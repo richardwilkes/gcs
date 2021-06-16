@@ -20,6 +20,7 @@ import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.skill.SkillLevel;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
+import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.StdLabel;
@@ -36,7 +37,6 @@ import java.awt.Container;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComboBox;
-import javax.swing.JTextField;
 
 /** The detailed editor for {@link Spell}s. */
 public class SpellEditor extends BaseSpellEditor<Spell> {
@@ -130,7 +130,7 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
         panel.add(new StdLabel("/"));
         mDifficultyCombo = createComboBox(panel, SkillDifficulty.values(), mRow.getDifficulty(), I18n.text("The difficulty of the spell"));
         if (forCharacter || forTemplate) {
-            mPointsField = createNumberField(panel, panel, I18n.text("Points"), I18n.text("The number of points spent on this spell"), mRow.getRawPoints(), 4);
+            mPointsField = createNumberField(panel, panel, I18n.text("Points"), I18n.text("The number of points spent on this spell"), mRow.getRawPoints(), 9999);
             if (forCharacter) {
                 mLevelField = createField(panel, panel, I18n.text("Level"), getDisplayLevel(mRow.getAttribute(), mRow.getLevel(), mRow.getRelativeLevel()), I18n.text("The spell level and relative spell level to roll against.\n") + mRow.getLevelToolTip(), 7);
                 mLevelField.setEnabled(false);
@@ -202,7 +202,7 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
     }
 
     @Override
-    protected void recalculateLevel(JTextField levelField) {
+    protected void recalculateLevel(EditorField levelField) {
         String attribute = getAttribute();
         SkillLevel level = Spell.calculateLevel(mRow.getCharacter(), getAdjustedPoints(),
                 attribute, getDifficulty(), getColleges(), mPowerSourceField.getText(),

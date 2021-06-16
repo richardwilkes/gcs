@@ -29,7 +29,6 @@ import com.trollworks.gcs.utility.text.IntegerFormatter;
 
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JComboBox;
@@ -173,19 +172,18 @@ public class SkillDefaultEditor extends EditorPanel {
     }
 
     @Override
-    public void propertyChange(PropertyChangeEvent event) {
-        Object src = event.getSource();
-        if (src == mSkillNameField) {
+    public void editorFieldChanged(EditorField field) {
+        if (field == mSkillNameField) {
             mDefault.setName((String) mSkillNameField.getValue());
             notifyActionListeners();
-        } else if (src == mSpecializationField) {
+        } else if (field == mSpecializationField) {
             mDefault.setSpecialization((String) mSpecializationField.getValue());
             notifyActionListeners();
-        } else if (src == mModifierField) {
+        } else if (field == mModifierField) {
             mDefault.setModifier(((Integer) mModifierField.getValue()).intValue());
             notifyActionListeners();
         } else {
-            super.propertyChange(event);
+            super.editorFieldChanged(field);
         }
     }
 

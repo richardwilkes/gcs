@@ -47,12 +47,12 @@ public class MeleeWeaponListEditor extends WeaponListEditor {
     }
 
     @Override
-    protected void updateFromField(Object source) {
-        if (mReach == source) {
+    protected void updateFromField(EditorField field) {
+        if (mReach == field) {
             changeReach();
-        } else if (mParry == source) {
+        } else if (mParry == field) {
             changeParry();
-        } else if (mBlock == source) {
+        } else if (mBlock == field) {
             changeBlock();
         }
     }

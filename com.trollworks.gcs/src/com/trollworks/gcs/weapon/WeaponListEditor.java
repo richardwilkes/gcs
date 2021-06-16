@@ -36,8 +36,6 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComboBox;
@@ -50,7 +48,7 @@ import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.Document;
 
 /** An abstract editor for weapon statistics. */
-public abstract class WeaponListEditor extends StdPanel implements ActionListener, PropertyChangeListener, DocumentListener {
+public abstract class WeaponListEditor extends StdPanel implements ActionListener, EditorField.ChangeListener, DocumentListener {
     private ListRow                      mOwner;
     private WeaponOutline                mOutline;
     private FontAwesomeButton            mAddButton;
@@ -230,32 +228,31 @@ public abstract class WeaponListEditor extends StdPanel implements ActionListene
     }
 
     @Override
-    public void propertyChange(PropertyChangeEvent event) {
+    public void editorFieldChanged(EditorField field) {
         if (mRespond) {
-            Object source = event.getSource();
-            if (mUsage == source) {
+            if (mUsage == field) {
                 mWeapon.setUsage((String) mUsage.getValue());
-            } else if (mDamageBase == source) {
+            } else if (mDamageBase == field) {
                 mWeapon.getDamage().setBase(new Dice((String) mDamageBase.getValue()));
-            } else if (mDamageArmorDivisor == source) {
+            } else if (mDamageArmorDivisor == field) {
                 mWeapon.getDamage().setArmorDivisor(extractArmorDivisor(mDamageArmorDivisor));
-            } else if (mDamageType == source) {
+            } else if (mDamageType == field) {
                 mWeapon.getDamage().setType(((String) mDamageType.getValue()).trim());
-            } else if (mDamageModPerDie == source) {
+            } else if (mDamageModPerDie == field) {
                 mWeapon.getDamage().setModifierPerDie(Numbers.extractInteger((String) mDamageModPerDie.getValue(), 0, true));
-            } else if (mFragDamage == source) {
+            } else if (mFragDamage == field) {
                 WeaponDamage damage = mWeapon.getDamage();
                 damage.setFragmentation(new Dice((String) mFragDamage.getValue()), adjustArmorDivisor(damage.getFragmentationArmorDivisor()), damage.getFragmentationType());
-            } else if (mFragArmorDivisor == source) {
+            } else if (mFragArmorDivisor == field) {
                 WeaponDamage damage = mWeapon.getDamage();
                 damage.setFragmentation(damage.getFragmentation(), extractArmorDivisor(mFragArmorDivisor), damage.getFragmentationType());
-            } else if (mFragType == source) {
+            } else if (mFragType == field) {
                 WeaponDamage damage = mWeapon.getDamage();
                 damage.setFragmentation(damage.getFragmentation(), adjustArmorDivisor(damage.getFragmentationArmorDivisor()), ((String) mFragType.getValue()).trim());
-            } else if (mStrength == source) {
+            } else if (mStrength == field) {
                 mWeapon.setStrength((String) mStrength.getValue());
             } else {
-                updateFromField(source);
+                updateFromField(field);
                 return;
             }
             adjustOutlineToContent();
@@ -280,7 +277,7 @@ public abstract class WeaponListEditor extends StdPanel implements ActionListene
      *
      * @param field The field that was altered.
      */
-    protected abstract void updateFromField(Object field);
+    protected abstract void updateFromField(EditorField field);
 
     /** Call to adjust the {@link Outline} to its new content. */
     protected void adjustOutlineToContent() {

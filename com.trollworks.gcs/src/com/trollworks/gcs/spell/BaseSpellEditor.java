@@ -11,20 +11,20 @@
 
 package com.trollworks.gcs.spell;
 
+import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
+import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.text.NumberFilter;
-import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.weapon.MeleeWeaponListEditor;
 import com.trollworks.gcs.weapon.RangedWeaponListEditor;
@@ -33,39 +33,37 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 
 /** An editor implementing functionalities common to all spell implementations. */
-public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> implements ActionListener, DocumentListener, FocusListener {
-    protected JTextField                 mNameField;
-    protected JTextField                 mCollegeField;
-    protected JTextField                 mPowerSourceField;
-    protected JTextField                 mResistField;
-    protected JTextField                 mClassField;
-    protected JTextField                 mCastingCostField;
-    protected JTextField                 mMaintenanceField;
-    protected JTextField                 mCastingTimeField;
-    protected JTextField                 mDurationField;
+public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> implements ActionListener, DocumentListener, EditorField.ChangeListener {
+    protected EditorField                mNameField;
+    protected EditorField                mCollegeField;
+    protected EditorField                mPowerSourceField;
+    protected EditorField                mResistField;
+    protected EditorField                mClassField;
+    protected EditorField                mCastingCostField;
+    protected EditorField                mMaintenanceField;
+    protected EditorField                mCastingTimeField;
+    protected EditorField                mDurationField;
     protected JComboBox<SkillDifficulty> mDifficultyCombo;
     protected MultiLineTextField         mNotesField;
-    protected JTextField                 mCategoriesField;
-    protected JTextField                 mPointsField;
-    protected JTextField                 mLevelField;
-    protected JTextField                 mReferenceField;
+    protected EditorField                mCategoriesField;
+    protected EditorField                mPointsField;
+    protected EditorField                mLevelField;
+    protected EditorField                mReferenceField;
     protected PrereqsPanel               mPrereqs;
     protected JCheckBox                  mHasTechLevel;
-    protected JTextField                 mTechLevel;
+    protected EditorField                mTechLevel;
     protected String                     mSavedTechLevel;
     protected MeleeWeaponListEditor      mMeleeWeapons;
     protected RangedWeaponListEditor     mRangedWeapons;
@@ -102,7 +100,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
 
     /** @return The points in the points field, as an integer. */
     protected int getPoints() {
-        return Numbers.extractInteger(mPointsField.getText(), 0, true);
+        return ((Integer) mPointsField.getValue()).intValue();
     }
 
     protected int getAdjustedPoints() {
@@ -135,15 +133,8 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
      * @param tooltip     The tooltip of the text field.
      * @param maxChars    The maximum number of characters that can be written in the text field.
      */
-    protected JTextField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
-        JTextField field = new JTextField(maxChars > 0 ? Text.makeFiller(maxChars, 'M') : text);
-        if (maxChars > 0) {
-            UIUtilities.setToPreferredSizeOnly(field);
-            field.setText(text);
-        }
-        field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        field.addActionListener(this);
-        field.addFocusListener(this);
+    protected EditorField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
+        EditorField field = new EditorField(FieldFactory.STRING, this, SwingConstants.LEFT, text, maxChars > 0 ? Text.makeFiller(maxChars, 'M') : null, tooltip);
         addLabel(labelParent, title, field);
         PrecisionLayoutData ld = new PrecisionLayoutData().setFillHorizontalAlignment();
         if (maxChars == 0) {
@@ -162,11 +153,12 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
      * @param title       The text of the label.
      * @param tooltip     The tooltip of the text field.
      * @param value       The number display in the text field.
-     * @param maxDigits   The maximum number of digits to display.
+     * @param maxValue    The maximum value the field will hold.
      */
-    protected JTextField createNumberField(Container labelParent, Container fieldParent, String title, String tooltip, int value, int maxDigits) {
-        JTextField field = createField(labelParent, fieldParent, title, Numbers.format(value), tooltip, maxDigits + 1);
-        NumberFilter.apply(field, false, false, false, maxDigits);
+    protected EditorField createNumberField(Container labelParent, Container fieldParent, String title, String tooltip, int value, int maxValue) {
+        EditorField field = new EditorField(FieldFactory.POSINT5, this, SwingConstants.LEFT, Integer.valueOf(value), Integer.valueOf(maxValue), tooltip);
+        addLabel(labelParent, title, field);
+        fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
 
@@ -179,12 +171,9 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
      * @param text        The text of the text field.
      * @param tooltip     The tooltip of the text field.
      */
-    protected JTextField createCorrectableField(Container labelParent, Container fieldParent, String title, String text, String tooltip) {
-        JTextField field = new JTextField(text);
-        field.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+    protected EditorField createCorrectableField(Container labelParent, Container fieldParent, String title, String text, String tooltip) {
+        EditorField field = new EditorField(FieldFactory.STRING, this, SwingConstants.LEFT, text, tooltip);
         field.getDocument().addDocumentListener(this);
-        field.addActionListener(this);
-        field.addFocusListener(this);
         addLabel(labelParent, title, field);
         fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return field;
@@ -231,20 +220,16 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
             mHasTechLevel.addActionListener(this);
             wrapper.add(mHasTechLevel);
 
-            mTechLevel = new JTextField("9999");
-            UIUtilities.setToPreferredSizeOnly(mTechLevel);
-            mTechLevel.setText(mSavedTechLevel);
-            mTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(tlTooltip));
+            mTechLevel = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, mSavedTechLevel, "9999", tlTooltip);
             mTechLevel.setEnabled(hasTL);
             wrapper.add(mTechLevel);
-            UIUtilities.setToPreferredSizeOnly(wrapper);
             parent.add(wrapper);
 
             if (!hasTL) {
                 mSavedTechLevel = character.getProfile().getTechLevel();
             }
         } else {
-            mTechLevel = new JTextField(mSavedTechLevel);
+            mTechLevel = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, mSavedTechLevel, "9999", null);
             mHasTechLevel = new JCheckBox(I18n.text("Tech Level Required"), hasTL);
             mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Whether this spell requires tech level specialization")));
             mHasTechLevel.addActionListener(this);
@@ -259,7 +244,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
      *
      * @param levelField The text field to update.
      */
-    protected abstract void recalculateLevel(JTextField levelField);
+    protected abstract void recalculateLevel(EditorField levelField);
 
     @Override
     public void actionPerformed(ActionEvent event) {
@@ -312,13 +297,8 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
     }
 
     @Override
-    public void focusGained(FocusEvent event) {
-        // Nothing to do
-    }
-
-    @Override
-    public void focusLost(FocusEvent event) {
-        adjustForSource(event.getSource());
+    public void editorFieldChanged(EditorField field) {
+        adjustForSource(field);
     }
 
     protected List<String> getColleges() {

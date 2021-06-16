@@ -27,7 +27,6 @@ import com.trollworks.gcs.utility.ID;
 
 import java.awt.Container;
 import java.awt.Rectangle;
-import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.JFormattedTextField;
 import javax.swing.SwingConstants;
@@ -94,16 +93,16 @@ public class HitLocationPanel extends ContentPanel implements DocumentListener {
                 mLocation.getID(),
                 null,
                 FieldFactory.STRING,
-                (evt) -> {
+                (f) -> {
                     String existingID = mLocation.getID();
-                    String id         = ((String) evt.getNewValue());
+                    String id         = ((String) f.getValue());
                     if (!existingID.equals(id)) {
                         id = ID.sanitize(id, null, false);
                         if (id.isEmpty()) {
-                            mIDField.setValue(existingID);
+                            f.setValue(existingID);
                         } else {
                             mLocation.setID(id);
-                            mIDField.setValue(id);
+                            f.setValue(id);
                             mAdjustCallback.run();
                         }
                     }
@@ -114,8 +113,8 @@ public class HitLocationPanel extends ContentPanel implements DocumentListener {
                 Integer.valueOf(mLocation.getSlots()),
                 Integer.valueOf(999),
                 FieldFactory.POSINT6,
-                (evt) -> {
-                    mLocation.setSlots(((Integer) evt.getNewValue()).intValue());
+                (f) -> {
+                    mLocation.setSlots(((Integer) f.getValue()).intValue());
                     mAdjustCallback.run();
                 });
         addField(wrapper,
@@ -124,8 +123,8 @@ public class HitLocationPanel extends ContentPanel implements DocumentListener {
                 Integer.valueOf(mLocation.getHitPenalty()),
                 Integer.valueOf(-999),
                 FieldFactory.INT6,
-                (evt) -> {
-                    mLocation.setHitPenalty(((Integer) evt.getNewValue()).intValue());
+                (f) -> {
+                    mLocation.setHitPenalty(((Integer) f.getValue()).intValue());
                     mAdjustCallback.run();
                 });
         addField(wrapper,
@@ -134,8 +133,8 @@ public class HitLocationPanel extends ContentPanel implements DocumentListener {
                 Integer.valueOf(mLocation.getDRBonus()),
                 Integer.valueOf(999),
                 FieldFactory.POSINT6,
-                (evt) -> {
-                    mLocation.setDRBonus(((Integer) evt.getNewValue()).intValue());
+                (f) -> {
+                    mLocation.setDRBonus(((Integer) f.getValue()).intValue());
                     mAdjustCallback.run();
                 });
         mCenter.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
@@ -147,8 +146,8 @@ public class HitLocationPanel extends ContentPanel implements DocumentListener {
                 mLocation.getChoiceName(),
                 null,
                 FieldFactory.STRING,
-                (evt) -> {
-                    mLocation.setChoiceName((String) evt.getNewValue());
+                (f) -> {
+                    mLocation.setChoiceName((String) f.getValue());
                     mAdjustCallback.run();
                 });
         addField(wrapper,
@@ -157,8 +156,8 @@ public class HitLocationPanel extends ContentPanel implements DocumentListener {
                 mLocation.getTableName(),
                 null,
                 FieldFactory.STRING,
-                (evt) -> {
-                    mLocation.setTableName((String) evt.getNewValue());
+                (f) -> {
+                    mLocation.setTableName((String) f.getValue());
                     mAdjustCallback.run();
                 });
         mCenter.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
@@ -185,7 +184,7 @@ public class HitLocationPanel extends ContentPanel implements DocumentListener {
         right.add(remove);
     }
 
-    private static EditorField addField(Container container, String title, String tooltip, Object value, Object protoValue, JFormattedTextField.AbstractFormatterFactory formatter, PropertyChangeListener listener) {
+    private static EditorField addField(Container container, String title, String tooltip, Object value, Object protoValue, JFormattedTextField.AbstractFormatterFactory formatter, EditorField.ChangeListener listener) {
         EditorField         field      = new EditorField(formatter, listener, SwingConstants.LEFT, value, protoValue, tooltip);
         PrecisionLayoutData layoutData = new PrecisionLayoutData().setFillHorizontalAlignment();
         if (protoValue == null) {

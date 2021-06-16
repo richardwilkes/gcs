@@ -41,12 +41,9 @@ public class ContainedWeightReductionEditor extends FeatureEditor {
         ContainedWeightReduction feature = (ContainedWeightReduction) getFeature();
         FlexRow                  row     = new FlexRow();
         row.add(addChangeBaseTypeCombo());
-        EditorField field = new EditorField(new DefaultFormatterFactory(new WeightReductionFormatter()), (event) -> {
-            EditorField source = (EditorField) event.getSource();
-            if ("value".equals(event.getPropertyName())) {
-                feature.setValue(source.getValue());
-                notifyActionListeners();
-            }
+        EditorField field = new EditorField(new DefaultFormatterFactory(new WeightReductionFormatter()), (f) -> {
+            feature.setValue(f.getValue());
+            notifyActionListeners();
         }, SwingConstants.LEFT, feature.getValue(), new WeightValue(new Fixed6(999999999), getRow().getDataFile().getSheetSettings().defaultWeightUnits()), I18n.text("Enter a weight or percentage, e.g. \"2 lb\" or \"5%\"."));
         UIUtilities.setToPreferredSizeOnly(field);
         add(field);

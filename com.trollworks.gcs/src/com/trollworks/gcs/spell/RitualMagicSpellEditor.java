@@ -17,6 +17,7 @@ import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.skill.SkillLevel;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
+import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.StdLabel;
@@ -33,14 +34,13 @@ import com.trollworks.gcs.weapon.WeaponStats;
 import java.awt.Container;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.Document;
 
 /** The detailed editor for {@link RitualMagicSpell}s. */
 public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
-    private JTextField mBaseSkillNameField;
-    private JTextField mPrerequisiteSpellsCountField;
+    private EditorField mBaseSkillNameField;
+    private EditorField mPrerequisiteSpellsCountField;
 
 
     /**
@@ -71,7 +71,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
         createTechLevelFields(wrapper);
         panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
         mBaseSkillNameField = createCorrectableField(panel, panel, I18n.text("Base Skill"), mRow.getBaseSkillName(), I18n.text("The name of the base skill, such as \"Ritual Magic\" or \"Thaumatology\""));
-        mPrerequisiteSpellsCountField = createNumberField(panel, panel, I18n.text("Prerequisite Count"), I18n.text("The penalty to skill level based on the number of prerequisite spells"), mRow.getPrerequisiteSpellsCount(), 2);
+        mPrerequisiteSpellsCountField = createNumberField(panel, panel, I18n.text("Prerequisite Count"), I18n.text("The penalty to skill level based on the number of prerequisite spells"), mRow.getPrerequisiteSpellsCount(), 99);
         mCollegeField = createField(panel, panel, I18n.text("College"), String.join(", ", mRow.getColleges()), I18n.text("The college(s) the spell belongs to; separate multiple colleges with a comma"), 0);
         mPowerSourceField = createField(panel, panel, I18n.text("Power Source"), mRow.getPowerSource(), I18n.text("The source of power for the spell"), 0);
         mClassField = createCorrectableField(panel, panel, I18n.text("Class"), mRow.getSpellClass(), I18n.text("The class of spell (Area, Missile, etc.)"));
@@ -106,7 +106,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
         StdPanel panel = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(columns));
         mDifficultyCombo = createComboBox(panel, new SkillDifficulty[]{SkillDifficulty.A, SkillDifficulty.H}, mRow.getDifficulty(), I18n.text("The difficulty of the spell"));
         if (forCharacter || forTemplate) {
-            mPointsField = createNumberField(panel, panel, I18n.text("Points"), I18n.text("The number of points spent on this spell"), mRow.getRawPoints(), 4);
+            mPointsField = createNumberField(panel, panel, I18n.text("Points"), I18n.text("The number of points spent on this spell"), mRow.getRawPoints(), 9999);
             if (forCharacter) {
                 mLevelField = createField(panel, panel, I18n.text("Level"), getDisplayLevel(mRow.getLevel(), mRow.getRelativeLevel()), I18n.text("The spell level and relative spell level to roll against.\n") + mRow.getLevelToolTip(), 7);
                 mLevelField.setEnabled(false);
@@ -124,7 +124,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
     }
 
     protected int getPrerequisiteSpellsCount() {
-        return Numbers.extractInteger(mPrerequisiteSpellsCountField.getText(), 0, true);
+        return ((Integer)mPrerequisiteSpellsCountField.getValue()).intValue();
     }
 
     @Override
@@ -157,7 +157,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
         return modified;
     }
 
-    protected void recalculateLevel(JTextField levelField) {
+    protected void recalculateLevel(EditorField levelField) {
         SkillLevel level = RitualMagicSpell.calculateLevel(mRow.getCharacter(), mNameField.getText(), mBaseSkillNameField.getText(), getColleges(), mPowerSourceField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()), getDifficulty(), getPrerequisiteSpellsCount(), getAdjustedPoints());
         levelField.setText(getDisplayLevel(level.getLevel(), level.getRelativeLevel()));
         levelField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("The spell level and relative spell level to roll against.\n") + level.getToolTip()));

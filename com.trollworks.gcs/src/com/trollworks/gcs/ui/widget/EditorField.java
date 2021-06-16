@@ -22,7 +22,6 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
-import java.beans.PropertyChangeListener;
 import java.text.ParseException;
 import javax.swing.JFormattedTextField;
 import javax.swing.SwingConstants;
@@ -31,6 +30,10 @@ import javax.swing.border.CompoundBorder;
 /** Provides a standard editor field. */
 public class EditorField extends JFormattedTextField implements ActionListener, Commitable {
     private String mHint;
+
+    public interface ChangeListener {
+        void editorFieldChanged(EditorField field);
+    }
 
     /**
      * Creates a new EditorField.
@@ -41,7 +44,7 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
      * @param value     The initial value.
      * @param tooltip   The tooltip to use.
      */
-    public EditorField(AbstractFormatterFactory formatter, PropertyChangeListener listener, int alignment, Object value, String tooltip) {
+    public EditorField(AbstractFormatterFactory formatter, ChangeListener listener, int alignment, Object value, String tooltip) {
         this(formatter, listener, alignment, value, null, tooltip);
     }
 
@@ -55,7 +58,7 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
      * @param protoValue The prototype value to use to set the preferred size.
      * @param tooltip    The tooltip to use.
      */
-    public EditorField(AbstractFormatterFactory formatter, PropertyChangeListener listener, int alignment, Object value, Object protoValue, String tooltip) {
+    public EditorField(AbstractFormatterFactory formatter, ChangeListener listener, int alignment, Object value, Object protoValue, String tooltip) {
         super(formatter, protoValue != null ? protoValue : value);
         setHorizontalAlignment(alignment);
         setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
@@ -72,7 +75,7 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
             setValue(value);
         }
         if (listener != null) {
-            addPropertyChangeListener("value", listener);
+            addPropertyChangeListener("value", (evt) -> listener.editorFieldChanged(this));
         }
         addActionListener(this);
     }

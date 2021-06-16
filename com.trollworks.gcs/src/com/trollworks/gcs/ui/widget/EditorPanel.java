@@ -29,8 +29,6 @@ import com.trollworks.gcs.utility.units.WeightValue;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComboBox;
@@ -39,7 +37,7 @@ import javax.swing.text.DefaultFormatter;
 import javax.swing.text.DefaultFormatterFactory;
 
 /** A generic editor panel. */
-public abstract class EditorPanel extends ActionPanel implements ActionListener, PropertyChangeListener {
+public abstract class EditorPanel extends ActionPanel implements ActionListener, EditorField.ChangeListener {
     private static final int    GAP        = 4;
     private static final String COMPARISON = "Comparison";
 
@@ -192,29 +190,26 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
     }
 
     @Override
-    public void propertyChange(PropertyChangeEvent event) {
-        if ("value".equals(event.getPropertyName())) {
-            EditorField    field    = (EditorField) event.getSource();
-            StringCriteria criteria = (StringCriteria) field.getClientProperty(StringCriteria.class);
-            if (criteria != null) {
-                criteria.setQualifier((String) field.getValue());
+    public void editorFieldChanged(EditorField field) {
+        StringCriteria criteria = (StringCriteria) field.getClientProperty(StringCriteria.class);
+        if (criteria != null) {
+            criteria.setQualifier((String) field.getValue());
+            notifyActionListeners();
+        } else {
+            IntegerCriteria integerCriteria = (IntegerCriteria) field.getClientProperty(IntegerCriteria.class);
+            if (integerCriteria != null) {
+                integerCriteria.setQualifier(((Integer) field.getValue()).intValue());
                 notifyActionListeners();
             } else {
-                IntegerCriteria integerCriteria = (IntegerCriteria) field.getClientProperty(IntegerCriteria.class);
-                if (integerCriteria != null) {
-                    integerCriteria.setQualifier(((Integer) field.getValue()).intValue());
+                DoubleCriteria doubleCriteria = (DoubleCriteria) field.getClientProperty(DoubleCriteria.class);
+                if (doubleCriteria != null) {
+                    doubleCriteria.setQualifier(((Double) field.getValue()).doubleValue());
                     notifyActionListeners();
                 } else {
-                    DoubleCriteria doubleCriteria = (DoubleCriteria) field.getClientProperty(DoubleCriteria.class);
-                    if (doubleCriteria != null) {
-                        doubleCriteria.setQualifier(((Double) field.getValue()).doubleValue());
+                    WeightCriteria weightCriteria = (WeightCriteria) field.getClientProperty(WeightCriteria.class);
+                    if (weightCriteria != null) {
+                        weightCriteria.setQualifier((WeightValue) field.getValue());
                         notifyActionListeners();
-                    } else {
-                        WeightCriteria weightCriteria = (WeightCriteria) field.getClientProperty(WeightCriteria.class);
-                        if (weightCriteria != null) {
-                            weightCriteria.setQualifier((WeightValue) field.getValue());
-                            notifyActionListeners();
-                        }
                     }
                 }
             }

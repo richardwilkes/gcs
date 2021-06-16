@@ -40,8 +40,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JCheckBox;
@@ -54,7 +52,7 @@ import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.Document;
 
 /** The detailed editor for {@link Advantage}s. */
-public class AdvantageEditor extends RowEditor<Advantage> implements ActionListener, DocumentListener, PropertyChangeListener {
+public class AdvantageEditor extends RowEditor<Advantage> implements ActionListener, DocumentListener, EditorField.ChangeListener {
     private EditorField                           mNameField;
     private JCheckBox                             mShouldRoundCostDown;
     private JComboBox<Levels>                     mLevelTypeCombo;
@@ -491,12 +489,9 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     }
 
     @Override
-    public void propertyChange(PropertyChangeEvent event) {
-        if ("value".equals(event.getPropertyName())) {
-            Object src = event.getSource();
-            if (src == mLevelField || src == mLevelPointsField || src == mBasePointsField) {
-                updatePoints();
-            }
+    public void editorFieldChanged(EditorField field) {
+        if (field == mLevelField || field == mLevelPointsField || field == mBasePointsField) {
+            updatePoints();
         }
     }
 

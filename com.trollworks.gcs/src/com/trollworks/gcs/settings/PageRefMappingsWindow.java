@@ -89,7 +89,7 @@ public final class PageRefMappingsWindow extends BaseWindow implements CloseHand
             wrapper.add(idLabel, new PrecisionLayoutData().setFillHorizontalAlignment().setMinimumWidth(50).setVerticalAlignment(PrecisionLayoutAlignment.MIDDLE));
             mPanel.add(wrapper, new PrecisionLayoutData().setFillAlignment());
             EditorField field = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(-9999, 9999, true)),
-                    (evt) -> ref.setPageToIndexOffset(((Integer) evt.getNewValue()).intValue()),
+                    (f) -> ref.setPageToIndexOffset(((Integer) f.getValue()).intValue()),
                     SwingConstants.RIGHT, Integer.valueOf(ref.getPageToIndexOffset()),
                     Integer.valueOf(-9999),
                     I18n.text("If your PDF is opening up to the wrong page when opening page references, enter an offset here to compensate."));

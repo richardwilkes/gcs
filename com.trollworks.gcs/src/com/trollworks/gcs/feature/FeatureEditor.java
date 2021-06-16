@@ -25,7 +25,6 @@ import com.trollworks.gcs.utility.text.DoubleFormatter;
 import com.trollworks.gcs.utility.text.IntegerFormatter;
 
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComboBox;
@@ -216,22 +215,17 @@ public abstract class FeatureEditor extends EditorPanel {
     }
 
     @Override
-    public void propertyChange(PropertyChangeEvent event) {
-        if ("value".equals(event.getPropertyName())) {
-            EditorField   field = (EditorField) event.getSource();
-            LeveledAmount amt   = (LeveledAmount) field.getClientProperty(LeveledAmount.class);
-            if (amt != null) {
-                if (amt.isDecimal()) {
-                    amt.setAmount(((Double) field.getValue()).doubleValue());
-                } else {
-                    amt.setAmount(((Integer) field.getValue()).intValue());
-                }
-                notifyActionListeners();
+    public void editorFieldChanged(EditorField field) {
+        LeveledAmount amt = (LeveledAmount) field.getClientProperty(LeveledAmount.class);
+        if (amt != null) {
+            if (amt.isDecimal()) {
+                amt.setAmount(((Double) field.getValue()).doubleValue());
             } else {
-                super.propertyChange(event);
+                amt.setAmount(((Integer) field.getValue()).intValue());
             }
+            notifyActionListeners();
         } else {
-            super.propertyChange(event);
+            super.editorFieldChanged(field);
         }
     }
 }

@@ -26,7 +26,6 @@ import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Container;
 import java.awt.event.ItemEvent;
-import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JFormattedTextField;
@@ -89,8 +88,8 @@ public class ThresholdPanel extends ContentPanel implements DocumentListener {
                 mThreshold.getState(),
                 null,
                 FieldFactory.STRING,
-                (evt) -> {
-                    mThreshold.setState((String) evt.getNewValue());
+                (f) -> {
+                    mThreshold.setState((String) f.getValue());
                     mAdjustCallback.run();
                 });
         addField(wrapper,
@@ -99,8 +98,8 @@ public class ThresholdPanel extends ContentPanel implements DocumentListener {
                 Integer.valueOf(mThreshold.getMultiplier()),
                 Integer.valueOf(-999999),
                 FieldFactory.INT6,
-                (evt) -> {
-                    mThreshold.setMultiplier(((Integer) evt.getNewValue()).intValue());
+                (f) -> {
+                    mThreshold.setMultiplier(((Integer) f.getValue()).intValue());
                     mAdjustCallback.run();
                 });
         mDivisorField = addField(wrapper,
@@ -109,10 +108,10 @@ public class ThresholdPanel extends ContentPanel implements DocumentListener {
                 Integer.valueOf(mThreshold.getDivisor()),
                 Integer.valueOf(-999999),
                 FieldFactory.INT6,
-                (evt) -> {
-                    int value = ((Integer) evt.getNewValue()).intValue();
+                (f) -> {
+                    int value = ((Integer) f.getValue()).intValue();
                     if (value == 0) {
-                        mDivisorField.setValue(evt.getOldValue());
+                        mDivisorField.setValue(Integer.valueOf(1));
                     } else {
                         mThreshold.setDivisor(value);
                         mAdjustCallback.run();
@@ -124,8 +123,8 @@ public class ThresholdPanel extends ContentPanel implements DocumentListener {
                 Integer.valueOf(mThreshold.getAddition()),
                 Integer.valueOf(-999999),
                 FieldFactory.INT6,
-                (evt) -> {
-                    mThreshold.setAddition(((Integer) evt.getNewValue()).intValue());
+                (f) -> {
+                    mThreshold.setAddition(((Integer) f.getValue()).intValue());
                     mAdjustCallback.run();
                 });
         center.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
@@ -160,7 +159,7 @@ public class ThresholdPanel extends ContentPanel implements DocumentListener {
         right.add(remove);
     }
 
-    private static EditorField addField(Container container, String title, String tooltip, Object value, Object protoValue, JFormattedTextField.AbstractFormatterFactory formatter, PropertyChangeListener listener) {
+    private static EditorField addField(Container container, String title, String tooltip, Object value, Object protoValue, JFormattedTextField.AbstractFormatterFactory formatter, EditorField.ChangeListener listener) {
         EditorField         field      = new EditorField(formatter, listener, SwingConstants.LEFT, value, protoValue, tooltip);
         PrecisionLayoutData layoutData = new PrecisionLayoutData().setFillHorizontalAlignment();
         if (protoValue == null) {

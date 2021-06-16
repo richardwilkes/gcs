@@ -34,7 +34,6 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.EventQueue;
 import java.awt.Rectangle;
-import java.beans.PropertyChangeListener;
 import javax.swing.JFormattedTextField;
 import javax.swing.SwingConstants;
 import javax.swing.text.DefaultFormatterFactory;
@@ -104,16 +103,16 @@ public class HitLocationTablePanel extends BandedPanel {
                     mLocations.getID(),
                     Text.makeFiller(8, 'm'),
                     FieldFactory.STRING,
-                    (evt) -> {
+                    (f) -> {
                         String existingID = mLocations.getID();
-                        String id         = ((String) evt.getNewValue());
+                        String id         = ((String) f.getValue());
                         if (!existingID.equals(id)) {
                             id = ID.sanitize(id, null, false);
                             if (id.isEmpty()) {
-                                mFirstField.setValue(existingID);
+                                f.setValue(existingID);
                             } else {
                                 mLocations.setID(id);
-                                mFirstField.setValue(id);
+                                f.setValue(id);
                                 mAdjustCallback.run();
                             }
                         }
@@ -124,8 +123,8 @@ public class HitLocationTablePanel extends BandedPanel {
                     mLocations.getName(),
                     null,
                     FieldFactory.STRING,
-                    (evt) -> {
-                        mLocations.setName((String) evt.getNewValue());
+                    (f) -> {
+                        mLocations.setName((String) f.getValue());
                         mAdjustCallback.run();
                     });
         }
@@ -135,8 +134,8 @@ public class HitLocationTablePanel extends BandedPanel {
                 mLocations.getRoll(),
                 new Dice(100, 100, 100),
                 new DefaultFormatterFactory(new DiceFormatter(null)),
-                (evt) -> {
-                    mLocations.setRoll((Dice) evt.getNewValue());
+                (f) -> {
+                    mLocations.setRoll((Dice) f.getValue());
                     mAdjustCallback.run();
                 });
         if (mFirstField == null) {
@@ -160,7 +159,7 @@ public class HitLocationTablePanel extends BandedPanel {
         EventQueue.invokeLater(this::repaint);
     }
 
-    private static EditorField addField(Container container, String title, String tooltip, Object value, Object protoValue, JFormattedTextField.AbstractFormatterFactory formatter, PropertyChangeListener listener) {
+    private static EditorField addField(Container container, String title, String tooltip, Object value, Object protoValue, JFormattedTextField.AbstractFormatterFactory formatter, EditorField.ChangeListener listener) {
         EditorField         field      = new EditorField(formatter, listener, SwingConstants.LEFT, value, protoValue, tooltip);
         PrecisionLayoutData layoutData = new PrecisionLayoutData().setFillHorizontalAlignment();
         if (protoValue == null) {

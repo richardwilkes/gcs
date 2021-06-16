@@ -24,7 +24,6 @@ import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.units.LengthValue;
 
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
 import javax.swing.JComboBox;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
@@ -64,20 +63,20 @@ public class PageSettingsEditor extends StdPanel {
             mAdjustCallback.run();
         });
         LengthValue proto = new LengthValue(new Fixed6(99.99), LengthUnits.IN);
-        mTopMargin = addField(I18n.text("Top Margin"), mSettings.getTopMargin(), proto, (evt) -> {
-            mSettings.setTopMargin((LengthValue) evt.getNewValue());
+        mTopMargin = addField(I18n.text("Top Margin"), mSettings.getTopMargin(), proto, (f) -> {
+            mSettings.setTopMargin((LengthValue) f.getValue());
             mAdjustCallback.run();
         });
-        mBottomMargin = addField(I18n.text("Bottom Margin"), mSettings.getBottomMargin(), proto, (evt) -> {
-            mSettings.setBottomMargin((LengthValue) evt.getNewValue());
+        mBottomMargin = addField(I18n.text("Bottom Margin"), mSettings.getBottomMargin(), proto, (f) -> {
+            mSettings.setBottomMargin((LengthValue) f.getValue());
             mAdjustCallback.run();
         });
-        mLeftMargin = addField(I18n.text("Left Margin"), mSettings.getLeftMargin(), proto, (evt) -> {
-            mSettings.setLeftMargin((LengthValue) evt.getNewValue());
+        mLeftMargin = addField(I18n.text("Left Margin"), mSettings.getLeftMargin(), proto, (f) -> {
+            mSettings.setLeftMargin((LengthValue) f.getValue());
             mAdjustCallback.run();
         });
-        mRightMargin = addField(I18n.text("Right Margin"), mSettings.getRightMargin(), proto, (evt) -> {
-            mSettings.setRightMargin((LengthValue) evt.getNewValue());
+        mRightMargin = addField(I18n.text("Right Margin"), mSettings.getRightMargin(), proto, (f) -> {
+            mSettings.setRightMargin((LengthValue) f.getValue());
             mAdjustCallback.run();
         });
     }
@@ -87,7 +86,7 @@ public class PageSettingsEditor extends StdPanel {
         return newUnits.convert(oldUnits, value).mul(HUNDRED).round().div(HUNDRED);
     }
 
-    private EditorField addField(String title, Object value, Object protoValue, PropertyChangeListener listener) {
+    private EditorField addField(String title, Object value, Object protoValue, EditorField.ChangeListener listener) {
         EditorField field = new EditorField(FieldFactory.LENGTH, listener, SwingConstants.LEFT, value, protoValue, null);
         add(new StdLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
         add(field, new PrecisionLayoutData().setFillHorizontalAlignment());

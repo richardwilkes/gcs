@@ -27,7 +27,6 @@ import com.trollworks.gcs.utility.text.Text;
 import java.awt.Container;
 import java.awt.Rectangle;
 import java.awt.event.ItemListener;
-import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JComboBox;
@@ -88,19 +87,19 @@ public class AttributePanel extends ContentPanel {
                 attrDef.getID(),
                 Text.makeFiller(7, 'm'),
                 FieldFactory.STRING,
-                (evt) -> {
+                (f) -> {
                     String existingID = mAttrDef.getID();
-                    String id         = ((String) evt.getNewValue());
+                    String id         = ((String) f.getValue());
                     if (!existingID.equals(id)) {
                         id = ID.sanitize(id, AttributeDef.RESERVED, false);
                         if (id.isEmpty() || mAttributes.containsKey(id)) {
-                            mIDField.setValue(existingID);
+                            f.setValue(existingID);
                         } else {
                             mAttributes.remove(existingID);
                             mAttrDef.setID(id);
                             id = mAttrDef.getID();
                             mAttributes.put(id, mAttrDef);
-                            mIDField.setValue(id);
+                            f.setValue(id);
                             mAdjustCallback.run();
                         }
                     }
@@ -111,8 +110,8 @@ public class AttributePanel extends ContentPanel {
                 attrDef.getName(),
                 Text.makeFiller(8, 'm'),
                 FieldFactory.STRING,
-                (evt) -> {
-                    mAttrDef.setName((String) evt.getNewValue());
+                (f) -> {
+                    mAttrDef.setName((String) f.getValue());
                     mAdjustCallback.run();
                 });
         addField(wrapper,
@@ -121,8 +120,8 @@ public class AttributePanel extends ContentPanel {
                 attrDef.getFullName(),
                 null,
                 FieldFactory.STRING,
-                (evt) -> {
-                    mAttrDef.setFullName((String) evt.getNewValue());
+                (f) -> {
+                    mAttrDef.setFullName((String) f.getValue());
                     mAdjustCallback.run();
                 });
         mCenter.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
@@ -154,8 +153,8 @@ public class AttributePanel extends ContentPanel {
                 attrDef.getAttributeBase(),
                 null,
                 FieldFactory.STRING,
-                (evt) -> {
-                    mAttrDef.setAttributeBase((String) evt.getNewValue());
+                (f) -> {
+                    mAttrDef.setAttributeBase((String) f.getValue());
                     mAdjustCallback.run();
                 });
         addField(wrapper,
@@ -164,8 +163,8 @@ public class AttributePanel extends ContentPanel {
                 Integer.valueOf(attrDef.getCostPerPoint()),
                 Integer.valueOf(999999),
                 FieldFactory.POSINT6,
-                (evt) -> {
-                    mAttrDef.setCostPerPoint(((Integer) evt.getNewValue()).intValue());
+                (f) -> {
+                    mAttrDef.setCostPerPoint(((Integer) f.getValue()).intValue());
                     mAdjustCallback.run();
                 });
         addField(wrapper,
@@ -174,8 +173,8 @@ public class AttributePanel extends ContentPanel {
                 Integer.valueOf(attrDef.getCostAdjPercentPerSM()),
                 Integer.valueOf(80),
                 FieldFactory.PERCENT_REDUCTION,
-                (evt) -> {
-                    mAttrDef.setCostAdjPercentPerSM(((Integer) evt.getNewValue()).intValue());
+                (f) -> {
+                    mAttrDef.setCostAdjPercentPerSM(((Integer) f.getValue()).intValue());
                     mAdjustCallback.run();
                 });
         mCenter.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
@@ -195,7 +194,7 @@ public class AttributePanel extends ContentPanel {
         right.add(remove);
     }
 
-    private static EditorField addField(Container container, String title, String tooltip, Object value, Object protoValue, AbstractFormatterFactory formatter, PropertyChangeListener listener) {
+    private static EditorField addField(Container container, String title, String tooltip, Object value, Object protoValue, AbstractFormatterFactory formatter, EditorField.ChangeListener listener) {
         EditorField         field      = new EditorField(formatter, listener, SwingConstants.LEFT, value, protoValue, tooltip);
         PrecisionLayoutData layoutData = new PrecisionLayoutData().setFillHorizontalAlignment();
         if (protoValue == null) {

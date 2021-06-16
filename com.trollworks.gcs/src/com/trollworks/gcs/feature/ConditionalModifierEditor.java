@@ -18,7 +18,6 @@ import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 
 import java.awt.Insets;
-import java.beans.PropertyChangeEvent;
 import javax.swing.SwingConstants;
 import javax.swing.text.DefaultFormatter;
 import javax.swing.text.DefaultFormatterFactory;
@@ -54,12 +53,11 @@ public class ConditionalModifierEditor extends FeatureEditor {
     }
 
     @Override
-    public void propertyChange(PropertyChangeEvent event) {
-        Object source = event.getSource();
-        if (source == mSituationField) {
+    public void editorFieldChanged(EditorField field) {
+        if (field == mSituationField) {
             ((ConditionalModifier) getFeature()).setSituation(mSituationField.getText().trim());
         } else {
-            super.propertyChange(event);
+            super.editorFieldChanged(field);
         }
     }
 }

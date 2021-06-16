@@ -35,15 +35,13 @@ import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.WindowEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.net.URI;
 import java.text.MessageFormat;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.SwingConstants;
 
-public final class GeneralSettingsWindow extends BaseWindow implements CloseHandler, PropertyChangeListener, ItemListener {
+public final class GeneralSettingsWindow extends BaseWindow implements CloseHandler, ItemListener {
     private static GeneralSettingsWindow INSTANCE;
     private        EditorField           mPlayerName;
     private        EditorField           mTechLevel;
@@ -77,7 +75,10 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
         content.setLayout(new PrecisionLayout().setColumns(3).setMargins(10));
 
         // First row
-        mPlayerName = new EditorField(FieldFactory.STRING, this, SwingConstants.LEFT, prefs.getDefaultPlayerName(),
+        mPlayerName = new EditorField(FieldFactory.STRING, (f) -> {
+            Settings.getInstance().setDefaultPlayerName(f.getText().trim());
+            adjustResetButton();
+        }, SwingConstants.LEFT, prefs.getDefaultPlayerName(),
                 I18n.text("The player name to use when a new character sheet is created"));
         content.add(new StdLabel(I18n.text("Player"), mPlayerName), new PrecisionLayoutData().setFillHorizontalAlignment());
         content.add(mPlayerName, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
@@ -90,8 +91,10 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
         content.add(mAutoFillProfile);
 
         // Second row
-        mTechLevel = new EditorField(FieldFactory.STRING, this, SwingConstants.RIGHT,
-                prefs.getDefaultTechLevel(), "99+99^",
+        mTechLevel = new EditorField(FieldFactory.STRING, (f) -> {
+            Settings.getInstance().setDefaultTechLevel(f.getText().trim());
+            adjustResetButton();
+        }, SwingConstants.RIGHT, prefs.getDefaultTechLevel(), "99+99^",
                 I18n.text("""
                         <html><body>
                         TL0: Stone Age (Prehistory and later)<br>
@@ -108,15 +111,19 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
                         TL11: Age of Exotic Matter<br>
                         TL12: Anything Goes
                         </body></html>"""));
-        content.add(new StdLabel(I18n.text("Tech Level"), mTechLevel), new PrecisionLayoutData().setFillHorizontalAlignment());
+        content.add(new StdLabel(I18n.text("Tech Level"), mTechLevel),
+                new PrecisionLayoutData().setFillHorizontalAlignment());
         Wrapper wrapper = new Wrapper(new PrecisionLayout().setMargins(0).setColumns(3));
         content.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         wrapper.add(mTechLevel, new PrecisionLayoutData().setFillHorizontalAlignment());
 
-        mInitialPoints = new EditorField(FieldFactory.POSINT6, this, SwingConstants.RIGHT,
-                Integer.valueOf(prefs.getInitialPoints()), Integer.valueOf(999999),
+        mInitialPoints = new EditorField(FieldFactory.POSINT6, (f) -> {
+            Settings.getInstance().setInitialPoints(((Integer) f.getValue()).intValue());
+            adjustResetButton();
+        }, SwingConstants.RIGHT, Integer.valueOf(prefs.getInitialPoints()), Integer.valueOf(999999),
                 I18n.text("The initial number of character points to start with"));
-        wrapper.add(new StdLabel(I18n.text("Initial Points"), mTechLevel), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(5));
+        wrapper.add(new StdLabel(I18n.text("Initial Points"), mTechLevel),
+                new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(5));
         wrapper.add(mInitialPoints, new PrecisionLayoutData().setFillHorizontalAlignment());
 
         mIncludeUnspentPointsInTotal = new JCheckBox(I18n.text("Include unspent points in total"),
@@ -137,15 +144,21 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
         content.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(2));
         wrapper.add(mInitialScale);
 
-        mToolTipTimeout = new EditorField(FieldFactory.TOOLTIP_TIMEOUT, this, SwingConstants.RIGHT,
-                Integer.valueOf(prefs.getToolTipTimeout()), FieldFactory.getMaxValue(FieldFactory.TOOLTIP_TIMEOUT),
+        mToolTipTimeout = new EditorField(FieldFactory.TOOLTIP_TIMEOUT, (f) -> {
+            Settings.getInstance().setToolTipTimeout(((Integer) f.getValue()).intValue());
+            adjustResetButton();
+        }, SwingConstants.RIGHT, Integer.valueOf(prefs.getToolTipTimeout()),
+                FieldFactory.getMaxValue(FieldFactory.TOOLTIP_TIMEOUT),
                 I18n.text("The number of seconds before tooltips will dismiss themselves"));
         wrapper.add(new StdLabel(I18n.text("Tooltip Timeout"), mToolTipTimeout), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(5));
         wrapper.add(mToolTipTimeout, new PrecisionLayoutData().setFillHorizontalAlignment());
         wrapper.add(new StdLabel(I18n.text("seconds"), mToolTipTimeout));
 
-        mImageResolution = new EditorField(FieldFactory.OUTPUT_DPI, this, SwingConstants.RIGHT,
-                Integer.valueOf(prefs.getImageResolution()), FieldFactory.getMaxValue(FieldFactory.OUTPUT_DPI),
+        mImageResolution = new EditorField(FieldFactory.OUTPUT_DPI, (f) -> {
+            Settings.getInstance().setImageResolution(((Integer) f.getValue()).intValue());
+            adjustResetButton();
+        }, SwingConstants.RIGHT, Integer.valueOf(prefs.getImageResolution()),
+                FieldFactory.getMaxValue(FieldFactory.OUTPUT_DPI),
                 I18n.text("The resolution, in dots-per-inch, to use when saving sheets as PNG files"));
         wrapper.add(new StdLabel(I18n.text("Image Resolution"), mImageResolution), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(5));
         wrapper.add(mImageResolution, new PrecisionLayoutData().setFillHorizontalAlignment());
@@ -154,7 +167,10 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
         // Fourth row
         wrapper = new Wrapper(new PrecisionLayout().setMargins(0).setColumns(3));
         content.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
-        mGCalcKey = new EditorField(FieldFactory.STRING, this, SwingConstants.LEFT, prefs.getGURPSCalculatorKey(), null);
+        mGCalcKey = new EditorField(FieldFactory.STRING, (f) -> {
+            Settings.getInstance().setGURPSCalculatorKey(f.getText().trim());
+            adjustResetButton();
+        }, SwingConstants.LEFT, prefs.getGURPSCalculatorKey(), null);
         wrapper.add(new StdLabel(I18n.text("GURPS Calculator Key"), mGCalcKey), new PrecisionLayoutData().setFillHorizontalAlignment());
         wrapper.add(mGCalcKey, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         wrapper.add(new StdButton(I18n.text("Find mine"), (btn) -> {
@@ -229,28 +245,6 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
             INSTANCE = null;
         }
         super.dispose();
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent event) {
-        if ("value".equals(event.getPropertyName())) {
-            Settings prefs = Settings.getInstance();
-            Object   src   = event.getSource();
-            if (src == mPlayerName) {
-                prefs.setDefaultPlayerName(mPlayerName.getText().trim());
-            } else if (src == mTechLevel) {
-                prefs.setDefaultTechLevel(mTechLevel.getText().trim());
-            } else if (src == mInitialPoints) {
-                prefs.setInitialPoints(((Integer) mInitialPoints.getValue()).intValue());
-            } else if (src == mToolTipTimeout) {
-                prefs.setToolTipTimeout(((Integer) mToolTipTimeout.getValue()).intValue());
-            } else if (src == mImageResolution) {
-                prefs.setImageResolution(((Integer) mImageResolution.getValue()).intValue());
-            } else if (src == mGCalcKey) {
-                prefs.setGURPSCalculatorKey(mGCalcKey.getText().trim());
-            }
-            adjustResetButton();
-        }
     }
 
     @Override

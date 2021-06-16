@@ -56,18 +56,18 @@ public class RangedWeaponListEditor extends WeaponListEditor {
     }
 
     @Override
-    protected void updateFromField(Object source) {
-        if (mAccuracy == source) {
+    protected void updateFromField(EditorField field) {
+        if (mAccuracy == field) {
             changeAccuracy();
-        } else if (mRange == source) {
+        } else if (mRange == field) {
             changeRange();
-        } else if (mRateOfFire == source) {
+        } else if (mRateOfFire == field) {
             changeRateOfFire();
-        } else if (mShots == source) {
+        } else if (mShots == field) {
             changeShots();
-        } else if (mBulk == source) {
+        } else if (mBulk == field) {
             changeBulk();
-        } else if (mRecoil == source) {
+        } else if (mRecoil == field) {
             changeRecoil();
         }
     }
