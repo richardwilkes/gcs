@@ -29,8 +29,6 @@ import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.text.NumberFilter;
-import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.weapon.MeleeWeaponListEditor;
 import com.trollworks.gcs.weapon.RangedWeaponListEditor;
@@ -150,9 +148,11 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     }
 
     private void createPointsFields(Container parent, boolean forCharacter) {
-        mPointsField = createField(parent, parent, I18n.text("Points"), Integer.toString(mRow.getRawPoints()),
-                I18n.text("The number of points spent on this skill"), 4, (f) -> recalculateLevel());
-        NumberFilter.apply(mPointsField, false, false, false, 4);
+        mPointsField = new EditorField(FieldFactory.POSINT3, (f) -> recalculateLevel(),
+                SwingConstants.LEFT, Integer.valueOf(mRow.getRawPoints()), Integer.valueOf(999),
+                I18n.text("The number of points spent on this skill"));
+        parent.add(new StdLabel(I18n.text("Points"), mPointsField), new PrecisionLayoutData().setFillHorizontalAlignment());
+        parent.add(mPointsField, new PrecisionLayoutData().setFillHorizontalAlignment());
         if (forCharacter) {
             String level = Skill.getSkillDisplayLevel(mRow.getDataFile(), mRow.getLevel(),
                     mRow.getRelativeLevel(), mRow.getAttribute(), mRow.canHaveChildren());
@@ -288,7 +288,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     }
 
     private int getSkillPoints() {
-        return Numbers.extractInteger(mPointsField.getText(), 0, true);
+        return ((Integer) mPointsField.getValue()).intValue();
     }
 
     private int getAdjustedSkillPoints() {
