@@ -64,7 +64,7 @@ public final class ThemeColor extends Color {
     public static final ThemeColor ICON_BUTTON          = new ThemeColor("icon_button", I18n.text("Icon Button"), new Color(0, 0, 0));
     public static final ThemeColor DISABLED_ICON_BUTTON = new ThemeColor("disabled_icon_button", I18n.text("Disabled Icon Button"), new Color(192, 192, 192));
     public static final ThemeColor ROLLOVER_ICON_BUTTON = new ThemeColor("rollover_icon_button", I18n.text("Rollover Icon Button"), new Color(54, 137, 131));
-    public static final ThemeColor PRESSED_ICON_BUTTON  = new ThemeColor("pressed_icon_button", I18n.text("Pressed Icon Button"), new Color(70, 171, 196));
+    public static final ThemeColor PRESSED_ICON_BUTTON  = new ThemeColor("pressed_icon_button", I18n.text("Pressed Icon Button"), new Color(0, 96, 160));
     public static final ThemeColor DROP_AREA            = new ThemeColor("drop_area", I18n.text("Drop Area"), new Color(0, 0, 255));
     public static final ThemeColor PAGE_VOID            = new ThemeColor("page_void", I18n.text("Page Void"), new Color(192, 192, 192));
 

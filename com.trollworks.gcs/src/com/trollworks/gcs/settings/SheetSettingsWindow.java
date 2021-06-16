@@ -24,6 +24,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.StdButton;
+import com.trollworks.gcs.ui.widget.StdCheckbox;
 import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.StdScrollPanel;
@@ -40,14 +41,11 @@ import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.WindowEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
@@ -56,22 +54,22 @@ import javax.swing.event.DocumentListener;
 
 // TODO: Fix layout around scrolling
 
-public final class SheetSettingsWindow extends BaseWindow implements ActionListener, DocumentListener, ItemListener, CloseHandler, DataChangeListener, PageSettingsEditor.ResetPageSettings {
+public final class SheetSettingsWindow extends BaseWindow implements ActionListener, DocumentListener, CloseHandler, DataChangeListener, PageSettingsEditor.ResetPageSettings {
     private static final Map<UUID, SheetSettingsWindow> INSTANCES = new HashMap<>();
     private              GURPSCharacter                 mCharacter;
     private              SheetSettings                  mSheetSettings;
-    private              JCheckBox                      mUseMultiplicativeModifiers;
-    private              JCheckBox                      mUseModifyingDicePlusAdds;
-    private              JCheckBox                      mUseKnowYourOwnStrength;
-    private              JCheckBox                      mUseReducedSwing;
-    private              JCheckBox                      mUseThrustEqualsSwingMinus2;
-    private              JCheckBox                      mUseSimpleMetricConversions;
-    private              JCheckBox                      mShowCollegeInSpells;
-    private              JCheckBox                      mShowDifficulty;
-    private              JCheckBox                      mShowAdvantageModifierAdj;
-    private              JCheckBox                      mShowEquipmentModifierAdj;
-    private              JCheckBox                      mShowSpellAdj;
-    private              JCheckBox                      mShowTitleInsteadOfNameInPageFooter;
+    private              StdCheckbox                    mUseMultiplicativeModifiers;
+    private              StdCheckbox                    mUseModifyingDicePlusAdds;
+    private              StdCheckbox                    mUseKnowYourOwnStrength;
+    private              StdCheckbox                    mUseReducedSwing;
+    private              StdCheckbox                    mUseThrustEqualsSwingMinus2;
+    private              StdCheckbox                    mUseSimpleMetricConversions;
+    private              StdCheckbox                    mShowCollegeInSpells;
+    private              StdCheckbox                    mShowDifficulty;
+    private              StdCheckbox                    mShowAdvantageModifierAdj;
+    private              StdCheckbox                    mShowEquipmentModifierAdj;
+    private              StdCheckbox                    mShowSpellAdj;
+    private              StdCheckbox                    mShowTitleInsteadOfNameInPageFooter;
     private              JComboBox<LengthUnits>         mLengthUnitsCombo;
     private              JComboBox<WeightUnits>         mWeightUnitsCombo;
     private              JComboBox<DisplayOption>       mUserDescriptionDisplayCombo;
@@ -139,12 +137,39 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
 
     private void addTopPanel() {
         StdPanel left = new StdPanel(new PrecisionLayout().setColumns(2).setMargins(0));
-        mShowCollegeInSpells = addCheckBox(left, I18n.text("Show the College column"), null, mSheetSettings.showCollegeInSpells());
-        mShowDifficulty = addCheckBox(left, I18n.text("Show the Difficulty column"), null, mSheetSettings.showDifficulty());
-        mShowAdvantageModifierAdj = addCheckBox(left, I18n.text("Show advantage modifier cost adjustments"), null, mSheetSettings.showAdvantageModifierAdj());
-        mShowEquipmentModifierAdj = addCheckBox(left, I18n.text("Show equipment modifier cost & weight adjustments"), null, mSheetSettings.showEquipmentModifierAdj());
-        mShowSpellAdj = addCheckBox(left, I18n.text("Show spell ritual, cost & time adjustments"), null, mSheetSettings.showSpellAdj());
-        mShowTitleInsteadOfNameInPageFooter = addCheckBox(left, I18n.text("Show the title instead of the name in the footer"), null, mSheetSettings.useTitleInFooter());
+        mShowCollegeInSpells = addCheckbox(left, I18n.text("Show the College column"), null,
+                mSheetSettings.showCollegeInSpells(), (b) -> {
+                    mSheetSettings.setShowCollegeInSpells(b.isChecked());
+                    adjustResetButton();
+                });
+        mShowDifficulty = addCheckbox(left, I18n.text("Show the Difficulty column"), null,
+                mSheetSettings.showDifficulty(), (b) -> {
+                    mSheetSettings.setShowDifficulty(b.isChecked());
+                    adjustResetButton();
+                });
+        mShowAdvantageModifierAdj = addCheckbox(left,
+                I18n.text("Show advantage modifier cost adjustments"), null,
+                mSheetSettings.showAdvantageModifierAdj(), (b) -> {
+                    mSheetSettings.setShowAdvantageModifierAdj(b.isChecked());
+                    adjustResetButton();
+                });
+        mShowEquipmentModifierAdj = addCheckbox(left,
+                I18n.text("Show equipment modifier cost & weight adjustments"), null,
+                mSheetSettings.showEquipmentModifierAdj(), (b) -> {
+                    mSheetSettings.setShowEquipmentModifierAdj(b.isChecked());
+                    adjustResetButton();
+                });
+        mShowSpellAdj = addCheckbox(left, I18n.text("Show spell ritual, cost & time adjustments"),
+                null, mSheetSettings.showSpellAdj(), (b) -> {
+                    mSheetSettings.setShowSpellAdj(b.isChecked());
+                    adjustResetButton();
+                });
+        mShowTitleInsteadOfNameInPageFooter = addCheckbox(left,
+                I18n.text("Show the title instead of the name in the footer"), null,
+                mSheetSettings.useTitleInFooter(), (b) -> {
+                    mSheetSettings.setUseTitleInFooter(b.isChecked());
+                    adjustResetButton();
+                });
         String tooltip = I18n.text("Where to display this information");
         mUserDescriptionDisplayCombo = addCombo(left, DisplayOption.values(), mSheetSettings.userDescriptionDisplay(), I18n.text("Show User Description"), tooltip);
         mModifiersDisplayCombo = addCombo(left, DisplayOption.values(), mSheetSettings.modifiersDisplay(), I18n.text("Show Modifiers"), tooltip);
@@ -155,12 +180,40 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
         left.add(mBlockLayoutField, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true).setHorizontalSpan(2));
 
         StdPanel right = new StdPanel(new PrecisionLayout().setColumns(2).setMargins(0));
-        mUseMultiplicativeModifiers = addCheckBox(right, I18n.text("Use Multiplicative Modifiers (PW102; changes point value)"), null, mSheetSettings.useMultiplicativeModifiers());
-        mUseModifyingDicePlusAdds = addCheckBox(right, I18n.text("Use Modifying Dice + Adds (B269)"), null, mSheetSettings.useModifyingDicePlusAdds());
-        mUseKnowYourOwnStrength = addCheckBox(right, I18n.text("Use strength rules from Knowing Your Own Strength (PY83)"), null, mSheetSettings.useKnowYourOwnStrength());
-        mUseReducedSwing = addCheckBox(right, I18n.text("Use the reduced swing rules"), "From \"Adjusting Swing Damage in Dungeon Fantasy\" found on noschoolgrognard.blogspot.com", mSheetSettings.useReducedSwing());
-        mUseThrustEqualsSwingMinus2 = addCheckBox(right, I18n.text("Use Thrust = Swing - 2"), null, mSheetSettings.useThrustEqualsSwingMinus2());
-        mUseSimpleMetricConversions = addCheckBox(right, I18n.text("Use the simple metric conversion rules (B9)"), null, mSheetSettings.useSimpleMetricConversions());
+        mUseMultiplicativeModifiers = addCheckbox(right,
+                I18n.text("Use Multiplicative Modifiers (PW102; changes point value)"), null,
+                mSheetSettings.useMultiplicativeModifiers(), (b) -> {
+                    mSheetSettings.setUseMultiplicativeModifiers(b.isChecked());
+                    adjustResetButton();
+                });
+        mUseModifyingDicePlusAdds = addCheckbox(right, I18n.text("Use Modifying Dice + Adds (B269)"),
+                null, mSheetSettings.useModifyingDicePlusAdds(), (b) -> {
+                    mSheetSettings.setUseModifyingDicePlusAdds(b.isChecked());
+                    adjustResetButton();
+                });
+        mUseKnowYourOwnStrength = addCheckbox(right,
+                I18n.text("Use strength rules from Knowing Your Own Strength (PY83)"), null,
+                mSheetSettings.useKnowYourOwnStrength(), (b) -> {
+                    mSheetSettings.setUseKnowYourOwnStrength(b.isChecked());
+                    adjustResetButton();
+                });
+        mUseReducedSwing = addCheckbox(right, I18n.text("Use the reduced swing rules"),
+                I18n.text("From \"Adjusting Swing Damage in Dungeon Fantasy\" found on noschoolgrognard.blogspot.com"),
+                mSheetSettings.useReducedSwing(), (b) -> {
+                    mSheetSettings.setUseReducedSwing(b.isChecked());
+                    adjustResetButton();
+                });
+        mUseThrustEqualsSwingMinus2 = addCheckbox(right, I18n.text("Use Thrust = Swing - 2"), null,
+                mSheetSettings.useThrustEqualsSwingMinus2(), (b) -> {
+                    mSheetSettings.setUseThrustEqualsSwingMinus2(b.isChecked());
+                    adjustResetButton();
+                });
+        mUseSimpleMetricConversions = addCheckbox(right,
+                I18n.text("Use the simple metric conversion rules (B9)"), null,
+                mSheetSettings.useSimpleMetricConversions(), (b) -> {
+                    mSheetSettings.setUseSimpleMetricConversions(b.isChecked());
+                    adjustResetButton();
+                });
         mLengthUnitsCombo = addCombo(right, LengthUnits.values(), mSheetSettings.defaultLengthUnits(), I18n.text("Length Units"), I18n.text("The units to use for display of generated lengths"));
         mWeightUnitsCombo = addCombo(right, WeightUnits.values(), mSheetSettings.defaultWeightUnits(), I18n.text("Weight Units"), I18n.text("The units to use for display of generated weights"));
         mPageSettingsEditor = new PageSettingsEditor(mSheetSettings.getPageSettings(), this::adjustResetButton, this);
@@ -196,44 +249,11 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
         return combo;
     }
 
-    private JCheckBox addCheckBox(StdPanel panel, String title, String tooltip, boolean checked) {
-        JCheckBox checkbox = new JCheckBox(title, checked);
-        checkbox.setOpaque(false);
+    private static StdCheckbox addCheckbox(StdPanel panel, String title, String tooltip, boolean checked, StdCheckbox.ClickFunction clickFunction) {
+        StdCheckbox checkbox = new StdCheckbox(title, checked, clickFunction);
         checkbox.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
-        checkbox.addItemListener(this);
         panel.add(checkbox, new PrecisionLayoutData().setHorizontalSpan(2));
         return checkbox;
-    }
-
-    @Override
-    public void itemStateChanged(ItemEvent event) {
-        Object source = event.getSource();
-        if (source == mShowCollegeInSpells) {
-            mSheetSettings.setShowCollegeInSpells(mShowCollegeInSpells.isSelected());
-        } else if (source == mShowDifficulty) {
-            mSheetSettings.setShowDifficulty(mShowDifficulty.isSelected());
-        } else if (source == mShowAdvantageModifierAdj) {
-            mSheetSettings.setShowAdvantageModifierAdj(mShowAdvantageModifierAdj.isSelected());
-        } else if (source == mShowEquipmentModifierAdj) {
-            mSheetSettings.setShowEquipmentModifierAdj(mShowEquipmentModifierAdj.isSelected());
-        } else if (source == mShowSpellAdj) {
-            mSheetSettings.setShowSpellAdj(mShowSpellAdj.isSelected());
-        } else if (source == mShowTitleInsteadOfNameInPageFooter) {
-            mSheetSettings.setUseTitleInFooter(mShowTitleInsteadOfNameInPageFooter.isSelected());
-        } else if (source == mUseMultiplicativeModifiers) {
-            mSheetSettings.setUseMultiplicativeModifiers(mUseMultiplicativeModifiers.isSelected());
-        } else if (source == mUseModifyingDicePlusAdds) {
-            mSheetSettings.setUseModifyingDicePlusAdds(mUseModifyingDicePlusAdds.isSelected());
-        } else if (source == mUseKnowYourOwnStrength) {
-            mSheetSettings.setUseKnowYourOwnStrength(mUseKnowYourOwnStrength.isSelected());
-        } else if (source == mUseReducedSwing) {
-            mSheetSettings.setUseReducedSwing(mUseReducedSwing.isSelected());
-        } else if (source == mUseThrustEqualsSwingMinus2) {
-            mSheetSettings.setUseThrustEqualsSwingMinus2(mUseThrustEqualsSwingMinus2.isSelected());
-        } else if (source == mUseSimpleMetricConversions) {
-            mSheetSettings.setUseSimpleMetricConversions(mUseSimpleMetricConversions.isSelected());
-        }
-        adjustResetButton();
     }
 
     private void adjustResetButton() {
@@ -242,18 +262,18 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
 
     private boolean isSetToDefaults() {
         SheetSettings defaults   = new SheetSettings(mCharacter);
-        boolean       atDefaults = mUseModifyingDicePlusAdds.isSelected() == defaults.useModifyingDicePlusAdds();
-        atDefaults = atDefaults && mShowCollegeInSpells.isSelected() == defaults.showCollegeInSpells();
-        atDefaults = atDefaults && mShowDifficulty.isSelected() == defaults.showDifficulty();
-        atDefaults = atDefaults && mShowAdvantageModifierAdj.isSelected() == defaults.showAdvantageModifierAdj();
-        atDefaults = atDefaults && mShowEquipmentModifierAdj.isSelected() == defaults.showEquipmentModifierAdj();
-        atDefaults = atDefaults && mShowSpellAdj.isSelected() == defaults.showSpellAdj();
-        atDefaults = atDefaults && mShowTitleInsteadOfNameInPageFooter.isSelected() == defaults.useTitleInFooter();
-        atDefaults = atDefaults && mUseMultiplicativeModifiers.isSelected() == defaults.useMultiplicativeModifiers();
-        atDefaults = atDefaults && mUseKnowYourOwnStrength.isSelected() == defaults.useKnowYourOwnStrength();
-        atDefaults = atDefaults && mUseThrustEqualsSwingMinus2.isSelected() == defaults.useThrustEqualsSwingMinus2();
-        atDefaults = atDefaults && mUseReducedSwing.isSelected() == defaults.useReducedSwing();
-        atDefaults = atDefaults && mUseSimpleMetricConversions.isSelected() == defaults.useSimpleMetricConversions();
+        boolean       atDefaults = mUseModifyingDicePlusAdds.isChecked() == defaults.useModifyingDicePlusAdds();
+        atDefaults = atDefaults && mShowCollegeInSpells.isChecked() == defaults.showCollegeInSpells();
+        atDefaults = atDefaults && mShowDifficulty.isChecked() == defaults.showDifficulty();
+        atDefaults = atDefaults && mShowAdvantageModifierAdj.isChecked() == defaults.showAdvantageModifierAdj();
+        atDefaults = atDefaults && mShowEquipmentModifierAdj.isChecked() == defaults.showEquipmentModifierAdj();
+        atDefaults = atDefaults && mShowSpellAdj.isChecked() == defaults.showSpellAdj();
+        atDefaults = atDefaults && mShowTitleInsteadOfNameInPageFooter.isChecked() == defaults.useTitleInFooter();
+        atDefaults = atDefaults && mUseMultiplicativeModifiers.isChecked() == defaults.useMultiplicativeModifiers();
+        atDefaults = atDefaults && mUseKnowYourOwnStrength.isChecked() == defaults.useKnowYourOwnStrength();
+        atDefaults = atDefaults && mUseThrustEqualsSwingMinus2.isChecked() == defaults.useThrustEqualsSwingMinus2();
+        atDefaults = atDefaults && mUseReducedSwing.isChecked() == defaults.useReducedSwing();
+        atDefaults = atDefaults && mUseSimpleMetricConversions.isChecked() == defaults.useSimpleMetricConversions();
         atDefaults = atDefaults && mLengthUnitsCombo.getSelectedItem() == defaults.defaultLengthUnits();
         atDefaults = atDefaults && mWeightUnitsCombo.getSelectedItem() == defaults.defaultWeightUnits();
         atDefaults = atDefaults && mUserDescriptionDisplayCombo.getSelectedItem() == defaults.userDescriptionDisplay();
@@ -283,18 +303,18 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
 
     private void reset() {
         SheetSettings defaults = new SheetSettings(mCharacter);
-        mUseModifyingDicePlusAdds.setSelected(defaults.useModifyingDicePlusAdds());
-        mShowCollegeInSpells.setSelected(defaults.showCollegeInSpells());
-        mShowDifficulty.setSelected(defaults.showDifficulty());
-        mShowAdvantageModifierAdj.setSelected(defaults.showAdvantageModifierAdj());
-        mShowEquipmentModifierAdj.setSelected(defaults.showEquipmentModifierAdj());
-        mShowSpellAdj.setSelected(defaults.showSpellAdj());
-        mShowTitleInsteadOfNameInPageFooter.setSelected(defaults.useTitleInFooter());
-        mUseMultiplicativeModifiers.setSelected(defaults.useMultiplicativeModifiers());
-        mUseKnowYourOwnStrength.setSelected(defaults.useKnowYourOwnStrength());
-        mUseThrustEqualsSwingMinus2.setSelected(defaults.useThrustEqualsSwingMinus2());
-        mUseReducedSwing.setSelected(defaults.useReducedSwing());
-        mUseSimpleMetricConversions.setSelected(defaults.useSimpleMetricConversions());
+        mUseModifyingDicePlusAdds.setChecked(defaults.useModifyingDicePlusAdds());
+        mShowCollegeInSpells.setChecked(defaults.showCollegeInSpells());
+        mShowDifficulty.setChecked(defaults.showDifficulty());
+        mShowAdvantageModifierAdj.setChecked(defaults.showAdvantageModifierAdj());
+        mShowEquipmentModifierAdj.setChecked(defaults.showEquipmentModifierAdj());
+        mShowSpellAdj.setChecked(defaults.showSpellAdj());
+        mShowTitleInsteadOfNameInPageFooter.setChecked(defaults.useTitleInFooter());
+        mUseMultiplicativeModifiers.setChecked(defaults.useMultiplicativeModifiers());
+        mUseKnowYourOwnStrength.setChecked(defaults.useKnowYourOwnStrength());
+        mUseThrustEqualsSwingMinus2.setChecked(defaults.useThrustEqualsSwingMinus2());
+        mUseReducedSwing.setChecked(defaults.useReducedSwing());
+        mUseSimpleMetricConversions.setChecked(defaults.useSimpleMetricConversions());
         mLengthUnitsCombo.setSelectedItem(defaults.defaultLengthUnits());
         mWeightUnitsCombo.setSelectedItem(defaults.defaultWeightUnits());
         mUserDescriptionDisplayCombo.setSelectedItem(defaults.userDescriptionDisplay());
