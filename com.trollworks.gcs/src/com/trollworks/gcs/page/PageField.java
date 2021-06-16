@@ -95,6 +95,10 @@ public class PageField extends JFormattedTextField implements PropertyChangeList
         setFocusLostBehavior(COMMIT_OR_REVERT);
     }
 
+    public final ThemeFont getThemeFont() {
+        return mThemeFont;
+    }
+
     public final void setThemeFont(ThemeFont font) {
         mThemeFont = font;
     }
@@ -107,20 +111,6 @@ public class PageField extends JFormattedTextField implements PropertyChangeList
             return super.getFont();
         }
         return mSheet.getScale().scale(mThemeFont.getFont());
-    }
-
-    @Override
-    public final void setFont(Font font) {
-        // TODO: Find a way to not need all this crud (i.e. override the look & feel that is used)
-        super.setFont(font);
-        Exception ex = new Exception();
-        for (StackTraceElement el : ex.getStackTrace()) {
-            if ("javax.swing.plaf.basic.BasicTextUI".equals(el.getClassName())) {
-                return;
-            }
-        }
-        System.out.println("ERROR: tried to set font rather than theme font");
-        ex.printStackTrace(System.out);
     }
 
     @Override

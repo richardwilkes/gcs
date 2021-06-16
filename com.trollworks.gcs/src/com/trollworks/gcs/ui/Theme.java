@@ -110,7 +110,7 @@ public class Theme {
         if (m.has(KEY_FONTS)) {
             JsonMap m2 = m.getMap(KEY_FONTS);
             for (ThemeFont one : ThemeFont.ALL) {
-                if (m2.has(one.getKey())) {
+                if (one.isEditable() && m2.has(one.getKey())) {
                     setFont(one.getIndex(), new FontDesc(m2.getMap(one.getKey())).create());
                 }
             }
@@ -136,8 +136,10 @@ public class Theme {
         w.key(KEY_FONTS);
         w.startMap();
         for (ThemeFont one : ThemeFont.ALL) {
-            w.key(one.getKey());
-            new FontDesc(getFont(one.getIndex())).toJSON(w);
+            if (one.isEditable()) {
+                w.key(one.getKey());
+                new FontDesc(getFont(one.getIndex())).toJSON(w);
+            }
         }
         w.endMap();
 

@@ -52,7 +52,7 @@ public class StdDialog extends JDialog {
         super(WindowUtils.getWindowForComponent(owner), title, ModalityType.APPLICATION_MODAL);
         setResizable(true);
         StdPanel content = new StdPanel(new BorderLayout());
-        StdPanel buttons = new StdPanel(new PrecisionLayout().setMargins(0, MARGIN, MARGIN, MARGIN).setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
+        StdPanel buttons = new StdPanel(new PrecisionLayout().setMargins(MARGIN).setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
         mButtons = new StdPanel(new PrecisionLayout().setEqualColumns(true).setMargins(0).setHorizontalSpacing(10));
         buttons.add(mButtons);
         content.add(buttons, BorderLayout.SOUTH);
@@ -249,7 +249,7 @@ public class StdDialog extends JDialog {
     public static StdDialog prepareToShowMessage(Component comp, String title, MessageType msgType, Object msg) {
         StdDialog dialog  = new StdDialog(comp, title);
         StdPanel  content = new StdPanel(new BorderLayout(MARGIN, 0));
-        content.setBorder(new EmptyBorder(MARGIN));
+        content.setBorder(new EmptyBorder(MARGIN, MARGIN, 0, MARGIN));
         String  iconValue = msgType.getText();
         boolean hasIcon   = !iconValue.isEmpty();
         if (hasIcon) {

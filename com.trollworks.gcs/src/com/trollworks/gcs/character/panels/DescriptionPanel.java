@@ -36,6 +36,14 @@ import javax.swing.SwingConstants;
 
 /** The character description panel. */
 public class DescriptionPanel extends DropPanel {
+    private PageField mAgeField;
+    private PageField mBirthdayField;
+    private PageField mHeightField;
+    private PageField mWeightField;
+    private PageField mHairField;
+    private PageField mEyeColorField;
+    private PageField mSkinColorField;
+
     /**
      * Creates a new description panel.
      *
@@ -46,45 +54,63 @@ public class DescriptionPanel extends DropPanel {
         GURPSCharacter gch     = sheet.getCharacter();
         Profile        profile = gch.getProfile();
         Wrapper        wrapper = new Wrapper(new PrecisionLayout().setColumns(3).setMargins(0).setSpacing(0, 0));
-        createField(wrapper, sheet, FieldFactory.STRING, profile.getGender(), "gender", I18n.text("Gender"), null, (c, v) -> c.getProfile().setGender((String) v));
-        createRandomizableField(wrapper, sheet, FieldFactory.STRING, profile.getAge(), "age", I18n.text("Age"), I18n.text("The character's age"), (c, v) -> c.getProfile().setAge((String) v), () -> {
-            String current = profile.getAge();
-            String result;
-            do {
-                result = Numbers.format(profile.getRandomAge());
-            } while (result.equals(current));
-            profile.setAge(result);
-        });
-        createRandomizableField(wrapper, sheet, FieldFactory.STRING, profile.getBirthday(), "birthday", I18n.text("Birthday"), I18n.text("The character's birthday"), (c, v) -> c.getProfile().setBirthday((String) v), () -> {
-            String current = profile.getBirthday();
-            String result;
-            do {
-                result = Profile.getRandomMonthAndDay();
-            } while (result.equals(current));
-            profile.setBirthday(result);
-        });
-        createField(wrapper, sheet, FieldFactory.STRING, profile.getReligion(), "religion", I18n.text("Religion"), null, (c, v) -> c.getProfile().setReligion((String) v));
+        createField(wrapper, sheet, FieldFactory.STRING, profile.getGender(), "gender",
+                I18n.text("Gender"), null, (c, v) -> c.getProfile().setGender((String) v));
+        mAgeField = createRandomizableField(wrapper, sheet, FieldFactory.STRING, profile.getAge(),
+                "age", I18n.text("Age"), I18n.text("The character's age"),
+                (c, v) -> c.getProfile().setAge((String) v), () -> {
+                    mAgeField.requestFocus();
+                    String current = profile.getAge();
+                    String result;
+                    do {
+                        result = Numbers.format(profile.getRandomAge());
+                    } while (result.equals(current));
+                    profile.setAge(result);
+                });
+        mBirthdayField = createRandomizableField(wrapper, sheet, FieldFactory.STRING,
+                profile.getBirthday(), "birthday", I18n.text("Birthday"),
+                I18n.text("The character's birthday"),
+                (c, v) -> c.getProfile().setBirthday((String) v), () -> {
+                    mBirthdayField.requestFocus();
+                    String current = profile.getBirthday();
+                    String result;
+                    do {
+                        result = Profile.getRandomMonthAndDay();
+                    } while (result.equals(current));
+                    profile.setBirthday(result);
+                });
+        createField(wrapper, sheet, FieldFactory.STRING, profile.getReligion(), "religion",
+                I18n.text("Religion"), null, (c, v) -> c.getProfile().setReligion((String) v));
         add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         createDivider();
 
         wrapper = new Wrapper(new PrecisionLayout().setColumns(3).setMargins(0).setSpacing(0, 0));
-        createRandomizableField(wrapper, sheet, FieldFactory.HEIGHT, profile.getHeight(), "character height", I18n.text("Height"), I18n.text("The character's height"), (c, v) -> c.getProfile().setHeight((LengthValue) v), () -> {
-            LengthValue length = profile.getHeight();
-            LengthValue result;
-            do {
-                result = profile.getRandomHeight(gch.getAttributeIntValue("st"), profile.getSizeModifier());
-            } while (result.equals(length));
-            profile.setHeight(result);
-        });
-        createRandomizableField(wrapper, sheet, FieldFactory.WEIGHT, profile.getWeight(), "character weight", I18n.text("Weight"), I18n.text("The character's weight"), (c, v) -> c.getProfile().setWeight((WeightValue) v), () -> {
-            WeightValue weight = profile.getWeight();
-            WeightValue result;
-            do {
-                result = profile.getRandomWeight(gch.getAttributeIntValue("st"), profile.getSizeModifier(), profile.getWeightMultiplier());
-            } while (result.equals(weight));
-            profile.setWeight(result);
-        });
+        mHeightField = createRandomizableField(wrapper, sheet, FieldFactory.HEIGHT,
+                profile.getHeight(), "character height", I18n.text("Height"),
+                I18n.text("The character's height"),
+                (c, v) -> c.getProfile().setHeight((LengthValue) v), () -> {
+                    mHeightField.requestFocus();
+                    LengthValue length = profile.getHeight();
+                    LengthValue result;
+                    do {
+                        result = profile.getRandomHeight(gch.getAttributeIntValue("st"),
+                                profile.getSizeModifier());
+                    } while (result.equals(length));
+                    profile.setHeight(result);
+                });
+        mWeightField = createRandomizableField(wrapper, sheet, FieldFactory.WEIGHT,
+                profile.getWeight(), "character weight", I18n.text("Weight"),
+                I18n.text("The character's weight"),
+                (c, v) -> c.getProfile().setWeight((WeightValue) v), () -> {
+                    mWeightField.requestFocus();
+                    WeightValue weight = profile.getWeight();
+                    WeightValue result;
+                    do {
+                        result = profile.getRandomWeight(gch.getAttributeIntValue("st"), profile.getSizeModifier(), profile.getWeightMultiplier());
+                    } while (result.equals(weight));
+                    profile.setWeight(result);
+                });
         createField(wrapper, sheet, FieldFactory.SM, Integer.valueOf(profile.getSizeModifier()), "SM", I18n.text("Size"), I18n.text("The character's size modifier"), (c, v) -> c.getProfile().setSizeModifier(((Integer) v).intValue()));
         createField(wrapper, sheet, FieldFactory.STRING, profile.getTechLevel(), "character TL", I18n.text("TL"), I18n.text("""
                 <html><body>
@@ -108,18 +134,36 @@ public class DescriptionPanel extends DropPanel {
         createDivider();
 
         wrapper = new Wrapper(new PrecisionLayout().setColumns(3).setMargins(0).setSpacing(0, 0));
-        createRandomizableField(wrapper, sheet, FieldFactory.STRING, profile.getHair(), "hair", I18n.text("Hair"), I18n.text("The character's hair style and color"), (c, v) -> c.getProfile().setHair((String) v), () -> profile.setHair(Profile.getRandomHair(profile.getHair())));
-        createRandomizableField(wrapper, sheet, FieldFactory.STRING, profile.getEyeColor(), "eye color", I18n.text("Eyes"), I18n.text("The character's eye color"), (c, v) -> c.getProfile().setEyeColor((String) v), () -> profile.setEyeColor(Profile.getRandomEyeColor(profile.getEyeColor())));
-        createRandomizableField(wrapper, sheet, FieldFactory.STRING, profile.getSkinColor(), "skin color", I18n.text("Skin"), I18n.text("The character's skin color"), (c, v) -> c.getProfile().setSkinColor((String) v), () -> profile.setSkinColor(Profile.getRandomSkinColor(profile.getSkinColor())));
+        mHairField = createRandomizableField(wrapper, sheet, FieldFactory.STRING, profile.getHair(),
+                "hair", I18n.text("Hair"), I18n.text("The character's hair style and color"),
+                (c, v) -> c.getProfile().setHair((String) v), () -> {
+                    mHairField.requestFocus();
+                    profile.setHair(Profile.getRandomHair(profile.getHair()));
+                });
+        mEyeColorField = createRandomizableField(wrapper, sheet, FieldFactory.STRING,
+                profile.getEyeColor(), "eye color", I18n.text("Eyes"),
+                I18n.text("The character's eye color"),
+                (c, v) -> c.getProfile().setEyeColor((String) v), () -> {
+                    mEyeColorField.requestFocus();
+                    profile.setEyeColor(Profile.getRandomEyeColor(profile.getEyeColor()));
+                });
+        mSkinColorField = createRandomizableField(wrapper, sheet, FieldFactory.STRING,
+                profile.getSkinColor(), "skin color", I18n.text("Skin"),
+                I18n.text("The character's skin color"),
+                (c, v) -> c.getProfile().setSkinColor((String) v), () -> {
+                    mSkinColorField.requestFocus();
+                    profile.setSkinColor(Profile.getRandomSkinColor(profile.getSkinColor()));
+                });
         createField(wrapper, sheet, FieldFactory.STRING, profile.getHandedness(), "handedness", I18n.text("Hand"), I18n.text("The character's preferred hand"), (c, v) -> c.getProfile().setHandedness((String) v));
         add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
-    private static void createRandomizableField(Container parent, CharacterSheet sheet, AbstractFormatterFactory factory, Object value, String tag, String title, String tooltip, CharacterSetter setter, Runnable randomizer) {
+    private static PageField createRandomizableField(Container parent, CharacterSheet sheet, AbstractFormatterFactory factory, Object value, String tag, String title, String tooltip, CharacterSetter setter, Runnable randomizer) {
         parent.add(new FontAwesomeButton("\uf074", ThemeFont.PAGE_LABEL_PRIMARY.getFont().getSize() * 8 / 10, String.format(I18n.text("Randomize %s"), title), randomizer));
         PageField field = new PageField(factory, value, setter, sheet, tag, SwingConstants.LEFT, true, tooltip, ThemeColor.ON_CONTENT);
         parent.add(new PageLabel(title, field), new PrecisionLayoutData().setEndHorizontalAlignment().setLeftMargin(1));
         parent.add(field, createFieldLayout());
+        return field;
     }
 
     private static void createField(Container parent, CharacterSheet sheet, AbstractFormatterFactory factory, Object value, String tag, String title, String tooltip, CharacterSetter setter) {

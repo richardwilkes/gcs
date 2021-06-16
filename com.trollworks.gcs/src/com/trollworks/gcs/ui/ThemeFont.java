@@ -56,10 +56,15 @@ public final class ThemeFont {
     public static final ThemeFont PAGE_FOOTER_PRIMARY;
     public static final ThemeFont PAGE_FOOTER_SECONDARY;
 
-    private final int    mIndex;
-    private final String mName;
-    private final String mKey;
-    private final Font   mDefault;
+    // Derived theme fonts
+    public static final ThemeFont KEYBOARD;
+    public static final ThemeFont ENCUMBRANCE_MARKER;
+
+    private final int              mIndex;
+    private final String           mName;
+    private final String           mKey;
+    private final Font             mDefault;
+    private final ThemeFontDeriver mDeriver;
 
     static {
         String[] embeddedFonts = {
@@ -99,6 +104,9 @@ public final class ThemeFont {
         PAGE_FIELD_SECONDARY = new ThemeFont("page.field.secondary", I18n.text("Page Secondary Fields"), new Font(ROBOTO, Font.PLAIN, 8));
         PAGE_FOOTER_PRIMARY = new ThemeFont("page.footer.primary", I18n.text("Page Primary Footer"), new Font(ROBOTO_BLACK, Font.PLAIN, 8));
         PAGE_FOOTER_SECONDARY = new ThemeFont("page.footer.secondary", I18n.text("Page Secondary Footer"), new Font(ROBOTO, Font.PLAIN, 6));
+
+        KEYBOARD = new ThemeFont("keyboard", () -> new Font("Dialog", Font.PLAIN, LABEL_PRIMARY.getFont().getSize()));
+        ENCUMBRANCE_MARKER = new ThemeFont("encumbrance.marker", () -> new Font(FONT_AWESOME_SOLID, Font.PLAIN, PAGE_LABEL_PRIMARY.getFont().getSize()));
     }
 
     private ThemeFont(String key, String name, Font def) {
@@ -106,6 +114,16 @@ public final class ThemeFont {
         mIndex = ALL.size();
         mKey = key;
         mDefault = def;
+        mDeriver = null;
+        ALL.add(this);
+    }
+
+    private ThemeFont(String key, ThemeFontDeriver deriver) {
+        mName = key;
+        mIndex = ALL.size();
+        mKey = key;
+        mDeriver = deriver;
+        mDefault = null;
         ALL.add(this);
     }
 
@@ -119,6 +137,10 @@ public final class ThemeFont {
         return mKey;
     }
 
+    public boolean isEditable() {
+        return mDeriver == null;
+    }
+
     /** @return The default font value. */
     public Font getDefault() {
         return mDefault;
@@ -126,7 +148,7 @@ public final class ThemeFont {
 
     /** @return The current font value. */
     public Font getFont() {
-        return Theme.current().getFont(mIndex);
+        return mDeriver == null ? Theme.current().getFont(mIndex) : mDeriver.derive();
     }
 
     @Override

@@ -14,6 +14,7 @@ package com.trollworks.gcs.settings;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.menu.file.CloseHandler;
+import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.widget.BandedPanel;
@@ -119,8 +120,7 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
             }
             adjustResetButton();
         });
-        button.setFont(KeyStrokeDisplay.KEYBOARD_FONT);
-        button.setThemeFont(null);
+        button.setThemeFont(ThemeFont.KEYBOARD);
         UIUtilities.setToPreferredSizeOnly(button);
         button.setText(KeyStrokeDisplay.getKeyStrokeDisplay(cmd.getAccelerator()));
         mMap.put(button, cmd);

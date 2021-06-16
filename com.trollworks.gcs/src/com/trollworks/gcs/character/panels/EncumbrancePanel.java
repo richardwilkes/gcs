@@ -19,8 +19,8 @@ import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageHeader;
 import com.trollworks.gcs.page.PageLabel;
-import com.trollworks.gcs.page.SpecialFontPageLabel;
 import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
@@ -79,11 +79,9 @@ public class EncumbrancePanel extends DropPanel {
                 textColor = ThemeColor.ON_CONTENT;
             }
 
-            if (encumbrance == current) {
-                add(new SpecialFontPageLabel("\uf24e", textColor, header), new PrecisionLayoutData().setFillHorizontalAlignment());
-            } else {
-                add(new PageLabel(" ", textColor, header), new PrecisionLayoutData().setFillHorizontalAlignment());
-            }
+            PageLabel label = new PageLabel(encumbrance == current ? "\uf24e" : " ", textColor, header);
+            label.setThemeFont(ThemeFont.ENCUMBRANCE_MARKER);
+            add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
 
             PageLabel level = new PageLabel(MessageFormat.format("{0} {1}", Numbers.format(-encumbrance.getEncumbrancePenalty()), encumbrance), textColor, header);
             add(level, new PrecisionLayoutData().setGrabHorizontalSpace(true));

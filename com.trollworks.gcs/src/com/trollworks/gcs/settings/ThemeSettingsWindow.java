@@ -71,10 +71,12 @@ public final class ThemeSettingsWindow extends BaseWindow implements CloseHandle
         StdPanel wrapper = new StdPanel(new PrecisionLayout().setColumns(2), false);
         mFontPanels = new ArrayList<>();
         for (ThemeFont font : ThemeFont.ALL) {
-            FontTracker tracker = new FontTracker(font);
-            wrapper.add(new StdLabel(font.toString(), tracker), new PrecisionLayoutData().setFillHorizontalAlignment());
-            wrapper.add(tracker);
-            mFontPanels.add(tracker);
+            if (font.isEditable()) {
+                FontTracker tracker = new FontTracker(font);
+                wrapper.add(new StdLabel(font.toString(), tracker), new PrecisionLayoutData().setFillHorizontalAlignment());
+                wrapper.add(tracker);
+                mFontPanels.add(tracker);
+            }
         }
         panel.add(wrapper);
 
@@ -161,7 +163,7 @@ public final class ThemeSettingsWindow extends BaseWindow implements CloseHandle
     private void adjustResetButtons() {
         boolean enabled = false;
         for (ThemeFont font : ThemeFont.ALL) {
-            if (!font.getFont().equals(Theme.DEFAULT.getFont(font.getIndex()))) {
+            if (font.isEditable() && !font.getFont().equals(Theme.DEFAULT.getFont(font.getIndex()))) {
                 enabled = true;
                 break;
             }

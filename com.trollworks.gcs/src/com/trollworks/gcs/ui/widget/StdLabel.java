@@ -104,7 +104,12 @@ public class StdLabel extends StdPanel implements PropertyChangeListener {
 
     @Override
     public final Font getFont() {
-        return mThemeFont != null ? mThemeFont.getFont() : super.getFont();
+        if (mThemeFont == null) {
+            // If this happens, we are in the constructor and the look & feel is being inited, so
+            // just return whatever was there by default.
+            return super.getFont();
+        }
+        return mThemeFont.getFont();
     }
 
     /** @return The icon, or {@code null} if there is none. */

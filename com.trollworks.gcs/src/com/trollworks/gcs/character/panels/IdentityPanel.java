@@ -30,6 +30,8 @@ import javax.swing.SwingConstants;
 
 /** The character identity panel. */
 public class IdentityPanel extends DropPanel {
+    private PageField mNameField;
+
     /**
      * Creates a new identity panel.
      *
@@ -38,20 +40,31 @@ public class IdentityPanel extends DropPanel {
     public IdentityPanel(CharacterSheet sheet) {
         super(new PrecisionLayout().setColumns(3).setMargins(0).setSpacing(0, 0), I18n.text("Identity"));
         Profile profile = sheet.getCharacter().getProfile();
-        createRandomizableField(sheet, profile.getName(), I18n.text("Name"), "character name", (c, v) -> c.getProfile().setName((String) v), () -> profile.setName(USCensusNames.INSTANCE.getFullName(!profile.getGender().equalsIgnoreCase(I18n.text("Female")))));
-        createStringField(sheet, profile.getTitle(), I18n.text("Title"), "character title", (c, v) -> c.getProfile().setTitle((String) v));
-        createStringField(sheet, profile.getOrganization(), I18n.text("Organization"), "organization", (c, v) -> c.getProfile().setOrganization((String) v));
+        mNameField = createRandomizableField(sheet, profile.getName(), I18n.text("Name"), "character name",
+                (c, v) -> c.getProfile().setName((String) v), () -> {
+                    mNameField.requestFocus();
+                    profile.setName(USCensusNames.INSTANCE.getFullName(!profile.getGender().equalsIgnoreCase(I18n.text("Female"))));
+                });
+        createStringField(sheet, profile.getTitle(), I18n.text("Title"), "character title",
+                (c, v) -> c.getProfile().setTitle((String) v));
+        createStringField(sheet, profile.getOrganization(), I18n.text("Organization"), "organization",
+                (c, v) -> c.getProfile().setOrganization((String) v));
     }
 
-    private void createRandomizableField(CharacterSheet sheet, String value, String title, String tag, CharacterSetter setter, Runnable randomizer) {
-        add(new FontAwesomeButton("\uf074", ThemeFont.PAGE_LABEL_PRIMARY.getFont().getSize() * 8 / 10, String.format(I18n.text("Randomize %s"), title), randomizer));
+    private PageField createRandomizableField(CharacterSheet sheet, String value, String title, String tag, CharacterSetter setter, Runnable randomizer) {
+        add(new FontAwesomeButton("\uf074", ThemeFont.PAGE_LABEL_PRIMARY.getFont().getSize() * 8 / 10,
+                String.format(I18n.text("Randomize %s"), title), randomizer));
         add(new PageLabel(title), new PrecisionLayoutData().setEndHorizontalAlignment());
-        add(new PageField(FieldFactory.STRING, value, setter, sheet, tag, SwingConstants.LEFT, true, null, ThemeColor.ON_CONTENT), createFieldLayoutData());
+        PageField field = new PageField(FieldFactory.STRING, value, setter, sheet, tag,
+                SwingConstants.LEFT, true, null, ThemeColor.ON_CONTENT);
+        add(field, createFieldLayoutData());
+        return field;
     }
 
     private void createStringField(CharacterSheet sheet, String value, String title, String tag, CharacterSetter setter) {
         add(new PageLabel(title), new PrecisionLayoutData().setEndHorizontalAlignment().setHorizontalSpan(2));
-        add(new PageField(FieldFactory.STRING, value, setter, sheet, tag, SwingConstants.LEFT, true, null, ThemeColor.ON_CONTENT), createFieldLayoutData());
+        add(new PageField(FieldFactory.STRING, value, setter, sheet, tag, SwingConstants.LEFT, true,
+                null, ThemeColor.ON_CONTENT), createFieldLayoutData());
     }
 
     private static PrecisionLayoutData createFieldLayoutData() {
