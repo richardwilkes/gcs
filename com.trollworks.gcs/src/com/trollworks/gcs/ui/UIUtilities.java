@@ -12,6 +12,7 @@
 package com.trollworks.gcs.ui;
 
 import com.trollworks.gcs.ui.image.Img;
+import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.WiderToolTipUI;
@@ -36,7 +37,6 @@ import javax.swing.AbstractButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextField;
 import javax.swing.JViewport;
 import javax.swing.RepaintManager;
 import javax.swing.UIManager;
@@ -88,7 +88,7 @@ public final class UIUtilities {
             }
         }
         if (comp instanceof AbstractButton || comp instanceof JComboBox ||
-                comp instanceof JTextField || comp instanceof FontAwesomeButton ||
+                comp instanceof EditorField || comp instanceof FontAwesomeButton ||
                 comp instanceof MultiLineTextField) {
             comp.setEnabled(false);
         }

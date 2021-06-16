@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.library;
 
+import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.datafile.DataChangeListener;
 import com.trollworks.gcs.datafile.DataFileDockable;
 import com.trollworks.gcs.datafile.ListFile;
@@ -20,6 +21,7 @@ import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.scale.Scales;
+import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.StdScrollPanel;
 import com.trollworks.gcs.ui.widget.StdToolbar;
@@ -43,7 +45,7 @@ import java.awt.dnd.DropTarget;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JList;
-import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -51,7 +53,7 @@ import javax.swing.event.DocumentListener;
 public abstract class LibraryDockable extends DataFileDockable implements RowFilter, DocumentListener, JumpToSearchTarget, RetargetableFocus, DataChangeListener, Runnable {
     private StdToolbar        mToolbar;
     private JComboBox<Scales> mScaleCombo;
-    private JTextField        mFilterField;
+    private EditorField       mFilterField;
     private JComboBox<String> mCategoryCombo;
     private FontAwesomeButton mLockButton;
     private ListOutline       mOutline;
@@ -144,12 +146,10 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
     protected abstract ListOutline createOutline();
 
     private void createFilterField() {
-        mFilterField = new JTextField(10);
+        mFilterField = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, "",
+                Text.makeFiller(10, 'M'), I18n.text("Enter text here to narrow the list to only those rows containing matching items"));
+        mFilterField.setHint(I18n.text("Filter"));
         mFilterField.getDocument().addDocumentListener(this);
-        mFilterField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Enter text here to narrow the list to only those rows containing matching items")));
-        // This client property is specific to Mac OS X
-        mFilterField.putClientProperty("JTextField.variant", "search");
-        mFilterField.setMinimumSize(new Dimension(60, mFilterField.getPreferredSize().height));
         mToolbar.add(mFilterField, StdToolbar.LAYOUT_FILL);
     }
 

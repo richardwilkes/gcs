@@ -14,6 +14,7 @@ package com.trollworks.gcs.ui.widget.search;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.LineBorder;
+import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.StdScrollPanel;
 
 import java.awt.Component;
@@ -26,13 +27,12 @@ import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 import javax.swing.JList;
-import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 
 /** The drop-down panel used by {@link Search}. */
 class SearchDropDown extends StdScrollPanel implements MouseListener {
     private JList<Object>            mList;
-    private JTextField               mFilterField;
+    private EditorField              mFilterField;
     private SearchTarget             mTarget;
     private DefaultListModel<Object> mModel;
 
@@ -43,7 +43,7 @@ class SearchDropDown extends StdScrollPanel implements MouseListener {
      * @param filterField The text field the drop-down will appear to be attached to.
      * @param target      The search target.
      */
-    SearchDropDown(ListCellRenderer<Object> renderer, JTextField filterField, SearchTarget target) {
+    SearchDropDown(ListCellRenderer<Object> renderer, EditorField filterField, SearchTarget target) {
         super(null);
         mFilterField = filterField;
         mTarget = target;

@@ -11,20 +11,18 @@
 
 package com.trollworks.gcs.ui.widget.search;
 
-import com.trollworks.gcs.ui.TextDrawing;
+import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
+import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
 
-import java.awt.Color;
 import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.FocusEvent;
@@ -35,7 +33,6 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.JLayeredPane;
 import javax.swing.JRootPane;
-import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -44,7 +41,7 @@ import javax.swing.event.DocumentListener;
 public class Search extends StdPanel implements DocumentListener, KeyListener, FocusListener {
     private SearchTarget   mTarget;
     private StdLabel       mHits;
-    private SearchField    mFilterField;
+    private EditorField    mFilterField;
     private SearchDropDown mFloater;
     private String         mFilter;
 
@@ -54,15 +51,25 @@ public class Search extends StdPanel implements DocumentListener, KeyListener, F
      * @param target The search target.
      */
     public Search(SearchTarget target) {
-        super(new PrecisionLayout().setColumns(2).setMargins(0));
+        super(new PrecisionLayout().setColumns(2).setMargins(2));
         setOpaque(false);
         mTarget = target;
-        mFilterField = new SearchField();
+        mFilterField = createSearchField();
         add(mFilterField, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
         mHits = new StdLabel("");
         mHits.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("The number of matches found")));
         adjustHits();
         add(mHits);
+    }
+
+    private EditorField createSearchField() {
+        EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, "",
+                Text.makeFiller(10, 'M'), I18n.text("Enter text here and press RETURN to select all matching items"));
+        field.setHint(I18n.text("Search"));
+        field.getDocument().addDocumentListener(this);
+        field.addKeyListener(this);
+        field.addFocusListener(this);
+        return field;
     }
 
     @Override
@@ -191,31 +198,6 @@ public class Search extends StdPanel implements DocumentListener, KeyListener, F
             mFloater = null;
             if (rootPane != null) {
                 rootPane.repaint(bounds);
-            }
-        }
-    }
-
-    class SearchField extends JTextField {
-        SearchField() {
-            super(10);
-            getDocument().addDocumentListener(Search.this);
-            addKeyListener(Search.this);
-            addFocusListener(Search.this);
-            setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Enter text here and press RETURN to select all matching items")));
-            // This client property is specific to Mac OS X
-            putClientProperty("JTextField.variant", "search");
-            setMinimumSize(new Dimension(60, getPreferredSize().height));
-        }
-
-        @Override
-        protected void paintComponent(Graphics gc) {
-            super.paintComponent(gc);
-            if (getText().isEmpty()) {
-                Rectangle bounds = UIUtilities.getLocalInsetBounds(this);
-                bounds.x += 4;
-                bounds.width -= 4;
-                gc.setColor(Color.GRAY);
-                TextDrawing.draw(gc, bounds, I18n.text("Search"), SwingConstants.LEFT, SwingConstants.CENTER);
             }
         }
     }
