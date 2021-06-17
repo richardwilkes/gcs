@@ -14,7 +14,6 @@ package com.trollworks.gcs.ui.widget.outline;
 import com.trollworks.gcs.ui.scale.Scale;
 
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
