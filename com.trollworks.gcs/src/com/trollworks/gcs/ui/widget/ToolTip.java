@@ -39,7 +39,7 @@ public class ToolTip extends JToolTip {
     @Override
     public void setTipText(String tipText) {
         super.setTipText(tipText);
-        mWrappedText = tipText != null ? TextDrawing.wrapToPixelWidth(ThemeFont.TOOLTIP.getFont(), tipText, 800) : "";
+        mWrappedText = tipText != null ? TextDrawing.wrapToPixelWidth(ThemeFont.TOOLTIP.getFont(), tipText, 600) : "";
     }
 
     @Override

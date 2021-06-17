@@ -15,7 +15,6 @@ import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
-import com.trollworks.gcs.ui.widget.WiderToolTipUI;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.Platform;
 
@@ -55,7 +54,6 @@ public final class UIUtilities {
             Log.error(ex);
         }
         Theme.current(); // Just here to ensure the theme is loaded
-        WiderToolTipUI.installIfNeeded();
     }
 
     /**

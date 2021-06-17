@@ -97,14 +97,14 @@ public final class ThemeFont {
         HEADER = new ThemeFont("header", I18n.text("Header"), new Font(ROBOTO_MEDIUM, Font.PLAIN, 13));
         LABEL_PRIMARY = new ThemeFont("label.primary", I18n.text("Primary Labels"), new Font(ROBOTO, Font.PLAIN, 13));
         LABEL_SECONDARY = new ThemeFont("label.secondary", I18n.text("Secondary Labels"), new Font(ROBOTO, Font.PLAIN, 11));
-        FIELD_PRIMARY = new ThemeFont("field.primary", I18n.text("Primary Fields"), new Font(ROBOTO_BLACK, Font.PLAIN, 13));
+        FIELD_PRIMARY = new ThemeFont("field.primary", I18n.text("Primary Fields"), new Font(ROBOTO, Font.PLAIN, 13));
         FIELD_SECONDARY = new ThemeFont("field.secondary", I18n.text("Secondary Fields"), new Font(ROBOTO, Font.PLAIN, 11));
-        TOOLTIP = new ThemeFont("tooltip", I18n.text("Tooltip"), new Font(ROBOTO, Font.PLAIN, 13));
+        TOOLTIP = new ThemeFont("tooltip", I18n.text("Tooltip"), new Font(ROBOTO, Font.PLAIN, 12));
         PAGE_LABEL_PRIMARY = new ThemeFont("page.label.primary", I18n.text("Page Primary Labels"), new Font(ROBOTO, Font.PLAIN, 9));
         PAGE_LABEL_SECONDARY = new ThemeFont("page.label.secondary", I18n.text("Page Secondary Labels"), new Font(ROBOTO, Font.PLAIN, 8));
-        PAGE_FIELD_PRIMARY = new ThemeFont("page.field.primary", I18n.text("Page Primary Fields"), new Font(ROBOTO_BLACK, Font.PLAIN, 9));
+        PAGE_FIELD_PRIMARY = new ThemeFont("page.field.primary", I18n.text("Page Primary Fields"), new Font(ROBOTO_MEDIUM, Font.PLAIN, 9));
         PAGE_FIELD_SECONDARY = new ThemeFont("page.field.secondary", I18n.text("Page Secondary Fields"), new Font(ROBOTO, Font.PLAIN, 8));
-        PAGE_FOOTER_PRIMARY = new ThemeFont("page.footer.primary", I18n.text("Page Primary Footer"), new Font(ROBOTO_BLACK, Font.PLAIN, 8));
+        PAGE_FOOTER_PRIMARY = new ThemeFont("page.footer.primary", I18n.text("Page Primary Footer"), new Font(ROBOTO_MEDIUM, Font.PLAIN, 8));
         PAGE_FOOTER_SECONDARY = new ThemeFont("page.footer.secondary", I18n.text("Page Secondary Footer"), new Font(ROBOTO, Font.PLAIN, 6));
 
         KEYBOARD = new ThemeFont("keyboard", () -> new Font("Dialog", Font.PLAIN, LABEL_PRIMARY.getFont().getSize()));
