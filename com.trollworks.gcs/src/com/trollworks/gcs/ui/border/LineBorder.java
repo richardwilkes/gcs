@@ -11,12 +11,14 @@
 
 package com.trollworks.gcs.ui.border;
 
+import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.scale.Scale;
 
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Insets;
 import javax.swing.border.Border;
 
@@ -133,11 +135,12 @@ public class LineBorder implements Border {
     }
 
     @Override
-    public void paintBorder(Component component, Graphics gc, int x, int y, int width, int height) {
-        Scale scale      = Scale.get(component);
-        Color savedColor = gc.getColor();
-        int   i          = Edge.LEFT.ordinal();
-        int   thickness  = scale.scale(mThickness[i]);
+    public void paintBorder(Component component, Graphics g, int x, int y, int width, int height) {
+        Scale      scale      = Scale.get(component);
+        Graphics2D gc         = GraphicsUtilities.prepare(g);
+        Color      savedColor = gc.getColor();
+        int        i          = Edge.LEFT.ordinal();
+        int        thickness  = scale.scale(mThickness[i]);
         if (thickness > 0) {
             gc.setColor(mColor[i]);
             gc.fillRect(x, y, thickness, height);

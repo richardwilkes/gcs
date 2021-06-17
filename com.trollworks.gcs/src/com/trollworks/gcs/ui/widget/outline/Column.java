@@ -13,7 +13,7 @@ package com.trollworks.gcs.ui.widget.outline;
 
 import com.trollworks.gcs.ui.scale.Scale;
 
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -86,7 +86,7 @@ public class Column implements Transferable {
      * @param gc      The graphics context to use.
      * @param bounds  The bounds of the cell.
      */
-    public void drawHeaderCell(Outline outline, Graphics gc, Rectangle bounds) {
+    public void drawHeaderCell(Outline outline, Graphics2D gc, Rectangle bounds) {
         getHeaderCell().drawCell(outline, gc, bounds, null, this, false, true);
     }
 
@@ -100,7 +100,7 @@ public class Column implements Transferable {
      * @param selected Pass in {@code true} if the cell should be drawn in its selected state.
      * @param active   Pass in {@code true} if the cell should be drawn in its active state.
      */
-    public void drawRowCell(Outline outline, Graphics gc, Rectangle bounds, Row row, boolean selected, boolean active) {
+    public void drawRowCell(Outline outline, Graphics2D gc, Rectangle bounds, Row row, boolean selected, boolean active) {
         getRowCell(row).drawCell(outline, gc, bounds, row, this, selected, active);
     }
 

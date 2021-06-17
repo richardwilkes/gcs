@@ -158,7 +158,7 @@ public class Button extends Panel implements MouseListener, MouseMotionListener,
         gc.setFont(font);
         gc.setColor(onColor);
         Rectangle textBounds = new Rectangle(bounds.x + 2, bounds.y + 1, bounds.width - 4, bounds.height - 2);
-        TextDrawing.draw(g, textBounds, TextDrawing.truncateIfNecessary(font, mText, bounds.width, SwingConstants.CENTER), SwingConstants.CENTER, SwingConstants.CENTER);
+        TextDrawing.draw(gc, textBounds, TextDrawing.truncateIfNecessary(font, mText, bounds.width, SwingConstants.CENTER), SwingConstants.CENTER, SwingConstants.CENTER);
 
         gc.setColor(ThemeColor.BUTTON_BORDER);
         RenderingHints saved = GraphicsUtilities.setMaximumQualityForGraphics(gc);

@@ -251,13 +251,13 @@ public class Checkbox extends Panel implements MouseListener, MouseMotionListene
         gc.setFont(iconFont);
         gc.setColor(color);
         Rectangle textBounds = new Rectangle(bounds.x, bounds.y, size.width, bounds.height);
-        TextDrawing.draw(g, textBounds, mChecked ? "\uf058" : "\uf111", SwingConstants.CENTER, SwingConstants.CENTER);
+        TextDrawing.draw(gc, textBounds, mChecked ? "\uf058" : "\uf111", SwingConstants.CENTER, SwingConstants.CENTER);
         if (!mText.isBlank()) {
             gc.setFont(font);
             gc.setColor(color);
             bounds.x += size.width + scale.scale(4);
             bounds.width -= size.width + scale.scale(4);
-            TextDrawing.draw(g, bounds, TextDrawing.truncateIfNecessary(font, mText, bounds.width, SwingConstants.CENTER), SwingConstants.LEFT, SwingConstants.CENTER);
+            TextDrawing.draw(gc, bounds, TextDrawing.truncateIfNecessary(font, mText, bounds.width, SwingConstants.CENTER), SwingConstants.LEFT, SwingConstants.CENTER);
         }
     }
 }

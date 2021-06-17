@@ -315,7 +315,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         return size;
     }
 
-    private void drawDragRowInsertionMarker(Graphics gc, Row parent, int insertAtIndex) {
+    private void drawDragRowInsertionMarker(Graphics2D gc, Row parent, int insertAtIndex) {
         Scale     scale  = Scale.get(this);
         int       one    = scale.scale(1);
         Rectangle bounds = getDragRowInsertionMarkerBounds(parent, insertAtIndex);
@@ -384,11 +384,11 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
     }
 
     @Override
-    protected void paintComponent(Graphics gc) {
-        Scale scale = Scale.get(this);
-        int   one   = scale.scale(1);
-
-        super.paintComponent(GraphicsUtilities.prepare(gc));
+    protected void paintComponent(Graphics g) {
+        Scale      scale = Scale.get(this);
+        int        one   = scale.scale(1);
+        Graphics2D gc    = GraphicsUtilities.prepare(g);
+        super.paintComponent(gc);
         drawBackground(gc);
 
         Shape     origClip   = gc.getClip();
@@ -461,13 +461,12 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         }
         Row dragTargetRow = getDragTargetRow();
         if (dragTargetRow != null) {
-            Graphics2D g2d = (Graphics2D) gc;
-            g2d.setColor(ThemeColor.DROP_AREA);
-            g2d.draw(Geometry.inset(1, getRowBounds(dragTargetRow)));
+            gc.setColor(ThemeColor.DROP_AREA);
+            gc.draw(Geometry.inset(1, getRowBounds(dragTargetRow)));
         }
     }
 
-    private void drawBackground(Graphics gc) {
+    private void drawBackground(Graphics2D gc) {
         Scale scale = Scale.get(this);
         int   one   = scale.scale(1);
 
@@ -2231,7 +2230,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         }
 
         if (mDragParentRow != parentRow || mDragChildInsertIndex != childInsertIndex) {
-            Graphics gc = getGraphics();
+            Graphics2D gc = GraphicsUtilities.prepare(getGraphics());
             mDragParentRow = parentRow;
             mDragChildInsertIndex = childInsertIndex;
             drawDragRowInsertionMarker(gc, mDragParentRow, mDragChildInsertIndex);

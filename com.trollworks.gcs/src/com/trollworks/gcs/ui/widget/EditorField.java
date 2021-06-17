@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.ThemeFont;
@@ -19,6 +20,7 @@ import com.trollworks.gcs.ui.border.LineBorder;
 
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -32,7 +34,7 @@ import javax.swing.border.CompoundBorder;
 /** Provides a standard editor field. */
 public class EditorField extends JFormattedTextField implements ActionListener, Commitable {
     private ThemeFont mThemeFont;
-    private String mHint;
+    private String    mHint;
 
     public interface ChangeListener {
         void editorFieldChanged(EditorField field);
@@ -102,7 +104,8 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
     }
 
     @Override
-    protected void paintComponent(Graphics gc) {
+    protected void paintComponent(Graphics g) {
+        Graphics2D gc = GraphicsUtilities.prepare(g);
         super.paintComponent(gc);
         if (mHint != null && getText().isEmpty()) {
             Rectangle bounds = getBounds();

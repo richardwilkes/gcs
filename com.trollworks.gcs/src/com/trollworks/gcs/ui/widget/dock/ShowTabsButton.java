@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.ui.widget.dock;
 
+import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.MouseCapture;
 import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.ThemeFont;
@@ -23,6 +24,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.MouseInfo;
 import java.awt.Point;
@@ -104,7 +106,8 @@ public class ShowTabsButton extends Panel implements MouseListener, MouseMotionL
     }
 
     @Override
-    protected void paintComponent(Graphics gc) {
+    protected void paintComponent(Graphics g) {
+        Graphics2D gc = GraphicsUtilities.prepare(g);
         gc.setFont(ThemeFont.LABEL_PRIMARY.getFont());
         gc.setColor(UIUtilities.getIconButtonColor(isEnabled(), mInMouseDown, mPressed, mRollover));
         TextDrawing.draw(gc, UIUtilities.getLocalInsetBounds(this), getText(), SwingConstants.CENTER, SwingConstants.CENTER);

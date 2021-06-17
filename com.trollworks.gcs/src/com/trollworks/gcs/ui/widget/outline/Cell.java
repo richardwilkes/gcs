@@ -12,7 +12,7 @@
 package com.trollworks.gcs.ui.widget.outline;
 
 import java.awt.Cursor;
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 
@@ -29,7 +29,7 @@ public interface Cell {
      * @param selected Pass in {@code true} if the cell should be drawn in its selected state.
      * @param active   Pass in {@code true} if the cell should be drawn in its active state.
      */
-    void drawCell(Outline outline, Graphics gc, Rectangle bounds, Row row, Column column, boolean selected, boolean active);
+    void drawCell(Outline outline, Graphics2D gc, Rectangle bounds, Row row, Column column, boolean selected, boolean active);
 
     /**
      * @param outline The {@link Outline} being used.

@@ -15,11 +15,9 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.font.FontRenderContext;
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -60,8 +58,31 @@ public final class TextDrawing {
         if (text == null || text.isEmpty()) {
             return 0;
         }
-        Rectangle2D bounds = font.getStringBounds(text, getDefaultFontRenderContext());
-        return (int) Math.ceil(bounds.getWidth());
+        Font              fallbackFont = null;
+        char[]            chars        = text.toCharArray();
+        int               max          = chars.length;
+        FontRenderContext frc          = getDefaultFontRenderContext();
+        int               width        = 0;
+        int               i            = 0;
+        while (i < max) {
+            int upTo = font.canDisplayUpTo(chars, i, max);
+            if (upTo != 0) {
+                width += (int) Math.ceil(font.getStringBounds(chars, i, upTo == -1 ? max : upTo, frc).getWidth());
+                if (upTo == -1) {
+                    break;
+                }
+            }
+            int j = upTo + 1;
+            while (j < max && !font.canDisplay(chars[j])) {
+                j++;
+            }
+            if (fallbackFont == null) {
+                fallbackFont = new Font(Font.SANS_SERIF, font.getStyle(), font.getSize());
+            }
+            width += (int) Math.ceil(fallbackFont.getStringBounds(chars, upTo, j, frc).getWidth());
+            i = j;
+        }
+        return width;
     }
 
     /**
@@ -110,7 +131,7 @@ public final class TextDrawing {
      *               SwingConstants#CENTER}, or {@link SwingConstants#RIGHT}.
      * @return The bottom of the drawn text.
      */
-    public static int draw(Graphics gc, Rectangle bounds, String text, int hAlign, int vAlign) {
+    public static int draw(Graphics2D gc, Rectangle bounds, String text, int hAlign, int vAlign) {
         return draw(gc, bounds, text, hAlign, vAlign, null, 0);
     }
 
@@ -129,7 +150,7 @@ public final class TextDrawing {
      * @param strikeThruSize  The line width to use when drawing the strike-thru.
      * @return The bottom of the drawn text.
      */
-    public static int draw(Graphics gc, Rectangle bounds, String text, int hAlign, int vAlign, Color strikeThruColor, int strikeThruSize) {
+    public static int draw(Graphics2D gc, Rectangle bounds, String text, int hAlign, int vAlign, Color strikeThruColor, int strikeThruSize) {
         int y = bounds.y;
         if (!text.isEmpty()) {
             List<String>    list       = new ArrayList<>();
@@ -183,7 +204,7 @@ public final class TextDrawing {
                     width = getSimpleWidth(font, piece);
                     x += bounds.width - (1 + width);
                 }
-                gc.drawString(piece, x, y + ascent);
+                drawString(gc, piece, x, y + ascent);
                 if (strikeThruColor != null) {
                     Color saved = gc.getColor();
                     gc.setColor(strikeThruColor);
@@ -197,6 +218,37 @@ public final class TextDrawing {
             }
         }
         return y;
+    }
+
+    private static void drawString(Graphics2D gc, String text, int x, int y) {
+        Font              font         = gc.getFont();
+        Font              fallbackFont = null;
+        char[]            chars        = text.toCharArray();
+        int               max          = chars.length;
+        FontRenderContext frc          = getDefaultFontRenderContext();
+        int               i            = 0;
+        while (i < max) {
+            int upTo = font.canDisplayUpTo(chars, i, max);
+            if (upTo != 0) {
+                gc.drawString(new String(chars, i, (upTo == -1 ? max : upTo) - i), x, y);
+                if (upTo == -1) {
+                    break;
+                }
+                x += (int) Math.ceil(font.getStringBounds(chars, i, upTo, frc).getWidth());
+            }
+            int j = upTo + 1;
+            while (j < max && !font.canDisplay(chars[j])) {
+                j++;
+            }
+            if (fallbackFont == null) {
+                fallbackFont = new Font(Font.SANS_SERIF, font.getStyle(), font.getSize());
+            }
+            gc.setFont(fallbackFont);
+            gc.drawString(new String(chars, upTo, j - upTo), x, y);
+            gc.setFont(font);
+            x += (int) Math.ceil(fallbackFont.getStringBounds(chars, upTo, j, frc).getWidth());
+            i = j;
+        }
     }
 
     /**

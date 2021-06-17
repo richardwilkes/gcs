@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.scale.Scale;
@@ -18,6 +19,7 @@ import com.trollworks.gcs.ui.scale.Scale;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import javax.swing.SwingConstants;
@@ -73,14 +75,15 @@ public class FontAwesomeIcon extends Panel {
     }
 
     @Override
-    protected void paintComponent(Graphics gc) {
+    protected void paintComponent(Graphics g) {
         Rectangle bounds = getBounds();
         Insets    insets = getInsets();
         bounds.x = insets.left;
         bounds.y = insets.top;
         bounds.width -= insets.left + insets.right;
         bounds.height -= insets.top + insets.bottom;
-        Scale scale = Scale.get(this);
+        Scale      scale = Scale.get(this);
+        Graphics2D gc    = GraphicsUtilities.prepare(g);
         gc.setFont(new Font(ThemeFont.FONT_AWESOME_SOLID, Font.PLAIN, scale.scale(mSize)));
         TextDrawing.draw(gc, bounds, mText, SwingConstants.CENTER, SwingConstants.CENTER);
     }

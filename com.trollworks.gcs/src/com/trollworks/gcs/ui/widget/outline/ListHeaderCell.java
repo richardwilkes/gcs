@@ -16,7 +16,7 @@ import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.scale.Scale;
 
 import java.awt.Color;
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 
 /** Used to draw headers in the lists. */
@@ -38,7 +38,7 @@ public class ListHeaderCell extends HeaderCell {
     }
 
     @Override
-    public void drawCell(Outline outline, Graphics gc, Rectangle bounds, Row row, Column column, boolean selected, boolean active) {
+    public void drawCell(Outline outline, Graphics2D gc, Rectangle bounds, Row row, Column column, boolean selected, boolean active) {
         if (mForSheet) {
             drawCellSuper(outline, gc, bounds, row, column, selected, active);
         } else {

@@ -19,6 +19,7 @@ import com.trollworks.gcs.ui.widget.Panel;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
@@ -159,9 +160,10 @@ public class OutlineHeader extends Panel implements MouseListener, MouseMotionLi
     }
 
     @Override
-    protected void paintComponent(Graphics gc) {
-        int one = Scale.get(this).scale(1);
-        super.paintComponent(GraphicsUtilities.prepare(gc));
+    protected void paintComponent(Graphics g) {
+        Graphics2D gc  = GraphicsUtilities.prepare(g);
+        int        one = Scale.get(this).scale(1);
+        super.paintComponent(gc);
         Rectangle clip         = gc.getClipBounds();
         Insets    insets       = getInsets();
         Rectangle bounds       = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));

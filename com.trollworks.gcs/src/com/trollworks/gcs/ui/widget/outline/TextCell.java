@@ -21,6 +21,7 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.StringTokenizer;
@@ -111,7 +112,7 @@ public class TextCell implements Cell {
     }
 
     @Override
-    public void drawCell(Outline outline, Graphics gc, Rectangle bounds, Row row, Column column, boolean selected, boolean active) {
+    public void drawCell(Outline outline, Graphics2D gc, Rectangle bounds, Row row, Column column, boolean selected, boolean active) {
         Scale           scale         = Scale.get(outline);
         Font            font          = scale.scale(getFont(row, column));
         int             ascent        = gc.getFontMetrics(font).getAscent();

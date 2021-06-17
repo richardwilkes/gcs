@@ -15,6 +15,7 @@ import com.trollworks.gcs.ui.scale.Scale;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import javax.swing.SwingConstants;
@@ -67,12 +68,12 @@ public class HeaderCell extends TextCell {
      * @param selected Pass in {@code true} if the cell should be drawn in its selected state.
      * @param active   Pass in {@code true} if the cell should be drawn in its active state.
      */
-    protected void drawCellSuper(Outline outline, Graphics gc, Rectangle bounds, Row row, Column column, boolean selected, boolean active) {
+    protected void drawCellSuper(Outline outline, Graphics2D gc, Rectangle bounds, Row row, Column column, boolean selected, boolean active) {
         super.drawCell(outline, gc, bounds, row, column, selected, active);
     }
 
     @Override
-    public void drawCell(Outline outline, Graphics gc, Rectangle bounds, Row row, Column column, boolean selected, boolean active) {
+    public void drawCell(Outline outline, Graphics2D gc, Rectangle bounds, Row row, Column column, boolean selected, boolean active) {
         Scale scale       = Scale.get(outline);
         int   sorterWidth = scale.scale(SORTER_WIDTH);
         int   two         = scale.scale(2);

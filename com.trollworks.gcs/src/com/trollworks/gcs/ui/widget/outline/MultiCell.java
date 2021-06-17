@@ -19,7 +19,7 @@ import com.trollworks.gcs.utility.text.NumericComparator;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import javax.swing.SwingConstants;
@@ -100,7 +100,7 @@ public class MultiCell implements Cell {
     }
 
     @Override
-    public void drawCell(Outline outline, Graphics gc, Rectangle bounds, Row row, Column column, boolean selected, boolean active) {
+    public void drawCell(Outline outline, Graphics2D gc, Rectangle bounds, Row row, Column column, boolean selected, boolean active) {
         Scale     scale       = Scale.get(outline);
         ListRow   theRow      = (ListRow) row;
         int       hMargin     = scale.scale(H_MARGIN);

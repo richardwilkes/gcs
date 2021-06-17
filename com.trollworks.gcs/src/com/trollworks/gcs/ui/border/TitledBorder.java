@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.ui.border;
 
+import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.ThemeFont;
@@ -20,6 +21,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import javax.swing.SwingConstants;
@@ -90,17 +92,18 @@ public class TitledBorder extends LineBorder {
     }
 
     @Override
-    public void paintBorder(Component component, Graphics graphics, int x, int y, int width, int height) {
-        super.paintBorder(component, graphics, x, y, width, height);
+    public void paintBorder(Component component, Graphics g, int x, int y, int width, int height) {
+        super.paintBorder(component, g, x, y, width, height);
         if (mTitle != null && mFont != null) {
-            Scale scale     = Scale.get(component);
-            Font  savedFont = graphics.getFont();
-            Font  font      = scale.scale(mFont.getFont());
-            int   one       = scale.scale(1);
-            graphics.setFont(font);
-            graphics.setColor(mTitleColor);
-            TextDrawing.draw(graphics, new Rectangle(x + one, y, width - (one + one), TextDrawing.getPreferredSize(font, mTitle).height), mTitle, SwingConstants.CENTER, SwingConstants.TOP);
-            graphics.setFont(savedFont);
+            Graphics2D gc        = GraphicsUtilities.prepare(g);
+            Scale      scale     = Scale.get(component);
+            Font       savedFont = gc.getFont();
+            Font       font      = scale.scale(mFont.getFont());
+            int        one       = scale.scale(1);
+            gc.setFont(font);
+            gc.setColor(mTitleColor);
+            TextDrawing.draw(gc, new Rectangle(x + one, y, width - (one + one), TextDrawing.getPreferredSize(font, mTitle).height), mTitle, SwingConstants.CENTER, SwingConstants.TOP);
+            gc.setFont(savedFont);
         }
     }
 
