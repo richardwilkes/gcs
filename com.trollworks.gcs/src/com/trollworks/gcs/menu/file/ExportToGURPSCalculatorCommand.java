@@ -19,7 +19,7 @@ import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.settings.QuickExport;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.widget.MessageType;
-import com.trollworks.gcs.ui.widget.StdDialog;
+import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.SaveType;
@@ -72,7 +72,7 @@ public final class ExportToGURPSCalculatorCommand extends Command {
             String         key       = Settings.getInstance().getGURPSCalculatorKey();
             try {
                 if ("true".equals(get(String.format("api/GetCharacterExists/%s/%s", character.getID(), key)))) {
-                    StdDialog dialog = StdDialog.prepareToShowMessage(KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner(),
+                    Modal dialog = Modal.prepareToShowMessage(KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner(),
                             I18n.text("Character already exists"), MessageType.WARNING,
                             I18n.text("""
                                     This character already exists in GURPS Calculator.
@@ -167,7 +167,7 @@ public final class ExportToGURPSCalculatorCommand extends Command {
 
     private static void showResult(boolean success) {
         if (success) {
-            StdDialog.showMessage(Command.getFocusOwner(), I18n.text("Success"), MessageType.NONE,
+            Modal.showMessage(Command.getFocusOwner(), I18n.text("Success"), MessageType.NONE,
                     I18n.text("Export to GURPS Calculator was successful."));
         } else {
             String key = Settings.getInstance().getGURPSCalculatorKey();
@@ -177,7 +177,7 @@ public final class ExportToGURPSCalculatorCommand extends Command {
             } else {
                 message = I18n.text("There was an error exporting to GURPS Calculator.\nPlease try again later.");
             }
-            StdDialog.showError(Command.getFocusOwner(), message);
+            Modal.showError(Command.getFocusOwner(), message);
         }
     }
 

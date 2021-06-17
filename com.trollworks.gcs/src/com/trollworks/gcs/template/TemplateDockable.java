@@ -15,7 +15,7 @@ import com.trollworks.gcs.character.CollectedOutlines;
 import com.trollworks.gcs.character.CollectedOutlinesDockable;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.widget.StdScrollPanel;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.dock.Dock;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.PrintProxy;
@@ -35,7 +35,7 @@ public class TemplateDockable extends CollectedOutlinesDockable {
         Template dataFile = getDataFile();
         mTemplate = new TemplateSheet(dataFile);
         createToolbar();
-        StdScrollPanel scroller = new StdScrollPanel(mTemplate);
+        ScrollPanel scroller = new ScrollPanel(mTemplate);
         scroller.getViewport().setBackground(ThemeColor.PAGE_VOID);
         add(scroller, BorderLayout.CENTER);
         dataFile.setModified(false);

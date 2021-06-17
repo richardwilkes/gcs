@@ -11,14 +11,14 @@
 
 package com.trollworks.gcs.prereq;
 
-import com.trollworks.gcs.ui.widget.StdLabel;
+import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.Graphics;
 import javax.swing.SwingConstants;
 
 /** A label that displays the "and" or the "or" message, or nothing if it is the first one. */
-public class AndOrLabel extends StdLabel {
+public class AndOrLabel extends Label {
     private Prereq mOwner;
 
     /**

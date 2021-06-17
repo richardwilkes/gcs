@@ -13,13 +13,12 @@ package com.trollworks.gcs.page;
 
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.ThemeFont;
-import com.trollworks.gcs.ui.widget.StdLabel;
-import com.trollworks.gcs.utility.text.Text;
+import com.trollworks.gcs.ui.widget.Label;
 
 import javax.swing.SwingConstants;
 
 /** A header within the page. */
-public class PageHeader extends StdLabel {
+public class PageHeader extends Label {
     /**
      * Creates a new PageHeader.
      *
@@ -31,6 +30,6 @@ public class PageHeader extends StdLabel {
         setThemeFont(ThemeFont.PAGE_LABEL_PRIMARY);
         setHorizontalAlignment(SwingConstants.CENTER);
         setForeground(ThemeColor.ON_HEADER);
-        setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+        setToolTipText(tooltip);
     }
 }

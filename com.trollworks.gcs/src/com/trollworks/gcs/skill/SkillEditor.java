@@ -24,9 +24,9 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.ScrollContent;
-import com.trollworks.gcs.ui.widget.StdCheckbox;
-import com.trollworks.gcs.ui.widget.StdLabel;
-import com.trollworks.gcs.ui.widget.StdPanel;
+import com.trollworks.gcs.ui.widget.Checkbox;
+import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
@@ -55,9 +55,9 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     private EditorField                mSpecializationField;
     private MultiLineTextField         mNotesField;
     private EditorField                mCategoriesField;
-    private EditorField                mReferenceField;
-    private StdCheckbox                mHasTechLevel;
-    private EditorField                mTechLevel;
+    private EditorField mReferenceField;
+    private Checkbox    mHasTechLevel;
+    private EditorField mTechLevel;
     private String                     mSavedTechLevel;
     private JComboBox<AttributeChoice> mAttributePopup;
     private JComboBox<Object>          mDifficultyPopup;
@@ -82,11 +82,11 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 
     @Override
     protected void addContentSelf(ScrollContent outer) {
-        StdPanel panel       = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(2));
-        boolean  isContainer = mRow.canHaveChildren();
+        Panel   panel       = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
+        boolean isContainer = mRow.canHaveChildren();
         mNameField = createCorrectableField(panel, I18n.text("Name"), mRow.getName(), I18n.text("The base name of the skill, without any notes or specialty information"));
         if (!isContainer) {
-            StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+            Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
             mSpecializationField = createField(panel, wrapper, I18n.text("Specialization"),
                     mRow.getSpecialization(), I18n.text("The specialization, if any, taken for this skill"),
                     0, null);
@@ -94,7 +94,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
             panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         }
         mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this skill"), this);
-        panel.add(new StdLabel(I18n.text("Notes"), mNotesField), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
+        panel.add(new Label(I18n.text("Notes"), mNotesField), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         mCategoriesField = createField(panel, panel, I18n.text("Categories"), mRow.getCategoriesAsString(),
                 I18n.text("The category or categories the skill belongs to (separate multiple categories with a comma)"),
@@ -126,7 +126,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     private EditorField createCorrectableField(Container parent, String title, String text, String tooltip) {
         EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text, tooltip);
         field.getDocument().addDocumentListener(this);
-        parent.add(new StdLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        parent.add(new Label(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
         parent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return field;
     }
@@ -134,7 +134,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     private static EditorField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars, EditorField.ChangeListener listener) {
         EditorField field = new EditorField(FieldFactory.STRING, listener, SwingConstants.LEFT, text,
                 maxChars > 0 ? Text.makeFiller(maxChars, 'M') : null, tooltip);
-        labelParent.add(new StdLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        labelParent.add(new Label(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
         PrecisionLayoutData ld = new PrecisionLayoutData().setFillHorizontalAlignment();
         if (maxChars == 0) {
             ld.setGrabHorizontalSpace(true);
@@ -151,7 +151,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         mPointsField = new EditorField(FieldFactory.POSINT3, (f) -> recalculateLevel(),
                 SwingConstants.LEFT, Integer.valueOf(mRow.getRawPoints()), Integer.valueOf(999),
                 I18n.text("The number of points spent on this skill"));
-        parent.add(new StdLabel(I18n.text("Points"), mPointsField), new PrecisionLayoutData().setFillHorizontalAlignment());
+        parent.add(new Label(I18n.text("Points"), mPointsField), new PrecisionLayoutData().setFillHorizontalAlignment());
         parent.add(mPointsField, new PrecisionLayoutData().setFillHorizontalAlignment());
         if (forCharacter) {
             String level = Skill.getSkillDisplayLevel(mRow.getDataFile(), mRow.getLevel(),
@@ -173,11 +173,11 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         }
 
         if (character != null) {
-            StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+            Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
 
             String tlTooltip = I18n.text("Whether this skill requires tech level specialization, and, if so, at what tech level it was learned");
-            mHasTechLevel = new StdCheckbox(I18n.text("Tech Level"), hasTL, this::clickedOnHasTechLevelCheckbox);
-            mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(tlTooltip));
+            mHasTechLevel = new Checkbox(I18n.text("Tech Level"), hasTL, this::clickedOnHasTechLevelCheckbox);
+            mHasTechLevel.setToolTipText(tlTooltip);
             wrapper.add(mHasTechLevel);
 
             mTechLevel = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT,
@@ -192,13 +192,13 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         } else {
             mTechLevel = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT,
                     mSavedTechLevel, "9999", null);
-            mHasTechLevel = new StdCheckbox(I18n.text("Tech Level Required"), hasTL, this::clickedOnHasTechLevelCheckbox);
-            mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Whether this skill requires tech level specialization")));
+            mHasTechLevel = new Checkbox(I18n.text("Tech Level Required"), hasTL, this::clickedOnHasTechLevelCheckbox);
+            mHasTechLevel.setToolTipText(I18n.text("Whether this skill requires tech level specialization"));
             parent.add(mHasTechLevel);
         }
     }
 
-    private void clickedOnHasTechLevelCheckbox(StdCheckbox checkbox) {
+    private void clickedOnHasTechLevelCheckbox(Checkbox checkbox) {
         boolean enabled = checkbox.isChecked();
         mTechLevel.setEnabled(enabled);
         if (enabled) {
@@ -217,7 +217,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         for (int i = 2; i < 10; i++) {
             items[i] = MessageFormat.format(I18n.text("Penalty equal to {0} times the current encumbrance level"), Integer.valueOf(i));
         }
-        StdLabel label = new StdLabel(I18n.text("Encumbrance"));
+        Label label = new Label(I18n.text("Encumbrance"));
         parent.add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
         JComboBox<Object> popup = createComboBox(parent, items, items[mRow.getEncumbrancePenaltyMultiplier()], I18n.text("The encumbrance penalty multiplier"));
         label.setRefersTo(popup);
@@ -252,9 +252,9 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
                 columns += 2;
             }
         }
-        StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(columns));
+        Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(columns));
         mAttributePopup = createComboBox(wrapper, list.toArray(new AttributeChoice[0]), current, I18n.text("The attribute this skill is based on"));
-        wrapper.add(new StdLabel("/"));
+        wrapper.add(new Label("/"));
         mDifficultyPopup = createComboBox(wrapper, SkillDifficulty.values(), mRow.getDifficulty(), I18n.text("The relative difficulty of learning this skill"));
 
         if (forCharacterOrTemplate) {
@@ -267,7 +267,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 
     private <T> JComboBox<T> createComboBox(Container parent, T[] items, T selection, String tooltip) {
         JComboBox<T> combo = new JComboBox<>(items);
-        combo.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+        combo.setToolTipText(tooltip);
         combo.setSelectedItem(selection);
         combo.addActionListener(this);
         combo.setMaximumRowCount(items.length);
@@ -284,7 +284,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
                     new HashSet<>(), getEncumbrancePenaltyMultiplier());
             mLevelField.setText(Skill.getSkillDisplayLevel(mRow.getDataFile(), level.mLevel,
                     level.mRelativeLevel, attribute, false));
-            mLevelField.setToolTipText(Text.wrapPlainTextForToolTip(editorLevelTooltip() + level.getToolTip()));
+            mLevelField.setToolTipText(editorLevelTooltip() + level.getToolTip());
         }
     }
 
@@ -370,7 +370,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 
     private void docChanged(DocumentEvent event) {
         if (mNameField.getDocument() == event.getDocument()) {
-            StdLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
+            Label.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
         }
     }
 

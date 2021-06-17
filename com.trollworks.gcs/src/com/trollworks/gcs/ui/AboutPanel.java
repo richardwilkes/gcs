@@ -13,7 +13,7 @@ package com.trollworks.gcs.ui;
 
 import com.trollworks.gcs.GCS;
 import com.trollworks.gcs.ui.image.Images;
-import com.trollworks.gcs.ui.widget.StdPanel;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.Color;
@@ -27,7 +27,7 @@ import java.awt.RenderingHints;
 import javax.swing.UIManager;
 
 /** The about box contents. */
-public class AboutPanel extends StdPanel {
+public class AboutPanel extends Panel {
     private static final int MARGIN = 8;
 
     /** Creates a new about panel. */

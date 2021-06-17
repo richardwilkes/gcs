@@ -15,7 +15,7 @@ import com.trollworks.gcs.ui.ThemeColor;
 
 import java.awt.LayoutManager;
 
-public class ContentPanel extends StdPanel {
+public class ContentPanel extends Panel {
     public ContentPanel() {
     }
 

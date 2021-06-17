@@ -16,8 +16,8 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.StdLabel;
-import com.trollworks.gcs.ui.widget.StdPanel;
+import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
@@ -38,9 +38,9 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** A standard search control. */
-public class Search extends StdPanel implements DocumentListener, KeyListener, FocusListener {
+public class Search extends Panel implements DocumentListener, KeyListener, FocusListener {
     private SearchTarget   mTarget;
-    private StdLabel       mHits;
+    private Label          mHits;
     private EditorField    mFilterField;
     private SearchDropDown mFloater;
     private String         mFilter;
@@ -56,8 +56,8 @@ public class Search extends StdPanel implements DocumentListener, KeyListener, F
         mTarget = target;
         mFilterField = createSearchField();
         add(mFilterField, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
-        mHits = new StdLabel("");
-        mHits.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("The number of matches found")));
+        mHits = new Label("");
+        mHits.setToolTipText(I18n.text("The number of matches found"));
         adjustHits();
         add(mHits);
     }

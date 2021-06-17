@@ -13,7 +13,7 @@ package com.trollworks.gcs.menu.library;
 
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.ui.widget.StdDialog;
+import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.Desktop;
@@ -50,7 +50,7 @@ public class ShowLibraryFolderCommand extends Command {
                 desktop.open(dir);
             }
         } catch (Exception exception) {
-            StdDialog.showError(null, exception.getMessage());
+            Modal.showError(null, exception.getMessage());
         }
     }
 }

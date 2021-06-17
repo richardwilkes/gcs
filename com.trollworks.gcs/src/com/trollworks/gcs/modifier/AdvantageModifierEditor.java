@@ -20,9 +20,9 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.ScrollContent;
-import com.trollworks.gcs.ui.widget.StdCheckbox;
-import com.trollworks.gcs.ui.widget.StdLabel;
-import com.trollworks.gcs.ui.widget.StdPanel;
+import com.trollworks.gcs.ui.widget.Checkbox;
+import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
@@ -41,7 +41,7 @@ import javax.swing.event.DocumentListener;
 /** Editor for {@link AdvantageModifier}s. */
 public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implements ActionListener, DocumentListener {
     private EditorField        mNameField;
-    private StdCheckbox        mEnabledField;
+    private Checkbox           mEnabledField;
     private MultiLineTextField mNotesField;
     private EditorField        mReferenceField;
     private EditorField        mCostField;
@@ -65,16 +65,16 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
 
     @Override
     protected void addContentSelf(ScrollContent outer) {
-        StdPanel panel = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+        Panel panel = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
         if (mRow.canHaveChildren()) {
             mNameField = createCorrectableField(panel, panel, I18n.text("Name"), mRow.getName(),
                     I18n.text("Name of container"));
         } else {
-            StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+            Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
             mNameField = createCorrectableField(panel, wrapper, I18n.text("Name"), mRow.getName(),
                     I18n.text("Name of Modifier"));
-            mEnabledField = new StdCheckbox(I18n.text("Enabled"), mRow.isEnabled(), null);
-            mEnabledField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Whether this modifier has been enabled or not")));
+            mEnabledField = new Checkbox(I18n.text("Enabled"), mRow.isEnabled(), null);
+            mEnabledField.setToolTipText(I18n.text("Whether this modifier has been enabled or not"));
             mEnabledField.setEnabled(mIsEditable);
             wrapper.add(mEnabledField);
             panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
@@ -83,7 +83,7 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
         }
 
         mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this modifier"), this);
-        panel.add(new StdLabel(I18n.text("Notes"), mNotesField),
+        panel.add(new Label(I18n.text("Notes"), mNotesField),
                 new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
@@ -192,7 +192,7 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
     }
 
     private void createCostModifierFields(Container parent) {
-        StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(7));
+        Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(7));
         mLastLevel = mRow.getLevels();
         if (mLastLevel < 1) {
             mLastLevel = 1;
@@ -276,7 +276,7 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
 
     private void docChanged(DocumentEvent event) {
         if (mNameField.getDocument() == event.getDocument()) {
-            StdLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
+            Label.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
         }
     }
 

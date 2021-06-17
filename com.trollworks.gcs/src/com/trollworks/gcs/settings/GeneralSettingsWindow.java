@@ -20,15 +20,14 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.scale.Scales;
 import com.trollworks.gcs.ui.widget.BaseWindow;
+import com.trollworks.gcs.ui.widget.Button;
+import com.trollworks.gcs.ui.widget.Checkbox;
+import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.StdButton;
-import com.trollworks.gcs.ui.widget.StdCheckbox;
-import com.trollworks.gcs.ui.widget.StdDialog;
-import com.trollworks.gcs.ui.widget.StdLabel;
+import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.ui.widget.Wrapper;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Container;
 import java.awt.Desktop;
@@ -45,13 +44,13 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
     private        EditorField           mPlayerName;
     private        EditorField           mTechLevel;
     private        EditorField           mInitialPoints;
-    private        StdCheckbox           mAutoFillProfile;
+    private        Checkbox              mAutoFillProfile;
     private        JComboBox<Scales>     mInitialScale;
     private        EditorField           mToolTipTimeout;
     private        EditorField           mImageResolution;
-    private        StdCheckbox           mIncludeUnspentPointsInTotal;
+    private        Checkbox              mIncludeUnspentPointsInTotal;
     private        EditorField           mGCalcKey;
-    private        StdButton             mResetButton;
+    private        Button                mResetButton;
 
     /** Displays the general settings window. */
     public static void display() {
@@ -79,15 +78,15 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
             adjustResetButton();
         }, SwingConstants.LEFT, prefs.getDefaultPlayerName(),
                 I18n.text("The player name to use when a new character sheet is created"));
-        content.add(new StdLabel(I18n.text("Player"), mPlayerName), new PrecisionLayoutData().setFillHorizontalAlignment());
+        content.add(new Label(I18n.text("Player"), mPlayerName), new PrecisionLayoutData().setFillHorizontalAlignment());
         content.add(mPlayerName, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-        mAutoFillProfile = new StdCheckbox(I18n.text("Fill in initial description"),
+        mAutoFillProfile = new Checkbox(I18n.text("Fill in initial description"),
                 prefs.autoFillProfile(), (b) -> {
             prefs.setAutoFillProfile(b.isChecked());
             adjustResetButton();
         });
-        mAutoFillProfile.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Automatically fill in new character identity and description information with randomized choices")));
+        mAutoFillProfile.setToolTipText(I18n.text("Automatically fill in new character identity and description information with randomized choices"));
         mAutoFillProfile.setOpaque(false);
         content.add(mAutoFillProfile);
 
@@ -95,24 +94,8 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
         mTechLevel = new EditorField(FieldFactory.STRING, (f) -> {
             Settings.getInstance().setDefaultTechLevel(f.getText().trim());
             adjustResetButton();
-        }, SwingConstants.RIGHT, prefs.getDefaultTechLevel(), "99+99^",
-                I18n.text("""
-                        <html><body>
-                        TL0: Stone Age (Prehistory and later)<br>
-                        TL1: Bronze Age (3500 B.C.+)<br>
-                        TL2: Iron Age (1200 B.C.+)<br>
-                        TL3: Medieval (600 A.D.+)<br>
-                        TL4: Age of Sail (1450+)<br>
-                        TL5: Industrial Revolution (1730+)<br>
-                        TL6: Mechanized Age (1880+)<br>
-                        TL7: Nuclear Age (1940+)<br>
-                        TL8: Digital Age (1980+)<br>
-                        TL9: Microtech Age (2025+?)<br>
-                        TL10: Robotic Age (2070+?)<br>
-                        TL11: Age of Exotic Matter<br>
-                        TL12: Anything Goes
-                        </body></html>"""));
-        content.add(new StdLabel(I18n.text("Tech Level"), mTechLevel),
+        }, SwingConstants.RIGHT, prefs.getDefaultTechLevel(), "99+99^", getTechLevelTooltip());
+        content.add(new Label(I18n.text("Tech Level"), mTechLevel),
                 new PrecisionLayoutData().setFillHorizontalAlignment());
         Wrapper wrapper = new Wrapper(new PrecisionLayout().setMargins(0).setColumns(3));
         content.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
@@ -123,16 +106,16 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
             adjustResetButton();
         }, SwingConstants.RIGHT, Integer.valueOf(prefs.getInitialPoints()), Integer.valueOf(999999),
                 I18n.text("The initial number of character points to start with"));
-        wrapper.add(new StdLabel(I18n.text("Initial Points"), mTechLevel),
+        wrapper.add(new Label(I18n.text("Initial Points"), mTechLevel),
                 new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(5));
         wrapper.add(mInitialPoints, new PrecisionLayoutData().setFillHorizontalAlignment());
 
-        mIncludeUnspentPointsInTotal = new StdCheckbox(I18n.text("Include unspent points in total"),
+        mIncludeUnspentPointsInTotal = new Checkbox(I18n.text("Include unspent points in total"),
                 prefs.includeUnspentPointsInTotal(), (b) -> {
             prefs.setIncludeUnspentPointsInTotal(b.isChecked());
             adjustResetButton();
         });
-        mIncludeUnspentPointsInTotal.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Include unspent points in the character point total")));
+        mIncludeUnspentPointsInTotal.setToolTipText(I18n.text("Include unspent points in the character point total"));
         mIncludeUnspentPointsInTotal.setOpaque(false);
         content.add(mIncludeUnspentPointsInTotal);
 
@@ -147,7 +130,7 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
             adjustResetButton();
         });
         mInitialScale.setMaximumRowCount(mInitialScale.getItemCount());
-        content.add(new StdLabel(I18n.text("Initial Scale"), mInitialScale), new PrecisionLayoutData().setFillHorizontalAlignment());
+        content.add(new Label(I18n.text("Initial Scale"), mInitialScale), new PrecisionLayoutData().setFillHorizontalAlignment());
         wrapper = new Wrapper(new PrecisionLayout().setMargins(0).setColumns(7));
         content.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(2));
         wrapper.add(mInitialScale);
@@ -158,9 +141,9 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
         }, SwingConstants.RIGHT, Integer.valueOf(prefs.getToolTipTimeout()),
                 FieldFactory.getMaxValue(FieldFactory.TOOLTIP_TIMEOUT),
                 I18n.text("The number of seconds before tooltips will dismiss themselves"));
-        wrapper.add(new StdLabel(I18n.text("Tooltip Timeout"), mToolTipTimeout), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(5));
+        wrapper.add(new Label(I18n.text("Tooltip Timeout"), mToolTipTimeout), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(5));
         wrapper.add(mToolTipTimeout, new PrecisionLayoutData().setFillHorizontalAlignment());
-        wrapper.add(new StdLabel(I18n.text("seconds"), mToolTipTimeout));
+        wrapper.add(new Label(I18n.text("seconds"), mToolTipTimeout));
 
         mImageResolution = new EditorField(FieldFactory.OUTPUT_DPI, (f) -> {
             Settings.getInstance().setImageResolution(((Integer) f.getValue()).intValue());
@@ -168,9 +151,9 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
         }, SwingConstants.RIGHT, Integer.valueOf(prefs.getImageResolution()),
                 FieldFactory.getMaxValue(FieldFactory.OUTPUT_DPI),
                 I18n.text("The resolution, in dots-per-inch, to use when saving sheets as PNG files"));
-        wrapper.add(new StdLabel(I18n.text("Image Resolution"), mImageResolution), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(5));
+        wrapper.add(new Label(I18n.text("Image Resolution"), mImageResolution), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(5));
         wrapper.add(mImageResolution, new PrecisionLayoutData().setFillHorizontalAlignment());
-        wrapper.add(new StdLabel(I18n.text("dpi"), mImageResolution));
+        wrapper.add(new Label(I18n.text("dpi"), mImageResolution));
 
         // Fourth row
         wrapper = new Wrapper(new PrecisionLayout().setMargins(0).setColumns(3));
@@ -179,24 +162,41 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
             Settings.getInstance().setGURPSCalculatorKey(f.getText().trim());
             adjustResetButton();
         }, SwingConstants.LEFT, prefs.getGURPSCalculatorKey(), null);
-        wrapper.add(new StdLabel(I18n.text("GURPS Calculator Key"), mGCalcKey), new PrecisionLayoutData().setFillHorizontalAlignment());
+        wrapper.add(new Label(I18n.text("GURPS Calculator Key"), mGCalcKey), new PrecisionLayoutData().setFillHorizontalAlignment());
         wrapper.add(mGCalcKey, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
-        wrapper.add(new StdButton(I18n.text("Find mine"), (btn) -> {
+        wrapper.add(new Button(I18n.text("Find mine"), (btn) -> {
             try {
                 Desktop.getDesktop().browse(new URI(ExportToGURPSCalculatorCommand.GURPS_CALCULATOR_URL));
             } catch (Exception exception) {
-                StdDialog.showError(this, MessageFormat.format(I18n.text("Unable to open {0}"),
+                Modal.showError(this, MessageFormat.format(I18n.text("Unable to open {0}"),
                         ExportToGURPSCalculatorCommand.GURPS_CALCULATOR_URL));
             }
         }));
 
         // Bottom row
-        mResetButton = new StdButton(I18n.text("Reset to Factory Settings"), (btn) -> reset());
+        mResetButton = new Button(I18n.text("Reset to Factory Settings"), (btn) -> reset());
         content.add(mResetButton, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE).setHorizontalSpan(3).setTopMargin(10));
 
         adjustResetButton();
         establishSizing();
         WindowUtils.packAndCenterWindowOn(this, null);
+    }
+
+    public static String getTechLevelTooltip() {
+        return I18n.text("""
+                TL0: Stone Age (Prehistory and later)
+                TL1: Bronze Age (3500 B.C.+)
+                TL2: Iron Age (1200 B.C.+)
+                TL3: Medieval (600 A.D.+)
+                TL4: Age of Sail (1450+)
+                TL5: Industrial Revolution (1730+)
+                TL6: Mechanized Age (1880+)
+                TL7: Nuclear Age (1940+)
+                TL8: Digital Age (1980+)
+                TL9: Microtech Age (2025+?)
+                TL10: Robotic Age (2070+?)
+                TL11: Age of Exotic Matter
+                TL12: Anything Goes""");
     }
 
     @Override

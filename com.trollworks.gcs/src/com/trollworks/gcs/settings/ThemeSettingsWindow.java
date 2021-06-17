@@ -24,9 +24,9 @@ import com.trollworks.gcs.ui.widget.ColorWell;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.FontPanel;
 import com.trollworks.gcs.ui.widget.Separator;
-import com.trollworks.gcs.ui.widget.StdLabel;
-import com.trollworks.gcs.ui.widget.StdPanel;
-import com.trollworks.gcs.ui.widget.StdScrollPanel;
+import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 
@@ -64,15 +64,15 @@ public final class ThemeSettingsWindow extends BaseWindow implements CloseHandle
 
     private ThemeSettingsWindow() {
         super(I18n.text("Theme Settings"));
-        StdPanel panel = new StdPanel(new PrecisionLayout().setMargins(10));
+        Panel panel = new Panel(new PrecisionLayout().setMargins(10));
 
         mResetFontsButton = addHeader(panel, I18n.text("Fonts"), 0, this::resetFonts);
-        StdPanel wrapper = new StdPanel(new PrecisionLayout().setColumns(2), false);
+        Panel wrapper = new Panel(new PrecisionLayout().setColumns(2), false);
         mFontPanels = new ArrayList<>();
         for (ThemeFont font : ThemeFont.ALL) {
             if (font.isEditable()) {
                 FontTracker tracker = new FontTracker(font);
-                wrapper.add(new StdLabel(font.toString(), tracker), new PrecisionLayoutData().setFillHorizontalAlignment());
+                wrapper.add(new Label(font.toString(), tracker), new PrecisionLayoutData().setFillHorizontalAlignment());
                 wrapper.add(tracker);
                 mFontPanels.add(tracker);
             }
@@ -81,7 +81,7 @@ public final class ThemeSettingsWindow extends BaseWindow implements CloseHandle
 
         mResetColorsButton = addHeader(panel, I18n.text("Colors"), 16, this::resetColors);
         int cols = 8;
-        wrapper = new StdPanel(new PrecisionLayout().setColumns(cols), false);
+        wrapper = new Panel(new PrecisionLayout().setColumns(cols), false);
         mColorWells = new ArrayList<>();
         int max = ThemeColor.ALL.size();
         cols /= 2;
@@ -106,7 +106,7 @@ public final class ThemeSettingsWindow extends BaseWindow implements CloseHandle
         }
         panel.add(wrapper);
 
-        getContentPane().add(new StdScrollPanel(panel), BorderLayout.CENTER);
+        getContentPane().add(new ScrollPanel(panel), BorderLayout.CENTER);
         adjustResetButtons();
         establishSizing();
         WindowUtils.packAndCenterWindowOn(this, null);
@@ -121,8 +121,8 @@ public final class ThemeSettingsWindow extends BaseWindow implements CloseHandle
     }
 
     private static FontAwesomeButton addHeader(Container parent, String text, int topMargin, Runnable reset) {
-        StdPanel header = new StdPanel(new PrecisionLayout().setColumns(2).setMargins(0));
-        StdLabel label  = new StdLabel(text);
+        Panel header = new Panel(new PrecisionLayout().setColumns(2).setMargins(0));
+        Label label  = new Label(text);
         label.setThemeFont(ThemeFont.HEADER);
         header.add(label);
         FontAwesomeButton resetButton = new FontAwesomeButton("\uf011", I18n.text("Reset to Factory Defaults"), reset);
@@ -135,7 +135,7 @@ public final class ThemeSettingsWindow extends BaseWindow implements CloseHandle
     private void addColorTracker(Container parent, ThemeColor color, int leftMargin) {
         ColorTracker tracker = new ColorTracker(color);
         mColorWells.add(tracker);
-        parent.add(new StdLabel(color.toString(), tracker), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(leftMargin));
+        parent.add(new Label(color.toString(), tracker), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(leftMargin));
         parent.add(tracker, new PrecisionLayoutData().setLeftMargin(4));
     }
 

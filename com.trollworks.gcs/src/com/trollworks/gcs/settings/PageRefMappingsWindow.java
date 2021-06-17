@@ -24,10 +24,10 @@ import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.MessageType;
-import com.trollworks.gcs.ui.widget.StdDialog;
-import com.trollworks.gcs.ui.widget.StdLabel;
-import com.trollworks.gcs.ui.widget.StdPanel;
-import com.trollworks.gcs.ui.widget.StdScrollPanel;
+import com.trollworks.gcs.ui.widget.Modal;
+import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.IntegerFormatter;
@@ -71,7 +71,7 @@ public final class PageRefMappingsWindow extends BaseWindow implements CloseHand
         setLayout(new BorderLayout());
         mPanel = new BandedPanel(true);
         buildPanel();
-        getContentPane().add(new StdScrollPanel(mPanel), BorderLayout.CENTER);
+        getContentPane().add(new ScrollPanel(mPanel), BorderLayout.CENTER);
         WindowUtils.packAndCenterWindowOn(this, null);
     }
 
@@ -81,11 +81,11 @@ public final class PageRefMappingsWindow extends BaseWindow implements CloseHand
         mPanel.removeAll();
         mPanel.setLayout(new PrecisionLayout().setColumns(4).setMargins(0, 10, 0, 10).setVerticalSpacing(0));
         for (PDFRef ref : prefs.allPdfRefs(false)) {
-            StdLabel idLabel = new StdLabel(ref.getID(), SwingConstants.CENTER);
+            Label idLabel = new Label(ref.getID(), SwingConstants.CENTER);
             idLabel.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(1, 4, 1, 4)));
             idLabel.setOpaque(true);
             idLabel.setBackground(background);
-            StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(6, 0, 6, 0), false);
+            Panel wrapper = new Panel(new PrecisionLayout().setMargins(6, 0, 6, 0), false);
             wrapper.add(idLabel, new PrecisionLayoutData().setFillHorizontalAlignment().setMinimumWidth(50).setVerticalAlignment(PrecisionLayoutAlignment.MIDDLE));
             mPanel.add(wrapper, new PrecisionLayoutData().setFillAlignment());
             EditorField field = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(-9999, 9999, true)),
@@ -94,22 +94,22 @@ public final class PageRefMappingsWindow extends BaseWindow implements CloseHand
                     Integer.valueOf(-9999),
                     I18n.text("If your PDF is opening up to the wrong page when opening page references, enter an offset here to compensate."));
             mPanel.add(field);
-            Path     path      = ref.getPath().normalize().toAbsolutePath();
-            StdLabel fileLabel = new StdLabel(path.getFileName().toString());
+            Path  path      = ref.getPath().normalize().toAbsolutePath();
+            Label fileLabel = new Label(path.getFileName().toString());
             fileLabel.setToolTipText(path.toString());
             mPanel.add(fileLabel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
             FontAwesomeButton removeButton = new FontAwesomeButton("\uf1f8", I18n.text("Remove"), null);
             removeButton.setClickFunction(() -> {
-                StdDialog dialog = StdDialog.prepareToShowMessage(this,
+                Modal dialog = Modal.prepareToShowMessage(this,
                         I18n.text("Confirm Change"),
                         MessageType.QUESTION,
                         String.format(I18n.text("""
                                 Are you sure you want to remove this page reference
                                 mapping from %s to "%s"?"""), ref.getID(), ref.getPath().getFileName().toString()));
                 dialog.addCancelButton();
-                dialog.addButton(I18n.text("Remove"), StdDialog.OK);
+                dialog.addButton(I18n.text("Remove"), Modal.OK);
                 dialog.presentToUser();
-                if (dialog.getResult() == StdDialog.OK) {
+                if (dialog.getResult() == Modal.OK) {
                     Settings.getInstance().removePdfRef(ref);
                     Component[] children = mPanel.getComponents();
                     int         length   = children.length;
@@ -131,7 +131,7 @@ public final class PageRefMappingsWindow extends BaseWindow implements CloseHand
         }
         if (mPanel.getComponentCount() == 0) {
             mPanel.setLayout(new PrecisionLayout().setMargins(10));
-            mPanel.add(new StdLabel(I18n.text("No page reference mappings have been set."), SwingConstants.CENTER), new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
+            mPanel.add(new Label(I18n.text("No page reference mappings have been set."), SwingConstants.CENTER), new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
         }
         mPanel.revalidate();
         mPanel.repaint();

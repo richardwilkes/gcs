@@ -12,7 +12,7 @@
 package com.trollworks.gcs.menu.help;
 
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.ui.widget.StdDialog;
+import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.utility.Log;
 
 import java.awt.Desktop;
@@ -62,7 +62,7 @@ public class OpenURICommand extends Command {
             try {
                 Desktop.getDesktop().browse(mURI);
             } catch (IOException exception) {
-                StdDialog.showError(null, exception.getMessage());
+                Modal.showError(null, exception.getMessage());
             }
         }
     }

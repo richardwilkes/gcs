@@ -59,18 +59,17 @@ public class HitLocationPanel extends DropPanel {
         for (HitLocation location : table.getLocations()) {
             String    name   = location.getTableName();
             String    prefix = Text.makeFiller(depth * 3, ' ');
-            PageLabel first  = createLabel(prefix + location.getRollRange(), MessageFormat.format(I18n.text("<html><body>The random roll needed to hit the <b>{0}</b> hit location</body></html>"), name), SwingConstants.LEFT);
+            PageLabel first  = createLabel(prefix + location.getRollRange(), MessageFormat.format(I18n.text("The random roll needed to hit the {0} hit location"), name), SwingConstants.LEFT);
             addHorizontalBackground(first, band ? band1Color : band2Color);
             band = !band;
             createDivider();
-            createLabel(prefix + name, Text.wrapPlainTextForToolTip(location.getDescription()), SwingConstants.LEFT);
+            createLabel(prefix + name, location.getDescription(), SwingConstants.LEFT);
             createDivider();
-            createLabel(Integer.toString(location.getHitPenalty()), MessageFormat.format(I18n.text("<html><body>The hit penalty for targeting the <b>{0}</b> hit location</body></html>"), name), SwingConstants.RIGHT);
+            createLabel(Integer.toString(location.getHitPenalty()), MessageFormat.format(I18n.text("The hit penalty for targeting the {0} hit location"), name), SwingConstants.RIGHT);
             createDivider();
             StringBuilder tooltip = new StringBuilder();
             int           dr      = location.getDR(sheet.getCharacter(), tooltip);
-            //noinspection DynamicRegexReplaceableByCompiledPattern
-            createDRField(sheet, Integer.valueOf(dr), String.format(I18n.text("<html><body>The DR covering the <b>%s</b> hit location%s</body></html>"), name, tooltip.toString().replaceAll("\n", "<br>")));
+            createDRField(sheet, Integer.valueOf(dr), String.format(I18n.text("The DR covering the %s hit location%s"), name, tooltip));
             if (location.getSubTable() != null) {
                 band = addTable(sheet, location.getSubTable(), depth + 1, band1Color, band2Color, band);
             }
@@ -100,7 +99,7 @@ public class HitLocationPanel extends DropPanel {
 
     private PageLabel createLabel(String title, String tooltip, int alignment) {
         PageLabel label = new PageLabel(title, null);
-        label.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+        label.setToolTipText(tooltip);
         label.setHorizontalAlignment(alignment);
         add(label, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
         return label;

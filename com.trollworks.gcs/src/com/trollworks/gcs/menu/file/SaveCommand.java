@@ -16,7 +16,7 @@ import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.ui.widget.MessageType;
-import com.trollworks.gcs.ui.widget.StdDialog;
+import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
@@ -82,21 +82,21 @@ public final class SaveCommand extends Command {
     private static SaveResult attemptSaveInternal(Saveable saveable) {
         if (saveable.isModified()) {
             saveable.toFrontAndFocus();
-            StdDialog dialog = StdDialog.prepareToShowMessage(UIUtilities.getComponentForDialog(saveable),
+            Modal dialog = Modal.prepareToShowMessage(UIUtilities.getComponentForDialog(saveable),
                     I18n.text("Save"), MessageType.QUESTION,
                     MessageFormat.format(I18n.text("Save changes to \"{0}\"?"), saveable.getSaveTitle()));
-            dialog.addButton(I18n.text("Cancel"), StdDialog.CLOSED);
-            dialog.addButton(I18n.text("Discard"), StdDialog.CANCEL);
-            dialog.addButton(I18n.text("Save"), StdDialog.OK);
+            dialog.addButton(I18n.text("Cancel"), Modal.CLOSED);
+            dialog.addButton(I18n.text("Discard"), Modal.CANCEL);
+            dialog.addButton(I18n.text("Save"), Modal.OK);
             dialog.presentToUser();
             switch (dialog.getResult()) {
-            case StdDialog.OK:
+            case Modal.OK:
                 save(saveable);
                 if (saveable.isModified()) {
                     return SaveResult.CANCEL;
                 }
                 return SaveResult.SUCCESS;
-            case StdDialog.CANCEL: // No
+            case Modal.CANCEL: // No
                 return SaveResult.NO_SAVE;
             default:
                 return SaveResult.CANCEL;

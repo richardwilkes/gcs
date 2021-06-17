@@ -18,8 +18,7 @@ import com.trollworks.gcs.pdfview.PDFServer;
 import com.trollworks.gcs.settings.PageRefMappingsWindow;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.Selection;
-import com.trollworks.gcs.ui.widget.StdDialog;
-import com.trollworks.gcs.ui.widget.StdFileDialog;
+import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.OutlineProxy;
@@ -111,7 +110,7 @@ public class OpenPageReferenceCommand extends Command {
             Settings prefs = Settings.getInstance();
             PDFRef   ref   = prefs.lookupPdfRef(id, true);
             if (ref == null) {
-                Path path = StdFileDialog.showOpenDialog(getFocusOwner(), String.format(I18n.text("Locate the PDF file for the prefix \"%s\""), id), FileType.PDF.getFilter());
+                Path path = Modal.presentOpenFileDialog(getFocusOwner(), String.format(I18n.text("Locate the PDF file for the prefix \"%s\""), id), FileType.PDF.getFilter());
                 if (path != null) {
                     ref = new PDFRef(id, path, 0);
                     prefs.putPdfRef(ref);
@@ -122,7 +121,7 @@ public class OpenPageReferenceCommand extends Command {
                 try {
                     PDFServer.showPDF(ref.getPath(), page + ref.getPageToIndexOffset());
                 } catch (Exception exception) {
-                    StdDialog.showError(null, exception.getMessage());
+                    Modal.showError(null, exception.getMessage());
                 }
             }
         }

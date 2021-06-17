@@ -15,10 +15,9 @@ import com.trollworks.gcs.ui.MouseCapture;
 import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.widget.StdPanel;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
-import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Component;
 import java.awt.Cursor;
@@ -43,7 +42,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 
-public class ShowTabsButton extends StdPanel implements MouseListener, MouseMotionListener, ComponentListener, ActionListener {
+public class ShowTabsButton extends Panel implements MouseListener, MouseMotionListener, ComponentListener, ActionListener {
     private static final int MARGIN = 2;
 
     private Set<DockTab> mHidden = new HashSet<>();
@@ -53,7 +52,7 @@ public class ShowTabsButton extends StdPanel implements MouseListener, MouseMoti
 
     public ShowTabsButton() {
         super(null, false);
-        setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Show Hidden Tabs List")));
+        setToolTipText(I18n.text("Show Hidden Tabs List"));
         setCursor(Cursor.getDefaultCursor());
         addMouseListener(this);
         addMouseMotionListener(this);

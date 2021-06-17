@@ -11,17 +11,23 @@
 
 package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.ThemeFont;
+import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.WindowSizeEnforcer;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
+import com.trollworks.gcs.utility.PathUtils;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.FileDialog;
+import java.awt.Frame;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -29,6 +35,11 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.MessageFormat;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
@@ -37,25 +48,26 @@ import javax.swing.JDialog;
 import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
-public class StdDialog extends JDialog {
+public class Modal extends JDialog {
     public static final int       CLOSED = 0;
     public static final int       OK     = 1;
     public static final int       CANCEL = 2;
     public static final int       MARGIN = 20;
     private             Component mOwner;
-    private             StdPanel  mButtons;
-    private             StdButton mOKButton;
-    private             StdButton mCancelButton;
+    private             Panel     mButtons;
+    private             Button    mOKButton;
+    private             Button    mCancelButton;
     private             int       mResult;
     private             int       mInitialFocusAttemptsRemaining;
 
-    public StdDialog(Component owner, String title) {
+    public Modal(Component owner, String title) {
         super(WindowUtils.getWindowForComponent(owner), title, ModalityType.APPLICATION_MODAL);
         setResizable(true);
-        StdPanel content = new StdPanel(new BorderLayout());
-        StdPanel buttons = new StdPanel(new PrecisionLayout().setMargins(MARGIN).setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
-        mButtons = new StdPanel(new PrecisionLayout().setEqualColumns(true).setMargins(0).setHorizontalSpacing(10));
+        Panel content = new Panel(new BorderLayout());
+        Panel buttons = new Panel(new PrecisionLayout().setMargins(MARGIN).setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
+        mButtons = new Panel(new PrecisionLayout().setEqualColumns(true).setMargins(0).setHorizontalSpacing(10));
         buttons.add(mButtons);
         content.add(buttons, BorderLayout.SOUTH);
         setContentPane(content);
@@ -63,11 +75,11 @@ public class StdDialog extends JDialog {
         installActions();
     }
 
-    public StdButton getOKButton() {
+    public Button getOKButton() {
         return mOKButton;
     }
 
-    public StdButton getCancelButton() {
+    public Button getCancelButton() {
         return mCancelButton;
     }
 
@@ -83,7 +95,7 @@ public class StdDialog extends JDialog {
     }
 
     private interface KeyButton {
-        StdButton getButton();
+        Button getButton();
     }
 
     private static class KeyAction extends AbstractAction {
@@ -95,7 +107,7 @@ public class StdDialog extends JDialog {
 
         @Override
         public void actionPerformed(ActionEvent event) {
-            StdButton button = mAccessor.getButton();
+            Button button = mAccessor.getButton();
             if (button != null && SwingUtilities.getRootPane(button) == event.getSource()) {
                 button.click();
             }
@@ -104,7 +116,7 @@ public class StdDialog extends JDialog {
         @Override
         public boolean accept(Object sender) {
             if (sender instanceof JRootPane) {
-                StdButton button = mAccessor.getButton();
+                Button button = mAccessor.getButton();
                 return button != null && button.isEnabled() && button.isShowing();
             }
             return true;
@@ -162,12 +174,12 @@ public class StdDialog extends JDialog {
         return mResult;
     }
 
-    public StdPanel getButtonsPanel() {
+    public Panel getButtonsPanel() {
         return mButtons;
     }
 
-    public StdButton addButton(String title, int value) {
-        StdButton button = addButton(title, (btn) -> {
+    public Button addButton(String title, int value) {
+        Button button = addButton(title, (btn) -> {
             mResult = value;
             setVisible(false);
         });
@@ -179,37 +191,37 @@ public class StdDialog extends JDialog {
         return button;
     }
 
-    public StdButton addButton(String title, StdButton.ClickFunction clickHandler) {
-        StdButton button = new StdButton(title, clickHandler);
+    public Button addButton(String title, Button.ClickFunction clickHandler) {
+        Button button = new Button(title, clickHandler);
         mButtons.add(button, new PrecisionLayoutData().setFillHorizontalAlignment().setMinimumWidth(60));
         ((PrecisionLayout) mButtons.getLayout()).setColumns(mButtons.getComponentCount());
         return button;
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    public StdButton addCancelRemainingButton() {
+    public Button addCancelRemainingButton() {
         return addButton(I18n.text("Cancel Remaining"), CLOSED);
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    public StdButton addCancelButton() {
+    public Button addCancelButton() {
         return addButton(I18n.text("Cancel"), CANCEL);
     }
 
-    public StdButton addNoButton() {
+    public Button addNoButton() {
         return addButton(I18n.text("No"), CANCEL);
     }
 
-    public StdButton addApplyButton() {
+    public Button addApplyButton() {
         return addButton(I18n.text("Apply"), OK);
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    public StdButton addOKButton() {
+    public Button addOKButton() {
         return addButton(I18n.text("OK"), OK);
     }
 
-    public StdButton addYesButton() {
+    public Button addYesButton() {
         return addButton(I18n.text("Yes"), OK);
     }
 
@@ -241,7 +253,7 @@ public class StdDialog extends JDialog {
      */
     @SuppressWarnings("UnusedReturnValue")
     public static int showMessage(Component comp, String title, MessageType msgType, Object msg) {
-        StdDialog dialog = prepareToShowMessage(comp, title, msgType, msg);
+        Modal dialog = prepareToShowMessage(comp, title, msgType, msg);
         if (msgType == MessageType.QUESTION) {
             dialog.addCancelButton();
         }
@@ -258,14 +270,14 @@ public class StdDialog extends JDialog {
      *                {@code toString()} will be called on it and the result will be used to create
      *                a label.
      */
-    public static StdDialog prepareToShowMessage(Component comp, String title, MessageType msgType, Object msg) {
-        StdDialog dialog  = new StdDialog(comp, title);
-        StdPanel  content = new StdPanel(new BorderLayout(MARGIN, 0));
+    public static Modal prepareToShowMessage(Component comp, String title, MessageType msgType, Object msg) {
+        Modal dialog  = new Modal(comp, title);
+        Panel content = new Panel(new BorderLayout(MARGIN, 0));
         content.setBorder(new EmptyBorder(MARGIN, MARGIN, 0, MARGIN));
         String  iconValue = msgType.getText();
         boolean hasIcon   = !iconValue.isEmpty();
         if (hasIcon) {
-            StdPanel        left = new StdPanel(new BorderLayout());
+            Panel           left = new Panel(new BorderLayout());
             FontAwesomeIcon icon = new FontAwesomeIcon(iconValue, ThemeFont.LABEL_PRIMARY.getFont().getSize() * 3, 0, null);
             icon.setForeground(msgType.getColor());
             left.add(icon, BorderLayout.NORTH);
@@ -275,13 +287,130 @@ public class StdDialog extends JDialog {
         if (msg instanceof Component) {
             msgComp = (Component) msg;
         } else {
-            StdLabel label = new StdLabel(msg.toString());
-            label.setTruncationPolicy(StdLabel.WRAP);
+            Label label = new Label(msg.toString());
+            label.setTruncationPolicy(Label.WRAP);
             msgComp = label;
         }
         content.add(msgComp, BorderLayout.CENTER);
         dialog.getContentPane().add(content, BorderLayout.CENTER);
         dialog.setResizable(false);
         return dialog;
+    }
+
+    /**
+     * Creates a new open file dialog.
+     *
+     * @param comp    The parent {@link Component} of the dialog. May be {@code null}.
+     * @param title   The title to use. May be {@code null}.
+     * @param filters The file filters to make available. If there are none, then the {@code
+     *                showAllFilter} flag will be forced to {@code true}.
+     * @return The chosen {@link Path} or {@code null}.
+     */
+    public static Path presentOpenFileDialog(Component comp, String title, FileNameExtensionFilter... filters) {
+        FileDialog dialog = createFileDialog(comp, title, FileDialog.LOAD, null, filters);
+        Path       path   = presentFileDialog(dialog);
+        if (path != null) {
+            Settings.getInstance().addRecentFile(path);
+        }
+        return path;
+    }
+
+    /**
+     * Creates a new save file dialog.
+     *
+     * @param comp          The parent {@link Component} of the dialog. May be {@code null}.
+     * @param title         The title to use. May be {@code null}.
+     * @param suggestedFile The suggested file to save as. May be {@code null}.
+     * @param filters       The file filters to make available. If there are none, then the {@code
+     *                      showAllFilter} flag will be forced to {@code true}.
+     * @return The chosen {@link Path} or {@code null}.
+     */
+    public static Path presentSaveFileDialog(Component comp, String title, Path suggestedFile, FileNameExtensionFilter... filters) {
+        FileDialog dialog = createFileDialog(comp, title, FileDialog.SAVE, suggestedFile != null ? suggestedFile.getParent() : null, filters);
+        if (suggestedFile != null) {
+            dialog.setFile(PathUtils.getLeafName(suggestedFile, true));
+        }
+        Path path = presentFileDialog(dialog);
+        if (path != null) {
+            if (!PathUtils.isNameValidForFile(PathUtils.getLeafName(path, true))) {
+                showError(comp, I18n.text("Invalid file name"));
+                return null;
+            }
+            if (filters != null) {
+                FileNameExtensionFilter filter = filters[0];
+                if (!filter.accept(path.toFile())) {
+                    path = path.resolveSibling(PathUtils.enforceExtension(PathUtils.getLeafName(path, true), filter.getExtensions()[0]));
+                }
+            }
+            if (Files.exists(path)) {
+                Modal question = prepareToShowMessage(comp,
+                        I18n.text("Already Exists!"),
+                        MessageType.QUESTION,
+                        String.format(I18n.text("%s already exists!\nDo you want to overwrite it?"), path));
+                question.addCancelButton();
+                question.addButton(I18n.text("Replace"), OK);
+                question.presentToUser();
+                if (question.getResult() == CANCEL) {
+                    return null;
+                }
+            }
+            Settings.getInstance().addRecentFile(path);
+        }
+        return path;
+    }
+
+    /**
+     * @param comp      The {@link Component} to use for determining the parent {@link Frame} or
+     *                  {@link java.awt.Dialog}.
+     * @param name      The name of the file that cannot be opened.
+     * @param throwable The {@link Throwable}, if any, that caused the failure.
+     */
+    public static void showCannotOpenMsg(Component comp, String name, Throwable throwable) {
+        if (throwable != null) {
+            Log.error(throwable);
+            showError(comp, MessageFormat.format(I18n.text("Unable to open \"{0}\"\n{1}"), name, throwable.getMessage()));
+        } else {
+            showError(comp, MessageFormat.format(I18n.text("Unable to open \"{0}\"."), name));
+        }
+    }
+
+    private static FileDialog createFileDialog(Component comp, String title, int mode, Path startingDir, FileNameExtensionFilter... filters) {
+        FileDialog dialog;
+        Window     window = UIUtilities.getSelfOrAncestorOfType(comp, Window.class);
+        if (window instanceof Frame) {
+            dialog = new FileDialog((Frame) window, title, mode);
+        } else {
+            dialog = new FileDialog((java.awt.Dialog) window, title, mode);
+        }
+        if (startingDir == null) {
+            startingDir = Settings.getInstance().getLastDir();
+        }
+        dialog.setDirectory(startingDir.toString());
+        if (filters != null) {
+            dialog.setFilenameFilter((File dir, String name) -> {
+                File f = new File(dir, name);
+                for (FileNameExtensionFilter filter : filters) {
+                    if (filter.accept(f)) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+        }
+        return dialog;
+    }
+
+    private static Path presentFileDialog(FileDialog dialog) {
+        dialog.setVisible(true);
+        String dir = dialog.getDirectory();
+        if (dir == null) {
+            return null;
+        }
+        Settings.getInstance().setLastDir(Paths.get(dir).normalize().toAbsolutePath());
+        String file = dialog.getFile();
+        if (file == null) {
+            return null;
+        }
+        return Paths.get(dir, file).normalize().toAbsolutePath();
     }
 }

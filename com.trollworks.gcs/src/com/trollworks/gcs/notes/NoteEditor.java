@@ -18,8 +18,8 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.ScrollContent;
-import com.trollworks.gcs.ui.widget.StdLabel;
-import com.trollworks.gcs.ui.widget.StdPanel;
+import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
 
@@ -53,15 +53,15 @@ public class NoteEditor extends RowEditor<Note> {
 
     @Override
     protected void addContentSelf(ScrollContent outer) {
-        StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+        Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
         outer.add(wrapper, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
 
         mDescriptionField = new MultiLineTextField(mRow.getDescription(), null, null);
-        wrapper.add(new StdLabel(I18n.text("Description"), mDescriptionField), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
+        wrapper.add(new Label(I18n.text("Description"), mDescriptionField), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
         wrapper.add(mDescriptionField, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
 
         mReferenceField = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, mRow.getReference(), PageRefCell.getStdToolTip(I18n.text("note")));
-        wrapper.add(new StdLabel(I18n.text("Page Reference"), mReferenceField), new PrecisionLayoutData().setFillHorizontalAlignment());
+        wrapper.add(new Label(I18n.text("Page Reference"), mReferenceField), new PrecisionLayoutData().setFillHorizontalAlignment());
         wrapper.add(mReferenceField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 

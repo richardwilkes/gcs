@@ -23,8 +23,8 @@ import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.scale.Scales;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
-import com.trollworks.gcs.ui.widget.StdScrollPanel;
-import com.trollworks.gcs.ui.widget.StdToolbar;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
+import com.trollworks.gcs.ui.widget.Toolbar;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
@@ -51,7 +51,7 @@ import javax.swing.event.DocumentListener;
 
 /** A list from a library. */
 public abstract class LibraryDockable extends DataFileDockable implements RowFilter, DocumentListener, JumpToSearchTarget, RetargetableFocus, DataChangeListener, Runnable {
-    private StdToolbar        mToolbar;
+    private Toolbar           mToolbar;
     private JComboBox<Scales> mScaleCombo;
     private EditorField       mFilterField;
     private JComboBox<String> mCategoryCombo;
@@ -70,7 +70,7 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         LibraryContent content = new LibraryContent(mOutline);
         LibraryHeader  header  = new LibraryHeader(mOutline.getHeaderPanel());
         Settings       prefs   = Settings.getInstance();
-        mToolbar = new StdToolbar();
+        mToolbar = new Toolbar();
         mLockButton = new FontAwesomeButton(outlineModel.isLocked() ? "\uf023" : "\uf13e", I18n.text("Switches between allowing editing and not"), () -> {
             OutlineModel model = mOutline.getModel();
             model.setLocked(!model.isLocked());
@@ -94,7 +94,7 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         createFilterField();
         createCategoryCombo();
         add(mToolbar, BorderLayout.NORTH);
-        StdScrollPanel scroller = new StdScrollPanel(header, content);
+        ScrollPanel scroller = new ScrollPanel(header, content);
         scroller.getViewport().setBackground(ThemeColor.PAGE_VOID);
         add(scroller, BorderLayout.CENTER);
         prefs.addChangeListener(this);
@@ -128,8 +128,8 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         return null;
     }
 
-    /** @return The {@link StdToolbar}. */
-    public StdToolbar getToolbar() {
+    /** @return The {@link Toolbar}. */
+    public Toolbar getToolbar() {
         return mToolbar;
     }
 
@@ -150,7 +150,7 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
                 Text.makeFiller(10, 'M'), I18n.text("Enter text here to narrow the list to only those rows containing matching items"));
         mFilterField.setHint(I18n.text("Filter"));
         mFilterField.getDocument().addDocumentListener(this);
-        mToolbar.add(mFilterField, StdToolbar.LAYOUT_FILL);
+        mToolbar.add(mFilterField, Toolbar.LAYOUT_FILL);
     }
 
     private void createCategoryCombo() {

@@ -47,8 +47,8 @@ public final class Workspace extends BaseWindow implements SignificantFrame, Jum
 
     private Workspace() {
         super("GCS");
-        Container  content = getContentPane();
-        StdToolbar toolbar = new StdToolbar();
+        Container content = getContentPane();
+        Toolbar   toolbar = new Toolbar();
         content.add(toolbar, BorderLayout.NORTH);
         mDock = new Dock();
         content.add(mDock, BorderLayout.CENTER);

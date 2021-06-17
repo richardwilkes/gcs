@@ -19,7 +19,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.ContentPanel;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
-import com.trollworks.gcs.ui.widget.StdLabel;
+import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.ID;
 import com.trollworks.gcs.utility.text.Text;
@@ -200,7 +200,7 @@ public class AttributePanel extends ContentPanel {
         if (protoValue == null) {
             layoutData.setGrabHorizontalSpace(true);
         }
-        container.add(new StdLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        container.add(new Label(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
         container.add(field, layoutData);
         return field;
     }

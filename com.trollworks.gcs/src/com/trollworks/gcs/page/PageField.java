@@ -18,8 +18,8 @@ import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.widget.Commitable;
+import com.trollworks.gcs.ui.widget.ToolTip;
 import com.trollworks.gcs.utility.Platform;
-import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -33,6 +33,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.ParseException;
 import javax.swing.JFormattedTextField;
+import javax.swing.JToolTip;
 import javax.swing.plaf.basic.BasicTextFieldUI;
 
 /** A generic field for a page. */
@@ -89,7 +90,7 @@ public class PageField extends JFormattedTextField implements PropertyChangeList
         setEnabled(editable);
         setForeground(editable ? ThemeColor.ON_EDITABLE : color);
         setDisabledTextColor(color);
-        setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+        setToolTipText(tooltip);
         addPropertyChangeListener("value", this);
         addActionListener(this);
         setFocusLostBehavior(COMMIT_OR_REVERT);
@@ -167,5 +168,10 @@ public class PageField extends JFormattedTextField implements PropertyChangeList
         } catch (ParseException exception) {
             invalidEdit();
         }
+    }
+
+    @Override
+    public JToolTip createToolTip() {
+        return new ToolTip(this);
     }
 }

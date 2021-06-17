@@ -21,9 +21,9 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.ActionPanel;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.ui.widget.ScrollContent;
-import com.trollworks.gcs.ui.widget.StdScrollPanel;
-import com.trollworks.gcs.ui.widget.StdDialog;
-import com.trollworks.gcs.ui.widget.StdLabel;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
+import com.trollworks.gcs.ui.widget.Modal;
+import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 
@@ -63,13 +63,13 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
         int                length = rows.length;
         for (int i = 0; i < length; i++) {
             ListRow   row     = rows[i];
-            StdDialog dialog  = new StdDialog(owner, MessageFormat.format(I18n.text("Edit {0}"), row.getRowType()));
+            Modal     dialog  = new Modal(owner, MessageFormat.format(I18n.text("Edit {0}"), row.getRowType()));
             Container content = dialog.getContentPane();
             if (i != length - 1) {
                 int      remaining = length - i - 1;
-                String   msg       = remaining == 1 ? I18n.text("1 item remaining to be edited.") : MessageFormat.format(I18n.text("{0} items remaining to be edited."), Integer.valueOf(remaining));
-                StdLabel label     = new StdLabel(msg, SwingConstants.CENTER);
-                label.setBorder(new EmptyBorder(StdDialog.MARGIN, 0, 0, 0));
+                String msg   = remaining == 1 ? I18n.text("1 item remaining to be edited.") : MessageFormat.format(I18n.text("{0} items remaining to be edited."), Integer.valueOf(remaining));
+                Label  label = new Label(msg, SwingConstants.CENTER);
+                label.setBorder(new EmptyBorder(Modal.MARGIN, 0, 0, 0));
                 content.add(label, BorderLayout.NORTH);
                 dialog.addCancelRemainingButton();
             }
@@ -79,7 +79,7 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
             dialog.addApplyButton();
             dialog.presentToUser();
             switch (dialog.getResult()) {
-            case StdDialog.OK:
+            case Modal.OK:
                 RowUndo undo = new RowUndo(row);
                 if (editor.applyChanges()) {
                     if (undo.finish()) {
@@ -87,7 +87,7 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
                     }
                 }
                 break;
-            case StdDialog.CLOSED:
+            case Modal.CLOSED:
                 i = length;
                 break;
             default:
@@ -121,8 +121,8 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
         if (!mIsEditable) {
             UIUtilities.disableControls(outer);
         }
-        StdScrollPanel scroller   = new StdScrollPanel(outer);
-        int            scrollSize = scroller.getVerticalScrollBar().getPreferredSize().width;
+        ScrollPanel scroller   = new ScrollPanel(outer);
+        int         scrollSize = scroller.getVerticalScrollBar().getPreferredSize().width;
         scroller.setPreferredSize(adjustSize(outer.getPreferredSize(), scrollSize));
         Dimension size = adjustSize(outer.getMinimumSize(), scrollSize);
         if (size.height > 128) {
@@ -154,7 +154,7 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
     }
 
     protected static void addLabel(Container parent, String text, JComponent linkedTo) {
-        parent.add(new StdLabel(text, linkedTo), new PrecisionLayoutData().setFillHorizontalAlignment());
+        parent.add(new Label(text, linkedTo), new PrecisionLayoutData().setFillHorizontalAlignment());
     }
 
     /**

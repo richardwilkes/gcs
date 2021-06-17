@@ -16,7 +16,6 @@ import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.scale.Scale;
-import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -35,7 +34,7 @@ import javax.swing.SwingConstants;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 
-public class FontAwesomeButton extends StdPanel implements MouseListener, MouseMotionListener, ComponentListener, AncestorListener {
+public class FontAwesomeButton extends Panel implements MouseListener, MouseMotionListener, ComponentListener, AncestorListener {
     private String   mText;
     private Runnable mClickFunction;
     private int      mSize;
@@ -50,7 +49,7 @@ public class FontAwesomeButton extends StdPanel implements MouseListener, MouseM
 
     public FontAwesomeButton(String text, int size, String tooltip, Runnable clickFunction) {
         super(null, false);
-        setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+        setToolTipText(tooltip);
         setText(text);
         setSize(size);
         setCursor(Cursor.getDefaultCursor());

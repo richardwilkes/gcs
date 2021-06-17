@@ -36,7 +36,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import javax.swing.SwingConstants;
 
-public class StdCheckbox extends StdPanel implements MouseListener, MouseMotionListener, KeyListener, FocusListener {
+public class Checkbox extends Panel implements MouseListener, MouseMotionListener, KeyListener, FocusListener {
     private String        mText;
     private ThemeFont     mThemeFont;
     private ClickFunction mClickFunction;
@@ -45,10 +45,10 @@ public class StdCheckbox extends StdPanel implements MouseListener, MouseMotionL
     private boolean       mChecked;
 
     public interface ClickFunction {
-        void checkboxClicked(StdCheckbox checkbox);
+        void checkboxClicked(Checkbox checkbox);
     }
 
-    public StdCheckbox(String text, boolean checked, ClickFunction clickFunction) {
+    public Checkbox(String text, boolean checked, ClickFunction clickFunction) {
         super(null, false);
         setThemeFont(ThemeFont.LABEL_PRIMARY);
         setText(text);

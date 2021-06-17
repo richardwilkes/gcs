@@ -26,12 +26,12 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.border.CompoundBorder;
 
-public class StdToolbar extends StdPanel {
+public class Toolbar extends Panel {
     public static final  String LAYOUT_FILL         = "fill";
     public static final  String LAYOUT_EXTRA_BEFORE = "extra_before";
     private static final int    GAP                 = 8;
 
-    public StdToolbar() {
+    public Toolbar() {
         super(new ToolbarLayout());
         setOpaque(true);
         setBorder(new CompoundBorder(new LineBorder(ThemeColor.DIVIDER, 0, 0, 1, 0), new EmptyBorder(0, GAP, 0, GAP)));

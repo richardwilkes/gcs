@@ -20,9 +20,9 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
-import com.trollworks.gcs.ui.widget.StdCheckbox;
-import com.trollworks.gcs.ui.widget.StdLabel;
-import com.trollworks.gcs.ui.widget.StdPanel;
+import com.trollworks.gcs.ui.widget.Checkbox;
+import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
@@ -61,9 +61,9 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
     protected EditorField                mPointsField;
     protected EditorField                mLevelField;
     protected EditorField                mReferenceField;
-    protected PrereqsPanel               mPrereqs;
-    protected StdCheckbox                mHasTechLevel;
-    protected EditorField                mTechLevel;
+    protected PrereqsPanel mPrereqs;
+    protected Checkbox     mHasTechLevel;
+    protected EditorField  mTechLevel;
     protected String                     mSavedTechLevel;
     protected MeleeWeaponListEditor      mMeleeWeapons;
     protected RangedWeaponListEditor     mRangedWeapons;
@@ -189,7 +189,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
      */
     protected <E> JComboBox<E> createComboBox(Container parent, E[] items, Object selection, String tooltip) {
         JComboBox<E> combo = new JComboBox<>(items);
-        combo.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+        combo.setToolTipText(tooltip);
         combo.setSelectedItem(selection);
         combo.addActionListener(this);
         combo.setMaximumRowCount(items.length);
@@ -211,11 +211,11 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
 
         GURPSCharacter character = mRow.getCharacter();
         if (character != null) {
-            StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+            Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
 
-            mHasTechLevel = new StdCheckbox(I18n.text("Tech Level"), hasTL, this::clickedOnHasTechLevel);
+            mHasTechLevel = new Checkbox(I18n.text("Tech Level"), hasTL, this::clickedOnHasTechLevel);
             String tlTooltip = I18n.text("Whether this spell requires tech level specialization, and, if so, at what tech level it was learned");
-            mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(tlTooltip));
+            mHasTechLevel.setToolTipText(tlTooltip);
             wrapper.add(mHasTechLevel);
 
             mTechLevel = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, mSavedTechLevel, "9999", tlTooltip);
@@ -228,13 +228,13 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
             }
         } else {
             mTechLevel = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, mSavedTechLevel, "9999", null);
-            mHasTechLevel = new StdCheckbox(I18n.text("Tech Level Required"), hasTL, this::clickedOnHasTechLevel);
-            mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Whether this spell requires tech level specialization")));
+            mHasTechLevel = new Checkbox(I18n.text("Tech Level Required"), hasTL, this::clickedOnHasTechLevel);
+            mHasTechLevel.setToolTipText(I18n.text("Whether this spell requires tech level specialization"));
             parent.add(mHasTechLevel);
         }
     }
 
-    private void clickedOnHasTechLevel(StdCheckbox checkbox) {
+    private void clickedOnHasTechLevel(Checkbox checkbox) {
         boolean enabled = checkbox.isChecked();
         mTechLevel.setEnabled(enabled);
         if (enabled) {
@@ -273,15 +273,15 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
     public void changedUpdate(DocumentEvent event) {
         Document doc = event.getDocument();
         if (doc == mNameField.getDocument()) {
-            StdLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
+            Label.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
         } else if (doc == mClassField.getDocument()) {
-            StdLabel.setErrorMessage(mClassField, mClassField.getText().trim().isEmpty() ? I18n.text("The class field may not be empty") : null);
+            Label.setErrorMessage(mClassField, mClassField.getText().trim().isEmpty() ? I18n.text("The class field may not be empty") : null);
         } else if (doc == mCastingCostField.getDocument()) {
-            StdLabel.setErrorMessage(mCastingCostField, mCastingCostField.getText().trim().isEmpty() ? I18n.text("The casting cost field may not be empty") : null);
+            Label.setErrorMessage(mCastingCostField, mCastingCostField.getText().trim().isEmpty() ? I18n.text("The casting cost field may not be empty") : null);
         } else if (doc == mCastingTimeField.getDocument()) {
-            StdLabel.setErrorMessage(mCastingTimeField, mCastingTimeField.getText().trim().isEmpty() ? I18n.text("The casting time field may not be empty") : null);
+            Label.setErrorMessage(mCastingTimeField, mCastingTimeField.getText().trim().isEmpty() ? I18n.text("The casting time field may not be empty") : null);
         } else if (doc == mDurationField.getDocument()) {
-            StdLabel.setErrorMessage(mDurationField, mDurationField.getText().trim().isEmpty() ? I18n.text("The duration field may not be empty") : null);
+            Label.setErrorMessage(mDurationField, mDurationField.getText().trim().isEmpty() ? I18n.text("The duration field may not be empty") : null);
         }
     }
 

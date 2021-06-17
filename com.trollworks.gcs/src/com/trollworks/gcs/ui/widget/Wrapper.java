@@ -18,7 +18,7 @@ import java.awt.Insets;
 import java.awt.LayoutManager2;
 
 /** A wrapper panel which is initially transparent. */
-public class Wrapper extends StdPanel {
+public class Wrapper extends Panel {
     private int mWidth  = -1;
     private int mHeight = -1;
 

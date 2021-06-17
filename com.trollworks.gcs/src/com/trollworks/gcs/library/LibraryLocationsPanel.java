@@ -16,10 +16,10 @@ import com.trollworks.gcs.menu.library.ChangeLibraryLocationsCommand;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.MessageType;
-import com.trollworks.gcs.ui.widget.StdButton;
-import com.trollworks.gcs.ui.widget.StdDialog;
-import com.trollworks.gcs.ui.widget.StdPanel;
-import com.trollworks.gcs.ui.widget.StdScrollPanel;
+import com.trollworks.gcs.ui.widget.Button;
+import com.trollworks.gcs.ui.widget.Modal;
+import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.Workspace;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
 import com.trollworks.gcs.utility.I18n;
@@ -35,9 +35,9 @@ import java.util.List;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 
-public final class LibraryLocationsPanel extends StdPanel implements Scrollable {
+public final class LibraryLocationsPanel extends Panel implements Scrollable {
     private List<LibraryFields> mFields;
-    private StdButton           mApplyButton;
+    private Button              mApplyButton;
 
     public static void showDialog() {
         // Close all documents
@@ -47,7 +47,7 @@ public final class LibraryLocationsPanel extends StdPanel implements Scrollable 
                 CloseHandler handler = (CloseHandler) dockable;
                 if (handler.mayAttemptClose()) {
                     if (!handler.attemptClose()) {
-                        StdDialog.showWarning(null, I18n.text("No documents may be open when setting library locations."));
+                        Modal.showWarning(null, I18n.text("No documents may be open when setting library locations."));
                         return;
                     }
                 }
@@ -59,8 +59,8 @@ public final class LibraryLocationsPanel extends StdPanel implements Scrollable 
 
         // Ask the user to make changes
         LibraryLocationsPanel panel    = new LibraryLocationsPanel();
-        StdScrollPanel        scroller = new StdScrollPanel(panel);
-        StdDialog dialog = StdDialog.prepareToShowMessage(Workspace.get(),
+        ScrollPanel           scroller = new ScrollPanel(panel);
+        Modal dialog = Modal.prepareToShowMessage(Workspace.get(),
                 ChangeLibraryLocationsCommand.INSTANCE.getTitle(), MessageType.QUESTION, scroller);
         dialog.setResizable(true);
         dialog.addButton(I18n.text("Add"), (btn) -> panel.addLibraryRow());
@@ -69,7 +69,7 @@ public final class LibraryLocationsPanel extends StdPanel implements Scrollable 
         panel.mFields.get(0).contentsChanged();
         dialog.presentToUser();
         int result = dialog.getResult();
-        if (result == StdDialog.OK) {
+        if (result == Modal.OK) {
             Library.LIBRARIES.clear();
             for (LibraryFields fields : panel.mFields) {
                 switch (fields.getLibraryType()) {
@@ -94,7 +94,7 @@ public final class LibraryLocationsPanel extends StdPanel implements Scrollable 
         }
 
         // Check to see if the new library locations need updating
-        if (result == StdDialog.OK) {
+        if (result == Modal.OK) {
             UpdateChecker.check();
         }
     }

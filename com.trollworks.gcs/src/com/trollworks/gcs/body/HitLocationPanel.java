@@ -20,7 +20,7 @@ import com.trollworks.gcs.ui.widget.ContentPanel;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
-import com.trollworks.gcs.ui.widget.StdLabel;
+import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.utility.Dice;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.ID;
@@ -190,14 +190,14 @@ public class HitLocationPanel extends ContentPanel implements DocumentListener {
         if (protoValue == null) {
             layoutData.setGrabHorizontalSpace(true);
         }
-        container.add(new StdLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        container.add(new Label(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
         container.add(field, layoutData);
         return field;
     }
 
     private MultiLineTextField addTextArea(Container container, String title, String tooltip, String text) {
         MultiLineTextField area = new MultiLineTextField(text, tooltip, this);
-        container.add(new StdLabel(title, area), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
+        container.add(new Label(title, area), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
         container.add(area, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return area;
     }

@@ -15,7 +15,7 @@ import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.widget.StdFileDialog;
+import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.PathUtils;
 
@@ -56,7 +56,7 @@ public final class SaveAsCommand extends Command {
             if (name.isBlank()) {
                 name = "untitled";
             }
-            Path path = StdFileDialog.showSaveDialog(UIUtilities.getComponentForDialog(saveable),
+            Path path = Modal.presentSaveFileDialog(UIUtilities.getComponentForDialog(saveable),
                     I18n.text("Save As…"), Settings.getInstance().getLastDir().resolve(name),
                     saveable.getFileType().getFilter());
             if (saveable.saveTo(path)) {

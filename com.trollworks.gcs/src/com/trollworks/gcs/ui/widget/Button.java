@@ -41,7 +41,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.SwingConstants;
 
-public class StdButton extends StdPanel implements MouseListener, MouseMotionListener, KeyListener, FocusListener {
+public class Button extends Panel implements MouseListener, MouseMotionListener, KeyListener, FocusListener {
     private String        mText;
     private ThemeFont     mThemeFont;
     private ClickFunction mClickFunction;
@@ -49,10 +49,10 @@ public class StdButton extends StdPanel implements MouseListener, MouseMotionLis
     private boolean       mPressed;
 
     public interface ClickFunction {
-        void buttonClicked(StdButton button);
+        void buttonClicked(Button button);
     }
 
-    public StdButton(String text, ClickFunction clickFunction) {
+    public Button(String text, ClickFunction clickFunction) {
         super(null, false);
         setThemeFont(ThemeFont.BUTTON);
         setText(text);

@@ -81,16 +81,16 @@ public enum ConditionalModifierColumn {
     public String getToolTip(ConditionalModifierRow row) {
         List<Integer> bonuses = row.getAmounts();
         List<String>  sources = row.getSources();
+        StringBuilder buffer  = new StringBuilder();
         int           count   = bonuses.size();
-        if (count == 1) {
-            return Numbers.formatWithForcedSign(bonuses.get(0).longValue()) + " " + sources.get(0);
-        }
-        StringBuilder buffer = new StringBuilder();
-        buffer.append("<html><body><table>");
         for (int i = 0; i < count; i++) {
-            buffer.append(String.format("<tr><td>&bull;</td><td align='right'>%s</td><td>%s</td></tr>", Numbers.formatWithForcedSign(bonuses.get(i).longValue()), sources.get(i)));
+            if (i != 0) {
+                buffer.append('\n');
+            }
+            buffer.append(Numbers.formatWithForcedSign(bonuses.get(i).longValue()));
+            buffer.append(" ");
+            buffer.append(sources.get(i));
         }
-        buffer.append("</table></body></html>");
         return buffer.toString();
 
     }

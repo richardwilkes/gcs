@@ -38,6 +38,8 @@ public final class ThemeColor extends Color {
     public static final ThemeColor ACTIVE_EDITABLE_BORDER = new ThemeColor("active_editable_border", I18n.text("Active Editable Border"), new Color(0, 0, 192));
     public static final ThemeColor BANDING                = new ThemeColor("banding", I18n.text("Banding"), new Color(235, 235, 220));
     public static final ThemeColor DIVIDER                = new ThemeColor("divider", I18n.text("Divider"), new Color(192, 192, 192));
+    public static final ThemeColor TOOLTIP             = new ThemeColor("tooltip", I18n.text("Tooltip"), new Color(252, 242, 196));
+    public static final ThemeColor ON_TOOLTIP         = new ThemeColor("on_tooltip", I18n.text("On Tooltip"), new Color(0, 0, 0));
 
     public static final ThemeColor HEADER     = new ThemeColor("header", I18n.text("Header"), new Color(43, 43, 43));
     public static final ThemeColor ON_HEADER  = new ThemeColor("on_header", I18n.text("On Header"), new Color(255, 255, 255));

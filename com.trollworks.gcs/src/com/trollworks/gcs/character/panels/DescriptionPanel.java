@@ -19,6 +19,7 @@ import com.trollworks.gcs.character.Profile;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageLabel;
+import com.trollworks.gcs.settings.GeneralSettingsWindow;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
@@ -111,24 +112,12 @@ public class DescriptionPanel extends DropPanel {
                     } while (result.equals(weight));
                     profile.setWeight(result);
                 });
-        createField(wrapper, sheet, FieldFactory.SM, Integer.valueOf(profile.getSizeModifier()), "SM", I18n.text("Size"), I18n.text("The character's size modifier"), (c, v) -> c.getProfile().setSizeModifier(((Integer) v).intValue()));
-        createField(wrapper, sheet, FieldFactory.STRING, profile.getTechLevel(), "character TL", I18n.text("TL"), I18n.text("""
-                <html><body>
-                TL0: Stone Age<br>
-                TL1: Bronze Age<br>
-                TL2: Iron Age<br>
-                TL3: Medieval<br>
-                TL4: Age of Sail<br>
-                TL5: Industrial Revolution<br>
-                TL6: Mechanized Age<br>
-                TL7: Nuclear Age<br>
-                TL8: Digital Age<br>
-                TL9: Microtech Age<br>
-                TL10: Robotic Age<br>
-                TL11: Age of Exotic Matter<br>
-                TL12: Anything Goes
-                </body></html>
-                """), (c, v) -> c.getProfile().setTechLevel((String) v));
+        createField(wrapper, sheet, FieldFactory.SM, Integer.valueOf(profile.getSizeModifier()),
+                "SM", I18n.text("Size"), I18n.text("The character's size modifier"),
+                (c, v) -> c.getProfile().setSizeModifier(((Integer) v).intValue()));
+        createField(wrapper, sheet, FieldFactory.STRING, profile.getTechLevel(), "character TL",
+                I18n.text("TL"), GeneralSettingsWindow.getTechLevelTooltip(),
+                (c, v) -> c.getProfile().setTechLevel((String) v));
         add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         createDivider();

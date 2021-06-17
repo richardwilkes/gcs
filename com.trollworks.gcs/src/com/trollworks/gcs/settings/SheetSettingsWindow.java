@@ -23,14 +23,13 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
-import com.trollworks.gcs.ui.widget.StdButton;
-import com.trollworks.gcs.ui.widget.StdCheckbox;
-import com.trollworks.gcs.ui.widget.StdLabel;
-import com.trollworks.gcs.ui.widget.StdPanel;
-import com.trollworks.gcs.ui.widget.StdScrollPanel;
+import com.trollworks.gcs.ui.widget.Button;
+import com.trollworks.gcs.ui.widget.Checkbox;
+import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.units.WeightUnits;
 
@@ -57,28 +56,28 @@ import javax.swing.event.DocumentListener;
 public final class SheetSettingsWindow extends BaseWindow implements ActionListener, DocumentListener, CloseHandler, DataChangeListener, PageSettingsEditor.ResetPageSettings {
     private static final Map<UUID, SheetSettingsWindow> INSTANCES = new HashMap<>();
     private              GURPSCharacter                 mCharacter;
-    private              SheetSettings                  mSheetSettings;
-    private              StdCheckbox                    mUseMultiplicativeModifiers;
-    private              StdCheckbox                    mUseModifyingDicePlusAdds;
-    private              StdCheckbox                    mUseKnowYourOwnStrength;
-    private              StdCheckbox                    mUseReducedSwing;
-    private              StdCheckbox                    mUseThrustEqualsSwingMinus2;
-    private              StdCheckbox                    mUseSimpleMetricConversions;
-    private              StdCheckbox                    mShowCollegeInSpells;
-    private              StdCheckbox                    mShowDifficulty;
-    private              StdCheckbox                    mShowAdvantageModifierAdj;
-    private              StdCheckbox                    mShowEquipmentModifierAdj;
-    private              StdCheckbox                    mShowSpellAdj;
-    private              StdCheckbox                    mShowTitleInsteadOfNameInPageFooter;
-    private              JComboBox<LengthUnits>         mLengthUnitsCombo;
+    private SheetSettings          mSheetSettings;
+    private Checkbox               mUseMultiplicativeModifiers;
+    private Checkbox               mUseModifyingDicePlusAdds;
+    private Checkbox               mUseKnowYourOwnStrength;
+    private Checkbox               mUseReducedSwing;
+    private Checkbox               mUseThrustEqualsSwingMinus2;
+    private Checkbox               mUseSimpleMetricConversions;
+    private Checkbox               mShowCollegeInSpells;
+    private Checkbox               mShowDifficulty;
+    private Checkbox               mShowAdvantageModifierAdj;
+    private Checkbox               mShowEquipmentModifierAdj;
+    private Checkbox               mShowSpellAdj;
+    private Checkbox               mShowTitleInsteadOfNameInPageFooter;
+    private JComboBox<LengthUnits> mLengthUnitsCombo;
     private              JComboBox<WeightUnits>         mWeightUnitsCombo;
     private              JComboBox<DisplayOption>       mUserDescriptionDisplayCombo;
     private              JComboBox<DisplayOption>       mModifiersDisplayCombo;
     private              JComboBox<DisplayOption>       mNotesDisplayCombo;
     private              JTextArea                      mBlockLayoutField;
-    private              PageSettingsEditor             mPageSettingsEditor;
-    private              StdButton                      mResetButton;
-    private              boolean                        mUpdatePending;
+    private PageSettingsEditor mPageSettingsEditor;
+    private Button             mResetButton;
+    private boolean            mUpdatePending;
 
     /** Displays the sheet settings window. */
     public static void display(GURPSCharacter gchar) {
@@ -136,7 +135,7 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
     }
 
     private void addTopPanel() {
-        StdPanel left = new StdPanel(new PrecisionLayout().setColumns(2).setMargins(0));
+        Panel left = new Panel(new PrecisionLayout().setColumns(2).setMargins(0));
         mShowCollegeInSpells = addCheckbox(left, I18n.text("Show the College column"), null,
                 mSheetSettings.showCollegeInSpells(), (b) -> {
                     mSheetSettings.setShowCollegeInSpells(b.isChecked());
@@ -174,12 +173,12 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
         mUserDescriptionDisplayCombo = addCombo(left, DisplayOption.values(), mSheetSettings.userDescriptionDisplay(), I18n.text("Show User Description"), tooltip);
         mModifiersDisplayCombo = addCombo(left, DisplayOption.values(), mSheetSettings.modifiersDisplay(), I18n.text("Show Modifiers"), tooltip);
         mNotesDisplayCombo = addCombo(left, DisplayOption.values(), mSheetSettings.notesDisplay(), I18n.text("Show Notes"), tooltip);
-        String blockLayoutTooltip = Text.wrapPlainTextForToolTip(I18n.text("Specifies the layout of the various blocks of data on the character sheet"));
+        String blockLayoutTooltip = I18n.text("Specifies the layout of the various blocks of data on the character sheet");
         mBlockLayoutField = new MultiLineTextField(Settings.linesToString(mSheetSettings.blockLayout()), blockLayoutTooltip, this);
-        left.add(new StdLabel(I18n.text("Block Layout")), new PrecisionLayoutData().setHorizontalSpan(2));
+        left.add(new Label(I18n.text("Block Layout")), new PrecisionLayoutData().setHorizontalSpan(2));
         left.add(mBlockLayoutField, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true).setHorizontalSpan(2));
 
-        StdPanel right = new StdPanel(new PrecisionLayout().setColumns(2).setMargins(0));
+        Panel right = new Panel(new PrecisionLayout().setColumns(2).setMargins(0));
         mUseMultiplicativeModifiers = addCheckbox(right,
                 I18n.text("Use Multiplicative Modifiers (PW102; changes point value)"), null,
                 mSheetSettings.useMultiplicativeModifiers(), (b) -> {
@@ -219,41 +218,41 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
         mPageSettingsEditor = new PageSettingsEditor(mSheetSettings.getPageSettings(), this::adjustResetButton, this);
         right.add(mPageSettingsEditor, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment().setHorizontalSpan(2).setTopMargin(10));
 
-        StdPanel panel = new StdPanel(new PrecisionLayout().setColumns(2).setMargins(10).setHorizontalSpacing(10));
+        Panel panel = new Panel(new PrecisionLayout().setColumns(2).setMargins(10).setHorizontalSpacing(10));
         panel.add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
         panel.add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
 
         panel.setSize(panel.getPreferredSize());
 
-        getContentPane().add(new StdScrollPanel(panel), BorderLayout.CENTER);
+        getContentPane().add(new ScrollPanel(panel), BorderLayout.CENTER);
     }
 
     private void addResetPanel() {
-        StdPanel panel = new StdPanel(new FlowLayout(FlowLayout.CENTER));
-        mResetButton = new StdButton(mCharacter == null ? I18n.text("Reset to Factory Settings") : I18n.text("Reset to Defaults"), (btn) -> reset());
+        Panel panel = new Panel(new FlowLayout(FlowLayout.CENTER));
+        mResetButton = new Button(mCharacter == null ? I18n.text("Reset to Factory Settings") : I18n.text("Reset to Defaults"), (btn) -> reset());
         panel.add(mResetButton);
         getContentPane().add(panel, BorderLayout.SOUTH);
     }
 
-    private static void addLabel(StdPanel panel, String title) {
-        panel.add(new StdLabel(title, SwingConstants.RIGHT), new PrecisionLayoutData().setFillHorizontalAlignment());
+    private static void addLabel(Panel panel, String title) {
+        panel.add(new Label(title, SwingConstants.RIGHT), new PrecisionLayoutData().setFillHorizontalAlignment());
     }
 
-    private <E> JComboBox<E> addCombo(StdPanel panel, E[] values, E choice, String title, String tooltip) {
+    private <E> JComboBox<E> addCombo(Panel panel, E[] values, E choice, String title, String tooltip) {
         JComboBox<E> combo = new JComboBox<>(values);
         combo.setOpaque(false);
-        combo.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+        combo.setToolTipText(tooltip);
         combo.setSelectedItem(choice);
         combo.addActionListener(this);
         combo.setMaximumRowCount(combo.getItemCount());
-        panel.add(new StdLabel(title, combo), new PrecisionLayoutData().setFillHorizontalAlignment());
+        panel.add(new Label(title, combo), new PrecisionLayoutData().setFillHorizontalAlignment());
         panel.add(combo);
         return combo;
     }
 
-    private static StdCheckbox addCheckbox(StdPanel panel, String title, String tooltip, boolean checked, StdCheckbox.ClickFunction clickFunction) {
-        StdCheckbox checkbox = new StdCheckbox(title, checked, clickFunction);
-        checkbox.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+    private static Checkbox addCheckbox(Panel panel, String title, String tooltip, boolean checked, Checkbox.ClickFunction clickFunction) {
+        Checkbox checkbox = new Checkbox(title, checked, clickFunction);
+        checkbox.setToolTipText(tooltip);
         panel.add(checkbox, new PrecisionLayoutData().setHorizontalSpan(2));
         return checkbox;
     }

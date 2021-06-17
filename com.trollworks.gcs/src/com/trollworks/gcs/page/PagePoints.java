@@ -13,16 +13,15 @@ package com.trollworks.gcs.page;
 
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.widget.StdLabel;
+import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.text.Text;
 
 /** A points field in a page. */
-public class PagePoints extends StdLabel {
+public class PagePoints extends Label {
     public PagePoints(int points) {
         super("[" + points + "]");
         setThemeFont(ThemeFont.PAGE_LABEL_SECONDARY);
-        setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Points spent")));
+        setToolTipText(I18n.text("Points spent"));
         UIUtilities.setToPreferredSizeOnly(this);
     }
 }

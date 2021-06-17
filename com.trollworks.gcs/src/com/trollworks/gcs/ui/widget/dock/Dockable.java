@@ -13,12 +13,12 @@ package com.trollworks.gcs.ui.widget.dock;
 
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.widget.StdPanel;
+import com.trollworks.gcs.ui.widget.Panel;
 
 import java.awt.LayoutManager;
 
 /** Represents dockable items. */
-public abstract class Dockable extends StdPanel {
+public abstract class Dockable extends Panel {
     /**
      * Creates a new Dockable.
      */

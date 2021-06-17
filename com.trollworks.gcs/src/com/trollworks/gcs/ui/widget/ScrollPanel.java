@@ -16,14 +16,14 @@ import com.trollworks.gcs.ui.ThemeColor;
 import java.awt.Component;
 import javax.swing.JScrollPane;
 
-public class StdScrollPanel extends JScrollPane {
-    public StdScrollPanel(Component view) {
+public class ScrollPanel extends JScrollPane {
+    public ScrollPanel(Component view) {
         super(view);
         setBorder(null);
         getViewport().setBackground(ThemeColor.BACKGROUND);
     }
 
-    public StdScrollPanel(Component header, Component view) {
+    public ScrollPanel(Component header, Component view) {
         this(view);
         setColumnHeaderView(header);
     }

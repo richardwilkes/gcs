@@ -21,13 +21,11 @@ import com.trollworks.gcs.ui.border.TitledBorder;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.scale.Scale;
-import com.trollworks.gcs.ui.widget.StdDialog;
-import com.trollworks.gcs.ui.widget.StdFileDialog;
+import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.PathUtils;
-import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -62,16 +60,8 @@ public class PortraitPanel extends DropPanel implements DropTargetListener {
         super(null, true);
         setBorder(new TitledBorder(ThemeFont.PAGE_LABEL_PRIMARY, I18n.text("Portrait")));
         mSheet = sheet;
-        setToolTipText(Text.wrapPlainTextForToolTip(MessageFormat.format(I18n.text("""
-                <html><body>
-                <b>Double-click</b> to set a character portrait.<br>
-                <br>
-                The dimensions of the chosen picture should be in a ratio of<br>
-                <b>3 pixels wide for every 4 pixels tall</b> to scale without distortion.<br>
-                <br>
-                Dimensions of <b>{0}x{1}</b> are ideal.
-                </body></html>
-                """), Integer.valueOf(Profile.PORTRAIT_WIDTH * 2), Integer.valueOf(Profile.PORTRAIT_HEIGHT * 2))));
+        setToolTipText(MessageFormat.format(I18n.text("Double-click to set a character portrait. The dimensions of the chosen picture should be in a ratio of 3 pixels wide for every 4 pixels tall to scale without distortion. Dimensions of {0}x{1} are ideal."),
+                Integer.valueOf(Profile.PORTRAIT_WIDTH * 2), Integer.valueOf(Profile.PORTRAIT_HEIGHT * 2)));
         if (GraphicsUtilities.hasUserDisplay()) {
             setDropTarget(new DropTarget(this, DnDConstants.ACTION_COPY, this));
         }
@@ -87,12 +77,12 @@ public class PortraitPanel extends DropPanel implements DropTargetListener {
 
     /** Allows the user to choose a portrait for their character. */
     public void choosePortrait() {
-        Path path = StdFileDialog.showOpenDialog(null, I18n.text("Select A Portrait"), FileType.IMAGE_FILTERS);
+        Path path = Modal.presentOpenFileDialog(null, I18n.text("Select A Portrait"), FileType.IMAGE_FILTERS);
         if (path != null) {
             try {
                 mSheet.getCharacter().getProfile().setPortrait(Img.create(path));
             } catch (Exception exception) {
-                StdDialog.showError(this, MessageFormat.format(I18n.text("Unable to load\n{0}."), path.normalize().toAbsolutePath()));
+                Modal.showError(this, MessageFormat.format(I18n.text("Unable to load\n{0}."), path.normalize().toAbsolutePath()));
             }
         }
     }
@@ -156,7 +146,7 @@ public class PortraitPanel extends DropPanel implements DropTargetListener {
                 try {
                     mSheet.getCharacter().getProfile().setPortrait(Img.create(img));
                 } catch (Exception exception) {
-                    StdDialog.showError(this, I18n.text("Unable to load image."));
+                    Modal.showError(this, I18n.text("Unable to load image."));
                 }
                 dtde.dropComplete(true);
                 dtde.getDropTargetContext().getComponent().requestFocus();
@@ -173,7 +163,7 @@ public class PortraitPanel extends DropPanel implements DropTargetListener {
                         mSheet.getCharacter().getProfile().setPortrait(Img.create(file));
                         break;
                     } catch (Exception exception) {
-                        StdDialog.showError(this, MessageFormat.format(I18n.text("Unable to load\n{0}."), PathUtils.getFullPath(file)));
+                        Modal.showError(this, MessageFormat.format(I18n.text("Unable to load\n{0}."), PathUtils.getFullPath(file)));
                     }
                 }
                 dtde.dropComplete(true);

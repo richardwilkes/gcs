@@ -49,6 +49,7 @@ public final class ThemeFont {
     public static final ThemeFont LABEL_SECONDARY;
     public static final ThemeFont FIELD_PRIMARY;
     public static final ThemeFont FIELD_SECONDARY;
+    public static final ThemeFont TOOLTIP;
     public static final ThemeFont PAGE_LABEL_PRIMARY;
     public static final ThemeFont PAGE_LABEL_SECONDARY;
     public static final ThemeFont PAGE_FIELD_PRIMARY;
@@ -98,6 +99,7 @@ public final class ThemeFont {
         LABEL_SECONDARY = new ThemeFont("label.secondary", I18n.text("Secondary Labels"), new Font(ROBOTO, Font.PLAIN, 11));
         FIELD_PRIMARY = new ThemeFont("field.primary", I18n.text("Primary Fields"), new Font(ROBOTO_BLACK, Font.PLAIN, 13));
         FIELD_SECONDARY = new ThemeFont("field.secondary", I18n.text("Secondary Fields"), new Font(ROBOTO, Font.PLAIN, 11));
+        TOOLTIP = new ThemeFont("tooltip", I18n.text("Tooltip"), new Font(ROBOTO, Font.PLAIN, 13));
         PAGE_LABEL_PRIMARY = new ThemeFont("page.label.primary", I18n.text("Page Primary Labels"), new Font(ROBOTO, Font.PLAIN, 9));
         PAGE_LABEL_SECONDARY = new ThemeFont("page.label.secondary", I18n.text("Page Secondary Labels"), new Font(ROBOTO, Font.PLAIN, 8));
         PAGE_FIELD_PRIMARY = new ThemeFont("page.field.primary", I18n.text("Page Primary Fields"), new Font(ROBOTO_BLACK, Font.PLAIN, 9));

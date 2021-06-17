@@ -14,7 +14,7 @@ package com.trollworks.gcs.menu.file;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.settings.Settings;
-import com.trollworks.gcs.ui.widget.StdFileDialog;
+import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.utility.FileProxy;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
@@ -51,7 +51,7 @@ public final class OpenCommand extends Command implements OpenFilesHandler {
 
     /** Ask the user to open a file. */
     public static void open() {
-        Path path = StdFileDialog.showOpenDialog(getFocusOwner(), I18n.text("Open…"), FileType.createFileFilters(I18n.text("All Readable Files"), FileType.ALL_OPENABLE.toArray(new FileType[0])));
+        Path path = Modal.presentOpenFileDialog(getFocusOwner(), I18n.text("Open…"), FileType.createFileFilters(I18n.text("All Readable Files"), FileType.ALL_OPENABLE.toArray(new FileType[0])));
         if (path != null) {
             open(path);
         }
@@ -71,7 +71,7 @@ public final class OpenCommand extends Command implements OpenFilesHandler {
                 }
             } catch (Exception exception) {
                 Log.error(exception);
-                StdFileDialog.showCannotOpenMsg(getFocusOwner(), path.toString(), exception);
+                Modal.showCannotOpenMsg(getFocusOwner(), path.toString(), exception);
             }
         }
     }

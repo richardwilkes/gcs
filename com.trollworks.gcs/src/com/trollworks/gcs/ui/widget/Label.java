@@ -17,7 +17,6 @@ import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.scale.Scale;
-import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -34,7 +33,7 @@ import javax.swing.JComponent;
 import javax.swing.SwingConstants;
 
 /** A simple label replacement that is scalable. */
-public class StdLabel extends StdPanel implements PropertyChangeListener {
+public class Label extends Panel implements PropertyChangeListener {
     /** Pass this constant in to indicate wrapping should be done rather than truncation. */
     public static final  int    WRAP      = -1;
     private static final String ERROR_KEY = "error";
@@ -52,7 +51,7 @@ public class StdLabel extends StdPanel implements PropertyChangeListener {
      *
      * @param text The text to use.
      */
-    public StdLabel(String text) {
+    public Label(String text) {
         super(null, false);
         mText = "";
         mHAlign = SwingConstants.LEFT;
@@ -67,7 +66,7 @@ public class StdLabel extends StdPanel implements PropertyChangeListener {
      * @param text   The text to use.
      * @param hAlign The horizontal alignment to use.
      */
-    public StdLabel(String text, int hAlign) {
+    public Label(String text, int hAlign) {
         this(text);
         mHAlign = hAlign;
     }
@@ -78,7 +77,7 @@ public class StdLabel extends StdPanel implements PropertyChangeListener {
      * @param text     The text to use.
      * @param refersTo The {@link JComponent} to pair with.
      */
-    public StdLabel(String text, JComponent refersTo) {
+    public Label(String text, JComponent refersTo) {
         this(text, SwingConstants.RIGHT);
         setRefersTo(refersTo);
     }
@@ -89,7 +88,7 @@ public class StdLabel extends StdPanel implements PropertyChangeListener {
      * @param icon The icon to use.
      * @param text The text to use.
      */
-    public StdLabel(RetinaIcon icon, String text) {
+    public Label(RetinaIcon icon, String text) {
         this(text);
         mIcon = icon;
     }
@@ -187,7 +186,7 @@ public class StdLabel extends StdPanel implements PropertyChangeListener {
         if (mTruncationPolicy != WRAP) {
             text = TextDrawing.truncateIfNecessary(font, text, bounds.width, mTruncationPolicy);
         }
-        TextDrawing.draw(g, bounds, text, mHAlign, SwingConstants.CENTER);
+        TextDrawing.draw(gc, bounds, text, mHAlign, SwingConstants.CENTER);
     }
 
     @Override
@@ -256,7 +255,7 @@ public class StdLabel extends StdPanel implements PropertyChangeListener {
                 tooltip = mRefersTo.getToolTipText();
             }
         }
-        setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+        setToolTipText(tooltip);
         repaint();
     }
 

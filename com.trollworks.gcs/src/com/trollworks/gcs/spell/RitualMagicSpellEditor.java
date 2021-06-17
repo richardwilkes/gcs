@@ -20,13 +20,12 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.ScrollContent;
-import com.trollworks.gcs.ui.widget.StdLabel;
-import com.trollworks.gcs.ui.widget.StdPanel;
+import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
-import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.weapon.MeleeWeaponListEditor;
 import com.trollworks.gcs.weapon.RangedWeaponListEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
@@ -64,9 +63,9 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
         addSection(outer, mRangedWeapons);
     }
 
-    private StdPanel createTop() {
-        StdPanel panel   = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(4));
-        StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+    private Panel createTop() {
+        Panel panel   = new Panel(new PrecisionLayout().setMargins(0).setColumns(4));
+        Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
         mNameField = createCorrectableField(panel, wrapper, I18n.text("Name"), mRow.getName(), I18n.text("The name of the spell, without any notes"));
         createTechLevelFields(wrapper);
         panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
@@ -82,12 +81,12 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
         mDurationField = createCorrectableField(panel, panel, I18n.text("Duration"), mRow.getDuration(), I18n.text("The duration of the spell once its cast"));
         createPointsFields(panel);
         mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this spell"), this);
-        panel.add(new StdLabel(I18n.text("Notes"), mNotesField), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
+        panel.add(new Label(I18n.text("Notes"), mNotesField), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
-        wrapper = new StdPanel(new PrecisionLayout().setMargins(0));
+        wrapper = new Panel(new PrecisionLayout().setMargins(0));
         mCategoriesField = createField(panel, wrapper, I18n.text("Categories"), mRow.getCategoriesAsString(), I18n.text("The category or categories the spell belongs to (separate multiple categories with a comma)"), 0);
         panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
-        wrapper = new StdPanel(new PrecisionLayout().setMargins(0));
+        wrapper = new Panel(new PrecisionLayout().setMargins(0));
         mReferenceField = createField(panel, wrapper, I18n.text("Page Reference"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.text("spell")), 0);
         panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
         return panel;
@@ -103,7 +102,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
         if (forCharacter) {
             columns += 2;
         }
-        StdPanel panel = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(columns));
+        Panel panel = new Panel(new PrecisionLayout().setMargins(0).setColumns(columns));
         mDifficultyCombo = createComboBox(panel, new SkillDifficulty[]{SkillDifficulty.A, SkillDifficulty.H}, mRow.getDifficulty(), I18n.text("The difficulty of the spell"));
         if (forCharacter || forTemplate) {
             mPointsField = createNumberField(panel, panel, I18n.text("Points"), I18n.text("The number of points spent on this spell"), mRow.getRawPoints(), 9999);
@@ -160,7 +159,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
     protected void recalculateLevel(EditorField levelField) {
         SkillLevel level = RitualMagicSpell.calculateLevel(mRow.getCharacter(), mNameField.getText(), mBaseSkillNameField.getText(), getColleges(), mPowerSourceField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()), getDifficulty(), getPrerequisiteSpellsCount(), getAdjustedPoints());
         levelField.setText(getDisplayLevel(level.getLevel(), level.getRelativeLevel()));
-        levelField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("The spell level and relative spell level to roll against.\n") + level.getToolTip()));
+        levelField.setToolTipText(I18n.text("The spell level and relative spell level to roll against.\n") + level.getToolTip());
     }
 
     @Override
@@ -178,7 +177,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
     public void changedUpdate(DocumentEvent event) {
         Document doc = event.getDocument();
         if (doc == mBaseSkillNameField.getDocument()) {
-            StdLabel.setErrorMessage(mBaseSkillNameField, mBaseSkillNameField.getText().trim().isEmpty() ? I18n.text("The base skill field may not be empty") : null);
+            Label.setErrorMessage(mBaseSkillNameField, mBaseSkillNameField.getText().trim().isEmpty() ? I18n.text("The base skill field may not be empty") : null);
         } else {
             super.changedUpdate(event);
         }

@@ -16,10 +16,9 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
-import com.trollworks.gcs.ui.widget.StdPanel;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
-import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -38,7 +37,7 @@ import java.awt.dnd.DropTargetListener;
 import javax.swing.border.CompoundBorder;
 
 /** The header for a {@link DockContainer}. */
-public class DockHeader extends StdPanel implements LayoutManager, DropTargetListener {
+public class DockHeader extends Panel implements LayoutManager, DropTargetListener {
     private static final int               MINIMUM_TAB_WIDTH = 60;
     private static final int               GAP               = 4;
     private              FontAwesomeButton mMaximizeRestoreButton;
@@ -111,14 +110,14 @@ public class DockHeader extends StdPanel implements LayoutManager, DropTargetLis
     void adjustToMaximizedState() {
         mMaximizeRestoreButton.setClickFunction(this::restore);
         mMaximizeRestoreButton.setText("\uf2d2");
-        mMaximizeRestoreButton.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Restore")));
+        mMaximizeRestoreButton.setToolTipText(I18n.text("Restore"));
     }
 
     /** Called when the owning {@link DockContainer} is restored from the maximized state. */
     void adjustToRestoredState() {
         mMaximizeRestoreButton.setClickFunction(this::maximize);
         mMaximizeRestoreButton.setText("\uf2d0");
-        mMaximizeRestoreButton.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Maximize")));
+        mMaximizeRestoreButton.setToolTipText(I18n.text("Maximize"));
     }
 
     @Override

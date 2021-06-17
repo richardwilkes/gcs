@@ -13,10 +13,11 @@ package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
-import com.trollworks.gcs.utility.text.Text;
 
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -24,11 +25,13 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.text.ParseException;
 import javax.swing.JFormattedTextField;
+import javax.swing.JToolTip;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 
 /** Provides a standard editor field. */
 public class EditorField extends JFormattedTextField implements ActionListener, Commitable {
+    private ThemeFont mThemeFont;
     private String mHint;
 
     public interface ChangeListener {
@@ -60,8 +63,9 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
      */
     public EditorField(AbstractFormatterFactory formatter, ChangeListener listener, int alignment, Object value, Object protoValue, String tooltip) {
         super(formatter, protoValue != null ? protoValue : value);
+        setThemeFont(ThemeFont.FIELD_PRIMARY);
         setHorizontalAlignment(alignment);
-        setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+        setToolTipText(tooltip);
         setFocusLostBehavior(COMMIT_OR_REVERT);
         setForeground(ThemeColor.ON_EDITABLE);
         setBackground(ThemeColor.EDITABLE);
@@ -121,5 +125,28 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
         } catch (ParseException exception) {
             invalidEdit();
         }
+    }
+
+    @Override
+    public JToolTip createToolTip() {
+        return new ToolTip(this);
+    }
+
+    public final ThemeFont getThemeFont() {
+        return mThemeFont;
+    }
+
+    public final void setThemeFont(ThemeFont font) {
+        mThemeFont = font;
+    }
+
+    @Override
+    public final Font getFont() {
+        if (mThemeFont == null) {
+            // If this happens, we are in the constructor and the look & feel is being inited, so
+            // just return whatever was there by default.
+            return super.getFont();
+        }
+        return mThemeFont.getFont();
     }
 }

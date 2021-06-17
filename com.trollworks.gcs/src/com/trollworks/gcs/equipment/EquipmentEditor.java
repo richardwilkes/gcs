@@ -22,9 +22,9 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.ScrollContent;
-import com.trollworks.gcs.ui.widget.StdCheckbox;
-import com.trollworks.gcs.ui.widget.StdLabel;
-import com.trollworks.gcs.ui.widget.StdPanel;
+import com.trollworks.gcs.ui.widget.Checkbox;
+import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.Filtered;
 import com.trollworks.gcs.utility.Fixed6;
@@ -47,9 +47,9 @@ import javax.swing.event.DocumentListener;
 
 /** The detailed editor for {@link Equipment}s. */
 public class EquipmentEditor extends RowEditor<Equipment> implements DocumentListener {
-    private StdCheckbox                 mEquippedCheckBox;
-    private StdCheckbox                 mIgnoreWeightForSkillsCheckBox;
-    private EditorField                 mDescriptionField;
+    private Checkbox    mEquippedCheckBox;
+    private Checkbox    mIgnoreWeightForSkillsCheckBox;
+    private EditorField mDescriptionField;
     private EditorField                 mTechLevelField;
     private EditorField                 mLegalityClassField;
     private EditorField                 mQtyField;
@@ -104,18 +104,18 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
         addSection(outer, mRangedWeapons);
     }
 
-    private StdPanel createTopSection() {
-        StdPanel panel = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+    private Panel createTopSection() {
+        Panel panel = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
         mDescriptionField = createCorrectableField(panel, I18n.text("Name"), mRow.getDescription(), I18n.text("The name/description of the equipment, without any notes"));
         createSecondLineFields(panel);
         createValueAndWeightFields(panel);
         mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this equipment"), this);
-        panel.add(new StdLabel(I18n.text("Notes"), mNotesField), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
+        panel.add(new Label(I18n.text("Notes"), mNotesField), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         mCategoriesField = createField(panel, panel, I18n.text("Categories"), mRow.getCategoriesAsString(), I18n.text("The category or categories the equipment belongs to (separate multiple categories with a comma)"), 0);
 
         boolean    forCharacterOrTemplate = mRow.getCharacter() != null || mRow.getTemplate() != null;
-        StdPanel   wrapper                = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(forCharacterOrTemplate ? 5 : 3));
+        Panel      wrapper                = new Panel(new PrecisionLayout().setMargins(0).setColumns(forCharacterOrTemplate ? 5 : 3));
         JComponent labelParent            = panel;
         if (forCharacterOrTemplate) {
             mUsesField = createIntegerNumberField(panel, wrapper, I18n.text("Uses"), mRow.getUses(),
@@ -131,8 +131,8 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
     }
 
     private void createSecondLineFields(Container parent) {
-        boolean  isContainer = mRow.canHaveChildren();
-        StdPanel wrapper     = new StdPanel(new PrecisionLayout().setMargins(0).setColumns((isContainer ? 4 : 6) + (showEquipmentState() ? 1 : 0)));
+        boolean isContainer = mRow.canHaveChildren();
+        Panel   wrapper     = new Panel(new PrecisionLayout().setMargins(0).setColumns((isContainer ? 4 : 6) + (showEquipmentState() ? 1 : 0)));
         if (!isContainer) {
             mQtyField = createIntegerNumberField(parent, wrapper, I18n.text("Quantity"),
                     mRow.getQuantity(), I18n.text("The number of this equipment present"), 999999999,
@@ -144,9 +144,9 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
         mTechLevelField = createField(isContainer ? parent : wrapper, wrapper, I18n.text("Tech Level"), mRow.getTechLevel(), I18n.text("The first Tech Level this equipment is available at"), 3);
         mLegalityClassField = createField(wrapper, wrapper, I18n.text("Legality Class"), mRow.getLegalityClass(), I18n.text("The legality class of this equipment"), 3);
         if (showEquipmentState()) {
-            mEquippedCheckBox = new StdCheckbox(I18n.text("Equipped"), mRow.isEquipped(), null);
+            mEquippedCheckBox = new Checkbox(I18n.text("Equipped"), mRow.isEquipped(), null);
             mEquippedCheckBox.setEnabled(mIsEditable);
-            mEquippedCheckBox.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Items that are not equipped do not apply any features they may normally contribute to the character.")));
+            mEquippedCheckBox.setToolTipText(I18n.text("Items that are not equipped do not apply any features they may normally contribute to the character."));
             wrapper.add(mEquippedCheckBox);
         }
         parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
@@ -157,7 +157,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
     }
 
     private void createValueAndWeightFields(Container parent) {
-        StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(3));
+        Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(3));
         mContainedValue = mRow.getExtendedValue().sub(mRow.getAdjustedValue().mul(new Fixed6(mRow.getQuantity())));
         Fixed6 protoValue = new Fixed6("9999999.999999", false);
         mValueField = createValueField(parent, wrapper, I18n.text("Value"), mRow.getValue(),
@@ -171,7 +171,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
         mExtValueField.setEnabled(false);
         parent.add(wrapper);
 
-        wrapper = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(4));
+        wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(4));
         mContainedWeight = new WeightValue(mRow.getExtendedWeight(false));
         WeightValue weight = new WeightValue(mRow.getAdjustedWeight(false));
         weight.setValue(weight.getValue().mul(new Fixed6(mRow.getQuantity())));
@@ -185,9 +185,9 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
                 I18n.text("The total weight of this quantity of equipment, plus everything contained by it"),
                 null);
         mExtWeightField.setEnabled(false);
-        mIgnoreWeightForSkillsCheckBox = new StdCheckbox(I18n.text("Ignore for Skills"), mRow.isWeightIgnoredForSkills(), null);
+        mIgnoreWeightForSkillsCheckBox = new Checkbox(I18n.text("Ignore for Skills"), mRow.isWeightIgnoredForSkills(), null);
         mIgnoreWeightForSkillsCheckBox.setEnabled(mIsEditable);
-        mIgnoreWeightForSkillsCheckBox.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("If checked, the weight of this item is not considered when calculating encumbrance penalties for skills")));
+        mIgnoreWeightForSkillsCheckBox.setToolTipText(I18n.text("If checked, the weight of this item is not considered when calculating encumbrance penalties for skills"));
         wrapper.add(mIgnoreWeightForSkillsCheckBox);
         parent.add(wrapper);
     }
@@ -196,7 +196,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
         EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text, tooltip);
         field.setEnabled(mIsEditable);
         field.getDocument().addDocumentListener(this);
-        parent.add(new StdLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        parent.add(new Label(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
         parent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return field;
     }
@@ -204,7 +204,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
     private EditorField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
         EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text, maxChars > 0 ? Text.makeFiller(maxChars, 'M') : null, tooltip);
         field.setEnabled(mIsEditable);
-        labelParent.add(new StdLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        labelParent.add(new Label(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
         PrecisionLayoutData ld = new PrecisionLayoutData().setFillHorizontalAlignment();
         if (maxChars == 0) {
             ld.setGrabHorizontalSpace(true);
@@ -216,7 +216,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
     private EditorField createIntegerNumberField(Container labelParent, Container fieldParent, String title, int value, String tooltip, int maxValue, EditorField.ChangeListener listener) {
         EditorField field = new EditorField(maxValue == 99999 ? FieldFactory.POSINT5 : FieldFactory.POSINT9, listener, SwingConstants.LEFT, Integer.valueOf(value), Integer.valueOf(maxValue), tooltip);
         field.setEnabled(mIsEditable);
-        labelParent.add(new StdLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        labelParent.add(new Label(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
         fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
@@ -224,7 +224,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
     private EditorField createValueField(Container labelParent, Container fieldParent, String title, Fixed6 value, Fixed6 protoValue, String tooltip, EditorField.ChangeListener listener) {
         EditorField field = new EditorField(FieldFactory.FIXED6, listener, SwingConstants.LEFT, value, protoValue, tooltip);
         field.setEnabled(mIsEditable);
-        labelParent.add(new StdLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        labelParent.add(new Label(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
         fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
@@ -232,7 +232,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
     private EditorField createWeightField(Container labelParent, Container fieldParent, String title, WeightValue value, WeightValue protoValue, String tooltip, EditorField.ChangeListener listener) {
         EditorField field = new EditorField(FieldFactory.WEIGHT, listener, SwingConstants.LEFT, value, protoValue, tooltip);
         field.setEnabled(mIsEditable);
-        labelParent.add(new StdLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        labelParent.add(new Label(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
         fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
@@ -299,7 +299,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
 
     private void docChanged(DocumentEvent event) {
         if (mDescriptionField.getDocument() == event.getDocument()) {
-            StdLabel.setErrorMessage(mDescriptionField, mDescriptionField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
+            Label.setErrorMessage(mDescriptionField, mDescriptionField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
         }
     }
 

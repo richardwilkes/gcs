@@ -15,8 +15,8 @@ import com.trollworks.gcs.datafile.DataFileDockable;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.widget.MessageType;
-import com.trollworks.gcs.ui.widget.StdDialog;
-import com.trollworks.gcs.ui.widget.StdLabel;
+import com.trollworks.gcs.ui.widget.Modal;
+import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.Workspace;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
 import com.trollworks.gcs.utility.I18n;
@@ -100,7 +100,7 @@ public final class LibraryUpdater implements Runnable {
                     if (path != null && path.toAbsolutePath().startsWith(prefix)) {
                         if (dfd.mayAttemptClose()) {
                             if (!dfd.attemptClose()) {
-                                StdDialog.showMessage(null, I18n.text("Canceled!"), MessageType.NONE, String.format(I18n.text("GCS %s update was canceled."), title));
+                                Modal.showMessage(null, I18n.text("Canceled!"), MessageType.NONE, String.format(I18n.text("GCS %s update was canceled."), title));
                                 return;
                             }
                         }
@@ -116,7 +116,7 @@ public final class LibraryUpdater implements Runnable {
             JComponent content = (JComponent) dialog.getContentPane();
             content.setLayout(new BorderLayout());
             content.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(10)));
-            content.add(new StdLabel(String.format(I18n.text("Downloading and installing the %s…"), title)), BorderLayout.NORTH);
+            content.add(new Label(String.format(I18n.text("Downloading and installing the %s…"), title)), BorderLayout.NORTH);
             JProgressBar bar = new JProgressBar();
             bar.setIndeterminate(true);
             content.add(bar);
@@ -219,9 +219,9 @@ public final class LibraryUpdater implements Runnable {
         mDialog.dispose();
         String title = mLibrary.getTitle();
         if (mResult == null) {
-            StdDialog.showMessage(null, I18n.text("Success!"), MessageType.NONE, String.format(I18n.text("%s update was successful."), title));
+            Modal.showMessage(null, I18n.text("Success!"), MessageType.NONE, String.format(I18n.text("%s update was successful."), title));
         } else {
-            StdDialog.showError(null, String.format(I18n.text("An error occurred while trying to update the %s:\n\n"), title) + mResult);
+            Modal.showError(null, String.format(I18n.text("An error occurred while trying to update the %s:\n\n"), title) + mResult);
         }
     }
 }

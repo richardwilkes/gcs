@@ -20,9 +20,9 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.ScrollContent;
-import com.trollworks.gcs.ui.widget.StdCheckbox;
-import com.trollworks.gcs.ui.widget.StdLabel;
-import com.trollworks.gcs.ui.widget.StdPanel;
+import com.trollworks.gcs.ui.widget.Checkbox;
+import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
@@ -37,7 +37,7 @@ import javax.swing.event.DocumentListener;
 public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implements DocumentListener {
     private EditorField        mNameField;
     private EditorField        mTechLevelField;
-    private StdCheckbox        mEnabledField;
+    private Checkbox           mEnabledField;
     private MultiLineTextField mNotesField;
     private EditorField        mReferenceField;
     private FeaturesPanel      mFeatures;
@@ -58,15 +58,15 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
 
     @Override
     protected void addContentSelf(ScrollContent outer) {
-        StdPanel panel = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+        Panel panel = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
         if (mRow.canHaveChildren()) {
             mNameField = createCorrectableField(panel, panel, I18n.text("Name"), mRow.getName(), I18n.text("Name of container"));
         } else {
-            StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(4));
+            Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(4));
             mNameField = createCorrectableField(panel, wrapper, I18n.text("Name"), mRow.getName(), I18n.text("Name of Modifier"));
             mTechLevelField = createField(wrapper, wrapper, I18n.text("Tech Level"), mRow.getTechLevel(), I18n.text("The first Tech Level this equipment is available at"), 3);
-            mEnabledField = new StdCheckbox(I18n.text("Enabled"), mRow.isEnabled(), null);
-            mEnabledField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Whether this modifier has been enabled or not")));
+            mEnabledField = new Checkbox(I18n.text("Enabled"), mRow.isEnabled(), null);
+            mEnabledField.setToolTipText(I18n.text("Whether this modifier has been enabled or not"));
             wrapper.add(mEnabledField);
             panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
@@ -75,7 +75,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         }
 
         mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this modifier"), this);
-        panel.add(new StdLabel(I18n.text("Notes"), mNotesField), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
+        panel.add(new Label(I18n.text("Notes"), mNotesField), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         mReferenceField = createField(panel, panel, I18n.text("Ref"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.text("equipment modifier")), 6);
@@ -129,7 +129,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     }
 
     private void createCostAdjustmentFields(Container parent) {
-        StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+        Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
         createCostAdjustmentField(parent, wrapper);
         createCostTypeCombo(wrapper);
         parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
@@ -161,7 +161,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     }
 
     private void createWeightAdjustmentFields(Container parent) {
-        StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(2));
+        Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
         createWeightAdjustmentField(parent, wrapper);
         createWeightTypeCombo(wrapper);
         parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
@@ -172,7 +172,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
                 SwingConstants.LEFT, mRow.getWeightAdjType().format(mRow.getWeightAdjAmount(),
                 mRow.getDataFile().getSheetSettings().defaultWeightUnits(), true),
                 "-999,999,999.00", I18n.text("The weight modifier"));
-        labelParent.add(new StdLabel("", mWeightAmountField));
+        labelParent.add(new Label("", mWeightAmountField));
         fieldParent.add(mWeightAmountField);
     }
 
@@ -195,7 +195,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
 
     private void docChanged(DocumentEvent event) {
         if (mNameField.getDocument() == event.getDocument()) {
-            StdLabel.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
+            Label.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
         }
     }
 

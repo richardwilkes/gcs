@@ -16,18 +16,19 @@ import com.trollworks.gcs.ui.ThemeColor;
 import java.awt.Graphics;
 import java.awt.LayoutManager;
 import javax.swing.JPanel;
+import javax.swing.JToolTip;
 
-public class StdPanel extends JPanel {
-    public StdPanel() {
+public class Panel extends JPanel {
+    public Panel() {
         init(true);
     }
 
-    public StdPanel(LayoutManager layout) {
+    public Panel(LayoutManager layout) {
         super(layout);
         init(true);
     }
 
-    public StdPanel(LayoutManager layout, boolean opaque) {
+    public Panel(LayoutManager layout, boolean opaque) {
         super(layout);
         init(opaque);
     }
@@ -49,5 +50,10 @@ public class StdPanel extends JPanel {
             g.fillRect(0, 0, getWidth(), getHeight());
         }
         g.setColor(getForeground());
+    }
+
+    @Override
+    public JToolTip createToolTip() {
+        return new ToolTip(this);
     }
 }

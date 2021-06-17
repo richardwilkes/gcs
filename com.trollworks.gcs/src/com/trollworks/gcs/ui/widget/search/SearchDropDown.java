@@ -15,7 +15,7 @@ import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.StdScrollPanel;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 
 import java.awt.Component;
 import java.awt.Insets;
@@ -30,7 +30,7 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 
 /** The drop-down panel used by {@link Search}. */
-class SearchDropDown extends StdScrollPanel implements MouseListener {
+class SearchDropDown extends ScrollPanel implements MouseListener {
     private JList<Object>            mList;
     private EditorField              mFilterField;
     private SearchTarget             mTarget;

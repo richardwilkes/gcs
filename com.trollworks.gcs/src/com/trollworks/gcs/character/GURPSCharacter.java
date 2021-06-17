@@ -69,7 +69,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 /** A GURPS character. */
 public class GURPSCharacter extends CollectedModels implements VariableResolver {
@@ -95,8 +94,6 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
     private static final String KEY_SPEED_ADJ = "speed_adj";
     private static final String KEY_ST        = "ST";
     private static final String KEY_WILL_ADJ  = "will_adj";
-
-    private static final Pattern UL_PATTERN = Pattern.compile("<ul>");
 
     private Set<String>                         mVariableResolverExclusions;
     private long                                mModifiedOn;
@@ -1114,26 +1111,26 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
     }
 
     private boolean processPrerequisites(Iterator<? extends ListRow> iterator) {
+        String        prefix      = "- ";
         boolean       needRepaint = false;
         StringBuilder builder     = new StringBuilder();
         while (iterator.hasNext()) {
             ListRow row = iterator.next();
             builder.setLength(0);
-            boolean satisfied = row.getPrereqs().satisfied(this, row, builder, "<li>");
+            boolean satisfied = row.getPrereqs().satisfied(this, row, builder, prefix);
             if (satisfied && row instanceof Technique) {
-                satisfied = ((Technique) row).satisfied(builder, "<li>");
+                satisfied = ((Technique) row).satisfied(builder, prefix);
             }
             if (satisfied && row instanceof RitualMagicSpell) {
-                satisfied = ((RitualMagicSpell) row).satisfied(builder, "<li>");
+                satisfied = ((RitualMagicSpell) row).satisfied(builder, prefix);
             }
             if (row.isSatisfied() != satisfied) {
                 row.setSatisfied(satisfied);
                 needRepaint = true;
             }
             if (!satisfied) {
-                builder.insert(0, "<html><body>" + I18n.text("Reason:") + "<ul>");
-                builder.append("</ul></body></html>");
-                row.setReasonForUnsatisfied(UL_PATTERN.matcher(builder.toString()).replaceAll("<ul style='margin-top: 0; margin-bottom: 0;'>"));
+                builder.insert(0, I18n.text("Prerequisites have not been met:"));
+                row.setReasonForUnsatisfied(builder.toString());
             }
         }
         return needRepaint;

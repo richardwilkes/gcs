@@ -16,7 +16,7 @@ import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.scale.Scale;
-import com.trollworks.gcs.ui.widget.StdPanel;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.utility.PrintProxy;
 
 import java.awt.BorderLayout;
@@ -27,7 +27,7 @@ import java.awt.Insets;
 import java.awt.print.PageFormat;
 
 /** A printer page. */
-public class Page extends StdPanel {
+public class Page extends Panel {
     private PageOwner mOwner;
 
     /**

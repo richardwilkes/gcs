@@ -23,12 +23,11 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.ScrollContent;
-import com.trollworks.gcs.ui.widget.StdLabel;
-import com.trollworks.gcs.ui.widget.StdPanel;
+import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
-import com.trollworks.gcs.utility.text.Text;
 import com.trollworks.gcs.weapon.MeleeWeaponListEditor;
 import com.trollworks.gcs.weapon.RangedWeaponListEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
@@ -65,10 +64,10 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
         }
     }
 
-    private StdPanel createTop() {
-        boolean  notContainer = !mRow.canHaveChildren();
-        StdPanel panel        = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(4));
-        StdPanel wrapper      = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(notContainer ? 2 : 1));
+    private Panel createTop() {
+        boolean notContainer = !mRow.canHaveChildren();
+        Panel   panel        = new Panel(new PrecisionLayout().setMargins(0).setColumns(4));
+        Panel   wrapper      = new Panel(new PrecisionLayout().setMargins(0).setColumns(notContainer ? 2 : 1));
         mNameField = createCorrectableField(panel, wrapper, I18n.text("Name"), mRow.getName(), I18n.text("The name of the spell, without any notes"));
         if (notContainer) {
             createTechLevelFields(wrapper);
@@ -86,12 +85,12 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
             createPointsFields(panel);
         }
         mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this spell"), this);
-        panel.add(new StdLabel(I18n.text("Notes"), mNotesField), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
+        panel.add(new Label(I18n.text("Notes"), mNotesField), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
-        wrapper = new StdPanel(new PrecisionLayout().setMargins(0));
+        wrapper = new Panel(new PrecisionLayout().setMargins(0));
         mCategoriesField = createField(panel, wrapper, I18n.text("Categories"), mRow.getCategoriesAsString(), I18n.text("The category or categories the spell belongs to (separate multiple categories with a comma)"), 0);
         panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
-        wrapper = new StdPanel(new PrecisionLayout().setMargins(0));
+        wrapper = new Panel(new PrecisionLayout().setMargins(0));
         mReferenceField = createField(panel, wrapper, I18n.text("Page Reference"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.text("spell")), 0);
         panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
         return panel;
@@ -125,9 +124,9 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
         if (forCharacter) {
             columns += 2;
         }
-        StdPanel panel = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(columns));
+        Panel panel = new Panel(new PrecisionLayout().setMargins(0).setColumns(columns));
         mAttributePopup = createComboBox(panel, list.toArray(new AttributeChoice[0]), current, I18n.text("The attribute this spell is based on"));
-        panel.add(new StdLabel("/"));
+        panel.add(new Label("/"));
         mDifficultyCombo = createComboBox(panel, SkillDifficulty.values(), mRow.getDifficulty(), I18n.text("The difficulty of the spell"));
         if (forCharacter || forTemplate) {
             mPointsField = createNumberField(panel, panel, I18n.text("Points"), I18n.text("The number of points spent on this spell"), mRow.getRawPoints(), 9999);
@@ -208,6 +207,6 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
                 attribute, getDifficulty(), getColleges(), mPowerSourceField.getText(),
                 mNameField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()));
         levelField.setText(getDisplayLevel(attribute, level.mLevel, level.mRelativeLevel));
-        levelField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("The spell level and relative spell level to roll against.\n") + level.getToolTip()));
+        levelField.setToolTipText(I18n.text("The spell level and relative spell level to roll against.\n") + level.getToolTip());
     }
 }

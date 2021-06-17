@@ -15,7 +15,7 @@ import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.page.PageSettings;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.widget.StdDialog;
+import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.utility.FileProxy;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.PrintProxy;
@@ -73,7 +73,7 @@ public final class PrintCommand extends Command implements PrintFilesHandler {
                     job.setPrintable(proxy, pageSettings.createPageFormat());
                     job.print();
                 } catch (PrinterException exception) {
-                    StdDialog.showError(UIUtilities.getComponentForDialog(proxy), I18n.text("Printing failed!"));
+                    Modal.showError(UIUtilities.getComponentForDialog(proxy), I18n.text("Printing failed!"));
                 } finally {
                     proxy.setPrinting(false);
                 }

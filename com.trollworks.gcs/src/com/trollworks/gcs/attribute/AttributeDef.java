@@ -100,21 +100,34 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         int                       i = 0;
 
         // Primary attributes
-        m.put("st", new AttributeDef("st", AttributeType.INTEGER, I18n.text("ST"), I18n.text("Strength"), "10", ++i, 10, 10));
-        m.put("dx", new AttributeDef("dx", AttributeType.INTEGER, I18n.text("DX"), I18n.text("Dexterity"), "10", ++i, 20, 0));
-        m.put("iq", new AttributeDef("iq", AttributeType.INTEGER, I18n.text("IQ"), I18n.text("Intelligence"), "10", ++i, 20, 0));
-        m.put("ht", new AttributeDef("ht", AttributeType.INTEGER, I18n.text("HT"), I18n.text("Health"), "10", ++i, 10, 0));
+        m.put("st", new AttributeDef("st", AttributeType.INTEGER, I18n.text("ST"),
+                I18n.text("Strength"), "10", ++i, 10, 10));
+        m.put("dx", new AttributeDef("dx", AttributeType.INTEGER, I18n.text("DX"),
+                I18n.text("Dexterity"), "10", ++i, 20, 0));
+        m.put("iq", new AttributeDef("iq", AttributeType.INTEGER, I18n.text("IQ"),
+                I18n.text("Intelligence"), "10", ++i, 20, 0));
+        m.put("ht", new AttributeDef("ht", AttributeType.INTEGER, I18n.text("HT"),
+                I18n.text("Health"), "10", ++i, 10, 0));
 
         // Secondary attributes
-        m.put("will", new AttributeDef("will", AttributeType.INTEGER, I18n.text("Will"), "", "$iq", ++i, 5, 0));
-        m.put("fright_check", new AttributeDef("fright_check", AttributeType.INTEGER, I18n.text("Fright Check"), "", "$will", ++i, 2, 0));
-        m.put("per", new AttributeDef("per", AttributeType.INTEGER, I18n.text("Per"), I18n.text("Perception"), "$iq", ++i, 5, 0));
-        m.put("vision", new AttributeDef("vision", AttributeType.INTEGER, I18n.text("Vision"), "", "$per", ++i, 2, 0));
-        m.put("hearing", new AttributeDef("hearing", AttributeType.INTEGER, I18n.text("Hearing"), "", "$per", ++i, 2, 0));
-        m.put("taste_smell", new AttributeDef("taste_smell", AttributeType.INTEGER, I18n.text("Taste & Smell"), "", "$per", ++i, 2, 0));
-        m.put("touch", new AttributeDef("touch", AttributeType.INTEGER, I18n.text("Touch"), "", "$per", ++i, 2, 0));
-        m.put("basic_speed", new AttributeDef("basic_speed", AttributeType.DECIMAL, I18n.text("Basic Speed"), "", "($dx+$ht)/4", ++i, 20, 0));
-        m.put("basic_move", new AttributeDef("basic_move", AttributeType.INTEGER, I18n.text("Basic Move"), "", "floor($basic_speed)", ++i, 5, 0));
+        m.put("will", new AttributeDef("will", AttributeType.INTEGER, I18n.text("Will"), "", "$iq",
+                ++i, 5, 0));
+        m.put("fright_check", new AttributeDef("fright_check", AttributeType.INTEGER,
+                I18n.text("Fright Check"), "", "$will", ++i, 2, 0));
+        m.put("per", new AttributeDef("per", AttributeType.INTEGER, I18n.text("Per"),
+                I18n.text("Perception"), "$iq", ++i, 5, 0));
+        m.put("vision", new AttributeDef("vision", AttributeType.INTEGER, I18n.text("Vision"), "",
+                "$per", ++i, 2, 0));
+        m.put("hearing", new AttributeDef("hearing", AttributeType.INTEGER, I18n.text("Hearing"),
+                "", "$per", ++i, 2, 0));
+        m.put("taste_smell", new AttributeDef("taste_smell", AttributeType.INTEGER,
+                I18n.text("Taste & Smell"), "", "$per", ++i, 2, 0));
+        m.put("touch", new AttributeDef("touch", AttributeType.INTEGER, I18n.text("Touch"), "",
+                "$per", ++i, 2, 0));
+        m.put("basic_speed", new AttributeDef("basic_speed", AttributeType.DECIMAL,
+                I18n.text("Basic Speed"), "", "($dx+$ht)/4", ++i, 20, 0));
+        m.put("basic_move", new AttributeDef("basic_move", AttributeType.INTEGER,
+                I18n.text("Basic Move"), "", "floor($basic_speed)", ++i, 5, 0));
 
         // Point pools
         List<ThresholdOps> ops = new ArrayList<>();
@@ -125,16 +138,16 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         List<PoolThreshold> thresholds = new ArrayList<>();
         thresholds.add(new PoolThreshold(-1, 1, 0, I18n.text("Unconscious"), "", ops));
         thresholds.add(new PoolThreshold(0, 1, 0, I18n.text("Collapse"), I18n.text("""
-                <html><body>
-                <b>Roll vs. Will</b> to do anything besides talk or rest; failure causes unconsciousness<br>
-                Each FP you lose below 0 also causes 1 HP of injury<br>
-                Move, Dodge and ST are halved (B426)
-                </body></html>"""), ops));
-        thresholds.add(new PoolThreshold(1, 3, 0, I18n.text("Tired"), I18n.text("Move, Dodge and ST are halved (B426)"), ops));
+                Roll vs. Will to do anything besides talk or rest; failure causes unconsciousness
+                Each FP you lose below 0 also causes 1 HP of injury
+                Move, Dodge and ST are halved (B426)"""), ops));
+        thresholds.add(new PoolThreshold(1, 3, 0, I18n.text("Tired"),
+                I18n.text("Move, Dodge and ST are halved (B426)"), ops));
         thresholds.add(new PoolThreshold(1, 1, -1, I18n.text("Tiring"), "", null));
         thresholds.add(new PoolThreshold(1, 1, 0, I18n.text("Rested"), "", null));
 
-        m.put("fp", new AttributeDef("fp", I18n.text("FP"), I18n.text("Fatigue Points"), "$ht", ++i, 3, 0, thresholds));
+        m.put("fp", new AttributeDef("fp", I18n.text("FP"), I18n.text("Fatigue Points"), "$ht", ++i,
+                3, 0, thresholds));
 
         ops = new ArrayList<>();
         ops.add(ThresholdOps.HALVE_MOVE);
@@ -143,22 +156,21 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         thresholds = new ArrayList<>();
         thresholds.add(new PoolThreshold(-5, 1, 0, I18n.text("Dead"), "", ops));
         for (int j = -4; j < 0; j++) {
-            thresholds.add(new PoolThreshold(j, 1, 0, String.format(I18n.text("Dying #%d"), Integer.valueOf(-j)), String.format(I18n.text("""
-                    <html><body>
-                    <b>Roll vs. HT</b> to avoid death<br>
-                    <b>Roll vs. HT%d</b> every second to avoid falling unconscious<br>
-                    Move and Dodge are halved (B419)
-                    </body></html>"""), Integer.valueOf(j)), ops));
+            thresholds.add(new PoolThreshold(j, 1, 0, String.format(I18n.text("Dying #%d"),
+                    Integer.valueOf(-j)), String.format(I18n.text("""
+                    Roll vs. HT to avoid death
+                    Roll vs. HT%d every second to avoid falling unconscious
+                    Move and Dodge are halved (B419)"""), Integer.valueOf(j)), ops));
         }
         thresholds.add(new PoolThreshold(0, 1, 0, I18n.text("Collapse"), I18n.text("""
-                <html><body>
-                <b>Roll vs. HT</b> every second to avoid falling unconscious<br>
-                Move and Dodge are halved (B419)
-                </body></html>"""), ops));
-        thresholds.add(new PoolThreshold(1, 3, 0, I18n.text("Reeling"), I18n.text("Move and Dodge are halved (B419)"), ops));
+                Roll vs. HT every second to avoid falling unconscious
+                Move and Dodge are halved (B419)"""), ops));
+        thresholds.add(new PoolThreshold(1, 3, 0, I18n.text("Reeling"),
+                I18n.text("Move and Dodge are halved (B419)"), ops));
         thresholds.add(new PoolThreshold(1, 1, -1, I18n.text("Wounded"), "", null));
         thresholds.add(new PoolThreshold(1, 1, 0, I18n.text("Healthy"), "", null));
-        m.put("hp", new AttributeDef("hp", I18n.text("HP"), I18n.text("Hit Points"), "$st", ++i, 2, 10, thresholds));
+        m.put("hp", new AttributeDef("hp", I18n.text("HP"), I18n.text("Hit Points"), "$st", ++i, 2,
+                10, thresholds));
 
         return m;
     }

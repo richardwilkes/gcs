@@ -21,11 +21,11 @@ import com.trollworks.gcs.ui.widget.BandedPanel;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.KeyStrokeDisplay;
 import com.trollworks.gcs.ui.widget.MessageType;
-import com.trollworks.gcs.ui.widget.StdButton;
-import com.trollworks.gcs.ui.widget.StdDialog;
-import com.trollworks.gcs.ui.widget.StdLabel;
-import com.trollworks.gcs.ui.widget.StdPanel;
-import com.trollworks.gcs.ui.widget.StdScrollPanel;
+import com.trollworks.gcs.ui.widget.Button;
+import com.trollworks.gcs.ui.widget.Modal;
+import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 
@@ -45,9 +45,9 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
     private static final String                  NONE = "NONE";
     private static       boolean                 LOADED;
     private static       MenuKeySettingsWindow   INSTANCE;
-    private              BandedPanel             mPanel;
-    private              StdButton               mResetButton;
-    private              Map<StdButton, Command> mMap;
+    private BandedPanel          mPanel;
+    private Button               mResetButton;
+    private Map<Button, Command> mMap;
 
     /** Displays the menu key settings window. */
     public static void display() {
@@ -81,7 +81,7 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
             }
         }
         Container content = getContentPane();
-        content.add(new StdScrollPanel(mPanel), BorderLayout.CENTER);
+        content.add(new ScrollPanel(mPanel), BorderLayout.CENTER);
         content.add(createResetPanel(), BorderLayout.SOUTH);
         adjustResetButton();
         establishSizing();
@@ -97,16 +97,16 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
     }
 
     private void addOne(Command cmd) {
-        StdButton button = new StdButton(KeyStrokeDisplay.getKeyStrokeDisplay(KeyStroke.getKeyStroke('Z', InputEvent.META_DOWN_MASK | InputEvent.ALT_DOWN_MASK | InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK)), (btn) -> {
+        Button button = new Button(KeyStrokeDisplay.getKeyStrokeDisplay(KeyStroke.getKeyStroke('Z', InputEvent.META_DOWN_MASK | InputEvent.ALT_DOWN_MASK | InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK)), (btn) -> {
             Command          command = mMap.get(btn);
-            KeyStrokeDisplay ksd     = new KeyStrokeDisplay(command.getAccelerator());
-            StdDialog        dialog  = StdDialog.prepareToShowMessage(this, I18n.text("Type a keystroke…"), MessageType.QUESTION, ksd);
-            dialog.addButton(I18n.text("Accept"), StdDialog.OK);
+            KeyStrokeDisplay ksd    = new KeyStrokeDisplay(command.getAccelerator());
+            Modal            dialog = Modal.prepareToShowMessage(this, I18n.text("Type a keystroke…"), MessageType.QUESTION, ksd);
+            dialog.addButton(I18n.text("Accept"), Modal.OK);
             dialog.addButton(I18n.text("Clear"), 100);
             dialog.addButton(I18n.text("Reset"), 200);
             dialog.presentToUser();
             switch (dialog.getResult()) {
-            case StdDialog.OK:
+            case Modal.OK:
                 setAccelerator(btn, ksd.getKeyStroke());
                 break;
             case 100: // Clear
@@ -124,13 +124,13 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
         UIUtilities.setToPreferredSizeOnly(button);
         button.setText(KeyStrokeDisplay.getKeyStrokeDisplay(cmd.getAccelerator()));
         mMap.put(button, cmd);
-        StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(4), false);
+        Panel wrapper = new Panel(new PrecisionLayout().setMargins(4), false);
         wrapper.add(button);
         mPanel.add(wrapper);
-        mPanel.add(new StdLabel(cmd.getTitle()));
+        mPanel.add(new Label(cmd.getTitle()));
     }
 
-    private void setAccelerator(StdButton button, KeyStroke ks) {
+    private void setAccelerator(Button button, KeyStroke ks) {
         Command cmd = mMap.get(button);
         cmd.setAccelerator(ks);
         button.setText(KeyStrokeDisplay.getKeyStrokeDisplay(cmd.getAccelerator()));
@@ -144,16 +144,16 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
         prefs.setKeyBindingOverride(key, override);
     }
 
-    private StdPanel createResetPanel() {
-        mResetButton = new StdButton(I18n.text("Reset to Factory Defaults"), (btn) -> {
-            for (Map.Entry<StdButton, Command> entry : mMap.entrySet()) {
-                StdButton button = entry.getKey();
+    private Panel createResetPanel() {
+        mResetButton = new Button(I18n.text("Reset to Factory Defaults"), (btn) -> {
+            for (Map.Entry<Button, Command> entry : mMap.entrySet()) {
+                Button button = entry.getKey();
                 setAccelerator(button, entry.getValue().getOriginalAccelerator());
                 button.invalidate();
             }
             adjustResetButton();
         });
-        StdPanel panel = new StdPanel(new FlowLayout(FlowLayout.CENTER));
+        Panel panel = new Panel(new FlowLayout(FlowLayout.CENTER));
         panel.add(mResetButton);
         return panel;
     }

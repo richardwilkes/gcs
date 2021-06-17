@@ -20,10 +20,9 @@ import com.trollworks.gcs.ui.widget.ContentPanel;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
-import com.trollworks.gcs.ui.widget.StdCheckbox;
-import com.trollworks.gcs.ui.widget.StdLabel;
+import com.trollworks.gcs.ui.widget.Checkbox;
+import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Container;
 import java.util.List;
@@ -164,20 +163,20 @@ public class ThresholdPanel extends ContentPanel implements DocumentListener {
         if (protoValue == null) {
             layoutData.setGrabHorizontalSpace(true);
         }
-        container.add(new StdLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        container.add(new Label(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
         container.add(field, layoutData);
         return field;
     }
 
     private MultiLineTextField addTextArea(Container container, String title, String tooltip, String text) {
         MultiLineTextField area = new MultiLineTextField(text, tooltip, this);
-        container.add(new StdLabel(title, area), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
+        container.add(new Label(title, area), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
         container.add(area, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return area;
     }
 
     private void addCheckbox(Container container, ThresholdOps op) {
-        StdCheckbox checkbox = new StdCheckbox(op.title(), mThreshold.getOps().contains(op), (b) -> {
+        Checkbox checkbox = new Checkbox(op.title(), mThreshold.getOps().contains(op), (b) -> {
             List<ThresholdOps> ops = mThreshold.getOps();
             if (b.isChecked()) {
                 ops.add(op);
@@ -186,7 +185,7 @@ public class ThresholdPanel extends ContentPanel implements DocumentListener {
             }
             mAdjustCallback.run();
         });
-        checkbox.setToolTipText(Text.wrapPlainTextForToolTip(op.toString()));
+        checkbox.setToolTipText(op.toString());
         container.add(checkbox);
     }
 

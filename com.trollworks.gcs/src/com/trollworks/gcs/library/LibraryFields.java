@@ -18,7 +18,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.Separator;
-import com.trollworks.gcs.ui.widget.StdLabel;
+import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Platform;
 
@@ -129,7 +129,7 @@ public class LibraryFields implements DocumentListener {
     private EditorField addLabelAndField(String title, String value, int columns) {
         EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, value, null);
         field.getDocument().addDocumentListener(this);
-        StdLabel label = new StdLabel(title, field);
+        Label label = new Label(title, field);
         mOwner.add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
         mOwner.add(field, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment().setHorizontalSpan(columns));
         mComps.add(label);

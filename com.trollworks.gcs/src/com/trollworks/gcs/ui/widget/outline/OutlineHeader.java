@@ -14,8 +14,7 @@ package com.trollworks.gcs.ui.widget.outline;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.scale.Scale;
-import com.trollworks.gcs.ui.widget.StdPanel;
-import com.trollworks.gcs.utility.text.Text;
+import com.trollworks.gcs.ui.widget.Panel;
 
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -30,7 +29,7 @@ import java.util.List;
 import javax.swing.ToolTipManager;
 
 /** A header panel for use with {@link Outline}. */
-public class OutlineHeader extends StdPanel implements MouseListener, MouseMotionListener {
+public class OutlineHeader extends Panel implements MouseListener, MouseMotionListener {
     private Outline    mOwner;
     private Column     mSortColumn;
     private boolean    mResizeOK;
@@ -224,7 +223,7 @@ public class OutlineHeader extends StdPanel implements MouseListener, MouseMotio
     public String getToolTipText(MouseEvent event) {
         Column column = mOwner.overColumn(event.getX());
         if (column != null) {
-            return Text.wrapPlainTextForToolTip(column.getHeaderCell().getToolTipText(mOwner, event, getColumnBounds(column), null, column));
+            return column.getHeaderCell().getToolTipText(mOwner, event, getColumnBounds(column), null, column);
         }
         return super.getToolTipText(event);
     }

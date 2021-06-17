@@ -22,7 +22,7 @@ import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.scale.ScaleRoot;
-import com.trollworks.gcs.ui.widget.StdPanel;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Outline;
@@ -45,7 +45,7 @@ import java.util.List;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 
-public abstract class CollectedOutlines extends StdPanel implements Runnable, ActionListener, ScaleRoot, Scrollable, DropTargetListener, DataChangeListener {
+public abstract class CollectedOutlines extends Panel implements Runnable, ActionListener, ScaleRoot, Scrollable, DropTargetListener, DataChangeListener {
     private Scale            mScale;
     private AdvantageOutline mAdvantagesOutline;
     private SkillOutline     mSkillsOutline;

@@ -122,7 +122,7 @@ public class ContainedQuantityPrereq extends HasPrereq {
             satisfied = !satisfied;
         }
         if (!satisfied && builder != null) {
-            builder.append(MessageFormat.format(I18n.text("{0}{1} a contained quantity which {2}\n"), prefix, getHasText(), mQuantityCompare));
+            builder.append(MessageFormat.format(I18n.text("\n{0}{1} a contained quantity which {2}"), prefix, getHasText(), mQuantityCompare));
         }
         return satisfied;
     }

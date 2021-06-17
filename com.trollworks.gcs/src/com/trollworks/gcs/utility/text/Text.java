@@ -167,13 +167,6 @@ public final class Text {
         return buffer.toString();
     }
 
-    public static String wrapPlainTextForToolTip(String text) {
-        if (text != null && !text.isEmpty() && !text.startsWith("<html>")) {
-            return "<html><body>" + LINE_FEED_PATTERN.matcher(htmlEscape(wrapToCharacterCount(text, 40))).replaceAll("<br>") + "</body></html>";
-        }
-        return text;
-    }
-
     public static String htmlEscape(String str) {
         if (str == null) {
             return null;

@@ -21,11 +21,10 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.DataModifiedListener;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
-import com.trollworks.gcs.ui.widget.StdLabel;
-import com.trollworks.gcs.ui.widget.StdPanel;
+import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.NumericComparator;
-import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -42,9 +41,9 @@ import java.awt.event.MouseListener;
 import java.awt.geom.Path2D;
 
 /** Provides a tab that contains the {@link Dockable}'s icon, title, and close button, if any. */
-public class DockTab extends StdPanel implements ContainerListener, MouseListener, DragGestureListener, DataModifiedListener, Comparable<DockTab> {
+public class DockTab extends Panel implements ContainerListener, MouseListener, DragGestureListener, DataModifiedListener, Comparable<DockTab> {
     private Dockable mDockable;
-    private StdLabel mTitle;
+    private Label    mTitle;
 
     /**
      * Creates a new DockTab for the specified {@link Dockable}.
@@ -56,7 +55,7 @@ public class DockTab extends StdPanel implements ContainerListener, MouseListene
         mDockable = dockable;
         setBorder(new EmptyBorder(2, 1, 0, 1));
         addContainerListener(this);
-        mTitle = new StdLabel(dockable.getTitleIcon(), getFullTitle());
+        mTitle = new Label(dockable.getTitleIcon(), getFullTitle());
         FontAwesomeButton closeButton = new FontAwesomeButton("\uf057", I18n.text("Close"), this::attemptClose);
         add(mTitle, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHeightHint(Math.max(mTitle.getPreferredSize().height, closeButton.getPreferredSize().height)));
         if (dockable instanceof CloseHandler) {
@@ -66,7 +65,7 @@ public class DockTab extends StdPanel implements ContainerListener, MouseListene
             ((Saveable) dockable).addDataModifiedListener(this);
         }
         addMouseListener(this);
-        setToolTipText(Text.wrapPlainTextForToolTip(dockable.getTitleTooltip()));
+        setToolTipText(dockable.getTitleTooltip());
         DragSource.getDefaultDragSource().createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_MOVE, this);
     }
 
@@ -104,7 +103,7 @@ public class DockTab extends StdPanel implements ContainerListener, MouseListene
     public void updateTitle() {
         mTitle.setText(getFullTitle());
         mTitle.setIcon(mDockable.getTitleIcon());
-        setToolTipText(Text.wrapPlainTextForToolTip(mDockable.getTitleTooltip()));
+        setToolTipText(mDockable.getTitleTooltip());
         mTitle.revalidate();
     }
 

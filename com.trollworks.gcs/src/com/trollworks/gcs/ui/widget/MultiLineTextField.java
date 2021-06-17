@@ -12,21 +12,26 @@
 package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
-import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.FocusEvent;
 import javax.swing.JTextArea;
+import javax.swing.JToolTip;
 import javax.swing.border.CompoundBorder;
 import javax.swing.event.DocumentListener;
 
 public class MultiLineTextField extends JTextArea {
+    private ThemeFont mThemeFont;
+
     public MultiLineTextField(String text, String tooltip, DocumentListener listener) {
         super(text);
-        setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+        setThemeFont(ThemeFont.FIELD_PRIMARY);
+        setToolTipText(tooltip);
         setBorder(new CompoundBorder(new LineBorder(ThemeColor.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
         setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, KeyboardFocusManager.getCurrentKeyboardFocusManager().getDefaultFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
         setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, KeyboardFocusManager.getCurrentKeyboardFocusManager().getDefaultFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS));
@@ -55,5 +60,28 @@ public class MultiLineTextField extends JTextArea {
         } else {
             setBorder(new CompoundBorder(new LineBorder(ThemeColor.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
         }
+    }
+
+    @Override
+    public JToolTip createToolTip() {
+        return new ToolTip(this);
+    }
+
+    public final ThemeFont getThemeFont() {
+        return mThemeFont;
+    }
+
+    public final void setThemeFont(ThemeFont font) {
+        mThemeFont = font;
+    }
+
+    @Override
+    public final Font getFont() {
+        if (mThemeFont == null) {
+            // If this happens, we are in the constructor and the look & feel is being inited, so
+            // just return whatever was there by default.
+            return super.getFont();
+        }
+        return mThemeFont.getFont();
     }
 }

@@ -13,13 +13,13 @@ package com.trollworks.gcs.page;
 
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.ThemeFont;
-import com.trollworks.gcs.ui.widget.StdLabel;
+import com.trollworks.gcs.ui.widget.Label;
 
 import java.awt.Color;
 import javax.swing.JComponent;
 
 /** A label for a field in a page. */
-public class PageLabel extends StdLabel {
+public class PageLabel extends Label {
     /**
      * Creates a new label.
      *

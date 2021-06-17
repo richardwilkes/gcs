@@ -21,7 +21,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BandedPanel;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
-import com.trollworks.gcs.ui.widget.StdLabel;
+import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.Wrapper;
 import com.trollworks.gcs.utility.Dice;
 import com.trollworks.gcs.utility.I18n;
@@ -95,7 +95,7 @@ public class HitLocationTablePanel extends BandedPanel {
         Wrapper wrapper = new Wrapper(new PrecisionLayout().setColumns(isSubTable() ? 5 : 7).setMargins(0));
         wrapper.add(new FontAwesomeButton("\uf055", I18n.text("Add Hit Location"), this::addHitLocation));
         if (isSubTable()) {
-            wrapper.add(new StdLabel(I18n.text("Sub-Table")), new PrecisionLayoutData().setFillHorizontalAlignment());
+            wrapper.add(new Label(I18n.text("Sub-Table")), new PrecisionLayoutData().setFillHorizontalAlignment());
         } else {
             mFirstField = addField(wrapper,
                     I18n.text("ID"),
@@ -165,7 +165,7 @@ public class HitLocationTablePanel extends BandedPanel {
         if (protoValue == null) {
             layoutData.setGrabHorizontalSpace(true);
         }
-        container.add(new StdLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        container.add(new Label(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
         container.add(field, layoutData);
         return field;
     }

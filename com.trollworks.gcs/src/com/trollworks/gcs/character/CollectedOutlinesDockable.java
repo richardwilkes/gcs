@@ -24,7 +24,7 @@ import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.RitualMagicSpell;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.ui.scale.Scales;
-import com.trollworks.gcs.ui.widget.StdToolbar;
+import com.trollworks.gcs.ui.widget.Toolbar;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Outline;
@@ -56,8 +56,8 @@ public abstract class CollectedOutlinesDockable extends DataFileDockable impleme
         super(dataFile);
     }
 
-    protected StdToolbar createToolbar() {
-        StdToolbar toolbar = new StdToolbar();
+    protected Toolbar createToolbar() {
+        Toolbar toolbar = new Toolbar();
         mScaleCombo = new JComboBox<>(Scales.values());
         mScaleCombo.setSelectedItem(Settings.getInstance().getInitialUIScale());
         mScaleCombo.addActionListener((event) -> {
@@ -69,7 +69,7 @@ public abstract class CollectedOutlinesDockable extends DataFileDockable impleme
         });
         toolbar.add(mScaleCombo);
         mSearch = new Search(this);
-        toolbar.add(mSearch, StdToolbar.LAYOUT_FILL);
+        toolbar.add(mSearch, Toolbar.LAYOUT_FILL);
         add(toolbar, BorderLayout.NORTH);
         return toolbar;
     }

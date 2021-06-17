@@ -19,8 +19,8 @@ import com.trollworks.gcs.ui.MarkdownDocument;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.widget.MessageType;
-import com.trollworks.gcs.ui.widget.StdDialog;
-import com.trollworks.gcs.ui.widget.StdScrollPanel;
+import com.trollworks.gcs.ui.widget.Modal;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.task.Tasks;
 
@@ -81,7 +81,7 @@ public final class UpdateChecker implements Runnable {
             try {
                 Desktop.getDesktop().browse(new URI(GCS.WEB_SITE));
             } catch (Exception exception) {
-                StdDialog.showError(null, exception.getMessage());
+                Modal.showError(null, exception.getMessage());
             }
         }
     }
@@ -172,14 +172,14 @@ public final class UpdateChecker implements Runnable {
                 markdown.setBackground(ThemeColor.BACKGROUND);
                 markdown.setForeground(ThemeColor.ON_BACKGROUND);
                 markdown.setEditable(false);
-                StdDialog dialog = StdDialog.prepareToShowMessage(null,
+                Modal dialog = Modal.prepareToShowMessage(null,
                         getAppResult(),
                         MessageType.WARNING,
-                        new StdScrollPanel(markdown));
-                dialog.addButton(I18n.text("Ignore"), StdDialog.CANCEL);
-                dialog.addButton(I18n.text("Update"), StdDialog.OK);
+                        new ScrollPanel(markdown));
+                dialog.addButton(I18n.text("Ignore"), Modal.CANCEL);
+                dialog.addButton(I18n.text("Update"), Modal.OK);
                 dialog.presentToUser();
-                if (dialog.getResult() == StdDialog.OK) {
+                if (dialog.getResult() == Modal.OK) {
                     goToUpdate();
                 }
                 return;

@@ -19,10 +19,10 @@ import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.MessageType;
 import com.trollworks.gcs.ui.widget.Separator;
-import com.trollworks.gcs.ui.widget.StdButton;
-import com.trollworks.gcs.ui.widget.StdDialog;
-import com.trollworks.gcs.ui.widget.StdLabel;
-import com.trollworks.gcs.ui.widget.StdPanel;
+import com.trollworks.gcs.ui.widget.Button;
+import com.trollworks.gcs.ui.widget.Modal;
+import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
@@ -41,10 +41,10 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** Asks the user to name items that have been marked to be customized. */
-public final class Namer extends StdPanel implements DocumentListener {
+public final class Namer extends Panel implements DocumentListener {
     private ListRow           mRow;
     private List<EditorField> mFields;
-    private StdButton         mApplyButton;
+    private Button            mApplyButton;
 
     /**
      * Brings up a modal naming dialog for each row in the list.
@@ -70,7 +70,7 @@ public final class Namer extends StdPanel implements DocumentListener {
         for (int i = 0; i < count; i++) {
             ListRow row   = rowList.get(i);
             Namer   panel = new Namer(row, setList.get(i), count - i - 1);
-            StdDialog dialog = StdDialog.prepareToShowMessage(owner,
+            Modal dialog = Modal.prepareToShowMessage(owner,
                     MessageFormat.format(I18n.text("Name {0}"), row.getLocalizedName()),
                     MessageType.QUESTION, panel);
             if (i != count - 1) {
@@ -81,13 +81,13 @@ public final class Namer extends StdPanel implements DocumentListener {
             panel.mApplyButton.setEnabled(false);
             dialog.presentToUser();
             switch (dialog.getResult()) {
-            case StdDialog.OK:
+            case Modal.OK:
                 panel.applyChanges();
                 modified = true;
                 break;
-            case StdDialog.CANCEL:
+            case Modal.CANCEL:
                 break;
-            case StdDialog.CLOSED:
+            case Modal.CLOSED:
             default:
                 return modified;
             }
@@ -99,7 +99,7 @@ public final class Namer extends StdPanel implements DocumentListener {
         super(new PrecisionLayout().setColumns(2));
         mRow = row;
         mFields = new ArrayList<>();
-        StdLabel header = new StdLabel(Text.truncateIfNecessary(row.toString(), 80, SwingConstants.CENTER));
+        Label header = new Label(Text.truncateIfNecessary(row.toString(), 80, SwingConstants.CENTER));
         header.setThemeFont(ThemeFont.HEADER);
         add(header, new PrecisionLayoutData().setMiddleHorizontalAlignment().setHorizontalSpan(2));
         add(new Separator(), new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(2).setBottomMargin(10));
@@ -109,12 +109,12 @@ public final class Namer extends StdPanel implements DocumentListener {
             EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, "", null);
             field.setName(name);
             field.getDocument().addDocumentListener(this);
-            add(new StdLabel(name, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+            add(new Label(name, field), new PrecisionLayoutData().setFillHorizontalAlignment());
             add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMinimumWidth(200));
             mFields.add(field);
         }
         if (remaining > 0) {
-            StdLabel reminder = new StdLabel(remaining == 1 ? I18n.text("1 item remaining to be named.") :
+            Label reminder = new Label(remaining == 1 ? I18n.text("1 item remaining to be named.") :
                     MessageFormat.format(I18n.text("{0} items remaining to be named."),
                             Integer.valueOf(remaining)));
             reminder.setThemeFont(ThemeFont.LABEL_SECONDARY);

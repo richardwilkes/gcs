@@ -17,8 +17,8 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.Separator;
-import com.trollworks.gcs.ui.widget.StdLabel;
-import com.trollworks.gcs.ui.widget.StdPanel;
+import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.units.LengthUnits;
@@ -28,7 +28,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JComboBox;
 import javax.swing.SwingConstants;
 
-public class PageSettingsEditor extends StdPanel {
+public class PageSettingsEditor extends Panel {
     private static final Fixed6                     HUNDRED = new Fixed6(100);
     private              PageSettings               mSettings;
     private              Runnable                   mAdjustCallback;
@@ -47,7 +47,7 @@ public class PageSettingsEditor extends StdPanel {
 
     public PageSettingsEditor(PageSettings settings, Runnable adjustCallback, ResetPageSettings resetCallback) {
         super(new PrecisionLayout().setColumns(4).setMargins(4, 0, 4, 0), false);
-        StdLabel header = new StdLabel(I18n.text("Page Settings"));
+        Label header = new Label(I18n.text("Page Settings"));
         header.setThemeFont(ThemeFont.HEADER);
         add(header, new PrecisionLayoutData().setHorizontalSpan(4));
         add(new Separator(), new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(4));
@@ -88,7 +88,7 @@ public class PageSettingsEditor extends StdPanel {
 
     private EditorField addField(String title, Object value, Object protoValue, EditorField.ChangeListener listener) {
         EditorField field = new EditorField(FieldFactory.LENGTH, listener, SwingConstants.LEFT, value, protoValue, null);
-        add(new StdLabel(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        add(new Label(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
         add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
@@ -100,7 +100,7 @@ public class PageSettingsEditor extends StdPanel {
         combo.addActionListener(listener);
         combo.setMaximumRowCount(combo.getItemCount());
         if (title != null) {
-            add(new StdLabel(title, combo), new PrecisionLayoutData().setFillHorizontalAlignment());
+            add(new Label(title, combo), new PrecisionLayoutData().setFillHorizontalAlignment());
         }
         add(combo);
         return combo;

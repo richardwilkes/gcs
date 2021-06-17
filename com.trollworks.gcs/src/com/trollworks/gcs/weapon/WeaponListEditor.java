@@ -21,8 +21,8 @@ import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
-import com.trollworks.gcs.ui.widget.StdLabel;
-import com.trollworks.gcs.ui.widget.StdPanel;
+import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Outline;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
@@ -48,17 +48,17 @@ import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.Document;
 
 /** An abstract editor for weapon statistics. */
-public abstract class WeaponListEditor extends StdPanel implements ActionListener, EditorField.ChangeListener, DocumentListener {
-    private ListRow                      mOwner;
-    private WeaponOutline                mOutline;
-    private FontAwesomeButton            mAddButton;
-    private FontAwesomeButton            mDeleteButton;
-    private FontAwesomeButton            mDuplicateButton;
-    private StdPanel                     mEditorPanel;
-    private EditorField                  mUsage;
-    private MultiLineTextField           mUsageNotes;
-    private EditorField                  mStrength;
-    private JComboBox<WeaponSTDamage>    mDamageSTCombo;
+public abstract class WeaponListEditor extends Panel implements ActionListener, EditorField.ChangeListener, DocumentListener {
+    private ListRow                   mOwner;
+    private WeaponOutline             mOutline;
+    private FontAwesomeButton         mAddButton;
+    private FontAwesomeButton         mDeleteButton;
+    private FontAwesomeButton         mDuplicateButton;
+    private Panel                     mEditorPanel;
+    private EditorField               mUsage;
+    private MultiLineTextField        mUsageNotes;
+    private EditorField               mStrength;
+    private JComboBox<WeaponSTDamage> mDamageSTCombo;
     private EditorField                  mDamageBase;
     private EditorField                  mDamageArmorDivisor;
     private EditorField                  mDamageType;
@@ -87,11 +87,11 @@ public abstract class WeaponListEditor extends StdPanel implements ActionListene
         mDeleteButton.setEnabled(false);
         mDuplicateButton = new FontAwesomeButton("\uf24d", I18n.text("Duplicate the selected attacks"), () -> mOutline.duplicateSelection());
         mDuplicateButton.setEnabled(false);
-        StdPanel right = new StdPanel(new PrecisionLayout().setMargins(5));
+        Panel right = new Panel(new PrecisionLayout().setMargins(5));
         right.add(mAddButton);
         right.add(mDeleteButton);
         right.add(mDuplicateButton);
-        StdPanel top = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(2).setHorizontalSpacing(1));
+        Panel top = new Panel(new PrecisionLayout().setMargins(0).setColumns(2).setHorizontalSpacing(1));
         top.add(createOutline(weapons, weaponClass), new PrecisionLayoutData().setFillAlignment().setGrabHorizontalSpace(true));
         top.add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
         add(top, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
@@ -129,16 +129,16 @@ public abstract class WeaponListEditor extends StdPanel implements ActionListene
             }
         }
         mOutline.addActionListener(this);
-        StdPanel panel = new StdPanel(new BorderLayout());
+        Panel panel = new Panel(new BorderLayout());
         panel.add(mOutline.getHeaderPanel(), BorderLayout.NORTH);
         panel.add(mOutline, BorderLayout.CENTER);
         return panel;
     }
 
-    private StdPanel createEditorPanel() {
-        StdPanel editorPanel = new StdPanel(new PrecisionLayout().setMargins(5).setColumns(2));
+    private Panel createEditorPanel() {
+        Panel editorPanel = new Panel(new PrecisionLayout().setMargins(5).setColumns(2));
 
-        StdPanel firstPanel = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(3));
+        Panel firstPanel = new Panel(new PrecisionLayout().setMargins(0).setColumns(3));
         mUsage = addField(editorPanel, firstPanel, null, I18n.text("Usage"));
         mStrength = addField(firstPanel, firstPanel, "99**", I18n.text("Minimum Strength"));
         editorPanel.add(firstPanel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
@@ -148,12 +148,12 @@ public abstract class WeaponListEditor extends StdPanel implements ActionListene
         addLabel(editorPanel, notes, mUsageNotes);
         editorPanel.add(mUsageNotes, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-        StdPanel damagePanel = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(8));
+        Panel damagePanel = new Panel(new PrecisionLayout().setMargins(0).setColumns(8));
         mDamageSTCombo = new JComboBox<>(WeaponSTDamage.values());
         mDamageSTCombo.setSelectedItem(WeaponSTDamage.NONE);
         mDamageSTCombo.addActionListener(this);
         mDamageSTCombo.setToolTipText(I18n.text("Strength Damage Type"));
-        editorPanel.add(new StdLabel(I18n.text("Damage")), new PrecisionLayoutData().setFillHorizontalAlignment());
+        editorPanel.add(new Label(I18n.text("Damage")), new PrecisionLayoutData().setFillHorizontalAlignment());
         damagePanel.add(mDamageSTCombo, new PrecisionLayoutData().setFillHorizontalAlignment());
         mDamageBase = addField(null, damagePanel, "9999999d+99x999", I18n.text("Base Damage"));
         addLabel(damagePanel, "(", null);
@@ -164,7 +164,7 @@ public abstract class WeaponListEditor extends StdPanel implements ActionListene
         addLabel(damagePanel, I18n.text("per die"), mDamageModPerDie);
         editorPanel.add(damagePanel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-        StdPanel fragPanel = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(5));
+        Panel fragPanel = new Panel(new PrecisionLayout().setMargins(0).setColumns(5));
         addLabel(editorPanel, I18n.text("Fragmentation"), null);
         mFragDamage = addField(null, fragPanel, "9999999d+99x999", I18n.text("Fragmentation Damage"));
         addLabel(fragPanel, "(", null);
@@ -193,7 +193,7 @@ public abstract class WeaponListEditor extends StdPanel implements ActionListene
     }
 
     protected void addLabel(Container parent, String label, JComponent field) {
-        parent.add(new StdLabel(label, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        parent.add(new Label(label, field), new PrecisionLayoutData().setFillHorizontalAlignment());
     }
 
     protected EditorField addField(Container labelParent, Container fieldParent, String protoValue, String label) {

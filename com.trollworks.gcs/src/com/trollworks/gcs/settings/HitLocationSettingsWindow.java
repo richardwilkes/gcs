@@ -23,10 +23,9 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
-import com.trollworks.gcs.ui.widget.StdDialog;
-import com.trollworks.gcs.ui.widget.StdFileDialog;
-import com.trollworks.gcs.ui.widget.StdPanel;
-import com.trollworks.gcs.ui.widget.StdScrollPanel;
+import com.trollworks.gcs.ui.widget.Modal;
+import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
@@ -59,9 +58,9 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
     private              GURPSCharacter                       mCharacter;
     private              HitLocationTablePanel                mLocationsPanel;
     private              FontAwesomeButton                    mResetButton;
-    private              FontAwesomeButton                    mMenuButton;
-    private              StdScrollPanel                       mScroller;
-    private              boolean                              mUpdatePending;
+    private FontAwesomeButton mMenuButton;
+    private ScrollPanel       mScroller;
+    private boolean           mUpdatePending;
 
     /** Displays the hit location settings window. */
     public static void display(GURPSCharacter gchar) {
@@ -99,7 +98,7 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
         super(createTitle(gchar));
         mCharacter = gchar;
         Container content = getContentPane();
-        StdPanel  header  = new StdPanel(new PrecisionLayout().setColumns(2).setMargins(5, 10, 5, 10).setHorizontalSpacing(10).setHorizontalAlignment(PrecisionLayoutAlignment.END));
+        Panel     header  = new Panel(new PrecisionLayout().setColumns(2).setMargins(5, 10, 5, 10).setHorizontalSpacing(10).setHorizontalAlignment(PrecisionLayoutAlignment.END));
         mResetButton = new FontAwesomeButton("\uf011", mCharacter == null ? I18n.text("Reset to Factory Defaults") : I18n.text("Reset to Global Defaults"), this::reset);
         header.add(mResetButton);
         mMenuButton = new FontAwesomeButton("\uf0c9", I18n.text("Menu"), this::actionMenu);
@@ -114,7 +113,7 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
             }
             adjustResetButton();
         });
-        mScroller = new StdScrollPanel(mLocationsPanel);
+        mScroller = new ScrollPanel(mLocationsPanel);
         content.add(mScroller, BorderLayout.CENTER);
         if (mCharacter != null) {
             mCharacter.addChangeListener(this);
@@ -158,20 +157,20 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
     }
 
     private void importData() {
-        Path path = StdFileDialog.showOpenDialog(this, I18n.text("Import…"),
+        Path path = Modal.presentOpenFileDialog(this, I18n.text("Import…"),
                 FileType.HIT_LOCATIONS.getFilter());
         if (path != null) {
             try {
                 reset(new HitLocationTable(path));
             } catch (IOException ioe) {
                 Log.error(ioe);
-                StdDialog.showError(this, I18n.text("Unable to import hit locations."));
+                Modal.showError(this, I18n.text("Unable to import hit locations."));
             }
         }
     }
 
     private void exportData() {
-        Path path = StdFileDialog.showSaveDialog(this, I18n.text("Export…"),
+        Path path = Modal.presentSaveFileDialog(this, I18n.text("Export…"),
                 Settings.getInstance().getLastDir().resolve(I18n.text("hit_locations")),
                 FileType.HIT_LOCATIONS.getFilter());
         if (path != null) {
@@ -191,7 +190,7 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
             } catch (Exception exception) {
                 Log.error(exception);
                 transaction.abort();
-                StdDialog.showError(this, I18n.text("Unable to export hit locations."));
+                Modal.showError(this, I18n.text("Unable to export hit locations."));
             }
         }
     }

@@ -20,7 +20,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 
-public class Separator extends StdPanel {
+public class Separator extends Panel {
     private boolean mVertical;
 
     public Separator() {

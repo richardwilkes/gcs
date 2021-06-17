@@ -19,7 +19,7 @@ import com.trollworks.gcs.menu.file.Saveable;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.DataModifiedListener;
-import com.trollworks.gcs.ui.widget.StdDialog;
+import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.ui.widget.dock.DockContainer;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
 import com.trollworks.gcs.utility.FileType;
@@ -106,7 +106,7 @@ public abstract class DataFileDockable extends Dockable implements CloseHandler,
             getDockContainer().updateTitle(this);
             return true;
         }
-        StdDialog.showError(this, I18n.text(String.format("An error occurred while trying to save the file to:\n%s", path)));
+        Modal.showError(this, I18n.text(String.format("An error occurred while trying to save the file to:\n%s", path)));
         return false;
     }
 
@@ -147,16 +147,12 @@ public abstract class DataFileDockable extends Dockable implements CloseHandler,
     @Override
     public String getTitleTooltip() {
         StringBuilder buffer = new StringBuilder();
-        buffer.append("<html><body><b>");
         buffer.append(getTitle());
-        buffer.append("</b>");
         Path path = getBackingFile();
         if (path != null) {
-            buffer.append("<br><font size='-2'>");
+            buffer.append("\n");
             buffer.append(path.normalize().toAbsolutePath());
-            buffer.append("</font>");
         }
-        buffer.append("</body></html>");
         return buffer.toString();
     }
 }

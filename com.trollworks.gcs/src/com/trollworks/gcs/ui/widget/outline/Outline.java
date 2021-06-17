@@ -25,13 +25,12 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.widget.ActionPanel;
-import com.trollworks.gcs.ui.widget.StdScrollPanel;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.dock.Dock;
 import com.trollworks.gcs.ui.widget.dock.DockableTransferable;
 import com.trollworks.gcs.utility.Geometry;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
-import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
@@ -1427,7 +1426,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                 mSelectOnMouseUp = -1;
                 if (mDividerDrag != null && allowColumnResize()) {
                     dragColumnDivider(x);
-                    if (UIUtilities.getAncestorOfType(this, StdScrollPanel.class) != null) {
+                    if (UIUtilities.getAncestorOfType(this, ScrollPanel.class) != null) {
                         Point pt = event.getPoint();
                         if (!(event.getSource() instanceof Outline)) {
                             // Column resizing is occurring in the header, most likely
@@ -1934,7 +1933,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         if (column != null) {
             Row row = overRow(event.getY());
             if (row != null) {
-                return Text.wrapPlainTextForToolTip(column.getRowCell(row).getToolTipText(this, event, getCellBounds(row, column), row, column));
+                return column.getRowCell(row).getToolTipText(this, event, getCellBounds(row, column), row, column);
             }
         }
         return super.getToolTipText(event);
@@ -2604,8 +2603,8 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
 
     @Override
     public Insets getAutoscrollInsets() {
-        int            margin      = Scale.get(this).scale(AUTO_SCROLL_MARGIN);
-        StdScrollPanel scrollPanel = UIUtilities.getAncestorOfType(this, StdScrollPanel.class);
+        int         margin      = Scale.get(this).scale(AUTO_SCROLL_MARGIN);
+        ScrollPanel scrollPanel = UIUtilities.getAncestorOfType(this, ScrollPanel.class);
         if (scrollPanel != null) {
             Rectangle bounds = scrollPanel.getViewport().getViewRect();
             return new Insets(bounds.y + margin, bounds.x + margin, getHeight() - (bounds.y + bounds.height) + margin, getWidth() - (bounds.x + bounds.width) + margin);

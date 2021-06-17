@@ -25,19 +25,20 @@ import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.units.WeightUnits;
 
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /** A prerequisite list. */
 public class PrereqList extends Prereq {
-    public static final  String KEY_ROOT    = "prereq_list";
-    private static final String KEY_WHEN_TL = "when_tl";
-    private static final String KEY_ALL     = "all";
-    private static final String KEY_PREREQS = "prereqs";
+    public static final  String  KEY_ROOT          = "prereq_list";
+    private static final String  KEY_WHEN_TL       = "when_tl";
+    private static final String  KEY_ALL           = "all";
+    private static final String  KEY_PREREQS       = "prereqs";
+    private static final Pattern LINE_FEED_MATCHER = Pattern.compile("\n");
 
     private IntegerCriteria mWhenTLCriteria;
     private List<Prereq>    mPrereqs;
@@ -244,13 +245,16 @@ public class PrereqList extends Prereq {
             }
         }
         if (localBuilder != null && !localBuilder.isEmpty()) {
-            localBuilder.insert(0, "<ul>");
-            localBuilder.append("</ul>");
+            String indented = LINE_FEED_MATCHER.matcher(localBuilder.toString()).replaceAll("\n\u00a0\u00a0");
+            localBuilder.setLength(0);
+            localBuilder.append(indented);
         }
 
         boolean satisfied = satisfiedCount == total || !requiresAll && satisfiedCount > 0;
         if (!satisfied && localBuilder != null) {
-            builder.append(MessageFormat.format(requiresAll ? I18n.text("{0}Requires all of:\n") : I18n.text("{0}Requires at least one of:\n"), prefix));
+            builder.append("\n");
+            builder.append(prefix);
+            builder.append(requiresAll ? I18n.text("Requires all of:") : I18n.text("Requires at least one of:"));
             builder.append(localBuilder);
         }
         return satisfied;

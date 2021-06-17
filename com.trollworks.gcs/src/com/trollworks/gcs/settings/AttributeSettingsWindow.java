@@ -25,10 +25,9 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
-import com.trollworks.gcs.ui.widget.StdDialog;
-import com.trollworks.gcs.ui.widget.StdFileDialog;
-import com.trollworks.gcs.ui.widget.StdPanel;
-import com.trollworks.gcs.ui.widget.StdScrollPanel;
+import com.trollworks.gcs.ui.widget.Modal;
+import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
@@ -67,9 +66,9 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
     private              GURPSCharacter                     mCharacter;
     private              AttributeListPanel                 mListPanel;
     private              FontAwesomeButton                  mResetButton;
-    private              FontAwesomeButton                  mMenuButton;
-    private              StdScrollPanel                     mScroller;
-    private              boolean                            mUpdatePending;
+    private FontAwesomeButton mMenuButton;
+    private ScrollPanel       mScroller;
+    private boolean           mUpdatePending;
 
     /** Displays the attribute settings window. */
     public static void display(GURPSCharacter gchar) {
@@ -107,7 +106,7 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
         super(createTitle(gchar));
         mCharacter = gchar;
         Container content = getContentPane();
-        StdPanel  header  = new StdPanel(new PrecisionLayout().setColumns(3).setMargins(5, 10, 5, 10).setHorizontalSpacing(10).setHorizontalAlignment(PrecisionLayoutAlignment.END));
+        Panel     header  = new Panel(new PrecisionLayout().setColumns(3).setMargins(5, 10, 5, 10).setHorizontalSpacing(10).setHorizontalAlignment(PrecisionLayoutAlignment.END));
         header.add(new FontAwesomeButton("\uf055", I18n.text("Add Attribute"), () -> mListPanel.addAttribute()), new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.BEGINNING));
         mResetButton = new FontAwesomeButton("\uf011", mCharacter == null ? I18n.text("Reset to Factory Defaults") : I18n.text("Reset to Global Defaults"), this::reset);
         header.add(mResetButton);
@@ -122,7 +121,7 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
                 mCharacter.notifyOfChange();
             }
         });
-        mScroller = new StdScrollPanel(mListPanel);
+        mScroller = new ScrollPanel(mListPanel);
         content.add(mScroller, BorderLayout.CENTER);
         adjustResetButton();
         if (mCharacter != null) {
@@ -193,7 +192,7 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
     }
 
     private void importData() {
-        Path path = StdFileDialog.showOpenDialog(this, I18n.text("Import…"),
+        Path path = Modal.presentOpenFileDialog(this, I18n.text("Import…"),
                 FileType.ATTRIBUTE_SETTINGS.getFilter());
         if (path != null) {
             try {
@@ -201,13 +200,13 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
                 reset(set.getAttributes());
             } catch (IOException ioe) {
                 Log.error(ioe);
-                StdDialog.showError(this, I18n.text("Unable to import attribute settings."));
+                Modal.showError(this, I18n.text("Unable to import attribute settings."));
             }
         }
     }
 
     private void exportData() {
-        Path path = StdFileDialog.showSaveDialog(this, I18n.text("Export…"),
+        Path path = Modal.presentSaveFileDialog(this, I18n.text("Export…"),
                 Settings.getInstance().getLastDir().resolve(I18n.text("attribute_settings")),
                 FileType.ATTRIBUTE_SETTINGS.getFilter());
         if (path != null) {
@@ -223,7 +222,7 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
             } catch (Exception exception) {
                 Log.error(exception);
                 transaction.abort();
-                StdDialog.showError(this, I18n.text("Unable to export attribute settings."));
+                Modal.showError(this, I18n.text("Unable to export attribute settings."));
             }
         }
     }

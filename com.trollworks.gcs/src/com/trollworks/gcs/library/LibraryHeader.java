@@ -16,12 +16,12 @@ import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.scale.ScaleRoot;
-import com.trollworks.gcs.ui.widget.StdPanel;
+import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.outline.OutlineHeader;
 
 import java.awt.BorderLayout;
 
-public class LibraryHeader extends StdPanel implements ScaleRoot {
+public class LibraryHeader extends Panel implements ScaleRoot {
     private Scale mScale;
 
     public LibraryHeader(OutlineHeader header) {

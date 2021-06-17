@@ -37,7 +37,7 @@ import javax.swing.UIManager;
 import javax.swing.border.CompoundBorder;
 
 /** Displays and captures keystrokes typed. */
-public class KeyStrokeDisplay extends StdLabel implements KeyListener, FocusListener {
+public class KeyStrokeDisplay extends Label implements KeyListener, FocusListener {
     private static final Pattern   PLUS_PATTERN = Pattern.compile("\\+");
     private              KeyStroke mKeyStroke;
 

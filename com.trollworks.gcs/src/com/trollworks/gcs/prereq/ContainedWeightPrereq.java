@@ -120,7 +120,7 @@ public class ContainedWeightPrereq extends HasPrereq {
             satisfied = !satisfied;
         }
         if (!satisfied && builder != null) {
-            builder.append(MessageFormat.format(I18n.text("{0}{1} a contained weight which {2}\n"), prefix, getHasText(), mWeightCompare));
+            builder.append(MessageFormat.format(I18n.text("\n{0}{1} a contained weight which {2}"), prefix, getHasText(), mWeightCompare));
         }
         return satisfied;
     }

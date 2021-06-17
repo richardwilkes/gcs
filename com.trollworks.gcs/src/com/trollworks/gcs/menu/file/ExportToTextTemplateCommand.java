@@ -18,8 +18,7 @@ import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.settings.QuickExport;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.widget.StdDialog;
-import com.trollworks.gcs.ui.widget.StdFileDialog;
+import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.PathUtils;
 
@@ -49,7 +48,7 @@ public class ExportToTextTemplateCommand extends Command {
                 name = "untitled";
             }
             String ext  = PathUtils.getExtension(mTemplatePath);
-            Path   path = StdFileDialog.showSaveDialog(UIUtilities.getComponentForDialog(dockable), getTitle(), Settings.getInstance().getLastDir().resolve(name), new FileNameExtensionFilter(ext + I18n.text(" Files"), ext));
+            Path   path = Modal.presentSaveFileDialog(UIUtilities.getComponentForDialog(dockable), getTitle(), Settings.getInstance().getLastDir().resolve(name), new FileNameExtensionFilter(ext + I18n.text(" Files"), ext));
             if (path != null) {
                 performExport(dockable, mTemplatePath, path);
             }
@@ -60,7 +59,7 @@ public class ExportToTextTemplateCommand extends Command {
         if (new TextTemplate(dockable.getSheet()).export(exportPath, templatePath)) {
             dockable.recordQuickExport(new QuickExport(templatePath, exportPath));
         } else {
-            StdDialog.showError(dockable, String.format(I18n.text("An error occurred while trying to export the sheet as %s."), PathUtils.getLeafName(templatePath, false)));
+            Modal.showError(dockable, String.format(I18n.text("An error occurred while trying to export the sheet as %s."), PathUtils.getLeafName(templatePath, false)));
         }
     }
 }

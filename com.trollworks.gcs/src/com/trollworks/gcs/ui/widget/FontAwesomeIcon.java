@@ -14,7 +14,6 @@ package com.trollworks.gcs.ui.widget;
 import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.scale.Scale;
-import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Dimension;
 import java.awt.Font;
@@ -23,14 +22,14 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import javax.swing.SwingConstants;
 
-public class FontAwesomeIcon extends StdPanel {
+public class FontAwesomeIcon extends Panel {
     private String mText;
     private int    mSize;
     private int    mMargin;
 
     public FontAwesomeIcon(String text, int size, int margin, String tooltip) {
         super(null, false);
-        setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
+        setToolTipText(tooltip);
         setText(text);
         setSize(size);
         setMargin(margin);

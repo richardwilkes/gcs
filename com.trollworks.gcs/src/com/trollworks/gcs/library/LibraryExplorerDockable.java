@@ -37,9 +37,8 @@ import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.MessageType;
-import com.trollworks.gcs.ui.widget.StdDialog;
-import com.trollworks.gcs.ui.widget.StdFileDialog;
-import com.trollworks.gcs.ui.widget.StdToolbar;
+import com.trollworks.gcs.ui.widget.Modal;
+import com.trollworks.gcs.ui.widget.Toolbar;
 import com.trollworks.gcs.ui.widget.Workspace;
 import com.trollworks.gcs.ui.widget.dock.Dock;
 import com.trollworks.gcs.ui.widget.dock.DockContainer;
@@ -106,11 +105,11 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
         mTreePanel.setUserSortable(false);
         mTreePanel.setOpenableProxy(this);
         mTreePanel.setDeletableProxy(this);
-        StdToolbar toolbar = new StdToolbar();
+        Toolbar toolbar = new Toolbar();
         mSearch = new Search(this);
         toolbar.add(new FontAwesomeButton("\uf0e8", I18n.text("Opens/closes all hierarchical rows"), () -> mTreePanel.toggleDisclosure()));
         toolbar.add(new FontAwesomeButton("\uf2f1", I18n.text("Refresh"), this::refresh));
-        toolbar.add(mSearch, StdToolbar.LAYOUT_FILL);
+        toolbar.add(mSearch, Toolbar.LAYOUT_FILL);
         add(toolbar, BorderLayout.NORTH);
         add(mTreePanel, BorderLayout.CENTER);
         List<String> openRowKeys = Settings.getInstance().getLibraryExplorerOpenRowKeys();
@@ -297,7 +296,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
                     PDFServer.showPDF(path, 0);
                 }
             } catch (Throwable throwable) {
-                StdFileDialog.showCannotOpenMsg(this, PathUtils.getLeafName(path, true), throwable);
+                Modal.showCannotOpenMsg(this, PathUtils.getLeafName(path, true), throwable);
                 proxy = null;
             }
         } else {
@@ -541,7 +540,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
     public void deleteSelection() {
         List<Path> paths = collectSelectedFilePaths();
         if (!paths.isEmpty()) {
-            StdDialog dialog = StdDialog.prepareToShowMessage(this,
+            Modal dialog = Modal.prepareToShowMessage(this,
                     paths.size() == 1 ?
                             I18n.text("Delete File") :
                             String.format(I18n.text("Delete {0} Files"), Integer.valueOf(paths.size())),
@@ -550,9 +549,9 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
                             I18n.text("Are you sure you want to delete this file?") :
                             I18n.text("Are you sure you want to delete these files?"));
             dialog.addCancelButton();
-            dialog.addButton(I18n.text("Delete"), StdDialog.OK);
+            dialog.addButton(I18n.text("Delete"), Modal.OK);
             dialog.presentToUser();
-            if (dialog.getResult() == StdDialog.OK) {
+            if (dialog.getResult() == Modal.OK) {
                 int failed = 0;
                 for (Path p : paths) {
                     FileProxy proxy = (FileProxy) getDockableFor(p);
@@ -569,7 +568,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
                 }
                 refresh();
                 if (failed != 0) {
-                    StdDialog.showError(this, failed == 1 ? I18n.text("A file could not be deleted.") : String.format(I18n.text("{0} files could not be deleted."), Integer.valueOf(failed)));
+                    Modal.showError(this, failed == 1 ? I18n.text("A file could not be deleted.") : String.format(I18n.text("{0} files could not be deleted."), Integer.valueOf(failed)));
                 }
             }
         }
