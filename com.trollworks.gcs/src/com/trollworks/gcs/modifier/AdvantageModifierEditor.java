@@ -20,6 +20,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.ScrollContent;
+import com.trollworks.gcs.ui.widget.StdCheckbox;
 import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
@@ -31,7 +32,6 @@ import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.MessageFormat;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.SwingConstants;
@@ -41,7 +41,7 @@ import javax.swing.event.DocumentListener;
 /** Editor for {@link AdvantageModifier}s. */
 public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implements ActionListener, DocumentListener {
     private EditorField        mNameField;
-    private JCheckBox          mEnabledField;
+    private StdCheckbox        mEnabledField;
     private MultiLineTextField mNotesField;
     private EditorField        mReferenceField;
     private EditorField        mCostField;
@@ -73,7 +73,7 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
             StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(2));
             mNameField = createCorrectableField(panel, wrapper, I18n.text("Name"), mRow.getName(),
                     I18n.text("Name of Modifier"));
-            mEnabledField = new JCheckBox(I18n.text("Enabled"), mRow.isEnabled());
+            mEnabledField = new StdCheckbox(I18n.text("Enabled"), mRow.isEnabled(), null);
             mEnabledField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Whether this modifier has been enabled or not")));
             mEnabledField.setEnabled(mIsEditable);
             wrapper.add(mEnabledField);
@@ -113,7 +113,7 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
                 modified |= mRow.setCostType(getCostType());
             }
             modified |= mRow.setAffects((Affects) mAffects.getSelectedItem());
-            modified |= mRow.setEnabled(mEnabledField.isSelected());
+            modified |= mRow.setEnabled(mEnabledField.isChecked());
             if (mFeatures != null) {
                 modified |= mRow.setFeatures(mFeatures.getFeatures());
             }

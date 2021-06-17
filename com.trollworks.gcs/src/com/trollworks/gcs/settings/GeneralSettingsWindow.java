@@ -22,6 +22,7 @@ import com.trollworks.gcs.ui.scale.Scales;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.StdButton;
+import com.trollworks.gcs.ui.widget.StdCheckbox;
 import com.trollworks.gcs.ui.widget.StdDialog;
 import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
@@ -33,24 +34,22 @@ import java.awt.Container;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.WindowEvent;
 import java.net.URI;
 import java.text.MessageFormat;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.SwingConstants;
 
-public final class GeneralSettingsWindow extends BaseWindow implements CloseHandler, ItemListener {
+public final class GeneralSettingsWindow extends BaseWindow implements CloseHandler {
     private static GeneralSettingsWindow INSTANCE;
     private        EditorField           mPlayerName;
     private        EditorField           mTechLevel;
     private        EditorField           mInitialPoints;
-    private        JCheckBox             mAutoFillProfile;
+    private        StdCheckbox           mAutoFillProfile;
     private        JComboBox<Scales>     mInitialScale;
     private        EditorField           mToolTipTimeout;
     private        EditorField           mImageResolution;
-    private        JCheckBox             mIncludeUnspentPointsInTotal;
+    private        StdCheckbox           mIncludeUnspentPointsInTotal;
     private        EditorField           mGCalcKey;
     private        StdButton             mResetButton;
 
@@ -83,11 +82,13 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
         content.add(new StdLabel(I18n.text("Player"), mPlayerName), new PrecisionLayoutData().setFillHorizontalAlignment());
         content.add(mPlayerName, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-        mAutoFillProfile = new JCheckBox(I18n.text("Fill in initial description"),
-                prefs.autoFillProfile());
+        mAutoFillProfile = new StdCheckbox(I18n.text("Fill in initial description"),
+                prefs.autoFillProfile(), (b) -> {
+            prefs.setAutoFillProfile(b.isChecked());
+            adjustResetButton();
+        });
         mAutoFillProfile.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Automatically fill in new character identity and description information with randomized choices")));
         mAutoFillProfile.setOpaque(false);
-        mAutoFillProfile.addItemListener(this);
         content.add(mAutoFillProfile);
 
         // Second row
@@ -126,18 +127,25 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
                 new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(5));
         wrapper.add(mInitialPoints, new PrecisionLayoutData().setFillHorizontalAlignment());
 
-        mIncludeUnspentPointsInTotal = new JCheckBox(I18n.text("Include unspent points in total"),
-                prefs.includeUnspentPointsInTotal());
+        mIncludeUnspentPointsInTotal = new StdCheckbox(I18n.text("Include unspent points in total"),
+                prefs.includeUnspentPointsInTotal(), (b) -> {
+            prefs.setIncludeUnspentPointsInTotal(b.isChecked());
+            adjustResetButton();
+        });
         mIncludeUnspentPointsInTotal.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Include unspent points in the character point total")));
         mIncludeUnspentPointsInTotal.setOpaque(false);
-        mIncludeUnspentPointsInTotal.addItemListener(this);
         content.add(mIncludeUnspentPointsInTotal);
 
         // Third row
         mInitialScale = new JComboBox<>(Scales.values());
         mInitialScale.setOpaque(false);
         mInitialScale.setSelectedItem(prefs.getInitialUIScale());
-        mInitialScale.addItemListener(this);
+        mInitialScale.addItemListener((event) -> {
+            if (event.getStateChange() == ItemEvent.SELECTED) {
+                Settings.getInstance().setInitialUIScale((Scales) event.getItem());
+            }
+            adjustResetButton();
+        });
         mInitialScale.setMaximumRowCount(mInitialScale.getItemCount());
         content.add(new StdLabel(I18n.text("Initial Scale"), mInitialScale), new PrecisionLayoutData().setFillHorizontalAlignment());
         wrapper = new Wrapper(new PrecisionLayout().setMargins(0).setColumns(7));
@@ -201,11 +209,11 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
         mPlayerName.setValue(Settings.DEFAULT_DEFAULT_PLAYER_NAME);
         mTechLevel.setValue(Settings.DEFAULT_DEFAULT_TECH_LEVEL);
         mInitialPoints.setValue(Integer.valueOf(Settings.DEFAULT_INITIAL_POINTS));
-        mAutoFillProfile.setSelected(Settings.DEFAULT_AUTO_FILL_PROFILE);
+        mAutoFillProfile.setChecked(Settings.DEFAULT_AUTO_FILL_PROFILE);
         mInitialScale.setSelectedItem(Settings.DEFAULT_INITIAL_UI_SCALE);
         mToolTipTimeout.setValue(Integer.valueOf(Settings.DEFAULT_TOOLTIP_TIMEOUT));
         mImageResolution.setValue(Integer.valueOf(Settings.DEFAULT_IMAGE_RESOLUTION));
-        mIncludeUnspentPointsInTotal.setSelected(Settings.DEFAULT_INCLUDE_UNSPENT_POINTS_IN_TOTAL);
+        mIncludeUnspentPointsInTotal.setChecked(Settings.DEFAULT_INCLUDE_UNSPENT_POINTS_IN_TOTAL);
         mGCalcKey.setValue("");
         adjustResetButton();
     }
@@ -245,21 +253,5 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
             INSTANCE = null;
         }
         super.dispose();
-    }
-
-    @Override
-    public void itemStateChanged(ItemEvent event) {
-        Settings prefs  = Settings.getInstance();
-        Object   source = event.getSource();
-        if (source == mAutoFillProfile) {
-            prefs.setAutoFillProfile(mAutoFillProfile.isSelected());
-        } else if (source == mInitialScale) {
-            if (event.getStateChange() == ItemEvent.SELECTED) {
-                prefs.setInitialUIScale((Scales) event.getItem());
-            }
-        } else if (source == mIncludeUnspentPointsInTotal) {
-            prefs.setIncludeUnspentPointsInTotal(mIncludeUnspentPointsInTotal.isSelected());
-        }
-        adjustResetButton();
     }
 }

@@ -133,7 +133,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
         modified |= mRow.setBaseSkillName(mBaseSkillNameField.getText());
         modified |= mRow.setReference(mReferenceField.getText());
         if (mHasTechLevel != null) {
-            modified |= mRow.setTechLevel(mHasTechLevel.isSelected() ? mTechLevel.getText() : null);
+            modified |= mRow.setTechLevel(mHasTechLevel.isChecked() ? mTechLevel.getText() : null);
         }
         modified |= mRow.setColleges(getColleges());
         modified |= mRow.setPowerSource(mPowerSourceField.getText());

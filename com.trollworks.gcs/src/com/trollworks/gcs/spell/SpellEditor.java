@@ -162,7 +162,7 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
         modified |= mRow.setReference(mReferenceField.getText());
         if (notContainer) {
             if (mHasTechLevel != null) {
-                modified |= mRow.setTechLevel(mHasTechLevel.isSelected() ? mTechLevel.getText() : null);
+                modified |= mRow.setTechLevel(mHasTechLevel.isChecked() ? mTechLevel.getText() : null);
             }
             modified |= mRow.setColleges(getColleges());
             modified |= mRow.setPowerSource(mPowerSourceField.getText());

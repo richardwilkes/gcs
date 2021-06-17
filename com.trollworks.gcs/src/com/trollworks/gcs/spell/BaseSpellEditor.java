@@ -20,6 +20,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
+import com.trollworks.gcs.ui.widget.StdCheckbox;
 import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
@@ -37,7 +38,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
@@ -62,7 +62,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
     protected EditorField                mLevelField;
     protected EditorField                mReferenceField;
     protected PrereqsPanel               mPrereqs;
-    protected JCheckBox                  mHasTechLevel;
+    protected StdCheckbox                mHasTechLevel;
     protected EditorField                mTechLevel;
     protected String                     mSavedTechLevel;
     protected MeleeWeaponListEditor      mMeleeWeapons;
@@ -213,11 +213,9 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
         if (character != null) {
             StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(2));
 
-            mHasTechLevel = new JCheckBox(I18n.text("Tech Level"), hasTL);
-            UIUtilities.setToPreferredSizeOnly(mHasTechLevel);
+            mHasTechLevel = new StdCheckbox(I18n.text("Tech Level"), hasTL, this::clickedOnHasTechLevel);
             String tlTooltip = I18n.text("Whether this spell requires tech level specialization, and, if so, at what tech level it was learned");
             mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(tlTooltip));
-            mHasTechLevel.addActionListener(this);
             wrapper.add(mHasTechLevel);
 
             mTechLevel = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, mSavedTechLevel, "9999", tlTooltip);
@@ -230,10 +228,21 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
             }
         } else {
             mTechLevel = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, mSavedTechLevel, "9999", null);
-            mHasTechLevel = new JCheckBox(I18n.text("Tech Level Required"), hasTL);
+            mHasTechLevel = new StdCheckbox(I18n.text("Tech Level Required"), hasTL, this::clickedOnHasTechLevel);
             mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Whether this spell requires tech level specialization")));
-            mHasTechLevel.addActionListener(this);
             parent.add(mHasTechLevel);
+        }
+    }
+
+    private void clickedOnHasTechLevel(StdCheckbox checkbox) {
+        boolean enabled = checkbox.isChecked();
+        mTechLevel.setEnabled(enabled);
+        if (enabled) {
+            mTechLevel.setText(mSavedTechLevel);
+            mTechLevel.requestFocus();
+        } else {
+            mSavedTechLevel = mTechLevel.getText();
+            mTechLevel.setText("");
         }
     }
 
@@ -252,17 +261,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
     }
 
     protected void adjustForSource(Object src) {
-        if (src == mHasTechLevel) {
-            boolean enabled = mHasTechLevel.isSelected();
-            mTechLevel.setEnabled(enabled);
-            if (enabled) {
-                mTechLevel.setText(mSavedTechLevel);
-                mTechLevel.requestFocus();
-            } else {
-                mSavedTechLevel = mTechLevel.getText();
-                mTechLevel.setText("");
-            }
-        } else if (src == mPointsField || src == mDifficultyCombo || src == mNameField) {
+        if (src == mPointsField || src == mDifficultyCombo || src == mNameField) {
             if (mLevelField != null) {
                 recalculateLevel(mLevelField);
             }

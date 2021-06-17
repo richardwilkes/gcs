@@ -20,14 +20,13 @@ import com.trollworks.gcs.ui.widget.ContentPanel;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
+import com.trollworks.gcs.ui.widget.StdCheckbox;
 import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Container;
-import java.awt.event.ItemEvent;
 import java.util.List;
-import javax.swing.JCheckBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
@@ -133,7 +132,7 @@ public class ThresholdPanel extends ContentPanel implements DocumentListener {
         wrapper = new ContentPanel(new PrecisionLayout().setColumns(opValues.length - 1).setMargins(0), false);
         for (ThresholdOps op : opValues) {
             if (op != ThresholdOps.UNKNOWN) {
-                addCheckBox(wrapper, op);
+                addCheckbox(wrapper, op);
             }
         }
         center.add(wrapper, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.END).setGrabHorizontalSpace(true).setMargins(0));
@@ -177,18 +176,17 @@ public class ThresholdPanel extends ContentPanel implements DocumentListener {
         return area;
     }
 
-    private void addCheckBox(Container container, ThresholdOps op) {
-        JCheckBox checkbox = new JCheckBox(op.title());
-        checkbox.setToolTipText(Text.wrapPlainTextForToolTip(op.toString()));
-        checkbox.setSelected(mThreshold.getOps().contains(op));
-        checkbox.addItemListener((evt) -> {
-            if (evt.getStateChange() == ItemEvent.SELECTED) {
-                mThreshold.getOps().add(op);
+    private void addCheckbox(Container container, ThresholdOps op) {
+        StdCheckbox checkbox = new StdCheckbox(op.title(), mThreshold.getOps().contains(op), (b) -> {
+            List<ThresholdOps> ops = mThreshold.getOps();
+            if (b.isChecked()) {
+                ops.add(op);
             } else {
-                mThreshold.getOps().remove(op);
+                ops.remove(op);
             }
             mAdjustCallback.run();
         });
+        checkbox.setToolTipText(Text.wrapPlainTextForToolTip(op.toString()));
         container.add(checkbox);
     }
 

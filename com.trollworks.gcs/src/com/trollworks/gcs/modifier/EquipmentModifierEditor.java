@@ -20,6 +20,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.ScrollContent;
+import com.trollworks.gcs.ui.widget.StdCheckbox;
 import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
@@ -27,7 +28,6 @@ import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Container;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
@@ -37,7 +37,7 @@ import javax.swing.event.DocumentListener;
 public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implements DocumentListener {
     private EditorField        mNameField;
     private EditorField        mTechLevelField;
-    private JCheckBox          mEnabledField;
+    private StdCheckbox        mEnabledField;
     private MultiLineTextField mNotesField;
     private EditorField        mReferenceField;
     private FeaturesPanel      mFeatures;
@@ -65,7 +65,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
             StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(4));
             mNameField = createCorrectableField(panel, wrapper, I18n.text("Name"), mRow.getName(), I18n.text("Name of Modifier"));
             mTechLevelField = createField(wrapper, wrapper, I18n.text("Tech Level"), mRow.getTechLevel(), I18n.text("The first Tech Level this equipment is available at"), 3);
-            mEnabledField = new JCheckBox(I18n.text("Enabled"), mRow.isEnabled());
+            mEnabledField = new StdCheckbox(I18n.text("Enabled"), mRow.isEnabled(), null);
             mEnabledField.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Whether this modifier has been enabled or not")));
             wrapper.add(mEnabledField);
             panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
@@ -94,7 +94,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         modified |= mRow.setNotes(mNotesField.getText());
         if (!mRow.canHaveChildren()) {
             modified |= mRow.setTechLevel(mTechLevelField.getText());
-            modified |= mRow.setEnabled(mEnabledField.isSelected());
+            modified |= mRow.setEnabled(mEnabledField.isChecked());
             if (mFeatures != null) {
                 modified |= mRow.setFeatures(mFeatures.getFeatures());
             }

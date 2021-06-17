@@ -24,6 +24,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.ScrollContent;
+import com.trollworks.gcs.ui.widget.StdCheckbox;
 import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
@@ -43,7 +44,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
@@ -56,7 +56,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     private MultiLineTextField         mNotesField;
     private EditorField                mCategoriesField;
     private EditorField                mReferenceField;
-    private JCheckBox                  mHasTechLevel;
+    private StdCheckbox                mHasTechLevel;
     private EditorField                mTechLevel;
     private String                     mSavedTechLevel;
     private JComboBox<AttributeChoice> mAttributePopup;
@@ -176,9 +176,8 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
             StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(2));
 
             String tlTooltip = I18n.text("Whether this skill requires tech level specialization, and, if so, at what tech level it was learned");
-            mHasTechLevel = new JCheckBox(I18n.text("Tech Level"), hasTL);
+            mHasTechLevel = new StdCheckbox(I18n.text("Tech Level"), hasTL, this::clickedOnHasTechLevelCheckbox);
             mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(tlTooltip));
-            mHasTechLevel.addActionListener(this);
             wrapper.add(mHasTechLevel);
 
             mTechLevel = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT,
@@ -193,10 +192,21 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         } else {
             mTechLevel = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT,
                     mSavedTechLevel, "9999", null);
-            mHasTechLevel = new JCheckBox(I18n.text("Tech Level Required"), hasTL);
+            mHasTechLevel = new StdCheckbox(I18n.text("Tech Level Required"), hasTL, this::clickedOnHasTechLevelCheckbox);
             mHasTechLevel.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Whether this skill requires tech level specialization")));
-            mHasTechLevel.addActionListener(this);
             parent.add(mHasTechLevel);
+        }
+    }
+
+    private void clickedOnHasTechLevelCheckbox(StdCheckbox checkbox) {
+        boolean enabled = checkbox.isChecked();
+        mTechLevel.setEnabled(enabled);
+        if (enabled) {
+            mTechLevel.setText(mSavedTechLevel);
+            mTechLevel.requestFocus();
+        } else {
+            mSavedTechLevel = mTechLevel.getText();
+            mTechLevel.setText("");
         }
     }
 
@@ -319,7 +329,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
             modified |= mRow.setSpecialization(mSpecializationField.getText());
         }
         if (mHasTechLevel != null) {
-            modified |= mRow.setTechLevel(mHasTechLevel.isSelected() ? mTechLevel.getText() : null);
+            modified |= mRow.setTechLevel(mHasTechLevel.isChecked() ? mTechLevel.getText() : null);
         }
         if (mAttributePopup != null) {
             modified |= mRow.setDifficulty(getSkillAttribute(), getSkillDifficulty());
@@ -353,17 +363,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     }
 
     protected void adjustForSource(Object src) {
-        if (src == mHasTechLevel) {
-            boolean enabled = mHasTechLevel.isSelected();
-            mTechLevel.setEnabled(enabled);
-            if (enabled) {
-                mTechLevel.setText(mSavedTechLevel);
-                mTechLevel.requestFocus();
-            } else {
-                mSavedTechLevel = mTechLevel.getText();
-                mTechLevel.setText("");
-            }
-        } else if (src == mAttributePopup || src == mDifficultyPopup || src == mDefaults || src == mEncPenaltyPopup) {
+        if (src == mAttributePopup || src == mDifficultyPopup || src == mDefaults || src == mEncPenaltyPopup) {
             recalculateLevel();
         }
     }

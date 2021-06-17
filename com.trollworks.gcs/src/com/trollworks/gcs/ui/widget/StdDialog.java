@@ -149,7 +149,7 @@ public class StdDialog extends JDialog {
         }
     }
 
-    private void tryInitialFocus() {
+    void tryInitialFocus() {
         if (--mInitialFocusAttemptsRemaining > 0 && !hasFocus()) {
             requestFocus();
             EventQueue.invokeLater(this::tryInitialFocus);

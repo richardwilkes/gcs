@@ -17,12 +17,12 @@ import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.modifier.EquipmentModifierListEditor;
 import com.trollworks.gcs.prereq.PrereqsPanel;
-import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.ScrollContent;
+import com.trollworks.gcs.ui.widget.StdCheckbox;
 import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
@@ -40,7 +40,6 @@ import com.trollworks.gcs.weapon.WeaponStats;
 import java.awt.Container;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
@@ -48,8 +47,8 @@ import javax.swing.event.DocumentListener;
 
 /** The detailed editor for {@link Equipment}s. */
 public class EquipmentEditor extends RowEditor<Equipment> implements DocumentListener {
-    private JCheckBox                   mEquippedCheckBox;
-    private JCheckBox                   mIgnoreWeightForSkillsCheckBox;
+    private StdCheckbox                 mEquippedCheckBox;
+    private StdCheckbox                 mIgnoreWeightForSkillsCheckBox;
     private EditorField                 mDescriptionField;
     private EditorField                 mTechLevelField;
     private EditorField                 mLegalityClassField;
@@ -145,8 +144,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
         mTechLevelField = createField(isContainer ? parent : wrapper, wrapper, I18n.text("Tech Level"), mRow.getTechLevel(), I18n.text("The first Tech Level this equipment is available at"), 3);
         mLegalityClassField = createField(wrapper, wrapper, I18n.text("Legality Class"), mRow.getLegalityClass(), I18n.text("The legality class of this equipment"), 3);
         if (showEquipmentState()) {
-            mEquippedCheckBox = new JCheckBox(I18n.text("Equipped"));
-            mEquippedCheckBox.setSelected(mRow.isEquipped());
+            mEquippedCheckBox = new StdCheckbox(I18n.text("Equipped"), mRow.isEquipped(), null);
             mEquippedCheckBox.setEnabled(mIsEditable);
             mEquippedCheckBox.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Items that are not equipped do not apply any features they may normally contribute to the character.")));
             wrapper.add(mEquippedCheckBox);
@@ -187,9 +185,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
                 I18n.text("The total weight of this quantity of equipment, plus everything contained by it"),
                 null);
         mExtWeightField.setEnabled(false);
-        mIgnoreWeightForSkillsCheckBox = new JCheckBox(I18n.text("Ignore for Skills"));
-        mIgnoreWeightForSkillsCheckBox.setSelected(mRow.isWeightIgnoredForSkills());
-        UIUtilities.setToPreferredSizeOnly(mIgnoreWeightForSkillsCheckBox);
+        mIgnoreWeightForSkillsCheckBox = new StdCheckbox(I18n.text("Ignore for Skills"), mRow.isWeightIgnoredForSkills(), null);
         mIgnoreWeightForSkillsCheckBox.setEnabled(mIsEditable);
         mIgnoreWeightForSkillsCheckBox.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("If checked, the weight of this item is not considered when calculating encumbrance penalties for skills")));
         wrapper.add(mIgnoreWeightForSkillsCheckBox);
@@ -250,11 +246,11 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
         modified |= mRow.setQuantity(getQty());
         modified |= mRow.setValue(new Fixed6(mValueField.getText(), Fixed6.ZERO, true));
         modified |= mRow.setWeight(WeightValue.extract(mWeightField.getText(), true));
-        modified |= mRow.setWeightIgnoredForSkills(mIgnoreWeightForSkillsCheckBox.isSelected());
+        modified |= mRow.setWeightIgnoredForSkills(mIgnoreWeightForSkillsCheckBox.isChecked());
         modified |= mRow.setMaxUses(Numbers.extractInteger(mMaxUsesField.getText(), 0, true));
         modified |= mUsesField != null ? mRow.setUses(Numbers.extractInteger(mUsesField.getText(), 0, true)) : mRow.setUses(mRow.getMaxUses());
         if (showEquipmentState()) {
-            modified |= mRow.setEquipped(mEquippedCheckBox.isSelected());
+            modified |= mRow.setEquipped(mEquippedCheckBox.isChecked());
         }
         modified |= mRow.setNotes(mNotesField.getText());
         modified |= mRow.setCategories(mCategoriesField.getText());

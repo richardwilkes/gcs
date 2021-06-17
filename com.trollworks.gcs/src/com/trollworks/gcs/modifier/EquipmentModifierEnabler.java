@@ -16,6 +16,7 @@ import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
 import com.trollworks.gcs.ui.widget.MessageType;
+import com.trollworks.gcs.ui.widget.StdCheckbox;
 import com.trollworks.gcs.ui.widget.StdDialog;
 import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.StdPanel;
@@ -32,14 +33,13 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import javax.swing.JCheckBox;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 
 /** Asks the user to enable/disable equipment modifiers. */
 public final class EquipmentModifierEnabler extends StdPanel {
     private Equipment           mEquipment;
-    private JCheckBox[]         mEnabled;
+    private StdCheckbox[]       mEnabled;
     private EquipmentModifier[] mModifiers;
 
     /**
@@ -117,9 +117,9 @@ public final class EquipmentModifierEnabler extends StdPanel {
         Arrays.sort(mModifiers);
 
         int length = mModifiers.length;
-        mEnabled = new JCheckBox[length];
+        mEnabled = new StdCheckbox[length];
         for (int i = 0; i < length; i++) {
-            mEnabled[i] = new JCheckBox(mModifiers[i].getFullDescription(), mModifiers[i].isEnabled());
+            mEnabled[i] = new StdCheckbox(mModifiers[i].getFullDescription(), mModifiers[i].isEnabled(), null);
             panel.add(mEnabled[i]);
         }
         return panel;
@@ -129,7 +129,7 @@ public final class EquipmentModifierEnabler extends StdPanel {
         int     length   = mModifiers.length;
         boolean modified = false;
         for (int i = 0; i < length; i++) {
-            modified |= mModifiers[i].setEnabled(mEnabled[i].isSelected());
+            modified |= mModifiers[i].setEnabled(mEnabled[i].isChecked());
         }
         if (modified) {
             mEquipment.update();
