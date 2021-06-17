@@ -21,6 +21,7 @@ import com.trollworks.gcs.utility.I18n;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -47,6 +48,7 @@ public class StdDialog extends JDialog {
     private             StdButton mOKButton;
     private             StdButton mCancelButton;
     private             int       mResult;
+    private             int       mInitialFocusAttemptsRemaining;
 
     public StdDialog(Component owner, String title) {
         super(WindowUtils.getWindowForComponent(owner), title, ModalityType.APPLICATION_MODAL);
@@ -113,7 +115,8 @@ public class StdDialog extends JDialog {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowOpened(WindowEvent event) {
-                transferFocus();
+                mInitialFocusAttemptsRemaining = 5;
+                tryInitialFocus();
             }
         });
         addKeyListener(new KeyAdapter() {
@@ -143,6 +146,15 @@ public class StdDialog extends JDialog {
         dispose();
         if (focusOwner != null) {
             focusOwner.requestFocus();
+        }
+    }
+
+    private void tryInitialFocus() {
+        if (--mInitialFocusAttemptsRemaining > 0 && !hasFocus()) {
+            requestFocus();
+            EventQueue.invokeLater(this::tryInitialFocus);
+        } else {
+            getContentPane().transferFocus();
         }
     }
 
