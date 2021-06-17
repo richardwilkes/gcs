@@ -16,6 +16,7 @@ import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
+import com.trollworks.gcs.ui.widget.Separator;
 import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.utility.Fixed6;
@@ -25,7 +26,6 @@ import com.trollworks.gcs.utility.units.LengthValue;
 
 import java.awt.event.ActionListener;
 import javax.swing.JComboBox;
-import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
 public class PageSettingsEditor extends StdPanel {
@@ -50,7 +50,7 @@ public class PageSettingsEditor extends StdPanel {
         StdLabel header = new StdLabel(I18n.text("Page Settings"));
         header.setThemeFont(ThemeFont.HEADER);
         add(header, new PrecisionLayoutData().setHorizontalSpan(4));
-        add(new JSeparator(SwingConstants.HORIZONTAL), new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(4));
+        add(new Separator(), new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(4));
         mSettings = settings;
         mAdjustCallback = adjustCallback;
         mResetCallback = resetCallback;

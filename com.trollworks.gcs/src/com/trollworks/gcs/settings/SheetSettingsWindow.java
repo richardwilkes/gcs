@@ -223,6 +223,8 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
         panel.add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
         panel.add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
 
+        panel.setSize(panel.getPreferredSize());
+
         getContentPane().add(new StdScrollPanel(panel), BorderLayout.CENTER);
     }
 
