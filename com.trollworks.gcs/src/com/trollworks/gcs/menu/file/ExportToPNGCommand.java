@@ -34,7 +34,7 @@ public final class ExportToPNGCommand extends Command {
 
     @Override
     public void adjust() {
-        setEnabled(Command.getTarget(SheetDockable.class) != null);
+        setEnabled(!UIUtilities.inModalState() && Command.getTarget(SheetDockable.class) != null);
     }
 
     @Override
@@ -45,7 +45,7 @@ public final class ExportToPNGCommand extends Command {
             if (name.isBlank()) {
                 name = "untitled";
             }
-            Path path = Modal.presentSaveFileDialog(UIUtilities.getComponentForDialog(dockable), getTitle(), Settings.getInstance().getLastDir().resolve(name), FileType.PNG.getFilter());
+            Path path = Modal.presentSaveFileDialog(dockable, getTitle(), Settings.getInstance().getLastDir().resolve(name), FileType.PNG.getFilter());
             if (path != null) {
                 performExport(dockable, path);
             }

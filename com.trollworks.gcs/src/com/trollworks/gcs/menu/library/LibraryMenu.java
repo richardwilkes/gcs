@@ -44,9 +44,12 @@ public class LibraryMenu extends JMenu implements MenuListener {
                 item.adjust();
                 add(new JMenuItem(item));
             }
-            add(new JMenuItem(new ShowLibraryFolderCommand(lib)));
+            ShowLibraryFolderCommand cmd = new ShowLibraryFolderCommand(lib);
+            cmd.adjust();
+            add(new JMenuItem(cmd));
             addSeparator();
         }
+        ChangeLibraryLocationsCommand.INSTANCE.adjust();
         add(new JMenuItem(ChangeLibraryLocationsCommand.INSTANCE));
     }
 }

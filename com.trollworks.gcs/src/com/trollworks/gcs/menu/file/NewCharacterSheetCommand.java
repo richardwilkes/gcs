@@ -16,6 +16,7 @@ import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.item.AddNaturalAttacksAdvantageCommand;
+import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
@@ -30,6 +31,7 @@ public final class NewCharacterSheetCommand extends Command {
 
     @Override
     public void adjust() {
+        setEnabled(!UIUtilities.inModalState());
     }
 
     @Override

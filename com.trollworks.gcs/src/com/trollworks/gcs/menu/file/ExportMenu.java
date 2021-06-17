@@ -53,7 +53,9 @@ public class ExportMenu extends JMenu implements MenuListener {
 
     private void populate() {
         removeAll();
+        ExportToGURPSCalculatorCommand.INSTANCE.adjust();
         add(ExportToGURPSCalculatorCommand.INSTANCE);
+        ExportToPNGCommand.INSTANCE.adjust();
         add(ExportToPNGCommand.INSTANCE);
         for (Library lib : Library.LIBRARIES) {
             List<Command> cmds = new ArrayList<>();
@@ -77,6 +79,7 @@ public class ExportMenu extends JMenu implements MenuListener {
                 header.setEnabled(false);
                 add(header);
                 for (Command cmd : cmds) {
+                    cmd.adjust();
                     add(cmd);
                 }
             }

@@ -15,6 +15,7 @@ import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.modifier.AdvantageModifierList;
 import com.trollworks.gcs.modifier.AdvantageModifiersDockable;
+import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
@@ -28,6 +29,7 @@ public final class NewAdvantageModifiersLibraryCommand extends Command {
 
     @Override
     public void adjust() {
+        setEnabled(!UIUtilities.inModalState());
     }
 
     @Override

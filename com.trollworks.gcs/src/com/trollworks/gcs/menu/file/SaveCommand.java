@@ -39,6 +39,10 @@ public final class SaveCommand extends Command {
 
     @Override
     public void adjust() {
+        if (UIUtilities.inModalState()) {
+            setEnabled(false);
+            return;
+        }
         Saveable saveable = getTarget(Saveable.class);
         Commitable.sendCommitToFocusOwner();
         setEnabled(saveable != null && saveable.isModified());

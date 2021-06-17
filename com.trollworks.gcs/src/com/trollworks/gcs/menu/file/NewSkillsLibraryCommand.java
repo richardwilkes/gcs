@@ -15,6 +15,7 @@ import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.skill.SkillsDockable;
+import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
@@ -28,6 +29,7 @@ public final class NewSkillsLibraryCommand extends Command {
 
     @Override
     public void adjust() {
+        setEnabled(!UIUtilities.inModalState());
     }
 
     @Override

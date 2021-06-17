@@ -33,7 +33,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.ParseException;
 import javax.swing.JFormattedTextField;
-import javax.swing.JToolTip;
 import javax.swing.plaf.basic.BasicTextFieldUI;
 
 /** A generic field for a page. */
@@ -171,7 +170,7 @@ public class PageField extends JFormattedTextField implements PropertyChangeList
     }
 
     @Override
-    public JToolTip createToolTip() {
+    public ToolTip createToolTip() {
         return new ToolTip(this);
     }
 }

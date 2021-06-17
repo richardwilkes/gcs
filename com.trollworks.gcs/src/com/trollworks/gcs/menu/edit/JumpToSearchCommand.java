@@ -12,6 +12,7 @@
 package com.trollworks.gcs.menu.edit;
 
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
@@ -29,7 +30,7 @@ public final class JumpToSearchCommand extends Command {
     @Override
     public void adjust() {
         JumpToSearchTarget target = getTarget(JumpToSearchTarget.class);
-        setEnabled(target != null && target.isJumpToSearchAvailable());
+        setEnabled(!UIUtilities.inModalState() && target != null && target.isJumpToSearchAvailable());
     }
 
     @Override

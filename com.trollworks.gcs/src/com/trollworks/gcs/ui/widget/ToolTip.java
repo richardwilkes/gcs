@@ -31,7 +31,6 @@ public class ToolTip extends JToolTip {
     private String mWrappedText;
 
     public ToolTip(JComponent comp) {
-        setUI(null);
         setBorder(new EmptyBorder(4, 8, 4, 8));
         setComponent(comp);
     }

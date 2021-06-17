@@ -47,7 +47,7 @@ public final class PrintCommand extends Command implements PrintFilesHandler {
 
     @Override
     public void adjust() {
-        setEnabled(getTarget(PrintProxy.class) != null);
+        setEnabled(!UIUtilities.inModalState() && getTarget(PrintProxy.class) != null);
     }
 
     @Override

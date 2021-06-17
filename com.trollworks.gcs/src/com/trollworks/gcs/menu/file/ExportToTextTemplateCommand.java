@@ -36,7 +36,7 @@ public class ExportToTextTemplateCommand extends Command {
 
     @Override
     public void adjust() {
-        setEnabled(Command.getTarget(SheetDockable.class) != null);
+        setEnabled(!UIUtilities.inModalState() && Command.getTarget(SheetDockable.class) != null);
     }
 
     @Override
@@ -48,7 +48,7 @@ public class ExportToTextTemplateCommand extends Command {
                 name = "untitled";
             }
             String ext  = PathUtils.getExtension(mTemplatePath);
-            Path   path = Modal.presentSaveFileDialog(UIUtilities.getComponentForDialog(dockable), getTitle(), Settings.getInstance().getLastDir().resolve(name), new FileNameExtensionFilter(ext + I18n.text(" Files"), ext));
+            Path   path = Modal.presentSaveFileDialog(dockable, getTitle(), Settings.getInstance().getLastDir().resolve(name), new FileNameExtensionFilter(ext + I18n.text(" Files"), ext));
             if (path != null) {
                 performExport(dockable, mTemplatePath, path);
             }

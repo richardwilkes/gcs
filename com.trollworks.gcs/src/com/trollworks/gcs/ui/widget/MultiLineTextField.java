@@ -21,7 +21,6 @@ import java.awt.Font;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.FocusEvent;
 import javax.swing.JTextArea;
-import javax.swing.JToolTip;
 import javax.swing.border.CompoundBorder;
 import javax.swing.event.DocumentListener;
 
@@ -63,7 +62,7 @@ public class MultiLineTextField extends JTextArea {
     }
 
     @Override
-    public JToolTip createToolTip() {
+    public ToolTip createToolTip() {
         return new ToolTip(this);
     }
 

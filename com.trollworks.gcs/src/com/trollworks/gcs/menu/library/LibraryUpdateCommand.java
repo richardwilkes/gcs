@@ -16,6 +16,7 @@ import com.trollworks.gcs.library.LibraryUpdater;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.ui.MarkdownDocument;
 import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.widget.MessageType;
 import com.trollworks.gcs.ui.widget.Modal;
@@ -60,11 +61,10 @@ public class LibraryUpdateCommand extends Command {
         Version availableVersion = upgrade.getVersion();
         if (availableVersion.equals(versionOnDisk)) {
             setTitle(String.format(I18n.text("%s is up to date (re-download v%s)"), title, versionOnDisk));
-            setEnabled(true);
-            return;
+        } else {
+            setTitle(String.format(I18n.text("Update %s to v%s"), title, availableVersion));
         }
-        setTitle(String.format(I18n.text("Update %s to v%s"), title, availableVersion));
-        setEnabled(true);
+        setEnabled(!UIUtilities.inModalState());
     }
 
     @Override

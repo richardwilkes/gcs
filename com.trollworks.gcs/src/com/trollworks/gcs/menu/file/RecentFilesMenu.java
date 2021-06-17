@@ -76,7 +76,9 @@ public class RecentFilesMenu extends JMenu implements MenuListener {
                 if (needFullPathSet.contains(title)) {
                     title = path.toAbsolutePath().toString();
                 }
-                add(new JMenuItem(new OpenDataFileCommand(title, path)));
+                OpenDataFileCommand cmd = new OpenDataFileCommand(title, path);
+                cmd.adjust();
+                add(new JMenuItem(cmd));
             }
             prefs.setRecentFiles(list);
             if (!list.isEmpty()) {

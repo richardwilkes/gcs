@@ -37,7 +37,7 @@ public final class SaveAsCommand extends Command {
 
     @Override
     public void adjust() {
-        setEnabled(getTarget(Saveable.class) != null);
+        setEnabled(!UIUtilities.inModalState() && getTarget(Saveable.class) != null);
     }
 
     @Override

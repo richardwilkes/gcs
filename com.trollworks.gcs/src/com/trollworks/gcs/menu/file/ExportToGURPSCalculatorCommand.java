@@ -18,6 +18,7 @@ import com.trollworks.gcs.character.TextTemplate;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.settings.QuickExport;
 import com.trollworks.gcs.settings.Settings;
+import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.MessageType;
 import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.utility.I18n;
@@ -57,7 +58,7 @@ public final class ExportToGURPSCalculatorCommand extends Command {
 
     @Override
     public void adjust() {
-        setEnabled(Command.getTarget(SheetDockable.class) != null);
+        setEnabled(!UIUtilities.inModalState() && Command.getTarget(SheetDockable.class) != null);
     }
 
     @Override

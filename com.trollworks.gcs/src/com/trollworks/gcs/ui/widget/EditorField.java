@@ -27,7 +27,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.text.ParseException;
 import javax.swing.JFormattedTextField;
-import javax.swing.JToolTip;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 
@@ -131,7 +130,7 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
     }
 
     @Override
-    public JToolTip createToolTip() {
+    public ToolTip createToolTip() {
         return new ToolTip(this);
     }
 

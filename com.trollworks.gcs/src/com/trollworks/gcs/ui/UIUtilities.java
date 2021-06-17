@@ -35,7 +35,6 @@ import java.awt.dnd.DropTargetDropEvent;
 import javax.swing.AbstractButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JTabbedPane;
 import javax.swing.JViewport;
 import javax.swing.RepaintManager;
 import javax.swing.UIManager;
@@ -54,22 +53,6 @@ public final class UIUtilities {
             Log.error(ex);
         }
         Theme.current(); // Just here to ensure the theme is loaded
-    }
-
-    /**
-     * Selects the tab with the specified title.
-     *
-     * @param pane  The {@link JTabbedPane} to use.
-     * @param title The title to select.
-     */
-    public static void selectTab(JTabbedPane pane, String title) {
-        int count = pane.getTabCount();
-        for (int i = 0; i < count; i++) {
-            if (pane.getTitleAt(i).equals(title)) {
-                pane.setSelectedIndex(i);
-                break;
-            }
-        }
     }
 
     /**
@@ -118,23 +101,6 @@ public final class UIUtilities {
             // off in many cases
         }
         setOnlySize(comp, size);
-    }
-
-    /** @param comps The {@link Component}s to set to the same size. */
-    public static void adjustToSameSize(Component... comps) {
-        Dimension best = new Dimension();
-        for (Component comp : comps) {
-            Dimension size = comp.getPreferredSize();
-            if (size.width > best.width) {
-                best.width = size.width;
-            }
-            if (size.height > best.height) {
-                best.height = size.height;
-            }
-        }
-        for (Component comp : comps) {
-            setOnlySize(comp, best);
-        }
     }
 
     /**
@@ -316,15 +282,6 @@ public final class UIUtilities {
             parent = parent.getParent();
         }
         return (T) parent;
-    }
-
-    /**
-     * Since JComboBox.getSelectedItem() returns a plain Object, this allows us to get the
-     * appropriate type of object instead.
-     */
-    public static <E> E getTypedSelectedItemFromCombo(JComboBox<E> combo) {
-        int index = combo.getSelectedIndex();
-        return index == -1 ? null : combo.getItemAt(index);
     }
 
     /**

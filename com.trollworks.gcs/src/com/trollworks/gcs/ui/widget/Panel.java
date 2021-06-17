@@ -16,7 +16,6 @@ import com.trollworks.gcs.ui.ThemeColor;
 import java.awt.Graphics;
 import java.awt.LayoutManager;
 import javax.swing.JPanel;
-import javax.swing.JToolTip;
 
 public class Panel extends JPanel {
     public Panel() {
@@ -53,7 +52,7 @@ public class Panel extends JPanel {
     }
 
     @Override
-    public JToolTip createToolTip() {
+    public ToolTip createToolTip() {
         return new ToolTip(this);
     }
 }

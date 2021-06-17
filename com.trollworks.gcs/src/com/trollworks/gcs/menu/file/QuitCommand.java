@@ -42,6 +42,7 @@ public final class QuitCommand extends Command implements QuitHandler {
 
     @Override
     public void adjust() {
+        setEnabled(!UIUtilities.inModalState());
     }
 
     @Override

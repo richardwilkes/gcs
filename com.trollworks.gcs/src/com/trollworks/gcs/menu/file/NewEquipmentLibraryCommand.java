@@ -15,6 +15,7 @@ import com.trollworks.gcs.equipment.EquipmentDockable;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
@@ -28,6 +29,7 @@ public final class NewEquipmentLibraryCommand extends Command {
 
     @Override
     public void adjust() {
+        setEnabled(!UIUtilities.inModalState());
     }
 
     @Override
