@@ -24,6 +24,7 @@ import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.ScrollContent;
+import com.trollworks.gcs.ui.widget.StdCheckbox;
 import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
@@ -39,7 +40,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
@@ -61,7 +61,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     private EditorField                mDefaultNameField;
     private EditorField                mDefaultSpecializationField;
     private EditorField                mDefaultModifierField;
-    private JCheckBox                  mLimitCheckbox;
+    private StdCheckbox                mLimitCheckbox;
     private EditorField                mLimitField;
     private PrereqsPanel               mPrereqs;
     private FeaturesPanel              mFeatures;
@@ -182,15 +182,17 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     private void createLimits(Container parent) {
         StdPanel wrapper = new StdPanel(new PrecisionLayout().setMargins(0).setColumns(2));
 
-        mLimitCheckbox = new JCheckBox(I18n.text("Cannot exceed default skill level by more than"),
-                mRow.isLimited());
+        mLimitCheckbox = new StdCheckbox(I18n.text("Cannot exceed default skill level by more than"),
+                mRow.isLimited(), (b) -> {
+            mLimitField.setEnabled(mLimitCheckbox.isChecked());
+            recalculateLevel();
+        });
         mLimitCheckbox.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Whether to limit the maximum level that can be achieved or not")));
-        mLimitCheckbox.addActionListener(this);
 
         mLimitField = createSInt2NumberField(wrapper,
                 I18n.text("The maximum amount above the default skill level that this technique can be raised"),
                 mRow.getLimitModifier());
-        mLimitField.setEnabled(mLimitCheckbox.isSelected());
+        mLimitField.setEnabled(mLimitCheckbox.isChecked());
 
         wrapper.add(mLimitCheckbox);
         wrapper.add(mLimitField);
@@ -262,8 +264,13 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
 
     private void recalculateLevel() {
         if (mLevelField != null) {
-            SkillLevel level = Technique.calculateTechniqueLevel(mRow.getCharacter(), mNameField.getText(), getSpecialization(), ListRow.createCategoriesList(mCategoriesField.getText()), createNewDefault(), getSkillDifficulty(), getAdjustedSkillPoints(), true, mLimitCheckbox.isSelected(), getLimitModifier());
-            mLevelField.setText(Technique.getTechniqueDisplayLevel(level.mLevel, level.mRelativeLevel, getDefaultModifier()));
+            SkillLevel level = Technique.calculateTechniqueLevel(mRow.getCharacter(),
+                    mNameField.getText(), getSpecialization(),
+                    ListRow.createCategoriesList(mCategoriesField.getText()), createNewDefault(),
+                    getSkillDifficulty(), getAdjustedSkillPoints(), true, mLimitCheckbox.isChecked(),
+                    getLimitModifier());
+            mLevelField.setText(Technique.getTechniqueDisplayLevel(level.mLevel,
+                    level.mRelativeLevel, getDefaultModifier()));
             mLevelField.setToolTipText(Text.wrapPlainTextForToolTip(editorLevelTooltip() + level.getToolTip()));
         }
     }
@@ -316,7 +323,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
         if (mPointsField != null) {
             modified |= mRow.setRawPoints(getPoints());
         }
-        modified |= mRow.setLimited(mLimitCheckbox.isSelected());
+        modified |= mRow.setLimited(mLimitCheckbox.isChecked());
         modified |= mRow.setLimitModifier(getLimitModifier());
         modified |= mRow.setDifficulty(getSkillDifficulty());
         modified |= mRow.setPrereqs(mPrereqs.getPrereqList());
@@ -330,14 +337,12 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     @Override
     public void actionPerformed(ActionEvent event) {
         Object src = event.getSource();
-        if (src == mLimitCheckbox) {
-            mLimitField.setEnabled(mLimitCheckbox.isSelected());
-        } else if (src == mDefaultTypeCombo) {
+        if (src == mDefaultTypeCombo) {
             if (!mLastDefaultType.equals(getDefaultType())) {
                 rebuildDefaultPanel();
             }
         }
-        if (src == mDifficultyCombo || src == mLimitCheckbox || src == mDefaultTypeCombo) {
+        if (src == mDifficultyCombo || src == mDefaultTypeCombo) {
             recalculateLevel();
         }
     }

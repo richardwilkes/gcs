@@ -24,6 +24,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.ScrollContent;
+import com.trollworks.gcs.ui.widget.StdCheckbox;
 import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.StdPanel;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
@@ -42,7 +43,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
@@ -54,11 +54,11 @@ import javax.swing.text.Document;
 /** The detailed editor for {@link Advantage}s. */
 public class AdvantageEditor extends RowEditor<Advantage> implements ActionListener, DocumentListener, EditorField.ChangeListener {
     private EditorField                           mNameField;
-    private JCheckBox                             mShouldRoundCostDown;
+    private StdCheckbox                           mShouldRoundCostDown;
     private JComboBox<Levels>                     mLevelTypeCombo;
     private EditorField                           mBasePointsField;
     private EditorField                           mLevelField;
-    private JCheckBox                             mHalfLevel;
+    private StdCheckbox                           mHalfLevel;
     private EditorField                           mLevelPointsField;
     private EditorField                           mPointsField;
     private MultiLineTextField                    mNotesField;
@@ -73,12 +73,12 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     private int                                   mLastLevel;
     private int                                   mLastPointsPerLevel;
     private boolean                               mLastHalfLevel;
-    private JCheckBox                             mMentalType;
-    private JCheckBox                             mPhysicalType;
-    private JCheckBox                             mSocialType;
-    private JCheckBox                             mExoticType;
-    private JCheckBox                             mSupernaturalType;
-    private JCheckBox                             mEnabledCheckBox;
+    private StdCheckbox                           mMentalType;
+    private StdCheckbox                           mPhysicalType;
+    private StdCheckbox                           mSocialType;
+    private StdCheckbox                           mExoticType;
+    private StdCheckbox                           mSupernaturalType;
+    private StdCheckbox                           mEnabledCheckBox;
     private JComboBox<AdvantageContainerType>     mContainerTypeCombo;
     private JComboBox<SelfControlRoll>            mCRCombo;
     private JComboBox<SelfControlRollAdjustments> mCRAdjCombo;
@@ -137,10 +137,8 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         addLabel(parent, I18n.text("Name"), mNameField);
         StdPanel wrapper = new StdPanel(new PrecisionLayout().setColumns(2).setMargins(0));
         wrapper.add(mNameField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
-        mEnabledCheckBox = new JCheckBox(I18n.text("Enabled"));
-        mEnabledCheckBox.setSelected(mRow.isSelfEnabled());
+        mEnabledCheckBox = new StdCheckbox(I18n.text("Enabled"), mRow.isSelfEnabled(), (b) -> updatePoints());
         mEnabledCheckBox.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("If checked, this advantage is treated normally. If not checked, it is treated as if it didn't exist.")));
-        mEnabledCheckBox.addActionListener(this);
         wrapper.add(mEnabledCheckBox);
         parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
@@ -174,21 +172,18 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         addLabel(wrapper, I18n.text("Level"), mLevelField);
         wrapper.add(mLevelField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-        mHalfLevel = new JCheckBox("+½");
-        mHalfLevel.setSelected(mLastHalfLevel);
+        mHalfLevel = new StdCheckbox("+½", mLastHalfLevel, (b) -> updatePoints());
         mHalfLevel.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Add a half Level")));
         mHalfLevel.setEnabled(mRow.allowHalfLevels());
-        mHalfLevel.addActionListener(this);
         wrapper.add(mHalfLevel);
 
         mLevelPointsField = createField(-9999, 9999, mLastPointsPerLevel, I18n.text("The per level cost of this advantage. If this is set to zero and there is a value other than zero in the level field, then the value in the base points field will be used"));
         addLabel(wrapper, I18n.text("Per Level"), mLevelPointsField);
         wrapper.add(mLevelPointsField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-        mShouldRoundCostDown = new JCheckBox(I18n.text("Round Down"));
-        mShouldRoundCostDown.setSelected(mRow.shouldRoundCostDown());
+        mShouldRoundCostDown = new StdCheckbox(I18n.text("Round Down"), mRow.shouldRoundCostDown(),
+                (b) -> updatePoints());
         mShouldRoundCostDown.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("Round point costs down if selected, round them up if not (most things in GURPS round up)")));
-        mShouldRoundCostDown.addActionListener(this);
         wrapper.add(mShouldRoundCostDown);
 
         parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
@@ -236,24 +231,24 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         label.setToolTipText(Text.wrapPlainTextForToolTip(I18n.text("The type of advantage this is")));
         parent.add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
 
-        mMentalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_MENTAL) == Advantage.TYPE_MASK_MENTAL, I18n.text("Mental"));
+        mMentalType = createTypeCheckbox((mRow.getType() & Advantage.TYPE_MASK_MENTAL) == Advantage.TYPE_MASK_MENTAL, I18n.text("Mental"));
         StdPanel wrapper = new StdPanel(new PrecisionLayout().setColumns(12).setMargins(0));
         wrapper.add(mMentalType);
         wrapper.add(createTypeLabel(Images.MENTAL_TYPE, mMentalType));
 
-        mPhysicalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_PHYSICAL) == Advantage.TYPE_MASK_PHYSICAL, I18n.text("Physical"));
+        mPhysicalType = createTypeCheckbox((mRow.getType() & Advantage.TYPE_MASK_PHYSICAL) == Advantage.TYPE_MASK_PHYSICAL, I18n.text("Physical"));
         wrapper.add(mPhysicalType);
         wrapper.add(createTypeLabel(Images.PHYSICAL_TYPE, mPhysicalType));
 
-        mSocialType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_SOCIAL) == Advantage.TYPE_MASK_SOCIAL, I18n.text("Social"));
+        mSocialType = createTypeCheckbox((mRow.getType() & Advantage.TYPE_MASK_SOCIAL) == Advantage.TYPE_MASK_SOCIAL, I18n.text("Social"));
         wrapper.add(mSocialType);
         wrapper.add(createTypeLabel(Images.SOCIAL_TYPE, mSocialType));
 
-        mExoticType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_EXOTIC) == Advantage.TYPE_MASK_EXOTIC, I18n.text("Exotic"));
+        mExoticType = createTypeCheckbox((mRow.getType() & Advantage.TYPE_MASK_EXOTIC) == Advantage.TYPE_MASK_EXOTIC, I18n.text("Exotic"));
         wrapper.add(mExoticType);
         wrapper.add(createTypeLabel(Images.EXOTIC_TYPE, mExoticType));
 
-        mSupernaturalType = createTypeCheckBox((mRow.getType() & Advantage.TYPE_MASK_SUPERNATURAL) == Advantage.TYPE_MASK_SUPERNATURAL, I18n.text("Supernatural"));
+        mSupernaturalType = createTypeCheckbox((mRow.getType() & Advantage.TYPE_MASK_SUPERNATURAL) == Advantage.TYPE_MASK_SUPERNATURAL, I18n.text("Supernatural"));
         wrapper.add(mSupernaturalType);
         wrapper.add(createTypeLabel(Images.SUPERNATURAL_TYPE, mSupernaturalType));
         addRefField(wrapper);
@@ -276,16 +271,16 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         mReferenceField = createField(mRow.getReference(), "MMMMMM", I18n.text("Page Reference"));
         parent.add(new StdLabel(I18n.text("Ref"), mReferenceField), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(10));
         parent.add(mReferenceField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+
     }
 
-    private static JCheckBox createTypeCheckBox(boolean selected, String tooltip) {
-        JCheckBox button = new JCheckBox();
-        button.setSelected(selected);
+    private static StdCheckbox createTypeCheckbox(boolean selected, String tooltip) {
+        StdCheckbox button = new StdCheckbox("", selected, null);
         button.setToolTipText(Text.wrapPlainTextForToolTip(tooltip));
         return button;
     }
 
-    private static StdLabel createTypeLabel(RetinaIcon icon, JCheckBox linkTo) {
+    private static StdLabel createTypeLabel(RetinaIcon icon, StdCheckbox linkTo) {
         StdLabel label = new StdLabel(icon, "");
         label.setRefersTo(linkTo);
         label.addMouseListener(new LinkAdapter(linkTo));
@@ -315,19 +310,19 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         } else {
             int type = 0;
 
-            if (mMentalType.isSelected()) {
+            if (mMentalType.isChecked()) {
                 type |= Advantage.TYPE_MASK_MENTAL;
             }
-            if (mPhysicalType.isSelected()) {
+            if (mPhysicalType.isChecked()) {
                 type |= Advantage.TYPE_MASK_PHYSICAL;
             }
-            if (mSocialType.isSelected()) {
+            if (mSocialType.isChecked()) {
                 type |= Advantage.TYPE_MASK_SOCIAL;
             }
-            if (mExoticType.isSelected()) {
+            if (mExoticType.isChecked()) {
                 type |= Advantage.TYPE_MASK_EXOTIC;
             }
-            if (mSupernaturalType.isSelected()) {
+            if (mSupernaturalType.isChecked()) {
                 type |= Advantage.TYPE_MASK_SUPERNATURAL;
             }
             modified |= mRow.setType(type);
@@ -374,7 +369,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         Object src = event.getSource();
         if (src == mLevelTypeCombo) {
             levelTypeChanged();
-        } else if (src == mModifiers || src == mShouldRoundCostDown || src == mHalfLevel || src == mEnabledCheckBox) {
+        } else if (src == mModifiers) {
             updatePoints();
         } else if (src == mCRCombo) {
             SelfControlRoll cr = getCR();
@@ -403,13 +398,13 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         if (isLeveled) {
             mLevelField.setValue(Integer.valueOf(mLastLevel));
             mLevelPointsField.setValue(Integer.valueOf(mLastPointsPerLevel));
-            mHalfLevel.setSelected(mLastHalfLevel && allowHalfLevels);
+            mHalfLevel.setChecked(mLastHalfLevel && allowHalfLevels);
         } else {
             mLastLevel = getLevels();
             mLastHalfLevel = getHalfLevel();
             mLastPointsPerLevel = getPointsPerLevel();
             mLevelField.setText("");
-            mHalfLevel.setSelected(false);
+            mHalfLevel.setChecked(false);
             mLevelPointsField.setText("");
         }
         mLevelField.setEnabled(isLeveled);
@@ -431,7 +426,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     }
 
     private boolean getHalfLevel() {
-        return mHalfLevel.isSelected();
+        return mHalfLevel.isChecked();
     }
 
     private int getPointsPerLevel() {
@@ -457,11 +452,11 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     }
 
     private boolean shouldRoundCostDown() {
-        return mShouldRoundCostDown.isSelected();
+        return mShouldRoundCostDown.isChecked();
     }
 
     private boolean enabled() {
-        return mEnabledCheckBox.isSelected();
+        return mEnabledCheckBox.isChecked();
     }
 
     private void docChanged(DocumentEvent event) {
@@ -496,15 +491,15 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     }
 
     static class LinkAdapter extends MouseAdapter {
-        private final JCheckBox mLinkTo;
+        private final StdCheckbox mLinkTo;
 
-        LinkAdapter(JCheckBox linkTo) {
+        LinkAdapter(StdCheckbox linkTo) {
             mLinkTo = linkTo;
         }
 
         @Override
         public void mouseClicked(MouseEvent event) {
-            mLinkTo.doClick();
+            mLinkTo.click();
         }
     }
 }

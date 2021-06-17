@@ -118,7 +118,9 @@ public class StdCheckbox extends StdPanel implements MouseListener, MouseMotionL
         mChecked = !mChecked;
         mPressed = wasPressed;
         paintImmediately(0, 0, width, height);
-        mClickFunction.checkboxClicked(this);
+        if (mClickFunction != null) {
+            mClickFunction.checkboxClicked(this);
+        }
     }
 
     @Override

@@ -18,6 +18,7 @@ import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
 import com.trollworks.gcs.ui.widget.MessageType;
+import com.trollworks.gcs.ui.widget.StdCheckbox;
 import com.trollworks.gcs.ui.widget.StdDialog;
 import com.trollworks.gcs.ui.widget.StdLabel;
 import com.trollworks.gcs.ui.widget.StdPanel;
@@ -34,7 +35,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
@@ -42,7 +42,7 @@ import javax.swing.border.CompoundBorder;
 /** Asks the user to enable/disable advantage modifiers. */
 public final class AdvantageModifierEnabler extends StdPanel {
     private Advantage           mAdvantage;
-    private JCheckBox[]         mEnabled;
+    private StdCheckbox[]       mEnabled;
     private AdvantageModifier[] mModifiers;
     private JComboBox<String>   mCRCombo;
 
@@ -138,9 +138,9 @@ public final class AdvantageModifierEnabler extends StdPanel {
         Arrays.sort(mModifiers);
 
         int length = mModifiers.length;
-        mEnabled = new JCheckBox[length];
+        mEnabled = new StdCheckbox[length];
         for (int i = 0; i < length; i++) {
-            mEnabled[i] = new JCheckBox(mModifiers[i].getFullDescription() + ", " + mModifiers[i].getCostDescription(), mModifiers[i].isEnabled());
+            mEnabled[i] = new StdCheckbox(mModifiers[i].getFullDescription() + ", " + mModifiers[i].getCostDescription(), mModifiers[i].isEnabled(), null);
             panel.add(mEnabled[i]);
         }
         return panel;
@@ -162,7 +162,7 @@ public final class AdvantageModifierEnabler extends StdPanel {
         }
         int length = mModifiers.length;
         for (int i = 0; i < length; i++) {
-            mModifiers[i].setEnabled(mEnabled[i].isSelected());
+            mModifiers[i].setEnabled(mEnabled[i].isChecked());
         }
     }
 }
