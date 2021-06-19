@@ -18,8 +18,10 @@ import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
+import com.trollworks.gcs.utility.text.NumericComparator;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -75,12 +77,14 @@ public abstract class ListFile extends DataFile {
     }
 
     /** @return The set of categories that exist in this ListFile. */
-    public Set<String> getCategories() {
+    public List<String> getCategories() {
         Set<String> set = new TreeSet<>();
         for (Row row : getTopLevelRows()) {
             processRowForCategories(row, set);
         }
-        return set;
+        List<String> list = new ArrayList<>(set);
+        list.sort(NumericComparator.CASELESS_COMPARATOR);
+        return list;
     }
 
     private static void processRowForCategories(Row row, Set<String> set) {

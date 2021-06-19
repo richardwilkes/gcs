@@ -23,6 +23,7 @@ import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.scale.Scales;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.Toolbar;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
@@ -37,14 +38,11 @@ import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.Font;
 import java.awt.KeyboardFocusManager;
 import java.awt.dnd.DropTarget;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JComboBox;
-import javax.swing.JList;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -52,9 +50,9 @@ import javax.swing.event.DocumentListener;
 /** A list from a library. */
 public abstract class LibraryDockable extends DataFileDockable implements RowFilter, DocumentListener, JumpToSearchTarget, RetargetableFocus, DataChangeListener, Runnable {
     private Toolbar           mToolbar;
-    private JComboBox<Scales> mScaleCombo;
+    private PopupMenu<Scales> mScalesPopup;
     private EditorField       mFilterField;
-    private JComboBox<String> mCategoryCombo;
+    private PopupMenu<String> mCategoryPopup;
     private FontAwesomeButton mLockButton;
     private ListOutline       mOutline;
     private boolean           mUpdatePending;
@@ -79,10 +77,8 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         mToolbar.add(mLockButton);
         mToolbar.add(new FontAwesomeButton("\uf0e8", I18n.text("Opens/closes all hierarchical rows"), () -> mOutline.getModel().toggleRowOpenState()));
         mToolbar.add(new FontAwesomeButton("\uf337", I18n.text("Sets the width of each column to exactly fit its contents"), () -> mOutline.sizeColumnsToFit()));
-        mScaleCombo = new JComboBox<>(Scales.values());
-        mScaleCombo.setSelectedItem(prefs.getInitialUIScale());
-        mScaleCombo.addActionListener((event) -> {
-            Scales scales = (Scales) mScaleCombo.getSelectedItem();
+        mScalesPopup = new PopupMenu<>(Scales.values(), (p) -> {
+            Scales scales = mScalesPopup.getSelectedItem();
             if (scales == null) {
                 scales = Scales.ACTUAL_SIZE;
             }
@@ -90,7 +86,8 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
             header.setScale(scale);
             content.setScale(scale);
         });
-        mToolbar.add(mScaleCombo);
+        mScalesPopup.setSelectedItem(prefs.getInitialUIScale(), false);
+        mToolbar.add(mScalesPopup);
         createFilterField();
         createCategoryCombo();
         add(mToolbar, BorderLayout.NORTH);
@@ -154,35 +151,40 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
     }
 
     private void createCategoryCombo() {
-        mCategoryCombo = new JComboBox<>();
-        // Next two client properties are specific to Mac OS X
-        mCategoryCombo.putClientProperty("JComponent.sizeVariant", "small");
-        mCategoryCombo.putClientProperty("JComboBox.isPopDown", Boolean.TRUE);
-        mCategoryCombo.setMaximumRowCount(20);
-        mCategoryCombo.setRenderer(new CategoryCellRenderer());
-        mCategoryCombo.addActionListener((event) -> {
-            mCategoryCombo.setFont(mCategoryCombo.getFont().deriveFont(mCategoryCombo.getSelectedIndex() == 0 ? Font.ITALIC : Font.PLAIN));
-            mCategoryCombo.revalidate();
-            mCategoryCombo.repaint();
+        mCategoryPopup = new PopupMenu<>(new ArrayList<>(), (p) -> {
             if (mOutline != null) {
                 mOutline.reapplyRowFilter();
             }
         });
-        mToolbar.add(mCategoryCombo);
         adjustCategoryCombo();
+        mToolbar.add(mCategoryPopup);
     }
 
     private void adjustCategoryCombo() {
-        mCategoryCombo.removeAllItems();
-        mCategoryCombo.addItem(I18n.text("Any Category"));
-        for (String category : getDataFile().getCategories()) {
-            mCategoryCombo.addItem(category);
+        String last = mCategoryPopup.getSelectedItem();
+        mCategoryPopup.clear();
+        mCategoryPopup.addItem(I18n.text("Any Category"));
+        List<String> categories = getDataFile().getCategories();
+        String       selection  = null;
+        if (!categories.isEmpty()) {
+            mCategoryPopup.addSeparator();
+            for (String category : categories) {
+                mCategoryPopup.addItem(category);
+                if (category.equals(last)) {
+                    selection = category;
+                }
+            }
         }
-        mCategoryCombo.setPreferredSize(null);
-        mCategoryCombo.setFont(mCategoryCombo.getFont().deriveFont(Font.ITALIC));
-        mCategoryCombo.setMinimumSize(new Dimension(36, mCategoryCombo.getPreferredSize().height));
-        mCategoryCombo.revalidate();
-        mCategoryCombo.repaint();
+        if (selection == null) {
+            mCategoryPopup.setSelectedIndex(0, false);
+        } else {
+            mCategoryPopup.setSelectedItem(selection, false);
+        }
+        mCategoryPopup.revalidate();
+        mCategoryPopup.repaint();
+        if (mOutline != null) {
+            mOutline.reapplyRowFilter();
+        }
     }
 
     @Override
@@ -190,8 +192,8 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         boolean filtered = false;
         if (row instanceof ListRow) {
             ListRow listRow = (ListRow) row;
-            if (mCategoryCombo.getSelectedIndex() != 0) {
-                String selectedItem = (String) mCategoryCombo.getSelectedItem();
+            if (mCategoryPopup.getSelectedIndex() != 0) {
+                String selectedItem = mCategoryPopup.getSelectedItem();
                 if (selectedItem != null) {
                     filtered = !listRow.getCategories().contains(selectedItem);
                 }
@@ -248,14 +250,5 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
     @Override
     public void jumpToSearchField() {
         mFilterField.requestFocus();
-    }
-
-    private static class CategoryCellRenderer extends DefaultListCellRenderer {
-        @Override
-        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            setFont(getFont().deriveFont(index == 0 ? Font.ITALIC : Font.PLAIN));
-            return comp;
-        }
     }
 }

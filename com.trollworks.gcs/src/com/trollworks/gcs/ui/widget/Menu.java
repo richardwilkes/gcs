@@ -17,6 +17,7 @@ import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
+import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.utility.task.Tasks;
@@ -144,7 +145,9 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
     }
 
     public void addSeparator() {
-        add(new Separator(), new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+        Separator sep = new Separator();
+        sep.setBorder(new EmptyBorder(2, 0, 2, 0));
+        add(sep, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
     public void addItem(MenuItem item) {
