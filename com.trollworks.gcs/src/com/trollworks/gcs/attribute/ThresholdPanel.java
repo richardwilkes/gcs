@@ -16,12 +16,12 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
+import com.trollworks.gcs.ui.widget.Checkbox;
 import com.trollworks.gcs.ui.widget.ContentPanel;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
-import com.trollworks.gcs.ui.widget.MultiLineTextField;
-import com.trollworks.gcs.ui.widget.Checkbox;
 import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.Container;

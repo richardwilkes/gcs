@@ -19,12 +19,12 @@ import com.trollworks.gcs.modifier.EquipmentModifierListEditor;
 import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
-import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.MultiLineTextField;
-import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.Checkbox;
+import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.Filtered;
 import com.trollworks.gcs.utility.Fixed6;
@@ -47,9 +47,9 @@ import javax.swing.event.DocumentListener;
 
 /** The detailed editor for {@link Equipment}s. */
 public class EquipmentEditor extends RowEditor<Equipment> implements DocumentListener {
-    private Checkbox    mEquippedCheckBox;
-    private Checkbox    mIgnoreWeightForSkillsCheckBox;
-    private EditorField mDescriptionField;
+    private Checkbox                    mEquippedCheckBox;
+    private Checkbox                    mIgnoreWeightForSkillsCheckBox;
+    private EditorField                 mDescriptionField;
     private EditorField                 mTechLevelField;
     private EditorField                 mLegalityClassField;
     private EditorField                 mQtyField;

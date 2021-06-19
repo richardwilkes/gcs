@@ -66,9 +66,9 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
     private              GURPSCharacter                     mCharacter;
     private              AttributeListPanel                 mListPanel;
     private              FontAwesomeButton                  mResetButton;
-    private FontAwesomeButton mMenuButton;
-    private ScrollPanel       mScroller;
-    private boolean           mUpdatePending;
+    private              FontAwesomeButton                  mMenuButton;
+    private              ScrollPanel                        mScroller;
+    private              boolean                            mUpdatePending;
 
     /** Displays the attribute settings window. */
     public static void display(GURPSCharacter gchar) {

@@ -58,9 +58,9 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
     private              GURPSCharacter                       mCharacter;
     private              HitLocationTablePanel                mLocationsPanel;
     private              FontAwesomeButton                    mResetButton;
-    private FontAwesomeButton mMenuButton;
-    private ScrollPanel       mScroller;
-    private boolean           mUpdatePending;
+    private              FontAwesomeButton                    mMenuButton;
+    private              ScrollPanel                          mScroller;
+    private              boolean                              mUpdatePending;
 
     /** Displays the hit location settings window. */
     public static void display(GURPSCharacter gchar) {

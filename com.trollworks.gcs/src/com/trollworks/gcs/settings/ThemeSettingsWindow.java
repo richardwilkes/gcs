@@ -23,10 +23,10 @@ import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.ColorWell;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.FontPanel;
-import com.trollworks.gcs.ui.widget.Separator;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
+import com.trollworks.gcs.ui.widget.Separator;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 

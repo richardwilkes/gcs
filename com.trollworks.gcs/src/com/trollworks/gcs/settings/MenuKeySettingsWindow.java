@@ -19,11 +19,11 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.widget.BandedPanel;
 import com.trollworks.gcs.ui.widget.BaseWindow;
-import com.trollworks.gcs.ui.widget.KeyStrokeDisplay;
-import com.trollworks.gcs.ui.widget.MessageType;
 import com.trollworks.gcs.ui.widget.Button;
-import com.trollworks.gcs.ui.widget.Modal;
+import com.trollworks.gcs.ui.widget.KeyStrokeDisplay;
 import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.MessageType;
+import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
@@ -42,12 +42,12 @@ import javax.swing.KeyStroke;
 
 /** A window for editing menu key settings. */
 public final class MenuKeySettingsWindow extends BaseWindow implements CloseHandler {
-    private static final String                  NONE = "NONE";
-    private static       boolean                 LOADED;
-    private static       MenuKeySettingsWindow   INSTANCE;
-    private BandedPanel          mPanel;
-    private Button               mResetButton;
-    private Map<Button, Command> mMap;
+    private static final String                NONE = "NONE";
+    private static       boolean               LOADED;
+    private static       MenuKeySettingsWindow INSTANCE;
+    private              BandedPanel           mPanel;
+    private              Button                mResetButton;
+    private              Map<Button, Command>  mMap;
 
     /** Displays the menu key settings window. */
     public static void display() {
@@ -99,8 +99,8 @@ public final class MenuKeySettingsWindow extends BaseWindow implements CloseHand
     private void addOne(Command cmd) {
         Button button = new Button(KeyStrokeDisplay.getKeyStrokeDisplay(KeyStroke.getKeyStroke('Z', InputEvent.META_DOWN_MASK | InputEvent.ALT_DOWN_MASK | InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK)), (btn) -> {
             Command          command = mMap.get(btn);
-            KeyStrokeDisplay ksd    = new KeyStrokeDisplay(command.getAccelerator());
-            Modal            dialog = Modal.prepareToShowMessage(this, I18n.text("Type a keystroke…"), MessageType.QUESTION, ksd);
+            KeyStrokeDisplay ksd     = new KeyStrokeDisplay(command.getAccelerator());
+            Modal            dialog  = Modal.prepareToShowMessage(this, I18n.text("Type a keystroke…"), MessageType.QUESTION, ksd);
             dialog.addButton(I18n.text("Accept"), Modal.OK);
             dialog.addButton(I18n.text("Clear"), 100);
             dialog.addButton(I18n.text("Reset"), 200);

@@ -317,7 +317,7 @@ public final class Json {
         } else {
             try {
                 c = mReader.read();
-            } catch(IOException ioe) {
+            } catch (IOException ioe) {
                 Log.error(toString());
                 throw ioe;
             }
