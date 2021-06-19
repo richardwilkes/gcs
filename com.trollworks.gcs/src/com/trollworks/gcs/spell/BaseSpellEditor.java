@@ -188,7 +188,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
     protected <E> PopupMenu<E> createPopupMenu(Container parent, E[] items, E selection, String tooltip, PopupMenu.SelectionListener<E> listener) {
         PopupMenu<E> popup = new PopupMenu<>(items, listener);
         popup.setToolTipText(tooltip);
-        popup.setSelectedItem(selection);
+        popup.setSelectedItem(selection, false);
         parent.add(popup);
         return popup;
     }

@@ -85,17 +85,17 @@ public class FontPanel extends ActionPanel implements ActionListener {
     /** @param font The new font. */
     public void setCurrentFont(Font font) {
         mNoNotify = true;
-        mFontNameMenu.setSelectedItem(font.getName());
+        mFontNameMenu.setSelectedItem(font.getName(), true);
         if (mFontNameMenu.getSelectedItem() == null) {
-            mFontNameMenu.setSelectedIndex(0);
+            mFontNameMenu.setSelectedIndex(0, true);
         }
-        mFontSizeMenu.setSelectedItem(Integer.valueOf(font.getSize()));
+        mFontSizeMenu.setSelectedItem(Integer.valueOf(font.getSize()), true);
         if (mFontSizeMenu.getSelectedItem() == null) {
-            mFontSizeMenu.setSelectedIndex(3);
+            mFontSizeMenu.setSelectedIndex(3, true);
         }
-        mFontStyleMenu.setSelectedItem(FontStyle.from(font));
+        mFontStyleMenu.setSelectedItem(FontStyle.from(font), true);
         if (mFontStyleMenu.getSelectedItem() == null) {
-            mFontStyleMenu.setSelectedIndex(0);
+            mFontStyleMenu.setSelectedIndex(0, true);
         }
         mNoNotify = false;
         notifyActionListeners();

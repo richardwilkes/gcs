@@ -27,6 +27,7 @@ import com.trollworks.gcs.ui.widget.Checkbox;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
@@ -38,22 +39,18 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import javax.swing.JComboBox;
-import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 // TODO: Fix layout around scrolling
 
-public final class SheetSettingsWindow extends BaseWindow implements ActionListener, DocumentListener, CloseHandler, DataChangeListener, PageSettingsEditor.ResetPageSettings {
+public final class SheetSettingsWindow extends BaseWindow implements DocumentListener, CloseHandler, DataChangeListener, PageSettingsEditor.ResetPageSettings {
     private static final Map<UUID, SheetSettingsWindow> INSTANCES = new HashMap<>();
     private              GURPSCharacter                 mCharacter;
     private              SheetSettings                  mSheetSettings;
@@ -69,12 +66,12 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
     private              Checkbox                       mShowEquipmentModifierAdj;
     private              Checkbox                       mShowSpellAdj;
     private              Checkbox                       mShowTitleInsteadOfNameInPageFooter;
-    private              JComboBox<LengthUnits>         mLengthUnitsCombo;
-    private              JComboBox<WeightUnits>         mWeightUnitsCombo;
-    private              JComboBox<DisplayOption>       mUserDescriptionDisplayCombo;
-    private              JComboBox<DisplayOption>       mModifiersDisplayCombo;
-    private              JComboBox<DisplayOption>       mNotesDisplayCombo;
-    private              JTextArea                      mBlockLayoutField;
+    private              PopupMenu<LengthUnits>         mLengthUnitsCombo;
+    private              PopupMenu<WeightUnits>         mWeightUnitsCombo;
+    private              PopupMenu<DisplayOption>       mUserDescriptionDisplayCombo;
+    private              PopupMenu<DisplayOption>       mModifiersDisplayCombo;
+    private              PopupMenu<DisplayOption>       mNotesDisplayCombo;
+    private              MultiLineTextField             mBlockLayoutField;
     private              PageSettingsEditor             mPageSettingsEditor;
     private              Button                         mResetButton;
     private              boolean                        mUpdatePending;
@@ -170,9 +167,22 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
                     adjustResetButton();
                 });
         String tooltip = I18n.text("Where to display this information");
-        mUserDescriptionDisplayCombo = addCombo(left, DisplayOption.values(), mSheetSettings.userDescriptionDisplay(), I18n.text("Show User Description"), tooltip);
-        mModifiersDisplayCombo = addCombo(left, DisplayOption.values(), mSheetSettings.modifiersDisplay(), I18n.text("Show Modifiers"), tooltip);
-        mNotesDisplayCombo = addCombo(left, DisplayOption.values(), mSheetSettings.notesDisplay(), I18n.text("Show Notes"), tooltip);
+        mUserDescriptionDisplayCombo = addPopupMenu(left, DisplayOption.values(),
+                mSheetSettings.userDescriptionDisplay(), I18n.text("Show User Description"),
+                tooltip, (p) -> {
+                    mSheetSettings.setUserDescriptionDisplay(mUserDescriptionDisplayCombo.getSelectedItem());
+                    adjustResetButton();
+                });
+        mModifiersDisplayCombo = addPopupMenu(left, DisplayOption.values(),
+                mSheetSettings.modifiersDisplay(), I18n.text("Show Modifiers"), tooltip, (p) -> {
+                    mSheetSettings.setModifiersDisplay(mModifiersDisplayCombo.getSelectedItem());
+                    adjustResetButton();
+                });
+        mNotesDisplayCombo = addPopupMenu(left, DisplayOption.values(), mSheetSettings.notesDisplay(),
+                I18n.text("Show Notes"), tooltip, (p) -> {
+                    mSheetSettings.setNotesDisplay(mNotesDisplayCombo.getSelectedItem());
+                    adjustResetButton();
+                });
         String blockLayoutTooltip = I18n.text("Specifies the layout of the various blocks of data on the character sheet");
         mBlockLayoutField = new MultiLineTextField(Settings.linesToString(mSheetSettings.blockLayout()), blockLayoutTooltip, this);
         left.add(new Label(I18n.text("Block Layout")), new PrecisionLayoutData().setHorizontalSpan(2));
@@ -213,8 +223,18 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
                     mSheetSettings.setUseSimpleMetricConversions(b.isChecked());
                     adjustResetButton();
                 });
-        mLengthUnitsCombo = addCombo(right, LengthUnits.values(), mSheetSettings.defaultLengthUnits(), I18n.text("Length Units"), I18n.text("The units to use for display of generated lengths"));
-        mWeightUnitsCombo = addCombo(right, WeightUnits.values(), mSheetSettings.defaultWeightUnits(), I18n.text("Weight Units"), I18n.text("The units to use for display of generated weights"));
+        mLengthUnitsCombo = addPopupMenu(right, LengthUnits.values(),
+                mSheetSettings.defaultLengthUnits(), I18n.text("Length Units"),
+                I18n.text("The units to use for display of generated lengths"), (p) -> {
+                    mSheetSettings.setDefaultLengthUnits(mLengthUnitsCombo.getSelectedItem());
+                    adjustResetButton();
+                });
+        mWeightUnitsCombo = addPopupMenu(right, WeightUnits.values(),
+                mSheetSettings.defaultWeightUnits(), I18n.text("Weight Units"),
+                I18n.text("The units to use for display of generated weights"), (p) -> {
+                    mSheetSettings.setDefaultWeightUnits(mWeightUnitsCombo.getSelectedItem());
+                    adjustResetButton();
+                });
         mPageSettingsEditor = new PageSettingsEditor(mSheetSettings.getPageSettings(), this::adjustResetButton, this);
         right.add(mPageSettingsEditor, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment().setHorizontalSpan(2).setTopMargin(10));
 
@@ -238,13 +258,10 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
         panel.add(new Label(title, SwingConstants.RIGHT), new PrecisionLayoutData().setFillHorizontalAlignment());
     }
 
-    private <E> JComboBox<E> addCombo(Panel panel, E[] values, E choice, String title, String tooltip) {
-        JComboBox<E> combo = new JComboBox<>(values);
-        combo.setOpaque(false);
+    private static <E> PopupMenu<E> addPopupMenu(Panel panel, E[] values, E choice, String title, String tooltip, PopupMenu.SelectionListener<E> listener) {
+        PopupMenu<E> combo = new PopupMenu<>(values, listener);
         combo.setToolTipText(tooltip);
-        combo.setSelectedItem(choice);
-        combo.addActionListener(this);
-        combo.setMaximumRowCount(combo.getItemCount());
+        combo.setSelectedItem(choice, false);
         panel.add(new Label(title, combo), new PrecisionLayoutData().setFillHorizontalAlignment());
         panel.add(combo);
         return combo;
@@ -285,23 +302,6 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
         return atDefaults;
     }
 
-    @Override
-    public void actionPerformed(ActionEvent event) {
-        Object source = event.getSource();
-        if (source == mLengthUnitsCombo) {
-            mSheetSettings.setDefaultLengthUnits((LengthUnits) mLengthUnitsCombo.getSelectedItem());
-        } else if (source == mWeightUnitsCombo) {
-            mSheetSettings.setDefaultWeightUnits((WeightUnits) mWeightUnitsCombo.getSelectedItem());
-        } else if (source == mUserDescriptionDisplayCombo) {
-            mSheetSettings.setUserDescriptionDisplay((DisplayOption) mUserDescriptionDisplayCombo.getSelectedItem());
-        } else if (source == mModifiersDisplayCombo) {
-            mSheetSettings.setModifiersDisplay((DisplayOption) mModifiersDisplayCombo.getSelectedItem());
-        } else if (source == mNotesDisplayCombo) {
-            mSheetSettings.setNotesDisplay((DisplayOption) mNotesDisplayCombo.getSelectedItem());
-        }
-        adjustResetButton();
-    }
-
     private void reset() {
         SheetSettings defaults = new SheetSettings(mCharacter);
         mUseModifyingDicePlusAdds.setChecked(defaults.useModifyingDicePlusAdds());
@@ -316,11 +316,11 @@ public final class SheetSettingsWindow extends BaseWindow implements ActionListe
         mUseThrustEqualsSwingMinus2.setChecked(defaults.useThrustEqualsSwingMinus2());
         mUseReducedSwing.setChecked(defaults.useReducedSwing());
         mUseSimpleMetricConversions.setChecked(defaults.useSimpleMetricConversions());
-        mLengthUnitsCombo.setSelectedItem(defaults.defaultLengthUnits());
-        mWeightUnitsCombo.setSelectedItem(defaults.defaultWeightUnits());
-        mUserDescriptionDisplayCombo.setSelectedItem(defaults.userDescriptionDisplay());
-        mModifiersDisplayCombo.setSelectedItem(defaults.modifiersDisplay());
-        mNotesDisplayCombo.setSelectedItem(defaults.notesDisplay());
+        mLengthUnitsCombo.setSelectedItem(defaults.defaultLengthUnits(), true);
+        mWeightUnitsCombo.setSelectedItem(defaults.defaultWeightUnits(), true);
+        mUserDescriptionDisplayCombo.setSelectedItem(defaults.userDescriptionDisplay(), true);
+        mModifiersDisplayCombo.setSelectedItem(defaults.modifiersDisplay(), true);
+        mNotesDisplayCombo.setSelectedItem(defaults.notesDisplay(), true);
         mBlockLayoutField.setText(Settings.linesToString(defaults.blockLayout()));
         mPageSettingsEditor.reset();
         adjustResetButton();

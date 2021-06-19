@@ -94,18 +94,18 @@ public class PopupMenu<T> extends Panel implements MouseListener, MouseMotionLis
         return mSelection < mItems.size() ? mItems.get(mSelection) : null;
     }
 
-    public void setSelectedIndex(int index) {
+    public void setSelectedIndex(int index, boolean notifyListeners) {
         if (index != mSelection && index >= 0 && index < mItems.size() && mItems.get(index) != null) {
             mSelection = index;
             repaint();
-            if (mSelectionListener != null) {
+            if (notifyListeners && mSelectionListener != null) {
                 mSelectionListener.popupMenuItemSelected(this);
             }
         }
     }
 
-    public final void setSelectedItem(T item) {
-        setSelectedIndex(mItems.indexOf(item));
+    public final void setSelectedItem(T item, boolean notifyListeners) {
+        setSelectedIndex(mItems.indexOf(item), notifyListeners);
     }
 
     public final int itemCount() {
@@ -374,7 +374,7 @@ public class PopupMenu<T> extends Panel implements MouseListener, MouseMotionLis
                 mMenu.addSeparator();
             } else {
                 int index = i;
-                mMenu.addItem(new MenuItem(item.toString(), (mi) -> setSelectedIndex(index)));
+                mMenu.addItem(new MenuItem(item.toString(), (mi) -> setSelectedIndex(index, true)));
             }
             i++;
         }

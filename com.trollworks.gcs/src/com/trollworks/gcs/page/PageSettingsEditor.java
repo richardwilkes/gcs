@@ -93,7 +93,7 @@ public class PageSettingsEditor extends Panel {
 
     private <T> PopupMenu<T> addPopupMenu(String title, T[] values, T selection, PopupMenu.SelectionListener<T> listener) {
         PopupMenu<T> popup = new PopupMenu<>(values, listener);
-        popup.setSelectedItem(selection);
+        popup.setSelectedItem(selection, false);
         if (title != null) {
             add(new Label(title, popup), new PrecisionLayoutData().setFillHorizontalAlignment());
         }
@@ -103,8 +103,8 @@ public class PageSettingsEditor extends Panel {
 
     public void reset() {
         mResetCallback.resetPageSettings(mSettings);
-        mPaperSize.setSelectedItem(mSettings.getPaperSize());
-        mOrientation.setSelectedItem(mSettings.getPageOrientation());
+        mPaperSize.setSelectedItem(mSettings.getPaperSize(), true);
+        mOrientation.setSelectedItem(mSettings.getPageOrientation(), true);
         mTopMargin.setValue(mSettings.getTopMargin());
         mLeftMargin.setValue(mSettings.getLeftMargin());
         mBottomMargin.setValue(mSettings.getBottomMargin());

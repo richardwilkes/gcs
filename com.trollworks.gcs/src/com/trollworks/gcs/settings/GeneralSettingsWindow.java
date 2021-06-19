@@ -123,7 +123,7 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
             Settings.getInstance().setInitialUIScale(p.getSelectedItem());
             adjustResetButton();
         });
-        mInitialScale.setSelectedItem(prefs.getInitialUIScale());
+        mInitialScale.setSelectedItem(prefs.getInitialUIScale(), false);
         content.add(new Label(I18n.text("Initial Scale"), mInitialScale), new PrecisionLayoutData().setFillHorizontalAlignment());
         wrapper = new Wrapper(new PrecisionLayout().setMargins(0).setColumns(7));
         content.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(2));
@@ -204,7 +204,7 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
         mTechLevel.setValue(Settings.DEFAULT_DEFAULT_TECH_LEVEL);
         mInitialPoints.setValue(Integer.valueOf(Settings.DEFAULT_INITIAL_POINTS));
         mAutoFillProfile.setChecked(Settings.DEFAULT_AUTO_FILL_PROFILE);
-        mInitialScale.setSelectedItem(Settings.DEFAULT_INITIAL_UI_SCALE);
+        mInitialScale.setSelectedItem(Settings.DEFAULT_INITIAL_UI_SCALE, true);
         mToolTipTimeout.setValue(Integer.valueOf(Settings.DEFAULT_TOOLTIP_TIMEOUT));
         mImageResolution.setValue(Integer.valueOf(Settings.DEFAULT_IMAGE_RESOLUTION));
         mIncludeUnspentPointsInTotal.setChecked(Settings.DEFAULT_INCLUDE_UNSPENT_POINTS_IN_TOTAL);
