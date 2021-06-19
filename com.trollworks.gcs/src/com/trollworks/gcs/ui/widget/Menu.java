@@ -263,6 +263,9 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
                 if (mSelection != null) {
                     close();
                 }
+            } else if (keyCode == KeyEvent.VK_ESCAPE) {
+                mSelection = null;
+                close();
             }
         }
     }
@@ -277,14 +280,23 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
             bounds.height -= mBottomScrollArea.height;
         }
         Rectangle compBounds = mSelection.getBounds();
+        int       state      = -1;
         while (!bounds.contains(compBounds)) {
             if (compBounds.y < bounds.y) {
+                if (state == 1) {
+                    break;
+                }
+                state = 0;
                 int top = mTop;
                 setTop(mTop - 1);
                 if (top == mTop) {
                     break;
                 }
             } else if (compBounds.y + compBounds.height > bounds.y + bounds.height) {
+                if (state == 0) {
+                    break;
+                }
+                state = 1;
                 int top = mTop;
                 setTop(mTop + 1);
                 if (top == mTop) {

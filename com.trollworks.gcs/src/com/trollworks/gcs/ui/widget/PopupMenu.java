@@ -385,9 +385,8 @@ public class PopupMenu<T> extends Panel implements MouseListener, MouseMotionLis
             prefSize.width = controlBounds.width;
         }
         Rectangle maxBounds = WindowUtils.getMaximumWindowBounds(this, controlBounds);
-        int       maxHeight = maxBounds.height - 40;
-        if (prefSize.height > maxHeight) {
-            prefSize.height = maxHeight;
+        if (prefSize.height > maxBounds.height) {
+            prefSize.height = maxBounds.height;
         }
         mMenu.setPreferredSize(prefSize);
         mMenu.setSize(prefSize);
@@ -408,6 +407,16 @@ public class PopupMenu<T> extends Panel implements MouseListener, MouseMotionLis
                     break;
                 }
             }
+        }
+        if (pt.y + prefSize.height > maxBounds.y + maxBounds.height) {
+            prefSize.height = maxBounds.y + maxBounds.height - pt.y;
+            int minHeight = mMenu.getMinimumSize().height;
+            if (minHeight > prefSize.height) {
+                pt.y -= minHeight - prefSize.height;
+                prefSize.height = minHeight;
+            }
+            mMenu.setPreferredSize(prefSize);
+            mMenu.setSize(prefSize);
         }
         PopupFactory factory = PopupFactory.getSharedInstance();
         Popup        popup   = factory.getPopup(this, mMenu, pt.x, pt.y);
