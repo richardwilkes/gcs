@@ -26,6 +26,7 @@ import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
@@ -44,7 +45,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import javax.swing.JComboBox;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -59,11 +59,11 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     private Checkbox                   mHasTechLevel;
     private EditorField                mTechLevel;
     private String                     mSavedTechLevel;
-    private JComboBox<AttributeChoice> mAttributePopup;
-    private JComboBox<Object>          mDifficultyPopup;
+    private PopupMenu<AttributeChoice> mAttributePopup;
+    private PopupMenu<Object>          mDifficultyPopup;
     private EditorField                mPointsField;
     private EditorField                mLevelField;
-    private JComboBox<Object>          mEncPenaltyPopup;
+    private PopupMenu<String>          mEncPenaltyPopup;
     private PrereqsPanel               mPrereqs;
     private FeaturesPanel              mFeatures;
     private Defaults                   mDefaults;
@@ -210,16 +210,19 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         }
     }
 
-    private JComboBox<Object> createEncumbrancePenaltyMultiplierPopup(Container parent) {
-        Object[] items = new Object[10];
+    private PopupMenu<String> createEncumbrancePenaltyMultiplierPopup(Container parent) {
+        String[] items = new String[10];
         items[0] = I18n.text("No penalty due to encumbrance");
         items[1] = I18n.text("Penalty equal to the current encumbrance level");
         for (int i = 2; i < 10; i++) {
-            items[i] = MessageFormat.format(I18n.text("Penalty equal to {0} times the current encumbrance level"), Integer.valueOf(i));
+            items[i] = MessageFormat.format(I18n.text("Penalty equal to {0} times the current encumbrance level"),
+                    Integer.valueOf(i));
         }
         Label label = new Label(I18n.text("Encumbrance"));
         parent.add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
-        JComboBox<Object> popup = createComboBox(parent, items, items[mRow.getEncumbrancePenaltyMultiplier()], I18n.text("The encumbrance penalty multiplier"));
+        PopupMenu<String> popup = createComboBox(parent, items,
+                items[mRow.getEncumbrancePenaltyMultiplier()],
+                I18n.text("The encumbrance penalty multiplier"), (p) -> recalculateLevel());
         label.setRefersTo(popup);
         return popup;
     }
@@ -253,9 +256,12 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
             }
         }
         Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(columns));
-        mAttributePopup = createComboBox(wrapper, list.toArray(new AttributeChoice[0]), current, I18n.text("The attribute this skill is based on"));
+        mAttributePopup = createComboBox(wrapper, list.toArray(new AttributeChoice[0]), current,
+                I18n.text("The attribute this skill is based on"), (p) -> recalculateLevel());
         wrapper.add(new Label("/"));
-        mDifficultyPopup = createComboBox(wrapper, SkillDifficulty.values(), mRow.getDifficulty(), I18n.text("The relative difficulty of learning this skill"));
+        mDifficultyPopup = createComboBox(wrapper, SkillDifficulty.values(), mRow.getDifficulty(),
+                I18n.text("The relative difficulty of learning this skill"),
+                (p) -> recalculateLevel());
 
         if (forCharacterOrTemplate) {
             createPointsFields(wrapper, character != null);
@@ -265,14 +271,12 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
-    private <T> JComboBox<T> createComboBox(Container parent, T[] items, T selection, String tooltip) {
-        JComboBox<T> combo = new JComboBox<>(items);
-        combo.setToolTipText(tooltip);
-        combo.setSelectedItem(selection);
-        combo.addActionListener(this);
-        combo.setMaximumRowCount(items.length);
-        parent.add(combo);
-        return combo;
+    private static <T> PopupMenu<T> createComboBox(Container parent, T[] items, T selection, String tooltip, PopupMenu.SelectionListener<T> listener) {
+        PopupMenu<T> popup = new PopupMenu<>(items, listener);
+        popup.setToolTipText(tooltip);
+        popup.setSelectedItem(selection, false);
+        parent.add(popup);
+        return popup;
     }
 
     private void recalculateLevel() {
@@ -289,7 +293,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     }
 
     private String getSkillAttribute() {
-        AttributeChoice choice = (AttributeChoice) mAttributePopup.getSelectedItem();
+        AttributeChoice choice = mAttributePopup.getSelectedItem();
         return choice != null ? choice.getAttribute() : Skill.getDefaultAttribute("dx");
     }
 
@@ -363,7 +367,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     }
 
     protected void adjustForSource(Object src) {
-        if (src == mAttributePopup || src == mDifficultyPopup || src == mDefaults || src == mEncPenaltyPopup) {
+        if (src == mDefaults) {
             recalculateLevel();
         }
     }
