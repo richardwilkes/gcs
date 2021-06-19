@@ -20,16 +20,15 @@ import com.trollworks.gcs.ui.widget.ContentPanel;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.ID;
 import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Container;
 import java.awt.Rectangle;
-import java.awt.event.ItemListener;
 import java.util.List;
 import java.util.Map;
-import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField.AbstractFormatterFactory;
 import javax.swing.SwingConstants;
 
@@ -127,10 +126,10 @@ public class AttributePanel extends ContentPanel {
         mCenter.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
 
         wrapper = new ContentPanel(new PrecisionLayout().setColumns(7).setMargins(0), false);
-        addAttributeTypeCombo(wrapper,
+        addAttributeTypePopup(wrapper,
                 attrDef.getType(),
-                (evt) -> {
-                    mAttrDef.setType((AttributeType) evt.getItem());
+                (p) -> {
+                    mAttrDef.setType(p.getSelectedItem());
                     if (mAttrDef.getType() == AttributeType.POOL) {
                         if (mThresholdListPanel == null) {
                             mThresholdListPanel = new ThresholdListPanel(mAttrDef, mAdjustCallback);
@@ -205,10 +204,9 @@ public class AttributePanel extends ContentPanel {
         return field;
     }
 
-    private static void addAttributeTypeCombo(Container container, AttributeType value, ItemListener listener) {
-        JComboBox<AttributeType> combo = new JComboBox<>(AttributeType.values());
-        combo.setSelectedItem(value);
-        combo.addItemListener(listener);
+    private static void addAttributeTypePopup(Container container, AttributeType value, PopupMenu.SelectionListener<AttributeType> listener) {
+        PopupMenu<AttributeType> combo = new PopupMenu<>(AttributeType.values(), listener);
+        combo.setSelectedItem(value, false);
         container.add(combo);
     }
 
