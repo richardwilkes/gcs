@@ -66,11 +66,11 @@ public final class SheetSettingsWindow extends BaseWindow implements DocumentLis
     private              Checkbox                       mShowEquipmentModifierAdj;
     private              Checkbox                       mShowSpellAdj;
     private              Checkbox                       mShowTitleInsteadOfNameInPageFooter;
-    private              PopupMenu<LengthUnits>         mLengthUnitsCombo;
-    private              PopupMenu<WeightUnits>         mWeightUnitsCombo;
-    private              PopupMenu<DisplayOption>       mUserDescriptionDisplayCombo;
-    private              PopupMenu<DisplayOption>       mModifiersDisplayCombo;
-    private              PopupMenu<DisplayOption>       mNotesDisplayCombo;
+    private              PopupMenu<LengthUnits>         mLengthUnitsPopup;
+    private              PopupMenu<WeightUnits>         mWeightUnitsPopup;
+    private              PopupMenu<DisplayOption>       mUserDescriptionDisplayPopup;
+    private              PopupMenu<DisplayOption>       mModifiersDisplayPopup;
+    private              PopupMenu<DisplayOption>       mNotesDisplayPopup;
     private              MultiLineTextField             mBlockLayoutField;
     private              PageSettingsEditor             mPageSettingsEditor;
     private              Button                         mResetButton;
@@ -167,20 +167,20 @@ public final class SheetSettingsWindow extends BaseWindow implements DocumentLis
                     adjustResetButton();
                 });
         String tooltip = I18n.text("Where to display this information");
-        mUserDescriptionDisplayCombo = addPopupMenu(left, DisplayOption.values(),
+        mUserDescriptionDisplayPopup = addPopupMenu(left, DisplayOption.values(),
                 mSheetSettings.userDescriptionDisplay(), I18n.text("Show User Description"),
                 tooltip, (p) -> {
-                    mSheetSettings.setUserDescriptionDisplay(mUserDescriptionDisplayCombo.getSelectedItem());
+                    mSheetSettings.setUserDescriptionDisplay(mUserDescriptionDisplayPopup.getSelectedItem());
                     adjustResetButton();
                 });
-        mModifiersDisplayCombo = addPopupMenu(left, DisplayOption.values(),
+        mModifiersDisplayPopup = addPopupMenu(left, DisplayOption.values(),
                 mSheetSettings.modifiersDisplay(), I18n.text("Show Modifiers"), tooltip, (p) -> {
-                    mSheetSettings.setModifiersDisplay(mModifiersDisplayCombo.getSelectedItem());
+                    mSheetSettings.setModifiersDisplay(mModifiersDisplayPopup.getSelectedItem());
                     adjustResetButton();
                 });
-        mNotesDisplayCombo = addPopupMenu(left, DisplayOption.values(), mSheetSettings.notesDisplay(),
+        mNotesDisplayPopup = addPopupMenu(left, DisplayOption.values(), mSheetSettings.notesDisplay(),
                 I18n.text("Show Notes"), tooltip, (p) -> {
-                    mSheetSettings.setNotesDisplay(mNotesDisplayCombo.getSelectedItem());
+                    mSheetSettings.setNotesDisplay(mNotesDisplayPopup.getSelectedItem());
                     adjustResetButton();
                 });
         String blockLayoutTooltip = I18n.text("Specifies the layout of the various blocks of data on the character sheet");
@@ -223,16 +223,16 @@ public final class SheetSettingsWindow extends BaseWindow implements DocumentLis
                     mSheetSettings.setUseSimpleMetricConversions(b.isChecked());
                     adjustResetButton();
                 });
-        mLengthUnitsCombo = addPopupMenu(right, LengthUnits.values(),
+        mLengthUnitsPopup = addPopupMenu(right, LengthUnits.values(),
                 mSheetSettings.defaultLengthUnits(), I18n.text("Length Units"),
                 I18n.text("The units to use for display of generated lengths"), (p) -> {
-                    mSheetSettings.setDefaultLengthUnits(mLengthUnitsCombo.getSelectedItem());
+                    mSheetSettings.setDefaultLengthUnits(mLengthUnitsPopup.getSelectedItem());
                     adjustResetButton();
                 });
-        mWeightUnitsCombo = addPopupMenu(right, WeightUnits.values(),
+        mWeightUnitsPopup = addPopupMenu(right, WeightUnits.values(),
                 mSheetSettings.defaultWeightUnits(), I18n.text("Weight Units"),
                 I18n.text("The units to use for display of generated weights"), (p) -> {
-                    mSheetSettings.setDefaultWeightUnits(mWeightUnitsCombo.getSelectedItem());
+                    mSheetSettings.setDefaultWeightUnits(mWeightUnitsPopup.getSelectedItem());
                     adjustResetButton();
                 });
         mPageSettingsEditor = new PageSettingsEditor(mSheetSettings.getPageSettings(), this::adjustResetButton, this);
@@ -292,11 +292,11 @@ public final class SheetSettingsWindow extends BaseWindow implements DocumentLis
         atDefaults = atDefaults && mUseThrustEqualsSwingMinus2.isChecked() == defaults.useThrustEqualsSwingMinus2();
         atDefaults = atDefaults && mUseReducedSwing.isChecked() == defaults.useReducedSwing();
         atDefaults = atDefaults && mUseSimpleMetricConversions.isChecked() == defaults.useSimpleMetricConversions();
-        atDefaults = atDefaults && mLengthUnitsCombo.getSelectedItem() == defaults.defaultLengthUnits();
-        atDefaults = atDefaults && mWeightUnitsCombo.getSelectedItem() == defaults.defaultWeightUnits();
-        atDefaults = atDefaults && mUserDescriptionDisplayCombo.getSelectedItem() == defaults.userDescriptionDisplay();
-        atDefaults = atDefaults && mModifiersDisplayCombo.getSelectedItem() == defaults.modifiersDisplay();
-        atDefaults = atDefaults && mNotesDisplayCombo.getSelectedItem() == defaults.notesDisplay();
+        atDefaults = atDefaults && mLengthUnitsPopup.getSelectedItem() == defaults.defaultLengthUnits();
+        atDefaults = atDefaults && mWeightUnitsPopup.getSelectedItem() == defaults.defaultWeightUnits();
+        atDefaults = atDefaults && mUserDescriptionDisplayPopup.getSelectedItem() == defaults.userDescriptionDisplay();
+        atDefaults = atDefaults && mModifiersDisplayPopup.getSelectedItem() == defaults.modifiersDisplay();
+        atDefaults = atDefaults && mNotesDisplayPopup.getSelectedItem() == defaults.notesDisplay();
         atDefaults = atDefaults && mBlockLayoutField.getText().equals(Settings.linesToString(defaults.blockLayout()));
         atDefaults = atDefaults && mSheetSettings.getPageSettings().equals(defaults.getPageSettings());
         return atDefaults;
@@ -316,11 +316,11 @@ public final class SheetSettingsWindow extends BaseWindow implements DocumentLis
         mUseThrustEqualsSwingMinus2.setChecked(defaults.useThrustEqualsSwingMinus2());
         mUseReducedSwing.setChecked(defaults.useReducedSwing());
         mUseSimpleMetricConversions.setChecked(defaults.useSimpleMetricConversions());
-        mLengthUnitsCombo.setSelectedItem(defaults.defaultLengthUnits(), true);
-        mWeightUnitsCombo.setSelectedItem(defaults.defaultWeightUnits(), true);
-        mUserDescriptionDisplayCombo.setSelectedItem(defaults.userDescriptionDisplay(), true);
-        mModifiersDisplayCombo.setSelectedItem(defaults.modifiersDisplay(), true);
-        mNotesDisplayCombo.setSelectedItem(defaults.notesDisplay(), true);
+        mLengthUnitsPopup.setSelectedItem(defaults.defaultLengthUnits(), true);
+        mWeightUnitsPopup.setSelectedItem(defaults.defaultWeightUnits(), true);
+        mUserDescriptionDisplayPopup.setSelectedItem(defaults.userDescriptionDisplay(), true);
+        mModifiersDisplayPopup.setSelectedItem(defaults.modifiersDisplay(), true);
+        mNotesDisplayPopup.setSelectedItem(defaults.notesDisplay(), true);
         mBlockLayoutField.setText(Settings.linesToString(defaults.blockLayout()));
         mPageSettingsEditor.reset();
         adjustResetButton();
