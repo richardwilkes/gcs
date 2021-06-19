@@ -20,8 +20,8 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
-import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Outline;
@@ -49,16 +49,16 @@ import javax.swing.text.Document;
 
 /** An abstract editor for weapon statistics. */
 public abstract class WeaponListEditor extends Panel implements ActionListener, EditorField.ChangeListener, DocumentListener {
-    private ListRow                   mOwner;
-    private WeaponOutline             mOutline;
-    private FontAwesomeButton         mAddButton;
-    private FontAwesomeButton         mDeleteButton;
-    private FontAwesomeButton         mDuplicateButton;
-    private Panel                     mEditorPanel;
-    private EditorField               mUsage;
-    private MultiLineTextField        mUsageNotes;
-    private EditorField               mStrength;
-    private JComboBox<WeaponSTDamage> mDamageSTCombo;
+    private ListRow                      mOwner;
+    private WeaponOutline                mOutline;
+    private FontAwesomeButton            mAddButton;
+    private FontAwesomeButton            mDeleteButton;
+    private FontAwesomeButton            mDuplicateButton;
+    private Panel                        mEditorPanel;
+    private EditorField                  mUsage;
+    private MultiLineTextField           mUsageNotes;
+    private EditorField                  mStrength;
+    private JComboBox<WeaponSTDamage>    mDamageSTCombo;
     private EditorField                  mDamageBase;
     private EditorField                  mDamageArmorDivisor;
     private EditorField                  mDamageType;

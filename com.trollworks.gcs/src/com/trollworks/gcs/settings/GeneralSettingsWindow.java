@@ -22,9 +22,10 @@ import com.trollworks.gcs.ui.scale.Scales;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.Button;
 import com.trollworks.gcs.ui.widget.Checkbox;
-import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.Modal;
+import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.ui.widget.Wrapper;
 import com.trollworks.gcs.utility.I18n;
@@ -32,11 +33,9 @@ import com.trollworks.gcs.utility.I18n;
 import java.awt.Container;
 import java.awt.Desktop;
 import java.awt.Dimension;
-import java.awt.event.ItemEvent;
 import java.awt.event.WindowEvent;
 import java.net.URI;
 import java.text.MessageFormat;
-import javax.swing.JComboBox;
 import javax.swing.SwingConstants;
 
 public final class GeneralSettingsWindow extends BaseWindow implements CloseHandler {
@@ -45,7 +44,7 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
     private        EditorField           mTechLevel;
     private        EditorField           mInitialPoints;
     private        Checkbox              mAutoFillProfile;
-    private        JComboBox<Scales>     mInitialScale;
+    private        PopupMenu<Scales>     mInitialScale;
     private        EditorField           mToolTipTimeout;
     private        EditorField           mImageResolution;
     private        Checkbox              mIncludeUnspentPointsInTotal;
@@ -120,16 +119,11 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
         content.add(mIncludeUnspentPointsInTotal);
 
         // Third row
-        mInitialScale = new JComboBox<>(Scales.values());
-        mInitialScale.setOpaque(false);
-        mInitialScale.setSelectedItem(prefs.getInitialUIScale());
-        mInitialScale.addItemListener((event) -> {
-            if (event.getStateChange() == ItemEvent.SELECTED) {
-                Settings.getInstance().setInitialUIScale((Scales) event.getItem());
-            }
+        mInitialScale = new PopupMenu<>(Scales.values(), (p) -> {
+            Settings.getInstance().setInitialUIScale(p.getSelectedItem());
             adjustResetButton();
         });
-        mInitialScale.setMaximumRowCount(mInitialScale.getItemCount());
+        mInitialScale.setSelectedItem(prefs.getInitialUIScale());
         content.add(new Label(I18n.text("Initial Scale"), mInitialScale), new PrecisionLayoutData().setFillHorizontalAlignment());
         wrapper = new Wrapper(new PrecisionLayout().setMargins(0).setColumns(7));
         content.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(2));
@@ -219,7 +213,9 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
     }
 
     private void adjustResetButton() {
-        mResetButton.setEnabled(!isSetToDefaults());
+        if (mResetButton != null) {
+            mResetButton.setEnabled(!isSetToDefaults());
+        }
     }
 
     private static boolean isSetToDefaults() {

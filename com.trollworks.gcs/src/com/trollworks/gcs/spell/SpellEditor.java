@@ -21,10 +21,11 @@ import com.trollworks.gcs.skill.SkillLevel;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.MultiLineTextField;
-import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.PopupMenu;
+import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
@@ -35,11 +36,10 @@ import com.trollworks.gcs.weapon.WeaponStats;
 import java.awt.Container;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JComboBox;
 
 /** The detailed editor for {@link Spell}s. */
 public class SpellEditor extends BaseSpellEditor<Spell> {
-    protected JComboBox<AttributeChoice> mAttributePopup;
+    protected PopupMenu<AttributeChoice> mAttributePopup;
 
     /**
      * Creates a new {@link Spell} editor.
@@ -68,30 +68,47 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
         boolean notContainer = !mRow.canHaveChildren();
         Panel   panel        = new Panel(new PrecisionLayout().setMargins(0).setColumns(4));
         Panel   wrapper      = new Panel(new PrecisionLayout().setMargins(0).setColumns(notContainer ? 2 : 1));
-        mNameField = createCorrectableField(panel, wrapper, I18n.text("Name"), mRow.getName(), I18n.text("The name of the spell, without any notes"));
+        mNameField = createCorrectableField(panel, wrapper, I18n.text("Name"), mRow.getName(),
+                I18n.text("The name of the spell, without any notes"),
+                (f) -> recalculateLevel(mLevelField));
         if (notContainer) {
             createTechLevelFields(wrapper);
         }
         panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
         if (notContainer) {
-            mCollegeField = createField(panel, panel, I18n.text("College"), String.join(", ", mRow.getColleges()), I18n.text("The college(s) the spell belongs to; separate multiple colleges with a comma"), 0);
-            mPowerSourceField = createField(panel, panel, I18n.text("Power Source"), mRow.getPowerSource(), I18n.text("The source of power for the spell"), 0);
-            mClassField = createCorrectableField(panel, panel, I18n.text("Class"), mRow.getSpellClass(), I18n.text("The class of spell (Area, Missile, etc.)"));
-            mResistField = createCorrectableField(panel, panel, I18n.text("Resistance"), mRow.getResist(), I18n.text("The resistance roll, if any"));
-            mCastingCostField = createCorrectableField(panel, panel, I18n.text("Casting Cost"), mRow.getCastingCost(), I18n.text("The casting cost of the spell"));
-            mCastingTimeField = createCorrectableField(panel, panel, I18n.text("Casting Time"), mRow.getCastingTime(), I18n.text("The casting time of the spell"));
-            mMaintenanceField = createField(panel, panel, I18n.text("Maintenance Cost"), mRow.getMaintenance(), I18n.text("The cost to maintain a spell after its initial duration"), 0);
-            mDurationField = createCorrectableField(panel, panel, I18n.text("Duration"), mRow.getDuration(), I18n.text("The duration of the spell once its cast"));
+            mCollegeField = createField(panel, panel, I18n.text("College"),
+                    String.join(", ", mRow.getColleges()),
+                    I18n.text("The college(s) the spell belongs to; separate multiple colleges with a comma"),
+                    0);
+            mPowerSourceField = createField(panel, panel, I18n.text("Power Source"),
+                    mRow.getPowerSource(), I18n.text("The source of power for the spell"), 0);
+            mClassField = createCorrectableField(panel, panel, I18n.text("Class"),
+                    mRow.getSpellClass(), I18n.text("The class of spell (Area, Missile, etc.)"), null);
+            mResistField = createCorrectableField(panel, panel, I18n.text("Resistance"),
+                    mRow.getResist(), I18n.text("The resistance roll, if any"), null);
+            mCastingCostField = createCorrectableField(panel, panel, I18n.text("Casting Cost"),
+                    mRow.getCastingCost(), I18n.text("The casting cost of the spell"), null);
+            mCastingTimeField = createCorrectableField(panel, panel, I18n.text("Casting Time"),
+                    mRow.getCastingTime(), I18n.text("The casting time of the spell"), null);
+            mMaintenanceField = createField(panel, panel, I18n.text("Maintenance Cost"),
+                    mRow.getMaintenance(),
+                    I18n.text("The cost to maintain a spell after its initial duration"), 0);
+            mDurationField = createCorrectableField(panel, panel, I18n.text("Duration"),
+                    mRow.getDuration(), I18n.text("The duration of the spell once its cast"), null);
             createPointsFields(panel);
         }
-        mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this spell"), this);
+        mNotesField = new MultiLineTextField(mRow.getNotes(),
+                I18n.text("Any notes that you would like to show up in the list along with this spell"),
+                this);
         panel.add(new Label(I18n.text("Notes"), mNotesField), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
         wrapper = new Panel(new PrecisionLayout().setMargins(0));
-        mCategoriesField = createField(panel, wrapper, I18n.text("Categories"), mRow.getCategoriesAsString(), I18n.text("The category or categories the spell belongs to (separate multiple categories with a comma)"), 0);
+        mCategoriesField = createField(panel, wrapper, I18n.text("Categories"),
+                mRow.getCategoriesAsString(), I18n.text("The category or categories the spell belongs to (separate multiple categories with a comma)"), 0);
         panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
         wrapper = new Panel(new PrecisionLayout().setMargins(0));
-        mReferenceField = createField(panel, wrapper, I18n.text("Page Reference"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.text("spell")), 0);
+        mReferenceField = createField(panel, wrapper, I18n.text("Page Reference"),
+                mRow.getReference(), PageRefCell.getStdToolTip(I18n.text("spell")), 0);
         panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
         return panel;
     }
@@ -125,11 +142,16 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
             columns += 2;
         }
         Panel panel = new Panel(new PrecisionLayout().setMargins(0).setColumns(columns));
-        mAttributePopup = createComboBox(panel, list.toArray(new AttributeChoice[0]), current, I18n.text("The attribute this spell is based on"));
+        mAttributePopup = createPopupMenu(panel, list.toArray(new AttributeChoice[0]), current,
+                I18n.text("The attribute this spell is based on"),
+                (p) -> recalculateLevel(mLevelField));
         panel.add(new Label("/"));
-        mDifficultyCombo = createComboBox(panel, SkillDifficulty.values(), mRow.getDifficulty(), I18n.text("The difficulty of the spell"));
+        mDifficultyPopup = createPopupMenu(panel, SkillDifficulty.values(), mRow.getDifficulty(),
+                I18n.text("The difficulty of the spell"), (p) -> recalculateLevel(mLevelField));
         if (forCharacter || forTemplate) {
-            mPointsField = createNumberField(panel, panel, I18n.text("Points"), I18n.text("The number of points spent on this spell"), mRow.getRawPoints(), 9999);
+            mPointsField = createNumberField(panel, panel, I18n.text("Points"),
+                    I18n.text("The number of points spent on this spell"), mRow.getRawPoints(),
+                    9999, (f) -> recalculateLevel(mLevelField));
             if (forCharacter) {
                 mLevelField = createField(panel, panel, I18n.text("Level"), getDisplayLevel(mRow.getAttribute(), mRow.getLevel(), mRow.getRelativeLevel()), I18n.text("The spell level and relative spell level to roll against.\n") + mRow.getLevelToolTip(), 7);
                 mLevelField.setEnabled(false);
@@ -141,7 +163,7 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
     }
 
     protected String getAttribute() {
-        AttributeChoice choice = (AttributeChoice) mAttributePopup.getSelectedItem();
+        AttributeChoice choice = mAttributePopup.getSelectedItem();
         return choice != null ? choice.getAttribute() : Skill.getDefaultAttribute("iq");
     }
 
@@ -190,23 +212,14 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
     }
 
     @Override
-    public void adjustForSource(Object src) {
-        if (src == mAttributePopup) {
-            if (mLevelField != null) {
-                recalculateLevel(mLevelField);
-            }
-        } else {
-            super.adjustForSource(src);
-        }
-    }
-
-    @Override
     protected void recalculateLevel(EditorField levelField) {
-        String attribute = getAttribute();
-        SkillLevel level = Spell.calculateLevel(mRow.getCharacter(), getAdjustedPoints(),
-                attribute, getDifficulty(), getColleges(), mPowerSourceField.getText(),
-                mNameField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()));
-        levelField.setText(getDisplayLevel(attribute, level.mLevel, level.mRelativeLevel));
-        levelField.setToolTipText(I18n.text("The spell level and relative spell level to roll against.\n") + level.getToolTip());
+        if (levelField != null) {
+            String attribute = getAttribute();
+            SkillLevel level = Spell.calculateLevel(mRow.getCharacter(), getAdjustedPoints(),
+                    attribute, getDifficulty(), getColleges(), mPowerSourceField.getText(),
+                    mNameField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()));
+            levelField.setText(getDisplayLevel(attribute, level.mLevel, level.mRelativeLevel));
+            levelField.setToolTipText(I18n.text("The spell level and relative spell level to roll against.\n") + level.getToolTip());
+        }
     }
 }

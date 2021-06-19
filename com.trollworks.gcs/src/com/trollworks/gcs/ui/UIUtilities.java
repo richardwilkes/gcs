@@ -12,9 +12,13 @@
 package com.trollworks.gcs.ui;
 
 import com.trollworks.gcs.ui.image.Img;
+import com.trollworks.gcs.ui.widget.Button;
+import com.trollworks.gcs.ui.widget.Checkbox;
+import com.trollworks.gcs.ui.widget.ColorWell;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
+import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.Platform;
 
@@ -32,8 +36,6 @@ import java.awt.Transparency;
 import java.awt.Window;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
-import javax.swing.AbstractButton;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JViewport;
 import javax.swing.RepaintManager;
@@ -68,9 +70,13 @@ public final class UIUtilities {
                 disableControls(container.getComponent(i));
             }
         }
-        if (comp instanceof AbstractButton || comp instanceof JComboBox ||
-                comp instanceof EditorField || comp instanceof FontAwesomeButton ||
-                comp instanceof MultiLineTextField) {
+        if (comp instanceof Button ||
+                comp instanceof Checkbox ||
+                comp instanceof ColorWell ||
+                comp instanceof EditorField ||
+                comp instanceof FontAwesomeButton ||
+                comp instanceof MultiLineTextField ||
+                comp instanceof PopupMenu) {
             comp.setEnabled(false);
         }
     }

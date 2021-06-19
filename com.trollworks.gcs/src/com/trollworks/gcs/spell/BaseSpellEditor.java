@@ -18,11 +18,12 @@ import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
-import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.Checkbox;
+import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
@@ -32,20 +33,17 @@ import com.trollworks.gcs.weapon.RangedWeaponListEditor;
 
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import javax.swing.JComboBox;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 
 /** An editor implementing functionalities common to all spell implementations. */
-public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> implements ActionListener, DocumentListener, EditorField.ChangeListener {
+public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> implements DocumentListener {
     protected EditorField                mNameField;
     protected EditorField                mCollegeField;
     protected EditorField                mPowerSourceField;
@@ -55,15 +53,15 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
     protected EditorField                mMaintenanceField;
     protected EditorField                mCastingTimeField;
     protected EditorField                mDurationField;
-    protected JComboBox<SkillDifficulty> mDifficultyCombo;
+    protected PopupMenu<SkillDifficulty> mDifficultyPopup;
     protected MultiLineTextField         mNotesField;
     protected EditorField                mCategoriesField;
     protected EditorField                mPointsField;
     protected EditorField                mLevelField;
     protected EditorField                mReferenceField;
-    protected PrereqsPanel mPrereqs;
-    protected Checkbox     mHasTechLevel;
-    protected EditorField  mTechLevel;
+    protected PrereqsPanel               mPrereqs;
+    protected Checkbox                   mHasTechLevel;
+    protected EditorField                mTechLevel;
     protected String                     mSavedTechLevel;
     protected MeleeWeaponListEditor      mMeleeWeapons;
     protected RangedWeaponListEditor     mRangedWeapons;
@@ -120,7 +118,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
 
     /** @return The selected item of the difficulty combobox, as a SkillDifficulty. */
     protected SkillDifficulty getDifficulty() {
-        return (SkillDifficulty) mDifficultyCombo.getSelectedItem();
+        return mDifficultyPopup.getSelectedItem();
     }
 
     /**
@@ -134,7 +132,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
      * @param maxChars    The maximum number of characters that can be written in the text field.
      */
     protected EditorField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
-        EditorField field = new EditorField(FieldFactory.STRING, this, SwingConstants.LEFT, text, maxChars > 0 ? Text.makeFiller(maxChars, 'M') : null, tooltip);
+        EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text, maxChars > 0 ? Text.makeFiller(maxChars, 'M') : null, tooltip);
         addLabel(labelParent, title, field);
         PrecisionLayoutData ld = new PrecisionLayoutData().setFillHorizontalAlignment();
         if (maxChars == 0) {
@@ -155,8 +153,8 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
      * @param value       The number display in the text field.
      * @param maxValue    The maximum value the field will hold.
      */
-    protected EditorField createNumberField(Container labelParent, Container fieldParent, String title, String tooltip, int value, int maxValue) {
-        EditorField field = new EditorField(FieldFactory.POSINT5, this, SwingConstants.LEFT, Integer.valueOf(value), Integer.valueOf(maxValue), tooltip);
+    protected EditorField createNumberField(Container labelParent, Container fieldParent, String title, String tooltip, int value, int maxValue, EditorField.ChangeListener listener) {
+        EditorField field = new EditorField(FieldFactory.POSINT5, listener, SwingConstants.LEFT, Integer.valueOf(value), Integer.valueOf(maxValue), tooltip);
         addLabel(labelParent, title, field);
         fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
@@ -171,8 +169,8 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
      * @param text        The text of the text field.
      * @param tooltip     The tooltip of the text field.
      */
-    protected EditorField createCorrectableField(Container labelParent, Container fieldParent, String title, String text, String tooltip) {
-        EditorField field = new EditorField(FieldFactory.STRING, this, SwingConstants.LEFT, text, tooltip);
+    protected EditorField createCorrectableField(Container labelParent, Container fieldParent, String title, String text, String tooltip, EditorField.ChangeListener listener) {
+        EditorField field = new EditorField(FieldFactory.STRING, listener, SwingConstants.LEFT, text, tooltip);
         field.getDocument().addDocumentListener(this);
         addLabel(labelParent, title, field);
         fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
@@ -180,21 +178,19 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
     }
 
     /**
-     * Utility function to create a combobox, populate it, and set a few properties.
+     * Utility function to create a PopupMenu, populate it, and set a few properties.
      *
      * @param parent    Container for the widget.
-     * @param items     Items of the combobox.
+     * @param items     Items of the PopupMenu.
      * @param selection The item initialliy selected.
-     * @param tooltip   The tooltip of the combobox.
+     * @param tooltip   The tooltip of the PopupMenu.
      */
-    protected <E> JComboBox<E> createComboBox(Container parent, E[] items, Object selection, String tooltip) {
-        JComboBox<E> combo = new JComboBox<>(items);
-        combo.setToolTipText(tooltip);
-        combo.setSelectedItem(selection);
-        combo.addActionListener(this);
-        combo.setMaximumRowCount(items.length);
-        parent.add(combo);
-        return combo;
+    protected <E> PopupMenu<E> createPopupMenu(Container parent, E[] items, E selection, String tooltip, PopupMenu.SelectionListener<E> listener) {
+        PopupMenu<E> popup = new PopupMenu<>(items, listener);
+        popup.setToolTipText(tooltip);
+        popup.setSelectedItem(selection);
+        parent.add(popup);
+        return popup;
     }
 
     /**
@@ -255,19 +251,6 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
      */
     protected abstract void recalculateLevel(EditorField levelField);
 
-    @Override
-    public void actionPerformed(ActionEvent event) {
-        adjustForSource(event.getSource());
-    }
-
-    protected void adjustForSource(Object src) {
-        if (src == mPointsField || src == mDifficultyCombo || src == mNameField) {
-            if (mLevelField != null) {
-                recalculateLevel(mLevelField);
-            }
-        }
-    }
-
     /** Always call the super implementation when overriding this method. */
     @Override
     public void changedUpdate(DocumentEvent event) {
@@ -293,11 +276,6 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
     @Override
     public void removeUpdate(DocumentEvent event) {
         changedUpdate(event);
-    }
-
-    @Override
-    public void editorFieldChanged(EditorField field) {
-        adjustForSource(field);
     }
 
     protected List<String> getColleges() {

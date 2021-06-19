@@ -42,11 +42,12 @@ import java.util.Map;
 import javax.swing.SwingConstants;
 
 public class Button extends Panel implements MouseListener, MouseMotionListener, KeyListener, FocusListener {
-    private String        mText;
-    private ThemeFont     mThemeFont;
-    private ClickFunction mClickFunction;
-    private boolean       mInMouseDown;
-    private boolean       mPressed;
+    public static final int           H_MARGIN = 8;
+    public static final int           V_MARGIN = 2;
+    private             String        mText;
+    private             ClickFunction mClickFunction;
+    private             boolean       mInMouseDown;
+    private             boolean       mPressed;
 
     public interface ClickFunction {
         void buttonClicked(Button button);
@@ -63,19 +64,6 @@ public class Button extends Panel implements MouseListener, MouseMotionListener,
         addMouseMotionListener(this);
         addKeyListener(this);
         addFocusListener(this);
-    }
-
-    public final ThemeFont getThemeFont() {
-        return mThemeFont;
-    }
-
-    public final void setThemeFont(ThemeFont font) {
-        mThemeFont = font;
-    }
-
-    @Override
-    public final Font getFont() {
-        return mThemeFont != null ? mThemeFont.getFont() : super.getFont();
     }
 
     /** @return The text. */
@@ -102,8 +90,8 @@ public class Button extends Panel implements MouseListener, MouseMotionListener,
         Insets    insets = getInsets();
         Scale     scale  = Scale.get(this);
         Dimension size   = TextDrawing.getPreferredSize(scale.scale(getFont()), mText);
-        size.width += insets.left + insets.right + scale.scale(16);
-        size.height += insets.top + insets.bottom + scale.scale(4);
+        size.width += insets.left + insets.right + scale.scale(H_MARGIN) + scale.scale(H_MARGIN);
+        size.height += insets.top + insets.bottom + scale.scale(V_MARGIN) + scale.scale(V_MARGIN);
         return size;
     }
 
@@ -158,7 +146,8 @@ public class Button extends Panel implements MouseListener, MouseMotionListener,
         gc.setFont(font);
         gc.setColor(onColor);
         Rectangle textBounds = new Rectangle(bounds.x + 2, bounds.y + 1, bounds.width - 4, bounds.height - 2);
-        TextDrawing.draw(gc, textBounds, TextDrawing.truncateIfNecessary(font, mText, bounds.width, SwingConstants.CENTER), SwingConstants.CENTER, SwingConstants.CENTER);
+        TextDrawing.draw(gc, textBounds, TextDrawing.truncateIfNecessary(font, mText,
+                textBounds.width, SwingConstants.CENTER), SwingConstants.CENTER, SwingConstants.CENTER);
 
         gc.setColor(ThemeColor.BUTTON_BORDER);
         RenderingHints saved = GraphicsUtilities.setMaximumQualityForGraphics(gc);

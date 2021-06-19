@@ -38,7 +38,6 @@ import javax.swing.SwingConstants;
 
 public class Checkbox extends Panel implements MouseListener, MouseMotionListener, KeyListener, FocusListener {
     private String        mText;
-    private ThemeFont     mThemeFont;
     private ClickFunction mClickFunction;
     private boolean       mInMouseDown;
     private boolean       mPressed;
@@ -50,7 +49,6 @@ public class Checkbox extends Panel implements MouseListener, MouseMotionListene
 
     public Checkbox(String text, boolean checked, ClickFunction clickFunction) {
         super(null, false);
-        setThemeFont(ThemeFont.LABEL_PRIMARY);
         setText(text);
         setCursor(Cursor.getDefaultCursor());
         setClickFunction(clickFunction);
@@ -60,19 +58,6 @@ public class Checkbox extends Panel implements MouseListener, MouseMotionListene
         addKeyListener(this);
         addFocusListener(this);
         mChecked = checked;
-    }
-
-    public final ThemeFont getThemeFont() {
-        return mThemeFont;
-    }
-
-    public final void setThemeFont(ThemeFont font) {
-        mThemeFont = font;
-    }
-
-    @Override
-    public final Font getFont() {
-        return mThemeFont != null ? mThemeFont.getFont() : super.getFont();
     }
 
     /** @return The text. */

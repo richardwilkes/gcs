@@ -14,7 +14,6 @@ package com.trollworks.gcs.ui.widget;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.TextDrawing;
-import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.scale.Scale;
 
@@ -41,7 +40,6 @@ public class Label extends Panel implements PropertyChangeListener {
 
     private RetinaIcon mIcon;
     private String     mText;
-    private ThemeFont  mThemeFont;
     private int        mHAlign;
     private JComponent mRefersTo;
     private int        mTruncationPolicy;
@@ -56,7 +54,6 @@ public class Label extends Panel implements PropertyChangeListener {
         mText = "";
         mHAlign = SwingConstants.LEFT;
         mTruncationPolicy = SwingConstants.CENTER;
-        setThemeFont(ThemeFont.LABEL_PRIMARY);
         setText(text);
     }
 
@@ -91,24 +88,6 @@ public class Label extends Panel implements PropertyChangeListener {
     public Label(RetinaIcon icon, String text) {
         this(text);
         mIcon = icon;
-    }
-
-    public final ThemeFont getThemeFont() {
-        return mThemeFont;
-    }
-
-    public final void setThemeFont(ThemeFont font) {
-        mThemeFont = font;
-    }
-
-    @Override
-    public final Font getFont() {
-        if (mThemeFont == null) {
-            // If this happens, we are in the constructor and the look & feel is being inited, so
-            // just return whatever was there by default.
-            return super.getFont();
-        }
-        return mThemeFont.getFont();
     }
 
     /** @return The icon, or {@code null} if there is none. */

@@ -11,13 +11,19 @@
 
 package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.ThemeFont;
 
+import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.LayoutManager;
 import javax.swing.JPanel;
 
 public class Panel extends JPanel {
+    private ThemeFont mThemeFont;
+
     public Panel() {
         init(true);
     }
@@ -34,6 +40,7 @@ public class Panel extends JPanel {
 
     private void init(boolean opaque) {
         setStdColors();
+        setThemeFont(ThemeFont.LABEL_PRIMARY);
         setOpaque(opaque);
         setBorder(null);
     }
@@ -44,15 +51,29 @@ public class Panel extends JPanel {
     }
 
     protected void paintComponent(Graphics g) {
+        Graphics2D gc = GraphicsUtilities.prepare(g);
         if (isOpaque()) {
-            g.setColor(getBackground());
-            g.fillRect(0, 0, getWidth(), getHeight());
+            gc.setColor(getBackground());
+            gc.fillRect(0, 0, getWidth(), getHeight());
         }
-        g.setColor(getForeground());
+        gc.setColor(getForeground());
     }
 
     @Override
     public ToolTip createToolTip() {
         return new ToolTip(this);
+    }
+
+    public final ThemeFont getThemeFont() {
+        return mThemeFont;
+    }
+
+    public final void setThemeFont(ThemeFont font) {
+        mThemeFont = font;
+    }
+
+    @Override
+    public final Font getFont() {
+        return mThemeFont != null ? mThemeFont.getFont() : super.getFont();
     }
 }
