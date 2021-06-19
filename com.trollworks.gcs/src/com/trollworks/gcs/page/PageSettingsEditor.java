@@ -16,16 +16,15 @@ import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.Separator;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.PopupMenu;
+import com.trollworks.gcs.ui.widget.Separator;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.units.LengthValue;
 
-import java.awt.event.ActionListener;
-import javax.swing.JComboBox;
 import javax.swing.SwingConstants;
 
 public class PageSettingsEditor extends Panel {
@@ -37,9 +36,8 @@ public class PageSettingsEditor extends Panel {
     private              EditorField                mLeftMargin;
     private              EditorField                mBottomMargin;
     private              EditorField                mRightMargin;
-    private              JComboBox<PaperSize>       mPaperSize;
-    private              JComboBox<PageOrientation> mOrientation;
-    private              JComboBox<LengthUnits>     mUnits;
+    private              PopupMenu<PaperSize>       mPaperSize;
+    private              PopupMenu<PageOrientation> mOrientation;
 
     public interface ResetPageSettings {
         void resetPageSettings(PageSettings settings);
@@ -54,12 +52,12 @@ public class PageSettingsEditor extends Panel {
         mSettings = settings;
         mAdjustCallback = adjustCallback;
         mResetCallback = resetCallback;
-        mPaperSize = addCombo(I18n.text("Paper Size"), PaperSize.getPaperSizes(), mSettings.getPaperSize(), (evt) -> {
-            mSettings.setPaperSize(((PaperSize) mPaperSize.getSelectedItem()));
+        mPaperSize = addPopupMenu(I18n.text("Paper Size"), PaperSize.getPaperSizes(), mSettings.getPaperSize(), (p) -> {
+            mSettings.setPaperSize(mPaperSize.getSelectedItem());
             mAdjustCallback.run();
         });
-        mOrientation = addCombo(I18n.text("Orientation"), PageOrientation.values(), mSettings.getPageOrientation(), (evt) -> {
-            mSettings.setPageOrientation((PageOrientation) mOrientation.getSelectedItem());
+        mOrientation = addPopupMenu(I18n.text("Orientation"), PageOrientation.values(), mSettings.getPageOrientation(), (p) -> {
+            mSettings.setPageOrientation(mOrientation.getSelectedItem());
             mAdjustCallback.run();
         });
         LengthValue proto = new LengthValue(new Fixed6(99.99), LengthUnits.IN);
@@ -93,17 +91,14 @@ public class PageSettingsEditor extends Panel {
         return field;
     }
 
-    private <T> JComboBox<T> addCombo(String title, T[] values, T selection, ActionListener listener) {
-        JComboBox<T> combo = new JComboBox<>(values);
-        combo.setOpaque(false);
-        combo.setSelectedItem(selection);
-        combo.addActionListener(listener);
-        combo.setMaximumRowCount(combo.getItemCount());
+    private <T> PopupMenu<T> addPopupMenu(String title, T[] values, T selection, PopupMenu.SelectionListener<T> listener) {
+        PopupMenu<T> popup = new PopupMenu<>(values, listener);
+        popup.setSelectedItem(selection);
         if (title != null) {
-            add(new Label(title, combo), new PrecisionLayoutData().setFillHorizontalAlignment());
+            add(new Label(title, popup), new PrecisionLayoutData().setFillHorizontalAlignment());
         }
-        add(combo);
-        return combo;
+        add(popup);
+        return popup;
     }
 
     public void reset() {
