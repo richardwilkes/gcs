@@ -350,6 +350,6 @@ public class PopupMenu<T> extends Panel implements MouseListener, KeyListener, F
             }
             i++;
         }
-        menu.presentToUser(this, UIUtilities.getLocalInsetBounds(this), mSelection);
+        menu.presentToUser(this, mSelection);
     }
 }

@@ -162,7 +162,7 @@ public class Modal extends JDialog {
     }
 
     void tryInitialFocus() {
-        if (--mInitialFocusAttemptsRemaining > 0 && !hasFocus()) {
+        if (--mInitialFocusAttemptsRemaining > 0 && !isFocusOwner()) {
             requestFocus();
             EventQueue.invokeLater(this::tryInitialFocus);
         } else {

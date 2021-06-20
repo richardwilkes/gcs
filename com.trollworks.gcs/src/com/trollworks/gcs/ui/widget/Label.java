@@ -17,6 +17,7 @@ import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.scale.Scale;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -156,6 +157,9 @@ public class Label extends Panel implements PropertyChangeListener {
         Scale     scale  = Scale.get(this);
         Font      font   = scale.scale(getFont());
         gc.setFont(font);
+        if (!isEnabled()) {
+            gc.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
+        }
         if (mIcon != null) {
             mIcon.paintIcon(this, gc, bounds.x, bounds.y + (bounds.height - scale.scale(mIcon.getIconHeight())) / 2);
             int amt = scale.scale(mIcon.getIconWidth()) + scale.scale(GAP);

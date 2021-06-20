@@ -30,11 +30,16 @@ import com.trollworks.gcs.menu.item.OpenPageReferenceCommand;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.template.TemplateDockable;
 import com.trollworks.gcs.ui.UIUtilities;
+import com.trollworks.gcs.ui.border.EmptyBorder;
+import com.trollworks.gcs.ui.widget.Menu;
+import com.trollworks.gcs.ui.widget.MenuItem;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
 import com.trollworks.gcs.utility.Filtered;
 import com.trollworks.gcs.utility.I18n;
 
+import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Rectangle;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -44,8 +49,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.swing.JMenu;
-import javax.swing.JPopupMenu;
+import javax.swing.JComponent;
+import javax.swing.border.CompoundBorder;
 import javax.swing.undo.StateEdit;
 
 /** Base outline class. */
@@ -278,57 +283,86 @@ public class ListOutline extends Outline implements Runnable, ActionListener, Du
     @Override
     protected void showContextMenu(MouseEvent event) {
         if (getModel().hasSelection()) {
-            JPopupMenu menu = new JPopupMenu();
+            Command.setFocusOwnerOverride(this);
+            Menu menu = new Menu();
             if (this instanceof EquipmentOutline && (mDataFile instanceof GURPSCharacter || mDataFile instanceof Template)) {
-                menu.add(new MoveEquipmentCommand(getModel().getProperty(EquipmentList.KEY_OTHER_ROOT) != null));
-                menu.add(new ConvertToContainer());
-                menu.addSeparator();
+                addCmdIfEnabled(menu, new MoveEquipmentCommand(getModel().getProperty(EquipmentList.KEY_OTHER_ROOT) != null));
+                addCmdIfEnabled(menu, new ConvertToContainer());
             }
-            menu.add(new OpenEditorCommand(this));
+            int count = menu.getComponentCount();
+            addCmdIfEnabled(menu, new OpenEditorCommand(this));
+            if (count > 0 && count != menu.getComponentCount()) {
+                menu.addSeparatorAt(count);
+            }
             LibraryExplorerDockable library = LibraryExplorerDockable.get();
             if (library != null) {
-                JMenu          subMenu   = new JMenu(CopyToSheetCommand.INSTANCE.getTitle());
+                count = menu.getComponentCount();
                 List<Dockable> dockables = library.getDockContainer().getDock().getDockables();
                 for (Dockable dockable : dockables) {
                     if (dockable instanceof SheetDockable) {
-                        subMenu.add(new CopyToSheetCommand(this, (SheetDockable) dockable));
+                        addCmdIfEnabled(menu, new CopyToSheetCommand(this, (SheetDockable) dockable), 8);
                     }
                 }
-                if (subMenu.getItemCount() == 0) {
-                    subMenu.setEnabled(false);
+                if (count > 0 && count != menu.getComponentCount()) {
+                    addMenuHeader(menu, CopyToSheetCommand.INSTANCE.getTitle(), count);
                 }
-                menu.add(subMenu);
 
-                subMenu = new JMenu(CopyToTemplateCommand.INSTANCE.getTitle());
+                count = menu.getComponentCount();
                 for (Dockable dockable : dockables) {
                     if (dockable instanceof TemplateDockable) {
-                        subMenu.add(new CopyToTemplateCommand(this, (TemplateDockable) dockable));
+                        addCmdIfEnabled(menu, new CopyToTemplateCommand(this, (TemplateDockable) dockable), 8);
                     }
                 }
-                if (subMenu.getItemCount() == 0) {
-                    subMenu.setEnabled(false);
+                if (count > 0 && count != menu.getComponentCount()) {
+                    addMenuHeader(menu, CopyToTemplateCommand.INSTANCE.getTitle(), count);
                 }
-                menu.add(subMenu);
 
                 TemplateDockable template = UIUtilities.getAncestorOfType(this, TemplateDockable.class);
                 if (template != null) {
-                    subMenu = new JMenu(ApplyTemplateCommand.INSTANCE.getTitle());
+                    count = menu.getComponentCount();
                     for (Dockable dockable : dockables) {
                         if (dockable instanceof SheetDockable) {
-                            subMenu.add(new ApplyTemplateCommand(template, (SheetDockable) dockable));
+                            addCmdIfEnabled(menu, new ApplyTemplateCommand(template, (SheetDockable) dockable), 8);
                         }
                     }
-                    if (subMenu.getItemCount() == 0) {
-                        subMenu.setEnabled(false);
+                    if (count > 0 && count != menu.getComponentCount()) {
+                        addMenuHeader(menu, ApplyTemplateCommand.INSTANCE.getTitle(), count);
                     }
-                    menu.add(subMenu);
                 }
             }
-            menu.addSeparator();
-            menu.add(new OpenPageReferenceCommand(this, true));
-            menu.add(new OpenPageReferenceCommand(this, false));
-            Command.adjustMenuTree(menu);
-            menu.show(event.getComponent(), event.getX(), event.getY());
+            count = menu.getComponentCount();
+            addCmdIfEnabled(menu, new OpenPageReferenceCommand(this, true));
+            addCmdIfEnabled(menu, new OpenPageReferenceCommand(this, false));
+            if (count > 0 && count != menu.getComponentCount()) {
+                menu.addSeparatorAt(count);
+            }
+            if (menu.getComponentCount() > 0) {
+                Dimension size = menu.getPreferredSize();
+                menu.presentToUser((JComponent) event.getComponent(), new Rectangle(event.getX(), event.getY(), size.width, 16), 0);
+            }
+            Command.setFocusOwnerOverride(null);
+        }
+    }
+
+    private static void addMenuHeader(Menu menu, String header, int index) {
+        MenuItem item = new MenuItem(header, null);
+        item.setEnabled(false);
+        menu.addItemAt(index, item);
+        menu.addSeparatorAt(index);
+    }
+
+    private static void addCmdIfEnabled(Menu menu, Command cmd) {
+        addCmdIfEnabled(menu, cmd, 0);
+    }
+
+    private static void addCmdIfEnabled(Menu menu, Command cmd, int indent) {
+        cmd.adjust();
+        if (cmd.isEnabled()) {
+            MenuItem item = new MenuItem(cmd);
+            if (indent > 0) {
+                item.setBorder(new CompoundBorder(new EmptyBorder(0, indent, 0, 0), item.getBorder()));
+            }
+            menu.addItem(item);
         }
     }
 

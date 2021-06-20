@@ -16,15 +16,11 @@ import com.trollworks.gcs.ui.UIUtilities;
 import java.awt.Component;
 import java.awt.KeyboardFocusManager;
 import java.awt.Toolkit;
-import java.awt.Window;
 import java.awt.event.InputEvent;
 import java.util.Objects;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 
 /** Represents a command in the user interface. */
@@ -33,6 +29,7 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
     public static final int       COMMAND_MODIFIER         = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
     /** The standard command modifier for this platform, plus the shift key. */
     public static final int       SHIFTED_COMMAND_MODIFIER = COMMAND_MODIFIER | InputEvent.SHIFT_DOWN_MASK;
+    private static      Component mFocusOwnerOverride;
     private             KeyStroke mOriginalAccelerator;
 
     /**
@@ -266,9 +263,13 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
         return result;
     }
 
+    public static final void setFocusOwnerOverride(Component focusOwner) {
+        mFocusOwnerOverride = focusOwner;
+    }
+
     /** @return The current permanent focus owner. */
     public static final Component getFocusOwner() {
-        return KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
+        return mFocusOwnerOverride == null ? KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner() : mFocusOwnerOverride;
     }
 
     /** @return The current target. */
@@ -282,43 +283,5 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
             }
         }
         return target;
-    }
-
-    /** @return The current active window. */
-    public static final Window getActiveWindow() {
-        return KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
-    }
-
-    /** @return The current focused window. */
-    public static final Window getFocusedWindow() {
-        return KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
-    }
-
-    public static void adjustMenuTree(JPopupMenu menu) {
-        for (Component component : menu.getComponents()) {
-            if (component instanceof JMenu) {
-                adjustMenuTree((JMenu) component);
-            } else if (component instanceof JMenuItem) {
-                JMenuItem item   = (JMenuItem) component;
-                Action    action = item.getAction();
-                if (action instanceof Command) {
-                    ((Command) action).adjust();
-                }
-            }
-        }
-    }
-
-    public static void adjustMenuTree(JMenu menu) {
-        for (Component component : menu.getMenuComponents()) {
-            if (component instanceof JMenu) {
-                adjustMenuTree((JMenu) component);
-            } else if (component instanceof JMenuItem) {
-                JMenuItem item   = (JMenuItem) component;
-                Action    action = item.getAction();
-                if (action instanceof Command) {
-                    ((Command) action).adjust();
-                }
-            }
-        }
     }
 }

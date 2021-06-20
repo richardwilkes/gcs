@@ -25,6 +25,8 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.Menu;
+import com.trollworks.gcs.ui.widget.MenuItem;
 import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
@@ -57,8 +59,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 
 /** A window for editing attribute settings. */
 public final class AttributeSettingsWindow extends BaseWindow implements CloseHandler, DataChangeListener {
@@ -144,9 +144,9 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
     }
 
     private void actionMenu() {
-        JPopupMenu menu = new JPopupMenu();
-        menu.add(createMenuItem(I18n.text("Import…"), this::importData, true));
-        menu.add(createMenuItem(I18n.text("Export…"), this::exportData, true));
+        Menu menu = new Menu();
+        menu.addItem(new MenuItem(I18n.text("Import…"), (p) -> importData()));
+        menu.addItem(new MenuItem(I18n.text("Export…"), (p) -> exportData()));
         Settings.getInstance(); // Just to ensure the libraries list is initialized
         for (Library lib : Library.LIBRARIES) {
             Path dir = lib.getPath().resolve("Attributes");
@@ -169,27 +169,23 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
                 if (!list.isEmpty()) {
                     Collections.sort(list);
                     menu.addSeparator();
-                    menu.add(createMenuItem(dir.getParent().getFileName().toString(), null, false));
+                    MenuItem item = new MenuItem(dir.getParent().getFileName().toString(), null);
+                    item.setEnabled(false);
+                    menu.addItem(item);
                     for (AttributeSet choice : list) {
-                        menu.add(createMenuItem(choice.toString(), () -> {
+                        menu.add(new MenuItem(choice.toString(), (p) -> {
                             Map<String, AttributeDef> attrs = choice.getAttributes();
                             if (attrs != null) {
                                 reset(attrs);
                             }
-                        }, true));
+                        }));
                     }
                 }
             }
         }
-        menu.show(mMenuButton, 0, 0);
+        menu.presentToUser(mMenuButton, 0);
     }
 
-    private static JMenuItem createMenuItem(String title, Runnable onSelection, boolean enabled) {
-        JMenuItem item = new JMenuItem(title);
-        item.addActionListener((evt) -> onSelection.run());
-        item.setEnabled(enabled);
-        return item;
-    }
 
     private void importData() {
         Path path = Modal.presentOpenFileDialog(this, I18n.text("Import…"),

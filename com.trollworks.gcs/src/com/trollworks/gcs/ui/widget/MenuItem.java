@@ -11,25 +11,19 @@
 
 package com.trollworks.gcs.ui.widget;
 
-import com.trollworks.gcs.ui.GraphicsUtilities;
-import com.trollworks.gcs.ui.TextDrawing;
+import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
-import com.trollworks.gcs.ui.scale.Scale;
 
 import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Insets;
 import java.awt.Rectangle;
-import javax.swing.SwingConstants;
+import java.awt.event.ActionEvent;
 
-public class MenuItem extends Panel {
-    private String            mTitle;
+public class MenuItem extends Label {
+    private Command           mCommand;
     private SelectionListener mSelectionListener;
     private boolean           mHighlighted;
 
@@ -38,14 +32,37 @@ public class MenuItem extends Panel {
     }
 
     public MenuItem(String title, SelectionListener listener) {
-        mTitle = title;
-        mSelectionListener = listener;
+        this(null, title, listener);
+    }
+
+    public MenuItem(RetinaIcon icon, String title, SelectionListener listener) {
+        super(icon, title);
+        setOpaque(true);
         setThemeFont(ThemeFont.BUTTON);
         setBorder(new EmptyBorder(Button.V_MARGIN, Button.H_MARGIN, Button.V_MARGIN, Button.H_MARGIN));
+        mSelectionListener = listener;
+    }
+
+    public MenuItem(Command cmd) {
+        this(cmd.getTitle(), null);
+        mCommand = cmd;
+    }
+
+    public void adjust() {
+        if (mCommand != null) {
+            mCommand.adjust();
+            String title = mCommand.getTitle();
+            if (!getText().equals(title)) {
+                setText(title);
+            }
+            setEnabled(mCommand.isEnabled());
+        }
     }
 
     public void click() {
-        if (mSelectionListener != null) {
+        if (mCommand != null) {
+            mCommand.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, mCommand.getCommand()));
+        } else if (mSelectionListener != null) {
             mSelectionListener.menuItemSelected(this);
         }
     }
@@ -81,30 +98,5 @@ public class MenuItem extends Panel {
             UIUtilities.convertRectangle(bounds, this, parent);
             parent.repaint(tm, bounds.x, bounds.y, bounds.width, bounds.height);
         }
-    }
-
-    @Override
-    public Dimension getPreferredSize() {
-        if (isPreferredSizeSet()) {
-            return super.getPreferredSize();
-        }
-        Insets    insets = getInsets();
-        Scale     scale  = Scale.get(this);
-        Dimension size   = TextDrawing.getPreferredSize(scale.scale(getFont()), mTitle);
-        size.width += insets.left + insets.right;
-        size.height += insets.top + insets.bottom;
-        return size;
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        Graphics2D gc = GraphicsUtilities.prepare(g);
-        super.paintComponent(gc);
-        Rectangle bounds = UIUtilities.getLocalInsetBounds(this);
-        Scale     scale  = Scale.get(this);
-        Font      font   = scale.scale(getFont());
-        gc.setFont(font);
-        TextDrawing.draw(gc, bounds, TextDrawing.truncateIfNecessary(font, mTitle, bounds.width,
-                SwingConstants.CENTER), SwingConstants.LEFT, SwingConstants.CENTER);
     }
 }

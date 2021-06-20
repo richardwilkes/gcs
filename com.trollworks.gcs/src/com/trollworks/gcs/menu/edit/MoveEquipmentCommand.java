@@ -11,15 +11,13 @@
 
 package com.trollworks.gcs.menu.edit;
 
-import com.trollworks.gcs.character.CharacterSheet;
+import com.trollworks.gcs.character.CollectedModels;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.equipment.EquipmentOutline;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.template.Template;
-import com.trollworks.gcs.template.TemplateSheet;
-import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
@@ -41,7 +39,7 @@ public class MoveEquipmentCommand extends Command {
     private             boolean mToCarried;
 
     public MoveEquipmentCommand(boolean toCarried) {
-        super(toCarried ? I18n.text("Move to Carried Equipment") : I18n.text("Move to Other Equipment"), toCarried ? CMD_TO_CARRIED_EQUIPMENT : CMD_TO_OTHER_EQUIPMENT);
+        super(getTitle(toCarried), toCarried ? CMD_TO_CARRIED_EQUIPMENT : CMD_TO_OTHER_EQUIPMENT);
         mToCarried = toCarried;
     }
 
@@ -69,47 +67,46 @@ public class MoveEquipmentCommand extends Command {
             focus = ((OutlineProxy) focus).getRealOutline();
         }
         if (focus instanceof EquipmentOutline) {
-            EquipmentOutline outline  = (EquipmentOutline) focus;
-            EquipmentOutline other    = null;
-            DataFile         dataFile = outline.getDataFile();
-            OutlineModel     model    = outline.getModel();
-            boolean          isOther  = model.getProperty(EquipmentList.KEY_OTHER_ROOT) != null;
-            if ((dataFile instanceof GURPSCharacter || dataFile instanceof Template) && isOther == mToCarried && model.hasSelection()) {
-                CharacterSheet csheet = UIUtilities.getAncestorOfType(outline, CharacterSheet.class);
-                if (csheet != null) {
-                    other = mToCarried ? csheet.getEquipmentOutline() : csheet.getOtherEquipmentOutline();
-                } else {
-                    TemplateSheet tsheet = UIUtilities.getAncestorOfType(outline, TemplateSheet.class);
-                    if (tsheet != null) {
-                        other = mToCarried ? tsheet.getEquipmentOutline() : tsheet.getOtherEquipmentOutline();
-                    }
-                }
-                if (other != null) {
-                    MultipleUndo undo = new MultipleUndo(getTitle());
-                    outline.postUndo(undo);
-                    List<Row>     rows    = new ArrayList<>();
-                    List<ListRow> topRows = new ArrayList<>();
-                    OutlineModel  target  = other.getModel();
-                    StateEdit     edit1   = new StateEdit(model, getTitle());
-                    StateEdit     edit2   = new StateEdit(target, getTitle());
-                    target.setDragRows(outline.getModel().getSelectionAsList(true).toArray(new Row[0]));
-                    other.convertDragRowsToSelf(rows);
-                    target.setDragRows(null);
-                    for (Row row : rows) {
-                        if (row.getDepth() == 0 && row instanceof ListRow) {
-                            topRows.add((ListRow) row);
-                        }
-                    }
-                    other.addRow(topRows.toArray(new ListRow[0]), getTitle(), true);
-                    edit1.end();
-                    edit2.end();
-                    undo.addEdit(edit1);
-                    undo.addEdit(edit2);
-                    undo.end();
-                    model.select(topRows, false);
-                    other.scrollSelectionIntoView();
+            moveSelection(((EquipmentOutline) focus).getDataFile(), mToCarried);
+        }
+    }
+
+    private static String getTitle(boolean toCarried) {
+        return toCarried ? I18n.text("Move to Carried Equipment") : I18n.text("Move to Other Equipment");
+    }
+
+    public static void moveSelection(DataFile dataFile, boolean toCarried) {
+        OutlineModel from = null;
+        OutlineModel to   = null;
+        if (dataFile instanceof CollectedModels) {
+            CollectedModels cmodels = (CollectedModels) dataFile;
+            from = toCarried ? cmodels.getOtherEquipmentModel() : cmodels.getEquipmentModel();
+            to = toCarried ? cmodels.getEquipmentModel() : cmodels.getOtherEquipmentModel();
+        }
+        if (from != null && from.hasSelection()) {
+            MultipleUndo undo = new MultipleUndo(getTitle(toCarried));
+            ((ListOutline) from.getProperty(ListOutline.OWNING_LIST)).postUndo(undo);
+            List<Row>     rows    = new ArrayList<>();
+            List<ListRow> topRows = new ArrayList<>();
+            StateEdit     edit1   = new StateEdit(from, getTitle(toCarried));
+            StateEdit     edit2   = new StateEdit(to, getTitle(toCarried));
+            to.setDragRows(from.getSelectionAsList(true).toArray(new Row[0]));
+            ListOutline toOutline = (ListOutline) to.getProperty(ListOutline.OWNING_LIST);
+            toOutline.convertDragRowsToSelf(rows);
+            to.setDragRows(null);
+            for (Row row : rows) {
+                if (row.getDepth() == 0 && row instanceof ListRow) {
+                    topRows.add((ListRow) row);
                 }
             }
+            toOutline.addRow(topRows.toArray(new ListRow[0]), getTitle(toCarried), true);
+            edit1.end();
+            edit2.end();
+            undo.addEdit(edit1);
+            undo.addEdit(edit2);
+            undo.end();
+            from.select(topRows, false);
+            toOutline.scrollSelectionIntoView();
         }
     }
 }

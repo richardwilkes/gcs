@@ -23,6 +23,8 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.Menu;
+import com.trollworks.gcs.ui.widget.MenuItem;
 import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
@@ -49,8 +51,6 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 
 /** A window for editing hit location settings. */
 public final class HitLocationSettingsWindow extends BaseWindow implements CloseHandler, DataChangeListener {
@@ -136,24 +136,19 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
     }
 
     private void actionMenu() {
-        JPopupMenu menu = new JPopupMenu();
-        menu.add(createMenuItem(I18n.text("Import…"), this::importData, true));
-        menu.add(createMenuItem(I18n.text("Export…"), this::exportData, true));
+        Menu menu = new Menu();
+        menu.addItem(new MenuItem(I18n.text("Import…"), (p) -> importData()));
+        menu.addItem(new MenuItem(I18n.text("Export…"), (p) -> exportData()));
         for (LibraryHitLocationTables tables : LibraryHitLocationTables.get()) {
             menu.addSeparator();
-            menu.add(createMenuItem(tables.toString(), null, false));
+            MenuItem header = new MenuItem(tables.toString(), null);
+            header.setEnabled(false);
+            menu.addItem(header);
             for (HitLocationTable choice : tables.getTables()) {
-                menu.add(createMenuItem(choice.getName(), () -> reset(choice), true));
+                menu.addItem(new MenuItem(choice.getName(), (p) -> reset(choice)));
             }
         }
-        menu.show(mMenuButton, 0, 0);
-    }
-
-    private static JMenuItem createMenuItem(String title, Runnable onSelection, boolean enabled) {
-        JMenuItem item = new JMenuItem(title);
-        item.addActionListener((evt) -> onSelection.run());
-        item.setEnabled(enabled);
-        return item;
+        menu.presentToUser(mMenuButton, 0);
     }
 
     private void importData() {

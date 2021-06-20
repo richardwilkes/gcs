@@ -1950,7 +1950,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
 
     @Override
     public void dragGestureRecognized(DragGestureEvent dge) {
-        if (mDividerDrag == null && mModel.hasSelection() && allowRowDrag() && hasFocus()) {
+        if (mDividerDrag == null && mModel.hasSelection() && allowRowDrag() && isFocusOwner()) {
             Point        pt        = dge.getDragOrigin();
             RowSelection selection = new RowSelection(mModel, mModel.getSelectionAsList(true).toArray(new Row[0]));
             if (DragSource.isDragImageSupported()) {

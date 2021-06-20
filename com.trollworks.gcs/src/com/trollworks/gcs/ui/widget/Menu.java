@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.MouseCapture;
 import com.trollworks.gcs.ui.SystemEventHandler;
@@ -31,6 +32,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
+import java.awt.KeyboardFocusManager;
 import java.awt.LayoutManager2;
 import java.awt.MouseInfo;
 import java.awt.Point;
@@ -61,6 +63,7 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
     public static final String    SCROLL_UP_MARKER   = "\uf0d8";
     public static final String    SCROLL_DOWN_MARKER = "\uf0d7";
     private             Popup     mPopup;
+    private             Component mRestoreFocusTo;
     private             MenuItem  mSelection;
     private             int       mTop;
     private             Rectangle mTopScrollArea;
@@ -138,7 +141,11 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
             MouseCapture.stop(this);
             mPopup.hide();
             mPopup = null;
-            if (mSelection != null) {
+            if (mRestoreFocusTo != null) {
+                mRestoreFocusTo.requestFocus();
+                mRestoreFocusTo = null;
+            }
+            if (mSelection != null && mSelection.isEnabled()) {
                 mSelection.click();
             }
         }
@@ -150,8 +157,26 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
         add(sep, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
+    public void addSeparatorAt(int index) {
+        Separator sep = new Separator();
+        sep.setBorder(new EmptyBorder(2, 0, 2, 0));
+        add(sep, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true), index);
+    }
+
     public void addItem(MenuItem item) {
         add(item, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+    }
+
+    public void addItemAt(int index, MenuItem item) {
+        add(item, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true), index);
+    }
+
+    public void addCommand(Command cmd) {
+        addItem(new MenuItem(cmd));
+    }
+
+    public void addCommandAt(int index, Command cmd) {
+        addItemAt(index, new MenuItem(cmd));
     }
 
     @Override
@@ -199,7 +224,7 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
             if (mSelection != null) {
                 mSelection.setHighlighted(false);
             }
-            if (over instanceof MenuItem) {
+            if (over instanceof MenuItem && over.isEnabled()) {
                 mSelection = (MenuItem) over;
                 mSelection.setHighlighted(true);
             } else {
@@ -229,7 +254,11 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
             if (keyCode == KeyEvent.VK_UP) {
                 int index = (mSelection != null ? UIUtilities.getIndexOf(this, mSelection) : max) - 1;
                 if (index >= 0) {
-                    while (index >= 0 && !(getComponent(index) instanceof MenuItem)) {
+                    while (index >= 0) {
+                        Component comp = getComponent(index);
+                        if (comp instanceof MenuItem && comp.isEnabled()) {
+                            break;
+                        }
                         index--;
                     }
                     if (index >= 0) {
@@ -247,7 +276,11 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
             } else if (keyCode == KeyEvent.VK_DOWN) {
                 int index = (mSelection != null ? UIUtilities.getIndexOf(this, mSelection) : -1) + 1;
                 if (index < max) {
-                    while (index < max && !(getComponent(index) instanceof MenuItem)) {
+                    while (index < max) {
+                        Component comp = getComponent(index);
+                        if (comp instanceof MenuItem && comp.isEnabled()) {
+                            break;
+                        }
                         index++;
                     }
                     if (index < max) {
@@ -538,7 +571,17 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
         }
     }
 
+    public void presentToUser(JComponent owner, int initialIndex) {
+        presentToUser(owner, UIUtilities.getLocalInsetBounds(owner), initialIndex);
+    }
+
     public void presentToUser(JComponent owner, Rectangle controlBounds, int initialIndex) {
+        mRestoreFocusTo = KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
+        for (Component comp : getComponents()) {
+            if (comp instanceof MenuItem) {
+                ((MenuItem) comp).adjust();
+            }
+        }
         Dimension prefSize = getPreferredSize();
         if (prefSize.width < controlBounds.width) {
             prefSize.width = controlBounds.width;
@@ -550,8 +593,7 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
         setPreferredSize(prefSize);
         setSize(prefSize);
         doLayout(); // force layout so the calls to get the component locations will give us correct data
-        Insets insets = getInsets();
-        Point  pt     = new Point(insets.left, insets.top - getComponent(initialIndex).getY());
+        Point pt = new Point(controlBounds.x, controlBounds.y - getComponent(initialIndex).getY());
         UIUtilities.convertPointToScreen(pt, owner);
         if (pt.y < maxBounds.y) {
             int delta = maxBounds.y - pt.y;
@@ -561,7 +603,7 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
                 Rectangle bounds = comp.getBounds();
                 if (bounds.y >= delta) {
                     setTop(j);
-                    pt = new Point(insets.left, insets.top - getComponent(initialIndex).getY());
+                    pt = new Point(controlBounds.x, controlBounds.y - getComponent(initialIndex).getY());
                     UIUtilities.convertPointToScreen(pt, owner);
                     break;
                 }
@@ -586,7 +628,7 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
     }
 
     private void tryInitialFocus() {
-        if (--mInitialFocusAttemptsRemaining > 0 && !hasFocus()) {
+        if (--mInitialFocusAttemptsRemaining > 0 && !isFocusOwner()) {
             requestFocus();
             EventQueue.invokeLater(this::tryInitialFocus);
         }

@@ -16,6 +16,8 @@ import com.trollworks.gcs.ui.MouseCapture;
 import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
+import com.trollworks.gcs.ui.widget.Menu;
+import com.trollworks.gcs.ui.widget.MenuItem;
 import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
@@ -41,7 +43,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 
 public class ShowTabsButton extends Panel implements MouseListener, MouseMotionListener, ComponentListener, ActionListener {
@@ -114,16 +115,15 @@ public class ShowTabsButton extends Panel implements MouseListener, MouseMotionL
     }
 
     public void click() {
-        JPopupMenu    menu = new JPopupMenu();
+        Menu          menu = new Menu();
         List<DockTab> tabs = new ArrayList<>(mHidden);
         Collections.sort(tabs);
         for (DockTab tab : tabs) {
-            JMenuItem item = new JMenuItem(tab.getFullTitle(), tab.getIcon());
-            item.putClientProperty(this, tab.getDockable());
-            item.addActionListener(this);
-            menu.add(item);
+            Dockable dockable = tab.getDockable();
+            menu.addItem(new MenuItem(tab.getIcon(), tab.getFullTitle(),
+                    (p) -> dockable.getDockContainer().setCurrentDockable(dockable)));
         }
-        menu.show(this, 0, 0);
+        menu.presentToUser(this, 0);
     }
 
     @Override
