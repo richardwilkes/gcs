@@ -76,7 +76,14 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
         return combo;
     }
 
-    protected JComboBox<AttributeChoice> addAttributePopup(DataFile dataFile, String command, String format, String attribute, boolean includeBlank) {
+    protected <T> PopupMenu<T> addPopup(T[] items, T selection, PopupMenu.SelectionListener<T> listener) {
+        PopupMenu<T> popup = new PopupMenu<>(items, listener);
+        popup.setSelectedItem(selection, false);
+        add(popup);
+        return popup;
+    }
+
+    protected PopupMenu<AttributeChoice> addAttributePopup(DataFile dataFile, String format, String attribute, boolean includeBlank, PopupMenu.SelectionListener<AttributeChoice> listener) {
         List<AttributeChoice> list = new ArrayList<>();
         if (includeBlank) {
             list.add(new AttributeChoice(" ", format, " "));
@@ -99,7 +106,10 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
             list.add(new AttributeChoice(attribute, format, attribute));
             current = list.get(list.size() - 1);
         }
-        return addComboBox(command, list.toArray(new AttributeChoice[0]), current);
+        PopupMenu<AttributeChoice> popup = new PopupMenu<>(list, listener);
+        popup.setSelectedItem(current, false);
+        add(popup);
+        return popup;
     }
 
     /**

@@ -24,7 +24,6 @@ import javax.swing.JComboBox;
 
 /** An cost reduction editor. */
 public class CostReductionEditor extends FeatureEditor {
-    private static final String CHANGE_ATTRIBUTE  = "ChangeAttribute";
     private static final String CHANGE_PERCENTAGE = "ChangePercentage";
 
     /**
@@ -42,7 +41,12 @@ public class CostReductionEditor extends FeatureEditor {
         CostReduction feature = (CostReduction) getFeature();
         FlexRow       row     = new FlexRow();
         row.add(addChangeBaseTypeCombo());
-        row.add(addAttributePopup(getRow().getDataFile(), CHANGE_ATTRIBUTE, "%s", feature.getAttribute(), false));
+        row.add(addAttributePopup(getRow().getDataFile(), "%s", feature.getAttribute(), false, (p) -> {
+            AttributeChoice selectedItem = p.getSelectedItem();
+            if (selectedItem != null) {
+                ((CostReduction) getFeature()).setAttribute(selectedItem.getAttribute());
+            }
+        }));
         String[] percents = new String[16];
         for (int i = 0; i < 16; i++) {
             percents[i] = MessageFormat.format(I18n.text("by {0}%"), Integer.valueOf((i + 1) * 5));
@@ -56,12 +60,7 @@ public class CostReductionEditor extends FeatureEditor {
     public void actionPerformed(ActionEvent event) {
         CostReduction cr      = (CostReduction) getFeature();
         String        command = event.getActionCommand();
-        if (CHANGE_ATTRIBUTE.equals(command)) {
-            AttributeChoice selectedItem = (AttributeChoice) ((JComboBox<?>) event.getSource()).getSelectedItem();
-            if (selectedItem != null) {
-                cr.setAttribute(selectedItem.getAttribute());
-            }
-        } else if (CHANGE_PERCENTAGE.equals(command)) {
+        if (CHANGE_PERCENTAGE.equals(command)) {
             cr.setPercentage((((JComboBox<?>) event.getSource()).getSelectedIndex() + 1) * 5);
         } else {
             super.actionPerformed(event);

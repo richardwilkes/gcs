@@ -15,18 +15,12 @@ import com.trollworks.gcs.attribute.AttributeChoice;
 import com.trollworks.gcs.ui.layout.FlexGrid;
 import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.ui.layout.FlexSpacer;
+import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 
-import java.awt.event.ActionEvent;
-import javax.swing.JComboBox;
-
 /** An attribute prerequisite editor panel. */
 public class AttributePrereqEditor extends PrereqEditor {
-    private static final String CHANGE_TYPE        = "ChangeType";
-    private static final String CHANGE_SECOND_TYPE = "ChangeSecondType";
-    private static final String BLANK              = " ";
-
     /**
      * Creates a new attribute prerequisite editor panel.
      *
@@ -57,39 +51,29 @@ public class AttributePrereqEditor extends PrereqEditor {
         grid.add(row, 1, 1);
     }
 
-    private JComboBox<AttributeChoice> addChangeTypePopup() {
-        return addAttributePopup(mRow.getDataFile(), CHANGE_TYPE, "%s", ((AttributePrereq) mPrereq).getWhich(), false);
+    private PopupMenu<AttributeChoice> addChangeTypePopup() {
+        return addAttributePopup(mRow.getDataFile(), "%s", ((AttributePrereq) mPrereq).getWhich(), false, (p) -> {
+            AttributeChoice selectedItem = p.getSelectedItem();
+            if (selectedItem != null) {
+                ((AttributePrereq) mPrereq).setWhich(selectedItem.getAttribute());
+            }
+        });
     }
 
-    private JComboBox<AttributeChoice> addChangeSecondTypePopup() {
+    private PopupMenu<AttributeChoice> addChangeSecondTypePopup() {
         String combinedWith = ((AttributePrereq) mPrereq).getCombinedWith();
         if (combinedWith == null) {
             combinedWith = " ";
         }
-        return addAttributePopup(mRow.getDataFile(), CHANGE_SECOND_TYPE, I18n.text("combined with %s"), combinedWith, true);
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent event) {
-        AttributePrereq prereq  = (AttributePrereq) mPrereq;
-        String          command = event.getActionCommand();
-        if (CHANGE_TYPE.equals(command)) {
-            AttributeChoice selectedItem = (AttributeChoice) ((JComboBox<?>) event.getSource()).getSelectedItem();
-            if (selectedItem != null) {
-                prereq.setWhich(selectedItem.getAttribute());
-            }
-        } else if (CHANGE_SECOND_TYPE.equals(command)) {
-            AttributeChoice selectedItem = (AttributeChoice) ((JComboBox<?>) event.getSource()).getSelectedItem();
+        return addAttributePopup(mRow.getDataFile(), I18n.text("combined with %s"), combinedWith, true, (p) -> {
+            AttributeChoice selectedItem = p.getSelectedItem();
             if (selectedItem != null) {
                 String choice = selectedItem.getAttribute();
                 if (" ".equals(choice)) {
                     choice = null;
                 }
-                prereq.setCombinedWith(choice);
+                ((AttributePrereq) mPrereq).setCombinedWith(choice);
             }
-        } else {
-            super.actionPerformed(event);
-        }
+        });
     }
-
 }
