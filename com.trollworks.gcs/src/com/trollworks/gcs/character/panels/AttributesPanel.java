@@ -69,9 +69,9 @@ public class AttributesPanel extends DropPanel {
         }
         PageField field;
         if (def.getType() == AttributeType.DECIMAL) {
-            field = new PageField(FieldFactory.FLOAT, Double.valueOf(attr.getDoubleValue(gch)), (c, v) -> attr.setDoubleValue(c, ((Double) v).doubleValue()), sheet, Attribute.ID_ATTR_PREFIX + attr.getID(), SwingConstants.RIGHT, true, null, ThemeColor.ON_CONTENT);
+            field = new PageField(FieldFactory.FLOAT, Double.valueOf(attr.getDoubleValue(gch)), (c, v) -> attr.setDoubleValue(c, ((Double) v).doubleValue()), sheet, Attribute.ID_ATTR_PREFIX + attr.getID(), SwingConstants.RIGHT, true, null);
         } else {
-            field = new PageField(FieldFactory.POSINT5, Integer.valueOf(attr.getIntValue(gch)), (c, v) -> attr.setIntValue(c, ((Integer) v).intValue()), sheet, Attribute.ID_ATTR_PREFIX + attr.getID(), SwingConstants.RIGHT, true, null, ThemeColor.ON_CONTENT);
+            field = new PageField(FieldFactory.POSINT5, Integer.valueOf(attr.getIntValue(gch)), (c, v) -> attr.setIntValue(c, ((Integer) v).intValue()), sheet, Attribute.ID_ATTR_PREFIX + attr.getID(), SwingConstants.RIGHT, true, null);
         }
         add(new PagePoints(attr.getPointCost(gch)), new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.END));
         add(field, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
@@ -79,7 +79,7 @@ public class AttributesPanel extends DropPanel {
     }
 
     private void createDiceField(CharacterSheet sheet, Dice dice, String title) {
-        PageField field = new PageField(new DefaultFormatterFactory(new DiceFormatter(sheet.getCharacter())), dice, sheet, SwingConstants.RIGHT, null, ThemeColor.ON_CONTENT);
+        PageField field = new PageField(new DefaultFormatterFactory(new DiceFormatter(sheet.getCharacter())), dice, sheet, SwingConstants.RIGHT, null);
         add(field, new PrecisionLayoutData().setHorizontalSpan(2).setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
         add(new PageLabel(title, field));
     }

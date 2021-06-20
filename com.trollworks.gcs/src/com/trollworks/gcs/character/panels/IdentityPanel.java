@@ -56,7 +56,7 @@ public class IdentityPanel extends DropPanel {
                 String.format(I18n.text("Randomize %s"), title), randomizer));
         add(new PageLabel(title), new PrecisionLayoutData().setEndHorizontalAlignment());
         PageField field = new PageField(FieldFactory.STRING, value, setter, sheet, tag,
-                SwingConstants.LEFT, true, null, ThemeColor.ON_CONTENT);
+                SwingConstants.LEFT, true, null);
         add(field, createFieldLayoutData());
         return field;
     }
@@ -64,7 +64,7 @@ public class IdentityPanel extends DropPanel {
     private void createStringField(CharacterSheet sheet, String value, String title, String tag, CharacterSetter setter) {
         add(new PageLabel(title), new PrecisionLayoutData().setEndHorizontalAlignment().setHorizontalSpan(2));
         add(new PageField(FieldFactory.STRING, value, setter, sheet, tag, SwingConstants.LEFT, true,
-                null, ThemeColor.ON_CONTENT), createFieldLayoutData());
+                null), createFieldLayoutData());
     }
 
     private static PrecisionLayoutData createFieldLayoutData() {

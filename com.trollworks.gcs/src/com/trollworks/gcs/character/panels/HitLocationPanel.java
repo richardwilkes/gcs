@@ -106,7 +106,7 @@ public class HitLocationPanel extends DropPanel {
     }
 
     private void createDRField(CharacterSheet sheet, Object value, String tooltip) {
-        PageField field = new PageField(FieldFactory.POSINT5, value, sheet, SwingConstants.RIGHT, tooltip, ThemeColor.ON_CONTENT);
+        PageField field = new PageField(FieldFactory.POSINT5, value, sheet, SwingConstants.RIGHT, tooltip);
         add(field, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
     }
 }

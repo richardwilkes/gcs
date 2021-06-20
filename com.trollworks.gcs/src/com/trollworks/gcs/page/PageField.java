@@ -14,6 +14,7 @@ package com.trollworks.gcs.page;
 import com.trollworks.gcs.character.CharacterSetter;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.DynamicColor;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.ThemeFont;
@@ -25,6 +26,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -50,10 +52,9 @@ public class PageField extends JFormattedTextField implements PropertyChangeList
      * @param sheet        The sheet the data belongs to.
      * @param alignment    The alignment of the field.
      * @param tooltip      The tooltip to set.
-     * @param color        The color to use.
      */
-    public PageField(AbstractFormatterFactory factory, Object currentValue, CharacterSheet sheet, int alignment, String tooltip, Color color) {
-        this(factory, currentValue, null, sheet, "", alignment, false, tooltip, color);
+    public PageField(AbstractFormatterFactory factory, Object currentValue, CharacterSheet sheet, int alignment, String tooltip) {
+        this(factory, currentValue, null, sheet, "", alignment, false, tooltip);
     }
 
     /**
@@ -66,9 +67,8 @@ public class PageField extends JFormattedTextField implements PropertyChangeList
      * @param alignment    The alignment of the field.
      * @param editable     Whether or not the user can edit this field.
      * @param tooltip      The tooltip to set.
-     * @param color        The color to use.
      */
-    public PageField(AbstractFormatterFactory factory, Object currentValue, CharacterSetter setter, CharacterSheet sheet, String tag, int alignment, boolean editable, String tooltip, Color color) {
+    public PageField(AbstractFormatterFactory factory, Object currentValue, CharacterSetter setter, CharacterSheet sheet, String tag, int alignment, boolean editable, String tooltip) {
         super(factory, currentValue);
         if (Platform.isLinux()) {
             // I override the UI here since the GTK UI on Linux has no way to turn off the border
@@ -80,15 +80,13 @@ public class PageField extends JFormattedTextField implements PropertyChangeList
         mSetter = setter;
         setThemeFont(ThemeFont.PAGE_FIELD_PRIMARY);
         setBorder(null);
-        setOpaque(false);
-        // Just setting opaque to false isn't enough for some reason, so I'm also setting the
-        // background color to a 100% transparent value.
-        setBackground(Colors.TRANSPARENT);
+        setOpaque(true);
         setHorizontalAlignment(alignment);
         setEditable(editable);
         setEnabled(editable);
-        setForeground(editable ? ThemeColor.ON_EDITABLE : color);
-        setDisabledTextColor(color);
+        setForeground(editable ? ThemeColor.ON_EDITABLE : ThemeColor.ON_CONTENT);
+        setBackground(editable ? ThemeColor.EDITABLE : ThemeColor.CONTENT);
+        setDisabledTextColor(new DynamicColor(() -> Colors.getWithAlpha(getForeground(), 128).getRGB()));
         setToolTipText(tooltip);
         addPropertyChangeListener("value", this);
         addActionListener(this);
@@ -131,8 +129,9 @@ public class PageField extends JFormattedTextField implements PropertyChangeList
     }
 
     @Override
-    protected void paintComponent(Graphics gc) {
-        super.paintComponent(GraphicsUtilities.prepare(gc));
+    protected void paintComponent(Graphics g) {
+        Graphics2D gc = GraphicsUtilities.prepare(g);
+        super.paintComponent(gc);
         if (isEditable()) {
             Rectangle bounds = getBounds();
             bounds.x = 0;

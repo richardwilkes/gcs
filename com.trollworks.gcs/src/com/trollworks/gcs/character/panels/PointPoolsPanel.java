@@ -52,9 +52,9 @@ public class PointPoolsPanel extends DropPanel {
         String id   = attr.getID();
         String name = def.getName();
         add(new PagePoints(attr.getPointCost(gch)), new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.END));
-        add(new PageField(FieldFactory.INT7, Integer.valueOf(attr.getCurrentIntValue(gch)), (c, v) -> attr.setDamage(gch, -Math.min(((Integer) v).intValue() - attr.getIntValue(gch), 0)), sheet, Attribute.ID_ATTR_PREFIX + id + ".current", SwingConstants.RIGHT, true, String.format(I18n.text("Current %s"), name), ThemeColor.ON_CONTENT), new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
+        add(new PageField(FieldFactory.INT7, Integer.valueOf(attr.getCurrentIntValue(gch)), (c, v) -> attr.setDamage(gch, -Math.min(((Integer) v).intValue() - attr.getIntValue(gch), 0)), sheet, Attribute.ID_ATTR_PREFIX + id + ".current", SwingConstants.RIGHT, true, String.format(I18n.text("Current %s"), name)), new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
         add(new PageLabel(I18n.text("of"), null));
-        add(new PageField(FieldFactory.POSINT6, Integer.valueOf(attr.getIntValue(gch)), (c, v) -> attr.setIntValue(gch, ((Integer) v).intValue()), sheet, Attribute.ID_ATTR_PREFIX + id, SwingConstants.RIGHT, true, String.format(I18n.text("Maximum %s"), name), ThemeColor.ON_CONTENT), new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
+        add(new PageField(FieldFactory.POSINT6, Integer.valueOf(attr.getIntValue(gch)), (c, v) -> attr.setIntValue(gch, ((Integer) v).intValue()), sheet, Attribute.ID_ATTR_PREFIX + id, SwingConstants.RIGHT, true, String.format(I18n.text("Maximum %s"), name)), new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
         PageLabel label    = new PageLabel(name, null);
         String    fullName = def.getFullName();
         label.setToolTipText(fullName.isBlank() ? null : fullName);
