@@ -26,6 +26,7 @@ import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.Filtered;
@@ -42,7 +43,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JComboBox;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -54,7 +54,7 @@ import javax.swing.text.Document;
 public class AdvantageEditor extends RowEditor<Advantage> implements ActionListener, DocumentListener, EditorField.ChangeListener {
     private EditorField                           mNameField;
     private Checkbox                              mShouldRoundCostDown;
-    private JComboBox<Levels>                     mLevelTypeCombo;
+    private PopupMenu<Levels>                     mLevelTypePopup;
     private EditorField                           mBasePointsField;
     private EditorField                           mLevelField;
     private Checkbox                              mHalfLevel;
@@ -78,9 +78,9 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     private Checkbox                              mExoticType;
     private Checkbox                              mSupernaturalType;
     private Checkbox                              mEnabledCheckBox;
-    private JComboBox<AdvantageContainerType>     mContainerTypeCombo;
-    private JComboBox<SelfControlRoll>            mCRCombo;
-    private JComboBox<SelfControlRollAdjustments> mCRAdjCombo;
+    private PopupMenu<AdvantageContainerType>     mContainerTypePopup;
+    private PopupMenu<SelfControlRoll>            mCRPopup;
+    private PopupMenu<SelfControlRollAdjustments> mCRAdjPopup;
     private String                                mUserDesc;
 
     /**
@@ -161,11 +161,10 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         addLabel(wrapper, I18n.text("Base"), mBasePointsField);
         wrapper.add(mBasePointsField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-        mLevelTypeCombo = new JComboBox<>(Levels.values());
+        mLevelTypePopup = new PopupMenu<>(Levels.values(), (p) -> levelTypeChanged());
         Levels levels = mRow.allowHalfLevels() ? Levels.HAS_HALF_LEVELS : Levels.HAS_LEVELS;
-        mLevelTypeCombo.setSelectedItem(mRow.isLeveled() ? levels : Levels.NO_LEVELS);
-        mLevelTypeCombo.addActionListener(this);
-        wrapper.add(mLevelTypeCombo);
+        mLevelTypePopup.setSelectedItem(mRow.isLeveled() ? levels : Levels.NO_LEVELS, false);
+        wrapper.add(mLevelTypePopup);
 
         mLevelField = createField(0, 9999, mLastLevel, I18n.text("The level of this advantage"));
         addLabel(wrapper, I18n.text("Level"), mLevelField);
@@ -211,17 +210,25 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         parent.add(new Label(I18n.text("Categories"), mCategoriesField), new PrecisionLayoutData().setFillHorizontalAlignment());
         parent.add(mCategoriesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-        mCRCombo = new JComboBox<>(SelfControlRoll.values());
-        mCRCombo.setSelectedIndex(mRow.getCR().ordinal());
-        mCRCombo.addActionListener(this);
-        parent.add(new Label(I18n.text("Self-Control Roll"), mCRCombo), new PrecisionLayoutData().setFillHorizontalAlignment());
+        mCRPopup = new PopupMenu<>(SelfControlRoll.values(), (p) -> {
+            SelfControlRoll cr = getCR();
+            if (cr == SelfControlRoll.NONE_REQUIRED) {
+                mCRAdjPopup.setSelectedItem(SelfControlRollAdjustments.NONE, true);
+                mCRAdjPopup.setEnabled(false);
+            } else {
+                mCRAdjPopup.setEnabled(mIsEditable);
+            }
+            updatePoints();
+        });
+        mCRPopup.setSelectedIndex(mRow.getCR().ordinal(), false);
+        parent.add(new Label(I18n.text("Self-Control Roll"), mCRPopup), new PrecisionLayoutData().setFillHorizontalAlignment());
         Panel wrapper = new Panel(new PrecisionLayout().setColumns(2).setMargins(0));
-        wrapper.add(mCRCombo);
-        mCRAdjCombo = new JComboBox<>(SelfControlRollAdjustments.values());
-        mCRAdjCombo.setToolTipText(I18n.text("Adjustments that are applied due to Self-Control Roll limitations"));
-        mCRAdjCombo.setSelectedIndex(mRow.getCRAdj().ordinal());
-        mCRAdjCombo.setEnabled(mRow.getCR() != SelfControlRoll.NONE_REQUIRED);
-        wrapper.add(mCRAdjCombo);
+        wrapper.add(mCRPopup);
+        mCRAdjPopup = new PopupMenu<>(SelfControlRollAdjustments.values(), null);
+        mCRAdjPopup.setToolTipText(I18n.text("Adjustments that are applied due to Self-Control Roll limitations"));
+        mCRAdjPopup.setSelectedIndex(mRow.getCRAdj().ordinal(), false);
+        mCRAdjPopup.setEnabled(mRow.getCR() != SelfControlRoll.NONE_REQUIRED);
+        wrapper.add(mCRAdjPopup);
         parent.add(wrapper);
     }
 
@@ -256,12 +263,12 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     }
 
     private void addContainerTypeFields(Container parent) {
-        mContainerTypeCombo = new JComboBox<>(AdvantageContainerType.values());
-        mContainerTypeCombo.setSelectedItem(mRow.getContainerType());
-        mContainerTypeCombo.setToolTipText(I18n.text("The type of container this is"));
-        parent.add(new Label(I18n.text("Container Type"), mContainerTypeCombo), new PrecisionLayoutData().setFillHorizontalAlignment());
+        mContainerTypePopup = new PopupMenu<>(AdvantageContainerType.values(), null);
+        mContainerTypePopup.setSelectedItem(mRow.getContainerType(), false);
+        mContainerTypePopup.setToolTipText(I18n.text("The type of container this is"));
+        parent.add(new Label(I18n.text("Container Type"), mContainerTypePopup), new PrecisionLayoutData().setFillHorizontalAlignment());
         Panel wrapper = new Panel(new PrecisionLayout().setColumns(3).setMargins(0));
-        wrapper.add(mContainerTypeCombo);
+        wrapper.add(mContainerTypePopup);
         addRefField(wrapper);
         parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
@@ -305,7 +312,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         boolean modified = mRow.setName((String) mNameField.getValue());
         modified |= mRow.setEnabled(enabled());
         if (mRow.canHaveChildren()) {
-            modified |= mRow.setContainerType((AdvantageContainerType) mContainerTypeCombo.getSelectedItem());
+            modified |= mRow.setContainerType(mContainerTypePopup.getSelectedItem());
         } else {
             int type = 0;
 
@@ -366,28 +373,17 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     @Override
     public void actionPerformed(ActionEvent event) {
         Object src = event.getSource();
-        if (src == mLevelTypeCombo) {
-            levelTypeChanged();
-        } else if (src == mModifiers) {
-            updatePoints();
-        } else if (src == mCRCombo) {
-            SelfControlRoll cr = getCR();
-            if (cr == SelfControlRoll.NONE_REQUIRED) {
-                mCRAdjCombo.setSelectedItem(SelfControlRollAdjustments.NONE);
-                mCRAdjCombo.setEnabled(false);
-            } else {
-                mCRAdjCombo.setEnabled(mIsEditable);
-            }
+        if (src == mModifiers) {
             updatePoints();
         }
     }
 
     private boolean isLeveled() {
-        return mLevelTypeCombo.getSelectedItem() != Levels.NO_LEVELS;
+        return mLevelTypePopup.getSelectedItem() != Levels.NO_LEVELS;
     }
 
     private boolean allowHalfLevels() {
-        return mLevelTypeCombo.getSelectedItem() == Levels.HAS_HALF_LEVELS;
+        return mLevelTypePopup.getSelectedItem() == Levels.HAS_HALF_LEVELS;
     }
 
     private void levelTypeChanged() {
@@ -413,11 +409,11 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     }
 
     private SelfControlRoll getCR() {
-        return (SelfControlRoll) mCRCombo.getSelectedItem();
+        return mCRPopup.getSelectedItem();
     }
 
     private SelfControlRollAdjustments getCRAdj() {
-        return (SelfControlRollAdjustments) mCRAdjCombo.getSelectedItem();
+        return mCRAdjPopup.getSelectedItem();
     }
 
     private int getLevels() {
