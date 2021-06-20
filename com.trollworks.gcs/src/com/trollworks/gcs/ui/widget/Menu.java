@@ -12,6 +12,7 @@
 package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.ui.GraphicsUtilities;
+import com.trollworks.gcs.ui.MouseCapture;
 import com.trollworks.gcs.ui.SystemEventHandler;
 import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.ThemeColor;
@@ -49,22 +50,22 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.concurrent.TimeUnit;
+import javax.swing.JComponent;
+import javax.swing.Popup;
+import javax.swing.PopupFactory;
 import javax.swing.SwingConstants;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 
 public class Menu extends Panel implements Runnable, MouseListener, MouseMotionListener, MouseWheelListener, KeyListener, FocusListener, AncestorListener, ComponentListener, AppForegroundListener, LayoutManager2 {
-    public static final String        SCROLL_UP_MARKER   = "\uf0d8";
-    public static final String        SCROLL_DOWN_MARKER = "\uf0d7";
-    private             MenuItem      mSelection;
-    private             CloseListener mCloseListener;
-    private             int           mTop;
-    private             Rectangle     mTopScrollArea;
-    private             Rectangle     mBottomScrollArea;
-
-    public interface CloseListener {
-        void menuClosed(Menu menu);
-    }
+    public static final String    SCROLL_UP_MARKER   = "\uf0d8";
+    public static final String    SCROLL_DOWN_MARKER = "\uf0d7";
+    private             Popup     mPopup;
+    private             MenuItem  mSelection;
+    private             int       mTop;
+    private             Rectangle mTopScrollArea;
+    private             Rectangle mBottomScrollArea;
+    private             int       mInitialFocusAttemptsRemaining;
 
     public Menu() {
         setLayout(this);
@@ -128,19 +129,18 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
         return 0;
     }
 
-    public void setCloseListener(CloseListener listener) {
-        mCloseListener = listener;
-    }
-
     private void close() {
         SystemEventHandler.INSTANCE.removeAppForegroundListener(this);
         for (Window window : Window.getWindows()) {
             window.removeComponentListener(this);
         }
-        if (mCloseListener != null) {
-            CloseListener closeListener = mCloseListener;
-            mCloseListener = null;
-            closeListener.menuClosed(this);
+        if (mPopup != null) {
+            MouseCapture.stop(this);
+            mPopup.hide();
+            mPopup = null;
+            if (mSelection != null) {
+                mSelection.click();
+            }
         }
     }
 
@@ -516,7 +516,7 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
 
     @Override
     public void run() {
-        if (mCloseListener != null) {
+        if (mPopup != null) {
             if (mTopScrollArea != null || mBottomScrollArea != null) {
                 Point pt = MouseInfo.getPointerInfo().getLocation();
                 UIUtilities.convertPointFromScreen(pt, this);
@@ -535,6 +535,60 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
                 }
             }
             Tasks.scheduleOnUIThread(this, 100, TimeUnit.MILLISECONDS, null);
+        }
+    }
+
+    public void presentToUser(JComponent owner, Rectangle controlBounds, int initialIndex) {
+        Dimension prefSize = getPreferredSize();
+        if (prefSize.width < controlBounds.width) {
+            prefSize.width = controlBounds.width;
+        }
+        Rectangle maxBounds = WindowUtils.getMaximumWindowBounds(owner, controlBounds);
+        if (prefSize.height > maxBounds.height) {
+            prefSize.height = maxBounds.height;
+        }
+        setPreferredSize(prefSize);
+        setSize(prefSize);
+        doLayout(); // force layout so the calls to get the component locations will give us correct data
+        Insets insets = getInsets();
+        Point  pt     = new Point(insets.left, insets.top - getComponent(initialIndex).getY());
+        UIUtilities.convertPointToScreen(pt, owner);
+        if (pt.y < maxBounds.y) {
+            int delta = maxBounds.y - pt.y;
+            setTop(1);
+            for (int j = 0; j < initialIndex; j++) {
+                Component comp   = getComponent(j);
+                Rectangle bounds = comp.getBounds();
+                if (bounds.y >= delta) {
+                    setTop(j);
+                    pt = new Point(insets.left, insets.top - getComponent(initialIndex).getY());
+                    UIUtilities.convertPointToScreen(pt, owner);
+                    break;
+                }
+            }
+        }
+        if (pt.y + prefSize.height > maxBounds.y + maxBounds.height) {
+            prefSize.height = maxBounds.y + maxBounds.height - pt.y;
+            int minHeight = getMinimumSize().height;
+            if (minHeight > prefSize.height) {
+                pt.y -= minHeight - prefSize.height;
+                prefSize.height = minHeight;
+            }
+            setPreferredSize(prefSize);
+            setSize(prefSize);
+        }
+        PopupFactory factory = PopupFactory.getSharedInstance();
+        mPopup = factory.getPopup(owner, this, pt.x, pt.y);
+        mPopup.show();
+        MouseCapture.start(owner, this, null);
+        mInitialFocusAttemptsRemaining = 5;
+        tryInitialFocus();
+    }
+
+    private void tryInitialFocus() {
+        if (--mInitialFocusAttemptsRemaining > 0 && !hasFocus()) {
+            requestFocus();
+            EventQueue.invokeLater(this::tryInitialFocus);
         }
     }
 }

@@ -19,14 +19,11 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.scale.Scale;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.FocusEvent;
@@ -35,7 +32,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.awt.font.TextAttribute;
 import java.awt.geom.Path2D;
 import java.util.ArrayList;
@@ -43,20 +39,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.Popup;
-import javax.swing.PopupFactory;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 
-public class PopupMenu<T> extends Panel implements MouseListener, MouseMotionListener, KeyListener, FocusListener {
+public class PopupMenu<T> extends Panel implements MouseListener, KeyListener, FocusListener {
     public static final int                  GAP        = 4;
     public static final String               POPUP_MARK = "\uf0d7";
     private             List<T>              mItems;
     private             int                  mSelection;
     private             SelectionListener<T> mSelectionListener;
-    private             int                  mInitialFocusAttemptsRemaining;
-    private             Menu                 mMenu;
-    private             boolean              mNeedReleaseForward;
 
     public interface SelectionListener<T> {
         void popupMenuItemSelected(PopupMenu<T> popup);
@@ -66,7 +56,6 @@ public class PopupMenu<T> extends Panel implements MouseListener, MouseMotionLis
         super(null, false);
         setThemeFont(ThemeFont.BUTTON);
         addMouseListener(this);
-        addMouseMotionListener(this);
         addFocusListener(this);
         addKeyListener(this);
         setFocusable(true);
@@ -336,12 +325,7 @@ public class PopupMenu<T> extends Panel implements MouseListener, MouseMotionLis
 
     @Override
     public void mouseReleased(MouseEvent event) {
-        if (mMenu != null && mNeedReleaseForward) {
-            Point pt = SwingUtilities.convertPoint(this, event.getPoint(), mMenu);
-            mMenu.dispatchEvent(new MouseEvent(mMenu, event.getID(), event.getWhen(),
-                    event.getModifiersEx(), pt.x, pt.y, event.getClickCount(),
-                    event.isPopupTrigger()));
-        }
+        // Unused
     }
 
     @Override
@@ -354,94 +338,18 @@ public class PopupMenu<T> extends Panel implements MouseListener, MouseMotionLis
         // Unused
     }
 
-    @Override
-    public void mouseDragged(MouseEvent event) {
-        if (mMenu != null) {
-            mNeedReleaseForward = true;
-            Point pt = SwingUtilities.convertPoint(this, event.getPoint(), mMenu);
-            mMenu.dispatchEvent(new MouseEvent(mMenu, event.getID(), event.getWhen(),
-                    event.getModifiersEx(), pt.x, pt.y, event.getClickCount(),
-                    event.isPopupTrigger()));
-        }
-    }
-
-    @Override
-    public void mouseMoved(MouseEvent event) {
-        // Unused
-    }
-
     public void click() {
-        mMenu = new Menu();
-        int i = 0;
+        Menu menu = new Menu();
+        int  i    = 0;
         for (T item : mItems) {
             if (item == null) {
-                mMenu.addSeparator();
+                menu.addSeparator();
             } else {
                 int index = i;
-                mMenu.addItem(new MenuItem(item.toString(), (mi) -> setSelectedIndex(index, true)));
+                menu.addItem(new MenuItem(item.toString(), (mi) -> setSelectedIndex(index, true)));
             }
             i++;
         }
-
-        Rectangle controlBounds = UIUtilities.getLocalInsetBounds(this);
-        Dimension prefSize      = mMenu.getPreferredSize();
-        if (prefSize.width < controlBounds.width) {
-            prefSize.width = controlBounds.width;
-        }
-        Rectangle maxBounds = WindowUtils.getMaximumWindowBounds(this, controlBounds);
-        if (prefSize.height > maxBounds.height) {
-            prefSize.height = maxBounds.height;
-        }
-        mMenu.setPreferredSize(prefSize);
-        mMenu.setSize(prefSize);
-        mMenu.doLayout(); // force layout so the calls to get the component locations will give us correct data
-        Insets insets = getInsets();
-        Point  pt     = new Point(insets.left, insets.top - mMenu.getComponent(mSelection).getY());
-        UIUtilities.convertPointToScreen(pt, this);
-        if (pt.y < maxBounds.y) {
-            int delta = maxBounds.y - pt.y;
-            mMenu.setTop(1);
-            for (int j = 0; j < mSelection; j++) {
-                Component comp   = mMenu.getComponent(j);
-                Rectangle bounds = comp.getBounds();
-                if (bounds.y >= delta) {
-                    mMenu.setTop(j);
-                    pt = new Point(insets.left, insets.top - mMenu.getComponent(mSelection).getY());
-                    UIUtilities.convertPointToScreen(pt, this);
-                    break;
-                }
-            }
-        }
-        if (pt.y + prefSize.height > maxBounds.y + maxBounds.height) {
-            prefSize.height = maxBounds.y + maxBounds.height - pt.y;
-            int minHeight = mMenu.getMinimumSize().height;
-            if (minHeight > prefSize.height) {
-                pt.y -= minHeight - prefSize.height;
-                prefSize.height = minHeight;
-            }
-            mMenu.setPreferredSize(prefSize);
-            mMenu.setSize(prefSize);
-        }
-        PopupFactory factory = PopupFactory.getSharedInstance();
-        Popup        popup   = factory.getPopup(this, mMenu, pt.x, pt.y);
-        mMenu.setCloseListener((m) -> {
-            mNeedReleaseForward = false;
-            MenuItem item = m.getSelection();
-            mMenu = null;
-            popup.hide();
-            if (item != null) {
-                item.click();
-            }
-        });
-        popup.show();
-        mInitialFocusAttemptsRemaining = 5;
-        tryInitialFocus();
-    }
-
-    private void tryInitialFocus() {
-        if (mMenu != null && --mInitialFocusAttemptsRemaining > 0 && !mMenu.hasFocus()) {
-            mMenu.requestFocus();
-            EventQueue.invokeLater(this::tryInitialFocus);
-        }
+        menu.presentToUser(this, UIUtilities.getLocalInsetBounds(this), mSelection);
     }
 }

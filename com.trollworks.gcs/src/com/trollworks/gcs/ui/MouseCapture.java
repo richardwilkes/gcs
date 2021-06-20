@@ -36,21 +36,26 @@ public final class MouseCapture implements MouseListener, MouseMotionListener, H
     /**
      * Starts redirecting all mouse events to the specified component or one of its children.
      *
-     * @param component The target.
-     * @param cursor    The cursor to use while the mouse is captured.
+     * @param target The target.
+     * @param cursor The cursor to use while the mouse is captured.
      */
-    public static void start(Component component, Cursor cursor) {
-        JRootPane rootPane = SwingUtilities.getRootPane(component);
+    public static void start(Component target, Cursor cursor) {
+        start(target, target, cursor);
+    }
+
+    /**
+     * Starts redirecting all mouse events to the specified component or one of its children.
+     *
+     * @param host   The host component, which determines the glass pane that will be used.
+     * @param target The target.
+     * @param cursor The cursor to use while the mouse is captured.
+     */
+    public static void start(Component host, Component target, Cursor cursor) {
+        JRootPane rootPane = SwingUtilities.getRootPane(host);
         if (rootPane != null) {
             Component    glassPane = rootPane.getGlassPane();
-            MouseCapture capture   = new MouseCapture(glassPane, component);
-            glassPane.addMouseListener(capture);
-            glassPane.addMouseMotionListener(capture);
-            glassPane.addHierarchyListener(capture);
-            if (cursor != null) {
-                glassPane.setCursor(cursor);
-            }
-            MAP.put(component, capture);
+            MouseCapture capture   = new MouseCapture(glassPane, target, cursor);
+            MAP.put(target, capture);
             glassPane.setVisible(true);
         }
     }
@@ -58,22 +63,32 @@ public final class MouseCapture implements MouseListener, MouseMotionListener, H
     /**
      * Stops redirecting mouse events.
      *
-     * @param component The target that was passed to {@link #start(Component, Cursor)}.
+     * @param target The target that was passed to one of the start calls.
      */
-    public static void stop(Component component) {
-        MouseCapture capture = MAP.remove(component);
+    public static void stop(Component target) {
+        MouseCapture capture = MAP.remove(target);
         if (capture != null) {
-            capture.mGlassPane.removeMouseListener(capture);
-            capture.mGlassPane.removeMouseMotionListener(capture);
-            capture.mGlassPane.removeHierarchyListener(capture);
-            capture.mGlassPane.setCursor(null);
-            capture.mGlassPane.setVisible(false);
+            capture.finish();
         }
     }
 
-    private MouseCapture(Component glassPane, Component capture) {
+    private MouseCapture(Component glassPane, Component capture, Cursor cursor) {
         mGlassPane = glassPane;
         mCaptureComponent = capture;
+        mGlassPane.addMouseListener(this);
+        mGlassPane.addMouseMotionListener(this);
+        mGlassPane.addHierarchyListener(this);
+        if (cursor != null) {
+            mGlassPane.setCursor(cursor);
+        }
+    }
+
+    private void finish() {
+        mGlassPane.removeMouseListener(this);
+        mGlassPane.removeMouseMotionListener(this);
+        mGlassPane.removeHierarchyListener(this);
+        mGlassPane.setCursor(null);
+        mGlassPane.setVisible(false);
     }
 
     @Override
