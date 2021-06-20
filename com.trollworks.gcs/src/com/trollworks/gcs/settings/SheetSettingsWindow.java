@@ -259,12 +259,12 @@ public final class SheetSettingsWindow extends BaseWindow implements DocumentLis
     }
 
     private static <E> PopupMenu<E> addPopupMenu(Panel panel, E[] values, E choice, String title, String tooltip, PopupMenu.SelectionListener<E> listener) {
-        PopupMenu<E> combo = new PopupMenu<>(values, listener);
-        combo.setToolTipText(tooltip);
-        combo.setSelectedItem(choice, false);
-        panel.add(new Label(title, combo), new PrecisionLayoutData().setFillHorizontalAlignment());
-        panel.add(combo);
-        return combo;
+        PopupMenu<E> popup = new PopupMenu<>(values, listener);
+        popup.setToolTipText(tooltip);
+        popup.setSelectedItem(choice, false);
+        panel.add(new Label(title, popup), new PrecisionLayoutData().setFillHorizontalAlignment());
+        panel.add(popup);
+        return popup;
     }
 
     private static Checkbox addCheckbox(Panel panel, String title, String tooltip, boolean checked, Checkbox.ClickFunction clickFunction) {

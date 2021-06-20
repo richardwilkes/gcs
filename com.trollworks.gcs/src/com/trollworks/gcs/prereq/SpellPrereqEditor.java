@@ -46,10 +46,10 @@ public class SpellPrereqEditor extends PrereqEditor {
         String      type   = prereq.getType();
 
         FlexRow row = new FlexRow();
-        row.add(addHasCombo(prereq.has()));
+        row.add(addHasPopup(prereq.has()));
         row.add(addNumericComparePopup(prereq.getQuantityCriteria(), null));
         row.add(addNumericCompareField(prereq.getQuantityCriteria(), 0, 999, false));
-        row.add(addChangeBaseTypeCombo());
+        row.add(addChangeBaseTypePopup());
         row.add(new FlexSpacer(0, 0, true, false));
         grid.add(row, 0, 1);
 

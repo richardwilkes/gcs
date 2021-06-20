@@ -37,7 +37,7 @@ public class CostReductionEditor extends FeatureEditor {
     protected void rebuildSelf(FlexGrid grid, FlexRow right) {
         CostReduction feature = (CostReduction) getFeature();
         FlexRow       row     = new FlexRow();
-        row.add(addChangeBaseTypeCombo());
+        row.add(addChangeBaseTypePopup());
         row.add(addAttributePopup(getRow().getDataFile(), "%s", feature.getAttribute(), false, (p) -> {
             AttributeChoice selectedItem = p.getSelectedItem();
             if (selectedItem != null) {

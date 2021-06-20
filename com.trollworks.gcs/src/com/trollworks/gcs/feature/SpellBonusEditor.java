@@ -39,10 +39,10 @@ public class SpellBonusEditor extends FeatureEditor {
         SpellBonus bonus = (SpellBonus) getFeature();
 
         FlexRow row = new FlexRow();
-        row.add(addChangeBaseTypeCombo());
+        row.add(addChangeBaseTypePopup());
         LeveledAmount amount = bonus.getAmount();
         row.add(addLeveledAmountField(amount, -999, 999));
-        row.add(addLeveledAmountCombo(amount, false));
+        row.add(addLeveledAmountPopup(amount, false));
         row.add(new FlexSpacer(0, 0, true, false));
         grid.add(row, 0, 0);
 

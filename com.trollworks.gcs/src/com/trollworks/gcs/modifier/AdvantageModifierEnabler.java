@@ -13,7 +13,6 @@ package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.SelfControlRoll;
-import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
@@ -22,6 +21,7 @@ import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.MessageType;
 import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
@@ -35,7 +35,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import javax.swing.JComboBox;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 
@@ -44,7 +43,7 @@ public final class AdvantageModifierEnabler extends Panel {
     private Advantage           mAdvantage;
     private Checkbox[]          mEnabled;
     private AdvantageModifier[] mModifiers;
-    private JComboBox<String>   mCRCombo;
+    private PopupMenu<String>   mCRPopup;
 
     /**
      * Brings up a modal dialog that allows {@link AdvantageModifier}s to be enabled or disabled for
@@ -128,10 +127,9 @@ public final class AdvantageModifierEnabler extends Panel {
                     possible.add(one.getDescriptionWithCost());
                 }
             }
-            mCRCombo = new JComboBox<>(possible.toArray(new String[0]));
-            mCRCombo.setSelectedItem(cr.getDescriptionWithCost());
-            UIUtilities.setToPreferredSizeOnly(mCRCombo);
-            panel.add(mCRCombo);
+            mCRPopup = new PopupMenu<>(possible, null);
+            mCRPopup.setSelectedItem(cr.getDescriptionWithCost(), false);
+            panel.add(mCRPopup);
         }
 
         mModifiers = mAdvantage.getModifiers().toArray(new AdvantageModifier[0]);
@@ -148,7 +146,7 @@ public final class AdvantageModifierEnabler extends Panel {
 
     private void applyChanges() {
         if (mAdvantage.getCR() != SelfControlRoll.NONE_REQUIRED) {
-            Object selectedItem = mCRCombo.getSelectedItem();
+            String selectedItem = mCRPopup.getSelectedItem();
             if (selectedItem != null) {
                 for (SelfControlRoll one : SelfControlRoll.values()) {
                     if (one != SelfControlRoll.NONE_REQUIRED) {

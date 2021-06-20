@@ -205,9 +205,9 @@ public class AttributePanel extends ContentPanel {
     }
 
     private static void addAttributeTypePopup(Container container, AttributeType value, PopupMenu.SelectionListener<AttributeType> listener) {
-        PopupMenu<AttributeType> combo = new PopupMenu<>(AttributeType.values(), listener);
-        combo.setSelectedItem(value, false);
-        container.add(combo);
+        PopupMenu<AttributeType> popup = new PopupMenu<>(AttributeType.values(), listener);
+        popup.setSelectedItem(value, false);
+        container.add(popup);
     }
 
     public void focusIDField() {

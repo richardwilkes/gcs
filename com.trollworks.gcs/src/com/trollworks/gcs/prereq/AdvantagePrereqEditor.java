@@ -35,8 +35,8 @@ public class AdvantagePrereqEditor extends PrereqEditor {
         AdvantagePrereq prereq = (AdvantagePrereq) mPrereq;
 
         FlexRow row = new FlexRow();
-        row.add(addHasCombo(prereq.has()));
-        row.add(addChangeBaseTypeCombo());
+        row.add(addHasPopup(prereq.has()));
+        row.add(addChangeBaseTypePopup());
         row.add(new FlexSpacer(0, 0, true, false));
         grid.add(row, 0, 1);
 

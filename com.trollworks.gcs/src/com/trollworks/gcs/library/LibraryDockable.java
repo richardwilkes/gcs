@@ -89,7 +89,7 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         mScalesPopup.setSelectedItem(prefs.getInitialUIScale(), false);
         mToolbar.add(mScalesPopup);
         createFilterField();
-        createCategoryCombo();
+        createCategoryPopup();
         add(mToolbar, BorderLayout.NORTH);
         ScrollPanel scroller = new ScrollPanel(header, content);
         scroller.getViewport().setBackground(ThemeColor.PAGE_VOID);
@@ -150,17 +150,17 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         mToolbar.add(mFilterField, Toolbar.LAYOUT_FILL);
     }
 
-    private void createCategoryCombo() {
+    private void createCategoryPopup() {
         mCategoryPopup = new PopupMenu<>(new ArrayList<>(), (p) -> {
             if (mOutline != null) {
                 mOutline.reapplyRowFilter();
             }
         });
-        adjustCategoryCombo();
+        adjustCategoryPopup();
         mToolbar.add(mCategoryPopup);
     }
 
-    private void adjustCategoryCombo() {
+    private void adjustCategoryPopup() {
         String last = mCategoryPopup.getSelectedItem();
         mCategoryPopup.clear();
         mCategoryPopup.addItem(I18n.text("Any Category"));
@@ -219,7 +219,7 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
     @Override
     public void run() {
         mOutline.updateRowHeights();
-        adjustCategoryCombo();
+        adjustCategoryPopup();
         mUpdatePending = false;
     }
 

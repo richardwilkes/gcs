@@ -47,11 +47,11 @@ public final class SkillDefaultType {
             list.add(new AttributeChoice(currentType, "%s", currentType));
             current = list.get(list.size() - 1);
         }
-        PopupMenu<AttributeChoice> combo = new PopupMenu<>(list, listener);
-        combo.setSelectedItem(current, false);
-        combo.setEnabled(editable);
-        parent.add(combo);
-        return combo;
+        PopupMenu<AttributeChoice> popup = new PopupMenu<>(list, listener);
+        popup.setSelectedItem(current, false);
+        popup.setEnabled(editable);
+        parent.add(popup);
+        return popup;
     }
 
     /** @return Whether the type is based on another skill or not. */

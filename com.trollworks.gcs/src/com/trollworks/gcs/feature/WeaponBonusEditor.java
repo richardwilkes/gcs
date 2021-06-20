@@ -39,10 +39,10 @@ public class WeaponBonusEditor extends FeatureEditor {
         WeaponBonus bonus = (WeaponBonus) getFeature();
 
         FlexRow row = new FlexRow();
-        row.add(addChangeBaseTypeCombo());
+        row.add(addChangeBaseTypePopup());
         LeveledAmount amount = bonus.getAmount();
         row.add(addLeveledAmountField(amount, -999, 999));
-        row.add(addLeveledAmountCombo(amount, true));
+        row.add(addLeveledAmountPopup(amount, true));
         row.add(new FlexSpacer(0, 0, true, false));
         grid.add(row, 0, 0);
 

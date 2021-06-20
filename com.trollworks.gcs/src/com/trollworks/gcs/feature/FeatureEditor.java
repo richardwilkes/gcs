@@ -27,7 +27,6 @@ import com.trollworks.gcs.utility.text.IntegerFormatter;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.SwingConstants;
@@ -39,8 +38,8 @@ public abstract class FeatureEditor extends EditorPanel {
 
     private ListRow                mRow;
     private Feature                mFeature;
-    private PopupMenu<FeatureType> mBaseTypeCombo;
-    private PopupMenu<String>      mLeveledAmountCombo;
+    private PopupMenu<FeatureType> mBaseTypePopup;
+    private PopupMenu<String>      mLeveledAmountPopup;
 
     /**
      * Creates a new FeatureEditor.
@@ -102,8 +101,8 @@ public abstract class FeatureEditor extends EditorPanel {
      */
     protected abstract void rebuildSelf(FlexGrid grid, FlexRow right);
 
-    /** @return The {@link JComboBox} that allows the base feature type to be changed. */
-    protected PopupMenu<FeatureType> addChangeBaseTypeCombo() {
+    /** @return The {@link PopupMenu} that allows the base feature type to be changed. */
+    protected PopupMenu<FeatureType> addChangeBaseTypePopup() {
         List<FeatureType> choices = new ArrayList<>();
         FeatureType       current = null;
         for (FeatureType featureType : FeatureType.values()) {
@@ -117,8 +116,8 @@ public abstract class FeatureEditor extends EditorPanel {
         if (current == null) {
             current = choices.get(0);
         }
-        mBaseTypeCombo = new PopupMenu<>(choices, (p) -> {
-            LAST_FEATURE_TYPE = mBaseTypeCombo.getSelectedItem();
+        mBaseTypePopup = new PopupMenu<>(choices, (p) -> {
+            LAST_FEATURE_TYPE = mBaseTypePopup.getSelectedItem();
             if (LAST_FEATURE_TYPE != null && !LAST_FEATURE_TYPE.matches(mFeature)) {
                 JComponent parent = (JComponent) getParent();
                 Commitable.sendCommitToFocusOwner();
@@ -133,9 +132,9 @@ public abstract class FeatureEditor extends EditorPanel {
                 parent.repaint();
             }
         });
-        mBaseTypeCombo.setSelectedItem(current, false);
-        add(mBaseTypeCombo);
-        return mBaseTypeCombo;
+        mBaseTypePopup.setSelectedItem(current, false);
+        add(mBaseTypePopup);
+        return mBaseTypePopup;
     }
 
     /**
@@ -163,13 +162,13 @@ public abstract class FeatureEditor extends EditorPanel {
         return field;
     }
 
-    protected PopupMenu<String> addLeveledAmountCombo(LeveledAmount amt, boolean usePerDie) {
+    protected PopupMenu<String> addLeveledAmountPopup(LeveledAmount amt, boolean usePerDie) {
         String per = usePerDie ? I18n.text("per die") : I18n.text("per level");
-        mLeveledAmountCombo = new PopupMenu<>(new String[]{" ", per},
-                (p) -> ((Bonus) mFeature).getAmount().setPerLevel(mLeveledAmountCombo.getSelectedIndex() == 1));
-        mLeveledAmountCombo.setSelectedItem(amt.isPerLevel() ? per : " ", false);
-        add(mLeveledAmountCombo);
-        return mLeveledAmountCombo;
+        mLeveledAmountPopup = new PopupMenu<>(new String[]{" ", per},
+                (p) -> ((Bonus) mFeature).getAmount().setPerLevel(mLeveledAmountPopup.getSelectedIndex() == 1));
+        mLeveledAmountPopup.setSelectedItem(amt.isPerLevel() ? per : " ", false);
+        add(mLeveledAmountPopup);
+        return mLeveledAmountPopup;
     }
 
     /** @return The underlying feature. */

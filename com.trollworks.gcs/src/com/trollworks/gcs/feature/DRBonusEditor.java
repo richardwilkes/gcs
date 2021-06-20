@@ -38,10 +38,10 @@ public class DRBonusEditor extends FeatureEditor {
     protected void rebuildSelf(FlexGrid grid, FlexRow right) {
         DRBonus bonus = (DRBonus) getFeature();
         FlexRow row   = new FlexRow();
-        row.add(addChangeBaseTypeCombo());
+        row.add(addChangeBaseTypePopup());
         LeveledAmount amount = bonus.getAmount();
         row.add(addLeveledAmountField(amount, -99999, 99999));
-        row.add(addLeveledAmountCombo(amount, false));
+        row.add(addLeveledAmountPopup(amount, false));
         row.add(new FlexSpacer(0, 0, true, false));
         grid.add(row, 0, 0);
 

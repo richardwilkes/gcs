@@ -40,7 +40,7 @@ public class ContainedWeightReductionEditor extends FeatureEditor {
     protected void rebuildSelf(FlexGrid grid, FlexRow right) {
         ContainedWeightReduction feature = (ContainedWeightReduction) getFeature();
         FlexRow                  row     = new FlexRow();
-        row.add(addChangeBaseTypeCombo());
+        row.add(addChangeBaseTypePopup());
         EditorField field = new EditorField(new DefaultFormatterFactory(new WeightReductionFormatter()), (f) -> {
             feature.setValue(f.getValue());
             notifyActionListeners();

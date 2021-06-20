@@ -116,7 +116,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
         return points;
     }
 
-    /** @return The selected item of the difficulty combobox, as a SkillDifficulty. */
+    /** @return The selected item of the difficulty popup, as a SkillDifficulty. */
     protected SkillDifficulty getDifficulty() {
         return mDifficultyPopup.getSelectedItem();
     }

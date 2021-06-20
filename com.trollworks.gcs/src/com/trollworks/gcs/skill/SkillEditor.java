@@ -220,7 +220,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         }
         Label label = new Label(I18n.text("Encumbrance"));
         parent.add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
-        PopupMenu<String> popup = createComboBox(parent, items,
+        PopupMenu<String> popup = createPopup(parent, items,
                 items[mRow.getEncumbrancePenaltyMultiplier()],
                 I18n.text("The encumbrance penalty multiplier"), (p) -> recalculateLevel());
         label.setRefersTo(popup);
@@ -256,10 +256,10 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
             }
         }
         Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(columns));
-        mAttributePopup = createComboBox(wrapper, list.toArray(new AttributeChoice[0]), current,
+        mAttributePopup = createPopup(wrapper, list.toArray(new AttributeChoice[0]), current,
                 I18n.text("The attribute this skill is based on"), (p) -> recalculateLevel());
         wrapper.add(new Label("/"));
-        mDifficultyPopup = createComboBox(wrapper, SkillDifficulty.values(), mRow.getDifficulty(),
+        mDifficultyPopup = createPopup(wrapper, SkillDifficulty.values(), mRow.getDifficulty(),
                 I18n.text("The relative difficulty of learning this skill"),
                 (p) -> recalculateLevel());
 
@@ -271,7 +271,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
-    private static <T> PopupMenu<T> createComboBox(Container parent, T[] items, T selection, String tooltip, PopupMenu.SelectionListener<T> listener) {
+    private static <T> PopupMenu<T> createPopup(Container parent, T[] items, T selection, String tooltip, PopupMenu.SelectionListener<T> listener) {
         PopupMenu<T> popup = new PopupMenu<>(items, listener);
         popup.setToolTipText(tooltip);
         popup.setSelectedItem(selection, false);

@@ -121,7 +121,7 @@ public abstract class PrereqEditor extends EditorPanel {
      */
     protected abstract void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right);
 
-    protected PopupMenu<String> addHasCombo(boolean has) {
+    protected PopupMenu<String> addHasPopup(boolean has) {
         String hasText         = I18n.text("has");
         String doesNotHaveText = I18n.text("doesn't have");
         PopupMenu<String> popup = new PopupMenu<>(new String[]{hasText, doesNotHaveText},
@@ -132,7 +132,7 @@ public abstract class PrereqEditor extends EditorPanel {
     }
 
     /** @return The {@link PopupMenu} that allows the base prereq type to be changed. */
-    protected PopupMenu<String> addChangeBaseTypeCombo() {
+    protected PopupMenu<String> addChangeBaseTypePopup() {
         String[] choices = {I18n.text("attribute"), I18n.text("advantage"), I18n.text("skill"),
                 I18n.text("spell(s)"), I18n.text("contained weight"),
                 I18n.text("contained quantity of")};

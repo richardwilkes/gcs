@@ -22,29 +22,29 @@ import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Container;
-import javax.swing.JComboBox;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** Editor for {@link EquipmentModifier}s. */
 public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implements DocumentListener {
-    private EditorField        mNameField;
-    private EditorField        mTechLevelField;
-    private Checkbox           mEnabledField;
-    private MultiLineTextField mNotesField;
-    private EditorField        mReferenceField;
-    private FeaturesPanel      mFeatures;
-    private JComboBox<Object>  mCostType;
-    private EditorField        mCostAmountField;
-    private JComboBox<Object>  mWeightType;
-    private EditorField        mWeightAmountField;
+    private EditorField                            mNameField;
+    private EditorField                            mTechLevelField;
+    private Checkbox                               mEnabledField;
+    private MultiLineTextField                     mNotesField;
+    private EditorField                            mReferenceField;
+    private FeaturesPanel                          mFeatures;
+    private PopupMenu<EquipmentModifierCostType>   mCostType;
+    private EditorField                            mCostAmountField;
+    private PopupMenu<EquipmentModifierWeightType> mWeightType;
+    private EditorField                            mWeightAmountField;
 
     /**
      * Creates a new EquipmentModifierEditor.
@@ -131,7 +131,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     private void createCostAdjustmentFields(Container parent) {
         Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
         createCostAdjustmentField(parent, wrapper);
-        createCostTypeCombo(wrapper);
+        createCostTypePopup(wrapper);
         parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
@@ -143,27 +143,21 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         fieldParent.add(mCostAmountField);
     }
 
-    private void createCostTypeCombo(Container parent) {
-        EquipmentModifierCostType[] types = EquipmentModifierCostType.values();
-        mCostType = new JComboBox<>(types);
-        mCostType.setSelectedItem(mRow.getCostAdjType());
-        mCostType.addActionListener((evt) -> costChanged());
-        mCostType.setMaximumRowCount(types.length);
+    private void createCostTypePopup(Container parent) {
+        mCostType = new PopupMenu<>(EquipmentModifierCostType.values(), (p) -> costChanged());
+        mCostType.setSelectedItem(mRow.getCostAdjType(), false);
         parent.add(mCostType);
     }
 
     private EquipmentModifierCostType getCostType() {
-        Object obj = mCostType.getSelectedItem();
-        if (!(obj instanceof EquipmentModifierCostType)) {
-            obj = EquipmentModifierCostType.TO_ORIGINAL_COST;
-        }
-        return (EquipmentModifierCostType) obj;
+        EquipmentModifierCostType selection = mCostType.getSelectedItem();
+        return selection == null ? EquipmentModifierCostType.TO_ORIGINAL_COST : selection;
     }
 
     private void createWeightAdjustmentFields(Container parent) {
         Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
         createWeightAdjustmentField(parent, wrapper);
-        createWeightTypeCombo(wrapper);
+        createWeightTypePopup(wrapper);
         parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
@@ -176,21 +170,15 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         fieldParent.add(mWeightAmountField);
     }
 
-    private void createWeightTypeCombo(Container parent) {
-        EquipmentModifierWeightType[] types = EquipmentModifierWeightType.values();
-        mWeightType = new JComboBox<>(types);
-        mWeightType.setSelectedItem(mRow.getWeightAdjType());
-        mWeightType.addActionListener((evt) -> weightChanged());
-        mWeightType.setMaximumRowCount(types.length);
+    private void createWeightTypePopup(Container parent) {
+        mWeightType = new PopupMenu<>(EquipmentModifierWeightType.values(), (p) -> weightChanged());
+        mWeightType.setSelectedItem(mRow.getWeightAdjType(), false);
         parent.add(mWeightType);
     }
 
     private EquipmentModifierWeightType getWeightType() {
-        Object obj = mWeightType.getSelectedItem();
-        if (!(obj instanceof EquipmentModifierWeightType)) {
-            obj = EquipmentModifierWeightType.TO_ORIGINAL_WEIGHT;
-        }
-        return (EquipmentModifierWeightType) obj;
+        EquipmentModifierWeightType selection = mWeightType.getSelectedItem();
+        return selection == null ? EquipmentModifierWeightType.TO_ORIGINAL_WEIGHT : selection;
     }
 
     private void docChanged(DocumentEvent event) {
