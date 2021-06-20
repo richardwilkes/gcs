@@ -15,21 +15,19 @@ import com.trollworks.gcs.attribute.AttributeChoice;
 import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
-import com.trollworks.gcs.ui.UIUtilities;
+import com.trollworks.gcs.ui.widget.PopupMenu;
 
 import java.awt.Container;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import javax.swing.JComboBox;
 
 /** Handling of skill defaults based on type. */
 public final class SkillDefaultType {
     private SkillDefaultType() {
     }
 
-    public static JComboBox<AttributeChoice> createCombo(Container parent, DataFile dataFile, String currentType, String actionCommand, ActionListener listener, boolean editable) {
+    public static PopupMenu<AttributeChoice> createPopup(Container parent, DataFile dataFile, String currentType, String actionCommand, PopupMenu.SelectionListener<AttributeChoice> listener, boolean editable) {
         List<AttributeChoice> list = new ArrayList<>();
         for (AttributeDef def : AttributeDef.getOrdered(dataFile.getSheetSettings().getAttributes())) {
             list.add(new AttributeChoice(def.getID(), "%s", def.getName()));
@@ -49,13 +47,8 @@ public final class SkillDefaultType {
             list.add(new AttributeChoice(currentType, "%s", currentType));
             current = list.get(list.size() - 1);
         }
-        JComboBox<AttributeChoice> combo = new JComboBox<>(list.toArray(new AttributeChoice[0]));
-        combo.setOpaque(false);
-        combo.setSelectedItem(current);
-        combo.setActionCommand(actionCommand);
-        combo.addActionListener(listener);
-        combo.setMaximumRowCount(list.size());
-        UIUtilities.setToPreferredSizeOnly(combo);
+        PopupMenu<AttributeChoice> combo = new PopupMenu<>(list, listener);
+        combo.setSelectedItem(current, false);
         combo.setEnabled(editable);
         parent.add(combo);
         return combo;

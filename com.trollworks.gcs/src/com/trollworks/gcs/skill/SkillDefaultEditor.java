@@ -87,10 +87,22 @@ public class SkillDefaultEditor extends EditorPanel {
             add(or);
             grid.add(or, 0, 0);
 
-            FlexRow                    row       = new FlexRow();
-            String                     current   = mDefault.getType();
-            JComboBox<AttributeChoice> typeCombo = SkillDefaultType.createCombo(this, mDataFile, current, SkillDefault.KEY_TYPE, this, true);
-            row.add(typeCombo);
+            FlexRow row     = new FlexRow();
+            String  current = mDefault.getType();
+            row.add(SkillDefaultType.createPopup(this, mDataFile, current, SkillDefault.KEY_TYPE,
+                    (p) -> {
+                        AttributeChoice selectedItem = p.getSelectedItem();
+                        if (selectedItem != null) {
+                            String value = selectedItem.getAttribute();
+                            if (!mDefault.getType().equals(value)) {
+                                Commitable.sendCommitToFocusOwner();
+                                mDefault.setType(value);
+                                rebuild();
+                                notifyActionListeners();
+                            }
+                            setLastItemType(value);
+                        }
+                    }, true));
             grid.add(row, 0, 1);
 
             mModifierField = new EditorField(new DefaultFormatterFactory(new IntegerFormatter(-99, 99, true)), this, SwingConstants.LEFT, Integer.valueOf(mDefault.getModifier()), Integer.valueOf(99), null);

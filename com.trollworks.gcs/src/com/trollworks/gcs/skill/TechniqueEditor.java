@@ -26,6 +26,7 @@ import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
@@ -36,28 +37,25 @@ import com.trollworks.gcs.weapon.RangedWeaponListEditor;
 import com.trollworks.gcs.weapon.WeaponStats;
 
 import java.awt.Container;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JComboBox;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 
 /** The detailed editor for {@link Technique}s. */
-public class TechniqueEditor extends RowEditor<Technique> implements ActionListener, DocumentListener {
+public class TechniqueEditor extends RowEditor<Technique> implements DocumentListener {
     private EditorField                mNameField;
     private MultiLineTextField         mNotesField;
     private EditorField                mCategoriesField;
     private EditorField                mReferenceField;
-    private JComboBox<Object>          mDifficultyCombo;
+    private PopupMenu<SkillDifficulty> mDifficultyPopup;
     private EditorField                mPointsField;
     private EditorField                mLevelField;
     private Panel                      mDefaultPanel;
     private Label                      mDefaultPanelLabel;
-    private JComboBox<AttributeChoice> mDefaultTypeCombo;
+    private PopupMenu<AttributeChoice> mDefaultTypePopup;
     private EditorField                mDefaultNameField;
     private EditorField                mDefaultSpecializationField;
     private EditorField                mDefaultModifierField;
@@ -117,24 +115,20 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     private void createDefaults(Container parent) {
         mDefaultPanel = new Panel(new PrecisionLayout().setMargins(0));
         mDefaultPanelLabel = new Label(I18n.text("Defaults To"));
-        mDefaultTypeCombo = SkillDefaultType.createCombo(mDefaultPanel, mRow.getDataFile(),
-                mRow.getDefault().getType(), "", this, mIsEditable);
+        mDefaultTypePopup = SkillDefaultType.createPopup(mDefaultPanel, mRow.getDataFile(),
+                mRow.getDefault().getType(), "", (p) -> {
+                    if (!mLastDefaultType.equals(getDefaultType())) {
+                        rebuildDefaultPanel();
+                    }
+                    recalculateLevel();
+                }, mIsEditable);
         parent.add(mDefaultPanelLabel, new PrecisionLayoutData().setFillHorizontalAlignment());
         parent.add(mDefaultPanel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         rebuildDefaultPanel();
     }
 
-    private JComboBox<Object> createComboBox(Container parent, Object[] items, Object selection) {
-        JComboBox<Object> combo = new JComboBox<>(items);
-        combo.setSelectedItem(selection);
-        combo.addActionListener(this);
-        combo.setMaximumRowCount(items.length);
-        parent.add(combo);
-        return combo;
-    }
-
     private String getDefaultType() {
-        AttributeChoice choice = (AttributeChoice) mDefaultTypeCombo.getSelectedItem();
+        AttributeChoice choice = mDefaultTypePopup.getSelectedItem();
         if (choice != null) {
             return choice.getAttribute();
         }
@@ -253,8 +247,11 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     private void createDifficultyPopups(Container parent) {
         GURPSCharacter character = mRow.getCharacter();
         Panel          wrapper   = new Panel(new PrecisionLayout().setMargins(0).setColumns(1 + (character != null ? 4 : 2)));
-        mDifficultyCombo = createComboBox(wrapper, new Object[]{SkillDifficulty.A, SkillDifficulty.H}, mRow.getDifficulty());
-        mDifficultyCombo.setToolTipText(I18n.text("The relative difficulty of learning this technique"));
+        mDifficultyPopup = new PopupMenu<>(new SkillDifficulty[]{SkillDifficulty.A, SkillDifficulty.H},
+                (p) -> recalculateLevel());
+        mDifficultyPopup.setToolTipText(I18n.text("The relative difficulty of learning this technique"));
+        mDifficultyPopup.setSelectedItem(mRow.getDifficulty(), false);
+        wrapper.add(mDifficultyPopup);
         if (character != null || mRow.getTemplate() != null) {
             createPointsFields(wrapper, character != null);
         }
@@ -284,7 +281,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
     }
 
     private SkillDifficulty getSkillDifficulty() {
-        return (SkillDifficulty) mDifficultyCombo.getSelectedItem();
+        return mDifficultyPopup.getSelectedItem();
     }
 
     private int getPoints() {
@@ -332,19 +329,6 @@ public class TechniqueEditor extends RowEditor<Technique> implements ActionListe
         list.addAll(mRangedWeapons.getWeapons());
         modified |= mRow.setWeapons(list);
         return modified;
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent event) {
-        Object src = event.getSource();
-        if (src == mDefaultTypeCombo) {
-            if (!mLastDefaultType.equals(getDefaultType())) {
-                rebuildDefaultPanel();
-            }
-        }
-        if (src == mDifficultyCombo || src == mDefaultTypeCombo) {
-            recalculateLevel();
-        }
     }
 
     private void docChanged(DocumentEvent event) {

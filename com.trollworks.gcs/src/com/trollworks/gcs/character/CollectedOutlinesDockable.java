@@ -24,6 +24,7 @@ import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.RitualMagicSpell;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.ui.scale.Scales;
+import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.Toolbar;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
@@ -44,12 +45,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.JComboBox;
 import javax.swing.ListCellRenderer;
 import javax.swing.undo.StateEdit;
 
 public abstract class CollectedOutlinesDockable extends DataFileDockable implements SearchTarget, RetargetableFocus {
-    private JComboBox<Scales> mScaleCombo;
+    private PopupMenu<Scales> mScalePopup;
     private Search            mSearch;
 
     protected CollectedOutlinesDockable(DataFile dataFile) {
@@ -58,16 +58,15 @@ public abstract class CollectedOutlinesDockable extends DataFileDockable impleme
 
     protected Toolbar createToolbar() {
         Toolbar toolbar = new Toolbar();
-        mScaleCombo = new JComboBox<>(Scales.values());
-        mScaleCombo.setSelectedItem(Settings.getInstance().getInitialUIScale());
-        mScaleCombo.addActionListener((event) -> {
-            Scales scale = (Scales) mScaleCombo.getSelectedItem();
+        mScalePopup = new PopupMenu<>(Scales.values(), (p) -> {
+            Scales scale = mScalePopup.getSelectedItem();
             if (scale == null) {
                 scale = Scales.ACTUAL_SIZE;
             }
             getCollectedOutlines().setScale(scale.getScale());
         });
-        toolbar.add(mScaleCombo);
+        mScalePopup.setSelectedItem(Settings.getInstance().getInitialUIScale(), false);
+        toolbar.add(mScalePopup);
         mSearch = new Search(this);
         toolbar.add(mSearch, Toolbar.LAYOUT_FILL);
         add(toolbar, BorderLayout.NORTH);
