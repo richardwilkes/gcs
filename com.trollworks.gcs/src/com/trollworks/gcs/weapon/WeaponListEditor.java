@@ -23,6 +23,7 @@ import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Outline;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
@@ -38,7 +39,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
@@ -58,7 +58,7 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
     private EditorField                  mUsage;
     private MultiLineTextField           mUsageNotes;
     private EditorField                  mStrength;
-    private JComboBox<WeaponSTDamage>    mDamageSTCombo;
+    private PopupMenu<WeaponSTDamage>    mDamageSTPopup;
     private EditorField                  mDamageBase;
     private EditorField                  mDamageArmorDivisor;
     private EditorField                  mDamageType;
@@ -149,12 +149,16 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
         editorPanel.add(mUsageNotes, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         Panel damagePanel = new Panel(new PrecisionLayout().setMargins(0).setColumns(8));
-        mDamageSTCombo = new JComboBox<>(WeaponSTDamage.values());
-        mDamageSTCombo.setSelectedItem(WeaponSTDamage.NONE);
-        mDamageSTCombo.addActionListener(this);
-        mDamageSTCombo.setToolTipText(I18n.text("Strength Damage Type"));
+        mDamageSTPopup = new PopupMenu<>(WeaponSTDamage.values(), (p) -> {
+            if (mRespond) {
+                mWeapon.getDamage().setWeaponSTDamage(mDamageSTPopup.getSelectedItem());
+                adjustOutlineToContent();
+            }
+        });
+        mDamageSTPopup.setSelectedItem(WeaponSTDamage.NONE, false);
+        mDamageSTPopup.setToolTipText(I18n.text("Strength Damage Type"));
         editorPanel.add(new Label(I18n.text("Damage")), new PrecisionLayoutData().setFillHorizontalAlignment());
-        damagePanel.add(mDamageSTCombo, new PrecisionLayoutData().setFillHorizontalAlignment());
+        damagePanel.add(mDamageSTPopup, new PrecisionLayoutData().setFillHorizontalAlignment());
         mDamageBase = addField(null, damagePanel, "9999999d+99x999", I18n.text("Base Damage"));
         addLabel(damagePanel, "(", null);
         mDamageArmorDivisor = addField(null, damagePanel, "100", I18n.text("Armor Divisor"));
@@ -219,9 +223,6 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
         } else if (mRespond) {
             if (mDefaults == source) {
                 mWeapon.setDefaults(mDefaults.getDefaults());
-                adjustOutlineToContent();
-            } else if (mDamageSTCombo == source) {
-                mWeapon.getDamage().setWeaponSTDamage((WeaponSTDamage) mDamageSTCombo.getSelectedItem());
                 adjustOutlineToContent();
             }
         }
@@ -347,7 +348,7 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
         mUsage.setValue(mWeapon.getUsage());
         mUsageNotes.setText(mWeapon.getUsageNotes());
         WeaponDamage damage = mWeapon.getDamage();
-        mDamageSTCombo.setSelectedItem(damage.getWeaponSTDamage());
+        mDamageSTPopup.setSelectedItem(damage.getWeaponSTDamage(), true);
         mDamageBase.setValue(damage.getBase() != null ? damage.getBase().toString() : "");
         mDamageArmorDivisor.setValue(getArmorDivisorForDisplay(damage.getArmorDivisor()));
         mDamageType.setValue(damage.getType());
@@ -373,7 +374,7 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
      */
     protected void enableFields(boolean enabled) {
         mUsage.setEnabled(enabled);
-        mDamageSTCombo.setEnabled(enabled);
+        mDamageSTPopup.setEnabled(enabled);
         mDamageBase.setEnabled(enabled);
         mDamageArmorDivisor.setEnabled(enabled);
         mDamageType.setEnabled(enabled);
