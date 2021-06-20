@@ -16,17 +16,14 @@ import com.trollworks.gcs.ui.layout.FlexGrid;
 import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.ui.layout.FlexSpacer;
 import com.trollworks.gcs.ui.widget.Commitable;
+import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import javax.swing.JComboBox;
 
 /** A spell point bonus editor. */
 public class SpellPointBonusEditor extends FeatureEditor {
-    private static final String COLLEGE_TYPE = "CollegeType";
-
     /**
      * Create a new spell point bonus editor.
      *
@@ -52,7 +49,33 @@ public class SpellPointBonusEditor extends FeatureEditor {
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
 
-        row.add(addComboBox(COLLEGE_TYPE, new Object[]{getMatchText(true, ""), getMatchText(false, SpellPointBonus.KEY_COLLEGE_NAME), getMatchText(false, ""), getMatchText(false, SpellPointBonus.KEY_POWER_SOURCE_NAME)}, getMatchText(bonus.allColleges(), bonus.getMatchType())));
+        PopupMenu<String> popup = new PopupMenu<>(new String[]{getMatchText(true, ""),
+                getMatchText(false, SpellPointBonus.KEY_COLLEGE_NAME), getMatchText(false, ""),
+                getMatchText(false, SpellPointBonus.KEY_POWER_SOURCE_NAME)}, (p) -> {
+            SpellPointBonus b = (SpellPointBonus) getFeature();
+            switch (p.getSelectedIndex()) {
+            case 0:
+            default:
+                if (!b.allColleges()) {
+                    Commitable.sendCommitToFocusOwner();
+                    b.allColleges(true);
+                    rebuild();
+                }
+                break;
+            case 1:
+                adjustMatchType(b, SpellPointBonus.KEY_COLLEGE_NAME);
+                break;
+            case 2:
+                adjustMatchType(b, SpellPointBonus.KEY_SPELL_NAME);
+                break;
+            case 3:
+                adjustMatchType(b, SpellPointBonus.KEY_POWER_SOURCE_NAME);
+                break;
+            }
+        });
+        popup.setSelectedItem(getMatchText(bonus.allColleges(), bonus.getMatchType()), false);
+        add(popup);
+        row.add(popup);
         if (bonus.allColleges()) {
             row.add(new FlexSpacer(0, 0, true, false));
         } else {
@@ -81,35 +104,6 @@ public class SpellPointBonusEditor extends FeatureEditor {
             return I18n.text("to the power source whose name");
         }
         return I18n.text("to the spell whose name");
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent event) {
-        String command = event.getActionCommand();
-        if (COLLEGE_TYPE.equals(command)) {
-            SpellPointBonus bonus = (SpellPointBonus) getFeature();
-            switch (((JComboBox<?>) event.getSource()).getSelectedIndex()) {
-            case 0:
-            default:
-                if (!bonus.allColleges()) {
-                    Commitable.sendCommitToFocusOwner();
-                    bonus.allColleges(true);
-                    rebuild();
-                }
-                break;
-            case 1:
-                adjustMatchType(bonus, SpellPointBonus.KEY_COLLEGE_NAME);
-                break;
-            case 2:
-                adjustMatchType(bonus, SpellPointBonus.KEY_SPELL_NAME);
-                break;
-            case 3:
-                adjustMatchType(bonus, SpellPointBonus.KEY_POWER_SOURCE_NAME);
-                break;
-            }
-        } else {
-            super.actionPerformed(event);
-        }
     }
 
     private void adjustMatchType(SpellPointBonus bonus, String type) {

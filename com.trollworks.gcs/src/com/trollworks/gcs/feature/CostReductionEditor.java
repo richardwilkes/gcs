@@ -15,17 +15,14 @@ import com.trollworks.gcs.attribute.AttributeChoice;
 import com.trollworks.gcs.ui.layout.FlexGrid;
 import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.ui.layout.FlexSpacer;
+import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 
-import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
-import javax.swing.JComboBox;
 
 /** An cost reduction editor. */
 public class CostReductionEditor extends FeatureEditor {
-    private static final String CHANGE_PERCENTAGE = "ChangePercentage";
-
     /**
      * Create a new cost reduction editor.
      *
@@ -51,19 +48,12 @@ public class CostReductionEditor extends FeatureEditor {
         for (int i = 0; i < 16; i++) {
             percents[i] = MessageFormat.format(I18n.text("by {0}%"), Integer.valueOf((i + 1) * 5));
         }
-        row.add(addComboBox(CHANGE_PERCENTAGE, percents, percents[Math.min(80, Math.max(0, feature.getPercentage())) / 5 - 1]));
+        PopupMenu<String> popup = new PopupMenu<>(percents,
+                (p) -> ((CostReduction) getFeature()).setPercentage((p.getSelectedIndex() + 1) * 5));
+        popup.setSelectedItem(percents[Math.min(80, Math.max(0, feature.getPercentage())) / 5 - 1], false);
+        add(popup);
+        row.add(popup);
         row.add(new FlexSpacer(0, 0, true, false));
         grid.add(row, 0, 0);
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent event) {
-        CostReduction cr      = (CostReduction) getFeature();
-        String        command = event.getActionCommand();
-        if (CHANGE_PERCENTAGE.equals(command)) {
-            cr.setPercentage((((JComboBox<?>) event.getSource()).getSelectedIndex() + 1) * 5);
-        } else {
-            super.actionPerformed(event);
-        }
     }
 }

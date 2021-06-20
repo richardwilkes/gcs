@@ -16,19 +16,16 @@ import com.trollworks.gcs.ui.layout.FlexGrid;
 import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.ui.widget.EditorPanel;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 
-import java.awt.event.ActionEvent;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 
 /** A generic prerequisite editor panel. */
 public abstract class PrereqEditor extends EditorPanel {
-    private static final String     CHANGE_BASE_TYPE = "ChangeBaseType";
-    private static final String     CHANGE_HAS       = "ChangeHas";
-    private static final Class<?>[] BASE_TYPES       = new Class<?>[]{
+    private static final Class<?>[] BASE_TYPES = new Class<?>[]{
             AttributePrereq.class,
             AdvantagePrereq.class,
             SkillPrereq.class,
@@ -38,11 +35,10 @@ public abstract class PrereqEditor extends EditorPanel {
     };
 
     /** The prerequisite this panel represents. */
-    protected Prereq            mPrereq;
+    protected Prereq  mPrereq;
     /** The row this prerequisite will be attached to. */
-    protected ListRow           mRow;
-    private   int               mDepth;
-    private   JComboBox<Object> mBaseTypeCombo;
+    protected ListRow mRow;
+    private   int     mDepth;
 
     /**
      * Creates a new prerequisite editor panel.
@@ -125,21 +121,23 @@ public abstract class PrereqEditor extends EditorPanel {
      */
     protected abstract void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right);
 
-    /**
-     * @param has The current value of the "has" attribute.
-     * @return The {@link JComboBox} that allows the "has" attribute to be changed.
-     */
-    protected JComboBox<Object> addHasCombo(boolean has) {
+    protected PopupMenu<String> addHasCombo(boolean has) {
         String hasText         = I18n.text("has");
         String doesNotHaveText = I18n.text("doesn't have");
-        return addComboBox(CHANGE_HAS, new Object[]{hasText, doesNotHaveText}, has ? hasText : doesNotHaveText);
+        PopupMenu<String> popup = new PopupMenu<>(new String[]{hasText, doesNotHaveText},
+                (p) -> ((HasPrereq) mPrereq).setHas(p.getSelectedIndex() == 0));
+        popup.setSelectedItem(has ? hasText : doesNotHaveText, false);
+        add(popup);
+        return popup;
     }
 
-    /** @return The {@link JComboBox} that allows the base prereq type to be changed. */
-    protected JComboBox<Object> addChangeBaseTypeCombo() {
-        Object[] choices = {I18n.text("attribute"), I18n.text("advantage"), I18n.text("skill"), I18n.text("spell(s)"), I18n.text("contained weight"), I18n.text("contained quantity of")};
+    /** @return The {@link PopupMenu} that allows the base prereq type to be changed. */
+    protected PopupMenu<String> addChangeBaseTypeCombo() {
+        String[] choices = {I18n.text("attribute"), I18n.text("advantage"), I18n.text("skill"),
+                I18n.text("spell(s)"), I18n.text("contained weight"),
+                I18n.text("contained quantity of")};
         Class<?> type    = mPrereq.getClass();
-        Object   current = choices[0];
+        String   current = choices[0];
         int      length  = BASE_TYPES.length;
         for (int i = 0; i < length; i++) {
             if (type.equals(BASE_TYPES[i])) {
@@ -147,8 +145,38 @@ public abstract class PrereqEditor extends EditorPanel {
                 break;
             }
         }
-        mBaseTypeCombo = addComboBox(CHANGE_BASE_TYPE, choices, current);
-        return mBaseTypeCombo;
+        PopupMenu<String> popup = new PopupMenu<>(choices, (p) -> {
+            Class<?> t = BASE_TYPES[p.getSelectedIndex()];
+            if (!mPrereq.getClass().equals(t)) {
+                JComponent parent    = (JComponent) getParent();
+                PrereqList list      = mPrereq.getParent();
+                int        listIndex = list.getIndexOf(mPrereq);
+                try {
+                    Prereq prereq;
+                    if (t == ContainedWeightPrereq.class) {
+                        prereq = new ContainedWeightPrereq(list, mRow.getDataFile().getSheetSettings().defaultWeightUnits());
+                    } else {
+                        prereq = (Prereq) t.getConstructor(PrereqList.class).newInstance(list);
+                    }
+                    if (prereq instanceof HasPrereq && mPrereq instanceof HasPrereq) {
+                        ((HasPrereq) prereq).setHas(((HasPrereq) mPrereq).has());
+                    }
+                    list.add(listIndex, prereq);
+                    list.remove(mPrereq);
+                    parent.add(create(mRow, prereq, mDepth), UIUtilities.getIndexOf(parent, this));
+                } catch (Exception exception) {
+                    // Shouldn't have a failure...
+                    Log.error(exception);
+                }
+                parent.remove(this);
+                parent.revalidate();
+                parent.repaint();
+                ListPrereqEditor.setLastItemType(t);
+            }
+        });
+        popup.setSelectedItem(current, false);
+        add(popup);
+        return popup;
     }
 
     /** @return The depth of this prerequisite. */
@@ -171,44 +199,6 @@ public abstract class PrereqEditor extends EditorPanel {
         mPrereq.removeFromParent();
         parent.revalidate();
         parent.repaint();
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent event) {
-        String command = event.getActionCommand();
-        if (CHANGE_BASE_TYPE.equals(command)) {
-            Class<?> type = BASE_TYPES[mBaseTypeCombo.getSelectedIndex()];
-            if (!mPrereq.getClass().equals(type)) {
-                JComponent parent    = (JComponent) getParent();
-                PrereqList list      = mPrereq.getParent();
-                int        listIndex = list.getIndexOf(mPrereq);
-                try {
-                    Prereq prereq;
-                    if (type == ContainedWeightPrereq.class) {
-                        prereq = new ContainedWeightPrereq(list, mRow.getDataFile().getSheetSettings().defaultWeightUnits());
-                    } else {
-                        prereq = (Prereq) type.getConstructor(PrereqList.class).newInstance(list);
-                    }
-                    if (prereq instanceof HasPrereq && mPrereq instanceof HasPrereq) {
-                        ((HasPrereq) prereq).setHas(((HasPrereq) mPrereq).has());
-                    }
-                    list.add(listIndex, prereq);
-                    list.remove(mPrereq);
-                    parent.add(create(mRow, prereq, mDepth), UIUtilities.getIndexOf(parent, this));
-                } catch (Exception exception) {
-                    // Shouldn't have a failure...
-                    Log.error(exception);
-                }
-                parent.remove(this);
-                parent.revalidate();
-                parent.repaint();
-                ListPrereqEditor.setLastItemType(type);
-            }
-        } else if (CHANGE_HAS.equals(command)) {
-            ((HasPrereq) mPrereq).setHas(((JComboBox<?>) event.getSource()).getSelectedIndex() == 0);
-        } else {
-            super.actionPerformed(event);
-        }
     }
 
     private static int countSelfAndDescendents(Prereq prereq) {

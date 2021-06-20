@@ -16,17 +16,14 @@ import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.ui.layout.FlexGrid;
 import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.ui.layout.FlexSpacer;
+import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import javax.swing.JComboBox;
 
 /** A weapon bonus editor. */
 public class WeaponBonusEditor extends FeatureEditor {
-    private static final String SELECTION_TYPE = "selection_type";
-
     /**
      * Create a new weapon skill bonus editor.
      *
@@ -51,7 +48,16 @@ public class WeaponBonusEditor extends FeatureEditor {
 
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
-        row.add(addComboBox(SELECTION_TYPE, WeaponSelectionType.values(), bonus.getWeaponSelectionType()));
+        PopupMenu<WeaponSelectionType> popup = new PopupMenu<>(WeaponSelectionType.values(), (p) -> {
+            boolean needRebuild = ((WeaponBonus) getFeature()).setWeaponSelectionType(p.getSelectedItem());
+            notifyActionListeners();
+            if (needRebuild) {
+                rebuild();
+            }
+        });
+        popup.setSelectedItem(bonus.getWeaponSelectionType(), false);
+        add(popup);
+        row.add(popup);
         grid.add(row, 1, 0);
         switch (bonus.getWeaponSelectionType()) {
         case WEAPONS_WITH_NAME -> rebuildWeaponsWithName(grid, row);
@@ -113,21 +119,5 @@ public class WeaponBonusEditor extends FeatureEditor {
         row.add(addStringCompareField(criteria));
         row.add(new FlexSpacer(0, 0, true, false));
         grid.add(row, i, 0);
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent event) {
-        String command = event.getActionCommand();
-        if (SELECTION_TYPE.equals(command)) {
-            WeaponBonus         bonus               = (WeaponBonus) getFeature();
-            WeaponSelectionType weaponSelectionType = (WeaponSelectionType) ((JComboBox<?>) event.getSource()).getSelectedItem();
-            boolean             needRebuild         = bonus.setWeaponSelectionType(weaponSelectionType);
-            notifyActionListeners();
-            if (needRebuild) {
-                rebuild();
-            }
-        } else {
-            super.actionPerformed(event);
-        }
     }
 }

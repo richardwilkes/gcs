@@ -17,16 +17,13 @@ import com.trollworks.gcs.settings.SheetSettings;
 import com.trollworks.gcs.ui.layout.FlexGrid;
 import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.ui.layout.FlexSpacer;
+import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import javax.swing.JComboBox;
 
 /** A DR bonus editor. */
 public class DRBonusEditor extends FeatureEditor {
-    private static final String CHANGE_LOCATION = "ChangeLocation";
-
     /**
      * Create a new DR bonus editor.
      *
@@ -51,21 +48,16 @@ public class DRBonusEditor extends FeatureEditor {
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
         HitLocationTable locations = SheetSettings.get(getRow().getCharacter()).getHitLocations();
-        row.add(addComboBox(CHANGE_LOCATION, locations.getUniqueHitLocations().toArray(new HitLocation[0]), locations.lookupLocationByID(((DRBonus) getFeature()).getLocation())));
-        row.add(new FlexSpacer(0, 0, true, false));
-        grid.add(row, 1, 0);
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent event) {
-        String command = event.getActionCommand();
-        if (CHANGE_LOCATION.equals(command)) {
-            HitLocation location = (HitLocation) ((JComboBox<?>) event.getSource()).getSelectedItem();
+        PopupMenu<HitLocation> popup = new PopupMenu<>(locations.getUniqueHitLocations(), (p) -> {
+            HitLocation location = p.getSelectedItem();
             if (location != null) {
                 ((DRBonus) getFeature()).setLocation(location.getID());
             }
-        } else {
-            super.actionPerformed(event);
-        }
+        });
+        popup.setSelectedItem(locations.lookupLocationByID(((DRBonus) getFeature()).getLocation()), false);
+        add(popup);
+        row.add(popup);
+        row.add(new FlexSpacer(0, 0, true, false));
+        grid.add(row, 1, 0);
     }
 }

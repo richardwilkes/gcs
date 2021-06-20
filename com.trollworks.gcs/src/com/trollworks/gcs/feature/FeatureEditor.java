@@ -18,13 +18,13 @@ import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.EditorPanel;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.text.DoubleFormatter;
 import com.trollworks.gcs.utility.text.IntegerFormatter;
 
-import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComboBox;
@@ -35,13 +35,12 @@ import javax.swing.text.DefaultFormatterFactory;
 
 /** A generic feature editor panel. */
 public abstract class FeatureEditor extends EditorPanel {
-    private static final String      CHANGE_BASE_TYPE  = "ChangeBaseType";
-    private static       FeatureType LAST_FEATURE_TYPE = FeatureType.SKILL_LEVEL_BONUS;
+    private static FeatureType LAST_FEATURE_TYPE = FeatureType.SKILL_LEVEL_BONUS;
 
-    private ListRow           mRow;
-    private Feature           mFeature;
-    private JComboBox<Object> mBaseTypeCombo;
-    private JComboBox<Object> mLeveledAmountCombo;
+    private ListRow                mRow;
+    private Feature                mFeature;
+    private PopupMenu<FeatureType> mBaseTypeCombo;
+    private PopupMenu<String>      mLeveledAmountCombo;
 
     /**
      * Creates a new FeatureEditor.
@@ -104,7 +103,7 @@ public abstract class FeatureEditor extends EditorPanel {
     protected abstract void rebuildSelf(FlexGrid grid, FlexRow right);
 
     /** @return The {@link JComboBox} that allows the base feature type to be changed. */
-    protected JComboBox<Object> addChangeBaseTypeCombo() {
+    protected PopupMenu<FeatureType> addChangeBaseTypeCombo() {
         List<FeatureType> choices = new ArrayList<>();
         FeatureType       current = null;
         for (FeatureType featureType : FeatureType.values()) {
@@ -118,7 +117,24 @@ public abstract class FeatureEditor extends EditorPanel {
         if (current == null) {
             current = choices.get(0);
         }
-        mBaseTypeCombo = addComboBox(CHANGE_BASE_TYPE, choices.toArray(), current);
+        mBaseTypeCombo = new PopupMenu<>(choices, (p) -> {
+            LAST_FEATURE_TYPE = mBaseTypeCombo.getSelectedItem();
+            if (LAST_FEATURE_TYPE != null && !LAST_FEATURE_TYPE.matches(mFeature)) {
+                JComponent parent = (JComponent) getParent();
+                Commitable.sendCommitToFocusOwner();
+                try {
+                    parent.add(create(mRow, LAST_FEATURE_TYPE.createFeature()), UIUtilities.getIndexOf(parent, this));
+                } catch (Exception exception) {
+                    // Shouldn't have a failure...
+                    Log.error(exception);
+                }
+                parent.remove(this);
+                parent.revalidate();
+                parent.repaint();
+            }
+        });
+        mBaseTypeCombo.setSelectedItem(current, false);
+        add(mBaseTypeCombo);
         return mBaseTypeCombo;
     }
 
@@ -143,20 +159,16 @@ public abstract class FeatureEditor extends EditorPanel {
         }
         EditorField field = new EditorField(new DefaultFormatterFactory(formatter), this, SwingConstants.LEFT, value, prototype, null);
         field.putClientProperty(LeveledAmount.class, amt);
-        UIUtilities.setToPreferredSizeOnly(field);
         add(field);
         return field;
     }
 
-    /**
-     * @param amt       The current leveled amount object.
-     * @param usePerDie Whether to use the "per die" message or the "per level" message.
-     * @return The {@link JComboBox} that allows a {@link LeveledAmount} to be changed.
-     */
-    protected JComboBox<Object> addLeveledAmountCombo(LeveledAmount amt, boolean usePerDie) {
+    protected PopupMenu<String> addLeveledAmountCombo(LeveledAmount amt, boolean usePerDie) {
         String per = usePerDie ? I18n.text("per die") : I18n.text("per level");
-        mLeveledAmountCombo = addComboBox(LeveledAmount.KEY_PER_LEVEL, new Object[]{" ", per}, amt.isPerLevel() ? per : " ");
-        mLeveledAmountCombo.putClientProperty(LeveledAmount.class, amt);
+        mLeveledAmountCombo = new PopupMenu<>(new String[]{" ", per},
+                (p) -> ((Bonus) mFeature).getAmount().setPerLevel(mLeveledAmountCombo.getSelectedIndex() == 1));
+        mLeveledAmountCombo.setSelectedItem(amt.isPerLevel() ? per : " ", false);
+        add(mLeveledAmountCombo);
         return mLeveledAmountCombo;
     }
 
@@ -187,31 +199,6 @@ public abstract class FeatureEditor extends EditorPanel {
         }
         parent.revalidate();
         parent.repaint();
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent event) {
-        String     command = event.getActionCommand();
-        JComponent parent  = (JComponent) getParent();
-        if (LeveledAmount.KEY_PER_LEVEL.equals(command)) {
-            ((Bonus) mFeature).getAmount().setPerLevel(mLeveledAmountCombo.getSelectedIndex() == 1);
-        } else if (CHANGE_BASE_TYPE.equals(command)) {
-            LAST_FEATURE_TYPE = (FeatureType) mBaseTypeCombo.getSelectedItem();
-            if (LAST_FEATURE_TYPE != null && !LAST_FEATURE_TYPE.matches(mFeature)) {
-                Commitable.sendCommitToFocusOwner();
-                try {
-                    parent.add(create(mRow, LAST_FEATURE_TYPE.createFeature()), UIUtilities.getIndexOf(parent, this));
-                } catch (Exception exception) {
-                    // Shouldn't have a failure...
-                    Log.error(exception);
-                }
-                parent.remove(this);
-                parent.revalidate();
-                parent.repaint();
-            }
-        } else {
-            super.actionPerformed(event);
-        }
     }
 
     @Override

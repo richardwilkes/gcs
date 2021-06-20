@@ -27,19 +27,15 @@ import com.trollworks.gcs.utility.text.IntegerFormatter;
 import com.trollworks.gcs.utility.text.WeightFormatter;
 import com.trollworks.gcs.utility.units.WeightValue;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JComboBox;
 import javax.swing.SwingConstants;
 import javax.swing.text.DefaultFormatter;
 import javax.swing.text.DefaultFormatterFactory;
 
 /** A generic editor panel. */
-public abstract class EditorPanel extends ActionPanel implements ActionListener, EditorField.ChangeListener {
-    private static final int    GAP        = 4;
-    private static final String COMPARISON = "Comparison";
+public abstract class EditorPanel extends ActionPanel implements EditorField.ChangeListener {
+    private static final int GAP = 4;
 
     /** Creates a new EditorPanel. */
     protected EditorPanel() {
@@ -54,26 +50,6 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
     protected EditorPanel(int indent) {
         setOpaque(false);
         setBorder(new EmptyBorder(GAP, GAP + indent, GAP, GAP));
-    }
-
-    /**
-     * Creates a new {@link JComboBox}.
-     *
-     * @param command   The command to issue on selection.
-     * @param items     The items to add to the {@link JComboBox}.
-     * @param selection The item to select initially.
-     * @return The new {@link JComboBox}.
-     */
-    protected <T> JComboBox<T> addComboBox(String command, T[] items, T selection) {
-        JComboBox<T> combo = new JComboBox<>(items);
-        combo.setOpaque(false);
-        combo.setSelectedItem(selection);
-        combo.setActionCommand(command);
-        combo.addActionListener(this);
-        combo.setMaximumRowCount(items.length);
-        UIUtilities.setToPreferredSizeOnly(combo);
-        add(combo);
-        return combo;
     }
 
     protected PopupMenu<AttributeChoice> addAttributePopup(DataFile dataFile, String format, String attribute, boolean includeBlank, PopupMenu.SelectionListener<AttributeChoice> listener) {
@@ -211,26 +187,6 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
                         weightCriteria.setQualifier((WeightValue) field.getValue());
                         notifyActionListeners();
                     }
-                }
-            }
-        }
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent event) {
-        String command = event.getActionCommand();
-        if (COMPARISON.equals(command)) {
-            JComboBox<?>   combo          = (JComboBox<?>) event.getSource();
-            int            selectedIndex  = combo.getSelectedIndex();
-            StringCriteria stringCriteria = (StringCriteria) combo.getClientProperty(StringCriteria.class);
-            if (stringCriteria != null) {
-                stringCriteria.setType(StringCompareType.values()[selectedIndex]);
-                notifyActionListeners();
-            } else {
-                NumericCriteria numericCriteria = (NumericCriteria) combo.getClientProperty(NumericCriteria.class);
-                if (numericCriteria != null) {
-                    numericCriteria.setType(NumericCompareType.values()[selectedIndex]);
-                    notifyActionListeners();
                 }
             }
         }

@@ -18,19 +18,16 @@ import com.trollworks.gcs.ui.layout.FlexGrid;
 import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.ui.layout.FlexSpacer;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 
-import java.awt.event.ActionEvent;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 
 /** A prerequisite list editor panel. */
 public class ListPrereqEditor extends PrereqEditor {
-    private static       Class<?> LAST_ITEM_TYPE = AdvantagePrereq.class;
-    private static final String   ANY_ALL        = "AnyAll";
-    private static final String   WHEN_TL        = "WhenTL";
+    private static Class<?> LAST_ITEM_TYPE = AdvantagePrereq.class;
 
     /** @param type The last item type created or switched to. */
     public static void setLastItemType(Class<?> type) {
@@ -74,14 +71,43 @@ public class ListPrereqEditor extends PrereqEditor {
 
     @Override
     protected void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right) {
+        PopupMenu<String> popup = new PopupMenu<>(new String[]{" ", tlIs(), tlIsAtLeast(), tlIsAtMost()}, (p) -> {
+            PrereqList      prereqList     = (PrereqList) mPrereq;
+            IntegerCriteria whenTLCriteria = prereqList.getWhenTLCriteria();
+            String          value          = p.getSelectedItem();
+            if (!mapWhenTLToString().equals(value)) {
+                if (tlIs().equals(value)) {
+                    prereqList.setWhenTLEnabled(true);
+                    whenTLCriteria.setType(NumericCompareType.IS);
+                } else if (tlIsAtLeast().equals(value)) {
+                    prereqList.setWhenTLEnabled(true);
+                    whenTLCriteria.setType(NumericCompareType.AT_LEAST);
+                } else if (tlIsAtMost().equals(value)) {
+                    prereqList.setWhenTLEnabled(true);
+                    whenTLCriteria.setType(NumericCompareType.AT_MOST);
+                } else {
+                    prereqList.setWhenTLEnabled(false);
+                }
+                rebuild();
+            }
+        });
+        popup.setSelectedItem(mapWhenTLToString(), false);
+        add(popup);
+        left.add(popup);
+
         PrereqList prereqList = (PrereqList) mPrereq;
-        left.add(addComboBox(WHEN_TL, new Object[]{" ", tlIs(), tlIsAtLeast(), tlIsAtMost()}, mapWhenTLToString()));
         if (prereqList.isWhenTLEnabled()) {
             left.add(addNumericCompareField(prereqList.getWhenTLCriteria(), 0, 99, false));
         }
         String requiresAll        = I18n.text("Requires all of:");
         String requiresAtLeastOne = I18n.text("Requires at least one of:");
-        left.add(addComboBox(ANY_ALL, new Object[]{requiresAll, requiresAtLeastOne}, prereqList.requiresAll() ? requiresAll : requiresAtLeastOne));
+        popup = new PopupMenu<>(new String[]{requiresAll, requiresAtLeastOne}, (p) -> {
+            ((PrereqList) mPrereq).setRequiresAll(p.getSelectedIndex() == 0);
+            getParent().repaint();
+        });
+        popup.setSelectedItem(prereqList.requiresAll() ? requiresAll : requiresAtLeastOne, false);
+        add(popup);
+        left.add(popup);
 
         grid.add(new FlexSpacer(0, 0, true, false), 0, 1);
 
@@ -110,36 +136,6 @@ public class ListPrereqEditor extends PrereqEditor {
         } catch (Exception exception) {
             // Shouldn't have a failure...
             Log.error(exception);
-        }
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent event) {
-        String command = event.getActionCommand();
-        if (ANY_ALL.equals(command)) {
-            ((PrereqList) mPrereq).setRequiresAll(((JComboBox<?>) event.getSource()).getSelectedIndex() == 0);
-            getParent().repaint();
-        } else if (WHEN_TL.equals(command)) {
-            PrereqList      prereqList     = (PrereqList) mPrereq;
-            IntegerCriteria whenTLCriteria = prereqList.getWhenTLCriteria();
-            Object          value          = ((JComboBox<?>) event.getSource()).getSelectedItem();
-            if (!mapWhenTLToString().equals(value)) {
-                if (tlIs().equals(value)) {
-                    prereqList.setWhenTLEnabled(true);
-                    whenTLCriteria.setType(NumericCompareType.IS);
-                } else if (tlIsAtLeast().equals(value)) {
-                    prereqList.setWhenTLEnabled(true);
-                    whenTLCriteria.setType(NumericCompareType.AT_LEAST);
-                } else if (tlIsAtMost().equals(value)) {
-                    prereqList.setWhenTLEnabled(true);
-                    whenTLCriteria.setType(NumericCompareType.AT_MOST);
-                } else {
-                    prereqList.setWhenTLEnabled(false);
-                }
-                rebuild();
-            }
-        } else {
-            super.actionPerformed(event);
         }
     }
 

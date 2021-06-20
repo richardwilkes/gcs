@@ -15,16 +15,13 @@ import com.trollworks.gcs.ui.layout.FlexGrid;
 import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.ui.layout.FlexSpacer;
 import com.trollworks.gcs.ui.widget.Commitable;
+import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 
-import java.awt.event.ActionEvent;
-import javax.swing.JComboBox;
-
 /** A spell prerequisite editor panel. */
 public class SpellPrereqEditor extends PrereqEditor {
-    private static final String   CHANGE_TYPE = "ChangeSpellType";
-    private static final String[] TYPES       = {
+    private static final String[] TYPES = {
             SpellPrereq.KEY_NAME,
             SpellPrereq.KEY_ANY,
             SpellPrereq.KEY_COLLEGE,
@@ -67,7 +64,7 @@ public class SpellPrereqEditor extends PrereqEditor {
         grid.add(row, 1, 1);
     }
 
-    private JComboBox<Object> addChangeTypePopup() {
+    private PopupMenu<String> addChangeTypePopup() {
         String[] titles    = {I18n.text("whose name"), I18n.text("of any kind"), I18n.text("whose college name"), I18n.text("from different colleges"), I18n.text("whose category name")};
         int      selection = 0;
         String   current   = ((SpellPrereq) mPrereq).getType();
@@ -78,23 +75,17 @@ public class SpellPrereqEditor extends PrereqEditor {
                 break;
             }
         }
-        return addComboBox(CHANGE_TYPE, titles, titles[selection]);
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent event) {
-        SpellPrereq prereq  = (SpellPrereq) mPrereq;
-        String      command = event.getActionCommand();
-
-        if (CHANGE_TYPE.equals(command)) {
-            String type = TYPES[((JComboBox<?>) event.getSource()).getSelectedIndex()];
+        PopupMenu<String> popup = new PopupMenu<>(titles, (p) -> {
+            String      type   = TYPES[p.getSelectedIndex()];
+            SpellPrereq prereq = (SpellPrereq) mPrereq;
             if (!prereq.getType().equals(type)) {
                 Commitable.sendCommitToFocusOwner();
                 prereq.setType(type);
                 rebuild();
             }
-        } else {
-            super.actionPerformed(event);
-        }
+        });
+        popup.setSelectedItem(titles[selection], false);
+        add(popup);
+        return popup;
     }
 }

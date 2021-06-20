@@ -15,17 +15,14 @@ import com.trollworks.gcs.criteria.StringCriteria;
 import com.trollworks.gcs.ui.layout.FlexGrid;
 import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.ui.layout.FlexSpacer;
+import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import javax.swing.JComboBox;
 
 /** A skill bonus editor. */
 public class SkillBonusEditor extends FeatureEditor {
-    private static final String SELECTION_TYPE = "selection_type";
-
     /**
      * Create a new skill bonus editor.
      *
@@ -50,7 +47,16 @@ public class SkillBonusEditor extends FeatureEditor {
 
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
-        row.add(addComboBox(SELECTION_TYPE, SkillSelectionType.values(), bonus.getSkillSelectionType()));
+        PopupMenu<SkillSelectionType> popup = new PopupMenu<>(SkillSelectionType.values(), (p) -> {
+            boolean needRebuild = ((SkillBonus) getFeature()).setSkillSelectionType(p.getSelectedItem());
+            notifyActionListeners();
+            if (needRebuild) {
+                rebuild();
+            }
+        });
+        popup.setSelectedItem(bonus.getSkillSelectionType(), false);
+        add(popup);
+        row.add(popup);
         grid.add(row, 1, 0);
         switch (bonus.getSkillSelectionType()) {
         case WEAPONS_WITH_NAME -> rebuildWeaponsWithName(grid, row);
@@ -101,21 +107,5 @@ public class SkillBonusEditor extends FeatureEditor {
         row.add(addStringComparePopup(criteria, I18n.text("and category ")));
         row.add(addStringCompareField(criteria));
         grid.add(row, i, 0);
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent event) {
-        String command = event.getActionCommand();
-        if (SELECTION_TYPE.equals(command)) {
-            SkillBonus         bonus              = (SkillBonus) getFeature();
-            SkillSelectionType skillSelectionType = (SkillSelectionType) ((JComboBox<?>) event.getSource()).getSelectedItem();
-            boolean            needRebuild        = bonus.setSkillSelectionType(skillSelectionType);
-            notifyActionListeners();
-            if (needRebuild) {
-                rebuild();
-            }
-        } else {
-            super.actionPerformed(event);
-        }
     }
 }
