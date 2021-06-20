@@ -48,21 +48,21 @@ public class SkillPointBonusEditor extends FeatureEditor {
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
         StringCriteria criteria = bonus.getNameCriteria();
-        row.add(addStringCompareCombo(criteria, I18n.text("to skills whose name ")));
+        row.add(addStringComparePopup(criteria, I18n.text("to skills whose name ")));
         row.add(addStringCompareField(criteria));
         grid.add(row, i++, 0);
 
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
         criteria = bonus.getSpecializationCriteria();
-        row.add(addStringCompareCombo(criteria, I18n.text("and specialization ")));
+        row.add(addStringComparePopup(criteria, I18n.text("and specialization ")));
         row.add(addStringCompareField(criteria));
         grid.add(row, i++, 0);
 
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
         criteria = bonus.getCategoryCriteria();
-        row.add(addStringCompareCombo(criteria, I18n.text("and category ")));
+        row.add(addStringComparePopup(criteria, I18n.text("and category ")));
         row.add(addStringCompareField(criteria));
         grid.add(row, i, 0);
     }

@@ -32,11 +32,10 @@ public class ContainedQuantityPrereqEditor extends PrereqEditor {
     @Override
     protected void rebuildSelf(FlexRow left, FlexGrid grid, FlexRow right) {
         ContainedQuantityPrereq prereq = (ContainedQuantityPrereq) mPrereq;
-
         FlexRow row = new FlexRow();
         row.add(addHasCombo(prereq.has()));
         row.add(addChangeBaseTypeCombo());
-        row.add(addNumericCompareCombo(prereq.getQuantityCompare(), null));
+        row.add(addNumericComparePopup(prereq.getQuantityCompare(), null));
         row.add(addNumericCompareField(prereq.getQuantityCompare(), 0, 999999999, false));
         row.add(new FlexSpacer(0, 0, true, false));
         grid.add(row, 0, 1);

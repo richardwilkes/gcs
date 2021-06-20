@@ -57,7 +57,7 @@ public class SpellBonusEditor extends FeatureEditor {
             row.add(new FlexSpacer(0, 0, true, false));
         } else {
             StringCriteria criteria = bonus.getNameCriteria();
-            row.add(addStringCompareCombo(criteria, ""));
+            row.add(addStringComparePopup(criteria, ""));
             row.add(addStringCompareField(criteria));
         }
         grid.add(row, 1, 0);
@@ -65,7 +65,7 @@ public class SpellBonusEditor extends FeatureEditor {
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
         StringCriteria criteria = bonus.getCategoryCriteria();
-        row.add(addStringCompareCombo(criteria, I18n.text("and category ")));
+        row.add(addStringComparePopup(criteria, I18n.text("and category ")));
         row.add(addStringCompareField(criteria));
         grid.add(row, 2, 0);
     }

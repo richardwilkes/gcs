@@ -41,7 +41,7 @@ public class ContainedWeightPrereqEditor extends PrereqEditor {
         grid.add(row, 0, 1);
 
         row = new FlexRow();
-        row.add(addNumericCompareCombo(prereq.getWeightCompare(), I18n.text("which ")));
+        row.add(addNumericComparePopup(prereq.getWeightCompare(), I18n.text("which ")));
         row.add(addWeightCompareField(prereq.getWeightCompare()));
         row.add(new FlexSpacer(0, 0, true, false));
         grid.add(row, 1, 1);

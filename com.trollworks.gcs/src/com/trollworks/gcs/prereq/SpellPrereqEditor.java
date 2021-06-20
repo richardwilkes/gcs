@@ -50,7 +50,7 @@ public class SpellPrereqEditor extends PrereqEditor {
 
         FlexRow row = new FlexRow();
         row.add(addHasCombo(prereq.has()));
-        row.add(addNumericCompareCombo(prereq.getQuantityCriteria(), null));
+        row.add(addNumericComparePopup(prereq.getQuantityCriteria(), null));
         row.add(addNumericCompareField(prereq.getQuantityCriteria(), 0, 999, false));
         row.add(addChangeBaseTypeCombo());
         row.add(new FlexSpacer(0, 0, true, false));
@@ -59,7 +59,7 @@ public class SpellPrereqEditor extends PrereqEditor {
         row = new FlexRow();
         row.add(addChangeTypePopup());
         if (SpellPrereq.KEY_NAME.equals(type) || SpellPrereq.KEY_CATEGORY.equals(type) || SpellPrereq.KEY_COLLEGE.equals(type)) {
-            row.add(addStringCompareCombo(prereq.getStringCriteria(), ""));
+            row.add(addStringComparePopup(prereq.getStringCriteria(), ""));
             row.add(addStringCompareField(prereq.getStringCriteria()));
         } else {
             row.add(new FlexSpacer(0, 0, true, false));

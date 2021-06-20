@@ -76,13 +76,6 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
         return combo;
     }
 
-    protected <T> PopupMenu<T> addPopup(T[] items, T selection, PopupMenu.SelectionListener<T> listener) {
-        PopupMenu<T> popup = new PopupMenu<>(items, listener);
-        popup.setSelectedItem(selection, false);
-        add(popup);
-        return popup;
-    }
-
     protected PopupMenu<AttributeChoice> addAttributePopup(DataFile dataFile, String format, String attribute, boolean includeBlank, PopupMenu.SelectionListener<AttributeChoice> listener) {
         List<AttributeChoice> list = new ArrayList<>();
         if (includeBlank) {
@@ -112,32 +105,30 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
         return popup;
     }
 
-    /**
-     * @param compare The current string compare object.
-     * @param extra   The extra text to add to the menu item.
-     * @return The {@link JComboBox} that allows a string comparison to be changed.
-     */
-    protected JComboBox<Object> addStringCompareCombo(StringCriteria compare, String extra) {
-        Object[] values;
-        Object   selection;
-        if (extra == null) {
-            values = StringCompareType.values();
-            selection = compare.getType();
-        } else {
-            List<String> list = new ArrayList<>();
-            selection = null;
-            for (StringCompareType type : StringCompareType.values()) {
+    protected PopupMenu<String> addStringComparePopup(StringCriteria compare, String extra) {
+        List<String> list      = new ArrayList<>();
+        String       selection = null;
+        for (StringCompareType type : StringCompareType.values()) {
+            if (extra == null) {
+                list.add(type.toString());
+            } else {
                 String title = extra + type;
                 list.add(title);
                 if (type == compare.getType()) {
                     selection = title;
                 }
             }
-            values = list.toArray();
         }
-        JComboBox<Object> combo = addComboBox(COMPARISON, values, selection);
-        combo.putClientProperty(StringCriteria.class, compare);
-        return combo;
+        if (extra == null) {
+            selection = compare.getType().toString();
+        }
+        PopupMenu<String> popup = new PopupMenu<>(list, (p) -> {
+            compare.setType(StringCompareType.values()[p.getSelectedIndex()]);
+            notifyActionListeners();
+        });
+        popup.setSelectedItem(selection, false);
+        add(popup);
+        return popup;
     }
 
     /**
@@ -153,13 +144,8 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
         return field;
     }
 
-    /**
-     * @param compare The current integer compare object.
-     * @param extra   The extra text to add to the menu item.
-     * @return The {@link JComboBox} that allows a comparison to be changed.
-     */
-    protected JComboBox<Object> addNumericCompareCombo(NumericCriteria compare, String extra) {
-        Object       selection = null;
+    protected PopupMenu<String> addNumericComparePopup(NumericCriteria compare, String extra) {
+        String       selection = null;
         List<String> list      = new ArrayList<>();
         for (NumericCompareType type : NumericCompareType.values()) {
             String title = extra == null ? type.toString() : extra + type.getDescription();
@@ -168,9 +154,13 @@ public abstract class EditorPanel extends ActionPanel implements ActionListener,
                 selection = title;
             }
         }
-        JComboBox<Object> combo = addComboBox(COMPARISON, list.toArray(), selection);
-        combo.putClientProperty(NumericCriteria.class, compare);
-        return combo;
+        PopupMenu<String> popup = new PopupMenu<>(list, (p) -> {
+            compare.setType(NumericCompareType.values()[p.getSelectedIndex()]);
+            notifyActionListeners();
+        });
+        popup.setSelectedItem(selection, false);
+        add(popup);
+        return popup;
     }
 
     /**

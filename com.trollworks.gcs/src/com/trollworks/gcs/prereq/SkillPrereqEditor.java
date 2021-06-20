@@ -41,17 +41,17 @@ public class SkillPrereqEditor extends PrereqEditor {
         grid.add(row, 0, 1);
 
         row = new FlexRow();
-        row.add(addStringCompareCombo(prereq.getNameCriteria(), I18n.text("whose name ")));
+        row.add(addStringComparePopup(prereq.getNameCriteria(), I18n.text("whose name ")));
         row.add(addStringCompareField(prereq.getNameCriteria()));
         grid.add(row, 1, 1);
 
         row = new FlexRow();
-        row.add(addStringCompareCombo(prereq.getSpecializationCriteria(), I18n.text("and whose specialization ")));
+        row.add(addStringComparePopup(prereq.getSpecializationCriteria(), I18n.text("and whose specialization ")));
         row.add(addStringCompareField(prereq.getSpecializationCriteria()));
         grid.add(row, 2, 1);
 
         row = new FlexRow();
-        row.add(addNumericCompareCombo(prereq.getLevelCriteria(), I18n.text("and whose level ")));
+        row.add(addNumericComparePopup(prereq.getLevelCriteria(), I18n.text("and whose level ")));
         row.add(addNumericCompareField(prereq.getLevelCriteria(), 0, 999, false));
         row.add(new FlexSpacer(0, 0, true, false));
         grid.add(row, 3, 1);

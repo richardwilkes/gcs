@@ -64,21 +64,21 @@ public class WeaponBonusEditor extends FeatureEditor {
     private void rebuildWeaponsWithName(FlexGrid grid, FlexRow row) {
         WeaponBonus    bonus    = (WeaponBonus) getFeature();
         StringCriteria criteria = bonus.getNameCriteria();
-        row.add(addStringCompareCombo(criteria, null));
+        row.add(addStringComparePopup(criteria, null));
         row.add(addStringCompareField(criteria));
 
         int i = 2;
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
         criteria = bonus.getSpecializationCriteria();
-        row.add(addStringCompareCombo(criteria, I18n.text("and usage ")));
+        row.add(addStringComparePopup(criteria, I18n.text("and usage ")));
         row.add(addStringCompareField(criteria));
         grid.add(row, i++, 0);
 
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
         criteria = bonus.getCategoryCriteria();
-        row.add(addStringCompareCombo(criteria, I18n.text("and category ")));
+        row.add(addStringComparePopup(criteria, I18n.text("and category ")));
         row.add(addStringCompareField(criteria));
         row.add(new FlexSpacer(0, 0, true, false));
         grid.add(row, i, 0);
@@ -87,21 +87,21 @@ public class WeaponBonusEditor extends FeatureEditor {
     private void rebuildWeaponsWithRequiredSkill(FlexGrid grid, FlexRow row) {
         WeaponBonus    bonus    = (WeaponBonus) getFeature();
         StringCriteria criteria = bonus.getNameCriteria();
-        row.add(addStringCompareCombo(criteria, null));
+        row.add(addStringComparePopup(criteria, null));
         row.add(addStringCompareField(criteria));
 
         int i = 2;
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
         criteria = bonus.getSpecializationCriteria();
-        row.add(addStringCompareCombo(criteria, I18n.text("and specialization ")));
+        row.add(addStringComparePopup(criteria, I18n.text("and specialization ")));
         row.add(addStringCompareField(criteria));
         grid.add(row, i++, 0);
 
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
         IntegerCriteria levelCriteria = bonus.getRelativeLevelCriteria();
-        row.add(addNumericCompareCombo(levelCriteria, I18n.text("and relative skill level ")));
+        row.add(addNumericComparePopup(levelCriteria, I18n.text("and relative skill level ")));
         row.add(addNumericCompareField(levelCriteria, -999, 999, true));
         row.add(new FlexSpacer(0, 0, true, false));
         grid.add(row, i++, 0);
@@ -109,7 +109,7 @@ public class WeaponBonusEditor extends FeatureEditor {
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
         criteria = bonus.getCategoryCriteria();
-        row.add(addStringCompareCombo(criteria, I18n.text("and category ")));
+        row.add(addStringComparePopup(criteria, I18n.text("and category ")));
         row.add(addStringCompareField(criteria));
         row.add(new FlexSpacer(0, 0, true, false));
         grid.add(row, i, 0);
