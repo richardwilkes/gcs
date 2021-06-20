@@ -28,10 +28,8 @@ import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.IntegerFormatter;
 
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.Map;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.SwingConstants;
 import javax.swing.text.DefaultFormatter;
@@ -89,7 +87,7 @@ public class SkillDefaultEditor extends EditorPanel {
 
             FlexRow row     = new FlexRow();
             String  current = mDefault.getType();
-            row.add(SkillDefaultType.createPopup(this, mDataFile, current, SkillDefault.KEY_TYPE,
+            row.add(SkillDefaultType.createPopup(this, mDataFile, current,
                     (p) -> {
                         AttributeChoice selectedItem = p.getSelectedItem();
                         if (selectedItem != null) {
@@ -196,28 +194,6 @@ public class SkillDefaultEditor extends EditorPanel {
             notifyActionListeners();
         } else {
             super.editorFieldChanged(field);
-        }
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent event) {
-        Object src     = event.getSource();
-        String command = event.getActionCommand();
-        if (SkillDefault.KEY_TYPE.equals(command)) {
-            AttributeChoice choice = (AttributeChoice) ((JComboBox<?>) src).getSelectedItem();
-            if (choice != null) {
-                String value   = choice.getAttribute();
-                String current = mDefault.getType();
-                if (!current.equals(value)) {
-                    Commitable.sendCommitToFocusOwner();
-                    mDefault.setType(value);
-                    rebuild();
-                    notifyActionListeners();
-                }
-                setLastItemType(value);
-            }
-        } else {
-            super.actionPerformed(event);
         }
     }
 }

@@ -116,7 +116,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements DocumentLis
         mDefaultPanel = new Panel(new PrecisionLayout().setMargins(0));
         mDefaultPanelLabel = new Label(I18n.text("Defaults To"));
         mDefaultTypePopup = SkillDefaultType.createPopup(mDefaultPanel, mRow.getDataFile(),
-                mRow.getDefault().getType(), "", (p) -> {
+                mRow.getDefault().getType(), (p) -> {
                     if (!mLastDefaultType.equals(getDefaultType())) {
                         rebuildDefaultPanel();
                     }

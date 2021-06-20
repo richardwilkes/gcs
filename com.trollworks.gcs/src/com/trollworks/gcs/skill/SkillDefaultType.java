@@ -27,7 +27,7 @@ public final class SkillDefaultType {
     private SkillDefaultType() {
     }
 
-    public static PopupMenu<AttributeChoice> createPopup(Container parent, DataFile dataFile, String currentType, String actionCommand, PopupMenu.SelectionListener<AttributeChoice> listener, boolean editable) {
+    public static PopupMenu<AttributeChoice> createPopup(Container parent, DataFile dataFile, String currentType, PopupMenu.SelectionListener<AttributeChoice> listener, boolean editable) {
         List<AttributeChoice> list = new ArrayList<>();
         for (AttributeDef def : AttributeDef.getOrdered(dataFile.getSheetSettings().getAttributes())) {
             list.add(new AttributeChoice(def.getID(), "%s", def.getName()));
