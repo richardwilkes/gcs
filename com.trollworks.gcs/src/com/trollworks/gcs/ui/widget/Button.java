@@ -140,7 +140,7 @@ public class Button extends Panel implements MouseListener, MouseMotionListener,
         Font  font  = scale.scale(getFont());
         if (isFocusOwner()) {
             Map<TextAttribute, Integer> attributes = new HashMap<>();
-            attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_LOW_TWO_PIXEL);
+            attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_LOW_ONE_PIXEL);
             font = font.deriveFont(attributes);
         }
         gc.setFont(font);

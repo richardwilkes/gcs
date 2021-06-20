@@ -62,20 +62,24 @@ public class PopupMenu<T> extends Panel implements MouseListener, MouseMotionLis
         void popupMenuItemSelected(PopupMenu<T> popup);
     }
 
-    public PopupMenu(T[] items, SelectionListener<T> selectionListener) {
-        this(Arrays.asList(items), selectionListener);
-    }
-
-    public PopupMenu(List<T> items, SelectionListener<T> selectionListener) {
+    public PopupMenu() {
         super(null, false);
-        mItems = new ArrayList<>(items);
-        mSelectionListener = selectionListener;
         setThemeFont(ThemeFont.BUTTON);
         addMouseListener(this);
         addMouseMotionListener(this);
         addFocusListener(this);
         addKeyListener(this);
         setFocusable(true);
+    }
+
+    public PopupMenu(T[] items, SelectionListener<T> selectionListener) {
+        this(Arrays.asList(items), selectionListener);
+    }
+
+    public PopupMenu(List<T> items, SelectionListener<T> selectionListener) {
+        this();
+        mItems = new ArrayList<>(items);
+        mSelectionListener = selectionListener;
     }
 
     public SelectionListener<T> getSelectionListener() {
@@ -268,7 +272,7 @@ public class PopupMenu<T> extends Panel implements MouseListener, MouseMotionLis
         if (item != null) {
             if (isFocusOwner()) {
                 Map<TextAttribute, Integer> attributes = new HashMap<>();
-                attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_LOW_TWO_PIXEL);
+                attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_LOW_ONE_PIXEL);
                 font = font.deriveFont(attributes);
             }
             gc.setFont(font);
