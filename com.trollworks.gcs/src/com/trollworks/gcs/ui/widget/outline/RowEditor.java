@@ -26,6 +26,7 @@ import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.text.Numbers;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -66,9 +67,10 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
             Modal     dialog  = new Modal(owner, MessageFormat.format(I18n.text("Edit {0}"), row.getRowType()));
             Container content = dialog.getContentPane();
             if (i != length - 1) {
-                int    remaining = length - i - 1;
-                String msg       = remaining == 1 ? I18n.text("1 item remaining to be edited.") : MessageFormat.format(I18n.text("{0} items remaining to be edited."), Integer.valueOf(remaining));
-                Label  label     = new Label(msg, SwingConstants.CENTER);
+                int remaining = length - i - 1;
+                String msg = remaining == 1 ? I18n.text("1 item remaining to be edited.") :
+                        String.format(I18n.text("%s items remaining to be edited."), Numbers.format(remaining));
+                Label label = new Label(msg, SwingConstants.CENTER);
                 label.setBorder(new EmptyBorder(Modal.MARGIN, 0, 0, 0));
                 content.add(label, BorderLayout.NORTH);
                 dialog.addCancelRemainingButton();
