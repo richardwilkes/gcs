@@ -227,7 +227,7 @@ public class Checkbox extends Panel implements MouseListener, MouseMotionListene
         } else if (isEnabled()) {
             color = ThemeColor.ICON_BUTTON;
         } else {
-            color = Colors.getWithAlpha(ThemeColor.ICON_BUTTON, 128);
+            color = Colors.getWithAlpha(ThemeColor.ICON_BUTTON, 96);
         }
         Graphics2D gc       = GraphicsUtilities.prepare(g);
         Scale      scale    = Scale.get(this);

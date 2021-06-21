@@ -226,7 +226,7 @@ public class PopupMenu<T> extends Panel implements MouseListener, KeyListener, F
             onColor = ThemeColor.ON_BUTTON;
         } else {
             color = ThemeColor.BUTTON;
-            onColor = Colors.getWithAlpha(ThemeColor.ON_BUTTON, 128);
+            onColor = Colors.getWithAlpha(ThemeColor.ON_BUTTON, 96);
         }
 
         Path2D.Double path         = new Path2D.Double();

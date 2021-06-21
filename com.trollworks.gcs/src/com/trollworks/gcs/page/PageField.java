@@ -87,7 +87,7 @@ public class PageField extends JFormattedTextField implements PropertyChangeList
         setBackground(editable ? ThemeColor.EDITABLE : ThemeColor.CONTENT);
         setSelectionColor(ThemeColor.SELECTION);
         setSelectedTextColor(ThemeColor.ON_SELECTION);
-        setDisabledTextColor(new DynamicColor(() -> Colors.getWithAlpha(getForeground(), 128).getRGB()));
+        setDisabledTextColor(new DynamicColor(() -> Colors.getWithAlpha(getForeground(), 96).getRGB()));
         setToolTipText(tooltip);
         addPropertyChangeListener("value", this);
         addActionListener(this);

@@ -45,7 +45,7 @@ public class MultiLineTextField extends JTextArea {
         setCaretColor(ThemeColor.ON_EDITABLE);
         setSelectionColor(ThemeColor.SELECTION);
         setSelectedTextColor(ThemeColor.ON_SELECTION);
-        setDisabledTextColor(new DynamicColor(() -> Colors.getWithAlpha(getForeground(), 128).getRGB()));
+        setDisabledTextColor(new DynamicColor(() -> Colors.getWithAlpha(getForeground(), 96).getRGB()));
         setMinimumSize(new Dimension(50, 16));
         if (listener != null) {
             getDocument().addDocumentListener(listener);
