@@ -12,17 +12,17 @@
 package com.trollworks.gcs.menu.settings;
 
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.settings.ThemeSettingsWindow;
+import com.trollworks.gcs.settings.FontSettingsWindow;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
-public final class ThemeSettingsCommand extends Command {
-    public static final ThemeSettingsCommand INSTANCE = new ThemeSettingsCommand();
+public final class FontSettingsCommand extends Command {
+    public static final FontSettingsCommand INSTANCE = new FontSettingsCommand();
 
-    private ThemeSettingsCommand() {
-        super(I18n.text("Theme…"), "ThemeSettings");
+    private FontSettingsCommand() {
+        super(I18n.text("Fonts…"), "FontSettings");
     }
 
     @Override
@@ -32,6 +32,6 @@ public final class ThemeSettingsCommand extends Command {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        ThemeSettingsWindow.display();
+        FontSettingsWindow.display();
     }
 }

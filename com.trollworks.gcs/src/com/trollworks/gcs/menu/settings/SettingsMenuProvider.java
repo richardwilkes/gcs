@@ -34,7 +34,8 @@ public final class SettingsMenuProvider {
         cmds.add(HitLocationSettingsCommand.DEFAULTS);
         cmds.add(GeneralSettingsCommand.INSTANCE);
         cmds.add(PageRefMappingsCommand.INSTANCE);
-        cmds.add(ThemeSettingsCommand.INSTANCE);
+        cmds.add(FontSettingsCommand.INSTANCE);
+        cmds.add(ColorSettingsCommand.INSTANCE);
         cmds.add(MenuKeySettingsCommand.INSTANCE);
         return cmds;
     }
@@ -51,7 +52,8 @@ public final class SettingsMenuProvider {
         menu.addSeparator();
         menu.add(new DynamicMenuItem(GeneralSettingsCommand.INSTANCE));
         menu.add(new DynamicMenuItem(PageRefMappingsCommand.INSTANCE));
-        menu.add(new DynamicMenuItem(ThemeSettingsCommand.INSTANCE));
+        menu.add(new DynamicMenuItem(FontSettingsCommand.INSTANCE));
+        menu.add(new DynamicMenuItem(ColorSettingsCommand.INSTANCE));
         menu.add(new DynamicMenuItem(MenuKeySettingsCommand.INSTANCE));
         DynamicMenuEnabler.add(menu);
         return menu;
