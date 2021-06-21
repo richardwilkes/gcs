@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.ThemeColor;
@@ -225,7 +226,7 @@ public class PopupMenu<T> extends Panel implements MouseListener, KeyListener, F
             onColor = ThemeColor.ON_BUTTON;
         } else {
             color = ThemeColor.BUTTON;
-            onColor = ThemeColor.ON_DISABLED_BUTTON;
+            onColor = Colors.getWithAlpha(ThemeColor.ON_BUTTON, 128);
         }
 
         Path2D.Double path         = new Path2D.Double();

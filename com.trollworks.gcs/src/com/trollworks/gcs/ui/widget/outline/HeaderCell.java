@@ -13,7 +13,6 @@ package com.trollworks.gcs.ui.widget.outline;
 
 import com.trollworks.gcs.ui.scale.Scale;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
@@ -22,7 +21,6 @@ import javax.swing.SwingConstants;
 /** Used to draw headers in a {@link Outline}. */
 public class HeaderCell extends TextCell {
     public static final int     SORTER_WIDTH = 12;
-    public static final Color   SORTER_COLOR = Color.blue.darker();
     private             int     mSortSequence;
     private             boolean mSortAscending;
 

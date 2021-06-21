@@ -12,6 +12,7 @@
 package com.trollworks.gcs.ui.widget.outline;
 
 import com.trollworks.gcs.ui.TextDrawing;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.utility.text.NumericComparator;
@@ -23,7 +24,6 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
 
 /**
  * A {@link Cell} for displaying both a piece of primary information and a piece of secondary
@@ -108,9 +108,9 @@ public class MultiCell implements Cell {
         String    notes       = getSecondaryText(theRow);
         Font      font        = scale.scale(getPrimaryFont().getFont());
         int       pos;
-        gc.setColor(getColor(outline, row, column, selected, active));
+        gc.setColor(getForeground(outline, row, column, selected, active));
         gc.setFont(font);
-        Color strikeThru = row instanceof Switchable && !((Switchable) row).isEnabled() ? Color.RED : null;
+        Color strikeThru = row instanceof Switchable && !((Switchable) row).isEnabled() ? ThemeColor.WARNING : null;
         pos = TextDrawing.draw(gc, insetBounds, getPrimaryText(theRow), SwingConstants.LEFT, SwingConstants.TOP, strikeThru, scale.scale(1));
         if (!notes.trim().isEmpty()) {
             insetBounds.height -= pos - insetBounds.y;
@@ -128,14 +128,14 @@ public class MultiCell implements Cell {
      * @param active   Whether or not the active version of the color is needed.
      * @return The foreground color.
      */
-    public Color getColor(Outline outline, Row row, Column column, boolean selected, boolean active) {
+    public Color getForeground(Outline outline, Row row, Column column, boolean selected, boolean active) {
         if (((ListRow) row).isSatisfied()) {
             if (selected) {
-                return UIManager.getColor("List.selectionForeground");
+                return active ? ThemeColor.ON_SELECTION : ThemeColor.ON_INACTIVE_SELECTION;
             }
             return outline.getForeground();
         }
-        return Color.RED;
+        return ThemeColor.WARNING;
     }
 
     @Override

@@ -19,7 +19,6 @@ import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageLabel;
 import com.trollworks.gcs.settings.Settings;
-import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;

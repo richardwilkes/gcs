@@ -13,6 +13,7 @@ package com.trollworks.gcs.ui.widget.outline;
 
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.TextDrawing;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.utility.text.NumericComparator;
@@ -25,7 +26,6 @@ import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.StringTokenizer;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
 
 /** Represents text cells in an {@link Outline}. */
 public class TextCell implements Cell {
@@ -80,7 +80,7 @@ public class TextCell implements Cell {
      */
     public Color getColor(Outline outline, Row row, Column column, boolean selected, boolean active) {
         if (selected) {
-            return UIManager.getColor("List.selectionForeground");
+            return active ? ThemeColor.ON_SELECTION : ThemeColor.ON_INACTIVE_SELECTION;
         }
         return outline.getForeground();
     }

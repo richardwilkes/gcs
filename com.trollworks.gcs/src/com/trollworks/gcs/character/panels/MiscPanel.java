@@ -18,7 +18,6 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageLabel;
-import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.utility.I18n;

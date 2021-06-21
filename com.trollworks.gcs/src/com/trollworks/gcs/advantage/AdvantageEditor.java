@@ -17,6 +17,7 @@ import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.AdvantageModifierListEditor;
 import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.ui.RetinaIcon;
+import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
@@ -171,6 +172,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         wrapper.add(mLevelField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         mHalfLevel = new Checkbox("+½", mLastHalfLevel, (b) -> updatePoints());
+        mHalfLevel.setBorder(new EmptyBorder(0, 0, 0, 10));
         mHalfLevel.setToolTipText(I18n.text("Add a half Level"));
         mHalfLevel.setEnabled(mRow.allowHalfLevels());
         wrapper.add(mHalfLevel);

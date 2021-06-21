@@ -72,7 +72,6 @@ import java.util.Set;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.ToolTipManager;
-import javax.swing.UIManager;
 import javax.swing.undo.StateEdit;
 import javax.swing.undo.UndoableEdit;
 
@@ -388,7 +387,6 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         Scale      scale = Scale.get(this);
         int        one   = scale.scale(1);
         Graphics2D gc    = GraphicsUtilities.prepare(g);
-        super.paintComponent(gc);
         drawBackground(gc);
 
         Shape     origClip   = gc.getClip();
@@ -647,15 +645,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
      */
     public Color getBackground(int rowIndex, boolean selected, boolean active) {
         if (selected) {
-            Color color = UIManager.getColor("List.selectionBackground");
-            if (!active) {
-                Color previous = color;
-                color = Colors.adjustSaturation(color, -0.5f);
-                if (previous.getRGB() == color.getRGB()) {
-                    color = Colors.adjustBrightness(color, 0.2f);
-                }
-            }
-            return color;
+            return active ? ThemeColor.SELECTION : ThemeColor.INACTIVE_SELECTION;
         }
         return (useBanding() && (rowIndex % 2 != 0)) ? ThemeColor.BANDING : ThemeColor.CONTENT;
     }

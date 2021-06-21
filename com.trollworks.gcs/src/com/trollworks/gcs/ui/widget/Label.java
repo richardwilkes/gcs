@@ -14,11 +14,11 @@ package com.trollworks.gcs.ui.widget;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.TextDrawing;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.scale.Scale;
 
 import java.awt.AlphaComposite;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -151,7 +151,7 @@ public class Label extends Panel implements PropertyChangeListener {
         Graphics2D gc = GraphicsUtilities.prepare(g);
         super.paintComponent(gc);
         if (mRefersTo != null && mRefersTo.getClientProperty(ERROR_KEY) != null) {
-            gc.setColor(Color.RED); // TODO: Use themed error color
+            gc.setColor(ThemeColor.WARNING);
         }
         Rectangle bounds = UIUtilities.getLocalInsetBounds(this);
         Scale     scale  = Scale.get(this);

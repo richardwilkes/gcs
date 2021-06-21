@@ -11,6 +11,8 @@
 
 package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.DynamicColor;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.ThemeColor;
@@ -73,7 +75,7 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
         setCaretColor(ThemeColor.ON_EDITABLE);
         setSelectionColor(ThemeColor.SELECTION);
         setSelectedTextColor(ThemeColor.ON_SELECTION);
-        setDisabledTextColor(ThemeColor.DISABLED_ON_EDITABLE);
+        setDisabledTextColor(new DynamicColor(() -> Colors.getWithAlpha(getForeground(), 128).getRGB()));
         setBorder(new CompoundBorder(new LineBorder(ThemeColor.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
         if (protoValue != null) {
             setPreferredSize(getPreferredSize());

@@ -33,7 +33,6 @@ public final class ThemeColor extends Color {
     public static final ThemeColor ON_CONTENT             = new ThemeColor("on_content", I18n.text("On Content"), new Color(0, 0, 0));
     public static final ThemeColor EDITABLE               = new ThemeColor("editable", I18n.text("Editable"), new Color(255, 255, 255));
     public static final ThemeColor ON_EDITABLE            = new ThemeColor("on_editable", I18n.text("On Editable"), new Color(0, 0, 160));
-    public static final ThemeColor DISABLED_ON_EDITABLE   = new ThemeColor("disabled_on_editable", I18n.text("Disabled On Editable"), new Color(192, 192, 192));
     public static final ThemeColor EDITABLE_BORDER        = new ThemeColor("editable_border", I18n.text("Editable Border"), new Color(192, 192, 192));
     public static final ThemeColor ACTIVE_EDITABLE_BORDER = new ThemeColor("active_editable_border", I18n.text("Active Editable Border"), new Color(0, 0, 192));
     public static final ThemeColor BANDING                = new ThemeColor("banding", I18n.text("Banding"), new Color(235, 235, 220));
@@ -56,22 +55,22 @@ public final class ThemeColor extends Color {
     public static final ThemeColor PAGE           = new ThemeColor("page", I18n.text("Page"), new Color(255, 255, 255));
     public static final ThemeColor ON_PAGE        = new ThemeColor("on_page", I18n.text("On Page"), new Color(0, 0, 0));
 
-    public static final ThemeColor BUTTON             = new ThemeColor("button.background", I18n.text("Button"), new Color(248, 248, 255));
-    public static final ThemeColor ON_BUTTON          = new ThemeColor("on_button.background", I18n.text("On Button"), new Color(0, 0, 0));
-    public static final ThemeColor ON_DISABLED_BUTTON = new ThemeColor("on_button.disabled", I18n.text("On Disabled Button"), new Color(192, 192, 192));
-    public static final ThemeColor PRESSED_BUTTON     = new ThemeColor("button.pressed", I18n.text("Pressed Button"), new Color(0, 96, 160));
-    public static final ThemeColor ON_PRESSED_BUTTON  = new ThemeColor("on_button.pressed", I18n.text("On Pressed Button"), new Color(255, 255, 255));
-    public static final ThemeColor BUTTON_BORDER      = new ThemeColor("button.border", I18n.text("Button Border"), new Color(96, 96, 96));
+    public static final ThemeColor BUTTON            = new ThemeColor("button.background", I18n.text("Button"), new Color(248, 248, 255));
+    public static final ThemeColor ON_BUTTON         = new ThemeColor("on_button.background", I18n.text("On Button"), new Color(0, 0, 0));
+    public static final ThemeColor PRESSED_BUTTON    = new ThemeColor("button.pressed", I18n.text("Pressed Button"), new Color(0, 96, 160));
+    public static final ThemeColor ON_PRESSED_BUTTON = new ThemeColor("on_button.pressed", I18n.text("On Pressed Button"), new Color(255, 255, 255));
+    public static final ThemeColor BUTTON_BORDER     = new ThemeColor("button.border", I18n.text("Button Border"), new Color(96, 96, 96));
 
     public static final ThemeColor ICON_BUTTON          = new ThemeColor("icon_button", I18n.text("Icon Button"), new Color(0, 0, 0));
-    public static final ThemeColor DISABLED_ICON_BUTTON = new ThemeColor("disabled_icon_button", I18n.text("Disabled Icon Button"), new Color(192, 192, 192));
     public static final ThemeColor ROLLOVER_ICON_BUTTON = new ThemeColor("rollover_icon_button", I18n.text("Rollover Icon Button"), new Color(54, 137, 131));
     public static final ThemeColor PRESSED_ICON_BUTTON  = new ThemeColor("pressed_icon_button", I18n.text("Pressed Icon Button"), new Color(0, 96, 160));
     public static final ThemeColor DROP_AREA            = new ThemeColor("drop_area", I18n.text("Drop Area"), new Color(0, 0, 255));
     public static final ThemeColor PAGE_VOID            = new ThemeColor("page_void", I18n.text("Page Void"), new Color(192, 192, 192));
 
-    public static final ThemeColor SELECTION    = new ThemeColor("selection", I18n.text("Selection"), new Color(0, 0, 224));
-    public static final ThemeColor ON_SELECTION = new ThemeColor("on_selection", I18n.text("On Selection"), new Color(255, 255, 255));
+    public static final ThemeColor SELECTION             = new ThemeColor("selection", I18n.text("Selection"), new Color(0, 96, 160));
+    public static final ThemeColor ON_SELECTION          = new ThemeColor("on_selection", I18n.text("On Selection"), new Color(255, 255, 255));
+    public static final ThemeColor INACTIVE_SELECTION    = new ThemeColor("selection.inactive", I18n.text("Inactive Selection"), new Color(0, 64, 148));
+    public static final ThemeColor ON_INACTIVE_SELECTION = new ThemeColor("on_selection.inactive", I18n.text("On Inactive Selection"), new Color(228, 228, 228));
 
     public static final ThemeColor SEARCH_LIST    = new ThemeColor("search_list", I18n.text("Search List"), new Color(224, 255, 255));
     public static final ThemeColor ON_SEARCH_LIST = new ThemeColor("on_search_list", I18n.text("On Search List"), new Color(0, 0, 0));

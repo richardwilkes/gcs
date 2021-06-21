@@ -381,6 +381,6 @@ public final class UIUtilities {
             }
             return ThemeColor.ICON_BUTTON;
         }
-        return ThemeColor.DISABLED_ICON_BUTTON;
+        return Colors.getWithAlpha(ThemeColor.ICON_BUTTON, 128);
     }
 }

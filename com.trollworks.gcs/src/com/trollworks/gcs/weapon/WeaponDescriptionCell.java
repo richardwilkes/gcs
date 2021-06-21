@@ -12,6 +12,7 @@
 package com.trollworks.gcs.weapon;
 
 import com.trollworks.gcs.ui.TextDrawing;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.widget.outline.Cell;
@@ -26,7 +27,6 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
 
 /**
  * A {@link Cell} for displaying both a piece of primary information and a piece of secondary
@@ -59,7 +59,11 @@ public class WeaponDescriptionCell implements Cell {
         Rectangle        insetBounds = new Rectangle(bounds.x + hMargin, bounds.y, bounds.width - hMargin * 2, bounds.height);
         String           notes       = getSecondaryText(theRow);
         Font             font        = scale.scale(ThemeFont.PAGE_FIELD_PRIMARY.getFont());
-        gc.setColor(selected ? UIManager.getColor("List.selectionForeground") : outline.getForeground());
+        if (selected) {
+            gc.setColor(active ? ThemeColor.ON_SELECTION : ThemeColor.ON_INACTIVE_SELECTION);
+        } else {
+            gc.setColor(outline.getForeground());
+        }
         gc.setFont(font);
         int pos = TextDrawing.draw(gc, insetBounds, getPrimaryText(theRow), SwingConstants.LEFT, SwingConstants.TOP);
         if (!notes.trim().isEmpty()) {

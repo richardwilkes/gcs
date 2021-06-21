@@ -69,41 +69,45 @@ public class EncumbrancePanel extends DropPanel {
         Encumbrance    current   = character.getEncumbranceLevel(false);
         boolean        band      = false;
         for (Encumbrance encumbrance : Encumbrance.values()) {
-            boolean warn;
-            Color   textColor;
+            Color textColor;
+            Color backColor;
             if (current == encumbrance) {
-                warn = character.isCarryingGreaterThanMaxLoad(false);
-                textColor = warn ? ThemeColor.ON_WARNING : ThemeColor.ON_CURRENT;
+                if (character.isCarryingGreaterThanMaxLoad(false)) {
+                    textColor = ThemeColor.ON_WARNING;
+                    backColor = ThemeColor.WARNING;
+                } else {
+                    textColor = ThemeColor.ON_CURRENT;
+                    backColor = ThemeColor.MARKER;
+                }
             } else {
-                warn = false;
                 textColor = ThemeColor.ON_CONTENT;
+                backColor = band ? ThemeColor.BANDING : ThemeColor.CONTENT;
             }
-
+            band = !band;
             PageLabel label = new PageLabel(encumbrance == current ? "\uf24e" : " ", textColor, header);
             label.setThemeFont(ThemeFont.ENCUMBRANCE_MARKER);
             add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
-
             PageLabel level = new PageLabel(MessageFormat.format("{0} {1}", Numbers.format(-encumbrance.getEncumbrancePenalty()), encumbrance), textColor, header);
             add(level, new PrecisionLayoutData().setGrabHorizontalSpace(true));
-            if (current == encumbrance) {
-                addHorizontalBackground(level, warn ? ThemeColor.WARNING : ThemeColor.MARKER);
-            } else if (band) {
-                addHorizontalBackground(level, ThemeColor.BANDING);
-            }
-            band = !band;
+            addHorizontalBackground(level, backColor);
             createDivider();
-            PageField field = new PageField(FieldFactory.WEIGHT, character.getMaximumCarry(encumbrance), sheet, SwingConstants.RIGHT, maxLoadTooltip);
-            field.setForeground(textColor);
-            add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
+            addPageField(new PageField(FieldFactory.WEIGHT, character.getMaximumCarry(encumbrance),
+                    sheet, SwingConstants.RIGHT, maxLoadTooltip), textColor, backColor);
             createDivider();
-            field = new PageField(FieldFactory.POSINT5, Integer.valueOf(character.getMove(encumbrance)), sheet, SwingConstants.RIGHT, moveTooltip);
-            field.setForeground(textColor);
-            add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
+            addPageField(new PageField(FieldFactory.POSINT5,
+                    Integer.valueOf(character.getMove(encumbrance)), sheet, SwingConstants.RIGHT,
+                    moveTooltip), textColor, backColor);
             createDivider();
-            field = new PageField(FieldFactory.POSINT5, Integer.valueOf(character.getDodge(encumbrance)), sheet, SwingConstants.RIGHT, dodgeTooltip);
-            field.setForeground(textColor);
-            add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
+            addPageField(new PageField(FieldFactory.POSINT5,
+                    Integer.valueOf(character.getDodge(encumbrance)), sheet, SwingConstants.RIGHT,
+                    dodgeTooltip), textColor, backColor);
         }
+    }
+
+    private void addPageField(PageField field, Color textColor, Color backColor) {
+        field.setForeground(textColor);
+        field.setBackground(backColor);
+        add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
     }
 
     private Container createDivider() {

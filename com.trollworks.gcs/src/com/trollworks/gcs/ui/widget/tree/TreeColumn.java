@@ -12,6 +12,7 @@
 package com.trollworks.gcs.ui.widget.tree;
 
 import com.trollworks.gcs.ui.TextDrawing;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.ThemeFont;
 
 import java.awt.Color;
@@ -25,7 +26,6 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.util.Comparator;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
 
 /** The abstract base class for columns within a {@link TreeRoot}. */
 public abstract class TreeColumn implements Comparator<TreeRow>, Transferable {
@@ -114,9 +114,9 @@ public abstract class TreeColumn implements Comparator<TreeRow>, Transferable {
     public void drawHeader(Graphics2D gc, TreePanel panel, Rectangle bounds, boolean active) {
         Font  savedFont  = gc.getFont();
         Color savedColor = gc.getColor();
-        gc.setColor(UIManager.getColor("Panel.background"));
+        gc.setColor(ThemeColor.BACKGROUND);
         gc.fill(bounds);
-        gc.setColor(UIManager.getColor("Panel.foreground"));
+        gc.setColor(ThemeColor.ON_BACKGROUND);
         Font font = getHeaderFont();
         gc.setFont(font);
         int        sortSequence = -1;
@@ -253,7 +253,7 @@ public abstract class TreeColumn implements Comparator<TreeRow>, Transferable {
 
     /** @return The {@link Color} to use for the sorter controls. */
     public Color getSorterColor() {
-        return Color.blue.darker();
+        return ThemeColor.ON_BACKGROUND;
     }
 
     @Override

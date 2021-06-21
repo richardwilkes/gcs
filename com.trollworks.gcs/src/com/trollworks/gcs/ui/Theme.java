@@ -16,7 +16,7 @@ import com.trollworks.gcs.utility.json.JsonWriter;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Frame;
+import java.awt.Window;
 import java.io.IOException;
 
 /**
@@ -67,12 +67,11 @@ public class Theme {
         }
     }
 
-    /** Repaint all frames. */
+    /** Repaint all windows. */
     public static void repaint() {
-        Frame[] frames = Frame.getFrames();
-        for (Frame frame : frames) {
-            if (frame.isShowing()) {
-                frame.repaint();
+        for (Window window : Window.getWindows()) {
+            if (window.isShowing()) {
+                window.repaint();
             }
         }
     }

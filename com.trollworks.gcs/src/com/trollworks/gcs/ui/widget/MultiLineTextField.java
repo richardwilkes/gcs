@@ -11,6 +11,8 @@
 
 package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.DynamicColor;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.border.EmptyBorder;
@@ -43,7 +45,7 @@ public class MultiLineTextField extends JTextArea {
         setCaretColor(ThemeColor.ON_EDITABLE);
         setSelectionColor(ThemeColor.SELECTION);
         setSelectedTextColor(ThemeColor.ON_SELECTION);
-        setDisabledTextColor(ThemeColor.DISABLED_ON_EDITABLE);
+        setDisabledTextColor(new DynamicColor(() -> Colors.getWithAlpha(getForeground(), 128).getRGB()));
         setMinimumSize(new Dimension(50, 16));
         if (listener != null) {
             getDocument().addDocumentListener(listener);

@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.MouseCapture;
 import com.trollworks.gcs.ui.TextDrawing;
@@ -226,7 +227,7 @@ public class Checkbox extends Panel implements MouseListener, MouseMotionListene
         } else if (isEnabled()) {
             color = ThemeColor.ICON_BUTTON;
         } else {
-            color = ThemeColor.DISABLED_ICON_BUTTON;
+            color = Colors.getWithAlpha(ThemeColor.ICON_BUTTON, 128);
         }
         Graphics2D gc       = GraphicsUtilities.prepare(g);
         Scale      scale    = Scale.get(this);

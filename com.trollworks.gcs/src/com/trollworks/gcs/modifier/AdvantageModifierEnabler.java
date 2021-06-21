@@ -13,6 +13,7 @@ package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.SelfControlRoll;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
@@ -27,7 +28,6 @@ import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -109,8 +109,8 @@ public final class AdvantageModifierEnabler extends Panel {
             top.add(new Label(msg, SwingConstants.CENTER));
         }
         label.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(0, 2, 0, 2)));
-        label.setBackground(Color.BLACK);
-        label.setForeground(Color.WHITE);
+        label.setBackground(ThemeColor.HEADER);
+        label.setForeground(ThemeColor.ON_HEADER);
         label.setOpaque(true);
         top.add(new Panel());
         top.add(label);

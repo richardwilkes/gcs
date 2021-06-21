@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.MouseCapture;
 import com.trollworks.gcs.ui.TextDrawing;
@@ -108,7 +109,7 @@ public class Button extends Panel implements MouseListener, MouseMotionListener,
             onColor = ThemeColor.ON_BUTTON;
         } else {
             color = ThemeColor.BUTTON;
-            onColor = ThemeColor.ON_DISABLED_BUTTON;
+            onColor = Colors.getWithAlpha(ThemeColor.ON_BUTTON, 128);
         }
 
         Path2D.Double path         = new Path2D.Double();

@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.modifier;
 
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.outline.Column;
@@ -50,7 +51,7 @@ public class ModifierCheckCell extends TextCell {
     @Override
     public Color getColor(Outline outline, Row row, Column column, boolean selected, boolean active) {
         if (mForEditor && row instanceof ListRow && !((ListRow) row).isSatisfied()) {
-            return Color.red;
+            return ThemeColor.WARNING;
         }
         return super.getColor(outline, row, column, selected, active);
     }

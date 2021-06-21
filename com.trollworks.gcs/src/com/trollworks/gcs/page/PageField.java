@@ -22,7 +22,6 @@ import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.ui.widget.ToolTip;
 import com.trollworks.gcs.utility.Platform;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -86,6 +85,8 @@ public class PageField extends JFormattedTextField implements PropertyChangeList
         setEnabled(editable);
         setForeground(editable ? ThemeColor.ON_EDITABLE : ThemeColor.ON_CONTENT);
         setBackground(editable ? ThemeColor.EDITABLE : ThemeColor.CONTENT);
+        setSelectionColor(ThemeColor.SELECTION);
+        setSelectedTextColor(ThemeColor.ON_SELECTION);
         setDisabledTextColor(new DynamicColor(() -> Colors.getWithAlpha(getForeground(), 128).getRGB()));
         setToolTipText(tooltip);
         addPropertyChangeListener("value", this);

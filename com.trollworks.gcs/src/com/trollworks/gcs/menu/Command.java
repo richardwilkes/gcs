@@ -29,7 +29,7 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
     public static final int       COMMAND_MODIFIER         = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
     /** The standard command modifier for this platform, plus the shift key. */
     public static final int       SHIFTED_COMMAND_MODIFIER = COMMAND_MODIFIER | InputEvent.SHIFT_DOWN_MASK;
-    private static      Component mFocusOwnerOverride;
+    private static      Component FOCUS_OWNER_OVERRIDE;
     private             KeyStroke mOriginalAccelerator;
 
     /**
@@ -264,12 +264,12 @@ public abstract class Command extends AbstractAction implements Comparable<Comma
     }
 
     public static final void setFocusOwnerOverride(Component focusOwner) {
-        mFocusOwnerOverride = focusOwner;
+        FOCUS_OWNER_OVERRIDE = focusOwner;
     }
 
     /** @return The current permanent focus owner. */
     public static final Component getFocusOwner() {
-        return mFocusOwnerOverride == null ? KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner() : mFocusOwnerOverride;
+        return FOCUS_OWNER_OVERRIDE == null ? KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner() : FOCUS_OWNER_OVERRIDE;
     }
 
     /** @return The current target. */

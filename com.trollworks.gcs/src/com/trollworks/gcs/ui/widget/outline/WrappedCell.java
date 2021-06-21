@@ -12,6 +12,7 @@
 package com.trollworks.gcs.ui.widget.outline;
 
 import com.trollworks.gcs.ui.TextDrawing;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.utility.text.NumericComparator;
@@ -22,7 +23,6 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
 
 public class WrappedCell implements Cell {
     private static final int H_MARGIN = 2;
@@ -31,7 +31,11 @@ public class WrappedCell implements Cell {
     public void drawCell(Outline outline, Graphics2D gc, Rectangle bounds, Row row, Column column, boolean selected, boolean active) {
         Scale scale   = Scale.get(outline);
         int   hMargin = scale.scale(H_MARGIN);
-        gc.setColor(selected ? UIManager.getColor("List.selectionForeground") : outline.getForeground());
+        if (selected) {
+            gc.setColor(active ? ThemeColor.ON_SELECTION : ThemeColor.ON_INACTIVE_SELECTION);
+        } else {
+            gc.setColor(outline.getForeground());
+        }
         gc.setFont(scale.scale(ThemeFont.PAGE_FIELD_PRIMARY.getFont()));
         TextDrawing.draw(gc, new Rectangle(bounds.x + hMargin, bounds.y, bounds.width - hMargin * 2, bounds.height), row.getDataAsText(column), SwingConstants.LEFT, SwingConstants.TOP);
     }
