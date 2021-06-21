@@ -81,7 +81,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
     public static final  int                       INDENT                  = TextTreeColumn.HMARGIN + 16 + TextTreeColumn.ICON_GAP;
     private              TreeRoot                  mRoot;
     private              ArrayList<TreeColumn>     mColumns                = new ArrayList<>();
-    private              DirectScrollPanelArea     mViewArea;
+    private              DirectScrollPanelArea     mViewArea               = DirectScrollPanelArea.NONE;
     private              Deletable                 mDeletableProxy;
     private              Openable                  mOpenableProxy;
     private              HashSet<TreeContainerRow> mOpenRows               = new HashSet<>();
