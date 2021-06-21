@@ -75,7 +75,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         }
 
         mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this modifier"), this);
-        panel.add(new Label(I18n.text("Notes"), mNotesField), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
+        panel.add(new Label(I18n.text("Notes")), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         mReferenceField = createField(panel, panel, I18n.text("Ref"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.text("equipment modifier")), 6);
@@ -111,7 +111,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     private EditorField createCorrectableField(Container labelParent, Container fieldParent, String title, String text, String tooltip) {
         EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text, tooltip);
         field.getDocument().addDocumentListener(this);
-        addLabel(labelParent, title, field);
+        addLabel(labelParent, title);
         fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return field;
     }
@@ -119,7 +119,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     private static EditorField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
         EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text,
                 maxChars > 0 ? Text.makeFiller(maxChars, 'M') : null, tooltip);
-        addLabel(labelParent, title, field);
+        addLabel(labelParent, title);
         PrecisionLayoutData ld = new PrecisionLayoutData().setFillHorizontalAlignment();
         if (maxChars == 0) {
             ld.setGrabHorizontalSpace(true);
@@ -139,7 +139,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         mCostAmountField = new EditorField(FieldFactory.STRING, (f) -> costChanged(),
                 SwingConstants.LEFT, mRow.getCostAdjType().format(mRow.getCostAdjAmount(), true),
                 "-999,999,999.00", I18n.text("The cost modifier"));
-        addLabel(labelParent, "", mCostAmountField);
+        addLabel(labelParent, "");
         fieldParent.add(mCostAmountField);
     }
 
@@ -166,7 +166,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
                 SwingConstants.LEFT, mRow.getWeightAdjType().format(mRow.getWeightAdjAmount(),
                 mRow.getDataFile().getSheetSettings().defaultWeightUnits(), true),
                 "-999,999,999.00", I18n.text("The weight modifier"));
-        labelParent.add(new Label("", mWeightAmountField));
+        labelParent.add(new Label(""));
         fieldParent.add(mWeightAmountField);
     }
 
@@ -183,7 +183,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
 
     private void docChanged(DocumentEvent event) {
         if (mNameField.getDocument() == event.getDocument()) {
-            Label.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
+            mNameField.setErrorMessage(mNameField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
         }
     }
 

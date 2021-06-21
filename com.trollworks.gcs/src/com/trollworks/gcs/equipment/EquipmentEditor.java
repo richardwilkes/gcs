@@ -110,7 +110,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
         createSecondLineFields(panel);
         createValueAndWeightFields(panel);
         mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this equipment"), this);
-        panel.add(new Label(I18n.text("Notes"), mNotesField), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
+        panel.add(new Label(I18n.text("Notes")), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         mCategoriesField = createField(panel, panel, I18n.text("Categories"), mRow.getCategoriesAsString(), I18n.text("The category or categories the equipment belongs to (separate multiple categories with a comma)"), 0);
 
@@ -196,7 +196,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
         EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text, tooltip);
         field.setEnabled(mIsEditable);
         field.getDocument().addDocumentListener(this);
-        parent.add(new Label(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        parent.add(new Label(title), new PrecisionLayoutData().setFillHorizontalAlignment());
         parent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return field;
     }
@@ -204,7 +204,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
     private EditorField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
         EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text, maxChars > 0 ? Text.makeFiller(maxChars, 'M') : null, tooltip);
         field.setEnabled(mIsEditable);
-        labelParent.add(new Label(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        labelParent.add(new Label(title), new PrecisionLayoutData().setFillHorizontalAlignment());
         PrecisionLayoutData ld = new PrecisionLayoutData().setFillHorizontalAlignment();
         if (maxChars == 0) {
             ld.setGrabHorizontalSpace(true);
@@ -216,7 +216,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
     private EditorField createIntegerNumberField(Container labelParent, Container fieldParent, String title, int value, String tooltip, int maxValue, EditorField.ChangeListener listener) {
         EditorField field = new EditorField(maxValue == 99999 ? FieldFactory.POSINT5 : FieldFactory.POSINT9, listener, SwingConstants.LEFT, Integer.valueOf(value), Integer.valueOf(maxValue), tooltip);
         field.setEnabled(mIsEditable);
-        labelParent.add(new Label(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        labelParent.add(new Label(title), new PrecisionLayoutData().setFillHorizontalAlignment());
         fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
@@ -224,7 +224,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
     private EditorField createValueField(Container labelParent, Container fieldParent, String title, Fixed6 value, Fixed6 protoValue, String tooltip, EditorField.ChangeListener listener) {
         EditorField field = new EditorField(FieldFactory.FIXED6, listener, SwingConstants.LEFT, value, protoValue, tooltip);
         field.setEnabled(mIsEditable);
-        labelParent.add(new Label(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        labelParent.add(new Label(title), new PrecisionLayoutData().setFillHorizontalAlignment());
         fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
@@ -232,7 +232,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
     private EditorField createWeightField(Container labelParent, Container fieldParent, String title, WeightValue value, WeightValue protoValue, String tooltip, EditorField.ChangeListener listener) {
         EditorField field = new EditorField(FieldFactory.WEIGHT, listener, SwingConstants.LEFT, value, protoValue, tooltip);
         field.setEnabled(mIsEditable);
-        labelParent.add(new Label(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        labelParent.add(new Label(title), new PrecisionLayoutData().setFillHorizontalAlignment());
         fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
@@ -299,7 +299,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
 
     private void docChanged(DocumentEvent event) {
         if (mDescriptionField.getDocument() == event.getDocument()) {
-            Label.setErrorMessage(mDescriptionField, mDescriptionField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
+            mDescriptionField.setErrorMessage(mDescriptionField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
         }
     }
 

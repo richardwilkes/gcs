@@ -77,7 +77,7 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
             adjustResetButton();
         }, SwingConstants.LEFT, prefs.getDefaultPlayerName(),
                 I18n.text("The player name to use when a new character sheet is created"));
-        content.add(new Label(I18n.text("Player"), mPlayerName), new PrecisionLayoutData().setFillHorizontalAlignment());
+        content.add(new Label(I18n.text("Player")), new PrecisionLayoutData().setFillHorizontalAlignment());
         content.add(mPlayerName, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         mAutoFillProfile = new Checkbox(I18n.text("Fill in initial description"),
@@ -94,7 +94,7 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
             Settings.getInstance().setDefaultTechLevel(f.getText().trim());
             adjustResetButton();
         }, SwingConstants.RIGHT, prefs.getDefaultTechLevel(), "99+99^", getTechLevelTooltip());
-        content.add(new Label(I18n.text("Tech Level"), mTechLevel),
+        content.add(new Label(I18n.text("Tech Level")),
                 new PrecisionLayoutData().setFillHorizontalAlignment());
         Wrapper wrapper = new Wrapper(new PrecisionLayout().setMargins(0).setColumns(3));
         content.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
@@ -105,7 +105,7 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
             adjustResetButton();
         }, SwingConstants.RIGHT, Integer.valueOf(prefs.getInitialPoints()), Integer.valueOf(999999),
                 I18n.text("The initial number of character points to start with"));
-        wrapper.add(new Label(I18n.text("Initial Points"), mTechLevel),
+        wrapper.add(new Label(I18n.text("Initial Points")),
                 new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(5));
         wrapper.add(mInitialPoints, new PrecisionLayoutData().setFillHorizontalAlignment());
 
@@ -124,7 +124,7 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
             adjustResetButton();
         });
         mInitialScale.setSelectedItem(prefs.getInitialUIScale(), false);
-        content.add(new Label(I18n.text("Initial Scale"), mInitialScale), new PrecisionLayoutData().setFillHorizontalAlignment());
+        content.add(new Label(I18n.text("Initial Scale")), new PrecisionLayoutData().setFillHorizontalAlignment());
         wrapper = new Wrapper(new PrecisionLayout().setMargins(0).setColumns(7));
         content.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(2));
         wrapper.add(mInitialScale);
@@ -135,9 +135,9 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
         }, SwingConstants.RIGHT, Integer.valueOf(prefs.getToolTipTimeout()),
                 FieldFactory.getMaxValue(FieldFactory.TOOLTIP_TIMEOUT),
                 I18n.text("The number of seconds before tooltips will dismiss themselves"));
-        wrapper.add(new Label(I18n.text("Tooltip Timeout"), mToolTipTimeout), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(5));
+        wrapper.add(new Label(I18n.text("Tooltip Timeout")), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(5));
         wrapper.add(mToolTipTimeout, new PrecisionLayoutData().setFillHorizontalAlignment());
-        wrapper.add(new Label(I18n.text("seconds"), mToolTipTimeout));
+        wrapper.add(new Label(I18n.text("seconds")));
 
         mImageResolution = new EditorField(FieldFactory.OUTPUT_DPI, (f) -> {
             Settings.getInstance().setImageResolution(((Integer) f.getValue()).intValue());
@@ -145,9 +145,9 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
         }, SwingConstants.RIGHT, Integer.valueOf(prefs.getImageResolution()),
                 FieldFactory.getMaxValue(FieldFactory.OUTPUT_DPI),
                 I18n.text("The resolution, in dots-per-inch, to use when saving sheets as PNG files"));
-        wrapper.add(new Label(I18n.text("Image Resolution"), mImageResolution), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(5));
+        wrapper.add(new Label(I18n.text("Image Resolution")), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(5));
         wrapper.add(mImageResolution, new PrecisionLayoutData().setFillHorizontalAlignment());
-        wrapper.add(new Label(I18n.text("dpi"), mImageResolution));
+        wrapper.add(new Label(I18n.text("dpi")));
 
         // Fourth row
         wrapper = new Wrapper(new PrecisionLayout().setMargins(0).setColumns(3));
@@ -156,7 +156,7 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
             Settings.getInstance().setGURPSCalculatorKey(f.getText().trim());
             adjustResetButton();
         }, SwingConstants.LEFT, prefs.getGURPSCalculatorKey(), null);
-        wrapper.add(new Label(I18n.text("GURPS Calculator Key"), mGCalcKey), new PrecisionLayoutData().setFillHorizontalAlignment());
+        wrapper.add(new Label(I18n.text("GURPS Calculator Key")), new PrecisionLayoutData().setFillHorizontalAlignment());
         wrapper.add(mGCalcKey, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         wrapper.add(new Button(I18n.text("Find mine"), (btn) -> {
             try {

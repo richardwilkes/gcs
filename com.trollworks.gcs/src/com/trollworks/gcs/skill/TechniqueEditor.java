@@ -54,7 +54,6 @@ public class TechniqueEditor extends RowEditor<Technique> implements DocumentLis
     private EditorField                mPointsField;
     private EditorField                mLevelField;
     private Panel                      mDefaultPanel;
-    private Label                      mDefaultPanelLabel;
     private PopupMenu<AttributeChoice> mDefaultTypePopup;
     private EditorField                mDefaultNameField;
     private EditorField                mDefaultSpecializationField;
@@ -87,7 +86,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements DocumentLis
         mNotesField = new MultiLineTextField(mRow.getNotes(),
                 I18n.text("Any notes that you would like to show up in the list along with this technique"),
                 this);
-        panel.add(new Label(I18n.text("Notes"), mNotesField),
+        panel.add(new Label(I18n.text("Notes")),
                 new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         mCategoriesField = createField(panel, panel, I18n.text("Categories"),
@@ -114,7 +113,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements DocumentLis
 
     private void createDefaults(Container parent) {
         mDefaultPanel = new Panel(new PrecisionLayout().setMargins(0));
-        mDefaultPanelLabel = new Label(I18n.text("Defaults To"));
+        Label defaultPanelLabel = new Label(I18n.text("Defaults To"));
         mDefaultTypePopup = SkillDefaultType.createPopup(mDefaultPanel, mRow.getDataFile(),
                 mRow.getDefault().getType(), (p) -> {
                     if (!mLastDefaultType.equals(getDefaultType())) {
@@ -122,7 +121,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements DocumentLis
                     }
                     recalculateLevel();
                 }, mIsEditable);
-        parent.add(mDefaultPanelLabel, new PrecisionLayoutData().setFillHorizontalAlignment());
+        parent.add(defaultPanelLabel, new PrecisionLayoutData().setFillHorizontalAlignment());
         parent.add(mDefaultPanel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         rebuildDefaultPanel();
     }
@@ -165,7 +164,6 @@ public class TechniqueEditor extends RowEditor<Technique> implements DocumentLis
             mDefaultSpecializationField = createField(null, mDefaultPanel, null, def.getSpecialization(),
                     I18n.text("The specialization of the skill, if any, this technique defaults from"),
                     0, (f) -> recalculateLevel());
-            mDefaultPanelLabel.setRefersTo(mDefaultNameField);
         }
         mDefaultModifierField = createSInt2NumberField(mDefaultPanel,
                 I18n.text("The amount to adjust the default skill level by"), def.getModifier());
@@ -198,7 +196,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements DocumentLis
         EditorField field = new EditorField(FieldFactory.STRING, listener, SwingConstants.LEFT, text, tooltip);
         field.getDocument().addDocumentListener(this);
         if (labelParent != null) {
-            addLabel(labelParent, title, field);
+            addLabel(labelParent, title);
         }
         fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return field;
@@ -208,7 +206,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements DocumentLis
         EditorField field = new EditorField(FieldFactory.STRING, listener, SwingConstants.LEFT, text,
                 maxChars > 0 ? Text.makeFiller(maxChars, 'M') : null, tooltip);
         if (labelParent != null) {
-            addLabel(labelParent, title, field);
+            addLabel(labelParent, title);
         }
         PrecisionLayoutData ld = new PrecisionLayoutData().setFillHorizontalAlignment();
         if (maxChars == 0) {
@@ -233,7 +231,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements DocumentLis
         mPointsField = new EditorField(FieldFactory.POSINT3, (f) -> recalculateLevel(),
                 SwingConstants.LEFT, Integer.valueOf(mRow.getRawPoints()), Integer.valueOf(999),
                 I18n.text("The number of points spent on this technique"));
-        addLabel(parent, I18n.text("Points"), mPointsField);
+        addLabel(parent, I18n.text("Points"));
         parent.add(mPointsField, new PrecisionLayoutData().setFillHorizontalAlignment());
         if (forCharacter) {
             mLevelField = createField(parent, parent, I18n.text("Level"),
@@ -255,7 +253,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements DocumentLis
         if (character != null || mRow.getTemplate() != null) {
             createPointsFields(wrapper, character != null);
         }
-        addLabel(parent, I18n.text("Difficulty"), null);
+        addLabel(parent, I18n.text("Difficulty"));
         parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
@@ -334,9 +332,9 @@ public class TechniqueEditor extends RowEditor<Technique> implements DocumentLis
     private void docChanged(DocumentEvent event) {
         Document doc = event.getDocument();
         if (doc == mNameField.getDocument()) {
-            Label.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
+            mNameField.setErrorMessage(mNameField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
         } else if (doc == mDefaultNameField.getDocument()) {
-            Label.setErrorMessage(mDefaultNameField, mDefaultNameField.getText().trim().isEmpty() ? I18n.text("The default name field may not be empty") : null);
+            mDefaultNameField.setErrorMessage(mDefaultNameField.getText().trim().isEmpty() ? I18n.text("The default name field may not be empty") : null);
         }
     }
 

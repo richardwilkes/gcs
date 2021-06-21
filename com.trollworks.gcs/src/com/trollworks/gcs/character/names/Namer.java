@@ -109,7 +109,7 @@ public final class Namer extends Panel implements DocumentListener {
             EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, "", null);
             field.setName(name);
             field.getDocument().addDocumentListener(this);
-            add(new Label(name, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+            add(new Label(name), new PrecisionLayoutData().setFillHorizontalAlignment());
             add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMinimumWidth(200));
             mFields.add(field);
         }

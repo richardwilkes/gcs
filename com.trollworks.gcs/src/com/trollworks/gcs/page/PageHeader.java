@@ -22,14 +22,23 @@ public class PageHeader extends Label {
     /**
      * Creates a new PageHeader.
      *
-     * @param title   The title to use.
-     * @param tooltip The tooltip to use.
+     * @param title The title to use.
      */
-    public PageHeader(String title, String tooltip) {
+    public PageHeader(String title) {
         super(title);
         setThemeFont(ThemeFont.PAGE_LABEL_PRIMARY);
         setHorizontalAlignment(SwingConstants.CENTER);
         setForeground(ThemeColor.ON_HEADER);
+    }
+
+    /**
+     * Creates a new PageHeader.
+     *
+     * @param title   The title to use.
+     * @param tooltip The tooltip to use.
+     */
+    public PageHeader(String title, String tooltip) {
+        this(title);
         setToolTipText(tooltip);
     }
 }

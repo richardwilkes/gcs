@@ -100,7 +100,7 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
         mNotesField = new MultiLineTextField(mRow.getNotes(),
                 I18n.text("Any notes that you would like to show up in the list along with this spell"),
                 this);
-        panel.add(new Label(I18n.text("Notes"), mNotesField), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
+        panel.add(new Label(I18n.text("Notes")), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
         wrapper = new Panel(new PrecisionLayout().setMargins(0));
         mCategoriesField = createField(panel, wrapper, I18n.text("Categories"),
@@ -158,7 +158,7 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
             }
         }
 
-        addLabel(parent, I18n.text("Difficulty"), null);
+        addLabel(parent, I18n.text("Difficulty"));
         parent.add(panel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
     }
 

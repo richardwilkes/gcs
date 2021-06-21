@@ -163,14 +163,14 @@ public class ThresholdPanel extends ContentPanel implements DocumentListener {
         if (protoValue == null) {
             layoutData.setGrabHorizontalSpace(true);
         }
-        container.add(new Label(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        container.add(new Label(title), new PrecisionLayoutData().setFillHorizontalAlignment());
         container.add(field, layoutData);
         return field;
     }
 
     private MultiLineTextField addTextArea(Container container, String title, String tooltip, String text) {
         MultiLineTextField area = new MultiLineTextField(text, tooltip, this);
-        container.add(new Label(title, area), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
+        container.add(new Label(title), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
         container.add(area, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return area;
     }

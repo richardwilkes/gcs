@@ -153,8 +153,8 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
         parent.add(section, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
-    protected static void addLabel(Container parent, String text, JComponent linkedTo) {
-        parent.add(new Label(text, linkedTo), new PrecisionLayoutData().setFillHorizontalAlignment());
+    protected static void addLabel(Container parent, String text) {
+        parent.add(new Label(text), new PrecisionLayoutData().setFillHorizontalAlignment());
     }
 
     /**

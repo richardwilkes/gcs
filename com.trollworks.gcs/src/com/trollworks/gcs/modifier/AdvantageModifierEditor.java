@@ -81,7 +81,7 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
         }
 
         mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this modifier"), this);
-        panel.add(new Label(I18n.text("Notes"), mNotesField),
+        panel.add(new Label(I18n.text("Notes")),
                 new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
@@ -126,7 +126,7 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
     private EditorField createCorrectableField(Container labelParent, Container fieldParent, String title, String text, String tooltip) {
         EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text, tooltip);
         field.getDocument().addDocumentListener(this);
-        addLabel(labelParent, title, field);
+        addLabel(labelParent, title);
         fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return field;
     }
@@ -134,7 +134,7 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
     private static EditorField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
         EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text,
                 maxChars > 0 ? Text.makeFiller(maxChars, 'M') : null, tooltip);
-        addLabel(labelParent, title, field);
+        addLabel(labelParent, title);
         PrecisionLayoutData ld = new PrecisionLayoutData().setFillHorizontalAlignment();
         if (maxChars == 0) {
             ld.setGrabHorizontalSpace(true);
@@ -147,7 +147,7 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
         EditorField field = new EditorField(formatter, listener, SwingConstants.LEFT,
                 Integer.valueOf(value), Integer.valueOf(protoValue), tooltip);
         field.setEnabled(mIsEditable);
-        addLabel(labelParent, title, field);
+        addLabel(labelParent, title);
         fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
@@ -156,7 +156,7 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
         EditorField field = new EditorField(FieldFactory.FLOAT, listener, SwingConstants.LEFT,
                 Double.valueOf(value), Double.valueOf(-99999), tooltip);
         field.setEnabled(mIsEditable);
-        addLabel(labelParent, title, field);
+        addLabel(labelParent, title);
         fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
@@ -266,7 +266,7 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
 
     private void docChanged(DocumentEvent event) {
         if (mNameField.getDocument() == event.getDocument()) {
-            Label.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
+            mNameField.setErrorMessage(mNameField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
         }
     }
 

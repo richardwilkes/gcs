@@ -39,7 +39,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JComponent;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -145,7 +144,7 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
 
         String notes = I18n.text("Notes");
         mUsageNotes = new MultiLineTextField("", notes, this);
-        addLabel(editorPanel, notes, mUsageNotes);
+        addLabel(editorPanel, notes);
         editorPanel.add(mUsageNotes, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         Panel damagePanel = new Panel(new PrecisionLayout().setMargins(0).setColumns(8));
@@ -160,20 +159,20 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
         editorPanel.add(new Label(I18n.text("Damage")), new PrecisionLayoutData().setFillHorizontalAlignment());
         damagePanel.add(mDamageSTPopup, new PrecisionLayoutData().setFillHorizontalAlignment());
         mDamageBase = addField(null, damagePanel, "9999999d+99x999", I18n.text("Base Damage"));
-        addLabel(damagePanel, "(", null);
+        addLabel(damagePanel, "(");
         mDamageArmorDivisor = addField(null, damagePanel, "100", I18n.text("Armor Divisor"));
-        addLabel(damagePanel, ")", null);
+        addLabel(damagePanel, ")");
         mDamageType = addField(null, damagePanel, null, I18n.text("Type"));
         mDamageModPerDie = addField(null, damagePanel, "+99", I18n.text("Bonus Per Die"));
-        addLabel(damagePanel, I18n.text("per die"), mDamageModPerDie);
+        addLabel(damagePanel, I18n.text("per die"));
         editorPanel.add(damagePanel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         Panel fragPanel = new Panel(new PrecisionLayout().setMargins(0).setColumns(5));
-        addLabel(editorPanel, I18n.text("Fragmentation"), null);
+        addLabel(editorPanel, I18n.text("Fragmentation"));
         mFragDamage = addField(null, fragPanel, "9999999d+99x999", I18n.text("Fragmentation Damage"));
-        addLabel(fragPanel, "(", null);
+        addLabel(fragPanel, "(");
         mFragArmorDivisor = addField(null, fragPanel, "9999", I18n.text("Armor Divisor"));
-        addLabel(fragPanel, ")", null);
+        addLabel(fragPanel, ")");
         mFragType = addField(null, fragPanel, null, I18n.text("Type"));
         editorPanel.add(fragPanel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
@@ -196,8 +195,8 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
         parent.add(mDefaults, new PrecisionLayoutData().setFillHorizontalAlignment().setHorizontalSpan(2).setGrabHorizontalSpace(true));
     }
 
-    protected void addLabel(Container parent, String label, JComponent field) {
-        parent.add(new Label(label, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+    protected void addLabel(Container parent, String label) {
+        parent.add(new Label(label), new PrecisionLayoutData().setFillHorizontalAlignment());
     }
 
     protected EditorField addField(Container labelParent, Container fieldParent, String protoValue, String label) {
@@ -209,7 +208,7 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
             ld.setGrabHorizontalSpace(true);
         }
         if (labelParent != null) {
-            addLabel(labelParent, label, field);
+            addLabel(labelParent, label);
         }
         fieldParent.add(field, ld);
         return field;

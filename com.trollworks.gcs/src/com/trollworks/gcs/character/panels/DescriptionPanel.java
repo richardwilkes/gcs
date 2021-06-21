@@ -150,14 +150,14 @@ public class DescriptionPanel extends DropPanel {
     private static PageField createRandomizableField(Container parent, CharacterSheet sheet, AbstractFormatterFactory factory, Object value, String tag, String title, String tooltip, CharacterSetter setter, Runnable randomizer) {
         parent.add(new FontAwesomeButton("\uf074", ThemeFont.PAGE_LABEL_PRIMARY.getFont().getSize() * 8 / 10, String.format(I18n.text("Randomize %s"), title), randomizer));
         PageField field = new PageField(factory, value, setter, sheet, tag, SwingConstants.LEFT, true, tooltip);
-        parent.add(new PageLabel(title, field), new PrecisionLayoutData().setEndHorizontalAlignment().setLeftMargin(1));
+        parent.add(new PageLabel(title), new PrecisionLayoutData().setEndHorizontalAlignment().setLeftMargin(1));
         parent.add(field, createFieldLayout());
         return field;
     }
 
     private static void createField(Container parent, CharacterSheet sheet, AbstractFormatterFactory factory, Object value, String tag, String title, String tooltip, CharacterSetter setter) {
         PageField field = new PageField(factory, value, setter, sheet, tag, SwingConstants.LEFT, true, tooltip);
-        parent.add(new PageLabel(title, field), new PrecisionLayoutData().setEndHorizontalAlignment().setHorizontalSpan(2));
+        parent.add(new PageLabel(title), new PrecisionLayoutData().setEndHorizontalAlignment().setHorizontalSpan(2));
         parent.add(field, createFieldLayout());
     }
 

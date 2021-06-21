@@ -63,7 +63,7 @@ public final class FontSettingsWindow extends BaseWindow implements CloseHandler
         for (ThemeFont font : ThemeFont.ALL) {
             if (font.isEditable()) {
                 FontTracker tracker = new FontTracker(font);
-                panel.add(new Label(font.toString(), tracker), new PrecisionLayoutData().setFillHorizontalAlignment());
+                panel.add(new Label(font.toString()), new PrecisionLayoutData().setFillHorizontalAlignment());
                 panel.add(tracker);
                 mFontPanels.add(tracker);
             }

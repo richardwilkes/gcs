@@ -20,6 +20,7 @@ import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -28,6 +29,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.text.ParseException;
+import java.util.Objects;
 import javax.swing.JFormattedTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
@@ -36,6 +38,8 @@ import javax.swing.border.CompoundBorder;
 public class EditorField extends JFormattedTextField implements ActionListener, Commitable {
     private ThemeFont mThemeFont;
     private String    mHint;
+    private String    mErrorMsg;
+    private String    mOriginalTooltip;
 
     public interface ChangeListener {
         void editorFieldChanged(EditorField field);
@@ -152,5 +156,40 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
             return super.getFont();
         }
         return mThemeFont.getFont();
+    }
+
+    @Override
+    public void setToolTipText(String text) {
+        mOriginalTooltip = text;
+        super.setToolTipText(text);
+    }
+
+    public String getErrorMessage() {
+        return mErrorMsg;
+    }
+
+    public void setErrorMessage(String msg) {
+        if (!Objects.equals(mErrorMsg, msg)) {
+            Color foregroundColor;
+            Color backgroundColor;
+            mErrorMsg = msg;
+            if (mErrorMsg == null) {
+                foregroundColor = ThemeColor.ON_EDITABLE;
+                backgroundColor = ThemeColor.EDITABLE;
+                super.setToolTipText(mOriginalTooltip);
+            } else {
+                foregroundColor = ThemeColor.ON_ERROR;
+                backgroundColor = ThemeColor.ERROR;
+                if (mOriginalTooltip == null) {
+                    super.setToolTipText(msg);
+                } else {
+                    super.setToolTipText(msg + "\n\n" + mOriginalTooltip);
+                }
+            }
+            setForeground(foregroundColor);
+            setBackground(backgroundColor);
+            setCaretColor(foregroundColor);
+            repaint();
+        }
     }
 }

@@ -44,9 +44,15 @@ public final class ThemeColor extends Color {
     public static final ThemeColor ON_HEADER  = new ThemeColor("on_header", I18n.text("On Header"), new Color(255, 255, 255));
     public static final ThemeColor MARKER     = new ThemeColor("marker", I18n.text("Marker"), new Color(252, 242, 196));
     public static final ThemeColor ON_CURRENT = new ThemeColor("on_marker", I18n.text("On Marker"), new Color(0, 0, 0));
-    public static final ThemeColor WARNING    = new ThemeColor("warn", I18n.text("Warn"), new Color(255, 205, 210));
-    public static final ThemeColor ON_WARNING = new ThemeColor("on_warn", I18n.text("On Warn"), new Color(0, 0, 0));
     public static final ThemeColor HINT       = new ThemeColor("hint", I18n.text("Hint"), new Color(128, 128, 128));
+
+    public static final ThemeColor ERROR      = new ThemeColor("error", I18n.text("Error"), new Color(128, 0, 0));
+    public static final ThemeColor ON_ERROR   = new ThemeColor("on_error", I18n.text("On Error"), new Color(255, 255, 255));
+    public static final ThemeColor WARNING    = new ThemeColor("warning", I18n.text("Warning"), new Color(128, 64, 0));
+    public static final ThemeColor ON_WARNING = new ThemeColor("on_warning", I18n.text("On Warning"), new Color(255, 255, 255));
+
+    public static final ThemeColor OVERLOADED    = new ThemeColor("overloaded", I18n.text("Overloaded"), new Color(192, 64, 64));
+    public static final ThemeColor ON_OVERLOADED = new ThemeColor("on_overloaded", I18n.text("On Overloaded"), new Color(255, 255, 255));
 
     public static final ThemeColor ACTIVE_TAB     = new ThemeColor("active_tab", I18n.text("Active Tab"), new Color(224, 212, 175));
     public static final ThemeColor ON_ACTIVE_TAB  = new ThemeColor("on_active_tab", I18n.text("On Active Tab"), new Color(0, 0, 0));

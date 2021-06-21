@@ -75,13 +75,13 @@ public class AttributesPanel extends DropPanel {
         }
         add(new PagePoints(attr.getPointCost(gch)), new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.END));
         add(field, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
-        add(new PageLabel(def.getCombinedName(), field));
+        add(new PageLabel(def.getCombinedName()));
     }
 
     private void createDiceField(CharacterSheet sheet, Dice dice, String title) {
         PageField field = new PageField(new DefaultFormatterFactory(new DiceFormatter(sheet.getCharacter())), dice, sheet, SwingConstants.RIGHT, null);
         add(field, new PrecisionLayoutData().setHorizontalSpan(2).setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
-        add(new PageLabel(title, field));
+        add(new PageLabel(title));
     }
 
     private void addDivider() {

@@ -109,7 +109,7 @@ public final class ColorSettingsWindow extends BaseWindow implements CloseHandle
     private void addColorTracker(Container parent, ThemeColor color, int leftMargin) {
         ColorTracker tracker = new ColorTracker(color);
         mColorWells.add(tracker);
-        parent.add(new Label(color.toString(), tracker), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(leftMargin));
+        parent.add(new Label(color.toString()), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(leftMargin));
         parent.add(tracker, new PrecisionLayoutData().setLeftMargin(4));
     }
 

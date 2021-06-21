@@ -19,6 +19,7 @@ import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageLabel;
 import com.trollworks.gcs.settings.Settings;
+import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
@@ -51,13 +52,15 @@ public class PointsPanel extends DropPanel {
     private void createLabelAndEditableField(int value, CharacterSetter setter, CharacterSheet sheet, String key, String title, String tooltip) {
         PageField field = new PageField(FieldFactory.INT6, Integer.valueOf(value), setter, sheet, key, SwingConstants.RIGHT, true, tooltip);
         add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
-        add(new PageLabel(title, field));
+        add(new PageLabel(title));
     }
 
     private void createLabelAndField(int value, CharacterSheet sheet, String title, String tooltip) {
-        PageField field = new PageField(FieldFactory.INT6, Integer.valueOf(value), sheet, SwingConstants.RIGHT, tooltip);
-        add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
-        add(new PageLabel(title, field));
+        PageLabel pts = new PageLabel(Numbers.format(value), tooltip);
+        pts.setHorizontalAlignment(SwingConstants.RIGHT);
+        pts.setBorder(new EmptyBorder(0, 2, 0, 2));
+        add(pts, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+        add(new PageLabel(title, tooltip));
     }
 
     private static String getTitle(GURPSCharacter gch) {

@@ -14,22 +14,21 @@ package com.trollworks.gcs.character.panels;
 import com.trollworks.gcs.body.HitLocation;
 import com.trollworks.gcs.body.HitLocationTable;
 import com.trollworks.gcs.character.CharacterSheet;
-import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.page.DropPanel;
-import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageHeader;
 import com.trollworks.gcs.page.PageLabel;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
+import com.trollworks.gcs.ui.widget.Separator;
 import com.trollworks.gcs.ui.widget.Wrapper;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.text.MessageFormat;
 import javax.swing.SwingConstants;
 
 /** The character hit location panel. */
@@ -42,34 +41,65 @@ public class HitLocationPanel extends DropPanel {
      * @param sheet The sheet to display the data for.
      */
     public HitLocationPanel(CharacterSheet sheet) {
-        super(new PrecisionLayout().setColumns(7).setSpacing(2, 0).setMargins(0), sheet.getCharacter().getSheetSettings().getHitLocations().getName());
+        super(new PrecisionLayout().setColumns(6).setSpacing(2, 0).setMargins(0), sheet.getCharacter().getSheetSettings().getHitLocations().getName());
 
-        addHorizontalBackground(createHeader(I18n.text("Roll"), null), ThemeColor.HEADER);
-        addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
-        createHeader(I18n.text("Where"), null);
-        addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
-        createHeader(I18n.text("Penalty"), I18n.text("The hit penalty for targeting a specific hit location"));
-        addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
-        createHeader(I18n.text("DR"), null);
+        Separator sep = new Separator();
+        add(sep, new PrecisionLayoutData().setHorizontalSpan(6).setHorizontalAlignment(PrecisionLayoutAlignment.FILL).setGrabHorizontalSpace(true));
+        addHorizontalBackground(sep, ThemeColor.DIVIDER);
+
+        PageHeader header = new PageHeader(I18n.text("Roll"));
+        add(header, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
+        addHorizontalBackground(header, ThemeColor.HEADER);
+
+        sep = new Separator(true);
+        add(sep, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.FILL).setGrabVerticalSpace(true));
+        addVerticalBackground(sep, ThemeColor.DIVIDER);
+
+        header = new PageHeader(I18n.text("Location"),
+                I18n.text("The location, along with the hit penalty for targeting it"));
+        add(header, new PrecisionLayoutData().setHorizontalSpan(2).setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
+
+        sep = new Separator(true);
+        add(sep, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.FILL).setGrabVerticalSpace(true));
+        addVerticalBackground(sep, ThemeColor.DIVIDER);
+
+        header = new PageHeader(I18n.text("DR"));
+        add(header, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
 
         addTable(sheet, sheet.getCharacter().getSheetSettings().getHitLocations(), 0, ThemeColor.BANDING, ThemeColor.CONTENT, false);
     }
 
     private boolean addTable(CharacterSheet sheet, HitLocationTable table, int depth, Color band1Color, Color band2Color, boolean band) {
         for (HitLocation location : table.getLocations()) {
-            String    name   = location.getTableName();
-            String    prefix = Text.makeFiller(depth * 3, ' ');
-            PageLabel first  = createLabel(prefix + location.getRollRange(), MessageFormat.format(I18n.text("The random roll needed to hit the {0} hit location"), name), SwingConstants.LEFT);
+            String name   = location.getTableName();
+            String prefix = Text.makeFiller(depth * 3, ' ');
+
+            PageLabel first = new PageLabel(prefix + location.getRollRange());
+            first.setToolTipText(String.format(I18n.text("The random roll needed to hit the %s hit location"), name));
+            first.setHorizontalAlignment(SwingConstants.CENTER);
+            add(first, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
             addHorizontalBackground(first, band ? band1Color : band2Color);
-            band = !band;
-            createDivider();
-            createLabel(prefix + name, location.getDescription(), SwingConstants.LEFT);
-            createDivider();
-            createLabel(Integer.toString(location.getHitPenalty()), MessageFormat.format(I18n.text("The hit penalty for targeting the {0} hit location"), name), SwingConstants.RIGHT);
-            createDivider();
+
+            add(new Separator(true), new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.FILL).setGrabVerticalSpace(true));
+
+            PageLabel label = new PageLabel(prefix + name);
+            label.setToolTipText(location.getDescription());
+            add(label, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
+
+            label = new PageLabel(Numbers.formatWithForcedSign(location.getHitPenalty()));
+            label.setToolTipText(String.format(I18n.text("The hit penalty for targeting the %s hit location"), name));
+            label.setHorizontalAlignment(SwingConstants.RIGHT);
+            add(label, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.FILL).setLeftMargin(2));
+
+            add(new Separator(true), new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.FILL).setGrabVerticalSpace(true));
+
             StringBuilder tooltip = new StringBuilder();
-            int           dr      = location.getDR(sheet.getCharacter(), tooltip);
-            createDRField(sheet, Integer.valueOf(dr), String.format(I18n.text("The DR covering the %s hit location%s"), name, tooltip));
+            label = new PageLabel(Numbers.format(location.getDR(sheet.getCharacter(), tooltip)));
+            label.setToolTipText(String.format(I18n.text("The DR covering the %s hit location%s"), name, tooltip));
+            label.setHorizontalAlignment(SwingConstants.RIGHT);
+            add(label, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
+
+            band = !band;
             if (location.getSubTable() != null) {
                 band = addTable(sheet, location.getSubTable(), depth + 1, band1Color, band2Color, band);
             }
@@ -84,29 +114,10 @@ public class HitLocationPanel extends DropPanel {
         return size;
     }
 
-    private PageHeader createHeader(String title, String tooltip) {
-        PageHeader header = new PageHeader(title, tooltip);
-        add(header, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
-        return header;
-    }
-
     private Wrapper createDivider() {
         Wrapper panel = new Wrapper();
         panel.setOnlySize(1, 1);
         add(panel);
         return panel;
-    }
-
-    private PageLabel createLabel(String title, String tooltip, int alignment) {
-        PageLabel label = new PageLabel(title, null);
-        label.setToolTipText(tooltip);
-        label.setHorizontalAlignment(alignment);
-        add(label, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
-        return label;
-    }
-
-    private void createDRField(CharacterSheet sheet, Object value, String tooltip) {
-        PageField field = new PageField(FieldFactory.POSINT5, value, sheet, SwingConstants.RIGHT, tooltip);
-        add(field, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
     }
 }

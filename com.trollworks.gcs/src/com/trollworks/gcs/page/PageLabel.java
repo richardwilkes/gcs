@@ -16,7 +16,6 @@ import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.widget.Label;
 
 import java.awt.Color;
-import javax.swing.JComponent;
 
 /** A label for a field in a page. */
 public class PageLabel extends Label {
@@ -25,31 +24,30 @@ public class PageLabel extends Label {
      *
      * @param title The title of the field.
      */
-    public PageLabel(String title) {
-        this(title, ThemeColor.ON_CONTENT, null);
+    public PageLabel(String title) {   // TODO: Re-check colors here?
+        this(title, ThemeColor.ON_CONTENT);
+    }
+
+    /**
+     * Creates a new label.
+     *
+     * @param title   The title of the field.
+     * @param tooltip The tooltip to use.
+     */
+    public PageLabel(String title, String tooltip) {
+        this(title, ThemeColor.ON_CONTENT);
+        setToolTipText(tooltip);
     }
 
     /**
      * Creates a new label for the specified field.
      *
-     * @param title    The title of the field.
-     * @param refersTo The component it refers to.
+     * @param title The title of the field.
+     * @param color The color to use.
      */
-    public PageLabel(String title, JComponent refersTo) {
-        this(title, ThemeColor.ON_CONTENT, refersTo);
-    }
-
-    /**
-     * Creates a new label for the specified field.
-     *
-     * @param title    The title of the field.
-     * @param color    The color to use.
-     * @param refersTo The component it refers to.
-     */
-    public PageLabel(String title, Color color, JComponent refersTo) {
+    public PageLabel(String title, Color color) {
         super(title);
         setThemeFont(ThemeFont.PAGE_LABEL_PRIMARY);
         setForeground(color);
-        setRefersTo(refersTo);
     }
 }

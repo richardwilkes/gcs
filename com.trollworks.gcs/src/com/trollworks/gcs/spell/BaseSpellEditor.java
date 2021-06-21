@@ -20,7 +20,6 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.Checkbox;
 import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.PopupMenu;
@@ -133,7 +132,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
      */
     protected EditorField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
         EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text, maxChars > 0 ? Text.makeFiller(maxChars, 'M') : null, tooltip);
-        addLabel(labelParent, title, field);
+        addLabel(labelParent, title);
         PrecisionLayoutData ld = new PrecisionLayoutData().setFillHorizontalAlignment();
         if (maxChars == 0) {
             ld.setGrabHorizontalSpace(true);
@@ -155,7 +154,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
      */
     protected EditorField createNumberField(Container labelParent, Container fieldParent, String title, String tooltip, int value, int maxValue, EditorField.ChangeListener listener) {
         EditorField field = new EditorField(FieldFactory.POSINT5, listener, SwingConstants.LEFT, Integer.valueOf(value), Integer.valueOf(maxValue), tooltip);
-        addLabel(labelParent, title, field);
+        addLabel(labelParent, title);
         fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
@@ -172,7 +171,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
     protected EditorField createCorrectableField(Container labelParent, Container fieldParent, String title, String text, String tooltip, EditorField.ChangeListener listener) {
         EditorField field = new EditorField(FieldFactory.STRING, listener, SwingConstants.LEFT, text, tooltip);
         field.getDocument().addDocumentListener(this);
-        addLabel(labelParent, title, field);
+        addLabel(labelParent, title);
         fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return field;
     }
@@ -256,15 +255,15 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
     public void changedUpdate(DocumentEvent event) {
         Document doc = event.getDocument();
         if (doc == mNameField.getDocument()) {
-            Label.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
+            mNameField.setErrorMessage(mNameField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
         } else if (doc == mClassField.getDocument()) {
-            Label.setErrorMessage(mClassField, mClassField.getText().trim().isEmpty() ? I18n.text("The class field may not be empty") : null);
+            mClassField.setErrorMessage(mClassField.getText().trim().isEmpty() ? I18n.text("The class field may not be empty") : null);
         } else if (doc == mCastingCostField.getDocument()) {
-            Label.setErrorMessage(mCastingCostField, mCastingCostField.getText().trim().isEmpty() ? I18n.text("The casting cost field may not be empty") : null);
+            mCastingCostField.setErrorMessage(mCastingCostField.getText().trim().isEmpty() ? I18n.text("The casting cost field may not be empty") : null);
         } else if (doc == mCastingTimeField.getDocument()) {
-            Label.setErrorMessage(mCastingTimeField, mCastingTimeField.getText().trim().isEmpty() ? I18n.text("The casting time field may not be empty") : null);
+            mCastingTimeField.setErrorMessage(mCastingTimeField.getText().trim().isEmpty() ? I18n.text("The casting time field may not be empty") : null);
         } else if (doc == mDurationField.getDocument()) {
-            Label.setErrorMessage(mDurationField, mDurationField.getText().trim().isEmpty() ? I18n.text("The duration field may not be empty") : null);
+            mDurationField.setErrorMessage(mDurationField.getText().trim().isEmpty() ? I18n.text("The duration field may not be empty") : null);
         }
     }
 

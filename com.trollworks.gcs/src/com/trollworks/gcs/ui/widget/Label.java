@@ -14,7 +14,6 @@ package com.trollworks.gcs.ui.widget;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.TextDrawing;
-import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.scale.Scale;
 
@@ -25,24 +24,18 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Rectangle;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Objects;
 import javax.swing.Icon;
-import javax.swing.JComponent;
 import javax.swing.SwingConstants;
 
 /** A simple label replacement that is scalable. */
-public class Label extends Panel implements PropertyChangeListener {
+public class Label extends Panel {
     /** Pass this constant in to indicate wrapping should be done rather than truncation. */
-    public static final  int    WRAP      = -1;
-    private static final String ERROR_KEY = "error";
-    private static final int    GAP       = 4;
+    public static final  int WRAP = -1;
+    private static final int GAP  = 4;
 
     private RetinaIcon mIcon;
     private String     mText;
     private int        mHAlign;
-    private JComponent mRefersTo;
     private int        mTruncationPolicy;
 
     /**
@@ -67,17 +60,6 @@ public class Label extends Panel implements PropertyChangeListener {
     public Label(String text, int hAlign) {
         this(text);
         mHAlign = hAlign;
-    }
-
-    /**
-     * Create a new right-aligned label that refers to another component.
-     *
-     * @param text     The text to use.
-     * @param refersTo The {@link JComponent} to pair with.
-     */
-    public Label(String text, JComponent refersTo) {
-        this(text, SwingConstants.RIGHT);
-        setRefersTo(refersTo);
     }
 
     /**
@@ -150,9 +132,6 @@ public class Label extends Panel implements PropertyChangeListener {
     protected void paintComponentWithText(Graphics g, String text) {
         Graphics2D gc = GraphicsUtilities.prepare(g);
         super.paintComponent(gc);
-        if (mRefersTo != null && mRefersTo.getClientProperty(ERROR_KEY) != null) {
-            gc.setColor(ThemeColor.WARNING);
-        }
         Rectangle bounds = UIUtilities.getLocalInsetBounds(this);
         Scale     scale  = Scale.get(this);
         Font      font   = scale.scale(getFont());
@@ -202,55 +181,5 @@ public class Label extends Panel implements PropertyChangeListener {
         Font      font = scale.scale(getFont());
         Dimension size = TextDrawing.getPreferredSize(font, TextDrawing.wrapToPixelWidth(font, mText, width));
         return size.height;
-    }
-
-    /** @return The {@link JComponent} that is being paired with. */
-    public JComponent getRefersTo() {
-        return mRefersTo;
-    }
-
-    /** @param refersTo The {@link JComponent} to pair with. */
-    public void setRefersTo(JComponent refersTo) {
-        if (mRefersTo != refersTo) {
-            if (mRefersTo != null) {
-                mRefersTo.removePropertyChangeListener(TOOL_TIP_TEXT_KEY, this);
-                mRefersTo.removePropertyChangeListener(ERROR_KEY, this);
-            }
-            mRefersTo = refersTo;
-            if (mRefersTo != null) {
-                mRefersTo.addPropertyChangeListener(TOOL_TIP_TEXT_KEY, this);
-                mRefersTo.addPropertyChangeListener(ERROR_KEY, this);
-            }
-            adjustToLink();
-        }
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        adjustToLink();
-    }
-
-    private void adjustToLink() {
-        String tooltip = null;
-        if (mRefersTo != null) {
-            tooltip = (String) mRefersTo.getClientProperty(ERROR_KEY);
-            if (tooltip == null) {
-                tooltip = mRefersTo.getToolTipText();
-            }
-        }
-        setToolTipText(tooltip);
-        repaint();
-    }
-
-    /**
-     * Sets/clears the error message that a Label will respond to.
-     *
-     * @param comp The {@link JComponent} to set the message on.
-     * @param msg  The error message or {@code null}.
-     */
-    public static void setErrorMessage(JComponent comp, String msg) {
-        if (!Objects.equals(comp.getClientProperty(ERROR_KEY), msg)) {
-            comp.putClientProperty(ERROR_KEY, msg);
-        }
     }
 }

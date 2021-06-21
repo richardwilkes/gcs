@@ -12,16 +12,14 @@
 package com.trollworks.gcs.character.panels;
 
 import com.trollworks.gcs.character.CharacterSheet;
-import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.page.DropPanel;
-import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageLabel;
-import com.trollworks.gcs.ui.layout.ColumnLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.units.WeightValue;
-
-import javax.swing.SwingConstants;
 
 /** The character lift panel. */
 public class LiftPanel extends DropPanel {
@@ -31,7 +29,7 @@ public class LiftPanel extends DropPanel {
      * @param sheet The sheet to display the data for.
      */
     public LiftPanel(CharacterSheet sheet) {
-        super(new ColumnLayout(2, 2, 0), I18n.text("Lifting & Moving Things"));
+        super(new PrecisionLayout().setColumns(2).setMargins(0).setSpacing(2, 0), I18n.text("Lifting & Moving Things"));
         GURPSCharacter gch = sheet.getCharacter();
         createRow(sheet, gch.getBasicLift(), I18n.text("Basic Lift"), I18n.text("The weight the character can lift overhead with one hand in one second"));
         createRow(sheet, gch.getOneHandedLift(), I18n.text("One-Handed Lift"), I18n.text("The weight the character can lift overhead with one hand in two seconds"));
@@ -43,8 +41,7 @@ public class LiftPanel extends DropPanel {
     }
 
     private void createRow(CharacterSheet sheet, WeightValue weight, String title, String tooltip) {
-        PageField field = new PageField(FieldFactory.WEIGHT, weight, sheet, SwingConstants.RIGHT, tooltip);
-        add(field);
-        add(new PageLabel(title, field));
+        add(new PageLabel(weight.toString(), tooltip), new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.END).setGrabHorizontalSpace(true));
+        add(new PageLabel(title, tooltip), new PrecisionLayoutData().setGrabHorizontalSpace(true));
     }
 }

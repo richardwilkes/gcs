@@ -199,7 +199,7 @@ public class AttributePanel extends ContentPanel {
         if (protoValue == null) {
             layoutData.setGrabHorizontalSpace(true);
         }
-        container.add(new Label(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        container.add(new Label(title), new PrecisionLayoutData().setFillHorizontalAlignment());
         container.add(field, layoutData);
         return field;
     }

@@ -94,7 +94,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
             panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         }
         mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this skill"), this);
-        panel.add(new Label(I18n.text("Notes"), mNotesField), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
+        panel.add(new Label(I18n.text("Notes")), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         mCategoriesField = createField(panel, panel, I18n.text("Categories"), mRow.getCategoriesAsString(),
                 I18n.text("The category or categories the skill belongs to (separate multiple categories with a comma)"),
@@ -126,7 +126,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     private EditorField createCorrectableField(Container parent, String title, String text, String tooltip) {
         EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text, tooltip);
         field.getDocument().addDocumentListener(this);
-        parent.add(new Label(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        parent.add(new Label(title), new PrecisionLayoutData().setFillHorizontalAlignment());
         parent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return field;
     }
@@ -134,7 +134,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     private static EditorField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars, EditorField.ChangeListener listener) {
         EditorField field = new EditorField(FieldFactory.STRING, listener, SwingConstants.LEFT, text,
                 maxChars > 0 ? Text.makeFiller(maxChars, 'M') : null, tooltip);
-        labelParent.add(new Label(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        labelParent.add(new Label(title), new PrecisionLayoutData().setFillHorizontalAlignment());
         PrecisionLayoutData ld = new PrecisionLayoutData().setFillHorizontalAlignment();
         if (maxChars == 0) {
             ld.setGrabHorizontalSpace(true);
@@ -151,7 +151,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         mPointsField = new EditorField(FieldFactory.POSINT3, (f) -> recalculateLevel(),
                 SwingConstants.LEFT, Integer.valueOf(mRow.getRawPoints()), Integer.valueOf(999),
                 I18n.text("The number of points spent on this skill"));
-        parent.add(new Label(I18n.text("Points"), mPointsField), new PrecisionLayoutData().setFillHorizontalAlignment());
+        parent.add(new Label(I18n.text("Points")), new PrecisionLayoutData().setFillHorizontalAlignment());
         parent.add(mPointsField, new PrecisionLayoutData().setFillHorizontalAlignment());
         if (forCharacter) {
             String level = Skill.getSkillDisplayLevel(mRow.getDataFile(), mRow.getLevel(),
@@ -220,11 +220,9 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         }
         Label label = new Label(I18n.text("Encumbrance"));
         parent.add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
-        PopupMenu<String> popup = createPopup(parent, items,
+        return createPopup(parent, items,
                 items[mRow.getEncumbrancePenaltyMultiplier()],
                 I18n.text("The encumbrance penalty multiplier"), (p) -> recalculateLevel());
-        label.setRefersTo(popup);
-        return popup;
     }
 
     private void createDifficultyPopups(Container parent) {
@@ -267,7 +265,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
             createPointsFields(wrapper, character != null);
         }
 
-        addLabel(parent, I18n.text("Difficulty"), null);
+        addLabel(parent, I18n.text("Difficulty"));
         parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
@@ -374,7 +372,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
 
     private void docChanged(DocumentEvent event) {
         if (mNameField.getDocument() == event.getDocument()) {
-            Label.setErrorMessage(mNameField, mNameField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
+            mNameField.setErrorMessage(mNameField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
         }
     }
 

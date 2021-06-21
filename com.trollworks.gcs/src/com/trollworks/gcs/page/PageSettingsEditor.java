@@ -86,7 +86,7 @@ public class PageSettingsEditor extends Panel {
 
     private EditorField addField(String title, Object value, Object protoValue, EditorField.ChangeListener listener) {
         EditorField field = new EditorField(FieldFactory.LENGTH, listener, SwingConstants.LEFT, value, protoValue, null);
-        add(new Label(title, field), new PrecisionLayoutData().setFillHorizontalAlignment());
+        add(new Label(title), new PrecisionLayoutData().setFillHorizontalAlignment());
         add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
@@ -95,7 +95,7 @@ public class PageSettingsEditor extends Panel {
         PopupMenu<T> popup = new PopupMenu<>(values, listener);
         popup.setSelectedItem(selection, false);
         if (title != null) {
-            add(new Label(title, popup), new PrecisionLayoutData().setFillHorizontalAlignment());
+            add(new Label(title), new PrecisionLayoutData().setFillHorizontalAlignment());
         }
         add(popup);
         return popup;

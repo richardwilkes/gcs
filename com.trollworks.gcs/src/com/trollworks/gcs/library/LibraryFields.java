@@ -129,7 +129,7 @@ public class LibraryFields implements DocumentListener {
     private EditorField addLabelAndField(String title, String value, int columns) {
         EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, value, null);
         field.getDocument().addDocumentListener(this);
-        Label label = new Label(title, field);
+        Label label = new Label(title);
         mOwner.add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
         mOwner.add(field, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment().setHorizontalSpan(columns));
         mComps.add(label);
@@ -172,8 +172,8 @@ public class LibraryFields implements DocumentListener {
     }
 
     private static boolean adjustColors(EditorField field, boolean valid) {
-        field.setForeground(valid ? ThemeColor.ON_EDITABLE : ThemeColor.ON_WARNING);
-        field.setBackground(valid ? ThemeColor.EDITABLE : ThemeColor.WARNING);
+        field.setForeground(valid ? ThemeColor.ON_EDITABLE : ThemeColor.ON_ERROR);
+        field.setBackground(valid ? ThemeColor.EDITABLE : ThemeColor.ERROR);
         return !valid;
     }
 

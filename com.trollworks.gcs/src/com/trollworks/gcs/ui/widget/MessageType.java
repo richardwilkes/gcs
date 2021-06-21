@@ -24,7 +24,7 @@ public enum MessageType {
 
         @Override
         Color getColor() {
-            return ThemeColor.WARNING;
+            return ThemeColor.ERROR;
         }
     },
     WARNING {

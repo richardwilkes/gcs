@@ -99,7 +99,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
                 mRow.getDuration(), I18n.text("The duration of the spell once its cast"), null);
         createPointsFields(panel);
         mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this spell"), this);
-        panel.add(new Label(I18n.text("Notes"), mNotesField), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
+        panel.add(new Label(I18n.text("Notes")), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
         wrapper = new Panel(new PrecisionLayout().setMargins(0));
         mCategoriesField = createField(panel, wrapper, I18n.text("Categories"),
@@ -140,7 +140,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
                 mLevelField.setEnabled(false);
             }
         }
-        addLabel(parent, I18n.text("Difficulty"), null);
+        addLabel(parent, I18n.text("Difficulty"));
         parent.add(panel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
     }
 
@@ -201,7 +201,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
     public void changedUpdate(DocumentEvent event) {
         Document doc = event.getDocument();
         if (doc == mBaseSkillNameField.getDocument()) {
-            Label.setErrorMessage(mBaseSkillNameField, mBaseSkillNameField.getText().trim().isEmpty() ? I18n.text("The base skill field may not be empty") : null);
+            mBaseSkillNameField.setErrorMessage(mBaseSkillNameField.getText().trim().isEmpty() ? I18n.text("The base skill field may not be empty") : null);
         } else {
             super.changedUpdate(event);
         }

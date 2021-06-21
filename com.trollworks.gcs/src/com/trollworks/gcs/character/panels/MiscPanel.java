@@ -40,7 +40,7 @@ public class MiscPanel extends DropPanel {
     }
 
     private void createTimestampField(CharacterSheet sheet, long timeStampseconds, String title) {
-        add(new PageLabel(title, null), new PrecisionLayoutData().setEndHorizontalAlignment());
+        add(new PageLabel(title), new PrecisionLayoutData().setEndHorizontalAlignment());
         add(new PageField(FieldFactory.DATETIME, Long.valueOf(timeStampseconds), sheet, SwingConstants.LEFT, null), createFieldLayoutData());
     }
 

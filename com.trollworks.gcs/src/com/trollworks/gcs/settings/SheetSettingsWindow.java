@@ -262,7 +262,7 @@ public final class SheetSettingsWindow extends BaseWindow implements DocumentLis
         PopupMenu<E> popup = new PopupMenu<>(values, listener);
         popup.setToolTipText(tooltip);
         popup.setSelectedItem(choice, false);
-        panel.add(new Label(title, popup), new PrecisionLayoutData().setFillHorizontalAlignment());
+        panel.add(new Label(title), new PrecisionLayoutData().setFillHorizontalAlignment());
         panel.add(popup);
         return popup;
     }

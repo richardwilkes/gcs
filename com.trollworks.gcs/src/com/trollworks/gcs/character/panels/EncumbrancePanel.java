@@ -24,6 +24,7 @@ import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
+import com.trollworks.gcs.ui.widget.Separator;
 import com.trollworks.gcs.ui.widget.Wrapper;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
@@ -42,6 +43,10 @@ public class EncumbrancePanel extends DropPanel {
      */
     public EncumbrancePanel(CharacterSheet sheet) {
         super(new PrecisionLayout().setColumns(8).setHorizontalSpacing(2).setVerticalSpacing(0).setMargins(0), I18n.text("Encumbrance, Move & Dodge"), true);
+
+        Separator sep = new Separator();
+        add(sep, new PrecisionLayoutData().setHorizontalSpan(8).setHorizontalAlignment(PrecisionLayoutAlignment.FILL).setGrabHorizontalSpace(true));
+        addHorizontalBackground(sep, ThemeColor.DIVIDER);
 
         PageHeader header = new PageHeader(I18n.text("Level"), I18n.text("The encumbrance level"));
         add(header, new PrecisionLayoutData().setHorizontalSpan(2).setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE).setGrabHorizontalSpace(true));
@@ -73,8 +78,8 @@ public class EncumbrancePanel extends DropPanel {
             Color backColor;
             if (current == encumbrance) {
                 if (character.isCarryingGreaterThanMaxLoad(false)) {
-                    textColor = ThemeColor.ON_WARNING;
-                    backColor = ThemeColor.WARNING;
+                    textColor = ThemeColor.ON_OVERLOADED;
+                    backColor = ThemeColor.OVERLOADED;
                 } else {
                     textColor = ThemeColor.ON_CURRENT;
                     backColor = ThemeColor.MARKER;
@@ -84,10 +89,11 @@ public class EncumbrancePanel extends DropPanel {
                 backColor = band ? ThemeColor.BANDING : ThemeColor.CONTENT;
             }
             band = !band;
-            PageLabel label = new PageLabel(encumbrance == current ? "\uf24e" : " ", textColor, header);
+            PageLabel label = new PageLabel(encumbrance == current ? "\uf24e" : " ", textColor);
             label.setThemeFont(ThemeFont.ENCUMBRANCE_MARKER);
             add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
-            PageLabel level = new PageLabel(MessageFormat.format("{0} {1}", Numbers.format(-encumbrance.getEncumbrancePenalty()), encumbrance), textColor, header);
+            PageLabel level = new PageLabel(MessageFormat.format("{0} {1}",
+                    Numbers.format(-encumbrance.getEncumbrancePenalty()), encumbrance), textColor);
             add(level, new PrecisionLayoutData().setGrabHorizontalSpace(true));
             addHorizontalBackground(level, backColor);
             createDivider();
@@ -106,6 +112,7 @@ public class EncumbrancePanel extends DropPanel {
 
     private void addPageField(PageField field, Color textColor, Color backColor) {
         field.setForeground(textColor);
+        field.setDisabledTextColor(textColor);
         field.setBackground(backColor);
         add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
     }
