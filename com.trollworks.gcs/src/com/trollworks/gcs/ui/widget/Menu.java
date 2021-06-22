@@ -622,7 +622,7 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
         PopupFactory factory = PopupFactory.getSharedInstance();
         mPopup = factory.getPopup(owner, this, pt.x, pt.y);
         mPopup.show();
-        MouseCapture.start(owner, this, null);
+        MouseCapture.start(owner, this, this, null);
         mInitialFocusAttemptsRemaining = 5;
         tryInitialFocus();
     }
