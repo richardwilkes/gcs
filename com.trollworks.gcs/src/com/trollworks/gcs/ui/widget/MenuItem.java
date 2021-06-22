@@ -21,6 +21,7 @@ import com.trollworks.gcs.ui.border.EmptyBorder;
 import java.awt.Container;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import javax.swing.JRootPane;
 
 public class MenuItem extends Label {
     private Command           mCommand;
@@ -75,7 +76,6 @@ public class MenuItem extends Label {
         if (mHighlighted != highlighted) {
             mHighlighted = highlighted;
             setStdColors();
-            repaint();
         }
     }
 
@@ -92,11 +92,16 @@ public class MenuItem extends Label {
 
     @Override
     public void repaint(long tm, int x, int y, int width, int height) {
-        Container parent = getParent();
-        if (parent != null) {
-            Rectangle bounds = new Rectangle(x, y, width, height);
-            UIUtilities.convertRectangle(bounds, this, parent);
-            parent.repaint(tm, bounds.x, bounds.y, bounds.width, bounds.height);
+        // Redirect the repaint to the top level manually, since things don't work correctly
+        // otherwise -- for no apparent reason that I can determine.
+        JRootPane root = getRootPane();
+        if (root != null) {
+            Container parent = root.getParent();
+            if (parent != null) {
+                Rectangle bounds = new Rectangle(x, y, width, height);
+                UIUtilities.convertRectangle(bounds, this, parent);
+                parent.repaint(tm, bounds.x, bounds.y, bounds.width, bounds.height);
+            }
         }
     }
 }
