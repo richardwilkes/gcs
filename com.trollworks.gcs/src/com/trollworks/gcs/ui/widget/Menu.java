@@ -186,7 +186,14 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
 
     @Override
     public void mousePressed(MouseEvent event) {
-        // Unused
+        Rectangle bounds = getBounds();
+        bounds.x = 0;
+        bounds.y = 0;
+        Point pt = event.getPoint();
+        if (!bounds.contains(pt)) {
+            processMouseOver(pt);
+            close();
+        }
     }
 
     @Override
