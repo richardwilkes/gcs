@@ -12,7 +12,6 @@
 package com.trollworks.gcs.ui;
 
 import com.trollworks.gcs.settings.Settings;
-import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.SafeFileUpdater;
 import com.trollworks.gcs.utility.json.Json;
@@ -285,8 +284,8 @@ public final class Colors {
         try (BufferedReader in = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
             JsonMap m       = Json.asMap(Json.parse(in));
             int     version = m.getInt(Settings.VERSION);
-            if (version >= MINIMUM_VERSION && version <= CURRENT_VERSION) {
-                load(m);
+            if (version >= MINIMUM_VERSION && version <= CURRENT_VERSION && m.has(Settings.COLORS)) {
+                load(m.getMap(Settings.COLORS));
             }
         }
     }
@@ -390,7 +389,6 @@ public final class Colors {
      */
     public static void setCurrentThemeColors(Colors colors) {
         CURRENT = new Colors(colors);
-        WindowUtils.repaintAll();
     }
 
     private static void add(String name, String rgb) {

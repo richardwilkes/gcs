@@ -62,7 +62,7 @@ public final class Settings extends ChangeableData {
     private static final String DEFAULT_PLAYER_NAME             = "default_player_name";
     private static final String DEFAULT_TECH_LEVEL              = "default_tech_level";
     private static final String DIVIDER_POSITION                = "divider_position";
-    private static final String FONTS                           = "fonts";
+    public static final  String FONTS                           = "fonts";
     private static final String GURPS_CALCULATOR_KEY            = "gurps_calculator_key";
     private static final String IMAGE_RESOLUTION                = "image_resolution";
     private static final String INCLUDE_UNSPENT_POINTS_IN_TOTAL = "include_unspent_points_in_total";

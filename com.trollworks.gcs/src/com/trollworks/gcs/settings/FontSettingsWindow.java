@@ -11,55 +11,47 @@
 
 package com.trollworks.gcs.settings;
 
-import com.trollworks.gcs.menu.file.CloseHandler;
+import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.ThemeFont;
-import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BaseWindow;
-import com.trollworks.gcs.ui.widget.Button;
 import com.trollworks.gcs.ui.widget.FontPanel;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.LayoutConstants;
+import com.trollworks.gcs.ui.widget.Menu;
+import com.trollworks.gcs.ui.widget.MenuItem;
+import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.ui.widget.Panel;
-import com.trollworks.gcs.ui.widget.ScrollPanel;
-import com.trollworks.gcs.ui.widget.WindowUtils;
+import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
+import com.trollworks.gcs.utility.PathUtils;
+import com.trollworks.gcs.utility.text.NumericComparator;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /** A window for editing font settings. */
-public final class FontSettingsWindow extends BaseWindow implements CloseHandler {
-    private static FontSettingsWindow INSTANCE;
-    private        List<FontTracker>  mFontPanels;
-    private        Button             mResetButton;
-    private        boolean            mIgnore;
+public final class FontSettingsWindow extends SettingsWindow {
+    private List<FontTracker> mFontPanels;
+    private boolean           mIgnore;
 
-    /** Displays the theme settings window. */
-    public static void display() {
-        if (!UIUtilities.inModalState()) {
-            FontSettingsWindow wnd;
-            synchronized (FontSettingsWindow.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = new FontSettingsWindow();
-                }
-                wnd = INSTANCE;
-            }
-            wnd.setVisible(true);
-        }
+    public FontSettingsWindow() {
+        super(I18n.text("Font Settings"));
     }
 
-    private FontSettingsWindow() {
-        super(I18n.text("Font Settings"));
-        Panel panel = new Panel(new PrecisionLayout().setColumns(2).setMargins(LayoutConstants.WINDOW_BORDER_INSET, LayoutConstants.WINDOW_BORDER_INSET, 0, LayoutConstants.WINDOW_BORDER_INSET), false);
+    @Override
+    protected Panel createContent() {
+        Panel panel = new Panel(new PrecisionLayout().setColumns(2).
+                setMargins(LayoutConstants.WINDOW_BORDER_INSET), false);
         mFontPanels = new ArrayList<>();
         for (ThemeFont font : Fonts.ALL) {
             if (font.isEditable()) {
@@ -69,68 +61,117 @@ public final class FontSettingsWindow extends BaseWindow implements CloseHandler
                 mFontPanels.add(tracker);
             }
         }
-        getContentPane().add(new ScrollPanel(panel), BorderLayout.CENTER);
-        addResetPanel();
-        adjustResetButton();
-        establishSizing();
-        WindowUtils.packAndCenterWindowOn(this, null);
-    }
-
-    private void addResetPanel() {
-        Panel panel = new Panel(new FlowLayout(FlowLayout.CENTER));
-        panel.setBorder(new EmptyBorder(LayoutConstants.WINDOW_BORDER_INSET));
-        mResetButton = new Button(I18n.text("Reset to Factory Settings"), (btn) -> resetFonts());
-        panel.add(mResetButton);
-        getContentPane().add(panel, BorderLayout.SOUTH);
+        return panel;
     }
 
     @Override
-    public void establishSizing() {
-        pack();
-        int width = getSize().width;
-        setMinimumSize(new Dimension(width, 200));
-        setMaximumSize(new Dimension(width, getPreferredSize().height));
+    protected boolean shouldResetBeEnabled() {
+        for (ThemeFont font : Fonts.ALL) {
+            if (font.isEditable() && !font.getFont().equals(Fonts.defaultThemeFonts().getFont(font.getIndex()))) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    private void resetFonts() {
+    @Override
+    protected void reset() {
+        resetTo(Fonts.defaultThemeFonts());
+    }
+
+    private void resetTo(Fonts fonts) {
         mIgnore = true;
         for (FontTracker tracker : mFontPanels) {
-            tracker.reset();
+            tracker.resetTo(fonts);
         }
         mIgnore = false;
         BaseWindow.forceRevalidateAndRepaint();
         adjustResetButton();
     }
 
-    private void adjustResetButton() {
-        boolean enabled = false;
-        for (ThemeFont font : Fonts.ALL) {
-            if (font.isEditable() && !font.getFont().equals(Fonts.defaultThemeFonts().getFont(font.getIndex()))) {
-                enabled = true;
-                break;
+    @Override
+    protected Menu createActionMenu() {
+        Menu menu = new Menu();
+        menu.addItem(new MenuItem(I18n.text("Import…"), (p) -> {
+            Path path = Modal.presentOpenFileDialog(this, I18n.text("Import…"),
+                    Dirs.THEME, FileType.FONT_SETTINGS.getFilter());
+            if (path != null) {
+                try {
+                    resetTo(new Fonts(path));
+                } catch (IOException ioe) {
+                    Log.error(ioe);
+                    Modal.showError(this, I18n.text("Unable to import font settings."));
+                }
+            }
+        }));
+        menu.addItem(new MenuItem(I18n.text("Export…"), (p) -> {
+            Path path = Modal.presentSaveFileDialog(this, I18n.text("Export…"), Dirs.THEME,
+                    FileType.FONT_SETTINGS.getUntitledDefaultFileName(),
+                    FileType.FONT_SETTINGS.getFilter());
+            if (path != null) {
+                try {
+                    Fonts.currentThemeFonts().save(path);
+                } catch (Exception exception) {
+                    Log.error(exception);
+                    Modal.showError(this, I18n.text("Unable to export font settings."));
+                }
+            }
+        }));
+        Settings.getInstance(); // Just to ensure the libraries list is initialized
+        for (Library lib : Library.LIBRARIES) {
+            Path dir = lib.getPath().resolve(Dirs.THEME.getDefaultPath().getFileName());
+            if (Files.isDirectory(dir)) {
+                List<FontSetData> list = new ArrayList<>();
+                // IMPORTANT: On Windows, calling any of the older methods to list the contents of a
+                // directory results in leaving state around that prevents future move & delete
+                // operations. Only use this style of access for directory listings to avoid that.
+                try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
+                    for (Path path : stream) {
+                        if (FileType.FONT_SETTINGS.matchExtension(PathUtils.getExtension(path))) {
+                            try {
+                                list.add(new FontSetData(PathUtils.getLeafName(path, false), new Fonts(path)));
+                            } catch (IOException ioe) {
+                                Log.error("unable to load " + path, ioe);
+                            }
+                        }
+                    }
+                } catch (IOException exception) {
+                    Log.error(exception);
+                }
+                if (!list.isEmpty()) {
+                    Collections.sort(list);
+                    menu.addSeparator();
+                    MenuItem item = new MenuItem(dir.getParent().getFileName().toString(), null);
+                    item.setEnabled(false);
+                    menu.addItem(item);
+                    for (FontSetData choice : list) {
+                        menu.add(new MenuItem(choice.toString(),
+                                (p) -> resetTo(choice.mFonts)));
+                    }
+                }
             }
         }
-        mResetButton.setEnabled(enabled);
+        return menu;
     }
 
-    @Override
-    public boolean mayAttemptClose() {
-        return true;
-    }
+    private static class FontSetData implements Comparable<FontSetData> {
+        String mName;
+        Fonts  mFonts;
 
-    @Override
-    public boolean attemptClose() {
-        windowClosing(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
-        return true;
-    }
-
-
-    @Override
-    public void dispose() {
-        synchronized (FontSettingsWindow.class) {
-            INSTANCE = null;
+        FontSetData(String name, Fonts fonts) {
+            mName = name;
+            mFonts = fonts;
         }
-        super.dispose();
+
+        @Override
+        public int compareTo(FontSetData other) {
+            return NumericComparator.CASELESS_COMPARATOR.compare(mName, other.mName);
+        }
+
+        @Override
+        public String toString() {
+            return mName;
+        }
     }
 
     private class FontTracker extends FontPanel {
@@ -148,8 +189,8 @@ public final class FontSettingsWindow extends BaseWindow implements CloseHandler
             });
         }
 
-        void reset() {
-            Font font = Fonts.defaultThemeFonts().getFont(mIndex);
+        void resetTo(Fonts fonts) {
+            Font font = fonts.getFont(mIndex);
             setCurrentFont(font);
             Fonts.currentThemeFonts().setFont(mIndex, font);
         }

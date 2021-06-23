@@ -14,13 +14,22 @@ package com.trollworks.gcs.ui;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
+import com.trollworks.gcs.utility.SafeFileUpdater;
+import com.trollworks.gcs.utility.json.Json;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +53,9 @@ public final class Fonts {
     /** The name of the Font Awesome Solid font. */
     public static final String FONT_AWESOME_SOLID   = "Font Awesome 5 Free Solid";
 
-    public static final List<ThemeFont> ALL = new ArrayList<>();
+    public static final  List<ThemeFont> ALL             = new ArrayList<>();
+    private static final int             MINIMUM_VERSION = 1;
+    private static final int             CURRENT_VERSION = 1;
 
     private static final Font  FALLBACK_FONT = new Font(Font.DIALOG, Font.PLAIN, 12);
     private static final Fonts DEFAULTS;
@@ -138,9 +149,7 @@ public final class Fonts {
      * @param fonts The theme fonts to set as current.
      */
     public static void setCurrentThemeFonts(Fonts fonts) {
-        if (CURRENT != fonts) {
-            CURRENT = fonts;
-        }
+        CURRENT = new Fonts(fonts);
     }
 
     private Fonts() {
@@ -161,17 +170,62 @@ public final class Fonts {
     }
 
     /**
+     * Creates theme fonts from a file.
+     *
+     * @param path The path to load the theme fonts from.
+     */
+    public Fonts(Path path) throws IOException {
+        this(DEFAULTS);
+        try (BufferedReader in = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+            JsonMap m       = Json.asMap(Json.parse(in));
+            int     version = m.getInt(Settings.VERSION);
+            if (version >= MINIMUM_VERSION && version <= CURRENT_VERSION && m.has(Settings.FONTS)) {
+                load(m.getMap(Settings.FONTS));
+            }
+        }
+    }
+
+    /**
      * Creates theme fonts from a JsonMap.
      *
      * @param m The map to load the theme fonts from.
      */
     public Fonts(JsonMap m) {
         this(DEFAULTS);
+        load(m);
+    }
+
+    private void load(JsonMap m) {
         for (ThemeFont one : ALL) {
             if (one.isEditable() && m.has(one.getKey())) {
                 setFont(one.getIndex(), new FontDesc(m.getMap(one.getKey())).create());
             }
         }
+    }
+
+    /**
+     * Save the theme fonts to a file.
+     *
+     * @param path The path to write to.
+     */
+    public void save(Path path) throws IOException {
+        SafeFileUpdater trans = new SafeFileUpdater();
+        trans.begin();
+        try {
+            Files.createDirectories(path.getParent());
+            File file = trans.getTransactionFile(path.toFile());
+            try (JsonWriter w = new JsonWriter(new BufferedWriter(new FileWriter(file, StandardCharsets.UTF_8)), "\t")) {
+                w.startMap();
+                w.keyValue(Settings.VERSION, CURRENT_VERSION);
+                w.key(Settings.FONTS);
+                save(w);
+                w.endMap();
+            }
+        } catch (IOException ioe) {
+            trans.abort();
+            throw ioe;
+        }
+        trans.commit();
     }
 
     /**

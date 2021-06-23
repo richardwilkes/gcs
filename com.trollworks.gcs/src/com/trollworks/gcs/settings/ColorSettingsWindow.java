@@ -149,10 +149,12 @@ public final class ColorSettingsWindow extends SettingsWindow {
                 // operations. Only use this style of access for directory listings to avoid that.
                 try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
                     for (Path path : stream) {
-                        try {
-                            list.add(new ColorSetData(PathUtils.getLeafName(path, false), new Colors(path)));
-                        } catch (IOException ioe) {
-                            Log.error("unable to load " + path, ioe);
+                        if (FileType.COLOR_SETTINGS.matchExtension(PathUtils.getExtension(path))) {
+                            try {
+                                list.add(new ColorSetData(PathUtils.getLeafName(path, false), new Colors(path)));
+                            } catch (IOException ioe) {
+                                Log.error("unable to load " + path, ioe);
+                            }
                         }
                     }
                 } catch (IOException exception) {
