@@ -15,6 +15,7 @@ import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.pdfview.PDFRef;
 import com.trollworks.gcs.pdfview.PDFServer;
+import com.trollworks.gcs.settings.Dirs;
 import com.trollworks.gcs.settings.PageRefMappingsWindow;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.Selection;
@@ -110,7 +111,9 @@ public class OpenPageReferenceCommand extends Command {
             Settings prefs = Settings.getInstance();
             PDFRef   ref   = prefs.lookupPdfRef(id, true);
             if (ref == null) {
-                Path path = Modal.presentOpenFileDialog(getFocusOwner(), String.format(I18n.text("Locate the PDF file for the prefix \"%s\""), id), FileType.PDF.getFilter());
+                Path path = Modal.presentOpenFileDialog(getFocusOwner(),
+                        String.format(I18n.text("Locate the PDF file for the prefix \"%s\""), id),
+                        Dirs.PDF, FileType.PDF.getFilter());
                 if (path != null) {
                     ref = new PDFRef(id, path, 0);
                     prefs.putPdfRef(ref);

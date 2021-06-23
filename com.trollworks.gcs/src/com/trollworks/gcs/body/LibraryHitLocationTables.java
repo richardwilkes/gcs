@@ -12,6 +12,7 @@
 package com.trollworks.gcs.body;
 
 import com.trollworks.gcs.library.Library;
+import com.trollworks.gcs.settings.Dirs;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.utility.Dice;
 import com.trollworks.gcs.utility.I18n;
@@ -49,7 +50,7 @@ public final class LibraryHitLocationTables {
         HUMANOID = null;
         Settings.getInstance(); // Just to ensure the libraries list is initialized
         for (Library lib : Library.LIBRARIES) {
-            Path dir = lib.getPath().resolve("Hit Locations");
+            Path dir = lib.getPath().resolve(Dirs.HIT_LOCATIONS.getDefaultPath().getFileName());
             if (Files.isDirectory(dir)) {
                 LibraryHitLocationTables libTables = new LibraryHitLocationTables(lib);
                 List<HitLocationTable>   tables    = libTables.getTables();

@@ -61,6 +61,14 @@ public class FileType {
         return mIcon;
     }
 
+    public String getUntitledDefaultFileName() {
+        return addExtension(I18n.text("untitled"));
+    }
+
+    public String addExtension(String filename) {
+        return filename + "." + mPrimaryExtension;
+    }
+
     /** @return The primary extension of the file. */
     public String getExtension() {
         return mPrimaryExtension;

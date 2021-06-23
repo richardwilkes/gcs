@@ -13,8 +13,8 @@ package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.settings.Dirs;
 import com.trollworks.gcs.settings.QuickExport;
-import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.utility.FileType;
@@ -43,9 +43,10 @@ public final class ExportToPNGCommand extends Command {
         if (dockable != null) {
             String name = PathUtils.cleanNameForFile(dockable.getSheet().getCharacter().getProfile().getName());
             if (name.isBlank()) {
-                name = "untitled";
+                name = I18n.text("untitled");
             }
-            Path path = Modal.presentSaveFileDialog(dockable, getTitle(), Settings.getInstance().getLastDir().resolve(name), FileType.PNG.getFilter());
+            Path path = Modal.presentSaveFileDialog(dockable, getTitle(), Dirs.GENERAL,
+                    name + "." + FileType.PNG.getExtension(), FileType.PNG.getFilter());
             if (path != null) {
                 performExport(dockable, path);
             }

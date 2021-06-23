@@ -12,7 +12,7 @@
 package com.trollworks.gcs.library;
 
 import com.trollworks.gcs.character.FieldFactory;
-import com.trollworks.gcs.settings.Settings;
+import com.trollworks.gcs.settings.Dirs;
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
@@ -22,6 +22,7 @@ import com.trollworks.gcs.ui.widget.Separator;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Platform;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -66,12 +67,14 @@ public class LibraryFields implements DocumentListener {
         mRepoName = addLabelAndField(I18n.text("Repo:"), repo, 1);
         FontAwesomeButton button = new FontAwesomeButton("\uf689", I18n.text("Locate"), () -> {
             String       currentPath = mPath.getText();
-            Path         current     = currentPath.isBlank() ? Settings.getInstance().getLastDir() : Paths.get(currentPath).getParent().toAbsolutePath();
+            Path         current     = currentPath.isBlank() ? Dirs.GENERAL.get() : Paths.get(currentPath).getParent().toAbsolutePath();
             JFileChooser dialog      = new JFileChooser(current.toString());
             dialog.setDialogTitle(mTitle.getText());
             dialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             if (dialog.showDialog(mOwner, I18n.text("Select")) == JFileChooser.APPROVE_OPTION) {
-                mPath.setText(dialog.getSelectedFile().getAbsolutePath());
+                File selectedFile = dialog.getSelectedFile();
+                Dirs.GENERAL.set(selectedFile.toPath().getParent());
+                mPath.setText(selectedFile.getAbsolutePath());
                 mPath.requestFocus();
                 mPath.selectAll();
             }

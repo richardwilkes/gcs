@@ -15,8 +15,8 @@ import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.character.TextTemplate;
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.settings.Dirs;
 import com.trollworks.gcs.settings.QuickExport;
-import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.utility.I18n;
@@ -44,11 +44,12 @@ public class ExportToTextTemplateCommand extends Command {
         SheetDockable dockable = getTarget(SheetDockable.class);
         if (dockable != null) {
             String name = PathUtils.cleanNameForFile(dockable.getSheet().getCharacter().getProfile().getName());
-            if (name.isBlank()) {
-                name = "untitled";
-            }
             String ext  = PathUtils.getExtension(mTemplatePath);
-            Path   path = Modal.presentSaveFileDialog(dockable, getTitle(), Settings.getInstance().getLastDir().resolve(name), new FileNameExtensionFilter(ext + I18n.text(" Files"), ext));
+            if (name.isBlank()) {
+                name = I18n.text("untitled") + "." + ext;
+            }
+            Path path = Modal.presentSaveFileDialog(dockable, getTitle(), Dirs.GENERAL, name,
+                    new FileNameExtensionFilter(ext + I18n.text(" Files"), ext));
             if (path != null) {
                 performExport(dockable, mTemplatePath, path);
             }

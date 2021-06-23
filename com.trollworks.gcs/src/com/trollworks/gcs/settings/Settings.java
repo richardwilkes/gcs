@@ -69,7 +69,7 @@ public final class Settings extends ChangeableData {
     private static final String INITIAL_POINTS                  = "initial_points";
     private static final String INITIAL_UI_SCALE                = "initial_ui_scale";
     private static final String KEY_BINDINGS                    = "key_bindings";
-    private static final String LAST_DIR                        = "last_dir";
+    private static final String LAST_DIRS                       = "last_dirs";
     private static final String LAST_SEEN_GCS_VERSION           = "last_seen_gcs_version";
     private static final String LIBRARIES                       = "libraries";
     private static final String LIBRARY_EXPLORER                = "library_explorer";
@@ -78,6 +78,7 @@ public final class Settings extends ChangeableData {
     private static final String QUICK_EXPORTS                   = "quick_exports";
     private static final String RECENT_FILES                    = "recent_files";
     private static final String SHEET_SETTINGS                  = "sheet_settings";
+    private static final String THEME                           = "theme";
     private static final String TOOLTIP_TIMEOUT                 = "tooltip_timeout";
     public static final  String VERSION                         = "version";
     private static final String WINDOW_POSITIONS                = "window_positions";
@@ -104,7 +105,6 @@ public final class Settings extends ChangeableData {
     private        Scales                           mInitialUIScale;
     private        List<Path>                       mRecentFiles;
     private        Map<String, QuickExport>         mQuickExports;
-    private        Path                             mLastDir;
     private        Map<String, PDFRef>              mPdfRefs;
     private        Map<String, String>              mKeyBindingOverrides;
     private        Map<String, BaseWindow.Position> mBaseWindowPositions;
@@ -159,7 +159,6 @@ public final class Settings extends ChangeableData {
         mInitialUIScale = DEFAULT_INITIAL_UI_SCALE;
         mRecentFiles = new ArrayList<>();
         mQuickExports = new HashMap<>();
-        mLastDir = Paths.get(System.getProperty("user.home", ".")).normalize().toAbsolutePath();
         mGURPSCalculatorKey = "";
         mDefaultPlayerName = DEFAULT_DEFAULT_PLAYER_NAME;
         mDefaultTechLevel = DEFAULT_DEFAULT_TECH_LEVEL;
@@ -208,7 +207,9 @@ public final class Settings extends ChangeableData {
                                 mRecentFiles.add(Paths.get(a.getString(i)).normalize().toAbsolutePath());
                             }
                         }
-                        mLastDir = Paths.get(m.getStringWithDefault(LAST_DIR, mLastDir.toString())).normalize().toAbsolutePath();
+                        if (m.has(LAST_DIRS)) {
+                            Dirs.load(m.getMap(LAST_DIRS));
+                        }
                         if (m.has(PDF_REFS)) {
                             JsonMap m2 = m.getMap(PDF_REFS);
                             for (String key : m2.keySet()) {
@@ -223,11 +224,14 @@ public final class Settings extends ChangeableData {
                                 }
                             }
                         }
-                        if (m.has(COLORS)) {
-                            Colors.setCurrentThemeColors(new Colors(m.getMap(COLORS)));
-                        }
-                        if (m.has(FONTS)) {
-                            Fonts.setCurrentThemeFonts(new Fonts(m.getMap(FONTS)));
+                        if (m.has(THEME)) {
+                            JsonMap m2 = m.getMap(THEME);
+                            if (m2.has(COLORS)) {
+                                Colors.setCurrentThemeColors(new Colors(m2.getMap(COLORS)));
+                            }
+                            if (m2.has(FONTS)) {
+                                Fonts.setCurrentThemeFonts(new Fonts(m2.getMap(FONTS)));
+                            }
                         }
                         if (m.has(WINDOW_POSITIONS)) {
                             JsonMap m2 = m.getMap(WINDOW_POSITIONS);
@@ -331,7 +335,7 @@ public final class Settings extends ChangeableData {
                         w.value(p.toString());
                     }
                     w.endArray();
-                    w.keyValue(LAST_DIR, mLastDir.toString());
+                    Dirs.save(LAST_DIRS, w);
                     w.key(PDF_REFS);
                     w.startMap();
                     for (Map.Entry<String, PDFRef> entry : mPdfRefs.entrySet()) {
@@ -362,10 +366,13 @@ public final class Settings extends ChangeableData {
                     w.keyValue(IMAGE_RESOLUTION, mImageResolution);
                     w.keyValue(INCLUDE_UNSPENT_POINTS_IN_TOTAL, mIncludeUnspentPointsInTotal);
                     w.keyValue(AUTO_FILL_PROFILE, mAutoFillProfile);
+                    w.key(THEME);
+                    w.startMap();
                     w.key(COLORS);
                     Colors.currentThemeColors().save(w);
                     w.key(FONTS);
                     Fonts.currentThemeFonts().save(w);
+                    w.endMap();
                     pruneQuickExports();
                     if (!mQuickExports.isEmpty()) {
                         w.key(QUICK_EXPORTS);
@@ -484,17 +491,6 @@ public final class Settings extends ChangeableData {
     public void setRecentFiles(List<Path> recentFiles) {
         mRecentFiles = recentFiles;
         mLastRecentFilesUpdateCounter++;
-    }
-
-    public Path getLastDir() {
-        if (!Files.isDirectory(mLastDir)) {
-            mLastDir = Paths.get(System.getProperty("user.home", ".")).normalize().toAbsolutePath();
-        }
-        return mLastDir;
-    }
-
-    public void setLastDir(Path lastDir) {
-        mLastDir = lastDir.normalize().toAbsolutePath();
     }
 
     public String getGURPSCalculatorKey() {

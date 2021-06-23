@@ -152,7 +152,7 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
     }
 
     private void importData() {
-        Path path = Modal.presentOpenFileDialog(this, I18n.text("Import…"),
+        Path path = Modal.presentOpenFileDialog(this, I18n.text("Import…"), Dirs.HIT_LOCATIONS,
                 FileType.HIT_LOCATIONS.getFilter());
         if (path != null) {
             try {
@@ -165,8 +165,8 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
     }
 
     private void exportData() {
-        Path path = Modal.presentSaveFileDialog(this, I18n.text("Export…"),
-                Settings.getInstance().getLastDir().resolve(I18n.text("hit_locations")),
+        Path path = Modal.presentSaveFileDialog(this, I18n.text("Export…"), Dirs.HIT_LOCATIONS,
+                FileType.HIT_LOCATIONS.getUntitledDefaultFileName(),
                 FileType.HIT_LOCATIONS.getFilter());
         if (path != null) {
             SafeFileUpdater transaction = new SafeFileUpdater();

@@ -149,7 +149,7 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
         menu.addItem(new MenuItem(I18n.text("Export…"), (p) -> exportData()));
         Settings.getInstance(); // Just to ensure the libraries list is initialized
         for (Library lib : Library.LIBRARIES) {
-            Path dir = lib.getPath().resolve("Attributes");
+            Path dir = lib.getPath().resolve(Dirs.ATTRIBUTES.getDefaultPath().getFileName());
             if (Files.isDirectory(dir)) {
                 List<AttributeSet> list = new ArrayList<>();
                 // IMPORTANT: On Windows, calling any of the older methods to list the contents of a
@@ -187,7 +187,7 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
     }
 
     private void importData() {
-        Path path = Modal.presentOpenFileDialog(this, I18n.text("Import…"),
+        Path path = Modal.presentOpenFileDialog(this, I18n.text("Import…"), Dirs.ATTRIBUTES,
                 FileType.ATTRIBUTE_SETTINGS.getFilter());
         if (path != null) {
             try {
@@ -201,8 +201,8 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
     }
 
     private void exportData() {
-        Path path = Modal.presentSaveFileDialog(this, I18n.text("Export…"),
-                Settings.getInstance().getLastDir().resolve(I18n.text("attribute_settings")),
+        Path path = Modal.presentSaveFileDialog(this, I18n.text("Export…"), Dirs.ATTRIBUTES,
+                FileType.ATTRIBUTE_SETTINGS.getUntitledDefaultFileName(),
                 FileType.ATTRIBUTE_SETTINGS.getFilter());
         if (path != null) {
             SafeFileUpdater transaction = new SafeFileUpdater();

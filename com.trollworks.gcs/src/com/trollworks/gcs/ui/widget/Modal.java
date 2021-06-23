@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.settings.Dirs;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.UIUtilities;
@@ -301,13 +302,14 @@ public class Modal extends JDialog {
      *
      * @param comp    The parent {@link Component} of the dialog. May be {@code null}.
      * @param title   The title to use. May be {@code null}.
+     * @param dirs    The directory to start in. May be {@code null}.
      * @param filters The file filters to make available. If there are none, then the {@code
      *                showAllFilter} flag will be forced to {@code true}.
      * @return The chosen {@link Path} or {@code null}.
      */
-    public static Path presentOpenFileDialog(Component comp, String title, FileNameExtensionFilter... filters) {
-        FileDialog dialog = createFileDialog(comp, title, FileDialog.LOAD, null, filters);
-        Path       path   = presentFileDialog(dialog);
+    public static Path presentOpenFileDialog(Component comp, String title, Dirs dirs, FileNameExtensionFilter... filters) {
+        FileDialog dialog = createFileDialog(comp, title, FileDialog.LOAD, dirs, filters);
+        Path       path   = presentFileDialog(dialog, dirs);
         if (path != null) {
             Settings.getInstance().addRecentFile(path);
         }
@@ -317,19 +319,20 @@ public class Modal extends JDialog {
     /**
      * Creates a new save file dialog.
      *
-     * @param comp          The parent {@link Component} of the dialog. May be {@code null}.
-     * @param title         The title to use. May be {@code null}.
-     * @param suggestedFile The suggested file to save as. May be {@code null}.
-     * @param filters       The file filters to make available. If there are none, then the {@code
-     *                      showAllFilter} flag will be forced to {@code true}.
+     * @param comp              The parent {@link Component} of the dialog. May be {@code null}.
+     * @param title             The title to use. May be {@code null}.
+     * @param dirs              The directory to show initially. May be {@code null}.
+     * @param suggestedFileName The suggested file name to save as. May be {@code null}.
+     * @param filters           The file filters to make available. If there are none, then the
+     *                          {@code showAllFilter} flag will be forced to {@code true}.
      * @return The chosen {@link Path} or {@code null}.
      */
-    public static Path presentSaveFileDialog(Component comp, String title, Path suggestedFile, FileNameExtensionFilter... filters) {
-        FileDialog dialog = createFileDialog(comp, title, FileDialog.SAVE, suggestedFile != null ? suggestedFile.getParent() : null, filters);
-        if (suggestedFile != null) {
-            dialog.setFile(PathUtils.getLeafName(suggestedFile, true));
+    public static Path presentSaveFileDialog(Component comp, String title, Dirs dirs, String suggestedFileName, FileNameExtensionFilter... filters) {
+        FileDialog dialog = createFileDialog(comp, title, FileDialog.SAVE, dirs, filters);
+        if (suggestedFileName != null && !suggestedFileName.isBlank()) {
+            dialog.setFile(PathUtils.getLeafName(suggestedFileName, true));
         }
-        Path path = presentFileDialog(dialog);
+        Path path = presentFileDialog(dialog, dirs);
         if (path != null) {
             if (!PathUtils.isNameValidForFile(PathUtils.getLeafName(path, true))) {
                 showError(comp, I18n.text("Invalid file name"));
@@ -373,7 +376,7 @@ public class Modal extends JDialog {
         }
     }
 
-    private static FileDialog createFileDialog(Component comp, String title, int mode, Path startingDir, FileNameExtensionFilter... filters) {
+    private static FileDialog createFileDialog(Component comp, String title, int mode, Dirs dirs, FileNameExtensionFilter... filters) {
         FileDialog dialog;
         Window     window = UIUtilities.getSelfOrAncestorOfType(comp, Window.class);
         if (window instanceof Frame) {
@@ -381,10 +384,10 @@ public class Modal extends JDialog {
         } else {
             dialog = new FileDialog((java.awt.Dialog) window, title, mode);
         }
-        if (startingDir == null) {
-            startingDir = Settings.getInstance().getLastDir();
+        if (dirs == null) {
+            dirs = Dirs.GENERAL;
         }
-        dialog.setDirectory(startingDir.toString());
+        dialog.setDirectory(dirs.get().toString());
         if (filters != null) {
             dialog.setFilenameFilter((File dir, String name) -> {
                 File f = new File(dir, name);
@@ -399,13 +402,16 @@ public class Modal extends JDialog {
         return dialog;
     }
 
-    private static Path presentFileDialog(FileDialog dialog) {
+    private static Path presentFileDialog(FileDialog dialog, Dirs dirs) {
         dialog.setVisible(true);
         String dir = dialog.getDirectory();
         if (dir == null) {
             return null;
         }
-        Settings.getInstance().setLastDir(Paths.get(dir).normalize().toAbsolutePath());
+        if (dirs == null) {
+            dirs = Dirs.GENERAL;
+        }
+        dirs.set(Paths.get(dir));
         String file = dialog.getFile();
         if (file == null) {
             return null;

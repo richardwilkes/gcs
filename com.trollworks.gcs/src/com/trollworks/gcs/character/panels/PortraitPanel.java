@@ -14,6 +14,7 @@ package com.trollworks.gcs.character.panels;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.Profile;
 import com.trollworks.gcs.page.DropPanel;
+import com.trollworks.gcs.settings.Dirs;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.RetinaIcon;
@@ -77,7 +78,8 @@ public class PortraitPanel extends DropPanel implements DropTargetListener {
 
     /** Allows the user to choose a portrait for their character. */
     public void choosePortrait() {
-        Path path = Modal.presentOpenFileDialog(null, I18n.text("Select A Portrait"), FileType.IMAGE_FILTERS);
+        Path path = Modal.presentOpenFileDialog(null, I18n.text("Select A Portrait"), Dirs.GENERAL,
+                FileType.IMAGE_FILTERS);
         if (path != null) {
             try {
                 mSheet.getCharacter().getProfile().setPortrait(Img.create(path));

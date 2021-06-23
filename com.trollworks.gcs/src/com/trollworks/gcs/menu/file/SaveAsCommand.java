@@ -13,9 +13,11 @@ package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.settings.Dirs;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.Modal;
+import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.PathUtils;
 
@@ -52,13 +54,13 @@ public final class SaveAsCommand extends Command {
      */
     public static void saveAs(Saveable saveable) {
         if (saveable != null) {
-            String name = PathUtils.cleanNameForFile(saveable.getSaveTitle());
+            FileType fileType = saveable.getFileType();
+            String   name     = PathUtils.cleanNameForFile(saveable.getSaveTitle());
             if (name.isBlank()) {
-                name = "untitled";
+                name = fileType.getUntitledDefaultFileName();
             }
             Path path = Modal.presentSaveFileDialog(UIUtilities.getComponentForDialog(saveable),
-                    I18n.text("Save As…"), Settings.getInstance().getLastDir().resolve(name),
-                    saveable.getFileType().getFilter());
+                    I18n.text("Save As…"), Dirs.GENERAL, name, fileType.getFilter());
             if (saveable.saveTo(path)) {
                 Settings.getInstance().addRecentFile(path);
                 LibraryExplorerDockable explorer = LibraryExplorerDockable.get();
