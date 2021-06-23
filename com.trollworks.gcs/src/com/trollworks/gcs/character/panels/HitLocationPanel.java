@@ -17,7 +17,7 @@ import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageHeader;
 import com.trollworks.gcs.page.PageLabel;
-import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
@@ -45,15 +45,15 @@ public class HitLocationPanel extends DropPanel {
 
         Separator sep = new Separator();
         add(sep, new PrecisionLayoutData().setHorizontalSpan(6).setHorizontalAlignment(PrecisionLayoutAlignment.FILL).setGrabHorizontalSpace(true));
-        addHorizontalBackground(sep, ThemeColor.DIVIDER);
+        addHorizontalBackground(sep, Colors.DIVIDER);
 
         PageHeader header = new PageHeader(I18n.text("Roll"));
         add(header, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
-        addHorizontalBackground(header, ThemeColor.HEADER);
+        addHorizontalBackground(header, Colors.HEADER);
 
         sep = new Separator(true);
         add(sep, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.FILL).setGrabVerticalSpace(true));
-        addVerticalBackground(sep, ThemeColor.DIVIDER);
+        addVerticalBackground(sep, Colors.DIVIDER);
 
         header = new PageHeader(I18n.text("Location"),
                 I18n.text("The location, along with the hit penalty for targeting it"));
@@ -61,12 +61,12 @@ public class HitLocationPanel extends DropPanel {
 
         sep = new Separator(true);
         add(sep, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.FILL).setGrabVerticalSpace(true));
-        addVerticalBackground(sep, ThemeColor.DIVIDER);
+        addVerticalBackground(sep, Colors.DIVIDER);
 
         header = new PageHeader(I18n.text("DR"));
         add(header, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
 
-        addTable(sheet, sheet.getCharacter().getSheetSettings().getHitLocations(), 0, ThemeColor.BANDING, ThemeColor.CONTENT, false);
+        addTable(sheet, sheet.getCharacter().getSheetSettings().getHitLocations(), 0, Colors.BANDING, Colors.CONTENT, false);
     }
 
     private boolean addTable(CharacterSheet sheet, HitLocationTable table, int depth, Color band1Color, Color band2Color, boolean band) {

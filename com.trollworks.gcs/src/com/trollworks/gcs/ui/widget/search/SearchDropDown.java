@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.ui.widget.search;
 
-import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.widget.EditorField;
@@ -49,13 +49,13 @@ class SearchDropDown extends ScrollPanel implements MouseListener {
         mTarget = target;
         mModel = new DefaultListModel<>();
         mList = new JList<>(mModel);
-        mList.setBackground(ThemeColor.SEARCH_LIST);
-        mList.setForeground(ThemeColor.ON_SEARCH_LIST);
+        mList.setBackground(Colors.SEARCH_LIST);
+        mList.setForeground(Colors.ON_SEARCH_LIST);
         mList.setFocusable(false);
         mList.addMouseListener(this);
         mList.setCellRenderer(renderer);
         setViewportView(mList);
-        setBorder(new LineBorder(ThemeColor.DIVIDER));
+        setBorder(new LineBorder(Colors.DIVIDER));
     }
 
     /** @return The currently selected values. */

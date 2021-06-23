@@ -11,7 +11,8 @@
 
 package com.trollworks.gcs.ui.widget.outline;
 
-import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.scale.Scale;
 
@@ -34,7 +35,7 @@ public class ListHeaderCell extends HeaderCell {
 
     @Override
     public ThemeFont getThemeFont(Row row, Column column) {
-        return ThemeFont.PAGE_LABEL_PRIMARY;
+        return Fonts.PAGE_LABEL_PRIMARY;
     }
 
     @Override
@@ -60,7 +61,7 @@ public class ListHeaderCell extends HeaderCell {
     @Override
     public Color getColor(Outline outline, Row row, Column column, boolean selected, boolean active) {
         if (mForSheet) {
-            return ThemeColor.ON_HEADER;
+            return Colors.ON_HEADER;
         }
         return super.getColor(outline, row, column, selected, active);
     }

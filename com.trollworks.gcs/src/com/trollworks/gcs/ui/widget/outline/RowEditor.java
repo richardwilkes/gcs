@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.ui.widget.outline;
 
-import com.trollworks.gcs.ui.ThemeColor;
-import com.trollworks.gcs.ui.ThemeFont;
+import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.TitledBorder;
@@ -21,6 +21,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.ActionPanel;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.LayoutConstants;
 import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
@@ -71,7 +72,7 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
                 String msg = remaining == 1 ? I18n.text("1 item remaining to be edited.") :
                         String.format(I18n.text("%s items remaining to be edited."), Numbers.format(remaining));
                 Label label = new Label(msg, SwingConstants.CENTER);
-                label.setBorder(new EmptyBorder(Modal.MARGIN, 0, 0, 0));
+                label.setBorder(new EmptyBorder(LayoutConstants.WINDOW_BORDER_INSET, 0, 0, 0));
                 content.add(label, BorderLayout.NORTH);
                 dialog.addCancelRemainingButton();
             }
@@ -118,7 +119,7 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
     protected void addContent() {
         ScrollContent outer = new ScrollContent(new PrecisionLayout().setMargins(MARGIN, MARGIN, 0, MARGIN));
         outer.setScrollableTracksViewportWidth(true);
-        outer.setBackground(ThemeColor.BACKGROUND);
+        outer.setBackground(Colors.BACKGROUND);
         addContentSelf(outer);
         if (!mIsEditable) {
             UIUtilities.disableControls(outer);
@@ -151,7 +152,7 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
     protected abstract void addContentSelf(ScrollContent outer);
 
     protected static void addSection(Container parent, JComponent section) {
-        section.setBorder(new TitledBorder(ThemeFont.LABEL_PRIMARY, section.toString()));
+        section.setBorder(new TitledBorder(Fonts.LABEL_PRIMARY, section.toString()));
         parent.add(section, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 

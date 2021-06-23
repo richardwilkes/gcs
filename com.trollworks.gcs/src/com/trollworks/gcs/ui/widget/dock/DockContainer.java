@@ -12,7 +12,7 @@
 package com.trollworks.gcs.ui.widget.dock;
 
 import com.trollworks.gcs.menu.file.CloseHandler;
-import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.Panel;
 
@@ -55,7 +55,7 @@ public class DockContainer extends Panel implements DockLayoutNode, LayoutManage
     public DockContainer(Dock dock, Dockable dockable) {
         mDock = dock;
         setLayout(this);
-        setBackground(ThemeColor.BACKGROUND);
+        setBackground(Colors.BACKGROUND);
         mHeader = new DockHeader(this);
         add(mHeader);
         add(dockable);

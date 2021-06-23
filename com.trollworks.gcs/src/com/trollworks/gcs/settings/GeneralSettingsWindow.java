@@ -32,7 +32,6 @@ import com.trollworks.gcs.utility.I18n;
 
 import java.awt.Container;
 import java.awt.Desktop;
-import java.awt.Dimension;
 import java.awt.event.WindowEvent;
 import java.net.URI;
 import java.text.MessageFormat;
@@ -195,7 +194,6 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
 
     @Override
     public void establishSizing() {
-        setMinimumSize(new Dimension(20, 20));
         setResizable(false);
     }
 

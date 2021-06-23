@@ -16,11 +16,10 @@ import com.trollworks.gcs.menu.edit.SelectAllCapable;
 import com.trollworks.gcs.menu.edit.Undoable;
 import com.trollworks.gcs.page.Page;
 import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.Selection;
 import com.trollworks.gcs.ui.TextDrawing;
-import com.trollworks.gcs.ui.ThemeColor;
-import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.scale.Scale;
@@ -168,8 +167,8 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         mModel.setIndentWidth(INDENT_WIDTH);
 
         setActionCommand(CMD_OPEN_SELECTION);
-        setBackground(ThemeColor.CONTENT);
-        setForeground(ThemeColor.ON_CONTENT);
+        setBackground(Colors.CONTENT);
+        setForeground(Colors.ON_CONTENT);
         setOpaque(true);
         setFocusable(true);
         addFocusListener(this);
@@ -318,7 +317,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         Scale     scale  = Scale.get(this);
         int       one    = scale.scale(1);
         Rectangle bounds = getDragRowInsertionMarkerBounds(parent, insertAtIndex);
-        gc.setColor(ThemeColor.DROP_AREA);
+        gc.setColor(Colors.DROP_AREA);
         int three = scale.scale(3);
         gc.fillRect(bounds.x, bounds.y + three, bounds.width, one);
         int height = bounds.height;
@@ -424,9 +423,9 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                                         colBounds.x += shift;
                                         colBounds.width -= shift;
                                         if (row.canHaveChildren()) {
-                                            gc.setColor(row == mRollRow ? ThemeColor.ROLLOVER_ICON_BUTTON : ThemeColor.ICON_BUTTON);
+                                            gc.setColor(row == mRollRow ? Colors.ROLLOVER_ICON_BUTTON : Colors.ICON_BUTTON);
                                             int disclosureSize = scale.scale(mModel.getIndentWidth());
-                                            gc.setFont(new Font(ThemeFont.FONT_AWESOME_SOLID, Font.PLAIN, disclosureSize));
+                                            gc.setFont(new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, disclosureSize));
                                             TextDrawing.draw(gc, new Rectangle(colBounds.x - disclosureSize, colBounds.y - scale.scale(2), disclosureSize, disclosureSize), getDisclosure(row), SwingConstants.CENTER, SwingConstants.CENTER);
                                         }
                                     }
@@ -459,7 +458,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
         }
         Row dragTargetRow = getDragTargetRow();
         if (dragTargetRow != null) {
-            gc.setColor(ThemeColor.DROP_AREA);
+            gc.setColor(Colors.DROP_AREA);
             gc.draw(Geometry.inset(1, getRowBounds(dragTargetRow)));
         }
     }
@@ -493,7 +492,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                         gc.setColor(getBackground(rowIndex, rowSelected, active));
                         gc.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
                         if (mDrawRowDividers) {
-                            gc.setColor(ThemeColor.DIVIDER);
+                            gc.setColor(Colors.DIVIDER);
                             gc.fillRect(bounds.x, bounds.y + bounds.height, bounds.width, one);
                         }
                     }
@@ -504,7 +503,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
 
         if (mDrawColumnDividers) {
             int x = insets.left;
-            gc.setColor(ThemeColor.DIVIDER);
+            gc.setColor(Colors.DIVIDER);
             List<Column> columns = mModel.getColumns();
             int          count   = columns.size() - 1;
             while (count > 0 && !columns.get(count).isVisible()) {
@@ -645,9 +644,9 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
      */
     public Color getBackground(int rowIndex, boolean selected, boolean active) {
         if (selected) {
-            return active ? ThemeColor.SELECTION : ThemeColor.INACTIVE_SELECTION;
+            return active ? Colors.SELECTION : Colors.INACTIVE_SELECTION;
         }
-        return (useBanding() && (rowIndex % 2 != 0)) ? ThemeColor.BANDING : ThemeColor.CONTENT;
+        return (useBanding() && (rowIndex % 2 != 0)) ? Colors.BANDING : Colors.CONTENT;
     }
 
     @Override
@@ -882,9 +881,9 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                 gc.setBackground(Colors.TRANSPARENT);
                 gc.clearRect(0, 0, bounds.width, bounds.height);
                 gc.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
-                gc.setColor(ThemeColor.CONTENT);
+                gc.setColor(Colors.CONTENT);
                 gc.fill(bounds);
-                gc.setColor(ThemeColor.DIVIDER);
+                gc.setColor(Colors.DIVIDER);
                 if (mDrawRowDividers) {
                     gc.fillRect(bounds.x, bounds.y, bounds.width, one);
                     gc.fillRect(bounds.x, bounds.y + bounds.height - one, bounds.width, one);
@@ -923,7 +922,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
             g2d.fill(bounds);
             column.drawHeaderCell(this, g2d, bounds);
             bounds.y += mHeaderPanel.getHeight();
-            g2d.setColor(ThemeColor.DIVIDER);
+            g2d.setColor(Colors.DIVIDER);
             g2d.fillRect(bounds.x, bounds.y, bounds.width, one);
             bounds.y += one;
         }
@@ -942,7 +941,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                     column.drawRowCell(this, g2d, bounds, row, false, true);
                     g2d.setClip(oldClip);
                     if (mDrawRowDividers) {
-                        g2d.setColor(ThemeColor.DIVIDER);
+                        g2d.setColor(Colors.DIVIDER);
                         g2d.fillRect(bounds.x, bounds.y + bounds.height, bounds.width, one);
                     }
                 }

@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.page;
 
-import com.trollworks.gcs.ui.ThemeColor;
-import com.trollworks.gcs.ui.ThemeFont;
+import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.widget.Label;
 
 import java.awt.Color;
@@ -25,7 +25,7 @@ public class PageLabel extends Label {
      * @param title The title of the field.
      */
     public PageLabel(String title) {   // TODO: Re-check colors here?
-        this(title, ThemeColor.ON_CONTENT);
+        this(title, Colors.ON_CONTENT);
     }
 
     /**
@@ -35,7 +35,7 @@ public class PageLabel extends Label {
      * @param tooltip The tooltip to use.
      */
     public PageLabel(String title, String tooltip) {
-        this(title, ThemeColor.ON_CONTENT);
+        this(title, Colors.ON_CONTENT);
         setToolTipText(tooltip);
     }
 
@@ -47,7 +47,7 @@ public class PageLabel extends Label {
      */
     public PageLabel(String title, Color color) {
         super(title);
-        setThemeFont(ThemeFont.PAGE_LABEL_PRIMARY);
+        setThemeFont(Fonts.PAGE_LABEL_PRIMARY);
         setForeground(color);
     }
 }

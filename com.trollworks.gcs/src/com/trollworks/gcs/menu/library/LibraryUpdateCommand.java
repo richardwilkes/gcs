@@ -14,8 +14,8 @@ package com.trollworks.gcs.menu.library;
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.library.LibraryUpdater;
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.MarkdownDocument;
-import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.widget.MessageType;
@@ -86,8 +86,8 @@ public class LibraryUpdateCommand extends Command {
             size.width = maxWidth;
             markdown.setPreferredSize(size);
         }
-        markdown.setBackground(ThemeColor.BACKGROUND);
-        markdown.setForeground(ThemeColor.ON_BACKGROUND);
+        markdown.setBackground(Colors.BACKGROUND);
+        markdown.setForeground(Colors.ON_BACKGROUND);
         markdown.setEditable(false);
         Modal dialog = Modal.prepareToShowMessage(null,
                 String.format(I18n.text("%s v%s is available!"), library.getTitle(), release.getVersion()),

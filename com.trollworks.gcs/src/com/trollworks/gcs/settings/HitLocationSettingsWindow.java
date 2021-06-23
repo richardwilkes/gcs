@@ -148,7 +148,7 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
                 menu.addItem(new MenuItem(choice.getName(), (p) -> reset(choice)));
             }
         }
-        menu.presentToUser(mMenuButton, 0);
+        menu.presentToUser(mMenuButton, 0, mMenuButton::updateRollOver);
     }
 
     private void importData() {

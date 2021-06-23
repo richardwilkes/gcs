@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.GraphicsUtilities;
-import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 
 import java.awt.Dimension;
@@ -34,7 +34,7 @@ public class Separator extends Panel {
 
     @Override
     protected void setStdColors() {
-        setBackground(ThemeColor.DIVIDER);
+        setBackground(Colors.DIVIDER);
     }
 
     @Override

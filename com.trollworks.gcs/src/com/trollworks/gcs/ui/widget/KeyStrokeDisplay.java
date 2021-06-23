@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.ui.widget;
 
-import com.trollworks.gcs.ui.ThemeColor;
-import com.trollworks.gcs.ui.ThemeFont;
+import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.utility.Platform;
@@ -48,9 +48,9 @@ public class KeyStrokeDisplay extends Label implements KeyListener, FocusListene
      */
     public KeyStrokeDisplay(KeyStroke ks) {
         super(getKeyStrokeDisplay(KeyStroke.getKeyStroke('Z', InputEvent.META_DOWN_MASK | InputEvent.ALT_DOWN_MASK | InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK)), SwingConstants.CENTER);
-        setThemeFont(ThemeFont.KEYBOARD);
+        setThemeFont(Fonts.KEYBOARD);
         setOpaque(true);
-        setBorder(new CompoundBorder(new LineBorder(ThemeColor.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
+        setBorder(new CompoundBorder(new LineBorder(Colors.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
         setFocusable(true);
         addFocusListener(this);
         addKeyListener(this);
@@ -60,8 +60,8 @@ public class KeyStrokeDisplay extends Label implements KeyListener, FocusListene
 
     @Override
     protected void setStdColors() {
-        setBackground(ThemeColor.EDITABLE);
-        setForeground(ThemeColor.ON_EDITABLE);
+        setBackground(Colors.EDITABLE);
+        setForeground(Colors.ON_EDITABLE);
     }
 
     @Override
@@ -132,11 +132,11 @@ public class KeyStrokeDisplay extends Label implements KeyListener, FocusListene
 
     @Override
     public void focusGained(FocusEvent event) {
-        setBorder(new CompoundBorder(new LineBorder(ThemeColor.ACTIVE_EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
+        setBorder(new CompoundBorder(new LineBorder(Colors.ACTIVE_EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
     }
 
     @Override
     public void focusLost(FocusEvent event) {
-        setBorder(new CompoundBorder(new LineBorder(ThemeColor.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
+        setBorder(new CompoundBorder(new LineBorder(Colors.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
     }
 }

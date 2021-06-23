@@ -21,7 +21,7 @@ import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageLabel;
 import com.trollworks.gcs.page.PagePoints;
-import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
@@ -87,6 +87,6 @@ public class AttributesPanel extends DropPanel {
     private void addDivider() {
         Wrapper panel = new Wrapper();
         add(panel, new PrecisionLayoutData().setHorizontalSpan(3).setHeightHint(1).setMargins(3, 0, 2, 0));
-        addHorizontalBackground(panel, ThemeColor.ON_CONTENT);
+        addHorizontalBackground(panel, Colors.ON_CONTENT);
     }
 }

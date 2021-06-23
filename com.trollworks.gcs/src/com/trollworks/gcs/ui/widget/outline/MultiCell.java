@@ -11,8 +11,9 @@
 
 package com.trollworks.gcs.ui.widget.outline;
 
+import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.TextDrawing;
-import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.utility.text.NumericComparator;
@@ -61,12 +62,12 @@ public class MultiCell implements Cell {
 
     /** @return The primary font. */
     public ThemeFont getPrimaryFont() {
-        return mForEditor ? ThemeFont.FIELD_PRIMARY : ThemeFont.PAGE_FIELD_PRIMARY;
+        return mForEditor ? Fonts.FIELD_PRIMARY : Fonts.PAGE_FIELD_PRIMARY;
     }
 
     /** @return The secondary font, for notes. */
     public ThemeFont getSecondaryFont() {
-        return mForEditor ? ThemeFont.FIELD_SECONDARY : ThemeFont.PAGE_FIELD_SECONDARY;
+        return mForEditor ? Fonts.FIELD_SECONDARY : Fonts.PAGE_FIELD_SECONDARY;
     }
 
     /**
@@ -110,7 +111,7 @@ public class MultiCell implements Cell {
         int       pos;
         gc.setColor(getForeground(outline, row, column, selected, active));
         gc.setFont(font);
-        Color strikeThru = row instanceof Switchable && !((Switchable) row).isEnabled() ? ThemeColor.WARNING : null;
+        Color strikeThru = row instanceof Switchable && !((Switchable) row).isEnabled() ? Colors.WARNING : null;
         pos = TextDrawing.draw(gc, insetBounds, getPrimaryText(theRow), SwingConstants.LEFT, SwingConstants.TOP, strikeThru, scale.scale(1));
         if (!notes.trim().isEmpty()) {
             insetBounds.height -= pos - insetBounds.y;
@@ -131,11 +132,11 @@ public class MultiCell implements Cell {
     public Color getForeground(Outline outline, Row row, Column column, boolean selected, boolean active) {
         if (((ListRow) row).isSatisfied()) {
             if (selected) {
-                return active ? ThemeColor.ON_SELECTION : ThemeColor.ON_INACTIVE_SELECTION;
+                return active ? Colors.ON_SELECTION : Colors.ON_INACTIVE_SELECTION;
             }
             return outline.getForeground();
         }
-        return ThemeColor.WARNING;
+        return Colors.WARNING;
     }
 
     @Override

@@ -13,7 +13,6 @@ package com.trollworks.gcs.ui.widget.dock;
 
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.MouseCapture;
-import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Cursors;
 import com.trollworks.gcs.ui.widget.Panel;
@@ -185,9 +184,9 @@ public class Dock extends Panel implements MouseListener, MouseMotionListener, P
         super.paintChildren(gc);
         if (mDragOverNode != null) {
             Rectangle bounds = getDragOverBounds();
-            gc.setColor(Colors.getWithAlpha(ThemeColor.DROP_AREA, 64));
+            gc.setColor(Colors.getWithAlpha(Colors.DROP_AREA, 64));
             gc.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
-            gc.setColor(ThemeColor.DROP_AREA);
+            gc.setColor(Colors.DROP_AREA);
             gc.drawRect(bounds.x, bounds.y, bounds.width - 1, bounds.height - 1);
             gc.drawRect(bounds.x + 1, bounds.y + 1, bounds.width - 3, bounds.height - 3);
         }
@@ -217,7 +216,7 @@ public class Dock extends Panel implements MouseListener, MouseMotionListener, P
     private static void drawHorizontalGripper(Graphics gc, DockLayoutNode secondary) {
         int x = secondary.getX() - DIVIDER_SIZE + (DIVIDER_SIZE - GRIP_WIDTH) / 2;
         int y = secondary.getY() + (secondary.getHeight() - GRIP_LENGTH) / 2;
-        gc.setColor(ThemeColor.DIVIDER);
+        gc.setColor(Colors.DIVIDER);
         for (int yy = y; yy < y + GRIP_LENGTH; yy += GRIP_HEIGHT + GRIP_GAP) {
             gc.fillRect(x, yy, GRIP_WIDTH - 1, GRIP_HEIGHT);
         }
@@ -226,7 +225,7 @@ public class Dock extends Panel implements MouseListener, MouseMotionListener, P
     private static void drawVerticalGripper(Graphics gc, DockLayoutNode secondary) {
         int x = secondary.getX() + (secondary.getWidth() - GRIP_LENGTH) / 2;
         int y = secondary.getY() - DIVIDER_SIZE + (DIVIDER_SIZE - GRIP_WIDTH) / 2;
-        gc.setColor(ThemeColor.DIVIDER);
+        gc.setColor(Colors.DIVIDER);
         for (int xx = x; xx < x + GRIP_LENGTH; xx += GRIP_HEIGHT + GRIP_GAP) {
             gc.fillRect(xx, y, GRIP_HEIGHT, GRIP_WIDTH - 1);
         }
@@ -240,7 +239,7 @@ public class Dock extends Panel implements MouseListener, MouseMotionListener, P
             if (layoutWidth > 0) {
                 int layoutHeight = node.getHeight();
                 if (layoutHeight > 0) {
-                    gc.setColor(ThemeColor.DIVIDER);
+                    gc.setColor(Colors.DIVIDER);
                     gc.drawRect(node.getX() - 1, node.getY() - 1, node.getWidth() + 1, node.getHeight() + 1);
                 }
             }

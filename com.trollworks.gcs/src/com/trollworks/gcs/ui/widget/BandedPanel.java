@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.GraphicsUtilities;
-import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
 import com.trollworks.gcs.ui.layout.FlexGrid;
@@ -74,7 +74,7 @@ public class BandedPanel extends ActionPanel implements Scrollable {
     }
 
     protected Color getBandingColor(boolean odd) {
-        return odd ? ThemeColor.BANDING : ThemeColor.CONTENT;
+        return odd ? Colors.BANDING : Colors.CONTENT;
     }
 
     private int getStep() {

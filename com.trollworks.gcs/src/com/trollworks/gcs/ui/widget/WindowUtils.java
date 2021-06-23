@@ -298,10 +298,12 @@ public final class WindowUtils {
         return HIDDEN_FRAME;
     }
 
-    /** Forces a full repaint of all windows, disposing of any window buffers. */
-    public static void forceRepaint() {
-        for (BaseWindow window : BaseWindow.getAllAppWindows()) {
-            window.repaint();
+    /** Repaints all visible windows. */
+    public static void repaintAll() {
+        for (Window window : Window.getWindows()) {
+            if (window.isShowing()) {
+                window.repaint();
+            }
         }
     }
 }

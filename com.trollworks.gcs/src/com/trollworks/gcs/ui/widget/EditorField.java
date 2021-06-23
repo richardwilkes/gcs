@@ -13,9 +13,9 @@ package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.DynamicColor;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.TextDrawing;
-import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
@@ -70,17 +70,17 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
      */
     public EditorField(AbstractFormatterFactory formatter, ChangeListener listener, int alignment, Object value, Object protoValue, String tooltip) {
         super(formatter, protoValue != null ? protoValue : value);
-        setThemeFont(ThemeFont.FIELD_PRIMARY);
+        setThemeFont(Fonts.FIELD_PRIMARY);
         setHorizontalAlignment(alignment);
         setToolTipText(tooltip);
         setFocusLostBehavior(COMMIT_OR_REVERT);
-        setForeground(ThemeColor.ON_EDITABLE);
-        setBackground(ThemeColor.EDITABLE);
-        setCaretColor(ThemeColor.ON_EDITABLE);
-        setSelectionColor(ThemeColor.SELECTION);
-        setSelectedTextColor(ThemeColor.ON_SELECTION);
+        setForeground(Colors.ON_EDITABLE);
+        setBackground(Colors.EDITABLE);
+        setCaretColor(Colors.ON_EDITABLE);
+        setSelectionColor(Colors.SELECTION);
+        setSelectedTextColor(Colors.ON_SELECTION);
         setDisabledTextColor(new DynamicColor(() -> Colors.getWithAlpha(getForeground(), 96).getRGB()));
-        setBorder(new CompoundBorder(new LineBorder(ThemeColor.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
+        setBorder(new CompoundBorder(new LineBorder(Colors.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
         if (protoValue != null) {
             setPreferredSize(getPreferredSize());
             setValue(value);
@@ -96,9 +96,9 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
         super.processFocusEvent(event);
         if (event.getID() == FocusEvent.FOCUS_GAINED) {
             selectAll();
-            setBorder(new CompoundBorder(new LineBorder(ThemeColor.ACTIVE_EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
+            setBorder(new CompoundBorder(new LineBorder(Colors.ACTIVE_EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
         } else {
-            setBorder(new CompoundBorder(new LineBorder(ThemeColor.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
+            setBorder(new CompoundBorder(new LineBorder(Colors.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
         }
     }
 
@@ -116,7 +116,7 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
             Rectangle bounds = getBounds();
             bounds.x = 0;
             bounds.y = 0;
-            gc.setColor(ThemeColor.HINT);
+            gc.setColor(Colors.HINT);
             TextDrawing.draw(gc, bounds, mHint, SwingConstants.CENTER, SwingConstants.CENTER);
         }
     }
@@ -174,12 +174,12 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
             Color backgroundColor;
             mErrorMsg = msg;
             if (mErrorMsg == null) {
-                foregroundColor = ThemeColor.ON_EDITABLE;
-                backgroundColor = ThemeColor.EDITABLE;
+                foregroundColor = Colors.ON_EDITABLE;
+                backgroundColor = Colors.EDITABLE;
                 super.setToolTipText(mOriginalTooltip);
             } else {
-                foregroundColor = ThemeColor.ON_ERROR;
-                backgroundColor = ThemeColor.ERROR;
+                foregroundColor = Colors.ON_ERROR;
+                backgroundColor = Colors.ERROR;
                 if (mOriginalTooltip == null) {
                     super.setToolTipText(msg);
                 } else {

@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.page;
 
-import com.trollworks.gcs.ui.ThemeColor;
-import com.trollworks.gcs.ui.ThemeFont;
+import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.widget.Label;
 
 import javax.swing.SwingConstants;
@@ -26,9 +26,9 @@ public class PageHeader extends Label {
      */
     public PageHeader(String title) {
         super(title);
-        setThemeFont(ThemeFont.PAGE_LABEL_PRIMARY);
+        setThemeFont(Fonts.PAGE_LABEL_PRIMARY);
         setHorizontalAlignment(SwingConstants.CENTER);
-        setForeground(ThemeColor.ON_HEADER);
+        setForeground(Colors.ON_HEADER);
     }
 
     /**

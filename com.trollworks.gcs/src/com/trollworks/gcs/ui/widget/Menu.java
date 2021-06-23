@@ -12,12 +12,12 @@
 package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.MouseCapture;
 import com.trollworks.gcs.ui.SystemEventHandler;
 import com.trollworks.gcs.ui.TextDrawing;
-import com.trollworks.gcs.ui.ThemeColor;
-import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
@@ -64,6 +64,7 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
     public static final String    SCROLL_DOWN_MARKER = "\uf0d7";
     private             Popup     mPopup;
     private             Component mRestoreFocusTo;
+    private             Runnable  mCallbackWhenDone;
     private             MenuItem  mSelection;
     private             int       mTop;
     private             Rectangle mTopScrollArea;
@@ -83,8 +84,8 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
 
     @Override
     protected void setStdColors() {
-        setBackground(ThemeColor.BUTTON);
-        setForeground(ThemeColor.ON_BUTTON);
+        setBackground(Colors.BUTTON);
+        setForeground(Colors.ON_BUTTON);
     }
 
     public MenuItem getSelection() {
@@ -114,7 +115,7 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
             int    available = getHeight() - (insets.top + insets.bottom);
             if (count > 1) {
                 Scale     scale  = Scale.get(this);
-                Font      faFont = new Font(ThemeFont.FONT_AWESOME_SOLID, Font.PLAIN, scale.scale(getFont()).getSize());
+                Font      faFont = new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, scale.scale(getFont()).getSize());
                 Dimension faSize = TextDrawing.getPreferredSize(faFont, SCROLL_DOWN_MARKER);
                 faSize.height += 2 * scale.scale(Button.V_MARGIN);
                 available -= faSize.height;
@@ -147,6 +148,9 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
             }
             if (mSelection != null && mSelection.isEnabled()) {
                 mSelection.click();
+            }
+            if (mCallbackWhenDone != null) {
+                mCallbackWhenDone.run();
             }
         }
     }
@@ -462,7 +466,7 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
         }
         if (getComponentCount() > 1) {
             Scale     scale  = Scale.get(this);
-            Font      faFont = new Font(ThemeFont.FONT_AWESOME_SOLID, Font.PLAIN, scale.scale(getFont()).getSize());
+            Font      faFont = new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, scale.scale(getFont()).getSize());
             Dimension faSize = TextDrawing.getPreferredSize(faFont, SCROLL_DOWN_MARKER);
             faSize.width += 2 * scale.scale(Button.H_MARGIN);
             if (size.width < faSize.width) {
@@ -504,7 +508,7 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
     @Override
     public void layoutContainer(Container target) {
         Scale     scale              = Scale.get(this);
-        Font      faFont             = new Font(ThemeFont.FONT_AWESOME_SOLID, Font.PLAIN, scale.scale(getFont()).getSize());
+        Font      faFont             = new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, scale.scale(getFont()).getSize());
         Dimension faSize             = TextDrawing.getPreferredSize(faFont, SCROLL_DOWN_MARKER);
         int       scrollMarkerHeight = faSize.height + 2 * scale.scale(Button.V_MARGIN);
         Rectangle bounds             = UIUtilities.getLocalInsetBounds(this);
@@ -530,7 +534,7 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
         Graphics2D gc     = GraphicsUtilities.prepare(g);
         Rectangle  bounds = UIUtilities.getLocalInsetBounds(this);
         Scale      scale  = Scale.get(this);
-        Font       faFont = new Font(ThemeFont.FONT_AWESOME_SOLID, Font.PLAIN, scale.scale(getFont()).getSize());
+        Font       faFont = new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, scale.scale(getFont()).getSize());
         Dimension  faSize = TextDrawing.getPreferredSize(faFont, SCROLL_DOWN_MARKER);
         faSize.height += 2 * scale.scale(Button.V_MARGIN);
         gc.setFont(faFont);
@@ -578,11 +582,12 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
         }
     }
 
-    public void presentToUser(JComponent owner, int initialIndex) {
-        presentToUser(owner, UIUtilities.getLocalInsetBounds(owner), initialIndex);
+    public void presentToUser(JComponent owner, int initialIndex, Runnable callbackWhenDone) {
+        presentToUser(owner, UIUtilities.getLocalInsetBounds(owner), initialIndex, callbackWhenDone);
     }
 
-    public void presentToUser(JComponent owner, Rectangle controlBounds, int initialIndex) {
+    public void presentToUser(JComponent owner, Rectangle controlBounds, int initialIndex, Runnable callbackWhenDone) {
+        mCallbackWhenDone = callbackWhenDone;
         mRestoreFocusTo = KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
         for (Component comp : getComponents()) {
             if (comp instanceof MenuItem) {

@@ -14,7 +14,6 @@ package com.trollworks.gcs.body;
 import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.DynamicColor;
-import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
@@ -49,8 +48,8 @@ public class HitLocationTablePanel extends BandedPanel {
         mLocations = locations;
         mAdjustCallback = adjustCallback;
         if (isSubTable()) {
-            setBorder(new LineBorder(ThemeColor.DIVIDER));
-            setBackground(new DynamicColor(() -> Colors.adjustSaturation(ThemeColor.BANDING, -0.05f * countSubTableDepth()).getRGB()));
+            setBorder(new LineBorder(Colors.DIVIDER));
+            setBackground(new DynamicColor(() -> Colors.adjustSaturation(Colors.BANDING, -0.05f * countSubTableDepth()).getRGB()));
         }
         fill();
     }

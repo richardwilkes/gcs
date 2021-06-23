@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.page;
 
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.GraphicsUtilities;
-import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.scale.Scale;
@@ -51,8 +51,8 @@ public class Page extends Panel {
 
     @Override
     protected void setStdColors() {
-        setBackground(ThemeColor.PAGE);
-        setForeground(ThemeColor.ON_PAGE);
+        setBackground(Colors.PAGE);
+        setForeground(Colors.ON_PAGE);
     }
 
     @Override

@@ -11,10 +11,10 @@
 
 package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.MouseCapture;
 import com.trollworks.gcs.ui.TextDrawing;
-import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.scale.Scale;
 
@@ -78,7 +78,7 @@ public class FontAwesomeButton extends Panel implements MouseListener, MouseMoti
     @Override
     public Dimension getPreferredSize() {
         Scale     scale = Scale.get(this);
-        Dimension size  = TextDrawing.getPreferredSize(new Font(ThemeFont.FONT_AWESOME_SOLID, Font.PLAIN, scale.scale(mSize)), mText);
+        Dimension size  = TextDrawing.getPreferredSize(new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, scale.scale(mSize)), mText);
         if (mMargin != 0) {
             size.width += scale.scale(mMargin) * 2;
             size.height *= scale.scale(mMargin) * 2;
@@ -118,7 +118,7 @@ public class FontAwesomeButton extends Panel implements MouseListener, MouseMoti
         Graphics2D gc = GraphicsUtilities.prepare(g);
         gc.setColor(UIUtilities.getIconButtonColor(isEnabled(), mInMouseDown, mPressed, mRollover));
         Scale scale = Scale.get(this);
-        gc.setFont(new Font(ThemeFont.FONT_AWESOME_SOLID, Font.PLAIN, scale.scale(mSize)));
+        gc.setFont(new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, scale.scale(mSize)));
         TextDrawing.draw(gc, bounds, mText, SwingConstants.CENTER, SwingConstants.CENTER);
     }
 
@@ -185,7 +185,7 @@ public class FontAwesomeButton extends Panel implements MouseListener, MouseMoti
         repaint();
     }
 
-    private void updateRollOver() {
+    public void updateRollOver() {
         boolean wasRollover = mRollover;
         Point   location    = MouseInfo.getPointerInfo().getLocation();
         UIUtilities.convertPointFromScreen(location, this);

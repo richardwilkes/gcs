@@ -22,7 +22,7 @@ import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageLabel;
 import com.trollworks.gcs.page.PagePoints;
-import com.trollworks.gcs.ui.ThemeFont;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
@@ -59,7 +59,7 @@ public class PointPoolsPanel extends DropPanel {
         label.setToolTipText(fullName.isBlank() ? null : fullName);
         add(label);
         PageLabel state = new PageLabel("");
-        state.setThemeFont(ThemeFont.PAGE_LABEL_SECONDARY);
+        state.setThemeFont(Fonts.PAGE_LABEL_SECONDARY);
         PoolThreshold threshold = attr.getCurrentThreshold(gch);
         if (threshold != null) {
             state.setText(String.format("[%s]", threshold.getState()));

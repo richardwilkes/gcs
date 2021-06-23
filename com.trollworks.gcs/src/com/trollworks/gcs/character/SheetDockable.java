@@ -16,7 +16,7 @@ import com.trollworks.gcs.settings.HitLocationSettingsWindow;
 import com.trollworks.gcs.settings.QuickExport;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.settings.SheetSettingsWindow;
-import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
@@ -45,7 +45,7 @@ public class SheetDockable extends CollectedOutlinesDockable {
         createToolbar();
         ScrollPanel scroller = new ScrollPanel(mSheet);
         JViewport   viewport = scroller.getViewport();
-        viewport.setBackground(ThemeColor.PAGE_VOID);
+        viewport.setBackground(Colors.PAGE_VOID);
         viewport.addChangeListener(mSheet);
         add(scroller, BorderLayout.CENTER);
         mSheet.rebuild();

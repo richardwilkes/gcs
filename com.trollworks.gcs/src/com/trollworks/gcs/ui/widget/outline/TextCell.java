@@ -11,9 +11,10 @@
 
 package com.trollworks.gcs.ui.widget.outline;
 
+import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.TextDrawing;
-import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.utility.text.NumericComparator;
@@ -80,7 +81,7 @@ public class TextCell implements Cell {
      */
     public Color getColor(Outline outline, Row row, Column column, boolean selected, boolean active) {
         if (selected) {
-            return active ? ThemeColor.ON_SELECTION : ThemeColor.ON_INACTIVE_SELECTION;
+            return active ? Colors.ON_SELECTION : Colors.ON_INACTIVE_SELECTION;
         }
         return outline.getForeground();
     }
@@ -218,7 +219,7 @@ public class TextCell implements Cell {
      * @return The font.
      */
     public ThemeFont getThemeFont(Row row, Column column) {
-        return ThemeFont.FIELD_PRIMARY;
+        return Fonts.FIELD_PRIMARY;
     }
 
     /**

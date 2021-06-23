@@ -12,7 +12,7 @@
 package com.trollworks.gcs.page;
 
 import com.trollworks.gcs.character.FieldFactory;
-import com.trollworks.gcs.ui.ThemeFont;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
@@ -46,7 +46,7 @@ public class PageSettingsEditor extends Panel {
     public PageSettingsEditor(PageSettings settings, Runnable adjustCallback, ResetPageSettings resetCallback) {
         super(new PrecisionLayout().setColumns(4).setMargins(4, 0, 4, 0), false);
         Label header = new Label(I18n.text("Page Settings"));
-        header.setThemeFont(ThemeFont.HEADER);
+        header.setThemeFont(Fonts.HEADER);
         add(header, new PrecisionLayoutData().setHorizontalSpan(4));
         add(new Separator(), new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(4));
         mSettings = settings;

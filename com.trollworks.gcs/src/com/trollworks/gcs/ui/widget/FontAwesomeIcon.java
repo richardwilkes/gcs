@@ -11,9 +11,9 @@
 
 package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.TextDrawing;
-import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.scale.Scale;
 
 import java.awt.Dimension;
@@ -53,7 +53,7 @@ public class FontAwesomeIcon extends Panel {
     @Override
     public Dimension getPreferredSize() {
         Scale     scale = Scale.get(this);
-        Dimension size  = TextDrawing.getPreferredSize(new Font(ThemeFont.FONT_AWESOME_SOLID, Font.PLAIN, scale.scale(mSize)), mText);
+        Dimension size  = TextDrawing.getPreferredSize(new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, scale.scale(mSize)), mText);
         if (mMargin != 0) {
             size.width += scale.scale(mMargin) * 2;
             size.height *= scale.scale(mMargin) * 2;
@@ -84,7 +84,7 @@ public class FontAwesomeIcon extends Panel {
         bounds.height -= insets.top + insets.bottom;
         Scale      scale = Scale.get(this);
         Graphics2D gc    = GraphicsUtilities.prepare(g);
-        gc.setFont(new Font(ThemeFont.FONT_AWESOME_SOLID, Font.PLAIN, scale.scale(mSize)));
+        gc.setFont(new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, scale.scale(mSize)));
         TextDrawing.draw(gc, bounds, mText, SwingConstants.CENTER, SwingConstants.CENTER);
     }
 }

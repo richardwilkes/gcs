@@ -11,9 +11,9 @@
 
 package com.trollworks.gcs.ui.border;
 
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.TextDrawing;
-import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.scale.Scale;
 
@@ -34,8 +34,8 @@ public class TitledBorder extends LineBorder {
 
     /** Creates a new border without a title. */
     public TitledBorder() {
-        super(ThemeColor.HEADER);
-        mTitleColor = ThemeColor.ON_HEADER;
+        super(Colors.HEADER);
+        mTitleColor = Colors.ON_HEADER;
     }
 
     /**

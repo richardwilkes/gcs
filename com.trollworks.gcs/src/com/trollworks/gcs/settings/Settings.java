@@ -18,8 +18,8 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.pdfview.PDFRef;
-import com.trollworks.gcs.ui.FontDesc;
-import com.trollworks.gcs.ui.Theme;
+import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.scale.Scales;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.utility.FileType;
@@ -58,6 +58,7 @@ public final class Settings extends ChangeableData {
     private static final String DEPRECATED_PNG_RESOLUTION           = "png_resolution"; // June 6, 2021
 
     private static final String AUTO_FILL_PROFILE               = "auto_fill_profile";
+    public static final  String COLORS                          = "colors";
     private static final String DEFAULT_PLAYER_NAME             = "default_player_name";
     private static final String DEFAULT_TECH_LEVEL              = "default_tech_level";
     private static final String DIVIDER_POSITION                = "divider_position";
@@ -77,9 +78,8 @@ public final class Settings extends ChangeableData {
     private static final String QUICK_EXPORTS                   = "quick_exports";
     private static final String RECENT_FILES                    = "recent_files";
     private static final String SHEET_SETTINGS                  = "sheet_settings";
-    private static final String THEME                           = "theme";
     private static final String TOOLTIP_TIMEOUT                 = "tooltip_timeout";
-    private static final String VERSION                         = "version";
+    public static final  String VERSION                         = "version";
     private static final String WINDOW_POSITIONS                = "window_positions";
 
     public static final boolean DEFAULT_AUTO_FILL_PROFILE                 = true;
@@ -107,7 +107,6 @@ public final class Settings extends ChangeableData {
     private        Path                             mLastDir;
     private        Map<String, PDFRef>              mPdfRefs;
     private        Map<String, String>              mKeyBindingOverrides;
-    private        Map<String, FontDesc>            mFontInfo;
     private        Map<String, BaseWindow.Position> mBaseWindowPositions;
     private        String                           mGURPSCalculatorKey;
     private        String                           mDefaultPlayerName;
@@ -166,7 +165,6 @@ public final class Settings extends ChangeableData {
         mDefaultTechLevel = DEFAULT_DEFAULT_TECH_LEVEL;
         mImageResolution = DEFAULT_IMAGE_RESOLUTION;
         mPdfRefs = new HashMap<>();
-        mFontInfo = new HashMap<>();
         mKeyBindingOverrides = new HashMap<>();
         mBaseWindowPositions = new HashMap<>();
         mIncludeUnspentPointsInTotal = DEFAULT_INCLUDE_UNSPENT_POINTS_IN_TOTAL;
@@ -225,11 +223,11 @@ public final class Settings extends ChangeableData {
                                 }
                             }
                         }
+                        if (m.has(COLORS)) {
+                            Colors.setCurrentThemeColors(new Colors(m.getMap(COLORS)));
+                        }
                         if (m.has(FONTS)) {
-                            JsonMap m2 = m.getMap(FONTS);
-                            for (String key : m2.keySet()) {
-                                mFontInfo.put(key, new FontDesc(m2.getMap(key)));
-                            }
+                            Fonts.setCurrentThemeFonts(new Fonts(m.getMap(FONTS)));
                         }
                         if (m.has(WINDOW_POSITIONS)) {
                             JsonMap m2 = m.getMap(WINDOW_POSITIONS);
@@ -251,9 +249,6 @@ public final class Settings extends ChangeableData {
                             mAutoFillProfile = m.getBooleanWithDefault(DEPRECATED_AUTO_NAME_NEW_CHARACTERS, mAutoFillProfile);
                         } else {
                             mAutoFillProfile = m.getBooleanWithDefault(AUTO_FILL_PROFILE, mAutoFillProfile);
-                        }
-                        if (m.has(THEME)) {
-                            Theme.set(new Theme(m.getMap(THEME)));
                         }
                         if (m.has(QUICK_EXPORTS)) {
                             JsonMap m2 = m.getMap(QUICK_EXPORTS);
@@ -350,13 +345,6 @@ public final class Settings extends ChangeableData {
                         w.keyValue(entry.getKey(), entry.getValue());
                     }
                     w.endMap();
-                    w.key(FONTS);
-                    w.startMap();
-                    for (Map.Entry<String, FontDesc> entry : mFontInfo.entrySet()) {
-                        w.key(entry.getKey());
-                        entry.getValue().toJSON(w);
-                    }
-                    w.endMap();
                     w.key(WINDOW_POSITIONS);
                     w.startMap();
                     long cutoff = System.currentTimeMillis() - 1000L * 60L * 60L * 24L * 45L;
@@ -374,8 +362,10 @@ public final class Settings extends ChangeableData {
                     w.keyValue(IMAGE_RESOLUTION, mImageResolution);
                     w.keyValue(INCLUDE_UNSPENT_POINTS_IN_TOTAL, mIncludeUnspentPointsInTotal);
                     w.keyValue(AUTO_FILL_PROFILE, mAutoFillProfile);
-                    w.key(THEME);
-                    Theme.current().save(w);
+                    w.key(COLORS);
+                    Colors.currentThemeColors().save(w);
+                    w.key(FONTS);
+                    Fonts.currentThemeFonts().save(w);
                     pruneQuickExports();
                     if (!mQuickExports.isEmpty()) {
                         w.key(QUICK_EXPORTS);
@@ -571,15 +561,6 @@ public final class Settings extends ChangeableData {
 
     public void removePdfRef(PDFRef ref) {
         mPdfRefs.remove(ref.getID());
-    }
-
-    public FontDesc getFontInfo(String key) {
-        return mFontInfo.get(key);
-    }
-
-    public void setFontInfo(String key, FontDesc fontInfo) {
-        mFontInfo.put(key, fontInfo);
-        notifyOfChange();
     }
 
     public String getKeyBindingOverride(String key) {

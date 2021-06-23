@@ -20,8 +20,8 @@ import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageLabel;
 import com.trollworks.gcs.settings.GeneralSettingsWindow;
-import com.trollworks.gcs.ui.ThemeColor;
-import com.trollworks.gcs.ui.ThemeFont;
+import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
@@ -148,7 +148,7 @@ public class DescriptionPanel extends DropPanel {
     }
 
     private static PageField createRandomizableField(Container parent, CharacterSheet sheet, AbstractFormatterFactory factory, Object value, String tag, String title, String tooltip, CharacterSetter setter, Runnable randomizer) {
-        parent.add(new FontAwesomeButton("\uf074", ThemeFont.PAGE_LABEL_PRIMARY.getFont().getSize() * 8 / 10, String.format(I18n.text("Randomize %s"), title), randomizer));
+        parent.add(new FontAwesomeButton("\uf074", Fonts.PAGE_LABEL_PRIMARY.getFont().getSize() * 8 / 10, String.format(I18n.text("Randomize %s"), title), randomizer));
         PageField field = new PageField(factory, value, setter, sheet, tag, SwingConstants.LEFT, true, tooltip);
         parent.add(new PageLabel(title), new PrecisionLayoutData().setEndHorizontalAlignment().setLeftMargin(1));
         parent.add(field, createFieldLayout());
@@ -169,6 +169,6 @@ public class DescriptionPanel extends DropPanel {
         Wrapper panel = new Wrapper();
         panel.setOnlySize(1, 1);
         add(panel);
-        addVerticalBackground(panel, ThemeColor.ON_CONTENT);
+        addVerticalBackground(panel, Colors.ON_CONTENT);
     }
 }

@@ -183,9 +183,8 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
                 }
             }
         }
-        menu.presentToUser(mMenuButton, 0);
+        menu.presentToUser(mMenuButton, 0, mMenuButton::updateRollOver);
     }
-
 
     private void importData() {
         Path path = Modal.presentOpenFileDialog(this, I18n.text("Import…"),

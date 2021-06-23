@@ -12,7 +12,7 @@
 package com.trollworks.gcs.character.names;
 
 import com.trollworks.gcs.character.FieldFactory;
-import com.trollworks.gcs.ui.ThemeFont;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.Button;
@@ -100,7 +100,7 @@ public final class Namer extends Panel implements DocumentListener {
         mRow = row;
         mFields = new ArrayList<>();
         Label header = new Label(Text.truncateIfNecessary(row.toString(), 80, SwingConstants.CENTER));
-        header.setThemeFont(ThemeFont.HEADER);
+        header.setThemeFont(Fonts.HEADER);
         add(header, new PrecisionLayoutData().setMiddleHorizontalAlignment().setHorizontalSpan(2));
         add(new Separator(), new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(2).setBottomMargin(10));
         List<String> list = new ArrayList<>(set);
@@ -117,7 +117,7 @@ public final class Namer extends Panel implements DocumentListener {
             Label reminder = new Label(remaining == 1 ? I18n.text("1 item remaining to be named.") :
                     MessageFormat.format(I18n.text("{0} items remaining to be named."),
                             Integer.valueOf(remaining)));
-            reminder.setThemeFont(ThemeFont.LABEL_SECONDARY);
+            reminder.setThemeFont(Fonts.LABEL_SECONDARY);
             add(new Separator(), new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(2).setTopMargin(10));
             add(reminder, new PrecisionLayoutData().setMiddleHorizontalAlignment().setHorizontalSpan(2));
         }

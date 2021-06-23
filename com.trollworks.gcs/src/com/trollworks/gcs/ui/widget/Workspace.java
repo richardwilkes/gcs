@@ -63,7 +63,7 @@ public final class Workspace extends BaseWindow implements SignificantFrame, Jum
     @Override
     public void pack() {
         super.pack();
-        setBounds(Geometry.inset(20, new Rectangle(WindowUtils.getMaximumWindowBounds())));
+        setBounds(Geometry.inset(LayoutConstants.WINDOW_BORDER_INSET, new Rectangle(WindowUtils.getMaximumWindowBounds())));
     }
 
     @Override

@@ -22,7 +22,7 @@ import javax.swing.text.StyleConstants;
 
 public class MarkdownDocument extends DefaultStyledDocument {
     public MarkdownDocument(String markdown) {
-        Font             font     = ThemeFont.LABEL_PRIMARY.getFont();
+        Font             font     = Fonts.LABEL_PRIMARY.getFont();
         Style            body     = createBodyStyle(font);
         Style[]          headers  = createHeaderStyles(font);
         Style            bullet   = createBulletStyle(font);

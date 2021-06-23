@@ -11,12 +11,13 @@
 
 package com.trollworks.gcs.ui.widget.outline;
 
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.ThemeFont;
 
 /** Used to draw headers in the lists. */
 public class EditorHeaderCell extends HeaderCell {
     @Override
     public ThemeFont getThemeFont(Row row, Column column) {
-        return ThemeFont.HEADER;
+        return Fonts.HEADER;
     }
 }

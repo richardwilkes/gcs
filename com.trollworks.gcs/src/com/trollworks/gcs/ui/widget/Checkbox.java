@@ -12,11 +12,10 @@
 package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.MouseCapture;
 import com.trollworks.gcs.ui.TextDrawing;
-import com.trollworks.gcs.ui.ThemeColor;
-import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.scale.Scale;
 
@@ -207,7 +206,7 @@ public class Checkbox extends Panel implements MouseListener, MouseMotionListene
         Insets    insets = getInsets();
         Scale     scale  = Scale.get(this);
         Font      font   = scale.scale(getFont());
-        Dimension size   = TextDrawing.getPreferredSize(new Font(ThemeFont.FONT_AWESOME_SOLID, Font.PLAIN, font.getSize()), "\uf058");
+        Dimension size   = TextDrawing.getPreferredSize(new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, font.getSize()), "\uf058");
         if (!mText.isBlank()) {
             Dimension textSize = TextDrawing.getPreferredSize(font, mText);
             size.width += textSize.width + scale.scale(4);
@@ -223,16 +222,16 @@ public class Checkbox extends Panel implements MouseListener, MouseMotionListene
         Rectangle bounds = UIUtilities.getLocalInsetBounds(this);
         Color     color;
         if (mPressed) {
-            color = ThemeColor.PRESSED_ICON_BUTTON;
+            color = Colors.PRESSED_ICON_BUTTON;
         } else if (isEnabled()) {
-            color = ThemeColor.ICON_BUTTON;
+            color = Colors.ICON_BUTTON;
         } else {
-            color = Colors.getWithAlpha(ThemeColor.ICON_BUTTON, 96);
+            color = Colors.getWithAlpha(Colors.ICON_BUTTON, 96);
         }
         Graphics2D gc       = GraphicsUtilities.prepare(g);
         Scale      scale    = Scale.get(this);
         Font       font     = scale.scale(getFont());
-        Font       iconFont = new Font(isFocusOwner() ? ThemeFont.FONT_AWESOME_SOLID : ThemeFont.FONT_AWESOME_REGULAR, Font.PLAIN, font.getSize());
+        Font       iconFont = new Font(isFocusOwner() ? Fonts.FONT_AWESOME_SOLID : Fonts.FONT_AWESOME_REGULAR, Font.PLAIN, font.getSize());
         Dimension  size     = TextDrawing.getPreferredSize(iconFont, "\uf058");
         gc.setFont(iconFont);
         gc.setColor(color);

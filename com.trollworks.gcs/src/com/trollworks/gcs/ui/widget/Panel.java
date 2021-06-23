@@ -11,8 +11,9 @@
 
 package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
-import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.ThemeFont;
 
 import java.awt.Font;
@@ -40,14 +41,14 @@ public class Panel extends JPanel {
 
     private void init(boolean opaque) {
         setStdColors();
-        setThemeFont(ThemeFont.LABEL_PRIMARY);
+        setThemeFont(Fonts.LABEL_PRIMARY);
         setOpaque(opaque);
         setBorder(null);
     }
 
     protected void setStdColors() {
-        setBackground(ThemeColor.BACKGROUND);
-        setForeground(ThemeColor.ON_BACKGROUND);
+        setBackground(Colors.BACKGROUND);
+        setForeground(Colors.ON_BACKGROUND);
     }
 
     protected void paintComponent(Graphics g) {

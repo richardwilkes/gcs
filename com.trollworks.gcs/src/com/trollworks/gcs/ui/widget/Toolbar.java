@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.ui.widget;
 
-import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.utility.Log;
@@ -34,7 +34,7 @@ public class Toolbar extends Panel {
     public Toolbar() {
         super(new ToolbarLayout());
         setOpaque(true);
-        setBorder(new CompoundBorder(new LineBorder(ThemeColor.DIVIDER, 0, 0, 1, 0), new EmptyBorder(0, GAP, 0, GAP)));
+        setBorder(new CompoundBorder(new LineBorder(Colors.DIVIDER, 0, 0, 1, 0), new EmptyBorder(0, GAP, 0, GAP)));
     }
 
     @Override

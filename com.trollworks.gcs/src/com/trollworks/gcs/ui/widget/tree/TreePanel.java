@@ -14,11 +14,11 @@ package com.trollworks.gcs.ui.widget.tree;
 import com.trollworks.gcs.menu.edit.Deletable;
 import com.trollworks.gcs.menu.edit.Openable;
 import com.trollworks.gcs.menu.edit.SelectAllCapable;
+import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.TextDrawing;
-import com.trollworks.gcs.ui.ThemeColor;
-import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.image.Img;
@@ -87,7 +87,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
     private              HashSet<TreeContainerRow> mOpenRows               = new HashSet<>();
     private              HashSet<TreeRow>          mSelectedRows           = new HashSet<>();
     private              Map<TreeRow, Integer>     mRowHeightMap           = new HashMap<>();
-    private              int                       mRowHeight              = TextTreeColumn.VMARGIN + TextDrawing.getFontHeight(ThemeFont.LABEL_PRIMARY.getFont()) + TextTreeColumn.VMARGIN;
+    private              int                       mRowHeight              = TextTreeColumn.VMARGIN + TextDrawing.getFontHeight(Fonts.LABEL_PRIMARY.getFont()) + TextTreeColumn.VMARGIN;
     private              int                       mMouseOverColumnDivider = -1;
     private              int                       mDragColumnDivider      = -1;
     private              int                       mAllowedRowDragTypes    = DnDConstants.ACTION_COPY_OR_MOVE;
@@ -651,7 +651,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
         }
         if (dividerWidth > 0) {
             Color savedColor = gc.getColor();
-            gc.setColor(ThemeColor.DIVIDER);
+            gc.setColor(Colors.DIVIDER);
             int bottom = colBounds.y + colBounds.height;
             gc.drawLine(left, bottom, right, bottom);
             gc.setColor(savedColor);
@@ -732,7 +732,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
                     int index = state.getChildInsertIndex();
                     if (index >= 0) {
                         y = getInsertionMarkerPosition(parent, index);
-                        gc.setColor(ThemeColor.DROP_AREA);
+                        gc.setColor(Colors.DROP_AREA);
                         gc.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, DRAG_OPACITY));
                         int indent = INDENT * parent.getDepth();
                         if (mShowDisclosureControls) {
@@ -758,7 +758,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
                 int       top        = clipBounds.y;
                 int       bottom     = top + clipBounds.height;
                 int       x          = 0;
-                gc.setColor(ThemeColor.DIVIDER);
+                gc.setColor(Colors.DIVIDER);
                 for (int i = 0; i < count; i++) {
                     x += mColumns.get(i).getWidth();
                     if (x >= left && x < right) {
@@ -773,12 +773,12 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
                         if (i == mMouseOverColumnDivider) {
                             if (x >= left && x < right) {
                                 Composite savedComposite = gc.getComposite();
-                                gc.setColor(ThemeColor.DROP_AREA);
+                                gc.setColor(Colors.DROP_AREA);
                                 gc.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.25f));
                                 gc.drawLine(x - 1, top, x - 1, bottom);
                                 gc.drawLine(x + 1, top, x + 1, bottom);
                                 gc.setComposite(savedComposite);
-                                gc.setColor(ThemeColor.DROP_AREA);
+                                gc.setColor(Colors.DROP_AREA);
                                 gc.drawLine(x, top, x, bottom);
                             }
                             break;
@@ -792,7 +792,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
     }
 
     private static void setHighlightColorAndComposite(Graphics2D gc, boolean active) {
-        gc.setColor(active ? ThemeColor.SELECTION : ThemeColor.INACTIVE_SELECTION);
+        gc.setColor(active ? Colors.SELECTION : Colors.INACTIVE_SELECTION);
         gc.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, DRAG_OPACITY));
     }
 
@@ -820,7 +820,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
         gc.setColor(getDefaultRowBackground(position, selected, active));
         gc.fillRect(left, top, clipBounds.width, height);
         if (mShowRowDivider) {
-            gc.setColor(ThemeColor.DIVIDER);
+            gc.setColor(Colors.DIVIDER);
             int bottom = top + height - 1;
             gc.drawLine(0, bottom, right, bottom);
         }
@@ -844,7 +844,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
                         TreeRow firstRow = mRoot.getChild(0);
                         if (row != firstRow || mRoot.getChildCount() > 1 || firstRow instanceof TreeContainerRow) {
                             int xx = x + indent - INDENT / 2;
-                            gc.setColor(ThemeColor.DIVIDER);
+                            gc.setColor(Colors.DIVIDER);
                             gc.drawLine(xx, top + rowHeight / 2, x + indent, top + rowHeight / 2);
                             int yt = row == firstRow ? top + rowHeight / 2 : top;
                             int yb = top + (row.getIndex() == row.getParent().getChildCount() - 1 ? rowHeight / 2 : height);
@@ -1080,9 +1080,9 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
      */
     public Color getDefaultRowForeground(int position, boolean selected, boolean active) {
         if (selected) {
-            return active ? ThemeColor.ON_SELECTION : ThemeColor.ON_INACTIVE_SELECTION;
+            return active ? Colors.ON_SELECTION : Colors.ON_INACTIVE_SELECTION;
         }
-        return ThemeColor.ON_CONTENT;
+        return Colors.ON_CONTENT;
     }
 
     /**
@@ -1093,9 +1093,9 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
      */
     public Color getDefaultRowBackground(int position, boolean selected, boolean active) {
         if (selected) {
-            return active ? ThemeColor.SELECTION : ThemeColor.INACTIVE_SELECTION;
+            return active ? Colors.SELECTION : Colors.INACTIVE_SELECTION;
         }
-        return (mUseBanding && (position % 2 != 0)) ? ThemeColor.BANDING : ThemeColor.CONTENT;
+        return (mUseBanding && (position % 2 != 0)) ? Colors.BANDING : Colors.CONTENT;
     }
 
     /** @return {@code true} if background banding is enabled. */

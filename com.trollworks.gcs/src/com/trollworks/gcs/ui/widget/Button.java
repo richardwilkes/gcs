@@ -12,11 +12,10 @@
 package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.MouseCapture;
 import com.trollworks.gcs.ui.TextDrawing;
-import com.trollworks.gcs.ui.ThemeColor;
-import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.scale.Scale;
 
@@ -56,7 +55,7 @@ public class Button extends Panel implements MouseListener, MouseMotionListener,
 
     public Button(String text, ClickFunction clickFunction) {
         super(null, false);
-        setThemeFont(ThemeFont.BUTTON);
+        setThemeFont(Fonts.BUTTON);
         setText(text);
         setCursor(Cursor.getDefaultCursor());
         setClickFunction(clickFunction);
@@ -102,14 +101,14 @@ public class Button extends Panel implements MouseListener, MouseMotionListener,
         Color     color;
         Color     onColor;
         if (mPressed) {
-            color = ThemeColor.PRESSED_BUTTON;
-            onColor = ThemeColor.ON_PRESSED_BUTTON;
+            color = Colors.PRESSED_BUTTON;
+            onColor = Colors.ON_PRESSED_BUTTON;
         } else if (isEnabled()) {
-            color = ThemeColor.BUTTON;
-            onColor = ThemeColor.ON_BUTTON;
+            color = Colors.BUTTON;
+            onColor = Colors.ON_BUTTON;
         } else {
-            color = ThemeColor.BUTTON;
-            onColor = Colors.getWithAlpha(ThemeColor.ON_BUTTON, 96);
+            color = Colors.BUTTON;
+            onColor = Colors.getWithAlpha(Colors.ON_BUTTON, 96);
         }
 
         Path2D.Double path         = new Path2D.Double();
@@ -150,7 +149,7 @@ public class Button extends Panel implements MouseListener, MouseMotionListener,
         TextDrawing.draw(gc, textBounds, TextDrawing.truncateIfNecessary(font, mText,
                 textBounds.width, SwingConstants.CENTER), SwingConstants.CENTER, SwingConstants.CENTER);
 
-        gc.setColor(ThemeColor.BUTTON_BORDER);
+        gc.setColor(Colors.BUTTON_BORDER);
         RenderingHints saved = GraphicsUtilities.setMaximumQualityForGraphics(gc);
         gc.draw(path);
         gc.setRenderingHints(saved);

@@ -34,7 +34,7 @@ public class FontDesc {
     }
 
     public FontDesc(JsonMap m) {
-        mName = m.getStringWithDefault(KEY_NAME, ThemeFont.ROBOTO);
+        mName = m.getStringWithDefault(KEY_NAME, Fonts.ROBOTO);
         mStyle = Enums.extract(m.getString(KEY_STYLE), FontStyle.values(), FontStyle.PLAIN);
         mSize = m.getIntWithDefault(KEY_SIZE, 9);
         if (mSize < 1) {

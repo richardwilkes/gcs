@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.ui.widget;
 
-import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.Colors;
 
 import java.awt.Color;
 
@@ -24,7 +24,7 @@ public enum MessageType {
 
         @Override
         Color getColor() {
-            return ThemeColor.ERROR;
+            return Colors.ERROR;
         }
     },
     WARNING {
@@ -35,7 +35,7 @@ public enum MessageType {
 
         @Override
         Color getColor() {
-            return ThemeColor.WARNING;
+            return Colors.WARNING;
         }
     },
     QUESTION {
@@ -51,6 +51,6 @@ public enum MessageType {
     }
 
     Color getColor() {
-        return ThemeColor.ON_BACKGROUND;
+        return Colors.ON_BACKGROUND;
     }
 }

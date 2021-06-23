@@ -11,10 +11,10 @@
 
 package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.TextDrawing;
-import com.trollworks.gcs.ui.ThemeColor;
-import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 
@@ -38,7 +38,7 @@ public class ToolTip extends JToolTip {
     @Override
     public void setTipText(String tipText) {
         super.setTipText(tipText);
-        mWrappedText = tipText != null ? TextDrawing.wrapToPixelWidth(ThemeFont.TOOLTIP.getFont(), tipText, 600) : "";
+        mWrappedText = tipText != null ? TextDrawing.wrapToPixelWidth(Fonts.TOOLTIP.getFont(), tipText, 600) : "";
     }
 
     @Override
@@ -47,7 +47,7 @@ public class ToolTip extends JToolTip {
             return new Dimension();
         }
         Insets    insets = getInsets();
-        Dimension size   = TextDrawing.getPreferredSize(ThemeFont.TOOLTIP.getFont(), mWrappedText);
+        Dimension size   = TextDrawing.getPreferredSize(Fonts.TOOLTIP.getFont(), mWrappedText);
         size.width += insets.left + insets.right;
         size.height += insets.top + insets.bottom;
         return size;
@@ -57,13 +57,13 @@ public class ToolTip extends JToolTip {
     protected void paintComponent(Graphics g) {
         if (!mWrappedText.isBlank()) {
             Graphics2D gc = GraphicsUtilities.prepare(g);
-            gc.setColor(ThemeColor.TOOLTIP);
+            gc.setColor(Colors.TOOLTIP);
             Rectangle bounds = getBounds();
             bounds.x = 0;
             bounds.y = 0;
             gc.fill(bounds);
-            gc.setFont(ThemeFont.TOOLTIP.getFont());
-            gc.setColor(ThemeColor.ON_TOOLTIP);
+            gc.setFont(Fonts.TOOLTIP.getFont());
+            gc.setColor(Colors.ON_TOOLTIP);
             TextDrawing.draw(gc, UIUtilities.getLocalInsetBounds(this), mWrappedText, SwingConstants.LEFT, SwingConstants.CENTER);
         }
     }

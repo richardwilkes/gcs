@@ -13,7 +13,7 @@ package com.trollworks.gcs.library;
 
 import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.settings.Settings;
-import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
@@ -172,8 +172,8 @@ public class LibraryFields implements DocumentListener {
     }
 
     private static boolean adjustColors(EditorField field, boolean valid) {
-        field.setForeground(valid ? ThemeColor.ON_EDITABLE : ThemeColor.ON_ERROR);
-        field.setBackground(valid ? ThemeColor.EDITABLE : ThemeColor.ERROR);
+        field.setForeground(valid ? Colors.ON_EDITABLE : Colors.ON_ERROR);
+        field.setBackground(valid ? Colors.EDITABLE : Colors.ERROR);
         return !valid;
     }
 

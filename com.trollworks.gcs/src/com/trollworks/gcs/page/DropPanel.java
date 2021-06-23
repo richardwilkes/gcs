@@ -11,9 +11,9 @@
 
 package com.trollworks.gcs.page;
 
+import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
-import com.trollworks.gcs.ui.ThemeColor;
-import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.TitledBorder;
@@ -80,8 +80,8 @@ public class DropPanel extends ContentPanel {
     public DropPanel(LayoutManager layout, String title, boolean onlyReportPreferredSize) {
         super(layout);
         setOpaque(true);
-        setBackground(ThemeColor.CONTENT);
-        mTitledBorder = new TitledBorder(ThemeFont.PAGE_LABEL_PRIMARY, title);
+        setBackground(Colors.CONTENT);
+        mTitledBorder = new TitledBorder(Fonts.PAGE_LABEL_PRIMARY, title);
         setBorder(new CompoundBorder(mTitledBorder, new EmptyBorder(0, 2, 1, 2)));
         setAlignmentY(TOP_ALIGNMENT);
         mOnlyReportPreferredSize = onlyReportPreferredSize;

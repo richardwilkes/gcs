@@ -19,8 +19,8 @@ import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageHeader;
 import com.trollworks.gcs.page.PageLabel;
-import com.trollworks.gcs.ui.ThemeColor;
-import com.trollworks.gcs.ui.ThemeFont;
+import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
@@ -46,25 +46,25 @@ public class EncumbrancePanel extends DropPanel {
 
         Separator sep = new Separator();
         add(sep, new PrecisionLayoutData().setHorizontalSpan(8).setHorizontalAlignment(PrecisionLayoutAlignment.FILL).setGrabHorizontalSpace(true));
-        addHorizontalBackground(sep, ThemeColor.DIVIDER);
+        addHorizontalBackground(sep, Colors.DIVIDER);
 
         PageHeader header = new PageHeader(I18n.text("Level"), I18n.text("The encumbrance level"));
         add(header, new PrecisionLayoutData().setHorizontalSpan(2).setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE).setGrabHorizontalSpace(true));
-        addHorizontalBackground(header, ThemeColor.HEADER);
+        addHorizontalBackground(header, Colors.HEADER);
 
-        addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
+        addVerticalBackground(createDivider(), Colors.DIVIDER);
 
         String maxLoadTooltip = I18n.text("The maximum load a character can carry and still remain within a specific encumbrance level");
         header = new PageHeader(I18n.text("Max Load"), maxLoadTooltip);
         add(header, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
 
-        addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
+        addVerticalBackground(createDivider(), Colors.DIVIDER);
 
         String moveTooltip = I18n.text("The character's ground movement rate for a specific encumbrance level");
         header = new PageHeader(I18n.text("Move"), moveTooltip);
         add(header, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
 
-        addVerticalBackground(createDivider(), ThemeColor.DIVIDER);
+        addVerticalBackground(createDivider(), Colors.DIVIDER);
 
         String dodgeTooltip = I18n.text("The character's dodge for a specific encumbrance level");
         header = new PageHeader(I18n.text("Dodge"), dodgeTooltip);
@@ -78,19 +78,19 @@ public class EncumbrancePanel extends DropPanel {
             Color backColor;
             if (current == encumbrance) {
                 if (character.isCarryingGreaterThanMaxLoad(false)) {
-                    textColor = ThemeColor.ON_OVERLOADED;
-                    backColor = ThemeColor.OVERLOADED;
+                    textColor = Colors.ON_OVERLOADED;
+                    backColor = Colors.OVERLOADED;
                 } else {
-                    textColor = ThemeColor.ON_CURRENT;
-                    backColor = ThemeColor.MARKER;
+                    textColor = Colors.ON_CURRENT;
+                    backColor = Colors.MARKER;
                 }
             } else {
-                textColor = ThemeColor.ON_CONTENT;
-                backColor = band ? ThemeColor.BANDING : ThemeColor.CONTENT;
+                textColor = Colors.ON_CONTENT;
+                backColor = band ? Colors.BANDING : Colors.CONTENT;
             }
             band = !band;
             PageLabel label = new PageLabel(encumbrance == current ? "\uf24e" : " ", textColor);
-            label.setThemeFont(ThemeFont.ENCUMBRANCE_MARKER);
+            label.setThemeFont(Fonts.ENCUMBRANCE_MARKER);
             add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
             PageLabel level = new PageLabel(MessageFormat.format("{0} {1}",
                     Numbers.format(-encumbrance.getEncumbrancePenalty()), encumbrance), textColor);

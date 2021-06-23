@@ -11,7 +11,8 @@
 
 package com.trollworks.gcs.ui.widget.outline;
 
-import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.ThemeFont;
 
 import java.awt.Color;
@@ -32,13 +33,13 @@ public class ListTextCell extends TextCell {
 
     @Override
     public ThemeFont getThemeFont(Row row, Column column) {
-        return ThemeFont.PAGE_FIELD_PRIMARY;
+        return Fonts.PAGE_FIELD_PRIMARY;
     }
 
     @Override
     public Color getColor(Outline outline, Row row, Column column, boolean selected, boolean active) {
         if (row instanceof ListRow && !((ListRow) row).isSatisfied()) {
-            return ThemeColor.WARNING;
+            return Colors.WARNING;
         }
         return super.getColor(outline, row, column, selected, active);
     }

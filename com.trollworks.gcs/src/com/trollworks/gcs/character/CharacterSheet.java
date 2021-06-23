@@ -43,11 +43,11 @@ import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillOutline;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellOutline;
+import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.Selection;
 import com.trollworks.gcs.ui.TextDrawing;
-import com.trollworks.gcs.ui.ThemeColor;
-import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
@@ -669,8 +669,8 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         int         pageNumber = 1 + UIUtilities.getIndexOf(this, page);
         String      pageString = MessageFormat.format(I18n.text("Page {0} of {1}"), Numbers.format(pageNumber), Numbers.format(getPageCount()));
         Scale       scale      = getScale();
-        Font        font1      = scale.scale(ThemeFont.PAGE_FOOTER_SECONDARY.getFont());
-        Font        font2      = scale.scale(ThemeFont.PAGE_FOOTER_PRIMARY.getFont());
+        Font        font1      = scale.scale(Fonts.PAGE_FOOTER_SECONDARY.getFont());
+        Font        font2      = scale.scale(Fonts.PAGE_FOOTER_PRIMARY.getFont());
         FontMetrics fm1        = gc.getFontMetrics(font1);
         FontMetrics fm2        = gc.getFontMetrics(font2);
         int         y          = bounds.y + bounds.height + fm2.getAscent();
@@ -687,7 +687,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         }
 
         Font savedFont = gc.getFont();
-        gc.setColor(ThemeColor.ON_PAGE);
+        gc.setColor(Colors.ON_PAGE);
         gc.setFont(font1);
         gc.drawString(left, bounds.x, y);
         gc.drawString(right, bounds.x + bounds.width - (int) fm1.getStringBounds(right, gc).getWidth(), y);
@@ -719,8 +719,8 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
 
     @Override
     public Insets getPageAdornmentsInsets(Page page) {
-        FontMetrics fm1 = TextDrawing.getFontMetrics(ThemeFont.PAGE_FOOTER_SECONDARY.getFont());
-        FontMetrics fm2 = TextDrawing.getFontMetrics(ThemeFont.PAGE_FOOTER_PRIMARY.getFont());
+        FontMetrics fm1 = TextDrawing.getFontMetrics(Fonts.PAGE_FOOTER_SECONDARY.getFont());
+        FontMetrics fm2 = TextDrawing.getFontMetrics(Fonts.PAGE_FOOTER_PRIMARY.getFont());
         return new Insets(0, 0, fm1.getAscent() + fm1.getDescent() + fm2.getAscent() + fm2.getDescent(), 0);
     }
 
@@ -807,7 +807,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
                     break;
                 }
                 gc.setClip(0, 0, width, height);
-                gc.setBackground(ThemeColor.PAGE);
+                gc.setBackground(Colors.PAGE);
                 gc.clearRect(0, 0, width, height);
                 gc.scale(dpi / 72.0, dpi / 72.0);
                 print(gc, format, pageNum++);

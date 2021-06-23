@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.modifier;
 
-import com.trollworks.gcs.ui.ThemeColor;
-import com.trollworks.gcs.ui.ThemeFont;
+import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
@@ -40,7 +40,7 @@ public class ModifierCheckCell extends TextCell {
 
     @Override
     protected Font deriveFont(Row row, Column column, Font font) {
-        return new Font(ThemeFont.FONT_AWESOME_SOLID, font.getStyle(), (int) Math.round(font.getSize() * 0.9));
+        return new Font(Fonts.FONT_AWESOME_SOLID, font.getStyle(), (int) Math.round(font.getSize() * 0.9));
     }
 
     @Override
@@ -51,7 +51,7 @@ public class ModifierCheckCell extends TextCell {
     @Override
     public Color getColor(Outline outline, Row row, Column column, boolean selected, boolean active) {
         if (mForEditor && row instanceof ListRow && !((ListRow) row).isSatisfied()) {
-            return ThemeColor.WARNING;
+            return Colors.WARNING;
         }
         return super.getColor(outline, row, column, selected, active);
     }

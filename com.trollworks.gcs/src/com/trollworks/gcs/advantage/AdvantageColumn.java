@@ -18,8 +18,8 @@ import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.equipment.FontAwesomeCell;
 import com.trollworks.gcs.settings.SheetSettings;
 import com.trollworks.gcs.template.Template;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.RetinaIcon;
-import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.outline.Cell;
 import com.trollworks.gcs.ui.widget.outline.Column;
@@ -269,7 +269,7 @@ public enum AdvantageColumn {
 
         @Override
         public HeaderCell getHeaderCell(boolean sheetOrTemplate) {
-            return new FontAwesomeCell(ThemeFont.FONT_AWESOME_SOLID, sheetOrTemplate);
+            return new FontAwesomeCell(Fonts.FONT_AWESOME_SOLID, sheetOrTemplate);
         }
 
         @Override

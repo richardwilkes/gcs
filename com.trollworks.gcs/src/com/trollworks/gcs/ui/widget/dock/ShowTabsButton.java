@@ -11,10 +11,10 @@
 
 package com.trollworks.gcs.ui.widget.dock;
 
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.MouseCapture;
 import com.trollworks.gcs.ui.TextDrawing;
-import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.Menu;
 import com.trollworks.gcs.ui.widget.MenuItem;
@@ -89,7 +89,7 @@ public class ShowTabsButton extends Panel implements MouseListener, MouseMotionL
     @Override
     public Dimension getPreferredSize() {
         Insets insets = getInsets();
-        return new Dimension(getPreferredWidth(), MARGIN + insets.top + TextDrawing.getFontHeight(ThemeFont.LABEL_PRIMARY.getFont()) + insets.bottom + MARGIN);
+        return new Dimension(getPreferredWidth(), MARGIN + insets.top + TextDrawing.getFontHeight(Fonts.LABEL_PRIMARY.getFont()) + insets.bottom + MARGIN);
     }
 
     @Override
@@ -99,7 +99,7 @@ public class ShowTabsButton extends Panel implements MouseListener, MouseMotionL
 
     public int getPreferredWidth() {
         Insets insets = getInsets();
-        return MARGIN + insets.left + TextDrawing.getSimpleWidth(ThemeFont.LABEL_PRIMARY.getFont(), getText()) + insets.right + MARGIN;
+        return MARGIN + insets.left + TextDrawing.getSimpleWidth(Fonts.LABEL_PRIMARY.getFont(), getText()) + insets.right + MARGIN;
     }
 
     private String getText() {
@@ -109,7 +109,7 @@ public class ShowTabsButton extends Panel implements MouseListener, MouseMotionL
     @Override
     protected void paintComponent(Graphics g) {
         Graphics2D gc = GraphicsUtilities.prepare(g);
-        gc.setFont(ThemeFont.LABEL_PRIMARY.getFont());
+        gc.setFont(Fonts.LABEL_PRIMARY.getFont());
         gc.setColor(UIUtilities.getIconButtonColor(isEnabled(), mInMouseDown, mPressed, mRollover));
         TextDrawing.draw(gc, UIUtilities.getLocalInsetBounds(this), getText(), SwingConstants.CENTER, SwingConstants.CENTER);
     }
@@ -123,7 +123,7 @@ public class ShowTabsButton extends Panel implements MouseListener, MouseMotionL
             menu.addItem(new MenuItem(tab.getIcon(), tab.getFullTitle(),
                     (p) -> dockable.getDockContainer().setCurrentDockable(dockable)));
         }
-        menu.presentToUser(this, 0);
+        menu.presentToUser(this, 0, this::updateRollOver);
     }
 
     @Override
@@ -190,7 +190,7 @@ public class ShowTabsButton extends Panel implements MouseListener, MouseMotionL
         repaint();
     }
 
-    private void updateRollOver() {
+    public void updateRollOver() {
         boolean wasRollover = mRollover;
         Point   location    = MouseInfo.getPointerInfo().getLocation();
         UIUtilities.convertPointFromScreen(location, this);

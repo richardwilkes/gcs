@@ -13,9 +13,9 @@ package com.trollworks.gcs.ui.widget.dock;
 
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.menu.file.Saveable;
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.RetinaIcon;
-import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
@@ -125,16 +125,16 @@ public class DockTab extends Panel implements ContainerListener, MouseListener, 
         DockContainer dc = getDockContainer();
         if (dc != null && dc.getCurrentDockable() == mDockable) {
             boolean active = dc.isActive();
-            gc.setColor(active ? ThemeColor.ACTIVE_TAB : ThemeColor.CURRENT_TAB);
-            mTitle.setForeground(active ? ThemeColor.ON_ACTIVE_TAB : ThemeColor.ON_CURRENT_TAB);
-            mCloseButton.setForeground(active ? ThemeColor.ON_ACTIVE_TAB : ThemeColor.ON_CURRENT_TAB);
+            gc.setColor(active ? Colors.ACTIVE_TAB : Colors.CURRENT_TAB);
+            mTitle.setForeground(active ? Colors.ON_ACTIVE_TAB : Colors.ON_CURRENT_TAB);
+            mCloseButton.setForeground(active ? Colors.ON_ACTIVE_TAB : Colors.ON_CURRENT_TAB);
         } else {
-            gc.setColor(ThemeColor.CONTENT);
-            mTitle.setForeground(ThemeColor.ON_CONTENT);
-            mCloseButton.setForeground(ThemeColor.ON_CONTENT);
+            gc.setColor(Colors.CONTENT);
+            mTitle.setForeground(Colors.ON_CONTENT);
+            mCloseButton.setForeground(Colors.ON_CONTENT);
         }
         gc.fill(path);
-        gc.setColor(ThemeColor.DIVIDER);
+        gc.setColor(Colors.DIVIDER);
         gc.draw(path);
     }
 

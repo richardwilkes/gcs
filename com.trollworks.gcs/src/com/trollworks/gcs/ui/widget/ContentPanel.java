@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.ui.widget;
 
-import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.Colors;
 
 import java.awt.LayoutManager;
 
@@ -29,7 +29,7 @@ public class ContentPanel extends Panel {
 
     @Override
     protected void setStdColors() {
-        setBackground(ThemeColor.CONTENT);
-        setForeground(ThemeColor.ON_CONTENT);
+        setBackground(Colors.CONTENT);
+        setForeground(Colors.ON_CONTENT);
     }
 }

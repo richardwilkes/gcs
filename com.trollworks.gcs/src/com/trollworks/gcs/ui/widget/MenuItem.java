@@ -12,9 +12,9 @@
 package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.RetinaIcon;
-import com.trollworks.gcs.ui.ThemeColor;
-import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 
@@ -39,7 +39,7 @@ public class MenuItem extends Label {
     public MenuItem(RetinaIcon icon, String title, SelectionListener listener) {
         super(icon, title);
         setOpaque(true);
-        setThemeFont(ThemeFont.BUTTON);
+        setThemeFont(Fonts.BUTTON);
         setBorder(new EmptyBorder(Button.V_MARGIN, Button.H_MARGIN, Button.V_MARGIN, Button.H_MARGIN));
         mSelectionListener = listener;
     }
@@ -82,11 +82,11 @@ public class MenuItem extends Label {
     @Override
     protected void setStdColors() {
         if (mHighlighted) {
-            setBackground(ThemeColor.PRESSED_BUTTON);
-            setForeground(ThemeColor.ON_PRESSED_BUTTON);
+            setBackground(Colors.PRESSED_BUTTON);
+            setForeground(Colors.ON_PRESSED_BUTTON);
         } else {
-            setBackground(ThemeColor.BUTTON);
-            setForeground(ThemeColor.ON_BUTTON);
+            setBackground(Colors.BUTTON);
+            setForeground(Colors.ON_BUTTON);
         }
     }
 

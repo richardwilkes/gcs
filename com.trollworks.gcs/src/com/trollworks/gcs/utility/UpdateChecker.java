@@ -15,8 +15,8 @@ import com.trollworks.gcs.GCS;
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.menu.library.LibraryUpdateCommand;
 import com.trollworks.gcs.settings.Settings;
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.MarkdownDocument;
-import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.widget.MessageType;
 import com.trollworks.gcs.ui.widget.Modal;
@@ -169,8 +169,8 @@ public final class UpdateChecker implements Runnable {
                     size.width = maxWidth;
                     markdown.setPreferredSize(size);
                 }
-                markdown.setBackground(ThemeColor.BACKGROUND);
-                markdown.setForeground(ThemeColor.ON_BACKGROUND);
+                markdown.setBackground(Colors.BACKGROUND);
+                markdown.setForeground(Colors.ON_BACKGROUND);
                 markdown.setEditable(false);
                 Modal dialog = Modal.prepareToShowMessage(null,
                         getAppResult(),

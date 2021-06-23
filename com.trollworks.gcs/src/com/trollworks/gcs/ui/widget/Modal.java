@@ -12,7 +12,7 @@
 package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.settings.Settings;
-import com.trollworks.gcs.ui.ThemeFont;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.WindowSizeEnforcer;
 import com.trollworks.gcs.ui.border.EmptyBorder;
@@ -54,7 +54,6 @@ public class Modal extends JDialog {
     public static final int       CLOSED = 0;
     public static final int       OK     = 1;
     public static final int       CANCEL = 2;
-    public static final int       MARGIN = 20;
     private             Component mOwner;
     private             Panel     mButtons;
     private             Button    mOKButton;
@@ -66,7 +65,7 @@ public class Modal extends JDialog {
         super(WindowUtils.getWindowForComponent(owner), title, ModalityType.APPLICATION_MODAL);
         setResizable(true);
         Panel content = new Panel(new BorderLayout());
-        Panel buttons = new Panel(new PrecisionLayout().setMargins(MARGIN).setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
+        Panel buttons = new Panel(new PrecisionLayout().setMargins(LayoutConstants.WINDOW_BORDER_INSET).setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
         mButtons = new Panel(new PrecisionLayout().setEqualColumns(true).setMargins(0).setHorizontalSpacing(10));
         buttons.add(mButtons);
         content.add(buttons, BorderLayout.SOUTH);
@@ -272,13 +271,13 @@ public class Modal extends JDialog {
      */
     public static Modal prepareToShowMessage(Component comp, String title, MessageType msgType, Object msg) {
         Modal dialog  = new Modal(comp, title);
-        Panel content = new Panel(new BorderLayout(MARGIN, 0));
-        content.setBorder(new EmptyBorder(MARGIN, MARGIN, 0, MARGIN));
+        Panel content = new Panel(new BorderLayout(LayoutConstants.WINDOW_BORDER_INSET, 0));
+        content.setBorder(new EmptyBorder(LayoutConstants.WINDOW_BORDER_INSET, LayoutConstants.WINDOW_BORDER_INSET, 0, LayoutConstants.WINDOW_BORDER_INSET));
         String  iconValue = msgType.getText();
         boolean hasIcon   = !iconValue.isEmpty();
         if (hasIcon) {
             Panel           left = new Panel(new BorderLayout());
-            FontAwesomeIcon icon = new FontAwesomeIcon(iconValue, ThemeFont.LABEL_PRIMARY.getFont().getSize() * 3, 0, null);
+            FontAwesomeIcon icon = new FontAwesomeIcon(iconValue, Fonts.LABEL_PRIMARY.getFont().getSize() * 3, 0, null);
             icon.setForeground(msgType.getColor());
             left.add(icon, BorderLayout.NORTH);
             content.add(left, BorderLayout.WEST);

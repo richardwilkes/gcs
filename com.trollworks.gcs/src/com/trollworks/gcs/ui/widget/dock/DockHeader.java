@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.ui.widget.dock;
 
-import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
@@ -52,7 +52,7 @@ public class DockHeader extends Panel implements LayoutManager, DropTargetListen
      */
     public DockHeader(DockContainer dc) {
         super.setLayout(this);
-        setBorder(new CompoundBorder(new LineBorder(ThemeColor.DIVIDER, 0, 0, 1, 0), new EmptyBorder(0, 4, 0, 4)));
+        setBorder(new CompoundBorder(new LineBorder(Colors.DIVIDER, 0, 0, 1, 0), new EmptyBorder(0, 4, 0, 4)));
         for (Dockable dockable : dc.getDockables()) {
             add(new DockTab(dockable));
         }
@@ -300,7 +300,7 @@ public class DockHeader extends Panel implements LayoutManager, DropTargetListen
                     x = insets.left;
                 }
             }
-            g.setColor(ThemeColor.DROP_AREA);
+            g.setColor(Colors.DROP_AREA);
             g.fillRect(x, insets.top, 3, getHeight() - (insets.top + insets.bottom));
         }
     }

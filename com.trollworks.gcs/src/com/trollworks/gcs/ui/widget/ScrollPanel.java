@@ -11,7 +11,7 @@
 
 package com.trollworks.gcs.ui.widget;
 
-import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.Colors;
 
 import java.awt.Component;
 import javax.swing.JScrollPane;
@@ -20,7 +20,7 @@ public class ScrollPanel extends JScrollPane {
     public ScrollPanel(Component view) {
         super(view);
         setBorder(null);
-        getViewport().setBackground(ThemeColor.BACKGROUND);
+        getViewport().setBackground(Colors.BACKGROUND);
     }
 
     public ScrollPanel(Component header, Component view) {

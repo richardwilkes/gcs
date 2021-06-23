@@ -13,7 +13,7 @@ package com.trollworks.gcs.template;
 
 import com.trollworks.gcs.character.CollectedOutlines;
 import com.trollworks.gcs.spell.SpellOutline;
-import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.scale.Scale;
@@ -40,7 +40,7 @@ public class TemplateSheet extends CollectedOutlines {
         mTemplate = template;
         setLayout(new PrecisionLayout().setVerticalSpacing(5).setHorizontalSpacing(0).setMargins(5));
         setOpaque(true);
-        setBackground(ThemeColor.PAGE);
+        setBackground(Colors.PAGE);
 
         // Make sure our primary outlines exist
         createOutlines(template);

@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.ui.widget.outline;
 
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.scale.Scale;
@@ -52,7 +53,7 @@ public class OutlineHeader extends Panel implements MouseListener, MouseMotionLi
 
     /** @return The top divider color. */
     public ThemeColor getTopDividerColor() {
-        return mTopDividerColor == null ? ThemeColor.DIVIDER : mTopDividerColor;
+        return mTopDividerColor == null ? Colors.DIVIDER : mTopDividerColor;
     }
 
     /** @param color The new top divider color. Pass in {@code null} to restore defaults. */
@@ -185,7 +186,7 @@ public class OutlineHeader extends Panel implements MouseListener, MouseMotionLi
                 }
                 bounds.x += bounds.width;
                 if (drawDividers && i < maxDivider) {
-                    gc.setColor(ThemeColor.DIVIDER);
+                    gc.setColor(Colors.DIVIDER);
                     gc.fillRect(bounds.x, bounds.y, one, bounds.height);
                     bounds.x += one;
                 }

@@ -54,7 +54,9 @@ public final class UIUtilities {
         } catch (Exception ex) {
             Log.error(ex);
         }
-        Theme.current(); // Just here to ensure the theme is loaded
+        // The following two lines are here to ensure the theme is loaded
+        Colors.currentThemeColors();
+        Fonts.currentThemeFonts();
     }
 
     /**
@@ -374,13 +376,13 @@ public final class UIUtilities {
     public static Color getIconButtonColor(boolean enabled, boolean inMouseDown, boolean pressed, boolean rollover) {
         if (enabled) {
             if (inMouseDown && pressed) {
-                return ThemeColor.PRESSED_ICON_BUTTON;
+                return Colors.PRESSED_ICON_BUTTON;
             }
             if (rollover) {
-                return ThemeColor.ROLLOVER_ICON_BUTTON;
+                return Colors.ROLLOVER_ICON_BUTTON;
             }
-            return ThemeColor.ICON_BUTTON;
+            return Colors.ICON_BUTTON;
         }
-        return Colors.getWithAlpha(ThemeColor.ICON_BUTTON, 96);
+        return Colors.getWithAlpha(Colors.ICON_BUTTON, 96);
     }
 }

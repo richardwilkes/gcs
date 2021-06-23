@@ -12,7 +12,6 @@
 package com.trollworks.gcs.attribute;
 
 import com.trollworks.gcs.ui.Colors;
-import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
@@ -29,8 +28,8 @@ public class ThresholdListPanel extends BandedPanel {
     public ThresholdListPanel(AttributeDef attrDef, Runnable adjustCallback) {
         super(false);
         setLayout(new PrecisionLayout().setMargins(0));
-        setBorder(new LineBorder(ThemeColor.DIVIDER));
-        setBackground(Colors.adjustSaturation(ThemeColor.BANDING, -0.05f));
+        setBorder(new LineBorder(Colors.DIVIDER));
+        setBackground(Colors.adjustSaturation(Colors.BANDING, -0.05f));
         mAttrDef = attrDef;
         mAdjustCallback = adjustCallback;
         fillThresholds();

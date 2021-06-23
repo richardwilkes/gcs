@@ -12,7 +12,7 @@
 package com.trollworks.gcs.library;
 
 import com.trollworks.gcs.settings.Settings;
-import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.scale.ScaleRoot;
@@ -26,7 +26,7 @@ public class LibraryHeader extends Panel implements ScaleRoot {
 
     public LibraryHeader(OutlineHeader header) {
         super(new BorderLayout());
-        header.setBorder(new LineBorder(ThemeColor.DIVIDER, 0, 0, 0, 1));
+        header.setBorder(new LineBorder(Colors.DIVIDER, 0, 0, 0, 1));
         add(header);
         mScale = Settings.getInstance().getInitialUIScale().getScale();
     }

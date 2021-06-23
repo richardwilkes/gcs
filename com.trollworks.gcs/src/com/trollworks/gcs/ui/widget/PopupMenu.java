@@ -12,10 +12,9 @@
 package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.TextDrawing;
-import com.trollworks.gcs.ui.ThemeColor;
-import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.scale.Scale;
 
@@ -55,7 +54,7 @@ public class PopupMenu<T> extends Panel implements MouseListener, KeyListener, F
 
     public PopupMenu() {
         super(null, false);
-        setThemeFont(ThemeFont.BUTTON);
+        setThemeFont(Fonts.BUTTON);
         addMouseListener(this);
         addFocusListener(this);
         addKeyListener(this);
@@ -160,7 +159,7 @@ public class PopupMenu<T> extends Panel implements MouseListener, KeyListener, F
         if (size.height < textSize.height) {
             size.height = textSize.height;
         }
-        Font      faFont = new Font(ThemeFont.FONT_AWESOME_SOLID, Font.PLAIN, font.getSize());
+        Font      faFont = new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, font.getSize());
         Dimension faSize = TextDrawing.getPreferredSize(faFont, POPUP_MARK);
         size.width += faSize.width;
         if (size.height < faSize.height) {
@@ -193,7 +192,7 @@ public class PopupMenu<T> extends Panel implements MouseListener, KeyListener, F
                 }
             }
         }
-        Font      faFont = new Font(ThemeFont.FONT_AWESOME_SOLID, Font.PLAIN, font.getSize());
+        Font      faFont = new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, font.getSize());
         Dimension faSize = TextDrawing.getPreferredSize(faFont, POPUP_MARK);
         size.width += faSize.width;
         if (size.height < faSize.height) {
@@ -222,11 +221,11 @@ public class PopupMenu<T> extends Panel implements MouseListener, KeyListener, F
         Color     color;
         Color     onColor;
         if (isEnabled()) {
-            color = ThemeColor.BUTTON;
-            onColor = ThemeColor.ON_BUTTON;
+            color = Colors.BUTTON;
+            onColor = Colors.ON_BUTTON;
         } else {
-            color = ThemeColor.BUTTON;
-            onColor = Colors.getWithAlpha(ThemeColor.ON_BUTTON, 96);
+            color = Colors.BUTTON;
+            onColor = Colors.getWithAlpha(Colors.ON_BUTTON, 96);
         }
 
         Path2D.Double path         = new Path2D.Double();
@@ -256,7 +255,7 @@ public class PopupMenu<T> extends Panel implements MouseListener, KeyListener, F
 
         Scale     scale  = Scale.get(this);
         Font      font   = scale.scale(getFont());
-        Font      faFont = new Font(ThemeFont.FONT_AWESOME_SOLID, Font.PLAIN, font.getSize());
+        Font      faFont = new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, font.getSize());
         Dimension faSize = TextDrawing.getPreferredSize(faFont, POPUP_MARK);
         T         item   = getSelectedItem();
         if (item != null) {
@@ -279,7 +278,7 @@ public class PopupMenu<T> extends Panel implements MouseListener, KeyListener, F
         bounds.width -= scale.scale(Button.H_MARGIN);
         TextDrawing.draw(gc, bounds, POPUP_MARK, SwingConstants.RIGHT, SwingConstants.CENTER);
 
-        gc.setColor(ThemeColor.BUTTON_BORDER);
+        gc.setColor(Colors.BUTTON_BORDER);
         RenderingHints saved = GraphicsUtilities.setMaximumQualityForGraphics(gc);
         gc.draw(path);
         gc.setRenderingHints(saved);
@@ -351,6 +350,6 @@ public class PopupMenu<T> extends Panel implements MouseListener, KeyListener, F
             }
             i++;
         }
-        menu.presentToUser(this, mSelection);
+        menu.presentToUser(this, mSelection, null);
     }
 }

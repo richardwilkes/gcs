@@ -14,9 +14,9 @@ package com.trollworks.gcs.character.panels;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.Profile;
 import com.trollworks.gcs.page.DropPanel;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.RetinaIcon;
-import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.border.TitledBorder;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.image.Img;
@@ -58,7 +58,7 @@ public class PortraitPanel extends DropPanel implements DropTargetListener {
      */
     public PortraitPanel(CharacterSheet sheet) {
         super(null, true);
-        setBorder(new TitledBorder(ThemeFont.PAGE_LABEL_PRIMARY, I18n.text("Portrait")));
+        setBorder(new TitledBorder(Fonts.PAGE_LABEL_PRIMARY, I18n.text("Portrait")));
         mSheet = sheet;
         setToolTipText(MessageFormat.format(I18n.text("Double-click to set a character portrait. The dimensions of the chosen picture should be in a ratio of 3 pixels wide for every 4 pixels tall to scale without distortion. Dimensions of {0}x{1} are ideal."),
                 Integer.valueOf(Profile.PORTRAIT_WIDTH * 2), Integer.valueOf(Profile.PORTRAIT_HEIGHT * 2)));

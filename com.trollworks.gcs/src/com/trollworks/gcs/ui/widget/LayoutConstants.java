@@ -9,10 +9,12 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.ui;
+package com.trollworks.gcs.ui.widget;
 
-import java.awt.Font;
+public final class LayoutConstants {
+    public static final int WINDOW_BORDER_INSET    = 20;
+    public static final int TOOLBAR_VERTICAL_INSET = 10;
 
-public interface ThemeFontDeriver {
-    Font derive();
+    private LayoutConstants() {
+    }
 }

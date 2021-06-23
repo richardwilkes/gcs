@@ -12,7 +12,7 @@
 package com.trollworks.gcs.settings;
 
 import com.trollworks.gcs.menu.file.CloseHandler;
-import com.trollworks.gcs.ui.Theme;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
@@ -22,6 +22,7 @@ import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.Button;
 import com.trollworks.gcs.ui.widget.FontPanel;
 import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.LayoutConstants;
 import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
@@ -58,9 +59,9 @@ public final class FontSettingsWindow extends BaseWindow implements CloseHandler
 
     private FontSettingsWindow() {
         super(I18n.text("Font Settings"));
-        Panel panel = new Panel(new PrecisionLayout().setColumns(2).setMargins(20, 20, 0, 20), false);
+        Panel panel = new Panel(new PrecisionLayout().setColumns(2).setMargins(LayoutConstants.WINDOW_BORDER_INSET, LayoutConstants.WINDOW_BORDER_INSET, 0, LayoutConstants.WINDOW_BORDER_INSET), false);
         mFontPanels = new ArrayList<>();
-        for (ThemeFont font : ThemeFont.ALL) {
+        for (ThemeFont font : Fonts.ALL) {
             if (font.isEditable()) {
                 FontTracker tracker = new FontTracker(font);
                 panel.add(new Label(font.toString()), new PrecisionLayoutData().setFillHorizontalAlignment());
@@ -77,7 +78,7 @@ public final class FontSettingsWindow extends BaseWindow implements CloseHandler
 
     private void addResetPanel() {
         Panel panel = new Panel(new FlowLayout(FlowLayout.CENTER));
-        panel.setBorder(new EmptyBorder(20));
+        panel.setBorder(new EmptyBorder(LayoutConstants.WINDOW_BORDER_INSET));
         mResetButton = new Button(I18n.text("Reset to Factory Settings"), (btn) -> resetFonts());
         panel.add(mResetButton);
         getContentPane().add(panel, BorderLayout.SOUTH);
@@ -103,8 +104,8 @@ public final class FontSettingsWindow extends BaseWindow implements CloseHandler
 
     private void adjustResetButton() {
         boolean enabled = false;
-        for (ThemeFont font : ThemeFont.ALL) {
-            if (font.isEditable() && !font.getFont().equals(Theme.DEFAULT.getFont(font.getIndex()))) {
+        for (ThemeFont font : Fonts.ALL) {
+            if (font.isEditable() && !font.getFont().equals(Fonts.defaultThemeFonts().getFont(font.getIndex()))) {
                 enabled = true;
                 break;
             }
@@ -140,7 +141,7 @@ public final class FontSettingsWindow extends BaseWindow implements CloseHandler
             mIndex = font.getIndex();
             addActionListener((evt) -> {
                 if (!mIgnore) {
-                    Theme.current().setFont(mIndex, getCurrentFont());
+                    Fonts.currentThemeFonts().setFont(mIndex, getCurrentFont());
                     adjustResetButton();
                     BaseWindow.forceRevalidateAndRepaint();
                 }
@@ -148,9 +149,9 @@ public final class FontSettingsWindow extends BaseWindow implements CloseHandler
         }
 
         void reset() {
-            Font font = Theme.DEFAULT.getFont(mIndex);
+            Font font = Fonts.defaultThemeFonts().getFont(mIndex);
             setCurrentFont(font);
-            Theme.current().setFont(mIndex, font);
+            Fonts.currentThemeFonts().setFont(mIndex, font);
         }
     }
 }

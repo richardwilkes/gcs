@@ -33,6 +33,7 @@ public class FileType {
     public static final FileType                  SPELL              = new FileType(I18n.text("Spells Library"), Images.SPL_FILE, true, true, "spl");
     public static final FileType                  NOTE               = new FileType(I18n.text("Notes Library"), Images.NOT_FILE, true, true, "not");
     public static final FileType                  ATTRIBUTE_SETTINGS = new FileType(I18n.text("Attribute Settings"), Images.FILE, true, false, "gas");
+    public static final FileType                  COLOR_SETTINGS     = new FileType(I18n.text("Color Settings"), Images.FILE, true, false, "colors");
     public static final FileType                  HIT_LOCATIONS      = new FileType(I18n.text("Hit Locations"), Images.FILE, true, false, "ghl");
     public static final FileType                  PDF                = new FileType(I18n.text("PDF Files"), Images.PDF_FILE, false, true, "pdf");
     public static final FileType                  PNG                = new FileType(I18n.text("PNG Files"), Images.FILE, false, false, "png");

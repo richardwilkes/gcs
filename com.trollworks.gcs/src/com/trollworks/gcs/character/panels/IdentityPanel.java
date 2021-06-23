@@ -19,7 +19,7 @@ import com.trollworks.gcs.character.names.USCensusNames;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageLabel;
-import com.trollworks.gcs.ui.ThemeFont;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
@@ -51,7 +51,7 @@ public class IdentityPanel extends DropPanel {
     }
 
     private PageField createRandomizableField(CharacterSheet sheet, String value, String title, String tag, CharacterSetter setter, Runnable randomizer) {
-        add(new FontAwesomeButton("\uf074", ThemeFont.PAGE_LABEL_PRIMARY.getFont().getSize() * 8 / 10,
+        add(new FontAwesomeButton("\uf074", Fonts.PAGE_LABEL_PRIMARY.getFont().getSize() * 8 / 10,
                 String.format(I18n.text("Randomize %s"), title), randomizer));
         add(new PageLabel(title), new PrecisionLayoutData().setEndHorizontalAlignment());
         PageField field = new PageField(FieldFactory.STRING, value, setter, sheet, tag,

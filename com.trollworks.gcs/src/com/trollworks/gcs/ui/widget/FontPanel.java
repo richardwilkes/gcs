@@ -12,7 +12,7 @@
 package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.ui.FontStyle;
-import com.trollworks.gcs.ui.ThemeFont;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 
 import java.awt.Font;
@@ -69,7 +69,7 @@ public class FontPanel extends ActionPanel implements ActionListener {
     public Font getCurrentFont() {
         String name = mFontNameMenu.getSelectedItem();
         if (name == null) {
-            name = ThemeFont.ROBOTO;
+            name = Fonts.ROBOTO;
         }
         FontStyle style = mFontStyleMenu.getSelectedItem();
         if (style == null) {

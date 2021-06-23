@@ -18,7 +18,7 @@ import com.trollworks.gcs.notes.NoteOutline;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.skill.SkillOutline;
 import com.trollworks.gcs.spell.SpellOutline;
-import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.scale.ScaleRoot;
@@ -148,8 +148,8 @@ public abstract class CollectedOutlines extends Panel implements Runnable, Actio
         outline.setDynamicRowHeight(true);
         outline.setAllowColumnResize(false);
         header.setIgnoreResizeOK(true);
-        header.setBackground(ThemeColor.HEADER);
-        header.setTopDividerColor(ThemeColor.HEADER);
+        header.setBackground(Colors.HEADER);
+        header.setTopDividerColor(Colors.HEADER);
     }
 
     @Override

@@ -338,7 +338,8 @@ public class ListOutline extends Outline implements Runnable, ActionListener, Du
             }
             if (menu.getComponentCount() > 0) {
                 Dimension size = menu.getPreferredSize();
-                menu.presentToUser((JComponent) event.getComponent(), new Rectangle(event.getX(), event.getY(), size.width, 16), 0);
+                menu.presentToUser((JComponent) event.getComponent(),
+                        new Rectangle(event.getX(), event.getY(), size.width, 16), 0, null);
             }
             Command.setFocusOwnerOverride(null);
         }

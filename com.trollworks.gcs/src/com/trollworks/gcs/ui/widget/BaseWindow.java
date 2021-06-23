@@ -19,7 +19,7 @@ import com.trollworks.gcs.menu.file.SaveResult;
 import com.trollworks.gcs.menu.file.Saveable;
 import com.trollworks.gcs.settings.MenuKeySettingsWindow;
 import com.trollworks.gcs.settings.Settings;
-import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.WindowSizeEnforcer;
 import com.trollworks.gcs.ui.image.Images;
@@ -62,7 +62,7 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         setLocationByPlatform(true);
         Container contentPane = getContentPane();
-        contentPane.setBackground(ThemeColor.BACKGROUND);
+        contentPane.setBackground(Colors.BACKGROUND);
         ((JComponent) contentPane).setDoubleBuffered(true);
         getToolkit().setDynamicLayout(true);
         addWindowListener(this);

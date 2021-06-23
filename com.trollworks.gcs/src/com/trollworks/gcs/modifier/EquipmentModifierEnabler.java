@@ -12,7 +12,7 @@
 package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.equipment.Equipment;
-import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
@@ -103,8 +103,8 @@ public final class EquipmentModifierEnabler extends Panel {
             top.add(new Label(MessageFormat.format(I18n.text("{0} equipment remaining to be processed."), Integer.valueOf(remaining)), SwingConstants.CENTER));
         }
         label.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(0, 2, 0, 2)));
-        label.setBackground(ThemeColor.HEADER);
-        label.setForeground(ThemeColor.ON_HEADER);
+        label.setBackground(Colors.HEADER);
+        label.setForeground(Colors.ON_HEADER);
         label.setOpaque(true);
         top.add(new Panel());
         top.add(label);
