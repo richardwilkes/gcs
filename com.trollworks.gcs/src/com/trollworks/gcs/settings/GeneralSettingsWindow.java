@@ -24,6 +24,7 @@ import com.trollworks.gcs.ui.widget.Button;
 import com.trollworks.gcs.ui.widget.Checkbox;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.LayoutConstants;
 import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.WindowUtils;
@@ -68,7 +69,7 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
         super(I18n.text("General Settings"));
         Settings  prefs   = Settings.getInstance();
         Container content = getContentPane();
-        content.setLayout(new PrecisionLayout().setColumns(3).setMargins(10));
+        content.setLayout(new PrecisionLayout().setColumns(3).setMargins(LayoutConstants.WINDOW_BORDER_INSET));
 
         // First row
         mPlayerName = new EditorField(FieldFactory.STRING, (f) -> {
@@ -144,7 +145,7 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
         }, SwingConstants.RIGHT, Integer.valueOf(prefs.getImageResolution()),
                 FieldFactory.getMaxValue(FieldFactory.OUTPUT_DPI),
                 I18n.text("The resolution, in dots-per-inch, to use when saving sheets as PNG files"));
-        wrapper.add(new Label(I18n.text("Image Resolution")), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(5));
+        wrapper.add(new Label(I18n.text("Image Resolution")), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(10));
         wrapper.add(mImageResolution, new PrecisionLayoutData().setFillHorizontalAlignment());
         wrapper.add(new Label(I18n.text("dpi")));
 
@@ -168,7 +169,9 @@ public final class GeneralSettingsWindow extends BaseWindow implements CloseHand
 
         // Bottom row
         mResetButton = new Button(I18n.text("Reset to Factory Settings"), (btn) -> reset());
-        content.add(mResetButton, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE).setHorizontalSpan(3).setTopMargin(10));
+        content.add(mResetButton, new PrecisionLayoutData().
+                setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE).setHorizontalSpan(3).
+                setTopMargin(LayoutConstants.WINDOW_BORDER_INSET));
 
         adjustResetButton();
         establishSizing();

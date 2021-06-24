@@ -19,8 +19,10 @@ import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
+import com.trollworks.gcs.ui.scale.Scale;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -32,6 +34,7 @@ import java.text.ParseException;
 import java.util.Objects;
 import javax.swing.JFormattedTextField;
 import javax.swing.SwingConstants;
+import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 
 /** Provides a standard editor field. */
@@ -40,6 +43,7 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
     private String    mHint;
     private String    mErrorMsg;
     private String    mOriginalTooltip;
+    private Object    mPrototypeValue;
 
     public interface ChangeListener {
         void editorFieldChanged(EditorField field);
@@ -69,7 +73,8 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
      * @param tooltip    The tooltip to use.
      */
     public EditorField(AbstractFormatterFactory formatter, ChangeListener listener, int alignment, Object value, Object protoValue, String tooltip) {
-        super(formatter, protoValue != null ? protoValue : value);
+        super(formatter, value);
+        mPrototypeValue = protoValue;
         setThemeFont(Fonts.FIELD_PRIMARY);
         setHorizontalAlignment(alignment);
         setToolTipText(tooltip);
@@ -81,10 +86,6 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
         setSelectedTextColor(Colors.ON_SELECTION);
         setDisabledTextColor(new DynamicColor(() -> Colors.getWithAlpha(getForeground(), 96).getRGB()));
         setBorder(new CompoundBorder(new LineBorder(Colors.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
-        if (protoValue != null) {
-            setPreferredSize(getPreferredSize());
-            setValue(value);
-        }
         if (listener != null) {
             addPropertyChangeListener("value", (evt) -> listener.editorFieldChanged(this));
         }
@@ -92,14 +93,37 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
     }
 
     @Override
+    public Dimension getPreferredSize() {
+        if (isPreferredSizeSet()) {
+            return super.getPreferredSize();
+        }
+        if (mPrototypeValue != null) {
+            // RAW: This is a horrible way to do this... but until I write my own text field, it
+            //      will have to do.
+            JFormattedTextField tmp = new JFormattedTextField(getFormatterFactory(), mPrototypeValue);
+            tmp.setFont(getFont());
+            tmp.setBorder(createBorder(isFocusOwner()));
+            tmp.setHorizontalAlignment(getHorizontalAlignment());
+            Dimension size = tmp.getPreferredSize();
+            size.width += Scale.get(this).scale(4); // Add some slop, since it is being truncated otherwise
+            return size;
+        }
+        return super.getPreferredSize();
+    }
+
+    private static Border createBorder(boolean focused) {
+        return new CompoundBorder(new LineBorder(focused ? Colors.ACTIVE_EDITABLE_BORDER :
+                Colors.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4));
+    }
+
+    @Override
     protected void processFocusEvent(FocusEvent event) {
         super.processFocusEvent(event);
-        if (event.getID() == FocusEvent.FOCUS_GAINED) {
+        boolean focused = event.getID() == FocusEvent.FOCUS_GAINED;
+        if (focused) {
             selectAll();
-            setBorder(new CompoundBorder(new LineBorder(Colors.ACTIVE_EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
-        } else {
-            setBorder(new CompoundBorder(new LineBorder(Colors.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
         }
+        setBorder(createBorder(focused));
     }
 
     /** @param hint The hint to use, or {@code null}. */
