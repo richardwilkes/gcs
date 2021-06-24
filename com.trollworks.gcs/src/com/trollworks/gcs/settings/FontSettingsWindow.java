@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.settings;
 
-import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
@@ -20,27 +19,18 @@ import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.FontPanel;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.LayoutConstants;
-import com.trollworks.gcs.ui.widget.Menu;
-import com.trollworks.gcs.ui.widget.MenuItem;
-import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.Log;
-import com.trollworks.gcs.utility.PathUtils;
-import com.trollworks.gcs.utility.text.NumericComparator;
 
 import java.awt.Font;
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /** A window for editing font settings. */
-public final class FontSettingsWindow extends SettingsWindow {
+public final class FontSettingsWindow extends SettingsWindow<Fonts> {
     private List<FontTracker> mFontPanels;
     private boolean           mIgnore;
 
@@ -79,7 +69,8 @@ public final class FontSettingsWindow extends SettingsWindow {
         resetTo(Fonts.defaultThemeFonts());
     }
 
-    private void resetTo(Fonts fonts) {
+    @Override
+    protected void resetTo(Fonts fonts) {
         mIgnore = true;
         for (FontTracker tracker : mFontPanels) {
             tracker.resetTo(fonts);
@@ -90,88 +81,23 @@ public final class FontSettingsWindow extends SettingsWindow {
     }
 
     @Override
-    protected Menu createActionMenu() {
-        Menu menu = new Menu();
-        menu.addItem(new MenuItem(I18n.text("Import…"), (p) -> {
-            Path path = Modal.presentOpenFileDialog(this, I18n.text("Import…"),
-                    Dirs.THEME, FileType.FONT_SETTINGS.getFilter());
-            if (path != null) {
-                try {
-                    resetTo(new Fonts(path));
-                } catch (IOException ioe) {
-                    Log.error(ioe);
-                    Modal.showError(this, I18n.text("Unable to import font settings."));
-                }
-            }
-        }));
-        menu.addItem(new MenuItem(I18n.text("Export…"), (p) -> {
-            Path path = Modal.presentSaveFileDialog(this, I18n.text("Export…"), Dirs.THEME,
-                    FileType.FONT_SETTINGS.getUntitledDefaultFileName(),
-                    FileType.FONT_SETTINGS.getFilter());
-            if (path != null) {
-                try {
-                    Fonts.currentThemeFonts().save(path);
-                } catch (Exception exception) {
-                    Log.error(exception);
-                    Modal.showError(this, I18n.text("Unable to export font settings."));
-                }
-            }
-        }));
-        Settings.getInstance(); // Just to ensure the libraries list is initialized
-        for (Library lib : Library.LIBRARIES) {
-            Path dir = lib.getPath().resolve(Dirs.THEME.getDefaultPath().getFileName());
-            if (Files.isDirectory(dir)) {
-                List<FontSetData> list = new ArrayList<>();
-                // IMPORTANT: On Windows, calling any of the older methods to list the contents of a
-                // directory results in leaving state around that prevents future move & delete
-                // operations. Only use this style of access for directory listings to avoid that.
-                try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
-                    for (Path path : stream) {
-                        if (FileType.FONT_SETTINGS.matchExtension(PathUtils.getExtension(path))) {
-                            try {
-                                list.add(new FontSetData(PathUtils.getLeafName(path, false), new Fonts(path)));
-                            } catch (IOException ioe) {
-                                Log.error("unable to load " + path, ioe);
-                            }
-                        }
-                    }
-                } catch (IOException exception) {
-                    Log.error(exception);
-                }
-                if (!list.isEmpty()) {
-                    Collections.sort(list);
-                    menu.addSeparator();
-                    MenuItem item = new MenuItem(dir.getParent().getFileName().toString(), null);
-                    item.setEnabled(false);
-                    menu.addItem(item);
-                    for (FontSetData choice : list) {
-                        menu.add(new MenuItem(choice.toString(),
-                                (p) -> resetTo(choice.mFonts)));
-                    }
-                }
-            }
-        }
-        return menu;
+    protected Dirs getDir() {
+        return Dirs.THEME;
     }
 
-    private static class FontSetData implements Comparable<FontSetData> {
-        String mName;
-        Fonts  mFonts;
+    @Override
+    protected FileType getFileType() {
+        return FileType.FONT_SETTINGS;
+    }
 
-        FontSetData(String name, Fonts fonts) {
-            mName = name;
-            mFonts = fonts;
-        }
+    @Override
+    protected Fonts createSettingsFrom(Path path) throws IOException {
+        return new Fonts(path);
+    }
 
-        @Override
-        public int compareTo(FontSetData other) {
-            return NumericComparator.CASELESS_COMPARATOR.compare(mName, other.mName);
-        }
-
-        @Override
-        public String toString() {
-            return mName;
-        }
+    @Override
+    protected void exportSettingsTo(Path path) throws IOException {
+        Fonts.currentThemeFonts().save(path);
     }
 
     private class FontTracker extends FontPanel {

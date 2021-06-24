@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.settings;
 
-import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
@@ -19,29 +18,20 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.ColorWell;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.LayoutConstants;
-import com.trollworks.gcs.ui.widget.Menu;
-import com.trollworks.gcs.ui.widget.MenuItem;
-import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.Log;
-import com.trollworks.gcs.utility.PathUtils;
-import com.trollworks.gcs.utility.text.NumericComparator;
 
 import java.awt.Color;
 import java.awt.Container;
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /** A window for editing color settings. */
-public final class ColorSettingsWindow extends SettingsWindow {
+public final class ColorSettingsWindow extends SettingsWindow<Colors> {
     private List<ColorTracker> mColorWells;
     private boolean            mIgnore;
 
@@ -101,10 +91,11 @@ public final class ColorSettingsWindow extends SettingsWindow {
         resetTo(Colors.defaultThemeColors());
     }
 
-    private void resetTo(Colors colors) {
+    @Override
+    protected void resetTo(Colors data) {
         mIgnore = true;
         for (ColorTracker tracker : mColorWells) {
-            tracker.resetTo(colors);
+            tracker.resetTo(data);
         }
         mIgnore = false;
         WindowUtils.repaintAll();
@@ -112,88 +103,23 @@ public final class ColorSettingsWindow extends SettingsWindow {
     }
 
     @Override
-    protected Menu createActionMenu() {
-        Menu menu = new Menu();
-        menu.addItem(new MenuItem(I18n.text("Import…"), (p) -> {
-            Path path = Modal.presentOpenFileDialog(this, I18n.text("Import…"),
-                    Dirs.THEME, FileType.COLOR_SETTINGS.getFilter());
-            if (path != null) {
-                try {
-                    resetTo(new Colors(path));
-                } catch (IOException ioe) {
-                    Log.error(ioe);
-                    Modal.showError(this, I18n.text("Unable to import color settings."));
-                }
-            }
-        }));
-        menu.addItem(new MenuItem(I18n.text("Export…"), (p) -> {
-            Path path = Modal.presentSaveFileDialog(this, I18n.text("Export…"), Dirs.THEME,
-                    FileType.COLOR_SETTINGS.getUntitledDefaultFileName(),
-                    FileType.COLOR_SETTINGS.getFilter());
-            if (path != null) {
-                try {
-                    Colors.currentThemeColors().save(path);
-                } catch (Exception exception) {
-                    Log.error(exception);
-                    Modal.showError(this, I18n.text("Unable to export color settings."));
-                }
-            }
-        }));
-        Settings.getInstance(); // Just to ensure the libraries list is initialized
-        for (Library lib : Library.LIBRARIES) {
-            Path dir = lib.getPath().resolve(Dirs.THEME.getDefaultPath().getFileName());
-            if (Files.isDirectory(dir)) {
-                List<ColorSetData> list = new ArrayList<>();
-                // IMPORTANT: On Windows, calling any of the older methods to list the contents of a
-                // directory results in leaving state around that prevents future move & delete
-                // operations. Only use this style of access for directory listings to avoid that.
-                try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
-                    for (Path path : stream) {
-                        if (FileType.COLOR_SETTINGS.matchExtension(PathUtils.getExtension(path))) {
-                            try {
-                                list.add(new ColorSetData(PathUtils.getLeafName(path, false), new Colors(path)));
-                            } catch (IOException ioe) {
-                                Log.error("unable to load " + path, ioe);
-                            }
-                        }
-                    }
-                } catch (IOException exception) {
-                    Log.error(exception);
-                }
-                if (!list.isEmpty()) {
-                    Collections.sort(list);
-                    menu.addSeparator();
-                    MenuItem item = new MenuItem(dir.getParent().getFileName().toString(), null);
-                    item.setEnabled(false);
-                    menu.addItem(item);
-                    for (ColorSetData choice : list) {
-                        menu.add(new MenuItem(choice.toString(),
-                                (p) -> resetTo(choice.mColors)));
-                    }
-                }
-            }
-        }
-        return menu;
+    protected Dirs getDir() {
+        return Dirs.THEME;
     }
 
-    private static class ColorSetData implements Comparable<ColorSetData> {
-        String mName;
-        Colors mColors;
+    @Override
+    protected FileType getFileType() {
+        return FileType.COLOR_SETTINGS;
+    }
 
-        ColorSetData(String name, Colors colors) {
-            mName = name;
-            mColors = colors;
-        }
+    @Override
+    protected Colors createSettingsFrom(Path path) throws IOException {
+        return new Colors(path);
+    }
 
-        @Override
-        public int compareTo(ColorSetData other) {
-            return NumericComparator.CASELESS_COMPARATOR.compare(mName, other.mName);
-        }
-
-        @Override
-        public String toString() {
-            return mName;
-        }
+    @Override
+    protected void exportSettingsTo(Path path) throws IOException {
+        Colors.currentThemeColors().save(path);
     }
 
     private class ColorTracker extends ColorWell implements ColorWell.ColorChangedListener {

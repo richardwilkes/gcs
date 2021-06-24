@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.settings;
 
+import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.UIUtilities;
@@ -20,28 +21,41 @@ import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.LayoutConstants;
 import com.trollworks.gcs.ui.widget.Menu;
+import com.trollworks.gcs.ui.widget.MenuItem;
+import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
+import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
+import com.trollworks.gcs.utility.PathUtils;
+import com.trollworks.gcs.utility.text.NumericComparator;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
-public abstract class SettingsWindow extends BaseWindow implements CloseHandler {
-    private static final Map<Class<? extends SettingsWindow>, SettingsWindow> INSTANCES = new HashMap<>();
+public abstract class SettingsWindow<T> extends BaseWindow implements CloseHandler {
+    private static final Map<Class<? extends SettingsWindow<?>>, SettingsWindow<?>> INSTANCES = new HashMap<>();
 
     private FontAwesomeButton mResetButton;
     private FontAwesomeButton mMenuButton;
 
     /** Displays the color settings window. */
-    public static void display(Class<? extends SettingsWindow> key) {
+    public static void display(Class<? extends SettingsWindow<?>> key) {
         if (!UIUtilities.inModalState()) {
-            SettingsWindow wnd;
+            SettingsWindow<?> wnd;
             synchronized (INSTANCES) {
                 wnd = INSTANCES.get(key);
                 if (wnd == null) {
@@ -87,7 +101,7 @@ public abstract class SettingsWindow extends BaseWindow implements CloseHandler 
     protected abstract Panel createContent();
 
     @Override
-    public void establishSizing() {
+    public final void establishSizing() {
         pack();
         int width = getSize().width;
         setMinimumSize(new Dimension(width, 200));
@@ -102,24 +116,124 @@ public abstract class SettingsWindow extends BaseWindow implements CloseHandler 
 
     protected abstract void reset();
 
-    protected abstract Menu createActionMenu();
+    protected abstract void resetTo(T data);
+
+    protected abstract Dirs getDir();
+
+    protected abstract FileType getFileType();
+
+    private void importSettings(MenuItem item) {
+        FileNameExtensionFilter filter = getFileType().getFilter();
+        Path                    path   = Modal.presentOpenFileDialog(this, item.getText(), getDir(), filter);
+        if (path != null) {
+            try {
+                resetTo(createSettingsFrom(path));
+            } catch (IOException ioe) {
+                Log.error(ioe);
+                Modal.showError(this, String.format(I18n.text("Unable to import %s."),
+                        filter.getDescription()));
+            }
+        }
+    }
+
+    protected abstract T createSettingsFrom(Path path) throws IOException;
+
+    private void exportSettings(MenuItem item) {
+        FileType                fileType = getFileType();
+        FileNameExtensionFilter filter   = fileType.getFilter();
+        Path path = Modal.presentSaveFileDialog(this, item.getText(), getDir(),
+                fileType.getUntitledDefaultFileName(), filter);
+        if (path != null) {
+            try {
+                exportSettingsTo(path);
+            } catch (IOException exception) {
+                Log.error(exception);
+                Modal.showError(this, String.format(I18n.text("Unable to export %s."),
+                        filter.getDescription()));
+            }
+        }
+    }
+
+    protected abstract void exportSettingsTo(Path path) throws IOException;
+
+    private Menu createActionMenu() {
+        Menu menu = new Menu();
+        menu.addItem(new MenuItem(I18n.text("Import…"), this::importSettings));
+        menu.addItem(new MenuItem(I18n.text("Export…"), this::exportSettings));
+        Settings.getInstance(); // Just to ensure the libraries list is initialized
+        FileType fileType = getFileType();
+        Dirs     lastDir  = getDir();
+        for (Library lib : Library.LIBRARIES) {
+            Path dir = lib.getPath().resolve(lastDir.getDefaultPath().getFileName());
+            if (Files.isDirectory(dir)) {
+                List<SetData<T>> list = new ArrayList<>();
+                // IMPORTANT: On Windows, calling any of the older methods to list the contents of a
+                // directory results in leaving state around that prevents future move & delete
+                // operations. Only use this style of access for directory listings to avoid that.
+                try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
+                    for (Path path : stream) {
+                        if (fileType.matchExtension(PathUtils.getExtension(path))) {
+                            try {
+                                list.add(new SetData<>(PathUtils.getLeafName(path, false), createSettingsFrom(path)));
+                            } catch (IOException ioe) {
+                                Log.error("unable to load " + path, ioe);
+                            }
+                        }
+                    }
+                } catch (IOException exception) {
+                    Log.error(exception);
+                }
+                if (!list.isEmpty()) {
+                    Collections.sort(list);
+                    menu.addSeparator();
+                    MenuItem item = new MenuItem(dir.getParent().getFileName().toString(), null);
+                    item.setEnabled(false);
+                    menu.addItem(item);
+                    for (SetData<T> choice : list) {
+                        menu.add(new MenuItem(choice.toString(), (p) -> resetTo(choice.mData)));
+                    }
+                }
+            }
+        }
+        return menu;
+    }
 
     @Override
-    public boolean mayAttemptClose() {
+    public final boolean mayAttemptClose() {
         return true;
     }
 
     @Override
-    public boolean attemptClose() {
+    public final boolean attemptClose() {
         windowClosing(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
         return true;
     }
 
     @Override
-    public void dispose() {
+    public final void dispose() {
         synchronized (INSTANCES) {
             INSTANCES.remove(getClass());
         }
         super.dispose();
+    }
+
+    private static class SetData<T> implements Comparable<SetData<T>> {
+        String mName;
+        T      mData;
+
+        SetData(String name, T data) {
+            mName = name;
+            mData = data;
+        }
+
+        @Override
+        public int compareTo(SetData other) {
+            return NumericComparator.CASELESS_COMPARATOR.compare(mName, other.mName);
+        }
+
+        @Override
+        public String toString() {
+            return mName;
+        }
     }
 }
