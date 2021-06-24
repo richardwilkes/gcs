@@ -466,38 +466,38 @@ public final class PrecisionLayout implements LayoutManager2 {
                     for (int k = 0; k < vSpan; k++) {
                         cellHeight += heights[i + k];
                     }
-                    cellWidth += hSpacing * (hSpan - 1);
                     int dataLeftMargin  = scale.scale(data.getLeftMargin());
                     int dataRightMargin = scale.scale(data.getRightMargin());
-                    int childX          = gridX + dataLeftMargin;
-                    int childWidth      = Math.min(data.getCachedWidth(), cellWidth);
+                    cellWidth += hSpacing * (hSpan - 1) - (dataLeftMargin + dataRightMargin);
+                    int childX     = gridX + dataLeftMargin;
+                    int childWidth = Math.min(data.getCachedWidth(), cellWidth);
                     switch (data.getHorizontalAlignment()) {
                     case MIDDLE:
-                        childX += Math.max(0, (cellWidth - (dataLeftMargin + dataRightMargin) - childWidth) / 2);
+                        childX += Math.max(0, (cellWidth - childWidth) / 2);
                         break;
                     case END:
-                        childX += Math.max(0, cellWidth - (dataLeftMargin + dataRightMargin) - childWidth);
+                        childX += Math.max(0, cellWidth - childWidth);
                         break;
                     case FILL:
-                        childWidth = cellWidth - (dataLeftMargin + dataRightMargin);
+                        childWidth = cellWidth;
                         break;
                     default:
                         break;
                     }
-                    cellHeight += vSpacing * (vSpan - 1);
                     int dataTopMargin    = scale.scale(data.getTopMargin());
                     int dataBottomMargin = scale.scale(data.getBottomMargin());
-                    int childY           = gridY + dataTopMargin;
-                    int childHeight      = Math.min(data.getCachedHeight(), cellHeight);
+                    cellHeight += vSpacing * (vSpan - 1) - (dataTopMargin + dataBottomMargin);
+                    int childY      = gridY + dataTopMargin;
+                    int childHeight = Math.min(data.getCachedHeight(), cellHeight);
                     switch (data.getVerticalAlignment()) {
                     case MIDDLE:
-                        childY += Math.max(0, (cellHeight - (dataTopMargin + dataBottomMargin) - childHeight) / 2);
+                        childY += Math.max(0, (cellHeight - childHeight) / 2);
                         break;
                     case END:
-                        childY += Math.max(0, cellHeight - (dataTopMargin + dataBottomMargin) - childHeight);
+                        childY += Math.max(0, cellHeight - childHeight);
                         break;
                     case FILL:
-                        childHeight = cellHeight - (dataTopMargin + dataBottomMargin);
+                        childHeight = cellHeight;
                         break;
                     default:
                         break;
@@ -612,7 +612,7 @@ public final class PrecisionLayout implements LayoutManager2 {
                     int hSpan = Math.max(1, Math.min(data.getHorizontalSpan(), mColumns));
                     if (hSpan == 1) {
                         int dataLeftMargin  = scale.scale(data.getLeftMargin());
-                        int dataRightMargin = scale.scale(data.getLeftMargin());
+                        int dataRightMargin = scale.scale(data.getRightMargin());
                         int w               = data.getCachedWidth() + dataLeftMargin + dataRightMargin;
                         if (widths[j] < w) {
                             widths[j] = w;
@@ -652,7 +652,7 @@ public final class PrecisionLayout implements LayoutManager2 {
                             expandColumn[j] = true;
                         }
                         int dataLeftMargin  = scale.scale(data.getLeftMargin());
-                        int dataRightMargin = scale.scale(data.getLeftMargin());
+                        int dataRightMargin = scale.scale(data.getRightMargin());
                         int w               = data.getCachedWidth() + dataLeftMargin + dataRightMargin - spanWidth - (hSpan - 1) * hSpacing;
                         if (w > 0) {
                             if (mEqualColumns) {
