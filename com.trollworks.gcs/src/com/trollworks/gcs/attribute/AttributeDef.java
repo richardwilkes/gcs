@@ -75,7 +75,7 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         Map<String, AttributeDef> m      = new HashMap<>();
         int                       length = a.size();
         for (int i = 0; i < length; i++) {
-            AttributeDef def = new AttributeDef(a.getMap(i), i);
+            AttributeDef def = new AttributeDef(a.getMap(i), i + 1);
             m.put(def.getID(), def);
         }
         return m;
