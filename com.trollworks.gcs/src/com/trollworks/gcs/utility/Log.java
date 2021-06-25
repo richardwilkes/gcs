@@ -25,7 +25,6 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -43,16 +42,16 @@ public final class Log {
         Path   path     = null;
         String property = System.getProperty(GCS_LOG_ENV, System.getenv(GCS_LOG_ENV));
         if (property != null && !property.isBlank()) {
-            path = Paths.get(property);
+            path = Path.of(property);
         } else if (!GCS.VERSION.isZero()) { // When running a dev version, assume the console is always appropriate, since you're likely running from an IDE
             String home = System.getProperty("user.home", ".");
             switch (Platform.getPlatform()) {
-            case MAC -> path = Paths.get(home, "Library", "Logs", GCS_LOG_FILE);
+            case MAC -> path = Path.of(home, "Library", "Logs", GCS_LOG_FILE);
             case WINDOWS -> {
                 String localAppData = System.getenv("LOCALAPPDATA");
-                path = Paths.get(localAppData != null ? localAppData : home, "logs", GCS_LOG_FILE);
+                path = Path.of(localAppData != null ? localAppData : home, "logs", GCS_LOG_FILE);
             }
-            default -> path = Paths.get(home, ".local", "logs", GCS_LOG_FILE);
+            default -> path = Path.of(home, ".local", "logs", GCS_LOG_FILE);
             }
         }
         if (path != null) {

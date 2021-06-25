@@ -37,12 +37,12 @@ import javax.swing.JFormattedTextField;
 import javax.swing.SwingConstants;
 import javax.swing.text.DefaultFormatterFactory;
 
-public class HitLocationTablePanel extends BandedPanel {
+public class BodyTypePanel extends BandedPanel {
     private HitLocationTable mLocations;
     private Runnable         mAdjustCallback;
     private EditorField      mFirstField;
 
-    public HitLocationTablePanel(HitLocationTable locations, Runnable adjustCallback) {
+    public BodyTypePanel(HitLocationTable locations, Runnable adjustCallback) {
         super(false);
         setLayout(new PrecisionLayout().setMargins(2, 10, 0, 10));
         mLocations = locations;
@@ -98,7 +98,7 @@ public class HitLocationTablePanel extends BandedPanel {
         } else {
             mFirstField = addField(wrapper,
                     I18n.text("ID"),
-                    I18n.text("An ID for the hit location table"),
+                    I18n.text("An ID for the body type table"),
                     mLocations.getID(),
                     Text.makeFiller(8, 'm'),
                     FieldFactory.STRING,
@@ -118,7 +118,7 @@ public class HitLocationTablePanel extends BandedPanel {
                     });
             addField(wrapper,
                     I18n.text("Name"),
-                    I18n.text("The name of this hit location table"),
+                    I18n.text("The name of this body type table"),
                     mLocations.getName(),
                     null,
                     FieldFactory.STRING,

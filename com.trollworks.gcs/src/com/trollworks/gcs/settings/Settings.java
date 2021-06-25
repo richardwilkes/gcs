@@ -44,7 +44,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -69,7 +68,7 @@ public final class Settings extends ChangeableData {
     private static final String INCLUDE_UNSPENT_POINTS_IN_TOTAL = "include_unspent_points_in_total";
     private static final String INITIAL_POINTS                  = "initial_points";
     private static final String INITIAL_UI_SCALE                = "initial_ui_scale";
-    private static final String KEY_BINDINGS                    = "key_bindings";
+    public static final  String KEY_BINDINGS                    = "key_bindings";
     private static final String LAST_DIRS                       = "last_dirs";
     private static final String LAST_SEEN_GCS_VERSION           = "last_seen_gcs_version";
     private static final String LIBRARIES                       = "libraries";
@@ -140,12 +139,12 @@ public final class Settings extends ChangeableData {
         String homeDir = System.getProperty("user.home", ".");
         Path   path;
         if (Platform.isMacintosh()) {
-            path = Paths.get(homeDir, "Library", "Preferences");
+            path = Path.of(homeDir, "Library", "Preferences");
         } else if (Platform.isWindows()) {
             String localAppData = System.getenv("LOCALAPPDATA");
-            path = localAppData != null ? Paths.get(localAppData) : Paths.get(homeDir, "AppData", "Local");
+            path = localAppData != null ? Path.of(localAppData) : Path.of(homeDir, "AppData", "Local");
         } else {
-            path = Paths.get(homeDir, ".config");
+            path = Path.of(homeDir, ".config");
         }
         return path.resolve("gcs.json").normalize().toAbsolutePath();
     }
@@ -205,7 +204,7 @@ public final class Settings extends ChangeableData {
                             JsonArray a      = m.getArray(RECENT_FILES);
                             int       length = a.size();
                             for (int i = 0; i < length; i++) {
-                                mRecentFiles.add(Paths.get(a.getString(i)).normalize().toAbsolutePath());
+                                mRecentFiles.add(Path.of(a.getString(i)).normalize().toAbsolutePath());
                             }
                         }
                         if (m.has(LAST_DIRS)) {

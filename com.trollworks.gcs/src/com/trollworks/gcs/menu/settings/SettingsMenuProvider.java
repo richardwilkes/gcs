@@ -28,10 +28,10 @@ public final class SettingsMenuProvider {
         List<Command> cmds = new ArrayList<>();
         cmds.add(SettingsCommand.PER_SHEET);
         cmds.add(AttributeSettingsCommand.PER_SHEET);
-        cmds.add(HitLocationSettingsCommand.PER_SHEET);
+        cmds.add(BodyTypeSettingsCommand.PER_SHEET);
         cmds.add(SettingsCommand.DEFAULTS);
         cmds.add(AttributeSettingsCommand.DEFAULTS);
-        cmds.add(HitLocationSettingsCommand.DEFAULTS);
+        cmds.add(BodyTypeSettingsCommand.DEFAULTS);
         cmds.add(GeneralSettingsCommand.INSTANCE);
         cmds.add(PageRefMappingsCommand.INSTANCE);
         cmds.add(ColorSettingsCommand.INSTANCE);
@@ -44,11 +44,11 @@ public final class SettingsMenuProvider {
         JMenu menu = new JMenu(I18n.text("Settings"));
         menu.add(new DynamicMenuItem(SettingsCommand.PER_SHEET));
         menu.add(new DynamicMenuItem(AttributeSettingsCommand.PER_SHEET));
-        menu.add(new DynamicMenuItem(HitLocationSettingsCommand.PER_SHEET));
+        menu.add(new DynamicMenuItem(BodyTypeSettingsCommand.PER_SHEET));
         menu.addSeparator();
         menu.add(new DynamicMenuItem(SettingsCommand.DEFAULTS));
         menu.add(new DynamicMenuItem(AttributeSettingsCommand.DEFAULTS));
-        menu.add(new DynamicMenuItem(HitLocationSettingsCommand.DEFAULTS));
+        menu.add(new DynamicMenuItem(BodyTypeSettingsCommand.DEFAULTS));
         menu.addSeparator();
         menu.add(new DynamicMenuItem(GeneralSettingsCommand.INSTANCE));
         menu.add(new DynamicMenuItem(PageRefMappingsCommand.INSTANCE));

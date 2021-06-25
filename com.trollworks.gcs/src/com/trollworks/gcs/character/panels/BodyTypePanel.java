@@ -32,14 +32,14 @@ import java.awt.Component;
 import java.awt.Dimension;
 import javax.swing.SwingConstants;
 
-/** The character hit location panel. */
-public class HitLocationPanel extends DropPanel {
+/** The character body type panel. */
+public class BodyTypePanel extends DropPanel {
     /**
      * Creates a new hit location panel.
      *
      * @param sheet The sheet to display the data for.
      */
-    public HitLocationPanel(CharacterSheet sheet) {
+    public BodyTypePanel(CharacterSheet sheet) {
         super(new PrecisionLayout().setColumns(6).setSpacing(2, 0).setMargins(0),
                 sheet.getCharacter().getSheetSettings().getHitLocations().getName());
 
@@ -70,9 +70,9 @@ public class HitLocationPanel extends DropPanel {
         addTable(sheet, sheet.getCharacter().getSheetSettings().getHitLocations(), 0, Colors.BANDING, Colors.CONTENT, false);
 
         PrecisionLayout layout = (PrecisionLayout) getLayout();
-        int count = getComponentCount();
+        int             count  = getComponentCount();
         for (int i = count - 6; i < count; i++) {
-            Component comp = getComponent(i);
+            Component           comp       = getComponent(i);
             PrecisionLayoutData layoutData = layout.getLayoutData(comp);
             layoutData.setGrabVerticalSpace(true);
             if (!(comp instanceof Separator)) {

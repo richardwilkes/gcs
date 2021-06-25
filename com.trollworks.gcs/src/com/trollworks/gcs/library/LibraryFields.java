@@ -25,7 +25,6 @@ import com.trollworks.gcs.utility.Platform;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -67,7 +66,7 @@ public class LibraryFields implements DocumentListener {
         mRepoName = addLabelAndField(I18n.text("Repo:"), repo, 1);
         FontAwesomeButton button = new FontAwesomeButton("\uf689", I18n.text("Locate"), () -> {
             String       currentPath = mPath.getText();
-            Path         current     = currentPath.isBlank() ? Dirs.GENERAL.get() : Paths.get(currentPath).getParent().toAbsolutePath();
+            Path         current     = currentPath.isBlank() ? Dirs.GENERAL.get() : Path.of(currentPath).getParent().toAbsolutePath();
             JFileChooser dialog      = new JFileChooser(current.toString());
             dialog.setDialogTitle(mTitle.getText());
             dialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -189,7 +188,7 @@ public class LibraryFields implements DocumentListener {
         if (text.isBlank()) {
             return null;
         }
-        Path path = Paths.get(text).toAbsolutePath().normalize();
+        Path path = Path.of(text).toAbsolutePath().normalize();
         if (!Files.isDirectory(path)) {
             return null;
         }

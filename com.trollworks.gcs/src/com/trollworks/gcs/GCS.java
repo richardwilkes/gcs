@@ -36,7 +36,6 @@ import java.awt.GraphicsEnvironment;
 import java.awt.desktop.QuitStrategy;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -130,7 +129,7 @@ public final class GCS {
             }
             if (arg.startsWith("-")) {
                 if (arg.startsWith("=")) {
-                    files.add(Paths.get(arg));
+                    files.add(Path.of(arg));
                     continue;
                 }
                 String[] parts = arg.split("=", 2);
@@ -184,12 +183,12 @@ public final class GCS {
                         if (parts[1].isBlank()) {
                             missingTemplateArg = true;
                         } else {
-                            template = Paths.get(parts[1]);
+                            template = Path.of(parts[1]);
                         }
                     } else {
                         i++;
                         if (i < length && !args[i].startsWith("-")) {
-                            template = Paths.get(args[i]);
+                            template = Path.of(args[i]);
                         } else {
                             missingTemplateArg = true;
                         }
@@ -203,7 +202,7 @@ public final class GCS {
                 default -> msgs.add(I18n.text("unknown option: ") + parts[0]);
                 }
             } else {
-                files.add(Paths.get(arg));
+                files.add(Path.of(arg));
             }
         }
 

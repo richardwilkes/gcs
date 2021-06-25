@@ -14,16 +14,17 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.attribute.Attribute;
 import com.trollworks.gcs.body.HitLocationTable;
-import com.trollworks.gcs.body.LibraryHitLocationTables;
 import com.trollworks.gcs.character.names.USCensusNames;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.settings.SheetSettings;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Img;
+import com.trollworks.gcs.utility.Dirs;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
+import com.trollworks.gcs.utility.NamedData;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Numbers;
@@ -45,6 +46,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.SignStyle;
 import java.util.Base64;
+import java.util.List;
 import java.util.Random;
 import javax.imageio.ImageIO;
 
@@ -157,11 +159,14 @@ public class Profile {
             if (bodyType.startsWith("winged_")) {
                 bodyType = bodyType.substring(7) + ".winged";
             }
-            for (LibraryHitLocationTables tables : LibraryHitLocationTables.get()) {
-                for (HitLocationTable table : tables.getTables()) {
-                    if (bodyType.equals(table.getID())) {
-                        mCharacter.getSheetSettings().setHitLocations(table.clone());
-                        break;
+            outer:
+            for (NamedData<List<NamedData<HitLocationTable>>> list :
+                    NamedData.scanLibraries(FileType.BODY_SETTINGS, Dirs.SETTINGS,
+                            HitLocationTable::new)) {
+                for (NamedData<HitLocationTable> one : list.getData()) {
+                    if (bodyType.equals(one.getData().getID())) {
+                        mCharacter.getSheetSettings().setHitLocations(one.getData());
+                        break outer;
                     }
                 }
             }
@@ -169,7 +174,8 @@ public class Profile {
 
         if (m.has(KEY_PORTRAIT)) {
             try {
-                mPortrait = createPortrait(Img.create(new ByteArrayInputStream(Base64.getDecoder().decode(m.getString(KEY_PORTRAIT)))));
+                mPortrait = createPortrait(Img.create(new ByteArrayInputStream(
+                        Base64.getDecoder().decode(m.getString(KEY_PORTRAIT)))));
             } catch (Exception imageException) {
                 Log.error(imageException);
             }

@@ -116,7 +116,7 @@ public final class FontSettingsWindow extends SettingsWindow<Fonts> {
 
     @Override
     protected Dirs getDir() {
-        return Dirs.THEME;
+        return Dirs.SETTINGS;
     }
 
     @Override

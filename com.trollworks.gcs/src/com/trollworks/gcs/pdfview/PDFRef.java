@@ -17,7 +17,6 @@ import com.trollworks.gcs.utility.text.NumericComparator;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /** Tracks data for opening and navigating PDFs. */
 public class PDFRef implements Comparable<PDFRef> {
@@ -44,7 +43,7 @@ public class PDFRef implements Comparable<PDFRef> {
 
     public PDFRef(JsonMap m) {
         mID = m.getString(ID);
-        mPath = Paths.get(m.getStringWithDefault(PATH, ".")).normalize().toAbsolutePath();
+        mPath = Path.of(m.getStringWithDefault(PATH, ".")).normalize().toAbsolutePath();
         mPageToIndexOffset = m.getInt(OFFSET);
     }
 

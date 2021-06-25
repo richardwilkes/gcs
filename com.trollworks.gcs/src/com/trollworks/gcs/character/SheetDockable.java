@@ -12,7 +12,7 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.settings.AttributeSettingsWindow;
-import com.trollworks.gcs.settings.HitLocationSettingsWindow;
+import com.trollworks.gcs.settings.BodyTypeSettingsWindow;
 import com.trollworks.gcs.settings.QuickExport;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.settings.SheetSettingsWindow;
@@ -79,7 +79,7 @@ public class SheetDockable extends CollectedOutlinesDockable {
             GURPSCharacter gurpsCharacter = getDataFile();
             SheetSettingsWindow.closeFor(gurpsCharacter);
             AttributeSettingsWindow.closeFor(gurpsCharacter);
-            HitLocationSettingsWindow.closeFor(gurpsCharacter);
+            BodyTypeSettingsWindow.closeFor(gurpsCharacter);
             mSheet.dispose();
         }
         return closed;

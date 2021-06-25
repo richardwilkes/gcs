@@ -108,9 +108,9 @@ public final class AttributeSettingsWindow extends SettingsWindow<Map<String, At
 
     @Override
     protected void addToToolBar(Toolbar toolbar) {
-        super.addToToolBar(toolbar);
         toolbar.add(new FontAwesomeButton("\uf055", I18n.text("Add Attribute"),
                 () -> mListPanel.addAttribute()));
+        super.addToToolBar(toolbar);
     }
 
     @Override
@@ -178,7 +178,7 @@ public final class AttributeSettingsWindow extends SettingsWindow<Map<String, At
 
     @Override
     protected Dirs getDir() {
-        return Dirs.ATTRIBUTES;
+        return Dirs.SETTINGS;
     }
 
     @Override

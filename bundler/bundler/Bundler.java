@@ -26,7 +26,6 @@ import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -45,7 +44,7 @@ public final class Bundler {
     private static final String LINUX             = "linux";
     private static final String MACOS             = "macos";
     private static final String WINDOWS           = "windows";
-    private static final Path   DIST_DIR          = Paths.get("out", "dist");
+    private static final Path   DIST_DIR          = Path.of("out", "dist");
     private static final Path   BUILD_DIR         = DIST_DIR.resolve("build");
     private static final Path   MODULE_DIR        = DIST_DIR.resolve("modules");
     private static final Path   EXTRA_DIR         = DIST_DIR.resolve("extra");
@@ -137,18 +136,18 @@ public final class Bundler {
         String osName = System.getProperty("os.name");
         if (osName.startsWith("Mac")) {
             OS = MACOS;
-            PKG = Paths.get("GCS-" + GCS_VERSION + ".dmg");
-            NO_INSTALLER_PKG = Paths.get("GCS.app");
+            PKG = Path.of("GCS-" + GCS_VERSION + ".dmg");
+            NO_INSTALLER_PKG = Path.of("GCS.app");
             ICON_TYPE = "icns";
         } else if (osName.startsWith("Win")) {
             OS = WINDOWS;
-            PKG = Paths.get("GCS-" + GCS_VERSION + ".msi");
-            NO_INSTALLER_PKG = Paths.get("GCS");
+            PKG = Path.of("GCS-" + GCS_VERSION + ".msi");
+            NO_INSTALLER_PKG = Path.of("GCS");
             ICON_TYPE = "ico";
         } else if (osName.startsWith("Linux")) {
             OS = LINUX;
-            PKG = Paths.get("gcs-" + GCS_VERSION + "-1_amd64.deb");
-            NO_INSTALLER_PKG = Paths.get("gcs");
+            PKG = Path.of("gcs-" + GCS_VERSION + "-1_amd64.deb");
+            NO_INSTALLER_PKG = Path.of("gcs");
             ICON_TYPE = "png";
         } else {
             System.err.println("Unsupported platform: " + osName);
@@ -229,8 +228,8 @@ public final class Bundler {
             out.println("UTF8");
             out.println("--module-source-path");
             out.printf(".%1$s*%1$ssrc%2$sthird_party%1$s*%1$ssrc\n", File.separator, File.pathSeparator);
-            FileScanner.walk(Paths.get("."), (path) -> {
-                if (path.getFileName().toString().endsWith(".java") && !path.startsWith(Paths.get(".", "bundler"))) {
+            FileScanner.walk(Path.of("."), (path) -> {
+                if (path.getFileName().toString().endsWith(".java") && !path.startsWith(Path.of(".", "bundler"))) {
                     out.println(path);
                 }
             });
@@ -247,7 +246,7 @@ public final class Bundler {
         System.out.print("Copying resources... ");
         System.out.flush();
         long timing = System.nanoTime();
-        copyResourceTree(Paths.get("com.trollworks.gcs", "resources"), BUILD_DIR.resolve("com.trollworks.gcs"));
+        copyResourceTree(Path.of("com.trollworks.gcs", "resources"), BUILD_DIR.resolve("com.trollworks.gcs"));
         showTiming(timing);
     }
 
@@ -310,7 +309,7 @@ public final class Bundler {
         System.out.flush();
         long        timing = System.nanoTime();
         Set<String> keys   = new HashSet<>();
-        try (Stream<Path> srcTree = Files.walk(Paths.get("com.trollworks.gcs", "src"))) {
+        try (Stream<Path> srcTree = Files.walk(Path.of("com.trollworks.gcs", "src"))) {
             srcTree.filter(path -> {
                 String lower = path.getFileName().toString().toLowerCase();
                 return lower.endsWith(".java") && !lower.endsWith("i18n.java") && Files.isRegularFile(path) && Files.isReadable(path);
@@ -595,11 +594,11 @@ public final class Bundler {
         args.add("--description");
         args.add("GCS (GURPS Character Sheet) is a stand-alone, interactive, character sheet editor that allows you to build characters for the GURPS 4th Edition roleplaying game system.");
         args.add("--icon");
-        args.add(Paths.get("artifacts", ICON_TYPE, "app." + ICON_TYPE).toString());
+        args.add(Path.of("artifacts", ICON_TYPE, "app." + ICON_TYPE).toString());
         if (OS.equals(MACOS) || !noInstaller) {
             for (String ext : new String[]{"adm", "adq", "eqm", "eqp", "gcs", "gct", "not", "skl", "spl"}) {
                 args.add("--file-associations");
-                args.add(Paths.get("artifacts", "file_associations", OS, ext + "_ext.properties").toString());
+                args.add(Path.of("artifacts", "file_associations", OS, ext + "_ext.properties").toString());
             }
         }
         args.add("--input");

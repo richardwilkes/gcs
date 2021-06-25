@@ -19,45 +19,47 @@ import com.trollworks.gcs.utility.text.Enums;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.EnumMap;
 import java.util.Map;
 
 public enum Dirs {
-    ATTRIBUTES {
-        @Override
-        public Path getDefaultPath() {
-            return Library.getDefaultUserLibraryPath().resolve("Attributes");
-        }
-    },
     GENERAL {
         @Override
         public Path getDefaultPath() {
-            return Paths.get(System.getProperty("user.home", "."));
-        }
-    },
-    HIT_LOCATIONS {
-        @Override
-        public Path getDefaultPath() {
-            return Library.getDefaultUserLibraryPath().resolve("Hit Locations");
+            return Path.of(System.getProperty("user.home", "."));
         }
     },
     PDF {
         @Override
         public Path getDefaultPath() {
-            return Paths.get(System.getProperty("user.home", "."));
+            return Path.of(System.getProperty("user.home", "."));
         }
     },
-    THEME {
+    SETTINGS {
         @Override
         public Path getDefaultPath() {
-            return Library.getDefaultUserLibraryPath().resolve("Theme");
+            return Library.getDefaultUserLibraryPath().resolve("Settings");
+        }
+
+        @Override
+        public Path getLegacyDefaultPath(FileType fileType) {
+            if (fileType == FileType.ATTRIBUTE_SETTINGS) {
+                return Library.getDefaultUserLibraryPath().resolve("Attributes");
+            }
+            if (fileType == FileType.BODY_SETTINGS) {
+                return Library.getDefaultUserLibraryPath().resolve("Hit Locations");
+            }
+            return null;
         }
     };
 
     private static final Map<Dirs, Path> LAST_DIRS = new EnumMap<>(Dirs.class);
 
     public abstract Path getDefaultPath();
+
+    public Path getLegacyDefaultPath(FileType fileType) {
+        return null;
+    }
 
     public final Path get() {
         synchronized (LAST_DIRS) {
@@ -87,7 +89,7 @@ public enum Dirs {
             for (Dirs one : values()) {
                 String p = m.getString(Enums.toId(one));
                 if (p != null && !p.isBlank()) {
-                    LAST_DIRS.put(one, Paths.get(p));
+                    LAST_DIRS.put(one, Path.of(p));
                 }
             }
         }

@@ -51,8 +51,8 @@ public class HitLocationPanel extends ContentPanel implements DocumentListener {
         ContentPanel left = new ContentPanel(new PrecisionLayout(), false);
         add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
         mMoveUpButton = new FontAwesomeButton("\uf35b", I18n.text("Move Up"), () -> {
-            HitLocationTablePanel parent = (HitLocationTablePanel) getParent();
-            int                   index  = UIUtilities.getIndexOf(parent, this);
+            BodyTypePanel parent = (BodyTypePanel) getParent();
+            int           index  = UIUtilities.getIndexOf(parent, this);
             if (index > 0) {
                 parent.remove(index);
                 parent.add(this, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment(), index - 1);
@@ -66,8 +66,8 @@ public class HitLocationPanel extends ContentPanel implements DocumentListener {
         });
         left.add(mMoveUpButton);
         mMoveDownButton = new FontAwesomeButton("\uf358", I18n.text("Move Down"), () -> {
-            HitLocationTablePanel parent = (HitLocationTablePanel) getParent();
-            int                   index  = UIUtilities.getIndexOf(parent, this);
+            BodyTypePanel parent = (BodyTypePanel) getParent();
+            int           index  = UIUtilities.getIndexOf(parent, this);
             if (index != -1 && index < parent.getComponentCount() - 1) {
                 parent.remove(index);
                 parent.add(this, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment(), index + 1);
@@ -170,7 +170,7 @@ public class HitLocationPanel extends ContentPanel implements DocumentListener {
         mCenter.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
 
         if (mLocation.getSubTable() != null) {
-            HitLocationTablePanel subTable = new HitLocationTablePanel(mLocation.getSubTable(), mAdjustCallback);
+            BodyTypePanel subTable = new BodyTypePanel(mLocation.getSubTable(), mAdjustCallback);
             mCenter.add(subTable, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
         }
 
@@ -215,7 +215,7 @@ public class HitLocationPanel extends ContentPanel implements DocumentListener {
     public void addSubHitLocations() {
         HitLocationTable table = new HitLocationTable("id", I18n.text("name"), new Dice(3));
         mLocation.setSubTable(table);
-        HitLocationTablePanel subTable = new HitLocationTablePanel(table, mAdjustCallback);
+        BodyTypePanel subTable = new BodyTypePanel(table, mAdjustCallback);
         mCenter.add(subTable, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMargins(0));
         mAdjustCallback.run();
         scrollRectToVisible(new Rectangle(0, getPreferredSize().height - 1, 1, 1));

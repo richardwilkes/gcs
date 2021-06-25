@@ -13,20 +13,20 @@ package com.trollworks.gcs.menu.settings;
 
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.settings.HitLocationSettingsWindow;
+import com.trollworks.gcs.settings.BodyTypeSettingsWindow;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.event.ActionEvent;
 
-public final class HitLocationSettingsCommand extends Command {
-    public static final HitLocationSettingsCommand PER_SHEET = new HitLocationSettingsCommand(false);
-    public static final HitLocationSettingsCommand DEFAULTS  = new HitLocationSettingsCommand(true);
-    private             boolean                    mForDefaults;
+public final class BodyTypeSettingsCommand extends Command {
+    public static final BodyTypeSettingsCommand PER_SHEET = new BodyTypeSettingsCommand(false);
+    public static final BodyTypeSettingsCommand DEFAULTS  = new BodyTypeSettingsCommand(true);
+    private             boolean                 mForDefaults;
 
-    private HitLocationSettingsCommand(boolean defaults) {
-        super(defaults ? I18n.text("Default Hit Locations…") : I18n.text("Hit Locations…"),
-                defaults ? "default_hit_location_settings" : "hit_location_settings");
+    private BodyTypeSettingsCommand(boolean defaults) {
+        super(defaults ? I18n.text("Default Body Type…") : I18n.text("Body Type…"),
+                defaults ? "default_body_type_settings" : "body_type_settings");
         mForDefaults = defaults;
     }
 
@@ -43,11 +43,11 @@ public final class HitLocationSettingsCommand extends Command {
     public void actionPerformed(ActionEvent event) {
         if (!UIUtilities.inModalState()) {
             if (mForDefaults) {
-                HitLocationSettingsWindow.display(null);
+                BodyTypeSettingsWindow.display(null);
             } else {
                 SheetDockable target = getTarget(SheetDockable.class);
                 if (target != null) {
-                    HitLocationSettingsWindow.display(target.getDataFile());
+                    BodyTypeSettingsWindow.display(target.getDataFile());
                 }
             }
         }

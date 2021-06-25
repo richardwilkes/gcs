@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -50,11 +49,11 @@ public class Library implements Comparable<Library> {
     private              Release       mAvailableUpgrade;
 
     public static Path getDefaultMasterLibraryPath() {
-        return Paths.get(System.getProperty("user.home", "."), "GCS", "Master Library").normalize().toAbsolutePath();
+        return Path.of(System.getProperty("user.home", "."), "GCS", "Master Library").normalize().toAbsolutePath();
     }
 
     public static Path getDefaultUserLibraryPath() {
-        return Paths.get(System.getProperty("user.home", "."), "GCS", "User Library").normalize().toAbsolutePath();
+        return Path.of(System.getProperty("user.home", "."), "GCS", "User Library").normalize().toAbsolutePath();
     }
 
     public Library(String title, String githubAccountName, String repoName, Path path) {
@@ -70,7 +69,7 @@ public class Library implements Comparable<Library> {
         if (pathStr.isBlank()) {
             throw new IOException("invalid library path");
         }
-        Path path = Paths.get(pathStr);
+        Path path = Path.of(pathStr);
         if (USER.getKey().equals(key)) {
             USER.mPath = path;
             return USER;
@@ -206,7 +205,7 @@ public class Library implements Comparable<Library> {
                 if (entry.isDirectory()) {
                     continue;
                 }
-                Path entryPath = Paths.get(entry.getName());
+                Path entryPath = Path.of(entry.getName());
                 int  nameCount = entryPath.getNameCount();
                 if (nameCount < 3 || !"Library".equals(entryPath.getName(1).toString())) {
                     continue;

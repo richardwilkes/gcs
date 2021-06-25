@@ -19,7 +19,7 @@ import com.trollworks.gcs.character.panels.AttributesPanel;
 import com.trollworks.gcs.character.panels.DescriptionPanel;
 import com.trollworks.gcs.character.panels.DoubleOutlinePanel;
 import com.trollworks.gcs.character.panels.EncumbrancePanel;
-import com.trollworks.gcs.character.panels.HitLocationPanel;
+import com.trollworks.gcs.character.panels.BodyTypePanel;
 import com.trollworks.gcs.character.panels.IdentityPanel;
 import com.trollworks.gcs.character.panels.LiftPanel;
 import com.trollworks.gcs.character.panels.MiscPanel;
@@ -211,7 +211,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         wrapper2.add(new AttributesPanel(this, false), new PrecisionLayoutData().setGrabVerticalSpace(false).setGrabHorizontalSpace(true).setFillAlignment());
         wrapper2.add(new PointPoolsPanel(this), new PrecisionLayoutData().setHorizontalSpan(2).setGrabSpace(true).setFillAlignment());
         wrapper.add(wrapper2, new PrecisionLayoutData().setFillAlignment());
-        wrapper.add(new HitLocationPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment());
+        wrapper.add(new BodyTypePanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment());
         wrapper2 = new Wrapper(new PrecisionLayout().setMargins(0).setSpacing(GAP, GAP).setFillAlignment());
         wrapper2.add(new EncumbrancePanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setGrabHorizontalSpace(true));
         wrapper2.add(new LiftPanel(this), new PrecisionLayoutData().setGrabVerticalSpace(true).setFillAlignment().setGrabHorizontalSpace(true));

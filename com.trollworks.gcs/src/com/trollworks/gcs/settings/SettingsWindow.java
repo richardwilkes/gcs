@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.settings;
 
-import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.border.EmptyBorder;
@@ -30,19 +29,14 @@ import com.trollworks.gcs.utility.Dirs;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
-import com.trollworks.gcs.utility.PathUtils;
-import com.trollworks.gcs.utility.text.NumericComparator;
+import com.trollworks.gcs.utility.NamedData;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.Point;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.border.CompoundBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -77,16 +71,23 @@ public abstract class SettingsWindow<T> extends BaseWindow implements CloseHandl
                         LayoutConstants.WINDOW_BORDER_INSET, LayoutConstants.TOOLBAR_VERTICAL_INSET,
                         LayoutConstants.WINDOW_BORDER_INSET)));
         addToToolBar(toolbar);
-        mResetButton = new FontAwesomeButton("\uf011", getResetButtonTitle(), this::reset);
-        toolbar.add(mResetButton, Toolbar.LAYOUT_EXTRA_BEFORE);
-        mMenuButton = new FontAwesomeButton("\uf0c9", I18n.text("Menu"),
-                () -> createActionMenu().presentToUser(mMenuButton, 0, mMenuButton::updateRollOver));
-        toolbar.add(mMenuButton);
         getContentPane().add(toolbar, BorderLayout.NORTH);
     }
 
     protected void addToToolBar(Toolbar toolbar) {
-        // Here for sub-classes
+        addResetButton(toolbar);
+        addActionMenu(toolbar);
+    }
+
+    protected final void addResetButton(Toolbar toolbar) {
+        mResetButton = new FontAwesomeButton("\uf011", getResetButtonTitle(), this::reset);
+        toolbar.add(mResetButton, Toolbar.LAYOUT_EXTRA_BEFORE);
+    }
+
+    protected final void addActionMenu(Toolbar toolbar) {
+        mMenuButton = new FontAwesomeButton("\uf0c9", I18n.text("Menu"),
+                () -> createActionMenu().presentToUser(mMenuButton, 0, mMenuButton::updateRollOver));
+        toolbar.add(mMenuButton);
     }
 
     protected String getResetButtonTitle() {
@@ -158,39 +159,14 @@ public abstract class SettingsWindow<T> extends BaseWindow implements CloseHandl
         Menu menu = new Menu();
         menu.addItem(new MenuItem(I18n.text("Import…"), this::importSettings));
         menu.addItem(new MenuItem(I18n.text("Export…"), this::exportSettings));
-        Settings.getInstance(); // Just to ensure the libraries list is initialized
-        FileType fileType = getFileType();
-        Dirs     lastDir  = getDir();
-        for (Library lib : Library.LIBRARIES) {
-            Path dir = lib.getPath().resolve(lastDir.getDefaultPath().getFileName());
-            if (Files.isDirectory(dir)) {
-                List<SetData<T>> list = new ArrayList<>();
-                // IMPORTANT: On Windows, calling any of the older methods to list the contents of a
-                // directory results in leaving state around that prevents future move & delete
-                // operations. Only use this style of access for directory listings to avoid that.
-                try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
-                    for (Path path : stream) {
-                        if (fileType.matchExtension(PathUtils.getExtension(path))) {
-                            try {
-                                list.add(new SetData<>(PathUtils.getLeafName(path, false), createSettingsFrom(path)));
-                            } catch (IOException ioe) {
-                                Log.error("unable to load " + path, ioe);
-                            }
-                        }
-                    }
-                } catch (IOException exception) {
-                    Log.error(exception);
-                }
-                if (!list.isEmpty()) {
-                    Collections.sort(list);
-                    menu.addSeparator();
-                    MenuItem item = new MenuItem(dir.getParent().getFileName().toString(), null);
-                    item.setEnabled(false);
-                    menu.addItem(item);
-                    for (SetData<T> choice : list) {
-                        menu.add(new MenuItem(choice.toString(), (p) -> resetTo(choice.mData)));
-                    }
-                }
+        for (NamedData<List<NamedData<T>>> oneDir : NamedData.scanLibraries(getFileType(), getDir(),
+                this::createSettingsFrom)) {
+            menu.addSeparator();
+            MenuItem item = new MenuItem(oneDir.getName(), null);
+            item.setEnabled(false);
+            menu.addItem(item);
+            for (NamedData<T> choice : oneDir.getData()) {
+                menu.add(new MenuItem(choice.toString(), (p) -> resetTo(choice.getData())));
             }
         }
         return menu;
@@ -214,24 +190,4 @@ public abstract class SettingsWindow<T> extends BaseWindow implements CloseHandl
     }
 
     protected abstract void preDispose();
-
-    private static class SetData<T> implements Comparable<SetData<T>> {
-        String mName;
-        T      mData;
-
-        SetData(String name, T data) {
-            mName = name;
-            mData = data;
-        }
-
-        @Override
-        public int compareTo(SetData other) {
-            return NumericComparator.CASELESS_COMPARATOR.compare(mName, other.mName);
-        }
-
-        @Override
-        public String toString() {
-            return mName;
-        }
-    }
 }

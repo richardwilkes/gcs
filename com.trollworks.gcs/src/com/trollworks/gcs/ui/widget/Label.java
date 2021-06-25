@@ -33,10 +33,10 @@ public class Label extends Panel {
     public static final  int WRAP = -1;
     private static final int GAP  = 4;
 
-    private RetinaIcon mIcon;
-    private String     mText;
-    private int        mHAlign;
-    private int        mTruncationPolicy;
+    private Icon   mIcon;
+    private String mText;
+    private int    mHAlign;
+    private int    mTruncationPolicy;
 
     /**
      * Create a new label.
@@ -78,8 +78,8 @@ public class Label extends Panel {
         return mIcon;
     }
 
-    /** @param icon The {@link RetinaIcon} to use, or {@code null}. */
-    public void setIcon(RetinaIcon icon) {
+    /** @param icon The {@link Icon} to use, or {@code null}. */
+    public void setIcon(Icon icon) {
         if (mIcon != icon) {
             mIcon = icon;
             invalidate();

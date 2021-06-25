@@ -22,7 +22,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +69,7 @@ public class LaunchProxy {
                                     WindowUtils.forceAppToFront();
                                     if (msg.mFiles != null && !msg.mFiles.isEmpty()) {
                                         for (String file : msg.mFiles) {
-                                            OpenDataFileCommand.open(Paths.get(file));
+                                            OpenDataFileCommand.open(Path.of(file));
                                         }
                                     } else {
                                         EventQueue.invokeLater(OpenCommand::open);

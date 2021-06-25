@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -87,7 +86,7 @@ public final class I18n {
         String envVar = System.getenv("GCS_TRANSLATIONS");
         if (envVar != null && !envVar.isBlank()) {
             try {
-                base = Paths.get(envVar).normalize().toAbsolutePath();
+                base = Path.of(envVar).normalize().toAbsolutePath();
                 if (!Files.isDirectory(base)) {
                     base = null;
                 }
@@ -97,9 +96,9 @@ public final class I18n {
         }
         if (base == null) {
             if (GCS.VERSION.isZero()) { // Development mode, just use the working dir
-                base = Paths.get(".").toAbsolutePath();
+                base = Path.of(".").toAbsolutePath();
             } else {
-                base = Paths.get(System.getProperty("java.home"));
+                base = Path.of(System.getProperty("java.home"));
                 if (Platform.isMacintosh()) {
                     base = base.resolve("../..");
                 }

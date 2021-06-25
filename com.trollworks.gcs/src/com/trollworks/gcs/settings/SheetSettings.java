@@ -13,7 +13,6 @@ package com.trollworks.gcs.settings;
 
 import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.body.HitLocationTable;
-import com.trollworks.gcs.body.LibraryHitLocationTables;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.DisplayOption;
 import com.trollworks.gcs.character.GURPSCharacter;
@@ -37,7 +36,7 @@ public class SheetSettings implements ChangeNotifier {
     private static final String KEY_BLOCK_LAYOUT                    = "block_layout";
     private static final String KEY_DEFAULT_LENGTH_UNITS            = "default_length_units";
     private static final String KEY_DEFAULT_WEIGHT_UNITS            = "default_weight_units";
-    public static final String KEY_HIT_LOCATIONS                   = "hit_locations";
+    public static final  String KEY_HIT_LOCATIONS                   = "hit_locations";
     private static final String KEY_MODIFIERS_DISPLAY               = "modifiers_display";
     private static final String KEY_NOTES_DISPLAY                   = "notes_display";
     private static final String KEY_PAGE                            = "page";
@@ -121,7 +120,7 @@ public class SheetSettings implements ChangeNotifier {
             mModifiersDisplay = DisplayOption.INLINE;
             mNotesDisplay = DisplayOption.INLINE;
             mAttributes = AttributeDef.createStandardAttributes();
-            mHitLocations = LibraryHitLocationTables.getHumanoid().clone();
+            mHitLocations = HitLocationTable.createHumanoidTable();
             mPageSettings = new PageSettings(this);
             mUseMultiplicativeModifiers = false;
             mUseModifyingDicePlusAdds = false;

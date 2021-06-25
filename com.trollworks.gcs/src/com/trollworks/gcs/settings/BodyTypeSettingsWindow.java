@@ -12,8 +12,7 @@
 package com.trollworks.gcs.settings;
 
 import com.trollworks.gcs.body.HitLocationTable;
-import com.trollworks.gcs.body.HitLocationTablePanel;
-import com.trollworks.gcs.body.LibraryHitLocationTables;
+import com.trollworks.gcs.body.BodyTypePanel;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataChangeListener;
 import com.trollworks.gcs.datafile.DataFile;
@@ -39,23 +38,23 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-/** A window for editing hit location settings. */
-public final class HitLocationSettingsWindow extends SettingsWindow<HitLocationTable> implements DataChangeListener {
-    private static final Map<UUID, HitLocationSettingsWindow> INSTANCES = new HashMap<>();
+/** A window for editing body type settings. */
+public final class BodyTypeSettingsWindow extends SettingsWindow<HitLocationTable> implements DataChangeListener {
+    private static final Map<UUID, BodyTypeSettingsWindow> INSTANCES = new HashMap<>();
 
-    private GURPSCharacter        mCharacter;
-    private HitLocationTablePanel mLocationsPanel;
-    private boolean               mUpdatePending;
+    private GURPSCharacter mCharacter;
+    private BodyTypePanel  mLocationsPanel;
+    private boolean        mUpdatePending;
 
     /** Displays the hit location settings window. */
     public static void display(GURPSCharacter gchar) {
         if (!UIUtilities.inModalState()) {
-            HitLocationSettingsWindow wnd;
+            BodyTypeSettingsWindow wnd;
             synchronized (INSTANCES) {
                 UUID key = gchar == null ? null : gchar.getID();
                 wnd = INSTANCES.get(key);
                 if (wnd == null) {
-                    wnd = new HitLocationSettingsWindow(gchar);
+                    wnd = new BodyTypeSettingsWindow(gchar);
                     INSTANCES.put(key, wnd);
                 }
             }
@@ -66,8 +65,8 @@ public final class HitLocationSettingsWindow extends SettingsWindow<HitLocationT
     /** Closes the HitLocationSettingsWindow for the given character if it is open. */
     public static void closeFor(GURPSCharacter gchar) {
         for (Window window : Window.getWindows()) {
-            if (window.isShowing() && window instanceof HitLocationSettingsWindow) {
-                HitLocationSettingsWindow wnd = (HitLocationSettingsWindow) window;
+            if (window.isShowing() && window instanceof BodyTypeSettingsWindow) {
+                BodyTypeSettingsWindow wnd = (BodyTypeSettingsWindow) window;
                 if (wnd.mCharacter == gchar) {
                     wnd.attemptClose();
                 }
@@ -76,10 +75,10 @@ public final class HitLocationSettingsWindow extends SettingsWindow<HitLocationT
     }
 
     private static String createTitle(GURPSCharacter gchar) {
-        return gchar == null ? I18n.text("Default Hit Locations") : String.format(I18n.text("Hit Locations for %s"), gchar.getProfile().getName());
+        return gchar == null ? I18n.text("Default Body Type") : String.format(I18n.text("Body Type for %s"), gchar.getProfile().getName());
     }
 
-    private HitLocationSettingsWindow(GURPSCharacter gchar) {
+    private BodyTypeSettingsWindow(GURPSCharacter gchar) {
         super(createTitle(gchar));
         mCharacter = gchar;
         if (mCharacter != null) {
@@ -102,7 +101,7 @@ public final class HitLocationSettingsWindow extends SettingsWindow<HitLocationT
 
     @Override
     protected Panel createContent() {
-        mLocationsPanel = new HitLocationTablePanel(SheetSettings.get(mCharacter).getHitLocations(), () -> {
+        mLocationsPanel = new BodyTypePanel(SheetSettings.get(mCharacter).getHitLocations(), () -> {
             SheetSettings.get(mCharacter).getHitLocations().update();
             if (mCharacter == null) {
                 Settings.getInstance().notifyOfChange();
@@ -124,7 +123,7 @@ public final class HitLocationSettingsWindow extends SettingsWindow<HitLocationT
     protected boolean shouldResetBeEnabled() {
         HitLocationTable prefsLocations = Settings.getInstance().getSheetSettings().getHitLocations();
         if (mCharacter == null) {
-            return !prefsLocations.equals(LibraryHitLocationTables.getHumanoid());
+            return !prefsLocations.equals(HitLocationTable.createHumanoidTable());
         }
         return !mCharacter.getSheetSettings().getHitLocations().equals(prefsLocations);
     }
@@ -136,7 +135,7 @@ public final class HitLocationSettingsWindow extends SettingsWindow<HitLocationT
 
     @Override
     protected HitLocationTable getResetData() {
-        return mCharacter == null ? LibraryHitLocationTables.getHumanoid() :
+        return mCharacter == null ? HitLocationTable.createHumanoidTable() :
                 Settings.getInstance().getSheetSettings().getHitLocations();
     }
 
@@ -150,12 +149,12 @@ public final class HitLocationSettingsWindow extends SettingsWindow<HitLocationT
 
     @Override
     protected Dirs getDir() {
-        return Dirs.HIT_LOCATIONS;
+        return Dirs.SETTINGS;
     }
 
     @Override
     protected FileType getFileType() {
-        return FileType.HIT_LOCATIONS;
+        return FileType.BODY_SETTINGS;
     }
 
     @Override

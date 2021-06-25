@@ -39,7 +39,6 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.MessageFormat;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -411,11 +410,11 @@ public class Modal extends JDialog {
         if (dirs == null) {
             dirs = Dirs.GENERAL;
         }
-        dirs.set(Paths.get(dir));
+        dirs.set(Path.of(dir));
         String file = dialog.getFile();
         if (file == null) {
             return null;
         }
-        return Paths.get(dir, file).normalize().toAbsolutePath();
+        return Path.of(dir, file).normalize().toAbsolutePath();
     }
 }

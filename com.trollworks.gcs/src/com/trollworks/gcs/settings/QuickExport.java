@@ -20,7 +20,6 @@ import com.trollworks.gcs.utility.json.JsonWriter;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class QuickExport implements Comparable<QuickExport> {
     private static final String KEY_TEMPLATE_PATH   = "template_path";
@@ -88,19 +87,19 @@ public class QuickExport implements Comparable<QuickExport> {
         if (isGCalcExport()) {
             return !Settings.getInstance().getGURPSCalculatorKey().isBlank();
         }
-        if (!isPNGExport() && (mTemplatePath.isBlank() || !Paths.get(mTemplatePath).getParent().toFile().isDirectory())) {
+        if (!isPNGExport() && (mTemplatePath.isBlank() || !Path.of(mTemplatePath).getParent().toFile().isDirectory())) {
             return false;
         }
-        return !mExportPath.isBlank() && Paths.get(mExportPath).getParent().toFile().isDirectory();
+        return !mExportPath.isBlank() && Path.of(mExportPath).getParent().toFile().isDirectory();
     }
 
     public void export(SheetDockable dockable) {
         if (isGCalcExport()) {
             ExportToGURPSCalculatorCommand.performExport(dockable);
         } else if (isPNGExport()) {
-            ExportToPNGCommand.performExport(dockable, Paths.get(mExportPath));
+            ExportToPNGCommand.performExport(dockable, Path.of(mExportPath));
         } else {
-            ExportToTextTemplateCommand.performExport(dockable, Paths.get(mTemplatePath), Paths.get(mExportPath));
+            ExportToTextTemplateCommand.performExport(dockable, Path.of(mTemplatePath), Path.of(mExportPath));
         }
     }
 
