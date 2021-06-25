@@ -33,7 +33,6 @@ public class Toolbar extends Panel {
 
     public Toolbar() {
         super(new ToolbarLayout());
-        setOpaque(true);
         setBorder(new CompoundBorder(new LineBorder(Colors.DIVIDER, 0, 0, 1, 0), new EmptyBorder(0, GAP, 0, GAP)));
     }
 
