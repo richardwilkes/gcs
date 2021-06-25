@@ -21,6 +21,7 @@ import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.LayoutConstants;
 import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
+import com.trollworks.gcs.utility.Dirs;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 

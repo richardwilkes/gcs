@@ -9,10 +9,9 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.settings;
+package com.trollworks.gcs.utility;
 
 import com.trollworks.gcs.library.Library;
-import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;

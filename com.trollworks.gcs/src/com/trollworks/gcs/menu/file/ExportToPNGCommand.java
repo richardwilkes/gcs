@@ -13,10 +13,10 @@ package com.trollworks.gcs.menu.file;
 
 import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.settings.Dirs;
 import com.trollworks.gcs.settings.QuickExport;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.Modal;
+import com.trollworks.gcs.utility.Dirs;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.PathUtils;

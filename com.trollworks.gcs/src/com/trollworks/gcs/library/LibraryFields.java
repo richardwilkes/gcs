@@ -12,13 +12,13 @@
 package com.trollworks.gcs.library;
 
 import com.trollworks.gcs.character.FieldFactory;
-import com.trollworks.gcs.settings.Dirs;
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.Separator;
+import com.trollworks.gcs.utility.Dirs;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Platform;
 

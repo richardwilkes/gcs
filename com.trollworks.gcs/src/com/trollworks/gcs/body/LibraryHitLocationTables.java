@@ -12,9 +12,9 @@
 package com.trollworks.gcs.body;
 
 import com.trollworks.gcs.library.Library;
-import com.trollworks.gcs.settings.Dirs;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.utility.Dice;
+import com.trollworks.gcs.utility.Dirs;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 

@@ -11,7 +11,6 @@
 
 package com.trollworks.gcs.ui.widget;
 
-import com.trollworks.gcs.settings.Dirs;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.UIUtilities;
@@ -20,6 +19,7 @@ import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
+import com.trollworks.gcs.utility.Dirs;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.PathUtils;
