@@ -13,7 +13,7 @@ package com.trollworks.gcs.body;
 
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
-import com.trollworks.gcs.datafile.LoadState;
+import com.trollworks.gcs.settings.SheetSettings;
 import com.trollworks.gcs.utility.Dice;
 import com.trollworks.gcs.utility.VersionException;
 import com.trollworks.gcs.utility.json.Json;
@@ -34,11 +34,10 @@ import java.util.List;
 import java.util.Map;
 
 public class HitLocationTable implements Cloneable, Comparable<HitLocationTable> {
-    public static final  String                   JSON_TYPE_NAME = "hit_locations";
-    private static final String                   KEY_ID         = "id";
-    private static final String                   KEY_NAME       = "name";
-    private static final String                   KEY_ROLL       = "roll";
-    private static final String                   KEY_LOCATIONS  = "locations";
+    private static final String                   KEY_ID        = "id";
+    private static final String                   KEY_NAME      = "name";
+    private static final String                   KEY_ROLL      = "roll";
+    private static final String                   KEY_LOCATIONS = "locations";
     private              String                   mID;
     private              String                   mName;
     private              Dice                     mRoll;
@@ -55,16 +54,15 @@ public class HitLocationTable implements Cloneable, Comparable<HitLocationTable>
 
     public HitLocationTable(Path path) throws IOException {
         try (BufferedReader fileReader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
-            JsonMap   m     = Json.asMap(Json.parse(fileReader));
-            LoadState state = new LoadState();
-            state.mDataFileVersion = m.getInt(DataFile.VERSION);
-            if (state.mDataFileVersion > DataFile.CURRENT_VERSION) {
+            JsonMap m       = Json.asMap(Json.parse(fileReader));
+            int     version = m.getInt(DataFile.VERSION);
+            if (version > DataFile.CURRENT_VERSION) {
                 throw VersionException.createTooNew();
             }
-            if (!JSON_TYPE_NAME.equals(m.getString(DataFile.TYPE))) {
+            if (!m.has(SheetSettings.KEY_HIT_LOCATIONS)) {
                 throw new IOException("invalid data type");
             }
-            loadJSON(m.getMap(JSON_TYPE_NAME));
+            loadJSON(m.getMap(SheetSettings.KEY_HIT_LOCATIONS));
         }
     }
 

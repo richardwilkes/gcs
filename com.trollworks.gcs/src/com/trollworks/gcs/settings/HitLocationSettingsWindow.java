@@ -17,51 +17,35 @@ import com.trollworks.gcs.body.LibraryHitLocationTables;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataChangeListener;
 import com.trollworks.gcs.datafile.DataFile;
-import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.layout.PrecisionLayout;
-import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
-import com.trollworks.gcs.ui.widget.BaseWindow;
-import com.trollworks.gcs.ui.widget.FontAwesomeButton;
-import com.trollworks.gcs.ui.widget.Menu;
-import com.trollworks.gcs.ui.widget.MenuItem;
-import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.ui.widget.Panel;
-import com.trollworks.gcs.ui.widget.ScrollPanel;
-import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.Dirs;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.SafeFileUpdater;
 import com.trollworks.gcs.utility.json.JsonWriter;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.Point;
 import java.awt.Window;
-import java.awt.event.WindowEvent;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 /** A window for editing hit location settings. */
-public final class HitLocationSettingsWindow extends BaseWindow implements CloseHandler, DataChangeListener {
+public final class HitLocationSettingsWindow extends SettingsWindow<HitLocationTable> implements DataChangeListener {
     private static final Map<UUID, HitLocationSettingsWindow> INSTANCES = new HashMap<>();
-    private              GURPSCharacter                       mCharacter;
-    private              HitLocationTablePanel                mLocationsPanel;
-    private              FontAwesomeButton                    mResetButton;
-    private              FontAwesomeButton                    mMenuButton;
-    private              ScrollPanel                          mScroller;
-    private              boolean                              mUpdatePending;
+
+    private GURPSCharacter        mCharacter;
+    private HitLocationTablePanel mLocationsPanel;
+    private boolean               mUpdatePending;
 
     /** Displays the hit location settings window. */
     public static void display(GURPSCharacter gchar) {
@@ -98,15 +82,28 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
     private HitLocationSettingsWindow(GURPSCharacter gchar) {
         super(createTitle(gchar));
         mCharacter = gchar;
-        Container content = getContentPane();
-        Panel     header  = new Panel(new PrecisionLayout().setColumns(2).setMargins(5, 10, 5, 10).setHorizontalSpacing(10).setHorizontalAlignment(PrecisionLayoutAlignment.END));
-        mResetButton = new FontAwesomeButton("\uf011", mCharacter == null ? I18n.text("Reset to Factory Defaults") : I18n.text("Reset to Global Defaults"), this::reset);
-        header.add(mResetButton);
-        mMenuButton = new FontAwesomeButton("\uf0c9", I18n.text("Menu"), this::actionMenu);
-        header.add(mMenuButton);
-        content.add(header, BorderLayout.NORTH);
-        mLocationsPanel = new HitLocationTablePanel(getHitLocations(), () -> {
-            getHitLocations().update();
+        if (mCharacter != null) {
+            mCharacter.addChangeListener(this);
+            Settings.getInstance().addChangeListener(this);
+        }
+        fill();
+    }
+
+    @Override
+    protected void preDispose() {
+        synchronized (INSTANCES) {
+            INSTANCES.remove(mCharacter == null ? null : mCharacter.getID());
+        }
+        if (mCharacter != null) {
+            mCharacter.removeChangeListener(this);
+            Settings.getInstance().removeChangeListener(this);
+        }
+    }
+
+    @Override
+    protected Panel createContent() {
+        mLocationsPanel = new HitLocationTablePanel(SheetSettings.get(mCharacter).getHitLocations(), () -> {
+            SheetSettings.get(mCharacter).getHitLocations().update();
             if (mCharacter == null) {
                 Settings.getInstance().notifyOfChange();
             } else {
@@ -114,16 +111,7 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
             }
             adjustResetButton();
         });
-        mScroller = new ScrollPanel(mLocationsPanel);
-        content.add(mScroller, BorderLayout.CENTER);
-        if (mCharacter != null) {
-            mCharacter.addChangeListener(this);
-            Settings.getInstance().addChangeListener(this);
-        }
-        adjustResetButton();
-        establishSizing();
-        WindowUtils.packAndCenterWindowOn(this, null);
-        EventQueue.invokeLater(() -> mScroller.getViewport().setViewPosition(new Point(0, 0)));
+        return mLocationsPanel;
     }
 
     @Override
@@ -132,114 +120,68 @@ public final class HitLocationSettingsWindow extends BaseWindow implements Close
         setMinimumSize(new Dimension(Math.max(min.width, 600), min.height));
     }
 
-    private HitLocationTable getHitLocations() {
-        return SheetSettings.get(mCharacter).getHitLocations();
-    }
-
-    private void actionMenu() {
-        Menu menu = new Menu();
-        menu.addItem(new MenuItem(I18n.text("Import…"), (p) -> importData()));
-        menu.addItem(new MenuItem(I18n.text("Export…"), (p) -> exportData()));
-        for (LibraryHitLocationTables tables : LibraryHitLocationTables.get()) {
-            menu.addSeparator();
-            MenuItem header = new MenuItem(tables.toString(), null);
-            header.setEnabled(false);
-            menu.addItem(header);
-            for (HitLocationTable choice : tables.getTables()) {
-                menu.addItem(new MenuItem(choice.getName(), (p) -> reset(choice)));
-            }
-        }
-        menu.presentToUser(mMenuButton, 0, mMenuButton::updateRollOver);
-    }
-
-    private void importData() {
-        Path path = Modal.presentOpenFileDialog(this, I18n.text("Import…"), Dirs.HIT_LOCATIONS,
-                FileType.HIT_LOCATIONS.getFilter());
-        if (path != null) {
-            try {
-                reset(new HitLocationTable(path));
-            } catch (IOException ioe) {
-                Log.error(ioe);
-                Modal.showError(this, I18n.text("Unable to import hit locations."));
-            }
-        }
-    }
-
-    private void exportData() {
-        Path path = Modal.presentSaveFileDialog(this, I18n.text("Export…"), Dirs.HIT_LOCATIONS,
-                FileType.HIT_LOCATIONS.getUntitledDefaultFileName(),
-                FileType.HIT_LOCATIONS.getFilter());
-        if (path != null) {
-            SafeFileUpdater transaction = new SafeFileUpdater();
-            transaction.begin();
-            try {
-                File transactionFile = transaction.getTransactionFile(path.toFile());
-                try (JsonWriter w = new JsonWriter(new BufferedWriter(new FileWriter(transactionFile, StandardCharsets.UTF_8)), "\t")) {
-                    w.startMap();
-                    w.keyValue(DataFile.TYPE, HitLocationTable.JSON_TYPE_NAME);
-                    w.keyValue(DataFile.VERSION, DataFile.CURRENT_VERSION);
-                    w.key(HitLocationTable.JSON_TYPE_NAME);
-                    mLocationsPanel.getHitLocations().toJSON(w, null);
-                    w.endMap();
-                }
-                transaction.commit();
-            } catch (Exception exception) {
-                Log.error(exception);
-                transaction.abort();
-                Modal.showError(this, I18n.text("Unable to export hit locations."));
-            }
-        }
-    }
-
-    private void reset() {
-        HitLocationTable locations;
+    @Override
+    protected boolean shouldResetBeEnabled() {
+        HitLocationTable prefsLocations = Settings.getInstance().getSheetSettings().getHitLocations();
         if (mCharacter == null) {
-            locations = LibraryHitLocationTables.getHumanoid();
-        } else {
-            locations = Settings.getInstance().getSheetSettings().getHitLocations();
+            return !prefsLocations.equals(LibraryHitLocationTables.getHumanoid());
         }
-        reset(locations);
-        adjustResetButton();
+        return !mCharacter.getSheetSettings().getHitLocations().equals(prefsLocations);
     }
 
-    private void reset(HitLocationTable locations) {
-        mLocationsPanel.reset(locations.clone());
+    @Override
+    protected String getResetButtonTitle() {
+        return mCharacter == null ? super.getResetButtonTitle() : I18n.text("Reset to Global Defaults");
+    }
+
+    @Override
+    protected HitLocationTable getResetData() {
+        return mCharacter == null ? LibraryHitLocationTables.getHumanoid() :
+                Settings.getInstance().getSheetSettings().getHitLocations();
+    }
+
+    @Override
+    protected void doResetTo(HitLocationTable data) {
+        mLocationsPanel.reset(data.clone());
         mLocationsPanel.getAdjustCallback().run();
         revalidate();
         repaint();
-        EventQueue.invokeLater(() -> mScroller.getViewport().setViewPosition(new Point(0, 0)));
-    }
-
-    private void adjustResetButton() {
-        HitLocationTable prefsLocations = Settings.getInstance().getSheetSettings().getHitLocations();
-        if (mCharacter == null) {
-            mResetButton.setEnabled(!prefsLocations.equals(LibraryHitLocationTables.getHumanoid()));
-        } else {
-            mResetButton.setEnabled(!mCharacter.getSheetSettings().getHitLocations().equals(prefsLocations));
-        }
     }
 
     @Override
-    public boolean mayAttemptClose() {
-        return true;
+    protected Dirs getDir() {
+        return Dirs.HIT_LOCATIONS;
     }
 
     @Override
-    public boolean attemptClose() {
-        windowClosing(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
-        return true;
+    protected FileType getFileType() {
+        return FileType.HIT_LOCATIONS;
     }
 
     @Override
-    public void dispose() {
-        synchronized (INSTANCES) {
-            INSTANCES.remove(mCharacter == null ? null : mCharacter.getID());
+    protected HitLocationTable createSettingsFrom(Path path) throws IOException {
+        return new HitLocationTable(path);
+    }
+
+    @Override
+    protected void exportSettingsTo(Path path) throws IOException {
+        SafeFileUpdater trans = new SafeFileUpdater();
+        trans.begin();
+        try {
+            Files.createDirectories(path.getParent());
+            File transactionFile = trans.getTransactionFile(path.toFile());
+            try (JsonWriter w = new JsonWriter(new BufferedWriter(new FileWriter(transactionFile, StandardCharsets.UTF_8)), "\t")) {
+                w.startMap();
+                w.keyValue(DataFile.VERSION, DataFile.CURRENT_VERSION);
+                w.key(SheetSettings.KEY_HIT_LOCATIONS);
+                mLocationsPanel.getHitLocations().toJSON(w, null);
+                w.endMap();
+            }
+        } catch (IOException ioe) {
+            trans.abort();
+            throw ioe;
         }
-        if (mCharacter != null) {
-            mCharacter.removeChangeListener(this);
-            Settings.getInstance().removeChangeListener(this);
-        }
-        super.dispose();
+        trans.commit();
     }
 
     @Override

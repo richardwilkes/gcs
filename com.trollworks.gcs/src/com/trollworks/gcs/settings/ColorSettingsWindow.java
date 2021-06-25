@@ -134,7 +134,6 @@ public final class ColorSettingsWindow extends SettingsWindow<Colors> {
         }
         mIgnore = false;
         WindowUtils.repaintAll();
-        adjustResetButton();
     }
 
     @Override

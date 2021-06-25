@@ -109,6 +109,8 @@ public abstract class SettingsWindow<T> extends BaseWindow implements CloseHandl
 
     protected final void resetTo(T data) {
         doResetTo(data);
+        adjustResetButton();
+        scrollToTop();
         transferFocus();
     }
 

@@ -113,6 +113,7 @@ public final class AttributeSettingsWindow extends SettingsWindow<Map<String, At
                 () -> mListPanel.addAttribute()));
     }
 
+    @Override
     protected Panel createContent() {
         mListPanel = new AttributeListPanel(SheetSettings.get(mCharacter).getAttributes(), () -> {
             adjustResetButton();
@@ -173,8 +174,6 @@ public final class AttributeSettingsWindow extends SettingsWindow<Map<String, At
         mListPanel.getAdjustCallback().run();
         revalidate();
         repaint();
-        adjustResetButton();
-        scrollToTop();
     }
 
     @Override

@@ -37,7 +37,7 @@ public class SheetSettings implements ChangeNotifier {
     private static final String KEY_BLOCK_LAYOUT                    = "block_layout";
     private static final String KEY_DEFAULT_LENGTH_UNITS            = "default_length_units";
     private static final String KEY_DEFAULT_WEIGHT_UNITS            = "default_weight_units";
-    private static final String KEY_HIT_LOCATIONS                   = "hit_locations";
+    public static final String KEY_HIT_LOCATIONS                   = "hit_locations";
     private static final String KEY_MODIFIERS_DISPLAY               = "modifiers_display";
     private static final String KEY_NOTES_DISPLAY                   = "notes_display";
     private static final String KEY_PAGE                            = "page";

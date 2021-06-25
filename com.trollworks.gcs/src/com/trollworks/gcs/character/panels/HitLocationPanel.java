@@ -28,23 +28,24 @@ import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import javax.swing.SwingConstants;
 
 /** The character hit location panel. */
 public class HitLocationPanel extends DropPanel {
-    private static float COLOR_ADJUSTMENT = -0.1f;
-
     /**
      * Creates a new hit location panel.
      *
      * @param sheet The sheet to display the data for.
      */
     public HitLocationPanel(CharacterSheet sheet) {
-        super(new PrecisionLayout().setColumns(6).setSpacing(2, 0).setMargins(0), sheet.getCharacter().getSheetSettings().getHitLocations().getName());
+        super(new PrecisionLayout().setColumns(6).setSpacing(2, 0).setMargins(0),
+                sheet.getCharacter().getSheetSettings().getHitLocations().getName());
 
         Separator sep = new Separator();
-        add(sep, new PrecisionLayoutData().setHorizontalSpan(6).setHorizontalAlignment(PrecisionLayoutAlignment.FILL).setGrabHorizontalSpace(true));
+        add(sep, new PrecisionLayoutData().setHorizontalSpan(6).
+                setHorizontalAlignment(PrecisionLayoutAlignment.FILL).setGrabHorizontalSpace(true));
         addHorizontalBackground(sep, Colors.DIVIDER);
 
         PageHeader header = new PageHeader(I18n.text("Roll"));
@@ -52,7 +53,7 @@ public class HitLocationPanel extends DropPanel {
         addHorizontalBackground(header, Colors.HEADER);
 
         sep = new Separator(true);
-        add(sep, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.FILL).setGrabVerticalSpace(true));
+        add(sep, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.FILL));
         addVerticalBackground(sep, Colors.DIVIDER);
 
         header = new PageHeader(I18n.text("Location"),
@@ -60,13 +61,24 @@ public class HitLocationPanel extends DropPanel {
         add(header, new PrecisionLayoutData().setHorizontalSpan(2).setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
 
         sep = new Separator(true);
-        add(sep, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.FILL).setGrabVerticalSpace(true));
+        add(sep, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.FILL));
         addVerticalBackground(sep, Colors.DIVIDER);
 
         header = new PageHeader(I18n.text("DR"));
         add(header, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
 
         addTable(sheet, sheet.getCharacter().getSheetSettings().getHitLocations(), 0, Colors.BANDING, Colors.CONTENT, false);
+
+        PrecisionLayout layout = (PrecisionLayout) getLayout();
+        int count = getComponentCount();
+        for (int i = count - 6; i < count; i++) {
+            Component comp = getComponent(i);
+            PrecisionLayoutData layoutData = layout.getLayoutData(comp);
+            layoutData.setGrabVerticalSpace(true);
+            if (!(comp instanceof Separator)) {
+                layoutData.setBeginningVerticalAlignment();
+            }
+        }
     }
 
     private boolean addTable(CharacterSheet sheet, HitLocationTable table, int depth, Color band1Color, Color band2Color, boolean band) {
@@ -80,7 +92,7 @@ public class HitLocationPanel extends DropPanel {
             add(first, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
             addHorizontalBackground(first, band ? band1Color : band2Color);
 
-            add(new Separator(true), new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.FILL).setGrabVerticalSpace(true));
+            add(new Separator(true), new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.FILL));
 
             PageLabel label = new PageLabel(prefix + name);
             label.setToolTipText(location.getDescription());
@@ -91,7 +103,7 @@ public class HitLocationPanel extends DropPanel {
             label.setHorizontalAlignment(SwingConstants.RIGHT);
             add(label, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.FILL).setLeftMargin(2));
 
-            add(new Separator(true), new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.FILL).setGrabVerticalSpace(true));
+            add(new Separator(true), new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.FILL));
 
             StringBuilder tooltip = new StringBuilder();
             label = new PageLabel(Numbers.format(location.getDR(sheet.getCharacter(), tooltip)));

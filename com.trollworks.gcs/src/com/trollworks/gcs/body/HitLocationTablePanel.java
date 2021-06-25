@@ -44,7 +44,7 @@ public class HitLocationTablePanel extends BandedPanel {
 
     public HitLocationTablePanel(HitLocationTable locations, Runnable adjustCallback) {
         super(false);
-        setLayout(new PrecisionLayout().setMargins(0, 10, 0, 10));
+        setLayout(new PrecisionLayout().setMargins(2, 10, 0, 10));
         mLocations = locations;
         mAdjustCallback = adjustCallback;
         if (isSubTable()) {

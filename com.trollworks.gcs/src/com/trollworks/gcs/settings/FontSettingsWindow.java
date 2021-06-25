@@ -112,7 +112,6 @@ public final class FontSettingsWindow extends SettingsWindow<Fonts> {
         }
         mIgnore = false;
         BaseWindow.forceRevalidateAndRepaint();
-        adjustResetButton();
     }
 
     @Override
