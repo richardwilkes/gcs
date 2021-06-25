@@ -14,7 +14,6 @@ package com.trollworks.gcs.settings;
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.ui.Colors;
-import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.widget.BaseWindow;
@@ -33,7 +32,8 @@ import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.text.NumericComparator;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.Point;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -41,44 +41,30 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 public abstract class SettingsWindow<T> extends BaseWindow implements CloseHandler {
-    private static final Map<Class<? extends SettingsWindow<?>>, SettingsWindow<?>> INSTANCES = new HashMap<>();
-
     private FontAwesomeButton mResetButton;
     private FontAwesomeButton mMenuButton;
-
-    /** Displays the color settings window. */
-    public static void display(Class<? extends SettingsWindow<?>> key) {
-        if (!UIUtilities.inModalState()) {
-            SettingsWindow<?> wnd;
-            synchronized (INSTANCES) {
-                wnd = INSTANCES.get(key);
-                if (wnd == null) {
-                    try {
-                        wnd = key.getConstructor().newInstance();
-                    } catch (Exception exception) {
-                        Log.error(exception);
-                        return;
-                    }
-                    INSTANCES.put(key, wnd);
-                }
-            }
-            wnd.setVisible(true);
-        }
-    }
+    private ScrollPanel       mScroller;
 
     protected SettingsWindow(String title) {
         super(title);
+    }
+
+    protected final void fill() {
         addToolBar();
-        getContentPane().add(new ScrollPanel(createContent()), BorderLayout.CENTER);
+        mScroller = new ScrollPanel(createContent());
+        getContentPane().add(mScroller, BorderLayout.CENTER);
         adjustResetButton();
         establishSizing();
         WindowUtils.packAndCenterWindowOn(this, null);
+        scrollToTop();
+    }
+
+    public final void scrollToTop() {
+        EventQueue.invokeLater(() -> mScroller.getViewport().setViewPosition(new Point(0, 0)));
     }
 
     private void addToolBar() {
@@ -99,14 +85,6 @@ public abstract class SettingsWindow<T> extends BaseWindow implements CloseHandl
     }
 
     protected abstract Panel createContent();
-
-    @Override
-    public final void establishSizing() {
-        pack();
-        int width = getSize().width;
-        setMinimumSize(new Dimension(width, 200));
-        setMaximumSize(new Dimension(width, getPreferredSize().height));
-    }
 
     protected final void adjustResetButton() {
         mResetButton.setEnabled(shouldResetBeEnabled());
@@ -211,11 +189,11 @@ public abstract class SettingsWindow<T> extends BaseWindow implements CloseHandl
 
     @Override
     public final void dispose() {
-        synchronized (INSTANCES) {
-            INSTANCES.remove(getClass());
-        }
+        preDispose();
         super.dispose();
     }
+
+    protected abstract void preDispose();
 
     private static class SetData<T> implements Comparable<SetData<T>> {
         String mName;

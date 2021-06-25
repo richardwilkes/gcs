@@ -13,6 +13,7 @@ package com.trollworks.gcs.settings;
 
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.ThemeColor;
+import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.ColorWell;
@@ -25,6 +26,7 @@ import com.trollworks.gcs.utility.I18n;
 
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -32,11 +34,35 @@ import java.util.List;
 
 /** A window for editing color settings. */
 public final class ColorSettingsWindow extends SettingsWindow<Colors> {
+    private static ColorSettingsWindow INSTANCE;
+
     private List<ColorTracker> mColorWells;
     private boolean            mIgnore;
 
+    /** Displays the color settings window. */
+    public static void display() {
+        if (!UIUtilities.inModalState()) {
+            ColorSettingsWindow wnd;
+            synchronized (ColorSettingsWindow.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new ColorSettingsWindow();
+                }
+                wnd = INSTANCE;
+            }
+            wnd.setVisible(true);
+        }
+    }
+
     public ColorSettingsWindow() {
         super(I18n.text("Color Settings"));
+        fill();
+    }
+
+    @Override
+    protected void preDispose() {
+        synchronized (ColorSettingsWindow.class) {
+            INSTANCE = null;
+        }
     }
 
     protected Panel createContent() {
@@ -66,6 +92,14 @@ public final class ColorSettingsWindow extends SettingsWindow<Colors> {
             }
         }
         return panel;
+    }
+
+    @Override
+    public void establishSizing() {
+        pack();
+        int width = getSize().width;
+        setMinimumSize(new Dimension(width, 200));
+        setMaximumSize(new Dimension(width, getPreferredSize().height));
     }
 
     private void addColorTracker(Container parent, ThemeColor color, int leftMargin) {

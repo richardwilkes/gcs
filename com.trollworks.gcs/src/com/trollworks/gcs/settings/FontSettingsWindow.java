@@ -13,6 +13,7 @@ package com.trollworks.gcs.settings;
 
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.ThemeFont;
+import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BaseWindow;
@@ -23,6 +24,7 @@ import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 
+import java.awt.Dimension;
 import java.awt.Font;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -31,11 +33,35 @@ import java.util.List;
 
 /** A window for editing font settings. */
 public final class FontSettingsWindow extends SettingsWindow<Fonts> {
+    private static FontSettingsWindow INSTANCE;
+
     private List<FontTracker> mFontPanels;
     private boolean           mIgnore;
 
+    /** Displays the font settings window. */
+    public static void display() {
+        if (!UIUtilities.inModalState()) {
+            FontSettingsWindow wnd;
+            synchronized (FontSettingsWindow.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new FontSettingsWindow();
+                }
+                wnd = INSTANCE;
+            }
+            wnd.setVisible(true);
+        }
+    }
+
     public FontSettingsWindow() {
         super(I18n.text("Font Settings"));
+        fill();
+    }
+
+    @Override
+    protected void preDispose() {
+        synchronized (FontSettingsWindow.class) {
+            INSTANCE = null;
+        }
     }
 
     @Override
@@ -52,6 +78,14 @@ public final class FontSettingsWindow extends SettingsWindow<Fonts> {
             }
         }
         return panel;
+    }
+
+    @Override
+    public void establishSizing() {
+        pack();
+        int width = getSize().width;
+        setMinimumSize(new Dimension(width, 200));
+        setMaximumSize(new Dimension(width, getPreferredSize().height));
     }
 
     @Override

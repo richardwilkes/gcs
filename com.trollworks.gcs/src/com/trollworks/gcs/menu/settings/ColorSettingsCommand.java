@@ -13,7 +13,6 @@ package com.trollworks.gcs.menu.settings;
 
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.settings.ColorSettingsWindow;
-import com.trollworks.gcs.settings.SettingsWindow;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.utility.I18n;
 
@@ -33,6 +32,6 @@ public final class ColorSettingsCommand extends Command {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        SettingsWindow.display(ColorSettingsWindow.class);
+        ColorSettingsWindow.display();
     }
 }
