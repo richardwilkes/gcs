@@ -14,61 +14,43 @@ package com.trollworks.gcs.settings;
 import com.trollworks.gcs.attribute.Attribute;
 import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.attribute.AttributeListPanel;
-import com.trollworks.gcs.attribute.AttributeSet;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataChangeListener;
-import com.trollworks.gcs.library.Library;
-import com.trollworks.gcs.menu.file.CloseHandler;
+import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.layout.PrecisionLayout;
-import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
-import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
-import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
-import com.trollworks.gcs.ui.widget.Menu;
-import com.trollworks.gcs.ui.widget.MenuItem;
-import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.ui.widget.Panel;
-import com.trollworks.gcs.ui.widget.ScrollPanel;
-import com.trollworks.gcs.ui.widget.WindowUtils;
+import com.trollworks.gcs.ui.widget.Toolbar;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
-import com.trollworks.gcs.utility.Log;
-import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.SafeFileUpdater;
+import com.trollworks.gcs.utility.VersionException;
+import com.trollworks.gcs.utility.json.Json;
+import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.Point;
 import java.awt.Window;
-import java.awt.event.WindowEvent;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 /** A window for editing attribute settings. */
-public final class AttributeSettingsWindow extends BaseWindow implements CloseHandler, DataChangeListener {
+public final class AttributeSettingsWindow extends SettingsWindow<Map<String, AttributeDef>> implements DataChangeListener {
     private static final Map<UUID, AttributeSettingsWindow> INSTANCES = new HashMap<>();
-    private              GURPSCharacter                     mCharacter;
-    private              AttributeListPanel                 mListPanel;
-    private              FontAwesomeButton                  mResetButton;
-    private              FontAwesomeButton                  mMenuButton;
-    private              ScrollPanel                        mScroller;
-    private              boolean                            mUpdatePending;
+
+    private GURPSCharacter     mCharacter;
+    private AttributeListPanel mListPanel;
+    private boolean            mUpdatePending;
 
     /** Displays the attribute settings window. */
     public static void display(GURPSCharacter gchar) {
@@ -105,15 +87,33 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
     private AttributeSettingsWindow(GURPSCharacter gchar) {
         super(createTitle(gchar));
         mCharacter = gchar;
-        Container content = getContentPane();
-        Panel     header  = new Panel(new PrecisionLayout().setColumns(3).setMargins(5, 10, 5, 10).setHorizontalSpacing(10).setHorizontalAlignment(PrecisionLayoutAlignment.END));
-        header.add(new FontAwesomeButton("\uf055", I18n.text("Add Attribute"), () -> mListPanel.addAttribute()), new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalAlignment(PrecisionLayoutAlignment.BEGINNING));
-        mResetButton = new FontAwesomeButton("\uf011", mCharacter == null ? I18n.text("Reset to Factory Defaults") : I18n.text("Reset to Global Defaults"), this::reset);
-        header.add(mResetButton);
-        mMenuButton = new FontAwesomeButton("\uf0c9", I18n.text("Menu"), this::actionMenu);
-        header.add(mMenuButton);
-        content.add(header, BorderLayout.NORTH);
-        mListPanel = new AttributeListPanel(getAttributes(), () -> {
+        if (mCharacter != null) {
+            mCharacter.addChangeListener(this);
+            Settings.getInstance().addChangeListener(this);
+        }
+        fill();
+    }
+
+    @Override
+    protected void preDispose() {
+        synchronized (INSTANCES) {
+            INSTANCES.remove(mCharacter == null ? null : mCharacter.getID());
+        }
+        if (mCharacter != null) {
+            mCharacter.removeChangeListener(this);
+            Settings.getInstance().removeChangeListener(this);
+        }
+    }
+
+    @Override
+    protected void addToToolBar(Toolbar toolbar) {
+        super.addToToolBar(toolbar);
+        toolbar.add(new FontAwesomeButton("\uf055", I18n.text("Add Attribute"),
+                () -> mListPanel.addAttribute()));
+    }
+
+    protected Panel createContent() {
+        mListPanel = new AttributeListPanel(SheetSettings.get(mCharacter).getAttributes(), () -> {
             adjustResetButton();
             if (mCharacter == null) {
                 Settings.getInstance().notifyOfChange();
@@ -121,131 +121,19 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
                 mCharacter.notifyOfChange();
             }
         });
-        mScroller = new ScrollPanel(mListPanel);
-        content.add(mScroller, BorderLayout.CENTER);
-        adjustResetButton();
-        if (mCharacter != null) {
-            mCharacter.addChangeListener(this);
-            Settings.getInstance().addChangeListener(this);
-        }
-        establishSizing();
-        WindowUtils.packAndCenterWindowOn(this, null);
-        EventQueue.invokeLater(() -> mScroller.getViewport().setViewPosition(new Point(0, 0)));
+        return mListPanel;
     }
 
     @Override
     public void establishSizing() {
         Dimension min = getMinimumSize();
-        setMinimumSize(new Dimension(Math.max(min.width, 600), min.height));
+        setMinimumSize(new Dimension(Math.max(min.width, 600), Math.max(min.height, 100)));
     }
 
-    private Map<String, AttributeDef> getAttributes() {
-        return SheetSettings.get(mCharacter).getAttributes();
-    }
-
-    private void actionMenu() {
-        Menu menu = new Menu();
-        menu.addItem(new MenuItem(I18n.text("Import…"), (p) -> importData()));
-        menu.addItem(new MenuItem(I18n.text("Export…"), (p) -> exportData()));
-        Settings.getInstance(); // Just to ensure the libraries list is initialized
-        for (Library lib : Library.LIBRARIES) {
-            Path dir = lib.getPath().resolve(Dirs.ATTRIBUTES.getDefaultPath().getFileName());
-            if (Files.isDirectory(dir)) {
-                List<AttributeSet> list = new ArrayList<>();
-                // IMPORTANT: On Windows, calling any of the older methods to list the contents of a
-                // directory results in leaving state around that prevents future move & delete
-                // operations. Only use this style of access for directory listings to avoid that.
-                try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
-                    for (Path path : stream) {
-                        try {
-                            list.add(new AttributeSet(path));
-                        } catch (IOException ioe) {
-                            Log.error("unable to load " + path, ioe);
-                        }
-                    }
-                } catch (IOException exception) {
-                    Log.error(exception);
-                }
-                if (!list.isEmpty()) {
-                    Collections.sort(list);
-                    menu.addSeparator();
-                    MenuItem item = new MenuItem(dir.getParent().getFileName().toString(), null);
-                    item.setEnabled(false);
-                    menu.addItem(item);
-                    for (AttributeSet choice : list) {
-                        menu.add(new MenuItem(choice.toString(), (p) -> {
-                            Map<String, AttributeDef> attrs = choice.getAttributes();
-                            if (attrs != null) {
-                                reset(attrs);
-                            }
-                        }));
-                    }
-                }
-            }
-        }
-        menu.presentToUser(mMenuButton, 0, mMenuButton::updateRollOver);
-    }
-
-    private void importData() {
-        Path path = Modal.presentOpenFileDialog(this, I18n.text("Import…"), Dirs.ATTRIBUTES,
-                FileType.ATTRIBUTE_SETTINGS.getFilter());
-        if (path != null) {
-            try {
-                AttributeSet set = new AttributeSet(path);
-                reset(set.getAttributes());
-            } catch (IOException ioe) {
-                Log.error(ioe);
-                Modal.showError(this, I18n.text("Unable to import attribute settings."));
-            }
-        }
-    }
-
-    private void exportData() {
-        Path path = Modal.presentSaveFileDialog(this, I18n.text("Export…"), Dirs.ATTRIBUTES,
-                FileType.ATTRIBUTE_SETTINGS.getUntitledDefaultFileName(),
-                FileType.ATTRIBUTE_SETTINGS.getFilter());
-        if (path != null) {
-            SafeFileUpdater transaction = new SafeFileUpdater();
-            transaction.begin();
-            try {
-                File         file = transaction.getTransactionFile(path.toFile());
-                AttributeSet set  = new AttributeSet(PathUtils.getLeafName(path, false), mListPanel.getAttributes());
-                try (JsonWriter w = new JsonWriter(new BufferedWriter(new FileWriter(file, StandardCharsets.UTF_8)), "\t")) {
-                    set.toJSON(w);
-                }
-                transaction.commit();
-            } catch (Exception exception) {
-                Log.error(exception);
-                transaction.abort();
-                Modal.showError(this, I18n.text("Unable to export attribute settings."));
-            }
-        }
-    }
-
-    private void reset() {
-        Map<String, AttributeDef> attributes;
-        if (mCharacter == null) {
-            attributes = AttributeDef.createStandardAttributes();
-        } else {
-            attributes = AttributeDef.cloneMap(Settings.getInstance().getSheetSettings().getAttributes());
-        }
-        reset(attributes);
-        adjustResetButton();
-    }
-
-    private void reset(Map<String, AttributeDef> attributes) {
-        mListPanel.reset(attributes);
-        mListPanel.getAdjustCallback().run();
-        revalidate();
-        repaint();
-        EventQueue.invokeLater(() -> mScroller.getViewport().setViewPosition(new Point(0, 0)));
-    }
-
-    private void adjustResetButton() {
+    @Override
+    protected boolean shouldResetBeEnabled() {
         Map<String, AttributeDef> prefsAttributes = Settings.getInstance().getSheetSettings().getAttributes();
-        if (mCharacter == null) {
-            mResetButton.setEnabled(!prefsAttributes.equals(AttributeDef.createStandardAttributes()));
-        } else {
+        if (mCharacter != null) {
             Map<String, Attribute> oldAttributes = mCharacter.getAttributes();
             Map<String, Attribute> newAttributes = new HashMap<>();
             for (String key : mCharacter.getSheetSettings().getAttributes().keySet()) {
@@ -257,32 +145,85 @@ public final class AttributeSettingsWindow extends BaseWindow implements CloseHa
                 oldAttributes.putAll(newAttributes);
                 mCharacter.notifyOfChange();
             }
-            mListPanel.adjustButtons();
-            mResetButton.setEnabled(!mCharacter.getSheetSettings().getAttributes().equals(prefsAttributes));
+        }
+        mListPanel.adjustButtons();
+        if (mCharacter == null) {
+            return !prefsAttributes.equals(AttributeDef.createStandardAttributes());
+        }
+        return !mCharacter.getSheetSettings().getAttributes().equals(prefsAttributes);
+    }
+
+    @Override
+    protected String getResetButtonTitle() {
+        return mCharacter == null ? super.getResetButtonTitle() : I18n.text("Reset to Global Defaults");
+    }
+
+    @Override
+    protected Map<String, AttributeDef> getResetData() {
+        if (mCharacter == null) {
+            return AttributeDef.createStandardAttributes();
+        }
+        return AttributeDef.cloneMap(Settings.getInstance().getSheetSettings().getAttributes());
+    }
+
+    @Override
+    protected void doResetTo(Map<String, AttributeDef> attributes) {
+        mListPanel.reset(attributes);
+        mListPanel.getAdjustCallback().run();
+        revalidate();
+        repaint();
+        adjustResetButton();
+        scrollToTop();
+    }
+
+    @Override
+    protected Dirs getDir() {
+        return Dirs.ATTRIBUTES;
+    }
+
+    @Override
+    protected FileType getFileType() {
+        return FileType.ATTRIBUTE_SETTINGS;
+    }
+
+    @Override
+    protected Map<String, AttributeDef> createSettingsFrom(Path path) throws IOException {
+        try (BufferedReader in = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+            JsonMap m       = Json.asMap(Json.parse(in));
+            int     version = m.getInt(DataFile.VERSION);
+            if (version > DataFile.CURRENT_VERSION) {
+                throw VersionException.createTooNew();
+            }
+            String key = SheetSettings.KEY_ATTRIBUTES;
+            if (!m.has(SheetSettings.KEY_ATTRIBUTES)) {
+                key = "attribute_settings"; // older key
+            }
+            if (!m.has(key)) {
+                throw new IOException("invalid data type");
+            }
+            return AttributeDef.load(m.getArray(key));
         }
     }
 
     @Override
-    public boolean mayAttemptClose() {
-        return true;
-    }
-
-    @Override
-    public boolean attemptClose() {
-        windowClosing(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
-        return true;
-    }
-
-    @Override
-    public void dispose() {
-        synchronized (INSTANCES) {
-            INSTANCES.remove(mCharacter == null ? null : mCharacter.getID());
+    protected void exportSettingsTo(Path path) throws IOException {
+        SafeFileUpdater trans = new SafeFileUpdater();
+        trans.begin();
+        try {
+            Files.createDirectories(path.getParent());
+            File file = trans.getTransactionFile(path.toFile());
+            try (JsonWriter w = new JsonWriter(new BufferedWriter(new FileWriter(file, StandardCharsets.UTF_8)), "\t")) {
+                w.startMap();
+                w.keyValue(Settings.VERSION, DataFile.CURRENT_VERSION);
+                w.key(SheetSettings.KEY_ATTRIBUTES);
+                AttributeDef.writeOrdered(w, mListPanel.getAttributes());
+                w.endMap();
+            }
+        } catch (IOException ioe) {
+            trans.abort();
+            throw ioe;
         }
-        if (mCharacter != null) {
-            mCharacter.removeChangeListener(this);
-            Settings.getInstance().removeChangeListener(this);
-        }
-        super.dispose();
+        trans.commit();
     }
 
     @Override

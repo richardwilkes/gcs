@@ -121,12 +121,12 @@ public final class ColorSettingsWindow extends SettingsWindow<Colors> {
     }
 
     @Override
-    protected void reset() {
-        resetTo(Colors.defaultThemeColors());
+    protected Colors getResetData() {
+        return Colors.defaultThemeColors();
     }
 
     @Override
-    protected void resetTo(Colors data) {
+    protected void doResetTo(Colors data) {
         mIgnore = true;
         for (ColorTracker tracker : mColorWells) {
             tracker.resetTo(data);

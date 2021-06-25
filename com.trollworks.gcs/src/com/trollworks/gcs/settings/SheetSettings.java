@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 public class SheetSettings implements ChangeNotifier {
-    private static final String KEY_ATTRIBUTES                      = "attributes";
+    public static final  String KEY_ATTRIBUTES                      = "attributes";
     private static final String KEY_BLOCK_LAYOUT                    = "block_layout";
     private static final String KEY_DEFAULT_LENGTH_UNITS            = "default_length_units";
     private static final String KEY_DEFAULT_WEIGHT_UNITS            = "default_weight_units";

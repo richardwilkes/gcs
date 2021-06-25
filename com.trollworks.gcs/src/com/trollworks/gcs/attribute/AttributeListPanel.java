@@ -62,7 +62,8 @@ public class AttributeListPanel extends BandedPanel {
 
     private void fillAttributes() {
         for (AttributeDef def : AttributeDef.getOrdered(mAttributes)) {
-            add(new AttributePanel(mAttributes, def, mAdjustCallback), new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
+            add(new AttributePanel(mAttributes, def, mAdjustCallback),
+                    new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment());
         }
         adjustButtons();
     }

@@ -99,12 +99,12 @@ public final class FontSettingsWindow extends SettingsWindow<Fonts> {
     }
 
     @Override
-    protected void reset() {
-        resetTo(Fonts.defaultThemeFonts());
+    protected Fonts getResetData() {
+        return Fonts.defaultThemeFonts();
     }
 
     @Override
-    protected void resetTo(Fonts fonts) {
+    protected void doResetTo(Fonts fonts) {
         mIgnore = true;
         for (FontTracker tracker : mFontPanels) {
             tracker.resetTo(fonts);

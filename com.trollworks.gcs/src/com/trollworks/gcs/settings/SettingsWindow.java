@@ -14,8 +14,8 @@ package com.trollworks.gcs.settings;
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
-import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.LayoutConstants;
@@ -24,6 +24,7 @@ import com.trollworks.gcs.ui.widget.MenuItem;
 import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
+import com.trollworks.gcs.ui.widget.Toolbar;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
@@ -42,6 +43,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.border.CompoundBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 public abstract class SettingsWindow<T> extends BaseWindow implements CloseHandler {
@@ -68,20 +70,26 @@ public abstract class SettingsWindow<T> extends BaseWindow implements CloseHandl
     }
 
     private void addToolBar() {
-        Panel header = new Panel(new PrecisionLayout().setColumns(2).
-                setMargins(LayoutConstants.TOOLBAR_VERTICAL_INSET,
-                        LayoutConstants.WINDOW_BORDER_INSET,
-                        LayoutConstants.TOOLBAR_VERTICAL_INSET,
-                        LayoutConstants.WINDOW_BORDER_INSET).
-                setHorizontalSpacing(10).setEndHorizontalAlignment());
-        header.setBorder(new LineBorder(Colors.DIVIDER, 0, 0, 1, 0));
-        mResetButton = new FontAwesomeButton("\uf011", I18n.text("Reset to Factory Defaults"),
-                this::reset);
-        header.add(mResetButton);
+        Toolbar toolbar = new Toolbar();
+        toolbar.setBorder(new CompoundBorder(new LineBorder(Colors.DIVIDER, 0, 0, 1, 0),
+                new EmptyBorder(LayoutConstants.TOOLBAR_VERTICAL_INSET,
+                        LayoutConstants.WINDOW_BORDER_INSET, LayoutConstants.TOOLBAR_VERTICAL_INSET,
+                        LayoutConstants.WINDOW_BORDER_INSET)));
+        addToToolBar(toolbar);
+        mResetButton = new FontAwesomeButton("\uf011", getResetButtonTitle(), this::reset);
+        toolbar.add(mResetButton, Toolbar.LAYOUT_EXTRA_BEFORE);
         mMenuButton = new FontAwesomeButton("\uf0c9", I18n.text("Menu"),
                 () -> createActionMenu().presentToUser(mMenuButton, 0, mMenuButton::updateRollOver));
-        header.add(mMenuButton);
-        getContentPane().add(header, BorderLayout.NORTH);
+        toolbar.add(mMenuButton);
+        getContentPane().add(toolbar, BorderLayout.NORTH);
+    }
+
+    protected void addToToolBar(Toolbar toolbar) {
+        // Here for sub-classes
+    }
+
+    protected String getResetButtonTitle() {
+        return I18n.text("Reset to Factory Defaults");
     }
 
     protected abstract Panel createContent();
@@ -92,9 +100,18 @@ public abstract class SettingsWindow<T> extends BaseWindow implements CloseHandl
 
     protected abstract boolean shouldResetBeEnabled();
 
-    protected abstract void reset();
+    public final void reset() {
+        resetTo(getResetData());
+    }
 
-    protected abstract void resetTo(T data);
+    protected abstract T getResetData();
+
+    protected final void resetTo(T data) {
+        doResetTo(data);
+        transferFocus();
+    }
+
+    protected abstract void doResetTo(T data);
 
     protected abstract Dirs getDir();
 
