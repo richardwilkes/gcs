@@ -88,10 +88,14 @@ public class TextCell implements Cell {
 
     @Override
     public int getPreferredWidth(Outline outline, Row row, Column column) {
-        Scale      scale         = Scale.get(outline);
-        int        scaledHMargin = scale.scale(H_MARGIN);
-        int        width         = TextDrawing.getPreferredSize(scale.scale(getFont(row, column)), getData(row, column)).width;
-        RetinaIcon icon          = getIcon(row, column);
+        Scale   scale         = Scale.get(outline);
+        int     scaledHMargin = scale.scale(H_MARGIN);
+        boolean wrapped       = mWrapped;
+        mWrapped = false;
+        String text = getPresentationText(outline, row, column);
+        mWrapped = wrapped;
+        int        width = TextDrawing.getPreferredSize(scale.scale(getFont(row, column)), text).width;
+        RetinaIcon icon  = getIcon(row, column);
         if (icon != null) {
             width += scale.scale(icon.getIconWidth()) + scaledHMargin;
         }
