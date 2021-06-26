@@ -34,12 +34,10 @@ public final class Images {
     public static final RetinaIcon ADM_MARKER       = getRetina("adm_marker");
     public static final RetinaIcon ADQ_FILE         = getRetina("adq_file");
     public static final RetinaIcon ADQ_MARKER       = getRetina("adq_marker");
-    public static final RetinaIcon COLLAPSE         = getRetina("collapse");
     public static final RetinaIcon EQM_FILE         = getRetina("eqm_file");
     public static final RetinaIcon EQM_MARKER       = getRetina("eqm_marker");
     public static final RetinaIcon EQP_FILE         = getRetina("eqp_file");
     public static final RetinaIcon EQP_MARKER       = getRetina("eqp_marker");
-    public static final RetinaIcon EXPAND           = getRetina("expand");
     public static final RetinaIcon FILE             = getRetina("file");
     public static final RetinaIcon FOLDER           = getRetina("folder");
     public static final RetinaIcon GCS_FILE         = getRetina("gcs_file");

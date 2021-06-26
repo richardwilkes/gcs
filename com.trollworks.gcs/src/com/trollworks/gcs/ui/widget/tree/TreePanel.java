@@ -17,10 +17,8 @@ import com.trollworks.gcs.menu.edit.SelectAllCapable;
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
-import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.widget.DirectScrollPanel;
 import com.trollworks.gcs.ui.widget.DirectScrollPanelArea;
@@ -34,6 +32,7 @@ import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -69,6 +68,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import javax.swing.SwingConstants;
 
 /** Provides a flexible tree widget. */
 public class TreePanel extends DirectScrollPanel implements Runnable, Openable, Deletable, SelectAllCapable, DropTargetListener, DragSourceListener, DragGestureListener, FocusListener, KeyListener, MouseListener, MouseMotionListener, RowsAddedHandler, RowsRemovedHandler {
@@ -98,6 +98,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
     private              TreeRow                   mAnchorRow;
     private              TreeRow                   mRowToSelectOnMouseUp;
     private              TreeRow                   mResizeRow;
+    private              TreeContainerRow          mRollRow;
     private              Dock                      mAlternateDragDestination;
     private              RowsAddedHandler          mRowsAddedHandler;
     private              RowsRemovedHandler        mRowsRemovedHandler;
@@ -111,7 +112,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
     private              boolean                   mUserSortable           = true;
     private              boolean                   mShowColumnDivider      = true;
     private              boolean                   mShowRowDivider         = true;
-    private              boolean                   mShowHierarchyLines     = true;
+    private              boolean                   mShowHierarchyLines;
     private              boolean                   mShowHeader             = true;
     private              boolean                   mDropReceived;
     private              boolean                   mResizePending;
@@ -149,7 +150,11 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
 
     @Override
     public void mouseExited(MouseEvent event) {
-        // Unused
+        if (mRollRow != null) {
+            TreeContainerRow rollRow = mRollRow;
+            mRollRow = null;
+            repaintRows(rollRow);
+        }
     }
 
     @Override
@@ -158,6 +163,11 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
         DirectScrollPanelArea area  = checkAndConvertToArea(where);
         if (area != DirectScrollPanelArea.NONE) {
             setColumnDividerHighlight(where.x);
+        }
+        TreeContainerRow rollRow = mRollRow;
+        mRollRow = overDisclosureControl(where.x, where.y);
+        if (rollRow != mRollRow) {
+            repaintRows(rollRow, mRollRow);
         }
     }
 
@@ -863,19 +873,18 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
                         }
                     }
                     if (mShowDisclosureControls && row instanceof TreeContainerRow) {
-                        RetinaIcon icon     = isOpen((TreeContainerRow) row) ? Images.COLLAPSE : Images.EXPAND;
-                        int        imgWidth = icon.getIconWidth();
-                        int        yt       = rowHeight - icon.getIconHeight();
+                        int disclosureSize = 16;
+                        int yt             = rowHeight - disclosureSize;
                         if ((yt & 1) == 1) {
                             yt++;
                         }
-                        yt = top + yt / 2;
-                        int xt = INDENT - imgWidth;
-                        if ((xt & 1) == 0) {
-                            xt--;
-                        }
-                        xt = x + indent - (imgWidth + xt / 2);
-                        icon.paintIcon(this, gc, xt, yt);
+                        yt = top + yt / 2 - 1;
+                        int xt = x + indent - (disclosureSize + (INDENT - disclosureSize - 1) / 2);
+                        gc.setFont(new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, disclosureSize));
+                        gc.setColor(row == mRollRow ? Colors.ROLLOVER_ICON_BUTTON : Colors.ICON_BUTTON);
+                        TextDrawing.draw(gc, new Rectangle(xt, yt, disclosureSize, disclosureSize),
+                                isOpen((TreeContainerRow) row) ? "\uf0d7" : "\uf0da",
+                                SwingConstants.CENTER, SwingConstants.CENTER);
                     }
                 }
                 column.draw(gc, this, row, position, top, tmpX, colWidth, selected, active);
@@ -954,6 +963,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
         int          width         = bounds.width;
         int          y             = 0;
         int          dividerHeight = getRowDividerHeight();
+        set.remove(null);
         for (TreeRow row : new TreeRowViewIterator(this, mRoot.getChildren())) {
             int height = getRowHeight(row) + dividerHeight;
             if (y + height > min) {
