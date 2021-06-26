@@ -18,7 +18,6 @@ import com.trollworks.gcs.skill.SkillLevel;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.ScrollContent;
@@ -99,7 +98,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
                 mRow.getDuration(), I18n.text("The duration of the spell once its cast"), null);
         createPointsFields(panel);
         mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this spell"), this);
-        panel.add(new Label(I18n.text("Notes")), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
+        addLabel(panel, I18n.text("Notes")).setBeginningVerticalAlignment().setTopMargin(2);
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
         wrapper = new Panel(new PrecisionLayout().setMargins(0));
         mCategoriesField = createField(panel, wrapper, I18n.text("Categories"),

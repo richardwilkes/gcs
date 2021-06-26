@@ -23,7 +23,6 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.Checkbox;
 import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.PopupMenu;
@@ -84,7 +83,8 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     protected void addContentSelf(ScrollContent outer) {
         Panel   panel       = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
         boolean isContainer = mRow.canHaveChildren();
-        mNameField = createCorrectableField(panel, I18n.text("Name"), mRow.getName(), I18n.text("The base name of the skill, without any notes or specialty information"));
+        mNameField = createCorrectableField(panel, I18n.text("Name"), mRow.getName(),
+                I18n.text("The base name of the skill, without any notes or specialty information"));
         if (!isContainer) {
             Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
             mSpecializationField = createField(panel, wrapper, I18n.text("Specialization"),
@@ -93,8 +93,9 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
             createTechLevelFields(wrapper);
             panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         }
-        mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this skill"), this);
-        panel.add(new Label(I18n.text("Notes")), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
+        mNotesField = new MultiLineTextField(mRow.getNotes(),
+                I18n.text("Any notes that you would like to show up in the list along with this skill"), this);
+        addLabel(panel, I18n.text("Notes")).setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2);
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         mCategoriesField = createField(panel, panel, I18n.text("Categories"), mRow.getCategoriesAsString(),
                 I18n.text("The category or categories the skill belongs to (separate multiple categories with a comma)"),
@@ -126,7 +127,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     private EditorField createCorrectableField(Container parent, String title, String text, String tooltip) {
         EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text, tooltip);
         field.getDocument().addDocumentListener(this);
-        parent.add(new Label(title), new PrecisionLayoutData().setFillHorizontalAlignment());
+        addLabel(parent, title);
         parent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return field;
     }
@@ -134,7 +135,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     private static EditorField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars, EditorField.ChangeListener listener) {
         EditorField field = new EditorField(FieldFactory.STRING, listener, SwingConstants.LEFT, text,
                 maxChars > 0 ? Text.makeFiller(maxChars, 'M') : null, tooltip);
-        labelParent.add(new Label(title), new PrecisionLayoutData().setFillHorizontalAlignment());
+        addLabel(labelParent, title);
         PrecisionLayoutData ld = new PrecisionLayoutData().setFillHorizontalAlignment();
         if (maxChars == 0) {
             ld.setGrabHorizontalSpace(true);
@@ -151,7 +152,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         mPointsField = new EditorField(FieldFactory.POSINT3, (f) -> recalculateLevel(),
                 SwingConstants.LEFT, Integer.valueOf(mRow.getRawPoints()), Integer.valueOf(999),
                 I18n.text("The number of points spent on this skill"));
-        parent.add(new Label(I18n.text("Points")), new PrecisionLayoutData().setFillHorizontalAlignment());
+        addLabel(parent, I18n.text("Points"));
         parent.add(mPointsField, new PrecisionLayoutData().setFillHorizontalAlignment());
         if (forCharacter) {
             String level = Skill.getSkillDisplayLevel(mRow.getDataFile(), mRow.getLevel(),
@@ -218,8 +219,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
             items[i] = MessageFormat.format(I18n.text("Penalty equal to {0} times the current encumbrance level"),
                     Integer.valueOf(i));
         }
-        Label label = new Label(I18n.text("Encumbrance"));
-        parent.add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
+        addLabel(parent, I18n.text("Encumbrance"));
         return createPopup(parent, items,
                 items[mRow.getEncumbrancePenaltyMultiplier()],
                 I18n.text("The encumbrance penalty multiplier"), (p) -> recalculateLevel());
@@ -256,7 +256,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(columns));
         mAttributePopup = createPopup(wrapper, list.toArray(new AttributeChoice[0]), current,
                 I18n.text("The attribute this skill is based on"), (p) -> recalculateLevel());
-        wrapper.add(new Label("/"));
+        addLabel(wrapper, "/");
         mDifficultyPopup = createPopup(wrapper, SkillDifficulty.values(), mRow.getDifficulty(),
                 I18n.text("The relative difficulty of learning this skill"),
                 (p) -> recalculateLevel());

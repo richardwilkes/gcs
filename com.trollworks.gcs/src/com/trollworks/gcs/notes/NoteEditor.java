@@ -16,7 +16,6 @@ import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.ScrollContent;
@@ -57,11 +56,11 @@ public class NoteEditor extends RowEditor<Note> {
         outer.add(wrapper, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
 
         mDescriptionField = new MultiLineTextField(mRow.getDescription(), null, null);
-        wrapper.add(new Label(I18n.text("Description")), new PrecisionLayoutData().setBeginningVerticalAlignment().setFillHorizontalAlignment().setTopMargin(2));
+        addLabel(wrapper, I18n.text("Description")).setBeginningVerticalAlignment().setTopMargin(2);
         wrapper.add(mDescriptionField, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true));
 
         mReferenceField = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, mRow.getReference(), PageRefCell.getStdToolTip(I18n.text("note")));
-        wrapper.add(new Label(I18n.text("Page Reference")), new PrecisionLayoutData().setFillHorizontalAlignment());
+        addLabel(wrapper, I18n.text("Page Reference"));
         wrapper.add(mReferenceField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 

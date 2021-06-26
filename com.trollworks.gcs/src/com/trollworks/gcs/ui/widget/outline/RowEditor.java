@@ -117,7 +117,9 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
 
     /** Call this during construction to add the content to the editor. */
     protected void addContent() {
-        ScrollContent outer = new ScrollContent(new PrecisionLayout().setMargins(MARGIN, MARGIN, 0, MARGIN));
+        ScrollContent outer = new ScrollContent(new PrecisionLayout().
+                setMargins(LayoutConstants.WINDOW_BORDER_INSET, LayoutConstants.WINDOW_BORDER_INSET,
+                        0, LayoutConstants.WINDOW_BORDER_INSET));
         outer.setScrollableTracksViewportWidth(true);
         outer.setBackground(Colors.BACKGROUND);
         addContentSelf(outer);
@@ -156,8 +158,16 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
         parent.add(section, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
-    protected static void addLabel(Container parent, String text) {
-        parent.add(new Label(text, SwingConstants.RIGHT), new PrecisionLayoutData().setFillHorizontalAlignment());
+    protected static PrecisionLayoutData addLabel(Container parent, String text) {
+        PrecisionLayoutData layoutData = new PrecisionLayoutData();
+        parent.add(new Label(text), layoutData.setEndHorizontalAlignment());
+        return layoutData;
+    }
+
+    protected static PrecisionLayoutData addInteriorLabel(Container parent, String text) {
+        PrecisionLayoutData layoutData = new PrecisionLayoutData();
+        parent.add(new Label(text), layoutData.setEndHorizontalAlignment().setLeftMargin(4));
+        return layoutData;
     }
 
     /**
