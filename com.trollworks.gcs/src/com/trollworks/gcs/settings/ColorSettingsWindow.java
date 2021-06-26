@@ -106,9 +106,9 @@ public final class ColorSettingsWindow extends SettingsWindow<Colors> {
     private void addColorTracker(Container parent, ThemeColor color, int leftMargin) {
         ColorTracker tracker = new ColorTracker(color);
         mColorWells.add(tracker);
+        parent.add(tracker, new PrecisionLayoutData().setLeftMargin(leftMargin));
         parent.add(new Label(color.toString()), new PrecisionLayoutData().
-                setFillHorizontalAlignment().setLeftMargin(leftMargin));
-        parent.add(tracker, new PrecisionLayoutData().setLeftMargin(4));
+                setFillHorizontalAlignment().setLeftMargin(4));
     }
 
     @Override
