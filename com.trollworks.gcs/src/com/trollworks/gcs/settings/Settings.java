@@ -17,7 +17,7 @@ import com.trollworks.gcs.datafile.ChangeableData;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.library.Library;
-import com.trollworks.gcs.pdfview.PDFRef;
+import com.trollworks.gcs.pageref.PageRefSettings;
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.widget.BaseWindow;
@@ -50,6 +50,8 @@ import java.util.Map;
 public final class Settings extends ChangeableData {
     public static final int MINIMUM_VERSION = 1;
 
+    private static final String DEPRECATED_PDF_REFS = "pdf_refs"; // June 25, 2021
+
     public static final  String COLORS                = "colors";
     private static final String DIVIDER_POSITION      = "divider_position";
     public static final  String FONTS                 = "fonts";
@@ -60,10 +62,10 @@ public final class Settings extends ChangeableData {
     private static final String LIBRARIES             = "libraries";
     private static final String LIBRARY_EXPLORER      = "library_explorer";
     private static final String OPEN_ROW_KEYS         = "open_row_keys";
-    private static final String PDF_REFS              = "pdf_refs";
+    public static final  String PAGE_REFS             = "page_refs";
     private static final String QUICK_EXPORTS         = "quick_exports";
     private static final String RECENT_FILES          = "recent_files";
-    private static final String SHEET_SETTINGS        = "sheet_settings";
+    public static final  String SHEET_SETTINGS        = "sheet_settings";
     private static final String THEME                 = "theme";
     public static final  String VERSION               = "version";
     private static final String WINDOW_POSITIONS      = "window_positions";
@@ -81,7 +83,7 @@ public final class Settings extends ChangeableData {
     private List<String>                     mLibraryExplorerOpenRowKeys;
     private List<Path>                       mRecentFiles;
     private Map<String, QuickExport>         mQuickExports;
-    private Map<String, PDFRef>              mPdfRefs;
+    private PageRefSettings                  mPageRefSettings;
     private Map<String, String>              mKeyBindingOverrides;
     private Map<String, BaseWindow.Position> mBaseWindowPositions;
     private SheetSettings                    mSheetSettings;
@@ -127,7 +129,7 @@ public final class Settings extends ChangeableData {
         mLibraryExplorerOpenRowKeys = new ArrayList<>();
         mRecentFiles = new ArrayList<>();
         mQuickExports = new HashMap<>();
-        mPdfRefs = new HashMap<>();
+        mPageRefSettings = new PageRefSettings();
         mKeyBindingOverrides = new HashMap<>();
         mBaseWindowPositions = new HashMap<>();
         mSheetSettings = new SheetSettings();
@@ -175,11 +177,10 @@ public final class Settings extends ChangeableData {
                         if (m.has(LAST_DIRS)) {
                             Dirs.load(m.getMap(LAST_DIRS));
                         }
-                        if (m.has(PDF_REFS)) {
-                            JsonMap m2 = m.getMap(PDF_REFS);
-                            for (String key : m2.keySet()) {
-                                mPdfRefs.put(key, new PDFRef(m2.getMap(key)));
-                            }
+                        if (m.has(PAGE_REFS)) {
+                            mPageRefSettings = new PageRefSettings(m.getMap(PAGE_REFS));
+                        } else if (m.has(DEPRECATED_PDF_REFS)) {
+                            mPageRefSettings = new PageRefSettings(m.getMap(DEPRECATED_PDF_REFS));
                         }
                         if (m.has(KEY_BINDINGS)) {
                             JsonMap m2 = m.getMap(KEY_BINDINGS);
@@ -212,9 +213,9 @@ public final class Settings extends ChangeableData {
                             }
                         }
                         if (m.has(SHEET_SETTINGS)) {
-                            mSheetSettings.load(m.getMap(SHEET_SETTINGS), state);
+                            mSheetSettings.load(m.getMap(SHEET_SETTINGS));
                         } else {
-                            mSheetSettings.load(m, state);
+                            mSheetSettings.load(m);
                         }
                     }
                 }
@@ -284,13 +285,8 @@ public final class Settings extends ChangeableData {
                     }
                     w.endArray();
                     Dirs.save(LAST_DIRS, w);
-                    w.key(PDF_REFS);
-                    w.startMap();
-                    for (Map.Entry<String, PDFRef> entry : mPdfRefs.entrySet()) {
-                        w.key(entry.getKey());
-                        entry.getValue().toJSON(w);
-                    }
-                    w.endMap();
+                    w.key(PAGE_REFS);
+                    mPageRefSettings.save(w);
                     w.key(KEY_BINDINGS);
                     w.startMap();
                     for (Map.Entry<String, String> entry : mKeyBindingOverrides.entrySet()) {
@@ -326,7 +322,7 @@ public final class Settings extends ChangeableData {
                         w.endMap();
                     }
                     w.key(SHEET_SETTINGS);
-                    mSheetSettings.toJSON(w);
+                    mSheetSettings.save(w, true);
                     w.endMap();
                 }
             } catch (IOException ioe) {
@@ -412,38 +408,8 @@ public final class Settings extends ChangeableData {
         mLastRecentFilesUpdateCounter++;
     }
 
-    public List<PDFRef> allPdfRefs(boolean requireExistence) {
-        List<PDFRef> list = new ArrayList<>();
-        for (String key : mPdfRefs.keySet()) {
-            PDFRef ref = lookupPdfRef(key, requireExistence);
-            if (ref != null) {
-                list.add(ref);
-            }
-        }
-        Collections.sort(list);
-        return list;
-    }
-
-    public PDFRef lookupPdfRef(String id, boolean requireExistence) {
-        PDFRef ref = mPdfRefs.get(id);
-        if (ref == null) {
-            return null;
-        }
-        if (requireExistence) {
-            Path path = ref.getPath();
-            if (!Files.isReadable(path) || !Files.isRegularFile(path)) {
-                return null;
-            }
-        }
-        return ref;
-    }
-
-    public void putPdfRef(PDFRef ref) {
-        mPdfRefs.put(ref.getID(), ref);
-    }
-
-    public void removePdfRef(PDFRef ref) {
-        mPdfRefs.remove(ref.getID());
+    public PageRefSettings getPDFRefSettings() {
+        return mPageRefSettings;
     }
 
     public String getKeyBindingOverride(String key) {

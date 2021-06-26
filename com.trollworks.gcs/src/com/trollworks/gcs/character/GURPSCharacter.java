@@ -200,7 +200,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
     @Override
     protected void loadSelf(JsonMap m, LoadState state) throws IOException {
         characterInitialize(false);
-        mSheetSettings.load(m.getMap(KEY_SETTINGS), state);
+        mSheetSettings.load(m.getMap(KEY_SETTINGS));
         mCreatedOn = Numbers.extractDateTime(Numbers.DATE_TIME_STORED_FORMAT, m.getString(KEY_CREATED_DATE)) / FieldFactory.TIMESTAMP_FACTOR;
         mProfile.load(m.getMap(KEY_PROFILE));
         if (m.has(KEY_ATTRIBUTES)) {
@@ -268,7 +268,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
     @Override
     protected void saveSelf(JsonWriter w, SaveType saveType) throws IOException {
         w.key(KEY_SETTINGS);
-        mSheetSettings.toJSON(w);
+        mSheetSettings.save(w, true);
         w.keyValue(KEY_CREATED_DATE, Numbers.formatDateTime(Numbers.DATE_TIME_STORED_FORMAT, mCreatedOn * FieldFactory.TIMESTAMP_FACTOR));
         w.keyValue(KEY_MODIFIED_DATE, Numbers.formatDateTime(Numbers.DATE_TIME_STORED_FORMAT, mModifiedOn * FieldFactory.TIMESTAMP_FACTOR));
         w.key(KEY_PROFILE);

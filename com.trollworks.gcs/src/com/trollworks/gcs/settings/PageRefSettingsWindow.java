@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.settings;
 
-import com.trollworks.gcs.menu.file.CloseHandler;
-import com.trollworks.gcs.pdfview.PDFRef;
+import com.trollworks.gcs.pageref.PageRef;
+import com.trollworks.gcs.pageref.PageRefSettings;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
@@ -20,39 +20,38 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BandedPanel;
-import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.MessageType;
 import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.ui.widget.Panel;
-import com.trollworks.gcs.ui.widget.ScrollPanel;
-import com.trollworks.gcs.ui.widget.WindowUtils;
+import com.trollworks.gcs.utility.Dirs;
+import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.IntegerFormatter;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.nio.file.Path;
 import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;
 import javax.swing.text.DefaultFormatterFactory;
 
 /** A window for editing page reference lookup settings. */
-public final class PageRefMappingsWindow extends BaseWindow implements CloseHandler {
-    private static PageRefMappingsWindow INSTANCE;
-    private        BandedPanel           mPanel;
+public final class PageRefSettingsWindow extends SettingsWindow<PageRefSettings> {
+    private static PageRefSettingsWindow INSTANCE;
+
+    private BandedPanel mPanel;
 
     /** Displays the page reference lookup settings window. */
     public static void display() {
         if (!UIUtilities.inModalState()) {
-            PageRefMappingsWindow wnd;
-            synchronized (PageRefMappingsWindow.class) {
+            PageRefSettingsWindow wnd;
+            synchronized (PageRefSettingsWindow.class) {
                 if (INSTANCE == null) {
-                    INSTANCE = new PageRefMappingsWindow();
+                    INSTANCE = new PageRefSettingsWindow();
                 }
                 wnd = INSTANCE;
             }
@@ -66,21 +65,30 @@ public final class PageRefMappingsWindow extends BaseWindow implements CloseHand
         }
     }
 
-    private PageRefMappingsWindow() {
-        super(I18n.text("Page Reference Mappings"));
-        setLayout(new BorderLayout());
+    private PageRefSettingsWindow() {
+        super(I18n.text("Page Reference Settings"));
+        fill();
+    }
+
+    @Override
+    protected void preDispose() {
+        synchronized (PageRefSettingsWindow.class) {
+            INSTANCE = null;
+        }
+    }
+
+    @Override
+    protected Panel createContent() {
         mPanel = new BandedPanel(true);
         buildPanel();
-        getContentPane().add(new ScrollPanel(mPanel), BorderLayout.CENTER);
-        WindowUtils.packAndCenterWindowOn(this, null);
+        return mPanel;
     }
 
     private void buildPanel() {
-        Settings prefs      = Settings.getInstance();
-        Color    background = new Color(255, 255, 224);
+        Color background = new Color(255, 255, 224);
         mPanel.removeAll();
         mPanel.setLayout(new PrecisionLayout().setColumns(4).setMargins(0, 10, 0, 10).setVerticalSpacing(0));
-        for (PDFRef ref : prefs.allPdfRefs(false)) {
+        for (PageRef ref : Settings.getInstance().getPDFRefSettings().list()) {
             Label idLabel = new Label(ref.getID(), SwingConstants.CENTER);
             idLabel.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(1, 4, 1, 4)));
             idLabel.setOpaque(true);
@@ -110,7 +118,7 @@ public final class PageRefMappingsWindow extends BaseWindow implements CloseHand
                 dialog.addButton(I18n.text("Remove"), Modal.OK);
                 dialog.presentToUser();
                 if (dialog.getResult() == Modal.OK) {
-                    Settings.getInstance().removePdfRef(ref);
+                    Settings.getInstance().getPDFRefSettings().remove(ref);
                     Component[] children = mPanel.getComponents();
                     int         length   = children.length;
                     for (int i = 0; i < length; i++) {
@@ -138,21 +146,38 @@ public final class PageRefMappingsWindow extends BaseWindow implements CloseHand
     }
 
     @Override
-    public boolean mayAttemptClose() {
-        return true;
+    protected boolean shouldResetBeEnabled() {
+        return !Settings.getInstance().getPDFRefSettings().isEmpty();
     }
 
     @Override
-    public boolean attemptClose() {
-        windowClosing(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
-        return true;
+    protected PageRefSettings getResetData() {
+        return new PageRefSettings();
     }
 
     @Override
-    public void dispose() {
-        synchronized (PageRefMappingsWindow.class) {
-            INSTANCE = null;
-        }
-        super.dispose();
+    protected void doResetTo(PageRefSettings data) {
+        Settings.getInstance().getPDFRefSettings().copyFrom(data);
+        buildPanel();
+    }
+
+    @Override
+    protected Dirs getDir() {
+        return Dirs.SETTINGS;
+    }
+
+    @Override
+    protected FileType getFileType() {
+        return FileType.PAGE_REF_SETTINGS;
+    }
+
+    @Override
+    protected PageRefSettings createSettingsFrom(Path path) throws IOException {
+        return new PageRefSettings(path);
+    }
+
+    @Override
+    protected void exportSettingsTo(Path path) throws IOException {
+        Settings.getInstance().getPDFRefSettings().save(path);
     }
 }

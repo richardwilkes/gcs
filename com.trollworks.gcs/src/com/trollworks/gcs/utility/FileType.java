@@ -40,6 +40,8 @@ public class FileType {
     public static final FileType FONT_SETTINGS      = new FileType(I18n.text("Font Settings"), Images.FILE, true, false, "fonts");
     public static final FileType GENERAL_SETTINGS   = new FileType(I18n.text("General Settings"), Images.FILE, true, false, "general");
     public static final FileType KEY_SETTINGS       = new FileType(I18n.text("Key Binding Settings"), Images.FILE, true, false, "keys");
+    public static final FileType PAGE_REF_SETTINGS  = new FileType(I18n.text("Page Reference Settings"), Images.FILE, true, false, "refs");
+    public static final FileType SHEET_SETTINGS     = new FileType(I18n.text("Sheet Settings"), Images.FILE, true, false, "sheet");
 
     public static final FileType PDF  = new FileType(I18n.text("PDF Files"), Images.PDF_FILE, false, true, "pdf");
     public static final FileType PNG  = new FileType(I18n.text("PNG Files"), Images.FILE, false, false, "png");

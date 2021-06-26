@@ -31,7 +31,6 @@ public class PageSettingsEditor extends Panel {
     private static final Fixed6                     HUNDRED = new Fixed6(100);
     private              PageSettings               mSettings;
     private              Runnable                   mAdjustCallback;
-    private              ResetPageSettings          mResetCallback;
     private              EditorField                mTopMargin;
     private              EditorField                mLeftMargin;
     private              EditorField                mBottomMargin;
@@ -39,11 +38,7 @@ public class PageSettingsEditor extends Panel {
     private              PopupMenu<PaperSize>       mPaperSize;
     private              PopupMenu<PageOrientation> mOrientation;
 
-    public interface ResetPageSettings {
-        void resetPageSettings(PageSettings settings);
-    }
-
-    public PageSettingsEditor(PageSettings settings, Runnable adjustCallback, ResetPageSettings resetCallback) {
+    public PageSettingsEditor(PageSettings settings, Runnable adjustCallback) {
         super(new PrecisionLayout().setColumns(4).setMargins(4, 0, 4, 0), false);
         Label header = new Label(I18n.text("Page Settings"));
         header.setThemeFont(Fonts.HEADER);
@@ -51,7 +46,6 @@ public class PageSettingsEditor extends Panel {
         add(new Separator(), new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(4));
         mSettings = settings;
         mAdjustCallback = adjustCallback;
-        mResetCallback = resetCallback;
         mPaperSize = addPopupMenu(I18n.text("Paper Size"), PaperSize.getPaperSizes(), mSettings.getPaperSize(), (p) -> {
             mSettings.setPaperSize(mPaperSize.getSelectedItem());
             mAdjustCallback.run();
@@ -101,13 +95,13 @@ public class PageSettingsEditor extends Panel {
         return popup;
     }
 
-    public void reset() {
-        mResetCallback.resetPageSettings(mSettings);
-        mPaperSize.setSelectedItem(mSettings.getPaperSize(), true);
-        mOrientation.setSelectedItem(mSettings.getPageOrientation(), true);
-        mTopMargin.setValue(mSettings.getTopMargin());
-        mLeftMargin.setValue(mSettings.getLeftMargin());
-        mBottomMargin.setValue(mSettings.getBottomMargin());
-        mRightMargin.setValue(mSettings.getRightMargin());
+    public void resetTo(PageSettings settings) {
+        mSettings.copy(settings);
+        mPaperSize.setSelectedItem(settings.getPaperSize(), true);
+        mOrientation.setSelectedItem(settings.getPageOrientation(), true);
+        mTopMargin.setValue(settings.getTopMargin());
+        mLeftMargin.setValue(settings.getLeftMargin());
+        mBottomMargin.setValue(settings.getBottomMargin());
+        mRightMargin.setValue(settings.getRightMargin());
     }
 }

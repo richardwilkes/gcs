@@ -12,7 +12,7 @@
 package com.trollworks.gcs.menu.settings;
 
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.settings.PageRefMappingsWindow;
+import com.trollworks.gcs.settings.PageRefSettingsWindow;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.utility.I18n;
 
@@ -32,6 +32,6 @@ public final class PageRefMappingsCommand extends Command {
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        PageRefMappingsWindow.display();
+        PageRefSettingsWindow.display();
     }
 }

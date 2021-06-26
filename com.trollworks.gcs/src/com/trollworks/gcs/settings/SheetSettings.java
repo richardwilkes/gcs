@@ -17,8 +17,10 @@ import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.DisplayOption;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.ChangeNotifier;
-import com.trollworks.gcs.datafile.LoadState;
+import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.page.PageSettings;
+import com.trollworks.gcs.utility.SafeFileUpdater;
+import com.trollworks.gcs.utility.json.Json;
 import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
@@ -26,7 +28,14 @@ import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.units.WeightUnits;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -102,6 +111,19 @@ public class SheetSettings implements ChangeNotifier {
         reset();
     }
 
+    public SheetSettings(Path path) throws IOException {
+        this();
+        try (BufferedReader in = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+            JsonMap m = Json.asMap(Json.parse(in));
+            if (!m.isEmpty()) {
+                int version = m.getInt(Settings.VERSION);
+                if (version >= Settings.MINIMUM_VERSION && version <= DataFile.CURRENT_VERSION) {
+                    load(m.getMap(Settings.SHEET_SETTINGS));
+                }
+            }
+        }
+    }
+
     /** Reset these settings to their defaults. */
     public void reset() {
         if (mCharacter == null) {
@@ -160,7 +182,7 @@ public class SheetSettings implements ChangeNotifier {
         }
     }
 
-    public void load(JsonMap m, LoadState state) {
+    public void load(JsonMap m) {
         reset();
         mDefaultLengthUnits = Enums.extract(m.getString(KEY_DEFAULT_LENGTH_UNITS), LengthUnits.values(), mDefaultLengthUnits);
         mDefaultWeightUnits = Enums.extract(m.getString(KEY_DEFAULT_WEIGHT_UNITS), WeightUnits.values(), mDefaultWeightUnits);
@@ -198,7 +220,27 @@ public class SheetSettings implements ChangeNotifier {
         }
     }
 
-    public void toJSON(JsonWriter w) throws IOException {
+    public void save(Path path) throws IOException {
+        SafeFileUpdater trans = new SafeFileUpdater();
+        trans.begin();
+        try {
+            Files.createDirectories(path.getParent());
+            File file = trans.getTransactionFile(path.toFile());
+            try (JsonWriter w = new JsonWriter(new BufferedWriter(new FileWriter(file, StandardCharsets.UTF_8)), "\t")) {
+                w.startMap();
+                w.keyValue(Settings.VERSION, DataFile.CURRENT_VERSION);
+                w.key(Settings.SHEET_SETTINGS);
+                save(w, false);
+                w.endMap();
+            }
+        } catch (IOException ioe) {
+            trans.abort();
+            throw ioe;
+        }
+        trans.commit();
+    }
+
+    public void save(JsonWriter w, boolean full) throws IOException {
         w.startMap();
         w.keyValue(KEY_DEFAULT_LENGTH_UNITS, Enums.toId(mDefaultLengthUnits));
         w.keyValue(KEY_DEFAULT_WEIGHT_UNITS, Enums.toId(mDefaultWeightUnits));
@@ -217,10 +259,6 @@ public class SheetSettings implements ChangeNotifier {
         w.keyValue(KEY_SHOW_EQUIPMENT_MODIFIER_ADJ, mShowEquipmentModifierAdj);
         w.keyValue(KEY_SHOW_SPELL_ADJ, mShowSpellAdj);
         w.keyValue(KEY_USE_TITLE_IN_FOOTER, mUseTitleInFooter);
-        w.key(KEY_ATTRIBUTES);
-        AttributeDef.writeOrdered(w, mAttributes);
-        w.key(KEY_HIT_LOCATIONS);
-        mHitLocations.toJSON(w, mCharacter);
         w.key(KEY_PAGE);
         mPageSettings.toJSON(w);
         w.key(KEY_BLOCK_LAYOUT);
@@ -229,6 +267,12 @@ public class SheetSettings implements ChangeNotifier {
             w.value(one);
         }
         w.endArray();
+        if (full) {
+            w.key(KEY_ATTRIBUTES);
+            AttributeDef.writeOrdered(w, mAttributes);
+            w.key(KEY_HIT_LOCATIONS);
+            mHitLocations.toJSON(w, mCharacter);
+        }
         w.endMap();
     }
 

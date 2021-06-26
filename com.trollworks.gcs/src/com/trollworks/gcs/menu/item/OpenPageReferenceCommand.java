@@ -13,9 +13,10 @@ package com.trollworks.gcs.menu.item;
 
 import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.pdfview.PDFRef;
-import com.trollworks.gcs.pdfview.PDFServer;
-import com.trollworks.gcs.settings.PageRefMappingsWindow;
+import com.trollworks.gcs.pageref.PageRef;
+import com.trollworks.gcs.pageref.PageRefSettings;
+import com.trollworks.gcs.pageref.PDFServer;
+import com.trollworks.gcs.settings.PageRefSettingsWindow;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.Selection;
 import com.trollworks.gcs.ui.widget.Modal;
@@ -108,16 +109,16 @@ public class OpenPageReferenceCommand extends Command {
             } catch (NumberFormatException nfex) {
                 return; // Has no page number, so bail
             }
-            Settings prefs = Settings.getInstance();
-            PDFRef   ref   = prefs.lookupPdfRef(id, true);
+            PageRefSettings settings = Settings.getInstance().getPDFRefSettings();
+            PageRef         ref      = settings.lookup(id, true);
             if (ref == null) {
                 Path path = Modal.presentOpenFileDialog(getFocusOwner(),
                         String.format(I18n.text("Locate the PDF file for the prefix \"%s\""), id),
                         Dirs.PDF, FileType.PDF.getFilter());
                 if (path != null) {
-                    ref = new PDFRef(id, path, 0);
-                    prefs.putPdfRef(ref);
-                    PageRefMappingsWindow.rebuild();
+                    ref = new PageRef(id, path, 0);
+                    settings.put(ref);
+                    PageRefSettingsWindow.rebuild();
                 }
             }
             if (ref != null) {

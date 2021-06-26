@@ -25,7 +25,7 @@ import com.trollworks.gcs.modifier.EquipmentModifierList;
 import com.trollworks.gcs.modifier.EquipmentModifiersDockable;
 import com.trollworks.gcs.notes.NoteList;
 import com.trollworks.gcs.notes.NotesDockable;
-import com.trollworks.gcs.pdfview.PDFServer;
+import com.trollworks.gcs.pageref.PDFServer;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.skill.SkillsDockable;

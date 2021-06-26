@@ -14,67 +14,61 @@ package com.trollworks.gcs.settings;
 import com.trollworks.gcs.character.DisplayOption;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataChangeListener;
-import com.trollworks.gcs.menu.file.CloseHandler;
-import com.trollworks.gcs.page.PageSettings;
 import com.trollworks.gcs.page.PageSettingsEditor;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
-import com.trollworks.gcs.ui.widget.BaseWindow;
-import com.trollworks.gcs.ui.widget.Button;
 import com.trollworks.gcs.ui.widget.Checkbox;
 import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.LayoutConstants;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.PopupMenu;
-import com.trollworks.gcs.ui.widget.ScrollPanel;
-import com.trollworks.gcs.ui.widget.WindowUtils;
+import com.trollworks.gcs.utility.Dirs;
+import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.units.LengthUnits;
 import com.trollworks.gcs.utility.units.WeightUnits;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.FlowLayout;
 import java.awt.Window;
-import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-// TODO: Fix layout around scrolling
-
-public final class SheetSettingsWindow extends BaseWindow implements DocumentListener, CloseHandler, DataChangeListener, PageSettingsEditor.ResetPageSettings {
+public final class SheetSettingsWindow extends SettingsWindow<SheetSettings> implements DocumentListener, DataChangeListener {
     private static final Map<UUID, SheetSettingsWindow> INSTANCES = new HashMap<>();
-    private              GURPSCharacter                 mCharacter;
-    private              SheetSettings                  mSheetSettings;
-    private              Checkbox                       mUseMultiplicativeModifiers;
-    private              Checkbox                       mUseModifyingDicePlusAdds;
-    private              Checkbox                       mUseKnowYourOwnStrength;
-    private              Checkbox                       mUseReducedSwing;
-    private              Checkbox                       mUseThrustEqualsSwingMinus2;
-    private              Checkbox                       mUseSimpleMetricConversions;
-    private              Checkbox                       mShowCollegeInSpells;
-    private              Checkbox                       mShowDifficulty;
-    private              Checkbox                       mShowAdvantageModifierAdj;
-    private              Checkbox                       mShowEquipmentModifierAdj;
-    private              Checkbox                       mShowSpellAdj;
-    private              Checkbox                       mShowTitleInsteadOfNameInPageFooter;
-    private              PopupMenu<LengthUnits>         mLengthUnitsPopup;
-    private              PopupMenu<WeightUnits>         mWeightUnitsPopup;
-    private              PopupMenu<DisplayOption>       mUserDescriptionDisplayPopup;
-    private              PopupMenu<DisplayOption>       mModifiersDisplayPopup;
-    private              PopupMenu<DisplayOption>       mNotesDisplayPopup;
-    private              MultiLineTextField             mBlockLayoutField;
-    private              PageSettingsEditor             mPageSettingsEditor;
-    private              Button                         mResetButton;
-    private              boolean                        mUpdatePending;
+
+    private GURPSCharacter           mCharacter;
+    private SheetSettings            mSheetSettings;
+    private Checkbox                 mUseMultiplicativeModifiers;
+    private Checkbox                 mUseModifyingDicePlusAdds;
+    private Checkbox                 mUseKnowYourOwnStrength;
+    private Checkbox                 mUseReducedSwing;
+    private Checkbox                 mUseThrustEqualsSwingMinus2;
+    private Checkbox                 mUseSimpleMetricConversions;
+    private Checkbox                 mShowCollegeInSpells;
+    private Checkbox                 mShowDifficulty;
+    private Checkbox                 mShowAdvantageModifierAdj;
+    private Checkbox                 mShowEquipmentModifierAdj;
+    private Checkbox                 mShowSpellAdj;
+    private Checkbox                 mShowTitleInsteadOfNameInPageFooter;
+    private PopupMenu<LengthUnits>   mLengthUnitsPopup;
+    private PopupMenu<WeightUnits>   mWeightUnitsPopup;
+    private PopupMenu<DisplayOption> mUserDescriptionDisplayPopup;
+    private PopupMenu<DisplayOption> mModifiersDisplayPopup;
+    private PopupMenu<DisplayOption> mNotesDisplayPopup;
+    private MultiLineTextField       mBlockLayoutField;
+    private PageSettingsEditor       mPageSettingsEditor;
+    private boolean                  mUpdatePending;
 
     /** Displays the sheet settings window. */
     public static void display(GURPSCharacter gchar) {
@@ -112,26 +106,26 @@ public final class SheetSettingsWindow extends BaseWindow implements DocumentLis
         super(createTitle(character));
         mCharacter = character;
         mSheetSettings = SheetSettings.get(mCharacter);
-        addTopPanel();
-        addResetPanel();
-        adjustResetButton();
-        establishSizing();
-        WindowUtils.packAndCenterWindowOn(this, null);
         if (mCharacter != null) {
             mCharacter.addChangeListener(this);
             Settings.getInstance().addChangeListener(this);
         }
+        fill();
     }
 
     @Override
-    public void establishSizing() {
-        pack();
-        int width = getSize().width;
-        setMinimumSize(new Dimension(width, 200));
-        setMaximumSize(new Dimension(width, 10000));
+    protected void preDispose() {
+        synchronized (INSTANCES) {
+            INSTANCES.remove(mCharacter == null ? null : mCharacter.getID());
+        }
+        if (mCharacter != null) {
+            mCharacter.removeChangeListener(this);
+            Settings.getInstance().removeChangeListener(this);
+        }
     }
 
-    private void addTopPanel() {
+    @Override
+    protected Panel createContent() {
         Panel left = new Panel(new PrecisionLayout().setColumns(2).setMargins(0));
         mShowCollegeInSpells = addCheckbox(left, I18n.text("Show the College column"), null,
                 mSheetSettings.showCollegeInSpells(), (b) -> {
@@ -166,26 +160,24 @@ public final class SheetSettingsWindow extends BaseWindow implements DocumentLis
                     mSheetSettings.setUseTitleInFooter(b.isChecked());
                     adjustResetButton();
                 });
-        String tooltip = I18n.text("Where to display this information");
-        mUserDescriptionDisplayPopup = addPopupMenu(left, DisplayOption.values(),
-                mSheetSettings.userDescriptionDisplay(), I18n.text("Show User Description"),
-                tooltip, (p) -> {
-                    mSheetSettings.setUserDescriptionDisplay(mUserDescriptionDisplayPopup.getSelectedItem());
+        left.add(new Panel(), new PrecisionLayoutData().setHorizontalSpan(2));
+        mLengthUnitsPopup = addPopupMenu(left, LengthUnits.values(),
+                mSheetSettings.defaultLengthUnits(), I18n.text("Length Units"),
+                I18n.text("The units to use for display of generated lengths"), (p) -> {
+                    mSheetSettings.setDefaultLengthUnits(mLengthUnitsPopup.getSelectedItem());
                     adjustResetButton();
                 });
-        mModifiersDisplayPopup = addPopupMenu(left, DisplayOption.values(),
-                mSheetSettings.modifiersDisplay(), I18n.text("Show Modifiers"), tooltip, (p) -> {
-                    mSheetSettings.setModifiersDisplay(mModifiersDisplayPopup.getSelectedItem());
-                    adjustResetButton();
-                });
-        mNotesDisplayPopup = addPopupMenu(left, DisplayOption.values(), mSheetSettings.notesDisplay(),
-                I18n.text("Show Notes"), tooltip, (p) -> {
-                    mSheetSettings.setNotesDisplay(mNotesDisplayPopup.getSelectedItem());
+        mWeightUnitsPopup = addPopupMenu(left, WeightUnits.values(),
+                mSheetSettings.defaultWeightUnits(), I18n.text("Weight Units"),
+                I18n.text("The units to use for display of generated weights"), (p) -> {
+                    mSheetSettings.setDefaultWeightUnits(mWeightUnitsPopup.getSelectedItem());
                     adjustResetButton();
                 });
         String blockLayoutTooltip = I18n.text("Specifies the layout of the various blocks of data on the character sheet");
         mBlockLayoutField = new MultiLineTextField(Settings.linesToString(mSheetSettings.blockLayout()), blockLayoutTooltip, this);
-        left.add(new Label(I18n.text("Block Layout")), new PrecisionLayoutData().setHorizontalSpan(2));
+        Label header = new Label(I18n.text("Block Layout"));
+        header.setThemeFont(Fonts.HEADER);
+        left.add(header, new PrecisionLayoutData().setHorizontalSpan(2).setTopMargin(10));
         left.add(mBlockLayoutField, new PrecisionLayoutData().setFillAlignment().setGrabSpace(true).setHorizontalSpan(2));
 
         Panel right = new Panel(new PrecisionLayout().setColumns(2).setMargins(0));
@@ -223,39 +215,35 @@ public final class SheetSettingsWindow extends BaseWindow implements DocumentLis
                     mSheetSettings.setUseSimpleMetricConversions(b.isChecked());
                     adjustResetButton();
                 });
-        mLengthUnitsPopup = addPopupMenu(right, LengthUnits.values(),
-                mSheetSettings.defaultLengthUnits(), I18n.text("Length Units"),
-                I18n.text("The units to use for display of generated lengths"), (p) -> {
-                    mSheetSettings.setDefaultLengthUnits(mLengthUnitsPopup.getSelectedItem());
+        right.add(new Panel(), new PrecisionLayoutData().setHorizontalSpan(2));
+        String tooltip = I18n.text("Where to display this information");
+        mUserDescriptionDisplayPopup = addPopupMenu(right, DisplayOption.values(),
+                mSheetSettings.userDescriptionDisplay(), I18n.text("Show User Description"),
+                tooltip, (p) -> {
+                    mSheetSettings.setUserDescriptionDisplay(mUserDescriptionDisplayPopup.getSelectedItem());
                     adjustResetButton();
                 });
-        mWeightUnitsPopup = addPopupMenu(right, WeightUnits.values(),
-                mSheetSettings.defaultWeightUnits(), I18n.text("Weight Units"),
-                I18n.text("The units to use for display of generated weights"), (p) -> {
-                    mSheetSettings.setDefaultWeightUnits(mWeightUnitsPopup.getSelectedItem());
+        mModifiersDisplayPopup = addPopupMenu(right, DisplayOption.values(),
+                mSheetSettings.modifiersDisplay(), I18n.text("Show Modifiers"), tooltip, (p) -> {
+                    mSheetSettings.setModifiersDisplay(mModifiersDisplayPopup.getSelectedItem());
                     adjustResetButton();
                 });
-        mPageSettingsEditor = new PageSettingsEditor(mSheetSettings.getPageSettings(), this::adjustResetButton, this);
-        right.add(mPageSettingsEditor, new PrecisionLayoutData().setGrabHorizontalSpace(true).setFillHorizontalAlignment().setHorizontalSpan(2).setTopMargin(10));
+        mNotesDisplayPopup = addPopupMenu(right, DisplayOption.values(), mSheetSettings.notesDisplay(),
+                I18n.text("Show Notes"), tooltip, (p) -> {
+                    mSheetSettings.setNotesDisplay(mNotesDisplayPopup.getSelectedItem());
+                    adjustResetButton();
+                });
+        mPageSettingsEditor = new PageSettingsEditor(mSheetSettings.getPageSettings(), this::adjustResetButton);
+        right.add(mPageSettingsEditor, new PrecisionLayoutData().setGrabHorizontalSpace(true).
+                setFillHorizontalAlignment().setHorizontalSpan(2).setTopMargin(10));
 
-        Panel panel = new Panel(new PrecisionLayout().setColumns(2).setMargins(10).setHorizontalSpacing(10));
+        Panel panel = new Panel(new PrecisionLayout().setColumns(2).
+                setMargins(LayoutConstants.WINDOW_BORDER_INSET).
+                setHorizontalSpacing(LayoutConstants.WINDOW_BORDER_INSET));
         panel.add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
         panel.add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-
         panel.setSize(panel.getPreferredSize());
-
-        getContentPane().add(new ScrollPanel(panel), BorderLayout.CENTER);
-    }
-
-    private void addResetPanel() {
-        Panel panel = new Panel(new FlowLayout(FlowLayout.CENTER));
-        mResetButton = new Button(mCharacter == null ? I18n.text("Reset to Factory Settings") : I18n.text("Reset to Defaults"), (btn) -> reset());
-        panel.add(mResetButton);
-        getContentPane().add(panel, BorderLayout.SOUTH);
-    }
-
-    private static void addLabel(Panel panel, String title) {
-        panel.add(new Label(title, SwingConstants.RIGHT), new PrecisionLayoutData().setFillHorizontalAlignment());
+        return panel;
     }
 
     private static <E> PopupMenu<E> addPopupMenu(Panel panel, E[] values, E choice, String title, String tooltip, PopupMenu.SelectionListener<E> listener) {
@@ -274,11 +262,16 @@ public final class SheetSettingsWindow extends BaseWindow implements DocumentLis
         return checkbox;
     }
 
-    private void adjustResetButton() {
-        mResetButton.setEnabled(!isSetToDefaults());
+    @Override
+    public void establishSizing() {
+        pack();
+        int width = getSize().width;
+        setMinimumSize(new Dimension(width, 200));
+        setMaximumSize(new Dimension(width, 10000));
     }
 
-    private boolean isSetToDefaults() {
+    @Override
+    protected boolean shouldResetBeEnabled() {
         SheetSettings defaults   = new SheetSettings(mCharacter);
         boolean       atDefaults = mUseModifyingDicePlusAdds.isChecked() == defaults.useModifyingDicePlusAdds();
         atDefaults = atDefaults && mShowCollegeInSpells.isChecked() == defaults.showCollegeInSpells();
@@ -299,54 +292,40 @@ public final class SheetSettingsWindow extends BaseWindow implements DocumentLis
         atDefaults = atDefaults && mNotesDisplayPopup.getSelectedItem() == defaults.notesDisplay();
         atDefaults = atDefaults && mBlockLayoutField.getText().equals(Settings.linesToString(defaults.blockLayout()));
         atDefaults = atDefaults && mSheetSettings.getPageSettings().equals(defaults.getPageSettings());
-        return atDefaults;
-    }
-
-    private void reset() {
-        SheetSettings defaults = new SheetSettings(mCharacter);
-        mUseModifyingDicePlusAdds.setChecked(defaults.useModifyingDicePlusAdds());
-        mShowCollegeInSpells.setChecked(defaults.showCollegeInSpells());
-        mShowDifficulty.setChecked(defaults.showDifficulty());
-        mShowAdvantageModifierAdj.setChecked(defaults.showAdvantageModifierAdj());
-        mShowEquipmentModifierAdj.setChecked(defaults.showEquipmentModifierAdj());
-        mShowSpellAdj.setChecked(defaults.showSpellAdj());
-        mShowTitleInsteadOfNameInPageFooter.setChecked(defaults.useTitleInFooter());
-        mUseMultiplicativeModifiers.setChecked(defaults.useMultiplicativeModifiers());
-        mUseKnowYourOwnStrength.setChecked(defaults.useKnowYourOwnStrength());
-        mUseThrustEqualsSwingMinus2.setChecked(defaults.useThrustEqualsSwingMinus2());
-        mUseReducedSwing.setChecked(defaults.useReducedSwing());
-        mUseSimpleMetricConversions.setChecked(defaults.useSimpleMetricConversions());
-        mLengthUnitsPopup.setSelectedItem(defaults.defaultLengthUnits(), true);
-        mWeightUnitsPopup.setSelectedItem(defaults.defaultWeightUnits(), true);
-        mUserDescriptionDisplayPopup.setSelectedItem(defaults.userDescriptionDisplay(), true);
-        mModifiersDisplayPopup.setSelectedItem(defaults.modifiersDisplay(), true);
-        mNotesDisplayPopup.setSelectedItem(defaults.notesDisplay(), true);
-        mBlockLayoutField.setText(Settings.linesToString(defaults.blockLayout()));
-        mPageSettingsEditor.reset();
-        adjustResetButton();
+        return !atDefaults;
     }
 
     @Override
-    public boolean mayAttemptClose() {
-        return true;
+    protected String getResetButtonTitle() {
+        return mCharacter == null ? super.getResetButtonTitle() : I18n.text("Reset to Global Defaults");
     }
 
     @Override
-    public boolean attemptClose() {
-        windowClosing(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
-        return true;
+    protected SheetSettings getResetData() {
+        return new SheetSettings(mCharacter);
     }
 
     @Override
-    public void dispose() {
-        synchronized (INSTANCES) {
-            INSTANCES.remove(mCharacter == null ? null : mCharacter.getID());
-        }
-        if (mCharacter != null) {
-            mCharacter.removeChangeListener(this);
-            Settings.getInstance().removeChangeListener(this);
-        }
-        super.dispose();
+    protected void doResetTo(SheetSettings data) {
+        mUseModifyingDicePlusAdds.setChecked(data.useModifyingDicePlusAdds());
+        mShowCollegeInSpells.setChecked(data.showCollegeInSpells());
+        mShowDifficulty.setChecked(data.showDifficulty());
+        mShowAdvantageModifierAdj.setChecked(data.showAdvantageModifierAdj());
+        mShowEquipmentModifierAdj.setChecked(data.showEquipmentModifierAdj());
+        mShowSpellAdj.setChecked(data.showSpellAdj());
+        mShowTitleInsteadOfNameInPageFooter.setChecked(data.useTitleInFooter());
+        mUseMultiplicativeModifiers.setChecked(data.useMultiplicativeModifiers());
+        mUseKnowYourOwnStrength.setChecked(data.useKnowYourOwnStrength());
+        mUseThrustEqualsSwingMinus2.setChecked(data.useThrustEqualsSwingMinus2());
+        mUseReducedSwing.setChecked(data.useReducedSwing());
+        mUseSimpleMetricConversions.setChecked(data.useSimpleMetricConversions());
+        mLengthUnitsPopup.setSelectedItem(data.defaultLengthUnits(), true);
+        mWeightUnitsPopup.setSelectedItem(data.defaultWeightUnits(), true);
+        mUserDescriptionDisplayPopup.setSelectedItem(data.userDescriptionDisplay(), true);
+        mModifiersDisplayPopup.setSelectedItem(data.modifiersDisplay(), true);
+        mNotesDisplayPopup.setSelectedItem(data.notesDisplay(), true);
+        mBlockLayoutField.setText(Settings.linesToString(data.blockLayout()));
+        mPageSettingsEditor.resetTo(data.getPageSettings());
     }
 
     @Override
@@ -378,7 +357,22 @@ public final class SheetSettingsWindow extends BaseWindow implements DocumentLis
     }
 
     @Override
-    public void resetPageSettings(PageSettings settings) {
-        settings.copy(new SheetSettings(mCharacter).getPageSettings());
+    protected Dirs getDir() {
+        return Dirs.SETTINGS;
+    }
+
+    @Override
+    protected FileType getFileType() {
+        return FileType.SHEET_SETTINGS;
+    }
+
+    @Override
+    protected SheetSettings createSettingsFrom(Path path) throws IOException {
+        return new SheetSettings(path);
+    }
+
+    @Override
+    protected void exportSettingsTo(Path path) throws IOException {
+        mSheetSettings.save(path);
     }
 }

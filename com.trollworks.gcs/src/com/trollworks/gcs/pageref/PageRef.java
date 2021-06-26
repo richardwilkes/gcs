@@ -9,42 +9,36 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.pdfview;
+package com.trollworks.gcs.pageref;
 
-import com.trollworks.gcs.utility.json.JsonMap;
-import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.NumericComparator;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
-/** Tracks data for opening and navigating PDFs. */
-public class PDFRef implements Comparable<PDFRef> {
-    private static final String ID     = "id";
-    private static final String PATH   = "path";
-    private static final String OFFSET = "offset";
-    private              String mID;
-    private              Path   mPath;
-    private              int    mPageToIndexOffset;
+/** Tracks data for opening and navigating page references. */
+public class PageRef implements Comparable<PageRef> {
+    private String mID;
+    private Path   mPath;
+    private int    mPageToIndexOffset;
 
     /**
-     * Creates a new PDFRef.
+     * Creates a new PageRef.
      *
      * @param id     The id to use. Pass in {@code null} or an empty string to create a {@link
-     *               PDFRef} that won't update preferences.
+     *               PageRef} that won't update preferences.
      * @param path   The path that the {@code id} refers to.
      * @param offset The amount to add to a symbolic page number to find the actual index.
      */
-    public PDFRef(String id, Path path, int offset) {
+    public PageRef(String id, Path path, int offset) {
         mID = id == null ? "" : id;
         mPath = path;
         mPageToIndexOffset = offset;
     }
 
-    public PDFRef(JsonMap m) {
-        mID = m.getString(ID);
-        mPath = Path.of(m.getStringWithDefault(PATH, ".")).normalize().toAbsolutePath();
-        mPageToIndexOffset = m.getInt(OFFSET);
+    public PageRef(PageRef other) {
+        mID = other.mID;
+        mPath = other.mPath;
+        mPageToIndexOffset = other.mPageToIndexOffset;
     }
 
     /** @return The id. */
@@ -68,15 +62,7 @@ public class PDFRef implements Comparable<PDFRef> {
     }
 
     @Override
-    public int compareTo(PDFRef other) {
+    public int compareTo(PageRef other) {
         return NumericComparator.caselessCompareStrings(mID, other.mID);
-    }
-
-    public void toJSON(JsonWriter w) throws IOException {
-        w.startMap();
-        w.keyValue(ID, mID);
-        w.keyValue(PATH, mPath.toString());
-        w.keyValue(OFFSET, mPageToIndexOffset);
-        w.endMap();
     }
 }
