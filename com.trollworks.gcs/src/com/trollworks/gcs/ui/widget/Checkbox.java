@@ -228,15 +228,17 @@ public class Checkbox extends Panel implements MouseListener, MouseMotionListene
         } else {
             color = Colors.getWithAlpha(Colors.ICON_BUTTON, 96);
         }
-        Graphics2D gc       = GraphicsUtilities.prepare(g);
-        Scale      scale    = Scale.get(this);
-        Font       font     = scale.scale(getFont());
-        Font       iconFont = new Font(isFocusOwner() ? Fonts.FONT_AWESOME_SOLID : Fonts.FONT_AWESOME_REGULAR, Font.PLAIN, font.getSize());
-        Dimension  size     = TextDrawing.getPreferredSize(iconFont, "\uf058");
+        Graphics2D gc         = GraphicsUtilities.prepare(g);
+        Scale      scale      = Scale.get(this);
+        Font       font       = scale.scale(getFont());
+        boolean    focusOwner = isFocusOwner();
+        Font       iconFont   = new Font(focusOwner ? Fonts.FONT_AWESOME_SOLID : Fonts.FONT_AWESOME_REGULAR, Font.PLAIN, font.getSize());
+        Dimension  size       = TextDrawing.getPreferredSize(iconFont, "\uf058");
         gc.setFont(iconFont);
         gc.setColor(color);
         Rectangle textBounds = new Rectangle(bounds.x, bounds.y, size.width, bounds.height);
-        TextDrawing.draw(gc, textBounds, mChecked ? "\uf058" : "\uf111", SwingConstants.CENTER, SwingConstants.CENTER);
+        String    unchecked  = focusOwner ? "\uf192" : "\uf111";
+        TextDrawing.draw(gc, textBounds, mChecked ? "\uf058" : unchecked, SwingConstants.CENTER, SwingConstants.CENTER);
         if (!mText.isBlank()) {
             gc.setFont(font);
             gc.setColor(color);
