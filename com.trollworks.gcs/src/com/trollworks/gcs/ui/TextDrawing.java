@@ -159,8 +159,9 @@ public final class TextDrawing {
             int             ascent     = fm.getAscent();
             int             descent    = fm.getDescent();
             int             fHeight    = ascent + descent;
-            StringTokenizer tokenizer  = new StringTokenizer(text, " \n", true);
-            StringBuilder   buffer     = new StringBuilder(text.length());
+            String          wrapped    = wrapToPixelWidth(font, text, bounds.width);
+            StringTokenizer tokenizer  = new StringTokenizer(wrapped, "\n", true);
+            StringBuilder   buffer     = new StringBuilder(wrapped.length());
             int             textHeight = 0;
             int             width;
             while (tokenizer.hasMoreTokens()) {
@@ -171,16 +172,6 @@ public final class TextDrawing {
                     list.add(text);
                     buffer.setLength(0);
                 } else {
-                    width = getSimpleWidth(font, buffer + token);
-                    if (width > bounds.width && !buffer.isEmpty()) {
-                        text = buffer.toString();
-                        textHeight += fHeight;
-                        list.add(text);
-                        buffer.setLength(0);
-                        if (" ".equals(token)) {
-                            continue;
-                        }
-                    }
                     buffer.append(token);
                 }
             }
