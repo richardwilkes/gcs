@@ -789,7 +789,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
             }
             if ((type & TYPE_MASK_PHYSICAL) != 0) {
                 if (!buffer.isEmpty()) {
-                    buffer.append("/");
+                    buffer.append(separator);
                 }
                 buffer.append(TYPE_PHYSICAL);
             }
