@@ -598,7 +598,7 @@ public final class PrecisionLayoutData implements Cloneable {
                 hHint = size.height;
             }
         }
-        if (useMinimumSize) {
+        if (useMinimumSize && mHGrab) {
             size = component.getMinimumSize();
             mCacheMinWidth = mMinWidth == DEFAULT ? size.width : scaledMinWidth;
         } else {
