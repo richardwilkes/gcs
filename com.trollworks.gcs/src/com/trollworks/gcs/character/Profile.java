@@ -15,6 +15,7 @@ import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.attribute.Attribute;
 import com.trollworks.gcs.body.HitLocationTable;
 import com.trollworks.gcs.character.names.USCensusNames;
+import com.trollworks.gcs.settings.GeneralSettings;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.settings.SheetSettings;
 import com.trollworks.gcs.ui.RetinaIcon;
@@ -115,9 +116,9 @@ public class Profile {
             mWeight = getRandomWeight(st, getSizeModifier(), Fixed6.ONE);
             mGender = getRandomGender();
             mName = USCensusNames.INSTANCE.getFullName(I18n.text("Male").equals(mGender));
-            Settings prefs = Settings.getInstance();
-            mTechLevel = prefs.getDefaultTechLevel();
-            mPlayerName = prefs.getDefaultPlayerName();
+            GeneralSettings settings = Settings.getInstance().getGeneralSettings();
+            mTechLevel = settings.getDefaultTechLevel();
+            mPlayerName = settings.getDefaultPlayerName();
         } else {
             mAge = "";
             mBirthday = "";

@@ -33,7 +33,7 @@ public class LibraryContent extends Panel implements ScaleRoot, Scrollable {
         mOutline = outline;
         mOutline.setBorder(new LineBorder(Colors.DIVIDER, 0, 0, 0, 1));
         add(mOutline);
-        mScale = Settings.getInstance().getInitialUIScale().getScale();
+        mScale = Settings.getInstance().getGeneralSettings().getInitialUIScale().getScale();
     }
 
     @Override

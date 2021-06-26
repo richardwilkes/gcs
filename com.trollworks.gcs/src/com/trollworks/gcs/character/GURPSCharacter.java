@@ -125,7 +125,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
 
     /** Creates a new character with only default values set. */
     public GURPSCharacter() {
-        characterInitialize(Settings.getInstance().autoFillProfile());
+        characterInitialize(Settings.getInstance().getGeneralSettings().autoFillProfile());
         calculateAll();
     }
 
@@ -145,7 +145,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         mVariableResolverExclusions = new HashSet<>();
         mSheetSettings = new SheetSettings(this);
         mFeatureMap = new HashMap<>();
-        mTotalPoints = Settings.getInstance().getInitialPoints();
+        mTotalPoints = Settings.getInstance().getGeneralSettings().getInitialPoints();
         mAttributes = new HashMap<>();
         for (String attrID : mSheetSettings.getAttributes().keySet()) {
             mAttributes.put(attrID, new Attribute(attrID));

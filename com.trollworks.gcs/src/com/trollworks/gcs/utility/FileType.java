@@ -38,6 +38,7 @@ public class FileType {
     public static final FileType BODY_SETTINGS      = new FileType(I18n.text("Body Type Settings"), Images.FILE, true, false, "body", "ghl");
     public static final FileType COLOR_SETTINGS     = new FileType(I18n.text("Color Settings"), Images.FILE, true, false, "colors");
     public static final FileType FONT_SETTINGS      = new FileType(I18n.text("Font Settings"), Images.FILE, true, false, "fonts");
+    public static final FileType GENERAL_SETTINGS   = new FileType(I18n.text("General Settings"), Images.FILE, true, false, "general");
     public static final FileType KEY_SETTINGS       = new FileType(I18n.text("Key Binding Settings"), Images.FILE, true, false, "keys");
 
     public static final FileType PDF  = new FileType(I18n.text("PDF Files"), Images.PDF_FILE, false, true, "pdf");

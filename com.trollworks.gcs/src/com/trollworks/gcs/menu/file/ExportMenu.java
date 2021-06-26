@@ -53,8 +53,8 @@ public class ExportMenu extends JMenu implements MenuListener {
 
     private void populate() {
         removeAll();
-        ExportToGURPSCalculatorCommand.INSTANCE.adjust();
-        add(ExportToGURPSCalculatorCommand.INSTANCE);
+        ExportToGCalcCommand.INSTANCE.adjust();
+        add(ExportToGCalcCommand.INSTANCE);
         ExportToPNGCommand.INSTANCE.adjust();
         add(ExportToPNGCommand.INSTANCE);
         for (Library lib : Library.LIBRARIES) {

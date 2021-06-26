@@ -20,7 +20,6 @@ import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.pdfview.PDFRef;
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.Fonts;
-import com.trollworks.gcs.ui.scale.Scales;
 import com.trollworks.gcs.ui.widget.BaseWindow;
 import com.trollworks.gcs.utility.Dirs;
 import com.trollworks.gcs.utility.FileType;
@@ -33,9 +32,7 @@ import com.trollworks.gcs.utility.json.Json;
 import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
-import com.trollworks.gcs.utility.text.Enums;
 
-import java.awt.GraphicsEnvironment;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -49,73 +46,46 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.ToolTipManager;
 
 public final class Settings extends ChangeableData {
-    private static final int MINIMUM_VERSION = 1;
+    public static final int MINIMUM_VERSION = 1;
 
-    private static final String DEPRECATED_AUTO_NAME_NEW_CHARACTERS = "auto_name_new_characters"; // March 21, 2021
-    private static final String DEPRECATED_PNG_RESOLUTION           = "png_resolution"; // June 6, 2021
+    public static final  String COLORS                = "colors";
+    private static final String DIVIDER_POSITION      = "divider_position";
+    public static final  String FONTS                 = "fonts";
+    public static final  String GENERAL               = "general";
+    public static final  String KEY_BINDINGS          = "key_bindings";
+    private static final String LAST_DIRS             = "last_dirs";
+    private static final String LAST_SEEN_GCS_VERSION = "last_seen_gcs_version";
+    private static final String LIBRARIES             = "libraries";
+    private static final String LIBRARY_EXPLORER      = "library_explorer";
+    private static final String OPEN_ROW_KEYS         = "open_row_keys";
+    private static final String PDF_REFS              = "pdf_refs";
+    private static final String QUICK_EXPORTS         = "quick_exports";
+    private static final String RECENT_FILES          = "recent_files";
+    private static final String SHEET_SETTINGS        = "sheet_settings";
+    private static final String THEME                 = "theme";
+    public static final  String VERSION               = "version";
+    private static final String WINDOW_POSITIONS      = "window_positions";
 
-    private static final String AUTO_FILL_PROFILE               = "auto_fill_profile";
-    public static final  String COLORS                          = "colors";
-    private static final String DEFAULT_PLAYER_NAME             = "default_player_name";
-    private static final String DEFAULT_TECH_LEVEL              = "default_tech_level";
-    private static final String DIVIDER_POSITION                = "divider_position";
-    public static final  String FONTS                           = "fonts";
-    private static final String GURPS_CALCULATOR_KEY            = "gurps_calculator_key";
-    private static final String IMAGE_RESOLUTION                = "image_resolution";
-    private static final String INCLUDE_UNSPENT_POINTS_IN_TOTAL = "include_unspent_points_in_total";
-    private static final String INITIAL_POINTS                  = "initial_points";
-    private static final String INITIAL_UI_SCALE                = "initial_ui_scale";
-    public static final  String KEY_BINDINGS                    = "key_bindings";
-    private static final String LAST_DIRS                       = "last_dirs";
-    private static final String LAST_SEEN_GCS_VERSION           = "last_seen_gcs_version";
-    private static final String LIBRARIES                       = "libraries";
-    private static final String LIBRARY_EXPLORER                = "library_explorer";
-    private static final String OPEN_ROW_KEYS                   = "open_row_keys";
-    private static final String PDF_REFS                        = "pdf_refs";
-    private static final String QUICK_EXPORTS                   = "quick_exports";
-    private static final String RECENT_FILES                    = "recent_files";
-    private static final String SHEET_SETTINGS                  = "sheet_settings";
-    private static final String THEME                           = "theme";
-    private static final String TOOLTIP_TIMEOUT                 = "tooltip_timeout";
-    public static final  String VERSION                         = "version";
-    private static final String WINDOW_POSITIONS                = "window_positions";
-
-    public static final boolean DEFAULT_AUTO_FILL_PROFILE                 = true;
-    public static final boolean DEFAULT_INCLUDE_UNSPENT_POINTS_IN_TOTAL   = true;
-    public static final int     DEFAULT_IMAGE_RESOLUTION                  = 200;
-    public static final int     DEFAULT_INITIAL_POINTS                    = 250;
-    public static final int     DEFAULT_LIBRARY_EXPLORER_DIVIDER_POSITION = 300;
-    public static final int     DEFAULT_TOOLTIP_TIMEOUT                   = 60;
-    public static final Scales  DEFAULT_INITIAL_UI_SCALE                  = Scales.QUARTER_AGAIN_SIZE;
-    public static final String  DEFAULT_DEFAULT_PLAYER_NAME               = System.getProperty("user.name", "");
-    public static final String  DEFAULT_DEFAULT_TECH_LEVEL                = "3";
+    public static final int DEFAULT_LIBRARY_EXPLORER_DIVIDER_POSITION = 300;
 
     public static final int MAX_QUICK_EXPORTS = 100;
     public static final int MAX_RECENT_FILES  = 20;
 
-    private static Settings                         INSTANCE;
-    private        Version                          mLastSeenGCSVersion;
-    private        int                              mInitialPoints;
-    private        int                              mToolTipTimeout;
-    private        int                              mLibraryExplorerDividerPosition;
-    private        List<String>                     mLibraryExplorerOpenRowKeys;
-    private        Scales                           mInitialUIScale;
-    private        List<Path>                       mRecentFiles;
-    private        Map<String, QuickExport>         mQuickExports;
-    private        Map<String, PDFRef>              mPdfRefs;
-    private        Map<String, String>              mKeyBindingOverrides;
-    private        Map<String, BaseWindow.Position> mBaseWindowPositions;
-    private        String                           mGURPSCalculatorKey;
-    private        String                           mDefaultPlayerName;
-    private        String                           mDefaultTechLevel;
-    private        SheetSettings                    mSheetSettings;
-    private        int                              mLastRecentFilesUpdateCounter;
-    private        int                              mImageResolution;
-    private        boolean                          mIncludeUnspentPointsInTotal;
-    private        boolean                          mAutoFillProfile;
+    private static Settings INSTANCE;
+
+    private Version                          mLastSeenGCSVersion;
+    private GeneralSettings                  mGeneralSettings;
+    private int                              mLibraryExplorerDividerPosition;
+    private List<String>                     mLibraryExplorerOpenRowKeys;
+    private List<Path>                       mRecentFiles;
+    private Map<String, QuickExport>         mQuickExports;
+    private Map<String, PDFRef>              mPdfRefs;
+    private Map<String, String>              mKeyBindingOverrides;
+    private Map<String, BaseWindow.Position> mBaseWindowPositions;
+    private SheetSettings                    mSheetSettings;
+    private int                              mLastRecentFilesUpdateCounter;
 
     public static synchronized Settings getInstance() {
         if (INSTANCE == null) {
@@ -151,23 +121,15 @@ public final class Settings extends ChangeableData {
 
     private Settings() {
         mLastSeenGCSVersion = new Version(GCS.VERSION);
+        mGeneralSettings = new GeneralSettings();
         Library.LIBRARIES.clear();
-        mInitialPoints = DEFAULT_INITIAL_POINTS;
-        mToolTipTimeout = DEFAULT_TOOLTIP_TIMEOUT;
         mLibraryExplorerDividerPosition = DEFAULT_LIBRARY_EXPLORER_DIVIDER_POSITION;
         mLibraryExplorerOpenRowKeys = new ArrayList<>();
-        mInitialUIScale = DEFAULT_INITIAL_UI_SCALE;
         mRecentFiles = new ArrayList<>();
         mQuickExports = new HashMap<>();
-        mGURPSCalculatorKey = "";
-        mDefaultPlayerName = DEFAULT_DEFAULT_PLAYER_NAME;
-        mDefaultTechLevel = DEFAULT_DEFAULT_TECH_LEVEL;
-        mImageResolution = DEFAULT_IMAGE_RESOLUTION;
         mPdfRefs = new HashMap<>();
         mKeyBindingOverrides = new HashMap<>();
         mBaseWindowPositions = new HashMap<>();
-        mIncludeUnspentPointsInTotal = DEFAULT_INCLUDE_UNSPENT_POINTS_IN_TOTAL;
-        mAutoFillProfile = DEFAULT_AUTO_FILL_PROFILE;
         mSheetSettings = new SheetSettings();
         Path path = getPreferencesPath();
         if (Files.isReadable(path) && Files.isRegularFile(path)) {
@@ -182,14 +144,18 @@ public final class Settings extends ChangeableData {
                         if (loadVersion.compareTo(mLastSeenGCSVersion) > 0) {
                             mLastSeenGCSVersion = loadVersion;
                         }
+                        if (m.has(GENERAL)) {
+                            mGeneralSettings = new GeneralSettings(m.getMap(GENERAL));
+                        } else {
+                            // Old data, before general settings were separated on June 25, 2021
+                            mGeneralSettings = new GeneralSettings(m);
+                        }
                         if (m.has(LIBRARIES)) {
                             JsonMap m2 = m.getMap(LIBRARIES);
                             for (String key : m2.keySet()) {
                                 Library.LIBRARIES.add(Library.fromJSON(key, m2.getMap(key)));
                             }
                         }
-                        mInitialPoints = m.getIntWithDefault(INITIAL_POINTS, mInitialPoints);
-                        mToolTipTimeout = m.getIntWithDefault(TOOLTIP_TIMEOUT, mToolTipTimeout);
                         if (m.has(LIBRARY_EXPLORER)) {
                             JsonMap m2 = m.getMap(LIBRARY_EXPLORER);
                             mLibraryExplorerDividerPosition = m2.getIntWithDefault(DIVIDER_POSITION, mLibraryExplorerDividerPosition);
@@ -199,7 +165,6 @@ public final class Settings extends ChangeableData {
                                 mLibraryExplorerOpenRowKeys.add(a.getString(i));
                             }
                         }
-                        mInitialUIScale = Enums.extract(m.getStringWithDefault(INITIAL_UI_SCALE, ""), Scales.values(), mInitialUIScale);
                         if (m.has(RECENT_FILES)) {
                             JsonArray a      = m.getArray(RECENT_FILES);
                             int       length = a.size();
@@ -240,20 +205,6 @@ public final class Settings extends ChangeableData {
                                 mBaseWindowPositions.put(key, new BaseWindow.Position(m2.getMap(key)));
                             }
                         }
-                        mGURPSCalculatorKey = m.getStringWithDefault(GURPS_CALCULATOR_KEY, mGURPSCalculatorKey);
-                        mDefaultPlayerName = m.getStringWithDefault(DEFAULT_PLAYER_NAME, mDefaultPlayerName);
-                        mDefaultTechLevel = m.getStringWithDefault(DEFAULT_TECH_LEVEL, mDefaultTechLevel);
-                        if (m.has(DEPRECATED_PNG_RESOLUTION)) {
-                            mImageResolution = m.getIntWithDefault(DEPRECATED_PNG_RESOLUTION, mImageResolution);
-                        } else {
-                            mImageResolution = m.getIntWithDefault(IMAGE_RESOLUTION, mImageResolution);
-                        }
-                        mIncludeUnspentPointsInTotal = m.getBooleanWithDefault(INCLUDE_UNSPENT_POINTS_IN_TOTAL, mIncludeUnspentPointsInTotal);
-                        if (m.has(DEPRECATED_AUTO_NAME_NEW_CHARACTERS)) {
-                            mAutoFillProfile = m.getBooleanWithDefault(DEPRECATED_AUTO_NAME_NEW_CHARACTERS, mAutoFillProfile);
-                        } else {
-                            mAutoFillProfile = m.getBooleanWithDefault(AUTO_FILL_PROFILE, mAutoFillProfile);
-                        }
                         if (m.has(QUICK_EXPORTS)) {
                             JsonMap m2 = m.getMap(QUICK_EXPORTS);
                             for (String key : m2.keySet()) {
@@ -293,9 +244,7 @@ public final class Settings extends ChangeableData {
             Library.LIBRARIES.add(Library.USER);
         }
         Collections.sort(Library.LIBRARIES);
-        if (!GraphicsEnvironment.isHeadless()) {
-            ToolTipManager.sharedInstance().setDismissDelay(mToolTipTimeout * 1000);
-        }
+        mGeneralSettings.updateToolTipTimeout();
     }
 
     public void save() {
@@ -310,14 +259,14 @@ public final class Settings extends ChangeableData {
                     w.startMap();
                     w.keyValue(VERSION, DataFile.CURRENT_VERSION);
                     w.keyValue(LAST_SEEN_GCS_VERSION, mLastSeenGCSVersion.toString());
+                    w.key(GENERAL);
+                    mGeneralSettings.save(w);
                     w.key(LIBRARIES);
                     w.startMap();
                     for (Library lib : Library.LIBRARIES) {
                         lib.toJSON(w);
                     }
                     w.endMap();
-                    w.keyValue(INITIAL_POINTS, mInitialPoints);
-                    w.keyValue(TOOLTIP_TIMEOUT, mToolTipTimeout);
                     w.key(LIBRARY_EXPLORER);
                     w.startMap();
                     w.keyValue(DIVIDER_POSITION, mLibraryExplorerDividerPosition);
@@ -328,7 +277,6 @@ public final class Settings extends ChangeableData {
                     }
                     w.endArray();
                     w.endMap();
-                    w.keyValue(INITIAL_UI_SCALE, Enums.toId(mInitialUIScale));
                     w.key(RECENT_FILES);
                     w.startArray();
                     for (Path p : mRecentFiles) {
@@ -360,12 +308,6 @@ public final class Settings extends ChangeableData {
                         }
                     }
                     w.endMap();
-                    w.keyValue(GURPS_CALCULATOR_KEY, mGURPSCalculatorKey);
-                    w.keyValue(DEFAULT_PLAYER_NAME, mDefaultPlayerName);
-                    w.keyValue(DEFAULT_TECH_LEVEL, mDefaultTechLevel);
-                    w.keyValue(IMAGE_RESOLUTION, mImageResolution);
-                    w.keyValue(INCLUDE_UNSPENT_POINTS_IN_TOTAL, mIncludeUnspentPointsInTotal);
-                    w.keyValue(AUTO_FILL_PROFILE, mAutoFillProfile);
                     w.key(THEME);
                     w.startMap();
                     w.key(COLORS);
@@ -405,23 +347,8 @@ public final class Settings extends ChangeableData {
         mLastSeenGCSVersion = new Version(lastSeenGCSVersion);
     }
 
-    public int getInitialPoints() {
-        return mInitialPoints;
-    }
-
-    public void setInitialPoints(int initialPoints) {
-        mInitialPoints = initialPoints;
-    }
-
-    public int getToolTipTimeout() {
-        return mToolTipTimeout;
-    }
-
-    public void setToolTipTimeout(int toolTipTimeout) {
-        if (mToolTipTimeout != toolTipTimeout) {
-            mToolTipTimeout = toolTipTimeout;
-            ToolTipManager.sharedInstance().setDismissDelay(mToolTipTimeout * 1000);
-        }
+    public GeneralSettings getGeneralSettings() {
+        return mGeneralSettings;
     }
 
     public int getLibraryExplorerDividerPosition() {
@@ -438,14 +365,6 @@ public final class Settings extends ChangeableData {
 
     public void setLibraryExplorerOpenRowKeys(List<String> libraryExplorerOpenRowKeys) {
         mLibraryExplorerOpenRowKeys = libraryExplorerOpenRowKeys;
-    }
-
-    public Scales getInitialUIScale() {
-        return mInitialUIScale;
-    }
-
-    public void setInitialUIScale(Scales initialUIScale) {
-        mInitialUIScale = initialUIScale;
     }
 
     public static String linesToString(List<String> lines) {
@@ -491,38 +410,6 @@ public final class Settings extends ChangeableData {
     public void setRecentFiles(List<Path> recentFiles) {
         mRecentFiles = recentFiles;
         mLastRecentFilesUpdateCounter++;
-    }
-
-    public String getGURPSCalculatorKey() {
-        return mGURPSCalculatorKey;
-    }
-
-    public void setGURPSCalculatorKey(String key) {
-        mGURPSCalculatorKey = key;
-    }
-
-    public String getDefaultPlayerName() {
-        return mDefaultPlayerName;
-    }
-
-    public void setDefaultPlayerName(String defaultPlayerName) {
-        mDefaultPlayerName = defaultPlayerName;
-    }
-
-    public String getDefaultTechLevel() {
-        return mDefaultTechLevel;
-    }
-
-    public void setDefaultTechLevel(String defaultTechLevel) {
-        mDefaultTechLevel = defaultTechLevel;
-    }
-
-    public int getImageResolution() {
-        return mImageResolution;
-    }
-
-    public void setImageResolution(int resolution) {
-        mImageResolution = resolution;
     }
 
     public List<PDFRef> allPdfRefs(boolean requireExistence) {
@@ -577,25 +464,6 @@ public final class Settings extends ChangeableData {
 
     public void putBaseWindowPosition(String key, BaseWindow.Position info) {
         mBaseWindowPositions.put(key, info);
-    }
-
-    public boolean includeUnspentPointsInTotal() {
-        return mIncludeUnspentPointsInTotal;
-    }
-
-    public void setIncludeUnspentPointsInTotal(boolean includeUnspentPointsInTotal) {
-        if (mIncludeUnspentPointsInTotal != includeUnspentPointsInTotal) {
-            mIncludeUnspentPointsInTotal = includeUnspentPointsInTotal;
-            notifyOfChange();
-        }
-    }
-
-    public boolean autoFillProfile() {
-        return mAutoFillProfile;
-    }
-
-    public void setAutoFillProfile(boolean autoFillProfile) {
-        mAutoFillProfile = autoFillProfile;
     }
 
     public QuickExport getQuickExport(String path) {

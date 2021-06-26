@@ -86,7 +86,7 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
             header.setScale(scale);
             content.setScale(scale);
         });
-        mScalesPopup.setSelectedItem(prefs.getInitialUIScale(), false);
+        mScalesPopup.setSelectedItem(prefs.getGeneralSettings().getInitialUIScale(), false);
         mToolbar.add(mScalesPopup);
         createFilterField();
         createCategoryPopup();

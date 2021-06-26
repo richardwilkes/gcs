@@ -65,7 +65,7 @@ public abstract class CollectedOutlinesDockable extends DataFileDockable impleme
             }
             getCollectedOutlines().setScale(scale.getScale());
         });
-        mScalePopup.setSelectedItem(Settings.getInstance().getInitialUIScale(), false);
+        mScalePopup.setSelectedItem(Settings.getInstance().getGeneralSettings().getInitialUIScale(), false);
         toolbar.add(mScalePopup);
         mSearch = new Search(this);
         toolbar.add(mSearch, Toolbar.LAYOUT_FILL);

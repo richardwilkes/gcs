@@ -423,7 +423,7 @@ public class TextTemplate {
             writeEncodedText(out, Numbers.formatDateTime(Numbers.DATE_AT_TIME_FORMAT, gurpsCharacter.getModifiedOn() * FieldFactory.TIMESTAMP_FACTOR));
             break;
         case KEY_TOTAL_POINTS:
-            writeEncodedText(out, Numbers.format(Settings.getInstance().includeUnspentPointsInTotal() ? gurpsCharacter.getTotalPoints() : gurpsCharacter.getSpentPoints()));
+            writeEncodedText(out, Numbers.format(Settings.getInstance().getGeneralSettings().includeUnspentPointsInTotal() ? gurpsCharacter.getTotalPoints() : gurpsCharacter.getSpentPoints()));
             break;
         case KEY_ATTRIBUTE_POINTS:
             writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributePoints()));

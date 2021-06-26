@@ -64,6 +64,6 @@ public class PointsPanel extends DropPanel {
     }
 
     private static String getTitle(GURPSCharacter gch) {
-        return MessageFormat.format(I18n.text("{0} Points"), Numbers.format(Settings.getInstance().includeUnspentPointsInTotal() ? gch.getTotalPoints() : gch.getSpentPoints()));
+        return MessageFormat.format(I18n.text("{0} Points"), Numbers.format(Settings.getInstance().getGeneralSettings().includeUnspentPointsInTotal() ? gch.getTotalPoints() : gch.getSpentPoints()));
     }
 }

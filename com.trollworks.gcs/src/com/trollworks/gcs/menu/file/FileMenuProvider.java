@@ -41,7 +41,7 @@ public final class FileMenuProvider {
         cmds.add(CloseCommand.INSTANCE);
         cmds.add(SaveCommand.INSTANCE);
         cmds.add(SaveAsCommand.INSTANCE);
-        cmds.add(ExportToGURPSCalculatorCommand.INSTANCE);
+        cmds.add(ExportToGCalcCommand.INSTANCE);
         cmds.add(ExportToPNGCommand.INSTANCE);
         cmds.add(PrintCommand.INSTANCE);
         if (!Platform.isMacintosh()) {

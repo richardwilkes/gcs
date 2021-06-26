@@ -58,7 +58,7 @@ public abstract class CollectedOutlines extends Panel implements Runnable, Actio
     private boolean          mRebuildPending;
 
     protected CollectedOutlines() {
-        mScale = Settings.getInstance().getInitialUIScale().getScale();
+        mScale = Settings.getInstance().getGeneralSettings().getInitialUIScale().getScale();
         Settings.getInstance().addChangeListener(this);
     }
 

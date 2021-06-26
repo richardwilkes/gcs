@@ -12,7 +12,7 @@
 package com.trollworks.gcs.settings;
 
 import com.trollworks.gcs.character.SheetDockable;
-import com.trollworks.gcs.menu.file.ExportToGURPSCalculatorCommand;
+import com.trollworks.gcs.menu.file.ExportToGCalcCommand;
 import com.trollworks.gcs.menu.file.ExportToPNGCommand;
 import com.trollworks.gcs.menu.file.ExportToTextTemplateCommand;
 import com.trollworks.gcs.utility.json.JsonMap;
@@ -85,7 +85,7 @@ public class QuickExport implements Comparable<QuickExport> {
 
     public boolean isValid() {
         if (isGCalcExport()) {
-            return !Settings.getInstance().getGURPSCalculatorKey().isBlank();
+            return !Settings.getInstance().getGeneralSettings().getGCalcKey().isBlank();
         }
         if (!isPNGExport() && (mTemplatePath.isBlank() || !Path.of(mTemplatePath).getParent().toFile().isDirectory())) {
             return false;
@@ -95,7 +95,7 @@ public class QuickExport implements Comparable<QuickExport> {
 
     public void export(SheetDockable dockable) {
         if (isGCalcExport()) {
-            ExportToGURPSCalculatorCommand.performExport(dockable);
+            ExportToGCalcCommand.performExport(dockable);
         } else if (isPNGExport()) {
             ExportToPNGCommand.performExport(dockable, Path.of(mExportPath));
         } else {

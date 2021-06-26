@@ -26,6 +26,8 @@ import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonWriter;
 
+import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -37,23 +39,33 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.text.MessageFormat;
 import java.util.Scanner;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 
-public final class ExportToGURPSCalculatorCommand extends Command {
-    public static final  String                         BASE_GURPS_CALCULATOR_URL = "http://www.gurpscalculator.com";
-    public static final  String                         GURPS_CALCULATOR_URL      = BASE_GURPS_CALCULATOR_URL + "/Character/ImportGCS";
-    public static final  ExportToGURPSCalculatorCommand INSTANCE                  = new ExportToGURPSCalculatorCommand();
-    private static final Pattern                        UUID_PATTERN              = Pattern.compile("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89ab][0-9a-fA-F]{3}-[0-9a-fA-F]{12}");
+public final class ExportToGCalcCommand extends Command {
+    public static final  ExportToGCalcCommand INSTANCE     = new ExportToGCalcCommand();
+    private static final String               BASE_URL     = "http://www.gurpscalculator.com";
+    private static final Pattern              UUID_PATTERN = Pattern.compile("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89ab][0-9a-fA-F]{3}-[0-9a-fA-F]{12}");
 
-    private ExportToGURPSCalculatorCommand() {
-        super(I18n.text("GURPS Calculator…"), "ExportToGURPSCalculator", KeyEvent.VK_L);
+    public static void openBrowserToFindKey(Component parent) {
+        String uri = BASE_URL + "/Character/ImportGCS";
+        try {
+            Desktop.getDesktop().browse(new URI(uri));
+        } catch (Exception exception) {
+            Modal.showError(parent, MessageFormat.format(I18n.text("Unable to open {0}"), uri));
+        }
+    }
+
+    private ExportToGCalcCommand() {
+        super(I18n.text("GURPS Calculator…"), "gCalcExport", KeyEvent.VK_L);
     }
 
     @Override
@@ -70,7 +82,7 @@ public final class ExportToGURPSCalculatorCommand extends Command {
         if (dockable != null) {
             CharacterSheet sheet     = dockable.getSheet();
             GURPSCharacter character = sheet.getCharacter();
-            String         key       = Settings.getInstance().getGURPSCalculatorKey();
+            String         key       = Settings.getInstance().getGeneralSettings().getGCalcKey();
             try {
                 if ("true".equals(get(String.format("api/GetCharacterExists/%s/%s", character.getID(), key)))) {
                     Modal dialog = Modal.prepareToShowMessage(KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner(),
@@ -122,7 +134,7 @@ public final class ExportToGURPSCalculatorCommand extends Command {
                         }
                         GURPSCharacter character = sheet.getCharacter();
                         UUID           id        = character.getID();
-                        String         key       = Settings.getInstance().getGURPSCalculatorKey();
+                        String         key       = Settings.getInstance().getGeneralSettings().getGCalcKey();
                         String         path      = String.format("api/SaveCharacter/%s/%s", id, key);
                         result = post(path, result);
                         if (!result.isEmpty()) {
@@ -171,7 +183,7 @@ public final class ExportToGURPSCalculatorCommand extends Command {
             Modal.showMessage(Command.getFocusOwner(), I18n.text("Success"), MessageType.NONE,
                     I18n.text("Export to GURPS Calculator was successful."));
         } else {
-            String key = Settings.getInstance().getGURPSCalculatorKey();
+            String key = Settings.getInstance().getGeneralSettings().getGCalcKey();
             String message;
             if (key == null || !UUID_PATTERN.matcher(key).matches()) {
                 message = I18n.text("You must first set a valid GURPS Calculator Key in General Settings.");
@@ -208,7 +220,7 @@ public final class ExportToGURPSCalculatorCommand extends Command {
     }
 
     private static URLConnection prepare(String path) throws IOException {
-        URLConnection connection = new URL(BASE_GURPS_CALCULATOR_URL + "/" + path + "/").openConnection();
+        URLConnection connection = new URL(BASE_URL + "/" + path + "/").openConnection();
         connection.setRequestProperty("Accept-Charset", StandardCharsets.UTF_8.toString());
         return connection;
     }

@@ -787,7 +787,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     public boolean saveAsPNG(Path path, List<Path> createdPaths) {
         Set<Row> changed = expandAllContainers();
         try {
-            int          dpi      = Settings.getInstance().getImageResolution();
+            int          dpi      = Settings.getInstance().getGeneralSettings().getImageResolution();
             PageSettings settings = mCharacter.getSheetSettings().getPageSettings();
             PageFormat   format   = settings.createPageFormat();
             int          width    = (int) (format.getWidth() / 72.0 * dpi);

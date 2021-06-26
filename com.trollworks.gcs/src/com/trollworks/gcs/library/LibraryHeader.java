@@ -28,7 +28,7 @@ public class LibraryHeader extends Panel implements ScaleRoot {
         super(new BorderLayout());
         header.setBorder(new LineBorder(Colors.DIVIDER, 0, 0, 0, 1));
         add(header);
-        mScale = Settings.getInstance().getInitialUIScale().getScale();
+        mScale = Settings.getInstance().getGeneralSettings().getInitialUIScale().getScale();
     }
 
     @Override
