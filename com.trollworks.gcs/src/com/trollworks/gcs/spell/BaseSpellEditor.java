@@ -121,58 +121,48 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
     }
 
     /**
-     * Utility function to create a text field (with a label) and set a few properties.
+     * Utility function to create a text field and set a few properties.
      *
-     * @param labelParent Container for the label.
-     * @param fieldParent Container for the text field.
-     * @param title       The text of the label.
-     * @param text        The text of the text field.
-     * @param tooltip     The tooltip of the text field.
-     * @param maxChars    The maximum number of characters that can be written in the text field.
+     * @param parent   Container for the text field.
+     * @param text     The text of the text field.
+     * @param tooltip  The tooltip of the text field.
+     * @param maxChars The maximum number of characters that can be written in the text field.
      */
-    protected EditorField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
-        EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text, maxChars > 0 ? Text.makeFiller(maxChars, 'M') : null, tooltip);
-        addLabel(labelParent, title);
-        PrecisionLayoutData ld = new PrecisionLayoutData().setFillHorizontalAlignment();
+    protected EditorField createField(Container parent, String text, String tooltip, int maxChars) {
+        EditorField         field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text, maxChars > 0 ? Text.makeFiller(maxChars, 'M') : null, tooltip);
+        PrecisionLayoutData ld    = new PrecisionLayoutData().setFillHorizontalAlignment();
         if (maxChars == 0) {
             ld.setGrabHorizontalSpace(true);
         }
-        fieldParent.add(field, ld);
+        parent.add(field, ld);
         return field;
     }
 
     /**
-     * Utility function to create a text field (with a label) that accepts only integral, unsigned
-     * numbers.
+     * Utility function to create a text field that accepts only integral, unsigned numbers.
      *
-     * @param labelParent Container for the label.
-     * @param fieldParent Container for the text field.
-     * @param title       The text of the label.
-     * @param tooltip     The tooltip of the text field.
-     * @param value       The number display in the text field.
-     * @param maxValue    The maximum value the field will hold.
+     * @param parent   Container for the text field.
+     * @param tooltip  The tooltip of the text field.
+     * @param value    The number display in the text field.
+     * @param maxValue The maximum value the field will hold.
      */
-    protected EditorField createNumberField(Container labelParent, Container fieldParent, String title, String tooltip, int value, int maxValue, EditorField.ChangeListener listener) {
+    protected EditorField createNumberField(Container parent, String tooltip, int value, int maxValue, EditorField.ChangeListener listener) {
         EditorField field = new EditorField(FieldFactory.POSINT5, listener, SwingConstants.LEFT, Integer.valueOf(value), Integer.valueOf(maxValue), tooltip);
-        addLabel(labelParent, title);
-        fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
+        parent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
 
     /**
-     * Utility function to create a text field (with a label) and set a few properties.
+     * Utility function to create a text field and set a few properties.
      *
-     * @param labelParent Container for the label.
-     * @param fieldParent Container for the text field.
-     * @param title       The text of the label.
-     * @param text        The text of the text field.
-     * @param tooltip     The tooltip of the text field.
+     * @param parent  Container for the text field.
+     * @param text    The text of the text field.
+     * @param tooltip The tooltip of the text field.
      */
-    protected EditorField createCorrectableField(Container labelParent, Container fieldParent, String title, String text, String tooltip, EditorField.ChangeListener listener) {
+    protected EditorField createCorrectableField(Container parent, String text, String tooltip, EditorField.ChangeListener listener) {
         EditorField field = new EditorField(FieldFactory.STRING, listener, SwingConstants.LEFT, text, tooltip);
         field.getDocument().addDocumentListener(this);
-        addLabel(labelParent, title);
-        fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+        parent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return field;
     }
 
@@ -211,7 +201,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
             mHasTechLevel = new Checkbox(I18n.text("Tech Level"), hasTL, this::clickedOnHasTechLevel);
             String tlTooltip = I18n.text("Whether this spell requires tech level specialization, and, if so, at what tech level it was learned");
             mHasTechLevel.setToolTipText(tlTooltip);
-            wrapper.add(mHasTechLevel);
+            wrapper.add(mHasTechLevel, new PrecisionLayoutData().setLeftMargin(4));
 
             mTechLevel = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, mSavedTechLevel, "9999", tlTooltip);
             mTechLevel.setEnabled(hasTL);
@@ -225,7 +215,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
             mTechLevel = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, mSavedTechLevel, "9999", null);
             mHasTechLevel = new Checkbox(I18n.text("Tech Level Required"), hasTL, this::clickedOnHasTechLevel);
             mHasTechLevel.setToolTipText(I18n.text("Whether this spell requires tech level specialization"));
-            parent.add(mHasTechLevel);
+            parent.add(mHasTechLevel, new PrecisionLayoutData().setLeftMargin(4));
         }
     }
 

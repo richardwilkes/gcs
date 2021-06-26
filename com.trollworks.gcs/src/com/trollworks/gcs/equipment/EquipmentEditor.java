@@ -39,7 +39,6 @@ import com.trollworks.gcs.weapon.WeaponStats;
 import java.awt.Container;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JComponent;
 import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -105,26 +104,34 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
 
     private Panel createTopSection() {
         Panel panel = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
-        mDescriptionField = createCorrectableField(panel, I18n.text("Name"), mRow.getDescription(), I18n.text("The name/description of the equipment, without any notes"));
+        addLabel(panel, I18n.text("Name"));
+        mDescriptionField = createCorrectableField(panel, mRow.getDescription(),
+                I18n.text("The name/description of the equipment, without any notes"));
         createSecondLineFields(panel);
         createValueAndWeightFields(panel);
-        mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this equipment"), this);
+        mNotesField = new MultiLineTextField(mRow.getNotes(),
+                I18n.text("Any notes that you would like to show up in the list along with this equipment"), this);
         addLabel(panel, I18n.text("Notes")).setBeginningVerticalAlignment().setTopMargin(2);
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
-        mCategoriesField = createField(panel, panel, I18n.text("Categories"), mRow.getCategoriesAsString(), I18n.text("The category or categories the equipment belongs to (separate multiple categories with a comma)"), 0);
+        addLabel(panel, I18n.text("Categories"));
+        mCategoriesField = createField(panel, mRow.getCategoriesAsString(),
+                I18n.text("The category or categories the equipment belongs to (separate multiple categories with a comma)"), 0);
 
-        boolean    forCharacterOrTemplate = mRow.getCharacter() != null || mRow.getTemplate() != null;
-        Panel      wrapper                = new Panel(new PrecisionLayout().setMargins(0).setColumns(forCharacterOrTemplate ? 5 : 3));
-        JComponent labelParent            = panel;
+        boolean forCharacterOrTemplate = mRow.getCharacter() != null || mRow.getTemplate() != null;
+        Panel   wrapper                = new Panel(new PrecisionLayout().setMargins(0).setColumns(forCharacterOrTemplate ? 5 : 3));
         if (forCharacterOrTemplate) {
-            mUsesField = createIntegerNumberField(panel, wrapper, I18n.text("Uses"), mRow.getUses(),
+            addLabel(panel, I18n.text("Uses"));
+            mUsesField = createIntegerNumberField(wrapper, mRow.getUses(),
                     I18n.text("The number of uses remaining for this equipment"), 99999, null);
-            labelParent = wrapper;
+            addInteriorLabel(wrapper, I18n.text("Max Uses"));
+        } else {
+            addLabel(panel, I18n.text("Max Uses"));
         }
-        mMaxUsesField = createIntegerNumberField(labelParent, wrapper, I18n.text("Max Uses"),
-                mRow.getMaxUses(), I18n.text("The maximum number of uses for this equipment"),
-                99999, null);
-        mReferenceField = createField(wrapper, wrapper, I18n.text("Page Reference"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.text("equipment")), 0);
+        mMaxUsesField = createIntegerNumberField(wrapper, mRow.getMaxUses(),
+                I18n.text("The maximum number of uses for this equipment"), 99999, null);
+        addInteriorLabel(wrapper, I18n.text("Page Reference"));
+        mReferenceField = createField(wrapper, mRow.getReference(),
+                PageRefCell.getStdToolTip(I18n.text("equipment")), 0);
         panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return panel;
     }
@@ -132,21 +139,27 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
     private void createSecondLineFields(Container parent) {
         boolean isContainer = mRow.canHaveChildren();
         Panel   wrapper     = new Panel(new PrecisionLayout().setMargins(0).setColumns((isContainer ? 4 : 6) + (showEquipmentState() ? 1 : 0)));
-        if (!isContainer) {
-            mQtyField = createIntegerNumberField(parent, wrapper, I18n.text("Quantity"),
-                    mRow.getQuantity(), I18n.text("The number of this equipment present"), 999999999,
-                    (f) -> {
+        if (isContainer) {
+            addLabel(parent, I18n.text("Tech Level"));
+        } else {
+            addLabel(parent, I18n.text("Quantity"));
+            mQtyField = createIntegerNumberField(wrapper, mRow.getQuantity(),
+                    I18n.text("The number of this equipment present"), 999999999, (f) -> {
                         valueChanged();
                         weightChanged();
                     });
+            addInteriorLabel(wrapper, I18n.text("Tech Level"));
         }
-        mTechLevelField = createField(isContainer ? parent : wrapper, wrapper, I18n.text("Tech Level"), mRow.getTechLevel(), I18n.text("The first Tech Level this equipment is available at"), 3);
-        mLegalityClassField = createField(wrapper, wrapper, I18n.text("Legality Class"), mRow.getLegalityClass(), I18n.text("The legality class of this equipment"), 3);
+        mTechLevelField = createField(wrapper, mRow.getTechLevel(),
+                I18n.text("The first Tech Level this equipment is available at"), 3);
+        addInteriorLabel(wrapper, I18n.text("Legality Class"));
+        mLegalityClassField = createField(wrapper, mRow.getLegalityClass(),
+                I18n.text("The legality class of this equipment"), 3);
         if (showEquipmentState()) {
             mEquippedCheckBox = new Checkbox(I18n.text("Equipped"), mRow.isEquipped(), null);
             mEquippedCheckBox.setEnabled(mIsEditable);
             mEquippedCheckBox.setToolTipText(I18n.text("Items that are not equipped do not apply any features they may normally contribute to the character."));
-            wrapper.add(mEquippedCheckBox);
+            wrapper.add(mEquippedCheckBox, new PrecisionLayoutData().setLeftMargin(4));
         }
         parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
@@ -159,12 +172,12 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
         Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(3));
         mContainedValue = mRow.getExtendedValue().sub(mRow.getAdjustedValue().mul(new Fixed6(mRow.getQuantity())));
         Fixed6 protoValue = new Fixed6("9999999.999999", false);
-        mValueField = createValueField(parent, wrapper, I18n.text("Value"), mRow.getValue(),
-                protoValue,
+        addLabel(parent, I18n.text("Value"));
+        mValueField = createValueField(wrapper, mRow.getValue(), protoValue,
                 I18n.text("The base value of one of these pieces of equipment before modifiers"),
                 (f) -> valueChanged());
-        mExtValueField = createValueField(wrapper, wrapper, I18n.text("Extended"),
-                mRow.getExtendedValue(), protoValue,
+        addInteriorLabel(wrapper, I18n.text("Extended"));
+        mExtValueField = createValueField(wrapper, mRow.getExtendedValue(), protoValue,
                 I18n.text("The value of all of these pieces of equipment, plus the value of any contained equipment"),
                 null);
         mExtValueField.setEnabled(false);
@@ -176,63 +189,58 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
         weight.setValue(weight.getValue().mul(new Fixed6(mRow.getQuantity())));
         mContainedWeight.subtract(weight);
         WeightValue weightProto = new WeightValue(protoValue, WeightUnits.LB);
-        mWeightField = createWeightField(parent, wrapper, I18n.text("Weight"), mRow.getWeight(),
-                weightProto, I18n.text("The weight of one of these pieces of equipment"),
-                (f) -> weightChanged());
-        mExtWeightField = createWeightField(wrapper, wrapper, I18n.text("Extended"),
-                mRow.getExtendedWeight(false), weightProto,
+        addLabel(parent, I18n.text("Weight"));
+        mWeightField = createWeightField(wrapper, mRow.getWeight(), weightProto,
+                I18n.text("The weight of one of these pieces of equipment"), (f) -> weightChanged());
+        addInteriorLabel(wrapper, I18n.text("Extended"));
+        mExtWeightField = createWeightField(wrapper, mRow.getExtendedWeight(false), weightProto,
                 I18n.text("The total weight of this quantity of equipment, plus everything contained by it"),
                 null);
         mExtWeightField.setEnabled(false);
         mIgnoreWeightForSkillsCheckBox = new Checkbox(I18n.text("Ignore for Skills"), mRow.isWeightIgnoredForSkills(), null);
         mIgnoreWeightForSkillsCheckBox.setEnabled(mIsEditable);
         mIgnoreWeightForSkillsCheckBox.setToolTipText(I18n.text("If checked, the weight of this item is not considered when calculating encumbrance penalties for skills"));
-        wrapper.add(mIgnoreWeightForSkillsCheckBox);
+        wrapper.add(mIgnoreWeightForSkillsCheckBox, new PrecisionLayoutData().setLeftMargin(4));
         parent.add(wrapper);
     }
 
-    private EditorField createCorrectableField(Container parent, String title, String text, String tooltip) {
+    private EditorField createCorrectableField(Container parent, String text, String tooltip) {
         EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text, tooltip);
         field.setEnabled(mIsEditable);
         field.getDocument().addDocumentListener(this);
-        addLabel(parent, title);
         parent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return field;
     }
 
-    private EditorField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
+    private EditorField createField(Container parent, String text, String tooltip, int maxChars) {
         EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text, maxChars > 0 ? Text.makeFiller(maxChars, 'M') : null, tooltip);
         field.setEnabled(mIsEditable);
-        addLabel(labelParent, title);
         PrecisionLayoutData ld = new PrecisionLayoutData().setFillHorizontalAlignment();
         if (maxChars == 0) {
             ld.setGrabHorizontalSpace(true);
         }
-        fieldParent.add(field, ld);
+        parent.add(field, ld);
         return field;
     }
 
-    private EditorField createIntegerNumberField(Container labelParent, Container fieldParent, String title, int value, String tooltip, int maxValue, EditorField.ChangeListener listener) {
+    private EditorField createIntegerNumberField(Container parent, int value, String tooltip, int maxValue, EditorField.ChangeListener listener) {
         EditorField field = new EditorField(maxValue == 99999 ? FieldFactory.POSINT5 : FieldFactory.POSINT9, listener, SwingConstants.LEFT, Integer.valueOf(value), Integer.valueOf(maxValue), tooltip);
         field.setEnabled(mIsEditable);
-        addLabel(labelParent, title);
-        fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
+        parent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
 
-    private EditorField createValueField(Container labelParent, Container fieldParent, String title, Fixed6 value, Fixed6 protoValue, String tooltip, EditorField.ChangeListener listener) {
+    private EditorField createValueField(Container parent, Fixed6 value, Fixed6 protoValue, String tooltip, EditorField.ChangeListener listener) {
         EditorField field = new EditorField(FieldFactory.FIXED6, listener, SwingConstants.LEFT, value, protoValue, tooltip);
         field.setEnabled(mIsEditable);
-        addLabel(labelParent, title);
-        fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
+        parent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
 
-    private EditorField createWeightField(Container labelParent, Container fieldParent, String title, WeightValue value, WeightValue protoValue, String tooltip, EditorField.ChangeListener listener) {
+    private EditorField createWeightField(Container parent, WeightValue value, WeightValue protoValue, String tooltip, EditorField.ChangeListener listener) {
         EditorField field = new EditorField(FieldFactory.WEIGHT, listener, SwingConstants.LEFT, value, protoValue, tooltip);
         field.setEnabled(mIsEditable);
-        addLabel(labelParent, title);
-        fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
+        parent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
 

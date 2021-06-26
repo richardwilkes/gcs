@@ -64,51 +64,59 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
     private Panel createTop() {
         Panel panel   = new Panel(new PrecisionLayout().setMargins(0).setColumns(4));
         Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
-        mNameField = createCorrectableField(panel, wrapper, I18n.text("Name"), mRow.getName(),
+        addLabel(panel, I18n.text("Name"));
+        mNameField = createCorrectableField(wrapper, mRow.getName(),
                 I18n.text("The name of the spell, without any notes"),
                 (f) -> recalculateLevel(mLevelField));
         createTechLevelFields(wrapper);
         panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
-        mBaseSkillNameField = createCorrectableField(panel, panel, I18n.text("Base Skill"),
-                mRow.getBaseSkillName(),
+        addLabel(panel, I18n.text("Base Skill"));
+        mBaseSkillNameField = createCorrectableField(panel, mRow.getBaseSkillName(),
                 I18n.text("The name of the base skill, such as \"Ritual Magic\" or \"Thaumatology\""),
                 (f) -> recalculateLevel(mLevelField));
-        mPrerequisiteSpellsCountField = createNumberField(panel, panel,
-                I18n.text("Prerequisite Count"),
+        addInteriorLabel(panel, I18n.text("Prerequisite Count"));
+        mPrerequisiteSpellsCountField = createNumberField(panel,
                 I18n.text("The penalty to skill level based on the number of prerequisite spells"),
                 mRow.getPrerequisiteSpellsCount(), 99, (f) -> recalculateLevel(mLevelField));
-        mCollegeField = createField(panel, panel, I18n.text("College"), String.join(", ",
-                mRow.getColleges()),
+        addLabel(panel, I18n.text("College"));
+        mCollegeField = createField(panel, String.join(", ", mRow.getColleges()),
                 I18n.text("The college(s) the spell belongs to; separate multiple colleges with a comma"),
                 0);
-        mPowerSourceField = createField(panel, panel, I18n.text("Power Source"),
-                mRow.getPowerSource(), I18n.text("The source of power for the spell"), 0);
-        mClassField = createCorrectableField(panel, panel, I18n.text("Class"), mRow.getSpellClass(),
+        addInteriorLabel(panel, I18n.text("Power Source"));
+        mPowerSourceField = createField(panel, mRow.getPowerSource(),
+                I18n.text("The source of power for the spell"), 0);
+        addLabel(panel, I18n.text("Class"));
+        mClassField = createCorrectableField(panel, mRow.getSpellClass(),
                 I18n.text("The class of spell (Area, Missile, etc.)"), null);
-        mResistField = createCorrectableField(panel, panel, I18n.text("Resistance"),
-                mRow.getResist(), I18n.text("The resistance roll, if any"), null);
-        mCastingCostField = createCorrectableField(panel, panel, I18n.text("Casting Cost"),
-                mRow.getCastingCost(), I18n.text("The casting cost of the spell"), null);
-        mCastingTimeField = createCorrectableField(panel, panel, I18n.text("Casting Time"),
-                mRow.getCastingTime(), I18n.text("The casting time of the spell"), null);
-        mMaintenanceField = createField(panel, panel, I18n.text("Maintenance Cost"),
-                mRow.getMaintenance(), I18n.text("The cost to maintain a spell after its initial duration"),
-                0);
-        mDurationField = createCorrectableField(panel, panel, I18n.text("Duration"),
-                mRow.getDuration(), I18n.text("The duration of the spell once its cast"), null);
+        addInteriorLabel(panel, I18n.text("Resistance"));
+        mResistField = createCorrectableField(panel, mRow.getResist(),
+                I18n.text("The resistance roll, if any"), null);
+        addLabel(panel, I18n.text("Casting Cost"));
+        mCastingCostField = createCorrectableField(panel, mRow.getCastingCost(),
+                I18n.text("The casting cost of the spell"), null);
+        addInteriorLabel(panel, I18n.text("Casting Time"));
+        mCastingTimeField = createCorrectableField(panel, mRow.getCastingTime(),
+                I18n.text("The casting time of the spell"), null);
+        addLabel(panel, I18n.text("Maintenance Cost"));
+        mMaintenanceField = createField(panel, mRow.getMaintenance(),
+                I18n.text("The cost to maintain a spell after its initial duration"), 0);
+        addInteriorLabel(panel, I18n.text("Duration"));
+        mDurationField = createCorrectableField(panel, mRow.getDuration(),
+                I18n.text("The duration of the spell once its cast"), null);
         createPointsFields(panel);
         mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this spell"), this);
         addLabel(panel, I18n.text("Notes")).setBeginningVerticalAlignment().setTopMargin(2);
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
+        addLabel(panel, I18n.text("Categories"));
         wrapper = new Panel(new PrecisionLayout().setMargins(0));
-        mCategoriesField = createField(panel, wrapper, I18n.text("Categories"),
-                mRow.getCategoriesAsString(),
+        mCategoriesField = createField(wrapper, mRow.getCategoriesAsString(),
                 I18n.text("The category or categories the spell belongs to (separate multiple categories with a comma)"),
                 0);
         panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
+        addLabel(panel, I18n.text("Page Reference"));
         wrapper = new Panel(new PrecisionLayout().setMargins(0));
-        mReferenceField = createField(panel, wrapper, I18n.text("Page Reference"),
-                mRow.getReference(), PageRefCell.getStdToolTip(I18n.text("spell")), 0);
+        mReferenceField = createField(wrapper, mRow.getReference(),
+                PageRefCell.getStdToolTip(I18n.text("spell")), 0);
         panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
         return panel;
     }
@@ -128,12 +136,13 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
                         SkillDifficulty.H}, mRow.getDifficulty(),
                 I18n.text("The difficulty of the spell"), (p) -> recalculateLevel(mLevelField));
         if (forCharacter || forTemplate) {
-            mPointsField = createNumberField(panel, panel, I18n.text("Points"),
+            addInteriorLabel(panel, I18n.text("Points"));
+            mPointsField = createNumberField(panel,
                     I18n.text("The number of points spent on this spell"), mRow.getRawPoints(),
                     9999, (f) -> recalculateLevel(mLevelField));
             if (forCharacter) {
-                mLevelField = createField(panel, panel, I18n.text("Level"),
-                        getDisplayLevel(mRow.getLevel(), mRow.getRelativeLevel()),
+                addInteriorLabel(panel, I18n.text("Level"));
+                mLevelField = createField(panel, getDisplayLevel(mRow.getLevel(), mRow.getRelativeLevel()),
                         I18n.text("The spell level and relative spell level to roll against.\n") + mRow.getLevelToolTip(),
                         7);
                 mLevelField.setEnabled(false);

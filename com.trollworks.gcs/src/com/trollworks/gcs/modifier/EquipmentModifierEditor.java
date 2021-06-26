@@ -19,7 +19,6 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.Checkbox;
 import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.PopupMenu;
@@ -59,26 +58,49 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     @Override
     protected void addContentSelf(ScrollContent outer) {
         Panel panel = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
+        addLabel(panel, I18n.text("Name"));
         if (mRow.canHaveChildren()) {
-            mNameField = createCorrectableField(panel, panel, I18n.text("Name"), mRow.getName(), I18n.text("Name of container"));
+            mNameField = createCorrectableField(panel, mRow.getName(), I18n.text("Name of container"));
         } else {
             Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(4));
-            mNameField = createCorrectableField(panel, wrapper, I18n.text("Name"), mRow.getName(), I18n.text("Name of Modifier"));
-            mTechLevelField = createField(wrapper, wrapper, I18n.text("Tech Level"), mRow.getTechLevel(), I18n.text("The first Tech Level this equipment is available at"), 3);
+            mNameField = createCorrectableField(wrapper, mRow.getName(), I18n.text("Name of Modifier"));
+            addInteriorLabel(wrapper, I18n.text("Tech Level"));
+            mTechLevelField = createField(wrapper, mRow.getTechLevel(), I18n.text("The first Tech Level this equipment is available at"), 3);
             mEnabledField = new Checkbox(I18n.text("Enabled"), mRow.isEnabled(), null);
             mEnabledField.setToolTipText(I18n.text("Whether this modifier has been enabled or not"));
-            wrapper.add(mEnabledField);
+            wrapper.add(mEnabledField, new PrecisionLayoutData().setLeftMargin(4));
             panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-            createCostAdjustmentFields(panel);
-            createWeightAdjustmentFields(panel);
+            wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
+            addLabel(panel, I18n.text("Cost Modifier"));
+            mCostAmountField = new EditorField(FieldFactory.STRING, (f) -> costChanged(),
+                    SwingConstants.LEFT, mRow.getCostAdjType().format(mRow.getCostAdjAmount(), true),
+                    "-999,999,999.00", I18n.text("The cost modifier"));
+            wrapper.add(mCostAmountField);
+            mCostType = new PopupMenu<>(EquipmentModifierCostType.values(), (p) -> costChanged());
+            mCostType.setSelectedItem(mRow.getCostAdjType(), false);
+            wrapper.add(mCostType);
+            panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+
+            wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
+            addLabel(panel, I18n.text("Weight Modifier"));
+            mWeightAmountField = new EditorField(FieldFactory.STRING, (f) -> weightChanged(),
+                    SwingConstants.LEFT, mRow.getWeightAdjType().format(mRow.getWeightAdjAmount(),
+                    mRow.getDataFile().getSheetSettings().defaultWeightUnits(), true),
+                    "-999,999,999.00", I18n.text("The weight modifier"));
+            wrapper.add(mWeightAmountField);
+            mWeightType = new PopupMenu<>(EquipmentModifierWeightType.values(), (p) -> weightChanged());
+            mWeightType.setSelectedItem(mRow.getWeightAdjType(), false);
+            wrapper.add(mWeightType);
+            panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         }
 
         mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this modifier"), this);
-        panel.add(new Label(I18n.text("Notes")), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
+        addLabel(panel, I18n.text("Notes")).setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2);
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-        mReferenceField = createField(panel, panel, I18n.text("Ref"), mRow.getReference(), PageRefCell.getStdToolTip(I18n.text("equipment modifier")), 6);
+        addLabel(panel, I18n.text("Page Reference"));
+        mReferenceField = createField(panel, mRow.getReference(), PageRefCell.getStdToolTip(I18n.text("equipment modifier")), 6);
         outer.add(panel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         if (!mRow.canHaveChildren()) {
@@ -108,72 +130,23 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         return modified;
     }
 
-    private EditorField createCorrectableField(Container labelParent, Container fieldParent, String title, String text, String tooltip) {
+    private EditorField createCorrectableField(Container fieldParent, String text, String tooltip) {
         EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text, tooltip);
         field.getDocument().addDocumentListener(this);
-        addLabel(labelParent, title);
         fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return field;
     }
 
-    private static EditorField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
+    private static EditorField createField(Container fieldParent, String text, String tooltip, int maxChars) {
         EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text,
                 maxChars > 0 ? Text.makeFiller(maxChars, 'M') : null, tooltip);
-        addLabel(labelParent, title);
-        PrecisionLayoutData ld = new PrecisionLayoutData().setFillHorizontalAlignment();
-        if (maxChars == 0) {
-            ld.setGrabHorizontalSpace(true);
-        }
-        fieldParent.add(field, ld);
+        fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return field;
-    }
-
-    private void createCostAdjustmentFields(Container parent) {
-        Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
-        createCostAdjustmentField(parent, wrapper);
-        createCostTypePopup(wrapper);
-        parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
-    }
-
-    private void createCostAdjustmentField(Container labelParent, Container fieldParent) {
-        mCostAmountField = new EditorField(FieldFactory.STRING, (f) -> costChanged(),
-                SwingConstants.LEFT, mRow.getCostAdjType().format(mRow.getCostAdjAmount(), true),
-                "-999,999,999.00", I18n.text("The cost modifier"));
-        addLabel(labelParent, "");
-        fieldParent.add(mCostAmountField);
-    }
-
-    private void createCostTypePopup(Container parent) {
-        mCostType = new PopupMenu<>(EquipmentModifierCostType.values(), (p) -> costChanged());
-        mCostType.setSelectedItem(mRow.getCostAdjType(), false);
-        parent.add(mCostType);
     }
 
     private EquipmentModifierCostType getCostType() {
         EquipmentModifierCostType selection = mCostType.getSelectedItem();
         return selection == null ? EquipmentModifierCostType.TO_ORIGINAL_COST : selection;
-    }
-
-    private void createWeightAdjustmentFields(Container parent) {
-        Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
-        createWeightAdjustmentField(parent, wrapper);
-        createWeightTypePopup(wrapper);
-        parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
-    }
-
-    private void createWeightAdjustmentField(Container labelParent, Container fieldParent) {
-        mWeightAmountField = new EditorField(FieldFactory.STRING, (f) -> weightChanged(),
-                SwingConstants.LEFT, mRow.getWeightAdjType().format(mRow.getWeightAdjAmount(),
-                mRow.getDataFile().getSheetSettings().defaultWeightUnits(), true),
-                "-999,999,999.00", I18n.text("The weight modifier"));
-        labelParent.add(new Label(""));
-        fieldParent.add(mWeightAmountField);
-    }
-
-    private void createWeightTypePopup(Container parent) {
-        mWeightType = new PopupMenu<>(EquipmentModifierWeightType.values(), (p) -> weightChanged());
-        mWeightType.setSelectedItem(mRow.getWeightAdjType(), false);
-        parent.add(mWeightType);
     }
 
     private EquipmentModifierWeightType getWeightType() {

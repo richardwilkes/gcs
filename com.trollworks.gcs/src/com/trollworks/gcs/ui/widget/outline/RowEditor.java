@@ -154,7 +154,7 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
     protected abstract void addContentSelf(ScrollContent outer);
 
     protected static void addSection(Container parent, JComponent section) {
-        section.setBorder(new TitledBorder(Fonts.LABEL_PRIMARY, section.toString()));
+        section.setBorder(new TitledBorder(Fonts.HEADER, section.toString()));
         parent.add(section, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 

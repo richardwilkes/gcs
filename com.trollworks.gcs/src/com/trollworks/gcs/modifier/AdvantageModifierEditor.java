@@ -19,7 +19,6 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.Checkbox;
 import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.PopupMenu;
@@ -64,28 +63,27 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
     @Override
     protected void addContentSelf(ScrollContent outer) {
         Panel panel = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
+        addLabel(panel, I18n.text("Name"));
         if (mRow.canHaveChildren()) {
-            mNameField = createCorrectableField(panel, panel, I18n.text("Name"), mRow.getName(),
-                    I18n.text("Name of container"));
+            mNameField = createCorrectableField(panel, mRow.getName(), I18n.text("Name of container"));
         } else {
             Panel wrapper = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
-            mNameField = createCorrectableField(panel, wrapper, I18n.text("Name"), mRow.getName(),
-                    I18n.text("Name of Modifier"));
+            mNameField = createCorrectableField(wrapper, mRow.getName(), I18n.text("Name of Modifier"));
             mEnabledField = new Checkbox(I18n.text("Enabled"), mRow.isEnabled(), null);
             mEnabledField.setToolTipText(I18n.text("Whether this modifier has been enabled or not"));
             mEnabledField.setEnabled(mIsEditable);
-            wrapper.add(mEnabledField);
+            wrapper.add(mEnabledField, new PrecisionLayoutData().setLeftMargin(4));
             panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
             createCostModifierFields(panel);
         }
 
         mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this modifier"), this);
-        panel.add(new Label(I18n.text("Notes")),
-                new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
+        addLabel(panel, I18n.text("Notes")).setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2);
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-        mReferenceField = createField(panel, panel, I18n.text("Ref"), mRow.getReference(),
+        addLabel(panel, I18n.text("Page Reference"));
+        mReferenceField = createField(panel, mRow.getReference(),
                 PageRefCell.getStdToolTip(I18n.text("advantage modifier")), 6);
         outer.add(panel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
@@ -123,40 +121,32 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
         return mCostType.getSelectedIndex() == 0;
     }
 
-    private EditorField createCorrectableField(Container labelParent, Container fieldParent, String title, String text, String tooltip) {
+    private EditorField createCorrectableField(Container fieldParent, String text, String tooltip) {
         EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text, tooltip);
         field.getDocument().addDocumentListener(this);
-        addLabel(labelParent, title);
         fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return field;
     }
 
-    private static EditorField createField(Container labelParent, Container fieldParent, String title, String text, String tooltip, int maxChars) {
+    private static EditorField createField(Container parent, String text, String tooltip, int maxChars) {
         EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, text,
                 maxChars > 0 ? Text.makeFiller(maxChars, 'M') : null, tooltip);
-        addLabel(labelParent, title);
-        PrecisionLayoutData ld = new PrecisionLayoutData().setFillHorizontalAlignment();
-        if (maxChars == 0) {
-            ld.setGrabHorizontalSpace(true);
-        }
-        fieldParent.add(field, ld);
+        parent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         return field;
     }
 
-    private EditorField createNumberField(Container labelParent, Container fieldParent, String title, JFormattedTextField.AbstractFormatterFactory formatter, int value, int protoValue, String tooltip, EditorField.ChangeListener listener) {
+    private EditorField createNumberField(Container fieldParent, JFormattedTextField.AbstractFormatterFactory formatter, int value, int protoValue, String tooltip, EditorField.ChangeListener listener) {
         EditorField field = new EditorField(formatter, listener, SwingConstants.LEFT,
                 Integer.valueOf(value), Integer.valueOf(protoValue), tooltip);
         field.setEnabled(mIsEditable);
-        addLabel(labelParent, title);
         fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
 
-    private EditorField createNumberField(Container labelParent, Container fieldParent, String title, double value, String tooltip, EditorField.ChangeListener listener) {
+    private EditorField createNumberField(Container fieldParent, double value, String tooltip, EditorField.ChangeListener listener) {
         EditorField field = new EditorField(FieldFactory.FLOAT, listener, SwingConstants.LEFT,
                 Double.valueOf(value), Double.valueOf(-99999), tooltip);
         field.setEnabled(mIsEditable);
-        addLabel(labelParent, title);
         fieldParent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment());
         return field;
     }
@@ -167,21 +157,23 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
         if (mLastLevel < 1) {
             mLastLevel = 1;
         }
-        String costTitle   = I18n.text("Cost");
         String costTooltip = I18n.text("The base cost modifier");
+        addLabel(parent, I18n.text("Cost"));
         mCostField = mRow.getCostType() == AdvantageModifierCostType.MULTIPLIER ?
-                createNumberField(parent, wrapper, costTitle, mRow.getCostMultiplier(), costTooltip,
+                createNumberField(wrapper, mRow.getCostMultiplier(), costTooltip,
                         (f) -> updateCostModifier()) :
-                createNumberField(parent, wrapper, costTitle, FieldFactory.INT5, mRow.getCost(),
-                        -99999, costTooltip, (f) -> updateCostModifier());
+                createNumberField(wrapper, FieldFactory.INT5, mRow.getCost(), -99999, costTooltip,
+                        (f) -> updateCostModifier());
         createCostType(wrapper);
-        mLevelField = createNumberField(wrapper, wrapper, I18n.text("Levels"), FieldFactory.POSINT3,
+        addInteriorLabel(wrapper, I18n.text("Levels"));
+        mLevelField = createNumberField(wrapper, FieldFactory.POSINT3,
                 mLastLevel, 999, I18n.text("The number of levels this modifier has"),
                 (f) -> updateCostModifier());
-        mCostModifierField = createField(wrapper, wrapper, I18n.text("Total"), "", I18n.text("The cost modifier's total value"), 9);
+        addInteriorLabel(wrapper, I18n.text("Total"));
+        mCostModifierField = createField(wrapper, "", I18n.text("The cost modifier's total value"), 9);
         mAffects = new PopupMenu<>(Affects.values(), null);
         mAffects.setSelectedItem(mRow.getAffects(), false);
-        wrapper.add(mAffects, new PrecisionLayoutData().setFillHorizontalAlignment());
+        wrapper.add(mAffects);
         mCostModifierField.setEnabled(false);
         if (!mRow.hasLevels()) {
             mLevelField.setText("");
@@ -193,7 +185,7 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
     private void createCostType(Container parent) {
         AdvantageModifierCostType[] types  = AdvantageModifierCostType.values();
         Object[]                    values = new Object[types.length + 1];
-        values[0] = MessageFormat.format(I18n.text("{0} Per Level"), AdvantageModifierCostType.PERCENTAGE.toString());
+        values[0] = MessageFormat.format(I18n.text("{0} per level"), AdvantageModifierCostType.PERCENTAGE.toString());
         System.arraycopy(types, 0, values, 1, types.length);
         mCostType = new PopupMenu<>(values, (p) -> {
             if (!mRow.canHaveChildren()) {
