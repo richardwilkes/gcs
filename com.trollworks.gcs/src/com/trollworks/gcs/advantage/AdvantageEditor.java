@@ -11,14 +11,13 @@
 
 package com.trollworks.gcs.advantage;
 
+import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.AdvantageModifierListEditor;
 import com.trollworks.gcs.prereq.PrereqsPanel;
-import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.border.EmptyBorder;
-import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
@@ -196,18 +195,18 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
 
     private void addSecondaryCommonFields(Container parent) {
         mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this advantage"), this);
-        parent.add(new Label(I18n.text("Notes")), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
+        parent.add(new Label(I18n.text("Notes"), SwingConstants.RIGHT), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
         parent.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         if (mRow.getDataFile() instanceof GURPSCharacter) {
             mUserDesc = mRow.getUserDesc();
             mUserDescField = new MultiLineTextField(mUserDesc, I18n.text("Additional notes for your own reference. These only exist in character sheets and will be removed if transferred to a data list or template"), this);
-            parent.add(new Label(I18n.text("User Description")), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
+            parent.add(new Label(I18n.text("User Description"), SwingConstants.RIGHT), new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
             parent.add(mUserDescField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         }
 
         mCategoriesField = createField(mRow.getCategoriesAsString(), null, I18n.text("The category or categories the advantage belongs to (separate multiple categories with a comma)"));
-        parent.add(new Label(I18n.text("Categories")), new PrecisionLayoutData().setFillHorizontalAlignment());
+        addLabel(parent, I18n.text("Categories"));
         parent.add(mCategoriesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         mCRPopup = new PopupMenu<>(SelfControlRoll.values(), (p) -> {
@@ -221,7 +220,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
             updatePoints();
         });
         mCRPopup.setSelectedIndex(mRow.getCR().ordinal(), false);
-        parent.add(new Label(I18n.text("Self-Control Roll")), new PrecisionLayoutData().setFillHorizontalAlignment());
+        addLabel(parent, I18n.text("Self-Control Roll"));
         Panel wrapper = new Panel(new PrecisionLayout().setColumns(2).setMargins(0));
         wrapper.add(mCRPopup);
         mCRAdjPopup = new PopupMenu<>(SelfControlRollAdjustments.values(), null);
@@ -233,31 +232,25 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     }
 
     private void addTypeFields(Container parent) {
-        Label label = new Label(I18n.text("Type"), SwingConstants.RIGHT);
-        label.setToolTipText(I18n.text("The type of advantage this is"));
-        parent.add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
+        addLabel(parent, I18n.text("Page Reference"));
+        Panel wrapper = new Panel(new PrecisionLayout().setColumns(6).setMargins(0));
+        mReferenceField = createField(mRow.getReference(), null, null);
+        wrapper.add(mReferenceField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-        mMentalType = createTypeCheckbox((mRow.getType() & Advantage.TYPE_MASK_MENTAL) == Advantage.TYPE_MASK_MENTAL, I18n.text("Mental"));
-        Panel wrapper = new Panel(new PrecisionLayout().setColumns(12).setMargins(0));
+        mMentalType = new Checkbox(I18n.text("Mental"), (mRow.getType() & Advantage.TYPE_MASK_MENTAL) == Advantage.TYPE_MASK_MENTAL, null);
         wrapper.add(mMentalType);
-        wrapper.add(createTypeLabel(Images.MENTAL_TYPE, mMentalType));
 
-        mPhysicalType = createTypeCheckbox((mRow.getType() & Advantage.TYPE_MASK_PHYSICAL) == Advantage.TYPE_MASK_PHYSICAL, I18n.text("Physical"));
+        mPhysicalType = new Checkbox(I18n.text("Physical"), (mRow.getType() & Advantage.TYPE_MASK_PHYSICAL) == Advantage.TYPE_MASK_PHYSICAL, null);
         wrapper.add(mPhysicalType);
-        wrapper.add(createTypeLabel(Images.PHYSICAL_TYPE, mPhysicalType));
 
-        mSocialType = createTypeCheckbox((mRow.getType() & Advantage.TYPE_MASK_SOCIAL) == Advantage.TYPE_MASK_SOCIAL, I18n.text("Social"));
+        mSocialType = new Checkbox(I18n.text("Social"), (mRow.getType() & Advantage.TYPE_MASK_SOCIAL) == Advantage.TYPE_MASK_SOCIAL, null);
         wrapper.add(mSocialType);
-        wrapper.add(createTypeLabel(Images.SOCIAL_TYPE, mSocialType));
 
-        mExoticType = createTypeCheckbox((mRow.getType() & Advantage.TYPE_MASK_EXOTIC) == Advantage.TYPE_MASK_EXOTIC, I18n.text("Exotic"));
+        mExoticType = new Checkbox(I18n.text("Exotic"), (mRow.getType() & Advantage.TYPE_MASK_EXOTIC) == Advantage.TYPE_MASK_EXOTIC, null);
         wrapper.add(mExoticType);
-        wrapper.add(createTypeLabel(Images.EXOTIC_TYPE, mExoticType));
 
-        mSupernaturalType = createTypeCheckbox((mRow.getType() & Advantage.TYPE_MASK_SUPERNATURAL) == Advantage.TYPE_MASK_SUPERNATURAL, I18n.text("Supernatural"));
+        mSupernaturalType = new Checkbox(I18n.text("Supernatural"), (mRow.getType() & Advantage.TYPE_MASK_SUPERNATURAL) == Advantage.TYPE_MASK_SUPERNATURAL, null);
         wrapper.add(mSupernaturalType);
-        wrapper.add(createTypeLabel(Images.SUPERNATURAL_TYPE, mSupernaturalType));
-        addRefField(wrapper);
 
         parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
@@ -266,36 +259,17 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         mContainerTypePopup = new PopupMenu<>(AdvantageContainerType.values(), null);
         mContainerTypePopup.setSelectedItem(mRow.getContainerType(), false);
         mContainerTypePopup.setToolTipText(I18n.text("The type of container this is"));
-        parent.add(new Label(I18n.text("Container Type")), new PrecisionLayoutData().setFillHorizontalAlignment());
+        addLabel(parent, I18n.text("Container Type"));
         Panel wrapper = new Panel(new PrecisionLayout().setColumns(3).setMargins(0));
         wrapper.add(mContainerTypePopup);
-        addRefField(wrapper);
+        mReferenceField = createField(mRow.getReference(), null, I18n.text("Page Reference"));
+        wrapper.add(new Label(I18n.text("Page Reference"), SwingConstants.RIGHT), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(10));
+        wrapper.add(mReferenceField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
-    private void addRefField(Container parent) {
-        mReferenceField = createField(mRow.getReference(), "MMMMMM", I18n.text("Page Reference"));
-        parent.add(new Label(I18n.text("Ref")), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(10));
-        parent.add(mReferenceField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
-
-    }
-
-    private static Checkbox createTypeCheckbox(boolean selected, String tooltip) {
-        Checkbox button = new Checkbox("", selected, null);
-        button.setToolTipText(tooltip);
-        return button;
-    }
-
-    private static Label createTypeLabel(RetinaIcon icon, Checkbox linkTo) {
-        Label label = new Label(icon, "");
-        label.setToolTipText(linkTo.getToolTipText());
-        return label;
-    }
-
     private EditorField createField(String text, String prototype, String tooltip) {
-        DefaultFormatter formatter = new DefaultFormatter();
-        formatter.setOverwriteMode(false);
-        return new EditorField(new DefaultFormatterFactory(formatter), this, SwingConstants.LEFT, text, prototype, tooltip);
+        return new EditorField(FieldFactory.STRING, this, SwingConstants.LEFT, text, prototype, tooltip);
     }
 
     private EditorField createField(int min, int max, int value, String tooltip) {

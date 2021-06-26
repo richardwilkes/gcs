@@ -19,12 +19,9 @@ import com.trollworks.gcs.equipment.FontAwesomeCell;
 import com.trollworks.gcs.settings.SheetSettings;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.Fonts;
-import com.trollworks.gcs.ui.RetinaIcon;
-import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.outline.Cell;
 import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.HeaderCell;
-import com.trollworks.gcs.ui.widget.outline.IconsCell;
 import com.trollworks.gcs.ui.widget.outline.ListHeaderCell;
 import com.trollworks.gcs.ui.widget.outline.ListTextCell;
 import com.trollworks.gcs.ui.widget.outline.MultiCell;
@@ -33,8 +30,6 @@ import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
 
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.SwingConstants;
 
 /** Definitions for advantage columns. */
@@ -172,7 +167,7 @@ public enum AdvantageColumn {
 
         @Override
         public Cell getCell() {
-            return new IconsCell(SwingConstants.CENTER, SwingConstants.TOP);
+            return new ListTextCell(SwingConstants.LEFT, true);
         }
 
         @Override
@@ -182,30 +177,7 @@ public enum AdvantageColumn {
 
         @Override
         public Object getData(Advantage advantage) {
-            if (!advantage.canHaveChildren()) {
-                int type = advantage.getType();
-                if (type == 0) {
-                    return null;
-                }
-                List<RetinaIcon> imgs = new ArrayList<>();
-                if ((type & Advantage.TYPE_MASK_MENTAL) != 0) {
-                    imgs.add(Images.MENTAL_TYPE);
-                }
-                if ((type & Advantage.TYPE_MASK_PHYSICAL) != 0) {
-                    imgs.add(Images.PHYSICAL_TYPE);
-                }
-                if ((type & Advantage.TYPE_MASK_SOCIAL) != 0) {
-                    imgs.add(Images.SOCIAL_TYPE);
-                }
-                if ((type & Advantage.TYPE_MASK_EXOTIC) != 0) {
-                    imgs.add(Images.EXOTIC_TYPE);
-                }
-                if ((type & Advantage.TYPE_MASK_SUPERNATURAL) != 0) {
-                    imgs.add(Images.SUPERNATURAL_TYPE);
-                }
-                return imgs;
-            }
-            return null;
+            return getDataAsText(advantage);
         }
 
         @Override
