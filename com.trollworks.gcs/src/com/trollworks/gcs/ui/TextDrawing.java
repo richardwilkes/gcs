@@ -399,10 +399,10 @@ public final class TextDrawing {
     }
 
     private static boolean processOneTokenForWrapToPixelWidth(String token, Font font, StringBuilder buffer, StringBuilder lineBuffer, int width, int[] lineWidth, boolean hasBeenWrapped) {
-        int tokenWidth = getSimpleWidth(font, token);
-        if (lineWidth[0] + tokenWidth <= width) {
+        int tokenWidth = getSimpleWidth(font, lineBuffer.toString() + token);
+        if (tokenWidth <= width) {
             lineBuffer.append(token);
-            lineWidth[0] += tokenWidth;
+            lineWidth[0] = tokenWidth;
         } else if (lineWidth[0] == 0) {
             // Special-case a line that has not had anything put on it yet
             int count = token.length();
