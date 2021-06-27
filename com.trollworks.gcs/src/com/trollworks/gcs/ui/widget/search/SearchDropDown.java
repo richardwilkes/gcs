@@ -56,6 +56,7 @@ class SearchDropDown extends ScrollPanel implements MouseListener {
         mList.setCellRenderer(renderer);
         setViewportView(mList);
         setBorder(new LineBorder(Colors.DIVIDER));
+        setVisible(false);
     }
 
     /** @return The currently selected values. */
@@ -93,6 +94,7 @@ class SearchDropDown extends ScrollPanel implements MouseListener {
         UIUtilities.revalidateImmediately(mFilterField);
         Insets insets = getInsets();
         setBounds(where.x, where.y, mFilterField.getWidth(), insets.top + height + insets.bottom);
+        setVisible(count > 0);
         revalidate();
     }
 
