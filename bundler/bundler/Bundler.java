@@ -613,6 +613,8 @@ public final class Bundler {
         }
         switch (OS) {
         case MACOS -> {
+            args.add("--java-options");
+            args.add("-Dapple.awt.application.appearance=system");
             args.add("--mac-package-name");
             args.add("GCS");
             args.add("--mac-package-identifier");
