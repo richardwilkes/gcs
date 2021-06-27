@@ -15,16 +15,19 @@ import com.trollworks.gcs.ui.Colors;
 
 import java.awt.Component;
 import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
 
 public class ScrollPanel extends JScrollPane {
     public ScrollPanel(Component view) {
         super(view);
         setBorder(null);
         getViewport().setBackground(Colors.BACKGROUND);
+        setCorner(ScrollPaneConstants.LOWER_RIGHT_CORNER, new Panel());
     }
 
     public ScrollPanel(Component header, Component view) {
         this(view);
         setColumnHeaderView(header);
+        setCorner(ScrollPaneConstants.UPPER_RIGHT_CORNER, new Panel());
     }
 }
