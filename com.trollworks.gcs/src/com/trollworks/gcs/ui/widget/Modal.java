@@ -26,7 +26,6 @@ import com.trollworks.gcs.utility.PathUtils;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.EventQueue;
 import java.awt.FileDialog;
 import java.awt.Frame;
 import java.awt.KeyboardFocusManager;
@@ -59,7 +58,6 @@ public class Modal extends JDialog {
     private             Button    mOKButton;
     private             Button    mCancelButton;
     private             int       mResult;
-    private             int       mInitialFocusAttemptsRemaining;
 
     public Modal(Component owner, String title) {
         super(WindowUtils.getWindowForComponent(owner), title, ModalityType.APPLICATION_MODAL);
@@ -126,8 +124,7 @@ public class Modal extends JDialog {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowOpened(WindowEvent event) {
-                mInitialFocusAttemptsRemaining = 5;
-                tryInitialFocus();
+                FocusHelper.focusOn(Modal.this);
             }
         });
         addKeyListener(new KeyAdapter() {
@@ -157,15 +154,6 @@ public class Modal extends JDialog {
         dispose();
         if (focusOwner != null) {
             focusOwner.requestFocus();
-        }
-    }
-
-    void tryInitialFocus() {
-        if (--mInitialFocusAttemptsRemaining > 0 && !isFocusOwner()) {
-            requestFocus();
-            EventQueue.invokeLater(this::tryInitialFocus);
-        } else {
-            getContentPane().transferFocus();
         }
     }
 

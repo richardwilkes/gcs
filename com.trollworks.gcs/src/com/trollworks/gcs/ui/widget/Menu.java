@@ -57,18 +57,19 @@ import javax.swing.JComponent;
 import javax.swing.Popup;
 import javax.swing.PopupFactory;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 
 public class Menu extends Panel implements Runnable, MouseListener, MouseMotionListener, MouseWheelListener, KeyListener, FocusListener, AncestorListener, ComponentListener, AppForegroundListener, LayoutManager2 {
-    private Popup     mPopup;
-    private Component mRestoreFocusTo;
-    private Runnable  mCallbackWhenDone;
-    private MenuItem  mSelection;
-    private int       mTop;
-    private Rectangle mTopScrollArea;
-    private Rectangle mBottomScrollArea;
-    private int       mInitialFocusAttemptsRemaining;
+    private Popup        mPopup;
+    private Component    mRestoreFocusTo;
+    private Runnable     mCallbackWhenDone;
+    private MenuItem     mSelection;
+    private int          mTop;
+    private Rectangle    mTopScrollArea;
+    private Rectangle    mBottomScrollArea;
+    private OwnerAdapter mOwnerAdapter;
 
     public Menu() {
         setLayout(this);
@@ -139,18 +140,25 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
         }
         if (mPopup != null) {
             MouseCapture.stop(this);
+            mOwnerAdapter.dispose();
+            mOwnerAdapter = null;
             mPopup.hide();
             mPopup = null;
             if (mRestoreFocusTo != null) {
-                mRestoreFocusTo.requestFocus();
-                mRestoreFocusTo = null;
+                FocusHelper.focusOn(mRestoreFocusTo, this::finish);
+            } else {
+                finish();
             }
-            if (mSelection != null && mSelection.isEnabled()) {
-                mSelection.click();
-            }
-            if (mCallbackWhenDone != null) {
-                mCallbackWhenDone.run();
-            }
+        }
+    }
+
+    private void finish() {
+        mRestoreFocusTo = null;
+        if (mSelection != null && mSelection.isEnabled()) {
+            mSelection.click();
+        }
+        if (mCallbackWhenDone != null) {
+            mCallbackWhenDone.run();
         }
     }
 
@@ -630,18 +638,91 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
             setPreferredSize(prefSize);
             setSize(prefSize);
         }
+        if (pt.x + prefSize.width > maxBounds.x + maxBounds.width) {
+            pt.x = maxBounds.x + maxBounds.width - prefSize.width;
+        }
+        mOwnerAdapter = new OwnerAdapter(owner);
         PopupFactory factory = PopupFactory.getSharedInstance();
         mPopup = factory.getPopup(owner, this, pt.x, pt.y);
         mPopup.show();
         MouseCapture.start(owner, this, this, null);
-        mInitialFocusAttemptsRemaining = 5;
-        tryInitialFocus();
+        FocusHelper.focusOn(this);
     }
 
-    private void tryInitialFocus() {
-        if (--mInitialFocusAttemptsRemaining > 0 && !isFocusOwner()) {
-            requestFocus();
-            EventQueue.invokeLater(this::tryInitialFocus);
+    private final class OwnerAdapter implements MouseListener, MouseMotionListener, MouseWheelListener {
+        private Component mOwner;
+        private boolean mFirst;
+
+        private OwnerAdapter(Component owner) {
+            mOwner = owner;
+            mOwner.addMouseListener(this);
+            mOwner.addMouseMotionListener(this);
+            mOwner.addMouseWheelListener(this);
+            mFirst = true;
+        }
+
+        public void dispose() {
+            mOwner.removeMouseListener(this);
+            mOwner.removeMouseMotionListener(this);
+            mOwner.removeMouseWheelListener(this);
+            mOwner = null;
+        }
+
+        @Override
+        public void mouseClicked(MouseEvent event) {
+            // Unused
+        }
+
+        @Override
+        public void mousePressed(MouseEvent event) {
+            // Unused
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent event) {
+            if (mFirst) {
+                mFirst = false;
+            } else {
+                forward(event);
+            }
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent event) {
+            // Unused
+        }
+
+        @Override
+        public void mouseExited(MouseEvent event) {
+            // Unused
+        }
+
+        @Override
+        public void mouseDragged(MouseEvent event) {
+            mFirst = false;
+            forward(event);
+        }
+
+        @Override
+        public void mouseMoved(MouseEvent event) {
+            // Unused
+        }
+
+        @Override
+        public void mouseWheelMoved(MouseWheelEvent event) {
+            Point dstPt = SwingUtilities.convertPoint(mOwner, event.getPoint(), Menu.this);
+            dispatchEvent(new MouseWheelEvent(Menu.this, event.getID(), event.getWhen(),
+                    event.getModifiersEx(), dstPt.x, dstPt.y, event.getXOnScreen(),
+                    event.getYOnScreen(), event.getClickCount(), event.isPopupTrigger(),
+                    event.getScrollType(), event.getScrollAmount(), event.getWheelRotation(),
+                    event.getPreciseWheelRotation()));
+        }
+
+        private void forward(MouseEvent event) {
+            Point dstPt = SwingUtilities.convertPoint(mOwner, event.getPoint(), Menu.this);
+            dispatchEvent(new MouseEvent(Menu.this, event.getID(), event.getWhen(),
+                    event.getModifiersEx(), dstPt.x, dstPt.y, event.getClickCount(),
+                    event.isPopupTrigger()));
         }
     }
 }
