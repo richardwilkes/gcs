@@ -323,12 +323,14 @@ public class Modal extends JDialog {
      * @param title             The title to use. May be {@code null}.
      * @param dirs              The directory to show initially. May be {@code null}.
      * @param suggestedFileName The suggested file name to save as. May be {@code null}.
-     * @param filters           The file filters to make available. If there are none, then the
-     *                          {@code showAllFilter} flag will be forced to {@code true}.
+     * @param filter            The file filter to use.
      * @return The chosen {@link Path} or {@code null}.
      */
-    public static Path presentSaveFileDialog(Component comp, String title, Dirs dirs, String suggestedFileName, FileNameExtensionFilter... filters) {
-        FileDialog dialog = createFileDialog(comp, title, FileDialog.SAVE, dirs, filters);
+    public static Path presentSaveFileDialog(Component comp, String title, Dirs dirs, String suggestedFileName, FileNameExtensionFilter filter) {
+        if (filter == null) {
+            throw new IllegalArgumentException("must supply a file filter");
+        }
+        FileDialog dialog = createFileDialog(comp, title, FileDialog.SAVE, dirs, filter);
         if (suggestedFileName != null && !suggestedFileName.isBlank()) {
             dialog.setFile(PathUtils.getLeafName(suggestedFileName, true));
         }
@@ -338,22 +340,22 @@ public class Modal extends JDialog {
                 showError(comp, I18n.text("Invalid file name"));
                 return null;
             }
-            if (filters != null) {
-                FileNameExtensionFilter filter = filters[0];
-                if (!filter.accept(path.toFile())) {
-                    path = path.resolveSibling(PathUtils.enforceExtension(PathUtils.getLeafName(path, true), filter.getExtensions()[0]));
-                }
-            }
-            if (Files.exists(path)) {
-                Modal question = prepareToShowMessage(comp,
-                        I18n.text("Already Exists!"),
-                        MessageType.QUESTION,
-                        String.format(I18n.text("%s already exists!\nDo you want to overwrite it?"), path));
-                question.addCancelButton();
-                question.addButton(I18n.text("Replace"), OK);
-                question.presentToUser();
-                if (question.getResult() == CANCEL) {
-                    return null;
+            if (!filter.accept(path.toFile())) {
+                path = path.resolveSibling(PathUtils.enforceExtension(PathUtils.getLeafName(path, true), filter.getExtensions()[0]));
+                // Only check for existance if we had to modify the path. Otherwise, we'd get a
+                // double prompt since the platform's save dialog should have already prompted if
+                // there was a match.
+                if (Files.exists(path)) {
+                    Modal question = prepareToShowMessage(comp,
+                            I18n.text("Already Exists!"),
+                            MessageType.QUESTION,
+                            String.format(I18n.text("%s already exists!\nDo you want to replace it?"), path));
+                    question.addCancelButton();
+                    question.addButton(I18n.text("Replace"), OK);
+                    question.presentToUser();
+                    if (question.getResult() == CANCEL) {
+                        return null;
+                    }
                 }
             }
             Settings.getInstance().addRecentFile(path);
