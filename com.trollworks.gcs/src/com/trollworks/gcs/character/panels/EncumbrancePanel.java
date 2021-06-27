@@ -20,6 +20,7 @@ import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageHeader;
 import com.trollworks.gcs.page.PageLabel;
 import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
@@ -89,7 +90,7 @@ public class EncumbrancePanel extends DropPanel {
                 backColor = band ? Colors.BANDING : Colors.CONTENT;
             }
             band = !band;
-            PageLabel label = new PageLabel(encumbrance == current ? "\uf24e" : " ", textColor);
+            PageLabel label = new PageLabel(encumbrance == current ? FontAwesome.BALANCE_SCALE : " ", textColor);
             label.setThemeFont(Fonts.ENCUMBRANCE_MARKER);
             add(label, new PrecisionLayoutData().setFillHorizontalAlignment());
             PageLabel level = new PageLabel(MessageFormat.format("{0} {1}",

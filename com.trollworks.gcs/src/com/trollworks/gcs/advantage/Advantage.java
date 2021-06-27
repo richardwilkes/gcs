@@ -19,13 +19,12 @@ import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.Affects;
 import com.trollworks.gcs.modifier.Modifier;
 import com.trollworks.gcs.skill.SkillDefault;
-import com.trollworks.gcs.ui.RetinaIcon;
-import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.ui.widget.outline.Switchable;
+import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.Filtered;
 import com.trollworks.gcs.utility.FilteredIterator;
 import com.trollworks.gcs.utility.Fixed6;
@@ -47,6 +46,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.Icon;
 
 /** A GURPS Advantage. */
 public class Advantage extends ListRow implements HasSourceReference, Switchable {
@@ -857,8 +857,8 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     }
 
     @Override
-    public RetinaIcon getIcon(boolean marker) {
-        return marker ? Images.ADQ_MARKER : Images.ADQ_FILE;
+    public Icon getIcon() {
+        return FileType.ADVANTAGE.getIcon();
     }
 
     @Override

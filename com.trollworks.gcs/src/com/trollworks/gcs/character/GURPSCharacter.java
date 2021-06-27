@@ -41,8 +41,6 @@ import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.spell.RitualMagicSpell;
 import com.trollworks.gcs.spell.Spell;
-import com.trollworks.gcs.ui.RetinaIcon;
-import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.utility.Dice;
@@ -170,11 +168,6 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
     @Override
     public FileType getFileType() {
         return FileType.SHEET;
-    }
-
-    @Override
-    public RetinaIcon getFileIcons() {
-        return Images.GCS_FILE;
     }
 
     @Override

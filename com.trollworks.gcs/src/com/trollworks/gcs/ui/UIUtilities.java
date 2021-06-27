@@ -16,7 +16,7 @@ import com.trollworks.gcs.ui.widget.Button;
 import com.trollworks.gcs.ui.widget.Checkbox;
 import com.trollworks.gcs.ui.widget.ColorWell;
 import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.FontIconButton;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.ThemeScrollBarUI;
@@ -79,7 +79,7 @@ public final class UIUtilities {
                 comp instanceof Checkbox ||
                 comp instanceof ColorWell ||
                 comp instanceof EditorField ||
-                comp instanceof FontAwesomeButton ||
+                comp instanceof FontIconButton ||
                 comp instanceof MultiLineTextField ||
                 comp instanceof PopupMenu) {
             comp.setEnabled(false);

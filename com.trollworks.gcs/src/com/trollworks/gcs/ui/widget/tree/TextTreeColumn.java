@@ -12,7 +12,6 @@
 package com.trollworks.gcs.ui.widget.tree;
 
 import com.trollworks.gcs.ui.Fonts;
-import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.utility.text.NumericComparator;
 
@@ -20,6 +19,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import javax.swing.Icon;
 import javax.swing.SwingConstants;
 
 /** Displays text in a {@link TreeColumn}. */
@@ -113,9 +113,9 @@ public class TextTreeColumn extends TreeColumn {
 
     @Override
     public int calculatePreferredHeight(TreeRow row, int width) {
-        Font       font = getFont(row);
-        RetinaIcon icon = getIcon(row);
-        int        height;
+        Font font = getFont(row);
+        Icon icon = getIcon(row);
+        int  height;
         if (mWrappingMode == WrappingMode.SINGLE_LINE) {
             height = TextDrawing.getFontHeight(font);
             if (icon != null) {
@@ -134,7 +134,7 @@ public class TextTreeColumn extends TreeColumn {
         return VMARGIN + height + VMARGIN;
     }
 
-    private static int calculatePreferredHeight(Font font, String text, RetinaIcon icon) {
+    private static int calculatePreferredHeight(Font font, String text, Icon icon) {
         int height = TextDrawing.getPreferredHeight(font, text);
         if (height == 0) {
             height = TextDrawing.getFontHeight(font);
@@ -150,8 +150,8 @@ public class TextTreeColumn extends TreeColumn {
 
     @Override
     public int calculatePreferredWidth(TreeRow row) {
-        int        width = TextDrawing.getPreferredSize(getFont(row), getText(row)).width;
-        RetinaIcon icon  = getIcon(row);
+        int  width = TextDrawing.getPreferredSize(getFont(row), getText(row)).width;
+        Icon icon  = getIcon(row);
         if (icon != null) {
             width += icon.getIconWidth() + ICON_GAP;
         }
@@ -160,9 +160,10 @@ public class TextTreeColumn extends TreeColumn {
 
     @Override
     public void draw(Graphics2D gc, TreePanel panel, TreeRow row, int position, int top, int left, int width, boolean selected, boolean active) {
+        gc.setColor(getColor(panel, row, position, selected, active));
         left += HMARGIN;
         width -= HMARGIN + HMARGIN;
-        RetinaIcon icon = getIcon(row);
+        Icon icon = getIcon(row);
         if (icon != null) {
             icon.paintIcon(panel, gc, left, top + VMARGIN);
             int iconSize = icon.getIconWidth() + ICON_GAP;
@@ -173,7 +174,6 @@ public class TextTreeColumn extends TreeColumn {
         gc.setFont(font);
         String text        = getPresentationText(row, font, width, false);
         int    totalHeight = calculatePreferredHeight(font, text, icon);
-        gc.setColor(getColor(panel, row, position, selected, active));
         TextDrawing.draw(gc, new Rectangle(left, top + VMARGIN, width, totalHeight), text, mAlignment, SwingConstants.TOP);
     }
 
@@ -212,7 +212,7 @@ public class TextTreeColumn extends TreeColumn {
      * @param row The {@link TreeRow} to extract information from.
      * @return The text to display.
      */
-    protected RetinaIcon getIcon(TreeRow row) {
+    protected Icon getIcon(TreeRow row) {
         return mIconAccessor != null ? mIconAccessor.getIcon(row) : null;
     }
 

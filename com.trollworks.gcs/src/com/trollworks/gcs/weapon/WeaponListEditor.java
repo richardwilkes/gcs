@@ -12,6 +12,7 @@
 package com.trollworks.gcs.weapon;
 
 import com.trollworks.gcs.skill.Defaults;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.Selection;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
@@ -19,7 +20,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.FontIconButton;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.Panel;
@@ -50,9 +51,9 @@ import javax.swing.text.Document;
 public abstract class WeaponListEditor extends Panel implements ActionListener, EditorField.ChangeListener, DocumentListener {
     private ListRow                      mOwner;
     private WeaponOutline                mOutline;
-    private FontAwesomeButton            mAddButton;
-    private FontAwesomeButton            mDeleteButton;
-    private FontAwesomeButton            mDuplicateButton;
+    private FontIconButton               mAddButton;
+    private FontIconButton               mDeleteButton;
+    private FontIconButton               mDuplicateButton;
     private Panel                        mEditorPanel;
     private EditorField                  mUsage;
     private MultiLineTextField           mUsageNotes;
@@ -81,10 +82,13 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
         super(new PrecisionLayout().setMargins(0));
         mOwner = owner;
         mWeaponClass = weaponClass;
-        mAddButton = new FontAwesomeButton("\uf055", I18n.text("Add an attack"), this::addWeapon);
-        mDeleteButton = new FontAwesomeButton("\uf1f8", I18n.text("Remove the selected attacks"), () -> mOutline.deleteSelection());
+        mAddButton = new FontIconButton(FontAwesome.PLUS_CIRCLE, I18n.text("Add an attack"),
+                (b) -> addWeapon());
+        mDeleteButton = new FontIconButton(FontAwesome.TRASH,
+                I18n.text("Remove the selected attacks"), (b) -> mOutline.deleteSelection());
         mDeleteButton.setEnabled(false);
-        mDuplicateButton = new FontAwesomeButton("\uf24d", I18n.text("Duplicate the selected attacks"), () -> mOutline.duplicateSelection());
+        mDuplicateButton = new FontIconButton(FontAwesome.CLONE,
+                I18n.text("Duplicate the selected attacks"), (b) -> mOutline.duplicateSelection());
         mDuplicateButton.setEnabled(false);
         Panel right = new Panel(new PrecisionLayout().setMargins(5));
         right.add(mAddButton);

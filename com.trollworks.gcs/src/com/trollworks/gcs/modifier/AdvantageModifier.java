@@ -14,10 +14,9 @@ package com.trollworks.gcs.modifier;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
-import com.trollworks.gcs.ui.RetinaIcon;
-import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
+import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonMap;
@@ -26,6 +25,7 @@ import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.text.Numbers;
 
 import java.io.IOException;
+import javax.swing.Icon;
 
 /** Model for trait modifiers */
 public class AdvantageModifier extends Modifier {
@@ -102,8 +102,8 @@ public class AdvantageModifier extends Modifier {
     }
 
     @Override
-    public RetinaIcon getIcon(boolean marker) {
-        return marker ? Images.ADM_MARKER : Images.ADM_FILE;
+    public Icon getIcon() {
+        return FileType.ADVANTAGE_MODIFIER.getIcon();
     }
 
     /** @return The total cost modifier. */

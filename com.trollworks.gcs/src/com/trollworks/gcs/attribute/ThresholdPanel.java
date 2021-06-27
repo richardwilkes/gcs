@@ -12,6 +12,7 @@
 package com.trollworks.gcs.attribute;
 
 import com.trollworks.gcs.character.FieldFactory;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
@@ -19,7 +20,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.Checkbox;
 import com.trollworks.gcs.ui.widget.ContentPanel;
 import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.FontIconButton;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.utility.I18n;
@@ -35,8 +36,8 @@ public class ThresholdPanel extends ContentPanel implements DocumentListener {
     private List<PoolThreshold> mThresholds;
     private PoolThreshold       mThreshold;
     private Runnable            mAdjustCallback;
-    private FontAwesomeButton   mMoveUpButton;
-    private FontAwesomeButton   mMoveDownButton;
+    private FontIconButton      mMoveUpButton;
+    private FontIconButton      mMoveDownButton;
     private EditorField         mStateField;
     private EditorField         mDivisorField;
     private MultiLineTextField  mExplanationField;
@@ -50,7 +51,7 @@ public class ThresholdPanel extends ContentPanel implements DocumentListener {
 
         ContentPanel left = new ContentPanel(new PrecisionLayout(), false);
         add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-        mMoveUpButton = new FontAwesomeButton("\uf35b", I18n.text("Move Up"), () -> {
+        mMoveUpButton = new FontIconButton(FontAwesome.ARROW_ALT_CIRCLE_UP, I18n.text("Move Up"), (b) -> {
             ThresholdListPanel parent = (ThresholdListPanel) getParent();
             int                index  = UIUtilities.getIndexOf(parent, this);
             if (index > 0) {
@@ -62,7 +63,7 @@ public class ThresholdPanel extends ContentPanel implements DocumentListener {
             }
         });
         left.add(mMoveUpButton);
-        mMoveDownButton = new FontAwesomeButton("\uf358", I18n.text("Move Down"), () -> {
+        mMoveDownButton = new FontIconButton(FontAwesome.ARROW_ALT_CIRCLE_DOWN, I18n.text("Move Down"), (b) -> {
             ThresholdListPanel parent = (ThresholdListPanel) getParent();
             int                index  = UIUtilities.getIndexOf(parent, this);
             if (index != -1 && index < parent.getComponentCount() - 1) {
@@ -145,7 +146,7 @@ public class ThresholdPanel extends ContentPanel implements DocumentListener {
 
         ContentPanel right = new ContentPanel(new PrecisionLayout(), false);
         add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-        FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", I18n.text("Remove"), () -> {
+        FontIconButton remove = new FontIconButton(FontAwesome.TRASH, I18n.text("Remove"), (b) -> {
             ThresholdListPanel parent = (ThresholdListPanel) getParent();
             int                index  = UIUtilities.getIndexOf(parent, this);
             if (index != -1) {

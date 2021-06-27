@@ -16,7 +16,6 @@ import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.menu.file.SaveCommand;
 import com.trollworks.gcs.menu.file.SaveResult;
 import com.trollworks.gcs.menu.file.Saveable;
-import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.DataModifiedListener;
 import com.trollworks.gcs.ui.widget.Modal;
@@ -30,6 +29,7 @@ import com.trollworks.gcs.utility.undo.StdUndoManager;
 import java.awt.BorderLayout;
 import java.awt.Window;
 import java.nio.file.Path;
+import javax.swing.Icon;
 
 /** Provides a common base for library and sheet files. */
 public abstract class DataFileDockable extends Dockable implements CloseHandler, Saveable, Undoable {
@@ -140,8 +140,8 @@ public abstract class DataFileDockable extends Dockable implements CloseHandler,
     protected abstract String getUntitledBaseName();
 
     @Override
-    public RetinaIcon getTitleIcon() {
-        return getDataFile().getFileIcons();
+    public Icon getTitleIcon() {
+        return getDataFile().getFileIcon();
     }
 
     @Override

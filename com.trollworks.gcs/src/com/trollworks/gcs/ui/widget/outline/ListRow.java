@@ -31,7 +31,6 @@ import com.trollworks.gcs.settings.SheetSettings;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.Technique;
 import com.trollworks.gcs.template.Template;
-import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.utility.Filtered;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.SaveType;
@@ -49,6 +48,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
+import javax.swing.Icon;
 
 /** A common row super-class for the model. */
 public abstract class ListRow extends Row {
@@ -682,11 +682,8 @@ public abstract class ListRow extends Row {
         return false;
     }
 
-    /**
-     * @param marker Whether to return the marker or file image.
-     * @return An image representative of this row.
-     */
-    public abstract RetinaIcon getIcon(boolean marker);
+    /** @return An image representative of this row. */
+    public abstract Icon getIcon();
 
     /** @param set The nameable keys. */
     public void fillWithNameableKeys(Set<String> set) {

@@ -13,6 +13,7 @@ package com.trollworks.gcs.settings;
 
 import com.trollworks.gcs.pageref.PageRef;
 import com.trollworks.gcs.pageref.PageRefSettings;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
@@ -21,7 +22,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BandedPanel;
 import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.FontIconButton;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.MessageType;
 import com.trollworks.gcs.ui.widget.Modal;
@@ -106,8 +107,8 @@ public final class PageRefSettingsWindow extends SettingsWindow<PageRefSettings>
             Label fileLabel = new Label(path.getFileName().toString());
             fileLabel.setToolTipText(path.toString());
             mPanel.add(fileLabel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
-            FontAwesomeButton removeButton = new FontAwesomeButton("\uf1f8", I18n.text("Remove"), null);
-            removeButton.setClickFunction(() -> {
+            FontIconButton removeButton = new FontIconButton(FontAwesome.TRASH, I18n.text("Remove"), null);
+            removeButton.setClickFunction((b) -> {
                 Modal dialog = Modal.prepareToShowMessage(this,
                         I18n.text("Confirm Change"),
                         MessageType.QUESTION,
@@ -122,7 +123,7 @@ public final class PageRefSettingsWindow extends SettingsWindow<PageRefSettings>
                     Component[] children = mPanel.getComponents();
                     int         length   = children.length;
                     for (int i = 0; i < length; i++) {
-                        if (children[i] == removeButton) {
+                        if (children[i] == b) {
                             int max = ((PrecisionLayout) mPanel.getLayout()).getColumns();
                             for (int j = 0; j < max; j++) {
                                 mPanel.remove(i - j);

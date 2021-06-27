@@ -17,8 +17,9 @@ import com.trollworks.gcs.attribute.AttributeListPanel;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataChangeListener;
 import com.trollworks.gcs.datafile.DataFile;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.FontIconButton;
 import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.Toolbar;
 import com.trollworks.gcs.utility.Dirs;
@@ -108,8 +109,8 @@ public final class AttributeSettingsWindow extends SettingsWindow<Map<String, At
 
     @Override
     protected void addToToolBar(Toolbar toolbar) {
-        toolbar.add(new FontAwesomeButton("\uf055", I18n.text("Add Attribute"),
-                () -> mListPanel.addAttribute()));
+        toolbar.add(new FontIconButton(FontAwesome.PLUS_CIRCLE, I18n.text("Add Attribute"),
+                (b) -> mListPanel.addAttribute()));
         super.addToToolBar(toolbar);
     }
 

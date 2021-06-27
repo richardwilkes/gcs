@@ -13,11 +13,12 @@ package com.trollworks.gcs.prereq;
 
 import com.trollworks.gcs.criteria.IntegerCriteria;
 import com.trollworks.gcs.criteria.NumericCompareType;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.FlexGrid;
 import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.ui.layout.FlexSpacer;
-import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.FontIconButton;
 import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
@@ -111,10 +112,10 @@ public class ListPrereqEditor extends PrereqEditor {
 
         grid.add(new FlexSpacer(0, 0, true, false), 0, 1);
 
-        FontAwesomeButton button = new FontAwesomeButton("\uf141", I18n.text("Add a prerequisite list to this list"), this::addPrereqList);
+        FontIconButton button = new FontIconButton(FontAwesome.ELLIPSIS_H, I18n.text("Add a prerequisite list to this list"), (b) -> addPrereqList());
         add(button);
         right.add(button);
-        button = new FontAwesomeButton("\uf055", I18n.text("Add a prerequisite to this list"), this::addPrereq);
+        button = new FontIconButton(FontAwesome.PLUS_CIRCLE, I18n.text("Add a prerequisite to this list"), (b) -> addPrereq());
         add(button);
         right.add(button);
     }

@@ -14,19 +14,20 @@ package com.trollworks.gcs.ui.widget.dock;
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.menu.file.Saveable;
 import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.GraphicsUtilities;
-import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.DataModifiedListener;
-import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.FontIconButton;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.NumericComparator;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.LayoutManager;
@@ -40,12 +41,13 @@ import java.awt.event.ContainerListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Path2D;
+import javax.swing.Icon;
 
 /** Provides a tab that contains the {@link Dockable}'s icon, title, and close button, if any. */
 public class DockTab extends Panel implements ContainerListener, MouseListener, DragGestureListener, DataModifiedListener, Comparable<DockTab> {
-    private Dockable          mDockable;
-    private Label             mTitle;
-    private FontAwesomeButton mCloseButton;
+    private Dockable       mDockable;
+    private Label          mTitle;
+    private FontIconButton mCloseButton;
 
     /**
      * Creates a new DockTab for the specified {@link Dockable}.
@@ -58,7 +60,7 @@ public class DockTab extends Panel implements ContainerListener, MouseListener, 
         setBorder(new EmptyBorder(2, 1, 0, 1));
         addContainerListener(this);
         mTitle = new Label(dockable.getTitleIcon(), getFullTitle());
-        mCloseButton = new FontAwesomeButton("\uf057", I18n.text("Close"), this::attemptClose);
+        mCloseButton = new FontIconButton(FontAwesome.TIMES_CIRCLE, I18n.text("Close"), (b) -> attemptClose());
         add(mTitle, new PrecisionLayoutData().setGrabHorizontalSpace(true).setHeightHint(Math.max(mTitle.getPreferredSize().height, mCloseButton.getPreferredSize().height)));
         if (dockable instanceof CloseHandler) {
             add(mCloseButton, new PrecisionLayoutData().setEndHorizontalAlignment());
@@ -85,7 +87,7 @@ public class DockTab extends Panel implements ContainerListener, MouseListener, 
     }
 
     /** @return The icon used by the tab. */
-    public RetinaIcon getIcon() {
+    public Icon getIcon() {
         return mDockable.getTitleIcon();
     }
 
@@ -123,16 +125,19 @@ public class DockTab extends Panel implements ContainerListener, MouseListener, 
         Graphics2D gc = GraphicsUtilities.prepare(g);
         GraphicsUtilities.setMaximumQualityForGraphics(gc);
         DockContainer dc = getDockContainer();
+        Color         bg;
+        Color         fg;
         if (dc != null && dc.getCurrentDockable() == mDockable) {
             boolean active = dc.isActive();
-            gc.setColor(active ? Colors.ACTIVE_TAB : Colors.CURRENT_TAB);
-            mTitle.setForeground(active ? Colors.ON_ACTIVE_TAB : Colors.ON_CURRENT_TAB);
-            mCloseButton.setForeground(active ? Colors.ON_ACTIVE_TAB : Colors.ON_CURRENT_TAB);
+            bg = active ? Colors.ACTIVE_TAB : Colors.CURRENT_TAB;
+            fg = active ? Colors.ON_ACTIVE_TAB : Colors.ON_CURRENT_TAB;
         } else {
-            gc.setColor(Colors.CONTENT);
-            mTitle.setForeground(Colors.ON_CONTENT);
-            mCloseButton.setForeground(Colors.ON_CONTENT);
+            bg = Colors.CONTENT;
+            fg = Colors.ON_CONTENT;
         }
+        mTitle.setForeground(fg);
+        mCloseButton.setForeground(fg);
+        gc.setColor(bg);
         gc.fill(path);
         gc.setColor(Colors.DIVIDER);
         gc.draw(path);

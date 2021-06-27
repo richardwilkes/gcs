@@ -17,6 +17,7 @@ import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.settings.SheetSettings;
 import com.trollworks.gcs.template.Template;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.widget.outline.Cell;
 import com.trollworks.gcs.ui.widget.outline.Column;
@@ -39,7 +40,7 @@ public enum EquipmentColumn {
     EQUIPPED {
         @Override
         public String toString() {
-            return "\uf058";
+            return FontAwesome.CHECK_CIRCLE;
         }
 
         @Override
@@ -54,7 +55,7 @@ public enum EquipmentColumn {
 
         @Override
         public HeaderCell getHeaderCell(boolean sheetOrTemplate) {
-            return new FontAwesomeCell(Fonts.FONT_AWESOME_SOLID, sheetOrTemplate);
+            return new FontIconCell(Fonts.FONT_AWESOME_SOLID, sheetOrTemplate);
         }
 
         @Override
@@ -69,14 +70,14 @@ public enum EquipmentColumn {
 
         @Override
         public String getDataAsText(Equipment equipment) {
-            return equipment.isEquipped() ? "\uf058" : "";
+            return equipment.isEquipped() ? FontAwesome.CHECK_CIRCLE : "";
         }
     },
     /** The quantity. */
     QUANTITY {
         @Override
         public String toString() {
-            return "\uf3ef";
+            return FontAwesome.SLACK_HASH;
         }
 
         @Override
@@ -91,7 +92,7 @@ public enum EquipmentColumn {
 
         @Override
         public HeaderCell getHeaderCell(boolean sheetOrTemplate) {
-            return new FontAwesomeCell(Fonts.FONT_AWESOME_BRANDS, sheetOrTemplate);
+            return new FontIconCell(Fonts.FONT_AWESOME_BRANDS, sheetOrTemplate);
         }
 
         @Override
@@ -292,7 +293,7 @@ public enum EquipmentColumn {
     VALUE {
         @Override
         public String toString() {
-            return "\uf155";
+            return FontAwesome.DOLLAR_SIGN;
         }
 
         @Override
@@ -307,7 +308,7 @@ public enum EquipmentColumn {
 
         @Override
         public HeaderCell getHeaderCell(boolean sheetOrTemplate) {
-            return new FontAwesomeCell(Fonts.FONT_AWESOME_SOLID, sheetOrTemplate);
+            return new FontIconCell(Fonts.FONT_AWESOME_SOLID, sheetOrTemplate);
         }
 
         @Override
@@ -324,7 +325,7 @@ public enum EquipmentColumn {
     WEIGHT {
         @Override
         public String toString() {
-            return "\uf5cd";
+            return FontAwesome.WEIGHT_HANGING;
         }
 
         @Override
@@ -339,7 +340,7 @@ public enum EquipmentColumn {
 
         @Override
         public HeaderCell getHeaderCell(boolean sheetOrTemplate) {
-            return new FontAwesomeCell(Fonts.FONT_AWESOME_SOLID, sheetOrTemplate);
+            return new FontIconCell(Fonts.FONT_AWESOME_SOLID, sheetOrTemplate);
         }
 
         @Override
@@ -356,7 +357,7 @@ public enum EquipmentColumn {
     EXT_VALUE {
         @Override
         public String toString() {
-            return "\uf5fd \uf155";
+            return FontAwesome.LAYER_GROUP + " " + FontAwesome.DOLLAR_SIGN;
         }
 
         @Override
@@ -371,7 +372,7 @@ public enum EquipmentColumn {
 
         @Override
         public HeaderCell getHeaderCell(boolean sheetOrTemplate) {
-            return new FontAwesomeCell(Fonts.FONT_AWESOME_SOLID, sheetOrTemplate);
+            return new FontIconCell(Fonts.FONT_AWESOME_SOLID, sheetOrTemplate);
         }
 
         @Override
@@ -393,7 +394,7 @@ public enum EquipmentColumn {
     EXT_WEIGHT {
         @Override
         public String toString() {
-            return "\uf5fd \uf5cd";
+            return FontAwesome.LAYER_GROUP + " " + FontAwesome.WEIGHT_HANGING;
         }
 
         @Override
@@ -408,7 +409,7 @@ public enum EquipmentColumn {
 
         @Override
         public HeaderCell getHeaderCell(boolean sheetOrTemplate) {
-            return new FontAwesomeCell(Fonts.FONT_AWESOME_SOLID, sheetOrTemplate);
+            return new FontIconCell(Fonts.FONT_AWESOME_SOLID, sheetOrTemplate);
         }
 
         @Override
@@ -462,7 +463,7 @@ public enum EquipmentColumn {
     REFERENCE {
         @Override
         public String toString() {
-            return "\uf02e";
+            return FontAwesome.BOOKMARK;
         }
 
         @Override
@@ -482,7 +483,7 @@ public enum EquipmentColumn {
 
         @Override
         public HeaderCell getHeaderCell(boolean sheetOrTemplate) {
-            return new FontAwesomeCell(Fonts.FONT_AWESOME_SOLID, sheetOrTemplate);
+            return new FontIconCell(Fonts.FONT_AWESOME_SOLID, sheetOrTemplate);
         }
 
         @Override

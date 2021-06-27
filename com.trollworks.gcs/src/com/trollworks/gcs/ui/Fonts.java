@@ -52,6 +52,8 @@ public final class Fonts {
     public static final String FONT_AWESOME_REGULAR = "Font Awesome 5 Free Regular";
     /** The name of the Font Awesome Solid font. */
     public static final String FONT_AWESOME_SOLID   = "Font Awesome 5 Free Solid";
+    /** The name of the RPG Awesome font. */
+    public static final String RPG_AWESOME          = "rpg-awesome";
 
     public static final  List<ThemeFont> ALL             = new ArrayList<>();
     private static final int             MINIMUM_VERSION = 1;
@@ -78,6 +80,12 @@ public final class Fonts {
     // Derived theme fonts
     public static final ThemeFont KEYBOARD;
     public static final ThemeFont ENCUMBRANCE_MARKER;
+    public static final ThemeFont FONT_ICON_STD;
+    public static final ThemeFont FONT_ICON_LABEL_PRIMARY;
+    public static final ThemeFont FONT_ICON_PAGE_SMALL;
+    public static final ThemeFont FONT_ICON_HUGE;
+    public static final ThemeFont FONT_ICON_FILE_RPG;
+    public static final ThemeFont FONT_ICON_FILE_FA;
 
     private           Font[]  mFonts;
     private transient boolean mReadOnly;
@@ -98,7 +106,8 @@ public final class Fonts {
                 "Roboto-ThinItalic.ttf",
                 "Font Awesome 5 Brands-Regular-400.otf",
                 "Font Awesome 5 Free-Regular-400.otf",
-                "Font Awesome 5 Free-Solid-900.otf"
+                "Font Awesome 5 Free-Solid-900.otf",
+                "RPG Awesome Webfont.ttf"
         };
         for (String embeddedFont : embeddedFonts) {
             try (InputStream in = Settings.class.getModule().getResourceAsStream("/fonts/" + embeddedFont)) {
@@ -124,6 +133,12 @@ public final class Fonts {
 
         KEYBOARD = new ThemeFont("keyboard", () -> new Font("Dialog", Font.PLAIN, LABEL_PRIMARY.getFont().getSize()));
         ENCUMBRANCE_MARKER = new ThemeFont("encumbrance.marker", () -> new Font(FONT_AWESOME_SOLID, Font.PLAIN, PAGE_LABEL_PRIMARY.getFont().getSize()));
+        FONT_ICON_STD = new ThemeFont("fonticon.std", () -> new Font(FONT_AWESOME_SOLID, Font.PLAIN, BUTTON.getFont().getSize()));
+        FONT_ICON_LABEL_PRIMARY = new ThemeFont("fonticon.label.primary", () -> new Font(FONT_AWESOME_SOLID, Font.PLAIN, LABEL_PRIMARY.getFont().getSize()));
+        FONT_ICON_PAGE_SMALL = new ThemeFont("fonticon.page.small", () -> new Font(FONT_AWESOME_SOLID, Font.PLAIN, PAGE_LABEL_SECONDARY.getFont().getSize()));
+        FONT_ICON_HUGE = new ThemeFont("fonticon.huge", () -> new Font(FONT_AWESOME_SOLID, Font.PLAIN, LABEL_PRIMARY.getFont().getSize() * 3));
+        FONT_ICON_FILE_RPG = new ThemeFont("fonticon.file.rpg", () -> new Font(RPG_AWESOME, Font.PLAIN, LABEL_PRIMARY.getFont().getSize()));
+        FONT_ICON_FILE_FA = new ThemeFont("fonticon.file.fa", () -> new Font(FONT_AWESOME_SOLID, Font.PLAIN, LABEL_PRIMARY.getFont().getSize()));
 
         DEFAULTS = new Fonts();
         for (ThemeFont font : ALL) {

@@ -17,8 +17,9 @@ import com.trollworks.gcs.settings.QuickExport;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.settings.SheetSettingsWindow;
 import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.FontIconButton;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.Toolbar;
 import com.trollworks.gcs.ui.widget.dock.Dock;
@@ -33,9 +34,9 @@ import javax.swing.JViewport;
 
 /** A list of advantages and disadvantages from a library. */
 public class SheetDockable extends CollectedOutlinesDockable {
-    private static SheetDockable     LAST_ACTIVATED;
-    private        CharacterSheet    mSheet;
-    private        FontAwesomeButton mQuickExportButton;
+    private static SheetDockable  LAST_ACTIVATED;
+    private        CharacterSheet mSheet;
+    private        FontIconButton mQuickExportButton;
 
     /** Creates a new SheetDockable. */
     public SheetDockable(GURPSCharacter character) {
@@ -60,8 +61,11 @@ public class SheetDockable extends CollectedOutlinesDockable {
     @Override
     protected Toolbar createToolbar() {
         Toolbar toolbar = super.createToolbar();
-        mQuickExportButton = new FontAwesomeButton("\uf56e", I18n.text("Quick Export\nExport to the same location using the last used output template for this sheet"), this::quickExport);
-        toolbar.add(new FontAwesomeButton("\uf013", I18n.text("Settings"), () -> SheetSettingsWindow.display(getDataFile())), 0);
+        mQuickExportButton = new FontIconButton(FontAwesome.FILE_EXPORT,
+                I18n.text("Quick Export\nExport to the same location using the last used output template for this sheet"),
+                this::quickExport);
+        toolbar.add(new FontIconButton(FontAwesome.COG, I18n.text("Settings"),
+                (b) -> SheetSettingsWindow.display(getDataFile())), 0);
         toolbar.add(mQuickExportButton, 1);
         updateQuickExport();
         return toolbar;
@@ -152,7 +156,7 @@ public class SheetDockable extends CollectedOutlinesDockable {
         mQuickExportButton.setEnabled(enabled);
     }
 
-    private void quickExport() {
+    private void quickExport(Component comp) {
         updateQuickExport();
         if (mQuickExportButton.isEnabled()) {
             Path        path = mSheet.getCharacter().getPath();

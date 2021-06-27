@@ -11,13 +11,12 @@
 
 package com.trollworks.gcs.ui.widget.tree;
 
-import com.trollworks.gcs.ui.RetinaIcon;
-import com.trollworks.gcs.ui.image.Img;
+import javax.swing.Icon;
 
 public interface IconAccessor {
     /**
-     * @param row The {@link TreeRow} to operate on.
-     * @return The {@link Img} for the field, or {@code null}.
+     * @param row The {@link TreeRow} to extract information from.
+     * @return The {@link Icon} for the field, or {@code null}.
      */
-    RetinaIcon getIcon(TreeRow row);
+    Icon getIcon(TreeRow row);
 }

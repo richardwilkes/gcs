@@ -33,9 +33,10 @@ import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.spell.SpellsDockable;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.template.TemplateDockable;
-import com.trollworks.gcs.ui.RetinaIcon;
-import com.trollworks.gcs.ui.image.Images;
-import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.FontAwesome;
+import com.trollworks.gcs.ui.FontIcon;
+import com.trollworks.gcs.ui.Fonts;
+import com.trollworks.gcs.ui.widget.FontIconButton;
 import com.trollworks.gcs.ui.widget.MessageType;
 import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.ui.widget.Toolbar;
@@ -72,6 +73,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import javax.swing.Icon;
 import javax.swing.ListCellRenderer;
 
 /** A list of available library files. */
@@ -107,8 +109,11 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
         mTreePanel.setDeletableProxy(this);
         Toolbar toolbar = new Toolbar();
         mSearch = new Search(this);
-        toolbar.add(new FontAwesomeButton("\uf0e8", I18n.text("Opens/closes all hierarchical rows"), () -> mTreePanel.toggleDisclosure()));
-        toolbar.add(new FontAwesomeButton("\uf2f1", I18n.text("Refresh"), this::refresh));
+        toolbar.add(new FontIconButton(FontAwesome.SITEMAP,
+                I18n.text("Opens/closes all hierarchical rows"),
+                (b) -> mTreePanel.toggleDisclosure()));
+        toolbar.add(new FontIconButton(FontAwesome.SYNC_ALT, I18n.text("Refresh"),
+                (b) -> refresh()));
         toolbar.add(mSearch, Toolbar.LAYOUT_FILL);
         add(toolbar, BorderLayout.NORTH);
         add(mTreePanel, BorderLayout.CENTER);
@@ -127,8 +132,8 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
     }
 
     @Override
-    public RetinaIcon getTitleIcon() {
-        return Images.FOLDER;
+    public Icon getTitleIcon() {
+        return new FontIcon(FontAwesome.FOLDER, Fonts.FONT_ICON_LABEL_PRIMARY);
     }
 
     @Override
@@ -147,7 +152,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
     }
 
     @Override
-    public RetinaIcon getIcon(TreeRow row) {
+    public Icon getIcon(TreeRow row) {
         return ((LibraryExplorerRow) row).getIcon();
     }
 
@@ -598,5 +603,9 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
             }
         }
         return paths;
+    }
+
+    public TreePanel getTreePanel() {
+        return mTreePanel;
     }
 }

@@ -14,8 +14,6 @@ package com.trollworks.gcs.skill;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.datafile.LoadState;
-import com.trollworks.gcs.ui.RetinaIcon;
-import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.Log;
@@ -34,11 +32,6 @@ public class SkillList extends ListFile {
     @Override
     public FileType getFileType() {
         return FileType.SKILL;
-    }
-
-    @Override
-    public RetinaIcon getFileIcons() {
-        return Images.SKL_FILE;
     }
 
     @Override

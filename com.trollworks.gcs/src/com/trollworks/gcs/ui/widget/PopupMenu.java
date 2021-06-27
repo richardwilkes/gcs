@@ -12,6 +12,7 @@
 package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.TextDrawing;
@@ -42,8 +43,7 @@ import java.util.Map;
 import javax.swing.SwingConstants;
 
 public class PopupMenu<T> extends Panel implements MouseListener, KeyListener, FocusListener {
-    public static final int                  GAP        = 4;
-    public static final String               POPUP_MARK = "\uf0d7";
+    public static final int                  GAP = 4;
     private             List<T>              mItems;
     private             int                  mSelection;
     private             SelectionListener<T> mSelectionListener;
@@ -160,7 +160,7 @@ public class PopupMenu<T> extends Panel implements MouseListener, KeyListener, F
             size.height = textSize.height;
         }
         Font      faFont = new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, font.getSize());
-        Dimension faSize = TextDrawing.getPreferredSize(faFont, POPUP_MARK);
+        Dimension faSize = TextDrawing.getPreferredSize(faFont, FontAwesome.CARET_DOWN);
         size.width += faSize.width;
         if (size.height < faSize.height) {
             size.height = faSize.height;
@@ -193,7 +193,7 @@ public class PopupMenu<T> extends Panel implements MouseListener, KeyListener, F
             }
         }
         Font      faFont = new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, font.getSize());
-        Dimension faSize = TextDrawing.getPreferredSize(faFont, POPUP_MARK);
+        Dimension faSize = TextDrawing.getPreferredSize(faFont, FontAwesome.CARET_DOWN);
         size.width += faSize.width;
         if (size.height < faSize.height) {
             size.height = faSize.height;
@@ -256,7 +256,7 @@ public class PopupMenu<T> extends Panel implements MouseListener, KeyListener, F
         Scale     scale  = Scale.get(this);
         Font      font   = scale.scale(getFont());
         Font      faFont = new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, font.getSize());
-        Dimension faSize = TextDrawing.getPreferredSize(faFont, POPUP_MARK);
+        Dimension faSize = TextDrawing.getPreferredSize(faFont, FontAwesome.CARET_DOWN);
         T         item   = getSelectedItem();
         if (item != null) {
             if (isFocusOwner()) {
@@ -276,7 +276,7 @@ public class PopupMenu<T> extends Panel implements MouseListener, KeyListener, F
         gc.setFont(faFont);
         gc.setColor(onColor);
         bounds.width -= scale.scale(Button.H_MARGIN);
-        TextDrawing.draw(gc, bounds, POPUP_MARK, SwingConstants.RIGHT, SwingConstants.CENTER);
+        TextDrawing.draw(gc, bounds, FontAwesome.CARET_DOWN, SwingConstants.RIGHT, SwingConstants.CENTER);
 
         gc.setColor(Colors.BUTTON_BORDER);
         RenderingHints saved = GraphicsUtilities.setMaximumQualityForGraphics(gc);

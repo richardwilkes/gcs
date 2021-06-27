@@ -11,12 +11,13 @@
 
 package com.trollworks.gcs.library;
 
-import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.widget.outline.Row;
+
+import javax.swing.Icon;
 
 /** A {@link Row} that represents a node in the library explorer. */
 public interface LibraryExplorerRow {
-    RetinaIcon getIcon();
+    Icon getIcon();
 
     String getName();
 

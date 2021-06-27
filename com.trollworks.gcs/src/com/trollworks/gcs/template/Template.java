@@ -14,8 +14,6 @@ package com.trollworks.gcs.template;
 import com.trollworks.gcs.character.CollectedModels;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.equipment.Equipment;
-import com.trollworks.gcs.ui.RetinaIcon;
-import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.SaveType;
@@ -50,11 +48,6 @@ public class Template extends CollectedModels {
     @Override
     public FileType getFileType() {
         return FileType.TEMPLATE;
-    }
-
-    @Override
-    public RetinaIcon getFileIcons() {
-        return Images.GCT_FILE;
     }
 
     @Override

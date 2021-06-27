@@ -14,13 +14,13 @@ package com.trollworks.gcs.ui.widget;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.Fonts;
-import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 
 import java.awt.Container;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import javax.swing.Icon;
 import javax.swing.JRootPane;
 
 public class MenuItem extends Label {
@@ -36,7 +36,7 @@ public class MenuItem extends Label {
         this(null, title, listener);
     }
 
-    public MenuItem(RetinaIcon icon, String title, SelectionListener listener) {
+    public MenuItem(Icon icon, String title, SelectionListener listener) {
         super(icon, title);
         setOpaque(true);
         setThemeFont(Fonts.BUTTON);

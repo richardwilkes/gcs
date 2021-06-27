@@ -15,9 +15,10 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.datafile.PageRefCell;
-import com.trollworks.gcs.equipment.FontAwesomeCell;
+import com.trollworks.gcs.equipment.FontIconCell;
 import com.trollworks.gcs.settings.SheetSettings;
 import com.trollworks.gcs.template.Template;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.widget.outline.Cell;
 import com.trollworks.gcs.ui.widget.outline.Column;
@@ -221,7 +222,7 @@ public enum AdvantageColumn {
     REFERENCE {
         @Override
         public String toString() {
-            return "\uf02e";
+            return FontAwesome.BOOKMARK;
         }
 
         @Override
@@ -241,7 +242,7 @@ public enum AdvantageColumn {
 
         @Override
         public HeaderCell getHeaderCell(boolean sheetOrTemplate) {
-            return new FontAwesomeCell(Fonts.FONT_AWESOME_SOLID, sheetOrTemplate);
+            return new FontIconCell(Fonts.FONT_AWESOME_SOLID, sheetOrTemplate);
         }
 
         @Override

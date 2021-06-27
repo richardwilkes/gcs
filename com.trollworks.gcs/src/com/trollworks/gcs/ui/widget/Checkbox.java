@@ -12,6 +12,7 @@
 package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.MouseCapture;
@@ -206,7 +207,7 @@ public class Checkbox extends Panel implements MouseListener, MouseMotionListene
         Insets    insets = getInsets();
         Scale     scale  = Scale.get(this);
         Font      font   = scale.scale(getFont());
-        Dimension size   = TextDrawing.getPreferredSize(new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, font.getSize()), "\uf058");
+        Dimension size   = TextDrawing.getPreferredSize(new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, font.getSize()), FontAwesome.CHECK_CIRCLE);
         if (!mText.isBlank()) {
             Dimension textSize = TextDrawing.getPreferredSize(font, mText);
             size.width += textSize.width + scale.scale(4);
@@ -233,12 +234,12 @@ public class Checkbox extends Panel implements MouseListener, MouseMotionListene
         Font       font       = scale.scale(getFont());
         boolean    focusOwner = isFocusOwner();
         Font       iconFont   = new Font(focusOwner ? Fonts.FONT_AWESOME_SOLID : Fonts.FONT_AWESOME_REGULAR, Font.PLAIN, font.getSize());
-        Dimension  size       = TextDrawing.getPreferredSize(iconFont, "\uf058");
+        Dimension  size       = TextDrawing.getPreferredSize(iconFont, FontAwesome.CHECK_CIRCLE);
         gc.setFont(iconFont);
         gc.setColor(color);
         Rectangle textBounds = new Rectangle(bounds.x, bounds.y, size.width, bounds.height);
-        String    unchecked  = focusOwner ? "\uf192" : "\uf111";
-        TextDrawing.draw(gc, textBounds, mChecked ? "\uf058" : unchecked, SwingConstants.CENTER, SwingConstants.CENTER);
+        String    unchecked  = focusOwner ? FontAwesome.DOT_CIRCLE : FontAwesome.CIRCLE;
+        TextDrawing.draw(gc, textBounds, mChecked ? FontAwesome.CHECK_CIRCLE : unchecked, SwingConstants.CENTER, SwingConstants.CENTER);
         if (!mText.isBlank()) {
             gc.setFont(font);
             gc.setColor(color);

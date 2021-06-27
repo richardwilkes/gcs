@@ -20,7 +20,6 @@ import com.trollworks.gcs.ui.scale.Scale;
 
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
@@ -36,24 +35,24 @@ import javax.swing.SwingConstants;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 
-public class FontAwesomeButton extends Panel implements MouseListener, MouseMotionListener, ComponentListener, AncestorListener {
-    private String   mText;
-    private Runnable mClickFunction;
-    private int      mSize;
-    private int      mMargin;
-    private boolean  mInMouseDown;
-    private boolean  mPressed;
-    private boolean  mRollover;
+public class FontIconButton extends Panel implements MouseListener, MouseMotionListener, ComponentListener, AncestorListener {
+    private String        mText;
+    private ClickFunction mClickFunction;
+    private int           mSize;
+    private int           mMargin;
+    private boolean       mInMouseDown;
+    private boolean       mPressed;
+    private boolean       mRollover;
 
-    public FontAwesomeButton(String text, String tooltip, Runnable clickFunction) {
-        this(text, 14, tooltip, clickFunction);
+    public interface ClickFunction {
+        void buttonClicked(FontIconButton button);
     }
 
-    public FontAwesomeButton(String text, int size, String tooltip, Runnable clickFunction) {
+    public FontIconButton(String text, String tooltip, ClickFunction clickFunction) {
         super(null, false);
+        setThemeFont(Fonts.FONT_ICON_STD);
         setToolTipText(tooltip);
         setText(text);
-        setSize(size);
         setCursor(Cursor.getDefaultCursor());
         setClickFunction(clickFunction);
         addMouseListener(this);
@@ -67,10 +66,6 @@ public class FontAwesomeButton extends Panel implements MouseListener, MouseMoti
         repaint();
     }
 
-    public void setSize(int size) {
-        mSize = size;
-    }
-
     public void setMargin(int margin) {
         mMargin = margin;
     }
@@ -78,7 +73,7 @@ public class FontAwesomeButton extends Panel implements MouseListener, MouseMoti
     @Override
     public Dimension getPreferredSize() {
         Scale     scale = Scale.get(this);
-        Dimension size  = TextDrawing.getPreferredSize(new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, scale.scale(mSize)), mText);
+        Dimension size  = TextDrawing.getPreferredSize(scale.scale(getFont()), mText);
         if (mMargin != 0) {
             size.width += scale.scale(mMargin) * 2;
             size.height *= scale.scale(mMargin) * 2;
@@ -99,12 +94,12 @@ public class FontAwesomeButton extends Panel implements MouseListener, MouseMoti
         return getPreferredSize();
     }
 
-    public void setClickFunction(Runnable clickFunction) {
+    public void setClickFunction(ClickFunction clickFunction) {
         mClickFunction = clickFunction;
     }
 
     public void click() {
-        mClickFunction.run();
+        mClickFunction.buttonClicked(this);
     }
 
     @Override
@@ -118,7 +113,7 @@ public class FontAwesomeButton extends Panel implements MouseListener, MouseMoti
         Graphics2D gc = GraphicsUtilities.prepare(g);
         gc.setColor(UIUtilities.getIconButtonColor(isEnabled(), mInMouseDown, mPressed, mRollover));
         Scale scale = Scale.get(this);
-        gc.setFont(new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, scale.scale(mSize)));
+        gc.setFont(scale.scale(getFont()));
         TextDrawing.draw(gc, bounds, mText, SwingConstants.CENTER, SwingConstants.CENTER);
     }
 

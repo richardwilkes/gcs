@@ -12,13 +12,14 @@
 package com.trollworks.gcs.body;
 
 import com.trollworks.gcs.character.FieldFactory;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.ContentPanel;
 import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.FontIconButton;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.utility.Dice;
@@ -38,9 +39,9 @@ public class HitLocationPanel extends ContentPanel implements DocumentListener {
     private Runnable           mAdjustCallback;
     private EditorField        mIDField;
     private MultiLineTextField mDescriptionField;
-    private FontAwesomeButton  mMoveUpButton;
-    private FontAwesomeButton  mMoveDownButton;
-    private FontAwesomeButton  mAddSubTableButton;
+    private FontIconButton     mMoveUpButton;
+    private FontIconButton     mMoveDownButton;
+    private FontIconButton     mAddSubTableButton;
     private ContentPanel       mCenter;
 
     public HitLocationPanel(HitLocation location, Runnable adjustCallback) {
@@ -50,7 +51,7 @@ public class HitLocationPanel extends ContentPanel implements DocumentListener {
 
         ContentPanel left = new ContentPanel(new PrecisionLayout(), false);
         add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-        mMoveUpButton = new FontAwesomeButton("\uf35b", I18n.text("Move Up"), () -> {
+        mMoveUpButton = new FontIconButton(FontAwesome.ARROW_ALT_CIRCLE_UP, I18n.text("Move Up"), (b) -> {
             BodyTypePanel parent = (BodyTypePanel) getParent();
             int           index  = UIUtilities.getIndexOf(parent, this);
             if (index > 0) {
@@ -65,7 +66,7 @@ public class HitLocationPanel extends ContentPanel implements DocumentListener {
             }
         });
         left.add(mMoveUpButton);
-        mMoveDownButton = new FontAwesomeButton("\uf358", I18n.text("Move Down"), () -> {
+        mMoveDownButton = new FontIconButton(FontAwesome.ARROW_ALT_CIRCLE_DOWN, I18n.text("Move Down"), (b) -> {
             BodyTypePanel parent = (BodyTypePanel) getParent();
             int           index  = UIUtilities.getIndexOf(parent, this);
             if (index != -1 && index < parent.getComponentCount() - 1) {
@@ -80,7 +81,8 @@ public class HitLocationPanel extends ContentPanel implements DocumentListener {
             }
         });
         left.add(mMoveDownButton);
-        mAddSubTableButton = new FontAwesomeButton("\uf055", I18n.text("Add Hit Location Sub-Table"), this::addSubHitLocations);
+        mAddSubTableButton = new FontIconButton(FontAwesome.PLUS_CIRCLE,
+                I18n.text("Add Hit Location Sub-Table"), (b) -> addSubHitLocations());
         left.add(mAddSubTableButton);
 
         mCenter = new ContentPanel(new PrecisionLayout(), false);
@@ -176,7 +178,7 @@ public class HitLocationPanel extends ContentPanel implements DocumentListener {
 
         ContentPanel right = new ContentPanel(new PrecisionLayout(), false);
         add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-        FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", I18n.text("Remove"), () -> {
+        FontIconButton remove = new FontIconButton(FontAwesome.TRASH, I18n.text("Remove"), (b) -> {
             getParent().remove(this);
             mLocation.getOwningTable().removeLocation(mLocation);
             mAdjustCallback.run();

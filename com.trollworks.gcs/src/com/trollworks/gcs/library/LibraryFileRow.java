@@ -11,12 +11,12 @@
 
 package com.trollworks.gcs.library;
 
-import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.widget.tree.TreeRow;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.PathUtils;
 
 import java.nio.file.Path;
+import javax.swing.Icon;
 
 /** A {@link TreeRow} that represents a file in the library explorer. */
 public class LibraryFileRow extends TreeRow implements LibraryExplorerRow {
@@ -38,7 +38,7 @@ public class LibraryFileRow extends TreeRow implements LibraryExplorerRow {
     }
 
     @Override
-    public RetinaIcon getIcon() {
+    public Icon getIcon() {
         return FileType.getIconForFileName(mPath.getFileName().toString());
     }
 

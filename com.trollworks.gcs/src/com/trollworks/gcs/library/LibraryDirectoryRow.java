@@ -11,10 +11,13 @@
 
 package com.trollworks.gcs.library;
 
-import com.trollworks.gcs.ui.RetinaIcon;
-import com.trollworks.gcs.ui.image.Images;
+import com.trollworks.gcs.ui.FontAwesome;
+import com.trollworks.gcs.ui.FontIcon;
+import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.widget.tree.TreeContainerRow;
 import com.trollworks.gcs.ui.widget.tree.TreeRow;
+
+import javax.swing.Icon;
 
 /** A {@link TreeRow} that represents a directory in the library explorer. */
 public class LibraryDirectoryRow extends TreeContainerRow implements LibraryExplorerRow {
@@ -28,12 +31,13 @@ public class LibraryDirectoryRow extends TreeContainerRow implements LibraryExpl
     @Override
     public String getSelectionKey() {
         TreeContainerRow parent = getParent();
-        return parent instanceof LibraryDirectoryRow ? ((LibraryDirectoryRow) parent).getSelectionKey() + "/" + mName : mName;
+        return parent instanceof LibraryDirectoryRow ?
+                ((LibraryDirectoryRow) parent).getSelectionKey() + "/" + mName : mName;
     }
 
     @Override
-    public RetinaIcon getIcon() {
-        return Images.FOLDER;
+    public Icon getIcon() {
+        return new FontIcon(FontAwesome.FOLDER, Fonts.FONT_ICON_LABEL_PRIMARY);
     }
 
     @Override

@@ -30,26 +30,6 @@ public final class Images {
             get("app_32"),
             get("app_16"));
     public static final RetinaIcon ABOUT            = getRetina("about");
-    public static final RetinaIcon ADM_FILE         = getRetina("adm_file");
-    public static final RetinaIcon ADM_MARKER       = getRetina("adm_marker");
-    public static final RetinaIcon ADQ_FILE         = getRetina("adq_file");
-    public static final RetinaIcon ADQ_MARKER       = getRetina("adq_marker");
-    public static final RetinaIcon EQM_FILE         = getRetina("eqm_file");
-    public static final RetinaIcon EQM_MARKER       = getRetina("eqm_marker");
-    public static final RetinaIcon EQP_FILE         = getRetina("eqp_file");
-    public static final RetinaIcon EQP_MARKER       = getRetina("eqp_marker");
-    public static final RetinaIcon FILE             = getRetina("file");
-    public static final RetinaIcon FOLDER           = getRetina("folder");
-    public static final RetinaIcon GCS_FILE         = getRetina("gcs_file");
-    public static final RetinaIcon GCS_MARKER       = getRetina("gcs_marker");
-    public static final RetinaIcon GCT_FILE         = getRetina("gct_file");
-    public static final RetinaIcon NOT_FILE         = getRetina("not_file");
-    public static final RetinaIcon NOT_MARKER       = getRetina("not_marker");
-    public static final RetinaIcon PDF_FILE         = getRetina("pdf_file");
-    public static final RetinaIcon SKL_FILE         = getRetina("skl_file");
-    public static final RetinaIcon SKL_MARKER       = getRetina("skl_marker");
-    public static final RetinaIcon SPL_FILE         = getRetina("spl_file");
-    public static final RetinaIcon SPL_MARKER       = getRetina("spl_marker");
     public static final RetinaIcon DEFAULT_PORTRAIT = Profile.createPortrait(get("default_portrait"));
 
     private Images() {

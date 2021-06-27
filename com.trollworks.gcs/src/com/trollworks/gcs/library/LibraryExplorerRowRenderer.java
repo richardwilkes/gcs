@@ -11,18 +11,18 @@
 
 package com.trollworks.gcs.library;
 
-import com.trollworks.gcs.ui.RetinaIcon;
+import com.trollworks.gcs.ui.widget.LabelListCellRenderer;
 
 import java.awt.Component;
-import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
 import javax.swing.JList;
 
 /** An item renderer for {@link LibraryExplorerRow}s. */
-public class LibraryExplorerRowRenderer extends DefaultListCellRenderer {
+public class LibraryExplorerRowRenderer extends LabelListCellRenderer<Object> {
     @Override
     public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-        String     title;
-        RetinaIcon icon;
+        String title;
+        Icon   icon;
         if (value instanceof LibraryExplorerSearchResult) {
             LibraryExplorerSearchResult row = (LibraryExplorerSearchResult) value;
             title = row.getTitle();

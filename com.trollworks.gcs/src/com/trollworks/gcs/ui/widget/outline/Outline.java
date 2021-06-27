@@ -16,6 +16,7 @@ import com.trollworks.gcs.menu.edit.SelectAllCapable;
 import com.trollworks.gcs.menu.edit.Undoable;
 import com.trollworks.gcs.page.Page;
 import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.Selection;
@@ -807,7 +808,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
     }
 
     private static String getDisclosure(Row row) {
-        return row.isOpen() ? "\uf0d7" : "\uf0da";
+        return row.isOpen() ? FontAwesome.CARET_DOWN : FontAwesome.CARET_RIGHT;
     }
 
     /**

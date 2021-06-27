@@ -15,7 +15,8 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.StdMenuBar;
 import com.trollworks.gcs.ui.Colors;
-import com.trollworks.gcs.ui.FontAwesomeIcon;
+import com.trollworks.gcs.ui.FontAwesome;
+import com.trollworks.gcs.ui.FontIcon;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
@@ -205,7 +206,7 @@ public final class MenuKeySettingsWindow extends SettingsWindow<Map<String, Stri
             Button button = entry.getKey();
             Label  label  = (Label) mPanel.getComponent(UIUtilities.getIndexOf(mPanel, button) + 1);
             if (count > 1) {
-                label.setIcon(new FontAwesomeIcon("\uf071", label.getFont().getSize(), Colors.ERROR));
+                label.setIcon(new FontIcon(FontAwesome.EXCLAMATION_TRIANGLE, Fonts.FONT_ICON_LABEL_PRIMARY, Colors.ERROR));
                 label.setToolTipText(I18n.text("Duplicate key binding"));
             } else {
                 label.setIcon(null);

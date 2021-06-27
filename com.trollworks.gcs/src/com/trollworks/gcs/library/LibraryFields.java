@@ -13,9 +13,10 @@ package com.trollworks.gcs.library;
 
 import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.FontIconButton;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.Separator;
 import com.trollworks.gcs.utility.Dirs;
@@ -64,7 +65,7 @@ public class LibraryFields implements DocumentListener {
         mTitle = addLabelAndField(I18n.text("Name:"), title, 1);
         mGitHubAccountName = addLabelAndField(I18n.text("GitHub Account:"), account, 1);
         mRepoName = addLabelAndField(I18n.text("Repo:"), repo, 1);
-        FontAwesomeButton button = new FontAwesomeButton("\uf689", I18n.text("Locate"), () -> {
+        FontIconButton button = new FontIconButton(FontAwesome.SEARCH_LOCATION, I18n.text("Locate"), (b) -> {
             String       currentPath = mPath.getText();
             Path         current     = currentPath.isBlank() ? Dirs.GENERAL.get() : Path.of(currentPath).getParent().toAbsolutePath();
             JFileChooser dialog      = new JFileChooser(current.toString());
@@ -83,7 +84,7 @@ public class LibraryFields implements DocumentListener {
 
         mPath = addLabelAndField(I18n.text("Path:"), path, 5);
         if (mLibraryType == LibraryType.EXTRA) {
-            button = new FontAwesomeButton("\uf1f8", I18n.text("Remove"), () -> {
+            button = new FontIconButton(FontAwesome.TRASH, I18n.text("Remove"), (b) -> {
                 for (JComponent comp : mComps) {
                     mOwner.remove(comp);
                 }
@@ -93,7 +94,7 @@ public class LibraryFields implements DocumentListener {
                 mOwner.repaint();
             });
         } else {
-            button = new FontAwesomeButton("\uf011", I18n.text("Use Default"), () -> {
+            button = new FontIconButton(FontAwesome.POWER_OFF, I18n.text("Use Default"), (b) -> {
                 Path def;
                 switch (mLibraryType) {
                 case MASTER:

@@ -12,6 +12,7 @@
 package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.datafile.PageRefCell;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.widget.outline.Cell;
 import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.EditorHeaderCell;
@@ -46,7 +47,7 @@ public enum AdvantageModifierColumnID {
 
         @Override
         public String getDataAsText(AdvantageModifier modifier) {
-            return modifier.isEnabled() ? "\uf058" : "";
+            return modifier.isEnabled() ? FontAwesome.CHECK_CIRCLE : "";
         }
 
         @Override

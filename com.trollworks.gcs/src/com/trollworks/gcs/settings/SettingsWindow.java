@@ -13,10 +13,11 @@ package com.trollworks.gcs.settings;
 
 import com.trollworks.gcs.menu.file.CloseHandler;
 import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.widget.BaseWindow;
-import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.FontIconButton;
 import com.trollworks.gcs.ui.widget.LayoutConstants;
 import com.trollworks.gcs.ui.widget.Menu;
 import com.trollworks.gcs.ui.widget.MenuItem;
@@ -42,9 +43,9 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 public abstract class SettingsWindow<T> extends BaseWindow implements CloseHandler {
-    private FontAwesomeButton mResetButton;
-    private FontAwesomeButton mMenuButton;
-    private ScrollPanel       mScroller;
+    private FontIconButton mResetButton;
+    private FontIconButton mMenuButton;
+    private ScrollPanel    mScroller;
 
     protected SettingsWindow(String title) {
         super(title);
@@ -80,13 +81,13 @@ public abstract class SettingsWindow<T> extends BaseWindow implements CloseHandl
     }
 
     protected final void addResetButton(Toolbar toolbar) {
-        mResetButton = new FontAwesomeButton("\uf011", getResetButtonTitle(), this::reset);
+        mResetButton = new FontIconButton(FontAwesome.POWER_OFF, getResetButtonTitle(), (b) -> reset());
         toolbar.add(mResetButton, Toolbar.LAYOUT_EXTRA_BEFORE);
     }
 
     protected final void addActionMenu(Toolbar toolbar) {
-        mMenuButton = new FontAwesomeButton("\uf0c9", I18n.text("Menu"),
-                () -> createActionMenu().presentToUser(mMenuButton, 0, mMenuButton::updateRollOver));
+        mMenuButton = new FontIconButton(FontAwesome.BARS, I18n.text("Menu"),
+                (b) -> createActionMenu().presentToUser(mMenuButton, 0, mMenuButton::updateRollOver));
         toolbar.add(mMenuButton);
     }
 

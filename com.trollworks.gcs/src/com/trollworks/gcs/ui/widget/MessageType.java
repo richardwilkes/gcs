@@ -12,6 +12,7 @@
 package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.FontAwesome;
 
 import java.awt.Color;
 
@@ -19,7 +20,7 @@ public enum MessageType {
     ERROR {
         @Override
         String getText() {
-            return "\uf06a";
+            return FontAwesome.EXCLAMATION_CIRCLE;
         }
 
         @Override
@@ -30,7 +31,7 @@ public enum MessageType {
     WARNING {
         @Override
         String getText() {
-            return "\uf071";
+            return FontAwesome.EXCLAMATION_TRIANGLE;
         }
 
         @Override
@@ -41,7 +42,7 @@ public enum MessageType {
     QUESTION {
         @Override
         String getText() {
-            return "\uf059";
+            return FontAwesome.QUESTION_CIRCLE;
         }
     },
     NONE;

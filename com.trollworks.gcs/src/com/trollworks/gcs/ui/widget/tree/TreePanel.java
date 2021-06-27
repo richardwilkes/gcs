@@ -15,6 +15,7 @@ import com.trollworks.gcs.menu.edit.Deletable;
 import com.trollworks.gcs.menu.edit.Openable;
 import com.trollworks.gcs.menu.edit.SelectAllCapable;
 import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.TextDrawing;
@@ -323,7 +324,10 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
                 if (mAllowColumnResize && which != -1) {
                     sizeColumnToFit(mColumns.get(which));
                 } else if (mViewArea == DirectScrollPanelArea.CONTENT && canOpenSelection()) {
-                    openSelection();
+                    TreeRow row = overRow(event.getY());
+                    if (row != null && isSelected(row)) {
+                        openSelection();
+                    }
                 }
             }
         }
@@ -883,8 +887,9 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
                         gc.setFont(new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, disclosureSize));
                         gc.setColor(row == mRollRow ? Colors.ROLLOVER_ICON_BUTTON : Colors.ICON_BUTTON);
                         TextDrawing.draw(gc, new Rectangle(xt, yt, disclosureSize, disclosureSize),
-                                isOpen((TreeContainerRow) row) ? "\uf0d7" : "\uf0da",
-                                SwingConstants.CENTER, SwingConstants.CENTER);
+                                isOpen((TreeContainerRow) row) ? FontAwesome.CARET_DOWN :
+                                        FontAwesome.CARET_RIGHT, SwingConstants.CENTER,
+                                SwingConstants.CENTER);
                     }
                 }
                 column.draw(gc, this, row, position, top, tmpX, colWidth, selected, active);

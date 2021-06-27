@@ -15,6 +15,7 @@ import com.trollworks.gcs.attribute.AttributeChoice;
 import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.settings.Settings;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.Alignment;
 import com.trollworks.gcs.ui.layout.FlexGrid;
@@ -23,7 +24,7 @@ import com.trollworks.gcs.ui.layout.FlexSpacer;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.EditorPanel;
-import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.FontIconButton;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.IntegerFormatter;
 
@@ -130,10 +131,12 @@ public class SkillDefaultEditor extends EditorPanel {
 
             row = new FlexRow();
             row.setHorizontalAlignment(Alignment.RIGHT_BOTTOM);
-            FontAwesomeButton button = new FontAwesomeButton("\uf1f8", I18n.text("Remove this default"), this::removeDefault);
+            FontIconButton button = new FontIconButton(FontAwesome.TRASH,
+                    I18n.text("Remove this default"), (b) -> removeDefault());
             add(button);
             row.add(button);
-            button = new FontAwesomeButton("\uf055", I18n.text("Add a default"), this::addDefault);
+            button = new FontIconButton(FontAwesome.PLUS_CIRCLE, I18n.text("Add a default"),
+                    (b) -> addDefault());
             add(button);
             row.add(button);
             grid.add(row, 0, 2);
@@ -142,7 +145,8 @@ public class SkillDefaultEditor extends EditorPanel {
             FlexRow row = new FlexRow();
             row.setHorizontalAlignment(Alignment.RIGHT_BOTTOM);
             row.add(new FlexSpacer(0, 0, true, false));
-            FontAwesomeButton button = new FontAwesomeButton("\uf055", I18n.text("Add a default"), this::addDefault);
+            FontIconButton button = new FontIconButton(FontAwesome.PLUS_CIRCLE,
+                    I18n.text("Add a default"), (b) -> addDefault());
             add(button);
             row.add(button);
             row.apply(this);

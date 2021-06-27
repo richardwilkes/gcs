@@ -19,10 +19,11 @@ import com.trollworks.gcs.character.names.USCensusNames;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageLabel;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
-import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.FontIconButton;
 import com.trollworks.gcs.utility.I18n;
 
 import javax.swing.SwingConstants;
@@ -40,7 +41,7 @@ public class IdentityPanel extends DropPanel {
         super(new PrecisionLayout().setColumns(3).setMargins(0).setSpacing(0, 0), I18n.text("Identity"));
         Profile profile = sheet.getCharacter().getProfile();
         mNameField = createRandomizableField(sheet, profile.getName(), I18n.text("Name"), "character name",
-                (c, v) -> c.getProfile().setName((String) v), () -> {
+                (c, v) -> c.getProfile().setName((String) v), (b) -> {
                     mNameField.requestFocus();
                     profile.setName(USCensusNames.INSTANCE.getFullName(!profile.getGender().equalsIgnoreCase(I18n.text("Female"))));
                 });
@@ -50,9 +51,10 @@ public class IdentityPanel extends DropPanel {
                 (c, v) -> c.getProfile().setOrganization((String) v));
     }
 
-    private PageField createRandomizableField(CharacterSheet sheet, String value, String title, String tag, CharacterSetter setter, Runnable randomizer) {
-        add(new FontAwesomeButton("\uf074", Fonts.PAGE_LABEL_PRIMARY.getFont().getSize() * 8 / 10,
-                String.format(I18n.text("Randomize %s"), title), randomizer));
+    private PageField createRandomizableField(CharacterSheet sheet, String value, String title, String tag, CharacterSetter setter, FontIconButton.ClickFunction randomizer) {
+        FontIconButton button = new FontIconButton(FontAwesome.RANDOM, String.format(I18n.text("Randomize %s"), title), randomizer);
+        button.setThemeFont(Fonts.FONT_ICON_PAGE_SMALL);
+        add(button);
         add(new PageLabel(title), new PrecisionLayoutData().setEndHorizontalAlignment());
         PageField field = new PageField(FieldFactory.STRING, value, setter, sheet, tag,
                 SwingConstants.LEFT, true, null);

@@ -12,7 +12,6 @@
 package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.ui.GraphicsUtilities;
-import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.scale.Scale;
@@ -68,7 +67,7 @@ public class Label extends Panel {
      * @param icon The icon to use.
      * @param text The text to use.
      */
-    public Label(RetinaIcon icon, String text) {
+    public Label(Icon icon, String text) {
         this(text);
         mIcon = icon;
     }

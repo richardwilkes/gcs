@@ -13,6 +13,7 @@ package com.trollworks.gcs.settings;
 
 import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.menu.file.ExportToGCalcCommand;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
@@ -20,6 +21,7 @@ import com.trollworks.gcs.ui.scale.Scales;
 import com.trollworks.gcs.ui.widget.Button;
 import com.trollworks.gcs.ui.widget.Checkbox;
 import com.trollworks.gcs.ui.widget.EditorField;
+import com.trollworks.gcs.ui.widget.FontIconButton;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.LayoutConstants;
 import com.trollworks.gcs.ui.widget.Panel;
@@ -166,7 +168,9 @@ public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings>
         }, SwingConstants.LEFT, settings.getGCalcKey(), null);
         wrapper.add(new Label(I18n.text("GURPS Calculator Key")), new PrecisionLayoutData().setFillHorizontalAlignment());
         wrapper.add(mGCalcKey, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
-        wrapper.add(new Button(I18n.text("Find mine"), ExportToGCalcCommand::openBrowserToFindKey));
+        wrapper.add(new FontIconButton(FontAwesome.SEARCH,
+                I18n.text("Lookup your key on the GURPS Calculator web site"),
+                ExportToGCalcCommand::openBrowserToFindKey));
 
         return panel;
     }

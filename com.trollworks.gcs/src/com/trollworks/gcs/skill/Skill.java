@@ -18,12 +18,11 @@ import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.menu.item.HasSourceReference;
 import com.trollworks.gcs.settings.Settings;
-import com.trollworks.gcs.ui.RetinaIcon;
-import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
+import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.ID;
 import com.trollworks.gcs.utility.Log;
@@ -44,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import javax.swing.Icon;
 
 /** A GURPS Skill. */
 public class Skill extends ListRow implements HasSourceReference {
@@ -710,8 +710,8 @@ public class Skill extends ListRow implements HasSourceReference {
     }
 
     @Override
-    public RetinaIcon getIcon(boolean marker) {
-        return marker ? Images.SKL_MARKER : Images.SKL_FILE;
+    public Icon getIcon() {
+        return FileType.SKILL.getIcon();
     }
 
     @Override

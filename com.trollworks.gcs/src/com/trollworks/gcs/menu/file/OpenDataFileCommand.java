@@ -69,7 +69,8 @@ public class OpenDataFileCommand extends Command implements Runnable {
      * @param path  The file to open.
      */
     public OpenDataFileCommand(String title, Path path) {
-        super(title, CMD_PREFIX + path + CMD_POSTFIX, FileType.getIconForFileName(path.getFileName().toString()));
+        super(title, CMD_PREFIX + path + CMD_POSTFIX,
+                FileType.getIconForFileName(path.getFileName().toString()));
         mPath = path;
     }
 

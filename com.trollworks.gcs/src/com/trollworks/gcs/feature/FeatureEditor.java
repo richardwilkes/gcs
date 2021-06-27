@@ -11,13 +11,14 @@
 
 package com.trollworks.gcs.feature;
 
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.FlexGrid;
 import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.EditorPanel;
-import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.FontIconButton;
 import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
@@ -80,11 +81,13 @@ public abstract class FeatureEditor extends EditorPanel {
         FlexRow  right = new FlexRow();
         rebuildSelf(grid, right);
         if (mFeature != null) {
-            FontAwesomeButton button = new FontAwesomeButton("\uf1f8", I18n.text("Remove this feature"), this::removeFeature);
+            FontIconButton button = new FontIconButton(FontAwesome.TRASH,
+                    I18n.text("Remove this feature"), (b) -> removeFeature());
             add(button);
             right.add(button);
         }
-        FontAwesomeButton button = new FontAwesomeButton("\uf055", I18n.text("Add a feature"), this::addFeature);
+        FontIconButton button = new FontIconButton(FontAwesome.PLUS_CIRCLE,
+                I18n.text("Add a feature"), (b) -> addFeature());
         add(button);
         right.add(button);
         grid.add(right, 0, 1);

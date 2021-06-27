@@ -12,13 +12,14 @@
 package com.trollworks.gcs.attribute;
 
 import com.trollworks.gcs.character.FieldFactory;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.ContentPanel;
 import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.FontIconButton;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.utility.I18n;
@@ -37,10 +38,10 @@ public class AttributePanel extends ContentPanel {
     protected AttributeDef              mAttrDef;
     private   Runnable                  mAdjustCallback;
     private   EditorField               mIDField;
-    private   FontAwesomeButton         mMoveUpButton;
-    private   FontAwesomeButton         mMoveDownButton;
+    private   FontIconButton            mMoveUpButton;
+    private   FontIconButton            mMoveDownButton;
     private   ContentPanel              mCenter;
-    private   FontAwesomeButton         mAddThresholdButton;
+    private   FontIconButton            mAddThresholdButton;
     private   ThresholdListPanel        mThresholdListPanel;
 
     public AttributePanel(Map<String, AttributeDef> attributes, AttributeDef attrDef, Runnable adjustCallback) {
@@ -51,7 +52,7 @@ public class AttributePanel extends ContentPanel {
 
         ContentPanel left = new ContentPanel(new PrecisionLayout(), false);
         add(left, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-        mMoveUpButton = new FontAwesomeButton("\uf35b", I18n.text("Move Up"), () -> {
+        mMoveUpButton = new FontIconButton(FontAwesome.ARROW_ALT_CIRCLE_UP, I18n.text("Move Up"), (b) -> {
             AttributeListPanel parent = (AttributeListPanel) getParent();
             int                index  = UIUtilities.getIndexOf(parent, this);
             if (index > 0) {
@@ -62,7 +63,7 @@ public class AttributePanel extends ContentPanel {
             }
         });
         left.add(mMoveUpButton);
-        mMoveDownButton = new FontAwesomeButton("\uf358", I18n.text("Move Down"), () -> {
+        mMoveDownButton = new FontIconButton(FontAwesome.ARROW_ALT_CIRCLE_DOWN, I18n.text("Move Down"), (b) -> {
             AttributeListPanel parent = (AttributeListPanel) getParent();
             int                index  = UIUtilities.getIndexOf(parent, this);
             if (index != -1 && index < parent.getComponentCount() - 1) {
@@ -73,7 +74,7 @@ public class AttributePanel extends ContentPanel {
             }
         });
         left.add(mMoveDownButton);
-        mAddThresholdButton = new FontAwesomeButton("\uf055", I18n.text("Add Pool Threshold"), this::addThreshold);
+        mAddThresholdButton = new FontIconButton(FontAwesome.PLUS_CIRCLE, I18n.text("Add Pool Threshold"), (b) -> addThreshold());
         left.add(mAddThresholdButton);
 
         mCenter = new ContentPanel(new PrecisionLayout(), false);
@@ -185,7 +186,7 @@ public class AttributePanel extends ContentPanel {
 
         ContentPanel right = new ContentPanel(new PrecisionLayout(), false);
         add(right, new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING));
-        FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", I18n.text("Remove"), () -> {
+        FontIconButton remove = new FontIconButton(FontAwesome.TRASH, I18n.text("Remove"), (b) -> {
             getParent().remove(this);
             mAttributes.remove(mAttrDef.getID());
             mAdjustCallback.run();

@@ -12,10 +12,11 @@
 package com.trollworks.gcs.ui.widget.dock;
 
 import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
-import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.FontIconButton;
 import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
@@ -38,12 +39,12 @@ import javax.swing.border.CompoundBorder;
 
 /** The header for a {@link DockContainer}. */
 public class DockHeader extends Panel implements LayoutManager, DropTargetListener {
-    private static final int               MINIMUM_TAB_WIDTH = 60;
-    private static final int               GAP               = 4;
-    private              FontAwesomeButton mMaximizeRestoreButton;
-    private              ShowTabsButton    mShowTabsButton;
-    private              Dockable          mDragDockable;
-    private              int               mDragInsertIndex;
+    private static final int            MINIMUM_TAB_WIDTH = 60;
+    private static final int            GAP               = 4;
+    private              FontIconButton mMaximizeRestoreButton;
+    private              ShowTabsButton mShowTabsButton;
+    private              Dockable       mDragDockable;
+    private              int            mDragInsertIndex;
 
     /**
      * Creates a new DockHeader for the specified {@link DockContainer}.
@@ -58,7 +59,7 @@ public class DockHeader extends Panel implements LayoutManager, DropTargetListen
         }
         mShowTabsButton = new ShowTabsButton();
         add(mShowTabsButton);
-        mMaximizeRestoreButton = new FontAwesomeButton("\uf2d0", "", this::maximize);
+        mMaximizeRestoreButton = new FontIconButton(FontAwesome.WINDOW_MAXIMIZE, "", (b) -> maximize());
         add(mMaximizeRestoreButton);
         setDropTarget(new DropTarget(this, DnDConstants.ACTION_MOVE, this));
         adjustToRestoredState();
@@ -108,15 +109,15 @@ public class DockHeader extends Panel implements LayoutManager, DropTargetListen
 
     /** Called when the owning {@link DockContainer} is set to the maximized state. */
     void adjustToMaximizedState() {
-        mMaximizeRestoreButton.setClickFunction(this::restore);
-        mMaximizeRestoreButton.setText("\uf2d2");
+        mMaximizeRestoreButton.setClickFunction((b) -> restore());
+        mMaximizeRestoreButton.setText(FontAwesome.WINDOW_RESTORE);
         mMaximizeRestoreButton.setToolTipText(I18n.text("Restore"));
     }
 
     /** Called when the owning {@link DockContainer} is restored from the maximized state. */
     void adjustToRestoredState() {
-        mMaximizeRestoreButton.setClickFunction(this::maximize);
-        mMaximizeRestoreButton.setText("\uf2d0");
+        mMaximizeRestoreButton.setClickFunction((b) -> maximize());
+        mMaximizeRestoreButton.setText(FontAwesome.WINDOW_MAXIMIZE);
         mMaximizeRestoreButton.setToolTipText(I18n.text("Maximize"));
     }
 

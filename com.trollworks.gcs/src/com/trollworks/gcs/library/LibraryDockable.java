@@ -19,10 +19,11 @@ import com.trollworks.gcs.menu.RetargetableFocus;
 import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.scale.Scales;
 import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.FontIconButton;
 import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.Toolbar;
@@ -53,7 +54,7 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
     private PopupMenu<Scales> mScalesPopup;
     private EditorField       mFilterField;
     private PopupMenu<String> mCategoryPopup;
-    private FontAwesomeButton mLockButton;
+    private FontIconButton    mLockButton;
     private ListOutline       mOutline;
     private boolean           mUpdatePending;
 
@@ -69,14 +70,20 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
         LibraryHeader  header  = new LibraryHeader(mOutline.getHeaderPanel());
         Settings       prefs   = Settings.getInstance();
         mToolbar = new Toolbar();
-        mLockButton = new FontAwesomeButton(outlineModel.isLocked() ? "\uf023" : "\uf13e", I18n.text("Switches between allowing editing and not"), () -> {
-            OutlineModel model = mOutline.getModel();
-            model.setLocked(!model.isLocked());
-            mLockButton.setText(model.isLocked() ? "\uf023" : "\uf13e");
-        });
+        mLockButton = new FontIconButton(outlineModel.isLocked() ? FontAwesome.LOCK :
+                FontAwesome.UNLOCK_ALT, I18n.text("Switches between allowing editing and not"),
+                (b) -> {
+                    OutlineModel model = mOutline.getModel();
+                    model.setLocked(!model.isLocked());
+                    mLockButton.setText(model.isLocked() ? FontAwesome.LOCK : FontAwesome.UNLOCK_ALT);
+                });
         mToolbar.add(mLockButton);
-        mToolbar.add(new FontAwesomeButton("\uf0e8", I18n.text("Opens/closes all hierarchical rows"), () -> mOutline.getModel().toggleRowOpenState()));
-        mToolbar.add(new FontAwesomeButton("\uf337", I18n.text("Sets the width of each column to exactly fit its contents"), () -> mOutline.sizeColumnsToFit()));
+        mToolbar.add(new FontIconButton(FontAwesome.SITEMAP,
+                I18n.text("Opens/closes all hierarchical rows"),
+                (b) -> mOutline.getModel().toggleRowOpenState()));
+        mToolbar.add(new FontIconButton(FontAwesome.ARROWS_ALT_H,
+                I18n.text("Sets the width of each column to exactly fit its contents"),
+                (b) -> mOutline.sizeColumnsToFit()));
         mScalesPopup = new PopupMenu<>(Scales.values(), (p) -> {
             Scales scales = mScalesPopup.getSelectedItem();
             if (scales == null) {

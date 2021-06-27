@@ -14,12 +14,13 @@ package com.trollworks.gcs.body;
 import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.DynamicColor;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.BandedPanel;
 import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.FontIconButton;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.Wrapper;
 import com.trollworks.gcs.utility.Dice;
@@ -92,7 +93,7 @@ public class BodyTypePanel extends BandedPanel {
     private void fill() {
         mFirstField = null;
         Wrapper wrapper = new Wrapper(new PrecisionLayout().setColumns(isSubTable() ? 5 : 7).setMargins(0));
-        wrapper.add(new FontAwesomeButton("\uf055", I18n.text("Add Hit Location"), this::addHitLocation));
+        wrapper.add(new FontIconButton(FontAwesome.PLUS_CIRCLE, I18n.text("Add Hit Location"), (b) -> addHitLocation()));
         if (isSubTable()) {
             wrapper.add(new Label(I18n.text("Sub-Table")), new PrecisionLayoutData().setFillHorizontalAlignment());
         } else {
@@ -141,7 +142,7 @@ public class BodyTypePanel extends BandedPanel {
             mFirstField = field;
         }
         if (isSubTable()) {
-            FontAwesomeButton remove = new FontAwesomeButton("\uf1f8", I18n.text("Remove"), () -> {
+            FontIconButton remove = new FontIconButton(FontAwesome.TRASH, I18n.text("Remove"), (b) -> {
                 getParent().remove(this);
                 mLocations.getOwningLocation().setSubTable(null);
                 mAdjustCallback.run();

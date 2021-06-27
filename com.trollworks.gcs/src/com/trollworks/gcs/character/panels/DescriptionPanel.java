@@ -21,10 +21,11 @@ import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageLabel;
 import com.trollworks.gcs.settings.GeneralSettingsWindow;
 import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
-import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.FontIconButton;
 import com.trollworks.gcs.ui.widget.Wrapper;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
@@ -59,7 +60,7 @@ public class DescriptionPanel extends DropPanel {
                 I18n.text("Gender"), null, (c, v) -> c.getProfile().setGender((String) v));
         mAgeField = createRandomizableField(wrapper, sheet, FieldFactory.STRING, profile.getAge(),
                 "age", I18n.text("Age"), I18n.text("The character's age"),
-                (c, v) -> c.getProfile().setAge((String) v), () -> {
+                (c, v) -> c.getProfile().setAge((String) v), (b) -> {
                     mAgeField.requestFocus();
                     String current = profile.getAge();
                     String result;
@@ -71,7 +72,7 @@ public class DescriptionPanel extends DropPanel {
         mBirthdayField = createRandomizableField(wrapper, sheet, FieldFactory.STRING,
                 profile.getBirthday(), "birthday", I18n.text("Birthday"),
                 I18n.text("The character's birthday"),
-                (c, v) -> c.getProfile().setBirthday((String) v), () -> {
+                (c, v) -> c.getProfile().setBirthday((String) v), (b) -> {
                     mBirthdayField.requestFocus();
                     String current = profile.getBirthday();
                     String result;
@@ -90,7 +91,7 @@ public class DescriptionPanel extends DropPanel {
         mHeightField = createRandomizableField(wrapper, sheet, FieldFactory.HEIGHT,
                 profile.getHeight(), "character height", I18n.text("Height"),
                 I18n.text("The character's height"),
-                (c, v) -> c.getProfile().setHeight((LengthValue) v), () -> {
+                (c, v) -> c.getProfile().setHeight((LengthValue) v), (b) -> {
                     mHeightField.requestFocus();
                     LengthValue length = profile.getHeight();
                     LengthValue result;
@@ -103,7 +104,7 @@ public class DescriptionPanel extends DropPanel {
         mWeightField = createRandomizableField(wrapper, sheet, FieldFactory.WEIGHT,
                 profile.getWeight(), "character weight", I18n.text("Weight"),
                 I18n.text("The character's weight"),
-                (c, v) -> c.getProfile().setWeight((WeightValue) v), () -> {
+                (c, v) -> c.getProfile().setWeight((WeightValue) v), (b) -> {
                     mWeightField.requestFocus();
                     WeightValue weight = profile.getWeight();
                     WeightValue result;
@@ -125,21 +126,21 @@ public class DescriptionPanel extends DropPanel {
         wrapper = new Wrapper(new PrecisionLayout().setColumns(3).setMargins(0).setSpacing(0, 0));
         mHairField = createRandomizableField(wrapper, sheet, FieldFactory.STRING, profile.getHair(),
                 "hair", I18n.text("Hair"), I18n.text("The character's hair style and color"),
-                (c, v) -> c.getProfile().setHair((String) v), () -> {
+                (c, v) -> c.getProfile().setHair((String) v), (b) -> {
                     mHairField.requestFocus();
                     profile.setHair(Profile.getRandomHair(profile.getHair()));
                 });
         mEyeColorField = createRandomizableField(wrapper, sheet, FieldFactory.STRING,
                 profile.getEyeColor(), "eye color", I18n.text("Eyes"),
                 I18n.text("The character's eye color"),
-                (c, v) -> c.getProfile().setEyeColor((String) v), () -> {
+                (c, v) -> c.getProfile().setEyeColor((String) v), (b) -> {
                     mEyeColorField.requestFocus();
                     profile.setEyeColor(Profile.getRandomEyeColor(profile.getEyeColor()));
                 });
         mSkinColorField = createRandomizableField(wrapper, sheet, FieldFactory.STRING,
                 profile.getSkinColor(), "skin color", I18n.text("Skin"),
                 I18n.text("The character's skin color"),
-                (c, v) -> c.getProfile().setSkinColor((String) v), () -> {
+                (c, v) -> c.getProfile().setSkinColor((String) v), (b) -> {
                     mSkinColorField.requestFocus();
                     profile.setSkinColor(Profile.getRandomSkinColor(profile.getSkinColor()));
                 });
@@ -147,8 +148,10 @@ public class DescriptionPanel extends DropPanel {
         add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 
-    private static PageField createRandomizableField(Container parent, CharacterSheet sheet, AbstractFormatterFactory factory, Object value, String tag, String title, String tooltip, CharacterSetter setter, Runnable randomizer) {
-        parent.add(new FontAwesomeButton("\uf074", Fonts.PAGE_LABEL_PRIMARY.getFont().getSize() * 8 / 10, String.format(I18n.text("Randomize %s"), title), randomizer));
+    private static PageField createRandomizableField(Container parent, CharacterSheet sheet, AbstractFormatterFactory factory, Object value, String tag, String title, String tooltip, CharacterSetter setter, FontIconButton.ClickFunction randomizer) {
+        FontIconButton button = new FontIconButton(FontAwesome.RANDOM, String.format(I18n.text("Randomize %s"), title), randomizer);
+        button.setThemeFont(Fonts.FONT_ICON_PAGE_SMALL);
+        parent.add(button);
         PageField field = new PageField(factory, value, setter, sheet, tag, SwingConstants.LEFT, true, tooltip);
         parent.add(new PageLabel(title), new PrecisionLayoutData().setEndHorizontalAlignment().setLeftMargin(1));
         parent.add(field, createFieldLayout());

@@ -276,8 +276,9 @@ public class Modal extends JDialog {
         String  iconValue = msgType.getText();
         boolean hasIcon   = !iconValue.isEmpty();
         if (hasIcon) {
-            Panel           left = new Panel(new BorderLayout());
-            FontAwesomeIcon icon = new FontAwesomeIcon(iconValue, Fonts.LABEL_PRIMARY.getFont().getSize() * 3, 0, null);
+            Panel left = new Panel(new BorderLayout());
+            Label icon = new Label(iconValue);
+            icon.setThemeFont(Fonts.FONT_ICON_HUGE);
             icon.setForeground(msgType.getColor());
             left.add(icon, BorderLayout.NORTH);
             content.add(left, BorderLayout.WEST);

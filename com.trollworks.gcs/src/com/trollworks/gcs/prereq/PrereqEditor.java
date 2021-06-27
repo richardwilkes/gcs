@@ -11,11 +11,12 @@
 
 package com.trollworks.gcs.prereq;
 
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.FlexGrid;
 import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.ui.widget.EditorPanel;
-import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.FontIconButton;
 import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.utility.I18n;
@@ -102,7 +103,7 @@ public abstract class PrereqEditor extends EditorPanel {
         grid.add(left, 0, 0);
         rebuildSelf(left, grid, right);
         if (mDepth > 0) {
-            FontAwesomeButton button = new FontAwesomeButton("\uf1f8", mPrereq instanceof PrereqList ? I18n.text("Remove this prerequisite list") : I18n.text("Remove this prerequisite"), this::remove);
+            FontIconButton button = new FontIconButton(FontAwesome.TRASH, mPrereq instanceof PrereqList ? I18n.text("Remove this prerequisite list") : I18n.text("Remove this prerequisite"), this::remove);
             add(button);
             right.add(button);
         }

@@ -15,7 +15,6 @@ import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.menu.edit.Undoable;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.settings.SheetSettings;
-import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.widget.DataModifiedListener;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.Log;
@@ -38,6 +37,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import javax.swing.Icon;
 import javax.swing.undo.UndoableEdit;
 
 /** A common super class for all data file-based model objects. */
@@ -173,8 +173,10 @@ public abstract class DataFile extends ChangeableData implements Undoable {
     /** @return The {@link FileType}. */
     public abstract FileType getFileType();
 
-    /** @return The icons representing this file. */
-    public abstract RetinaIcon getFileIcons();
+    /** @return The icon representing this file. */
+    public final Icon getFileIcon() {
+        return getFileType().getIcon();
+    }
 
     /** @return The path associated with this data file. */
     public Path getPath() {

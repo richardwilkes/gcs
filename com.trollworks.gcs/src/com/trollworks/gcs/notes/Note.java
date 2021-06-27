@@ -14,11 +14,10 @@ package com.trollworks.gcs.notes;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.menu.item.HasSourceReference;
-import com.trollworks.gcs.ui.RetinaIcon;
-import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
+import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.SaveType;
@@ -28,6 +27,7 @@ import com.trollworks.gcs.utility.json.JsonWriter;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.Icon;
 
 /** A note. */
 public class Note extends ListRow implements HasSourceReference {
@@ -175,8 +175,8 @@ public class Note extends ListRow implements HasSourceReference {
     }
 
     @Override
-    public RetinaIcon getIcon(boolean marker) {
-        return marker ? Images.NOT_MARKER : Images.NOT_FILE;
+    public Icon getIcon() {
+        return FileType.NOTE.getIcon();
     }
 
     @Override

@@ -27,11 +27,10 @@ import com.trollworks.gcs.modifier.ModifierWeightValueType;
 import com.trollworks.gcs.settings.SheetSettings;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.template.Template;
-import com.trollworks.gcs.ui.RetinaIcon;
-import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
+import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.Filtered;
 import com.trollworks.gcs.utility.Fixed6;
 import com.trollworks.gcs.utility.I18n;
@@ -52,6 +51,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.Icon;
 
 /** A piece of equipment. */
 public class Equipment extends ListRow implements HasSourceReference {
@@ -815,8 +815,8 @@ public class Equipment extends ListRow implements HasSourceReference {
     }
 
     @Override
-    public RetinaIcon getIcon(boolean marker) {
-        return marker ? Images.EQP_MARKER : Images.EQP_FILE;
+    public Icon getIcon() {
+        return FileType.EQUIPMENT.getIcon();
     }
 
     @Override

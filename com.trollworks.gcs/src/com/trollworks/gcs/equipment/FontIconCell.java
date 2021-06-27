@@ -18,10 +18,10 @@ import com.trollworks.gcs.ui.widget.outline.Row;
 import java.awt.Font;
 import javax.swing.SwingConstants;
 
-public class FontAwesomeCell extends ListHeaderCell {
+public class FontIconCell extends ListHeaderCell {
     private String mFontName;
 
-    public FontAwesomeCell(String fontName, boolean forSheet) {
+    public FontIconCell(String fontName, boolean forSheet) {
         super(forSheet);
         mFontName = fontName;
     }

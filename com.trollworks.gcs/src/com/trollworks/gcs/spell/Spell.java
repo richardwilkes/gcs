@@ -21,12 +21,11 @@ import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.skill.SkillLevel;
-import com.trollworks.gcs.ui.RetinaIcon;
-import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
+import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.ID;
 import com.trollworks.gcs.utility.Log;
@@ -47,6 +46,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
+import javax.swing.Icon;
 
 /** A GURPS Spell. */
 public class Spell extends ListRow implements HasSourceReference {
@@ -906,8 +906,8 @@ public class Spell extends ListRow implements HasSourceReference {
     }
 
     @Override
-    public RetinaIcon getIcon(boolean marker) {
-        return marker ? Images.SPL_MARKER : Images.SPL_FILE;
+    public Icon getIcon() {
+        return FileType.SPELL.getIcon();
     }
 
     /** @return The attribute. */

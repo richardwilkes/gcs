@@ -13,13 +13,14 @@ package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.border.TitledBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.ActionPanel;
-import com.trollworks.gcs.ui.widget.FontAwesomeButton;
+import com.trollworks.gcs.ui.widget.FontIconButton;
 import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Outline;
@@ -40,8 +41,8 @@ import java.util.List;
 public abstract class ModifierListEditor extends ActionPanel implements ActionListener {
     private DataFile        mOwner;
     private ModifierOutline mOutline;
-    FontAwesomeButton mAddButton;
-    private FontAwesomeButton mDeleteButton;
+    FontIconButton mAddButton;
+    private FontIconButton mDeleteButton;
     boolean mModified;
 
     protected ModifierListEditor(DataFile owner, List<? extends Modifier> readOnlyModifiers, List<? extends Modifier> modifiers) {
@@ -72,8 +73,8 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
         panel.add(header, BorderLayout.NORTH);
         panel.add(mOutline, BorderLayout.CENTER);
 
-        mAddButton = new FontAwesomeButton("\uf055", I18n.text("Add a modifier"), this::addModifier);
-        mDeleteButton = new FontAwesomeButton("\uf1f8", I18n.text("Remove the selected modifiers"), () -> mOutline.deleteSelection());
+        mAddButton = new FontIconButton(FontAwesome.PLUS_CIRCLE, I18n.text("Add a modifier"), (b) -> addModifier());
+        mDeleteButton = new FontIconButton(FontAwesome.TRASH, I18n.text("Remove the selected modifiers"), (b) -> mOutline.deleteSelection());
         mDeleteButton.setEnabled(false);
 
         Panel right = new Panel(new PrecisionLayout().setMargins(5));
