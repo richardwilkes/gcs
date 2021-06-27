@@ -13,7 +13,7 @@ package com.trollworks.gcs.ui.widget;
 
 public final class LayoutConstants {
     public static final int WINDOW_BORDER_INSET    = 20;
-    public static final int TOOLBAR_VERTICAL_INSET = 10;
+    public static final int TOOLBAR_VERTICAL_INSET = 6;
 
     private LayoutConstants() {
     }
