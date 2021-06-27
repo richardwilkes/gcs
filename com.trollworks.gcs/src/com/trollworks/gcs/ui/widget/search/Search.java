@@ -51,7 +51,7 @@ public class Search extends Panel implements DocumentListener, KeyListener, Focu
      * @param target The search target.
      */
     public Search(SearchTarget target) {
-        super(new PrecisionLayout().setColumns(2).setMargins(2));
+        super(new PrecisionLayout().setColumns(2).setMargins(0));
         setOpaque(false);
         mTarget = target;
         mFilterField = createSearchField();
