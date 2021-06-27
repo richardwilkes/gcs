@@ -19,6 +19,7 @@ import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontAwesomeButton;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.PopupMenu;
+import com.trollworks.gcs.ui.widget.ThemeScrollBarUI;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.Platform;
 
@@ -57,6 +58,8 @@ public final class UIUtilities {
         // The following two lines are here to ensure the theme is loaded
         Colors.currentThemeColors();
         Fonts.currentThemeFonts();
+
+        UIManager.put("ScrollBarUI", ThemeScrollBarUI.class.getName());
     }
 
     /**
@@ -362,6 +365,14 @@ public final class UIUtilities {
     public static Rectangle getLocalInsetBounds(JComponent component) {
         Insets insets = component.getInsets();
         return new Rectangle(insets.left, insets.top, component.getWidth() - (insets.left + insets.right), component.getHeight() - (insets.top + insets.bottom));
+    }
+
+    /**
+     * @param component The {@link JComponent} to work with.
+     * @return The local bounds of the specified {@link JComponent}.
+     */
+    public static Rectangle getLocalBounds(JComponent component) {
+        return new Rectangle(0, 0, component.getWidth(), component.getHeight());
     }
 
     public static void invalidateTree(Component comp) {
