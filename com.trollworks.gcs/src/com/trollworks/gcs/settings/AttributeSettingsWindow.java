@@ -157,8 +157,8 @@ public final class AttributeSettingsWindow extends SettingsWindow<Map<String, At
     }
 
     @Override
-    protected String getResetButtonTitle() {
-        return mCharacter == null ? super.getResetButtonTitle() : I18n.text("Reset to Global Defaults");
+    protected String getResetButtonTooltip() {
+        return mCharacter == null ? super.getResetButtonTooltip() : I18n.text("Reset to Global Defaults");
     }
 
     @Override

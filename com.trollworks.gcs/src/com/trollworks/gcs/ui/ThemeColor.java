@@ -18,14 +18,16 @@ public final class ThemeColor extends Color {
     private final int    mIndex;
     private final String mName;
     private final String mKey;
-    private final Color  mDefault;
+    private final Color  mDefLight;
+    private final Color  mDefDark;
 
-    ThemeColor(String key, String name, Color def) {
+    ThemeColor(String key, String name, Color defLight, Color defDark) {
         super(0, true);
         mName = name;
         mIndex = Colors.ALL.size();
         mKey = key;
-        mDefault = new Color(def.getRGB(), true);
+        mDefLight = new Color(defLight.getRGB(), true);
+        mDefDark = new Color(defDark.getRGB(), true);
         Colors.ALL.add(this);
     }
 
@@ -39,9 +41,14 @@ public final class ThemeColor extends Color {
         return mKey;
     }
 
-    /** @return The default color value. */
-    public Color getDefault() {
-        return mDefault;
+    /** @return The default "light" color value. */
+    public Color getDefaultLight() {
+        return mDefLight;
+    }
+
+    /** @return The default "dark" color value. */
+    public Color getDefaultDark() {
+        return mDefDark;
     }
 
     @Override

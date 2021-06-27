@@ -81,17 +81,39 @@ public abstract class SettingsWindow<T> extends BaseWindow implements CloseHandl
     }
 
     protected final void addResetButton(Toolbar toolbar) {
-        mResetButton = new FontIconButton(FontAwesome.POWER_OFF, getResetButtonTitle(), (b) -> reset());
+        mResetButton = new FontIconButton(getResetButtonGlyph(), getResetButtonTooltip(), (b) -> reset());
         toolbar.add(mResetButton, Toolbar.LAYOUT_EXTRA_BEFORE);
     }
 
     protected final void addActionMenu(Toolbar toolbar) {
-        mMenuButton = new FontIconButton(FontAwesome.BARS, I18n.text("Menu"),
-                (b) -> createActionMenu().presentToUser(mMenuButton, 0, mMenuButton::updateRollOver));
+        mMenuButton = new FontIconButton(FontAwesome.BARS, I18n.text("Menu"), (b) -> {
+            Menu menu = new Menu();
+            populateActionMenu(menu);
+            menu.presentToUser(mMenuButton, 0, mMenuButton::updateRollOver);
+        });
         toolbar.add(mMenuButton);
     }
 
-    protected String getResetButtonTitle() {
+    protected void populateActionMenu(Menu menu) {
+        menu.addItem(new MenuItem(I18n.text("Import…"), this::importSettings));
+        menu.addItem(new MenuItem(I18n.text("Export…"), this::exportSettings));
+        for (NamedData<List<NamedData<T>>> oneDir : NamedData.scanLibraries(getFileType(), getDir(),
+                this::createSettingsFrom)) {
+            menu.addSeparator();
+            MenuItem item = new MenuItem(oneDir.getName(), null);
+            item.setEnabled(false);
+            menu.addItem(item);
+            for (NamedData<T> choice : oneDir.getData()) {
+                menu.add(new MenuItem(choice.toString(), (p) -> resetTo(choice.getData())));
+            }
+        }
+    }
+
+    protected String getResetButtonGlyph() {
+        return FontAwesome.POWER_OFF;
+    }
+
+    protected String getResetButtonTooltip() {
         return I18n.text("Reset to Factory Defaults");
     }
 
@@ -155,23 +177,6 @@ public abstract class SettingsWindow<T> extends BaseWindow implements CloseHandl
     }
 
     protected abstract void exportSettingsTo(Path path) throws IOException;
-
-    private Menu createActionMenu() {
-        Menu menu = new Menu();
-        menu.addItem(new MenuItem(I18n.text("Import…"), this::importSettings));
-        menu.addItem(new MenuItem(I18n.text("Export…"), this::exportSettings));
-        for (NamedData<List<NamedData<T>>> oneDir : NamedData.scanLibraries(getFileType(), getDir(),
-                this::createSettingsFrom)) {
-            menu.addSeparator();
-            MenuItem item = new MenuItem(oneDir.getName(), null);
-            item.setEnabled(false);
-            menu.addItem(item);
-            for (NamedData<T> choice : oneDir.getData()) {
-                menu.add(new MenuItem(choice.toString(), (p) -> resetTo(choice.getData())));
-            }
-        }
-        return menu;
-    }
 
     @Override
     public final boolean mayAttemptClose() {

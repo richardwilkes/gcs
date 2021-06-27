@@ -40,6 +40,7 @@ public final class FontAwesome {
     public static final String FOLDER                = "\uf07b";
     public static final String LAYER_GROUP           = "\uf5fd";
     public static final String LOCK                  = "\uf023";
+    public static final String MOON                  = "\uf186";
     public static final String PLUS_CIRCLE           = "\uf055";
     public static final String POWER_OFF             = "\uf011";
     public static final String QUESTION_CIRCLE       = "\uf059";
@@ -48,6 +49,7 @@ public final class FontAwesome {
     public static final String SEARCH_LOCATION       = "\uf689";
     public static final String SITEMAP               = "\uf0e8";
     public static final String SLACK_HASH            = "\uf3ef";
+    public static final String SUN                   = "\uf185";
     public static final String SYNC_ALT              = "\uf2f1";
     public static final String TIMES_CIRCLE          = "\uf057";
     public static final String TRASH                 = "\uf1f8";

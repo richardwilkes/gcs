@@ -12,14 +12,17 @@
 package com.trollworks.gcs.settings;
 
 import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.ColorWell;
+import com.trollworks.gcs.ui.widget.FontIconButton;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.LayoutConstants;
 import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.Toolbar;
 import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.Dirs;
 import com.trollworks.gcs.utility.FileType;
@@ -37,6 +40,7 @@ import java.util.List;
 public final class ColorSettingsWindow extends SettingsWindow<Colors> {
     private static ColorSettingsWindow INSTANCE;
 
+    private FontIconButton     mDarkModeButton;
     private List<ColorTracker> mColorWells;
     private boolean            mIgnore;
 
@@ -64,6 +68,25 @@ public final class ColorSettingsWindow extends SettingsWindow<Colors> {
         synchronized (ColorSettingsWindow.class) {
             INSTANCE = null;
         }
+    }
+
+    @Override
+    protected void addToToolBar(Toolbar toolbar) {
+        addResetButton(toolbar);
+        mDarkModeButton = new FontIconButton(FontAwesome.MOON, I18n.text("Dark Mode"),
+                (b) -> resetTo(Colors.defaultDarkThemeColors()));
+        toolbar.add(mDarkModeButton);
+        addActionMenu(toolbar);
+    }
+
+    @Override
+    protected String getResetButtonGlyph() {
+        return FontAwesome.SUN;
+    }
+
+    @Override
+    protected String getResetButtonTooltip() {
+        return I18n.text("Light Mode");
     }
 
     protected Panel createContent() {
@@ -113,17 +136,14 @@ public final class ColorSettingsWindow extends SettingsWindow<Colors> {
 
     @Override
     protected boolean shouldResetBeEnabled() {
-        for (ThemeColor color : Colors.ALL) {
-            if (color.getRGB() != Colors.defaultThemeColors().getColor(color.getIndex()).getRGB()) {
-                return true;
-            }
-        }
-        return false;
+        Colors current = Colors.currentThemeColors();
+        mDarkModeButton.setEnabled(!Colors.defaultDarkThemeColors().match(current));
+        return !Colors.defaultLightThemeColors().match(current);
     }
 
     @Override
     protected Colors getResetData() {
-        return Colors.defaultThemeColors();
+        return Colors.defaultLightThemeColors();
     }
 
     @Override
