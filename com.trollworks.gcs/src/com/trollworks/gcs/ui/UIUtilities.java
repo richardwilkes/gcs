@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.ui;
 
+import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.widget.Button;
 import com.trollworks.gcs.ui.widget.Checkbox;
@@ -19,6 +20,7 @@ import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.FontIconButton;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.PopupMenu;
+import com.trollworks.gcs.ui.widget.ThemePopupMenuSeparatorUI;
 import com.trollworks.gcs.ui.widget.ThemeScrollBarUI;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.Platform;
@@ -41,6 +43,10 @@ import javax.swing.JComponent;
 import javax.swing.JViewport;
 import javax.swing.RepaintManager;
 import javax.swing.UIManager;
+import javax.swing.plaf.basic.BasicMenuBarUI;
+import javax.swing.plaf.basic.BasicMenuItemUI;
+import javax.swing.plaf.basic.BasicMenuUI;
+import javax.swing.plaf.basic.BasicPopupMenuUI;
 
 /** Various utility methods for the UI. */
 public final class UIUtilities {
@@ -60,6 +66,42 @@ public final class UIUtilities {
         Fonts.currentThemeFonts();
 
         UIManager.put("ScrollBarUI", ThemeScrollBarUI.class.getName());
+
+        if (!Platform.isMacintosh()) {
+            UIManager.put("MenuBarUI", BasicMenuBarUI.class.getName());
+            UIManager.put("MenuUI", BasicMenuUI.class.getName());
+            UIManager.put("MenuItemUI", BasicMenuItemUI.class.getName());
+            UIManager.put("PopupMenuUI", BasicPopupMenuUI.class.getName());
+            UIManager.put("PopupMenuSeparatorUI", ThemePopupMenuSeparatorUI.class.getName());
+
+            UIManager.put("MenuBar.opaque", Boolean.TRUE);
+            UIManager.put("MenuBar.background", Colors.BACKGROUND);
+            UIManager.put("MenuBar.foreground", Colors.ON_BACKGROUND);
+            UIManager.put("MenuBar.shadow", Colors.BACKGROUND);
+            UIManager.put("MenuBar.highlight", Colors.BACKGROUND);
+            UIManager.put("MenuBar.border", new LineBorder(Colors.DIVIDER, 0, 0, 1, 0));
+
+            UIManager.put("Menu.opaque", Boolean.TRUE);
+            UIManager.put("Menu.background", Colors.BACKGROUND);
+            UIManager.put("Menu.foreground", Colors.ON_BACKGROUND);
+
+            UIManager.put("MenuItem.opaque", Boolean.TRUE);
+            UIManager.put("MenuItem.borderPainted", Boolean.FALSE);
+            UIManager.put("MenuItem.background", Colors.BACKGROUND);
+            UIManager.put("MenuItem.foreground", Colors.ON_BACKGROUND);
+            UIManager.put("MenuItem.disabledForeground", new DynamicColor(() -> Colors.getWithAlpha(Colors.ON_BACKGROUND, 192).getRGB()));
+            UIManager.put("MenuItem.selectionBackground", Colors.SELECTION);
+            UIManager.put("MenuItem.selectionForeground", Colors.ON_SELECTION);
+            UIManager.put("MenuItem.acceleratorForeground", Colors.ON_BACKGROUND);
+            UIManager.put("MenuItem.acceleratorSelectionForeground", Colors.ON_SELECTION);
+
+            UIManager.put("PopupMenu.background", Colors.BACKGROUND);
+            UIManager.put("PopupMenu.foreground", Colors.ON_BACKGROUND);
+            UIManager.put("PopupMenu.border", new LineBorder(Colors.DIVIDER));
+
+            UIManager.put("Panel.background", Colors.BACKGROUND);
+            UIManager.put("Panel.foreground", Colors.ON_BACKGROUND);
+        }
     }
 
     /**
