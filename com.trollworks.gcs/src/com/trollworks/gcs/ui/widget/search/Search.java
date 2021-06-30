@@ -12,6 +12,7 @@
 package com.trollworks.gcs.ui.widget.search;
 
 import com.trollworks.gcs.character.FieldFactory;
+import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
@@ -131,7 +132,7 @@ public class Search extends Panel implements DocumentListener, KeyListener, Focu
     }
 
     private boolean redirectKeyEventToFloater(KeyEvent event) {
-        if (mFloater != null && !event.isConsumed() && (event.getModifiersEx() & getToolkit().getMenuShortcutKeyMaskEx()) == 0) {
+        if (mFloater != null && !event.isConsumed() && (event.getModifiersEx() & Command.COMMAND_MODIFIER) == 0) {
             int keyCode = event.getKeyCode();
             if (keyCode == KeyEvent.VK_UP || keyCode == KeyEvent.VK_DOWN) {
                 mFloater.handleKeyPressed(event);
@@ -143,7 +144,7 @@ public class Search extends Panel implements DocumentListener, KeyListener, Focu
 
     @Override
     public void keyPressed(KeyEvent event) {
-        if (!event.isConsumed() && (event.getModifiersEx() & getToolkit().getMenuShortcutKeyMaskEx()) == 0 && !redirectKeyEventToFloater(event) && event.getKeyCode() == KeyEvent.VK_ENTER) {
+        if (!event.isConsumed() && (event.getModifiersEx() & Command.COMMAND_MODIFIER) == 0 && !redirectKeyEventToFloater(event) && event.getKeyCode() == KeyEvent.VK_ENTER) {
             searchSelect();
         }
     }

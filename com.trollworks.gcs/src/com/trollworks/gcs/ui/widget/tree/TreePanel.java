@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.ui.widget.tree;
 
+import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.edit.Deletable;
 import com.trollworks.gcs.menu.edit.Openable;
 import com.trollworks.gcs.menu.edit.SelectAllCapable;
@@ -232,7 +233,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
                             if (!handled) {
                                 if (mAnchorRow != null && event.isShiftDown()) {
                                     select(mAnchorRow, row, true);
-                                } else if ((event.getModifiersEx() & getToolkit().getMenuShortcutKeyMaskEx()) != 0 && !isPopupTrigger) {
+                                } else if ((event.getModifiersEx() & Command.COMMAND_MODIFIER) != 0 && !isPopupTrigger) {
                                     if (isSelected(row)) {
                                         deselect(row);
                                     } else {
@@ -1666,7 +1667,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
 
     @Override
     public void keyPressed(KeyEvent event) {
-        if (!event.isConsumed() && (event.getModifiersEx() & getToolkit().getMenuShortcutKeyMaskEx()) == 0) {
+        if (!event.isConsumed() && (event.getModifiersEx() & Command.COMMAND_MODIFIER) == 0) {
             switch (event.getKeyCode()) {
             case KeyEvent.VK_LEFT:
                 if (mSelectedRows.size() == 1) {
@@ -1726,7 +1727,7 @@ public class TreePanel extends DirectScrollPanel implements Runnable, Openable, 
 
     @Override
     public void keyTyped(KeyEvent event) {
-        if (!event.isConsumed() && (event.getModifiersEx() & getToolkit().getMenuShortcutKeyMaskEx()) == 0) {
+        if (!event.isConsumed() && (event.getModifiersEx() & Command.COMMAND_MODIFIER) == 0) {
             char ch = event.getKeyChar();
             if (ch == '\n' || ch == '\r') {
                 if (canOpenSelection()) {

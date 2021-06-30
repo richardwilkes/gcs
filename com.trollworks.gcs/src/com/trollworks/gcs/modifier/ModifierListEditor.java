@@ -13,6 +13,7 @@ package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
+import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.border.TitledBorder;
@@ -183,7 +184,7 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
         @Override
         public void keyPressed(KeyEvent event) {
             super.keyPressed(event);
-            if (!event.isConsumed() && (event.getModifiersEx() & getToolkit().getMenuShortcutKeyMaskEx()) == 0 && event.getKeyCode() == KeyEvent.VK_SPACE) {
+            if (!event.isConsumed() && (event.getModifiersEx() & Command.COMMAND_MODIFIER) == 0 && event.getKeyCode() == KeyEvent.VK_SPACE) {
                 boolean      doNotify = false;
                 OutlineModel model    = getModel();
                 if (mAddButton.isEnabled() && model.hasSelection()) {

@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.ui.widget.outline;
 
+import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.menu.edit.Deletable;
 import com.trollworks.gcs.menu.edit.SelectAllCapable;
 import com.trollworks.gcs.menu.edit.Undoable;
@@ -1365,7 +1366,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                     if (event.isShiftDown()) {
                         method |= Selection.MOUSE_EXTEND;
                     }
-                    if ((event.getModifiersEx() & getToolkit().getMenuShortcutKeyMaskEx()) != 0 && !event.isPopupTrigger()) {
+                    if ((event.getModifiersEx() & Command.COMMAND_MODIFIER) != 0 && !event.isPopupTrigger()) {
                         method |= Selection.MOUSE_FLIP;
                     }
                     mSelectOnMouseUp = mModel.getSelection().selectByMouse(rowIndexHit, method);
@@ -1470,7 +1471,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
 
     @Override
     public void keyPressed(KeyEvent event) {
-        if (!event.isConsumed() && (event.getModifiersEx() & getToolkit().getMenuShortcutKeyMaskEx()) == 0) {
+        if (!event.isConsumed() && (event.getModifiersEx() & Command.COMMAND_MODIFIER) == 0) {
             Selection selection = mModel.getSelection();
             boolean   shiftDown = event.isShiftDown();
             int       index;
@@ -1621,7 +1622,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
 
     @Override
     public void keyTyped(KeyEvent event) {
-        if (!event.isConsumed() && (event.getModifiersEx() & getToolkit().getMenuShortcutKeyMaskEx()) == 0) {
+        if (!event.isConsumed() && (event.getModifiersEx() & Command.COMMAND_MODIFIER) == 0) {
             char ch = event.getKeyChar();
             if (ch == '\n' || ch == '\r') {
                 if (mModel.hasSelection()) {
