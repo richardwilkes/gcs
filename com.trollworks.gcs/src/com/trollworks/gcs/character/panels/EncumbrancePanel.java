@@ -82,7 +82,7 @@ public class EncumbrancePanel extends DropPanel {
                     textColor = Colors.ON_OVERLOADED;
                     backColor = Colors.OVERLOADED;
                 } else {
-                    textColor = Colors.ON_CURRENT;
+                    textColor = Colors.ON_MARKER;
                     backColor = Colors.MARKER;
                 }
             } else {
