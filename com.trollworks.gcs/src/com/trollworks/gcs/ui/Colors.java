@@ -146,11 +146,14 @@ public final class Colors {
             new Color(0, 96, 160),
             new Color(0, 96, 160));
     public static final ThemeColor SCROLL               = new ThemeColor("scroll", I18n.text("Scroll"),
+            new Color(192, 192, 192, 128),
+            new Color(128, 128, 128, 128));
+    public static final ThemeColor SCROLL_ROLLOVER      = new ThemeColor("scroll.rollover", I18n.text("Scroll Rollover"),
             new Color(192, 192, 192),
             new Color(128, 128, 128));
-    public static final ThemeColor SCROLL_ROLLOVER      = new ThemeColor("scroll.rollover", I18n.text("Scroll Rollover"),
+    public static final ThemeColor SCROLL_EDGE          = new ThemeColor("scroll.edge", I18n.text("Scroll Edge"),
             new Color(128, 128, 128),
-            new Color(192, 192, 192));
+            new Color(160, 160, 160));
     public static final ThemeColor TOOLTIP              = new ThemeColor("tooltip", I18n.text("Tooltip"),
             new Color(252, 252, 196),
             new Color(153, 153, 0));
@@ -165,7 +168,7 @@ public final class Colors {
             new Color(0, 0, 0),
             new Color(160, 160, 160));
     public static final ThemeColor PAGE_VOID     = new ThemeColor("page_void", I18n.text("Page Void"),
-            new Color(192, 192, 192),
+            new Color(128, 128, 128),
             new Color(0, 0, 0));
     public static final ThemeColor MARKER        = new ThemeColor("marker", I18n.text("Marker"),
             new Color(252, 242, 196),

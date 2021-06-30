@@ -126,10 +126,9 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
         if (!mIsEditable) {
             UIUtilities.disableControls(outer);
         }
-        ScrollPanel scroller   = new ScrollPanel(outer);
-        int         scrollSize = scroller.getVerticalScrollBar().getPreferredSize().width;
-        scroller.setPreferredSize(adjustSize(outer.getPreferredSize(), scrollSize));
-        Dimension size = adjustSize(outer.getMinimumSize(), scrollSize);
+        ScrollPanel scroller = new ScrollPanel(outer);
+        scroller.setPreferredSize(adjustSize(outer.getPreferredSize()));
+        Dimension size = adjustSize(outer.getMinimumSize());
         if (size.height > 128) {
             size.height = 128;
         }
@@ -137,9 +136,8 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
         add(scroller);
     }
 
-    private static Dimension adjustSize(Dimension size, int scrollSize) {
+    private static Dimension adjustSize(Dimension size) {
         size = new Dimension(size);
-        size.width += scrollSize;
         Rectangle maxBounds = WindowUtils.getMaximumWindowBounds();
         if (size.width > maxBounds.width - 64) {
             size.width = maxBounds.width - 64;

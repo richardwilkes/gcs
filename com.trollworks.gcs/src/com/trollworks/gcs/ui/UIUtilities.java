@@ -21,7 +21,6 @@ import com.trollworks.gcs.ui.widget.FontIconButton;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.ThemePopupMenuSeparatorUI;
-import com.trollworks.gcs.ui.widget.ThemeScrollBarUI;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.Platform;
 
@@ -64,8 +63,6 @@ public final class UIUtilities {
         // The following two lines are here to ensure the theme is loaded
         Colors.currentThemeColors();
         Fonts.currentThemeFonts();
-
-        UIManager.put("ScrollBarUI", ThemeScrollBarUI.class.getName());
 
         if (!Platform.isMacintosh()) {
             UIManager.put("MenuBarUI", BasicMenuBarUI.class.getName());
