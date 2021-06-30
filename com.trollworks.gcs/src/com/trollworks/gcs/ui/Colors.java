@@ -108,18 +108,18 @@ public final class Colors {
     public static final ThemeColor ON_INACTIVE_SELECTION  = new ThemeColor("on_selection.inactive", I18n.text("On Inactive Selection"),
             new Color(228, 228, 228),
             new Color(228, 228, 228));
-    public static final ThemeColor HINT                   = new ThemeColor("hint", I18n.text("Hint"),
+    public static final ThemeColor SCROLL                 = new ThemeColor("scroll", I18n.text("Scroll"),
+            new Color(192, 192, 192, 128),
+            new Color(128, 128, 128, 128));
+    public static final ThemeColor SCROLL_ROLLOVER        = new ThemeColor("scroll.rollover", I18n.text("Scroll Rollover"),
+            new Color(192, 192, 192),
+            new Color(128, 128, 128));
+    public static final ThemeColor SCROLL_EDGE            = new ThemeColor("scroll.edge", I18n.text("Scroll Edge"),
             new Color(128, 128, 128),
-            new Color(64, 64, 64));
+            new Color(160, 160, 160));
     public static final ThemeColor DROP_AREA              = new ThemeColor("drop_area", I18n.text("Drop Area"),
             new Color(0, 204, 0),
             new Color(0, 204, 0));
-    public static final ThemeColor SEARCH_LIST            = new ThemeColor("search_list", I18n.text("Search List"),
-            new Color(224, 255, 255),
-            new Color(0, 43, 43));
-    public static final ThemeColor ON_SEARCH_LIST         = new ThemeColor("on_search_list", I18n.text("On Search List"),
-            new Color(0, 0, 0),
-            new Color(204, 204, 204));
 
     public static final ThemeColor BUTTON               = new ThemeColor("button.background", I18n.text("Button"),
             new Color(248, 248, 255),
@@ -145,21 +145,18 @@ public final class Colors {
     public static final ThemeColor PRESSED_ICON_BUTTON  = new ThemeColor("pressed_icon_button", I18n.text("Pressed Icon Button"),
             new Color(0, 96, 160),
             new Color(0, 96, 160));
-    public static final ThemeColor SCROLL               = new ThemeColor("scroll", I18n.text("Scroll"),
-            new Color(192, 192, 192, 128),
-            new Color(128, 128, 128, 128));
-    public static final ThemeColor SCROLL_ROLLOVER      = new ThemeColor("scroll.rollover", I18n.text("Scroll Rollover"),
-            new Color(192, 192, 192),
-            new Color(128, 128, 128));
-    public static final ThemeColor SCROLL_EDGE          = new ThemeColor("scroll.edge", I18n.text("Scroll Edge"),
-            new Color(128, 128, 128),
-            new Color(160, 160, 160));
     public static final ThemeColor TOOLTIP              = new ThemeColor("tooltip", I18n.text("Tooltip"),
             new Color(252, 252, 196),
             new Color(153, 153, 0));
     public static final ThemeColor ON_TOOLTIP           = new ThemeColor("on_tooltip", I18n.text("On Tooltip"),
             new Color(0, 0, 0),
             new Color(32, 32, 32));
+    public static final ThemeColor SEARCH_LIST          = new ThemeColor("search_list", I18n.text("Search List"),
+            new Color(224, 255, 255),
+            new Color(0, 43, 43));
+    public static final ThemeColor ON_SEARCH_LIST       = new ThemeColor("on_search_list", I18n.text("On Search List"),
+            new Color(0, 0, 0),
+            new Color(204, 204, 204));
 
     public static final ThemeColor PAGE          = new ThemeColor("page", I18n.text("Page"),
             new Color(255, 255, 255),
@@ -173,7 +170,7 @@ public final class Colors {
     public static final ThemeColor MARKER        = new ThemeColor("marker", I18n.text("Marker"),
             new Color(252, 242, 196),
             new Color(0, 51, 0));
-    public static final ThemeColor ON_CURRENT    = new ThemeColor("on_marker", I18n.text("On Marker"),
+    public static final ThemeColor ON_MARKER     = new ThemeColor("on_marker", I18n.text("On Marker"),
             new Color(0, 0, 0),
             new Color(221, 221, 221));
     public static final ThemeColor ERROR         = new ThemeColor("error", I18n.text("Error"),
@@ -194,6 +191,9 @@ public final class Colors {
     public static final ThemeColor ON_OVERLOADED = new ThemeColor("on_overloaded", I18n.text("On Overloaded"),
             new Color(255, 255, 255),
             new Color(221, 221, 221));
+    public static final ThemeColor HINT          = new ThemeColor("hint", I18n.text("Hint"),
+            new Color(128, 128, 128),
+            new Color(64, 64, 64));
 
     private static final Colors LIGHT_DEFAULTS;
     private static final Colors DARK_DEFAULTS;
