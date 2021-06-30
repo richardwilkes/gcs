@@ -25,8 +25,8 @@ public class ScrollContent extends ContentPanel implements Scrollable {
 
     public ScrollContent(LayoutManager layoutManager) {
         super(layoutManager);
-        mHScrollUnit = 16;
-        mVScrollUnit = 16;
+        mHScrollUnit = Scrollbar.MINIMUM_SIZE;
+        mVScrollUnit = Scrollbar.MINIMUM_SIZE;
     }
 
     @Override
