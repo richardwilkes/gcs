@@ -83,6 +83,9 @@ public final class Colors {
     public static final ThemeColor ON_CURRENT_TAB = new ThemeColor("on_current_tab", I18n.text("On Current Tab"),
             new Color(0, 0, 0),
             new Color(221, 221, 221));
+    public static final ThemeColor DROP_AREA      = new ThemeColor("drop_area", I18n.text("Drop Area"),
+            new Color(0, 204, 0),
+            new Color(0, 204, 0));
 
     public static final ThemeColor EDITABLE               = new ThemeColor("editable", I18n.text("Editable"),
             new Color(255, 255, 255),
@@ -117,9 +120,9 @@ public final class Colors {
     public static final ThemeColor SCROLL_EDGE            = new ThemeColor("scroll.edge", I18n.text("Scroll Edge"),
             new Color(128, 128, 128),
             new Color(160, 160, 160));
-    public static final ThemeColor DROP_AREA              = new ThemeColor("drop_area", I18n.text("Drop Area"),
-            new Color(0, 204, 0),
-            new Color(0, 204, 0));
+    public static final ThemeColor ACCENT                 = new ThemeColor("accent", I18n.text("Accent"),
+            new Color(128, 0, 192),
+            new Color(128, 0, 192));
 
     public static final ThemeColor BUTTON               = new ThemeColor("button.background", I18n.text("Button"),
             new Color(248, 248, 255),
