@@ -12,6 +12,7 @@
 package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.ui.widget.outline.Outline;
+import com.trollworks.gcs.ui.widget.outline.OutlineModel;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.weapon.WeaponColumn;
 import com.trollworks.gcs.weapon.WeaponStats;
@@ -26,9 +27,11 @@ public class WeaponOutline extends Outline {
      * @param weaponClass The class of weapon to generate an outline for.
      */
     public WeaponOutline(Class<? extends WeaponStats> weaponClass) {
-        super(false);
+        super(new OutlineModel());
         WeaponColumn.addColumns(this, weaponClass, false);
-        getModel().getColumnWithID(WeaponColumn.DESCRIPTION.ordinal()).setSortCriteria(0, true);
+        OutlineModel model = getModel();
+        model.setShowIndent(false);
+        model.getColumnWithID(WeaponColumn.DESCRIPTION.ordinal()).setSortCriteria(0, true);
         setEnabled(false);
     }
 

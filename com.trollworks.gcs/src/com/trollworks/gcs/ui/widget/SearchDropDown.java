@@ -9,13 +9,11 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.ui.widget.search;
+package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.LineBorder;
-import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.ScrollPanel;
 
 import java.awt.Component;
 import java.awt.Insets;

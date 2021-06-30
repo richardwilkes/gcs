@@ -14,23 +14,24 @@ package com.trollworks.gcs.library;
 import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.FontIcon;
 import com.trollworks.gcs.ui.Fonts;
-import com.trollworks.gcs.ui.widget.tree.TreeContainerRow;
-import com.trollworks.gcs.ui.widget.tree.TreeRow;
+import com.trollworks.gcs.ui.widget.outline.Column;
+import com.trollworks.gcs.ui.widget.outline.Row;
 
 import javax.swing.Icon;
 
-/** A {@link TreeRow} that represents a directory in the library explorer. */
-public class LibraryDirectoryRow extends TreeContainerRow implements LibraryExplorerRow {
+/** A {@link Row} that represents a directory in the library explorer. */
+public class LibraryDirectoryRow extends Row implements LibraryExplorerRow {
     private String mName;
 
     /** @param name The name of the directory. */
     public LibraryDirectoryRow(String name) {
         mName = name;
+        setCanHaveChildren(true);
     }
 
     @Override
     public String getSelectionKey() {
-        TreeContainerRow parent = getParent();
+        Row parent = getParent();
         return parent instanceof LibraryDirectoryRow ?
                 ((LibraryDirectoryRow) parent).getSelectionKey() + "/" + mName : mName;
     }
@@ -41,7 +42,27 @@ public class LibraryDirectoryRow extends TreeContainerRow implements LibraryExpl
     }
 
     @Override
+    public Icon getIcon(Column column) {
+        return getIcon();
+    }
+
+    @Override
     public String getName() {
         return mName;
+    }
+
+    @Override
+    public Object getData(Column column) {
+        return mName;
+    }
+
+    @Override
+    public String getDataAsText(Column column) {
+        return mName;
+    }
+
+    @Override
+    public void setData(Column column, Object data) {
+        // Unused
     }
 }

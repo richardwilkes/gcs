@@ -176,7 +176,8 @@ public abstract class ModifierListEditor extends ActionPanel implements ActionLi
 
     class ModifierOutline extends Outline {
         ModifierOutline() {
-            super(false);
+            super(new OutlineModel());
+            getModel().setShowIndent(false);
             setAllowColumnResize(false);
             setAllowRowDrag(false);
         }

@@ -29,27 +29,28 @@ import javax.swing.undo.StateEditable;
 
 /** The data model underlying a {@link Outline}. */
 public class OutlineModel implements SelectionOwner, StateEditable {
-    private static final String                          UNDO_KEY_ROWS        = "Rows";
-    private static final String                          UNDO_KEY_SELECTION   = "Selection";
-    private static final String                          UNDO_KEY_SORT_CONFIG = "SortConfig";
+    private static final String                     UNDO_KEY_ROWS        = "Rows";
+    private static final String                     UNDO_KEY_SELECTION   = "Selection";
+    private static final String                     UNDO_KEY_SORT_CONFIG = "SortConfig";
     /** The current config version. */
-    public static final  int                             CONFIG_VERSION       = 4;
-    private              ArrayList<OutlineModelListener> mListeners;
-    private              ArrayList<Column>               mColumns;
-    private              ArrayList<Row>                  mRows;
-    private              Selection                       mSelection;
-    private              Column                          mDragColumn;
-    private              Row                             mDragTargetRow;
-    private              Row[]                           mDragRows;
-    private              boolean                         mLocked;
-    private              boolean                         mNotifyOfSelections;
-    private              Row                             mSavedAnchorRow;
-    private              List<Row>                       mSavedSelection;
-    private              boolean                         mShowIndent;
-    private              int                             mIndentWidth;
-    private              int                             mHierarchyColumnID   = -1;
-    private              RowFilter                       mRowFilter;
-    private              Map<String, Object>             mProperties          = new HashMap<>();
+    public static final  int                        CONFIG_VERSION       = 4;
+    private              List<OutlineModelListener> mListeners;
+    private              List<Column>               mColumns;
+    private              List<Row>                  mRows;
+    private              Selection                  mSelection;
+    private              Column                     mDragColumn;
+    private              Row                        mDragTargetRow;
+    private              Row[]                      mDragRows;
+    private              boolean                    mLocked;
+    private              boolean                    mNotifyOfSelections;
+    private              Row                        mSavedAnchorRow;
+    private              List<Row>                  mSavedSelection;
+    private              boolean                    mShowIndent;
+    private              int                        mIndentWidth;
+    private              int                        mDisclosureSize;
+    private              int                        mHierarchyColumnID;
+    private              RowFilter                  mRowFilter;
+    private              Map<String, Object>        mProperties;
 
     /** Creates a new model. */
     public OutlineModel() {
@@ -58,6 +59,11 @@ public class OutlineModel implements SelectionOwner, StateEditable {
         mRows = new ArrayList<>();
         mSelection = new Selection(this);
         mNotifyOfSelections = true;
+        mHierarchyColumnID = -1;
+        mProperties = new HashMap<>();
+        mDisclosureSize = 16;
+        mIndentWidth = 14;
+        mShowIndent = true;
     }
 
     public Object getProperty(String key) {
@@ -634,6 +640,12 @@ public class OutlineModel implements SelectionOwner, StateEditable {
         return result;
     }
 
+    public void openAllParents(List<Row> rows) {
+        for (Row row : rows) {
+            row.openAllParents();
+        }
+    }
+
     /**
      * If the first row capable of having children is open, then all rows will be closed, otherwise
      * all rows will be opened.
@@ -641,15 +653,13 @@ public class OutlineModel implements SelectionOwner, StateEditable {
     public void toggleRowOpenState() {
         boolean first = true;
         boolean open  = true;
-
-        for (int i = 0; i < mRows.size(); i++) {
-            Row row = getRowAtIndex(i);
+        for (Row row : getTopLevelRows()) {
             if (row.canHaveChildren()) {
                 if (first) {
                     open = !row.isOpen();
                     first = false;
                 }
-                row.setOpen(open);
+                row.setOpenRecursively(open);
             }
         }
     }
@@ -991,6 +1001,16 @@ public class OutlineModel implements SelectionOwner, StateEditable {
         return false;
     }
 
+    /** @return The size used for the disclosure triangle. */
+    public int getDisclosureSize() {
+        return mDisclosureSize;
+    }
+
+    /** @param size The new disclosure width. */
+    public void setDisclosureSize(int size) {
+        mDisclosureSize = size;
+    }
+
     /** @return {@code true} if hierarchy indention (and controls) will be shown. */
     public boolean showIndent() {
         return mShowIndent;
@@ -1011,16 +1031,15 @@ public class OutlineModel implements SelectionOwner, StateEditable {
         mIndentWidth = width;
     }
 
-    /**
-     * @param row    The row.
-     * @param column The column.
-     * @return The amount the column for this row is indented.
-     */
     public int getIndentWidth(Row row, Column column) {
         if (mShowIndent && isHierarchyColumn(column)) {
-            return getIndentWidth() * (1 + row.getDepth());
+            return getIndentWidth() * row.getDepth();
         }
         return 0;
+    }
+
+    public int getIndentWidthWithDisclosure(Row row, Column column) {
+        return mShowIndent ? getDisclosureSize() + getIndentWidth(row, column) : 0;
     }
 
     @Override

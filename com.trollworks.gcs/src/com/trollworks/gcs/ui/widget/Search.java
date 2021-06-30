@@ -9,16 +9,13 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.ui.widget.search;
+package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
-import com.trollworks.gcs.ui.widget.EditorField;
-import com.trollworks.gcs.ui.widget.Label;
-import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.Text;

@@ -34,8 +34,8 @@ import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowItemRenderer;
 import com.trollworks.gcs.ui.widget.outline.RowIterator;
 import com.trollworks.gcs.ui.widget.outline.RowPostProcessor;
-import com.trollworks.gcs.ui.widget.search.Search;
-import com.trollworks.gcs.ui.widget.search.SearchTarget;
+import com.trollworks.gcs.ui.widget.Search;
+import com.trollworks.gcs.ui.widget.SearchTarget;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.BorderLayout;

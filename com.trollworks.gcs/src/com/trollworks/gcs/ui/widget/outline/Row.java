@@ -11,11 +11,10 @@
 
 package com.trollworks.gcs.ui.widget.outline;
 
-import com.trollworks.gcs.ui.RetinaIcon;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.Icon;
 
 /** Represents a single row of data within an {@link OutlineModel}. */
 public abstract class Row {
@@ -68,7 +67,7 @@ public abstract class Row {
      * @param column The column.
      * @return The icon for the specified column, or {@code null}.
      */
-    public RetinaIcon getIcon(Column column) {
+    public Icon getIcon(Column column) {
         return null;
     }
 
@@ -203,6 +202,15 @@ public abstract class Row {
         }
     }
 
+    public void setOpenRecursively(boolean open) {
+        setOpen(open);
+        if (canHaveChildren()) {
+            for (Row row : mChildren) {
+                row.setOpenRecursively(open);
+            }
+        }
+    }
+
     /**
      * @param row The child row to determine the index of.
      * @return The index of the row, or {@code -1} if its not an immediate child.
@@ -324,5 +332,13 @@ public abstract class Row {
     /** @return The string to display as tooltip. Defaults to {@code null}. */
     public String getToolTip(Column column) {
         return null;
+    }
+
+    public void openAllParents() {
+        Row parent = mParent;
+        while (parent != null) {
+            parent.setOpen(true);
+            parent = parent.getParent();
+        }
     }
 }

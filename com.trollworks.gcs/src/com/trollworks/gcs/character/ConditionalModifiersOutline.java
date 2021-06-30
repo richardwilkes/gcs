@@ -20,10 +20,11 @@ import java.awt.dnd.DropTargetDragEvent;
 
 public class ConditionalModifiersOutline extends Outline {
     public ConditionalModifiersOutline() {
-        super(false);
+        super(new OutlineModel());
         ConditionalModifierColumn.addColumns(this, false);
-        OutlineModel model           = getModel();
-        Column       conditionColumn = model.getColumnWithID(ConditionalModifierColumn.CONDITION.ordinal());
+        OutlineModel model = getModel();
+        model.setShowIndent(false);
+        Column conditionColumn = model.getColumnWithID(ConditionalModifierColumn.CONDITION.ordinal());
         conditionColumn.setSortCriteria(0, true);
         model.setHierarchyColumn(conditionColumn);
         setEnabled(false);

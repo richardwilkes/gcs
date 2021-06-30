@@ -24,7 +24,8 @@ class WeaponOutline extends Outline implements Duplicatable {
     private ListRow mOwner;
 
     WeaponOutline(ListRow owner) {
-        super(false);
+        super(new OutlineModel());
+        getModel().setShowIndent(false);
         mOwner = owner;
         setAllowColumnResize(false);
         setAllowRowDrag(false);

@@ -18,7 +18,6 @@ import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.equipment.EquipmentDockable;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.menu.edit.Deletable;
-import com.trollworks.gcs.menu.edit.Openable;
 import com.trollworks.gcs.modifier.AdvantageModifierList;
 import com.trollworks.gcs.modifier.AdvantageModifiersDockable;
 import com.trollworks.gcs.modifier.EquipmentModifierList;
@@ -39,6 +38,8 @@ import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.widget.FontIconButton;
 import com.trollworks.gcs.ui.widget.MessageType;
 import com.trollworks.gcs.ui.widget.Modal;
+import com.trollworks.gcs.ui.widget.ScrollContent;
+import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.Toolbar;
 import com.trollworks.gcs.ui.widget.Workspace;
 import com.trollworks.gcs.ui.widget.dock.Dock;
@@ -46,16 +47,12 @@ import com.trollworks.gcs.ui.widget.dock.DockContainer;
 import com.trollworks.gcs.ui.widget.dock.DockLayout;
 import com.trollworks.gcs.ui.widget.dock.DockLocation;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
-import com.trollworks.gcs.ui.widget.search.Search;
-import com.trollworks.gcs.ui.widget.search.SearchTarget;
-import com.trollworks.gcs.ui.widget.tree.FieldAccessor;
-import com.trollworks.gcs.ui.widget.tree.IconAccessor;
-import com.trollworks.gcs.ui.widget.tree.TextTreeColumn;
-import com.trollworks.gcs.ui.widget.tree.TreeContainerRow;
-import com.trollworks.gcs.ui.widget.tree.TreePanel;
-import com.trollworks.gcs.ui.widget.tree.TreeRoot;
-import com.trollworks.gcs.ui.widget.tree.TreeRow;
-import com.trollworks.gcs.ui.widget.tree.TreeRowViewIterator;
+import com.trollworks.gcs.ui.widget.outline.Column;
+import com.trollworks.gcs.ui.widget.outline.Outline;
+import com.trollworks.gcs.ui.widget.outline.OutlineModel;
+import com.trollworks.gcs.ui.widget.outline.Row;
+import com.trollworks.gcs.ui.widget.Search;
+import com.trollworks.gcs.ui.widget.SearchTarget;
 import com.trollworks.gcs.utility.FileProxy;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
@@ -65,10 +62,15 @@ import com.trollworks.gcs.utility.text.NumericComparator;
 
 import java.awt.BorderLayout;
 import java.awt.KeyboardFocusManager;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -77,9 +79,9 @@ import javax.swing.Icon;
 import javax.swing.ListCellRenderer;
 
 /** A list of available library files. */
-public class LibraryExplorerDockable extends Dockable implements SearchTarget, FieldAccessor, IconAccessor, Openable, Deletable {
-    private Search    mSearch;
-    private TreePanel mTreePanel;
+public class LibraryExplorerDockable extends Dockable implements SearchTarget, Deletable, ActionListener {
+    private Search  mSearch;
+    private Outline mOutline;
 
     public static LibraryExplorerDockable get() {
         for (Dockable dockable : Workspace.get().getDock().getDockables()) {
@@ -93,34 +95,39 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
 
     public LibraryExplorerDockable() {
         super(new BorderLayout());
-        TreeRoot root = new TreeRoot();
+        OutlineModel model = new OutlineModel();
+        model.addColumn(new Column(0, "", "", new LibraryExplorerCell()));
+        LibraryDirectoryRow root = new LibraryDirectoryRow("");
         fillTree(LibraryUpdater.collectFiles(), root);
-        mTreePanel = new TreePanel(root);
-        mTreePanel.setShowHeader(false);
-        mTreePanel.addColumn(new TextTreeColumn(I18n.text("Library Explorer"), this, this));
-        mTreePanel.setAllowColumnResize(false);
-        mTreePanel.setAllowRowDropFromExternal(false);
-        mTreePanel.setAllowedRowDragTypes(0); // Turns off row dragging
-        mTreePanel.setShowRowDivider(false);
-        mTreePanel.setShowColumnDivider(false);
-        mTreePanel.setUseBanding(false);
-        mTreePanel.setUserSortable(false);
-        mTreePanel.setOpenableProxy(this);
-        mTreePanel.setDeletableProxy(this);
+        transferRowsToModel(model, root);
+        restoreOpenRows(model, new HashSet<>(Settings.getInstance().getLibraryExplorerOpenRowKeys()));
+        mOutline = new Outline(model);
+        mOutline.setUseBanding(false);
+        mOutline.setAllowRowDrag(false);
+        mOutline.setAllowColumnResize(false);
+        mOutline.setDeletableProxy(this);
+        mOutline.addActionListener(this);
+        mOutline.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent event) {
+                mOutline.getModel().getColumnWithID(0).setWidth(mOutline, mOutline.getWidth());
+            }
+        });
         Toolbar toolbar = new Toolbar();
         mSearch = new Search(this);
         toolbar.add(new FontIconButton(FontAwesome.SITEMAP,
                 I18n.text("Opens/closes all hierarchical rows"),
-                (b) -> mTreePanel.toggleDisclosure()));
+                (b) -> mOutline.getModel().toggleRowOpenState()));
         toolbar.add(new FontIconButton(FontAwesome.SYNC_ALT, I18n.text("Refresh"),
                 (b) -> refresh()));
         toolbar.add(mSearch, Toolbar.LAYOUT_FILL);
         add(toolbar, BorderLayout.NORTH);
-        add(mTreePanel, BorderLayout.CENTER);
-        List<String> openRowKeys = Settings.getInstance().getLibraryExplorerOpenRowKeys();
-        if (!openRowKeys.isEmpty()) {
-            mTreePanel.setOpen(true, collectRowsToOpen(root, new HashSet<>(openRowKeys), null));
-        }
+        ScrollContent content = new ScrollContent(new BorderLayout());
+        content.setScrollableTracksViewportWidth(true);
+        content.add(mOutline, BorderLayout.CENTER);
+        ScrollPanel scrollPanel = new ScrollPanel(content);
+        scrollPanel.getViewport().setBackground(mOutline.getBackground());
+        add(scrollPanel, BorderLayout.CENTER);
     }
 
     public void savePreferences() {
@@ -146,17 +153,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
         return getTitle();
     }
 
-    @Override
-    public String getField(TreeRow row) {
-        return ((LibraryExplorerRow) row).getName();
-    }
-
-    @Override
-    public Icon getIcon(TreeRow row) {
-        return ((LibraryExplorerRow) row).getIcon();
-    }
-
-    private static void fillTree(List<?> lists, TreeContainerRow parent) {
+    private static void fillTree(List<?> lists, LibraryDirectoryRow parent) {
         int count = lists.size();
         for (int i = 1; i < count; i++) {
             Object entry = lists.get(i);
@@ -164,92 +161,115 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
                 List<?>             subList = (List<?>) entry;
                 LibraryDirectoryRow dir     = new LibraryDirectoryRow((String) subList.get(0));
                 fillTree(subList, dir);
-                parent.addRow(dir);
+                parent.addChild(dir);
             } else {
-                parent.addRow(new LibraryFileRow((Path) entry));
+                parent.addChild(new LibraryFileRow((Path) entry));
             }
+        }
+    }
+
+    private static void transferRowsToModel(OutlineModel model, Row root) {
+        model.removeAllRows();
+        List<Row> rows = new ArrayList<>(root.getChildren());
+        for (Row child : rows) {
+            child.removeFromParent();
+            model.addRow(child, true);
         }
     }
 
     public void refresh() {
-        TreeRoot    root     = mTreePanel.getRoot();
-        Set<String> selected = new HashSet<>();
-        for (TreeRow row : mTreePanel.getExplicitlySelectedRows()) {
+        OutlineModel model    = mOutline.getModel();
+        Set<String>  selected = new HashSet<>();
+        for (Row row : model.getSelectionAsList()) {
             selected.add(((LibraryExplorerRow) row).getSelectionKey());
         }
-        Set<String> open = collectOpenRowKeys();
-        root.removeRow(new ArrayList<>(root.getChildren()));
+        Set<String>         openSet = collectOpenRowKeys();
+        LibraryDirectoryRow root    = new LibraryDirectoryRow("");
         fillTree(LibraryUpdater.collectFiles(), root);
-        mTreePanel.setOpen(true, collectRowsToOpen(root, open, null));
-        mTreePanel.select(collectRows(root, selected, null));
+        transferRowsToModel(model, root);
+        restoreOpenRows(model, openSet);
+        restoreSelectedRows(model, selected);
     }
 
     private Set<String> collectOpenRowKeys() {
-        Set<String> open = new HashSet<>();
-        for (TreeRow row : new TreeRowViewIterator(mTreePanel, mTreePanel.getRoot().getChildren())) {
-            if (row instanceof TreeContainerRow && mTreePanel.isOpen((TreeContainerRow) row) && row instanceof LibraryExplorerRow) {
-                open.add(((LibraryExplorerRow) row).getSelectionKey());
+        Set<String> openSet = new HashSet<>();
+        for (Row row : mOutline.getModel().getTopLevelRows()) {
+            if (row instanceof LibraryDirectoryRow) {
+                collectOpenRowKeys((LibraryDirectoryRow) row, openSet);
             }
         }
-        return open;
+        return openSet;
     }
 
-    private static Set<TreeContainerRow> collectRowsToOpen(TreeContainerRow parent, Set<String> selectors, Set<TreeContainerRow> set) {
-        if (set == null) {
-            set = new HashSet<>();
-        }
-        for (TreeRow row : parent.getChildren()) {
-            if (row instanceof LibraryExplorerRow) {
-                if (selectors.contains(((LibraryExplorerRow) row).getSelectionKey())) {
-                    if (row instanceof TreeContainerRow) {
-                        set.add((TreeContainerRow) row);
-                    } else {
-                        set.add(row.getParent());
-                    }
-                }
-                if (row instanceof TreeContainerRow) {
-                    collectRowsToOpen((TreeContainerRow) row, selectors, set);
+    private static void collectOpenRowKeys(LibraryDirectoryRow dirRow, Set<String> openSet) {
+        if (dirRow.isOpen()) {
+            openSet.add(dirRow.getSelectionKey());
+            for (Row row : dirRow.getChildren()) {
+                if (row instanceof LibraryDirectoryRow) {
+                    collectOpenRowKeys((LibraryDirectoryRow) row, openSet);
                 }
             }
         }
-        return set;
     }
 
-    private static List<TreeRow> collectRows(TreeContainerRow parent, Set<String> selectors, List<TreeRow> list) {
-        if (list == null) {
-            list = new ArrayList<>();
-        }
-        for (TreeRow row : parent.getChildren()) {
-            if (selectors.contains(((LibraryExplorerRow) row).getSelectionKey())) {
-                list.add(row);
-            }
-            if (row instanceof TreeContainerRow) {
-                collectRows((TreeContainerRow) row, selectors, list);
+    private static void restoreOpenRows(OutlineModel model, Set<String> openSet) {
+        if (!openSet.isEmpty()) {
+            for (Row row : model.getTopLevelRows()) {
+                if (row instanceof LibraryDirectoryRow) {
+                    restoreOpenRows((LibraryDirectoryRow) row, openSet);
+                }
             }
         }
-        return list;
+    }
+
+    private static void restoreOpenRows(LibraryDirectoryRow dirRow, Set<String> openSet) {
+        dirRow.setOpen(openSet.contains(dirRow.getSelectionKey()));
+        for (Row row : dirRow.getChildren()) {
+            if (row instanceof LibraryDirectoryRow) {
+                restoreOpenRows((LibraryDirectoryRow) row, openSet);
+            }
+        }
+    }
+
+    private static void restoreSelectedRows(OutlineModel model, Set<String> selectedSet) {
+        if (!selectedSet.isEmpty()) {
+            Set<Row> toSelect = new HashSet<>();
+            for (Row row : model.getTopLevelRows()) {
+                restoreSelectedRows(row, selectedSet, toSelect);
+            }
+        }
+    }
+
+    private static void restoreSelectedRows(Row row, Set<String> selectedSet, Set<Row> toSelect) {
+        if (row instanceof LibraryExplorerRow) {
+            if (selectedSet.contains(((LibraryExplorerRow) row).getSelectionKey())) {
+                toSelect.add(row);
+            }
+        }
+        if (row instanceof LibraryDirectoryRow && row.isOpen()) {
+            for (Row child : row.getChildren()) {
+                restoreSelectedRows(child, selectedSet, toSelect);
+            }
+        }
     }
 
     @Override
-    public boolean canOpenSelection() {
-        return true;
-    }
-
-    @Override
-    public void openSelection() {
-        List<TreeContainerRow> containers = new ArrayList<>();
-        boolean                hadFile    = false;
-        for (TreeRow row : mTreePanel.getExplicitlySelectedRows()) {
-            if (row instanceof TreeContainerRow) {
-                containers.add((TreeContainerRow) row);
-            } else {
-                open(((LibraryFileRow) row).getPath());
-                hadFile = true;
+    public void actionPerformed(ActionEvent event) {
+        if (Outline.CMD_OPEN_SELECTION.equals(event.getActionCommand())) {
+            List<Row> containers = new ArrayList<>();
+            boolean   hadFile    = false;
+            for (Row row : mOutline.getModel().getSelectionAsList()) {
+                if (row instanceof LibraryFileRow) {
+                    open(((LibraryFileRow) row).getFilePath());
+                    hadFile = true;
+                } else {
+                    containers.add(row);
+                }
             }
-        }
-        if (!hadFile) {
-            for (TreeContainerRow container : containers) {
-                mTreePanel.setOpen(!mTreePanel.isOpen(container), container);
+            if (!hadFile) {
+                for (Row row : containers) {
+                    row.setOpen(!row.isOpen());
+                }
             }
         }
     }
@@ -484,8 +504,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
     @Override
     public List<Object> search(String filter) {
         List<LibraryExplorerSearchResult> list = new ArrayList<>();
-        filter = filter.toLowerCase();
-        collect(mTreePanel.getRoot(), filter, list);
+        collect(filter.toLowerCase(), list);
         Set<String> titles     = new HashSet<>();
         Set<String> duplicates = new HashSet<>();
         for (LibraryExplorerSearchResult one : list) {
@@ -506,15 +525,21 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
         return result;
     }
 
-    private static void collect(TreeRow row, String text, List<LibraryExplorerSearchResult> list) {
+    private void collect(String text, List<LibraryExplorerSearchResult> list) {
+        for (Row row : mOutline.getModel().getTopLevelRows()) {
+            collect(row, text, list);
+        }
+    }
+
+    private static void collect(Row row, String text, List<LibraryExplorerSearchResult> list) {
         if (row instanceof LibraryExplorerRow) {
             LibraryExplorerRow libRow = (LibraryExplorerRow) row;
             if (libRow.getName().toLowerCase().contains(text)) {
                 list.add(new LibraryExplorerSearchResult(libRow));
             }
         }
-        if (row instanceof TreeContainerRow) {
-            for (TreeRow child : ((TreeContainerRow) row).getChildren()) {
+        if (row instanceof LibraryDirectoryRow) {
+            for (Row child : row.getChildren()) {
                 collect(child, text, list);
             }
         }
@@ -522,18 +547,18 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
 
     @Override
     public void searchSelect(List<Object> selection) {
-        List<TreeRow> list = new ArrayList<>();
+        List<Row> list = new ArrayList<>();
         for (Object one : selection) {
             if (one instanceof LibraryExplorerSearchResult) {
                 LibraryExplorerRow row = ((LibraryExplorerSearchResult) one).getRow();
-                if (row instanceof TreeRow) {
-                    list.add((TreeRow) row);
+                if (row instanceof Row) {
+                    list.add((Row) row);
                 }
             }
         }
-        mTreePanel.setParentsOpen(list);
-        mTreePanel.select(list);
-        mTreePanel.requestFocus();
+        mOutline.getModel().openAllParents(list);
+        mOutline.getModel().select(list, false);
+        mOutline.requestFocus();
     }
 
     @Override
@@ -580,32 +605,22 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, F
     }
 
     private List<Path> collectSelectedFilePaths() {
-        Set<TreeRow> set = new HashSet<>();
-        for (TreeRow row : mTreePanel.getExplicitlySelectedRows()) {
-            set.add(row);
-            if (row instanceof TreeContainerRow) {
-                TreeContainerRow container = (TreeContainerRow) row;
-                set.addAll(container.getChildren());
-                for (TreeContainerRow subContainer : container.getRecursiveChildContainers(null)) {
-                    set.add(subContainer);
-                    set.addAll(subContainer.getChildren());
-                }
-            }
+        Set<Path> set = new HashSet<>();
+        for (Row row : mOutline.getModel().getSelectionAsList()) {
+            collectFilePaths(row, set);
         }
-        Set<TreeRow> forbidden = new HashSet<>(mTreePanel.getRoot().getChildren());
-        List<Path>   paths     = new ArrayList<>();
-        for (TreeRow one : set) {
-            if (forbidden.contains(one)) {
-                return new ArrayList<>();
-            }
-            if (one instanceof LibraryFileRow) {
-                paths.add(((LibraryFileRow) one).getPath());
-            }
-        }
-        return paths;
+        List<Path> list = new ArrayList<>(set);
+        Collections.sort(list);
+        return list;
     }
 
-    public TreePanel getTreePanel() {
-        return mTreePanel;
+    private static void collectFilePaths(Row row, Set<Path> set) {
+        if (row instanceof LibraryDirectoryRow) {
+            for (Row child : row.getChildren()) {
+                collectFilePaths(child, set);
+            }
+        } else {
+            set.add(((LibraryFileRow) row).getFilePath());
+        }
     }
 }

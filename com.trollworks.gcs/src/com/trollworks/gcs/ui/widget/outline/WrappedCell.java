@@ -59,7 +59,7 @@ public class WrappedCell implements Cell {
         if (width == -1) {
             return text;
         }
-        return TextDrawing.wrapToPixelWidth(font, text, width - (scale.scale(row.getOwner().getIndentWidth(row, column)) + scale.scale(H_MARGIN) * 2));
+        return TextDrawing.wrapToPixelWidth(font, text, width - (scale.scale(row.getOwner().getIndentWidthWithDisclosure(row, column)) + scale.scale(H_MARGIN) * 2));
     }
 
     @Override

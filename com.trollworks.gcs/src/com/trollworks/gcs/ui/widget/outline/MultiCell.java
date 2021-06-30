@@ -183,7 +183,7 @@ public class MultiCell implements Cell {
             width = scale.scale(mMaxPreferredWidth);
         }
         OutlineModel owner  = row.getOwner();
-        int          indent = owner != null ? scale.scale(owner.getIndentWidth(row, column)) : 0;
+        int          indent = owner != null ? scale.scale(owner.getIndentWidthWithDisclosure(row, column)) : 0;
         return TextDrawing.wrapToPixelWidth(font, text, width - (indent + scale.scale(H_MARGIN) * 2));
     }
 

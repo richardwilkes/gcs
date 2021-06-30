@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.ui.widget.search;
+package com.trollworks.gcs.ui.widget;
 
 import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
 

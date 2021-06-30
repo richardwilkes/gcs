@@ -11,39 +11,60 @@
 
 package com.trollworks.gcs.library;
 
-import com.trollworks.gcs.ui.widget.tree.TreeRow;
+import com.trollworks.gcs.ui.widget.outline.Column;
+import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.PathUtils;
 
 import java.nio.file.Path;
 import javax.swing.Icon;
 
-/** A {@link TreeRow} that represents a file in the library explorer. */
-public class LibraryFileRow extends TreeRow implements LibraryExplorerRow {
-    private Path mPath;
+/** A {@link Row} that represents a file in the library explorer. */
+public class LibraryFileRow extends Row implements LibraryExplorerRow {
+    private Path mFilePath;
 
-    /** @param path A {@link Path} to a library or template file. */
-    public LibraryFileRow(Path path) {
-        mPath = path;
+    /** @param filePath A {@link Path} to library file. */
+    public LibraryFileRow(Path filePath) {
+        mFilePath = filePath;
     }
 
     /** @return The {@link Path}. */
-    public Path getPath() {
-        return mPath;
+    public Path getFilePath() {
+        return mFilePath;
     }
 
     @Override
     public String getSelectionKey() {
-        return mPath.toString();
+        return mFilePath.toString();
     }
 
     @Override
     public Icon getIcon() {
-        return FileType.getIconForFileName(mPath.getFileName().toString());
+        return FileType.getIconForFileName(mFilePath.getFileName().toString());
+    }
+
+    @Override
+    public Icon getIcon(Column column) {
+        return getIcon();
     }
 
     @Override
     public String getName() {
-        return PathUtils.getLeafName(mPath.getFileName(), false);
+        return PathUtils.getLeafName(mFilePath.getFileName(), false);
+    }
+
+    @Override
+    public Object getData(Column column) {
+        return mFilePath;
+    }
+
+    @Override
+    public String getDataAsText(Column column) {
+        return getName();
+    }
+
+    @Override
+    public void setData(Column column, Object data) {
+        // Unused
     }
 }

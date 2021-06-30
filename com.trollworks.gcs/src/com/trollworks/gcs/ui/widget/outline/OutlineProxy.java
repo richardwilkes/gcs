@@ -30,7 +30,7 @@ public class OutlineProxy extends Outline {
      * @param outlineToProxy The {@link Outline} to proxy.
      */
     public OutlineProxy(Outline outlineToProxy) {
-        super(outlineToProxy.getModel(), outlineToProxy.showIndent());
+        super(outlineToProxy.getModel());
         mOutlineToProxy = outlineToProxy;
         mOutlineToProxy.addProxy(this);
     }

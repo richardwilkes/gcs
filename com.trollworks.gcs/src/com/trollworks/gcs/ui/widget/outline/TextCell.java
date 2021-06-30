@@ -13,7 +13,6 @@ package com.trollworks.gcs.ui.widget.outline;
 
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.Fonts;
-import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.scale.Scale;
@@ -26,6 +25,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.util.StringTokenizer;
+import javax.swing.Icon;
 import javax.swing.SwingConstants;
 
 /** Represents text cells in an {@link Outline}. */
@@ -94,8 +94,8 @@ public class TextCell implements Cell {
         mWrapped = false;
         String text = getPresentationText(outline, row, column);
         mWrapped = wrapped;
-        int        width = TextDrawing.getPreferredSize(scale.scale(getFont(row, column)), text).width;
-        RetinaIcon icon  = getIcon(row, column);
+        int  width = TextDrawing.getPreferredSize(scale.scale(getFont(row, column)), text).width;
+        Icon icon  = getIcon(row, column);
         if (icon != null) {
             width += scale.scale(icon.getIconWidth()) + scaledHMargin;
         }
@@ -111,7 +111,7 @@ public class TextCell implements Cell {
         return Math.max(minHeight, height);
     }
 
-    public RetinaIcon getIcon(Row row, Column column) {
+    public Icon getIcon(Row row, Column column) {
         return row == null ? null : row.getIcon(column);
     }
 
@@ -124,12 +124,13 @@ public class TextCell implements Cell {
         int             totalHeight   = getPreferredHeight(outline, row, column);
         int             lineHeight    = TextDrawing.getPreferredSize(font, "Mg").height;
         int             lineCount     = 0;
-        RetinaIcon      icon          = getIcon(row, column);
+        Icon            icon          = getIcon(row, column);
         int             scaledHMargin = scale.scale(H_MARGIN);
         int             left          = icon == null ? 0 : scale.scale(icon.getIconWidth()) + scaledHMargin;
         int             cellWidth     = bounds.width - (scaledHMargin + left + scaledHMargin);
         int             vAlignment    = getVAlignment();
         int             hAlignment    = getHAlignment();
+        Color           color         = getColor(outline, row, column, selected, active);
 
         left += bounds.x + scaledHMargin;
 
@@ -142,9 +143,11 @@ public class TextCell implements Cell {
                 }
                 iy += ivDelta;
             }
+            gc.setColor(Colors.blend(color, Colors.ACCENT, 70));
             icon.paintIcon(outline, gc, bounds.x + scaledHMargin, iy);
         }
 
+        gc.setColor(color);
         gc.setFont(font);
         while (tokenizer.hasMoreTokens()) {
             String token = tokenizer.nextToken();
@@ -168,7 +171,6 @@ public class TextCell implements Cell {
                     }
                     y += (int) vDelta;
                 }
-                gc.setColor(getColor(outline, row, column, selected, active));
                 gc.drawString(text, x, y);
             }
         }
@@ -191,7 +193,7 @@ public class TextCell implements Cell {
         }
         Scale scale         = Scale.get(outline);
         int   scaledHMargin = scale.scale(H_MARGIN);
-        return TextDrawing.wrapToPixelWidth(scale.scale(getFont(row, column)), text, width - (scaledHMargin + scale.scale(row.getOwner().getIndentWidth(row, column)) + scaledHMargin));
+        return TextDrawing.wrapToPixelWidth(scale.scale(getFont(row, column)), text, width - (scaledHMargin + scale.scale(row.getOwner().getIndentWidthWithDisclosure(row, column)) + scaledHMargin));
     }
 
     @Override

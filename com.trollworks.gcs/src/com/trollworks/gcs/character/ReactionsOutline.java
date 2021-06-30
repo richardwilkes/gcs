@@ -20,10 +20,11 @@ import java.awt.dnd.DropTargetDragEvent;
 
 public class ReactionsOutline extends Outline {
     public ReactionsOutline() {
-        super(false);
+        super(new OutlineModel());
         ReactionColumn.addColumns(this, false);
-        OutlineModel model           = getModel();
-        Column       situationColumn = model.getColumnWithID(ReactionColumn.REACTION.ordinal());
+        OutlineModel model = getModel();
+        model.setShowIndent(false);
+        Column situationColumn = model.getColumnWithID(ReactionColumn.REACTION.ordinal());
         situationColumn.setSortCriteria(0, true);
         model.setHierarchyColumn(situationColumn);
         setEnabled(false);

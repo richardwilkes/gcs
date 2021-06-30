@@ -175,7 +175,7 @@ public class Column implements Transferable {
         int          preferredWidth = getPreferredHeaderWidth(outline);
         OutlineModel model          = outline.getModel();
         for (Row row : model.getRows()) {
-            int width = getRowCell(row).getPreferredWidth(outline, row, this) + scale.scale(model.getIndentWidth(row, this));
+            int width = getRowCell(row).getPreferredWidth(outline, row, this) + scale.scale(model.getIndentWidthWithDisclosure(row, this));
             if (width > preferredWidth) {
                 preferredWidth = width;
             }
