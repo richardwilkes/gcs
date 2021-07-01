@@ -124,7 +124,7 @@ public class Modal extends JDialog {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowOpened(WindowEvent event) {
-                FocusHelper.focusOn(Modal.this);
+                FocusHelper.focusOn(Modal.this, true);
             }
         });
         addKeyListener(new KeyAdapter() {

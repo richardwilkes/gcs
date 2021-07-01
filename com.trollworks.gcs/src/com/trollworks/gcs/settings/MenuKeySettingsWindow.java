@@ -135,12 +135,14 @@ public final class MenuKeySettingsWindow extends SettingsWindow<Map<String, Stri
                 InputEvent.META_DOWN_MASK | InputEvent.ALT_DOWN_MASK | InputEvent.CTRL_DOWN_MASK |
                         InputEvent.SHIFT_DOWN_MASK)), (btn) -> {
             Command          command = mMap.get(btn);
-            KeyStrokeDisplay ksd     = new KeyStrokeDisplay(command.getAccelerator());
+            KeyStrokeDisplay ksd     = new KeyStrokeDisplay(command);
             Modal dialog = Modal.prepareToShowMessage(this,
                     I18n.text("Type a keystroke…"), MessageType.QUESTION, ksd);
-            dialog.addButton(I18n.text("Accept"), Modal.OK);
-            dialog.addButton(I18n.text("Clear"), 100);
-            dialog.addButton(I18n.text("Reset"), 200);
+            Button resetButton = dialog.addButton(I18n.text("Reset"), 200);
+            Button clearButton = dialog.addButton(I18n.text("Clear"), 100);
+            dialog.addCancelButton();
+            Button setButton = dialog.addButton(I18n.text("Set"), Modal.OK);
+            ksd.setButtons(resetButton, clearButton, setButton);
             dialog.presentToUser();
             switch (dialog.getResult()) {
             case Modal.OK:
@@ -152,7 +154,7 @@ public final class MenuKeySettingsWindow extends SettingsWindow<Map<String, Stri
             case 200: // Reset
                 setAccelerator(btn, command.getOriginalAccelerator());
                 break;
-            default: // Close
+            default: // Close or cancel
                 break;
             }
             adjustResetButton();

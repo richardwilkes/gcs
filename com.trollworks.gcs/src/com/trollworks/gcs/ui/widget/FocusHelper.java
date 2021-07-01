@@ -12,6 +12,7 @@
 package com.trollworks.gcs.ui.widget;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.EventQueue;
 import java.awt.KeyboardFocusManager;
 
@@ -19,28 +20,40 @@ public final class FocusHelper {
     private Component mTarget;
     private int       mRemaining;
     private Runnable  mRunnable;
+    private boolean   mUseTransfer;
 
-    public static void focusOn(Component target) {
-        focusOn(target, null);
+    public static void focusOn(Component target, boolean useTransfer) {
+        focusOn(target, useTransfer, null);
     }
 
-    public static void focusOn(Component target, Runnable runnable) {
-        FocusHelper helper = new FocusHelper(target, runnable);
+    public static void focusOn(Component target, boolean useTransfer, Runnable runnable) {
+        FocusHelper helper = new FocusHelper(target, useTransfer, runnable);
         helper.tryInitialFocus();
     }
 
-    private FocusHelper(Component target, Runnable runnable) {
+    private FocusHelper(Component target, boolean useTransfer, Runnable runnable) {
         mTarget = target;
         mRemaining = 5;
         mRunnable = runnable;
+        mUseTransfer = useTransfer;
     }
 
     private void tryInitialFocus() {
         if (--mRemaining > 0 && !isTargetFocusOwner()) {
-            mTarget.requestFocus();
+            if (mUseTransfer) {
+                if (mTarget instanceof Container) {
+                    KeyboardFocusManager.getCurrentKeyboardFocusManager().downFocusCycle((Container) mTarget);
+                } else {
+                    mTarget.transferFocus();
+                }
+            } else {
+                mTarget.requestFocus();
+            }
             EventQueue.invokeLater(this::tryInitialFocus);
-        } else if (mRunnable != null) {
-            mRunnable.run();
+        } else {
+            if (mRunnable != null) {
+                mRunnable.run();
+            }
         }
     }
 

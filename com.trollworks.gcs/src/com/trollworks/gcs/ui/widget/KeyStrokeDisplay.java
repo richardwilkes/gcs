@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.ui.widget;
 
+import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.border.EmptyBorder;
@@ -38,23 +39,27 @@ import javax.swing.border.CompoundBorder;
 
 /** Displays and captures keystrokes typed. */
 public class KeyStrokeDisplay extends Label implements KeyListener, FocusListener {
-    private static final Pattern   PLUS_PATTERN = Pattern.compile("\\+");
-    private              KeyStroke mKeyStroke;
+    private static final Pattern PLUS_PATTERN = Pattern.compile("\\+");
 
-    /**
-     * Creates a new KeyStrokeDisplay.
-     *
-     * @param ks The {@link KeyStroke} to start with.
-     */
-    public KeyStrokeDisplay(KeyStroke ks) {
-        super(getKeyStrokeDisplay(KeyStroke.getKeyStroke('Z', InputEvent.META_DOWN_MASK | InputEvent.ALT_DOWN_MASK | InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK)), SwingConstants.CENTER);
+    private Command   mCommand;
+    private KeyStroke mKeyStroke;
+    private Button    mResetButton;
+    private Button    mClearButton;
+    private Button    mSetButton;
+
+    public KeyStrokeDisplay(Command cmd) {
+        super(getKeyStrokeDisplay(KeyStroke.getKeyStroke('Z', InputEvent.META_DOWN_MASK |
+                InputEvent.ALT_DOWN_MASK | InputEvent.CTRL_DOWN_MASK |
+                InputEvent.SHIFT_DOWN_MASK)), SwingConstants.CENTER);
         setThemeFont(Fonts.KEYBOARD);
         setOpaque(true);
-        setBorder(new CompoundBorder(new LineBorder(Colors.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
+        setBorder(new CompoundBorder(new LineBorder(Colors.EDITABLE_BORDER),
+                new EmptyBorder(2, 4, 2, 4)));
         setFocusable(true);
         addFocusListener(this);
         addKeyListener(this);
-        mKeyStroke = ks;
+        mCommand = cmd;
+        mKeyStroke = cmd.getAccelerator();
         setText(getKeyStrokeDisplay(mKeyStroke));
     }
 
@@ -78,6 +83,7 @@ public class KeyStrokeDisplay extends Label implements KeyListener, FocusListene
             mKeyStroke = ks;
             setText(getKeyStrokeDisplay(mKeyStroke));
             repaint();
+            adjustButtons();
         }
     }
 
@@ -132,11 +138,27 @@ public class KeyStrokeDisplay extends Label implements KeyListener, FocusListene
 
     @Override
     public void focusGained(FocusEvent event) {
-        setBorder(new CompoundBorder(new LineBorder(Colors.EDITABLE_BORDER_FOCUSED), new EmptyBorder(2, 4, 2, 4)));
+        setBorder(new CompoundBorder(new LineBorder(Colors.EDITABLE_BORDER_FOCUSED),
+                new EmptyBorder(2, 4, 2, 4)));
     }
 
     @Override
     public void focusLost(FocusEvent event) {
-        setBorder(new CompoundBorder(new LineBorder(Colors.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
+        setBorder(new CompoundBorder(new LineBorder(Colors.EDITABLE_BORDER),
+                new EmptyBorder(2, 4, 2, 4)));
+    }
+
+    public void setButtons(Button resetButton, Button clearButton, Button setButton) {
+        mResetButton = resetButton;
+        mClearButton = clearButton;
+        mSetButton = setButton;
+        adjustButtons();
+    }
+
+    private void adjustButtons() {
+        String current = getKeyStrokeDisplay(mKeyStroke);
+        mResetButton.setEnabled(!getKeyStrokeDisplay(mCommand.getOriginalAccelerator()).equals(current));
+        mClearButton.setEnabled(mKeyStroke != null);
+        mSetButton.setEnabled(!getKeyStrokeDisplay(mCommand.getAccelerator()).equals(current));
     }
 }

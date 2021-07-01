@@ -145,7 +145,7 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
             mPopup.hide();
             mPopup = null;
             if (mRestoreFocusTo != null) {
-                FocusHelper.focusOn(mRestoreFocusTo, this::finish);
+                FocusHelper.focusOn(mRestoreFocusTo, false, this::finish);
             } else {
                 finish();
             }
@@ -270,49 +270,13 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
             int max     = getComponentCount();
             int keyCode = event.getKeyCode();
             if (keyCode == KeyEvent.VK_UP) {
-                int index = (mSelection != null ? UIUtilities.getIndexOf(this, mSelection) : max) - 1;
-                if (index >= 0) {
-                    while (index >= 0) {
-                        Component comp = getComponent(index);
-                        if (comp instanceof MenuItem && comp.isEnabled()) {
-                            break;
-                        }
-                        index--;
-                    }
-                    if (index >= 0) {
-                        Component comp = getComponent(index);
-                        if (comp instanceof MenuItem) {
-                            if (mSelection != null) {
-                                mSelection.setHighlighted(false);
-                            }
-                            mSelection = ((MenuItem) comp);
-                            mSelection.setHighlighted(true);
-                            scrollToSelection();
-                        }
-                    }
-                }
+                setSelectionTo((mSelection != null ? UIUtilities.getIndexOf(this, mSelection) : max) - 1, true);
             } else if (keyCode == KeyEvent.VK_DOWN) {
-                int index = (mSelection != null ? UIUtilities.getIndexOf(this, mSelection) : -1) + 1;
-                if (index < max) {
-                    while (index < max) {
-                        Component comp = getComponent(index);
-                        if (comp instanceof MenuItem && comp.isEnabled()) {
-                            break;
-                        }
-                        index++;
-                    }
-                    if (index < max) {
-                        Component comp = getComponent(index);
-                        if (comp instanceof MenuItem) {
-                            if (mSelection != null) {
-                                mSelection.setHighlighted(false);
-                            }
-                            mSelection = ((MenuItem) comp);
-                            mSelection.setHighlighted(true);
-                            scrollToSelection();
-                        }
-                    }
-                }
+                setSelectionTo(1 + (mSelection != null ? UIUtilities.getIndexOf(this, mSelection) : -1), false);
+            } else if (keyCode == KeyEvent.VK_HOME) {
+                setSelectionTo(0, false);
+            } else if (keyCode == KeyEvent.VK_END) {
+                setSelectionTo(max - 1, true);
             } else if (keyCode == KeyEvent.VK_SPACE || keyCode == KeyEvent.VK_ENTER || keyCode == KeyEvent.VK_COMMA) {
                 if (mSelection != null) {
                     close();
@@ -320,6 +284,37 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
             } else if (keyCode == KeyEvent.VK_ESCAPE) {
                 mSelection = null;
                 close();
+            }
+        }
+    }
+
+    private void setSelectionTo(int index, boolean up) {
+        int max = getComponentCount() - 1;
+        if (index < 0) {
+            index = 0;
+        } else if (index > max) {
+            index = max;
+        }
+        while (up ? index >= 0 : index <= max) {
+            Component comp = getComponent(index);
+            if (comp instanceof MenuItem && comp.isEnabled()) {
+                break;
+            }
+            if (up) {
+                index--;
+            } else {
+                index++;
+            }
+        }
+        if (index >= 0 && index <= max) {
+            Component comp = getComponent(index);
+            if (comp instanceof MenuItem) {
+                if (mSelection != null) {
+                    mSelection.setHighlighted(false);
+                }
+                mSelection = ((MenuItem) comp);
+                mSelection.setHighlighted(true);
+                scrollToSelection();
             }
         }
     }
@@ -646,7 +641,7 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
         mPopup = factory.getPopup(owner, this, pt.x, pt.y);
         mPopup.show();
         MouseCapture.start(owner, this, this, null);
-        FocusHelper.focusOn(this);
+        FocusHelper.focusOn(this, false);
     }
 
     private final class OwnerAdapter implements MouseListener, MouseMotionListener, MouseWheelListener {
