@@ -57,7 +57,7 @@ public class MultiLineTextField extends JTextArea {
         super.processFocusEvent(event);
         if (event.getID() == FocusEvent.FOCUS_GAINED) {
             selectAll();
-            setBorder(new CompoundBorder(new LineBorder(Colors.ACTIVE_EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
+            setBorder(new CompoundBorder(new LineBorder(Colors.EDITABLE_BORDER_FOCUSED), new EmptyBorder(2, 4, 2, 4)));
         } else {
             setBorder(new CompoundBorder(new LineBorder(Colors.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
         }

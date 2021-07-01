@@ -101,14 +101,14 @@ public class Button extends Panel implements MouseListener, MouseMotionListener,
         Color     color;
         Color     onColor;
         if (mPressed) {
-            color = Colors.PRESSED_BUTTON;
-            onColor = Colors.ON_PRESSED_BUTTON;
+            color = Colors.CONTROL_PRESSED;
+            onColor = Colors.ON_CONTROL_PRESSED;
         } else if (isEnabled()) {
-            color = Colors.BUTTON;
-            onColor = Colors.ON_BUTTON;
+            color = Colors.CONTROL;
+            onColor = Colors.ON_CONTROL;
         } else {
-            color = Colors.BUTTON;
-            onColor = Colors.getWithAlpha(Colors.ON_BUTTON, 96);
+            color = Colors.CONTROL;
+            onColor = Colors.getWithAlpha(Colors.ON_CONTROL, 96);
         }
 
         Path2D.Double path         = new Path2D.Double();
@@ -149,7 +149,7 @@ public class Button extends Panel implements MouseListener, MouseMotionListener,
         TextDrawing.draw(gc, textBounds, TextDrawing.truncateIfNecessary(font, mText,
                 textBounds.width, SwingConstants.CENTER), SwingConstants.CENTER, SwingConstants.CENTER);
 
-        gc.setColor(Colors.BUTTON_BORDER);
+        gc.setColor(Colors.CONTROL_EDGE);
         RenderingHints saved = GraphicsUtilities.setMaximumQualityForGraphics(gc);
         gc.draw(path);
         gc.setRenderingHints(saved);

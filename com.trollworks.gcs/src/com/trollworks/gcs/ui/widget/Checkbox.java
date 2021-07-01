@@ -223,7 +223,7 @@ public class Checkbox extends Panel implements MouseListener, MouseMotionListene
         Rectangle bounds = UIUtilities.getLocalInsetBounds(this);
         Color     color;
         if (mPressed) {
-            color = Colors.PRESSED_ICON_BUTTON;
+            color = Colors.ICON_BUTTON_PRESSED;
         } else if (isEnabled()) {
             color = Colors.ICON_BUTTON;
         } else {

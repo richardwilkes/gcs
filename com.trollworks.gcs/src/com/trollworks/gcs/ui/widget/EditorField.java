@@ -112,7 +112,7 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
     }
 
     private static Border createBorder(boolean focused) {
-        return new CompoundBorder(new LineBorder(focused ? Colors.ACTIVE_EDITABLE_BORDER :
+        return new CompoundBorder(new LineBorder(focused ? Colors.EDITABLE_BORDER_FOCUSED :
                 Colors.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4));
     }
 

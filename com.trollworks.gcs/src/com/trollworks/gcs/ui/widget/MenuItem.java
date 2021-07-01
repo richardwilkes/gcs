@@ -82,11 +82,11 @@ public class MenuItem extends Label {
     @Override
     protected void setStdColors() {
         if (mHighlighted) {
-            setBackground(Colors.PRESSED_BUTTON);
-            setForeground(Colors.ON_PRESSED_BUTTON);
+            setBackground(Colors.CONTROL_PRESSED);
+            setForeground(Colors.ON_CONTROL_PRESSED);
         } else {
-            setBackground(Colors.BUTTON);
-            setForeground(Colors.ON_BUTTON);
+            setBackground(Colors.CONTROL);
+            setForeground(Colors.ON_CONTROL);
         }
     }
 

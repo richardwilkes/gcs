@@ -132,7 +132,7 @@ public class KeyStrokeDisplay extends Label implements KeyListener, FocusListene
 
     @Override
     public void focusGained(FocusEvent event) {
-        setBorder(new CompoundBorder(new LineBorder(Colors.ACTIVE_EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
+        setBorder(new CompoundBorder(new LineBorder(Colors.EDITABLE_BORDER_FOCUSED), new EmptyBorder(2, 4, 2, 4)));
     }
 
     @Override

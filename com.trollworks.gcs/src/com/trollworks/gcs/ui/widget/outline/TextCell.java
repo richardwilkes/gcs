@@ -143,7 +143,7 @@ public class TextCell implements Cell {
                 }
                 iy += ivDelta;
             }
-            gc.setColor(Colors.blend(color, Colors.ACCENT, 70));
+            gc.setColor(selected ? color : Colors.ACCENT);
             icon.paintIcon(outline, gc, bounds.x + scaledHMargin, iy);
         }
 

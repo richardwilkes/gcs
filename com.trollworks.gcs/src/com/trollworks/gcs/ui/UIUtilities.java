@@ -426,10 +426,10 @@ public final class UIUtilities {
     public static Color getIconButtonColor(boolean enabled, boolean inMouseDown, boolean pressed, boolean rollover) {
         if (enabled) {
             if (inMouseDown && pressed) {
-                return Colors.PRESSED_ICON_BUTTON;
+                return Colors.ICON_BUTTON_PRESSED;
             }
             if (rollover) {
-                return Colors.ROLLOVER_ICON_BUTTON;
+                return Colors.ICON_BUTTON_ROLLOVER;
             }
             return Colors.ICON_BUTTON;
         }

@@ -129,8 +129,8 @@ public class DockTab extends Panel implements ContainerListener, MouseListener, 
         Color         fg;
         if (dc != null && dc.getCurrentDockable() == mDockable) {
             boolean active = dc.isActive();
-            bg = active ? Colors.ACTIVE_TAB : Colors.CURRENT_TAB;
-            fg = active ? Colors.ON_ACTIVE_TAB : Colors.ON_CURRENT_TAB;
+            bg = active ? Colors.TAB_FOCUSED : Colors.TAB_CURRENT;
+            fg = active ? Colors.ON_TAB_FOCUSED : Colors.ON_TAB_CURRENT;
         } else {
             bg = Colors.CONTENT;
             fg = Colors.ON_CONTENT;

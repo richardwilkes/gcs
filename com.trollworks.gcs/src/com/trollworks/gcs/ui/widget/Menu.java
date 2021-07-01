@@ -84,8 +84,8 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
 
     @Override
     protected void setStdColors() {
-        setBackground(Colors.BUTTON);
-        setForeground(Colors.ON_BUTTON);
+        setBackground(Colors.CONTROL);
+        setForeground(Colors.ON_CONTROL);
     }
 
     public MenuItem getSelection() {
@@ -651,7 +651,7 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
 
     private final class OwnerAdapter implements MouseListener, MouseMotionListener, MouseWheelListener {
         private Component mOwner;
-        private boolean mFirst;
+        private boolean   mFirst;
 
         private OwnerAdapter(Component owner) {
             mOwner = owner;

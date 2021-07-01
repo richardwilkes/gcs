@@ -221,11 +221,11 @@ public class PopupMenu<T> extends Panel implements MouseListener, KeyListener, F
         Color     color;
         Color     onColor;
         if (isEnabled()) {
-            color = Colors.BUTTON;
-            onColor = Colors.ON_BUTTON;
+            color = Colors.CONTROL;
+            onColor = Colors.ON_CONTROL;
         } else {
-            color = Colors.BUTTON;
-            onColor = Colors.getWithAlpha(Colors.ON_BUTTON, 96);
+            color = Colors.CONTROL;
+            onColor = Colors.getWithAlpha(Colors.ON_CONTROL, 96);
         }
 
         Path2D.Double path         = new Path2D.Double();
@@ -278,7 +278,7 @@ public class PopupMenu<T> extends Panel implements MouseListener, KeyListener, F
         bounds.width -= scale.scale(Button.H_MARGIN);
         TextDrawing.draw(gc, bounds, FontAwesome.CARET_DOWN, SwingConstants.RIGHT, SwingConstants.CENTER);
 
-        gc.setColor(Colors.BUTTON_BORDER);
+        gc.setColor(Colors.CONTROL_EDGE);
         RenderingHints saved = GraphicsUtilities.setMaximumQualityForGraphics(gc);
         gc.draw(path);
         gc.setRenderingHints(saved);

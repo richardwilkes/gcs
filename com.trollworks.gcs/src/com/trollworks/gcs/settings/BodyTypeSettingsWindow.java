@@ -11,8 +11,8 @@
 
 package com.trollworks.gcs.settings;
 
-import com.trollworks.gcs.body.HitLocationTable;
 import com.trollworks.gcs.body.BodyTypePanel;
+import com.trollworks.gcs.body.HitLocationTable;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataChangeListener;
 import com.trollworks.gcs.datafile.DataFile;

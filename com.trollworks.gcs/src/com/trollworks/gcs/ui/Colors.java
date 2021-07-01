@@ -71,81 +71,81 @@ public final class Colors {
     public static final ThemeColor ON_HEADER      = new ThemeColor("on_header", I18n.text("On Header"),
             new Color(255, 255, 255),
             new Color(192, 192, 192));
-    public static final ThemeColor ACTIVE_TAB     = new ThemeColor("active_tab", I18n.text("Active Tab"),
+    public static final ThemeColor TAB_FOCUSED    = new ThemeColor("tab_focused", I18n.text("Focused Tab"),
             new Color(224, 212, 175),
             new Color(102, 102, 0));
-    public static final ThemeColor ON_ACTIVE_TAB  = new ThemeColor("on_active_tab", I18n.text("On Active Tab"),
+    public static final ThemeColor ON_TAB_FOCUSED = new ThemeColor("on_tab_focused", I18n.text("On Focused Tab"),
             new Color(0, 0, 0),
             new Color(221, 221, 221));
-    public static final ThemeColor CURRENT_TAB    = new ThemeColor("current_tab", I18n.text("Current Tab"),
+    public static final ThemeColor TAB_CURRENT    = new ThemeColor("tab_current", I18n.text("Current Tab"),
             new Color(211, 207, 197),
             new Color(61, 61, 0));
-    public static final ThemeColor ON_CURRENT_TAB = new ThemeColor("on_current_tab", I18n.text("On Current Tab"),
+    public static final ThemeColor ON_TAB_CURRENT = new ThemeColor("on_tab_current", I18n.text("On Current Tab"),
             new Color(0, 0, 0),
             new Color(221, 221, 221));
     public static final ThemeColor DROP_AREA      = new ThemeColor("drop_area", I18n.text("Drop Area"),
-            new Color(0, 204, 0),
-            new Color(0, 204, 0));
+            new Color(204, 0, 51),
+            new Color(255, 0, 0));
 
-    public static final ThemeColor EDITABLE               = new ThemeColor("editable", I18n.text("Editable"),
+    public static final ThemeColor EDITABLE                = new ThemeColor("editable", I18n.text("Editable"),
             new Color(255, 255, 255),
             new Color(24, 24, 24));
-    public static final ThemeColor ON_EDITABLE            = new ThemeColor("on_editable", I18n.text("On Editable"),
+    public static final ThemeColor ON_EDITABLE             = new ThemeColor("on_editable", I18n.text("On Editable"),
             new Color(0, 0, 160),
             new Color(0, 153, 153));
-    public static final ThemeColor EDITABLE_BORDER        = new ThemeColor("editable_border", I18n.text("Editable Border"),
+    public static final ThemeColor EDITABLE_BORDER         = new ThemeColor("editable_border", I18n.text("Editable Border"),
             new Color(192, 192, 192),
             new Color(96, 96, 96));
-    public static final ThemeColor ACTIVE_EDITABLE_BORDER = new ThemeColor("active_editable_border", I18n.text("Active Editable Border"),
+    public static final ThemeColor EDITABLE_BORDER_FOCUSED = new ThemeColor("editable_border_focused", I18n.text("Focused Editable Border"),
             new Color(0, 0, 192),
             new Color(0, 102, 102));
-    public static final ThemeColor SELECTION              = new ThemeColor("selection", I18n.text("Selection"),
+    public static final ThemeColor SELECTION               = new ThemeColor("selection", I18n.text("Selection"),
             new Color(0, 96, 160),
             new Color(0, 96, 160));
-    public static final ThemeColor ON_SELECTION           = new ThemeColor("on_selection", I18n.text("On Selection"),
+    public static final ThemeColor ON_SELECTION            = new ThemeColor("on_selection", I18n.text("On Selection"),
             new Color(255, 255, 255),
             new Color(255, 255, 255));
-    public static final ThemeColor INACTIVE_SELECTION     = new ThemeColor("selection.inactive", I18n.text("Inactive Selection"),
+    public static final ThemeColor INACTIVE_SELECTION      = new ThemeColor("inactive_selection", I18n.text("Inactive Selection"),
             new Color(0, 64, 148),
             new Color(0, 64, 148));
-    public static final ThemeColor ON_INACTIVE_SELECTION  = new ThemeColor("on_selection.inactive", I18n.text("On Inactive Selection"),
+    public static final ThemeColor ON_INACTIVE_SELECTION   = new ThemeColor("on_inactive_selection", I18n.text("On Inactive Selection"),
             new Color(228, 228, 228),
             new Color(228, 228, 228));
-    public static final ThemeColor SCROLL                 = new ThemeColor("scroll", I18n.text("Scroll"),
+    public static final ThemeColor SCROLL                  = new ThemeColor("scroll", I18n.text("Scroll"),
             new Color(192, 192, 192, 128),
             new Color(128, 128, 128, 128));
-    public static final ThemeColor SCROLL_ROLLOVER        = new ThemeColor("scroll.rollover", I18n.text("Scroll Rollover"),
+    public static final ThemeColor SCROLL_ROLLOVER         = new ThemeColor("scroll_rollover", I18n.text("Scroll Rollover"),
             new Color(192, 192, 192),
             new Color(128, 128, 128));
-    public static final ThemeColor SCROLL_EDGE            = new ThemeColor("scroll.edge", I18n.text("Scroll Edge"),
+    public static final ThemeColor SCROLL_EDGE             = new ThemeColor("scroll_edge", I18n.text("Scroll Edge"),
             new Color(128, 128, 128),
             new Color(160, 160, 160));
-    public static final ThemeColor ACCENT                 = new ThemeColor("accent", I18n.text("Accent"),
-            new Color(128, 0, 192),
-            new Color(128, 0, 192));
+    public static final ThemeColor ACCENT                  = new ThemeColor("accent", I18n.text("Accent"),
+            new Color(0, 102, 102),
+            new Color(0, 153, 153));
 
-    public static final ThemeColor BUTTON               = new ThemeColor("button.background", I18n.text("Button"),
+    public static final ThemeColor CONTROL              = new ThemeColor("control", I18n.text("Control"),
             new Color(248, 248, 255),
             new Color(64, 64, 64));
-    public static final ThemeColor ON_BUTTON            = new ThemeColor("on_button.background", I18n.text("On Button"),
+    public static final ThemeColor ON_CONTROL           = new ThemeColor("on_control", I18n.text("On Control"),
             new Color(0, 0, 0),
             new Color(221, 221, 221));
-    public static final ThemeColor PRESSED_BUTTON       = new ThemeColor("button.pressed", I18n.text("Pressed Button"),
+    public static final ThemeColor CONTROL_PRESSED      = new ThemeColor("control_pressed", I18n.text("Pressed Control"),
             new Color(0, 96, 160),
             new Color(0, 96, 160));
-    public static final ThemeColor ON_PRESSED_BUTTON    = new ThemeColor("on_button.pressed", I18n.text("On Pressed Button"),
+    public static final ThemeColor ON_CONTROL_PRESSED   = new ThemeColor("on_control_pressed", I18n.text("On Pressed Control"),
             new Color(255, 255, 255),
             new Color(255, 255, 255));
-    public static final ThemeColor BUTTON_BORDER        = new ThemeColor("button.border", I18n.text("Button Border"),
+    public static final ThemeColor CONTROL_EDGE         = new ThemeColor("control_edge", I18n.text("Control Edge"),
             new Color(96, 96, 96),
             new Color(96, 96, 96));
     public static final ThemeColor ICON_BUTTON          = new ThemeColor("icon_button", I18n.text("Icon Button"),
             new Color(96, 96, 96),
             new Color(128, 128, 128));
-    public static final ThemeColor ROLLOVER_ICON_BUTTON = new ThemeColor("rollover_icon_button", I18n.text("Rollover Icon Button"),
+    public static final ThemeColor ICON_BUTTON_ROLLOVER = new ThemeColor("icon_button_rollover", I18n.text("Icon Button Rollover"),
             new Color(0, 0, 0),
             new Color(192, 192, 192));
-    public static final ThemeColor PRESSED_ICON_BUTTON  = new ThemeColor("pressed_icon_button", I18n.text("Pressed Icon Button"),
+    public static final ThemeColor ICON_BUTTON_PRESSED  = new ThemeColor("icon_button_pressed", I18n.text("Pressed Icon Button"),
             new Color(0, 96, 160),
             new Color(0, 96, 160));
     public static final ThemeColor TOOLTIP              = new ThemeColor("tooltip", I18n.text("Tooltip"),

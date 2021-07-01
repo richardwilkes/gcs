@@ -288,13 +288,12 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
 
     private void drawDragRowInsertionMarker(Graphics2D gc, Row parent, int insertAtIndex) {
         Scale     scale  = Scale.get(this);
-        int       one    = scale.scale(1);
         Rectangle bounds = getDragRowInsertionMarkerBounds(parent, insertAtIndex);
         gc.setColor(Colors.DROP_AREA);
-        int three = scale.scale(3);
-        gc.fillRect(bounds.x, bounds.y + three, bounds.width, one);
+        int five = scale.scale(5);
+        gc.fillRect(bounds.x, bounds.y + five, bounds.width, scale.scale(2));
         int height = bounds.height;
-        for (int i = 0; i < three; i++) {
+        for (int i = 0; i < five; i++) {
             gc.fillRect(bounds.x + i, bounds.y + i, 1, height);
             height -= 2;
         }
@@ -302,23 +301,21 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
 
     private Rectangle getDragRowInsertionMarkerBounds(Row parent, int insertAtIndex) {
         Scale     scale    = Scale.get(this);
-        int       one      = scale.scale(1);
         int       rowCount = mModel.getRowCount();
         Rectangle bounds;
-
         if (insertAtIndex < 0 || rowCount == 0) {
             bounds = new Rectangle();
         } else {
             int    insertAt = getAbsoluteInsertionIndex(parent, insertAtIndex);
             Column col      = mModel.getHierarchyColumn();
-            int    indent   = getColumnStart(col) + scale.scale(mModel.getIndentWidth());
+            int    indent   = getColumnStart(col) + scale.scale(mModel.getIndentWidth()) - scale.scale(3);
             if (parent != null) {
                 indent += scale.scale(mModel.getIndentWidthWithDisclosure(parent, col));
             }
             if (insertAt != -1 && insertAt < rowCount) {
                 bounds = getRowBounds(mModel.getRowAtIndex(insertAt));
                 if (mDrawRowDividers && insertAt != 0) {
-                    bounds.y -= one;
+                    bounds.y -= scale.scale(1);
                 }
             } else {
                 bounds = getRowBounds(mModel.getRowAtIndex(rowCount - 1));
@@ -327,9 +324,9 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
             bounds.x += indent;
             bounds.width -= indent;
         }
-        int three = scale.scale(3);
-        bounds.y -= three;
-        bounds.height = three + one + three;
+        int five = scale.scale(5);
+        bounds.y -= five + scale.scale(1);
+        bounds.height = five + scale.scale(2) + five;
         return bounds;
     }
 
@@ -402,7 +399,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                                             if (rowSelected) {
                                                 gc.setColor(active ? Colors.ON_SELECTION : Colors.ON_INACTIVE_SELECTION);
                                             } else {
-                                                gc.setColor(row == mRollRow ? Colors.ROLLOVER_ICON_BUTTON : Colors.ICON_BUTTON);
+                                                gc.setColor(row == mRollRow ? Colors.ICON_BUTTON_ROLLOVER : Colors.ICON_BUTTON);
                                             }
                                             int disclosureSize = scale.scale(mModel.getDisclosureSize());
                                             gc.setFont(new Font(Fonts.FONT_AWESOME_SOLID, Font.PLAIN, disclosureSize));
@@ -2139,8 +2136,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                 } else if (pt.y <= y + height) {
                     if (row.canHaveChildren()) {
                         bounds = getRowBounds(row);
-                        indent = scale.scale(mModel.getIndentWidthWithDisclosure(row, mModel.getHierarchyColumn())) +
-                                scale.scale(mModel.getDisclosureSize());
+                        indent = scale.scale(mModel.getIndentWidthWithDisclosure(row, mModel.getHierarchyColumn()));
                         if (pt.x >= bounds.x + indent && (!isFromSelf || !mModel.isExtendedRowSelected(row))) {
                             parentRow = row;
                             childInsertIndex = 0;
@@ -2168,8 +2164,7 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
                 row = mModel.getRowAtIndex(last);
                 if (row.canHaveChildren()) {
                     bounds = getRowBounds(row);
-                    indent = scale.scale(mModel.getIndentWidthWithDisclosure(row, mModel.getHierarchyColumn())) +
-                            scale.scale(mModel.getDisclosureSize());
+                    indent = scale.scale(mModel.getIndentWidthWithDisclosure(row, mModel.getHierarchyColumn()));
                     if (pt.x >= bounds.x + indent && (!isFromSelf || !mModel.isExtendedRowSelected(row))) {
                         parentRow = row;
                         childInsertIndex = 0;

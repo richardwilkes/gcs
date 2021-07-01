@@ -25,6 +25,8 @@ import com.trollworks.gcs.spell.RitualMagicSpell;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.ui.scale.Scales;
 import com.trollworks.gcs.ui.widget.PopupMenu;
+import com.trollworks.gcs.ui.widget.Search;
+import com.trollworks.gcs.ui.widget.SearchTarget;
 import com.trollworks.gcs.ui.widget.Toolbar;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
@@ -34,8 +36,6 @@ import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowItemRenderer;
 import com.trollworks.gcs.ui.widget.outline.RowIterator;
 import com.trollworks.gcs.ui.widget.outline.RowPostProcessor;
-import com.trollworks.gcs.ui.widget.Search;
-import com.trollworks.gcs.ui.widget.SearchTarget;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.BorderLayout;

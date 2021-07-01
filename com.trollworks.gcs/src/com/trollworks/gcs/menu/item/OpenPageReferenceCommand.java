@@ -13,9 +13,9 @@ package com.trollworks.gcs.menu.item;
 
 import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.menu.Command;
+import com.trollworks.gcs.pageref.PDFServer;
 import com.trollworks.gcs.pageref.PageRef;
 import com.trollworks.gcs.pageref.PageRefSettings;
-import com.trollworks.gcs.pageref.PDFServer;
 import com.trollworks.gcs.settings.PageRefSettingsWindow;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.Selection;
