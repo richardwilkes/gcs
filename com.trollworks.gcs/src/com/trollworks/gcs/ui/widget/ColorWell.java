@@ -28,7 +28,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import javax.swing.JColorChooser;
 
 public class ColorWell extends Panel implements KeyListener, MouseListener, FocusListener {
     private static final int SIZE = 20; // Should be a multiple of 4
@@ -115,9 +114,9 @@ public class ColorWell extends Panel implements KeyListener, MouseListener, Focu
     }
 
     public void click() {
-        Color color = JColorChooser.showDialog(this, null, mColor);
-        if (color != null) {
-            if (!mColor.equals(color)) {
+        if (isEnabled()) {
+            Color color = ColorChooser.presentToUser(this, getName(), mColor);
+            if (color != null && color.getRGB() != mColor.getRGB()) {
                 mColor = color;
                 repaint();
                 if (mListener != null) {
@@ -144,14 +143,18 @@ public class ColorWell extends Panel implements KeyListener, MouseListener, Focu
 
     @Override
     public void mouseEntered(MouseEvent event) {
-        mRollover = true;
-        repaint();
+        if (isEnabled()) {
+            mRollover = true;
+            repaint();
+        }
     }
 
     @Override
     public void mouseExited(MouseEvent event) {
-        mRollover = false;
-        repaint();
+        if (mRollover) {
+            mRollover = false;
+            repaint();
+        }
     }
 
     @Override
@@ -166,7 +169,7 @@ public class ColorWell extends Panel implements KeyListener, MouseListener, Focu
 
     @Override
     public void keyTyped(KeyEvent event) {
-        if (!event.isConsumed() && (event.getModifiersEx() & Command.COMMAND_MODIFIER) == 0) {
+        if (isEnabled() && !event.isConsumed() && (event.getModifiersEx() & Command.COMMAND_MODIFIER) == 0) {
             if (event.getKeyChar() == ' ') {
                 event.consume();
                 click();

@@ -181,6 +181,7 @@ public final class ColorSettingsWindow extends SettingsWindow<Colors> {
 
         ColorTracker(ThemeColor color) {
             super(new Color(color.getRGB(), true), null);
+            setName(color.toString());
             mIndex = color.getIndex();
             setColorChangedListener(this);
         }
