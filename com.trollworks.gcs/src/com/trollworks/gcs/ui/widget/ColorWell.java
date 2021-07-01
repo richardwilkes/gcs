@@ -31,6 +31,8 @@ import java.awt.event.MouseListener;
 import javax.swing.JColorChooser;
 
 public class ColorWell extends Panel implements KeyListener, MouseListener, FocusListener {
+    private static final int SIZE = 20; // Should be a multiple of 4
+
     private Color                mColor;
     private ColorChangedListener mListener;
     private boolean              mRollover;
@@ -54,7 +56,7 @@ public class ColorWell extends Panel implements KeyListener, MouseListener, Focu
         if (isMinimumSizeSet()) {
             return super.getMinimumSize();
         }
-        return new Dimension(20, 20);
+        return new Dimension(SIZE, SIZE);
     }
 
     @Override
@@ -62,7 +64,7 @@ public class ColorWell extends Panel implements KeyListener, MouseListener, Focu
         if (isPreferredSizeSet()) {
             return super.getPreferredSize();
         }
-        return new Dimension(20, 20);
+        return new Dimension(SIZE, SIZE);
     }
 
     @Override
@@ -70,7 +72,7 @@ public class ColorWell extends Panel implements KeyListener, MouseListener, Focu
         if (isMaximumSizeSet()) {
             return super.getMaximumSize();
         }
-        return new Dimension(20, 20);
+        return new Dimension(SIZE, SIZE);
     }
 
     public void setColorChangedListener(ColorChangedListener listener) {
