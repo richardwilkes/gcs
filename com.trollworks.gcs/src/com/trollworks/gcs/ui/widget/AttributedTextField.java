@@ -24,15 +24,16 @@ import java.awt.Font;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.FocusEvent;
-import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.border.CompoundBorder;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.StyledDocument;
 
-public class MultiLineTextField extends JTextArea {
+public class AttributedTextField extends JTextPane {
     private ThemeFont mThemeFont;
 
-    public MultiLineTextField(String text, String tooltip, DocumentListener listener) {
-        super(text);
+    public AttributedTextField(StyledDocument doc, String tooltip, DocumentListener listener) {
+        super(doc);
         setThemeFont(Fonts.FIELD_PRIMARY);
         setToolTipText(tooltip);
         setBorder(new CompoundBorder(new LineBorder(Colors.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
@@ -40,8 +41,6 @@ public class MultiLineTextField extends JTextArea {
         setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, KeyboardFocusManager.getCurrentKeyboardFocusManager().getDefaultFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS));
         setFocusTraversalKeys(KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS, KeyboardFocusManager.getCurrentKeyboardFocusManager().getDefaultFocusTraversalKeys(KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS));
         setFocusTraversalKeysEnabled(true);
-        setLineWrap(true);
-        setWrapStyleWord(true);
         setForeground(Colors.ON_EDITABLE);
         setBackground(Colors.EDITABLE);
         setCaretColor(Colors.ON_EDITABLE);

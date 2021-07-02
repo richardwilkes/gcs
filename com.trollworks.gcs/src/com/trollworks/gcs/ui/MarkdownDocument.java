@@ -67,6 +67,7 @@ public class MarkdownDocument extends DefaultStyledDocument {
         Style style = addStyle("body", null);
         style.addAttribute(StyleConstants.FontFamily, font.getFamily());
         style.addAttribute(StyleConstants.FontSize, Integer.valueOf(font.getSize()));
+        style.addAttribute(StyleConstants.Foreground, Colors.ON_CONTENT);
         return style;
     }
 
@@ -80,6 +81,7 @@ public class MarkdownDocument extends DefaultStyledDocument {
             Style h = addStyle("h" + (i + 1), null);
             h.addAttribute(StyleConstants.FontFamily, family);
             h.addAttribute(StyleConstants.FontSize, Integer.valueOf(sizes[i]));
+            h.addAttribute(StyleConstants.Foreground, Colors.ON_CONTENT);
             h.addAttribute(StyleConstants.Bold, Boolean.TRUE);
             h.addAttribute(StyleConstants.SpaceBelow, Float.valueOf(sizes[i] / 2.0f));
             styles[i] = h;
@@ -91,6 +93,7 @@ public class MarkdownDocument extends DefaultStyledDocument {
         Style style = addStyle("bullet", null);
         style.addAttribute(StyleConstants.FontFamily, font.getFamily());
         style.addAttribute(StyleConstants.FontSize, Integer.valueOf(font.getSize()));
+        style.addAttribute(StyleConstants.Foreground, Colors.ON_CONTENT);
         int indent = TextDrawing.getSimpleWidth(font, "• ");
         style.addAttribute(StyleConstants.FirstLineIndent, Float.valueOf(-indent));
         style.addAttribute(StyleConstants.LeftIndent, Float.valueOf(indent));

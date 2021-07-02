@@ -18,6 +18,8 @@ import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.MarkdownDocument;
 import com.trollworks.gcs.ui.border.EmptyBorder;
+import com.trollworks.gcs.ui.border.LineBorder;
+import com.trollworks.gcs.ui.widget.AttributedTextField;
 import com.trollworks.gcs.ui.widget.MessageType;
 import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
@@ -30,7 +32,6 @@ import java.awt.EventQueue;
 import java.net.URI;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import javax.swing.JTextPane;
 
 /** Provides a background check for updates. */
 public final class UpdateChecker implements Runnable {
@@ -159,27 +160,7 @@ public final class UpdateChecker implements Runnable {
         if (GCS.isNotificationAllowed()) {
             mMode = Mode.DONE;
             if (isNewAppVersionAvailable()) {
-                JTextPane markdown = new JTextPane(new MarkdownDocument(getAppReleaseNotes()));
-                markdown.setBorder(new EmptyBorder(4));
-                Dimension size     = markdown.getPreferredSize();
-                int       maxWidth = Math.min(600, WindowUtils.getMaximumWindowBounds().width * 3 / 2);
-                if (size.width > maxWidth) {
-                    markdown.setSize(new Dimension(maxWidth, Short.MAX_VALUE));
-                    size = markdown.getPreferredSize();
-                    size.width = maxWidth;
-                    markdown.setPreferredSize(size);
-                }
-                markdown.setBackground(Colors.BACKGROUND);
-                markdown.setForeground(Colors.ON_BACKGROUND);
-                markdown.setEditable(false);
-                Modal dialog = Modal.prepareToShowMessage(null,
-                        getAppResult(),
-                        MessageType.WARNING,
-                        new ScrollPanel(markdown));
-                dialog.addButton(I18n.text("Ignore"), Modal.CANCEL);
-                dialog.addButton(I18n.text("Update"), Modal.OK);
-                dialog.presentToUser();
-                if (dialog.getResult() == Modal.OK) {
+                if (presentUpdateToUser(getAppResult(), getAppReleaseNotes()).getResult() == Modal.OK) {
                     goToUpdate();
                 }
                 return;
@@ -196,5 +177,28 @@ public final class UpdateChecker implements Runnable {
         } else {
             Tasks.scheduleOnUIThread(this, 250, TimeUnit.MILLISECONDS, this);
         }
+    }
+
+    public static Modal presentUpdateToUser(String title, String text) {
+        AttributedTextField markdown = new AttributedTextField(new MarkdownDocument(text), null, null);
+        markdown.setBorder(new EmptyBorder(2, 4, 2, 4));
+        Dimension size     = markdown.getPreferredSize();
+        int       maxWidth = Math.min(900, WindowUtils.getMaximumWindowBounds().width * 3 / 2);
+        if (size.width > maxWidth) {
+            size = markdown.getPreferredSizeForWidth(maxWidth);
+            size.width = maxWidth;
+            markdown.setPreferredSize(size);
+        }
+        markdown.setBackground(Colors.CONTENT);
+        markdown.setFocusable(false);
+        markdown.setEditable(false);
+        ScrollPanel scroller = new ScrollPanel(markdown);
+        scroller.setBorder(new LineBorder(Colors.DIVIDER));
+        Modal modal = Modal.prepareToShowMessage(null, title, MessageType.WARNING, scroller);
+        modal.addButton(I18n.text("Ignore"), Modal.CANCEL);
+        modal.addButton(I18n.text("Update"), Modal.OK);
+        modal.setResizable(true);
+        modal.presentToUser();
+        return modal;
     }
 }

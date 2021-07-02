@@ -14,21 +14,14 @@ package com.trollworks.gcs.menu.library;
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.library.LibraryUpdater;
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.ui.Colors;
-import com.trollworks.gcs.ui.MarkdownDocument;
 import com.trollworks.gcs.ui.UIUtilities;
-import com.trollworks.gcs.ui.border.EmptyBorder;
-import com.trollworks.gcs.ui.widget.MessageType;
 import com.trollworks.gcs.ui.widget.Modal;
-import com.trollworks.gcs.ui.widget.ScrollPanel;
-import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Release;
+import com.trollworks.gcs.utility.UpdateChecker;
 import com.trollworks.gcs.utility.Version;
 
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import javax.swing.JTextPane;
 
 public class LibraryUpdateCommand extends Command {
     private Library mLibrary;
@@ -76,27 +69,11 @@ public class LibraryUpdateCommand extends Command {
     }
 
     public static void askUserToUpdate(Library library, Release release) {
-        JTextPane markdown = new JTextPane(new MarkdownDocument(I18n.text("NOTE: Existing content for this library will be removed and replaced. Content in other libraries will not be modified.\n\n" + release.getNotes())));
-        markdown.setBorder(new EmptyBorder(4));
-        Dimension size     = markdown.getPreferredSize();
-        int       maxWidth = Math.min(600, WindowUtils.getMaximumWindowBounds().width * 3 / 2);
-        if (size.width > maxWidth) {
-            markdown.setSize(new Dimension(maxWidth, Short.MAX_VALUE));
-            size = markdown.getPreferredSize();
-            size.width = maxWidth;
-            markdown.setPreferredSize(size);
-        }
-        markdown.setBackground(Colors.BACKGROUND);
-        markdown.setForeground(Colors.ON_BACKGROUND);
-        markdown.setEditable(false);
-        Modal dialog = Modal.prepareToShowMessage(null,
-                String.format(I18n.text("%s v%s is available!"), library.getTitle(), release.getVersion()),
-                MessageType.WARNING,
-                new ScrollPanel(markdown));
-        dialog.addButton(I18n.text("Ignore"), Modal.CANCEL);
-        dialog.addButton(I18n.text("Update"), Modal.OK);
-        dialog.presentToUser();
-        if (dialog.getResult() == Modal.OK) {
+        if (UpdateChecker.presentUpdateToUser(String.format(I18n.text("%s v%s is available!"),
+                library.getTitle(), release.getVersion()), I18n.text("""
+                NOTE: Existing content for this library will be removed and replaced. Content in other libraries will not be modified.
+
+                """) + release.getNotes()).getResult() == Modal.OK) {
             LibraryUpdater.download(library, release);
         }
     }

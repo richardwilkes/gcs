@@ -12,11 +12,15 @@
 package com.trollworks.gcs.library;
 
 import com.trollworks.gcs.datafile.DataFileDockable;
-import com.trollworks.gcs.ui.border.EmptyBorder;
-import com.trollworks.gcs.ui.border.LineBorder;
+import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.LayoutConstants;
 import com.trollworks.gcs.ui.widget.MessageType;
 import com.trollworks.gcs.ui.widget.Modal;
+import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.ProgressBar;
 import com.trollworks.gcs.ui.widget.Workspace;
 import com.trollworks.gcs.ui.widget.dock.Dockable;
 import com.trollworks.gcs.utility.I18n;
@@ -24,7 +28,6 @@ import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.RecursiveDirectoryRemover;
 import com.trollworks.gcs.utility.Release;
 
-import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.GraphicsEnvironment;
 import java.io.IOException;
@@ -37,16 +40,11 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JProgressBar;
-import javax.swing.WindowConstants;
-import javax.swing.border.CompoundBorder;
 
 public final class LibraryUpdater implements Runnable {
     private static final ExecutorService QUEUE = Executors.newSingleThreadExecutor();
     private              String          mResult;
-    private              JDialog         mDialog;
+    private              Modal           mModal;
     private              Library         mLibrary;
     private              Release         mRelease;
     private              boolean         mUpdateComplete;
@@ -109,22 +107,13 @@ public final class LibraryUpdater implements Runnable {
             }
 
             // Put up a progress dialog
-            JDialog dialog = new JDialog(workspace, String.format(I18n.text("Update %s"), title), true);
-            dialog.setResizable(false);
-            dialog.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-            dialog.setUndecorated(true);
-            JComponent content = (JComponent) dialog.getContentPane();
-            content.setLayout(new BorderLayout());
-            content.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(10)));
-            content.add(new Label(String.format(I18n.text("Downloading and installing the %s…"), title)), BorderLayout.NORTH);
-            JProgressBar bar = new JProgressBar();
-            bar.setIndeterminate(true);
-            content.add(bar);
-            dialog.pack();
-            dialog.setLocationRelativeTo(workspace);
-            lib.mDialog = dialog;
+            Panel msgPanel = new Panel(new PrecisionLayout().setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
+            msgPanel.add(new Label(String.format(I18n.text("Downloading and installing the %s…"), title)));
+            msgPanel.add(new ProgressBar(0), new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setTopMargin(LayoutConstants.TOOLBAR_VERTICAL_INSET));
+            Modal modal = Modal.prepareToShowMessage(workspace, String.format(I18n.text("Update %s"), title), MessageType.NONE, msgPanel);
+            lib.mModal = modal;
             QUEUE.submit(lib);
-            dialog.setVisible(true);
+            modal.presentToUser();
         }
     }
 
@@ -216,7 +205,7 @@ public final class LibraryUpdater implements Runnable {
         if (libraryDockable != null) {
             libraryDockable.refresh();
         }
-        mDialog.dispose();
+        mModal.dispose();
         String title = mLibrary.getTitle();
         if (mResult == null) {
             Modal.showMessage(null, I18n.text("Success!"), MessageType.NONE, String.format(I18n.text("%s update was successful."), title));
