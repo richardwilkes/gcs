@@ -36,6 +36,7 @@ import javax.swing.JFormattedTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
+import javax.swing.plaf.basic.BasicFormattedTextFieldUI;
 
 /** Provides a standard editor field. */
 public class EditorField extends JFormattedTextField implements ActionListener, Commitable {
@@ -74,6 +75,7 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
      */
     public EditorField(AbstractFormatterFactory formatter, ChangeListener listener, int alignment, Object value, Object protoValue, String tooltip) {
         super(formatter, value);
+        setUI(new BasicFormattedTextFieldUI()); // Without this line, Linux will ignore various settings made below
         mPrototypeValue = protoValue;
         setThemeFont(Fonts.FIELD_PRIMARY);
         setHorizontalAlignment(alignment);
