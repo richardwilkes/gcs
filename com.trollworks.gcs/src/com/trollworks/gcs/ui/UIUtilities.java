@@ -38,6 +38,10 @@ import java.awt.Transparency;
 import java.awt.Window;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import javax.swing.JComponent;
 import javax.swing.JViewport;
 import javax.swing.RepaintManager;
@@ -54,12 +58,31 @@ public final class UIUtilities {
 
     /** Initialize the UI. */
     public static void initialize() {
+        if (Platform.isLinux()) {
+            // Try to determine the display scaling factor and set it -- but only if none of the
+            // properties or environment variables that should control it are set.
+            String uiScale = System.getProperty("sun.java2d.uiScale");
+            if (uiScale == null || uiScale.isBlank()) {
+                String gdkScale = System.getenv("GDK_SCALE");
+                if (gdkScale == null || gdkScale.isBlank()) {
+                    String gdkDPIScale = System.getenv("GDK_DPI_SCALE");
+                    if (gdkDPIScale == null || gdkDPIScale.isBlank()) {
+                        int dpi = getXftDPI();
+                        if (dpi > 0) {
+                            System.setProperty("sun.java2d.uiScale", Integer.toString(dpi / 96));
+                        }
+                    }
+                }
+            }
+        }
+
         System.setProperty("apple.laf.useScreenMenuBar", Boolean.TRUE.toString());
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception ex) {
             Log.error(ex);
         }
+
         // The following two lines are here to ensure the theme is loaded
         Colors.currentThemeColors();
         Fonts.currentThemeFonts();
@@ -99,6 +122,31 @@ public final class UIUtilities {
             UIManager.put("Panel.background", Colors.BACKGROUND);
             UIManager.put("Panel.foreground", Colors.ON_BACKGROUND);
         }
+    }
+
+    private static int getXftDPI() {
+        int dpi = 0;
+        ProcessBuilder builder = new ProcessBuilder("xrdb", "-q");
+        builder.redirectOutput(ProcessBuilder.Redirect.PIPE).redirectErrorStream(true);
+        try {
+            Process process     = builder.start();
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
+                String prefix = "Xft.dpi:";
+                String line;
+                while ((line = in.readLine()) != null) {
+                    if (line.startsWith(prefix)) {
+                        try {
+                            dpi = Integer.parseInt(line.substring(prefix.length()).trim());
+                        } catch(NumberFormatException nfex) {
+                            System.err.println("unable to parse dpi from: " + line);
+                        }
+                    }
+                }
+            }
+        } catch (IOException exception) {
+            exception.printStackTrace(System.err);
+        }
+        return dpi;
     }
 
     /**
