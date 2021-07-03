@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.ui;
 
+import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.widget.Button;
@@ -58,6 +59,7 @@ public final class UIUtilities {
 
     /** Initialize the UI. */
     public static void initialize() {
+        int scaleFactor = 1;
         if (Platform.isLinux()) {
             // Try to determine the display scaling factor and set it -- but only if none of the
             // properties or environment variables that should control it are set.
@@ -69,7 +71,8 @@ public final class UIUtilities {
                     if (gdkDPIScale == null || gdkDPIScale.isBlank()) {
                         int dpi = getXftDPI();
                         if (dpi > 0) {
-                            System.setProperty("sun.java2d.uiScale", Integer.toString(dpi / 96));
+                            scaleFactor = dpi / 96;
+                            System.setProperty("sun.java2d.uiScale", Integer.toString(scaleFactor));
                         }
                     }
                 }
@@ -104,16 +107,23 @@ public final class UIUtilities {
             UIManager.put("Menu.opaque", Boolean.TRUE);
             UIManager.put("Menu.background", Colors.BACKGROUND);
             UIManager.put("Menu.foreground", Colors.ON_BACKGROUND);
+            UIManager.put("Menu.font", Fonts.LABEL_PRIMARY.getFont());
+            UIManager.put("Menu.border", new EmptyBorder(2 * scaleFactor, 4 * scaleFactor, 2 * scaleFactor, 4 * scaleFactor));
+            UIManager.put("Menu.borderPainted", Boolean.TRUE);
 
             UIManager.put("MenuItem.opaque", Boolean.TRUE);
             UIManager.put("MenuItem.borderPainted", Boolean.FALSE);
             UIManager.put("MenuItem.background", Colors.BACKGROUND);
             UIManager.put("MenuItem.foreground", Colors.ON_BACKGROUND);
-            UIManager.put("MenuItem.disabledForeground", new DynamicColor(() -> Colors.getWithAlpha(Colors.ON_BACKGROUND, 192).getRGB()));
+            UIManager.put("MenuItem.disabledForeground", new DynamicColor(() -> Colors.getWithAlpha(Colors.ON_BACKGROUND, 128).getRGB()));
             UIManager.put("MenuItem.selectionBackground", Colors.SELECTION);
             UIManager.put("MenuItem.selectionForeground", Colors.ON_SELECTION);
             UIManager.put("MenuItem.acceleratorForeground", Colors.ON_BACKGROUND);
             UIManager.put("MenuItem.acceleratorSelectionForeground", Colors.ON_SELECTION);
+            UIManager.put("MenuItem.font", Fonts.LABEL_PRIMARY.getFont());
+            UIManager.put("MenuItem.acceleratorFont", Fonts.LABEL_SECONDARY.getFont());
+            UIManager.put("MenuItem.border", new EmptyBorder(2 * scaleFactor, 4 * scaleFactor, 2 * scaleFactor, 4 * scaleFactor));
+            UIManager.put("MenuItem.borderPainted", Boolean.TRUE);
 
             UIManager.put("PopupMenu.background", Colors.BACKGROUND);
             UIManager.put("PopupMenu.foreground", Colors.ON_BACKGROUND);
@@ -125,11 +135,11 @@ public final class UIUtilities {
     }
 
     private static int getXftDPI() {
-        int dpi = 0;
+        int            dpi     = 0;
         ProcessBuilder builder = new ProcessBuilder("xrdb", "-q");
         builder.redirectOutput(ProcessBuilder.Redirect.PIPE).redirectErrorStream(true);
         try {
-            Process process     = builder.start();
+            Process process = builder.start();
             try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
                 String prefix = "Xft.dpi:";
                 String line;
@@ -137,7 +147,7 @@ public final class UIUtilities {
                     if (line.startsWith(prefix)) {
                         try {
                             dpi = Integer.parseInt(line.substring(prefix.length()).trim());
-                        } catch(NumberFormatException nfex) {
+                        } catch (NumberFormatException nfex) {
                             System.err.println("unable to parse dpi from: " + line);
                         }
                     }
