@@ -448,12 +448,12 @@ public final class PrecisionLayout implements LayoutManager2 {
     }
 
     private void positionChildren(Scale scale, int x, int y, Component[][] grid, int[] widths, int[] heights) {
-        int hSpacing  = scale.scale(mHSpacing);
-        int vSpacing  = scale.scale(mVSpacing);
-        int letMargin = scale.scale(mMarginLeft);
-        int gridY     = y + scale.scale(mMarginTop);
+        int hSpacing   = scale.scale(mHSpacing);
+        int vSpacing   = scale.scale(mVSpacing);
+        int leftMargin = scale.scale(mMarginLeft);
+        int gridY      = y + scale.scale(mMarginTop);
         for (int i = 0; i < mRowCount; i++) {
-            int gridX = x + letMargin;
+            int gridX = x + leftMargin;
             for (int j = 0; j < mColumns; j++) {
                 PrecisionLayoutData data = getData(grid, i, j, mRowCount, true);
                 if (data != null) {
@@ -855,9 +855,9 @@ public final class PrecisionLayout implements LayoutManager2 {
                             }
                             expandRow[i] = true;
                         }
-                        int minimumHeight = scale.scale(data.getMinimumHeight());
+                        int minimumHeight = data.getMinimumHeight();
                         if (!data.shouldGrabVerticalSpace() || minimumHeight != 0) {
-                            h = !data.shouldGrabVerticalSpace() || minimumHeight == PrecisionLayoutData.DEFAULT ? data.getCachedHeight() : minimumHeight;
+                            h = !data.shouldGrabVerticalSpace() || minimumHeight == PrecisionLayoutData.DEFAULT ? data.getCachedHeight() : scale.scale(minimumHeight);
                             h += dataTopMargin + dataBottomMargin;
                             minHeights[i] = Math.max(minHeights[i], h);
                         }
@@ -900,9 +900,9 @@ public final class PrecisionLayout implements LayoutManager2 {
                                 }
                             }
                         }
-                        int minimumHeight = scale.scale(data.getMinimumHeight());
+                        int minimumHeight = data.getMinimumHeight();
                         if (!data.shouldGrabVerticalSpace() || minimumHeight != 0) {
-                            h = !data.shouldGrabVerticalSpace() || minimumHeight == PrecisionLayoutData.DEFAULT ? data.getCachedHeight() : minimumHeight;
+                            h = !data.shouldGrabVerticalSpace() || minimumHeight == PrecisionLayoutData.DEFAULT ? data.getCachedHeight() : scale.scale(minimumHeight);
                             h += dataTopMargin + dataBottomMargin - spanMinHeight - (vSpan - 1) * vSpacing;
                             if (h > 0) {
                                 if (spanExpandCount == 0) {
@@ -956,7 +956,7 @@ public final class PrecisionLayout implements LayoutManager2 {
                         if (data != null) {
                             int vSpan = Math.max(1, Math.min(data.getVerticalSpan(), mRowCount));
                             if (vSpan > 1) {
-                                int minimumHeight = scale.scale(data.getMinimumHeight());
+                                int minimumHeight = data.getMinimumHeight();
                                 if (!data.shouldGrabVerticalSpace() || minimumHeight != 0) {
                                     int spanHeight = 0, spanExpandCount = 0;
                                     for (int k = 0; k < vSpan; k++) {
@@ -965,7 +965,7 @@ public final class PrecisionLayout implements LayoutManager2 {
                                             spanExpandCount++;
                                         }
                                     }
-                                    int h = !data.shouldGrabVerticalSpace() || minimumHeight == PrecisionLayoutData.DEFAULT ? data.getCachedHeight() : minimumHeight;
+                                    int h = !data.shouldGrabVerticalSpace() || minimumHeight == PrecisionLayoutData.DEFAULT ? data.getCachedHeight() : scale.scale(minimumHeight);
                                     h += scale.scale(data.getTopMargin()) + scale.scale(data.getBottomMargin()) - spanHeight - (vSpan - 1) * vSpacing;
                                     if (h > 0) {
                                         if (spanExpandCount == 0) {
