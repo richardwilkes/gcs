@@ -169,16 +169,4 @@ public class Label extends Panel {
         }
         return size;
     }
-
-    public int getPreferredHeight(int width) {
-        Scale  scale  = Scale.get(this);
-        Insets insets = getInsets();
-        width -= insets.left + insets.right;
-        if (mIcon != null) {
-            width -= scale.scale(mIcon.getIconWidth()) + scale.scale(GAP);
-        }
-        Font      font = scale.scale(getFont());
-        Dimension size = TextDrawing.getPreferredSize(font, TextDrawing.wrapToPixelWidth(font, mText, width));
-        return size.height;
-    }
 }
