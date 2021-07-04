@@ -59,18 +59,31 @@ public class MultiLineTextField extends JTextArea {
         if (isPreferredSizeSet()) {
             return super.getPreferredSize();
         }
-        Dimension size   = TextDrawing.getPreferredSize(getFont(), getText());
-        Insets    insets = getInsets();
+        Dimension size;
+        String    text = getText();
+        Font      font = getFont();
+        if (text.isEmpty()) {
+            size = new Dimension(0, TextDrawing.getFontHeight(font));
+        } else {
+            size = TextDrawing.getPreferredSize(font, text);
+        }
+        Insets insets = getInsets();
         size.width += insets.left + insets.right;
         size.height += insets.top + insets.bottom;
         return size;
     }
 
     public Dimension getPreferredSizeForWidth(int width) {
-        Font   font   = getFont();
-        Insets insets = getInsets();
-        Dimension size = TextDrawing.getPreferredSize(font,
-                TextDrawing.wrapToPixelWidth(font, getText(), width - (insets.left + insets.right)));
+        Dimension size;
+        String    text   = getText();
+        Font      font   = getFont();
+        Insets    insets = getInsets();
+        if (text.isEmpty()) {
+            size = new Dimension(0, TextDrawing.getFontHeight(font));
+        } else {
+            size = TextDrawing.getPreferredSize(font,
+                    TextDrawing.wrapToPixelWidth(font, getText(), width - (insets.left + insets.right)));
+        }
         size.width += insets.left + insets.right;
         size.height += insets.top + insets.bottom;
         return size;
