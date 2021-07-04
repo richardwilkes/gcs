@@ -87,7 +87,7 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
         setSelectionColor(Colors.SELECTION);
         setSelectedTextColor(Colors.ON_SELECTION);
         setDisabledTextColor(new DynamicColor(() -> Colors.getWithAlpha(getForeground(), 96).getRGB()));
-        setBorder(new CompoundBorder(new LineBorder(Colors.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4)));
+        setBorder(createBorder(false));
         if (listener != null) {
             addPropertyChangeListener("value", (evt) -> listener.editorFieldChanged(this));
         }
