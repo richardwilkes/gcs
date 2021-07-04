@@ -107,22 +107,27 @@ public final class UIUtilities {
             UIManager.put("Menu.opaque", Boolean.TRUE);
             UIManager.put("Menu.background", Colors.BACKGROUND);
             UIManager.put("Menu.foreground", Colors.ON_BACKGROUND);
+            DynamicColor disabledForeground = new DynamicColor(() -> Colors.getWithAlpha(Colors.ON_BACKGROUND, 128).getRGB());
+            UIManager.put("Menu.disabledForeground", disabledForeground);
+            UIManager.put("Menu.selectionBackground", Colors.SELECTION);
+            UIManager.put("Menu.selectionForeground", Colors.ON_SELECTION);
             UIManager.put("Menu.font", Fonts.LABEL_PRIMARY.getFont());
-            UIManager.put("Menu.border", new EmptyBorder(2 * scaleFactor, 4 * scaleFactor, 2 * scaleFactor, 4 * scaleFactor));
+            EmptyBorder menuBorder = new EmptyBorder(2 * scaleFactor, 4 * scaleFactor, 2 * scaleFactor, 4 * scaleFactor);
+            UIManager.put("Menu.border", menuBorder);
             UIManager.put("Menu.borderPainted", Boolean.TRUE);
 
             UIManager.put("MenuItem.opaque", Boolean.TRUE);
             UIManager.put("MenuItem.borderPainted", Boolean.FALSE);
             UIManager.put("MenuItem.background", Colors.BACKGROUND);
             UIManager.put("MenuItem.foreground", Colors.ON_BACKGROUND);
-            UIManager.put("MenuItem.disabledForeground", new DynamicColor(() -> Colors.getWithAlpha(Colors.ON_BACKGROUND, 128).getRGB()));
+            UIManager.put("MenuItem.disabledForeground", disabledForeground);
             UIManager.put("MenuItem.selectionBackground", Colors.SELECTION);
             UIManager.put("MenuItem.selectionForeground", Colors.ON_SELECTION);
             UIManager.put("MenuItem.acceleratorForeground", Colors.ON_BACKGROUND);
             UIManager.put("MenuItem.acceleratorSelectionForeground", Colors.ON_SELECTION);
             UIManager.put("MenuItem.font", Fonts.LABEL_PRIMARY.getFont());
             UIManager.put("MenuItem.acceleratorFont", Fonts.LABEL_SECONDARY.getFont());
-            UIManager.put("MenuItem.border", new EmptyBorder(2 * scaleFactor, 4 * scaleFactor, 2 * scaleFactor, 4 * scaleFactor));
+            UIManager.put("MenuItem.border", menuBorder);
             UIManager.put("MenuItem.borderPainted", Boolean.TRUE);
 
             UIManager.put("PopupMenu.background", Colors.BACKGROUND);
