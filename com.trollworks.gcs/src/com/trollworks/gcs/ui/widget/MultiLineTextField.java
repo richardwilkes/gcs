@@ -59,6 +59,12 @@ public class MultiLineTextField extends JTextArea {
         if (isPreferredSizeSet()) {
             return super.getPreferredSize();
         }
+        // For this to work as desired, we really want to have a known width. Unfortunately, the
+        // AWT/Swing layout managers aren't setup that way, so we'll use our last width as a proxy
+        // when possible. This may have undesired behaviors for other use-cases.
+        if (getWidth() > 0) {
+            return getPreferredSizeForWidth(getWidth());
+        }
         Dimension size;
         String    text = getText();
         Font      font = getFont();

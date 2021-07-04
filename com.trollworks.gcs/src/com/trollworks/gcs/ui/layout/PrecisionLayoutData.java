@@ -12,6 +12,7 @@
 package com.trollworks.gcs.ui.layout;
 
 import com.trollworks.gcs.ui.scale.Scale;
+import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.utility.Log;
 
 import java.awt.Component;
@@ -610,14 +611,17 @@ public final class PrecisionLayoutData implements Cloneable {
         if (mMinWidth != DEFAULT && size.width < scaledMinWidth) {
             size.width = scaledMinWidth;
         }
+        if (wHint != DEFAULT) {
+            size.width = wHint;
+        }
+        if (component instanceof MultiLineTextField) {
+            size.height = ((MultiLineTextField) component).getPreferredSizeForWidth(size.width).height;
+        }
         if (mHeightHint != DEFAULT) {
             size.height = scale.scale(mHeightHint);
         }
         if (mMinHeight != DEFAULT && size.height < scaledMinHeight) {
             size.height = scaledMinHeight;
-        }
-        if (wHint != DEFAULT) {
-            size.width = wHint;
         }
         if (hHint != DEFAULT) {
             size.height = hHint;

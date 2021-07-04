@@ -12,6 +12,7 @@
 package com.trollworks.gcs.ui.layout;
 
 import com.trollworks.gcs.ui.scale.Scale;
+import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.utility.Log;
 
 import java.awt.Component;
@@ -406,7 +407,20 @@ public final class PrecisionLayout implements LayoutManager2 {
         layout(target, true, insets.left, insets.top, target.getWidth() - (insets.left + insets.right), target.getHeight() - (insets.top + insets.bottom), false);
     }
 
+    private boolean mNeedSecondLayout;
+
     private Dimension layout(Container target, boolean move, int x, int y, int width, int height, boolean useMinimumSize) {
+        // This is a hack to handle the case where we have MultiLineTextFields in the layout, which
+        // adjust their preferred height based on the width they get set to.
+        mNeedSecondLayout = false;
+        Dimension size = layout2(target, move, x, y, width, height, useMinimumSize);
+        if (!mNeedSecondLayout) {
+            return size;
+        }
+        return layout2(target, move, x, y, width, height, useMinimumSize);
+    }
+
+    private Dimension layout2(Container target, boolean move, int x, int y, int width, int height, boolean useMinimumSize) {
         Scale scale       = Scale.get(target);
         int   totalWidth  = scale.scale(mMarginLeft) + scale.scale(mMarginRight);
         int   totalHeight = scale.scale(mMarginTop) + scale.scale(mMarginBottom);
@@ -532,6 +546,9 @@ public final class PrecisionLayout implements LayoutManager2 {
         int           column = 0;
         mRowCount = 0;
         for (Component child : children) {
+            if (child instanceof MultiLineTextField) {
+                mNeedSecondLayout = true;
+            }
             PrecisionLayoutData data  = mConstraints.get(child);
             int                 hSpan = Math.max(1, Math.min(data.getHorizontalSpan(), mColumns));
             int                 vSpan = Math.max(1, data.getVerticalSpan());
