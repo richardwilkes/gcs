@@ -541,6 +541,15 @@ public final class Colors {
         return substitute != null ? substitute : result;
     }
 
+    public static String encodeToHex(Color color) {
+        int rgba = color.getRGB();
+        if ((rgba & 0xFF000000) == 0xFF000000) {
+            rgba &= 0xFFFFFF;
+            return String.format("#%06x", Integer.valueOf(rgba));
+        }
+        return String.format("#%08x", Integer.valueOf(rgba));
+    }
+
     public static Color decode(String buffer) {
         int red   = 0;
         int green = 0;
