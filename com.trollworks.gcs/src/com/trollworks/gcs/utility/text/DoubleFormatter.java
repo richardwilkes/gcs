@@ -13,7 +13,7 @@ package com.trollworks.gcs.utility.text;
 
 import javax.swing.JFormattedTextField;
 
-/** Provides integer field conversion. */
+/** Provides double field conversion. */
 public class DoubleFormatter extends JFormattedTextField.AbstractFormatter {
     private double  mMinValue;
     private double  mMaxValue;
