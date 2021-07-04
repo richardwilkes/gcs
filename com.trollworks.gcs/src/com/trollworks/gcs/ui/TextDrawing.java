@@ -95,23 +95,9 @@ public final class TextDrawing {
         if (text == null || text.isEmpty()) {
             return 0;
         }
-        StringTokenizer tokenizer = new StringTokenizer(text, "\n", true);
-        boolean         veryFirst = true;
-        boolean         first     = true;
-        int             width     = 0;
-        while (tokenizer.hasMoreTokens()) {
-            String token = tokenizer.nextToken();
-            if ("\n".equals(token)) {
-                if (first && !veryFirst) {
-                    first = false;
-                    continue;
-                }
-                token = " ";
-            } else {
-                first = true;
-            }
-            veryFirst = false;
-            int bWidth = getSimpleWidth(font, token);
+        int width = 0;
+        for (String line : text.split("\n")) {
+            int bWidth = getSimpleWidth(font, line);
             if (width < bWidth) {
                 width = bWidth;
             }
@@ -161,49 +147,50 @@ public final class TextDrawing {
             int             fHeight    = ascent + descent;
             String          wrapped    = wrapToPixelWidth(font, text, bounds.width);
             StringTokenizer tokenizer  = new StringTokenizer(wrapped, "\n", true);
-            StringBuilder   buffer     = new StringBuilder(wrapped.length());
             int             textHeight = 0;
             int             width;
+            boolean         addedToken = false;
             while (tokenizer.hasMoreTokens()) {
                 String token = tokenizer.nextToken();
                 if ("\n".equals(token)) {
-                    text = buffer.toString();
-                    textHeight += fHeight;
-                    list.add(text);
-                    buffer.setLength(0);
+                    if (addedToken) {
+                        addedToken = false;
+                    } else {
+                        textHeight += fHeight;
+                        list.add("");
+                    }
                 } else {
-                    buffer.append(token);
+                    list.add(token);
+                    textHeight += fHeight;
+                    addedToken = true;
                 }
-            }
-            if (!buffer.isEmpty()) {
-                text = buffer.toString();
-                textHeight += fHeight;
-                list.add(text);
             }
             if (vAlign == SwingConstants.CENTER) {
-                y = bounds.y + (bounds.height - textHeight) / 2;
+                y += (bounds.height - textHeight) / 2;
             } else if (vAlign == SwingConstants.BOTTOM) {
-                y = bounds.y + bounds.height - textHeight;
+                y += bounds.height - textHeight;
             }
             for (String piece : list) {
-                width = 0;
-                int x = bounds.x;
-                if (hAlign == SwingConstants.CENTER) {
-                    width = getSimpleWidth(font, piece);
-                    x += (bounds.width - width) / 2;
-                } else if (hAlign == SwingConstants.RIGHT) {
-                    width = getSimpleWidth(font, piece);
-                    x += bounds.width - (1 + width);
-                }
-                drawString(gc, piece, x, y + ascent);
-                if (strikeThruColor != null) {
-                    Color saved = gc.getColor();
-                    gc.setColor(strikeThruColor);
-                    if (width == 0) {
+                if (!piece.isBlank()) {
+                    width = 0;
+                    int x = bounds.x;
+                    if (hAlign == SwingConstants.CENTER) {
                         width = getSimpleWidth(font, piece);
+                        x += (bounds.width - width) / 2;
+                    } else if (hAlign == SwingConstants.RIGHT) {
+                        width = getSimpleWidth(font, piece);
+                        x += bounds.width - (1 + width);
                     }
-                    gc.fillRect(x, y + (ascent - strikeThruSize) / 2, x + width, strikeThruSize);
-                    gc.setColor(saved);
+                    drawString(gc, piece, x, y + ascent);
+                    if (strikeThruColor != null) {
+                        Color saved = gc.getColor();
+                        gc.setColor(strikeThruColor);
+                        if (width == 0) {
+                            width = getSimpleWidth(font, piece);
+                        }
+                        gc.fillRect(x, y + (ascent - strikeThruSize) / 2, x + width, strikeThruSize);
+                        gc.setColor(saved);
+                    }
                 }
                 y += fHeight;
             }
@@ -250,34 +237,32 @@ public final class TextDrawing {
      * @return The preferred size of the text in the specified font.
      */
     public static Dimension getPreferredSize(Font font, String text) {
+        int fHeight = getFontHeight(font);
         if (text == null || text.isEmpty()) {
-            return new Dimension();
+            return new Dimension(0, fHeight);
         }
-        StringTokenizer tokenizer = new StringTokenizer(text, "\n", true);
-        boolean         veryFirst = true;
-        boolean         first     = true;
-        int             fHeight   = getFontHeight(font);
-        int             width     = 0;
-        int             height    = 0;
+        StringTokenizer tokenizer  = new StringTokenizer(text, "\n", true);
+        int             width      = 0;
+        int             height     = 0;
+        boolean         addedToken = false;
         while (tokenizer.hasMoreTokens()) {
             String token = tokenizer.nextToken();
             if ("\n".equals(token)) {
-                height += fHeight;
-                if (first && !veryFirst) {
-                    first = false;
-                    continue;
+                if (addedToken) {
+                    addedToken = false;
+                } else {
+                    height += fHeight;
                 }
-                token = " ";
             } else {
-                first = true;
-            }
-            veryFirst = false;
-            int bWidth = getSimpleWidth(font, token);
-            if (width < bWidth) {
-                width = bWidth;
+                int w = getSimpleWidth(font, token);
+                if (width < w) {
+                    width = w;
+                }
+                height += fHeight;
+                addedToken = true;
             }
         }
-        if (!text.endsWith("\n")) {
+        if (!addedToken) {
             height += fHeight;
         }
         return new Dimension(width, height);
@@ -296,20 +281,28 @@ public final class TextDrawing {
      * @return The preferred height of the text in the specified font.
      */
     public static int getPreferredHeight(Font font, String text) {
-        int height = 0;
-        int length = text.length();
-        if (length > 0) {
-            int  fHeight = getFontHeight(font);
-            char ch      = 0;
-            for (int i = 0; i < length; i++) {
-                ch = text.charAt(i);
-                if (ch == '\n') {
+        int fHeight = getFontHeight(font);
+        if (text == null || text.isEmpty()) {
+            return fHeight;
+        }
+        StringTokenizer tokenizer  = new StringTokenizer(text, "\n", true);
+        int             height     = 0;
+        boolean         addedToken = false;
+        while (tokenizer.hasMoreTokens()) {
+            String token = tokenizer.nextToken();
+            if ("\n".equals(token)) {
+                if (addedToken) {
+                    addedToken = false;
+                } else {
                     height += fHeight;
                 }
-            }
-            if (ch != '\n') {
+            } else {
                 height += fHeight;
+                addedToken = true;
             }
+        }
+        if (!addedToken) {
+            height += fHeight;
         }
         return height;
     }
@@ -373,7 +366,7 @@ public final class TextDrawing {
         int[]           lineWidth  = {0};
         StringBuilder   buffer     = new StringBuilder(text.length() * 2);
         StringBuilder   lineBuffer = new StringBuilder(text.length());
-        StringTokenizer tokenizer  = new StringTokenizer(text + "\n", " \t/\\\n", true);
+        StringTokenizer tokenizer  = new StringTokenizer(text, " \t/\\\n", true);
         boolean         wrapped    = false;
         while (tokenizer.hasMoreTokens()) {
             String token = tokenizer.nextToken();
@@ -394,13 +387,12 @@ public final class TextDrawing {
         if (lineWidth[0] > 0) {
             buffer.append(lineBuffer);
         }
-        buffer.setLength(buffer.length() - 1);
         return buffer.toString();
     }
 
     private static boolean processOneTokenForWrapToPixelWidth(String token, Font font, StringBuilder buffer, StringBuilder lineBuffer, int width, int[] lineWidth, boolean hasBeenWrapped) {
         int tokenWidth = getSimpleWidth(font, lineBuffer + token);
-        if (tokenWidth <= width) {
+        if (tokenWidth < width) {
             lineBuffer.append(token);
             lineWidth[0] = tokenWidth;
         } else if (lineWidth[0] == 0) {
