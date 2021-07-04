@@ -254,7 +254,7 @@ public final class TextDrawing {
                     height += fHeight;
                 }
             } else {
-                int w = getSimpleWidth(font, token);
+                int w = getSimpleWidth(font, token) + 1;
                 if (width < w) {
                     width = w;
                 }
