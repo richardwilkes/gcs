@@ -69,6 +69,7 @@ import javax.imageio.ImageIO;
 /** Provides text template output. */
 public class TextTemplate {
     private static final String  UNIDENTIFIED_KEY   = "Unidentified key: '%s'";
+    private static final String  UNRESOLVABLE_TYPE  = "Unresolvable type for key: '%s'";
     private static final String  CURRENT            = "current";
     private static final String  GROUP              = "GROUP";
     private static final String  ITEM               = "ITEM";
@@ -724,11 +725,81 @@ public class TextTemplate {
                 setOnlyCategories(key);
             } else if (key.startsWith(KEY_EXCLUDE_CATEGORIES)) {
                 setExcludeCategories(key);
-            } else {
+            } else if (!processAttributeKeys(out, gurpsCharacter, key)) {
                 writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
             }
             break;
         }
+    }
+
+    private boolean processAttributeKeys(BufferedWriter out, GURPSCharacter gch, String key) throws IOException {
+        key = key.toLowerCase();
+        Attribute attr = gch.getAttributes().get(key);
+        if (attr != null) {
+            AttributeDef attrDef = attr.getAttrDef(gch);
+            if (attrDef == null) {
+                return false;
+            }
+            switch (attrDef.getType()) {
+            case INTEGER:
+            case POOL:
+                writeEncodedText(out, Numbers.format(attr.getIntValue(gch)));
+                return true;
+            case DECIMAL:
+                writeEncodedText(out, Numbers.format(attr.getDoubleValue(gch)));
+                return true;
+            default:
+                return false;
+            }
+        }
+        if (key.endsWith("_" + KEY_NAME.toLowerCase())) {
+            attr = gch.getAttributes().get(key.substring(0, key.length() - (KEY_NAME.length() + 1)));
+            if (attr != null) {
+                AttributeDef attrDef = attr.getAttrDef(gch);
+                if (attrDef == null) {
+                    return false;
+                }
+                writeEncodedText(out, attrDef.getName());
+                return true;
+            }
+        } else if (key.endsWith("_" + KEY_FULL_NAME.toLowerCase())) {
+            attr = gch.getAttributes().get(key.substring(0, key.length() - (KEY_FULL_NAME.length() + 1)));
+            if (attr != null) {
+                AttributeDef attrDef = attr.getAttrDef(gch);
+                if (attrDef == null) {
+                    return false;
+                }
+                writeEncodedText(out, attrDef.getFullName());
+                return true;
+            }
+        } else if (key.endsWith("_" + KEY_COMBINED_NAME.toLowerCase())) {
+            attr = gch.getAttributes().get(key.substring(0, key.length() - (KEY_COMBINED_NAME.length() + 1)));
+            if (attr != null) {
+                AttributeDef attrDef = attr.getAttrDef(gch);
+                if (attrDef == null) {
+                    return false;
+                }
+                writeEncodedText(out, attrDef.getCombinedName());
+                return true;
+            }
+        } else if (key.endsWith("_" + KEY_POINTS.toLowerCase())) {
+            attr = gch.getAttributes().get(key.substring(0, key.length() - (KEY_POINTS.length() + 1)));
+            if (attr != null) {
+                writeEncodedText(out, Numbers.format(attr.getPointCost(gch)));
+                return true;
+            }
+        } else if (key.endsWith("_" + KEY_CURRENT.toLowerCase())) {
+            attr = gch.getAttributes().get(key.substring(0, key.length() - (KEY_CURRENT.length() + 1)));
+            if (attr != null) {
+                AttributeDef attrDef = attr.getAttrDef(gch);
+                if (attrDef == null || attrDef.getType() != AttributeType.POOL) {
+                    return false;
+                }
+                writeEncodedText(out, Numbers.format(attr.getCurrentIntValue(gch)));
+                return true;
+            }
+        }
+        return false;
     }
 
     private void deprecatedWritePointPoolThreshold(BufferedWriter out, GURPSCharacter gch, String poolID, String match) throws IOException {
