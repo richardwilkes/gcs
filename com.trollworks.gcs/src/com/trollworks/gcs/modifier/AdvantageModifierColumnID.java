@@ -68,21 +68,18 @@ public enum AdvantageModifierColumnID {
         }
 
         @Override
+        public String getToolTip(AdvantageModifier modifier) {
+            return modifier.getDescriptionToolTipText();
+        }
+
+        @Override
         public Cell getCell(boolean forEditor) {
             return new MultiCell(forEditor);
         }
 
         @Override
         public String getDataAsText(AdvantageModifier modifier) {
-            StringBuilder builder = new StringBuilder();
-            String        notes   = modifier.getNotes();
-            builder.append(modifier);
-            if (!notes.isEmpty()) {
-                builder.append(" (");
-                builder.append(notes);
-                builder.append(')');
-            }
-            return builder.toString();
+            return modifier.getDescriptionText();
         }
     },
     /** The total cost modifier. */

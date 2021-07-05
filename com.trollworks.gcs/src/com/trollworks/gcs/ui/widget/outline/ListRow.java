@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.ui.widget.outline;
 
+import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
@@ -26,6 +27,7 @@ import com.trollworks.gcs.feature.SkillPointBonus;
 import com.trollworks.gcs.feature.SpellBonus;
 import com.trollworks.gcs.feature.SpellPointBonus;
 import com.trollworks.gcs.feature.WeaponBonus;
+import com.trollworks.gcs.modifier.Modifier;
 import com.trollworks.gcs.prereq.PrereqList;
 import com.trollworks.gcs.settings.SheetSettings;
 import com.trollworks.gcs.skill.SkillDefault;
@@ -729,5 +731,69 @@ public abstract class ListRow extends Row {
             return true;
         }
         return false;
+    }
+
+    public String getDescriptionText() {
+        StringBuilder builder = new StringBuilder();
+        builder.append(this);
+        SheetSettings settings = getDataFile().getSheetSettings();
+        if (settings.userDescriptionDisplay().tooltip() && this instanceof Advantage) {
+            String userDesc = ((Advantage) this).getUserDesc();
+            if (!userDesc.isBlank()) {
+                builder.append(" - ");
+                builder.append(userDesc);
+            }
+        }
+        if (settings.modifiersDisplay().inline()) {
+            String modNotes = getModifierNotes();
+            if (!modNotes.isBlank()) {
+                builder.append(" - ");
+                builder.append(modNotes);
+            }
+        }
+        if (settings.notesDisplay().inline()) {
+            String notes = getNotes();
+            if (!notes.isBlank()) {
+                if (this instanceof Modifier) {
+                    builder.append(" (");
+                    builder.append(notes);
+                    builder.append(')');
+                } else {
+                    builder.append(" - ");
+                    builder.append(notes);
+                }
+            }
+        }
+        return builder.toString();
+    }
+
+    public String getDescriptionToolTipText() {
+        StringBuilder builder  = new StringBuilder();
+        SheetSettings settings = getDataFile().getSheetSettings();
+        if (settings.userDescriptionDisplay().tooltip() && this instanceof Advantage) {
+            String userDesc = ((Advantage) this).getUserDesc();
+            if (!userDesc.isBlank()) {
+                builder.append(userDesc);
+                builder.append('\n');
+            }
+        }
+        if (settings.modifiersDisplay().tooltip()) {
+            String modNotes = getModifierNotes();
+            if (!modNotes.isBlank()) {
+                builder.append(modNotes);
+                builder.append('\n');
+            }
+        }
+        if (settings.notesDisplay().tooltip()) {
+            String notes = getNotes();
+            if (!notes.isBlank()) {
+                builder.append(notes);
+                builder.append('\n');
+            }
+        }
+        if (!builder.isEmpty()) {
+            builder.setLength(builder.length() - 1); // Remove the last '\n'
+        }
+        return builder.isEmpty() ? null : builder.toString();
     }
 }

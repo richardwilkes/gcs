@@ -53,7 +53,6 @@ public enum WeaponColumn {
         public String getDataAsText(WeaponStats weapon) {
             StringBuilder builder = new StringBuilder();
             String        notes   = weapon.getNotes();
-
             builder.append(weapon);
             if (!notes.isEmpty()) {
                 builder.append(" - ");

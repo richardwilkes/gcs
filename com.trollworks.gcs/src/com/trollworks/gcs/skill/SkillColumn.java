@@ -47,6 +47,11 @@ public enum SkillColumn {
         }
 
         @Override
+        public String getToolTip(Skill skill) {
+            return skill.getDescriptionToolTipText();
+        }
+
+        @Override
         public Cell getCell() {
             return new MultiCell();
         }
@@ -63,15 +68,7 @@ public enum SkillColumn {
 
         @Override
         public String getDataAsText(Skill skill) {
-            StringBuilder builder = new StringBuilder();
-            String        notes   = skill.getNotes();
-
-            builder.append(skill);
-            if (!notes.isEmpty()) {
-                builder.append(" - ");
-                builder.append(notes);
-            }
-            return builder.toString();
+            return skill.getDescriptionText();
         }
     },
     /** The skill difficulty. */

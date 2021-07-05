@@ -44,6 +44,11 @@ public enum NoteColumn {
         }
 
         @Override
+        public String getToolTip(Note note) {
+            return note.getDescriptionToolTipText();
+        }
+
+        @Override
         public Cell getCell() {
             return new ListTextCell(SwingConstants.LEFT, true);
         }
@@ -55,14 +60,7 @@ public enum NoteColumn {
 
         @Override
         public String getDataAsText(Note note) {
-            StringBuilder builder = new StringBuilder();
-            String        notes   = note.getNotes();
-            builder.append(note);
-            if (!notes.isEmpty()) {
-                builder.append(" - ");
-                builder.append(notes);
-            }
-            return builder.toString();
+            return note.getDescriptionText();
         }
     },
     /** The page reference. */

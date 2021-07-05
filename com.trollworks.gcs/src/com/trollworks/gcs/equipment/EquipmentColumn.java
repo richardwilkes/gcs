@@ -124,26 +124,7 @@ public enum EquipmentColumn {
 
         @Override
         public String getToolTip(Equipment equipment) {
-            StringBuilder builder  = new StringBuilder();
-            SheetSettings settings = equipment.getDataFile().getSheetSettings();
-            if (settings.modifiersDisplay().tooltip()) {
-                String desc = equipment.getModifierNotes();
-                builder.append(desc);
-                if (!desc.isEmpty()) {
-                    builder.append('\n');
-                }
-            }
-            if (settings.notesDisplay().tooltip()) {
-                String desc = equipment.getNotes();
-                builder.append(desc);
-                if (!desc.isEmpty()) {
-                    builder.append('\n');
-                }
-            }
-            if (!builder.isEmpty()) {
-                builder.setLength(builder.length() - 1);   // Remove the last '\n'
-            }
-            return builder.isEmpty() ? null : builder.toString();
+            return equipment.getDescriptionToolTipText();
         }
 
         @Override
@@ -178,24 +159,7 @@ public enum EquipmentColumn {
 
         @Override
         public String getDataAsText(Equipment equipment) {
-            StringBuilder builder = new StringBuilder();
-            builder.append(equipment);
-            SheetSettings settings = equipment.getDataFile().getSheetSettings();
-            if (settings.modifiersDisplay().inline()) {
-                String desc = equipment.getModifierNotes();
-                if (!desc.isEmpty()) {
-                    builder.append(" - ");
-                }
-                builder.append(desc);
-            }
-            if (settings.notesDisplay().inline()) {
-                String desc = equipment.getNotes();
-                if (!desc.isEmpty()) {
-                    builder.append(" - ");
-                }
-                builder.append(desc);
-            }
-            return builder.toString();
+            return equipment.getDescriptionText();
         }
     },
     /** The uses remaining. */

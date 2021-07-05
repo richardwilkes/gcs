@@ -68,21 +68,18 @@ public enum EquipmentModifierColumnID {
         }
 
         @Override
+        public String getToolTip(EquipmentModifier modifier) {
+            return modifier.getDescriptionToolTipText();
+        }
+
+        @Override
         public Cell getCell(boolean forEditor) {
             return new MultiCell(forEditor);
         }
 
         @Override
         public String getDataAsText(EquipmentModifier modifier) {
-            StringBuilder builder = new StringBuilder();
-            String        notes   = modifier.getNotes();
-            builder.append(modifier);
-            if (!notes.isEmpty()) {
-                builder.append(" (");
-                builder.append(notes);
-                builder.append(')');
-            }
-            return builder.toString();
+            return modifier.getDescriptionText();
         }
     },
     /** The tech level. */

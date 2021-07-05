@@ -49,6 +49,11 @@ public enum SpellColumn {
         }
 
         @Override
+        public String getToolTip(Spell spell) {
+            return spell.getDescriptionToolTipText();
+        }
+
+        @Override
         public Cell getCell() {
             return new MultiCell();
         }
@@ -60,14 +65,7 @@ public enum SpellColumn {
 
         @Override
         public String getDataAsText(Spell spell) {
-            StringBuilder builder = new StringBuilder();
-            builder.append(spell);
-            String notes = spell.getNotes();
-            if (!notes.isEmpty()) {
-                builder.append(" - ");
-                builder.append(notes);
-            }
-            return builder.toString();
+            return spell.getDescriptionText();
         }
     },
     /** The resistance. */
