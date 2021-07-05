@@ -218,20 +218,20 @@ public enum FeatureType {
 
         @Override
         public boolean matches(Feature feature) {
-            return feature instanceof WeaponBonus;
+            return feature instanceof WeaponDamageBonus;
         }
 
         @Override
         public FeatureEditor createFeatureEditor(ListRow row, Feature feature) {
             if (matches(feature)) {
-                return new WeaponBonusEditor(row, (WeaponBonus) feature);
+                return new WeaponDamageBonusEditor(row, (WeaponDamageBonus) feature);
             }
             return null;
         }
 
         @Override
         public Feature createFeature() {
-            return new WeaponBonus();
+            return new WeaponDamageBonus();
         }
     },
     REDUCE_ATTRIBUTE_COST {

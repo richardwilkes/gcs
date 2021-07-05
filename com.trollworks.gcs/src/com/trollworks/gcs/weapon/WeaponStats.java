@@ -17,7 +17,7 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.feature.SkillBonus;
-import com.trollworks.gcs.feature.WeaponBonus;
+import com.trollworks.gcs.feature.WeaponDamageBonus;
 import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.skill.Skill;
@@ -341,10 +341,10 @@ public abstract class WeaponStats {
         String      nameQualifier  = toString();
         String      usageQualifier = getUsage();
         Set<String> categories     = getCategories();
-        for (SkillBonus bonus : character.getNamedWeaponSkillBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "*", nameQualifier, usageQualifier, categories, toolTip)) {
+        for (SkillBonus bonus : character.getNamedWeaponSkillBonusesFor(WeaponDamageBonus.WEAPON_NAMED_ID_PREFIX + "*", nameQualifier, usageQualifier, categories, toolTip)) {
             adj += bonus.getAmount().getIntegerAdjustedAmount();
         }
-        for (SkillBonus bonus : character.getNamedWeaponSkillBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "/" + nameQualifier, nameQualifier, usageQualifier, categories, toolTip)) {
+        for (SkillBonus bonus : character.getNamedWeaponSkillBonusesFor(WeaponDamageBonus.WEAPON_NAMED_ID_PREFIX + "/" + nameQualifier, nameQualifier, usageQualifier, categories, toolTip)) {
             adj += bonus.getAmount().getIntegerAdjustedAmount();
         }
         for (Feature feature : mOwner.getFeatures()) {

@@ -22,21 +22,21 @@ import com.trollworks.gcs.utility.I18n;
 
 import java.awt.Insets;
 
-/** A weapon bonus editor. */
-public class WeaponBonusEditor extends FeatureEditor {
+/** A weapon damage bonus editor. */
+public class WeaponDamageBonusEditor extends FeatureEditor {
     /**
      * Create a new weapon skill bonus editor.
      *
      * @param row   The row this feature will belong to.
      * @param bonus The bonus to edit.
      */
-    public WeaponBonusEditor(ListRow row, WeaponBonus bonus) {
+    public WeaponDamageBonusEditor(ListRow row, WeaponDamageBonus bonus) {
         super(row, bonus);
     }
 
     @Override
     protected void rebuildSelf(FlexGrid grid, FlexRow right) {
-        WeaponBonus bonus = (WeaponBonus) getFeature();
+        WeaponDamageBonus bonus = (WeaponDamageBonus) getFeature();
 
         FlexRow row = new FlexRow();
         row.add(addChangeBaseTypePopup());
@@ -49,7 +49,7 @@ public class WeaponBonusEditor extends FeatureEditor {
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
         PopupMenu<WeaponSelectionType> popup = new PopupMenu<>(WeaponSelectionType.values(), (p) -> {
-            boolean needRebuild = ((WeaponBonus) getFeature()).setWeaponSelectionType(p.getSelectedItem());
+            boolean needRebuild = ((WeaponDamageBonus) getFeature()).setWeaponSelectionType(p.getSelectedItem());
             notifyActionListeners();
             if (needRebuild) {
                 rebuild();
@@ -68,8 +68,8 @@ public class WeaponBonusEditor extends FeatureEditor {
 
 
     private void rebuildWeaponsWithName(FlexGrid grid, FlexRow row) {
-        WeaponBonus    bonus    = (WeaponBonus) getFeature();
-        StringCriteria criteria = bonus.getNameCriteria();
+        WeaponDamageBonus bonus    = (WeaponDamageBonus) getFeature();
+        StringCriteria    criteria = bonus.getNameCriteria();
         row.add(addStringComparePopup(criteria, null));
         row.add(addStringCompareField(criteria));
 
@@ -91,8 +91,8 @@ public class WeaponBonusEditor extends FeatureEditor {
     }
 
     private void rebuildWeaponsWithRequiredSkill(FlexGrid grid, FlexRow row) {
-        WeaponBonus    bonus    = (WeaponBonus) getFeature();
-        StringCriteria criteria = bonus.getNameCriteria();
+        WeaponDamageBonus bonus    = (WeaponDamageBonus) getFeature();
+        StringCriteria    criteria = bonus.getNameCriteria();
         row.add(addStringComparePopup(criteria, null));
         row.add(addStringCompareField(criteria));
 

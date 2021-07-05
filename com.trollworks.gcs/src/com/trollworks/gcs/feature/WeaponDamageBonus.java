@@ -26,8 +26,8 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
-/** A weapon bonus. */
-public class WeaponBonus extends Bonus {
+/** A weapon damage bonus. */
+public class WeaponDamageBonus extends Bonus {
     public static final  String KEY_ROOT           = "weapon_bonus";
     private static final String KEY_SELECTION_TYPE = "selection_type";
     private static final String KEY_NAME           = "name";
@@ -45,7 +45,7 @@ public class WeaponBonus extends Bonus {
     private StringCriteria      mCategoryCriteria;
 
     /** Creates a new skill bonus. */
-    public WeaponBonus() {
+    public WeaponDamageBonus() {
         super(1);
         mWeaponSelectionType = WeaponSelectionType.WEAPONS_WITH_REQUIRED_SKILL;
         mNameCriteria = new StringCriteria(StringCompareType.IS, "");
@@ -54,7 +54,7 @@ public class WeaponBonus extends Bonus {
         mCategoryCriteria = new StringCriteria(StringCompareType.ANY, "");
     }
 
-    public WeaponBonus(DataFile dataFile, JsonMap m) throws IOException {
+    public WeaponDamageBonus(DataFile dataFile, JsonMap m) throws IOException {
         this();
         loadSelf(dataFile, m);
     }
@@ -64,7 +64,7 @@ public class WeaponBonus extends Bonus {
      *
      * @param other The bonus to clone.
      */
-    public WeaponBonus(WeaponBonus other) {
+    public WeaponDamageBonus(WeaponDamageBonus other) {
         super(other);
         mWeaponSelectionType = other.mWeaponSelectionType;
         mNameCriteria = new StringCriteria(other.mNameCriteria);
@@ -78,8 +78,8 @@ public class WeaponBonus extends Bonus {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof WeaponBonus && super.equals(obj)) {
-            WeaponBonus wb = (WeaponBonus) obj;
+        if (obj instanceof WeaponDamageBonus && super.equals(obj)) {
+            WeaponDamageBonus wb = (WeaponDamageBonus) obj;
             return mWeaponSelectionType == wb.mWeaponSelectionType && mNameCriteria.equals(wb.mNameCriteria) && mSpecializationCriteria.equals(wb.mSpecializationCriteria) && mRelativeLevelCriteria.equals(wb.mRelativeLevelCriteria) && mCategoryCriteria.equals(wb.mCategoryCriteria);
         }
         return false;
@@ -87,7 +87,7 @@ public class WeaponBonus extends Bonus {
 
     @Override
     public Feature cloneFeature() {
-        return new WeaponBonus(this);
+        return new WeaponDamageBonus(this);
     }
 
     @Override

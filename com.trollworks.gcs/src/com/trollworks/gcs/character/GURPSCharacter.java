@@ -31,7 +31,7 @@ import com.trollworks.gcs.feature.SkillPointBonus;
 import com.trollworks.gcs.feature.SkillSelectionType;
 import com.trollworks.gcs.feature.SpellBonus;
 import com.trollworks.gcs.feature.SpellPointBonus;
-import com.trollworks.gcs.feature.WeaponBonus;
+import com.trollworks.gcs.feature.WeaponDamageBonus;
 import com.trollworks.gcs.feature.WeaponSelectionType;
 import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.EquipmentModifier;
@@ -1200,7 +1200,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         List<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
-                if (feature instanceof Bonus && !(feature instanceof WeaponBonus)) {
+                if (feature instanceof Bonus && !(feature instanceof WeaponDamageBonus)) {
                     Bonus bonus = (Bonus) feature;
                     total += bonus.getAmount().getIntegerAdjustedAmount();
                     bonus.addToToolTip(toolTip);
@@ -1219,9 +1219,9 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
      * @param toolTip                 A buffer to write a tooltip into. May be null.
      * @return The bonuses.
      */
-    public List<WeaponBonus> getWeaponComparedBonusesFor(String id, String nameQualifier, String specializationQualifier, Set<String> categoriesQualifier, int dieCount, StringBuilder toolTip) {
-        List<WeaponBonus> bonuses = new ArrayList<>();
-        int               rsl     = Integer.MIN_VALUE;
+    public List<WeaponDamageBonus> getWeaponComparedDamageBonusesFor(String id, String nameQualifier, String specializationQualifier, Set<String> categoriesQualifier, int dieCount, StringBuilder toolTip) {
+        List<WeaponDamageBonus> bonuses = new ArrayList<>();
+        int                     rsl     = Integer.MIN_VALUE;
         for (Skill skill : getSkillNamed(nameQualifier, specializationQualifier, true, null)) {
             int srsl = skill.getRelativeLevel();
             if (srsl > rsl) {
@@ -1232,8 +1232,8 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
             List<Feature> list = mFeatureMap.get(id.toLowerCase());
             if (list != null) {
                 for (Feature feature : list) {
-                    if (feature instanceof WeaponBonus) {
-                        WeaponBonus bonus = (WeaponBonus) feature;
+                    if (feature instanceof WeaponDamageBonus) {
+                        WeaponDamageBonus bonus = (WeaponDamageBonus) feature;
                         if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier) && bonus.getRelativeLevelCriteria().matches(rsl) && bonus.matchesCategories(categoriesQualifier)) {
                             bonuses.add(bonus);
                             LeveledAmount amount = bonus.getAmount();
@@ -1258,13 +1258,13 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
      * @param toolTip             A buffer to write a tooltip into. May be null.
      * @return The bonuses.
      */
-    public List<WeaponBonus> getNamedWeaponBonusesFor(String id, String nameQualifier, String usageQualifier, Set<String> categoriesQualifier, int dieCount, StringBuilder toolTip) {
-        List<WeaponBonus> bonuses = new ArrayList<>();
-        List<Feature>     list    = mFeatureMap.get(id.toLowerCase());
+    public List<WeaponDamageBonus> getNamedWeaponDamageBonusesFor(String id, String nameQualifier, String usageQualifier, Set<String> categoriesQualifier, int dieCount, StringBuilder toolTip) {
+        List<WeaponDamageBonus> bonuses = new ArrayList<>();
+        List<Feature>           list    = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
-                if (feature instanceof WeaponBonus) {
-                    WeaponBonus bonus = (WeaponBonus) feature;
+                if (feature instanceof WeaponDamageBonus) {
+                    WeaponDamageBonus bonus = (WeaponDamageBonus) feature;
                     if (bonus.getWeaponSelectionType() == WeaponSelectionType.WEAPONS_WITH_NAME && bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(usageQualifier) && bonus.matchesCategories(categoriesQualifier)) {
                         bonuses.add(bonus);
                         LeveledAmount amount = bonus.getAmount();
@@ -1441,7 +1441,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         List<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
-                if (feature instanceof Bonus && !(feature instanceof WeaponBonus)) {
+                if (feature instanceof Bonus && !(feature instanceof WeaponDamageBonus)) {
                     total += ((Bonus) feature).getAmount().getAdjustedAmount();
                 }
             }

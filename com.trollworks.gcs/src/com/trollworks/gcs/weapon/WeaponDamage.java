@@ -17,7 +17,7 @@ import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.feature.LeveledAmount;
-import com.trollworks.gcs.feature.WeaponBonus;
+import com.trollworks.gcs.feature.WeaponDamageBonus;
 import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.EquipmentModifier;
 import com.trollworks.gcs.skill.Skill;
@@ -255,12 +255,12 @@ public class WeaponDamage {
         if (mOwner.mOwner != null) {
             DataFile df = mOwner.mOwner.getDataFile();
             if (df instanceof GURPSCharacter) {
-                GURPSCharacter   character  = (GURPSCharacter) df;
-                Set<WeaponBonus> bonusSet   = new HashSet<>();
-                Set<String>      categories = mOwner.getCategories();
-                int              maxST      = mOwner.getMinStrengthValue() * 3;
-                int              st         = character.getAttributeIntValue("st") + character.getStrikingStrengthBonus();
-                Dice             base       = new Dice(0, 0);
+                GURPSCharacter         character  = (GURPSCharacter) df;
+                Set<WeaponDamageBonus> bonusSet   = new HashSet<>();
+                Set<String>            categories = mOwner.getCategories();
+                int                    maxST      = mOwner.getMinStrengthValue() * 3;
+                int                    st         = character.getAttributeIntValue("st") + character.getStrikingStrengthBonus();
+                Dice                   base       = new Dice(0, 0);
 
                 if (maxST > 0 && maxST < st) {
                     st = maxST;
@@ -322,22 +322,22 @@ public class WeaponDamage {
                 if (bestDefault != null) {
                     String name           = bestDefault.getName();
                     String specialization = bestDefault.getSpecialization();
-                    bonusSet.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "*", name, specialization, categories, dieCount, toolTip));
-                    bonusSet.addAll(character.getWeaponComparedBonusesFor(Skill.ID_NAME + "/" + name, name, specialization, categories, dieCount, toolTip));
+                    bonusSet.addAll(character.getWeaponComparedDamageBonusesFor(Skill.ID_NAME + "*", name, specialization, categories, dieCount, toolTip));
+                    bonusSet.addAll(character.getWeaponComparedDamageBonusesFor(Skill.ID_NAME + "/" + name, name, specialization, categories, dieCount, toolTip));
                 }
                 String nameQualifier  = mOwner.toString();
                 String usageQualifier = mOwner.getUsage();
-                bonusSet.addAll(character.getNamedWeaponBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "*", nameQualifier, usageQualifier, categories, dieCount, toolTip));
-                bonusSet.addAll(character.getNamedWeaponBonusesFor(WeaponBonus.WEAPON_NAMED_ID_PREFIX + "/" + nameQualifier, nameQualifier, usageQualifier, categories, dieCount, toolTip));
-                List<WeaponBonus> bonuses = new ArrayList<>(bonusSet);
+                bonusSet.addAll(character.getNamedWeaponDamageBonusesFor(WeaponDamageBonus.WEAPON_NAMED_ID_PREFIX + "*", nameQualifier, usageQualifier, categories, dieCount, toolTip));
+                bonusSet.addAll(character.getNamedWeaponDamageBonusesFor(WeaponDamageBonus.WEAPON_NAMED_ID_PREFIX + "/" + nameQualifier, nameQualifier, usageQualifier, categories, dieCount, toolTip));
+                List<WeaponDamageBonus> bonuses = new ArrayList<>(bonusSet);
                 for (Feature feature : mOwner.mOwner.getFeatures()) {
-                    extractWeaponBonus(feature, bonuses, dieCount, toolTip);
+                    extractWeaponDamageBonus(feature, bonuses, dieCount, toolTip);
                 }
                 if (mOwner.mOwner instanceof Advantage) {
                     for (AdvantageModifier modifier : ((Advantage) mOwner.mOwner).getModifiers()) {
                         if (modifier.isEnabled()) {
                             for (Feature feature : modifier.getFeatures()) {
-                                extractWeaponBonus(feature, bonuses, dieCount, toolTip);
+                                extractWeaponDamageBonus(feature, bonuses, dieCount, toolTip);
                             }
                         }
                     }
@@ -346,12 +346,12 @@ public class WeaponDamage {
                     for (EquipmentModifier modifier : ((Equipment) mOwner.mOwner).getModifiers()) {
                         if (modifier.isEnabled()) {
                             for (Feature feature : modifier.getFeatures()) {
-                                extractWeaponBonus(feature, bonuses, dieCount, toolTip);
+                                extractWeaponDamageBonus(feature, bonuses, dieCount, toolTip);
                             }
                         }
                     }
                 }
-                for (WeaponBonus bonus : bonuses) {
+                for (WeaponDamageBonus bonus : bonuses) {
                     LeveledAmount lvlAmt = bonus.getAmount();
                     int           amt    = lvlAmt.getIntegerAmount();
                     if (lvlAmt.isPerLevel()) {
@@ -403,11 +403,11 @@ public class WeaponDamage {
         return toString();
     }
 
-    private void extractWeaponBonus(Feature feature, List<WeaponBonus> list, int dieCount, StringBuilder toolTip) {
-        if (feature instanceof WeaponBonus) {
-            WeaponBonus   wb     = (WeaponBonus) feature;
-            LeveledAmount amount = wb.getAmount();
-            int           level  = amount.getLevel();
+    private void extractWeaponDamageBonus(Feature feature, List<WeaponDamageBonus> list, int dieCount, StringBuilder toolTip) {
+        if (feature instanceof WeaponDamageBonus) {
+            WeaponDamageBonus wb     = (WeaponDamageBonus) feature;
+            LeveledAmount     amount = wb.getAmount();
+            int               level  = amount.getLevel();
             amount.setLevel(dieCount);
             switch (wb.getWeaponSelectionType()) {
             case THIS_WEAPON:

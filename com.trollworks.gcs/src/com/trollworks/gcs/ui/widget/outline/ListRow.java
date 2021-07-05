@@ -26,7 +26,7 @@ import com.trollworks.gcs.feature.SkillBonus;
 import com.trollworks.gcs.feature.SkillPointBonus;
 import com.trollworks.gcs.feature.SpellBonus;
 import com.trollworks.gcs.feature.SpellPointBonus;
-import com.trollworks.gcs.feature.WeaponBonus;
+import com.trollworks.gcs.feature.WeaponDamageBonus;
 import com.trollworks.gcs.modifier.Modifier;
 import com.trollworks.gcs.prereq.PrereqList;
 import com.trollworks.gcs.settings.SheetSettings;
@@ -310,7 +310,7 @@ public abstract class ListRow extends Row {
                 case SkillPointBonus.KEY_ROOT -> mFeatures.add(new SkillPointBonus(dataFile, m1));
                 case SpellBonus.KEY_ROOT -> mFeatures.add(new SpellBonus(dataFile, m1));
                 case SpellPointBonus.KEY_ROOT -> mFeatures.add(new SpellPointBonus(dataFile, m1));
-                case WeaponBonus.KEY_ROOT -> mFeatures.add(new WeaponBonus(dataFile, m1));
+                case WeaponDamageBonus.KEY_ROOT -> mFeatures.add(new WeaponDamageBonus(dataFile, m1));
                 case CostReduction.KEY_ROOT -> mFeatures.add(new CostReduction(m1));
                 case ContainedWeightReduction.KEY_ROOT -> mFeatures.add(new ContainedWeightReduction(m1));
                 default -> Log.warn("unknown feature type: " + type);

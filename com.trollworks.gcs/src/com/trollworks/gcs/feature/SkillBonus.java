@@ -91,9 +91,9 @@ public class SkillBonus extends Bonus {
     @Override
     public String getKey() {
         return switch (mSkillSelectionType) {
-            case WEAPONS_WITH_NAME -> buildKey(WeaponBonus.WEAPON_NAMED_ID_PREFIX);
+            case WEAPONS_WITH_NAME -> buildKey(WeaponDamageBonus.WEAPON_NAMED_ID_PREFIX);
             case SKILLS_WITH_NAME -> buildKey(Skill.ID_NAME);
-            default -> WeaponBonus.THIS_WEAPON_ID;
+            default -> WeaponDamageBonus.THIS_WEAPON_ID;
         };
     }
 
