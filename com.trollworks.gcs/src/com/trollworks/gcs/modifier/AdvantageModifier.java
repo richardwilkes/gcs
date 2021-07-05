@@ -14,6 +14,7 @@ package com.trollworks.gcs.modifier;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
+import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.FileType;
@@ -284,7 +285,8 @@ public class AdvantageModifier extends Modifier {
             builder.append(modNote);
             builder.append(')');
         }
-        if (mDataFile instanceof GURPSCharacter && mDataFile.getSheetSettings().showAdvantageModifierAdj()) {
+        if ((mDataFile instanceof GURPSCharacter || mDataFile instanceof Template) &&
+                mDataFile.getSheetSettings().showAdvantageModifierAdj()) {
             builder.append(" [");
             builder.append(getCostDescription());
             builder.append(']');

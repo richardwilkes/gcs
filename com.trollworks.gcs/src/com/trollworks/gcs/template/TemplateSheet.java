@@ -12,6 +12,7 @@
 package com.trollworks.gcs.template;
 
 import com.trollworks.gcs.character.CollectedOutlines;
+import com.trollworks.gcs.skill.SkillOutline;
 import com.trollworks.gcs.spell.SpellOutline;
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
@@ -80,7 +81,9 @@ public class TemplateSheet extends CollectedOutlines {
         Insets insets = getInsets();
         int    width  = Scale.get(this).scale(8 * 72) - (insets.left + insets.right);
         ColumnUtils.pack(getAdvantagesOutline(), width);
-        ColumnUtils.pack(getSkillsOutline(), width);
+        SkillOutline skillsOutline = getSkillsOutline();
+        skillsOutline.resetColumns();
+        ColumnUtils.pack(skillsOutline, width);
         SpellOutline spellOutline = getSpellsOutline();
         spellOutline.resetColumns();
         ColumnUtils.pack(spellOutline, width);
@@ -88,6 +91,7 @@ public class TemplateSheet extends CollectedOutlines {
         ColumnUtils.pack(getOtherEquipmentOutline(), width);
         ColumnUtils.pack(getNotesOutline(), width);
         setSize(getPreferredSize());
+        repaint();
         // This next line must be put into the event queue to prevent an endless rebuild cycle due
         // to deferred processing.
         EventQueue.invokeLater(() -> mIgnoreContentSizeChange = false);
