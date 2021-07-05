@@ -16,6 +16,7 @@ public enum Scales {
     ACTUAL_SIZE(1, "100%"),
     QUARTER_AGAIN_SIZE(1.25, "125%"),
     HALF_AGAIN_SIZE(1.5, "150%"),
+    THREE_QUARTERS_AGAIN_SIZE(1.75, "175%"),
     DOUBLE_SIZE(2, "200%");
 
     private final Scale  mScale;
