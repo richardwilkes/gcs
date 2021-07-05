@@ -14,6 +14,7 @@ package com.trollworks.gcs.ui.widget;
 import com.trollworks.gcs.menu.Command;
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.Fonts;
+import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.utility.Platform;
@@ -140,6 +141,7 @@ public class KeyStrokeDisplay extends Label implements KeyListener, FocusListene
     public void focusGained(FocusEvent event) {
         setBorder(new CompoundBorder(new LineBorder(Colors.EDITABLE_BORDER_FOCUSED),
                 new EmptyBorder(2, 4, 2, 4)));
+        scrollRectToVisible(UIUtilities.getLocalBounds(this));
     }
 
     @Override

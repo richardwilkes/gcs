@@ -113,7 +113,7 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
         return super.getPreferredSize();
     }
 
-    private static Border createBorder(boolean focused) {
+    public static Border createBorder(boolean focused) {
         return new CompoundBorder(new LineBorder(focused ? Colors.EDITABLE_BORDER_FOCUSED :
                 Colors.EDITABLE_BORDER), new EmptyBorder(2, 4, 2, 4));
     }
@@ -121,11 +121,15 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
     @Override
     protected void processFocusEvent(FocusEvent event) {
         super.processFocusEvent(event);
-        boolean focused = event.getID() == FocusEvent.FOCUS_GAINED;
-        if (focused) {
-            selectAll();
+        if (isEnabled()) {
+            if (event.getID() == FocusEvent.FOCUS_GAINED) {
+                selectAll();
+                setBorder(createBorder(true));
+                FocusHelper.scrollIntoView(this);
+            } else {
+                setBorder(createBorder(false));
+            }
         }
-        setBorder(createBorder(focused));
     }
 
     /** @param hint The hint to use, or {@code null}. */

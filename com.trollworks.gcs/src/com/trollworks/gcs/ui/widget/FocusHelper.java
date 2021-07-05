@@ -15,6 +15,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.EventQueue;
 import java.awt.KeyboardFocusManager;
+import javax.swing.JComponent;
 
 public final class FocusHelper {
     private Component mTarget;
@@ -29,6 +30,17 @@ public final class FocusHelper {
     public static void focusOn(Component target, boolean useTransfer, Runnable runnable) {
         FocusHelper helper = new FocusHelper(target, useTransfer, runnable);
         helper.tryInitialFocus();
+    }
+
+    /**
+     * Attempts to scroll the component into view by asking its parent. This is hear to help text
+     * fields that normally do local scrolling if scrollRectIntoView() is called.
+     */
+    public static void scrollIntoView(Component comp) {
+        Container parent = comp.getParent();
+        if (parent instanceof JComponent) {
+            ((JComponent) parent).scrollRectToVisible(comp.getBounds());
+        }
     }
 
     private FocusHelper(Component target, boolean useTransfer, Runnable runnable) {

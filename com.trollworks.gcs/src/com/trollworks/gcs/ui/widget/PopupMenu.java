@@ -286,6 +286,7 @@ public class PopupMenu<T> extends Panel implements MouseListener, KeyListener, F
 
     @Override
     public void focusGained(FocusEvent event) {
+        scrollRectToVisible(UIUtilities.getLocalBounds(this));
         repaint();
     }
 

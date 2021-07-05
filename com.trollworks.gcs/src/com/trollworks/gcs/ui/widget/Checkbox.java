@@ -111,11 +111,8 @@ public class Checkbox extends Panel implements MouseListener, MouseMotionListene
 
     @Override
     public void focusGained(FocusEvent event) {
-        Rectangle bounds = getBounds();
-        bounds.x = 0;
-        bounds.y = 0;
-        scrollRectToVisible(bounds);
         repaint();
+        scrollRectToVisible(UIUtilities.getLocalBounds(this));
     }
 
     @Override

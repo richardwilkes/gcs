@@ -236,6 +236,7 @@ public class Button extends Panel implements MouseListener, MouseMotionListener,
 
     @Override
     public void focusGained(FocusEvent event) {
+        scrollRectToVisible(UIUtilities.getLocalBounds(this));
         repaint();
     }
 

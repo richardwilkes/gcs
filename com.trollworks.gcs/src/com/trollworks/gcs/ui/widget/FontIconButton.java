@@ -28,6 +28,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -35,7 +37,7 @@ import javax.swing.SwingConstants;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 
-public class FontIconButton extends Panel implements MouseListener, MouseMotionListener, ComponentListener, AncestorListener {
+public class FontIconButton extends Panel implements MouseListener, MouseMotionListener, ComponentListener, AncestorListener, FocusListener {
     private String        mText;
     private ClickFunction mClickFunction;
     private int           mSize;
@@ -59,6 +61,7 @@ public class FontIconButton extends Panel implements MouseListener, MouseMotionL
         addMouseMotionListener(this);
         addComponentListener(this);
         addAncestorListener(this);
+        addFocusListener(this);
     }
 
     public void setText(String text) {
@@ -223,5 +226,16 @@ public class FontIconButton extends Panel implements MouseListener, MouseMotionL
     @Override
     public void ancestorMoved(AncestorEvent event) {
         updateRollOver();
+    }
+
+    @Override
+    public void focusGained(FocusEvent event) {
+        scrollRectToVisible(UIUtilities.getLocalBounds(this));
+        repaint();
+    }
+
+    @Override
+    public void focusLost(FocusEvent event) {
+        repaint();
     }
 }

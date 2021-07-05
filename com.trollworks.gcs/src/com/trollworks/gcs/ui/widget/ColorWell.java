@@ -159,6 +159,7 @@ public class ColorWell extends Panel implements KeyListener, MouseListener, Focu
 
     @Override
     public void focusGained(FocusEvent event) {
+        scrollRectToVisible(UIUtilities.getLocalBounds(this));
         repaint();
     }
 
