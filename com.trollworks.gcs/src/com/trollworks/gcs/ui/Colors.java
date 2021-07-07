@@ -73,13 +73,13 @@ public final class Colors {
             new Color(192, 192, 192));
     public static final ThemeColor TAB_FOCUSED    = new ThemeColor("tab_focused", I18n.text("Focused Tab"),
             new Color(224, 212, 175),
-            new Color(102, 102, 0));
+            new Color(68,102,0));
     public static final ThemeColor ON_TAB_FOCUSED = new ThemeColor("on_tab_focused", I18n.text("On Focused Tab"),
             new Color(0, 0, 0),
             new Color(221, 221, 221));
     public static final ThemeColor TAB_CURRENT    = new ThemeColor("tab_current", I18n.text("Current Tab"),
             new Color(211, 207, 197),
-            new Color(61, 61, 0));
+            new Color(41,61,0));
     public static final ThemeColor ON_TAB_CURRENT = new ThemeColor("on_tab_current", I18n.text("On Current Tab"),
             new Color(0, 0, 0),
             new Color(221, 221, 221));
@@ -150,7 +150,7 @@ public final class Colors {
             new Color(0, 96, 160));
     public static final ThemeColor TOOLTIP              = new ThemeColor("tooltip", I18n.text("Tooltip"),
             new Color(252, 252, 196),
-            new Color(153, 153, 0));
+            new Color(184,204,143));
     public static final ThemeColor ON_TOOLTIP           = new ThemeColor("on_tooltip", I18n.text("On Tooltip"),
             new Color(0, 0, 0),
             new Color(32, 32, 32));
