@@ -199,7 +199,7 @@ public final class SheetSettingsWindow extends SettingsWindow<SheetSettings> imp
                     adjustResetButton();
                 });
         mUseReducedSwing = addCheckbox(right, I18n.text("Use the reduced swing rules"),
-                I18n.text("From \"Adjusting Swing Damage in Dungeon Fantasy\" found on noschoolgrognard.blogspot.com"),
+                I18n.text("From the blog post \"Adjusting Swing Damage in Dungeon Fantasy\".\nhttps://noschoolgrognard.blogspot.com/2013/04/adjusting-swing-damage-in-dungeon.html"),
                 mSheetSettings.useReducedSwing(), (b) -> {
                     mSheetSettings.setUseReducedSwing(b.isChecked());
                     adjustResetButton();
