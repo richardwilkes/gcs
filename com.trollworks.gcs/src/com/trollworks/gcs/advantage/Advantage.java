@@ -537,7 +537,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     }
 
     private static int applyRounding(double value, boolean roundCostDown) {
-        return (int) (roundCostDown ? Math.floor(value) : Math.ceil(value));
+        return (int) (roundCostDown ? Math.floor(value + 0.05) : Math.ceil(value));
     }
 
     public boolean isDisabled() {
