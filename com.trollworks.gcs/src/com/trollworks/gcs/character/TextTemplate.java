@@ -81,214 +81,194 @@ public class TextTemplate {
     private static final String  COMMA_SEPARATOR    = ", ";
     private static final Pattern NOT_NUMBER_PATTERN = Pattern.compile("[^0-9]");
 
-    private static final String KEY_ACCURACY                          = "ACCURACY";
-    private static final String KEY_ADVANTAGE_POINTS                  = "ADVANTAGE_POINTS";
-    private static final String KEY_ADVANTAGES_ALL_LOOP_END           = "ADVANTAGES_ALL_LOOP_END";
-    private static final String KEY_ADVANTAGES_ALL_LOOP_START         = "ADVANTAGES_ALL_LOOP_START";
-    private static final String KEY_ADVANTAGES_LOOP_END               = "ADVANTAGES_LOOP_END";
-    private static final String KEY_ADVANTAGES_LOOP_START             = "ADVANTAGES_LOOP_START";
-    private static final String KEY_ADVANTAGES_ONLY_LOOP_END          = "ADVANTAGES_ONLY_LOOP_END";
-    private static final String KEY_ADVANTAGES_ONLY_LOOP_START        = "ADVANTAGES_ONLY_LOOP_START";
-    private static final String KEY_AGE                               = "AGE";
-    private static final String KEY_AMMO                              = "AMMO";
-    private static final String KEY_AMMO_TYPE                         = "AmmoType:";
-    private static final String KEY_ATTACK_MODES_LOOP_END             = "ATTACK_MODES_LOOP_END";
-    private static final String KEY_ATTACK_MODES_LOOP_START           = "ATTACK_MODES_LOOP_START";
-    private static final String KEY_ATTRIBUTE_POINTS                  = "ATTRIBUTE_POINTS";
-    private static final String KEY_BASIC_LIFT                        = "BASIC_LIFT";
-    private static final String KEY_BASIC_MOVE                        = "BASIC_MOVE";
-    private static final String KEY_BASIC_MOVE_POINTS                 = "BASIC_MOVE_POINTS";
-    private static final String KEY_BASIC_SPEED                       = "BASIC_SPEED";
-    private static final String KEY_BASIC_SPEED_POINTS                = "BASIC_SPEED_POINTS";
-    private static final String KEY_BEST_CURRENT_BLOCK                = "BEST_CURRENT_BLOCK";
-    private static final String KEY_BEST_CURRENT_PARRY                = "BEST_CURRENT_PARRY";
-    private static final String KEY_BIRTHDAY                          = "BIRTHDAY";
-    private static final String KEY_BLOCK                             = "BLOCK";
-    private static final String KEY_BODY_TYPE                         = "BODY_TYPE";
-    private static final String KEY_BULK                              = "BULK";
-    private static final String KEY_CARRIED_STATUS                    = "CARRIED_STATUS";
-    private static final String KEY_CARRIED_VALUE                     = "CARRIED_VALUE";
-    private static final String KEY_CARRIED_WEIGHT                    = "CARRIED_WEIGHT";
-    private static final String KEY_CARRY_ON_BACK                     = "CARRY_ON_BACK";
-    private static final String KEY_CATEGORIES                        = "CATEGORIES";
-    private static final String KEY_CLASS                             = "CLASS";
-    private static final String KEY_COLLEGE                           = "COLLEGE";
-    private static final String KEY_COMBINED_NAME                     = "COMBINED_NAME";
-    private static final String KEY_CONDITIONAL_MODIFIERS_LOOP_END    = "CONDITIONAL_MODIFIERS_LOOP_END";
-    private static final String KEY_CONDITIONAL_MODIFIERS_LOOP_START  = "CONDITIONAL_MODIFIERS_LOOP_START";
-    private static final String KEY_CONTINUE_ID                       = "CONTINUE_ID";
-    private static final String KEY_COST                              = "COST";
-    private static final String KEY_COST_SUMMARY                      = "COST_SUMMARY";
-    private static final String KEY_CREATED_ON                        = "CREATED_ON";
-    private static final String KEY_CULTURAL_FAMILIARITIES_LOOP_END   = "CULTURAL_FAMILIARITIES_LOOP_END";
-    private static final String KEY_CULTURAL_FAMILIARITIES_LOOP_START = "CULTURAL_FAMILIARITIES_LOOP_START";
-    private static final String KEY_CURRENT                           = "CURRENT";
-    private static final String KEY_CURRENT_DODGE                     = "CURRENT_DODGE";
-    private static final String KEY_CURRENT_MARKER                    = "CURRENT_MARKER";
-    private static final String KEY_CURRENT_MARKER_1                  = "CURRENT_MARKER_1";
-    private static final String KEY_CURRENT_MARKER_BULLET             = "CURRENT_MARKER_BULLET";
-    private static final String KEY_CURRENT_MOVE                      = "CURRENT_MOVE";
-    private static final String KEY_DAMAGE                            = "DAMAGE";
-    private static final String KEY_DESCRIPTION                       = "DESCRIPTION";
-    private static final String KEY_DESCRIPTION_MODIFIER_NOTES        = "DESCRIPTION_MODIFIER_NOTES";
-    private static final String KEY_DESCRIPTION_NOTES                 = "DESCRIPTION_NOTES";
-    private static final String KEY_DESCRIPTION_PRIMARY               = "DESCRIPTION_PRIMARY";
-    private static final String KEY_DESCRIPTION_USER                  = "DESCRIPTION_USER";
-    private static final String KEY_DESCRIPTION_USER_FORMATTED        = "DESCRIPTION_USER_FORMATTED";
-    private static final String KEY_DIFFICULTY                        = "DIFFICULTY";
-    private static final String KEY_DISADVANTAGE_POINTS               = "DISADVANTAGE_POINTS";
-    private static final String KEY_DISADVANTAGES_ALL_LOOP_END        = "DISADVANTAGES_ALL_LOOP_END";
-    private static final String KEY_DISADVANTAGES_ALL_LOOP_START      = "DISADVANTAGES_ALL_LOOP_START";
-    private static final String KEY_DISADVANTAGES_LOOP_END            = "DISADVANTAGES_LOOP_END";
-    private static final String KEY_DISADVANTAGES_LOOP_START          = "DISADVANTAGES_LOOP_START";
-    private static final String KEY_DODGE                             = "DODGE";
-    private static final String KEY_DR                                = "DR";
-    private static final String KEY_DURATION                          = "DURATION";
-    private static final String KEY_DX                                = "DX";
-    private static final String KEY_DX_POINTS                         = "DX_POINTS";
-    private static final String KEY_ENCODING_OFF                      = "ENCODING_OFF";
-    private static final String KEY_ENCUMBRANCE_LOOP_END              = "ENCUMBRANCE_LOOP_END";
-    private static final String KEY_ENCUMBRANCE_LOOP_START            = "ENCUMBRANCE_LOOP_START";
-    private static final String KEY_ENHANCED_KEY_PARSING              = "ENHANCED_KEY_PARSING";
-    private static final String KEY_EQUIPMENT                         = "EQUIPMENT";
-    private static final String KEY_EQUIPMENT_FORMATTED               = "EQUIPMENT_FORMATTED";
-    private static final String KEY_EQUIPMENT_LOOP_END                = "EQUIPMENT_LOOP_END";
-    private static final String KEY_EQUIPMENT_LOOP_START              = "EQUIPMENT_LOOP_START";
-    private static final String KEY_EQUIPPED                          = "EQUIPPED";
-    private static final String KEY_EQUIPPED_FONT_AWESOME             = "EQUIPPED_FA";
-    private static final String KEY_EQUIPPED_NUM                      = "EQUIPPED_NUM";
-    private static final String KEY_EXCLUDE_CATEGORIES                = "EXCLUDE_CATEGORIES_";
-    private static final String KEY_EYES                              = "EYES";
-    private static final String KEY_FRIGHT_CHECK                      = "FRIGHT_CHECK";
-    private static final String KEY_GENDER                            = "GENDER";
-    private static final String KEY_GENERAL_DR                        = "GENERAL_DR";
-    private static final String KEY_GRID_TEMPLATE                     = "GRID_TEMPLATE";
-    private static final String KEY_HAIR                              = "HAIR";
-    private static final String KEY_HAND                              = "HAND";
-    private static final String KEY_HEARING                           = "HEARING";
-    private static final String KEY_HEIGHT                            = "HEIGHT";
-    private static final String KEY_HIERARCHICAL_MELEE_LOOP_END       = "HIERARCHICAL_MELEE_LOOP_END";
-    private static final String KEY_HIERARCHICAL_MELEE_LOOP_START     = "HIERARCHICAL_MELEE_LOOP_START";
-    private static final String KEY_HIERARCHICAL_RANGED_LOOP_END      = "HIERARCHICAL_RANGED_LOOP_END";
-    private static final String KEY_HIERARCHICAL_RANGED_LOOP_START    = "HIERARCHICAL_RANGED_LOOP_START";
-    private static final String KEY_HIT_LOCATION_LOOP_END             = "HIT_LOCATION_LOOP_END";
-    private static final String KEY_HIT_LOCATION_LOOP_START           = "HIT_LOCATION_LOOP_START";
-    private static final String KEY_HT                                = "HT";
-    private static final String KEY_HT_POINTS                         = "HT_POINTS";
-    private static final String KEY_ID                                = "ID";
-    private static final String KEY_IQ                                = "IQ";
-    private static final String KEY_IQ_POINTS                         = "IQ_POINTS";
-    private static final String KEY_LANGUAGES_LOOP_END                = "LANGUAGES_LOOP_END";
-    private static final String KEY_LANGUAGES_LOOP_START              = "LANGUAGES_LOOP_START";
-    private static final String KEY_LEGALITY_CLASS                    = "LEGALITY_CLASS";
-    private static final String KEY_LEVEL                             = "LEVEL";
-    private static final String KEY_LEVEL_NO_MARKER                   = "LEVEL_NO_MARKER";
-    private static final String KEY_LEVEL_ONLY                        = "LEVEL_ONLY";
-    private static final String KEY_LOCATION                          = "LOCATION";
-    private static final String KEY_FULL_NAME                         = "FULL_NAME";
-    private static final String KEY_MANA_CAST                         = "MANA_CAST";
-    private static final String KEY_MANA_MAINTAIN                     = "MANA_MAINTAIN";
-    private static final String KEY_MAX_LOAD                          = "MAX_LOAD";
-    private static final String KEY_MAX_USES                          = "MAX_USES";
-    private static final String KEY_MAXIMUM                           = "MAXIMUM";
-    private static final String KEY_MELEE_LOOP_END                    = "MELEE_LOOP_END";
-    private static final String KEY_MELEE_LOOP_START                  = "MELEE_LOOP_START";
-    private static final String KEY_MODIFIED_ON                       = "MODIFIED_ON";
-    private static final String KEY_MODIFIER                          = "MODIFIER";
-    private static final String KEY_MODIFIER_NOTES_FOR                = "MODIFIER_NOTES_FOR_";
-    private static final String KEY_MOVE                              = "MOVE";
-    private static final String KEY_NAME                              = "NAME";
-    private static final String KEY_NOTE                              = "NOTE";
-    private static final String KEY_NOTE_FORMATTED                    = "NOTE_FORMATTED";
-    private static final String KEY_NOTES                             = "NOTES";
-    private static final String KEY_NOTES_LOOP_END                    = "NOTES_LOOP_END";
-    private static final String KEY_NOTES_LOOP_START                  = "NOTES_LOOP_START";
-    private static final String KEY_ONE_HANDED_LIFT                   = "ONE_HANDED_LIFT";
-    private static final String KEY_ONLY_CATEGORIES                   = "ONLY_CATEGORIES_";
-    private static final String KEY_ORGANIZATION                      = "ORGANIZATION";
-    private static final String KEY_OTHER_EQUIPMENT_LOOP_END          = "OTHER_EQUIPMENT_LOOP_END";
-    private static final String KEY_OTHER_EQUIPMENT_LOOP_START        = "OTHER_EQUIPMENT_LOOP_START";
-    private static final String KEY_OTHER_VALUE                       = "OTHER_EQUIPMENT_VALUE";
-    private static final String KEY_PARENT_ID                         = "PARENT_ID";
-    private static final String KEY_PARRY                             = "PARRY";
-    private static final String KEY_PENALTY                           = "PENALTY";
-    private static final String KEY_PERCEPTION                        = "PERCEPTION";
-    private static final String KEY_PERCEPTION_POINTS                 = "PERCEPTION_POINTS";
-    private static final String KEY_PERKS_LOOP_END                    = "PERKS_LOOP_END";
-    private static final String KEY_PERKS_LOOP_START                  = "PERKS_LOOP_START";
-    private static final String KEY_PLAYER                            = "PLAYER";
-    private static final String KEY_POINT_POOL_LOOP_END               = "POINT_POOL_LOOP_END";
-    private static final String KEY_POINT_POOL_LOOP_START             = "POINT_POOL_LOOP_START";
-    private static final String KEY_POINTS                            = "POINTS";
-    private static final String KEY_PORTRAIT                          = "PORTRAIT";
-    private static final String KEY_PORTRAIT_EMBEDDED                 = "PORTRAIT_EMBEDDED";
-    private static final String KEY_PREFIX_DEPTH                      = "DEPTHx";
-    private static final String KEY_PRIMARY_ATTRIBUTE_LOOP_END        = "PRIMARY_ATTRIBUTE_LOOP_END";
-    private static final String KEY_PRIMARY_ATTRIBUTE_LOOP_START      = "PRIMARY_ATTRIBUTE_LOOP_START";
-    private static final String KEY_QTY                               = "QTY";
-    private static final String KEY_QUIRK_POINTS                      = "QUIRK_POINTS";
-    private static final String KEY_QUIRKS_LOOP_END                   = "QUIRKS_LOOP_END";
-    private static final String KEY_QUIRKS_LOOP_START                 = "QUIRKS_LOOP_START";
-    private static final String KEY_RACE_POINTS                       = "RACE_POINTS";
-    private static final String KEY_RANGE                             = "RANGE";
-    private static final String KEY_RANGED_LOOP_END                   = "RANGED_LOOP_END";
-    private static final String KEY_RANGED_LOOP_START                 = "RANGED_LOOP_START";
-    private static final String KEY_REACH                             = "REACH";
-    private static final String KEY_REACTION_LOOP_END                 = "REACTION_LOOP_END";
-    private static final String KEY_REACTION_LOOP_START               = "REACTION_LOOP_START";
-    private static final String KEY_RECOIL                            = "RECOIL";
-    private static final String KEY_REF                               = "REF";
-    private static final String KEY_RELIGION                          = "RELIGION";
-    private static final String KEY_RESIST                            = "RESIST";
-    private static final String KEY_ROF                               = "ROF";
-    private static final String KEY_ROLL                              = "ROLL";
-    private static final String KEY_RSL                               = "RSL";
-    private static final String KEY_RUNNING_SHOVE                     = "RUNNING_SHOVE";
-    private static final String KEY_SATISFIED                         = "SATISFIED";
-    private static final String KEY_SECONDARY_ATTRIBUTE_LOOP_END      = "SECONDARY_ATTRIBUTE_LOOP_END";
-    private static final String KEY_SECONDARY_ATTRIBUTE_LOOP_START    = "SECONDARY_ATTRIBUTE_LOOP_START";
-    private static final String KEY_SHIFT_SLIGHTLY                    = "SHIFT_SLIGHTLY";
-    private static final String KEY_SHOTS                             = "SHOTS";
-    private static final String KEY_SHOVE                             = "SHOVE";
-    private static final String KEY_SITUATION                         = "SITUATION";
-    private static final String KEY_SIZE                              = "SIZE";
-    private static final String KEY_SKILL_POINTS                      = "SKILL_POINTS";
-    private static final String KEY_SKILLS_LOOP_END                   = "SKILLS_LOOP_END";
-    private static final String KEY_SKILLS_LOOP_START                 = "SKILLS_LOOP_START";
-    private static final String KEY_SKIN                              = "SKIN";
-    private static final String KEY_SL                                = "SL";
-    private static final String KEY_SPELL_POINTS                      = "SPELL_POINTS";
-    private static final String KEY_SPELLS_LOOP_END                   = "SPELLS_LOOP_END";
-    private static final String KEY_SPELLS_LOOP_START                 = "SPELLS_LOOP_START";
-    private static final String KEY_ST                                = "ST";
-    private static final String KEY_ST_POINTS                         = "ST_POINTS";
-    private static final String KEY_STATE                             = "STATE";
-    private static final String KEY_STYLE_INDENT_WARNING              = "STYLE_INDENT_WARNING";
-    private static final String KEY_SWING                             = "SWING";
-    private static final String KEY_TASTE_SMELL                       = "TASTE_SMELL";
-    private static final String KEY_THRUST                            = "THRUST";
-    private static final String KEY_TIME_CAST                         = "TIME_CAST";
-    private static final String KEY_TITLE                             = "TITLE";
-    private static final String KEY_TL                                = "TL";
-    private static final String KEY_TOTAL_POINTS                      = "TOTAL_POINTS";
-    private static final String KEY_TOUCH                             = "TOUCH";
-    private static final String KEY_TWO_HANDED_LIFT                   = "TWO_HANDED_LIFT";
-    private static final String KEY_TYPE                              = "TYPE";
-    private static final String KEY_UNMODIFIED_DAMAGE                 = "UNMODIFIED_DAMAGE";
-    private static final String KEY_UNSPENT_POINTS                    = "UNSPENT_POINTS";
-    private static final String KEY_USAGE                             = "USAGE";
-    private static final String KEY_USES                              = "USES";
-    private static final String KEY_USES_AMMO_TYPE                    = "UsesAmmoType:";
-    private static final String KEY_VALUE                             = "VALUE";
-    private static final String KEY_VISION                            = "VISION";
-    private static final String KEY_WEAPON_STRENGTH                   = "STRENGTH";
-    private static final String KEY_WEAPON_STRENGTH_NUM               = "WEAPON_STRENGTH";
-    private static final String KEY_WEIGHT                            = "WEIGHT";
-    private static final String KEY_WEIGHT_RAW                        = "WEIGHT_RAW";
-    private static final String KEY_WEIGHT_SUMMARY                    = "WEIGHT_SUMMARY";
-    private static final String KEY_WHERE                             = "WHERE";
-    private static final String KEY_WILL                              = "WILL";
-    private static final String KEY_WILL_POINTS                       = "WILL_POINTS";
+    private static final String KEY_ACCURACY                     = "ACCURACY";
+    private static final String KEY_ADVANTAGE_POINTS             = "ADVANTAGE_POINTS";
+    private static final String KEY_AGE                          = "AGE";
+    private static final String KEY_AMMO                         = "AMMO";
+    private static final String KEY_AMMO_TYPE                    = "AmmoType:";
+    private static final String KEY_ATTRIBUTE_POINTS             = "ATTRIBUTE_POINTS";
+    private static final String KEY_BASIC_LIFT                   = "BASIC_LIFT";
+    private static final String KEY_BASIC_MOVE                   = "BASIC_MOVE";
+    private static final String KEY_BASIC_MOVE_POINTS            = "BASIC_MOVE_POINTS";
+    private static final String KEY_BASIC_SPEED                  = "BASIC_SPEED";
+    private static final String KEY_BASIC_SPEED_POINTS           = "BASIC_SPEED_POINTS";
+    private static final String KEY_BEST_CURRENT_BLOCK           = "BEST_CURRENT_BLOCK";
+    private static final String KEY_BEST_CURRENT_PARRY           = "BEST_CURRENT_PARRY";
+    private static final String KEY_BIRTHDAY                     = "BIRTHDAY";
+    private static final String KEY_BLOCK                        = "BLOCK";
+    private static final String KEY_BODY_TYPE                    = "BODY_TYPE";
+    private static final String KEY_BULK                         = "BULK";
+    private static final String KEY_CARRIED_STATUS               = "CARRIED_STATUS";
+    private static final String KEY_CARRIED_VALUE                = "CARRIED_VALUE";
+    private static final String KEY_CARRIED_WEIGHT               = "CARRIED_WEIGHT";
+    private static final String KEY_CARRY_ON_BACK                = "CARRY_ON_BACK";
+    private static final String KEY_CATEGORIES                   = "CATEGORIES";
+    private static final String KEY_CLASS                        = "CLASS";
+    private static final String KEY_COLLEGE                      = "COLLEGE";
+    private static final String KEY_COMBINED_NAME                = "COMBINED_NAME";
+    private static final String KEY_CONTINUE_ID                  = "CONTINUE_ID";
+    private static final String KEY_COST                         = "COST";
+    private static final String KEY_COST_SUMMARY                 = "COST_SUMMARY";
+    private static final String KEY_CREATED_ON                   = "CREATED_ON";
+    private static final String KEY_CURRENT                      = "CURRENT";
+    private static final String KEY_CURRENT_DODGE                = "CURRENT_DODGE";
+    private static final String KEY_CURRENT_MARKER               = "CURRENT_MARKER";
+    private static final String KEY_CURRENT_MARKER_1             = "CURRENT_MARKER_1";
+    private static final String KEY_CURRENT_MARKER_BULLET        = "CURRENT_MARKER_BULLET";
+    private static final String KEY_CURRENT_MOVE                 = "CURRENT_MOVE";
+    private static final String KEY_DAMAGE                       = "DAMAGE";
+    private static final String KEY_DESCRIPTION                  = "DESCRIPTION";
+    private static final String KEY_DESCRIPTION_MODIFIER_NOTES   = "DESCRIPTION_MODIFIER_NOTES";
+    private static final String KEY_DESCRIPTION_NOTES            = "DESCRIPTION_NOTES";
+    private static final String KEY_DESCRIPTION_PRIMARY          = "DESCRIPTION_PRIMARY";
+    private static final String KEY_DESCRIPTION_USER             = "DESCRIPTION_USER";
+    private static final String KEY_DESCRIPTION_USER_FORMATTED   = "DESCRIPTION_USER_FORMATTED";
+    private static final String KEY_DIFFICULTY                   = "DIFFICULTY";
+    private static final String KEY_DISADVANTAGE_POINTS          = "DISADVANTAGE_POINTS";
+    private static final String KEY_DODGE                        = "DODGE";
+    private static final String KEY_DR                           = "DR";
+    private static final String KEY_DURATION                     = "DURATION";
+    private static final String KEY_DX                           = "DX";
+    private static final String KEY_DX_POINTS                    = "DX_POINTS";
+    private static final String KEY_ENCODING_OFF                 = "ENCODING_OFF";
+    private static final String KEY_ENHANCED_KEY_PARSING         = "ENHANCED_KEY_PARSING";
+    private static final String KEY_LOCATION_EQUIPMENT           = "EQUIPMENT";
+    private static final String KEY_LOCATION_EQUIPMENT_FORMATTED = "EQUIPMENT_FORMATTED";
+    private static final String KEY_EQUIPPED                     = "EQUIPPED";
+    private static final String KEY_EQUIPPED_FONT_AWESOME        = "EQUIPPED_FA";
+    private static final String KEY_EQUIPPED_NUM                 = "EQUIPPED_NUM";
+    private static final String KEY_EXCLUDE_CATEGORIES           = "EXCLUDE_CATEGORIES_";
+    private static final String KEY_EYES                         = "EYES";
+    private static final String KEY_FRIGHT_CHECK                 = "FRIGHT_CHECK";
+    private static final String KEY_GENDER                       = "GENDER";
+    private static final String KEY_GENERAL_DR                   = "GENERAL_DR";
+    private static final String KEY_GRID_TEMPLATE                = "GRID_TEMPLATE";
+    private static final String KEY_HAIR                         = "HAIR";
+    private static final String KEY_HAND                         = "HAND";
+    private static final String KEY_HEARING                      = "HEARING";
+    private static final String KEY_HEIGHT                       = "HEIGHT";
+    private static final String KEY_HT                           = "HT";
+    private static final String KEY_HT_POINTS                    = "HT_POINTS";
+    private static final String KEY_ID                           = "ID";
+    private static final String KEY_IQ                           = "IQ";
+    private static final String KEY_IQ_POINTS                    = "IQ_POINTS";
+    private static final String KEY_LEGALITY_CLASS               = "LEGALITY_CLASS";
+    private static final String KEY_LEVEL                        = "LEVEL";
+    private static final String KEY_LEVEL_NO_MARKER              = "LEVEL_NO_MARKER";
+    private static final String KEY_LEVEL_ONLY                   = "LEVEL_ONLY";
+    private static final String KEY_LOCATION                     = "LOCATION";
+    private static final String KEY_FULL_NAME                    = "FULL_NAME";
+    private static final String KEY_MANA_CAST                    = "MANA_CAST";
+    private static final String KEY_MANA_MAINTAIN                = "MANA_MAINTAIN";
+    private static final String KEY_MAX_LOAD                     = "MAX_LOAD";
+    private static final String KEY_MAX_USES                     = "MAX_USES";
+    private static final String KEY_MAXIMUM                      = "MAXIMUM";
+    private static final String KEY_MODIFIED_ON                  = "MODIFIED_ON";
+    private static final String KEY_MODIFIER                     = "MODIFIER";
+    private static final String KEY_MODIFIER_NOTES_FOR           = "MODIFIER_NOTES_FOR_";
+    private static final String KEY_MOVE                         = "MOVE";
+    private static final String KEY_NAME                         = "NAME";
+    private static final String KEY_NOTE                         = "NOTE";
+    private static final String KEY_NOTE_FORMATTED               = "NOTE_FORMATTED";
+    private static final String KEY_ALL_NOTES_COMBINED           = "NOTES";
+    private static final String KEY_ONE_HANDED_LIFT              = "ONE_HANDED_LIFT";
+    private static final String KEY_ONLY_CATEGORIES              = "ONLY_CATEGORIES_";
+    private static final String KEY_ORGANIZATION                 = "ORGANIZATION";
+    private static final String KEY_OTHER_VALUE                  = "OTHER_EQUIPMENT_VALUE";
+    private static final String KEY_PARENT_ID                    = "PARENT_ID";
+    private static final String KEY_PARRY                        = "PARRY";
+    private static final String KEY_PENALTY                      = "PENALTY";
+    private static final String KEY_PERCEPTION                   = "PERCEPTION";
+    private static final String KEY_PERCEPTION_POINTS            = "PERCEPTION_POINTS";
+    private static final String KEY_PLAYER                       = "PLAYER";
+    private static final String KEY_POINTS                       = "POINTS";
+    private static final String KEY_PORTRAIT                     = "PORTRAIT";
+    private static final String KEY_PORTRAIT_EMBEDDED            = "PORTRAIT_EMBEDDED";
+    private static final String KEY_PREFIX_DEPTH                 = "DEPTHx";
+    private static final String KEY_QTY                          = "QTY";
+    private static final String KEY_QUIRK_POINTS                 = "QUIRK_POINTS";
+    private static final String KEY_RACE_POINTS                  = "RACE_POINTS";
+    private static final String KEY_RANGE                        = "RANGE";
+    private static final String KEY_REACH                        = "REACH";
+    private static final String KEY_RECOIL                       = "RECOIL";
+    private static final String KEY_REF                          = "REF";
+    private static final String KEY_RELIGION                     = "RELIGION";
+    private static final String KEY_RESIST                       = "RESIST";
+    private static final String KEY_ROF                          = "ROF";
+    private static final String KEY_ROLL                         = "ROLL";
+    private static final String KEY_RSL                          = "RSL";
+    private static final String KEY_RUNNING_SHOVE                = "RUNNING_SHOVE";
+    private static final String KEY_SATISFIED                    = "SATISFIED";
+    private static final String KEY_SHIFT_SLIGHTLY               = "SHIFT_SLIGHTLY";
+    private static final String KEY_SHOTS                        = "SHOTS";
+    private static final String KEY_SHOVE                        = "SHOVE";
+    private static final String KEY_SITUATION                    = "SITUATION";
+    private static final String KEY_SIZE                         = "SIZE";
+    private static final String KEY_SKILL_POINTS                 = "SKILL_POINTS";
+    private static final String KEY_SKIN                         = "SKIN";
+    private static final String KEY_SL                           = "SL";
+    private static final String KEY_SPELL_POINTS                 = "SPELL_POINTS";
+    private static final String KEY_ST                           = "ST";
+    private static final String KEY_ST_POINTS                    = "ST_POINTS";
+    private static final String KEY_STATE                        = "STATE";
+    private static final String KEY_STYLE_INDENT_WARNING         = "STYLE_INDENT_WARNING";
+    private static final String KEY_SWING                        = "SWING";
+    private static final String KEY_TASTE_SMELL                  = "TASTE_SMELL";
+    private static final String KEY_THRUST                       = "THRUST";
+    private static final String KEY_TIME_CAST                    = "TIME_CAST";
+    private static final String KEY_TITLE                        = "TITLE";
+    private static final String KEY_TL                           = "TL";
+    private static final String KEY_TOTAL_POINTS                 = "TOTAL_POINTS";
+    private static final String KEY_TOUCH                        = "TOUCH";
+    private static final String KEY_TWO_HANDED_LIFT              = "TWO_HANDED_LIFT";
+    private static final String KEY_TYPE                         = "TYPE";
+    private static final String KEY_UNMODIFIED_DAMAGE            = "UNMODIFIED_DAMAGE";
+    private static final String KEY_UNSPENT_POINTS               = "UNSPENT_POINTS";
+    private static final String KEY_USAGE                        = "USAGE";
+    private static final String KEY_USES                         = "USES";
+    private static final String KEY_USES_AMMO_TYPE               = "UsesAmmoType:";
+    private static final String KEY_VALUE                        = "VALUE";
+    private static final String KEY_VISION                       = "VISION";
+    private static final String KEY_WEAPON_STRENGTH              = "STRENGTH";
+    private static final String KEY_WEAPON_STRENGTH_NUM          = "WEAPON_STRENGTH";
+    private static final String KEY_WEIGHT                       = "WEIGHT";
+    private static final String KEY_WEIGHT_RAW                   = "WEIGHT_RAW";
+    private static final String KEY_WEIGHT_SUMMARY               = "WEIGHT_SUMMARY";
+    private static final String KEY_WHERE                        = "WHERE";
+    private static final String KEY_WILL                         = "WILL";
+    private static final String KEY_WILL_POINTS                  = "WILL_POINTS";
+
+    // Loop key prefixes
+    private static final String KEY_ADVANTAGES_ALL         = "ADVANTAGES_ALL";
+    private static final String KEY_ADVANTAGES             = "ADVANTAGES";
+    private static final String KEY_ADVANTAGES_ONLY        = "ADVANTAGES_ONLY";
+    private static final String KEY_ATTACK_MODES           = "ATTACK_MODES";
+    private static final String KEY_CONDITIONAL_MODIFIERS  = "CONDITIONAL_MODIFIERS";
+    private static final String KEY_CULTURAL_FAMILIARITIES = "CULTURAL_FAMILIARITIES";
+    private static final String KEY_DISADVANTAGES_ALL      = "DISADVANTAGES_ALL";
+    private static final String KEY_DISADVANTAGES          = "DISADVANTAGES";
+    private static final String KEY_ENCUMBRANCE            = "ENCUMBRANCE";
+    private static final String KEY_EQUIPMENT              = "EQUIPMENT";
+    private static final String KEY_HIERARCHICAL_MELEE     = "HIERARCHICAL_MELEE";
+    private static final String KEY_HIERARCHICAL_RANGED    = "HIERARCHICAL_RANGED";
+    private static final String KEY_HIT_LOCATION           = "HIT_LOCATION";
+    private static final String KEY_LANGUAGES              = "LANGUAGES";
+    private static final String KEY_MELEE                  = "MELEE";
+    private static final String KEY_NOTES                  = "NOTES";
+    private static final String KEY_OTHER_EQUIPMENT        = "OTHER_EQUIPMENT";
+    private static final String KEY_PERKS                  = "PERKS";
+    private static final String KEY_POINT_POOL             = "POINT_POOL";
+    private static final String KEY_PRIMARY_ATTRIBUTE      = "PRIMARY_ATTRIBUTE";
+    private static final String KEY_QUIRKS                 = "QUIRKS";
+    private static final String KEY_RANGED                 = "RANGED";
+    private static final String KEY_REACTION               = "REACTION";
+    private static final String KEY_SECONDARY_ATTRIBUTE    = "SECONDARY_ATTRIBUTE";
+    private static final String KEY_SKILLS                 = "SKILLS";
+    private static final String KEY_SPELLS                 = "SPELLS";
+
+    private static final String LOOP_START = "_LOOP_START";
+    private static final String LOOP_END   = "_LOOP_END";
+    private static final String LOOP_COUNT = "_LOOP_COUNT";
 
     private static final String KEY_SUFFIX_BRACKET = "_BRACKET";
     private static final String KEY_SUFFIX_CURLY   = "_CURLY";
@@ -651,7 +631,7 @@ public class TextTemplate {
         case KEY_OTHER_VALUE:
             writeEncodedText(out, "$" + gurpsCharacter.getWealthNotCarried().toLocalizedString());
             break;
-        case KEY_NOTES:
+        case KEY_ALL_NOTES_COMBINED:
             StringBuilder buffer = new StringBuilder();
             for (Note note : gurpsCharacter.getNotesIterator()) {
                 if (!buffer.isEmpty()) {
@@ -671,65 +651,166 @@ public class TextTemplate {
             writeEncodedText(out, gurpsCharacter.getSheetSettings().getHitLocations().getName());
             break;
         default:
-            if (key.startsWith(KEY_ENCUMBRANCE_LOOP_START)) {
-                processEncumbranceLoop(out, extractUpToMarker(in, KEY_ENCUMBRANCE_LOOP_END));
-            } else if (key.startsWith(KEY_HIT_LOCATION_LOOP_START)) {
-                processHitLocationLoop(out, extractUpToMarker(in, KEY_HIT_LOCATION_LOOP_END));
-            } else if (key.startsWith(KEY_ADVANTAGES_LOOP_START)) {
-                processAdvantagesLoop(out, extractUpToMarker(in, KEY_ADVANTAGES_LOOP_END), AdvantagesLoopType.ALL);
-            } else if (key.startsWith(KEY_ADVANTAGES_ALL_LOOP_START)) {
-                processAdvantagesLoop(out, extractUpToMarker(in, KEY_ADVANTAGES_ALL_LOOP_END), AdvantagesLoopType.ADS_ALL);
-            } else if (key.startsWith(KEY_ADVANTAGES_ONLY_LOOP_START)) {
-                processAdvantagesLoop(out, extractUpToMarker(in, KEY_ADVANTAGES_ONLY_LOOP_END), AdvantagesLoopType.ADS);
-            } else if (key.startsWith(KEY_DISADVANTAGES_LOOP_START)) {
-                processAdvantagesLoop(out, extractUpToMarker(in, KEY_DISADVANTAGES_LOOP_END), AdvantagesLoopType.DISADS);
-            } else if (key.startsWith(KEY_DISADVANTAGES_ALL_LOOP_START)) {
-                processAdvantagesLoop(out, extractUpToMarker(in, KEY_DISADVANTAGES_ALL_LOOP_END), AdvantagesLoopType.DISADS_ALL);
-            } else if (key.startsWith(KEY_QUIRKS_LOOP_START)) {
-                processAdvantagesLoop(out, extractUpToMarker(in, KEY_QUIRKS_LOOP_END), AdvantagesLoopType.QUIRKS);
-            } else if (key.startsWith(KEY_PERKS_LOOP_START)) {
-                processAdvantagesLoop(out, extractUpToMarker(in, KEY_PERKS_LOOP_END), AdvantagesLoopType.PERKS);
-            } else if (key.startsWith(KEY_LANGUAGES_LOOP_START)) {
-                processAdvantagesLoop(out, extractUpToMarker(in, KEY_LANGUAGES_LOOP_END), AdvantagesLoopType.LANGUAGES);
-            } else if (key.startsWith(KEY_CULTURAL_FAMILIARITIES_LOOP_START)) {
-                processAdvantagesLoop(out, extractUpToMarker(in, KEY_CULTURAL_FAMILIARITIES_LOOP_END), AdvantagesLoopType.CULTURAL_FAMILIARITIES);
-            } else if (key.startsWith(KEY_SKILLS_LOOP_START)) {
-                processSkillsLoop(out, extractUpToMarker(in, KEY_SKILLS_LOOP_END));
-            } else if (key.startsWith(KEY_SPELLS_LOOP_START)) {
-                processSpellsLoop(out, extractUpToMarker(in, KEY_SPELLS_LOOP_END));
-            } else if (key.startsWith(KEY_MELEE_LOOP_START)) {
-                processMeleeLoop(out, extractUpToMarker(in, KEY_MELEE_LOOP_END));
-            } else if (key.startsWith(KEY_HIERARCHICAL_MELEE_LOOP_START)) {
-                processHierarchicalMeleeLoop(out, extractUpToMarker(in, KEY_HIERARCHICAL_MELEE_LOOP_END));
-            } else if (key.startsWith(KEY_RANGED_LOOP_START)) {
-                processRangedLoop(out, extractUpToMarker(in, KEY_RANGED_LOOP_END));
-            } else if (key.startsWith(KEY_HIERARCHICAL_RANGED_LOOP_START)) {
-                processHierarchicalRangedLoop(out, extractUpToMarker(in, KEY_HIERARCHICAL_RANGED_LOOP_END));
-            } else if (key.startsWith(KEY_EQUIPMENT_LOOP_START)) {
-                processEquipmentLoop(out, extractUpToMarker(in, KEY_EQUIPMENT_LOOP_END), true);
-            } else if (key.startsWith(KEY_OTHER_EQUIPMENT_LOOP_START)) {
-                processEquipmentLoop(out, extractUpToMarker(in, KEY_OTHER_EQUIPMENT_LOOP_END), false);
-            } else if (key.startsWith(KEY_NOTES_LOOP_START)) {
-                processNotesLoop(out, extractUpToMarker(in, KEY_NOTES_LOOP_END));
-            } else if (key.startsWith(KEY_REACTION_LOOP_START)) {
-                processReactionLoop(out, extractUpToMarker(in, KEY_REACTION_LOOP_END));
-            } else if (key.startsWith(KEY_CONDITIONAL_MODIFIERS_LOOP_START)) {
-                processConditionalModifiersLoop(out, extractUpToMarker(in, KEY_CONDITIONAL_MODIFIERS_LOOP_END));
-            } else if (key.startsWith(KEY_PRIMARY_ATTRIBUTE_LOOP_START)) {
-                processAttributeLoop(out, extractUpToMarker(in, KEY_PRIMARY_ATTRIBUTE_LOOP_END), true);
-            } else if (key.startsWith(KEY_SECONDARY_ATTRIBUTE_LOOP_START)) {
-                processAttributeLoop(out, extractUpToMarker(in, KEY_SECONDARY_ATTRIBUTE_LOOP_END), false);
-            } else if (key.startsWith(KEY_POINT_POOL_LOOP_START)) {
-                processPointPoolLoop(out, extractUpToMarker(in, KEY_POINT_POOL_LOOP_END));
-            } else if (key.startsWith(KEY_ONLY_CATEGORIES)) {
-                setOnlyCategories(key);
-            } else if (key.startsWith(KEY_EXCLUDE_CATEGORIES)) {
-                setExcludeCategories(key);
-            } else if (!processAttributeKeys(out, gurpsCharacter, key)) {
-                writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+            if (!checkForLoopKeys(in, out, key)) {
+                if (key.startsWith(KEY_ONLY_CATEGORIES)) {
+                    setOnlyCategories(key);
+                } else if (key.startsWith(KEY_EXCLUDE_CATEGORIES)) {
+                    setExcludeCategories(key);
+                } else if (!processAttributeKeys(out, gurpsCharacter, key)) {
+                    writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                }
             }
             break;
         }
+    }
+
+    private boolean checkForLoopKeys(BufferedReader in, BufferedWriter out, String key) throws IOException {
+        if (key.startsWith(KEY_ENCUMBRANCE + LOOP_START)) {
+            processEncumbranceLoop(out, extractUpToMarker(in, KEY_ENCUMBRANCE + LOOP_END));
+        } else if (key.startsWith(KEY_ENCUMBRANCE + LOOP_COUNT)) {
+            writeEncodedText(out, Integer.toString(Encumbrance.values().length));
+        } else if (key.startsWith(KEY_HIT_LOCATION + LOOP_START)) {
+            processHitLocationLoop(out, extractUpToMarker(in, KEY_HIT_LOCATION + LOOP_END));
+        } else if (key.startsWith(KEY_HIT_LOCATION + LOOP_COUNT)) {
+            writeEncodedText(out, Integer.toString(mSheet.getCharacter().getSheetSettings().getHitLocations().getLocations().size()));
+        } else if (key.startsWith(KEY_ADVANTAGES + LOOP_START)) {
+            processAdvantagesLoop(out, extractUpToMarker(in, KEY_ADVANTAGES + LOOP_END), AdvantagesLoopType.ALL);
+        } else if (key.startsWith(KEY_ADVANTAGES + LOOP_COUNT)) {
+            writeAdvantagesLoopCount(out, AdvantagesLoopType.ALL);
+        } else if (key.startsWith(KEY_ADVANTAGES_ALL + LOOP_START)) {
+            processAdvantagesLoop(out, extractUpToMarker(in, KEY_ADVANTAGES_ALL + LOOP_END), AdvantagesLoopType.ADS_ALL);
+        } else if (key.startsWith(KEY_ADVANTAGES_ALL + LOOP_COUNT)) {
+            writeAdvantagesLoopCount(out, AdvantagesLoopType.ADS_ALL);
+        } else if (key.startsWith(KEY_ADVANTAGES_ONLY + LOOP_START)) {
+            processAdvantagesLoop(out, extractUpToMarker(in, KEY_ADVANTAGES_ONLY + LOOP_END), AdvantagesLoopType.ADS);
+        } else if (key.startsWith(KEY_ADVANTAGES_ONLY + LOOP_COUNT)) {
+            writeAdvantagesLoopCount(out, AdvantagesLoopType.ADS);
+        } else if (key.startsWith(KEY_DISADVANTAGES + LOOP_START)) {
+            processAdvantagesLoop(out, extractUpToMarker(in, KEY_DISADVANTAGES + LOOP_END), AdvantagesLoopType.DISADS);
+        } else if (key.startsWith(KEY_DISADVANTAGES + LOOP_COUNT)) {
+            writeAdvantagesLoopCount(out, AdvantagesLoopType.DISADS);
+        } else if (key.startsWith(KEY_DISADVANTAGES_ALL + LOOP_START)) {
+            processAdvantagesLoop(out, extractUpToMarker(in, KEY_DISADVANTAGES_ALL + LOOP_END), AdvantagesLoopType.DISADS_ALL);
+        } else if (key.startsWith(KEY_DISADVANTAGES_ALL + LOOP_COUNT)) {
+            writeAdvantagesLoopCount(out, AdvantagesLoopType.DISADS_ALL);
+        } else if (key.startsWith(KEY_QUIRKS + LOOP_START)) {
+            processAdvantagesLoop(out, extractUpToMarker(in, KEY_QUIRKS + LOOP_END), AdvantagesLoopType.QUIRKS);
+        } else if (key.startsWith(KEY_QUIRKS + LOOP_COUNT)) {
+            writeAdvantagesLoopCount(out, AdvantagesLoopType.QUIRKS);
+        } else if (key.startsWith(KEY_PERKS + LOOP_START)) {
+            processAdvantagesLoop(out, extractUpToMarker(in, KEY_PERKS + LOOP_END), AdvantagesLoopType.PERKS);
+        } else if (key.startsWith(KEY_PERKS + LOOP_COUNT)) {
+            writeAdvantagesLoopCount(out, AdvantagesLoopType.PERKS);
+        } else if (key.startsWith(KEY_LANGUAGES + LOOP_START)) {
+            processAdvantagesLoop(out, extractUpToMarker(in, KEY_LANGUAGES + LOOP_END), AdvantagesLoopType.LANGUAGES);
+        } else if (key.startsWith(KEY_LANGUAGES + LOOP_COUNT)) {
+            writeAdvantagesLoopCount(out, AdvantagesLoopType.LANGUAGES);
+        } else if (key.startsWith(KEY_CULTURAL_FAMILIARITIES + LOOP_START)) {
+            processAdvantagesLoop(out, extractUpToMarker(in, KEY_CULTURAL_FAMILIARITIES + LOOP_END), AdvantagesLoopType.CULTURAL_FAMILIARITIES);
+        } else if (key.startsWith(KEY_CULTURAL_FAMILIARITIES + LOOP_COUNT)) {
+            writeAdvantagesLoopCount(out, AdvantagesLoopType.CULTURAL_FAMILIARITIES);
+        } else if (key.startsWith(KEY_SKILLS + LOOP_START)) {
+            processSkillsLoop(out, extractUpToMarker(in, KEY_SKILLS + LOOP_END));
+        } else if (key.startsWith(KEY_SKILLS + LOOP_COUNT)) {
+            int counter = 0;
+            for (Skill skill : mSheet.getCharacter().getSkillsIterator()) {
+                counter++;
+            }
+            writeEncodedText(out, Integer.toString(counter));
+        } else if (key.startsWith(KEY_SPELLS + LOOP_START)) {
+            processSpellsLoop(out, extractUpToMarker(in, KEY_SPELLS + LOOP_END));
+        } else if (key.startsWith(KEY_SPELLS + LOOP_COUNT)) {
+            int counter = 0;
+            for (Spell spell : mSheet.getCharacter().getSpellsIterator()) {
+                counter++;
+            }
+            writeEncodedText(out, Integer.toString(counter));
+        } else if (key.startsWith(KEY_MELEE + LOOP_START)) {
+            processMeleeLoop(out, extractUpToMarker(in, KEY_MELEE + LOOP_END));
+        } else if (key.startsWith(KEY_MELEE + LOOP_COUNT)) {
+            writeEncodedText(out, Integer.toString(mSheet.getMeleeWeaponOutline().getModel().getRows().size()));
+        } else if (key.startsWith(KEY_HIERARCHICAL_MELEE + LOOP_START)) {
+            processHierarchicalMeleeLoop(out, extractUpToMarker(in, KEY_HIERARCHICAL_MELEE + LOOP_END));
+        } else if (key.startsWith(KEY_HIERARCHICAL_MELEE + LOOP_COUNT)) {
+            writeEncodedText(out, Integer.toString(mSheet.getMeleeWeaponOutline().getModel().getRows().size()));
+        } else if (key.startsWith(KEY_RANGED + LOOP_START)) {
+            processRangedLoop(out, extractUpToMarker(in, KEY_RANGED + LOOP_END));
+        } else if (key.startsWith(KEY_RANGED + LOOP_COUNT)) {
+            writeEncodedText(out, Integer.toString(mSheet.getRangedWeaponOutline().getModel().getRows().size()));
+        } else if (key.startsWith(KEY_HIERARCHICAL_RANGED + LOOP_START)) {
+            processHierarchicalRangedLoop(out, extractUpToMarker(in, KEY_HIERARCHICAL_RANGED + LOOP_END));
+        } else if (key.startsWith(KEY_HIERARCHICAL_RANGED + LOOP_COUNT)) {
+            writeEncodedText(out, Integer.toString(mSheet.getRangedWeaponOutline().getModel().getRows().size()));
+        } else if (key.startsWith(KEY_EQUIPMENT + LOOP_START)) {
+            processEquipmentLoop(out, extractUpToMarker(in, KEY_EQUIPMENT + LOOP_END), true);
+        } else if (key.startsWith(KEY_EQUIPMENT + LOOP_COUNT)) {
+            writeEquipmentLoopCount(out, true);
+        } else if (key.startsWith(KEY_OTHER_EQUIPMENT + LOOP_START)) {
+            processEquipmentLoop(out, extractUpToMarker(in, KEY_OTHER_EQUIPMENT + LOOP_END), false);
+        } else if (key.startsWith(KEY_OTHER_EQUIPMENT + LOOP_COUNT)) {
+            writeEquipmentLoopCount(out, false);
+        } else if (key.startsWith(KEY_NOTES + LOOP_START)) {
+            processNotesLoop(out, extractUpToMarker(in, KEY_NOTES + LOOP_END));
+        } else if (key.startsWith(KEY_NOTES + LOOP_COUNT)) {
+            int counter = 0;
+            for (Note note : mSheet.getCharacter().getNotesIterator()) {
+                counter++;
+            }
+            writeEncodedText(out, Integer.toString(counter));
+        } else if (key.startsWith(KEY_REACTION + LOOP_START)) {
+            processReactionLoop(out, extractUpToMarker(in, KEY_REACTION + LOOP_END));
+        } else if (key.startsWith(KEY_REACTION + LOOP_COUNT)) {
+            writeEncodedText(out, Integer.toString(mSheet.collectReactions().size()));
+        } else if (key.startsWith(KEY_CONDITIONAL_MODIFIERS + LOOP_START)) {
+            processConditionalModifiersLoop(out, extractUpToMarker(in, KEY_CONDITIONAL_MODIFIERS + LOOP_END));
+        } else if (key.startsWith(KEY_CONDITIONAL_MODIFIERS + LOOP_COUNT)) {
+            writeEncodedText(out, Integer.toString(mSheet.collectConditionalModifiers().size()));
+        } else if (key.startsWith(KEY_PRIMARY_ATTRIBUTE + LOOP_START)) {
+            processAttributeLoop(out, extractUpToMarker(in, KEY_PRIMARY_ATTRIBUTE + LOOP_END), true);
+        } else if (key.startsWith(KEY_PRIMARY_ATTRIBUTE + LOOP_COUNT)) {
+            int            counter = 0;
+            GURPSCharacter gch     = mSheet.getCharacter();
+            for (AttributeDef def : AttributeDef.getOrdered(gch.getSheetSettings().getAttributes())) {
+                if (def.getType() != AttributeType.POOL && def.isPrimary()) {
+                    Attribute attr = gch.getAttributes().get(def.getID());
+                    if (attr != null) {
+                        counter++;
+                    }
+                }
+            }
+            writeEncodedText(out, Integer.toString(counter));
+        } else if (key.startsWith(KEY_SECONDARY_ATTRIBUTE + LOOP_START)) {
+            processAttributeLoop(out, extractUpToMarker(in, KEY_SECONDARY_ATTRIBUTE + LOOP_END), false);
+        } else if (key.startsWith(KEY_SECONDARY_ATTRIBUTE + LOOP_COUNT)) {
+            int            counter = 0;
+            GURPSCharacter gch     = mSheet.getCharacter();
+            for (AttributeDef def : AttributeDef.getOrdered(gch.getSheetSettings().getAttributes())) {
+                if (def.getType() != AttributeType.POOL && !def.isPrimary()) {
+                    Attribute attr = gch.getAttributes().get(def.getID());
+                    if (attr != null) {
+                        counter++;
+                    }
+                }
+            }
+            writeEncodedText(out, Integer.toString(counter));
+        } else if (key.startsWith(KEY_POINT_POOL + LOOP_START)) {
+            processPointPoolLoop(out, extractUpToMarker(in, KEY_POINT_POOL + LOOP_END));
+        } else if (key.startsWith(KEY_POINT_POOL + LOOP_COUNT)) {
+            int            counter = 0;
+            GURPSCharacter gch     = mSheet.getCharacter();
+            for (AttributeDef def : AttributeDef.getOrdered(gch.getSheetSettings().getAttributes())) {
+                if (def.getType() == AttributeType.POOL) {
+                    Attribute attr = gch.getAttributes().get(def.getID());
+                    if (attr != null) {
+                        counter++;
+                    }
+                }
+            }
+            writeEncodedText(out, Integer.toString(counter));
+        } else {
+            return false;
+        }
+        return true;
     }
 
     private boolean processAttributeKeys(BufferedWriter out, GURPSCharacter gch, String key) throws IOException {
@@ -1017,8 +1098,8 @@ public class TextTemplate {
                         case KEY_DR -> writeEncodedText(out, Numbers.format(location.getDR(gurpsCharacter, null)));
                         case KEY_ID -> writeEncodedText(out, Integer.toString(currentID));
                         // Show the equipment that is providing the DR bonus
-                        case KEY_EQUIPMENT -> writeEncodedText(out, hitLocationEquipment(location).replace(NEWLINE, COMMA_SEPARATOR));
-                        case KEY_EQUIPMENT_FORMATTED -> {
+                        case KEY_LOCATION_EQUIPMENT -> writeEncodedText(out, hitLocationEquipment(location).replace(NEWLINE, COMMA_SEPARATOR));
+                        case KEY_LOCATION_EQUIPMENT_FORMATTED -> {
                             String loc = hitLocationEquipment(location);
                             if (!loc.isEmpty()) {
                                 writeEncodedText(out, PARAGRAPH_START + loc.replace(NEWLINE, PARAGRAPH_END + NEWLINE + PARAGRAPH_START) + PARAGRAPH_END);
@@ -1057,6 +1138,16 @@ public class TextTemplate {
             }
         }
         return sb.toString();
+    }
+
+    private void writeAdvantagesLoopCount(BufferedWriter out, AdvantagesLoopType loopType) throws IOException {
+        int counter = 0;
+        for (Advantage advantage : mSheet.getCharacter().getAdvantagesIterator(false)) {
+            if (loopType.shouldInclude(advantage, mOnlyCategories, mExcludedCategories)) {
+                counter++;
+            }
+        }
+        writeEncodedText(out, Integer.toString(counter));
     }
 
     private void processAdvantagesLoop(BufferedWriter out, String contents, AdvantagesLoopType loopType) throws IOException {
@@ -1364,7 +1455,8 @@ public class TextTemplate {
         }
     }
 
-    /* Handle keys specific to MeleeWeaponStats.   If "attackModes" is NOT NULL, then we could allow processing of a hierarchical loop  */
+    // Handle keys specific to MeleeWeaponStats. If "attackModes" is NOT NULL, then we could allow
+    // processing of a hierarchical loop.
     private int processMeleeWeaponKeys(BufferedWriter out, String key, int counter, MeleeWeaponStats weapon, int index, String contents, List<MeleeWeaponStats> attackModes) throws IOException {
         switch (key) {
         case KEY_PARRY -> {
@@ -1380,20 +1472,25 @@ public class TextTemplate {
             return index;
         }
         default -> {
-            if (attackModes != null && key.startsWith(KEY_ATTACK_MODES_LOOP_START)) {
-                int endIndex = contents.indexOf(KEY_ATTACK_MODES_LOOP_END);
+            if (attackModes != null && key.startsWith(KEY_ATTACK_MODES + LOOP_START)) {
+                int endIndex = contents.indexOf(KEY_ATTACK_MODES + LOOP_END);
                 if (endIndex > 0) {
                     String subContents = contents.substring(index + 1, endIndex - 1);
                     processMeleeAttackModes(out, subContents, attackModes);
-                    return endIndex + KEY_ATTACK_MODES_LOOP_END.length();
+                    return endIndex + (KEY_ATTACK_MODES + LOOP_END).length();
                 }
+            }
+            if (key.startsWith(KEY_ATTACK_MODES + LOOP_COUNT)) {
+                writeEncodedText(out, Integer.toString(attackModes != null ? attackModes.size() : 0));
+                return index;
             }
             return processWeaponKeys(out, key, counter, weapon, index);
         }
         }
     }
 
-    /* Handle keys specific to RangedWeaponStats.   If "attackModes" is NOT NULL, then we could allow processing of a hierarchical loop  */
+    // Handle keys specific to RangedWeaponStats. If "attackModes" is NOT NULL, then we could allow
+    // processing of a hierarchical loop.
     private int processRangedWeaponKeys(BufferedWriter out, String key, int counter, RangedWeaponStats weapon, int index, String contents, List<RangedWeaponStats> attackModes) throws IOException {
         switch (key) {
         case KEY_BULK -> {
@@ -1421,13 +1518,17 @@ public class TextTemplate {
             return index;
         }
         default -> {
-            if (attackModes != null && key.startsWith(KEY_ATTACK_MODES_LOOP_START)) {
-                int endIndex = contents.indexOf(KEY_ATTACK_MODES_LOOP_END);
+            if (attackModes != null && key.startsWith(KEY_ATTACK_MODES + LOOP_START)) {
+                int endIndex = contents.indexOf(KEY_ATTACK_MODES + LOOP_END);
                 if (endIndex > 0) {
                     String subContents = contents.substring(index + 1, endIndex - 1);
                     processRangedAttackModes(out, subContents, attackModes);
-                    return endIndex + KEY_ATTACK_MODES_LOOP_END.length();
+                    return endIndex + (KEY_ATTACK_MODES + LOOP_END).length();
                 }
+            }
+            if (key.startsWith(KEY_ATTACK_MODES + LOOP_COUNT)) {
+                writeEncodedText(out, Integer.toString(attackModes != null ? attackModes.size() : 0));
+                return index;
             }
             return processWeaponKeys(out, key, counter, weapon, index);
         }
@@ -1496,7 +1597,7 @@ public class TextTemplate {
         return index;
     }
 
-    /* Process the weapons in a hierarchical format.   One time for each weapon with a unique name,
+    /* Process the weapons in a hierarchical format. One time for each weapon with a unique name,
      * and then possibly one time for each different "attack mode" that the weapon can support.
      * e.g. Weapon Name: Spear, attack modes "1 Handed" and "2 Handed"
      */
@@ -1731,6 +1832,17 @@ public class TextTemplate {
                 }
             }
         }
+    }
+
+    private void writeEquipmentLoopCount(BufferedWriter out, boolean carried) throws IOException {
+        int                    counter = 0;
+        RowIterator<Equipment> iter    = carried ? mSheet.getCharacter().getEquipmentIterator() : mSheet.getCharacter().getOtherEquipmentIterator();
+        for (Equipment equipment : iter) {
+            if (shouldInclude(equipment)) {   // Allows category filtering
+                counter++;
+            }
+        }
+        writeEncodedText(out, Integer.toString(counter));
     }
 
     private void processEquipmentLoop(BufferedWriter out, String contents, boolean carried) throws IOException {
