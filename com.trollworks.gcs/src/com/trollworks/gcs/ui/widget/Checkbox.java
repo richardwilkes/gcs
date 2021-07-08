@@ -40,6 +40,7 @@ import javax.swing.SwingConstants;
 public class Checkbox extends Panel implements MouseListener, MouseMotionListener, KeyListener, FocusListener {
     private String        mText;
     private ClickFunction mClickFunction;
+    private Rectangle     mOverBounds;
     private boolean       mInMouseDown;
     private boolean       mPressed;
     private boolean       mChecked;
@@ -50,6 +51,7 @@ public class Checkbox extends Panel implements MouseListener, MouseMotionListene
 
     public Checkbox(String text, boolean checked, ClickFunction clickFunction) {
         super(null, false);
+        mOverBounds = new Rectangle();
         setText(text);
         setCursor(Cursor.getDefaultCursor());
         setClickFunction(clickFunction);
@@ -146,7 +148,7 @@ public class Checkbox extends Panel implements MouseListener, MouseMotionListene
     public void mousePressed(MouseEvent event) {
         if (isEnabled() && !event.isPopupTrigger() && event.getButton() == 1) {
             mInMouseDown = true;
-            mPressed = true;
+            mPressed = mOverBounds.contains(event.getPoint());
             repaint();
             MouseCapture.start(this, Cursor.getDefaultCursor());
         }
@@ -180,7 +182,7 @@ public class Checkbox extends Panel implements MouseListener, MouseMotionListene
     public void mouseDragged(MouseEvent event) {
         if (isEnabled()) {
             boolean wasPressed = mPressed;
-            mPressed = isOver(event.getX(), event.getY());
+            mPressed = mOverBounds.contains(event.getPoint());
             if (mPressed != wasPressed) {
                 repaint();
             }
@@ -190,10 +192,6 @@ public class Checkbox extends Panel implements MouseListener, MouseMotionListene
     @Override
     public void mouseMoved(MouseEvent event) {
         // Unused
-    }
-
-    private boolean isOver(int x, int y) {
-        return x >= 0 && y >= 0 && x < getWidth() && y < getHeight();
     }
 
     @Override
@@ -234,12 +232,15 @@ public class Checkbox extends Panel implements MouseListener, MouseMotionListene
         Dimension  size       = TextDrawing.getPreferredSize(iconFont, FontAwesome.CHECK_CIRCLE);
         gc.setFont(iconFont);
         gc.setColor(color);
-        Rectangle textBounds = new Rectangle(bounds.x, bounds.y, size.width, bounds.height);
-        String    unchecked  = focusOwner ? FontAwesome.DOT_CIRCLE : FontAwesome.CIRCLE;
-        TextDrawing.draw(gc, textBounds, mChecked ? FontAwesome.CHECK_CIRCLE : unchecked, SwingConstants.CENTER, SwingConstants.CENTER);
+        mOverBounds.x = bounds.x;
+        mOverBounds.y = bounds.y;
+        mOverBounds.width = size.width;
+        mOverBounds.height = bounds.height;
+        String unchecked = focusOwner ? FontAwesome.DOT_CIRCLE : FontAwesome.CIRCLE;
+        TextDrawing.draw(gc, mOverBounds, mChecked ? FontAwesome.CHECK_CIRCLE : unchecked, SwingConstants.CENTER, SwingConstants.CENTER);
         if (!mText.isBlank()) {
             gc.setFont(font);
-            gc.setColor(color);
+            gc.setColor(getForeground());
             bounds.x += size.width + scale.scale(4);
             bounds.width -= size.width + scale.scale(4);
             TextDrawing.draw(gc, bounds, TextDrawing.truncateIfNecessary(font, mText, bounds.width, SwingConstants.CENTER), SwingConstants.LEFT, SwingConstants.CENTER);
