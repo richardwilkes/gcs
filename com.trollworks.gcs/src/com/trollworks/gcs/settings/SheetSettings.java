@@ -61,7 +61,7 @@ public class SheetSettings implements ChangeNotifier {
     private static final String KEY_USER_DESCRIPTION_DISPLAY      = "user_description_display";
     private static final String KEY_DAMAGE_PROGRESSION            = "damage_progression";
 
-    // These were deprecated July 7, 2021
+    // TODO: Eliminate these deprecated keys after a suitable waiting period; added July 7, 2021
     private static final String DEPRECATED_KEY_USE_KNOW_YOUR_OWN_STRENGTH      = "use_know_your_own_strength";
     private static final String DEPRECATED_KEY_USE_REDUCED_SWING               = "use_reduced_swing";
     private static final String DEPRECATED_KEY_USE_THRUST_EQUALS_SWING_MINUS_2 = "use_thrust_equals_swing_minus_2";
