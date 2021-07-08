@@ -35,6 +35,7 @@ import com.trollworks.gcs.feature.WeaponDamageBonus;
 import com.trollworks.gcs.feature.WeaponSelectionType;
 import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.EquipmentModifier;
+import com.trollworks.gcs.settings.DamageProgression;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.settings.SheetSettings;
 import com.trollworks.gcs.skill.Skill;
@@ -382,53 +383,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
      * @return The basic thrusting damage.
      */
     public Dice getThrust(int strength) {
-        if (mSheetSettings.useThrustEqualsSwingMinus2()) {
-            Dice dice = getSwing(strength);
-            dice.add(-2);
-            return dice;
-        }
-        if (mSheetSettings.useReducedSwing()) {
-            if (strength < 19) {
-                return new Dice(1, -(6 - (strength - 1) / 2));
-            }
-            int dice = 1;
-            int adds = (strength - 10) / 2 - 2;
-            if ((strength - 10) % 2 == 1) {
-                adds++;
-            }
-            dice += 2 * (adds / 7);
-            adds %= 7;
-            dice += adds / 4;
-            adds %= 4;
-            if (adds == 3) {
-                dice++;
-                adds = -1;
-            }
-
-            return new Dice(dice, adds);
-        }
-
-        if (mSheetSettings.useKnowYourOwnStrength()) {
-            if (strength < 12) {
-                return new Dice(1, strength - 12);
-            }
-            return new Dice((strength - 7) / 4, (strength + 1) % 4 - 1);
-        }
-
-        int value = strength;
-
-        if (value < 19) {
-            return new Dice(1, -(6 - (value - 1) / 2));
-        }
-
-        value -= 11;
-        if (strength > 50) {
-            value--;
-            if (strength > 79) {
-                value -= 1 + (strength - 80) / 5;
-            }
-        }
-        return new Dice(value / 8 + 1, value % 8 / 2 - 1);
+        return mSheetSettings.getDamageProgression().calculateThrust(strength);
     }
 
     /** @return The basic swinging damage. */
@@ -441,52 +396,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
      * @return The basic thrusting damage.
      */
     public Dice getSwing(int strength) {
-        if (mSheetSettings.useReducedSwing()) {
-            if (strength < 10) {
-                return new Dice(1, -(5 - (strength - 1) / 2));
-            }
-
-            int dice = 1;
-            int adds = (strength - 10) / 2;
-            dice += 2 * (adds / 7);
-            adds %= 7;
-            dice += adds / 4;
-            adds %= 4;
-            if (adds == 3) {
-                dice++;
-                adds = -1;
-            }
-
-            return new Dice(dice, adds);
-        }
-
-        if (mSheetSettings.useKnowYourOwnStrength()) {
-            if (strength < 10) {
-                return new Dice(1, strength - 10);
-            }
-            return new Dice((strength - 5) / 4, (strength - 1) % 4 - 1);
-        }
-
-        int value = strength;
-
-        if (value < 10) {
-            return new Dice(1, -(5 - (value - 1) / 2));
-        }
-
-        if (value < 28) {
-            value -= 9;
-            return new Dice(value / 4 + 1, value % 4 - 1);
-        }
-
-        if (strength > 40) {
-            value -= (strength - 40) / 5;
-        }
-
-        if (strength > 59) {
-            value++;
-        }
-        value += 9;
-        return new Dice(value / 8 + 1, value % 8 / 2 - 1);
+        return mSheetSettings.getDamageProgression().calculateSwing(strength);
     }
 
     /** @return Basic lift. */
@@ -523,7 +433,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         if (strength < 1) {
             value = Fixed6.ZERO;
         } else {
-            if (mSheetSettings.useKnowYourOwnStrength()) {
+            if (mSheetSettings.getDamageProgression() == DamageProgression.KNOWING_YOUR_OWN_STRENGTH) {
                 int diff = 0;
                 if (strength > 19) {
                     diff = strength / 10 - 1;

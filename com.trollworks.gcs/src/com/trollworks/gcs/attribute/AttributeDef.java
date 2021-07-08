@@ -15,6 +15,7 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.expression.EvaluationException;
 import com.trollworks.gcs.expression.Evaluator;
 import com.trollworks.gcs.expression.VariableResolver;
+import com.trollworks.gcs.settings.DamageProgression;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.ID;
 import com.trollworks.gcs.utility.Log;
@@ -325,7 +326,7 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
     }
 
     public int computeCost(GURPSCharacter character, double value, int sm, int costReduction) {
-        if (sm > 0 && mCostAdjPercentPerSM > 0 && !("hp".equals(mID) && character.getSheetSettings().useKnowYourOwnStrength())) {
+        if (sm > 0 && mCostAdjPercentPerSM > 0 && !("hp".equals(mID) && character.getSheetSettings().getDamageProgression() == DamageProgression.KNOWING_YOUR_OWN_STRENGTH)) {
             costReduction += sm * mCostAdjPercentPerSM;
             if (costReduction < 0) {
                 costReduction = 0;

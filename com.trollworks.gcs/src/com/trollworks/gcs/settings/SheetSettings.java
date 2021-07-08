@@ -41,27 +41,30 @@ import java.util.List;
 import java.util.Map;
 
 public class SheetSettings implements ChangeNotifier {
-    public static final  String KEY_ATTRIBUTES                      = "attributes";
-    private static final String KEY_BLOCK_LAYOUT                    = "block_layout";
-    private static final String KEY_DEFAULT_LENGTH_UNITS            = "default_length_units";
-    private static final String KEY_DEFAULT_WEIGHT_UNITS            = "default_weight_units";
-    public static final  String KEY_HIT_LOCATIONS                   = "hit_locations";
-    private static final String KEY_MODIFIERS_DISPLAY               = "modifiers_display";
-    private static final String KEY_NOTES_DISPLAY                   = "notes_display";
-    private static final String KEY_PAGE                            = "page";
-    private static final String KEY_SHOW_ADVANTAGE_MODIFIER_ADJ     = "show_advantage_modifier_adj";
-    private static final String KEY_SHOW_COLLEGE_IN_SPELLS          = "show_college_in_sheet_spells";
-    private static final String KEY_SHOW_DIFFICULTY                 = "show_difficulty";
-    private static final String KEY_SHOW_EQUIPMENT_MODIFIER_ADJ     = "show_equipment_modifier_adj";
-    private static final String KEY_SHOW_SPELL_ADJ                  = "show_spell_adj";
-    private static final String KEY_USE_KNOW_YOUR_OWN_STRENGTH      = "use_know_your_own_strength";
-    private static final String KEY_USE_MODIFYING_DICE_PLUS_ADDS    = "use_modifying_dice_plus_adds";
-    private static final String KEY_USE_MULTIPLICATIVE_MODIFIERS    = "use_multiplicative_modifiers";
-    private static final String KEY_USE_REDUCED_SWING               = "use_reduced_swing";
-    private static final String KEY_USE_SIMPLE_METRIC_CONVERSIONS   = "use_simple_metric_conversions";
-    private static final String KEY_USE_THRUST_EQUALS_SWING_MINUS_2 = "use_thrust_equals_swing_minus_2";
-    private static final String KEY_USE_TITLE_IN_FOOTER             = "use_title_in_footer";
-    private static final String KEY_USER_DESCRIPTION_DISPLAY        = "user_description_display";
+    public static final  String KEY_ATTRIBUTES                    = "attributes";
+    private static final String KEY_BLOCK_LAYOUT                  = "block_layout";
+    private static final String KEY_DEFAULT_LENGTH_UNITS          = "default_length_units";
+    private static final String KEY_DEFAULT_WEIGHT_UNITS          = "default_weight_units";
+    public static final  String KEY_HIT_LOCATIONS                 = "hit_locations";
+    private static final String KEY_MODIFIERS_DISPLAY             = "modifiers_display";
+    private static final String KEY_NOTES_DISPLAY                 = "notes_display";
+    private static final String KEY_PAGE                          = "page";
+    private static final String KEY_SHOW_ADVANTAGE_MODIFIER_ADJ   = "show_advantage_modifier_adj";
+    private static final String KEY_SHOW_COLLEGE_IN_SPELLS        = "show_college_in_sheet_spells";
+    private static final String KEY_SHOW_DIFFICULTY               = "show_difficulty";
+    private static final String KEY_SHOW_EQUIPMENT_MODIFIER_ADJ   = "show_equipment_modifier_adj";
+    private static final String KEY_SHOW_SPELL_ADJ                = "show_spell_adj";
+    private static final String KEY_USE_MODIFYING_DICE_PLUS_ADDS  = "use_modifying_dice_plus_adds";
+    private static final String KEY_USE_MULTIPLICATIVE_MODIFIERS  = "use_multiplicative_modifiers";
+    private static final String KEY_USE_SIMPLE_METRIC_CONVERSIONS = "use_simple_metric_conversions";
+    private static final String KEY_USE_TITLE_IN_FOOTER           = "use_title_in_footer";
+    private static final String KEY_USER_DESCRIPTION_DISPLAY      = "user_description_display";
+    private static final String KEY_DAMAGE_PROGRESSION            = "damage_progression";
+
+    // These were deprecated July 7, 2021
+    private static final String DEPRECATED_KEY_USE_KNOW_YOUR_OWN_STRENGTH      = "use_know_your_own_strength";
+    private static final String DEPRECATED_KEY_USE_REDUCED_SWING               = "use_reduced_swing";
+    private static final String DEPRECATED_KEY_USE_THRUST_EQUALS_SWING_MINUS_2 = "use_thrust_equals_swing_minus_2";
 
     private GURPSCharacter            mCharacter;
     private LengthUnits               mDefaultLengthUnits;
@@ -73,11 +76,9 @@ public class SheetSettings implements ChangeNotifier {
     private Map<String, AttributeDef> mAttributes;
     private HitLocationTable          mHitLocations;
     private PageSettings              mPageSettings;
+    private DamageProgression         mDamageProgression;
     private boolean                   mUseMultiplicativeModifiers; // P102
     private boolean                   mUseModifyingDicePlusAdds; // B269
-    private boolean                   mUseKnowYourOwnStrength; // PY83
-    private boolean                   mUseReducedSwing; // Adjusting Swing Damage from noschoolgrognard.blogspot.com
-    private boolean                   mUseThrustEqualsSwingMinus2; // Home brew
     private boolean                   mUseSimpleMetricConversions; // B9
     private boolean                   mShowCollegeInSpells;
     private boolean                   mShowDifficulty;
@@ -124,6 +125,28 @@ public class SheetSettings implements ChangeNotifier {
         }
     }
 
+    public void copyFrom(SheetSettings other) {
+        mDefaultLengthUnits = other.mDefaultLengthUnits;
+        mDefaultWeightUnits = other.mDefaultWeightUnits;
+        mBlockLayout = new ArrayList<>(other.mBlockLayout);
+        mUserDescriptionDisplay = other.mUserDescriptionDisplay;
+        mModifiersDisplay = other.mModifiersDisplay;
+        mNotesDisplay = other.mNotesDisplay;
+        mAttributes = AttributeDef.cloneMap(other.mAttributes);
+        mHitLocations = other.mHitLocations.clone();
+        mPageSettings = new PageSettings(this, other.mPageSettings);
+        mUseMultiplicativeModifiers = other.mUseMultiplicativeModifiers;
+        mUseModifyingDicePlusAdds = other.mUseModifyingDicePlusAdds;
+        mDamageProgression = other.mDamageProgression;
+        mUseSimpleMetricConversions = other.mUseSimpleMetricConversions;
+        mShowCollegeInSpells = other.mShowCollegeInSpells;
+        mShowDifficulty = other.mShowDifficulty;
+        mShowAdvantageModifierAdj = other.mShowAdvantageModifierAdj;
+        mShowEquipmentModifierAdj = other.mShowEquipmentModifierAdj;
+        mShowSpellAdj = other.mShowSpellAdj;
+        mUseTitleInFooter = other.mUseTitleInFooter;
+    }
+
     /** Reset these settings to their defaults. */
     public void reset() {
         if (mCharacter == null) {
@@ -146,9 +169,7 @@ public class SheetSettings implements ChangeNotifier {
             mPageSettings = new PageSettings(this);
             mUseMultiplicativeModifiers = false;
             mUseModifyingDicePlusAdds = false;
-            mUseKnowYourOwnStrength = false;
-            mUseReducedSwing = false;
-            mUseThrustEqualsSwingMinus2 = false;
+            mDamageProgression = DamageProgression.BASIC_SET;
             mUseSimpleMetricConversions = true;
             mShowCollegeInSpells = false;
             mShowDifficulty = false;
@@ -157,28 +178,7 @@ public class SheetSettings implements ChangeNotifier {
             mShowSpellAdj = true;
             mUseTitleInFooter = false;
         } else {
-            SheetSettings defaults = Settings.getInstance().getSheetSettings();
-            mDefaultLengthUnits = defaults.mDefaultLengthUnits;
-            mDefaultWeightUnits = defaults.mDefaultWeightUnits;
-            mBlockLayout = new ArrayList<>(defaults.mBlockLayout);
-            mUserDescriptionDisplay = defaults.mUserDescriptionDisplay;
-            mModifiersDisplay = defaults.mModifiersDisplay;
-            mNotesDisplay = defaults.mNotesDisplay;
-            mAttributes = AttributeDef.cloneMap(defaults.mAttributes);
-            mHitLocations = defaults.mHitLocations.clone();
-            mPageSettings = new PageSettings(this, defaults.mPageSettings);
-            mUseMultiplicativeModifiers = defaults.mUseMultiplicativeModifiers;
-            mUseModifyingDicePlusAdds = defaults.mUseModifyingDicePlusAdds;
-            mUseKnowYourOwnStrength = defaults.mUseKnowYourOwnStrength;
-            mUseReducedSwing = defaults.mUseReducedSwing;
-            mUseThrustEqualsSwingMinus2 = defaults.mUseThrustEqualsSwingMinus2;
-            mUseSimpleMetricConversions = defaults.mUseSimpleMetricConversions;
-            mShowCollegeInSpells = defaults.mShowCollegeInSpells;
-            mShowDifficulty = defaults.mShowDifficulty;
-            mShowAdvantageModifierAdj = defaults.mShowAdvantageModifierAdj;
-            mShowEquipmentModifierAdj = defaults.mShowEquipmentModifierAdj;
-            mShowSpellAdj = defaults.mShowSpellAdj;
-            mUseTitleInFooter = defaults.mUseTitleInFooter;
+            copyFrom(Settings.getInstance().getSheetSettings());
         }
     }
 
@@ -191,9 +191,17 @@ public class SheetSettings implements ChangeNotifier {
         mNotesDisplay = Enums.extract(m.getString(KEY_NOTES_DISPLAY), DisplayOption.values(), mNotesDisplay);
         mUseMultiplicativeModifiers = m.getBooleanWithDefault(KEY_USE_MULTIPLICATIVE_MODIFIERS, mUseMultiplicativeModifiers);
         mUseModifyingDicePlusAdds = m.getBooleanWithDefault(KEY_USE_MODIFYING_DICE_PLUS_ADDS, mUseModifyingDicePlusAdds);
-        mUseKnowYourOwnStrength = m.getBooleanWithDefault(KEY_USE_KNOW_YOUR_OWN_STRENGTH, mUseKnowYourOwnStrength);
-        mUseReducedSwing = m.getBooleanWithDefault(KEY_USE_REDUCED_SWING, mUseReducedSwing);
-        mUseThrustEqualsSwingMinus2 = m.getBooleanWithDefault(KEY_USE_THRUST_EQUALS_SWING_MINUS_2, mUseThrustEqualsSwingMinus2);
+        if (m.has(KEY_DAMAGE_PROGRESSION)) {
+            mDamageProgression = Enums.extract(m.getString(KEY_DAMAGE_PROGRESSION), DamageProgression.values(), DamageProgression.BASIC_SET);
+        } else if (m.getBoolean(DEPRECATED_KEY_USE_KNOW_YOUR_OWN_STRENGTH)) {
+            mDamageProgression = DamageProgression.KNOWING_YOUR_OWN_STRENGTH;
+        } else if (m.getBoolean(DEPRECATED_KEY_USE_REDUCED_SWING)) {
+            mDamageProgression = DamageProgression.NO_SCHOOL_GROGNARD_DAMAGE;
+        } else if (m.getBoolean(DEPRECATED_KEY_USE_THRUST_EQUALS_SWING_MINUS_2)) {
+            mDamageProgression = DamageProgression.THRUST_EQUALS_SWING_MINUS_2;
+        } else {
+            mDamageProgression = DamageProgression.BASIC_SET;
+        }
         mUseSimpleMetricConversions = m.getBooleanWithDefault(KEY_USE_SIMPLE_METRIC_CONVERSIONS, mUseSimpleMetricConversions);
         mShowCollegeInSpells = m.getBooleanWithDefault(KEY_SHOW_COLLEGE_IN_SPELLS, mShowCollegeInSpells);
         mShowDifficulty = m.getBooleanWithDefault(KEY_SHOW_DIFFICULTY, mShowDifficulty);
@@ -249,9 +257,7 @@ public class SheetSettings implements ChangeNotifier {
         w.keyValue(KEY_NOTES_DISPLAY, Enums.toId(mNotesDisplay));
         w.keyValue(KEY_USE_MULTIPLICATIVE_MODIFIERS, mUseMultiplicativeModifiers);
         w.keyValue(KEY_USE_MODIFYING_DICE_PLUS_ADDS, mUseModifyingDicePlusAdds);
-        w.keyValue(KEY_USE_KNOW_YOUR_OWN_STRENGTH, mUseKnowYourOwnStrength);
-        w.keyValue(KEY_USE_REDUCED_SWING, mUseReducedSwing);
-        w.keyValue(KEY_USE_THRUST_EQUALS_SWING_MINUS_2, mUseThrustEqualsSwingMinus2);
+        w.keyValue(KEY_DAMAGE_PROGRESSION, Enums.toId(mDamageProgression));
         w.keyValue(KEY_USE_SIMPLE_METRIC_CONVERSIONS, mUseSimpleMetricConversions);
         w.keyValue(KEY_SHOW_COLLEGE_IN_SPELLS, mShowCollegeInSpells);
         w.keyValue(KEY_SHOW_DIFFICULTY, mShowDifficulty);
@@ -372,35 +378,13 @@ public class SheetSettings implements ChangeNotifier {
         }
     }
 
-    public boolean useKnowYourOwnStrength() {
-        return mUseKnowYourOwnStrength;
+    public DamageProgression getDamageProgression() {
+        return mDamageProgression;
     }
 
-    public void setUseKnowYourOwnStrength(boolean useKnowYourOwnStrength) {
-        if (mUseKnowYourOwnStrength != useKnowYourOwnStrength) {
-            mUseKnowYourOwnStrength = useKnowYourOwnStrength;
-            notifyOfChange();
-        }
-    }
-
-    public boolean useReducedSwing() {
-        return mUseReducedSwing;
-    }
-
-    public void setUseReducedSwing(boolean useReducedSwing) {
-        if (mUseReducedSwing != useReducedSwing) {
-            mUseReducedSwing = useReducedSwing;
-            notifyOfChange();
-        }
-    }
-
-    public boolean useThrustEqualsSwingMinus2() {
-        return mUseThrustEqualsSwingMinus2;
-    }
-
-    public void setUseThrustEqualsSwingMinus2(boolean useThrustEqualsSwingMinus2) {
-        if (mUseThrustEqualsSwingMinus2 != useThrustEqualsSwingMinus2) {
-            mUseThrustEqualsSwingMinus2 = useThrustEqualsSwingMinus2;
+    public void setDamageProgression(DamageProgression progression) {
+        if (mDamageProgression != progression) {
+            mDamageProgression = progression;
             notifyOfChange();
         }
     }

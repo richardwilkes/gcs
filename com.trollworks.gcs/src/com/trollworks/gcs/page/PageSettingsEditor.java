@@ -17,6 +17,7 @@ import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.Label;
+import com.trollworks.gcs.ui.widget.LayoutConstants;
 import com.trollworks.gcs.ui.widget.Panel;
 import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.Separator;
@@ -39,11 +40,13 @@ public class PageSettingsEditor extends Panel {
     private              PopupMenu<PageOrientation> mOrientation;
 
     public PageSettingsEditor(PageSettings settings, Runnable adjustCallback) {
-        super(new PrecisionLayout().setColumns(4).setMargins(4, 0, 4, 0), false);
+        super(new PrecisionLayout().setColumns(4).setMargins(0), false);
         Label header = new Label(I18n.text("Page Settings"));
         header.setThemeFont(Fonts.HEADER);
         add(header, new PrecisionLayoutData().setHorizontalSpan(4));
-        add(new Separator(), new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(4));
+        add(new Separator(), new PrecisionLayoutData().setFillHorizontalAlignment().
+                setGrabHorizontalSpace(true).setHorizontalSpan(4).
+                setBottomMargin(LayoutConstants.TOOLBAR_VERTICAL_INSET / 2));
         mSettings = settings;
         mAdjustCallback = adjustCallback;
         mPaperSize = addPopupMenu(I18n.text("Paper Size"), PaperSize.getPaperSizes(), mSettings.getPaperSize(), (p) -> {
