@@ -1039,7 +1039,8 @@ public class OutlineModel implements SelectionOwner, StateEditable {
     }
 
     public int getIndentWidthWithDisclosure(Row row, Column column) {
-        return mShowIndent ? getDisclosureSize() + getIndentWidth(row, column) : 0;
+        return (mShowIndent && isHierarchyColumn(column)) ?
+                getDisclosureSize() + getIndentWidth(row, column) : 0;
     }
 
     @Override
