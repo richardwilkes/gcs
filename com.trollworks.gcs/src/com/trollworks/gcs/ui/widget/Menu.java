@@ -616,6 +616,12 @@ public class Menu extends Panel implements Runnable, MouseListener, MouseMotionL
                 Component comp   = getComponent(j);
                 Rectangle bounds = comp.getBounds();
                 if (bounds.y >= delta) {
+                    if (j > 0) {
+                        prefSize.height -= getComponent(j - 1).getBounds().y;
+                        setPreferredSize(prefSize);
+                        setSize(prefSize);
+                        doLayout(); // force layout so the calls to get the component locations will give us correct data
+                    }
                     setTop(j);
                     pt = new Point(controlBounds.x, controlBounds.y - getComponent(initialIndex).getY());
                     UIUtilities.convertPointToScreen(pt, owner);
