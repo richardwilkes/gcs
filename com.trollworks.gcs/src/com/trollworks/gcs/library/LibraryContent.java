@@ -13,16 +13,19 @@ package com.trollworks.gcs.library;
 
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.LineBorder;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.scale.ScaleRoot;
 import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.Scrollbar;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import javax.swing.Scrollable;
+import javax.swing.border.CompoundBorder;
 
 public class LibraryContent extends Panel implements ScaleRoot, Scrollable {
     private ListOutline mOutline;
@@ -31,7 +34,8 @@ public class LibraryContent extends Panel implements ScaleRoot, Scrollable {
     public LibraryContent(ListOutline outline) {
         super(new BorderLayout());
         mOutline = outline;
-        mOutline.setBorder(new LineBorder(Colors.DIVIDER, 0, 0, 0, 1));
+        mOutline.setBorder(new CompoundBorder(new EmptyBorder(0, 0, Scrollbar.MINIMUM_SIZE, 0),
+                new LineBorder(Colors.DIVIDER, 0, 0, 0, 1)));
         add(mOutline);
         mScale = Settings.getInstance().getGeneralSettings().getInitialUIScale().getScale();
     }
