@@ -87,6 +87,6 @@ public class AttributesPanel extends DropPanel {
     private void addDivider() {
         Wrapper panel = new Wrapper();
         add(panel, new PrecisionLayoutData().setHorizontalSpan(3).setHeightHint(1).setMargins(3, 0, 2, 0));
-        addHorizontalBackground(panel, Colors.ON_CONTENT);
+        addHorizontalBackground(panel, Colors.DIVIDER);
     }
 }

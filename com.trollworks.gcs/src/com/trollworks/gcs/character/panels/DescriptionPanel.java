@@ -172,6 +172,6 @@ public class DescriptionPanel extends DropPanel {
         Wrapper panel = new Wrapper();
         panel.setOnlySize(1, 1);
         add(panel);
-        addVerticalBackground(panel, Colors.ON_CONTENT);
+        addVerticalBackground(panel, Colors.DIVIDER);
     }
 }
