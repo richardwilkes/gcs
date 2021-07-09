@@ -15,6 +15,7 @@ import com.trollworks.gcs.library.LibraryExplorerDockable;
 import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
 import com.trollworks.gcs.menu.file.SignificantFrame;
 import com.trollworks.gcs.settings.Settings;
+import com.trollworks.gcs.ui.FontAdjustable;
 import com.trollworks.gcs.ui.widget.dock.Dock;
 import com.trollworks.gcs.ui.widget.dock.DockContainer;
 import com.trollworks.gcs.ui.widget.dock.DockLocation;
@@ -29,7 +30,7 @@ import java.awt.Window;
 import java.util.List;
 
 /** The workspace, where all files can be viewed and edited. */
-public final class Workspace extends BaseWindow implements SignificantFrame, JumpToSearchTarget {
+public final class Workspace extends BaseWindow implements SignificantFrame, JumpToSearchTarget, FontAdjustable {
     private Dock mDock;
 
     /** @return The Workspace. */
@@ -105,6 +106,15 @@ public final class Workspace extends BaseWindow implements SignificantFrame, Jum
         LibraryExplorerDockable lib = LibraryExplorerDockable.get();
         if (lib != null) {
             lib.savePreferences();
+        }
+    }
+
+    @Override
+    public void adjustToFontChanges() {
+        for (Dockable dockable : mDock.getDockables()) {
+            if (dockable instanceof FontAdjustable) {
+                ((FontAdjustable) dockable).adjustToFontChanges();
+            }
         }
     }
 }

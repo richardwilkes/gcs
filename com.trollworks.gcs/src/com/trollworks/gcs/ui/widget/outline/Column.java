@@ -143,9 +143,11 @@ public class Column implements Transferable {
      * @param width   The width of this column.
      */
     public void setWidth(Outline outline, int width) {
-        int minWidth = getPreferredHeaderWidth(outline);
-        if (width < minWidth && width != -1) {
-            width = minWidth;
+        if (width != -1) {
+            int minWidth = getPreferredHeaderWidth(outline);
+            if (width < minWidth) {
+                width = minWidth;
+            }
         }
         mWidth = width;
     }

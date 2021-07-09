@@ -19,6 +19,7 @@ import com.trollworks.gcs.menu.RetargetableFocus;
 import com.trollworks.gcs.menu.edit.JumpToSearchTarget;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.FontAdjustable;
 import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.scale.Scales;
@@ -49,7 +50,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /** A list from a library. */
-public abstract class LibraryDockable extends DataFileDockable implements RowFilter, DocumentListener, JumpToSearchTarget, RetargetableFocus, DataChangeListener, Runnable {
+public abstract class LibraryDockable extends DataFileDockable implements RowFilter, DocumentListener, JumpToSearchTarget, RetargetableFocus, DataChangeListener, Runnable, FontAdjustable {
     private Toolbar           mToolbar;
     private PopupMenu<Scales> mScalesPopup;
     private EditorField       mFilterField;
@@ -257,5 +258,11 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
     @Override
     public void jumpToSearchField() {
         mFilterField.requestFocus();
+    }
+
+    @Override
+    public void adjustToFontChanges() {
+        mOutline.sizeColumnsToFit();
+        mOutline.updateRowHeights();
     }
 }

@@ -17,6 +17,7 @@ import com.trollworks.gcs.settings.QuickExport;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.settings.SheetSettingsWindow;
 import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.FontAdjustable;
 import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.FontIconButton;
@@ -33,7 +34,7 @@ import java.nio.file.Path;
 import javax.swing.JViewport;
 
 /** A list of advantages and disadvantages from a library. */
-public class SheetDockable extends CollectedOutlinesDockable {
+public class SheetDockable extends CollectedOutlinesDockable implements FontAdjustable {
     private static SheetDockable  LAST_ACTIVATED;
     private        CharacterSheet mSheet;
     private        FontIconButton mQuickExportButton;
@@ -170,5 +171,10 @@ public class SheetDockable extends CollectedOutlinesDockable {
     public void recordQuickExport(QuickExport qe) {
         Settings.getInstance().putQuickExport(mSheet.getCharacter(), qe);
         updateQuickExport();
+    }
+
+    @Override
+    public void adjustToFontChanges() {
+        mSheet.markForRebuild();
     }
 }

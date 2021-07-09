@@ -32,6 +32,7 @@ import com.trollworks.gcs.spell.SpellList;
 import com.trollworks.gcs.spell.SpellsDockable;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.template.TemplateDockable;
+import com.trollworks.gcs.ui.FontAdjustable;
 import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.FontIcon;
 import com.trollworks.gcs.ui.Fonts;
@@ -79,7 +80,7 @@ import javax.swing.Icon;
 import javax.swing.ListCellRenderer;
 
 /** A list of available library files. */
-public class LibraryExplorerDockable extends Dockable implements SearchTarget, Deletable, ActionListener {
+public class LibraryExplorerDockable extends Dockable implements SearchTarget, Deletable, ActionListener, FontAdjustable {
     private Search  mSearch;
     private Outline mOutline;
 
@@ -622,5 +623,11 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, D
         } else {
             set.add(((LibraryFileRow) row).getFilePath());
         }
+    }
+
+    @Override
+    public void adjustToFontChanges() {
+        mOutline.sizeColumnsToFit();
+        mOutline.updateRowHeights();
     }
 }

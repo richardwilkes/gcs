@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.settings;
 
+import com.trollworks.gcs.ui.FontAdjustable;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.ThemeFont;
 import com.trollworks.gcs.ui.UIUtilities;
@@ -21,6 +22,7 @@ import com.trollworks.gcs.ui.widget.FontPanel;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.LayoutConstants;
 import com.trollworks.gcs.ui.widget.Panel;
+import com.trollworks.gcs.ui.widget.WindowUtils;
 import com.trollworks.gcs.utility.Dirs;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
@@ -111,7 +113,7 @@ public final class FontSettingsWindow extends SettingsWindow<Fonts> {
             tracker.resetTo(fonts);
         }
         mIgnore = false;
-        BaseWindow.forceRevalidateAndRepaint();
+        forceRevalidateAndRepaint();
     }
 
     @Override
@@ -138,6 +140,23 @@ public final class FontSettingsWindow extends SettingsWindow<Fonts> {
         Fonts.currentThemeFonts().save(path);
     }
 
+    /** Forces a revalidate and full repaint on all windows, disposing of any window buffers. */
+    public static void forceRevalidateAndRepaint() {
+        for (BaseWindow window : getAllAppWindows()) {
+            if (window instanceof FontAdjustable) {
+                ((FontAdjustable) window).adjustToFontChanges();
+            }
+            UIUtilities.invalidateTree(window);
+            window.setMinimumSize(null);
+            window.setPreferredSize(null);
+            window.setMaximumSize(null);
+            window.establishSizing();
+            window.pack();
+            WindowUtils.forceOnScreen(window);
+            window.repaint();
+        }
+    }
+
     private class FontTracker extends FontPanel {
         private int mIndex;
 
@@ -148,7 +167,7 @@ public final class FontSettingsWindow extends SettingsWindow<Fonts> {
                 if (!mIgnore) {
                     Fonts.currentThemeFonts().setFont(mIndex, getCurrentFont());
                     adjustResetButton();
-                    BaseWindow.forceRevalidateAndRepaint();
+                    forceRevalidateAndRepaint();
                 }
             });
         }

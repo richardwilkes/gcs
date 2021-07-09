@@ -14,6 +14,7 @@ package com.trollworks.gcs.template;
 import com.trollworks.gcs.character.CollectedOutlines;
 import com.trollworks.gcs.character.CollectedOutlinesDockable;
 import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.FontAdjustable;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.dock.Dock;
@@ -25,7 +26,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 
 /** A list of advantages and disadvantages from a library. */
-public class TemplateDockable extends CollectedOutlinesDockable {
+public class TemplateDockable extends CollectedOutlinesDockable implements FontAdjustable {
     private static TemplateDockable LAST_ACTIVATED;
     private        TemplateSheet    mTemplate;
 
@@ -98,5 +99,10 @@ public class TemplateDockable extends CollectedOutlinesDockable {
     @Override
     public PrintProxy getPrintProxy() {
         return null;
+    }
+
+    @Override
+    public void adjustToFontChanges() {
+        mTemplate.markForRebuild();
     }
 }
