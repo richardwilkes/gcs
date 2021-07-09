@@ -142,7 +142,7 @@ public final class ExportToGCalcCommand extends Command {
                         }
                         File image = File.createTempFile("gcalcImage", ".png");
                         try {
-                            ImageIO.write(character.getProfile().getPortrait().getRetina(), "png", image);
+                            ImageIO.write(character.getProfile().getPortraitWithFallback().getRetina(), "png", image);
                             path = String.format("api/SaveCharacterImage/%s/%s", id, key);
                             result = post(path, Files.readAllBytes(image.toPath()));
                             if (!result.isEmpty()) {

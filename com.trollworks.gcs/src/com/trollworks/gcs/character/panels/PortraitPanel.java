@@ -17,9 +17,7 @@ import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
-import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.border.TitledBorder;
-import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.widget.Modal;
@@ -29,7 +27,6 @@ import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.PathUtils;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -96,11 +93,7 @@ public class PortraitPanel extends DropPanel implements DropTargetListener {
         Graphics2D gc     = GraphicsUtilities.prepare(g);
         gc.setColor(Colors.CONTENT);
         gc.fillRect(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
-        RetinaIcon portrait = mSheet.getCharacter().getProfile().getPortrait();
-        if (portrait == null) {
-            portrait = Images.DEFAULT_PORTRAIT;
-        }
-        portrait.paintIcon(this, gc, insets.left, insets.top);
+        mSheet.getCharacter().getProfile().getPortraitWithFallback().paintIcon(this, gc, insets.left, insets.top);
     }
 
     @Override

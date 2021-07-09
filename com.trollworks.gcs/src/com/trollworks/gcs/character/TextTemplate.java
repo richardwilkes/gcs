@@ -37,6 +37,7 @@ import com.trollworks.gcs.ui.widget.outline.RowIterator;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.FilteredIterator;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
@@ -352,6 +353,7 @@ public class TextTemplate {
             }
             return true;
         } catch (Exception exception) {
+            Log.error(exception);
             return false;
         }
     }
@@ -371,14 +373,14 @@ public class TextTemplate {
             break;                          // be embedded. ex: "<HTML@KEY@TAG>"
         case KEY_PORTRAIT:
             String fileName = PathUtils.enforceExtension(PathUtils.getLeafName(base, false), FileType.PNG.getExtension());
-            ImageIO.write(description.getPortrait().getRetina(), "png", base.resolveSibling(fileName).toFile());
+            ImageIO.write(description.getPortraitWithFallback().getRetina(), "png", base.resolveSibling(fileName).toFile());
             out.write(URLEncoder.encode(fileName, StandardCharsets.UTF_8));
             break;
         case KEY_PORTRAIT_EMBEDDED:
             out.write("data:image/png;base64,");
             ByteArrayOutputStream imgBuffer = new ByteArrayOutputStream();
             OutputStream wrapped = Base64.getEncoder().wrap(imgBuffer);
-            ImageIO.write(description.getPortrait().getRetina(), "png", wrapped);
+            ImageIO.write(description.getPortraitWithFallback().getRetina(), "png", wrapped);
             wrapped.close();
             out.write(imgBuffer.toString(StandardCharsets.UTF_8));
             break;

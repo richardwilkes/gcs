@@ -19,6 +19,7 @@ import com.trollworks.gcs.settings.GeneralSettings;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.settings.SheetSettings;
 import com.trollworks.gcs.ui.RetinaIcon;
+import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.image.Img;
 import com.trollworks.gcs.utility.Dirs;
 import com.trollworks.gcs.utility.FileType;
@@ -223,6 +224,11 @@ public class Profile {
     /** @return The portrait. */
     public RetinaIcon getPortrait() {
         return mPortrait;
+    }
+
+    /** @return The portrait, or the default image if none is set. */
+    public RetinaIcon getPortraitWithFallback() {
+        return mPortrait == null ? Images.DEFAULT_PORTRAIT : mPortrait;
     }
 
     /**
