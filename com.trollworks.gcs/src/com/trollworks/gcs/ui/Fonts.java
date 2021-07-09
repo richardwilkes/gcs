@@ -18,6 +18,7 @@ import com.trollworks.gcs.utility.SafeFileUpdater;
 import com.trollworks.gcs.utility.json.Json;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
+import com.trollworks.gcs.utility.text.NumericComparator;
 
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
@@ -31,7 +32,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Fonts allows the font to be changed dynamically. Unfortunately, there is no good way to sub-class
@@ -208,6 +212,40 @@ public final class Fonts {
     public Fonts(JsonMap m) {
         this(DEFAULTS);
         load(m);
+    }
+
+    public static String verifyFontsAreValid(Path path) throws IOException {
+        Set<String> missing = new HashSet<>();
+        try (BufferedReader in = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+            JsonMap m       = Json.asMap(Json.parse(in));
+            int     version = m.getInt(Settings.VERSION);
+            if (version >= MINIMUM_VERSION && version <= CURRENT_VERSION && m.has(Settings.FONTS)) {
+                m = m.getMap(Settings.FONTS);
+                Set<String> set = new HashSet<>();
+                Collections.addAll(set, GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames());
+                for (ThemeFont one : ALL) {
+                    if (one.isEditable() && m.has(one.getKey())) {
+                        FontDesc fontDesc = new FontDesc(m.getMap(one.getKey()));
+                        if (!set.contains(fontDesc.mName)) {
+                            missing.add(fontDesc.mName);
+                        }
+                    }
+                }
+            }
+        }
+        if (missing.isEmpty()) {
+            return null;
+        }
+        List<String> sorted = new ArrayList<>(missing);
+        sorted.sort(NumericComparator.CASELESS_COMPARATOR);
+        StringBuilder buffer = new StringBuilder();
+        for (String one : sorted) {
+            if (!buffer.isEmpty()) {
+                buffer.append("\n");
+            }
+            buffer.append(one).append(I18n.text(" is missing."));
+        }
+        return buffer.toString();
     }
 
     private void load(JsonMap m) {

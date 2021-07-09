@@ -126,7 +126,11 @@ public final class FontSettingsWindow extends SettingsWindow<Fonts> {
 
     @Override
     protected Fonts createSettingsFrom(Path path) throws IOException {
-        return new Fonts(path);
+        String validityCheck = Fonts.verifyFontsAreValid(path);
+        if (validityCheck == null) {
+            return new Fonts(path);
+        }
+        throw new IOException(validityCheck);
     }
 
     @Override

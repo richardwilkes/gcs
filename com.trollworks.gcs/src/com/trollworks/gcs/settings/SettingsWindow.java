@@ -152,8 +152,13 @@ public abstract class SettingsWindow<T> extends BaseWindow implements CloseHandl
                 resetTo(createSettingsFrom(path));
             } catch (IOException ioe) {
                 Log.error(ioe);
-                Modal.showError(this, String.format(I18n.text("Unable to import %s."),
-                        filter.getDescription()));
+                String msg = String.format(I18n.text("Unable to import %s."),
+                        filter.getDescription());
+                String exMsg = ioe.getMessage();
+                if (exMsg != null && !exMsg.isBlank()) {
+                    msg += "\n\n" + exMsg;
+                }
+                Modal.showError(this, msg);
             }
         }
     }
