@@ -14,6 +14,7 @@ package com.trollworks.gcs.character.panels;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.Profile;
 import com.trollworks.gcs.page.DropPanel;
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.RetinaIcon;
@@ -93,7 +94,7 @@ public class PortraitPanel extends DropPanel implements DropTargetListener {
     protected void paintComponent(Graphics g) {
         Insets     insets = getInsets();
         Graphics2D gc     = GraphicsUtilities.prepare(g);
-        gc.setColor(Color.WHITE);
+        gc.setColor(Colors.CONTENT);
         gc.fillRect(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
         RetinaIcon portrait = mSheet.getCharacter().getProfile().getPortrait();
         if (portrait == null) {
