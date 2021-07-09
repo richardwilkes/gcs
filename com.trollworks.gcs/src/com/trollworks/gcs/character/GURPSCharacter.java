@@ -67,6 +67,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /** A GURPS character. */
@@ -1369,7 +1370,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
      */
     public void postUndoEdit(String name, CharacterSetter setter, Object before, Object after) {
         StdUndoManager mgr = getUndoManager();
-        if (!mgr.isInTransaction() && !before.equals(after)) {
+        if (!mgr.isInTransaction() && !Objects.equals(before, after)) {
             addEdit(new CharacterUndo(this, name, setter, before, after));
         }
     }
