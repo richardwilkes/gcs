@@ -20,17 +20,17 @@ import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.units.LengthUnits;
 
 public class SSRT implements ExpressionFunction {
-    private static final Fixed6 ONE_AND_A_HALF = new Fixed6("1.5", false);
-    private static final Fixed6 TWO            = new Fixed6(2);
-    private static final Fixed6 THREE          = new Fixed6(3);
-    private static final Fixed6 FIVE           = new Fixed6(5);
-    private static final Fixed6 SEVEN          = new Fixed6(7);
-    private static final Fixed6 EIGHT          = new Fixed6(8);
-    private static final Fixed6 TEN            = new Fixed6(10);
-    private static final Fixed6 ONE_FIFTH      = Fixed6.ONE.div(FIVE);
-    private static final Fixed6 ONE_THIRD      = Fixed6.ONE.div(THREE);
-    private static final Fixed6 HALF           = Fixed6.ONE.div(TWO);
-    private static final Fixed6 TWO_THIRDS     = TWO.div(THREE);
+    public static final Fixed6 ONE_AND_A_HALF = new Fixed6("1.5", false);
+    public static final Fixed6 TWO            = new Fixed6(2);
+    public static final Fixed6 THREE          = new Fixed6(3);
+    public static final Fixed6 FIVE           = new Fixed6(5);
+    public static final Fixed6 SEVEN          = new Fixed6(7);
+    public static final Fixed6 EIGHT          = new Fixed6(8);
+    public static final Fixed6 TEN            = new Fixed6(10);
+    public static final Fixed6 ONE_FIFTH      = Fixed6.ONE.div(FIVE);
+    public static final Fixed6 ONE_THIRD      = Fixed6.ONE.div(THREE);
+    public static final Fixed6 HALF           = Fixed6.ONE.div(TWO);
+    public static final Fixed6 TWO_THIRDS     = TWO.div(THREE);
 
     @Override
     public String getName() {

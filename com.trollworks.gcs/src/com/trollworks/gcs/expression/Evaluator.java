@@ -29,6 +29,7 @@ import com.trollworks.gcs.expression.function.Pow;
 import com.trollworks.gcs.expression.function.Roll;
 import com.trollworks.gcs.expression.function.Round;
 import com.trollworks.gcs.expression.function.SSRT;
+import com.trollworks.gcs.expression.function.SSRTtoYards;
 import com.trollworks.gcs.expression.function.Signed;
 import com.trollworks.gcs.expression.function.Sqrt;
 import com.trollworks.gcs.expression.operator.Add;
@@ -104,6 +105,7 @@ public class Evaluator {
         addDefaultFunction(new Signed());
         addDefaultFunction(new Sqrt());
         addDefaultFunction(new SSRT());
+        addDefaultFunction(new SSRTtoYards());
     }
 
     public static final void addDefaultOperator(Operator operator) {
