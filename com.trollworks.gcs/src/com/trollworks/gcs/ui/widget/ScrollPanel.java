@@ -259,6 +259,8 @@ public class ScrollPanel extends JLayeredPane implements LayoutManager, ChangeLi
             if (mColumnHeader != null) {
                 mColumnHeader.setViewPosition(new Point(viewPosition.x, 0));
             }
+            mVerticalScrollbar.setRange(viewPosition.y, mVerticalScrollbar.getExtent(), mVerticalScrollbar.getMax());
+            mHorizontalScrollbar.setRange(viewPosition.x, mHorizontalScrollbar.getExtent(), mHorizontalScrollbar.getMax());
             repaint();
         }
     }
