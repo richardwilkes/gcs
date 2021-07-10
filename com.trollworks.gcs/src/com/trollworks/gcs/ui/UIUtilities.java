@@ -90,6 +90,8 @@ public final class UIUtilities {
         Colors.currentThemeColors();
         Fonts.currentThemeFonts();
 
+        UIManager.put("TextComponent.selectionBackgroundInactive", Colors.INACTIVE_SELECTION);
+
         if (!Platform.isMacintosh()) {
             UIManager.put("MenuBarUI", BasicMenuBarUI.class.getName());
             UIManager.put("MenuUI", BasicMenuUI.class.getName());
