@@ -40,6 +40,7 @@ import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.text.Numbers;
+import com.trollworks.gcs.utility.text.NumericComparator;
 import com.trollworks.gcs.weapon.MeleeWeaponStats;
 import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponDisplayRow;
@@ -1616,7 +1617,15 @@ public class TextTemplate {
             weapons.put(description, weapon);
             weaponsMap.computeIfAbsent(description, k -> new ArrayList<>()).add(weapon);
         }
-        for (MeleeWeaponStats weapon : weapons.values()) {
+        List<MeleeWeaponStats> sorted = new ArrayList<>(weapons.values());
+        sorted.sort((o1, o2) -> {
+            int result = NumericComparator.CASELESS_COMPARATOR.compare(o1.getDescription(), o2.getDescription());
+            if (result == 0) {
+                result = NumericComparator.CASELESS_COMPARATOR.compare(o1.getUsage(), o2.getUsage());
+            }
+            return result;
+        });
+        for (MeleeWeaponStats weapon : sorted) {
             currentID++;
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
@@ -1661,7 +1670,15 @@ public class TextTemplate {
             weapons.put(description, weapon);
             weaponsMap.computeIfAbsent(description, k -> new ArrayList<>()).add(weapon);
         }
-        for (RangedWeaponStats weapon : weapons.values()) {
+        List<RangedWeaponStats> sorted = new ArrayList<>(weapons.values());
+        sorted.sort((o1, o2) -> {
+            int result = NumericComparator.CASELESS_COMPARATOR.compare(o1.getDescription(), o2.getDescription());
+            if (result == 0) {
+                result = NumericComparator.CASELESS_COMPARATOR.compare(o1.getUsage(), o2.getUsage());
+            }
+            return result;
+        });
+        for (RangedWeaponStats weapon : sorted) {
             currentID++;
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
