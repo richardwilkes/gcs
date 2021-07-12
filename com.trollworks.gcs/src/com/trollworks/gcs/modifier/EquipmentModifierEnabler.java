@@ -114,7 +114,6 @@ public final class EquipmentModifierEnabler extends Panel {
     private Container createCenter() {
         Panel panel = new Panel(new ColumnLayout());
         mModifiers = mEquipment.getModifiers().toArray(new EquipmentModifier[0]);
-        Arrays.sort(mModifiers);
 
         int length = mModifiers.length;
         mEnabled = new Checkbox[length];

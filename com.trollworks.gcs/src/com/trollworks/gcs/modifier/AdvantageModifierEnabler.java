@@ -133,7 +133,6 @@ public final class AdvantageModifierEnabler extends Panel {
         }
 
         mModifiers = mAdvantage.getModifiers().toArray(new AdvantageModifier[0]);
-        Arrays.sort(mModifiers);
 
         int length = mModifiers.length;
         mEnabled = new Checkbox[length];
