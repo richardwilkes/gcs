@@ -253,9 +253,17 @@ public abstract class CollectedOutlinesDockable extends DataFileDockable impleme
             model.select(selMap.get(anOutline), false);
             StateEdit edit = entry.getValue();
             edit.end();
-            anOutline.postUndo(edit);
-            anOutline.scrollSelectionIntoView();
-            anOutline.requestFocus();
+            if (anOutline.getParent() == null) {
+                getUndoManager().addEdit(edit);
+                EventQueue.invokeLater(() -> {
+                    anOutline.scrollSelectionIntoView();
+                    anOutline.requestFocus();
+                });
+            } else {
+                anOutline.postUndo(edit);
+                anOutline.scrollSelectionIntoView();
+                anOutline.requestFocus();
+            }
         }
         if (!nameMap.isEmpty()) {
             EventQueue.invokeLater(new RowPostProcessor(nameMap));
