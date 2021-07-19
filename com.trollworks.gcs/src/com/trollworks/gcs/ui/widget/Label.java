@@ -145,7 +145,8 @@ public class Label extends Panel {
             bounds.width -= amt;
         }
         if (mTruncationPolicy != WRAP) {
-            text = TextDrawing.truncateIfNecessary(font, text, bounds.width, mTruncationPolicy);
+            // Reduce space by 1 pixel due to partial pixels otherwise causing wrapping
+            text = TextDrawing.truncateIfNecessary(font, text, bounds.width - 1, mTruncationPolicy);
         }
         TextDrawing.draw(gc, bounds, text, mHAlign, SwingConstants.CENTER);
     }
@@ -158,7 +159,7 @@ public class Label extends Panel {
         Insets    insets = getInsets();
         Scale     scale  = Scale.get(this);
         Dimension size   = TextDrawing.getPreferredSize(scale.scale(getFont()), mText);
-        size.width += insets.left + insets.right;
+        size.width += insets.left + insets.right + 1; // Extra pixel is to account for partial pixels
         size.height += insets.top + insets.bottom;
         if (mIcon != null) {
             size.width += scale.scale(mIcon.getIconWidth()) + scale.scale(GAP);
