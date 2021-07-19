@@ -103,7 +103,9 @@ public abstract class PrereqEditor extends EditorPanel {
         grid.add(left, 0, 0);
         rebuildSelf(left, grid, right);
         if (mDepth > 0) {
-            FontIconButton button = new FontIconButton(FontAwesome.TRASH, mPrereq instanceof PrereqList ? I18n.text("Remove this prerequisite list") : I18n.text("Remove this prerequisite"), this::remove);
+            FontIconButton button = new FontIconButton(FontAwesome.TRASH,
+                    mPrereq instanceof PrereqList ? I18n.text("Remove this prerequisite list") :
+                            I18n.text("Remove this prerequisite"), (b) -> removeSelfAndDescendents());
             add(button);
             right.add(button);
         }
@@ -190,7 +192,7 @@ public abstract class PrereqEditor extends EditorPanel {
         return mPrereq;
     }
 
-    private void remove() {
+    private void removeSelfAndDescendents() {
         JComponent parent = (JComponent) getParent();
         int        index  = UIUtilities.getIndexOf(parent, this);
         int        count  = countSelfAndDescendents(mPrereq);
