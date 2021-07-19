@@ -31,9 +31,7 @@ import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.text.Numbers;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -329,15 +327,14 @@ public class WeaponDamage {
                 String usageQualifier = mOwner.getUsage();
                 bonusSet.addAll(character.getNamedWeaponDamageBonusesFor(WeaponDamageBonus.WEAPON_NAMED_ID_PREFIX + "*", nameQualifier, usageQualifier, categories, dieCount, toolTip));
                 bonusSet.addAll(character.getNamedWeaponDamageBonusesFor(WeaponDamageBonus.WEAPON_NAMED_ID_PREFIX + "/" + nameQualifier, nameQualifier, usageQualifier, categories, dieCount, toolTip));
-                List<WeaponDamageBonus> bonuses = new ArrayList<>(bonusSet);
                 for (Feature feature : mOwner.mOwner.getFeatures()) {
-                    extractWeaponDamageBonus(feature, bonuses, dieCount, toolTip);
+                    extractWeaponDamageBonus(feature, bonusSet, dieCount, toolTip);
                 }
                 if (mOwner.mOwner instanceof Advantage) {
                     for (AdvantageModifier modifier : ((Advantage) mOwner.mOwner).getModifiers()) {
                         if (modifier.isEnabled()) {
                             for (Feature feature : modifier.getFeatures()) {
-                                extractWeaponDamageBonus(feature, bonuses, dieCount, toolTip);
+                                extractWeaponDamageBonus(feature, bonusSet, dieCount, toolTip);
                             }
                         }
                     }
@@ -346,12 +343,12 @@ public class WeaponDamage {
                     for (EquipmentModifier modifier : ((Equipment) mOwner.mOwner).getModifiers()) {
                         if (modifier.isEnabled()) {
                             for (Feature feature : modifier.getFeatures()) {
-                                extractWeaponDamageBonus(feature, bonuses, dieCount, toolTip);
+                                extractWeaponDamageBonus(feature, bonusSet, dieCount, toolTip);
                             }
                         }
                     }
                 }
-                for (WeaponDamageBonus bonus : bonuses) {
+                for (WeaponDamageBonus bonus : bonusSet) {
                     LeveledAmount lvlAmt = bonus.getAmount();
                     int           amt    = lvlAmt.getIntegerAmount();
                     if (lvlAmt.isPerLevel()) {
@@ -403,7 +400,7 @@ public class WeaponDamage {
         return toString();
     }
 
-    private void extractWeaponDamageBonus(Feature feature, List<WeaponDamageBonus> list, int dieCount, StringBuilder toolTip) {
+    private void extractWeaponDamageBonus(Feature feature, Set<WeaponDamageBonus> set, int dieCount, StringBuilder toolTip) {
         if (feature instanceof WeaponDamageBonus) {
             WeaponDamageBonus wb     = (WeaponDamageBonus) feature;
             LeveledAmount     amount = wb.getAmount();
@@ -412,13 +409,17 @@ public class WeaponDamage {
             switch (wb.getWeaponSelectionType()) {
             case THIS_WEAPON:
             default:
-                list.add(wb);
-                wb.addToToolTip(toolTip);
+                if (set.add(wb)) {
+                    wb.addToToolTip(toolTip);
+                }
                 break;
             case WEAPONS_WITH_NAME:
-                if (wb.getNameCriteria().matches(mOwner.toString()) && wb.getSpecializationCriteria().matches(mOwner.getUsage()) && wb.matchesCategories(mOwner.getCategories())) {
-                    list.add(wb);
-                    wb.addToToolTip(toolTip);
+                if (wb.getNameCriteria().matches(mOwner.toString()) &&
+                        wb.getSpecializationCriteria().matches(mOwner.getUsage()) &&
+                        wb.matchesCategories(mOwner.getCategories())) {
+                    if (set.add(wb)) {
+                        wb.addToToolTip(toolTip);
+                    }
                 }
                 break;
             case WEAPONS_WITH_REQUIRED_SKILL:
