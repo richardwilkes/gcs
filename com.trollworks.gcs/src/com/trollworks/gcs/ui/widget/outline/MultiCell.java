@@ -144,13 +144,6 @@ public class MultiCell implements Cell {
         Scale   scale  = Scale.get(outline);
         ListRow theRow = (ListRow) row;
         int     width  = TextDrawing.getWidth(scale.scale(getPrimaryFont().getFont()), getPrimaryText(theRow));
-        String  notes  = getSecondaryText(theRow);
-        if (!notes.trim().isEmpty()) {
-            int notesWidth = TextDrawing.getWidth(scale.scale(getSecondaryFont().getFont()), notes);
-            if (notesWidth > width) {
-                width = notesWidth;
-            }
-        }
         if (mMaxPreferredWidth > 0) {
             int scaledMax = scale.scale(mMaxPreferredWidth);
             if (scaledMax < width) {
