@@ -75,7 +75,8 @@ public class Spell extends ListRow implements HasSourceReference {
     public static final String ID_POINTS_COLLEGE      = "spell.college.points";
     public static final String ID_POINTS_POWER_SOURCE = "spell.power_source.points";
 
-    private static final Pattern COLLEGE_OR = Pattern.compile("(\\s+or\\s+)|/", Pattern.CASE_INSENSITIVE);
+    private static final Pattern COLLEGE_OR        = Pattern.compile("(\\s+or\\s+)|/", Pattern.CASE_INSENSITIVE);
+    private static final Pattern LINE_FEED_PATTERN = Pattern.compile("\n");
 
     private   String            mName;
     private   String            mTechLevel;
@@ -1025,6 +1026,20 @@ public class Spell extends ListRow implements HasSourceReference {
                 builder.append("\n");
             }
             builder.append(rituals);
+        }
+        if (getDataFile().getSheetSettings().skillLevelAdjustmentsDisplay().inline()) {
+            String levelTooltip = getLevelToolTip();
+            if (levelTooltip != null && !SkillLevel.getNoAdditionalModifiers().equals(levelTooltip)) {
+                if (!builder.isEmpty()) {
+                    builder.append("\n");
+                }
+                levelTooltip = LINE_FEED_PATTERN.matcher(levelTooltip).replaceAll(", ");
+                String includesPrefix = SkillLevel.getIncludesModifiersFrom();
+                if (levelTooltip.startsWith(includesPrefix + ",")) {
+                    levelTooltip = includesPrefix + ":" + levelTooltip.substring(includesPrefix.length() + 1);
+                }
+                builder.append(levelTooltip);
+            }
         }
         return builder.toString();
     }

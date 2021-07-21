@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Pattern;
 import javax.swing.Icon;
 
 /** A GURPS Skill. */
@@ -61,6 +62,8 @@ public class Skill extends ListRow implements HasSourceReference {
 
     public static final String ID_NAME   = "skill.name";
     public static final String ID_POINTS = "skill.points";
+
+    private static final Pattern LINE_FEED_PATTERN = Pattern.compile("\n");
 
     private   String            mName;
     private   String            mSpecialization;
@@ -1006,5 +1009,25 @@ public class Skill extends ListRow implements HasSourceReference {
             }
         }
         return Integer.MIN_VALUE;
+    }
+
+    @Override
+    protected String getSecondaryText() {
+        String secondary = super.getSecondaryText();
+        if (getDataFile().getSheetSettings().skillLevelAdjustmentsDisplay().inline()) {
+            String levelTooltip = getLevelToolTip();
+            if (levelTooltip != null && !SkillLevel.getNoAdditionalModifiers().equals(levelTooltip)) {
+                if (!secondary.isBlank()) {
+                    secondary += "\n";
+                }
+                levelTooltip = LINE_FEED_PATTERN.matcher(levelTooltip).replaceAll(", ");
+                String includesPrefix = SkillLevel.getIncludesModifiersFrom();
+                if (levelTooltip.startsWith(includesPrefix + ",")) {
+                    levelTooltip = includesPrefix + ":" + levelTooltip.substring(includesPrefix.length() + 1);
+                }
+                secondary += levelTooltip;
+            }
+        }
+        return secondary;
     }
 }

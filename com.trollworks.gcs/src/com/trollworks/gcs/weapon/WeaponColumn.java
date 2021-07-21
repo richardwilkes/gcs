@@ -11,6 +11,8 @@
 
 package com.trollworks.gcs.weapon;
 
+import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.ui.widget.outline.Cell;
 import com.trollworks.gcs.ui.widget.outline.Column;
 import com.trollworks.gcs.ui.widget.outline.EditorHeaderCell;
@@ -110,7 +112,11 @@ public enum WeaponColumn {
 
         @Override
         public String getToolTip(WeaponDisplayRow weapon) {
-            return weapon.getSkillLevelToolTip();
+            DataFile dataFile = weapon.getWeapon().getOwner().getDataFile();
+            if (dataFile instanceof GURPSCharacter && dataFile.getSheetSettings().skillLevelAdjustmentsDisplay().tooltip()) {
+                return weapon.getSkillLevelToolTip();
+            }
+            return null;
         }
 
         @Override

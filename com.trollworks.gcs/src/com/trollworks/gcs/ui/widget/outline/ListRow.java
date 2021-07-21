@@ -526,7 +526,7 @@ public abstract class ListRow extends Row {
         return mDataFile instanceof Template ? (Template) mDataFile : null;
     }
 
-    /** @return The "secondary" text, the text display below an Advantage. */
+    /** @return The "secondary" text, the text display below the primary text, usually as a note. */
     protected String getSecondaryText() {
         StringBuilder builder  = new StringBuilder();
         SheetSettings settings = getDataFile().getSheetSettings();

@@ -22,6 +22,14 @@ public class SkillLevel {
     /** The tooltip describing how this level was calculated. */
     public String mToolTip;
 
+    public static String getNoAdditionalModifiers() {
+        return I18n.text("No additional modifiers");
+    }
+
+    public static String getIncludesModifiersFrom() {
+        return I18n.text("Includes modifiers from");
+    }
+
     /**
      * Creates a new SkillLevel.
      *
@@ -31,7 +39,7 @@ public class SkillLevel {
     public SkillLevel(int level, int relativeLevel) {
         mLevel = level;
         mRelativeLevel = relativeLevel;
-        mToolTip = I18n.text("No additional modifiers");
+        mToolTip = getNoAdditionalModifiers();
     }
 
     /**
@@ -44,7 +52,7 @@ public class SkillLevel {
     public SkillLevel(int level, int relativeLevel, StringBuilder toolTip) {
         this(level, relativeLevel);
         if (toolTip != null && !toolTip.isEmpty()) {
-            mToolTip = I18n.text("Includes modifiers from") + toolTip;
+            mToolTip = getIncludesModifiersFrom() + toolTip;
         }
     }
 

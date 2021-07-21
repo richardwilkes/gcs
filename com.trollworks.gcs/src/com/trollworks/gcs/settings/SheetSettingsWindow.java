@@ -65,6 +65,7 @@ public final class SheetSettingsWindow extends SettingsWindow<SheetSettings> imp
     private PopupMenu<DisplayOption>     mUserDescriptionDisplayPopup;
     private PopupMenu<DisplayOption>     mModifiersDisplayPopup;
     private PopupMenu<DisplayOption>     mNotesDisplayPopup;
+    private PopupMenu<DisplayOption>     mSkillLevelAdjustmentsPopup;
     private MultiLineTextField           mBlockLayoutField;
     private PageSettingsEditor           mPageSettingsEditor;
     private boolean                      mUpdatePending;
@@ -186,7 +187,7 @@ public final class SheetSettingsWindow extends SettingsWindow<SheetSettings> imp
         Panel panel = new Panel(new PrecisionLayout().setMargins(0));
         mShowCollegeInSpells = addCheckbox(panel, I18n.text("Show the College column"), null,
                 mSheetSettings.showCollegeInSpells(), (b) -> {
-            System.out.println(b + ": " + b.isChecked());
+                    System.out.println(b + ": " + b.isChecked());
                     mSheetSettings.setShowCollegeInSpells(b.isChecked());
                     adjustResetButton();
                 });
@@ -297,6 +298,11 @@ public final class SheetSettingsWindow extends SettingsWindow<SheetSettings> imp
                     mSheetSettings.setNotesDisplay(mNotesDisplayPopup.getSelectedItem());
                     adjustResetButton();
                 });
+        mSkillLevelAdjustmentsPopup = addPopupMenu(panel, DisplayOption.values(), mSheetSettings.skillLevelAdjustmentsDisplay(),
+                I18n.text("Skill Level Adjustments"), tooltip, (p) -> {
+                    mSheetSettings.setSkillLevelAdjustmentsDisplay(mSkillLevelAdjustmentsPopup.getSelectedItem());
+                    adjustResetButton();
+                });
         return panel;
     }
 
@@ -326,6 +332,7 @@ public final class SheetSettingsWindow extends SettingsWindow<SheetSettings> imp
         atDefaults = atDefaults && mUserDescriptionDisplayPopup.getSelectedItem() == defaults.userDescriptionDisplay();
         atDefaults = atDefaults && mModifiersDisplayPopup.getSelectedItem() == defaults.modifiersDisplay();
         atDefaults = atDefaults && mNotesDisplayPopup.getSelectedItem() == defaults.notesDisplay();
+        atDefaults = atDefaults && mSkillLevelAdjustmentsPopup.getSelectedItem() == defaults.skillLevelAdjustmentsDisplay();
         atDefaults = atDefaults && mBlockLayoutField.getText().equals(Settings.linesToString(defaults.blockLayout()));
         atDefaults = atDefaults && mSheetSettings.getPageSettings().equals(defaults.getPageSettings());
         return !atDefaults;
@@ -360,6 +367,7 @@ public final class SheetSettingsWindow extends SettingsWindow<SheetSettings> imp
         mUserDescriptionDisplayPopup.setSelectedItem(data.userDescriptionDisplay(), true);
         mModifiersDisplayPopup.setSelectedItem(data.modifiersDisplay(), true);
         mNotesDisplayPopup.setSelectedItem(data.notesDisplay(), true);
+        mSkillLevelAdjustmentsPopup.setSelectedItem(data.skillLevelAdjustmentsDisplay(), true);
         mBlockLayoutField.setText(Settings.linesToString(data.blockLayout()));
         mPageSettingsEditor.resetTo(data.getPageSettings());
     }

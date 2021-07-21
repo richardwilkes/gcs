@@ -295,7 +295,10 @@ public enum SpellColumn {
 
         @Override
         public String getToolTip(Spell spell) {
-            return spell.getLevelToolTip();
+            if (spell.getDataFile().getSheetSettings().skillLevelAdjustmentsDisplay().tooltip()) {
+                return spell.getLevelToolTip();
+            }
+            return null;
         }
 
         @Override
@@ -341,7 +344,10 @@ public enum SpellColumn {
 
         @Override
         public String getToolTip(Spell spell) {
-            return spell.getLevelToolTip();
+            if (spell.getDataFile().getSheetSettings().skillLevelAdjustmentsDisplay().tooltip()) {
+                return spell.getLevelToolTip();
+            }
+            return null;
         }
 
         @Override

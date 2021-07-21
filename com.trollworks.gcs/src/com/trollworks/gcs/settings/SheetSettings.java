@@ -48,6 +48,7 @@ public class SheetSettings implements ChangeNotifier {
     public static final  String KEY_HIT_LOCATIONS                 = "hit_locations";
     private static final String KEY_MODIFIERS_DISPLAY             = "modifiers_display";
     private static final String KEY_NOTES_DISPLAY                 = "notes_display";
+    private static final String KEY_SKILL_LEVEL_ADJ_DISPLAY       = "skill_level_adj_display";
     private static final String KEY_PAGE                          = "page";
     private static final String KEY_SHOW_ADVANTAGE_MODIFIER_ADJ   = "show_advantage_modifier_adj";
     private static final String KEY_SHOW_COLLEGE_IN_SPELLS        = "show_college_in_sheet_spells";
@@ -73,6 +74,7 @@ public class SheetSettings implements ChangeNotifier {
     private DisplayOption             mUserDescriptionDisplay;
     private DisplayOption             mModifiersDisplay;
     private DisplayOption             mNotesDisplay;
+    private DisplayOption             mSkillLevelAdjustmentsDisplay;
     private Map<String, AttributeDef> mAttributes;
     private HitLocationTable          mHitLocations;
     private PageSettings              mPageSettings;
@@ -132,6 +134,7 @@ public class SheetSettings implements ChangeNotifier {
         mUserDescriptionDisplay = other.mUserDescriptionDisplay;
         mModifiersDisplay = other.mModifiersDisplay;
         mNotesDisplay = other.mNotesDisplay;
+        mSkillLevelAdjustmentsDisplay = other.mSkillLevelAdjustmentsDisplay;
         mAttributes = AttributeDef.cloneMap(other.mAttributes);
         mHitLocations = other.mHitLocations.clone();
         mPageSettings = new PageSettings(this, other.mPageSettings);
@@ -164,6 +167,7 @@ public class SheetSettings implements ChangeNotifier {
             mUserDescriptionDisplay = DisplayOption.TOOLTIP;
             mModifiersDisplay = DisplayOption.INLINE;
             mNotesDisplay = DisplayOption.INLINE;
+            mSkillLevelAdjustmentsDisplay = DisplayOption.TOOLTIP;
             mAttributes = AttributeDef.createStandardAttributes();
             mHitLocations = HitLocationTable.createHumanoidTable();
             mPageSettings = new PageSettings(this);
@@ -189,6 +193,7 @@ public class SheetSettings implements ChangeNotifier {
         mUserDescriptionDisplay = Enums.extract(m.getString(KEY_USER_DESCRIPTION_DISPLAY), DisplayOption.values(), mUserDescriptionDisplay);
         mModifiersDisplay = Enums.extract(m.getString(KEY_MODIFIERS_DISPLAY), DisplayOption.values(), mModifiersDisplay);
         mNotesDisplay = Enums.extract(m.getString(KEY_NOTES_DISPLAY), DisplayOption.values(), mNotesDisplay);
+        mSkillLevelAdjustmentsDisplay = Enums.extract(m.getString(KEY_SKILL_LEVEL_ADJ_DISPLAY), DisplayOption.values(), mSkillLevelAdjustmentsDisplay);
         mUseMultiplicativeModifiers = m.getBooleanWithDefault(KEY_USE_MULTIPLICATIVE_MODIFIERS, mUseMultiplicativeModifiers);
         mUseModifyingDicePlusAdds = m.getBooleanWithDefault(KEY_USE_MODIFYING_DICE_PLUS_ADDS, mUseModifyingDicePlusAdds);
         if (m.has(KEY_DAMAGE_PROGRESSION)) {
@@ -255,6 +260,7 @@ public class SheetSettings implements ChangeNotifier {
         w.keyValue(KEY_USER_DESCRIPTION_DISPLAY, Enums.toId(mUserDescriptionDisplay));
         w.keyValue(KEY_MODIFIERS_DISPLAY, Enums.toId(mModifiersDisplay));
         w.keyValue(KEY_NOTES_DISPLAY, Enums.toId(mNotesDisplay));
+        w.keyValue(KEY_SKILL_LEVEL_ADJ_DISPLAY, Enums.toId(mSkillLevelAdjustmentsDisplay));
         w.keyValue(KEY_USE_MULTIPLICATIVE_MODIFIERS, mUseMultiplicativeModifiers);
         w.keyValue(KEY_USE_MODIFYING_DICE_PLUS_ADDS, mUseModifyingDicePlusAdds);
         w.keyValue(KEY_DAMAGE_PROGRESSION, Enums.toId(mDamageProgression));
@@ -327,9 +333,9 @@ public class SheetSettings implements ChangeNotifier {
         return mUserDescriptionDisplay;
     }
 
-    public void setUserDescriptionDisplay(DisplayOption userDescriptionDisplay) {
-        if (mUserDescriptionDisplay != userDescriptionDisplay) {
-            mUserDescriptionDisplay = userDescriptionDisplay;
+    public void setUserDescriptionDisplay(DisplayOption option) {
+        if (mUserDescriptionDisplay != option) {
+            mUserDescriptionDisplay = option;
             notifyOfChange();
         }
     }
@@ -338,9 +344,9 @@ public class SheetSettings implements ChangeNotifier {
         return mModifiersDisplay;
     }
 
-    public void setModifiersDisplay(DisplayOption modifiersDisplay) {
-        if (mModifiersDisplay != modifiersDisplay) {
-            mModifiersDisplay = modifiersDisplay;
+    public void setModifiersDisplay(DisplayOption option) {
+        if (mModifiersDisplay != option) {
+            mModifiersDisplay = option;
             notifyOfChange();
         }
     }
@@ -349,9 +355,20 @@ public class SheetSettings implements ChangeNotifier {
         return mNotesDisplay;
     }
 
-    public void setNotesDisplay(DisplayOption notesDisplay) {
-        if (mNotesDisplay != notesDisplay) {
-            mNotesDisplay = notesDisplay;
+    public void setNotesDisplay(DisplayOption option) {
+        if (mNotesDisplay != option) {
+            mNotesDisplay = option;
+            notifyOfChange();
+        }
+    }
+
+    public DisplayOption skillLevelAdjustmentsDisplay() {
+        return mSkillLevelAdjustmentsDisplay;
+    }
+
+    public void setSkillLevelAdjustmentsDisplay(DisplayOption option) {
+        if (mSkillLevelAdjustmentsDisplay != option) {
+            mSkillLevelAdjustmentsDisplay = option;
             notifyOfChange();
         }
     }

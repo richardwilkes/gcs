@@ -15,8 +15,8 @@ import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillDefaultType;
+import com.trollworks.gcs.skill.SkillLevel;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
-import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Numbers;
@@ -290,7 +290,8 @@ public class MeleeWeaponStats extends WeaponStats {
         }
         if (obj instanceof MeleeWeaponStats && super.equals(obj)) {
             MeleeWeaponStats mws = (MeleeWeaponStats) obj;
-            return mReach.equals(mws.mReach) && mParry.equals(mws.mParry) && mBlock.equals(mws.mBlock);
+            return mReach.equals(mws.mReach) && mParry.equals(mws.mParry) &&
+                    mBlock.equals(mws.mBlock);
         }
         return false;
     }
@@ -300,7 +301,8 @@ public class MeleeWeaponStats extends WeaponStats {
         if (mOwner.getDataFile() instanceof GURPSCharacter) {
             getResolvedParry(toolTip);
         }
-        return toolTip.isEmpty() ? I18n.text("No additional modifiers") : I18n.text("Includes modifiers from") + toolTip;
+        return toolTip.isEmpty() ? SkillLevel.getNoAdditionalModifiers() :
+                SkillLevel.getIncludesModifiersFrom() + toolTip;
     }
 
     public String getBlockToolTip() {
@@ -308,6 +310,7 @@ public class MeleeWeaponStats extends WeaponStats {
         if (mOwner.getDataFile() instanceof GURPSCharacter) {
             getResolvedBlock(toolTip);
         }
-        return toolTip.isEmpty() ? I18n.text("No additional modifiers") : I18n.text("Includes modifiers from") + toolTip;
+        return toolTip.isEmpty() ? SkillLevel.getNoAdditionalModifiers() :
+                SkillLevel.getIncludesModifiersFrom() + toolTip;
     }
 }

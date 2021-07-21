@@ -11,6 +11,9 @@
 
 package com.trollworks.gcs.weapon;
 
+import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.datafile.DataFile;
+import com.trollworks.gcs.skill.SkillLevel;
 import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.TextDrawing;
@@ -26,6 +29,7 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
+import java.util.regex.Pattern;
 import javax.swing.SwingConstants;
 
 /**
@@ -33,7 +37,8 @@ import javax.swing.SwingConstants;
  * information for a {@link WeaponDisplayRow}.
  */
 public class WeaponDescriptionCell implements Cell {
-    private static final int H_MARGIN = 2;
+    private static final int     H_MARGIN          = 2;
+    private static final Pattern LINE_FEED_PATTERN = Pattern.compile("\n");
 
     /**
      * @param row The row to use.
@@ -48,7 +53,24 @@ public class WeaponDescriptionCell implements Cell {
      * @return The secondary text to display.
      */
     protected String getSecondaryText(WeaponDisplayRow row) {
-        return row.getWeapon().getNotes();
+        WeaponStats weapon    = row.getWeapon();
+        String      secondary = weapon.getNotes();
+        DataFile    dataFile  = weapon.getOwner().getDataFile();
+        if (dataFile instanceof GURPSCharacter && dataFile.getSheetSettings().skillLevelAdjustmentsDisplay().inline()) {
+            String levelTooltip = row.getSkillLevelToolTip();
+            if (levelTooltip != null && !SkillLevel.getNoAdditionalModifiers().equals(levelTooltip)) {
+                if (!secondary.isBlank()) {
+                    secondary += "\n";
+                }
+                levelTooltip = LINE_FEED_PATTERN.matcher(levelTooltip).replaceAll(", ");
+                String includesPrefix = SkillLevel.getIncludesModifiersFrom();
+                if (levelTooltip.startsWith(includesPrefix + ",")) {
+                    levelTooltip = includesPrefix + ":" + levelTooltip.substring(includesPrefix.length() + 1);
+                }
+                secondary += levelTooltip;
+            }
+        }
+        return secondary;
     }
 
     @Override

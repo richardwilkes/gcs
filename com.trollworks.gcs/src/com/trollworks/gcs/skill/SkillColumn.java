@@ -149,7 +149,10 @@ public enum SkillColumn {
 
         @Override
         public String getToolTip(Skill skill) {
-            return skill.getLevelToolTip();
+            if (skill.getDataFile().getSheetSettings().skillLevelAdjustmentsDisplay().tooltip()) {
+                return skill.getLevelToolTip();
+            }
+            return null;
         }
     },
     /** The relative skill level. */
@@ -199,7 +202,10 @@ public enum SkillColumn {
 
         @Override
         public String getToolTip(Skill skill) {
-            return skill.getLevelToolTip();
+            if (skill.getDataFile().getSheetSettings().skillLevelAdjustmentsDisplay().tooltip()) {
+                return skill.getLevelToolTip();
+            }
+            return null;
         }
     },
     /** The points spent in the skill. */
