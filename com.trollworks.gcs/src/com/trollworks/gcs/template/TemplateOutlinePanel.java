@@ -16,6 +16,7 @@ import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.TextDrawing;
 import com.trollworks.gcs.ui.border.TitledBorder;
+import com.trollworks.gcs.ui.scale.Scale;
 import com.trollworks.gcs.ui.widget.outline.ColumnUtils;
 import com.trollworks.gcs.ui.widget.outline.Outline;
 import com.trollworks.gcs.ui.widget.outline.OutlineHeader;
@@ -81,10 +82,11 @@ public class TemplateOutlinePanel extends DropPanel implements LayoutManager2 {
 
     @Override
     public void layoutContainer(Container parent) {
-        Insets    insets = getInsets();
-        Rectangle bounds = new Rectangle(insets.left, insets.top, getWidth() - (insets.left + insets.right), getHeight() - (insets.top + insets.bottom));
-        int       width  = bounds.width;
-        int       height = mHeader.getPreferredSize().height;
+        Insets    parentInsets = parent.getInsets();
+        Insets    insets       = getInsets();
+        int       width        = Scale.get(this).scale(8 * 72) - (parentInsets.left + parentInsets.right) - (insets.left + insets.right);
+        Rectangle bounds       = new Rectangle(insets.left, insets.top, width, getHeight() - (insets.top + insets.bottom));
+        int       height       = mHeader.getPreferredSize().height;
         mHeader.setBounds(bounds.x, bounds.y, width, height);
         bounds.y += height;
         bounds.height -= height;
