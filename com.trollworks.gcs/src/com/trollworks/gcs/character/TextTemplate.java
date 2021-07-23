@@ -31,6 +31,8 @@ import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillColumn;
 import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.spell.SpellColumn;
+import com.trollworks.gcs.ui.Colors;
+import com.trollworks.gcs.ui.ThemeColor;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowIterator;
@@ -107,6 +109,7 @@ public class TextTemplate {
     private static final String KEY_CATEGORIES                   = "CATEGORIES";
     private static final String KEY_CLASS                        = "CLASS";
     private static final String KEY_COLLEGE                      = "COLLEGE";
+    private static final String KEY_COLOR_PREFIX                 = "COLOR_";
     private static final String KEY_COMBINED_NAME                = "COMBINED_NAME";
     private static final String KEY_CONTINUE_ID                  = "CONTINUE_ID";
     private static final String KEY_COST                         = "COST";
@@ -659,6 +662,13 @@ public class TextTemplate {
                     setOnlyCategories(key);
                 } else if (key.startsWith(KEY_EXCLUDE_CATEGORIES)) {
                     setExcludeCategories(key);
+                } else if (key.startsWith(KEY_COLOR_PREFIX)) {
+                    String colorKey = key.substring(KEY_COLOR_PREFIX.length()).toLowerCase();
+                    for (ThemeColor one : Colors.ALL) {
+                        if (colorKey.equals(one.getKey())) {
+                            out.write(Colors.encodeToHex(one));
+                        }
+                    }
                 } else if (!processAttributeKeys(out, gurpsCharacter, key)) {
                     writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
                 }
@@ -716,7 +726,7 @@ public class TextTemplate {
             processSkillsLoop(out, extractUpToMarker(in, KEY_SKILLS + LOOP_END));
         } else if (key.startsWith(KEY_SKILLS + LOOP_COUNT)) {
             int counter = 0;
-            for (Skill skill : mSheet.getCharacter().getSkillsIterator()) {
+            for (Skill ignored : mSheet.getCharacter().getSkillsIterator()) {
                 counter++;
             }
             writeEncodedText(out, Integer.toString(counter));
@@ -724,7 +734,7 @@ public class TextTemplate {
             processSpellsLoop(out, extractUpToMarker(in, KEY_SPELLS + LOOP_END));
         } else if (key.startsWith(KEY_SPELLS + LOOP_COUNT)) {
             int counter = 0;
-            for (Spell spell : mSheet.getCharacter().getSpellsIterator()) {
+            for (Spell ignored : mSheet.getCharacter().getSpellsIterator()) {
                 counter++;
             }
             writeEncodedText(out, Integer.toString(counter));
@@ -756,7 +766,7 @@ public class TextTemplate {
             processNotesLoop(out, extractUpToMarker(in, KEY_NOTES + LOOP_END));
         } else if (key.startsWith(KEY_NOTES + LOOP_COUNT)) {
             int counter = 0;
-            for (Note note : mSheet.getCharacter().getNotesIterator()) {
+            for (Note ignored : mSheet.getCharacter().getNotesIterator()) {
                 counter++;
             }
             writeEncodedText(out, Integer.toString(counter));
