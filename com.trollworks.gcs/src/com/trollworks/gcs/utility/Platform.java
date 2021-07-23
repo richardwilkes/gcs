@@ -11,14 +11,25 @@
 
 package com.trollworks.gcs.utility;
 
+import com.trollworks.gcs.pageref.PDFViewer;
+
 /** Defines constants for each platform we support. */
 public enum Platform {
-    LINUX,
-    MAC,
-    WINDOWS,
-    UNKNOWN;
+    LINUX(PDFViewer.EVINCE),
+    MAC(PDFViewer.BROWSER),
+    WINDOWS(PDFViewer.BROWSER),
+    UNKNOWN(PDFViewer.BROWSER);
 
-    private static final Platform CURRENT;
+    private static final Platform  CURRENT;
+    private final        PDFViewer mDefaultPDFViewer;
+
+    Platform(PDFViewer viewer) {
+        mDefaultPDFViewer = viewer;
+    }
+
+    public PDFViewer defaultPDFViewer() {
+        return mDefaultPDFViewer;
+    }
 
     static {
         String osName = System.getProperty("os.name");

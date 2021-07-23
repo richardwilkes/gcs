@@ -13,7 +13,9 @@ package com.trollworks.gcs.settings;
 
 import com.trollworks.gcs.datafile.ChangeableData;
 import com.trollworks.gcs.datafile.DataFile;
+import com.trollworks.gcs.pageref.PDFViewer;
 import com.trollworks.gcs.ui.scale.Scales;
+import com.trollworks.gcs.utility.Platform;
 import com.trollworks.gcs.utility.SafeFileUpdater;
 import com.trollworks.gcs.utility.json.Json;
 import com.trollworks.gcs.utility.json.JsonMap;
@@ -40,26 +42,29 @@ public final class GeneralSettings {
     private static final String KEY_DEFAULT_TECH_LEVEL  = "default_tech_level";
     private static final String KEY_GCALC               = "gurps_calculator_key";
     private static final String KEY_IMAGE_RESOLUTION    = "image_resolution";
+    private static final String KEY_PDF_VIEWER          = "pdf_viewer";
     private static final String KEY_UNSPENT_POINTS      = "include_unspent_points_in_total";
     private static final String KEY_INITIAL_POINTS      = "initial_points";
     private static final String KEY_INITIAL_UI_SCALE    = "initial_ui_scale";
     private static final String KEY_TOOLTIP_TIMEOUT     = "tooltip_timeout";
 
-    private Scales  mInitialUIScale;
-    private String  mDefaultPlayerName;
-    private String  mDefaultTechLevel;
-    private String  mGCalcKey;
-    private int     mInitialPoints;
-    private int     mToolTipTimeout;
-    private int     mImageResolution;
-    private boolean mAutoFillProfile;
-    private boolean mIncludeUnspentPointsInTotal;
+    private Scales    mInitialUIScale;
+    private String    mDefaultPlayerName;
+    private String    mDefaultTechLevel;
+    private String    mGCalcKey;
+    private PDFViewer mPDFViewer;
+    private int       mInitialPoints;
+    private int       mToolTipTimeout;
+    private int       mImageResolution;
+    private boolean   mAutoFillProfile;
+    private boolean   mIncludeUnspentPointsInTotal;
 
     public GeneralSettings() {
         mInitialUIScale = Scales.QUARTER_AGAIN_SIZE;
         mDefaultPlayerName = System.getProperty("user.name", "");
         mDefaultTechLevel = "3";
         mGCalcKey = "";
+        mPDFViewer = Platform.getPlatform().defaultPDFViewer();
         mInitialPoints = 250;
         mToolTipTimeout = 60;
         mImageResolution = 200;
@@ -90,6 +95,7 @@ public final class GeneralSettings {
         mDefaultPlayerName = other.mDefaultPlayerName;
         mDefaultTechLevel = other.mDefaultTechLevel;
         mGCalcKey = other.mGCalcKey;
+        mPDFViewer = other.mPDFViewer;
         mInitialPoints = other.mInitialPoints;
         mToolTipTimeout = other.mToolTipTimeout;
         mImageResolution = other.mImageResolution;
@@ -102,6 +108,7 @@ public final class GeneralSettings {
         mDefaultPlayerName = m.getStringWithDefault(KEY_DEFAULT_PLAYER_NAME, mDefaultPlayerName);
         mDefaultTechLevel = m.getStringWithDefault(KEY_DEFAULT_TECH_LEVEL, mDefaultTechLevel);
         mGCalcKey = m.getStringWithDefault(KEY_GCALC, mGCalcKey);
+        mPDFViewer = Enums.extract(m.getString(KEY_PDF_VIEWER), PDFViewer.values(), Platform.getPlatform().defaultPDFViewer());
         mInitialPoints = m.getIntWithDefault(KEY_INITIAL_POINTS, mInitialPoints);
         mToolTipTimeout = m.getIntWithDefault(KEY_TOOLTIP_TIMEOUT, mToolTipTimeout);
         if (m.has(DEPRECATED_KEY_PNG_RESOLUTION)) {
@@ -143,6 +150,7 @@ public final class GeneralSettings {
         w.keyValue(KEY_DEFAULT_PLAYER_NAME, mDefaultPlayerName);
         w.keyValue(KEY_DEFAULT_TECH_LEVEL, mDefaultTechLevel);
         w.keyValue(KEY_GCALC, mGCalcKey);
+        w.keyValue(KEY_PDF_VIEWER, Enums.toId(mPDFViewer));
         w.keyValue(KEY_INITIAL_POINTS, mInitialPoints);
         w.keyValue(KEY_TOOLTIP_TIMEOUT, mToolTipTimeout);
         w.keyValue(KEY_IMAGE_RESOLUTION, mImageResolution);
@@ -181,6 +189,14 @@ public final class GeneralSettings {
 
     public void setGCalcKey(String key) {
         mGCalcKey = key;
+    }
+
+    public PDFViewer getPDFViewer() {
+        return mPDFViewer;
+    }
+
+    public void setPDFViewer(PDFViewer viewer) {
+        mPDFViewer = viewer;
     }
 
     public int getInitialPoints() {
@@ -270,6 +286,9 @@ public final class GeneralSettings {
         if (!mDefaultTechLevel.equals(that.mDefaultTechLevel)) {
             return false;
         }
+        if (mPDFViewer != that.mPDFViewer) {
+            return false;
+        }
         return mGCalcKey.equals(that.mGCalcKey);
     }
 
@@ -279,6 +298,7 @@ public final class GeneralSettings {
         result = 31 * result + mDefaultPlayerName.hashCode();
         result = 31 * result + mDefaultTechLevel.hashCode();
         result = 31 * result + mGCalcKey.hashCode();
+        result = 31 * result + mPDFViewer.hashCode();
         result = 31 * result + mInitialPoints;
         result = 31 * result + mToolTipTimeout;
         result = 31 * result + mImageResolution;

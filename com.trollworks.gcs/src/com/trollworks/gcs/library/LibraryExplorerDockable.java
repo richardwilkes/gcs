@@ -24,7 +24,6 @@ import com.trollworks.gcs.modifier.EquipmentModifierList;
 import com.trollworks.gcs.modifier.EquipmentModifiersDockable;
 import com.trollworks.gcs.notes.NoteList;
 import com.trollworks.gcs.notes.NotesDockable;
-import com.trollworks.gcs.pageref.PDFServer;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.skill.SkillList;
 import com.trollworks.gcs.skill.SkillsDockable;
@@ -319,7 +318,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, D
                 } else if (FileType.TEMPLATE.matchExtension(ext)) {
                     proxy = dockTemplate(new TemplateDockable(new Template(path)));
                 } else if (FileType.PDF.matchExtension(ext)) {
-                    PDFServer.showPDF(path, 0);
+                    Settings.getInstance().getGeneralSettings().getPDFViewer().open(path, 0);
                 }
             } catch (Throwable throwable) {
                 Modal.showCannotOpenMsg(this, PathUtils.getLeafName(path, true), throwable);

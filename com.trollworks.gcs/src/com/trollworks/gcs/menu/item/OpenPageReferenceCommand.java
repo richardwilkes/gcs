@@ -13,7 +13,6 @@ package com.trollworks.gcs.menu.item;
 
 import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.pageref.PDFServer;
 import com.trollworks.gcs.pageref.PageRef;
 import com.trollworks.gcs.pageref.PageRefSettings;
 import com.trollworks.gcs.settings.PageRefSettingsWindow;
@@ -122,11 +121,7 @@ public class OpenPageReferenceCommand extends Command {
                 }
             }
             if (ref != null) {
-                try {
-                    PDFServer.showPDF(ref.getPath(), page + ref.getPageToIndexOffset());
-                } catch (Exception exception) {
-                    Modal.showError(null, exception.getMessage());
-                }
+                Settings.getInstance().getGeneralSettings().getPDFViewer().open(ref.getPath(), page + ref.getPageToIndexOffset());
             }
         }
     }

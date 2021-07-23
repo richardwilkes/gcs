@@ -13,6 +13,7 @@ package com.trollworks.gcs.settings;
 
 import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.menu.file.ExportToGCalcCommand;
+import com.trollworks.gcs.pageref.PDFViewer;
 import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
@@ -38,16 +39,17 @@ import javax.swing.SwingConstants;
 public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings> {
     private static GeneralSettingsWindow INSTANCE;
 
-    private EditorField       mPlayerName;
-    private EditorField       mTechLevel;
-    private EditorField       mInitialPoints;
-    private Checkbox          mAutoFillProfile;
-    private PopupMenu<Scales> mInitialScale;
-    private EditorField       mToolTipTimeout;
-    private EditorField       mImageResolution;
-    private Checkbox          mIncludeUnspentPointsInTotal;
-    private EditorField       mGCalcKey;
-    private Button            mResetButton;
+    private EditorField          mPlayerName;
+    private EditorField          mTechLevel;
+    private EditorField          mInitialPoints;
+    private Checkbox             mAutoFillProfile;
+    private PopupMenu<Scales>    mInitialScale;
+    private EditorField          mToolTipTimeout;
+    private EditorField          mImageResolution;
+    private Checkbox             mIncludeUnspentPointsInTotal;
+    private EditorField          mGCalcKey;
+    private PopupMenu<PDFViewer> mPDFViewer;
+    private Button               mResetButton;
 
     /** Displays the general settings window. */
     public static void display() {
@@ -160,6 +162,15 @@ public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings>
         wrapper.add(new Label(I18n.text("dpi")));
 
         // Fourth row
+        mPDFViewer = new PopupMenu<>(PDFViewer.valuesForPlatform(), (p) -> {
+            Settings.getInstance().getGeneralSettings().setPDFViewer(p.getSelectedItem());
+            adjustResetButton();
+        });
+        mPDFViewer.setSelectedItem(settings.getPDFViewer(), false);
+        panel.add(new Label(I18n.text("PDF Viewer")), new PrecisionLayoutData().setFillHorizontalAlignment());
+        panel.add(mPDFViewer, new PrecisionLayoutData().setHorizontalSpan(2));
+
+        // Fifth row
         wrapper = new Wrapper(new PrecisionLayout().setMargins(0).setColumns(3));
         panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
         mGCalcKey = new EditorField(FieldFactory.STRING, (f) -> {
@@ -220,6 +231,7 @@ public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings>
         mImageResolution.setValue(Integer.valueOf(settings.getImageResolution()));
         mIncludeUnspentPointsInTotal.setChecked(settings.includeUnspentPointsInTotal());
         mGCalcKey.setValue(settings.getGCalcKey());
+        mPDFViewer.setSelectedItem(settings.getPDFViewer(), true);
     }
 
     @Override
