@@ -96,7 +96,7 @@ public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings>
             adjustResetButton();
         }, SwingConstants.LEFT, settings.getDefaultPlayerName(),
                 I18n.text("The player name to use when a new character sheet is created"));
-        panel.add(new Label(I18n.text("Player")), new PrecisionLayoutData().setFillHorizontalAlignment());
+        panel.add(new Label(I18n.text("Player")), new PrecisionLayoutData().setEndHorizontalAlignment());
         panel.add(mPlayerName, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
         mAutoFillProfile = new Checkbox(I18n.text("Fill in initial description"),
@@ -106,7 +106,7 @@ public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings>
         });
         mAutoFillProfile.setToolTipText(I18n.text("Automatically fill in new character identity and description information with randomized choices"));
         mAutoFillProfile.setOpaque(false);
-        panel.add(mAutoFillProfile);
+        panel.add(mAutoFillProfile, new PrecisionLayoutData().setLeftMargin(10));
 
         // Second row
         mTechLevel = new EditorField(FieldFactory.STRING, (f) -> {
@@ -114,7 +114,7 @@ public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings>
             adjustResetButton();
         }, SwingConstants.RIGHT, settings.getDefaultTechLevel(), "99+99^", getTechLevelTooltip());
         panel.add(new Label(I18n.text("Tech Level")),
-                new PrecisionLayoutData().setFillHorizontalAlignment());
+                new PrecisionLayoutData().setEndHorizontalAlignment());
         Wrapper wrapper = new Wrapper(new PrecisionLayout().setMargins(0).setColumns(3));
         panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         wrapper.add(mTechLevel, new PrecisionLayoutData().setFillHorizontalAlignment());
@@ -125,7 +125,7 @@ public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings>
         }, SwingConstants.RIGHT, Integer.valueOf(settings.getInitialPoints()), Integer.valueOf(999999),
                 I18n.text("The initial number of character points to start with"));
         wrapper.add(new Label(I18n.text("Initial Points")),
-                new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(5));
+                new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(10));
         wrapper.add(mInitialPoints, new PrecisionLayoutData().setFillHorizontalAlignment());
 
         mIncludeUnspentPointsInTotal = new Checkbox(I18n.text("Include unspent points in total"),
@@ -136,7 +136,7 @@ public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings>
         });
         mIncludeUnspentPointsInTotal.setToolTipText(I18n.text("Include unspent points in the character point total"));
         mIncludeUnspentPointsInTotal.setOpaque(false);
-        panel.add(mIncludeUnspentPointsInTotal);
+        panel.add(mIncludeUnspentPointsInTotal, new PrecisionLayoutData().setLeftMargin(10));
 
         // Third row
         mInitialScale = new PopupMenu<>(Scales.values(), (p) -> {
@@ -144,9 +144,11 @@ public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings>
             adjustResetButton();
         });
         mInitialScale.setSelectedItem(settings.getInitialUIScale(), false);
-        panel.add(new Label(I18n.text("Initial Scale")), new PrecisionLayoutData().setFillHorizontalAlignment());
+        panel.add(new Label(I18n.text("Initial Scale")),
+                new PrecisionLayoutData().setEndHorizontalAlignment());
         wrapper = new Wrapper(new PrecisionLayout().setMargins(0).setColumns(7));
-        panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(2));
+        panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().
+                setGrabHorizontalSpace(true).setHorizontalSpan(2));
         wrapper.add(mInitialScale);
 
         mToolTipTimeout = new EditorField(FieldFactory.TOOLTIP_TIMEOUT, (f) -> {
@@ -155,7 +157,8 @@ public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings>
         }, SwingConstants.RIGHT, Integer.valueOf(settings.getToolTipTimeout()),
                 FieldFactory.getMaxValue(FieldFactory.TOOLTIP_TIMEOUT),
                 I18n.text("The number of seconds before tooltips will dismiss themselves"));
-        wrapper.add(new Label(I18n.text("Tooltip Timeout")), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(5));
+        wrapper.add(new Label(I18n.text("Tooltip Timeout")),
+                new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(10));
         wrapper.add(mToolTipTimeout, new PrecisionLayoutData().setFillHorizontalAlignment());
         wrapper.add(new Label(I18n.text("seconds")));
 
@@ -165,7 +168,8 @@ public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings>
         }, SwingConstants.RIGHT, Integer.valueOf(settings.getImageResolution()),
                 FieldFactory.getMaxValue(FieldFactory.OUTPUT_DPI),
                 I18n.text("The resolution, in dots-per-inch, to use when saving sheets as PNG files"));
-        wrapper.add(new Label(I18n.text("Image Resolution")), new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(10));
+        wrapper.add(new Label(I18n.text("Image Resolution")),
+                new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(10));
         wrapper.add(mImageResolution, new PrecisionLayoutData().setFillHorizontalAlignment());
         wrapper.add(new Label(I18n.text("dpi")));
 
@@ -180,7 +184,7 @@ public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings>
         });
         PDFViewer pdfViewer = settings.getPDFViewer();
         mPDFViewer.setSelectedItem(pdfViewer, false);
-        panel.add(new Label(I18n.text("PDF Viewer")), new PrecisionLayoutData().setFillHorizontalAlignment());
+        panel.add(new Label(I18n.text("PDF Viewer")), new PrecisionLayoutData().setEndHorizontalAlignment());
         wrapper = new Wrapper(new PrecisionLayout().setMargins(0).setColumns(3));
         wrapper.add(mPDFViewer);
         mPDFInstall = new Label("");
@@ -211,7 +215,7 @@ public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings>
             Settings.getInstance().getGeneralSettings().setGCalcKey(f.getText().trim());
             adjustResetButton();
         }, SwingConstants.LEFT, settings.getGCalcKey(), null);
-        wrapper.add(new Label(I18n.text("GURPS Calculator Key")), new PrecisionLayoutData().setFillHorizontalAlignment());
+        wrapper.add(new Label(I18n.text("GURPS Calculator Key")), new PrecisionLayoutData().setEndHorizontalAlignment());
         wrapper.add(mGCalcKey, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         wrapper.add(new FontIconButton(FontAwesome.SEARCH,
                 I18n.text("Lookup your key on the GURPS Calculator web site"),

@@ -14,10 +14,14 @@ package com.trollworks.gcs.pageref;
 import com.trollworks.gcs.ui.widget.Modal;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
+import com.trollworks.gcs.utility.PathUtils;
 import com.trollworks.gcs.utility.Platform;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,13 +44,86 @@ public enum PDFViewer {
 
         @Override
         public void open(Path path, int page) {
-            ProcessBuilder pb = new ProcessBuilder("evince", "-i", Integer.toString(page),
-                    path.normalize().toAbsolutePath().toString());
-            try {
-                pb.start();
-            } catch (IOException ioe) {
-                Log.error(ioe);
-                Modal.showError(null, ioe.getMessage());
+            String exe = findExecutable("evince");
+            if (exe != null) {
+                ProcessBuilder pb = new ProcessBuilder("evince", "-i", Integer.toString(page),
+                        path.normalize().toAbsolutePath().toString());
+                try {
+                    pb.start();
+                } catch (IOException ioe) {
+                    Log.error(ioe);
+                    Modal.showError(null, ioe.getMessage());
+                }
+            }
+        }
+    },
+    FOXIT {
+        @Override
+        public String toString() {
+            return I18n.text("Foxit PDF");
+        }
+
+        @Override
+        public boolean available() {
+            return Platform.isWindows();
+        }
+
+        @Override
+        public String installFrom() {
+            return "https://www.foxit.com/pdf-reader";
+        }
+
+        @Override
+        public void open(Path path, int page) {
+            String exeName     = "FoxitPDFReader";
+            String partialPath = "Foxit Software\\Foxit PDF Reader";
+            String exe = findExecutable(appendToPaths(appendToPaths(System.getenv("PATH"),
+                    System.getenv("PROGRAMFILES"), partialPath), System.getenv("ProgramFiles(x86)"),
+                    partialPath), exeName);
+            if (exe != null) {
+                ProcessBuilder pb = new ProcessBuilder(exe,
+                        path.normalize().toAbsolutePath().toString(), "/A", "page=" + page);
+                try {
+                    pb.start();
+                } catch (IOException ioe) {
+                    Log.error(ioe);
+                    Modal.showError(null, ioe.getMessage());
+                }
+            }
+        }
+    },
+    PDF_XCHANGE {
+        @Override
+        public String toString() {
+            return I18n.text("PDF-XChange");
+        }
+
+        @Override
+        public boolean available() {
+            return Platform.isWindows();
+        }
+
+        @Override
+        public String installFrom() {
+            return "https://www.tracker-software.com";
+        }
+
+        @Override
+        public void open(Path path, int page) {
+            String exeName     = "PDFXEdit";
+            String partialPath = "Tracker Software\\PDF Editor";
+            String exe = findExecutable(appendToPaths(appendToPaths(System.getenv("PATH"),
+                    System.getenv("PROGRAMFILES"), partialPath), System.getenv("ProgramFiles(x86)"),
+                    partialPath), exeName);
+            if (exe != null) {
+                ProcessBuilder pb = new ProcessBuilder(exe, "/A", "page=" + page,
+                        path.normalize().toAbsolutePath().toString());
+                try {
+                    pb.start();
+                } catch (IOException ioe) {
+                    Log.error(ioe);
+                    Modal.showError(null, ioe.getMessage());
+                }
             }
         }
     },
@@ -68,6 +145,10 @@ public enum PDFViewer {
 
         @Override
         public void open(Path path, int page) {
+            if (!Files.exists(Paths.get("/Applications/Skim.app"))) {
+                showUnableToLocateMsg();
+                return;
+            }
             ProcessBuilder pb = new ProcessBuilder("open", "skim://" +
                     PDFServer.encodeQueryParam(path.normalize().toAbsolutePath().toString()) +
                     "#page=" + page);
@@ -82,7 +163,7 @@ public enum PDFViewer {
     SUMATRA {
         @Override
         public String toString() {
-            return I18n.text("Sumatra");
+            return I18n.text("SumatraPDF");
         }
 
         @Override
@@ -97,13 +178,19 @@ public enum PDFViewer {
 
         @Override
         public void open(Path path, int page) {
-            ProcessBuilder pb = new ProcessBuilder("sumatra", "-page", Integer.toString(page),
-                    path.normalize().toAbsolutePath().toString());
-            try {
-                pb.start();
-            } catch (IOException ioe) {
-                Log.error(ioe);
-                Modal.showError(null, ioe.getMessage());
+            String exeName = "SumatraPDF";
+            String exe = findExecutable(appendToPaths(appendToPaths(System.getenv("PATH"),
+                    System.getenv("LOCALAPPDATA"), exeName), System.getenv("APPDATA"),
+                    exeName), exeName);
+            if (exe != null) {
+                ProcessBuilder pb = new ProcessBuilder(exe, "-page", Integer.toString(page),
+                        path.normalize().toAbsolutePath().toString());
+                try {
+                    pb.start();
+                } catch (IOException ioe) {
+                    Log.error(ioe);
+                    Modal.showError(null, ioe.getMessage());
+                }
             }
         }
     },
@@ -148,5 +235,42 @@ public enum PDFViewer {
             }
         }
         return list;
+    }
+
+    void showUnableToLocateMsg() {
+        Modal.showError(null, String.format(I18n.text("""
+                Unable to locate %s.
+                                        
+                You may need to install it from %s
+                and/or add it to your system PATH variable."""), this, installFrom()));
+    }
+
+    String findExecutable(String exeName) {
+        String exe = PathUtils.searchPathForExecutable(exeName);
+        if (exe == null) {
+            showUnableToLocateMsg();
+        }
+        return exe;
+    }
+
+    String findExecutable(String paths, String exeName) {
+        String exe = PathUtils.searchPathsForExecutable(paths, exeName);
+        if (exe == null) {
+            showUnableToLocateMsg();
+        }
+        return exe;
+    }
+
+    String appendToPaths(String paths, String path, String additional) {
+        if (path == null) {
+            return paths;
+        }
+        if (additional != null) {
+            path += File.separator + additional;
+        }
+        if (paths == null) {
+            return path;
+        }
+        return paths + File.pathSeparator + path;
     }
 }

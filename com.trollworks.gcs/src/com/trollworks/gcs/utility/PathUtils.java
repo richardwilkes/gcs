@@ -12,10 +12,15 @@
 package com.trollworks.gcs.utility;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /** Provides standard file path manipulation facilities. */
 public final class PathUtils {
@@ -300,5 +305,54 @@ public final class PathUtils {
             return name;
         }
         return "untitled";
+    }
+
+    /**
+     * Searches through the system path for an executable.
+     *
+     * @param executable The executable to locate.
+     * @return The absolute path to the executable, or {@code null}.
+     */
+    public static String searchPathForExecutable(String executable) {
+        return searchPathsForExecutable(System.getenv("PATH"), executable);
+    }
+
+    /**
+     * Searches through the specified paths for an executable.
+     *
+     * @param paths      The paths to search. Separate multiple paths with the {@link
+     *                   File#pathSeparator}.
+     * @param executable The executable to locate.
+     * @return The absolute path to the executable, or {@code null}.
+     */
+    public static String searchPathsForExecutable(String paths, String executable) {
+        if (paths == null) {
+            return null;
+        }
+        if (Platform.isWindows()) {
+            executable = enforceExtension(executable, "exe", true);
+        }
+        for (String dir : paths.split(File.pathSeparator)) {
+            Path p = Paths.get(dir);
+            if (Files.isDirectory(p)) {
+                try (Stream<Path> stream = Files.list(p)) {
+                    for (Path path : stream.collect(Collectors.toList())) {
+                        String  fileName = path.getFileName().toString();
+                        boolean match;
+                        if (Platform.isWindows() || Platform.isMacintosh()) {
+                            match = fileName.equalsIgnoreCase(executable);
+                        } else {
+                            match = fileName.equals(executable);
+                        }
+                        if (match && Files.isExecutable(path)) {
+                            return path.toAbsolutePath().toString();
+                        }
+                    }
+                } catch (IOException ex) {
+                    Log.warn(ex);
+                }
+            }
+        }
+        return null;
     }
 }
