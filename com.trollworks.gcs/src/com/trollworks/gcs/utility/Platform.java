@@ -16,9 +16,9 @@ import com.trollworks.gcs.pageref.PDFViewer;
 /** Defines constants for each platform we support. */
 public enum Platform {
     LINUX(PDFViewer.EVINCE),
-    MAC(PDFViewer.BROWSER),
-    WINDOWS(PDFViewer.BROWSER),
-    UNKNOWN(PDFViewer.BROWSER);
+    MAC(PDFViewer.SKIM),
+    WINDOWS(PDFViewer.SUMATRA),
+    UNKNOWN(PDFViewer.WEB_BROWSER);
 
     private static final Platform  CURRENT;
     private final        PDFViewer mDefaultPDFViewer;

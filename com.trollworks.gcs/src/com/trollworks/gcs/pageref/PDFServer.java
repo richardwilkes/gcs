@@ -159,14 +159,12 @@ public final class PDFServer {
         }
     }
 
-    private static String encodeQueryParam(String str) {
+    public static String encodeQueryParam(String str) {
         StringBuilder buffer = new StringBuilder();
         byte[]        bytes  = str.getBytes(StandardCharsets.UTF_8);
         for (byte b : bytes) {
             if ((b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z') || (b >= '0' && b <= '9') || b == '-' || b == '_' || b == '.' || b == '~' || b == '/') {
                 buffer.append((char) b);
-            } else if (b == ' ') {
-                buffer.append('+');
             } else {
                 buffer.append('%');
                 int bint = b & 0xff;

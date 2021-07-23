@@ -22,27 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public enum PDFViewer {
-    BROWSER {
-        @Override
-        public String toString() {
-            return I18n.text("Web Browser");
-        }
-
-        @Override
-        public boolean available() {
-            return true;
-        }
-
-        @Override
-        public void open(Path path, int page) {
-            try {
-                PDFServer.showPDF(path, page);
-            } catch (Exception ex) {
-                Log.error(ex);
-                Modal.showError(null, ex.getMessage());
-            }
-        }
-    },
     EVINCE {
         @Override
         public String toString() {
@@ -52,6 +31,11 @@ public enum PDFViewer {
         @Override
         public boolean available() {
             return Platform.isLinux();
+        }
+
+        @Override
+        public String installFrom() {
+            return "https://wiki.gnome.org/Apps/Evince";
         }
 
         @Override
@@ -65,9 +49,94 @@ public enum PDFViewer {
                 Modal.showError(null, ioe.getMessage());
             }
         }
+    },
+    SKIM {
+        @Override
+        public String toString() {
+            return I18n.text("Skim");
+        }
+
+        @Override
+        public boolean available() {
+            return Platform.isMacintosh();
+        }
+
+        @Override
+        public String installFrom() {
+            return "https://skim-app.sourceforge.io";
+        }
+
+        @Override
+        public void open(Path path, int page) {
+            ProcessBuilder pb = new ProcessBuilder("open", "skim://" +
+                    PDFServer.encodeQueryParam(path.normalize().toAbsolutePath().toString()) +
+                    "#page=" + page);
+            try {
+                pb.start();
+            } catch (IOException ioe) {
+                Log.error(ioe);
+                Modal.showError(null, ioe.getMessage());
+            }
+        }
+    },
+    SUMATRA {
+        @Override
+        public String toString() {
+            return I18n.text("Sumatra");
+        }
+
+        @Override
+        public boolean available() {
+            return Platform.isWindows();
+        }
+
+        @Override
+        public String installFrom() {
+            return "https://www.sumatrapdfreader.org";
+        }
+
+        @Override
+        public void open(Path path, int page) {
+            ProcessBuilder pb = new ProcessBuilder("sumatra", "-page", Integer.toString(page),
+                    path.normalize().toAbsolutePath().toString());
+            try {
+                pb.start();
+            } catch (IOException ioe) {
+                Log.error(ioe);
+                Modal.showError(null, ioe.getMessage());
+            }
+        }
+    },
+    WEB_BROWSER {
+        @Override
+        public String toString() {
+            return I18n.text("Web Browser");
+        }
+
+        @Override
+        public boolean available() {
+            return true;
+        }
+
+        @Override
+        public String installFrom() {
+            return "";
+        }
+
+        @Override
+        public void open(Path path, int page) {
+            try {
+                PDFServer.showPDF(path, page);
+            } catch (Exception ex) {
+                Log.error(ex);
+                Modal.showError(null, ex.getMessage());
+            }
+        }
     };
 
     public abstract boolean available();
+
+    public abstract String installFrom();
 
     public abstract void open(Path path, int page);
 

@@ -14,6 +14,7 @@ package com.trollworks.gcs.settings;
 import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.menu.file.ExportToGCalcCommand;
 import com.trollworks.gcs.pageref.PDFViewer;
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
@@ -31,8 +32,13 @@ import com.trollworks.gcs.ui.widget.Wrapper;
 import com.trollworks.gcs.utility.Dirs;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.Log;
 
+import java.awt.Desktop;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
 import javax.swing.SwingConstants;
 
@@ -49,6 +55,8 @@ public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings>
     private Checkbox             mIncludeUnspentPointsInTotal;
     private EditorField          mGCalcKey;
     private PopupMenu<PDFViewer> mPDFViewer;
+    private Label                mPDFInstall;
+    private Label                mPDFLink;
     private Button               mResetButton;
 
     /** Displays the general settings window. */
@@ -163,12 +171,38 @@ public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings>
 
         // Fourth row
         mPDFViewer = new PopupMenu<>(PDFViewer.valuesForPlatform(), (p) -> {
-            Settings.getInstance().getGeneralSettings().setPDFViewer(p.getSelectedItem());
-            adjustResetButton();
+            PDFViewer pdfViewer = p.getSelectedItem();
+            if (pdfViewer != null) {
+                Settings.getInstance().getGeneralSettings().setPDFViewer(pdfViewer);
+                updatePDFLinks(pdfViewer);
+                adjustResetButton();
+            }
         });
-        mPDFViewer.setSelectedItem(settings.getPDFViewer(), false);
+        PDFViewer pdfViewer = settings.getPDFViewer();
+        mPDFViewer.setSelectedItem(pdfViewer, false);
         panel.add(new Label(I18n.text("PDF Viewer")), new PrecisionLayoutData().setFillHorizontalAlignment());
-        panel.add(mPDFViewer, new PrecisionLayoutData().setHorizontalSpan(2));
+        wrapper = new Wrapper(new PrecisionLayout().setMargins(0).setColumns(3));
+        wrapper.add(mPDFViewer);
+        mPDFInstall = new Label("");
+        wrapper.add(mPDFInstall, new PrecisionLayoutData().setLeftMargin(10));
+        mPDFLink = new Label("");
+        mPDFLink.setForeground(Colors.ICON_BUTTON_PRESSED);
+        mPDFLink.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent event) {
+                String text = mPDFLink.getText();
+                if (!text.isBlank()) {
+                    try {
+                        Desktop.getDesktop().browse(new URI(text));
+                    } catch (Exception ex) {
+                        Log.error(ex);
+                    }
+                }
+            }
+        });
+        wrapper.add(mPDFLink, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+        panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(2));
+        updatePDFLinks(pdfViewer);
 
         // Fifth row
         wrapper = new Wrapper(new PrecisionLayout().setMargins(0).setColumns(3));
@@ -231,7 +265,23 @@ public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings>
         mImageResolution.setValue(Integer.valueOf(settings.getImageResolution()));
         mIncludeUnspentPointsInTotal.setChecked(settings.includeUnspentPointsInTotal());
         mGCalcKey.setValue(settings.getGCalcKey());
-        mPDFViewer.setSelectedItem(settings.getPDFViewer(), true);
+        PDFViewer pdfViewer = settings.getPDFViewer();
+        mPDFViewer.setSelectedItem(pdfViewer, true);
+        updatePDFLinks(pdfViewer);
+    }
+
+    private static String getInstallFromText() {
+        return I18n.text("Install from:");
+    }
+
+    private void updatePDFLinks(PDFViewer viewer) {
+        String from = viewer.installFrom();
+        mPDFInstall.setText(from.isBlank() ? "" : getInstallFromText());
+        mPDFInstall.revalidate();
+        mPDFInstall.repaint();
+        mPDFLink.setText(from);
+        mPDFLink.revalidate();
+        mPDFLink.repaint();
     }
 
     @Override
