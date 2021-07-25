@@ -26,6 +26,41 @@ import java.util.ArrayList;
 import java.util.List;
 
 public enum PDFViewer {
+    ACROBAT {
+        @Override
+        public String toString() {
+            return I18n.text("Acrobat");
+        }
+
+        @Override
+        public boolean available() {
+            return Platform.isWindows();
+        }
+
+        @Override
+        public String installFrom() {
+            return "https://acrobat.adobe.com";
+        }
+
+        @Override
+        public void open(Path path, int page) {
+            String exeName     = "Acrobat";
+            String partialPath = "Adobe\\Acrobat DC\\Acrobat";
+            String exe = findExecutable(appendToPaths(appendToPaths(System.getenv("PATH"),
+                    System.getenv("PROGRAMFILES"), partialPath), System.getenv("ProgramFiles(x86)"),
+                    partialPath), exeName);
+            if (exe != null) {
+                ProcessBuilder pb = new ProcessBuilder(exe, "/A", "page=" + page,
+                        path.normalize().toAbsolutePath().toString());
+                try {
+                    pb.start();
+                } catch (IOException ioe) {
+                    Log.error(ioe);
+                    Modal.showError(null, ioe.getMessage());
+                }
+            }
+        }
+    },
     EVINCE {
         @Override
         public String toString() {
