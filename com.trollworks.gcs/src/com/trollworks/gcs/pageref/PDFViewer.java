@@ -44,21 +44,7 @@ public enum PDFViewer {
 
         @Override
         public void open(Path path, int page) {
-            String exeName     = "Acrobat";
-            String partialPath = "Adobe\\Acrobat DC\\Acrobat";
-            String exe = findExecutable(appendToPaths(appendToPaths(System.getenv("PATH"),
-                    System.getenv("PROGRAMFILES"), partialPath), System.getenv("ProgramFiles(x86)"),
-                    partialPath), exeName);
-            if (exe != null) {
-                ProcessBuilder pb = new ProcessBuilder(exe, "/A", "page=" + page,
-                        path.normalize().toAbsolutePath().toString());
-                try {
-                    pb.start();
-                } catch (IOException ioe) {
-                    Log.error(ioe);
-                    Modal.showError(null, ioe.getMessage());
-                }
-            }
+            slashAPageOpenForWindows("Adobe\\Acrobat DC\\Acrobat", "Acrobat", path, page, true);
         }
     },
     EVINCE {
@@ -110,21 +96,7 @@ public enum PDFViewer {
 
         @Override
         public void open(Path path, int page) {
-            String exeName     = "FoxitPDFReader";
-            String partialPath = "Foxit Software\\Foxit PDF Reader";
-            String exe = findExecutable(appendToPaths(appendToPaths(System.getenv("PATH"),
-                    System.getenv("PROGRAMFILES"), partialPath), System.getenv("ProgramFiles(x86)"),
-                    partialPath), exeName);
-            if (exe != null) {
-                ProcessBuilder pb = new ProcessBuilder(exe,
-                        path.normalize().toAbsolutePath().toString(), "/A", "page=" + page);
-                try {
-                    pb.start();
-                } catch (IOException ioe) {
-                    Log.error(ioe);
-                    Modal.showError(null, ioe.getMessage());
-                }
-            }
+            slashAPageOpenForWindows("Foxit Software\\Foxit PDF Reader", "FoxitPDFReader", path, page, false);
         }
     },
     PDF_XCHANGE {
@@ -145,21 +117,28 @@ public enum PDFViewer {
 
         @Override
         public void open(Path path, int page) {
-            String exeName     = "PDFXEdit";
-            String partialPath = "Tracker Software\\PDF Editor";
-            String exe = findExecutable(appendToPaths(appendToPaths(System.getenv("PATH"),
-                    System.getenv("PROGRAMFILES"), partialPath), System.getenv("ProgramFiles(x86)"),
-                    partialPath), exeName);
-            if (exe != null) {
-                ProcessBuilder pb = new ProcessBuilder(exe, "/A", "page=" + page,
-                        path.normalize().toAbsolutePath().toString());
-                try {
-                    pb.start();
-                } catch (IOException ioe) {
-                    Log.error(ioe);
-                    Modal.showError(null, ioe.getMessage());
-                }
-            }
+            slashAPageOpenForWindows("Tracker Software\\PDF Editor", "PDFXEdit", path, page, true);
+        }
+    },
+    PDF_XCVIEW {
+        @Override
+        public String toString() {
+            return I18n.text("PDF-XChange Viewer");
+        }
+
+        @Override
+        public boolean available() {
+            return Platform.isWindows();
+        }
+
+        @Override
+        public String installFrom() {
+            return "https://www.tracker-software.com";
+        }
+
+        @Override
+        public void open(Path path, int page) {
+            slashAPageOpenForWindows("Tracker Software\\PDF-Viewer", "PDFXCview", path, page, true);
         }
     },
     SKIM {
@@ -214,9 +193,7 @@ public enum PDFViewer {
         @Override
         public void open(Path path, int page) {
             String exeName = "SumatraPDF";
-            String exe = findExecutable(appendToPaths(appendToPaths(System.getenv("PATH"),
-                    System.getenv("LOCALAPPDATA"), exeName), System.getenv("APPDATA"),
-                    exeName), exeName);
+            String exe     = findWindowsExecutable(exeName, exeName);
             if (exe != null) {
                 ProcessBuilder pb = new ProcessBuilder(exe, "-page", Integer.toString(page),
                         path.normalize().toAbsolutePath().toString());
@@ -296,6 +273,14 @@ public enum PDFViewer {
         return exe;
     }
 
+    String findWindowsExecutable(String partialPath, String exeName) {
+        String paths = appendToPaths(System.getenv("PATH"), System.getenv("PROGRAMFILES"), partialPath);
+        paths = appendToPaths(paths, System.getenv("ProgramFiles(x86)"), partialPath);
+        paths = appendToPaths(paths, System.getenv("LOCALAPPDATA"), partialPath);
+        paths = appendToPaths(paths, System.getenv("APPDATA"), partialPath);
+        return findExecutable(paths, exeName);
+    }
+
     String appendToPaths(String paths, String path, String additional) {
         if (path == null) {
             return paths;
@@ -307,5 +292,32 @@ public enum PDFViewer {
             return path;
         }
         return paths + File.pathSeparator + path;
+    }
+
+    void slashAPageOpenForWindows(String partialPath, String exeName, Path pdfPath, int page, boolean before) {
+        String exe = findWindowsExecutable(partialPath, exeName);
+        if (exe != null) {
+            List<String> args = new ArrayList<>();
+            args.add(exe);
+            if (before) {
+                addSlashAPageArg(args, page);
+            }
+            args.add(pdfPath.normalize().toAbsolutePath().toString());
+            if (!before) {
+                addSlashAPageArg(args, page);
+            }
+            ProcessBuilder pb = new ProcessBuilder(args);
+            try {
+                pb.start();
+            } catch (IOException ioe) {
+                Log.error(ioe);
+                Modal.showError(null, ioe.getMessage());
+            }
+        }
+    }
+
+    void addSlashAPageArg(List<String> args, int page) {
+        args.add("/A");
+        args.add("page=" + page);
     }
 }
