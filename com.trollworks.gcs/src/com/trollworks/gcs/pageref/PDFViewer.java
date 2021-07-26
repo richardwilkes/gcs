@@ -99,6 +99,37 @@ public enum PDFViewer {
             slashAPageOpenForWindows("Foxit Software\\Foxit PDF Reader", "FoxitPDFReader", path, page, false);
         }
     },
+    OKULAR {
+        @Override
+        public String toString() {
+            return I18n.text("Okular");
+        }
+
+        @Override
+        public boolean available() {
+            return Platform.isLinux();
+        }
+
+        @Override
+        public String installFrom() {
+            return "https://okular.kde.org/";
+        }
+
+        @Override
+        public void open(Path path, int page) {
+            String exe = findExecutable("okular");
+            if (exe != null) {
+                ProcessBuilder pb = new ProcessBuilder("okular", "-p", Integer.toString(page),
+                        path.normalize().toAbsolutePath().toString());
+                try {
+                    pb.start();
+                } catch (IOException ioe) {
+                    Log.error(ioe);
+                    Modal.showError(null, ioe.getMessage());
+                }
+            }
+        }
+    },
     PDF_XCHANGE {
         @Override
         public String toString() {
@@ -139,6 +170,37 @@ public enum PDFViewer {
         @Override
         public void open(Path path, int page) {
             slashAPageOpenForWindows("Tracker Software\\PDF-Viewer", "PDFXCview", path, page, true);
+        }
+    },
+    QPDFVIEW {
+        @Override
+        public String toString() {
+            return I18n.text("qpdfview");
+        }
+
+        @Override
+        public boolean available() {
+            return Platform.isLinux();
+        }
+
+        @Override
+        public String installFrom() {
+            return "https://launchpad.net/qpdfview";
+        }
+
+        @Override
+        public void open(Path path, int page) {
+            String exe = findExecutable("qpdfview");
+            if (exe != null) {
+                ProcessBuilder pb = new ProcessBuilder("qpdfview", "--unique",
+                        path.normalize().toAbsolutePath().toString() + "#" + Integer.toString(page));
+                try {
+                    pb.start();
+                } catch (IOException ioe) {
+                    Log.error(ioe);
+                    Modal.showError(null, ioe.getMessage());
+                }
+            }
         }
     },
     SKIM {
