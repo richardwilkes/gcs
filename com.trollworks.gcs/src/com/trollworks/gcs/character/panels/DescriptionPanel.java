@@ -61,6 +61,7 @@ public class DescriptionPanel extends DropPanel {
         mAgeField = createRandomizableField(wrapper, sheet, FieldFactory.STRING, profile.getAge(),
                 "age", I18n.text("Age"), I18n.text("The character's age"),
                 (c, v) -> c.getProfile().setAge((String) v), (b) -> {
+                    mAgeField.attemptCommit();
                     mAgeField.requestFocus();
                     String current = profile.getAge();
                     String result;
@@ -73,6 +74,7 @@ public class DescriptionPanel extends DropPanel {
                 profile.getBirthday(), "birthday", I18n.text("Birthday"),
                 I18n.text("The character's birthday"),
                 (c, v) -> c.getProfile().setBirthday((String) v), (b) -> {
+                    mBirthdayField.attemptCommit();
                     mBirthdayField.requestFocus();
                     String current = profile.getBirthday();
                     String result;
@@ -92,6 +94,7 @@ public class DescriptionPanel extends DropPanel {
                 profile.getHeight(), "character height", I18n.text("Height"),
                 I18n.text("The character's height"),
                 (c, v) -> c.getProfile().setHeight((LengthValue) v), (b) -> {
+                    mHeightField.attemptCommit();
                     mHeightField.requestFocus();
                     LengthValue length = profile.getHeight();
                     LengthValue result;
@@ -105,6 +108,7 @@ public class DescriptionPanel extends DropPanel {
                 profile.getWeight(), "character weight", I18n.text("Weight"),
                 I18n.text("The character's weight"),
                 (c, v) -> c.getProfile().setWeight((WeightValue) v), (b) -> {
+                    mWeightField.attemptCommit();
                     mWeightField.requestFocus();
                     WeightValue weight = profile.getWeight();
                     WeightValue result;
@@ -127,6 +131,7 @@ public class DescriptionPanel extends DropPanel {
         mHairField = createRandomizableField(wrapper, sheet, FieldFactory.STRING, profile.getHair(),
                 "hair", I18n.text("Hair"), I18n.text("The character's hair style and color"),
                 (c, v) -> c.getProfile().setHair((String) v), (b) -> {
+                    mHairField.attemptCommit();
                     mHairField.requestFocus();
                     profile.setHair(Profile.getRandomHair(profile.getHair()));
                 });
@@ -134,6 +139,7 @@ public class DescriptionPanel extends DropPanel {
                 profile.getEyeColor(), "eye color", I18n.text("Eyes"),
                 I18n.text("The character's eye color"),
                 (c, v) -> c.getProfile().setEyeColor((String) v), (b) -> {
+                    mEyeColorField.attemptCommit();
                     mEyeColorField.requestFocus();
                     profile.setEyeColor(Profile.getRandomEyeColor(profile.getEyeColor()));
                 });
@@ -141,6 +147,7 @@ public class DescriptionPanel extends DropPanel {
                 profile.getSkinColor(), "skin color", I18n.text("Skin"),
                 I18n.text("The character's skin color"),
                 (c, v) -> c.getProfile().setSkinColor((String) v), (b) -> {
+                    mSkinColorField.attemptCommit();
                     mSkinColorField.requestFocus();
                     profile.setSkinColor(Profile.getRandomSkinColor(profile.getSkinColor()));
                 });
@@ -151,6 +158,7 @@ public class DescriptionPanel extends DropPanel {
     private static PageField createRandomizableField(Container parent, CharacterSheet sheet, AbstractFormatterFactory factory, Object value, String tag, String title, String tooltip, CharacterSetter setter, FontIconButton.ClickFunction randomizer) {
         FontIconButton button = new FontIconButton(FontAwesome.RANDOM, String.format(I18n.text("Randomize %s"), title), randomizer);
         button.setThemeFont(Fonts.FONT_ICON_PAGE_SMALL);
+        button.setFocusable(false);
         parent.add(button);
         PageField field = new PageField(factory, value, setter, sheet, tag, SwingConstants.LEFT, true, tooltip);
         parent.add(new PageLabel(title), new PrecisionLayoutData().setEndHorizontalAlignment().setLeftMargin(1));

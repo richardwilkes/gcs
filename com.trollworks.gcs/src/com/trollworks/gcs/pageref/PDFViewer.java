@@ -193,7 +193,7 @@ public enum PDFViewer {
             String exe = findExecutable("qpdfview");
             if (exe != null) {
                 ProcessBuilder pb = new ProcessBuilder("qpdfview", "--unique",
-                        path.normalize().toAbsolutePath().toString() + "#" + Integer.toString(page));
+                        path.normalize().toAbsolutePath() + "#" + page);
                 try {
                     pb.start();
                 } catch (IOException ioe) {

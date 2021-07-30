@@ -322,7 +322,6 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, D
                 }
             } catch (Throwable throwable) {
                 Modal.showCannotOpenMsg(this, PathUtils.getLeafName(path, true), throwable);
-                proxy = null;
             }
         } else {
             Dockable dockable = (Dockable) proxy;

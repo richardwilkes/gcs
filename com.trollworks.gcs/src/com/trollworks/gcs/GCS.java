@@ -83,6 +83,7 @@ public final class GCS {
 
         // Setup the copyright notices and such that rely on the version and year info
         COPYRIGHT = String.format(I18n.text("Copyright ©%s by %s"), years, "Richard A. Wilkes");
+        //noinspection StringConcatenationInFormatCall
         COPYRIGHT_FOOTER = String.format("GCS " + I18n.text("is copyrighted ©%s by %s"), years, "Richard A. Wilkes");
         StringBuilder buffer = new StringBuilder();
         buffer.append("GCS ");

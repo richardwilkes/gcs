@@ -32,7 +32,6 @@ public final class MouseCapture implements MouseListener, MouseMotionListener, H
     private static final Map<Component, MouseCapture> MAP = new HashMap<>();
     private              Component                    mGlassPane;
     private              Component                    mCaptureComponent;
-    private              Component                    mCaptureOutsideComponent;
 
     /**
      * Starts redirecting all mouse events to the specified component or one of its children.
@@ -41,23 +40,21 @@ public final class MouseCapture implements MouseListener, MouseMotionListener, H
      * @param cursor The cursor to use while the mouse is captured.
      */
     public static void start(Component target, Cursor cursor) {
-        start(target, target, null, cursor);
+        start(target, target, cursor);
     }
 
     /**
      * Starts redirecting all mouse events to the specified component or one of its children.
      *
-     * @param host          The host component, which determines the glass pane that will be used.
-     * @param target        The target.
-     * @param outsideTarget The outside target. Mouse events that would otherwise be discarded will
-     *                      be delivered to this component if set.
-     * @param cursor        The cursor to use while the mouse is captured.
+     * @param host   The host component, which determines the glass pane that will be used.
+     * @param target The target.
+     * @param cursor The cursor to use while the mouse is captured.
      */
-    public static void start(Component host, Component target, Component outsideTarget, Cursor cursor) {
+    public static void start(Component host, Component target, Cursor cursor) {
         JRootPane rootPane = SwingUtilities.getRootPane(host);
         if (rootPane != null) {
             Component    glassPane = rootPane.getGlassPane();
-            MouseCapture capture   = new MouseCapture(glassPane, target, outsideTarget, cursor);
+            MouseCapture capture   = new MouseCapture(glassPane, target, cursor);
             MAP.put(target, capture);
             glassPane.setVisible(true);
         }
@@ -75,10 +72,9 @@ public final class MouseCapture implements MouseListener, MouseMotionListener, H
         }
     }
 
-    private MouseCapture(Component glassPane, Component capture, Component outsideTarget, Cursor cursor) {
+    private MouseCapture(Component glassPane, Component capture, Cursor cursor) {
         mGlassPane = glassPane;
         mCaptureComponent = capture;
-        mCaptureOutsideComponent = outsideTarget;
         mGlassPane.addMouseListener(this);
         mGlassPane.addMouseMotionListener(this);
         mGlassPane.addHierarchyListener(this);
@@ -142,11 +138,9 @@ public final class MouseCapture implements MouseListener, MouseMotionListener, H
         Point     containerPoint = SwingUtilities.convertPoint(mGlassPane, glassPanePoint, mCaptureComponent);
         Component component      = SwingUtilities.getDeepestComponentAt(mCaptureComponent, containerPoint.x, containerPoint.y);
         if (component == null) {
-            component = mCaptureOutsideComponent;
+            component = mCaptureComponent;
         }
-        if (component != null) {
-            Point componentPoint = SwingUtilities.convertPoint(mGlassPane, glassPanePoint, component);
-            component.dispatchEvent(new MouseEvent(component, event.getID(), event.getWhen(), event.getModifiersEx(), componentPoint.x, componentPoint.y, event.getClickCount(), event.isPopupTrigger()));
-        }
+        Point componentPoint = SwingUtilities.convertPoint(mGlassPane, glassPanePoint, component);
+        component.dispatchEvent(new MouseEvent(component, event.getID(), event.getWhen(), event.getModifiersEx(), componentPoint.x, componentPoint.y, event.getClickCount(), event.isPopupTrigger()));
     }
 }

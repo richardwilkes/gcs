@@ -42,6 +42,7 @@ public class IdentityPanel extends DropPanel {
         Profile profile = sheet.getCharacter().getProfile();
         mNameField = createRandomizableField(sheet, profile.getName(), I18n.text("Name"), "character name",
                 (c, v) -> c.getProfile().setName((String) v), (b) -> {
+                    mNameField.attemptCommit();
                     mNameField.requestFocus();
                     profile.setName(USCensusNames.INSTANCE.getFullName(!profile.getGender().equalsIgnoreCase(I18n.text("Female"))));
                 });
@@ -54,6 +55,7 @@ public class IdentityPanel extends DropPanel {
     private PageField createRandomizableField(CharacterSheet sheet, String value, String title, String tag, CharacterSetter setter, FontIconButton.ClickFunction randomizer) {
         FontIconButton button = new FontIconButton(FontAwesome.RANDOM, String.format(I18n.text("Randomize %s"), title), randomizer);
         button.setThemeFont(Fonts.FONT_ICON_PAGE_SMALL);
+        button.setFocusable(false);
         add(button);
         add(new PageLabel(title), new PrecisionLayoutData().setEndHorizontalAlignment());
         PageField field = new PageField(FieldFactory.STRING, value, setter, sheet, tag,

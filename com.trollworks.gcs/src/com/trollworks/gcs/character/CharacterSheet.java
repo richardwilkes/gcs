@@ -171,6 +171,8 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
                     firstRow = selRow;
                 }
                 focus = outline.getRealOutline();
+            } else {
+                focus = null;
             }
             focusMgr.clearFocusOwner();
         } else {
