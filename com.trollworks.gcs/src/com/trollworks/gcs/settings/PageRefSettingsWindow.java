@@ -13,6 +13,7 @@ package com.trollworks.gcs.settings;
 
 import com.trollworks.gcs.pageref.PageRef;
 import com.trollworks.gcs.pageref.PageRefSettings;
+import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
@@ -32,7 +33,6 @@ import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.IntegerFormatter;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -86,14 +86,14 @@ public final class PageRefSettingsWindow extends SettingsWindow<PageRefSettings>
     }
 
     private void buildPanel() {
-        Color background = new Color(255, 255, 224);
         mPanel.removeAll();
         mPanel.setLayout(new PrecisionLayout().setColumns(4).setMargins(0, 10, 0, 10).setVerticalSpacing(0));
         for (PageRef ref : Settings.getInstance().getPDFRefSettings().list()) {
             Label idLabel = new Label(ref.getID(), SwingConstants.CENTER);
             idLabel.setBorder(new CompoundBorder(new LineBorder(), new EmptyBorder(1, 4, 1, 4)));
             idLabel.setOpaque(true);
-            idLabel.setBackground(background);
+            idLabel.setForeground(Colors.ON_TOOLTIP);
+            idLabel.setBackground(Colors.TOOLTIP);
             Panel wrapper = new Panel(new PrecisionLayout().setMargins(6, 0, 6, 0), false);
             wrapper.add(idLabel, new PrecisionLayoutData().setFillHorizontalAlignment().setMinimumWidth(50).setVerticalAlignment(PrecisionLayoutAlignment.MIDDLE));
             mPanel.add(wrapper, new PrecisionLayoutData().setFillAlignment());
@@ -149,6 +149,20 @@ public final class PageRefSettingsWindow extends SettingsWindow<PageRefSettings>
     @Override
     protected boolean shouldResetBeEnabled() {
         return !Settings.getInstance().getPDFRefSettings().isEmpty();
+    }
+
+    @Override
+    protected boolean confirmReset() {
+        Modal dialog = Modal.prepareToShowMessage(this,
+                I18n.text("Confirm Reset"),
+                MessageType.QUESTION,
+                I18n.text("""
+                        Are you sure you want to reset the page reference mappings?
+                        This will remove them all, resulting in an empty list."""));
+        dialog.addCancelButton();
+        dialog.addButton(I18n.text("Reset"), Modal.OK);
+        dialog.presentToUser();
+        return dialog.getResult() == Modal.OK;
     }
 
     @Override

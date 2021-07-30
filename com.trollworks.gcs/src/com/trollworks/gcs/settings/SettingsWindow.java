@@ -126,7 +126,13 @@ public abstract class SettingsWindow<T> extends BaseWindow implements CloseHandl
     protected abstract boolean shouldResetBeEnabled();
 
     public final void reset() {
-        resetTo(getResetData());
+        if (confirmReset()) {
+            resetTo(getResetData());
+        }
+    }
+
+    protected boolean confirmReset() {
+        return true;
     }
 
     protected abstract T getResetData();
