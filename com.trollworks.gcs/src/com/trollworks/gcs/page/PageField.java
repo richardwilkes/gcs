@@ -85,6 +85,7 @@ public class PageField extends JFormattedTextField implements PropertyChangeList
         setEnabled(editable);
         setForeground(editable ? Colors.ON_EDITABLE : Colors.ON_CONTENT);
         setBackground(editable ? Colors.EDITABLE : Colors.CONTENT);
+        setCaretColor(editable ? Colors.ON_EDITABLE : Colors.ON_CONTENT);
         setSelectionColor(Colors.SELECTION);
         setSelectedTextColor(Colors.ON_SELECTION);
         setDisabledTextColor(new DynamicColor(() -> Colors.getWithAlpha(getForeground(), 96).getRGB()));
