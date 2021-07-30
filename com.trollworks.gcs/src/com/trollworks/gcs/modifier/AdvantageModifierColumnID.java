@@ -12,6 +12,7 @@
 package com.trollworks.gcs.modifier;
 
 import com.trollworks.gcs.datafile.PageRefCell;
+import com.trollworks.gcs.datafile.RefCell;
 import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.widget.outline.Cell;
 import com.trollworks.gcs.ui.widget.outline.Column;
@@ -128,7 +129,7 @@ public enum AdvantageModifierColumnID {
         @Override
         public Cell getCell(boolean forEditor) {
             if (forEditor) {
-                return new TextCell(SwingConstants.RIGHT, false);
+                return new RefCell();
             }
             return new PageRefCell();
         }

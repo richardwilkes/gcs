@@ -14,9 +14,9 @@ package com.trollworks.gcs.datafile;
 import com.trollworks.gcs.menu.item.HasSourceReference;
 import com.trollworks.gcs.menu.item.OpenPageReferenceCommand;
 import com.trollworks.gcs.ui.widget.outline.Column;
-import com.trollworks.gcs.ui.widget.outline.ListTextCell;
 import com.trollworks.gcs.ui.widget.outline.Outline;
 import com.trollworks.gcs.ui.widget.outline.Row;
+import com.trollworks.gcs.ui.widget.outline.TextCell;
 import com.trollworks.gcs.utility.I18n;
 
 import java.awt.Cursor;
@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import javax.swing.SwingConstants;
 
-public class PageRefCell extends ListTextCell {
+public class RefCell extends TextCell {
     public static final Pattern SEPARATORS_PATTERN = Pattern.compile("[, ;]");
 
     public static final String getStdToolTip(String type) {
@@ -37,7 +37,7 @@ public class PageRefCell extends ListTextCell {
         return (SEPARATORS_PATTERN.split(text, 2).length == 1) ? null : text;
     }
 
-    public PageRefCell() {
+    public RefCell() {
         super(SwingConstants.LEFT, false);
     }
 

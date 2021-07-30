@@ -153,7 +153,7 @@ public class OpenPageReferenceCommand extends Command {
         return ref;
     }
 
-    private static List<String> getReferences(HasSourceReference ref) {
+    public static List<String> getReferences(HasSourceReference ref) {
         List<String> list = new ArrayList<>();
         if (ref != null) {
             String[] refs = PageRefCell.SEPARATORS_PATTERN.split(ref.getReference());
