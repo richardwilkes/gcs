@@ -177,14 +177,14 @@ public final class Colors {
             new Color(0, 0, 0),
             new Color(221, 221, 221));
     public static final ThemeColor ERROR         = new ThemeColor("error", I18n.text("Error"),
-            new Color(128, 0, 0),
-            new Color(128, 0, 0));
+            new Color(248, 32, 32),
+            new Color(248, 32, 32));
     public static final ThemeColor ON_ERROR      = new ThemeColor("on_error", I18n.text("On Error"),
             new Color(255, 255, 255),
             new Color(221, 221, 221));
     public static final ThemeColor WARNING       = new ThemeColor("warning", I18n.text("Warning"),
-            new Color(128, 64, 0),
-            new Color(153, 102, 0));
+            new Color(248, 128, 0),
+            new Color(248, 128, 0));
     public static final ThemeColor ON_WARNING    = new ThemeColor("on_warning", I18n.text("On Warning"),
             new Color(255, 255, 255),
             new Color(221, 221, 221));
