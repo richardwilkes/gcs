@@ -632,9 +632,9 @@ public final class Bundler {
                 args.add("--linux-deb-maintainer");
                 args.add("wilkes@me.com");
                 args.add("--linux-menu-group");
-                args.add("Roleplaying");
+                args.add("Game;Utility;RolePlaying");
                 args.add("--linux-app-category");
-                args.add("Roleplaying");
+                args.add("games");
                 args.add("--linux-rpm-license-type");
                 args.add("MPLv2.0");
                 args.add("--linux-shortcut");
