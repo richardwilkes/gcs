@@ -118,8 +118,9 @@ public final class AdvantageModifierEnabler extends Panel {
     }
 
     private Container createCenter() {
-        Panel           panel = new Panel(new ColumnLayout());
-        SelfControlRoll cr    = mAdvantage.getCR();
+        Panel panel = new Panel(new ColumnLayout());
+        panel.setBorder(new EmptyBorder(0, 0, 16, 0));
+        SelfControlRoll cr = mAdvantage.getCR();
         if (cr != SelfControlRoll.NONE_REQUIRED) {
             ArrayList<String> possible = new ArrayList<>();
             for (SelfControlRoll one : SelfControlRoll.values()) {

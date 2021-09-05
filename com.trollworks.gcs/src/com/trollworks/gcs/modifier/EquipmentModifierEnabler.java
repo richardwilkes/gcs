@@ -113,6 +113,7 @@ public final class EquipmentModifierEnabler extends Panel {
 
     private Container createCenter() {
         Panel panel = new Panel(new ColumnLayout());
+        panel.setBorder(new EmptyBorder(0, 0, 16, 0));
         mModifiers = mEquipment.getModifiers().toArray(new EquipmentModifier[0]);
         Arrays.sort(mModifiers);
 
