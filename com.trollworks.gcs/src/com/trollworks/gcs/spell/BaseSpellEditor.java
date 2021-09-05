@@ -246,13 +246,13 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
         Document doc = event.getDocument();
         if (doc == mNameField.getDocument()) {
             mNameField.setErrorMessage(mNameField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
-        } else if (doc == mClassField.getDocument()) {
+        } else if (mClassField != null && doc == mClassField.getDocument()) {
             mClassField.setErrorMessage(mClassField.getText().trim().isEmpty() ? I18n.text("The class field may not be empty") : null);
-        } else if (doc == mCastingCostField.getDocument()) {
+        } else if (mCastingCostField != null && doc == mCastingCostField.getDocument()) {
             mCastingCostField.setErrorMessage(mCastingCostField.getText().trim().isEmpty() ? I18n.text("The casting cost field may not be empty") : null);
-        } else if (doc == mCastingTimeField.getDocument()) {
+        } else if (mCastingTimeField != null && doc == mCastingTimeField.getDocument()) {
             mCastingTimeField.setErrorMessage(mCastingTimeField.getText().trim().isEmpty() ? I18n.text("The casting time field may not be empty") : null);
-        } else if (doc == mDurationField.getDocument()) {
+        } else if (mDurationField != null && doc == mDurationField.getDocument()) {
             mDurationField.setErrorMessage(mDurationField.getText().trim().isEmpty() ? I18n.text("The duration field may not be empty") : null);
         }
     }
