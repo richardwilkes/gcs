@@ -126,7 +126,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
     /** Creates a new character with only default values set. */
     public GURPSCharacter() {
         characterInitialize(Settings.getInstance().getGeneralSettings().autoFillProfile());
-        calculateAll();
+        recalculate();
     }
 
     /**
@@ -178,18 +178,14 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
     }
 
     public void recalculate() {
+        calculateWeightAndWealthCarried(false);
+        calculateWealthNotCarried(false);
         updateSkills();
         processFeaturesAndPrereqs();
-        calculateAll();
-    }
-
-    private void calculateAll() {
         calculateAttributePoints();
         calculateAdvantagePoints();
         calculateSkillPoints();
         calculateSpellPoints();
-        calculateWeightAndWealthCarried(false);
-        calculateWealthNotCarried(false);
     }
 
     @Override
@@ -233,7 +229,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         for (Skill skill : getSkillsIterator()) {
             skill.updateLevel(false);
         }
-        calculateAll();
+        recalculate();
         mThirdPartyData = m.getMap(KEY_THIRD_PARTY_DATA);
         mModifiedOn = Numbers.extractDateTime(Numbers.DATE_TIME_STORED_FORMAT, m.getString(KEY_MODIFIED_DATE)) / FieldFactory.TIMESTAMP_FACTOR; // Must be last
     }
