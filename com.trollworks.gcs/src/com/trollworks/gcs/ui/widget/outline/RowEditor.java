@@ -17,6 +17,7 @@ import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.border.EmptyBorder;
 import com.trollworks.gcs.ui.border.TitledBorder;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
+import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.ActionPanel;
 import com.trollworks.gcs.ui.widget.Commitable;
@@ -82,19 +83,15 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
             dialog.addApplyButton();
             dialog.presentToUser();
             switch (dialog.getResult()) {
-            case Modal.OK:
+            case Modal.OK -> {
                 RowUndo undo = new RowUndo(row);
                 if (editor.applyChanges()) {
                     if (undo.finish()) {
                         undos.add(undo);
                     }
                 }
-                break;
-            case Modal.CLOSED:
-                i = length;
-                break;
-            default:
-                break;
+            }
+            case Modal.CLOSED -> i = length;
             }
         }
         if (!undos.isEmpty()) {
@@ -160,6 +157,10 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
         PrecisionLayoutData layoutData = new PrecisionLayoutData();
         parent.add(new Label(text), layoutData.setEndHorizontalAlignment());
         return layoutData;
+    }
+
+    protected static void addLabelPinnedToTop(Container parent, String text) {
+        parent.add(new Label(text), new PrecisionLayoutData().setEndHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
     }
 
     protected static PrecisionLayoutData addInteriorLabel(Container parent, String text) {

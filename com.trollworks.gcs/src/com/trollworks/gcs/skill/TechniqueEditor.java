@@ -18,7 +18,6 @@ import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.feature.FeaturesPanel;
 import com.trollworks.gcs.prereq.PrereqsPanel;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
-import com.trollworks.gcs.ui.layout.PrecisionLayoutAlignment;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
 import com.trollworks.gcs.ui.widget.Checkbox;
 import com.trollworks.gcs.ui.widget.Commitable;
@@ -86,8 +85,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements DocumentLis
         mNotesField = new MultiLineTextField(mRow.getNotes(),
                 I18n.text("Any notes that you would like to show up in the list along with this technique"),
                 this);
-        panel.add(new Label(I18n.text("Notes")),
-                new PrecisionLayoutData().setFillHorizontalAlignment().setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2));
+        addLabelPinnedToTop(panel, I18n.text("Notes"));
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         mCategoriesField = createField(panel, panel, I18n.text("Categories"),
                 mRow.getCategoriesAsString(),
@@ -113,7 +111,6 @@ public class TechniqueEditor extends RowEditor<Technique> implements DocumentLis
 
     private void createDefaults(Container parent) {
         mDefaultPanel = new Panel(new PrecisionLayout().setMargins(0));
-        Label defaultPanelLabel = new Label(I18n.text("Defaults To"));
         mDefaultTypePopup = SkillDefaultType.createPopup(mDefaultPanel, mRow.getDataFile(),
                 mRow.getDefault().getType(), (p) -> {
                     if (!mLastDefaultType.equals(getDefaultType())) {
@@ -121,7 +118,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements DocumentLis
                     }
                     recalculateLevel();
                 }, mIsEditable);
-        parent.add(defaultPanelLabel, new PrecisionLayoutData().setFillHorizontalAlignment());
+        addLabel(parent, I18n.text("Defaults To"));
         parent.add(mDefaultPanel, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         rebuildDefaultPanel();
     }
@@ -135,16 +132,18 @@ public class TechniqueEditor extends RowEditor<Technique> implements DocumentLis
     }
 
     private String getSpecialization() {
-        StringBuilder builder        = new StringBuilder();
-        String        specialization = mDefaultSpecializationField.getText();
-
-        builder.append(mDefaultNameField.getText());
-        if (!specialization.isEmpty()) {
-            builder.append(" (");
-            builder.append(specialization);
-            builder.append(')');
+        if (SkillDefaultType.isSkillBased(getDefaultType())) {
+            StringBuilder builder = new StringBuilder();
+            builder.append(mDefaultNameField.getText());
+            String specialization = mDefaultSpecializationField.getText();
+            if (!specialization.isEmpty()) {
+                builder.append(" (");
+                builder.append(specialization);
+                builder.append(')');
+            }
+            return builder.toString();
         }
-        return builder.toString();
+        return "";
     }
 
     private void rebuildDefaultPanel() {
@@ -290,8 +289,12 @@ public class TechniqueEditor extends RowEditor<Technique> implements DocumentLis
         int            points    = getPoints();
         GURPSCharacter character = mRow.getCharacter();
         if (character != null) {
-            String name = mNameField.getText();
-            points += character.getSkillPointComparedIntegerBonusFor(Skill.ID_POINTS + "*", name, mDefaultSpecializationField.getText(), ListRow.createCategoriesList(mCategoriesField.getText()));
+            String name           = mNameField.getText();
+            String specialization = "";
+            if (SkillDefaultType.isSkillBased(getDefaultType())) {
+                specialization = mDefaultSpecializationField.getText();
+            }
+            points += character.getSkillPointComparedIntegerBonusFor(Skill.ID_POINTS + "*", name, specialization, ListRow.createCategoriesList(mCategoriesField.getText()));
             points += character.getIntegerBonusFor(Skill.ID_POINTS + "/" + name.toLowerCase());
             if (points < 0) {
                 points = 0;
@@ -333,7 +336,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements DocumentLis
         Document doc = event.getDocument();
         if (doc == mNameField.getDocument()) {
             mNameField.setErrorMessage(mNameField.getText().trim().isEmpty() ? I18n.text("The name field may not be empty") : null);
-        } else if (doc == mDefaultNameField.getDocument()) {
+        } else if (SkillDefaultType.isSkillBased(getDefaultType()) && doc == mDefaultNameField.getDocument()) {
             mDefaultNameField.setErrorMessage(mDefaultNameField.getText().trim().isEmpty() ? I18n.text("The default name field may not be empty") : null);
         }
     }
