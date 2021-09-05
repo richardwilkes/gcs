@@ -672,17 +672,9 @@ public class Equipment extends ListRow implements HasSourceReference {
                 ModifierWeightValueType mvt      = weightType.determineType(adj);
                 Fraction                fraction = mvt.extractFraction(adj, false);
                 switch (mvt) {
-                case MULTIPLIER:
-                    weight.setValue(weight.getValue().mul(fraction.mNumerator).div(fraction.mDenominator));
-                    break;
-                case PERCENTAGE_MULTIPLIER:
-                    weight.setValue(weight.getValue().mul(fraction.mNumerator).div(fraction.mDenominator.mul(new Fixed6(100))));
-                    break;
-                case ADDITION:
-                    sum.add(new WeightValue(fraction.value(), ModifierWeightValueType.extractUnits(adj, defUnits)));
-                    break;
-                default:
-                    break;
+                case MULTIPLIER -> weight.setValue(weight.getValue().mul(fraction.mNumerator).div(fraction.mDenominator));
+                case PERCENTAGE_MULTIPLIER -> weight.setValue(weight.getValue().mul(fraction.mNumerator).div(fraction.mDenominator.mul(new Fixed6(100))));
+                case ADDITION -> sum.add(new WeightValue(fraction.value(), ModifierWeightValueType.extractUnits(adj, defUnits)));
                 }
             }
         }

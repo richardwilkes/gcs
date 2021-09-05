@@ -94,7 +94,7 @@ public final class UpdateChecker implements Runnable {
     @Override
     public void run() {
         switch (mMode) {
-        case CHECK:
+        case CHECK -> {
             setAppResult(null, null, false);
             checkForAppUpdates();
             checkForLibraryUpdates();
@@ -103,12 +103,8 @@ public final class UpdateChecker implements Runnable {
             } else {
                 mMode = Mode.DONE;
             }
-            break;
-        case NOTIFY:
-            tryNotify();
-            break;
-        default:
-            break;
+        }
+        case NOTIFY -> tryNotify();
         }
     }
 

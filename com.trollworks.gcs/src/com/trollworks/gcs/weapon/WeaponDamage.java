@@ -273,10 +273,8 @@ public class WeaponDamage {
                     }
                 }
                 switch (mST) {
-                case SW:
-                    base = addDice(base, character.getSwing(st));
-                    break;
-                case SW_LEVELED:
+                case SW -> base = addDice(base, character.getSwing(st));
+                case SW_LEVELED -> {
                     Dice swing = character.getSwing(st);
                     if (mOwner.mOwner instanceof Advantage) {
                         Advantage advantage = (Advantage) mOwner.mOwner;
@@ -285,11 +283,9 @@ public class WeaponDamage {
                         }
                     }
                     base = addDice(base, swing);
-                    break;
-                case THR:
-                    base = addDice(base, character.getThrust(st));
-                    break;
-                case THR_LEVELED:
+                }
+                case THR -> base = addDice(base, character.getThrust(st));
+                case THR_LEVELED -> {
                     Dice thrust = character.getThrust(st);
                     if (mOwner.mOwner instanceof Advantage) {
                         Advantage advantage = (Advantage) mOwner.mOwner;
@@ -298,9 +294,7 @@ public class WeaponDamage {
                         }
                     }
                     base = addDice(base, thrust);
-                    break;
-                default:
-                    break;
+                }
                 }
                 int dieCount = base.getDieCount();
 

@@ -486,17 +486,9 @@ public final class PrecisionLayout implements LayoutManager2 {
                     int childX     = gridX + dataLeftMargin;
                     int childWidth = Math.min(data.getCachedWidth(), cellWidth);
                     switch (data.getHorizontalAlignment()) {
-                    case MIDDLE:
-                        childX += Math.max(0, (cellWidth - childWidth) / 2);
-                        break;
-                    case END:
-                        childX += Math.max(0, cellWidth - childWidth);
-                        break;
-                    case FILL:
-                        childWidth = cellWidth;
-                        break;
-                    default:
-                        break;
+                    case MIDDLE -> childX += Math.max(0, (cellWidth - childWidth) / 2);
+                    case END -> childX += Math.max(0, cellWidth - childWidth);
+                    case FILL -> childWidth = cellWidth;
                     }
                     int dataTopMargin    = scale.scale(data.getTopMargin());
                     int dataBottomMargin = scale.scale(data.getBottomMargin());
@@ -504,17 +496,9 @@ public final class PrecisionLayout implements LayoutManager2 {
                     int childY      = gridY + dataTopMargin;
                     int childHeight = Math.min(data.getCachedHeight(), cellHeight);
                     switch (data.getVerticalAlignment()) {
-                    case MIDDLE:
-                        childY += Math.max(0, (cellHeight - childHeight) / 2);
-                        break;
-                    case END:
-                        childY += Math.max(0, cellHeight - childHeight);
-                        break;
-                    case FILL:
-                        childHeight = cellHeight;
-                        break;
-                    default:
-                        break;
+                    case MIDDLE -> childY += Math.max(0, (cellHeight - childHeight) / 2);
+                    case END -> childY += Math.max(0, cellHeight - childHeight);
+                    case FILL -> childHeight = cellHeight;
                     }
                     Component child = grid[i][j];
                     if (child != null) {

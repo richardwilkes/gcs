@@ -145,17 +145,9 @@ public final class MenuKeySettingsWindow extends SettingsWindow<Map<String, Stri
             ksd.setButtons(resetButton, clearButton, setButton);
             dialog.presentToUser();
             switch (dialog.getResult()) {
-            case Modal.OK:
-                setAccelerator(btn, ksd.getKeyStroke());
-                break;
-            case 100: // Clear
-                setAccelerator(btn, null);
-                break;
-            case 200: // Reset
-                setAccelerator(btn, command.getOriginalAccelerator());
-                break;
-            default: // Close or cancel
-                break;
+            case Modal.OK -> setAccelerator(btn, ksd.getKeyStroke());
+            case 100 -> setAccelerator(btn, null); // Clear
+            case 200 -> setAccelerator(btn, command.getOriginalAccelerator()); // Reset
             }
             adjustResetButton();
             adjustForDuplicates();
