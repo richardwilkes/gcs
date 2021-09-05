@@ -31,10 +31,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 public class ScrollPanel extends JLayeredPane implements LayoutManager, ChangeListener, MouseWheelListener {
-    private static final int     MINIMUM_SIZE    = 4;
-    private static final int     CORNER_RADIUS   = 8;
-    private static final int     BAR_WIDTH       = 10;
-    private static final int     BAR_INSET       = 13;
     private static final Integer SCROLLBAR_LAYER = Integer.valueOf(50);
 
     private JViewport mViewport;
