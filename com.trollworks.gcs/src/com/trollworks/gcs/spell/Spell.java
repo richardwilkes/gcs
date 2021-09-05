@@ -866,7 +866,7 @@ public class Spell extends ListRow implements HasSourceReference {
             return "";
         }
         if (this instanceof RitualMagicSpell) {
-            return (localized ? mDifficulty.toString() : mDifficulty.name());
+            return (localized ? mDifficulty.toString() : mDifficulty.name().toLowerCase());
         }
         if (localized) {
             return Skill.resolveAttributeName(getDataFile(), mAttribute) + "/" + mDifficulty.toString();
