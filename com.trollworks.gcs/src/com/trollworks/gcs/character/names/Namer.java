@@ -37,14 +37,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.SwingConstants;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 /** Asks the user to name items that have been marked to be customized. */
-public final class Namer extends Panel implements DocumentListener {
+public final class Namer extends Panel {
     private ListRow           mRow;
     private List<EditorField> mFields;
-    private Button            mApplyButton;
 
     /**
      * Brings up a modal naming dialog for each row in the list.
@@ -77,8 +74,7 @@ public final class Namer extends Panel implements DocumentListener {
                 dialog.addCancelRemainingButton();
             }
             dialog.addCancelButton();
-            panel.mApplyButton = dialog.addApplyButton();
-            panel.mApplyButton.setEnabled(false);
+            dialog.addApplyButton();
             dialog.presentToUser();
             switch (dialog.getResult()) {
             case Modal.OK:
@@ -108,7 +104,6 @@ public final class Namer extends Panel implements DocumentListener {
         for (String name : list) {
             EditorField field = new EditorField(FieldFactory.STRING, null, SwingConstants.LEFT, "", null);
             field.setName(name);
-            field.getDocument().addDocumentListener(this);
             add(new Label(name), new PrecisionLayoutData().setFillHorizontalAlignment());
             add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setMinimumWidth(200));
             mFields.add(field);
@@ -130,27 +125,5 @@ public final class Namer extends Panel implements DocumentListener {
             map.put(field.getName(), field.getText());
         }
         mRow.applyNameableKeys(map);
-    }
-
-    @Override
-    public void insertUpdate(DocumentEvent event) {
-        changedUpdate(event);
-    }
-
-    @Override
-    public void removeUpdate(DocumentEvent event) {
-        changedUpdate(event);
-    }
-
-    @Override
-    public void changedUpdate(DocumentEvent event) {
-        boolean enable = true;
-        for (EditorField field : mFields) {
-            if (field.getText().isBlank()) {
-                enable = false;
-                break;
-            }
-        }
-        mApplyButton.setEnabled(enable);
     }
 }
