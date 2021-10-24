@@ -86,20 +86,10 @@ public class RitualMagicSpell extends Spell {
         }
     }
 
-    /**
-     * Call to force an update of the level and relative level for this spell.
-     *
-     * @param notify Whether or not a notification should be issued on a change.
-     */
+    /** @return The calculated spell skill level. */
     @Override
-    public void updateLevel(boolean notify) {
-        SkillLevel skillLevel = calculateLevel(getCharacter(), getName(), getBaseSkillName(), getColleges(), getPowerSource(), getCategories(), getDifficulty(), mPrerequisiteSpellsCount, getPoints());
-        if (mLevel == null || !mLevel.isSameLevelAs(skillLevel)) {
-            mLevel = skillLevel;
-            if (notify) {
-                notifyOfChange();
-            }
-        }
+    protected SkillLevel calculateLevelSelf() {
+        return calculateLevel(getCharacter(), getName(), getBaseSkillName(), getColleges(), getPowerSource(), getCategories(), getDifficulty(), mPrerequisiteSpellsCount, getPoints());
     }
 
     /**

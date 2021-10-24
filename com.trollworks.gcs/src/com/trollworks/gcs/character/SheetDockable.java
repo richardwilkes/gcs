@@ -51,7 +51,6 @@ public class SheetDockable extends CollectedOutlinesDockable implements FontAdju
         viewport.addChangeListener(mSheet);
         add(scroller, BorderLayout.CENTER);
         mSheet.rebuild();
-        character.processFeaturesAndPrereqs();
         character.setModifiedOn(modifiedOn);
         character.setModified(false);
         StdUndoManager undoManager = getUndoManager();
@@ -136,13 +135,6 @@ public class SheetDockable extends CollectedOutlinesDockable implements FontAdju
     @Override
     public PrintProxy getPrintProxy() {
         return mSheet;
-    }
-
-    /** Notify background threads of prereq or feature modifications. */
-    public void notifyOfPrereqOrFeatureModification() {
-        if (mSheet.getCharacter().processFeaturesAndPrereqs()) {
-            mSheet.repaint();
-        }
     }
 
     public void updateQuickExport() {

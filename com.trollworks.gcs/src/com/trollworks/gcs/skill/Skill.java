@@ -484,15 +484,16 @@ public class Skill extends ListRow implements HasSourceReference {
      * Call to force an update of the level and relative level for this skill or technique.
      *
      * @param notify Whether or not a notification should be issued on a change.
+     * @return Whether a change was made or not.
      */
-    public void updateLevel(boolean notify) {
+    public boolean updateLevel(boolean notify) {
         SkillLevel savedLevel = mLevel;
         mLevel = calculateLevelSelf();
-        if (notify) {
-            if (savedLevel.isDifferentLevelThan(mLevel) || savedLevel.isDifferentRelativeLevelThan(mLevel)) {
-                notifyOfChange();
-            }
+        boolean changed = savedLevel == null || !savedLevel.isSameLevelAs(mLevel);
+        if (notify && changed) {
+            notifyOfChange();
         }
+        return changed;
     }
 
     /** @return The calculated skill level. */

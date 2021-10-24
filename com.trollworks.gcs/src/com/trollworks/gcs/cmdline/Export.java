@@ -86,8 +86,6 @@ public final class Export implements Runnable {
 
                     sheet.addNotify(); // Required to allow layout to work
                     sheet.rebuild();
-                    sheet.getCharacter().processFeaturesAndPrereqs();
-                    sheet.rebuild();
                     sheet.setSize(sheet.getPreferredSize());
 
                     System.out.println(timing);

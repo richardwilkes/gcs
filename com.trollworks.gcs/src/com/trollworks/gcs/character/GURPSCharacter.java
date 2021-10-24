@@ -120,8 +120,6 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
     private int                                 mCachedSkillPoints;
     private int                                 mCachedSpellPoints;
     private int                                 mCachedRacePoints;
-    private boolean                             mSkillsUpdated;
-    private boolean                             mSpellsUpdated;
 
     /** Creates a new character with only default values set. */
     public GURPSCharacter() {
@@ -181,7 +179,17 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         calculateWeightAndWealthCarried(false);
         calculateWealthNotCarried(false);
         updateSkills();
-        processFeaturesAndPrereqs();
+        updateSpells();
+        int     maxTries = 5;
+        boolean changed;
+        do {
+            // Unfortunately, there are what amount to circular references in the GURPS logic, so
+            // we need to potentially run though this process a few times until things stabilize.
+            // To avoid a potential endless loop, though, we cap the iterations.
+            processFeaturesAndPrereqs();
+            changed = updateSkills();
+            changed |= updateSpells();
+        } while (changed && --maxTries > 0);
         calculateAttributePoints();
         calculateAdvantagePoints();
         calculateSkillPoints();
@@ -276,18 +284,24 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         }
     }
 
-    public void updateSkills() {
+    public boolean updateSkills() {
+        boolean changed = false;
         for (Skill skill : getSkillsIterator()) {
-            skill.updateLevel(true);
+            if (skill.updateLevel(true)) {
+                changed = true;
+            }
         }
-        mSkillsUpdated = true;
+        return changed;
     }
 
-    private void updateSpells() {
+    private boolean updateSpells() {
+        boolean changed = false;
         for (Spell spell : getSpellsIterator()) {
-            spell.updateLevel(true);
+            if (spell.updateLevel(true)) {
+                changed = true;
+            }
         }
-        mSpellsUpdated = true;
+        return changed;
     }
 
     /** @return The current lifting strength bonus from features. */
@@ -898,28 +912,29 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         return best;
     }
 
-    public boolean processFeaturesAndPrereqs() {
-        boolean needRepaint = processFeatures();
-        needRepaint |= processPrerequisites(getAdvantagesIterator(false));
-        needRepaint |= processPrerequisites(getSkillsIterator());
-        needRepaint |= processPrerequisites(getSpellsIterator());
-        needRepaint |= processPrerequisites(getEquipmentIterator());
-        needRepaint |= processPrerequisites(getOtherEquipmentIterator());
-        return needRepaint;
+    public void processFeaturesAndPrereqs() {
+        processFeatures();
+        processPrerequisites();
     }
 
-    private boolean processFeatures() {
-        HashMap<String, ArrayList<Feature>> map         = new HashMap<>();
-        boolean                             needRepaint = buildFeatureMap(map, getAdvantagesIterator(false));
-        needRepaint |= buildFeatureMap(map, getSkillsIterator());
-        needRepaint |= buildFeatureMap(map, getSpellsIterator());
-        needRepaint |= buildFeatureMap(map, getEquipmentIterator());
+    private void processFeatures() {
+        HashMap<String, ArrayList<Feature>> map = new HashMap<>();
+        buildFeatureMap(map, getAdvantagesIterator(false));
+        buildFeatureMap(map, getSkillsIterator());
+        buildFeatureMap(map, getSpellsIterator());
+        buildFeatureMap(map, getEquipmentIterator());
         setFeatureMap(map);
-        return needRepaint;
     }
 
-    private static boolean buildFeatureMap(HashMap<String, ArrayList<Feature>> map, Iterator<? extends ListRow> iterator) {
-        boolean needRepaint = false;
+    private void processPrerequisites() {
+        processPrerequisites(getAdvantagesIterator(false));
+        processPrerequisites(getSkillsIterator());
+        processPrerequisites(getSpellsIterator());
+        processPrerequisites(getEquipmentIterator());
+        processPrerequisites(getOtherEquipmentIterator());
+    }
+
+    private static void buildFeatureMap(HashMap<String, ArrayList<Feature>> map, Iterator<? extends ListRow> iterator) {
         while (iterator.hasNext()) {
             ListRow row = iterator.next();
             if (row instanceof Equipment) {
@@ -930,7 +945,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
                 }
             }
             for (Feature feature : row.getFeatures()) {
-                needRepaint |= processFeature(map, row instanceof Advantage ? ((Advantage) row).getLevels() : 0, feature);
+                processFeature(map, row instanceof Advantage ? ((Advantage) row).getLevels() : 0, feature);
                 if (feature instanceof Bonus) {
                     ((Bonus) feature).setParent(row);
                 }
@@ -938,13 +953,13 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
             if (row instanceof Advantage) {
                 Advantage advantage = (Advantage) row;
                 for (Bonus bonus : advantage.getCRAdj().getBonuses(advantage.getCR())) {
-                    needRepaint |= processFeature(map, 0, bonus);
+                    processFeature(map, 0, bonus);
                     bonus.setParent(row);
                 }
                 for (AdvantageModifier modifier : advantage.getModifiers()) {
                     if (modifier.isEnabled()) {
                         for (Feature feature : modifier.getFeatures()) {
-                            needRepaint |= processFeature(map, modifier.getLevels(), feature);
+                            processFeature(map, modifier.getLevels(), feature);
                             if (feature instanceof Bonus) {
                                 ((Bonus) feature).setParent(row);
                             }
@@ -957,7 +972,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
                 for (EquipmentModifier modifier : equipment.getModifiers()) {
                     if (modifier.isEnabled()) {
                         for (Feature feature : modifier.getFeatures()) {
-                            needRepaint |= processFeature(map, 0, feature);
+                            processFeature(map, 0, feature);
                             if (feature instanceof Bonus) {
                                 ((Bonus) feature).setParent(row);
                             }
@@ -966,32 +981,23 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
                 }
             }
         }
-        return needRepaint;
     }
 
-    private static boolean processFeature(HashMap<String, ArrayList<Feature>> map, int levels, Feature feature) {
-        String             key         = feature.getKey().toLowerCase();
-        ArrayList<Feature> list        = map.get(key);
-        boolean            needRepaint = false;
-        if (list == null) {
-            list = new ArrayList<>(1);
-            map.put(key, list);
-        }
+    private static void processFeature(HashMap<String, ArrayList<Feature>> map, int levels, Feature feature) {
+        String        key  = feature.getKey().toLowerCase();
+        List<Feature> list = map.computeIfAbsent(key, k -> new ArrayList<>(1));
         if (feature instanceof Bonus) {
             LeveledAmount amount = ((Bonus) feature).getAmount();
             if (amount.getLevel() != levels) {
                 amount.setLevel(levels);
-                needRepaint = true;
             }
         }
         list.add(feature);
-        return needRepaint;
     }
 
-    private boolean processPrerequisites(Iterator<? extends ListRow> iterator) {
-        String        prefix      = "- ";
-        boolean       needRepaint = false;
-        StringBuilder builder     = new StringBuilder();
+    private void processPrerequisites(Iterator<? extends ListRow> iterator) {
+        String        prefix  = "- ";
+        StringBuilder builder = new StringBuilder();
         while (iterator.hasNext()) {
             ListRow row = iterator.next();
             builder.setLength(0);
@@ -1004,21 +1010,17 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
             }
             if (row.isSatisfied() != satisfied) {
                 row.setSatisfied(satisfied);
-                needRepaint = true;
             }
             if (!satisfied) {
                 builder.insert(0, I18n.text("Prerequisites have not been met:"));
                 row.setReasonForUnsatisfied(builder.toString());
             }
         }
-        return needRepaint;
     }
 
     /** @param map The new feature map. */
     public void setFeatureMap(HashMap<String, ArrayList<Feature>> map) {
         mFeatureMap = map;
-        mSkillsUpdated = false;
-        mSpellsUpdated = false;
         String strPrefix = Attribute.ID_ATTR_PREFIX + "st.";
         setLiftingStrengthBonus(getIntegerBonusFor(strPrefix + AttributeBonusLimitation.LIFTING_ONLY.name()));
         setStrikingStrengthBonus(getIntegerBonusFor(strPrefix + AttributeBonusLimitation.STRIKING_ONLY.name()));
@@ -1038,12 +1040,6 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         setDodgeBonus(getIntegerBonusFor(Attribute.ID_ATTR_PREFIX + "dodge"));
         setParryBonus(getIntegerBonusFor(Attribute.ID_ATTR_PREFIX + "parry"));
         setBlockBonus(getIntegerBonusFor(Attribute.ID_ATTR_PREFIX + "block"));
-        if (!mSkillsUpdated) {
-            updateSkills();
-        }
-        if (!mSpellsUpdated) {
-            updateSpells();
-        }
     }
 
     /**

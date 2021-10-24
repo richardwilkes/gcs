@@ -445,7 +445,7 @@ public class Spell extends ListRow implements HasSourceReference {
     }
 
     /** @return The calculated spell skill level. */
-    private SkillLevel calculateLevelSelf() {
+    protected SkillLevel calculateLevelSelf() {
         return calculateLevel(getCharacter(), getPoints(), mAttribute, mDifficulty, mColleges, mPowerSource, mName, getCategories());
     }
 
@@ -453,13 +453,16 @@ public class Spell extends ListRow implements HasSourceReference {
      * Call to force an update of the level and relative level for this spell.
      *
      * @param notify Whether or not a notification should be issued on a change.
+     * @return Whether a change was made or not.
      */
-    public void updateLevel(boolean notify) {
+    public boolean updateLevel(boolean notify) {
         SkillLevel savedLevel = mLevel;
         mLevel = calculateLevelSelf();
-        if (notify && (savedLevel.isDifferentLevelThan(mLevel) || savedLevel.isDifferentRelativeLevelThan(mLevel))) {
+        boolean changed = savedLevel == null || !savedLevel.isSameLevelAs(mLevel);
+        if (notify && changed) {
             notifyOfChange();
         }
+        return changed;
     }
 
     /**

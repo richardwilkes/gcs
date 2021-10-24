@@ -77,7 +77,7 @@ public class RowPostProcessor implements Runnable {
                 outline.repaint();
                 SheetDockable dockable = UIUtilities.getAncestorOfType(outline, SheetDockable.class);
                 if (dockable != null) {
-                    dockable.notifyOfPrereqOrFeatureModification();
+                    dockable.getSheet().markForRebuild();
                 }
             }
         }

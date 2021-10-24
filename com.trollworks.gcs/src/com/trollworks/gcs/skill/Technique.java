@@ -234,10 +234,11 @@ public class Technique extends Skill {
     }
 
     @Override
-    public void updateLevel(boolean notify) {
+    public boolean updateLevel(boolean notify) {
         if (mDefault != null) {
-            super.updateLevel(notify);
+            return super.updateLevel(notify);
         }
+        return false;
     }
 
     /**

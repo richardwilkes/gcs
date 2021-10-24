@@ -15,7 +15,6 @@ import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;
-import com.trollworks.gcs.ui.widget.Button;
 import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.ui.widget.EditorField;
 import com.trollworks.gcs.ui.widget.Label;
