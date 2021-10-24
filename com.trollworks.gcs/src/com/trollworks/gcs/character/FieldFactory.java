@@ -27,7 +27,7 @@ public final class FieldFactory {
     public static final long                    TIMESTAMP_FACTOR  = 60000; // milliseconds -> minutes
     public static final DefaultFormatterFactory BYTE              = new DefaultFormatterFactory(new IntegerFormatter(0, 255, false));
     public static final DefaultFormatterFactory DATETIME          = new DefaultFormatterFactory(new DateTimeFormatter(TIMESTAMP_FACTOR));
-    public static final DefaultFormatterFactory FIXED6            = new DefaultFormatterFactory(new Fixed6Formatter(Fixed6.ZERO, new Fixed6(99999), false));
+    public static final DefaultFormatterFactory FIXED6            = new DefaultFormatterFactory(new Fixed6Formatter(Fixed6.ZERO, new Fixed6(9999999999L), false));
     public static final DefaultFormatterFactory FLOAT             = new DefaultFormatterFactory(new DoubleFormatter(0, 99999, false));
     public static final DefaultFormatterFactory HEIGHT            = new DefaultFormatterFactory(new HeightFormatter(true));
     public static final DefaultFormatterFactory INT5              = new DefaultFormatterFactory(new IntegerFormatter(-99999, 99999, false));
