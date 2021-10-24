@@ -65,8 +65,12 @@ public class DescriptionPanel extends DropPanel {
                     mAgeField.requestFocus();
                     String current = profile.getAge();
                     String result;
+                    int maxAttempts = 5;
                     do {
                         result = Numbers.format(profile.getRandomAge());
+                        if (--maxAttempts == 0) {
+                            break;
+                        }
                     } while (result.equals(current));
                     profile.setAge(result);
                 });
@@ -78,8 +82,12 @@ public class DescriptionPanel extends DropPanel {
                     mBirthdayField.requestFocus();
                     String current = profile.getBirthday();
                     String result;
+                    int maxAttempts = 5;
                     do {
                         result = Profile.getRandomMonthAndDay();
+                        if (--maxAttempts == 0) {
+                            break;
+                        }
                     } while (result.equals(current));
                     profile.setBirthday(result);
                 });
@@ -98,9 +106,13 @@ public class DescriptionPanel extends DropPanel {
                     mHeightField.requestFocus();
                     LengthValue length = profile.getHeight();
                     LengthValue result;
+                    int maxAttempts = 5;
                     do {
                         result = profile.getRandomHeight(gch.getAttributeIntValue("st"),
                                 profile.getSizeModifier());
+                        if (--maxAttempts == 0) {
+                            break;
+                        }
                     } while (result.equals(length));
                     profile.setHeight(result);
                 });
@@ -112,8 +124,12 @@ public class DescriptionPanel extends DropPanel {
                     mWeightField.requestFocus();
                     WeightValue weight = profile.getWeight();
                     WeightValue result;
+                    int maxAttempts = 5;
                     do {
                         result = profile.getRandomWeight(gch.getAttributeIntValue("st"), profile.getSizeModifier(), profile.getWeightMultiplier());
+                        if (--maxAttempts == 0) {
+                            break;
+                        }
                     } while (result.equals(weight));
                     profile.setWeight(result);
                 });

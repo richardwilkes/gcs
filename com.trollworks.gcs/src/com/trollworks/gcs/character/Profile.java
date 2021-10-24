@@ -636,6 +636,7 @@ public class Profile {
     /** @return A random hair color, style & length. */
     public static String getRandomHair(String not) {
         String result;
+        int maxAttempts = 5;
         do {
             if (RANDOM.nextInt(7) == 0) {
                 result = I18n.text("Bald");
@@ -658,6 +659,9 @@ public class Profile {
                 };
                 result = MessageFormat.format("{0}, {1}, {2}", color, style, length);
             }
+            if (--maxAttempts == 0) {
+                break;
+            }
         } while (result.equals(not));
         return result;
     }
@@ -665,6 +669,7 @@ public class Profile {
     /** @return A random eye color. */
     public static String getRandomEyeColor(String not) {
         String result;
+        int maxAttempts = 5;
         do {
             result = switch (RANDOM.nextInt(8)) {
                 case 0, 1 -> I18n.text("Blue");
@@ -673,6 +678,9 @@ public class Profile {
                 case 4 -> I18n.text("Violet");
                 default -> I18n.text("Brown");
             };
+            if (--maxAttempts == 0) {
+                break;
+            }
         } while (result.equals(not));
         return result;
     }
@@ -680,6 +688,7 @@ public class Profile {
     /** @return A random sking color. */
     public static String getRandomSkinColor(String not) {
         String result;
+        int maxAttempts = 5;
         do {
             result = switch (RANDOM.nextInt(8)) {
                 case 0 -> I18n.text("Freckled");
@@ -691,6 +700,9 @@ public class Profile {
                 case 6 -> I18n.text("Pale");
                 default -> I18n.text("Tan");
             };
+            if (--maxAttempts == 0) {
+                break;
+            }
         } while (result.equals(not));
         return result;
     }
