@@ -5,6 +5,8 @@ editor that allows you to build characters for the
 [GURPS 4<sup>th</sup> Edition](http://www.sjgames.com/gurps) roleplaying game
 system.
 
+![Build Status](https://github.com/richardwilkes/gcs/actions/workflows/build.yml/badge.svg?branch=master)
+
 ### Building from the command line
 
 **NOTE**: *To build a specific version of GCS, you will need to check out the appropriate release
