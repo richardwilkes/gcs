@@ -1,6 +1,6 @@
 # https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-ant
 
-name: Java CI
+name: Build
 
 on:
   push:
