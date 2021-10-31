@@ -131,6 +131,29 @@ public enum DamageProgression {
         public Dice calculateSwing(int strength) {
             return BASIC_SET.calculateSwing(strength);
         }
+    },
+    SWING_EQUALS_THRUST_PLUS_2 {
+        @Override
+        public String toString() {
+            return I18n.text("Swing = Thrust+2");
+        }
+
+        @Override
+        public String getFootnote() {
+            return I18n.text("Houserule originating with Kevin Smyth. See https://gamingballistic.com/2020/12/04/df-eastmarch-boss-fight-and-house-rules/");
+        }
+
+        @Override
+        public Dice calculateThrust(int strength) {
+            return BASIC_SET.calculateThrust(strength);
+        }
+
+        @Override
+        public Dice calculateSwing(int strength) {
+            Dice dice = calculateThrust(strength);
+            dice.add(2);
+            return dice;
+        }
     };
 
     public String getTooltip() {
