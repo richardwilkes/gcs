@@ -140,7 +140,7 @@ public enum DamageProgression {
 
         @Override
         public String getFootnote() {
-            return I18n.text("Houserule originally originating with Kevyn Smith");
+            return I18n.text("Houserule originating with Kevin Smyth. See https://gamingballistic.com/2020/12/04/df-eastmarch-boss-fight-and-house-rules/");
         }
 
         @Override
@@ -151,7 +151,7 @@ public enum DamageProgression {
         @Override
         public Dice calculateSwing(int strength) {
             Dice dice = calculateThrust(strength);
-            dice.add(+2);
+            dice.add(2);
             return dice;
         }
     };
