@@ -131,6 +131,69 @@ public enum DamageProgression {
         public Dice calculateSwing(int strength) {
             return BASIC_SET.calculateSwing(strength);
         }
+    },
+    PHOENIX_D3 {
+        @Override
+        public String toString() {
+            return I18n.text("Phoenix d3");
+        }
+
+        @Override
+        public String getFootnote() {
+            return I18n.text("Pull Not Done Yet");
+        }
+
+        @Override
+        public Dice calculateThrust(int strength) {
+            Math.ceil()
+            if (strength<10){
+                // big ugly switch statement
+                switch (strength){
+                    case 9: ;
+                    return new Dice(1, 3, 0, 1);
+                    break;
+                    case 8: ;
+                    return new Dice(1, 3, -1, 1);
+                    break;
+                    case 7: ;
+                    return new Dice(1, 3, -1, 1);
+                    break;
+                    case 6: ;
+                    return new Dice(1, 6, -4, 1);
+                    break;
+                    case 5: ;
+                    return new Dice(1, 6, -4, 1);
+                    break;
+                    case 4: ;
+                    return new Dice(1, 6, -5, 1);
+                    break;
+                    case 3: ;
+                    return new Dice(1, 6, -5, 1);
+                    break;
+                    case 2: ;
+                    return new Dice(1, 6, -6, 1);
+                    break;
+                    case 1: ;
+                    return new Dice(1, 6, -6, 1);
+                    break;
+                    case 0: ;
+                    return new Dice(1, 6, -6, 1);
+                    break;
+                }
+
+
+            }else{
+                int base = 2 + (strength-10);
+                int mod = base%2;
+                Dice dice = new Dice(base/2,3,mod,1);
+                return dice;
+            }
+        }
+
+        @Override
+        public Dice calculateSwing(int strength) {
+            return PHOENIX_D3.calculateThrust(strength)
+        }
     };
 
     public String getTooltip() {
