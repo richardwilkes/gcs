@@ -61,6 +61,7 @@ public class SheetSettings implements ChangeNotifier {
     private static final String KEY_USE_TITLE_IN_FOOTER           = "use_title_in_footer";
     private static final String KEY_USER_DESCRIPTION_DISPLAY      = "user_description_display";
     private static final String KEY_DAMAGE_PROGRESSION            = "damage_progression";
+    private static final String KEY_USE_PHOENIX_DICE_CONVERSION       = "use_phoenix_dice_conversion";
 
     // TODO: Eliminate these deprecated keys after a suitable waiting period; added July 7, 2021
     private static final String DEPRECATED_KEY_USE_KNOW_YOUR_OWN_STRENGTH      = "use_know_your_own_strength";
@@ -88,6 +89,7 @@ public class SheetSettings implements ChangeNotifier {
     private boolean                   mShowEquipmentModifierAdj;
     private boolean                   mShowSpellAdj;
     private boolean                   mUseTitleInFooter;
+    private boolean                   mUsePhoenixDiceConversion;
 
     /**
      * @param character The {@link GURPSCharacter} to retrieve settings for, or {@code null}.
@@ -148,6 +150,7 @@ public class SheetSettings implements ChangeNotifier {
         mShowEquipmentModifierAdj = other.mShowEquipmentModifierAdj;
         mShowSpellAdj = other.mShowSpellAdj;
         mUseTitleInFooter = other.mUseTitleInFooter;
+        mUsePhoenixDiceConversion = other.mUsePhoenixDiceConversion;
     }
 
     /** Reset these settings to their defaults. */
@@ -181,6 +184,7 @@ public class SheetSettings implements ChangeNotifier {
             mShowEquipmentModifierAdj = false;
             mShowSpellAdj = true;
             mUseTitleInFooter = false;
+            mUsePhoenixDiceConversion = false;
         } else {
             copyFrom(Settings.getInstance().getSheetSettings());
         }
@@ -214,6 +218,7 @@ public class SheetSettings implements ChangeNotifier {
         mShowEquipmentModifierAdj = m.getBooleanWithDefault(KEY_SHOW_EQUIPMENT_MODIFIER_ADJ, mShowEquipmentModifierAdj);
         mShowSpellAdj = m.getBooleanWithDefault(KEY_SHOW_SPELL_ADJ, mShowSpellAdj);
         mUseTitleInFooter = m.getBooleanWithDefault(KEY_USE_TITLE_IN_FOOTER, mUseTitleInFooter);
+        mUsePhoenixDiceConversion = m.getBooleanWithDefault(KEY_USE_PHOENIX_DICE_CONVERSION, mUsePhoenixDiceConversion);
         if (m.has(KEY_ATTRIBUTES)) {
             mAttributes = AttributeDef.load(m.getArray(KEY_ATTRIBUTES));
         }
@@ -271,6 +276,7 @@ public class SheetSettings implements ChangeNotifier {
         w.keyValue(KEY_SHOW_EQUIPMENT_MODIFIER_ADJ, mShowEquipmentModifierAdj);
         w.keyValue(KEY_SHOW_SPELL_ADJ, mShowSpellAdj);
         w.keyValue(KEY_USE_TITLE_IN_FOOTER, mUseTitleInFooter);
+        w.keyValue(KEY_USE_PHOENIX_DICE_CONVERSION,mUsePhoenixDiceConversion);
         w.key(KEY_PAGE);
         mPageSettings.toJSON(w);
         w.key(KEY_BLOCK_LAYOUT);
@@ -402,6 +408,15 @@ public class SheetSettings implements ChangeNotifier {
     public void setDamageProgression(DamageProgression progression) {
         if (mDamageProgression != progression) {
             mDamageProgression = progression;
+            notifyOfChange();
+        }
+    }
+    public boolean usePhoenixDiceConversion(){
+        return mUsePhoenixDiceConversion;
+    }
+    public void setUsePhoenixDiceConversion(boolean useConversion){
+        if (mUsePhoenixDiceConversion != useConversion){
+            mUsePhoenixDiceConversion = useConversion;
             notifyOfChange();
         }
     }

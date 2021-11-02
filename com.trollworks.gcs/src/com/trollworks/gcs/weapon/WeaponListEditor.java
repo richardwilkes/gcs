@@ -39,7 +39,6 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.SwingConstants;
@@ -154,7 +153,7 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
         addLabel(editorPanel, notes);
         editorPanel.add(mUsageNotes, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-        Panel damagePanel = new Panel(new PrecisionLayout().setMargins(0).setColumns(8));
+        Panel damagePanel = new Panel(new PrecisionLayout().setMargins(0).setColumns(9));
         mDamageSTPopup = new PopupMenu<>(WeaponSTDamage.values(), (p) -> {
             if (mRespond) {
                 mWeapon.getDamage().setWeaponSTDamage(mDamageSTPopup.getSelectedItem());
@@ -166,7 +165,7 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
         editorPanel.add(new Label(I18n.text("Damage")), new PrecisionLayoutData().setFillHorizontalAlignment());
         damagePanel.add(mDamageSTPopup, new PrecisionLayoutData().setFillHorizontalAlignment());
         // Phoenix D3 Only
-        String[] percentages = {"+0%","+25%","+50%","+75%","+125%","+150%","+200%"};
+        String[] percentages = {"+0%","+25%","+50%","+75%","+100%"};
         mPercentBonusPopup = new PopupMenu<>(percentages,(p) -> {
             if (mRespond){
                 mWeapon.getDamage().setPercentBonus(mPercentBonusPopup.getSelectedItem());
@@ -174,8 +173,10 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
             }
         }
         );
-        damagePanel.add(mPercentBonusPopup,new PrecisionLayoutData().setFillHorizontalAlignment());
-        addLabel(damagePanel, "%");
+        if(mOwner.getDataFile().getSheetSettings().getDamageProgression() == DamageProgression.PHOENIX_D3){
+            damagePanel.add(mPercentBonusPopup,new PrecisionLayoutData().setFillHorizontalAlignment());
+        }
+        mPercentBonusPopup.setSelectedItem(mWeapon.getDamage().getPercentBonus(), true);
         mDamageBase = addField(null, damagePanel, "9999999d+99x999", I18n.text("Base Damage"));
         addLabel(damagePanel, "(");
         mDamageArmorDivisor = addField(null, damagePanel, "100", I18n.text("Armor Divisor"));
@@ -366,8 +367,8 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
         mUsageNotes.setText(mWeapon.getUsageNotes());
         WeaponDamage damage = mWeapon.getDamage();
         mDamageSTPopup.setSelectedItem(damage.getWeaponSTDamage(), true);
+        mPercentBonusPopup.setSelectedItem(damage.getPercentBonus(), true);
         mDamageBase.setValue(damage.getBase() != null ? damage.getBase().toString() : "");
-        //mPercentBonusPopup.setSelectedItem(damage.getPercentBonus()); //Phoenix D3 Only //This isn't required right? TODO
         mDamageArmorDivisor.setValue(getArmorDivisorForDisplay(damage.getArmorDivisor()));
         mDamageType.setValue(damage.getType());
         mDamageModPerDie.setValue(Numbers.formatWithForcedSign(damage.getModifierPerDie()));

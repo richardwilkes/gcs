@@ -59,6 +59,7 @@ public final class SheetSettingsWindow extends SettingsWindow<SheetSettings> imp
     private Checkbox                     mShowEquipmentModifierAdj;
     private Checkbox                     mShowSpellAdj;
     private Checkbox                     mShowTitleInsteadOfNameInPageFooter;
+    private Checkbox                     mUsePhoenixDiceConversion;
     private PopupMenu<DamageProgression> mDamageProgressionPopup;
     private PopupMenu<LengthUnits>       mLengthUnitsPopup;
     private PopupMenu<WeightUnits>       mWeightUnitsPopup;
@@ -230,6 +231,11 @@ public final class SheetSettingsWindow extends SettingsWindow<SheetSettings> imp
                     mSheetSettings.setUseModifyingDicePlusAdds(b.isChecked());
                     adjustResetButton();
                 });
+        mUsePhoenixDiceConversion = addCheckbox(panel, I18n.text("Convert Damage d6 to d3 (Phoenix d3 Only)"),
+            I18n.text("Converts d6s in weapons to d3s for ease of use."), mSheetSettings.usePhoenixDiceConversion(), (b)->{
+            mSheetSettings.setUsePhoenixDiceConversion(b.isChecked());
+            adjustResetButton();
+        });
         return panel;
     }
 
