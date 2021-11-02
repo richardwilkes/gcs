@@ -145,44 +145,45 @@ public enum DamageProgression {
 
         @Override
         public Dice calculateThrust(int strength) {
-            Math.ceil()
             if (strength<10){
                 // big ugly switch statement
+                Dice dice = new Dice();
                 switch (strength){
-                    case 9: ;
-                    return new Dice(1, 3, 0, 1);
+                    case 9: 
+                        dice = new Dice(1, 3, 0, 1);
                     break;
-                    case 8: ;
-                    return new Dice(1, 3, -1, 1);
+                    case 8: 
+                        dice = new Dice(1, 3, -1, 1);
                     break;
-                    case 7: ;
-                    return new Dice(1, 3, -1, 1);
+                    case 7: 
+                        dice = new Dice(1, 3, -1, 1);
                     break;
-                    case 6: ;
-                    return new Dice(1, 6, -4, 1);
+                    case 6: 
+                        dice = new Dice(1, 6, -4, 1);
                     break;
-                    case 5: ;
-                    return new Dice(1, 6, -4, 1);
+                    case 5: 
+                        dice = new Dice(1, 6, -4, 1);
                     break;
-                    case 4: ;
-                    return new Dice(1, 6, -5, 1);
+                    case 4: 
+                        dice = new Dice(1, 6, -5, 1);
                     break;
-                    case 3: ;
-                    return new Dice(1, 6, -5, 1);
+                    case 3: 
+                        dice = new Dice(1, 6, -5, 1);
                     break;
-                    case 2: ;
-                    return new Dice(1, 6, -6, 1);
+                    case 2: 
+                        dice = new Dice(1, 6, -6, 1);
                     break;
-                    case 1: ;
-                    return new Dice(1, 6, -6, 1);
+                    case 1: 
+                        dice = new Dice(1, 6, -6, 1);
                     break;
-                    case 0: ;
-                    return new Dice(1, 6, -6, 1);
+                    case 0: 
+                        dice = new Dice(1, 6, -6, 1);
                     break;
                 }
-
-
-            }else{
+                return dice;
+            }
+            else
+            {
                 int base = 2 + (strength-10);
                 int mod = base%2;
                 Dice dice = new Dice(base/2,3,mod,1);
@@ -192,7 +193,7 @@ public enum DamageProgression {
 
         @Override
         public Dice calculateSwing(int strength) {
-            return PHOENIX_D3.calculateThrust(strength)
+            return PHOENIX_D3.calculateThrust(strength);
         }
     };
 

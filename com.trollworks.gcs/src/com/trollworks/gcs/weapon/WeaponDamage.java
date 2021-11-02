@@ -45,6 +45,7 @@ public class WeaponDamage {
     private static final String KEY_FRAGMENTATION_ARMOR_DIVISOR = "fragmentation_armor_divisor";
     private static final String KEY_FRAGMENTATION_TYPE          = "fragmentation_type";
     private static final String KEY_MODIFIER_PER_DIE            = "modifier_per_die";
+    private static final String KEY_PERCENT_BONUS               = "percent_bonus";
 
     private WeaponStats    mOwner;
     private String         mType;
@@ -55,6 +56,7 @@ public class WeaponDamage {
     private double         mFragmentationArmorDivisor;
     private String         mFragmentationType;
     private int            mModifierPerDie;
+    private int            mPercentBonus;
 
     public WeaponDamage(WeaponStats owner) {
         mType = "";
@@ -71,6 +73,7 @@ public class WeaponDamage {
             mBase = new Dice(m.getString(KEY_BASE));
         }
         mArmorDivisor = m.getDoubleWithDefault(KEY_ARMOR_DIVISOR, 1);
+        mPercentBonus = m.getDoubleWithDefault(KEY_PERCENT_BONUS, 0);
         mModifierPerDie = m.getInt(KEY_MODIFIER_PER_DIE);
         if (m.has(KEY_FRAGMENTATION)) {
             mFragmentation = new Dice(m.getString(KEY_FRAGMENTATION));
@@ -96,6 +99,13 @@ public class WeaponDamage {
                 w.keyValue(KEY_BASE, base);
             }
         }
+        //Phoenix D3 Only
+        if (mPercentBonus != null) {
+            String percentbonus = mPercentBonus.toString();
+            if (!"0".equals(percentbonus)) {
+                w.keyValue(KEY_PERCENT_BONUS, percentbonus);
+            }
+        }
         if (mArmorDivisor != 1) {
             w.keyValue(KEY_ARMOR_DIVISOR, mArmorDivisor);
         }
@@ -118,6 +128,7 @@ public class WeaponDamage {
         if (mBase != null) {
             other.mBase = mBase.clone();
         }
+        other.mPercentBonus = mPercentBonus;
         other.mArmorDivisor = mArmorDivisor;
         other.mModifierPerDie = mModifierPerDie;
         if (mFragmentation != null) {
@@ -144,7 +155,7 @@ public class WeaponDamage {
         }
         if (obj instanceof WeaponDamage) {
             WeaponDamage other = (WeaponDamage) obj;
-            if (mType.equals(other.mType) && mST == other.mST && mArmorDivisor == other.mArmorDivisor && mModifierPerDie == other.mModifierPerDie && Objects.equals(mBase, other.mBase)) {
+            if (mType.equals(other.mType) && mST == other.mST && mArmorDivisor == other.mArmorDivisor && mPercentBonus == other.mPercentBonus && mModifierPerDie == other.mModifierPerDie && Objects.equals(mBase, other.mBase)) {
                 if (mFragmentation == null) {
                     return other.mFragmentation == null;
                 }
@@ -236,6 +247,16 @@ public class WeaponDamage {
             notifyOfChange();
         }
     }
+    public int getPercentBonus() {
+        return mPercentBonus;
+    }
+    public int setPercentBonus(WeaponPercentBonus percentBonus) {
+        if(mPercentBonus != percentBonus){
+            mPercentBonus = percentBonus
+            notifyOfChange();
+        }
+        
+    }
 
     /** @return The damage, fully resolved for the user's sw or thr, if possible. */
     public String getResolvedDamage() {
@@ -272,10 +293,15 @@ public class WeaponDamage {
                         base.multiply(advantage.getLevels());
                     }
                 }
+                boolean usePercentBonus = (mOwner.mOwner.getDataFile().getSheetSettings().getDamageProgression() == DamageProgression.PHOENIX_D3)
+                int percent = 0
+                if(usePercentBonus){
+                    percent = mPercentBonus;
+                }
                 switch (mST) {
-                case SW -> base = addDice(base, character.getSwing(st));
+                case SW -> base = addDice(base, character.getSwing(st).percentAdd(percent));
                 case SW_LEVELED -> {
-                    Dice swing = character.getSwing(st);
+                    Dice swing = character.getSwing(st).percentAdd(percent);
                     if (mOwner.mOwner instanceof Advantage) {
                         Advantage advantage = (Advantage) mOwner.mOwner;
                         if (advantage.isLeveled()) {
@@ -425,7 +451,20 @@ public class WeaponDamage {
     }
 
     private static Dice addDice(Dice left, Dice right) {
-        return new Dice(left.getDieCount() + right.getDieCount(), Math.max(left.getDieSides(), right.getDieSides()), left.getModifier() + right.getModifier(), left.getMultiplier() + right.getMultiplier() - 1);
+        
+        if(mOwner.mOwner.getDataFile().getSheetSettings().getDamageProgression() != DamageProgression.PHOENIX_D3){
+            //If we're not using weird d3 stuff, then treat as normal.
+            return new Dice(left.getDieCount() + right.getDieCount(), Math.max(left.getDieSides(), right.getDieSides()), left.getModifier() + right.getModifier(), left.getMultiplier() + right.getMultiplier() - 1);
+        }else{
+            // always return as d3 with Phoenix d3
+            // Converts both sides to raw averages, then halves them and takes any remainder to get a +1
+            int leftval = (left.getDieCount() * (left.getDieSides() +1)/2)*left.getMultiplier();
+            int rightval = (right.getDieCount() * (right.getDieSides() +1)/2)*right.getMultiplier();
+            int dieCount =  (leftval + rightval)/2;
+            int baseMod = (leftval + rightval)%2;
+            return new Dice(dieCount,3,baseMod+left.getModifier() + right.getModifier(),1);
+        }
+        
     }
 
     @Override

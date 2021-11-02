@@ -38,6 +38,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.SwingConstants;
@@ -70,6 +71,7 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
     private WeaponStats                  mWeapon;
     private Class<? extends WeaponStats> mWeaponClass;
     private boolean                      mRespond;
+    private PopupMenu<> mPercentBonusPopup;
 
     /**
      * Creates a new WeaponListEditor.
@@ -162,6 +164,17 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
         mDamageSTPopup.setToolTipText(I18n.text("Strength Damage Type"));
         editorPanel.add(new Label(I18n.text("Damage")), new PrecisionLayoutData().setFillHorizontalAlignment());
         damagePanel.add(mDamageSTPopup, new PrecisionLayoutData().setFillHorizontalAlignment());
+        // Phoenix D3 Only
+        
+        mPercentBonusPopup = new PopupMenu<>(WeaponPercentBonus.values(),(p)->{
+            if (mRespond){
+                mWeapon.getDamage().setPercentBonus(mPercentBonusPopup.getSelectedItem());
+                adjustOutlineToContent();
+            }
+        }
+        );
+        damagePanel.add(mPercentBonusPopup,new PrecisionLayoutData().setFillHorizontalAlignment());
+        addLabel(damagePanel, "%");
         mDamageBase = addField(null, damagePanel, "9999999d+99x999", I18n.text("Base Damage"));
         addLabel(damagePanel, "(");
         mDamageArmorDivisor = addField(null, damagePanel, "100", I18n.text("Armor Divisor"));
@@ -353,6 +366,7 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
         WeaponDamage damage = mWeapon.getDamage();
         mDamageSTPopup.setSelectedItem(damage.getWeaponSTDamage(), true);
         mDamageBase.setValue(damage.getBase() != null ? damage.getBase().toString() : "");
+        mPercentBonus.setSelectedItem(damage.getPercentBonus()); //Phoenix D3 Only //TODO
         mDamageArmorDivisor.setValue(getArmorDivisorForDisplay(damage.getArmorDivisor()));
         mDamageType.setValue(damage.getType());
         mDamageModPerDie.setValue(Numbers.formatWithForcedSign(damage.getModifierPerDie()));
@@ -386,6 +400,12 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
         mFragArmorDivisor.setEnabled(enabled);
         mFragType.setEnabled(enabled);
         mStrength.setEnabled(enabled);
+        if (mOwner.mOwner.getDataFile().getSheetSettings().getDamageProgression() != DamageProgression.PHOENIX_D3){
+            //Phoenix D3 Only, should enable only if it's enabled.
+            mPercentBonus.setEnabled(enabled)
+        }else{
+            mPercentBonus.setEnabled(false)
+        }
     }
 
     private void docChanged(DocumentEvent event) {
