@@ -240,7 +240,7 @@ public class Dice implements Cloneable {
     public void percentAdd(double percent){
         if (percent!=0){
             int average = (mSides + 1) / 2;
-            int base =  ((mCount * average)  + mModifier) * percent ;
+            int base =  (int) Math.floor(((mCount * average)  + mModifier) * percent) ;
             mCount += base/average;
             mModifier += base%average;
         }
