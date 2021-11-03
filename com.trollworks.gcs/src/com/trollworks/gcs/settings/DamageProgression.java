@@ -132,15 +132,38 @@ public enum DamageProgression {
             return BASIC_SET.calculateSwing(strength);
         }
     },
-    PHOENIX_D3 {
+    SWING_EQUALS_THRUST_PLUS_2 {
         @Override
         public String toString() {
-            return I18n.text("Phoenix d3");
+            return I18n.text("Swing = Thrust+2");
         }
 
         @Override
         public String getFootnote() {
-            return I18n.text("Pull Not Done Yet");
+            return I18n.text("Houserule originating with Kevin Smyth. See https://gamingballistic.com/2020/12/04/df-eastmarch-boss-fight-and-house-rules/");
+        }
+
+        @Override
+        public Dice calculateThrust(int strength) {
+            return BASIC_SET.calculateThrust(strength);
+        }
+
+        @Override
+        public Dice calculateSwing(int strength) {
+            Dice dice = calculateThrust(strength);
+            dice.add(2);
+            return dice;
+        }
+    },
+    PHOENIX_D3 {
+        @Override
+        public String toString() {
+            return I18n.text("PhoenixFlame d3 Damage");
+        }
+
+        @Override
+        public String getFootnote() {
+            return I18n.text("Houserules that use d3s instead of d6s for Damage. See: https://github.com/richardwilkes/gcs/pull/393");
         }
 
         @Override
