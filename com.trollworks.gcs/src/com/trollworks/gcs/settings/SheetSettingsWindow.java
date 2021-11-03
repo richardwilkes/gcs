@@ -231,7 +231,7 @@ public final class SheetSettingsWindow extends SettingsWindow<SheetSettings> imp
                     mSheetSettings.setUseModifyingDicePlusAdds(b.isChecked());
                     adjustResetButton();
                 });
-        mUsePhoenixDiceConversion = addCheckbox(panel, I18n.text("Convert Damage d6 to d3 (Phoenix d3 Only)"),
+        mUsePhoenixDiceConversion = addCheckbox(panel, I18n.text("Convert Damage d6 to d3 (PhoenixFlame d3 Damage Only)"),
             I18n.text("Converts d6s in weapons to d3s for ease of use."), mSheetSettings.usePhoenixDiceConversion(), (b)->{
             mSheetSettings.setUsePhoenixDiceConversion(b.isChecked());
             adjustResetButton();
