@@ -403,7 +403,7 @@ public class WeaponDamage {
                     // Converts dice to raw averages, then halves them and takes any remainder to get a +1
                     int dicevalue = Math.round((base.getDieCount() * (base.getDieSides() +1))/2);
                     int newcount = dicevalue / 2;
-                    int newmod = dicevalue % 2;
+                    int newmod = Math.round(dicevalue % 2);
                     Dice newDice = new Dice(newcount,3,newmod+base.getModifier(),base.getMultiplier());//we shouldn't have to touch the multiplier because it'll be the same r-right?
                     base = newDice;
                 }
@@ -487,7 +487,7 @@ public class WeaponDamage {
             int leftval = Math.round((left.getDieCount() * (left.getDieSides() +1)/2)*left.getMultiplier());
             int rightval = Math.round((right.getDieCount() * (right.getDieSides() +1)/2)*right.getMultiplier());
             int dieCount =  (leftval + rightval)/2;
-            int baseMod = (leftval + rightval)%2;
+            int baseMod = Math.round((leftval + rightval)%2);
             return new Dice(dieCount,3,baseMod+left.getModifier() + right.getModifier(),1);
         }else{
 
