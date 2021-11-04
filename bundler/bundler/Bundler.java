@@ -40,7 +40,7 @@ import java.util.stream.Stream;
 
 public final class Bundler {
     private static final String GCS_VERSION       = "4.34.2";
-    private static final String JDK_MAJOR_VERSION = "15";
+    private static final String JDK_MAJOR_VERSION = "17";
     private static final String LINUX             = "linux";
     private static final String MACOS             = "macos";
     private static final String WINDOWS           = "windows";
@@ -658,16 +658,6 @@ public final class Bundler {
                 args.add("--win-upgrade-uuid");
                 args.add("E71F99DA-AD84-4E6E-9bE7-4E65421752E1");
             }
-            Path propsFile = BUILD_DIR.resolve("console.properties");
-            try (PrintWriter out = new PrintWriter(Files.newBufferedWriter(propsFile))) {
-                out.println("win-console=true");
-            } catch (IOException exception) {
-                System.out.println();
-                exception.printStackTrace(System.err);
-                System.exit(1);
-            }
-            args.add("--add-launcher");
-            args.add("GCScmdline=" + propsFile);
         }
         }
         runNoOutputCmd(args);
