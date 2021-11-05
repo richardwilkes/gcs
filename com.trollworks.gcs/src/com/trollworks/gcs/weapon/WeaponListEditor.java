@@ -165,7 +165,7 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
         editorPanel.add(new Label(I18n.text("Damage")), new PrecisionLayoutData().setFillHorizontalAlignment());
         damagePanel.add(mDamageSTPopup, new PrecisionLayoutData().setFillHorizontalAlignment());
         // Phoenix D3 Only
-        String[] percentages = {"+0%","+25%","+50%","+75%","+100%"};
+        String[] percentages = {"+0%","+25%","+50%","+75%","+100%","+125%","+150%"};
         mPercentBonusPopup = new PopupMenu<>(percentages,(p) -> {
             if (mRespond){
                 mWeapon.getDamage().setPercentBonus(mPercentBonusPopup.getSelectedItem());
