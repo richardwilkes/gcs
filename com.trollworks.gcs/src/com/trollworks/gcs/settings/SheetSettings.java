@@ -61,7 +61,7 @@ public class SheetSettings implements ChangeNotifier {
     private static final String KEY_USE_TITLE_IN_FOOTER           = "use_title_in_footer";
     private static final String KEY_USER_DESCRIPTION_DISPLAY      = "user_description_display";
     private static final String KEY_DAMAGE_PROGRESSION            = "damage_progression";
-    private static final String KEY_USE_PHOENIX_DICE_CONVERSION       = "use_phoenix_dice_conversion";
+    private static final String KEY_USE_PHOENIX_DICE_CONVERSION   = "use_phoenix_dice_conversion";
 
     // TODO: Eliminate these deprecated keys after a suitable waiting period; added July 7, 2021
     private static final String DEPRECATED_KEY_USE_KNOW_YOUR_OWN_STRENGTH      = "use_know_your_own_strength";
@@ -276,7 +276,7 @@ public class SheetSettings implements ChangeNotifier {
         w.keyValue(KEY_SHOW_EQUIPMENT_MODIFIER_ADJ, mShowEquipmentModifierAdj);
         w.keyValue(KEY_SHOW_SPELL_ADJ, mShowSpellAdj);
         w.keyValue(KEY_USE_TITLE_IN_FOOTER, mUseTitleInFooter);
-        w.keyValue(KEY_USE_PHOENIX_DICE_CONVERSION,mUsePhoenixDiceConversion);
+        w.keyValue(KEY_USE_PHOENIX_DICE_CONVERSION, mUsePhoenixDiceConversion);
         w.key(KEY_PAGE);
         mPageSettings.toJSON(w);
         w.key(KEY_BLOCK_LAYOUT);
@@ -411,11 +411,13 @@ public class SheetSettings implements ChangeNotifier {
             notifyOfChange();
         }
     }
-    public boolean usePhoenixDiceConversion(){
+
+    public boolean usePhoenixDiceConversion() {
         return mUsePhoenixDiceConversion;
     }
-    public void setUsePhoenixDiceConversion(boolean useConversion){
-        if (mUsePhoenixDiceConversion != useConversion){
+
+    public void setUsePhoenixDiceConversion(boolean useConversion) {
+        if (mUsePhoenixDiceConversion != useConversion) {
             mUsePhoenixDiceConversion = useConversion;
             notifyOfChange();
         }

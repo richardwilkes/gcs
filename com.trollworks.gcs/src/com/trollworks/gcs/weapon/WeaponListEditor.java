@@ -71,7 +71,7 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
     private WeaponStats                  mWeapon;
     private Class<? extends WeaponStats> mWeaponClass;
     private boolean                      mRespond;
-    private PopupMenu<String>            mPercentBonusPopup;
+    private PopupMenu<Integer>           mPercentBonusPopup;
 
     /**
      * Creates a new WeaponListEditor.
@@ -153,7 +153,7 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
         addLabel(editorPanel, notes);
         editorPanel.add(mUsageNotes, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-        Panel damagePanel = new Panel(new PrecisionLayout().setMargins(0).setColumns(9));
+        Panel damagePanel = new Panel(new PrecisionLayout().setMargins(0).setColumns(11));
         mDamageSTPopup = new PopupMenu<>(WeaponSTDamage.values(), (p) -> {
             if (mRespond) {
                 mWeapon.getDamage().setWeaponSTDamage(mDamageSTPopup.getSelectedItem());
@@ -165,18 +165,21 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
         editorPanel.add(new Label(I18n.text("Damage")), new PrecisionLayoutData().setFillHorizontalAlignment());
         damagePanel.add(mDamageSTPopup, new PrecisionLayoutData().setFillHorizontalAlignment());
         // Phoenix D3 Only
-        String[] percentages = {"+0%","+25%","+50%","+75%","+100%","+125%","+150%"};
-        mPercentBonusPopup = new PopupMenu<>(percentages,(p) -> {
-            if (mRespond){
+        Integer[] percentages = {0, 25, 50, 75, 100, 125, 150};
+        mPercentBonusPopup = new PopupMenu<>(percentages, (p) -> {
+            if (mRespond) {
                 mWeapon.getDamage().setPercentBonus(mPercentBonusPopup.getSelectedItem());
                 adjustOutlineToContent();
             }
         }
         );
-        if(mOwner.getDataFile().getSheetSettings().getDamageProgression() == DamageProgression.PHOENIX_D3){
-            damagePanel.add(mPercentBonusPopup,new PrecisionLayoutData().setFillHorizontalAlignment());
+        if (mOwner.getDataFile().getSheetSettings().getDamageProgression() == DamageProgression.PHOENIX_D3) {
+            addLabel(damagePanel, "+");
+            damagePanel.add(mPercentBonusPopup, new PrecisionLayoutData().setFillHorizontalAlignment());
+            addLabel(damagePanel, "%");
         }
         mPercentBonusPopup.setSelectedItem(mWeapon.getDamage().getPercentBonus(), true);
+
         mDamageBase = addField(null, damagePanel, "9999999d+99x999", I18n.text("Base Damage"));
         addLabel(damagePanel, "(");
         mDamageArmorDivisor = addField(null, damagePanel, "100", I18n.text("Armor Divisor"));
