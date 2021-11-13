@@ -103,6 +103,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
     private Map<String, Attribute>              mAttributes;
     private int                                 mLiftingStrengthBonus;
     private int                                 mStrikingStrengthBonus;
+    private int                                 mThrowingStrengthBonus;
     private int                                 mDodgeBonus;
     private int                                 mParryBonus;
     private int                                 mBlockBonus;
@@ -326,6 +327,19 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
     public void setStrikingStrengthBonus(int bonus) {
         if (mStrikingStrengthBonus != bonus) {
             mStrikingStrengthBonus = bonus;
+            notifyOfChange();
+        }
+    }
+
+    /** @return The current throwing strength bonus from features. */
+    public int getThrowingStrengthBonus() {
+        return mThrowingStrengthBonus;
+    }
+
+    /** @param bonus The new throwing strength bonus. */
+    public void setThrowingStrengthBonus(int bonus) {
+        if (mThrowingStrengthBonus != bonus) {
+            mThrowingStrengthBonus = bonus;
             notifyOfChange();
         }
     }
@@ -1024,6 +1038,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         String strPrefix = Attribute.ID_ATTR_PREFIX + "st.";
         setLiftingStrengthBonus(getIntegerBonusFor(strPrefix + AttributeBonusLimitation.LIFTING_ONLY.name()));
         setStrikingStrengthBonus(getIntegerBonusFor(strPrefix + AttributeBonusLimitation.STRIKING_ONLY.name()));
+        setThrowingStrengthBonus(getIntegerBonusFor(strPrefix + AttributeBonusLimitation.THROWING_ONLY.name()));
         for (Attribute attr : mAttributes.values()) {
             String       attrID = Attribute.ID_ATTR_PREFIX + attr.getID();
             AttributeDef def    = attr.getAttrDef(this);
