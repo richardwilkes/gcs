@@ -32,7 +32,6 @@ import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.utility.Dice;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.text.Numbers;
-import com.trollworks.gcs.settings.DamageProgression;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -164,16 +163,14 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
         mDamageSTPopup.setToolTipText(I18n.text("Strength Damage Type"));
         editorPanel.add(new Label(I18n.text("Damage")), new PrecisionLayoutData().setFillHorizontalAlignment());
         damagePanel.add(mDamageSTPopup, new PrecisionLayoutData().setFillHorizontalAlignment());
-        // Phoenix D3 Only
         Integer[] percentages = {0, 25, 50, 75, 100, 125, 150};
         mPercentBonusPopup = new PopupMenu<>(percentages, (p) -> {
             if (mRespond) {
                 mWeapon.getDamage().setPercentBonus(mPercentBonusPopup.getSelectedItem());
                 adjustOutlineToContent();
             }
-        }
-        );
-        if (mOwner.getDataFile().getSheetSettings().getDamageProgression() == DamageProgression.PHOENIX_D3) {
+        });
+        if (mOwner.getDataFile().getSheetSettings().useBaseDamagePercentBonus()) {
             addLabel(damagePanel, "+");
             damagePanel.add(mPercentBonusPopup, new PrecisionLayoutData().setFillHorizontalAlignment());
             addLabel(damagePanel, "%");

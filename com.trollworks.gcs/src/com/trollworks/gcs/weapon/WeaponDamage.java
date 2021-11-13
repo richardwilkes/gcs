@@ -257,7 +257,6 @@ public class WeaponDamage {
             mPercentBonus = percentBonus;
             notifyOfChange();
         }
-
     }
 
     /** @return The damage, fully resolved for the user's sw or thr, if possible. */
@@ -295,10 +294,9 @@ public class WeaponDamage {
                         base.multiply(advantage.getLevels());
                     }
                 }
-                //Phoenix D3
-                double percent = (double) 0;
-                if (mOwner.mOwner.getDataFile().getSheetSettings().getDamageProgression() == DamageProgression.PHOENIX_D3) {
-                    percent = (double) mPercentBonus / 100;
+                double percent = 0.0;
+                if (mOwner.mOwner.getDataFile().getSheetSettings().useBaseDamagePercentBonus()) {
+                    percent = mPercentBonus / 100.0;
                 }
                 switch (mST) {
                 case SW -> {
@@ -317,9 +315,14 @@ public class WeaponDamage {
                     }
                     base = addDice(base, swing);
                 }
-                case THR -> base = addDice(base, character.getThrust(st));
+                case THR -> {
+                    Dice thrust = character.getThrust(st);
+                    thrust.percentAdd(percent);
+                    base = addDice(base, thrust);
+                }
                 case THR_LEVELED -> {
                     Dice thrust = character.getThrust(st);
+                    thrust.percentAdd(percent);
                     if (mOwner.mOwner instanceof Advantage) {
                         Advantage advantage = (Advantage) mOwner.mOwner;
                         if (advantage.isLeveled()) {
@@ -396,14 +399,24 @@ public class WeaponDamage {
                         base.add(mModifierPerDie * base.getDieCount());
                     }
                 }
-                if (mOwner.mOwner.getDataFile().getSheetSettings().usePhoenixDiceConversion() && mOwner.mOwner.getDataFile().getSheetSettings().getDamageProgression() == DamageProgression.PHOENIX_D3 && base.getDieSides() != 3) {
-                    // Convert d6 to d3 when this setting is enabled and Phoenix Damage is being used
-                    // Converts dice to raw averages, then halves them and takes any remainder to get a +1
-                    int  dicevalue = Math.round((base.getDieCount() * (base.getDieSides() + 1)) / 2);
-                    int  newcount  = dicevalue / 2;
-                    int  newmod    = Math.round(dicevalue % 2);
-                    Dice newDice   = new Dice(newcount, 3, newmod + base.getModifier(), base.getMultiplier());//we shouldn't have to touch the multiplier because it'll be the same r-right?
-                    base = newDice;
+                if (mOwner.mOwner.getDataFile().getSheetSettings().useDamageDiceConversion() && mOwner.mOwner.getDataFile().getSheetSettings().getDamageDiceConversionDie() != base.getDieSides()) {
+                    // Division by 0 would be bad, and 1 sided die don't exist, so we guard against that.
+                    Integer conversionDie = mOwner.mOwner.getDataFile().getSheetSettings().getDamageDiceConversionDie();
+                    if (conversionDie > 1) {
+                        // Converts dice to raw averages, then halves them and takes any remainder to get a +1
+                        double conversionDieAverage = (conversionDie + 1) / 2.0;
+                        double dicevalue            = (base.getDieCount() * (base.getDieSides() + 1)) / 2.0;
+                        double newcount             = (dicevalue / conversionDieAverage);
+                        int    newmod               = (int) Math.round(dicevalue % conversionDieAverage);
+                        int    count                = (int) newcount;
+                        if (newcount < 1) {
+                            newmod = (int) Math.round(dicevalue - conversionDieAverage);
+                            count = 1;
+                        }
+                        Dice newDice = new Dice(count, conversionDie, newmod + base.getModifier(), base.getMultiplier());//we shouldn't have to touch the multiplier because it'll be the same
+                        base = newDice;
+
+                    }
                 }
 
                 boolean       convertModifiersToExtraDice = mOwner.mOwner.getDataFile().getSheetSettings().useModifyingDicePlusAdds();
@@ -478,21 +491,31 @@ public class WeaponDamage {
     }
 
     private Dice addDice(Dice left, Dice right) {
-
-        if (mOwner.mOwner.getDataFile().getSheetSettings().getDamageProgression() == DamageProgression.PHOENIX_D3) {
-            // always return as d3 with Phoenix d3
-            // Converts both sides to raw averages, then halves them and takes any remainder to get a +1
-            int leftval  = Math.round((left.getDieCount() * (left.getDieSides() + 1) / 2) * left.getMultiplier());
-            int rightval = Math.round((right.getDieCount() * (right.getDieSides() + 1) / 2) * right.getMultiplier());
-            int dieCount = (leftval + rightval) / 2;
-            int baseMod  = Math.round((leftval + rightval) % 2);
-            return new Dice(dieCount, 3, baseMod + left.getModifier() + right.getModifier(), 1);
+        // Check if the sides are different, otherwise just add as normal.
+        String behavior = mOwner.mOwner.getDataFile().getSheetSettings().getDiceAdditionBehavior();
+        // set sides to 6 as default.
+        int sides = 6;
+        if (mOwner.mOwner.getDataFile().getSheetSettings().useDamageDiceConversion()) {
+            sides = mOwner.mOwner.getDataFile().getSheetSettings().getDamageDiceConversionDie();
+        }
+        if (left.getDieSides() != right.getDieSides() && behavior == "Lower" || behavior == "Higher") {
+            //get the larger die
+            if (behavior == "Lower") {
+                sides = Math.min(left.getDieSides(), right.getDieSides());
+            } else if (behavior == "Higher") {
+                sides = Math.max(left.getDieSides(), right.getDieSides());
+            }
+            double dicevalue = (sides + 1) / 2.0;
+            // Converts both sides to raw averages, then halves them and takes any remainder to get the mod
+            double leftval  = (left.getDieCount() * (left.getDieSides() + 1) / 2.0) * left.getMultiplier();
+            double rightval = (right.getDieCount() * (right.getDieSides() + 1) / 2.0) * right.getMultiplier();
+            int    dieCount = (int) ((leftval + rightval) / dicevalue);
+            int    baseMod  = (int) Math.round((leftval + rightval) % dicevalue);
+            return new Dice(dieCount, sides, baseMod + left.getModifier() + right.getModifier(), 1);
         } else {
-
-            //If we're not using weird d3 stuff, then treat as normal.
+            //Just Add is the default behavior.
             return new Dice(left.getDieCount() + right.getDieCount(), Math.max(left.getDieSides(), right.getDieSides()), left.getModifier() + right.getModifier(), left.getMultiplier() + right.getMultiplier() - 1);
         }
-
     }
 
     @Override

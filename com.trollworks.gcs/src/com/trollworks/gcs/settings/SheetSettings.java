@@ -61,7 +61,10 @@ public class SheetSettings implements ChangeNotifier {
     private static final String KEY_USE_TITLE_IN_FOOTER           = "use_title_in_footer";
     private static final String KEY_USER_DESCRIPTION_DISPLAY      = "user_description_display";
     private static final String KEY_DAMAGE_PROGRESSION            = "damage_progression";
-    private static final String KEY_USE_PHOENIX_DICE_CONVERSION   = "use_phoenix_dice_conversion";
+    private static final String KEY_USE_DAMAGE_DICE_CONVERSION    = "use_damage_dice_conversion";
+    private static final String KEY_DAMAGE_DICE_CONVERSION_DIE    = "damage_dice_conversion_die";
+    private static final String KEY_DICE_ADDITION_BEHAVIOR        = "dice_addition_behavior";
+    private static final String KEY_USE_BASE_DAMAGE_PERCENT_BONUS = "use_base_damage_percent_bonus";
 
     // TODO: Eliminate these deprecated keys after a suitable waiting period; added July 7, 2021
     private static final String DEPRECATED_KEY_USE_KNOW_YOUR_OWN_STRENGTH      = "use_know_your_own_strength";
@@ -89,7 +92,10 @@ public class SheetSettings implements ChangeNotifier {
     private boolean                   mShowEquipmentModifierAdj;
     private boolean                   mShowSpellAdj;
     private boolean                   mUseTitleInFooter;
-    private boolean                   mUsePhoenixDiceConversion;
+    private boolean                   mUseDamageDiceConversion;
+    private Integer                   mDamageDiceConversionDie;
+    private String                    mDiceAdditionBehavior;
+    private boolean                   mUseBaseDamagePercentBonus;
 
     /**
      * @param character The {@link GURPSCharacter} to retrieve settings for, or {@code null}.
@@ -150,7 +156,9 @@ public class SheetSettings implements ChangeNotifier {
         mShowEquipmentModifierAdj = other.mShowEquipmentModifierAdj;
         mShowSpellAdj = other.mShowSpellAdj;
         mUseTitleInFooter = other.mUseTitleInFooter;
-        mUsePhoenixDiceConversion = other.mUsePhoenixDiceConversion;
+        mUseDamageDiceConversion = other.mUseDamageDiceConversion;
+        mDamageDiceConversionDie = other.mDamageDiceConversionDie;
+        mDiceAdditionBehavior = other.mDiceAdditionBehavior;
     }
 
     /** Reset these settings to their defaults. */
@@ -184,7 +192,10 @@ public class SheetSettings implements ChangeNotifier {
             mShowEquipmentModifierAdj = false;
             mShowSpellAdj = true;
             mUseTitleInFooter = false;
-            mUsePhoenixDiceConversion = false;
+            mUseDamageDiceConversion = false;
+            mDamageDiceConversionDie = 6;
+            mDiceAdditionBehavior = "Just Add";
+            mUseBaseDamagePercentBonus = false;
         } else {
             copyFrom(Settings.getInstance().getSheetSettings());
         }
@@ -218,7 +229,10 @@ public class SheetSettings implements ChangeNotifier {
         mShowEquipmentModifierAdj = m.getBooleanWithDefault(KEY_SHOW_EQUIPMENT_MODIFIER_ADJ, mShowEquipmentModifierAdj);
         mShowSpellAdj = m.getBooleanWithDefault(KEY_SHOW_SPELL_ADJ, mShowSpellAdj);
         mUseTitleInFooter = m.getBooleanWithDefault(KEY_USE_TITLE_IN_FOOTER, mUseTitleInFooter);
-        mUsePhoenixDiceConversion = m.getBooleanWithDefault(KEY_USE_PHOENIX_DICE_CONVERSION, mUsePhoenixDiceConversion);
+        mUseDamageDiceConversion = m.getBooleanWithDefault(KEY_USE_DAMAGE_DICE_CONVERSION, mUseDamageDiceConversion);
+        mDamageDiceConversionDie = m.getIntWithDefault(KEY_DAMAGE_DICE_CONVERSION_DIE, mDamageDiceConversionDie);
+        mDiceAdditionBehavior = m.getStringWithDefault(KEY_DICE_ADDITION_BEHAVIOR, mDiceAdditionBehavior);
+        mUseBaseDamagePercentBonus = m.getBooleanWithDefault(KEY_USE_BASE_DAMAGE_PERCENT_BONUS, mUseBaseDamagePercentBonus);
         if (m.has(KEY_ATTRIBUTES)) {
             mAttributes = AttributeDef.load(m.getArray(KEY_ATTRIBUTES));
         }
@@ -276,7 +290,10 @@ public class SheetSettings implements ChangeNotifier {
         w.keyValue(KEY_SHOW_EQUIPMENT_MODIFIER_ADJ, mShowEquipmentModifierAdj);
         w.keyValue(KEY_SHOW_SPELL_ADJ, mShowSpellAdj);
         w.keyValue(KEY_USE_TITLE_IN_FOOTER, mUseTitleInFooter);
-        w.keyValue(KEY_USE_PHOENIX_DICE_CONVERSION, mUsePhoenixDiceConversion);
+        w.keyValue(KEY_USE_DAMAGE_DICE_CONVERSION, mUseDamageDiceConversion);
+        w.keyValue(KEY_DAMAGE_DICE_CONVERSION_DIE, mDamageDiceConversionDie);
+        w.keyValue(KEY_DICE_ADDITION_BEHAVIOR, mDiceAdditionBehavior);
+        w.keyValue(KEY_USE_BASE_DAMAGE_PERCENT_BONUS, mUseBaseDamagePercentBonus);
         w.key(KEY_PAGE);
         mPageSettings.toJSON(w);
         w.key(KEY_BLOCK_LAYOUT);
@@ -412,19 +429,52 @@ public class SheetSettings implements ChangeNotifier {
         }
     }
 
-    public boolean usePhoenixDiceConversion() {
-        return mUsePhoenixDiceConversion;
+    public boolean useDamageDiceConversion() {
+        return mUseDamageDiceConversion;
     }
 
-    public void setUsePhoenixDiceConversion(boolean useConversion) {
-        if (mUsePhoenixDiceConversion != useConversion) {
-            mUsePhoenixDiceConversion = useConversion;
+    public void setUseDamageDiceConversion(boolean useConversion) {
+        if (mUseDamageDiceConversion != useConversion) {
+            mUseDamageDiceConversion = useConversion;
             notifyOfChange();
         }
     }
 
+    public void setDamageDiceConversionDie(Integer dieSides) {
+        if (mDamageDiceConversionDie != dieSides) {
+            mDamageDiceConversionDie = dieSides;
+            notifyOfChange();
+        }
+    }
+
+    public int getDamageDiceConversionDie() {
+        return mDamageDiceConversionDie;
+    }
+
     public boolean useSimpleMetricConversions() {
         return mUseSimpleMetricConversions;
+    }
+
+    public String getDiceAdditionBehavior() {
+        return mDiceAdditionBehavior;
+    }
+
+    public void setDiceAdditionBehavior(String behavior) {
+        if (mDiceAdditionBehavior != behavior) {
+            mDiceAdditionBehavior = behavior;
+            notifyOfChange();
+        }
+    }
+
+    public boolean useBaseDamagePercentBonus() {
+        return mUseBaseDamagePercentBonus;
+    }
+
+    public void setUseBaseDamagePercentBonus(boolean useBaseDamagePercentBonus) {
+        if (mUseBaseDamagePercentBonus != useBaseDamagePercentBonus) {
+            mUseBaseDamagePercentBonus = useBaseDamagePercentBonus;
+            notifyOfChange();
+        }
     }
 
     public void setUseSimpleMetricConversions(boolean useSimpleMetricConversions) {
