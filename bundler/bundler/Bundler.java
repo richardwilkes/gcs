@@ -647,6 +647,8 @@ public final class Bundler {
         case WINDOWS -> {
             args.add("--java-options");
             args.add("-Dsun.java2d.dpiaware=false");
+            args.add("--java-options");
+            args.add("-Dsun.java2d.d3d=false");
             if (!noInstaller) {
                 args.add("--win-menu");
                 args.add("--win-menu-group");
