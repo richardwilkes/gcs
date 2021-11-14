@@ -12,19 +12,46 @@
 package com.trollworks.gcs.calendar;
 
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
+
+import java.io.IOException;
 
 /** LeapYear holds parameters for determining leap years. */
 public class LeapYear {
-    public int mMonth;
-    public int mEvery;
-    public int mExcept;
-    public int mUnless;
+    private static final String KEY_MONTH  = "month";
+    private static final String KEY_EVERY  = "every";
+    private static final String KEY_EXCEPT = "except";
+    private static final String KEY_UNLESS = "unless";
+    public               int    mMonth;
+    public               int    mEvery;
+    public               int    mExcept;
+    public               int    mUnless;
 
+    /** Create a new leap year. */
     public LeapYear(int month, int every, int except, int unless) {
         mMonth = month;
         mEvery = every;
         mExcept = except;
         mUnless = unless;
+    }
+
+    /** Create a new leap year from json. */
+    public LeapYear(JsonMap m) {
+        mMonth = m.getInt(KEY_MONTH);
+        mEvery = m.getInt(KEY_EVERY);
+        mExcept = m.getInt(KEY_EXCEPT);
+        mUnless = m.getInt(KEY_UNLESS);
+    }
+
+    /** Save the data as json. */
+    public void save(JsonWriter w) throws IOException {
+        w.startMap();
+        w.keyValue(KEY_MONTH, mMonth);
+        w.keyValue(KEY_EVERY, mEvery);
+        w.keyValueNot(KEY_EXCEPT, mExcept, 0);
+        w.keyValueNot(KEY_UNLESS, mUnless, 0);
+        w.endMap();
     }
 
     /** @return null if the leap year data is usable for the given calendar. */

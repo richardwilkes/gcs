@@ -15,7 +15,6 @@ import com.trollworks.gcs.character.CharacterSetter;
 import com.trollworks.gcs.character.CharacterSheet;
 import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.character.Profile;
-import com.trollworks.gcs.character.names.USCensusNames;
 import com.trollworks.gcs.page.DropPanel;
 import com.trollworks.gcs.page.PageField;
 import com.trollworks.gcs.page.PageLabel;
@@ -44,7 +43,7 @@ public class IdentityPanel extends DropPanel {
                 (c, v) -> c.getProfile().setName((String) v), (b) -> {
                     mNameField.attemptCommit();
                     mNameField.requestFocus();
-                    profile.setName(USCensusNames.INSTANCE.getFullName(!profile.getGender().equalsIgnoreCase(I18n.text("Female"))));
+                    profile.setName(profile.getRandomName(profile.getName()));
                 });
         createStringField(sheet, profile.getTitle(), I18n.text("Title"), "character title",
                 (c, v) -> c.getProfile().setTitle((String) v));

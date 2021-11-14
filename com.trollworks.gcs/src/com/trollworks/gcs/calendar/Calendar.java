@@ -12,22 +12,34 @@
 package com.trollworks.gcs.calendar;
 
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.json.JsonArray;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Calendar {
-    public int          mDayZeroWeekDay;
-    public List<String> mWeekDays;
-    public List<Month>  mMonths;
-    public List<Season> mSeasons;
-    public String       mEra;
-    public String       mPreviousEra;
-    public LeapYear     mLeapYear;
+    private static final String       KEY_WEEKDAYS         = "weekdays";
+    private static final String       KEY_DAY_ZERO_WEEKDAY = "day_zero_weekday";
+    private static final String       KEY_MONTHS           = "months";
+    private static final String       KEY_SEASONS          = "seasons";
+    private static final String       KEY_ERA              = "era";
+    private static final String       KEY_PREVIOUS_ERA     = "previous_era";
+    private static final String       KEY_LEAP_YEAR        = "leap";
+    public               List<String> mWeekDays;
+    public               int          mDayZeroWeekDay;
+    public               List<Month>  mMonths;
+    public               List<Season> mSeasons;
+    public               String       mEra;
+    public               String       mPreviousEra;
+    public               LeapYear     mLeapYear;
 
     /** Creates a default Gregorian calendar. */
     public Calendar() {
-        mDayZeroWeekDay = 1;
         mWeekDays = List.of("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday");
+        mDayZeroWeekDay = 1;
         mMonths = List.of(
                 new Month("January", 31),
                 new Month("Feburary", 28),
@@ -51,6 +63,82 @@ public class Calendar {
         mEra = "AD";
         mPreviousEra = "BC";
         mLeapYear = new LeapYear(2, 4, 100, 400);
+    }
+
+    /** Creates a new calendar from json. */
+    public Calendar(JsonMap m) throws IOException {
+        mWeekDays = new ArrayList<>();
+        JsonArray a     = m.getArray(KEY_WEEKDAYS);
+        int       count = a.size();
+        for (int i = 0; i < count; i++) {
+            mWeekDays.add(a.getString(i));
+        }
+
+        mDayZeroWeekDay = m.getInt(KEY_DAY_ZERO_WEEKDAY);
+
+        mMonths = new ArrayList<>();
+        a = m.getArray(KEY_MONTHS);
+        count = a.size();
+        for (int i = 0; i < count; i++) {
+            mMonths.add(new Month(a.getMap(i)));
+        }
+
+        mSeasons = new ArrayList<>();
+        a = m.getArray(KEY_SEASONS);
+        count = a.size();
+        for (int i = 0; i < count; i++) {
+            mSeasons.add(new Season(a.getMap(i)));
+        }
+
+        mEra = m.getString(KEY_ERA);
+        mPreviousEra = m.getString(KEY_PREVIOUS_ERA);
+
+        if (m.has(KEY_LEAP_YEAR)) {
+            mLeapYear = new LeapYear(m.getMap(KEY_LEAP_YEAR));
+        }
+
+        String check = checkValidity();
+        if (check != null) {
+            throw new IOException(check);
+        }
+    }
+
+    /** Save the data as json. */
+    public void save(JsonWriter w) throws IOException {
+        w.startMap();
+
+        w.key(KEY_WEEKDAYS);
+        w.startArray();
+        for (String one : mWeekDays) {
+            w.value(one);
+        }
+        w.endArray();
+
+        w.keyValue(KEY_DAY_ZERO_WEEKDAY, mDayZeroWeekDay);
+
+        w.key(KEY_MONTHS);
+        w.startArray();
+        for (Month one : mMonths) {
+            one.save(w);
+        }
+        w.endArray();
+
+        w.key(KEY_SEASONS);
+        w.startArray();
+        for (Season one : mSeasons) {
+            one.save(w);
+        }
+        w.endArray();
+
+        w.keyValueNot(KEY_ERA, mEra, "");
+        w.keyValueNot(KEY_PREVIOUS_ERA, mPreviousEra, "");
+
+        if (mLeapYear != null) {
+            w.key(KEY_LEAP_YEAR);
+            mLeapYear.save(w);
+        }
+
+        w.endMap();
     }
 
     /** @return null if the calendar data is usable. */

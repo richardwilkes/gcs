@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.advantage;
 
+import com.trollworks.gcs.ancestry.Ancestry;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
@@ -71,6 +72,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     private static final String KEY_SOCIAL              = "social";
     private static final String KEY_EXOTIC              = "exotic";
     private static final String KEY_SUPERNATURAL        = "supernatural";
+    private static final String KEY_ANCESTRY            = "ancestry";
     private static final String TYPE_MENTAL             = "Mental";
     private static final String TYPE_PHYSICAL           = "Physical";
     private static final String TYPE_SOCIAL             = "Social";
@@ -94,6 +96,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     private List<WeaponStats>          mWeapons;
     private List<AdvantageModifier>    mModifiers;
     private String                     mUserDesc;
+    private Ancestry                   mAncestry;
     private boolean                    mAllowHalfLevels;
     private boolean                    mHalfLevel;
     private boolean                    mRoundCostDown;
@@ -156,7 +159,6 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         }
         if (deep) {
             int count = advantage.getChildCount();
-
             for (int i = 0; i < count; i++) {
                 addChild(new Advantage(dataFile, (Advantage) advantage.getChild(i), true));
             }
@@ -213,6 +215,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         mWeapons = new ArrayList<>();
         mModifiers = new ArrayList<>();
         mUserDesc = "";
+        mAncestry = null;
     }
 
     @Override
@@ -271,6 +274,9 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
             mUserDesc = m.getString(KEY_USER_DESC);
         }
         mReference = m.getString(KEY_REFERENCE);
+        if (canHaveChildren() && mContainerType == AdvantageContainerType.RACE) {
+            mAncestry = m.has(KEY_ANCESTRY) ? new Ancestry(m.getMap(KEY_ANCESTRY)) : new Ancestry();
+        }
     }
 
     @Override
@@ -322,6 +328,13 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
             w.keyValueNot(KEY_USER_DESC, mUserDesc, "");
         }
         w.keyValueNot(KEY_REFERENCE, mReference, "");
+        if (canHaveChildren() && mContainerType == AdvantageContainerType.RACE) {
+            if (mAncestry == null) {
+                mAncestry = new Ancestry();
+            }
+            w.key(KEY_ANCESTRY);
+            mAncestry.save(w);
+        }
 
         // Emit the calculated values for third parties
         w.key("calc");
@@ -980,5 +993,15 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     @Override
     public String getToolTip(Column column) {
         return AdvantageColumn.values()[column.getID()].getToolTip(this);
+    }
+
+    public Ancestry getAncestry() {
+        if (canHaveChildren() && mContainerType == AdvantageContainerType.RACE) {
+            if (mAncestry == null) {
+                mAncestry = new Ancestry();
+            }
+            return mAncestry;
+        }
+        return null;
     }
 }

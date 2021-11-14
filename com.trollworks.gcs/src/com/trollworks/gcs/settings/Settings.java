@@ -12,6 +12,7 @@
 package com.trollworks.gcs.settings;
 
 import com.trollworks.gcs.GCS;
+import com.trollworks.gcs.calendar.Calendar;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.ChangeableData;
 import com.trollworks.gcs.datafile.DataFile;

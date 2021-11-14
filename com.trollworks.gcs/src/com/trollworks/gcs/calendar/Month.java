@@ -12,15 +12,36 @@
 package com.trollworks.gcs.calendar;
 
 import com.trollworks.gcs.utility.I18n;
+import com.trollworks.gcs.utility.json.JsonMap;
+import com.trollworks.gcs.utility.json.JsonWriter;
+
+import java.io.IOException;
 
 /** Month holds information about a month within the calendar. */
 public class Month {
-    public String mName;
-    public int    mDays;
+    private static final String KEY_NAME = "name";
+    private static final String KEY_DAYS = "days";
+    public               String mName;
+    public               int    mDays;
 
+    /** Create a new month. */
     public Month(String name, int days) {
         mName = name;
         mDays = days;
+    }
+
+    /** Create a new month from json. */
+    public Month(JsonMap m) {
+        mName = m.getString(KEY_NAME);
+        mDays = m.getInt(KEY_DAYS);
+    }
+
+    /** Save the data as json. */
+    public void save(JsonWriter w) throws IOException {
+        w.startMap();
+        w.keyValue(KEY_NAME, mName);
+        w.keyValue(KEY_DAYS, mDays);
+        w.endMap();
     }
 
     /** @return null if the month data is usable. */

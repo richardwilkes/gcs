@@ -11,16 +11,20 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.advantage.Advantage;
+import com.trollworks.gcs.ancestry.Ancestry;
 import com.trollworks.gcs.attribute.Attribute;
 import com.trollworks.gcs.body.HitLocationTable;
-import com.trollworks.gcs.character.names.USCensusNames;
+import com.trollworks.gcs.calendar.Calendar;
+import com.trollworks.gcs.calendar.CalendarException;
+import com.trollworks.gcs.calendar.Date;
+import com.trollworks.gcs.settings.CalendarRef;
 import com.trollworks.gcs.settings.GeneralSettings;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.settings.SheetSettings;
 import com.trollworks.gcs.ui.RetinaIcon;
 import com.trollworks.gcs.ui.image.Images;
 import com.trollworks.gcs.ui.image.Img;
+import com.trollworks.gcs.utility.Dice;
 import com.trollworks.gcs.utility.Dirs;
 import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.Fixed6;
@@ -43,13 +47,11 @@ import java.awt.Transparency;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.SignStyle;
 import java.util.Base64;
 import java.util.List;
-import java.util.Random;
 import javax.imageio.ImageIO;
 
 /** Holds the character profile. */
@@ -77,7 +79,6 @@ public class Profile {
     public static final  int               PORTRAIT_HEIGHT      = 96; // Height of the portrait, in 1/72nds of an inch
     public static final  int               PORTRAIT_WIDTH       = 3 * PORTRAIT_HEIGHT / 4; // Width of the portrait, in 1/72nds of an inch
     private static final DateTimeFormatter MONTH_AND_DAY_FORMAT = new DateTimeFormatterBuilder().parseCaseInsensitive().parseLenient().appendText(MONTH_OF_YEAR, FULL).appendLiteral(' ').appendValue(DAY_OF_MONTH, 1, 2, SignStyle.NOT_NEGATIVE).toFormatter();
-    private static final Random            RANDOM               = new Random();
 
     private GURPSCharacter mCharacter;
     private RetinaIcon     mPortrait;
@@ -105,32 +106,31 @@ public class Profile {
         mTitle = "";
         mOrganization = "";
         mReligion = "";
+        SheetSettings sheetSettings = mCharacter.getSheetSettings();
         if (full) {
-            mAge = Numbers.format(getRandomAge());
-            mBirthday = getRandomMonthAndDay();
+            mGender = getRandomGender("");
+            mAge = Numbers.format(getRandomAge(-1));
+            mBirthday = getRandomBirthday("");
             mEyeColor = getRandomEyeColor("");
             mHair = getRandomHair("");
-            mSkinColor = getRandomSkinColor("");
-            mHandedness = getRandomHandedness();
-            int st = mCharacter.getAttributeIntValue("st");
-            mHeight = getRandomHeight(st, getSizeModifier());
-            mWeight = getRandomWeight(st, getSizeModifier(), Fixed6.ONE);
-            mGender = getRandomGender();
-            mName = USCensusNames.INSTANCE.getFullName(I18n.text("Male").equals(mGender));
+            mSkinColor = getRandomSkin("");
+            mHandedness = getRandomHandedness("");
+            mHeight = getRandomHeight(new LengthValue(Fixed6.ZERO, sheetSettings.defaultLengthUnits()));
+            mWeight = getRandomWeight(Fixed6.ONE, new WeightValue(Fixed6.ZERO, sheetSettings.defaultWeightUnits()));
+            mName = getRandomName("");
             GeneralSettings settings = Settings.getInstance().getGeneralSettings();
             mTechLevel = settings.getDefaultTechLevel();
             mPlayerName = settings.getDefaultPlayerName();
         } else {
+            mGender = "";
             mAge = "";
             mBirthday = "";
             mEyeColor = "";
             mHair = "";
             mSkinColor = "";
             mHandedness = "";
-            SheetSettings sheetSettings = mCharacter.getSheetSettings();
             mHeight = new LengthValue(Fixed6.ZERO, sheetSettings.defaultLengthUnits());
             mWeight = new WeightValue(Fixed6.ZERO, sheetSettings.defaultWeightUnits());
-            mGender = "";
             mName = "";
             mTechLevel = "";
             mPlayerName = "";
@@ -424,42 +424,6 @@ public class Profile {
         }
     }
 
-    /** @return A random age. */
-    public int getRandomAge() {
-        if (mCharacter.getAdvantageNamed("Unaging") != null) {
-            return 18 + RANDOM.nextInt(7);
-        }
-
-        int mod = 7;
-        if (RANDOM.nextInt(3) == 1) {
-            mod += 7;
-            if (RANDOM.nextInt(4) == 1) {
-                mod += 13;
-            }
-        }
-
-        int       base     = 16;
-        int       levels;
-        Advantage lifespan = mCharacter.getAdvantageNamed("Short Lifespan");
-        if (lifespan != null) {
-            levels = lifespan.getLevels();
-            base >>= levels;
-            mod >>= levels;
-        } else {
-            lifespan = mCharacter.getAdvantageNamed("Extended Lifespan");
-            if (lifespan != null) {
-                levels = lifespan.getLevels();
-                base <<= levels;
-                mod <<= levels;
-            }
-        }
-        if (mod < 1) {
-            mod = 1;
-        }
-
-        return base + RANDOM.nextInt(mod);
-    }
-
     /** @return The date of birth. */
     public String getBirthday() {
         return mBirthday;
@@ -633,178 +597,113 @@ public class Profile {
         }
     }
 
+    /** @return A random age. */
+    @SuppressWarnings({"AutoBoxing", "AutoUnboxing"})
+    public int getRandomAge(int not) {
+        Ancestry ancestry = mCharacter.getAncestry();
+        return getRandomized(not, () -> ancestry.getRandomAge(mCharacter, mGender));
+    }
+
     /** @return A random hair color, style & length. */
-    public static String getRandomHair(String not) {
-        String result;
-        int maxAttempts = 5;
-        do {
-            if (RANDOM.nextInt(7) == 0) {
-                result = I18n.text("Bald");
-            } else {
-                String color = switch (RANDOM.nextInt(9)) {
-                    case 0, 1, 2 -> I18n.text("Black");
-                    case 3, 4 -> I18n.text("Blond");
-                    case 5 -> I18n.text("Redhead");
-                    default -> I18n.text("Brown");
-                };
-                String style = switch (RANDOM.nextInt(3)) {
-                    case 0 -> I18n.text("Curly");
-                    case 1 -> I18n.text("Wavy");
-                    default -> I18n.text("Straight");
-                };
-                String length = switch (RANDOM.nextInt(3)) {
-                    case 0 -> I18n.text("Short");
-                    case 1 -> I18n.text("Long");
-                    default -> I18n.text("Medium");
-                };
-                result = MessageFormat.format("{0}, {1}, {2}", color, style, length);
-            }
-            if (--maxAttempts == 0) {
-                break;
-            }
-        } while (result.equals(not));
-        return result;
+    public String getRandomHair(String not) {
+        Ancestry ancestry = mCharacter.getAncestry();
+        return getRandomized(not, () -> ancestry.getRandomHair(mGender));
     }
 
     /** @return A random eye color. */
-    public static String getRandomEyeColor(String not) {
-        String result;
-        int maxAttempts = 5;
-        do {
-            result = switch (RANDOM.nextInt(8)) {
-                case 0, 1 -> I18n.text("Blue");
-                case 2 -> I18n.text("Green");
-                case 3 -> I18n.text("Grey");
-                case 4 -> I18n.text("Violet");
-                default -> I18n.text("Brown");
-            };
-            if (--maxAttempts == 0) {
-                break;
-            }
-        } while (result.equals(not));
-        return result;
+    public String getRandomEyeColor(String not) {
+        Ancestry ancestry = mCharacter.getAncestry();
+        return getRandomized(not, () -> ancestry.getRandomEyeColor(mGender));
     }
 
-    /** @return A random sking color. */
-    public static String getRandomSkinColor(String not) {
-        String result;
-        int maxAttempts = 5;
-        do {
-            result = switch (RANDOM.nextInt(8)) {
-                case 0 -> I18n.text("Freckled");
-                case 1 -> I18n.text("Light Tan");
-                case 2 -> I18n.text("Dark Tan");
-                case 3 -> I18n.text("Brown");
-                case 4 -> I18n.text("Light Brown");
-                case 5 -> I18n.text("Dark Brown");
-                case 6 -> I18n.text("Pale");
-                default -> I18n.text("Tan");
-            };
-            if (--maxAttempts == 0) {
-                break;
-            }
-        } while (result.equals(not));
-        return result;
+    /** @return A random skin. */
+    public String getRandomSkin(String not) {
+        Ancestry ancestry = mCharacter.getAncestry();
+        return getRandomized(not, () -> ancestry.getRandomSkin(mGender));
     }
 
     /** @return A random handedness. */
-    public static String getRandomHandedness() {
-        if (RANDOM.nextInt(4) == 0) {
-            return I18n.text("Left");
-        }
-        return I18n.text("Right");
+    public String getRandomHandedness(String not) {
+        Ancestry ancestry = mCharacter.getAncestry();
+        return getRandomized(not, () -> ancestry.getRandomHandedness(mGender));
     }
 
     /** @return A random gender. */
-    public static String getRandomGender() {
-        if (RANDOM.nextInt(2) == 0) {
-            return I18n.text("Female");
-        }
-        return I18n.text("Male");
+    public String getRandomGender(String not) {
+        Ancestry ancestry = mCharacter.getAncestry();
+        return getRandomized(not, ancestry::getRandomGender);
     }
 
-    /** @return A random month and day. */
-    public static String getRandomMonthAndDay() {
-        return Numbers.formatDateTime(MONTH_AND_DAY_FORMAT, RANDOM.nextLong());
+    /** @return A random birthday. */
+    public String getRandomBirthday(String not) {
+        int      year = 1;
+        int      base = 0;
+        Calendar cal  = CalendarRef.currentCalendar();
+        if (cal.mLeapYear != null) {
+            while (!cal.isLeapYear(year)) {
+                year++;
+            }
+            try {
+                base = new Date(cal, 1, 1, year).days();
+            } catch (CalendarException e) {
+                Log.error(e);
+            }
+        }
+        int start = base;
+        int range = cal.days(year);
+        return getRandomized(not, () -> new Date(cal, start + Dice.RANDOM.nextInt(range)).format("%M %D"));
     }
 
     /**
-     * @param strength The strength to base the height on.
-     * @param sm       The size modifier to use.
+     * @param not A height not to return, if possible.
      * @return A random height.
      */
-    public LengthValue getRandomHeight(int strength, int sm) {
-        Fixed6 base;
-        if (strength < 7) {
-            base = new Fixed6(52);
-        } else if (strength < 10) {
-            base = new Fixed6(55 + (strength - 7) * 3);
-        } else if (strength == 10) {
-            base = new Fixed6(63);
-        } else if (strength < 14) {
-            base = new Fixed6(65 + (strength - 11) * 3);
-        } else {
-            base = new Fixed6(74);
-        }
-        SheetSettings sheetSettings = mCharacter.getSheetSettings();
-        boolean       useMetric     = sheetSettings.defaultWeightUnits().isMetric();
-        if (useMetric) {
-            base = LengthUnits.CM.convert(LengthUnits.FT_IN, base).round().add(new Fixed6(RANDOM.nextInt(16)));
-        } else {
-            base = base.add(new Fixed6(RANDOM.nextInt(11)));
-        }
-        if (sm != 0) {
-            base = base.mul(new Fixed6(Math.pow(10.0, sm / 6.0))).round();
+    public LengthValue getRandomHeight(LengthValue not) {
+        Ancestry    ancestry     = mCharacter.getAncestry();
+        LengthUnits desiredUnits = mCharacter.getSheetSettings().defaultLengthUnits();
+        return getRandomized(not, () -> {
+            Fixed6 base = new Fixed6(ancestry.getRandomHeightInInches(mCharacter, mGender));
+            return new LengthValue(desiredUnits.convert(LengthUnits.IN, base).round(), desiredUnits);
+        });
+    }
+
+    /**
+     * @param multiplier The weight multiplier for being under- or overweight.
+     * @param not        A weight not to return, if possible.
+     * @return A random weight.
+     */
+    public WeightValue getRandomWeight(Fixed6 multiplier, WeightValue not) {
+        Ancestry    ancestry     = mCharacter.getAncestry();
+        WeightUnits desiredUnits = mCharacter.getSheetSettings().defaultWeightUnits();
+        return getRandomized(not, () -> {
+            Fixed6 base = new Fixed6(ancestry.getRandomWeightInPounds(mCharacter, mGender));
+            base = base.mul(multiplier).round();
             if (base.lessThan(Fixed6.ONE)) {
                 base = Fixed6.ONE;
             }
-        }
-        LengthUnits calcUnits    = useMetric ? LengthUnits.CM : LengthUnits.FT_IN;
-        LengthUnits desiredUnits = sheetSettings.defaultLengthUnits();
-        return new LengthValue(desiredUnits.convert(calcUnits, base), desiredUnits);
+            return new WeightValue(desiredUnits.convert(WeightUnits.LB, base).round(), desiredUnits);
+        });
     }
 
-    /**
-     * @param strength   The strength to base the weight on.
-     * @param sm         The size modifier to use.
-     * @param multiplier The weight multiplier for being under- or overweight.
-     * @return A random weight.
-     */
-    public WeightValue getRandomWeight(int strength, int sm, Fixed6 multiplier) {
-        Fixed6 base;
-        Fixed6 range;
-        if (strength < 7) {
-            base = new Fixed6(60);
-            range = new Fixed6(61);
-        } else if (strength < 10) {
-            base = new Fixed6(75 + (strength - 7) * 15);
-            range = new Fixed6(61);
-        } else if (strength == 10) {
-            base = new Fixed6(115);
-            range = new Fixed6(61);
-        } else if (strength < 14) {
-            base = new Fixed6(125 + (strength - 11) * 15);
-            range = new Fixed6(71 + (strength - 11) * 10);
-        } else {
-            base = new Fixed6(170);
-            range = new Fixed6(101);
-        }
-        SheetSettings sheetSettings = mCharacter.getSheetSettings();
-        boolean       useMetric     = sheetSettings.defaultWeightUnits().isMetric();
-        if (useMetric) {
-            base = WeightUnits.KG.convert(WeightUnits.LB, base).round();
-            range = WeightUnits.KG.convert(WeightUnits.LB, range.sub(Fixed6.ONE)).round().add(Fixed6.ONE);
-        }
-        base = base.add(new Fixed6(RANDOM.nextInt((int) range.asLong())));
-        if (sm != 0) {
-            base = base.mul(new Fixed6(Math.pow(1000.0, sm / 6.0))).round();
-        }
-        base = base.mul(multiplier).round();
-        if (base.lessThan(Fixed6.ONE)) {
-            base = Fixed6.ONE;
-        }
-        WeightUnits calcUnits    = useMetric ? WeightUnits.KG : WeightUnits.LB;
-        WeightUnits desiredUnits = sheetSettings.defaultWeightUnits();
-        return new WeightValue(desiredUnits.convert(calcUnits, base), desiredUnits);
+    /** @return A random name. */
+    public String getRandomName(String not) {
+        Ancestry ancestry = mCharacter.getAncestry();
+        return getRandomized(not, () -> ancestry.getRandomName(mGender));
+    }
+
+    interface Randomizer<T> {
+        T getRandomResult();
+    }
+
+    private static <T> T getRandomized(T not, Randomizer<T> randomizer) {
+        T   result;
+        int maxAttempts = 5;
+        do {
+            result = randomizer.getRandomResult();
+            if (--maxAttempts == 0) {
+                break;
+            }
+        } while (result.equals(not));
+        return result;
     }
 }
