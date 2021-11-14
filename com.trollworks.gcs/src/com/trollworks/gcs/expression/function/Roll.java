@@ -25,7 +25,7 @@ public class Roll implements ExpressionFunction {
     @Override
     public final Object execute(Evaluator evaluator, String arguments) throws EvaluationException {
         try {
-            Dice dice = new Dice(arguments);
+            Dice dice = new Dice(arguments.contains("(") ? new Evaluator(evaluator).evaluate(arguments).toString() : arguments);
             return Double.valueOf(dice.roll(false));
         } catch (Exception exception) {
             throw new EvaluationException(String.format(I18n.text("Invalid dice specification: %s"), arguments));
