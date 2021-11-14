@@ -29,7 +29,7 @@ public class Ancestry {
     public               List<WeightedAncestryOptions> mGenderOptions;
 
     public Ancestry() {
-        mCommonOptions = new AncestryOptions("").SetToDefaults();
+        mCommonOptions = new AncestryOptions("").setToDefaults();
         mCommonOptions.mNameGenerators = List.of("Human Last");
         mGenderOptions = new ArrayList<>();
         AncestryOptions male = new AncestryOptions("Male");

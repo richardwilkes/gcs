@@ -58,8 +58,7 @@ public class CostReduction extends Feature {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof CostReduction) {
-            CostReduction cr = (CostReduction) obj;
+        if (obj instanceof CostReduction cr) {
             return mPercentage == cr.mPercentage && mAttribute.equals(cr.mAttribute);
         }
         return false;

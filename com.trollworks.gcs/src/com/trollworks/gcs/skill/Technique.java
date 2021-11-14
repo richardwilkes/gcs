@@ -153,8 +153,7 @@ public class Technique extends Skill {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof Technique && super.isEquivalentTo(obj)) {
-            Technique row = (Technique) obj;
+        if (obj instanceof Technique row && super.isEquivalentTo(obj)) {
             if (mLimited == row.mLimited && mLimitModifier == row.mLimitModifier) {
                 return mDefault.equals(row.mDefault);
             }

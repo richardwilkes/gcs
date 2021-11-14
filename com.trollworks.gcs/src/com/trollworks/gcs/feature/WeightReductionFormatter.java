@@ -36,8 +36,7 @@ public class WeightReductionFormatter extends JFormattedTextField.AbstractFormat
                 return Numbers.format(percentage) + "%";
             }
             return "";
-        } else if (value instanceof WeightValue) {
-            WeightValue weight = (WeightValue) value;
+        } else if (value instanceof WeightValue weight) {
             if (weight.getValue().equals(Fixed6.ZERO)) {
                 return "";
             }

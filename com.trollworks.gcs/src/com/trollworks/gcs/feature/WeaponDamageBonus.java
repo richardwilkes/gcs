@@ -78,8 +78,7 @@ public class WeaponDamageBonus extends Bonus {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof WeaponDamageBonus && super.equals(obj)) {
-            WeaponDamageBonus wb = (WeaponDamageBonus) obj;
+        if (obj instanceof WeaponDamageBonus wb && super.equals(obj)) {
             return mWeaponSelectionType == wb.mWeaponSelectionType &&
                     mNameCriteria.equals(wb.mNameCriteria) &&
                     mSpecializationCriteria.equals(wb.mSpecializationCriteria) &&

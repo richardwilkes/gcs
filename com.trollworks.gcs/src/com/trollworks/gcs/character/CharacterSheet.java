@@ -162,8 +162,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
             if (focus instanceof PageField) {
                 focusKey = ((PageField) focus).getTag();
                 focus = null;
-            } else if (focus instanceof Outline) {
-                Outline   outline   = (Outline) focus;
+            } else if (focus instanceof Outline outline) {
                 Selection selection = outline.getModel().getSelection();
                 firstRow = outline.getFirstRowToDisplay();
                 int selRow = selection.nextSelectedIndex(firstRow);
@@ -367,8 +366,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
                     panel.requestFocus();
                     return true;
                 }
-            } else if (panel instanceof Container) {
-                Container container = (Container) panel;
+            } else if (panel instanceof Container container) {
                 if (container.getComponentCount() > 0) {
                     for (Component child : container.getComponents()) {
                         if (restoreFocusToKey(key, child)) {
@@ -479,8 +477,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
 
     private static void collectReactionsFromFeatureList(String source, List<Feature> features, Map<String, ReactionRow> reactionMap) {
         for (Feature feature : features) {
-            if (feature instanceof ReactionBonus) {
-                ReactionBonus bonus     = (ReactionBonus) feature;
+            if (feature instanceof ReactionBonus bonus) {
                 int           amount    = bonus.getAmount().getIntegerAdjustedAmount();
                 String        situation = bonus.getSituation();
                 ReactionRow   existing  = reactionMap.get(situation);
@@ -535,8 +532,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
 
     private static void collectConditionalModsFromFeatureList(String source, List<Feature> features, Map<String, ConditionalModifierRow> cmMap) {
         for (Feature feature : features) {
-            if (feature instanceof ConditionalModifier) {
-                ConditionalModifier    cm        = (ConditionalModifier) feature;
+            if (feature instanceof ConditionalModifier cm) {
                 int                    amount    = cm.getAmount().getIntegerAdjustedAmount();
                 String                 situation = cm.getSituation();
                 ConditionalModifierRow existing  = cmMap.get(situation);

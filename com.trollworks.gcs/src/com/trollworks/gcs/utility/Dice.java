@@ -357,8 +357,7 @@ public class Dice implements Cloneable {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof Dice) {
-            Dice od = (Dice) obj;
+        if (obj instanceof Dice od) {
             return mCount == od.mCount && mSides == od.mSides && mModifier == od.mModifier && mMultiplier == od.mMultiplier;
         }
         return false;

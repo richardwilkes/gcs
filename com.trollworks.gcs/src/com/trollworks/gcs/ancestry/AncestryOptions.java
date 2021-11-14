@@ -96,7 +96,7 @@ public class AncestryOptions {
         w.endMap();
     }
 
-    public AncestryOptions SetToDefaults() {
+    public AncestryOptions setToDefaults() {
         mHeightFormula = "roll(dice(1, 8, if($st < 7, 51, if($st < 10, 54 + ($st - 7) * 3, if($st == 10, 62, if($st < 14, 64 + ($st - 11) * 3, 73))))))";
         mWeightFormula = "roll(dice(1, if($st < 11, 61, if($st < 14, 71 + ($st - 11) * 10, 101)), if($st < 7, 60, if($st < 10, 75 + ($st - 7) * 15, if($st == 10, 115, if($st < 14, 125 + ($st - 11) * 15, 170))))))";
         mAgeFormula = "roll(1d12+14)";

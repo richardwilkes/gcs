@@ -96,8 +96,7 @@ public class PrereqList extends Prereq {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof PrereqList) {
-            PrereqList list = (PrereqList) obj;
+        if (obj instanceof PrereqList list) {
             return mAll == list.mAll && mWhenEnabled == list.mWhenEnabled && mWhenTLCriteria.equals(list.mWhenTLCriteria) && mPrereqs.equals(list.mPrereqs);
         }
         return false;

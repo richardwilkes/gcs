@@ -37,8 +37,7 @@ public final class DeleteCommand extends Command {
     public void adjust() {
         boolean   enable = false;
         Component comp   = getFocusOwner();
-        if (comp instanceof JTextComponent && comp.isEnabled()) {
-            JTextComponent textComp = (JTextComponent) comp;
+        if (comp instanceof JTextComponent textComp && comp.isEnabled()) {
             if (textComp.isEditable()) {
                 int selectionEnd = textComp.getSelectionEnd();
                 enable = textComp.getSelectionStart() != selectionEnd || selectionEnd < textComp.getDocument().getLength();
@@ -55,8 +54,7 @@ public final class DeleteCommand extends Command {
     @Override
     public void actionPerformed(ActionEvent event) {
         Component comp = getFocusOwner();
-        if (comp instanceof JTextComponent && comp.isEnabled()) {
-            JTextComponent textComp = (JTextComponent) comp;
+        if (comp instanceof JTextComponent textComp && comp.isEnabled()) {
             ActionListener listener = textComp.getActionForKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
             if (listener != null) {
                 listener.actionPerformed(event);

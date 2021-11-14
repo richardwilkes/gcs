@@ -175,8 +175,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         if (obj == this) {
             return true;
         }
-        if (obj instanceof Advantage && super.isEquivalentTo(obj)) {
-            Advantage row = (Advantage) obj;
+        if (obj instanceof Advantage row && super.isEquivalentTo(obj)) {
             if (mType == row.mType && mLevels == row.mLevels && mHalfLevel == row.mHalfLevel && mPoints == row.mPoints && mPointsPerLevel == row.mPointsPerLevel && mDisabled == row.mDisabled && mRoundCostDown == row.mRoundCostDown && mAllowHalfLevels == row.mAllowHalfLevels && mContainerType == row.mContainerType && mCR == row.mCR && mCRAdj == row.mCRAdj && mName.equals(row.mName) && mReference.equals(row.mReference)) {
                 if (mWeapons.equals(row.mWeapons)) {
                     return mModifiers.equals(row.mModifiers);

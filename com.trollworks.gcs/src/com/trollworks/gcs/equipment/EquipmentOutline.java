@@ -272,8 +272,7 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Uses
         if (forSheetOrTemplate) {
             OutlineModel carriedModel;
             OutlineModel uncarriedModel;
-            if (mDataFile instanceof GURPSCharacter) {
-                GURPSCharacter character = (GURPSCharacter) mDataFile;
+            if (mDataFile instanceof GURPSCharacter character) {
                 carriedModel = character.getEquipmentModel();
                 uncarriedModel = character.getOtherEquipmentModel();
             } else {
@@ -320,10 +319,9 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Uses
     @Override
     protected boolean dropOnRow(DropTargetDropEvent dtde) {
         Row target = getDragTargetRow();
-        if (!(target instanceof Equipment)) {
+        if (!(target instanceof Equipment targetEquipment)) {
             return false;
         }
-        Equipment               targetEquipment = (Equipment) target;
         OutlineModel            model           = getModel();
         ArrayList<RowUndo>      undoList        = new ArrayList<>();
         RowUndo                 undo            = new RowUndo(targetEquipment);
@@ -359,8 +357,7 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Uses
     }
 
     private static void collectEquipmentModifiers(Row row, List<EquipmentModifier> result) {
-        if (row instanceof EquipmentModifier) {
-            EquipmentModifier eqpmod = (EquipmentModifier) row;
+        if (row instanceof EquipmentModifier eqpmod) {
             if (eqpmod.canHaveChildren()) {
                 for (Row child : eqpmod.getChildren()) {
                     collectEquipmentModifiers(child, result);

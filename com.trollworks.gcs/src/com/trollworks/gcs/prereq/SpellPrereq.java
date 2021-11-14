@@ -87,8 +87,7 @@ public class SpellPrereq extends HasPrereq {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof SpellPrereq && super.equals(obj)) {
-            SpellPrereq sp = (SpellPrereq) obj;
+        if (obj instanceof SpellPrereq sp && super.equals(obj)) {
             return mType.equals(sp.mType) && mStringCriteria.equals(sp.mStringCriteria) && mQuantityCriteria.equals(sp.mQuantityCriteria);
         }
         return false;

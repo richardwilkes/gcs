@@ -335,8 +335,7 @@ public class Dock extends Panel implements MouseListener, MouseMotionListener, P
 
     private static DockLayoutNode over(DockLayoutNode node, int x, int y) {
         if (containedBy(node, x, y)) {
-            if (node instanceof DockLayout) {
-                DockLayout layout = (DockLayout) node;
+            if (node instanceof DockLayout layout) {
                 for (DockLayoutNode child : layout.getChildren()) {
                     if (containedBy(child, x, y)) {
                         return over(child, x, y);
@@ -375,8 +374,7 @@ public class Dock extends Panel implements MouseListener, MouseMotionListener, P
     }
 
     private static void dump(StringBuilder buffer, int depth, DockLayoutNode node) {
-        if (node instanceof DockLayout) {
-            DockLayout layout = (DockLayout) node;
+        if (node instanceof DockLayout layout) {
             pad(buffer, depth);
             buffer.append(layout);
             buffer.append('\n');
@@ -681,8 +679,7 @@ public class Dock extends Panel implements MouseListener, MouseMotionListener, P
         public void eventDispatched(AWTEvent event) {
             if (event.getID() == MouseEvent.MOUSE_PRESSED) {
                 Object source = event.getSource();
-                if (source instanceof Component) {
-                    Component comp = (Component) source;
+                if (source instanceof Component comp) {
                     if (Dock.this == UIUtilities.getAncestorOfType(comp, Dock.class)) {
                         Dockable dockable;
                         dockable = comp instanceof Dockable ? (Dockable) comp : UIUtilities.getAncestorOfType(comp, Dockable.class);

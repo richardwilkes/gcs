@@ -129,8 +129,7 @@ public enum EquipmentColumn {
 
         @Override
         public String toString(DataFile dataFile, boolean carried) {
-            if (dataFile instanceof GURPSCharacter) {
-                GURPSCharacter character = (GURPSCharacter) dataFile;
+            if (dataFile instanceof GURPSCharacter character) {
                 if (carried) {
                     return MessageFormat.format(I18n.text("Carried Equipment ({0}; ${1})"), character.getWeightCarried(false).toString(), character.getWealthCarried().toLocalizedString());
                 }

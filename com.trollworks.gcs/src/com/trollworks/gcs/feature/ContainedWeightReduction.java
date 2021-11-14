@@ -53,8 +53,7 @@ public class ContainedWeightReduction extends Feature {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof ContainedWeightReduction) {
-            ContainedWeightReduction cr = (ContainedWeightReduction) obj;
+        if (obj instanceof ContainedWeightReduction cr) {
             return mValue.equals(cr.mValue);
         }
         return false;
@@ -162,8 +161,7 @@ public class ContainedWeightReduction extends Feature {
             if (percentage != 0) {
                 text = percentage + "%";
             }
-        } else if (mValue instanceof WeightValue) {
-            WeightValue weight = (WeightValue) mValue;
+        } else if (mValue instanceof WeightValue weight) {
             if (!weight.getValue().equals(Fixed6.ZERO)) {
                 text = weight.toString(false);
             }

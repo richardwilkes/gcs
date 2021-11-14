@@ -69,8 +69,8 @@ public class NameGenerator {
                             builders.put(charGroup, new HashMap<>());
                         }
                         Map<Character, Integer> m              = builders.get(charGroup);
-                        char                    subsequentChar = line.charAt(i);
-                        m.put(subsequentChar, m.getOrDefault(subsequentChar, 0) + 1);
+                        Character               subsequentChar = Character.valueOf(line.charAt(i));
+                        m.put(subsequentChar, Integer.valueOf(m.getOrDefault(subsequentChar, Integer.valueOf(0)).intValue() + 1));
                     }
                 }
                 line = fileReader.readLine();
@@ -120,7 +120,8 @@ public class NameGenerator {
 
         char chooseCharacter() {
             int threshold = Dice.RANDOM.nextInt(mThresholds[mThresholds.length - 1] + 1);
-            for (int i = 0; i < mThresholds.length; i++) {
+            int count     = mThresholds.length;
+            for (int i = 0; i < count; i++) {
                 if (mThresholds[i] >= threshold) {
                     return mCharacters[i];
                 }

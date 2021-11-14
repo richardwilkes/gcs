@@ -53,7 +53,7 @@ public abstract class WeightedOption<T> {
         return mWeight > 0;
     }
 
-    public static final <T extends WeightedOption> List<T> loadList(JsonMap m, String key, Class<T> cls) {
+    public static final <T extends WeightedOption<E>, E> List<T> loadList(JsonMap m, String key, Class<T> cls) {
         List<T> list = new ArrayList<>();
         if (m.has(key)) {
             try {
@@ -73,7 +73,7 @@ public abstract class WeightedOption<T> {
         return list;
     }
 
-    public static final <T extends WeightedOption> void saveList(JsonWriter w, String key, List<T> options) throws IOException {
+    public static final <T extends WeightedOption<E>, E> void saveList(JsonWriter w, String key, List<T> options) throws IOException {
         if (options != null && !options.isEmpty()) {
             w.key(key);
             w.startArray();
@@ -84,7 +84,7 @@ public abstract class WeightedOption<T> {
         }
     }
 
-    public static final <T extends WeightedOption> T choose(List<T> options) {
+    public static final <T extends WeightedOption<E>, E> T choose(List<T> options) {
         int total = 0;
         for (T option : options) {
             total += option.mWeight;

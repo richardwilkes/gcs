@@ -57,7 +57,7 @@ public class CalendarRef implements Comparable<CalendarRef> {
         return list;
     }
 
-    private static final void load() {
+    private static void load() {
         if (REGISTERED_CALENDARS.isEmpty()) {
             for (NamedData<List<NamedData<CalendarRef>>> list : NamedData.scanLibraries(FileType.CALENDAR_SETTINGS, Dirs.SETTINGS, CalendarRef::new)) {
                 for (NamedData<CalendarRef> data : list.getData()) {

@@ -198,8 +198,7 @@ public abstract class ListRow extends Row {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof ListRow) {
-            ListRow row = (ListRow) obj;
+        if (obj instanceof ListRow row) {
             if (mNotes.equals(row.mNotes) && mCategories.equals(row.mCategories)) {
                 if (mDefaults.equals(row.mDefaults)) {
                     if (mPrereqList.equals(row.mPrereqList)) {

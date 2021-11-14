@@ -35,8 +35,7 @@ public final class CopyCommand extends Command {
     public void adjust() {
         boolean   enable = false;
         Component comp   = getFocusOwner();
-        if (comp instanceof JTextComponent) {
-            JTextComponent textComp = (JTextComponent) comp;
+        if (comp instanceof JTextComponent textComp) {
             enable = textComp.getSelectionStart() != textComp.getSelectionEnd();
         } else {
             Copyable copyable = getTarget(Copyable.class);

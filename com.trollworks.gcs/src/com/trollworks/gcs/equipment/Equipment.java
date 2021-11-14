@@ -178,8 +178,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof Equipment && super.isEquivalentTo(obj)) {
-            Equipment row = (Equipment) obj;
+        if (obj instanceof Equipment row && super.isEquivalentTo(obj)) {
             if (mQuantity == row.mQuantity && mUses == row.mUses && mMaxUses == row.mMaxUses && mValue.equals(row.mValue) && mEquipped == row.mEquipped && mWeightIgnoredForSkills == row.mWeightIgnoredForSkills && mWeight.equals(row.mWeight) && mDescription.equals(row.mDescription) && mTechLevel.equals(row.mTechLevel) && mLegalityClass.equals(row.mLegalityClass) && mReference.equals(row.mReference)) {
                 if (mWeapons.equals(row.mWeapons)) {
                     return mModifiers.equals(row.mModifiers);
@@ -353,8 +352,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         WeightValue reduction          = new WeightValue(Fixed6.ZERO, units);
         WeightUnits defaultWeightUnits = sheetSettings.defaultWeightUnits();
         for (Feature feature : getFeatures()) {
-            if (feature instanceof ContainedWeightReduction) {
-                ContainedWeightReduction cwr = (ContainedWeightReduction) feature;
+            if (feature instanceof ContainedWeightReduction cwr) {
                 if (cwr.isPercentage()) {
                     percentage = percentage.add(new Fixed6(cwr.getPercentageReduction()));
                 } else {
@@ -365,8 +363,7 @@ public class Equipment extends ListRow implements HasSourceReference {
         for (EquipmentModifier modifier : getModifiers()) {
             if (modifier.isEnabled()) {
                 for (Feature feature : modifier.getFeatures()) {
-                    if (feature instanceof ContainedWeightReduction) {
-                        ContainedWeightReduction cwr = (ContainedWeightReduction) feature;
+                    if (feature instanceof ContainedWeightReduction cwr) {
                         if (cwr.isPercentage()) {
                             percentage = percentage.add(new Fixed6(cwr.getPercentageReduction()));
                         } else {

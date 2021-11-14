@@ -172,8 +172,7 @@ public final class UIUtilities {
      * @param comp The {@link Component} to work on.
      */
     public static void disableControls(Component comp) {
-        if (comp instanceof Container) {
-            Container container = (Container) comp;
+        if (comp instanceof Container container) {
             int       count     = container.getComponentCount();
             for (int i = 0; i < count; i++) {
                 disableControls(container.getComponent(i));
@@ -435,8 +434,7 @@ public final class UIUtilities {
     /** @return Whether or not the application is currently in a modal state. */
     public static boolean inModalState() {
         for (Window window : Window.getWindows()) {
-            if (window instanceof Dialog) {
-                Dialog dialog = (Dialog) window;
+            if (window instanceof Dialog dialog) {
                 if (dialog.isShowing()) {
                     ModalityType type = dialog.getModalityType();
                     if (type == ModalityType.APPLICATION_MODAL || type == ModalityType.TOOLKIT_MODAL) {

@@ -126,8 +126,7 @@ public class MeleeWeaponStats extends WeaponStats {
 
     private String getResolvedValue(String input, String baseDefaultType, StringBuilder toolTip) {
         DataFile df = getOwner().getDataFile();
-        if (df instanceof GURPSCharacter) {
-            GURPSCharacter  character  = (GURPSCharacter) df;
+        if (df instanceof GURPSCharacter character) {
             StringTokenizer tokenizer  = new StringTokenizer(input, "\n\r", true);
             StringBuilder   buffer     = new StringBuilder();
             int             skillLevel = Integer.MAX_VALUE;
@@ -288,8 +287,7 @@ public class MeleeWeaponStats extends WeaponStats {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof MeleeWeaponStats && super.equals(obj)) {
-            MeleeWeaponStats mws = (MeleeWeaponStats) obj;
+        if (obj instanceof MeleeWeaponStats mws && super.equals(obj)) {
             return mReach.equals(mws.mReach) && mParry.equals(mws.mParry) &&
                     mBlock.equals(mws.mBlock);
         }

@@ -62,8 +62,7 @@ public class AttributeBonus extends Bonus {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof AttributeBonus && super.equals(obj)) {
-            AttributeBonus ab = (AttributeBonus) obj;
+        if (obj instanceof AttributeBonus ab && super.equals(obj)) {
             return mAttribute.equals(ab.mAttribute) && mLimitation == ab.mLimitation;
         }
         return false;

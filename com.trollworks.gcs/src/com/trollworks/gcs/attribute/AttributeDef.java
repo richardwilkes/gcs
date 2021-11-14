@@ -375,10 +375,9 @@ public class AttributeDef implements Cloneable, Comparable<AttributeDef> {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof AttributeDef)) {
+        if (!(o instanceof AttributeDef that)) {
             return false;
         }
-        AttributeDef that = (AttributeDef) o;
         if (mType != that.mType) {
             return false;
         }

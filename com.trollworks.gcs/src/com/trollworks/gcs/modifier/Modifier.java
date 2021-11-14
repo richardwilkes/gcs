@@ -155,8 +155,7 @@ public abstract class Modifier extends ListRow implements Comparable<Modifier>, 
         if (obj == this) {
             return true;
         }
-        if (obj instanceof Modifier && super.isEquivalentTo(obj)) {
-            Modifier row = (Modifier) obj;
+        if (obj instanceof Modifier row && super.isEquivalentTo(obj)) {
             return mEnabled == row.mEnabled && mName.equals(row.mName) && mReference.equals(row.mReference);
         }
         return false;

@@ -68,8 +68,7 @@ public class LeveledAmount {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof LeveledAmount) {
-            LeveledAmount amt = (LeveledAmount) obj;
+        if (obj instanceof LeveledAmount amt) {
             return mPerLevel == amt.mPerLevel && mDecimal == amt.mDecimal && mLevel == amt.mLevel && mAmount == amt.mAmount;
         }
         return false;
