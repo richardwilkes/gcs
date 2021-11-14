@@ -17,13 +17,13 @@ import java.util.Random;
 
 /** Simulates dice. */
 public class Dice implements Cloneable {
-    private static final Random RANDOM = new Random();
-    private              int    mCount;
-    private              int    mSides;
-    private              int    mModifier;
-    private              int    mMultiplier;
-    private              int    mAltCount;
-    private              int    mAltModifier;
+    public static final Random RANDOM = new Random();
+    private             int    mCount;
+    private             int    mSides;
+    private             int    mModifier;
+    private             int    mMultiplier;
+    private             int    mAltCount;
+    private             int    mAltModifier;
 
     /** Creates a new 1d6 dice object. */
     public Dice() {
