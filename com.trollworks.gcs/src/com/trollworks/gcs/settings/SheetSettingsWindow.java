@@ -42,7 +42,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -268,7 +267,6 @@ public final class SheetSettingsWindow extends SettingsWindow<SheetSettings> imp
             mSheetSettings.setUseBaseDamagePercentBonus(b.isChecked());
         });
         return panel;
-
     }
 
     private Panel createBlockLayoutPanel() {
