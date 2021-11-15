@@ -272,6 +272,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener, Du
         if (mDataFile.sortingMarksDirty()) {
             mDataFile.setModified(true);
         }
+        mDataFile.notifyOfChange();
     }
 
     @Override

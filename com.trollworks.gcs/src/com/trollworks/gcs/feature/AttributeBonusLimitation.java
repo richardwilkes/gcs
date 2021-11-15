@@ -35,5 +35,12 @@ public enum AttributeBonusLimitation {
         public String toString() {
             return I18n.text("for lifting only");
         }
+    },
+    /** Throwing only */
+    THROWING_ONLY {
+        @Override
+        public String toString() {
+            return I18n.text("for throwing only");
+        }
     }
 }
