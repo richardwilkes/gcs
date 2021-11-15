@@ -9,9 +9,8 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package com.trollworks.gcs.character.names;
+package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.layout.PrecisionLayout;
 import com.trollworks.gcs.ui.layout.PrecisionLayoutData;

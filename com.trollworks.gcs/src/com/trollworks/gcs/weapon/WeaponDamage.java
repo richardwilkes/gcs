@@ -101,7 +101,6 @@ public class WeaponDamage {
                 w.keyValue(KEY_BASE, base);
             }
         }
-        //Phoenix D3 Only
         if (mPercentBonus != 0) {
             Integer percentbonus = mPercentBonus;
             w.keyValue(KEY_PERCENT_BONUS, percentbonus);
@@ -153,8 +152,7 @@ public class WeaponDamage {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof WeaponDamage) {
-            WeaponDamage other = (WeaponDamage) obj;
+        if (obj instanceof WeaponDamage other) {
             if (mType.equals(other.mType) && mST == other.mST && mArmorDivisor == other.mArmorDivisor && mPercentBonus == other.mPercentBonus && mModifierPerDie == other.mModifierPerDie && Objects.equals(mBase, other.mBase)) {
                 if (mFragmentation == null) {
                     return other.mFragmentation == null;
@@ -274,8 +272,7 @@ public class WeaponDamage {
     public String getResolvedDamage(StringBuilder toolTip) {
         if (mOwner.mOwner != null) {
             DataFile df = mOwner.mOwner.getDataFile();
-            if (df instanceof GURPSCharacter) {
-                GURPSCharacter         character  = (GURPSCharacter) df;
+            if (df instanceof GURPSCharacter character) {
                 Set<WeaponDamageBonus> bonusSet   = new HashSet<>();
                 Set<String>            categories = mOwner.getCategories();
                 int                    maxST      = mOwner.getMinStrengthValue() * 3;
@@ -288,8 +285,7 @@ public class WeaponDamage {
                 if (mBase != null) {
                     base = mBase.clone();
                 }
-                if (mOwner.mOwner instanceof Advantage) {
-                    Advantage advantage = (Advantage) mOwner.mOwner;
+                if (mOwner.mOwner instanceof Advantage advantage) {
                     if (advantage.isLeveled()) {
                         base.multiply(advantage.getLevels());
                     }
@@ -307,8 +303,7 @@ public class WeaponDamage {
                 case SW_LEVELED -> {
                     Dice swing = character.getSwing(st);
                     swing.percentAdd(percent);
-                    if (mOwner.mOwner instanceof Advantage) {
-                        Advantage advantage = (Advantage) mOwner.mOwner;
+                    if (mOwner.mOwner instanceof Advantage advantage) {
                         if (advantage.isLeveled()) {
                             swing.multiply(advantage.getLevels());
                         }
@@ -323,8 +318,7 @@ public class WeaponDamage {
                 case THR_LEVELED -> {
                     Dice thrust = character.getThrust(st);
                     thrust.percentAdd(percent);
-                    if (mOwner.mOwner instanceof Advantage) {
-                        Advantage advantage = (Advantage) mOwner.mOwner;
+                    if (mOwner.mOwner instanceof Advantage advantage) {
                         if (advantage.isLeveled()) {
                             thrust.multiply(advantage.getLevels());
                         }
@@ -461,8 +455,7 @@ public class WeaponDamage {
     }
 
     private void extractWeaponDamageBonus(Feature feature, Set<WeaponDamageBonus> set, int dieCount, StringBuilder toolTip) {
-        if (feature instanceof WeaponDamageBonus) {
-            WeaponDamageBonus wb     = (WeaponDamageBonus) feature;
+        if (feature instanceof WeaponDamageBonus wb) {
             LeveledAmount     amount = wb.getAmount();
             int               level  = amount.getLevel();
             amount.setLevel(dieCount);

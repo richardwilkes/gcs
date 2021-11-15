@@ -78,8 +78,7 @@ public class MoveEquipmentCommand extends Command {
     public static void moveSelection(DataFile dataFile, boolean toCarried) {
         OutlineModel from = null;
         OutlineModel to   = null;
-        if (dataFile instanceof CollectedModels) {
-            CollectedModels cmodels = (CollectedModels) dataFile;
+        if (dataFile instanceof CollectedModels cmodels) {
             from = toCarried ? cmodels.getOtherEquipmentModel() : cmodels.getEquipmentModel();
             to = toCarried ? cmodels.getEquipmentModel() : cmodels.getOtherEquipmentModel();
         }

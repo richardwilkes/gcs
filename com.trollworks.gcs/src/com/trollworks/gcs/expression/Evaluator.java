@@ -409,13 +409,11 @@ public class Evaluator {
     final Object evaluateOperand(Object operand) throws EvaluationException {
         if (operand instanceof ExpressionTree) {
             return ((ExpressionTree) operand).evaluate();
-        } else if (operand instanceof ExpressionOperand) {
-            ExpressionOperand exop  = (ExpressionOperand) operand;
+        } else if (operand instanceof ExpressionOperand exop) {
             Object            value = replaceVariables(exop.mValue);
             Operator          unary = exop.mUnaryOperator;
             return unary != null ? unary.evaluate(value) : value;
-        } else if (operand instanceof ParsedFunction) {
-            ParsedFunction function = (ParsedFunction) operand;
+        } else if (operand instanceof ParsedFunction function) {
             Object         value    = function.mFunction.execute(this, replaceVariables(function.mArguments));
             if (function.mUnaryOperator != null) {
                 value = function.mUnaryOperator.evaluate(value);

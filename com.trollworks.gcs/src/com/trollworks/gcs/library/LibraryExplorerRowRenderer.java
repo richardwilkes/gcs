@@ -23,8 +23,7 @@ public class LibraryExplorerRowRenderer extends LabelListCellRenderer<Object> {
     public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
         String title;
         Icon   icon;
-        if (value instanceof LibraryExplorerSearchResult) {
-            LibraryExplorerSearchResult row = (LibraryExplorerSearchResult) value;
+        if (value instanceof LibraryExplorerSearchResult row) {
             title = row.getTitle();
             icon = row.getRow().getIcon();
         } else {

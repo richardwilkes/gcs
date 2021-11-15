@@ -187,8 +187,7 @@ public class Spell extends ListRow implements HasSourceReference {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof Spell && super.isEquivalentTo(obj)) {
-            Spell row = (Spell) obj;
+        if (obj instanceof Spell row && super.isEquivalentTo(obj)) {
             if (mDifficulty != row.mDifficulty) {
                 return false;
             }

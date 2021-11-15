@@ -194,10 +194,9 @@ public class PageSettings {
         if (this == other) {
             return true;
         }
-        if (!(other instanceof PageSettings)) {
+        if (!(other instanceof PageSettings that)) {
             return false;
         }
-        PageSettings that = (PageSettings) other;
         if (!mPaperSize.equals(that.mPaperSize)) {
             return false;
         }

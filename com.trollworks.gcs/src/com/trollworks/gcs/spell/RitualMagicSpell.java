@@ -152,8 +152,7 @@ public class RitualMagicSpell extends Spell {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof RitualMagicSpell) {
-            RitualMagicSpell other = (RitualMagicSpell) obj;
+        if (obj instanceof RitualMagicSpell other) {
             if (mPrerequisiteSpellsCount != other.mPrerequisiteSpellsCount) {
                 return false;
             }

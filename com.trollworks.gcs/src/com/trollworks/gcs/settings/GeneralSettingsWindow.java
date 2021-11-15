@@ -45,19 +45,20 @@ import javax.swing.SwingConstants;
 public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings> {
     private static GeneralSettingsWindow INSTANCE;
 
-    private EditorField          mPlayerName;
-    private EditorField          mTechLevel;
-    private EditorField          mInitialPoints;
-    private Checkbox             mAutoFillProfile;
-    private PopupMenu<Scales>    mInitialScale;
-    private EditorField          mToolTipTimeout;
-    private EditorField          mImageResolution;
-    private Checkbox             mIncludeUnspentPointsInTotal;
-    private EditorField          mGCalcKey;
-    private PopupMenu<PDFViewer> mPDFViewer;
-    private Label                mPDFInstall;
-    private Label                mPDFLink;
-    private Button               mResetButton;
+    private EditorField            mPlayerName;
+    private EditorField            mTechLevel;
+    private EditorField            mInitialPoints;
+    private Checkbox               mAutoFillProfile;
+    private PopupMenu<Scales>      mInitialScale;
+    private EditorField            mToolTipTimeout;
+    private EditorField            mImageResolution;
+    private Checkbox               mIncludeUnspentPointsInTotal;
+    private EditorField            mGCalcKey;
+    private PopupMenu<CalendarRef> mCalendar;
+    private PopupMenu<PDFViewer>   mPDFViewer;
+    private Label                  mPDFInstall;
+    private Label                  mPDFLink;
+    private Button                 mResetButton;
 
     /** Displays the general settings window. */
     public static void display() {
@@ -139,6 +140,17 @@ public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings>
         panel.add(mIncludeUnspentPointsInTotal, new PrecisionLayoutData().setLeftMargin(10));
 
         // Third row
+        mCalendar = new PopupMenu<>(CalendarRef.choices(), (p) -> {
+            Settings.getInstance().getGeneralSettings().setCalendarRef(p.getSelectedItem().name());
+            adjustResetButton();
+        });
+        mCalendar.setSelectedItem(CalendarRef.current(), false);
+        panel.add(new Label(I18n.text("Calendar")),
+                new PrecisionLayoutData().setEndHorizontalAlignment());
+        panel.add(mCalendar, new PrecisionLayoutData().setFillHorizontalAlignment().
+                setGrabHorizontalSpace(true).setHorizontalSpan(2));
+
+        // Fourth row
         mInitialScale = new PopupMenu<>(Scales.values(), (p) -> {
             Settings.getInstance().getGeneralSettings().setInitialUIScale(p.getSelectedItem());
             adjustResetButton();
@@ -173,7 +185,7 @@ public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings>
         wrapper.add(mImageResolution, new PrecisionLayoutData().setFillHorizontalAlignment());
         wrapper.add(new Label(I18n.text("dpi")));
 
-        // Fourth row
+        // Fifth row
         mPDFViewer = new PopupMenu<>(PDFViewer.valuesForPlatform(), (p) -> {
             PDFViewer pdfViewer = p.getSelectedItem();
             if (pdfViewer != null) {
@@ -208,7 +220,7 @@ public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings>
         panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(2));
         updatePDFLinks(pdfViewer);
 
-        // Fifth row
+        // Sixth row
         wrapper = new Wrapper(new PrecisionLayout().setMargins(0).setColumns(3));
         panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
         mGCalcKey = new EditorField(FieldFactory.STRING, (f) -> {
@@ -264,6 +276,7 @@ public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings>
         mTechLevel.setValue(settings.getDefaultTechLevel());
         mInitialPoints.setValue(Integer.valueOf(settings.getInitialPoints()));
         mAutoFillProfile.setChecked(settings.autoFillProfile());
+        mCalendar.setSelectedItem(CalendarRef.get(settings.calendarRef()), true);
         mInitialScale.setSelectedItem(settings.getInitialUIScale(), true);
         mToolTipTimeout.setValue(Integer.valueOf(settings.getToolTipTimeout()));
         mImageResolution.setValue(Integer.valueOf(settings.getImageResolution()));

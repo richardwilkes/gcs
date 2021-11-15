@@ -38,6 +38,7 @@ import javax.swing.SwingConstants;
 
 /** The character description panel. */
 public class DescriptionPanel extends DropPanel {
+    private PageField mGenderField;
     private PageField mAgeField;
     private PageField mBirthdayField;
     private PageField mHeightField;
@@ -45,6 +46,7 @@ public class DescriptionPanel extends DropPanel {
     private PageField mHairField;
     private PageField mEyeColorField;
     private PageField mSkinColorField;
+    private PageField mHandednessField;
 
     /**
      * Creates a new description panel.
@@ -56,23 +58,19 @@ public class DescriptionPanel extends DropPanel {
         GURPSCharacter gch     = sheet.getCharacter();
         Profile        profile = gch.getProfile();
         Wrapper        wrapper = new Wrapper(new PrecisionLayout().setColumns(3).setMargins(0).setSpacing(0, 0));
-        createField(wrapper, sheet, FieldFactory.STRING, profile.getGender(), "gender",
-                I18n.text("Gender"), null, (c, v) -> c.getProfile().setGender((String) v));
+        mGenderField = createRandomizableField(wrapper, sheet, FieldFactory.STRING,
+                profile.getGender(), "gender", I18n.text("Gender"), null,
+                (c, v) -> c.getProfile().setGender((String) v), (b) -> {
+                    mGenderField.attemptCommit();
+                    mGenderField.requestFocus();
+                    profile.setGender(profile.getRandomGender(profile.getGender()));
+                });
         mAgeField = createRandomizableField(wrapper, sheet, FieldFactory.STRING, profile.getAge(),
                 "age", I18n.text("Age"), I18n.text("The character's age"),
                 (c, v) -> c.getProfile().setAge((String) v), (b) -> {
                     mAgeField.attemptCommit();
                     mAgeField.requestFocus();
-                    String current = profile.getAge();
-                    String result;
-                    int maxAttempts = 5;
-                    do {
-                        result = Numbers.format(profile.getRandomAge());
-                        if (--maxAttempts == 0) {
-                            break;
-                        }
-                    } while (result.equals(current));
-                    profile.setAge(result);
+                    profile.setAge(Numbers.format(profile.getRandomAge(Numbers.extractInteger(profile.getAge(), 0, true))));
                 });
         mBirthdayField = createRandomizableField(wrapper, sheet, FieldFactory.STRING,
                 profile.getBirthday(), "birthday", I18n.text("Birthday"),
@@ -80,16 +78,7 @@ public class DescriptionPanel extends DropPanel {
                 (c, v) -> c.getProfile().setBirthday((String) v), (b) -> {
                     mBirthdayField.attemptCommit();
                     mBirthdayField.requestFocus();
-                    String current = profile.getBirthday();
-                    String result;
-                    int maxAttempts = 5;
-                    do {
-                        result = Profile.getRandomMonthAndDay();
-                        if (--maxAttempts == 0) {
-                            break;
-                        }
-                    } while (result.equals(current));
-                    profile.setBirthday(result);
+                    profile.setBirthday(profile.getRandomBirthday(profile.getBirthday()));
                 });
         createField(wrapper, sheet, FieldFactory.STRING, profile.getReligion(), "religion",
                 I18n.text("Religion"), null, (c, v) -> c.getProfile().setReligion((String) v));
@@ -104,17 +93,7 @@ public class DescriptionPanel extends DropPanel {
                 (c, v) -> c.getProfile().setHeight((LengthValue) v), (b) -> {
                     mHeightField.attemptCommit();
                     mHeightField.requestFocus();
-                    LengthValue length = profile.getHeight();
-                    LengthValue result;
-                    int maxAttempts = 5;
-                    do {
-                        result = profile.getRandomHeight(gch.getAttributeIntValue("st"),
-                                profile.getSizeModifier());
-                        if (--maxAttempts == 0) {
-                            break;
-                        }
-                    } while (result.equals(length));
-                    profile.setHeight(result);
+                    profile.setHeight(profile.getRandomHeight(profile.getHeight()));
                 });
         mWeightField = createRandomizableField(wrapper, sheet, FieldFactory.WEIGHT,
                 profile.getWeight(), "character weight", I18n.text("Weight"),
@@ -122,16 +101,7 @@ public class DescriptionPanel extends DropPanel {
                 (c, v) -> c.getProfile().setWeight((WeightValue) v), (b) -> {
                     mWeightField.attemptCommit();
                     mWeightField.requestFocus();
-                    WeightValue weight = profile.getWeight();
-                    WeightValue result;
-                    int maxAttempts = 5;
-                    do {
-                        result = profile.getRandomWeight(gch.getAttributeIntValue("st"), profile.getSizeModifier(), profile.getWeightMultiplier());
-                        if (--maxAttempts == 0) {
-                            break;
-                        }
-                    } while (result.equals(weight));
-                    profile.setWeight(result);
+                    profile.setWeight(profile.getRandomWeight(profile.getWeightMultiplier(), profile.getWeight()));
                 });
         createField(wrapper, sheet, FieldFactory.SM, Integer.valueOf(profile.getSizeModifier()),
                 "SM", I18n.text("Size"), I18n.text("The character's size modifier"),
@@ -149,7 +119,7 @@ public class DescriptionPanel extends DropPanel {
                 (c, v) -> c.getProfile().setHair((String) v), (b) -> {
                     mHairField.attemptCommit();
                     mHairField.requestFocus();
-                    profile.setHair(Profile.getRandomHair(profile.getHair()));
+                    profile.setHair(profile.getRandomHair(profile.getHair()));
                 });
         mEyeColorField = createRandomizableField(wrapper, sheet, FieldFactory.STRING,
                 profile.getEyeColor(), "eye color", I18n.text("Eyes"),
@@ -157,7 +127,7 @@ public class DescriptionPanel extends DropPanel {
                 (c, v) -> c.getProfile().setEyeColor((String) v), (b) -> {
                     mEyeColorField.attemptCommit();
                     mEyeColorField.requestFocus();
-                    profile.setEyeColor(Profile.getRandomEyeColor(profile.getEyeColor()));
+                    profile.setEyeColor(profile.getRandomEyeColor(profile.getEyeColor()));
                 });
         mSkinColorField = createRandomizableField(wrapper, sheet, FieldFactory.STRING,
                 profile.getSkinColor(), "skin color", I18n.text("Skin"),
@@ -165,9 +135,16 @@ public class DescriptionPanel extends DropPanel {
                 (c, v) -> c.getProfile().setSkinColor((String) v), (b) -> {
                     mSkinColorField.attemptCommit();
                     mSkinColorField.requestFocus();
-                    profile.setSkinColor(Profile.getRandomSkinColor(profile.getSkinColor()));
+                    profile.setSkinColor(profile.getRandomSkin(profile.getSkinColor()));
                 });
-        createField(wrapper, sheet, FieldFactory.STRING, profile.getHandedness(), "handedness", I18n.text("Hand"), I18n.text("The character's preferred hand"), (c, v) -> c.getProfile().setHandedness((String) v));
+        mHandednessField = createRandomizableField(wrapper, sheet, FieldFactory.STRING,
+                profile.getHandedness(), "handedness", I18n.text("Hand"),
+                I18n.text("The character's preferred hand"),
+                (c, v) -> c.getProfile().setHandedness((String) v), (b) -> {
+                    mHandednessField.attemptCommit();
+                    mHandednessField.requestFocus();
+                    profile.setHandedness(profile.getRandomHandedness(profile.getHandedness()));
+                });
         add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
     }
 

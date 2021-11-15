@@ -34,8 +34,7 @@ public final class SkillLevelIncrementCommand extends Command {
         if (focus instanceof OutlineProxy) {
             focus = ((OutlineProxy) focus).getRealOutline();
         }
-        if (focus instanceof SkillLevelIncrementable) {
-            SkillLevelIncrementable inc = (SkillLevelIncrementable) focus;
+        if (focus instanceof SkillLevelIncrementable inc) {
             setEnabled(inc.canIncrementSkillLevel());
             setTitle(inc.getIncrementSkillLevelTitle());
         } else {

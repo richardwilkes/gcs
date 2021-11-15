@@ -66,7 +66,7 @@ public enum LengthUnits implements Units {
             return formatNumber(value, localize) + '"';
         }
 
-        private String formatNumber(Fixed6 value, boolean localize) {
+        private static String formatNumber(Fixed6 value, boolean localize) {
             return localize ? value.toLocalizedString() : value.toString();
         }
     },

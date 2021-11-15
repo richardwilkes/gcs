@@ -105,8 +105,7 @@ public class ContainedQuantityPrereq extends HasPrereq {
     @Override
     public boolean satisfied(GURPSCharacter character, ListRow exclude, StringBuilder builder, String prefix) {
         boolean satisfied = false;
-        if (exclude instanceof Equipment) {
-            Equipment equipment = (Equipment) exclude;
+        if (exclude instanceof Equipment equipment) {
             satisfied = !equipment.canHaveChildren();
             if (!satisfied) {
                 int qty = 0;

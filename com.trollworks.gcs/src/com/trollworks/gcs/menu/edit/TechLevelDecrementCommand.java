@@ -36,8 +36,7 @@ public final class TechLevelDecrementCommand extends Command {
         if (focus instanceof OutlineProxy) {
             focus = ((OutlineProxy) focus).getRealOutline();
         }
-        if (focus instanceof TechLevelIncrementable) {
-            TechLevelIncrementable inc = (TechLevelIncrementable) focus;
+        if (focus instanceof TechLevelIncrementable inc) {
             setEnabled(inc.canDecrementTechLevel());
         } else {
             setEnabled(false);

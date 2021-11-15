@@ -92,8 +92,7 @@ public final class LibraryUpdater implements Runnable {
             Path      prefix    = library.getPath();
             String    title     = library.getTitle();
             for (Dockable dockable : workspace.getDock().getDockables()) {
-                if (dockable instanceof DataFileDockable) {
-                    DataFileDockable dfd  = (DataFileDockable) dockable;
+                if (dockable instanceof DataFileDockable dfd) {
                     Path             path = dfd.getBackingFile();
                     if (path != null && path.toAbsolutePath().startsWith(prefix)) {
                         if (dfd.mayAttemptClose()) {

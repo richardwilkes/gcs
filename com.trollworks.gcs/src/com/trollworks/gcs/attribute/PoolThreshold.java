@@ -149,10 +149,9 @@ public class PoolThreshold implements Cloneable {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof PoolThreshold)) {
+        if (!(o instanceof PoolThreshold that)) {
             return false;
         }
-        PoolThreshold that = (PoolThreshold) o;
         if (mMultiplier != that.mMultiplier) {
             return false;
         }

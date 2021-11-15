@@ -121,8 +121,7 @@ public class UnitsValue<T extends Units> implements Comparable<UnitsValue<T>> {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof UnitsValue<?>) {
-            UnitsValue<?> uv = (UnitsValue<?>) obj;
+        if (obj instanceof UnitsValue<?> uv) {
             return mUnits == uv.mUnits && mValue.equals(uv.mValue);
         }
         return false;

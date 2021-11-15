@@ -43,8 +43,7 @@ public final class LibraryLocationsPanel extends Panel implements Scrollable {
         // Close all documents
         Workspace workspace = Workspace.get();
         for (Dockable dockable : workspace.getDock().getDockables()) {
-            if (dockable instanceof CloseHandler) {
-                CloseHandler handler = (CloseHandler) dockable;
+            if (dockable instanceof CloseHandler handler) {
                 if (handler.mayAttemptClose()) {
                     if (!handler.attemptClose()) {
                         Modal.showWarning(null, I18n.text("No documents may be open when setting library locations."));

@@ -198,8 +198,7 @@ public abstract class LibraryDockable extends DataFileDockable implements RowFil
     @Override
     public boolean isRowFiltered(Row row) {
         boolean filtered = false;
-        if (row instanceof ListRow) {
-            ListRow listRow = (ListRow) row;
+        if (row instanceof ListRow listRow) {
             if (mCategoryPopup.getSelectedIndex() != 0) {
                 String selectedItem = mCategoryPopup.getSelectedItem();
                 if (selectedItem != null) {

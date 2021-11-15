@@ -108,8 +108,7 @@ public class EquipmentModifier extends Modifier {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof EquipmentModifier && super.isEquivalentTo(obj)) {
-            EquipmentModifier row = (EquipmentModifier) obj;
+        if (obj instanceof EquipmentModifier row && super.isEquivalentTo(obj)) {
             return mCostType == row.mCostType && mCostAmount.equals(row.mCostAmount) && mWeightType == row.mWeightType && mWeightAmount.equals(row.mWeightAmount) && mTechLevel.equals(row.mTechLevel);
         }
         return false;

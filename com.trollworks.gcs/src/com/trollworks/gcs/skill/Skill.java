@@ -184,8 +184,7 @@ public class Skill extends ListRow implements HasSourceReference {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof Skill && getClass() == obj.getClass() && super.isEquivalentTo(obj)) {
-            Skill row = (Skill) obj;
+        if (obj instanceof Skill row && getClass() == obj.getClass() && super.isEquivalentTo(obj)) {
             if (mPoints != row.mPoints) {
                 return false;
             }

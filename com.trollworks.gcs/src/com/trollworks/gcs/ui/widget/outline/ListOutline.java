@@ -13,7 +13,7 @@ package com.trollworks.gcs.ui.widget.outline;
 
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.character.SheetDockable;
-import com.trollworks.gcs.character.names.Namer;
+import com.trollworks.gcs.character.Namer;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.equipment.EquipmentOutline;
@@ -272,6 +272,7 @@ public class ListOutline extends Outline implements Runnable, ActionListener, Du
         if (mDataFile.sortingMarksDirty()) {
             mDataFile.setModified(true);
         }
+        mDataFile.notifyOfChange();
     }
 
     @Override

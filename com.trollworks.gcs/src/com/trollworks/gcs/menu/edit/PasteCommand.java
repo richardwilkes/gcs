@@ -37,8 +37,7 @@ public final class PasteCommand extends Command {
     public void adjust() {
         boolean   enable = false;
         Component comp   = getFocusOwner();
-        if (comp instanceof JTextComponent && comp.isEnabled()) {
-            JTextComponent textComp = (JTextComponent) comp;
+        if (comp instanceof JTextComponent textComp && comp.isEnabled()) {
             if (textComp.isEditable()) {
                 try {
                     enable = comp.getToolkit().getSystemClipboard().isDataFlavorAvailable(DataFlavor.stringFlavor);

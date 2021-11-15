@@ -41,8 +41,7 @@ public class CheckCell extends ListTextCell {
 
     @Override
     public void mouseClicked(MouseEvent event, Rectangle bounds, Row row, Column column) {
-        if (row instanceof Equipment) {
-            Equipment equipment = (Equipment) row;
+        if (row instanceof Equipment equipment) {
             RowUndo   undo      = new RowUndo(equipment);
             equipment.setEquipped(!equipment.isEquipped());
             if (undo.finish()) {
