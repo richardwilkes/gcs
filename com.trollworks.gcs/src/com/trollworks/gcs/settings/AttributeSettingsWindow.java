@@ -73,8 +73,7 @@ public final class AttributeSettingsWindow extends SettingsWindow<Map<String, At
     /** Closes the AttributeSettingsWindow for the given character if it is open. */
     public static void closeFor(GURPSCharacter gchar) {
         for (Window window : Window.getWindows()) {
-            if (window.isShowing() && window instanceof AttributeSettingsWindow) {
-                AttributeSettingsWindow wnd = (AttributeSettingsWindow) window;
+            if (window.isShowing() && window instanceof AttributeSettingsWindow wnd) {
                 if (wnd.mCharacter == gchar) {
                     wnd.attemptClose();
                 }

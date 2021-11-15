@@ -37,8 +37,7 @@ public final class SwapDefaultsCommand extends Command {
         if (focus instanceof OutlineProxy) {
             focus = ((OutlineProxy) focus).getRealOutline();
         }
-        if (focus instanceof SkillOutline) {
-            SkillOutline skillOutline = (SkillOutline) focus;
+        if (focus instanceof SkillOutline skillOutline) {
             setEnabled(skillOutline.canSwapDefaults());
         } else {
             setEnabled(false);

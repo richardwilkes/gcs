@@ -51,8 +51,7 @@ class HashedWeapon {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof HashedWeapon) {
-            HashedWeapon other = (HashedWeapon) obj;
+        if (obj instanceof HashedWeapon other) {
             return mWeapon.equals(other.mWeapon) && mWeapon.getDescription().equals(other.mWeapon.getDescription());
         }
         return false;

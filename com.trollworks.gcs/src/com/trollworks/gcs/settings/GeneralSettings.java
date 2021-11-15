@@ -38,6 +38,7 @@ public final class GeneralSettings {
     private static final String DEPRECATED_KEY_PNG_RESOLUTION           = "png_resolution"; // June 6, 2021
 
     private static final String KEY_AUTO_FILL_PROFILE   = "auto_fill_profile";
+    public static final  String KEY_CALENDAR_REF        = "calendar_ref";
     private static final String KEY_DEFAULT_PLAYER_NAME = "default_player_name";
     private static final String KEY_DEFAULT_TECH_LEVEL  = "default_tech_level";
     private static final String KEY_GCALC               = "gurps_calculator_key";
@@ -52,6 +53,7 @@ public final class GeneralSettings {
     private String    mDefaultPlayerName;
     private String    mDefaultTechLevel;
     private String    mGCalcKey;
+    private String    mCalendarRef;
     private PDFViewer mPDFViewer;
     private int       mInitialPoints;
     private int       mToolTipTimeout;
@@ -64,6 +66,7 @@ public final class GeneralSettings {
         mDefaultPlayerName = System.getProperty("user.name", "");
         mDefaultTechLevel = "3";
         mGCalcKey = "";
+        mCalendarRef = CalendarRef.DEFAULT.name();
         mPDFViewer = Platform.getPlatform().defaultPDFViewer();
         mInitialPoints = 250;
         mToolTipTimeout = 60;
@@ -108,6 +111,7 @@ public final class GeneralSettings {
         mDefaultPlayerName = m.getStringWithDefault(KEY_DEFAULT_PLAYER_NAME, mDefaultPlayerName);
         mDefaultTechLevel = m.getStringWithDefault(KEY_DEFAULT_TECH_LEVEL, mDefaultTechLevel);
         mGCalcKey = m.getStringWithDefault(KEY_GCALC, mGCalcKey);
+        mCalendarRef = m.getStringWithDefault(KEY_CALENDAR_REF, CalendarRef.DEFAULT.name());
         mPDFViewer = Enums.extract(m.getString(KEY_PDF_VIEWER), PDFViewer.values(), Platform.getPlatform().defaultPDFViewer());
         mInitialPoints = m.getIntWithDefault(KEY_INITIAL_POINTS, mInitialPoints);
         mToolTipTimeout = m.getIntWithDefault(KEY_TOOLTIP_TIMEOUT, mToolTipTimeout);
@@ -150,6 +154,7 @@ public final class GeneralSettings {
         w.keyValue(KEY_DEFAULT_PLAYER_NAME, mDefaultPlayerName);
         w.keyValue(KEY_DEFAULT_TECH_LEVEL, mDefaultTechLevel);
         w.keyValue(KEY_GCALC, mGCalcKey);
+        w.keyValue(KEY_CALENDAR_REF, mCalendarRef);
         w.keyValue(KEY_PDF_VIEWER, Enums.toId(mPDFViewer));
         w.keyValue(KEY_INITIAL_POINTS, mInitialPoints);
         w.keyValue(KEY_TOOLTIP_TIMEOUT, mToolTipTimeout);
@@ -286,6 +291,9 @@ public final class GeneralSettings {
         if (!mDefaultTechLevel.equals(that.mDefaultTechLevel)) {
             return false;
         }
+        if (!mCalendarRef.equals(that.mCalendarRef)) {
+            return false;
+        }
         if (mPDFViewer != that.mPDFViewer) {
             return false;
         }
@@ -298,6 +306,7 @@ public final class GeneralSettings {
         result = 31 * result + mDefaultPlayerName.hashCode();
         result = 31 * result + mDefaultTechLevel.hashCode();
         result = 31 * result + mGCalcKey.hashCode();
+        result = 31 * result + mCalendarRef.hashCode();
         result = 31 * result + mPDFViewer.hashCode();
         result = 31 * result + mInitialPoints;
         result = 31 * result + mToolTipTimeout;
@@ -305,5 +314,13 @@ public final class GeneralSettings {
         result = 31 * result + (mAutoFillProfile ? 1 : 0);
         result = 31 * result + (mIncludeUnspentPointsInTotal ? 1 : 0);
         return result;
+    }
+
+    public String calendarRef() {
+        return mCalendarRef;
+    }
+
+    public void setCalendarRef(String ref) {
+        mCalendarRef = ref;
     }
 }

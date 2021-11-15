@@ -390,8 +390,7 @@ public abstract class WeaponStats {
     }
 
     private int extractSkillBonus(Feature feature, StringBuilder toolTip) {
-        if (feature instanceof SkillBonus) {
-            SkillBonus sb = (SkillBonus) feature;
+        if (feature instanceof SkillBonus sb) {
             switch (sb.getSkillSelectionType()) {
             case THIS_WEAPON:
             default:
@@ -497,8 +496,7 @@ public abstract class WeaponStats {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof WeaponStats) {
-            WeaponStats ws = (WeaponStats) obj;
+        if (obj instanceof WeaponStats ws) {
             return mDamage.equivalent(ws.mDamage) && mStrength.equals(ws.mStrength) && mUsage.equals(ws.mUsage) && mUsageNotes.equals(ws.mUsageNotes) && mDefaults.equals(ws.mDefaults);
         }
         return false;

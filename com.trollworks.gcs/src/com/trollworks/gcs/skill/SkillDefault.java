@@ -218,8 +218,7 @@ public class SkillDefault {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof SkillDefault) {
-            SkillDefault sd = (SkillDefault) obj;
+        if (obj instanceof SkillDefault sd) {
             return mModifier == sd.mModifier && mType.equals(sd.mType) && mName.equals(sd.mName) && mSpecialization.equals(sd.mSpecialization);
         }
         return false;

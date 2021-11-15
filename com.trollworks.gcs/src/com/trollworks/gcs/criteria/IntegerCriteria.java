@@ -47,8 +47,7 @@ public class IntegerCriteria extends NumericCriteria {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof IntegerCriteria && super.equals(obj)) {
-            IntegerCriteria criteria = (IntegerCriteria) obj;
+        if (obj instanceof IntegerCriteria criteria && super.equals(obj)) {
             return mQualifier == criteria.mQualifier;
         }
         return false;

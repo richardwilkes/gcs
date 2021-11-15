@@ -13,6 +13,7 @@ package com.trollworks.gcs.character;
 
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageContainerType;
+import com.trollworks.gcs.ancestry.Ancestry;
 import com.trollworks.gcs.attribute.Attribute;
 import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.attribute.AttributeType;
@@ -951,8 +952,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
     private static void buildFeatureMap(HashMap<String, ArrayList<Feature>> map, Iterator<? extends ListRow> iterator) {
         while (iterator.hasNext()) {
             ListRow row = iterator.next();
-            if (row instanceof Equipment) {
-                Equipment equipment = (Equipment) row;
+            if (row instanceof Equipment equipment) {
                 if (!equipment.isEquipped() || equipment.getQuantity() < 1) {
                     // Don't allow unequipped equipment to affect the character
                     continue;
@@ -964,8 +964,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
                     ((Bonus) feature).setParent(row);
                 }
             }
-            if (row instanceof Advantage) {
-                Advantage advantage = (Advantage) row;
+            if (row instanceof Advantage advantage) {
                 for (Bonus bonus : advantage.getCRAdj().getBonuses(advantage.getCR())) {
                     processFeature(map, 0, bonus);
                     bonus.setParent(row);
@@ -981,8 +980,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
                     }
                 }
             }
-            if (row instanceof Equipment) {
-                Equipment equipment = (Equipment) row;
+            if (row instanceof Equipment equipment) {
                 for (EquipmentModifier modifier : equipment.getModifiers()) {
                     if (modifier.isEnabled()) {
                         for (Feature feature : modifier.getFeatures()) {
@@ -1096,8 +1094,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         List<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
-                if (feature instanceof Bonus && !(feature instanceof WeaponDamageBonus)) {
-                    Bonus bonus = (Bonus) feature;
+                if (feature instanceof Bonus bonus && !(feature instanceof WeaponDamageBonus)) {
                     total += bonus.getAmount().getIntegerAdjustedAmount();
                     bonus.addToToolTip(toolTip);
                 }
@@ -1128,8 +1125,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
             List<Feature> list = mFeatureMap.get(id.toLowerCase());
             if (list != null) {
                 for (Feature feature : list) {
-                    if (feature instanceof WeaponDamageBonus) {
-                        WeaponDamageBonus bonus = (WeaponDamageBonus) feature;
+                    if (feature instanceof WeaponDamageBonus bonus) {
                         if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier) && bonus.getRelativeLevelCriteria().matches(rsl) && bonus.matchesCategories(categoriesQualifier)) {
                             bonuses.add(bonus);
                             LeveledAmount amount = bonus.getAmount();
@@ -1159,8 +1155,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         List<Feature>           list    = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
-                if (feature instanceof WeaponDamageBonus) {
-                    WeaponDamageBonus bonus = (WeaponDamageBonus) feature;
+                if (feature instanceof WeaponDamageBonus bonus) {
                     if (bonus.getWeaponSelectionType() == WeaponSelectionType.WEAPONS_WITH_NAME && bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(usageQualifier) && bonus.matchesCategories(categoriesQualifier)) {
                         bonuses.add(bonus);
                         LeveledAmount amount = bonus.getAmount();
@@ -1187,8 +1182,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         List<Feature>    list    = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
-                if (feature instanceof SkillBonus) {
-                    SkillBonus bonus = (SkillBonus) feature;
+                if (feature instanceof SkillBonus bonus) {
                     if (bonus.getSkillSelectionType() == SkillSelectionType.WEAPONS_WITH_NAME && bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(usageQualifier) && bonus.matchesCategories(categoriesQualifier)) {
                         bonuses.add(bonus);
                         bonus.addToToolTip(toolTip);
@@ -1223,8 +1217,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         List<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
-                if (feature instanceof SkillBonus) {
-                    SkillBonus bonus = (SkillBonus) feature;
+                if (feature instanceof SkillBonus bonus) {
                     if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier) && bonus.matchesCategories(categoryQualifier)) {
                         total += bonus.getAmount().getIntegerAdjustedAmount();
                         bonus.addToToolTip(toolTip);
@@ -1259,8 +1252,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         List<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
-                if (feature instanceof SkillPointBonus) {
-                    SkillPointBonus bonus = (SkillPointBonus) feature;
+                if (feature instanceof SkillPointBonus bonus) {
                     if (bonus.getNameCriteria().matches(nameQualifier) && bonus.getSpecializationCriteria().matches(specializationQualifier) && bonus.matchesCategories(categoryQualifier)) {
                         total += bonus.getAmount().getIntegerAdjustedAmount();
                         bonus.addToToolTip(toolTip);
@@ -1282,8 +1274,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         List<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
-                if (feature instanceof SpellBonus) {
-                    SpellBonus bonus = (SpellBonus) feature;
+                if (feature instanceof SpellBonus bonus) {
                     if (bonus.getNameCriteria().matches(qualifier) && bonus.matchesCategories(categories)) {
                         total += bonus.getAmount().getIntegerAdjustedAmount();
                         bonus.addToToolTip(toolTip);
@@ -1316,8 +1307,7 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         List<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
-                if (feature instanceof SpellPointBonus) {
-                    SpellPointBonus bonus = (SpellPointBonus) feature;
+                if (feature instanceof SpellPointBonus bonus) {
                     if (bonus.getNameCriteria().matches(qualifier) && bonus.matchesCategories(categories)) {
                         total += bonus.getAmount().getIntegerAdjustedAmount();
                         bonus.addToToolTip(toolTip);
@@ -1418,5 +1408,14 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         } finally {
             mVariableResolverExclusions.remove(variableName);
         }
+    }
+
+    public Ancestry getAncestry() {
+        for (Advantage advantage : new FilteredIterator<>(getAdvantagesModel().getTopLevelRows(), Advantage.class)) {
+            if (advantage.canHaveChildren() && advantage.isEnabled() && advantage.getContainerType() == AdvantageContainerType.RACE) {
+                return advantage.getAncestry();
+            }
+        }
+        return new Ancestry();
     }
 }

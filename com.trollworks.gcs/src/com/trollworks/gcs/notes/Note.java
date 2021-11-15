@@ -80,8 +80,7 @@ public class Note extends ListRow implements HasSourceReference {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof Note && super.isEquivalentTo(obj)) {
-            Note row = (Note) obj;
+        if (obj instanceof Note row && super.isEquivalentTo(obj)) {
             return mText.equals(row.mText) && mReference.equals(row.mReference);
         }
         return false;

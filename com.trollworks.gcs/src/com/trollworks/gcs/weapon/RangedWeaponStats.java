@@ -166,8 +166,7 @@ public class RangedWeaponStats extends WeaponStats {
     public String getResolvedRange() {
         DataFile df    = getOwner().getDataFile();
         String   range = mRange;
-        if (df instanceof GURPSCharacter) {
-            GURPSCharacter gchar    = (GURPSCharacter) df;
+        if (df instanceof GURPSCharacter gchar) {
             int            strength = gchar.getAttributeIntValue("st") + gchar.getThrowingStrengthBonus();
             String         savedRange;
             do {
@@ -298,8 +297,7 @@ public class RangedWeaponStats extends WeaponStats {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof RangedWeaponStats && super.equals(obj)) {
-            RangedWeaponStats rws = (RangedWeaponStats) obj;
+        if (obj instanceof RangedWeaponStats rws && super.equals(obj)) {
             return mAccuracy.equals(rws.mAccuracy) && mRange.equals(rws.mRange) && mRateOfFire.equals(rws.mRateOfFire) && mShots.equals(rws.mShots) && mBulk.equals(rws.mBulk) && mRecoil.equals(rws.mRecoil);
         }
         return false;

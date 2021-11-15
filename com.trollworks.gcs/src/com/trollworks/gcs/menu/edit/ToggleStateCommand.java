@@ -71,8 +71,7 @@ public final class ToggleStateCommand extends Command {
             focus = ((OutlineProxy) focus).getRealOutline();
         }
         ArrayList<RowUndo> undos = new ArrayList<>();
-        if (focus instanceof EquipmentOutline) {
-            EquipmentOutline outline = (EquipmentOutline) focus;
+        if (focus instanceof EquipmentOutline outline) {
             for (Equipment equipment : new FilteredIterator<>(outline.getModel().getSelectionAsList(), Equipment.class)) {
                 RowUndo undo = new RowUndo(equipment);
                 equipment.setEquipped(!equipment.isEquipped());
@@ -80,8 +79,7 @@ public final class ToggleStateCommand extends Command {
                     undos.add(undo);
                 }
             }
-        } else if (focus instanceof AdvantageOutline) {
-            AdvantageOutline outline = (AdvantageOutline) focus;
+        } else if (focus instanceof AdvantageOutline outline) {
             for (Advantage adq : new FilteredIterator<>(outline.getModel().getSelectionAsList(), Advantage.class)) {
                 RowUndo undo = new RowUndo(adq);
                 adq.setEnabled(!adq.isSelfEnabled());

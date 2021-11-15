@@ -90,8 +90,7 @@ public class AdvantageModifier extends Modifier {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof AdvantageModifier && super.isEquivalentTo(obj)) {
-            AdvantageModifier row = (AdvantageModifier) obj;
+        if (obj instanceof AdvantageModifier row && super.isEquivalentTo(obj)) {
             return mLevels == row.mLevels && mCost == row.mCost && mCostMultiplier == row.mCostMultiplier && mCostType == row.mCostType && mAffects == row.mAffects;
         }
         return false;

@@ -85,8 +85,7 @@ public abstract class NameLevelPrereq extends HasPrereq {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof NameLevelPrereq && super.equals(obj)) {
-            NameLevelPrereq nlp = (NameLevelPrereq) obj;
+        if (obj instanceof NameLevelPrereq nlp && super.equals(obj)) {
             return mTag.equals(nlp.mTag) && mNameCriteria.equals(nlp.mNameCriteria) && mLevelCriteria.equals(nlp.mLevelCriteria);
         }
         return false;

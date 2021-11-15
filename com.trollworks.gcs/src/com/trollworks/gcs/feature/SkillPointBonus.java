@@ -64,8 +64,7 @@ public class SkillPointBonus extends Bonus {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof SkillPointBonus && super.equals(obj)) {
-            SkillPointBonus sb = (SkillPointBonus) obj;
+        if (obj instanceof SkillPointBonus sb && super.equals(obj)) {
             if (mNameCriteria.equals(sb.mNameCriteria)) {
                 return mNameCriteria.equals(sb.mNameCriteria) && mSpecializationCriteria.equals(sb.mSpecializationCriteria) && mCategoryCriteria.equals(sb.mCategoryCriteria);
             }

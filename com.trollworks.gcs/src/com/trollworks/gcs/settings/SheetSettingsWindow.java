@@ -94,8 +94,7 @@ public final class SheetSettingsWindow extends SettingsWindow<SheetSettings> imp
     /** Closes the SheetSettingsWindow for the given character if it is open. */
     public static void closeFor(GURPSCharacter gchar) {
         for (Window window : Window.getWindows()) {
-            if (window.isShowing() && window instanceof SheetSettingsWindow) {
-                SheetSettingsWindow wnd = (SheetSettingsWindow) window;
+            if (window.isShowing() && window instanceof SheetSettingsWindow wnd) {
                 if (wnd.mCharacter == gchar) {
                     wnd.attemptClose();
                 }

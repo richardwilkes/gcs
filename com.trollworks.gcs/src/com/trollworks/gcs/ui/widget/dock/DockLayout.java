@@ -45,8 +45,7 @@ public class DockLayout implements DockLayoutNode, LayoutManager {
 
     private DockContainer getFocusedDockContainerInternal() {
         for (DockLayoutNode child : mChildren) {
-            if (child instanceof DockContainer) {
-                DockContainer dc = (DockContainer) child;
+            if (child instanceof DockContainer dc) {
                 if (dc.isActive()) {
                     return dc;
                 }
@@ -174,8 +173,7 @@ public class DockLayout implements DockLayoutNode, LayoutManager {
 
         if (target instanceof DockLayout) {
             ((DockLayout) target).dock(dc, locationRelativeToTarget);
-        } else if (target instanceof DockContainer) {
-            DockContainer tdc    = (DockContainer) target;
+        } else if (target instanceof DockContainer tdc) {
             DockLayout    layout = findLayout(tdc);
             layout.dockWithContainer(dc, tdc, locationRelativeToTarget);
         }

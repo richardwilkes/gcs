@@ -65,8 +65,7 @@ public final class BodyTypeSettingsWindow extends SettingsWindow<HitLocationTabl
     /** Closes the HitLocationSettingsWindow for the given character if it is open. */
     public static void closeFor(GURPSCharacter gchar) {
         for (Window window : Window.getWindows()) {
-            if (window.isShowing() && window instanceof BodyTypeSettingsWindow) {
-                BodyTypeSettingsWindow wnd = (BodyTypeSettingsWindow) window;
+            if (window.isShowing() && window instanceof BodyTypeSettingsWindow wnd) {
                 if (wnd.mCharacter == gchar) {
                     wnd.attemptClose();
                 }

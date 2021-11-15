@@ -36,8 +36,7 @@ public final class IncrementCommand extends Command {
         if (focus instanceof OutlineProxy) {
             focus = ((OutlineProxy) focus).getRealOutline();
         }
-        if (focus instanceof Incrementable) {
-            Incrementable inc = (Incrementable) focus;
+        if (focus instanceof Incrementable inc) {
             setTitle(inc.getIncrementTitle());
             setEnabled(inc.canIncrement());
         } else {

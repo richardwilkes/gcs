@@ -80,8 +80,7 @@ public class AttributePrereq extends HasPrereq {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof AttributePrereq && super.equals(obj)) {
-            AttributePrereq ap = (AttributePrereq) obj;
+        if (obj instanceof AttributePrereq ap && super.equals(obj)) {
             return mWhich.equals(ap.mWhich) && Objects.equals(mCombinedWith, ap.mCombinedWith) && mValueCompare.equals(ap.mValueCompare);
         }
         return false;

@@ -72,8 +72,7 @@ public class SpellBonus extends Bonus {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof SpellBonus && super.equals(obj)) {
-            SpellBonus sb = (SpellBonus) obj;
+        if (obj instanceof SpellBonus sb && super.equals(obj)) {
             return mAllColleges == sb.mAllColleges && Objects.equals(mMatchType, sb.mMatchType) && mNameCriteria.equals(sb.mNameCriteria) && mCategoryCriteria.equals(sb.mCategoryCriteria);
         }
         return false;

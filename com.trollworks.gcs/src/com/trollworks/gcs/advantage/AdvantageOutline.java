@@ -95,10 +95,9 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
     @Override
     protected boolean dropOnRow(DropTargetDropEvent dtde) {
         Row target = getDragTargetRow();
-        if (!(target instanceof Advantage)) {
+        if (!(target instanceof Advantage targetAdvantage)) {
             return false;
         }
-        Advantage               targetAdvantage = (Advantage) target;
         OutlineModel            model           = getModel();
         ArrayList<RowUndo>      undoList        = new ArrayList<>();
         RowUndo                 undo            = new RowUndo(targetAdvantage);
@@ -134,8 +133,7 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
     }
 
     private static void collectAdvantageModifiers(Row row, List<AdvantageModifier> result) {
-        if (row instanceof AdvantageModifier) {
-            AdvantageModifier advmod = (AdvantageModifier) row;
+        if (row instanceof AdvantageModifier advmod) {
             if (advmod.canHaveChildren()) {
                 for (Row child : advmod.getChildren()) {
                     collectAdvantageModifiers(child, result);

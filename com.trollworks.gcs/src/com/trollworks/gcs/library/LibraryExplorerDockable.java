@@ -157,8 +157,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, D
         int count = lists.size();
         for (int i = 1; i < count; i++) {
             Object entry = lists.get(i);
-            if (entry instanceof List<?>) {
-                List<?>             subList = (List<?>) entry;
+            if (entry instanceof List<?> subList) {
                 LibraryDirectoryRow dir     = new LibraryDirectoryRow((String) subList.get(0));
                 fillTree(subList, dir);
                 parent.addChild(dir);
@@ -531,8 +530,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, D
     }
 
     private static void collect(Row row, String text, List<LibraryExplorerSearchResult> list) {
-        if (row instanceof LibraryExplorerRow) {
-            LibraryExplorerRow libRow = (LibraryExplorerRow) row;
+        if (row instanceof LibraryExplorerRow libRow) {
             if (libRow.getName().toLowerCase().contains(text)) {
                 list.add(new LibraryExplorerSearchResult(libRow));
             }
