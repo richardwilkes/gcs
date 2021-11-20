@@ -147,8 +147,7 @@ public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings>
         mCalendar.setSelectedItem(CalendarRef.current(), false);
         panel.add(new Label(I18n.text("Calendar")),
                 new PrecisionLayoutData().setEndHorizontalAlignment());
-        panel.add(mCalendar, new PrecisionLayoutData().setFillHorizontalAlignment().
-                setGrabHorizontalSpace(true).setHorizontalSpan(2));
+        panel.add(mCalendar, new PrecisionLayoutData().setHorizontalSpan(2));
 
         // Fourth row
         mInitialScale = new PopupMenu<>(Scales.values(), (p) -> {
