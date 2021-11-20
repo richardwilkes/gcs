@@ -33,7 +33,7 @@ public final class PrecisionLayout implements LayoutManager2 {
     private int                                     mMarginBottom = 4;
     private int                                     mMarginRight  = 4;
     private int                                     mHSpacing     = 4;
-    private int                                     mVSpacing     = 2;
+    private int                                     mVSpacing     = 4;
     private PrecisionLayoutAlignment                mHAlign       = PrecisionLayoutAlignment.BEGINNING;
     private PrecisionLayoutAlignment                mVAlign       = PrecisionLayoutAlignment.BEGINNING;
     private boolean                                 mEqualColumns;
@@ -203,7 +203,7 @@ public final class PrecisionLayout implements LayoutManager2 {
 
     /**
      * @param spacing The number of pixels between the bottom edge of one cell and the top edge of
-     *                its neighboring cell underneath. The default value is 2.
+     *                its neighboring cell underneath. The default value is 4.
      * @return This layout.
      */
     public PrecisionLayout setVerticalSpacing(int spacing) {
@@ -215,7 +215,7 @@ public final class PrecisionLayout implements LayoutManager2 {
      * @param horizontal The number of pixels between the right edge of one cell and the left edge
      *                   of its neighboring cell to the right. The default value is 4.
      * @param vertical   The number of pixels between the bottom edge of one cell and the top edge
-     *                   of its neighboring cell underneath. The default value is 2.
+     *                   of its neighboring cell underneath. The default value is 4.
      * @return This layout.
      */
     public PrecisionLayout setSpacing(int horizontal, int vertical) {
