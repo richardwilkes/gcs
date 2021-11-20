@@ -33,10 +33,10 @@ public class Ancestry {
         mCommonOptions.mNameGenerators = List.of("Human Last");
         mGenderOptions = new ArrayList<>();
         AncestryOptions male = new AncestryOptions("Male");
-        male.mNameGenerators = List.of("Human Male First", "Human Last");
+        male.mNameGenerators = List.of("Human First - Male", "Human Last");
         mGenderOptions.add(new WeightedAncestryOptions(1, male));
         AncestryOptions female = new AncestryOptions("Female");
-        female.mNameGenerators = List.of("Human Female First", "Human Last");
+        female.mNameGenerators = List.of("Human First - Female", "Human Last");
         mGenderOptions.add(new WeightedAncestryOptions(1, female));
     }
 
