@@ -34,6 +34,7 @@ import com.trollworks.gcs.utility.FileType;
 import com.trollworks.gcs.utility.I18n;
 import com.trollworks.gcs.utility.Log;
 
+import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -202,6 +203,7 @@ public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings>
         wrapper.add(mPDFInstall, new PrecisionLayoutData().setLeftMargin(10));
         mPDFLink = new Label("");
         mPDFLink.setForeground(Colors.ICON_BUTTON_PRESSED);
+        mPDFLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         mPDFLink.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent event) {
