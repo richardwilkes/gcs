@@ -12,6 +12,7 @@
 package com.trollworks.gcs.ui.layout;
 
 import com.trollworks.gcs.ui.scale.Scale;
+import com.trollworks.gcs.ui.widget.ColumnCounter;
 import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.utility.Log;
 
@@ -24,7 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /** A layout manager that can handle complex layouts with precision. */
-public final class PrecisionLayout implements LayoutManager2 {
+public final class PrecisionLayout implements LayoutManager2, ColumnCounter {
     private HashMap<Component, PrecisionLayoutData> mConstraints  = new HashMap<>();
     private int                                     mRowCount;
     private int                                     mColumns      = 1;

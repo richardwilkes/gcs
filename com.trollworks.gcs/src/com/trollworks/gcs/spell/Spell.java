@@ -12,6 +12,8 @@
 package com.trollworks.gcs.spell;
 
 import com.trollworks.gcs.attribute.AttributeDef;
+import com.trollworks.gcs.character.CollectedListRow;
+import com.trollworks.gcs.character.CollectedOutlines;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
@@ -22,6 +24,7 @@ import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillDifficulty;
 import com.trollworks.gcs.skill.SkillLevel;
 import com.trollworks.gcs.ui.widget.outline.Column;
+import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
@@ -49,7 +52,7 @@ import java.util.regex.Pattern;
 import javax.swing.Icon;
 
 /** A GURPS Spell. */
-public class Spell extends ListRow implements HasSourceReference {
+public class Spell extends CollectedListRow implements HasSourceReference {
     private static final   int    COLLEGE_LIST_VERSION = 2; // First version with college lists (post v4.29.1)
     public static final    String KEY_SPELL            = "spell";
     public static final    String KEY_SPELL_CONTAINER  = "spell_container";
@@ -180,6 +183,16 @@ public class Spell extends ListRow implements HasSourceReference {
     public Spell(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
         this(dataFile, m.getString(DataFile.TYPE).equals(KEY_SPELL_CONTAINER));
         load(dataFile, m, state);
+    }
+
+    @Override
+    public Spell cloneRow(DataFile newOwner, boolean deep, boolean forSheet) {
+        return new Spell(newOwner, this, deep, forSheet);
+    }
+
+    @Override
+    public ListOutline getOutlineFromCollectedOutlines(CollectedOutlines outlines) {
+        return outlines.getSpellsOutline();
     }
 
     @Override

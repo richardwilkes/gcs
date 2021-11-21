@@ -149,8 +149,8 @@ public class BaseWindow extends JFrame implements Undoable, Comparable<BaseWindo
                 collectSaveables(container.getComponent(i), saveables);
             }
         }
-        if (component instanceof Saveable) {
-            saveables.add((Saveable) component);
+        if (component instanceof Saveable s) {
+            saveables.add(s);
         }
     }
 

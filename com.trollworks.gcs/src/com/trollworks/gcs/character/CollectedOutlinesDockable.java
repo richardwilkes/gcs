@@ -11,18 +11,10 @@
 
 package com.trollworks.gcs.character;
 
-import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.DataFileDockable;
-import com.trollworks.gcs.equipment.Equipment;
-import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.menu.RetargetableFocus;
-import com.trollworks.gcs.notes.Note;
 import com.trollworks.gcs.settings.Settings;
-import com.trollworks.gcs.skill.Skill;
-import com.trollworks.gcs.skill.Technique;
-import com.trollworks.gcs.spell.RitualMagicSpell;
-import com.trollworks.gcs.spell.Spell;
 import com.trollworks.gcs.ui.scale.Scales;
 import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.Search;
@@ -187,82 +179,34 @@ public abstract class CollectedOutlinesDockable extends DataFileDockable impleme
         Map<ListOutline, StateEdit> map         = new HashMap<>();
         Map<Outline, List<Row>>     selMap      = new HashMap<>();
         Map<Outline, List<ListRow>> nameMap     = new HashMap<>();
-        ListOutline                 outline     = null;
         String                      addRowsText = I18n.text("Add Rows");
         for (Row row : rows) {
-            if (row instanceof Advantage) {
-                outline = outlines.getAdvantagesOutline();
+            if (row instanceof CollectedListRow clr) {
+                ListOutline outline = clr.getOutlineFromCollectedOutlines(outlines);
                 if (!map.containsKey(outline)) {
                     map.put(outline, new StateEdit(outline.getModel(), addRowsText));
                 }
-                row = new Advantage(getDataFile(), (Advantage) row, true);
-                addCompleteRow(outline, row, selMap);
-            } else if (row instanceof Technique) {
-                outline = outlines.getSkillsOutline();
-                if (!map.containsKey(outline)) {
-                    map.put(outline, new StateEdit(outline.getModel(), addRowsText));
-                }
-                row = new Technique(getDataFile(), (Technique) row, true);
-                addCompleteRow(outline, row, selMap);
-            } else if (row instanceof Skill) {
-                outline = outlines.getSkillsOutline();
-                if (!map.containsKey(outline)) {
-                    map.put(outline, new StateEdit(outline.getModel(), addRowsText));
-                }
-                row = new Skill(getDataFile(), (Skill) row, true, true);
-                addCompleteRow(outline, row, selMap);
-            } else if (row instanceof RitualMagicSpell) {
-                outline = outlines.getSpellsOutline();
-                if (!map.containsKey(outline)) {
-                    map.put(outline, new StateEdit(outline.getModel(), addRowsText));
-                }
-                row = new RitualMagicSpell(getDataFile(), (RitualMagicSpell) row, true, true);
-                addCompleteRow(outline, row, selMap);
-            } else if (row instanceof Spell) {
-                outline = outlines.getSpellsOutline();
-                if (!map.containsKey(outline)) {
-                    map.put(outline, new StateEdit(outline.getModel(), addRowsText));
-                }
-                row = new Spell(getDataFile(), (Spell) row, true, true);
-                addCompleteRow(outline, row, selMap);
-            } else if (row instanceof Equipment) {
-                outline = row.getOwner().getProperty(EquipmentList.KEY_OTHER_ROOT) != null ? outlines.getOtherEquipmentOutline() : outlines.getEquipmentOutline();
-                if (!map.containsKey(outline)) {
-                    map.put(outline, new StateEdit(outline.getModel(), addRowsText));
-                }
-                row = new Equipment(getDataFile(), (Equipment) row, true);
-                addCompleteRow(outline, row, selMap);
-            } else if (row instanceof Note) {
-                outline = outlines.getNotesOutline();
-                if (!map.containsKey(outline)) {
-                    map.put(outline, new StateEdit(outline.getModel(), addRowsText));
-                }
-                row = new Note(getDataFile(), (Note) row, true);
-                addCompleteRow(outline, row, selMap);
-            } else {
-                row = null;
-            }
-            //noinspection ConstantConditions
-            if (row instanceof ListRow) {
-                addRowsToBeProcessed(nameMap.computeIfAbsent(outline, k -> new ArrayList<>()), (ListRow) row);
+                ListRow lr = clr.cloneRow(getDataFile(), true, true);
+                addCompleteRow(outline, lr, selMap);
+                addRowsToBeProcessed(nameMap.computeIfAbsent(outline, k -> new ArrayList<>()), lr);
             }
         }
         for (Map.Entry<ListOutline, StateEdit> entry : map.entrySet()) {
-            ListOutline  anOutline = entry.getKey();
-            OutlineModel model     = anOutline.getModel();
-            model.select(selMap.get(anOutline), false);
+            ListOutline  outline = entry.getKey();
+            OutlineModel model   = outline.getModel();
+            model.select(selMap.get(outline), false);
             StateEdit edit = entry.getValue();
             edit.end();
-            if (anOutline.getParent() == null) {
+            if (outline.getParent() == null) {
                 getUndoManager().addEdit(edit);
                 EventQueue.invokeLater(() -> {
-                    anOutline.scrollSelectionIntoView();
-                    anOutline.requestFocus();
+                    outline.scrollSelectionIntoView();
+                    outline.requestFocus();
                 });
             } else {
-                anOutline.postUndo(edit);
-                anOutline.scrollSelectionIntoView();
-                anOutline.requestFocus();
+                outline.postUndo(edit);
+                outline.scrollSelectionIntoView();
+                outline.requestFocus();
             }
         }
         if (!nameMap.isEmpty()) {

@@ -159,8 +159,8 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         PageAssembler        pageAssembler;
 
         if (UIUtilities.getSelfOrAncestorOfType(focus, CharacterSheet.class) == this) {
-            if (focus instanceof PageField) {
-                focusKey = ((PageField) focus).getTag();
+            if (focus instanceof PageField f) {
+                focusKey = f.getTag();
                 focus = null;
             } else if (focus instanceof Outline outline) {
                 Selection selection = outline.getModel().getSelection();

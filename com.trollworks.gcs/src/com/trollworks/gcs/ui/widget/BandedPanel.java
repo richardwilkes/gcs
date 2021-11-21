@@ -15,14 +15,10 @@ import com.trollworks.gcs.ui.Colors;
 import com.trollworks.gcs.ui.GraphicsUtilities;
 import com.trollworks.gcs.ui.UIUtilities;
 import com.trollworks.gcs.ui.layout.ColumnLayout;
-import com.trollworks.gcs.ui.layout.FlexGrid;
-import com.trollworks.gcs.ui.layout.FlexLayout;
-import com.trollworks.gcs.ui.layout.PrecisionLayout;
 
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.LayoutManager;
 import java.awt.Rectangle;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
@@ -78,16 +74,7 @@ public class BandedPanel extends ActionPanel implements Scrollable {
     }
 
     private int getStep() {
-        LayoutManager layout = getLayout();
-        if (layout instanceof ColumnLayout) {
-            return ((ColumnLayout) layout).getColumns();
-        } else if (layout instanceof FlexLayout && ((FlexLayout) layout).getRootCell() instanceof FlexGrid) {
-            int columns = ((FlexGrid) ((FlexLayout) layout).getRootCell()).getColumnCount();
-            return columns - columns / 2;
-        } else if (layout instanceof PrecisionLayout) {
-            return ((PrecisionLayout) layout).getColumns();
-        }
-        return 1;
+        return (getLayout() instanceof ColumnCounter cc) ? cc.getColumns() : 1;
     }
 
     @Override

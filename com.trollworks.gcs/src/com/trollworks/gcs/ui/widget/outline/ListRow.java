@@ -186,6 +186,16 @@ public abstract class ListRow extends Row {
         mCategories = new TreeSet<>(rowToClone.mCategories);
     }
 
+    /**
+     * Clones this row.
+     *
+     * @param dataFile The {@link DataFile} the new row should be owned by.
+     * @param deep     {@code true} if children should be cloned, too.
+     * @param forSheet {@code true} if this is for a character sheet.
+     * @return The newly created row.
+     */
+    public abstract ListRow cloneRow(DataFile dataFile, boolean deep, boolean forSheet);
+
     public UUID getID() {
         return mID;
     }

@@ -86,6 +86,11 @@ public class RitualMagicSpell extends Spell {
         }
     }
 
+    @Override
+    public Spell cloneRow(DataFile newOwner, boolean deep, boolean forSheet) {
+        return new RitualMagicSpell(newOwner, this, deep, forSheet);
+    }
+
     /** @return The calculated spell skill level. */
     @Override
     protected SkillLevel calculateLevelSelf() {

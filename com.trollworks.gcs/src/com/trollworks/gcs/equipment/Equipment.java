@@ -11,6 +11,8 @@
 
 package com.trollworks.gcs.equipment;
 
+import com.trollworks.gcs.character.CollectedListRow;
+import com.trollworks.gcs.character.CollectedOutlines;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
@@ -28,6 +30,7 @@ import com.trollworks.gcs.settings.SheetSettings;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.widget.outline.Column;
+import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.FileType;
@@ -54,7 +57,7 @@ import java.util.Set;
 import javax.swing.Icon;
 
 /** A piece of equipment. */
-public class Equipment extends ListRow implements HasSourceReference {
+public class Equipment extends CollectedListRow implements HasSourceReference {
     public static final  String KEY_EQUIPMENT                = "equipment";
     public static final  String KEY_EQUIPMENT_CONTAINER      = "equipment_container";
     private static final String KEY_WEAPONS                  = "weapons";
@@ -171,6 +174,16 @@ public class Equipment extends ListRow implements HasSourceReference {
     public Equipment(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
         this(dataFile, m.getString(DataFile.TYPE).equals(KEY_EQUIPMENT_CONTAINER));
         load(dataFile, m, state);
+    }
+
+    @Override
+    public Equipment cloneRow(DataFile newOwner, boolean deep, boolean forSheet) {
+        return new Equipment(newOwner, this, deep);
+    }
+
+    @Override
+    public ListOutline getOutlineFromCollectedOutlines(CollectedOutlines outlines) {
+        return getOwner().getProperty(EquipmentList.KEY_OTHER_ROOT) != null ? outlines.getOtherEquipmentOutline() : outlines.getEquipmentOutline();
     }
 
     @Override

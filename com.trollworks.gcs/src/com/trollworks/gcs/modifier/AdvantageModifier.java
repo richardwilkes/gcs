@@ -86,6 +86,11 @@ public class AdvantageModifier extends Modifier {
     }
 
     @Override
+    public AdvantageModifier cloneRow(DataFile newOwner, boolean deep, boolean forSheet) {
+        return new AdvantageModifier(newOwner, this, deep);
+    }
+
+    @Override
     public boolean isEquivalentTo(Object obj) {
         if (obj == this) {
             return true;

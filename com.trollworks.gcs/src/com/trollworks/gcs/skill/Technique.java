@@ -149,6 +149,11 @@ public class Technique extends Skill {
     }
 
     @Override
+    public Technique cloneRow(DataFile newOwner, boolean deep, boolean forSheet) {
+        return new Technique(newOwner, this, forSheet);
+    }
+
+    @Override
     public boolean isEquivalentTo(Object obj) {
         if (obj == this) {
             return true;

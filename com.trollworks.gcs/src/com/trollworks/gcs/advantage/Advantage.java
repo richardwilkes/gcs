@@ -13,6 +13,8 @@ package com.trollworks.gcs.advantage;
 
 import com.trollworks.gcs.ancestry.Ancestry;
 import com.trollworks.gcs.ancestry.AncestryRef;
+import com.trollworks.gcs.character.CollectedListRow;
+import com.trollworks.gcs.character.CollectedOutlines;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
@@ -22,6 +24,7 @@ import com.trollworks.gcs.modifier.Affects;
 import com.trollworks.gcs.modifier.Modifier;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.ui.widget.outline.Column;
+import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
@@ -37,8 +40,6 @@ import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
-import com.trollworks.gcs.weapon.MeleeWeaponStats;
-import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
 
 import java.io.IOException;
@@ -51,7 +52,7 @@ import java.util.Set;
 import javax.swing.Icon;
 
 /** A GURPS Advantage. */
-public class Advantage extends ListRow implements HasSourceReference, Switchable {
+public class Advantage extends CollectedListRow implements HasSourceReference, Switchable {
     public static final  String KEY_ADVANTAGE           = "advantage";
     public static final  String KEY_ADVANTAGE_CONTAINER = "advantage_container";
     private static final String KEY_REFERENCE           = "reference";
@@ -150,11 +151,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         mAncestryRef = AncestryRef.DEFAULT;
         mWeapons = new ArrayList<>(advantage.mWeapons.size());
         for (WeaponStats weapon : advantage.mWeapons) {
-            if (weapon instanceof MeleeWeaponStats) {
-                mWeapons.add(new MeleeWeaponStats(this, (MeleeWeaponStats) weapon));
-            } else if (weapon instanceof RangedWeaponStats) {
-                mWeapons.add(new RangedWeaponStats(this, (RangedWeaponStats) weapon));
-            }
+            mWeapons.add(weapon.clone(this));
         }
         mModifiers = new ArrayList<>(advantage.mModifiers.size());
         for (AdvantageModifier modifier : advantage.mModifiers) {
@@ -171,6 +168,16 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     public Advantage(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
         this(dataFile, m.getString(DataFile.TYPE).equals(KEY_ADVANTAGE_CONTAINER));
         load(dataFile, m, state);
+    }
+
+    @Override
+    public Advantage cloneRow(DataFile newOwner, boolean deep, boolean forSheet) {
+        return new Advantage(newOwner, this, deep);
+    }
+
+    @Override
+    public ListOutline getOutlineFromCollectedOutlines(CollectedOutlines outlines) {
+        return outlines.getAdvantagesOutline();
     }
 
     @Override

@@ -89,6 +89,11 @@ public class EquipmentModifier extends Modifier {
         mTechLevel = "";
     }
 
+    @Override
+    public EquipmentModifier cloneRow(DataFile newOwner, boolean deep, boolean forSheet) {
+        return new EquipmentModifier(newOwner, this, deep);
+    }
+
     private String getDefaultWeightAmount() {
         return "+" + new WeightValue(Fixed6.ZERO, getDataFile().getSheetSettings().defaultWeightUnits());
     }

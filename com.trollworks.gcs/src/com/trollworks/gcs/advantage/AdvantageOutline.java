@@ -11,9 +11,9 @@
 
 package com.trollworks.gcs.advantage;
 
+import com.trollworks.gcs.character.CollectedModels;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
-import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.menu.edit.Incrementable;
 import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.template.Template;
@@ -35,23 +35,13 @@ import java.util.List;
 
 /** An outline specifically for Advantages. */
 public class AdvantageOutline extends ListOutline implements Incrementable {
-    private static OutlineModel extractModel(DataFile dataFile) {
-        if (dataFile instanceof GURPSCharacter) {
-            return ((GURPSCharacter) dataFile).getAdvantagesModel();
-        }
-        if (dataFile instanceof Template) {
-            return ((Template) dataFile).getAdvantagesModel();
-        }
-        return ((ListFile) dataFile).getModel();
-    }
-
     /**
      * Create a new Advantages, Disadvantages & Quirks outline.
      *
      * @param dataFile The owning data file.
      */
-    public AdvantageOutline(DataFile dataFile) {
-        this(dataFile, extractModel(dataFile));
+    public AdvantageOutline(CollectedModels dataFile) {
+        this(dataFile, dataFile.getAdvantagesModel());
     }
 
     /**

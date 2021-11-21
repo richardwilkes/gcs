@@ -12,6 +12,7 @@
 package com.trollworks.gcs.ui.layout;
 
 import com.trollworks.gcs.ui.scale.Scale;
+import com.trollworks.gcs.ui.widget.ColumnCounter;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -33,7 +34,7 @@ import java.awt.LayoutManager2;
  * This layout manager does not track any state specific to components, so it may be re-used in
  * multiple containers without creating new copies.
  */
-public class ColumnLayout implements LayoutManager2 {
+public class ColumnLayout implements LayoutManager2, ColumnCounter {
     /** The default horizontal gap size. */
     public static final int             DEFAULT_H_GAP_SIZE = 5;
     /** The default vertical gap size. */

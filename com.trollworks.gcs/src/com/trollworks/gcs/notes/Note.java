@@ -11,10 +11,13 @@
 
 package com.trollworks.gcs.notes;
 
+import com.trollworks.gcs.character.CollectedListRow;
+import com.trollworks.gcs.character.CollectedOutlines;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.menu.item.HasSourceReference;
 import com.trollworks.gcs.ui.widget.outline.Column;
+import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.FileType;
@@ -30,7 +33,7 @@ import java.util.Set;
 import javax.swing.Icon;
 
 /** A note. */
-public class Note extends ListRow implements HasSourceReference {
+public class Note extends CollectedListRow implements HasSourceReference {
     public static final  String KEY_NOTE           = "note";
     public static final  String KEY_NOTE_CONTAINER = "note_container";
     private static final String KEY_TEXT           = "text";
@@ -73,6 +76,16 @@ public class Note extends ListRow implements HasSourceReference {
     public Note(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
         this(dataFile, m.getString(DataFile.TYPE).equals(KEY_NOTE_CONTAINER));
         load(dataFile, m, state);
+    }
+
+    @Override
+    public Note cloneRow(DataFile newOwner, boolean deep, boolean forSheet) {
+        return new Note(newOwner, this, deep);
+    }
+
+    @Override
+    public ListOutline getOutlineFromCollectedOutlines(CollectedOutlines outlines) {
+        return outlines.getNotesOutline();
     }
 
     @Override

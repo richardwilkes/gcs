@@ -12,6 +12,8 @@
 package com.trollworks.gcs.skill;
 
 import com.trollworks.gcs.attribute.AttributeDef;
+import com.trollworks.gcs.character.CollectedListRow;
+import com.trollworks.gcs.character.CollectedOutlines;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
@@ -19,6 +21,7 @@ import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.menu.item.HasSourceReference;
 import com.trollworks.gcs.settings.Settings;
 import com.trollworks.gcs.ui.widget.outline.Column;
+import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.Row;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
@@ -47,7 +50,7 @@ import java.util.regex.Pattern;
 import javax.swing.Icon;
 
 /** A GURPS Skill. */
-public class Skill extends ListRow implements HasSourceReference {
+public class Skill extends CollectedListRow implements HasSourceReference {
     public static final  String KEY_SKILL               = "skill";
     public static final  String KEY_SKILL_CONTAINER     = "skill_container";
     private static final String KEY_NAME                = "name";
@@ -168,6 +171,16 @@ public class Skill extends ListRow implements HasSourceReference {
     public Skill(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
         this(dataFile, m.getString(DataFile.TYPE).equals(KEY_SKILL_CONTAINER));
         load(dataFile, m, state);
+    }
+
+    @Override
+    public Skill cloneRow(DataFile newOwner, boolean deep, boolean forSheet) {
+        return new Skill(newOwner, this, deep, forSheet);
+    }
+
+    @Override
+    public ListOutline getOutlineFromCollectedOutlines(CollectedOutlines outlines) {
+        return outlines.getSkillsOutline();
     }
 
     public static String getDefaultAttribute(String preferred) {
