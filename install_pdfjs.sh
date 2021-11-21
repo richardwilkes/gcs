@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-VERSION=2.9.359
+VERSION=2.11.338
 
 cd com.trollworks.gcs/resources/pdfjs
 /bin/rm -rf build web LICENSE

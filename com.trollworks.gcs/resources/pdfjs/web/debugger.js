@@ -220,7 +220,7 @@ var StepperManager = (function StepperManagerClosure() {
     },
     selectStepper: function selectStepper(pageIndex, selectPanel) {
       let i;
-      pageIndex = pageIndex | 0;
+      pageIndex |= 0;
       if (selectPanel) {
         this.manager.selectPanel(this);
       }
@@ -357,27 +357,38 @@ const Stepper = (function StepperClosure() {
         let decArgs = args;
         if (fn === "showText") {
           const glyphs = args[0];
-          const newArgs = [];
-          let str = [];
+          const charCodeRow = c("tr");
+          const fontCharRow = c("tr");
+          const unicodeRow = c("tr");
           for (let j = 0; j < glyphs.length; j++) {
             const glyph = glyphs[j];
             if (typeof glyph === "object" && glyph !== null) {
-              str.push(glyph.fontChar);
+              charCodeRow.appendChild(c("td", glyph.originalCharCode));
+              fontCharRow.appendChild(c("td", glyph.fontChar));
+              unicodeRow.appendChild(c("td", glyph.unicode));
             } else {
-              if (str.length > 0) {
-                newArgs.push(str.join(""));
-                str = [];
-              }
-              newArgs.push(glyph); // null or number
+              // null or number
+              const advanceEl = c("td", glyph);
+              advanceEl.classList.add("advance");
+              charCodeRow.appendChild(advanceEl);
+              fontCharRow.appendChild(c("td"));
+              unicodeRow.appendChild(c("td"));
             }
           }
-          if (str.length > 0) {
-            newArgs.push(str.join(""));
-          }
-          decArgs = [newArgs];
+          decArgs = c("td");
+          const table = c("table");
+          table.classList.add("showText");
+          decArgs.appendChild(table);
+          table.appendChild(charCodeRow);
+          table.appendChild(fontCharRow);
+          table.appendChild(unicodeRow);
         }
         line.appendChild(c("td", fn));
-        line.appendChild(c("td", JSON.stringify(simplifyArgs(decArgs))));
+        if (decArgs instanceof HTMLElement) {
+          line.appendChild(decArgs);
+        } else {
+          line.appendChild(c("td", JSON.stringify(simplifyArgs(decArgs))));
+        }
       }
       if (operatorsToDisplay < operatorList.fnArray.length) {
         const lastCell = c("td", "...");
@@ -529,7 +540,8 @@ window.PDFBug = (function PDFBugClosure() {
         });
       }
     },
-    init(pdfjsLib, container) {
+    init(pdfjsLib, container, ids) {
+      this.enable(ids);
       /*
        * Basic Layout:
        * PDFBug
@@ -578,12 +590,8 @@ window.PDFBug = (function PDFBugClosure() {
           tool.init(pdfjsLib);
         } else {
           panel.textContent =
-            tool.name +
-            " is disabled. To enable add " +
-            ' "' +
-            tool.id +
-            '" to the pdfBug parameter ' +
-            "and refresh (separate multiple by commas).";
+            `${tool.name} is disabled. To enable add "${tool.id}" to ` +
+            "the pdfBug parameter and refresh (separate multiple by commas).";
         }
         buttons.push(panelButton);
       }
