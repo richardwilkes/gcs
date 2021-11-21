@@ -44,8 +44,6 @@ import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.units.WeightUnits;
 import com.trollworks.gcs.utility.units.WeightValue;
-import com.trollworks.gcs.weapon.MeleeWeaponStats;
-import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
 
 import java.io.IOException;
@@ -141,11 +139,7 @@ public class Equipment extends CollectedListRow implements HasSourceReference {
         mReference = equipment.mReference;
         mWeapons = new ArrayList<>(equipment.mWeapons.size());
         for (WeaponStats weapon : equipment.mWeapons) {
-            if (weapon instanceof MeleeWeaponStats) {
-                mWeapons.add(new MeleeWeaponStats(this, (MeleeWeaponStats) weapon));
-            } else if (weapon instanceof RangedWeaponStats) {
-                mWeapons.add(new RangedWeaponStats(this, (RangedWeaponStats) weapon));
-            }
+            mWeapons.add(weapon.clone(this));
         }
         mModifiers = new ArrayList<>(equipment.mModifiers.size());
         for (EquipmentModifier modifier : equipment.mModifiers) {
