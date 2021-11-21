@@ -46,8 +46,7 @@ public class AboutPanel extends Panel {
         Graphics2D gc = GraphicsUtilities.prepare(g);
         super.paintComponent(gc);
         Images.ABOUT.paintIcon(this, gc, 0, 0);
-        //noinspection IntegerDivisionInFloatingPointContext
-        gc.setPaint(new LinearGradientPaint(0, Images.ABOUT.getIconHeight() / 2, 0, Images.ABOUT.getIconHeight(), new float[]{0, 1}, new Color[]{Colors.TRANSPARENT, getBackground()}));
+        gc.setPaint(new LinearGradientPaint(0, Images.ABOUT.getIconHeight() / 2.0f, 0, Images.ABOUT.getIconHeight(), new float[]{0, 1}, new Color[]{Colors.TRANSPARENT, getBackground()}));
         gc.fillRect(0, 0, Images.ABOUT.getIconWidth(), Images.ABOUT.getIconHeight());
         RenderingHints saved = (RenderingHints) gc.getRenderingHints().clone();
         gc.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);

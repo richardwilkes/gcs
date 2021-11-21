@@ -447,8 +447,8 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
                 value = strength <= 6 ? value.mul(ten).round().div(ten) : value.round();
                 value = value.mul(new Fixed6(Math.pow(10, diff)));
             } else {
-                //noinspection UnnecessaryExplicitNumericCast
-                value = new Fixed6((long) strength * (long) strength).div(divisor);
+                value = new Fixed6(strength);
+                value = value.mul(value).div(divisor);
             }
             if (value.greaterThanOrEqual(roundAt)) {
                 value = value.round();

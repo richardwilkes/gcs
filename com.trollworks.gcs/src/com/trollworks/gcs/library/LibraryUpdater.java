@@ -93,7 +93,7 @@ public final class LibraryUpdater implements Runnable {
             String    title     = library.getTitle();
             for (Dockable dockable : workspace.getDock().getDockables()) {
                 if (dockable instanceof DataFileDockable dfd) {
-                    Path             path = dfd.getBackingFile();
+                    Path path = dfd.getBackingFile();
                     if (path != null && path.toAbsolutePath().startsWith(prefix)) {
                         if (dfd.mayAttemptClose()) {
                             if (!dfd.attemptClose()) {
@@ -181,11 +181,11 @@ public final class LibraryUpdater implements Runnable {
             } catch (Throwable throwable) {
                 Log.error(throwable);
                 if (mResult == null) {
+                    Throwable t = throwable;
                     do {
-                        mResult = throwable.getMessage();
-                        //noinspection AssignmentToCatchBlockParameter
-                        throwable = throwable.getCause();
-                    } while (mResult == null && throwable != null);
+                        mResult = t.getMessage();
+                        t = t.getCause();
+                    } while (mResult == null && t != null);
                     if (mResult == null) {
                         mResult = "exception";
                     }

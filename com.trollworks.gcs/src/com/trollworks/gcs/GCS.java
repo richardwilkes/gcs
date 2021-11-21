@@ -53,6 +53,7 @@ public final class GCS {
     public static final  String  COPYRIGHT_FOOTER;
     public static final  String  APP_BANNER;
     private static final Pattern COPYRIGHT_PATTERN = Pattern.compile("©");
+    private static final String  COPYRIGHT_OWNER   = "Richard A. Wilkes";
     private static       boolean NOTIFICATION_ALLOWED;
 
     static {
@@ -82,9 +83,8 @@ public final class GCS {
         I18n.initialize();
 
         // Setup the copyright notices and such that rely on the version and year info
-        COPYRIGHT = String.format(I18n.text("Copyright ©%s by %s"), years, "Richard A. Wilkes");
-        //noinspection StringConcatenationInFormatCall
-        COPYRIGHT_FOOTER = String.format("GCS " + I18n.text("is copyrighted ©%s by %s"), years, "Richard A. Wilkes");
+        COPYRIGHT = String.format(I18n.text("Copyright ©%s by %s"), years, COPYRIGHT_OWNER);
+        COPYRIGHT_FOOTER = "GCS " + String.format(I18n.text("is copyrighted ©%s by %s"), years, COPYRIGHT_OWNER);
         StringBuilder buffer = new StringBuilder();
         buffer.append("GCS ");
         if (VERSION.isZero()) {
