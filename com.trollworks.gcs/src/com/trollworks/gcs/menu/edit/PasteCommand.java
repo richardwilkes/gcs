@@ -57,8 +57,8 @@ public final class PasteCommand extends Command {
     @Override
     public void actionPerformed(ActionEvent event) {
         Component comp = getFocusOwner();
-        if (comp instanceof JTextComponent) {
-            ((JTextComponent) comp).paste();
+        if (comp instanceof JTextComponent c) {
+            c.paste();
         } else {
             Pastable pastable = getTarget(Pastable.class);
             if (pastable != null && pastable.canPasteSelection()) {

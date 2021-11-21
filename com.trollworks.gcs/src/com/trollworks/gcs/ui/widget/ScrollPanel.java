@@ -138,9 +138,9 @@ public class ScrollPanel extends JLayeredPane implements LayoutManager, ChangeLi
     public int getUnitIncrement(boolean vertical, boolean upOrLeft) {
         Dimension extent = mViewport.getExtentSize();
         Component view   = mViewport.getView();
-        if (view instanceof Scrollable) {
+        if (view instanceof Scrollable scrollable) {
             Point pos = mViewport.getViewPosition();
-            return ((Scrollable) view).getScrollableUnitIncrement(new Rectangle(pos.x, pos.y,
+            return scrollable.getScrollableUnitIncrement(new Rectangle(pos.x, pos.y,
                     extent.width, extent.height), vertical ? SwingConstants.VERTICAL :
                     SwingConstants.HORIZONTAL, upOrLeft ? -1 : 1);
         }
@@ -150,9 +150,9 @@ public class ScrollPanel extends JLayeredPane implements LayoutManager, ChangeLi
     public int getBlockIncrement(boolean vertical, boolean upOrLeft) {
         Dimension extent = mViewport.getExtentSize();
         Component view   = mViewport.getView();
-        if (view instanceof Scrollable) {
+        if (view instanceof Scrollable scrollable) {
             Point pos = mViewport.getViewPosition();
-            return ((Scrollable) view).getScrollableBlockIncrement(new Rectangle(pos.x, pos.y,
+            return scrollable.getScrollableBlockIncrement(new Rectangle(pos.x, pos.y,
                     extent.width, extent.height), vertical ? SwingConstants.VERTICAL :
                     SwingConstants.HORIZONTAL, upOrLeft ? -1 : 1);
         }

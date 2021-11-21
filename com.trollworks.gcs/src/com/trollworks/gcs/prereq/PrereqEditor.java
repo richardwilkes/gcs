@@ -42,39 +42,6 @@ public abstract class PrereqEditor extends EditorPanel {
     private   int     mDepth;
 
     /**
-     * Creates a new prerequisite editor panel.
-     *
-     * @param row    The owning row.
-     * @param prereq The prerequisite to edit.
-     * @param depth  The depth of this prerequisite.
-     * @return The newly created editor panel.
-     */
-    public static PrereqEditor create(ListRow row, Prereq prereq, int depth) {
-        if (prereq instanceof PrereqList) {
-            return new ListPrereqEditor(row, (PrereqList) prereq, depth);
-        }
-        if (prereq instanceof AdvantagePrereq) {
-            return new AdvantagePrereqEditor(row, (AdvantagePrereq) prereq, depth);
-        }
-        if (prereq instanceof SkillPrereq) {
-            return new SkillPrereqEditor(row, (SkillPrereq) prereq, depth);
-        }
-        if (prereq instanceof SpellPrereq) {
-            return new SpellPrereqEditor(row, (SpellPrereq) prereq, depth);
-        }
-        if (prereq instanceof AttributePrereq) {
-            return new AttributePrereqEditor(row, (AttributePrereq) prereq, depth);
-        }
-        if (prereq instanceof ContainedWeightPrereq) {
-            return new ContainedWeightPrereqEditor(row, (ContainedWeightPrereq) prereq, depth);
-        }
-        if (prereq instanceof ContainedQuantityPrereq) {
-            return new ContainedQuantityPrereqEditor(row, (ContainedQuantityPrereq) prereq, depth);
-        }
-        return null;
-    }
-
-    /**
      * Creates a new generic prerequisite editor panel.
      *
      * @param row    The owning row.
@@ -161,12 +128,12 @@ public abstract class PrereqEditor extends EditorPanel {
                     } else {
                         prereq = (Prereq) t.getConstructor(PrereqList.class).newInstance(list);
                     }
-                    if (prereq instanceof HasPrereq && mPrereq instanceof HasPrereq) {
-                        ((HasPrereq) prereq).setHas(((HasPrereq) mPrereq).has());
+                    if (prereq instanceof HasPrereq left && mPrereq instanceof HasPrereq right) {
+                        left.setHas(right.has());
                     }
                     list.add(listIndex, prereq);
                     list.remove(mPrereq);
-                    parent.add(create(mRow, prereq, mDepth), UIUtilities.getIndexOf(parent, this));
+                    parent.add(prereq.createPrereqEditor(mRow, mDepth), UIUtilities.getIndexOf(parent, this));
                 } catch (Exception exception) {
                     // Shouldn't have a failure...
                     Log.error(exception);

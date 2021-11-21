@@ -82,8 +82,8 @@ public class AttributedTextField extends JTextPane {
                 selectAll();
                 setBorder(EditorField.createBorder(true));
                 Container parent = getParent();
-                if (parent instanceof JComponent) {
-                    ((JComponent) parent).scrollRectToVisible(getBounds());
+                if (parent instanceof JComponent c) {
+                    c.scrollRectToVisible(getBounds());
                 }
             } else {
                 setBorder(EditorField.createBorder(false));

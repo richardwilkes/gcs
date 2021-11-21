@@ -33,8 +33,8 @@ public final class TechLevelDecrementCommand extends Command {
     @Override
     public void adjust() {
         Component focus = getFocusOwner();
-        if (focus instanceof OutlineProxy) {
-            focus = ((OutlineProxy) focus).getRealOutline();
+        if (focus instanceof OutlineProxy proxy) {
+            focus = proxy.getRealOutline();
         }
         if (focus instanceof TechLevelIncrementable inc) {
             setEnabled(inc.canDecrementTechLevel());
@@ -46,8 +46,8 @@ public final class TechLevelDecrementCommand extends Command {
     @Override
     public void actionPerformed(ActionEvent event) {
         Component focus = getFocusOwner();
-        if (focus instanceof OutlineProxy) {
-            focus = ((OutlineProxy) focus).getRealOutline();
+        if (focus instanceof OutlineProxy proxy) {
+            focus = proxy.getRealOutline();
         }
         ((TechLevelIncrementable) focus).decrementTechLevel();
     }

@@ -144,7 +144,7 @@ public class ListPrereqEditor extends PrereqEditor {
         JComponent parent = (JComponent) getParent();
         int        index  = UIUtilities.getIndexOf(parent, this);
         ((PrereqList) mPrereq).add(0, prereq);
-        parent.add(create(mRow, prereq, getDepth() + 1), index + 1);
+        parent.add(prereq.createPrereqEditor(mRow, getDepth() + 1), index + 1);
         parent.revalidate();
     }
 }

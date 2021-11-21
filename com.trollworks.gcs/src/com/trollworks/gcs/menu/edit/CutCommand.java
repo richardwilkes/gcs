@@ -51,8 +51,8 @@ public final class CutCommand extends Command {
     @Override
     public void actionPerformed(ActionEvent event) {
         Component comp = getFocusOwner();
-        if (comp instanceof JTextComponent) {
-            ((JTextComponent) comp).cut();
+        if (comp instanceof JTextComponent textComp) {
+            textComp.cut();
         } else {
             Cutable cutable = getTarget(Cutable.class);
             if (cutable != null && cutable.canCutSelection()) {

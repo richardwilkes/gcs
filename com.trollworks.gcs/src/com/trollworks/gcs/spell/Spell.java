@@ -37,8 +37,6 @@ import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Numbers;
-import com.trollworks.gcs.weapon.MeleeWeaponStats;
-import com.trollworks.gcs.weapon.RangedWeaponStats;
 import com.trollworks.gcs.weapon.WeaponStats;
 
 import java.io.IOException;
@@ -159,11 +157,7 @@ public class Spell extends CollectedListRow implements HasSourceReference {
         }
         mWeapons = new ArrayList<>(spell.mWeapons.size());
         for (WeaponStats weapon : spell.mWeapons) {
-            if (weapon instanceof MeleeWeaponStats) {
-                mWeapons.add(new MeleeWeaponStats(this, (MeleeWeaponStats) weapon));
-            } else if (weapon instanceof RangedWeaponStats) {
-                mWeapons.add(new RangedWeaponStats(this, (RangedWeaponStats) weapon));
-            }
+            mWeapons.add(weapon.clone(this));
         }
         updateLevel(false);
         if (deep) {

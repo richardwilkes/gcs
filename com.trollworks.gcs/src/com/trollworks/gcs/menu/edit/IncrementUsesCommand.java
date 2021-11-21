@@ -33,11 +33,11 @@ public final class IncrementUsesCommand extends Command {
     @Override
     public void adjust() {
         Component focus = getFocusOwner();
-        if (focus instanceof OutlineProxy) {
-            focus = ((OutlineProxy) focus).getRealOutline();
+        if (focus instanceof OutlineProxy proxy) {
+            focus = proxy.getRealOutline();
         }
-        if (focus instanceof UsesIncrementable) {
-            setEnabled(((UsesIncrementable) focus).canIncrementUses());
+        if (focus instanceof UsesIncrementable inc) {
+            setEnabled(inc.canIncrementUses());
         } else {
             setEnabled(false);
         }

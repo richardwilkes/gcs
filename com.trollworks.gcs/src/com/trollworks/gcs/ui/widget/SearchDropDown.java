@@ -81,8 +81,8 @@ class SearchDropDown extends ScrollPanel implements MouseListener {
             height = 5 * renderer.getPreferredSize().height;
             Component component = mList;
             while (component != this) {
-                if (component instanceof JComponent) {
-                    Insets insets = ((JComponent) component).getInsets();
+                if (component instanceof JComponent comp) {
+                    Insets insets = comp.getInsets();
                     height += insets.top + insets.bottom;
                 }
                 component = component.getParent();

@@ -31,8 +31,8 @@ public final class SkillLevelIncrementCommand extends Command {
     @Override
     public void adjust() {
         Component focus = getFocusOwner();
-        if (focus instanceof OutlineProxy) {
-            focus = ((OutlineProxy) focus).getRealOutline();
+        if (focus instanceof OutlineProxy proxy) {
+            focus = proxy.getRealOutline();
         }
         if (focus instanceof SkillLevelIncrementable inc) {
             setEnabled(inc.canIncrementSkillLevel());
@@ -46,8 +46,8 @@ public final class SkillLevelIncrementCommand extends Command {
     @Override
     public void actionPerformed(ActionEvent event) {
         Component focus = getFocusOwner();
-        if (focus instanceof OutlineProxy) {
-            focus = ((OutlineProxy) focus).getRealOutline();
+        if (focus instanceof OutlineProxy proxy) {
+            focus = proxy.getRealOutline();
         }
         ((SkillLevelIncrementable) focus).incrementSkillLevel();
     }

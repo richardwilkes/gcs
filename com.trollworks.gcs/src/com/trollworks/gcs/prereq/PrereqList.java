@@ -92,6 +92,11 @@ public class PrereqList extends Prereq {
     }
 
     @Override
+    public PrereqEditor createPrereqEditor(ListRow row, int depth) {
+        return new ListPrereqEditor(row, this, depth);
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;

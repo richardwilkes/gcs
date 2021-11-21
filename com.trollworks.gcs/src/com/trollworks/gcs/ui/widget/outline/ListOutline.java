@@ -176,8 +176,8 @@ public class ListOutline extends Outline implements Runnable, ActionListener, Du
         Object source  = event.getSource();
         String command = event.getActionCommand();
 
-        if (source instanceof OutlineProxy) {
-            source = ((OutlineProxy) source).getRealOutline();
+        if (source instanceof OutlineProxy proxy) {
+            source = proxy.getRealOutline();
         }
         if (source == this && Outline.CMD_OPEN_SELECTION.equals(command)) {
             openDetailEditor(false);

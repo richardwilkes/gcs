@@ -46,8 +46,8 @@ public class DoubleCriteria extends NumericCriteria {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof DoubleCriteria && super.equals(obj)) {
-            return mQualifier == ((DoubleCriteria) obj).mQualifier;
+        if (obj instanceof DoubleCriteria criteria && super.equals(obj)) {
+            return mQualifier == criteria.mQualifier;
         }
         return false;
     }

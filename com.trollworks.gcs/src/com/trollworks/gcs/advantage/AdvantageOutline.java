@@ -38,10 +38,10 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
     /**
      * Create a new Advantages, Disadvantages & Quirks outline.
      *
-     * @param dataFile The owning data file.
+     * @param owner The owning data file.
      */
-    public AdvantageOutline(CollectedModels dataFile) {
-        this(dataFile, dataFile.getAdvantagesModel());
+    public AdvantageOutline(CollectedModels owner) {
+        this(owner, owner.getAdvantagesModel());
     }
 
     /**

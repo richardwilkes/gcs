@@ -12,12 +12,10 @@
 package com.trollworks.gcs.menu.edit;
 
 import com.trollworks.gcs.character.CollectedModels;
-import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.equipment.EquipmentOutline;
 import com.trollworks.gcs.menu.Command;
-import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
@@ -46,15 +44,14 @@ public class MoveEquipmentCommand extends Command {
     @Override
     public void adjust() {
         Component focus = getFocusOwner();
-        if (focus instanceof OutlineProxy) {
-            focus = ((OutlineProxy) focus).getRealOutline();
+        if (focus instanceof OutlineProxy proxy) {
+            focus = proxy.getRealOutline();
         }
-        if (focus instanceof EquipmentOutline) {
-            ListOutline  outline  = (ListOutline) focus;
+        if (focus instanceof EquipmentOutline outline) {
             DataFile     dataFile = outline.getDataFile();
             OutlineModel model    = outline.getModel();
             boolean      isOther  = model.getProperty(EquipmentList.KEY_OTHER_ROOT) != null;
-            setEnabled((dataFile instanceof GURPSCharacter || dataFile instanceof Template) && isOther == mToCarried && model.hasSelection());
+            setEnabled((dataFile instanceof CollectedModels) && isOther == mToCarried && model.hasSelection());
         } else {
             setEnabled(false);
         }
@@ -63,11 +60,11 @@ public class MoveEquipmentCommand extends Command {
     @Override
     public void actionPerformed(ActionEvent event) {
         Component focus = getFocusOwner();
-        if (focus instanceof OutlineProxy) {
-            focus = ((OutlineProxy) focus).getRealOutline();
+        if (focus instanceof OutlineProxy proxy) {
+            focus = proxy.getRealOutline();
         }
-        if (focus instanceof EquipmentOutline) {
-            moveSelection(((EquipmentOutline) focus).getDataFile(), mToCarried);
+        if (focus instanceof EquipmentOutline f) {
+            moveSelection(f.getDataFile(), mToCarried);
         }
     }
 
@@ -94,8 +91,8 @@ public class MoveEquipmentCommand extends Command {
             toOutline.convertDragRowsToSelf(rows);
             to.setDragRows(null);
             for (Row row : rows) {
-                if (row.getDepth() == 0 && row instanceof ListRow) {
-                    topRows.add((ListRow) row);
+                if (row.getDepth() == 0 && row instanceof ListRow lr) {
+                    topRows.add(lr);
                 }
             }
             toOutline.addRow(topRows.toArray(new ListRow[0]), getTitle(toCarried), true);

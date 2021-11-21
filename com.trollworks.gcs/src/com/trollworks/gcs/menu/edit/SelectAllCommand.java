@@ -49,8 +49,8 @@ public final class SelectAllCommand extends Command {
     @Override
     public void actionPerformed(ActionEvent event) {
         Component comp = getFocusOwner();
-        if (comp instanceof JTextComponent) {
-            ((JTextComponent) comp).selectAll();
+        if (comp instanceof JTextComponent c) {
+            c.selectAll();
         } else {
             SelectAllCapable selectable = getTarget(SelectAllCapable.class);
             if (selectable != null && selectable.canSelectAll()) {

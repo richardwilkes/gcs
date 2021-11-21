@@ -60,8 +60,8 @@ public abstract class Bonus extends Feature {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof Bonus) {
-            return mAmount.equals(((Bonus) obj).mAmount);
+        if (obj instanceof Bonus b) {
+            return mAmount.equals(b.mAmount);
         }
         return false;
     }

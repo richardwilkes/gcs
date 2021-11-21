@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.equipment;
 
+import com.trollworks.gcs.character.CollectedModels;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.menu.edit.Incrementable;
@@ -61,12 +62,12 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Uses
 
     @Override
     public boolean canDecrement() {
-        return (mDataFile instanceof GURPSCharacter || mDataFile instanceof Template) && selectionHasIncrementableLeafRows(true);
+        return (mDataFile instanceof CollectedModels) && selectionHasIncrementableLeafRows(true);
     }
 
     @Override
     public boolean canIncrement() {
-        return (mDataFile instanceof GURPSCharacter || mDataFile instanceof Template) && selectionHasIncrementableLeafRows(false);
+        return (mDataFile instanceof CollectedModels) && selectionHasIncrementableLeafRows(false);
     }
 
     private boolean selectionHasIncrementableLeafRows(boolean requireQtyAboveZero) {
@@ -119,7 +120,7 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Uses
 
     @Override
     public boolean canIncrementUses() {
-        if (mDataFile instanceof GURPSCharacter || mDataFile instanceof Template) {
+        if (mDataFile instanceof CollectedModels) {
             for (Equipment equipment : new FilteredIterator<>(getModel().getSelectionAsList(), Equipment.class)) {
                 int max = equipment.getMaxUses();
                 return max > 0 && equipment.getUses() < max;
@@ -130,7 +131,7 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Uses
 
     @Override
     public boolean canDecrementUses() {
-        if (mDataFile instanceof GURPSCharacter || mDataFile instanceof Template) {
+        if (mDataFile instanceof CollectedModels) {
             for (Equipment equipment : new FilteredIterator<>(getModel().getSelectionAsList(), Equipment.class)) {
                 return equipment.getMaxUses() > 0 && equipment.getUses() > 0;
             }

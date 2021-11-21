@@ -39,8 +39,8 @@ public class ConvertToContainer extends Command {
     @Override
     public void adjust() {
         Component focus = getFocusOwner();
-        if (focus instanceof OutlineProxy) {
-            focus = ((OutlineProxy) focus).getRealOutline();
+        if (focus instanceof OutlineProxy f) {
+            focus = f.getRealOutline();
         }
         if (!(focus instanceof EquipmentOutline)) {
             setEnabled(false);
@@ -53,8 +53,8 @@ public class ConvertToContainer extends Command {
     @Override
     public void actionPerformed(ActionEvent event) {
         Component focus = getFocusOwner();
-        if (focus instanceof OutlineProxy) {
-            focus = ((OutlineProxy) focus).getRealOutline();
+        if (focus instanceof OutlineProxy f) {
+            focus = f.getRealOutline();
         }
         ListOutline  outline = (ListOutline) focus;
         OutlineModel model   = outline.getModel();

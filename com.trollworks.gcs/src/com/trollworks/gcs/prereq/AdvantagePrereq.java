@@ -60,6 +60,11 @@ public class AdvantagePrereq extends NameLevelPrereq {
     }
 
     @Override
+    public PrereqEditor createPrereqEditor(ListRow row, int depth) {
+        return new AdvantagePrereqEditor(row, this, depth);
+    }
+
+    @Override
     protected void initializeForLoad() {
         mNotesCriteria = new StringCriteria(StringCompareType.ANY, "");
     }
@@ -69,8 +74,8 @@ public class AdvantagePrereq extends NameLevelPrereq {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof AdvantagePrereq && super.equals(obj)) {
-            return mNotesCriteria.equals(((AdvantagePrereq) obj).mNotesCriteria);
+        if (obj instanceof AdvantagePrereq prereq && super.equals(obj)) {
+            return mNotesCriteria.equals(prereq.mNotesCriteria);
         }
         return false;
     }

@@ -36,8 +36,8 @@ public final class Workspace extends BaseWindow implements SignificantFrame, Jum
     /** @return The Workspace. */
     public static Workspace get() {
         Window window = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusedWindow();
-        if (window instanceof Workspace) {
-            return (Workspace) window;
+        if (window instanceof Workspace w) {
+            return w;
         }
         List<Workspace> windows = BaseWindow.getWindows(Workspace.class);
         if (!windows.isEmpty()) {
@@ -82,8 +82,8 @@ public final class Workspace extends BaseWindow implements SignificantFrame, Jum
         DockContainer dc = mDock.getFocusedDockContainer();
         if (dc != null) {
             Dockable dockable = dc.getCurrentDockable();
-            if (dockable instanceof JumpToSearchTarget) {
-                return ((JumpToSearchTarget) dockable).isJumpToSearchAvailable();
+            if (dockable instanceof JumpToSearchTarget target) {
+                return target.isJumpToSearchAvailable();
             }
         }
         return false;
@@ -94,8 +94,8 @@ public final class Workspace extends BaseWindow implements SignificantFrame, Jum
         DockContainer dc = mDock.getFocusedDockContainer();
         if (dc != null) {
             Dockable dockable = dc.getCurrentDockable();
-            if (dockable instanceof JumpToSearchTarget) {
-                ((JumpToSearchTarget) dockable).jumpToSearchField();
+            if (dockable instanceof JumpToSearchTarget target) {
+                target.jumpToSearchField();
             }
         }
     }
@@ -112,8 +112,8 @@ public final class Workspace extends BaseWindow implements SignificantFrame, Jum
     @Override
     public void adjustToFontChanges() {
         for (Dockable dockable : mDock.getDockables()) {
-            if (dockable instanceof FontAdjustable) {
-                ((FontAdjustable) dockable).adjustToFontChanges();
+            if (dockable instanceof FontAdjustable fa) {
+                fa.adjustToFontChanges();
             }
         }
     }

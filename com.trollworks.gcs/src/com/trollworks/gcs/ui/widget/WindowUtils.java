@@ -49,8 +49,8 @@ public final class WindowUtils {
             if (comp == null) {
                 return JOptionPane.getRootFrame();
             }
-            if (comp instanceof Window) {
-                return (Window) comp;
+            if (comp instanceof Window w) {
+                return w;
             }
             comp = comp.getParent();
         }

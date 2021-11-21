@@ -11,10 +11,10 @@
 
 package com.trollworks.gcs.skill;
 
+import com.trollworks.gcs.character.CollectedModels;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
-import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.RowEditor;
 import com.trollworks.gcs.utility.I18n;
@@ -143,7 +143,7 @@ public class Technique extends Skill {
     public Technique(DataFile dataFile, JsonMap m, LoadState state) throws IOException {
         this(dataFile);
         load(dataFile, m, state);
-        if (!(dataFile instanceof GURPSCharacter) && !(dataFile instanceof Template)) {
+        if (!(dataFile instanceof CollectedModels)) {
             mPoints = getDifficulty() == SkillDifficulty.A ? 1 : 2;
         }
     }

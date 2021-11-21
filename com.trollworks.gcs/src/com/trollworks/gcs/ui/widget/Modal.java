@@ -272,8 +272,8 @@ public class Modal extends JDialog {
             content.add(left, BorderLayout.WEST);
         }
         Component msgComp;
-        if (msg instanceof Component) {
-            msgComp = (Component) msg;
+        if (msg instanceof Component c) {
+            msgComp = c;
         } else {
             Label label = new Label(msg.toString());
             label.setTruncationPolicy(Label.WRAP);

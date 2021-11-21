@@ -361,8 +361,8 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
 
     private static boolean restoreFocusToKey(String key, Component panel) {
         if (key != null) {
-            if (panel instanceof PageField) {
-                if (key.equals(((PageField) panel).getTag())) {
+            if (panel instanceof PageField field) {
+                if (key.equals(field.getTag())) {
                     panel.requestFocus();
                     return true;
                 }

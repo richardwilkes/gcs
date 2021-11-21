@@ -36,8 +36,8 @@ public final class DecrementUsesCommand extends Command {
         if (focus instanceof OutlineProxy) {
             focus = ((OutlineProxy) focus).getRealOutline();
         }
-        if (focus instanceof UsesIncrementable) {
-            setEnabled(((UsesIncrementable) focus).canDecrementUses());
+        if (focus instanceof UsesIncrementable uses) {
+            setEnabled(uses.canDecrementUses());
         } else {
             setEnabled(false);
         }
@@ -46,8 +46,8 @@ public final class DecrementUsesCommand extends Command {
     @Override
     public void actionPerformed(ActionEvent event) {
         Component focus = getFocusOwner();
-        if (focus instanceof OutlineProxy) {
-            focus = ((OutlineProxy) focus).getRealOutline();
+        if (focus instanceof OutlineProxy proxy) {
+            focus = proxy.getRealOutline();
         }
         ((UsesIncrementable) focus).decrementUses();
     }

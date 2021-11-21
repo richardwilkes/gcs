@@ -232,8 +232,8 @@ public class Dock extends Panel implements MouseListener, MouseMotionListener, P
     }
 
     private void drawDockLayoutNode(Graphics gc, DockLayoutNode node, Rectangle clip) {
-        if (node instanceof DockLayout) {
-            drawDividers(gc, (DockLayout) node, clip);
+        if (node instanceof DockLayout dl) {
+            drawDividers(gc, dl, clip);
         } else if (node != null) {
             int layoutWidth = node.getWidth();
             if (layoutWidth > 0) {

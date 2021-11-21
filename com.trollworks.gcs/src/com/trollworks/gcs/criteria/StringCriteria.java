@@ -48,8 +48,8 @@ public class StringCriteria extends Criteria {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof StringCriteria sc) {
-            return mType == sc.mType && mQualifier.equalsIgnoreCase(sc.mQualifier);
+        if (obj instanceof StringCriteria criteria) {
+            return mType == criteria.mType && mQualifier.equalsIgnoreCase(criteria.mQualifier);
         }
         return false;
     }

@@ -60,6 +60,11 @@ public class SkillPrereq extends NameLevelPrereq {
     }
 
     @Override
+    public PrereqEditor createPrereqEditor(ListRow row, int depth) {
+        return new SkillPrereqEditor(row, this, depth);
+    }
+
+    @Override
     protected void initializeForLoad() {
         mSpecializationCriteria = new StringCriteria(StringCompareType.ANY, "");
     }

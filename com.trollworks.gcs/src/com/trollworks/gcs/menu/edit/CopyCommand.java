@@ -49,8 +49,8 @@ public final class CopyCommand extends Command {
     @Override
     public void actionPerformed(ActionEvent event) {
         Component comp = getFocusOwner();
-        if (comp instanceof JTextComponent) {
-            ((JTextComponent) comp).copy();
+        if (comp instanceof JTextComponent textComp) {
+            textComp.copy();
         } else {
             Copyable copyable = getTarget(Copyable.class);
             if (copyable != null && copyable.canCopySelection()) {

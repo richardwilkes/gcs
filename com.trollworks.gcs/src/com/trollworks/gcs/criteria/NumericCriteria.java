@@ -36,8 +36,8 @@ public abstract class NumericCriteria extends Criteria {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof NumericCriteria) {
-            return mType == ((NumericCriteria) obj).mType;
+        if (obj instanceof NumericCriteria criteria) {
+            return mType == criteria.mType;
         }
         return false;
     }

@@ -11,9 +11,9 @@
 
 package com.trollworks.gcs.spell;
 
+import com.trollworks.gcs.character.CollectedModels;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
-import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.menu.edit.Incrementable;
 import com.trollworks.gcs.menu.edit.SkillLevelIncrementable;
 import com.trollworks.gcs.menu.edit.TechLevelIncrementable;
@@ -37,23 +37,13 @@ import java.util.List;
 
 /** An outline specifically for spells. */
 public class SpellOutline extends ListOutline implements Incrementable, TechLevelIncrementable, SkillLevelIncrementable {
-    private static OutlineModel extractModel(DataFile dataFile) {
-        if (dataFile instanceof GURPSCharacter) {
-            return ((GURPSCharacter) dataFile).getSpellsModel();
-        }
-        if (dataFile instanceof Template) {
-            return ((Template) dataFile).getSpellsModel();
-        }
-        return ((ListFile) dataFile).getModel();
-    }
-
     /**
      * Create a new spells outline.
      *
-     * @param dataFile The owning data file.
+     * @param owner The owning data file.
      */
-    public SpellOutline(DataFile dataFile) {
-        this(dataFile, extractModel(dataFile));
+    public SpellOutline(CollectedModels owner) {
+        this(owner, owner.getSpellsModel());
     }
 
     /**
@@ -84,12 +74,12 @@ public class SpellOutline extends ListOutline implements Incrementable, TechLeve
 
     @Override
     public boolean canDecrement() {
-        return (mDataFile instanceof GURPSCharacter || mDataFile instanceof Template) && selectionHasLeafRows(true);
+        return (mDataFile instanceof CollectedModels) && selectionHasLeafRows(true);
     }
 
     @Override
     public boolean canIncrement() {
-        return (mDataFile instanceof GURPSCharacter || mDataFile instanceof Template) && selectionHasLeafRows(false);
+        return (mDataFile instanceof CollectedModels) && selectionHasLeafRows(false);
     }
 
     private boolean selectionHasLeafRows(boolean requirePointsAboveZero) {

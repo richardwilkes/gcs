@@ -66,7 +66,7 @@ public final class Json {
      *         or the value cannot be converted to a boolean.
      */
     public static boolean asBoolean(Object obj) {
-        return Boolean.TRUE.equals(obj) || obj instanceof String && Boolean.TRUE.toString().equalsIgnoreCase((String) obj);
+        return Boolean.TRUE.equals(obj) || obj instanceof String str && Boolean.TRUE.toString().equalsIgnoreCase(str);
     }
 
     /**

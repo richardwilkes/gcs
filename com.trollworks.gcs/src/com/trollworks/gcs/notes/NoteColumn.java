@@ -11,11 +11,11 @@
 
 package com.trollworks.gcs.notes;
 
+import com.trollworks.gcs.character.CollectedModels;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.equipment.FontIconCell;
-import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.widget.outline.Cell;
@@ -149,7 +149,7 @@ public enum NoteColumn {
      */
     public static void addColumns(Outline outline, DataFile dataFile) {
         GURPSCharacter character       = dataFile instanceof GURPSCharacter ? (GURPSCharacter) dataFile : null;
-        boolean        sheetOrTemplate = dataFile instanceof GURPSCharacter || dataFile instanceof Template;
+        boolean        sheetOrTemplate = dataFile instanceof CollectedModels;
         OutlineModel   model           = outline.getModel();
         for (NoteColumn one : values()) {
             Column column = new Column(one.ordinal(), one.toString(character), one.getToolTip(), one.getCell());

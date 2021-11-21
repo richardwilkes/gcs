@@ -11,12 +11,12 @@
 
 package com.trollworks.gcs.skill;
 
+import com.trollworks.gcs.character.CollectedModels;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.datafile.PageRefCell;
 import com.trollworks.gcs.equipment.FontIconCell;
-import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.FontAwesome;
 import com.trollworks.gcs.ui.Fonts;
 import com.trollworks.gcs.ui.widget.outline.Cell;
@@ -174,7 +174,7 @@ public enum SkillColumn {
 
         @Override
         public boolean shouldDisplay(DataFile dataFile) {
-            return dataFile instanceof Template || dataFile instanceof GURPSCharacter;
+            return dataFile instanceof CollectedModels;
         }
 
         @Override
@@ -227,7 +227,7 @@ public enum SkillColumn {
 
         @Override
         public boolean shouldDisplay(DataFile dataFile) {
-            return dataFile instanceof Template || dataFile instanceof GURPSCharacter;
+            return dataFile instanceof CollectedModels;
         }
 
         @Override
@@ -364,7 +364,7 @@ public enum SkillColumn {
      * @param dataFile The {@link DataFile} that data is being displayed for.
      */
     public static void addColumns(Outline outline, DataFile dataFile) {
-        boolean      sheetOrTemplate = dataFile instanceof GURPSCharacter || dataFile instanceof Template;
+        boolean      sheetOrTemplate = dataFile instanceof CollectedModels;
         OutlineModel model           = outline.getModel();
         for (SkillColumn one : values()) {
             if (one.shouldDisplay(dataFile)) {

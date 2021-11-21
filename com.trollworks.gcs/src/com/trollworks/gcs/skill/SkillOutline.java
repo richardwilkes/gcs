@@ -11,9 +11,9 @@
 
 package com.trollworks.gcs.skill;
 
+import com.trollworks.gcs.character.CollectedModels;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
-import com.trollworks.gcs.datafile.ListFile;
 import com.trollworks.gcs.menu.edit.Incrementable;
 import com.trollworks.gcs.menu.edit.SkillLevelIncrementable;
 import com.trollworks.gcs.menu.edit.TechLevelIncrementable;
@@ -36,23 +36,13 @@ import java.util.List;
 
 /** An outline specifically for skills. */
 public class SkillOutline extends ListOutline implements Incrementable, TechLevelIncrementable, SkillLevelIncrementable {
-    private static OutlineModel extractModel(DataFile dataFile) {
-        if (dataFile instanceof GURPSCharacter) {
-            return ((GURPSCharacter) dataFile).getSkillsModel();
-        }
-        if (dataFile instanceof Template) {
-            return ((Template) dataFile).getSkillsModel();
-        }
-        return ((ListFile) dataFile).getModel();
-    }
-
     /**
      * Create a new skills outline.
      *
-     * @param dataFile The owning data file.
+     * @param owner The owning data file.
      */
-    public SkillOutline(DataFile dataFile) {
-        this(dataFile, extractModel(dataFile));
+    public SkillOutline(CollectedModels owner) {
+        this(owner, owner.getSkillsModel());
     }
 
     /**

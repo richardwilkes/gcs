@@ -50,8 +50,8 @@ public class DRBonus extends Bonus {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof DRBonus && super.equals(obj)) {
-            return mLocation.equals(((DRBonus) obj).mLocation);
+        if (obj instanceof DRBonus drb && super.equals(obj)) {
+            return mLocation.equals(drb.mLocation);
         }
         return false;
     }

@@ -131,11 +131,11 @@ public class OpenPageReferenceCommand extends Command {
         ListOutline        outline = mOutline;
         if (outline == null) {
             Component comp = getFocusOwner();
-            if (comp instanceof OutlineProxy) {
-                comp = ((OutlineProxy) comp).getRealOutline();
+            if (comp instanceof OutlineProxy proxy) {
+                comp = proxy.getRealOutline();
             }
-            if (comp instanceof ListOutline) {
-                outline = (ListOutline) comp;
+            if (comp instanceof ListOutline listOutline) {
+                outline = listOutline;
             }
         }
         if (outline != null) {
@@ -144,8 +144,8 @@ public class OpenPageReferenceCommand extends Command {
                 Selection selection = model.getSelection();
                 if (selection.getCount() == 1) {
                     Row row = model.getFirstSelectedRow();
-                    if (row instanceof HasSourceReference) {
-                        ref = (HasSourceReference) row;
+                    if (row instanceof HasSourceReference r) {
+                        ref = r;
                     }
                 }
             }

@@ -34,12 +34,12 @@ public class PrereqsPanel extends BandedPanel {
     }
 
     private void addPrereqs(ListRow row, PrereqList prereqs, int depth) {
-        add(PrereqEditor.create(row, prereqs, depth++));
+        add(prereqs.createPrereqEditor(row, depth++));
         for (Prereq prereq : prereqs.getChildren()) {
-            if (prereq instanceof PrereqList) {
-                addPrereqs(row, (PrereqList) prereq, depth);
+            if (prereq instanceof PrereqList pl) {
+                addPrereqs(row, pl, depth);
             } else {
-                add(PrereqEditor.create(row, prereq, depth));
+                add(prereq.createPrereqEditor(row, depth));
             }
         }
     }

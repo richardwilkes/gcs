@@ -23,8 +23,8 @@ public interface Commitable {
         if (focus == null) {
             focus = focusManager.getFocusOwner();
         }
-        if (focus instanceof Commitable) {
-            ((Commitable) focus).attemptCommit();
+        if (focus instanceof Commitable c) {
+            c.attemptCommit();
         }
     }
 }

@@ -88,8 +88,8 @@ public abstract class ListFile extends DataFile {
     }
 
     private static void processRowForCategories(Row row, Set<String> set) {
-        if (row instanceof ListRow) {
-            set.addAll(((ListRow) row).getCategories());
+        if (row instanceof ListRow lr) {
+            set.addAll(lr.getCategories());
         }
         if (row.hasChildren()) {
             for (Row child : row.getChildren()) {

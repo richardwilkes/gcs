@@ -25,11 +25,11 @@ public class LookupAdvantageLevel implements ExpressionFunction {
     @Override
     public Object execute(Evaluator evaluator, String arguments) {
         VariableResolver resolver = evaluator.getVariableResolver();
-        if (resolver instanceof GURPSCharacter character) {
+        if (resolver instanceof GURPSCharacter gchar) {
             if (arguments.startsWith("\"") && arguments.endsWith("\"")) {
                 arguments = arguments.substring(1, arguments.length() - 1);
             }
-            for (Advantage advantage : character.getAdvantagesIterator(false)) {
+            for (Advantage advantage : gchar.getAdvantagesIterator(false)) {
                 if (advantage.getName().equalsIgnoreCase(arguments)) {
                     if (advantage.isLeveled()) {
                         double levels = advantage.getLevels();

@@ -46,8 +46,8 @@ public class ReactionBonus extends Bonus {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof ReactionBonus && super.equals(obj)) {
-            return mSituation.equals(((ReactionBonus) obj).mSituation);
+        if (obj instanceof ReactionBonus rb && super.equals(obj)) {
+            return mSituation.equals(rb.mSituation);
         }
         return false;
     }

@@ -11,10 +11,8 @@
 
 package com.trollworks.gcs.notes;
 
-import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.character.CollectedModels;
 import com.trollworks.gcs.datafile.DataFile;
-import com.trollworks.gcs.datafile.ListFile;
-import com.trollworks.gcs.template.Template;
 import com.trollworks.gcs.ui.widget.outline.ListOutline;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
 import com.trollworks.gcs.ui.widget.outline.OutlineModel;
@@ -28,23 +26,13 @@ import java.util.List;
 
 /** An outline specifically for notes. */
 public class NoteOutline extends ListOutline {
-    private static OutlineModel extractModel(DataFile dataFile) {
-        if (dataFile instanceof GURPSCharacter) {
-            return ((GURPSCharacter) dataFile).getNotesModel();
-        }
-        if (dataFile instanceof Template) {
-            return ((Template) dataFile).getNotesModel();
-        }
-        return ((ListFile) dataFile).getModel();
-    }
-
     /**
      * Create a new notes outline.
      *
-     * @param dataFile The owning data file.
+     * @param owner The owning data file.
      */
-    public NoteOutline(DataFile dataFile) {
-        this(dataFile, extractModel(dataFile));
+    public NoteOutline(CollectedModels owner) {
+        this(owner, owner.getNotesModel());
     }
 
     /**
@@ -67,7 +55,7 @@ public class NoteOutline extends ListOutline {
     public void convertDragRowsToSelf(List<Row> list) {
         OutlineModel       model              = getModel();
         Row[]              rows               = model.getDragRows();
-        boolean            forSheetOrTemplate = mDataFile instanceof GURPSCharacter || mDataFile instanceof Template;
+        boolean            forSheetOrTemplate = mDataFile instanceof CollectedModels;
         ArrayList<ListRow> process            = new ArrayList<>();
         for (Row element : rows) {
             Note note = new Note(mDataFile, (Note) element, true);

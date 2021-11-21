@@ -30,10 +30,10 @@ public class DockLayout implements DockLayoutNode, LayoutManager {
     /** @param processor A processor to execute for each {@link DockContainer}. */
     public void forEachDockContainer(DockContainerProcessor processor) {
         for (DockLayoutNode child : mChildren) {
-            if (child instanceof DockContainer) {
-                processor.processDockContainer((DockContainer) child);
-            } else if (child instanceof DockLayout) {
-                ((DockLayout) child).forEachDockContainer(processor);
+            if (child instanceof DockContainer dc) {
+                processor.processDockContainer(dc);
+            } else if (child instanceof DockLayout dl) {
+                dl.forEachDockContainer(processor);
             }
         }
     }
@@ -49,8 +49,8 @@ public class DockLayout implements DockLayoutNode, LayoutManager {
                 if (dc.isActive()) {
                     return dc;
                 }
-            } else if (child instanceof DockLayout) {
-                DockContainer dc = ((DockLayout) child).getFocusedDockContainerInternal();
+            } else if (child instanceof DockLayout dl) {
+                DockContainer dc =dl.getFocusedDockContainerInternal();
                 if (dc != null) {
                     return dc;
                 }
@@ -75,10 +75,10 @@ public class DockLayout implements DockLayoutNode, LayoutManager {
 
     private Dock getDockInternal() {
         for (DockLayoutNode child : mChildren) {
-            if (child instanceof DockContainer) {
-                return (Dock) ((DockContainer) child).getParent();
-            } else if (child instanceof DockLayout) {
-                Dock dock = ((DockLayout) child).getDockInternal();
+            if (child instanceof DockContainer dc) {
+                return (Dock) dc.getParent();
+            } else if (child instanceof DockLayout dl) {
+                Dock dock = dl.getDockInternal();
                 if (dock != null) {
                     return dock;
                 }
@@ -103,8 +103,8 @@ public class DockLayout implements DockLayoutNode, LayoutManager {
                 if (child == dc) {
                     return this;
                 }
-            } else if (child instanceof DockLayout) {
-                DockLayout layout = ((DockLayout) child).findLayoutInternal(dc);
+            } else if (child instanceof DockLayout dl) {
+                DockLayout layout = dl.findLayoutInternal(dc);
                 if (layout != null) {
                     return layout;
                 }

@@ -75,8 +75,8 @@ public class DockHeader extends Panel implements LayoutManager, DropTargetListen
         int count = getComponentCount();
         for (int i = 0; i < count; i++) {
             Component child = getComponent(i);
-            if (child instanceof DockTab) {
-                if (((DockTab) child).getDockable() == dockable) {
+            if (child instanceof DockTab dt) {
+                if (dt.getDockable() == dockable) {
                     remove(child);
                     return;
                 }
@@ -93,8 +93,8 @@ public class DockHeader extends Panel implements LayoutManager, DropTargetListen
         int count = getComponentCount();
         if (index >= 0 && index < count) {
             Component child = getComponent(index);
-            if (child instanceof DockTab) {
-                ((DockTab) child).updateTitle();
+            if (child instanceof DockTab dt) {
+                dt.updateTitle();
             }
         }
     }

@@ -67,6 +67,11 @@ public class ContainedWeightPrereq extends HasPrereq {
     }
 
     @Override
+    public PrereqEditor createPrereqEditor(ListRow row, int depth) {
+        return new ContainedWeightPrereqEditor(row, this, depth);
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;

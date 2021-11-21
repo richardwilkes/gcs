@@ -38,8 +38,8 @@ public final class FocusHelper {
      */
     public static void scrollIntoView(Component comp) {
         Container parent = comp.getParent();
-        if (parent instanceof JComponent) {
-            ((JComponent) parent).scrollRectToVisible(comp.getBounds());
+        if (parent instanceof JComponent p) {
+            p.scrollRectToVisible(comp.getBounds());
         }
     }
 
@@ -53,8 +53,8 @@ public final class FocusHelper {
     private void tryInitialFocus() {
         if (--mRemaining > 0 && !isTargetFocusOwner()) {
             if (mUseTransfer) {
-                if (mTarget instanceof Container) {
-                    KeyboardFocusManager.getCurrentKeyboardFocusManager().downFocusCycle((Container) mTarget);
+                if (mTarget instanceof Container c) {
+                    KeyboardFocusManager.getCurrentKeyboardFocusManager().downFocusCycle(c);
                 } else {
                     mTarget.transferFocus();
                 }

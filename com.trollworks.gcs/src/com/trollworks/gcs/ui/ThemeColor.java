@@ -63,7 +63,7 @@ public final class ThemeColor extends Color {
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof ThemeColor && ((ThemeColor) obj).mIndex == mIndex;
+        return obj instanceof ThemeColor tc && tc.mIndex == mIndex;
     }
 
     @Override
