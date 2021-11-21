@@ -186,7 +186,6 @@ public final class SheetSettingsWindow extends SettingsWindow<SheetSettings> imp
         Panel panel = new Panel(new PrecisionLayout().setMargins(0));
         mShowCollegeInSpells = addCheckbox(panel, I18n.text("Show the College column"), null,
                 mSheetSettings.showCollegeInSpells(), (b) -> {
-                    System.out.println(b + ": " + b.isChecked());
                     mSheetSettings.setShowCollegeInSpells(b.isChecked());
                     adjustResetButton();
                 });
