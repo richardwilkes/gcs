@@ -11,6 +11,7 @@
 
 package com.trollworks.gcs.advantage;
 
+import com.trollworks.gcs.ancestry.AncestryRef;
 import com.trollworks.gcs.character.FieldFactory;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.feature.FeaturesPanel;
@@ -74,6 +75,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     private Checkbox                              mSupernaturalType;
     private Checkbox                              mEnabledCheckBox;
     private PopupMenu<AdvantageContainerType>     mContainerTypePopup;
+    private PopupMenu<AncestryRef>                mAncestryPopup;
     private PopupMenu<SelfControlRoll>            mCRPopup;
     private PopupMenu<SelfControlRollAdjustments> mCRAdjPopup;
     private String                                mUserDesc;
@@ -256,7 +258,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     }
 
     private void addContainerTypeFields(Container parent) {
-        mContainerTypePopup = new PopupMenu<>(AdvantageContainerType.values(), null);
+        mContainerTypePopup = new PopupMenu<>(AdvantageContainerType.values(), (popup) -> mAncestryPopup.setEnabled(popup.getSelectedItem() == AdvantageContainerType.RACE));
         mContainerTypePopup.setSelectedItem(mRow.getContainerType(), false);
         mContainerTypePopup.setToolTipText(I18n.text("The type of container this is"));
         addLabel(parent, I18n.text("Container Type"));
@@ -266,6 +268,13 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         addLabel(wrapper, I18n.text("Page Reference")).setLeftMargin(10);
         wrapper.add(mReferenceField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         parent.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+
+        mAncestryPopup = new PopupMenu<>(AncestryRef.choices(), null);
+        mAncestryPopup.setSelectedItem(mRow.getAncestryRef(), false);
+        mAncestryPopup.setToolTipText(I18n.text("Controls how the randomizable portions of the character sheet are resolved when the container type is set to Race"));
+        mAncestryPopup.setEnabled(mRow.getContainerType() == AdvantageContainerType.RACE);
+        addLabel(parent, I18n.text("Ancestry"));
+        parent.add(mAncestryPopup, new PrecisionLayoutData().setGrabHorizontalSpace(true));
     }
 
     private EditorField createField(String text, String prototype, String tooltip) {
@@ -286,6 +295,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         modified |= mRow.setEnabled(enabled());
         if (mRow.canHaveChildren()) {
             modified |= mRow.setContainerType(mContainerTypePopup.getSelectedItem());
+            modified |= mRow.setAncestryRef(mAncestryPopup.getSelectedItem());
         } else {
             int type = 0;
 

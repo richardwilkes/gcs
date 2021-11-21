@@ -46,6 +46,7 @@ public class FileType {
     public static final FileType KEY_SETTINGS            = new FileType(I18n.text("Key Binding Settings"), FontAwesome.FILE, Fonts.FONT_ICON_FILE_FA, true, false, "keys");
     public static final FileType PAGE_REF_SETTINGS       = new FileType(I18n.text("Page Reference Settings"), FontAwesome.FILE, Fonts.FONT_ICON_FILE_FA, true, false, "refs");
     public static final FileType SHEET_SETTINGS          = new FileType(I18n.text("Sheet Settings"), FontAwesome.FILE, Fonts.FONT_ICON_FILE_FA, true, false, "sheet");
+    public static final FileType ANCESTRY_SETTINGS       = new FileType(I18n.text("Ancestry Settings"), FontAwesome.FILE, Fonts.FONT_ICON_FILE_FA, true, false, "ancestry");
     public static final FileType NAME_GENERATOR_SETTINGS = new FileType(I18n.text("Name Generator Settings"), FontAwesome.FILE, Fonts.FONT_ICON_FILE_FA, true, false, "names");
     public static final FileType CALENDAR_SETTINGS       = new FileType(I18n.text("Calendar Settings"), FontAwesome.FILE, Fonts.FONT_ICON_FILE_FA, true, false, "calendar");
 

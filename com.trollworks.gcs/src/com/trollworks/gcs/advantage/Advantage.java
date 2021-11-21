@@ -12,6 +12,7 @@
 package com.trollworks.gcs.advantage;
 
 import com.trollworks.gcs.ancestry.Ancestry;
+import com.trollworks.gcs.ancestry.AncestryRef;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.datafile.LoadState;
@@ -96,7 +97,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
     private List<WeaponStats>          mWeapons;
     private List<AdvantageModifier>    mModifiers;
     private String                     mUserDesc;
-    private Ancestry                   mAncestry;
+    private AncestryRef                mAncestryRef;
     private boolean                    mAllowHalfLevels;
     private boolean                    mHalfLevel;
     private boolean                    mRoundCostDown;
@@ -120,6 +121,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         mWeapons = new ArrayList<>();
         mModifiers = new ArrayList<>();
         mUserDesc = "";
+        mAncestryRef = AncestryRef.DEFAULT;
     }
 
     /**
@@ -145,6 +147,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         mReference = advantage.mReference;
         mContainerType = advantage.mContainerType;
         mUserDesc = dataFile instanceof GURPSCharacter ? advantage.mUserDesc : "";
+        mAncestryRef = AncestryRef.DEFAULT;
         mWeapons = new ArrayList<>(advantage.mWeapons.size());
         for (WeaponStats weapon : advantage.mWeapons) {
             if (weapon instanceof MeleeWeaponStats) {
@@ -214,7 +217,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         mWeapons = new ArrayList<>();
         mModifiers = new ArrayList<>();
         mUserDesc = "";
-        mAncestry = null;
+        mAncestryRef = AncestryRef.DEFAULT;
     }
 
     @Override
@@ -274,7 +277,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         }
         mReference = m.getString(KEY_REFERENCE);
         if (canHaveChildren() && mContainerType == AdvantageContainerType.RACE) {
-            mAncestry = m.has(KEY_ANCESTRY) ? new Ancestry(m.getMap(KEY_ANCESTRY)) : new Ancestry();
+            mAncestryRef = AncestryRef.get(m.getStringWithDefault(KEY_ANCESTRY, AncestryRef.DEFAULT.name()));
         }
     }
 
@@ -328,11 +331,7 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         }
         w.keyValueNot(KEY_REFERENCE, mReference, "");
         if (canHaveChildren() && mContainerType == AdvantageContainerType.RACE) {
-            if (mAncestry == null) {
-                mAncestry = new Ancestry();
-            }
-            w.key(KEY_ANCESTRY);
-            mAncestry.save(w);
+            w.keyValue(KEY_ANCESTRY, mAncestryRef.name());
         }
 
         // Emit the calculated values for third parties
@@ -994,12 +993,22 @@ public class Advantage extends ListRow implements HasSourceReference, Switchable
         return AdvantageColumn.values()[column.getID()].getToolTip(this);
     }
 
+    public AncestryRef getAncestryRef() {
+        return mAncestryRef;
+    }
+
+    public boolean setAncestryRef(AncestryRef ref) {
+        if (mAncestryRef.compareTo(ref) != 0) {
+            mAncestryRef = ref;
+            notifyOfChange();
+            return true;
+        }
+        return false;
+    }
+
     public Ancestry getAncestry() {
         if (canHaveChildren() && mContainerType == AdvantageContainerType.RACE) {
-            if (mAncestry == null) {
-                mAncestry = new Ancestry();
-            }
-            return mAncestry;
+            return mAncestryRef.ancestry();
         }
         return null;
     }

@@ -12,16 +12,20 @@
 package com.trollworks.gcs.ancestry;
 
 import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.utility.json.Json;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 /** Holds details necessary to generate ancestry-specific customizations. */
 public class Ancestry {
-    private static final Ancestry                      DEFAULT              = new Ancestry();
     private static final String                        KEY_COMMON_OPTIONS   = "common_options";
     private static final String                        KEY_GENDER_OPTIONS   = "gender_options";
     private static final String                        KEY_GENDERED_OPTIONS = "gendered_options";
@@ -40,11 +44,14 @@ public class Ancestry {
         mGenderOptions.add(new WeightedAncestryOptions(1, female));
     }
 
-    public Ancestry(JsonMap m) {
-        if (m.has(KEY_COMMON_OPTIONS)) {
-            mCommonOptions = new AncestryOptions(m.getMap(KEY_COMMON_OPTIONS));
+    public Ancestry(Path path) throws IOException {
+        try (BufferedReader fileReader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+            JsonMap m = Json.asMap(Json.parse(fileReader));
+            if (m.has(KEY_COMMON_OPTIONS)) {
+                mCommonOptions = new AncestryOptions(m.getMap(KEY_COMMON_OPTIONS));
+            }
+            mGenderOptions = WeightedOption.loadList(m, KEY_GENDER_OPTIONS, WeightedAncestryOptions.class);
         }
-        mGenderOptions = WeightedOption.loadList(m, KEY_GENDER_OPTIONS, WeightedAncestryOptions.class);
     }
 
     public void save(JsonWriter w) throws IOException {
@@ -62,7 +69,11 @@ public class Ancestry {
         if (choice != null) {
             return choice.mValue.mName;
         }
-        return DEFAULT.getRandomGender();
+        Ancestry ancestry = AncestryRef.DEFAULT.ancestry();
+        if (ancestry != this) {
+            return ancestry.getRandomGender();
+        }
+        return "Male";
     }
 
     private WeightedAncestryOptions getGenderedOptions(String gender) {
@@ -83,7 +94,11 @@ public class Ancestry {
         if (mCommonOptions != null && !mCommonOptions.mHeightFormula.isBlank()) {
             return mCommonOptions.getRandomHeightInInches(gchar);
         }
-        return DEFAULT.getRandomHeightInInches(gchar, gender);
+        Ancestry ancestry = AncestryRef.DEFAULT.ancestry();
+        if (ancestry != this) {
+            return ancestry.getRandomHeightInInches(gchar, gender);
+        }
+        return 64;
     }
 
     public double getRandomWeightInPounds(GURPSCharacter gchar, String gender) {
@@ -94,7 +109,11 @@ public class Ancestry {
         if (mCommonOptions != null && !mCommonOptions.mWeightFormula.isBlank()) {
             return mCommonOptions.getRandomWeightInPounds(gchar);
         }
-        return DEFAULT.getRandomWeightInPounds(gchar, gender);
+        Ancestry ancestry = AncestryRef.DEFAULT.ancestry();
+        if (ancestry != this) {
+            return ancestry.getRandomWeightInPounds(gchar, gender);
+        }
+        return 140;
     }
 
     public int getRandomAge(GURPSCharacter gchar, String gender) {
@@ -105,7 +124,11 @@ public class Ancestry {
         if (mCommonOptions != null && !mCommonOptions.mAgeFormula.isBlank()) {
             return mCommonOptions.getRandomAge(gchar);
         }
-        return DEFAULT.getRandomAge(gchar, gender);
+        Ancestry ancestry = AncestryRef.DEFAULT.ancestry();
+        if (ancestry != this) {
+            return ancestry.getRandomAge(gchar, gender);
+        }
+        return 20;
     }
 
     public String getRandomHair(String gender) {
@@ -116,7 +139,11 @@ public class Ancestry {
         if (mCommonOptions != null && !mCommonOptions.mHairOptions.isEmpty()) {
             return mCommonOptions.getRandomHair();
         }
-        return DEFAULT.getRandomHair(gender);
+        Ancestry ancestry = AncestryRef.DEFAULT.ancestry();
+        if (ancestry != this) {
+            return ancestry.getRandomHair(gender);
+        }
+        return "Brown";
     }
 
     public String getRandomEyeColor(String gender) {
@@ -127,7 +154,11 @@ public class Ancestry {
         if (mCommonOptions != null && !mCommonOptions.mEyeOptions.isEmpty()) {
             return mCommonOptions.getRandomEyeColor();
         }
-        return DEFAULT.getRandomEyeColor(gender);
+        Ancestry ancestry = AncestryRef.DEFAULT.ancestry();
+        if (ancestry != this) {
+            return ancestry.getRandomEyeColor(gender);
+        }
+        return "Brown";
     }
 
     public String getRandomSkin(String gender) {
@@ -138,7 +169,11 @@ public class Ancestry {
         if (mCommonOptions != null && !mCommonOptions.mSkinOptions.isEmpty()) {
             return mCommonOptions.getRandomSkin();
         }
-        return DEFAULT.getRandomSkin(gender);
+        Ancestry ancestry = AncestryRef.DEFAULT.ancestry();
+        if (ancestry != this) {
+            return ancestry.getRandomSkin(gender);
+        }
+        return "Brown";
     }
 
     public String getRandomHandedness(String gender) {
@@ -149,7 +184,11 @@ public class Ancestry {
         if (mCommonOptions != null && !mCommonOptions.mHandednessOptions.isEmpty()) {
             return mCommonOptions.getRandomHandedness();
         }
-        return DEFAULT.getRandomHandedness(gender);
+        Ancestry ancestry = AncestryRef.DEFAULT.ancestry();
+        if (ancestry != this) {
+            return ancestry.getRandomHandedness(gender);
+        }
+        return "Right";
     }
 
     public String getRandomName(String gender) {
@@ -160,6 +199,10 @@ public class Ancestry {
         if (mCommonOptions != null && mCommonOptions.mNameGenerators != null && !mCommonOptions.mNameGenerators.isEmpty()) {
             return mCommonOptions.getRandomName();
         }
-        return DEFAULT.getRandomName(gender);
+        Ancestry ancestry = AncestryRef.DEFAULT.ancestry();
+        if (ancestry != this) {
+            return ancestry.getRandomName(gender);
+        }
+        return "";
     }
 }
