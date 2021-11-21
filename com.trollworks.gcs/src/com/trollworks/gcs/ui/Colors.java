@@ -92,7 +92,7 @@ public final class Colors {
             new Color(24, 24, 24));
     public static final ThemeColor ON_EDITABLE             = new ThemeColor("on_editable", I18n.text("On Editable"),
             new Color(0, 0, 160),
-            new Color(0, 153, 153));
+            new Color(100, 153, 153));
     public static final ThemeColor EDITABLE_BORDER         = new ThemeColor("editable_border", I18n.text("Editable Border"),
             new Color(192, 192, 192),
             new Color(96, 96, 96));
@@ -122,7 +122,7 @@ public final class Colors {
             new Color(160, 160, 160));
     public static final ThemeColor ACCENT                  = new ThemeColor("accent", I18n.text("Accent"),
             new Color(0, 102, 102),
-            new Color(0, 153, 153));
+            new Color(100, 153, 153));
 
     public static final ThemeColor CONTROL              = new ThemeColor("control", I18n.text("Control"),
             new Color(248, 248, 255),
