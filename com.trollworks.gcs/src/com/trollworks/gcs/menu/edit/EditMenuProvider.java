@@ -46,6 +46,7 @@ public final class EditMenuProvider {
         cmds.add(JumpToSearchCommand.INSTANCE);
         cmds.add(SwapDefaultsCommand.INSTANCE);
         cmds.add(ConvertToContainer.INSTANCE);
+        cmds.add(RandomizeForAncestryCommand.INSTANCE);
         return cmds;
     }
 
@@ -80,6 +81,8 @@ public final class EditMenuProvider {
         stateMenu.addSeparator();
         stateMenu.add(new DynamicMenuItem(SwapDefaultsCommand.INSTANCE));
         menu.add(stateMenu);
+        menu.addSeparator();
+        menu.add(new DynamicMenuItem(RandomizeForAncestryCommand.INSTANCE));
         menu.addSeparator();
         menu.add(new DynamicMenuItem(JumpToSearchCommand.INSTANCE));
         DynamicMenuEnabler.add(stateMenu);

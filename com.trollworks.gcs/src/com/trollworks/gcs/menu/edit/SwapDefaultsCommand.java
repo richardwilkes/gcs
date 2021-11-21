@@ -52,5 +52,4 @@ public final class SwapDefaultsCommand extends Command {
         }
         ((SkillOutline) focus).swapDefaults();
     }
-
 }
