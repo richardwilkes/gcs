@@ -256,7 +256,7 @@ public final class SheetSettingsWindow extends SettingsWindow<SheetSettings> imp
         });
         mUseDamageDiceConversion.setToolTipText(I18n.text("Converts all damage dice to the given target using mathematical averages."));
         panel.add(mUseDamageDiceConversion);
-        Integer[] dieValues = {3, 4, 6, 8, 10, 12, 20};
+        Integer[] dieValues = {3, 4, 5, 6, 8, 9, 10, 12, 14, 16, 20};
         mDamageDiceConversionDiePopup = new PopupMenu<Integer>(dieValues, (p) -> {
             mSheetSettings.setDamageDiceConversionDie(p.getSelectedItem());
         });
