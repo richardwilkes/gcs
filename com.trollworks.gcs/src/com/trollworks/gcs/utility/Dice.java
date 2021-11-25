@@ -238,6 +238,15 @@ public class Dice implements Cloneable {
         }
     }
 
+    public void percentAdd(double percent) {
+        if (percent != 0 && mSides > 1) {
+            double average = (mSides + 1) / 2.0;
+            double base    = Math.floor(((mCount * average) + mModifier) * percent);
+            mCount += (int) base / average;
+            mModifier += (int) Math.round(base % average);
+        }
+    }
+
     /** @return The number of dice to roll. */
     public int getDieCount() {
         return mCount;

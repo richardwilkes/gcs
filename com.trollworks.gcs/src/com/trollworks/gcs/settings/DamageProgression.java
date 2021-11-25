@@ -154,6 +154,58 @@ public enum DamageProgression {
             dice.add(2);
             return dice;
         }
+    },
+    PHOENIX_D3 {
+        @Override
+        public String toString() {
+            return I18n.text("PhoenixFlame d3 Damage");
+        }
+
+        @Override
+        public String getFootnote() {
+            return I18n.text("Houserules that use d3s instead of d6s for Damage. See: https://github.com/richardwilkes/gcs/pull/393");
+        }
+
+        @Override
+        public Dice calculateThrust(int strength) {
+            if (strength < 10) {
+                // big ugly switch statement
+                Dice dice = new Dice();
+                switch (strength) {
+                case 9:
+                    dice = new Dice(1, 3, 0, 1);
+                    break;
+                case 8:
+                case 7:
+                    dice = new Dice(1, 3, -1, 1);
+                    break;
+                case 6:
+                case 5:
+                    dice = new Dice(1, 6, -4, 1);
+                    break;
+                case 4:
+                case 3:
+                    dice = new Dice(1, 6, -5, 1);
+                    break;
+                case 2:
+                case 1:
+                case 0:
+                    dice = new Dice(1, 6, -6, 1);
+                    break;
+                }
+                return dice;
+            } else {
+                int  base = 2 + (strength - 10);
+                int  mod  = base % 2;
+                Dice dice = new Dice(base / 2, 3, mod, 1);
+                return dice;
+            }
+        }
+
+        @Override
+        public Dice calculateSwing(int strength) {
+            return PHOENIX_D3.calculateThrust(strength);
+        }
     };
 
     public String getTooltip() {

@@ -29,6 +29,7 @@ import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.text.Numbers;
+import com.trollworks.gcs.settings.DamageProgression;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -45,6 +46,7 @@ public class WeaponDamage {
     private static final String KEY_FRAGMENTATION_ARMOR_DIVISOR = "fragmentation_armor_divisor";
     private static final String KEY_FRAGMENTATION_TYPE          = "fragmentation_type";
     private static final String KEY_MODIFIER_PER_DIE            = "modifier_per_die";
+    private static final String KEY_PERCENT_BONUS               = "percent_bonus";
 
     private WeaponStats    mOwner;
     private String         mType;
@@ -55,12 +57,14 @@ public class WeaponDamage {
     private double         mFragmentationArmorDivisor;
     private String         mFragmentationType;
     private int            mModifierPerDie;
+    private Integer        mPercentBonus;
 
     public WeaponDamage(WeaponStats owner) {
         mType = "";
         mOwner = owner;
         mST = WeaponSTDamage.NONE;
         mArmorDivisor = 1;
+        mPercentBonus = 0;
     }
 
     public WeaponDamage(JsonMap m, WeaponStats owner) {
@@ -71,6 +75,7 @@ public class WeaponDamage {
             mBase = new Dice(m.getString(KEY_BASE));
         }
         mArmorDivisor = m.getDoubleWithDefault(KEY_ARMOR_DIVISOR, 1);
+        mPercentBonus = m.getIntWithDefault(KEY_PERCENT_BONUS, 0);
         mModifierPerDie = m.getInt(KEY_MODIFIER_PER_DIE);
         if (m.has(KEY_FRAGMENTATION)) {
             mFragmentation = new Dice(m.getString(KEY_FRAGMENTATION));
@@ -96,6 +101,10 @@ public class WeaponDamage {
                 w.keyValue(KEY_BASE, base);
             }
         }
+        if (mPercentBonus != 0) {
+            Integer percentbonus = mPercentBonus;
+            w.keyValue(KEY_PERCENT_BONUS, percentbonus);
+        }
         if (mArmorDivisor != 1) {
             w.keyValue(KEY_ARMOR_DIVISOR, mArmorDivisor);
         }
@@ -118,6 +127,7 @@ public class WeaponDamage {
         if (mBase != null) {
             other.mBase = mBase.clone();
         }
+        other.mPercentBonus = mPercentBonus;
         other.mArmorDivisor = mArmorDivisor;
         other.mModifierPerDie = mModifierPerDie;
         if (mFragmentation != null) {
@@ -143,7 +153,7 @@ public class WeaponDamage {
             return true;
         }
         if (obj instanceof WeaponDamage other) {
-            if (mType.equals(other.mType) && mST == other.mST && mArmorDivisor == other.mArmorDivisor && mModifierPerDie == other.mModifierPerDie && Objects.equals(mBase, other.mBase)) {
+            if (mType.equals(other.mType) && mST == other.mST && mArmorDivisor == other.mArmorDivisor && mPercentBonus == other.mPercentBonus && mModifierPerDie == other.mModifierPerDie && Objects.equals(mBase, other.mBase)) {
                 if (mFragmentation == null) {
                     return other.mFragmentation == null;
                 }
@@ -236,6 +246,17 @@ public class WeaponDamage {
         }
     }
 
+    public Integer getPercentBonus() {
+        return mPercentBonus;
+    }
+
+    public void setPercentBonus(Integer percentBonus) {
+        if (mPercentBonus != percentBonus) {
+            mPercentBonus = percentBonus;
+            notifyOfChange();
+        }
+    }
+
     /** @return The damage, fully resolved for the user's sw or thr, if possible. */
     public String getResolvedDamage() {
         return getResolvedDamage(null);
@@ -269,10 +290,19 @@ public class WeaponDamage {
                         base.multiply(advantage.getLevels());
                     }
                 }
+                double percent = 0.0;
+                if (mOwner.mOwner.getDataFile().getSheetSettings().useBaseDamagePercentBonus()) {
+                    percent = mPercentBonus / 100.0;
+                }
                 switch (mST) {
-                case SW -> base = addDice(base, character.getSwing(st));
+                case SW -> {
+                    Dice swing = character.getSwing(st);
+                    swing.percentAdd(percent);
+                    base = addDice(base, swing);
+                }
                 case SW_LEVELED -> {
                     Dice swing = character.getSwing(st);
+                    swing.percentAdd(percent);
                     if (mOwner.mOwner instanceof Advantage advantage) {
                         if (advantage.isLeveled()) {
                             swing.multiply(advantage.getLevels());
@@ -280,9 +310,14 @@ public class WeaponDamage {
                     }
                     base = addDice(base, swing);
                 }
-                case THR -> base = addDice(base, character.getThrust(st));
+                case THR -> {
+                    Dice thrust = character.getThrust(st);
+                    thrust.percentAdd(percent);
+                    base = addDice(base, thrust);
+                }
                 case THR_LEVELED -> {
                     Dice thrust = character.getThrust(st);
+                    thrust.percentAdd(percent);
                     if (mOwner.mOwner instanceof Advantage advantage) {
                         if (advantage.isLeveled()) {
                             thrust.multiply(advantage.getLevels());
@@ -341,16 +376,46 @@ public class WeaponDamage {
                     LeveledAmount lvlAmt = bonus.getAmount();
                     int           amt    = lvlAmt.getIntegerAmount();
                     if (lvlAmt.isPerLevel()) {
-                        base.add(amt * base.getDieCount());
+                        if (mOwner.mOwner.getDataFile().getSheetSettings().getDamageProgression() == DamageProgression.PHOENIX_D3 && base.getDieSides() == 3) {
+                            base.add(amt * Math.max(Math.floorDiv(base.getDieCount(), 2), 1));
+                        } else {
+                            base.add(amt * base.getDieCount());
+                        }
+
                     } else {
                         base.add(amt);
                     }
                 }
                 if (mModifierPerDie != 0) {
-                    base.add(mModifierPerDie * base.getDieCount());
+                    if (mOwner.mOwner.getDataFile().getSheetSettings().getDamageProgression() == DamageProgression.PHOENIX_D3 && base.getDieSides() == 3) {
+                        base.add(mModifierPerDie * Math.max(Math.floorDiv(base.getDieCount(), 2), 1));
+                    } else {
+                        base.add(mModifierPerDie * base.getDieCount());
+                    }
                 }
+                if (mOwner.mOwner.getDataFile().getSheetSettings().useDamageDiceConversion() && mOwner.mOwner.getDataFile().getSheetSettings().getDamageDiceConversionDie() != base.getDieSides()) {
+                    // Division by 0 would be bad, and 1 sided die don't exist, so we guard against that.
+                    Integer conversionDie = mOwner.mOwner.getDataFile().getSheetSettings().getDamageDiceConversionDie();
+                    if (conversionDie > 1) {
+                        // Converts dice to raw averages, then halves them and takes any remainder to get a +1
+                        double conversionDieAverage = (conversionDie + 1) / 2.0;
+                        double dicevalue            = (base.getDieCount() * (base.getDieSides() + 1)) / 2.0;
+                        double newcount             = (dicevalue / conversionDieAverage);
+                        int    newmod               = (int) Math.round(dicevalue % conversionDieAverage);
+                        int    count                = (int) newcount;
+                        if (newcount < 1) {
+                            newmod = (int) Math.round(dicevalue - conversionDieAverage);
+                            count = 1;
+                        }
+                        Dice newDice = new Dice(count, conversionDie, newmod + base.getModifier(), base.getMultiplier());//we shouldn't have to touch the multiplier because it'll be the same
+                        base = newDice;
+
+                    }
+                }
+
                 boolean       convertModifiersToExtraDice = mOwner.mOwner.getDataFile().getSheetSettings().useModifyingDicePlusAdds();
                 StringBuilder buffer                      = new StringBuilder();
+
                 if (base.getDieCount() != 0 || base.getModifier() != 0) {
                     buffer.append(base.toString(convertModifiersToExtraDice));
                 }
@@ -418,8 +483,32 @@ public class WeaponDamage {
         }
     }
 
-    private static Dice addDice(Dice left, Dice right) {
-        return new Dice(left.getDieCount() + right.getDieCount(), Math.max(left.getDieSides(), right.getDieSides()), left.getModifier() + right.getModifier(), left.getMultiplier() + right.getMultiplier() - 1);
+    private Dice addDice(Dice left, Dice right) {
+        // Check if the sides are different, otherwise just add as normal.
+        String behavior = mOwner.mOwner.getDataFile().getSheetSettings().getDiceAdditionBehavior();
+        // set sides to 6 as default.
+        int sides = 6;
+        if (mOwner.mOwner.getDataFile().getSheetSettings().useDamageDiceConversion()) {
+            sides = mOwner.mOwner.getDataFile().getSheetSettings().getDamageDiceConversionDie();
+        }
+        if (left.getDieSides() != right.getDieSides() && behavior == "Lower" || behavior == "Higher") {
+            //get the larger die
+            if (behavior == "Lower") {
+                sides = Math.min(left.getDieSides(), right.getDieSides());
+            } else if (behavior == "Higher") {
+                sides = Math.max(left.getDieSides(), right.getDieSides());
+            }
+            double dicevalue = (sides + 1) / 2.0;
+            // Converts both sides to raw averages, then halves them and takes any remainder to get the mod
+            double leftval  = (left.getDieCount() * (left.getDieSides() + 1) / 2.0) * left.getMultiplier();
+            double rightval = (right.getDieCount() * (right.getDieSides() + 1) / 2.0) * right.getMultiplier();
+            int    dieCount = (int) ((leftval + rightval) / dicevalue);
+            int    baseMod  = (int) Math.round((leftval + rightval) % dicevalue);
+            return new Dice(dieCount, sides, baseMod + left.getModifier() + right.getModifier(), 1);
+        } else {
+            //Just Add is the default behavior.
+            return new Dice(left.getDieCount() + right.getDieCount(), Math.max(left.getDieSides(), right.getDieSides()), left.getModifier() + right.getModifier(), left.getMultiplier() + right.getMultiplier() - 1);
+        }
     }
 
     @Override

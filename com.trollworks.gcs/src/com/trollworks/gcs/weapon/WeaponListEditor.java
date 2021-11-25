@@ -70,6 +70,7 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
     private WeaponStats                  mWeapon;
     private Class<? extends WeaponStats> mWeaponClass;
     private boolean                      mRespond;
+    private PopupMenu<Integer>           mPercentBonusPopup;
 
     /**
      * Creates a new WeaponListEditor.
@@ -151,7 +152,7 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
         addLabel(editorPanel, notes);
         editorPanel.add(mUsageNotes, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
 
-        Panel damagePanel = new Panel(new PrecisionLayout().setMargins(0).setColumns(8));
+        Panel damagePanel = new Panel(new PrecisionLayout().setMargins(0).setColumns(11));
         mDamageSTPopup = new PopupMenu<>(WeaponSTDamage.values(), (p) -> {
             if (mRespond) {
                 mWeapon.getDamage().setWeaponSTDamage(mDamageSTPopup.getSelectedItem());
@@ -162,6 +163,20 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
         mDamageSTPopup.setToolTipText(I18n.text("Strength Damage Type"));
         editorPanel.add(new Label(I18n.text("Damage")), new PrecisionLayoutData().setFillHorizontalAlignment());
         damagePanel.add(mDamageSTPopup, new PrecisionLayoutData().setFillHorizontalAlignment());
+        Integer[] percentages = {0, 25, 50, 75, 100, 125, 150};
+        mPercentBonusPopup = new PopupMenu<>(percentages, (p) -> {
+            if (mRespond) {
+                mWeapon.getDamage().setPercentBonus(mPercentBonusPopup.getSelectedItem());
+                adjustOutlineToContent();
+            }
+        });
+        if (mOwner.getDataFile().getSheetSettings().useBaseDamagePercentBonus()) {
+            addLabel(damagePanel, "+");
+            damagePanel.add(mPercentBonusPopup, new PrecisionLayoutData().setFillHorizontalAlignment());
+            addLabel(damagePanel, "%");
+        }
+        mPercentBonusPopup.setSelectedItem(mWeapon.getDamage().getPercentBonus(), true);
+
         mDamageBase = addField(null, damagePanel, "9999999d+99x999", I18n.text("Base Damage"));
         addLabel(damagePanel, "(");
         mDamageArmorDivisor = addField(null, damagePanel, "100", I18n.text("Armor Divisor"));
@@ -352,6 +367,7 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
         mUsageNotes.setText(mWeapon.getUsageNotes());
         WeaponDamage damage = mWeapon.getDamage();
         mDamageSTPopup.setSelectedItem(damage.getWeaponSTDamage(), true);
+        mPercentBonusPopup.setSelectedItem(damage.getPercentBonus(), true);
         mDamageBase.setValue(damage.getBase() != null ? damage.getBase().toString() : "");
         mDamageArmorDivisor.setValue(getArmorDivisorForDisplay(damage.getArmorDivisor()));
         mDamageType.setValue(damage.getType());
@@ -386,6 +402,7 @@ public abstract class WeaponListEditor extends Panel implements ActionListener, 
         mFragArmorDivisor.setEnabled(enabled);
         mFragType.setEnabled(enabled);
         mStrength.setEnabled(enabled);
+        mPercentBonusPopup.setEnabled(enabled);
     }
 
     private void docChanged(DocumentEvent event) {
