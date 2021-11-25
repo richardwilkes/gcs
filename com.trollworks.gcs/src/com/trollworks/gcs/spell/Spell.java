@@ -1054,7 +1054,7 @@ public class Spell extends CollectedListRow implements HasSourceReference {
     }
 
     public String getRituals() {
-        if (!((mDataFile instanceof GURPSCharacter) && mDataFile.getSheetSettings().showSpellAdj())) {
+        if (canHaveChildren() || !((mDataFile instanceof GURPSCharacter) && mDataFile.getSheetSettings().showSpellAdj())) {
             return "";
         }
         int level = mLevel.getLevel();
