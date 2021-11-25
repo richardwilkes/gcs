@@ -87,7 +87,7 @@ public enum DamageProgression {
     NO_SCHOOL_GROGNARD_DAMAGE {
         @Override
         public String toString() {
-            return I18n.text("No School Grognard Damage");
+            return I18n.text("No School Grognard");
         }
 
         @Override
@@ -153,6 +153,34 @@ public enum DamageProgression {
             Dice dice = calculateThrust(strength);
             dice.add(2);
             return dice;
+        }
+    },
+    PHOENIX_FLAME_D3 {
+        @Override
+        public String toString() {
+            return I18n.text("PhoenixFlame d3");
+        }
+
+        @Override
+        public String getFootnote() {
+            return I18n.text("Houserule that use d3s instead of d6s for Damage. See: https://github.com/richardwilkes/gcs/pull/393");
+        }
+
+        @Override
+        public Dice calculateThrust(int strength) {
+            if (strength < 7) {
+                return new Dice(1, 6, ((Math.max(strength, 1) + 1) / 2) - 7, 1);
+            }
+            if (strength < 10) {
+                return new Dice(1, 3, ((strength + 1) / 2) - 5, 1);
+            }
+            int base = strength - 8;
+            return new Dice(base / 2, 3, base % 2, 1);
+        }
+
+        @Override
+        public Dice calculateSwing(int strength) {
+            return calculateThrust(strength);
         }
     };
 

@@ -20,6 +20,7 @@ import com.trollworks.gcs.feature.LeveledAmount;
 import com.trollworks.gcs.feature.WeaponDamageBonus;
 import com.trollworks.gcs.modifier.AdvantageModifier;
 import com.trollworks.gcs.modifier.EquipmentModifier;
+import com.trollworks.gcs.settings.DamageProgression;
 import com.trollworks.gcs.skill.Skill;
 import com.trollworks.gcs.skill.SkillDefault;
 import com.trollworks.gcs.skill.SkillDefaultType;
@@ -337,17 +338,24 @@ public class WeaponDamage {
                         }
                     }
                 }
+                boolean adjustForPhoenixFlame = mOwner.mOwner.getDataFile().getSheetSettings().getDamageProgression() == DamageProgression.PHOENIX_FLAME_D3 && base.getDieSides() == 3;
                 for (WeaponDamageBonus bonus : bonusSet) {
                     LeveledAmount lvlAmt = bonus.getAmount();
                     int           amt    = lvlAmt.getIntegerAmount();
                     if (lvlAmt.isPerLevel()) {
-                        base.add(amt * base.getDieCount());
-                    } else {
-                        base.add(amt);
+                        amt *= base.getDieCount();
+                        if (adjustForPhoenixFlame) {
+                            amt /= 2;
+                        }
                     }
+                    base.add(amt);
                 }
                 if (mModifierPerDie != 0) {
-                    base.add(mModifierPerDie * base.getDieCount());
+                    int amt = mModifierPerDie * base.getDieCount();
+                    if (adjustForPhoenixFlame) {
+                        amt /= 2;
+                    }
+                    base.add(amt);
                 }
                 boolean       convertModifiersToExtraDice = mOwner.mOwner.getDataFile().getSheetSettings().useModifyingDicePlusAdds();
                 StringBuilder buffer                      = new StringBuilder();
@@ -391,8 +399,8 @@ public class WeaponDamage {
 
     private void extractWeaponDamageBonus(Feature feature, Set<WeaponDamageBonus> set, int dieCount, StringBuilder toolTip) {
         if (feature instanceof WeaponDamageBonus wb) {
-            LeveledAmount     amount = wb.getAmount();
-            int               level  = amount.getLevel();
+            LeveledAmount amount = wb.getAmount();
+            int           level  = amount.getLevel();
             amount.setLevel(dieCount);
             switch (wb.getWeaponSelectionType()) {
             case THIS_WEAPON:
@@ -419,7 +427,25 @@ public class WeaponDamage {
     }
 
     private static Dice addDice(Dice left, Dice right) {
-        return new Dice(left.getDieCount() + right.getDieCount(), Math.max(left.getDieSides(), right.getDieSides()), left.getModifier() + right.getModifier(), left.getMultiplier() + right.getMultiplier() - 1);
+        int leftDieCount    = left.getDieCount();
+        int rightDieCount   = right.getDieCount();
+        int leftMultiplier  = left.getMultiplier();
+        int rightMultiplier = right.getMultiplier();
+        int leftModifier    = left.getModifier();
+        int rightModifier   = right.getModifier();
+        int leftDieSides    = left.getDieSides();
+        int rightDieSides   = right.getDieSides();
+        if (leftDieSides > 1 && rightDieSides > 1 && leftDieSides != rightDieSides) {
+            int    sides        = Math.min(leftDieSides, rightDieSides);
+            double average      = (sides + 1) / 2.0;
+            double averageLeft  = (leftDieCount * (leftDieSides + 1) / 2.0) * leftMultiplier;
+            double averageRight = (rightDieCount * (rightDieSides + 1) / 2.0) * rightMultiplier;
+            double averageBoth  = averageLeft + averageRight;
+            return new Dice((int) (averageBoth / average), sides,
+                    ((int) Math.round(averageBoth % average)) + leftModifier + rightModifier, 1);
+        }
+        return new Dice(leftDieCount + rightDieCount, Math.max(leftDieSides, rightDieSides),
+                leftModifier + rightModifier, leftMultiplier + rightMultiplier - 1);
     }
 
     @Override
