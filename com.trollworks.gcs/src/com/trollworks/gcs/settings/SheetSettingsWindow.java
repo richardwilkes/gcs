@@ -59,8 +59,6 @@ public final class SheetSettingsWindow extends SettingsWindow<SheetSettings> imp
     private Checkbox                     mShowEquipmentModifierAdj;
     private Checkbox                     mShowSpellAdj;
     private Checkbox                     mShowTitleInsteadOfNameInPageFooter;
-    private Checkbox                     mUseDamageDiceConversion;
-    private Checkbox                     mUseBaseDamagePercentBonus;
     private PopupMenu<DamageProgression> mDamageProgressionPopup;
     private PopupMenu<LengthUnits>       mLengthUnitsPopup;
     private PopupMenu<WeightUnits>       mWeightUnitsPopup;
@@ -68,8 +66,6 @@ public final class SheetSettingsWindow extends SettingsWindow<SheetSettings> imp
     private PopupMenu<DisplayOption>     mModifiersDisplayPopup;
     private PopupMenu<DisplayOption>     mNotesDisplayPopup;
     private PopupMenu<DisplayOption>     mSkillLevelAdjustmentsPopup;
-    private PopupMenu<Integer>           mDamageDiceConversionDiePopup;
-    private PopupMenu<String>            mDiceAdditionBehaviorPopup;
     private MultiLineTextField           mBlockLayoutField;
     private PageSettingsEditor           mPageSettingsEditor;
     private boolean                      mUpdatePending;
@@ -137,8 +133,6 @@ public final class SheetSettingsWindow extends SettingsWindow<SheetSettings> imp
 
         Panel right = new Panel(new PrecisionLayout().setMargins(0).
                 setVerticalSpacing(LayoutConstants.WINDOW_BORDER_INSET));
-        right.add(createDamageDicePanel(), new PrecisionLayoutData().
-                setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         right.add(createUnitsOfMeasurePanel(), new PrecisionLayoutData().
                 setFillHorizontalAlignment().setGrabHorizontalSpace(true));
         right.add(createWhereToDisplayPanel(), new PrecisionLayoutData().
@@ -234,37 +228,6 @@ public final class SheetSettingsWindow extends SettingsWindow<SheetSettings> imp
                     mSheetSettings.setUseModifyingDicePlusAdds(b.isChecked());
                     adjustResetButton();
                 });
-        return panel;
-    }
-
-    private Panel createDamageDicePanel() {
-        Panel panel  = new Panel(new PrecisionLayout().setMargins(0).setColumns(2));
-        Label header = new Label(I18n.text("Damage Dice Settings"));
-        header.setThemeFont(Fonts.HEADER);
-        panel.add(header, new PrecisionLayoutData().setHorizontalSpan(2));
-        panel.add(new Separator(), new PrecisionLayoutData().setFillHorizontalAlignment().
-                setGrabHorizontalSpace(true).setHorizontalSpan(2).
-                setBottomMargin(LayoutConstants.TOOLBAR_VERTICAL_INSET / 2));
-        String[] diceAdditionBehaviorStrings = {"Just Add", "Higher", "Lower"};
-        mDiceAdditionBehaviorPopup = addPopupMenu(panel, diceAdditionBehaviorStrings, mSheetSettings.getDiceAdditionBehavior(), I18n.text("Dice Size Priority for adding different Dice"), I18n.text("Just add: Adds the number of smaller dice to the larger. \n Smaller: converts the larger dice to equivalent number of the smaller die. \n Larger: converts the smaller dice to equivalent number of the larger die."), (p) -> {
-            mSheetSettings.setDiceAdditionBehavior(p.getSelectedItem());
-        });
-        mUseDamageDiceConversion = new Checkbox(I18n.text("Convert all damage dice to d"), mSheetSettings.useDamageDiceConversion(), (b) -> {
-            mSheetSettings.setUseDamageDiceConversion(b.isChecked());
-            adjustResetButton();
-        });
-        mUseDamageDiceConversion.setToolTipText(I18n.text("Converts all damage dice to the given target using mathematical averages."));
-        panel.add(mUseDamageDiceConversion);
-        Integer[] dieValues = {3, 4, 5, 6, 8, 9, 10, 12, 14, 16, 20};
-        mDamageDiceConversionDiePopup = new PopupMenu<Integer>(dieValues, (p) -> {
-            mSheetSettings.setDamageDiceConversionDie(p.getSelectedItem());
-        });
-        mDamageDiceConversionDiePopup.setSelectedItem(mSheetSettings.getDamageDiceConversionDie(), false);
-        mDamageDiceConversionDiePopup.setToolTipText(I18n.text("Sides of Damage die."));
-        panel.add(mDamageDiceConversionDiePopup);
-        mUseBaseDamagePercentBonus = addCheckbox(panel, I18n.text("Use Base Damage Percent Bonus"), I18n.text("Show and use muscle powered percentage bonus on weapons."), mSheetSettings.useBaseDamagePercentBonus(), (b) -> {
-            mSheetSettings.setUseBaseDamagePercentBonus(b.isChecked());
-        });
         return panel;
     }
 
@@ -369,10 +332,6 @@ public final class SheetSettingsWindow extends SettingsWindow<SheetSettings> imp
         atDefaults = atDefaults && mNotesDisplayPopup.getSelectedItem() == defaults.notesDisplay();
         atDefaults = atDefaults && mSkillLevelAdjustmentsPopup.getSelectedItem() == defaults.skillLevelAdjustmentsDisplay();
         atDefaults = atDefaults && mBlockLayoutField.getText().equals(Settings.linesToString(defaults.blockLayout()));
-        atDefaults = atDefaults && mUseDamageDiceConversion.isChecked() == defaults.useDamageDiceConversion();
-        atDefaults = atDefaults && mUseBaseDamagePercentBonus.isChecked() == defaults.useBaseDamagePercentBonus();
-        atDefaults = atDefaults && mDamageDiceConversionDiePopup.getSelectedItem() == defaults.getDamageDiceConversionDie();
-        atDefaults = atDefaults && mDiceAdditionBehaviorPopup.getSelectedItem() == defaults.getDiceAdditionBehavior();
         atDefaults = atDefaults && mSheetSettings.getPageSettings().equals(defaults.getPageSettings());
         return !atDefaults;
     }
@@ -408,8 +367,6 @@ public final class SheetSettingsWindow extends SettingsWindow<SheetSettings> imp
         mNotesDisplayPopup.setSelectedItem(data.notesDisplay(), true);
         mSkillLevelAdjustmentsPopup.setSelectedItem(data.skillLevelAdjustmentsDisplay(), true);
         mBlockLayoutField.setText(Settings.linesToString(data.blockLayout()));
-        Integer damagedie = data.getDamageDiceConversionDie();
-        mDamageDiceConversionDiePopup.setSelectedItem(damagedie, true);
         mPageSettingsEditor.resetTo(data.getPageSettings());
     }
 
