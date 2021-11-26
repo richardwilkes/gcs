@@ -97,14 +97,14 @@ public class LibraryFields implements DocumentListener {
             button = new FontIconButton(FontAwesome.POWER_OFF, I18n.text("Use Default"), (b) -> {
                 Path def;
                 switch (mLibraryType) {
-                case MASTER:
-                    def = Library.getDefaultMasterLibraryPath();
-                    break;
-                case USER:
-                    def = Library.getDefaultUserLibraryPath();
-                    break;
-                default: // Shouldn't ever reach this
-                    return;
+                    case MASTER:
+                        def = Library.getDefaultMasterLibraryPath();
+                        break;
+                    case USER:
+                        def = Library.getDefaultUserLibraryPath();
+                        break;
+                    default: // Shouldn't ever reach this
+                        return;
                 }
                 mPath.setText(def.toString());
                 mPath.requestFocus();

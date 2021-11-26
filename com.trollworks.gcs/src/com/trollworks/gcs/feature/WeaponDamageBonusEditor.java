@@ -60,10 +60,10 @@ public class WeaponDamageBonusEditor extends FeatureEditor {
         row.add(popup);
         grid.add(row, 1, 0);
         switch (bonus.getWeaponSelectionType()) {
-        case THIS_WEAPON -> rebuildThisWeapon(grid);
-        case WEAPONS_WITH_NAME -> rebuildWeaponsWithName(grid, row);
-        case WEAPONS_WITH_REQUIRED_SKILL -> rebuildWeaponsWithRequiredSkill(grid, row);
-        default -> row.add(new FlexSpacer(0, 0, true, false));
+            case THIS_WEAPON -> rebuildThisWeapon(grid);
+            case WEAPONS_WITH_NAME -> rebuildWeaponsWithName(grid, row);
+            case WEAPONS_WITH_REQUIRED_SKILL -> rebuildWeaponsWithRequiredSkill(grid, row);
+            default -> row.add(new FlexSpacer(0, 0, true, false));
         }
     }
 

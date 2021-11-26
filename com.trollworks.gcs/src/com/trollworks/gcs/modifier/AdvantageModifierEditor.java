@@ -224,13 +224,13 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
         } else {
             AdvantageModifierCostType costType = getCostType();
             switch (costType) {
-            case POINTS -> mCostModifierField.setText(Numbers.formatWithForcedSign(getCost()));
-            case MULTIPLIER -> {
-                mCostModifierField.setText(costType + Numbers.format(getCostMultiplier()));
-                mAffects.setSelectedItem(Affects.TOTAL, true);
-                enabled = false;
-            }
-            default -> mCostModifierField.setText(Numbers.formatWithForcedSign(getCost()) + costType);
+                case POINTS -> mCostModifierField.setText(Numbers.formatWithForcedSign(getCost()));
+                case MULTIPLIER -> {
+                    mCostModifierField.setText(costType + Numbers.format(getCostMultiplier()));
+                    mAffects.setSelectedItem(Affects.TOTAL, true);
+                    enabled = false;
+                }
+                default -> mCostModifierField.setText(Numbers.formatWithForcedSign(getCost()) + costType);
             }
         }
         mAffects.setEnabled(mIsEditable && enabled);

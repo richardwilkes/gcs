@@ -70,92 +70,92 @@ public final class PDFServer {
 
     private static void handleRequest(HttpExchange httpExchange) throws IOException {
         switch (httpExchange.getRequestMethod()) {
-        case "HEAD", "GET" -> {
-            URI    requestURI  = httpExchange.getRequestURI();
-            Path   p           = Path.of(requestURI.getPath()).normalize();
-            String contentType = contentType(PathUtils.getExtension(p));
-            if ("application/pdf".equals(contentType)) {
-                String path = URLDecoder.decode(requestURI.getPath(), StandardCharsets.UTF_8);
+            case "HEAD", "GET" -> {
+                URI    requestURI  = httpExchange.getRequestURI();
+                Path   p           = Path.of(requestURI.getPath()).normalize();
+                String contentType = contentType(PathUtils.getExtension(p));
+                if ("application/pdf".equals(contentType)) {
+                    String path = URLDecoder.decode(requestURI.getPath(), StandardCharsets.UTF_8);
+                    if (Platform.isWindows()) {
+                        if (path.startsWith("/unc/")) {
+                            path = "/" + path.substring(4);
+                        } else if (path.length() > 2 && path.charAt(0) == '/' && path.charAt(2) == '/') {
+                            char ch = path.charAt(1);
+                            if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z')) {
+                                path = ch + ":" + path.substring(2);
+                            }
+                        }
+                    }
+                    p = Path.of(path).normalize();
+                    if (!Files.isRegularFile(p) || !Files.isReadable(p)) {
+                        notFound(httpExchange);
+                        return;
+                    }
+                    long    size;
+                    Instant instant;
+                    try {
+                        size = Files.size(p);
+                        instant = Files.getLastModifiedTime(p).toInstant();
+                    } catch (IOException ex) {
+                        notFound(httpExchange);
+                        return;
+                    }
+                    int expiresInSeconds = 12 * 60 * 60; // 12 hours
+                    httpExchange.getResponseHeaders().add("Content-Type", contentType);
+                    httpExchange.getResponseHeaders().add("Content-Length", Long.toString(size));
+                    httpExchange.getResponseHeaders().add("Last-Modified", DATE_TIME_FORMATTER.format(instant));
+                    httpExchange.getResponseHeaders().add("Expires", DATE_TIME_FORMATTER.format(Instant.now().plusSeconds(expiresInSeconds)));
+                    httpExchange.getResponseHeaders().add("Cache-Control", "max-age=" + expiresInSeconds);
+                    httpExchange.sendResponseHeaders(200, size);
+                    if ("HEAD".equals(httpExchange.getRequestMethod())) {
+                        httpExchange.getResponseBody().close();
+                    } else {
+                        try (OutputStream out = httpExchange.getResponseBody()) {
+                            Files.copy(p, out);
+                        }
+                    }
+                    return;
+                }
+                String path = p.toString();
                 if (Platform.isWindows()) {
-                    if (path.startsWith("/unc/")) {
-                        path = "/" + path.substring(4);
-                    } else if (path.length() > 2 && path.charAt(0) == '/' && path.charAt(2) == '/') {
-                        char ch = path.charAt(1);
-                        if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z')) {
-                            path = ch + ":" + path.substring(2);
+                    path = path.replace('\\', '/');
+                }
+                byte[] data;
+                synchronized (CACHE) {
+                    data = CACHE.get(path);
+                    if (data == null) {
+                        ByteArrayOutputStream out = new ByteArrayOutputStream();
+                        try (InputStream in = PDFServer.class.getModule().getResourceAsStream("/pdfjs" + path)) {
+                            in.transferTo(out);
+                        } catch (IOException ioe) {
+                            out = null;
+                        }
+                        if (out != null) {
+                            data = out.toByteArray();
+                            CACHE.put(path, data);
                         }
                     }
                 }
-                p = Path.of(path).normalize();
-                if (!Files.isRegularFile(p) || !Files.isReadable(p)) {
-                    notFound(httpExchange);
-                    return;
-                }
-                long    size;
-                Instant instant;
-                try {
-                    size = Files.size(p);
-                    instant = Files.getLastModifiedTime(p).toInstant();
-                } catch (IOException ex) {
+                if (data == null) {
                     notFound(httpExchange);
                     return;
                 }
                 int expiresInSeconds = 12 * 60 * 60; // 12 hours
                 httpExchange.getResponseHeaders().add("Content-Type", contentType);
-                httpExchange.getResponseHeaders().add("Content-Length", Long.toString(size));
-                httpExchange.getResponseHeaders().add("Last-Modified", DATE_TIME_FORMATTER.format(instant));
+                httpExchange.getResponseHeaders().add("Content-Length", Integer.toString(data.length));
+                httpExchange.getResponseHeaders().add("Last-Modified", DATE_TIME_FORMATTER.format(RESOURCE_LAST_MODIFIED));
                 httpExchange.getResponseHeaders().add("Expires", DATE_TIME_FORMATTER.format(Instant.now().plusSeconds(expiresInSeconds)));
-                httpExchange.getResponseHeaders().add("Cache-Control", "max-age=" + expiresInSeconds);
-                httpExchange.sendResponseHeaders(200, size);
-                if ("HEAD".equals(httpExchange.getRequestMethod())) {
-                    httpExchange.getResponseBody().close();
-                } else {
-                    try (OutputStream out = httpExchange.getResponseBody()) {
-                        Files.copy(p, out);
+                httpExchange.getResponseHeaders().add("Cache-Control", "public, immutable, max-age=" + expiresInSeconds);
+                httpExchange.sendResponseHeaders(200, data.length);
+                OutputStream body = httpExchange.getResponseBody();
+                if (!"HEAD".equals(httpExchange.getRequestMethod())) {
+                    try (InputStream in = new ByteArrayInputStream(data)) {
+                        in.transferTo(body);
                     }
                 }
-                return;
+                body.close();
             }
-            String path = p.toString();
-            if (Platform.isWindows()) {
-                path = path.replace('\\', '/');
-            }
-            byte[] data;
-            synchronized (CACHE) {
-                data = CACHE.get(path);
-                if (data == null) {
-                    ByteArrayOutputStream out = new ByteArrayOutputStream();
-                    try (InputStream in = PDFServer.class.getModule().getResourceAsStream("/pdfjs" + path)) {
-                        in.transferTo(out);
-                    } catch (IOException ioe) {
-                        out = null;
-                    }
-                    if (out != null) {
-                        data = out.toByteArray();
-                        CACHE.put(path, data);
-                    }
-                }
-            }
-            if (data == null) {
-                notFound(httpExchange);
-                return;
-            }
-            int expiresInSeconds = 12 * 60 * 60; // 12 hours
-            httpExchange.getResponseHeaders().add("Content-Type", contentType);
-            httpExchange.getResponseHeaders().add("Content-Length", Integer.toString(data.length));
-            httpExchange.getResponseHeaders().add("Last-Modified", DATE_TIME_FORMATTER.format(RESOURCE_LAST_MODIFIED));
-            httpExchange.getResponseHeaders().add("Expires", DATE_TIME_FORMATTER.format(Instant.now().plusSeconds(expiresInSeconds)));
-            httpExchange.getResponseHeaders().add("Cache-Control", "public, immutable, max-age=" + expiresInSeconds);
-            httpExchange.sendResponseHeaders(200, data.length);
-            OutputStream body = httpExchange.getResponseBody();
-            if (!"HEAD".equals(httpExchange.getRequestMethod())) {
-                try (InputStream in = new ByteArrayInputStream(data)) {
-                    in.transferTo(body);
-                }
-            }
-            body.close();
-        }
-        default -> methodNotAllowed(httpExchange);
+            default -> methodNotAllowed(httpExchange);
         }
     }
 

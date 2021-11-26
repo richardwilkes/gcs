@@ -83,15 +83,15 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
             dialog.addApplyButton();
             dialog.presentToUser();
             switch (dialog.getResult()) {
-            case Modal.OK -> {
-                RowUndo undo = new RowUndo(row);
-                if (editor.applyChanges()) {
-                    if (undo.finish()) {
-                        undos.add(undo);
+                case Modal.OK -> {
+                    RowUndo undo = new RowUndo(row);
+                    if (editor.applyChanges()) {
+                        if (undo.finish()) {
+                            undos.add(undo);
+                        }
                     }
                 }
-            }
-            case Modal.CLOSED -> i = length;
+                case Modal.CLOSED -> i = length;
             }
         }
         if (!undos.isEmpty()) {

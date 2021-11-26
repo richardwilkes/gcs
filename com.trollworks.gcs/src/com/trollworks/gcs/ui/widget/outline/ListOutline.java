@@ -12,8 +12,8 @@
 package com.trollworks.gcs.ui.widget.outline;
 
 import com.trollworks.gcs.character.GURPSCharacter;
-import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.character.Namer;
+import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.datafile.DataFile;
 import com.trollworks.gcs.equipment.EquipmentList;
 import com.trollworks.gcs.equipment.EquipmentOutline;

@@ -217,16 +217,16 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
                 Attribute attr = mAttributes.get(attrID);
                 if (attr != null) {
                     switch (attrID) {
-                    case "st" -> attr.initTo(m.getInt(KEY_ST) - 10, 0);
-                    case "dx" -> attr.initTo(m.getInt(KEY_DX) - 10, 0);
-                    case "iq" -> attr.initTo(m.getInt(KEY_IQ) - 10, 0);
-                    case "ht" -> attr.initTo(m.getInt(KEY_HT) - 10, 0);
-                    case "will" -> attr.initTo(m.getInt(KEY_WILL_ADJ), 0);
-                    case "per" -> attr.initTo(m.getInt(KEY_PER_ADJ), 0);
-                    case "basic_speed" -> attr.initTo(m.getDouble(KEY_SPEED_ADJ), 0);
-                    case "basic_move" -> attr.initTo(m.getInt(KEY_MOVE_ADJ), 0);
-                    case "hp" -> attr.initTo(m.getInt(KEY_HP_ADJ), m.getInt(KEY_HP_DAMAGE));
-                    case "fp" -> attr.initTo(m.getInt(KEY_FP_ADJ), m.getInt(KEY_FP_DAMAGE));
+                        case "st" -> attr.initTo(m.getInt(KEY_ST) - 10, 0);
+                        case "dx" -> attr.initTo(m.getInt(KEY_DX) - 10, 0);
+                        case "iq" -> attr.initTo(m.getInt(KEY_IQ) - 10, 0);
+                        case "ht" -> attr.initTo(m.getInt(KEY_HT) - 10, 0);
+                        case "will" -> attr.initTo(m.getInt(KEY_WILL_ADJ), 0);
+                        case "per" -> attr.initTo(m.getInt(KEY_PER_ADJ), 0);
+                        case "basic_speed" -> attr.initTo(m.getDouble(KEY_SPEED_ADJ), 0);
+                        case "basic_move" -> attr.initTo(m.getInt(KEY_MOVE_ADJ), 0);
+                        case "hp" -> attr.initTo(m.getInt(KEY_HP_ADJ), m.getInt(KEY_HP_DAMAGE));
+                        case "fp" -> attr.initTo(m.getInt(KEY_FP_ADJ), m.getInt(KEY_FP_DAMAGE));
                     }
                 }
             }
@@ -1395,13 +1395,13 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
             }
             if (def.getType() == AttributeType.POOL && parts.length > 1) {
                 switch (parts[1]) {
-                case "current":
-                    return String.valueOf(attr.getCurrentIntValue(this));
-                case "maximum":
-                    return String.valueOf(attr.getIntValue(this));
-                default:
-                    Log.error("no such variable: $" + variableName);
-                    return "";
+                    case "current":
+                        return String.valueOf(attr.getCurrentIntValue(this));
+                    case "maximum":
+                        return String.valueOf(attr.getIntValue(this));
+                    default:
+                        Log.error("no such variable: $" + variableName);
+                        return "";
                 }
             }
             return String.valueOf(attr.getDoubleValue(this));

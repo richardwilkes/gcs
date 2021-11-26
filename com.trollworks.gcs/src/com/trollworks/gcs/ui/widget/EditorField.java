@@ -150,7 +150,7 @@ public class EditorField extends JFormattedTextField implements ActionListener, 
             Font font = getFont();
             gc.setFont(font);
             TextDrawing.draw(gc, bounds, TextDrawing.truncateIfNecessary(font, mHint,
-                    bounds.width, SwingConstants.CENTER), SwingConstants.CENTER,
+                            bounds.width, SwingConstants.CENTER), SwingConstants.CENTER,
                     SwingConstants.CENTER);
         }
     }

@@ -59,10 +59,10 @@ public class SkillBonusEditor extends FeatureEditor {
         row.add(popup);
         grid.add(row, 1, 0);
         switch (bonus.getSkillSelectionType()) {
-        case THIS_WEAPON -> rebuildThisWeapon(grid);
-        case WEAPONS_WITH_NAME -> rebuildWeaponsWithName(grid, row);
-        case SKILLS_WITH_NAME -> rebuildSkillsWithName(grid, row);
-        default -> row.add(new FlexSpacer(0, 0, true, false));
+            case THIS_WEAPON -> rebuildThisWeapon(grid);
+            case WEAPONS_WITH_NAME -> rebuildWeaponsWithName(grid, row);
+            case SKILLS_WITH_NAME -> rebuildSkillsWithName(grid, row);
+            default -> row.add(new FlexSpacer(0, 0, true, false));
         }
     }
 

@@ -51,11 +51,11 @@ public final class UrlUtils {
             conn.setReadTimeout(10000);
             conn.setInstanceFollowRedirects(false);   // Make the logic below easier to detect redirections
             switch (conn.getResponseCode()) {
-            case HttpURLConnection.HTTP_MOVED_PERM, HttpURLConnection.HTTP_MOVED_TEMP, 307 -> {
-                String location = URLDecoder.decode(conn.getHeaderField("Location"), StandardCharsets.UTF_8);
-                url = new URL(url, location);  // Deal with relative URLs
-                continue;
-            }
+                case HttpURLConnection.HTTP_MOVED_PERM, HttpURLConnection.HTTP_MOVED_TEMP, 307 -> {
+                    String location = URLDecoder.decode(conn.getHeaderField("Location"), StandardCharsets.UTF_8);
+                    url = new URL(url, location);  // Deal with relative URLs
+                    continue;
+                }
             }
             break;
         }

@@ -160,9 +160,9 @@ public class HitLocationTable implements Cloneable, Comparable<HitLocationTable>
             String rollRange;
             int    slots = location.getSlots();
             switch (slots) {
-            case 0 -> rollRange = "-";
-            case 1 -> rollRange = Integer.toString(start);
-            default -> rollRange = start + "-" + (start + slots - 1);
+                case 0 -> rollRange = "-";
+                case 1 -> rollRange = Integer.toString(start);
+                default -> rollRange = start + "-" + (start + slots - 1);
             }
             location.setRollRange(rollRange);
             HitLocationTable subTable = location.getSubTable();

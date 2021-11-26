@@ -73,29 +73,29 @@ public class Release implements Comparable<Release> {
             return;
         }
         switch (releases.size()) {
-        case 0 -> mVersion = new Version();
-        case 1 -> {
-            Release other = releases.get(0);
-            mVersion = other.mVersion;
-            mNotes = other.mNotes;
-            mZipFileURL = other.mZipFileURL;
-        }
-        default -> {
-            Release other2 = releases.get(0);
-            mVersion = other2.mVersion;
-            mZipFileURL = other2.mZipFileURL;
-            StringBuilder buffer = new StringBuilder();
-            for (Release one : releases) {
-                if (mVersion != one.mVersion) {
-                    buffer.append("\n\n");
-                }
-                buffer.append("## Version ");
-                buffer.append(one.mVersion);
-                buffer.append("\n");
-                buffer.append(one.mNotes);
+            case 0 -> mVersion = new Version();
+            case 1 -> {
+                Release other = releases.get(0);
+                mVersion = other.mVersion;
+                mNotes = other.mNotes;
+                mZipFileURL = other.mZipFileURL;
             }
-            mNotes = buffer.toString();
-        }
+            default -> {
+                Release other2 = releases.get(0);
+                mVersion = other2.mVersion;
+                mZipFileURL = other2.mZipFileURL;
+                StringBuilder buffer = new StringBuilder();
+                for (Release one : releases) {
+                    if (mVersion != one.mVersion) {
+                        buffer.append("\n\n");
+                    }
+                    buffer.append("## Version ");
+                    buffer.append(one.mVersion);
+                    buffer.append("\n");
+                    buffer.append(one.mNotes);
+                }
+                mNotes = buffer.toString();
+            }
         }
     }
 

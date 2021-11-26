@@ -158,7 +158,7 @@ public class LibraryExplorerDockable extends Dockable implements SearchTarget, D
         for (int i = 1; i < count; i++) {
             Object entry = lists.get(i);
             if (entry instanceof List<?> subList) {
-                LibraryDirectoryRow dir     = new LibraryDirectoryRow((String) subList.get(0));
+                LibraryDirectoryRow dir = new LibraryDirectoryRow((String) subList.get(0));
                 fillTree(subList, dir);
                 parent.addChild(dir);
             } else {

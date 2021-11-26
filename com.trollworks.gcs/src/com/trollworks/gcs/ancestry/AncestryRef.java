@@ -27,7 +27,7 @@ import java.util.Map;
 
 public class AncestryRef implements Comparable<AncestryRef> {
     private static final Map<String, AncestryRef> REGISTERED_ANCESTRIES = new HashMap<>();
-    public static final AncestryRef              DEFAULT               = new AncestryRef();
+    public static final  AncestryRef              DEFAULT               = new AncestryRef();
     private              String                   mName;
     private              Ancestry                 mAncestry;
 

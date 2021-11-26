@@ -276,54 +276,54 @@ public class Date {
             if (cmd) {
                 cmd = false;
                 switch (ch) {
-                case 'W' -> buffer.append(weekDayName());
-                case 'w' -> {
-                    String weekDayName = weekDayName();
-                    if (weekDayName.length() > 3) {
-                        weekDayName = weekDayName.substring(0, 3);
+                    case 'W' -> buffer.append(weekDayName());
+                    case 'w' -> {
+                        String weekDayName = weekDayName();
+                        if (weekDayName.length() > 3) {
+                            weekDayName = weekDayName.substring(0, 3);
+                        }
+                        buffer.append(weekDayName);
                     }
-                    buffer.append(weekDayName);
-                }
-                case 'M' -> buffer.append(monthName());
-                case 'm' -> {
-                    String monthName = monthName();
-                    if (monthName.length() > 3) {
-                        monthName = monthName.substring(0, 3);
+                    case 'M' -> buffer.append(monthName());
+                    case 'm' -> {
+                        String monthName = monthName();
+                        if (monthName.length() > 3) {
+                            monthName = monthName.substring(0, 3);
+                        }
+                        buffer.append(monthName);
                     }
-                    buffer.append(monthName);
-                }
-                case 'N' -> buffer.append(month());
-                case 'n' -> buffer.append(String.format(String.format("%%0%d", widthNeeded(mCalendar.mMonths.size())), month()));
-                case 'D' -> buffer.append(dayInMonth());
-                case 'd' -> buffer.append(String.format(String.format("%%0%d", widthNeeded(mCalendar.mMonths.get(month()).mDays)), dayInMonth()));
-                case 'Y' -> {
-                    int year = year();
-                    if (mCalendar.mPreviousEra.isBlank()) {
-                        buffer.append(year);
-                    } else if (mCalendar.mEra.equals(mCalendar.mPreviousEra)) {
-                        buffer.append(String.format("%d %s", year, mCalendar.mPreviousEra));
-                    } else if (year < 0) {
-                        buffer.append(String.format("%d %s", -year, mCalendar.mPreviousEra));
-                    } else {
-                        buffer.append(year);
+                    case 'N' -> buffer.append(month());
+                    case 'n' -> buffer.append(String.format(String.format("%%0%d", widthNeeded(mCalendar.mMonths.size())), month()));
+                    case 'D' -> buffer.append(dayInMonth());
+                    case 'd' -> buffer.append(String.format(String.format("%%0%d", widthNeeded(mCalendar.mMonths.get(month()).mDays)), dayInMonth()));
+                    case 'Y' -> {
+                        int year = year();
+                        if (mCalendar.mPreviousEra.isBlank()) {
+                            buffer.append(year);
+                        } else if (mCalendar.mEra.equals(mCalendar.mPreviousEra)) {
+                            buffer.append(String.format("%d %s", year, mCalendar.mPreviousEra));
+                        } else if (year < 0) {
+                            buffer.append(String.format("%d %s", -year, mCalendar.mPreviousEra));
+                        } else {
+                            buffer.append(year);
+                        }
                     }
-                }
-                case 'y' -> {
-                    String era  = era();
-                    int    year = year();
-                    if (year < 0 && !era.isBlank() && !mCalendar.mEra.equals(mCalendar.mPreviousEra)) {
-                        year = -year;
+                    case 'y' -> {
+                        String era  = era();
+                        int    year = year();
+                        if (year < 0 && !era.isBlank() && !mCalendar.mEra.equals(mCalendar.mPreviousEra)) {
+                            year = -year;
+                        }
+                        if (era.isBlank()) {
+                            buffer.append(year);
+                        } else {
+                            buffer.append(String.format("%d %s", year, era));
+                        }
                     }
-                    if (era.isBlank()) {
-                        buffer.append(year);
-                    } else {
-                        buffer.append(String.format("%d %s", year, era));
+                    case 'z' -> buffer.append(year());
+                    case '%' -> buffer.append('%');
+                    default -> {
                     }
-                }
-                case 'z' -> buffer.append(year());
-                case '%' -> buffer.append('%');
-                default -> {
-                }
                 }
             } else if (ch == '%') {
                 cmd = true;

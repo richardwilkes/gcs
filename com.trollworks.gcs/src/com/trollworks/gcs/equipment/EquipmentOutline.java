@@ -323,11 +323,11 @@ public class EquipmentOutline extends ListOutline implements Incrementable, Uses
         if (!(target instanceof Equipment targetEquipment)) {
             return false;
         }
-        OutlineModel            model           = getModel();
-        ArrayList<RowUndo>      undoList        = new ArrayList<>();
-        RowUndo                 undo            = new RowUndo(targetEquipment);
-        List<EquipmentModifier> list            = new ArrayList<>(targetEquipment.getModifiers());
-        Object                  property        = model.getProperty(ListOutline.OWNING_LIST);
+        OutlineModel            model    = getModel();
+        ArrayList<RowUndo>      undoList = new ArrayList<>();
+        RowUndo                 undo     = new RowUndo(targetEquipment);
+        List<EquipmentModifier> list     = new ArrayList<>(targetEquipment.getModifiers());
+        Object                  property = model.getProperty(ListOutline.OWNING_LIST);
         removeDragHighlight(this);
         if (property instanceof ListOutline) {
             List<EquipmentModifier> collection = new ArrayList<>();

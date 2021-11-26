@@ -167,8 +167,8 @@ public class RangedWeaponStats extends WeaponStats {
         DataFile df    = getOwner().getDataFile();
         String   range = mRange;
         if (df instanceof GURPSCharacter gchar) {
-            int            strength = gchar.getAttributeIntValue("st") + gchar.getThrowingStrengthBonus();
-            String         savedRange;
+            int    strength = gchar.getAttributeIntValue("st") + gchar.getThrowingStrengthBonus();
+            String savedRange;
             do {
                 savedRange = range;
                 range = resolveRange(range, strength);

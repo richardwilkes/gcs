@@ -129,15 +129,15 @@ public class WeaponDamageBonus extends Bonus {
         mWeaponSelectionType = Enums.extract(m.getString(KEY_SELECTION_TYPE), WeaponSelectionType.values(), WeaponSelectionType.WEAPONS_WITH_REQUIRED_SKILL);
         mSpecializationCriteria.load(m.getMap(KEY_SPECIALIZATION));
         switch (mWeaponSelectionType) {
-        case WEAPONS_WITH_NAME -> {
-            mNameCriteria.load(m.getMap(KEY_NAME));
-            mCategoryCriteria.load(m.getMap(KEY_CATEGORY));
-        }
-        case WEAPONS_WITH_REQUIRED_SKILL -> {
-            mNameCriteria.load(m.getMap(KEY_NAME));
-            mRelativeLevelCriteria.load(m.getMap(KEY_LEVEL));
-            mCategoryCriteria.load(m.getMap(KEY_CATEGORY));
-        }
+            case WEAPONS_WITH_NAME -> {
+                mNameCriteria.load(m.getMap(KEY_NAME));
+                mCategoryCriteria.load(m.getMap(KEY_CATEGORY));
+            }
+            case WEAPONS_WITH_REQUIRED_SKILL -> {
+                mNameCriteria.load(m.getMap(KEY_NAME));
+                mRelativeLevelCriteria.load(m.getMap(KEY_LEVEL));
+                mCategoryCriteria.load(m.getMap(KEY_CATEGORY));
+            }
         }
     }
 
@@ -147,15 +147,15 @@ public class WeaponDamageBonus extends Bonus {
         w.keyValue(KEY_SELECTION_TYPE, Enums.toId(mWeaponSelectionType));
         mSpecializationCriteria.save(w, KEY_SPECIALIZATION);
         switch (mWeaponSelectionType) {
-        case WEAPONS_WITH_NAME -> {
-            mNameCriteria.save(w, KEY_NAME);
-            mCategoryCriteria.save(w, KEY_CATEGORY);
-        }
-        case WEAPONS_WITH_REQUIRED_SKILL -> {
-            mNameCriteria.save(w, KEY_NAME);
-            mRelativeLevelCriteria.save(w, KEY_LEVEL);
-            mCategoryCriteria.save(w, KEY_CATEGORY);
-        }
+            case WEAPONS_WITH_NAME -> {
+                mNameCriteria.save(w, KEY_NAME);
+                mCategoryCriteria.save(w, KEY_CATEGORY);
+            }
+            case WEAPONS_WITH_REQUIRED_SKILL -> {
+                mNameCriteria.save(w, KEY_NAME);
+                mRelativeLevelCriteria.save(w, KEY_LEVEL);
+                mCategoryCriteria.save(w, KEY_CATEGORY);
+            }
         }
     }
 
@@ -194,24 +194,24 @@ public class WeaponDamageBonus extends Bonus {
     @Override
     public void fillWithNameableKeys(Set<String> set) {
         switch (mWeaponSelectionType) {
-        case THIS_WEAPON -> ListRow.extractNameables(set, mSpecializationCriteria.getQualifier());
-        case WEAPONS_WITH_NAME, WEAPONS_WITH_REQUIRED_SKILL -> {
-            ListRow.extractNameables(set, mNameCriteria.getQualifier());
-            ListRow.extractNameables(set, mSpecializationCriteria.getQualifier());
-            ListRow.extractNameables(set, mCategoryCriteria.getQualifier());
-        }
+            case THIS_WEAPON -> ListRow.extractNameables(set, mSpecializationCriteria.getQualifier());
+            case WEAPONS_WITH_NAME, WEAPONS_WITH_REQUIRED_SKILL -> {
+                ListRow.extractNameables(set, mNameCriteria.getQualifier());
+                ListRow.extractNameables(set, mSpecializationCriteria.getQualifier());
+                ListRow.extractNameables(set, mCategoryCriteria.getQualifier());
+            }
         }
     }
 
     @Override
     public void applyNameableKeys(Map<String, String> map) {
         switch (mWeaponSelectionType) {
-        case THIS_WEAPON -> mSpecializationCriteria.setQualifier(ListRow.nameNameables(map, mSpecializationCriteria.getQualifier()));
-        case WEAPONS_WITH_NAME, WEAPONS_WITH_REQUIRED_SKILL -> {
-            mNameCriteria.setQualifier(ListRow.nameNameables(map, mNameCriteria.getQualifier()));
-            mSpecializationCriteria.setQualifier(ListRow.nameNameables(map, mSpecializationCriteria.getQualifier()));
-            mCategoryCriteria.setQualifier(ListRow.nameNameables(map, mCategoryCriteria.getQualifier()));
-        }
+            case THIS_WEAPON -> mSpecializationCriteria.setQualifier(ListRow.nameNameables(map, mSpecializationCriteria.getQualifier()));
+            case WEAPONS_WITH_NAME, WEAPONS_WITH_REQUIRED_SKILL -> {
+                mNameCriteria.setQualifier(ListRow.nameNameables(map, mNameCriteria.getQualifier()));
+                mSpecializationCriteria.setQualifier(ListRow.nameNameables(map, mSpecializationCriteria.getQualifier()));
+                mCategoryCriteria.setQualifier(ListRow.nameNameables(map, mCategoryCriteria.getQualifier()));
+            }
         }
     }
 

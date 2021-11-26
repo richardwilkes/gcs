@@ -60,9 +60,9 @@ public abstract class WeaponStats {
             JsonMap m    = a.getMap(i);
             String  type = m.getString(DataFile.TYPE);
             switch (type) {
-            case MeleeWeaponStats.KEY_ROOT -> list.add(new MeleeWeaponStats(row, m));
-            case RangedWeaponStats.KEY_ROOT -> list.add(new RangedWeaponStats(row, m));
-            default -> Log.warn("unknown weapon type: " + type);
+                case MeleeWeaponStats.KEY_ROOT -> list.add(new MeleeWeaponStats(row, m));
+                case RangedWeaponStats.KEY_ROOT -> list.add(new RangedWeaponStats(row, m));
+                default -> Log.warn("unknown weapon type: " + type);
             }
         }
     }
@@ -392,22 +392,22 @@ public abstract class WeaponStats {
     private int extractSkillBonus(Feature feature, StringBuilder toolTip) {
         if (feature instanceof SkillBonus sb) {
             switch (sb.getSkillSelectionType()) {
-            case THIS_WEAPON:
-            default:
-                if (sb.getSpecializationCriteria().matches(getUsage())) {
-                    sb.addToToolTip(toolTip);
-                    return sb.getAmount().getIntegerAdjustedAmount();
-                }
-                break;
-            case WEAPONS_WITH_NAME:
-                if (sb.getNameCriteria().matches(mOwner.toString()) && sb.getSpecializationCriteria().matches(getUsage()) && sb.matchesCategories(getCategories())) {
-                    sb.addToToolTip(toolTip);
-                    return sb.getAmount().getIntegerAdjustedAmount();
-                }
-                break;
-            case SKILLS_WITH_NAME:
-                // Already handled
-                break;
+                case THIS_WEAPON:
+                default:
+                    if (sb.getSpecializationCriteria().matches(getUsage())) {
+                        sb.addToToolTip(toolTip);
+                        return sb.getAmount().getIntegerAdjustedAmount();
+                    }
+                    break;
+                case WEAPONS_WITH_NAME:
+                    if (sb.getNameCriteria().matches(mOwner.toString()) && sb.getSpecializationCriteria().matches(getUsage()) && sb.matchesCategories(getCategories())) {
+                        sb.addToToolTip(toolTip);
+                        return sb.getAmount().getIntegerAdjustedAmount();
+                    }
+                    break;
+                case SKILLS_WITH_NAME:
+                    // Already handled
+                    break;
             }
         }
         return 0;

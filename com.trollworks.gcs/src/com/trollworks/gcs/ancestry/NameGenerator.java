@@ -132,34 +132,34 @@ public class NameGenerator {
 
     public String generate() {
         switch (mType) {
-        case SIMPLE -> {
-            if (mTrainingData.isEmpty()) {
+            case SIMPLE -> {
+                if (mTrainingData.isEmpty()) {
+                    return "";
+                }
+                String name = mTrainingData.get(Dice.RANDOM.nextInt(mTrainingData.size()));
+                return Character.toUpperCase(name.charAt(0)) + name.substring(1).toLowerCase();
+            }
+            case MARKOV_CHAIN -> {
+                int           targetSize = Dice.RANDOM.nextInt(mMin, mMax + 1);
+                StringBuilder buffer     = new StringBuilder();
+                buffer.append((String) mEntries.keySet().toArray()[Dice.RANDOM.nextInt(mEntries.size())]);
+                for (int i = 2; i < targetSize; i++) {
+                    String sub = buffer.substring(i - 2, i);
+                    if (!mEntries.containsKey(sub)) {
+                        break;
+                    }
+                    char next = mEntries.get(sub).chooseCharacter();
+                    if (next == 0) {
+                        break;
+                    }
+                    buffer.append(next);
+                }
+                buffer.setCharAt(0, Character.toUpperCase(buffer.charAt(0)));
+                return buffer.toString();
+            }
+            default -> {
                 return "";
             }
-            String name = mTrainingData.get(Dice.RANDOM.nextInt(mTrainingData.size()));
-            return Character.toUpperCase(name.charAt(0)) + name.substring(1).toLowerCase();
-        }
-        case MARKOV_CHAIN -> {
-            int           targetSize = Dice.RANDOM.nextInt(mMin, mMax + 1);
-            StringBuilder buffer     = new StringBuilder();
-            buffer.append((String) mEntries.keySet().toArray()[Dice.RANDOM.nextInt(mEntries.size())]);
-            for (int i = 2; i < targetSize; i++) {
-                String sub = buffer.substring(i - 2, i);
-                if (!mEntries.containsKey(sub)) {
-                    break;
-                }
-                char next = mEntries.get(sub).chooseCharacter();
-                if (next == 0) {
-                    break;
-                }
-                buffer.append(next);
-            }
-            buffer.setCharAt(0, Character.toUpperCase(buffer.charAt(0)));
-            return buffer.toString();
-        }
-        default -> {
-            return "";
-        }
         }
     }
 

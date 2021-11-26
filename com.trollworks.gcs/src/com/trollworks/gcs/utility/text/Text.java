@@ -179,13 +179,13 @@ public final class Text {
         for (int i = 0; i < length; i++) {
             char ch = str.charAt(i);
             switch (ch) {
-            case '&' -> buffer.append("&amp;");
-            case '<' -> buffer.append("&lt;");
-            case '>' -> buffer.append("&gt;");
-            case '"' -> buffer.append("&quot;");
-            case '\'' -> buffer.append("&#39;");
-            case '/' -> buffer.append("&#47;");
-            default -> buffer.append(ch);
+                case '&' -> buffer.append("&amp;");
+                case '<' -> buffer.append("&lt;");
+                case '>' -> buffer.append("&gt;");
+                case '"' -> buffer.append("&quot;");
+                case '\'' -> buffer.append("&#39;");
+                case '/' -> buffer.append("&#47;");
+                default -> buffer.append(ch);
             }
         }
         return buffer.toString();
@@ -224,18 +224,18 @@ public final class Text {
                 buffer.append(ch);
             } else {
                 switch (ch) {
-                case '\b' -> buffer.append("\\b");
-                case '\f' -> buffer.append("\\f");
-                case '\n' -> buffer.append("\\n");
-                case '\r' -> buffer.append("\\r");
-                case '\t' -> buffer.append("\\t");
-                default -> {
-                    buffer.append("\\u");
-                    buffer.append(HEX_DIGITS[ch >> 12 & 0xF]);
-                    buffer.append(HEX_DIGITS[ch >> 8 & 0xF]);
-                    buffer.append(HEX_DIGITS[ch >> 4 & 0xF]);
-                    buffer.append(HEX_DIGITS[ch & 0xF]);
-                }
+                    case '\b' -> buffer.append("\\b");
+                    case '\f' -> buffer.append("\\f");
+                    case '\n' -> buffer.append("\\n");
+                    case '\r' -> buffer.append("\\r");
+                    case '\t' -> buffer.append("\\t");
+                    default -> {
+                        buffer.append("\\u");
+                        buffer.append(HEX_DIGITS[ch >> 12 & 0xF]);
+                        buffer.append(HEX_DIGITS[ch >> 8 & 0xF]);
+                        buffer.append(HEX_DIGITS[ch >> 4 & 0xF]);
+                        buffer.append(HEX_DIGITS[ch & 0xF]);
+                    }
                 }
             }
         }
@@ -259,65 +259,65 @@ public final class Text {
         for (int i = 1; i < length; i++) {
             char ch = in.charAt(i);
             switch (state) {
-            case 0: // Normal
-                if (ch == '\\') {
-                    state = 1;
-                } else {
-                    buffer.append(ch);
-                }
-                break;
-            case 1: // Process escape
-                switch (ch) {
-                case '\\', '"' -> {
-                    buffer.append(ch);
+                case 0: // Normal
+                    if (ch == '\\') {
+                        state = 1;
+                    } else {
+                        buffer.append(ch);
+                    }
+                    break;
+                case 1: // Process escape
+                    switch (ch) {
+                        case '\\', '"' -> {
+                            buffer.append(ch);
+                            state = 0;
+                        }
+                        case 'b' -> {
+                            buffer.append('\b');
+                            state = 0;
+                        }
+                        case 'f' -> {
+                            buffer.append('\f');
+                            state = 0;
+                        }
+                        case 'n' -> {
+                            buffer.append('\n');
+                            state = 0;
+                        }
+                        case 'r' -> {
+                            buffer.append('\r');
+                            state = 0;
+                        }
+                        case 't' -> {
+                            buffer.append('\t');
+                            state = 0;
+                        }
+                        case 'u' -> {
+                            value = 0;
+                            state = 2;
+                        }
+                        default -> state = 0; // In case bogus input was provided
+                    }
+                    break;
+                case 2: // Process 4-byte escape, part 1
+                    value = hexDigitValue(ch) << 12;
+                    state++;
+                    break;
+                case 3: // Process 4-byte escape, part 2
+                    value |= hexDigitValue(ch) << 8;
+                    state++;
+                    break;
+                case 4: // Process 4-byte escape, part 3
+                    value |= hexDigitValue(ch) << 4;
+                    state++;
+                    break;
+                case 5: // Process 4-byte escape, part 4
+                    buffer.append((char) (value | hexDigitValue(ch)));
                     state = 0;
-                }
-                case 'b' -> {
-                    buffer.append('\b');
-                    state = 0;
-                }
-                case 'f' -> {
-                    buffer.append('\f');
-                    state = 0;
-                }
-                case 'n' -> {
-                    buffer.append('\n');
-                    state = 0;
-                }
-                case 'r' -> {
-                    buffer.append('\r');
-                    state = 0;
-                }
-                case 't' -> {
-                    buffer.append('\t');
-                    state = 0;
-                }
-                case 'u' -> {
-                    value = 0;
-                    state = 2;
-                }
-                default -> state = 0; // In case bogus input was provided
-                }
-                break;
-            case 2: // Process 4-byte escape, part 1
-                value = hexDigitValue(ch) << 12;
-                state++;
-                break;
-            case 3: // Process 4-byte escape, part 2
-                value |= hexDigitValue(ch) << 8;
-                state++;
-                break;
-            case 4: // Process 4-byte escape, part 3
-                value |= hexDigitValue(ch) << 4;
-                state++;
-                break;
-            case 5: // Process 4-byte escape, part 4
-                buffer.append((char) (value | hexDigitValue(ch)));
-                state = 0;
-                break;
-            default:
-                state = 0; // In case bogus input was provided
-                break;
+                    break;
+                default:
+                    state = 0; // In case bogus input was provided
+                    break;
             }
         }
         return buffer.toString();

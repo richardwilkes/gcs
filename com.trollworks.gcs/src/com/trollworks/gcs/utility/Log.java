@@ -46,12 +46,12 @@ public final class Log {
         } else if (!GCS.VERSION.isZero()) { // When running a dev version, assume the console is always appropriate, since you're likely running from an IDE
             String home = System.getProperty("user.home", ".");
             switch (Platform.getPlatform()) {
-            case MAC -> path = Path.of(home, "Library", "Logs", GCS_LOG_FILE);
-            case WINDOWS -> {
-                String localAppData = System.getenv("LOCALAPPDATA");
-                path = Path.of(localAppData != null ? localAppData : home, "logs", GCS_LOG_FILE);
-            }
-            default -> path = Path.of(home, ".local", "logs", GCS_LOG_FILE);
+                case MAC -> path = Path.of(home, "Library", "Logs", GCS_LOG_FILE);
+                case WINDOWS -> {
+                    String localAppData = System.getenv("LOCALAPPDATA");
+                    path = Path.of(localAppData != null ? localAppData : home, "logs", GCS_LOG_FILE);
+                }
+                default -> path = Path.of(home, ".local", "logs", GCS_LOG_FILE);
             }
         }
         if (path != null) {

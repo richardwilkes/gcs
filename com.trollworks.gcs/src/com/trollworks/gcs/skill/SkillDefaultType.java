@@ -72,17 +72,17 @@ public final class SkillDefaultType {
         int    best;
         String type = skillDefault.getType();
         switch (type) {
-        case "parry":
-            best = getBestFast(character, skillDefault, requirePoints, excludes);
-            return finalLevel(skillDefault, best == Integer.MIN_VALUE ? best : best / 2 + 3 + character.getParryBonus());
-        case "block":
-            best = getBestFast(character, skillDefault, requirePoints, excludes);
-            return finalLevel(skillDefault, best == Integer.MIN_VALUE ? best : best / 2 + 3 + character.getBlockBonus());
-        case "skill":
-            return finalLevel(skillDefault, getBestFast(character, skillDefault, requirePoints, excludes));
-        default:
-            int level = com.trollworks.gcs.skill.Skill.resolveAttribute(character, type);
-            return finalLevel(skillDefault, ruleOf20 ? Math.min(level, 20) : level);
+            case "parry":
+                best = getBestFast(character, skillDefault, requirePoints, excludes);
+                return finalLevel(skillDefault, best == Integer.MIN_VALUE ? best : best / 2 + 3 + character.getParryBonus());
+            case "block":
+                best = getBestFast(character, skillDefault, requirePoints, excludes);
+                return finalLevel(skillDefault, best == Integer.MIN_VALUE ? best : best / 2 + 3 + character.getBlockBonus());
+            case "skill":
+                return finalLevel(skillDefault, getBestFast(character, skillDefault, requirePoints, excludes));
+            default:
+                int level = com.trollworks.gcs.skill.Skill.resolveAttribute(character, type);
+                return finalLevel(skillDefault, ruleOf20 ? Math.min(level, 20) : level);
         }
     }
 
@@ -98,16 +98,16 @@ public final class SkillDefaultType {
     public static int getSkillLevel(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20) {
         int best;
         switch (skillDefault.getType()) {
-        case "parry":
-            best = getBest(character, skillDefault, requirePoints, excludes);
-            return finalLevel(skillDefault, best == Integer.MIN_VALUE ? best : best / 2 + 3 + character.getParryBonus());
-        case "block":
-            best = getBest(character, skillDefault, requirePoints, excludes);
-            return finalLevel(skillDefault, best == Integer.MIN_VALUE ? best : best / 2 + 3 + character.getBlockBonus());
-        case "skill":
-            return finalLevel(skillDefault, getBest(character, skillDefault, requirePoints, excludes));
-        default:
-            return getSkillLevelFast(character, skillDefault, requirePoints, excludes, ruleOf20);
+            case "parry":
+                best = getBest(character, skillDefault, requirePoints, excludes);
+                return finalLevel(skillDefault, best == Integer.MIN_VALUE ? best : best / 2 + 3 + character.getParryBonus());
+            case "block":
+                best = getBest(character, skillDefault, requirePoints, excludes);
+                return finalLevel(skillDefault, best == Integer.MIN_VALUE ? best : best / 2 + 3 + character.getBlockBonus());
+            case "skill":
+                return finalLevel(skillDefault, getBest(character, skillDefault, requirePoints, excludes));
+            default:
+                return getSkillLevelFast(character, skillDefault, requirePoints, excludes, ruleOf20);
         }
     }
 

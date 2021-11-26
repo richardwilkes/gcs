@@ -94,16 +94,16 @@ public final class SaveCommand extends Command {
             dialog.addButton(I18n.text("Save"), Modal.OK);
             dialog.presentToUser();
             switch (dialog.getResult()) {
-            case Modal.OK:
-                save(saveable);
-                if (saveable.isModified()) {
+                case Modal.OK:
+                    save(saveable);
+                    if (saveable.isModified()) {
+                        return SaveResult.CANCEL;
+                    }
+                    return SaveResult.SUCCESS;
+                case Modal.CANCEL: // No
+                    return SaveResult.NO_SAVE;
+                default:
                     return SaveResult.CANCEL;
-                }
-                return SaveResult.SUCCESS;
-            case Modal.CANCEL: // No
-                return SaveResult.NO_SAVE;
-            default:
-                return SaveResult.CANCEL;
             }
         }
         return SaveResult.SUCCESS;

@@ -67,7 +67,7 @@ public class ModifierCheckCell extends TextCell {
     @Override
     public void mouseClicked(MouseEvent event, Rectangle bounds, Row row, Column column) {
         if (row instanceof Modifier modifier) {
-            Component src      = (Component) event.getSource();
+            Component src = (Component) event.getSource();
             if (mForEditor) {
                 modifier.setEnabled(!modifier.isEnabled());
                 ModifierListEditor editor = UIUtilities.getAncestorOfType(src, ModifierListEditor.class);

@@ -135,72 +135,72 @@ public final class GCS {
                 }
                 String[] parts = arg.split("=", 2);
                 switch (parts[0]) {
-                case "-h", "--help" -> showHelp();
-                case "--margins" -> {
-                    boolean missingMarginsArg = false;
-                    if (parts.length > 1) {
-                        if (parts[1].isBlank()) {
-                            missingMarginsArg = true;
+                    case "-h", "--help" -> showHelp();
+                    case "--margins" -> {
+                        boolean missingMarginsArg = false;
+                        if (parts.length > 1) {
+                            if (parts[1].isBlank()) {
+                                missingMarginsArg = true;
+                            } else {
+                                margins = parts[1];
+                            }
                         } else {
-                            margins = parts[1];
+                            i++;
+                            if (i < length && !args[i].startsWith("-")) {
+                                margins = args[i];
+                            } else {
+                                missingMarginsArg = true;
+                            }
                         }
-                    } else {
-                        i++;
-                        if (i < length && !args[i].startsWith("-")) {
-                            margins = args[i];
-                        } else {
-                            missingMarginsArg = true;
-                        }
-                    }
-                    if (missingMarginsArg) {
-                        msgs.add(I18n.text("missing argument for --margins"));
-                    }
-                }
-                case "--paper" -> {
-                    boolean missingPaperArg = false;
-                    if (parts.length > 1) {
-                        if (parts[1].isBlank()) {
-                            missingPaperArg = true;
-                        } else {
-                            paper = parts[1];
-                        }
-                    } else {
-                        i++;
-                        if (i < length && !args[i].startsWith("-")) {
-                            paper = args[i];
-                        } else {
-                            missingPaperArg = true;
+                        if (missingMarginsArg) {
+                            msgs.add(I18n.text("missing argument for --margins"));
                         }
                     }
-                    if (missingPaperArg) {
-                        msgs.add(I18n.text("missing argument for --paper"));
-                    }
-                }
-                case "--png" -> generatePNG = true;
-                case "--text" -> {
-                    generateText = true;
-                    boolean missingTemplateArg = false;
-                    if (parts.length > 1) {
-                        if (parts[1].isBlank()) {
-                            missingTemplateArg = true;
+                    case "--paper" -> {
+                        boolean missingPaperArg = false;
+                        if (parts.length > 1) {
+                            if (parts[1].isBlank()) {
+                                missingPaperArg = true;
+                            } else {
+                                paper = parts[1];
+                            }
                         } else {
-                            template = Path.of(parts[1]);
+                            i++;
+                            if (i < length && !args[i].startsWith("-")) {
+                                paper = args[i];
+                            } else {
+                                missingPaperArg = true;
+                            }
                         }
-                    } else {
-                        i++;
-                        if (i < length && !args[i].startsWith("-")) {
-                            template = Path.of(args[i]);
-                        } else {
-                            missingTemplateArg = true;
+                        if (missingPaperArg) {
+                            msgs.add(I18n.text("missing argument for --paper"));
                         }
                     }
-                    if (missingTemplateArg) {
-                        msgs.add(I18n.text("missing argument for --text"));
+                    case "--png" -> generatePNG = true;
+                    case "--text" -> {
+                        generateText = true;
+                        boolean missingTemplateArg = false;
+                        if (parts.length > 1) {
+                            if (parts[1].isBlank()) {
+                                missingTemplateArg = true;
+                            } else {
+                                template = Path.of(parts[1]);
+                            }
+                        } else {
+                            i++;
+                            if (i < length && !args[i].startsWith("-")) {
+                                template = Path.of(args[i]);
+                            } else {
+                                missingTemplateArg = true;
+                            }
+                        }
+                        if (missingTemplateArg) {
+                            msgs.add(I18n.text("missing argument for --text"));
+                        }
                     }
-                }
-                case "--loadsave" -> loadSave = true;
-                case "-v", "--version" -> showVersion = true;
-                default -> msgs.add(I18n.text("unknown option: ") + parts[0]);
+                    case "--loadsave" -> loadSave = true;
+                    case "-v", "--version" -> showVersion = true;
+                    default -> msgs.add(I18n.text("unknown option: ") + parts[0]);
                 }
             } else {
                 files.add(Path.of(arg));

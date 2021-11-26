@@ -58,32 +58,32 @@ public class LaunchProxy {
                     ConduitMessage msg = new ConduitMessage(mInput);
                     if (mUserFilter.equals(msg.mUser) && "GCS".equals(msg.mApp)) {
                         switch (msg.mState) {
-                        case LAUNCH:
-                            boolean ready;
-                            synchronized (this) {
-                                ready = mReady;
-                            }
-                            if (ready) {
-                                if (mID != msg.mID) {
-                                    send(new ConduitMessage("GCS", msg.mID, State.TOOK_OVER_FOR, null));
-                                    WindowUtils.forceAppToFront();
-                                    if (msg.mFiles != null && !msg.mFiles.isEmpty()) {
-                                        for (String file : msg.mFiles) {
-                                            OpenDataFileCommand.open(Path.of(file));
+                            case LAUNCH:
+                                boolean ready;
+                                synchronized (this) {
+                                    ready = mReady;
+                                }
+                                if (ready) {
+                                    if (mID != msg.mID) {
+                                        send(new ConduitMessage("GCS", msg.mID, State.TOOK_OVER_FOR, null));
+                                        WindowUtils.forceAppToFront();
+                                        if (msg.mFiles != null && !msg.mFiles.isEmpty()) {
+                                            for (String file : msg.mFiles) {
+                                                OpenDataFileCommand.open(Path.of(file));
+                                            }
+                                        } else {
+                                            EventQueue.invokeLater(OpenCommand::open);
                                         }
-                                    } else {
-                                        EventQueue.invokeLater(OpenCommand::open);
                                     }
                                 }
-                            }
-                            break;
-                        case TOOK_OVER_FOR:
-                            if (mID == msg.mID) {
-                                System.exit(0);
-                            }
-                            break;
-                        default:
-                            break;
+                                break;
+                            case TOOK_OVER_FOR:
+                                if (mID == msg.mID) {
+                                    System.exit(0);
+                                }
+                                break;
+                            default:
+                                break;
                         }
                     }
                 } catch (Exception exception) {

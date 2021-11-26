@@ -609,45 +609,45 @@ public class Advantage extends CollectedListRow implements HasSourceReference, S
             if (one.isEnabled()) {
                 int modifier = one.getCostModifier();
                 switch (one.getCostType()) {
-                case PERCENTAGE:
-                default:
-                    switch (one.getAffects()) {
-                    case TOTAL:
+                    case PERCENTAGE:
                     default:
-                        if (modifier < 0) { // Limitation
-                            baseLim += modifier;
-                            levelLim += modifier;
-                        } else { // Enhancement
-                            baseEnh += modifier;
-                            levelEnh += modifier;
+                        switch (one.getAffects()) {
+                            case TOTAL:
+                            default:
+                                if (modifier < 0) { // Limitation
+                                    baseLim += modifier;
+                                    levelLim += modifier;
+                                } else { // Enhancement
+                                    baseEnh += modifier;
+                                    levelEnh += modifier;
+                                }
+                                break;
+                            case BASE_ONLY:
+                                if (modifier < 0) { // Limitation
+                                    baseLim += modifier;
+                                } else { // Enhancement
+                                    baseEnh += modifier;
+                                }
+                                break;
+                            case LEVELS_ONLY:
+                                if (modifier < 0) { // Limitation
+                                    levelLim += modifier;
+                                } else { // Enhancement
+                                    levelEnh += modifier;
+                                }
+                                break;
                         }
                         break;
-                    case BASE_ONLY:
-                        if (modifier < 0) { // Limitation
-                            baseLim += modifier;
-                        } else { // Enhancement
-                            baseEnh += modifier;
+                    case POINTS:
+                        if (one.getAffects() == Affects.LEVELS_ONLY) {
+                            pointsPerLevel += modifier;
+                        } else {
+                            basePoints += modifier;
                         }
                         break;
-                    case LEVELS_ONLY:
-                        if (modifier < 0) { // Limitation
-                            levelLim += modifier;
-                        } else { // Enhancement
-                            levelEnh += modifier;
-                        }
+                    case MULTIPLIER:
+                        multiplier *= one.getCostMultiplier();
                         break;
-                    }
-                    break;
-                case POINTS:
-                    if (one.getAffects() == Affects.LEVELS_ONLY) {
-                        pointsPerLevel += modifier;
-                    } else {
-                        basePoints += modifier;
-                    }
-                    break;
-                case MULTIPLIER:
-                    multiplier *= one.getCostMultiplier();
-                    break;
                 }
             }
         }

@@ -86,42 +86,42 @@ public class Dice implements Cloneable {
         for (int i = 0; i < max; i++) {
             char ch = text.charAt(i);
             switch (state) {
-            case 0:
-                if (ch >= '0' && ch <= '9') {
-                    if (start == -1) {
-                        start = i;
+                case 0:
+                    if (ch >= '0' && ch <= '9') {
+                        if (start == -1) {
+                            start = i;
+                        }
+                    } else if (ch != ' ') {
+                        if (ch == 'd') {
+                            state = 1;
+                        } else if (ch == '+' || ch == '-') {
+                            state = 2;
+                        }
                     }
-                } else if (ch != ' ') {
-                    if (ch == 'd') {
-                        state = 1;
-                    } else if (ch == '+' || ch == '-') {
-                        state = 2;
+                    break;
+                case 1:
+                    if (ch != ' ' && (ch < '0' || ch > '9')) {
+                        if (ch == '+' || ch == '-') {
+                            state = 2;
+                        } else if (ch == 'x') {
+                            state = 3;
+                        } else {
+                            state = 4;
+                        }
                     }
-                }
-                break;
-            case 1:
-                if (ch != ' ' && (ch < '0' || ch > '9')) {
-                    if (ch == '+' || ch == '-') {
-                        state = 2;
-                    } else if (ch == 'x') {
-                        state = 3;
-                    } else {
+                    break;
+                case 2:
+                    if ((ch < '0' || ch > '9') && ch != ' ') {
+                        state = ch == 'x' ? 3 : 4;
+                    }
+                    break;
+                case 3:
+                    if ((ch < '0' || ch > '9') && ch != ' ') {
                         state = 4;
                     }
-                }
-                break;
-            case 2:
-                if ((ch < '0' || ch > '9') && ch != ' ') {
-                    state = ch == 'x' ? 3 : 4;
-                }
-                break;
-            case 3:
-                if ((ch < '0' || ch > '9') && ch != ' ') {
-                    state = 4;
-                }
-                break;
-            default:
-                break;
+                    break;
+                default:
+                    break;
             }
             if (state == 4) {
                 max = i;

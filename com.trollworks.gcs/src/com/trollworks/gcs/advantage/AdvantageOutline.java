@@ -88,11 +88,11 @@ public class AdvantageOutline extends ListOutline implements Incrementable {
         if (!(target instanceof Advantage targetAdvantage)) {
             return false;
         }
-        OutlineModel            model           = getModel();
-        ArrayList<RowUndo>      undoList        = new ArrayList<>();
-        RowUndo                 undo            = new RowUndo(targetAdvantage);
-        List<AdvantageModifier> list            = new ArrayList<>(targetAdvantage.getModifiers());
-        Object                  property        = model.getProperty(ListOutline.OWNING_LIST);
+        OutlineModel            model    = getModel();
+        ArrayList<RowUndo>      undoList = new ArrayList<>();
+        RowUndo                 undo     = new RowUndo(targetAdvantage);
+        List<AdvantageModifier> list     = new ArrayList<>(targetAdvantage.getModifiers());
+        Object                  property = model.getProperty(ListOutline.OWNING_LIST);
         removeDragHighlight(this);
         if (property instanceof ListOutline) {
             List<AdvantageModifier> collection = new ArrayList<>();

@@ -580,9 +580,9 @@ public class Equipment extends CollectedListRow implements HasSourceReference {
                 ModifierCostValueType mvt = costType.determineType(adj);
                 Fixed6                amt = mvt.extractValue(adj, false);
                 switch (mvt) {
-                case ADDITION -> additions = additions.add(amt);
-                case PERCENTAGE -> percentages = percentages.add(amt);
-                case MULTIPLIER -> cost = cost.mul(amt);
+                    case ADDITION -> additions = additions.add(amt);
+                    case PERCENTAGE -> percentages = percentages.add(amt);
+                    case MULTIPLIER -> cost = cost.mul(amt);
                 }
             }
         }
@@ -676,9 +676,9 @@ public class Equipment extends CollectedListRow implements HasSourceReference {
                 ModifierWeightValueType mvt      = weightType.determineType(adj);
                 Fraction                fraction = mvt.extractFraction(adj, false);
                 switch (mvt) {
-                case MULTIPLIER -> weight.setValue(weight.getValue().mul(fraction.mNumerator).div(fraction.mDenominator));
-                case PERCENTAGE_MULTIPLIER -> weight.setValue(weight.getValue().mul(fraction.mNumerator).div(fraction.mDenominator.mul(new Fixed6(100))));
-                case ADDITION -> sum.add(new WeightValue(fraction.value(), ModifierWeightValueType.extractUnits(adj, defUnits)));
+                    case MULTIPLIER -> weight.setValue(weight.getValue().mul(fraction.mNumerator).div(fraction.mDenominator));
+                    case PERCENTAGE_MULTIPLIER -> weight.setValue(weight.getValue().mul(fraction.mNumerator).div(fraction.mDenominator.mul(new Fixed6(100))));
+                    case ADDITION -> sum.add(new WeightValue(fraction.value(), ModifierWeightValueType.extractUnits(adj, defUnits)));
                 }
             }
         }

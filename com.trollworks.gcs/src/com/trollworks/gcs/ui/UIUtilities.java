@@ -173,7 +173,7 @@ public final class UIUtilities {
      */
     public static void disableControls(Component comp) {
         if (comp instanceof Container container) {
-            int       count     = container.getComponentCount();
+            int count = container.getComponentCount();
             for (int i = 0; i < count; i++) {
                 disableControls(container.getComponent(i));
             }

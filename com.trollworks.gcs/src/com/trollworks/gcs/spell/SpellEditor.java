@@ -164,7 +164,7 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
             if (forCharacter) {
                 addInteriorLabel(panel, I18n.text("Level"));
                 mLevelField = createField(panel, getDisplayLevel(mRow.getAttribute(),
-                        mRow.getLevel(), mRow.getRelativeLevel()),
+                                mRow.getLevel(), mRow.getRelativeLevel()),
                         I18n.text("The spell level and relative spell level to roll against.\n") + mRow.getLevelToolTip(),
                         7);
                 mLevelField.setEnabled(false);

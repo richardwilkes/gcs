@@ -39,14 +39,14 @@ public class Version implements Comparable<Version> {
         try {
             String[] parts = buffer.split("\\.", 3);
             switch (parts.length) {
-            case 3:
-                mBugfix = Integer.parseInt(parts[2]);
-                //noinspection fallthrough
-            case 2:
-                mMinor = Integer.parseInt(parts[1]);
-                //noinspection fallthrough
-            default:
-                mMajor = Integer.parseInt(parts[0]);
+                case 3:
+                    mBugfix = Integer.parseInt(parts[2]);
+                    //noinspection fallthrough
+                case 2:
+                    mMinor = Integer.parseInt(parts[1]);
+                    //noinspection fallthrough
+                default:
+                    mMajor = Integer.parseInt(parts[0]);
             }
         } catch (NumberFormatException nfe) {
             mMajor = 0;

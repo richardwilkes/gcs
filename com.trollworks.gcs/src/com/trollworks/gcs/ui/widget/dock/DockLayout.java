@@ -50,7 +50,7 @@ public class DockLayout implements DockLayoutNode, LayoutManager {
                     return dc;
                 }
             } else if (child instanceof DockLayout dl) {
-                DockContainer dc =dl.getFocusedDockContainerInternal();
+                DockContainer dc = dl.getFocusedDockContainerInternal();
                 if (dc != null) {
                     return dc;
                 }
@@ -174,7 +174,7 @@ public class DockLayout implements DockLayoutNode, LayoutManager {
         if (target instanceof DockLayout) {
             ((DockLayout) target).dock(dc, locationRelativeToTarget);
         } else if (target instanceof DockContainer tdc) {
-            DockLayout    layout = findLayout(tdc);
+            DockLayout layout = findLayout(tdc);
             layout.dockWithContainer(dc, tdc, locationRelativeToTarget);
         }
     }

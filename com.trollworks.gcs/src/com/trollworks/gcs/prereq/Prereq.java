@@ -37,8 +37,8 @@ public abstract class Prereq {
     }
 
     /**
-     * @param row The row to create the editor for.
-     * @param depth  The depth of this prerequisite.
+     * @param row   The row to create the editor for.
+     * @param depth The depth of this prerequisite.
      * @return A newly created prereq editor.
      */
     public abstract PrereqEditor createPrereqEditor(ListRow row, int depth);

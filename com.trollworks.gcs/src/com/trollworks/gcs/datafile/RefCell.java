@@ -50,7 +50,7 @@ public class RefCell extends TextCell {
     @Override
     public void mouseClicked(MouseEvent event, Rectangle bounds, Row row, Column column) {
         if (row instanceof HasSourceReference srcRef) {
-            List<String>       refs   = OpenPageReferenceCommand.getReferences(srcRef);
+            List<String> refs = OpenPageReferenceCommand.getReferences(srcRef);
             if (!refs.isEmpty()) {
                 OpenPageReferenceCommand.openReference(refs.get(0), (srcRef).getReferenceHighlight());
             }
@@ -60,7 +60,7 @@ public class RefCell extends TextCell {
     @Override
     public Cursor getCursor(MouseEvent event, Rectangle bounds, Row row, Column column) {
         if (row instanceof HasSourceReference srcRef) {
-            List<String>       refs   = OpenPageReferenceCommand.getReferences(srcRef);
+            List<String> refs = OpenPageReferenceCommand.getReferences(srcRef);
             if (!refs.isEmpty()) {
                 return Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
             }

@@ -12,8 +12,8 @@
 package com.trollworks.gcs.ui.widget.outline;
 
 import com.trollworks.gcs.advantage.Advantage;
-import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.character.Namer;
+import com.trollworks.gcs.character.SheetDockable;
 import com.trollworks.gcs.equipment.Equipment;
 import com.trollworks.gcs.modifier.AdvantageModifierEnabler;
 import com.trollworks.gcs.modifier.EquipmentModifierEnabler;

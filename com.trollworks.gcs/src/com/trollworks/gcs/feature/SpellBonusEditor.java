@@ -54,23 +54,23 @@ public class SpellBonusEditor extends FeatureEditor {
                 getMatchText(false, SpellBonus.KEY_POWER_SOURCE_NAME)}, (p) -> {
             SpellBonus b = (SpellBonus) getFeature();
             switch (p.getSelectedIndex()) {
-            case 0:
-            default:
-                if (!b.allColleges()) {
-                    Commitable.sendCommitToFocusOwner();
-                    b.allColleges(true);
-                    rebuild();
-                }
-                break;
-            case 1:
-                adjustMatchType(b, SpellBonus.KEY_COLLEGE_NAME);
-                break;
-            case 2:
-                adjustMatchType(b, SpellBonus.KEY_SPELL_NAME);
-                break;
-            case 3:
-                adjustMatchType(b, SpellBonus.KEY_POWER_SOURCE_NAME);
-                break;
+                case 0:
+                default:
+                    if (!b.allColleges()) {
+                        Commitable.sendCommitToFocusOwner();
+                        b.allColleges(true);
+                        rebuild();
+                    }
+                    break;
+                case 1:
+                    adjustMatchType(b, SpellBonus.KEY_COLLEGE_NAME);
+                    break;
+                case 2:
+                    adjustMatchType(b, SpellBonus.KEY_SPELL_NAME);
+                    break;
+                case 3:
+                    adjustMatchType(b, SpellBonus.KEY_POWER_SOURCE_NAME);
+                    break;
             }
         });
         popup.setSelectedItem(getMatchText(bonus.allColleges(), bonus.getMatchType()), false);

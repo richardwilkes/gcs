@@ -1451,83 +1451,83 @@ public class Outline extends ActionPanel implements OutlineModelListener, Compon
             boolean   shiftDown = event.isShiftDown();
             int       index;
             switch (event.getKeyCode()) {
-            case KeyEvent.VK_LEFT:
-                index = selection.firstSelectedIndex();
-                if (index >= 0) {
-                    if (selection.getCount() == 1) {
-                        Row row = mModel.getRowAtIndex(index);
-                        if (row.canHaveChildren() && row.isOpen()) {
-                            row.setOpen(false);
-                            repaintSelection();
+                case KeyEvent.VK_LEFT:
+                    index = selection.firstSelectedIndex();
+                    if (index >= 0) {
+                        if (selection.getCount() == 1) {
+                            Row row = mModel.getRowAtIndex(index);
+                            if (row.canHaveChildren() && row.isOpen()) {
+                                row.setOpen(false);
+                                repaintSelection();
+                            } else {
+                                Row parentRow = row.getParent();
+                                if (parentRow != null) {
+                                    index = getModel().getIndexOfRow(parentRow);
+                                    selection.select(index, false);
+                                    keyScroll(index);
+                                }
+                            }
                         } else {
-                            Row parentRow = row.getParent();
-                            if (parentRow != null) {
-                                index = getModel().getIndexOfRow(parentRow);
-                                selection.select(index, false);
-                                keyScroll(index);
+                            while (index >= 0) {
+                                mModel.getRowAtIndex(index).setOpen(false);
+                                index = selection.nextSelectedIndex(index + 1);
+                                repaintSelection();
                             }
                         }
-                    } else {
-                        while (index >= 0) {
-                            mModel.getRowAtIndex(index).setOpen(false);
-                            index = selection.nextSelectedIndex(index + 1);
-                            repaintSelection();
-                        }
                     }
-                }
-                break;
-            case KeyEvent.VK_RIGHT:
-                index = selection.firstSelectedIndex();
-                while (index >= 0) {
-                    mModel.getRowAtIndex(index).setOpen(true);
-                    index = selection.nextSelectedIndex(index + 1);
-                    repaintSelection();
-                }
-                break;
-            case KeyEvent.VK_UP:
-                index = selection.selectUp(shiftDown);
-                if (index != -1) {
-                    OutlineModel model  = getModel();
-                    RowFilter    filter = model.getRowFilter();
-                    if (filter != null) {
-                        while (filter.isRowFiltered(model.getRowAtIndex(index))) {
-                            int last = index;
-                            index = selection.selectUp(shiftDown);
-                            if (index == last || index == -1) {
-                                break;
+                    break;
+                case KeyEvent.VK_RIGHT:
+                    index = selection.firstSelectedIndex();
+                    while (index >= 0) {
+                        mModel.getRowAtIndex(index).setOpen(true);
+                        index = selection.nextSelectedIndex(index + 1);
+                        repaintSelection();
+                    }
+                    break;
+                case KeyEvent.VK_UP:
+                    index = selection.selectUp(shiftDown);
+                    if (index != -1) {
+                        OutlineModel model  = getModel();
+                        RowFilter    filter = model.getRowFilter();
+                        if (filter != null) {
+                            while (filter.isRowFiltered(model.getRowAtIndex(index))) {
+                                int last = index;
+                                index = selection.selectUp(shiftDown);
+                                if (index == last || index == -1) {
+                                    break;
+                                }
                             }
+                            model.reapplyRowFilter();
                         }
-                        model.reapplyRowFilter();
+                        keyScroll(index);
                     }
-                    keyScroll(index);
-                }
-                break;
-            case KeyEvent.VK_DOWN:
-                index = selection.selectDown(shiftDown);
-                if (index != -1) {
-                    OutlineModel model  = getModel();
-                    RowFilter    filter = model.getRowFilter();
-                    if (filter != null) {
-                        while (filter.isRowFiltered(model.getRowAtIndex(index))) {
-                            int last = index;
-                            index = selection.selectDown(shiftDown);
-                            if (index == last || index == -1) {
-                                break;
+                    break;
+                case KeyEvent.VK_DOWN:
+                    index = selection.selectDown(shiftDown);
+                    if (index != -1) {
+                        OutlineModel model  = getModel();
+                        RowFilter    filter = model.getRowFilter();
+                        if (filter != null) {
+                            while (filter.isRowFiltered(model.getRowAtIndex(index))) {
+                                int last = index;
+                                index = selection.selectDown(shiftDown);
+                                if (index == last || index == -1) {
+                                    break;
+                                }
                             }
+                            model.reapplyRowFilter();
                         }
-                        model.reapplyRowFilter();
+                        keyScroll(index);
                     }
-                    keyScroll(index);
-                }
-                break;
-            case KeyEvent.VK_HOME:
-                selectToHome(selection, shiftDown);
-                break;
-            case KeyEvent.VK_END:
-                selectToEnd(selection, shiftDown);
-                break;
-            default:
-                return;
+                    break;
+                case KeyEvent.VK_HOME:
+                    selectToHome(selection, shiftDown);
+                    break;
+                case KeyEvent.VK_END:
+                    selectToEnd(selection, shiftDown);
+                    break;
+                default:
+                    return;
             }
             event.consume();
         }

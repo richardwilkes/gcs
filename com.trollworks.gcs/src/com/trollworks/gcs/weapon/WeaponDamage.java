@@ -271,26 +271,26 @@ public class WeaponDamage {
                     }
                 }
                 switch (mST) {
-                case SW -> base = addDice(base, character.getSwing(st));
-                case SW_LEVELED -> {
-                    Dice swing = character.getSwing(st);
-                    if (mOwner.mOwner instanceof Advantage advantage) {
-                        if (advantage.isLeveled()) {
-                            swing.multiply(advantage.getLevels());
+                    case SW -> base = addDice(base, character.getSwing(st));
+                    case SW_LEVELED -> {
+                        Dice swing = character.getSwing(st);
+                        if (mOwner.mOwner instanceof Advantage advantage) {
+                            if (advantage.isLeveled()) {
+                                swing.multiply(advantage.getLevels());
+                            }
                         }
+                        base = addDice(base, swing);
                     }
-                    base = addDice(base, swing);
-                }
-                case THR -> base = addDice(base, character.getThrust(st));
-                case THR_LEVELED -> {
-                    Dice thrust = character.getThrust(st);
-                    if (mOwner.mOwner instanceof Advantage advantage) {
-                        if (advantage.isLeveled()) {
-                            thrust.multiply(advantage.getLevels());
+                    case THR -> base = addDice(base, character.getThrust(st));
+                    case THR_LEVELED -> {
+                        Dice thrust = character.getThrust(st);
+                        if (mOwner.mOwner instanceof Advantage advantage) {
+                            if (advantage.isLeveled()) {
+                                thrust.multiply(advantage.getLevels());
+                            }
                         }
+                        base = addDice(base, thrust);
                     }
-                    base = addDice(base, thrust);
-                }
                 }
                 int dieCount = base.getDieCount();
 
@@ -403,26 +403,26 @@ public class WeaponDamage {
             int           level  = amount.getLevel();
             amount.setLevel(dieCount);
             switch (wb.getWeaponSelectionType()) {
-            case THIS_WEAPON:
-            default:
-                if (wb.getSpecializationCriteria().matches(mOwner.getUsage())) {
-                    if (set.add(wb)) {
-                        wb.addToToolTip(toolTip);
+                case THIS_WEAPON:
+                default:
+                    if (wb.getSpecializationCriteria().matches(mOwner.getUsage())) {
+                        if (set.add(wb)) {
+                            wb.addToToolTip(toolTip);
+                        }
                     }
-                }
-                break;
-            case WEAPONS_WITH_NAME:
-                if (wb.getNameCriteria().matches(mOwner.toString()) &&
-                        wb.getSpecializationCriteria().matches(mOwner.getUsage()) &&
-                        wb.matchesCategories(mOwner.getCategories())) {
-                    if (set.add(wb)) {
-                        wb.addToToolTip(toolTip);
+                    break;
+                case WEAPONS_WITH_NAME:
+                    if (wb.getNameCriteria().matches(mOwner.toString()) &&
+                            wb.getSpecializationCriteria().matches(mOwner.getUsage()) &&
+                            wb.matchesCategories(mOwner.getCategories())) {
+                        if (set.add(wb)) {
+                            wb.addToToolTip(toolTip);
+                        }
                     }
-                }
-                break;
-            case WEAPONS_WITH_REQUIRED_SKILL:
-                // Already handled
-                break;
+                    break;
+                case WEAPONS_WITH_REQUIRED_SKILL:
+                    // Already handled
+                    break;
             }
             amount.setLevel(level);
         }

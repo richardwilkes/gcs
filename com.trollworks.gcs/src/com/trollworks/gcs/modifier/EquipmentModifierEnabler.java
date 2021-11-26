@@ -72,15 +72,15 @@ public final class EquipmentModifierEnabler extends Panel {
             dialog.addApplyButton();
             dialog.presentToUser();
             switch (dialog.getResult()) {
-            case Modal.OK:
-                panel.applyChanges();
-                modified = true;
-                break;
-            case Modal.CANCEL:
-                break;
-            case Modal.CLOSED:
-            default:
-                return modified;
+                case Modal.OK:
+                    panel.applyChanges();
+                    modified = true;
+                    break;
+                case Modal.CANCEL:
+                    break;
+                case Modal.CLOSED:
+                default:
+                    return modified;
             }
         }
         return modified;

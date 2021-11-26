@@ -33,14 +33,14 @@ public enum Alignment {
      */
     public static Rectangle position(Rectangle outer, Rectangle inner, Alignment horizontalAlignment, Alignment verticalAlignment) {
         switch (horizontalAlignment) {
-        case CENTER -> inner.x = outer.x + (outer.width - inner.width) / 2;
-        case RIGHT_BOTTOM -> inner.x = outer.x + outer.width - inner.width;
-        default -> inner.x = outer.x;
+            case CENTER -> inner.x = outer.x + (outer.width - inner.width) / 2;
+            case RIGHT_BOTTOM -> inner.x = outer.x + outer.width - inner.width;
+            default -> inner.x = outer.x;
         }
         switch (verticalAlignment) {
-        case CENTER -> inner.y = outer.y + (outer.height - inner.height) / 2;
-        case RIGHT_BOTTOM -> inner.y = outer.y + outer.height - inner.height;
-        default -> inner.y = outer.y;
+            case CENTER -> inner.y = outer.y + (outer.height - inner.height) / 2;
+            case RIGHT_BOTTOM -> inner.y = outer.y + outer.height - inner.height;
+            default -> inner.y = outer.y;
         }
         return inner;
     }

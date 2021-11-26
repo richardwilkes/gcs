@@ -30,60 +30,60 @@ public class SSRTtoYards implements ExpressionFunction {
             v = -15;
         }
         switch (v) {
-        case -15:
-            return Double.valueOf(LengthUnits.YD.convert(LengthUnits.IN, SSRT.ONE_FIFTH).asDouble());
-        case -14:
-            return Double.valueOf(LengthUnits.YD.convert(LengthUnits.IN, SSRT.ONE_THIRD).asDouble());
-        case -13:
-            return Double.valueOf(LengthUnits.YD.convert(LengthUnits.IN, SSRT.HALF).asDouble());
-        case -12:
-            return Double.valueOf(LengthUnits.YD.convert(LengthUnits.IN, SSRT.TWO_THIRDS).asDouble());
-        case -11:
-            return Double.valueOf(LengthUnits.YD.convert(LengthUnits.IN, Fixed6.ONE).asDouble());
-        case -10:
-            return Double.valueOf(LengthUnits.YD.convert(LengthUnits.IN, SSRT.ONE_AND_A_HALF).asDouble());
-        case -9:
-            return Double.valueOf(LengthUnits.YD.convert(LengthUnits.IN, SSRT.TWO).asDouble());
-        case -8:
-            return Double.valueOf(LengthUnits.YD.convert(LengthUnits.IN, SSRT.THREE).asDouble());
-        case -7:
-            return Double.valueOf(LengthUnits.YD.convert(LengthUnits.IN, SSRT.FIVE).asDouble());
-        case -6:
-            return Double.valueOf(LengthUnits.YD.convert(LengthUnits.IN, SSRT.EIGHT).asDouble());
-        case -5:
-            return Double.valueOf(LengthUnits.YD.convert(LengthUnits.FT, Fixed6.ONE).asDouble());
-        case -4:
-            return Double.valueOf(LengthUnits.YD.convert(LengthUnits.FT, SSRT.ONE_AND_A_HALF).asDouble());
-        case -3:
-            return Double.valueOf(LengthUnits.YD.convert(LengthUnits.FT, SSRT.TWO).asDouble());
-        case -2:
-            return Double.valueOf(1);
-        case -1:
-            return Double.valueOf(1.5);
-        case 0:
-            return Double.valueOf(2);
-        case 1:
-            return Double.valueOf(3);
-        case 2:
-            return Double.valueOf(5);
-        case 3:
-            return Double.valueOf(7);
-        default:
-            v -= 4;
-            long multiplier = 1;
-            for (int i = 0; i < v / 6; i++) {
-                multiplier *= 10;
-            }
-            v = switch (v % 6) {
-                case 0 -> 10;
-                case 1 -> 15;
-                case 2 -> 20;
-                case 3 -> 30;
-                case 4 -> 50;
-                case 5 -> 70;
-                default -> 0; // can't actually happen
-            };
-            return Double.valueOf(v * multiplier);
+            case -15:
+                return Double.valueOf(LengthUnits.YD.convert(LengthUnits.IN, SSRT.ONE_FIFTH).asDouble());
+            case -14:
+                return Double.valueOf(LengthUnits.YD.convert(LengthUnits.IN, SSRT.ONE_THIRD).asDouble());
+            case -13:
+                return Double.valueOf(LengthUnits.YD.convert(LengthUnits.IN, SSRT.HALF).asDouble());
+            case -12:
+                return Double.valueOf(LengthUnits.YD.convert(LengthUnits.IN, SSRT.TWO_THIRDS).asDouble());
+            case -11:
+                return Double.valueOf(LengthUnits.YD.convert(LengthUnits.IN, Fixed6.ONE).asDouble());
+            case -10:
+                return Double.valueOf(LengthUnits.YD.convert(LengthUnits.IN, SSRT.ONE_AND_A_HALF).asDouble());
+            case -9:
+                return Double.valueOf(LengthUnits.YD.convert(LengthUnits.IN, SSRT.TWO).asDouble());
+            case -8:
+                return Double.valueOf(LengthUnits.YD.convert(LengthUnits.IN, SSRT.THREE).asDouble());
+            case -7:
+                return Double.valueOf(LengthUnits.YD.convert(LengthUnits.IN, SSRT.FIVE).asDouble());
+            case -6:
+                return Double.valueOf(LengthUnits.YD.convert(LengthUnits.IN, SSRT.EIGHT).asDouble());
+            case -5:
+                return Double.valueOf(LengthUnits.YD.convert(LengthUnits.FT, Fixed6.ONE).asDouble());
+            case -4:
+                return Double.valueOf(LengthUnits.YD.convert(LengthUnits.FT, SSRT.ONE_AND_A_HALF).asDouble());
+            case -3:
+                return Double.valueOf(LengthUnits.YD.convert(LengthUnits.FT, SSRT.TWO).asDouble());
+            case -2:
+                return Double.valueOf(1);
+            case -1:
+                return Double.valueOf(1.5);
+            case 0:
+                return Double.valueOf(2);
+            case 1:
+                return Double.valueOf(3);
+            case 2:
+                return Double.valueOf(5);
+            case 3:
+                return Double.valueOf(7);
+            default:
+                v -= 4;
+                long multiplier = 1;
+                for (int i = 0; i < v / 6; i++) {
+                    multiplier *= 10;
+                }
+                v = switch (v % 6) {
+                    case 0 -> 10;
+                    case 1 -> 15;
+                    case 2 -> 20;
+                    case 3 -> 30;
+                    case 4 -> 50;
+                    case 5 -> 70;
+                    default -> 0; // can't actually happen
+                };
+                return Double.valueOf(v * multiplier);
         }
     }
 }

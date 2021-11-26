@@ -478,9 +478,9 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     private static void collectReactionsFromFeatureList(String source, List<Feature> features, Map<String, ReactionRow> reactionMap) {
         for (Feature feature : features) {
             if (feature instanceof ReactionBonus bonus) {
-                int           amount    = bonus.getAmount().getIntegerAdjustedAmount();
-                String        situation = bonus.getSituation();
-                ReactionRow   existing  = reactionMap.get(situation);
+                int         amount    = bonus.getAmount().getIntegerAdjustedAmount();
+                String      situation = bonus.getSituation();
+                ReactionRow existing  = reactionMap.get(situation);
                 if (existing == null) {
                     reactionMap.put(situation, new ReactionRow(amount, situation, source));
                 } else {

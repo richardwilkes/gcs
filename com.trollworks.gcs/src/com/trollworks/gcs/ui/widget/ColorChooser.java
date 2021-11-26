@@ -40,11 +40,11 @@ public final class ColorChooser extends Panel {
         cc.adjustButtons();
         modal.presentToUser();
         switch (modal.getResult()) {
-        case Modal.OK:
-            Commitable.sendCommitToFocusOwner();
-            return cc.mCurrent.getWellColor();
-        default: // Close or cancel
-            return null;
+            case Modal.OK:
+                Commitable.sendCommitToFocusOwner();
+                return cc.mCurrent.getWellColor();
+            default: // Close or cancel
+                return null;
         }
     }
 

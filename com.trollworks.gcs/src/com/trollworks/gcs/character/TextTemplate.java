@@ -366,314 +366,314 @@ public class TextTemplate {
         GURPSCharacter gurpsCharacter = mSheet.getCharacter();
         Profile        description    = gurpsCharacter.getProfile();
         switch (key) {
-        case KEY_GRID_TEMPLATE:
-            out.write(mSheet.getHTMLGridTemplate());
-            break;
-        case KEY_ENCODING_OFF:
-            mEncodeText = false;
-            break;
-        case KEY_ENHANCED_KEY_PARSING:      // Turn on the ability to enclose a KEY with @.
-            mEnhancedKeyParsing = true;     // ex: @KEY@. Useful for when output needs to
-            break;                          // be embedded. ex: "<HTML@KEY@TAG>"
-        case KEY_PORTRAIT:
-            String fileName = PathUtils.enforceExtension(PathUtils.getLeafName(base, false), FileType.PNG.getExtension());
-            ImageIO.write(description.getPortraitWithFallback().getRetina(), "png", base.resolveSibling(fileName).toFile());
-            out.write(URLEncoder.encode(fileName, StandardCharsets.UTF_8));
-            break;
-        case KEY_PORTRAIT_EMBEDDED:
-            out.write("data:image/png;base64,");
-            ByteArrayOutputStream imgBuffer = new ByteArrayOutputStream();
-            OutputStream wrapped = Base64.getEncoder().wrap(imgBuffer);
-            ImageIO.write(description.getPortraitWithFallback().getRetina(), "png", wrapped);
-            wrapped.close();
-            out.write(imgBuffer.toString(StandardCharsets.UTF_8));
-            break;
-        case KEY_NAME:
-            writeEncodedText(out, description.getName());
-            break;
-        case KEY_TITLE:
-            writeEncodedText(out, description.getTitle());
-            break;
-        case KEY_ORGANIZATION:
-            writeEncodedText(out, description.getOrganization());
-            break;
-        case KEY_RELIGION:
-            writeEncodedText(out, description.getReligion());
-            break;
-        case KEY_PLAYER:
-            writeEncodedText(out, description.getPlayerName());
-            break;
-        case KEY_CREATED_ON:
-            writeEncodedText(out, Numbers.formatDateTime(Numbers.DATE_AT_TIME_FORMAT, gurpsCharacter.getCreatedOn() * FieldFactory.TIMESTAMP_FACTOR));
-            break;
-        case KEY_MODIFIED_ON:
-            writeEncodedText(out, Numbers.formatDateTime(Numbers.DATE_AT_TIME_FORMAT, gurpsCharacter.getModifiedOn() * FieldFactory.TIMESTAMP_FACTOR));
-            break;
-        case KEY_TOTAL_POINTS:
-            writeEncodedText(out, Numbers.format(Settings.getInstance().getGeneralSettings().includeUnspentPointsInTotal() ? gurpsCharacter.getTotalPoints() : gurpsCharacter.getSpentPoints()));
-            break;
-        case KEY_ATTRIBUTE_POINTS:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributePoints()));
-            break;
-        case KEY_ST_POINTS:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("st")));
-            break;
-        case KEY_DX_POINTS:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("dx")));
-            break;
-        case KEY_IQ_POINTS:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("iq")));
-            break;
-        case KEY_HT_POINTS:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("ht")));
-            break;
-        case KEY_PERCEPTION_POINTS:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("per")));
-            break;
-        case KEY_WILL_POINTS:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("will")));
-            break;
-        case KEY_FP_POINTS_DEPRECATED:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("fp")));
-            break;
-        case KEY_HP_POINTS_DEPRECATED:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("hp")));
-            break;
-        case KEY_BASIC_SPEED_POINTS:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("basic_speed")));
-            break;
-        case KEY_BASIC_MOVE_POINTS:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("basic_move")));
-            break;
-        case KEY_ADVANTAGE_POINTS:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAdvantagePoints()));
-            break;
-        case KEY_DISADVANTAGE_POINTS:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getDisadvantagePoints()));
-            break;
-        case KEY_QUIRK_POINTS:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getQuirkPoints()));
-            break;
-        case KEY_SKILL_POINTS:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getSkillPoints()));
-            break;
-        case KEY_SPELL_POINTS:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getSpellPoints()));
-            break;
-        case KEY_RACE_POINTS:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getRacePoints()));
-            break;
-        case KEY_UNSPENT_POINTS:
-        case KEY_EARNED_POINTS_DEPRECATED:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getUnspentPoints()));
-            break;
-        case KEY_HEIGHT:
-            writeEncodedText(out, description.getHeight().toString());
-            break;
-        case KEY_HAIR:
-            writeEncodedText(out, description.getHair());
-            break;
-        case KEY_GENDER:
-            writeEncodedText(out, description.getGender());
-            break;
-        case KEY_WEIGHT:
-            writeEncodedText(out, EquipmentColumn.getDisplayWeight(gurpsCharacter, description.getWeight()));
-            break;
-        case KEY_EYES:
-            writeEncodedText(out, description.getEyeColor());
-            break;
-        case KEY_AGE:
-            writeEncodedText(out, description.getAge());
-            break;
-        case KEY_SIZE:
-            writeEncodedText(out, Numbers.formatWithForcedSign(description.getSizeModifier()));
-            break;
-        case KEY_SKIN:
-            writeEncodedText(out, description.getSkinColor());
-            break;
-        case KEY_BIRTHDAY:
-            writeEncodedText(out, description.getBirthday());
-            break;
-        case KEY_TL:
-            writeEncodedText(out, description.getTechLevel());
-            break;
-        case KEY_HAND:
-            writeEncodedText(out, description.getHandedness());
-            break;
-        case KEY_ST:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("st")));
-            break;
-        case KEY_DX:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("dx")));
-            break;
-        case KEY_IQ:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("iq")));
-            break;
-        case KEY_HT:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("ht")));
-            break;
-        case KEY_WILL:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("will")));
-            break;
-        case KEY_FRIGHT_CHECK:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("fright_check")));
-            break;
-        case KEY_BASIC_SPEED:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeDoubleValue("basic_speed")));
-            break;
-        case KEY_BASIC_MOVE:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("basic_move")));
-            break;
-        case KEY_PERCEPTION:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("per")));
-            break;
-        case KEY_VISION:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("vision")));
-            break;
-        case KEY_HEARING:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("hearing")));
-            break;
-        case KEY_TASTE_SMELL:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("taste_smell")));
-            break;
-        case KEY_TOUCH:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("touch")));
-            break;
-        case KEY_THRUST:
-            writeEncodedText(out, gurpsCharacter.getThrust().toString());
-            break;
-        case KEY_SWING:
-            writeEncodedText(out, gurpsCharacter.getSwing().toString());
-            break;
-        case KEY_GENERAL_DR:
-            int torsoDR = 0;
-            HitLocation torsoLocation = gurpsCharacter.getSheetSettings().getHitLocations().lookupLocationByID("torso");
-            if (torsoLocation != null) {
-                torsoDR = torsoLocation.getDR(gurpsCharacter, null);
-            }
-            writeEncodedText(out, Numbers.format(torsoDR));
-            break;
-        case KEY_CURRENT_DODGE:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getDodge(gurpsCharacter.getEncumbranceLevel(false))));
-            break;
-        case KEY_CURRENT_MOVE:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getMove(gurpsCharacter.getEncumbranceLevel(false))));
-            break;
-        case KEY_BEST_CURRENT_PARRY:
-            writeBestWeaponDefense(out, MeleeWeaponStats::getResolvedParryNoToolTip);
-            break;
-        case KEY_BEST_CURRENT_BLOCK:
-            writeBestWeaponDefense(out, MeleeWeaponStats::getResolvedBlockNoToolTip);
-            break;
-        case KEY_FP_DEPRECATED:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCurrentIntValue("fp")));
-            break;
-        case KEY_BASIC_FP_DEPRECATED:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("fp")));
-            break;
-        case KEY_TIRED_DEPRECATED:
-            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "fp", I18n.text("Tired"));
-            break;
-        case KEY_FP_COLLAPSE_DEPRECATED:
-            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "fp", I18n.text("Collapse"));
-            break;
-        case KEY_UNCONSCIOUS_DEPRECATED:
-            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "fp", I18n.text("Unconscious"));
-            break;
-        case KEY_HP_DEPRECATED:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCurrentIntValue("hp")));
-            break;
-        case KEY_BASIC_HP_DEPRECATED:
-            writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("hp")));
-            break;
-        case KEY_REELING_DEPRECATED:
-            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", I18n.text("Reeling"));
-            break;
-        case KEY_HP_COLLAPSE_DEPRECATED:
-            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", I18n.text("Collapse"));
-            break;
-        case KEY_DEATH_CHECK_1_DEPRECATED:
-            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", String.format(I18n.text("Dying #%d"), Integer.valueOf(1)));
-            break;
-        case KEY_DEATH_CHECK_2_DEPRECATED:
-            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", String.format(I18n.text("Dying #%d"), Integer.valueOf(2)));
-            break;
-        case KEY_DEATH_CHECK_3_DEPRECATED:
-            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", String.format(I18n.text("Dying #%d"), Integer.valueOf(3)));
-            break;
-        case KEY_DEATH_CHECK_4_DEPRECATED:
-            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", String.format(I18n.text("Dying #%d"), Integer.valueOf(4)));
-            break;
-        case KEY_DEAD_DEPRECATED:
-            deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", I18n.text("Dead"));
-            break;
-        case KEY_BASIC_LIFT:
-            writeEncodedText(out, gurpsCharacter.getBasicLift().toString());
-            break;
-        case KEY_ONE_HANDED_LIFT:
-            writeEncodedText(out, gurpsCharacter.getOneHandedLift().toString());
-            break;
-        case KEY_TWO_HANDED_LIFT:
-            writeEncodedText(out, gurpsCharacter.getTwoHandedLift().toString());
-            break;
-        case KEY_SHOVE:
-            writeEncodedText(out, gurpsCharacter.getShoveAndKnockOver().toString());
-            break;
-        case KEY_RUNNING_SHOVE:
-            writeEncodedText(out, gurpsCharacter.getRunningShoveAndKnockOver().toString());
-            break;
-        case KEY_CARRY_ON_BACK:
-            writeEncodedText(out, gurpsCharacter.getCarryOnBack().toString());
-            break;
-        case KEY_SHIFT_SLIGHTLY:
-            writeEncodedText(out, gurpsCharacter.getShiftSlightly().toString());
-            break;
-        case KEY_CARRIED_WEIGHT:
-            writeEncodedText(out, EquipmentColumn.getDisplayWeight(gurpsCharacter, gurpsCharacter.getWeightCarried(false)));
-            break;
-        case KEY_CARRIED_VALUE:
-            writeEncodedText(out, "$" + gurpsCharacter.getWealthCarried().toLocalizedString());
-            break;
-        case KEY_OTHER_VALUE:
-            writeEncodedText(out, "$" + gurpsCharacter.getWealthNotCarried().toLocalizedString());
-            break;
-        case KEY_ALL_NOTES_COMBINED:
-            StringBuilder buffer = new StringBuilder();
-            for (Note note : gurpsCharacter.getNotesIterator()) {
-                if (!buffer.isEmpty()) {
-                    buffer.append("\n\n");
+            case KEY_GRID_TEMPLATE:
+                out.write(mSheet.getHTMLGridTemplate());
+                break;
+            case KEY_ENCODING_OFF:
+                mEncodeText = false;
+                break;
+            case KEY_ENHANCED_KEY_PARSING:      // Turn on the ability to enclose a KEY with @.
+                mEnhancedKeyParsing = true;     // ex: @KEY@. Useful for when output needs to
+                break;                          // be embedded. ex: "<HTML@KEY@TAG>"
+            case KEY_PORTRAIT:
+                String fileName = PathUtils.enforceExtension(PathUtils.getLeafName(base, false), FileType.PNG.getExtension());
+                ImageIO.write(description.getPortraitWithFallback().getRetina(), "png", base.resolveSibling(fileName).toFile());
+                out.write(URLEncoder.encode(fileName, StandardCharsets.UTF_8));
+                break;
+            case KEY_PORTRAIT_EMBEDDED:
+                out.write("data:image/png;base64,");
+                ByteArrayOutputStream imgBuffer = new ByteArrayOutputStream();
+                OutputStream wrapped = Base64.getEncoder().wrap(imgBuffer);
+                ImageIO.write(description.getPortraitWithFallback().getRetina(), "png", wrapped);
+                wrapped.close();
+                out.write(imgBuffer.toString(StandardCharsets.UTF_8));
+                break;
+            case KEY_NAME:
+                writeEncodedText(out, description.getName());
+                break;
+            case KEY_TITLE:
+                writeEncodedText(out, description.getTitle());
+                break;
+            case KEY_ORGANIZATION:
+                writeEncodedText(out, description.getOrganization());
+                break;
+            case KEY_RELIGION:
+                writeEncodedText(out, description.getReligion());
+                break;
+            case KEY_PLAYER:
+                writeEncodedText(out, description.getPlayerName());
+                break;
+            case KEY_CREATED_ON:
+                writeEncodedText(out, Numbers.formatDateTime(Numbers.DATE_AT_TIME_FORMAT, gurpsCharacter.getCreatedOn() * FieldFactory.TIMESTAMP_FACTOR));
+                break;
+            case KEY_MODIFIED_ON:
+                writeEncodedText(out, Numbers.formatDateTime(Numbers.DATE_AT_TIME_FORMAT, gurpsCharacter.getModifiedOn() * FieldFactory.TIMESTAMP_FACTOR));
+                break;
+            case KEY_TOTAL_POINTS:
+                writeEncodedText(out, Numbers.format(Settings.getInstance().getGeneralSettings().includeUnspentPointsInTotal() ? gurpsCharacter.getTotalPoints() : gurpsCharacter.getSpentPoints()));
+                break;
+            case KEY_ATTRIBUTE_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributePoints()));
+                break;
+            case KEY_ST_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("st")));
+                break;
+            case KEY_DX_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("dx")));
+                break;
+            case KEY_IQ_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("iq")));
+                break;
+            case KEY_HT_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("ht")));
+                break;
+            case KEY_PERCEPTION_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("per")));
+                break;
+            case KEY_WILL_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("will")));
+                break;
+            case KEY_FP_POINTS_DEPRECATED:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("fp")));
+                break;
+            case KEY_HP_POINTS_DEPRECATED:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("hp")));
+                break;
+            case KEY_BASIC_SPEED_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("basic_speed")));
+                break;
+            case KEY_BASIC_MOVE_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCost("basic_move")));
+                break;
+            case KEY_ADVANTAGE_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAdvantagePoints()));
+                break;
+            case KEY_DISADVANTAGE_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getDisadvantagePoints()));
+                break;
+            case KEY_QUIRK_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getQuirkPoints()));
+                break;
+            case KEY_SKILL_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getSkillPoints()));
+                break;
+            case KEY_SPELL_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getSpellPoints()));
+                break;
+            case KEY_RACE_POINTS:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getRacePoints()));
+                break;
+            case KEY_UNSPENT_POINTS:
+            case KEY_EARNED_POINTS_DEPRECATED:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getUnspentPoints()));
+                break;
+            case KEY_HEIGHT:
+                writeEncodedText(out, description.getHeight().toString());
+                break;
+            case KEY_HAIR:
+                writeEncodedText(out, description.getHair());
+                break;
+            case KEY_GENDER:
+                writeEncodedText(out, description.getGender());
+                break;
+            case KEY_WEIGHT:
+                writeEncodedText(out, EquipmentColumn.getDisplayWeight(gurpsCharacter, description.getWeight()));
+                break;
+            case KEY_EYES:
+                writeEncodedText(out, description.getEyeColor());
+                break;
+            case KEY_AGE:
+                writeEncodedText(out, description.getAge());
+                break;
+            case KEY_SIZE:
+                writeEncodedText(out, Numbers.formatWithForcedSign(description.getSizeModifier()));
+                break;
+            case KEY_SKIN:
+                writeEncodedText(out, description.getSkinColor());
+                break;
+            case KEY_BIRTHDAY:
+                writeEncodedText(out, description.getBirthday());
+                break;
+            case KEY_TL:
+                writeEncodedText(out, description.getTechLevel());
+                break;
+            case KEY_HAND:
+                writeEncodedText(out, description.getHandedness());
+                break;
+            case KEY_ST:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("st")));
+                break;
+            case KEY_DX:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("dx")));
+                break;
+            case KEY_IQ:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("iq")));
+                break;
+            case KEY_HT:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("ht")));
+                break;
+            case KEY_WILL:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("will")));
+                break;
+            case KEY_FRIGHT_CHECK:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("fright_check")));
+                break;
+            case KEY_BASIC_SPEED:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeDoubleValue("basic_speed")));
+                break;
+            case KEY_BASIC_MOVE:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("basic_move")));
+                break;
+            case KEY_PERCEPTION:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("per")));
+                break;
+            case KEY_VISION:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("vision")));
+                break;
+            case KEY_HEARING:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("hearing")));
+                break;
+            case KEY_TASTE_SMELL:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("taste_smell")));
+                break;
+            case KEY_TOUCH:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("touch")));
+                break;
+            case KEY_THRUST:
+                writeEncodedText(out, gurpsCharacter.getThrust().toString());
+                break;
+            case KEY_SWING:
+                writeEncodedText(out, gurpsCharacter.getSwing().toString());
+                break;
+            case KEY_GENERAL_DR:
+                int torsoDR = 0;
+                HitLocation torsoLocation = gurpsCharacter.getSheetSettings().getHitLocations().lookupLocationByID("torso");
+                if (torsoLocation != null) {
+                    torsoDR = torsoLocation.getDR(gurpsCharacter, null);
                 }
-                buffer.append(note.getDescription());
-            }
-            writeEncodedText(out, buffer.toString());
-            break;
-        case KEY_CONTINUE_ID: // No-op... here so that old files don't choke
-            break;
-        case KEY_RACE_DEPRECATED:
-        case KEY_CAMPAIGN_DEPRECATED:
-        case KEY_OPTIONS_CODE_DEPRECATED:
-            break;
-        case KEY_BODY_TYPE:
-            writeEncodedText(out, gurpsCharacter.getSheetSettings().getHitLocations().getName());
-            break;
-        default:
-            if (!checkForLoopKeys(in, out, key)) {
-                if (key.startsWith(KEY_ONLY_CATEGORIES)) {
-                    setOnlyCategories(key);
-                } else if (key.startsWith(KEY_EXCLUDE_CATEGORIES)) {
-                    setExcludeCategories(key);
-                } else if (key.startsWith(KEY_COLOR_PREFIX)) {
-                    String colorKey = key.substring(KEY_COLOR_PREFIX.length()).toLowerCase();
-                    for (ThemeColor one : Colors.ALL) {
-                        if (colorKey.equals(one.getKey())) {
-                            out.write(Colors.encodeToHex(one));
-                        }
+                writeEncodedText(out, Numbers.format(torsoDR));
+                break;
+            case KEY_CURRENT_DODGE:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getDodge(gurpsCharacter.getEncumbranceLevel(false))));
+                break;
+            case KEY_CURRENT_MOVE:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getMove(gurpsCharacter.getEncumbranceLevel(false))));
+                break;
+            case KEY_BEST_CURRENT_PARRY:
+                writeBestWeaponDefense(out, MeleeWeaponStats::getResolvedParryNoToolTip);
+                break;
+            case KEY_BEST_CURRENT_BLOCK:
+                writeBestWeaponDefense(out, MeleeWeaponStats::getResolvedBlockNoToolTip);
+                break;
+            case KEY_FP_DEPRECATED:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCurrentIntValue("fp")));
+                break;
+            case KEY_BASIC_FP_DEPRECATED:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("fp")));
+                break;
+            case KEY_TIRED_DEPRECATED:
+                deprecatedWritePointPoolThreshold(out, gurpsCharacter, "fp", I18n.text("Tired"));
+                break;
+            case KEY_FP_COLLAPSE_DEPRECATED:
+                deprecatedWritePointPoolThreshold(out, gurpsCharacter, "fp", I18n.text("Collapse"));
+                break;
+            case KEY_UNCONSCIOUS_DEPRECATED:
+                deprecatedWritePointPoolThreshold(out, gurpsCharacter, "fp", I18n.text("Unconscious"));
+                break;
+            case KEY_HP_DEPRECATED:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeCurrentIntValue("hp")));
+                break;
+            case KEY_BASIC_HP_DEPRECATED:
+                writeEncodedText(out, Numbers.format(gurpsCharacter.getAttributeIntValue("hp")));
+                break;
+            case KEY_REELING_DEPRECATED:
+                deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", I18n.text("Reeling"));
+                break;
+            case KEY_HP_COLLAPSE_DEPRECATED:
+                deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", I18n.text("Collapse"));
+                break;
+            case KEY_DEATH_CHECK_1_DEPRECATED:
+                deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", String.format(I18n.text("Dying #%d"), Integer.valueOf(1)));
+                break;
+            case KEY_DEATH_CHECK_2_DEPRECATED:
+                deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", String.format(I18n.text("Dying #%d"), Integer.valueOf(2)));
+                break;
+            case KEY_DEATH_CHECK_3_DEPRECATED:
+                deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", String.format(I18n.text("Dying #%d"), Integer.valueOf(3)));
+                break;
+            case KEY_DEATH_CHECK_4_DEPRECATED:
+                deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", String.format(I18n.text("Dying #%d"), Integer.valueOf(4)));
+                break;
+            case KEY_DEAD_DEPRECATED:
+                deprecatedWritePointPoolThreshold(out, gurpsCharacter, "hp", I18n.text("Dead"));
+                break;
+            case KEY_BASIC_LIFT:
+                writeEncodedText(out, gurpsCharacter.getBasicLift().toString());
+                break;
+            case KEY_ONE_HANDED_LIFT:
+                writeEncodedText(out, gurpsCharacter.getOneHandedLift().toString());
+                break;
+            case KEY_TWO_HANDED_LIFT:
+                writeEncodedText(out, gurpsCharacter.getTwoHandedLift().toString());
+                break;
+            case KEY_SHOVE:
+                writeEncodedText(out, gurpsCharacter.getShoveAndKnockOver().toString());
+                break;
+            case KEY_RUNNING_SHOVE:
+                writeEncodedText(out, gurpsCharacter.getRunningShoveAndKnockOver().toString());
+                break;
+            case KEY_CARRY_ON_BACK:
+                writeEncodedText(out, gurpsCharacter.getCarryOnBack().toString());
+                break;
+            case KEY_SHIFT_SLIGHTLY:
+                writeEncodedText(out, gurpsCharacter.getShiftSlightly().toString());
+                break;
+            case KEY_CARRIED_WEIGHT:
+                writeEncodedText(out, EquipmentColumn.getDisplayWeight(gurpsCharacter, gurpsCharacter.getWeightCarried(false)));
+                break;
+            case KEY_CARRIED_VALUE:
+                writeEncodedText(out, "$" + gurpsCharacter.getWealthCarried().toLocalizedString());
+                break;
+            case KEY_OTHER_VALUE:
+                writeEncodedText(out, "$" + gurpsCharacter.getWealthNotCarried().toLocalizedString());
+                break;
+            case KEY_ALL_NOTES_COMBINED:
+                StringBuilder buffer = new StringBuilder();
+                for (Note note : gurpsCharacter.getNotesIterator()) {
+                    if (!buffer.isEmpty()) {
+                        buffer.append("\n\n");
                     }
-                } else if (!processAttributeKeys(out, gurpsCharacter, key)) {
-                    writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                    buffer.append(note.getDescription());
                 }
-            }
-            break;
+                writeEncodedText(out, buffer.toString());
+                break;
+            case KEY_CONTINUE_ID: // No-op... here so that old files don't choke
+                break;
+            case KEY_RACE_DEPRECATED:
+            case KEY_CAMPAIGN_DEPRECATED:
+            case KEY_OPTIONS_CODE_DEPRECATED:
+                break;
+            case KEY_BODY_TYPE:
+                writeEncodedText(out, gurpsCharacter.getSheetSettings().getHitLocations().getName());
+                break;
+            default:
+                if (!checkForLoopKeys(in, out, key)) {
+                    if (key.startsWith(KEY_ONLY_CATEGORIES)) {
+                        setOnlyCategories(key);
+                    } else if (key.startsWith(KEY_EXCLUDE_CATEGORIES)) {
+                        setExcludeCategories(key);
+                    } else if (key.startsWith(KEY_COLOR_PREFIX)) {
+                        String colorKey = key.substring(KEY_COLOR_PREFIX.length()).toLowerCase();
+                        for (ThemeColor one : Colors.ALL) {
+                            if (colorKey.equals(one.getKey())) {
+                                out.write(Colors.encodeToHex(one));
+                            }
+                        }
+                    } else if (!processAttributeKeys(out, gurpsCharacter, key)) {
+                        writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                    }
+                }
+                break;
         }
     }
 
@@ -835,15 +835,15 @@ public class TextTemplate {
                 return false;
             }
             switch (attrDef.getType()) {
-            case INTEGER:
-            case POOL:
-                writeEncodedText(out, Numbers.format(attr.getIntValue(gch)));
-                return true;
-            case DECIMAL:
-                writeEncodedText(out, Numbers.format(attr.getDoubleValue(gch)));
-                return true;
-            default:
-                return false;
+                case INTEGER:
+                case POOL:
+                    writeEncodedText(out, Numbers.format(attr.getIntValue(gch)));
+                    return true;
+                case DECIMAL:
+                    writeEncodedText(out, Numbers.format(attr.getDoubleValue(gch)));
+                    return true;
+                default:
+                    return false;
             }
         }
         if (key.endsWith("_" + KEY_NAME.toLowerCase())) {
@@ -1033,42 +1033,42 @@ public class TextTemplate {
                         keyBuffer.setLength(0);
                         lookForKeyMarker = true;
                         switch (key) {
-                        case KEY_CURRENT_MARKER:
-                            if (encumbrance == gurpsCharacter.getEncumbranceLevel(false)) {
-                                out.write(CURRENT);
-                            }
-                            break;
-                        case KEY_CURRENT_MARKER_1:
-                            if (encumbrance == gurpsCharacter.getEncumbranceLevel(false)) {
-                                out.write(ONE);
-                            }
-                            break;
-                        case KEY_CURRENT_MARKER_BULLET:
-                            if (encumbrance == gurpsCharacter.getEncumbranceLevel(false)) {
-                                out.write("•");
-                            }
-                            break;
-                        case KEY_LEVEL:
-                            writeEncodedText(out, MessageFormat.format(encumbrance == gurpsCharacter.getEncumbranceLevel(false) ? "• {0} ({1})" : "{0} ({1})", encumbrance, Numbers.format(-encumbrance.getEncumbrancePenalty())));
-                            break;
-                        case KEY_LEVEL_NO_MARKER:
-                            writeEncodedText(out, MessageFormat.format("{0} ({1})", encumbrance, Numbers.format(-encumbrance.getEncumbrancePenalty())));
-                            break;
-                        case KEY_LEVEL_ONLY:
-                            writeEncodedText(out, Numbers.format(-encumbrance.getEncumbrancePenalty()));
-                            break;
-                        case KEY_MAX_LOAD:
-                            writeEncodedText(out, gurpsCharacter.getMaximumCarry(encumbrance).toString());
-                            break;
-                        case KEY_MOVE:
-                            writeEncodedText(out, Numbers.format(gurpsCharacter.getMove(encumbrance)));
-                            break;
-                        case KEY_DODGE:
-                            writeEncodedText(out, Numbers.format(gurpsCharacter.getDodge(encumbrance)));
-                            break;
-                        default:
-                            writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
-                            break;
+                            case KEY_CURRENT_MARKER:
+                                if (encumbrance == gurpsCharacter.getEncumbranceLevel(false)) {
+                                    out.write(CURRENT);
+                                }
+                                break;
+                            case KEY_CURRENT_MARKER_1:
+                                if (encumbrance == gurpsCharacter.getEncumbranceLevel(false)) {
+                                    out.write(ONE);
+                                }
+                                break;
+                            case KEY_CURRENT_MARKER_BULLET:
+                                if (encumbrance == gurpsCharacter.getEncumbranceLevel(false)) {
+                                    out.write("•");
+                                }
+                                break;
+                            case KEY_LEVEL:
+                                writeEncodedText(out, MessageFormat.format(encumbrance == gurpsCharacter.getEncumbranceLevel(false) ? "• {0} ({1})" : "{0} ({1})", encumbrance, Numbers.format(-encumbrance.getEncumbrancePenalty())));
+                                break;
+                            case KEY_LEVEL_NO_MARKER:
+                                writeEncodedText(out, MessageFormat.format("{0} ({1})", encumbrance, Numbers.format(-encumbrance.getEncumbrancePenalty())));
+                                break;
+                            case KEY_LEVEL_ONLY:
+                                writeEncodedText(out, Numbers.format(-encumbrance.getEncumbrancePenalty()));
+                                break;
+                            case KEY_MAX_LOAD:
+                                writeEncodedText(out, gurpsCharacter.getMaximumCarry(encumbrance).toString());
+                                break;
+                            case KEY_MOVE:
+                                writeEncodedText(out, Numbers.format(gurpsCharacter.getMove(encumbrance)));
+                                break;
+                            case KEY_DODGE:
+                                writeEncodedText(out, Numbers.format(gurpsCharacter.getDodge(encumbrance)));
+                                break;
+                            default:
+                                writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                                break;
                         }
                     }
                 }
@@ -1105,20 +1105,20 @@ public class TextTemplate {
                         keyBuffer.setLength(0);
                         lookForKeyMarker = true;
                         switch (key) {
-                        case KEY_ROLL -> writeEncodedText(out, location.getRollRange());
-                        case KEY_WHERE -> writeEncodedText(out, location.getTableName());
-                        case KEY_PENALTY -> writeEncodedText(out, Numbers.format(location.getHitPenalty()));
-                        case KEY_DR -> writeEncodedText(out, Numbers.format(location.getDR(gurpsCharacter, null)));
-                        case KEY_ID -> writeEncodedText(out, Integer.toString(currentID));
-                        // Show the equipment that is providing the DR bonus
-                        case KEY_LOCATION_EQUIPMENT -> writeEncodedText(out, hitLocationEquipment(location).replace(NEWLINE, COMMA_SEPARATOR));
-                        case KEY_LOCATION_EQUIPMENT_FORMATTED -> {
-                            String loc = hitLocationEquipment(location);
-                            if (!loc.isEmpty()) {
-                                writeEncodedText(out, PARAGRAPH_START + loc.replace(NEWLINE, PARAGRAPH_END + NEWLINE + PARAGRAPH_START) + PARAGRAPH_END);
+                            case KEY_ROLL -> writeEncodedText(out, location.getRollRange());
+                            case KEY_WHERE -> writeEncodedText(out, location.getTableName());
+                            case KEY_PENALTY -> writeEncodedText(out, Numbers.format(location.getHitPenalty()));
+                            case KEY_DR -> writeEncodedText(out, Numbers.format(location.getDR(gurpsCharacter, null)));
+                            case KEY_ID -> writeEncodedText(out, Integer.toString(currentID));
+                            // Show the equipment that is providing the DR bonus
+                            case KEY_LOCATION_EQUIPMENT -> writeEncodedText(out, hitLocationEquipment(location).replace(NEWLINE, COMMA_SEPARATOR));
+                            case KEY_LOCATION_EQUIPMENT_FORMATTED -> {
+                                String loc = hitLocationEquipment(location);
+                                if (!loc.isEmpty()) {
+                                    writeEncodedText(out, PARAGRAPH_START + loc.replace(NEWLINE, PARAGRAPH_END + NEWLINE + PARAGRAPH_START) + PARAGRAPH_END);
+                                }
                             }
-                        }
-                        default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                            default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
                         }
                     }
                 }
@@ -1191,45 +1191,45 @@ public class TextTemplate {
                             if (!processStyleIndentWarning(key, out, advantage)) {
                                 if (!processDescription(key, out, advantage)) {
                                     switch (key) {
-                                    case KEY_POINTS:
-                                        writeEncodedText(out, AdvantageColumn.POINTS.getDataAsText(advantage));
-                                        break;
-                                    case KEY_REF:
-                                        writeEncodedText(out, AdvantageColumn.REFERENCE.getDataAsText(advantage));
-                                        break;
-                                    case KEY_ID:
-                                        writeEncodedText(out, advantage.getID().toString());
-                                        break;
-                                    case KEY_PARENT_ID:
-                                        ListRow parent = (ListRow) advantage.getParent();
-                                        if (parent != null) {
-                                            out.write(parent.getID().toString());
-                                        }
-                                        break;
-                                    case KEY_TYPE:
-                                        writeEncodedText(out, advantage.canHaveChildren() ? advantage.getContainerType().name() : ITEM);
-                                        break;
-                                    case KEY_DESCRIPTION_USER:
-                                        writeEncodedText(out, advantage.getUserDesc());
-                                        break;
-                                    case KEY_DESCRIPTION_USER_FORMATTED:
-                                        if (!advantage.getUserDesc().isEmpty()) {
-                                            writeEncodedText(out, PARAGRAPH_START + advantage.getUserDesc().replace(NEWLINE, PARAGRAPH_END + NEWLINE + PARAGRAPH_START) + PARAGRAPH_END);
-                                        }
-                                        break;
-                                    default:
-                                        /* Allows the access to notes on modifiers.  Currently only used in the 'Language' loop.
-                                         * e.g. Advantage:Language, Modifier:Spoken -> Note:Native, Advantage:Language, Modifier:Written -> Note:Accented
-                                         */
-                                        if (key.startsWith(KEY_MODIFIER_NOTES_FOR)) {
-                                            AdvantageModifier m = advantage.getActiveModifierFor(key.substring(KEY_MODIFIER_NOTES_FOR.length()));
-                                            if (m != null) {
-                                                writeEncodedText(out, m.getNotes());
+                                        case KEY_POINTS:
+                                            writeEncodedText(out, AdvantageColumn.POINTS.getDataAsText(advantage));
+                                            break;
+                                        case KEY_REF:
+                                            writeEncodedText(out, AdvantageColumn.REFERENCE.getDataAsText(advantage));
+                                            break;
+                                        case KEY_ID:
+                                            writeEncodedText(out, advantage.getID().toString());
+                                            break;
+                                        case KEY_PARENT_ID:
+                                            ListRow parent = (ListRow) advantage.getParent();
+                                            if (parent != null) {
+                                                out.write(parent.getID().toString());
                                             }
-                                        } else {
-                                            writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
-                                        }
-                                        break;
+                                            break;
+                                        case KEY_TYPE:
+                                            writeEncodedText(out, advantage.canHaveChildren() ? advantage.getContainerType().name() : ITEM);
+                                            break;
+                                        case KEY_DESCRIPTION_USER:
+                                            writeEncodedText(out, advantage.getUserDesc());
+                                            break;
+                                        case KEY_DESCRIPTION_USER_FORMATTED:
+                                            if (!advantage.getUserDesc().isEmpty()) {
+                                                writeEncodedText(out, PARAGRAPH_START + advantage.getUserDesc().replace(NEWLINE, PARAGRAPH_END + NEWLINE + PARAGRAPH_START) + PARAGRAPH_END);
+                                            }
+                                            break;
+                                        default:
+                                            /* Allows the access to notes on modifiers.  Currently only used in the 'Language' loop.
+                                             * e.g. Advantage:Language, Modifier:Spoken -> Note:Native, Advantage:Language, Modifier:Written -> Note:Accented
+                                             */
+                                            if (key.startsWith(KEY_MODIFIER_NOTES_FOR)) {
+                                                AdvantageModifier m = advantage.getActiveModifierFor(key.substring(KEY_MODIFIER_NOTES_FOR.length()));
+                                                if (m != null) {
+                                                    writeEncodedText(out, m.getNotes());
+                                                }
+                                            } else {
+                                                writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                                            }
+                                            break;
                                     }
                                 }
                             }
@@ -1324,20 +1324,20 @@ public class TextTemplate {
                         if (!processStyleIndentWarning(key, out, skill)) {
                             if (!processDescription(key, out, skill)) {
                                 switch (key) {
-                                case KEY_SL -> writeEncodedText(out, SkillColumn.LEVEL.getDataAsText(skill));
-                                case KEY_RSL -> writeEncodedText(out, SkillColumn.RELATIVE_LEVEL.getDataAsText(skill));
-                                case KEY_DIFFICULTY -> writeEncodedText(out, SkillColumn.DIFFICULTY.getDataAsText(skill));
-                                case KEY_POINTS -> writeEncodedText(out, SkillColumn.POINTS.getDataAsText(skill));
-                                case KEY_REF -> writeEncodedText(out, SkillColumn.REFERENCE.getDataAsText(skill));
-                                case KEY_ID -> writeEncodedText(out, skill.getID().toString());
-                                case KEY_PARENT_ID -> {
-                                    ListRow parent = (ListRow) skill.getParent();
-                                    if (parent != null) {
-                                        out.write(parent.getID().toString());
+                                    case KEY_SL -> writeEncodedText(out, SkillColumn.LEVEL.getDataAsText(skill));
+                                    case KEY_RSL -> writeEncodedText(out, SkillColumn.RELATIVE_LEVEL.getDataAsText(skill));
+                                    case KEY_DIFFICULTY -> writeEncodedText(out, SkillColumn.DIFFICULTY.getDataAsText(skill));
+                                    case KEY_POINTS -> writeEncodedText(out, SkillColumn.POINTS.getDataAsText(skill));
+                                    case KEY_REF -> writeEncodedText(out, SkillColumn.REFERENCE.getDataAsText(skill));
+                                    case KEY_ID -> writeEncodedText(out, skill.getID().toString());
+                                    case KEY_PARENT_ID -> {
+                                        ListRow parent = (ListRow) skill.getParent();
+                                        if (parent != null) {
+                                            out.write(parent.getID().toString());
+                                        }
                                     }
-                                }
-                                case KEY_TYPE -> writeEncodedText(out, skill.canHaveChildren() ? GROUP : ITEM);
-                                default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                                    case KEY_TYPE -> writeEncodedText(out, skill.canHaveChildren() ? GROUP : ITEM);
+                                    default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
                                 }
                             }
                         }
@@ -1404,27 +1404,27 @@ public class TextTemplate {
                         if (!processStyleIndentWarning(key, out, spell)) {
                             if (!processDescription(key, out, spell)) {
                                 switch (key) {
-                                case KEY_CLASS -> writeEncodedText(out, spell.getSpellClass());
-                                case KEY_COLLEGE -> writeEncodedText(out, String.join(", ", spell.getColleges()));
-                                case KEY_MANA_CAST -> writeEncodedText(out, spell.getCastingCost());
-                                case KEY_MANA_MAINTAIN -> writeEncodedText(out, spell.getMaintenance());
-                                case KEY_TIME_CAST -> writeEncodedText(out, spell.getCastingTime());
-                                case KEY_DURATION -> writeEncodedText(out, spell.getDuration());
-                                case KEY_RESIST -> writeEncodedText(out, spell.getResist());
-                                case KEY_SL -> writeEncodedText(out, SpellColumn.LEVEL.getDataAsText(spell));
-                                case KEY_RSL -> writeEncodedText(out, SpellColumn.RELATIVE_LEVEL.getDataAsText(spell));
-                                case KEY_DIFFICULTY -> writeEncodedText(out, spell.getDifficultyAsText());
-                                case KEY_POINTS -> writeEncodedText(out, SpellColumn.POINTS.getDataAsText(spell));
-                                case KEY_REF -> writeEncodedText(out, SpellColumn.REFERENCE.getDataAsText(spell));
-                                case KEY_ID -> writeEncodedText(out, spell.getID().toString());
-                                case KEY_PARENT_ID -> {
-                                    ListRow parent = (ListRow) spell.getParent();
-                                    if (parent != null) {
-                                        out.write(parent.getID().toString());
+                                    case KEY_CLASS -> writeEncodedText(out, spell.getSpellClass());
+                                    case KEY_COLLEGE -> writeEncodedText(out, String.join(", ", spell.getColleges()));
+                                    case KEY_MANA_CAST -> writeEncodedText(out, spell.getCastingCost());
+                                    case KEY_MANA_MAINTAIN -> writeEncodedText(out, spell.getMaintenance());
+                                    case KEY_TIME_CAST -> writeEncodedText(out, spell.getCastingTime());
+                                    case KEY_DURATION -> writeEncodedText(out, spell.getDuration());
+                                    case KEY_RESIST -> writeEncodedText(out, spell.getResist());
+                                    case KEY_SL -> writeEncodedText(out, SpellColumn.LEVEL.getDataAsText(spell));
+                                    case KEY_RSL -> writeEncodedText(out, SpellColumn.RELATIVE_LEVEL.getDataAsText(spell));
+                                    case KEY_DIFFICULTY -> writeEncodedText(out, spell.getDifficultyAsText());
+                                    case KEY_POINTS -> writeEncodedText(out, SpellColumn.POINTS.getDataAsText(spell));
+                                    case KEY_REF -> writeEncodedText(out, SpellColumn.REFERENCE.getDataAsText(spell));
+                                    case KEY_ID -> writeEncodedText(out, spell.getID().toString());
+                                    case KEY_PARENT_ID -> {
+                                        ListRow parent = (ListRow) spell.getParent();
+                                        if (parent != null) {
+                                            out.write(parent.getID().toString());
+                                        }
                                     }
-                                }
-                                case KEY_TYPE -> writeEncodedText(out, spell.canHaveChildren() ? GROUP : ITEM);
-                                default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                                    case KEY_TYPE -> writeEncodedText(out, spell.canHaveChildren() ? GROUP : ITEM);
+                                    default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
                                 }
                             }
                         }
@@ -1472,33 +1472,33 @@ public class TextTemplate {
     // processing of a hierarchical loop.
     private int processMeleeWeaponKeys(BufferedWriter out, String key, int counter, MeleeWeaponStats weapon, int index, String contents, List<MeleeWeaponStats> attackModes) throws IOException {
         switch (key) {
-        case KEY_PARRY -> {
-            writeEncodedText(out, weapon.getResolvedParryNoToolTip());
-            return index;
-        }
-        case KEY_BLOCK -> {
-            writeEncodedText(out, weapon.getResolvedBlockNoToolTip());
-            return index;
-        }
-        case KEY_REACH -> {
-            writeEncodedText(out, weapon.getReach());
-            return index;
-        }
-        default -> {
-            if (attackModes != null && key.startsWith(KEY_ATTACK_MODES + LOOP_START)) {
-                int endIndex = contents.indexOf(KEY_ATTACK_MODES + LOOP_END);
-                if (endIndex > 0) {
-                    String subContents = contents.substring(index + 1, endIndex - 1);
-                    processMeleeAttackModes(out, subContents, attackModes);
-                    return endIndex + (KEY_ATTACK_MODES + LOOP_END).length();
-                }
-            }
-            if (key.startsWith(KEY_ATTACK_MODES + LOOP_COUNT)) {
-                writeEncodedText(out, Integer.toString(attackModes != null ? attackModes.size() : 0));
+            case KEY_PARRY -> {
+                writeEncodedText(out, weapon.getResolvedParryNoToolTip());
                 return index;
             }
-            return processWeaponKeys(out, key, counter, weapon, index);
-        }
+            case KEY_BLOCK -> {
+                writeEncodedText(out, weapon.getResolvedBlockNoToolTip());
+                return index;
+            }
+            case KEY_REACH -> {
+                writeEncodedText(out, weapon.getReach());
+                return index;
+            }
+            default -> {
+                if (attackModes != null && key.startsWith(KEY_ATTACK_MODES + LOOP_START)) {
+                    int endIndex = contents.indexOf(KEY_ATTACK_MODES + LOOP_END);
+                    if (endIndex > 0) {
+                        String subContents = contents.substring(index + 1, endIndex - 1);
+                        processMeleeAttackModes(out, subContents, attackModes);
+                        return endIndex + (KEY_ATTACK_MODES + LOOP_END).length();
+                    }
+                }
+                if (key.startsWith(KEY_ATTACK_MODES + LOOP_COUNT)) {
+                    writeEncodedText(out, Integer.toString(attackModes != null ? attackModes.size() : 0));
+                    return index;
+                }
+                return processWeaponKeys(out, key, counter, weapon, index);
+            }
         }
     }
 
@@ -1506,45 +1506,45 @@ public class TextTemplate {
     // processing of a hierarchical loop.
     private int processRangedWeaponKeys(BufferedWriter out, String key, int counter, RangedWeaponStats weapon, int index, String contents, List<RangedWeaponStats> attackModes) throws IOException {
         switch (key) {
-        case KEY_BULK -> {
-            writeEncodedText(out, weapon.getBulk());
-            return index;
-        }
-        case KEY_ACCURACY -> {
-            writeEncodedText(out, weapon.getAccuracy());
-            return index;
-        }
-        case KEY_RANGE -> {
-            writeEncodedText(out, weapon.getRange());
-            return index;
-        }
-        case KEY_ROF -> {
-            writeEncodedText(out, weapon.getRateOfFire());
-            return index;
-        }
-        case KEY_SHOTS -> {
-            writeEncodedText(out, weapon.getShots());
-            return index;
-        }
-        case KEY_RECOIL -> {
-            writeEncodedText(out, weapon.getRecoil());
-            return index;
-        }
-        default -> {
-            if (attackModes != null && key.startsWith(KEY_ATTACK_MODES + LOOP_START)) {
-                int endIndex = contents.indexOf(KEY_ATTACK_MODES + LOOP_END);
-                if (endIndex > 0) {
-                    String subContents = contents.substring(index + 1, endIndex - 1);
-                    processRangedAttackModes(out, subContents, attackModes);
-                    return endIndex + (KEY_ATTACK_MODES + LOOP_END).length();
-                }
-            }
-            if (key.startsWith(KEY_ATTACK_MODES + LOOP_COUNT)) {
-                writeEncodedText(out, Integer.toString(attackModes != null ? attackModes.size() : 0));
+            case KEY_BULK -> {
+                writeEncodedText(out, weapon.getBulk());
                 return index;
             }
-            return processWeaponKeys(out, key, counter, weapon, index);
-        }
+            case KEY_ACCURACY -> {
+                writeEncodedText(out, weapon.getAccuracy());
+                return index;
+            }
+            case KEY_RANGE -> {
+                writeEncodedText(out, weapon.getRange());
+                return index;
+            }
+            case KEY_ROF -> {
+                writeEncodedText(out, weapon.getRateOfFire());
+                return index;
+            }
+            case KEY_SHOTS -> {
+                writeEncodedText(out, weapon.getShots());
+                return index;
+            }
+            case KEY_RECOIL -> {
+                writeEncodedText(out, weapon.getRecoil());
+                return index;
+            }
+            default -> {
+                if (attackModes != null && key.startsWith(KEY_ATTACK_MODES + LOOP_START)) {
+                    int endIndex = contents.indexOf(KEY_ATTACK_MODES + LOOP_END);
+                    if (endIndex > 0) {
+                        String subContents = contents.substring(index + 1, endIndex - 1);
+                        processRangedAttackModes(out, subContents, attackModes);
+                        return endIndex + (KEY_ATTACK_MODES + LOOP_END).length();
+                    }
+                }
+                if (key.startsWith(KEY_ATTACK_MODES + LOOP_COUNT)) {
+                    writeEncodedText(out, Integer.toString(attackModes != null ? attackModes.size() : 0));
+                    return index;
+                }
+                return processWeaponKeys(out, key, counter, weapon, index);
+            }
         }
     }
 
@@ -1556,55 +1556,55 @@ public class TextTemplate {
         }
         if (!processDescription(key, out, weapon)) {
             switch (key) {
-            case KEY_USAGE:
-                writeEncodedText(out, weapon.getUsage());
-                break;
-            case KEY_LEVEL:
-                writeEncodedText(out, Numbers.format(weapon.getSkillLevel()));
-                break;
-            case KEY_DAMAGE:
-                writeEncodedText(out, weapon.getDamage().getResolvedDamage());
-                break;
-            case KEY_UNMODIFIED_DAMAGE:
-                writeEncodedText(out, weapon.getDamage().toString());
-                break;
-            case KEY_WEAPON_STRENGTH:
-                writeEncodedText(out, weapon.getStrength());
-                break;
-            case KEY_WEAPON_STRENGTH_NUM:
-                writeEncodedText(out, NOT_NUMBER_PATTERN.matcher(weapon.getStrength()).replaceAll(""));
-                break;
-            case KEY_ID:
-                writeEncodedText(out, Integer.toString(counter));
-                break;
-            case KEY_COST:
-                if (equipment != null) {
-                    writeEncodedText(out, equipment.getAdjustedValue().toLocalizedString());
-                }
-                break;
-            case KEY_LEGALITY_CLASS:
-                if (equipment != null) {
-                    writeEncodedText(out, equipment.getLegalityClass());
-                }
-                break;
-            case KEY_TL:
-                if (equipment != null) {
-                    writeEncodedText(out, equipment.getTechLevel());
-                }
-                break;
-            case KEY_WEIGHT:
-                if (equipment != null) {
-                    writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getDataFile(), equipment.getAdjustedWeight(false)));
-                }
-                break;
-            case KEY_AMMO:
-                if (equipment != null) {
-                    writeEncodedText(out, Numbers.format(ammoFor(equipment)));
-                }
-                break;
-            default:
-                writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
-                break;
+                case KEY_USAGE:
+                    writeEncodedText(out, weapon.getUsage());
+                    break;
+                case KEY_LEVEL:
+                    writeEncodedText(out, Numbers.format(weapon.getSkillLevel()));
+                    break;
+                case KEY_DAMAGE:
+                    writeEncodedText(out, weapon.getDamage().getResolvedDamage());
+                    break;
+                case KEY_UNMODIFIED_DAMAGE:
+                    writeEncodedText(out, weapon.getDamage().toString());
+                    break;
+                case KEY_WEAPON_STRENGTH:
+                    writeEncodedText(out, weapon.getStrength());
+                    break;
+                case KEY_WEAPON_STRENGTH_NUM:
+                    writeEncodedText(out, NOT_NUMBER_PATTERN.matcher(weapon.getStrength()).replaceAll(""));
+                    break;
+                case KEY_ID:
+                    writeEncodedText(out, Integer.toString(counter));
+                    break;
+                case KEY_COST:
+                    if (equipment != null) {
+                        writeEncodedText(out, equipment.getAdjustedValue().toLocalizedString());
+                    }
+                    break;
+                case KEY_LEGALITY_CLASS:
+                    if (equipment != null) {
+                        writeEncodedText(out, equipment.getLegalityClass());
+                    }
+                    break;
+                case KEY_TL:
+                    if (equipment != null) {
+                        writeEncodedText(out, equipment.getTechLevel());
+                    }
+                    break;
+                case KEY_WEIGHT:
+                    if (equipment != null) {
+                        writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getDataFile(), equipment.getAdjustedWeight(false)));
+                    }
+                    break;
+                case KEY_AMMO:
+                    if (equipment != null) {
+                        writeEncodedText(out, Numbers.format(ammoFor(equipment)));
+                    }
+                    break;
+                default:
+                    writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                    break;
             }
         }
         return index;
@@ -1916,98 +1916,98 @@ public class TextTemplate {
                         if (!processStyleIndentWarning(key, out, equipment)) {
                             if (!processDescription(key, out, equipment)) {
                                 switch (key) {
-                                case KEY_STATE:
-                                    if (carried) {
-                                        out.write(equipment.isEquipped() ? "E" : "C");
-                                    } else {
-                                        out.write("-");
-                                    }
-                                    break;
-                                case KEY_EQUIPPED:
-                                    if (carried && equipment.isEquipped()) {
-                                        out.write("✓");
-                                    }
-                                    break;
-                                case KEY_EQUIPPED_FONT_AWESOME:
-                                    if (carried && equipment.isEquipped()) {
-                                        out.write("<i class=\"fas fa-check-circle\"></i>");
-                                    }
-                                    break;
-                                case KEY_EQUIPPED_NUM:
-                                    out.write(carried && equipment.isEquipped() ? '1' : '0');
-                                    break;
-                                case KEY_CARRIED_STATUS:
-                                    if (carried) {
-                                        out.write(equipment.isEquipped() ? '2' : '1');
-                                    } else {
-                                        out.write('0');
-                                    }
-                                    break;
-                                case KEY_QTY:
-                                    writeEncodedText(out, Numbers.format(equipment.getQuantity()));
-                                    break;
-                                case KEY_COST:
-                                    writeEncodedText(out, equipment.getAdjustedValue().toLocalizedString());
-                                    break;
-                                case KEY_WEIGHT:
-                                    writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getDataFile(), equipment.getAdjustedWeight(false)));
-                                    break;
-                                case KEY_COST_SUMMARY:
-                                    writeEncodedText(out, equipment.getExtendedValue().toLocalizedString());
-                                    break;
-                                case KEY_WEIGHT_SUMMARY:
-                                    writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getDataFile(), equipment.getExtendedWeight(false)));
-                                    break;
-                                case KEY_WEIGHT_RAW:
-                                    writeEncodedText(out, equipment.getAdjustedWeight(false).getNormalizedValue().toLocalizedString());
-                                    break;
-                                case KEY_REF:
-                                    writeEncodedText(out, equipment.getReference());
-                                    break;
-                                case KEY_ID:
-                                    writeEncodedText(out, equipment.getID().toString());
-                                    break;
-                                case KEY_PARENT_ID:
-                                    ListRow parent = (ListRow) equipment.getParent();
-                                    if (parent != null) {
-                                        out.write(parent.getID().toString());
-                                    }
-                                    break;
-                                case KEY_TYPE:
-                                    writeEncodedText(out, equipment.canHaveChildren() ? GROUP : ITEM);
-                                    break;
-                                case KEY_TL:
-                                    writeEncodedText(out, equipment.getTechLevel());
-                                    break;
-                                case KEY_LEGALITY_CLASS:
-                                    writeEncodedText(out, equipment.getDisplayLegalityClass());
-                                    break;
-                                case KEY_CATEGORIES:
-                                    writeEncodedText(out, equipment.getCategoriesAsString());
-                                    break;
-                                case KEY_LOCATION:
-                                    for (int j = 0; j < children.size(); j++) {
-                                        if (children.get(j).contains(equipment)) {
-                                            writeEncodedText(out, parents.get(j).getDescription());
+                                    case KEY_STATE:
+                                        if (carried) {
+                                            out.write(equipment.isEquipped() ? "E" : "C");
+                                        } else {
+                                            out.write("-");
                                         }
-                                    }
-                                    break;
-                                case KEY_USES:
-                                    writeEncodedText(out, Integer.valueOf(equipment.getUses()).toString());
-                                    break;
-                                case KEY_MAX_USES:
-                                    writeEncodedText(out, Integer.valueOf(equipment.getMaxUses()).toString());
-                                    break;
-                                default:
-                                    if (key.startsWith(KEY_MODIFIER_NOTES_FOR)) {
-                                        EquipmentModifier m = equipment.getActiveModifierFor(key.substring(KEY_MODIFIER_NOTES_FOR.length()));
-                                        if (m != null) {
-                                            writeEncodedText(out, m.getNotes());
+                                        break;
+                                    case KEY_EQUIPPED:
+                                        if (carried && equipment.isEquipped()) {
+                                            out.write("✓");
                                         }
-                                    } else {
-                                        writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
-                                    }
-                                    break;
+                                        break;
+                                    case KEY_EQUIPPED_FONT_AWESOME:
+                                        if (carried && equipment.isEquipped()) {
+                                            out.write("<i class=\"fas fa-check-circle\"></i>");
+                                        }
+                                        break;
+                                    case KEY_EQUIPPED_NUM:
+                                        out.write(carried && equipment.isEquipped() ? '1' : '0');
+                                        break;
+                                    case KEY_CARRIED_STATUS:
+                                        if (carried) {
+                                            out.write(equipment.isEquipped() ? '2' : '1');
+                                        } else {
+                                            out.write('0');
+                                        }
+                                        break;
+                                    case KEY_QTY:
+                                        writeEncodedText(out, Numbers.format(equipment.getQuantity()));
+                                        break;
+                                    case KEY_COST:
+                                        writeEncodedText(out, equipment.getAdjustedValue().toLocalizedString());
+                                        break;
+                                    case KEY_WEIGHT:
+                                        writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getDataFile(), equipment.getAdjustedWeight(false)));
+                                        break;
+                                    case KEY_COST_SUMMARY:
+                                        writeEncodedText(out, equipment.getExtendedValue().toLocalizedString());
+                                        break;
+                                    case KEY_WEIGHT_SUMMARY:
+                                        writeEncodedText(out, EquipmentColumn.getDisplayWeight(equipment.getDataFile(), equipment.getExtendedWeight(false)));
+                                        break;
+                                    case KEY_WEIGHT_RAW:
+                                        writeEncodedText(out, equipment.getAdjustedWeight(false).getNormalizedValue().toLocalizedString());
+                                        break;
+                                    case KEY_REF:
+                                        writeEncodedText(out, equipment.getReference());
+                                        break;
+                                    case KEY_ID:
+                                        writeEncodedText(out, equipment.getID().toString());
+                                        break;
+                                    case KEY_PARENT_ID:
+                                        ListRow parent = (ListRow) equipment.getParent();
+                                        if (parent != null) {
+                                            out.write(parent.getID().toString());
+                                        }
+                                        break;
+                                    case KEY_TYPE:
+                                        writeEncodedText(out, equipment.canHaveChildren() ? GROUP : ITEM);
+                                        break;
+                                    case KEY_TL:
+                                        writeEncodedText(out, equipment.getTechLevel());
+                                        break;
+                                    case KEY_LEGALITY_CLASS:
+                                        writeEncodedText(out, equipment.getDisplayLegalityClass());
+                                        break;
+                                    case KEY_CATEGORIES:
+                                        writeEncodedText(out, equipment.getCategoriesAsString());
+                                        break;
+                                    case KEY_LOCATION:
+                                        for (int j = 0; j < children.size(); j++) {
+                                            if (children.get(j).contains(equipment)) {
+                                                writeEncodedText(out, parents.get(j).getDescription());
+                                            }
+                                        }
+                                        break;
+                                    case KEY_USES:
+                                        writeEncodedText(out, Integer.valueOf(equipment.getUses()).toString());
+                                        break;
+                                    case KEY_MAX_USES:
+                                        writeEncodedText(out, Integer.valueOf(equipment.getMaxUses()).toString());
+                                        break;
+                                    default:
+                                        if (key.startsWith(KEY_MODIFIER_NOTES_FOR)) {
+                                            EquipmentModifier m = equipment.getActiveModifierFor(key.substring(KEY_MODIFIER_NOTES_FOR.length()));
+                                            if (m != null) {
+                                                writeEncodedText(out, m.getNotes());
+                                            }
+                                        } else {
+                                            writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                                        }
+                                        break;
                                 }
                             }
                         }
@@ -2063,32 +2063,32 @@ public class TextTemplate {
                         lookForKeyMarker = true;
                         if (!processStyleIndentWarning(key, out, note)) {
                             switch (key) {
-                            case KEY_NOTE:
-                                writeEncodedText(out, note.getDescription());
-                                break;
-                            case KEY_NOTE_FORMATTED:
-                                if (!note.getDescription().isEmpty()) {
-                                    writeEncodedText(out, PARAGRAPH_START + note.getDescription().replace(NEWLINE, PARAGRAPH_END + NEWLINE + PARAGRAPH_START) + PARAGRAPH_END);
-                                }
-                                break;
-                            case KEY_ID:
-                                writeEncodedText(out, note.getID().toString());
-                                break;
-                            case KEY_PARENT_ID:
-                                ListRow parent = (ListRow) note.getParent();
-                                if (parent != null) {
-                                    out.write(parent.getID().toString());
-                                }
-                                break;
-                            case KEY_TYPE:
-                                writeEncodedText(out, note.canHaveChildren() ? GROUP : ITEM);
-                                break;
-                            case KEY_REF:
-                                writeEncodedText(out, note.getReference());
-                                break;
-                            default:
-                                writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
-                                break;
+                                case KEY_NOTE:
+                                    writeEncodedText(out, note.getDescription());
+                                    break;
+                                case KEY_NOTE_FORMATTED:
+                                    if (!note.getDescription().isEmpty()) {
+                                        writeEncodedText(out, PARAGRAPH_START + note.getDescription().replace(NEWLINE, PARAGRAPH_END + NEWLINE + PARAGRAPH_START) + PARAGRAPH_END);
+                                    }
+                                    break;
+                                case KEY_ID:
+                                    writeEncodedText(out, note.getID().toString());
+                                    break;
+                                case KEY_PARENT_ID:
+                                    ListRow parent = (ListRow) note.getParent();
+                                    if (parent != null) {
+                                        out.write(parent.getID().toString());
+                                    }
+                                    break;
+                                case KEY_TYPE:
+                                    writeEncodedText(out, note.canHaveChildren() ? GROUP : ITEM);
+                                    break;
+                                case KEY_REF:
+                                    writeEncodedText(out, note.getReference());
+                                    break;
+                                default:
+                                    writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                                    break;
                             }
                         }
                     }
@@ -2125,10 +2125,10 @@ public class TextTemplate {
                         keyBuffer.setLength(0);
                         lookForKeyMarker = true;
                         switch (key) {
-                        case KEY_MODIFIER -> writeEncodedText(out, Numbers.formatWithForcedSign(reaction.getTotalAmount()));
-                        case KEY_SITUATION -> writeEncodedText(out, reaction.getFrom());
-                        case KEY_ID -> writeEncodedText(out, Integer.toString(currentID));
-                        default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                            case KEY_MODIFIER -> writeEncodedText(out, Numbers.formatWithForcedSign(reaction.getTotalAmount()));
+                            case KEY_SITUATION -> writeEncodedText(out, reaction.getFrom());
+                            case KEY_ID -> writeEncodedText(out, Integer.toString(currentID));
+                            default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
                         }
                     }
                 }
@@ -2163,10 +2163,10 @@ public class TextTemplate {
                         keyBuffer.setLength(0);
                         lookForKeyMarker = true;
                         switch (key) {
-                        case KEY_MODIFIER -> writeEncodedText(out, Numbers.formatWithForcedSign(cm.getTotalAmount()));
-                        case KEY_SITUATION -> writeEncodedText(out, cm.getFrom());
-                        case KEY_ID -> writeEncodedText(out, Integer.toString(currentID));
-                        default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                            case KEY_MODIFIER -> writeEncodedText(out, Numbers.formatWithForcedSign(cm.getTotalAmount()));
+                            case KEY_SITUATION -> writeEncodedText(out, cm.getFrom());
+                            case KEY_ID -> writeEncodedText(out, Integer.toString(currentID));
+                            default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
                         }
                     }
                 }
@@ -2204,19 +2204,19 @@ public class TextTemplate {
                                 keyBuffer.setLength(0);
                                 lookForKeyMarker = true;
                                 switch (key) {
-                                case KEY_ID -> writeEncodedText(out, def.getID());
-                                case KEY_NAME -> writeEncodedText(out, def.getName());
-                                case KEY_FULL_NAME -> writeEncodedText(out, def.getFullName());
-                                case KEY_COMBINED_NAME -> writeEncodedText(out, def.getCombinedName());
-                                case KEY_VALUE -> {
-                                    if (def.getType() == AttributeType.DECIMAL) {
-                                        writeEncodedText(out, Numbers.format(attr.getDoubleValue(gch)));
-                                    } else {
-                                        writeEncodedText(out, Numbers.format(attr.getIntValue(gch)));
+                                    case KEY_ID -> writeEncodedText(out, def.getID());
+                                    case KEY_NAME -> writeEncodedText(out, def.getName());
+                                    case KEY_FULL_NAME -> writeEncodedText(out, def.getFullName());
+                                    case KEY_COMBINED_NAME -> writeEncodedText(out, def.getCombinedName());
+                                    case KEY_VALUE -> {
+                                        if (def.getType() == AttributeType.DECIMAL) {
+                                            writeEncodedText(out, Numbers.format(attr.getDoubleValue(gch)));
+                                        } else {
+                                            writeEncodedText(out, Numbers.format(attr.getIntValue(gch)));
+                                        }
                                     }
-                                }
-                                case KEY_POINTS -> writeEncodedText(out, Numbers.format(attr.getPointCost(gch)));
-                                default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                                    case KEY_POINTS -> writeEncodedText(out, Numbers.format(attr.getPointCost(gch)));
+                                    default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
                                 }
                             }
                         }
@@ -2255,14 +2255,14 @@ public class TextTemplate {
                                 keyBuffer.setLength(0);
                                 lookForKeyMarker = true;
                                 switch (key) {
-                                case KEY_ID -> writeEncodedText(out, def.getID());
-                                case KEY_NAME -> writeEncodedText(out, def.getName());
-                                case KEY_FULL_NAME -> writeEncodedText(out, def.getFullName());
-                                case KEY_COMBINED_NAME -> writeEncodedText(out, def.getCombinedName());
-                                case KEY_CURRENT -> writeEncodedText(out, Numbers.format(attr.getCurrentIntValue(gch)));
-                                case KEY_MAXIMUM -> writeEncodedText(out, Numbers.format(attr.getIntValue(gch)));
-                                case KEY_POINTS -> writeEncodedText(out, Numbers.format(attr.getPointCost(gch)));
-                                default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
+                                    case KEY_ID -> writeEncodedText(out, def.getID());
+                                    case KEY_NAME -> writeEncodedText(out, def.getName());
+                                    case KEY_FULL_NAME -> writeEncodedText(out, def.getFullName());
+                                    case KEY_COMBINED_NAME -> writeEncodedText(out, def.getCombinedName());
+                                    case KEY_CURRENT -> writeEncodedText(out, Numbers.format(attr.getCurrentIntValue(gch)));
+                                    case KEY_MAXIMUM -> writeEncodedText(out, Numbers.format(attr.getIntValue(gch)));
+                                    case KEY_POINTS -> writeEncodedText(out, Numbers.format(attr.getPointCost(gch)));
+                                    default -> writeEncodedText(out, String.format(UNIDENTIFIED_KEY, key));
                                 }
                             }
                         }

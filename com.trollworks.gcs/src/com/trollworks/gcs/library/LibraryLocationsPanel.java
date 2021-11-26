@@ -72,15 +72,15 @@ public final class LibraryLocationsPanel extends Panel implements Scrollable {
             Library.LIBRARIES.clear();
             for (LibraryFields fields : panel.mFields) {
                 switch (fields.getLibraryType()) {
-                case MASTER -> {
-                    Library.MASTER.setPath(fields.getPath());
-                    Library.LIBRARIES.add(Library.MASTER);
-                }
-                case USER -> {
-                    Library.USER.setPath(fields.getPath());
-                    Library.LIBRARIES.add(Library.USER);
-                }
-                default -> Library.LIBRARIES.add(fields.createLibrary());
+                    case MASTER -> {
+                        Library.MASTER.setPath(fields.getPath());
+                        Library.LIBRARIES.add(Library.MASTER);
+                    }
+                    case USER -> {
+                        Library.USER.setPath(fields.getPath());
+                        Library.LIBRARIES.add(Library.USER);
+                    }
+                    default -> Library.LIBRARIES.add(fields.createLibrary());
                 }
             }
             Collections.sort(Library.LIBRARIES);
