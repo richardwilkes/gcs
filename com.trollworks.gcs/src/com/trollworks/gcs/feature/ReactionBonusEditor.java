@@ -36,7 +36,7 @@ public class ReactionBonusEditor extends FeatureEditor {
         row.add(addChangeBaseTypePopup());
         LeveledAmount amount = bonus.getAmount();
         row.add(addLeveledAmountField(amount, -99999, 99999));
-        row.add(addLeveledAmountPopup(amount, false));
+        row.add(addLeveledAmountPopup(amount));
         row.add(new FlexSpacer(0, 0, true, false));
         grid.add(row, 0, 0);
 

@@ -165,11 +165,42 @@ public abstract class FeatureEditor extends EditorPanel {
         return field;
     }
 
-    protected PopupMenu<String> addLeveledAmountPopup(LeveledAmount amt, boolean usePerDie) {
-        String per = usePerDie ? I18n.text("per die") : I18n.text("per level");
-        mLeveledAmountPopup = new PopupMenu<>(new String[]{" ", per},
-                (p) -> ((Bonus) mFeature).getAmount().setPerLevel(mLeveledAmountPopup.getSelectedIndex() == 1));
-        mLeveledAmountPopup.setSelectedItem(amt.isPerLevel() ? per : " ", false);
+    protected PopupMenu<String> addLeveledAmountPopup(LeveledAmount amt) {
+        boolean      forWeaponDamageBonus = mFeature instanceof WeaponDamageBonus;
+        int          initialChoice        = amt.isPerLevel() ? 1 : 0;
+        List<String> options              = new ArrayList<>();
+        options.add(" ");
+        if (forWeaponDamageBonus) {
+            options.add(I18n.text("per die"));
+            options.add("%");
+            if (((WeaponDamageBonus) mFeature).isPercent()) {
+                initialChoice = 2;
+            }
+        } else {
+            options.add(I18n.text("per level"));
+        }
+        mLeveledAmountPopup = new PopupMenu<>(options, (p) -> {
+            LeveledAmount amount = ((Bonus) mFeature).getAmount();
+            switch (mLeveledAmountPopup.getSelectedIndex()) {
+                case 1 -> {
+                    amount.setPerLevel(true);
+                    if (forWeaponDamageBonus) {
+                        ((WeaponDamageBonus) mFeature).setPercent(false);
+                    }
+                }
+                case 2 -> {
+                    amount.setPerLevel(false);
+                    ((WeaponDamageBonus) mFeature).setPercent(true);
+                }
+                default -> {
+                    amount.setPerLevel(false);
+                    if (forWeaponDamageBonus) {
+                        ((WeaponDamageBonus) mFeature).setPercent(false);
+                    }
+                }
+            }
+        });
+        mLeveledAmountPopup.setSelectedItem(options.get(initialChoice), false);
         add(mLeveledAmountPopup);
         return mLeveledAmountPopup;
     }

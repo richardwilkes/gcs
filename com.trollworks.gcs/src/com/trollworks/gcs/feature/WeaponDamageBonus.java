@@ -34,6 +34,7 @@ public class WeaponDamageBonus extends Bonus {
     private static final String KEY_SPECIALIZATION = "specialization";
     private static final String KEY_LEVEL          = "level";
     private static final String KEY_CATEGORY       = "category";
+    private static final String KEY_IS_PERCENT     = "percent";
 
     public static final String THIS_WEAPON_ID         = "\u0001";
     public static final String WEAPON_NAMED_ID_PREFIX = "weapon_named.";
@@ -43,6 +44,7 @@ public class WeaponDamageBonus extends Bonus {
     private StringCriteria      mSpecializationCriteria;
     private IntegerCriteria     mRelativeLevelCriteria;
     private StringCriteria      mCategoryCriteria;
+    private boolean             mIsPercent;
 
     /** Creates a new skill bonus. */
     public WeaponDamageBonus() {
@@ -52,6 +54,7 @@ public class WeaponDamageBonus extends Bonus {
         mSpecializationCriteria = new StringCriteria(StringCompareType.ANY, "");
         mRelativeLevelCriteria = new IntegerCriteria(NumericCompareType.AT_LEAST, 0);
         mCategoryCriteria = new StringCriteria(StringCompareType.ANY, "");
+        mIsPercent = false;
     }
 
     public WeaponDamageBonus(DataFile dataFile, JsonMap m) throws IOException {
@@ -71,6 +74,7 @@ public class WeaponDamageBonus extends Bonus {
         mSpecializationCriteria = new StringCriteria(other.mSpecializationCriteria);
         mRelativeLevelCriteria = new IntegerCriteria(other.mRelativeLevelCriteria);
         mCategoryCriteria = new StringCriteria(other.mCategoryCriteria);
+        mIsPercent = other.mIsPercent;
     }
 
     @Override
@@ -79,7 +83,8 @@ public class WeaponDamageBonus extends Bonus {
             return true;
         }
         if (obj instanceof WeaponDamageBonus wb && super.equals(obj)) {
-            return mWeaponSelectionType == wb.mWeaponSelectionType &&
+            return mIsPercent == wb.mIsPercent &&
+                    mWeaponSelectionType == wb.mWeaponSelectionType &&
                     mNameCriteria.equals(wb.mNameCriteria) &&
                     mSpecializationCriteria.equals(wb.mSpecializationCriteria) &&
                     mRelativeLevelCriteria.equals(wb.mRelativeLevelCriteria) &&
@@ -127,6 +132,7 @@ public class WeaponDamageBonus extends Bonus {
     protected void loadSelf(DataFile dataFile, JsonMap m) throws IOException {
         super.loadSelf(dataFile, m);
         mWeaponSelectionType = Enums.extract(m.getString(KEY_SELECTION_TYPE), WeaponSelectionType.values(), WeaponSelectionType.WEAPONS_WITH_REQUIRED_SKILL);
+        mIsPercent = m.getBoolean(KEY_IS_PERCENT);
         mSpecializationCriteria.load(m.getMap(KEY_SPECIALIZATION));
         switch (mWeaponSelectionType) {
             case WEAPONS_WITH_NAME -> {
@@ -145,6 +151,7 @@ public class WeaponDamageBonus extends Bonus {
     protected void saveSelf(JsonWriter w) throws IOException {
         super.saveSelf(w);
         w.keyValue(KEY_SELECTION_TYPE, Enums.toId(mWeaponSelectionType));
+        w.keyValueNot(KEY_IS_PERCENT, mIsPercent, false);
         mSpecializationCriteria.save(w, KEY_SPECIALIZATION);
         switch (mWeaponSelectionType) {
             case WEAPONS_WITH_NAME -> {
@@ -191,6 +198,16 @@ public class WeaponDamageBonus extends Bonus {
         return mCategoryCriteria;
     }
 
+    /** @return {@code true} if this is a percentage bonus. */
+    public boolean isPercent() {
+        return mIsPercent;
+    }
+
+    /** @param percent {@code true} if this is a percentage bonus. */
+    public void setPercent(boolean percent) {
+        mIsPercent = percent;
+    }
+
     @Override
     public void fillWithNameableKeys(Set<String> set) {
         switch (mWeaponSelectionType) {
@@ -217,6 +234,7 @@ public class WeaponDamageBonus extends Bonus {
 
     @Override
     public String getToolTipAmount() {
-        return getAmount().getAmountAsWeaponBonus();
+        String result = getAmount().getAmountAsWeaponBonus();
+        return mIsPercent ? result + "%" : result;
     }
 }

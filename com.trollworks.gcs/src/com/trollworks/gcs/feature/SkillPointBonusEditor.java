@@ -41,7 +41,7 @@ public class SkillPointBonusEditor extends FeatureEditor {
         row.add(addChangeBaseTypePopup());
         LeveledAmount amount = bonus.getAmount();
         row.add(addLeveledAmountField(amount, -999, 999));
-        row.add(addLeveledAmountPopup(amount, false));
+        row.add(addLeveledAmountPopup(amount));
         row.add(new FlexSpacer(0, 0, true, false));
         grid.add(row, i++, 0);
 

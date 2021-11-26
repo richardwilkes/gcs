@@ -339,16 +339,21 @@ public class WeaponDamage {
                     }
                 }
                 boolean adjustForPhoenixFlame = mOwner.mOwner.getDataFile().getSheetSettings().getDamageProgression() == DamageProgression.PHOENIX_FLAME_D3 && base.getDieSides() == 3;
+                int     percent               = 0;
                 for (WeaponDamageBonus bonus : bonusSet) {
                     LeveledAmount lvlAmt = bonus.getAmount();
                     int           amt    = lvlAmt.getIntegerAmount();
-                    if (lvlAmt.isPerLevel()) {
-                        amt *= base.getDieCount();
-                        if (adjustForPhoenixFlame) {
-                            amt /= 2;
+                    if (bonus.isPercent()) {
+                        percent += amt;
+                    } else {
+                        if (lvlAmt.isPerLevel()) {
+                            amt *= base.getDieCount();
+                            if (adjustForPhoenixFlame) {
+                                amt /= 2;
+                            }
                         }
+                        base.add(amt);
                     }
-                    base.add(amt);
                 }
                 if (mModifierPerDie != 0) {
                     int amt = mModifierPerDie * base.getDieCount();
@@ -356,6 +361,9 @@ public class WeaponDamage {
                         amt /= 2;
                     }
                     base.add(amt);
+                }
+                if (percent != 0) {
+                    base = adjustDiceForPercentBonus(base, percent);
                 }
                 boolean       convertModifiersToExtraDice = mOwner.mOwner.getDataFile().getSheetSettings().useModifyingDicePlusAdds();
                 StringBuilder buffer                      = new StringBuilder();
@@ -395,6 +403,23 @@ public class WeaponDamage {
             }
         }
         return toString();
+    }
+
+    private static Dice adjustDiceForPercentBonus(Dice dice, int percent) {
+        int    count         = dice.getDieCount();
+        int    sides         = dice.getDieSides();
+        int    modifier      = dice.getModifier();
+        int    multiplier    = dice.getMultiplier();
+        double averagePerDie = (sides + 1) / 2.0;
+        double average       = averagePerDie * count + modifier;
+        modifier = modifier * (100 + percent) / 100;
+        if (average < 0) {
+            return new Dice(Math.max(count * (100 + percent) / 100, 0), sides, modifier, multiplier);
+        }
+        average = (average * (100 + percent) / 100.0) - modifier;
+        int adjustedDieCount = Math.max((int) Math.floor(average / averagePerDie), 0);
+        modifier += (int) Math.round(average - adjustedDieCount * averagePerDie);
+        return new Dice(adjustedDieCount, sides, modifier, multiplier);
     }
 
     private void extractWeaponDamageBonus(Feature feature, Set<WeaponDamageBonus> set, int dieCount, StringBuilder toolTip) {
