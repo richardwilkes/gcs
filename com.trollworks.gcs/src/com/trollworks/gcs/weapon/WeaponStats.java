@@ -394,8 +394,11 @@ public abstract class WeaponStats {
             switch (sb.getSkillSelectionType()) {
             case THIS_WEAPON:
             default:
-                sb.addToToolTip(toolTip);
-                return sb.getAmount().getIntegerAdjustedAmount();
+                if (sb.getSpecializationCriteria().matches(getUsage())) {
+                    sb.addToToolTip(toolTip);
+                    return sb.getAmount().getIntegerAdjustedAmount();
+                }
+                break;
             case WEAPONS_WITH_NAME:
                 if (sb.getNameCriteria().matches(mOwner.toString()) && sb.getSpecializationCriteria().matches(getUsage()) && sb.matchesCategories(getCategories())) {
                     sb.addToToolTip(toolTip);

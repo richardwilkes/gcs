@@ -405,8 +405,10 @@ public class WeaponDamage {
             switch (wb.getWeaponSelectionType()) {
             case THIS_WEAPON:
             default:
-                if (set.add(wb)) {
-                    wb.addToToolTip(toolTip);
+                if (wb.getSpecializationCriteria().matches(mOwner.getUsage())) {
+                    if (set.add(wb)) {
+                        wb.addToToolTip(toolTip);
+                    }
                 }
                 break;
             case WEAPONS_WITH_NAME:

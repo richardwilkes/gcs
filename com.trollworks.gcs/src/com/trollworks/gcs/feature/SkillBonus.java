@@ -71,7 +71,10 @@ public class SkillBonus extends Bonus {
         }
         if (obj instanceof SkillBonus sb && super.equals(obj)) {
             if (mNameCriteria.equals(sb.mNameCriteria)) {
-                return mSkillSelectionType == sb.mSkillSelectionType && mNameCriteria.equals(sb.mNameCriteria) && mSpecializationCriteria.equals(sb.mSpecializationCriteria) && mCategoryCriteria.equals(sb.mCategoryCriteria);
+                return mSkillSelectionType == sb.mSkillSelectionType &&
+                        mNameCriteria.equals(sb.mNameCriteria) &&
+                        mSpecializationCriteria.equals(sb.mSpecializationCriteria) &&
+                        mCategoryCriteria.equals(sb.mCategoryCriteria);
             }
         }
         return false;
@@ -116,9 +119,9 @@ public class SkillBonus extends Bonus {
     protected void loadSelf(DataFile dataFile, JsonMap m) throws IOException {
         super.loadSelf(dataFile, m);
         mSkillSelectionType = Enums.extract(m.getString(KEY_SELECTION_TYPE), SkillSelectionType.values(), SkillSelectionType.SKILLS_WITH_NAME);
+        mSpecializationCriteria.load(m.getMap(KEY_SPECIALIZATION));
         if (mSkillSelectionType != SkillSelectionType.THIS_WEAPON) {
             mNameCriteria.load(m.getMap(KEY_NAME));
-            mSpecializationCriteria.load(m.getMap(KEY_SPECIALIZATION));
             mCategoryCriteria.load(m.getMap(KEY_CATEGORY));
         }
     }
@@ -127,9 +130,9 @@ public class SkillBonus extends Bonus {
     protected void saveSelf(JsonWriter w) throws IOException {
         super.saveSelf(w);
         w.keyValue(KEY_SELECTION_TYPE, Enums.toId(mSkillSelectionType));
+        mSpecializationCriteria.save(w, KEY_SPECIALIZATION);
         if (mSkillSelectionType != SkillSelectionType.THIS_WEAPON) {
             mNameCriteria.save(w, KEY_NAME);
-            mSpecializationCriteria.save(w, KEY_SPECIALIZATION);
             mCategoryCriteria.save(w, KEY_CATEGORY);
         }
     }
@@ -163,7 +166,9 @@ public class SkillBonus extends Bonus {
 
     @Override
     public void fillWithNameableKeys(Set<String> set) {
-        if (mSkillSelectionType != SkillSelectionType.THIS_WEAPON) {
+        if (mSkillSelectionType == SkillSelectionType.THIS_WEAPON) {
+            ListRow.extractNameables(set, mSpecializationCriteria.getQualifier());
+        } else {
             ListRow.extractNameables(set, mNameCriteria.getQualifier());
             ListRow.extractNameables(set, mSpecializationCriteria.getQualifier());
             ListRow.extractNameables(set, mCategoryCriteria.getQualifier());
@@ -172,7 +177,9 @@ public class SkillBonus extends Bonus {
 
     @Override
     public void applyNameableKeys(Map<String, String> map) {
-        if (mSkillSelectionType != SkillSelectionType.THIS_WEAPON) {
+        if (mSkillSelectionType == SkillSelectionType.THIS_WEAPON) {
+            mSpecializationCriteria.setQualifier(ListRow.nameNameables(map, mSpecializationCriteria.getQualifier()));
+        } else {
             mNameCriteria.setQualifier(ListRow.nameNameables(map, mNameCriteria.getQualifier()));
             mSpecializationCriteria.setQualifier(ListRow.nameNameables(map, mSpecializationCriteria.getQualifier()));
             mCategoryCriteria.setQualifier(ListRow.nameNameables(map, mCategoryCriteria.getQualifier()));

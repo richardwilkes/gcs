@@ -60,12 +60,21 @@ public class WeaponDamageBonusEditor extends FeatureEditor {
         row.add(popup);
         grid.add(row, 1, 0);
         switch (bonus.getWeaponSelectionType()) {
+        case THIS_WEAPON -> rebuildThisWeapon(grid);
         case WEAPONS_WITH_NAME -> rebuildWeaponsWithName(grid, row);
         case WEAPONS_WITH_REQUIRED_SKILL -> rebuildWeaponsWithRequiredSkill(grid, row);
         default -> row.add(new FlexSpacer(0, 0, true, false));
         }
     }
 
+    private void rebuildThisWeapon(FlexGrid grid) {
+        FlexRow row = new FlexRow();
+        row.setInsets(new Insets(0, 20, 0, 0));
+        StringCriteria criteria = ((WeaponDamageBonus) getFeature()).getSpecializationCriteria();
+        row.add(addStringComparePopup(criteria, I18n.text("and usage ")));
+        row.add(addStringCompareField(criteria));
+        grid.add(row, 2, 0);
+    }
 
     private void rebuildWeaponsWithName(FlexGrid grid, FlexRow row) {
         WeaponDamageBonus bonus    = (WeaponDamageBonus) getFeature();
