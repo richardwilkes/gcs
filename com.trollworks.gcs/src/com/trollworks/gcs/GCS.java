@@ -280,6 +280,8 @@ public final class GCS {
     private static void showHelp() {
         System.out.println(APP_BANNER);
         System.out.println();
+        System.out.println("gcs [options] [files...]");
+        System.out.println();
         System.out.println(I18n.text("Available options:"));
         System.out.println();
         List<String> options = new ArrayList<>();
@@ -291,8 +293,6 @@ public final class GCS {
         options.add(I18n.text("When generating PDF or PNG from the command line, allows you to specify the margins to use, rather than the ones embedded in the file. The top, left, bottom, and right margins must all be specified in inches, separated by colons, such as '1:1:1:1'."));
         options.add(I18n.text("--paper <size>"));
         options.add(I18n.text("When generating PDF or PNG from the command line, allows you to specify a paper size to use, rather than the one embedded in the file. Valid choices are: LETTER, A4, or the width and height, expressed in inches and separated by an 'x', such as '5x7'."));
-        options.add(I18n.text("--pdf"));
-        options.add(I18n.text("Create PDF versions of sheets specified on the command line."));
         options.add(I18n.text("--png"));
         options.add(I18n.text("Create PNG versions of sheets specified on the command line."));
         options.add(I18n.text("--text <file>"));
