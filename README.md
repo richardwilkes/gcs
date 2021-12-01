@@ -14,9 +14,9 @@ tag. These directions are for the latest source, which may have experimental cod
 are incompatible with the current data files. These build instructions may have also changed since
 a given release, so be sure to review them again with the version you plan to build.*
 
-1. Make sure you have JDK 15 installed and set to be used as your default Java compiler. You can
+1. Make sure you have JDK 17 installed and set to be used as your default Java compiler. You can
    download it for your platform here:
-   http://jdk.java.net/15/
+   http://jdk.java.net/17/
 
 2. If you are building on Windows, you'll need to install the WiX Toolset from here:
    https://github.com/wixtoolset/wix3/releases/tag/wix3112rtm
