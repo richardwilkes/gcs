@@ -57,7 +57,9 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
     public AdvantageModifierEditor(AdvantageModifier modifier) {
         super(modifier);
         addContent();
-        updateCostModifier();
+        if (!modifier.canHaveChildren()) {
+            updateCostModifier();
+        }
     }
 
     @Override
