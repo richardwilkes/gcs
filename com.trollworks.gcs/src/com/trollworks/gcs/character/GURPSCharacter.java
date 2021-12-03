@@ -266,6 +266,17 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         if (saveType != SaveType.HASH) {
             w.keyValueNotEmpty(KEY_THIRD_PARTY_DATA, mThirdPartyData);
         }
+
+        // Emit the calculated values for third parties
+        w.key("calc");
+        w.startMap();
+        w.keyValue("swing", getSwing().toString());
+        w.keyValue("thrust", getThrust().toString());
+        w.keyValue("basic_lift", getBasicLift().toString());
+        w.keyValue("lifting_st_bonus", getLiftingStrengthBonus());
+        w.keyValue("striking_st_bonus", getStrikingStrengthBonus());
+        w.keyValue("throwing_st_bonus", getThrowingStrengthBonus());
+        w.endMap();
     }
 
     /** @return The created on date. */
