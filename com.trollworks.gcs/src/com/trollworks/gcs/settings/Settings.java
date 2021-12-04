@@ -15,7 +15,6 @@ import com.trollworks.gcs.GCS;
 import com.trollworks.gcs.character.GURPSCharacter;
 import com.trollworks.gcs.datafile.ChangeableData;
 import com.trollworks.gcs.datafile.DataFile;
-import com.trollworks.gcs.datafile.LoadState;
 import com.trollworks.gcs.library.Library;
 import com.trollworks.gcs.pageref.PageRefSettings;
 import com.trollworks.gcs.ui.Colors;
@@ -140,8 +139,6 @@ public final class Settings extends ChangeableData {
                 if (!m.isEmpty()) {
                     int version = m.getInt(VERSION);
                     if (version >= MINIMUM_VERSION && version <= DataFile.CURRENT_VERSION) {
-                        LoadState state = new LoadState();
-                        state.mDataFileVersion = version;
                         Version loadVersion = new Version(m.getString(LAST_SEEN_GCS_VERSION));
                         if (loadVersion.compareTo(mLastSeenGCSVersion) > 0) {
                             mLastSeenGCSVersion = loadVersion;

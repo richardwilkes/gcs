@@ -12,12 +12,17 @@
 package com.trollworks.gcs.body;
 
 import com.trollworks.gcs.character.GURPSCharacter;
+import com.trollworks.gcs.feature.DRBonus;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.text.NumericComparator;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -88,7 +93,15 @@ public class HitLocation implements Cloneable, Comparable<HitLocation> {
         w.startMap();
         w.keyValue("roll_range", getRollRange());
         if (character != null) {
-            w.keyValue("dr", getDR(character, null));
+            Map<String, Integer> dr   = getDR(character, null, null);
+            List<String>         keys = new ArrayList<>(dr.keySet());
+            Collections.sort(keys);
+            w.key("dr");
+            w.startMap();
+            for (String key : keys) {
+                w.keyValue(key, dr.get(key).intValue());
+            }
+            w.endMap();
         }
         w.endMap();
 
@@ -143,18 +156,58 @@ public class HitLocation implements Cloneable, Comparable<HitLocation> {
         mHitPenalty = penalty;
     }
 
-    public int getDR(GURPSCharacter character, StringBuilder toolTip) {
-        if (mDRBonus != 0 && toolTip != null) {
-            toolTip.append("\n").append(mChoiceName).append(" [").append(Numbers.formatWithForcedSign(mDRBonus)).append("]");
+    public Map<String, Integer> getDR(GURPSCharacter character, StringBuilder tooltip, Map<String, Integer> dr) {
+        if (dr == null) {
+            dr = new HashMap<>();
         }
-        int dr = character.getIntegerBonusFor(KEY_PREFIX + mID, toolTip) + mDRBonus;
+        if (mDRBonus != 0) {
+            Integer value = dr.get(DRBonus.ALL_SPECIALIZATION);
+            if (value == null) {
+                value = Integer.valueOf(mDRBonus);
+            } else {
+                value = Integer.valueOf(value.intValue() + mDRBonus);
+            }
+            dr.put(DRBonus.ALL_SPECIALIZATION, value);
+            if (tooltip != null) {
+                tooltip.append(String.format("\n%s [%s against %s attacks]", mChoiceName, DRBonus.ALL_SPECIALIZATION, Numbers.formatWithForcedSign(mDRBonus)));
+            }
+        }
+        dr = character.addDRBonusesFor(KEY_PREFIX + mID, tooltip, dr);
         if (mOwningTable != null) {
             HitLocation owningLocation = mOwningTable.getOwningLocation();
             if (owningLocation != null) {
-                dr += owningLocation.getDR(character, toolTip);
+                dr = owningLocation.getDR(character, tooltip, dr);
+            }
+        }
+        if (tooltip != null) {
+            List<String> keys = new ArrayList<>(dr.keySet());
+            if (!keys.isEmpty()) {
+                StringBuilder tt = new StringBuilder();
+                Collections.sort(keys);
+                Integer base   = dr.get(DRBonus.ALL_SPECIALIZATION);
+                int     baseDR = base == null ? 0 : base.intValue();
+                tt.append('\n');
+                for (String key : keys) {
+                    int value = dr.get(key).intValue();
+                    if (!DRBonus.ALL_SPECIALIZATION.equalsIgnoreCase(key)) {
+                        value += baseDR;
+                    }
+                    tt.append(String.format("\n%s against %s attacks", Numbers.format(value), key));
+                }
+                tt.append('\n');
+                tooltip.insert(0, tt);
             }
         }
         return dr;
+    }
+
+    public String getDisplayDR(GURPSCharacter character, StringBuilder tooltip) {
+        Map<String, Integer> dr  = getDR(character, tooltip, null);
+        Integer              all = dr.get(DRBonus.ALL_SPECIALIZATION);
+        if (all == null) {
+            return dr.isEmpty() ? "0" : "0+";
+        }
+        return Numbers.format(all.intValue()) + (dr.size() > 1 ? "+" : "");
     }
 
     public int getDRBonus() {

@@ -14,16 +14,25 @@ package com.trollworks.gcs.feature;
 import com.trollworks.gcs.body.HitLocation;
 import com.trollworks.gcs.body.HitLocationTable;
 import com.trollworks.gcs.settings.SheetSettings;
+import com.trollworks.gcs.ui.layout.FlexComponent;
 import com.trollworks.gcs.ui.layout.FlexGrid;
 import com.trollworks.gcs.ui.layout.FlexRow;
 import com.trollworks.gcs.ui.layout.FlexSpacer;
+import com.trollworks.gcs.ui.widget.EditorField;
+import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.PopupMenu;
 import com.trollworks.gcs.ui.widget.outline.ListRow;
+import com.trollworks.gcs.utility.I18n;
 
 import java.awt.Insets;
+import javax.swing.SwingConstants;
+import javax.swing.text.DefaultFormatter;
+import javax.swing.text.DefaultFormatterFactory;
 
 /** A DR bonus editor. */
 public class DRBonusEditor extends FeatureEditor {
+    private EditorField mTypeField;
+
     /**
      * Create a new DR bonus editor.
      *
@@ -47,6 +56,9 @@ public class DRBonusEditor extends FeatureEditor {
 
         row = new FlexRow();
         row.setInsets(new Insets(0, 20, 0, 0));
+        Label label = new Label(I18n.text("to the"));
+        add(label);
+        row.add(new FlexComponent(label, true));
         HitLocationTable locations = SheetSettings.get(getRow().getCharacter()).getHitLocations();
         PopupMenu<HitLocation> popup = new PopupMenu<>(locations.getUniqueHitLocations(), (p) -> {
             HitLocation location = p.getSelectedItem();
@@ -59,5 +71,30 @@ public class DRBonusEditor extends FeatureEditor {
         row.add(popup);
         row.add(new FlexSpacer(0, 0, true, false));
         grid.add(row, 1, 0);
+
+        row = new FlexRow();
+        row.setInsets(new Insets(0, 20, 0, 0));
+        label = new Label(I18n.text("against"));
+        add(label);
+        row.add(new FlexComponent(label, true));
+        DefaultFormatter formatter = new DefaultFormatter();
+        formatter.setOverwriteMode(false);
+        mTypeField = new EditorField(new DefaultFormatterFactory(formatter), this, SwingConstants.LEFT, bonus.getSpecialization(), null);
+        add(mTypeField);
+        row.add(mTypeField);
+        label = new Label(I18n.text("attacks"));
+        add(label);
+        row.add(new FlexComponent(label, true));
+        row.add(new FlexSpacer(0, 0, true, false));
+        grid.add(row, 2, 0);
+    }
+
+    @Override
+    public void editorFieldChanged(EditorField field) {
+        if (field == mTypeField) {
+            ((DRBonus) getFeature()).setSpecialization(mTypeField.getText().trim());
+        } else {
+            super.editorFieldChanged(field);
+        }
     }
 }

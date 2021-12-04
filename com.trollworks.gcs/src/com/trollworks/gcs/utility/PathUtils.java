@@ -19,7 +19,6 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /** Provides standard file path manipulation facilities. */
@@ -336,7 +335,7 @@ public final class PathUtils {
             Path p = Paths.get(dir);
             if (Files.isDirectory(p)) {
                 try (Stream<Path> stream = Files.list(p)) {
-                    for (Path path : stream.collect(Collectors.toList())) {
+                    for (Path path : stream.toList()) {
                         String  fileName = path.getFileName().toString();
                         boolean match;
                         if (Platform.isWindows() || Platform.isMacintosh()) {

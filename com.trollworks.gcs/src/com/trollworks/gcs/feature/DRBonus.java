@@ -19,15 +19,19 @@ import java.io.IOException;
 
 /** A DR bonus. */
 public class DRBonus extends Bonus {
-    public static final  String KEY_ROOT     = "dr_bonus";
-    private static final String KEY_LOCATION = "location";
+    public static final  String ALL_SPECIALIZATION = "all";
+    public static final  String KEY_ROOT           = "dr_bonus";
+    private static final String KEY_LOCATION       = "location";
+    private static final String KEY_SPECIALIZATION = "specialization";
 
     private String mLocation;
+    private String mSpecialization;
 
     /** Creates a new DR bonus. */
     public DRBonus() {
         super(1);
         mLocation = "torso";
+        mSpecialization = ALL_SPECIALIZATION;
     }
 
     public DRBonus(DataFile dataFile, JsonMap m) throws IOException {
@@ -43,6 +47,7 @@ public class DRBonus extends Bonus {
     public DRBonus(DRBonus other) {
         super(other);
         mLocation = other.mLocation;
+        mSpecialization = other.mSpecialization;
     }
 
     @Override
@@ -50,8 +55,8 @@ public class DRBonus extends Bonus {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof DRBonus drb && super.equals(obj)) {
-            return mLocation.equals(drb.mLocation);
+        if (obj instanceof DRBonus other && super.equals(obj)) {
+            return mLocation.equals(other.mLocation) && mSpecialization.equals(other.mSpecialization);
         }
         return false;
     }
@@ -75,12 +80,14 @@ public class DRBonus extends Bonus {
     protected void loadSelf(DataFile dataFile, JsonMap m) throws IOException {
         super.loadSelf(dataFile, m);
         mLocation = m.getString(KEY_LOCATION);
+        setSpecialization(m.getString(KEY_SPECIALIZATION));
     }
 
     @Override
     protected void saveSelf(JsonWriter w) throws IOException {
         super.saveSelf(w);
         w.keyValue(KEY_LOCATION, mLocation);
+        w.keyValueNot(KEY_SPECIALIZATION, mSpecialization, ALL_SPECIALIZATION);
     }
 
     /** @return The location protected by the DR. */
@@ -91,5 +98,27 @@ public class DRBonus extends Bonus {
     /** @param location The location. */
     public void setLocation(String location) {
         mLocation = location;
+    }
+
+    /** @return The specialization. */
+    public String getSpecialization() {
+        return mSpecialization;
+    }
+
+    /** @param specialization The specialization. */
+    public void setSpecialization(String specialization) {
+        specialization = specialization.trim();
+        if (specialization.isBlank() || ALL_SPECIALIZATION.equalsIgnoreCase(specialization)) {
+            mSpecialization = ALL_SPECIALIZATION;
+        } else {
+            mSpecialization = specialization;
+        }
+    }
+
+    @Override
+    public void addToToolTip(StringBuilder toolTip) {
+        if (toolTip != null) {
+            toolTip.append("\n").append(getParentName()).append(" [").append(getToolTipAmount()).append(" against ").append(mSpecialization).append(" attacks]");
+        }
     }
 }

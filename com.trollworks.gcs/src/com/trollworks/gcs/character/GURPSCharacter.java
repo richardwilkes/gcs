@@ -25,6 +25,7 @@ import com.trollworks.gcs.expression.VariableResolver;
 import com.trollworks.gcs.feature.AttributeBonusLimitation;
 import com.trollworks.gcs.feature.Bonus;
 import com.trollworks.gcs.feature.CostReduction;
+import com.trollworks.gcs.feature.DRBonus;
 import com.trollworks.gcs.feature.Feature;
 import com.trollworks.gcs.feature.LeveledAmount;
 import com.trollworks.gcs.feature.SkillBonus;
@@ -1112,21 +1113,51 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
 
     /**
      * @param id      The feature ID to search for.
-     * @param toolTip The toolTip being built.
+     * @param tooltip The tooltip being built.
      * @return The bonus.
      */
-    public int getIntegerBonusFor(String id, StringBuilder toolTip) {
+    public int getIntegerBonusFor(String id, StringBuilder tooltip) {
         int           total = 0;
         List<Feature> list  = mFeatureMap.get(id.toLowerCase());
         if (list != null) {
             for (Feature feature : list) {
                 if (feature instanceof Bonus bonus && !(feature instanceof WeaponDamageBonus)) {
                     total += bonus.getAmount().getIntegerAdjustedAmount();
-                    bonus.addToToolTip(toolTip);
+                    bonus.addToToolTip(tooltip);
                 }
             }
         }
         return total;
+    }
+
+    /**
+     * @param id      The feature ID to search for.
+     * @param tooltip The tooltip being built.
+     * @param dr      The DR bonuses, per specialization.
+     * @return The passed-in {@code dr} or the newly created one if {@code null} was passed in.
+     */
+    public Map<String, Integer> addDRBonusesFor(String id, StringBuilder tooltip, Map<String, Integer> dr) {
+        if (dr == null) {
+            dr = new HashMap<>();
+        }
+        List<Feature> list = mFeatureMap.get(id.toLowerCase());
+        if (list != null) {
+            for (Feature feature : list) {
+                if (feature instanceof DRBonus bonus) {
+                    String  specialization = bonus.getSpecialization();
+                    int     amt            = bonus.getAmount().getIntegerAdjustedAmount();
+                    Integer value          = dr.get(specialization);
+                    if (value == null) {
+                        value = Integer.valueOf(amt);
+                    } else {
+                        value = Integer.valueOf(value.intValue() + amt);
+                    }
+                    dr.put(specialization, value);
+                    bonus.addToToolTip(tooltip);
+                }
+            }
+        }
+        return dr;
     }
 
     /**

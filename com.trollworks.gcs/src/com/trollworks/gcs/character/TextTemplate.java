@@ -132,6 +132,7 @@ public class TextTemplate {
     private static final String KEY_DISADVANTAGE_POINTS          = "DISADVANTAGE_POINTS";
     private static final String KEY_DODGE                        = "DODGE";
     private static final String KEY_DR                           = "DR";
+    private static final String KEY_DR_TOOLTIP                   = "DR_TOOLTIP";
     private static final String KEY_DURATION                     = "DURATION";
     private static final String KEY_DX                           = "DX";
     private static final String KEY_DX_POINTS                    = "DX_POINTS";
@@ -549,7 +550,9 @@ public class TextTemplate {
                 int torsoDR = 0;
                 HitLocation torsoLocation = gurpsCharacter.getSheetSettings().getHitLocations().lookupLocationByID("torso");
                 if (torsoLocation != null) {
-                    torsoDR = torsoLocation.getDR(gurpsCharacter, null);
+                    Map<String, Integer> dr  = torsoLocation.getDR(gurpsCharacter, null, null);
+                    Integer              all = dr.get(DRBonus.ALL_SPECIALIZATION);
+                    torsoDR = all == null ? 0 : all.intValue();
                 }
                 writeEncodedText(out, Numbers.format(torsoDR));
                 break;
@@ -1108,7 +1111,12 @@ public class TextTemplate {
                             case KEY_ROLL -> writeEncodedText(out, location.getRollRange());
                             case KEY_WHERE -> writeEncodedText(out, location.getTableName());
                             case KEY_PENALTY -> writeEncodedText(out, Numbers.format(location.getHitPenalty()));
-                            case KEY_DR -> writeEncodedText(out, Numbers.format(location.getDR(gurpsCharacter, null)));
+                            case KEY_DR -> writeEncodedText(out, location.getDisplayDR(gurpsCharacter, null));
+                            case KEY_DR_TOOLTIP -> {
+                                StringBuilder tooltip = new StringBuilder();
+                                location.getDisplayDR(gurpsCharacter, tooltip);
+                                writeEncodedText(out, tooltip.toString());
+                            }
                             case KEY_ID -> writeEncodedText(out, Integer.toString(currentID));
                             // Show the equipment that is providing the DR bonus
                             case KEY_LOCATION_EQUIPMENT -> writeEncodedText(out, hitLocationEquipment(location).replace(NEWLINE, COMMA_SEPARATOR));
