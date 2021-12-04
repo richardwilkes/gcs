@@ -55,6 +55,7 @@ import com.trollworks.gcs.utility.SaveType;
 import com.trollworks.gcs.utility.json.JsonArray;
 import com.trollworks.gcs.utility.json.JsonMap;
 import com.trollworks.gcs.utility.json.JsonWriter;
+import com.trollworks.gcs.utility.text.Enums;
 import com.trollworks.gcs.utility.text.Numbers;
 import com.trollworks.gcs.utility.undo.StdUndoManager;
 import com.trollworks.gcs.utility.units.WeightUnits;
@@ -276,6 +277,12 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         w.keyValue("lifting_st_bonus", getLiftingStrengthBonus());
         w.keyValue("striking_st_bonus", getStrikingStrengthBonus());
         w.keyValue("throwing_st_bonus", getThrowingStrengthBonus());
+        for (Encumbrance enc : Encumbrance.values()) {
+            w.keyValue("dodge_" + Enums.toId(enc), getDodge(enc));
+        }
+        w.keyValue("dodge_bonus", getDodgeBonus());
+        w.keyValue("block_bonus", getBlockBonus());
+        w.keyValue("parry_bonus", getParryBonus());
         w.endMap();
     }
 
