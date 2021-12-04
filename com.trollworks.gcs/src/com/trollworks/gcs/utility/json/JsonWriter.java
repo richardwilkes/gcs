@@ -112,6 +112,30 @@ public class JsonWriter extends FilterWriter {
         }
     }
 
+    public void value(boolean value) throws IOException {
+        commaIfNeeded();
+        write(value ? "true" : "false");
+    }
+
+    public void value(int value) throws IOException {
+        commaIfNeeded();
+        write(Integer.toString(value));
+    }
+
+    public void value(long value) throws IOException {
+        commaIfNeeded();
+        write(Long.toString(value));
+    }
+
+    public void value(double value) throws IOException {
+        value(Double.valueOf(value));
+    }
+
+    public void value(Number value) throws IOException {
+        commaIfNeeded();
+        write(Json.toString(value));
+    }
+
     public void value(String value) throws IOException {
         commaIfNeeded();
         write(Json.quote(value));
