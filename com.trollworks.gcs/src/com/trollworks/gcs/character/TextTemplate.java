@@ -2151,6 +2151,7 @@ public class TextTemplate {
         int                          currentID        = 0;
         List<ConditionalModifierRow> cms              = mSheet.collectConditionalModifiers();
         for (ConditionalModifierRow cm : cms) {
+            currentID++;
             for (int i = 0; i < length; i++) {
                 char ch = contents.charAt(i);
                 if (lookForKeyMarker) {
