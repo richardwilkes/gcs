@@ -205,4 +205,28 @@ public class Ancestry {
         }
         return "";
     }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (other == null || getClass() != other.getClass()) {
+            return false;
+        }
+
+        Ancestry ancestry = (Ancestry) other;
+
+        if (!mCommonOptions.equals(ancestry.mCommonOptions)) {
+            return false;
+        }
+        return mGenderOptions.equals(ancestry.mGenderOptions);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = mCommonOptions.hashCode();
+        result = 31 * result + mGenderOptions.hashCode();
+        return result;
+    }
 }

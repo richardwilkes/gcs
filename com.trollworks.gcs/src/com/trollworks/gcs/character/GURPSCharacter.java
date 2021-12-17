@@ -14,6 +14,7 @@ package com.trollworks.gcs.character;
 import com.trollworks.gcs.advantage.Advantage;
 import com.trollworks.gcs.advantage.AdvantageContainerType;
 import com.trollworks.gcs.ancestry.Ancestry;
+import com.trollworks.gcs.ancestry.AncestryRef;
 import com.trollworks.gcs.attribute.Attribute;
 import com.trollworks.gcs.attribute.AttributeDef;
 import com.trollworks.gcs.attribute.AttributeType;
@@ -1467,8 +1468,17 @@ public class GURPSCharacter extends CollectedModels implements VariableResolver 
         }
     }
 
+    public AncestryRef getAncestryRef() {
+        for (Advantage advantage : getAdvantagesIterator(false)) {
+            if (advantage.canHaveChildren() && advantage.isEnabled() && advantage.getContainerType() == AdvantageContainerType.RACE) {
+                return advantage.getAncestryRef();
+            }
+        }
+        return AncestryRef.DEFAULT;
+    }
+
     public Ancestry getAncestry() {
-        for (Advantage advantage : new FilteredIterator<>(getAdvantagesModel().getTopLevelRows(), Advantage.class)) {
+        for (Advantage advantage : getAdvantagesIterator(false)) {
             if (advantage.canHaveChildren() && advantage.isEnabled() && advantage.getContainerType() == AdvantageContainerType.RACE) {
                 return advantage.getAncestry();
             }

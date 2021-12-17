@@ -86,4 +86,26 @@ public class AncestryRef implements Comparable<AncestryRef> {
     public String toString() {
         return mName;
     }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (other == null || getClass() != other.getClass()) {
+            return false;
+        }
+        AncestryRef that = (AncestryRef) other;
+        if (!mName.equals(that.mName)) {
+            return false;
+        }
+        return mAncestry.equals(that.mAncestry);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = mName.hashCode();
+        result = 31 * result + mAncestry.hashCode();
+        return result;
+    }
 }

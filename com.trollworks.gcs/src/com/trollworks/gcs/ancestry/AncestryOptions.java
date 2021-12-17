@@ -207,4 +207,56 @@ public class AncestryOptions {
         }
         return buffer.toString();
     }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (other == null || getClass() != other.getClass()) {
+            return false;
+        }
+
+        AncestryOptions that = (AncestryOptions) other;
+
+        if (!mName.equals(that.mName)) {
+            return false;
+        }
+        if (!mHeightFormula.equals(that.mHeightFormula)) {
+            return false;
+        }
+        if (!mWeightFormula.equals(that.mWeightFormula)) {
+            return false;
+        }
+        if (!mAgeFormula.equals(that.mAgeFormula)) {
+            return false;
+        }
+        if (!mHairOptions.equals(that.mHairOptions)) {
+            return false;
+        }
+        if (!mEyeOptions.equals(that.mEyeOptions)) {
+            return false;
+        }
+        if (!mSkinOptions.equals(that.mSkinOptions)) {
+            return false;
+        }
+        if (!mHandednessOptions.equals(that.mHandednessOptions)) {
+            return false;
+        }
+        return mNameGenerators.equals(that.mNameGenerators);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = mName.hashCode();
+        result = 31 * result + mHeightFormula.hashCode();
+        result = 31 * result + mWeightFormula.hashCode();
+        result = 31 * result + mAgeFormula.hashCode();
+        result = 31 * result + mHairOptions.hashCode();
+        result = 31 * result + mEyeOptions.hashCode();
+        result = 31 * result + mSkinOptions.hashCode();
+        result = 31 * result + mHandednessOptions.hashCode();
+        result = 31 * result + mNameGenerators.hashCode();
+        return result;
+    }
 }

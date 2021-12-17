@@ -100,4 +100,25 @@ public abstract class WeightedOption<T> {
         }
         return null;
     }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof WeightedOption<?> that)) {
+            return false;
+        }
+        if (mWeight != that.mWeight) {
+            return false;
+        }
+        return mValue.equals(that.mValue);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = mWeight;
+        result = 31 * result + mValue.hashCode();
+        return result;
+    }
 }

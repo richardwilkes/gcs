@@ -75,6 +75,7 @@ import com.trollworks.gcs.weapon.WeaponStats;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Frame;
@@ -118,6 +119,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     private static final Pattern                     SCHEME_PATTERN            = Pattern.compile(".*://");
     private              GURPSCharacter              mCharacter;
     private              int                         mLastPage;
+    private              int                         mLastAncestryHashCode;
     private              WeaponOutline               mMeleeWeaponOutline;
     private              WeaponOutline               mRangedWeaponOutline;
     private              ReactionsOutline            mReactionsOutline;
@@ -125,6 +127,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
     private              Scale                       mSavedScale;
     private              boolean                     mOkToPaint                = true;
     private              boolean                     mIsPrinting;
+    private              boolean                     mAncestryChangePending;
 
     /**
      * Creates a new character sheet display. {@link #rebuild()} must be called prior to the first
@@ -141,6 +144,7 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
             setDropTarget(new DropTarget(this, this));
         }
         mCharacter.addChangeListener(this);
+        mLastAncestryHashCode = mCharacter.getAncestry().hashCode();
     }
 
     /** Call when the sheet is no longer in use. */
@@ -272,6 +276,19 @@ public class CharacterSheet extends CollectedOutlines implements ChangeListener,
         }
         setSize(getPreferredSize());
         repaint();
+
+        int hash = mCharacter.getAncestry().hashCode();
+        if (hash != mLastAncestryHashCode) {
+            mLastAncestryHashCode = hash;
+            if (!mAncestryChangePending) {
+                mAncestryChangePending = true;
+                EventQueue.invokeLater(new AncestryRandomizer(this, false));
+            }
+        }
+    }
+
+    public void setAncestryChangePending(boolean ancestryChangePending) {
+        mAncestryChangePending = ancestryChangePending;
     }
 
     private static void syncOutline(Outline outline) {
