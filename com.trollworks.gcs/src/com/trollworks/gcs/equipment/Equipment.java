@@ -294,20 +294,26 @@ public class Equipment extends CollectedListRow implements HasSourceReference {
         w.keyValueNot(KEY_DESCRIPTION, mDescription, "");
         w.keyValueNot(KEY_TL, mTechLevel, "");
         w.keyValueNot(KEY_LC, mLegalityClass, DEFAULT_LC);
-        if (!mValue.equals(Fixed6.ZERO)) {
-            w.keyValue(KEY_VALUE, mValue.toString());
-        }
+        w.keyValue(KEY_VALUE, mValue.toString());
         if (mWeightIgnoredForSkills) {
             w.keyValue(KEY_IGNORE_WEIGHT_FOR_SKILLS, true);
         }
-        if (!mWeight.getNormalizedValue().equals(Fixed6.ZERO)) {
-            w.keyValue(KEY_WEIGHT, mWeight.toString(false));
-        }
+        w.keyValue(KEY_WEIGHT, mWeight.toString(false));
         w.keyValueNot(KEY_REFERENCE, mReference, "");
         w.keyValueNot(KEY_USES, mUses, 0);
         w.keyValueNot(KEY_MAX_USES, mMaxUses, 0);
         WeaponStats.saveList(w, KEY_WEAPONS, mWeapons);
         saveList(w, KEY_MODIFIERS, mModifiers, saveType);
+
+        // Emit the calculated values for third parties
+        w.key("calc");
+        w.startMap();
+        w.keyValue("extended_value", mExtendedValue.toString());
+        w.keyValue("extended_weight", mExtendedWeight.toString(false));
+        if (mWeightIgnoredForSkills) {
+            w.keyValue("extended_weight_for_skills", mExtendedWeightForSkills.toString(false));
+        }
+        w.endMap();
     }
 
     @Override
