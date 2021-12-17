@@ -242,7 +242,7 @@ public final class Settings extends ChangeableData {
             Library.LIBRARIES.add(Library.USER);
         }
         Collections.sort(Library.LIBRARIES);
-        mGeneralSettings.updateToolTipTimeout();
+        mGeneralSettings.updateToolTipTiming();
     }
 
     public void save() {

@@ -36,18 +36,21 @@ import javax.swing.ToolTipManager;
 public final class GeneralSettings {
     private static final String DEPRECATED_KEY_AUTO_NAME_NEW_CHARACTERS = "auto_name_new_characters"; // March 21, 2021
     private static final String DEPRECATED_KEY_PNG_RESOLUTION           = "png_resolution"; // June 6, 2021
+    private static final String DEPRECATED_KEY_TOOLTIP_TIMEOUT          = "tooltip_timeout"; // Dec 17, 2021
 
-    private static final String KEY_AUTO_FILL_PROFILE   = "auto_fill_profile";
-    public static final  String KEY_CALENDAR_REF        = "calendar_ref";
-    private static final String KEY_DEFAULT_PLAYER_NAME = "default_player_name";
-    private static final String KEY_DEFAULT_TECH_LEVEL  = "default_tech_level";
-    private static final String KEY_GCALC               = "gurps_calculator_key";
-    private static final String KEY_IMAGE_RESOLUTION    = "image_resolution";
-    private static final String KEY_PDF_VIEWER          = "pdf_viewer";
-    private static final String KEY_UNSPENT_POINTS      = "include_unspent_points_in_total";
-    private static final String KEY_INITIAL_POINTS      = "initial_points";
-    private static final String KEY_INITIAL_UI_SCALE    = "initial_ui_scale";
-    private static final String KEY_TOOLTIP_TIMEOUT     = "tooltip_timeout";
+    private static final String KEY_AUTO_FILL_PROFILE                  = "auto_fill_profile";
+    public static final  String KEY_CALENDAR_REF                       = "calendar_ref";
+    private static final String KEY_DEFAULT_PLAYER_NAME                = "default_player_name";
+    private static final String KEY_DEFAULT_TECH_LEVEL                 = "default_tech_level";
+    private static final String KEY_GCALC                              = "gurps_calculator_key";
+    private static final String KEY_IMAGE_RESOLUTION                   = "image_resolution";
+    private static final String KEY_PDF_VIEWER                         = "pdf_viewer";
+    private static final String KEY_UNSPENT_POINTS                     = "include_unspent_points_in_total";
+    private static final String KEY_INITIAL_POINTS                     = "initial_points";
+    private static final String KEY_INITIAL_UI_SCALE                   = "initial_ui_scale";
+    private static final String KEY_TOOLTIP_INITIAL_DELAY_MILLISECONDS = "tooltip_initial_delay_milliseconds";
+    private static final String KEY_TOOLTIP_DISMISS_DELAY_SECONDS      = "tooltip_dismiss_delay_seconds";
+    private static final String KEY_TOOLTIP_RESHOW_DELAY_MILLISECONDS  = "tooltip_reshow_delay_milliseconds";
 
     private Scales    mInitialUIScale;
     private String    mDefaultPlayerName;
@@ -56,7 +59,9 @@ public final class GeneralSettings {
     private String    mCalendarRef;
     private PDFViewer mPDFViewer;
     private int       mInitialPoints;
-    private int       mToolTipTimeout;
+    private int       mToolTipInitialDelayMilliseconds;
+    private int       mToolTipDismissDelaySeconds;
+    private int       mToolTipReshowDelayMilliseconds;
     private int       mImageResolution;
     private boolean   mAutoFillProfile;
     private boolean   mIncludeUnspentPointsInTotal;
@@ -69,7 +74,9 @@ public final class GeneralSettings {
         mCalendarRef = CalendarRef.DEFAULT.name();
         mPDFViewer = Platform.getPlatform().defaultPDFViewer();
         mInitialPoints = 250;
-        mToolTipTimeout = 60;
+        mToolTipInitialDelayMilliseconds = 750;
+        mToolTipDismissDelaySeconds = 60;
+        mToolTipReshowDelayMilliseconds = 500;
         mImageResolution = 200;
         mAutoFillProfile = true;
         mIncludeUnspentPointsInTotal = true;
@@ -100,7 +107,9 @@ public final class GeneralSettings {
         mGCalcKey = other.mGCalcKey;
         mPDFViewer = other.mPDFViewer;
         mInitialPoints = other.mInitialPoints;
-        mToolTipTimeout = other.mToolTipTimeout;
+        mToolTipInitialDelayMilliseconds = other.mToolTipInitialDelayMilliseconds;
+        mToolTipDismissDelaySeconds = other.mToolTipDismissDelaySeconds;
+        mToolTipReshowDelayMilliseconds = other.mToolTipReshowDelayMilliseconds;
         mImageResolution = other.mImageResolution;
         mAutoFillProfile = other.mAutoFillProfile;
         mIncludeUnspentPointsInTotal = other.mIncludeUnspentPointsInTotal;
@@ -114,7 +123,13 @@ public final class GeneralSettings {
         mCalendarRef = m.getStringWithDefault(KEY_CALENDAR_REF, CalendarRef.DEFAULT.name());
         mPDFViewer = Enums.extract(m.getString(KEY_PDF_VIEWER), PDFViewer.values(), Platform.getPlatform().defaultPDFViewer());
         mInitialPoints = m.getIntWithDefault(KEY_INITIAL_POINTS, mInitialPoints);
-        mToolTipTimeout = m.getIntWithDefault(KEY_TOOLTIP_TIMEOUT, mToolTipTimeout);
+        if (m.has(DEPRECATED_KEY_TOOLTIP_TIMEOUT)) {
+            mToolTipDismissDelaySeconds = m.getIntWithDefault(DEPRECATED_KEY_TOOLTIP_TIMEOUT, mToolTipDismissDelaySeconds);
+        } else {
+            mToolTipInitialDelayMilliseconds = m.getIntWithDefault(KEY_TOOLTIP_INITIAL_DELAY_MILLISECONDS, mToolTipInitialDelayMilliseconds);
+            mToolTipDismissDelaySeconds = m.getIntWithDefault(KEY_TOOLTIP_DISMISS_DELAY_SECONDS, mToolTipDismissDelaySeconds);
+            mToolTipReshowDelayMilliseconds = m.getIntWithDefault(KEY_TOOLTIP_RESHOW_DELAY_MILLISECONDS, mToolTipReshowDelayMilliseconds);
+        }
         if (m.has(DEPRECATED_KEY_PNG_RESOLUTION)) {
             mImageResolution = m.getIntWithDefault(DEPRECATED_KEY_PNG_RESOLUTION, mImageResolution);
         } else {
@@ -157,7 +172,9 @@ public final class GeneralSettings {
         w.keyValue(KEY_CALENDAR_REF, mCalendarRef);
         w.keyValue(KEY_PDF_VIEWER, Enums.toId(mPDFViewer));
         w.keyValue(KEY_INITIAL_POINTS, mInitialPoints);
-        w.keyValue(KEY_TOOLTIP_TIMEOUT, mToolTipTimeout);
+        w.keyValue(KEY_TOOLTIP_INITIAL_DELAY_MILLISECONDS, mToolTipInitialDelayMilliseconds);
+        w.keyValue(KEY_TOOLTIP_DISMISS_DELAY_SECONDS, mToolTipDismissDelaySeconds);
+        w.keyValue(KEY_TOOLTIP_RESHOW_DELAY_MILLISECONDS, mToolTipReshowDelayMilliseconds);
         w.keyValue(KEY_IMAGE_RESOLUTION, mImageResolution);
         w.keyValue(KEY_AUTO_FILL_PROFILE, mAutoFillProfile);
         w.keyValue(KEY_UNSPENT_POINTS, mIncludeUnspentPointsInTotal);
@@ -212,20 +229,45 @@ public final class GeneralSettings {
         mInitialPoints = initialPoints;
     }
 
-    public int getToolTipTimeout() {
-        return mToolTipTimeout;
+    public int getToolTipInitialDelayMilliseconds() {
+        return mToolTipInitialDelayMilliseconds;
     }
 
-    public void setToolTipTimeout(int toolTipTimeout) {
-        if (mToolTipTimeout != toolTipTimeout) {
-            mToolTipTimeout = toolTipTimeout;
-            updateToolTipTimeout();
+    public void setToolTipInitialDelayMilliseconds(int milliseconds) {
+        if (mToolTipInitialDelayMilliseconds != milliseconds) {
+            mToolTipInitialDelayMilliseconds = milliseconds;
+            updateToolTipTiming();
         }
     }
 
-    public void updateToolTipTimeout() {
+    public int getToolTipDismissDelaySeconds() {
+        return mToolTipDismissDelaySeconds;
+    }
+
+    public void setToolTipDismissDelaySeconds(int seconds) {
+        if (mToolTipDismissDelaySeconds != seconds) {
+            mToolTipDismissDelaySeconds = seconds;
+            updateToolTipTiming();
+        }
+    }
+
+    public int getToolTipReshowDelayMilliseconds() {
+        return mToolTipReshowDelayMilliseconds;
+    }
+
+    public void setToolTipReshowDelayMilliseconds(int milliseconds) {
+        if (mToolTipReshowDelayMilliseconds != milliseconds) {
+            mToolTipReshowDelayMilliseconds = milliseconds;
+            updateToolTipTiming();
+        }
+    }
+
+    public void updateToolTipTiming() {
         if (!GraphicsEnvironment.isHeadless()) {
-            ToolTipManager.sharedInstance().setDismissDelay(mToolTipTimeout * 1000);
+            ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
+            toolTipManager.setInitialDelay(mToolTipInitialDelayMilliseconds);
+            toolTipManager.setDismissDelay(mToolTipDismissDelaySeconds * 1000);
+            toolTipManager.setReshowDelay(mToolTipReshowDelayMilliseconds);
         }
     }
 
@@ -270,7 +312,13 @@ public final class GeneralSettings {
         if (mInitialPoints != that.mInitialPoints) {
             return false;
         }
-        if (mToolTipTimeout != that.mToolTipTimeout) {
+        if (mToolTipInitialDelayMilliseconds != that.mToolTipInitialDelayMilliseconds) {
+            return false;
+        }
+        if (mToolTipDismissDelaySeconds != that.mToolTipDismissDelaySeconds) {
+            return false;
+        }
+        if (mToolTipReshowDelayMilliseconds != that.mToolTipReshowDelayMilliseconds) {
             return false;
         }
         if (mImageResolution != that.mImageResolution) {
@@ -309,7 +357,9 @@ public final class GeneralSettings {
         result = 31 * result + mCalendarRef.hashCode();
         result = 31 * result + mPDFViewer.hashCode();
         result = 31 * result + mInitialPoints;
-        result = 31 * result + mToolTipTimeout;
+        result = 31 * result + mToolTipInitialDelayMilliseconds;
+        result = 31 * result + mToolTipDismissDelaySeconds;
+        result = 31 * result + mToolTipReshowDelayMilliseconds;
         result = 31 * result + mImageResolution;
         result = 31 * result + (mAutoFillProfile ? 1 : 0);
         result = 31 * result + (mIncludeUnspentPointsInTotal ? 1 : 0);

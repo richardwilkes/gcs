@@ -51,7 +51,9 @@ public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings>
     private EditorField            mInitialPoints;
     private Checkbox               mAutoFillProfile;
     private PopupMenu<Scales>      mInitialScale;
-    private EditorField            mToolTipTimeout;
+    private EditorField            mToolTipInitialDelayMilliseconds;
+    private EditorField            mToolTipDismissDelaySeconds;
+    private EditorField            mToolTipReshowDelayMilliseconds;
     private EditorField            mImageResolution;
     private Checkbox               mIncludeUnspentPointsInTotal;
     private EditorField            mGCalcKey;
@@ -158,21 +160,10 @@ public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings>
         mInitialScale.setSelectedItem(settings.getInitialUIScale(), false);
         panel.add(new Label(I18n.text("Initial Scale")),
                 new PrecisionLayoutData().setEndHorizontalAlignment());
-        wrapper = new Wrapper(new PrecisionLayout().setMargins(0).setColumns(7));
+        wrapper = new Wrapper(new PrecisionLayout().setMargins(0).setColumns(4));
         panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().
                 setGrabHorizontalSpace(true).setHorizontalSpan(2));
         wrapper.add(mInitialScale);
-
-        mToolTipTimeout = new EditorField(FieldFactory.TOOLTIP_TIMEOUT, (f) -> {
-            Settings.getInstance().getGeneralSettings().setToolTipTimeout(((Integer) f.getValue()).intValue());
-            adjustResetButton();
-        }, SwingConstants.RIGHT, Integer.valueOf(settings.getToolTipTimeout()),
-                FieldFactory.getMaxValue(FieldFactory.TOOLTIP_TIMEOUT),
-                I18n.text("The number of seconds before tooltips will dismiss themselves"));
-        wrapper.add(new Label(I18n.text("Tooltip Timeout")),
-                new PrecisionLayoutData().setFillHorizontalAlignment().setLeftMargin(10));
-        wrapper.add(mToolTipTimeout, new PrecisionLayoutData().setFillHorizontalAlignment());
-        wrapper.add(new Label(I18n.text("seconds")));
 
         mImageResolution = new EditorField(FieldFactory.OUTPUT_DPI, (f) -> {
             Settings.getInstance().getGeneralSettings().setImageResolution(((Integer) f.getValue()).intValue());
@@ -186,6 +177,49 @@ public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings>
         wrapper.add(new Label(I18n.text("dpi")));
 
         // Fifth row
+        panel.add(new Label(I18n.text("Tooltip Initial Delay")),
+                new PrecisionLayoutData().setEndHorizontalAlignment());
+        wrapper = new Wrapper(new PrecisionLayout().setMargins(0).setColumns(2));
+        panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().
+                setGrabHorizontalSpace(true).setHorizontalSpan(2));
+        mToolTipInitialDelayMilliseconds = new EditorField(FieldFactory.TOOLTIP_MILLIS_TIMEOUT, (f) -> {
+            Settings.getInstance().getGeneralSettings().setToolTipInitialDelayMilliseconds(((Integer) f.getValue()).intValue());
+            adjustResetButton();
+        }, SwingConstants.RIGHT, Integer.valueOf(settings.getToolTipInitialDelayMilliseconds()),
+                FieldFactory.getMaxValue(FieldFactory.TOOLTIP_MILLIS_TIMEOUT),
+                I18n.text("The number of milliseconds after the cursor has paused before tooltips will appear"));
+        wrapper.add(mToolTipInitialDelayMilliseconds, new PrecisionLayoutData().setFillHorizontalAlignment());
+        wrapper.add(new Label(I18n.text("milliseconds")));
+
+        panel.add(new Label(I18n.text("Tooltip Dismissal Timeout")),
+                new PrecisionLayoutData().setEndHorizontalAlignment());
+        wrapper = new Wrapper(new PrecisionLayout().setMargins(0).setColumns(2));
+        panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().
+                setGrabHorizontalSpace(true).setHorizontalSpan(2));
+        mToolTipDismissDelaySeconds = new EditorField(FieldFactory.TOOLTIP_TIMEOUT, (f) -> {
+            Settings.getInstance().getGeneralSettings().setToolTipDismissDelaySeconds(((Integer) f.getValue()).intValue());
+            adjustResetButton();
+        }, SwingConstants.RIGHT, Integer.valueOf(settings.getToolTipDismissDelaySeconds()),
+                FieldFactory.getMaxValue(FieldFactory.TOOLTIP_TIMEOUT),
+                I18n.text("The number of seconds before tooltips will dismiss themselves"));
+        wrapper.add(mToolTipDismissDelaySeconds, new PrecisionLayoutData().setFillHorizontalAlignment());
+        wrapper.add(new Label(I18n.text("seconds")));
+
+        panel.add(new Label(I18n.text("Tooltip Reshow Delay")),
+                new PrecisionLayoutData().setEndHorizontalAlignment());
+        wrapper = new Wrapper(new PrecisionLayout().setMargins(0).setColumns(2));
+        panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().
+                setGrabHorizontalSpace(true).setHorizontalSpan(2));
+        mToolTipReshowDelayMilliseconds = new EditorField(FieldFactory.TOOLTIP_MILLIS_TIMEOUT, (f) -> {
+            Settings.getInstance().getGeneralSettings().setToolTipReshowDelayMilliseconds(((Integer) f.getValue()).intValue());
+            adjustResetButton();
+        }, SwingConstants.RIGHT, Integer.valueOf(settings.getToolTipReshowDelayMilliseconds()),
+                FieldFactory.getMaxValue(FieldFactory.TOOLTIP_MILLIS_TIMEOUT),
+                I18n.text("The number of milliseconds before the user has to wait the initial delay before a tooltip will be shown. If the tooltip is hidden and the user moves into a region of the same component that has a valid tooltip within the reshow milliseconds, the tooltip will be immediately shown. Otherwise, if the user moves into a region with a valid tooltip after reshow milliseconds, the user will have to wait an additional initial delay milliseconds before the tooltip is shown again"));
+        wrapper.add(mToolTipReshowDelayMilliseconds, new PrecisionLayoutData().setFillHorizontalAlignment());
+        wrapper.add(new Label(I18n.text("milliseconds")));
+
+        // Sixth row
         mPDFViewer = new PopupMenu<>(PDFViewer.valuesForPlatform(), (p) -> {
             PDFViewer pdfViewer = p.getSelectedItem();
             if (pdfViewer != null) {
@@ -221,7 +255,7 @@ public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings>
         panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(2));
         updatePDFLinks(pdfViewer);
 
-        // Sixth row
+        // Seventh row
         wrapper = new Wrapper(new PrecisionLayout().setMargins(0).setColumns(3));
         panel.add(wrapper, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
         mGCalcKey = new EditorField(FieldFactory.STRING, (f) -> {
@@ -279,13 +313,16 @@ public final class GeneralSettingsWindow extends SettingsWindow<GeneralSettings>
         mAutoFillProfile.setChecked(settings.autoFillProfile());
         mCalendar.setSelectedItem(CalendarRef.get(settings.calendarRef()), true);
         mInitialScale.setSelectedItem(settings.getInitialUIScale(), true);
-        mToolTipTimeout.setValue(Integer.valueOf(settings.getToolTipTimeout()));
+        mToolTipInitialDelayMilliseconds.setValue(Integer.valueOf(settings.getToolTipInitialDelayMilliseconds()));
+        mToolTipDismissDelaySeconds.setValue(Integer.valueOf(settings.getToolTipDismissDelaySeconds()));
+        mToolTipReshowDelayMilliseconds.setValue(Integer.valueOf(settings.getToolTipReshowDelayMilliseconds()));
         mImageResolution.setValue(Integer.valueOf(settings.getImageResolution()));
         mIncludeUnspentPointsInTotal.setChecked(settings.includeUnspentPointsInTotal());
         mGCalcKey.setValue(settings.getGCalcKey());
         PDFViewer pdfViewer = settings.getPDFViewer();
         mPDFViewer.setSelectedItem(pdfViewer, true);
         updatePDFLinks(pdfViewer);
+        settings.updateToolTipTiming();
     }
 
     private static String getInstallFromText() {
