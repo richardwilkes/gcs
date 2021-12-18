@@ -108,6 +108,7 @@ public class BodyTypePanel extends DropPanel {
             StringBuilder tooltip = new StringBuilder();
             label = new PageLabel(location.getDisplayDR(sheet.getCharacter(), tooltip));
             label.setToolTipText(String.format(I18n.text("The DR covering the %s hit location%s"), name, tooltip));
+            label.setHorizontalAlignment(SwingConstants.CENTER);
             add(label, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
 
             band = !band;
