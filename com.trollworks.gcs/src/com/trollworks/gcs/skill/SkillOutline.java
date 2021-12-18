@@ -57,8 +57,11 @@ public class SkillOutline extends ListOutline implements Incrementable, TechLeve
     }
 
     public void resetColumns() {
-        getModel().removeAllColumns();
+        OutlineModel model      = getModel();
+        String       sortConfig = model.getSortConfig();
+        model.removeAllColumns();
         SkillColumn.addColumns(this, mDataFile);
+        model.applySortConfig(sortConfig);
     }
 
     @Override
