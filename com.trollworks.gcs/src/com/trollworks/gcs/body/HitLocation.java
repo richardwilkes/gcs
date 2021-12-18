@@ -94,8 +94,8 @@ public class HitLocation implements Cloneable, Comparable<HitLocation> {
         w.keyValue("roll_range", getRollRange());
         if (character != null) {
             Map<String, Integer> dr = getDR(character, null, null);
-            if (!dr.containsKey("all")) {
-                dr.put("all", Integer.valueOf(0));
+            if (!dr.containsKey(DRBonus.ALL_SPECIALIZATION)) {
+                dr.put(DRBonus.ALL_SPECIALIZATION, Integer.valueOf(0));
             }
             List<String> keys = new ArrayList<>(dr.keySet());
             Collections.sort(keys);
@@ -205,12 +205,27 @@ public class HitLocation implements Cloneable, Comparable<HitLocation> {
     }
 
     public String getDisplayDR(GURPSCharacter character, StringBuilder tooltip) {
-        Map<String, Integer> dr  = getDR(character, tooltip, null);
-        Integer              all = dr.get(DRBonus.ALL_SPECIALIZATION);
-        if (all == null) {
-            return dr.isEmpty() ? "0" : "0+";
+        Map<String, Integer> dr = getDR(character, tooltip, null);
+        if (!dr.containsKey(DRBonus.ALL_SPECIALIZATION)) {
+            dr.put(DRBonus.ALL_SPECIALIZATION, Integer.valueOf(0));
         }
-        return Numbers.format(all.intValue()) + (dr.size() > 1 ? "+" : "");
+        int          all  = dr.get(DRBonus.ALL_SPECIALIZATION);
+        List<String> keys = new ArrayList<>(dr.keySet());
+        keys.remove(DRBonus.ALL_SPECIALIZATION);
+        Collections.sort(keys);
+        keys.add(0, DRBonus.ALL_SPECIALIZATION);
+        StringBuilder buffer = new StringBuilder();
+        for (String key : keys) {
+            int value = dr.get(key).intValue();
+            if (!DRBonus.ALL_SPECIALIZATION.equals(key)) {
+                value += all;
+            }
+            if (!buffer.isEmpty()) {
+                buffer.append("/");
+            }
+            buffer.append(Numbers.format(value));
+        }
+        return buffer.toString();
     }
 
     public int getDRBonus() {

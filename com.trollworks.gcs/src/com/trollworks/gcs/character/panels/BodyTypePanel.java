@@ -40,7 +40,7 @@ public class BodyTypePanel extends DropPanel {
      * @param sheet The sheet to display the data for.
      */
     public BodyTypePanel(CharacterSheet sheet) {
-        super(new PrecisionLayout().setColumns(7).setSpacing(2, 0).setMargins(0),
+        super(new PrecisionLayout().setColumns(6).setSpacing(2, 0).setMargins(0),
                 sheet.getCharacter().getSheetSettings().getHitLocations().getName());
 
         Separator sep = new Separator();
@@ -65,7 +65,7 @@ public class BodyTypePanel extends DropPanel {
         addVerticalBackground(sep, Colors.DIVIDER);
 
         header = new PageHeader(I18n.text("DR"));
-        add(header, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE).setHorizontalSpan(2));
+        add(header, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.MIDDLE));
 
         addTable(sheet, sheet.getCharacter().getSheetSettings().getHitLocations(), 0, Colors.BANDING, Colors.CONTENT, false);
 
@@ -106,15 +106,8 @@ public class BodyTypePanel extends DropPanel {
             add(new Separator(true), new PrecisionLayoutData().setVerticalAlignment(PrecisionLayoutAlignment.FILL));
 
             StringBuilder tooltip = new StringBuilder();
-            String dr = location.getDisplayDR(sheet.getCharacter(), tooltip);
-            String noStar = dr.endsWith("+") ? dr.substring(0, dr.length() -1) : dr;
-            label = new PageLabel(noStar);
-            String tip = String.format(I18n.text("The DR covering the %s hit location%s"), name, tooltip);
-            label.setToolTipText(tip);
-            label.setHorizontalAlignment(SwingConstants.RIGHT);
-            add(label, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
-            label = new PageLabel(dr.endsWith("+") ? "+" : "");
-            label.setToolTipText(tip);
+            label = new PageLabel(location.getDisplayDR(sheet.getCharacter(), tooltip));
+            label.setToolTipText(String.format(I18n.text("The DR covering the %s hit location%s"), name, tooltip));
             add(label, new PrecisionLayoutData().setHorizontalAlignment(PrecisionLayoutAlignment.FILL));
 
             band = !band;
