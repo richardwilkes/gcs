@@ -93,8 +93,11 @@ public class HitLocation implements Cloneable, Comparable<HitLocation> {
         w.startMap();
         w.keyValue("roll_range", getRollRange());
         if (character != null) {
-            Map<String, Integer> dr   = getDR(character, null, null);
-            List<String>         keys = new ArrayList<>(dr.keySet());
+            Map<String, Integer> dr = getDR(character, null, null);
+            if (!dr.containsKey("all")) {
+                dr.put("all", Integer.valueOf(0));
+            }
+            List<String> keys = new ArrayList<>(dr.keySet());
             Collections.sort(keys);
             w.key("dr");
             w.startMap();
