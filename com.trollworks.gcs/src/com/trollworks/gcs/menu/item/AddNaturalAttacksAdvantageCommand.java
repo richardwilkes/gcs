@@ -132,7 +132,7 @@ public final class AddNaturalAttacksAdvantageCommand extends Command {
         kick.setUsage(I18n.text("Kick"));
         kick.setReach("C,1");
         kick.setParry("No");
-        kick.setDefaults(List.of(new SkillDefault("dx", null, null, -2), new SkillDefault("skill", "Brawling", null, -2), new SkillDefault("skill", "Karate", null, -2)));
+        kick.setDefaults(List.of(new SkillDefault("dx", null, null, -2), new SkillDefault("skill", "Brawling", null, -2), new SkillDefault("skill", "Kicking", null, 0), new SkillDefault("skill", "Karate", null, -2)));
         return kick;
     }
 }
