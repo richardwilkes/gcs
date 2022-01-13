@@ -58,6 +58,7 @@ public abstract class ListRow extends Row {
     private static final String KEY_ID                                  = "id";
     private static final String KEY_OPEN                                = "open";
     private static final String KEY_NOTES                               = "notes";
+    private static final String KEY_VTT_NOTES                           = "vtt_notes";
     private static final String KEY_CATEGORIES                          = "categories";
     private static final String KEY_FEATURES                            = "features";
     private static final String KEY_DEFAULTS                            = "defaults";
@@ -72,6 +73,7 @@ public abstract class ListRow extends Row {
     private   boolean            mIsSatisfied;
     private   String             mUnsatisfiedReason;
     private   String             mNotes;
+    private   String             mVTTNotes;
     private   TreeSet<String>    mCategories;
 
     public static void saveList(JsonWriter w, String key, List<?> list, SaveType saveType) throws IOException {
@@ -162,6 +164,7 @@ public abstract class ListRow extends Row {
         mDefaults = new ArrayList<>();
         mIsSatisfied = true;
         mNotes = "";
+        mVTTNotes = "";
         mCategories = new TreeSet<>();
     }
 
@@ -175,6 +178,7 @@ public abstract class ListRow extends Row {
         this(dataFile, rowToClone.canHaveChildren());
         setOpen(rowToClone.isOpen());
         mNotes = rowToClone.mNotes;
+        mVTTNotes = rowToClone.mVTTNotes;
         for (Feature feature : rowToClone.mFeatures) {
             mFeatures.add(feature.cloneFeature());
         }
@@ -209,22 +213,32 @@ public abstract class ListRow extends Row {
             return true;
         }
         if (obj instanceof ListRow row) {
-            if (mNotes.equals(row.mNotes) && mCategories.equals(row.mCategories)) {
-                if (mDefaults.equals(row.mDefaults)) {
-                    if (mPrereqList.equals(row.mPrereqList)) {
-                        if (mFeatures.equals(row.mFeatures)) {
-                            int childCount = getChildCount();
-                            if (childCount == row.getChildCount()) {
-                                for (int i = 0; i < childCount; i++) {
-                                    if (!((ListRow) getChild(i)).isEquivalentTo(row.getChild(i))) {
-                                        return false;
-                                    }
-                                }
-                                return true;
-                            }
-                        }
+            if (!mNotes.equals(row.mNotes)) {
+                return false;
+            }
+            if (!mVTTNotes.equals(row.mVTTNotes)) {
+                return false;
+            }
+            if (!mCategories.equals(row.mCategories)) {
+                return false;
+            }
+            if (!mDefaults.equals(row.mDefaults)) {
+                return false;
+            }
+            if (!mPrereqList.equals(row.mPrereqList)) {
+                return false;
+            }
+            if (!mFeatures.equals(row.mFeatures)) {
+                return false;
+            }
+            int childCount = getChildCount();
+            if (childCount == row.getChildCount()) {
+                for (int i = 0; i < childCount; i++) {
+                    if (!((ListRow) getChild(i)).isEquivalentTo(row.getChild(i))) {
+                        return false;
                     }
                 }
+                return true;
             }
         }
         return false;
@@ -327,6 +341,7 @@ public abstract class ListRow extends Row {
             }
         }
         mNotes = m.getString(KEY_NOTES);
+        mVTTNotes = m.getString(KEY_VTT_NOTES);
         if (m.has(KEY_CATEGORIES)) {
             JsonArray a     = m.getArray(KEY_CATEGORIES);
             int       count = a.size();
@@ -440,6 +455,7 @@ public abstract class ListRow extends Row {
      */
     protected void prepareForLoad(LoadState state) {
         mNotes = "";
+        mVTTNotes = "";
         mFeatures.clear();
         mDefaults.clear();
         mPrereqList = new PrereqList(null, true);
@@ -487,6 +503,7 @@ public abstract class ListRow extends Row {
             w.endArray();
         }
         w.keyValueNot(KEY_NOTES, mNotes, "");
+        w.keyValueNot(KEY_VTT_NOTES, mVTTNotes, "");
         if (!mCategories.isEmpty()) {
             w.key(KEY_CATEGORIES);
             w.startArray();
@@ -699,6 +716,7 @@ public abstract class ListRow extends Row {
     /** @param set The nameable keys. */
     public void fillWithNameableKeys(Set<String> set) {
         extractNameables(set, mNotes);
+        extractNameables(set, mVTTNotes);
         for (SkillDefault def : mDefaults) {
             def.fillWithNameableKeys(set);
         }
@@ -711,6 +729,7 @@ public abstract class ListRow extends Row {
     /** @param map The map of nameable keys to names to apply. */
     public void applyNameableKeys(Map<String, String> map) {
         mNotes = nameNameables(map, mNotes);
+        mVTTNotes = nameNameables(map, mVTTNotes);
         for (SkillDefault def : mDefaults) {
             def.applyNameableKeys(map);
         }
@@ -737,6 +756,23 @@ public abstract class ListRow extends Row {
     public boolean setNotes(String notes) {
         if (!mNotes.equals(notes)) {
             mNotes = notes;
+            return true;
+        }
+        return false;
+    }
+
+    /** @return The VTT notes. */
+    public String getVTTNotes() {
+        return mVTTNotes;
+    }
+
+    /**
+     * @param notes The VTT notes to set.
+     * @return Whether it was changed.
+     */
+    public boolean setVTTNotes(String notes) {
+        if (!mVTTNotes.equals(notes)) {
+            mVTTNotes = notes;
             return true;
         }
         return false;

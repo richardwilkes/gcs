@@ -54,6 +54,7 @@ public abstract class BaseSpellEditor<T extends Spell> extends RowEditor<T> impl
     protected EditorField                mDurationField;
     protected PopupMenu<SkillDifficulty> mDifficultyPopup;
     protected MultiLineTextField         mNotesField;
+    protected MultiLineTextField         mVTTNotesField;
     protected EditorField                mCategoriesField;
     protected EditorField                mPointsField;
     protected EditorField                mLevelField;

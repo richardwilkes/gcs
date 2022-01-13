@@ -24,6 +24,7 @@ import com.trollworks.gcs.ui.widget.Commitable;
 import com.trollworks.gcs.ui.widget.Label;
 import com.trollworks.gcs.ui.widget.LayoutConstants;
 import com.trollworks.gcs.ui.widget.Modal;
+import com.trollworks.gcs.ui.widget.MultiLineTextField;
 import com.trollworks.gcs.ui.widget.ScrollContent;
 import com.trollworks.gcs.ui.widget.ScrollPanel;
 import com.trollworks.gcs.ui.widget.WindowUtils;
@@ -40,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.SwingConstants;
+import javax.swing.event.DocumentListener;
 
 /**
  * The base class for all row editors.
@@ -167,6 +169,18 @@ public abstract class RowEditor<T extends ListRow> extends ActionPanel {
         PrecisionLayoutData layoutData = new PrecisionLayoutData();
         parent.add(new Label(text), layoutData.setEndHorizontalAlignment().setLeftMargin(4));
         return layoutData;
+    }
+
+    public MultiLineTextField addVTTNotesField(Container parent, DocumentListener listener) {
+        return addVTTNotesField(parent, 1, listener);
+    }
+
+    public MultiLineTextField addVTTNotesField(Container parent, int hSpan, DocumentListener listener) {
+        MultiLineTextField field = new MultiLineTextField(mRow.getVTTNotes(),
+                I18n.text("Any notes for VTT use; see the instructions for your VTT to determine if/how these can be used"), listener);
+        addLabel(parent, I18n.text("VTT Notes")).setBeginningVerticalAlignment().setTopMargin(2);
+        parent.add(field, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(hSpan));
+        return field;
     }
 
     /**
