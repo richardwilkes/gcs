@@ -172,7 +172,7 @@ public class HitLocation implements Cloneable, Comparable<HitLocation> {
             }
             dr.put(DRBonus.ALL_SPECIALIZATION, value);
             if (tooltip != null) {
-                tooltip.append(String.format("\n%s [%s against %s attacks]", mChoiceName, DRBonus.ALL_SPECIALIZATION, Numbers.formatWithForcedSign(mDRBonus)));
+                tooltip.append(String.format("\n%s [%s against %s attacks]", mChoiceName, Numbers.formatWithForcedSign(mDRBonus), DRBonus.ALL_SPECIALIZATION));
             }
         }
         dr = character.addDRBonusesFor(KEY_PREFIX + mID, tooltip, dr);
