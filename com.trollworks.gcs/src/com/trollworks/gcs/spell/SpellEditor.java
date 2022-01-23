@@ -213,7 +213,7 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
             }
         }
         modified |= mRow.setNotes(mNotesField.getText());
-        modified |= mRow.setNotes(mVTTNotesField.getText());
+        modified |= mRow.setVTTNotes(mVTTNotesField.getText());
         modified |= mRow.setCategories(mCategoriesField.getText());
         if (mPrereqs != null) {
             modified |= mRow.setPrereqs(mPrereqs.getPrereqList());

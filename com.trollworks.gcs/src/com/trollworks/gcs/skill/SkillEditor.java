@@ -331,7 +331,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         boolean modified = mRow.setName(mNameField.getText());
         modified |= mRow.setReference(mReferenceField.getText());
         modified |= mRow.setNotes(mNotesField.getText());
-        modified |= mRow.setNotes(mVTTNotesField.getText());
+        modified |= mRow.setVTTNotes(mVTTNotesField.getText());
         modified |= mRow.setCategories(mCategoriesField.getText());
         if (mSpecializationField != null) {
             modified |= mRow.setSpecialization(mSpecializationField.getText());

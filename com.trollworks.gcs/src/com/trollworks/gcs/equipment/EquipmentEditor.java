@@ -263,7 +263,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
             modified |= mRow.setEquipped(mEquippedCheckBox.isChecked());
         }
         modified |= mRow.setNotes(mNotesField.getText());
-        modified |= mRow.setNotes(mVTTNotesField.getText());
+        modified |= mRow.setVTTNotes(mVTTNotesField.getText());
         modified |= mRow.setCategories(mCategoriesField.getText());
         if (mPrereqs != null) {
             modified |= mRow.setPrereqs(mPrereqs.getPrereqList());

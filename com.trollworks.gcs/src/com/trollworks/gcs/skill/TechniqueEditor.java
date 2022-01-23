@@ -319,7 +319,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements DocumentLis
         modified |= mRow.setDefault(createNewDefault());
         modified |= mRow.setReference(mReferenceField.getText());
         modified |= mRow.setNotes(mNotesField.getText());
-        modified |= mRow.setNotes(mVTTNotesField.getText());
+        modified |= mRow.setVTTNotes(mVTTNotesField.getText());
         modified |= mRow.setCategories(mCategoriesField.getText());
         if (mPointsField != null) {
             modified |= mRow.setRawPoints(getPoints());

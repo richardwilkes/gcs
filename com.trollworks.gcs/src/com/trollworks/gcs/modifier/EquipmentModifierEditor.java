@@ -116,7 +116,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         boolean modified = mRow.setName(mNameField.getText());
         modified |= mRow.setReference(mReferenceField.getText());
         modified |= mRow.setNotes(mNotesField.getText());
-        modified |= mRow.setNotes(mVTTNotesField.getText());
+        modified |= mRow.setVTTNotes(mVTTNotesField.getText());
         if (!mRow.canHaveChildren()) {
             modified |= mRow.setTechLevel(mTechLevelField.getText());
             modified |= mRow.setEnabled(mEnabledField.isChecked());

@@ -186,7 +186,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
             modified |= mRow.setRawPoints(getPoints());
         }
         modified |= mRow.setNotes(mNotesField.getText());
-        modified |= mRow.setNotes(mVTTNotesField.getText());
+        modified |= mRow.setVTTNotes(mVTTNotesField.getText());
         modified |= mRow.setCategories(mCategoriesField.getText());
         modified |= mRow.setPrereqs(mPrereqs.getPrereqList());
         List<WeaponStats> list = new ArrayList<>(mMeleeWeapons.getWeapons());

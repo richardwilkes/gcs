@@ -102,7 +102,7 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
         boolean modified = mRow.setName(mNameField.getText());
         modified |= mRow.setReference(mReferenceField.getText());
         modified |= mRow.setNotes(mNotesField.getText());
-        modified |= mRow.setNotes(mVTTNotesField.getText());
+        modified |= mRow.setVTTNotes(mVTTNotesField.getText());
         if (!mRow.canHaveChildren()) {
             modified |= getCostType() == AdvantageModifierCostType.MULTIPLIER ?
                     mRow.setCostMultiplier(getCostMultiplier()) : mRow.setCost(getCost());
