@@ -28,7 +28,6 @@ import java.util.List;
 public class Ancestry {
     private static final String                        KEY_COMMON_OPTIONS   = "common_options";
     private static final String                        KEY_GENDER_OPTIONS   = "gender_options";
-    private static final String                        KEY_GENDERED_OPTIONS = "gendered_options";
     public               AncestryOptions               mCommonOptions;
     public               List<WeightedAncestryOptions> mGenderOptions;
 
