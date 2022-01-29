@@ -27,7 +27,6 @@ import java.util.Set;
 public abstract class Modifier extends ListRow implements Comparable<Modifier>, HasSourceReference {
     protected static final String KEY_NAME      = "name";
     protected static final String KEY_REFERENCE = "reference";
-    protected static final String KEY_ENABLED   = "enabled";
     private static final   String KEY_DISABLED  = "disabled";
 
     protected String  mName;

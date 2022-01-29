@@ -28,7 +28,7 @@ public enum EquipmentModifierCostType {
 
         @Override
         public String toString() {
-            return toShortString() + I18n.text(" (e.g. '+5', '-5', '+10%', '-10%', 'x3.2)");
+            return toShortString() + I18n.text(" (e.g. '+5', '-5', '+10%', '-10%', 'x3.2')");
         }
     },
     /**
@@ -58,7 +58,7 @@ public enum EquipmentModifierCostType {
 
         @Override
         public String toString() {
-            return toShortString() + I18n.text(" (e.g. '+5', '-5', '+10%', '-10%', 'x3.2)");
+            return toShortString() + I18n.text(" (e.g. '+5', '-5', '+10%', '-10%', 'x3.2')");
         }
     },
     /**
@@ -73,7 +73,7 @@ public enum EquipmentModifierCostType {
 
         @Override
         public String toString() {
-            return toShortString() + I18n.text(" (e.g. '+5', '-5', '+10%', '-10%', 'x3.2)");
+            return toShortString() + I18n.text(" (e.g. '+5', '-5', '+10%', '-10%', 'x3.2')");
         }
     };
 
