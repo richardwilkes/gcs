@@ -61,7 +61,7 @@ public final class SaveAsCommand extends Command {
             }
             Path path = Modal.presentSaveFileDialog(UIUtilities.getComponentForDialog(saveable),
                     I18n.text("Save As…"), Dirs.GENERAL, name, fileType.getFilter());
-            if (saveable.saveTo(path)) {
+            if (path != null && saveable.saveTo(path)) {
                 Settings.getInstance().addRecentFile(path);
                 LibraryExplorerDockable explorer = LibraryExplorerDockable.get();
                 if (explorer != null) {

@@ -47,6 +47,7 @@ import javax.swing.text.Document;
 public class TechniqueEditor extends RowEditor<Technique> implements DocumentListener {
     private EditorField                mNameField;
     private MultiLineTextField         mNotesField;
+    private MultiLineTextField         mVTTNotesField;
     private EditorField                mCategoriesField;
     private EditorField                mReferenceField;
     private PopupMenu<SkillDifficulty> mDifficultyPopup;
@@ -87,6 +88,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements DocumentLis
                 this);
         addLabelPinnedToTop(panel, I18n.text("Notes"));
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+        mVTTNotesField = addVTTNotesField(panel, this);
         mCategoriesField = createField(panel, panel, I18n.text("Categories"),
                 mRow.getCategoriesAsString(),
                 I18n.text("The category or categories the technique belongs to (separate multiple categories with a comma)"),
@@ -317,6 +319,7 @@ public class TechniqueEditor extends RowEditor<Technique> implements DocumentLis
         modified |= mRow.setDefault(createNewDefault());
         modified |= mRow.setReference(mReferenceField.getText());
         modified |= mRow.setNotes(mNotesField.getText());
+        modified |= mRow.setVTTNotes(mVTTNotesField.getText());
         modified |= mRow.setCategories(mCategoriesField.getText());
         if (mPointsField != null) {
             modified |= mRow.setRawPoints(getPoints());

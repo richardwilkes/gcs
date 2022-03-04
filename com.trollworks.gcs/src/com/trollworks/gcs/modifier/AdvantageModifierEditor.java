@@ -40,6 +40,7 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
     private EditorField        mNameField;
     private Checkbox           mEnabledField;
     private MultiLineTextField mNotesField;
+    private MultiLineTextField mVTTNotesField;
     private EditorField        mReferenceField;
     private EditorField        mCostField;
     private EditorField        mLevelField;
@@ -83,6 +84,7 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
         mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this modifier"), this);
         addLabel(panel, I18n.text("Notes")).setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2);
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+        mVTTNotesField = addVTTNotesField(panel, this);
 
         addLabel(panel, I18n.text("Page Reference"));
         mReferenceField = createField(panel, mRow.getReference(),
@@ -100,6 +102,7 @@ public class AdvantageModifierEditor extends RowEditor<AdvantageModifier> implem
         boolean modified = mRow.setName(mNameField.getText());
         modified |= mRow.setReference(mReferenceField.getText());
         modified |= mRow.setNotes(mNotesField.getText());
+        modified |= mRow.setVTTNotes(mVTTNotesField.getText());
         if (!mRow.canHaveChildren()) {
             modified |= getCostType() == AdvantageModifierCostType.MULTIPLIER ?
                     mRow.setCostMultiplier(getCostMultiplier()) : mRow.setCost(getCost());

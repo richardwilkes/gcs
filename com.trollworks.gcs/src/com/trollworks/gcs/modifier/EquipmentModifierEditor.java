@@ -38,6 +38,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
     private EditorField                            mTechLevelField;
     private Checkbox                               mEnabledField;
     private MultiLineTextField                     mNotesField;
+    private MultiLineTextField                     mVTTNotesField;
     private EditorField                            mReferenceField;
     private FeaturesPanel                          mFeatures;
     private PopupMenu<EquipmentModifierCostType>   mCostType;
@@ -98,6 +99,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this modifier"), this);
         addLabel(panel, I18n.text("Notes")).setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2);
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+        mVTTNotesField = addVTTNotesField(panel, this);
 
         addLabel(panel, I18n.text("Page Reference"));
         mReferenceField = createField(panel, mRow.getReference(), PageRefCell.getStdToolTip(I18n.text("equipment modifier")), 6);
@@ -114,6 +116,7 @@ public class EquipmentModifierEditor extends RowEditor<EquipmentModifier> implem
         boolean modified = mRow.setName(mNameField.getText());
         modified |= mRow.setReference(mReferenceField.getText());
         modified |= mRow.setNotes(mNotesField.getText());
+        modified |= mRow.setVTTNotes(mVTTNotesField.getText());
         if (!mRow.canHaveChildren()) {
             modified |= mRow.setTechLevel(mTechLevelField.getText());
             modified |= mRow.setEnabled(mEnabledField.isChecked());

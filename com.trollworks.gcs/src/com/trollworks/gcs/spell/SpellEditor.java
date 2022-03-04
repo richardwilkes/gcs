@@ -108,6 +108,7 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
                 this);
         addLabel(panel, I18n.text("Notes")).setBeginningVerticalAlignment().setTopMargin(2);
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
+        mVTTNotesField = addVTTNotesField(panel, 3, this);
         addLabel(panel, I18n.text("Categories"));
         wrapper = new Panel(new PrecisionLayout().setMargins(0));
         mCategoriesField = createField(wrapper, mRow.getCategoriesAsString(),
@@ -212,6 +213,7 @@ public class SpellEditor extends BaseSpellEditor<Spell> {
             }
         }
         modified |= mRow.setNotes(mNotesField.getText());
+        modified |= mRow.setVTTNotes(mVTTNotesField.getText());
         modified |= mRow.setCategories(mCategoriesField.getText());
         if (mPrereqs != null) {
             modified |= mRow.setPrereqs(mPrereqs.getPrereqList());

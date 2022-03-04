@@ -58,6 +58,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
     private EditorField                 mWeightField;
     private EditorField                 mExtWeightField;
     private MultiLineTextField          mNotesField;
+    private MultiLineTextField          mVTTNotesField;
     private EditorField                 mCategoriesField;
     private EditorField                 mReferenceField;
     private PrereqsPanel                mPrereqs;
@@ -113,6 +114,8 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
                 I18n.text("Any notes that you would like to show up in the list along with this equipment"), this);
         addLabel(panel, I18n.text("Notes")).setBeginningVerticalAlignment().setTopMargin(2);
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+        mVTTNotesField = addVTTNotesField(panel, this);
+
         addLabel(panel, I18n.text("Categories"));
         mCategoriesField = createField(panel, mRow.getCategoriesAsString(),
                 I18n.text("The category or categories the equipment belongs to (separate multiple categories with a comma)"), 0);
@@ -260,6 +263,7 @@ public class EquipmentEditor extends RowEditor<Equipment> implements DocumentLis
             modified |= mRow.setEquipped(mEquippedCheckBox.isChecked());
         }
         modified |= mRow.setNotes(mNotesField.getText());
+        modified |= mRow.setVTTNotes(mVTTNotesField.getText());
         modified |= mRow.setCategories(mCategoriesField.getText());
         if (mPrereqs != null) {
             modified |= mRow.setPrereqs(mPrereqs.getPrereqList());

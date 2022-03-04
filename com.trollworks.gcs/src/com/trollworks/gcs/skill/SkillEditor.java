@@ -53,6 +53,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
     private EditorField                mNameField;
     private EditorField                mSpecializationField;
     private MultiLineTextField         mNotesField;
+    private MultiLineTextField         mVTTNotesField;
     private EditorField                mCategoriesField;
     private EditorField                mReferenceField;
     private Checkbox                   mHasTechLevel;
@@ -98,6 +99,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
                 I18n.text("Any notes that you would like to show up in the list along with this skill"), this);
         addLabel(panel, I18n.text("Notes")).setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2);
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+        mVTTNotesField = addVTTNotesField(panel, this);
         addLabel(panel, I18n.text("Categories"));
         mCategoriesField = createField(panel, mRow.getCategoriesAsString(),
                 I18n.text("The category or categories the skill belongs to (separate multiple categories with a comma)"),
@@ -329,6 +331,7 @@ public class SkillEditor extends RowEditor<Skill> implements ActionListener, Doc
         boolean modified = mRow.setName(mNameField.getText());
         modified |= mRow.setReference(mReferenceField.getText());
         modified |= mRow.setNotes(mNotesField.getText());
+        modified |= mRow.setVTTNotes(mVTTNotesField.getText());
         modified |= mRow.setCategories(mCategoriesField.getText());
         if (mSpecializationField != null) {
             modified |= mRow.setSpecialization(mSpecializationField.getText());

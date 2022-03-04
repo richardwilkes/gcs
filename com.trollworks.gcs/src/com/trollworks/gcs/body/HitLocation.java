@@ -172,7 +172,7 @@ public class HitLocation implements Cloneable, Comparable<HitLocation> {
             }
             dr.put(DRBonus.ALL_SPECIALIZATION, value);
             if (tooltip != null) {
-                tooltip.append(String.format("\n%s [%s against %s attacks]", mChoiceName, DRBonus.ALL_SPECIALIZATION, Numbers.formatWithForcedSign(mDRBonus)));
+                tooltip.append(String.format("\n%s [%s against %s attacks]", mChoiceName, Numbers.formatWithForcedSign(mDRBonus), DRBonus.ALL_SPECIALIZATION));
             }
         }
         dr = character.addDRBonusesFor(KEY_PREFIX + mID, tooltip, dr);
@@ -209,7 +209,7 @@ public class HitLocation implements Cloneable, Comparable<HitLocation> {
         if (!dr.containsKey(DRBonus.ALL_SPECIALIZATION)) {
             dr.put(DRBonus.ALL_SPECIALIZATION, Integer.valueOf(0));
         }
-        int          all  = dr.get(DRBonus.ALL_SPECIALIZATION);
+        int          all  = dr.get(DRBonus.ALL_SPECIALIZATION).intValue();
         List<String> keys = new ArrayList<>(dr.keySet());
         keys.remove(DRBonus.ALL_SPECIALIZATION);
         Collections.sort(keys);

@@ -57,6 +57,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
     private EditorField                           mLevelPointsField;
     private EditorField                           mPointsField;
     private MultiLineTextField                    mNotesField;
+    private MultiLineTextField                    mVTTNotesField;
     private MultiLineTextField                    mUserDescField;
     private EditorField                           mCategoriesField;
     private EditorField                           mReferenceField;
@@ -197,6 +198,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
                 I18n.text("Any notes that you would like to show up in the list along with this advantage"), this);
         addLabel(parent, I18n.text("Notes")).setVerticalAlignment(PrecisionLayoutAlignment.BEGINNING).setTopMargin(2);
         parent.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true));
+        mVTTNotesField = addVTTNotesField(parent, this);
 
         if (mRow.getDataFile() instanceof GURPSCharacter) {
             mUserDesc = mRow.getUserDesc();
@@ -346,6 +348,7 @@ public class AdvantageEditor extends RowEditor<Advantage> implements ActionListe
         }
         modified |= mRow.setReference((String) mReferenceField.getValue());
         modified |= mRow.setNotes(mNotesField.getText());
+        modified |= mRow.setVTTNotes(mVTTNotesField.getText());
         modified |= mRow.setCategories((String) mCategoriesField.getValue());
         if (mUserDesc != null) {
             modified |= mRow.setUserDesc(mUserDesc);

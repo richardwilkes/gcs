@@ -107,6 +107,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
         mNotesField = new MultiLineTextField(mRow.getNotes(), I18n.text("Any notes that you would like to show up in the list along with this spell"), this);
         addLabel(panel, I18n.text("Notes")).setBeginningVerticalAlignment().setTopMargin(2);
         panel.add(mNotesField, new PrecisionLayoutData().setFillHorizontalAlignment().setGrabHorizontalSpace(true).setHorizontalSpan(3));
+        mVTTNotesField = addVTTNotesField(panel, 3, this);
         addLabel(panel, I18n.text("Categories"));
         wrapper = new Panel(new PrecisionLayout().setMargins(0));
         mCategoriesField = createField(wrapper, mRow.getCategoriesAsString(),
@@ -185,6 +186,7 @@ public class RitualMagicSpellEditor extends BaseSpellEditor<RitualMagicSpell> {
             modified |= mRow.setRawPoints(getPoints());
         }
         modified |= mRow.setNotes(mNotesField.getText());
+        modified |= mRow.setVTTNotes(mVTTNotesField.getText());
         modified |= mRow.setCategories(mCategoriesField.getText());
         modified |= mRow.setPrereqs(mPrereqs.getPrereqList());
         List<WeaponStats> list = new ArrayList<>(mMeleeWeapons.getWeapons());
