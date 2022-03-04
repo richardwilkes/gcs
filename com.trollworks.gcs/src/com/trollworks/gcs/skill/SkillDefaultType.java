@@ -35,6 +35,7 @@ public final class SkillDefaultType {
         list.add(new AttributeChoice("skill", "%s", "Skill"));
         list.add(new AttributeChoice("parry", "%s", "Parry"));
         list.add(new AttributeChoice("block", "%s", "Block"));
+        list.add(new AttributeChoice("dodge", "%s", "Dodge"));
         list.add(new AttributeChoice("10", "%s", "10"));
         AttributeChoice current = null;
         for (AttributeChoice attributeChoice : list) {
@@ -70,6 +71,7 @@ public final class SkillDefaultType {
      */
     public static int getSkillLevelFast(GURPSCharacter character, SkillDefault skillDefault, boolean requirePoints, Set<String> excludes, boolean ruleOf20) {
         int    best;
+        int    level;
         String type = skillDefault.getType();
         switch (type) {
             case "parry":
@@ -80,8 +82,11 @@ public final class SkillDefaultType {
                 return finalLevel(skillDefault, best == Integer.MIN_VALUE ? best : best / 2 + 3 + character.getBlockBonus());
             case "skill":
                 return finalLevel(skillDefault, getBestFast(character, skillDefault, requirePoints, excludes));
+            case "dodge":
+            	level = character.getDodge(character.getEncumbranceLevel(true));
+            	return finalLevel(skillDefault, ruleOf20 ? Math.min(level, 20) : level);
             default:
-                int level = com.trollworks.gcs.skill.Skill.resolveAttribute(character, type);
+                level = com.trollworks.gcs.skill.Skill.resolveAttribute(character, type);
                 return finalLevel(skillDefault, ruleOf20 ? Math.min(level, 20) : level);
         }
     }
