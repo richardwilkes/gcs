@@ -114,7 +114,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 					} else {
 						e.editorData.TechniqueLimitModifier = nil
 					}
-					adjustFieldBlank(limitField, b)
+					adjustFieldBlank(limitField, !b)
 					widget.MarkModified(wrapper2)
 				}))
 			adjustFieldBlank(limitField, e.editorData.TechniqueLimitModifier == nil)
