@@ -157,6 +157,11 @@ func (d *Template) installNewItemCmdHandlers(itemID, containerID int, creator it
 	d.InstallCmdHandlers(itemID, unison.AlwaysEnabled, func(_ any) { creator.CreateItem(d, variant) })
 }
 
+// Entity implements gurps.EntityProvider
+func (d *Template) Entity() *gurps.Entity {
+	return nil
+}
+
 // DockableKind implements widget.DockableKind
 func (d *Template) DockableKind() string {
 	return widget.TemplateDockableKind

@@ -23,41 +23,44 @@ const tableProviderClientKey = "table-provider"
 // InstallTableDropSupport installs our standard drop support on a table.
 func InstallTableDropSupport[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]], provider TableProvider[T]) {
 	table.ClientData()[tableProviderClientKey] = provider
-	unison.InstallDropSupport[*Node[T], *tableDragUndoEditData[T]](table, provider.DragKey(),
+	unison.InstallDropSupport[*Node[T], *TableDragUndoEditData[T]](table, provider.DragKey(),
 		provider.DropShouldMoveData, willDropCallback[T], didDropCallback[T])
 	table.DragRemovedRowsCallback = func() { widget.MarkModified(table) }
-	table.DropOccurredCallback = func() { widget.MarkModified(table) }
+	table.DropOccurredCallback = func() {
+		widget.MarkModified(table)
+		table.RequestFocus()
+	}
 }
 
-func willDropCallback[T gurps.NodeConstraint[T]](from, to *unison.Table[*Node[T]], move bool) *unison.UndoEdit[*tableDragUndoEditData[T]] {
-	mgr := unison.UndoManagerFor(from)
+func willDropCallback[T gurps.NodeConstraint[T]](from, to *unison.Table[*Node[T]], move bool) *unison.UndoEdit[*TableDragUndoEditData[T]] {
+	mgr := unison.UndoManagerFor(to)
 	if mgr == nil {
 		return nil
 	}
-	data := newTableDragUndoEditData(from, to, move)
-	if data == nil {
-		return nil
+	if from != nil && (!move || from == to) {
+		from = nil
 	}
-	return &unison.UndoEdit[*tableDragUndoEditData[T]]{
+	return &unison.UndoEdit[*TableDragUndoEditData[T]]{
 		ID:         unison.NextUndoID(),
 		EditName:   i18n.Text("Drag"),
-		UndoFunc:   func(e *unison.UndoEdit[*tableDragUndoEditData[T]]) { e.BeforeData.apply() },
-		RedoFunc:   func(e *unison.UndoEdit[*tableDragUndoEditData[T]]) { e.AfterData.apply() },
-		AbsorbFunc: func(e *unison.UndoEdit[*tableDragUndoEditData[T]], other unison.Undoable) bool { return false },
-		BeforeData: data,
+		UndoFunc:   func(e *unison.UndoEdit[*TableDragUndoEditData[T]]) { e.BeforeData.Apply() },
+		RedoFunc:   func(e *unison.UndoEdit[*TableDragUndoEditData[T]]) { e.AfterData.Apply() },
+		AbsorbFunc: func(e *unison.UndoEdit[*TableDragUndoEditData[T]], other unison.Undoable) bool { return false },
+		BeforeData: NewTableDragUndoEditData(from, to),
 	}
 }
 
-func didDropCallback[T gurps.NodeConstraint[T]](undo *unison.UndoEdit[*tableDragUndoEditData[T]], from, to *unison.Table[*Node[T]], move bool) {
+func didDropCallback[T gurps.NodeConstraint[T]](undo *unison.UndoEdit[*TableDragUndoEditData[T]], from, to *unison.Table[*Node[T]], move bool) {
 	if undo == nil {
 		return
 	}
-	mgr := unison.UndoManagerFor(from)
+	mgr := unison.UndoManagerFor(to)
 	if mgr == nil {
 		return
 	}
-	undo.AfterData = newTableDragUndoEditData(from, to, move)
-	if undo.AfterData != nil {
-		mgr.Add(undo)
+	if from != nil && (!move || from == to) {
+		from = nil
 	}
+	undo.AfterData = NewTableDragUndoEditData(from, to)
+	mgr.Add(undo)
 }

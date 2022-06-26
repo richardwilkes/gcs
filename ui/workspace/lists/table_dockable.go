@@ -480,6 +480,11 @@ func NewTableDockable[T gurps.NodeConstraint[T]](filePath, extension string, pro
 	return d
 }
 
+// Entity implements gurps.EntityProvider
+func (d *TableDockable[T]) Entity() *gurps.Entity {
+	return nil
+}
+
 // UndoManager implements undo.Provider
 func (d *TableDockable[T]) UndoManager() *unison.UndoManager {
 	return d.undoMgr

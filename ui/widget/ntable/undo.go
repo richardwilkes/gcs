@@ -12,74 +12,57 @@
 package ntable
 
 import (
-	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/ui/widget"
-	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
 )
 
-type tableDragUndoEditData[T gurps.NodeConstraint[T]] struct {
-	From       *unison.Table[*Node[T]]
-	To         *unison.Table[*Node[T]]
-	FromData   []byte
-	FromSelMap map[uuid.UUID]bool
-	ToData     []byte
-	ToSelMap   map[uuid.UUID]bool
-	Move       bool
+type TableUndoEditData[T gurps.NodeConstraint[T]] struct {
+	Table *unison.Table[*Node[T]]
+	Data  PreservedTableData[T]
 }
 
-func newTableDragUndoEditData[T gurps.NodeConstraint[T]](from, to *unison.Table[*Node[T]], move bool) *tableDragUndoEditData[T] {
-	data, err := collectTableData(to)
-	if err != nil {
-		jot.Error(err)
+// NewTableUndoEditData collects the undo edit data for a table.
+func NewTableUndoEditData[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]]) *TableUndoEditData[T] {
+	if table == nil {
 		return nil
 	}
-	undo := &tableDragUndoEditData[T]{
-		From:     from,
-		To:       to,
-		ToData:   data,
-		ToSelMap: to.CopySelectionMap(),
-		Move:     move,
-	}
-	if move && from != to {
-		if data, err = collectTableData(from); err != nil {
-			jot.Error(err)
-			return nil
-		}
-		undo.FromData = data
-		undo.FromSelMap = from.CopySelectionMap()
+	undo := &TableUndoEditData[T]{Table: table}
+	if err := undo.Data.Collect(table); err != nil {
+		jot.Error(err)
+		return nil
 	}
 	return undo
 }
 
-func (t *tableDragUndoEditData[T]) apply() {
-	applyTableData(t.To, t.ToData, t.ToSelMap)
-	if t.Move && t.From != t.To {
-		applyTableData(t.From, t.FromData, t.FromSelMap)
-	}
-}
-
-func collectTableData[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]]) ([]byte, error) {
-	provider, ok := table.ClientData()[tableProviderClientKey].(TableProvider[T])
-	if !ok {
-		return nil, errs.New("unable to locate provider")
-	}
-	return provider.Serialize()
-}
-
-func applyTableData[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]], data []byte, selMap map[uuid.UUID]bool) {
-	provider, ok := table.ClientData()[tableProviderClientKey].(TableProvider[T])
-	if !ok {
-		jot.Error(errs.New("unable to locate provider"))
+// Apply the undo edit data to a table.
+func (t *TableUndoEditData[T]) Apply() {
+	if t == nil {
 		return
 	}
-	if err := provider.Deserialize(data); err != nil {
+	if err := t.Data.Apply(t.Table); err != nil {
 		jot.Error(err)
-		return
 	}
-	table.SyncToModel()
-	widget.MarkModified(table)
-	table.SetSelectionMap(selMap)
+}
+
+// TableDragUndoEditData holds the undo edit data for a table drag.
+type TableDragUndoEditData[T gurps.NodeConstraint[T]] struct {
+	From *TableUndoEditData[T]
+	To   *TableUndoEditData[T]
+}
+
+// NewTableDragUndoEditData collects the undo edit data for a table drag.
+func NewTableDragUndoEditData[T gurps.NodeConstraint[T]](from, to *unison.Table[*Node[T]]) *TableDragUndoEditData[T] {
+	return &TableDragUndoEditData[T]{
+		From: NewTableUndoEditData(from),
+		To:   NewTableUndoEditData(to),
+	}
+}
+
+// Apply the undo edit data to a table.
+func (t *TableDragUndoEditData[T]) Apply() {
+	t.To.Apply()
+	if t.From != nil {
+		t.From.Apply()
+	}
 }
