@@ -294,31 +294,51 @@ func (d *Template) createLists() {
 		for _, c := range col {
 			switch c {
 			case gurps.BlockLayoutTraitsKey:
-				d.Traits = NewTraitsPageList(d, d.template)
+				if d.Traits == nil {
+					d.Traits = NewTraitsPageList(d, d.template)
+				} else {
+					d.Traits.Sync()
+				}
 				rowPanel.AddChild(d.Traits)
 				if c == refocusOnKey {
 					refocusOn = d.Traits.table
 				}
 			case gurps.BlockLayoutSkillsKey:
-				d.Skills = NewSkillsPageList(d, d.template)
+				if d.Skills == nil {
+					d.Skills = NewSkillsPageList(d, d.template)
+				} else {
+					d.Skills.Sync()
+				}
 				rowPanel.AddChild(d.Skills)
 				if c == refocusOnKey {
 					refocusOn = d.Skills.table
 				}
 			case gurps.BlockLayoutSpellsKey:
-				d.Spells = NewSpellsPageList(d, d.template)
+				if d.Spells == nil {
+					d.Spells = NewSpellsPageList(d, d.template)
+				} else {
+					d.Spells.Sync()
+				}
 				rowPanel.AddChild(d.Spells)
 				if c == refocusOnKey {
 					refocusOn = d.Spells.table
 				}
 			case gurps.BlockLayoutEquipmentKey:
-				d.Equipment = NewCarriedEquipmentPageList(d, d.template)
+				if d.Equipment == nil {
+					d.Equipment = NewCarriedEquipmentPageList(d, d.template)
+				} else {
+					d.Equipment.Sync()
+				}
 				rowPanel.AddChild(d.Equipment)
 				if c == refocusOnKey {
 					refocusOn = d.Equipment.table
 				}
 			case gurps.BlockLayoutNotesKey:
-				d.Notes = NewNotesPageList(d, d.template)
+				if d.Notes == nil {
+					d.Notes = NewNotesPageList(d, d.template)
+				} else {
+					d.Notes.Sync()
+				}
 				rowPanel.AddChild(d.Notes)
 				if c == refocusOnKey {
 					refocusOn = d.Notes.table

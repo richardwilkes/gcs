@@ -478,61 +478,101 @@ func (s *Sheet) createLists() {
 		for _, c := range col {
 			switch c {
 			case gurps.BlockLayoutReactionsKey:
-				s.Reactions = NewReactionsPageList(s.entity)
+				if s.Reactions == nil {
+					s.Reactions = NewReactionsPageList(s.entity)
+				} else {
+					s.Reactions.Sync()
+				}
 				rowPanel.AddChild(s.Reactions)
 				if c == refocusOnKey {
 					refocusOn = s.Reactions.table
 				}
 			case gurps.BlockLayoutConditionalModifiersKey:
-				s.ConditionalModifiers = NewConditionalModifiersPageList(s.entity)
+				if s.ConditionalModifiers == nil {
+					s.ConditionalModifiers = NewConditionalModifiersPageList(s.entity)
+				} else {
+					s.ConditionalModifiers.Sync()
+				}
 				rowPanel.AddChild(s.ConditionalModifiers)
 				if c == refocusOnKey {
 					refocusOn = s.ConditionalModifiers.table
 				}
 			case gurps.BlockLayoutMeleeKey:
-				s.MeleeWeapons = NewMeleeWeaponsPageList(s.entity)
+				if s.MeleeWeapons == nil {
+					s.MeleeWeapons = NewMeleeWeaponsPageList(s.entity)
+				} else {
+					s.MeleeWeapons.Sync()
+				}
 				rowPanel.AddChild(s.MeleeWeapons)
 				if c == refocusOnKey {
 					refocusOn = s.MeleeWeapons.table
 				}
 			case gurps.BlockLayoutRangedKey:
-				s.RangedWeapons = NewRangedWeaponsPageList(s.entity)
+				if s.RangedWeapons == nil {
+					s.RangedWeapons = NewRangedWeaponsPageList(s.entity)
+				} else {
+					s.RangedWeapons.Sync()
+				}
 				rowPanel.AddChild(s.RangedWeapons)
 				if c == refocusOnKey {
 					refocusOn = s.RangedWeapons.table
 				}
 			case gurps.BlockLayoutTraitsKey:
-				s.Traits = NewTraitsPageList(s, s.entity)
+				if s.Traits == nil {
+					s.Traits = NewTraitsPageList(s, s.entity)
+				} else {
+					s.Traits.Sync()
+				}
 				rowPanel.AddChild(s.Traits)
 				if c == refocusOnKey {
 					refocusOn = s.Traits.table
 				}
 			case gurps.BlockLayoutSkillsKey:
-				s.Skills = NewSkillsPageList(s, s.entity)
+				if s.Skills == nil {
+					s.Skills = NewSkillsPageList(s, s.entity)
+				} else {
+					s.Skills.Sync()
+				}
 				rowPanel.AddChild(s.Skills)
 				if c == refocusOnKey {
 					refocusOn = s.Skills.table
 				}
 			case gurps.BlockLayoutSpellsKey:
-				s.Spells = NewSpellsPageList(s, s.entity)
+				if s.Spells == nil {
+					s.Spells = NewSpellsPageList(s, s.entity)
+				} else {
+					s.Spells.Sync()
+				}
 				rowPanel.AddChild(s.Spells)
 				if c == refocusOnKey {
 					refocusOn = s.Spells.table
 				}
 			case gurps.BlockLayoutEquipmentKey:
-				s.CarriedEquipment = NewCarriedEquipmentPageList(s, s.entity)
+				if s.CarriedEquipment == nil {
+					s.CarriedEquipment = NewCarriedEquipmentPageList(s, s.entity)
+				} else {
+					s.CarriedEquipment.Sync()
+				}
 				rowPanel.AddChild(s.CarriedEquipment)
 				if c == refocusOnKey {
 					refocusOn = s.CarriedEquipment.table
 				}
 			case gurps.BlockLayoutOtherEquipmentKey:
-				s.OtherEquipment = NewOtherEquipmentPageList(s, s.entity)
+				if s.OtherEquipment == nil {
+					s.OtherEquipment = NewOtherEquipmentPageList(s, s.entity)
+				} else {
+					s.OtherEquipment.Sync()
+				}
 				rowPanel.AddChild(s.OtherEquipment)
 				if c == refocusOnKey {
 					refocusOn = s.OtherEquipment.table
 				}
 			case gurps.BlockLayoutNotesKey:
-				s.Notes = NewNotesPageList(s, s.entity)
+				if s.Notes == nil {
+					s.Notes = NewNotesPageList(s, s.entity)
+				} else {
+					s.Notes.Sync()
+				}
 				rowPanel.AddChild(s.Notes)
 				if c == refocusOnKey {
 					refocusOn = s.Notes.table
