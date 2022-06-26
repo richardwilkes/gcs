@@ -237,12 +237,13 @@ func FormatRelativeSkill(entity *Entity, typ string, difficulty AttributeDifficu
 		return "-"
 	case strings.HasPrefix(typ, gid.Skill) || strings.HasPrefix(typ, gid.Spell):
 		s := ResolveAttributeName(entity, difficulty.Attribute)
+		rsl = rsl.Trunc()
 		if rsl != 0 {
 			s += rsl.StringWithSign()
 		}
 		return s
 	default:
-		return rsl.StringWithSign()
+		return rsl.Trunc().StringWithSign()
 	}
 }
 
