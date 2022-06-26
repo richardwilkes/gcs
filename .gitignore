@@ -1,5 +1,4 @@
-/*.dmg
-/*.msi
-/*.deb
-/out
-/GCS/
+/GCS.app/
+/tools/
+/gcs
+/gcs.exe

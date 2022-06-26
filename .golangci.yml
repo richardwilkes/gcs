@@ -1,0 +1,97 @@
+run:
+  timeout: 5m
+  modules-download-mode: readonly
+output:
+  sort-results: true
+linters-settings:
+  depguard:
+    list-type: denylist
+    include-go-root: true
+    packages:
+      - log
+      - github.com/satori/go.uuid
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+    exclude-functions:
+      - (*bufio.Writer).WriteByte
+      - (*bufio.Writer).WriteRune
+      - (*bufio.Writer).WriteString
+      - (*github.com/richardwilkes/toolbox/xio.ByteBuffer).Insert
+      - (*github.com/richardwilkes/toolbox/xio.ByteBuffer).InsertByte
+      - (*github.com/richardwilkes/toolbox/xio.ByteBuffer).InsertRune
+      - (*github.com/richardwilkes/toolbox/xio.ByteBuffer).InsertString
+      - (*github.com/richardwilkes/toolbox/xio.ByteBuffer).Write
+      - (*github.com/richardwilkes/toolbox/xio.ByteBuffer).WriteByte
+      - (*github.com/richardwilkes/toolbox/xio.ByteBuffer).WriteRune
+      - (*github.com/richardwilkes/toolbox/xio.ByteBuffer).WriteString
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - performance
+      - style
+      - opinionated
+      - experimental
+    disabled-checks:
+      - sloppyReassign
+  gofumpt:
+    extra-rules: true
+  govet:
+    check-shadowing: true
+    enable-all: true
+    settings:
+      printf:
+        funcs:
+          - Errorf
+          - Warnf
+          - Infof
+          - Debugf
+          - Fatalf
+          - StartRootSpanf
+          - StartSubSpanf
+          - EndWithMsgf
+          - Newf
+          - NewWithCausef
+  misspell:
+    locale: US
+  unused:
+    check-exported: false
+linters:
+  disable-all: true
+  enable:
+    # Re-enable the commented-out ones once they work correctly with Go 1.18+
+    - deadcode
+    - depguard
+    - errcheck
+    - errorlint
+    - exportloopref
+    - goconst
+#    - gocritic
+    - gofumpt
+    - goimports
+    - gosec
+#    - gosimple
+    - govet
+    - ifshort
+    - ineffassign
+    - misspell
+    - noctx
+    - prealloc
+    - predeclared
+    - revive
+#    - staticcheck
+    - structcheck
+    - unconvert
+#    - unused
+    - varcheck
+    - wastedassign
+issues:
+  exclude-use-default: false
+  exclude:
+    - "fieldalignment: struct with \\d+ pointer bytes could be"
+    - "stdmethods: method MarshalJSON"
+    - "stdmethods: method UnmarshalJSON"
+    - "G104:"
+    - "G110:"
+    - "G304:"
+    - "G306:"

@@ -1,0 +1,94 @@
+{
+  "weekdays": [
+    "Moonday",
+    "Toilday",
+    "Wealday",
+    "Oathday",
+    "Fireday",
+    "Starday",
+    "Sunday"
+  ],
+  "day_zero_weekday": 0,
+  "months": [
+    {
+      "name": "Abadius",
+      "days": 31
+    },
+    {
+      "name": "Calistril",
+      "days": 28
+    },
+    {
+      "name": "Pharast",
+      "days": 31
+    },
+    {
+      "name": "Gozran",
+      "days": 30
+    },
+    {
+      "name": "Desnus",
+      "days": 31
+    },
+    {
+      "name": "Sarenith",
+      "days": 30
+    },
+    {
+      "name": "Erastus",
+      "days": 31
+    },
+    {
+      "name": "Arodus",
+      "days": 31
+    },
+    {
+      "name": "Rova",
+      "days": 30
+    },
+    {
+      "name": "Lamashan",
+      "days": 31
+    },
+    {
+      "name": "Neth",
+      "days": 30
+    },
+    {
+      "name": "Kuthona",
+      "days": 31
+    }
+  ],
+  "seasons": [
+    {
+      "name": "Winter",
+      "start_month": 12,
+      "start_day": 1,
+      "end_month": 2,
+      "end_day": 28
+    },
+    {
+      "name": "Spring",
+      "start_month": 3,
+      "start_day": 1,
+      "end_month": 5,
+      "end_day": 31
+    },
+    {
+      "name": "Summer",
+      "start_month": 6,
+      "start_day": 1,
+      "end_month": 8,
+      "end_day": 31
+    },
+    {
+      "name": "Fall",
+      "start_month": 9,
+      "start_day": 1,
+      "end_month": 10,
+      "end_day": 31
+    }
+  ],
+  "era": "AR",
+  "previous_era": "AR"
+}

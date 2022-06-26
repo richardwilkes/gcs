@@ -1,55 +1,48 @@
-## GURPS Character Sheet
+# GURPS Character Sheet
 
-GURPS Character Sheet (GCS) is a stand-alone, interactive, character sheet
-editor that allows you to build characters for the
-[GURPS 4<sup>th</sup> Edition](http://www.sjgames.com/gurps) roleplaying game
-system.
+GURPS Character Sheet (GCS) is a stand-alone, interactive, character sheet editor that allows you to build characters
+for the [GURPS 4<sup>th</sup> Edition](http://www.sjgames.com/gurps) roleplaying game system.
 
-![Build Status](https://github.com/richardwilkes/gcs/actions/workflows/build.yml/badge.svg?branch=master)
+<hr>
 
-### Building from the command line
+## Branches
 
-**NOTE**: *To build a specific version of GCS, you will need to check out the appropriate release
-tag. These directions are for the latest source, which may have experimental code or changes that
-are incompatible with the current data files. These build instructions may have also changed since
-a given release, so be sure to review them again with the version you plan to build.*
+### v4-java
 
-1. Make sure you have JDK 17 installed and set to be used as your default Java compiler. You can
-   download it for your platform here:
-   http://jdk.java.net/17/
+This is the current v4.37.1 release branch.
 
-2. If you are building on Windows, you'll need to install the WiX Toolset from here:
-   https://github.com/wixtoolset/wix3/releases/tag/wix3112rtm
+### master
 
-3. Clone the source repositories:
-   ```
-   % git clone https://github.com/richardwilkes/gcs
-   ```
+This is the unreleased v5.0.0 branch for the new version being rewritten using the [Go language](http://go.dev).
 
-4. Build and bundle the code for your platform:
+#### GCS-specific work that still needs to be done
 
-   **macOS**
+- Add undo records for edit operations that don't already have them
+- Implement prompting for substitution text when moving items onto a sheet
+- Add monitoring of the library directories for file changes
+    - Perhaps also add manual refresh option, for those platforms where disk monitoring is less than optimal
+- Settings editors
+    - Attributes
+    - Body Type
+- Library configuration dialogs
+- Completion of menu item actions
+    - Item
+        - Copy to Character Sheet
+        - Copy to Template
+        - Apply Template to Character Sheet
+    - Library
+        - Update <library> to <version>
+        - Change Library Locations
+    - Settings
+        - Attributes...
+        - Default Attributes...
+        - Body Type...
+        - Default Body Type...
+- Printing support for sheets (requires support in unison first)
 
-   ```
-   % cd gcs
-   % ./bundle.sh
-   ```
+#### [Unison](https://github.com/richardwilkes/unison)-specific work that still needs to be done
 
-   **Linux**
-
-   If you get a message similar to "Error: Invalid or unsupported type: [null]" in the
-   application packaging step when trying to run this on Linux, your distribution likely does not
-   have the debian packaging tools installed. You'll either need to install them, or use the
-   `--unpackaged` option when running `bundle.sh`
-   
-   ```
-   % cd gcs
-   % ./bundle.sh
-   ```
-
-   **Windows**
-
-   ```
-   > cd gcs
-   > .\bundle.bat
-   ```
+- When closing a tab, focus the next tab in the same dockable area before moving the focus to another dockable area
+- Printing support
+- Carefully comb over the interface and identify areas where things aren't working well on Windows and Linux, since I
+  spend nearly all of my development time on macOS and may not have noticed deficiencies on the other platforms

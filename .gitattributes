@@ -2,11 +2,20 @@
 * text=auto
 
 # Force text files to have LF
-*.java text eol=lf
+*.go text eol=lf
 *.md text eol=lf
 *.txt text eol=lf
-*.xml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.plist text eol=lf
+*.body text eol=lf
+*.attr text eol=lf
+*.ancestry text eol=lf
+*.names text eol=lf
+*.tmpl text eol=lf
 
 # Denote all files that are truly binary and should not be modified.
 *.png binary
-*.psd binary
+*.webp binary
+*.icns binary

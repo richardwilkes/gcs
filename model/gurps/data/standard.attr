@@ -1,0 +1,247 @@
+{
+  "type": "attribute_settings",
+  "version": 4,
+  "rows": [
+    {
+      "id": "st",
+      "type": "integer",
+      "name": "ST",
+      "full_name": "Strength",
+      "attribute_base": "10",
+      "cost_per_point": 10,
+      "cost_adj_percent_per_sm": 10
+    },
+    {
+      "id": "dx",
+      "type": "integer",
+      "name": "DX",
+      "full_name": "Dexterity",
+      "attribute_base": "10",
+      "cost_per_point": 20
+    },
+    {
+      "id": "iq",
+      "type": "integer",
+      "name": "IQ",
+      "full_name": "Intelligence",
+      "attribute_base": "10",
+      "cost_per_point": 20
+    },
+    {
+      "id": "ht",
+      "type": "integer",
+      "name": "HT",
+      "full_name": "Health",
+      "attribute_base": "10",
+      "cost_per_point": 10
+    },
+    {
+      "id": "will",
+      "type": "integer",
+      "name": "Will",
+      "attribute_base": "$iq",
+      "cost_per_point": 5
+    },
+    {
+      "id": "fright_check",
+      "type": "integer",
+      "name": "Fright Check",
+      "attribute_base": "$will",
+      "cost_per_point": 2
+    },
+    {
+      "id": "per",
+      "type": "integer",
+      "name": "Per",
+      "full_name": "Perception",
+      "attribute_base": "$iq",
+      "cost_per_point": 5
+    },
+    {
+      "id": "vision",
+      "type": "integer",
+      "name": "Vision",
+      "attribute_base": "$per",
+      "cost_per_point": 2
+    },
+    {
+      "id": "hearing",
+      "type": "integer",
+      "name": "Hearing",
+      "attribute_base": "$per",
+      "cost_per_point": 2
+    },
+    {
+      "id": "taste_smell",
+      "type": "integer",
+      "name": "Taste \u0026 Smell",
+      "attribute_base": "$per",
+      "cost_per_point": 2
+    },
+    {
+      "id": "touch",
+      "type": "integer",
+      "name": "Touch",
+      "attribute_base": "$per",
+      "cost_per_point": 2
+    },
+    {
+      "id": "basic_speed",
+      "type": "decimal",
+      "name": "Basic Speed",
+      "attribute_base": "($dx+$ht)/4",
+      "cost_per_point": 20
+    },
+    {
+      "id": "basic_move",
+      "type": "integer",
+      "name": "Basic Move",
+      "attribute_base": "floor($basic_speed)",
+      "cost_per_point": 5
+    },
+    {
+      "id": "fp",
+      "type": "pool",
+      "name": "FP",
+      "full_name": "Fatigue Points",
+      "attribute_base": "$ht",
+      "cost_per_point": 3,
+      "thresholds": [
+        {
+          "state": "Unconscious",
+          "multiplier": -1,
+          "divisor": 1,
+          "ops": [
+            "halve_move",
+            "halve_dodge",
+            "halve_st"
+          ]
+        },
+        {
+          "state": "Collapse",
+          "explanation": "Roll vs. Will to do anything besides talk or rest; failure causes unconsciousness\nEach FP you lose below 0 also causes 1 HP of injury\nMove, Dodge and ST are halved (B426)",
+          "multiplier": 0,
+          "divisor": 1,
+          "ops": [
+            "halve_move",
+            "halve_dodge",
+            "halve_st"
+          ]
+        },
+        {
+          "state": "Tired",
+          "explanation": "Move, Dodge and ST are halved (B426)",
+          "multiplier": 1,
+          "divisor": 3,
+          "ops": [
+            "halve_move",
+            "halve_dodge",
+            "halve_st"
+          ]
+        },
+        {
+          "state": "Tiring",
+          "multiplier": 1,
+          "divisor": 1,
+          "addition": -1
+        },
+        {
+          "state": "Rested",
+          "multiplier": 1,
+          "divisor": 1
+        }
+      ]
+    },
+    {
+      "id": "hp",
+      "type": "pool",
+      "name": "HP",
+      "full_name": "Hit Points",
+      "attribute_base": "$st",
+      "cost_per_point": 2,
+      "cost_adj_percent_per_sm": 10,
+      "thresholds": [
+        {
+          "state": "Dead",
+          "multiplier": -5,
+          "divisor": 1,
+          "ops": [
+            "halve_move",
+            "halve_dodge"
+          ]
+        },
+        {
+          "state": "Dying #4",
+          "explanation": "Roll vs. HT to avoid death\nRoll vs. HT-4 every second to avoid falling unconscious\nMove and Dodge are halved (B419)",
+          "multiplier": -4,
+          "divisor": 1,
+          "ops": [
+            "halve_move",
+            "halve_dodge"
+          ]
+        },
+        {
+          "state": "Dying #3",
+          "explanation": "Roll vs. HT to avoid death\nRoll vs. HT-3 every second to avoid falling unconscious\nMove and Dodge are halved (B419)",
+          "multiplier": -3,
+          "divisor": 1,
+          "ops": [
+            "halve_move",
+            "halve_dodge"
+          ]
+        },
+        {
+          "state": "Dying #2",
+          "explanation": "Roll vs. HT to avoid death\nRoll vs. HT-2 every second to avoid falling unconscious\nMove and Dodge are halved (B419)",
+          "multiplier": -2,
+          "divisor": 1,
+          "ops": [
+            "halve_move",
+            "halve_dodge"
+          ]
+        },
+        {
+          "state": "Dying #1",
+          "explanation": "Roll vs. HT to avoid death\nRoll vs. HT-1 every second to avoid falling unconscious\nMove and Dodge are halved (B419)",
+          "multiplier": -1,
+          "divisor": 1,
+          "ops": [
+            "halve_move",
+            "halve_dodge"
+          ]
+        },
+        {
+          "state": "Collapse",
+          "explanation": "Roll vs. HT every second to avoid falling unconscious\nMove and Dodge are halved (B419)",
+          "multiplier": 0,
+          "divisor": 1,
+          "ops": [
+            "halve_move",
+            "halve_dodge"
+          ]
+        },
+        {
+          "state": "Reeling",
+          "explanation": "Move and Dodge are halved (B419)",
+          "multiplier": 1,
+          "divisor": 3,
+          "ops": [
+            "halve_move",
+            "halve_dodge"
+          ]
+        },
+        {
+          "state": "Wounded",
+          "multiplier": 1,
+          "divisor": 1,
+          "addition": -1
+        },
+        {
+          "state": "Healthy",
+          "multiplier": 1,
+          "divisor": 1
+        }
+      ]
+    }
+  ]
+}
