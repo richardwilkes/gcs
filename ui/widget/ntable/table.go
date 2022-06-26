@@ -221,6 +221,18 @@ func DeleteSelection[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]]) {
 // DuplicateSelection duplicates the selected nodes in the table.
 func DuplicateSelection[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]]) {
 	if provider, ok := table.Model.(TableProvider[T]); ok && table.HasSelection() {
+		var undo *unison.UndoEdit[*TableUndoEditData[T]]
+		mgr := unison.UndoManagerFor(table)
+		if mgr != nil {
+			undo = &unison.UndoEdit[*TableUndoEditData[T]]{
+				ID:         unison.NextUndoID(),
+				EditName:   i18n.Text("Duplicate Selection"),
+				UndoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.BeforeData.Apply() },
+				RedoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.AfterData.Apply() },
+				AbsorbFunc: func(e *unison.UndoEdit[*TableUndoEditData[T]], other unison.Undoable) bool { return false },
+				BeforeData: NewTableUndoEditData(table),
+			}
+		}
 		var zero T
 		needSet := false
 		topLevelData := provider.RootData()
@@ -255,6 +267,10 @@ func DuplicateSelection[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]]
 		}
 		table.SyncToModel()
 		table.SetSelectionMap(selMap)
+		if mgr != nil && undo != nil {
+			undo.AfterData = NewTableUndoEditData(table)
+			mgr.Add(undo)
+		}
 		if builder := unison.AncestorOrSelf[widget.Rebuildable](table); builder != nil {
 			builder.Rebuild(true)
 		}
