@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
+// TableUndoEditData holds the data necessary to provide undo for a table.
 type TableUndoEditData[T gurps.NodeConstraint[T]] struct {
 	Table *unison.Table[*Node[T]]
 	Data  PreservedTableData[T]
