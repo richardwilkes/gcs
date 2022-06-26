@@ -171,6 +171,18 @@ func DeleteSelection[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]]) {
 		if !workspace.CloseUUID(ids) {
 			return
 		}
+		var undo *unison.UndoEdit[*TableUndoEditData[T]]
+		mgr := unison.UndoManagerFor(table)
+		if mgr != nil {
+			undo = &unison.UndoEdit[*TableUndoEditData[T]]{
+				ID:         unison.NextUndoID(),
+				EditName:   i18n.Text("Delete Selection"),
+				UndoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.BeforeData.Apply() },
+				RedoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.AfterData.Apply() },
+				AbsorbFunc: func(e *unison.UndoEdit[*TableUndoEditData[T]], other unison.Undoable) bool { return false },
+				BeforeData: NewTableUndoEditData(table),
+			}
+		}
 		needSet := false
 		topLevelData := provider.RootData()
 		for _, target := range list {
@@ -195,6 +207,10 @@ func DeleteSelection[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]]) {
 		}
 		if needSet {
 			provider.SetRootData(topLevelData)
+		}
+		if mgr != nil && undo != nil {
+			undo.AfterData = NewTableUndoEditData(table)
+			mgr.Add(undo)
 		}
 		if builder := unison.AncestorOrSelf[widget.Rebuildable](table); builder != nil {
 			builder.Rebuild(true)
