@@ -13,7 +13,11 @@ This is the current v4.37.1 release branch.
 
 ### master
 
-This is the unreleased v5.0.0 branch for the new version being rewritten using the [Go language](http://go.dev).
+This is the unreleased v5.0.0 branch for the new version being rewritten using the [Go language](http://go.dev). GCS
+relies on another project of mine, [Unison](https://github.com/richardwilkes/unison), for the UI and OS integration. The
+prerequisites are therefore the same as for that project and are listed
+[here](https://github.com/richardwilkes/unison/blob/main/README.md). Once you have the prerequistes, you can build GCS
+by running the build script: `./build.sh`. Add a `-h` to see available options.
 
 #### GCS-specific work that still needs to be done
 
