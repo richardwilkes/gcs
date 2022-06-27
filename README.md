@@ -9,7 +9,7 @@ for the [GURPS 4<sup>th</sup> Edition](http://www.sjgames.com/gurps) roleplaying
 
 ### v4-java
 
-This is the current v4.37.1 release branch.
+This is the current v4.37.1 release branch. You can access it [here](https://github.com/richardwilkes/gcs/tree/v4-java).
 
 ### master
 
