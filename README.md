@@ -17,7 +17,8 @@ This is the unreleased v5.0.0 branch for the new version being rewritten using t
 
 #### GCS-specific work that still needs to be done
 
-- Add undo records for edit operations that don't already have them
+- Some undo operations don't work correctly because the underlying user interface object is discarded during a rebuild
+  of the display. Need to provide a mechanism to discover the new object the data should be attached to.
 - Implement prompting for substitution text when moving items onto a sheet
 - Add monitoring of the library directories for file changes
     - Perhaps also add manual refresh option, for those platforms where disk monitoring is less than optimal
