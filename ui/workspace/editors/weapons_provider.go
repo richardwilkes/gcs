@@ -14,6 +14,7 @@ package editors
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/weapon"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/gcs/v5/ui/widget/ntable"
 	"github.com/richardwilkes/toolbox/errs"
@@ -141,9 +142,8 @@ func (p *weaponsProvider) DragSVG() *unison.SVG {
 	return p.weaponType.SVG()
 }
 
-func (p *weaponsProvider) DropShouldMoveData(_, _ *unison.Table[*ntable.Node[*gurps.Weapon]]) bool {
-	// Not used
-	return false
+func (p *weaponsProvider) DropShouldMoveData(from, to *unison.Table[*ntable.Node[*gurps.Weapon]]) bool {
+	return from == to
 }
 
 func (p *weaponsProvider) ItemNames() (singular, plural string) {
@@ -232,9 +232,20 @@ func (p *weaponsProvider) CreateItem(owner widget.Rebuildable, table *unison.Tab
 }
 
 func (p *weaponsProvider) Serialize() ([]byte, error) {
-	return nil, errs.New("not allowed")
+	if p.forPage {
+		return nil, errs.New("not allowed")
+	}
+	return jio.SerializeAndCompress(p.provider.Weapons(p.weaponType))
 }
 
-func (p *weaponsProvider) Deserialize(_ []byte) error {
-	return errs.New("not allowed")
+func (p *weaponsProvider) Deserialize(data []byte) error {
+	if p.forPage {
+		return errs.New("not allowed")
+	}
+	var rows []*gurps.Weapon
+	if err := jio.DecompressAndDeserialize(data, &rows); err != nil {
+		return err
+	}
+	p.provider.SetWeapons(p.weaponType, rows)
+	return nil
 }
