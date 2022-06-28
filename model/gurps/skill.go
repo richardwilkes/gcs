@@ -125,11 +125,16 @@ func newSkill(entity *Entity, parent *Skill, typeKey string, container bool) *Sk
 
 // Clone implements Node.
 func (s *Skill) Clone(entity *Entity, parent *Skill, preserveID bool) *Skill {
-	other := NewSkill(entity, parent, s.Container())
+	var other *Skill
+	if s.Type == gid.Technique {
+		other = NewTechnique(entity, parent, s.TechniqueDefault.Name)
+	} else {
+		other = NewSkill(entity, parent, s.Container())
+		other.IsOpen = s.IsOpen
+	}
 	if preserveID {
 		other.ID = s.ID
 	}
-	other.IsOpen = s.IsOpen
 	other.SkillEditData.CopyFrom(s)
 	if s.HasChildren() {
 		other.Children = make([]*Skill, 0, len(s.Children))
