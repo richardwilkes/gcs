@@ -21,6 +21,8 @@ by running the build script: `./build.sh`. Add a `-h` to see available options.
 
 #### GCS-specific work that still needs to be done
 
+- Some older attribute keys are not being recognized (Kicking technique's difficulty illustrates this)
+- The search box isn't highlighting the found entries (was working, so clearly broke it along the way)
 - Some undo operations don't work correctly because the underlying user interface object is discarded during a rebuild
   of the display. Need to provide a mechanism to discover the new object the data should be attached to. An example is
   the fields in the top section of the sheet... some edits cause a rebuild, rather than a simple update, and when that
