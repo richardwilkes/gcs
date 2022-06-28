@@ -142,7 +142,7 @@ func (f *NumericField[T]) modified() {
 					}
 					return false
 				},
-				BeforeData: f.getData(),
+				BeforeData: f.Format(f.get()),
 				AfterData:  text,
 			})
 		}

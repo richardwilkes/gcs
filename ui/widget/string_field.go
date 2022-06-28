@@ -90,7 +90,7 @@ func (f *StringField) modified() {
 					}
 					return false
 				},
-				BeforeData: f.getData(),
+				BeforeData: f.get(),
 				AfterData:  text,
 			})
 		}

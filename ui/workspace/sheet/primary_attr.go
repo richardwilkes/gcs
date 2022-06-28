@@ -70,9 +70,7 @@ func (p *PrimaryAttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 			continue
 		}
 		p.AddChild(p.createPointsField(attr))
-		p.AddChild(widget.NewDecimalPageField(i18n.Text("Primary Attribute"),
-			func() fxp.Int { return attr.Maximum() },
-			func(v fxp.Int) { attr.SetMaximum(v) }, fxp.Min, fxp.Max, true))
+		p.AddChild(p.createValueField(def, attr))
 		p.AddChild(widget.NewPageLabel(def.CombinedName()))
 	}
 }
@@ -88,6 +86,13 @@ func (p *PrimaryAttrPanel) createPointsField(attr *gurps.Attribute) *widget.NonE
 		}
 	})
 	field.Font = theme.PageFieldSecondaryFont
+	return field
+}
+
+func (p *PrimaryAttrPanel) createValueField(def *gurps.AttributeDef, attr *gurps.Attribute) *widget.DecimalField {
+	field := widget.NewDecimalPageField(def.CombinedName(),
+		func() fxp.Int { return attr.Maximum() },
+		func(v fxp.Int) { attr.SetMaximum(v) }, fxp.Min, fxp.Max, true)
 	return field
 }
 
