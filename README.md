@@ -19,39 +19,4 @@ prerequisites are therefore the same as for that project and are listed
 [here](https://github.com/richardwilkes/unison/blob/main/README.md). Once you have the prerequistes, you can build GCS
 by running the build script: `./build.sh`. Add a `-h` to see available options.
 
-#### GCS-specific work that still needs to be done
-
-- Some older attribute keys are not being recognized (Kicking technique's difficulty illustrates this)
-- The search box isn't highlighting the found entries (was working, so clearly broke it along the way)
-- Some undo operations don't work correctly because the underlying user interface object is discarded during a rebuild
-  of the display. Need to provide a mechanism to discover the new object the data should be attached to. An example is
-  the fields in the top section of the sheet... some edits cause a rebuild, rather than a simple update, and when that
-  happens, the associated undos that came before the rebuild can no longer function.
-- Implement prompting for substitution text when moving items onto a sheet
-- Add monitoring of the library directories for file changes
-    - Perhaps also add manual refresh option, for those platforms where disk monitoring is less than optimal
-- Settings editors
-    - Attributes
-    - Body Type
-- Library configuration dialogs
-- Completion of menu item actions
-    - Item
-        - Copy to Character Sheet
-        - Copy to Template
-        - Apply Template to Character Sheet
-    - Library
-        - Update <library> to <version>
-        - Change Library Locations
-    - Settings
-        - Attributes...
-        - Default Attributes...
-        - Body Type...
-        - Default Body Type...
-- Printing support for sheets (requires support in unison first)
-
-#### [Unison](https://github.com/richardwilkes/unison)-specific work that still needs to be done
-
-- When closing a tab, focus the next tab in the same dockable area before moving the focus to another dockable area
-- Printing support
-- Carefully comb over the interface and identify areas where things aren't working well on Windows and Linux, since I
-  spend nearly all of my development time on macOS and may not have noticed deficiencies on the other platforms
+#### [Remaining issues for v5](https://github.com/richardwilkes/gcs/issues?q=is%3Aopen+is%3Aissue+label%3Av5)
