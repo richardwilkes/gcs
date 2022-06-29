@@ -12,6 +12,7 @@
 package ntable
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/google/uuid"
@@ -500,6 +501,18 @@ func rowIndex[T gurps.NodeConstraint[T]](id uuid.UUID, startIndex int, rows []*N
 
 // InsertItem inserts an item into a table.
 func InsertItem[T gurps.NodeConstraint[T]](owner widget.Rebuildable, table *unison.Table[*Node[T]], item T, topList func() []T, setTopList func([]T), rowData func(table *unison.Table[*Node[T]]) []*Node[T]) {
+	var undo *unison.UndoEdit[*TableUndoEditData[T]]
+	mgr := unison.UndoManagerFor(table)
+	if mgr != nil {
+		undo = &unison.UndoEdit[*TableUndoEditData[T]]{
+			ID:         unison.NextUndoID(),
+			EditName:   fmt.Sprintf(i18n.Text("New %s"), item.Kind()),
+			UndoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.BeforeData.Apply() },
+			RedoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.AfterData.Apply() },
+			AbsorbFunc: func(e *unison.UndoEdit[*TableUndoEditData[T]], other unison.Undoable) bool { return false },
+			BeforeData: NewTableUndoEditData(table),
+		}
+	}
 	var target, zero T
 	i := table.FirstSelectedRowIndex()
 	if i != -1 {
@@ -536,6 +549,10 @@ func InsertItem[T gurps.NodeConstraint[T]](owner widget.Rebuildable, table *unis
 	index := FindRowIndexByID(table, item.UUID())
 	table.SelectByIndex(index)
 	table.ScrollRowCellIntoView(index, 0)
+	if mgr != nil && undo != nil {
+		undo.AfterData = NewTableUndoEditData(table)
+		mgr.Add(undo)
+	}
 	owner.Rebuild(true)
 }
 
