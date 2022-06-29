@@ -28,6 +28,7 @@ import (
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio"
+	"github.com/rjeczalik/notify"
 )
 
 const releaseFile = "release.txt"
@@ -39,8 +40,21 @@ type Library struct {
 	RepoName          string `json:"-"`
 	PathOnDisk        string `json:"path,omitempty"`
 	LastSeen          string `json:"last_seen,omitempty"`
+	monitor           *monitor
 	lock              sync.RWMutex
 	upgrade           *Release
+}
+
+// NewLibrary creates a new library.
+func NewLibrary(title, githubAccountName, repoName, pathOnDisk string) *Library {
+	lib := &Library{
+		Title:             title,
+		GitHubAccountName: githubAccountName,
+		RepoName:          repoName,
+		PathOnDisk:        pathOnDisk,
+	}
+	lib.monitor = newMonitor(lib)
+	return lib
 }
 
 // Valid returns true if the library has a path on disk and a title.
@@ -75,10 +89,24 @@ func (l *Library) SetPath(newPath string) error {
 		return errs.NewWithCause("unable to update library path to "+newPath, err)
 	}
 	if l.PathOnDisk != p {
+		tokens := l.monitor.stop()
 		l.PathOnDisk = p
 		l.LastSeen = l.VersionOnDisk()
+		for _, token := range tokens {
+			l.monitor.startWatch(token)
+		}
 	}
 	return nil
+}
+
+// Watch for changes in the directory tree of this library.
+func (l *Library) Watch(callback func(lib *Library, fullPath string, what notify.Event), callbackOnUIThread bool) *MonitorToken {
+	return l.monitor.newWatch(callback, callbackOnUIThread)
+}
+
+// StopAllWatches that were previously established.
+func (l *Library) StopAllWatches() {
+	l.monitor.stop()
 }
 
 // IsMaster returns true if this is the Master Library.

@@ -9,6 +9,7 @@ require (
 	github.com/richardwilkes/rpgtools v1.4.2
 	github.com/richardwilkes/toolbox v1.72.0
 	github.com/richardwilkes/unison v0.22.0
+	github.com/rjeczalik/notify v0.9.2
 	github.com/stretchr/testify v1.7.5
 	golang.org/x/exp v0.0.0-20220613132600-b0d781184e0d
 	golang.org/x/text v0.3.7

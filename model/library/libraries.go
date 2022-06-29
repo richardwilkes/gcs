@@ -48,12 +48,6 @@ func NewLibrariesFromFS(fileSystem fs.FS, filePath string) (Libraries, error) {
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &libs); err != nil {
 		return nil, err
 	}
-	for k, v := range libs {
-		if !v.Valid() {
-			delete(libs, k)
-		}
-		v.ConfigureForKey(k)
-	}
 	libs.Master()
 	libs.User()
 	return libs, nil
@@ -65,8 +59,12 @@ func (l *Libraries) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &libs); err != nil {
 		return err
 	}
-	for lib, v := range libs {
-		v.ConfigureForKey(lib)
+	for k, lib := range libs {
+		if !lib.Valid() {
+			delete(libs, k)
+		}
+		lib.ConfigureForKey(k)
+		lib.monitor = newMonitor(lib)
 	}
 	*l = libs
 	return nil
@@ -76,12 +74,7 @@ func (l *Libraries) UnmarshalJSON(data []byte) error {
 func (l Libraries) Master() *Library {
 	lib, ok := l[masterGitHubAccountName+"/"+masterRepoName]
 	if !ok {
-		lib = &Library{
-			Title:             i18n.Text("Master Library"),
-			GitHubAccountName: masterGitHubAccountName,
-			RepoName:          masterRepoName,
-			PathOnDisk:        DefaultMasterLibraryPath(),
-		}
+		lib = NewLibrary(i18n.Text("Master Library"), masterGitHubAccountName, masterRepoName, DefaultMasterLibraryPath())
 		l[lib.Key()] = lib
 	}
 	return lib
@@ -91,12 +84,7 @@ func (l Libraries) Master() *Library {
 func (l Libraries) User() *Library {
 	lib, ok := l[userGitHubAccountName+"/"+userRepoName]
 	if !ok {
-		lib = &Library{
-			Title:             i18n.Text("User Library"),
-			GitHubAccountName: userGitHubAccountName,
-			RepoName:          userRepoName,
-			PathOnDisk:        DefaultUserLibraryPath(),
-		}
+		lib = NewLibrary(i18n.Text("User Library"), userGitHubAccountName, userRepoName, DefaultUserLibraryPath())
 		l[lib.Key()] = lib
 	}
 	return lib

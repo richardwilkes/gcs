@@ -14,12 +14,14 @@ package workspace
 import (
 	"fmt"
 	"path/filepath"
+	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/res"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/rjeczalik/notify"
 )
 
 var _ unison.Dockable = &Navigator{}
@@ -33,8 +35,10 @@ type FileBackedDockable interface {
 // Navigator holds the workspace navigation panel.
 type Navigator struct {
 	unison.Panel
-	scroll *unison.ScrollPanel
-	table  *unison.Table[*NavigatorNode]
+	scroll     *unison.ScrollPanel
+	table      *unison.Table[*NavigatorNode]
+	tokens     []*library.MonitorToken
+	needReload bool
 }
 
 // RegisterFileTypes registers special navigator file types.
@@ -86,7 +90,30 @@ func newNavigator() *Navigator {
 	n.AddChild(n.scroll)
 
 	n.table.DoubleClickCallback = n.handleSelectionDoubleClick
+
+	for _, lib := range libs {
+		n.tokens = append(n.tokens, lib.Watch(n.watchCallback, true))
+	}
 	return n
+}
+
+func (n *Navigator) watchCallback(lib *library.Library, fullPath string, what notify.Event) {
+	if !n.needReload {
+		n.needReload = true
+		unison.InvokeTaskAfter(n.reload, time.Millisecond*50)
+	}
+}
+
+func (n *Navigator) reload() {
+	n.needReload = false
+	sel := n.DisclosedPaths()
+	libs := settings.Global().LibrarySet.List()
+	rows := make([]*NavigatorNode, 0, len(libs))
+	for _, one := range libs {
+		rows = append(rows, NewLibraryNode(n, one))
+	}
+	n.table.SetRootRows(rows)
+	n.ApplyDisclosedPaths(sel)
 }
 
 func (n *Navigator) adjustTableSize() {
