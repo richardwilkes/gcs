@@ -100,7 +100,7 @@ func newNavigator() *Navigator {
 func (n *Navigator) watchCallback(lib *library.Library, fullPath string, what notify.Event) {
 	if !n.needReload {
 		n.needReload = true
-		unison.InvokeTaskAfter(n.reload, time.Millisecond*50)
+		unison.InvokeTaskAfter(n.reload, time.Millisecond*100)
 	}
 }
 
