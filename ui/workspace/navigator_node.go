@@ -209,6 +209,11 @@ func (n *NavigatorNode) refreshChildren(dirPath string, parent *NavigatorNode) [
 				var sub []fs.DirEntry
 				if sub, err = os.ReadDir(filepath.Join(libPath, p)); err == nil && len(sub) > 0 {
 					isDir = true
+					for _, token := range n.nav.tokens {
+						if token.Library() == n.library {
+							token.AddSubPath(p)
+						}
+					}
 				}
 			}
 			if isDir {

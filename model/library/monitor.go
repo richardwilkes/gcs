@@ -1,6 +1,7 @@
 package library
 
 import (
+	"path/filepath"
 	"sync"
 
 	"github.com/richardwilkes/toolbox/errs"
@@ -34,22 +35,22 @@ func (m *monitor) newWatch(callback func(lib *Library, fullPath string, what not
 		callback:   callback,
 		onUIThread: callbackOnUIThread,
 	}
-	m.startWatch(token)
+	m.startWatch(token, false)
 	return token
 }
 
-func (m *monitor) startWatch(token *MonitorToken) {
-	rootPath := m.library.Path()
+func (m *monitor) startWatch(token *MonitorToken, sendSync bool) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
+	token.root = m.library.Path()
+	token.subPaths = make(map[string]bool)
 	m.tokens = append(m.tokens, token)
 	if m.events == nil {
 		m.queue = taskqueue.New(taskqueue.Workers(1))
 		m.done = make(chan bool)
 		m.events = make(chan notify.EventInfo, 16)
-		target := rootPath + "/..."
-		if err := notify.Watch(target, m.events, notify.Create|notify.Remove|notify.Rename); err != nil {
-			jot.Error(errs.NewWithCausef(err, "unable to watch filesystem path: %s", target))
+		if err := notify.Watch(token.root+"/...", m.events, notify.Create|notify.Remove|notify.Rename); err != nil {
+			jot.Error(errs.NewWithCausef(err, "unable to watch filesystem path: %s", token.root))
 			m.events = nil
 			m.done = nil
 			m.queue.Shutdown()
@@ -58,7 +59,9 @@ func (m *monitor) startWatch(token *MonitorToken) {
 			go m.listenForEvents()
 		}
 	}
-	m.send(rootPath, EventRootSync)
+	if sendSync {
+		m.send(token.root, EventRootSync)
+	}
 }
 
 func (m *monitor) stop() []*MonitorToken {
@@ -112,17 +115,42 @@ func (m *monitor) send(fullPath string, what notify.Event) {
 type MonitorToken struct {
 	monitor    *monitor
 	callback   func(*Library, string, notify.Event)
+	root       string
+	subPaths   map[string]bool
 	onUIThread bool
+}
+
+// Library returns the library this token is attached to.
+func (m *MonitorToken) Library() *Library {
+	return m.monitor.library
+}
+
+// AddSubPath adds a sub-path within the library to watch. Should only be called for symlinks, since the native OS
+// monitoring typically does not traverse those on its own.
+func (m *MonitorToken) AddSubPath(relativePath string) {
+	m.monitor.lock.Lock()
+	defer m.monitor.lock.Unlock()
+	if m.monitor.events != nil {
+		if fullPath, err := filepath.Abs(filepath.Join(m.root, relativePath)); err != nil {
+			jot.Error(errs.Wrap(err))
+		} else if !m.subPaths[fullPath] {
+			if err = notify.Watch(fullPath+"/...", m.monitor.events, notify.Create|notify.Remove|notify.Rename); err != nil {
+				jot.Error(errs.NewWithCausef(err, "unable to watch filesystem path: %s", fullPath))
+			} else {
+				m.subPaths[fullPath] = true
+			}
+		}
+	}
 }
 
 // Stop this watch.
 func (m *MonitorToken) Stop() {
 	m.monitor.lock.Lock()
+	defer m.monitor.lock.Unlock()
 	if i := slices.Index(m.monitor.tokens, m); i != -1 {
 		m.monitor.tokens = slices.Delete(m.monitor.tokens, i, i+1)
 		if len(m.monitor.tokens) == 0 {
 			m.monitor.internalStop()
 		}
 	}
-	m.monitor.lock.Unlock()
 }

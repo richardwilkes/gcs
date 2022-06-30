@@ -16,6 +16,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/res"
@@ -67,9 +68,12 @@ func newNavigator() *Navigator {
 	globalSettings := settings.Global()
 	libs := globalSettings.LibrarySet.List()
 	rows := make([]*NavigatorNode, 0, len(libs))
-	for _, one := range libs {
-		rows = append(rows, NewLibraryNode(n, one))
+	n.needReload = true
+	for _, lib := range libs {
+		n.tokens = append(n.tokens, lib.Watch(n.watchCallback, true))
+		rows = append(rows, NewLibraryNode(n, lib))
 	}
+	n.needReload = false
 	n.table.SetRootRows(rows)
 	n.ApplyDisclosedPaths(globalSettings.LibraryExplorer.OpenRowKeys)
 	n.table.SizeColumnsToFit(true)
@@ -90,14 +94,10 @@ func newNavigator() *Navigator {
 	n.AddChild(n.scroll)
 
 	n.table.DoubleClickCallback = n.handleSelectionDoubleClick
-
-	for _, lib := range libs {
-		n.tokens = append(n.tokens, lib.Watch(n.watchCallback, true))
-	}
 	return n
 }
 
-func (n *Navigator) watchCallback(lib *library.Library, fullPath string, what notify.Event) {
+func (n *Navigator) watchCallback(_ *library.Library, _ string, _ notify.Event) {
 	if !n.needReload {
 		n.needReload = true
 		unison.InvokeTaskAfter(n.reload, time.Millisecond*100)
@@ -106,14 +106,16 @@ func (n *Navigator) watchCallback(lib *library.Library, fullPath string, what no
 
 func (n *Navigator) reload() {
 	n.needReload = false
-	sel := n.DisclosedPaths()
+	disclosed := n.DisclosedPaths()
+	selection := n.SelectedPaths()
 	libs := settings.Global().LibrarySet.List()
 	rows := make([]*NavigatorNode, 0, len(libs))
 	for _, one := range libs {
 		rows = append(rows, NewLibraryNode(n, one))
 	}
 	n.table.SetRootRows(rows)
-	n.ApplyDisclosedPaths(sel)
+	n.ApplyDisclosedPaths(disclosed)
+	n.ApplySelectedPaths(selection)
 }
 
 func (n *Navigator) adjustTableSize() {
@@ -190,6 +192,33 @@ func (n *Navigator) applyDisclosedPaths(rows []*NavigatorNode, paths map[string]
 		}
 		n.applyDisclosedPaths(row.Children(), paths)
 	}
+}
+
+// SelectedPaths returns a list of paths that are currently selected.
+func (n *Navigator) SelectedPaths() []string {
+	sel := n.table.SelectedRows(false)
+	paths := make([]string, 0, len(sel))
+	for _, row := range sel {
+		paths = append(paths, row.Path())
+	}
+	return paths
+}
+
+// ApplySelectedPaths replaces the selection with the nodes that match the given paths.
+func (n *Navigator) ApplySelectedPaths(paths []string) {
+	m := make(map[string]bool, len(paths))
+	for _, p := range paths {
+		m[p] = true
+	}
+	selMap := make(map[uuid.UUID]bool)
+	count := n.table.LastRowIndex()
+	for i := 0; i <= count; i++ {
+		row := n.table.RowFromIndex(i)
+		if m[row.Path()] {
+			selMap[row.UUID()] = true
+		}
+	}
+	n.table.SetSelectionMap(selMap)
 }
 
 // OpenFiles attempts to open the given file paths.

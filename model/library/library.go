@@ -93,7 +93,7 @@ func (l *Library) SetPath(newPath string) error {
 		l.PathOnDisk = p
 		l.LastSeen = l.VersionOnDisk()
 		for _, token := range tokens {
-			l.monitor.startWatch(token)
+			l.monitor.startWatch(token, true)
 		}
 	}
 	return nil
