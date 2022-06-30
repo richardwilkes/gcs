@@ -53,7 +53,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 			})
 			flags := gurps.TenFlag
 			if isTechnique {
-				flags |= gurps.SkillFlag + gurps.ParryFlag + gurps.BlockFlag
+				flags |= gurps.SkillFlag + gurps.ParryFlag + gurps.BlockFlag + gurps.DodgeFlag
 			}
 			choices, attrChoice := gurps.AttributeChoices(e.target.Entity, "", flags, e.editorData.TechniqueDefault.DefaultType)
 			attrChoicePopup := addPopup(wrapper, choices, &attrChoice)
