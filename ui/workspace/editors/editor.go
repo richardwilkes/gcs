@@ -225,7 +225,6 @@ func (e *editor[N, D]) AttemptClose() bool {
 	if dc := unison.Ancestor[*unison.DockContainer](e); dc != nil {
 		dc.Close(e)
 	}
-	e.owner.AsPanel().RequestFocus()
 	return true
 }
 
