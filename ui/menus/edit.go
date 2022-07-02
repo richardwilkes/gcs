@@ -120,22 +120,22 @@ func registerEditMenuActions() {
 		ID:              constants.CopyToSheetItemID,
 		Title:           i18n.Text("Copy to Character Sheet"),
 		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyC, Modifiers: unison.ShiftModifier | unison.OSMenuCmdModifier()},
-		EnabledCallback: notEnabled,
-		ExecuteCallback: unimplemented,
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	}
 	CopyToTemplate = &unison.Action{
 		ID:              constants.CopyToTemplateItemID,
 		Title:           i18n.Text("Copy to Template"),
 		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyT, Modifiers: unison.ShiftModifier | unison.OSMenuCmdModifier()},
-		EnabledCallback: notEnabled,
-		ExecuteCallback: unimplemented,
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	}
 	ApplyTemplate = &unison.Action{
 		ID:              constants.ApplyTemplateItemID,
 		Title:           i18n.Text("Apply Template to Character Sheet"),
 		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyA, Modifiers: unison.ShiftModifier | unison.OSMenuCmdModifier()},
-		EnabledCallback: notEnabled,
-		ExecuteCallback: unimplemented,
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	}
 	Increment = &unison.Action{
 		ID:              constants.IncrementItemID,
