@@ -188,8 +188,8 @@ func (p *equipmentProvider) Headers() []unison.TableColumnHeader[*ntable.Node[*g
 
 func (p *equipmentProvider) SyncHeader(headers []unison.TableColumnHeader[*ntable.Node[*gurps.Equipment]]) {
 	if p.forPage {
-		for i := 0; i < len(carriedEquipmentPageColMap); i++ {
-			if carriedEquipmentPageColMap[i] == gurps.EquipmentDescriptionColumn {
+		for i := 0; i < len(p.colMap); i++ {
+			if p.colMap[i] == gurps.EquipmentDescriptionColumn {
 				if header, ok2 := headers[i].(*PageTableColumnHeader[*gurps.Equipment]); ok2 {
 					header.Label.Text = p.descriptionText()
 				}
