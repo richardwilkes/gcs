@@ -21,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/datafile"
 	"github.com/richardwilkes/gcs/v5/model/gurps/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
+	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/gcs/v5/model/gurps/skill"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
@@ -754,4 +755,52 @@ func (s *Spell) SetTL(tl string) {
 // Enabled returns true if this node is enabled.
 func (s *Spell) Enabled() bool {
 	return true
+}
+
+// FillWithNameableKeys adds any nameable keys found to the provided map.
+func (s *Spell) FillWithNameableKeys(m map[string]string) {
+	nameables.Extract(s.Name, m)
+	nameables.Extract(s.LocalNotes, m)
+	nameables.Extract(s.VTTNotes, m)
+	nameables.Extract(s.PowerSource, m)
+	nameables.Extract(s.Class, m)
+	nameables.Extract(s.Resist, m)
+	nameables.Extract(s.CastingCost, m)
+	nameables.Extract(s.MaintenanceCost, m)
+	nameables.Extract(s.CastingTime, m)
+	nameables.Extract(s.Duration, m)
+	nameables.Extract(s.RitualSkillName, m)
+	for _, one := range s.College {
+		nameables.Extract(one, m)
+	}
+	if s.Prereq != nil {
+		s.Prereq.FillWithNameableKeys(m)
+	}
+	for _, one := range s.Weapons {
+		one.FillWithNameableKeys(m)
+	}
+}
+
+// ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
+func (s *Spell) ApplyNameableKeys(m map[string]string) {
+	s.Name = nameables.Apply(s.Name, m)
+	s.LocalNotes = nameables.Apply(s.LocalNotes, m)
+	s.VTTNotes = nameables.Apply(s.VTTNotes, m)
+	s.PowerSource = nameables.Apply(s.PowerSource, m)
+	s.Class = nameables.Apply(s.Class, m)
+	s.Resist = nameables.Apply(s.Resist, m)
+	s.CastingCost = nameables.Apply(s.CastingCost, m)
+	s.MaintenanceCost = nameables.Apply(s.MaintenanceCost, m)
+	s.CastingTime = nameables.Apply(s.CastingTime, m)
+	s.Duration = nameables.Apply(s.Duration, m)
+	s.RitualSkillName = nameables.Apply(s.RitualSkillName, m)
+	for i, one := range s.College {
+		s.College[i] = nameables.Apply(one, m)
+	}
+	if s.Prereq != nil {
+		s.Prereq.ApplyNameableKeys(m)
+	}
+	for _, one := range s.Weapons {
+		one.ApplyNameableKeys(m)
+	}
 }

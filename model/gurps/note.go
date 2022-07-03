@@ -16,6 +16,7 @@ import (
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
+	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
@@ -163,4 +164,14 @@ func (n *Note) SetOwningEntity(entity *Entity) {
 // Enabled returns true if this node is enabled.
 func (n *Note) Enabled() bool {
 	return true
+}
+
+// FillWithNameableKeys adds any nameable keys found to the provided map.
+func (n *Note) FillWithNameableKeys(m map[string]string) {
+	nameables.Extract(n.Text, m)
+}
+
+// ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
+func (n *Note) ApplyNameableKeys(m map[string]string) {
+	n.Text = nameables.Apply(n.Text, m)
 }

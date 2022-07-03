@@ -21,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/datafile"
 	"github.com/richardwilkes/gcs/v5/model/gurps/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
+	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/gcs/v5/model/gurps/skill"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
@@ -716,4 +717,50 @@ func (s *Skill) SetTL(tl string) {
 // Enabled returns true if this node is enabled.
 func (s *Skill) Enabled() bool {
 	return true
+}
+
+// FillWithNameableKeys adds any nameable keys found to the provided map.
+func (s *Skill) FillWithNameableKeys(m map[string]string) {
+	nameables.Extract(s.Name, m)
+	nameables.Extract(s.LocalNotes, m)
+	nameables.Extract(s.VTTNotes, m)
+	nameables.Extract(s.Specialization, m)
+	if s.Prereq != nil {
+		s.Prereq.FillWithNameableKeys(m)
+	}
+	if s.TechniqueDefault != nil {
+		s.TechniqueDefault.FillWithNameableKeys(m)
+	}
+	for _, one := range s.Defaults {
+		one.FillWithNameableKeys(m)
+	}
+	for _, one := range s.Features {
+		one.FillWithNameableKeys(m)
+	}
+	for _, one := range s.Weapons {
+		one.FillWithNameableKeys(m)
+	}
+}
+
+// ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
+func (s *Skill) ApplyNameableKeys(m map[string]string) {
+	s.Name = nameables.Apply(s.Name, m)
+	s.LocalNotes = nameables.Apply(s.LocalNotes, m)
+	s.VTTNotes = nameables.Apply(s.VTTNotes, m)
+	s.Specialization = nameables.Apply(s.Specialization, m)
+	if s.Prereq != nil {
+		s.Prereq.ApplyNameableKeys(m)
+	}
+	if s.TechniqueDefault != nil {
+		s.TechniqueDefault.ApplyNameableKeys(m)
+	}
+	for _, one := range s.Defaults {
+		one.ApplyNameableKeys(m)
+	}
+	for _, one := range s.Features {
+		one.ApplyNameableKeys(m)
+	}
+	for _, one := range s.Weapons {
+		one.ApplyNameableKeys(m)
+	}
 }

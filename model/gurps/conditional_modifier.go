@@ -165,3 +165,11 @@ func (m *ConditionalModifier) OwningEntity() *Entity {
 // SetOwningEntity sets the owning entity and configures any sub-components as needed.
 func (m *ConditionalModifier) SetOwningEntity(_ *Entity) {
 }
+
+// FillWithNameableKeys adds any nameable keys found to the provided map.
+func (m *ConditionalModifier) FillWithNameableKeys(_ map[string]string) {
+}
+
+// ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
+func (m *ConditionalModifier) ApplyNameableKeys(_ map[string]string) {
+}

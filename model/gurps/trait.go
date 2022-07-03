@@ -336,11 +336,12 @@ func (a *Trait) TagList() []string {
 	return a.Tags
 }
 
-// FillWithNameableKeys adds any nameable keys found in this Trait to the provided map.
+// FillWithNameableKeys adds any nameable keys found to the provided map.
 func (a *Trait) FillWithNameableKeys(m map[string]string) {
 	nameables.Extract(a.Name, m)
 	nameables.Extract(a.LocalNotes, m)
 	nameables.Extract(a.VTTNotes, m)
+	nameables.Extract(a.UserDesc, m)
 	if a.Prereq != nil {
 		a.Prereq.FillWithNameableKeys(m)
 	}
@@ -356,11 +357,12 @@ func (a *Trait) FillWithNameableKeys(m map[string]string) {
 	}, true, false, a.Modifiers...)
 }
 
-// ApplyNameableKeys replaces any nameable keys found in this Trait with the corresponding values in the provided map.
+// ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
 func (a *Trait) ApplyNameableKeys(m map[string]string) {
 	a.Name = nameables.Apply(a.Name, m)
 	a.LocalNotes = nameables.Apply(a.LocalNotes, m)
 	a.VTTNotes = nameables.Apply(a.VTTNotes, m)
+	a.UserDesc = nameables.Apply(a.UserDesc, m)
 	if a.Prereq != nil {
 		a.Prereq.ApplyNameableKeys(m)
 	}

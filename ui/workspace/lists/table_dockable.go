@@ -445,19 +445,24 @@ func (d *TableDockable[T]) copySelectionToSheet(_ any) {
 		if sheets := PromptForDestination(sheet.OpenSheets()); len(sheets) > 0 {
 			sel := d.table.SelectedRows(true)
 			for _, s := range sheets {
+				var table *unison.Table[*ntable.Node[T]]
 				switch any(sel[0].Data()).(type) {
 				case *gurps.Trait:
-					CopyRowsTo(d.convertTable(s.Traits.Table), sel)
+					table = d.convertTable(s.Traits.Table)
 				case *gurps.Skill:
-					CopyRowsTo(d.convertTable(s.Skills.Table), sel)
+					table = d.convertTable(s.Skills.Table)
 				case *gurps.Spell:
-					CopyRowsTo(d.convertTable(s.Spells.Table), sel)
+					table = d.convertTable(s.Spells.Table)
 				case *gurps.Equipment:
-					CopyRowsTo(d.convertTable(s.CarriedEquipment.Table), sel)
+					table = d.convertTable(s.CarriedEquipment.Table)
 				case *gurps.Note:
-					CopyRowsTo(d.convertTable(s.Notes.Table), sel)
+					table = d.convertTable(s.Notes.Table)
 				default:
 					continue
+				}
+				if table != nil {
+					CopyRowsTo(table, sel)
+					ntable.ProcessNameablesForSelection(table, table.SelectedRows(true))
 				}
 			}
 		}

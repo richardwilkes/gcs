@@ -433,7 +433,7 @@ func ExtendedWeightAdjustedForModifiers(defUnits measure.WeightUnits, qty fxp.In
 	return measure.Weight(base.Mul(qty))
 }
 
-// FillWithNameableKeys adds any nameable keys found in this Trait to the provided map.
+// FillWithNameableKeys adds any nameable keys found to the provided map.
 func (e *Equipment) FillWithNameableKeys(m map[string]string) {
 	nameables.Extract(e.Name, m)
 	nameables.Extract(e.LocalNotes, m)
@@ -453,7 +453,7 @@ func (e *Equipment) FillWithNameableKeys(m map[string]string) {
 	}, true, false, e.Modifiers...)
 }
 
-// ApplyNameableKeys replaces any nameable keys found in this Trait with the corresponding values in the provided map.
+// ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
 func (e *Equipment) ApplyNameableKeys(m map[string]string) {
 	e.Name = nameables.Apply(e.Name, m)
 	e.LocalNotes = nameables.Apply(e.LocalNotes, m)

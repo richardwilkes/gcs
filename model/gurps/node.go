@@ -39,6 +39,8 @@ type Node[T any] interface {
 	Open() bool
 	SetOpen(open bool)
 	CellData(column int, data *CellData)
+	FillWithNameableKeys(m map[string]string)
+	ApplyNameableKeys(m map[string]string)
 }
 
 // RawPointsAdjuster defines methods for nodes that can have their raw points adjusted must implement.

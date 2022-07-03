@@ -12,8 +12,11 @@
 package ntable
 
 import (
+	"time"
+
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -63,4 +66,11 @@ func didDropCallback[T gurps.NodeConstraint[T]](undo *unison.UndoEdit[*TableDrag
 	}
 	undo.AfterData = NewTableDragUndoEditData(from, to)
 	mgr.Add(undo)
+	entityProvider := unison.Ancestor[gurps.EntityProvider](to)
+	if !toolbox.IsNil(entityProvider) && entityProvider.Entity() != nil {
+		sel := to.SelectedRows(true)
+		unison.InvokeTaskAfter(func() {
+			ProcessNameablesForSelection(to, sel)
+		}, time.Millisecond)
+	}
 }
