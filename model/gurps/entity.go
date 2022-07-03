@@ -964,7 +964,7 @@ func (e *Entity) ResolveVariable(variableName string) string {
 			return ""
 		}
 	}
-	return attr.Current().String()
+	return attr.Maximum().String()
 }
 
 // ResolveAttributeDef resolves the given attribute ID to its AttributeDef, or nil.
