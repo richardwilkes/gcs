@@ -32,8 +32,6 @@ func Start(files []string) {
 			jot.FatalIfErr(err)
 			menus.Setup(wnd)
 			workspace.NewWorkspace(wnd)
-			wnd.SetFrameRect(unison.PrimaryDisplay().Usable)
-			wnd.ToFront()
 			workspace.OpenFiles(files)
 		}),
 		unison.OpenFilesCallback(workspace.OpenFiles),

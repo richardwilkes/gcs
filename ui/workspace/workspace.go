@@ -131,12 +131,19 @@ func NewWorkspace(wnd *unison.Window) *Workspace {
 	wnd.ClientData()[workspaceClientDataKey] = w
 	wnd.AllowCloseCallback = w.allowClose
 	wnd.WillCloseCallback = w.willClose
+	global := settings.Global()
+	if global.WorkspaceFrame != nil {
+		wnd.SetFrameRect(*global.WorkspaceFrame)
+	} else {
+		wnd.SetFrameRect(unison.PrimaryDisplay().Usable)
+	}
 	// On some platforms, this needs to be done after a delay... but we do it without the delay, too, so that
 	// well-behaved platforms don't flash
-	w.TopDock.RootDockLayout().SetDividerPosition(settings.Global().LibraryExplorer.DividerPosition)
+	w.TopDock.RootDockLayout().SetDividerPosition(global.LibraryExplorer.DividerPosition)
 	unison.InvokeTaskAfter(func() {
-		w.TopDock.RootDockLayout().SetDividerPosition(settings.Global().LibraryExplorer.DividerPosition)
+		w.TopDock.RootDockLayout().SetDividerPosition(global.LibraryExplorer.DividerPosition)
 	}, time.Millisecond)
+	wnd.ToFront()
 	return w
 }
 
@@ -163,9 +170,11 @@ func (w *Workspace) allowClose() bool {
 }
 
 func (w *Workspace) willClose() {
-	globalSettings := settings.Global()
-	globalSettings.LibraryExplorer.OpenRowKeys = w.Navigator.DisclosedPaths()
-	if err := globalSettings.Save(); err != nil {
+	global := settings.Global()
+	global.LibraryExplorer.OpenRowKeys = w.Navigator.DisclosedPaths()
+	frame := w.Window.FrameRect()
+	global.WorkspaceFrame = &frame
+	if err := global.Save(); err != nil {
 		unison.ErrorDialogWithError(i18n.Text("Unable to save global settings"), err)
 	}
 }

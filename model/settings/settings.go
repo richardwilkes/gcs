@@ -36,12 +36,6 @@ const maxRecentFiles = 20
 
 var global *Settings
 
-// WindowPosition holds a window's last known frame and when the frame's size or position was last altered.
-type WindowPosition struct {
-	Frame       unison.Rect `json:"frame"`
-	LastUpdated jio.Time    `json:"last_updated"`
-}
-
 // NavigatorSettings holds settings for the navigator view.
 type NavigatorSettings struct {
 	DividerPosition float32  `json:"divider_position"`
@@ -50,19 +44,19 @@ type NavigatorSettings struct {
 
 // Settings holds the application settings.
 type Settings struct {
-	LastSeenGCSVersion string                     `json:"last_seen_gcs_version,omitempty"`
-	General            *settings.General          `json:"general,omitempty"`
-	LibrarySet         library.Libraries          `json:"libraries,omitempty"`
-	LibraryExplorer    NavigatorSettings          `json:"library_explorer"`
-	RecentFiles        []string                   `json:"recent_files,omitempty"`
-	LastDirs           map[string]string          `json:"last_dirs,omitempty"`
-	PageRefs           PageRefs                   `json:"page_refs,omitempty"`
-	KeyBindings        KeyBindings                `json:"key_bindings,omitempty"`
-	WindowPositions    map[string]*WindowPosition `json:"window_positions,omitempty"`
-	Colors             theme.Colors               `json:"colors"`
-	Fonts              theme.Fonts                `json:"fonts"`
-	QuickExports       *gurps.QuickExports        `json:"quick_exports,omitempty"`
-	Sheet              *gurps.SheetSettings       `json:"sheet_settings,omitempty"`
+	LastSeenGCSVersion string               `json:"last_seen_gcs_version,omitempty"`
+	General            *settings.General    `json:"general,omitempty"`
+	LibrarySet         library.Libraries    `json:"libraries,omitempty"`
+	LibraryExplorer    NavigatorSettings    `json:"library_explorer"`
+	RecentFiles        []string             `json:"recent_files,omitempty"`
+	LastDirs           map[string]string    `json:"last_dirs,omitempty"`
+	PageRefs           PageRefs             `json:"page_refs,omitempty"`
+	KeyBindings        KeyBindings          `json:"key_bindings,omitempty"`
+	WorkspaceFrame     *unison.Rect         `json:"workspace_frame,omitempty"`
+	Colors             theme.Colors         `json:"colors"`
+	Fonts              theme.Fonts          `json:"fonts"`
+	QuickExports       *gurps.QuickExports  `json:"quick_exports,omitempty"`
+	Sheet              *gurps.SheetSettings `json:"sheet_settings,omitempty"`
 }
 
 // Default returns new default settings.
@@ -73,7 +67,6 @@ func Default() *Settings {
 		LibrarySet:         library.NewLibraries(),
 		LibraryExplorer:    NavigatorSettings{DividerPosition: 300},
 		LastDirs:           make(map[string]string),
-		WindowPositions:    make(map[string]*WindowPosition),
 		QuickExports:       gurps.NewQuickExports(),
 		Sheet:              gurps.FactorySheetSettings(),
 	}
@@ -112,9 +105,6 @@ func (s *Settings) EnsureValidity() {
 	}
 	if s.LastDirs == nil {
 		s.LastDirs = make(map[string]string)
-	}
-	if s.WindowPositions == nil {
-		s.WindowPositions = make(map[string]*WindowPosition)
 	}
 	if s.QuickExports == nil {
 		s.QuickExports = gurps.NewQuickExports()
