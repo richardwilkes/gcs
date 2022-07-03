@@ -96,6 +96,21 @@ func ActiveSheet() *Sheet {
 	return nil
 }
 
+// OpenSheets returns the currently open sheets.
+func OpenSheets() []*Sheet {
+	var sheets []*Sheet
+	ws := workspace.FromWindowOrAny(unison.ActiveWindow())
+	ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
+		for _, one := range dc.Dockables() {
+			if sheet, ok := one.(*Sheet); ok {
+				sheets = append(sheets, sheet)
+			}
+		}
+		return false
+	})
+	return sheets
+}
+
 // NewSheetFromFile loads a GURPS character sheet file and creates a new unison.Dockable for it.
 func NewSheetFromFile(filePath string) (unison.Dockable, error) {
 	entity, err := gurps.NewEntityFromFile(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath))
@@ -187,11 +202,10 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 		s.OtherEquipment)
 	s.installNewItemCmdHandlers(constants.NewNoteItemID, constants.NewNoteContainerItemID, s.Notes)
 	s.InstallCmdHandlers(constants.AddNaturalAttacksItemID, unison.AlwaysEnabled, func(_ any) {
-		ntable.InsertItem[*gurps.Trait](s, s.Traits.table, gurps.NewNaturalAttacks(s.entity, nil),
-			s.entity.TraitList, s.entity.SetTraitList,
+		ntable.InsertItems[*gurps.Trait](s, s.Traits.Table, s.entity.TraitList, s.entity.SetTraitList,
 			func(_ *unison.Table[*ntable.Node[*gurps.Trait]]) []*ntable.Node[*gurps.Trait] {
 				return s.Traits.provider.RootRows()
-			})
+			}, gurps.NewNaturalAttacks(s.entity, nil))
 	})
 
 	return s
@@ -485,7 +499,7 @@ func (s *Sheet) createLists() {
 				}
 				rowPanel.AddChild(s.Reactions)
 				if c == refocusOnKey {
-					refocusOn = s.Reactions.table
+					refocusOn = s.Reactions.Table
 				}
 			case gurps.BlockLayoutConditionalModifiersKey:
 				if s.ConditionalModifiers == nil {
@@ -495,7 +509,7 @@ func (s *Sheet) createLists() {
 				}
 				rowPanel.AddChild(s.ConditionalModifiers)
 				if c == refocusOnKey {
-					refocusOn = s.ConditionalModifiers.table
+					refocusOn = s.ConditionalModifiers.Table
 				}
 			case gurps.BlockLayoutMeleeKey:
 				if s.MeleeWeapons == nil {
@@ -505,7 +519,7 @@ func (s *Sheet) createLists() {
 				}
 				rowPanel.AddChild(s.MeleeWeapons)
 				if c == refocusOnKey {
-					refocusOn = s.MeleeWeapons.table
+					refocusOn = s.MeleeWeapons.Table
 				}
 			case gurps.BlockLayoutRangedKey:
 				if s.RangedWeapons == nil {
@@ -515,7 +529,7 @@ func (s *Sheet) createLists() {
 				}
 				rowPanel.AddChild(s.RangedWeapons)
 				if c == refocusOnKey {
-					refocusOn = s.RangedWeapons.table
+					refocusOn = s.RangedWeapons.Table
 				}
 			case gurps.BlockLayoutTraitsKey:
 				if s.Traits == nil {
@@ -525,7 +539,7 @@ func (s *Sheet) createLists() {
 				}
 				rowPanel.AddChild(s.Traits)
 				if c == refocusOnKey {
-					refocusOn = s.Traits.table
+					refocusOn = s.Traits.Table
 				}
 			case gurps.BlockLayoutSkillsKey:
 				if s.Skills == nil {
@@ -535,7 +549,7 @@ func (s *Sheet) createLists() {
 				}
 				rowPanel.AddChild(s.Skills)
 				if c == refocusOnKey {
-					refocusOn = s.Skills.table
+					refocusOn = s.Skills.Table
 				}
 			case gurps.BlockLayoutSpellsKey:
 				if s.Spells == nil {
@@ -545,7 +559,7 @@ func (s *Sheet) createLists() {
 				}
 				rowPanel.AddChild(s.Spells)
 				if c == refocusOnKey {
-					refocusOn = s.Spells.table
+					refocusOn = s.Spells.Table
 				}
 			case gurps.BlockLayoutEquipmentKey:
 				if s.CarriedEquipment == nil {
@@ -555,7 +569,7 @@ func (s *Sheet) createLists() {
 				}
 				rowPanel.AddChild(s.CarriedEquipment)
 				if c == refocusOnKey {
-					refocusOn = s.CarriedEquipment.table
+					refocusOn = s.CarriedEquipment.Table
 				}
 			case gurps.BlockLayoutOtherEquipmentKey:
 				if s.OtherEquipment == nil {
@@ -565,7 +579,7 @@ func (s *Sheet) createLists() {
 				}
 				rowPanel.AddChild(s.OtherEquipment)
 				if c == refocusOnKey {
-					refocusOn = s.OtherEquipment.table
+					refocusOn = s.OtherEquipment.Table
 				}
 			case gurps.BlockLayoutNotesKey:
 				if s.Notes == nil {
@@ -575,7 +589,7 @@ func (s *Sheet) createLists() {
 				}
 				rowPanel.AddChild(s.Notes)
 				if c == refocusOnKey {
-					refocusOn = s.Notes.table
+					refocusOn = s.Notes.Table
 				}
 			}
 		}

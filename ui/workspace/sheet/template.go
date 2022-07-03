@@ -59,6 +59,21 @@ type Template struct {
 	needsSaveAsPrompt bool
 }
 
+// OpenTemplates returns the currently open templates.
+func OpenTemplates() []*Template {
+	var templates []*Template
+	ws := workspace.FromWindowOrAny(unison.ActiveWindow())
+	ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
+		for _, one := range dc.Dockables() {
+			if template, ok := one.(*Template); ok {
+				templates = append(templates, template)
+			}
+		}
+		return false
+	})
+	return templates
+}
+
 // NewTemplateFromFile loads a GURPS template file and creates a new unison.Dockable for it.
 func NewTemplateFromFile(filePath string) (unison.Dockable, error) {
 	template, err := gurps.NewTemplateFromFile(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath))
@@ -136,11 +151,10 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 		constants.NewCarriedEquipmentContainerItemID, d.Equipment)
 	d.installNewItemCmdHandlers(constants.NewNoteItemID, constants.NewNoteContainerItemID, d.Notes)
 	d.InstallCmdHandlers(constants.AddNaturalAttacksItemID, unison.AlwaysEnabled, func(_ any) {
-		ntable.InsertItem[*gurps.Trait](d, d.Traits.table, gurps.NewNaturalAttacks(nil, nil),
-			d.template.TraitList, d.template.SetTraitList,
+		ntable.InsertItems[*gurps.Trait](d, d.Traits.Table, d.template.TraitList, d.template.SetTraitList,
 			func(_ *unison.Table[*ntable.Node[*gurps.Trait]]) []*ntable.Node[*gurps.Trait] {
 				return d.Traits.provider.RootRows()
-			})
+			}, gurps.NewNaturalAttacks(nil, nil))
 	})
 
 	return d
@@ -301,7 +315,7 @@ func (d *Template) createLists() {
 				}
 				rowPanel.AddChild(d.Traits)
 				if c == refocusOnKey {
-					refocusOn = d.Traits.table
+					refocusOn = d.Traits.Table
 				}
 			case gurps.BlockLayoutSkillsKey:
 				if d.Skills == nil {
@@ -311,7 +325,7 @@ func (d *Template) createLists() {
 				}
 				rowPanel.AddChild(d.Skills)
 				if c == refocusOnKey {
-					refocusOn = d.Skills.table
+					refocusOn = d.Skills.Table
 				}
 			case gurps.BlockLayoutSpellsKey:
 				if d.Spells == nil {
@@ -321,7 +335,7 @@ func (d *Template) createLists() {
 				}
 				rowPanel.AddChild(d.Spells)
 				if c == refocusOnKey {
-					refocusOn = d.Spells.table
+					refocusOn = d.Spells.Table
 				}
 			case gurps.BlockLayoutEquipmentKey:
 				if d.Equipment == nil {
@@ -331,7 +345,7 @@ func (d *Template) createLists() {
 				}
 				rowPanel.AddChild(d.Equipment)
 				if c == refocusOnKey {
-					refocusOn = d.Equipment.table
+					refocusOn = d.Equipment.Table
 				}
 			case gurps.BlockLayoutNotesKey:
 				if d.Notes == nil {
@@ -341,7 +355,7 @@ func (d *Template) createLists() {
 				}
 				rowPanel.AddChild(d.Notes)
 				if c == refocusOnKey {
-					refocusOn = d.Notes.table
+					refocusOn = d.Notes.Table
 				}
 			}
 		}

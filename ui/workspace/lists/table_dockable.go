@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/constants"
 	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -29,10 +30,13 @@ import (
 	"github.com/richardwilkes/gcs/v5/ui/widget/ntable"
 	"github.com/richardwilkes/gcs/v5/ui/workspace"
 	"github.com/richardwilkes/gcs/v5/ui/workspace/editors"
+	"github.com/richardwilkes/gcs/v5/ui/workspace/sheet"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
+	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
+	"golang.org/x/exp/slices"
 )
 
 var (
@@ -200,6 +204,8 @@ func NewTableDockable[T gurps.NodeConstraint[T]](filePath, extension string, pro
 	d.InstallCmdHandlers(constants.DuplicateItemID,
 		func(_ any) bool { return d.table.HasSelection() },
 		func(_ any) { ntable.DuplicateSelection(d.table) })
+	d.InstallCmdHandlers(constants.CopyToSheetItemID, d.canCopySelectionToSheet, d.copySelectionToSheet)
+	d.InstallCmdHandlers(constants.CopyToTemplateItemID, d.canCopySelectionToTemplate, d.copySelectionToTemplate)
 	for _, id := range canCreateIDs {
 		variant := ntable.ItemVariant(-1)
 		switch {
@@ -428,4 +434,157 @@ func (d *TableDockable[T]) crc64() uint64 {
 		return 0
 	}
 	return crc.Bytes(0, buffer.Bytes())
+}
+
+func (d *TableDockable[T]) canCopySelectionToSheet(_ any) bool {
+	return d.table.HasSelection() && len(sheet.OpenSheets()) > 0
+}
+
+func (d *TableDockable[T]) copySelectionToSheet(_ any) {
+	if d.table.HasSelection() {
+		if sheets := PromptForDestination(sheet.OpenSheets()); len(sheets) > 0 {
+			sel := d.table.SelectedRows(true)
+			for _, s := range sheets {
+				switch any(sel[0].Data()).(type) {
+				case *gurps.Trait:
+					CopyRowsTo(d.convertTable(s.Traits.Table), sel)
+				case *gurps.Skill:
+					CopyRowsTo(d.convertTable(s.Skills.Table), sel)
+				case *gurps.Spell:
+					CopyRowsTo(d.convertTable(s.Spells.Table), sel)
+				case *gurps.Equipment:
+					CopyRowsTo(d.convertTable(s.CarriedEquipment.Table), sel)
+				case *gurps.Note:
+					CopyRowsTo(d.convertTable(s.Notes.Table), sel)
+				default:
+					continue
+				}
+			}
+		}
+	}
+}
+
+func (d *TableDockable[T]) convertTable(table any) *unison.Table[*ntable.Node[T]] {
+	// This is here just to get around limitations in the way Go generics behave
+	if t, ok := table.(*unison.Table[*ntable.Node[T]]); ok {
+		return t
+	}
+	return nil
+}
+
+func (d *TableDockable[T]) copySelectionToTemplate(_ any) {
+	if d.table.HasSelection() {
+		if templates := PromptForDestination(sheet.OpenTemplates()); len(templates) > 0 {
+			sel := d.table.SelectedRows(true)
+			for _, t := range templates {
+				switch any(sel[0].Data()).(type) {
+				case *gurps.Trait:
+					CopyRowsTo(d.convertTable(t.Traits.Table), sel)
+				case *gurps.Skill:
+					CopyRowsTo(d.convertTable(t.Skills.Table), sel)
+				case *gurps.Spell:
+					CopyRowsTo(d.convertTable(t.Spells.Table), sel)
+				case *gurps.Equipment:
+					CopyRowsTo(d.convertTable(t.Equipment.Table), sel)
+				case *gurps.Note:
+					CopyRowsTo(d.convertTable(t.Notes.Table), sel)
+				}
+			}
+		}
+	}
+}
+
+func (d *TableDockable[T]) canCopySelectionToTemplate(_ any) bool {
+	return d.table.HasSelection() && len(sheet.OpenTemplates()) > 0
+}
+
+// CopyRowsTo copies the provided rows to the target table.
+func CopyRowsTo[T gurps.NodeConstraint[T]](table *unison.Table[*ntable.Node[T]], rows []*ntable.Node[T]) {
+	if table == nil {
+		return
+	}
+	rows = slices.Clone(rows)
+	for j, row := range rows {
+		rows[j] = row.CloneForTarget(table, nil)
+	}
+	var undo *unison.UndoEdit[*ntable.TableUndoEditData[T]]
+	mgr := unison.UndoManagerFor(table)
+	if mgr != nil {
+		undo = &unison.UndoEdit[*ntable.TableUndoEditData[T]]{
+			ID:         unison.NextUndoID(),
+			EditName:   fmt.Sprintf(i18n.Text("Insert %s"), rows[0].Data().Kind()),
+			UndoFunc:   func(e *unison.UndoEdit[*ntable.TableUndoEditData[T]]) { e.BeforeData.Apply() },
+			RedoFunc:   func(e *unison.UndoEdit[*ntable.TableUndoEditData[T]]) { e.AfterData.Apply() },
+			AbsorbFunc: func(e *unison.UndoEdit[*ntable.TableUndoEditData[T]], other unison.Undoable) bool { return false },
+			BeforeData: ntable.NewTableUndoEditData(table),
+		}
+	}
+	table.SetRootRows(append(slices.Clone(table.RootRows()), rows...))
+	selMap := make(map[uuid.UUID]bool, len(rows))
+	for _, row := range rows {
+		selMap[row.UUID()] = true
+	}
+	table.SetSelectionMap(selMap)
+	table.ScrollRowCellIntoView(table.LastSelectedRowIndex(), 0)
+	table.ScrollRowCellIntoView(table.FirstSelectedRowIndex(), 0)
+	if mgr != nil && undo != nil {
+		undo.AfterData = ntable.NewTableUndoEditData(table)
+		mgr.Add(undo)
+	}
+	unison.Ancestor[widget.Rebuildable](table).Rebuild(true)
+}
+
+// PromptForDestination puts up a modal dialog to choose one or more destinations if choices contains more than one
+// choice. Return an empty list if canceled or there are no selections made.
+func PromptForDestination[T workspace.FileBackedDockable](choices []T) []T {
+	if len(choices) < 2 {
+		return choices
+	}
+	slices.SortFunc(choices, func(a, b T) bool {
+		ta := a.Title()
+		tb := b.Title()
+		if ta == tb {
+			return txt.NaturalLess(a.BackingFilePath(), b.BackingFilePath(), true)
+		}
+		return txt.NaturalLess(ta, tb, true)
+	})
+	list := unison.NewList[T]()
+	list.SetAllowMultipleSelection(true)
+	list.DoubleClickCallback = func() {
+		if dialog, ok := list.Window().ClientData()[unison.DialogClientDataKey].(*unison.Dialog); ok {
+			dialog.Button(unison.ModalResponseOK).Click()
+		}
+	}
+	list.Append(choices...)
+	scroll := unison.NewScrollPanel()
+	scroll.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
+	scroll.SetContent(list, unison.FillBehavior, unison.FillBehavior)
+	scroll.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		VAlign: unison.FillAlignment,
+		HGrab:  true,
+		VGrab:  true,
+	})
+	panel := unison.NewPanel()
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  1,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+		HAlign:   unison.FillAlignment,
+		VAlign:   unison.FillAlignment,
+	})
+	label := unison.NewLabel()
+	label.Text = i18n.Text("Choose one or more destinations:")
+	panel.AddChild(label)
+	panel.AddChild(scroll)
+	if unison.QuestionDialogWithPanel(panel) != unison.ModalResponseOK || list.Selection.Count() == 0 {
+		return nil
+	}
+	result := make([]T, 0, list.Selection.Count())
+	i := list.Selection.FirstSet()
+	for i != -1 {
+		result = append(result, choices[i])
+		i = list.Selection.NextSet(i + 1)
+	}
+	return result
 }
