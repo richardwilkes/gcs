@@ -176,8 +176,8 @@ func (p *skillsProvider) CreateItem(owner widget.Rebuildable, table *unison.Tabl
 	default:
 		jot.Fatal(1, "unhandled variant")
 	}
-	ntable.InsertItem[*gurps.Skill](owner, table, item, p.provider.SkillList, p.provider.SetSkillList,
-		func(_ *unison.Table[*ntable.Node[*gurps.Skill]]) []*ntable.Node[*gurps.Skill] { return p.RootRows() })
+	ntable.InsertItems[*gurps.Skill](owner, table, p.provider.SkillList, p.provider.SetSkillList,
+		func(_ *unison.Table[*ntable.Node[*gurps.Skill]]) []*ntable.Node[*gurps.Skill] { return p.RootRows() }, item)
 	EditSkill(owner, item)
 }
 

@@ -296,7 +296,7 @@ func (n *Node[T]) createToggleCell(c *gurps.CellData, foreground unison.Ink) uni
 	return check
 }
 
-func handleCheck(data interface{}, check unison.Paneler, checked bool) {
+func handleCheck(data any, check unison.Paneler, checked bool) {
 	switch item := data.(type) {
 	case *gurps.Equipment:
 		item.Equipped = checked
@@ -499,14 +499,17 @@ func rowIndex[T gurps.NodeConstraint[T]](id uuid.UUID, startIndex int, rows []*N
 	return startIndex, -1
 }
 
-// InsertItem inserts an item into a table.
-func InsertItem[T gurps.NodeConstraint[T]](owner widget.Rebuildable, table *unison.Table[*Node[T]], item T, topList func() []T, setTopList func([]T), rowData func(table *unison.Table[*Node[T]]) []*Node[T]) {
+// InsertItems into a table.
+func InsertItems[T gurps.NodeConstraint[T]](owner widget.Rebuildable, table *unison.Table[*Node[T]], topList func() []T, setTopList func([]T), rowData func(table *unison.Table[*Node[T]]) []*Node[T], items ...T) {
+	if len(items) == 0 {
+		return
+	}
 	var undo *unison.UndoEdit[*TableUndoEditData[T]]
 	mgr := unison.UndoManagerFor(table)
 	if mgr != nil {
 		undo = &unison.UndoEdit[*TableUndoEditData[T]]{
 			ID:         unison.NextUndoID(),
-			EditName:   fmt.Sprintf(i18n.Text("New %s"), item.Kind()),
+			EditName:   fmt.Sprintf(i18n.Text("Insert %s"), items[0].Kind()),
 			UndoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.BeforeData.Apply() },
 			RedoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.AfterData.Apply() },
 			AbsorbFunc: func(e *unison.UndoEdit[*TableUndoEditData[T]], other unison.Undoable) bool { return false },
@@ -520,40 +523,50 @@ func InsertItem[T gurps.NodeConstraint[T]](owner widget.Rebuildable, table *unis
 		if target = row.Data(); target != zero {
 			if row.CanHaveChildren() {
 				// Target is container, append to end of that container
-				item.SetParent(target)
-				target.SetChildren(append(target.NodeChildren(), item))
+				setParents(items, target)
+				target.SetChildren(append(target.NodeChildren(), items...))
 			} else {
 				// Target isn't a container. If it has a parent, insert after the target within that parent.
 				if parent := row.Parent().Data(); parent != zero {
-					item.SetParent(parent)
+					setParents(items, parent)
 					children := parent.NodeChildren()
-					parent.SetChildren(slices.Insert(children, slices.Index(children, target)+1, item))
+					parent.SetChildren(slices.Insert(children, slices.Index(children, target)+1, items...))
 				} else {
 					// Otherwise, insert after the target within the top-level list.
-					item.SetParent(zero)
+					setParents(items, zero)
 					list := topList()
-					setTopList(slices.Insert(list, slices.Index(list, target)+1, item))
+					setTopList(slices.Insert(list, slices.Index(list, target)+1, items...))
 				}
 			}
 		}
 	}
 	if target == zero {
 		// There was no selection, so append to the end of the top-level list.
-		item.SetParent(zero)
-		setTopList(append(topList(), item))
+		setParents(items, zero)
+		setTopList(append(topList(), items...))
 	}
 	widget.MarkModified(table)
 	table.SetRootRows(rowData(table))
 	table.ValidateScrollRoot()
 	table.RequestFocus()
-	index := FindRowIndexByID(table, item.UUID())
-	table.SelectByIndex(index)
-	table.ScrollRowCellIntoView(index, 0)
+	selMap := make(map[uuid.UUID]bool)
+	for _, item := range items {
+		selMap[item.UUID()] = true
+	}
+	table.SetSelectionMap(selMap)
+	table.ScrollRowCellIntoView(table.LastSelectedRowIndex(), 0)
+	table.ScrollRowCellIntoView(table.FirstSelectedRowIndex(), 0)
 	if mgr != nil && undo != nil {
 		undo.AfterData = NewTableUndoEditData(table)
 		mgr.Add(undo)
 	}
 	owner.Rebuild(true)
+}
+
+func setParents[T gurps.NodeConstraint[T]](items []T, parent T) {
+	for _, item := range items {
+		item.SetParent(parent)
+	}
 }
 
 // ExtractNodeDataFromList returns the underlying node data.

@@ -58,7 +58,7 @@ func (a *rawPointsAdjuster[T]) Apply() {
 
 func canAdjustRawPoints[T gurps.NodeConstraint[T]](table *unison.Table[*ntable.Node[T]], increment bool) bool {
 	for _, row := range table.SelectedRows(false) {
-		if provider, ok := interface{}(row.Data()).(gurps.RawPointsAdjuster[T]); ok && !provider.Container() {
+		if provider, ok := any(row.Data()).(gurps.RawPointsAdjuster[T]); ok && !provider.Container() {
 			if increment || provider.RawPoints() > 0 {
 				return true
 			}
@@ -71,7 +71,7 @@ func adjustRawPoints[T gurps.NodeConstraint[T]](owner widget.Rebuildable, table 
 	before := &adjustRawPointsList[T]{Owner: owner}
 	after := &adjustRawPointsList[T]{Owner: owner}
 	for _, row := range table.SelectedRows(false) {
-		if provider, ok := interface{}(row.Data()).(gurps.RawPointsAdjuster[T]); ok {
+		if provider, ok := any(row.Data()).(gurps.RawPointsAdjuster[T]); ok {
 			if increment || provider.RawPoints() > 0 {
 				before.List = append(before.List, newRawPointsAdjuster[T](provider))
 				rawPts := provider.RawPoints()

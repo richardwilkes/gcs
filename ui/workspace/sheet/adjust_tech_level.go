@@ -58,7 +58,7 @@ func (a *techLevelAdjuster[T]) Apply() {
 
 func canAdjustTechLevel[T gurps.NodeConstraint[T]](table *unison.Table[*ntable.Node[T]], amount fxp.Int) bool {
 	for _, row := range table.SelectedRows(false) {
-		if provider, ok := interface{}(row.Data()).(gurps.TechLevelProvider[T]); ok {
+		if provider, ok := any(row.Data()).(gurps.TechLevelProvider[T]); ok {
 			if _, changed := gurps.AdjustTechLevel(provider.TL(), amount); changed {
 				return true
 			}
@@ -71,7 +71,7 @@ func adjustTechLevel[T gurps.NodeConstraint[T]](owner widget.Rebuildable, table 
 	before := &adjustTechLevelList[T]{Owner: owner}
 	after := &adjustTechLevelList[T]{Owner: owner}
 	for _, row := range table.SelectedRows(false) {
-		if provider, ok := interface{}(row.Data()).(gurps.TechLevelProvider[T]); ok {
+		if provider, ok := any(row.Data()).(gurps.TechLevelProvider[T]); ok {
 			if tl, changed := gurps.AdjustTechLevel(provider.TL(), amount); changed {
 				before.List = append(before.List, newTechLevelAdjuster[T](provider))
 				provider.SetTL(tl)

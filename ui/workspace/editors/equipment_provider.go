@@ -245,10 +245,10 @@ func (p *equipmentProvider) CreateItem(owner widget.Rebuildable, table *unison.T
 		setTopListFunc = p.provider.SetCarriedEquipmentList
 	}
 	item := gurps.NewEquipment(p.Entity(), nil, variant == ntable.ContainerItemVariant)
-	ntable.InsertItem[*gurps.Equipment](owner, table, item, topListFunc, setTopListFunc,
+	ntable.InsertItems[*gurps.Equipment](owner, table, topListFunc, setTopListFunc,
 		func(_ *unison.Table[*ntable.Node[*gurps.Equipment]]) []*ntable.Node[*gurps.Equipment] {
 			return p.RootRows()
-		})
+		}, item)
 	EditEquipment(owner, item, p.carried)
 }
 

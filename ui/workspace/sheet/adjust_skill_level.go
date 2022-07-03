@@ -21,7 +21,7 @@ import (
 
 func canAdjustSkillLevel[T gurps.NodeConstraint[T]](table *unison.Table[*ntable.Node[T]], increment bool) bool {
 	for _, row := range table.SelectedRows(false) {
-		if provider, ok := interface{}(row.Data()).(gurps.SkillAdjustmentProvider[T]); ok && !provider.Container() {
+		if provider, ok := any(row.Data()).(gurps.SkillAdjustmentProvider[T]); ok && !provider.Container() {
 			if increment || provider.RawPoints() > 0 {
 				return true
 			}
@@ -34,7 +34,7 @@ func adjustSkillLevel[T gurps.NodeConstraint[T]](owner widget.Rebuildable, table
 	before := &adjustRawPointsList[T]{Owner: owner}
 	after := &adjustRawPointsList[T]{Owner: owner}
 	for _, row := range table.SelectedRows(false) {
-		if provider, ok := interface{}(row.Data()).(gurps.SkillAdjustmentProvider[T]); ok {
+		if provider, ok := any(row.Data()).(gurps.SkillAdjustmentProvider[T]); ok {
 			if increment || provider.RawPoints() > 0 {
 				before.List = append(before.List, newRawPointsAdjuster[T](provider))
 				if increment {

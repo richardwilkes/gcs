@@ -223,10 +223,11 @@ func (p *weaponsProvider) OpenEditor(owner widget.Rebuildable, table *unison.Tab
 func (p *weaponsProvider) CreateItem(owner widget.Rebuildable, table *unison.Table[*ntable.Node[*gurps.Weapon]], _ ntable.ItemVariant) {
 	if !p.forPage {
 		wpn := gurps.NewWeapon(p.provider.WeaponOwner(), p.weaponType)
-		ntable.InsertItem[*gurps.Weapon](owner, table, wpn,
+		ntable.InsertItems[*gurps.Weapon](owner, table,
 			func() []*gurps.Weapon { return p.provider.Weapons(p.weaponType) },
 			func(list []*gurps.Weapon) { p.provider.SetWeapons(p.weaponType, list) },
-			func(_ *unison.Table[*ntable.Node[*gurps.Weapon]]) []*ntable.Node[*gurps.Weapon] { return p.RootRows() })
+			func(_ *unison.Table[*ntable.Node[*gurps.Weapon]]) []*ntable.Node[*gurps.Weapon] { return p.RootRows() },
+			wpn)
 		EditWeapon(owner, wpn)
 	}
 }

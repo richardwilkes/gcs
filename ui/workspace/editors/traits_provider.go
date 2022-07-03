@@ -149,8 +149,8 @@ func (p *traitsProvider) OpenEditor(owner widget.Rebuildable, table *unison.Tabl
 
 func (p *traitsProvider) CreateItem(owner widget.Rebuildable, table *unison.Table[*ntable.Node[*gurps.Trait]], variant ntable.ItemVariant) {
 	item := gurps.NewTrait(p.Entity(), nil, variant == ntable.ContainerItemVariant)
-	ntable.InsertItem[*gurps.Trait](owner, table, item, p.provider.TraitList, p.provider.SetTraitList,
-		func(_ *unison.Table[*ntable.Node[*gurps.Trait]]) []*ntable.Node[*gurps.Trait] { return p.RootRows() })
+	ntable.InsertItems[*gurps.Trait](owner, table, p.provider.TraitList, p.provider.SetTraitList,
+		func(_ *unison.Table[*ntable.Node[*gurps.Trait]]) []*ntable.Node[*gurps.Trait] { return p.RootRows() }, item)
 	EditTrait(owner, item)
 }
 

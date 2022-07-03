@@ -203,8 +203,8 @@ func (p *spellsProvider) CreateItem(owner widget.Rebuildable, table *unison.Tabl
 	default:
 		jot.Fatal(1, "unhandled variant")
 	}
-	ntable.InsertItem[*gurps.Spell](owner, table, item, p.provider.SpellList, p.provider.SetSpellList,
-		func(_ *unison.Table[*ntable.Node[*gurps.Spell]]) []*ntable.Node[*gurps.Spell] { return p.RootRows() })
+	ntable.InsertItems[*gurps.Spell](owner, table, p.provider.SpellList, p.provider.SetSpellList,
+		func(_ *unison.Table[*ntable.Node[*gurps.Spell]]) []*ntable.Node[*gurps.Spell] { return p.RootRows() }, item)
 	EditSpell(owner, item)
 }
 

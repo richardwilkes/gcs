@@ -161,11 +161,11 @@ func (p *eqpModProvider) OpenEditor(owner widget.Rebuildable, table *unison.Tabl
 
 func (p *eqpModProvider) CreateItem(owner widget.Rebuildable, table *unison.Table[*ntable.Node[*gurps.EquipmentModifier]], variant ntable.ItemVariant) {
 	item := gurps.NewEquipmentModifier(p.Entity(), nil, variant == ntable.ContainerItemVariant)
-	ntable.InsertItem[*gurps.EquipmentModifier](owner, table, item, p.provider.EquipmentModifierList,
+	ntable.InsertItems[*gurps.EquipmentModifier](owner, table, p.provider.EquipmentModifierList,
 		p.provider.SetEquipmentModifierList,
 		func(_ *unison.Table[*ntable.Node[*gurps.EquipmentModifier]]) []*ntable.Node[*gurps.EquipmentModifier] {
 			return p.RootRows()
-		})
+		}, item)
 	EditEquipmentModifier(owner, item)
 }
 
