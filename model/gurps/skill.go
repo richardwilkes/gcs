@@ -605,6 +605,17 @@ func (s *Skill) UpdateLevel() bool {
 	saved := s.LevelData
 	s.DefaultedFrom = s.bestDefaultWithPoints(nil)
 	s.LevelData = s.CalculateLevel()
+	if s.DefaultedFrom != nil {
+		// If we used a default, verify that we actually needed to
+		def := s.DefaultedFrom
+		previous := s.LevelData
+		s.DefaultedFrom = nil
+		s.LevelData = s.CalculateLevel()
+		if s.LevelData.Level < previous.Level {
+			s.DefaultedFrom = def
+			s.LevelData = previous
+		}
+	}
 	return saved != s.LevelData
 }
 
@@ -639,7 +650,7 @@ func (s *Skill) bestDefault(excluded *SkillDefault) *SkillDefault {
 	excludes[s.String()] = true
 	var bestDef *SkillDefault
 	best := fxp.Min
-	for _, def := range s.Defaults {
+	for _, def := range s.resolveToSpecificDefaults() {
 		// For skill-based defaults, prune out any that already use a default that we are involved with
 		if def.Equivalent(excluded) || s.inDefaultChain(def, make(map[*Skill]bool)) {
 			continue
@@ -664,20 +675,35 @@ func (s *Skill) inDefaultChain(def *SkillDefault, lookedAt map[*Skill]bool) bool
 	if s.Entity == nil || def == nil || !def.SkillBased() {
 		return false
 	}
-	hadOne := false
 	for _, one := range s.Entity.SkillNamed(def.Name, def.Specialization, true, nil) {
 		if one == s {
 			return true
 		}
-		if _, has := lookedAt[one]; !has {
+		if !lookedAt[one] {
 			lookedAt[one] = true
 			if s.inDefaultChain(one.DefaultedFrom, lookedAt) {
 				return true
 			}
 		}
-		hadOne = true
 	}
-	return !hadOne
+	return false
+}
+
+func (s *Skill) resolveToSpecificDefaults() []*SkillDefault {
+	result := make([]*SkillDefault, 0, len(s.Defaults))
+	for _, def := range s.Defaults {
+		if s.Entity == nil || def == nil || !def.SkillBased() {
+			result = append(result, def)
+		} else {
+			for _, one := range s.Entity.SkillNamed(def.Name, def.Specialization, true,
+				map[string]bool{s.String(): true}) {
+				local := *def
+				local.Specialization = one.Specialization
+				result = append(result, &local)
+			}
+		}
+	}
+	return result
 }
 
 // TechniqueSatisfied returns true if the Technique is satisfied.
