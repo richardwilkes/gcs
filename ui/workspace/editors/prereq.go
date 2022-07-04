@@ -428,7 +428,7 @@ func (p *prereqPanel) createSpellPrereqPanel(depth int, pr *gurps.SpellPrereq) *
 	second := unison.NewPanel()
 	second.SetLayoutData(&unison.FlexLayoutData{HSpan: columns - 1})
 	subTypePopup := addPopup[spell.ComparisonType](second, spell.AllComparisonType, &pr.SubType)
-	popup, field := addStringCriteriaPanel(second, "", i18n.Text("Spell Qualifier"), &pr.QualifierCriteria, 1, false)
+	popup, field := addStringCriteriaPanel(second, "", "", i18n.Text("Spell Qualifier"), &pr.QualifierCriteria, 1, false)
 	savedCallback := subTypePopup.SelectionCallback
 	subTypePopup.SelectionCallback = func(index int, item spell.ComparisonType) {
 		savedCallback(index, item)

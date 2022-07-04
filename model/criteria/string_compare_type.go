@@ -82,6 +82,22 @@ func (s StringCompareType) String() string {
 	}
 }
 
+// AltString provides a variant of String() for the not cases.
+func (s StringCompareType) AltString() string {
+	switch s {
+	case IsNot:
+		return i18n.Text("are not")
+	case DoesNotContain:
+		return i18n.Text("do not contain")
+	case DoesNotStartWith:
+		return i18n.Text("do not start with")
+	case DoesNotEndWith:
+		return i18n.Text("do not end with")
+	default:
+		return s.String()
+	}
+}
+
 // Describe returns a description of this StringCompareType using a qualifier.
 func (s StringCompareType) Describe(qualifier string) string {
 	v := s.EnsureValid()
@@ -128,10 +144,14 @@ func ExtractStringCompareTypeIndex(str string) int {
 }
 
 // PrefixedStringCompareTypeChoices returns the set of StringCompareType choices as strings with a prefix.
-func PrefixedStringCompareTypeChoices(prefix string) []string {
+func PrefixedStringCompareTypeChoices(prefix, notPrefix string) []string {
 	choices := make([]string, len(AllStringCompareTypes))
 	for i, choice := range AllStringCompareTypes {
-		choices[i] = prefix + " " + choice.String()
+		if prefix == notPrefix || choice == Any || choice == Is || choice == Contains || choice == StartsWith || choice == EndsWith {
+			choices[i] = prefix + " " + choice.String()
+		} else {
+			choices[i] = notPrefix + " " + choice.AltString()
+		}
 	}
 	return choices
 }

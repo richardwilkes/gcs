@@ -560,7 +560,7 @@ func (e *Entity) WeaponComparedDamageBonusesFor(featureID, nameQualifier, specia
 			bonus.NameCriteria.Matches(nameQualifier) &&
 			bonus.SpecializationCriteria.Matches(specializationQualifier) &&
 			bonus.RelativeLevelCriteria.Matches(rsl) &&
-			bonus.TagsCriteria.Matches(tagsQualifier...) {
+			bonus.TagsCriteria.MatchesList(tagsQualifier...) {
 			bonuses = append(bonuses, bonus)
 			level := bonus.LeveledAmount.Level
 			bonus.LeveledAmount.Level = fxp.From(dieCount)
@@ -696,7 +696,7 @@ func (e *Entity) SkillComparedBonusFor(featureID, name, specialization string, t
 		if bonus, ok := f.(*feature.SkillBonus); ok &&
 			bonus.NameCriteria.Matches(name) &&
 			bonus.SpecializationCriteria.Matches(specialization) &&
-			bonus.TagsCriteria.Matches(tags...) {
+			bonus.TagsCriteria.MatchesList(tags...) {
 			total += bonus.AdjustedAmount()
 			bonus.AddToTooltip(tooltip)
 		}
@@ -711,7 +711,7 @@ func (e *Entity) SkillPointComparedBonusFor(featureID, name, specialization stri
 		if bonus, ok := f.(*feature.SkillPointBonus); ok &&
 			bonus.NameCriteria.Matches(name) &&
 			bonus.SpecializationCriteria.Matches(specialization) &&
-			bonus.TagsCriteria.Matches(tags...) {
+			bonus.TagsCriteria.MatchesList(tags...) {
 			total += bonus.AdjustedAmount()
 			bonus.AddToTooltip(tooltip)
 		}
@@ -733,7 +733,7 @@ func (e *Entity) SpellComparedBonusFor(featureID, name string, tags []string, to
 	for _, f := range e.featureMap[strings.ToLower(featureID)] {
 		if bonus, ok := f.(*feature.SpellBonus); ok &&
 			bonus.NameCriteria.Matches(name) &&
-			bonus.TagsCriteria.Matches(tags...) {
+			bonus.TagsCriteria.MatchesList(tags...) {
 			total += bonus.AdjustedAmount()
 			bonus.AddToTooltip(tooltip)
 		}
@@ -747,7 +747,7 @@ func (e *Entity) SpellPointComparedBonusFor(featureID, qualifier string, tags []
 	for _, f := range e.featureMap[strings.ToLower(featureID)] {
 		if bonus, ok := f.(*feature.SpellPointBonus); ok &&
 			bonus.NameCriteria.Matches(qualifier) &&
-			bonus.TagsCriteria.Matches(tags...) {
+			bonus.TagsCriteria.MatchesList(tags...) {
 			total += bonus.AdjustedAmount()
 			bonus.AddToTooltip(tooltip)
 		}
@@ -780,7 +780,7 @@ func (e *Entity) NamedWeaponDamageBonusesFor(featureID, nameQualifier, usageQual
 			bonus.SelectionType == weapon.WithName &&
 			bonus.NameCriteria.Matches(nameQualifier) &&
 			bonus.SpecializationCriteria.Matches(usageQualifier) &&
-			bonus.TagsCriteria.Matches(tagsQualifier...) {
+			bonus.TagsCriteria.MatchesList(tagsQualifier...) {
 			bonuses = append(bonuses, bonus)
 			level := bonus.LeveledAmount.Level
 			bonus.LeveledAmount.Level = fxp.From(dieCount)
@@ -803,7 +803,7 @@ func (e *Entity) NamedWeaponSkillBonusesFor(featureID, nameQualifier, usageQuali
 			bonus.SelectionType == skill.WeaponsWithName &&
 			bonus.NameCriteria.Matches(nameQualifier) &&
 			bonus.SpecializationCriteria.Matches(usageQualifier) &&
-			bonus.TagsCriteria.Matches(tagsQualifier...) {
+			bonus.TagsCriteria.MatchesList(tagsQualifier...) {
 			bonuses = append(bonuses, bonus)
 			bonus.AddToTooltip(tooltip)
 		}

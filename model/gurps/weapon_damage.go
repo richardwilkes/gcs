@@ -319,7 +319,7 @@ func (w *WeaponDamage) extractWeaponDamageBonus(f feature.Feature, set map[*feat
 			}
 		case weapon.WithName:
 			if bonus.NameCriteria.Matches(w.Owner.String()) && bonus.SpecializationCriteria.Matches(w.Owner.Usage) &&
-				bonus.TagsCriteria.Matches(w.Owner.Owner.TagList()...) {
+				bonus.TagsCriteria.MatchesList(w.Owner.Owner.TagList()...) {
 				if _, exists := set[bonus]; !exists {
 					set[bonus] = true
 					bonus.AddToTooltip(tooltip)

@@ -382,22 +382,25 @@ func adjustPopupBlank[T comparable](popup *unison.PopupMenu[T], blank bool) {
 }
 
 func addNameCriteriaPanel(parent *unison.Panel, strCriteria *criteria.String, hSpan int, includeEmptyFiller bool) {
-	addStringCriteriaPanel(parent, i18n.Text("whose name"), i18n.Text("Name Qualifier"), strCriteria, hSpan, includeEmptyFiller)
+	prefix := i18n.Text("whose name")
+	addStringCriteriaPanel(parent, prefix, prefix, i18n.Text("Name Qualifier"), strCriteria, hSpan, includeEmptyFiller)
 }
 
 func addSpecializationCriteriaPanel(parent *unison.Panel, strCriteria *criteria.String, hSpan int, includeEmptyFiller bool) {
-	addStringCriteriaPanel(parent, i18n.Text("and whose specialization"), i18n.Text("Specialization Qualifier"), strCriteria, hSpan, includeEmptyFiller)
+	prefix := i18n.Text("and whose specialization")
+	addStringCriteriaPanel(parent, prefix, prefix, i18n.Text("Specialization Qualifier"), strCriteria, hSpan, includeEmptyFiller)
 }
 
 func addTagCriteriaPanel(parent *unison.Panel, strCriteria *criteria.String, hSpan int, includeEmptyFiller bool) {
-	addStringCriteriaPanel(parent, i18n.Text("and at least one tag"), i18n.Text("Tag Qualifier"), strCriteria, hSpan, includeEmptyFiller)
+	addStringCriteriaPanel(parent, i18n.Text("and at least one tag"), i18n.Text("and all tags"), i18n.Text("Tag Qualifier"), strCriteria, hSpan, includeEmptyFiller)
 }
 
 func addNotesCriteriaPanel(parent *unison.Panel, strCriteria *criteria.String, hSpan int, includeEmptyFiller bool) {
-	addStringCriteriaPanel(parent, i18n.Text("and whose notes"), i18n.Text("Notes Qualifier"), strCriteria, hSpan, includeEmptyFiller)
+	prefix := i18n.Text("and whose notes")
+	addStringCriteriaPanel(parent, prefix, prefix, i18n.Text("Notes Qualifier"), strCriteria, hSpan, includeEmptyFiller)
 }
 
-func addStringCriteriaPanel(parent *unison.Panel, prefix, undoTitle string, strCriteria *criteria.String, hSpan int, includeEmptyFiller bool) (*unison.PopupMenu[string], *widget.StringField) {
+func addStringCriteriaPanel(parent *unison.Panel, prefix, notPrefix, undoTitle string, strCriteria *criteria.String, hSpan int, includeEmptyFiller bool) (*unison.PopupMenu[string], *widget.StringField) {
 	if includeEmptyFiller {
 		parent.AddChild(unison.NewPanel())
 	}
@@ -415,7 +418,7 @@ func addStringCriteriaPanel(parent *unison.Panel, prefix, undoTitle string, strC
 	})
 	var criteriaField *widget.StringField
 	popup := unison.NewPopupMenu[string]()
-	for _, one := range criteria.PrefixedStringCompareTypeChoices(prefix) {
+	for _, one := range criteria.PrefixedStringCompareTypeChoices(prefix, notPrefix) {
 		popup.AddItem(one)
 	}
 	popup.SelectIndex(criteria.ExtractStringCompareTypeIndex(string(strCriteria.Compare)))

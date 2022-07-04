@@ -271,7 +271,7 @@ func (p *featuresPanel) createSkillBonusPanel(f *feature.SkillBonus) *unison.Pan
 		unison.Ancestor[*unison.DockContainer](p).MarkForLayoutRecursively()
 		widget.MarkModified(p)
 	}
-	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", i18n.Text("Name Qualifier"), &f.NameCriteria, 1, false)
+	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", "", i18n.Text("Name Qualifier"), &f.NameCriteria, 1, false)
 	wrapper.SetLayout(&unison.FlexLayout{
 		Columns:  len(wrapper.Children()),
 		HSpacing: unison.StdHSpacing,
@@ -296,7 +296,8 @@ func (p *featuresPanel) createSecondarySkillPanels(parent *unison.Panel, index i
 	case skill.SkillsWithName:
 		addSpecializationCriteriaPanel(wrapper, &f.SpecializationCriteria, 1, false)
 	case skill.ThisWeapon, skill.WeaponsWithName:
-		addStringCriteriaPanel(wrapper, i18n.Text("and whose usage"), i18n.Text("Usage Qualifier"), &f.SpecializationCriteria, 1, false)
+		prefix := i18n.Text("and whose usage")
+		addStringCriteriaPanel(wrapper, prefix, prefix, i18n.Text("Usage Qualifier"), &f.SpecializationCriteria, 1, false)
 	default:
 		jot.Errorf("unknown selection type: %v", f.SelectionType)
 	}
@@ -331,7 +332,8 @@ func (p *featuresPanel) createSecondarySkillPanels(parent *unison.Panel, index i
 func (p *featuresPanel) createSkillPointBonusPanel(f *feature.SkillPointBonus) *unison.Panel {
 	panel := p.createBasePanel(f)
 	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
-	addStringCriteriaPanel(panel, i18n.Text("to skills whose name"), i18n.Text("Name Qualifier"), &f.NameCriteria, 1, true)
+	prefix := i18n.Text("to skills whose name")
+	addStringCriteriaPanel(panel, prefix, prefix, i18n.Text("Name Qualifier"), &f.NameCriteria, 1, true)
 	addSpecializationCriteriaPanel(panel, &f.SpecializationCriteria, 1, true)
 	addTagCriteriaPanel(panel, &f.TagsCriteria, 1, true)
 	return panel
@@ -351,7 +353,7 @@ func (p *featuresPanel) createSpellBonusPanel(f *feature.SpellBonus) *unison.Pan
 		adjustFieldBlank(criteriaField, f.SpellMatchType == spell.AllColleges)
 		widget.MarkModified(p)
 	}
-	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", i18n.Text("Name Qualifier"), &f.NameCriteria, 1, false)
+	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", "", i18n.Text("Name Qualifier"), &f.NameCriteria, 1, false)
 	wrapper.SetLayout(&unison.FlexLayout{
 		Columns:  len(wrapper.Children()),
 		HSpacing: unison.StdHSpacing,
@@ -382,7 +384,7 @@ func (p *featuresPanel) createSpellPointBonusPanel(f *feature.SpellPointBonus) *
 		adjustFieldBlank(criteriaField, f.SpellMatchType == spell.AllColleges)
 		widget.MarkModified(p)
 	}
-	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", i18n.Text("Name Qualifier"), &f.NameCriteria, 1, false)
+	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", "", i18n.Text("Name Qualifier"), &f.NameCriteria, 1, false)
 	wrapper.SetLayout(&unison.FlexLayout{
 		Columns:  len(wrapper.Children()),
 		HSpacing: unison.StdHSpacing,
@@ -429,7 +431,7 @@ func (p *featuresPanel) createWeaponDamageBonusPanel(f *feature.WeaponDamageBonu
 		unison.Ancestor[*unison.DockContainer](p).MarkForLayoutRecursively()
 		widget.MarkModified(p)
 	}
-	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", i18n.Text("Name Qualifier"), &f.NameCriteria, 1, false)
+	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", "", i18n.Text("Name Qualifier"), &f.NameCriteria, 1, false)
 	wrapper.SetLayout(&unison.FlexLayout{
 		Columns:  len(wrapper.Children()),
 		HSpacing: unison.StdHSpacing,
@@ -454,7 +456,8 @@ func (p *featuresPanel) createSecondaryWeaponPanels(parent *unison.Panel, index 
 	case weapon.WithRequiredSkill:
 		addSpecializationCriteriaPanel(wrapper, &f.SpecializationCriteria, 1, false)
 	case weapon.ThisWeapon, weapon.WithName:
-		addStringCriteriaPanel(wrapper, i18n.Text("and whose usage"), i18n.Text("Usage Qualifier"), &f.SpecializationCriteria, 1, false)
+		prefix := i18n.Text("and whose usage")
+		addStringCriteriaPanel(wrapper, prefix, prefix, i18n.Text("Usage Qualifier"), &f.SpecializationCriteria, 1, false)
 	default:
 		jot.Errorf("unknown selection type: %v", f.SelectionType)
 	}

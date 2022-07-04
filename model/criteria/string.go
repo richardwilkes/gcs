@@ -39,13 +39,21 @@ func (s *String) UnmarshalJSON(data []byte) error {
 }
 
 // Matches performs a comparison and returns true if the data matches.
-func (s String) Matches(value ...string) bool {
+func (s String) Matches(value string) bool {
+	return s.Compare.Matches(s.Qualifier, value)
+}
+
+// MatchesList performs a comparison and returns true if the data matches.
+func (s String) MatchesList(value ...string) bool {
+	if len(value) == 0 {
+		return s.Compare.Matches(s.Qualifier, "")
+	}
 	for _, one := range value {
-		if s.Compare.Matches(s.Qualifier, one) {
-			return true
+		if !s.Compare.Matches(s.Qualifier, one) {
+			return false
 		}
 	}
-	return s.Compare.Matches(s.Qualifier, "")
+	return true
 }
 
 func (s String) String() string {

@@ -384,7 +384,7 @@ func (w *Weapon) extractSkillBonus(f feature.Feature, tooltip *xio.ByteBuffer) f
 			}
 		case skill.WeaponsWithName:
 			if w.Owner != nil && sb.NameCriteria.Matches(w.Owner.String()) &&
-				sb.SpecializationCriteria.Matches(w.Usage) && sb.TagsCriteria.Matches(w.Owner.TagList()...) {
+				sb.SpecializationCriteria.Matches(w.Usage) && sb.TagsCriteria.MatchesList(w.Owner.TagList()...) {
 				sb.AddToTooltip(tooltip)
 				return sb.AdjustedAmount()
 			}
