@@ -15,7 +15,6 @@ import (
 	"bufio"
 	"fmt"
 	"hash/fnv"
-	"strconv"
 	"strings"
 	"unsafe"
 
@@ -29,7 +28,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -329,12 +327,12 @@ func (w *Weapon) skillLevelBaseAdjustment(entity *Entity, tooltip *xio.ByteBuffe
 		adj += bonus.AdjustedAmount()
 	}
 	for _, f := range w.Owner.FeatureList() {
-		adj += w.extractSkillBonus(f, tooltip)
+		adj += w.extractSkillBonusForThisWeapon(f, tooltip)
 	}
 	if t, ok := w.Owner.(*Trait); ok {
 		Traverse[*TraitModifier](func(mod *TraitModifier) bool {
 			for _, f := range mod.Features {
-				adj += w.extractSkillBonus(f, tooltip)
+				adj += w.extractSkillBonusForThisWeapon(f, tooltip)
 			}
 			return false
 		}, true, false, t.Modifiers...)
@@ -342,7 +340,7 @@ func (w *Weapon) skillLevelBaseAdjustment(entity *Entity, tooltip *xio.ByteBuffe
 	if eqp, ok := w.Owner.(*Equipment); ok {
 		Traverse[*EquipmentModifier](func(mod *EquipmentModifier) bool {
 			for _, f := range mod.Features {
-				adj += w.extractSkillBonus(f, tooltip)
+				adj += w.extractSkillBonusForThisWeapon(f, tooltip)
 			}
 			return false
 		}, true, false, eqp.Modifiers...)
@@ -373,23 +371,13 @@ func (w *Weapon) EncumbrancePenalty(entity *Entity, tooltip *xio.ByteBuffer) fxp
 	return penalty
 }
 
-func (w *Weapon) extractSkillBonus(f feature.Feature, tooltip *xio.ByteBuffer) fxp.Int {
+func (w *Weapon) extractSkillBonusForThisWeapon(f feature.Feature, tooltip *xio.ByteBuffer) fxp.Int {
 	if sb, ok := f.(*feature.SkillBonus); ok {
-		switch sb.SelectionType.EnsureValid() {
-		case skill.SkillsWithName:
-		case skill.ThisWeapon:
+		if sb.SelectionType.EnsureValid() == skill.ThisWeapon {
 			if sb.SpecializationCriteria.Matches(w.Usage) {
 				sb.AddToTooltip(tooltip)
 				return sb.AdjustedAmount()
 			}
-		case skill.WeaponsWithName:
-			if w.Owner != nil && sb.NameCriteria.Matches(w.Owner.String()) &&
-				sb.SpecializationCriteria.Matches(w.Usage) && sb.TagsCriteria.MatchesList(w.Owner.TagList()...) {
-				sb.AddToTooltip(tooltip)
-				return sb.AdjustedAmount()
-			}
-		default:
-			jot.Fatal(1, "unhandled selection type: "+strconv.Itoa(int(sb.SelectionType)))
 		}
 	}
 	return 0
@@ -688,7 +676,9 @@ func (w *Weapon) CellData(column int, data *CellData) {
 	case PageRefCellAlias:
 		data.Type = PageRef
 	}
-	data.Tooltip = buffer.String()
+	if buffer.Len() > 0 {
+		data.Tooltip = i18n.Text("Includes modifiers from:") + buffer.String()
+	}
 }
 
 // OwningEntity returns the owning Entity.
