@@ -102,21 +102,24 @@ func NewEntityFromFile(fileSystem fs.FS, filePath string) (*Entity, error) {
 
 // NewEntity creates a new Entity.
 func NewEntity(entityType datafile.Type) *Entity {
+	settings := SettingsProvider.GeneralSettings()
 	entity := &Entity{
 		EntityData: EntityData{
 			Type:        entityType,
 			ID:          id.NewUUID(),
-			TotalPoints: SettingsProvider.GeneralSettings().InitialPoints,
+			TotalPoints: settings.InitialPoints,
 			Profile:     &Profile{},
 			CreatedOn:   jio.Now(),
 		},
 	}
 	entity.SheetSettings = SettingsProvider.SheetSettings().Clone(entity)
 	entity.Attributes = NewAttributes(entity)
-	if SettingsProvider.GeneralSettings().AutoFillProfile {
+	if settings.AutoFillProfile {
 		entity.Profile.AutoFill(entity)
 	}
-	entity.Traits = append(entity.Traits, NewNaturalAttacks(entity, nil))
+	if settings.AutoAddNaturalAttacks {
+		entity.Traits = append(entity.Traits, NewNaturalAttacks(entity, nil))
+	}
 	entity.ModifiedOn = entity.CreatedOn
 	entity.Recalculate()
 	return entity

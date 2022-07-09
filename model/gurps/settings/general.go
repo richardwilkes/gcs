@@ -50,15 +50,15 @@ type General struct {
 	DefaultPlayerName           string  `json:"default_player_name,omitempty"`
 	DefaultTechLevel            string  `json:"default_tech_level,omitempty"`
 	CalendarName                string  `json:"calendar_ref,omitempty"`
-	GCalcKey                    string  `json:"gurps_calculator_key,omitempty"`
 	InitialPoints               fxp.Int `json:"initial_points"`
 	TooltipDelay                fxp.Int `json:"tooltip_delay"`
 	TooltipDismissal            fxp.Int `json:"tooltip_dismissal"`
 	InitialListUIScale          int     `json:"initial_list_scale"`
 	InitialSheetUIScale         int     `json:"initial_sheet_scale"`
 	ImageResolution             int     `json:"image_resolution"`
-	AutoFillProfile             bool    `json:"auto_fill_profile,omitempty"`
-	IncludeUnspentPointsInTotal bool    `json:"include_unspent_points_in_total,omitempty"`
+	AutoFillProfile             bool    `json:"auto_fill_profile"`
+	AutoAddNaturalAttacks       bool    `json:"add_natural_attacks"`
+	IncludeUnspentPointsInTotal bool    `json:"include_unspent_points_in_total"`
 }
 
 // NewGeneral creates settings with factory defaults.
@@ -79,6 +79,7 @@ func NewGeneral() *General {
 		InitialSheetUIScale:         InitialSheetUIScaleDef,
 		ImageResolution:             ImageResolutionDef,
 		AutoFillProfile:             true,
+		AutoAddNaturalAttacks:       true,
 		IncludeUnspentPointsInTotal: true,
 	}
 }

@@ -19,10 +19,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	gsettings "github.com/richardwilkes/gcs/v5/model/gurps/settings"
 	"github.com/richardwilkes/gcs/v5/model/settings"
-	"github.com/richardwilkes/gcs/v5/res"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/gcs/v5/ui/workspace"
-	"github.com/richardwilkes/toolbox/desktop"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -31,6 +29,7 @@ type generalSettingsDockable struct {
 	Dockable
 	nameField                           *widget.StringField
 	autoFillProfileCheckbox             *unison.CheckBox
+	autoAddNaturalAttacksCheckbox       *unison.CheckBox
 	pointsField                         *widget.DecimalField
 	includeUnspentPointsInTotalCheckbox *unison.CheckBox
 	techLevelField                      *widget.StringField
@@ -40,7 +39,6 @@ type generalSettingsDockable struct {
 	exportResolutionField               *widget.IntegerField
 	tooltipDelayField                   *widget.DecimalField
 	tooltipDismissalField               *widget.DecimalField
-	gCalcKeyField                       *widget.StringField
 }
 
 // ShowGeneralSettings the General Settings window.
@@ -69,6 +67,7 @@ func (d *generalSettingsDockable) initContent(content *unison.Panel) {
 		VSpacing: unison.StdVSpacing,
 	})
 	d.createPlayerAndDescFields(content)
+	d.createCheckboxBlock(content)
 	d.createInitialPointsFields(content)
 	d.createTechLevelField(content)
 	d.createCalendarPopup(content)
@@ -89,7 +88,6 @@ func (d *generalSettingsDockable) initContent(content *unison.Panel) {
 	d.createImageResolutionField(content)
 	d.createTooltipDelayField(content)
 	d.createTooltipDismissalField(content)
-	d.createGCalcKeyField(content)
 }
 
 func (d *generalSettingsDockable) createPlayerAndDescFields(content *unison.Panel) {
@@ -98,11 +96,35 @@ func (d *generalSettingsDockable) createPlayerAndDescFields(content *unison.Pane
 	d.nameField = widget.NewStringField(title,
 		func() string { return settings.Global().General.DefaultPlayerName },
 		func(s string) { settings.Global().General.DefaultPlayerName = s })
+	d.nameField.SetLayoutData(&unison.FlexLayoutData{
+		HSpan:  2,
+		HAlign: unison.FillAlignment,
+		HGrab:  true,
+	})
 	content.AddChild(d.nameField)
+}
+
+func (d *generalSettingsDockable) createCheckboxBlock(content *unison.Panel) {
 	d.autoFillProfileCheckbox = widget.NewCheckBox(i18n.Text("Fill in initial description"),
 		settings.Global().General.AutoFillProfile,
 		func(checked bool) { settings.Global().General.AutoFillProfile = checked })
+	d.autoFillProfileCheckbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
+	content.AddChild(widget.NewFieldLeadingLabel(""))
 	content.AddChild(d.autoFillProfileCheckbox)
+
+	d.autoAddNaturalAttacksCheckbox = widget.NewCheckBox(i18n.Text("Add natural attacks to new sheets"),
+		settings.Global().General.AutoAddNaturalAttacks,
+		func(checked bool) { settings.Global().General.AutoAddNaturalAttacks = checked })
+	d.autoAddNaturalAttacksCheckbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
+	content.AddChild(widget.NewFieldLeadingLabel(""))
+	content.AddChild(d.autoAddNaturalAttacksCheckbox)
+
+	d.includeUnspentPointsInTotalCheckbox = widget.NewCheckBox(i18n.Text("Include unspent points in total"),
+		settings.Global().General.IncludeUnspentPointsInTotal,
+		func(checked bool) { settings.Global().General.IncludeUnspentPointsInTotal = checked })
+	d.includeUnspentPointsInTotalCheckbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
+	content.AddChild(widget.NewFieldLeadingLabel(""))
+	content.AddChild(d.includeUnspentPointsInTotalCheckbox)
 }
 
 func (d *generalSettingsDockable) createInitialPointsFields(content *unison.Panel) {
@@ -112,11 +134,8 @@ func (d *generalSettingsDockable) createInitialPointsFields(content *unison.Pane
 		func() fxp.Int { return settings.Global().General.InitialPoints },
 		func(v fxp.Int) { settings.Global().General.InitialPoints = v }, gsettings.InitialPointsMin,
 		gsettings.InitialPointsMax, false, false)
+	d.pointsField.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(d.pointsField)
-	d.includeUnspentPointsInTotalCheckbox = widget.NewCheckBox(i18n.Text("Include unspent points in total"),
-		settings.Global().General.IncludeUnspentPointsInTotal,
-		func(checked bool) { settings.Global().General.IncludeUnspentPointsInTotal = checked })
-	content.AddChild(d.includeUnspentPointsInTotalCheckbox)
 }
 
 func (d *generalSettingsDockable) createTechLevelField(content *unison.Panel) {
@@ -126,8 +145,9 @@ func (d *generalSettingsDockable) createTechLevelField(content *unison.Panel) {
 		func() string { return settings.Global().General.DefaultTechLevel },
 		func(s string) { settings.Global().General.DefaultTechLevel = s })
 	d.techLevelField.Tooltip = unison.NewTooltipWithText(gurps.TechLevelInfo)
+	d.techLevelField.SetMinimumTextWidthUsing("12^")
+	d.techLevelField.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(d.techLevelField)
-	content.AddChild(unison.NewPanel())
 }
 
 func (d *generalSettingsDockable) createCalendarPopup(content *unison.Panel) {
@@ -183,29 +203,6 @@ func (d *generalSettingsDockable) createTooltipDismissalField(content *unison.Pa
 	content.AddChild(widget.WrapWithSpan(2, d.tooltipDismissalField, widget.NewFieldTrailingLabel(i18n.Text("seconds"))))
 }
 
-func (d *generalSettingsDockable) createGCalcKeyField(content *unison.Panel) {
-	title := i18n.Text("GURPS Calculator Key")
-	content.AddChild(widget.NewFieldLeadingLabel(title))
-	button := unison.NewButton()
-	button.HideBase = true
-	baseline := button.Font.Baseline()
-	button.Drawable = &unison.DrawableSVG{
-		SVG:  res.SearchSVG,
-		Size: unison.NewSize(baseline, baseline),
-	}
-	button.ClickCallback = d.findGCalcKey
-	d.gCalcKeyField = widget.NewStringField(title,
-		func() string { return settings.Global().General.GCalcKey },
-		func(s string) { settings.Global().General.GCalcKey = s })
-	content.AddChild(widget.WrapWithSpan(2, d.gCalcKeyField, button))
-}
-
-func (d *generalSettingsDockable) findGCalcKey() {
-	if err := desktop.Open("http://www.gurpscalculator.com/Character/ImportGCS"); err != nil {
-		unison.ErrorDialogWithError(i18n.Text("Unable to open browser to determine GURPS Calculator Key"), err)
-	}
-}
-
 func (d *generalSettingsDockable) reset() {
 	*settings.Global().General = *gsettings.NewGeneral()
 	d.sync()
@@ -215,6 +212,7 @@ func (d *generalSettingsDockable) sync() {
 	s := settings.Global().General
 	d.nameField.SetText(s.DefaultPlayerName)
 	widget.SetCheckBoxState(d.autoFillProfileCheckbox, s.AutoFillProfile)
+	widget.SetCheckBoxState(d.autoAddNaturalAttacksCheckbox, s.AutoAddNaturalAttacks)
 	d.pointsField.SetText(s.InitialPoints.String())
 	widget.SetCheckBoxState(d.includeUnspentPointsInTotalCheckbox, s.IncludeUnspentPointsInTotal)
 	d.techLevelField.SetText(s.DefaultTechLevel)
@@ -224,7 +222,6 @@ func (d *generalSettingsDockable) sync() {
 	d.exportResolutionField.SetText(strconv.Itoa(s.ImageResolution))
 	d.tooltipDelayField.SetText(s.TooltipDelay.String())
 	d.tooltipDismissalField.SetText(s.TooltipDismissal.String())
-	d.gCalcKeyField.SetText(s.GCalcKey)
 	d.MarkForRedraw()
 }
 
