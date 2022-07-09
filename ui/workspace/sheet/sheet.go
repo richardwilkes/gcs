@@ -611,6 +611,7 @@ func (s *Sheet) SheetSettingsUpdated(entity *gurps.Entity, blockLayout bool) {
 
 // Rebuild implements widget.Rebuildable.
 func (s *Sheet) Rebuild(full bool) {
+	h, v := s.scroll.Position()
 	s.entity.Recalculate()
 	if full {
 		reactionsSelMap := s.Reactions.RecordSelection()
@@ -641,6 +642,7 @@ func (s *Sheet) Rebuild(full bool) {
 	if dc := unison.Ancestor[*unison.DockContainer](s); dc != nil {
 		dc.UpdateTitle(s)
 	}
+	s.scroll.SetPosition(h, v)
 }
 
 func drawBandedBackground(p unison.Paneler, gc *unison.Canvas, rect unison.Rect, start, step int) {

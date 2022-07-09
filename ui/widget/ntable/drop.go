@@ -68,6 +68,9 @@ func didDropCallback[T gurps.NodeConstraint[T]](undo *unison.UndoEdit[*TableDrag
 	mgr.Add(undo)
 	entityProvider := unison.Ancestor[gurps.EntityProvider](to)
 	if !toolbox.IsNil(entityProvider) && entityProvider.Entity() != nil {
+		if rebuilder := unison.Ancestor[widget.Rebuildable](to); rebuilder != nil {
+			rebuilder.Rebuild(true)
+		}
 		sel := to.SelectedRows(true)
 		unison.InvokeTaskAfter(func() {
 			ProcessNameablesForSelection(to, sel)

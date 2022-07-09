@@ -390,6 +390,7 @@ func (d *Template) SheetSettingsUpdated(entity *gurps.Entity, blockLayout bool) 
 
 // Rebuild implements widget.Rebuildable.
 func (d *Template) Rebuild(full bool) {
+	h, v := d.scroll.Position()
 	if full {
 		traitsSelMap := d.Traits.RecordSelection()
 		skillsSelMap := d.Skills.RecordSelection()
@@ -409,4 +410,5 @@ func (d *Template) Rebuild(full bool) {
 	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
 		dc.UpdateTitle(d)
 	}
+	d.scroll.SetPosition(h, v)
 }
