@@ -568,6 +568,9 @@ func (p *featuresPanel) addLeveledModifierLine(parent *unison.Panel, f feature.F
 	panel := unison.NewPanel()
 	p.addTypeSwitcher(panel, f)
 	addLeveledAmountPanel(panel, amount)
+	if wdb, ok := f.(*feature.WeaponDamageBonus); ok {
+		addCheckBox(panel, i18n.Text("as a percentage"), &wdb.Percent)
+	}
 	panel.SetLayout(&unison.FlexLayout{
 		Columns:  len(panel.Children()),
 		HSpacing: unison.StdHSpacing,
