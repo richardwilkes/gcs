@@ -116,6 +116,7 @@ func NewEntity(entityType datafile.Type) *Entity {
 	if SettingsProvider.GeneralSettings().AutoFillProfile {
 		entity.Profile.AutoFill(entity)
 	}
+	entity.Traits = append(entity.Traits, NewNaturalAttacks(entity, nil))
 	entity.ModifiedOn = entity.CreatedOn
 	entity.Recalculate()
 	return entity
