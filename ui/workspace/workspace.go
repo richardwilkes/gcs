@@ -23,8 +23,10 @@ import (
 	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
+	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
+	"golang.org/x/exp/slices"
 )
 
 const workspaceClientDataKey = "workspace"
@@ -354,4 +356,59 @@ func SaveDockableAs(d FileBackedDockable, extension string, saver func(filePath 
 		return true
 	}
 	return false
+}
+
+// PromptForDestination puts up a modal dialog to choose one or more destinations if choices contains more than one
+// choice. Return an empty list if canceled or there are no selections made.
+func PromptForDestination[T FileBackedDockable](choices []T) []T {
+	if len(choices) < 2 {
+		return choices
+	}
+	slices.SortFunc(choices, func(a, b T) bool {
+		ta := a.Title()
+		tb := b.Title()
+		if ta == tb {
+			return txt.NaturalLess(a.BackingFilePath(), b.BackingFilePath(), true)
+		}
+		return txt.NaturalLess(ta, tb, true)
+	})
+	list := unison.NewList[T]()
+	list.SetAllowMultipleSelection(true)
+	list.DoubleClickCallback = func() {
+		if dialog, ok := list.Window().ClientData()[unison.DialogClientDataKey].(*unison.Dialog); ok {
+			dialog.Button(unison.ModalResponseOK).Click()
+		}
+	}
+	list.Append(choices...)
+	scroll := unison.NewScrollPanel()
+	scroll.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
+	scroll.SetContent(list, unison.FillBehavior, unison.FillBehavior)
+	scroll.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		VAlign: unison.FillAlignment,
+		HGrab:  true,
+		VGrab:  true,
+	})
+	panel := unison.NewPanel()
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  1,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+		HAlign:   unison.FillAlignment,
+		VAlign:   unison.FillAlignment,
+	})
+	label := unison.NewLabel()
+	label.Text = i18n.Text("Choose one or more destinations:")
+	panel.AddChild(label)
+	panel.AddChild(scroll)
+	if unison.QuestionDialogWithPanel(panel) != unison.ModalResponseOK || list.Selection.Count() == 0 {
+		return nil
+	}
+	result := make([]T, 0, list.Selection.Count())
+	i := list.Selection.FirstSet()
+	for i != -1 {
+		result = append(result, choices[i])
+		i = list.Selection.NextSet(i + 1)
+	}
+	return result
 }

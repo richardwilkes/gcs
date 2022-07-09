@@ -276,3 +276,39 @@ func DuplicateSelection[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]]
 		}
 	}
 }
+
+// CopyRowsTo copies the provided rows to the target table.
+func CopyRowsTo[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]], rows []*Node[T]) {
+	if table == nil {
+		return
+	}
+	rows = slices.Clone(rows)
+	for j, row := range rows {
+		rows[j] = row.CloneForTarget(table, nil)
+	}
+	var undo *unison.UndoEdit[*TableUndoEditData[T]]
+	mgr := unison.UndoManagerFor(table)
+	if mgr != nil {
+		undo = &unison.UndoEdit[*TableUndoEditData[T]]{
+			ID:         unison.NextUndoID(),
+			EditName:   fmt.Sprintf(i18n.Text("Insert %s"), rows[0].Data().Kind()),
+			UndoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.BeforeData.Apply() },
+			RedoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.AfterData.Apply() },
+			AbsorbFunc: func(e *unison.UndoEdit[*TableUndoEditData[T]], other unison.Undoable) bool { return false },
+			BeforeData: NewTableUndoEditData(table),
+		}
+	}
+	table.SetRootRows(append(slices.Clone(table.RootRows()), rows...))
+	selMap := make(map[uuid.UUID]bool, len(rows))
+	for _, row := range rows {
+		selMap[row.UUID()] = true
+	}
+	table.SetSelectionMap(selMap)
+	table.ScrollRowCellIntoView(table.LastSelectedRowIndex(), 0)
+	table.ScrollRowCellIntoView(table.FirstSelectedRowIndex(), 0)
+	if mgr != nil && undo != nil {
+		undo.AfterData = NewTableUndoEditData(table)
+		mgr.Add(undo)
+	}
+	unison.Ancestor[widget.Rebuildable](table).Rebuild(true)
+}

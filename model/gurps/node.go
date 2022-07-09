@@ -64,3 +64,12 @@ type EditorData[T Node[T]] interface {
 	// ApplyTo copes he editor data into the provided node.
 	ApplyTo(T)
 }
+
+// CloneNodes creates clones of the provided nodes.
+func CloneNodes[T Node[T]](newEntity *Entity, newParent T, preserveID bool, nodes []T) []T {
+	clones := make([]T, len(nodes))
+	for i, one := range nodes {
+		clones[i] = one.Clone(newEntity, newParent, preserveID)
+	}
+	return clones
+}

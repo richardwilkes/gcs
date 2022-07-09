@@ -9,10 +9,10 @@ import (
 )
 
 // ProcessNameablesForSelection processes the selected rows and their children for any nameables.
-func ProcessNameablesForSelection[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]], sel []*Node[T]) {
+func ProcessNameablesForSelection[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]]) {
 	var rows []T
 	var nameables []map[string]string
-	for _, row := range sel {
+	for _, row := range table.SelectedRows(true) {
 		gurps.Traverse[T](func(row T) bool {
 			m := make(map[string]string)
 			row.FillWithNameableKeys(m)
@@ -81,24 +81,8 @@ func ProcessNameablesForSelection[T gurps.NodeConstraint[T]](table *unison.Table
 		panel.AddChild(label)
 		panel.AddChild(scroll)
 		if unison.QuestionDialogWithPanel(panel) == unison.ModalResponseOK {
-			var undo *unison.UndoEdit[*TableUndoEditData[T]]
-			mgr := unison.UndoManagerFor(table)
-			if mgr != nil {
-				undo = &unison.UndoEdit[*TableUndoEditData[T]]{
-					ID:         unison.NextUndoID(),
-					EditName:   i18n.Text("Substitutions"),
-					UndoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.BeforeData.Apply() },
-					RedoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.AfterData.Apply() },
-					AbsorbFunc: func(e *unison.UndoEdit[*TableUndoEditData[T]], other unison.Undoable) bool { return false },
-					BeforeData: NewTableUndoEditData(table),
-				}
-			}
 			for i, row := range rows {
 				row.ApplyNameableKeys(nameables[i])
-			}
-			if mgr != nil && undo != nil {
-				undo.AfterData = NewTableUndoEditData(table)
-				mgr.Add(undo)
 			}
 			unison.Ancestor[widget.Rebuildable](table).Rebuild(true)
 		}

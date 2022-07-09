@@ -12,8 +12,6 @@
 package ntable
 
 import (
-	"time"
-
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/toolbox"
@@ -54,6 +52,13 @@ func willDropCallback[T gurps.NodeConstraint[T]](from, to *unison.Table[*Node[T]
 }
 
 func didDropCallback[T gurps.NodeConstraint[T]](undo *unison.UndoEdit[*TableDragUndoEditData[T]], from, to *unison.Table[*Node[T]], move bool) {
+	entityProvider := unison.Ancestor[gurps.EntityProvider](to)
+	if !toolbox.IsNil(entityProvider) && entityProvider.Entity() != nil {
+		if rebuilder := unison.Ancestor[widget.Rebuildable](to); rebuilder != nil {
+			rebuilder.Rebuild(true)
+		}
+		ProcessNameablesForSelection(to)
+	}
 	if undo == nil {
 		return
 	}
@@ -66,14 +71,4 @@ func didDropCallback[T gurps.NodeConstraint[T]](undo *unison.UndoEdit[*TableDrag
 	}
 	undo.AfterData = NewTableDragUndoEditData(from, to)
 	mgr.Add(undo)
-	entityProvider := unison.Ancestor[gurps.EntityProvider](to)
-	if !toolbox.IsNil(entityProvider) && entityProvider.Entity() != nil {
-		if rebuilder := unison.Ancestor[widget.Rebuildable](to); rebuilder != nil {
-			rebuilder.Rebuild(true)
-		}
-		sel := to.SelectedRows(true)
-		unison.InvokeTaskAfter(func() {
-			ProcessNameablesForSelection(to, sel)
-		}, time.Millisecond)
-	}
 }

@@ -16,6 +16,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/constants"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	gsettings "github.com/richardwilkes/gcs/v5/model/gurps/settings"
@@ -29,6 +30,7 @@ import (
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
+	"golang.org/x/exp/slices"
 )
 
 var (
@@ -156,8 +158,67 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 				return d.Traits.provider.RootRows()
 			}, gurps.NewNaturalAttacks(nil, nil))
 	})
+	d.InstallCmdHandlers(constants.ApplyTemplateItemID, d.canApplyTemplate, d.applyTemplate)
 
 	return d
+}
+
+func (d *Template) canApplyTemplate(_ any) bool {
+	return len(OpenSheets()) > 0
+}
+
+func (d *Template) applyTemplate(_ any) {
+	for _, sheet := range workspace.PromptForDestination(OpenSheets()) {
+		var undo *unison.UndoEdit[*ApplyTemplateUndoEditData]
+		mgr := unison.UndoManagerFor(sheet)
+		if mgr != nil {
+			if beforeData, err := NewApplyTemplateUndoEditData(sheet); err != nil {
+				jot.Warn(err)
+				mgr = nil
+			} else {
+				undo = &unison.UndoEdit[*ApplyTemplateUndoEditData]{
+					ID:         unison.NextUndoID(),
+					EditName:   i18n.Text("Apply Template"),
+					UndoFunc:   func(e *unison.UndoEdit[*ApplyTemplateUndoEditData]) { e.BeforeData.Apply() },
+					RedoFunc:   func(e *unison.UndoEdit[*ApplyTemplateUndoEditData]) { e.AfterData.Apply() },
+					AbsorbFunc: func(e *unison.UndoEdit[*ApplyTemplateUndoEditData], other unison.Undoable) bool { return false },
+					BeforeData: beforeData,
+				}
+			}
+		}
+		copyRowsTo(sheet.Traits.Table, d.Traits.Table.RootRows())
+		copyRowsTo(sheet.Skills.Table, d.Skills.Table.RootRows())
+		copyRowsTo(sheet.Spells.Table, d.Spells.Table.RootRows())
+		copyRowsTo(sheet.CarriedEquipment.Table, d.Equipment.Table.RootRows())
+		copyRowsTo(sheet.Notes.Table, d.Notes.Table.RootRows())
+		sheet.Rebuild(true)
+		ntable.ProcessNameablesForSelection(sheet.Traits.Table)
+		ntable.ProcessNameablesForSelection(sheet.Skills.Table)
+		ntable.ProcessNameablesForSelection(sheet.Spells.Table)
+		ntable.ProcessNameablesForSelection(sheet.CarriedEquipment.Table)
+		ntable.ProcessNameablesForSelection(sheet.Notes.Table)
+		if mgr != nil && undo != nil {
+			var err error
+			if undo.AfterData, err = NewApplyTemplateUndoEditData(sheet); err != nil {
+				jot.Warn(err)
+			} else {
+				mgr.Add(undo)
+			}
+		}
+	}
+}
+
+func copyRowsTo[T gurps.NodeConstraint[T]](table *unison.Table[*ntable.Node[T]], rows []*ntable.Node[T]) {
+	rows = slices.Clone(rows)
+	for j, row := range rows {
+		rows[j] = row.CloneForTarget(table, nil)
+	}
+	table.SetRootRows(append(slices.Clone(table.RootRows()), rows...))
+	selMap := make(map[uuid.UUID]bool, len(rows))
+	for _, row := range rows {
+		selMap[row.UUID()] = true
+	}
+	table.SetSelectionMap(selMap)
 }
 
 func (d *Template) installNewItemCmdHandlers(itemID, containerID int, creator itemCreator) {
