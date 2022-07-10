@@ -294,6 +294,16 @@ func (s *Skill) DefaultSkill() *Skill {
 	return s.Entity.BaseSkill(s.DefaultedFrom, true)
 }
 
+// HasDefaultTo returns true if the set of possible defaults includes the other skill.
+func (s *Skill) HasDefaultTo(other *Skill) bool {
+	for _, def := range s.resolveToSpecificDefaults() {
+		if def.SkillBased() && def.Name == other.Name && (def.Specialization == "" || def.Specialization == other.Specialization) {
+			return true
+		}
+	}
+	return false
+}
+
 // Notes implements WeaponOwner.
 func (s *Skill) Notes() string {
 	return s.LocalNotes
@@ -406,7 +416,6 @@ func (s *Skill) AdjustedRelativeLevel() fxp.Int {
 		}
 		return s.LevelData.RelativeLevel
 	}
-	// TODO: Old code had a case for templates... but can't see that being exercised in the actual display anywhere
 	return fxp.Min
 }
 
@@ -605,17 +614,6 @@ func (s *Skill) UpdateLevel() bool {
 	saved := s.LevelData
 	s.DefaultedFrom = s.bestDefaultWithPoints(nil)
 	s.LevelData = s.CalculateLevel()
-	if s.DefaultedFrom != nil {
-		// If we used a default, verify that we actually needed to
-		def := s.DefaultedFrom
-		previous := s.LevelData
-		s.DefaultedFrom = nil
-		s.LevelData = s.CalculateLevel()
-		if s.LevelData.Level < previous.Level {
-			s.DefaultedFrom = def
-			s.LevelData = previous
-		}
-	}
 	return saved != s.LevelData
 }
 
@@ -655,20 +653,24 @@ func (s *Skill) bestDefault(excluded *SkillDefault) *SkillDefault {
 		if def.Equivalent(excluded) || s.inDefaultChain(def, make(map[*Skill]bool)) {
 			continue
 		}
-		level := def.SkillLevel(s.Entity, true, excludes, strings.HasPrefix(s.Type, gid.Skill))
-		if def.SkillBased() {
-			if other := s.Entity.BestSkillNamed(def.Name, def.Specialization, true, excludes); other != nil {
-				level -= s.Entity.SkillComparedBonusFor(feature.SkillNameID+"*", def.Name, def.Specialization, s.Tags, nil)
-				level -= s.Entity.BonusFor(feature.SkillNameID+"/"+strings.ToLower(def.Name), nil)
-			}
-		}
-		if best < level {
+		if level := s.calcSkillDefaultLevel(def, excludes); best < level {
 			best = level
 			bestDef = def.CloneWithoutLevelOrPoints()
 			bestDef.Level = level
 		}
 	}
 	return bestDef
+}
+
+func (s *Skill) calcSkillDefaultLevel(def *SkillDefault, excludes map[string]bool) fxp.Int {
+	level := def.SkillLevel(s.Entity, true, excludes, strings.HasPrefix(s.Type, gid.Skill))
+	if def.SkillBased() {
+		if other := s.Entity.BestSkillNamed(def.Name, def.Specialization, true, excludes); other != nil {
+			level -= s.Entity.SkillComparedBonusFor(feature.SkillNameID+"*", def.Name, def.Specialization, s.Tags, nil)
+			level -= s.Entity.BonusFor(feature.SkillNameID+"/"+strings.ToLower(def.Name), nil)
+		}
+	}
+	return level
 }
 
 func (s *Skill) inDefaultChain(def *SkillDefault, lookedAt map[*Skill]bool) bool {
@@ -788,5 +790,43 @@ func (s *Skill) ApplyNameableKeys(m map[string]string) {
 	}
 	for _, one := range s.Weapons {
 		one.ApplyNameableKeys(m)
+	}
+}
+
+// CanSwapDefaults returns true if this skill's default can be swapped.
+func (s *Skill) CanSwapDefaults() bool {
+	return s.Type != gid.Technique && !s.Container() && s.AdjustedPoints(nil) > 0
+}
+
+// CanSwapDefaultsWith returns true if this skill's default can be swapped with the other skill.
+func (s *Skill) CanSwapDefaultsWith(other *Skill) bool {
+	return other != nil && s.CanSwapDefaults() && other.HasDefaultTo(s)
+}
+
+// BestSwappableSkill returns the best skill to swap with.
+func (s *Skill) BestSwappableSkill() *Skill {
+	if s.Entity == nil {
+		return nil
+	}
+	var best *Skill
+	Traverse(func(other *Skill) bool {
+		if s == other.DefaultSkill() && other.CanSwapDefaultsWith(s) {
+			if best == nil || best.CalculateLevel().Level < other.CalculateLevel().Level {
+				best = other
+			}
+		}
+		return false
+	}, true, true, s.Entity.Skills...)
+	return best
+}
+
+// SwapDefaults causes this skill's default to be swapped.
+func (s *Skill) SwapDefaults() {
+	def := s.DefaultedFrom
+	s.DefaultedFrom = nil
+	if baseSkill := s.Entity.BaseSkill(s.bestDefault(nil), true); baseSkill != nil {
+		s.DefaultedFrom = s.bestDefaultWithPoints(def)
+		baseSkill.UpdateLevel()
+		s.UpdateLevel()
 	}
 }

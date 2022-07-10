@@ -204,8 +204,8 @@ func registerEditMenuActions() {
 		ID:              constants.SwapDefaultsItemID,
 		Title:           i18n.Text("Swap Defaults"),
 		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyX, Modifiers: unison.ShiftModifier | unison.OSMenuCmdModifier()},
-		EnabledCallback: notEnabled,
-		ExecuteCallback: unimplemented,
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	}
 	ConvertToContainer = &unison.Action{
 		ID:              constants.ConvertToContainerItemID,

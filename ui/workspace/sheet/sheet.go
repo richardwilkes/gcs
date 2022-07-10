@@ -19,6 +19,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/constants"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	gsettings "github.com/richardwilkes/gcs/v5/model/gurps/settings"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
@@ -207,6 +208,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 				return s.Traits.provider.RootRows()
 			}, gurps.NewNaturalAttacks(s.entity, nil))
 	})
+	s.InstallCmdHandlers(constants.SwapDefaultsItemID, s.canSwapDefaults, s.swapDefaults)
 
 	return s
 }
@@ -279,6 +281,7 @@ func (s *Sheet) MarkModified() {
 	if !s.awaitingUpdate {
 		s.awaitingUpdate = true
 		unison.InvokeTaskAfter(func() {
+			h, v := s.scroll.Position()
 			s.MiscPanel.UpdateModified()
 			// TODO: This is still too slow when the lists have more than a few rows of content.
 			//       It impinges on interactive typing. Looks like most of the time is spent in updating the tables.
@@ -287,6 +290,7 @@ func (s *Sheet) MarkModified() {
 			if dc := unison.Ancestor[*unison.DockContainer](s); dc != nil {
 				dc.UpdateTitle(s)
 			}
+			s.scroll.SetPosition(h, v)
 			s.awaitingUpdate = false
 		}, time.Millisecond*100)
 	}
@@ -600,6 +604,49 @@ func (s *Sheet) createLists() {
 		refocusOn.AsPanel().RequestFocus()
 	}
 	s.scroll.SetPosition(h, v)
+}
+
+func (s *Sheet) canSwapDefaults(_ any) bool {
+	canSwap := false
+	for _, skillNode := range s.Skills.SelectedNodes(true) {
+		skill := skillNode.Data()
+		if skill.Type == gid.Technique {
+			return false
+		}
+		if !skill.CanSwapDefaultsWith(skill.DefaultSkill()) && skill.BestSwappableSkill() == nil {
+			return false
+		}
+		canSwap = true
+	}
+	return canSwap
+}
+
+func (s *Sheet) swapDefaults(_ any) {
+	undo := &unison.UndoEdit[*ntable.TableUndoEditData[*gurps.Skill]]{
+		ID:       unison.NextUndoID(),
+		EditName: i18n.Text("Swap Defaults"),
+		UndoFunc: func(e *unison.UndoEdit[*ntable.TableUndoEditData[*gurps.Skill]]) { e.BeforeData.Apply() },
+		RedoFunc: func(e *unison.UndoEdit[*ntable.TableUndoEditData[*gurps.Skill]]) { e.AfterData.Apply() },
+		AbsorbFunc: func(e *unison.UndoEdit[*ntable.TableUndoEditData[*gurps.Skill]], other unison.Undoable) bool {
+			return false
+		},
+		BeforeData: ntable.NewTableUndoEditData(s.Skills.Table),
+	}
+	for _, skillNode := range s.Skills.SelectedNodes(true) {
+		skill := skillNode.Data()
+		if !skill.CanSwapDefaults() {
+			continue
+		}
+		swap := skill.DefaultSkill()
+		if !skill.CanSwapDefaultsWith(swap) {
+			swap = skill.BestSwappableSkill()
+		}
+		skill.DefaultedFrom = nil
+		swap.SwapDefaults()
+	}
+	s.Skills.Sync()
+	undo.AfterData = ntable.NewTableUndoEditData(s.Skills.Table)
+	s.UndoManager().Add(undo)
 }
 
 // SheetSettingsUpdated implements gurps.SheetSettingsResponder.
