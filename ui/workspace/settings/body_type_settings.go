@@ -48,9 +48,9 @@ func (d *bodyTypesDockable) CloseWithGroup(other unison.Paneler) bool {
 
 func (d *bodyTypesDockable) bodyType() *gurps.BodyType {
 	if d.owner != nil {
-		return d.owner.Entity().SheetSettings.HitLocations
+		return d.owner.Entity().SheetSettings.BodyType
 	}
-	return settings.Global().Sheet.HitLocations
+	return settings.Global().Sheet.BodyType
 }
 
 func (d *bodyTypesDockable) initContent(content *unison.Panel) {
@@ -65,9 +65,9 @@ func (d *bodyTypesDockable) initContent(content *unison.Panel) {
 func (d *bodyTypesDockable) reset() {
 	if d.owner != nil {
 		entity := d.owner.Entity()
-		entity.SheetSettings.HitLocations = settings.Global().Sheet.HitLocations.Clone(entity, nil)
+		entity.SheetSettings.BodyType = settings.Global().Sheet.BodyType.Clone(entity, nil)
 	} else {
-		settings.Global().Sheet.HitLocations = gurps.FactoryBodyType()
+		settings.Global().Sheet.BodyType = gurps.FactoryBodyType()
 	}
 	d.sync()
 }
@@ -103,9 +103,9 @@ func (d *bodyTypesDockable) load(fileSystem fs.FS, filePath string) error {
 		return err
 	}
 	if d.owner != nil {
-		d.owner.Entity().SheetSettings.HitLocations = bodyType
+		d.owner.Entity().SheetSettings.BodyType = bodyType
 	} else {
-		settings.Global().Sheet.HitLocations = bodyType
+		settings.Global().Sheet.BodyType = bodyType
 	}
 	d.sync()
 	return nil

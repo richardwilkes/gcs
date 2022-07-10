@@ -47,7 +47,7 @@ type SheetSettingsData struct {
 	Page                       *settings.Page              `json:"page,omitempty"`
 	BlockLayout                *BlockLayout                `json:"block_layout,omitempty"`
 	Attributes                 *AttributeDefs              `json:"attributes,omitempty"`
-	HitLocations               *BodyType                   `json:"hit_locations,omitempty"`
+	BodyType                   *BodyType                   `json:"body_type,alt=hit_locations,omitempty"`
 	DamageProgression          attribute.DamageProgression `json:"damage_progression"`
 	DefaultLengthUnits         measure.LengthUnits         `json:"default_length_units"`
 	DefaultWeightUnits         measure.WeightUnits         `json:"default_weight_units"`
@@ -87,7 +87,7 @@ func FactorySheetSettings() *SheetSettings {
 			Page:                   settings.NewPage(),
 			BlockLayout:            NewBlockLayout(),
 			Attributes:             FactoryAttributeDefs(),
-			HitLocations:           FactoryBodyType(),
+			BodyType:               FactoryBodyType(),
 			DamageProgression:      attribute.BasicSet,
 			DefaultLengthUnits:     measure.FeetAndInches,
 			DefaultWeightUnits:     measure.Pound,
@@ -137,10 +137,10 @@ func (s *SheetSettings) EnsureValidity() {
 	} else {
 		s.Attributes.EnsureValidity()
 	}
-	if s.HitLocations == nil {
-		s.HitLocations = FactoryBodyType()
+	if s.BodyType == nil {
+		s.BodyType = FactoryBodyType()
 	} else {
-		s.HitLocations.EnsureValidity()
+		s.BodyType.EnsureValidity()
 	}
 	s.DamageProgression = s.DamageProgression.EnsureValid()
 	s.DefaultLengthUnits = s.DefaultLengthUnits.EnsureValid()
@@ -172,14 +172,14 @@ func (s *SheetSettings) Clone(entity *Entity) *SheetSettings {
 	clone.Page = s.Page.Clone()
 	clone.BlockLayout = s.BlockLayout.Clone()
 	clone.Attributes = s.Attributes.Clone()
-	clone.HitLocations = s.HitLocations.Clone(entity, nil)
+	clone.BodyType = s.BodyType.Clone(entity, nil)
 	return &clone
 }
 
 // SetOwningEntity sets the owning entity and configures any sub-components as needed.
 func (s *SheetSettings) SetOwningEntity(entity *Entity) {
 	s.Entity = entity
-	s.HitLocations.Update(entity)
+	s.BodyType.Update(entity)
 }
 
 // Save writes the settings to the file as JSON.

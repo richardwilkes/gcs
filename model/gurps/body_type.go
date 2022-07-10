@@ -53,7 +53,7 @@ type bodyTypeListData struct {
 
 // BodyTypeFor returns the BodyType for the given Entity, or the global settings if the Entity is nil.
 func BodyTypeFor(entity *Entity) *BodyType {
-	return SheetSettingsFor(entity).HitLocations
+	return SheetSettingsFor(entity).BodyType
 }
 
 // FactoryBodyType returns a new copy of the default factory BodyType.

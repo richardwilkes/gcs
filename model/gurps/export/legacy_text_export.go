@@ -271,7 +271,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 		ex.writeEncodedText(ex.entity.Swing().String())
 	case "GENERAL_DR":
 		dr := 0
-		if torso := ex.entity.SheetSettings.HitLocations.LookupLocationByID(ex.entity, gid.Torso); torso != nil {
+		if torso := ex.entity.SheetSettings.BodyType.LookupLocationByID(ex.entity, gid.Torso); torso != nil {
 			dr = torso.DR(ex.entity, nil, nil)[gid.All]
 		}
 		ex.writeEncodedText(strconv.Itoa(dr))
@@ -337,13 +337,13 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "RACE":
 		ex.writeEncodedText(ex.entity.Ancestry().Name)
 	case "BODY_TYPE":
-		ex.writeEncodedText(ex.entity.SheetSettings.HitLocations.Name)
+		ex.writeEncodedText(ex.entity.SheetSettings.BodyType.Name)
 	case "ENCUMBRANCE_LOOP_COUNT":
 		ex.writeEncodedText(strconv.Itoa(len(datafile.AllEncumbrance)))
 	case "ENCUMBRANCE_LOOP_START":
 		ex.processEncumbranceLoop(ex.extractUpToMarker("ENCUMBRANCE_LOOP_END"))
 	case "HIT_LOCATION_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(len(ex.entity.SheetSettings.HitLocations.Locations)))
+		ex.writeEncodedText(strconv.Itoa(len(ex.entity.SheetSettings.BodyType.Locations)))
 	case "HIT_LOCATION_LOOP_START":
 		ex.processHitLocationLoop(ex.extractUpToMarker("HIT_LOCATION_LOOP_END"))
 	case "ADVANTAGES_LOOP_COUNT":
@@ -730,7 +730,7 @@ func (ex *legacyExporter) processEncumbranceLoop(buffer []byte) {
 }
 
 func (ex *legacyExporter) processHitLocationLoop(buffer []byte) {
-	for i, location := range ex.entity.SheetSettings.HitLocations.Locations {
+	for i, location := range ex.entity.SheetSettings.BodyType.Locations {
 		ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 			switch key {
 			case idKey:
