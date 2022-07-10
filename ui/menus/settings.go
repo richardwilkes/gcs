@@ -50,7 +50,7 @@ func registerSettingsMenuActions() {
 		ID:              constants.PerSheetSettingsItemID,
 		Title:           i18n.Text("Sheet Settings…"),
 		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyComma, Modifiers: unison.ShiftModifier | unison.OSMenuCmdModifier()},
-		EnabledCallback: func(_ *unison.Action, _ any) bool { return sheet.ActiveSheet() != nil },
+		EnabledCallback: enabledForSheet,
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			if s := sheet.ActiveSheet(); s != nil {
 				uisettings.ShowSheetSettings(s)
@@ -66,26 +66,32 @@ func registerSettingsMenuActions() {
 	PerSheetAttributeSettings = &unison.Action{
 		ID:              constants.PerSheetAttributeSettingsItemID,
 		Title:           i18n.Text("Attributes…"),
-		EnabledCallback: notEnabled,
-		ExecuteCallback: unimplemented,
+		EnabledCallback: enabledForSheet,
+		ExecuteCallback: func(_ *unison.Action, _ any) {
+			if s := sheet.ActiveSheet(); s != nil {
+				uisettings.ShowAttributeSettings(s)
+			}
+		},
 	}
 	DefaultAttributeSettings = &unison.Action{
 		ID:              constants.DefaultAttributeSettingsItemID,
 		Title:           i18n.Text("Default Attributes…"),
-		EnabledCallback: notEnabled,
-		ExecuteCallback: unimplemented,
+		ExecuteCallback: func(_ *unison.Action, _ any) { uisettings.ShowAttributeSettings(nil) },
 	}
 	PerSheetBodyTypeSettings = &unison.Action{
 		ID:              constants.PerSheetBodyTypeSettingsItemID,
 		Title:           i18n.Text("Body Type…"),
-		EnabledCallback: notEnabled,
-		ExecuteCallback: unimplemented,
+		EnabledCallback: enabledForSheet,
+		ExecuteCallback: func(_ *unison.Action, _ any) {
+			if s := sheet.ActiveSheet(); s != nil {
+				uisettings.ShowBodyTypeSettings(s)
+			}
+		},
 	}
 	DefaultBodyTypeSettings = &unison.Action{
 		ID:              constants.DefaultBodyTypeSettingsItemID,
 		Title:           i18n.Text("Default Body Type…"),
-		EnabledCallback: notEnabled,
-		ExecuteCallback: unimplemented,
+		ExecuteCallback: func(_ *unison.Action, _ any) { uisettings.ShowBodyTypeSettings(nil) },
 	}
 	GeneralSettings = &unison.Action{
 		ID:              constants.GeneralSettingsItemID,
@@ -142,4 +148,8 @@ func createSettingsMenu(f unison.MenuFactory) unison.Menu {
 	m.InsertItem(-1, FontSettings.NewMenuItem(f))
 	m.InsertItem(-1, MenuKeySettings.NewMenuItem(f))
 	return m
+}
+
+func enabledForSheet(_ *unison.Action, _ any) bool {
+	return sheet.ActiveSheet() != nil
 }

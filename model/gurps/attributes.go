@@ -28,10 +28,8 @@ type Attributes struct {
 // NewAttributes creates a new Attributes.
 func NewAttributes(entity *Entity) *Attributes {
 	a := &Attributes{Set: make(map[string]*Attribute)}
-	i := 0
-	for attrID := range entity.SheetSettings.Attributes.Set {
-		a.Set[attrID] = NewAttribute(entity, attrID, i)
-		i++
+	for attrID, def := range entity.SheetSettings.Attributes.Set {
+		a.Set[attrID] = NewAttribute(entity, attrID, def.Order)
 	}
 	return a
 }

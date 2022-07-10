@@ -41,7 +41,7 @@ func ShowFontSettings() {
 		d := &fontSettingsDockable{}
 		d.Self = d
 		d.TabTitle = i18n.Text("Fonts")
-		d.Extension = ".fonts"
+		d.Extensions = []string{".fonts"}
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset

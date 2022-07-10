@@ -39,7 +39,7 @@ func ShowColorSettings() {
 		d := &colorSettingsDockable{}
 		d.Self = d
 		d.TabTitle = i18n.Text("Colors")
-		d.Extension = ".colors"
+		d.Extensions = []string{".colors"}
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset

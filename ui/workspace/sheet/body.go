@@ -27,6 +27,7 @@ import (
 type BodyPanel struct {
 	unison.Panel
 	entity        *gurps.Entity
+	titledBorder  *widget.TitledBorder
 	row           []unison.Paneler
 	sepLayoutData []*unison.FlexLayoutData
 	crc           uint64
@@ -47,7 +48,8 @@ func NewBodyPanel(entity *gurps.Entity) *BodyPanel {
 	})
 	locations := gurps.SheetSettingsFor(entity).HitLocations
 	p.crc = locations.CRC64()
-	p.SetBorder(unison.NewCompoundBorder(&widget.TitledBorder{Title: locations.Name}, unison.NewEmptyBorder(unison.Insets{
+	p.titledBorder = &widget.TitledBorder{Title: locations.Name}
+	p.SetBorder(unison.NewCompoundBorder(p.titledBorder, unison.NewEmptyBorder(unison.Insets{
 		Left:   2,
 		Bottom: 1,
 		Right:  2,
@@ -93,13 +95,22 @@ func (p *BodyPanel) addContent(locations *gurps.BodyType) {
 func (p *BodyPanel) addTable(bodyType *gurps.BodyType, depth int) {
 	for i, location := range bodyType.Locations {
 		prefix := strings.Repeat("   ", depth)
-		p.AddChild(widget.NewPageLabelCenter(prefix + location.RollRange))
+		label := widget.NewPageLabelCenter(prefix + location.RollRange)
+		label.SetLayoutData(&unison.FlexLayoutData{
+			HAlign: unison.FillAlignment,
+			VAlign: unison.StartAlignment,
+		})
+		p.AddChild(label)
 
 		if i == 0 {
 			p.addSeparator()
 		}
 
 		name := widget.NewPageLabel(prefix + location.TableName)
+		name.SetLayoutData(&unison.FlexLayoutData{
+			HAlign: unison.FillAlignment,
+			VAlign: unison.StartAlignment,
+		})
 		p.row = append(p.row, name)
 		p.AddChild(name)
 		p.AddChild(p.createHitPenaltyField(location))
@@ -117,20 +128,30 @@ func (p *BodyPanel) addTable(bodyType *gurps.BodyType, depth int) {
 }
 
 func (p *BodyPanel) createHitPenaltyField(location *gurps.HitLocation) unison.Paneler {
-	return widget.NewNonEditablePageFieldEnd(func(f *widget.NonEditablePageField) {
+	field := widget.NewNonEditablePageFieldEnd(func(f *widget.NonEditablePageField) {
 		f.Text = fmt.Sprintf("%+d", location.HitPenalty)
 		widget.MarkForLayoutWithinDockable(f)
 	})
+	field.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		VAlign: unison.StartAlignment,
+	})
+	return field
 }
 
 func (p *BodyPanel) createDRField(location *gurps.HitLocation) unison.Paneler {
-	return widget.NewNonEditablePageFieldCenter(func(f *widget.NonEditablePageField) {
+	field := widget.NewNonEditablePageFieldCenter(func(f *widget.NonEditablePageField) {
 		var tooltip xio.ByteBuffer
 		f.Text = location.DisplayDR(p.entity, &tooltip)
 		f.Tooltip = unison.NewTooltipWithText(fmt.Sprintf(i18n.Text("The DR covering the %s hit location%s"),
 			location.TableName, tooltip.String()))
 		widget.MarkForLayoutWithinDockable(f)
 	})
+	field.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		VAlign: unison.StartAlignment,
+	})
+	return field
 }
 
 func (p *BodyPanel) addSeparator() {
@@ -152,6 +173,7 @@ func (p *BodyPanel) Sync() {
 	locations := gurps.SheetSettingsFor(p.entity).HitLocations
 	if crc := locations.CRC64(); crc != p.crc {
 		p.crc = crc
+		p.titledBorder.Title = locations.Name
 		p.addContent(locations)
 		widget.MarkForLayoutWithinDockable(p)
 	}

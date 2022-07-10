@@ -322,7 +322,7 @@ func createExportToTextAction(index int, path string) *unison.Action {
 	return &unison.Action{
 		ID:              constants.ExportToTextBaseItemID + index,
 		Title:           xfs.TrimExtension(filepath.Base(path)),
-		EnabledCallback: func(_ *unison.Action, _ any) bool { return sheet.ActiveSheet() != nil },
+		EnabledCallback: enabledForSheet,
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			if s := sheet.ActiveSheet(); s != nil {
 				dialog := unison.NewSaveDialog()

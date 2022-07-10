@@ -51,7 +51,7 @@ func ShowGeneralSettings() {
 		d := &generalSettingsDockable{}
 		d.Self = d
 		d.TabTitle = i18n.Text("General Settings")
-		d.Extension = ".general"
+		d.Extensions = []string{".general"}
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset

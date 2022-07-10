@@ -53,7 +53,7 @@ type sheetSettingsDockable struct {
 	blockLayoutField                   *unison.Field
 }
 
-// ShowSheetSettings the Sheet Settings window. Pass in nil to edit the defaults or a sheet to edit the sheet's settings
+// ShowSheetSettings the Sheet Settings. Pass in nil to edit the defaults or a sheet to edit the sheet's.
 func ShowSheetSettings(owner widget.EntityPanel) {
 	ws, dc, found := workspace.Activate(func(d unison.Dockable) bool {
 		if s, ok := d.(*sheetSettingsDockable); ok && owner == s.owner {
@@ -69,7 +69,7 @@ func ShowSheetSettings(owner widget.EntityPanel) {
 		} else {
 			d.TabTitle = i18n.Text("Default Sheet Settings")
 		}
-		d.Extension = ".sheet"
+		d.Extensions = []string{".sheet"}
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset
@@ -398,8 +398,5 @@ func (d *sheetSettingsDockable) load(fileSystem fs.FS, filePath string) error {
 }
 
 func (d *sheetSettingsDockable) save(filePath string) error {
-	if d.owner != nil {
-		return d.owner.Entity().SheetSettings.Save(filePath)
-	}
-	return settings.Global().Sheet.Save(filePath)
+	return d.settings().Save(filePath)
 }

@@ -42,11 +42,11 @@ type NamedFileSet struct {
 }
 
 // ScanForNamedFileSets scans for settings files of a particular type.
-func ScanForNamedFileSets(builtIn fs.FS, builtInDir, extension string, omitDuplicateNames bool, libraries Libraries) []*NamedFileSet {
+func ScanForNamedFileSets(builtIn fs.FS, builtInDir string, omitDuplicateNames bool, libraries Libraries, extensions ...string) []*NamedFileSet {
 	set := make(map[string]bool)
 	list := make([]*NamedFileSet, 0)
 	for _, lib := range libraries.List() {
-		if refs := scanForNamedFileSets(os.DirFS(lib.Path()), "Settings", extension, omitDuplicateNames, set); len(refs) != 0 {
+		if refs := scanForNamedFileSets(os.DirFS(lib.Path()), "Settings", extensions, omitDuplicateNames, set); len(refs) != 0 {
 			list = append(list, &NamedFileSet{
 				Name: lib.Title,
 				List: refs,
@@ -54,7 +54,7 @@ func ScanForNamedFileSets(builtIn fs.FS, builtInDir, extension string, omitDupli
 		}
 	}
 	if builtIn != nil {
-		if refs := scanForNamedFileSets(builtIn, builtInDir, extension, omitDuplicateNames, set); len(refs) != 0 {
+		if refs := scanForNamedFileSets(builtIn, builtInDir, extensions, omitDuplicateNames, set); len(refs) != 0 {
 			list = append(list, &NamedFileSet{
 				Name: i18n.Text("Built-in"),
 				List: refs,
@@ -64,7 +64,7 @@ func ScanForNamedFileSets(builtIn fs.FS, builtInDir, extension string, omitDupli
 	return list
 }
 
-func scanForNamedFileSets(fileSystem fs.FS, dirPath, extension string, omitDuplicateNames bool, set map[string]bool) []*NamedFileRef {
+func scanForNamedFileSets(fileSystem fs.FS, dirPath string, extensions []string, omitDuplicateNames bool, set map[string]bool) []*NamedFileRef {
 	entries, err := fs.ReadDir(fileSystem, dirPath)
 	if err != nil {
 		if !errors.Is(err, fs.ErrNotExist) {
@@ -75,15 +75,18 @@ func scanForNamedFileSets(fileSystem fs.FS, dirPath, extension string, omitDupli
 	list := make([]*NamedFileRef, 0)
 	for _, entry := range entries {
 		name := entry.Name()
-		if strings.EqualFold(path.Ext(name), extension) {
-			shortName := xfs.TrimExtension(name)
-			if shortLowerName := strings.ToLower(shortName); !omitDuplicateNames || !set[shortLowerName] {
-				set[shortLowerName] = true
-				list = append(list, &NamedFileRef{
-					Name:       shortName,
-					FileSystem: fileSystem,
-					FilePath:   path.Join(dirPath, name),
-				})
+		for _, extension := range extensions {
+			if strings.EqualFold(path.Ext(name), extension) {
+				shortName := xfs.TrimExtension(name)
+				if shortLowerName := strings.ToLower(shortName); !omitDuplicateNames || !set[shortLowerName] {
+					set[shortLowerName] = true
+					list = append(list, &NamedFileRef{
+						Name:       shortName,
+						FileSystem: fileSystem,
+						FilePath:   path.Join(dirPath, name),
+					})
+				}
+				break
 			}
 		}
 	}

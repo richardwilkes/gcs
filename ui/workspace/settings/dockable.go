@@ -35,11 +35,11 @@ var (
 // Dockable holds common settings dockable data.
 type Dockable struct {
 	unison.Panel
-	TabTitle  string
-	Extension string
-	Loader    func(fileSystem fs.FS, filePath string) error
-	Saver     func(filePath string) error
-	Resetter  func()
+	TabTitle   string
+	Extensions []string
+	Loader     func(fileSystem fs.FS, filePath string) error
+	Saver      func(filePath string) error
+	Resetter   func()
 }
 
 // Setup the dockable and display it.
@@ -165,7 +165,7 @@ func (d *Dockable) showMenu(b *unison.Button) {
 	}
 	if d.Loader != nil {
 		libraries := settings.Global().Libraries()
-		sets := library.ScanForNamedFileSets(nil, "", d.Extension, false, libraries)
+		sets := library.ScanForNamedFileSets(nil, "", false, libraries, d.Extensions...)
 		if len(sets) != 0 {
 			m.InsertSeparator(-1, false)
 			for _, lib := range sets {
@@ -197,7 +197,7 @@ func (d *Dockable) doLoad(fileSystem fs.FS, filePath string) {
 func (d *Dockable) handleImport(_ unison.MenuItem) {
 	dialog := unison.NewOpenDialog()
 	dialog.SetResolvesAliases(true)
-	dialog.SetAllowedExtensions(d.Extension)
+	dialog.SetAllowedExtensions(d.Extensions...)
 	dialog.SetAllowsMultipleSelection(false)
 	dialog.SetCanChooseDirectories(false)
 	dialog.SetCanChooseFiles(true)
@@ -209,7 +209,7 @@ func (d *Dockable) handleImport(_ unison.MenuItem) {
 
 func (d *Dockable) handleExport(_ unison.MenuItem) {
 	dialog := unison.NewSaveDialog()
-	dialog.SetAllowedExtensions(d.Extension)
+	dialog.SetAllowedExtensions(d.Extensions[0])
 	if dialog.RunModal() {
 		if err := d.Saver(dialog.Path()); err != nil {
 			unison.ErrorDialogWithError(i18n.Text("Unable to save ")+d.TabTitle, err)

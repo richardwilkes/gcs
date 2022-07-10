@@ -76,18 +76,20 @@ func FactoryAttributeDefs() *AttributeDefs {
 type attributeDefsData struct {
 	Type    string         `json:"type"`
 	Version int            `json:"version"`
-	Rows    *AttributeDefs `json:"rows"`
+	Rows    *AttributeDefs `json:"rows,alt=attributes"`
 }
 
 // NewAttributeDefsFromFile loads an AttributeDef set from a file.
 func NewAttributeDefsFromFile(fileSystem fs.FS, filePath string) (*AttributeDefs, error) {
 	var data struct {
 		attributeDefsData
-		OldKey1 *AttributeDefs `json:"attribute_settings"`
-		OldKey2 *AttributeDefs `json:"attributes"`
+		OldestKey *AttributeDefs `json:"attribute_settings"`
 	}
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
 		return nil, errs.NewWithCause(gid.InvalidFileDataMsg, err)
+	}
+	if data.Type == "" && data.Version == 2 { // for some older files
+		data.Type = attributeSettingsListTypeKey
 	}
 	if data.Type != attributeSettingsListTypeKey {
 		return nil, errs.New(gid.UnexpectedFileDataMsg)
@@ -99,11 +101,8 @@ func NewAttributeDefsFromFile(fileSystem fs.FS, filePath string) (*AttributeDefs
 	if data.attributeDefsData.Rows != nil {
 		defs = data.attributeDefsData.Rows
 	}
-	if defs == nil && data.OldKey1 != nil {
-		defs = data.OldKey1
-	}
-	if defs == nil && data.OldKey2 != nil {
-		defs = data.OldKey2
+	if defs == nil && data.OldestKey != nil {
+		defs = data.OldestKey
 	}
 	if defs == nil {
 		defs = FactoryAttributeDefs()

@@ -50,10 +50,6 @@ func Setup(wnd *unison.Window) {
 	})
 }
 
-func notEnabled(_ *unison.Action, _ any) bool {
-	return false
-}
-
 // TODO: Implement each call site
 func unimplemented(a *unison.Action, _ any) {
 	unison.ErrorDialogWithMessage("Unimplemented Action:", a.Title)

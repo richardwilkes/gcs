@@ -136,7 +136,7 @@ func ShowPageRefMappings() {
 		d := &pageRefMappingsDockable{}
 		d.Self = d
 		d.TabTitle = i18n.Text("Page Reference Mappings")
-		d.Extension = ".refs"
+		d.Extensions = []string{".refs"}
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset

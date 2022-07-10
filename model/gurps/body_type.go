@@ -28,7 +28,10 @@ import (
 	"github.com/richardwilkes/toolbox/txt"
 )
 
-const bodyTypeListTypeKey = "body_type"
+const (
+	bodyTypeListTypeKey    = "body_type"
+	oldBodyTypeListTypeKey = "hit_locations"
+)
 
 //go:embed data
 var embeddedFS embed.FS
@@ -84,19 +87,20 @@ func FactoryBodyTypes() []*BodyType {
 func NewBodyTypeFromFile(fileSystem fs.FS, filePath string) (*BodyType, error) {
 	var data struct {
 		bodyTypeListData
-		HitLocations []*HitLocation `json:"hit_locations"`
+		OldHitLocations *BodyType `json:"hit_locations"`
 	}
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
 		return nil, errs.NewWithCause(gid.InvalidFileDataMsg, err)
 	}
 	if data.Type != bodyTypeListTypeKey {
-		return nil, errs.New(gid.UnexpectedFileDataMsg)
+		if data.Type == oldBodyTypeListTypeKey {
+			data.BodyType = data.OldHitLocations
+		} else {
+			return nil, errs.New(gid.UnexpectedFileDataMsg)
+		}
 	}
 	if err := gid.CheckVersion(data.Version); err != nil {
 		return nil, err
-	}
-	if data.Locations == nil {
-		data.BodyType.Locations = data.HitLocations
 	}
 	data.BodyType.EnsureValidity()
 	data.BodyType.Update(nil)
