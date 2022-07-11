@@ -12,6 +12,7 @@
 package fxp
 
 import (
+	"github.com/richardwilkes/gcs/v5/dbg"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/eval"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -36,7 +37,9 @@ func NewEvaluator(resolver eval.VariableResolver) *eval.Evaluator {
 func EvaluateToNumber(expression string, resolver eval.VariableResolver) Int {
 	result, err := NewEvaluator(resolver).Evaluate(expression)
 	if err != nil {
-		jot.Warn(errs.NewWithCausef(err, "unable to resolve '%s'", expression))
+		if dbg.VariableResolver {
+			jot.Warn(errs.NewWithCausef(err, "unable to resolve '%s'", expression))
+		}
 		return 0
 	}
 	if value, ok := result.(Int); ok {
@@ -48,6 +51,8 @@ func EvaluateToNumber(expression string, resolver eval.VariableResolver) Int {
 			return value
 		}
 	}
-	jot.Warn(errs.Newf("unable to resolve '%s' to a number", expression))
+	if dbg.VariableResolver {
+		jot.Warn(errs.NewWithCausef(err, "unable to resolve '%s' to a number", expression))
+	}
 	return 0
 }

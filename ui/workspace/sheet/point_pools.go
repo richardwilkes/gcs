@@ -127,10 +127,10 @@ func (p *PointPoolsPanel) createPointsField(attr *gurps.Attribute) *widget.NonEd
 
 // Sync the panel to the current data.
 func (p *PointPoolsPanel) Sync() {
-	attrs := gurps.SheetSettingsFor(p.entity).Attributes
+	attrs := p.entity.Attributes
 	if crc := attrs.CRC64(); crc != p.crc {
 		p.crc = crc
-		p.rebuild(attrs)
+		p.rebuild(gurps.SheetSettingsFor(p.entity).Attributes)
 		widget.MarkForLayoutWithinDockable(p)
 	}
 }

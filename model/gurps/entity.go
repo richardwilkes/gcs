@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/richardwilkes/gcs/v5/dbg"
 	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/ancestry"
@@ -935,9 +936,12 @@ func (e *Entity) BasicLift() measure.Weight {
 // ResolveVariable implements eval.VariableResolver.
 func (e *Entity) ResolveVariable(variableName string) string {
 	if e.variableResolverExclusions[variableName] {
-		jot.Warn("attempt to resolve variable via itself: $" + variableName)
+		if dbg.VariableResolver {
+			jot.Warnf("attempt to resolve variable via itself: $%s", variableName)
+		}
 		return ""
 	}
+
 	if e.variableResolverExclusions == nil {
 		e.variableResolverExclusions = make(map[string]bool)
 	}
@@ -949,24 +953,20 @@ func (e *Entity) ResolveVariable(variableName string) string {
 	parts := strings.SplitN(variableName, ".", 2)
 	attr := e.Attributes.Set[parts[0]]
 	if attr == nil {
-		jot.Warn("no such variable: $" + variableName)
+		if dbg.VariableResolver {
+			jot.Warnf("no such variable: $%s", variableName)
+		}
 		return ""
 	}
 	def := attr.AttributeDef()
 	if def == nil {
-		jot.Warn("no such variable definition: $" + variableName)
+		if dbg.VariableResolver {
+			jot.Warnf("no such variable definition: $%s", variableName)
+		}
 		return ""
 	}
-	if def.Type == attribute.Pool && len(parts) > 1 {
-		switch parts[1] {
-		case "current":
-			return attr.Current().Trunc().String()
-		case "maximum":
-			return attr.Maximum().Trunc().String()
-		default:
-			jot.Warn("no such variable: $" + variableName)
-			return ""
-		}
+	if def.Type == attribute.Pool && len(parts) > 1 && parts[1] == "current" {
+		return attr.Current().String()
 	}
 	return attr.Maximum().String()
 }

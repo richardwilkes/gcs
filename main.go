@@ -14,6 +14,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/richardwilkes/gcs/v5/dbg"
 	"github.com/richardwilkes/gcs/v5/model/export"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
@@ -40,6 +41,7 @@ func main() {
 	cl.NewGeneralOption(&textTmplPath).SetName("text").SetSingle('x').SetArg("file").
 		SetUsage(i18n.Text("Export sheets using the specified template file"))
 	cl.NewGeneralOption(&showCopyrightDateAndExit).SetName("copyright-date")
+	cl.NewGeneralOption(&dbg.VariableResolver).SetName("debug-variable-resolver")
 	fileList := jotrotate.ParseAndSetup(cl)
 	if showCopyrightDateAndExit {
 		fmt.Print(cmdline.ResolveCopyrightYears())

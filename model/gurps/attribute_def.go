@@ -12,7 +12,7 @@
 package gurps
 
 import (
-	"strconv"
+	"bytes"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/crc"
@@ -20,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/id"
+	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/eval"
 )
 
@@ -28,6 +29,12 @@ var ReservedIDs = []string{gid.Skill, gid.Parry, gid.Block, gid.Dodge, gid.SizeM
 
 // AttributeDef holds the definition of an attribute.
 type AttributeDef struct {
+	AttributeDefData
+	Order int
+}
+
+// AttributeDefData holds the data that will be serialized for the AttributeDef.
+type AttributeDefData struct {
 	DefID               string           `json:"id"`
 	Type                attribute.Type   `json:"type"`
 	Name                string           `json:"name"`
@@ -36,7 +43,26 @@ type AttributeDef struct {
 	CostPerPoint        fxp.Int          `json:"cost_per_point"`
 	CostAdjPercentPerSM fxp.Int          `json:"cost_adj_percent_per_sm,omitempty"`
 	Thresholds          []*PoolThreshold `json:"thresholds,omitempty"`
-	Order               int              `json:"-"`
+}
+
+// MarshalJSON implements json.Marshaler.
+func (a *AttributeDef) MarshalJSON() ([]byte, error) {
+	var buffer bytes.Buffer
+	e := json.NewEncoder(&buffer)
+	e.SetEscapeHTML(false)
+	err := e.Encode(&a.AttributeDefData)
+	return buffer.Bytes(), err
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (a *AttributeDef) UnmarshalJSON(data []byte) error {
+	if err := json.Unmarshal(data, &a.AttributeDefData); err != nil {
+		return err
+	}
+	for _, threshold := range a.Thresholds {
+		threshold.Expression = strings.ReplaceAll(threshold.Expression, "$self", "$"+a.DefID)
+	}
+	return nil
 }
 
 // Clone a copy of this.
@@ -83,7 +109,7 @@ func (a *AttributeDef) CombinedName() string {
 
 // Primary returns true if the base value is a non-derived value.
 func (a *AttributeDef) Primary() bool {
-	_, err := strconv.ParseInt(strings.TrimSpace(a.AttributeBase), 10, 64)
+	_, err := fxp.FromString(strings.TrimSpace(a.AttributeBase))
 	return err == nil
 }
 

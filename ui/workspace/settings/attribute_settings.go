@@ -1,13 +1,18 @@
 package settings
 
 import (
+	"fmt"
 	"io/fs"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/attribute"
 	"github.com/richardwilkes/gcs/v5/model/settings"
+	"github.com/richardwilkes/gcs/v5/res"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/gcs/v5/ui/workspace"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
 )
 
@@ -15,7 +20,13 @@ var _ widget.GroupedCloser = &attributesDockable{}
 
 type attributesDockable struct {
 	Dockable
-	owner widget.EntityPanel
+	owner         widget.EntityPanel
+	defs          *gurps.AttributeDefs
+	originalCRC   uint64
+	content       *unison.Panel
+	applyButton   *unison.Button
+	cancelButton  *unison.Button
+	promptForSave bool
 }
 
 // ShowAttributeSettings the Attribute Settings. Pass in nil to edit the defaults or a sheet to edit the sheet's.
@@ -30,15 +41,36 @@ func ShowAttributeSettings(owner widget.EntityPanel) {
 		d := &attributesDockable{owner: owner}
 		d.Self = d
 		if owner != nil {
+			d.defs = d.owner.Entity().SheetSettings.Attributes.Clone()
 			d.TabTitle = i18n.Text("Attributes: " + owner.Entity().Profile.Name)
 		} else {
+			d.defs = settings.Global().Sheet.Attributes.Clone()
 			d.TabTitle = i18n.Text("Default Attributes")
 		}
+		d.originalCRC = d.defs.CRC64()
 		d.Extensions = []string{".attr", ".attributes", ".gas"}
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset
-		d.Setup(ws, dc, nil, nil, d.initContent)
+		d.ModifiedCallback = func() bool {
+			modified := d.originalCRC != d.defs.CRC64()
+			d.applyButton.SetEnabled(modified)
+			d.cancelButton.SetEnabled(modified)
+			return modified
+		}
+		d.WillCloseCallback = func() bool {
+			if d.promptForSave && d.originalCRC != d.defs.CRC64() {
+				switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Apply changes made to\n%s?"), d.Title()), "") {
+				case unison.ModalResponseDiscard:
+				case unison.ModalResponseOK:
+					d.apply()
+				case unison.ModalResponseCancel:
+					return false
+				}
+			}
+			return true
+		}
+		d.Setup(ws, dc, d.addToStartToolbar, nil, d.initContent)
 	}
 }
 
@@ -46,55 +78,425 @@ func (d *attributesDockable) CloseWithGroup(other unison.Paneler) bool {
 	return d.owner != nil && d.owner == other
 }
 
-func (d *attributesDockable) defs() *gurps.AttributeDefs {
-	if d.owner != nil {
-		return d.owner.Entity().SheetSettings.Attributes
+func (d *attributesDockable) addToStartToolbar(toolbar *unison.Panel) {
+	d.applyButton = unison.NewSVGButton(res.CheckmarkSVG)
+	d.applyButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Apply Changes"))
+	d.applyButton.SetEnabled(false)
+	d.applyButton.ClickCallback = func() {
+		d.apply()
+		d.promptForSave = false
+		d.AttemptClose()
 	}
-	return settings.Global().Sheet.Attributes
+	toolbar.AddChild(d.applyButton)
+
+	d.cancelButton = unison.NewSVGButton(res.NotSVG)
+	d.cancelButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Discard Changes"))
+	d.cancelButton.SetEnabled(false)
+	d.cancelButton.ClickCallback = func() {
+		d.promptForSave = false
+		d.AttemptClose()
+	}
+	toolbar.AddChild(d.cancelButton)
 }
 
 func (d *attributesDockable) initContent(content *unison.Panel) {
+	d.content = content
+	content.SetBorder(nil)
+	content.SetLayout(&unison.FlexLayout{Columns: 1})
+	for _, def := range d.defs.List() {
+		content.AddChild(d.createAttrDefPanel(def))
+	}
+}
+
+func (d *attributesDockable) createAttrDefPanel(def *gurps.AttributeDef) *unison.Panel {
+	panel := unison.NewPanel()
+	panel.SetBorder(unison.NewEmptyBorder(unison.Insets{
+		Top:    unison.StdVSpacing,
+		Left:   unison.StdHSpacing,
+		Bottom: unison.StdVSpacing,
+		Right:  unison.StdHSpacing * 2,
+	}))
+	panel.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+		color := unison.ContentColor
+		if panel.Parent().IndexOfChild(panel)%2 == 1 {
+			color = unison.BandingColor
+		}
+		gc.DrawRect(rect, color.Paint(gc, rect, unison.Fill))
+	}
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	panel.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		VAlign: unison.StartAlignment,
+		HGrab:  true,
+	})
+
+	panel.AddChild(d.createButtons(def))
+	panel.AddChild(d.createContent(def))
+	return panel
+}
+
+func (d *attributesDockable) createButtons(def *gurps.AttributeDef) *unison.Panel {
+	buttons := unison.NewPanel()
+	buttons.SetLayout(&unison.FlexLayout{
+		Columns:  1,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	buttons.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.MiddleAlignment,
+		VAlign: unison.StartAlignment,
+	})
+
+	deleteButton := unison.NewSVGButton(res.TrashSVG)
+	deleteButton.ClickCallback = func() {
+		// TODO: Implement removal of attribute
+		jot.Info("delete attribute button clicked")
+	}
+	buttons.AddChild(deleteButton)
+
+	addButton := unison.NewSVGButton(res.CircledAddSVG)
+	addButton.ClickCallback = func() {
+		// TODO: Implement addition of threshold
+		jot.Info("add threshold button clicked")
+	}
+	addButton.SetEnabled(def.Type == attribute.Pool)
+	buttons.AddChild(addButton)
+	return buttons
+}
+
+func (d *attributesDockable) createContent(def *gurps.AttributeDef) *unison.Panel {
+	content := unison.NewPanel()
 	content.SetLayout(&unison.FlexLayout{
 		Columns:  1,
 		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.DefaultLabelTheme.Font.LineHeight(),
+		VSpacing: unison.StdVSpacing,
 	})
-	// TODO: build content here
+	content.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		VAlign: unison.StartAlignment,
+		HGrab:  true,
+	})
+	content.AddChild(d.createFirstLine(def))
+	content.AddChild(d.createSecondLine(def))
+	if def.Type == attribute.Pool {
+		content.AddChild(d.createPool(def))
+	}
+	return content
+}
+
+func (d *attributesDockable) createFirstLine(def *gurps.AttributeDef) *unison.Panel {
+	panel := unison.NewPanel()
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  6,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	panel.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		VAlign: unison.StartAlignment,
+		HGrab:  true,
+	})
+
+	text := i18n.Text("ID")
+	panel.AddChild(widget.NewFieldLeadingLabel(text))
+	field := widget.NewStringField(text, func() string {
+		return def.DefID
+	}, func(s string) {
+		def.DefID = s
+	})
+	field.SetMinimumTextWidthUsing("basic_speed")
+	field.Tooltip = unison.NewTooltipWithText(i18n.Text("A unique ID for the attribute"))
+	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
+	panel.AddChild(field)
+
+	text = i18n.Text("Short Name")
+	panel.AddChild(widget.NewFieldLeadingLabel(text))
+	field = widget.NewStringField(text, func() string {
+		return def.Name
+	}, func(s string) {
+		def.Name = s
+	})
+	field.SetMinimumTextWidthUsing("Taste & Smell")
+	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The name of this attribute, often an abbreviation"))
+	panel.AddChild(field)
+
+	text = i18n.Text("Full Name")
+	panel.AddChild(widget.NewFieldLeadingLabel(text))
+	field = widget.NewStringField(text, func() string {
+		return def.FullName
+	}, func(s string) {
+		def.FullName = s
+	})
+	field.SetMinimumTextWidthUsing("Fatigue Points")
+	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The full name of this attribute (may be omitted, in which case the Short Name will be used instead)"))
+	panel.AddChild(field)
+	return panel
+}
+
+func (d *attributesDockable) createSecondLine(def *gurps.AttributeDef) *unison.Panel {
+	panel := unison.NewPanel()
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  7,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	panel.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		VAlign: unison.StartAlignment,
+		HGrab:  true,
+	})
+
+	popup := unison.NewPopupMenu[attribute.Type]()
+	for _, one := range attribute.AllType {
+		popup.AddItem(one)
+	}
+	popup.Select(def.Type)
+	popup.SelectionCallback = func(_ int, typ attribute.Type) {
+		def.Type = typ
+		d.sync()
+	}
+	panel.AddChild(popup)
+
+	text := i18n.Text("Base")
+	panel.AddChild(widget.NewFieldLeadingLabel(text))
+	field := widget.NewStringField(text, func() string {
+		return def.AttributeBase
+	}, func(s string) {
+		def.AttributeBase = s
+	})
+	field.SetMinimumTextWidthUsing("floor($basic_speed)")
+	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The base value, which may be a number or a formula"))
+	panel.AddChild(field)
+
+	text = i18n.Text("Cost")
+	panel.AddChild(widget.NewFieldLeadingLabel(text))
+	numField := widget.NewIntegerField(text, func() int {
+		return fxp.As[int](def.CostPerPoint)
+	}, func(v int) {
+		def.CostPerPoint = fxp.From(v)
+	}, 0, 9999, false, false)
+	numField.Tooltip = unison.NewTooltipWithText(i18n.Text("The cost per point difference from the base"))
+	panel.AddChild(numField)
+
+	text = i18n.Text("SM Reduction")
+	panel.AddChild(widget.NewFieldLeadingLabel(text))
+	numField = widget.NewPercentageField(text, func() int {
+		return fxp.As[int](def.CostAdjPercentPerSM)
+	}, func(v int) {
+		def.CostAdjPercentPerSM = fxp.From(v)
+	}, 0, 80, false, false)
+	numField.Tooltip = unison.NewTooltipWithText(i18n.Text("The reduction in cost for each SM greater than 0"))
+	panel.AddChild(numField)
+
+	return panel
+}
+
+func (d *attributesDockable) createPool(def *gurps.AttributeDef) *unison.Panel {
+	panel := unison.NewPanel()
+	panel.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  1,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	panel.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		VAlign: unison.StartAlignment,
+		HGrab:  true,
+	})
+	for _, threshold := range def.Thresholds {
+		panel.AddChild(d.createThresholdPanel(def, threshold))
+	}
+	return panel
+}
+
+func (d *attributesDockable) createThresholdPanel(def *gurps.AttributeDef, threshold *gurps.PoolThreshold) *unison.Panel {
+	panel := unison.NewPanel()
+	panel.SetBorder(unison.NewEmptyBorder(unison.Insets{
+		Top:    unison.StdVSpacing,
+		Left:   unison.StdHSpacing,
+		Bottom: unison.StdVSpacing,
+		Right:  unison.StdHSpacing,
+	}))
+	panel.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+		color := unison.ContentColor
+		if panel.Parent().IndexOfChild(panel)%2 == 1 {
+			color = unison.BandingColor
+		}
+		gc.DrawRect(rect, color.Paint(gc, rect, unison.Fill))
+	}
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	panel.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		VAlign: unison.StartAlignment,
+		HGrab:  true,
+	})
+
+	panel.AddChild(d.createThresholdButtons(def, threshold))
+	panel.AddChild(d.createThesholdContent(threshold))
+	return panel
+}
+
+func (d *attributesDockable) createThresholdButtons(def *gurps.AttributeDef, threshold *gurps.PoolThreshold) *unison.Panel {
+	buttons := unison.NewPanel()
+	buttons.SetLayout(&unison.FlexLayout{
+		Columns:  1,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	buttons.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.MiddleAlignment,
+		VAlign: unison.StartAlignment,
+	})
+
+	deleteButton := unison.NewSVGButton(res.TrashSVG)
+	deleteButton.ClickCallback = func() {
+		// TODO: Implement removal of threshold
+		jot.Info("delete threshold button clicked")
+	}
+	deleteButton.SetEnabled(len(def.Thresholds) > 1)
+	buttons.AddChild(deleteButton)
+	return buttons
+}
+
+func (d *attributesDockable) createThesholdContent(threshold *gurps.PoolThreshold) *unison.Panel {
+	content := unison.NewPanel()
+	content.SetLayout(&unison.FlexLayout{
+		Columns:  1,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	content.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		VAlign: unison.StartAlignment,
+		HGrab:  true,
+	})
+	content.AddChild(d.createFirstThresholdLine(threshold))
+	content.AddChild(d.createSecondThresholdLine(threshold))
+	content.AddChild(d.createThirdThresholdLine(threshold))
+	return content
+}
+
+func (d *attributesDockable) createFirstThresholdLine(threshold *gurps.PoolThreshold) *unison.Panel {
+	panel := unison.NewPanel()
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  4,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	panel.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		VAlign: unison.StartAlignment,
+		HGrab:  true,
+	})
+
+	text := i18n.Text("State")
+	panel.AddChild(widget.NewFieldLeadingLabel(text))
+	field := widget.NewStringField(text, func() string {
+		return threshold.State
+	}, func(s string) {
+		threshold.State = s
+	})
+	field.SetMinimumTextWidthUsing("Unconscious")
+	field.Tooltip = unison.NewTooltipWithText(i18n.Text("A short description of the threshold state"))
+	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
+	panel.AddChild(field)
+
+	text = i18n.Text("Threshold")
+	panel.AddChild(widget.NewFieldLeadingLabel(text))
+	field = widget.NewStringField(text, func() string {
+		return threshold.Expression
+	}, func(s string) {
+		threshold.Expression = s
+	})
+	field.SetMinimumTextWidthUsing("round($self*100/50+20)")
+	field.Tooltip = unison.NewTooltipWithText(i18n.Text("An expression to calculate the threshold value"))
+	panel.AddChild(field)
+	return panel
+}
+
+func (d *attributesDockable) createSecondThresholdLine(threshold *gurps.PoolThreshold) *unison.Panel {
+	panel := unison.NewPanel()
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  3,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	panel.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.StartAlignment,
+		VAlign: unison.StartAlignment,
+	})
+
+	for _, op := range attribute.AllThresholdOp[1:] {
+		panel.AddChild(createOpCheckBox(threshold, op))
+	}
+	return panel
+}
+
+func createOpCheckBox(threshold *gurps.PoolThreshold, op attribute.ThresholdOp) *unison.CheckBox {
+	checkBox := widget.NewCheckBox(op.String(), threshold.ContainsOp(op), func(b bool) {
+		if b {
+			threshold.AddOp(op)
+		} else {
+			threshold.RemoveOp(op)
+		}
+	})
+	checkBox.Tooltip = unison.NewTooltipWithText(op.AltString())
+	return checkBox
+}
+
+func (d *attributesDockable) createThirdThresholdLine(threshold *gurps.PoolThreshold) *unison.Panel {
+	panel := unison.NewPanel()
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	panel.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		VAlign: unison.StartAlignment,
+		HGrab:  true,
+	})
+
+	text := i18n.Text("Explanation")
+	panel.AddChild(widget.NewFieldLeadingLabel(text))
+	field := widget.NewMultiLineStringField(text, func() string {
+		return threshold.Explanation
+	}, func(s string) {
+		threshold.Explanation = s
+	})
+	field.Tooltip = unison.NewTooltipWithText(i18n.Text("A explanation of the effects of the threshold state"))
+	panel.AddChild(field)
+	return panel
 }
 
 func (d *attributesDockable) reset() {
 	if d.owner != nil {
-		entity := d.owner.Entity()
-		entity.SheetSettings.Attributes = settings.Global().Sheet.Attributes.Clone()
+		d.defs = settings.Global().Sheet.Attributes.Clone()
 	} else {
-		settings.Global().Sheet.Attributes = gurps.FactoryAttributeDefs()
+		d.defs = gurps.FactoryAttributeDefs()
 	}
 	d.sync()
 }
 
 func (d *attributesDockable) sync() {
-	// TODO: Sync content here
-	d.MarkForRedraw()
-	d.syncSheet(true) // TODO: Remove when actual sync logic is installed, above
-}
-
-func (d *attributesDockable) syncSheet(full bool) {
-	if d.owner == nil {
-		return
+	scrollRoot := d.content.ScrollRoot()
+	h, v := scrollRoot.Position()
+	d.content.RemoveAllChildren()
+	for _, def := range d.defs.List() {
+		d.content.AddChild(d.createAttrDefPanel(def))
 	}
-	entity := d.owner.Entity()
-	for _, wnd := range unison.Windows() {
-		if ws := workspace.FromWindow(wnd); ws != nil {
-			ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
-				for _, one := range dc.Dockables() {
-					if s, ok := one.(gurps.SheetSettingsResponder); ok {
-						s.SheetSettingsUpdated(entity, full)
-					}
-				}
-				return false
-			})
-		}
-	}
+	scrollRoot.SetPosition(h, v)
+	d.MarkForLayoutAndRedraw()
+	d.MarkModified()
 }
 
 func (d *attributesDockable) load(fileSystem fs.FS, filePath string) error {
@@ -102,28 +504,45 @@ func (d *attributesDockable) load(fileSystem fs.FS, filePath string) error {
 	if err != nil {
 		return err
 	}
-	if d.owner != nil {
-		entity := d.owner.Entity()
-		entity.SheetSettings.Attributes = defs
-		for attrID, def := range entity.SheetSettings.Attributes.Set {
-			if attr, exists := entity.Attributes.Set[attrID]; exists {
-				attr.Order = def.Order
-			} else {
-				entity.Attributes.Set[attrID] = gurps.NewAttribute(entity, attrID, def.Order)
-			}
-		}
-		for attrID := range entity.Attributes.Set {
-			if _, exists := defs.Set[attrID]; !exists {
-				delete(entity.Attributes.Set, attrID)
-			}
-		}
-	} else {
-		settings.Global().Sheet.Attributes = defs
-	}
+	d.defs = defs
 	d.sync()
 	return nil
 }
 
 func (d *attributesDockable) save(filePath string) error {
-	return d.defs().Save(filePath)
+	return d.defs.Save(filePath)
+}
+
+func (d *attributesDockable) apply() {
+	d.Window().FocusNext() // Intentionally move the focus to ensure any pending edits are flushed
+	if d.owner == nil {
+		settings.Global().Sheet.Attributes = d.defs.Clone()
+		return
+	}
+	entity := d.owner.Entity()
+	entity.SheetSettings.Attributes = d.defs.Clone()
+	for attrID, def := range entity.SheetSettings.Attributes.Set {
+		if attr, exists := entity.Attributes.Set[attrID]; exists {
+			attr.Order = def.Order
+		} else {
+			entity.Attributes.Set[attrID] = gurps.NewAttribute(entity, attrID, def.Order)
+		}
+	}
+	for attrID := range entity.Attributes.Set {
+		if _, exists := d.defs.Set[attrID]; !exists {
+			delete(entity.Attributes.Set, attrID)
+		}
+	}
+	for _, wnd := range unison.Windows() {
+		if ws := workspace.FromWindow(wnd); ws != nil {
+			ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
+				for _, one := range dc.Dockables() {
+					if s, ok := one.(gurps.SheetSettingsResponder); ok {
+						s.SheetSettingsUpdated(entity, true)
+					}
+				}
+				return false
+			})
+		}
+	}
 }

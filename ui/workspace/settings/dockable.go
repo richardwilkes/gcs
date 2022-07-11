@@ -20,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/res"
+	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/gcs/v5/ui/workspace"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -35,11 +36,13 @@ var (
 // Dockable holds common settings dockable data.
 type Dockable struct {
 	unison.Panel
-	TabTitle   string
-	Extensions []string
-	Loader     func(fileSystem fs.FS, filePath string) error
-	Saver      func(filePath string) error
-	Resetter   func()
+	TabTitle          string
+	Extensions        []string
+	Loader            func(fileSystem fs.FS, filePath string) error
+	Saver             func(filePath string) error
+	Resetter          func()
+	ModifiedCallback  func() bool
+	WillCloseCallback func() bool
 }
 
 // Setup the dockable and display it.
@@ -90,16 +93,36 @@ func (d *Dockable) Tooltip() string {
 
 // Modified implements unison.Dockable
 func (d *Dockable) Modified() bool {
-	return false
+	if d.ModifiedCallback == nil {
+		return false
+	}
+	return d.ModifiedCallback()
+}
+
+// MarkModified implements widget.ModifiableRoot
+func (d *Dockable) MarkModified() {
+	d.Modified()
+	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
+		dc.UpdateTitle(d)
+	}
+	widget.DeepSync(d)
 }
 
 // MayAttemptClose implements unison.TabCloser
 func (d *Dockable) MayAttemptClose() bool {
-	return true
+	return workspace.MayAttemptCloseOfGroup(d)
 }
 
 // AttemptClose implements unison.TabCloser
 func (d *Dockable) AttemptClose() bool {
+	if !workspace.CloseGroup(d) {
+		return false
+	}
+	if d.WillCloseCallback != nil {
+		if !d.WillCloseCallback() {
+			return false
+		}
+	}
 	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
 		dc.Close(d)
 	}

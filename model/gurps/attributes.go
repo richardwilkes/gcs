@@ -16,6 +16,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/json"
 )
@@ -78,6 +79,15 @@ func (a *Attributes) List() []*Attribute {
 	return list
 }
 
+// CRC64 calculates a CRC-64 for this data.
+func (a *Attributes) CRC64() uint64 {
+	c := crc.Number(0, len(a.Set))
+	for _, one := range a.List() {
+		c = one.crc64(c)
+	}
+	return c
+}
+
 // Cost returns the points spent for the specified Attribute.
 func (a *Attributes) Cost(attrID string) fxp.Int {
 	if attr, ok := a.Set[attrID]; ok {
@@ -114,7 +124,7 @@ func (a *Attributes) PoolThreshold(attrID, state string) fxp.Int {
 		if def := attr.AttributeDef(); def != nil {
 			for _, one := range def.Thresholds {
 				if strings.EqualFold(one.State, state) {
-					return one.Threshold(attr.Maximum())
+					return one.Threshold(attr.Entity)
 				}
 			}
 		}

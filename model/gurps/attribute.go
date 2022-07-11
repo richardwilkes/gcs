@@ -12,6 +12,7 @@
 package gurps
 
 import (
+	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/attribute"
 	"github.com/richardwilkes/gcs/v5/model/id"
@@ -145,10 +146,9 @@ func (a *Attribute) CurrentThreshold() *PoolThreshold {
 	if def == nil {
 		return nil
 	}
-	max := a.Maximum()
 	cur := a.Current()
 	for _, threshold := range def.Thresholds {
-		if cur <= threshold.Threshold(max) {
+		if cur <= threshold.Threshold(a.Entity) {
 			return threshold
 		}
 	}
@@ -187,4 +187,19 @@ func CountThresholdOpMet(op attribute.ThresholdOp, attributes *Attributes) int {
 		}
 	}
 	return total
+}
+
+func (a *Attribute) crc64(c uint64) uint64 {
+	c = crc.String(c, a.AttrID)
+	c = crc.Number(c, a.Adjustment)
+	c = crc.Number(c, a.Damage)
+	c = crc.Number(c, a.Bonus)
+	c = crc.Number(c, a.CostReduction)
+	c = crc.Number(c, a.Order)
+	if def := a.AttributeDef(); def != nil {
+		c = def.crc64(c)
+	} else {
+		c = crc.Number(c, 0)
+	}
+	return c
 }
