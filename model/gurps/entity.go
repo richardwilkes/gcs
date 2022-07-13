@@ -1127,6 +1127,10 @@ func (e *Entity) Reactions() []*ConditionalModifier {
 		}
 		return false
 	}, false, false, e.CarriedEquipment...)
+	Traverse[*Skill](func(sk *Skill) bool {
+		e.reactionsFromFeatureList(i18n.Text("from skill ")+sk.String(), sk.Features, m)
+		return false
+	}, true, false, e.Skills...)
 	list := make([]*ConditionalModifier, 0, len(m))
 	for _, v := range m {
 		list = append(list, v)
@@ -1173,6 +1177,10 @@ func (e *Entity) ConditionalModifiers() []*ConditionalModifier {
 		}
 		return false
 	}, false, false, e.CarriedEquipment...)
+	Traverse[*Skill](func(sk *Skill) bool {
+		e.conditionalModifiersFromFeatureList(i18n.Text("from skill ")+sk.String(), sk.Features, m)
+		return false
+	}, true, false, e.Skills...)
 	list := make([]*ConditionalModifier, 0, len(m))
 	for _, v := range m {
 		list = append(list, v)
