@@ -27,6 +27,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/weapon"
 	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/json"
+	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio"
@@ -114,10 +115,28 @@ func SeparateWeapons(list []*Weapon) (melee, ranged []*Weapon) {
 
 // NewWeapon creates a new weapon of the given type.
 func NewWeapon(owner WeaponOwner, weaponType weapon.Type) *Weapon {
-	return &Weapon{
-		WeaponData: WeaponData{Type: weaponType},
-		Owner:      owner,
+	w := &Weapon{
+		WeaponData: WeaponData{
+			Type: weaponType,
+			Damage: WeaponDamage{
+				WeaponDamageData: WeaponDamageData{
+					Type:                      "cr",
+					ArmorDivisor:              fxp.One,
+					FragmentationArmorDivisor: fxp.One,
+				},
+			},
+		},
+		Owner: owner,
 	}
+	switch weaponType {
+	case weapon.Melee:
+		w.Reach = "1"
+		w.Damage.StrengthType = weapon.Thrust
+	case weapon.Ranged:
+		w.RateOfFire = "1"
+		w.Damage.Base = dice.New("1d")
+	}
+	return w
 }
 
 // Clone implements Node.
