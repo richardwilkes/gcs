@@ -38,7 +38,10 @@ func ShowAttributeSettings(owner widget.EntityPanel) {
 		return false
 	})
 	if !found && ws != nil {
-		d := &attributesDockable{owner: owner}
+		d := &attributesDockable{
+			owner:         owner,
+			promptForSave: true,
+		}
 		d.Self = d
 		if owner != nil {
 			d.defs = d.owner.Entity().SheetSettings.Attributes.Clone()
@@ -52,26 +55,30 @@ func ShowAttributeSettings(owner widget.EntityPanel) {
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset
-		d.ModifiedCallback = func() bool {
-			modified := d.originalCRC != d.defs.CRC64()
-			d.applyButton.SetEnabled(modified)
-			d.cancelButton.SetEnabled(modified)
-			return modified
-		}
-		d.WillCloseCallback = func() bool {
-			if d.promptForSave && d.originalCRC != d.defs.CRC64() {
-				switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Apply changes made to\n%s?"), d.Title()), "") {
-				case unison.ModalResponseDiscard:
-				case unison.ModalResponseOK:
-					d.apply()
-				case unison.ModalResponseCancel:
-					return false
-				}
-			}
-			return true
-		}
+		d.ModifiedCallback = d.modified
+		d.WillCloseCallback = d.willClose
 		d.Setup(ws, dc, d.addToStartToolbar, nil, d.initContent)
 	}
+}
+
+func (d *attributesDockable) modified() bool {
+	modified := d.originalCRC != d.defs.CRC64()
+	d.applyButton.SetEnabled(modified)
+	d.cancelButton.SetEnabled(modified)
+	return modified
+}
+
+func (d *attributesDockable) willClose() bool {
+	if d.promptForSave && d.originalCRC != d.defs.CRC64() {
+		switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Apply changes made to\n%s?"), d.Title()), "") {
+		case unison.ModalResponseDiscard:
+		case unison.ModalResponseOK:
+			d.apply()
+		case unison.ModalResponseCancel:
+			return false
+		}
+	}
+	return true
 }
 
 func (d *attributesDockable) CloseWithGroup(other unison.Paneler) bool {
