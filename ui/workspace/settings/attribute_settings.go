@@ -14,6 +14,7 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
+	"golang.org/x/exp/slices"
 )
 
 var _ widget.GroupedCloser = &attributesDockable{}
@@ -21,6 +22,7 @@ var _ widget.GroupedCloser = &attributesDockable{}
 type attributesDockable struct {
 	Dockable
 	owner         widget.EntityPanel
+	undoMgr       *unison.UndoManager
 	defs          *gurps.AttributeDefs
 	originalCRC   uint64
 	content       *unison.Panel
@@ -52,6 +54,7 @@ func ShowAttributeSettings(owner widget.EntityPanel) {
 		}
 		d.originalCRC = d.defs.CRC64()
 		d.Extensions = []string{".attr", ".attributes", ".gas"}
+		d.undoMgr = unison.NewUndoManager(100, func(err error) { jot.Error(err) })
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset
@@ -59,6 +62,10 @@ func ShowAttributeSettings(owner widget.EntityPanel) {
 		d.WillCloseCallback = d.willClose
 		d.Setup(ws, dc, d.addToStartToolbar, nil, d.initContent)
 	}
+}
+
+func (d *attributesDockable) UndoManager() *unison.UndoManager {
+	return d.undoMgr
 }
 
 func (d *attributesDockable) modified() bool {
@@ -366,12 +373,45 @@ func (d *attributesDockable) createThresholdButtons(def *gurps.AttributeDef, thr
 
 	deleteButton := unison.NewSVGButton(res.TrashSVG)
 	deleteButton.ClickCallback = func() {
-		// TODO: Implement removal of threshold
-		jot.Info("delete threshold button clicked")
+		thresholdPanel := buttons.Parent()
+		poolPanel := thresholdPanel.Parent()
+		i := poolPanel.IndexOfChild(thresholdPanel)
+		thresholdPanel.RemoveFromParent()
+		children := poolPanel.Children()
+		if len(children) == 1 {
+			children[0].Children()[0].Children()[0].SetEnabled(false)
+		}
+		undo := &unison.UndoEdit[[]*gurps.PoolThreshold]{
+			ID:       unison.NextUndoID(),
+			EditName: i18n.Text("Delete Pool Threshold"),
+			UndoFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold]) { d.applyPoolThresholds(def, e.BeforeData) },
+			RedoFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold]) { d.applyPoolThresholds(def, e.AfterData) },
+			AbsorbFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold], other unison.Undoable) bool {
+				return false
+			},
+		}
+		undo.BeforeData = clonePoolThresholds(def.Thresholds)
+		def.Thresholds = slices.Delete(def.Thresholds, i, i+1)
+		undo.AfterData = clonePoolThresholds(def.Thresholds)
+		d.UndoManager().Add(undo)
+		d.MarkModified()
 	}
 	deleteButton.SetEnabled(len(def.Thresholds) > 1)
 	buttons.AddChild(deleteButton)
 	return buttons
+}
+
+func (d *attributesDockable) applyPoolThresholds(def *gurps.AttributeDef, thresholds []*gurps.PoolThreshold) {
+	def.Thresholds = clonePoolThresholds(thresholds)
+	d.sync()
+}
+
+func clonePoolThresholds(in []*gurps.PoolThreshold) []*gurps.PoolThreshold {
+	thresholds := make([]*gurps.PoolThreshold, len(in))
+	for i, one := range in {
+		thresholds[i] = one.Clone()
+	}
+	return thresholds
 }
 
 func (d *attributesDockable) createThesholdContent(threshold *gurps.PoolThreshold) *unison.Panel {
