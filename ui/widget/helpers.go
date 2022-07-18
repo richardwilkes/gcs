@@ -43,3 +43,34 @@ func SetCheckBoxState(checkbox *unison.CheckBox, checked bool) {
 		checkbox.State = unison.OffCheckState
 	}
 }
+
+// FocusFirstContent attempts to focus the first non-button widget in the content. Failing that, tries to focus the
+// first focusable widget in the content. Failing that, tries to focus the first focusable widget in the toolbar.
+func FocusFirstContent(toolbar, content *unison.Panel) {
+	content.RequestFocus()
+	wnd := content.Window()
+	for {
+		actual := wnd.Focus()
+		parent := actual
+		for parent != nil && !parent.Is(content) {
+			parent = parent.Parent()
+		}
+		if parent == nil {
+			// Nothing found within the content that isn't a button, so go back to the first one.
+			content.RequestFocus()
+			parent = wnd.Focus()
+			for parent != nil && !parent.Is(content) {
+				parent = parent.Parent()
+			}
+			if parent == nil {
+				// Nothing found within the content that is focusable, so try the toolbar.
+				toolbar.RequestFocus()
+			}
+			break
+		}
+		if _, ok := actual.Self.(*unison.Button); !ok {
+			break
+		}
+		wnd.FocusNext()
+	}
+}
