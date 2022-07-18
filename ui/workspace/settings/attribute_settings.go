@@ -3,10 +3,12 @@ package settings
 import (
 	"fmt"
 	"io/fs"
+	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/attribute"
+	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/res"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
@@ -167,8 +169,27 @@ func (d *attributesDockable) createButtons(def *gurps.AttributeDef) *unison.Pane
 
 	deleteButton := unison.NewSVGButton(res.TrashSVG)
 	deleteButton.ClickCallback = func() {
-		// TODO: Implement removal of attribute
-		jot.Info("delete attribute button clicked")
+		attrsPanel := buttons.Parent()
+		attrPanel := attrsPanel.Parent()
+		attrsPanel.RemoveFromParent()
+		children := attrPanel.Children()
+		if len(children) == 1 {
+			children[0].Children()[0].Children()[0].SetEnabled(false)
+		}
+		undo := &unison.UndoEdit[*gurps.AttributeDefs]{
+			ID:       unison.NextUndoID(),
+			EditName: i18n.Text("Delete Attribute"),
+			UndoFunc: func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.BeforeData) },
+			RedoFunc: func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.AfterData) },
+			AbsorbFunc: func(e *unison.UndoEdit[*gurps.AttributeDefs], other unison.Undoable) bool {
+				return false
+			},
+		}
+		undo.BeforeData = d.defs.Clone()
+		delete(d.defs.Set, def.DefID)
+		undo.AfterData = d.defs.Clone()
+		d.UndoManager().Add(undo)
+		d.MarkModified()
 	}
 	buttons.AddChild(deleteButton)
 
@@ -180,6 +201,11 @@ func (d *attributesDockable) createButtons(def *gurps.AttributeDef) *unison.Pane
 	addButton.SetEnabled(def.Type == attribute.Pool)
 	buttons.AddChild(addButton)
 	return buttons
+}
+
+func (d *attributesDockable) applyAttrDefs(defs *gurps.AttributeDefs) {
+	d.defs = defs.Clone()
+	d.sync()
 }
 
 func (d *attributesDockable) createContent(def *gurps.AttributeDef) *unison.Panel {
@@ -220,8 +246,15 @@ func (d *attributesDockable) createFirstLine(def *gurps.AttributeDef) *unison.Pa
 	field := widget.NewStringField(text, func() string {
 		return def.DefID
 	}, func(s string) {
-		def.DefID = s
+		if d.validateAttrID(s, def) {
+			delete(d.defs.Set, def.DefID)
+			def.DefID = strings.TrimSpace(strings.ToLower(s))
+			d.defs.Set[def.DefID] = def
+		}
 	})
+	field.ValidateCallback = func(field *widget.StringField, def *gurps.AttributeDef) func() bool {
+		return func() bool { return d.validateAttrID(field.Text(), def) }
+	}(field, def)
 	field.SetMinimumTextWidthUsing("basic_speed")
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("A unique ID for the attribute"))
 	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
@@ -249,6 +282,20 @@ func (d *attributesDockable) createFirstLine(def *gurps.AttributeDef) *unison.Pa
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The full name of this attribute (may be omitted, in which case the Short Name will be used instead)"))
 	panel.AddChild(field)
 	return panel
+}
+
+func (d *attributesDockable) validateAttrID(attrID string, def *gurps.AttributeDef) bool {
+	if key := strings.TrimSpace(strings.ToLower(attrID)); key != "" {
+		if key != id.Sanitize(key, false, gurps.ReservedIDs...) {
+			return false
+		}
+		if key == def.DefID {
+			return true
+		}
+		_, exists := d.defs.Set[key]
+		return !exists
+	}
+	return false
 }
 
 func (d *attributesDockable) createSecondLine(def *gurps.AttributeDef) *unison.Panel {
