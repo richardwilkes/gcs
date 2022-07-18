@@ -48,7 +48,8 @@ type Dockable struct {
 // Setup the dockable and display it.
 func (d *Dockable) Setup(ws *workspace.Workspace, dc *unison.DockContainer, addToStartToolbar, addToEndToolbar, initContent func(*unison.Panel)) {
 	d.SetLayout(&unison.FlexLayout{Columns: 1})
-	d.AddChild(d.createToolbar(addToStartToolbar, addToEndToolbar))
+	toolbar := d.createToolbar(addToStartToolbar, addToEndToolbar)
+	d.AddChild(toolbar)
 	content := unison.NewPanel()
 	content.SetBorder(unison.NewEmptyBorder(unison.NewUniformInsets(unison.StdHSpacing * 2)))
 	initContent(content)
@@ -71,6 +72,7 @@ func (d *Dockable) Setup(ws *workspace.Workspace, dc *unison.DockContainer, addT
 			dc.Group = settingsGroup
 		}
 	}
+	widget.FocusFirstContent(toolbar, content)
 }
 
 // TitleIcon implements unison.Dockable

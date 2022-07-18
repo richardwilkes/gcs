@@ -20,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/res"
+	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/rjeczalik/notify"
@@ -243,7 +244,11 @@ func DisplayNewDockable(wnd *unison.Window, dockable unison.Dockable) {
 		ShowUnableToLocateWorkspaceError()
 		return
 	}
-	defer func() { dockable.AsPanel().RequestFocus() }()
+	defer func() {
+		if children := dockable.AsPanel().Children(); len(children) > 1 {
+			widget.FocusFirstContent(children[0], children[1])
+		}
+	}()
 	if fbd, ok := dockable.(FileBackedDockable); ok {
 		fi := library.FileInfoFor(fbd.BackingFilePath())
 		if dc := ws.CurrentlyFocusedDockContainer(); dc != nil && DockContainerHoldsExtension(dc, fi.ExtensionsToGroupWith...) {
