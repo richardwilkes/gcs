@@ -401,12 +401,12 @@ func (d *attributesDockable) createThresholdPanel(def *gurps.AttributeDef, thres
 		HGrab:  true,
 	})
 
-	panel.AddChild(d.createThresholdButtons(def, threshold))
+	panel.AddChild(d.createThresholdButtons(def))
 	panel.AddChild(d.createThesholdContent(threshold))
 	return panel
 }
 
-func (d *attributesDockable) createThresholdButtons(def *gurps.AttributeDef, threshold *gurps.PoolThreshold) *unison.Panel {
+func (d *attributesDockable) createThresholdButtons(def *gurps.AttributeDef) *unison.Panel {
 	buttons := unison.NewPanel()
 	buttons.SetLayout(&unison.FlexLayout{
 		Columns:  1,
