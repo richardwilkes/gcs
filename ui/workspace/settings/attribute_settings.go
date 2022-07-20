@@ -177,13 +177,11 @@ func (d *attributesDockable) createButtons(def *gurps.AttributeDef) *unison.Pane
 			children[0].Children()[0].Children()[0].SetEnabled(false)
 		}
 		undo := &unison.UndoEdit[*gurps.AttributeDefs]{
-			ID:       unison.NextUndoID(),
-			EditName: i18n.Text("Delete Attribute"),
-			UndoFunc: func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.BeforeData) },
-			RedoFunc: func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.AfterData) },
-			AbsorbFunc: func(e *unison.UndoEdit[*gurps.AttributeDefs], other unison.Undoable) bool {
-				return false
-			},
+			ID:         unison.NextUndoID(),
+			EditName:   i18n.Text("Delete Attribute"),
+			UndoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.BeforeData) },
+			RedoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.AfterData) },
+			AbsorbFunc: func(e *unison.UndoEdit[*gurps.AttributeDefs], other unison.Undoable) bool { return false },
 		}
 		undo.BeforeData = d.defs.Clone()
 		delete(d.defs.Set, def.DefID)
@@ -196,13 +194,11 @@ func (d *attributesDockable) createButtons(def *gurps.AttributeDef) *unison.Pane
 	addButton := unison.NewSVGButton(res.CircledAddSVG)
 	addButton.ClickCallback = func() {
 		undo := &unison.UndoEdit[[]*gurps.PoolThreshold]{
-			ID:       unison.NextUndoID(),
-			EditName: i18n.Text("Add Pool Threshold"),
-			UndoFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold]) { d.applyPoolThresholds(def, e.BeforeData) },
-			RedoFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold]) { d.applyPoolThresholds(def, e.AfterData) },
-			AbsorbFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold], other unison.Undoable) bool {
-				return false
-			},
+			ID:         unison.NextUndoID(),
+			EditName:   i18n.Text("Add Pool Threshold"),
+			UndoFunc:   func(e *unison.UndoEdit[[]*gurps.PoolThreshold]) { d.applyPoolThresholds(def, e.BeforeData) },
+			RedoFunc:   func(e *unison.UndoEdit[[]*gurps.PoolThreshold]) { d.applyPoolThresholds(def, e.AfterData) },
+			AbsorbFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold], other unison.Undoable) bool { return false },
 		}
 		undo.BeforeData = clonePoolThresholds(def.Thresholds)
 		threshold := &gurps.PoolThreshold{}
@@ -264,15 +260,15 @@ func (d *attributesDockable) createFirstLine(def *gurps.AttributeDef) *unison.Pa
 
 	text := i18n.Text("ID")
 	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	field := widget.NewStringField(text, func() string {
-		return def.DefID
-	}, func(s string) {
-		if d.validateAttrID(s, def) {
-			delete(d.defs.Set, def.DefID)
-			def.DefID = strings.TrimSpace(strings.ToLower(s))
-			d.defs.Set[def.DefID] = def
-		}
-	})
+	field := widget.NewStringField(text,
+		func() string { return def.DefID },
+		func(s string) {
+			if d.validateAttrID(s, def) {
+				delete(d.defs.Set, def.DefID)
+				def.DefID = strings.TrimSpace(strings.ToLower(s))
+				d.defs.Set[def.DefID] = def
+			}
+		})
 	field.ValidateCallback = func(field *widget.StringField, def *gurps.AttributeDef) func() bool {
 		return func() bool { return d.validateAttrID(field.Text(), def) }
 	}(field, def)
@@ -283,22 +279,18 @@ func (d *attributesDockable) createFirstLine(def *gurps.AttributeDef) *unison.Pa
 
 	text = i18n.Text("Short Name")
 	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	field = widget.NewStringField(text, func() string {
-		return def.Name
-	}, func(s string) {
-		def.Name = s
-	})
+	field = widget.NewStringField(text,
+		func() string { return def.Name },
+		func(s string) { def.Name = s })
 	field.SetMinimumTextWidthUsing("Taste & Smell")
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The name of this attribute, often an abbreviation"))
 	panel.AddChild(field)
 
 	text = i18n.Text("Full Name")
 	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	field = widget.NewStringField(text, func() string {
-		return def.FullName
-	}, func(s string) {
-		def.FullName = s
-	})
+	field = widget.NewStringField(text,
+		func() string { return def.FullName },
+		func(s string) { def.FullName = s })
 	field.SetMinimumTextWidthUsing("Fatigue Points")
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The full name of this attribute (may be omitted, in which case the Short Name will be used instead)"))
 	panel.AddChild(field)
@@ -350,32 +342,28 @@ func (d *attributesDockable) createSecondLine(def *gurps.AttributeDef) *unison.P
 
 	text := i18n.Text("Base")
 	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	field := widget.NewStringField(text, func() string {
-		return def.AttributeBase
-	}, func(s string) {
-		def.AttributeBase = s
-	})
+	field := widget.NewStringField(text,
+		func() string { return def.AttributeBase },
+		func(s string) { def.AttributeBase = s })
 	field.SetMinimumTextWidthUsing("floor($basic_speed)")
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The base value, which may be a number or a formula"))
 	panel.AddChild(field)
 
 	text = i18n.Text("Cost")
 	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	numField := widget.NewIntegerField(text, func() int {
-		return fxp.As[int](def.CostPerPoint)
-	}, func(v int) {
-		def.CostPerPoint = fxp.From(v)
-	}, 0, 9999, false, false)
+	numField := widget.NewIntegerField(text,
+		func() int { return fxp.As[int](def.CostPerPoint) },
+		func(v int) { def.CostPerPoint = fxp.From(v) },
+		0, 9999, false, false)
 	numField.Tooltip = unison.NewTooltipWithText(i18n.Text("The cost per point difference from the base"))
 	panel.AddChild(numField)
 
 	text = i18n.Text("SM Reduction")
 	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	numField = widget.NewPercentageField(text, func() int {
-		return fxp.As[int](def.CostAdjPercentPerSM)
-	}, func(v int) {
-		def.CostAdjPercentPerSM = fxp.From(v)
-	}, 0, 80, false, false)
+	numField = widget.NewPercentageField(text,
+		func() int { return fxp.As[int](def.CostAdjPercentPerSM) },
+		func(v int) { def.CostAdjPercentPerSM = fxp.From(v) },
+		0, 80, false, false)
 	numField.Tooltip = unison.NewTooltipWithText(i18n.Text("The reduction in cost for each SM greater than 0"))
 	panel.AddChild(numField)
 
@@ -455,13 +443,11 @@ func (d *attributesDockable) createThresholdButtons(def *gurps.AttributeDef) *un
 			children[0].Children()[0].Children()[0].SetEnabled(false)
 		}
 		undo := &unison.UndoEdit[[]*gurps.PoolThreshold]{
-			ID:       unison.NextUndoID(),
-			EditName: i18n.Text("Delete Pool Threshold"),
-			UndoFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold]) { d.applyPoolThresholds(def, e.BeforeData) },
-			RedoFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold]) { d.applyPoolThresholds(def, e.AfterData) },
-			AbsorbFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold], other unison.Undoable) bool {
-				return false
-			},
+			ID:         unison.NextUndoID(),
+			EditName:   i18n.Text("Delete Pool Threshold"),
+			UndoFunc:   func(e *unison.UndoEdit[[]*gurps.PoolThreshold]) { d.applyPoolThresholds(def, e.BeforeData) },
+			RedoFunc:   func(e *unison.UndoEdit[[]*gurps.PoolThreshold]) { d.applyPoolThresholds(def, e.AfterData) },
+			AbsorbFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold], other unison.Undoable) bool { return false },
 		}
 		undo.BeforeData = clonePoolThresholds(def.Thresholds)
 		def.Thresholds = slices.Delete(def.Thresholds, i, i+1)
@@ -520,11 +506,9 @@ func (d *attributesDockable) createFirstThresholdLine(threshold *gurps.PoolThres
 
 	text := i18n.Text("State")
 	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	field := widget.NewStringField(text, func() string {
-		return threshold.State
-	}, func(s string) {
-		threshold.State = s
-	})
+	field := widget.NewStringField(text,
+		func() string { return threshold.State },
+		func(s string) { threshold.State = s })
 	field.SetMinimumTextWidthUsing("Unconscious")
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("A short description of the threshold state"))
 	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
@@ -532,11 +516,9 @@ func (d *attributesDockable) createFirstThresholdLine(threshold *gurps.PoolThres
 
 	text = i18n.Text("Threshold")
 	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	field = widget.NewStringField(text, func() string {
-		return threshold.Expression
-	}, func(s string) {
-		threshold.Expression = s
-	})
+	field = widget.NewStringField(text,
+		func() string { return threshold.Expression },
+		func(s string) { threshold.Expression = s })
 	field.SetMinimumTextWidthUsing("round($self*100/50+20)")
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("An expression to calculate the threshold value"))
 	panel.AddChild(field)
@@ -588,11 +570,9 @@ func (d *attributesDockable) createThirdThresholdLine(threshold *gurps.PoolThres
 
 	text := i18n.Text("Explanation")
 	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	field := widget.NewMultiLineStringField(text, func() string {
-		return threshold.Explanation
-	}, func(s string) {
-		threshold.Explanation = s
-	})
+	field := widget.NewMultiLineStringField(text,
+		func() string { return threshold.Explanation },
+		func(s string) { threshold.Explanation = s })
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("A explanation of the effects of the threshold state"))
 	panel.AddChild(field)
 	return panel
