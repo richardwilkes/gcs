@@ -195,8 +195,29 @@ func (d *attributesDockable) createButtons(def *gurps.AttributeDef) *unison.Pane
 
 	addButton := unison.NewSVGButton(res.CircledAddSVG)
 	addButton.ClickCallback = func() {
-		// TODO: Implement addition of threshold
-		jot.Info("add threshold button clicked")
+		undo := &unison.UndoEdit[[]*gurps.PoolThreshold]{
+			ID:       unison.NextUndoID(),
+			EditName: i18n.Text("Add Pool Threshold"),
+			UndoFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold]) { d.applyPoolThresholds(def, e.BeforeData) },
+			RedoFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold]) { d.applyPoolThresholds(def, e.AfterData) },
+			AbsorbFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold], other unison.Undoable) bool {
+				return false
+			},
+		}
+		undo.BeforeData = clonePoolThresholds(def.Thresholds)
+		threshold := &gurps.PoolThreshold{}
+		def.Thresholds = append(def.Thresholds, threshold)
+		poolPanel := buttons.Parent().Children()[1].Children()[2]
+		thresholdPanel := d.createThresholdPanel(def, threshold)
+		poolPanel.AddChild(thresholdPanel)
+		children := poolPanel.Children()
+		if len(children) == 2 {
+			children[0].Children()[0].Children()[0].SetEnabled(true)
+		}
+		thresholdPanel.Children()[1].RequestFocus()
+		undo.AfterData = clonePoolThresholds(def.Thresholds)
+		d.UndoManager().Add(undo)
+		d.MarkModified()
 	}
 	addButton.SetEnabled(def.Type == attribute.Pool)
 	buttons.AddChild(addButton)
@@ -318,6 +339,11 @@ func (d *attributesDockable) createSecondLine(def *gurps.AttributeDef) *unison.P
 	popup.Select(def.Type)
 	popup.SelectionCallback = func(_ int, typ attribute.Type) {
 		def.Type = typ
+		if def.Type == attribute.Pool {
+			if len(def.Thresholds) == 0 {
+				def.Thresholds = append(def.Thresholds, &gurps.PoolThreshold{})
+			}
+		}
 		d.sync()
 	}
 	panel.AddChild(popup)

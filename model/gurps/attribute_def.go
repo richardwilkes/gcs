@@ -68,11 +68,15 @@ func (a *AttributeDef) UnmarshalJSON(data []byte) error {
 // Clone a copy of this.
 func (a *AttributeDef) Clone() *AttributeDef {
 	clone := *a
-	if a.Thresholds != nil {
-		clone.Thresholds = make([]*PoolThreshold, len(a.Thresholds))
-		for i, one := range a.Thresholds {
-			clone.Thresholds[i] = one.Clone()
+	if a.Type == attribute.Pool {
+		if a.Thresholds != nil {
+			clone.Thresholds = make([]*PoolThreshold, len(a.Thresholds))
+			for i, one := range a.Thresholds {
+				clone.Thresholds[i] = one.Clone()
+			}
 		}
+	} else {
+		a.Thresholds = nil
 	}
 	return &clone
 }
