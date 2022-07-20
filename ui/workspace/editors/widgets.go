@@ -354,15 +354,15 @@ func adjustFieldBlank(field unison.Paneler, blank bool) {
 	panel := field.AsPanel()
 	panel.SetEnabled(!blank)
 	if blank {
-		panel.DrawOverCallback = func(gc *unison.Canvas, rect unison.Rect) {
-			rect = panel.ContentRect(false)
+		panel.DrawOverCallback = func(gc *unison.Canvas, _ unison.Rect) {
 			var ink unison.Ink
 			if f, ok := panel.Self.(*unison.Field); ok {
 				ink = f.BackgroundInk
 			} else {
 				ink = unison.DefaultFieldTheme.BackgroundInk
 			}
-			gc.DrawRect(rect, ink.Paint(gc, rect, unison.Fill))
+			r := panel.ContentRect(false)
+			gc.DrawRect(r, ink.Paint(gc, r, unison.Fill))
 		}
 	} else {
 		panel.DrawOverCallback = nil
@@ -372,9 +372,8 @@ func adjustFieldBlank(field unison.Paneler, blank bool) {
 func adjustPopupBlank[T comparable](popup *unison.PopupMenu[T], blank bool) {
 	popup.SetEnabled(!blank)
 	if blank {
-		popup.DrawOverCallback = func(gc *unison.Canvas, rect unison.Rect) {
-			rect = popup.ContentRect(false)
-			unison.DrawRoundedRectBase(gc, rect, popup.CornerRadius, 1, popup.BackgroundInk, popup.EdgeInk)
+		popup.DrawOverCallback = func(gc *unison.Canvas, _ unison.Rect) {
+			unison.DrawRoundedRectBase(gc, popup.ContentRect(false), popup.CornerRadius, 1, popup.BackgroundInk, popup.EdgeInk)
 		}
 	} else {
 		popup.DrawOverCallback = nil

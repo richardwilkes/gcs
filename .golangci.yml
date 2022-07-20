@@ -70,7 +70,7 @@ linters:
     - gofumpt
     - goimports
     - gosec
-#    - gosimple
+    - gosimple
     - govet
     - ifshort
     - ineffassign
@@ -79,10 +79,10 @@ linters:
     - prealloc
     - predeclared
     - revive
-#    - staticcheck
+    - staticcheck
     - structcheck
     - unconvert
-#    - unused
+    - unused
     - varcheck
     - wastedassign
 issues:
@@ -95,3 +95,4 @@ issues:
     - "G110:"
     - "G304:"
     - "G306:"
+    - "SA5008:"

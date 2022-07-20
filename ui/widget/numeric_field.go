@@ -34,7 +34,6 @@ type NumericField[T xmath.Numeric] struct {
 	last          T
 	min           T
 	max           T
-	prototype     T
 	useGet        bool
 	marksModified bool
 	inUndo        bool

@@ -46,32 +46,8 @@ Recommended minimum dimensions are %dx%d.`), gurps.PortraitWidth*2, gurps.Portra
 	return p
 }
 
-func (p *PortraitPanel) portraitSizer(_ unison.Size) (min, pref, max unison.Size) {
-	var width, height float32
-	insets := p.Border().Insets()
-	parent := p.Parent()
-	for parent != nil {
-		if sheet, ok := parent.Self.(*Sheet); ok {
-			_, idPanelPref, _ := sheet.IdentityPanel.Sizes(unison.Size{})
-			_, descPanelPref, _ := sheet.DescriptionPanel.Sizes(unison.Size{})
-			height = idPanelPref.Height + 1 + descPanelPref.Height
-			break
-		}
-		parent = parent.Parent()
-	}
-	if height -= insets.Top + insets.Bottom; height > 0 {
-		width = height * 0.75
-	} else {
-		width = gurps.PortraitWidth
-		height = gurps.PortraitHeight
-	}
-	pref.Width = insets.Left + insets.Right + width
-	pref.Height = insets.Top + insets.Bottom + height
-	return pref, pref, pref
-}
-
-func (p *PortraitPanel) drawSelf(gc *unison.Canvas, r unison.Rect) {
-	r = p.ContentRect(false)
+func (p *PortraitPanel) drawSelf(gc *unison.Canvas, _ unison.Rect) {
+	r := p.ContentRect(false)
 	paint := unison.ContentColor.Paint(gc, r, unison.Fill)
 	gc.DrawRect(r, paint)
 	if img := p.entity.Profile.Portrait(); img != nil {
