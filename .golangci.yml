@@ -75,16 +75,16 @@ linters:
     - ifshort
     - ineffassign
     - misspell
-    - noctx
+#    - noctx
     - prealloc
     - predeclared
     - revive
     - staticcheck
-    - structcheck
+#    - structcheck
     - unconvert
     - unused
     - varcheck
-    - wastedassign
+#    - wastedassign
 issues:
   exclude-use-default: false
   exclude:
