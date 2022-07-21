@@ -21,7 +21,7 @@ import (
 type WeightField = NumericField[measure.Weight]
 
 // NewWeightField creates a new field that holds a fixed-point number.
-func NewWeightField(undoTitle string, entity *gurps.Entity, get func() measure.Weight, set func(measure.Weight), min, max measure.Weight, noMinWidth bool) *WeightField {
+func NewWeightField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() measure.Weight, set func(measure.Weight), min, max measure.Weight, noMinWidth bool) *WeightField {
 	var getPrototypes func(min, max measure.Weight) []measure.Weight
 	if !noMinWidth {
 		getPrototypes = func(min, max measure.Weight) []measure.Weight {
@@ -42,7 +42,7 @@ func NewWeightField(undoTitle string, entity *gurps.Entity, get func() measure.W
 	extract := func(s string) (measure.Weight, error) {
 		return measure.WeightFromString(s, gurps.SheetSettingsFor(entity).DefaultWeightUnits)
 	}
-	f := NewNumericField[measure.Weight](undoTitle, getPrototypes, get, set, format, extract, min, max)
+	f := NewNumericField[measure.Weight](targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, min, max)
 	f.RuneTypedCallback = f.DefaultRuneTyped
 	return f
 }

@@ -21,7 +21,7 @@ import (
 type IntegerField = NumericField[int]
 
 // NewIntegerField creates a new field that holds an int.
-func NewIntegerField(undoTitle string, get func() int, set func(int), min, max int, forceSign, noMinWidth bool) *IntegerField {
+func NewIntegerField(targetMgr *TargetMgr, targetKey, undoTitle string, get func() int, set func(int), min, max int, forceSign, noMinWidth bool) *IntegerField {
 	var getPrototype func(min, max int) []int
 	if !noMinWidth {
 		getPrototype = func(min, max int) []int {
@@ -40,5 +40,5 @@ func NewIntegerField(undoTitle string, get func() int, set func(int), min, max i
 		}
 		return strconv.Itoa(value)
 	}
-	return NewNumericField[int](undoTitle, getPrototype, get, set, format, strconv.Atoi, min, max)
+	return NewNumericField[int](targetMgr, targetKey, undoTitle, getPrototype, get, set, format, strconv.Atoi, min, max)
 }

@@ -39,10 +39,10 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 	if !e.target.Container() {
 		costLabel := i18n.Text("Cost")
 		wrapper := addFlowWrapper(content, costLabel, 3)
-		addDecimalField(wrapper, costLabel, "", &e.editorData.Cost, -fxp.MaxBasePoints, fxp.MaxBasePoints)
+		addDecimalField(wrapper, nil, "", costLabel, "", &e.editorData.Cost, -fxp.MaxBasePoints, fxp.MaxBasePoints)
 		costTypePopup := addCostTypePopup(wrapper, e)
 		affectsPopup := addPopup(wrapper, trait.AllAffects, &e.editorData.Affects)
-		levels := addLabelAndDecimalField(content, i18n.Text("Level"), "", &e.editorData.Levels, 0, fxp.Thousand)
+		levels := addLabelAndDecimalField(content, nil, "", i18n.Text("Level"), "", &e.editorData.Levels, 0, fxp.Thousand)
 		adjustFieldBlank(levels, !e.target.HasLevels())
 		total := widget.NewNonEditableField(func(field *widget.NonEditableField) {
 			enabled := true

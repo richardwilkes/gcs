@@ -90,7 +90,7 @@ func (p *PrimaryAttrPanel) createPointsField(attr *gurps.Attribute) *widget.NonE
 }
 
 func (p *PrimaryAttrPanel) createValueField(def *gurps.AttributeDef, attr *gurps.Attribute) *widget.DecimalField {
-	field := widget.NewDecimalPageField(def.CombinedName(),
+	field := widget.NewDecimalPageField(nil, "", def.CombinedName(),
 		func() fxp.Int { return attr.Maximum() },
 		func(v fxp.Int) { attr.SetMaximum(v) }, fxp.Min, fxp.Max, true)
 	return field

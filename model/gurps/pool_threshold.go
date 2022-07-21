@@ -25,6 +25,7 @@ import (
 // PoolThreshold holds a point within an attribute pool where changes in state occur.
 type PoolThreshold struct {
 	PoolThresholdData
+	KeyPrefix string
 }
 
 // PoolThresholdData holds the data that will be serialized for the PoolThreshold.

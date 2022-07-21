@@ -65,7 +65,7 @@ func NewMiscPanel(entity *gurps.Entity) *MiscPanel {
 
 	title := i18n.Text("Player")
 	m.AddChild(widget.NewPageLabelEnd(title))
-	m.AddChild(widget.NewStringPageFieldNoGrab(title,
+	m.AddChild(widget.NewStringPageFieldNoGrab(nil, "", title,
 		func() string { return m.entity.Profile.PlayerName },
 		func(s string) { m.entity.Profile.PlayerName = s }))
 

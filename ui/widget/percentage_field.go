@@ -22,7 +22,7 @@ import (
 type PercentageField = NumericField[int]
 
 // NewPercentageField creates a new field that holds a percentage.
-func NewPercentageField(undoTitle string, get func() int, set func(int), min, max int, forceSign, noMinWidth bool) *PercentageField {
+func NewPercentageField(targetMgr *TargetMgr, targetKey, undoTitle string, get func() int, set func(int), min, max int, forceSign, noMinWidth bool) *PercentageField {
 	var getPrototype func(min, max int) []int
 	if !noMinWidth {
 		getPrototype = func(min, max int) []int {
@@ -44,5 +44,5 @@ func NewPercentageField(undoTitle string, get func() int, set func(int), min, ma
 	extract := func(s string) (int, error) {
 		return strconv.Atoi(strings.TrimSpace(strings.TrimSuffix(s, "%")))
 	}
-	return NewNumericField[int](undoTitle, getPrototype, get, set, format, extract, min, max)
+	return NewNumericField[int](targetMgr, targetKey, undoTitle, getPrototype, get, set, format, extract, min, max)
 }

@@ -197,7 +197,8 @@ func (d *pageRefMappingsDockable) createIDField(ref *settings.PageRef) {
 }
 
 func (d *pageRefMappingsDockable) createOffsetField(ref *settings.PageRef) {
-	p := widget.NewIntegerField(i18n.Text("Page Offset"), func() int { return ref.Offset },
+	p := widget.NewIntegerField(nil, "", i18n.Text("Page Offset"),
+		func() int { return ref.Offset },
 		func(v int) {
 			ref.Offset = v
 			settings.Global().PageRefs.Set(ref)

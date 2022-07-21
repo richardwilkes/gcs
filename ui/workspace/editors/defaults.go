@@ -91,14 +91,14 @@ func (p *defaultsPanel) insertDefaultsPanel(index int, def *gurps.SkillDefault) 
 	panel.AddChild(deleteButton)
 
 	name := i18n.Text("Name")
-	nameField := widget.NewStringField(name, func() string { return def.Name },
+	nameField := widget.NewStringField(nil, "", name, func() string { return def.Name },
 		func(s string) { def.Name = s })
 	nameField.Watermark = name
 	specialization := i18n.Text("Specialization")
-	specializationField := widget.NewStringField(specialization,
+	specializationField := widget.NewStringField(nil, "", specialization,
 		func() string { return def.Specialization }, func(s string) { def.Specialization = s })
 	specializationField.Watermark = specialization
-	modifierField := widget.NewDecimalField(i18n.Text("Modifier"),
+	modifierField := widget.NewDecimalField(nil, "", i18n.Text("Modifier"),
 		func() fxp.Int { return def.Modifier },
 		func(v fxp.Int) { def.Modifier = v },
 		-fxp.Thousand, fxp.Thousand, true, false)

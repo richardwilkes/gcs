@@ -164,10 +164,12 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	sheetSettingsButton.ClickCallback = func() { wsettings.ShowSheetSettings(s) }
 
 	scaleTitle := i18n.Text("Scale")
-	s.scaleField = widget.NewPercentageField(scaleTitle, func() int { return s.scale }, func(v int) {
-		s.scale = v
-		s.applyScale()
-	}, gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, false, false)
+	s.scaleField = widget.NewPercentageField(nil, "", scaleTitle,
+		func() int { return s.scale },
+		func(v int) {
+			s.scale = v
+			s.applyScale()
+		}, gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, false, false)
 	s.scaleField.SetMarksModified(false)
 	s.scaleField.Tooltip = unison.NewTooltipWithText(scaleTitle)
 

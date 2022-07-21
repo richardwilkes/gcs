@@ -30,7 +30,8 @@ var ReservedIDs = []string{gid.Skill, gid.Parry, gid.Block, gid.Dodge, gid.SizeM
 // AttributeDef holds the definition of an attribute.
 type AttributeDef struct {
 	AttributeDefData
-	Order int
+	Order     int
+	KeyPrefix string
 }
 
 // AttributeDefData holds the data that will be serialized for the AttributeDef.

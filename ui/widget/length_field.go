@@ -21,7 +21,7 @@ import (
 type LengthField = NumericField[measure.Length]
 
 // NewLengthField creates a new field that holds a fixed-point number.
-func NewLengthField(undoTitle string, entity *gurps.Entity, get func() measure.Length, set func(measure.Length), min, max measure.Length, noMinWidth bool) *LengthField {
+func NewLengthField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() measure.Length, set func(measure.Length), min, max measure.Length, noMinWidth bool) *LengthField {
 	var getPrototypes func(min, max measure.Length) []measure.Length
 	if !noMinWidth {
 		getPrototypes = func(min, max measure.Length) []measure.Length {
@@ -42,7 +42,7 @@ func NewLengthField(undoTitle string, entity *gurps.Entity, get func() measure.L
 	extract := func(s string) (measure.Length, error) {
 		return measure.LengthFromString(s, gurps.SheetSettingsFor(entity).DefaultLengthUnits)
 	}
-	f := NewNumericField[measure.Length](undoTitle, getPrototypes, get, set, format, extract, min, max)
+	f := NewNumericField[measure.Length](targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, min, max)
 	f.RuneTypedCallback = f.DefaultRuneTyped
 	return f
 }

@@ -176,3 +176,13 @@ func (a *AttributeDefs) CRC64() uint64 {
 	}
 	return c
 }
+
+// ResetTargetKeyPrefixes assigns new key prefixes for all data within these AttributeDefs.
+func (a *AttributeDefs) ResetTargetKeyPrefixes(prefixProvider func() string) {
+	for _, one := range a.Set {
+		one.KeyPrefix = prefixProvider()
+		for _, threshold := range one.Thresholds {
+			threshold.KeyPrefix = prefixProvider()
+		}
+	}
+}

@@ -24,6 +24,7 @@ var _ widget.GroupedCloser = &attributesDockable{}
 type attributesDockable struct {
 	Dockable
 	owner         widget.EntityPanel
+	targetMgr     *widget.TargetMgr
 	undoMgr       *unison.UndoManager
 	defs          *gurps.AttributeDefs
 	originalCRC   uint64
@@ -47,6 +48,7 @@ func ShowAttributeSettings(owner widget.EntityPanel) {
 			promptForSave: true,
 		}
 		d.Self = d
+		d.targetMgr = widget.NewTargetMgr(d)
 		if owner != nil {
 			d.defs = d.owner.Entity().SheetSettings.Attributes.Clone()
 			d.TabTitle = i18n.Text("Attributes: " + owner.Entity().Profile.Name)
@@ -54,6 +56,7 @@ func ShowAttributeSettings(owner widget.EntityPanel) {
 			d.defs = settings.Global().Sheet.Attributes.Clone()
 			d.TabTitle = i18n.Text("Default Attributes")
 		}
+		d.defs.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
 		d.originalCRC = d.defs.CRC64()
 		d.Extensions = []string{".attr", ".attributes", ".gas"}
 		d.undoMgr = unison.NewUndoManager(100, func(err error) { jot.Error(err) })
@@ -201,7 +204,7 @@ func (d *attributesDockable) createButtons(def *gurps.AttributeDef) *unison.Pane
 			AbsorbFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold], other unison.Undoable) bool { return false },
 		}
 		undo.BeforeData = clonePoolThresholds(def.Thresholds)
-		threshold := &gurps.PoolThreshold{}
+		threshold := &gurps.PoolThreshold{KeyPrefix: d.targetMgr.NextPrefix()}
 		def.Thresholds = append(def.Thresholds, threshold)
 		poolPanel := buttons.Parent().Children()[1].Children()[2]
 		thresholdPanel := d.createThresholdPanel(def, threshold)
@@ -260,7 +263,7 @@ func (d *attributesDockable) createFirstLine(def *gurps.AttributeDef) *unison.Pa
 
 	text := i18n.Text("ID")
 	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	field := widget.NewStringField(text,
+	field := widget.NewStringField(d.targetMgr, def.KeyPrefix+"id", text,
 		func() string { return def.DefID },
 		func(s string) {
 			if d.validateAttrID(s, def) {
@@ -279,7 +282,7 @@ func (d *attributesDockable) createFirstLine(def *gurps.AttributeDef) *unison.Pa
 
 	text = i18n.Text("Short Name")
 	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	field = widget.NewStringField(text,
+	field = widget.NewStringField(d.targetMgr, def.KeyPrefix+"name", text,
 		func() string { return def.Name },
 		func(s string) { def.Name = s })
 	field.SetMinimumTextWidthUsing("Taste & Smell")
@@ -288,7 +291,7 @@ func (d *attributesDockable) createFirstLine(def *gurps.AttributeDef) *unison.Pa
 
 	text = i18n.Text("Full Name")
 	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	field = widget.NewStringField(text,
+	field = widget.NewStringField(d.targetMgr, def.KeyPrefix+"fullname", text,
 		func() string { return def.FullName },
 		func(s string) { def.FullName = s })
 	field.SetMinimumTextWidthUsing("Fatigue Points")
@@ -346,7 +349,7 @@ func (d *attributesDockable) createSecondLine(def *gurps.AttributeDef) *unison.P
 
 	text := i18n.Text("Base")
 	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	field := widget.NewStringField(text,
+	field := widget.NewStringField(d.targetMgr, def.KeyPrefix+"base", text,
 		func() string { return def.AttributeBase },
 		func(s string) { def.AttributeBase = s })
 	field.SetMinimumTextWidthUsing("floor($basic_speed)")
@@ -355,7 +358,7 @@ func (d *attributesDockable) createSecondLine(def *gurps.AttributeDef) *unison.P
 
 	text = i18n.Text("Cost")
 	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	numField := widget.NewIntegerField(text,
+	numField := widget.NewIntegerField(d.targetMgr, def.KeyPrefix+"cost", text,
 		func() int { return fxp.As[int](def.CostPerPoint) },
 		func(v int) { def.CostPerPoint = fxp.From(v) },
 		0, 9999, false, false)
@@ -364,7 +367,7 @@ func (d *attributesDockable) createSecondLine(def *gurps.AttributeDef) *unison.P
 
 	text = i18n.Text("SM Reduction")
 	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	numField = widget.NewPercentageField(text,
+	numField = widget.NewPercentageField(d.targetMgr, def.KeyPrefix+"sm", text,
 		func() int { return fxp.As[int](def.CostAdjPercentPerSM) },
 		func(v int) { def.CostAdjPercentPerSM = fxp.From(v) },
 		0, 80, false, false)
@@ -377,7 +380,7 @@ func (d *attributesDockable) createSecondLine(def *gurps.AttributeDef) *unison.P
 func (d *attributesDockable) applyAttributeType(def *gurps.AttributeDef, attrType attribute.Type) {
 	if def.Type = attrType; def.Type == attribute.Pool {
 		if len(def.Thresholds) == 0 {
-			def.Thresholds = append(def.Thresholds, &gurps.PoolThreshold{})
+			def.Thresholds = append(def.Thresholds, &gurps.PoolThreshold{KeyPrefix: d.targetMgr.NextPrefix()})
 		}
 	}
 	d.sync()
@@ -519,7 +522,7 @@ func (d *attributesDockable) createFirstThresholdLine(threshold *gurps.PoolThres
 
 	text := i18n.Text("State")
 	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	field := widget.NewStringField(text,
+	field := widget.NewStringField(d.targetMgr, threshold.KeyPrefix+"state", text,
 		func() string { return threshold.State },
 		func(s string) { threshold.State = s })
 	field.SetMinimumTextWidthUsing("Unconscious")
@@ -529,7 +532,7 @@ func (d *attributesDockable) createFirstThresholdLine(threshold *gurps.PoolThres
 
 	text = i18n.Text("Threshold")
 	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	field = widget.NewStringField(text,
+	field = widget.NewStringField(d.targetMgr, threshold.KeyPrefix+"threshold", text,
 		func() string { return threshold.Expression },
 		func(s string) { threshold.Expression = s })
 	field.SetMinimumTextWidthUsing("round($self*100/50+20)")
@@ -583,7 +586,7 @@ func (d *attributesDockable) createThirdThresholdLine(threshold *gurps.PoolThres
 
 	text := i18n.Text("Explanation")
 	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	field := widget.NewMultiLineStringField(text,
+	field := widget.NewMultiLineStringField(d.targetMgr, threshold.KeyPrefix+"explanation", text,
 		func() string { return threshold.Explanation },
 		func(s string) { threshold.Explanation = s })
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("A explanation of the effects of the threshold state"))

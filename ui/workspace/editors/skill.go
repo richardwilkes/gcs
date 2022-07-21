@@ -76,8 +76,9 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 				skillDefNameField.RemoveFromParent()
 				skillDefSpecialtyField.RemoveFromParent()
 			}
-			addDecimalField(wrapper, i18n.Text("Technique Default Adjustment"), i18n.Text("Default Adjustment"),
-				&e.editorData.TechniqueDefault.Modifier, -fxp.NinetyNine, fxp.NinetyNine)
+			addDecimalField(wrapper, nil, "", i18n.Text("Technique Default Adjustment"),
+				i18n.Text("Default Adjustment"), &e.editorData.TechniqueDefault.Modifier, -fxp.NinetyNine,
+				fxp.NinetyNine)
 			attrChoicePopup.SelectionCallback = func(_ int, item *gurps.AttributeChoice) {
 				e.editorData.TechniqueDefault.DefaultType = item.Key
 				if skillBased := skill.DefaultTypeIsSkillBased(e.editorData.TechniqueDefault.DefaultType); skillBased != lastWasSkillBased {
@@ -93,17 +94,18 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 				widget.MarkModified(content)
 			}
 			wrapper2 := addFlowWrapper(content, "", 2)
-			limitField := widget.NewDecimalField(i18n.Text("Limit"), func() fxp.Int {
-				if e.editorData.TechniqueLimitModifier != nil {
-					return *e.editorData.TechniqueLimitModifier
-				}
-				return 0
-			}, func(value fxp.Int) {
-				if e.editorData.TechniqueLimitModifier != nil {
-					*e.editorData.TechniqueLimitModifier = value
-				}
-				widget.MarkModified(wrapper2)
-			}, -fxp.NinetyNine, fxp.NinetyNine, false, false)
+			limitField := widget.NewDecimalField(nil, "", i18n.Text("Limit"),
+				func() fxp.Int {
+					if e.editorData.TechniqueLimitModifier != nil {
+						return *e.editorData.TechniqueLimitModifier
+					}
+					return 0
+				}, func(value fxp.Int) {
+					if e.editorData.TechniqueLimitModifier != nil {
+						*e.editorData.TechniqueLimitModifier = value
+					}
+					widget.MarkModified(wrapper2)
+				}, -fxp.NinetyNine, fxp.NinetyNine, false, false)
 			wrapper2.AddChild(widget.NewCheckBox(i18n.Text("Cannot exceed default skill level by more than"),
 				e.editorData.TechniqueLimitModifier != nil, func(b bool) {
 					if b {
@@ -125,14 +127,14 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 			addDifficultyLabelAndFields(content, e.target.Entity, &e.editorData.Difficulty)
 			encLabel := i18n.Text("Encumbrance Penalty")
 			wrapper := addFlowWrapper(content, encLabel, 2)
-			addDecimalField(wrapper, encLabel, "", &e.editorData.EncumbrancePenaltyMultiplier, 0, fxp.Nine)
+			addDecimalField(wrapper, nil, "", encLabel, "", &e.editorData.EncumbrancePenaltyMultiplier, 0, fxp.Nine)
 			wrapper.AddChild(widget.NewFieldTrailingLabel(i18n.Text("times the current encumbrance level")))
 		}
 
 		if dockableKind == widget.SheetDockableKind || dockableKind == widget.TemplateDockableKind {
 			pointsLabel := i18n.Text("Points")
 			wrapper := addFlowWrapper(content, pointsLabel, 3)
-			addDecimalField(wrapper, pointsLabel, "", &e.editorData.Points, 0, fxp.MaxBasePoints)
+			addDecimalField(wrapper, nil, "", pointsLabel, "", &e.editorData.Points, 0, fxp.MaxBasePoints)
 			wrapper.AddChild(widget.NewFieldInteriorLeadingLabel(i18n.Text("Level")))
 			levelField := widget.NewNonEditableField(func(field *widget.NonEditableField) {
 				points := gurps.AdjustedPointsForNonContainerSkillOrTechnique(e.target.Entity, e.editorData.Points,

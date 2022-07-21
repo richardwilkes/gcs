@@ -55,11 +55,11 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 		addCheckBox(wrapper, i18n.Text("Round Down"), &e.editorData.RoundCostDown)
 		baseCost := i18n.Text("Base Cost")
 		wrapper = addFlowWrapper(content, baseCost, 8)
-		addDecimalField(wrapper, baseCost, "", &e.editorData.BasePoints, -fxp.MaxBasePoints,
+		addDecimalField(wrapper, nil, "", baseCost, "", &e.editorData.BasePoints, -fxp.MaxBasePoints,
 			fxp.MaxBasePoints)
-		addLabelAndDecimalField(wrapper, i18n.Text("Per Level"), "", &e.editorData.PointsPerLevel, -fxp.MaxBasePoints,
-			fxp.MaxBasePoints)
-		levelField = addLabelAndDecimalField(wrapper, i18n.Text("Level"), "", &e.editorData.Levels, 0,
+		addLabelAndDecimalField(wrapper, nil, "", i18n.Text("Per Level"), "", &e.editorData.PointsPerLevel,
+			-fxp.MaxBasePoints, fxp.MaxBasePoints)
+		levelField = addLabelAndDecimalField(wrapper, nil, "", i18n.Text("Level"), "", &e.editorData.Levels, 0,
 			fxp.MaxBasePoints)
 		adjustFieldBlank(levelField, e.editorData.PointsPerLevel == 0)
 	}

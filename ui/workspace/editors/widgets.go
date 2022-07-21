@@ -59,7 +59,7 @@ func addTechLevelRequired(parent *unison.Panel, fieldData **string, includeField
 	var field *widget.StringField
 	if includeField {
 		wrapper := addFlowWrapper(parent, tl, 2)
-		field = widget.NewStringField(tl, func() string {
+		field = widget.NewStringField(nil, "", tl, func() string {
 			if *fieldData == nil {
 				return ""
 			}
@@ -143,7 +143,8 @@ func addLabelAndListField(parent *unison.Panel, labelText, pluralForTooltip stri
 		label.Tooltip = unison.NewTooltipWithText(tooltip)
 	}
 	parent.AddChild(label)
-	field := widget.NewMultiLineStringField(labelText, func() string { return gurps.CombineTags(*fieldData) },
+	field := widget.NewMultiLineStringField(nil, "", labelText,
+		func() string { return gurps.CombineTags(*fieldData) },
 		func(value string) {
 			*fieldData = gurps.ExtractTags(value)
 			parent.MarkForLayoutAndRedraw()
@@ -166,7 +167,8 @@ func addLabelAndStringField(parent *unison.Panel, labelText, tooltip string, fie
 }
 
 func addStringField(parent *unison.Panel, labelText, tooltip string, fieldData *string) *widget.StringField {
-	field := widget.NewStringField(labelText, func() string { return *fieldData },
+	field := widget.NewStringField(nil, "", labelText,
+		func() string { return *fieldData },
 		func(value string) {
 			*fieldData = value
 			widget.MarkModified(parent)
@@ -184,7 +186,8 @@ func addLabelAndMultiLineStringField(parent *unison.Panel, labelText, tooltip st
 		label.Tooltip = unison.NewTooltipWithText(tooltip)
 	}
 	parent.AddChild(label)
-	field := widget.NewMultiLineStringField(labelText, func() string { return *fieldData },
+	field := widget.NewMultiLineStringField(nil, "", labelText,
+		func() string { return *fieldData },
 		func(value string) {
 			*fieldData = value
 			parent.MarkForLayoutAndRedraw()
@@ -197,8 +200,9 @@ func addLabelAndMultiLineStringField(parent *unison.Panel, labelText, tooltip st
 	parent.AddChild(field)
 }
 
-func addIntegerField(parent *unison.Panel, labelText, tooltip string, fieldData *int, min, max int) *widget.IntegerField {
-	field := widget.NewIntegerField(labelText, func() int { return *fieldData },
+func addIntegerField(parent *unison.Panel, targetMgr *widget.TargetMgr, targetKey, labelText, tooltip string, fieldData *int, min, max int) *widget.IntegerField {
+	field := widget.NewIntegerField(targetMgr, targetKey, labelText,
+		func() int { return *fieldData },
 		func(value int) {
 			*fieldData = value
 			widget.MarkModified(parent)
@@ -210,13 +214,14 @@ func addIntegerField(parent *unison.Panel, labelText, tooltip string, fieldData 
 	return field
 }
 
-func addLabelAndDecimalField(parent *unison.Panel, labelText, tooltip string, fieldData *fxp.Int, min, max fxp.Int) *widget.DecimalField {
+func addLabelAndDecimalField(parent *unison.Panel, targetMgr *widget.TargetMgr, targetKey, labelText, tooltip string, fieldData *fxp.Int, min, max fxp.Int) *widget.DecimalField {
 	label := widget.NewFieldLeadingLabel(labelText)
 	if tooltip != "" {
 		label.Tooltip = unison.NewTooltipWithText(tooltip)
 	}
 	parent.AddChild(label)
-	field := widget.NewDecimalField(labelText, func() fxp.Int { return *fieldData },
+	field := widget.NewDecimalField(targetMgr, targetKey, labelText,
+		func() fxp.Int { return *fieldData },
 		func(value fxp.Int) {
 			*fieldData = value
 			widget.MarkModified(parent)
@@ -228,8 +233,9 @@ func addLabelAndDecimalField(parent *unison.Panel, labelText, tooltip string, fi
 	return field
 }
 
-func addDecimalField(parent *unison.Panel, labelText, tooltip string, fieldData *fxp.Int, min, max fxp.Int) *widget.DecimalField {
-	field := widget.NewDecimalField(labelText, func() fxp.Int { return *fieldData },
+func addDecimalField(parent *unison.Panel, targetMgr *widget.TargetMgr, targetKey, labelText, tooltip string, fieldData *fxp.Int, min, max fxp.Int) *widget.DecimalField {
+	field := widget.NewDecimalField(targetMgr, targetKey, labelText,
+		func() fxp.Int { return *fieldData },
 		func(value fxp.Int) {
 			*fieldData = value
 			widget.MarkModified(parent)
@@ -241,8 +247,9 @@ func addDecimalField(parent *unison.Panel, labelText, tooltip string, fieldData 
 	return field
 }
 
-func addWeightField(parent *unison.Panel, labelText, tooltip string, entity *gurps.Entity, fieldData *measure.Weight, noMinWidth bool) *widget.WeightField {
-	field := widget.NewWeightField(labelText, entity, func() measure.Weight { return *fieldData },
+func addWeightField(parent *unison.Panel, targetMgr *widget.TargetMgr, targetKey, labelText, tooltip string, entity *gurps.Entity, fieldData *measure.Weight, noMinWidth bool) *widget.WeightField {
+	field := widget.NewWeightField(targetMgr, targetKey, labelText, entity,
+		func() measure.Weight { return *fieldData },
 		func(value measure.Weight) {
 			*fieldData = value
 			widget.MarkModified(parent)
@@ -288,7 +295,8 @@ func addLabelAndNullableDice(parent *unison.Panel, labelText, tooltip string, fi
 	}
 	label := widget.NewFieldLeadingLabel(labelText)
 	parent.AddChild(label)
-	field := widget.NewStringField(labelText, func() string { return data },
+	field := widget.NewStringField(nil, "", labelText,
+		func() string { return data },
 		func(value string) {
 			data = value
 			if value == "" {
@@ -433,11 +441,12 @@ func addStringCriteriaPanel(parent *unison.Panel, prefix, notPrefix, undoTitle s
 	return popup, criteriaField
 }
 
-func addLevelCriteriaPanel(parent *unison.Panel, numCriteria *criteria.Numeric, hSpan int, includeEmptyFiller bool) {
-	addNumericCriteriaPanel(parent, i18n.Text("and whose level"), i18n.Text("Level Qualifier"), numCriteria, 0, fxp.Thousand, hSpan, false, includeEmptyFiller)
+func addLevelCriteriaPanel(parent *unison.Panel, targetMgr *widget.TargetMgr, targetKey string, numCriteria *criteria.Numeric, hSpan int, includeEmptyFiller bool) {
+	addNumericCriteriaPanel(parent, targetMgr, targetKey, i18n.Text("and whose level"), i18n.Text("Level Qualifier"),
+		numCriteria, 0, fxp.Thousand, hSpan, false, includeEmptyFiller)
 }
 
-func addNumericCriteriaPanel(parent *unison.Panel, prefix, undoTitle string, numCriteria *criteria.Numeric, min, max fxp.Int, hSpan int, integerOnly, includeEmptyFiller bool) {
+func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *widget.TargetMgr, targetKey, prefix, undoTitle string, numCriteria *criteria.Numeric, min, max fxp.Int, hSpan int, integerOnly, includeEmptyFiller bool) {
 	if includeEmptyFiller {
 		parent.AddChild(unison.NewPanel())
 	}
@@ -466,7 +475,7 @@ func addNumericCriteriaPanel(parent *unison.Panel, prefix, undoTitle string, num
 	}
 	panel.AddChild(popup)
 	if integerOnly {
-		field = widget.NewIntegerField(undoTitle,
+		field = widget.NewIntegerField(targetMgr, targetKey, undoTitle,
 			func() int { return fxp.As[int](numCriteria.Qualifier) },
 			func(value int) {
 				numCriteria.Qualifier = fxp.From(value)
@@ -474,20 +483,21 @@ func addNumericCriteriaPanel(parent *unison.Panel, prefix, undoTitle string, num
 			}, fxp.As[int](min), fxp.As[int](max), false, false)
 		panel.AddChild(field)
 	} else {
-		field = addDecimalField(panel, undoTitle, "", &numCriteria.Qualifier, min, max)
+		field = addDecimalField(panel, targetMgr, targetKey, undoTitle, "", &numCriteria.Qualifier, min, max)
 	}
 	adjustFieldBlank(field, numCriteria.Compare == criteria.AnyNumber)
 	parent.AddChild(panel)
 }
 
-func addWeightCriteriaPanel(parent *unison.Panel, entity *gurps.Entity, weightCriteria *criteria.Weight) {
+func addWeightCriteriaPanel(parent *unison.Panel, targetMgr *widget.TargetMgr, targetKey string, entity *gurps.Entity, weightCriteria *criteria.Weight) {
 	popup := unison.NewPopupMenu[string]()
 	for _, one := range criteria.PrefixedNumericCompareTypeChoices(i18n.Text("which")) {
 		popup.AddItem(one)
 	}
 	popup.SelectIndex(criteria.ExtractNumericCompareTypeIndex(string(weightCriteria.Compare)))
 	parent.AddChild(popup)
-	field := addWeightField(parent, i18n.Text("Weight Qualifier"), "", entity, &weightCriteria.Qualifier, false)
+	field := addWeightField(parent, targetMgr, targetKey, i18n.Text("Weight Qualifier"), "", entity,
+		&weightCriteria.Qualifier, false)
 	popup.SelectionCallback = func(index int, _ string) {
 		weightCriteria.Compare = criteria.AllNumericCompareTypes[index]
 		adjustFieldBlank(field, weightCriteria.Compare == criteria.AnyNumber)
@@ -501,7 +511,7 @@ func addWeightCriteriaPanel(parent *unison.Panel, entity *gurps.Entity, weightCr
 	})
 }
 
-func addQuantityCriteriaPanel(parent *unison.Panel, numCriteria *criteria.Numeric) {
+func addQuantityCriteriaPanel(parent *unison.Panel, targetMgr *widget.TargetMgr, targetKey string, numCriteria *criteria.Numeric) {
 	choices := []string{
 		i18n.Text("exactly"),
 		i18n.Text("at least"),
@@ -533,7 +543,7 @@ func addQuantityCriteriaPanel(parent *unison.Panel, numCriteria *criteria.Numeri
 		widget.MarkModified(parent)
 	}
 	parent.AddChild(popup)
-	parent.AddChild(widget.NewIntegerField(i18n.Text("Quantity Criteria"),
+	parent.AddChild(widget.NewIntegerField(targetMgr, targetKey, i18n.Text("Quantity Criteria"),
 		func() int { return fxp.As[int](numCriteria.Qualifier) },
 		func(value int) {
 			numCriteria.Qualifier = fxp.From(value)
@@ -541,8 +551,8 @@ func addQuantityCriteriaPanel(parent *unison.Panel, numCriteria *criteria.Numeri
 		}, 0, 9999, false, false))
 }
 
-func addLeveledAmountPanel(parent *unison.Panel, amount *feature.LeveledAmount) {
-	parent.AddChild(widget.NewDecimalField(i18n.Text("Amount"),
+func addLeveledAmountPanel(parent *unison.Panel, targetMgr *widget.TargetMgr, targetKey string, amount *feature.LeveledAmount) {
+	parent.AddChild(widget.NewDecimalField(targetMgr, targetKey, i18n.Text("Amount"),
 		func() fxp.Int { return amount.Amount },
 		func(value fxp.Int) {
 			amount.Amount = value

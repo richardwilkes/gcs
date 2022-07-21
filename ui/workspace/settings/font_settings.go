@@ -117,15 +117,15 @@ func (d *fontSettingsDockable) createFamilyField(index int) {
 }
 
 func (d *fontSettingsDockable) createSizeField(index int) {
-	field := widget.NewDecimalField(i18n.Text("Font Size"), func() fxp.Int {
-		return fxp.From(theme.CurrentFonts[index].Font.Size())
-	}, func(v fxp.Int) {
-		if !d.noUpdate {
-			fd := theme.CurrentFonts[index].Font.Descriptor()
-			fd.Size = fxp.As[float32](v)
-			d.applyFont(index, fd)
-		}
-	}, fxp.One, fxp.From(999), false, false)
+	field := widget.NewDecimalField(nil, "", i18n.Text("Font Size"),
+		func() fxp.Int { return fxp.From(theme.CurrentFonts[index].Font.Size()) },
+		func(v fxp.Int) {
+			if !d.noUpdate {
+				fd := theme.CurrentFonts[index].Font.Descriptor()
+				fd.Size = fxp.As[float32](v)
+				d.applyFont(index, fd)
+			}
+		}, fxp.One, fxp.From(999), false, false)
 	field.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,
 		VAlign: unison.MiddleAlignment,

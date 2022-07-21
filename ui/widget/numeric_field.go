@@ -25,6 +25,8 @@ import (
 type NumericField[T xmath.Numeric] struct {
 	*unison.Field
 	undoID        int64
+	targetMgr     *TargetMgr
+	targetKey     string
 	undoTitle     string
 	getPrototypes func(min, max T) []T
 	get           func() T
@@ -40,10 +42,12 @@ type NumericField[T xmath.Numeric] struct {
 }
 
 // NewNumericField creates a new field that formats its content.
-func NewNumericField[T xmath.Numeric](undoTitle string, getPrototypes func(min, max T) []T, get func() T, set func(T), format func(T) string, extract func(s string) (T, error), min, max T) *NumericField[T] {
+func NewNumericField[T xmath.Numeric](targetMgr *TargetMgr, targetKey, undoTitle string, getPrototypes func(min, max T) []T, get func() T, set func(T), format func(T) string, extract func(s string) (T, error), min, max T) *NumericField[T] {
 	f := &NumericField[T]{
 		Field:         unison.NewField(),
 		undoID:        unison.NextUndoID(),
+		targetMgr:     targetMgr,
+		targetKey:     targetKey,
 		undoTitle:     undoTitle,
 		getPrototypes: getPrototypes,
 		get:           get,
@@ -61,6 +65,9 @@ func NewNumericField[T xmath.Numeric](undoTitle string, getPrototypes func(min, 
 	f.RuneTypedCallback = f.runeTyped
 	f.ModifiedCallback = f.modified
 	f.ValidateCallback = f.validate
+	if targetMgr != nil && targetKey != "" {
+		f.ClientData()[TargetIDKey] = targetKey
+	}
 	f.adjustMinimumTextWidth()
 	f.Sync()
 	return f
@@ -129,21 +136,17 @@ func (f *NumericField[T]) modified() {
 	text := f.Text()
 	if !f.inUndo && f.undoID != unison.NoUndoID {
 		if mgr := unison.UndoManagerFor(f); mgr != nil {
-			mgr.Add(&unison.UndoEdit[string]{
-				ID:       f.undoID,
-				EditName: f.undoTitle,
-				UndoFunc: func(e *unison.UndoEdit[string]) { f.setWithoutUndo(e.BeforeData, true) },
-				RedoFunc: func(e *unison.UndoEdit[string]) { f.setWithoutUndo(e.AfterData, true) },
-				AbsorbFunc: func(e *unison.UndoEdit[string], other unison.Undoable) bool {
-					if e2, ok := other.(*unison.UndoEdit[string]); ok && e2.ID == f.undoID {
-						e.AfterData = e2.AfterData
-						return true
+			undo := NewTargetUndo(f.targetMgr, f.targetKey, f.undoTitle, f.undoID, func(target *unison.Panel, data string) {
+				self := f
+				if target != nil {
+					if field, ok := target.Self.(*NumericField[T]); ok {
+						self = field
 					}
-					return false
-				},
-				BeforeData: f.Format(f.get()),
-				AfterData:  text,
-			})
+				}
+				self.setWithoutUndo(data, true)
+			}, f.Format(f.get()))
+			undo.AfterData = text
+			mgr.Add(undo)
 		}
 	}
 	if v := f.mustExtract(f.Text()); f.last != v {

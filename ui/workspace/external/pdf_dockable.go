@@ -155,13 +155,15 @@ func NewPDFDockable(filePath string) (unison.Dockable, error) {
 	ofLabel.Text = fmt.Sprintf(i18n.Text("of %d"), d.pdf.PageCount())
 
 	scaleTitle := i18n.Text("Scale")
-	d.scaleField = widget.NewPercentageField(scaleTitle, func() int { return d.scale }, func(v int) {
-		if d.noUpdate {
-			return
-		}
-		d.scale = v
-		d.LoadPage(d.pdf.MostRecentPageNumber())
-	}, minPDFDockableScale, maxPDFDockableScale, false, false)
+	d.scaleField = widget.NewPercentageField(nil, "", scaleTitle,
+		func() int { return d.scale },
+		func(v int) {
+			if d.noUpdate {
+				return
+			}
+			d.scale = v
+			d.LoadPage(d.pdf.MostRecentPageNumber())
+		}, minPDFDockableScale, maxPDFDockableScale, false, false)
 	d.scaleField.Tooltip = unison.NewTooltipWithText(scaleTitle)
 
 	d.searchField = widget.NewSearchField()

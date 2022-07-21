@@ -81,20 +81,22 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 	d.scroll.SetContent(d.imgPanel, unison.FillBehavior, unison.FillBehavior)
 
 	scaleTitle := i18n.Text("Scale")
-	d.scaleField = widget.NewPercentageField(scaleTitle, func() int { return d.scale }, func(v int) {
-		viewRect := d.scroll.ContentView().ContentRect(false)
-		center := d.imgPanel.PointFromRoot(d.scroll.ContentView().PointToRoot(viewRect.Center()))
-		center.X /= float32(d.scale) / 100
-		center.X *= float32(v) / 100
-		center.Y /= float32(d.scale) / 100
-		center.Y *= float32(v) / 100
-		d.scale = v
-		d.scroll.MarkForLayoutAndRedraw()
-		d.scroll.ValidateLayout()
-		viewRect.X = center.X - viewRect.Width/2
-		viewRect.Y = center.Y - viewRect.Height/2
-		d.imgPanel.ScrollRectIntoView(viewRect)
-	}, minImageDockableScale, maxImageDockableScale, false, false)
+	d.scaleField = widget.NewPercentageField(nil, "", scaleTitle,
+		func() int { return d.scale },
+		func(v int) {
+			viewRect := d.scroll.ContentView().ContentRect(false)
+			center := d.imgPanel.PointFromRoot(d.scroll.ContentView().PointToRoot(viewRect.Center()))
+			center.X /= float32(d.scale) / 100
+			center.X *= float32(v) / 100
+			center.Y /= float32(d.scale) / 100
+			center.Y *= float32(v) / 100
+			d.scale = v
+			d.scroll.MarkForLayoutAndRedraw()
+			d.scroll.ValidateLayout()
+			viewRect.X = center.X - viewRect.Width/2
+			viewRect.Y = center.Y - viewRect.Height/2
+			d.imgPanel.ScrollRectIntoView(viewRect)
+		}, minImageDockableScale, maxImageDockableScale, false, false)
 	d.scaleField.Tooltip = unison.NewTooltipWithText(scaleTitle)
 
 	typeLabel := unison.NewLabel()

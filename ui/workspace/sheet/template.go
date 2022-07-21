@@ -117,10 +117,12 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 	}
 
 	scaleTitle := i18n.Text("Scale")
-	d.scaleField = widget.NewPercentageField(scaleTitle, func() int { return d.scale }, func(v int) {
-		d.scale = v
-		d.applyScale()
-	}, gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, false, false)
+	d.scaleField = widget.NewPercentageField(nil, "", scaleTitle,
+		func() int { return d.scale },
+		func(v int) {
+			d.scale = v
+			d.applyScale()
+		}, gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, false, false)
 	d.scaleField.SetMarksModified(false)
 	d.scaleField.Tooltip = unison.NewTooltipWithText(scaleTitle)
 

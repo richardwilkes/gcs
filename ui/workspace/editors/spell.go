@@ -47,14 +47,14 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 			addPopup(wrapper, skill.AllTechniqueDifficulty, &e.editorData.Difficulty.Difficulty)
 			prereqCount := i18n.Text("Prerequisite Count")
 			wrapper.AddChild(widget.NewFieldInteriorLeadingLabel(prereqCount))
-			addIntegerField(wrapper, prereqCount, "", &e.editorData.RitualPrereqCount, 0, 99)
+			addIntegerField(wrapper, nil, "", prereqCount, "", &e.editorData.RitualPrereqCount, 0, 99)
 		} else {
 			addDifficultyLabelAndFields(content, e.target.Entity, &e.editorData.Difficulty)
 		}
 		if dockableKind == widget.SheetDockableKind || dockableKind == widget.TemplateDockableKind {
 			pointsLabel := i18n.Text("Points")
 			wrapper := addFlowWrapper(content, pointsLabel, 3)
-			addDecimalField(wrapper, pointsLabel, "", &e.editorData.Points, 0, fxp.MaxBasePoints)
+			addDecimalField(wrapper, nil, "", pointsLabel, "", &e.editorData.Points, 0, fxp.MaxBasePoints)
 			wrapper.AddChild(widget.NewFieldInteriorLeadingLabel(i18n.Text("Level")))
 			levelField := widget.NewNonEditableField(func(field *widget.NonEditableField) {
 				points := gurps.AdjustedPointsForNonContainerSpell(e.target.Entity, e.editorData.Points,

@@ -38,14 +38,14 @@ func EditEquipment(owner widget.Rebuildable, equipment *gurps.Equipment, carried
 			qtyLabel := i18n.Text("Quantity")
 			if carried {
 				wrapper := addFlowWrapper(content, qtyLabel, 2)
-				addDecimalField(wrapper, qtyLabel, "", &e.editorData.Quantity, 0, fxp.Max-1)
+				addDecimalField(wrapper, nil, "", qtyLabel, "", &e.editorData.Quantity, 0, fxp.Max-1)
 				addCheckBox(wrapper, i18n.Text("Equipped"), &e.editorData.Equipped)
 			} else {
-				addLabelAndDecimalField(content, qtyLabel, "", &e.editorData.Quantity, 0, fxp.Max-1)
+				addLabelAndDecimalField(content, nil, "", qtyLabel, "", &e.editorData.Quantity, 0, fxp.Max-1)
 			}
 			valueLabel := i18n.Text("Value")
 			wrapper := addFlowWrapper(content, valueLabel, 3)
-			addDecimalField(wrapper, valueLabel, "", &e.editorData.Value, 0, fxp.Max-1)
+			addDecimalField(wrapper, nil, "", valueLabel, "", &e.editorData.Value, 0, fxp.Max-1)
 			wrapper.AddChild(widget.NewFieldInteriorLeadingLabel(i18n.Text("Extended")))
 			wrapper.AddChild(widget.NewNonEditableField(func(field *widget.NonEditableField) {
 				var value fxp.Int
@@ -63,7 +63,7 @@ func EditEquipment(owner widget.Rebuildable, equipment *gurps.Equipment, carried
 			}))
 			weightLabel := i18n.Text("Weight")
 			wrapper = addFlowWrapper(content, weightLabel, 3)
-			addWeightField(wrapper, weightLabel, "", e.target.Entity, &e.editorData.Weight, false)
+			addWeightField(wrapper, nil, "", weightLabel, "", e.target.Entity, &e.editorData.Weight, false)
 			wrapper.AddChild(widget.NewFieldInteriorLeadingLabel(i18n.Text("Extended")))
 			wrapper.AddChild(widget.NewNonEditableField(func(field *widget.NonEditableField) {
 				var weight measure.Weight
@@ -79,10 +79,10 @@ func EditEquipment(owner widget.Rebuildable, equipment *gurps.Equipment, carried
 			addCheckBox(content, i18n.Text("Ignore weight for skills"), &e.editorData.WeightIgnoredForSkills)
 			usesLabel := i18n.Text("Uses")
 			wrapper = addFlowWrapper(content, usesLabel, 3)
-			usesField := addIntegerField(wrapper, usesLabel, "", &e.editorData.Uses, 0, 9999999)
+			usesField := addIntegerField(wrapper, nil, "", usesLabel, "", &e.editorData.Uses, 0, 9999999)
 			maxUsesLabel := i18n.Text("Maximum Uses")
 			wrapper.AddChild(widget.NewFieldInteriorLeadingLabel(maxUsesLabel))
-			addIntegerField(wrapper, maxUsesLabel, "", &e.editorData.MaxUses, 0, 9999999)
+			addIntegerField(wrapper, nil, "", maxUsesLabel, "", &e.editorData.MaxUses, 0, 9999999)
 			addTagsLabelAndField(content, &e.editorData.Tags)
 			addPageRefLabelAndField(content, &e.editorData.PageRef)
 			adjustFieldBlank(usesField, e.editorData.MaxUses <= 0)

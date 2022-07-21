@@ -180,7 +180,7 @@ func (p *featuresPanel) createConditionalModifierPanel(f *feature.ConditionalMod
 	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
 	panel.AddChild(unison.NewPanel())
 	watermark := i18n.Text("Triggering Condition")
-	field := widget.NewMultiLineStringField(watermark, func() string { return f.Situation },
+	field := widget.NewMultiLineStringField(nil, "", watermark, func() string { return f.Situation },
 		func(value string) {
 			f.Situation = value
 			panel.MarkForLayoutAndRedraw()
@@ -211,7 +211,7 @@ func (p *featuresPanel) createDRBonusPanel(f *feature.DRBonus) *unison.Panel {
 		VSpacing: unison.StdVSpacing,
 	})
 	wrapper.AddChild(widget.NewFieldLeadingLabel(i18n.Text("against")))
-	field := widget.NewStringField(i18n.Text("Specialization"), func() string { return f.Specialization },
+	field := widget.NewStringField(nil, "", i18n.Text("Specialization"), func() string { return f.Specialization },
 		func(value string) {
 			f.Specialization = value
 			f.Normalize()
@@ -230,7 +230,7 @@ func (p *featuresPanel) createReactionBonusPanel(f *feature.ReactionBonus) *unis
 	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
 	panel.AddChild(unison.NewPanel())
 	watermark := i18n.Text("from/to target group")
-	field := widget.NewMultiLineStringField(watermark, func() string { return f.Situation },
+	field := widget.NewMultiLineStringField(nil, "", watermark, func() string { return f.Situation },
 		func(value string) {
 			f.Situation = value
 			panel.MarkForLayoutAndRedraw()
@@ -492,7 +492,8 @@ func (p *featuresPanel) createSecondaryWeaponPanels(parent *unison.Panel, index 
 			parent.AddChildAtIndex(unison.NewPanel(), index)
 			index++
 			wrapper = unison.NewPanel()
-			addNumericCriteriaPanel(wrapper, i18n.Text("and whose relative skill level"), i18n.Text("Level Qualifier"), &f.RelativeLevelCriteria, -fxp.Thousand, fxp.Thousand, 1, true, false)
+			addNumericCriteriaPanel(wrapper, nil, "", i18n.Text("and whose relative skill level"),
+				i18n.Text("Level Qualifier"), &f.RelativeLevelCriteria, -fxp.Thousand, fxp.Thousand, 1, true, false)
 			wrapper.SetLayout(&unison.FlexLayout{
 				Columns:  len(wrapper.Children()),
 				HSpacing: unison.StdHSpacing,
@@ -511,7 +512,7 @@ func (p *featuresPanel) createContainedWeightReductionPanel(f *feature.Contained
 	wrapper := unison.NewPanel()
 	p.addTypeSwitcher(wrapper, f)
 
-	field := widget.NewStringField(i18n.Text("Contained Weight Reduction"),
+	field := widget.NewStringField(nil, "", i18n.Text("Contained Weight Reduction"),
 		func() string { return f.Reduction },
 		func(value string) {
 			f.Reduction, _ = feature.ExtractContainedWeightReduction(value, gurps.SheetSettingsFor(p.entity).DefaultWeightUnits) //nolint:errcheck // A valid value is always returned
@@ -567,7 +568,7 @@ func (p *featuresPanel) createCostReductionPanel(f *feature.CostReduction) *unis
 func (p *featuresPanel) addLeveledModifierLine(parent *unison.Panel, f feature.Feature, amount *feature.LeveledAmount) {
 	panel := unison.NewPanel()
 	p.addTypeSwitcher(panel, f)
-	addLeveledAmountPanel(panel, amount)
+	addLeveledAmountPanel(panel, nil, "", amount)
 	if wdb, ok := f.(*feature.WeaponDamageBonus); ok {
 		addCheckBox(panel, i18n.Text("as a percentage"), &wdb.Percent)
 	}

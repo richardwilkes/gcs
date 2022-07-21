@@ -31,12 +31,12 @@ func initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.P
 	addLabelAndStringField(content, i18n.Text("Minimum ST"), "", &e.editorData.MinimumStrength)
 	addLabelAndPopup(content, i18n.Text("Base Damage"), "", weapon.AllStrengthDamage, &e.editorData.Damage.StrengthType)
 	addLabelAndNullableDice(content, i18n.Text("Damage Modifier"), "", &e.editorData.Damage.Base)
-	addLabelAndDecimalField(content, i18n.Text("Damage Modifier Per Die"), "", &e.editorData.Damage.ModifierPerDie,
+	addLabelAndDecimalField(content, nil, "", i18n.Text("Damage Modifier Per Die"), "", &e.editorData.Damage.ModifierPerDie,
 		fxp.Min, fxp.Max)
-	addLabelAndDecimalField(content, i18n.Text("Armor Divisor"), "", &e.editorData.Damage.ArmorDivisor, 0, fxp.Max)
+	addLabelAndDecimalField(content, nil, "", i18n.Text("Armor Divisor"), "", &e.editorData.Damage.ArmorDivisor, 0, fxp.Max)
 	addLabelAndStringField(content, i18n.Text("Damage Type"), "", &e.editorData.Damage.Type)
 	addLabelAndNullableDice(content, i18n.Text("Fragmentation Base Damage"), "", &e.editorData.Damage.Fragmentation)
-	addLabelAndDecimalField(content, i18n.Text("Fragmentation Armor Divisor"), "",
+	addLabelAndDecimalField(content, nil, "", i18n.Text("Fragmentation Armor Divisor"), "",
 		&e.editorData.Damage.FragmentationArmorDivisor, 0, fxp.Max)
 	addLabelAndStringField(content, i18n.Text("Fragmentation Type"), "", &e.editorData.Damage.FragmentationType)
 	switch e.editorData.Type {

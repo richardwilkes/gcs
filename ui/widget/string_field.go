@@ -19,6 +19,8 @@ import (
 type StringField struct {
 	*unison.Field
 	undoID    int64
+	targetMgr *TargetMgr
+	targetKey string
 	undoTitle string
 	last      string
 	get       func() string
@@ -28,21 +30,23 @@ type StringField struct {
 }
 
 // NewMultiLineStringField creates a new field for editing a string.
-func NewMultiLineStringField(undoTitle string, get func() string, set func(string)) *StringField {
-	f := newStringField(unison.NewMultiLineField(), undoTitle, get, set)
+func NewMultiLineStringField(targetMgr *TargetMgr, targetKey, undoTitle string, get func() string, set func(string)) *StringField {
+	f := newStringField(unison.NewMultiLineField(), targetMgr, targetKey, undoTitle, get, set)
 	f.SetWrap(true)
 	return f
 }
 
 // NewStringField creates a new field for editing a string.
-func NewStringField(undoTitle string, get func() string, set func(string)) *StringField {
-	return newStringField(unison.NewField(), undoTitle, get, set)
+func NewStringField(targetMgr *TargetMgr, targetKey, undoTitle string, get func() string, set func(string)) *StringField {
+	return newStringField(unison.NewField(), targetMgr, targetKey, undoTitle, get, set)
 }
 
-func newStringField(field *unison.Field, undoTitle string, get func() string, set func(string)) *StringField {
+func newStringField(field *unison.Field, targetMgr *TargetMgr, targetKey, undoTitle string, get func() string, set func(string)) *StringField {
 	f := &StringField{
 		Field:     field,
 		undoID:    unison.NextUndoID(),
+		targetMgr: targetMgr,
+		targetKey: targetKey,
 		undoTitle: undoTitle,
 		last:      get(),
 		get:       get,
@@ -57,6 +61,9 @@ func newStringField(field *unison.Field, undoTitle string, get func() string, se
 		HAlign: unison.FillAlignment,
 		HGrab:  true,
 	})
+	if targetMgr != nil && targetKey != "" {
+		f.ClientData()[TargetIDKey] = targetKey
+	}
 	return f
 }
 
@@ -78,21 +85,17 @@ func (f *StringField) modified() {
 	text := f.Text()
 	if !f.inUndo && f.undoID != unison.NoUndoID {
 		if mgr := unison.UndoManagerFor(f); mgr != nil {
-			mgr.Add(&unison.UndoEdit[string]{
-				ID:       f.undoID,
-				EditName: f.undoTitle,
-				UndoFunc: func(e *unison.UndoEdit[string]) { f.setWithoutUndo(e.BeforeData, true) },
-				RedoFunc: func(e *unison.UndoEdit[string]) { f.setWithoutUndo(e.AfterData, true) },
-				AbsorbFunc: func(e *unison.UndoEdit[string], other unison.Undoable) bool {
-					if e2, ok := other.(*unison.UndoEdit[string]); ok && e2.ID == f.undoID {
-						e.AfterData = e2.AfterData
-						return true
+			undo := NewTargetUndo(f.targetMgr, f.targetKey, f.undoTitle, f.undoID, func(target *unison.Panel, data string) {
+				self := f
+				if target != nil {
+					if field, ok := target.Self.(*StringField); ok {
+						self = field
 					}
-					return false
-				},
-				BeforeData: f.get(),
-				AfterData:  text,
-			})
+				}
+				self.setWithoutUndo(data, true)
+			}, f.get())
+			undo.AfterData = text
+			mgr.Add(undo)
 		}
 	}
 	if f.last != text {

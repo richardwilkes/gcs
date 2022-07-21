@@ -116,10 +116,12 @@ func NewTableDockable[T gurps.NodeConstraint[T]](filePath, extension string, pro
 	d.sizeToFitButton.ClickCallback = d.sizeToFit
 
 	scaleTitle := i18n.Text("Scale")
-	d.scaleField = widget.NewPercentageField(scaleTitle, func() int { return d.scale }, func(v int) {
-		d.scale = v
-		d.applyScale()
-	}, gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, false, false)
+	d.scaleField = widget.NewPercentageField(nil, "", scaleTitle,
+		func() int { return d.scale },
+		func(v int) {
+			d.scale = v
+			d.applyScale()
+		}, gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, false, false)
 	d.scaleField.Tooltip = unison.NewTooltipWithText(scaleTitle)
 
 	d.backButton = unison.NewSVGButton(res.BackSVG)

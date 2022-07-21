@@ -17,7 +17,7 @@ import "github.com/richardwilkes/gcs/v5/model/fxp"
 type DecimalField = NumericField[fxp.Int]
 
 // NewDecimalField creates a new field that holds a fixed-point number.
-func NewDecimalField(undoTitle string, get func() fxp.Int, set func(fxp.Int), min, max fxp.Int, forceSign, noMinWidth bool) *DecimalField {
+func NewDecimalField(targetMgr *TargetMgr, targetKey, undoTitle string, get func() fxp.Int, set func(fxp.Int), min, max fxp.Int, forceSign, noMinWidth bool) *DecimalField {
 	var getPrototypes func(min, max fxp.Int) []fxp.Int
 	if !noMinWidth {
 		getPrototypes = func(min, max fxp.Int) []fxp.Int {
@@ -38,5 +38,5 @@ func NewDecimalField(undoTitle string, get func() fxp.Int, set func(fxp.Int), mi
 		}
 		return value.String()
 	}
-	return NewNumericField[fxp.Int](undoTitle, getPrototypes, get, set, format, fxp.FromString, min, max)
+	return NewNumericField[fxp.Int](targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, fxp.FromString, min, max)
 }
