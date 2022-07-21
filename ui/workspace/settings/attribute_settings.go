@@ -330,13 +330,17 @@ func (d *attributesDockable) createSecondLine(def *gurps.AttributeDef) *unison.P
 	}
 	popup.Select(def.Type)
 	popup.SelectionCallback = func(_ int, typ attribute.Type) {
-		def.Type = typ
-		if def.Type == attribute.Pool {
-			if len(def.Thresholds) == 0 {
-				def.Thresholds = append(def.Thresholds, &gurps.PoolThreshold{})
-			}
+		undo := &unison.UndoEdit[attribute.Type]{
+			ID:         unison.NextUndoID(),
+			EditName:   i18n.Text("Attribute Type"),
+			UndoFunc:   func(e *unison.UndoEdit[attribute.Type]) { d.applyAttributeType(def, e.BeforeData) },
+			RedoFunc:   func(e *unison.UndoEdit[attribute.Type]) { d.applyAttributeType(def, e.AfterData) },
+			AbsorbFunc: func(e *unison.UndoEdit[attribute.Type], other unison.Undoable) bool { return false },
 		}
-		d.sync()
+		undo.BeforeData = def.Type
+		d.applyAttributeType(def, typ)
+		undo.AfterData = def.Type
+		d.UndoManager().Add(undo)
 	}
 	panel.AddChild(popup)
 
@@ -368,6 +372,15 @@ func (d *attributesDockable) createSecondLine(def *gurps.AttributeDef) *unison.P
 	panel.AddChild(numField)
 
 	return panel
+}
+
+func (d *attributesDockable) applyAttributeType(def *gurps.AttributeDef, attrType attribute.Type) {
+	if def.Type = attrType; def.Type == attribute.Pool {
+		if len(def.Thresholds) == 0 {
+			def.Thresholds = append(def.Thresholds, &gurps.PoolThreshold{})
+		}
+	}
+	d.sync()
 }
 
 func (d *attributesDockable) createPool(def *gurps.AttributeDef) *unison.Panel {
