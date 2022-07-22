@@ -36,7 +36,7 @@ func MarkForLayoutWithinDockable(panel unison.Paneler) {
 }
 
 // SetCheckBoxState sets the checkbox state based on the value of checked.
-func SetCheckBoxState(checkbox *unison.CheckBox, checked bool) {
+func SetCheckBoxState(checkbox *CheckBox, checked bool) {
 	if checked {
 		checkbox.State = unison.OnCheckState
 	} else {

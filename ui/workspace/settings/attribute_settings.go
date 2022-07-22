@@ -554,21 +554,23 @@ func (d *attributesDockable) createSecondThresholdLine(threshold *gurps.PoolThre
 	})
 
 	for _, op := range attribute.AllThresholdOp[1:] {
-		panel.AddChild(createOpCheckBox(threshold, op))
+		panel.AddChild(d.createOpCheckBox(threshold, op))
 	}
 	return panel
 }
 
-func createOpCheckBox(threshold *gurps.PoolThreshold, op attribute.ThresholdOp) *unison.CheckBox {
-	checkBox := widget.NewCheckBox(op.String(), threshold.ContainsOp(op), func(b bool) {
-		if b {
-			threshold.AddOp(op)
-		} else {
-			threshold.RemoveOp(op)
-		}
-	})
-	checkBox.Tooltip = unison.NewTooltipWithText(op.AltString())
-	return checkBox
+func (d *attributesDockable) createOpCheckBox(threshold *gurps.PoolThreshold, op attribute.ThresholdOp) *widget.CheckBox {
+	c := widget.NewCheckBox(d.targetMgr, threshold.KeyPrefix+op.Key(), op.String(),
+		func() unison.CheckState { return unison.CheckStateFromBool(threshold.ContainsOp(op)) },
+		func(state unison.CheckState) {
+			if state == unison.OnCheckState {
+				threshold.AddOp(op)
+			} else {
+				threshold.RemoveOp(op)
+			}
+		})
+	c.Tooltip = unison.NewTooltipWithText(op.AltString())
+	return c
 }
 
 func (d *attributesDockable) createThirdThresholdLine(threshold *gurps.PoolThreshold) *unison.Panel {

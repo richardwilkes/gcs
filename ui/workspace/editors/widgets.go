@@ -83,26 +83,26 @@ func addTechLevelRequired(parent *unison.Panel, fieldData **string, includeField
 	}
 	last := *fieldData
 	required := last != nil
-	parent.AddChild(widget.NewCheckBox(i18n.Text("Required"), required, func(b bool) {
-		required = b
-		if b {
-			if last == nil {
-				var data string
-				last = &data
+	parent.AddChild(widget.NewCheckBox(nil, "", i18n.Text("Required"),
+		func() unison.CheckState { return unison.CheckStateFromBool(required) },
+		func(state unison.CheckState) {
+			if required = state == unison.OnCheckState; required {
+				if last == nil {
+					var data string
+					last = &data
+				}
+				*fieldData = last
+				if field != nil {
+					field.SetEnabled(true)
+				}
+			} else {
+				last = *fieldData
+				*fieldData = nil
+				if field != nil {
+					field.SetEnabled(false)
+				}
 			}
-			*fieldData = last
-			if field != nil {
-				field.SetEnabled(true)
-			}
-		} else {
-			last = *fieldData
-			*fieldData = nil
-			if field != nil {
-				field.SetEnabled(false)
-			}
-		}
-		widget.MarkModified(parent)
-	}))
+		}))
 }
 
 func addHitLocationChoicePopup(parent *unison.Panel, entity *gurps.Entity, prefix string, fieldData *string) *unison.PopupMenu[*gurps.HitLocationChoice] {
@@ -262,17 +262,15 @@ func addWeightField(parent *unison.Panel, targetMgr *widget.TargetMgr, targetKey
 }
 
 func addCheckBox(parent *unison.Panel, labelText string, fieldData *bool) {
-	parent.AddChild(widget.NewCheckBox(labelText, *fieldData, func(b bool) {
-		*fieldData = b
-		widget.MarkModified(parent)
-	}))
+	parent.AddChild(widget.NewCheckBox(nil, "", labelText,
+		func() unison.CheckState { return unison.CheckStateFromBool(*fieldData) },
+		func(state unison.CheckState) { *fieldData = state == unison.OnCheckState }))
 }
 
 func addInvertedCheckBox(parent *unison.Panel, labelText string, fieldData *bool) {
-	parent.AddChild(widget.NewCheckBox(labelText, !*fieldData, func(b bool) {
-		*fieldData = !b
-		widget.MarkModified(parent)
-	}))
+	parent.AddChild(widget.NewCheckBox(nil, "", labelText,
+		func() unison.CheckState { return unison.CheckStateFromBool(!*fieldData) },
+		func(state unison.CheckState) { *fieldData = state == unison.OffCheckState }))
 }
 
 func addFlowWrapper(parent *unison.Panel, labelText string, count int) *unison.Panel {

@@ -28,10 +28,10 @@ import (
 type generalSettingsDockable struct {
 	Dockable
 	nameField                           *widget.StringField
-	autoFillProfileCheckbox             *unison.CheckBox
-	autoAddNaturalAttacksCheckbox       *unison.CheckBox
+	autoFillProfileCheckbox             *widget.CheckBox
+	autoAddNaturalAttacksCheckbox       *widget.CheckBox
 	pointsField                         *widget.DecimalField
-	includeUnspentPointsInTotalCheckbox *unison.CheckBox
+	includeUnspentPointsInTotalCheckbox *widget.CheckBox
 	techLevelField                      *widget.StringField
 	calendarPopup                       *unison.PopupMenu[string]
 	initialListScaleField               *widget.PercentageField
@@ -105,23 +105,33 @@ func (d *generalSettingsDockable) createPlayerAndDescFields(content *unison.Pane
 }
 
 func (d *generalSettingsDockable) createCheckboxBlock(content *unison.Panel) {
-	d.autoFillProfileCheckbox = widget.NewCheckBox(i18n.Text("Fill in initial description"),
-		settings.Global().General.AutoFillProfile,
-		func(checked bool) { settings.Global().General.AutoFillProfile = checked })
+	d.autoFillProfileCheckbox = widget.NewCheckBox(nil, "", i18n.Text("Fill in initial description"),
+		func() unison.CheckState { return unison.CheckStateFromBool(settings.Global().General.AutoFillProfile) },
+		func(state unison.CheckState) {
+			settings.Global().General.AutoFillProfile = state == unison.OnCheckState
+		})
 	d.autoFillProfileCheckbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(widget.NewFieldLeadingLabel(""))
 	content.AddChild(d.autoFillProfileCheckbox)
 
-	d.autoAddNaturalAttacksCheckbox = widget.NewCheckBox(i18n.Text("Add natural attacks to new sheets"),
-		settings.Global().General.AutoAddNaturalAttacks,
-		func(checked bool) { settings.Global().General.AutoAddNaturalAttacks = checked })
+	d.autoAddNaturalAttacksCheckbox = widget.NewCheckBox(nil, "", i18n.Text("Add natural attacks to new sheets"),
+		func() unison.CheckState {
+			return unison.CheckStateFromBool(settings.Global().General.AutoAddNaturalAttacks)
+		},
+		func(state unison.CheckState) {
+			settings.Global().General.AutoAddNaturalAttacks = state == unison.OnCheckState
+		})
 	d.autoAddNaturalAttacksCheckbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(widget.NewFieldLeadingLabel(""))
 	content.AddChild(d.autoAddNaturalAttacksCheckbox)
 
-	d.includeUnspentPointsInTotalCheckbox = widget.NewCheckBox(i18n.Text("Include unspent points in total"),
-		settings.Global().General.IncludeUnspentPointsInTotal,
-		func(checked bool) { settings.Global().General.IncludeUnspentPointsInTotal = checked })
+	d.includeUnspentPointsInTotalCheckbox = widget.NewCheckBox(nil, "", i18n.Text("Include unspent points in total"),
+		func() unison.CheckState {
+			return unison.CheckStateFromBool(settings.Global().General.IncludeUnspentPointsInTotal)
+		},
+		func(state unison.CheckState) {
+			settings.Global().General.IncludeUnspentPointsInTotal = state == unison.OnCheckState
+		})
 	d.includeUnspentPointsInTotalCheckbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(widget.NewFieldLeadingLabel(""))
 	content.AddChild(d.includeUnspentPointsInTotalCheckbox)

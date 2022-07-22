@@ -106,18 +106,21 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 					}
 					widget.MarkModified(wrapper2)
 				}, -fxp.NinetyNine, fxp.NinetyNine, false, false)
-			wrapper2.AddChild(widget.NewCheckBox(i18n.Text("Cannot exceed default skill level by more than"),
-				e.editorData.TechniqueLimitModifier != nil, func(b bool) {
-					if b {
+			wrapper2.AddChild(widget.NewCheckBox(nil, "", i18n.Text("Cannot exceed default skill level by more than"),
+				func() unison.CheckState {
+					return unison.CheckStateFromBool(e.editorData.TechniqueLimitModifier != nil)
+				},
+				func(state unison.CheckState) {
+					if state == unison.OnCheckState {
 						if e.editorData.TechniqueLimitModifier == nil {
 							var limit fxp.Int
 							e.editorData.TechniqueLimitModifier = &limit
 						}
+						adjustFieldBlank(limitField, false)
 					} else {
 						e.editorData.TechniqueLimitModifier = nil
+						adjustFieldBlank(limitField, true)
 					}
-					adjustFieldBlank(limitField, !b)
-					widget.MarkModified(wrapper2)
 				}))
 			adjustFieldBlank(limitField, e.editorData.TechniqueLimitModifier == nil)
 			wrapper2.AddChild(limitField)
