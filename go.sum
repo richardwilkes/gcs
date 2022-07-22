@@ -25,8 +25,8 @@ github.com/richardwilkes/rpgtools v1.4.2 h1:pARC8K5+SD+6BblzTjC73flLJnsO7Jql4eni
 github.com/richardwilkes/rpgtools v1.4.2/go.mod h1:AzjxgmnZi8AJD4OaGYGqm9QiKQS5M9k5C99H3kEagSk=
 github.com/richardwilkes/toolbox v1.72.1-0.20220720040545-0bcdb267b9d0 h1:oBnBlfEALYi907OU+HjE0CJ+9CUwWe8FFMg40LSiqeE=
 github.com/richardwilkes/toolbox v1.72.1-0.20220720040545-0bcdb267b9d0/go.mod h1:mC/Zu9PjZ0GUFL2gc8t5R5+7QxiHZXsEwy04zHq7Tt0=
-github.com/richardwilkes/unison v0.23.3-0.20220720040939-e89768275508 h1:I3A7VpF+eYLfWtkiPG/005lYqQexYkBH3st1xF3n4ig=
-github.com/richardwilkes/unison v0.23.3-0.20220720040939-e89768275508/go.mod h1:zlgxJ+THrzJYTtumDSLJFmFQhiVgtnh4zVQMRSTgGXw=
+github.com/richardwilkes/unison v0.24.0 h1:oE0d/L4bY2DXQQ/F2sNrGjmz6611jllCOsySKYVehSw=
+github.com/richardwilkes/unison v0.24.0/go.mod h1:zlgxJ+THrzJYTtumDSLJFmFQhiVgtnh4zVQMRSTgGXw=
 github.com/rjeczalik/notify v0.9.2 h1:MiTWrPj55mNDHEiIX5YUSKefw/+lCQVoAFmD6oQm5w8=
 github.com/rjeczalik/notify v0.9.2/go.mod h1:aErll2f0sUX9PXZnVNyeiObbmTlk5jnMoCa4QEjJeqM=
 github.com/rogpeppe/go-internal v1.8.0 h1:FCbCCtXNOY3UtUuHUYaghJg4y7Fd14rXifAYUAtL9R8=
@@ -43,8 +43,8 @@ golang.org/x/image v0.0.0-20220617043117-41969df76e82 h1:KpZB5pUSBvrHltNEdK/tw0x
 golang.org/x/image v0.0.0-20220617043117-41969df76e82/go.mod h1:doUCurBvlfPMKfmIpRIywoHmhN3VyhnoFDbvIEWF4hY=
 golang.org/x/sys v0.0.0-20180926160741-c2ed4eda69e7/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20200909081042-eff7692f9009/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
-golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 h1:0A+M6Uqn+Eje4kHMK80dtF3JCXC4ykBgQG4Fe06QRhQ=
-golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.0.0-20220721230656-c6bc011c0c49 h1:TMjZDarEwf621XDryfitp/8awEhiZNiwgphKlTMGRIg=
+golang.org/x/sys v0.0.0-20220721230656-c6bc011c0c49/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/text v0.3.7 h1:olpwvP2KacW1ZWvsR7uQhoyTYvKAupfQrRGBFM352Gk=
 golang.org/x/text v0.3.7/go.mod h1:u+2+/6zg+i71rQMx5EYifcz6MCKuco9NR6JIITiCfzQ=
 golang.org/x/tools v0.0.0-20180917221912-90fa682c2a6e/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=

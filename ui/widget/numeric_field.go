@@ -66,7 +66,7 @@ func NewNumericField[T xmath.Numeric](targetMgr *TargetMgr, targetKey, undoTitle
 	f.ModifiedCallback = f.modified
 	f.ValidateCallback = f.validate
 	if targetMgr != nil && targetKey != "" {
-		f.ClientData()[TargetIDKey] = targetKey
+		f.RefKey = targetKey
 	}
 	f.adjustMinimumTextWidth()
 	f.Sync()

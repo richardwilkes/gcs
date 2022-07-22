@@ -62,7 +62,7 @@ func newStringField(field *unison.Field, targetMgr *TargetMgr, targetKey, undoTi
 		HGrab:  true,
 	})
 	if targetMgr != nil && targetKey != "" {
-		f.ClientData()[TargetIDKey] = targetKey
+		f.RefKey = targetKey
 	}
 	return f
 }
