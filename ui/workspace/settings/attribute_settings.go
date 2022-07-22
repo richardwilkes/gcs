@@ -327,25 +327,10 @@ func (d *attributesDockable) createSecondLine(def *gurps.AttributeDef) *unison.P
 		HGrab:  true,
 	})
 
-	popup := unison.NewPopupMenu[attribute.Type]()
-	for _, one := range attribute.AllType {
-		popup.AddItem(one)
-	}
-	popup.Select(def.Type)
-	popup.SelectionCallback = func(_ int, typ attribute.Type) {
-		undo := &unison.UndoEdit[attribute.Type]{
-			ID:         unison.NextUndoID(),
-			EditName:   i18n.Text("Attribute Type"),
-			UndoFunc:   func(e *unison.UndoEdit[attribute.Type]) { d.applyAttributeType(def, e.BeforeData) },
-			RedoFunc:   func(e *unison.UndoEdit[attribute.Type]) { d.applyAttributeType(def, e.AfterData) },
-			AbsorbFunc: func(e *unison.UndoEdit[attribute.Type], other unison.Undoable) bool { return false },
-		}
-		undo.BeforeData = def.Type
-		d.applyAttributeType(def, typ)
-		undo.AfterData = def.Type
-		d.UndoManager().Add(undo)
-	}
-	panel.AddChild(popup)
+	panel.AddChild(widget.NewPopup[attribute.Type](d.targetMgr, def.KeyPrefix+"type", i18n.Text("Attribute Type"),
+		func() attribute.Type { return def.Type },
+		func(typ attribute.Type) { d.applyAttributeType(def, typ) },
+		attribute.AllType...))
 
 	text := i18n.Text("Base")
 	panel.AddChild(widget.NewFieldLeadingLabel(text))
@@ -606,6 +591,7 @@ func (d *attributesDockable) reset() {
 }
 
 func (d *attributesDockable) sync() {
+	focusRefKey := d.Window().Focus().RefKey
 	scrollRoot := d.content.ScrollRoot()
 	h, v := scrollRoot.Position()
 	d.content.RemoveAllChildren()
@@ -615,6 +601,11 @@ func (d *attributesDockable) sync() {
 	scrollRoot.SetPosition(h, v)
 	d.MarkForLayoutAndRedraw()
 	d.MarkModified()
+	if focusRefKey != "" {
+		if focus := d.targetMgr.Find(focusRefKey); focus != nil {
+			focus.RequestFocus()
+		}
+	}
 }
 
 func (d *attributesDockable) load(fileSystem fs.FS, filePath string) error {
