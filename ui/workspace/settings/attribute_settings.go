@@ -118,6 +118,55 @@ func (d *attributesDockable) addToStartToolbar(toolbar *unison.Panel) {
 		d.AttemptClose()
 	}
 	toolbar.AddChild(d.cancelButton)
+
+	label := unison.NewLabel()
+	label.Text = " "
+	toolbar.AddChild(label)
+
+	addButton := unison.NewSVGButton(res.CircledAddSVG)
+	addAttributeText := i18n.Text("Add Attribute")
+	addButton.Tooltip = unison.NewTooltipWithText(addAttributeText)
+	addButton.ClickCallback = func() {
+		undo := &unison.UndoEdit[*gurps.AttributeDefs]{
+			ID:         unison.NextUndoID(),
+			EditName:   addAttributeText,
+			UndoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.BeforeData) },
+			RedoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.AfterData) },
+			AbsorbFunc: func(e *unison.UndoEdit[*gurps.AttributeDefs], other unison.Undoable) bool { return false },
+		}
+		undo.BeforeData = d.defs.Clone()
+		attrDef := &gurps.AttributeDef{}
+		base := ""
+		for {
+			for v := 'a'; v <= 'z'; v++ {
+				attempt := fmt.Sprintf("%s%c", base, v)
+				if _, exists := d.defs.Set[attempt]; !exists {
+					attrDef.DefID = attempt
+					break
+				}
+			}
+			if attrDef.DefID != "" {
+				break
+			}
+			base += "a"
+		}
+		for _, v := range d.defs.Set {
+			if attrDef.Order <= v.Order {
+				attrDef.Order = v.Order + 1
+			}
+		}
+		d.defs.Set[attrDef.DefID] = attrDef
+		p := d.createAttrDefPanel(attrDef)
+		d.content.AddChild(p)
+		undo.AfterData = d.defs.Clone()
+		d.UndoManager().Add(undo)
+		d.MarkModified()
+		d.MarkForLayoutAndRedraw()
+		d.ValidateLayout()
+		widget.FocusFirstContent(d.toolbar, p)
+		d.Window().Focus().ScrollIntoView()
+	}
+	toolbar.AddChild(addButton)
 }
 
 func (d *attributesDockable) initContent(content *unison.Panel) {
@@ -215,10 +264,14 @@ func (d *attributesDockable) createButtons(def *gurps.AttributeDef) *unison.Pane
 		if len(children) == 2 {
 			children[0].Children()[0].Children()[0].SetEnabled(true)
 		}
-		thresholdPanel.Children()[1].RequestFocus()
 		undo.AfterData = clonePoolThresholds(def.Thresholds)
 		d.UndoManager().Add(undo)
 		d.MarkModified()
+		d.MarkForLayoutAndRedraw()
+		d.ValidateLayout()
+		focus := thresholdPanel.Children()[1]
+		focus.RequestFocus()
+		focus.ScrollIntoView()
 	}
 	addButton.SetEnabled(def.Type == attribute.Pool)
 	buttons.AddChild(addButton)
