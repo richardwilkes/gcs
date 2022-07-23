@@ -28,6 +28,7 @@ type attributesDockable struct {
 	undoMgr       *unison.UndoManager
 	defs          *gurps.AttributeDefs
 	originalCRC   uint64
+	toolbar       *unison.Panel
 	content       *unison.Panel
 	applyButton   *unison.Button
 	cancelButton  *unison.Button
@@ -98,6 +99,7 @@ func (d *attributesDockable) CloseWithGroup(other unison.Paneler) bool {
 }
 
 func (d *attributesDockable) addToStartToolbar(toolbar *unison.Panel) {
+	d.toolbar = toolbar
 	d.applyButton = unison.NewSVGButton(res.CheckmarkSVG)
 	d.applyButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Apply Changes"))
 	d.applyButton.SetEnabled(false)
@@ -363,10 +365,8 @@ func (d *attributesDockable) createSecondLine(def *gurps.AttributeDef) *unison.P
 }
 
 func (d *attributesDockable) applyAttributeType(def *gurps.AttributeDef, attrType attribute.Type) {
-	if def.Type = attrType; def.Type == attribute.Pool {
-		if len(def.Thresholds) == 0 {
-			def.Thresholds = append(def.Thresholds, &gurps.PoolThreshold{KeyPrefix: d.targetMgr.NextPrefix()})
-		}
+	if def.Type = attrType; def.Type == attribute.Pool && len(def.Thresholds) == 0 {
+		def.Thresholds = append(def.Thresholds, &gurps.PoolThreshold{KeyPrefix: d.targetMgr.NextPrefix()})
 	}
 	d.sync()
 }
@@ -591,7 +591,10 @@ func (d *attributesDockable) reset() {
 }
 
 func (d *attributesDockable) sync() {
-	focusRefKey := d.Window().Focus().RefKey
+	var focusRefKey string
+	if focus := d.Window().Focus(); unison.AncestorOrSelf[*attributesDockable](focus) == d {
+		focusRefKey = focus.RefKey
+	}
 	scrollRoot := d.content.ScrollRoot()
 	h, v := scrollRoot.Position()
 	d.content.RemoveAllChildren()
@@ -604,6 +607,8 @@ func (d *attributesDockable) sync() {
 	if focusRefKey != "" {
 		if focus := d.targetMgr.Find(focusRefKey); focus != nil {
 			focus.RequestFocus()
+		} else {
+			widget.FocusFirstContent(d.toolbar, d.content)
 		}
 	}
 }
