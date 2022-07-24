@@ -37,6 +37,7 @@ var (
 type Dockable struct {
 	unison.Panel
 	TabTitle          string
+	TabIcon           *unison.SVG
 	Extensions        []string
 	Loader            func(fileSystem fs.FS, filePath string) error
 	Saver             func(filePath string) error
@@ -78,7 +79,7 @@ func (d *Dockable) Setup(ws *workspace.Workspace, dc *unison.DockContainer, addT
 // TitleIcon implements unison.Dockable
 func (d *Dockable) TitleIcon(suggestedSize unison.Size) unison.Drawable {
 	return &unison.DrawableSVG{
-		SVG:  res.SettingsSVG,
+		SVG:  d.TabIcon,
 		Size: suggestedSize,
 	}
 }

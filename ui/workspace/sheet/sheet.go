@@ -163,6 +163,14 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	sheetSettingsButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Sheet Settings"))
 	sheetSettingsButton.ClickCallback = func() { wsettings.ShowSheetSettings(s) }
 
+	attributesButton := unison.NewSVGButton(res.AttributesSVG)
+	attributesButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Attributes"))
+	attributesButton.ClickCallback = func() { wsettings.ShowAttributeSettings(s) }
+
+	bodyTypeButton := unison.NewSVGButton(res.BodyTypeSVG)
+	bodyTypeButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Body Type"))
+	bodyTypeButton.ClickCallback = func() { wsettings.ShowBodyTypeSettings(s) }
+
 	scaleTitle := i18n.Text("Scale")
 	s.scaleField = widget.NewPercentageField(nil, "", scaleTitle,
 		func() int { return s.scale },
@@ -181,6 +189,8 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 		HGrab:  true,
 	})
 	toolbar.AddChild(sheetSettingsButton)
+	toolbar.AddChild(attributesButton)
+	toolbar.AddChild(bodyTypeButton)
 	toolbar.AddChild(s.scaleField)
 	toolbar.SetLayout(&unison.FlexLayout{
 		Columns:  len(toolbar.Children()),

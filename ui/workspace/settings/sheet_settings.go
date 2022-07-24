@@ -20,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/paper"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/model/settings/display"
+	"github.com/richardwilkes/gcs/v5/res"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/gcs/v5/ui/workspace"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -69,6 +70,7 @@ func ShowSheetSettings(owner widget.EntityPanel) {
 		} else {
 			d.TabTitle = i18n.Text("Default Sheet Settings")
 		}
+		d.TabIcon = res.SettingsSVG
 		d.Extensions = []string{".sheet"}
 		d.Loader = d.load
 		d.Saver = d.save

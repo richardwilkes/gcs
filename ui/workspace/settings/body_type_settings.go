@@ -5,6 +5,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/settings"
+	"github.com/richardwilkes/gcs/v5/res"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/gcs/v5/ui/workspace"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -34,6 +35,7 @@ func ShowBodyTypeSettings(owner widget.EntityPanel) {
 		} else {
 			d.TabTitle = i18n.Text("Default Body Type")
 		}
+		d.TabIcon = res.BodyTypeSVG
 		d.Extensions = []string{".body", ".ghl"}
 		d.Loader = d.load
 		d.Saver = d.save

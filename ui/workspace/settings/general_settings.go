@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	gsettings "github.com/richardwilkes/gcs/v5/model/gurps/settings"
 	"github.com/richardwilkes/gcs/v5/model/settings"
+	"github.com/richardwilkes/gcs/v5/res"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/gcs/v5/ui/workspace"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -51,6 +52,7 @@ func ShowGeneralSettings() {
 		d := &generalSettingsDockable{}
 		d.Self = d
 		d.TabTitle = i18n.Text("General Settings")
+		d.TabIcon = res.SettingsSVG
 		d.Extensions = []string{".general"}
 		d.Loader = d.load
 		d.Saver = d.save

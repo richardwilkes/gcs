@@ -39,6 +39,7 @@ func ShowMenuKeySettings() {
 		d := &menuKeySettingsDockable{}
 		d.Self = d
 		d.TabTitle = i18n.Text("Menu Keys")
+		d.TabIcon = res.SettingsSVG
 		d.Extensions = []string{".keys"}
 		d.Loader = d.load
 		d.Saver = d.save

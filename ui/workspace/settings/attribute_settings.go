@@ -57,6 +57,7 @@ func ShowAttributeSettings(owner widget.EntityPanel) {
 			d.defs = settings.Global().Sheet.Attributes.Clone()
 			d.TabTitle = i18n.Text("Default Attributes")
 		}
+		d.TabIcon = res.AttributesSVG
 		d.defs.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
 		d.originalCRC = d.defs.CRC64()
 		d.Extensions = []string{".attr", ".attributes", ".gas"}
