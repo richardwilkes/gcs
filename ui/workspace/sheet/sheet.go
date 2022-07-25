@@ -29,6 +29,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/ui/widget/ntable"
 	"github.com/richardwilkes/gcs/v5/ui/workspace"
 	wsettings "github.com/richardwilkes/gcs/v5/ui/workspace/settings"
+	"github.com/richardwilkes/gcs/v5/ui/workspace/settings/attrdef"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio/fs"
@@ -165,7 +166,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 
 	attributesButton := unison.NewSVGButton(res.AttributesSVG)
 	attributesButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Attributes"))
-	attributesButton.ClickCallback = func() { wsettings.ShowAttributeSettings(s) }
+	attributesButton.ClickCallback = func() { attrdef.ShowAttributeSettings(s) }
 
 	bodyTypeButton := unison.NewSVGButton(res.BodyTypeSVG)
 	bodyTypeButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Body Type"))
