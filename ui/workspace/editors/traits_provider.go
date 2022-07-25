@@ -104,6 +104,9 @@ func (p *traitsProvider) DropShouldMoveData(from, to *unison.Table[*ntable.Node[
 	return from == to
 }
 
+func (p *traitsProvider) ProcessDropData(_, _ *unison.Table[*ntable.Node[*gurps.Trait]]) {
+}
+
 func (p *traitsProvider) ItemNames() (singular, plural string) {
 	return i18n.Text("Trait"), i18n.Text("Traits")
 }

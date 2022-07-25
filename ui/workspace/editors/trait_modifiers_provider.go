@@ -104,6 +104,9 @@ func (p *traitModifierProvider) DropShouldMoveData(from, to *unison.Table[*ntabl
 	return from == to
 }
 
+func (p *traitModifierProvider) ProcessDropData(_, _ *unison.Table[*ntable.Node[*gurps.TraitModifier]]) {
+}
+
 func (p *traitModifierProvider) ItemNames() (singular, plural string) {
 	return i18n.Text("Trait Modifier"), i18n.Text("Trait Modifiers")
 }

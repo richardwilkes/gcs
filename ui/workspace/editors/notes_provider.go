@@ -90,6 +90,9 @@ func (p *notesProvider) DropShouldMoveData(from, to *unison.Table[*ntable.Node[*
 	return from == to
 }
 
+func (p *notesProvider) ProcessDropData(_, _ *unison.Table[*ntable.Node[*gurps.Note]]) {
+}
+
 func (p *notesProvider) ItemNames() (singular, plural string) {
 	return i18n.Text("Note"), i18n.Text("Notes")
 }

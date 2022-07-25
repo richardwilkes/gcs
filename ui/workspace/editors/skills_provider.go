@@ -115,6 +115,9 @@ func (p *skillsProvider) DropShouldMoveData(from, to *unison.Table[*ntable.Node[
 	return from == to
 }
 
+func (p *skillsProvider) ProcessDropData(_, _ *unison.Table[*ntable.Node[*gurps.Skill]]) {
+}
+
 func (p *skillsProvider) ItemNames() (singular, plural string) {
 	return i18n.Text("Skill"), i18n.Text("Skills")
 }

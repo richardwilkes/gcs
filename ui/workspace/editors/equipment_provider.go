@@ -145,6 +145,19 @@ func (p *equipmentProvider) DropShouldMoveData(from, to *unison.Table[*ntable.No
 	return false
 }
 
+func (p *equipmentProvider) ProcessDropData(from, to *unison.Table[*ntable.Node[*gurps.Equipment]]) {
+	if p.carried && from != to {
+		for _, row := range to.SelectedRows(true) {
+			if equipmentRow, ok := any(row).(*ntable.Node[*gurps.Equipment]); ok {
+				gurps.Traverse(func(e *gurps.Equipment) bool {
+					e.Equipped = true
+					return false
+				}, false, false, equipmentRow.Data())
+			}
+		}
+	}
+}
+
 func (p *equipmentProvider) ItemNames() (singular, plural string) {
 	return i18n.Text("Equipment Item"), i18n.Text("Equipment Items")
 }

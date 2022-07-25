@@ -125,6 +125,9 @@ func (p *spellsProvider) DropShouldMoveData(from, to *unison.Table[*ntable.Node[
 	return from == to
 }
 
+func (p *spellsProvider) ProcessDropData(_, _ *unison.Table[*ntable.Node[*gurps.Spell]]) {
+}
+
 func (p *spellsProvider) ItemNames() (singular, plural string) {
 	return i18n.Text("Spell"), i18n.Text("Spells")
 }

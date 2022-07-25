@@ -47,6 +47,7 @@ type TableProvider[T gurps.NodeConstraint[T]] interface {
 	DragKey() string
 	DragSVG() *unison.SVG
 	DropShouldMoveData(from, to *unison.Table[*Node[T]]) bool
+	ProcessDropData(from, to *unison.Table[*Node[T]])
 	ItemNames() (singular, plural string)
 	Headers() []unison.TableColumnHeader[*Node[T]]
 	SyncHeader(headers []unison.TableColumnHeader[*Node[T]])

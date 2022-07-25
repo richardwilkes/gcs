@@ -52,6 +52,12 @@ func willDropCallback[T gurps.NodeConstraint[T]](from, to *unison.Table[*Node[T]
 }
 
 func didDropCallback[T gurps.NodeConstraint[T]](undo *unison.UndoEdit[*TableDragUndoEditData[T]], from, to *unison.Table[*Node[T]], move bool) {
+	if provider, ok := to.ClientData()[tableProviderClientKey]; ok {
+		var tableProvider TableProvider[T]
+		if tableProvider, ok = provider.(TableProvider[T]); ok {
+			tableProvider.ProcessDropData(from, to)
+		}
+	}
 	entityProvider := unison.Ancestor[gurps.EntityProvider](to)
 	if !toolbox.IsNil(entityProvider) && entityProvider.Entity() != nil {
 		if rebuilder := unison.Ancestor[widget.Rebuildable](to); rebuilder != nil {
