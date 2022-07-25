@@ -41,6 +41,7 @@ type BodyType struct {
 	Name           string         `json:"name,omitempty"`
 	Roll           *dice.Dice     `json:"roll"`
 	Locations      []*HitLocation `json:"locations,omitempty"`
+	KeyPrefix      string         `json:"-"`
 	owningLocation *HitLocation
 	locationLookup map[string]*HitLocation
 }
@@ -224,4 +225,12 @@ func (b *BodyType) crc64(c uint64) uint64 {
 		c = loc.crc64(c)
 	}
 	return c
+}
+
+// ResetTargetKeyPrefixes assigns new key prefixes for all data within this BodyType.
+func (b *BodyType) ResetTargetKeyPrefixes(prefixProvider func() string) {
+	b.KeyPrefix = prefixProvider()
+	for _, one := range b.Locations {
+		one.ResetTargetKeyPrefixes(prefixProvider)
+	}
 }

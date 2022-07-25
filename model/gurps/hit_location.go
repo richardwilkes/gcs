@@ -43,6 +43,7 @@ type HitLocation struct {
 	HitLocationData
 	Entity      *Entity
 	RollRange   string
+	KeyPrefix   string
 	owningTable *BodyType
 }
 
@@ -216,4 +217,12 @@ func (h *HitLocation) crc64(c uint64) uint64 {
 		c = h.SubTable.crc64(c)
 	}
 	return c
+}
+
+// ResetTargetKeyPrefixes assigns new key prefixes for all data within this HitLocation.
+func (h *HitLocation) ResetTargetKeyPrefixes(prefixProvider func() string) {
+	h.KeyPrefix = prefixProvider()
+	if h.SubTable != nil {
+		h.SubTable.ResetTargetKeyPrefixes(prefixProvider)
+	}
 }
