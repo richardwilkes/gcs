@@ -77,7 +77,7 @@ func NewBodyPanel(entity *gurps.Entity) *BodyPanel {
 	return p
 }
 
-func (p *BodyPanel) addContent(locations *gurps.BodyType) {
+func (p *BodyPanel) addContent(locations *gurps.Body) {
 	p.RemoveAllChildren()
 	p.AddChild(widget.NewPageHeader(i18n.Text("Roll"), 1))
 	p.AddChild(unison.NewPanel())
@@ -92,7 +92,7 @@ func (p *BodyPanel) addContent(locations *gurps.BodyType) {
 	}
 }
 
-func (p *BodyPanel) addTable(bodyType *gurps.BodyType, depth int) {
+func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 	for i, location := range bodyType.Locations {
 		prefix := strings.Repeat("   ", depth)
 		label := widget.NewPageLabelCenter(prefix + location.RollRange)

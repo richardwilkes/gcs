@@ -28,14 +28,14 @@ import (
 
 // HitLocationData holds the Hitlocation data that gets written to disk.
 type HitLocationData struct {
-	LocID       string    `json:"id"`
-	ChoiceName  string    `json:"choice_name"`
-	TableName   string    `json:"table_name"`
-	Slots       int       `json:"slots"`
-	HitPenalty  int       `json:"hit_penalty"`
-	DRBonus     int       `json:"dr_bonus"`
-	Description string    `json:"description"`
-	SubTable    *BodyType `json:"sub_table,omitempty"`
+	LocID       string `json:"id"`
+	ChoiceName  string `json:"choice_name"`
+	TableName   string `json:"table_name"`
+	Slots       int    `json:"slots"`
+	HitPenalty  int    `json:"hit_penalty"`
+	DRBonus     int    `json:"dr_bonus"`
+	Description string `json:"description"`
+	SubTable    *Body  `json:"sub_table,omitempty"`
 }
 
 // HitLocation holds a single hit location.
@@ -44,11 +44,11 @@ type HitLocation struct {
 	Entity      *Entity
 	RollRange   string
 	KeyPrefix   string
-	owningTable *BodyType
+	owningTable *Body
 }
 
 // Clone a copy of this.
-func (h *HitLocation) Clone(entity *Entity, owningTable *BodyType) *HitLocation {
+func (h *HitLocation) Clone(entity *Entity, owningTable *Body) *HitLocation {
 	clone := *h
 	clone.Entity = entity
 	clone.owningTable = owningTable
@@ -172,8 +172,8 @@ func (h *HitLocation) DisplayDR(entity *Entity, tooltip *xio.ByteBuffer) string 
 	return buffer.String()
 }
 
-// SetSubTable sets the BodyType as a sub-table.
-func (h *HitLocation) SetSubTable(bodyType *BodyType) {
+// SetSubTable sets the Body as a sub-table.
+func (h *HitLocation) SetSubTable(bodyType *Body) {
 	if bodyType == nil && h.SubTable != nil {
 		h.SubTable.SetOwningLocation(nil)
 	}

@@ -30,6 +30,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/ui/workspace"
 	wsettings "github.com/richardwilkes/gcs/v5/ui/workspace/settings"
 	"github.com/richardwilkes/gcs/v5/ui/workspace/settings/attrdef"
+	"github.com/richardwilkes/gcs/v5/ui/workspace/settings/body"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio/fs"
@@ -170,7 +171,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 
 	bodyTypeButton := unison.NewSVGButton(res.BodyTypeSVG)
 	bodyTypeButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Body Type"))
-	bodyTypeButton.ClickCallback = func() { wsettings.ShowBodyTypeSettings(s) }
+	bodyTypeButton.ClickCallback = func() { body.ShowBodySettings(s) }
 
 	scaleTitle := i18n.Text("Scale")
 	s.scaleField = widget.NewPercentageField(nil, "", scaleTitle,

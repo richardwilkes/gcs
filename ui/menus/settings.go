@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	uisettings "github.com/richardwilkes/gcs/v5/ui/workspace/settings"
 	"github.com/richardwilkes/gcs/v5/ui/workspace/settings/attrdef"
+	"github.com/richardwilkes/gcs/v5/ui/workspace/settings/body"
 	"github.com/richardwilkes/gcs/v5/ui/workspace/sheet"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -85,14 +86,14 @@ func registerSettingsMenuActions() {
 		EnabledCallback: enabledForSheet,
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			if s := sheet.ActiveSheet(); s != nil {
-				uisettings.ShowBodyTypeSettings(s)
+				body.ShowBodySettings(s)
 			}
 		},
 	}
 	DefaultBodyTypeSettings = &unison.Action{
 		ID:              constants.DefaultBodyTypeSettingsItemID,
 		Title:           i18n.Text("Default Body Type…"),
-		ExecuteCallback: func(_ *unison.Action, _ any) { uisettings.ShowBodyTypeSettings(nil) },
+		ExecuteCallback: func(_ *unison.Action, _ any) { body.ShowBodySettings(nil) },
 	}
 	GeneralSettings = &unison.Action{
 		ID:              constants.GeneralSettingsItemID,

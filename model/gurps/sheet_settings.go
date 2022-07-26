@@ -47,7 +47,7 @@ type SheetSettingsData struct {
 	Page                       *settings.Page              `json:"page,omitempty"`
 	BlockLayout                *BlockLayout                `json:"block_layout,omitempty"`
 	Attributes                 *AttributeDefs              `json:"attributes,omitempty"`
-	BodyType                   *BodyType                   `json:"body_type,alt=hit_locations,omitempty"`
+	BodyType                   *Body                       `json:"body_type,alt=hit_locations,omitempty"`
 	DamageProgression          attribute.DamageProgression `json:"damage_progression"`
 	DefaultLengthUnits         measure.LengthUnits         `json:"default_length_units"`
 	DefaultWeightUnits         measure.WeightUnits         `json:"default_weight_units"`
@@ -87,7 +87,7 @@ func FactorySheetSettings() *SheetSettings {
 			Page:                   settings.NewPage(),
 			BlockLayout:            NewBlockLayout(),
 			Attributes:             FactoryAttributeDefs(),
-			BodyType:               FactoryBodyType(),
+			BodyType:               FactoryBody(),
 			DamageProgression:      attribute.BasicSet,
 			DefaultLengthUnits:     measure.FeetAndInches,
 			DefaultWeightUnits:     measure.Pound,
@@ -138,7 +138,7 @@ func (s *SheetSettings) EnsureValidity() {
 		s.Attributes.EnsureValidity()
 	}
 	if s.BodyType == nil {
-		s.BodyType = FactoryBodyType()
+		s.BodyType = FactoryBody()
 	} else {
 		s.BodyType.EnsureValidity()
 	}

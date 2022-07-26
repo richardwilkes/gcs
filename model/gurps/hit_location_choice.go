@@ -29,7 +29,7 @@ func HitLocationChoices(entity *Entity, prefix, currentKey string) (choices []*H
 	if prefix != "" && !strings.HasSuffix(prefix, " ") {
 		prefix = prefix + " "
 	}
-	bodyType := BodyTypeFor(entity)
+	bodyType := BodyFor(entity)
 	list := bodyType.UniqueHitLocations(entity)
 	choices = make([]*HitLocationChoice, 0, len(list)+1)
 	for _, one := range list {

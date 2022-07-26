@@ -36,8 +36,8 @@ const (
 //go:embed data
 var embeddedFS embed.FS
 
-// BodyType holds a set of hit locations.
-type BodyType struct {
+// Body holds a set of hit locations.
+type Body struct {
 	Name           string         `json:"name,omitempty"`
 	Roll           *dice.Dice     `json:"roll"`
 	Locations      []*HitLocation `json:"locations,omitempty"`
@@ -46,34 +46,34 @@ type BodyType struct {
 	locationLookup map[string]*HitLocation
 }
 
-type bodyTypeListData struct {
+type bodyData struct {
 	Type    string `json:"type"`
 	Version int    `json:"version"`
-	*BodyType
+	*Body
 }
 
-// BodyTypeFor returns the BodyType for the given Entity, or the global settings if the Entity is nil.
-func BodyTypeFor(entity *Entity) *BodyType {
+// BodyFor returns the Body for the given Entity, or the global settings if the Entity is nil.
+func BodyFor(entity *Entity) *Body {
 	return SheetSettingsFor(entity).BodyType
 }
 
-// FactoryBodyType returns a new copy of the default factory BodyType.
-func FactoryBodyType() *BodyType {
-	bodyType, err := NewBodyTypeFromFile(embeddedFS, "data/body_types/Humanoid.body")
+// FactoryBody returns a new copy of the default factory Body.
+func FactoryBody() *Body {
+	bodyType, err := NewBodyFromFile(embeddedFS, "data/body/Humanoid.body")
 	jot.FatalIfErr(err)
 	return bodyType
 }
 
-// FactoryBodyTypes returns the list of the known factory BodyTypes.
-func FactoryBodyTypes() []*BodyType {
-	entries, err := embeddedFS.ReadDir("data/body_types")
+// FactoryBodies returns the list of the known factory Body types.
+func FactoryBodies() []*Body {
+	entries, err := embeddedFS.ReadDir("data/body")
 	jot.FatalIfErr(err)
-	list := make([]*BodyType, 0, len(entries))
+	list := make([]*Body, 0, len(entries))
 	for _, entry := range entries {
 		name := entry.Name()
 		if path.Ext(name) == ".body" {
-			var bodyType *BodyType
-			bodyType, err = NewBodyTypeFromFile(embeddedFS, "data/body_types/"+name)
+			var bodyType *Body
+			bodyType, err = NewBodyFromFile(embeddedFS, "data/body/"+name)
 			jot.FatalIfErr(err)
 			list = append(list, bodyType)
 		}
@@ -84,18 +84,18 @@ func FactoryBodyTypes() []*BodyType {
 	return list
 }
 
-// NewBodyTypeFromFile loads an BodyType from a file.
-func NewBodyTypeFromFile(fileSystem fs.FS, filePath string) (*BodyType, error) {
+// NewBodyFromFile loads a Body from a file.
+func NewBodyFromFile(fileSystem fs.FS, filePath string) (*Body, error) {
 	var data struct {
-		bodyTypeListData
-		OldHitLocations *BodyType `json:"hit_locations"`
+		bodyData
+		OldHitLocations *Body `json:"hit_locations"`
 	}
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
 		return nil, errs.NewWithCause(gid.InvalidFileDataMsg, err)
 	}
 	if data.Type != bodyTypeListTypeKey {
 		if data.Type == oldBodyTypeListTypeKey {
-			data.BodyType = data.OldHitLocations
+			data.Body = data.OldHitLocations
 		} else {
 			return nil, errs.New(gid.UnexpectedFileDataMsg)
 		}
@@ -103,19 +103,19 @@ func NewBodyTypeFromFile(fileSystem fs.FS, filePath string) (*BodyType, error) {
 	if err := gid.CheckVersion(data.Version); err != nil {
 		return nil, err
 	}
-	data.BodyType.EnsureValidity()
-	data.BodyType.Update(nil)
-	return data.BodyType, nil
+	data.Body.EnsureValidity()
+	data.Body.Update(nil)
+	return data.Body, nil
 }
 
 // EnsureValidity checks the current settings for validity and if they aren't valid, makes them so.
-func (b *BodyType) EnsureValidity() {
+func (b *Body) EnsureValidity() {
 	// TODO: Implement validity check
 }
 
 // Clone a copy of this.
-func (b *BodyType) Clone(entity *Entity, owningLocation *HitLocation) *BodyType {
-	clone := &BodyType{
+func (b *Body) Clone(entity *Entity, owningLocation *HitLocation) *Body {
+	clone := &Body{
 		Name:           b.Name,
 		Roll:           dice.New(b.Roll.String()),
 		Locations:      make([]*HitLocation, len(b.Locations)),
@@ -128,51 +128,51 @@ func (b *BodyType) Clone(entity *Entity, owningLocation *HitLocation) *BodyType 
 	return clone
 }
 
-// Save writes the BodyType to the file as JSON.
-func (b *BodyType) Save(filePath string) error {
-	return jio.SaveToFile(context.Background(), filePath, &bodyTypeListData{
-		Type:     bodyTypeListTypeKey,
-		Version:  gid.CurrentDataVersion,
-		BodyType: b,
+// Save writes the Body to the file as JSON.
+func (b *Body) Save(filePath string) error {
+	return jio.SaveToFile(context.Background(), filePath, &bodyData{
+		Type:    bodyTypeListTypeKey,
+		Version: gid.CurrentDataVersion,
+		Body:    b,
 	})
 }
 
 // Update the role ranges and populate the lookup map.
-func (b *BodyType) Update(entity *Entity) {
+func (b *Body) Update(entity *Entity) {
 	b.updateRollRanges()
 	b.locationLookup = make(map[string]*HitLocation)
 	b.populateMap(entity, b.locationLookup)
 }
 
 // SetOwningLocation sets the owning HitLocation.
-func (b *BodyType) SetOwningLocation(loc *HitLocation) {
+func (b *Body) SetOwningLocation(loc *HitLocation) {
 	b.owningLocation = loc
 	if loc != nil {
 		b.Name = ""
 	}
 }
 
-func (b *BodyType) updateRollRanges() {
+func (b *Body) updateRollRanges() {
 	start := b.Roll.Minimum(false)
 	for _, location := range b.Locations {
 		start = location.updateRollRange(start)
 	}
 }
 
-func (b *BodyType) populateMap(entity *Entity, m map[string]*HitLocation) {
+func (b *Body) populateMap(entity *Entity, m map[string]*HitLocation) {
 	for _, location := range b.Locations {
 		location.populateMap(entity, m)
 	}
 }
 
 // AddLocation adds a HitLocation to the end of list.
-func (b *BodyType) AddLocation(loc *HitLocation) {
+func (b *Body) AddLocation(loc *HitLocation) {
 	b.Locations = append(b.Locations, loc)
 	loc.owningTable = b
 }
 
 // RemoveLocation removes a HitLocation.
-func (b *BodyType) RemoveLocation(loc *HitLocation) {
+func (b *Body) RemoveLocation(loc *HitLocation) {
 	for i, one := range b.Locations {
 		if one == loc {
 			copy(b.Locations[i:], b.Locations[i+1:])
@@ -184,7 +184,7 @@ func (b *BodyType) RemoveLocation(loc *HitLocation) {
 }
 
 // UniqueHitLocations returns the list of unique hit locations.
-func (b *BodyType) UniqueHitLocations(entity *Entity) []*HitLocation {
+func (b *Body) UniqueHitLocations(entity *Entity) []*HitLocation {
 	if len(b.locationLookup) == 0 {
 		b.Update(entity)
 	}
@@ -205,7 +205,7 @@ func (b *BodyType) UniqueHitLocations(entity *Entity) []*HitLocation {
 }
 
 // LookupLocationByID returns the HitLocation that matches the given ID.
-func (b *BodyType) LookupLocationByID(entity *Entity, idStr string) *HitLocation {
+func (b *Body) LookupLocationByID(entity *Entity, idStr string) *HitLocation {
 	if len(b.locationLookup) == 0 {
 		b.Update(entity)
 	}
@@ -213,11 +213,11 @@ func (b *BodyType) LookupLocationByID(entity *Entity, idStr string) *HitLocation
 }
 
 // CRC64 calculates a CRC-64 for this data.
-func (b *BodyType) CRC64() uint64 {
+func (b *Body) CRC64() uint64 {
 	return b.crc64(0)
 }
 
-func (b *BodyType) crc64(c uint64) uint64 {
+func (b *Body) crc64(c uint64) uint64 {
 	c = crc.String(c, b.Name)
 	c = crc.String(c, b.Roll.String())
 	c = crc.Number(c, len(b.Locations))
@@ -227,8 +227,8 @@ func (b *BodyType) crc64(c uint64) uint64 {
 	return c
 }
 
-// ResetTargetKeyPrefixes assigns new key prefixes for all data within this BodyType.
-func (b *BodyType) ResetTargetKeyPrefixes(prefixProvider func() string) {
+// ResetTargetKeyPrefixes assigns new key prefixes for all data within this Body.
+func (b *Body) ResetTargetKeyPrefixes(prefixProvider func() string) {
 	b.KeyPrefix = prefixProvider()
 	for _, one := range b.Locations {
 		one.ResetTargetKeyPrefixes(prefixProvider)
