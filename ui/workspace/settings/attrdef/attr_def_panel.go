@@ -57,7 +57,7 @@ func newAttrDefPanel(dockable *attributesDockable, def *gurps.AttributeDef) *att
 		def:   def,
 	}}))
 	p.AddChild(p.createButtons())
-	p.AddChild(p.createContent(def))
+	p.AddChild(p.createContent())
 	return p
 }
 
@@ -105,7 +105,7 @@ func (p *attrDefPanel) deleteAttrDef() {
 	p.dockable.MarkModified()
 }
 
-func (p *attrDefPanel) createContent(def *gurps.AttributeDef) *unison.Panel {
+func (p *attrDefPanel) createContent() *unison.Panel {
 	content := unison.NewPanel()
 	content.SetLayout(&unison.FlexLayout{
 		Columns:  1,
@@ -117,10 +117,10 @@ func (p *attrDefPanel) createContent(def *gurps.AttributeDef) *unison.Panel {
 		VAlign: unison.StartAlignment,
 		HGrab:  true,
 	})
-	content.AddChild(p.createFirstLine(def))
-	content.AddChild(p.createSecondLine(def))
-	if def.Type == attribute.Pool {
-		p.poolPanel = newPoolPanel(p.dockable, def)
+	content.AddChild(p.createFirstLine())
+	content.AddChild(p.createSecondLine())
+	if p.def.Type == attribute.Pool {
+		p.poolPanel = newPoolPanel(p.dockable, p.def)
 		content.AddChild(p.poolPanel)
 	} else {
 		p.poolPanel = nil
@@ -128,7 +128,7 @@ func (p *attrDefPanel) createContent(def *gurps.AttributeDef) *unison.Panel {
 	return content
 }
 
-func (p *attrDefPanel) createFirstLine(def *gurps.AttributeDef) *unison.Panel {
+func (p *attrDefPanel) createFirstLine() *unison.Panel {
 	panel := unison.NewPanel()
 	panel.SetLayout(&unison.FlexLayout{
 		Columns:  6,
@@ -143,18 +143,18 @@ func (p *attrDefPanel) createFirstLine(def *gurps.AttributeDef) *unison.Panel {
 
 	text := i18n.Text("ID")
 	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	field := widget.NewStringField(p.dockable.targetMgr, def.KeyPrefix+"id", text,
-		func() string { return def.DefID },
+	field := widget.NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+"id", text,
+		func() string { return p.def.DefID },
 		func(s string) {
 			if p.validateAttrID(s) {
-				delete(p.dockable.defs.Set, def.DefID)
-				def.DefID = strings.TrimSpace(strings.ToLower(s))
-				p.dockable.defs.Set[def.DefID] = def
+				delete(p.dockable.defs.Set, p.def.DefID)
+				p.def.DefID = strings.TrimSpace(strings.ToLower(s))
+				p.dockable.defs.Set[p.def.DefID] = p.def
 			}
 		})
 	field.ValidateCallback = func(field *widget.StringField, def *gurps.AttributeDef) func() bool {
 		return func() bool { return p.validateAttrID(field.Text()) }
-	}(field, def)
+	}(field, p.def)
 	field.SetMinimumTextWidthUsing("basic_speed")
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("A unique ID for the attribute"))
 	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
@@ -162,25 +162,25 @@ func (p *attrDefPanel) createFirstLine(def *gurps.AttributeDef) *unison.Panel {
 
 	text = i18n.Text("Short Name")
 	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	field = widget.NewStringField(p.dockable.targetMgr, def.KeyPrefix+"name", text,
-		func() string { return def.Name },
-		func(s string) { def.Name = s })
+	field = widget.NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+"name", text,
+		func() string { return p.def.Name },
+		func(s string) { p.def.Name = s })
 	field.SetMinimumTextWidthUsing("Taste & Smell")
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The name of this attribute, often an abbreviation"))
 	panel.AddChild(field)
 
 	text = i18n.Text("Full Name")
 	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	field = widget.NewStringField(p.dockable.targetMgr, def.KeyPrefix+"fullname", text,
-		func() string { return def.FullName },
-		func(s string) { def.FullName = s })
+	field = widget.NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+"fullname", text,
+		func() string { return p.def.FullName },
+		func(s string) { p.def.FullName = s })
 	field.SetMinimumTextWidthUsing("Fatigue Points")
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The full name of this attribute (may be omitted, in which case the Short Name will be used instead)"))
 	panel.AddChild(field)
 	return panel
 }
 
-func (p *attrDefPanel) createSecondLine(def *gurps.AttributeDef) *unison.Panel {
+func (p *attrDefPanel) createSecondLine() *unison.Panel {
 	panel := unison.NewPanel()
 	panel.SetLayout(&unison.FlexLayout{
 		Columns:  7,
@@ -193,34 +193,34 @@ func (p *attrDefPanel) createSecondLine(def *gurps.AttributeDef) *unison.Panel {
 		HGrab:  true,
 	})
 
-	panel.AddChild(widget.NewPopup[attribute.Type](p.dockable.targetMgr, def.KeyPrefix+"type", i18n.Text("Attribute Type"),
-		func() attribute.Type { return def.Type },
+	panel.AddChild(widget.NewPopup[attribute.Type](p.dockable.targetMgr, p.def.KeyPrefix+"type", i18n.Text("Attribute Type"),
+		func() attribute.Type { return p.def.Type },
 		func(typ attribute.Type) { p.applyAttributeType(typ) },
 		attribute.AllType...))
 
 	text := i18n.Text("Base")
 	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	field := widget.NewStringField(p.dockable.targetMgr, def.KeyPrefix+"base", text,
-		func() string { return def.AttributeBase },
-		func(s string) { def.AttributeBase = s })
+	field := widget.NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+"base", text,
+		func() string { return p.def.AttributeBase },
+		func(s string) { p.def.AttributeBase = s })
 	field.SetMinimumTextWidthUsing("floor($basic_speed)")
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The base value, which may be a number or a formula"))
 	panel.AddChild(field)
 
 	text = i18n.Text("Cost")
 	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	numField := widget.NewIntegerField(p.dockable.targetMgr, def.KeyPrefix+"cost", text,
-		func() int { return fxp.As[int](def.CostPerPoint) },
-		func(v int) { def.CostPerPoint = fxp.From(v) },
+	numField := widget.NewIntegerField(p.dockable.targetMgr, p.def.KeyPrefix+"cost", text,
+		func() int { return fxp.As[int](p.def.CostPerPoint) },
+		func(v int) { p.def.CostPerPoint = fxp.From(v) },
 		0, 9999, false, false)
 	numField.Tooltip = unison.NewTooltipWithText(i18n.Text("The cost per point difference from the base"))
 	panel.AddChild(numField)
 
 	text = i18n.Text("SM Reduction")
 	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	numField = widget.NewPercentageField(p.dockable.targetMgr, def.KeyPrefix+"sm", text,
-		func() int { return fxp.As[int](def.CostAdjPercentPerSM) },
-		func(v int) { def.CostAdjPercentPerSM = fxp.From(v) },
+	numField = widget.NewPercentageField(p.dockable.targetMgr, p.def.KeyPrefix+"sm", text,
+		func() int { return fxp.As[int](p.def.CostAdjPercentPerSM) },
+		func(v int) { p.def.CostAdjPercentPerSM = fxp.From(v) },
 		0, 80, false, false)
 	numField.Tooltip = unison.NewTooltipWithText(i18n.Text("The reduction in cost for each SM greater than 0"))
 	panel.AddChild(numField)
