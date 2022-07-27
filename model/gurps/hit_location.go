@@ -22,6 +22,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/json"
+	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -45,6 +46,19 @@ type HitLocation struct {
 	RollRange   string
 	KeyPrefix   string
 	owningTable *Body
+}
+
+// NewHitLocation creates a new hit location.
+func NewHitLocation(entity *Entity, keyPrefix string) *HitLocation {
+	return &HitLocation{
+		HitLocationData: HitLocationData{
+			LocID:      "id",
+			ChoiceName: i18n.Text("untitled choice"),
+			TableName:  i18n.Text("untitled location"),
+		},
+		Entity:    entity,
+		KeyPrefix: keyPrefix,
+	}
 }
 
 // Clone a copy of this.
@@ -103,6 +117,11 @@ func (h *HitLocation) ID() string {
 // to be sure of what it gets set to.
 func (h *HitLocation) SetID(value string) {
 	h.LocID = id.Sanitize(value, false, ReservedIDs...)
+}
+
+// OwningTable returns the owning table.
+func (h *HitLocation) OwningTable() *Body {
+	return h.owningTable
 }
 
 // DR computes the DR coverage for this HitLocation. If 'tooltip' isn't nil, the buffer will be updated with details on

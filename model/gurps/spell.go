@@ -355,7 +355,6 @@ func (s *Spell) AdjustedRelativeLevel() fxp.Int {
 	if s.Entity != nil && s.CalculateLevel().Level > 0 {
 		return s.LevelData.RelativeLevel
 	}
-	// TODO: Old code had a case for templates... but can't see that being exercised in the actual display anywhere
 	return fxp.Min
 }
 

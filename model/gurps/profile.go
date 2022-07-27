@@ -80,7 +80,6 @@ func (p *Profile) AdjustedSizeModifier() int {
 // SetAdjustedSizeModifier sets the adjusted size modifier.
 func (p *Profile) SetAdjustedSizeModifier(value int) {
 	if value != p.AdjustedSizeModifier() {
-		// TODO: Need undo logic
 		p.SizeModifier = value - fxp.As[int](p.SizeModifierBonus)
 	}
 }

@@ -30,10 +30,8 @@ import (
 
 const (
 	bodyTypeListTypeKey    = "body_type"
-	oldBodyTypeListTypeKey = "hit_locations"
+	noNeedForRewrapVersion = 4
 )
-
-const noNeedForRewrapVersion = 4
 
 //go:embed data
 var embeddedFS embed.FS
@@ -96,7 +94,7 @@ func NewBodyFromFile(fileSystem fs.FS, filePath string) (*Body, error) {
 		return nil, errs.NewWithCause(gid.InvalidFileDataMsg, err)
 	}
 	if data.Type != bodyTypeListTypeKey {
-		if data.Type == oldBodyTypeListTypeKey {
+		if data.OldHitLocations != nil {
 			data.Body = data.OldHitLocations
 		} else {
 			return nil, errs.New(gid.UnexpectedFileDataMsg)
@@ -154,6 +152,11 @@ func (b *Body) Update(entity *Entity) {
 	b.updateRollRanges()
 	b.locationLookup = make(map[string]*HitLocation)
 	b.populateMap(entity, b.locationLookup)
+}
+
+// OwningLocation returns the owning hit location, or nil if this is the top-level body.
+func (b *Body) OwningLocation() *HitLocation {
+	return b.owningLocation
 }
 
 // SetOwningLocation sets the owning HitLocation.

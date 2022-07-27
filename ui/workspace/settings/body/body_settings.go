@@ -22,7 +22,7 @@ type bodyDockable struct {
 	owner         widget.EntityPanel
 	targetMgr     *widget.TargetMgr
 	undoMgr       *unison.UndoManager
-	bodyType      *gurps.Body
+	body          *gurps.Body
 	originalCRC   uint64
 	toolbar       *unison.Panel
 	content       *unison.Panel
@@ -48,15 +48,15 @@ func ShowBodySettings(owner widget.EntityPanel) {
 		d.targetMgr = widget.NewTargetMgr(d)
 		if owner != nil {
 			entity := d.owner.Entity()
-			d.bodyType = entity.SheetSettings.BodyType.Clone(entity, nil)
+			d.body = entity.SheetSettings.BodyType.Clone(entity, nil)
 			d.TabTitle = i18n.Text("Body Type: " + owner.Entity().Profile.Name)
 		} else {
-			d.bodyType = settings.Global().Sheet.BodyType.Clone(nil, nil)
+			d.body = settings.Global().Sheet.BodyType.Clone(nil, nil)
 			d.TabTitle = i18n.Text("Default Body Type")
 		}
 		d.TabIcon = res.BodyTypeSVG
-		d.bodyType.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
-		d.originalCRC = d.bodyType.CRC64()
+		d.body.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
+		d.originalCRC = d.body.CRC64()
 		d.Extensions = []string{".body", ".ghl"}
 		d.undoMgr = unison.NewUndoManager(100, func(err error) { jot.Error(err) })
 		d.Loader = d.load
@@ -73,14 +73,14 @@ func (d *bodyDockable) UndoManager() *unison.UndoManager {
 }
 
 func (d *bodyDockable) modified() bool {
-	modified := d.originalCRC != d.bodyType.CRC64()
+	modified := d.originalCRC != d.body.CRC64()
 	d.applyButton.SetEnabled(modified)
 	d.cancelButton.SetEnabled(modified)
 	return modified
 }
 
 func (d *bodyDockable) willClose() bool {
-	if d.promptForSave && d.originalCRC != d.bodyType.CRC64() {
+	if d.promptForSave && d.originalCRC != d.body.CRC64() {
 		switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Apply changes made to\n%s?"), d.Title()), "") {
 		case unison.ModalResponseDiscard:
 		case unison.ModalResponseOK:
@@ -122,7 +122,7 @@ func (d *bodyDockable) initContent(content *unison.Panel) {
 	d.content = content
 	content.SetBorder(nil)
 	content.SetLayout(&unison.FlexLayout{Columns: 1})
-	// TODO: Insert content here
+	content.AddChild(newBodyPanel(d))
 }
 
 func (d *bodyDockable) Entity() *gurps.Entity {
@@ -132,29 +132,36 @@ func (d *bodyDockable) Entity() *gurps.Entity {
 	return nil
 }
 
+func (d *bodyDockable) prepareUndo(title string) *unison.UndoEdit[*gurps.Body] {
+	return &unison.UndoEdit[*gurps.Body]{
+		ID:         unison.NextUndoID(),
+		EditName:   title,
+		UndoFunc:   func(e *unison.UndoEdit[*gurps.Body]) { d.applyBodyType(e.BeforeData) },
+		RedoFunc:   func(e *unison.UndoEdit[*gurps.Body]) { d.applyBodyType(e.AfterData) },
+		AbsorbFunc: func(e *unison.UndoEdit[*gurps.Body], other unison.Undoable) bool { return false },
+		BeforeData: d.body.Clone(d.Entity(), nil),
+	}
+}
+
+func (d *bodyDockable) finishAndPostUndo(undo *unison.UndoEdit[*gurps.Body]) {
+	undo.AfterData = d.body.Clone(d.Entity(), nil)
+	d.UndoManager().Add(undo)
+}
+
 func (d *bodyDockable) applyBodyType(bodyType *gurps.Body) {
-	d.bodyType = bodyType.Clone(d.Entity(), nil)
+	d.body = bodyType.Clone(d.Entity(), nil)
 	d.sync()
 }
 
 func (d *bodyDockable) reset() {
-	entity := d.Entity()
-	undo := &unison.UndoEdit[*gurps.Body]{
-		ID:         unison.NextUndoID(),
-		EditName:   i18n.Text("Reset Body Type"),
-		UndoFunc:   func(e *unison.UndoEdit[*gurps.Body]) { d.applyBodyType(e.BeforeData) },
-		RedoFunc:   func(e *unison.UndoEdit[*gurps.Body]) { d.applyBodyType(e.AfterData) },
-		AbsorbFunc: func(e *unison.UndoEdit[*gurps.Body], other unison.Undoable) bool { return false },
-		BeforeData: d.bodyType.Clone(entity, nil),
-	}
+	undo := d.prepareUndo(i18n.Text("Reset Body Type"))
 	if d.owner != nil {
-		entity.SheetSettings.BodyType = settings.Global().Sheet.BodyType.Clone(entity, nil)
+		d.body = settings.Global().Sheet.BodyType.Clone(d.Entity(), nil)
 	} else {
-		settings.Global().Sheet.BodyType = gurps.FactoryBody()
+		d.body = gurps.FactoryBody()
 	}
-	d.bodyType.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
-	undo.AfterData = d.bodyType.Clone(entity, nil)
-	d.UndoManager().Add(undo)
+	d.body.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
+	d.finishAndPostUndo(undo)
 	d.sync()
 }
 
@@ -166,8 +173,9 @@ func (d *bodyDockable) sync() {
 	scrollRoot := d.content.ScrollRoot()
 	h, v := scrollRoot.Position()
 	d.content.RemoveAllChildren()
-	// TODO: Rebuild display here
-	d.MarkForLayoutAndRedraw()
+	d.content.AddChild(newBodyPanel(d))
+	d.MarkForLayoutRecursively()
+	d.MarkForRedraw()
 	d.ValidateLayout()
 	d.MarkModified()
 	if focusRefKey != "" {
@@ -186,34 +194,25 @@ func (d *bodyDockable) load(fileSystem fs.FS, filePath string) error {
 		return err
 	}
 	bodyType.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
-	entity := d.Entity()
-	undo := &unison.UndoEdit[*gurps.Body]{
-		ID:         unison.NextUndoID(),
-		EditName:   i18n.Text("Load Body Type"),
-		UndoFunc:   func(e *unison.UndoEdit[*gurps.Body]) { d.applyBodyType(e.BeforeData) },
-		RedoFunc:   func(e *unison.UndoEdit[*gurps.Body]) { d.applyBodyType(e.AfterData) },
-		AbsorbFunc: func(e *unison.UndoEdit[*gurps.Body], other unison.Undoable) bool { return false },
-		BeforeData: d.bodyType.Clone(entity, nil),
-	}
-	d.bodyType = bodyType
-	undo.AfterData = d.bodyType.Clone(entity, nil)
-	d.UndoManager().Add(undo)
+	undo := d.prepareUndo(i18n.Text("Load Body Type"))
+	d.body = bodyType
+	d.finishAndPostUndo(undo)
 	d.sync()
 	return nil
 }
 
 func (d *bodyDockable) save(filePath string) error {
-	return d.bodyType.Save(filePath)
+	return d.body.Save(filePath)
 }
 
 func (d *bodyDockable) apply() {
 	d.Window().FocusNext() // Intentionally move the focus to ensure any pending edits are flushed
 	if d.owner == nil {
-		settings.Global().Sheet.BodyType = d.bodyType.Clone(nil, nil)
+		settings.Global().Sheet.BodyType = d.body.Clone(nil, nil)
 		return
 	}
 	entity := d.owner.Entity()
-	entity.SheetSettings.BodyType = d.bodyType.Clone(entity, nil)
+	entity.SheetSettings.BodyType = d.body.Clone(entity, nil)
 	for _, wnd := range unison.Windows() {
 		if ws := workspace.FromWindow(wnd); ws != nil {
 			ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
