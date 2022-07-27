@@ -12,6 +12,11 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
+const (
+	prototypeMinIDWidth   = "Abcdefghijklmnopqrstuvwxyz"
+	prototypeMinNameWidth = prototypeMinIDWidth + prototypeMinIDWidth
+)
+
 type hitLocationPanel struct {
 	unison.Panel
 	dockable     *bodyDockable
@@ -31,10 +36,7 @@ func newHitLocationPanel(dockable *bodyDockable, loc *gurps.HitLocation) *hitLoc
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		HGrab:  true,
-	})
+	p.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
 	p.SetBorder(unison.NewEmptyBorder(unison.Insets{
 		Top:    unison.StdVSpacing,
 		Left:   unison.StdHSpacing,
@@ -77,6 +79,7 @@ func (p *hitLocationPanel) createButtons() *unison.Panel {
 	p.deleteButton = unison.NewSVGButton(res.TrashSVG)
 	p.deleteButton.ClickCallback = p.removeHitLocation
 	p.deleteButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Remove hit location"))
+	p.deleteButton.SetEnabled(len(p.loc.OwningTable().Locations) > 1)
 	buttons.AddChild(p.deleteButton)
 	return buttons
 }
@@ -89,9 +92,10 @@ func (p *hitLocationPanel) addSubTable() {
 	}
 	p.loc.SubTable.SetOwningLocation(p.loc)
 	p.loc.SubTable.Update(p.dockable.Entity())
+	p.loc.SubTable.AddLocation(gurps.NewHitLocation(p.dockable.Entity(), p.dockable.targetMgr.NextPrefix()))
 	p.dockable.finishAndPostUndo(undo)
 	p.dockable.sync()
-	if focus := p.dockable.targetMgr.Find(p.loc.SubTable.KeyPrefix + "sub-table_roll"); focus != nil {
+	if focus := p.dockable.targetMgr.Find(p.loc.SubTable.KeyPrefix + "subroll"); focus != nil {
 		focus.RequestFocus()
 	}
 }
@@ -106,39 +110,17 @@ func (p *hitLocationPanel) removeHitLocation() {
 func (p *hitLocationPanel) createContent() *unison.Panel {
 	content := unison.NewPanel()
 	content.SetLayout(&unison.FlexLayout{
-		Columns:  1,
+		Columns:  2,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
 	content.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,
 		VAlign: unison.StartAlignment,
-		HGrab:  true,
-	})
-	content.AddChild(p.createFirstLine())
-	content.AddChild(p.createSecondLine())
-	content.AddChild(p.createThirdLine())
-	if p.loc.SubTable != nil {
-		content.AddChild(newSubTablePanel(p.dockable, p.loc.SubTable))
-	}
-	return content
-}
-
-func (p *hitLocationPanel) createFirstLine() *unison.Panel {
-	panel := unison.NewPanel()
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  8,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	panel.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.StartAlignment,
-		HGrab:  true,
 	})
 
 	text := i18n.Text("ID")
-	panel.AddChild(widget.NewFieldLeadingLabel(text))
+	content.AddChild(widget.NewFieldLeadingLabel(text))
 	field := widget.NewStringField(p.dockable.targetMgr, p.loc.KeyPrefix+"id", text,
 		func() string { return p.loc.LocID },
 		func(s string) {
@@ -149,97 +131,82 @@ func (p *hitLocationPanel) createFirstLine() *unison.Panel {
 	field.ValidateCallback = func(field *widget.StringField, loc *gurps.HitLocation) func() bool {
 		return func() bool { return p.validateLocID(field.Text()) }
 	}(field, p.loc)
-	field.SetMinimumTextWidthUsing("humanoid")
+	field.SetMinimumTextWidthUsing(prototypeMinIDWidth)
+	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("An ID for the hit location"))
-	panel.AddChild(field)
+	content.AddChild(field)
+
+	text = i18n.Text("Choice Name")
+	content.AddChild(widget.NewFieldLeadingLabel(text))
+	field = widget.NewStringField(p.dockable.targetMgr, p.loc.KeyPrefix+"choice_name", text,
+		func() string { return p.loc.ChoiceName },
+		func(s string) { p.loc.ChoiceName = s })
+	field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
+	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
+	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The name of this hit location as it should appear in choice lists"))
+	content.AddChild(field)
+
+	text = i18n.Text("Table Name")
+	content.AddChild(widget.NewFieldLeadingLabel(text))
+	field = widget.NewStringField(p.dockable.targetMgr, p.loc.KeyPrefix+"table_name", text,
+		func() string { return p.loc.TableName },
+		func(s string) { p.loc.TableName = s })
+	field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
+	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
+	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The name of this hit location as it should appear in the hit location table"))
+	content.AddChild(field)
 
 	text = i18n.Text("Slots")
-	panel.AddChild(widget.NewFieldLeadingLabel(text))
+	content.AddChild(widget.NewFieldLeadingLabel(text))
 	intField := widget.NewIntegerField(p.dockable.targetMgr, p.loc.KeyPrefix+"slots", text,
 		func() int { return p.loc.Slots },
 		func(v int) { p.loc.Slots = v },
 		0, 999999, false, false)
 	intField.Tooltip = unison.NewTooltipWithText(i18n.Text("The number of consecutive numbers this hit location fills in the table"))
-	panel.AddChild(intField)
+	content.AddChild(intField)
 
 	text = i18n.Text("Hit Penalty")
-	panel.AddChild(widget.NewFieldLeadingLabel(text))
+	content.AddChild(widget.NewFieldLeadingLabel(text))
 	intField = widget.NewIntegerField(p.dockable.targetMgr, p.loc.KeyPrefix+"hit_penalty", text,
 		func() int { return p.loc.HitPenalty },
 		func(v int) { p.loc.HitPenalty = v },
 		-100, 100, true, false)
-	intField.Tooltip = unison.NewTooltipWithText(i18n.Text("The skill adjustment for this hit location)"))
-	panel.AddChild(intField)
+	intField.Tooltip = unison.NewTooltipWithText(i18n.Text("The skill adjustment for this hit location"))
+	content.AddChild(intField)
 
 	text = i18n.Text("DR Bonus")
-	panel.AddChild(widget.NewFieldLeadingLabel(text))
+	content.AddChild(widget.NewFieldLeadingLabel(text))
 	intField = widget.NewIntegerField(p.dockable.targetMgr, p.loc.KeyPrefix+"dr_bonus", text,
 		func() int { return p.loc.DRBonus },
 		func(v int) { p.loc.DRBonus = v },
 		0, 100, false, false)
 	intField.Tooltip = unison.NewTooltipWithText(i18n.Text("The amount of DR this hit location grants due to natural toughness"))
-	panel.AddChild(intField)
+	content.AddChild(intField)
 
-	return panel
-}
-
-func (p *hitLocationPanel) createSecondLine() *unison.Panel {
-	panel := unison.NewPanel()
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  4,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	panel.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.StartAlignment,
-		HGrab:  true,
-	})
-
-	text := i18n.Text("Choice Name")
-	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	field := widget.NewStringField(p.dockable.targetMgr, p.loc.KeyPrefix+"choice_name", text,
-		func() string { return p.loc.ChoiceName },
-		func(s string) { p.loc.ChoiceName = s })
-	field.SetMinimumTextWidthUsing("humanoid")
-	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The name of this hit location as it should appear in choice lists"))
-	panel.AddChild(field)
-
-	text = i18n.Text("Table Name")
-	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	field = widget.NewStringField(p.dockable.targetMgr, p.loc.KeyPrefix+"table_name", text,
-		func() string { return p.loc.TableName },
-		func(s string) { p.loc.TableName = s })
-	field.SetMinimumTextWidthUsing("humanoid")
-	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The name of this hit location as it should appear in the hit location table"))
-	panel.AddChild(field)
-
-	return panel
-}
-
-func (p *hitLocationPanel) createThirdLine() *unison.Panel {
-	panel := unison.NewPanel()
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	panel.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.StartAlignment,
-		HGrab:  true,
-	})
-
-	text := i18n.Text("Description")
-	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	field := widget.NewMultiLineStringField(p.dockable.targetMgr, p.loc.KeyPrefix+"desc", text,
+	text = i18n.Text("Description")
+	content.AddChild(widget.NewFieldLeadingLabel(text))
+	field = widget.NewMultiLineStringField(p.dockable.targetMgr, p.loc.KeyPrefix+"desc", text,
 		func() string { return p.loc.Description },
 		func(s string) { p.loc.Description = s })
-	field.SetMinimumTextWidthUsing("humanoid")
+	field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
+	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("A description of any special effects for hits to this location"))
-	panel.AddChild(field)
+	content.AddChild(field)
 
-	return panel
+	if p.loc.SubTable != nil {
+		text = i18n.Text("Sub-Roll")
+		content.AddChild(widget.NewFieldLeadingLabel(text))
+		field = widget.NewStringField(p.dockable.targetMgr, p.loc.SubTable.KeyPrefix+"subroll", text,
+			func() string { return p.loc.SubTable.Roll.String() },
+			func(s string) { p.loc.SubTable.Roll = dice.New(s) })
+		field.SetMinimumTextWidthUsing("100d1000")
+		field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
+		field.Tooltip = unison.NewTooltipWithText(i18n.Text("The dice to roll on the sub-table"))
+		content.AddChild(field)
+
+		content.AddChild(newSubTablePanel(p.dockable, p.loc.SubTable))
+	}
+	return content
 }
 
 func (p *hitLocationPanel) validateLocID(locID string) bool {

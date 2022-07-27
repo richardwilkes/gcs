@@ -33,55 +33,38 @@ func newBodyPanel(d *bodyDockable) *bodyPanel {
 		Right:  unison.StdHSpacing * 2,
 	}))
 	p.SetLayout(&unison.FlexLayout{
-		Columns:  5,
+		Columns:  2,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
 	p.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,
 		VAlign: unison.StartAlignment,
-		HGrab:  true,
+	})
+
+	p.AddChild(p.createButtons())
+	p.AddChild(p.createContent())
+
+	return p
+}
+
+func (p *bodyPanel) createButtons() *unison.Panel {
+	buttons := unison.NewPanel()
+	buttons.SetLayout(&unison.FlexLayout{
+		Columns:  1,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	buttons.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.MiddleAlignment,
+		VAlign: unison.StartAlignment,
 	})
 
 	addButton := unison.NewSVGButton(res.CircledAddSVG)
 	addButton.ClickCallback = p.addHitLocation
 	addButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Add hit location"))
-	p.AddChild(addButton)
-
-	text := i18n.Text("Name")
-	p.AddChild(widget.NewFieldLeadingLabel(text))
-	field := widget.NewStringField(p.dockable.targetMgr, p.dockable.body.KeyPrefix+"name", text,
-		func() string { return p.dockable.body.Name },
-		func(s string) { p.dockable.body.Name = s })
-	field.SetMinimumTextWidthUsing("humanoid")
-	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The name of this body type"))
-	p.AddChild(field)
-
-	text = i18n.Text("Roll")
-	p.AddChild(widget.NewFieldLeadingLabel(text))
-	field = widget.NewStringField(p.dockable.targetMgr, p.dockable.body.KeyPrefix+"roll", text,
-		func() string { return p.dockable.body.Roll.String() },
-		func(s string) { p.dockable.body.Roll = dice.New(s) })
-	field.SetMinimumTextWidthUsing("2d100")
-	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The dice to roll on the table"))
-	p.AddChild(field)
-
-	wrapper := unison.NewPanel()
-	wrapper.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
-	wrapper.SetLayoutData(&unison.FlexLayoutData{
-		HSpan:  4,
-		HAlign: unison.FillAlignment,
-		HGrab:  true,
-	})
-	wrapper.SetLayout(&unison.FlexLayout{Columns: 1})
-	p.AddChild(unison.NewPanel())
-	p.AddChild(wrapper)
-
-	for _, loc := range p.dockable.body.Locations {
-		wrapper.AddChild(newHitLocationPanel(p.dockable, loc))
-	}
-
-	return p
+	buttons.AddChild(addButton)
+	return buttons
 }
 
 func (p *bodyPanel) addHitLocation() {
@@ -93,4 +76,51 @@ func (p *bodyPanel) addHitLocation() {
 	if focus := p.dockable.targetMgr.Find(location.KeyPrefix + "id"); focus != nil {
 		focus.RequestFocus()
 	}
+}
+
+func (p *bodyPanel) createContent() *unison.Panel {
+	content := unison.NewPanel()
+	content.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	content.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		VAlign: unison.StartAlignment,
+	})
+
+	text := i18n.Text("Name")
+	content.AddChild(widget.NewFieldLeadingLabel(text))
+	field := widget.NewStringField(p.dockable.targetMgr, p.dockable.body.KeyPrefix+"name", text,
+		func() string { return p.dockable.body.Name },
+		func(s string) { p.dockable.body.Name = s })
+	field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
+	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
+	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The name of this body type"))
+	content.AddChild(field)
+
+	text = i18n.Text("Roll")
+	content.AddChild(widget.NewFieldLeadingLabel(text))
+	field = widget.NewStringField(p.dockable.targetMgr, p.dockable.body.KeyPrefix+"roll", text,
+		func() string { return p.dockable.body.Roll.String() },
+		func(s string) { p.dockable.body.Roll = dice.New(s) })
+	field.SetMinimumTextWidthUsing("100d1000")
+	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
+	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The dice to roll on the table"))
+	content.AddChild(field)
+
+	wrapper := unison.NewPanel()
+	wrapper.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
+	wrapper.SetLayoutData(&unison.FlexLayoutData{
+		HSpan:  2,
+		HAlign: unison.FillAlignment,
+	})
+	wrapper.SetLayout(&unison.FlexLayout{Columns: 1})
+	content.AddChild(wrapper)
+
+	for _, loc := range p.dockable.body.Locations {
+		wrapper.AddChild(newHitLocationPanel(p.dockable, loc))
+	}
+	return content
 }

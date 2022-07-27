@@ -9,7 +9,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/res"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/gcs/v5/ui/workspace"
-	settings2 "github.com/richardwilkes/gcs/v5/ui/workspace/settings"
+	wsettings "github.com/richardwilkes/gcs/v5/ui/workspace/settings"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
@@ -18,7 +18,7 @@ import (
 var _ widget.GroupedCloser = &bodyDockable{}
 
 type bodyDockable struct {
-	settings2.Dockable
+	wsettings.Dockable
 	owner         widget.EntityPanel
 	targetMgr     *widget.TargetMgr
 	undoMgr       *unison.UndoManager

@@ -3,8 +3,6 @@ package body
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/res"
-	"github.com/richardwilkes/gcs/v5/ui/widget"
-	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -29,46 +27,12 @@ func newSubTablePanel(d *bodyDockable, body *gurps.Body) *subTablePanel {
 		VSpacing: unison.StdVSpacing,
 	})
 	p.SetLayoutData(&unison.FlexLayoutData{
+		HSpan:  2,
 		HAlign: unison.FillAlignment,
-		HGrab:  true,
 	})
 
 	p.AddChild(p.createButtons())
-
-	contentWrapper := unison.NewPanel()
-	contentWrapper.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	contentWrapper.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		HGrab:  true,
-	})
-	p.AddChild(contentWrapper)
-
-	text := i18n.Text("Sub-Table Roll")
-	contentWrapper.AddChild(widget.NewFieldLeadingLabel(text))
-	field := widget.NewStringField(p.dockable.targetMgr, p.body.KeyPrefix+"sub-table_roll", text,
-		func() string { return p.body.Roll.String() },
-		func(s string) { p.body.Roll = dice.New(s) })
-	field.SetMinimumTextWidthUsing("2d100")
-	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The dice to roll on the table"))
-	contentWrapper.AddChild(field)
-
-	wrapper := unison.NewPanel()
-	wrapper.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
-	wrapper.SetLayoutData(&unison.FlexLayoutData{
-		HSpan:  2,
-		HAlign: unison.FillAlignment,
-		HGrab:  true,
-	})
-	wrapper.SetLayout(&unison.FlexLayout{Columns: 1})
-	contentWrapper.AddChild(wrapper)
-
-	for _, loc := range p.body.Locations {
-		wrapper.AddChild(newHitLocationPanel(p.dockable, loc))
-	}
+	p.AddChild(p.createContent())
 
 	return p
 }
@@ -113,4 +77,24 @@ func (p *subTablePanel) removeSubTable() {
 	p.body.OwningLocation().SubTable = nil
 	p.dockable.finishAndPostUndo(undo)
 	p.dockable.sync()
+}
+
+func (p *subTablePanel) createContent() *unison.Panel {
+	content := unison.NewPanel()
+	content.SetLayout(&unison.FlexLayout{
+		Columns:  1,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	content.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		VAlign: unison.StartAlignment,
+	})
+	content.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
+
+	for _, loc := range p.body.Locations {
+		content.AddChild(newHitLocationPanel(p.dockable, loc))
+	}
+
+	return content
 }
