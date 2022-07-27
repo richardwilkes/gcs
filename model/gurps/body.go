@@ -33,6 +33,8 @@ const (
 	oldBodyTypeListTypeKey = "hit_locations"
 )
 
+const noNeedForRewrapVersion = 4
+
 //go:embed data
 var embeddedFS embed.FS
 
@@ -104,6 +106,9 @@ func NewBodyFromFile(fileSystem fs.FS, filePath string) (*Body, error) {
 		return nil, err
 	}
 	data.Body.EnsureValidity()
+	if data.Version < noNeedForRewrapVersion {
+		data.Body.Rewrap()
+	}
 	data.Body.Update(nil)
 	return data.Body, nil
 }
@@ -111,6 +116,13 @@ func NewBodyFromFile(fileSystem fs.FS, filePath string) (*Body, error) {
 // EnsureValidity checks the current settings for validity and if they aren't valid, makes them so.
 func (b *Body) EnsureValidity() {
 	// TODO: Implement validity check
+}
+
+// Rewrap the description field. Should only be called for older data (prior to noNeedForRewrapVersion)
+func (b *Body) Rewrap() {
+	for _, loc := range b.Locations {
+		loc.rewrap()
+	}
 }
 
 // Clone a copy of this.

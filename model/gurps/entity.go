@@ -194,6 +194,9 @@ func (e *Entity) UnmarshalJSON(data []byte) error {
 	if e.Attributes == nil {
 		e.Attributes = NewAttributes(e)
 	}
+	if e.Version < noNeedForRewrapVersion {
+		e.SheetSettings.BodyType.Rewrap()
+	}
 	e.Recalculate()
 	return nil
 }

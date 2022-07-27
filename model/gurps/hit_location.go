@@ -31,10 +31,10 @@ type HitLocationData struct {
 	LocID       string `json:"id"`
 	ChoiceName  string `json:"choice_name"`
 	TableName   string `json:"table_name"`
-	Slots       int    `json:"slots"`
-	HitPenalty  int    `json:"hit_penalty"`
-	DRBonus     int    `json:"dr_bonus"`
-	Description string `json:"description"`
+	Slots       int    `json:"slots,omitempty"`
+	HitPenalty  int    `json:"hit_penalty,omitempty"`
+	DRBonus     int    `json:"dr_bonus,omitempty"`
+	Description string `json:"description,omitempty"`
 	SubTable    *Body  `json:"sub_table,omitempty"`
 }
 
@@ -224,5 +224,14 @@ func (h *HitLocation) ResetTargetKeyPrefixes(prefixProvider func() string) {
 	h.KeyPrefix = prefixProvider()
 	if h.SubTable != nil {
 		h.SubTable.ResetTargetKeyPrefixes(prefixProvider)
+	}
+}
+
+func (h *HitLocation) rewrap() {
+	h.Description = txt.Wrap("", h.Description, 60)
+	if h.SubTable != nil {
+		for _, loc := range h.SubTable.Locations {
+			loc.rewrap()
+		}
 	}
 }
