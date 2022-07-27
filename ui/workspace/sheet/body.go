@@ -107,6 +107,9 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 		}
 
 		name := widget.NewPageLabel(prefix + location.TableName)
+		if strings.TrimSpace(location.Description) != "" {
+			name.Tooltip = unison.NewTooltipWithText(location.Description)
+		}
 		name.SetLayoutData(&unison.FlexLayoutData{
 			HAlign: unison.FillAlignment,
 			VAlign: unison.StartAlignment,
