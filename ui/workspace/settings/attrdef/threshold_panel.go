@@ -53,12 +53,12 @@ func newThresholdPanel(pool *poolPanel, threshold *gurps.PoolThreshold) *thresho
 			threshold: threshold,
 		},
 	}))
-	p.AddChild(p.createThresholdButtons())
-	p.AddChild(p.createThresholdContent())
+	p.AddChild(p.createButtons())
+	p.AddChild(p.createContent())
 	return p
 }
 
-func (p *thresholdPanel) createThresholdButtons() *unison.Panel {
+func (p *thresholdPanel) createButtons() *unison.Panel {
 	buttons := unison.NewPanel()
 	buttons.SetLayout(&unison.FlexLayout{
 		Columns:  1,
@@ -72,15 +72,16 @@ func (p *thresholdPanel) createThresholdButtons() *unison.Panel {
 
 	p.deleteButton = unison.NewSVGButton(res.TrashSVG)
 	p.deleteButton.ClickCallback = func() { p.pool.deleteThreshold(p) }
+	p.deleteButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Remove pool threshold"))
 	p.deleteButton.SetEnabled(len(p.pool.def.Thresholds) > 1)
 	buttons.AddChild(p.deleteButton)
 	return buttons
 }
 
-func (p *thresholdPanel) createThresholdContent() *unison.Panel {
+func (p *thresholdPanel) createContent() *unison.Panel {
 	content := unison.NewPanel()
 	content.SetLayout(&unison.FlexLayout{
-		Columns:  1,
+		Columns:  2,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
@@ -89,62 +90,43 @@ func (p *thresholdPanel) createThresholdContent() *unison.Panel {
 		VAlign: unison.StartAlignment,
 		HGrab:  true,
 	})
-	content.AddChild(p.createFirstThresholdLine())
-	content.AddChild(p.createSecondThresholdLine())
-	content.AddChild(p.createThirdThresholdLine())
-	return content
-}
-
-func (p *thresholdPanel) createFirstThresholdLine() *unison.Panel {
-	panel := unison.NewPanel()
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  4,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	panel.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.StartAlignment,
-		HGrab:  true,
-	})
 
 	text := i18n.Text("State")
-	panel.AddChild(widget.NewFieldLeadingLabel(text))
+	content.AddChild(widget.NewFieldLeadingLabel(text))
 	field := widget.NewStringField(p.pool.dockable.targetMgr, p.threshold.KeyPrefix+"state", text,
 		func() string { return p.threshold.State },
 		func(s string) { p.threshold.State = s })
-	field.SetMinimumTextWidthUsing("Unconscious")
+	field.SetMinimumTextWidthUsing(prototypeMinIDWidth)
+	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("A short description of the threshold state"))
 	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
-	panel.AddChild(field)
+	content.AddChild(field)
 
 	text = i18n.Text("Threshold")
-	panel.AddChild(widget.NewFieldLeadingLabel(text))
+	content.AddChild(widget.NewFieldLeadingLabel(text))
 	field = widget.NewStringField(p.pool.dockable.targetMgr, p.threshold.KeyPrefix+"threshold", text,
 		func() string { return p.threshold.Expression },
 		func(s string) { p.threshold.Expression = s })
 	field.SetMinimumTextWidthUsing("round($self*100/50+20)")
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("An expression to calculate the threshold value"))
-	panel.AddChild(field)
-	return panel
-}
-
-func (p *thresholdPanel) createSecondThresholdLine() *unison.Panel {
-	panel := unison.NewPanel()
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  3,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	panel.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.StartAlignment,
-		VAlign: unison.StartAlignment,
-	})
+	content.AddChild(field)
 
 	for _, op := range attribute.AllThresholdOp[1:] {
-		panel.AddChild(p.createOpCheckBox(op))
+		content.AddChild(unison.NewPanel())
+		content.AddChild(p.createOpCheckBox(op))
 	}
-	return panel
+
+	text = i18n.Text("Explanation")
+	content.AddChild(widget.NewFieldLeadingLabel(text))
+	field = widget.NewMultiLineStringField(p.pool.dockable.targetMgr, p.threshold.KeyPrefix+"explanation", text,
+		func() string { return p.threshold.Explanation },
+		func(s string) { p.threshold.Explanation = s })
+	field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
+	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
+	field.Tooltip = unison.NewTooltipWithText(i18n.Text("A explanation of the effects of the threshold state"))
+	content.AddChild(field)
+
+	return content
 }
 
 func (p *thresholdPanel) createOpCheckBox(op attribute.ThresholdOp) *widget.CheckBox {
@@ -159,27 +141,4 @@ func (p *thresholdPanel) createOpCheckBox(op attribute.ThresholdOp) *widget.Chec
 		})
 	c.Tooltip = unison.NewTooltipWithText(op.AltString())
 	return c
-}
-
-func (p *thresholdPanel) createThirdThresholdLine() *unison.Panel {
-	panel := unison.NewPanel()
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	panel.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.StartAlignment,
-		HGrab:  true,
-	})
-
-	text := i18n.Text("Explanation")
-	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	field := widget.NewMultiLineStringField(p.pool.dockable.targetMgr, p.threshold.KeyPrefix+"explanation", text,
-		func() string { return p.threshold.Explanation },
-		func(s string) { p.threshold.Explanation = s })
-	field.Tooltip = unison.NewTooltipWithText(i18n.Text("A explanation of the effects of the threshold state"))
-	panel.AddChild(field)
-	return panel
 }

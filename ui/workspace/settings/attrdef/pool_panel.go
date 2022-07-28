@@ -25,6 +25,7 @@ func newPoolPanel(dockable *attributesDockable, def *gurps.AttributeDef) *poolPa
 		HSpacing: unison.StdHSpacing,
 	})
 	p.SetLayoutData(&unison.FlexLayoutData{
+		HSpan:  2,
 		HAlign: unison.FillAlignment,
 		VAlign: unison.StartAlignment,
 		HGrab:  true,

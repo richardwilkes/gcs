@@ -75,10 +75,12 @@ func (p *attrDefPanel) createButtons() *unison.Panel {
 
 	p.deleteButton = unison.NewSVGButton(res.TrashSVG)
 	p.deleteButton.ClickCallback = p.deleteAttrDef
+	p.deleteButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Remove attribute"))
 	buttons.AddChild(p.deleteButton)
 
 	p.addThresholdButton = unison.NewSVGButton(res.CircledAddSVG)
 	p.addThresholdButton.ClickCallback = func() { p.poolPanel.addThreshold() }
+	p.addThresholdButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Add pool threshold"))
 	p.addThresholdButton.SetEnabled(p.def.Type == attribute.Pool)
 	buttons.AddChild(p.addThresholdButton)
 	return buttons
@@ -108,7 +110,7 @@ func (p *attrDefPanel) deleteAttrDef() {
 func (p *attrDefPanel) createContent() *unison.Panel {
 	content := unison.NewPanel()
 	content.SetLayout(&unison.FlexLayout{
-		Columns:  1,
+		Columns:  2,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
@@ -117,32 +119,9 @@ func (p *attrDefPanel) createContent() *unison.Panel {
 		VAlign: unison.StartAlignment,
 		HGrab:  true,
 	})
-	content.AddChild(p.createFirstLine())
-	content.AddChild(p.createSecondLine())
-	if p.def.Type == attribute.Pool {
-		p.poolPanel = newPoolPanel(p.dockable, p.def)
-		content.AddChild(p.poolPanel)
-	} else {
-		p.poolPanel = nil
-	}
-	return content
-}
-
-func (p *attrDefPanel) createFirstLine() *unison.Panel {
-	panel := unison.NewPanel()
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  6,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	panel.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.StartAlignment,
-		HGrab:  true,
-	})
 
 	text := i18n.Text("ID")
-	panel.AddChild(widget.NewFieldLeadingLabel(text))
+	content.AddChild(widget.NewFieldLeadingLabel(text))
 	field := widget.NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+"id", text,
 		func() string { return p.def.DefID },
 		func(s string) {
@@ -155,77 +134,72 @@ func (p *attrDefPanel) createFirstLine() *unison.Panel {
 	field.ValidateCallback = func(field *widget.StringField, def *gurps.AttributeDef) func() bool {
 		return func() bool { return p.validateAttrID(field.Text()) }
 	}(field, p.def)
-	field.SetMinimumTextWidthUsing("basic_speed")
+	field.SetMinimumTextWidthUsing(prototypeMinIDWidth)
+	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("A unique ID for the attribute"))
-	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
-	panel.AddChild(field)
+	content.AddChild(field)
 
 	text = i18n.Text("Short Name")
-	panel.AddChild(widget.NewFieldLeadingLabel(text))
+	content.AddChild(widget.NewFieldLeadingLabel(text))
 	field = widget.NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+"name", text,
 		func() string { return p.def.Name },
 		func(s string) { p.def.Name = s })
-	field.SetMinimumTextWidthUsing("Taste & Smell")
+	field.SetMinimumTextWidthUsing(prototypeMinIDWidth)
+	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The name of this attribute, often an abbreviation"))
-	panel.AddChild(field)
+	content.AddChild(field)
 
 	text = i18n.Text("Full Name")
-	panel.AddChild(widget.NewFieldLeadingLabel(text))
+	content.AddChild(widget.NewFieldLeadingLabel(text))
 	field = widget.NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+"fullname", text,
 		func() string { return p.def.FullName },
 		func(s string) { p.def.FullName = s })
-	field.SetMinimumTextWidthUsing("Fatigue Points")
+	field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
+	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The full name of this attribute (may be omitted, in which case the Short Name will be used instead)"))
-	panel.AddChild(field)
-	return panel
-}
+	content.AddChild(field)
 
-func (p *attrDefPanel) createSecondLine() *unison.Panel {
-	panel := unison.NewPanel()
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  7,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	panel.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.StartAlignment,
-		HGrab:  true,
-	})
-
-	panel.AddChild(widget.NewPopup[attribute.Type](p.dockable.targetMgr, p.def.KeyPrefix+"type", i18n.Text("Attribute Type"),
-		func() attribute.Type { return p.def.Type },
-		func(typ attribute.Type) { p.applyAttributeType(typ) },
-		attribute.AllType...))
-
-	text := i18n.Text("Base")
-	panel.AddChild(widget.NewFieldLeadingLabel(text))
-	field := widget.NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+"base", text,
+	text = i18n.Text("Base Value")
+	content.AddChild(widget.NewFieldLeadingLabel(text))
+	field = widget.NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+"base", text,
 		func() string { return p.def.AttributeBase },
 		func(s string) { p.def.AttributeBase = s })
 	field.SetMinimumTextWidthUsing("floor($basic_speed)")
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The base value, which may be a number or a formula"))
-	panel.AddChild(field)
+	content.AddChild(field)
 
-	text = i18n.Text("Cost")
-	panel.AddChild(widget.NewFieldLeadingLabel(text))
+	text = i18n.Text("Cost per Point")
+	content.AddChild(widget.NewFieldLeadingLabel(text))
 	numField := widget.NewIntegerField(p.dockable.targetMgr, p.def.KeyPrefix+"cost", text,
 		func() int { return fxp.As[int](p.def.CostPerPoint) },
 		func(v int) { p.def.CostPerPoint = fxp.From(v) },
 		0, 9999, false, false)
 	numField.Tooltip = unison.NewTooltipWithText(i18n.Text("The cost per point difference from the base"))
-	panel.AddChild(numField)
+	content.AddChild(numField)
 
 	text = i18n.Text("SM Reduction")
-	panel.AddChild(widget.NewFieldLeadingLabel(text))
+	content.AddChild(widget.NewFieldLeadingLabel(text))
 	numField = widget.NewPercentageField(p.dockable.targetMgr, p.def.KeyPrefix+"sm", text,
 		func() int { return fxp.As[int](p.def.CostAdjPercentPerSM) },
 		func(v int) { p.def.CostAdjPercentPerSM = fxp.From(v) },
 		0, 80, false, false)
 	numField.Tooltip = unison.NewTooltipWithText(i18n.Text("The reduction in cost for each SM greater than 0"))
-	panel.AddChild(numField)
+	content.AddChild(numField)
 
-	return panel
+	text = i18n.Text("Attribute Type")
+	content.AddChild(widget.NewFieldLeadingLabel(text))
+	content.AddChild(widget.NewPopup[attribute.Type](p.dockable.targetMgr, p.def.KeyPrefix+"type", text,
+		func() attribute.Type { return p.def.Type },
+		func(typ attribute.Type) { p.applyAttributeType(typ) },
+		attribute.AllType...))
+
+	if p.def.Type == attribute.Pool {
+		p.poolPanel = newPoolPanel(p.dockable, p.def)
+		content.AddChild(p.poolPanel)
+	} else {
+		p.poolPanel = nil
+	}
+	return content
 }
 
 func (p *attrDefPanel) validateAttrID(attrID string) bool {

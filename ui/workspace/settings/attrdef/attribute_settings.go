@@ -17,7 +17,11 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-const attributesDragDataKey = "drag.attr"
+const (
+	attributesDragDataKey = "drag.attr"
+	prototypeMinIDWidth   = "Abcdefghijklmnopqrstuvwxyz"
+	prototypeMinNameWidth = prototypeMinIDWidth + prototypeMinIDWidth
+)
 
 var _ widget.GroupedCloser = &attributesDockable{}
 
@@ -377,7 +381,7 @@ func (d *attributesDockable) dataDragExit() {
 	d.MarkForRedraw()
 }
 
-func (d *attributesDockable) dataDragDrop(where unison.Point, data map[string]any) {
+func (d *attributesDockable) dataDragDrop(_ unison.Point, data map[string]any) {
 	if d.inDragOver && d.defInsert != -1 {
 		if dragData, ok := data[attributesDragDataKey]; ok {
 			var dd *attributesDragData
@@ -393,7 +397,7 @@ func (d *attributesDockable) dataDragDrop(where unison.Point, data map[string]an
 					undo.EditName = i18n.Text("Pool Threshold Drag")
 					i := slices.Index(dd.def.Thresholds, dd.threshold)
 					dd.def.Thresholds = slices.Delete(dd.def.Thresholds, i, i+1)
-					if i <= d.thresholdInsert {
+					if i < d.thresholdInsert {
 						d.thresholdInsert--
 					}
 					dd.def.Thresholds = slices.Insert(dd.def.Thresholds, d.thresholdInsert, dd.threshold)
@@ -402,7 +406,7 @@ func (d *attributesDockable) dataDragDrop(where unison.Point, data map[string]an
 					list := d.defs.List()
 					i := slices.Index(list, dd.def)
 					list = slices.Delete(list, i, i+1)
-					if i <= d.defInsert {
+					if i < d.defInsert {
 						d.defInsert--
 					}
 					list = slices.Insert(list, d.defInsert, dd.def)
