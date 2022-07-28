@@ -322,45 +322,43 @@ func (d *attributesDockable) dataDragOver(where unison.Point, data map[string]an
 	d.dragTargetPool = nil
 	if dragData, ok := data[attributesDragDataKey]; ok {
 		var dd *attributesDragData
-		if dd, ok = dragData.(*attributesDragData); ok {
-			if dd.owner == d.Entity() {
-				children := d.content.Children()
-				rootPt := d.content.PointToRoot(where)
-				if dd.threshold == nil {
-					pt := d.content.PointFromRoot(rootPt)
-					for i, child := range children {
-						rect := child.FrameRect()
-						if rect.ContainsPoint(pt) {
-							if rect.CenterY() <= pt.Y {
-								d.defInsert = i + 1
-							} else {
-								d.defInsert = i
-							}
-							d.inDragOver = true
-							break
+		if dd, ok = dragData.(*attributesDragData); ok && dd.owner == d.Entity() {
+			children := d.content.Children()
+			rootPt := d.content.PointToRoot(where)
+			if dd.threshold == nil {
+				pt := d.content.PointFromRoot(rootPt)
+				for i, child := range children {
+					rect := child.FrameRect()
+					if rect.ContainsPoint(pt) {
+						if rect.CenterY() <= pt.Y {
+							d.defInsert = i + 1
+						} else {
+							d.defInsert = i
 						}
+						d.inDragOver = true
+						break
 					}
-				} else {
-					for i, def := range d.defs.List() {
-						if def == dd.def && def.Type == attribute.Pool {
-							p := children[i].Self.(*attrDefPanel).poolPanel
-							pt := p.PointFromRoot(rootPt)
-							for j, child := range p.Children() {
-								if rect := child.FrameRect(); rect.ContainsPoint(pt) {
-									d.dragTargetPool = p
-									d.defInsert = i
-									if rect.CenterY() <= pt.Y {
-										d.thresholdInsert = j + 1
-									} else {
-										d.thresholdInsert = j
-									}
-									d.inDragOver = true
-									break
+				}
+			} else {
+				for i, def := range d.defs.List() {
+					if def == dd.def && def.Type == attribute.Pool {
+						p := children[i].Self.(*attrDefPanel).poolPanel
+						pt := p.PointFromRoot(rootPt)
+						for j, child := range p.Children() {
+							if rect := child.FrameRect(); rect.ContainsPoint(pt) {
+								d.dragTargetPool = p
+								d.defInsert = i
+								if rect.CenterY() <= pt.Y {
+									d.thresholdInsert = j + 1
+								} else {
+									d.thresholdInsert = j
 								}
-							}
-							if d.inDragOver {
+								d.inDragOver = true
 								break
 							}
+						}
+						if d.inDragOver {
+							break
 						}
 					}
 				}
@@ -422,11 +420,7 @@ func (d *attributesDockable) dataDragDrop(_ unison.Point, data map[string]any) {
 			}
 		}
 	}
-	d.inDragOver = false
-	d.defInsert = -1
-	d.thresholdInsert = -1
-	d.dragTargetPool = nil
-	d.MarkForRedraw()
+	d.dataDragExit()
 }
 
 func (d *attributesDockable) drawOver(gc *unison.Canvas, rect unison.Rect) {

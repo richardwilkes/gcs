@@ -13,22 +13,27 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
+	"golang.org/x/exp/slices"
 )
 
 var _ widget.GroupedCloser = &bodyDockable{}
 
 type bodyDockable struct {
 	wsettings.Dockable
-	owner         widget.EntityPanel
-	targetMgr     *widget.TargetMgr
-	undoMgr       *unison.UndoManager
-	body          *gurps.Body
-	originalCRC   uint64
-	toolbar       *unison.Panel
-	content       *unison.Panel
-	applyButton   *unison.Button
-	cancelButton  *unison.Button
-	promptForSave bool
+	owner          widget.EntityPanel
+	targetMgr      *widget.TargetMgr
+	undoMgr        *unison.UndoManager
+	body           *gurps.Body
+	originalCRC    uint64
+	toolbar        *unison.Panel
+	content        *unison.Panel
+	applyButton    *unison.Button
+	cancelButton   *unison.Button
+	dragTarget     *unison.Panel
+	dragTargetBody *gurps.Body
+	dragInsert     int
+	promptForSave  bool
+	inDragOver     bool
 }
 
 // ShowBodySettings the Body Settings. Pass in nil to edit the defaults or a sheet to edit the sheet's.
@@ -120,6 +125,10 @@ func (d *bodyDockable) addToStartToolbar(toolbar *unison.Panel) {
 
 func (d *bodyDockable) initContent(content *unison.Panel) {
 	d.content = content
+	d.content.DataDragOverCallback = d.dataDragOver
+	d.content.DataDragExitCallback = d.dataDragExit
+	d.content.DataDragDropCallback = d.dataDragDrop
+	d.content.DrawOverCallback = d.drawOver
 	content.SetBorder(nil)
 	content.SetLayout(&unison.FlexLayout{Columns: 1})
 	content.AddChild(newBodyPanel(d))
@@ -224,5 +233,86 @@ func (d *bodyDockable) apply() {
 				return false
 			})
 		}
+	}
+}
+
+func (d *bodyDockable) dataDragOver(where unison.Point, data map[string]any) bool {
+	prevInDragOver := d.inDragOver
+	dragInsert := d.dragInsert
+	dragTarget := d.dragTarget
+	d.inDragOver = false
+	d.dragInsert = -1
+	d.dragTargetBody = nil
+	d.dragTarget = nil
+	if dragData, ok := data[hitLocationDragDataKey]; ok {
+		var dd *hitLocationPanel
+		if dd, ok = dragData.(*hitLocationPanel); ok && dd.dockable == d {
+			parent := dd.Parent()
+			where = parent.PointFromRoot(d.content.PointToRoot(where))
+			for i, child := range parent.Children() {
+				rect := child.FrameRect()
+				if rect.ContainsPoint(where) {
+					d.dragTarget = parent
+					if rect.CenterY() <= where.Y {
+						d.dragInsert = i + 1
+					} else {
+						d.dragInsert = i
+					}
+					d.inDragOver = true
+					break
+				}
+			}
+		}
+	}
+	if prevInDragOver != d.inDragOver || dragInsert != d.dragInsert || dragTarget != d.dragTarget {
+		d.MarkForRedraw()
+	}
+	return true
+}
+
+func (d *bodyDockable) dataDragExit() {
+	d.inDragOver = false
+	d.dragInsert = -1
+	d.dragTargetBody = nil
+	d.dragTarget = nil
+	d.MarkForRedraw()
+}
+
+func (d *bodyDockable) dataDragDrop(_ unison.Point, data map[string]any) {
+	if d.inDragOver && d.dragInsert != -1 {
+		if dragData, ok := data[hitLocationDragDataKey]; ok {
+			var dd *hitLocationPanel
+			if dd, ok = dragData.(*hitLocationPanel); ok && dd.dockable == d && d.dragInsert != -1 {
+				undo := d.prepareUndo(i18n.Text("Hit Location Drag"))
+				table := dd.loc.OwningTable()
+				i := slices.Index(table.Locations, dd.loc)
+				table.Locations = slices.Delete(table.Locations, i, i+1)
+				if i < d.dragInsert {
+					d.dragInsert--
+				}
+				table.Locations = slices.Insert(table.Locations, d.dragInsert, dd.loc)
+				table.Update(d.Entity())
+				d.finishAndPostUndo(undo)
+				d.sync()
+			}
+		}
+	}
+	d.dataDragExit()
+}
+
+func (d *bodyDockable) drawOver(gc *unison.Canvas, rect unison.Rect) {
+	if d.inDragOver && d.dragInsert != -1 {
+		children := d.dragTarget.Children()
+		var y float32
+		if d.dragInsert < len(children) {
+			y = children[d.dragInsert].FrameRect().Y
+		} else {
+			y = children[len(children)-1].FrameRect().Bottom()
+		}
+		pt := d.content.PointFromRoot(d.dragTarget.PointToRoot(unison.Point{Y: y}))
+		paint := unison.DropAreaColor.Paint(gc, rect, unison.Stroke)
+		paint.SetStrokeWidth(2)
+		r := d.content.RectFromRoot(d.dragTarget.RectToRoot(d.dragTarget.ContentRect(false)))
+		gc.DrawLine(r.X, pt.Y, r.Right(), pt.Y, paint)
 	}
 }

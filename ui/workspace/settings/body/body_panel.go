@@ -16,11 +16,6 @@ type bodyPanel struct {
 	dockable *bodyDockable
 }
 
-type hitLocationDragData struct {
-	owner *gurps.Body
-	loc   *gurps.HitLocation
-}
-
 func newBodyPanel(d *bodyDockable) *bodyPanel {
 	p := &bodyPanel{
 		dockable: d,
