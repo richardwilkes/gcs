@@ -57,6 +57,7 @@ type Settings struct {
 	Fonts              theme.Fonts          `json:"fonts"`
 	QuickExports       *gurps.QuickExports  `json:"quick_exports,omitempty"`
 	Sheet              *gurps.SheetSettings `json:"sheet_settings,omitempty"`
+	ColorMode          unison.ColorMode     `json:"color_mode"`
 }
 
 // Default returns new default settings.
@@ -82,6 +83,7 @@ func Global() *Settings {
 		global.EnsureValidity()
 		gurps.SettingsProvider = global
 		gurps.InstallEvaluatorFunctions(fxp.EvalFuncs)
+		unison.SetColorMode(global.ColorMode)
 		global.Colors.MakeCurrent()
 		global.Fonts.MakeCurrent()
 	}

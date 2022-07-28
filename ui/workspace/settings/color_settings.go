@@ -44,7 +44,7 @@ func ShowColorSettings() {
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset
-		d.Setup(ws, dc, nil, nil, d.initContent)
+		d.Setup(ws, dc, d.addToStartToolbar, nil, d.initContent)
 	}
 }
 
@@ -56,6 +56,22 @@ func (d *colorSettingsDockable) initContent(content *unison.Panel) {
 		VSpacing: unison.StdVSpacing,
 	})
 	d.fill()
+}
+
+func (d *colorSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
+	label := unison.NewLabel()
+	label.Text = i18n.Text("Color Mode")
+	toolbar.AddChild(label)
+	p := unison.NewPopupMenu[unison.ColorMode]()
+	for _, mode := range unison.AllColorModes {
+		p.AddItem(mode)
+	}
+	p.Select(settings.Global().ColorMode)
+	p.SelectionCallback = func(_ int, mode unison.ColorMode) {
+		settings.Global().ColorMode = mode
+		unison.SetColorMode(mode)
+	}
+	toolbar.AddChild(p)
 }
 
 func (d *colorSettingsDockable) reset() {
