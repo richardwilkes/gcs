@@ -12,6 +12,8 @@
 package workspace
 
 import (
+	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"path"
@@ -24,6 +26,7 @@ import (
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
+	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
 )
 
@@ -39,23 +42,25 @@ const (
 
 // NavigatorNode holds a library, directory or file.
 type NavigatorNode struct {
-	nodeType navigatorNodeType
-	open     bool
-	id       uuid.UUID
-	path     string
-	nav      *Navigator
-	library  *library.Library
-	parent   *NavigatorNode
-	children []*NavigatorNode
+	nodeType            navigatorNodeType
+	open                bool
+	id                  uuid.UUID
+	path                string
+	nav                 *Navigator
+	library             *library.Library
+	parent              *NavigatorNode
+	children            []*NavigatorNode
+	libraryVersionCache string
 }
 
 // NewLibraryNode creates a new library node.
 func NewLibraryNode(nav *Navigator, lib *library.Library) *NavigatorNode {
 	n := &NavigatorNode{
-		nodeType: libraryNode,
-		id:       uuid.New(),
-		nav:      nav,
-		library:  lib,
+		nodeType:            libraryNode,
+		id:                  uuid.New(),
+		nav:                 nav,
+		library:             lib,
+		libraryVersionCache: filterVersion(lib.VersionOnDisk()),
 	}
 	n.Refresh()
 	return n
@@ -128,9 +133,26 @@ func (n *NavigatorNode) CellDataForSort(col int) string {
 		return ""
 	}
 	if n.nodeType == libraryNode {
-		return n.library.Title
+		if n.library.IsUser() {
+			return n.library.Title
+		}
+		if rel := n.library.AvailableUpdate(); rel != nil && rel.HasUpdate() {
+			return fmt.Sprintf("%s v%s (v%s available)", n.library.Title, n.libraryVersionCache,
+				filterVersion(rel.Version))
+		}
+		return fmt.Sprintf("%s v%s", n.library.Title, n.libraryVersionCache)
 	}
-	return path.Base(n.path)
+	return xfs.TrimExtension(path.Base(n.path))
+}
+
+func filterVersion(version string) string {
+	if strings.Index(version, ".") == strings.LastIndex(version, ".") {
+		return version
+	}
+	if strings.HasSuffix(version, ".0") {
+		return version[:len(version)-2]
+	}
+	return version
 }
 
 // ColumnCell implements unison.TableRowData.
@@ -141,13 +163,22 @@ func (n *NavigatorNode) ColumnCell(_, col int, foreground, _ unison.Ink, _, _, _
 	title := n.CellDataForSort(col)
 	var ext string
 	if n.nodeType == fileNode {
-		ext = strings.ToLower(path.Ext(title))
+		ext = strings.ToLower(path.Ext(n.path))
 	} else if n.open {
 		ext = library.OpenFolder
 	} else {
 		ext = library.ClosedFolder
 	}
-	return createNodeCell(ext, title, foreground)
+	size := unison.LabelFont.Size() + 5
+	fi := library.FileInfoFor(ext)
+	label := unison.NewLabel()
+	label.LabelTheme.OnBackgroundInk = foreground
+	label.Text = title
+	label.Drawable = &unison.DrawableSVG{
+		SVG:  fi.SVG,
+		Size: unison.NewSize(size, size),
+	}
+	return label
 }
 
 // IsOpen implements unison.TableRowData.
@@ -193,7 +224,10 @@ func (n *NavigatorNode) refreshChildren(dirPath string, parent *NavigatorNode) [
 	libPath := n.library.Path()
 	entries, err := os.ReadDir(filepath.Join(libPath, dirPath))
 	if err != nil {
-		jot.Error(errs.NewWithCausef(err, "unable to read the directory: %s", dirPath))
+		if !errors.Is(err, fs.ErrNotExist) {
+			// Only log the error if it wasn't due to a missing dir, since that happens during filesystem updates
+			jot.Error(errs.NewWithCausef(err, "unable to read the directory: %s", dirPath))
+		}
 		return nil
 	}
 	sort.Slice(entries, func(i, j int) bool {

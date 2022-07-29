@@ -57,7 +57,7 @@ func (w *aboutWindow) prepare() error {
 		unison.NotResizableWindowOption()); err != nil {
 		return errs.NewWithCause("unable to create about window", err)
 	}
-	trampolines.MenuSetup(w.Window)
+	trampolines.CallMenuSetup(w.Window)
 	content := w.Content()
 	content.DrawCallback = w.drawContentBackground
 	content.SetLayout(w)

@@ -20,8 +20,12 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/res"
+	"github.com/richardwilkes/gcs/v5/setup/trampolines"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
+	"github.com/richardwilkes/toolbox/desktop"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/log/jot"
+	"github.com/richardwilkes/toolbox/xmath/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/rjeczalik/notify"
 )
@@ -95,7 +99,79 @@ func newNavigator() *Navigator {
 	n.AddChild(n.scroll)
 
 	n.table.DoubleClickCallback = n.handleSelectionDoubleClick
+	trampolines.SetLibraryUpdatesAvailable(func() { n.table.EventuallySizeColumnsToFit(true) })
+	n.table.MouseDownCallback = n.mouseDown
 	return n
+}
+
+func (n *Navigator) mouseDown(where unison.Point, button, clickCount int, mod unison.Modifiers) bool {
+	stop := n.table.DefaultMouseDown(where, button, clickCount, mod)
+	if button == unison.ButtonRight && clickCount == 1 {
+		if sel := n.table.SelectedRows(false); len(sel) != 0 {
+			f := unison.DefaultMenuFactory()
+			cm := f.NewMenu(unison.PopupMenuTemporaryBaseID|unison.ContextMenuIDFlag, "", nil)
+			cm.InsertItem(-1, n.newShowNodeOnDiskMenuItem(f, 1, sel))
+			cm.InsertItem(-1, n.newUpdateLibraryMenuItem(f, 2, sel))
+			if cm.Count() > 0 {
+				n.FlushDrawing()
+				cm.Popup(geom.Rect[float32]{
+					Point: n.PointToRoot(where),
+					Size: geom.Size[float32]{
+						Width:  1,
+						Height: 1,
+					},
+				}, 0)
+			}
+			cm.Dispose()
+			stop = true
+		}
+	}
+	return stop
+}
+
+func (n *Navigator) newShowNodeOnDiskMenuItem(f unison.MenuFactory, id int, sel []*NavigatorNode) unison.MenuItem {
+	return f.NewItem(unison.PopupMenuTemporaryBaseID+id, i18n.Text("Show on Disk"), unison.KeyBinding{}, nil,
+		func(item unison.MenuItem) {
+			m := make(map[string]struct{})
+			for _, node := range sel {
+				p := node.Path()
+				if node.nodeType == fileNode {
+					p = filepath.Dir(p)
+				}
+				m[p] = struct{}{}
+			}
+			for p := range m {
+				if err := desktop.Open(p); err != nil {
+					unison.ErrorDialogWithError(i18n.Text("Unable to show location on disk"), err)
+				}
+			}
+		})
+}
+
+func (n *Navigator) newUpdateLibraryMenuItem(f unison.MenuFactory, id int, sel []*NavigatorNode) unison.MenuItem {
+	var libs []*library.Library
+	for _, node := range sel {
+		if node.nodeType == libraryNode {
+			if rel := node.library.AvailableUpdate(); rel != nil && rel.HasUpdate() {
+				libs = append(libs, node.library)
+			}
+		}
+	}
+	var title string
+	switch len(libs) {
+	case 0:
+		return nil
+	case 1:
+		title = i18n.Text("Update Library")
+	default:
+		title = i18n.Text("Update Libraries")
+	}
+	return f.NewItem(unison.PopupMenuTemporaryBaseID+id, title, unison.KeyBinding{}, nil,
+		func(item unison.MenuItem) {
+			for _, lib := range libs {
+				jot.Infof("Initiate update for %s", lib.Title)
+			}
+		})
 }
 
 func (n *Navigator) watchCallback(_ *library.Library, _ string, _ notify.Event) {
@@ -293,17 +369,4 @@ func OpenFile(wnd *unison.Window, filePath string) (dockable unison.Dockable, wa
 	settings.Global().AddRecentFile(filePath)
 	DisplayNewDockable(wnd, d)
 	return d, false
-}
-
-func createNodeCell(ext, title string, foreground unison.Ink) unison.Paneler {
-	size := unison.LabelFont.Size() + 5
-	fi := library.FileInfoFor(ext)
-	label := unison.NewLabel()
-	label.LabelTheme.OnBackgroundInk = foreground
-	label.Text = title
-	label.Drawable = &unison.DrawableSVG{
-		SVG:  fi.SVG,
-		Size: unison.NewSize(size, size),
-	}
-	return label
 }

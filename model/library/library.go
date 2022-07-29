@@ -24,6 +24,7 @@ import (
 	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
+	"github.com/richardwilkes/gcs/v5/setup/trampolines"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
@@ -150,8 +151,12 @@ func (l *Library) CheckForAvailableUpgrade(ctx context.Context, client *http.Cli
 		}
 	}
 	l.lock.Lock()
+	updated := l.upgrade == nil || *l.upgrade == *upgrade
 	l.upgrade = upgrade
 	l.lock.Unlock()
+	if updated {
+		trampolines.CallLibraryUpdatesAvailable()
+	}
 }
 
 // AvailableUpdate returns the available release that can be updated to.

@@ -24,5 +24,5 @@ func Setup() {
 	workspace.RegisterFileTypes()
 	external.RegisterFileTypes()
 	lists.RegisterFileTypes()
-	trampolines.MenuSetup = menus.Setup
+	trampolines.SetMenuSetup(menus.Setup)
 }

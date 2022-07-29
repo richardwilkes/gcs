@@ -22,8 +22,8 @@ import (
 // Some special "extension" values.
 const (
 	GenericFile  = "file"
-	ClosedFolder = "folder-closed"
-	OpenFolder   = "folder-open"
+	ClosedFolder = ".folder-closed"
+	OpenFolder   = ".folder-open"
 )
 
 // Known file extensions.

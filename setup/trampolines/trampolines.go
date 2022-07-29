@@ -11,9 +11,51 @@
 
 package trampolines
 
-import "github.com/richardwilkes/unison"
+import (
+	"sync"
+
+	"github.com/richardwilkes/unison"
+)
 
 // These functions are here to break what would otherwise be circular dependencies.
 
-// MenuSetup sets up the menus for the given window.
-var MenuSetup func(wnd *unison.Window)
+var (
+	lock                    sync.RWMutex
+	menuSetup               func(wnd *unison.Window)
+	libraryUpdatesAvailable func()
+)
+
+// CallMenuSetup calls the trampoline that sets up the menus for the given window.
+func CallMenuSetup(wnd *unison.Window) {
+	lock.RLock()
+	f := menuSetup //nolint:ifshort // Can't use short syntax
+	lock.RUnlock()
+	if f != nil {
+		f(wnd)
+	}
+}
+
+// SetMenuSetup sets the trampoline that sets up the menus for the given window.
+func SetMenuSetup(f func(wnd *unison.Window)) {
+	lock.Lock()
+	menuSetup = f
+	lock.Unlock()
+}
+
+// CallLibraryUpdatesAvailable calls the trampoline that notifies of library updates becoming available. The trampoline
+// will be called via unison.InvokeTask, so is safe to call from a non-UI thread.
+func CallLibraryUpdatesAvailable() {
+	lock.RLock()
+	f := libraryUpdatesAvailable //nolint:ifshort // Can't use short syntax
+	lock.RUnlock()
+	if f != nil {
+		unison.InvokeTask(f)
+	}
+}
+
+// SetLibraryUpdatesAvailable sets the trampoline that notifies of library updates becoming available.
+func SetLibraryUpdatesAvailable(f func()) {
+	lock.Lock()
+	libraryUpdatesAvailable = f
+	lock.Unlock()
+}
