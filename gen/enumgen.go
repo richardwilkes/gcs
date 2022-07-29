@@ -309,6 +309,15 @@ func main() {
 			{
 				Key: "pool",
 			},
+			{
+				Key: "primary_separator",
+			},
+			{
+				Key: "secondary_separator",
+			},
+			{
+				Key: "pool_separator",
+			},
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{

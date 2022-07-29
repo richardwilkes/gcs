@@ -40,8 +40,8 @@ type AttributeDefData struct {
 	Type                attribute.Type   `json:"type"`
 	Name                string           `json:"name"`
 	FullName            string           `json:"full_name,omitempty"`
-	AttributeBase       string           `json:"attribute_base"`
-	CostPerPoint        fxp.Int          `json:"cost_per_point"`
+	AttributeBase       string           `json:"attribute_base,omitempty"`
+	CostPerPoint        fxp.Int          `json:"cost_per_point,omitempty"`
 	CostAdjPercentPerSM fxp.Int          `json:"cost_adj_percent_per_sm,omitempty"`
 	Thresholds          []*PoolThreshold `json:"thresholds,omitempty"`
 }
@@ -112,19 +112,33 @@ func (a *AttributeDef) CombinedName() string {
 	return a.FullName + " (" + a.Name + ")"
 }
 
+// IsSeparator returns true if this is actually just a separator.
+func (a *AttributeDef) IsSeparator() bool {
+	return a.Type == attribute.PrimarySeparator || a.Type == attribute.SecondarySeparator || a.Type == attribute.PoolSeparator
+}
+
 // Primary returns true if the base value is a non-derived value.
 func (a *AttributeDef) Primary() bool {
+	if a.Type == attribute.PrimarySeparator {
+		return true
+	}
 	_, err := fxp.FromString(strings.TrimSpace(a.AttributeBase))
 	return err == nil
 }
 
 // BaseValue returns the resolved base value.
 func (a *AttributeDef) BaseValue(resolver eval.VariableResolver) fxp.Int {
+	if a.IsSeparator() {
+		return 0
+	}
 	return fxp.EvaluateToNumber(a.AttributeBase, resolver)
 }
 
 // ComputeCost returns the value adjusted for a cost reduction.
 func (a *AttributeDef) ComputeCost(entity *Entity, value, costReduction fxp.Int, sizeModifier int) fxp.Int {
+	if a.IsSeparator() {
+		return 0
+	}
 	cost := value.Mul(a.CostPerPoint)
 	if sizeModifier > 0 && a.CostAdjPercentPerSM > 0 && !(a.DefID == "hp" && entity.SheetSettings.DamageProgression == attribute.KnowingYourOwnStrength) {
 		costReduction += fxp.From(sizeModifier).Mul(a.CostAdjPercentPerSM)

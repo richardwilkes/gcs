@@ -453,7 +453,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 		ex.processConditionalModifiersLoop(ex.entity.ConditionalModifiers(), ex.extractUpToMarker("CONDITIONAL_MODIFIERS_LOOP_END"))
 	case "PRIMARY_ATTRIBUTE_LOOP_COUNT":
 		count := 0
-		for _, def := range ex.entity.SheetSettings.Attributes.List() {
+		for _, def := range ex.entity.SheetSettings.Attributes.List(true) {
 			if def.Type != attribute.Pool && def.Primary() {
 				if _, exists := ex.entity.Attributes.Set[def.DefID]; exists {
 					count++
@@ -465,7 +465,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 		ex.processAttributesLoop(ex.extractUpToMarker("PRIMARY_ATTRIBUTE_LOOP_END"), true)
 	case "SECONDARY_ATTRIBUTE_LOOP_COUNT":
 		count := 0
-		for _, def := range ex.entity.SheetSettings.Attributes.List() {
+		for _, def := range ex.entity.SheetSettings.Attributes.List(true) {
 			if def.Type != attribute.Pool && !def.Primary() {
 				if _, exists := ex.entity.Attributes.Set[def.DefID]; exists {
 					count++
@@ -477,7 +477,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 		ex.processAttributesLoop(ex.extractUpToMarker("SECONDARY_ATTRIBUTE_LOOP_END"), false)
 	case "POINT_POOL_LOOP_COUNT":
 		count := 0
-		for _, def := range ex.entity.SheetSettings.Attributes.List() {
+		for _, def := range ex.entity.SheetSettings.Attributes.List(true) {
 			if def.Type == attribute.Pool {
 				if _, exists := ex.entity.Attributes.Set[def.DefID]; exists {
 					count++
@@ -1167,7 +1167,7 @@ func (ex *legacyExporter) processConditionalModifiersLoop(list []*gurps.Conditio
 }
 
 func (ex *legacyExporter) processAttributesLoop(buffer []byte, primary bool) {
-	for _, def := range ex.entity.SheetSettings.Attributes.List() {
+	for _, def := range ex.entity.SheetSettings.Attributes.List(true) {
 		if def.Type != attribute.Pool && def.Primary() == primary {
 			if attr, ok := ex.entity.Attributes.Set[def.DefID]; ok {
 				ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
@@ -1195,7 +1195,7 @@ func (ex *legacyExporter) processAttributesLoop(buffer []byte, primary bool) {
 }
 
 func (ex *legacyExporter) processPointPoolLoop(buffer []byte) {
-	for _, def := range ex.entity.SheetSettings.Attributes.List() {
+	for _, def := range ex.entity.SheetSettings.Attributes.List(true) {
 		if def.Type == attribute.Pool {
 			if attr, ok := ex.entity.Attributes.Set[def.DefID]; ok {
 				ex.processBuffer(buffer, func(key string, _ []byte, index int) int {

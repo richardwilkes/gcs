@@ -55,6 +55,9 @@ func (a *Attribute) MarshalJSON() ([]byte, error) {
 				Current *fxp.Int `json:"current,omitempty"`
 				Points  fxp.Int  `json:"points"`
 			}
+			if def.IsSeparator() {
+				return json.Marshal(&a.AttributeData)
+			}
 			data := struct {
 				AttributeData
 				Calc calc `json:"calc"`
@@ -110,7 +113,7 @@ func (a *Attribute) AttributeDef() *AttributeDef {
 // Maximum returns the maximum value of a pool or the adjusted attribute value for other types.
 func (a *Attribute) Maximum() fxp.Int {
 	def := a.AttributeDef()
-	if def == nil {
+	if def == nil || def.IsSeparator() {
 		return 0
 	}
 	max := def.BaseValue(a.Entity) + a.Adjustment + a.Bonus
@@ -125,15 +128,18 @@ func (a *Attribute) SetMaximum(value fxp.Int) {
 	if a.Maximum() == value {
 		return
 	}
-	if def := a.AttributeDef(); def != nil {
+	if def := a.AttributeDef(); def != nil && !def.IsSeparator() {
 		a.Adjustment = value - (def.BaseValue(a.Entity) + a.Bonus)
 	}
 }
 
 // Current returns the current value. Same as .Maximum() if not a pool.
 func (a *Attribute) Current() fxp.Int {
-	max := a.Maximum()
 	def := a.AttributeDef()
+	if def == nil && def.IsSeparator() {
+		return 0
+	}
+	max := a.Maximum()
 	if def == nil || def.Type != attribute.Pool {
 		return max
 	}
@@ -143,7 +149,7 @@ func (a *Attribute) Current() fxp.Int {
 // CurrentThreshold return the current PoolThreshold, if any.
 func (a *Attribute) CurrentThreshold() *PoolThreshold {
 	def := a.AttributeDef()
-	if def == nil {
+	if def == nil || def.IsSeparator() {
 		return nil
 	}
 	cur := a.Current()
@@ -158,7 +164,7 @@ func (a *Attribute) CurrentThreshold() *PoolThreshold {
 // PointCost returns the number of points spent on this Attribute.
 func (a *Attribute) PointCost() fxp.Int {
 	def := a.AttributeDef()
-	if def == nil {
+	if def == nil || def.IsSeparator() {
 		return 0
 	}
 	var sm int

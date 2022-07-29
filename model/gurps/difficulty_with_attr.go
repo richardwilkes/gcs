@@ -78,7 +78,7 @@ func (a *AttributeDifficulty) Normalize(entity *Entity) {
 		text = DefaultAttributeIDFor(entity)
 	}
 	var attr *AttributeDef
-	list := AttributeDefsFor(entity).List()
+	list := AttributeDefsFor(entity).List(true)
 	for _, one := range list {
 		if strings.EqualFold(one.ID(), text) {
 			attr = one

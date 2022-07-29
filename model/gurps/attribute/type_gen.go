@@ -24,7 +24,10 @@ const (
 	Integer Type = iota
 	Decimal
 	Pool
-	LastType = Pool
+	PrimarySeparator
+	SecondarySeparator
+	PoolSeparator
+	LastType = PoolSeparator
 )
 
 var (
@@ -33,6 +36,9 @@ var (
 		Integer,
 		Decimal,
 		Pool,
+		PrimarySeparator,
+		SecondarySeparator,
+		PoolSeparator,
 	}
 	typeData = []struct {
 		key    string
@@ -49,6 +55,18 @@ var (
 		{
 			key:    "pool",
 			string: i18n.Text("Pool"),
+		},
+		{
+			key:    "primary_separator",
+			string: i18n.Text("Primary Separator"),
+		},
+		{
+			key:    "secondary_separator",
+			string: i18n.Text("Secondary Separator"),
+		},
+		{
+			key:    "pool_separator",
+			string: i18n.Text("Pool Separator"),
 		},
 	}
 )

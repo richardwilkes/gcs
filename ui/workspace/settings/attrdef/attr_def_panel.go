@@ -139,52 +139,64 @@ func (p *attrDefPanel) createContent() *unison.Panel {
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("A unique ID for the attribute"))
 	content.AddChild(field)
 
-	text = i18n.Text("Short Name")
-	content.AddChild(widget.NewFieldLeadingLabel(text))
-	field = widget.NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+"name", text,
-		func() string { return p.def.Name },
-		func(s string) { p.def.Name = s })
-	field.SetMinimumTextWidthUsing(prototypeMinIDWidth)
-	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
-	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The name of this attribute, often an abbreviation"))
-	content.AddChild(field)
+	if p.def.IsSeparator() {
+		text = i18n.Text("Name")
+		content.AddChild(widget.NewFieldLeadingLabel(text))
+		field = widget.NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+"name", text,
+			func() string { return p.def.Name },
+			func(s string) { p.def.Name = s })
+		field.SetMinimumTextWidthUsing(prototypeMinIDWidth)
+		field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
+		field.Tooltip = unison.NewTooltipWithText(i18n.Text("A title to use with the separator"))
+		content.AddChild(field)
+	} else {
+		text = i18n.Text("Short Name")
+		content.AddChild(widget.NewFieldLeadingLabel(text))
+		field = widget.NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+"name", text,
+			func() string { return p.def.Name },
+			func(s string) { p.def.Name = s })
+		field.SetMinimumTextWidthUsing(prototypeMinIDWidth)
+		field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
+		field.Tooltip = unison.NewTooltipWithText(i18n.Text("The name of this attribute, often an abbreviation"))
+		content.AddChild(field)
 
-	text = i18n.Text("Full Name")
-	content.AddChild(widget.NewFieldLeadingLabel(text))
-	field = widget.NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+"fullname", text,
-		func() string { return p.def.FullName },
-		func(s string) { p.def.FullName = s })
-	field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
-	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
-	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The full name of this attribute (may be omitted, in which case the Short Name will be used instead)"))
-	content.AddChild(field)
+		text = i18n.Text("Full Name")
+		content.AddChild(widget.NewFieldLeadingLabel(text))
+		field = widget.NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+"fullname", text,
+			func() string { return p.def.FullName },
+			func(s string) { p.def.FullName = s })
+		field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
+		field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
+		field.Tooltip = unison.NewTooltipWithText(i18n.Text("The full name of this attribute (may be omitted, in which case the Short Name will be used instead)"))
+		content.AddChild(field)
 
-	text = i18n.Text("Base Value")
-	content.AddChild(widget.NewFieldLeadingLabel(text))
-	field = widget.NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+"base", text,
-		func() string { return p.def.AttributeBase },
-		func(s string) { p.def.AttributeBase = s })
-	field.SetMinimumTextWidthUsing("floor($basic_speed)")
-	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The base value, which may be a number or a formula"))
-	content.AddChild(field)
+		text = i18n.Text("Base Value")
+		content.AddChild(widget.NewFieldLeadingLabel(text))
+		field = widget.NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+"base", text,
+			func() string { return p.def.AttributeBase },
+			func(s string) { p.def.AttributeBase = s })
+		field.SetMinimumTextWidthUsing("floor($basic_speed)")
+		field.Tooltip = unison.NewTooltipWithText(i18n.Text("The base value, which may be a number or a formula"))
+		content.AddChild(field)
 
-	text = i18n.Text("Cost per Point")
-	content.AddChild(widget.NewFieldLeadingLabel(text))
-	numField := widget.NewIntegerField(p.dockable.targetMgr, p.def.KeyPrefix+"cost", text,
-		func() int { return fxp.As[int](p.def.CostPerPoint) },
-		func(v int) { p.def.CostPerPoint = fxp.From(v) },
-		0, 9999, false, false)
-	numField.Tooltip = unison.NewTooltipWithText(i18n.Text("The cost per point difference from the base"))
-	content.AddChild(numField)
+		text = i18n.Text("Cost per Point")
+		content.AddChild(widget.NewFieldLeadingLabel(text))
+		numField := widget.NewIntegerField(p.dockable.targetMgr, p.def.KeyPrefix+"cost", text,
+			func() int { return fxp.As[int](p.def.CostPerPoint) },
+			func(v int) { p.def.CostPerPoint = fxp.From(v) },
+			0, 9999, false, false)
+		numField.Tooltip = unison.NewTooltipWithText(i18n.Text("The cost per point difference from the base"))
+		content.AddChild(numField)
 
-	text = i18n.Text("SM Reduction")
-	content.AddChild(widget.NewFieldLeadingLabel(text))
-	numField = widget.NewPercentageField(p.dockable.targetMgr, p.def.KeyPrefix+"sm", text,
-		func() int { return fxp.As[int](p.def.CostAdjPercentPerSM) },
-		func(v int) { p.def.CostAdjPercentPerSM = fxp.From(v) },
-		0, 80, false, false)
-	numField.Tooltip = unison.NewTooltipWithText(i18n.Text("The reduction in cost for each SM greater than 0"))
-	content.AddChild(numField)
+		text = i18n.Text("SM Reduction")
+		content.AddChild(widget.NewFieldLeadingLabel(text))
+		numField = widget.NewPercentageField(p.dockable.targetMgr, p.def.KeyPrefix+"sm", text,
+			func() int { return fxp.As[int](p.def.CostAdjPercentPerSM) },
+			func(v int) { p.def.CostAdjPercentPerSM = fxp.From(v) },
+			0, 80, false, false)
+		numField.Tooltip = unison.NewTooltipWithText(i18n.Text("The reduction in cost for each SM greater than 0"))
+		content.AddChild(numField)
+	}
 
 	text = i18n.Text("Attribute Type")
 	content.AddChild(widget.NewFieldLeadingLabel(text))
@@ -217,8 +229,15 @@ func (p *attrDefPanel) validateAttrID(attrID string) bool {
 }
 
 func (p *attrDefPanel) applyAttributeType(attrType attribute.Type) {
-	if p.def.Type = attrType; p.def.Type == attribute.Pool && len(p.def.Thresholds) == 0 {
+	p.def.Type = attrType
+	if p.def.Type == attribute.Pool && len(p.def.Thresholds) == 0 {
 		p.def.Thresholds = append(p.def.Thresholds, &gurps.PoolThreshold{KeyPrefix: p.dockable.targetMgr.NextPrefix()})
+	} else if p.def.IsSeparator() {
+		p.def.FullName = ""
+		p.def.AttributeBase = ""
+		p.def.CostPerPoint = 0
+		p.def.CostAdjPercentPerSM = 0
+		p.def.Thresholds = nil
 	}
 	p.dockable.sync()
 }

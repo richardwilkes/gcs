@@ -60,19 +60,54 @@ func NewPrimaryAttrPanel(entity *gurps.Entity) *PrimaryAttrPanel {
 
 func (p *PrimaryAttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 	p.RemoveAllChildren()
-	for _, def := range attrs.List() {
+	for _, def := range attrs.List(false) {
 		if def.Type == attribute.Pool || !def.Primary() {
 			continue
 		}
-		attr, ok := p.entity.Attributes.Set[def.ID()]
-		if !ok {
-			jot.Warnf("unable to locate attribute data for '%s'", def.ID())
-			continue
+		if def.Type == attribute.PrimarySeparator {
+			p.AddChild(newPageInternalHeader(def.Name, 3))
+		} else {
+			attr, ok := p.entity.Attributes.Set[def.ID()]
+			if !ok {
+				jot.Warnf("unable to locate attribute data for '%s'", def.ID())
+				continue
+			}
+			p.AddChild(p.createPointsField(attr))
+			p.AddChild(p.createValueField(def, attr))
+			p.AddChild(widget.NewPageLabel(def.CombinedName()))
 		}
-		p.AddChild(p.createPointsField(attr))
-		p.AddChild(p.createValueField(def, attr))
-		p.AddChild(widget.NewPageLabel(def.CombinedName()))
 	}
+}
+
+func newPageInternalHeader(title string, span int) unison.Paneler {
+	layoutData := &unison.FlexLayoutData{
+		HSpan:  span,
+		HAlign: unison.FillAlignment,
+	}
+	border := unison.NewEmptyBorder(unison.NewVerticalInsets(2))
+	if title == "" {
+		sep := unison.NewSeparator()
+		sep.SetBorder(border)
+		sep.SetLayoutData(layoutData)
+		return sep
+	}
+	label := unison.NewLabel()
+	label.Text = title
+	label.Font = theme.PageLabelSecondaryFont
+	label.HAlign = unison.MiddleAlignment
+	label.OnBackgroundInk = theme.OnPageColor
+	label.SetLayoutData(layoutData)
+	label.SetBorder(border)
+	label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+		_, pref, _ := label.Sizes(unison.Size{})
+		paint := unison.DividerColor.Paint(gc, rect, unison.Stroke)
+		paint.SetStrokeWidth(1)
+		half := (rect.Width - pref.Width) / 2
+		gc.DrawLine(rect.X, rect.CenterY(), rect.X+half-2, rect.CenterY(), paint)
+		gc.DrawLine(2+rect.Right()-half, rect.CenterY(), rect.Right(), rect.CenterY(), paint)
+		label.DefaultDraw(gc, rect)
+	}
+	return label
 }
 
 func (p *PrimaryAttrPanel) createPointsField(attr *gurps.Attribute) *widget.NonEditablePageField {

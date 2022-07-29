@@ -192,7 +192,7 @@ func (d *attributesDockable) initContent(content *unison.Panel) {
 	d.content.DrawOverCallback = d.drawOver
 	content.SetBorder(nil)
 	content.SetLayout(&unison.FlexLayout{Columns: 1})
-	for _, def := range d.defs.List() {
+	for _, def := range d.defs.List(false) {
 		content.AddChild(newAttrDefPanel(d, def))
 	}
 }
@@ -237,7 +237,7 @@ func (d *attributesDockable) sync() {
 	scrollRoot := d.content.ScrollRoot()
 	h, v := scrollRoot.Position()
 	d.content.RemoveAllChildren()
-	for _, def := range d.defs.List() {
+	for _, def := range d.defs.List(false) {
 		d.content.AddChild(newAttrDefPanel(d, def))
 	}
 	d.MarkForLayoutAndRedraw()
@@ -340,7 +340,7 @@ func (d *attributesDockable) dataDragOver(where unison.Point, data map[string]an
 					}
 				}
 			} else {
-				for i, def := range d.defs.List() {
+				for i, def := range d.defs.List(false) {
 					if def == dd.def && def.Type == attribute.Pool {
 						p := children[i].Self.(*attrDefPanel).poolPanel
 						pt := p.PointFromRoot(rootPt)
@@ -401,7 +401,7 @@ func (d *attributesDockable) dataDragDrop(_ unison.Point, data map[string]any) {
 					dd.def.Thresholds = slices.Insert(dd.def.Thresholds, d.thresholdInsert, dd.threshold)
 				} else {
 					undo.EditName = i18n.Text("Attribute Definition Drag")
-					list := d.defs.List()
+					list := d.defs.List(false)
 					i := slices.Index(list, dd.def)
 					list = slices.Delete(list, i, i+1)
 					if i < d.defInsert {

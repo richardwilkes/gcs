@@ -44,7 +44,7 @@ func AttributeChoices(entity *Entity, prefix string, flags AttributeFlags, curre
 	if prefix != "" && !strings.HasSuffix(prefix, " ") {
 		prefix = prefix + " "
 	}
-	list := AttributeDefsFor(entity).List()
+	list := AttributeDefsFor(entity).List(true)
 	choices = make([]*AttributeChoice, 0, len(list)+8)
 	if flags&BlankFlag != 0 {
 		choices = append(choices, &AttributeChoice{})

@@ -47,7 +47,7 @@ func AttributeDefsFor(entity *Entity) *AttributeDefs {
 
 // DefaultAttributeIDFor returns the default attribute ID to use for the given Entity, which may be nil.
 func DefaultAttributeIDFor(entity *Entity) string {
-	list := AttributeDefsFor(entity).List()
+	list := AttributeDefsFor(entity).List(true)
 	if len(list) != 0 {
 		return list[0].ID()
 	}
@@ -60,7 +60,7 @@ func AttributeIDFor(entity *Entity, preferred string) string {
 	if _, exists := defs.Set[preferred]; exists {
 		return preferred
 	}
-	if list := defs.List(); len(list) != 0 {
+	if list := defs.List(true); len(list) != 0 {
 		return list[0].ID()
 	}
 	return gid.Strength
@@ -131,7 +131,7 @@ func (a *AttributeDefs) MarshalJSON() ([]byte, error) {
 	var buffer bytes.Buffer
 	e := json.NewEncoder(&buffer)
 	e.SetEscapeHTML(false)
-	err := e.Encode(a.List())
+	err := e.Encode(a.List(false))
 	return buffer.Bytes(), err
 }
 
@@ -159,9 +159,12 @@ func (a *AttributeDefs) Clone() *AttributeDefs {
 }
 
 // List returns the map of AttributeDef objects as an ordered list.
-func (a *AttributeDefs) List() []*AttributeDef {
+func (a *AttributeDefs) List(omitSeparators bool) []*AttributeDef {
 	list := make([]*AttributeDef, 0, len(a.Set))
 	for _, v := range a.Set {
+		if omitSeparators && v.IsSeparator() {
+			continue
+		}
 		list = append(list, v)
 	}
 	sort.Slice(list, func(i, j int) bool { return list[i].Order < list[j].Order })
@@ -171,7 +174,7 @@ func (a *AttributeDefs) List() []*AttributeDef {
 // CRC64 calculates a CRC-64 for this data.
 func (a *AttributeDefs) CRC64() uint64 {
 	c := crc.Number(0, len(a.Set))
-	for _, one := range a.List() {
+	for _, one := range a.List(false) {
 		c = one.crc64(c)
 	}
 	return c
