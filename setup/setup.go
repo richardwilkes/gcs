@@ -25,4 +25,5 @@ func Setup() {
 	external.RegisterFileTypes()
 	lists.RegisterFileTypes()
 	trampolines.SetMenuSetup(menus.Setup)
+	trampolines.SetShowReleaseNotesMarkdown(external.ShowReleaseNotesMarkdown)
 }

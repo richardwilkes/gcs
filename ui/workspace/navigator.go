@@ -110,8 +110,10 @@ func (n *Navigator) mouseDown(where unison.Point, button, clickCount int, mod un
 		if sel := n.table.SelectedRows(false); len(sel) != 0 {
 			f := unison.DefaultMenuFactory()
 			cm := f.NewMenu(unison.PopupMenuTemporaryBaseID|unison.ContextMenuIDFlag, "", nil)
-			cm.InsertItem(-1, n.newShowNodeOnDiskMenuItem(f, 1, sel))
-			cm.InsertItem(-1, n.newUpdateLibraryMenuItem(f, 2, sel))
+			id := 1
+			cm.InsertItem(-1, newShowNodeOnDiskMenuItem(f, &id, sel))
+			cm.InsertItem(-1, newLibraryReleaseNotesMenuItem(f, &id, sel))
+			cm.InsertItem(-1, newUpdateLibraryMenuItem(f, &id, sel))
 			if cm.Count() > 0 {
 				n.FlushDrawing()
 				cm.Popup(geom.Rect[float32]{
@@ -129,8 +131,10 @@ func (n *Navigator) mouseDown(where unison.Point, button, clickCount int, mod un
 	return stop
 }
 
-func (n *Navigator) newShowNodeOnDiskMenuItem(f unison.MenuFactory, id int, sel []*NavigatorNode) unison.MenuItem {
-	return f.NewItem(unison.PopupMenuTemporaryBaseID+id, i18n.Text("Show on Disk"), unison.KeyBinding{}, nil,
+func newShowNodeOnDiskMenuItem(f unison.MenuFactory, id *int, sel []*NavigatorNode) unison.MenuItem {
+	useID := *id
+	*id++
+	return f.NewItem(unison.PopupMenuTemporaryBaseID+useID, i18n.Text("Show on Disk"), unison.KeyBinding{}, nil,
 		func(item unison.MenuItem) {
 			m := make(map[string]struct{})
 			for _, node := range sel {
@@ -148,15 +152,37 @@ func (n *Navigator) newShowNodeOnDiskMenuItem(f unison.MenuFactory, id int, sel 
 		})
 }
 
-func (n *Navigator) newUpdateLibraryMenuItem(f unison.MenuFactory, id int, sel []*NavigatorNode) unison.MenuItem {
+func filterLibraries(sel []*NavigatorNode, f func(*library.Release) bool) []*library.Library {
 	var libs []*library.Library
 	for _, node := range sel {
 		if node.nodeType == libraryNode {
-			if rel := node.library.AvailableUpdate(); rel != nil && rel.HasUpdate() {
+			if rel := node.library.AvailableUpdate(); rel != nil && f(rel) {
 				libs = append(libs, node.library)
 			}
 		}
 	}
+	return libs
+}
+
+func newLibraryReleaseNotesMenuItem(f unison.MenuFactory, id *int, sel []*NavigatorNode) unison.MenuItem {
+	libs := filterLibraries(sel, func(rel *library.Release) bool { return rel.HasReleaseNotes() })
+	if len(libs) == 0 {
+		return nil
+	}
+	useID := *id
+	*id++
+	return f.NewItem(unison.PopupMenuTemporaryBaseID+useID, i18n.Text("Show Library Release Notes"),
+		unison.KeyBinding{}, nil, func(item unison.MenuItem) {
+			for _, lib := range libs {
+				rel := lib.AvailableUpdate()
+				trampolines.CallShowReleaseNotesMarkdown(fmt.Sprintf("%s v%s Release Notes", lib.Title,
+					filterVersion(rel.Version)), fmt.Sprintf("## Version %s\n%s", rel.Version, rel.Notes))
+			}
+		})
+}
+
+func newUpdateLibraryMenuItem(f unison.MenuFactory, id *int, sel []*NavigatorNode) unison.MenuItem {
+	libs := filterLibraries(sel, func(rel *library.Release) bool { return rel.HasUpdate() })
 	var title string
 	switch len(libs) {
 	case 0:
@@ -166,9 +192,12 @@ func (n *Navigator) newUpdateLibraryMenuItem(f unison.MenuFactory, id int, sel [
 	default:
 		title = i18n.Text("Update Libraries")
 	}
-	return f.NewItem(unison.PopupMenuTemporaryBaseID+id, title, unison.KeyBinding{}, nil,
+	useID := *id
+	*id++
+	return f.NewItem(unison.PopupMenuTemporaryBaseID+useID, title, unison.KeyBinding{}, nil,
 		func(item unison.MenuItem) {
 			for _, lib := range libs {
+				// TODO: Implement
 				jot.Infof("Initiate update for %s", lib.Title)
 			}
 		})

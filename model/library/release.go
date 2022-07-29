@@ -36,6 +36,11 @@ func (r *Release) HasUpdate() bool {
 	return !r.CheckFailed && r.Version != ""
 }
 
+// HasReleaseNotes returns true if there are release notes available.
+func (r *Release) HasReleaseNotes() bool {
+	return !r.CheckFailed && r.Notes != ""
+}
+
 // LoadReleases loads the list of releases available from a given GitHub repo.
 func LoadReleases(ctx context.Context, client *http.Client, githubAccountName, repoName, currentVersion string, filter func(version, notes string) bool) ([]Release, error) {
 	if githubAccountName == "" || githubAccountName == "*" || repoName == "" {

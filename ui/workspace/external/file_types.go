@@ -20,6 +20,7 @@ import (
 // RegisterFileTypes registers external file types.
 func RegisterFileTypes() {
 	registerPDFFileInfo()
+	registerMarkdownFileInfo()
 	for _, one := range unison.KnownImageFormatExtensions {
 		if unison.EncodedImageFormatForPath(one).CanRead() {
 			registerImageFileInfo(one)
@@ -44,5 +45,14 @@ func registerPDFFileInfo() {
 		SVG:                   res.PDFFileSVG,
 		Load:                  NewPDFDockable,
 		IsPDF:                 true,
+	}.Register()
+}
+
+func registerMarkdownFileInfo() {
+	library.FileInfo{
+		Extension:             ".md",
+		ExtensionsToGroupWith: []string{".md"},
+		SVG:                   res.MarkdownFileSVG,
+		Load:                  NewMarkdownDockable,
 	}.Register()
 }

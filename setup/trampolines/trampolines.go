@@ -20,9 +20,10 @@ import (
 // These functions are here to break what would otherwise be circular dependencies.
 
 var (
-	lock                    sync.RWMutex
-	menuSetup               func(wnd *unison.Window)
-	libraryUpdatesAvailable func()
+	lock                     sync.RWMutex
+	menuSetup                func(wnd *unison.Window)
+	libraryUpdatesAvailable  func()
+	showReleaseNotesMarkdown func(title, content string)
 )
 
 // CallMenuSetup calls the trampoline that sets up the menus for the given window.
@@ -57,5 +58,22 @@ func CallLibraryUpdatesAvailable() {
 func SetLibraryUpdatesAvailable(f func()) {
 	lock.Lock()
 	libraryUpdatesAvailable = f
+	lock.Unlock()
+}
+
+// CallShowReleaseNotesMarkdown calls the trampoline that shows the release notes markdown content.
+func CallShowReleaseNotesMarkdown(title, content string) {
+	lock.RLock()
+	f := showReleaseNotesMarkdown //nolint:ifshort // Can't use short syntax
+	lock.RUnlock()
+	if f != nil {
+		f(title, content)
+	}
+}
+
+// SetShowReleaseNotesMarkdown sets the trampoline that shows the release notes markdown content.
+func SetShowReleaseNotesMarkdown(f func(title, content string)) {
+	lock.Lock()
+	showReleaseNotesMarkdown = f
 	lock.Unlock()
 }

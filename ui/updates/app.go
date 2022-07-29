@@ -23,6 +23,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/res"
+	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/desktop"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -117,9 +118,11 @@ func NotifyOfAppUpdate() {
 			buffer.WriteByte('\n')
 		}
 
+		md := widget.NewMarkdown()
+		md.SetContent(buffer.String(), 0)
+
 		scroll := unison.NewScrollPanel()
-		scroll.SetContent(convertMarkdownToPanel(buffer.String(), 900), unison.UnmodifiedBehavior,
-			unison.UnmodifiedBehavior)
+		scroll.SetContent(md, unison.UnmodifiedBehavior, unison.UnmodifiedBehavior)
 
 		dialog, err := unison.NewDialog(
 			&unison.DrawableSVG{
@@ -147,79 +150,4 @@ func NotifyOfAppUpdate() {
 // AppUpdateResult returns the current results of any outstanding app update check.
 func AppUpdateResult() (title string, releases []library.Release, updating bool) {
 	return appUpdate.Result()
-}
-
-func convertMarkdownToPanel(text string, maxWidth float32) *unison.Panel {
-	hdrFD := unison.DefaultLabelTheme.Font.Descriptor()
-	hdrFD.Weight = unison.BoldFontWeight
-	sizes := []float32{hdrFD.Size * 2, hdrFD.Size * 3 / 2, hdrFD.Size * 5 / 4, hdrFD.Size}
-	otherDecoration := &unison.TextDecoration{Font: unison.DefaultLabelTheme.Font}
-	bulletWidth := maxWidth - (otherDecoration.Font.SimpleWidth("•") + unison.StdHSpacing)
-	panel := unison.NewPanel()
-	panel.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: unison.StdHSpacing,
-		VSpacing: 0,
-	})
-	for _, line := range strings.Split(text, "\n") {
-		found := false
-		for i := range sizes {
-			if strings.HasPrefix(line, strings.Repeat("#", i+1)+" ") {
-				hdrFD.Size = sizes[i]
-				font := hdrFD.Font()
-				block := unison.NewTextWrappedLines(line[i+2:], &unison.TextDecoration{Font: font}, maxWidth)
-				for j, chunk := range block {
-					label := unison.NewLabel()
-					label.Font = font
-					label.Text = chunk.String()
-					if j == len(block)-1 {
-						label.SetBorder(unison.NewEmptyBorder(unison.Insets{Bottom: sizes[i] / 2}))
-					}
-					label.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
-					panel.AddChild(label)
-				}
-				found = true
-				break
-			}
-		}
-		if found {
-			continue
-		}
-		switch {
-		case line == "---":
-			hr := unison.NewSeparator()
-			hr.SetBorder(unison.NewEmptyBorder(unison.NewVerticalInsets(otherDecoration.Font.Size())))
-			hr.SetLayoutData(&unison.FlexLayoutData{
-				HSpan:  2,
-				HAlign: unison.FillAlignment,
-				HGrab:  true,
-			})
-			panel.AddChild(hr)
-		case strings.HasPrefix(line, "- "):
-			block := unison.NewTextWrappedLines(line[2:], otherDecoration, bulletWidth)
-			for j, chunk := range block {
-				label := unison.NewLabel()
-				label.Font = otherDecoration.Font
-				if j == 0 {
-					label.Text = "•"
-				}
-				panel.AddChild(label)
-
-				label = unison.NewLabel()
-				label.Font = otherDecoration.Font
-				label.Text = chunk.String()
-				panel.AddChild(label)
-			}
-		default:
-			block := unison.NewTextWrappedLines(line, otherDecoration, maxWidth)
-			for _, chunk := range block {
-				label := unison.NewLabel()
-				label.Font = otherDecoration.Font
-				label.Text = chunk.String()
-				label.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
-				panel.AddChild(label)
-			}
-		}
-	}
-	return panel
 }
