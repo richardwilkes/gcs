@@ -175,6 +175,7 @@ func (w *Workspace) allowClose() bool {
 func (w *Workspace) willClose() {
 	global := settings.Global()
 	global.LibraryExplorer.OpenRowKeys = w.Navigator.DisclosedPaths()
+	global.LibraryExplorer.DividerPosition = w.TopDock.RootDockLayout().DividerPosition()
 	frame := w.Window.FrameRect()
 	global.WorkspaceFrame = &frame
 	if err := global.Save(); err != nil {
