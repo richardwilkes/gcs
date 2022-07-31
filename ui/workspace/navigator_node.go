@@ -50,7 +50,6 @@ type NavigatorNode struct {
 	library                  *library.Library
 	parent                   *NavigatorNode
 	children                 []*NavigatorNode
-	libraryVersionCache      string
 	updateCellReleaseVersion string
 	updateCellCache          *updatableLibraryCell
 }
@@ -58,11 +57,10 @@ type NavigatorNode struct {
 // NewLibraryNode creates a new library node.
 func NewLibraryNode(nav *Navigator, lib *library.Library) *NavigatorNode {
 	n := &NavigatorNode{
-		nodeType:            libraryNode,
-		id:                  uuid.New(),
-		nav:                 nav,
-		library:             lib,
-		libraryVersionCache: filterVersion(lib.VersionOnDisk()),
+		nodeType: libraryNode,
+		id:       uuid.New(),
+		nav:      nav,
+		library:  lib,
 	}
 	n.Refresh()
 	return n
@@ -135,10 +133,10 @@ func (n *NavigatorNode) CellDataForSort(col int) string {
 		return ""
 	}
 	if n.nodeType == libraryNode {
-		if n.library.IsUser() {
+		if n.library.IsUser() || n.library.CachedVersion == "" {
 			return n.library.Title
 		}
-		return fmt.Sprintf("%s v%s", n.library.Title, n.libraryVersionCache)
+		return fmt.Sprintf("%s v%s", n.library.Title, filterVersion(n.library.CachedVersion))
 	}
 	return xfs.TrimExtension(path.Base(n.path))
 }
@@ -178,7 +176,7 @@ func (n *NavigatorNode) ColumnCell(_, col int, foreground, _ unison.Ink, _, _, _
 	}
 	if n.nodeType == libraryNode && !n.library.IsUser() {
 		if rel := n.library.AvailableUpdate(); rel != nil && rel.HasUpdate() {
-			if relVersion := filterVersion(rel.Version); n.libraryVersionCache != relVersion {
+			if relVersion := filterVersion(rel.Version); filterVersion(n.library.CachedVersion) != relVersion {
 				if n.updateCellReleaseVersion != relVersion || n.updateCellCache == nil {
 					n.updateCellReleaseVersion = relVersion
 					n.updateCellCache = newUpdatableLibraryCell(n.library, label, rel)

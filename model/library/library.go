@@ -42,7 +42,7 @@ type Library struct {
 	GitHubAccountName string `json:"-"`
 	RepoName          string `json:"-"`
 	PathOnDisk        string `json:"path,omitempty"`
-	LastSeen          string `json:"last_seen,omitempty"`
+	CachedVersion     string `json:"-"`
 	monitor           *monitor
 	lock              sync.RWMutex
 	upgrade           *Release
@@ -56,6 +56,7 @@ func NewLibrary(title, githubAccountName, repoName, pathOnDisk string) *Library 
 		RepoName:          repoName,
 		PathOnDisk:        pathOnDisk,
 	}
+	lib.CachedVersion = lib.VersionOnDisk()
 	lib.monitor = newMonitor(lib)
 	return lib
 }
@@ -94,7 +95,7 @@ func (l *Library) SetPath(newPath string) error {
 	if l.PathOnDisk != p {
 		tokens := l.monitor.stop()
 		l.PathOnDisk = p
-		l.LastSeen = l.VersionOnDisk()
+		l.CachedVersion = l.VersionOnDisk()
 		for _, token := range tokens {
 			l.monitor.startWatch(token, true)
 		}
@@ -153,6 +154,7 @@ func (l *Library) CheckForAvailableUpgrade(ctx context.Context, client *http.Cli
 		}
 	}
 	l.lock.Lock()
+	l.CachedVersion = l.VersionOnDisk()
 	updated := l.upgrade == nil || *l.upgrade == *upgrade
 	l.upgrade = upgrade
 	l.lock.Unlock()
@@ -191,6 +193,9 @@ func (l *Library) Less(other *Library) bool {
 
 // VersionOnDisk returns the version of the data on disk, if it can be determined.
 func (l *Library) VersionOnDisk() string {
+	if l.IsUser() {
+		return ""
+	}
 	data, err := os.ReadFile(filepath.Join(l.PathOnDisk, releaseFile))
 	if err != nil {
 		if !os.IsNotExist(err) {
@@ -276,6 +281,7 @@ func (l *Library) Download(ctx context.Context, client *http.Client, release Rel
 	if err = os.WriteFile(f, []byte(release.Version+"\n"), 0o640); err != nil {
 		return errs.NewWithCause("unable to create "+f, err)
 	}
+	l.CachedVersion = l.VersionOnDisk()
 	success = true
 	return nil
 }

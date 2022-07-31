@@ -99,7 +99,7 @@ func newNavigator() *Navigator {
 	n.AddChild(n.scroll)
 
 	n.table.DoubleClickCallback = n.handleSelectionDoubleClick
-	trampolines.SetLibraryUpdatesAvailable(func() { n.table.EventuallySizeColumnsToFit(true) })
+	trampolines.SetLibraryUpdatesAvailable(n.eventuallyReload)
 	n.table.MouseDownCallback = n.mouseDown
 	return n
 }
