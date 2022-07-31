@@ -17,6 +17,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/library"
+	"github.com/richardwilkes/gcs/v5/res"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/gcs/v5/ui/workspace"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -81,7 +82,7 @@ func newMarkdownDockable(filePath, title, content string) (unison.Dockable, erro
 
 	d.markdown = widget.NewMarkdown()
 	d.markdown.MouseWheelCallback = d.mouseWheel
-	if d.BackingFilePath() != "" {
+	if !strings.HasPrefix(d.path, markdownContentOnlyPrefix) {
 		data, err := ioutil.ReadFile(d.BackingFilePath())
 		if err != nil {
 			return nil, err
@@ -178,6 +179,12 @@ func (d *MarkdownDockable) keyDown(keyCode unison.KeyCode, _ unison.Modifiers, _
 
 // TitleIcon implements workspace.FileBackedDockable
 func (d *MarkdownDockable) TitleIcon(suggestedSize unison.Size) unison.Drawable {
+	if strings.HasPrefix(d.path, markdownContentOnlyPrefix) {
+		return &unison.DrawableSVG{
+			SVG:  res.MarkdownFileSVG,
+			Size: suggestedSize,
+		}
+	}
 	return &unison.DrawableSVG{
 		SVG:  library.FileInfoFor(d.BackingFilePath()).SVG,
 		Size: suggestedSize,
@@ -194,14 +201,14 @@ func (d *MarkdownDockable) Title() string {
 
 // Tooltip implements workspace.FileBackedDockable
 func (d *MarkdownDockable) Tooltip() string {
+	if strings.HasPrefix(d.path, markdownContentOnlyPrefix) {
+		return ""
+	}
 	return d.BackingFilePath()
 }
 
 // BackingFilePath implements workspace.FileBackedDockable
 func (d *MarkdownDockable) BackingFilePath() string {
-	if strings.HasPrefix(d.path, markdownContentOnlyPrefix) {
-		return ""
-	}
 	return d.path
 }
 

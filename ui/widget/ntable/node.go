@@ -173,10 +173,12 @@ func (n *Node[T]) Data() T {
 // Match looks for the text in the node and return true if it is present. Note that calls to this method should always
 // pass in text that has already been run through strings.ToLower().
 func (n *Node[T]) Match(text string) bool {
-	count := len(n.colMap)
-	for i := 0; i < count; i++ {
-		if strings.Contains(strings.ToLower(n.CellDataForSort(i)), text) {
-			return true
+	if text != "" {
+		count := len(n.colMap)
+		for i := 0; i < count; i++ {
+			if strings.Contains(strings.ToLower(n.CellDataForSort(i)), text) {
+				return true
+			}
 		}
 	}
 	return false

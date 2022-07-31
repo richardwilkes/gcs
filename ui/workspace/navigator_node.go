@@ -151,6 +151,15 @@ func filterVersion(version string) string {
 	return version
 }
 
+// Match looks for the text in the node and return true if it is present. Note that calls to this method should always
+// pass in text that has already been run through strings.ToLower().
+func (n *NavigatorNode) Match(text string) bool {
+	if text == "" {
+		return false
+	}
+	return strings.Contains(strings.ToLower(n.CellDataForSort(0)), text)
+}
+
 // ColumnCell implements unison.TableRowData.
 func (n *NavigatorNode) ColumnCell(_, col int, foreground, _ unison.Ink, _, _, _ bool) unison.Paneler {
 	if col != 0 {
@@ -199,7 +208,7 @@ func (n *NavigatorNode) IsOpen() bool {
 func (n *NavigatorNode) SetOpen(open bool) {
 	if open != n.open && n.nodeType != fileNode {
 		n.open = open
-		n.nav.adjustTableSize()
+		n.nav.adjustTableSizeEventually()
 	}
 }
 

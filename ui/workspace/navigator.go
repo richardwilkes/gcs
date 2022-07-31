@@ -14,6 +14,7 @@ package workspace
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -25,7 +26,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/toolbox/desktop"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xmath/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/rjeczalik/notify"
@@ -42,11 +42,23 @@ type FileBackedDockable interface {
 // Navigator holds the workspace navigation panel.
 type Navigator struct {
 	unison.Panel
-	toolbar    *unison.Panel
-	scroll     *unison.ScrollPanel
-	table      *unison.Table[*NavigatorNode]
-	tokens     []*library.MonitorToken
-	needReload bool
+	toolbar                   *unison.Panel
+	hierarchyButton           *unison.Button
+	backButton                *unison.Button
+	forwardButton             *unison.Button
+	searchField               *unison.Field
+	matchesLabel              *unison.Label
+	removeLibraryButton       *unison.Button
+	downloadLibraryButton     *unison.Button
+	libraryReleaseNotesButton *unison.Button
+	configLibraryButton       *unison.Button
+	scroll                    *unison.ScrollPanel
+	table                     *unison.Table[*NavigatorNode]
+	tokens                    []*library.MonitorToken
+	searchResult              []*NavigatorNode
+	searchIndex               int
+	needReload                bool
+	adjustTableSizePending    bool
 }
 
 // RegisterFileTypes registers special navigator file types.
@@ -71,37 +83,7 @@ func newNavigator() *Navigator {
 		table:   unison.NewTable[*NavigatorNode](&unison.SimpleTableModel[*NavigatorNode]{}),
 	}
 	n.Self = n
-
-	libsButton := unison.NewSVGButton(res.GearsSVG)
-	libsButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Libraries Configuration"))
-	libsButton.ClickCallback = func() {
-		// TODO: Implement libraries configuration
-		fmt.Println("Libraries Configuration")
-		unison.WarningDialogWithMessage("Unimplemented", "Coming soon…")
-	}
-
-	scaleTitle := i18n.Text("Scale")
-	scaleField := widget.NewPercentageField(nil, "", scaleTitle,
-		func() int { return settings.Global().General.NavigatorUIScale },
-		func(v int) {
-			settings.Global().General.NavigatorUIScale = v
-			n.applyScale()
-		}, gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, false, false)
-	scaleField.SetMarksModified(false)
-	scaleField.Tooltip = unison.NewTooltipWithText(scaleTitle)
-
-	n.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
-		false), unison.NewEmptyBorder(unison.StdInsets())))
-	n.toolbar.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		HGrab:  true,
-	})
-	n.toolbar.AddChild(libsButton)
-	n.toolbar.AddChild(scaleField)
-	n.toolbar.SetLayout(&unison.FlexLayout{
-		Columns:  len(n.toolbar.Children()),
-		HSpacing: unison.StdHSpacing,
-	})
+	n.setupToolBar()
 
 	n.table.ColumnSizes = make([]unison.ColumnSize, 1)
 	globalSettings := settings.Global()
@@ -137,7 +119,159 @@ func newNavigator() *Navigator {
 	n.table.DoubleClickCallback = n.handleSelectionDoubleClick
 	trampolines.SetLibraryUpdatesAvailable(n.eventuallyReload)
 	n.table.MouseDownCallback = n.mouseDown
+	n.table.SelectionChangedCallback = n.selectionChanged
 	return n
+}
+
+func (n *Navigator) setupToolBar() {
+	n.hierarchyButton = unison.NewSVGButton(res.HierarchySVG)
+	n.hierarchyButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Opens/closes all hierarchical rows"))
+	n.hierarchyButton.ClickCallback = n.toggleHierarchy
+
+	addButton := unison.NewSVGButton(res.CircledAddSVG)
+	addButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Add Library"))
+	addButton.ClickCallback = func() {
+		// TODO: Implement
+		fmt.Println("add library...")
+	}
+
+	n.removeLibraryButton = unison.NewSVGButton(res.TrashSVG)
+	n.removeLibraryButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Remove Library"))
+	n.removeLibraryButton.ClickCallback = func() {
+		if n.table.SelectionCount() == 1 {
+			if row := n.table.SelectedRows(true)[0]; row.nodeType == libraryNode && !row.library.IsMaster() &&
+				!row.library.IsUser() {
+				// TODO: Implement
+				fmt.Println("remove library")
+			}
+		}
+	}
+
+	n.downloadLibraryButton = unison.NewSVGButton(res.DownloadSVG)
+	n.downloadLibraryButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Update Library"))
+	n.downloadLibraryButton.ClickCallback = func() {
+		if n.table.SelectionCount() == 1 {
+			if row := n.table.SelectedRows(true)[0]; row.nodeType == libraryNode {
+				if rel := row.library.AvailableUpdate(); rel != nil && rel.HasUpdate() {
+					initiateLibraryUpdate(row.library, *rel)
+				}
+			}
+		}
+	}
+
+	n.libraryReleaseNotesButton = unison.NewSVGButton(res.ReleaseNotesSVG)
+	n.libraryReleaseNotesButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Show Release Notes"))
+	n.libraryReleaseNotesButton.ClickCallback = func() {
+		if n.table.SelectionCount() == 1 {
+			if row := n.table.SelectedRows(true)[0]; row.nodeType == libraryNode {
+				if rel := row.library.AvailableUpdate(); rel != nil && rel.HasUpdate() {
+					trampolines.CallShowReleaseNotesMarkdown(fmt.Sprintf("%s v%s Release Notes", row.library.Title,
+						filterVersion(rel.Version)), fmt.Sprintf("## Version %s\n%s", rel.Version, rel.Notes))
+				}
+			}
+		}
+	}
+
+	n.configLibraryButton = unison.NewSVGButton(res.GearsSVG)
+	n.configLibraryButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Configure Library"))
+	n.configLibraryButton.ClickCallback = func() {
+		if n.table.SelectionCount() == 1 {
+			if row := n.table.SelectedRows(true)[0]; row.nodeType == libraryNode {
+				// TODO: Implement
+				fmt.Println("configure library")
+			}
+		}
+	}
+
+	scaleTitle := i18n.Text("Scale")
+	scaleField := widget.NewPercentageField(nil, "", scaleTitle,
+		func() int { return settings.Global().General.NavigatorUIScale },
+		func(v int) {
+			settings.Global().General.NavigatorUIScale = v
+			n.applyScale()
+		}, gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, false, false)
+	scaleField.SetMarksModified(false)
+	scaleField.Tooltip = unison.NewTooltipWithText(scaleTitle)
+
+	first := unison.NewPanel()
+	first.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		HGrab:  true,
+	})
+	first.AddChild(n.hierarchyButton)
+	first.AddChild(addButton)
+	first.AddChild(n.removeLibraryButton)
+	first.AddChild(n.downloadLibraryButton)
+	first.AddChild(n.libraryReleaseNotesButton)
+	first.AddChild(n.configLibraryButton)
+	first.AddChild(scaleField)
+	first.SetLayout(&unison.FlexLayout{
+		Columns:  len(first.Children()),
+		HSpacing: unison.StdHSpacing,
+	})
+
+	n.backButton = unison.NewSVGButton(res.BackSVG)
+	n.backButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Previous Match"))
+	n.backButton.ClickCallback = n.previousMatch
+	n.backButton.SetEnabled(false)
+
+	n.forwardButton = unison.NewSVGButton(res.ForwardSVG)
+	n.forwardButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Next Match"))
+	n.forwardButton.ClickCallback = n.nextMatch
+	n.forwardButton.SetEnabled(false)
+
+	n.searchField = unison.NewField()
+	search := i18n.Text("Search")
+	n.searchField.Watermark = search
+	n.searchField.Tooltip = unison.NewTooltipWithText(search)
+	n.searchField.ModifiedCallback = n.searchModified
+	n.searchField.KeyDownCallback = func(keyCode unison.KeyCode, mod unison.Modifiers, repeat bool) bool {
+		if keyCode == unison.KeyReturn || keyCode == unison.KeyNumPadEnter {
+			if mod.ShiftDown() {
+				n.previousMatch()
+			} else {
+				n.nextMatch()
+			}
+			return true
+		}
+		return n.searchField.DefaultKeyDown(keyCode, mod, repeat)
+	}
+	n.searchField.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		VAlign: unison.MiddleAlignment,
+		HGrab:  true,
+	})
+
+	n.matchesLabel = unison.NewLabel()
+	n.matchesLabel.Text = "-"
+	n.matchesLabel.Tooltip = unison.NewTooltipWithText(i18n.Text("Number of matches found"))
+
+	second := unison.NewPanel()
+	second.SetLayout(&unison.FlexLayout{
+		Columns:  4,
+		HSpacing: unison.StdHSpacing,
+	})
+	second.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		HGrab:  true,
+	})
+	second.AddChild(n.backButton)
+	second.AddChild(n.forwardButton)
+	second.AddChild(n.searchField)
+	second.AddChild(n.matchesLabel)
+
+	n.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
+		false), unison.NewEmptyBorder(unison.StdInsets())))
+	n.toolbar.SetLayout(&unison.FlexLayout{
+		Columns:  1,
+		VSpacing: unison.StdVSpacing,
+	})
+	n.toolbar.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		HGrab:  true,
+	})
+	n.toolbar.AddChild(first)
+	n.toolbar.AddChild(second)
 }
 
 // InitialFocus causes the navigator to focus its initial component.
@@ -158,12 +292,14 @@ func (n *Navigator) mouseDown(where unison.Point, button, clickCount int, mod un
 			cm := f.NewMenu(unison.PopupMenuTemporaryBaseID|unison.ContextMenuIDFlag, "", nil)
 			id := 1
 			cm.InsertItem(-1, newShowNodeOnDiskMenuItem(f, &id, sel))
-			cm.InsertItem(-1, newLibraryReleaseNotesMenuItem(f, &id, sel))
-			cm.InsertItem(-1, newUpdateLibraryMenuItem(f, &id, sel))
+			cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.libraryReleaseNotesButton))
+			cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.configLibraryButton))
+			cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.downloadLibraryButton))
+			cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.removeLibraryButton))
 			if cm.Count() > 0 {
 				n.FlushDrawing()
 				cm.Popup(geom.Rect[float32]{
-					Point: n.PointToRoot(where),
+					Point: n.table.PointToRoot(where),
 					Size: geom.Size[float32]{
 						Width:  1,
 						Height: 1,
@@ -175,6 +311,17 @@ func (n *Navigator) mouseDown(where unison.Point, button, clickCount int, mod un
 		}
 	}
 	return stop
+}
+
+func newContextMenuItemFromButton(f unison.MenuFactory, id *int, button *unison.Button) unison.MenuItem {
+	if button.Enabled() {
+		useID := *id
+		*id++
+		return f.NewItem(unison.PopupMenuTemporaryBaseID+useID,
+			button.Tooltip.Children()[0].Self.(*unison.Label).Text, unison.KeyBinding{}, nil,
+			func(item unison.MenuItem) { button.ClickCallback() })
+	}
+	return nil
 }
 
 func newShowNodeOnDiskMenuItem(f unison.MenuFactory, id *int, sel []*NavigatorNode) unison.MenuItem {
@@ -194,57 +341,6 @@ func newShowNodeOnDiskMenuItem(f unison.MenuFactory, id *int, sel []*NavigatorNo
 				if err := desktop.Open(p); err != nil {
 					unison.ErrorDialogWithError(i18n.Text("Unable to show location on disk"), err)
 				}
-			}
-		})
-}
-
-func filterLibraries(sel []*NavigatorNode, f func(*library.Release) bool) []*library.Library {
-	var libs []*library.Library
-	for _, node := range sel {
-		if node.nodeType == libraryNode {
-			if rel := node.library.AvailableUpdate(); rel != nil && f(rel) {
-				libs = append(libs, node.library)
-			}
-		}
-	}
-	return libs
-}
-
-func newLibraryReleaseNotesMenuItem(f unison.MenuFactory, id *int, sel []*NavigatorNode) unison.MenuItem {
-	libs := filterLibraries(sel, func(rel *library.Release) bool { return rel.HasReleaseNotes() })
-	if len(libs) == 0 {
-		return nil
-	}
-	useID := *id
-	*id++
-	return f.NewItem(unison.PopupMenuTemporaryBaseID+useID, i18n.Text("Show Library Release Notes"),
-		unison.KeyBinding{}, nil, func(item unison.MenuItem) {
-			for _, lib := range libs {
-				rel := lib.AvailableUpdate()
-				trampolines.CallShowReleaseNotesMarkdown(fmt.Sprintf("%s v%s Release Notes", lib.Title,
-					filterVersion(rel.Version)), fmt.Sprintf("## Version %s\n%s", rel.Version, rel.Notes))
-			}
-		})
-}
-
-func newUpdateLibraryMenuItem(f unison.MenuFactory, id *int, sel []*NavigatorNode) unison.MenuItem {
-	libs := filterLibraries(sel, func(rel *library.Release) bool { return rel.HasUpdate() })
-	var title string
-	switch len(libs) {
-	case 0:
-		return nil
-	case 1:
-		title = i18n.Text("Update Library")
-	default:
-		title = i18n.Text("Update Libraries")
-	}
-	useID := *id
-	*id++
-	return f.NewItem(unison.PopupMenuTemporaryBaseID+useID, title, unison.KeyBinding{}, nil,
-		func(item unison.MenuItem) {
-			for _, lib := range libs {
-				// TODO: Implement
-				jot.Infof("Initiate update for %s", lib.Title)
 			}
 		})
 }
@@ -274,7 +370,15 @@ func (n *Navigator) reload() {
 	n.ApplySelectedPaths(selection)
 }
 
+func (n *Navigator) adjustTableSizeEventually() {
+	if !n.adjustTableSizePending {
+		n.adjustTableSizePending = true
+		unison.InvokeTaskAfter(n.adjustTableSize, time.Millisecond)
+	}
+}
+
 func (n *Navigator) adjustTableSize() {
+	n.adjustTableSizePending = false
 	n.table.SyncToModel()
 	n.table.SizeColumnsToFit(true)
 }
@@ -302,6 +406,25 @@ func (n *Navigator) Modified() bool {
 	return false
 }
 
+func (n *Navigator) selectionChanged() {
+	removeEnabled := false
+	downloadEnabled := false
+	configEnabled := false
+	if n.table.SelectionCount() == 1 {
+		if row := n.table.SelectedRows(true)[0]; row.nodeType == libraryNode {
+			configEnabled = true
+			removeEnabled = !row.library.IsMaster() && !row.library.IsUser()
+			if rel := row.library.AvailableUpdate(); rel != nil && rel.HasUpdate() {
+				downloadEnabled = true
+			}
+		}
+	}
+	n.removeLibraryButton.SetEnabled(removeEnabled)
+	n.downloadLibraryButton.SetEnabled(downloadEnabled)
+	n.libraryReleaseNotesButton.SetEnabled(downloadEnabled)
+	n.configLibraryButton.SetEnabled(configEnabled)
+}
+
 func (n *Navigator) handleSelectionDoubleClick() {
 	window := n.Window()
 	selection := n.table.SelectedRows(false)
@@ -314,6 +437,82 @@ func (n *Navigator) handleSelectionDoubleClick() {
 	for _, row := range selection {
 		row.Open(window)
 	}
+}
+
+func (n *Navigator) toggleHierarchy() {
+	first := true
+	open := false
+	for _, row := range n.table.RootRows() {
+		if row.CanHaveChildren() {
+			if first {
+				first = false
+				open = !row.IsOpen()
+			}
+			setRowOpen(row, open)
+		}
+	}
+	n.table.SyncToModel()
+}
+
+func setRowOpen(row *NavigatorNode, open bool) {
+	row.SetOpen(open)
+	for _, child := range row.Children() {
+		if child.CanHaveChildren() {
+			setRowOpen(child, open)
+		}
+	}
+}
+
+func (n *Navigator) searchModified() {
+	n.searchIndex = 0
+	n.searchResult = nil
+	text := strings.ToLower(n.searchField.Text())
+	for _, row := range n.table.RootRows() {
+		n.search(text, row)
+	}
+	n.adjustForMatch()
+}
+
+func (n *Navigator) search(text string, row *NavigatorNode) {
+	if row.Match(text) {
+		n.searchResult = append(n.searchResult, row)
+	}
+	if row.CanHaveChildren() {
+		for _, child := range row.Children() {
+			n.search(text, child)
+		}
+	}
+}
+
+func (n *Navigator) previousMatch() {
+	if n.searchIndex > 0 {
+		n.searchIndex--
+		n.adjustForMatch()
+	}
+}
+
+func (n *Navigator) nextMatch() {
+	if n.searchIndex < len(n.searchResult)-1 {
+		n.searchIndex++
+		n.adjustForMatch()
+	}
+}
+
+func (n *Navigator) adjustForMatch() {
+	n.backButton.SetEnabled(n.searchIndex != 0)
+	n.forwardButton.SetEnabled(len(n.searchResult) != 0 && n.searchIndex != len(n.searchResult)-1)
+	if len(n.searchResult) != 0 {
+		n.matchesLabel.Text = fmt.Sprintf(i18n.Text("%d of %d"), n.searchIndex+1, len(n.searchResult))
+		row := n.searchResult[n.searchIndex]
+		n.table.DiscloseRow(row, false)
+		n.table.ClearSelection()
+		rowIndex := n.table.RowToIndex(row)
+		n.table.SelectByIndex(rowIndex)
+		n.table.ScrollRowIntoView(rowIndex)
+	} else {
+		n.matchesLabel.Text = "-"
+	}
+	n.matchesLabel.Parent().MarkForLayoutAndRedraw()
 }
 
 // DisclosedPaths returns a list of paths that are currently disclosed.
