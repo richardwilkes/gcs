@@ -42,15 +42,17 @@ const (
 
 // NavigatorNode holds a library, directory or file.
 type NavigatorNode struct {
-	nodeType            navigatorNodeType
-	open                bool
-	id                  uuid.UUID
-	path                string
-	nav                 *Navigator
-	library             *library.Library
-	parent              *NavigatorNode
-	children            []*NavigatorNode
-	libraryVersionCache string
+	nodeType                 navigatorNodeType
+	open                     bool
+	id                       uuid.UUID
+	path                     string
+	nav                      *Navigator
+	library                  *library.Library
+	parent                   *NavigatorNode
+	children                 []*NavigatorNode
+	libraryVersionCache      string
+	updateCellReleaseVersion string
+	updateCellCache          *updatableLibraryCell
 }
 
 // NewLibraryNode creates a new library node.
@@ -136,10 +138,6 @@ func (n *NavigatorNode) CellDataForSort(col int) string {
 		if n.library.IsUser() {
 			return n.library.Title
 		}
-		if rel := n.library.AvailableUpdate(); rel != nil && rel.HasUpdate() {
-			return fmt.Sprintf("%s v%s (v%s available)", n.library.Title, n.libraryVersionCache,
-				filterVersion(rel.Version))
-		}
 		return fmt.Sprintf("%s v%s", n.library.Title, n.libraryVersionCache)
 	}
 	return xfs.TrimExtension(path.Base(n.path))
@@ -172,11 +170,24 @@ func (n *NavigatorNode) ColumnCell(_, col int, foreground, _ unison.Ink, _, _, _
 	size := unison.LabelFont.Size() + 5
 	fi := library.FileInfoFor(ext)
 	label := unison.NewLabel()
-	label.LabelTheme.OnBackgroundInk = foreground
+	label.OnBackgroundInk = foreground
 	label.Text = title
 	label.Drawable = &unison.DrawableSVG{
 		SVG:  fi.SVG,
 		Size: unison.NewSize(size, size),
+	}
+	if n.nodeType == libraryNode && !n.library.IsUser() {
+		if rel := n.library.AvailableUpdate(); rel != nil && rel.HasUpdate() {
+			if relVersion := filterVersion(rel.Version); n.libraryVersionCache != relVersion {
+				if n.updateCellReleaseVersion != relVersion || n.updateCellCache == nil {
+					n.updateCellReleaseVersion = relVersion
+					n.updateCellCache = newUpdatableLibraryCell(n.library, label, rel)
+				} else {
+					n.updateCellCache.updateForeground(foreground)
+				}
+				return n.updateCellCache
+			}
+		}
 	}
 	return label
 }

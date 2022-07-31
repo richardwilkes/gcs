@@ -15,7 +15,9 @@ import (
 	"archive/zip"
 	"bytes"
 	"context"
+	"errors"
 	"io"
+	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -202,10 +204,38 @@ func (l *Library) VersionOnDisk() string {
 // Download the release onto the local disk.
 func (l *Library) Download(ctx context.Context, client *http.Client, release Release) error {
 	p := l.Path()
-	if err := os.MkdirAll(p, 0o750); err != nil {
+
+	tmpDir, err := os.MkdirTemp(filepath.Dir(p), filepath.Base(p)+"_*")
+	if err != nil {
+		return errs.NewWithCause("unable to create temporary directory", err)
+	}
+	if err = os.Remove(tmpDir); err != nil {
+		return errs.NewWithCause("unable to remove temporary directory:\n"+tmpDir, err)
+	}
+	if err = os.Rename(p, tmpDir); err != nil {
+		return errs.NewWithCause("unable to move old directory aside:\n"+p+"\n"+tmpDir, err)
+	}
+	success := false
+	defer func() {
+		if success {
+			if err = os.RemoveAll(tmpDir); err != nil {
+				jot.Error(errs.NewWithCause("unable to remove the old data:\n"+tmpDir, err))
+			}
+		} else {
+			if err = os.RemoveAll(p); err != nil && !errors.Is(err, fs.ErrNotExist) {
+				jot.Error(errs.NewWithCause("unable to remove the failed download data:\n"+p, err))
+			}
+			if err = os.Rename(tmpDir, p); err != nil {
+				jot.Error(errs.NewWithCause("unable to move the old directory back into place:\n"+tmpDir+"\n"+p, err))
+			}
+		}
+	}()
+
+	if err = os.MkdirAll(p, 0o750); err != nil {
 		return errs.NewWithCause("unable to create "+p, err)
 	}
-	data, err := l.downloadRelease(ctx, client, release)
+	var data []byte
+	data, err = l.downloadRelease(ctx, client, release)
 	if err != nil {
 		return err
 	}
@@ -246,6 +276,7 @@ func (l *Library) Download(ctx context.Context, client *http.Client, release Rel
 	if err = os.WriteFile(f, []byte(release.Version+"\n"), 0o640); err != nil {
 		return errs.NewWithCause("unable to create "+f, err)
 	}
+	success = true
 	return nil
 }
 

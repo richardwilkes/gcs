@@ -204,6 +204,10 @@ func newUpdateLibraryMenuItem(f unison.MenuFactory, id *int, sel []*NavigatorNod
 }
 
 func (n *Navigator) watchCallback(_ *library.Library, _ string, _ notify.Event) {
+	n.eventuallyReload()
+}
+
+func (n *Navigator) eventuallyReload() {
 	if !n.needReload {
 		n.needReload = true
 		unison.InvokeTaskAfter(n.reload, time.Millisecond*100)
