@@ -57,6 +57,11 @@ func newUpdatableLibraryCell(lib *library.Library, title *unison.Label, rel *lib
 }
 
 func (c *updatableLibraryCell) initiateUpdate() {
+	if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Update %s to v%s?"), c.library.Title, filterVersion(c.release.Version)),
+		i18n.Text("Existing content for this library will be removed and replaced.\nContent in other libraries will not be modified")) != unison.ModalResponseOK {
+		return
+	}
+
 	if w := FromWindowOrAny(c.Window()); w != nil {
 		var list []unison.TabCloser
 		w.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {

@@ -53,7 +53,6 @@ const (
 	ApplyTemplateItemID
 	OpenOnePageReferenceItemID
 	OpenEachPageReferenceItemID
-	LibraryMenuID
 	SettingsMenuID
 	PerSheetSettingsItemID
 	PerSheetAttributeSettingsItemID
@@ -73,7 +72,6 @@ const (
 	ReleaseNotesItemID
 	WebSiteItemID
 	MailingListItemID
-	ChangeLibraryLocationsItemID
 
 	FirstNonContainerMarker // Keep this block grouped together
 	NewCarriedEquipmentItemID

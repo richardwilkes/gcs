@@ -27,22 +27,23 @@ import (
 
 // Default, min & max values for the general numeric settings
 var (
-	InitialPointsDef       = fxp.From(150)
-	InitialPointsMin       fxp.Int
-	InitialPointsMax       = fxp.From(9999999)
-	TooltipDelayDef        = fxp.FromStringForced("0.75")
-	TooltipDelayMin        fxp.Int
-	TooltipDelayMax        = fxp.Thirty
-	TooltipDismissalDef    = fxp.From(60)
-	TooltipDismissalMin    = fxp.One
-	TooltipDismissalMax    = fxp.From(3600)
-	ImageResolutionDef     = 200
-	ImageResolutionMin     = 50
-	ImageResolutionMax     = 400
-	InitialUIScaleMin      = 50
-	InitialUIScaleMax      = 400
-	InitialListUIScaleDef  = 100
-	InitialSheetUIScaleDef = 133
+	InitialPointsDef           = fxp.From(150)
+	InitialPointsMin           fxp.Int
+	InitialPointsMax           = fxp.From(9999999)
+	TooltipDelayDef            = fxp.FromStringForced("0.75")
+	TooltipDelayMin            fxp.Int
+	TooltipDelayMax            = fxp.Thirty
+	TooltipDismissalDef        = fxp.From(60)
+	TooltipDismissalMin        = fxp.One
+	TooltipDismissalMax        = fxp.From(3600)
+	ImageResolutionDef         = 200
+	ImageResolutionMin         = 50
+	ImageResolutionMax         = 400
+	InitialUIScaleMin          = 50
+	InitialUIScaleMax          = 400
+	InitialNavigatorUIScaleDef = 100
+	InitialListUIScaleDef      = 100
+	InitialSheetUIScaleDef     = 133
 )
 
 // General holds settings for a sheet.
@@ -53,6 +54,7 @@ type General struct {
 	InitialPoints               fxp.Int `json:"initial_points"`
 	TooltipDelay                fxp.Int `json:"tooltip_delay"`
 	TooltipDismissal            fxp.Int `json:"tooltip_dismissal"`
+	NavigatorUIScale            int     `json:"navigator_scale"`
 	InitialListUIScale          int     `json:"initial_list_scale"`
 	InitialSheetUIScale         int     `json:"initial_sheet_scale"`
 	ImageResolution             int     `json:"image_resolution"`
@@ -75,6 +77,7 @@ func NewGeneral() *General {
 		InitialPoints:               InitialPointsDef,
 		TooltipDelay:                TooltipDelayDef,
 		TooltipDismissal:            TooltipDismissalDef,
+		NavigatorUIScale:            InitialNavigatorUIScaleDef,
 		InitialListUIScale:          InitialListUIScaleDef,
 		InitialSheetUIScale:         InitialSheetUIScaleDef,
 		ImageResolution:             ImageResolutionDef,
@@ -132,6 +135,7 @@ func (s *General) EnsureValidity() {
 	s.TooltipDelay = fxp.ResetIfOutOfRange(s.TooltipDelay, TooltipDelayMin, TooltipDelayMax, TooltipDelayDef)
 	s.TooltipDismissal = fxp.ResetIfOutOfRange(s.TooltipDismissal, TooltipDismissalMin, TooltipDismissalMax, TooltipDismissalDef)
 	s.ImageResolution = fxp.ResetIfOutOfRangeInt(s.ImageResolution, ImageResolutionMin, ImageResolutionMax, ImageResolutionDef)
+	s.NavigatorUIScale = fxp.ResetIfOutOfRangeInt(s.NavigatorUIScale, InitialUIScaleMin, InitialUIScaleMax, InitialNavigatorUIScaleDef)
 	s.InitialListUIScale = fxp.ResetIfOutOfRangeInt(s.InitialListUIScale, InitialUIScaleMin, InitialUIScaleMax, InitialListUIScaleDef)
 	s.InitialSheetUIScale = fxp.ResetIfOutOfRangeInt(s.InitialSheetUIScale, InitialUIScaleMin, InitialUIScaleMax, InitialSheetUIScaleDef)
 }

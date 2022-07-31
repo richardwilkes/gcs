@@ -14,10 +14,8 @@ package menus
 import (
 	"sync"
 
-	"github.com/richardwilkes/gcs/v5/constants"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/ui/about"
-	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
 
@@ -29,7 +27,6 @@ func Setup(wnd *unison.Window) {
 		registerFileMenuActions()
 		registerEditMenuActions()
 		registerItemMenuActions()
-		registerLibraryMenuActions()
 		registerSettingsMenuActions()
 		registerHelpMenuActions()
 	})
@@ -44,15 +41,9 @@ func Setup(wnd *unison.Window) {
 		setupEditMenu(bar)
 		f := bar.Factory()
 		i := insertMenu(bar, bar.Item(unison.EditMenuID).Index()+1, createItemMenu(f))
-		i = insertMenu(bar, i, f.NewMenu(constants.LibraryMenuID, i18n.Text("Library"), updateLibraryMenu))
 		insertMenu(bar, i, createSettingsMenu(f))
 		setupHelpMenu(bar)
 	})
-}
-
-// TODO: Implement each call site
-func unimplemented(a *unison.Action, _ any) {
-	unison.ErrorDialogWithMessage("Unimplemented Action:", a.Title)
 }
 
 func insertSeparator(parent unison.Menu, atIndex int) int {

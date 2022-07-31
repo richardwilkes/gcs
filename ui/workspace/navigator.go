@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	gsettings "github.com/richardwilkes/gcs/v5/model/gurps/settings"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/res"
@@ -41,6 +42,7 @@ type FileBackedDockable interface {
 // Navigator holds the workspace navigation panel.
 type Navigator struct {
 	unison.Panel
+	toolbar    *unison.Panel
 	scroll     *unison.ScrollPanel
 	table      *unison.Table[*NavigatorNode]
 	tokens     []*library.MonitorToken
@@ -64,10 +66,42 @@ func registerSpecialFileInfo(key string, svg *unison.SVG) {
 
 func newNavigator() *Navigator {
 	n := &Navigator{
-		scroll: unison.NewScrollPanel(),
-		table:  unison.NewTable[*NavigatorNode](&unison.SimpleTableModel[*NavigatorNode]{}),
+		toolbar: unison.NewPanel(),
+		scroll:  unison.NewScrollPanel(),
+		table:   unison.NewTable[*NavigatorNode](&unison.SimpleTableModel[*NavigatorNode]{}),
 	}
 	n.Self = n
+
+	libsButton := unison.NewSVGButton(res.GearsSVG)
+	libsButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Libraries Configuration"))
+	libsButton.ClickCallback = func() {
+		// TODO: Implement libraries configuration
+		fmt.Println("Libraries Configuration")
+		unison.WarningDialogWithMessage("Unimplemented", "Coming soon…")
+	}
+
+	scaleTitle := i18n.Text("Scale")
+	scaleField := widget.NewPercentageField(nil, "", scaleTitle,
+		func() int { return settings.Global().General.NavigatorUIScale },
+		func(v int) {
+			settings.Global().General.NavigatorUIScale = v
+			n.applyScale()
+		}, gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, false, false)
+	scaleField.SetMarksModified(false)
+	scaleField.Tooltip = unison.NewTooltipWithText(scaleTitle)
+
+	n.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
+		false), unison.NewEmptyBorder(unison.StdInsets())))
+	n.toolbar.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		HGrab:  true,
+	})
+	n.toolbar.AddChild(libsButton)
+	n.toolbar.AddChild(scaleField)
+	n.toolbar.SetLayout(&unison.FlexLayout{
+		Columns:  len(n.toolbar.Children()),
+		HSpacing: unison.StdHSpacing,
+	})
 
 	n.table.ColumnSizes = make([]unison.ColumnSize, 1)
 	globalSettings := settings.Global()
@@ -79,6 +113,7 @@ func newNavigator() *Navigator {
 		rows = append(rows, NewLibraryNode(n, lib))
 	}
 	n.needReload = false
+	n.table.SetScale(float32(settings.Global().General.NavigatorUIScale) / 100)
 	n.table.SetRootRows(rows)
 	n.ApplyDisclosedPaths(globalSettings.LibraryExplorer.OpenRowKeys)
 	n.table.SizeColumnsToFit(true)
@@ -96,12 +131,23 @@ func newNavigator() *Navigator {
 		HAlign:  unison.FillAlignment,
 		VAlign:  unison.FillAlignment,
 	})
+	n.AddChild(n.toolbar)
 	n.AddChild(n.scroll)
 
 	n.table.DoubleClickCallback = n.handleSelectionDoubleClick
 	trampolines.SetLibraryUpdatesAvailable(n.eventuallyReload)
 	n.table.MouseDownCallback = n.mouseDown
 	return n
+}
+
+// InitialFocus causes the navigator to focus its initial component.
+func (n *Navigator) InitialFocus() {
+	widget.FocusFirstContent(n.toolbar, n.table.AsPanel())
+}
+
+func (n *Navigator) applyScale() {
+	n.table.SetScale(float32(settings.Global().General.NavigatorUIScale) / 100)
+	n.scroll.Sync()
 }
 
 func (n *Navigator) mouseDown(where unison.Point, button, clickCount int, mod unison.Modifiers) bool {

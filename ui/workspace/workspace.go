@@ -146,6 +146,7 @@ func NewWorkspace(wnd *unison.Window) *Workspace {
 		w.TopDock.RootDockLayout().SetDividerPosition(global.LibraryExplorer.DividerPosition)
 	}, time.Millisecond)
 	wnd.ToFront()
+	w.Navigator.InitialFocus()
 	return w
 }
 
