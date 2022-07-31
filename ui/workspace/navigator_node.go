@@ -132,13 +132,17 @@ func (n *NavigatorNode) CellDataForSort(col int) string {
 	if col != 0 {
 		return ""
 	}
+	text := n.primaryColumnText()
 	if n.nodeType == libraryNode {
-		if n.library.IsUser() || n.library.CachedVersion == "" {
-			return n.library.Title
+		if n.library.IsUser() {
+			return "0/" + text
 		}
-		return fmt.Sprintf("%s v%s", n.library.Title, filterVersion(n.library.CachedVersion))
+		if n.library.IsMaster() {
+			return "2/" + text
+		}
+		return "1/" + text
 	}
-	return xfs.TrimExtension(path.Base(n.path))
+	return text
 }
 
 func filterVersion(version string) string {
@@ -151,13 +155,23 @@ func filterVersion(version string) string {
 	return version
 }
 
+func (n *NavigatorNode) primaryColumnText() string {
+	if n.nodeType == libraryNode {
+		if n.library.IsUser() || n.library.CachedVersion == "" || n.library.CachedVersion == "0" {
+			return n.library.Title
+		}
+		return fmt.Sprintf("%s v%s", n.library.Title, filterVersion(n.library.CachedVersion))
+	}
+	return xfs.TrimExtension(path.Base(n.path))
+}
+
 // Match looks for the text in the node and return true if it is present. Note that calls to this method should always
 // pass in text that has already been run through strings.ToLower().
 func (n *NavigatorNode) Match(text string) bool {
 	if text == "" {
 		return false
 	}
-	return strings.Contains(strings.ToLower(n.CellDataForSort(0)), text)
+	return strings.Contains(strings.ToLower(n.primaryColumnText()), text)
 }
 
 // ColumnCell implements unison.TableRowData.
@@ -165,7 +179,7 @@ func (n *NavigatorNode) ColumnCell(_, col int, foreground, _ unison.Ink, _, _, _
 	if col != 0 {
 		return unison.NewLabel()
 	}
-	title := n.CellDataForSort(col)
+	title := n.primaryColumnText()
 	var ext string
 	if n.nodeType == fileNode {
 		ext = strings.ToLower(path.Ext(n.path))

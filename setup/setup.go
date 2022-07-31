@@ -13,10 +13,12 @@ package setup
 
 import (
 	"github.com/richardwilkes/gcs/v5/setup/trampolines"
+	"github.com/richardwilkes/gcs/v5/setup/trampolines2"
 	"github.com/richardwilkes/gcs/v5/ui/menus"
 	"github.com/richardwilkes/gcs/v5/ui/workspace"
 	"github.com/richardwilkes/gcs/v5/ui/workspace/external"
 	"github.com/richardwilkes/gcs/v5/ui/workspace/lists"
+	"github.com/richardwilkes/gcs/v5/ui/workspace/settings"
 )
 
 // Setup the application. This code is here to break circular dependencies.
@@ -26,4 +28,5 @@ func Setup() {
 	lists.RegisterFileTypes()
 	trampolines.SetMenuSetup(menus.Setup)
 	trampolines.SetShowReleaseNotesMarkdown(external.ShowReleaseNotesMarkdown)
+	trampolines2.SetShowLibrarySettings(settings.ShowLibrarySettings)
 }

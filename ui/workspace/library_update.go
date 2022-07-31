@@ -103,6 +103,6 @@ func finishLibraryUpdate(wnd *unison.Window, lib *library.Library) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	lib.CheckForAvailableUpgrade(ctx, &http.Client{})
-	FromWindowOrAny(wnd).Navigator.eventuallyReload()
+	FromWindowOrAny(wnd).Navigator.EventuallyReload()
 	wnd.StopModal(unison.ModalResponseOK)
 }

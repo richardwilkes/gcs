@@ -93,11 +93,17 @@ func (l *Library) SetPath(newPath string) error {
 		return errs.NewWithCause("unable to update library path to "+newPath, err)
 	}
 	if l.PathOnDisk != p {
-		tokens := l.monitor.stop()
-		l.PathOnDisk = p
-		l.CachedVersion = l.VersionOnDisk()
-		for _, token := range tokens {
-			l.monitor.startWatch(token, true)
+		if l.monitor == nil {
+			l.PathOnDisk = p
+			l.monitor = newMonitor(l)
+			l.CachedVersion = l.VersionOnDisk()
+		} else {
+			tokens := l.monitor.stop()
+			l.PathOnDisk = p
+			l.CachedVersion = l.VersionOnDisk()
+			for _, token := range tokens {
+				l.monitor.startWatch(token, true)
+			}
 		}
 	}
 	return nil
@@ -179,14 +185,20 @@ func (l *Library) Less(other *Library) bool {
 	if l.IsUser() {
 		return true
 	}
-	if l.IsMaster() {
-		return !other.IsUser()
+	if other.IsUser() {
+		return false
 	}
-	if txt.NaturalLess(l.GitHubAccountName, other.GitHubAccountName, true) {
+	if l.IsMaster() {
+		return false
+	}
+	if other.IsMaster() {
 		return true
 	}
+	if l.Title != other.Title {
+		return txt.NaturalLess(l.Title, other.Title, true)
+	}
 	if l.GitHubAccountName != other.GitHubAccountName {
-		return false
+		return txt.NaturalLess(l.GitHubAccountName, other.GitHubAccountName, true)
 	}
 	return txt.NaturalLess(l.RepoName, other.RepoName, true)
 }
