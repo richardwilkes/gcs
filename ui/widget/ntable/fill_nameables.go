@@ -9,13 +9,13 @@ import (
 )
 
 // ProcessNameablesForSelection processes the selected rows and their children for any nameables.
-func ProcessNameablesForSelection[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]]) {
+func ProcessNameablesForSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 	var rows []T
 	var nameables []map[string]string
 	for _, row := range table.SelectedRows(true) {
 		gurps.Traverse[T](func(row T) bool {
 			m := make(map[string]string)
-			row.FillWithNameableKeys(m)
+			gurps.AsNode(row).FillWithNameableKeys(m)
 			if len(m) > 0 {
 				rows = append(rows, row)
 				nameables = append(nameables, m)
@@ -82,7 +82,7 @@ func ProcessNameablesForSelection[T gurps.NodeConstraint[T]](table *unison.Table
 		panel.AddChild(scroll)
 		if unison.QuestionDialogWithPanel(panel) == unison.ModalResponseOK {
 			for i, row := range rows {
-				row.ApplyNameableKeys(nameables[i])
+				gurps.AsNode(row).ApplyNameableKeys(nameables[i])
 			}
 			unison.Ancestor[widget.Rebuildable](table).Rebuild(true)
 		}

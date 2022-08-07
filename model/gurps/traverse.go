@@ -13,7 +13,7 @@ package gurps
 
 import "golang.org/x/exp/slices"
 
-type traversalData[T Node[T]] struct {
+type traversalData[T NodeTypes] struct {
 	list  []T
 	index int
 }
@@ -21,7 +21,7 @@ type traversalData[T Node[T]] struct {
 // Traverse calls the function 'f' for each node and its children in the input list, recursively. Return true from the
 // function to abort early. If excludeContainers is true, then nodes that are containers will not be passed to 'f',
 // although their children will still be processed as usual.
-func Traverse[T Node[T]](f func(T) bool, excludeContainers, excludeChildrenOfDisabledNodes bool, in ...T) {
+func Traverse[T NodeTypes](f func(T) bool, excludeContainers, excludeChildrenOfDisabledNodes bool, in ...T) {
 	tracking := []*traversalData[T]{
 		{
 			list:  in,
@@ -35,13 +35,14 @@ func Traverse[T Node[T]](f func(T) bool, excludeContainers, excludeChildrenOfDis
 			continue
 		}
 		one := current.list[current.index]
+		node := AsNode(one)
 		current.index++
-		enabled := one.Enabled()
-		if enabled && (!excludeContainers || !one.Container()) && f(one) {
+		enabled := node.Enabled()
+		if enabled && (!excludeContainers || !node.Container()) && f(one) {
 			return
 		}
-		if (enabled || !excludeChildrenOfDisabledNodes) && one.HasChildren() {
-			tracking = append(tracking, &traversalData[T]{list: slices.Clone(one.NodeChildren())})
+		if (enabled || !excludeChildrenOfDisabledNodes) && node.HasChildren() {
+			tracking = append(tracking, &traversalData[T]{list: slices.Clone(node.NodeChildren())})
 		}
 	}
 }

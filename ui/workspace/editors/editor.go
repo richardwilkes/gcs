@@ -38,7 +38,7 @@ var (
 	_ widget.Rebuildable         = &editor[*gurps.Note, *gurps.NoteEditData]{}
 )
 
-type editor[N gurps.Node[N], D gurps.EditorData[N]] struct {
+type editor[N gurps.NodeTypes, D gurps.EditorData[N]] struct {
 	unison.Panel
 	owner                widget.Rebuildable
 	target               N
@@ -52,11 +52,11 @@ type editor[N gurps.Node[N], D gurps.EditorData[N]] struct {
 	promptForSave        bool
 }
 
-func displayEditor[N gurps.Node[N], D gurps.EditorData[N]](owner widget.Rebuildable, target N, svg *unison.SVG, initContent func(*editor[N, D], *unison.Panel) func()) {
-	lookFor := target.UUID()
+func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner widget.Rebuildable, target N, svg *unison.SVG, initContent func(*editor[N, D], *unison.Panel) func()) {
+	lookFor := gurps.AsNode(target).UUID()
 	ws, dc, found := workspace.Activate(func(d unison.Dockable) bool {
 		if e, ok := d.(*editor[N, D]); ok {
-			return e.owner == owner && e.target.UUID() == lookFor
+			return e.owner == owner && gurps.AsNode(e.target).UUID() == lookFor
 		}
 		return false
 	})
@@ -94,7 +94,7 @@ func displayEditor[N gurps.Node[N], D gurps.EditorData[N]](owner widget.Rebuilda
 			VGrab:  true,
 		})
 		e.AddChild(scroller)
-		e.ClientData()[workspace.AssociatedUUIDKey] = target.UUID()
+		e.ClientData()[workspace.AssociatedUUIDKey] = gurps.AsNode(target).UUID()
 		e.promptForSave = true
 		scroller.Content().AsPanel().ValidateScrollRoot()
 		group := editorGroup
@@ -167,7 +167,7 @@ func (e *editor[N, D]) TitleIcon(suggestedSize unison.Size) unison.Drawable {
 }
 
 func (e *editor[N, D]) Title() string {
-	return fmt.Sprintf(i18n.Text("%s Editor for %s"), e.target.Kind(), e.owner.String())
+	return fmt.Sprintf(i18n.Text("%s Editor for %s"), gurps.AsNode(e.target).Kind(), e.owner.String())
 }
 
 func (e *editor[N, D]) String() string {
@@ -239,7 +239,7 @@ func (e *editor[N, D]) apply() {
 		target := e.target
 		mgr.Add(&unison.UndoEdit[D]{
 			ID:       unison.NextUndoID(),
-			EditName: fmt.Sprintf(i18n.Text("%s Changes"), target.Kind()),
+			EditName: fmt.Sprintf(i18n.Text("%s Changes"), gurps.AsNode(target).Kind()),
 			UndoFunc: func(edit *unison.UndoEdit[D]) {
 				edit.BeforeData.ApplyTo(target)
 				owner.Rebuild(true)

@@ -32,25 +32,27 @@ const excludeMarker = "exclude"
 var _ unison.TableRowData[*Node[*gurps.Trait]] = &Node[*gurps.Trait]{}
 
 // Node represents a row in a table.
-type Node[T gurps.NodeConstraint[T]] struct {
-	table     *unison.Table[*Node[T]]
-	parent    *Node[T]
-	data      T
-	children  []*Node[T]
-	cellCache []*CellCache
-	colMap    map[int]int
-	forPage   bool
+type Node[T gurps.NodeTypes] struct {
+	table      *unison.Table[*Node[T]]
+	parent     *Node[T]
+	data       T
+	dataAsNode gurps.Node[T]
+	children   []*Node[T]
+	cellCache  []*CellCache
+	colMap     map[int]int
+	forPage    bool
 }
 
 // NewNode creates a new node for a table.
-func NewNode[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]], parent *Node[T], colMap map[int]int, data T, forPage bool) *Node[T] {
+func NewNode[T gurps.NodeTypes](table *unison.Table[*Node[T]], parent *Node[T], colMap map[int]int, data T, forPage bool) *Node[T] {
 	return &Node[T]{
-		table:     table,
-		parent:    parent,
-		data:      data,
-		cellCache: make([]*CellCache, len(colMap)),
-		colMap:    colMap,
-		forPage:   forPage,
+		table:      table,
+		parent:     parent,
+		data:       data,
+		dataAsNode: gurps.AsNode(data),
+		cellCache:  make([]*CellCache, len(colMap)),
+		colMap:     colMap,
+		forPage:    forPage,
 	}
 }
 
@@ -61,7 +63,8 @@ func (n *Node[T]) CloneForTarget(target unison.Paneler, newParent *Node[T]) *Nod
 		jot.Fatal(1, "unable to convert to table")
 	}
 	if provider := unison.AncestorOrSelf[gurps.EntityProvider](target); provider != nil {
-		return NewNode[T](table, newParent, n.colMap, n.data.Clone(provider.Entity(), newParent.Data(), false), n.forPage)
+		return NewNode[T](table, newParent, n.colMap, n.dataAsNode.Clone(provider.Entity(), newParent.Data(), false),
+			n.forPage)
 	}
 	jot.Fatal(1, "unable to locate entity provider")
 	return nil // Never reaches here
@@ -69,7 +72,7 @@ func (n *Node[T]) CloneForTarget(target unison.Paneler, newParent *Node[T]) *Nod
 
 // UUID implements unison.TableRowData.
 func (n *Node[T]) UUID() uuid.UUID {
-	return n.data.UUID()
+	return n.dataAsNode.UUID()
 }
 
 // Parent implements unison.TableRowData.
@@ -79,18 +82,18 @@ func (n *Node[T]) Parent() *Node[T] {
 
 // SetParent implements unison.TableRowData.
 func (n *Node[T]) SetParent(parent *Node[T]) {
-	n.data.SetParent(parent.Data())
+	n.dataAsNode.SetParent(parent.Data())
 }
 
 // CanHaveChildren implements unison.TableRowData.
 func (n *Node[T]) CanHaveChildren() bool {
-	return n.data.Container()
+	return n.dataAsNode.Container()
 }
 
 // Children implements unison.TableRowData.
 func (n *Node[T]) Children() []*Node[T] {
-	if n.data.Container() && n.children == nil {
-		children := n.data.NodeChildren()
+	if n.dataAsNode.Container() && n.children == nil {
+		children := n.dataAsNode.NodeChildren()
 		n.children = make([]*Node[T], len(children))
 		for i, one := range children {
 			n.children[i] = NewNode[T](n.table, n, n.colMap, one, n.forPage)
@@ -101,8 +104,8 @@ func (n *Node[T]) Children() []*Node[T] {
 
 // SetChildren implements unison.TableRowData.
 func (n *Node[T]) SetChildren(children []*Node[T]) {
-	if n.data.Container() {
-		n.data.SetChildren(ExtractNodeDataFromList(children))
+	if n.dataAsNode.Container() {
+		n.dataAsNode.SetChildren(ExtractNodeDataFromList(children))
 		n.children = nil
 	}
 }
@@ -111,7 +114,7 @@ func (n *Node[T]) SetChildren(children []*Node[T]) {
 func (n *Node[T]) CellDataForSort(index int) string {
 	if column, exists := n.colMap[index]; exists {
 		var data gurps.CellData
-		n.data.CellData(column, &data)
+		n.dataAsNode.CellData(column, &data)
 		return data.ForSort()
 	}
 	return ""
@@ -121,7 +124,7 @@ func (n *Node[T]) CellDataForSort(index int) string {
 func (n *Node[T]) ColumnCell(row, col int, foreground, _ unison.Ink, _, _, _ bool) unison.Paneler {
 	var cellData gurps.CellData
 	if column, exists := n.colMap[col]; exists {
-		n.data.CellData(column, &cellData)
+		n.dataAsNode.CellData(column, &cellData)
 	}
 	width := n.table.CellWidth(row, col)
 	if n.cellCache[col].Matches(width, &cellData) {
@@ -150,13 +153,13 @@ func applyForegroundInkRecursively(panel *unison.Panel, foreground unison.Ink) {
 
 // IsOpen implements unison.TableRowData.
 func (n *Node[T]) IsOpen() bool {
-	return n.data.Container() && n.data.Open()
+	return n.dataAsNode.Container() && n.dataAsNode.Open()
 }
 
 // SetOpen implements unison.TableRowData.
 func (n *Node[T]) SetOpen(open bool) {
-	if n.data.Container() && open != n.data.Open() {
-		n.data.SetOpen(open)
+	if n.dataAsNode.Container() && open != n.dataAsNode.Open() {
+		n.dataAsNode.SetOpen(open)
 		n.table.SyncToModel()
 	}
 }
@@ -481,14 +484,14 @@ func (n *Node[T]) secondaryFieldFont() unison.Font {
 }
 
 // FindRowIndexByID returns the row index of the row with the given ID in the given table.
-func FindRowIndexByID[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]], id uuid.UUID) int {
+func FindRowIndexByID[T gurps.NodeTypes](table *unison.Table[*Node[T]], id uuid.UUID) int {
 	_, i := rowIndex(id, 0, table.RootRows())
 	return i
 }
 
-func rowIndex[T gurps.NodeConstraint[T]](id uuid.UUID, startIndex int, rows []*Node[T]) (updatedStartIndex, result int) {
+func rowIndex[T gurps.NodeTypes](id uuid.UUID, startIndex int, rows []*Node[T]) (updatedStartIndex, result int) {
 	for _, row := range rows {
-		if id == row.Data().UUID() {
+		if id == row.dataAsNode.UUID() {
 			return 0, startIndex
 		}
 		startIndex++
@@ -502,7 +505,7 @@ func rowIndex[T gurps.NodeConstraint[T]](id uuid.UUID, startIndex int, rows []*N
 }
 
 // InsertItems into a table.
-func InsertItems[T gurps.NodeConstraint[T]](owner widget.Rebuildable, table *unison.Table[*Node[T]], topList func() []T, setTopList func([]T), rowData func(table *unison.Table[*Node[T]]) []*Node[T], items ...T) {
+func InsertItems[T gurps.NodeTypes](owner widget.Rebuildable, table *unison.Table[*Node[T]], topList func() []T, setTopList func([]T), rowData func(table *unison.Table[*Node[T]]) []*Node[T], items ...T) {
 	if len(items) == 0 {
 		return
 	}
@@ -511,7 +514,7 @@ func InsertItems[T gurps.NodeConstraint[T]](owner widget.Rebuildable, table *uni
 	if mgr != nil {
 		undo = &unison.UndoEdit[*TableUndoEditData[T]]{
 			ID:         unison.NextUndoID(),
-			EditName:   fmt.Sprintf(i18n.Text("Insert %s"), items[0].Kind()),
+			EditName:   fmt.Sprintf(i18n.Text("Insert %s"), gurps.AsNode(items[0]).Kind()),
 			UndoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.BeforeData.Apply() },
 			RedoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.AfterData.Apply() },
 			AbsorbFunc: func(e *unison.UndoEdit[*TableUndoEditData[T]], other unison.Undoable) bool { return false },
@@ -526,13 +529,14 @@ func InsertItems[T gurps.NodeConstraint[T]](owner widget.Rebuildable, table *uni
 			if row.CanHaveChildren() {
 				// Target is container, append to end of that container
 				setParents(items, target)
-				target.SetChildren(append(target.NodeChildren(), items...))
+				row.dataAsNode.SetChildren(append(row.dataAsNode.NodeChildren(), items...))
 			} else {
 				// Target isn't a container. If it has a parent, insert after the target within that parent.
-				if parent := row.Parent().Data(); parent != zero {
-					setParents(items, parent)
-					children := parent.NodeChildren()
-					parent.SetChildren(slices.Insert(children, slices.Index(children, target)+1, items...))
+				parent := row.Parent()
+				if parentData := parent.Data(); parentData != zero {
+					setParents(items, parentData)
+					children := parent.dataAsNode.NodeChildren()
+					parent.dataAsNode.SetChildren(slices.Insert(children, slices.Index(children, target)+1, items...))
 				} else {
 					// Otherwise, insert after the target within the top-level list.
 					setParents(items, zero)
@@ -553,7 +557,7 @@ func InsertItems[T gurps.NodeConstraint[T]](owner widget.Rebuildable, table *uni
 	table.RequestFocus()
 	selMap := make(map[uuid.UUID]bool)
 	for _, item := range items {
-		selMap[item.UUID()] = true
+		selMap[gurps.AsNode(item).UUID()] = true
 	}
 	table.SetSelectionMap(selMap)
 	table.ScrollRowCellIntoView(table.LastSelectedRowIndex(), 0)
@@ -565,14 +569,14 @@ func InsertItems[T gurps.NodeConstraint[T]](owner widget.Rebuildable, table *uni
 	owner.Rebuild(true)
 }
 
-func setParents[T gurps.NodeConstraint[T]](items []T, parent T) {
+func setParents[T gurps.NodeTypes](items []T, parent T) {
 	for _, item := range items {
-		item.SetParent(parent)
+		gurps.AsNode(item).SetParent(parent)
 	}
 }
 
 // ExtractNodeDataFromList returns the underlying node data.
-func ExtractNodeDataFromList[T gurps.NodeConstraint[T]](list []*Node[T]) []T {
+func ExtractNodeDataFromList[T gurps.NodeTypes](list []*Node[T]) []T {
 	dataList := make([]T, 0, len(list))
 	for _, child := range list {
 		dataList = append(dataList, child.data)

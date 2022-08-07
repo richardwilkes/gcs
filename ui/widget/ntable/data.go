@@ -9,7 +9,7 @@ import (
 )
 
 // PreservedTableData holds the data and selection state of a table in a serialized form.
-type PreservedTableData[T gurps.NodeConstraint[T]] struct {
+type PreservedTableData[T gurps.NodeTypes] struct {
 	data   []byte
 	selMap map[uuid.UUID]bool
 }

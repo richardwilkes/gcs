@@ -46,7 +46,7 @@ var (
 )
 
 // TableDockable holds the view for a file that contains a (potentially hierarchical) list of data.
-type TableDockable[T gurps.NodeConstraint[T]] struct {
+type TableDockable[T gurps.NodeTypes] struct {
 	unison.Panel
 	path              string
 	extension         string
@@ -72,7 +72,7 @@ type TableDockable[T gurps.NodeConstraint[T]] struct {
 }
 
 // NewTableDockable creates a new TableDockable for list data files.
-func NewTableDockable[T gurps.NodeConstraint[T]](filePath, extension string, provider ntable.TableProvider[T], saver func(path string) error, canCreateIDs ...int) *TableDockable[T] {
+func NewTableDockable[T gurps.NodeTypes](filePath, extension string, provider ntable.TableProvider[T], saver func(path string) error, canCreateIDs ...int) *TableDockable[T] {
 	header, table := ntable.NewNodeTable[T](provider, nil)
 	d := &TableDockable[T]{
 		path:              filePath,
@@ -344,7 +344,7 @@ func (d *TableDockable[T]) toggleHierarchy() {
 	d.table.SyncToModel()
 }
 
-func setRowOpen[T gurps.NodeConstraint[T]](row *ntable.Node[T], open bool) {
+func setRowOpen[T gurps.NodeTypes](row *ntable.Node[T], open bool) {
 	row.SetOpen(open)
 	for _, child := range row.Children() {
 		if child.CanHaveChildren() {

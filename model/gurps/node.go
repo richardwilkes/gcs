@@ -16,14 +16,13 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 )
 
-// NodeConstraint is the constraint for a Node.
-type NodeConstraint[T Node[T]] interface {
-	comparable
-	Node[T]
+// NodeTypes is a constraint that defines the types that may be nodes.
+type NodeTypes interface {
+	*ConditionalModifier | *Equipment | *EquipmentModifier | *Note | *Skill | *Spell | *Trait | *TraitModifier | *Weapon
 }
 
 // Node defines the methods required of nodes in our tables.
-type Node[T any] interface {
+type Node[T NodeTypes] interface {
 	UUID() uuid.UUID
 	Clone(newEntity *Entity, newParent T, preserveID bool) T
 	OwningEntity() *Entity
@@ -44,29 +43,35 @@ type Node[T any] interface {
 }
 
 // RawPointsAdjuster defines methods for nodes that can have their raw points adjusted must implement.
-type RawPointsAdjuster[T Node[T]] interface {
+type RawPointsAdjuster[T NodeTypes] interface {
 	Node[T]
 	RawPoints() fxp.Int
 	SetRawPoints(points fxp.Int) bool
 }
 
 // SkillAdjustmentProvider defines methods for nodes that can have their skill level adjusted must implement.
-type SkillAdjustmentProvider[T Node[T]] interface {
+type SkillAdjustmentProvider[T NodeTypes] interface {
 	RawPointsAdjuster[T]
 	IncrementSkillLevel()
 	DecrementSkillLevel()
 }
 
 // EditorData defines the methods required of editor data.
-type EditorData[T Node[T]] interface {
+type EditorData[T NodeTypes] interface {
 	// CopyFrom copies the corresponding data from the node into this editor data.
 	CopyFrom(T)
 	// ApplyTo copes he editor data into the provided node.
 	ApplyTo(T)
 }
 
+// AsNode converts a T to a Node[T]. This shouldn't require these hoops, but Go generics (as of 1.19) fails to compile
+// otherwise.
+func AsNode[T NodeTypes](in T) Node[T] {
+	return interface{}(in).(Node[T])
+}
+
 // CloneNodes creates clones of the provided nodes.
-func CloneNodes[T Node[T]](newEntity *Entity, newParent T, preserveID bool, nodes []T) []T {
+func CloneNodes[T NodeTypes](newEntity *Entity, newParent T, preserveID bool, nodes []Node[T]) []T {
 	clones := make([]T, len(nodes))
 	for i, one := range nodes {
 		clones[i] = one.Clone(newEntity, newParent, preserveID)

@@ -27,7 +27,7 @@ import (
 var _ widget.Syncer = &PageList[*gurps.Trait]{}
 
 // PageList holds a list for a sheet page.
-type PageList[T gurps.NodeConstraint[T]] struct {
+type PageList[T gurps.NodeTypes] struct {
 	unison.Panel
 	tableHeader *unison.TableHeader[*ntable.Node[T]]
 	Table       *unison.Table[*ntable.Node[T]]
@@ -117,7 +117,7 @@ func NewRangedWeaponsPageList(entity *gurps.Entity) *PageList[*gurps.Weapon] {
 	return newPageList(nil, editors.NewWeaponsProvider(entity, weapon.Ranged, true))
 }
 
-func newPageList[T gurps.NodeConstraint[T]](owner widget.Rebuildable, provider ntable.TableProvider[T]) *PageList[T] {
+func newPageList[T gurps.NodeTypes](owner widget.Rebuildable, provider ntable.TableProvider[T]) *PageList[T] {
 	header, table := ntable.NewNodeTable[T](provider, theme.PageFieldPrimaryFont)
 	p := &PageList[T]{
 		tableHeader: header,

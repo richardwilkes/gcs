@@ -20,7 +20,7 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-type adjustRawPointsList[T gurps.NodeConstraint[T]] struct {
+type adjustRawPointsList[T gurps.NodeTypes] struct {
 	Owner widget.Rebuildable
 	List  []*rawPointsAdjuster[T]
 }
@@ -40,12 +40,12 @@ func (a *adjustRawPointsList[T]) Finish() {
 	widget.MarkModified(a.Owner)
 }
 
-type rawPointsAdjuster[T gurps.NodeConstraint[T]] struct {
+type rawPointsAdjuster[T gurps.NodeTypes] struct {
 	Target gurps.RawPointsAdjuster[T]
 	Points fxp.Int
 }
 
-func newRawPointsAdjuster[T gurps.NodeConstraint[T]](target gurps.RawPointsAdjuster[T]) *rawPointsAdjuster[T] {
+func newRawPointsAdjuster[T gurps.NodeTypes](target gurps.RawPointsAdjuster[T]) *rawPointsAdjuster[T] {
 	return &rawPointsAdjuster[T]{
 		Target: target,
 		Points: target.RawPoints(),
@@ -56,7 +56,7 @@ func (a *rawPointsAdjuster[T]) Apply() {
 	a.Target.SetRawPoints(a.Points)
 }
 
-func canAdjustRawPoints[T gurps.NodeConstraint[T]](table *unison.Table[*ntable.Node[T]], increment bool) bool {
+func canAdjustRawPoints[T gurps.NodeTypes](table *unison.Table[*ntable.Node[T]], increment bool) bool {
 	for _, row := range table.SelectedRows(false) {
 		if provider, ok := any(row.Data()).(gurps.RawPointsAdjuster[T]); ok && !provider.Container() {
 			if increment || provider.RawPoints() > 0 {
@@ -67,7 +67,7 @@ func canAdjustRawPoints[T gurps.NodeConstraint[T]](table *unison.Table[*ntable.N
 	return false
 }
 
-func adjustRawPoints[T gurps.NodeConstraint[T]](owner widget.Rebuildable, table *unison.Table[*ntable.Node[T]], increment bool) {
+func adjustRawPoints[T gurps.NodeTypes](owner widget.Rebuildable, table *unison.Table[*ntable.Node[T]], increment bool) {
 	before := &adjustRawPointsList[T]{Owner: owner}
 	after := &adjustRawPointsList[T]{Owner: owner}
 	for _, row := range table.SelectedRows(false) {

@@ -24,7 +24,7 @@ import (
 const ContainerKeyPostfix = "_container"
 
 // ContainerBase holds the type and ID of the data.
-type ContainerBase[T Node[T]] struct {
+type ContainerBase[T NodeTypes] struct {
 	ID       uuid.UUID `json:"id"`
 	Type     string    `json:"type"`
 	IsOpen   bool      `json:"open,omitempty"`     // Container only
@@ -32,7 +32,7 @@ type ContainerBase[T Node[T]] struct {
 	parent   T
 }
 
-func newContainerBase[T Node[T]](typeKey string, isContainer bool) ContainerBase[T] {
+func newContainerBase[T NodeTypes](typeKey string, isContainer bool) ContainerBase[T] {
 	if isContainer {
 		typeKey += ContainerKeyPostfix
 	}

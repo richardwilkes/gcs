@@ -18,7 +18,7 @@ import (
 )
 
 // TechLevelProvider defines methods that a TechLevel provider must implement.
-type TechLevelProvider[T Node[T]] interface {
+type TechLevelProvider[T NodeTypes] interface {
 	Node[T]
 	TL() string
 	SetTL(tl string)

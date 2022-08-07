@@ -38,7 +38,7 @@ const (
 )
 
 // TableProvider defines the methods a table provider must contain.
-type TableProvider[T gurps.NodeConstraint[T]] interface {
+type TableProvider[T gurps.NodeTypes] interface {
 	unison.TableModel[*Node[T]]
 	gurps.EntityProvider
 	SetTable(table *unison.Table[*Node[T]])
@@ -61,7 +61,7 @@ type TableProvider[T gurps.NodeConstraint[T]] interface {
 
 // NewNodeTable creates a new node table of the specified type, returning the header and table. Pass nil for 'font' if
 // this should be a standalone top-level table for a dockable. Otherwise, pass in the typical font used for a cell.
-func NewNodeTable[T gurps.NodeConstraint[T]](provider TableProvider[T], font unison.Font) (header *unison.TableHeader[*Node[T]], table *unison.Table[*Node[T]]) {
+func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font) (header *unison.TableHeader[*Node[T]], table *unison.Table[*Node[T]]) {
 	table = unison.NewTable[*Node[T]](provider)
 	provider.SetTable(table)
 	table.HierarchyColumnIndex = provider.HierarchyColumnIndex()
@@ -140,7 +140,7 @@ func flexibleLess(s1, s2 string) bool {
 }
 
 // OpenEditor opens an editor for each selected row in the table.
-func OpenEditor[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]], edit func(item T)) {
+func OpenEditor[T gurps.NodeTypes](table *unison.Table[*Node[T]], edit func(item T)) {
 	var zero T
 	selection := table.SelectedRows(false)
 	if len(selection) > 4 {
@@ -157,7 +157,7 @@ func OpenEditor[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]], edit f
 }
 
 // DeleteSelection removes the selected nodes from the table.
-func DeleteSelection[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]]) {
+func DeleteSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 	if provider, ok := table.Model.(TableProvider[T]); ok && table.HasSelection() {
 		sel := table.SelectedRows(true)
 		ids := make(map[uuid.UUID]bool, len(sel))
@@ -187,7 +187,7 @@ func DeleteSelection[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]]) {
 		needSet := false
 		topLevelData := provider.RootData()
 		for _, target := range list {
-			parent := target.Parent()
+			parent := gurps.AsNode(target).Parent()
 			if parent == zero {
 				for i, one := range topLevelData {
 					if one == target {
@@ -197,10 +197,11 @@ func DeleteSelection[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]]) {
 					}
 				}
 			} else {
-				children := parent.NodeChildren()
+				pNode := gurps.AsNode(parent)
+				children := pNode.NodeChildren()
 				for i, one := range children {
 					if one == target {
-						parent.SetChildren(slices.Delete(children, i, i+1))
+						pNode.SetChildren(slices.Delete(children, i, i+1))
 						break
 					}
 				}
@@ -220,7 +221,7 @@ func DeleteSelection[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]]) {
 }
 
 // DuplicateSelection duplicates the selected nodes in the table.
-func DuplicateSelection[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]]) {
+func DuplicateSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 	if provider, ok := table.Model.(TableProvider[T]); ok && table.HasSelection() {
 		var undo *unison.UndoEdit[*TableUndoEditData[T]]
 		mgr := unison.UndoManagerFor(table)
@@ -241,9 +242,10 @@ func DuplicateSelection[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]]
 		selMap := make(map[uuid.UUID]bool, len(sel))
 		for _, row := range sel {
 			if target := row.Data(); target != zero {
-				parent := target.Parent()
-				clone := target.Clone(target.OwningEntity(), parent, false)
-				selMap[clone.UUID()] = true
+				tData := gurps.AsNode(target)
+				parent := tData.Parent()
+				clone := tData.Clone(tData.OwningEntity(), parent, false)
+				selMap[gurps.AsNode(clone).UUID()] = true
 				if parent == zero {
 					for i, child := range topLevelData {
 						if child == target {
@@ -253,10 +255,11 @@ func DuplicateSelection[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]]
 						}
 					}
 				} else {
-					children := parent.NodeChildren()
+					pNode := gurps.AsNode(parent)
+					children := pNode.NodeChildren()
 					for i, child := range children {
 						if child == target {
-							parent.SetChildren(slices.Insert(children, i+1, clone))
+							pNode.SetChildren(slices.Insert(children, i+1, clone))
 							break
 						}
 					}
@@ -279,7 +282,7 @@ func DuplicateSelection[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]]
 }
 
 // CopyRowsTo copies the provided rows to the target table.
-func CopyRowsTo[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]], rows []*Node[T]) {
+func CopyRowsTo[T gurps.NodeTypes](table *unison.Table[*Node[T]], rows []*Node[T]) {
 	if table == nil {
 		return
 	}
@@ -292,7 +295,7 @@ func CopyRowsTo[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]], rows [
 	if mgr != nil {
 		undo = &unison.UndoEdit[*TableUndoEditData[T]]{
 			ID:         unison.NextUndoID(),
-			EditName:   fmt.Sprintf(i18n.Text("Insert %s"), rows[0].Data().Kind()),
+			EditName:   fmt.Sprintf(i18n.Text("Insert %s"), gurps.AsNode(rows[0].Data()).Kind()),
 			UndoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.BeforeData.Apply() },
 			RedoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.AfterData.Apply() },
 			AbsorbFunc: func(e *unison.UndoEdit[*TableUndoEditData[T]], other unison.Undoable) bool { return false },

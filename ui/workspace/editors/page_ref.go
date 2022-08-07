@@ -19,10 +19,10 @@ import (
 )
 
 // CanOpenPageRef returns true if the current selection on the table has a page reference.
-func CanOpenPageRef[T gurps.NodeConstraint[T]](table *unison.Table[*ntable.Node[T]]) bool {
+func CanOpenPageRef[T gurps.NodeTypes](table *unison.Table[*ntable.Node[T]]) bool {
 	for _, row := range table.SelectedRows(false) {
 		var data gurps.CellData
-		row.Data().CellData(gurps.PageRefCellAlias, &data)
+		gurps.AsNode(row.Data()).CellData(gurps.PageRefCellAlias, &data)
 		if len(settings.ExtractPageReferences(data.Primary)) != 0 {
 			return true
 		}
@@ -31,11 +31,11 @@ func CanOpenPageRef[T gurps.NodeConstraint[T]](table *unison.Table[*ntable.Node[
 }
 
 // OpenPageRef opens the first page reference on each selected item in the table.
-func OpenPageRef[T gurps.NodeConstraint[T]](table *unison.Table[*ntable.Node[T]]) {
+func OpenPageRef[T gurps.NodeTypes](table *unison.Table[*ntable.Node[T]]) {
 	promptCtx := make(map[string]bool)
 	for _, row := range table.SelectedRows(false) {
 		var data gurps.CellData
-		row.Data().CellData(gurps.PageRefCellAlias, &data)
+		gurps.AsNode(row.Data()).CellData(gurps.PageRefCellAlias, &data)
 		for _, one := range settings.ExtractPageReferences(data.Primary) {
 			if settings.OpenPageReference(table.Window(), one, data.Secondary, promptCtx) {
 				return
@@ -45,11 +45,11 @@ func OpenPageRef[T gurps.NodeConstraint[T]](table *unison.Table[*ntable.Node[T]]
 }
 
 // OpenEachPageRef opens the all page references on each selected item in the table.
-func OpenEachPageRef[T gurps.NodeConstraint[T]](table *unison.Table[*ntable.Node[T]]) {
+func OpenEachPageRef[T gurps.NodeTypes](table *unison.Table[*ntable.Node[T]]) {
 	promptCtx := make(map[string]bool)
 	for _, row := range table.SelectedRows(false) {
 		var data gurps.CellData
-		row.Data().CellData(gurps.PageRefCellAlias, &data)
+		gurps.AsNode(row.Data()).CellData(gurps.PageRefCellAlias, &data)
 		for _, one := range settings.ExtractPageReferences(data.Primary) {
 			if settings.OpenPageReference(table.Window(), one, data.Secondary, promptCtx) {
 				return

@@ -22,7 +22,7 @@ import (
 const tableProviderClientKey = "table-provider"
 
 // InstallTableDropSupport installs our standard drop support on a table.
-func InstallTableDropSupport[T gurps.NodeConstraint[T]](table *unison.Table[*Node[T]], provider TableProvider[T]) {
+func InstallTableDropSupport[T gurps.NodeTypes](table *unison.Table[*Node[T]], provider TableProvider[T]) {
 	table.ClientData()[tableProviderClientKey] = provider
 	unison.InstallDropSupport[*Node[T], *TableDragUndoEditData[T]](table, provider.DragKey(),
 		provider.DropShouldMoveData, willDropCallback[T], didDropCallback[T])
@@ -33,7 +33,7 @@ func InstallTableDropSupport[T gurps.NodeConstraint[T]](table *unison.Table[*Nod
 	}
 }
 
-func willDropCallback[T gurps.NodeConstraint[T]](from, to *unison.Table[*Node[T]], move bool) *unison.UndoEdit[*TableDragUndoEditData[T]] {
+func willDropCallback[T gurps.NodeTypes](from, to *unison.Table[*Node[T]], move bool) *unison.UndoEdit[*TableDragUndoEditData[T]] {
 	mgr := unison.UndoManagerFor(to)
 	if mgr == nil {
 		return nil
@@ -51,7 +51,7 @@ func willDropCallback[T gurps.NodeConstraint[T]](from, to *unison.Table[*Node[T]
 	}
 }
 
-func didDropCallback[T gurps.NodeConstraint[T]](undo *unison.UndoEdit[*TableDragUndoEditData[T]], from, to *unison.Table[*Node[T]], move bool) {
+func didDropCallback[T gurps.NodeTypes](undo *unison.UndoEdit[*TableDragUndoEditData[T]], from, to *unison.Table[*Node[T]], move bool) {
 	if provider, ok := to.ClientData()[tableProviderClientKey]; ok {
 		var tableProvider TableProvider[T]
 		if tableProvider, ok = provider.(TableProvider[T]); ok {

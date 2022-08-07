@@ -210,7 +210,7 @@ func (d *Template) applyTemplate(_ any) {
 	}
 }
 
-func copyRowsTo[T gurps.NodeConstraint[T]](table *unison.Table[*ntable.Node[T]], rows []*ntable.Node[T]) {
+func copyRowsTo[T gurps.NodeTypes](table *unison.Table[*ntable.Node[T]], rows []*ntable.Node[T]) {
 	rows = slices.Clone(rows)
 	for j, row := range rows {
 		rows[j] = row.CloneForTarget(table, nil)
