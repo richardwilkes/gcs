@@ -13,7 +13,7 @@ package external
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/library"
@@ -83,7 +83,7 @@ func newMarkdownDockable(filePath, title, content string) (unison.Dockable, erro
 	d.markdown = widget.NewMarkdown()
 	d.markdown.MouseWheelCallback = d.mouseWheel
 	if !strings.HasPrefix(d.path, markdownContentOnlyPrefix) {
-		data, err := ioutil.ReadFile(d.BackingFilePath())
+		data, err := os.ReadFile(d.BackingFilePath())
 		if err != nil {
 			return nil, err
 		}
