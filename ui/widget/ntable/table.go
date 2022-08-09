@@ -105,11 +105,6 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 		HGrab:  true,
 	})
 
-	mouseDownCallback := table.MouseDownCallback
-	table.MouseDownCallback = func(where unison.Point, button, clickCount int, mod unison.Modifiers) bool {
-		table.RequestFocus()
-		return mouseDownCallback(where, button, clickCount, mod)
-	}
 	table.DoubleClickCallback = func() { table.PerformCmd(nil, constants.OpenEditorItemID) }
 	keydownCallback := table.KeyDownCallback
 	table.KeyDownCallback = func(keyCode unison.KeyCode, mod unison.Modifiers, repeat bool) bool {
