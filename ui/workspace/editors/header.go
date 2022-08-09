@@ -26,7 +26,9 @@ func NewHeader[T gurps.NodeTypes](title, tooltip string, forPage bool) unison.Ta
 	if forPage {
 		return NewPageTableColumnHeader[T](title, tooltip)
 	}
-	return unison.NewTableColumnHeader[*ntable.Node[T]](title, tooltip)
+	header := unison.NewTableColumnHeader[*ntable.Node[T]](title, tooltip)
+	header.OnBackgroundInk = theme.OnHeaderColor
+	return header
 }
 
 // NewSVGHeader creates a new list header with an SVG image as its content rather than text.
@@ -46,6 +48,7 @@ func NewSVGHeader[T gurps.NodeTypes](svg *unison.SVG, tooltip string, forPage bo
 		SVG:  svg,
 		Size: unison.NewSize(baseline, baseline),
 	}
+	header.OnBackgroundInk = theme.OnHeaderColor
 	return header
 }
 
@@ -68,6 +71,7 @@ func NewSVGPairHeader[T gurps.NodeTypes](leftSVG, rightSVG *unison.SVG, tooltip 
 		Right: rightSVG,
 		Size:  unison.NewSize(baseline*2+4, baseline),
 	}
+	header.OnBackgroundInk = theme.OnHeaderColor
 	return header
 }
 
