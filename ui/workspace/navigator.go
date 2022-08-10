@@ -52,6 +52,7 @@ type Navigator struct {
 	searchField               *unison.Field
 	matchesLabel              *unison.Label
 	deleteButton              *unison.Button
+	renameButton              *unison.Button
 	downloadLibraryButton     *unison.Button
 	libraryReleaseNotesButton *unison.Button
 	configLibraryButton       *unison.Button
@@ -138,6 +139,10 @@ func (n *Navigator) setupToolBar() {
 	n.deleteButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Delete"))
 	n.deleteButton.ClickCallback = n.deleteSelection
 
+	n.renameButton = unison.NewSVGButton(res.SignPostSVG)
+	n.renameButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Rename"))
+	n.renameButton.ClickCallback = n.renameSelection
+
 	addLibraryButton := unison.NewSVGButton(res.CircledAddSVG)
 	addLibraryButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Add Library"))
 	addLibraryButton.ClickCallback = n.addLibrary
@@ -173,6 +178,7 @@ func (n *Navigator) setupToolBar() {
 	first.AddChild(n.libraryReleaseNotesButton)
 	first.AddChild(n.configLibraryButton)
 	first.AddChild(widget.NewToolbarSeparator())
+	first.AddChild(n.renameButton)
 	first.AddChild(n.deleteButton)
 	first.SetLayout(&unison.FlexLayout{
 		Columns:  len(first.Children()),
@@ -318,6 +324,88 @@ func (n *Navigator) deleteSelection() {
 	}
 }
 
+var disallowedWindowsFileNames = map[string]bool{
+	"con":  true,
+	"prn":  true,
+	"aux":  true,
+	"nul":  true,
+	"com0": true,
+	"com1": true,
+	"com2": true,
+	"com3": true,
+	"com4": true,
+	"com5": true,
+	"com6": true,
+	"com7": true,
+	"com8": true,
+	"com9": true,
+	"lpt0": true,
+	"lpt1": true,
+	"lpt2": true,
+	"lpt3": true,
+	"lpt4": true,
+	"lpt5": true,
+	"lpt6": true,
+	"lpt7": true,
+	"lpt8": true,
+	"lpt9": true,
+}
+
+func (n *Navigator) renameSelection() {
+	if n.table.SelectionCount() == 1 {
+		row := n.table.SelectedRows(false)[0]
+		if row.nodeType == libraryNode {
+			return
+		}
+
+		oldName := row.primaryColumnText()
+		newName := oldName
+
+		oldField := widget.NewStringField(nil, "", "", func() string { return oldName }, func(s string) {})
+		oldField.SetEnabled(false)
+
+		newField := widget.NewStringField(nil, "", "", func() string { return newName }, func(s string) { newName = s })
+		newField.SetMinimumTextWidthUsing("Abcdefghijklmnopqrstuvwxyz0123456789")
+
+		panel := unison.NewPanel()
+		panel.SetLayout(&unison.FlexLayout{
+			Columns:  2,
+			HSpacing: unison.StdHSpacing,
+			VSpacing: unison.StdVSpacing,
+		})
+		panel.AddChild(widget.NewFieldLeadingLabel(i18n.Text("Current Name")))
+		panel.AddChild(oldField)
+		panel.AddChild(widget.NewFieldLeadingLabel(i18n.Text("New Name")))
+		panel.AddChild(newField)
+
+		dialog, err := unison.NewDialog(unison.DefaultDialogTheme.QuestionIcon,
+			unison.DefaultDialogTheme.QuestionIconInk, panel,
+			[]*unison.DialogButtonInfo{unison.NewCancelButtonInfo(), unison.NewOKButtonInfo()})
+		if err != nil {
+			unison.ErrorDialogWithError(i18n.Text("Unable to create rename dialog"), err)
+			return
+		}
+		newField.ValidateCallback = func() bool {
+			trimmed := strings.TrimSpace(newName)
+			valid := trimmed != "" && !strings.HasPrefix(trimmed, ".") && !strings.ContainsAny(newName, `/\:`) &&
+				!disallowedWindowsFileNames[strings.ToLower(newName)]
+			dialog.Button(unison.ModalResponseOK).SetEnabled(valid)
+			return valid
+		}
+		if dialog.RunModal() == unison.ModalResponseOK {
+			oldPath := row.Path()
+			newPath := filepath.Join(filepath.Dir(oldPath), newName+filepath.Ext(oldPath))
+			if err = os.Rename(oldPath, newPath); err != nil {
+				unison.ErrorDialogWithError(fmt.Sprintf(i18n.Text("Unable to rename:\n%s"), oldPath), err)
+			} else {
+				n.Reload()
+				n.ApplySelectedPaths([]string{newPath})
+				n.MarkForRedraw()
+			}
+		}
+	}
+}
+
 func (n *Navigator) updateLibrarySelection() {
 	for _, row := range n.table.SelectedRows(true) {
 		if row.nodeType == libraryNode {
@@ -390,6 +478,7 @@ func (n *Navigator) mouseDown(where unison.Point, button, clickCount int, mod un
 			cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.configLibraryButton))
 			cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.downloadLibraryButton))
 			cm.InsertSeparator(-1, true)
+			cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.renameButton))
 			cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.deleteButton))
 			count := cm.Count()
 			if count > 0 {
@@ -474,6 +563,7 @@ func (n *Navigator) Reload() {
 	}
 	n.table.SetRootRows(rows)
 	n.ApplyDisclosedPaths(disclosed)
+	n.table.SyncToModel()
 	n.ApplySelectedPaths(selection)
 	n.table.SizeColumnsToFit(true)
 }
@@ -516,17 +606,19 @@ func (n *Navigator) Modified() bool {
 
 func (n *Navigator) selectionChanged() {
 	deleteEnabled := false
+	renameEnabled := false
 	downloadEnabled := false
 	configEnabled := false
 	if n.table.HasSelection() {
 		deleteEnabled = true
 		downloadEnabled = true
 		configEnabled = true
-		selection := n.table.SelectedRows(true)
+		renameEnabled = n.table.SelectionCount() == 1
 		hasLibs := false
 		hasOther := false
-		for _, row := range selection {
-			if selection[0].nodeType == libraryNode {
+		for _, row := range n.table.SelectedRows(true) {
+			if row.nodeType == libraryNode {
+				renameEnabled = false
 				hasLibs = true
 				if row.library.IsMaster() || row.library.IsUser() {
 					deleteEnabled = false
@@ -546,6 +638,7 @@ func (n *Navigator) selectionChanged() {
 		}
 	}
 	n.deleteButton.SetEnabled(deleteEnabled)
+	n.renameButton.SetEnabled(renameEnabled)
 	n.downloadLibraryButton.SetEnabled(downloadEnabled)
 	n.libraryReleaseNotesButton.SetEnabled(downloadEnabled)
 	n.configLibraryButton.SetEnabled(configEnabled)
