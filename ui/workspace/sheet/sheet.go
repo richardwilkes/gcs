@@ -190,10 +190,10 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 		HAlign: unison.FillAlignment,
 		HGrab:  true,
 	})
+	toolbar.AddChild(s.scaleField)
 	toolbar.AddChild(sheetSettingsButton)
 	toolbar.AddChild(attributesButton)
 	toolbar.AddChild(bodyTypeButton)
-	toolbar.AddChild(s.scaleField)
 	toolbar.SetLayout(&unison.FlexLayout{
 		Columns:  len(toolbar.Children()),
 		HSpacing: unison.StdHSpacing,

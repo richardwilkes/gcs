@@ -13,6 +13,7 @@ package workspace
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -27,6 +28,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/toolbox/desktop"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xmath/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/rjeczalik/notify"
@@ -49,7 +51,7 @@ type Navigator struct {
 	forwardButton             *unison.Button
 	searchField               *unison.Field
 	matchesLabel              *unison.Label
-	removeLibraryButton       *unison.Button
+	deleteButton              *unison.Button
 	downloadLibraryButton     *unison.Button
 	libraryReleaseNotesButton *unison.Button
 	configLibraryButton       *unison.Button
@@ -121,6 +123,7 @@ func newNavigator() *Navigator {
 	trampolines.SetLibraryUpdatesAvailable(n.EventuallyReload)
 	n.table.MouseDownCallback = n.mouseDown
 	n.table.SelectionChangedCallback = n.selectionChanged
+	n.table.KeyDownCallback = n.tableKeyDown
 
 	n.selectionChanged()
 	return n
@@ -131,25 +134,25 @@ func (n *Navigator) setupToolBar() {
 	n.hierarchyButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Opens/closes all hierarchical rows"))
 	n.hierarchyButton.ClickCallback = n.toggleHierarchy
 
-	addButton := unison.NewSVGButton(res.CircledAddSVG)
-	addButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Add Library"))
-	addButton.ClickCallback = n.addLibrary
+	n.deleteButton = unison.NewSVGButton(res.TrashSVG)
+	n.deleteButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Delete"))
+	n.deleteButton.ClickCallback = n.deleteSelection
 
-	n.removeLibraryButton = unison.NewSVGButton(res.TrashSVG)
-	n.removeLibraryButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Remove Library"))
-	n.removeLibraryButton.ClickCallback = n.removeSelectedLibrary
+	addLibraryButton := unison.NewSVGButton(res.CircledAddSVG)
+	addLibraryButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Add Library"))
+	addLibraryButton.ClickCallback = n.addLibrary
 
 	n.downloadLibraryButton = unison.NewSVGButton(res.DownloadSVG)
-	n.downloadLibraryButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Update Library"))
-	n.downloadLibraryButton.ClickCallback = n.updateSelectedLibrary
+	n.downloadLibraryButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Update"))
+	n.downloadLibraryButton.ClickCallback = n.updateLibrarySelection
 
 	n.libraryReleaseNotesButton = unison.NewSVGButton(res.ReleaseNotesSVG)
-	n.libraryReleaseNotesButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Show Release Notes"))
-	n.libraryReleaseNotesButton.ClickCallback = n.showSelectedLibraryReleaseNotes
+	n.libraryReleaseNotesButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Release Notes"))
+	n.libraryReleaseNotesButton.ClickCallback = n.showSelectionReleaseNotes
 
 	n.configLibraryButton = unison.NewSVGButton(res.GearsSVG)
-	n.configLibraryButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Configure Library"))
-	n.configLibraryButton.ClickCallback = n.configureSelectedLibrary
+	n.configLibraryButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Configure"))
+	n.configLibraryButton.ClickCallback = n.configureSelection
 
 	scaleTitle := i18n.Text("Scale")
 	scaleField := widget.NewPercentageField(nil, "", scaleTitle,
@@ -162,20 +165,22 @@ func (n *Navigator) setupToolBar() {
 	scaleField.Tooltip = unison.NewTooltipWithText(scaleTitle)
 
 	first := unison.NewPanel()
-	first.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		HGrab:  true,
-	})
+	first.AddChild(scaleField)
 	first.AddChild(n.hierarchyButton)
-	first.AddChild(addButton)
-	first.AddChild(n.removeLibraryButton)
+	first.AddChild(widget.NewToolbarSeparator())
+	first.AddChild(addLibraryButton)
 	first.AddChild(n.downloadLibraryButton)
 	first.AddChild(n.libraryReleaseNotesButton)
 	first.AddChild(n.configLibraryButton)
-	first.AddChild(scaleField)
+	first.AddChild(widget.NewToolbarSeparator())
+	first.AddChild(n.deleteButton)
 	first.SetLayout(&unison.FlexLayout{
 		Columns:  len(first.Children()),
 		HSpacing: unison.StdHSpacing,
+	})
+	first.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		HGrab:  true,
 	})
 
 	n.backButton = unison.NewSVGButton(res.BackSVG)
@@ -246,45 +251,100 @@ func (n *Navigator) addLibrary() {
 	trampolines2.CallShowLibrarySettings(&library.Library{})
 }
 
-func (n *Navigator) removeSelectedLibrary() {
-	if n.table.SelectionCount() == 1 {
-		if row := n.table.SelectedRows(true)[0]; row.nodeType == libraryNode && !row.library.IsMaster() &&
-			!row.library.IsUser() {
-			if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to remove %s?"), row.library.Title),
-				i18n.Text("Note: This action will NOT remove any files from disk")) == unison.ModalResponseOK {
+func (n *Navigator) deleteSelection() {
+	if n.table.HasSelection() {
+		selection := n.table.SelectedRows(true)
+		hasLibs := false
+		hasOther := false
+		title := ""
+		for _, row := range selection {
+			if row.nodeType == libraryNode {
+				if row.library.IsMaster() || row.library.IsUser() {
+					return
+				}
+				if title == "" {
+					title = row.library.Title
+				} else {
+					title = i18n.Text("these libraries")
+				}
+				hasLibs = true
+			} else {
+				hasOther = true
+				if title == "" {
+					title = row.primaryColumnText()
+				} else {
+					title = i18n.Text("these entries")
+				}
+			}
+		}
+		if hasLibs && hasOther {
+			return
+		}
+		switch {
+		case hasLibs && hasOther:
+			return
+		case hasLibs:
+			header := txt.Wrap("", fmt.Sprintf(i18n.Text("Are you sure you want to remove %s?"), title), 100)
+			if unison.QuestionDialog(header,
+				i18n.Text("Note: This action will NOT remove any files from disk.")) == unison.ModalResponseOK {
 				libs := settings.Global().LibrarySet
-				delete(libs, row.library.Key())
-				row.library.StopAllWatches()
+				for _, row := range selection {
+					delete(libs, row.library.Key())
+					row.library.StopAllWatches()
+				}
 				n.Reload()
 			}
-		}
-	}
-}
-
-func (n *Navigator) updateSelectedLibrary() {
-	if n.table.SelectionCount() == 1 {
-		if row := n.table.SelectedRows(true)[0]; row.nodeType == libraryNode {
-			if rel := row.library.AvailableUpdate(); rel != nil && rel.HasUpdate() {
-				initiateLibraryUpdate(row.library, *rel)
+		case hasOther:
+			header := txt.Wrap("", fmt.Sprintf(i18n.Text("Are you sure you want to remove %s?"), title), 100)
+			note := txt.Wrap("", fmt.Sprintf(i18n.Text("Note: This action cannot be undone and will remove %s from disk."), title), 100)
+			if unison.QuestionDialog(header, note) == unison.ModalResponseOK {
+				defer n.Reload()
+				for _, row := range selection {
+					p := row.Path()
+					if row.nodeType == directoryNode {
+						if err := os.RemoveAll(p); err != nil {
+							unison.ErrorDialogWithError(fmt.Sprintf(i18n.Text("Unable to remove directory:\n%s"), p), err)
+							return
+						}
+					} else {
+						if err := os.Remove(p); err != nil {
+							unison.ErrorDialogWithError(fmt.Sprintf(i18n.Text("Unable to remove file:\n%s"), p), err)
+							return
+						}
+					}
+				}
 			}
 		}
 	}
 }
 
-func (n *Navigator) showSelectedLibraryReleaseNotes() {
-	if n.table.SelectionCount() == 1 {
-		if row := n.table.SelectedRows(true)[0]; row.nodeType == libraryNode {
-			if rel := row.library.AvailableUpdate(); rel != nil && rel.HasUpdate() {
-				trampolines.CallShowReleaseNotesMarkdown(fmt.Sprintf("%s v%s Release Notes", row.library.Title,
-					filterVersion(rel.Version)), fmt.Sprintf("## Version %s\n%s", rel.Version, rel.Notes))
+func (n *Navigator) updateLibrarySelection() {
+	for _, row := range n.table.SelectedRows(true) {
+		if row.nodeType == libraryNode {
+			rel := row.library.AvailableUpdate()
+			if rel == nil || !rel.HasUpdate() || !initiateLibraryUpdate(row.library, *rel) {
+				return
 			}
 		}
 	}
 }
 
-func (n *Navigator) configureSelectedLibrary() {
-	if n.table.SelectionCount() == 1 {
-		if row := n.table.SelectedRows(true)[0]; row.nodeType == libraryNode {
+func (n *Navigator) showSelectionReleaseNotes() {
+	for _, row := range n.table.SelectedRows(true) {
+		if row.nodeType == libraryNode {
+			rel := row.library.AvailableUpdate()
+			if rel == nil || !rel.HasUpdate() {
+				return
+			}
+			trampolines.CallShowReleaseNotesMarkdown(fmt.Sprintf("%s v%s Release Notes", row.library.Title,
+				filterVersion(rel.Version)), fmt.Sprintf("## Version %s\n%s", rel.Version, rel.Notes))
+		}
+	}
+}
+
+func (n *Navigator) configureSelection() {
+	for _, row := range n.table.SelectedRows(true) {
+		if row.nodeType == libraryNode {
 			trampolines2.CallShowLibrarySettings(row.library)
 		}
 	}
@@ -302,6 +362,21 @@ func (n *Navigator) searchKeydown(keyCode unison.KeyCode, mod unison.Modifiers, 
 	return n.searchField.DefaultKeyDown(keyCode, mod, repeat)
 }
 
+func (n *Navigator) tableKeyDown(keyCode unison.KeyCode, mod unison.Modifiers, repeat bool) bool {
+	if unison.IsControlAction(keyCode, mod) {
+		return n.table.DefaultKeyDown(keyCode, mod, repeat)
+	}
+	switch keyCode {
+	case unison.KeyBackspace, unison.KeyDelete:
+		if n.deleteButton.Enabled() {
+			n.deleteButton.Click()
+		}
+		return true
+	default:
+		return n.table.DefaultKeyDown(keyCode, mod, repeat)
+	}
+}
+
 func (n *Navigator) mouseDown(where unison.Point, button, clickCount int, mod unison.Modifiers) bool {
 	stop := n.table.DefaultMouseDown(where, button, clickCount, mod)
 	if button == unison.ButtonRight && clickCount == 1 {
@@ -310,11 +385,18 @@ func (n *Navigator) mouseDown(where unison.Point, button, clickCount int, mod un
 			cm := f.NewMenu(unison.PopupMenuTemporaryBaseID|unison.ContextMenuIDFlag, "", nil)
 			id := 1
 			cm.InsertItem(-1, newShowNodeOnDiskMenuItem(f, &id, sel))
+			cm.InsertSeparator(-1, true)
 			cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.libraryReleaseNotesButton))
 			cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.configLibraryButton))
 			cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.downloadLibraryButton))
-			cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.removeLibraryButton))
-			if cm.Count() > 0 {
+			cm.InsertSeparator(-1, true)
+			cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.deleteButton))
+			count := cm.Count()
+			if count > 0 {
+				count--
+				if cm.ItemAtIndex(count).IsSeparator() {
+					cm.RemoveItem(count)
+				}
 				n.FlushDrawing()
 				cm.Popup(geom.Rect[float32]{
 					Point: n.table.PointToRoot(where),
@@ -433,19 +515,37 @@ func (n *Navigator) Modified() bool {
 }
 
 func (n *Navigator) selectionChanged() {
-	removeEnabled := false
+	deleteEnabled := false
 	downloadEnabled := false
 	configEnabled := false
-	if n.table.SelectionCount() == 1 {
-		if row := n.table.SelectedRows(true)[0]; row.nodeType == libraryNode {
-			configEnabled = true
-			removeEnabled = !row.library.IsMaster() && !row.library.IsUser()
-			if rel := row.library.AvailableUpdate(); rel != nil && rel.HasUpdate() {
-				downloadEnabled = true
+	if n.table.HasSelection() {
+		deleteEnabled = true
+		downloadEnabled = true
+		configEnabled = true
+		selection := n.table.SelectedRows(true)
+		hasLibs := false
+		hasOther := false
+		for _, row := range selection {
+			if selection[0].nodeType == libraryNode {
+				hasLibs = true
+				if row.library.IsMaster() || row.library.IsUser() {
+					deleteEnabled = false
+				}
+				if downloadEnabled {
+					rel := row.library.AvailableUpdate()
+					downloadEnabled = rel != nil && rel.HasUpdate()
+				}
+			} else {
+				hasOther = true
+				configEnabled = false
+				downloadEnabled = false
 			}
 		}
+		if hasLibs && hasOther {
+			deleteEnabled = false
+		}
 	}
-	n.removeLibraryButton.SetEnabled(removeEnabled)
+	n.deleteButton.SetEnabled(deleteEnabled)
 	n.downloadLibraryButton.SetEnabled(downloadEnabled)
 	n.libraryReleaseNotesButton.SetEnabled(downloadEnabled)
 	n.configLibraryButton.SetEnabled(configEnabled)
@@ -478,6 +578,7 @@ func (n *Navigator) toggleHierarchy() {
 		}
 	}
 	n.table.SyncToModel()
+	n.table.PruneSelectionOfUndisclosedNodes()
 }
 
 func setRowOpen(row *NavigatorNode, open bool) {
