@@ -49,6 +49,7 @@ func newPrereqPanel(entity *gurps.Entity, root **gurps.PrereqList) *prereqPanel 
 	p.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,
 		HAlign: unison.FillAlignment,
+		HGrab:  true,
 	})
 	p.SetBorder(unison.NewCompoundBorder(
 		&widget.TitledBorder{
@@ -87,6 +88,10 @@ func (p *prereqPanel) createPrereqListPanel(depth int, list *gurps.PrereqList) *
 		HAlign:   unison.FillAlignment,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
+	})
+	panel.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		HGrab:  true,
 	})
 	for _, child := range list.Prereqs {
 		p.addToList(panel, depth+1, -1, child)
