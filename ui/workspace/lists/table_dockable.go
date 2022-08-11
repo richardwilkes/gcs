@@ -170,7 +170,7 @@ func NewTableDockable[T gurps.NodeTypes](filePath, extension string, provider nt
 	toolbar.AddChild(d.scaleField)
 	toolbar.AddChild(d.hierarchyButton)
 	toolbar.AddChild(d.sizeToFitButton)
-	toolbar.AddChild(widget.NewToolbarSeparator())
+	toolbar.AddChild(widget.NewToolbarSeparator(unison.StdHSpacing))
 	toolbar.AddChild(d.backButton)
 	toolbar.AddChild(d.forwardButton)
 	toolbar.AddChild(d.searchField)

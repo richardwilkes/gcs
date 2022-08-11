@@ -73,11 +73,11 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 	}
 
 	p.AddChild(widget.NewPageHeader(i18n.Text("Level"), 3))
-	p.AddChild(unison.NewPanel())
+	p.AddChild(widget.NewToolbarSeparator(0))
 	p.AddChild(widget.NewPageHeader(i18n.Text("Max Load"), 1))
-	p.AddChild(unison.NewPanel())
+	p.AddChild(widget.NewToolbarSeparator(0))
 	p.AddChild(widget.NewPageHeader(i18n.Text("Move"), 1))
-	p.AddChild(unison.NewPanel())
+	p.AddChild(widget.NewToolbarSeparator(0))
 	p.AddChild(widget.NewPageHeader(i18n.Text("Dodge"), 1))
 
 	current := entity.EncumbranceLevel(true)
