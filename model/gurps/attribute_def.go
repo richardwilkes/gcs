@@ -122,8 +122,28 @@ func (a *AttributeDef) Primary() bool {
 	if a.Type == attribute.PrimarySeparator {
 		return true
 	}
+	if a.Type == attribute.Pool || a.IsSeparator() {
+		return false
+	}
 	_, err := fxp.FromString(strings.TrimSpace(a.AttributeBase))
 	return err == nil
+}
+
+// Secondary returns true if the base value is a derived value.
+func (a *AttributeDef) Secondary() bool {
+	if a.Type == attribute.SecondarySeparator {
+		return true
+	}
+	if a.Type == attribute.Pool || a.IsSeparator() {
+		return false
+	}
+	_, err := fxp.FromString(strings.TrimSpace(a.AttributeBase))
+	return err != nil
+}
+
+// Pool returns true if the base value is a pool value.
+func (a *AttributeDef) Pool() bool {
+	return a.Type == attribute.PoolSeparator || a.Type == attribute.Pool
 }
 
 // BaseValue returns the resolved base value.

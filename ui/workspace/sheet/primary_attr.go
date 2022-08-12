@@ -61,20 +61,19 @@ func NewPrimaryAttrPanel(entity *gurps.Entity) *PrimaryAttrPanel {
 func (p *PrimaryAttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 	p.RemoveAllChildren()
 	for _, def := range attrs.List(false) {
-		if def.Type == attribute.Pool || !def.Primary() {
-			continue
-		}
-		if def.Type == attribute.PrimarySeparator {
-			p.AddChild(newPageInternalHeader(def.Name, 3))
-		} else {
-			attr, ok := p.entity.Attributes.Set[def.ID()]
-			if !ok {
-				jot.Warnf("unable to locate attribute data for '%s'", def.ID())
-				continue
+		if def.Primary() {
+			if def.Type == attribute.PrimarySeparator {
+				p.AddChild(newPageInternalHeader(def.Name, 3))
+			} else {
+				attr, ok := p.entity.Attributes.Set[def.ID()]
+				if !ok {
+					jot.Warnf("unable to locate attribute data for '%s'", def.ID())
+					continue
+				}
+				p.AddChild(p.createPointsField(attr))
+				p.AddChild(p.createValueField(def, attr))
+				p.AddChild(widget.NewPageLabel(def.CombinedName()))
 			}
-			p.AddChild(p.createPointsField(attr))
-			p.AddChild(p.createValueField(def, attr))
-			p.AddChild(widget.NewPageLabel(def.CombinedName()))
 		}
 	}
 }
