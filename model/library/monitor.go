@@ -17,12 +17,13 @@ import (
 const EventRootSync = 0xFFFFFFFF
 
 type monitor struct {
-	library *Library
-	lock    sync.RWMutex
-	events  chan notify.EventInfo
-	done    chan bool
-	queue   *taskqueue.Queue
-	tokens  []*MonitorToken
+	library    *Library
+	lock       sync.RWMutex
+	events     chan notify.EventInfo
+	done       chan bool
+	queue      *taskqueue.Queue
+	tokensLock sync.RWMutex
+	tokens     []*MonitorToken
 }
 
 func newMonitor(library *Library) *monitor {
@@ -44,7 +45,9 @@ func (m *monitor) startWatch(token *MonitorToken, sendSync bool) {
 	defer m.lock.Unlock()
 	token.root = m.library.Path()
 	token.subPaths = make(map[string]bool)
+	m.tokensLock.Lock()
 	m.tokens = append(m.tokens, token)
+	m.tokensLock.Unlock()
 	if m.events == nil {
 		m.queue = taskqueue.New(taskqueue.Workers(1))
 		m.done = make(chan bool)
@@ -66,16 +69,13 @@ func (m *monitor) startWatch(token *MonitorToken, sendSync bool) {
 
 func (m *monitor) stop() []*MonitorToken {
 	m.lock.Lock()
-	tokens := m.internalStop()
-	m.lock.Unlock()
-	return tokens
-}
-
-func (m *monitor) internalStop() []*MonitorToken {
+	defer m.lock.Unlock()
 	var tokens []*MonitorToken
 	if m.events != nil {
+		m.tokensLock.RLock()
 		tokens = make([]*MonitorToken, len(m.tokens))
 		copy(tokens, m.tokens)
+		m.tokensLock.RUnlock()
 		notify.Stop(m.events)
 		close(m.events)
 		<-m.done
@@ -83,7 +83,9 @@ func (m *monitor) internalStop() []*MonitorToken {
 		m.queue = nil
 		m.events = nil
 		m.done = nil
+		m.tokensLock.Lock()
 		m.tokens = nil
+		m.tokensLock.Unlock()
 	}
 	return tokens
 }
@@ -97,10 +99,10 @@ func (m *monitor) listenForEvents() {
 
 func (m *monitor) send(fullPath string, what notify.Event) {
 	m.queue.Submit(func() {
-		m.lock.RLock()
+		m.tokensLock.RLock()
 		tokens := make([]*MonitorToken, len(m.tokens))
 		copy(tokens, m.tokens)
-		m.lock.RUnlock()
+		m.tokensLock.RUnlock()
 		for _, token := range tokens {
 			if token.onUIThread {
 				unison.InvokeTask(func() { token.callback(m.library, fullPath, what) })
@@ -145,12 +147,14 @@ func (m *MonitorToken) AddSubPath(relativePath string) {
 
 // Stop this watch.
 func (m *MonitorToken) Stop() {
-	m.monitor.lock.Lock()
-	defer m.monitor.lock.Unlock()
+	m.monitor.tokensLock.Lock()
 	if i := slices.Index(m.monitor.tokens, m); i != -1 {
 		m.monitor.tokens = slices.Delete(m.monitor.tokens, i, i+1)
 		if len(m.monitor.tokens) == 0 {
-			m.monitor.internalStop()
+			m.monitor.tokensLock.Unlock()
+			m.monitor.stop()
+			return
 		}
 	}
+	m.monitor.tokensLock.Unlock()
 }
