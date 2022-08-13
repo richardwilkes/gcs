@@ -27,13 +27,17 @@ import (
 // PrimaryAttrPanel holds the contents of the primary attributes block on the sheet.
 type PrimaryAttrPanel struct {
 	unison.Panel
-	entity *gurps.Entity
+	sheet  *Sheet
+	prefix string
 	crc    uint64
 }
 
 // NewPrimaryAttrPanel creates a new primary attributes panel.
-func NewPrimaryAttrPanel(entity *gurps.Entity) *PrimaryAttrPanel {
-	p := &PrimaryAttrPanel{entity: entity}
+func NewPrimaryAttrPanel(sheet *Sheet) *PrimaryAttrPanel {
+	p := &PrimaryAttrPanel{
+		sheet:  sheet,
+		prefix: sheet.targetMgr.NextPrefix(),
+	}
 	p.Self = p
 	p.SetLayout(&unison.FlexLayout{
 		Columns:  3,
@@ -52,20 +56,21 @@ func NewPrimaryAttrPanel(entity *gurps.Entity) *PrimaryAttrPanel {
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
 		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, unison.Fill))
 	}
-	attrs := gurps.SheetSettingsFor(p.entity).Attributes
+	attrs := gurps.SheetSettingsFor(p.sheet.entity).Attributes
 	p.crc = attrs.CRC64()
 	p.rebuild(attrs)
 	return p
 }
 
 func (p *PrimaryAttrPanel) rebuild(attrs *gurps.AttributeDefs) {
+	focusRefKey := p.sheet.targetMgr.CurrentFocusRef()
 	p.RemoveAllChildren()
 	for _, def := range attrs.List(false) {
 		if def.Primary() {
 			if def.Type == attribute.PrimarySeparator {
 				p.AddChild(newPageInternalHeader(def.Name, 3))
 			} else {
-				attr, ok := p.entity.Attributes.Set[def.ID()]
+				attr, ok := p.sheet.entity.Attributes.Set[def.ID()]
 				if !ok {
 					jot.Warnf("unable to locate attribute data for '%s'", def.ID())
 					continue
@@ -76,6 +81,7 @@ func (p *PrimaryAttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 			}
 		}
 	}
+	p.sheet.targetMgr.ReacquireFocus(focusRefKey, p.sheet.toolbar, p.sheet.scroll.Content())
 }
 
 func newPageInternalHeader(title string, span int) unison.Paneler {
@@ -124,7 +130,7 @@ func (p *PrimaryAttrPanel) createPointsField(attr *gurps.Attribute) *widget.NonE
 }
 
 func (p *PrimaryAttrPanel) createValueField(def *gurps.AttributeDef, attr *gurps.Attribute) *widget.DecimalField {
-	field := widget.NewDecimalPageField(nil, "", def.CombinedName(),
+	field := widget.NewDecimalPageField(p.sheet.targetMgr, p.prefix+attr.AttrID, def.CombinedName(),
 		func() fxp.Int { return attr.Maximum() },
 		func(v fxp.Int) { attr.SetMaximum(v) }, fxp.Min, fxp.Max, true)
 	return field
@@ -132,7 +138,7 @@ func (p *PrimaryAttrPanel) createValueField(def *gurps.AttributeDef, attr *gurps
 
 // Sync the panel to the current data.
 func (p *PrimaryAttrPanel) Sync() {
-	attrs := gurps.SheetSettingsFor(p.entity).Attributes
+	attrs := gurps.SheetSettingsFor(p.sheet.entity).Attributes
 	if crc := attrs.CRC64(); crc != p.crc {
 		p.crc = crc
 		p.rebuild(attrs)

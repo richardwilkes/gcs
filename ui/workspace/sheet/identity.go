@@ -12,7 +12,6 @@
 package sheet
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/ancestry"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
@@ -23,12 +22,16 @@ import (
 // IdentityPanel holds the contents of the identity block on the sheet.
 type IdentityPanel struct {
 	unison.Panel
-	entity *gurps.Entity
+	sheet  *Sheet
+	prefix string
 }
 
 // NewIdentityPanel creates a new identity panel.
-func NewIdentityPanel(entity *gurps.Entity) *IdentityPanel {
-	p := &IdentityPanel{entity: entity}
+func NewIdentityPanel(sheet *Sheet) *IdentityPanel {
+	p := &IdentityPanel{
+		sheet:  sheet,
+		prefix: sheet.targetMgr.NextPrefix(),
+	}
 	p.Self = p
 	p.SetLayout(&unison.FlexLayout{
 		Columns:  2,
@@ -50,27 +53,27 @@ func NewIdentityPanel(entity *gurps.Entity) *IdentityPanel {
 	}
 
 	title := i18n.Text("Name")
-	field := widget.NewStringPageField(nil, "", title,
-		func() string { return p.entity.Profile.Name },
-		func(s string) { p.entity.Profile.Name = s })
+	field := widget.NewStringPageField(p.sheet.targetMgr, p.prefix+"name", title,
+		func() string { return p.sheet.entity.Profile.Name },
+		func(s string) { p.sheet.entity.Profile.Name = s })
 	p.AddChild(widget.NewPageLabelWithRandomizer(title,
 		i18n.Text("Randomize the name using the current ancestry"), func() {
-			p.entity.Profile.Name = entity.Ancestry().RandomName(
-				ancestry.AvailableNameGenerators(settings.Global().Libraries()), p.entity.Profile.Gender)
-			SetTextAndMarkModified(field.Field, p.entity.Profile.Name)
+			p.sheet.entity.Profile.Name = p.sheet.entity.Ancestry().RandomName(
+				ancestry.AvailableNameGenerators(settings.Global().Libraries()), p.sheet.entity.Profile.Gender)
+			SetTextAndMarkModified(field.Field, p.sheet.entity.Profile.Name)
 		}))
 	p.AddChild(field)
 
 	title = i18n.Text("Title")
 	p.AddChild(widget.NewPageLabelEnd(title))
-	p.AddChild(widget.NewStringPageField(nil, "", title,
-		func() string { return p.entity.Profile.Title },
-		func(s string) { p.entity.Profile.Title = s }))
+	p.AddChild(widget.NewStringPageField(p.sheet.targetMgr, p.prefix+"title", title,
+		func() string { return p.sheet.entity.Profile.Title },
+		func(s string) { p.sheet.entity.Profile.Title = s }))
 
 	title = i18n.Text("Organization")
 	p.AddChild(widget.NewPageLabelEnd(title))
-	p.AddChild(widget.NewStringPageField(nil, "", title,
-		func() string { return p.entity.Profile.Organization },
-		func(s string) { p.entity.Profile.Organization = s }))
+	p.AddChild(widget.NewStringPageField(p.sheet.targetMgr, p.prefix+"org", title,
+		func() string { return p.sheet.entity.Profile.Organization },
+		func(s string) { p.sheet.entity.Profile.Organization = s }))
 	return p
 }

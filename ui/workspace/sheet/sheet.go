@@ -54,7 +54,9 @@ type itemCreator interface {
 type Sheet struct {
 	unison.Panel
 	path                 string
+	targetMgr            *widget.TargetMgr
 	undoMgr              *unison.UndoManager
+	toolbar              *unison.Panel
 	scroll               *unison.ScrollPanel
 	entity               *gurps.Entity
 	crc                  uint64
@@ -138,6 +140,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 		needsSaveAsPrompt: true,
 	}
 	s.Self = s
+	s.targetMgr = widget.NewTargetMgr(s)
 	s.SetLayout(&unison.FlexLayout{
 		Columns: 1,
 		HAlign:  unison.FillAlignment,
@@ -183,23 +186,23 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	s.scaleField.SetMarksModified(false)
 	s.scaleField.Tooltip = unison.NewTooltipWithText(scaleTitle)
 
-	toolbar := unison.NewPanel()
-	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
+	s.toolbar = unison.NewPanel()
+	s.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
-	toolbar.SetLayoutData(&unison.FlexLayoutData{
+	s.toolbar.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,
 		HGrab:  true,
 	})
-	toolbar.AddChild(s.scaleField)
-	toolbar.AddChild(sheetSettingsButton)
-	toolbar.AddChild(attributesButton)
-	toolbar.AddChild(bodyTypeButton)
-	toolbar.SetLayout(&unison.FlexLayout{
-		Columns:  len(toolbar.Children()),
+	s.toolbar.AddChild(s.scaleField)
+	s.toolbar.AddChild(sheetSettingsButton)
+	s.toolbar.AddChild(attributesButton)
+	s.toolbar.AddChild(bodyTypeButton)
+	s.toolbar.SetLayout(&unison.FlexLayout{
+		Columns:  len(s.toolbar.Children()),
 		HSpacing: unison.StdHSpacing,
 	})
 
-	s.AddChild(toolbar)
+	s.AddChild(s.toolbar)
 	s.AddChild(s.scroll)
 
 	s.applyScale()
@@ -361,11 +364,11 @@ func (s *Sheet) createTopBlock() *Page {
 }
 
 func (s *Sheet) createFirstRow() *unison.Panel {
-	s.PortraitPanel = NewPortraitPanel(s.entity)
-	s.IdentityPanel = NewIdentityPanel(s.entity)
-	s.MiscPanel = NewMiscPanel(s.entity)
-	s.DescriptionPanel = NewDescriptionPanel(s.entity)
-	s.PointsPanel = NewPointsPanel(s.entity)
+	s.PortraitPanel = NewPortraitPanel(s)
+	s.IdentityPanel = NewIdentityPanel(s)
+	s.MiscPanel = NewMiscPanel(s)
+	s.DescriptionPanel = NewDescriptionPanel(s)
+	s.PointsPanel = NewPointsPanel(s)
 
 	right := unison.NewPanel()
 	right.SetLayout(&unison.FlexLayout{
@@ -412,9 +415,9 @@ func (s *Sheet) createSecondRow() *unison.Panel {
 		HGrab:  true,
 	})
 
-	s.PrimaryAttrPanel = NewPrimaryAttrPanel(s.entity)
-	s.SecondaryAttrPanel = NewSecondaryAttrPanel(s.entity)
-	s.PointPoolsPanel = NewPointPoolsPanel(s.entity)
+	s.PrimaryAttrPanel = NewPrimaryAttrPanel(s)
+	s.SecondaryAttrPanel = NewSecondaryAttrPanel(s)
+	s.PointPoolsPanel = NewPointPoolsPanel(s)
 	s.BodyPanel = NewBodyPanel(s.entity)
 	s.EncumbrancePanel = NewEncumbrancePanel(s.entity)
 	s.LiftingPanel = NewLiftingPanel(s.entity)
@@ -672,6 +675,7 @@ func (s *Sheet) SheetSettingsUpdated(entity *gurps.Entity, blockLayout bool) {
 
 // Rebuild implements widget.Rebuildable.
 func (s *Sheet) Rebuild(full bool) {
+	focusRefKey := s.targetMgr.CurrentFocusRef()
 	h, v := s.scroll.Position()
 	s.entity.Recalculate()
 	if full {
@@ -703,6 +707,7 @@ func (s *Sheet) Rebuild(full bool) {
 	if dc := unison.Ancestor[*unison.DockContainer](s); dc != nil {
 		dc.UpdateTitle(s)
 	}
+	s.targetMgr.ReacquireFocus(focusRefKey, s.toolbar, s.scroll.Content())
 	s.scroll.SetPosition(h, v)
 }
 

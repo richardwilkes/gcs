@@ -175,10 +175,7 @@ func (d *bodyDockable) reset() {
 }
 
 func (d *bodyDockable) sync() {
-	var focusRefKey string
-	if focus := d.Window().Focus(); unison.AncestorOrSelf[*bodyDockable](focus) == d {
-		focusRefKey = focus.RefKey
-	}
+	focusRefKey := d.targetMgr.CurrentFocusRef()
 	scrollRoot := d.content.ScrollRoot()
 	h, v := scrollRoot.Position()
 	d.content.RemoveAllChildren()
@@ -187,13 +184,7 @@ func (d *bodyDockable) sync() {
 	d.MarkForRedraw()
 	d.ValidateLayout()
 	d.MarkModified()
-	if focusRefKey != "" {
-		if focus := d.targetMgr.Find(focusRefKey); focus != nil {
-			focus.RequestFocus()
-		} else {
-			widget.FocusFirstContent(d.toolbar, d.content)
-		}
-	}
+	d.targetMgr.ReacquireFocus(focusRefKey, d.toolbar, d.content)
 	scrollRoot.SetPosition(h, v)
 }
 

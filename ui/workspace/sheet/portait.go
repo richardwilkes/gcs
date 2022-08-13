@@ -23,12 +23,12 @@ import (
 // PortraitPanel holds the contents of the portrait block on the sheet.
 type PortraitPanel struct {
 	unison.Panel
-	entity *gurps.Entity
+	sheet *Sheet
 }
 
 // NewPortraitPanel creates a new portrait panel.
-func NewPortraitPanel(entity *gurps.Entity) *PortraitPanel {
-	p := &PortraitPanel{entity: entity}
+func NewPortraitPanel(sheet *Sheet) *PortraitPanel {
+	p := &PortraitPanel{sheet: sheet}
 	p.Self = p
 	p.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.StartAlignment,
@@ -50,7 +50,7 @@ func (p *PortraitPanel) drawSelf(gc *unison.Canvas, _ unison.Rect) {
 	r := p.ContentRect(false)
 	paint := unison.ContentColor.Paint(gc, r, unison.Fill)
 	gc.DrawRect(r, paint)
-	if img := p.entity.Profile.Portrait(); img != nil {
+	if img := p.sheet.entity.Profile.Portrait(); img != nil {
 		img.DrawInRect(gc, r, nil, paint)
 	}
 }

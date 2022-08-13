@@ -12,7 +12,6 @@
 package sheet
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -22,12 +21,16 @@ import (
 // MiscPanel holds the contents of the miscellaneous block on the sheet.
 type MiscPanel struct {
 	unison.Panel
-	entity *gurps.Entity
+	sheet  *Sheet
+	prefix string
 }
 
 // NewMiscPanel creates a new miscellaneous panel.
-func NewMiscPanel(entity *gurps.Entity) *MiscPanel {
-	m := &MiscPanel{entity: entity}
+func NewMiscPanel(sheet *Sheet) *MiscPanel {
+	m := &MiscPanel{
+		sheet:  sheet,
+		prefix: sheet.targetMgr.NextPrefix(),
+	}
 	m.Self = m
 	m.SetLayout(&unison.FlexLayout{
 		Columns:  2,
@@ -49,7 +52,7 @@ func NewMiscPanel(entity *gurps.Entity) *MiscPanel {
 
 	m.AddChild(widget.NewPageLabelEnd(i18n.Text("Created")))
 	m.AddChild(widget.NewNonEditablePageField(func(f *widget.NonEditablePageField) {
-		if text := m.entity.CreatedOn.String(); text != f.Text {
+		if text := m.sheet.entity.CreatedOn.String(); text != f.Text {
 			f.Text = text
 			widget.MarkForLayoutWithinDockable(f)
 		}
@@ -57,7 +60,7 @@ func NewMiscPanel(entity *gurps.Entity) *MiscPanel {
 
 	m.AddChild(widget.NewPageLabelEnd(i18n.Text("Modified")))
 	m.AddChild(widget.NewNonEditablePageField(func(f *widget.NonEditablePageField) {
-		if text := m.entity.ModifiedOn.String(); text != f.Text {
+		if text := m.sheet.entity.ModifiedOn.String(); text != f.Text {
 			f.Text = text
 			widget.MarkForLayoutWithinDockable(f)
 		}
@@ -65,16 +68,16 @@ func NewMiscPanel(entity *gurps.Entity) *MiscPanel {
 
 	title := i18n.Text("Player")
 	m.AddChild(widget.NewPageLabelEnd(title))
-	m.AddChild(widget.NewStringPageFieldNoGrab(nil, "", title,
-		func() string { return m.entity.Profile.PlayerName },
-		func(s string) { m.entity.Profile.PlayerName = s }))
+	m.AddChild(widget.NewStringPageFieldNoGrab(m.sheet.targetMgr, m.prefix+"player", title,
+		func() string { return m.sheet.entity.Profile.PlayerName },
+		func(s string) { m.sheet.entity.Profile.PlayerName = s }))
 
 	return m
 }
 
 // UpdateModified updates the current modification timestamp.
 func (m *MiscPanel) UpdateModified() {
-	m.entity.ModifiedOn = jio.Now()
+	m.sheet.entity.ModifiedOn = jio.Now()
 }
 
 // SetTextAndMarkModified sets the field to the given text, selects it, requests focus, then calls MarkModified().
