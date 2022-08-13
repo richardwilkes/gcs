@@ -568,9 +568,11 @@ func (p *featuresPanel) createCostReductionPanel(f *feature.CostReduction) *unis
 func (p *featuresPanel) addLeveledModifierLine(parent *unison.Panel, f feature.Feature, amount *feature.LeveledAmount) {
 	panel := unison.NewPanel()
 	p.addTypeSwitcher(panel, f)
-	addLeveledAmountPanel(panel, nil, "", amount)
 	if wdb, ok := f.(*feature.WeaponDamageBonus); ok {
+		addLeveledAmountPanel(panel, nil, "", i18n.Text("per die"), amount)
 		addCheckBox(panel, i18n.Text("as a percentage"), &wdb.Percent)
+	} else {
+		addLeveledAmountPanel(panel, nil, "", i18n.Text("per level"), amount)
 	}
 	panel.SetLayout(&unison.FlexLayout{
 		Columns:  len(panel.Children()),

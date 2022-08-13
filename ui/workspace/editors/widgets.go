@@ -549,12 +549,12 @@ func addQuantityCriteriaPanel(parent *unison.Panel, targetMgr *widget.TargetMgr,
 		}, 0, 9999, false, false))
 }
 
-func addLeveledAmountPanel(parent *unison.Panel, targetMgr *widget.TargetMgr, targetKey string, amount *feature.LeveledAmount) {
+func addLeveledAmountPanel(parent *unison.Panel, targetMgr *widget.TargetMgr, targetKey, title string, amount *feature.LeveledAmount) {
 	parent.AddChild(widget.NewDecimalField(targetMgr, targetKey, i18n.Text("Amount"),
 		func() fxp.Int { return amount.Amount },
 		func(value fxp.Int) {
 			amount.Amount = value
 			widget.MarkModified(parent)
 		}, fxp.Min, fxp.Max, true, false))
-	addCheckBox(parent, i18n.Text("per level"), &amount.PerLevel)
+	addCheckBox(parent, title, &amount.PerLevel)
 }
