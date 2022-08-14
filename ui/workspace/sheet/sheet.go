@@ -669,6 +669,7 @@ func (s *Sheet) swapDefaults(_ any) {
 // SheetSettingsUpdated implements gurps.SheetSettingsResponder.
 func (s *Sheet) SheetSettingsUpdated(entity *gurps.Entity, blockLayout bool) {
 	if s.entity == entity {
+		s.MarkModified()
 		s.Rebuild(blockLayout)
 	}
 }
