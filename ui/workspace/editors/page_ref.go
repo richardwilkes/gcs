@@ -37,9 +37,8 @@ func OpenPageRef[T gurps.NodeTypes](table *unison.Table[*ntable.Node[T]]) {
 		var data gurps.CellData
 		gurps.AsNode(row.Data()).CellData(gurps.PageRefCellAlias, &data)
 		for _, one := range settings.ExtractPageReferences(data.Primary) {
-			if settings.OpenPageReference(table.Window(), one, data.Secondary, promptCtx) {
-				return
-			}
+			settings.OpenPageReference(table.Window(), one, data.Secondary, promptCtx)
+			break
 		}
 	}
 }
