@@ -523,6 +523,11 @@ func (e *Equipment) TL() string {
 	return e.TechLevel
 }
 
+// RequiresTL implements TechLevelProvider.
+func (e *Equipment) RequiresTL() bool {
+	return true
+}
+
 // SetTL implements TechLevelProvider.
 func (e *Equipment) SetTL(tl string) {
 	e.TechLevel = tl

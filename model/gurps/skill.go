@@ -735,6 +735,11 @@ func (s *Skill) TL() string {
 	return ""
 }
 
+// RequiresTL implements TechLevelProvider.
+func (s *Skill) RequiresTL() bool {
+	return s.TechLevel != nil
+}
+
 // SetTL implements TechLevelProvider.
 func (s *Skill) SetTL(tl string) {
 	if s.TechLevel != nil {

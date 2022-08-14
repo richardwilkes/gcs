@@ -23,6 +23,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/ui/workspace"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/xmath/geom"
 	"github.com/richardwilkes/unison"
 	"golang.org/x/exp/slices"
 )
@@ -104,13 +105,12 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 	})
 
 	table.DoubleClickCallback = func() { table.PerformCmd(nil, constants.OpenEditorItemID) }
-	keydownCallback := table.KeyDownCallback
 	table.KeyDownCallback = func(keyCode unison.KeyCode, mod unison.Modifiers, repeat bool) bool {
 		if mod == 0 && (keyCode == unison.KeyBackspace || keyCode == unison.KeyDelete) {
 			table.PerformCmd(table, unison.DeleteItemID)
 			return true
 		}
-		return keydownCallback(keyCode, mod, repeat)
+		return table.DefaultKeyDown(keyCode, mod, repeat)
 	}
 	singular, plural := provider.ItemNames()
 	table.InstallDragSupport(provider.DragSVG(), provider.DragKey(), singular, plural)
@@ -119,7 +119,80 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 			table.SizeColumnsToFitWithExcessIn(provider.ExcessWidthColumnIndex())
 		}
 	}
+
+	table.MouseDownCallback = func(where unison.Point, button, clickCount int, mod unison.Modifiers) bool {
+		stop := table.DefaultMouseDown(where, button, clickCount, mod)
+		if button == unison.ButtonRight && clickCount == 1 {
+			if sel := table.SelectedRows(false); len(sel) != 0 {
+				f := unison.DefaultMenuFactory()
+				cm := f.NewMenu(unison.PopupMenuTemporaryBaseID|unison.ContextMenuIDFlag, "", nil)
+				id := 1
+				insertCmdContextMenuItem(table, i18n.Text("Open Detail Editor"), constants.OpenEditorItemID, &id, cm)
+				cm.InsertSeparator(-1, true)
+				insertCmdContextMenuItem(table, i18n.Text("Duplicate"), constants.DuplicateItemID, &id, cm)
+				insertCmdContextMenuItem(table, i18n.Text("Delete"), unison.DeleteItemID, &id, cm)
+				cm.InsertSeparator(-1, true)
+				insertCmdContextMenuItem(table, i18n.Text("Copy to Character Sheet"), constants.CopyToSheetItemID,
+					&id, cm)
+				insertCmdContextMenuItem(table, i18n.Text("Copy to Template"), constants.CopyToTemplateItemID, &id, cm)
+				insertCmdContextMenuItem(table, i18n.Text("Apply Template to Character Sheet"),
+					constants.ApplyTemplateItemID, &id, cm)
+				cm.InsertSeparator(-1, true)
+				insertCmdContextMenuItem(table, i18n.Text("Increment"), constants.IncrementItemID, &id, cm)
+				insertCmdContextMenuItem(table, i18n.Text("Decrement"), constants.DecrementItemID, &id, cm)
+				insertCmdContextMenuItem(table, i18n.Text("Increase Uses"), constants.IncrementUsesItemID, &id, cm)
+				insertCmdContextMenuItem(table, i18n.Text("Decrease Uses"), constants.DecrementUsesItemID, &id, cm)
+				insertCmdContextMenuItem(table, i18n.Text("Increase Skill Level"), constants.IncrementSkillLevelItemID,
+					&id, cm)
+				insertCmdContextMenuItem(table, i18n.Text("Decrease Skill Level"), constants.DecrementSkillLevelItemID,
+					&id, cm)
+				insertCmdContextMenuItem(table, i18n.Text("Increase Tech Level"), constants.IncrementTechLevelItemID,
+					&id, cm)
+				insertCmdContextMenuItem(table, i18n.Text("Decrease Tech Level"), constants.DecrementTechLevelItemID,
+					&id, cm)
+				cm.InsertSeparator(-1, true)
+				insertCmdContextMenuItem(table, i18n.Text("Toggle State"), constants.ToggleStateItemID, &id, cm)
+				insertCmdContextMenuItem(table, i18n.Text("Swap Defaults"), constants.SwapDefaultsItemID, &id, cm)
+				insertCmdContextMenuItem(table, i18n.Text("Convert to Container"), constants.ConvertToContainerItemID,
+					&id, cm)
+				cm.InsertSeparator(-1, true)
+				insertCmdContextMenuItem(table, i18n.Text("Open Page Reference"),
+					constants.OpenOnePageReferenceItemID, &id, cm)
+				insertCmdContextMenuItem(table, i18n.Text("Open Each Page Reference"),
+					constants.OpenEachPageReferenceItemID, &id, cm)
+				count := cm.Count()
+				if count > 0 {
+					count--
+					if cm.ItemAtIndex(count).IsSeparator() {
+						cm.RemoveItem(count)
+					}
+					table.FlushDrawing()
+					cm.Popup(geom.Rect[float32]{
+						Point: table.PointToRoot(where),
+						Size: geom.Size[float32]{
+							Width:  1,
+							Height: 1,
+						},
+					}, 0)
+				}
+				cm.Dispose()
+			}
+		}
+		return stop
+	}
+
 	return header, table
+}
+
+func insertCmdContextMenuItem[T gurps.NodeTypes](table *unison.Table[*Node[T]], title string, cmdID int, id *int, cm unison.Menu) {
+	if table.CanPerformCmd(table, cmdID) {
+		useID := *id
+		*id++
+		cm.InsertItem(-1, cm.Factory().NewItem(unison.PopupMenuTemporaryBaseID+useID, title, unison.KeyBinding{}, nil,
+			func(item unison.MenuItem) {
+				table.PerformCmd(table, cmdID)
+			}))
+	}
 }
 
 func flexibleLess(s1, s2 string) bool {

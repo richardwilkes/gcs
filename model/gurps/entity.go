@@ -1212,6 +1212,9 @@ func (e *Entity) TraitList() []*Trait {
 
 // SetTraitList implements ListProvider
 func (e *Entity) SetTraitList(list []*Trait) {
+	for _, one := range list {
+		one.SetOwningEntity(e)
+	}
 	e.Traits = list
 }
 
@@ -1222,6 +1225,9 @@ func (e *Entity) CarriedEquipmentList() []*Equipment {
 
 // SetCarriedEquipmentList implements ListProvider
 func (e *Entity) SetCarriedEquipmentList(list []*Equipment) {
+	for _, one := range list {
+		one.SetOwningEntity(e)
+	}
 	e.CarriedEquipment = list
 }
 
@@ -1232,6 +1238,9 @@ func (e *Entity) OtherEquipmentList() []*Equipment {
 
 // SetOtherEquipmentList implements ListProvider
 func (e *Entity) SetOtherEquipmentList(list []*Equipment) {
+	for _, one := range list {
+		one.SetOwningEntity(e)
+	}
 	e.OtherEquipment = list
 }
 
@@ -1242,6 +1251,9 @@ func (e *Entity) SkillList() []*Skill {
 
 // SetSkillList implements ListProvider
 func (e *Entity) SetSkillList(list []*Skill) {
+	for _, one := range list {
+		one.SetOwningEntity(e)
+	}
 	e.Skills = list
 }
 
@@ -1252,6 +1264,9 @@ func (e *Entity) SpellList() []*Spell {
 
 // SetSpellList implements ListProvider
 func (e *Entity) SetSpellList(list []*Spell) {
+	for _, one := range list {
+		one.SetOwningEntity(e)
+	}
 	e.Spells = list
 }
 
@@ -1262,6 +1277,9 @@ func (e *Entity) NoteList() []*Note {
 
 // SetNoteList implements ListProvider
 func (e *Entity) SetNoteList(list []*Note) {
+	for _, one := range list {
+		one.SetOwningEntity(e)
+	}
 	e.Notes = list
 }
 
