@@ -68,7 +68,7 @@ func (p *PrimaryAttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 	for _, def := range attrs.List(false) {
 		if def.Primary() {
 			if def.Type == attribute.PrimarySeparator {
-				p.AddChild(newPageInternalHeader(def.Name, 3))
+				p.AddChild(widget.NewPageInternalHeader(def.Name, 3))
 			} else {
 				attr, ok := p.sheet.entity.Attributes.Set[def.ID()]
 				if !ok {
@@ -82,37 +82,6 @@ func (p *PrimaryAttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 		}
 	}
 	p.sheet.targetMgr.ReacquireFocus(focusRefKey, p.sheet.toolbar, p.sheet.scroll.Content())
-}
-
-func newPageInternalHeader(title string, span int) unison.Paneler {
-	layoutData := &unison.FlexLayoutData{
-		HSpan:  span,
-		HAlign: unison.FillAlignment,
-	}
-	border := unison.NewEmptyBorder(unison.NewVerticalInsets(2))
-	if title == "" {
-		sep := unison.NewSeparator()
-		sep.SetBorder(border)
-		sep.SetLayoutData(layoutData)
-		return sep
-	}
-	label := unison.NewLabel()
-	label.Text = title
-	label.Font = theme.PageLabelSecondaryFont
-	label.HAlign = unison.MiddleAlignment
-	label.OnBackgroundInk = theme.OnPageColor
-	label.SetLayoutData(layoutData)
-	label.SetBorder(border)
-	label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		_, pref, _ := label.Sizes(unison.Size{})
-		paint := unison.DividerColor.Paint(gc, rect, unison.Stroke)
-		paint.SetStrokeWidth(1)
-		half := (rect.Width - pref.Width) / 2
-		gc.DrawLine(rect.X, rect.CenterY(), rect.X+half-2, rect.CenterY(), paint)
-		gc.DrawLine(2+rect.Right()-half, rect.CenterY(), rect.Right(), rect.CenterY(), paint)
-		label.DefaultDraw(gc, rect)
-	}
-	return label
 }
 
 func (p *PrimaryAttrPanel) createPointsField(attr *gurps.Attribute) *widget.NonEditablePageField {
