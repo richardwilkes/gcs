@@ -253,3 +253,14 @@ func (p *weaponsProvider) Deserialize(data []byte) error {
 	p.provider.SetWeapons(p.weaponType, rows)
 	return nil
 }
+
+func (p *weaponsProvider) ContextMenuItems() []ntable.ContextMenuItem {
+	var list []ntable.ContextMenuItem
+	switch p.weaponType {
+	case weapon.Melee:
+		list = append(list, ntable.MeleeWeaponExtraContextMenuItems...)
+	case weapon.Ranged:
+		list = append(list, ntable.RangedWeaponExtraContextMenuItems...)
+	}
+	return append(list, ntable.DefaultContextMenuItems...)
+}

@@ -196,3 +196,9 @@ func (p *skillsProvider) Deserialize(data []byte) error {
 	p.provider.SetSkillList(rows)
 	return nil
 }
+
+func (p *skillsProvider) ContextMenuItems() []ntable.ContextMenuItem {
+	var list []ntable.ContextMenuItem
+	list = append(list, ntable.SkillExtraContextMenuItems...)
+	return append(list, ntable.DefaultContextMenuItems...)
+}

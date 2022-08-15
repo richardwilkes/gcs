@@ -175,3 +175,9 @@ func (p *traitModifierProvider) Deserialize(data []byte) error {
 	p.provider.SetTraitModifierList(rows)
 	return nil
 }
+
+func (p *traitModifierProvider) ContextMenuItems() []ntable.ContextMenuItem {
+	var list []ntable.ContextMenuItem
+	list = append(list, ntable.TraitModifierExtraContextMenuItems...)
+	return append(list, ntable.DefaultContextMenuItems...)
+}

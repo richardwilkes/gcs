@@ -292,3 +292,13 @@ func (p *equipmentProvider) Deserialize(data []byte) error {
 	p.setEquipmentList(rows)
 	return nil
 }
+
+func (p *equipmentProvider) ContextMenuItems() []ntable.ContextMenuItem {
+	var list []ntable.ContextMenuItem
+	if p.carried {
+		list = append(list, ntable.CarriedEquipmentExtraContextMenuItems...)
+	} else {
+		list = append(list, ntable.OtherEquipmentExtraContextMenuItems...)
+	}
+	return append(list, ntable.DefaultContextMenuItems...)
+}

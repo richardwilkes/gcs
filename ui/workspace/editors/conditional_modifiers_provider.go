@@ -137,3 +137,7 @@ func (p *condModProvider) Serialize() ([]byte, error) {
 func (p *condModProvider) Deserialize(_ []byte) error {
 	return errs.New("not allowed")
 }
+
+func (p *condModProvider) ContextMenuItems() []ntable.ContextMenuItem {
+	return nil
+}

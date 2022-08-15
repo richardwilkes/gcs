@@ -223,3 +223,9 @@ func (p *spellsProvider) Deserialize(data []byte) error {
 	p.provider.SetSpellList(rows)
 	return nil
 }
+
+func (p *spellsProvider) ContextMenuItems() []ntable.ContextMenuItem {
+	var list []ntable.ContextMenuItem
+	list = append(list, ntable.SpellExtraContextMenuItems...)
+	return append(list, ntable.DefaultContextMenuItems...)
+}

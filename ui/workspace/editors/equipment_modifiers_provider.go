@@ -184,3 +184,9 @@ func (p *eqpModProvider) Deserialize(data []byte) error {
 	p.provider.SetEquipmentModifierList(rows)
 	return nil
 }
+
+func (p *eqpModProvider) ContextMenuItems() []ntable.ContextMenuItem {
+	var list []ntable.ContextMenuItem
+	list = append(list, ntable.EquipmentModifierExtraContextMenuItems...)
+	return append(list, ntable.DefaultContextMenuItems...)
+}

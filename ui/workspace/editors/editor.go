@@ -213,16 +213,16 @@ func (e *editor[N, D]) AttemptClose() bool {
 	if !workspace.CloseGroup(e) {
 		return false
 	}
-	if e.promptForSave && !reflect.DeepEqual(e.beforeData, e.editorData) {
-		switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Save changes made to\n%s?"), e.Title()), "") {
-		case unison.ModalResponseDiscard:
-		case unison.ModalResponseOK:
-			e.apply()
-		case unison.ModalResponseCancel:
-			return false
-		}
-	}
 	if dc := unison.Ancestor[*unison.DockContainer](e); dc != nil {
+		if e.promptForSave && !reflect.DeepEqual(e.beforeData, e.editorData) {
+			switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Save changes made to\n%s?"), e.Title()), "") {
+			case unison.ModalResponseDiscard:
+			case unison.ModalResponseOK:
+				e.apply()
+			case unison.ModalResponseCancel:
+				return false
+			}
+		}
 		dc.Close(e)
 	}
 	return true

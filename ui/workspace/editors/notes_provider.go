@@ -151,3 +151,9 @@ func (p *notesProvider) Deserialize(data []byte) error {
 	p.provider.SetNoteList(rows)
 	return nil
 }
+
+func (p *notesProvider) ContextMenuItems() []ntable.ContextMenuItem {
+	var list []ntable.ContextMenuItem
+	list = append(list, ntable.NoteExtraContextMenuItems...)
+	return append(list, ntable.DefaultContextMenuItems...)
+}

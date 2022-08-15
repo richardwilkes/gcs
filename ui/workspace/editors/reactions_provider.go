@@ -137,3 +137,7 @@ func (p *reactionModProvider) Serialize() ([]byte, error) {
 func (p *reactionModProvider) Deserialize(_ []byte) error {
 	return errs.New("not allowed")
 }
+
+func (p *reactionModProvider) ContextMenuItems() []ntable.ContextMenuItem {
+	return nil
+}
