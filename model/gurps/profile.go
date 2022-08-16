@@ -46,11 +46,11 @@ type Profile struct {
 	Gender            string         `json:"gender,omitempty"`
 	TechLevel         string         `json:"tech_level,omitempty"`
 	PortraitData      []byte         `json:"portrait,omitempty"`
+	PortraitImage     *unison.Image  `json:"-"`
 	Height            measure.Length `json:"height,omitempty"`
 	Weight            measure.Weight `json:"weight,omitempty"`
 	SizeModifier      int            `json:"SM,omitempty"`
 	SizeModifierBonus fxp.Int        `json:"-"`
-	portrait          *unison.Image
 }
 
 // Update any derived values.
@@ -60,16 +60,16 @@ func (p *Profile) Update(entity *Entity) {
 
 // Portrait returns the portrait image, if there is one.
 func (p *Profile) Portrait() *unison.Image {
-	if p.portrait == nil && len(p.PortraitData) != 0 {
+	if p.PortraitImage == nil && len(p.PortraitData) != 0 {
 		var err error
-		if p.portrait, err = unison.NewImageFromBytes(p.PortraitData, 0.5); err != nil {
+		if p.PortraitImage, err = unison.NewImageFromBytes(p.PortraitData, 0.5); err != nil {
 			jot.Error(errs.NewWithCause("unable to load portrait data", err))
-			p.portrait = nil
+			p.PortraitImage = nil
 			p.PortraitData = nil
 			return nil
 		}
 	}
-	return p.portrait
+	return p.PortraitImage
 }
 
 // AdjustedSizeModifier returns the adjusted size modifier.

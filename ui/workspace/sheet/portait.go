@@ -13,11 +13,17 @@ package sheet
 
 import (
 	"fmt"
+	"image"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
+	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/log/jot"
+	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/xmath"
 	"github.com/richardwilkes/unison"
+	"golang.org/x/image/draw"
 )
 
 // PortraitPanel holds the contents of the portrait block on the sheet.
@@ -43,6 +49,7 @@ for every 4 pixels tall to scale without distortion.
 
 Recommended minimum dimensions are %dx%d.`), gurps.PortraitWidth*2, gurps.PortraitHeight*2))
 	p.DrawCallback = p.drawSelf
+	p.FileDropCallback = p.fileDrop
 	return p
 }
 
@@ -58,4 +65,61 @@ func (p *PortraitPanel) drawSelf(gc *unison.Canvas, _ unison.Rect) {
 // Sync the panel to the current data.
 func (p *PortraitPanel) Sync() {
 	// Nothing to do
+}
+
+func (p *PortraitPanel) fileDrop(files []string) {
+	for _, f := range files {
+		data, err := xio.RetrieveData(f)
+		if err != nil {
+			jot.Error(errs.NewWithCause("unable to load: "+f, err))
+			continue
+		}
+		var img *unison.Image
+		if img, err = unison.NewImageFromBytes(data, 0.5); err != nil {
+			jot.Error(errs.NewWithCause("does not appear to be a valid image: "+f, err))
+			continue
+		}
+		size := img.Size()
+		if size.Width != gurps.PortraitWidth*2 || size.Height != gurps.PortraitHeight*2 {
+			var src *image.NRGBA
+			if src, err = img.ToNRGBA(); err != nil {
+				jot.Error(errs.NewWithCause("unable to convert: "+f, err))
+				continue
+			}
+			dst := image.NewNRGBA(image.Rect(0, 0, gurps.PortraitWidth*2, gurps.PortraitHeight*2))
+			if size.Width > gurps.PortraitWidth*2 || size.Height > gurps.PortraitHeight*2 {
+				if size.Width > gurps.PortraitWidth*2 {
+					factor := gurps.PortraitWidth * 2 / size.Width
+					size.Width = gurps.PortraitWidth * 2
+					size.Height = xmath.Max(xmath.Floor(size.Height*factor), 1)
+				}
+				if size.Height > gurps.PortraitHeight*2 {
+					factor := gurps.PortraitHeight * 2 / size.Height
+					size.Height = gurps.PortraitHeight * 2
+					size.Width = xmath.Max(xmath.Floor(size.Width*factor), 1)
+				}
+				x := int((gurps.PortraitWidth*2 - size.Width) / 2)
+				y := int((gurps.PortraitHeight*2 - size.Height) / 2)
+				draw.CatmullRom.Scale(dst, image.Rect(x, y, x+int(size.Width), y+int(size.Height)), src, src.Rect,
+					draw.Over, nil)
+				src = dst
+			} else {
+				x := int((gurps.PortraitWidth*2 - size.Width) / 2)
+				y := int((gurps.PortraitHeight*2 - size.Height) / 2)
+				draw.Draw(dst, image.Rect(x, y, x+int(size.Width), y+int(size.Height)), src, image.Pt(0, 0), draw.Over)
+			}
+			if img, err = unison.NewImageFromPixels(gurps.PortraitWidth*2, gurps.PortraitHeight*2, dst.Pix, 0.5); err != nil {
+				jot.Error(errs.NewWithCause("unable to create scaled image from: "+f, err))
+				continue
+			}
+			if data, err = img.ToWebp(80); err != nil {
+				jot.Error(errs.NewWithCause("unable to create webp image from: "+f, err))
+				continue
+			}
+		}
+		p.sheet.entity.Profile.PortraitData = data
+		p.sheet.entity.Profile.PortraitImage = img
+		p.MarkForRedraw()
+		widget.MarkModified(p)
+	}
 }
