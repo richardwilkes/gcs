@@ -420,6 +420,13 @@ func (a *traitModifierAdjuster) Apply() {
 	widget.MarkModified(a.Owner)
 }
 
+func convertLinksForPageRef(in string) string {
+	if strings.HasPrefix(strings.ToLower(in), "http") {
+		return i18n.Text("link")
+	}
+	return in
+}
+
 func (n *Node[T]) createPageRefCell(c *gurps.CellData, foreground unison.Ink) unison.Paneler {
 	label := unison.NewLabel()
 	label.Font = n.primaryFieldFont()
@@ -430,9 +437,12 @@ func (n *Node[T]) createPageRefCell(c *gurps.CellData, foreground unison.Ink) un
 	switch len(parts) {
 	case 0:
 	case 1:
-		label.Text = parts[0]
+		label.Text = convertLinksForPageRef(parts[0])
+		if label.Text == i18n.Text("link") {
+			label.Tooltip = unison.NewTooltipWithText(parts[0])
+		}
 	default:
-		label.Text = parts[0] + "+"
+		label.Text = convertLinksForPageRef(parts[0]) + "+"
 		label.Tooltip = unison.NewTooltipWithText(strings.Join(parts, "\n"))
 	}
 	if label.Text != "" {

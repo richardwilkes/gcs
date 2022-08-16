@@ -23,6 +23,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/gcs/v5/ui/workspace"
 	"github.com/richardwilkes/gcs/v5/ui/workspace/external"
+	"github.com/richardwilkes/toolbox/desktop"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -47,6 +48,12 @@ func ExtractPageReferences(s string) []string {
 // for wnd to let it pick the first such window it discovers. Returns true if the the user asked to cancel further
 // processing.
 func OpenPageReference(wnd *unison.Window, ref, highlight string, promptContext map[string]bool) bool {
+	if strings.HasPrefix(strings.ToLower(ref), "http") {
+		if err := desktop.Open(ref); err != nil {
+			unison.ErrorDialogWithError(i18n.Text("Unable to open link"), err)
+		}
+		return false
+	}
 	if promptContext == nil {
 		promptContext = make(map[string]bool)
 	}
