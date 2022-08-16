@@ -45,11 +45,10 @@ func NewPortraitPanel(sheet *Sheet) *PortraitPanel {
 	p.Tooltip = unison.NewTooltipWithText(fmt.Sprintf(i18n.Text(`Double-click to set a character portrait, or drag an image onto this block.
 
 The dimensions of the chosen picture should be in a ratio of 3 pixels wide
-for every 4 pixels tall to scale without distortion.
-
-Recommended minimum dimensions are %dx%d.`), gurps.PortraitWidth*2, gurps.PortraitHeight*2))
+for every 4 pixels tall to fill the block (recommended %dx%d pixels).`), gurps.PortraitWidth*2, gurps.PortraitHeight*2))
 	p.DrawCallback = p.drawSelf
 	p.FileDropCallback = p.fileDrop
+	p.MouseDownCallback = p.mouseDown
 	return p
 }
 
@@ -65,6 +64,21 @@ func (p *PortraitPanel) drawSelf(gc *unison.Canvas, _ unison.Rect) {
 // Sync the panel to the current data.
 func (p *PortraitPanel) Sync() {
 	// Nothing to do
+}
+
+func (p *PortraitPanel) mouseDown(_ unison.Point, button, clickCount int, _ unison.Modifiers) bool {
+	if button == unison.ButtonLeft && clickCount == 2 {
+		d := unison.NewOpenDialog()
+		d.SetResolvesAliases(true)
+		d.SetAllowsMultipleSelection(false)
+		d.SetCanChooseFiles(true)
+		d.SetCanChooseDirectories(false)
+		d.SetAllowedExtensions(unison.KnownImageFormatExtensions...)
+		if d.RunModal() {
+			p.fileDrop([]string{d.Path()})
+		}
+	}
+	return true
 }
 
 func (p *PortraitPanel) fileDrop(files []string) {
