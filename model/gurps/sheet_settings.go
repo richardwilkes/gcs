@@ -134,13 +134,9 @@ func (s *SheetSettings) EnsureValidity() {
 	}
 	if s.Attributes == nil {
 		s.Attributes = FactoryAttributeDefs()
-	} else {
-		s.Attributes.EnsureValidity()
 	}
 	if s.BodyType == nil {
 		s.BodyType = FactoryBody()
-	} else {
-		s.BodyType.EnsureValidity()
 	}
 	s.DamageProgression = s.DamageProgression.EnsureValid()
 	s.DefaultLengthUnits = s.DefaultLengthUnits.EnsureValid()

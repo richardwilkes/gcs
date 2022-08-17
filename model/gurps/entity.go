@@ -421,7 +421,6 @@ func (e *Entity) UnspentPoints() fxp.Int {
 // SetUnspentPoints sets the number of unspent points.
 func (e *Entity) SetUnspentPoints(unspent fxp.Int) {
 	if unspent != e.UnspentPoints() {
-		// TODO: Need undo logic
 		e.TotalPoints = unspent + e.SpentPoints()
 	}
 }

@@ -106,8 +106,6 @@ func NewAttributeDefsFromFile(fileSystem fs.FS, filePath string) (*AttributeDefs
 	}
 	if defs == nil {
 		defs = FactoryAttributeDefs()
-	} else {
-		defs.EnsureValidity()
 	}
 	return defs, nil
 }
@@ -119,11 +117,6 @@ func (a *AttributeDefs) Save(filePath string) error {
 		Version: gid.CurrentDataVersion,
 		Rows:    a,
 	})
-}
-
-// EnsureValidity checks the current settings for validity and if they aren't valid, makes them so.
-func (a *AttributeDefs) EnsureValidity() {
-	// TODO: Implement validity check
 }
 
 // MarshalJSON implements json.Marshaler.

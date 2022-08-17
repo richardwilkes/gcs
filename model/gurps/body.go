@@ -103,17 +103,11 @@ func NewBodyFromFile(fileSystem fs.FS, filePath string) (*Body, error) {
 	if err := gid.CheckVersion(data.Version); err != nil {
 		return nil, err
 	}
-	data.Body.EnsureValidity()
 	if data.Version < noNeedForRewrapVersion {
 		data.Body.Rewrap()
 	}
 	data.Body.Update(nil)
 	return data.Body, nil
-}
-
-// EnsureValidity checks the current settings for validity and if they aren't valid, makes them so.
-func (b *Body) EnsureValidity() {
-	// TODO: Implement validity check
 }
 
 // Rewrap the description field. Should only be called for older data (prior to noNeedForRewrapVersion)
