@@ -80,18 +80,8 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 	p.AddChild(widget.NewToolbarSeparator(0))
 	p.AddChild(widget.NewPageHeader(i18n.Text("Dodge"), 1))
 
-	current := entity.EncumbranceLevel(true)
 	for i, enc := range datafile.AllEncumbrance {
-		marker := widget.NewPageLabel("")
-		marker.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: 4}))
-		if enc == current {
-			baseline := marker.Font.Baseline()
-			marker.Drawable = &unison.DrawableSVG{
-				SVG:  res.WeightSVG,
-				Size: unison.Size{Width: baseline, Height: baseline},
-			}
-		}
-		p.AddChild(marker)
+		p.AddChild(p.createMarker(entity, enc))
 		p.AddChild(p.createLevelField(enc))
 		name := widget.NewPageLabel(enc.String())
 		name.SetLayoutData(&unison.FlexLayoutData{
@@ -116,6 +106,22 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 	}
 
 	return p
+}
+
+func (p *EncumbrancePanel) createMarker(entity *gurps.Entity, enc datafile.Encumbrance) *unison.Label {
+	marker := widget.NewPageLabel("")
+	marker.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: 4}))
+	baseline := marker.Font.Baseline()
+	marker.Drawable = &unison.DrawableSVG{
+		SVG:  res.WeightSVG,
+		Size: unison.Size{Width: baseline, Height: baseline},
+	}
+	marker.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+		if enc == entity.EncumbranceLevel(true) {
+			marker.DefaultDraw(gc, rect)
+		}
+	}
+	return marker
 }
 
 func (p *EncumbrancePanel) createLevelField(enc datafile.Encumbrance) *widget.NonEditablePageField {
