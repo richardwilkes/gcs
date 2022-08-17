@@ -65,6 +65,7 @@ type WeaponOwner interface {
 
 // WeaponData holds the Weapon data that is written to disk.
 type WeaponData struct {
+	ID              uuid.UUID       `json:"id"`
 	Type            weapon.Type     `json:"type"`
 	Damage          WeaponDamage    `json:"damage"`
 	MinimumStrength string          `json:"strength,omitempty"`
@@ -86,7 +87,6 @@ type WeaponData struct {
 type Weapon struct {
 	WeaponData
 	Owner WeaponOwner
-	id    uuid.UUID
 }
 
 // ExtractWeaponsOfType filters the input list down to only those weapons of the given type.
@@ -117,6 +117,7 @@ func SeparateWeapons(list []*Weapon) (melee, ranged []*Weapon) {
 func NewWeapon(owner WeaponOwner, weaponType weapon.Type) *Weapon {
 	w := &Weapon{
 		WeaponData: WeaponData{
+			ID:   id.NewUUID(),
 			Type: weaponType,
 			Damage: WeaponDamage{
 				WeaponDamageData: WeaponDamageData{
@@ -142,10 +143,8 @@ func NewWeapon(owner WeaponOwner, weaponType weapon.Type) *Weapon {
 // Clone implements Node.
 func (w *Weapon) Clone(_ *Entity, _ *Weapon, preserveID bool) *Weapon {
 	other := *w
-	if preserveID {
-		other.id = w.id
-	} else {
-		other.id = uuid.New()
+	if !preserveID {
+		other.ID = uuid.New()
 	}
 	other.Damage = *other.Damage.Clone(&other)
 	if other.Defaults != nil {
@@ -186,6 +185,7 @@ func (w *Weapon) Less(other *Weapon) bool {
 // HashCode returns a hash value for this weapon's resolved state.
 func (w *Weapon) HashCode() uint32 {
 	h := fnv.New32()
+	h.Write([]byte(w.ID.String()))
 	h.Write([]byte{byte(w.Type)})
 	h.Write([]byte(w.String()))
 	h.Write([]byte(w.UsageNotes))
@@ -233,14 +233,21 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&data)
 }
 
-// UUID returns the UUID of this data. For weapons, this is only valid while the data is in memory.
-// TODO: Make the UUID persistent, like with most other data in GCS?
-func (w *Weapon) UUID() uuid.UUID {
-	var zero uuid.UUID
-	if w.id == zero {
-		w.id = id.NewUUID()
+// UnmarshalJSON implements json.Unmarshaler.
+func (w *Weapon) UnmarshalJSON(data []byte) error {
+	if err := json.Unmarshal(data, &w.WeaponData); err != nil {
+		return err
 	}
-	return w.id
+	var zero uuid.UUID
+	if w.WeaponData.ID == zero {
+		w.WeaponData.ID = id.NewUUID()
+	}
+	return nil
+}
+
+// UUID returns the UUID of this data.
+func (w *Weapon) UUID() uuid.UUID {
+	return w.ID
 }
 
 // Kind returns the kind of data.
