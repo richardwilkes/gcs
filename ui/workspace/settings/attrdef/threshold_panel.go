@@ -42,7 +42,6 @@ func newThresholdPanel(pool *poolPanel, threshold *gurps.PoolThreshold) *thresho
 	})
 	p.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,
-		VAlign: unison.StartAlignment,
 		HGrab:  true,
 	})
 
@@ -65,10 +64,7 @@ func (p *thresholdPanel) createButtons() *unison.Panel {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	buttons.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.MiddleAlignment,
-		VAlign: unison.StartAlignment,
-	})
+	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.MiddleAlignment})
 
 	p.deleteButton = unison.NewSVGButton(res.TrashSVG)
 	p.deleteButton.ClickCallback = func() { p.pool.deleteThreshold(p) }
@@ -87,7 +83,6 @@ func (p *thresholdPanel) createContent() *unison.Panel {
 	})
 	content.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,
-		VAlign: unison.StartAlignment,
 		HGrab:  true,
 	})
 
@@ -97,7 +92,6 @@ func (p *thresholdPanel) createContent() *unison.Panel {
 		func() string { return p.threshold.State },
 		func(s string) { p.threshold.State = s })
 	field.SetMinimumTextWidthUsing(prototypeMinIDWidth)
-	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("A short description of the threshold state"))
 	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
 	content.AddChild(field)
@@ -122,7 +116,6 @@ func (p *thresholdPanel) createContent() *unison.Panel {
 		func() string { return p.threshold.Explanation },
 		func(s string) { p.threshold.Explanation = s })
 	field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
-	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("A explanation of the effects of the threshold state"))
 	content.AddChild(field)
 

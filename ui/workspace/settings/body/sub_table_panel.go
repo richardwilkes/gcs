@@ -44,10 +44,7 @@ func (p *subTablePanel) createButtons() *unison.Panel {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	buttons.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.MiddleAlignment,
-		VAlign: unison.StartAlignment,
-	})
+	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.MiddleAlignment})
 
 	p.addButton = unison.NewSVGButton(res.CircledAddSVG)
 	p.addButton.ClickCallback = p.addHitLocation
@@ -86,10 +83,7 @@ func (p *subTablePanel) createContent() *unison.Panel {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	content.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.StartAlignment,
-	})
+	content.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
 	content.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
 
 	for _, loc := range p.body.Locations {

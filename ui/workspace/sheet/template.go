@@ -431,7 +431,6 @@ func (d *Template) createLists() {
 			})
 			rowPanel.SetLayoutData(&unison.FlexLayoutData{
 				HAlign: unison.FillAlignment,
-				VAlign: unison.StartAlignment,
 				HGrab:  true,
 			})
 			d.content.AddChild(rowPanel)
