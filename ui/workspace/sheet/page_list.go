@@ -24,7 +24,10 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-var _ widget.Syncer = &PageList[*gurps.Trait]{}
+var (
+	_ widget.Syncer = &PageList[*gurps.Trait]{}
+	_ pdfHelper     = &PageList[*gurps.Trait]{}
+)
 
 // PageList holds a list for a sheet page.
 type PageList[T gurps.NodeTypes] struct {
@@ -171,7 +174,6 @@ func newPageList[T gurps.NodeTypes](owner widget.Rebuildable, provider ntable.Ta
 		HAlign: unison.FillAlignment,
 		VAlign: unison.FillAlignment,
 		HGrab:  true,
-		VGrab:  true,
 	})
 	return p
 }
@@ -333,4 +335,26 @@ func (p *PageList[T]) Sync() {
 // CreateItem calls CreateItem on the contained TableProvider.
 func (p *PageList[T]) CreateItem(owner widget.Rebuildable, variant ntable.ItemVariant) {
 	p.provider.CreateItem(owner, p.Table, variant)
+}
+
+func (p *PageList[T]) OverheadHeight() float32 {
+	_, pref, _ := p.tableHeader.Sizes(unison.Size{})
+	insets := p.Border().Insets()
+	return insets.Height() + pref.Height
+}
+
+func (p *PageList[T]) RowHeights() []float32 {
+	return p.Table.RowHeights()
+}
+
+func (p *PageList[T]) RowCount() int {
+	return p.Table.LastRowIndex() + 1
+}
+
+func (p *PageList[T]) CurrentDrawRowRange() (start, endBefore int) {
+	return p.Table.CurrentDrawRowRange()
+}
+
+func (p *PageList[T]) SetDrawRowRange(start, endBefore int) {
+	p.Table.SetDrawRowRange(start, endBefore)
 }

@@ -64,6 +64,8 @@ var (
 	Save *unison.Action
 	// SaveAs saves to a new file.
 	SaveAs *unison.Action
+	// ExportAsPDF exports the content as a PDF.
+	ExportAsPDF *unison.Action
 	// Print the content.
 	Print *unison.Action
 )
@@ -198,6 +200,13 @@ func registerFileMenuActions() {
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	}
+	ExportAsPDF = &unison.Action{
+		ID:              constants.ExportAsPDFItemID,
+		Title:           i18n.Text("PDF"),
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyP, Modifiers: unison.ShiftModifier | unison.OSMenuCmdModifier()},
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
+	}
 	Print = &unison.Action{
 		ID:              constants.PrintItemID,
 		Title:           i18n.Text("Print…"),
@@ -219,6 +228,7 @@ func registerFileMenuActions() {
 	settings.RegisterKeyBinding("close", CloseTab)
 	settings.RegisterKeyBinding("save", Save)
 	settings.RegisterKeyBinding("save_as", SaveAs)
+	settings.RegisterKeyBinding("export.pdf", ExportAsPDF)
 	settings.RegisterKeyBinding("print", Print)
 }
 
@@ -286,6 +296,7 @@ func createOpenRecentFileAction(index int, path, title string) *unison.Action {
 
 func exportToUpdater(menu unison.Menu) {
 	menu.RemoveAll()
+	factory := menu.Factory()
 	index := 0
 	for _, lib := range settings.Global().Libraries().List() {
 		dir := lib.Path()
@@ -304,11 +315,14 @@ func exportToUpdater(menu unison.Menu) {
 				list = append(list, fullPath)
 			}
 		}
-		if len(list) > 0 {
-			txt.SortStringsNaturalAscending(list)
+		if len(list) > 0 || lib.IsMaster() {
 			appendDisabledMenuItem(menu, lib.Title)
+			if lib.IsMaster() {
+				menu.InsertItem(-1, ExportAsPDF.NewMenuItem(factory))
+			}
+			txt.SortStringsNaturalAscending(list)
 			for _, one := range list {
-				menu.InsertItem(-1, createExportToTextAction(index, one).NewMenuItem(menu.Factory()))
+				menu.InsertItem(-1, createExportToTextAction(index, one).NewMenuItem(factory))
 				index++
 			}
 		}

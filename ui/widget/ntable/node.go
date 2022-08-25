@@ -268,6 +268,7 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 
 func (n *Node[T]) createToggleCell(c *gurps.CellData, foreground unison.Ink) unison.Paneler {
 	check := unison.NewLabel()
+	check.VAlign = unison.StartAlignment
 	check.Font = n.primaryFieldFont()
 	check.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: 1}))
 	baseline := check.Font.Baseline()
@@ -428,6 +429,7 @@ func convertLinksForPageRef(in string) string {
 
 func (n *Node[T]) createPageRefCell(c *gurps.CellData, foreground unison.Ink) unison.Paneler {
 	label := unison.NewLabel()
+	label.VAlign = unison.StartAlignment
 	label.Font = n.primaryFieldFont()
 	label.OnBackgroundInk = foreground
 	label.SetEnabled(!c.Dim)

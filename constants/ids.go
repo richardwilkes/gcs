@@ -30,6 +30,7 @@ const (
 	SaveItemID
 	SaveAsItemID
 	ExportToMenuID
+	ExportAsPDFItemID
 	PrintItemID
 	UndoItemID
 	RedoItemID
