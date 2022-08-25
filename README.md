@@ -1,6 +1,6 @@
-# GURPS Character Sheet
+# GURPS[^1] Character Sheet
 
-GURPS[^1] Character Sheet (GCS) is a stand-alone, interactive, character sheet editor that allows you to build
+GURPS Character Sheet (GCS) is a stand-alone, interactive, character sheet editor that allows you to build
 characters for the [GURPS 4<sup>th</sup> Edition](http://www.sjgames.com/gurps) roleplaying game system.
 
 ## Branches
