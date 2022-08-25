@@ -5,10 +5,10 @@ for the [GURPS 4<sup>th</sup> Edition](http://www.sjgames.com/gurps) roleplaying
 
 ---
 
-GURPS is a trademark of Steve Jackson Games, and its rules and art are copyrighted by Steve Jackson Games. All rights
+*GURPS is a trademark of Steve Jackson Games, and its rules and art are copyrighted by Steve Jackson Games. All rights
 are reserved by Steve Jackson Games. This game aid is the original creation of Richard A. Wilkes and is released for
 free distribution, and not for resale, under the permissions granted in the
-<a href="http://www.sjgames.com/general/online_policy.html">Steve Jackson Games Online Policy</a>.
+<a href="http://www.sjgames.com/general/online_policy.html">Steve Jackson Games Online Policy</a>.*
 
 ---
 
