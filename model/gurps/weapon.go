@@ -356,20 +356,20 @@ func (w *Weapon) skillLevelBaseAdjustment(entity *Entity, tooltip *xio.ByteBuffe
 		adj += w.extractSkillBonusForThisWeapon(f, tooltip)
 	}
 	if t, ok := w.Owner.(*Trait); ok {
-		Traverse[*TraitModifier](func(mod *TraitModifier) bool {
+		Traverse(func(mod *TraitModifier) bool {
 			for _, f := range mod.Features {
 				adj += w.extractSkillBonusForThisWeapon(f, tooltip)
 			}
 			return false
-		}, true, false, t.Modifiers...)
+		}, true, true, t.Modifiers...)
 	}
 	if eqp, ok := w.Owner.(*Equipment); ok {
-		Traverse[*EquipmentModifier](func(mod *EquipmentModifier) bool {
+		Traverse(func(mod *EquipmentModifier) bool {
 			for _, f := range mod.Features {
 				adj += w.extractSkillBonusForThisWeapon(f, tooltip)
 			}
 			return false
-		}, true, false, eqp.Modifiers...)
+		}, true, true, eqp.Modifiers...)
 	}
 	return adj
 }

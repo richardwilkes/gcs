@@ -28,7 +28,10 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-var _ Node[*TraitModifier] = &TraitModifier{}
+var (
+	_ Node[*TraitModifier] = &TraitModifier{}
+	_ GeneralModifier      = &TraitModifier{}
+)
 
 // Columns that can be used with the trait modifier method .CellData()
 const (
@@ -43,6 +46,15 @@ const (
 	traitModifierListTypeKey = "modifier_list"
 	traitModifierTypeKey     = "modifier"
 )
+
+// GeneralModifier is used for common access to modifiers.
+type GeneralModifier interface {
+	Container() bool
+	Depth() int
+	FullDescription() string
+	Enabled() bool
+	SetEnabled(enabled bool)
+}
 
 // TraitModifier holds a modifier to an Trait.
 type TraitModifier struct {
@@ -300,4 +312,11 @@ func (a *TraitModifier) ApplyNameableKeys(m map[string]string) {
 // Enabled returns true if this node is enabled.
 func (a *TraitModifier) Enabled() bool {
 	return !a.Disabled || a.Container()
+}
+
+// SetEnabled makes the node enabled, if possible.
+func (a *TraitModifier) SetEnabled(enabled bool) {
+	if !a.Container() {
+		a.Disabled = !enabled
+	}
 }

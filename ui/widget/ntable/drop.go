@@ -63,6 +63,7 @@ func didDropCallback[T gurps.NodeTypes](undo *unison.UndoEdit[*TableDragUndoEdit
 		if rebuilder := unison.Ancestor[widget.Rebuildable](to); rebuilder != nil {
 			rebuilder.Rebuild(true)
 		}
+		ProcessModifiersForSelection(to)
 		ProcessNameablesForSelection(to)
 	}
 	if undo == nil {

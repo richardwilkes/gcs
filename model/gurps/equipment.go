@@ -411,7 +411,7 @@ func ExtendedWeightAdjustedForModifiers(defUnits measure.WeightUnits, qty fxp.In
 				}
 			}
 		}
-		Traverse[*EquipmentModifier](func(mod *EquipmentModifier) bool {
+		Traverse(func(mod *EquipmentModifier) bool {
 			for _, f := range mod.Features {
 				if cwr, ok := f.(*feature.ContainedWeightReduction); ok {
 					if cwr.IsPercentageReduction() {
@@ -422,7 +422,7 @@ func ExtendedWeightAdjustedForModifiers(defUnits measure.WeightUnits, qty fxp.In
 				}
 			}
 			return false
-		}, true, false, modifiers...)
+		}, true, true, modifiers...)
 		if percentage >= fxp.Hundred {
 			contained = 0
 		} else if percentage > 0 {
@@ -447,10 +447,10 @@ func (e *Equipment) FillWithNameableKeys(m map[string]string) {
 	for _, one := range e.Weapons {
 		one.FillWithNameableKeys(m)
 	}
-	Traverse[*EquipmentModifier](func(mod *EquipmentModifier) bool {
+	Traverse(func(mod *EquipmentModifier) bool {
 		mod.FillWithNameableKeys(m)
 		return false
-	}, true, false, e.Modifiers...)
+	}, true, true, e.Modifiers...)
 }
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
@@ -467,10 +467,10 @@ func (e *Equipment) ApplyNameableKeys(m map[string]string) {
 	for _, one := range e.Weapons {
 		one.ApplyNameableKeys(m)
 	}
-	Traverse[*EquipmentModifier](func(mod *EquipmentModifier) bool {
+	Traverse(func(mod *EquipmentModifier) bool {
 		mod.ApplyNameableKeys(m)
 		return false
-	}, true, false, e.Modifiers...)
+	}, true, true, e.Modifiers...)
 }
 
 // DisplayLegalityClass returns a display version of the LegalityClass.
@@ -495,26 +495,26 @@ func (e *Equipment) DisplayLegalityClass() string {
 // ActiveModifierFor returns the first modifier that matches the name (case-insensitive).
 func (e *Equipment) ActiveModifierFor(name string) *EquipmentModifier {
 	var found *EquipmentModifier
-	Traverse[*EquipmentModifier](func(mod *EquipmentModifier) bool {
+	Traverse(func(mod *EquipmentModifier) bool {
 		if strings.EqualFold(mod.Name, name) {
 			found = mod
 			return true
 		}
 		return false
-	}, true, false, e.Modifiers...)
+	}, true, true, e.Modifiers...)
 	return found
 }
 
 // ModifierNotes returns the notes due to modifiers.
 func (e *Equipment) ModifierNotes() string {
 	var buffer strings.Builder
-	Traverse[*EquipmentModifier](func(mod *EquipmentModifier) bool {
+	Traverse(func(mod *EquipmentModifier) bool {
 		if buffer.Len() != 0 {
 			buffer.WriteString("; ")
 		}
 		buffer.WriteString(mod.FullDescription())
 		return false
-	}, true, false, e.Modifiers...)
+	}, true, true, e.Modifiers...)
 	return buffer.String()
 }
 

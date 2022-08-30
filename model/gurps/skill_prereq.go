@@ -90,7 +90,7 @@ func (s *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 	if sk, ok := exclude.(*Skill); ok {
 		techLevel = sk.TechLevel
 	}
-	Traverse[*Skill](func(sk *Skill) bool {
+	Traverse(func(sk *Skill) bool {
 		if exclude == sk || !s.NameCriteria.Matches(sk.Name) || !s.SpecializationCriteria.Matches(sk.Specialization) {
 			return false
 		}
@@ -99,7 +99,7 @@ func (s *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 			satisfied = sk.TechLevel == nil || *techLevel == *sk.TechLevel
 		}
 		return satisfied
-	}, true, false, entity.Skills...)
+	}, false, true, entity.Skills...)
 	if !s.Has {
 		satisfied = !satisfied
 	}

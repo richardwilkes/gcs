@@ -13,7 +13,7 @@ func ProcessNameablesForSelection[T gurps.NodeTypes](table *unison.Table[*Node[T
 	var rows []T
 	var nameables []map[string]string
 	for _, row := range table.SelectedRows(true) {
-		gurps.Traverse[T](func(row T) bool {
+		gurps.Traverse(func(row T) bool {
 			m := make(map[string]string)
 			gurps.AsNode(row).FillWithNameableKeys(m)
 			if len(m) > 0 {
