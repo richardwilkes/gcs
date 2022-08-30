@@ -23,25 +23,23 @@ import (
 
 // Additional colors over and above what unison provides by default.
 var (
-	HeaderColor                = &unison.ThemeColor{Light: unison.RGB(43, 43, 43), Dark: unison.RGB(64, 64, 64)}
-	OnHeaderColor              = &unison.ThemeColor{Light: unison.White, Dark: unison.Silver}
-	EditableBorderColor        = &unison.ThemeColor{Light: unison.Silver, Dark: unison.RGB(96, 96, 96)}
-	EditableBorderFocusedColor = &unison.ThemeColor{Light: unison.RGB(0, 0, 192), Dark: unison.RGB(0, 102, 102)}
-	AccentColor                = &unison.ThemeColor{Light: unison.RGB(0, 102, 102), Dark: unison.RGB(100, 153, 153)}
-	SearchListColor            = &unison.ThemeColor{Light: unison.LightCyan, Dark: unison.RGB(0, 43, 43)}
-	OnSearchListColor          = &unison.ThemeColor{Light: unison.Black, Dark: unison.RGB(204, 204, 204)}
-	PageColor                  = &unison.ThemeColor{Light: unison.White, Dark: unison.RGB(16, 16, 16)}
-	OnPageColor                = &unison.ThemeColor{Light: unison.Black, Dark: unison.RGB(160, 160, 160)}
-	PageVoidColor              = &unison.ThemeColor{Light: unison.Grey, Dark: unison.Black}
-	MarkerColor                = &unison.ThemeColor{Light: unison.RGB(252, 242, 196), Dark: unison.RGB(0, 51, 0)}
-	OnMarkerColor              = &unison.ThemeColor{Light: unison.Black, Dark: unison.RGB(221, 221, 221)}
-	OverloadedColor            = &unison.ThemeColor{Light: unison.RGB(192, 64, 64), Dark: unison.RGB(115, 37, 37)}
-	OnOverloadedColor          = &unison.ThemeColor{Light: unison.White, Dark: unison.RGB(221, 221, 221)}
-	HintColor                  = &unison.ThemeColor{Light: unison.Grey, Dark: unison.RGB(64, 64, 64)}
-	LinkColor                  = &unison.ThemeColor{Light: unison.SpringGreen, Dark: unison.SpringGreen}
-	OnLinkColor                = &unison.ThemeColor{Light: unison.Black, Dark: unison.Black}
-	PDFLinkHighlightColor      = &unison.ThemeColor{Light: unison.SpringGreen, Dark: unison.SpringGreen}
-	PDFMarkerHighlightColor    = &unison.ThemeColor{Light: unison.Yellow, Dark: unison.Yellow}
+	HeaderColor             = &unison.ThemeColor{Light: unison.RGB(43, 43, 43), Dark: unison.RGB(64, 64, 64)}
+	OnHeaderColor           = &unison.ThemeColor{Light: unison.White, Dark: unison.Silver}
+	AccentColor             = &unison.ThemeColor{Light: unison.RGB(0, 102, 102), Dark: unison.RGB(100, 153, 153)}
+	SearchListColor         = &unison.ThemeColor{Light: unison.LightCyan, Dark: unison.RGB(0, 43, 43)}
+	OnSearchListColor       = &unison.ThemeColor{Light: unison.Black, Dark: unison.RGB(204, 204, 204)}
+	PageColor               = &unison.ThemeColor{Light: unison.White, Dark: unison.RGB(16, 16, 16)}
+	OnPageColor             = &unison.ThemeColor{Light: unison.Black, Dark: unison.RGB(160, 160, 160)}
+	PageVoidColor           = &unison.ThemeColor{Light: unison.Grey, Dark: unison.Black}
+	MarkerColor             = &unison.ThemeColor{Light: unison.RGB(252, 242, 196), Dark: unison.RGB(0, 51, 0)}
+	OnMarkerColor           = &unison.ThemeColor{Light: unison.Black, Dark: unison.RGB(221, 221, 221)}
+	OverloadedColor         = &unison.ThemeColor{Light: unison.RGB(192, 64, 64), Dark: unison.RGB(115, 37, 37)}
+	OnOverloadedColor       = &unison.ThemeColor{Light: unison.White, Dark: unison.RGB(221, 221, 221)}
+	HintColor               = &unison.ThemeColor{Light: unison.Grey, Dark: unison.RGB(64, 64, 64)}
+	LinkColor               = &unison.ThemeColor{Light: unison.SpringGreen, Dark: unison.SpringGreen}
+	OnLinkColor             = &unison.ThemeColor{Light: unison.Black, Dark: unison.Black}
+	PDFLinkHighlightColor   = &unison.ThemeColor{Light: unison.SpringGreen, Dark: unison.SpringGreen}
+	PDFMarkerHighlightColor = &unison.ThemeColor{Light: unison.Yellow, Dark: unison.Yellow}
 )
 
 var (
@@ -61,8 +59,6 @@ var (
 		{ID: "on_tab_current", Title: i18n.Text("On Current Tab"), Color: unison.OnTabCurrentColor},
 		{ID: "editable", Title: i18n.Text("Editable"), Color: unison.EditableColor},
 		{ID: "on_editable", Title: i18n.Text("On Editable"), Color: unison.OnEditableColor},
-		{ID: "editable_border", Title: i18n.Text("Editable Border"), Color: EditableBorderColor},
-		{ID: "editable_border_focused", Title: i18n.Text("Focused Editable Border"), Color: EditableBorderFocusedColor},
 		{ID: "selection", Title: i18n.Text("Selection"), Color: unison.SelectionColor},
 		{ID: "on_selection", Title: i18n.Text("On Selection"), Color: unison.OnSelectionColor},
 		{ID: "inactive_selection", Title: i18n.Text("Inactive Selection"), Color: unison.InactiveSelectionColor},

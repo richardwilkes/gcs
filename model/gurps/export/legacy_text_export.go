@@ -1553,10 +1553,6 @@ func (ex *legacyExporter) handleColor(key string) {
 		c = unison.EditableColor
 	case "on_editable":
 		c = unison.OnEditableColor
-	case "editable_border":
-		c = theme.EditableBorderColor
-	case "editable_border_focused":
-		c = theme.EditableBorderFocusedColor
 	case "selection":
 		c = unison.SelectionColor
 	case "on_selection":
