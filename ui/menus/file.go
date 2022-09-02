@@ -326,10 +326,13 @@ func createExportToTextAction(index int, path string) *unison.Action {
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			if s := sheet.ActiveSheet(); s != nil {
 				dialog := unison.NewSaveDialog()
-				dialog.SetAllowedExtensions(filepath.Ext(path))
+				ext := filepath.Ext(path)
+				dialog.SetAllowedExtensions(ext)
 				if dialog.RunModal() {
-					if err := export.LegacyExport(s.Entity(), path, dialog.Path()); err != nil {
-						unison.ErrorDialogWithError(i18n.Text("Export failed"), err)
+					if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), ext, false); ok {
+						if err := export.LegacyExport(s.Entity(), path, filePath); err != nil {
+							unison.ErrorDialogWithError(i18n.Text("Export failed"), err)
+						}
 					}
 				}
 			}

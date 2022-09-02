@@ -345,9 +345,12 @@ func SaveDockableAs(d FileBackedDockable, extension string, saver func(filePath 
 	}
 	dialog.SetAllowedExtensions(extension)
 	if dialog.RunModal() {
-		filePath := dialog.Path()
+		filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), extension, false)
+		if !ok {
+			return false
+		}
 		if err := saver(filePath); err != nil {
-			unison.ErrorDialogWithError(fmt.Sprintf(i18n.Text("Unable to save as %s"), fs.BaseName(filePath)), err)
+			unison.ErrorDialogWithError(i18n.Text("Unable to save as ")+fs.BaseName(filePath), err)
 			return false
 		}
 		setUnmodifiedAndNewPath(filePath)

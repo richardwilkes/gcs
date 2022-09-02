@@ -237,8 +237,10 @@ func (d *Dockable) handleExport(_ unison.MenuItem) {
 	dialog := unison.NewSaveDialog()
 	dialog.SetAllowedExtensions(d.Extensions[0])
 	if dialog.RunModal() {
-		if err := d.Saver(dialog.Path()); err != nil {
-			unison.ErrorDialogWithError(i18n.Text("Unable to save ")+d.TabTitle, err)
+		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), d.Extensions[0], false); ok {
+			if err := d.Saver(filePath); err != nil {
+				unison.ErrorDialogWithError(i18n.Text("Unable to save ")+d.TabTitle, err)
+			}
 		}
 	}
 }
