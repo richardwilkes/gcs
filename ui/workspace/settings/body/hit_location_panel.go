@@ -65,10 +65,7 @@ func (p *hitLocationPanel) createButtons() *unison.Panel {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	buttons.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.MiddleAlignment,
-		VAlign: unison.StartAlignment,
-	})
+	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.MiddleAlignment})
 
 	p.addButton = unison.NewSVGButton(res.CircledAddSVG)
 	p.addButton.ClickCallback = p.addSubTable
@@ -114,10 +111,7 @@ func (p *hitLocationPanel) createContent() *unison.Panel {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	content.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.StartAlignment,
-	})
+	content.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
 
 	text := i18n.Text("ID")
 	content.AddChild(widget.NewFieldLeadingLabel(text))
@@ -132,7 +126,6 @@ func (p *hitLocationPanel) createContent() *unison.Panel {
 		return func() bool { return p.validateLocID(field.Text()) }
 	}(field, p.loc)
 	field.SetMinimumTextWidthUsing(prototypeMinIDWidth)
-	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("An ID for the hit location"))
 	content.AddChild(field)
 
@@ -142,7 +135,6 @@ func (p *hitLocationPanel) createContent() *unison.Panel {
 		func() string { return p.loc.ChoiceName },
 		func(s string) { p.loc.ChoiceName = s })
 	field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
-	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The name of this hit location as it should appear in choice lists"))
 	content.AddChild(field)
 
@@ -152,7 +144,6 @@ func (p *hitLocationPanel) createContent() *unison.Panel {
 		func() string { return p.loc.TableName },
 		func(s string) { p.loc.TableName = s })
 	field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
-	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The name of this hit location as it should appear in the hit location table"))
 	content.AddChild(field)
 
@@ -189,7 +180,6 @@ func (p *hitLocationPanel) createContent() *unison.Panel {
 		func() string { return p.loc.Description },
 		func(s string) { p.loc.Description = s })
 	field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
-	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("A description of any special effects for hits to this location"))
 	content.AddChild(field)
 
@@ -200,7 +190,6 @@ func (p *hitLocationPanel) createContent() *unison.Panel {
 			func() string { return p.loc.SubTable.Roll.String() },
 			func(s string) { p.loc.SubTable.Roll = dice.New(s) })
 		field.SetMinimumTextWidthUsing("100d1000")
-		field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
 		field.Tooltip = unison.NewTooltipWithText(i18n.Text("The dice to roll on the sub-table"))
 		content.AddChild(field)
 

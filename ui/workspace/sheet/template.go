@@ -194,6 +194,11 @@ func (d *Template) applyTemplate(_ any) {
 		copyRowsTo(sheet.CarriedEquipment.Table, d.Equipment.Table.RootRows())
 		copyRowsTo(sheet.Notes.Table, d.Notes.Table.RootRows())
 		sheet.Rebuild(true)
+		ntable.ProcessModifiersForSelection(sheet.Traits.Table)
+		ntable.ProcessModifiersForSelection(sheet.Skills.Table)
+		ntable.ProcessModifiersForSelection(sheet.Spells.Table)
+		ntable.ProcessModifiersForSelection(sheet.CarriedEquipment.Table)
+		ntable.ProcessModifiersForSelection(sheet.Notes.Table)
 		ntable.ProcessNameablesForSelection(sheet.Traits.Table)
 		ntable.ProcessNameablesForSelection(sheet.Skills.Table)
 		ntable.ProcessNameablesForSelection(sheet.Spells.Table)
@@ -431,7 +436,6 @@ func (d *Template) createLists() {
 			})
 			rowPanel.SetLayoutData(&unison.FlexLayoutData{
 				HAlign: unison.FillAlignment,
-				VAlign: unison.StartAlignment,
 				HGrab:  true,
 			})
 			d.content.AddChild(rowPanel)

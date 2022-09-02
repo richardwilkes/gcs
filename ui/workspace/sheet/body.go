@@ -96,10 +96,7 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 	for i, location := range bodyType.Locations {
 		prefix := strings.Repeat("   ", depth)
 		label := widget.NewPageLabelCenter(prefix + location.RollRange)
-		label.SetLayoutData(&unison.FlexLayoutData{
-			HAlign: unison.FillAlignment,
-			VAlign: unison.StartAlignment,
-		})
+		label.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
 		p.AddChild(label)
 
 		if i == 0 {
@@ -110,10 +107,7 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 		if strings.TrimSpace(location.Description) != "" {
 			name.Tooltip = unison.NewTooltipWithText(location.Description)
 		}
-		name.SetLayoutData(&unison.FlexLayoutData{
-			HAlign: unison.FillAlignment,
-			VAlign: unison.StartAlignment,
-		})
+		name.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
 		p.row = append(p.row, name)
 		p.AddChild(name)
 		p.AddChild(p.createHitPenaltyField(location))
@@ -135,10 +129,7 @@ func (p *BodyPanel) createHitPenaltyField(location *gurps.HitLocation) unison.Pa
 		f.Text = fmt.Sprintf("%+d", location.HitPenalty)
 		widget.MarkForLayoutWithinDockable(f)
 	})
-	field.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.StartAlignment,
-	})
+	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
 	return field
 }
 
@@ -150,10 +141,7 @@ func (p *BodyPanel) createDRField(location *gurps.HitLocation) unison.Paneler {
 			location.TableName, tooltip.String()))
 		widget.MarkForLayoutWithinDockable(f)
 	})
-	field.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.StartAlignment,
-	})
+	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
 	return field
 }
 

@@ -48,7 +48,6 @@ func newAttrDefPanel(dockable *attributesDockable, def *gurps.AttributeDef) *att
 	})
 	p.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,
-		VAlign: unison.StartAlignment,
 		HGrab:  true,
 	})
 
@@ -68,10 +67,7 @@ func (p *attrDefPanel) createButtons() *unison.Panel {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	buttons.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.MiddleAlignment,
-		VAlign: unison.StartAlignment,
-	})
+	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.MiddleAlignment})
 
 	p.deleteButton = unison.NewSVGButton(res.TrashSVG)
 	p.deleteButton.ClickCallback = p.deleteAttrDef
@@ -116,7 +112,6 @@ func (p *attrDefPanel) createContent() *unison.Panel {
 	})
 	content.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,
-		VAlign: unison.StartAlignment,
 		HGrab:  true,
 	})
 
@@ -135,7 +130,6 @@ func (p *attrDefPanel) createContent() *unison.Panel {
 		return func() bool { return p.validateAttrID(field.Text()) }
 	}(field, p.def)
 	field.SetMinimumTextWidthUsing(prototypeMinIDWidth)
-	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("A unique ID for the attribute"))
 	content.AddChild(field)
 
@@ -146,7 +140,6 @@ func (p *attrDefPanel) createContent() *unison.Panel {
 			func() string { return p.def.Name },
 			func(s string) { p.def.Name = s })
 		field.SetMinimumTextWidthUsing(prototypeMinIDWidth)
-		field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
 		field.Tooltip = unison.NewTooltipWithText(i18n.Text("A title to use with the separator"))
 		content.AddChild(field)
 	} else {
@@ -156,7 +149,6 @@ func (p *attrDefPanel) createContent() *unison.Panel {
 			func() string { return p.def.Name },
 			func(s string) { p.def.Name = s })
 		field.SetMinimumTextWidthUsing(prototypeMinIDWidth)
-		field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
 		field.Tooltip = unison.NewTooltipWithText(i18n.Text("The name of this attribute, often an abbreviation"))
 		content.AddChild(field)
 
@@ -166,7 +158,6 @@ func (p *attrDefPanel) createContent() *unison.Panel {
 			func() string { return p.def.FullName },
 			func(s string) { p.def.FullName = s })
 		field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
-		field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
 		field.Tooltip = unison.NewTooltipWithText(i18n.Text("The full name of this attribute (may be omitted, in which case the Short Name will be used instead)"))
 		content.AddChild(field)
 

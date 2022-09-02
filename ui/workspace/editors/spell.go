@@ -43,6 +43,7 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 		addLabelAndStringField(content, i18n.Text("Class"), "", &e.editorData.Class)
 		addLabelAndStringField(content, i18n.Text("Power Source"), "", &e.editorData.PowerSource)
 		if isRitualMagic {
+			addLabelAndStringField(content, i18n.Text("Base Skill"), "", &e.editorData.RitualSkillName)
 			wrapper := addFlowWrapper(content, i18n.Text("Difficulty"), 3)
 			addPopup(wrapper, skill.AllTechniqueDifficulty, &e.editorData.Difficulty.Difficulty)
 			prereqCount := i18n.Text("Prerequisite Count")

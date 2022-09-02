@@ -67,7 +67,7 @@ type EditorData[T NodeTypes] interface {
 // AsNode converts a T to a Node[T]. This shouldn't require these hoops, but Go generics (as of 1.19) fails to compile
 // otherwise.
 func AsNode[T NodeTypes](in T) Node[T] {
-	return interface{}(in).(Node[T])
+	return any(in).(Node[T])
 }
 
 // CloneNodes creates clones of the provided nodes.

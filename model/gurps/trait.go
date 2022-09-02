@@ -351,10 +351,10 @@ func (a *Trait) FillWithNameableKeys(m map[string]string) {
 	for _, one := range a.Weapons {
 		one.FillWithNameableKeys(m)
 	}
-	Traverse[*TraitModifier](func(mod *TraitModifier) bool {
+	Traverse(func(mod *TraitModifier) bool {
 		mod.FillWithNameableKeys(m)
 		return false
-	}, true, false, a.Modifiers...)
+	}, true, true, a.Modifiers...)
 }
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
@@ -372,22 +372,22 @@ func (a *Trait) ApplyNameableKeys(m map[string]string) {
 	for _, one := range a.Weapons {
 		one.ApplyNameableKeys(m)
 	}
-	Traverse[*TraitModifier](func(mod *TraitModifier) bool {
+	Traverse(func(mod *TraitModifier) bool {
 		mod.ApplyNameableKeys(m)
 		return false
-	}, true, false, a.Modifiers...)
+	}, true, true, a.Modifiers...)
 }
 
 // ActiveModifierFor returns the first modifier that matches the name (case-insensitive).
 func (a *Trait) ActiveModifierFor(name string) *TraitModifier {
 	var found *TraitModifier
-	Traverse[*TraitModifier](func(mod *TraitModifier) bool {
+	Traverse(func(mod *TraitModifier) bool {
 		if strings.EqualFold(mod.Name, name) {
 			found = mod
 			return true
 		}
 		return false
-	}, true, false, a.Modifiers...)
+	}, true, true, a.Modifiers...)
 	return found
 }
 
@@ -401,13 +401,13 @@ func (a *Trait) ModifierNotes() string {
 			buffer.WriteString(a.CRAdj.Description(a.CR))
 		}
 	}
-	Traverse[*TraitModifier](func(mod *TraitModifier) bool {
+	Traverse(func(mod *TraitModifier) bool {
 		if buffer.Len() != 0 {
 			buffer.WriteString("; ")
 		}
 		buffer.WriteString(mod.FullDescription())
 		return false
-	}, true, false, a.Modifiers...)
+	}, true, true, a.Modifiers...)
 	return buffer.String()
 }
 
@@ -469,7 +469,7 @@ func ExtractTags(tags string) []string {
 func AdjustedPoints(entity *Entity, basePoints, levels, pointsPerLevel fxp.Int, cr trait.SelfControlRoll, modifiers []*TraitModifier, roundCostDown bool) fxp.Int {
 	var baseEnh, levelEnh, baseLim, levelLim fxp.Int
 	multiplier := cr.Multiplier()
-	Traverse[*TraitModifier](func(mod *TraitModifier) bool {
+	Traverse(func(mod *TraitModifier) bool {
 		modifier := mod.CostModifier()
 		switch mod.CostType {
 		case trait.Percentage:
@@ -505,7 +505,7 @@ func AdjustedPoints(entity *Entity, basePoints, levels, pointsPerLevel fxp.Int, 
 			multiplier = multiplier.Mul(modifier)
 		}
 		return false
-	}, true, false, modifiers...)
+	}, true, true, modifiers...)
 	modifiedBasePoints := basePoints
 	leveledPoints := pointsPerLevel.Mul(levels)
 	if baseEnh != 0 || baseLim != 0 || levelEnh != 0 || levelLim != 0 {

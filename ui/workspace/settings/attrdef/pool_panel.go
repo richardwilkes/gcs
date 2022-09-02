@@ -27,7 +27,6 @@ func newPoolPanel(dockable *attributesDockable, def *gurps.AttributeDef) *poolPa
 	p.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,
 		HAlign: unison.FillAlignment,
-		VAlign: unison.StartAlignment,
 		HGrab:  true,
 	})
 	for _, threshold := range def.Thresholds {

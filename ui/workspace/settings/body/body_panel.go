@@ -32,10 +32,7 @@ func newBodyPanel(d *bodyDockable) *bodyPanel {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.StartAlignment,
-	})
+	p.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
 
 	p.AddChild(p.createButtons())
 	p.AddChild(p.createContent())
@@ -50,10 +47,7 @@ func (p *bodyPanel) createButtons() *unison.Panel {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	buttons.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.MiddleAlignment,
-		VAlign: unison.StartAlignment,
-	})
+	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.MiddleAlignment})
 
 	addButton := unison.NewSVGButton(res.CircledAddSVG)
 	addButton.ClickCallback = p.addHitLocation
@@ -80,10 +74,7 @@ func (p *bodyPanel) createContent() *unison.Panel {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	content.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.StartAlignment,
-	})
+	content.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
 
 	text := i18n.Text("Name")
 	content.AddChild(widget.NewFieldLeadingLabel(text))
@@ -91,7 +82,6 @@ func (p *bodyPanel) createContent() *unison.Panel {
 		func() string { return p.dockable.body.Name },
 		func(s string) { p.dockable.body.Name = s })
 	field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
-	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The name of this body type"))
 	content.AddChild(field)
 
@@ -101,7 +91,6 @@ func (p *bodyPanel) createContent() *unison.Panel {
 		func() string { return p.dockable.body.Roll.String() },
 		func(s string) { p.dockable.body.Roll = dice.New(s) })
 	field.SetMinimumTextWidthUsing("100d1000")
-	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.StartAlignment})
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The dice to roll on the table"))
 	content.AddChild(field)
 

@@ -462,6 +462,7 @@ func (d *TableDockable[T]) copySelectionToSheet(_ any) {
 				}
 				if table != nil {
 					ntable.CopyRowsTo(table, sel)
+					ntable.ProcessModifiersForSelection(table)
 					ntable.ProcessNameablesForSelection(table)
 				}
 			}

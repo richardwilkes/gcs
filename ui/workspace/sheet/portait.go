@@ -29,18 +29,14 @@ import (
 // PortraitPanel holds the contents of the portrait block on the sheet.
 type PortraitPanel struct {
 	unison.Panel
-	sheet *Sheet
+	entity *gurps.Entity
 }
 
 // NewPortraitPanel creates a new portrait panel.
-func NewPortraitPanel(sheet *Sheet) *PortraitPanel {
-	p := &PortraitPanel{sheet: sheet}
+func NewPortraitPanel(entity *gurps.Entity) *PortraitPanel {
+	p := &PortraitPanel{entity: entity}
 	p.Self = p
-	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.StartAlignment,
-		VAlign: unison.StartAlignment,
-		VSpan:  2,
-	})
+	p.SetLayoutData(&unison.FlexLayoutData{VSpan: 2})
 	p.SetBorder(&widget.TitledBorder{Title: i18n.Text("Portrait")})
 	p.Tooltip = unison.NewTooltipWithText(fmt.Sprintf(i18n.Text(`Double-click to set a character portrait, or drag an image onto this block.
 
@@ -56,7 +52,7 @@ func (p *PortraitPanel) drawSelf(gc *unison.Canvas, _ unison.Rect) {
 	r := p.ContentRect(false)
 	paint := unison.ContentColor.Paint(gc, r, unison.Fill)
 	gc.DrawRect(r, paint)
-	if img := p.sheet.entity.Profile.Portrait(); img != nil {
+	if img := p.entity.Profile.Portrait(); img != nil {
 		img.DrawInRect(gc, r, nil, paint)
 	}
 }
@@ -131,8 +127,8 @@ func (p *PortraitPanel) fileDrop(files []string) {
 				continue
 			}
 		}
-		p.sheet.entity.Profile.PortraitData = data
-		p.sheet.entity.Profile.PortraitImage = img
+		p.entity.Profile.PortraitData = data
+		p.entity.Profile.PortraitImage = img
 		p.MarkForRedraw()
 		widget.MarkModified(p)
 	}

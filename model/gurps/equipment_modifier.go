@@ -28,7 +28,10 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-var _ Node[*EquipmentModifier] = &EquipmentModifier{}
+var (
+	_ Node[*EquipmentModifier] = &EquipmentModifier{}
+	_ GeneralModifier          = &EquipmentModifier{}
+)
 
 // Columns that can be used with the equipment modifier method .CellData()
 const (
@@ -293,6 +296,13 @@ func (e *EquipmentModifier) Enabled() bool {
 	return !e.Disabled || e.Container()
 }
 
+// SetEnabled makes the node enabled, if possible.
+func (e *EquipmentModifier) SetEnabled(enabled bool) {
+	if !e.Container() {
+		e.Disabled = !enabled
+	}
+}
+
 // ValueAdjustedForModifiers returns the value after adjusting it for a set of modifiers.
 func ValueAdjustedForModifiers(value fxp.Int, modifiers []*EquipmentModifier) fxp.Int {
 	// Apply all equipment.OriginalCost
@@ -300,7 +310,7 @@ func ValueAdjustedForModifiers(value fxp.Int, modifiers []*EquipmentModifier) fx
 
 	// Apply all equipment.BaseCost
 	var cf fxp.Int
-	Traverse[*EquipmentModifier](func(mod *EquipmentModifier) bool {
+	Traverse(func(mod *EquipmentModifier) bool {
 		if mod.CostType == equipment.BaseCost {
 			t := equipment.BaseCost.DetermineModifierCostValueTypeFromString(mod.CostAmount)
 			cf += t.ExtractValue(mod.CostAmount)
@@ -309,7 +319,7 @@ func ValueAdjustedForModifiers(value fxp.Int, modifiers []*EquipmentModifier) fx
 			}
 		}
 		return false
-	}, true, false, modifiers...)
+	}, true, true, modifiers...)
 	if cf != 0 {
 		cf = cf.Max(fxp.NegPointEight)
 		cost = cost.Mul(cf.Max(fxp.NegPointEight) + fxp.One)
@@ -327,7 +337,7 @@ func ValueAdjustedForModifiers(value fxp.Int, modifiers []*EquipmentModifier) fx
 func processNonCFStep(costType equipment.ModifierCostType, value fxp.Int, modifiers []*EquipmentModifier) fxp.Int {
 	var percentages, additions fxp.Int
 	cost := value
-	Traverse[*EquipmentModifier](func(mod *EquipmentModifier) bool {
+	Traverse(func(mod *EquipmentModifier) bool {
 		if mod.CostType == costType {
 			t := costType.DetermineModifierCostValueTypeFromString(mod.CostAmount)
 			amt := t.ExtractValue(mod.CostAmount)
@@ -341,7 +351,7 @@ func processNonCFStep(costType equipment.ModifierCostType, value fxp.Int, modifi
 			}
 		}
 		return false
-	}, true, false, modifiers...)
+	}, true, true, modifiers...)
 	cost += additions
 	if percentages != 0 {
 		cost += value.Mul(percentages.Div(fxp.Hundred))
@@ -355,7 +365,7 @@ func WeightAdjustedForModifiers(weight measure.Weight, modifiers []*EquipmentMod
 	w := fxp.Int(weight)
 
 	// Apply all equipment.OriginalWeight
-	Traverse[*EquipmentModifier](func(mod *EquipmentModifier) bool {
+	Traverse(func(mod *EquipmentModifier) bool {
 		if mod.WeightType == equipment.OriginalWeight {
 			t := equipment.OriginalWeight.DetermineModifierWeightValueTypeFromString(mod.WeightAmount)
 			amt := t.ExtractFraction(mod.WeightAmount).Value()
@@ -366,7 +376,7 @@ func WeightAdjustedForModifiers(weight measure.Weight, modifiers []*EquipmentMod
 			}
 		}
 		return false
-	}, true, false, modifiers...)
+	}, true, true, modifiers...)
 	if percentages != 0 {
 		w += fxp.Int(weight).Mul(percentages.Div(fxp.Hundred))
 	}
@@ -385,7 +395,7 @@ func WeightAdjustedForModifiers(weight measure.Weight, modifiers []*EquipmentMod
 
 func processMultiplyAddWeightStep(weightType equipment.ModifierWeightType, weight fxp.Int, defUnits measure.WeightUnits, modifiers []*EquipmentModifier) fxp.Int {
 	var sum fxp.Int
-	Traverse[*EquipmentModifier](func(mod *EquipmentModifier) bool {
+	Traverse(func(mod *EquipmentModifier) bool {
 		if mod.WeightType == weightType {
 			t := weightType.DetermineModifierWeightValueTypeFromString(mod.WeightAmount)
 			f := t.ExtractFraction(mod.WeightAmount)
@@ -399,6 +409,6 @@ func processMultiplyAddWeightStep(weightType equipment.ModifierWeightType, weigh
 			}
 		}
 		return false
-	}, true, false, modifiers...)
+	}, true, true, modifiers...)
 	return weight + sum
 }

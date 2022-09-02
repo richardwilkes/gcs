@@ -27,16 +27,18 @@ import (
 // PointPoolsPanel holds the contents of the point pools block on the sheet.
 type PointPoolsPanel struct {
 	unison.Panel
-	sheet  *Sheet
-	prefix string
-	crc    uint64
+	entity    *gurps.Entity
+	targetMgr *widget.TargetMgr
+	prefix    string
+	crc       uint64
 }
 
 // NewPointPoolsPanel creates a new point pools panel.
-func NewPointPoolsPanel(sheet *Sheet) *PointPoolsPanel {
+func NewPointPoolsPanel(entity *gurps.Entity, targetMgr *widget.TargetMgr) *PointPoolsPanel {
 	p := &PointPoolsPanel{
-		sheet:  sheet,
-		prefix: sheet.targetMgr.NextPrefix(),
+		entity:    entity,
+		targetMgr: targetMgr,
+		prefix:    targetMgr.NextPrefix(),
 	}
 	p.Self = p
 	p.SetLayout(&unison.FlexLayout{
@@ -57,21 +59,21 @@ func NewPointPoolsPanel(sheet *Sheet) *PointPoolsPanel {
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
 		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, unison.Fill))
 	}
-	attrs := gurps.SheetSettingsFor(p.sheet.entity).Attributes
+	attrs := gurps.SheetSettingsFor(p.entity).Attributes
 	p.crc = attrs.CRC64()
 	p.rebuild(attrs)
 	return p
 }
 
 func (p *PointPoolsPanel) rebuild(attrs *gurps.AttributeDefs) {
-	focusRefKey := p.sheet.targetMgr.CurrentFocusRef()
+	focusRefKey := p.targetMgr.CurrentFocusRef()
 	p.RemoveAllChildren()
 	for _, def := range attrs.List(false) {
 		if def.Pool() {
 			if def.Type == attribute.PoolSeparator {
 				p.AddChild(widget.NewPageInternalHeader(def.Name, 6))
 			} else {
-				attr, ok := p.sheet.entity.Attributes.Set[def.ID()]
+				attr, ok := p.entity.Attributes.Set[def.ID()]
 				if !ok {
 					jot.Warnf("unable to locate attribute data for '%s'", def.ID())
 					continue
@@ -79,7 +81,7 @@ func (p *PointPoolsPanel) rebuild(attrs *gurps.AttributeDefs) {
 				p.AddChild(p.createPointsField(attr))
 
 				var currentField *widget.DecimalField
-				currentField = widget.NewDecimalPageField(p.sheet.targetMgr, p.prefix+attr.AttrID+":cur",
+				currentField = widget.NewDecimalPageField(p.targetMgr, p.prefix+attr.AttrID+":cur",
 					i18n.Text("Point Pool Current"), func() fxp.Int {
 						if currentField != nil {
 							currentField.SetMinMax(currentField.Min(), attr.Maximum())
@@ -91,7 +93,7 @@ func (p *PointPoolsPanel) rebuild(attrs *gurps.AttributeDefs) {
 
 				p.AddChild(widget.NewPageLabel(i18n.Text("of")))
 
-				maximumField := widget.NewDecimalPageField(p.sheet.targetMgr, p.prefix+attr.AttrID+":max",
+				maximumField := widget.NewDecimalPageField(p.targetMgr, p.prefix+attr.AttrID+":max",
 					i18n.Text("Point Pool Maximum"), func() fxp.Int { return attr.Maximum() },
 					func(v fxp.Int) {
 						attr.SetMaximum(v)
@@ -118,7 +120,11 @@ func (p *PointPoolsPanel) rebuild(attrs *gurps.AttributeDefs) {
 			}
 		}
 	}
-	p.sheet.targetMgr.ReacquireFocus(focusRefKey, p.sheet.toolbar, p.sheet.scroll.Content())
+	if p.targetMgr != nil {
+		if sheet := unison.Ancestor[*Sheet](p); sheet != nil {
+			p.targetMgr.ReacquireFocus(focusRefKey, sheet.toolbar, sheet.scroll.Content())
+		}
+	}
 }
 
 func (p *PointPoolsPanel) createPointsField(attr *gurps.Attribute) *widget.NonEditablePageField {
@@ -137,10 +143,10 @@ func (p *PointPoolsPanel) createPointsField(attr *gurps.Attribute) *widget.NonEd
 
 // Sync the panel to the current data.
 func (p *PointPoolsPanel) Sync() {
-	attrs := p.sheet.entity.Attributes
+	attrs := p.entity.Attributes
 	if crc := attrs.CRC64(); crc != p.crc {
 		p.crc = crc
-		p.rebuild(gurps.SheetSettingsFor(p.sheet.entity).Attributes)
+		p.rebuild(gurps.SheetSettingsFor(p.entity).Attributes)
 		widget.MarkForLayoutWithinDockable(p)
 	}
 }

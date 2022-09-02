@@ -63,16 +63,19 @@ type General struct {
 	IncludeUnspentPointsInTotal bool    `json:"include_unspent_points_in_total"`
 }
 
+// DefaultUserName returns the default user name.
+func DefaultUserName() string {
+	u, err := user.Current()
+	if err != nil {
+		return os.Getenv("USER")
+	}
+	return u.Name
+}
+
 // NewGeneral creates settings with factory defaults.
 func NewGeneral() *General {
-	var name string
-	if u, err := user.Current(); err != nil {
-		name = os.Getenv("USER")
-	} else {
-		name = u.Name
-	}
 	return &General{
-		DefaultPlayerName:           name,
+		DefaultPlayerName:           DefaultUserName(),
 		DefaultTechLevel:            "3",
 		InitialPoints:               InitialPointsDef,
 		TooltipDelay:                TooltipDelayDef,

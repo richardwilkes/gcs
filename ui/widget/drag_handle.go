@@ -29,10 +29,7 @@ func NewDragHandle(data map[string]any) *DragHandle {
 		Size: *size.GrowToInteger(),
 	}
 	h.SetSizer(h.size)
-	h.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.MiddleAlignment,
-		VAlign: unison.StartAlignment,
-	})
+	h.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.MiddleAlignment})
 	h.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: 3}))
 	return h
 }

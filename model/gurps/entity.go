@@ -247,7 +247,7 @@ func (e *Entity) ensureAttachments() {
 
 func (e *Entity) processFeatures() {
 	m := make(map[string][]feature.Feature)
-	Traverse[*Trait](func(a *Trait) bool {
+	Traverse(func(a *Trait) bool {
 		if !a.Container() {
 			for _, f := range a.Features {
 				processFeature(a, m, f, a.Levels.Max(0))
@@ -256,33 +256,33 @@ func (e *Entity) processFeatures() {
 		for _, f := range a.CRAdj.Features(a.CR) {
 			processFeature(a, m, f, a.Levels.Max(0))
 		}
-		Traverse[*TraitModifier](func(mod *TraitModifier) bool {
+		Traverse(func(mod *TraitModifier) bool {
 			for _, f := range mod.Features {
 				processFeature(a, m, f, mod.Levels)
 			}
 			return false
-		}, true, false, a.Modifiers...)
+		}, true, true, a.Modifiers...)
 		return false
-	}, false, true, e.Traits...)
-	Traverse[*Skill](func(s *Skill) bool {
+	}, true, false, e.Traits...)
+	Traverse(func(s *Skill) bool {
 		for _, f := range s.Features {
 			processFeature(s, m, f, 0)
 		}
 		return false
-	}, true, false, e.Skills...)
-	Traverse[*Equipment](func(eqp *Equipment) bool {
+	}, false, true, e.Skills...)
+	Traverse(func(eqp *Equipment) bool {
 		if !eqp.Equipped || eqp.Quantity <= 0 {
 			return false
 		}
 		for _, f := range eqp.Features {
 			processFeature(eqp, m, f, 0)
 		}
-		Traverse[*EquipmentModifier](func(mod *EquipmentModifier) bool {
+		Traverse(func(mod *EquipmentModifier) bool {
 			for _, f := range mod.Features {
 				processFeature(eqp, m, f, 0)
 			}
 			return false
-		}, true, false, eqp.Modifiers...)
+		}, true, true, eqp.Modifiers...)
 		return false
 	}, false, false, e.CarriedEquipment...)
 	e.featureMap = m
@@ -321,7 +321,7 @@ func processFeature(parent fmt.Stringer, m map[string][]feature.Feature, f featu
 func (e *Entity) processPrereqs() {
 	const prefix = "\n● "
 	notMetPrefix := i18n.Text("Prerequisites have not been met:")
-	Traverse[*Trait](func(a *Trait) bool {
+	Traverse(func(a *Trait) bool {
 		a.UnsatisfiedReason = ""
 		if !a.Container() && a.Prereq != nil {
 			var tooltip xio.ByteBuffer
@@ -330,8 +330,8 @@ func (e *Entity) processPrereqs() {
 			}
 		}
 		return false
-	}, false, true, e.Traits...)
-	Traverse[*Skill](func(s *Skill) bool {
+	}, true, false, e.Traits...)
+	Traverse(func(s *Skill) bool {
 		s.UnsatisfiedReason = ""
 		if !s.Container() {
 			var tooltip xio.ByteBuffer
@@ -348,7 +348,7 @@ func (e *Entity) processPrereqs() {
 		}
 		return false
 	}, false, false, e.Skills...)
-	Traverse[*Spell](func(s *Spell) bool {
+	Traverse(func(s *Spell) bool {
 		s.UnsatisfiedReason = ""
 		if !s.Container() {
 			var tooltip xio.ByteBuffer
@@ -375,31 +375,31 @@ func (e *Entity) processPrereqs() {
 		}
 		return false
 	}
-	Traverse[*Equipment](equipmentFunc, false, false, e.CarriedEquipment...)
-	Traverse[*Equipment](equipmentFunc, false, false, e.OtherEquipment...)
+	Traverse(equipmentFunc, false, false, e.CarriedEquipment...)
+	Traverse(equipmentFunc, false, false, e.OtherEquipment...)
 }
 
 // UpdateSkills updates the levels of all skills.
 func (e *Entity) UpdateSkills() bool {
 	changed := false
-	Traverse[*Skill](func(s *Skill) bool {
+	Traverse(func(s *Skill) bool {
 		if s.UpdateLevel() {
 			changed = true
 		}
 		return false
-	}, true, false, e.Skills...)
+	}, false, true, e.Skills...)
 	return changed
 }
 
 // UpdateSpells updates the levels of all spells.
 func (e *Entity) UpdateSpells() bool {
 	changed := false
-	Traverse[*Spell](func(s *Spell) bool {
+	Traverse(func(s *Spell) bool {
 		if s.UpdateLevel() {
 			changed = true
 		}
 		return false
-	}, true, false, e.Spells...)
+	}, false, true, e.Spells...)
 	return changed
 }
 
@@ -477,20 +477,20 @@ func calculateSingleTraitPoints(t *Trait) (ad, disad, race, quirk fxp.Int) {
 // SkillPoints returns the number of points spent on skills.
 func (e *Entity) SkillPoints() fxp.Int {
 	var total fxp.Int
-	Traverse[*Skill](func(s *Skill) bool {
+	Traverse(func(s *Skill) bool {
 		total += s.Points
 		return false
-	}, true, false, e.Skills...)
+	}, false, true, e.Skills...)
 	return total
 }
 
 // SpellPoints returns the number of points spent on spells.
 func (e *Entity) SpellPoints() fxp.Int {
 	var total fxp.Int
-	Traverse[*Spell](func(s *Spell) bool {
+	Traverse(func(s *Spell) bool {
 		total += s.Points
 		return false
-	}, true, false, e.Spells...)
+	}, false, true, e.Spells...)
 	return total
 }
 
@@ -681,7 +681,7 @@ func (e *Entity) BaseSkill(def *SkillDefault, requirePoints bool) *Skill {
 // SkillNamed returns a list of skills that match.
 func (e *Entity) SkillNamed(name, specialization string, requirePoints bool, excludes map[string]bool) []*Skill {
 	var list []*Skill
-	Traverse[*Skill](func(sk *Skill) bool {
+	Traverse(func(sk *Skill) bool {
 		if !excludes[sk.String()] {
 			if !requirePoints || sk.Type == gid.Technique || sk.AdjustedPoints(nil) > 0 {
 				if strings.EqualFold(sk.Name, name) {
@@ -692,7 +692,7 @@ func (e *Entity) SkillNamed(name, specialization string, requirePoints bool, exc
 			}
 		}
 		return false
-	}, true, false, e.Skills...)
+	}, false, true, e.Skills...)
 	return list
 }
 
@@ -1018,14 +1018,14 @@ func (e *Entity) PreservesUserDesc() bool {
 // Ancestry returns the current Ancestry.
 func (e *Entity) Ancestry() *ancestry.Ancestry {
 	var anc *ancestry.Ancestry
-	Traverse[*Trait](func(t *Trait) bool {
+	Traverse(func(t *Trait) bool {
 		if t.Container() && t.ContainerType == trait.Race {
 			if anc = ancestry.Lookup(t.Ancestry, SettingsProvider.Libraries()); anc != nil {
 				return true
 			}
 		}
 		return false
-	}, false, true, e.Traits...)
+	}, true, false, e.Traits...)
 	if anc == nil {
 		if anc = ancestry.Lookup(ancestry.Default, SettingsProvider.Libraries()); anc == nil {
 			jot.Fatal(1, "unable to load default ancestry (Human)")
@@ -1053,7 +1053,7 @@ func (e *Entity) SetWeapons(_ weapon.Type, _ []*Weapon) {
 // EquippedWeapons returns a sorted list of equipped weapons.
 func (e *Entity) EquippedWeapons(weaponType weapon.Type) []*Weapon {
 	m := make(map[uint32]*Weapon)
-	Traverse[*Trait](func(a *Trait) bool {
+	Traverse(func(a *Trait) bool {
 		for _, w := range a.Weapons {
 			if w.Type == weaponType {
 				m[w.HashCode()] = w
@@ -1061,7 +1061,7 @@ func (e *Entity) EquippedWeapons(weaponType weapon.Type) []*Weapon {
 		}
 		return false
 	}, true, true, e.Traits...)
-	Traverse[*Equipment](func(eqp *Equipment) bool {
+	Traverse(func(eqp *Equipment) bool {
 		if eqp.Equipped {
 			for _, w := range eqp.Weapons {
 				if w.Type == weaponType {
@@ -1071,22 +1071,22 @@ func (e *Entity) EquippedWeapons(weaponType weapon.Type) []*Weapon {
 		}
 		return false
 	}, false, false, e.CarriedEquipment...)
-	Traverse[*Skill](func(s *Skill) bool {
+	Traverse(func(s *Skill) bool {
 		for _, w := range s.Weapons {
 			if w.Type == weaponType {
 				m[w.HashCode()] = w
 			}
 		}
 		return false
-	}, true, false, e.Skills...)
-	Traverse[*Spell](func(s *Spell) bool {
+	}, false, true, e.Skills...)
+	Traverse(func(s *Spell) bool {
 		for _, w := range s.Weapons {
 			if w.Type == weaponType {
 				m[w.HashCode()] = w
 			}
 		}
 		return false
-	}, true, false, e.Spells...)
+	}, false, true, e.Spells...)
 	list := make([]*Weapon, 0, len(m))
 	for _, v := range m {
 		list = append(list, v)
@@ -1098,15 +1098,15 @@ func (e *Entity) EquippedWeapons(weaponType weapon.Type) []*Weapon {
 // Reactions returns the current set of reactions.
 func (e *Entity) Reactions() []*ConditionalModifier {
 	m := make(map[string]*ConditionalModifier)
-	Traverse[*Trait](func(a *Trait) bool {
+	Traverse(func(a *Trait) bool {
 		source := i18n.Text("from trait ") + a.String()
 		if !a.Container() {
 			e.reactionsFromFeatureList(source, a.Features, m)
 		}
-		Traverse[*TraitModifier](func(mod *TraitModifier) bool {
+		Traverse(func(mod *TraitModifier) bool {
 			e.reactionsFromFeatureList(source, mod.Features, m)
 			return false
-		}, true, false, a.Modifiers...)
+		}, true, true, a.Modifiers...)
 		if a.CR != trait.None && a.CRAdj == ReactionPenalty {
 			amt := fxp.From(ReactionPenalty.Adjustment(a.CR))
 			situation := fmt.Sprintf(i18n.Text("from others when %s is triggered"), a.String())
@@ -1117,22 +1117,22 @@ func (e *Entity) Reactions() []*ConditionalModifier {
 			}
 		}
 		return false
-	}, false, true, e.Traits...)
-	Traverse[*Equipment](func(eqp *Equipment) bool {
+	}, true, false, e.Traits...)
+	Traverse(func(eqp *Equipment) bool {
 		if eqp.Equipped && eqp.Quantity > 0 {
 			source := i18n.Text("from equipment ") + eqp.Name
 			e.reactionsFromFeatureList(source, eqp.Features, m)
-			Traverse[*EquipmentModifier](func(mod *EquipmentModifier) bool {
+			Traverse(func(mod *EquipmentModifier) bool {
 				e.reactionsFromFeatureList(source, mod.Features, m)
 				return false
-			}, true, false, eqp.Modifiers...)
+			}, true, true, eqp.Modifiers...)
 		}
 		return false
 	}, false, false, e.CarriedEquipment...)
-	Traverse[*Skill](func(sk *Skill) bool {
+	Traverse(func(sk *Skill) bool {
 		e.reactionsFromFeatureList(i18n.Text("from skill ")+sk.String(), sk.Features, m)
 		return false
-	}, true, false, e.Skills...)
+	}, false, true, e.Skills...)
 	list := make([]*ConditionalModifier, 0, len(m))
 	for _, v := range m {
 		list = append(list, v)
@@ -1157,32 +1157,32 @@ func (e *Entity) reactionsFromFeatureList(source string, features feature.Featur
 // ConditionalModifiers returns the current set of conditional modifiers.
 func (e *Entity) ConditionalModifiers() []*ConditionalModifier {
 	m := make(map[string]*ConditionalModifier)
-	Traverse[*Trait](func(a *Trait) bool {
+	Traverse(func(a *Trait) bool {
 		source := i18n.Text("from trait ") + a.String()
 		if !a.Container() {
 			e.conditionalModifiersFromFeatureList(source, a.Features, m)
 		}
-		Traverse[*TraitModifier](func(mod *TraitModifier) bool {
+		Traverse(func(mod *TraitModifier) bool {
 			e.conditionalModifiersFromFeatureList(source, mod.Features, m)
 			return false
-		}, true, false, a.Modifiers...)
+		}, true, true, a.Modifiers...)
 		return false
-	}, false, true, e.Traits...)
-	Traverse[*Equipment](func(eqp *Equipment) bool {
+	}, true, false, e.Traits...)
+	Traverse(func(eqp *Equipment) bool {
 		if eqp.Equipped && eqp.Quantity > 0 {
 			source := i18n.Text("from equipment ") + eqp.Name
 			e.conditionalModifiersFromFeatureList(source, eqp.Features, m)
-			Traverse[*EquipmentModifier](func(mod *EquipmentModifier) bool {
+			Traverse(func(mod *EquipmentModifier) bool {
 				e.conditionalModifiersFromFeatureList(source, mod.Features, m)
 				return false
-			}, true, false, eqp.Modifiers...)
+			}, true, true, eqp.Modifiers...)
 		}
 		return false
 	}, false, false, e.CarriedEquipment...)
-	Traverse[*Skill](func(sk *Skill) bool {
+	Traverse(func(sk *Skill) bool {
 		e.conditionalModifiersFromFeatureList(i18n.Text("from skill ")+sk.String(), sk.Features, m)
 		return false
-	}, true, false, e.Skills...)
+	}, false, true, e.Skills...)
 	list := make([]*ConditionalModifier, 0, len(m))
 	for _, v := range m {
 		list = append(list, v)

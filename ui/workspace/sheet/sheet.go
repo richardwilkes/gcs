@@ -62,19 +62,8 @@ type Sheet struct {
 	crc                  uint64
 	scale                int
 	scaleField           *widget.PercentageField
-	pages                *unison.Panel
-	PortraitPanel        *PortraitPanel
-	IdentityPanel        *IdentityPanel
-	MiscPanel            *MiscPanel
-	DescriptionPanel     *DescriptionPanel
-	PointsPanel          *PointsPanel
-	PrimaryAttrPanel     *PrimaryAttrPanel
-	SecondaryAttrPanel   *SecondaryAttrPanel
-	PointPoolsPanel      *PointPoolsPanel
-	BodyPanel            *BodyPanel
-	EncumbrancePanel     *EncumbrancePanel
-	LiftingPanel         *LiftingPanel
-	DamagePanel          *DamagePanel
+	content              *unison.Panel
+	modifiedFunc         func()
 	Reactions            *PageList[*gurps.ConditionalModifier]
 	ConditionalModifiers *PageList[*gurps.ConditionalModifier]
 	MeleeWeapons         *PageList[*gurps.Weapon]
@@ -136,7 +125,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 		entity:            entity,
 		crc:               entity.CRC64(),
 		scale:             settings.Global().General.InitialSheetUIScale,
-		pages:             unison.NewPanel(),
+		content:           unison.NewPanel(),
 		needsSaveAsPrompt: true,
 	}
 	s.Self = s
@@ -147,13 +136,15 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 		VAlign:  unison.FillAlignment,
 	})
 
-	s.pages.SetLayout(&unison.FlexLayout{
+	s.content.SetLayout(&unison.FlexLayout{
 		Columns:  1,
 		VSpacing: 1,
 	})
-	s.pages.AddChild(s.createTopBlock())
+	var top *Page
+	top, s.modifiedFunc = createTopBlock(s.entity, s.targetMgr)
+	s.content.AddChild(top)
 	s.createLists()
-	s.scroll.SetContent(s.pages, unison.UnmodifiedBehavior, unison.UnmodifiedBehavior)
+	s.scroll.SetContent(s.content, unison.UnmodifiedBehavior, unison.UnmodifiedBehavior)
 	s.scroll.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,
 		VAlign: unison.FillAlignment,
@@ -226,6 +217,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 			}, gurps.NewNaturalAttacks(s.entity, nil))
 	})
 	s.InstallCmdHandlers(constants.SwapDefaultsItemID, s.canSwapDefaults, s.swapDefaults)
+	s.InstallCmdHandlers(constants.ExportAsPDFItemID, unison.AlwaysEnabled, func(_ any) { s.exportToPDF() })
 
 	return s
 }
@@ -257,7 +249,7 @@ func (s *Sheet) UndoManager() *unison.UndoManager {
 }
 
 func (s *Sheet) applyScale() {
-	s.pages.SetScale(float32(s.scale) / 100)
+	s.content.SetScale(float32(s.scale) / 100)
 	s.scroll.Sync()
 }
 
@@ -299,7 +291,7 @@ func (s *Sheet) MarkModified() {
 		s.awaitingUpdate = true
 		unison.InvokeTaskAfter(func() {
 			h, v := s.scroll.Position()
-			s.MiscPanel.UpdateModified()
+			s.modifiedFunc()
 			// TODO: This is still too slow when the lists have more than a few rows of content.
 			//       It impinges on interactive typing. Looks like most of the time is spent in updating the tables.
 			//       Unfortunately, there isn't a fast way to determine that the content doesn't need to be refreshed.
@@ -356,99 +348,20 @@ func (s *Sheet) save(forceSaveAs bool) bool {
 	return success
 }
 
-func (s *Sheet) createTopBlock() *Page {
-	p := NewPage(s.entity)
-	p.AddChild(s.createFirstRow())
-	p.AddChild(s.createSecondRow())
-	return p
-}
-
-func (s *Sheet) createFirstRow() *unison.Panel {
-	s.PortraitPanel = NewPortraitPanel(s)
-	s.IdentityPanel = NewIdentityPanel(s)
-	s.MiscPanel = NewMiscPanel(s)
-	s.DescriptionPanel = NewDescriptionPanel(s)
-	s.PointsPanel = NewPointsPanel(s)
-
-	right := unison.NewPanel()
-	right.SetLayout(&unison.FlexLayout{
-		Columns:  3,
-		HSpacing: 1,
-		VSpacing: 1,
-		HAlign:   unison.FillAlignment,
-		VAlign:   unison.FillAlignment,
-	})
-
-	right.AddChild(s.IdentityPanel)
-	right.AddChild(s.MiscPanel)
-	right.AddChild(s.PointsPanel)
-	right.AddChild(s.DescriptionPanel)
-
-	p := unison.NewPanel()
-	p.SetLayout(&portraitLayout{
-		portrait: s.PortraitPanel,
-		rest:     right,
-	})
-	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
-		HGrab:  true,
-	})
-	p.AddChild(s.PortraitPanel)
-	p.AddChild(right)
-
-	return p
-}
-
-func (s *Sheet) createSecondRow() *unison.Panel {
-	p := unison.NewPanel()
-	p.SetLayout(&unison.FlexLayout{
-		Columns:  4,
-		HSpacing: 1,
-		VSpacing: 1,
-		HAlign:   unison.FillAlignment,
-		VAlign:   unison.FillAlignment,
-	})
-	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
-		HGrab:  true,
-	})
-
-	s.PrimaryAttrPanel = NewPrimaryAttrPanel(s)
-	s.SecondaryAttrPanel = NewSecondaryAttrPanel(s)
-	s.PointPoolsPanel = NewPointPoolsPanel(s)
-	s.BodyPanel = NewBodyPanel(s.entity)
-	s.EncumbrancePanel = NewEncumbrancePanel(s.entity)
-	s.LiftingPanel = NewLiftingPanel(s.entity)
-	s.DamagePanel = NewDamagePanel(s.entity)
-
-	endWrapper := unison.NewPanel()
-	endWrapper.SetLayout(&unison.FlexLayout{
-		Columns:  1,
-		VSpacing: 1,
-	})
-	endWrapper.SetLayoutData(&unison.FlexLayoutData{
-		VSpan:  3,
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
-		HGrab:  true,
-	})
-	endWrapper.AddChild(s.EncumbrancePanel)
-	endWrapper.AddChild(s.LiftingPanel)
-
-	p.AddChild(s.PrimaryAttrPanel)
-	p.AddChild(s.SecondaryAttrPanel)
-	p.AddChild(s.BodyPanel)
-	p.AddChild(endWrapper)
-	p.AddChild(s.DamagePanel)
-	p.AddChild(s.PointPoolsPanel)
-
-	return p
+func (s *Sheet) exportToPDF() {
+	s.Window().ShowCursor()
+	dialog := unison.NewSaveDialog()
+	dialog.SetInitialDirectory(filepath.Dir(s.BackingFilePath()))
+	dialog.SetAllowedExtensions("pdf")
+	if dialog.RunModal() {
+		if err := newPDFExporter(s.entity).export(dialog.Path()); err != nil {
+			unison.ErrorDialogWithError(i18n.Text("Unable to export as PDF!"), err)
+		}
+	}
 }
 
 func (s *Sheet) createLists() {
-	children := s.pages.Children()
+	children := s.content.Children()
 	if len(children) == 0 {
 		return
 	}
@@ -507,7 +420,6 @@ func (s *Sheet) createLists() {
 		})
 		rowPanel.SetLayoutData(&unison.FlexLayoutData{
 			HAlign: unison.FillAlignment,
-			VAlign: unison.StartAlignment,
 			HGrab:  true,
 		})
 		for _, c := range col {

@@ -91,7 +91,7 @@ func (s *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 	}
 	count := 0
 	colleges := make(map[string]bool)
-	Traverse[*Spell](func(sp *Spell) bool {
+	Traverse(func(sp *Spell) bool {
 		if exclude == sp || sp.Points == 0 {
 			return false
 		}
@@ -125,7 +125,7 @@ func (s *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 			count++
 		}
 		return false
-	}, true, false, entity.Spells...)
+	}, false, true, entity.Spells...)
 	if s.SubType == spell.CollegeCount {
 		count = len(colleges)
 	}
