@@ -12,6 +12,8 @@
 package sheet
 
 import (
+	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -35,6 +37,7 @@ import (
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/printing"
 )
 
 var (
@@ -218,6 +221,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	})
 	s.InstallCmdHandlers(constants.SwapDefaultsItemID, s.canSwapDefaults, s.swapDefaults)
 	s.InstallCmdHandlers(constants.ExportAsPDFItemID, unison.AlwaysEnabled, func(_ any) { s.exportToPDF() })
+	s.InstallCmdHandlers(constants.PrintItemID, unison.AlwaysEnabled, func(_ any) { s.print() })
 
 	return s
 }
@@ -348,13 +352,34 @@ func (s *Sheet) save(forceSaveAs bool) bool {
 	return success
 }
 
+func (s *Sheet) print() {
+	data, err := newPDFExporter(s.entity).exportAsBytes()
+	if err != nil {
+		unison.ErrorDialogWithError(i18n.Text("Unable to create PDF!"), err)
+		return
+	}
+	dialog := workspace.PrintMgr.NewJobDialog(printing.PrinterID{}, "application/pdf", nil)
+	if dialog.RunModal() {
+		dialog.JobAttributes()
+		go backgroundPrint(s.entity.Profile.Name, dialog.Printer(), dialog.JobAttributes(), data)
+	}
+}
+
+func backgroundPrint(title string, printer *printing.Printer, jobAttributes *printing.JobAttributes, data []byte) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
+	if err := printer.Print(ctx, title, "application/pdf", bytes.NewBuffer(data), len(data), jobAttributes); err != nil {
+		unison.InvokeTask(func() { unison.ErrorDialogWithError(fmt.Sprintf(i18n.Text("Printing '%s' failed"), title), err) })
+	}
+}
+
 func (s *Sheet) exportToPDF() {
 	s.Window().ShowCursor()
 	dialog := unison.NewSaveDialog()
 	dialog.SetInitialDirectory(filepath.Dir(s.BackingFilePath()))
 	dialog.SetAllowedExtensions("pdf")
 	if dialog.RunModal() {
-		if err := newPDFExporter(s.entity).export(dialog.Path()); err != nil {
+		if err := newPDFExporter(s.entity).exportAsFile(dialog.Path()); err != nil {
 			unison.ErrorDialogWithError(i18n.Text("Unable to export as PDF!"), err)
 		}
 	}

@@ -2,10 +2,9 @@ package sheet
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	gsettings "github.com/richardwilkes/gcs/v5/model/gurps/settings"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/toolbox/xmath"
 	"github.com/richardwilkes/unison"
 )
@@ -179,7 +178,25 @@ func addRowPanel[T gurps.NodeTypes](rowPanel *unison.Panel, list *PageList[T], k
 	}
 }
 
-func (p *pdfExporter) export(filePath string) error {
+func (p *pdfExporter) exportAsBytes() ([]byte, error) {
+	stream := unison.NewMemoryStream()
+	defer stream.Close()
+	if err := p.export(stream); err != nil {
+		return nil, err
+	}
+	return stream.Bytes(), nil
+}
+
+func (p *pdfExporter) exportAsFile(filePath string) error {
+	stream, err := unison.NewFileStream(filePath)
+	if err != nil {
+		return err
+	}
+	defer stream.Close()
+	return p.export(stream)
+}
+
+func (p *pdfExporter) export(stream unison.Stream) error {
 	savedColorMode := unison.CurrentColorMode()
 	unison.SetColorMode(unison.LightColorMode)
 	unison.ThemeChanged()
@@ -189,20 +206,15 @@ func (p *pdfExporter) export(filePath string) error {
 		unison.ThemeChanged()
 		unison.RebuildDynamicColors()
 	}()
-	stream, err := unison.NewFileStream(filePath)
-	if err != nil {
-		return err
-	}
-	if err = unison.CreatePDF(stream, &unison.PDFMetaData{
-		Title:    fs.BaseName(filePath),
-		Author:   gsettings.DefaultUserName(),
+	if err := unison.CreatePDF(stream, &unison.PDFMetaData{
+		Title:    p.entity.Profile.Name,
+		Author:   toolbox.CurrentUserName(),
 		Subject:  p.entity.Profile.Name,
 		Keywords: "GCS Character Sheet",
 		Creator:  "GCS",
 	}, p); err != nil {
 		return err
 	}
-	stream.Close()
 	return nil
 }
 

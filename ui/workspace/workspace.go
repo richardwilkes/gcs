@@ -26,10 +26,14 @@ import (
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/printing"
 	"golang.org/x/exp/slices"
 )
 
 const workspaceClientDataKey = "workspace"
+
+// PrintMgr is our PrintManager singleton.
+var PrintMgr printing.PrintManager
 
 // Workspace holds the data necessary to track the Workspace.
 type Workspace struct {

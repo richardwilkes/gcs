@@ -14,13 +14,12 @@ package settings
 import (
 	"context"
 	"io/fs"
-	"os"
-	"os/user"
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/library"
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
 )
@@ -63,19 +62,10 @@ type General struct {
 	IncludeUnspentPointsInTotal bool    `json:"include_unspent_points_in_total"`
 }
 
-// DefaultUserName returns the default user name.
-func DefaultUserName() string {
-	u, err := user.Current()
-	if err != nil {
-		return os.Getenv("USER")
-	}
-	return u.Name
-}
-
 // NewGeneral creates settings with factory defaults.
 func NewGeneral() *General {
 	return &General{
-		DefaultPlayerName:           DefaultUserName(),
+		DefaultPlayerName:           toolbox.CurrentUserName(),
 		DefaultTechLevel:            "3",
 		InitialPoints:               InitialPointsDef,
 		TooltipDelay:                TooltipDelayDef,
