@@ -297,6 +297,8 @@ func createOpenRecentFileAction(index int, path, title string) *unison.Action {
 func exportToUpdater(menu unison.Menu) {
 	menu.RemoveAll()
 	factory := menu.Factory()
+	menu.InsertItem(-1, ExportAsPDF.NewMenuItem(factory))
+	menu.InsertSeparator(-1, false)
 	index := 0
 	for _, lib := range settings.Global().Libraries().List() {
 		dir := lib.Path()
@@ -317,9 +319,6 @@ func exportToUpdater(menu unison.Menu) {
 		}
 		if len(list) > 0 || lib.IsMaster() {
 			appendDisabledMenuItem(menu, lib.Title)
-			if lib.IsMaster() {
-				menu.InsertItem(-1, ExportAsPDF.NewMenuItem(factory))
-			}
 			txt.SortStringsNaturalAscending(list)
 			for _, one := range list {
 				menu.InsertItem(-1, createExportToTextAction(index, one).NewMenuItem(factory))
@@ -327,7 +326,7 @@ func exportToUpdater(menu unison.Menu) {
 			}
 		}
 	}
-	if menu.Count() == 0 {
+	if menu.Count() == 2 {
 		appendDisabledMenuItem(menu, i18n.Text("No export templates available"))
 	}
 }
@@ -335,7 +334,7 @@ func exportToUpdater(menu unison.Menu) {
 func createExportToTextAction(index int, path string) *unison.Action {
 	return &unison.Action{
 		ID:              constants.ExportToTextBaseItemID + index,
-		Title:           xfs.TrimExtension(filepath.Base(path)),
+		Title:           "    " + xfs.TrimExtension(filepath.Base(path)),
 		EnabledCallback: enabledForSheet,
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			if s := sheet.ActiveSheet(); s != nil {
