@@ -224,7 +224,7 @@ func (s *Skill) CellData(column int, data *CellData) {
 		if !s.Container() {
 			data.Type = Text
 			if strings.HasPrefix(s.Type, gid.Technique) {
-				data.Primary = FormatRelativeTechniqueSkill(s.Entity, s.Type, s.SkillEditData, s.AdjustedRelativeLevel())
+				data.Primary = FormatRelativeTechniqueSkill(s.Entity, s.Type, *s.SkillEditData.TechniqueDefault, s.AdjustedRelativeLevel())
 			} else {
 				data.Primary = FormatRelativeSkill(s.Entity, s.Type, s.Difficulty, s.AdjustedRelativeLevel())
 			}
@@ -258,20 +258,20 @@ func FormatRelativeSkill(entity *Entity, typ string, difficulty AttributeDifficu
 }
 
 // FormatRelativeTechniqueSkill formats the technique's relative skill for display.
-func FormatRelativeTechniqueSkill(entity *Entity, typ string, technique SkillEditData, rsl fxp.Int) string {
-	name := technique.TechniqueDefault.Name
+func FormatRelativeTechniqueSkill(entity *Entity, typ string, technique SkillDefault, rsl fxp.Int) string {
+	name := technique.Name
 	switch {
 	case rsl == fxp.Min:
 		return "-"
 	case strings.HasPrefix(typ, gid.Technique) && len(name) <= 0:
-		s := ResolveAttributeName(entity, technique.TechniqueDefault.DefaultType)
+		s := ResolveAttributeName(entity, technique.DefaultType)
 		rsl = rsl.Trunc()
 		if rsl != 0 {
 			s += rsl.StringWithSign()
 		}
 		return s
 	case strings.HasPrefix(typ, gid.Technique) && len(name) > 0:
-		s := ResolveAttributeName(entity, technique.TechniqueDefault.Name)
+		s := ResolveAttributeName(entity, technique.Name)
 		rsl = rsl.Trunc()
 		if rsl != 0 {
 			s += rsl.StringWithSign()

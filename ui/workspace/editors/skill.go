@@ -158,7 +158,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 				} else {
 					rsl := level.RelativeLevel
 					if isTechnique {
-						field.Text = lvl.String() + "/" + gurps.FormatRelativeTechniqueSkill(e.target.Entity, e.target.Type, *e.editorData, rsl)
+						field.Text = lvl.String() + "/" + gurps.FormatRelativeTechniqueSkill(e.target.Entity, e.target.Type, *e.editorData.TechniqueDefault, rsl)
 					} else {
 						field.Text = lvl.String() + "/" + gurps.FormatRelativeSkill(e.target.Entity, e.target.Type,
 							e.editorData.Difficulty, rsl)
