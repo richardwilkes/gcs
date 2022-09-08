@@ -45,7 +45,7 @@ STD_FLAGS="-v -buildvcs $EXTRA_BUILD_FLAGS"
 
 case $(uname -s) in
 Darwin*)
-  if [ $(uname -p) == "arm" ]; then
+  if [ "$(uname -p)" == "arm" ]; then
     export MACOSX_DEPLOYMENT_TARGET=11
   else
     export MACOSX_DEPLOYMENT_TARGET=10.14
@@ -73,6 +73,13 @@ Linux*)
   go build $STD_FLAGS -ldflags all="$LDFLAGS_ALL" .
   ;;
 MINGW*)
+  go install github.com/tc-hib/go-winres@v0.3.0
+  if [ -e "$GOPATH/bin/go-winres.exe" ]; then
+    GOWINRES="$GOPATH/bin/go-winres"
+  else
+    GOWINRES="$HOME/go/bin/go-winres"
+  fi
+  "$GOWINRES" make --arch amd64
   go build $STD_FLAGS -ldflags all="$LDFLAGS_ALL -H windowsgui" .
   ;;
 *)
