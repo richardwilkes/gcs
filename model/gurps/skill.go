@@ -259,11 +259,19 @@ func FormatRelativeSkill(entity *Entity, typ string, difficulty AttributeDifficu
 
 // FormatRelativeTechniqueSkill formats the technique's relative skill for display.
 func FormatRelativeTechniqueSkill(entity *Entity, typ string, technique SkillEditData, rsl fxp.Int) string {
+	name := technique.TechniqueDefault.Name
 	switch {
 	case rsl == fxp.Min:
 		return "-"
-	case strings.HasPrefix(typ, gid.Technique):
+	case strings.HasPrefix(typ, gid.Technique) && len(name) <= 0:
 		s := ResolveAttributeName(entity, technique.TechniqueDefault.DefaultType)
+		rsl = rsl.Trunc()
+		if rsl != 0 {
+			s += rsl.StringWithSign()
+		}
+		return s
+	case strings.HasPrefix(typ, gid.Technique) && len(name) > 0:
+		s := ResolveAttributeName(entity, technique.TechniqueDefault.Name)
 		rsl = rsl.Trunc()
 		if rsl != 0 {
 			s += rsl.StringWithSign()
