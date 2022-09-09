@@ -116,7 +116,9 @@ func newSkill(entity *Entity, parent *Skill, typeKey string, container bool) *Sk
 	}
 	s.parent = parent
 	if !container {
-		s.Difficulty.Attribute = AttributeIDFor(entity, gid.Dexterity)
+		if typeKey != gid.Technique {
+			s.Difficulty.Attribute = AttributeIDFor(entity, gid.Dexterity)
+		}
 		s.Difficulty.Difficulty = skill.Average
 		s.Points = fxp.One
 	}
