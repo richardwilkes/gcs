@@ -8,15 +8,6 @@
         "app-32.png",
         "app-16.png"
       ]
-    },
-    "GCS": {
-      "0000": [
-        "gcs-256.png",
-        "gcs-64.png",
-        "gcs-48.png",
-        "gcs-32.png",
-        "gcs-16.png"
-      ]
     }
   },
   "RT_MANIFEST": {
