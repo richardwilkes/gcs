@@ -19,10 +19,14 @@ import (
 	"github.com/richardwilkes/gcs/v5/ui/workspace/external"
 	"github.com/richardwilkes/gcs/v5/ui/workspace/lists"
 	"github.com/richardwilkes/gcs/v5/ui/workspace/settings"
+	"github.com/richardwilkes/toolbox/log/jot"
 )
 
 // Setup the application. This code is here to break circular dependencies.
 func Setup() {
+	if err := RegisterFileTypes(); err != nil {
+		jot.Warn(err)
+	}
 	workspace.RegisterFileTypes()
 	external.RegisterFileTypes()
 	lists.RegisterFileTypes()
