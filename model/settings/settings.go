@@ -66,7 +66,7 @@ func Default() *Settings {
 		LastSeenGCSVersion: cmdline.AppVersion,
 		General:            settings.NewGeneral(),
 		LibrarySet:         library.NewLibraries(),
-		LibraryExplorer:    NavigatorSettings{DividerPosition: 300},
+		LibraryExplorer:    NavigatorSettings{DividerPosition: 330},
 		LastDirs:           make(map[string]string),
 		QuickExports:       gurps.NewQuickExports(),
 		Sheet:              gurps.FactorySheetSettings(),

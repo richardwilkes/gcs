@@ -283,8 +283,8 @@ func (n *NavigatorNode) refreshChildren(dirPath string, parent *NavigatorNode) [
 				}
 			}
 			if isDir {
-				dirNode := NewDirectoryNode(n.nav, n.library, p, parent)
-				if dirNode.recursiveFileCount() > 0 {
+				if !strings.EqualFold(p, "Settings") && !strings.EqualFold(p, "Output Templates") {
+					dirNode := NewDirectoryNode(n.nav, n.library, p, parent)
 					children = append(children, dirNode)
 				}
 			} else if !library.FileInfoFor(name).IsSpecial {
@@ -293,17 +293,4 @@ func (n *NavigatorNode) refreshChildren(dirPath string, parent *NavigatorNode) [
 		}
 	}
 	return children
-}
-
-func (n *NavigatorNode) recursiveFileCount() int {
-	count := 0
-	for _, child := range n.children {
-		switch child.nodeType {
-		case directoryNode:
-			count += child.recursiveFileCount()
-		case fileNode:
-			count++
-		}
-	}
-	return count
 }

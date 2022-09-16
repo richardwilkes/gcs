@@ -34,6 +34,8 @@ import (
 	"github.com/rjeczalik/notify"
 )
 
+const minTextWidthCandidate = "Abcdefghijklmnopqrstuvwxyz0123456789"
+
 var _ unison.Dockable = &Navigator{}
 
 // FileBackedDockable defines methods a Dockable that is based on a file should implement.
@@ -53,6 +55,7 @@ type Navigator struct {
 	matchesLabel              *unison.Label
 	deleteButton              *unison.Button
 	renameButton              *unison.Button
+	newFolderButton           *unison.Button
 	downloadLibraryButton     *unison.Button
 	libraryReleaseNotesButton *unison.Button
 	configLibraryButton       *unison.Button
@@ -143,6 +146,10 @@ func (n *Navigator) setupToolBar() {
 	n.renameButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Rename"))
 	n.renameButton.ClickCallback = n.renameSelection
 
+	n.newFolderButton = unison.NewSVGButton(res.NewFolderSVG)
+	n.newFolderButton.Tooltip = unison.NewTooltipWithText(i18n.Text("New Folder"))
+	n.newFolderButton.ClickCallback = n.newFolder
+
 	addLibraryButton := unison.NewSVGButton(res.CircledAddSVG)
 	addLibraryButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Add Library"))
 	addLibraryButton.ClickCallback = n.addLibrary
@@ -178,6 +185,7 @@ func (n *Navigator) setupToolBar() {
 	first.AddChild(n.libraryReleaseNotesButton)
 	first.AddChild(n.configLibraryButton)
 	first.AddChild(widget.NewToolbarSeparator(unison.StdHSpacing))
+	first.AddChild(n.newFolderButton)
 	first.AddChild(n.renameButton)
 	first.AddChild(n.deleteButton)
 	first.SetLayout(&unison.FlexLayout{
@@ -365,7 +373,7 @@ func (n *Navigator) renameSelection() {
 		oldField.SetEnabled(false)
 
 		newField := widget.NewStringField(nil, "", "", func() string { return newName }, func(s string) { newName = s })
-		newField.SetMinimumTextWidthUsing("Abcdefghijklmnopqrstuvwxyz0123456789")
+		newField.SetMinimumTextWidthUsing(minTextWidthCandidate)
 
 		panel := unison.NewPanel()
 		panel.SetLayout(&unison.FlexLayout{
@@ -478,6 +486,7 @@ func (n *Navigator) mouseDown(where unison.Point, button, clickCount int, mod un
 			cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.configLibraryButton))
 			cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.downloadLibraryButton))
 			cm.InsertSeparator(-1, true)
+			cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.newFolderButton))
 			cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.renameButton))
 			cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.deleteButton))
 			count := cm.Count()
@@ -607,6 +616,7 @@ func (n *Navigator) Modified() bool {
 func (n *Navigator) selectionChanged() {
 	deleteEnabled := false
 	renameEnabled := false
+	newFolderEnabled := false
 	downloadEnabled := false
 	configEnabled := false
 	if n.table.HasSelection() {
@@ -614,6 +624,7 @@ func (n *Navigator) selectionChanged() {
 		downloadEnabled = true
 		configEnabled = true
 		renameEnabled = n.table.SelectionCount() == 1
+		newFolderEnabled = renameEnabled
 		hasLibs := false
 		hasOther := false
 		for _, row := range n.table.SelectedRows(true) {
@@ -639,6 +650,7 @@ func (n *Navigator) selectionChanged() {
 	}
 	n.deleteButton.SetEnabled(deleteEnabled)
 	n.renameButton.SetEnabled(renameEnabled)
+	n.newFolderButton.SetEnabled(newFolderEnabled)
 	n.downloadLibraryButton.SetEnabled(downloadEnabled)
 	n.libraryReleaseNotesButton.SetEnabled(downloadEnabled)
 	n.configLibraryButton.SetEnabled(configEnabled)
@@ -867,4 +879,59 @@ func OpenFile(wnd *unison.Window, filePath string) (dockable unison.Dockable, wa
 	settings.Global().AddRecentFile(filePath)
 	DisplayNewDockable(wnd, d)
 	return d, false
+}
+
+func (n *Navigator) newFolder() {
+	if n.table.SelectionCount() == 1 {
+		row := n.table.SelectedRows(false)[0]
+		parentDir := row.Path()
+		if row.nodeType == fileNode {
+			parentDir = filepath.Dir(parentDir)
+		}
+		name := ""
+		field := widget.NewStringField(nil, "", "", func() string { return name }, func(s string) { name = s })
+		field.SetMinimumTextWidthUsing(minTextWidthCandidate)
+
+		panel := unison.NewPanel()
+		panel.SetLayout(&unison.FlexLayout{
+			Columns:  2,
+			HSpacing: unison.StdHSpacing,
+			VSpacing: unison.StdVSpacing,
+		})
+		panel.AddChild(widget.NewFieldLeadingLabel(i18n.Text("Folder Name")))
+		panel.AddChild(field)
+
+		dialog, err := unison.NewDialog(unison.DefaultDialogTheme.QuestionIcon,
+			unison.DefaultDialogTheme.QuestionIconInk, panel,
+			[]*unison.DialogButtonInfo{unison.NewCancelButtonInfo(), unison.NewOKButtonInfo()})
+		if err != nil {
+			unison.ErrorDialogWithError(i18n.Text("Unable to create new folder dialog"), err)
+			return
+		}
+		field.ValidateCallback = func() bool {
+			trimmed := strings.TrimSpace(name)
+			valid := trimmed != "" && !strings.HasPrefix(trimmed, ".") && !strings.ContainsAny(name, `/\:`) &&
+				!disallowedWindowsFileNames[strings.ToLower(name)]
+			if valid {
+				if _, err = os.Stat(filepath.Join(parentDir, trimmed)); err == nil {
+					valid = false
+				}
+			}
+			dialog.Button(unison.ModalResponseOK).SetEnabled(valid)
+			return valid
+		}
+		if dialog.RunModal() == unison.ModalResponseOK {
+			dirPath := filepath.Join(parentDir, name)
+			if err = os.Mkdir(dirPath, 0o750); err != nil {
+				unison.ErrorDialogWithError(fmt.Sprintf(i18n.Text("Unable to create:\n%s"), dirPath), err)
+			} else {
+				if row.nodeType != fileNode && !row.IsOpen() {
+					row.SetOpen(true)
+				}
+				n.Reload()
+				n.ApplySelectedPaths([]string{dirPath})
+				n.MarkForRedraw()
+			}
+		}
+	}
 }
