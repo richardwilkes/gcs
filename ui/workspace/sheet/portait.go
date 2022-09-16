@@ -53,7 +53,12 @@ func (p *PortraitPanel) drawSelf(gc *unison.Canvas, _ unison.Rect) {
 	paint := unison.ContentColor.Paint(gc, r, unison.Fill)
 	gc.DrawRect(r, paint)
 	if img := p.entity.Profile.Portrait(); img != nil {
-		img.DrawInRect(gc, r, nil, paint)
+		img.DrawInRect(gc, r, &unison.SamplingOptions{
+			UseCubic:       true,
+			CubicResampler: unison.MitchellResampler(),
+			FilterMode:     unison.FilterModeLinear,
+			MipMapMode:     unison.MipMapModeLinear,
+		}, paint)
 	}
 }
 

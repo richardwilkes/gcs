@@ -207,11 +207,13 @@ func (p *pdfExporter) export(stream unison.Stream) error {
 		unison.RebuildDynamicColors()
 	}()
 	if err := unison.CreatePDF(stream, &unison.PDFMetaData{
-		Title:    p.entity.Profile.Name,
-		Author:   toolbox.CurrentUserName(),
-		Subject:  p.entity.Profile.Name,
-		Keywords: "GCS Character Sheet",
-		Creator:  "GCS",
+		Title:           p.entity.Profile.Name,
+		Author:          toolbox.CurrentUserName(),
+		Subject:         p.entity.Profile.Name,
+		Keywords:        "GCS Character Sheet",
+		Creator:         "GCS",
+		RasterDPI:       300,
+		EncodingQuality: 101,
 	}, p); err != nil {
 		return err
 	}
