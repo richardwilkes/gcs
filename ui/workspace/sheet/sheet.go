@@ -379,7 +379,7 @@ func (s *Sheet) exportToPDF() {
 	dialog.SetInitialDirectory(filepath.Dir(s.BackingFilePath()))
 	dialog.SetAllowedExtensions("pdf")
 	if dialog.RunModal() {
-		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "pdf", true); ok {
+		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "pdf", false); ok {
 			if err := newPDFExporter(s.entity).exportAsFile(filePath); err != nil {
 				unison.ErrorDialogWithError(i18n.Text("Unable to export as PDF!"), err)
 			}
