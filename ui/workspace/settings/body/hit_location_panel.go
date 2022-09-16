@@ -76,7 +76,8 @@ func (p *hitLocationPanel) createButtons() *unison.Panel {
 	p.deleteButton = unison.NewSVGButton(res.TrashSVG)
 	p.deleteButton.ClickCallback = p.removeHitLocation
 	p.deleteButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Remove hit location"))
-	p.deleteButton.SetEnabled(len(p.loc.OwningTable().Locations) > 1)
+	owningTable := p.loc.OwningTable()
+	p.deleteButton.SetEnabled(owningTable != nil && len(owningTable.Locations) > 1)
 	buttons.AddChild(p.deleteButton)
 	return buttons
 }

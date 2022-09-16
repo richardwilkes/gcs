@@ -19,7 +19,7 @@ import (
 	"github.com/richardwilkes/toolbox/txt"
 )
 
-//go:embed data
+//go:embed embedded_data
 var embeddedFS embed.FS
 
 // NameGeneratorRef holds a reference to a NameGenerator.
@@ -32,7 +32,7 @@ type NameGeneratorRef struct {
 func AvailableNameGenerators(libraries library.Libraries) []*NameGeneratorRef {
 	var list []*NameGeneratorRef
 	seen := make(map[string]bool)
-	for _, set := range library.ScanForNamedFileSets(embeddedFS, "data", true, libraries, ".names") {
+	for _, set := range library.ScanForNamedFileSets(embeddedFS, "embedded_data", true, libraries, ".names") {
 		for _, one := range set.List {
 			if seen[one.Name] {
 				continue

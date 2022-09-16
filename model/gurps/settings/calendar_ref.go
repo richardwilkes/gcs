@@ -24,7 +24,7 @@ import (
 	"github.com/richardwilkes/toolbox/xmath/rand"
 )
 
-//go:embed data
+//go:embed embedded_data
 var embeddedFS embed.FS
 
 // CalendarRef holds a named reference to a calendar.
@@ -35,7 +35,7 @@ type CalendarRef struct {
 
 // AvailableCalendarRefs scans the libraries and returns the available calendars.
 func AvailableCalendarRefs(libraries library.Libraries) []*library.NamedFileSet {
-	return library.ScanForNamedFileSets(embeddedFS, "data", true, libraries, ".calendar")
+	return library.ScanForNamedFileSets(embeddedFS, "embedded_data", true, libraries, ".calendar")
 }
 
 // LookupCalendarRef a CalendarRef by name.

@@ -68,7 +68,7 @@ func AttributeIDFor(entity *Entity, preferred string) string {
 
 // FactoryAttributeDefs returns the factory AttributeDef set.
 func FactoryAttributeDefs() *AttributeDefs {
-	defs, err := NewAttributeDefsFromFile(embeddedFS, "data/standard.attr")
+	defs, err := NewAttributeDefsFromFile(embeddedFS, "embedded_data/Standard.attr")
 	jot.FatalIfErr(err)
 	return defs
 }

@@ -15,7 +15,6 @@ import (
 	"context"
 	"embed"
 	"io/fs"
-	"path"
 	"sort"
 	"strings"
 
@@ -33,7 +32,7 @@ const (
 	noNeedForRewrapVersion = 4
 )
 
-//go:embed data
+//go:embed embedded_data
 var embeddedFS embed.FS
 
 // Body holds a set of hit locations.
@@ -59,29 +58,9 @@ func BodyFor(entity *Entity) *Body {
 
 // FactoryBody returns a new copy of the default factory Body.
 func FactoryBody() *Body {
-	bodyType, err := NewBodyFromFile(embeddedFS, "data/body/Humanoid.body")
+	bodyType, err := NewBodyFromFile(embeddedFS, "embedded_data/Humanoid.body")
 	jot.FatalIfErr(err)
 	return bodyType
-}
-
-// FactoryBodies returns the list of the known factory Body types.
-func FactoryBodies() []*Body {
-	entries, err := embeddedFS.ReadDir("data/body")
-	jot.FatalIfErr(err)
-	list := make([]*Body, 0, len(entries))
-	for _, entry := range entries {
-		name := entry.Name()
-		if path.Ext(name) == ".body" {
-			var bodyType *Body
-			bodyType, err = NewBodyFromFile(embeddedFS, "data/body/"+name)
-			jot.FatalIfErr(err)
-			list = append(list, bodyType)
-		}
-	}
-	sort.Slice(list, func(i, j int) bool {
-		return txt.NaturalLess(list[i].Name, list[j].Name, true)
-	})
-	return list
 }
 
 // NewBodyFromFile loads a Body from a file.
@@ -143,6 +122,9 @@ func (b *Body) Save(filePath string) error {
 
 // Update the role ranges and populate the lookup map.
 func (b *Body) Update(entity *Entity) {
+	for _, one := range b.Locations {
+		one.owningTable = b
+	}
 	b.updateRollRanges()
 	b.locationLookup = make(map[string]*HitLocation)
 	b.populateMap(entity, b.locationLookup)
