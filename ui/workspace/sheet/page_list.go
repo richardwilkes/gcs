@@ -290,8 +290,8 @@ func (p *PageList[T]) installDecrementTechLevelHandler(owner widget.Rebuildable)
 func (p *PageList[T]) installConvertToContainerHandler(owner widget.Rebuildable) {
 	if t, ok := (any(p.Table)).(*unison.Table[*ntable.Node[*gurps.Equipment]]); ok {
 		p.InstallCmdHandlers(constants.ConvertToContainerItemID,
-			func(_ any) bool { return canConvertToContainer(t) },
-			func(_ any) { convertToContainer(owner, t) })
+			func(_ any) bool { return CanConvertToContainer(t) },
+			func(_ any) { ConvertToContainer(owner, t) })
 	}
 }
 

@@ -49,7 +49,8 @@ func (c *containerConversion) Apply() {
 	c.Target.Type = c.Type
 }
 
-func canConvertToContainer(table *unison.Table[*ntable.Node[*gurps.Equipment]]) bool {
+// CanConvertToContainer returns true if the table's current selection has a row that can be converted to a container.
+func CanConvertToContainer(table *unison.Table[*ntable.Node[*gurps.Equipment]]) bool {
 	for _, row := range table.SelectedRows(false) {
 		if eqp := row.Data(); eqp != nil && !eqp.Container() {
 			return true
@@ -58,7 +59,8 @@ func canConvertToContainer(table *unison.Table[*ntable.Node[*gurps.Equipment]]) 
 	return false
 }
 
-func convertToContainer(owner widget.Rebuildable, table *unison.Table[*ntable.Node[*gurps.Equipment]]) {
+// ConvertToContainer converts any selected rows to containers, if possible.
+func ConvertToContainer(owner widget.Rebuildable, table *unison.Table[*ntable.Node[*gurps.Equipment]]) {
 	before := &containerConversionList{Owner: owner}
 	after := &containerConversionList{Owner: owner}
 	for _, row := range table.SelectedRows(false) {

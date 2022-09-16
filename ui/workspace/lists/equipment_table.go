@@ -8,6 +8,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/ui/workspace/editors"
+	"github.com/richardwilkes/gcs/v5/ui/workspace/sheet"
 	"github.com/richardwilkes/unison"
 )
 
@@ -50,7 +51,11 @@ func NewEquipmentTableDockableFromFile(filePath string) (unison.Dockable, error)
 // NewEquipmentTableDockable creates a new unison.Dockable for equipment list files.
 func NewEquipmentTableDockable(filePath string, equipment []*gurps.Equipment) *TableDockable[*gurps.Equipment] {
 	provider := &equipmentListProvider{other: equipment}
-	return NewTableDockable(filePath, library.EquipmentExt, editors.NewEquipmentProvider(provider, false, false),
+	d := NewTableDockable(filePath, library.EquipmentExt, editors.NewEquipmentProvider(provider, false, false),
 		func(path string) error { return gurps.SaveEquipment(provider.OtherEquipmentList(), path) },
 		constants.NewCarriedEquipmentItemID, constants.NewCarriedEquipmentContainerItemID)
+	d.InstallCmdHandlers(constants.ConvertToContainerItemID,
+		func(_ any) bool { return sheet.CanConvertToContainer(d.table) },
+		func(_ any) { sheet.ConvertToContainer(d, d.table) })
+	return d
 }
