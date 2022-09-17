@@ -31,15 +31,25 @@ import (
 var appIcon []byte
 
 func performPlatformStartup() {
-	if err := installIcons(); err != nil {
+	exePath, err := os.Executable()
+	if err != nil {
+		jot.Error(errs.Wrap(err))
+		return
+	}
+	if filepath.Base(exePath) != cmdline.AppCmdName {
+		jot.Warnf("skipping desktop integration since executable name '%s' is not '%s'", filepath.Base(exePath),
+			cmdline.AppCmdName)
+		return
+	}
+	if err = installIcons(); err != nil {
 		jot.Error(err)
 	}
-	if err := installDesktopFiles(); err != nil {
+	if err = installDesktopFiles(exePath); err != nil {
 		jot.Error(err)
 	}
 }
 
-func installDesktopFiles() error {
+func installDesktopFiles(exePath string) error {
 	dir := filepath.Join(paths.HomeDir(), ".local", "share", "applications")
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return errs.Wrap(err)
@@ -48,13 +58,13 @@ func installDesktopFiles() error {
 Type=Application
 Name=%s
 Comment=%s
-Exec=gcs %%F
+Exec=%s %%F
 Icon=%s
 MimeType=%s;
 Categories=Game;Utility;RolePlaying;
 Keywords=gurps;character;sheet;rpg;roleplaying;utility;
 Terminal=false
-`, cmdline.AppName, AppDescription, cmdline.AppIdentifier, strings.Join(library.RegisteredMimeTypes(), ";"))
+`, cmdline.AppName, AppDescription, exePath, cmdline.AppIdentifier, strings.Join(library.RegisteredMimeTypes(), ";"))
 	if err := os.WriteFile(filepath.Join(dir, cmdline.AppIdentifier+".desktop"), []byte(data), 0o640); err != nil {
 		return errs.Wrap(err)
 	}
