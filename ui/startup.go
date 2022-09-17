@@ -12,6 +12,8 @@
 package ui
 
 import (
+	_ "embed"
+
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/ui/menus"
 	"github.com/richardwilkes/gcs/v5/ui/updates"
@@ -25,6 +27,11 @@ import (
 // AppDescription of the software
 var AppDescription = i18n.Text("GURPS Character Sheet is an interactive character sheet editor for the GURPS Fourth Edition roleplaying game.")
 
+// AppIconBytes holds the GCS application icon in a 256x256 format
+//
+//go:embed app-256.png
+var AppIconBytes []byte
+
 // Start the UI.
 func Start(files []string) {
 	libs := settings.Global().LibrarySet
@@ -32,6 +39,11 @@ func Start(files []string) {
 	unison.Start(
 		unison.StartupFinishedCallback(func() {
 			performPlatformStartup()
+			if appIcon, err := unison.NewImageFromBytes(AppIconBytes, 0.5); err != nil {
+				jot.Error(err)
+			} else {
+				unison.DefaultTitleIcons = []*unison.Image{appIcon}
+			}
 			updates.CheckForAppUpdates()
 			wnd, err := unison.NewWindow(cmdline.AppName)
 			jot.FatalIfErr(err)

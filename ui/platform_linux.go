@@ -12,7 +12,6 @@
 package ui
 
 import (
-	_ "embed"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -26,9 +25,6 @@ import (
 )
 
 // See https://developer.gnome.org/documentation/guidelines/maintainer/integrating.html
-
-//go:embed app-256.png
-var appIcon []byte
 
 func performPlatformStartup() {
 	exePath, err := os.Executable()
@@ -76,7 +72,7 @@ func installIcons() error {
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return errs.Wrap(err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, cmdline.AppIdentifier+".png"), appIcon, 0o640); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, cmdline.AppIdentifier+".png"), AppIconBytes, 0o640); err != nil {
 		return errs.Wrap(err)
 	}
 	return nil
