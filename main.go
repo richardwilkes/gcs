@@ -36,6 +36,7 @@ func main() {
 	cmdline.AppIdentifier = "com.trollworks.gcs"
 	unison.AttachConsole()
 	cl := cmdline.New(true)
+	cl.Description = ui.AppDescription
 	var textTmplPath string
 	var showCopyrightDateAndExit bool
 	cl.NewGeneralOption(&textTmplPath).SetName("text").SetSingle('x').SetArg("file").

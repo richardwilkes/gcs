@@ -21,17 +21,18 @@ import (
 func RegisterFileTypes() {
 	registerPDFFileInfo()
 	registerMarkdownFileInfo()
-	for _, one := range unison.KnownImageFormatExtensions {
-		if unison.EncodedImageFormatForPath(one).CanRead() {
+	for _, one := range unison.KnownImageFormatFormats {
+		if one.CanRead() {
 			registerImageFileInfo(one)
 		}
 	}
 }
 
-func registerImageFileInfo(ext string) {
+func registerImageFileInfo(format unison.EncodedImageFormat) {
 	library.FileInfo{
-		Extension:             ext,
-		ExtensionsToGroupWith: unison.KnownImageFormatExtensions,
+		Extension:             format.Extension(),
+		ExtensionsToGroupWith: format.Extensions(),
+		MimeTypes:             format.MimeTypes(),
 		SVG:                   res.ImageFileSVG,
 		Load:                  NewImageDockable,
 		IsImage:               true,
@@ -42,6 +43,7 @@ func registerPDFFileInfo() {
 	library.FileInfo{
 		Extension:             ".pdf",
 		ExtensionsToGroupWith: []string{".pdf"},
+		MimeTypes:             []string{"application/pdf", "application/x-pdf"},
 		SVG:                   res.PDFFileSVG,
 		Load:                  NewPDFDockable,
 		IsPDF:                 true,
@@ -51,7 +53,8 @@ func registerPDFFileInfo() {
 func registerMarkdownFileInfo() {
 	library.FileInfo{
 		Extension:             ".md",
-		ExtensionsToGroupWith: []string{".md"},
+		ExtensionsToGroupWith: []string{".md", ".markdown"},
+		MimeTypes:             []string{"text/markdown"},
 		SVG:                   res.MarkdownFileSVG,
 		Load:                  NewMarkdownDockable,
 	}.Register()

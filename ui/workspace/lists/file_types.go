@@ -36,6 +36,7 @@ func registerGCSFileInfo(ext string, groupWith []string, svg *unison.SVG, loader
 	library.FileInfo{
 		Extension:             ext,
 		ExtensionsToGroupWith: groupWith,
+		MimeTypes:             []string{"application/x-gcs-" + ext[1:]},
 		SVG:                   svg,
 		Load:                  loader,
 		IsGCSData:             true,
@@ -46,6 +47,7 @@ func registerExportableGCSFileInfo(ext string, svg *unison.SVG, loader func(file
 	library.FileInfo{
 		Extension:             ext,
 		ExtensionsToGroupWith: []string{ext},
+		MimeTypes:             []string{"application/x-gcs-" + ext[1:]},
 		SVG:                   svg,
 		Load:                  loader,
 		IsGCSData:             true,

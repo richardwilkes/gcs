@@ -17,9 +17,13 @@ import (
 	"github.com/richardwilkes/gcs/v5/ui/updates"
 	"github.com/richardwilkes/gcs/v5/ui/workspace"
 	"github.com/richardwilkes/toolbox/cmdline"
+	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
 )
+
+// AppDescription of the software
+var AppDescription = i18n.Text("GURPS Character Sheet is a standalone, interactive, character sheet editor that allows you to build characters for the GURPS Fourth Edition roleplaying game.")
 
 // Start the UI.
 func Start(files []string) {
@@ -27,6 +31,7 @@ func Start(files []string) {
 	go libs.PerformUpdateChecks()
 	unison.Start(
 		unison.StartupFinishedCallback(func() {
+			performPlatformStartup()
 			updates.CheckForAppUpdates()
 			wnd, err := unison.NewWindow(cmdline.AppName)
 			jot.FatalIfErr(err)

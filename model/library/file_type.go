@@ -43,6 +43,7 @@ const (
 type FileInfo struct {
 	Extension             string
 	ExtensionsToGroupWith []string
+	MimeTypes             []string
 	SVG                   *unison.SVG
 	Load                  func(filePath string) (unison.Dockable, error)
 	IsSpecial             bool
@@ -74,6 +75,24 @@ func AcceptableExtensions() []string {
 		if !v.IsSpecial {
 			list = append(list, k)
 		}
+	}
+	txt.SortStringsNaturalAscending(list)
+	return list
+}
+
+// RegisteredMimeTypes returns the mime types that we should be able to open.
+func RegisteredMimeTypes() []string {
+	all := make(map[string]bool)
+	for _, v := range fileTypeRegistry {
+		if !v.IsSpecial {
+			for _, one := range v.MimeTypes {
+				all[one] = true
+			}
+		}
+	}
+	list := make([]string, 0, len(all))
+	for k := range all {
+		list = append(list, k)
 	}
 	txt.SortStringsNaturalAscending(list)
 	return list
