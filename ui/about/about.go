@@ -59,8 +59,12 @@ func (w *aboutWindow) prepare() error {
 	}
 	trampolines.CallMenuSetup(w.Window)
 	content := w.Content()
+	content.SetSizer(func(hint unison.Size) (min, pref, max unison.Size) {
+		pref = w.img.LogicalSize()
+		return pref, pref, pref
+	})
+	content.SetLayout(nil)
 	content.DrawCallback = w.drawContentBackground
-	content.SetLayout(w)
 	w.Pack()
 	r := w.ContentRect()
 	usable := unison.PrimaryDisplay().Usable
@@ -69,15 +73,6 @@ func (w *aboutWindow) prepare() error {
 	r.Point.Align()
 	w.SetContentRect(r)
 	return nil
-}
-
-func (w *aboutWindow) LayoutSizes(_ *unison.Panel, _ unison.Size) (min, pref, max unison.Size) {
-	pref = w.img.LogicalSize()
-	return pref, pref, pref
-}
-
-func (w *aboutWindow) PerformLayout(target *unison.Panel) {
-	target.SetFrameRect(unison.Rect{Size: w.img.LogicalSize()})
 }
 
 func (w *aboutWindow) drawContentBackground(gc *unison.Canvas, _ unison.Rect) {
