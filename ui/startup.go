@@ -23,7 +23,7 @@ import (
 )
 
 // AppDescription of the software
-var AppDescription = i18n.Text("GURPS Character Sheet is a standalone, interactive, character sheet editor that allows you to build characters for the GURPS Fourth Edition roleplaying game.")
+var AppDescription = i18n.Text("GURPS Character Sheet is an interactive character sheet editor for the GURPS Fourth Edition roleplaying game.")
 
 // Start the UI.
 func Start(files []string) {
