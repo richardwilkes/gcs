@@ -14,6 +14,7 @@ package ui
 import (
 	"bytes"
 	_ "embed"
+	"errors"
 	"fmt"
 	"image"
 	"image/png"
@@ -81,7 +82,8 @@ Terminal=false
 }
 
 func installIcons() error {
-	baseDir := filepath.Join(paths.HomeDir(), ".local", "share", "icons", "hicolor", "256x256")
+	hicolorDir := filepath.Join(paths.HomeDir(), ".local", "share", "icons", "hicolor")
+	baseDir := filepath.Join(hicolorDir, "256x256")
 	dir := filepath.Join(baseDir, "apps")
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return errs.Wrap(err)
@@ -89,14 +91,11 @@ func installIcons() error {
 	if err := os.WriteFile(filepath.Join(dir, cmdline.AppIdentifier+".png"), AppIconBytes, 0o640); err != nil {
 		return errs.Wrap(err)
 	}
+
 	dir = filepath.Join(baseDir, "mimetypes")
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return errs.Wrap(err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, cmdline.AppIdentifier+".png"), AppIconBytes, 0o640); err != nil {
-		return errs.Wrap(err)
-	}
-
 	docIcon, _, err := image.Decode(bytes.NewBuffer(docIconBytes))
 	if err != nil {
 		return errs.Wrap(err)
@@ -113,6 +112,18 @@ func installIcons() error {
 				return err
 			}
 		}
+	}
+	var cmdPath string
+	if cmdPath, err = exec.LookPath("gtk-update-icon-cache"); err != nil {
+		if errors.Is(err, exec.ErrNotFound) {
+			jot.Warn(errs.NewWithCause("skipping icon cache update", err))
+			return nil
+		}
+		return errs.Wrap(err)
+	}
+	var out []byte
+	if out, err = exec.Command(cmdPath, "--force", "--ignore-theme-index", hicolorDir).CombinedOutput(); err != nil {
+		return errs.NewWithCause(string(out), err)
 	}
 	return nil
 }
@@ -133,13 +144,13 @@ func writePNG(dstPath string, img image.Image) (err error) {
 }
 
 func installMimeInfo() error {
-	dir := filepath.Join(paths.HomeDir(), ".local", "share", "mime", "packages")
+	mimeDir := filepath.Join(paths.HomeDir(), ".local", "share", "mime")
+	dir := filepath.Join(mimeDir, "packages")
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return errs.Wrap(err)
 	}
 	var buffer bytes.Buffer
-	buffer.WriteString(`<?xml version="1.0" encoding="UTF-8"?>
-<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>`)
+	buffer.WriteString("<?xml version='1.0' encoding='UTF-8'?>\n<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>\n")
 	for i := range library.KnownFileTypes {
 		if fi := &library.KnownFileTypes[i]; fi.IsGCSData {
 			fmt.Fprintf(&buffer, "  <mime-type type=\"%s\">\n", fi.MimeTypes[0])
@@ -153,13 +164,21 @@ func installMimeInfo() error {
 			buffer.WriteString("  </mime-type>\n")
 		}
 	}
-	buffer.WriteString(`</mime-info>\n`)
+	buffer.WriteString("</mime-info>\n")
 	if err := os.WriteFile(filepath.Join(dir, cmdline.AppIdentifier+".xml"), buffer.Bytes(), 0o640); err != nil {
 		return errs.Wrap(err)
 	}
 	cmdPath, err := exec.LookPath("update-mime-database")
 	if err != nil {
+		if errors.Is(err, exec.ErrNotFound) {
+			jot.Warn(errs.NewWithCause("skipping mime database update", err))
+			return nil
+		}
 		return errs.Wrap(err)
 	}
-	return errs.Wrap(exec.Command(cmdPath, dir).Run())
+	var out []byte
+	if out, err = exec.Command(cmdPath, mimeDir).CombinedOutput(); err != nil {
+		return errs.NewWithCause(string(out), err)
+	}
+	return nil
 }
