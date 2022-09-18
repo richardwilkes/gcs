@@ -143,6 +143,7 @@ func installMimeInfo() error {
 	for i := range library.KnownFileTypes {
 		if fi := &library.KnownFileTypes[i]; fi.IsGCSData {
 			fmt.Fprintf(&buffer, "  <mime-type type=\"%s\">\n", fi.MimeTypes[0])
+			fmt.Fprintf(&buffer, "    <comment>%s</comment>\n", fi.Name)
 			for _, mimeType := range fi.MimeTypes[1:] {
 				fmt.Fprintf(&buffer, "    <alias type=\"%s\"/>\n", mimeType)
 			}
