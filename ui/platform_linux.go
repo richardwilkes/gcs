@@ -107,7 +107,7 @@ func installIcons() error {
 			if err != nil {
 				return err
 			}
-			targetPath := filepath.Join(dir, fi.MimeTypes[0]+".png")
+			targetPath := filepath.Join(dir, strings.ReplaceAll(fi.MimeTypes[0], "/", "-")+".png")
 			if err = writePNG(targetPath, icon.Stack(docIcon, overlay)); err != nil {
 				return err
 			}
