@@ -92,6 +92,7 @@ issues:
     - "stdmethods: method UnmarshalJSON"
     - "G104:"
     - "G110:"
+    - "G301:"
     - "G304:"
     - "G306:"
     - "SA5008:"
