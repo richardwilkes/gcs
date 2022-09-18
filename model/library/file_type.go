@@ -41,23 +41,33 @@ const (
 
 // FileInfo contains some static information about a given file type.
 type FileInfo struct {
-	Extension             string
-	ExtensionsToGroupWith []string
-	MimeTypes             []string
-	SVG                   *unison.SVG
-	Load                  func(filePath string) (unison.Dockable, error)
-	IsSpecial             bool
-	IsGCSData             bool
-	IsImage               bool
-	IsPDF                 bool
-	IsExportable          bool
+	Name         string
+	UTI          string
+	ConformsTo   []string
+	Extensions   []string
+	GroupWith    []string
+	MimeTypes    []string
+	SVG          *unison.SVG
+	Load         func(filePath string) (unison.Dockable, error)
+	IsSpecial    bool
+	IsGCSData    bool
+	IsImage      bool
+	IsPDF        bool
+	IsExportable bool
 }
 
-var fileTypeRegistry = make(map[string]FileInfo)
+var (
+	// KnownFileTypes holds the registered file types.
+	KnownFileTypes   []FileInfo
+	fileTypeRegistry = make(map[string]FileInfo)
+)
 
 // Register with the central registry.
 func (f FileInfo) Register() {
-	fileTypeRegistry[f.Extension] = f
+	for _, ext := range f.Extensions {
+		fileTypeRegistry[ext] = f
+	}
+	KnownFileTypes = append(KnownFileTypes, f)
 }
 
 // FileInfoFor returns the FileInfo for the given file path's extension.

@@ -58,16 +58,9 @@ go generate ./gen/enumgen.go
 # Build our code
 case $(uname -s) in
 Darwin*)
-  /bin/rm -rf GCS.app
-  CONTENTS="GCS.app/Contents"
-  mkdir -p "$CONTENTS/MacOS"
-  mkdir -p "$CONTENTS/Resources"
-  cp bundle/*.icns "$CONTENTS/Resources/"
-  go build $STD_FLAGS -ldflags all="$LDFLAGS_ALL" -o "$CONTENTS/MacOS/" .
-  sed -e "s/SHORT_APP_VERSION/$($CONTENTS/MacOS/gcs -v | tr -d "\n")/" \
-    -e "s/LONG_APP_VERSION/$($CONTENTS/MacOS/gcs -V | tr -d "\n")/" \
-    -e "s/COPYRIGHT_YEARS/$($CONTENTS/MacOS/gcs --copyright-date | tr -d "\n")/" \
-    bundle/Info.plist >"$CONTENTS/Info.plist"
+  go run $STD_FLAGS -ldflags all="$LDFLAGS_ALL" packaging/main.go
+  go build $STD_FLAGS -ldflags all="$LDFLAGS_ALL" -o "GCS.app/Contents/MacOS/" .
+  touch GCS.app
   ;;
 Linux*)
   go build $STD_FLAGS -ldflags all="$LDFLAGS_ALL" .

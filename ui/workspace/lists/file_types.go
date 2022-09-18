@@ -15,42 +15,57 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/res"
 	"github.com/richardwilkes/gcs/v5/ui/workspace/sheet"
+	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/unison"
 )
 
 // RegisterFileTypes registers GCS file types.
 func RegisterFileTypes() {
-	registerExportableGCSFileInfo(library.SheetExt, res.GCSSheetSVG, sheet.NewSheetFromFile)
-	registerGCSFileInfo(library.TemplatesExt, []string{library.TemplatesExt}, res.GCSTemplateSVG, sheet.NewTemplateFromFile)
-	groupWith := []string{library.TraitsExt, library.TraitModifiersExt, library.EquipmentExt, library.EquipmentModifiersExt, library.SkillsExt, library.SpellsExt, library.NotesExt}
-	registerGCSFileInfo(library.TraitsExt, groupWith, res.GCSTraitsSVG, NewTraitTableDockableFromFile)
-	registerGCSFileInfo(library.TraitModifiersExt, groupWith, res.GCSTraitModifiersSVG, NewTraitModifierTableDockableFromFile)
-	registerGCSFileInfo(library.EquipmentExt, groupWith, res.GCSEquipmentSVG, NewEquipmentTableDockableFromFile)
-	registerGCSFileInfo(library.EquipmentModifiersExt, groupWith, res.GCSEquipmentModifiersSVG, NewEquipmentModifierTableDockableFromFile)
-	registerGCSFileInfo(library.SkillsExt, groupWith, res.GCSSkillsSVG, NewSkillTableDockableFromFile)
-	registerGCSFileInfo(library.SpellsExt, groupWith, res.GCSSpellsSVG, NewSpellTableDockableFromFile)
-	registerGCSFileInfo(library.NotesExt, groupWith, res.GCSNotesSVG, NewNoteTableDockableFromFile)
+	registerExportableGCSFileInfo("GCS Sheet", library.SheetExt, res.GCSSheetSVG, sheet.NewSheetFromFile)
+	registerGCSFileInfo("GCS Template", library.TemplatesExt, []string{library.TemplatesExt}, res.GCSTemplateSVG, sheet.NewTemplateFromFile)
+	groupWith := []string{
+		library.TraitsExt,
+		library.TraitModifiersExt,
+		library.EquipmentExt,
+		library.EquipmentModifiersExt,
+		library.SkillsExt,
+		library.SpellsExt,
+		library.NotesExt,
+	}
+	registerGCSFileInfo("GCS Traits", library.TraitsExt, groupWith, res.GCSTraitsSVG, NewTraitTableDockableFromFile)
+	registerGCSFileInfo("GCS Trait Modifiers", library.TraitModifiersExt, groupWith, res.GCSTraitModifiersSVG, NewTraitModifierTableDockableFromFile)
+	registerGCSFileInfo("GCS Equipment", library.EquipmentExt, groupWith, res.GCSEquipmentSVG, NewEquipmentTableDockableFromFile)
+	registerGCSFileInfo("GCS Equipment Modifiers", library.EquipmentModifiersExt, groupWith, res.GCSEquipmentModifiersSVG, NewEquipmentModifierTableDockableFromFile)
+	registerGCSFileInfo("GCS Skills", library.SkillsExt, groupWith, res.GCSSkillsSVG, NewSkillTableDockableFromFile)
+	registerGCSFileInfo("GCS Spells", library.SpellsExt, groupWith, res.GCSSpellsSVG, NewSpellTableDockableFromFile)
+	registerGCSFileInfo("GCS Notes", library.NotesExt, groupWith, res.GCSNotesSVG, NewNoteTableDockableFromFile)
 }
 
-func registerGCSFileInfo(ext string, groupWith []string, svg *unison.SVG, loader func(filePath string) (unison.Dockable, error)) {
+func registerGCSFileInfo(name, ext string, groupWith []string, svg *unison.SVG, loader func(filePath string) (unison.Dockable, error)) {
 	library.FileInfo{
-		Extension:             ext,
-		ExtensionsToGroupWith: groupWith,
-		MimeTypes:             []string{"application/x-gcs-" + ext[1:]},
-		SVG:                   svg,
-		Load:                  loader,
-		IsGCSData:             true,
+		Name:       name,
+		UTI:        cmdline.AppIdentifier + ext,
+		ConformsTo: []string{"public.data"},
+		Extensions: []string{ext},
+		GroupWith:  groupWith,
+		MimeTypes:  []string{"application/x-gcs-" + ext[1:]},
+		SVG:        svg,
+		Load:       loader,
+		IsGCSData:  true,
 	}.Register()
 }
 
-func registerExportableGCSFileInfo(ext string, svg *unison.SVG, loader func(filePath string) (unison.Dockable, error)) {
+func registerExportableGCSFileInfo(name, ext string, svg *unison.SVG, loader func(filePath string) (unison.Dockable, error)) {
 	library.FileInfo{
-		Extension:             ext,
-		ExtensionsToGroupWith: []string{ext},
-		MimeTypes:             []string{"application/x-gcs-" + ext[1:]},
-		SVG:                   svg,
-		Load:                  loader,
-		IsGCSData:             true,
-		IsExportable:          true,
+		Name:         name,
+		UTI:          cmdline.AppIdentifier + ext,
+		ConformsTo:   []string{"public.data"},
+		Extensions:   []string{ext},
+		GroupWith:    []string{ext},
+		MimeTypes:    []string{"application/x-gcs-" + ext[1:]},
+		SVG:          svg,
+		Load:         loader,
+		IsGCSData:    true,
+		IsExportable: true,
 	}.Register()
 }

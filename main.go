@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/setup"
+	"github.com/richardwilkes/gcs/v5/setup/early"
 	"github.com/richardwilkes/gcs/v5/ui"
 	"github.com/richardwilkes/toolbox/atexit"
 	"github.com/richardwilkes/toolbox/cmdline"
@@ -28,12 +29,7 @@ import (
 )
 
 func main() {
-	cmdline.AppName = "GCS"
-	cmdline.AppCmdName = "gcs"
-	cmdline.License = "Mozilla Public License, version 2.0"
-	cmdline.CopyrightStartYear = "1998"
-	cmdline.CopyrightHolder = "Richard A. Wilkes"
-	cmdline.AppIdentifier = "com.trollworks.gcs"
+	early.Configure()
 	unison.AttachConsole()
 	cl := cmdline.New(true)
 	cl.Description = ui.AppDescription

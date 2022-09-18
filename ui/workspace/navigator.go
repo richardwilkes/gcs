@@ -77,9 +77,9 @@ func RegisterFileTypes() {
 
 func registerSpecialFileInfo(key string, svg *unison.SVG) {
 	library.FileInfo{
-		Extension: key,
-		SVG:       svg,
-		IsSpecial: true,
+		Extensions: []string{key},
+		SVG:        svg,
+		IsSpecial:  true,
 	}.Register()
 }
 
@@ -837,10 +837,10 @@ func DisplayNewDockable(wnd *unison.Window, dockable unison.Dockable) {
 	}()
 	if fbd, ok := dockable.(FileBackedDockable); ok {
 		fi := library.FileInfoFor(fbd.BackingFilePath())
-		if dc := ws.CurrentlyFocusedDockContainer(); dc != nil && DockContainerHoldsExtension(dc, fi.ExtensionsToGroupWith...) {
+		if dc := ws.CurrentlyFocusedDockContainer(); dc != nil && DockContainerHoldsExtension(dc, fi.GroupWith...) {
 			dc.Stack(dockable, -1)
 			return
-		} else if dc = ws.LocateDockContainerForExtension(fi.ExtensionsToGroupWith...); dc != nil {
+		} else if dc = ws.LocateDockContainerForExtension(fi.GroupWith...); dc != nil {
 			dc.Stack(dockable, -1)
 			return
 		}

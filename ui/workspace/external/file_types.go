@@ -12,50 +12,72 @@
 package external
 
 import (
+	"strings"
+
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/res"
 	"github.com/richardwilkes/unison"
+	"golang.org/x/exp/maps"
 )
 
 // RegisterFileTypes registers external file types.
 func RegisterFileTypes() {
 	registerPDFFileInfo()
 	registerMarkdownFileInfo()
+	all := make(map[string]bool)
 	for _, one := range unison.KnownImageFormatFormats {
 		if one.CanRead() {
-			registerImageFileInfo(one)
+			for _, ext := range one.Extensions() {
+				all[ext] = true
+			}
+		}
+	}
+	groupWith := maps.Keys(all)
+	for _, one := range unison.KnownImageFormatFormats {
+		if one.CanRead() {
+			registerImageFileInfo(one, groupWith)
 		}
 	}
 }
 
-func registerImageFileInfo(format unison.EncodedImageFormat) {
+func registerImageFileInfo(format unison.EncodedImageFormat, groupWith []string) {
 	library.FileInfo{
-		Extension:             format.Extension(),
-		ExtensionsToGroupWith: format.Extensions(),
-		MimeTypes:             format.MimeTypes(),
-		SVG:                   res.ImageFileSVG,
-		Load:                  NewImageDockable,
-		IsImage:               true,
+		Name:       strings.ToUpper(format.Extension()[1:]) + " Image",
+		UTI:        format.UTI(),
+		ConformsTo: []string{"public.image"},
+		Extensions: format.Extensions(),
+		GroupWith:  groupWith,
+		MimeTypes:  format.MimeTypes(),
+		SVG:        res.ImageFileSVG,
+		Load:       NewImageDockable,
+		IsImage:    true,
 	}.Register()
 }
 
 func registerPDFFileInfo() {
 	library.FileInfo{
-		Extension:             ".pdf",
-		ExtensionsToGroupWith: []string{".pdf"},
-		MimeTypes:             []string{"application/pdf", "application/x-pdf"},
-		SVG:                   res.PDFFileSVG,
-		Load:                  NewPDFDockable,
-		IsPDF:                 true,
+		Name:       "PDF Document",
+		UTI:        "com.adobe.pdf",
+		ConformsTo: []string{"public.data"},
+		Extensions: []string{".pdf"},
+		GroupWith:  []string{".pdf"},
+		MimeTypes:  []string{"application/pdf", "application/x-pdf"},
+		SVG:        res.PDFFileSVG,
+		Load:       NewPDFDockable,
+		IsPDF:      true,
 	}.Register()
 }
 
 func registerMarkdownFileInfo() {
+	extensions := []string{".md", ".markdown"}
 	library.FileInfo{
-		Extension:             ".md",
-		ExtensionsToGroupWith: []string{".md", ".markdown"},
-		MimeTypes:             []string{"text/markdown"},
-		SVG:                   res.MarkdownFileSVG,
-		Load:                  NewMarkdownDockable,
+		Name:       "Markdown Document",
+		UTI:        "net.daringfireball.markdown",
+		ConformsTo: []string{"public.plain-text"},
+		Extensions: extensions,
+		GroupWith:  extensions,
+		MimeTypes:  []string{"text/markdown"},
+		SVG:        res.MarkdownFileSVG,
+		Load:       NewMarkdownDockable,
 	}.Register()
 }
