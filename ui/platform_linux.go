@@ -18,6 +18,7 @@ import (
 	"image"
 	"image/png"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -155,5 +156,9 @@ func installMimeInfo() error {
 	if err := os.WriteFile(filepath.Join(dir, cmdline.AppIdentifier+".xml"), buffer.Bytes(), 0o640); err != nil {
 		return errs.Wrap(err)
 	}
-	return nil
+	cmdPath, err := exec.LookPath("update-mime-database")
+	if err != nil {
+		return errs.Wrap(err)
+	}
+	return errs.Wrap(exec.Command(cmdPath, dir).Run())
 }
