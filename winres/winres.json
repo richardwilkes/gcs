@@ -2,11 +2,7 @@
   "RT_GROUP_ICON": {
     "APP": {
       "0000": [
-        "app-256.png",
-        "app-64.png",
-        "app-48.png",
-        "app-32.png",
-        "app-16.png"
+        "app-256.png"
       ]
     }
   },
