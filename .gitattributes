@@ -3,6 +3,8 @@
 
 # Force text files to have LF
 *.go text eol=lf
+*.mod text eol=lf
+*.sum text eol=lf
 *.md text eol=lf
 *.txt text eol=lf
 *.yml text eol=lf
@@ -19,3 +21,4 @@
 *.png binary
 *.webp binary
 *.icns binary
+*.xcf binary
