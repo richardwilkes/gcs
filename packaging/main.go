@@ -25,6 +25,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/setup/early"
+	"github.com/richardwilkes/gcs/v5/ui/svglayer"
 	"github.com/richardwilkes/gcs/v5/ui/workspace/external"
 	"github.com/richardwilkes/gcs/v5/ui/workspace/lists"
 	"github.com/richardwilkes/toolbox"
@@ -34,8 +35,6 @@ import (
 	"github.com/richardwilkes/toolbox/formats/icon"
 	"github.com/richardwilkes/toolbox/formats/icon/icns"
 	"github.com/richardwilkes/toolbox/log/jot"
-	"github.com/srwiley/oksvg"
-	"github.com/srwiley/rasterx"
 )
 
 //go:embed app.png
@@ -97,7 +96,7 @@ func packageMacOS() error {
 func writeDocICNS(dir string, base image.Image) error {
 	for i := range library.KnownFileTypes {
 		if fi := &library.KnownFileTypes[i]; fi.IsGCSData {
-			overlay, err := createImageFromSVG(fi, 512)
+			overlay, err := svglayer.CreateImageFromSVG(fi, 512)
 			if err != nil {
 				return err
 			}
@@ -108,20 +107,6 @@ func writeDocICNS(dir string, base image.Image) error {
 		}
 	}
 	return nil
-}
-
-func createImageFromSVG(fi *library.FileInfo, size int) (image.Image, error) {
-	var buffer bytes.Buffer
-	fmt.Fprintf(&buffer, `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %f %f"><path d="%s"/></svg>`,
-		fi.SVG.Size().Width, fi.SVG.Size().Height, fi.SVG.PathScaledTo(1).ToSVGString())
-	svg, err := oksvg.ReadIconStream(&buffer)
-	if err != nil {
-		return nil, errs.Wrap(err)
-	}
-	svg.SetTarget(0, 0, float64(size), float64(size))
-	img := image.NewRGBA(image.Rect(0, 0, size, size))
-	svg.Draw(rasterx.NewDasher(size, size, rasterx.NewScannerGV(size, size, img, img.Bounds())), 1)
-	return img, nil
 }
 
 func writeICNS(dstPath string, img image.Image) (err error) {
@@ -136,7 +121,6 @@ func writeICNS(dstPath string, img image.Image) (err error) {
 		}
 	}()
 	err = errs.Wrap(icns.Encode(f, img))
-	cmdline.Copyright()
 	return
 }
 

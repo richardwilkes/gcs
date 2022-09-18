@@ -12,19 +12,28 @@
 package ui
 
 import (
+	"bytes"
+	_ "embed"
 	"fmt"
+	"image"
+	"image/png"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/library"
+	"github.com/richardwilkes/gcs/v5/ui/svglayer"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/formats/icon"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio/fs/paths"
 )
 
 // See https://developer.gnome.org/documentation/guidelines/maintainer/integrating.html
+
+//go:embed doc-256.png
+var docIconBytes []byte
 
 func performPlatformStartup() {
 	exePath, err := os.Executable()
@@ -41,6 +50,9 @@ func performPlatformStartup() {
 		jot.Error(err)
 	}
 	if err = installDesktopFiles(exePath); err != nil {
+		jot.Error(err)
+	}
+	if err = installMimeInfo(); err != nil {
 		jot.Error(err)
 	}
 }
@@ -68,11 +80,79 @@ Terminal=false
 }
 
 func installIcons() error {
-	dir := filepath.Join(paths.HomeDir(), ".local", "share", "icons", "hicolor", "256x256", "apps")
+	baseDir := filepath.Join(paths.HomeDir(), ".local", "share", "icons", "hicolor", "256x256")
+	dir := filepath.Join(baseDir, "apps")
 	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return errs.Wrap(err)
 	}
 	if err := os.WriteFile(filepath.Join(dir, cmdline.AppIdentifier+".png"), AppIconBytes, 0o640); err != nil {
+		return errs.Wrap(err)
+	}
+	dir = filepath.Join(baseDir, "mimetypes")
+	if err := os.MkdirAll(dir, 0o750); err != nil {
+		return errs.Wrap(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, cmdline.AppIdentifier+".png"), AppIconBytes, 0o640); err != nil {
+		return errs.Wrap(err)
+	}
+
+	docIcon, _, err := image.Decode(bytes.NewBuffer(docIconBytes))
+	if err != nil {
+		return errs.Wrap(err)
+	}
+	for i := range library.KnownFileTypes {
+		if fi := &library.KnownFileTypes[i]; fi.IsGCSData {
+			var overlay image.Image
+			overlay, err = svglayer.CreateImageFromSVG(fi, 128)
+			if err != nil {
+				return err
+			}
+			targetPath := filepath.Join(dir, fi.MimeTypes[0]+".png")
+			if err = writePNG(targetPath, icon.Stack(docIcon, overlay)); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func writePNG(dstPath string, img image.Image) (err error) {
+	var f *os.File
+	f, err = os.Create(dstPath)
+	if err != nil {
+		return errs.Wrap(err)
+	}
+	defer func() {
+		if cerr := f.Close(); cerr != nil && err == nil {
+			err = errs.Wrap(cerr)
+		}
+	}()
+	err = errs.Wrap(png.Encode(f, img))
+	return
+}
+
+func installMimeInfo() error {
+	dir := filepath.Join(paths.HomeDir(), ".local", "share", "mime", "packages")
+	if err := os.MkdirAll(dir, 0o750); err != nil {
+		return errs.Wrap(err)
+	}
+	var buffer bytes.Buffer
+	buffer.WriteString(`<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>`)
+	for i := range library.KnownFileTypes {
+		if fi := &library.KnownFileTypes[i]; fi.IsGCSData {
+			fmt.Fprintf(&buffer, "  <mime-type type=\"%s\">\n", fi.MimeTypes[0])
+			for _, mimeType := range fi.MimeTypes[1:] {
+				fmt.Fprintf(&buffer, "    <alias type=\"%s\"/>\n", mimeType)
+			}
+			for _, ext := range fi.Extensions {
+				fmt.Fprintf(&buffer, "    <glob pattern=\"*%s\"/>\n", ext)
+			}
+			buffer.WriteString("  </mime-type>\n")
+		}
+	}
+	buffer.WriteString(`</mime-info>\n`)
+	if err := os.WriteFile(filepath.Join(dir, cmdline.AppIdentifier+".xml"), buffer.Bytes(), 0o640); err != nil {
 		return errs.Wrap(err)
 	}
 	return nil
