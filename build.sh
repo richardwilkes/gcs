@@ -48,7 +48,7 @@ Darwin*)
   if [ "$(uname -p)" == "arm" ]; then
     export MACOSX_DEPLOYMENT_TARGET=11
   else
-    export MACOSX_DEPLOYMENT_TARGET=10.13
+    export MACOSX_DEPLOYMENT_TARGET=10.14
   fi
 esac
 

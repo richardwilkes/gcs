@@ -197,7 +197,7 @@ func writePlist(targetPath string) (err error) {
 		AppIdentifier:        cmdline.AppIdentifier,
 		AppVersion:           cmdline.AppVersion,
 		ShortVersion:         shortVersion,
-		MinimumSystemVersion: "10.13", // Minimum for Go as of the 1.19.1 release
+		MinimumSystemVersion: "10.14",
 		Copyright:            fmt.Sprintf("©%s by %s", cmdline.ResolveCopyrightYears(), cmdline.CopyrightHolder),
 		CategoryUTI:          "public.app-category.role-playing-games",
 		FileInfo:             fileInfo,
