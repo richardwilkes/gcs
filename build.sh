@@ -66,13 +66,7 @@ Linux*)
   go build $STD_FLAGS -ldflags all="$LDFLAGS_ALL" .
   ;;
 MINGW*)
-  go install github.com/tc-hib/go-winres@v0.3.0
-  if [ -e "$GOPATH/bin/go-winres.exe" ]; then
-    GOWINRES="$GOPATH/bin/go-winres"
-  else
-    GOWINRES="$HOME/go/bin/go-winres"
-  fi
-  "$GOWINRES" make --arch amd64
+  go run $STD_FLAGS -ldflags all="$LDFLAGS_ALL" packaging/main.go
   go build $STD_FLAGS -ldflags all="$LDFLAGS_ALL -H windowsgui" .
   ;;
 *)

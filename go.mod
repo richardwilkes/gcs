@@ -13,6 +13,7 @@ require (
 	github.com/srwiley/oksvg v0.0.0-20220904191616-8889df18e8f4
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef
 	github.com/stretchr/testify v1.8.0
+	github.com/tc-hib/winres v0.1.6
 	golang.org/x/exp v0.0.0-20220916125017-b168a2c6b86b
 	golang.org/x/image v0.0.0-20220902085622-e7cb96979f69
 	golang.org/x/text v0.3.7
@@ -28,6 +29,7 @@ require (
 	github.com/grandcat/zeroconf v1.0.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/miekg/dns v1.1.50 // indirect
+	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/pkg/term v1.1.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/yookoala/realpath v1.0.0 // indirect

@@ -25,6 +25,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/setup/early"
+	"github.com/richardwilkes/gcs/v5/ui"
 	"github.com/richardwilkes/gcs/v5/ui/svglayer"
 	"github.com/richardwilkes/gcs/v5/ui/workspace/external"
 	"github.com/richardwilkes/gcs/v5/ui/workspace/lists"
@@ -35,6 +36,8 @@ import (
 	"github.com/richardwilkes/toolbox/formats/icon"
 	"github.com/richardwilkes/toolbox/formats/icon/icns"
 	"github.com/richardwilkes/toolbox/log/jot"
+	"github.com/tc-hib/winres"
+	"github.com/tc-hib/winres/version"
 )
 
 //go:embed app-1024.png
@@ -53,6 +56,8 @@ func main() {
 	switch runtime.GOOS {
 	case toolbox.MacOS:
 		jot.FatalIfErr(packageMacOS())
+	case toolbox.WindowsOS:
+		jot.FatalIfErr(packageWindows())
 	}
 	atexit.Exit(0)
 }
@@ -124,6 +129,14 @@ func writeICNS(dstPath string, img image.Image) (err error) {
 	return
 }
 
+func shortAppVersion() string {
+	shortVersion := strings.TrimSuffix(cmdline.AppVersion, ".0")
+	if strings.IndexByte(shortVersion, '.') == -1 {
+		return cmdline.AppVersion
+	}
+	return shortVersion
+}
+
 func writePlist(targetPath string) (err error) {
 	var tmpl *template.Template
 	tmpl, err = template.New("plist").Parse(plistTmpl)
@@ -139,10 +152,6 @@ func writePlist(targetPath string) (err error) {
 			err = errs.Wrap(cerr)
 		}
 	}()
-	shortVersion := strings.TrimSuffix(cmdline.AppVersion, ".0")
-	if strings.IndexByte(shortVersion, '.') == -1 {
-		shortVersion = cmdline.AppVersion
-	}
 	type fileData struct {
 		Name       string
 		Icon       string
@@ -196,7 +205,7 @@ func writePlist(targetPath string) (err error) {
 		SpokenName:           "gurps character sheet",
 		AppIdentifier:        cmdline.AppIdentifier,
 		AppVersion:           cmdline.AppVersion,
-		ShortVersion:         shortVersion,
+		ShortVersion:         shortAppVersion(),
 		MinimumSystemVersion: "10.14",
 		Copyright:            fmt.Sprintf("©%s by %s", cmdline.ResolveCopyrightYears(), cmdline.CopyrightHolder),
 		CategoryUTI:          "public.app-category.role-playing-games",
@@ -206,6 +215,83 @@ func writePlist(targetPath string) (err error) {
 		return
 	}
 	return
+}
+
+func packageWindows() (err error) {
+	rs := &winres.ResourceSet{}
+	rs.SetManifest(winres.AppManifest{
+		Description:    ui.AppDescription,
+		Compatibility:  winres.Win7AndAbove,
+		ExecutionLevel: winres.AsInvoker,
+		DPIAwareness:   winres.DPIAware,
+	})
+	if err = addWindowsIcon(rs); err != nil {
+		return err
+	}
+	if err = addWindowsVersion(rs); err != nil {
+		return err
+	}
+	var f *os.File
+	f, err = os.Create("rsrc_windows_amd64.syso")
+	if err != nil {
+		return errs.Wrap(err)
+	}
+	defer func() {
+		if cerr := f.Close(); cerr != nil && err == nil {
+			err = errs.Wrap(cerr)
+		}
+	}()
+	if err = rs.WriteObject(f, winres.ArchAMD64); err != nil {
+		return errs.Wrap(err)
+	}
+	return
+}
+
+func addWindowsIcon(rs *winres.ResourceSet) error {
+	winIcon, err := winres.NewIconFromImages([]image.Image{icon.Scale(app, 256, 256)})
+	if err != nil {
+		return errs.Wrap(err)
+	}
+	if err = rs.SetIconTranslation(winres.Name("APP"), 0, winIcon); err != nil {
+		return errs.Wrap(err)
+	}
+	return nil
+}
+
+func addWindowsVersion(rs *winres.ResourceSet) error {
+	var vi version.Info
+	vi.SetFileVersion(cmdline.AppVersion)
+	vi.SetProductVersion(cmdline.AppVersion)
+	if err := vi.Set(version.LangDefault, version.CompanyName, cmdline.CopyrightHolder); err != nil {
+		return errs.Wrap(err)
+	}
+	if err := vi.Set(version.LangDefault, version.FileDescription, ui.AppDescription); err != nil {
+		return errs.Wrap(err)
+	}
+	if err := vi.Set(version.LangDefault, version.FileVersion, shortAppVersion()); err != nil {
+		return errs.Wrap(err)
+	}
+	if err := vi.Set(version.LangDefault, version.InternalName, cmdline.AppCmdName); err != nil {
+		return errs.Wrap(err)
+	}
+	if err := vi.Set(version.LangDefault, version.LegalCopyright, cmdline.Copyright()); err != nil {
+		return errs.Wrap(err)
+	}
+	if err := vi.Set(version.LangDefault, version.LegalTrademarks,
+		"GURPS is a trademark of Steve Jackson Games, used by permission. All rights reserved."); err != nil {
+		return errs.Wrap(err)
+	}
+	if err := vi.Set(version.LangDefault, version.OriginalFilename, cmdline.AppCmdName+".exe"); err != nil {
+		return errs.Wrap(err)
+	}
+	if err := vi.Set(version.LangDefault, version.ProductName, "GURPS Character Sheet"); err != nil {
+		return errs.Wrap(err)
+	}
+	if err := vi.Set(version.LangDefault, version.ProductVersion, shortAppVersion()); err != nil {
+		return errs.Wrap(err)
+	}
+	rs.SetVersionInfo(vi)
+	return nil
 }
 
 var plistTmpl = `<?xml version="1.0" encoding="UTF-8"?>
