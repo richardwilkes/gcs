@@ -25,7 +25,7 @@ import (
 )
 
 var (
-	//go:embed "about.png"
+	//go:embed "about-1200x820.png"
 	aboutImageData []byte
 	aboutWnd       = &aboutWindow{}
 )

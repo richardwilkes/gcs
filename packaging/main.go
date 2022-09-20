@@ -37,11 +37,11 @@ import (
 	"github.com/richardwilkes/toolbox/log/jot"
 )
 
-//go:embed app.png
+//go:embed app-1024.png
 var appImgBytes []byte
 var app image.Image
 
-//go:embed doc.png
+//go:embed doc-1024.png
 var docImgBytes []byte
 var doc image.Image
 
