@@ -5,10 +5,10 @@ go 1.19
 require (
 	github.com/google/uuid v1.3.0
 	github.com/richardwilkes/json v0.1.0
-	github.com/richardwilkes/pdf v1.20.0
+	github.com/richardwilkes/pdf v1.20.1-0.20220920031706-d4ac8ae14335
 	github.com/richardwilkes/rpgtools v1.4.2
 	github.com/richardwilkes/toolbox v1.74.0
-	github.com/richardwilkes/unison v0.31.3-0.20220918234315-34d9a19eb6ec
+	github.com/richardwilkes/unison v0.31.3-0.20220920032155-9764a737d843
 	github.com/rjeczalik/notify v0.9.2
 	github.com/srwiley/oksvg v0.0.0-20220904191616-8889df18e8f4
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef
