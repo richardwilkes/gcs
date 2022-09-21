@@ -284,6 +284,14 @@ func (s *Sheet) BackingFilePath() string {
 	return s.path
 }
 
+// SetBackingFilePath implements workspace.FileBackedDockable
+func (s *Sheet) SetBackingFilePath(p string) {
+	s.path = p
+	if dc := unison.Ancestor[*unison.DockContainer](s); dc != nil {
+		dc.UpdateTitle(s)
+	}
+}
+
 // Modified implements workspace.FileBackedDockable
 func (s *Sheet) Modified() bool {
 	return s.crc != s.entity.CRC64()

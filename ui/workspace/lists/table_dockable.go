@@ -275,6 +275,14 @@ func (d *TableDockable[T]) BackingFilePath() string {
 	return d.path
 }
 
+// SetBackingFilePath implements workspace.FileBackedDockable
+func (d *TableDockable[T]) SetBackingFilePath(p string) {
+	d.path = p
+	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
+		dc.UpdateTitle(d)
+	}
+}
+
 // Modified implements workspace.FileBackedDockable
 func (d *TableDockable[T]) Modified() bool {
 	return d.crc != d.crc64()

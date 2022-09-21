@@ -41,7 +41,9 @@ var _ unison.Dockable = &Navigator{}
 // FileBackedDockable defines methods a Dockable that is based on a file should implement.
 type FileBackedDockable interface {
 	unison.Dockable
+	unison.TabCloser
 	BackingFilePath() string
+	SetBackingFilePath(p string)
 }
 
 // Navigator holds the workspace navigation panel.
@@ -312,24 +314,50 @@ func (n *Navigator) deleteSelection() {
 			header := txt.Wrap("", fmt.Sprintf(i18n.Text("Are you sure you want to remove %s?"), title), 100)
 			note := txt.Wrap("", fmt.Sprintf(i18n.Text("Note: This action cannot be undone and will remove %s from disk."), title), 100)
 			if unison.QuestionDialog(header, note) == unison.ModalResponseOK {
-				defer n.Reload()
-				for _, row := range selection {
-					p := row.Path()
-					if row.nodeType == directoryNode {
-						if err := os.RemoveAll(p); err != nil {
-							unison.ErrorDialogWithError(fmt.Sprintf(i18n.Text("Unable to remove directory:\n%s"), p), err)
-							return
-						}
-					} else {
-						if err := os.Remove(p); err != nil {
-							unison.ErrorDialogWithError(fmt.Sprintf(i18n.Text("Unable to remove file:\n%s"), p), err)
-							return
+				if n.closeSelection(selection) {
+					defer n.Reload()
+					for _, row := range selection {
+						p := row.Path()
+						if row.nodeType == directoryNode {
+							if err := os.RemoveAll(p); err != nil {
+								unison.ErrorDialogWithError(fmt.Sprintf(i18n.Text("Unable to remove directory:\n%s"), p), err)
+								return
+							}
+						} else {
+							if err := os.Remove(p); err != nil {
+								unison.ErrorDialogWithError(fmt.Sprintf(i18n.Text("Unable to remove file:\n%s"), p), err)
+								return
+							}
 						}
 					}
 				}
 			}
 		}
 	}
+}
+
+func (n *Navigator) closeSelection(selection []*NavigatorNode) bool {
+	ws := FromWindowOrAny(n.Window())
+	for _, row := range selection {
+		p := row.Path()
+		if row.nodeType == directoryNode {
+			if len(row.children) != 0 {
+				if !n.closeSelection(row.children) {
+					return false
+				}
+			}
+		} else {
+			if dockable := ws.LocateFileBackedDockable(p); dockable != nil {
+				if !dockable.MayAttemptClose() {
+					return false
+				}
+				if !dockable.AttemptClose() {
+					return false
+				}
+			}
+		}
+	}
+	return true
 }
 
 var disallowedWindowsFileNames = map[string]bool{
@@ -409,7 +437,33 @@ func (n *Navigator) renameSelection() {
 				n.Reload()
 				n.ApplySelectedPaths([]string{newPath})
 				n.MarkForRedraw()
+				n.adjustBackingFilePath(row, oldPath, newPath)
 			}
+		}
+	}
+}
+
+func (n *Navigator) adjustBackingFilePath(row *NavigatorNode, oldPath, newPath string) {
+	ws := FromWindowOrAny(n.Window())
+	switch row.nodeType {
+	case directoryNode:
+		if !strings.HasSuffix(oldPath, string(os.PathSeparator)) {
+			oldPath += string(os.PathSeparator)
+		}
+		ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
+			for _, one := range dc.Dockables() {
+				if fbd, ok := one.(FileBackedDockable); ok {
+					p := fbd.BackingFilePath()
+					if strings.HasPrefix(p, oldPath) {
+						fbd.SetBackingFilePath(filepath.Join(newPath, strings.TrimPrefix(p, oldPath)))
+					}
+				}
+			}
+			return false
+		})
+	case fileNode:
+		if dockable := ws.LocateFileBackedDockable(oldPath); dockable != nil {
+			dockable.SetBackingFilePath(newPath)
 		}
 	}
 }

@@ -528,6 +528,14 @@ func (d *PDFDockable) BackingFilePath() string {
 	return d.path
 }
 
+// SetBackingFilePath implements workspace.FileBackedDockable
+func (d *PDFDockable) SetBackingFilePath(p string) {
+	d.path = p
+	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
+		dc.UpdateTitle(d)
+	}
+}
+
 // Modified implements workspace.FileBackedDockable
 func (d *PDFDockable) Modified() bool {
 	return false
