@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"io/fs"
 
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/res"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
@@ -40,7 +41,7 @@ func ShowMenuKeySettings() {
 		d.Self = d
 		d.TabTitle = i18n.Text("Menu Keys")
 		d.TabIcon = res.SettingsSVG
-		d.Extensions = []string{".keys"}
+		d.Extensions = []string{library.KeySettingsExt}
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset

@@ -16,16 +16,21 @@ import (
 	"io/fs"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/library"
+	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/eval"
 	"github.com/richardwilkes/toolbox/log/jot"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 )
 
 // Default holds the name of the default ancestry.
-const Default = "Human"
+const (
+	Default         = "Human"
+	ancestryTypeKey = "ancestry"
+)
 
 // Ancestry holds details necessary to generate ancestry-specific customizations.
 type Ancestry struct {
@@ -34,9 +39,15 @@ type Ancestry struct {
 	GenderOptions []*WeightedAncestryOptions `json:"gender_options,omitempty"`
 }
 
+type ancestryData struct {
+	Type    string `json:"type"`
+	Version int    `json:"version"`
+	Ancestry
+}
+
 // AvailableAncestries scans the libraries and returns the available ancestries.
 func AvailableAncestries(libraries library.Libraries) []*library.NamedFileSet {
-	return library.ScanForNamedFileSets(embeddedFS, "embedded_data", true, libraries, ".ancestry")
+	return library.ScanForNamedFileSets(embeddedFS, "embedded_data", true, libraries, library.AncestryExt)
 }
 
 // Lookup an Ancestry by name.
@@ -57,19 +68,33 @@ func Lookup(name string, libraries library.Libraries) *Ancestry {
 
 // NewAncestryFromFile creates a new Ancestry from a file.
 func NewAncestryFromFile(fileSystem fs.FS, filePath string) (*Ancestry, error) {
-	var ancestry Ancestry
+	var ancestry ancestryData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &ancestry); err != nil {
+		return nil, err
+	}
+	if ancestry.Type == "" && ancestry.Version == 0 { // for some older files
+		ancestry.Type = ancestryTypeKey
+		ancestry.Version = gid.CurrentDataVersion
+	}
+	if ancestry.Type != ancestryTypeKey {
+		return nil, errs.New(gid.UnexpectedFileDataMsg)
+	}
+	if err := gid.CheckVersion(ancestry.Version); err != nil {
 		return nil, err
 	}
 	if ancestry.Name == "" {
 		ancestry.Name = xfs.BaseName(filePath)
 	}
-	return &ancestry, nil
+	return &ancestry.Ancestry, nil
 }
 
 // Save writes the Ancestry to the file as JSON.
 func (a *Ancestry) Save(filePath string) error {
-	return jio.SaveToFile(context.Background(), filePath, a)
+	return jio.SaveToFile(context.Background(), filePath, &ancestryData{
+		Type:     ancestryTypeKey,
+		Version:  gid.CurrentDataVersion,
+		Ancestry: *a,
+	})
 }
 
 // RandomGender returns a randomized gender.

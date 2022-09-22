@@ -35,7 +35,7 @@ type CalendarRef struct {
 
 // AvailableCalendarRefs scans the libraries and returns the available calendars.
 func AvailableCalendarRefs(libraries library.Libraries) []*library.NamedFileSet {
-	return library.ScanForNamedFileSets(embeddedFS, "embedded_data", true, libraries, ".calendar")
+	return library.ScanForNamedFileSets(embeddedFS, "embedded_data", true, libraries, library.CalendarExt)
 }
 
 // LookupCalendarRef a CalendarRef by name.

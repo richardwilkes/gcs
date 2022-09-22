@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	gsettings "github.com/richardwilkes/gcs/v5/model/gurps/settings"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/res"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
@@ -53,7 +54,7 @@ func ShowGeneralSettings() {
 		d.Self = d
 		d.TabTitle = i18n.Text("General Settings")
 		d.TabIcon = res.SettingsSVG
-		d.Extensions = []string{".general"}
+		d.Extensions = []string{library.GeneralSettingsExt}
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset

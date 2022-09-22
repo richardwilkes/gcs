@@ -13,13 +13,20 @@ package theme
 
 import (
 	"context"
+	"fmt"
 	"io/fs"
+	"strconv"
+	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
+	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
+
+const colorsTypeKey = "theme_colors"
 
 // Additional colors over and above what unison provides by default.
 var (
@@ -130,32 +137,95 @@ type Colors struct {
 	data map[string]*unison.ThemeColor // Just here for serialization
 }
 
+type colorsData struct {
+	Type    string `json:"type"`
+	Version int    `json:"version"`
+	Colors
+}
+
 // NewColorsFromFS creates a new set of colors from a file. Any missing values will be filled in with defaults.
 func NewColorsFromFS(fileSystem fs.FS, filePath string) (*Colors, error) {
-	var c Colors
-	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &c); err != nil {
+	var current colorsData
+	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &current); err != nil {
+		var old struct {
+			Version   int               `json:"version"`
+			OldColors map[string]string `json:"colors"`
+		}
+		if err2 := jio.LoadFromFS(context.Background(), fileSystem, filePath, &old); err2 != nil {
+			return nil, err
+		}
+		current.Type = colorsTypeKey
+		current.Version = old.Version
+		if old.Version == 1 {
+			current.data = make(map[string]*unison.ThemeColor, len(FactoryColors))
+			for _, fc := range FactoryColors {
+				current.data[fc.ID] = fc.Color
+				if c, ok := old.OldColors[fc.ID]; ok {
+					var clr unison.Color
+					if clr, err = unison.ColorDecode(c); err != nil {
+						if clr, err = unison.ColorDecode("rgb(" + c + ")"); err != nil {
+							lastComma := strings.LastIndexByte(c, ',')
+							if lastComma == -1 {
+								continue
+							}
+							var v int
+							if v, err = strconv.Atoi(c[lastComma+1:]); err != nil {
+								continue
+							}
+							if clr, err = unison.ColorDecode(fmt.Sprintf("rgba(%s,%f)", c[:lastComma], float32(v)/255)); err != nil {
+								continue
+							}
+						}
+					}
+					current.data[fc.ID] = &unison.ThemeColor{
+						Light: clr,
+						Dark:  clr,
+					}
+				}
+			}
+			current.Version = gid.CurrentDataVersion
+		}
+	}
+	// During development of v5, forgot to add the type & version initially, so try and fix that up
+	if current.Type == "" && current.Version == 0 {
+		current.Type = colorsTypeKey
+		current.Version = gid.CurrentDataVersion
+	}
+	if current.Type != colorsTypeKey {
+		return nil, errs.New(gid.UnexpectedFileDataMsg)
+	}
+	if err := gid.CheckVersion(current.Version); err != nil {
 		return nil, err
 	}
-	return &c, nil
+	return &current.Colors, nil
 }
 
 // Save writes the Colors to the file as JSON.
 func (c *Colors) Save(filePath string) error {
-	return jio.SaveToFile(context.Background(), filePath, c)
+	return jio.SaveToFile(context.Background(), filePath, &colorsData{
+		Type:    colorsTypeKey,
+		Version: gid.CurrentDataVersion,
+		Colors:  *c,
+	})
 }
 
 // MarshalJSON implements json.Marshaler.
 func (c *Colors) MarshalJSON() ([]byte, error) {
-	c.data = make(map[string]*unison.ThemeColor, len(CurrentColors))
-	for _, one := range CurrentColors {
-		c.data[one.ID] = one.Color
+	m := make(map[string]bool)
+	for _, one := range FactoryColors {
+		m[one.ID] = true
+	}
+	for k := range c.data {
+		if _, ok := m[k]; !ok {
+			delete(c.data, k)
+		}
 	}
 	return json.Marshal(&c.data)
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (c *Colors) UnmarshalJSON(data []byte) error {
-	c.data = make(map[string]*unison.ThemeColor, len(CurrentColors))
+	c.data = make(map[string]*unison.ThemeColor, len(FactoryColors))
 	if err := json.Unmarshal(data, &c.data); err != nil {
 		return err
 	}

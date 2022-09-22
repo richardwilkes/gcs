@@ -32,7 +32,7 @@ type NameGeneratorRef struct {
 func AvailableNameGenerators(libraries library.Libraries) []*NameGeneratorRef {
 	var list []*NameGeneratorRef
 	seen := make(map[string]bool)
-	for _, set := range library.ScanForNamedFileSets(embeddedFS, "embedded_data", true, libraries, ".names") {
+	for _, set := range library.ScanForNamedFileSets(embeddedFS, "embedded_data", true, libraries, library.NamesExt) {
 		for _, one := range set.List {
 			if seen[one.Name] {
 				continue

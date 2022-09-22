@@ -15,12 +15,16 @@ import (
 	"context"
 	"io/fs"
 
+	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
+	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
 )
+
+const fontsTypeKey = "theme_fonts"
 
 // Additional fonts over and above what unison provides by default.
 var (
@@ -83,32 +87,88 @@ type Fonts struct {
 	data map[string]unison.FontDescriptor // Just here for serialization
 }
 
+type fontsData struct {
+	Type    string `json:"type"`
+	Version int    `json:"version"`
+	Fonts
+}
+
 // NewFontsFromFS creates a new set of fonts from a file. Any missing values will be filled in with defaults.
 func NewFontsFromFS(fileSystem fs.FS, filePath string) (*Fonts, error) {
-	var f Fonts
-	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &f); err != nil {
+	var current fontsData
+	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &current); err != nil {
+		type oldFont struct {
+			Name  string `json:"name"`
+			Style string `json:"style"`
+			Size  int    `json:"size"`
+		}
+		var old struct {
+			Version  int                 `json:"version"`
+			OldFonts map[string]*oldFont `json:"fonts"`
+		}
+		if err2 := jio.LoadFromFS(context.Background(), fileSystem, filePath, &old); err2 != nil {
+			return nil, err
+		}
+		current.Type = fontsTypeKey
+		current.Version = old.Version
+		if old.Version == 1 {
+			current.data = make(map[string]unison.FontDescriptor, len(FactoryFonts))
+			for _, ff := range FactoryFonts {
+				if f, ok := old.OldFonts[ff.ID]; ok {
+					current.data[ff.ID] = unison.FontDescriptor{
+						Family:  f.Name,
+						Size:    float32(f.Size),
+						Weight:  unison.WeightFromString(f.Style),
+						Spacing: unison.SpacingFromString(f.Style),
+						Slant:   unison.SlantFromString(f.Style),
+					}
+				} else {
+					current.data[ff.ID] = ff.Font.Descriptor()
+				}
+			}
+			current.Version = gid.CurrentDataVersion
+		}
+	}
+	// During development of v5, forgot to add the type & version initially, so try and fix that up
+	if current.Type == "" && current.Version == 0 {
+		current.Type = fontsTypeKey
+		current.Version = gid.CurrentDataVersion
+	}
+	if current.Type != fontsTypeKey {
+		return nil, errs.New(gid.UnexpectedFileDataMsg)
+	}
+	if err := gid.CheckVersion(current.Version); err != nil {
 		return nil, err
 	}
-	return &f, nil
+	return &current.Fonts, nil
 }
 
 // Save writes the Fonts to the file as JSON.
 func (f *Fonts) Save(filePath string) error {
-	return jio.SaveToFile(context.Background(), filePath, f)
+	return jio.SaveToFile(context.Background(), filePath, &fontsData{
+		Type:    fontsTypeKey,
+		Version: gid.CurrentDataVersion,
+		Fonts:   *f,
+	})
 }
 
 // MarshalJSON implements json.Marshaler.
 func (f *Fonts) MarshalJSON() ([]byte, error) {
-	f.data = make(map[string]unison.FontDescriptor, len(CurrentFonts))
-	for _, one := range CurrentFonts {
-		f.data[one.ID] = one.Font.Descriptor()
+	m := make(map[string]bool)
+	for _, one := range FactoryFonts {
+		m[one.ID] = true
+	}
+	for k := range f.data {
+		if _, ok := m[k]; !ok {
+			delete(f.data, k)
+		}
 	}
 	return json.Marshal(&f.data)
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (f *Fonts) UnmarshalJSON(data []byte) error {
-	f.data = make(map[string]unison.FontDescriptor, len(CurrentFonts))
+	f.data = make(map[string]unison.FontDescriptor, len(FactoryFonts))
 	if err := json.Unmarshal(data, &f.data); err != nil {
 		return err
 	}

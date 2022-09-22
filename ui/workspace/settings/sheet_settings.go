@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/paper"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/model/settings/display"
@@ -71,7 +72,7 @@ func ShowSheetSettings(owner widget.EntityPanel) {
 			d.TabTitle = i18n.Text("Default Sheet Settings")
 		}
 		d.TabIcon = res.SettingsSVG
-		d.Extensions = []string{".sheet"}
+		d.Extensions = []string{library.SheetSettingsExt}
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset

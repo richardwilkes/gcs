@@ -6,6 +6,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/attribute"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/res"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
@@ -74,7 +75,7 @@ func ShowAttributeSettings(owner widget.EntityPanel) {
 		d.TabIcon = res.AttributesSVG
 		d.defs.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
 		d.originalCRC = d.defs.CRC64()
-		d.Extensions = []string{".attr", ".attributes", ".gas"}
+		d.Extensions = []string{library.AttributesExt, library.AttributesExtAlt1, library.AttributesExtAlt2}
 		d.undoMgr = unison.NewUndoManager(100, func(err error) { jot.Error(err) })
 		d.Loader = d.load
 		d.Saver = d.save

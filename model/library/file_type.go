@@ -26,17 +26,35 @@ const (
 	OpenFolder   = ".folder-open"
 )
 
-// Known file extensions.
+// Primary GCS file extensions.
 const (
-	TraitsExt             = ".adq"
-	TraitModifiersExt     = ".adm"
 	EquipmentExt          = ".eqp"
 	EquipmentModifiersExt = ".eqm"
+	NotesExt              = ".not"
+	SheetExt              = ".gcs"
 	SkillsExt             = ".skl"
 	SpellsExt             = ".spl"
-	NotesExt              = ".not"
 	TemplatesExt          = ".gct"
-	SheetExt              = ".gcs"
+	TraitModifiersExt     = ".adm"
+	TraitsExt             = ".adq"
+)
+
+// Secondary GCS file extensions (no visible display for these, since you don't open them into a view).
+const (
+	AncestryExt        = ".ancestry"
+	AttributesExt      = ".attr"
+	AttributesExtAlt1  = ".attributes"
+	AttributesExtAlt2  = ".gas"
+	BodyExt            = ".body"
+	BodyExtAlt         = ".ghl"
+	CalendarExt        = ".calendar"
+	ColorSettingsExt   = ".colors"
+	FontSettingsExt    = ".fonts"
+	GeneralSettingsExt = ".general"
+	KeySettingsExt     = ".keys"
+	NamesExt           = ".names"
+	PageRefSettingsExt = ".refs"
+	SheetSettingsExt   = ".sheet"
 )
 
 // FileInfo contains some static information about a given file type.
@@ -100,6 +118,26 @@ func GCSExtensions() []string {
 	}
 	txt.SortStringsNaturalAscending(list)
 	return list
+}
+
+// GCSSecondaryExtensions returns the file extensions that are owned by GCS but are not directly openable file types.
+func GCSSecondaryExtensions() []string {
+	return []string{
+		AncestryExt,
+		AttributesExt,
+		AttributesExtAlt1,
+		AttributesExtAlt2,
+		BodyExt,
+		BodyExtAlt,
+		CalendarExt,
+		ColorSettingsExt,
+		FontSettingsExt,
+		GeneralSettingsExt,
+		KeySettingsExt,
+		NamesExt,
+		PageRefSettingsExt,
+		SheetSettingsExt,
+	}
 }
 
 // RegisteredMimeTypes returns the mime types that we should be able to open.

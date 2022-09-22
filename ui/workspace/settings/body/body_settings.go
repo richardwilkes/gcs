@@ -5,6 +5,7 @@ import (
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/res"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
@@ -62,7 +63,7 @@ func ShowBodySettings(owner widget.EntityPanel) {
 		d.TabIcon = res.BodyTypeSVG
 		d.body.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
 		d.originalCRC = d.body.CRC64()
-		d.Extensions = []string{".body", ".ghl"}
+		d.Extensions = []string{library.BodyExt, library.BodyExtAlt}
 		d.undoMgr = unison.NewUndoManager(100, func(err error) { jot.Error(err) })
 		d.Loader = d.load
 		d.Saver = d.save
