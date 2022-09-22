@@ -32,31 +32,31 @@ import (
 	"github.com/richardwilkes/toolbox/xio/fs/paths"
 )
 
+// See https://developer.gnome.org/documentation/guidelines/maintainer/integrating.html
+
 //go:embed doc-256.png
 var docIconBytes []byte
 
 func performPlatformStartup() {
-	go func() {
-		exePath, err := os.Executable()
-		if err != nil {
-			jot.Error(errs.Wrap(err))
-			return
-		}
-		if filepath.Base(exePath) != cmdline.AppCmdName {
-			jot.Warnf("skipping desktop integration since executable name '%s' is not '%s'", filepath.Base(exePath),
-				cmdline.AppCmdName)
-			return
-		}
-		if err = installIcons(); err != nil {
-			jot.Error(err)
-		}
-		if err = installDesktopFiles(exePath); err != nil {
-			jot.Error(err)
-		}
-		if err = installMimeInfo(); err != nil {
-			jot.Error(err)
-		}
-	}()
+	exePath, err := os.Executable()
+	if err != nil {
+		jot.Error(errs.Wrap(err))
+		return
+	}
+	if filepath.Base(exePath) != cmdline.AppCmdName {
+		jot.Warnf("skipping desktop integration since executable name '%s' is not '%s'", filepath.Base(exePath),
+			cmdline.AppCmdName)
+		return
+	}
+	if err = installIcons(); err != nil {
+		jot.Error(err)
+	}
+	if err = installDesktopFiles(exePath); err != nil {
+		jot.Error(err)
+	}
+	if err = installMimeInfo(); err != nil {
+		jot.Error(err)
+	}
 }
 
 func installDesktopFiles(exePath string) error {
@@ -82,48 +82,34 @@ Terminal=false
 }
 
 func installIcons() error {
-	baseAppImg, _, err := image.Decode(bytes.NewBuffer(AppIconBytes))
-	if err != nil {
-		return errs.Wrap(err)
-	}
-	var docIcon image.Image
-	docIcon, _, err = image.Decode(bytes.NewBuffer(docIconBytes))
-	if err != nil {
-		return errs.Wrap(err)
-	}
 	hicolorDir := filepath.Join(paths.HomeDir(), ".local", "share", "icons", "hicolor")
-	for _, size := range []int{256, 64, 48, 32, 16} {
-		baseDir := filepath.Join(hicolorDir, fmt.Sprintf("%[1]dx%[1]d", size))
-		dir := filepath.Join(baseDir, "apps")
-		if err = os.MkdirAll(dir, 0o750); err != nil {
-			return errs.Wrap(err)
-		}
-		img := baseAppImg
-		if size != img.Bounds().Dx() {
-			img = icon.Scale(img, size, size)
-		}
-		if err = writePNG(filepath.Join(dir, cmdline.AppIdentifier+".png"), img); err != nil {
-			return errs.Wrap(err)
-		}
-		dir = filepath.Join(baseDir, "mimetypes")
-		if err = os.MkdirAll(dir, 0o750); err != nil {
-			return errs.Wrap(err)
-		}
-		for i := range library.KnownFileTypes {
-			if fi := &library.KnownFileTypes[i]; fi.IsGCSData {
-				img = docIcon
-				if size != img.Bounds().Dx() {
-					img = icon.Scale(img, size, size)
-				}
-				var overlay image.Image
-				overlay, err = svglayer.CreateImageFromSVG(fi, size/2)
-				if err != nil {
-					return err
-				}
-				targetPath := filepath.Join(dir, strings.ReplaceAll(fi.MimeTypes[0], "/", "-")+".png")
-				if err = writePNG(targetPath, icon.Stack(img, overlay)); err != nil {
-					return err
-				}
+	baseDir := filepath.Join(hicolorDir, "256x256")
+	dir := filepath.Join(baseDir, "apps")
+	if err := os.MkdirAll(dir, 0o750); err != nil {
+		return errs.Wrap(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, cmdline.AppIdentifier+".png"), AppIconBytes, 0o640); err != nil {
+		return errs.Wrap(err)
+	}
+
+	dir = filepath.Join(baseDir, "mimetypes")
+	if err := os.MkdirAll(dir, 0o750); err != nil {
+		return errs.Wrap(err)
+	}
+	docIcon, _, err := image.Decode(bytes.NewBuffer(docIconBytes))
+	if err != nil {
+		return errs.Wrap(err)
+	}
+	for i := range library.KnownFileTypes {
+		if fi := &library.KnownFileTypes[i]; fi.IsGCSData {
+			var overlay image.Image
+			overlay, err = svglayer.CreateImageFromSVG(fi, 128)
+			if err != nil {
+				return err
+			}
+			targetPath := filepath.Join(dir, strings.ReplaceAll(fi.MimeTypes[0], "/", "-")+".png")
+			if err = writePNG(targetPath, icon.Stack(docIcon, overlay)); err != nil {
+				return err
 			}
 		}
 	}
