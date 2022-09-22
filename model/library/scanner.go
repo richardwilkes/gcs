@@ -12,15 +12,14 @@
 package library
 
 import (
-	"errors"
 	"io/fs"
 	"os"
 	"path"
+	"sort"
 	"strings"
 
-	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
+	"github.com/richardwilkes/toolbox/txt"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 )
 
@@ -65,30 +64,40 @@ func ScanForNamedFileSets(builtIn fs.FS, builtInDir string, omitDuplicateNames b
 }
 
 func scanForNamedFileSets(fileSystem fs.FS, dirPath string, extensions []string, omitDuplicateNames bool, set map[string]bool) []*NamedFileRef {
-	entries, err := fs.ReadDir(fileSystem, dirPath)
-	if err != nil {
-		if !errors.Is(err, fs.ErrNotExist) {
-			jot.Error(errs.Wrap(err))
-		}
-		return nil
+	extMap := make(map[string]bool, len(extensions))
+	for _, ext := range extensions {
+		extMap[strings.ToLower(ext)] = true
 	}
 	list := make([]*NamedFileRef, 0)
-	for _, entry := range entries {
-		name := entry.Name()
-		for _, extension := range extensions {
-			if strings.EqualFold(path.Ext(name), extension) {
-				shortName := xfs.TrimExtension(name)
-				if shortLowerName := strings.ToLower(shortName); !omitDuplicateNames || !set[shortLowerName] {
-					set[shortLowerName] = true
-					list = append(list, &NamedFileRef{
-						Name:       shortName,
-						FileSystem: fileSystem,
-						FilePath:   path.Join(dirPath, name),
-					})
-				}
-				break
+	_ = fs.WalkDir(fileSystem, dirPath, func(p string, d fs.DirEntry, err error) error { //nolint:errcheck // Intentionally ignored the error result
+		if err != nil {
+			return nil
+		}
+		name := d.Name()
+		if strings.HasPrefix(name, ".") {
+			if d.IsDir() {
+				return fs.SkipDir
+			}
+			return nil
+		}
+		if !d.IsDir() && extMap[path.Ext(name)] {
+			shortName := xfs.TrimExtension(name)
+			if shortLowerName := strings.ToLower(shortName); !omitDuplicateNames || !set[shortLowerName] {
+				set[shortLowerName] = true
+				list = append(list, &NamedFileRef{
+					Name:       shortName,
+					FileSystem: fileSystem,
+					FilePath:   p,
+				})
 			}
 		}
-	}
+		return nil
+	})
+	sort.Slice(list, func(i, j int) bool {
+		if list[i].Name == list[j].Name {
+			return txt.NaturalLess(list[i].FilePath, list[j].FilePath, true)
+		}
+		return txt.NaturalLess(list[i].Name, list[j].Name, true)
+	})
 	return list
 }
