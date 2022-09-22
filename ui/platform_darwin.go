@@ -1,5 +1,3 @@
-//go:build !linux
-
 /*
  * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
  *
