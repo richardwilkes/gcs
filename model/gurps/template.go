@@ -71,6 +71,7 @@ func (t *Template) Entity() *Entity {
 
 // Save the Template to a file as JSON.
 func (t *Template) Save(filePath string) error {
+	t.Version = gid.CurrentDataVersion
 	return jio.SaveToFile(context.Background(), filePath, t)
 }
 
