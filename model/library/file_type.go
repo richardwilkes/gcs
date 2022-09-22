@@ -90,6 +90,18 @@ func AcceptableExtensions() []string {
 	return list
 }
 
+// GCSExtensions returns the file extensions that are owned by GCS.
+func GCSExtensions() []string {
+	list := make([]string, 0, len(fileTypeRegistry))
+	for k, v := range fileTypeRegistry {
+		if v.IsGCSData {
+			list = append(list, k)
+		}
+	}
+	txt.SortStringsNaturalAscending(list)
+	return list
+}
+
 // RegisteredMimeTypes returns the mime types that we should be able to open.
 func RegisteredMimeTypes() []string {
 	all := make(map[string]bool)
