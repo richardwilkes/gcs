@@ -248,7 +248,7 @@ func packageWindows() (err error) {
 }
 
 func addWindowsIcon(rs *winres.ResourceSet) error {
-	winIcon, err := winres.NewIconFromImages([]image.Image{icon.Scale(app, 256, 256)})
+	winIcon, err := winres.NewIconFromResizedImage(app, []int{256, 64, 48, 32, 16})
 	if err != nil {
 		return errs.Wrap(err)
 	}
