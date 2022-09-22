@@ -209,7 +209,7 @@ func (d *Dockable) showMenu(b *unison.Button) {
 }
 
 func (d *Dockable) insertFileToLoad(m unison.Menu, id int, ref *library.NamedFileRef) {
-	m.InsertItem(-1, m.Factory().NewItem(id, ref.Name, unison.KeyBinding{}, nil, func(_ unison.MenuItem) {
+	m.InsertItem(-1, m.Factory().NewItem(id, "    "+ref.Name, unison.KeyBinding{}, nil, func(_ unison.MenuItem) {
 		d.doLoad(ref.FileSystem, ref.FilePath)
 	}))
 }
