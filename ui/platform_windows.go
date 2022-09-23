@@ -49,27 +49,21 @@ func configureRegistry() error {
 	if exePath, err = filepath.Abs(exePath); err != nil {
 		return errs.Wrap(err)
 	}
-	if err = setKey(softwareClasses+cmdline.AppIdentifier, "", ""); err != nil {
-		return err
-	}
-	if err = setKey(softwareClasses+cmdline.AppIdentifier+`\Shell`, "", ""); err != nil {
-		return err
-	}
-	if err = setKey(softwareClasses+cmdline.AppIdentifier+`\Shell\Open`, "", ""); err != nil {
-		return err
-	}
-	if err = setKey(softwareClasses+cmdline.AppIdentifier+`\Shell\Open\Command`, "", fmt.Sprintf(`"%s" "%%*"`, exePath)); err != nil {
-		return err
-	}
 	counter := 2
 	for i := range library.KnownFileTypes {
 		if fi := &library.KnownFileTypes[i]; fi.IsGCSData {
 			// Create the entry that points to the app's information for the extension
-			path := softwareClasses + cmdline.AppIdentifier + fi.Extensions[0]
-			if err = setKey(path, "", ""); err != nil {
+			appExtKey := cmdline.AppIdentifier + fi.Extensions[0]
+			if err = setKey(softwareClasses+fi.Extensions[0], "", appExtKey); err != nil {
 				return err
 			}
-			if err = setKey(path, "DefaultIcon", fmt.Sprintf("%s,%d", exePath, counter)); err != nil {
+			counter++
+			// Create the entry for the extension
+			path := softwareClasses + appExtKey
+			if err = setKey(path, "", fi.Name); err != nil {
+				return err
+			}
+			if err = setKey(path+`\DefaultIcon`, "", fmt.Sprintf("%s,%d", exePath, counter)); err != nil {
 				return err
 			}
 			if err = setKey(path+`\Shell`, "", ""); err != nil {
@@ -78,16 +72,7 @@ func configureRegistry() error {
 			if err = setKey(path+`\Shell\Open`, "", ""); err != nil {
 				return err
 			}
-			if err = setKey(path+`\Shell\Open\Command`, "", fmt.Sprintf(`"%s" "%%1" "%%*"`, exePath)); err != nil {
-				return err
-			}
-			// Create the entry that points to the app's information for the extension
-			path = softwareClasses + fi.Extensions[0]
-			if err = setKey(path, "", cmdline.AppIdentifier+fi.Extensions[0]); err != nil {
-				return err
-			}
-			counter++
-			if err = setKey(path, "Content Type", fi.MimeTypes[0]); err != nil {
+			if err = setKey(path+`\Shell\Open\Command`, "", fmt.Sprintf(`"%s" "%%1"`, exePath)); err != nil {
 				return err
 			}
 		}
