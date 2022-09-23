@@ -15,6 +15,9 @@ for arg in "$@"; do
   --dist|-d)
     EXTRA_BUILD_FLAGS="-a -trimpath"
     RELEASE="5.0.0"
+    # Installation of https://github.com/mitchellh/gon is required for macOS distributions to succeed
+    # In addition, XCode 13.4.1 should be used. As of Sept 23, 2022, XCode 14 caused linking problems.
+    PKG_FOR_MACOS=1
     ;;
   --lint | -l) LINT=1 ;;
   --race | -r)
@@ -96,4 +99,33 @@ if [ "$LINT"x == "1x" ]; then
   fi
   echo -e "\033[32mLinting...\033[0m"
   $TOOLS_DIR/golangci-lint run
+fi
+
+# Package for macOS
+if [ "$PKG_FOR_MACOS"x == "1x" ]; then
+  echo -e "\033[32mPackaging into disk image...\033[0m"
+  if [ "$(uname -m)" == "x86_64" ]; then
+    HW=intel
+  else
+    HW=apple
+  fi
+  cat > gon.json <<BLOCK
+{
+  "source": ["./GCS.app"],
+  "bundle_id": "com.trollworks.gcs",
+  "apple_id": {
+    "username": "wilkes@me.com",
+    "password": "@keychain:gcs_app_pw"
+  },
+  "sign": {
+    "application_identity": "Richard Wilkes"
+  },
+  "dmg": {
+    "output_path": "GCS-${RELEASE}-${HW}.dmg",
+    "volume_name": "GCS v${RELEASE}"
+  }
+}
+BLOCK
+  gon gon.json
+  /bin/rm gon.json
 fi
