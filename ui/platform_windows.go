@@ -12,15 +12,21 @@
 package ui
 
 import (
+	"bytes"
 	"fmt"
+	"image"
 	"os"
 	"path/filepath"
 	"syscall"
 
 	"github.com/richardwilkes/gcs/v5/model/library"
+	"github.com/richardwilkes/gcs/v5/ui/svglayer"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/formats/icon"
+	"github.com/richardwilkes/toolbox/formats/icon/ico"
 	"github.com/richardwilkes/toolbox/log/jot"
+	"github.com/richardwilkes/toolbox/xio/fs/paths"
 	"golang.org/x/sys/windows/registry"
 )
 
@@ -49,21 +55,34 @@ func configureRegistry() error {
 	if exePath, err = filepath.Abs(exePath); err != nil {
 		return errs.Wrap(err)
 	}
-	counter := 2
+	var docBaseIcon image.Image
+	if docBaseIcon, _, err = image.Decode(bytes.NewBuffer(docIconBytes)); err != nil {
+		return errs.Wrap(err)
+	}
 	for i := range library.KnownFileTypes {
 		if fi := &library.KnownFileTypes[i]; fi.IsGCSData {
+			// Create the doc icon
+			var overlay image.Image
+			if overlay, err = svglayer.CreateImageFromSVG(fi, 128); err != nil {
+				return err
+			}
+			docPath := filepath.Join(paths.AppDataDir(), fi.Extensions[0][1:]+".ico")
+			if err = writeIco(icon.Stack(docBaseIcon, overlay), docPath); err != nil {
+				return err
+			}
+
 			// Create the entry that points to the app's information for the extension
 			appExtKey := cmdline.AppIdentifier + fi.Extensions[0]
 			if err = setKey(softwareClasses+fi.Extensions[0], "", appExtKey); err != nil {
 				return err
 			}
-			counter++
+
 			// Create the entry for the extension
 			path := softwareClasses + appExtKey
 			if err = setKey(path, "", fi.Name); err != nil {
 				return err
 			}
-			if err = setKey(path+`\DefaultIcon`, "", fmt.Sprintf("%s,%s", exePath, fi.Extensions[0][1:])); err != nil {
+			if err = setKey(path+`\DefaultIcon`, "", docPath); err != nil {
 				return err
 			}
 			if err = setKey(path+`\Shell`, "", ""); err != nil {
@@ -79,6 +98,20 @@ func configureRegistry() error {
 	}
 	shChangeNotifyProc.Call(shcneAssocChanged, shcfnIDlist, 0, 0)
 	return nil
+}
+
+func writeIco(img image.Image, path string) (err error) {
+	var f *os.File
+	if f, err = os.Create(path); err != nil {
+		return errs.Wrap(err)
+	}
+	defer func() {
+		if cerr := f.Close(); cerr != nil && err == nil {
+			err = errs.Wrap(cerr)
+		}
+	}()
+	err = errs.Wrap(ico.Encode(f, img))
+	return
 }
 
 func setKey(path, name, value string) error {

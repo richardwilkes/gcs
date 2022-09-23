@@ -32,6 +32,9 @@ var AppDescription = i18n.Text("GURPS Character Sheet is an interactive characte
 //go:embed app-256.png
 var AppIconBytes []byte
 
+//go:embed doc-256.png
+var docIconBytes []byte
+
 // Start the UI.
 func Start(files []string) {
 	libs := settings.Global().LibrarySet

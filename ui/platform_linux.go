@@ -34,9 +34,6 @@ import (
 
 // See https://developer.gnome.org/documentation/guidelines/maintainer/integrating.html
 
-//go:embed doc-256.png
-var docIconBytes []byte
-
 func performPlatformStartup() {
 	exePath, err := os.Executable()
 	if err != nil {
