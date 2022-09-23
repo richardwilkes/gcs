@@ -13,6 +13,7 @@ package ui
 
 import (
 	"bytes"
+	_ "embed"
 	"fmt"
 	"image"
 	"os"
@@ -34,6 +35,9 @@ const (
 	shcneAssocChanged = 0x08000000
 	shcfnIDlist       = 0
 )
+
+//go:embed doc-256.png
+var docIconBytes []byte
 
 var (
 	shell32            = syscall.NewLazyDLL("shell32.dll")

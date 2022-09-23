@@ -27,13 +27,8 @@ import (
 // AppDescription of the software
 var AppDescription = i18n.Text("GURPS Character Sheet is an interactive character sheet editor for the GURPS Fourth Edition roleplaying game.")
 
-// AppIconBytes holds the GCS application icon in a 256x256 format
-//
 //go:embed app-256.png
-var AppIconBytes []byte
-
-//go:embed doc-256.png
-var docIconBytes []byte
+var appIconBytes []byte
 
 // Start the UI.
 func Start(files []string) {
@@ -42,7 +37,7 @@ func Start(files []string) {
 	unison.Start(
 		unison.StartupFinishedCallback(func() {
 			performPlatformStartup()
-			if appIcon, err := unison.NewImageFromBytes(AppIconBytes, 0.5); err != nil {
+			if appIcon, err := unison.NewImageFromBytes(appIconBytes, 0.5); err != nil {
 				jot.Error(err)
 			} else {
 				unison.DefaultTitleIcons = []*unison.Image{appIcon}
