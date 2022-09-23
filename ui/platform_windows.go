@@ -63,7 +63,7 @@ func configureRegistry() error {
 			if err = setKey(path, "", fi.Name); err != nil {
 				return err
 			}
-			if err = setKey(path+`\DefaultIcon`, "", fmt.Sprintf("%s,%d", exePath, counter)); err != nil {
+			if err = setKey(path+`\DefaultIcon`, "", fmt.Sprintf("%s,%s", exePath, fi.Extensions[0][1:])); err != nil {
 				return err
 			}
 			if err = setKey(path+`\Shell`, "", ""); err != nil {
