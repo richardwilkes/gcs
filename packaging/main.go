@@ -252,10 +252,10 @@ func addWindowsIcon(rs *winres.ResourceSet) error {
 	if err != nil {
 		return errs.Wrap(err)
 	}
-	if err = rs.SetIconTranslation(winres.ID(0), 0, winIcon); err != nil {
+	if err = rs.SetIconTranslation(winres.ID(1), 0, winIcon); err != nil {
 		return errs.Wrap(err)
 	}
-	counter := 1
+	counter := 2
 	for i := range library.KnownFileTypes {
 		if fi := &library.KnownFileTypes[i]; fi.IsGCSData {
 			var overlay image.Image

@@ -61,7 +61,7 @@ func configureRegistry() error {
 	if err = setKey(softwareClasses+cmdline.AppIdentifier+`\Shell\Open\Command`, "", fmt.Sprintf(`"%s" "%%*"`, exePath)); err != nil {
 		return err
 	}
-	counter := 1
+	counter := 2
 	for i := range library.KnownFileTypes {
 		if fi := &library.KnownFileTypes[i]; fi.IsGCSData {
 			// Create the entry that points to the app's information for the extension
