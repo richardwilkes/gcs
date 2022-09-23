@@ -78,7 +78,7 @@ func configureRegistry() error {
 			if err = setKey(path+`\Shell\Open`, "", ""); err != nil {
 				return err
 			}
-			if err = setKey(path+`\Shell\Open\Command`, "", fmt.Sprintf(`"%s" "%%*"`, exePath)); err != nil {
+			if err = setKey(path+`\Shell\Open\Command`, "", fmt.Sprintf(`"%s" "%%1" "%%*"`, exePath)); err != nil {
 				return err
 			}
 			// Create the entry that points to the app's information for the extension
