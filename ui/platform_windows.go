@@ -65,11 +65,25 @@ func configureRegistry() error {
 	for i := range library.KnownFileTypes {
 		if fi := &library.KnownFileTypes[i]; fi.IsGCSData {
 			// Create the entry that points to the app's information for the extension
-			path := softwareClasses + fi.Extensions[0]
-			if err = setKey(path, "", cmdline.AppIdentifier); err != nil {
+			path := softwareClasses + cmdline.AppIdentifier + fi.Extensions[0]
+			if err = setKey(path, "", ""); err != nil {
 				return err
 			}
 			if err = setKey(path, "DefaultIcon", fmt.Sprintf("%s,%d", exePath, counter)); err != nil {
+				return err
+			}
+			if err = setKey(path+`\Shell`, "", ""); err != nil {
+				return err
+			}
+			if err = setKey(path+`\Shell\Open`, "", ""); err != nil {
+				return err
+			}
+			if err = setKey(path+`\Shell\Open\Command`, "", fmt.Sprintf(`"%s" "%%*"`, exePath)); err != nil {
+				return err
+			}
+			// Create the entry that points to the app's information for the extension
+			path = softwareClasses + fi.Extensions[0]
+			if err = setKey(path, "", cmdline.AppIdentifier+fi.Extensions[0]); err != nil {
 				return err
 			}
 			counter++
@@ -83,12 +97,6 @@ func configureRegistry() error {
 }
 
 func setKey(path, name, value string) error {
-	// if err  := registry.DeleteKey(registry.CURRENT_USER, path); err != nil {
-	// 	var e *syscall.Errno
-	// 	if !errors.As(err, &e) || *e != registry.ErrNotExist {
-	// 		return errs.Wrap(err)
-	// 	}
-	// }
 	k, _, err := registry.CreateKey(registry.CURRENT_USER, path, registry.READ|registry.WRITE)
 	if err != nil {
 		return errs.Wrap(err)
