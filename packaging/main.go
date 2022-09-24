@@ -25,6 +25,7 @@ import (
 	"runtime"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/setup/early"
@@ -71,18 +72,10 @@ func main() {
 }
 
 func compress() (err error) {
-	var binary, platform string
-	switch runtime.GOOS {
-	case toolbox.WindowsOS:
-		binary = "gcs.exe"
-		platform = "windows"
-	case toolbox.LinuxOS:
-		binary = "gcs"
-		platform = "linux"
-	default:
+	if runtime.GOOS != toolbox.WindowsOS {
 		return errs.New("not valid for this OS")
 	}
-	name := fmt.Sprintf("%s-%s-%s.zip", binary, cmdline.AppVersion, platform)
+	name := fmt.Sprintf("gcs-%s-windows.zip", cmdline.AppVersion)
 	if err = os.Remove(name); err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return errs.Wrap(err)
 	}
@@ -98,12 +91,18 @@ func compress() (err error) {
 	}()
 	zw := zip.NewWriter(f)
 	var fw io.Writer
-	if fw, err = zw.Create(binary); err != nil {
+	hdr := &zip.FileHeader{
+		Name:     "gcs.exe",
+		Method:   zip.Deflate,
+		Modified: time.Now(),
+	}
+	hdr.SetMode(0o755)
+	if fw, err = zw.CreateHeader(hdr); err != nil {
 		err = errs.Wrap(err)
 		return
 	}
 	var in *os.File
-	if in, err = os.Open(binary); err != nil {
+	if in, err = os.Open("gcs.exe"); err != nil {
 		err = errs.Wrap(err)
 		return
 	}

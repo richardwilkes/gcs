@@ -132,7 +132,11 @@ BLOCK
     gon gon.json
     /bin/rm gon.json
     ;;
-  *)
+  Linux*)
+    /bin/rm -f gcs-${RELEASE}-linux.tgz
+    tar czf gcs-${RELEASE}-linux.tgz gcs
+    ;;
+  MINGW*)
     go run $STD_FLAGS -ldflags all="$LDFLAGS_ALL" packaging/main.go -z
     ;;
   esac
