@@ -137,7 +137,7 @@ BLOCK
     tar czf gcs-${RELEASE}-linux.tgz gcs
     ;;
   MINGW*)
-    go run $STD_FLAGS -ldflags all="$LDFLAGS_ALL" packaging/main.go -z
+    go run -ldflags all="$LDFLAGS_ALL" packaging/main.go -z
     ;;
   esac
 fi
