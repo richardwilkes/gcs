@@ -132,17 +132,8 @@ BLOCK
     gon gon.json
     /bin/rm gon.json
     ;;
-  Linux*)
-    /bin/rm -f gcs-${RELEASE}-linux.zip
-    zip -9 gcs-${RELEASE}-linux.zip gcs
-    ;;
-  MINGW*)
-    /bin/rm -f gcs-${RELEASE}-windows.zip
-    zip -9 gcs-${RELEASE}-windows.zip gcs
-    ;;
   *)
-    echo "Unsupported OS"
-    false
+    go run $STD_FLAGS -ldflags all="$LDFLAGS_ALL" packaging/main.go -z
     ;;
   esac
 fi

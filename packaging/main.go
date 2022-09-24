@@ -12,11 +12,14 @@
 package main
 
 import (
+	"archive/zip"
 	"bytes"
 	_ "embed"
 	"errors"
 	"fmt"
 	"image"
+	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -36,6 +39,7 @@ import (
 	"github.com/richardwilkes/toolbox/formats/icon"
 	"github.com/richardwilkes/toolbox/formats/icon/icns"
 	"github.com/richardwilkes/toolbox/log/jot"
+	"github.com/richardwilkes/toolbox/xio"
 	"github.com/tc-hib/winres"
 	"github.com/tc-hib/winres/version"
 )
@@ -49,17 +53,67 @@ var docImgBytes []byte
 var doc image.Image
 
 func main() {
-	early.Configure()
-	jot.FatalIfErr(loadBaseImages())
-	external.RegisterFileTypes()
-	lists.RegisterFileTypes()
-	switch runtime.GOOS {
-	case toolbox.MacOS:
-		jot.FatalIfErr(packageMacOS())
-	case toolbox.WindowsOS:
-		jot.FatalIfErr(packageWindows())
+	if len(os.Args) > 1 && os.Args[1] == "-z" {
+		jot.FatalIfErr(compress())
+	} else {
+		early.Configure()
+		jot.FatalIfErr(loadBaseImages())
+		external.RegisterFileTypes()
+		lists.RegisterFileTypes()
+		switch runtime.GOOS {
+		case toolbox.MacOS:
+			jot.FatalIfErr(packageMacOS())
+		case toolbox.WindowsOS:
+			jot.FatalIfErr(packageWindows())
+		}
 	}
 	atexit.Exit(0)
+}
+
+func compress() (err error) {
+	var binary, platform string
+	switch runtime.GOOS {
+	case toolbox.WindowsOS:
+		binary = "gcs.exe"
+		platform = "windows"
+	case toolbox.LinuxOS:
+		binary = "gcs"
+		platform = "linux"
+	default:
+		return errs.New("not valid for this OS")
+	}
+	name := fmt.Sprintf("%s-%s-%s.zip", binary, cmdline.AppVersion, platform)
+	if err = os.Remove(name); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return errs.Wrap(err)
+	}
+	var f *os.File
+	f, err = os.Create(name)
+	if err != nil {
+		return errs.Wrap(err)
+	}
+	defer func() {
+		if cerr := f.Close(); cerr != nil && err == nil {
+			err = errs.Wrap(cerr)
+		}
+	}()
+	zw := zip.NewWriter(f)
+	var fw io.Writer
+	if fw, err = zw.Create(binary); err != nil {
+		err = errs.Wrap(err)
+		return
+	}
+	var in *os.File
+	if in, err = os.Open(binary); err != nil {
+		err = errs.Wrap(err)
+		return
+	}
+	defer xio.CloseIgnoringErrors(in)
+	if _, err = io.Copy(fw, in); err != nil {
+		err = errs.Wrap(err)
+		return
+	}
+	err = errs.Wrap(zw.Close())
+	return
 }
 
 func loadBaseImages() error {
