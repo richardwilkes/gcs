@@ -8,7 +8,7 @@ require (
 	github.com/richardwilkes/pdf v1.20.3
 	github.com/richardwilkes/rpgtools v1.4.2
 	github.com/richardwilkes/toolbox v1.74.1
-	github.com/richardwilkes/unison v0.33.1
+	github.com/richardwilkes/unison v0.33.2-0.20220925013122-e069566f25cb
 	github.com/rjeczalik/notify v0.9.2
 	github.com/srwiley/oksvg v0.0.0-20220904191616-8889df18e8f4
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef
