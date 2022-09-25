@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/res"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/gcs/v5/ui/widget/ntable"
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
@@ -115,7 +116,22 @@ func (p *skillsProvider) DropShouldMoveData(from, to *unison.Table[*ntable.Node[
 	return from == to
 }
 
-func (p *skillsProvider) ProcessDropData(_, _ *unison.Table[*ntable.Node[*gurps.Skill]]) {
+func (p *skillsProvider) ProcessDropData(_, to *unison.Table[*ntable.Node[*gurps.Skill]]) {
+	entityProvider := unison.Ancestor[gurps.EntityProvider](to)
+	if !toolbox.IsNil(entityProvider) {
+		entity := entityProvider.Entity()
+		if entity != nil {
+			for _, row := range to.SelectedRows(true) {
+				gurps.Traverse(func(skill *gurps.Skill) bool {
+					if skill.TechLevel != nil && *skill.TechLevel == "" {
+						tl := entity.Profile.TechLevel
+						skill.TechLevel = &tl
+					}
+					return false
+				}, false, true, row.Data())
+			}
+		}
+	}
 }
 
 func (p *skillsProvider) ItemNames() (singular, plural string) {
