@@ -31,9 +31,9 @@ type StringField struct {
 
 // NewMultiLineStringField creates a new field for editing a string.
 func NewMultiLineStringField(targetMgr *TargetMgr, targetKey, undoTitle string, get func() string, set func(string)) *StringField {
-	f := newStringField(unison.NewMultiLineField(), targetMgr, targetKey, undoTitle, get, set)
+	f := unison.NewMultiLineField()
 	f.SetWrap(true)
-	return f
+	return newStringField(f, targetMgr, targetKey, undoTitle, get, set)
 }
 
 // NewStringField creates a new field for editing a string.
