@@ -32,6 +32,8 @@ var appIconBytes []byte
 
 // Start the UI.
 func Start(files []string) {
+	pathsChan := make(chan []string, 32)
+	startHandoffService(pathsChan, files)
 	libs := settings.Global().LibrarySet
 	go libs.PerformUpdateChecks()
 	unison.Start(
@@ -48,6 +50,12 @@ func Start(files []string) {
 			menus.Setup(wnd)
 			workspace.NewWorkspace(wnd)
 			workspace.OpenFiles(files)
+			go func() {
+				for paths := range pathsChan {
+					wnd.ToFront()
+					unison.InvokeTask(func() { workspace.OpenFiles(paths) })
+				}
+			}()
 		}),
 		unison.OpenFilesCallback(workspace.OpenFiles),
 		unison.AllowQuitCallback(func() bool {
