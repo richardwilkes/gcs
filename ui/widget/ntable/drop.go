@@ -60,11 +60,13 @@ func didDropCallback[T gurps.NodeTypes](undo *unison.UndoEdit[*TableDragUndoEdit
 	}
 	entityProvider := unison.Ancestor[gurps.EntityProvider](to)
 	if !toolbox.IsNil(entityProvider) && entityProvider.Entity() != nil {
-		if rebuilder := unison.Ancestor[widget.Rebuildable](to); rebuilder != nil {
-			rebuilder.Rebuild(true)
+		if entityProvider != unison.Ancestor[gurps.EntityProvider](from) {
+			if rebuilder := unison.Ancestor[widget.Rebuildable](to); rebuilder != nil {
+				rebuilder.Rebuild(true)
+			}
+			ProcessModifiersForSelection(to)
+			ProcessNameablesForSelection(to)
 		}
-		ProcessModifiersForSelection(to)
-		ProcessNameablesForSelection(to)
 	}
 	if undo == nil {
 		return
