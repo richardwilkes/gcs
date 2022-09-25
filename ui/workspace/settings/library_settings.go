@@ -19,6 +19,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/res"
@@ -170,6 +171,16 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 	wrapper.AddChild(locateButton)
 
 	content.AddChild(wrapper)
+
+	content.AddChild(unison.NewPanel())
+	info := unison.NewLabel()
+	info.Text = i18n.Text("Once configured, the repository specified above will be scanned for release tags")
+	info.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: unison.StdVSpacing * 2}))
+	content.AddChild(info)
+	content.AddChild(unison.NewPanel())
+	info = unison.NewLabel()
+	info.Text = fmt.Sprintf(i18n.Text(`in the form "v%d.x.y" through "v%d.x.y", where x and y can be any numeric value.`), gid.MinimumLibraryVersion, gid.CurrentDataVersion)
+	content.AddChild(info)
 }
 
 func (d *librarySettingsDockable) checkForSpecial() bool {
