@@ -144,6 +144,10 @@ func (p *spellsProvider) ProcessDropData(_, to *unison.Table[*ntable.Node[*gurps
 	}
 }
 
+func (p *spellsProvider) AltDropSupport() *ntable.AltDropSupport {
+	return nil
+}
+
 func (p *spellsProvider) ItemNames() (singular, plural string) {
 	return i18n.Text("Spell"), i18n.Text("Spells")
 }

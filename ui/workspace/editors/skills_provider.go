@@ -134,6 +134,10 @@ func (p *skillsProvider) ProcessDropData(_, to *unison.Table[*ntable.Node[*gurps
 	}
 }
 
+func (p *skillsProvider) AltDropSupport() *ntable.AltDropSupport {
+	return nil
+}
+
 func (p *skillsProvider) ItemNames() (singular, plural string) {
 	return i18n.Text("Skill"), i18n.Text("Skills")
 }

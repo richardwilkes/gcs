@@ -9,20 +9,30 @@ import (
 
 // ProcessModifiersForSelection processes the selected rows for modifiers that can be toggled on or off.
 func ProcessModifiersForSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
-	for _, row := range table.SelectedRows(true) {
+	rows := table.SelectedRows(true)
+	data := make([]T, 0, len(rows))
+	for _, row := range rows {
+		data = append(data, row.Data())
+	}
+	ProcessModifiers(table, data)
+}
+
+// ProcessModifiers processes the rows for modifiers that can be toggled on or off.
+func ProcessModifiers[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
+	for _, row := range rows {
 		gurps.Traverse(func(row T) bool {
 			switch t := (any(row)).(type) {
 			case *gurps.Trait:
 				if processModifiers(t.Modifiers) {
-					unison.Ancestor[widget.Rebuildable](table).Rebuild(true)
+					unison.Ancestor[widget.Rebuildable](owner).Rebuild(true)
 				}
 			case *gurps.Equipment:
 				if processModifiers(t.Modifiers) {
-					unison.Ancestor[widget.Rebuildable](table).Rebuild(true)
+					unison.Ancestor[widget.Rebuildable](owner).Rebuild(true)
 				}
 			}
 			return false
-		}, false, false, row.Data())
+		}, false, false, row)
 	}
 }
 

@@ -111,6 +111,10 @@ func (p *eqpModProvider) DropShouldMoveData(from, to *unison.Table[*ntable.Node[
 func (p *eqpModProvider) ProcessDropData(_, _ *unison.Table[*ntable.Node[*gurps.EquipmentModifier]]) {
 }
 
+func (p *eqpModProvider) AltDropSupport() *ntable.AltDropSupport {
+	return nil
+}
+
 func (p *eqpModProvider) ItemNames() (singular, plural string) {
 	return i18n.Text("Equipment Modifier"), i18n.Text("Equipment Modifiers")
 }

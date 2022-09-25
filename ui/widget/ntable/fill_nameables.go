@@ -10,20 +10,30 @@ import (
 
 // ProcessNameablesForSelection processes the selected rows and their children for any nameables.
 func ProcessNameablesForSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
-	var rows []T
+	rows := table.SelectedRows(true)
+	data := make([]T, 0, len(rows))
+	for _, row := range rows {
+		data = append(data, row.Data())
+	}
+	ProcessNameables(table, data)
+}
+
+// ProcessNameables processes the rows and their children for any nameables.
+func ProcessNameables[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
+	var data []T
 	var nameables []map[string]string
-	for _, row := range table.SelectedRows(true) {
+	for _, row := range rows {
 		gurps.Traverse(func(row T) bool {
 			m := make(map[string]string)
 			gurps.AsNode(row).FillWithNameableKeys(m)
 			if len(m) > 0 {
-				rows = append(rows, row)
+				data = append(data, row)
 				nameables = append(nameables, m)
 			}
 			return false
-		}, false, false, row.Data())
+		}, false, false, row)
 	}
-	if len(rows) > 0 {
+	if len(data) > 0 {
 		list := unison.NewPanel()
 		list.SetBorder(unison.NewEmptyBorder(unison.NewUniformInsets(unison.StdHSpacing)))
 		list.SetLayout(&unison.FlexLayout{
@@ -31,7 +41,7 @@ func ProcessNameablesForSelection[T gurps.NodeTypes](table *unison.Table[*Node[T
 			HSpacing: unison.StdHSpacing,
 			VSpacing: unison.StdVSpacing,
 		})
-		for i := range rows {
+		for i := range data {
 			keys := make([]string, 0, len(nameables[i]))
 			for k := range nameables[i] {
 				keys = append(keys, k)
@@ -81,10 +91,10 @@ func ProcessNameablesForSelection[T gurps.NodeTypes](table *unison.Table[*Node[T
 		panel.AddChild(label)
 		panel.AddChild(scroll)
 		if unison.QuestionDialogWithPanel(panel) == unison.ModalResponseOK {
-			for i, row := range rows {
+			for i, row := range data {
 				gurps.AsNode(row).ApplyNameableKeys(nameables[i])
 			}
-			unison.Ancestor[widget.Rebuildable](table).Rebuild(true)
+			unison.Ancestor[widget.Rebuildable](owner).Rebuild(true)
 		}
 	}
 }

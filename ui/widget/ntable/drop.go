@@ -21,6 +21,13 @@ import (
 
 const tableProviderClientKey = "table-provider"
 
+// AltDropSupport holds handlers for supporting an alternate drop type that drops onto a specific row, rather than
+// moving or adding rows.
+type AltDropSupport struct {
+	DragKey string
+	Drop    func(rowIndex int, data any)
+}
+
 // InstallTableDropSupport installs our standard drop support on a table.
 func InstallTableDropSupport[T gurps.NodeTypes](table *unison.Table[*Node[T]], provider TableProvider[T]) {
 	table.ClientData()[tableProviderClientKey] = provider
@@ -30,6 +37,46 @@ func InstallTableDropSupport[T gurps.NodeTypes](table *unison.Table[*Node[T]], p
 	table.DropOccurredCallback = func() {
 		widget.MarkModified(table)
 		table.RequestFocus()
+	}
+	if altDropSupport := provider.AltDropSupport(); altDropSupport != nil {
+		originalDataDragOverCallback := table.DataDragOverCallback
+		originalDataDragExitCallback := table.DataDragExitCallback
+		originalDataDragDropCallback := table.DataDragDropCallback
+		originalDrawOverCallback := table.DrawOverCallback
+		altDropRowIndex := -1
+		table.DataDragOverCallback = func(where unison.Point, data map[string]any) bool {
+			if _, ok := data[altDropSupport.DragKey]; ok {
+				altDropRowIndex = table.OverRow(where.Y)
+				return altDropRowIndex != -1
+			}
+			return originalDataDragOverCallback(where, data)
+		}
+		table.DataDragExitCallback = func() {
+			altDropRowIndex = -1
+			originalDataDragExitCallback()
+		}
+		table.DataDragDropCallback = func(where unison.Point, data map[string]any) {
+			if altDropRowIndex != -1 {
+				if dd, ok := data[altDropSupport.DragKey]; ok {
+					undo := willDropCallback(nil, table, false)
+					altDropSupport.Drop(altDropRowIndex, dd)
+					finishDidDrop(undo, nil, table, false)
+				}
+				altDropRowIndex = -1
+				table.MarkForRedraw()
+			} else {
+				originalDataDragDropCallback(where, data)
+			}
+		}
+		table.DrawOverCallback = func(gc *unison.Canvas, rect unison.Rect) {
+			originalDrawOverCallback(gc, rect)
+			if altDropRowIndex > -1 && altDropRowIndex <= table.LastRowIndex() {
+				frame := table.RowFrame(altDropRowIndex)
+				paint := unison.DropAreaColor.Paint(gc, frame, unison.Fill)
+				paint.SetColorFilter(unison.Alpha30Filter())
+				gc.DrawRect(frame, paint)
+			}
+		}
 	}
 }
 
@@ -68,6 +115,10 @@ func didDropCallback[T gurps.NodeTypes](undo *unison.UndoEdit[*TableDragUndoEdit
 			ProcessNameablesForSelection(to)
 		}
 	}
+	finishDidDrop(undo, from, to, move)
+}
+
+func finishDidDrop[T gurps.NodeTypes](undo *unison.UndoEdit[*TableDragUndoEditData[T]], from, to *unison.Table[*Node[T]], move bool) {
 	if undo == nil {
 		return
 	}

@@ -49,6 +49,7 @@ type TableProvider[T gurps.NodeTypes] interface {
 	DragSVG() *unison.SVG
 	DropShouldMoveData(from, to *unison.Table[*Node[T]]) bool
 	ProcessDropData(from, to *unison.Table[*Node[T]])
+	AltDropSupport() *AltDropSupport
 	ItemNames() (singular, plural string)
 	Headers() []unison.TableColumnHeader[*Node[T]]
 	SyncHeader(headers []unison.TableColumnHeader[*Node[T]])

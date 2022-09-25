@@ -149,6 +149,10 @@ func (p *weaponsProvider) DropShouldMoveData(from, to *unison.Table[*ntable.Node
 func (p *weaponsProvider) ProcessDropData(_, _ *unison.Table[*ntable.Node[*gurps.Weapon]]) {
 }
 
+func (p *weaponsProvider) AltDropSupport() *ntable.AltDropSupport {
+	return nil
+}
+
 func (p *weaponsProvider) ItemNames() (singular, plural string) {
 	return p.weaponType.String(), p.weaponType.AltString()
 }

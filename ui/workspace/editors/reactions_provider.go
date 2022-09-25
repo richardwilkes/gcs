@@ -89,6 +89,10 @@ func (p *reactionModProvider) DropShouldMoveData(_, _ *unison.Table[*ntable.Node
 func (p *reactionModProvider) ProcessDropData(_, _ *unison.Table[*ntable.Node[*gurps.ConditionalModifier]]) {
 }
 
+func (p *reactionModProvider) AltDropSupport() *ntable.AltDropSupport {
+	return nil
+}
+
 func (p *reactionModProvider) ItemNames() (singular, plural string) {
 	return i18n.Text("Reaction Modifier"), i18n.Text("Reaction Modifiers")
 }

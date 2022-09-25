@@ -158,6 +158,31 @@ func (p *equipmentProvider) ProcessDropData(from, to *unison.Table[*ntable.Node[
 	}
 }
 
+func (p *equipmentProvider) AltDropSupport() *ntable.AltDropSupport {
+	return &ntable.AltDropSupport{
+		DragKey: gid.EquipmentModifier,
+		Drop: func(rowIndex int, data any) {
+			if tableDragData, ok := data.(*unison.TableDragData[*ntable.Node[*gurps.EquipmentModifier]]); ok {
+				entity := p.Entity()
+				rows := make([]*gurps.EquipmentModifier, 0, len(tableDragData.Rows))
+				for _, row := range tableDragData.Rows {
+					rows = append(rows, row.Data().Clone(entity, nil, false))
+				}
+				rowData := p.table.RowFromIndex(rowIndex).Data()
+				rowData.Modifiers = append(rowData.Modifiers, rows...)
+				p.table.SyncToModel()
+				if entity != nil {
+					if rebuilder := unison.Ancestor[widget.Rebuildable](p.table); rebuilder != nil {
+						rebuilder.Rebuild(true)
+					}
+					ntable.ProcessModifiers(p.table, rows)
+					ntable.ProcessNameables(p.table, rows)
+				}
+			}
+		},
+	}
+}
+
 func (p *equipmentProvider) ItemNames() (singular, plural string) {
 	return i18n.Text("Equipment Item"), i18n.Text("Equipment Items")
 }
