@@ -21,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -147,49 +148,19 @@ type colorsData struct {
 func NewColorsFromFS(fileSystem fs.FS, filePath string) (*Colors, error) {
 	var current colorsData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &current); err != nil {
-		var old struct {
-			Version   int               `json:"version"`
-			OldColors map[string]string `json:"colors"`
-		}
-		if err2 := jio.LoadFromFS(context.Background(), fileSystem, filePath, &old); err2 != nil {
-			return nil, err
-		}
-		current.Type = colorsTypeKey
-		current.Version = old.Version
-		if old.Version == 1 {
-			current.data = make(map[string]*unison.ThemeColor, len(FactoryColors))
-			for _, fc := range FactoryColors {
-				current.data[fc.ID] = fc.Color
-				if c, ok := old.OldColors[fc.ID]; ok {
-					var clr unison.Color
-					if clr, err = unison.ColorDecode(c); err != nil {
-						if clr, err = unison.ColorDecode("rgb(" + c + ")"); err != nil {
-							lastComma := strings.LastIndexByte(c, ',')
-							if lastComma == -1 {
-								continue
-							}
-							var v int
-							if v, err = strconv.Atoi(c[lastComma+1:]); err != nil {
-								continue
-							}
-							if clr, err = unison.ColorDecode(fmt.Sprintf("rgba(%s,%f)", c[:lastComma], float32(v)/255)); err != nil {
-								continue
-							}
-						}
-					}
-					current.data[fc.ID] = &unison.ThemeColor{
-						Light: clr,
-						Dark:  clr,
-					}
-				}
-			}
+		return nil, errs.Wrap(err)
+	}
+	switch current.Version {
+	case 0:
+		// During development of v5, forgot to add the type & version initially, so try and fix that up
+		if current.Type == "" {
+			current.Type = colorsTypeKey
 			current.Version = gid.CurrentDataVersion
 		}
-	}
-	// During development of v5, forgot to add the type & version initially, so try and fix that up
-	if current.Type == "" && current.Version == 0 {
+	case 1:
 		current.Type = colorsTypeKey
 		current.Version = gid.CurrentDataVersion
+	default:
 	}
 	if current.Type != colorsTypeKey {
 		return nil, errs.New(gid.UnexpectedFileDataMsg)
@@ -211,27 +182,60 @@ func (c *Colors) Save(filePath string) error {
 
 // MarshalJSON implements json.Marshaler.
 func (c *Colors) MarshalJSON() ([]byte, error) {
-	m := make(map[string]bool)
-	for _, one := range FactoryColors {
-		m[one.ID] = true
-	}
-	for k := range c.data {
-		if _, ok := m[k]; !ok {
-			delete(c.data, k)
-		}
+	c.data = make(map[string]*unison.ThemeColor, len(CurrentColors))
+	for _, one := range CurrentColors {
+		c.data[one.ID] = one.Color
 	}
 	return json.Marshal(&c.data)
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (c *Colors) UnmarshalJSON(data []byte) error {
-	c.data = make(map[string]*unison.ThemeColor, len(FactoryColors))
-	if err := json.Unmarshal(data, &c.data); err != nil {
-		return err
+	c.data = make(map[string]*unison.ThemeColor, len(CurrentColors))
+	var err error
+	toolbox.CallWithHandler(func() {
+		err = json.Unmarshal(data, &c.data)
+	}, func(e error) {
+		err = e
+	})
+	if err != nil {
+		var old map[string]string
+		if err = json.Unmarshal(data, &old); err != nil {
+			return errs.New("invalid color data")
+		}
+		c.data = make(map[string]*unison.ThemeColor, len(CurrentColors))
+		for _, fc := range CurrentColors {
+			local := *fc.Color
+			c.data[fc.ID] = &local
+			if cc, ok := old[fc.ID]; ok {
+				var clr unison.Color
+				if clr, err = unison.ColorDecode(cc); err != nil {
+					if clr, err = unison.ColorDecode("rgb(" + cc + ")"); err != nil {
+						lastComma := strings.LastIndexByte(cc, ',')
+						if lastComma == -1 {
+							continue
+						}
+						var v int
+						if v, err = strconv.Atoi(cc[lastComma+1:]); err != nil {
+							continue
+						}
+						if clr, err = unison.ColorDecode(fmt.Sprintf("rgba(%s,%f)", cc[:lastComma], float32(v)/255)); err != nil {
+							continue
+						}
+					}
+				}
+				local.Light = clr
+				local.Dark = clr
+			}
+		}
+	}
+	if c.data == nil {
+		c.data = make(map[string]*unison.ThemeColor, len(CurrentColors))
 	}
 	for _, one := range FactoryColors {
 		if _, ok := c.data[one.ID]; !ok {
-			c.data[one.ID] = one.Color
+			clr := *one.Color
+			c.data[one.ID] = &clr
 		}
 	}
 	return nil
@@ -249,9 +253,8 @@ func (c *Colors) MakeCurrent() {
 
 // Reset to factory defaults.
 func (c *Colors) Reset() {
-	c.data = make(map[string]*unison.ThemeColor, len(CurrentColors))
 	for _, one := range FactoryColors {
-		c.data[one.ID] = one.Color
+		*c.data[one.ID] = *one.Color
 	}
 }
 
@@ -259,7 +262,7 @@ func (c *Colors) Reset() {
 func (c *Colors) ResetOne(id string) {
 	for _, v := range FactoryColors {
 		if v.ID == id {
-			c.data[id] = v.Color
+			*c.data[id] = *v.Color
 			break
 		}
 	}

@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -97,42 +98,19 @@ type fontsData struct {
 func NewFontsFromFS(fileSystem fs.FS, filePath string) (*Fonts, error) {
 	var current fontsData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &current); err != nil {
-		type oldFont struct {
-			Name  string `json:"name"`
-			Style string `json:"style"`
-			Size  int    `json:"size"`
-		}
-		var old struct {
-			Version  int                 `json:"version"`
-			OldFonts map[string]*oldFont `json:"fonts"`
-		}
-		if err2 := jio.LoadFromFS(context.Background(), fileSystem, filePath, &old); err2 != nil {
-			return nil, err
-		}
-		current.Type = fontsTypeKey
-		current.Version = old.Version
-		if old.Version == 1 {
-			current.data = make(map[string]unison.FontDescriptor, len(FactoryFonts))
-			for _, ff := range FactoryFonts {
-				if f, ok := old.OldFonts[ff.ID]; ok {
-					current.data[ff.ID] = unison.FontDescriptor{
-						Family:  f.Name,
-						Size:    float32(f.Size),
-						Weight:  unison.WeightFromString(f.Style),
-						Spacing: unison.SpacingFromString(f.Style),
-						Slant:   unison.SlantFromString(f.Style),
-					}
-				} else {
-					current.data[ff.ID] = ff.Font.Descriptor()
-				}
-			}
+		return nil, errs.Wrap(err)
+	}
+	switch current.Version {
+	case 0:
+		// During development of v5, forgot to add the type & version initially, so try and fix that up
+		if current.Type == "" {
+			current.Type = fontsTypeKey
 			current.Version = gid.CurrentDataVersion
 		}
-	}
-	// During development of v5, forgot to add the type & version initially, so try and fix that up
-	if current.Type == "" && current.Version == 0 {
+	case 1:
 		current.Type = fontsTypeKey
 		current.Version = gid.CurrentDataVersion
+	default:
 	}
 	if current.Type != fontsTypeKey {
 		return nil, errs.New(gid.UnexpectedFileDataMsg)
@@ -154,14 +132,9 @@ func (f *Fonts) Save(filePath string) error {
 
 // MarshalJSON implements json.Marshaler.
 func (f *Fonts) MarshalJSON() ([]byte, error) {
-	m := make(map[string]bool)
-	for _, one := range FactoryFonts {
-		m[one.ID] = true
-	}
-	for k := range f.data {
-		if _, ok := m[k]; !ok {
-			delete(f.data, k)
-		}
+	f.data = make(map[string]unison.FontDescriptor, len(CurrentFonts))
+	for _, one := range CurrentFonts {
+		f.data[one.ID] = one.Font.Descriptor()
 	}
 	return json.Marshal(&f.data)
 }
@@ -169,8 +142,39 @@ func (f *Fonts) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON implements json.Unmarshaler.
 func (f *Fonts) UnmarshalJSON(data []byte) error {
 	f.data = make(map[string]unison.FontDescriptor, len(FactoryFonts))
-	if err := json.Unmarshal(data, &f.data); err != nil {
-		return err
+	var err error
+	toolbox.CallWithHandler(func() {
+		err = json.Unmarshal(data, &f.data)
+	}, func(e error) {
+		err = e
+	})
+	if err != nil {
+		type oldFont struct {
+			Name  string `json:"name"`
+			Style string `json:"style"`
+			Size  int    `json:"size"`
+		}
+		var old map[string]*oldFont
+		if err = json.Unmarshal(data, &old); err != nil {
+			return errs.New("invalid font data")
+		}
+		f.data = make(map[string]unison.FontDescriptor, len(FactoryFonts))
+		for _, ff := range FactoryFonts {
+			if of, ok := old[ff.ID]; ok {
+				f.data[ff.ID] = unison.FontDescriptor{
+					Family:  of.Name,
+					Size:    float32(of.Size),
+					Weight:  unison.WeightFromString(of.Style),
+					Spacing: unison.SpacingFromString(of.Style),
+					Slant:   unison.SlantFromString(of.Style),
+				}
+			} else {
+				f.data[ff.ID] = ff.Font.Descriptor()
+			}
+		}
+	}
+	if f.data == nil {
+		f.data = make(map[string]unison.FontDescriptor, len(FactoryFonts))
 	}
 	for _, one := range FactoryFonts {
 		if _, ok := f.data[one.ID]; !ok {
@@ -192,7 +196,6 @@ func (f *Fonts) MakeCurrent() {
 
 // Reset to factory defaults.
 func (f *Fonts) Reset() {
-	f.data = make(map[string]unison.FontDescriptor, len(CurrentFonts))
 	for _, one := range FactoryFonts {
 		f.data[one.ID] = one.Font.Descriptor()
 	}
