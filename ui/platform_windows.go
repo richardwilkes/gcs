@@ -63,6 +63,10 @@ func configureRegistry() error {
 	if docBaseIcon, _, err = image.Decode(bytes.NewBuffer(docIconBytes)); err != nil {
 		return errs.Wrap(err)
 	}
+	appDataDir := paths.AppDataDir()
+	if err = os.MkdirAll(appDataDir, 0o755); err != nil {
+		return errs.Wrap(err)
+	}
 	for i := range library.KnownFileTypes {
 		if fi := &library.KnownFileTypes[i]; fi.IsGCSData {
 			// Create the doc icon
@@ -70,7 +74,7 @@ func configureRegistry() error {
 			if overlay, err = svglayer.CreateImageFromSVG(fi, 128); err != nil {
 				return err
 			}
-			docPath := filepath.Join(paths.AppDataDir(), fi.Extensions[0][1:]+".ico")
+			docPath := filepath.Join(appDataDir, fi.Extensions[0][1:]+".ico")
 			if err = writeIco(icon.Stack(docBaseIcon, overlay), docPath); err != nil {
 				return err
 			}
