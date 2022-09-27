@@ -26,7 +26,7 @@ import (
 )
 
 func startHandoffService(pathsChan chan<- []string, paths []string) {
-	const address = "127.0.0.1:13321"
+	const address = "127.0.0.1:13322"
 	var pathsBuffer []byte
 	now := time.Now()
 	for time.Since(now) < 10*time.Second {
