@@ -48,12 +48,20 @@ func (s String) MatchesList(value ...string) bool {
 	if len(value) == 0 {
 		return s.Compare.Matches(s.Qualifier, "")
 	}
+	matches := 0
 	for _, one := range value {
-		if !s.Compare.Matches(s.Qualifier, one) {
-			return false
+		if s.Compare.Matches(s.Qualifier, one) {
+			matches++
 		}
 	}
-	return true
+	switch s.Compare {
+	case Any, Is, Contains, StartsWith, EndsWith:
+		return matches > 0
+	case IsNot, DoesNotContain, DoesNotStartWith, DoesNotEndWith:
+		return matches == len(value)
+	default:
+		return matches > 0
+	}
 }
 
 func (s String) String() string {
