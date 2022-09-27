@@ -24,6 +24,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/gcs/v5/ui/workspace"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/log/jotrotate"
 	"github.com/richardwilkes/unison"
 )
 
@@ -91,6 +92,9 @@ func (d *generalSettingsDockable) initContent(content *unison.Panel) {
 	d.createImageResolutionField(content)
 	d.createTooltipDelayField(content)
 	d.createTooltipDismissalField(content)
+	d.createPathInfoField(content, i18n.Text("Settings Path"), settings.Path())
+	d.createPathInfoField(content, i18n.Text("Translations Path"), i18n.Dir)
+	d.createPathInfoField(content, i18n.Text("Log Path"), jotrotate.PathToLog)
 }
 
 func (d *generalSettingsDockable) createPlayerAndDescFields(content *unison.Panel) {
@@ -215,6 +219,19 @@ func (d *generalSettingsDockable) createTooltipDismissalField(content *unison.Pa
 			general.UpdateToolTipTiming()
 		}, gsettings.TooltipDismissalMin, gsettings.TooltipDismissalMax, false, false)
 	content.AddChild(widget.WrapWithSpan(2, d.tooltipDismissalField, widget.NewFieldTrailingLabel(i18n.Text("seconds"))))
+}
+
+func (d *generalSettingsDockable) createPathInfoField(content *unison.Panel, title, value string) {
+	content.AddChild(widget.NewFieldLeadingLabel(title))
+	content.AddChild(widget.NewNonEditableField(func(field *widget.NonEditableField) {
+		field.Text = value
+	}))
+	addButton := unison.NewSVGButton(res.CopySVG)
+	addButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Copy to clipboard"))
+	addButton.ClickCallback = func() {
+		unison.GlobalClipboard.SetText(value)
+	}
+	content.AddChild(addButton)
 }
 
 func (d *generalSettingsDockable) reset() {

@@ -41,14 +41,17 @@ func main() {
 	cl.NewGeneralOption(&convertFiles).SetName("convert").SetSingle('c').
 		SetUsage(i18n.Text("Converts all files specified on the command line to the current data format. If a directory is specified, it will be traversed recursively and all files found will be converted. This operation is intended to easily bring files up tot he current version's data format. After all files have been processed, GCS will exit"))
 	cl.NewGeneralOption(&dbg.VariableResolver).SetName("debug-variable-resolver")
-	showSettings := true
+	showExtraPaths := true
 	atexit.Register(func() {
-		if showSettings {
-			fmt.Printf(i18n.Text("\nSettings path: \"%s\"\n"), settings.Path())
+		if showExtraPaths {
+			fmt.Printf(i18n.Text(`
+   Settings path: "%s"
+Translations dir: "%s"
+`), settings.Path(), i18n.Dir)
 		}
 	})
 	fileList := jotrotate.ParseAndSetup(cl)
-	showSettings = false
+	showExtraPaths = false
 	setup.Setup()
 	settings.Global() // Here to force early initialization
 	switch {
