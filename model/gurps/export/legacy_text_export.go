@@ -30,7 +30,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/gurps/weapon"
-	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/xio"
@@ -164,10 +163,10 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "MODIFIED_ON":
 		ex.writeEncodedText(ex.entity.ModifiedOn.String())
 	case "TOTAL_POINTS":
-		if settings.Global().General.IncludeUnspentPointsInTotal {
-			ex.writeEncodedText(ex.entity.TotalPoints.String())
-		} else {
+		if ex.entity.SheetSettings.ExcludeUnspentPointsFromTotal {
 			ex.writeEncodedText(ex.entity.SpentPoints().String())
+		} else {
+			ex.writeEncodedText(ex.entity.TotalPoints.String())
 		}
 	case "ATTRIBUTE_POINTS":
 		ex.writeEncodedText(ex.entity.AttributePoints().String())

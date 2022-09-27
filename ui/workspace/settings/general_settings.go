@@ -30,18 +30,17 @@ import (
 
 type generalSettingsDockable struct {
 	Dockable
-	nameField                           *widget.StringField
-	autoFillProfileCheckbox             *widget.CheckBox
-	autoAddNaturalAttacksCheckbox       *widget.CheckBox
-	pointsField                         *widget.DecimalField
-	includeUnspentPointsInTotalCheckbox *widget.CheckBox
-	techLevelField                      *widget.StringField
-	calendarPopup                       *unison.PopupMenu[string]
-	initialListScaleField               *widget.PercentageField
-	initialSheetScaleField              *widget.PercentageField
-	exportResolutionField               *widget.IntegerField
-	tooltipDelayField                   *widget.DecimalField
-	tooltipDismissalField               *widget.DecimalField
+	nameField                     *widget.StringField
+	autoFillProfileCheckbox       *widget.CheckBox
+	autoAddNaturalAttacksCheckbox *widget.CheckBox
+	pointsField                   *widget.DecimalField
+	techLevelField                *widget.StringField
+	calendarPopup                 *unison.PopupMenu[string]
+	initialListScaleField         *widget.PercentageField
+	initialSheetScaleField        *widget.PercentageField
+	exportResolutionField         *widget.IntegerField
+	tooltipDelayField             *widget.DecimalField
+	tooltipDismissalField         *widget.DecimalField
 }
 
 // ShowGeneralSettings the General Settings window.
@@ -131,17 +130,6 @@ func (d *generalSettingsDockable) createCheckboxBlock(content *unison.Panel) {
 	d.autoAddNaturalAttacksCheckbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(widget.NewFieldLeadingLabel(""))
 	content.AddChild(d.autoAddNaturalAttacksCheckbox)
-
-	d.includeUnspentPointsInTotalCheckbox = widget.NewCheckBox(nil, "", i18n.Text("Include unspent points in total"),
-		func() unison.CheckState {
-			return unison.CheckStateFromBool(settings.Global().General.IncludeUnspentPointsInTotal)
-		},
-		func(state unison.CheckState) {
-			settings.Global().General.IncludeUnspentPointsInTotal = state == unison.OnCheckState
-		})
-	d.includeUnspentPointsInTotalCheckbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
-	content.AddChild(widget.NewFieldLeadingLabel(""))
-	content.AddChild(d.includeUnspentPointsInTotalCheckbox)
 }
 
 func (d *generalSettingsDockable) createInitialPointsFields(content *unison.Panel) {
@@ -245,7 +233,6 @@ func (d *generalSettingsDockable) sync() {
 	widget.SetCheckBoxState(d.autoFillProfileCheckbox, s.AutoFillProfile)
 	widget.SetCheckBoxState(d.autoAddNaturalAttacksCheckbox, s.AutoAddNaturalAttacks)
 	d.pointsField.SetText(s.InitialPoints.String())
-	widget.SetCheckBoxState(d.includeUnspentPointsInTotalCheckbox, s.IncludeUnspentPointsInTotal)
 	d.techLevelField.SetText(s.DefaultTechLevel)
 	d.calendarPopup.Select(s.CalendarRef(settings.Global().Libraries()).Name)
 	widget.SetFieldValue(d.initialListScaleField.Field, d.initialListScaleField.Format(s.InitialListUIScale))

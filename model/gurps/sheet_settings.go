@@ -44,23 +44,24 @@ type SheetSettingsResponder interface {
 
 // SheetSettingsData holds the SheetSettings data that is written to disk.
 type SheetSettingsData struct {
-	Page                       *settings.Page              `json:"page,omitempty"`
-	BlockLayout                *BlockLayout                `json:"block_layout,omitempty"`
-	Attributes                 *AttributeDefs              `json:"attributes,omitempty"`
-	BodyType                   *Body                       `json:"body_type,alt=hit_locations,omitempty"`
-	DamageProgression          attribute.DamageProgression `json:"damage_progression"`
-	DefaultLengthUnits         measure.LengthUnits         `json:"default_length_units"`
-	DefaultWeightUnits         measure.WeightUnits         `json:"default_weight_units"`
-	UserDescriptionDisplay     display.Option              `json:"user_description_display"`
-	ModifiersDisplay           display.Option              `json:"modifiers_display"`
-	NotesDisplay               display.Option              `json:"notes_display"`
-	SkillLevelAdjDisplay       display.Option              `json:"skill_level_adj_display"`
-	UseMultiplicativeModifiers bool                        `json:"use_multiplicative_modifiers,omitempty"`
-	UseModifyingDicePlusAdds   bool                        `json:"use_modifying_dice_plus_adds,omitempty"`
-	ShowTraitModifierAdj       bool                        `json:"show_trait_modifier_adj,alt=show_advantage_modifier_adj,omitempty"`
-	ShowEquipmentModifierAdj   bool                        `json:"show_equipment_modifier_adj,omitempty"`
-	ShowSpellAdj               bool                        `json:"show_spell_adj,omitempty"`
-	UseTitleInFooter           bool                        `json:"use_title_in_footer,omitempty"`
+	Page                          *settings.Page              `json:"page,omitempty"`
+	BlockLayout                   *BlockLayout                `json:"block_layout,omitempty"`
+	Attributes                    *AttributeDefs              `json:"attributes,omitempty"`
+	BodyType                      *Body                       `json:"body_type,alt=hit_locations,omitempty"`
+	DamageProgression             attribute.DamageProgression `json:"damage_progression"`
+	DefaultLengthUnits            measure.LengthUnits         `json:"default_length_units"`
+	DefaultWeightUnits            measure.WeightUnits         `json:"default_weight_units"`
+	UserDescriptionDisplay        display.Option              `json:"user_description_display"`
+	ModifiersDisplay              display.Option              `json:"modifiers_display"`
+	NotesDisplay                  display.Option              `json:"notes_display"`
+	SkillLevelAdjDisplay          display.Option              `json:"skill_level_adj_display"`
+	UseMultiplicativeModifiers    bool                        `json:"use_multiplicative_modifiers,omitempty"`
+	UseModifyingDicePlusAdds      bool                        `json:"use_modifying_dice_plus_adds,omitempty"`
+	ShowTraitModifierAdj          bool                        `json:"show_trait_modifier_adj,alt=show_advantage_modifier_adj,omitempty"`
+	ShowEquipmentModifierAdj      bool                        `json:"show_equipment_modifier_adj,omitempty"`
+	ShowSpellAdj                  bool                        `json:"show_spell_adj,omitempty"`
+	UseTitleInFooter              bool                        `json:"use_title_in_footer,omitempty"`
+	ExcludeUnspentPointsFromTotal bool                        `json:"exclude_unspent_points_from_total"`
 }
 
 // SheetSettings holds sheet settings.

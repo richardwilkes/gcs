@@ -48,7 +48,13 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *widget.TargetMgr) *PointsPa
 		VAlign: unison.FillAlignment,
 		VSpan:  2,
 	})
-	p.pointsBorder = &widget.TitledBorder{Title: fmt.Sprintf(i18n.Text("%s Points"), p.entity.TotalPoints.String())}
+	var overallTotal string
+	if p.entity.SheetSettings.ExcludeUnspentPointsFromTotal {
+		overallTotal = p.entity.SpentPoints().String()
+	} else {
+		overallTotal = p.entity.TotalPoints.String()
+	}
+	p.pointsBorder = &widget.TitledBorder{Title: fmt.Sprintf(i18n.Text("%s Points"), overallTotal)}
 	p.SetBorder(unison.NewCompoundBorder(p.pointsBorder, unison.NewEmptyBorder(unison.Insets{
 		Top:    1,
 		Left:   2,
@@ -128,5 +134,11 @@ func (p *PointsPanel) addPointsField(field *widget.NonEditablePageField, title, 
 // Sync the panel to the current data.
 func (p *PointsPanel) Sync() {
 	p.unspent.Sync()
-	p.pointsBorder.Title = fmt.Sprintf(i18n.Text("%s Points"), p.entity.TotalPoints.String())
+	var overallTotal string
+	if p.entity.SheetSettings.ExcludeUnspentPointsFromTotal {
+		overallTotal = p.entity.SpentPoints().String()
+	} else {
+		overallTotal = p.entity.TotalPoints.String()
+	}
+	p.pointsBorder.Title = fmt.Sprintf(i18n.Text("%s Points"), overallTotal)
 }

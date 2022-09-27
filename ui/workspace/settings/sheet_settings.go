@@ -40,6 +40,7 @@ type sheetSettingsDockable struct {
 	showTitleInsteadOfNameInPageFooter *unison.CheckBox
 	useMultiplicativeModifiers         *unison.CheckBox
 	useModifyDicePlusAdds              *unison.CheckBox
+	excludeUnspentPointsFromTotal      *unison.CheckBox
 	lengthUnitsPopup                   *unison.PopupMenu[measure.LengthUnits]
 	weightUnitsPopup                   *unison.PopupMenu[measure.WeightUnits]
 	userDescDisplayPopup               *unison.PopupMenu[display.Option]
@@ -158,6 +159,11 @@ func (d *sheetSettingsDockable) createOptions(content *unison.Panel) {
 	d.useModifyDicePlusAdds = d.addCheckBox(panel, i18n.Text("Use Modifying Dice + Adds (B269)"),
 		s.UseModifyingDicePlusAdds, func() {
 			d.settings().UseModifyingDicePlusAdds = d.useModifyDicePlusAdds.State == unison.OnCheckState
+			d.syncSheet(false)
+		})
+	d.excludeUnspentPointsFromTotal = d.addCheckBox(panel, i18n.Text("Exclude unspent points from total"),
+		s.ExcludeUnspentPointsFromTotal, func() {
+			d.settings().ExcludeUnspentPointsFromTotal = d.excludeUnspentPointsFromTotal.State == unison.OnCheckState
 			d.syncSheet(false)
 		})
 	content.AddChild(panel)
@@ -349,6 +355,7 @@ func (d *sheetSettingsDockable) sync() {
 	d.showTitleInsteadOfNameInPageFooter.State = unison.CheckStateFromBool(s.UseTitleInFooter)
 	d.useMultiplicativeModifiers.State = unison.CheckStateFromBool(s.UseMultiplicativeModifiers)
 	d.useModifyDicePlusAdds.State = unison.CheckStateFromBool(s.UseModifyingDicePlusAdds)
+	d.excludeUnspentPointsFromTotal.State = unison.CheckStateFromBool(s.ExcludeUnspentPointsFromTotal)
 	d.lengthUnitsPopup.Select(s.DefaultLengthUnits)
 	d.weightUnitsPopup.Select(s.DefaultWeightUnits)
 	d.userDescDisplayPopup.Select(s.UserDescriptionDisplay)

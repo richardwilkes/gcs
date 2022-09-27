@@ -47,36 +47,34 @@ var (
 
 // General holds settings for a sheet.
 type General struct {
-	DefaultPlayerName           string  `json:"default_player_name,omitempty"`
-	DefaultTechLevel            string  `json:"default_tech_level,omitempty"`
-	CalendarName                string  `json:"calendar_ref,omitempty"`
-	InitialPoints               fxp.Int `json:"initial_points"`
-	TooltipDelay                fxp.Int `json:"tooltip_delay"`
-	TooltipDismissal            fxp.Int `json:"tooltip_dismissal"`
-	NavigatorUIScale            int     `json:"navigator_scale"`
-	InitialListUIScale          int     `json:"initial_list_scale"`
-	InitialSheetUIScale         int     `json:"initial_sheet_scale"`
-	ImageResolution             int     `json:"image_resolution"`
-	AutoFillProfile             bool    `json:"auto_fill_profile"`
-	AutoAddNaturalAttacks       bool    `json:"add_natural_attacks"`
-	IncludeUnspentPointsInTotal bool    `json:"include_unspent_points_in_total"`
+	DefaultPlayerName     string  `json:"default_player_name,omitempty"`
+	DefaultTechLevel      string  `json:"default_tech_level,omitempty"`
+	CalendarName          string  `json:"calendar_ref,omitempty"`
+	InitialPoints         fxp.Int `json:"initial_points"`
+	TooltipDelay          fxp.Int `json:"tooltip_delay"`
+	TooltipDismissal      fxp.Int `json:"tooltip_dismissal"`
+	NavigatorUIScale      int     `json:"navigator_scale"`
+	InitialListUIScale    int     `json:"initial_list_scale"`
+	InitialSheetUIScale   int     `json:"initial_sheet_scale"`
+	ImageResolution       int     `json:"image_resolution"`
+	AutoFillProfile       bool    `json:"auto_fill_profile"`
+	AutoAddNaturalAttacks bool    `json:"add_natural_attacks"`
 }
 
 // NewGeneral creates settings with factory defaults.
 func NewGeneral() *General {
 	return &General{
-		DefaultPlayerName:           toolbox.CurrentUserName(),
-		DefaultTechLevel:            "3",
-		InitialPoints:               InitialPointsDef,
-		TooltipDelay:                TooltipDelayDef,
-		TooltipDismissal:            TooltipDismissalDef,
-		NavigatorUIScale:            InitialNavigatorUIScaleDef,
-		InitialListUIScale:          InitialListUIScaleDef,
-		InitialSheetUIScale:         InitialSheetUIScaleDef,
-		ImageResolution:             ImageResolutionDef,
-		AutoFillProfile:             true,
-		AutoAddNaturalAttacks:       true,
-		IncludeUnspentPointsInTotal: true,
+		DefaultPlayerName:     toolbox.CurrentUserName(),
+		DefaultTechLevel:      "3",
+		InitialPoints:         InitialPointsDef,
+		TooltipDelay:          TooltipDelayDef,
+		TooltipDismissal:      TooltipDismissalDef,
+		NavigatorUIScale:      InitialNavigatorUIScaleDef,
+		InitialListUIScale:    InitialListUIScaleDef,
+		InitialSheetUIScale:   InitialSheetUIScaleDef,
+		ImageResolution:       ImageResolutionDef,
+		AutoFillProfile:       true,
+		AutoAddNaturalAttacks: true,
 	}
 }
 
