@@ -454,6 +454,7 @@ func (d *TableDockable[T]) copySelectionToSheet(_ any) {
 			sel := d.table.SelectedRows(true)
 			for _, s := range sheets {
 				var table *unison.Table[*ntable.Node[T]]
+				var postProcessor func(rows []*ntable.Node[T])
 				switch any(sel[0].Data()).(type) {
 				case *gurps.Trait:
 					table = d.convertTable(s.Traits.Table)
@@ -463,13 +464,23 @@ func (d *TableDockable[T]) copySelectionToSheet(_ any) {
 					table = d.convertTable(s.Spells.Table)
 				case *gurps.Equipment:
 					table = d.convertTable(s.CarriedEquipment.Table)
+					postProcessor = func(rows []*ntable.Node[T]) {
+						if erows, ok := interface{}(rows).([]*ntable.Node[*gurps.Equipment]); ok {
+							for _, row := range erows {
+								gurps.Traverse(func(e *gurps.Equipment) bool {
+									e.Equipped = true
+									return false
+								}, false, false, row.Data())
+							}
+						}
+					}
 				case *gurps.Note:
 					table = d.convertTable(s.Notes.Table)
 				default:
 					continue
 				}
 				if table != nil {
-					ntable.CopyRowsTo(table, sel)
+					ntable.CopyRowsTo(table, sel, postProcessor)
 					ntable.ProcessModifiersForSelection(table)
 					ntable.ProcessNameablesForSelection(table)
 				}
@@ -493,15 +504,15 @@ func (d *TableDockable[T]) copySelectionToTemplate(_ any) {
 			for _, t := range templates {
 				switch any(sel[0].Data()).(type) {
 				case *gurps.Trait:
-					ntable.CopyRowsTo(d.convertTable(t.Traits.Table), sel)
+					ntable.CopyRowsTo(d.convertTable(t.Traits.Table), sel, nil)
 				case *gurps.Skill:
-					ntable.CopyRowsTo(d.convertTable(t.Skills.Table), sel)
+					ntable.CopyRowsTo(d.convertTable(t.Skills.Table), sel, nil)
 				case *gurps.Spell:
-					ntable.CopyRowsTo(d.convertTable(t.Spells.Table), sel)
+					ntable.CopyRowsTo(d.convertTable(t.Spells.Table), sel, nil)
 				case *gurps.Equipment:
-					ntable.CopyRowsTo(d.convertTable(t.Equipment.Table), sel)
+					ntable.CopyRowsTo(d.convertTable(t.Equipment.Table), sel, nil)
 				case *gurps.Note:
-					ntable.CopyRowsTo(d.convertTable(t.Notes.Table), sel)
+					ntable.CopyRowsTo(d.convertTable(t.Notes.Table), sel, nil)
 				}
 			}
 		}

@@ -323,7 +323,7 @@ func DuplicateSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 }
 
 // CopyRowsTo copies the provided rows to the target table.
-func CopyRowsTo[T gurps.NodeTypes](table *unison.Table[*Node[T]], rows []*Node[T]) {
+func CopyRowsTo[T gurps.NodeTypes](table *unison.Table[*Node[T]], rows []*Node[T], postProcessor func(rows []*Node[T])) {
 	if table == nil {
 		return
 	}
@@ -344,6 +344,9 @@ func CopyRowsTo[T gurps.NodeTypes](table *unison.Table[*Node[T]], rows []*Node[T
 		}
 	}
 	table.SetRootRows(append(slices.Clone(table.RootRows()), rows...))
+	if postProcessor != nil {
+		postProcessor(rows)
+	}
 	selMap := make(map[uuid.UUID]bool, len(rows))
 	for _, row := range rows {
 		selMap[row.UUID()] = true
