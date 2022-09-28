@@ -114,6 +114,14 @@ func newPDFExporter(entity *gurps.Entity) *pdfExporter {
 					if allowed < 0 {
 						// No more fit, mark it
 						one.helper.SetDrawRowRange(start, xmath.Max(i, start+1))
+						if i == start {
+							// I have to guard against the case where a single row is so large it can't fit on a single
+							// page on its own. In this case, I just let it flow off the end and drop that extra
+							// content.
+							//
+							// TODO: In the future, see if I can do sub-row partitioning.
+							i = start + 1
+						}
 						startAt[one.key()] = i
 						break
 					}
