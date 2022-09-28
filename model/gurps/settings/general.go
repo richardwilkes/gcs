@@ -35,6 +35,9 @@ var (
 	TooltipDismissalDef        = fxp.From(60)
 	TooltipDismissalMin        = fxp.One
 	TooltipDismissalMax        = fxp.From(3600)
+	ScrollWheelMultiplierDef   = fxp.From(unison.MouseWheelMultiplier)
+	ScrollWheelMultiplierMin   = fxp.Int(1)
+	ScrollWheelMultiplierMax   = fxp.From(9999)
 	ImageResolutionDef         = 200
 	ImageResolutionMin         = 50
 	ImageResolutionMax         = 400
@@ -53,6 +56,7 @@ type General struct {
 	InitialPoints         fxp.Int `json:"initial_points"`
 	TooltipDelay          fxp.Int `json:"tooltip_delay"`
 	TooltipDismissal      fxp.Int `json:"tooltip_dismissal"`
+	ScrollWheelMultiplier fxp.Int `json:"scroll_wheel_multiplier"`
 	NavigatorUIScale      int     `json:"navigator_scale"`
 	InitialListUIScale    int     `json:"initial_list_scale"`
 	InitialSheetUIScale   int     `json:"initial_sheet_scale"`
@@ -69,6 +73,7 @@ func NewGeneral() *General {
 		InitialPoints:         InitialPointsDef,
 		TooltipDelay:          TooltipDelayDef,
 		TooltipDismissal:      TooltipDismissalDef,
+		ScrollWheelMultiplier: fxp.From(unison.MouseWheelMultiplier),
 		NavigatorUIScale:      InitialNavigatorUIScaleDef,
 		InitialListUIScale:    InitialListUIScaleDef,
 		InitialSheetUIScale:   InitialSheetUIScaleDef,
@@ -125,6 +130,7 @@ func (s *General) EnsureValidity() {
 	s.InitialPoints = fxp.ResetIfOutOfRange(s.InitialPoints, InitialPointsMin, InitialPointsMax, InitialPointsDef)
 	s.TooltipDelay = fxp.ResetIfOutOfRange(s.TooltipDelay, TooltipDelayMin, TooltipDelayMax, TooltipDelayDef)
 	s.TooltipDismissal = fxp.ResetIfOutOfRange(s.TooltipDismissal, TooltipDismissalMin, TooltipDismissalMax, TooltipDismissalDef)
+	s.ScrollWheelMultiplier = fxp.ResetIfOutOfRange(s.ScrollWheelMultiplier, ScrollWheelMultiplierMin, ScrollWheelMultiplierMax, ScrollWheelMultiplierDef)
 	s.ImageResolution = fxp.ResetIfOutOfRangeInt(s.ImageResolution, ImageResolutionMin, ImageResolutionMax, ImageResolutionDef)
 	s.NavigatorUIScale = fxp.ResetIfOutOfRangeInt(s.NavigatorUIScale, InitialUIScaleMin, InitialUIScaleMax, InitialNavigatorUIScaleDef)
 	s.InitialListUIScale = fxp.ResetIfOutOfRangeInt(s.InitialListUIScale, InitialUIScaleMin, InitialUIScaleMax, InitialListUIScaleDef)

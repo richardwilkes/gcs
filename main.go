@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/dbg"
 	"github.com/richardwilkes/gcs/v5/model/convert"
 	"github.com/richardwilkes/gcs/v5/model/export"
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/setup"
@@ -54,6 +55,9 @@ Translations dir: "%s"
 	showExtraPaths = false
 	setup.Setup()
 	settings.Global() // Here to force early initialization
+	unison.DefaultScrollPanelTheme.MouseWheelMultiplier = func() float32 {
+		return fxp.As[float32](settings.Global().General.ScrollWheelMultiplier)
+	}
 	switch {
 	case convertFiles:
 		if err := convert.Convert(fileList...); err != nil {

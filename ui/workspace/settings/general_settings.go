@@ -41,6 +41,7 @@ type generalSettingsDockable struct {
 	exportResolutionField         *widget.IntegerField
 	tooltipDelayField             *widget.DecimalField
 	tooltipDismissalField         *widget.DecimalField
+	scrollWheelMultiplierField    *widget.DecimalField
 }
 
 // ShowGeneralSettings the General Settings window.
@@ -91,6 +92,7 @@ func (d *generalSettingsDockable) initContent(content *unison.Panel) {
 	d.createImageResolutionField(content)
 	d.createTooltipDelayField(content)
 	d.createTooltipDismissalField(content)
+	d.createScrollWheelMultiplierField(content)
 	d.createPathInfoField(content, i18n.Text("Settings Path"), settings.Path())
 	d.createPathInfoField(content, i18n.Text("Translations Path"), i18n.Dir)
 	d.createPathInfoField(content, i18n.Text("Log Path"), jotrotate.PathToLog)
@@ -209,6 +211,17 @@ func (d *generalSettingsDockable) createTooltipDismissalField(content *unison.Pa
 	content.AddChild(widget.WrapWithSpan(2, d.tooltipDismissalField, widget.NewFieldTrailingLabel(i18n.Text("seconds"))))
 }
 
+func (d *generalSettingsDockable) createScrollWheelMultiplierField(content *unison.Panel) {
+	title := i18n.Text("Scroll Wheel Multiplier")
+	content.AddChild(widget.NewFieldLeadingLabel(title))
+	d.scrollWheelMultiplierField = widget.NewDecimalField(nil, "", title,
+		func() fxp.Int { return settings.Global().General.ScrollWheelMultiplier },
+		func(v fxp.Int) { settings.Global().General.ScrollWheelMultiplier = v },
+		gsettings.ScrollWheelMultiplierMin, gsettings.ScrollWheelMultiplierMax, false, false)
+	d.scrollWheelMultiplierField.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
+	content.AddChild(d.scrollWheelMultiplierField)
+}
+
 func (d *generalSettingsDockable) createPathInfoField(content *unison.Panel, title, value string) {
 	content.AddChild(widget.NewFieldLeadingLabel(title))
 	content.AddChild(widget.NewNonEditableField(func(field *widget.NonEditableField) {
@@ -240,6 +253,7 @@ func (d *generalSettingsDockable) sync() {
 	d.exportResolutionField.SetText(strconv.Itoa(s.ImageResolution))
 	d.tooltipDelayField.SetText(s.TooltipDelay.String())
 	d.tooltipDismissalField.SetText(s.TooltipDismissal.String())
+	d.scrollWheelMultiplierField.SetText(s.ScrollWheelMultiplier.String())
 	d.MarkForRedraw()
 }
 
