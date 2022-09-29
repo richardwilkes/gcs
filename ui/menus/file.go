@@ -147,8 +147,14 @@ func registerFileMenuActions() {
 			dialog.SetAllowsMultipleSelection(true)
 			dialog.SetResolvesAliases(true)
 			dialog.SetAllowedExtensions(library.AcceptableExtensions()...)
+			dialog.SetCanChooseDirectories(false)
+			dialog.SetCanChooseFiles(true)
+			global := settings.Global()
+			dialog.SetInitialDirectory(global.LastDir(settings.DefaultLastDirKey))
 			if dialog.RunModal() {
-				workspace.OpenFiles(dialog.Paths())
+				paths := dialog.Paths()
+				global.SetLastDir(settings.DefaultLastDirKey, filepath.Dir(paths[0]))
+				workspace.OpenFiles(paths)
 			}
 		},
 	}
@@ -340,6 +346,7 @@ func createExportToTextAction(index int, path string) *unison.Action {
 			if s := sheet.ActiveSheet(); s != nil {
 				dialog := unison.NewSaveDialog()
 				ext := filepath.Ext(path)
+				dialog.SetInitialDirectory(filepath.Dir(path))
 				dialog.SetAllowedExtensions(ext)
 				if dialog.RunModal() {
 					if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), ext, false); ok {

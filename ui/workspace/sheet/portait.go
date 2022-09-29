@@ -14,8 +14,10 @@ package sheet
 import (
 	"fmt"
 	"image"
+	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -70,13 +72,17 @@ func (p *PortraitPanel) Sync() {
 func (p *PortraitPanel) mouseDown(_ unison.Point, button, clickCount int, _ unison.Modifiers) bool {
 	if button == unison.ButtonLeft && clickCount == 2 {
 		d := unison.NewOpenDialog()
-		d.SetResolvesAliases(true)
 		d.SetAllowsMultipleSelection(false)
-		d.SetCanChooseFiles(true)
-		d.SetCanChooseDirectories(false)
+		d.SetResolvesAliases(true)
 		d.SetAllowedExtensions(unison.KnownImageFormatExtensions...)
+		d.SetCanChooseDirectories(false)
+		d.SetCanChooseFiles(true)
+		global := settings.Global()
+		d.SetInitialDirectory(global.LastDir(settings.ImagesDirKey))
 		if d.RunModal() {
-			p.fileDrop([]string{d.Path()})
+			file := d.Path()
+			global.SetLastDir(settings.DefaultLastDirKey, filepath.Dir(file))
+			p.fileDrop([]string{file})
 		}
 	}
 	return true

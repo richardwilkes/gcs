@@ -222,22 +222,29 @@ func (d *Dockable) doLoad(fileSystem fs.FS, filePath string) {
 
 func (d *Dockable) handleImport(_ unison.MenuItem) {
 	dialog := unison.NewOpenDialog()
+	dialog.SetAllowsMultipleSelection(false)
 	dialog.SetResolvesAliases(true)
 	dialog.SetAllowedExtensions(d.Extensions...)
-	dialog.SetAllowsMultipleSelection(false)
 	dialog.SetCanChooseDirectories(false)
 	dialog.SetCanChooseFiles(true)
+	global := settings.Global()
+	dialog.SetInitialDirectory(global.LastDir(settings.DefaultLastDirKey))
 	if dialog.RunModal() {
 		p := dialog.Path()
-		d.doLoad(os.DirFS(filepath.Dir(p)), filepath.Base(p))
+		dir := filepath.Dir(p)
+		global.SetLastDir(settings.DefaultLastDirKey, dir)
+		d.doLoad(os.DirFS(dir), filepath.Base(p))
 	}
 }
 
 func (d *Dockable) handleExport(_ unison.MenuItem) {
 	dialog := unison.NewSaveDialog()
 	dialog.SetAllowedExtensions(d.Extensions[0])
+	global := settings.Global()
+	dialog.SetInitialDirectory(global.LastDir(settings.DefaultLastDirKey))
 	if dialog.RunModal() {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), d.Extensions[0], false); ok {
+			global.SetLastDir(settings.DefaultLastDirKey, filepath.Dir(filePath))
 			if err := d.Saver(filePath); err != nil {
 				unison.ErrorDialogWithError(i18n.Text("Unable to save ")+d.TabTitle, err)
 			}

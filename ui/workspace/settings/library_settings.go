@@ -193,13 +193,15 @@ func (d *librarySettingsDockable) checkForSpecial() bool {
 
 func (d *librarySettingsDockable) choosePath() {
 	dlg := unison.NewOpenDialog()
+	dlg.SetAllowsMultipleSelection(false)
+	dlg.SetResolvesAliases(true)
 	dlg.SetCanChooseDirectories(true)
 	dlg.SetCanChooseFiles(false)
 	if xfs.IsDir(d.path) {
 		dlg.SetInitialDirectory(d.path)
+	} else {
+		dlg.SetInitialDirectory(settings.Global().LastDir(settings.DefaultLastDirKey))
 	}
-	dlg.SetResolvesAliases(true)
-	dlg.SetAllowsMultipleSelection(false)
 	if dlg.RunModal() {
 		p, err := filepath.Abs(dlg.Path())
 		if err != nil {

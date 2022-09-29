@@ -13,6 +13,8 @@ package settings
 
 import (
 	"context"
+	"os"
+	"os/user"
 	"path"
 	"path/filepath"
 	"runtime"
@@ -33,6 +35,11 @@ import (
 )
 
 const maxRecentFiles = 20
+
+const (
+	DefaultLastDirKey = "default"
+	ImagesDirKey      = "images"
+)
 
 var global *Settings
 
@@ -115,6 +122,27 @@ func (s *Settings) EnsureValidity() {
 		s.Sheet = gurps.FactorySheetSettings()
 	} else {
 		s.Sheet.EnsureValidity()
+	}
+}
+
+// LastDir returns the last directory used for the given key.
+func (s *Settings) LastDir(key string) string {
+	if last, ok := s.LastDirs[key]; ok {
+		return last
+	}
+	var home string
+	if u, err := user.Current(); err != nil {
+		home = os.Getenv("HOME")
+	} else {
+		home = u.HomeDir
+	}
+	return home
+}
+
+// SetLastDir sets the last directory used for the given key. Ignores attempts to set it to an empty string.
+func (s *Settings) SetLastDir(key, dir string) {
+	if strings.TrimSpace(dir) != "" {
+		s.LastDirs[key] = dir
 	}
 }
 

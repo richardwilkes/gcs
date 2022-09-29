@@ -90,10 +90,16 @@ Would you like to create one by choosing a PDF to map to this key?`), key), pdfN
 				dialog.SetAllowsMultipleSelection(false)
 				dialog.SetResolvesAliases(true)
 				dialog.SetAllowedExtensions("pdf")
+				dialog.SetCanChooseDirectories(false)
+				dialog.SetCanChooseFiles(true)
+				global := settings.Global()
+				dialog.SetInitialDirectory(global.LastDir(settings.DefaultLastDirKey))
 				if dialog.RunModal() {
+					p := dialog.Path()
+					global.SetLastDir(settings.DefaultLastDirKey, filepath.Dir(p))
 					pageRef = &settings.PageRef{
 						ID:   key,
-						Path: dialog.Paths()[0],
+						Path: p,
 					}
 					s.PageRefs.Set(pageRef)
 					RefreshPageRefMappingsView()
