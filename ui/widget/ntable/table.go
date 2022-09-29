@@ -60,6 +60,7 @@ type TableProvider[T gurps.NodeTypes] interface {
 	CreateItem(owner widget.Rebuildable, table *unison.Table[*Node[T]], variant ItemVariant)
 	Serialize() ([]byte, error)
 	Deserialize(data []byte) error
+	RefKey() string
 }
 
 // NewNodeTable creates a new node table of the specified type, returning the header and table. Pass nil for 'font' if

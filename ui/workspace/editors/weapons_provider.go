@@ -101,6 +101,10 @@ func NewWeaponsProvider(provider gurps.WeaponListProvider, weaponType weapon.Typ
 	return p
 }
 
+func (p *weaponsProvider) RefKey() string {
+	return p.weaponType.Key()
+}
+
 func (p *weaponsProvider) SetTable(table *unison.Table[*ntable.Node[*gurps.Weapon]]) {
 	p.table = table
 }

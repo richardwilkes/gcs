@@ -63,6 +63,10 @@ func NewEquipmentModifiersProvider(provider gurps.EquipmentModifierListProvider,
 	return p
 }
 
+func (p *eqpModProvider) RefKey() string {
+	return gid.EquipmentModifier
+}
+
 func (p *eqpModProvider) SetTable(table *unison.Table[*ntable.Node[*gurps.EquipmentModifier]]) {
 	p.table = table
 }

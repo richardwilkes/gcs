@@ -59,6 +59,10 @@ func NewTraitModifiersProvider(provider gurps.TraitModifierListProvider, forEdit
 	return p
 }
 
+func (p *traitModifierProvider) RefKey() string {
+	return gid.TraitModifier
+}
+
 func (p *traitModifierProvider) SetTable(table *unison.Table[*ntable.Node[*gurps.TraitModifier]]) {
 	p.table = table
 }

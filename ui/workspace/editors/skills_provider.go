@@ -71,6 +71,10 @@ func NewSkillsProvider(provider gurps.SkillListProvider, forPage bool) ntable.Ta
 	return p
 }
 
+func (p *skillsProvider) RefKey() string {
+	return gurps.BlockLayoutSkillsKey
+}
+
 func (p *skillsProvider) SetTable(table *unison.Table[*ntable.Node[*gurps.Skill]]) {
 	p.table = table
 }

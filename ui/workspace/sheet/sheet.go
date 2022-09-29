@@ -301,19 +301,19 @@ func (s *Sheet) Modified() bool {
 func (s *Sheet) MarkModified() {
 	if !s.awaitingUpdate {
 		s.awaitingUpdate = true
-		unison.InvokeTaskAfter(func() {
-			h, v := s.scroll.Position()
-			s.modifiedFunc()
-			// TODO: This is still too slow when the lists have more than a few rows of content.
-			//       It impinges on interactive typing. Looks like most of the time is spent in updating the tables.
-			//       Unfortunately, there isn't a fast way to determine that the content doesn't need to be refreshed.
-			widget.DeepSync(s)
-			if dc := unison.Ancestor[*unison.DockContainer](s); dc != nil {
-				dc.UpdateTitle(s)
-			}
-			s.scroll.SetPosition(h, v)
-			s.awaitingUpdate = false
-		}, time.Millisecond*100)
+		h, v := s.scroll.Position()
+		focusRefKey := s.targetMgr.CurrentFocusRef()
+		s.modifiedFunc()
+		// TODO: This can be too slow when the lists have many rows of content, impinging upon interactive typing.
+		//       Looks like most of the time is spent in updating the tables. Unfortunately, there isn't a fast way to
+		//       determine that the content of a table doesn't need to be refreshed.
+		widget.DeepSync(s)
+		if dc := unison.Ancestor[*unison.DockContainer](s); dc != nil {
+			dc.UpdateTitle(s)
+		}
+		s.awaitingUpdate = false
+		s.targetMgr.ReacquireFocus(focusRefKey, s.toolbar, s.scroll.Content())
+		s.scroll.SetPosition(h, v)
 	}
 }
 
@@ -410,38 +410,6 @@ func (s *Sheet) createLists() {
 	if len(children) < 2 {
 		return
 	}
-	h, v := s.scroll.Position()
-	var refocusOnKey string
-	var refocusOn unison.Paneler
-	if wnd := s.Window(); wnd != nil {
-		if focus := wnd.Focus(); focus != nil {
-			// For page lists, the focus will be the table, so we need to look up a level
-			if focus = focus.Parent(); focus != nil {
-				switch focus.Self {
-				case s.Reactions:
-					refocusOnKey = gurps.BlockLayoutReactionsKey
-				case s.ConditionalModifiers:
-					refocusOnKey = gurps.BlockLayoutConditionalModifiersKey
-				case s.MeleeWeapons:
-					refocusOnKey = gurps.BlockLayoutMeleeKey
-				case s.RangedWeapons:
-					refocusOnKey = gurps.BlockLayoutRangedKey
-				case s.Traits:
-					refocusOnKey = gurps.BlockLayoutTraitsKey
-				case s.Skills:
-					refocusOnKey = gurps.BlockLayoutSkillsKey
-				case s.Spells:
-					refocusOnKey = gurps.BlockLayoutSpellsKey
-				case s.CarriedEquipment:
-					refocusOnKey = gurps.BlockLayoutEquipmentKey
-				case s.OtherEquipment:
-					refocusOnKey = gurps.BlockLayoutOtherEquipmentKey
-				case s.Notes:
-					refocusOnKey = gurps.BlockLayoutNotesKey
-				}
-			}
-		}
-	}
 	for i := len(children) - 1; i > 1; i-- {
 		page.RemoveChildAtIndex(i)
 	}
@@ -468,9 +436,6 @@ func (s *Sheet) createLists() {
 					s.Reactions.Sync()
 				}
 				rowPanel.AddChild(s.Reactions)
-				if c == refocusOnKey {
-					refocusOn = s.Reactions.Table
-				}
 			case gurps.BlockLayoutConditionalModifiersKey:
 				if s.ConditionalModifiers == nil {
 					s.ConditionalModifiers = NewConditionalModifiersPageList(s.entity)
@@ -478,9 +443,6 @@ func (s *Sheet) createLists() {
 					s.ConditionalModifiers.Sync()
 				}
 				rowPanel.AddChild(s.ConditionalModifiers)
-				if c == refocusOnKey {
-					refocusOn = s.ConditionalModifiers.Table
-				}
 			case gurps.BlockLayoutMeleeKey:
 				if s.MeleeWeapons == nil {
 					s.MeleeWeapons = NewMeleeWeaponsPageList(s.entity)
@@ -488,9 +450,6 @@ func (s *Sheet) createLists() {
 					s.MeleeWeapons.Sync()
 				}
 				rowPanel.AddChild(s.MeleeWeapons)
-				if c == refocusOnKey {
-					refocusOn = s.MeleeWeapons.Table
-				}
 			case gurps.BlockLayoutRangedKey:
 				if s.RangedWeapons == nil {
 					s.RangedWeapons = NewRangedWeaponsPageList(s.entity)
@@ -498,9 +457,6 @@ func (s *Sheet) createLists() {
 					s.RangedWeapons.Sync()
 				}
 				rowPanel.AddChild(s.RangedWeapons)
-				if c == refocusOnKey {
-					refocusOn = s.RangedWeapons.Table
-				}
 			case gurps.BlockLayoutTraitsKey:
 				if s.Traits == nil {
 					s.Traits = NewTraitsPageList(s, s.entity)
@@ -508,9 +464,6 @@ func (s *Sheet) createLists() {
 					s.Traits.Sync()
 				}
 				rowPanel.AddChild(s.Traits)
-				if c == refocusOnKey {
-					refocusOn = s.Traits.Table
-				}
 			case gurps.BlockLayoutSkillsKey:
 				if s.Skills == nil {
 					s.Skills = NewSkillsPageList(s, s.entity)
@@ -518,9 +471,6 @@ func (s *Sheet) createLists() {
 					s.Skills.Sync()
 				}
 				rowPanel.AddChild(s.Skills)
-				if c == refocusOnKey {
-					refocusOn = s.Skills.Table
-				}
 			case gurps.BlockLayoutSpellsKey:
 				if s.Spells == nil {
 					s.Spells = NewSpellsPageList(s, s.entity)
@@ -528,9 +478,6 @@ func (s *Sheet) createLists() {
 					s.Spells.Sync()
 				}
 				rowPanel.AddChild(s.Spells)
-				if c == refocusOnKey {
-					refocusOn = s.Spells.Table
-				}
 			case gurps.BlockLayoutEquipmentKey:
 				if s.CarriedEquipment == nil {
 					s.CarriedEquipment = NewCarriedEquipmentPageList(s, s.entity)
@@ -538,9 +485,6 @@ func (s *Sheet) createLists() {
 					s.CarriedEquipment.Sync()
 				}
 				rowPanel.AddChild(s.CarriedEquipment)
-				if c == refocusOnKey {
-					refocusOn = s.CarriedEquipment.Table
-				}
 			case gurps.BlockLayoutOtherEquipmentKey:
 				if s.OtherEquipment == nil {
 					s.OtherEquipment = NewOtherEquipmentPageList(s, s.entity)
@@ -548,9 +492,6 @@ func (s *Sheet) createLists() {
 					s.OtherEquipment.Sync()
 				}
 				rowPanel.AddChild(s.OtherEquipment)
-				if c == refocusOnKey {
-					refocusOn = s.OtherEquipment.Table
-				}
 			case gurps.BlockLayoutNotesKey:
 				if s.Notes == nil {
 					s.Notes = NewNotesPageList(s, s.entity)
@@ -558,18 +499,11 @@ func (s *Sheet) createLists() {
 					s.Notes.Sync()
 				}
 				rowPanel.AddChild(s.Notes)
-				if c == refocusOnKey {
-					refocusOn = s.Notes.Table
-				}
 			}
 		}
 		page.AddChild(rowPanel)
 	}
 	page.ApplyPreferredSize()
-	if refocusOn != nil {
-		refocusOn.AsPanel().RequestFocus()
-	}
-	s.scroll.SetPosition(h, v)
 }
 
 func (s *Sheet) canSwapDefaults(_ any) bool {
@@ -625,8 +559,8 @@ func (s *Sheet) SheetSettingsUpdated(entity *gurps.Entity, blockLayout bool) {
 
 // Rebuild implements widget.Rebuildable.
 func (s *Sheet) Rebuild(full bool) {
-	focusRefKey := s.targetMgr.CurrentFocusRef()
 	h, v := s.scroll.Position()
+	focusRefKey := s.targetMgr.CurrentFocusRef()
 	s.entity.Recalculate()
 	if full {
 		reactionsSelMap := s.Reactions.RecordSelection()

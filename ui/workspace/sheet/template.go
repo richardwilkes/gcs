@@ -46,7 +46,9 @@ var (
 type Template struct {
 	unison.Panel
 	path              string
+	targetMgr         *widget.TargetMgr
 	undoMgr           *unison.UndoManager
+	toolbar           *unison.Panel
 	scroll            *unison.ScrollPanel
 	template          *gurps.Template
 	crc               uint64
@@ -99,6 +101,7 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 		needsSaveAsPrompt: true,
 	}
 	d.Self = d
+	d.targetMgr = widget.NewTargetMgr(d)
 	d.SetLayout(&unison.FlexLayout{
 		Columns: 1,
 		HAlign:  unison.FillAlignment,
@@ -126,20 +129,20 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 	d.scaleField.SetMarksModified(false)
 	d.scaleField.Tooltip = unison.NewTooltipWithText(scaleTitle)
 
-	toolbar := unison.NewPanel()
-	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
+	d.toolbar = unison.NewPanel()
+	d.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
-	toolbar.SetLayoutData(&unison.FlexLayoutData{
+	d.toolbar.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,
 		HGrab:  true,
 	})
-	toolbar.AddChild(d.scaleField)
-	toolbar.SetLayout(&unison.FlexLayout{
-		Columns:  len(toolbar.Children()),
+	d.toolbar.AddChild(d.scaleField)
+	d.toolbar.SetLayout(&unison.FlexLayout{
+		Columns:  len(d.toolbar.Children()),
 		HSpacing: unison.StdHSpacing,
 	})
 
-	d.AddChild(toolbar)
+	d.AddChild(d.toolbar)
 	d.AddChild(d.scroll)
 
 	d.applyScale()
@@ -466,6 +469,7 @@ func (d *Template) SheetSettingsUpdated(entity *gurps.Entity, blockLayout bool) 
 // Rebuild implements widget.Rebuildable.
 func (d *Template) Rebuild(full bool) {
 	h, v := d.scroll.Position()
+	focusRefKey := d.targetMgr.CurrentFocusRef()
 	if full {
 		traitsSelMap := d.Traits.RecordSelection()
 		skillsSelMap := d.Skills.RecordSelection()
@@ -485,5 +489,6 @@ func (d *Template) Rebuild(full bool) {
 	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
 		dc.UpdateTitle(d)
 	}
+	d.targetMgr.ReacquireFocus(focusRefKey, d.toolbar, d.scroll.Content())
 	d.scroll.SetPosition(h, v)
 }

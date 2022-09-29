@@ -122,6 +122,7 @@ func NewRangedWeaponsPageList(entity *gurps.Entity) *PageList[*gurps.Weapon] {
 
 func newPageList[T gurps.NodeTypes](owner widget.Rebuildable, provider ntable.TableProvider[T]) *PageList[T] {
 	header, table := ntable.NewNodeTable[T](provider, theme.PageFieldPrimaryFont)
+	table.RefKey = provider.RefKey()
 	p := &PageList[T]{
 		tableHeader: header,
 		Table:       table,

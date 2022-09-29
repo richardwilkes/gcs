@@ -81,6 +81,10 @@ func NewSpellsProvider(provider gurps.SpellListProvider, forPage bool) ntable.Ta
 	return p
 }
 
+func (p *spellsProvider) RefKey() string {
+	return gurps.BlockLayoutSpellsKey
+}
+
 func (p *spellsProvider) SetTable(table *unison.Table[*ntable.Node[*gurps.Spell]]) {
 	p.table = table
 }

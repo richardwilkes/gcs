@@ -42,6 +42,10 @@ func NewReactionModifiersProvider(provider gurps.ReactionModifierListProvider) n
 	}
 }
 
+func (p *reactionModProvider) RefKey() string {
+	return gurps.BlockLayoutReactionsKey
+}
+
 func (p *reactionModProvider) SetTable(table *unison.Table[*ntable.Node[*gurps.ConditionalModifier]]) {
 	p.table = table
 }

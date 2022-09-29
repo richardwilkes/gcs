@@ -59,6 +59,10 @@ func NewTraitsProvider(provider gurps.TraitListProvider, forPage bool) ntable.Ta
 	return p
 }
 
+func (p *traitsProvider) RefKey() string {
+	return gurps.BlockLayoutTraitsKey
+}
+
 func (p *traitsProvider) SetTable(table *unison.Table[*ntable.Node[*gurps.Trait]]) {
 	p.table = table
 }

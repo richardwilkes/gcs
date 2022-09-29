@@ -91,6 +91,13 @@ func NewEquipmentProvider(provider gurps.EquipmentListProvider, forPage, carried
 	return p
 }
 
+func (p *equipmentProvider) RefKey() string {
+	if p.carried {
+		return gurps.BlockLayoutEquipmentKey
+	}
+	return gurps.BlockLayoutOtherEquipmentKey
+}
+
 func (p *equipmentProvider) SetTable(table *unison.Table[*ntable.Node[*gurps.Equipment]]) {
 	p.table = table
 }

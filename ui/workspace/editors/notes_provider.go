@@ -45,6 +45,10 @@ func NewNotesProvider(provider gurps.NoteListProvider, forPage bool) ntable.Tabl
 	}
 }
 
+func (p *notesProvider) RefKey() string {
+	return gurps.BlockLayoutNotesKey
+}
+
 func (p *notesProvider) SetTable(table *unison.Table[*ntable.Node[*gurps.Note]]) {
 	p.table = table
 }
