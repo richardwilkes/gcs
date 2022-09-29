@@ -182,6 +182,21 @@ func (a *Trait) transferOldTypeFlagToTags(name string, flag bool) {
 	}
 }
 
+// EffectivelyDisabled returns true if this node or a parent is disabled.
+func (a *Trait) EffectivelyDisabled() bool {
+	if a.Disabled {
+		return true
+	}
+	p := a.Parent()
+	for p != nil {
+		if p.Disabled {
+			return true
+		}
+		p = p.Parent()
+	}
+	return false
+}
+
 // CellData returns the cell data information for the given column.
 func (a *Trait) CellData(column int, data *CellData) {
 	data.Dim = !a.Enabled()
@@ -190,7 +205,7 @@ func (a *Trait) CellData(column int, data *CellData) {
 		data.Type = Text
 		data.Primary = a.String()
 		data.Secondary = a.SecondaryText()
-		data.Disabled = a.Disabled
+		data.Disabled = a.EffectivelyDisabled()
 		data.UnsatisfiedReason = a.UnsatisfiedReason
 	case TraitPointsColumn:
 		data.Type = Text
@@ -251,7 +266,7 @@ func (a *Trait) IsLeveled() bool {
 
 // AdjustedPoints returns the total points, taking levels and modifiers into account.
 func (a *Trait) AdjustedPoints() fxp.Int {
-	if a.Disabled {
+	if a.EffectivelyDisabled() {
 		return 0
 	}
 	if !a.Container() {

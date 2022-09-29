@@ -447,6 +447,9 @@ func (e *Entity) TraitPoints() (ad, disad, race, quirk fxp.Int) {
 }
 
 func calculateSingleTraitPoints(t *Trait) (ad, disad, race, quirk fxp.Int) {
+	if t.Disabled {
+		return
+	}
 	if t.Container() {
 		switch t.ContainerType {
 		case trait.Group:
