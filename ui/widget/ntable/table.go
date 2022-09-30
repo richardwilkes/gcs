@@ -69,7 +69,6 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 	table = unison.NewTable[*Node[T]](provider)
 	provider.SetTable(table)
 	table.HierarchyColumnIndex = provider.HierarchyColumnIndex()
-	table.DividerInk = theme.HeaderColor
 	layoutData := &unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,
 		VAlign: unison.FillAlignment,
@@ -98,8 +97,6 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 	header = unison.NewTableHeader(table, headers...)
 	header.Less = flexibleLess
 	header.BackgroundInk = theme.HeaderColor
-	header.DividerInk = unison.DividerColor
-	header.HeaderBorder = unison.NewLineBorder(theme.HeaderColor, 0, unison.Insets{Bottom: 1}, false)
 	header.SetBorder(header.HeaderBorder)
 	header.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,

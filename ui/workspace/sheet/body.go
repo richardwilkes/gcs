@@ -148,7 +148,7 @@ func (p *BodyPanel) createDRField(location *gurps.HitLocation) unison.Paneler {
 func (p *BodyPanel) addSeparator() {
 	sep := unison.NewSeparator()
 	sep.Vertical = true
-	sep.LineInk = theme.HeaderColor
+	sep.LineInk = unison.InteriorDividerColor
 	layoutData := &unison.FlexLayoutData{
 		HAlign: unison.MiddleAlignment,
 		VAlign: unison.FillAlignment,

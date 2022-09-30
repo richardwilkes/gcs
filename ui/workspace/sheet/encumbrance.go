@@ -171,7 +171,7 @@ func (p *EncumbrancePanel) createDodgeField(enc datafile.Encumbrance) *widget.No
 func (p *EncumbrancePanel) addSeparator() {
 	sep := unison.NewSeparator()
 	sep.Vertical = true
-	sep.LineInk = theme.HeaderColor
+	sep.LineInk = unison.InteriorDividerColor
 	sep.SetLayoutData(&unison.FlexLayoutData{
 		VSpan:  len(datafile.AllEncumbrance),
 		HAlign: unison.MiddleAlignment,
