@@ -24,6 +24,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/gcs/v5/model/gurps/skill"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/settings/display"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -198,8 +199,9 @@ func (s *Skill) CellData(column int, data *CellData) {
 	case SkillDescriptionColumn:
 		data.Type = Text
 		data.Primary = s.Description()
-		data.Secondary = s.SecondaryText()
+		data.Secondary = s.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.UnsatisfiedReason = s.UnsatisfiedReason
+		data.Tooltip = s.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 	case SkillDifficultyColumn:
 		if !s.Container() {
 			data.Type = Text
@@ -226,6 +228,9 @@ func (s *Skill) CellData(column int, data *CellData) {
 		if !s.Container() {
 			data.Type = Text
 			data.Primary = FormatRelativeSkill(s.Entity, s.Type, s.Difficulty, s.AdjustedRelativeLevel())
+			if tooltip := s.CalculateLevel().Tooltip; tooltip != "" {
+				data.Tooltip = IncludesModifiersFrom + ":" + tooltip
+			}
 		}
 	case SkillPointsColumn:
 		data.Type = Text
@@ -341,16 +346,16 @@ func (s *Skill) Description() string {
 }
 
 // SecondaryText returns the less important information that should be displayed with the description.
-func (s *Skill) SecondaryText() string {
+func (s *Skill) SecondaryText(optionChecker func(display.Option) bool) string {
 	var buffer strings.Builder
 	prefs := SheetSettingsFor(s.Entity)
-	if prefs.ModifiersDisplay.Inline() {
+	if optionChecker(prefs.ModifiersDisplay) {
 		text := s.ModifierNotes()
 		if strings.TrimSpace(text) != "" {
 			buffer.WriteString(text)
 		}
 	}
-	if prefs.NotesDisplay.Inline() {
+	if optionChecker(prefs.NotesDisplay) {
 		text := s.Notes()
 		if strings.TrimSpace(text) != "" {
 			if buffer.Len() != 0 {
@@ -359,7 +364,7 @@ func (s *Skill) SecondaryText() string {
 			buffer.WriteString(text)
 		}
 	}
-	if prefs.SkillLevelAdjDisplay.Inline() {
+	if optionChecker(prefs.SkillLevelAdjDisplay) {
 		if s.LevelData.Tooltip != "" && s.LevelData.Tooltip != NoAdditionalModifiers {
 			if buffer.Len() != 0 {
 				buffer.WriteByte('\n')

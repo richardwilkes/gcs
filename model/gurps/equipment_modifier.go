@@ -22,6 +22,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
 	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/settings/display"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/unison"
@@ -155,7 +156,8 @@ func (e *EquipmentModifier) CellData(column int, data *CellData) {
 	case EquipmentModifierDescriptionColumn:
 		data.Type = Text
 		data.Primary = e.Name
-		data.Secondary = e.SecondaryText()
+		data.Secondary = e.SecondaryText(func(option display.Option) bool { return option.Inline() })
+		data.Tooltip = e.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 	case EquipmentModifierTechLevelColumn:
 		if !e.Container() {
 			data.Type = Text
@@ -212,10 +214,10 @@ func (e *EquipmentModifier) String() string {
 }
 
 // SecondaryText returns the "secondary" text: the text display below an Trait.
-func (e *EquipmentModifier) SecondaryText() string {
+func (e *EquipmentModifier) SecondaryText(optionChecker func(display.Option) bool) string {
 	var buffer strings.Builder
 	settings := SheetSettingsFor(e.Entity)
-	if e.LocalNotes != "" && settings.NotesDisplay.Inline() {
+	if e.LocalNotes != "" && optionChecker(settings.NotesDisplay) {
 		if buffer.Len() != 0 {
 			buffer.WriteByte('\n')
 		}

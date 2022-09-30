@@ -22,6 +22,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/gcs/v5/model/gurps/trait"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/settings/display"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -204,9 +205,10 @@ func (a *Trait) CellData(column int, data *CellData) {
 	case TraitDescriptionColumn:
 		data.Type = Text
 		data.Primary = a.String()
-		data.Secondary = a.SecondaryText()
+		data.Secondary = a.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.Disabled = a.EffectivelyDisabled()
 		data.UnsatisfiedReason = a.UnsatisfiedReason
+		data.Tooltip = a.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 	case TraitPointsColumn:
 		data.Type = Text
 		data.Primary = a.AdjustedPoints().String()
@@ -427,13 +429,13 @@ func (a *Trait) ModifierNotes() string {
 }
 
 // SecondaryText returns the "secondary" text: the text display below an Trait.
-func (a *Trait) SecondaryText() string {
+func (a *Trait) SecondaryText(optionChecker func(display.Option) bool) string {
 	var buffer strings.Builder
 	settings := SheetSettingsFor(a.Entity)
-	if a.UserDesc != "" && settings.UserDescriptionDisplay.Inline() {
+	if a.UserDesc != "" && optionChecker(settings.UserDescriptionDisplay) {
 		buffer.WriteString(a.UserDesc)
 	}
-	if settings.ModifiersDisplay.Inline() {
+	if optionChecker(settings.ModifiersDisplay) {
 		if notes := a.ModifierNotes(); notes != "" {
 			if buffer.Len() != 0 {
 				buffer.WriteByte('\n')
@@ -441,7 +443,7 @@ func (a *Trait) SecondaryText() string {
 			buffer.WriteString(notes)
 		}
 	}
-	if a.LocalNotes != "" && settings.NotesDisplay.Inline() {
+	if a.LocalNotes != "" && optionChecker(settings.NotesDisplay) {
 		if buffer.Len() != 0 {
 			buffer.WriteByte('\n')
 		}

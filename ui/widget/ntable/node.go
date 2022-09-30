@@ -23,6 +23,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/ui/workspace/settings"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
+	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
 	"golang.org/x/exp/slices"
 )
@@ -238,7 +239,7 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground u
 		tooltip = c.UnsatisfiedReason
 	}
 	if tooltip != "" {
-		p.Tooltip = unison.NewTooltipWithText(tooltip)
+		p.Tooltip = unison.NewTooltipWithText(txt.Wrap("", tooltip, 120))
 	}
 	return p
 }

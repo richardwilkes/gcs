@@ -21,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/gcs/v5/model/gurps/trait"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/settings/display"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -162,7 +163,8 @@ func (a *TraitModifier) CellData(column int, data *CellData) {
 	case TraitModifierDescriptionColumn:
 		data.Type = Text
 		data.Primary = a.Name
-		data.Secondary = a.SecondaryText()
+		data.Secondary = a.SecondaryText(func(option display.Option) bool { return option.Inline() })
+		data.Tooltip = a.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 	case TraitModifierCostColumn:
 		if !a.Container() {
 			data.Type = Text
@@ -228,10 +230,10 @@ func (a *TraitModifier) String() string {
 }
 
 // SecondaryText returns the "secondary" text: the text display below an Trait.
-func (a *TraitModifier) SecondaryText() string {
+func (a *TraitModifier) SecondaryText(optionChecker func(display.Option) bool) string {
 	var buffer strings.Builder
 	settings := SheetSettingsFor(a.Entity)
-	if a.LocalNotes != "" && settings.NotesDisplay.Inline() {
+	if a.LocalNotes != "" && optionChecker(settings.NotesDisplay) {
 		if buffer.Len() != 0 {
 			buffer.WriteByte('\n')
 		}

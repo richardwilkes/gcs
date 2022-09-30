@@ -24,6 +24,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/gcs/v5/model/gurps/skill"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/settings/display"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -206,8 +207,9 @@ func (s *Spell) CellData(column int, data *CellData) {
 	case SpellDescriptionColumn:
 		data.Type = Text
 		data.Primary = s.Description()
-		data.Secondary = s.SecondaryText()
+		data.Secondary = s.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.UnsatisfiedReason = s.UnsatisfiedReason
+		data.Tooltip = s.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 	case SpellResistColumn:
 		if !s.Container() {
 			data.Type = Text
@@ -277,6 +279,9 @@ func (s *Spell) CellData(column int, data *CellData) {
 					data.Primary += rsl.StringWithSign()
 				}
 			}
+			if tooltip := s.CalculateLevel().Tooltip; tooltip != "" {
+				data.Tooltip = IncludesModifiersFrom + ":" + tooltip
+			}
 		}
 	case SpellPointsColumn:
 		data.Type = Text
@@ -289,7 +294,8 @@ func (s *Spell) CellData(column int, data *CellData) {
 	case SpellDescriptionForPageColumn:
 		data.Type = Text
 		data.Primary = s.Description()
-		data.Secondary = s.SecondaryText()
+		data.Secondary = s.SecondaryText(func(option display.Option) bool { return option.Inline() })
+		data.Tooltip = s.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 		if !s.Container() {
 			var buffer strings.Builder
 			addPartToBuffer(&buffer, i18n.Text("Resistance"), s.Resist)
@@ -632,10 +638,10 @@ func (s *Spell) Description() string {
 }
 
 // SecondaryText returns the less important information that should be displayed with the description.
-func (s *Spell) SecondaryText() string {
+func (s *Spell) SecondaryText(optionChecker func(display.Option) bool) string {
 	var buffer strings.Builder
 	prefs := SheetSettingsFor(s.Entity)
-	if prefs.NotesDisplay.Inline() {
+	if optionChecker(prefs.NotesDisplay) {
 		text := s.Notes()
 		if strings.TrimSpace(text) != "" {
 			if buffer.Len() != 0 {
@@ -643,14 +649,14 @@ func (s *Spell) SecondaryText() string {
 			}
 			buffer.WriteString(text)
 		}
-	}
-	if rituals := s.Rituals(); rituals != "" {
-		if buffer.Len() != 0 {
-			buffer.WriteByte('\n')
+		if rituals := s.Rituals(); rituals != "" {
+			if buffer.Len() != 0 {
+				buffer.WriteByte('\n')
+			}
+			buffer.WriteString(rituals)
 		}
-		buffer.WriteString(rituals)
 	}
-	if prefs.SkillLevelAdjDisplay.Inline() {
+	if optionChecker(prefs.SkillLevelAdjDisplay) {
 		if s.LevelData.Tooltip != "" && s.LevelData.Tooltip != NoAdditionalModifiers {
 			if buffer.Len() != 0 {
 				buffer.WriteByte('\n')

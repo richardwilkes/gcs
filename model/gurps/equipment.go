@@ -23,6 +23,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
 	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/settings/display"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -227,8 +228,9 @@ func (e *Equipment) CellData(column int, data *CellData) {
 	case EquipmentDescriptionColumn:
 		data.Type = Text
 		data.Primary = e.Description()
-		data.Secondary = e.SecondaryText()
+		data.Secondary = e.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.UnsatisfiedReason = e.UnsatisfiedReason
+		data.Tooltip = e.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 	case EquipmentUsesColumn:
 		if e.MaxUses > 0 {
 			data.Type = Text
@@ -315,10 +317,10 @@ func (e *Equipment) Description() string {
 }
 
 // SecondaryText returns the "secondary" text: the text display below the description.
-func (e *Equipment) SecondaryText() string {
+func (e *Equipment) SecondaryText(optionChecker func(display.Option) bool) string {
 	var buffer strings.Builder
 	settings := SheetSettingsFor(e.Entity)
-	if settings.ModifiersDisplay.Inline() {
+	if optionChecker(settings.ModifiersDisplay) {
 		if notes := e.ModifierNotes(); notes != "" {
 			if buffer.Len() != 0 {
 				buffer.WriteByte('\n')
@@ -326,7 +328,7 @@ func (e *Equipment) SecondaryText() string {
 			buffer.WriteString(notes)
 		}
 	}
-	if e.LocalNotes != "" && settings.NotesDisplay.Inline() {
+	if e.LocalNotes != "" && optionChecker(settings.NotesDisplay) {
 		if buffer.Len() != 0 {
 			buffer.WriteByte('\n')
 		}
