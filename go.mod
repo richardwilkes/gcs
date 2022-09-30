@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/google/uuid v1.3.0
 	github.com/richardwilkes/json v0.1.0
-	github.com/richardwilkes/pdf v1.20.4-0.20220929025926-c6b6cf00810c
+	github.com/richardwilkes/pdf v1.20.4-0.20220930022800-cf951ec397b0
 	github.com/richardwilkes/rpgtools v1.4.2
 	github.com/richardwilkes/toolbox v1.74.2-0.20220926235828-a3b6a06fb615
 	github.com/richardwilkes/unison v0.33.4-0.20220928022059-ed1abcf03c11
