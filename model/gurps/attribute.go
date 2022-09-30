@@ -136,11 +136,11 @@ func (a *Attribute) SetMaximum(value fxp.Int) {
 // Current returns the current value. Same as .Maximum() if not a pool.
 func (a *Attribute) Current() fxp.Int {
 	def := a.AttributeDef()
-	if def == nil && def.IsSeparator() {
+	if def == nil || def.IsSeparator() {
 		return 0
 	}
 	max := a.Maximum()
-	if def == nil || def.Type != attribute.Pool {
+	if def.Type != attribute.Pool {
 		return max
 	}
 	return max - a.Damage
