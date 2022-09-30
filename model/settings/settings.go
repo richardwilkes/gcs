@@ -36,6 +36,7 @@ import (
 
 const maxRecentFiles = 20
 
+// Dir keys
 const (
 	DefaultLastDirKey = "default"
 	ImagesDirKey      = "images"

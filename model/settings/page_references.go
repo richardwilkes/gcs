@@ -78,7 +78,9 @@ func (p *PageRefs) UnmarshalJSON(data []byte) error {
 			return err
 		}
 	}
-	delete(p.data, oldPageRefsKey)
+	if p.data != nil {
+		delete(p.data, oldPageRefsKey)
+	}
 	for k, v := range p.data {
 		v.ID = k
 	}
@@ -109,7 +111,9 @@ func (p *PageRefs) Set(pageRef *PageRef) {
 
 // Remove the PageRef for the ID.
 func (p *PageRefs) Remove(id string) {
-	delete(p.data, id)
+	if p.data != nil {
+		delete(p.data, id)
+	}
 }
 
 // List returns a sorted list of page references.

@@ -18,6 +18,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
 )
@@ -135,7 +136,7 @@ func (b *KeyBindings) MakeCurrent() {
 	if len(actions) != 0 {
 		factory := unison.DefaultMenuFactory()
 		for _, w := range unison.Windows() {
-			if bar := factory.BarForWindowNoCreate(w); bar != nil {
+			if bar := factory.BarForWindowNoCreate(w); !toolbox.IsNil(bar) {
 				for _, a := range actions {
 					if item := bar.Item(a.ID); item != nil {
 						item.SetKeyBinding(a.KeyBinding)
@@ -181,5 +182,7 @@ func (b *KeyBindings) Reset() {
 
 // ResetOne resets one font by ID to factory defaults.
 func (b *KeyBindings) ResetOne(id string) {
-	delete(b.data, id)
+	if b.data != nil {
+		delete(b.data, id)
+	}
 }
