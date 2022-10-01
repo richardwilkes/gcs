@@ -139,7 +139,16 @@ func NewWorkspace(wnd *unison.Window) *Workspace {
 	wnd.WillCloseCallback = w.willClose
 	global := settings.Global()
 	if global.WorkspaceFrame != nil {
-		wnd.SetFrameRect(*global.WorkspaceFrame)
+		r := *global.WorkspaceFrame
+		if r.Width < 10 {
+			r.Width = 10
+		}
+		if r.Height < 10 {
+			r.Height = 10
+		}
+		r = unison.BestDisplayForRect(r).FitRectOnto(r)
+		*global.WorkspaceFrame = r
+		wnd.SetFrameRect(r)
 	} else {
 		wnd.SetFrameRect(unison.PrimaryDisplay().Usable)
 	}
