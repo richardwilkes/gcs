@@ -65,6 +65,9 @@ func (w *aboutWindow) prepare() error {
 	})
 	content.SetLayout(nil)
 	content.DrawCallback = w.drawContentBackground
+	w.WillCloseCallback = func() {
+		aboutWnd.Window = nil
+	}
 	w.Pack()
 	r := w.ContentRect()
 	usable := unison.PrimaryDisplay().Usable
