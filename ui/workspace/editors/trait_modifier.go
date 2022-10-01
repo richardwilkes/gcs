@@ -29,14 +29,12 @@ func EditTraitModifier(owner widget.Rebuildable, modifier *gurps.TraitModifier) 
 }
 
 func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifierEditData], content *unison.Panel) func() {
-	if !e.target.Container() {
-		content.AddChild(unison.NewPanel())
-		addInvertedCheckBox(content, i18n.Text("Enabled"), &e.editorData.Disabled)
-	}
 	addNameLabelAndField(content, &e.editorData.Name)
 	addNotesLabelAndField(content, &e.editorData.LocalNotes)
 	addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
 	if !e.target.Container() {
+		content.AddChild(unison.NewPanel())
+		addInvertedCheckBox(content, i18n.Text("Enabled"), &e.editorData.Disabled)
 		costLabel := i18n.Text("Cost")
 		wrapper := addFlowWrapper(content, costLabel, 3)
 		addDecimalField(wrapper, nil, "", costLabel, "", &e.editorData.Cost, -fxp.MaxBasePoints, fxp.MaxBasePoints)

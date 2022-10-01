@@ -29,10 +29,6 @@ func EditEquipmentModifier(owner widget.Rebuildable, modifier *gurps.EquipmentMo
 }
 
 func initEquipmentModifierEditor(e *editor[*gurps.EquipmentModifier, *gurps.EquipmentModifierEditData], content *unison.Panel) func() {
-	if !e.target.Container() {
-		content.AddChild(unison.NewPanel())
-		addInvertedCheckBox(content, i18n.Text("Enabled"), &e.editorData.Disabled)
-	}
 	addNameLabelAndField(content, &e.editorData.Name)
 	if !e.target.Container() {
 		addLabelAndStringField(content, i18n.Text("Tech Level"), gurps.TechLevelInfo, &e.editorData.TechLevel)
@@ -40,6 +36,8 @@ func initEquipmentModifierEditor(e *editor[*gurps.EquipmentModifier, *gurps.Equi
 	addNotesLabelAndField(content, &e.editorData.LocalNotes)
 	addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
 	if !e.target.Container() {
+		content.AddChild(unison.NewPanel())
+		addInvertedCheckBox(content, i18n.Text("Enabled"), &e.editorData.Disabled)
 		addEquipmentCostFields(content, e)
 		addEquipmentWeightFields(content, e)
 	}

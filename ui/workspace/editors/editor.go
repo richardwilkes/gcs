@@ -84,6 +84,22 @@ func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner widget.Rebuil
 			HSpacing: unison.StdHSpacing,
 			VSpacing: unison.StdVSpacing,
 		})
+		content.KeyDownCallback = func(keyCode unison.KeyCode, mod unison.Modifiers, repeat bool) bool {
+			switch {
+			case mod.OSMenuCmdModifierDown() && (keyCode == unison.KeyReturn || keyCode == unison.KeyNumPadEnter):
+				if e.applyButton.Enabled() {
+					e.applyButton.Click()
+				}
+				return true
+			case mod == 0 && keyCode == unison.KeyEscape:
+				if e.cancelButton.Enabled() {
+					e.cancelButton.Click()
+				}
+				return true
+			default:
+				return false
+			}
+		}
 		e.modificationCallback = initContent(e, content)
 		scroller := unison.NewScrollPanel()
 		scroller.SetContent(content, unison.HintedFillBehavior, unison.FillBehavior)
@@ -136,7 +152,9 @@ func (e *editor[N, D]) createToolbar() unison.Paneler {
 	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	e.applyButton = unison.NewSVGButton(res.CheckmarkSVG)
-	e.applyButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Apply Changes"))
+	e.applyButton.Tooltip = unison.NewTooltipWithSecondaryText(i18n.Text("Apply Changes"),
+		fmt.Sprintf(i18n.Text("%v%v or %v%v"), unison.OSMenuCmdModifier(), unison.KeyReturn, unison.OSMenuCmdModifier(),
+			unison.KeyNumPadEnter))
 	e.applyButton.SetEnabled(false)
 	e.applyButton.ClickCallback = func() {
 		e.apply()
@@ -145,7 +163,7 @@ func (e *editor[N, D]) createToolbar() unison.Paneler {
 	}
 	toolbar.AddChild(e.applyButton)
 	e.cancelButton = unison.NewSVGButton(res.NotSVG)
-	e.cancelButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Discard Changes"))
+	e.cancelButton.Tooltip = unison.NewTooltipWithSecondaryText(i18n.Text("Discard Changes"), unison.KeyEscape.String())
 	e.cancelButton.SetEnabled(false)
 	e.cancelButton.ClickCallback = func() {
 		e.promptForSave = false
