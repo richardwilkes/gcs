@@ -42,7 +42,7 @@ done
 
 echo -e "\033[33mBuilding...\033[0m"
 LDFLAGS_ALL="-X github.com/richardwilkes/toolbox/cmdline.AppVersion=$RELEASE"
-STD_FLAGS="-v -buildvcs $EXTRA_BUILD_FLAGS"
+STD_FLAGS="-v -buildvcs=true $EXTRA_BUILD_FLAGS"
 
 case $(uname -s) in
 Darwin*)
