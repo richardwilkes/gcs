@@ -41,12 +41,19 @@ import (
 )
 
 var (
-	_ workspace.FileBackedDockable = &Sheet{}
-	_ unison.UndoManagerProvider   = &Sheet{}
-	_ widget.ModifiableRoot        = &Sheet{}
-	_ widget.Rebuildable           = &Sheet{}
-	_ widget.DockableKind          = &Sheet{}
-	_ unison.TabCloser             = &Sheet{}
+	_        workspace.FileBackedDockable = &Sheet{}
+	_        unison.UndoManagerProvider   = &Sheet{}
+	_        widget.ModifiableRoot        = &Sheet{}
+	_        widget.Rebuildable           = &Sheet{}
+	_        widget.DockableKind          = &Sheet{}
+	_        unison.TabCloser             = &Sheet{}
+	dropKeys                              = []string{
+		gid.Equipment,
+		gid.Skill,
+		gid.Spell,
+		gid.Trait,
+		gid.Note,
+	}
 )
 
 type itemCreator interface {
@@ -77,6 +84,7 @@ type Sheet struct {
 	CarriedEquipment     *PageList[*gurps.Equipment]
 	OtherEquipment       *PageList[*gurps.Equipment]
 	Notes                *PageList[*gurps.Note]
+	dragReroutePanel     *unison.Panel
 	awaitingUpdate       bool
 	needsSaveAsPrompt    bool
 }
@@ -138,6 +146,44 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 		HAlign:  unison.FillAlignment,
 		VAlign:  unison.FillAlignment,
 	})
+
+	s.MouseDownCallback = func(_ unison.Point, _, _ int, _ unison.Modifiers) bool {
+		s.RequestFocus()
+		return false
+	}
+	s.DataDragOverCallback = func(_ unison.Point, data map[string]any) bool {
+		s.dragReroutePanel = nil
+		for _, key := range dropKeys {
+			if _, ok := data[key]; ok {
+				if s.dragReroutePanel = s.keyToPanel(key); s.dragReroutePanel != nil {
+					s.dragReroutePanel.DataDragOverCallback(unison.Point{Y: 100000000}, data)
+					return true
+				}
+				break
+			}
+		}
+		return false
+	}
+	s.DataDragExitCallback = func() {
+		if s.dragReroutePanel != nil {
+			s.dragReroutePanel.DataDragExitCallback()
+			s.dragReroutePanel = nil
+		}
+	}
+	s.DataDragDropCallback = func(_ unison.Point, data map[string]any) {
+		if s.dragReroutePanel != nil {
+			s.dragReroutePanel.DataDragDropCallback(unison.Point{Y: 10000000}, data)
+			s.dragReroutePanel = nil
+		}
+	}
+	s.DrawOverCallback = func(gc *unison.Canvas, rect unison.Rect) {
+		if s.dragReroutePanel != nil {
+			r := s.RectFromRoot(s.dragReroutePanel.RectToRoot(s.dragReroutePanel.ContentRect(true)))
+			paint := unison.DropAreaColor.Paint(gc, r, unison.Fill)
+			paint.SetColorFilter(unison.Alpha30Filter())
+			gc.DrawRect(r, paint)
+		}
+	}
 
 	s.content.SetLayout(&unison.FlexLayout{
 		Columns:  1,
@@ -224,6 +270,25 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	s.InstallCmdHandlers(constants.PrintItemID, unison.AlwaysEnabled, func(_ any) { s.print() })
 
 	return s
+}
+
+func (s *Sheet) keyToPanel(key string) *unison.Panel {
+	var p unison.Paneler
+	switch key {
+	case gid.Equipment:
+		p = s.CarriedEquipment.Table
+	case gid.Skill:
+		p = s.Skills.Table
+	case gid.Spell:
+		p = s.Spells.Table
+	case gid.Trait:
+		p = s.Traits.Table
+	case gid.Note:
+		p = s.Notes.Table
+	default:
+		return nil
+	}
+	return p.AsPanel()
 }
 
 func (s *Sheet) installNewItemCmdHandlers(itemID, containerID int, creator itemCreator) {

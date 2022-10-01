@@ -19,6 +19,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/constants"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	gsettings "github.com/richardwilkes/gcs/v5/model/gurps/settings"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
@@ -60,6 +61,7 @@ type Template struct {
 	Spells            *PageList[*gurps.Spell]
 	Equipment         *PageList[*gurps.Equipment]
 	Notes             *PageList[*gurps.Note]
+	dragReroutePanel  *unison.Panel
 	needsSaveAsPrompt bool
 }
 
@@ -107,6 +109,44 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 		HAlign:  unison.FillAlignment,
 		VAlign:  unison.FillAlignment,
 	})
+
+	d.MouseDownCallback = func(_ unison.Point, _, _ int, _ unison.Modifiers) bool {
+		d.RequestFocus()
+		return false
+	}
+	d.DataDragOverCallback = func(_ unison.Point, data map[string]any) bool {
+		d.dragReroutePanel = nil
+		for _, key := range dropKeys {
+			if _, ok := data[key]; ok {
+				if d.dragReroutePanel = d.keyToPanel(key); d.dragReroutePanel != nil {
+					d.dragReroutePanel.DataDragOverCallback(unison.Point{Y: 100000000}, data)
+					return true
+				}
+				break
+			}
+		}
+		return false
+	}
+	d.DataDragExitCallback = func() {
+		if d.dragReroutePanel != nil {
+			d.dragReroutePanel.DataDragExitCallback()
+			d.dragReroutePanel = nil
+		}
+	}
+	d.DataDragDropCallback = func(_ unison.Point, data map[string]any) {
+		if d.dragReroutePanel != nil {
+			d.dragReroutePanel.DataDragDropCallback(unison.Point{Y: 10000000}, data)
+			d.dragReroutePanel = nil
+		}
+	}
+	d.DrawOverCallback = func(gc *unison.Canvas, rect unison.Rect) {
+		if d.dragReroutePanel != nil {
+			r := d.RectFromRoot(d.dragReroutePanel.RectToRoot(d.dragReroutePanel.ContentRect(true)))
+			paint := unison.DropAreaColor.Paint(gc, r, unison.Fill)
+			paint.SetColorFilter(unison.Alpha30Filter())
+			gc.DrawRect(r, paint)
+		}
+	}
 
 	d.scroll.SetContent(d.createContent(), unison.UnmodifiedBehavior, unison.UnmodifiedBehavior)
 	d.scroll.SetLayoutData(&unison.FlexLayoutData{
@@ -166,6 +206,25 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 	d.InstallCmdHandlers(constants.ApplyTemplateItemID, d.canApplyTemplate, d.applyTemplate)
 
 	return d
+}
+
+func (d *Template) keyToPanel(key string) *unison.Panel {
+	var p unison.Paneler
+	switch key {
+	case gid.Equipment:
+		p = d.Equipment.Table
+	case gid.Skill:
+		p = d.Skills.Table
+	case gid.Spell:
+		p = d.Spells.Table
+	case gid.Trait:
+		p = d.Traits.Table
+	case gid.Note:
+		p = d.Notes.Table
+	default:
+		return nil
+	}
+	return p.AsPanel()
 }
 
 func (d *Template) canApplyTemplate(_ any) bool {
