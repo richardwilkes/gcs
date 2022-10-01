@@ -719,8 +719,17 @@ func (n *Navigator) handleSelectionDoubleClick() {
 			return
 		}
 	}
+	altered := false
 	for _, row := range selection {
-		row.Open(window)
+		if row.CanHaveChildren() {
+			altered = true
+			row.SetOpen(!row.IsOpen())
+		} else {
+			row.Open(window)
+		}
+	}
+	if altered {
+		n.table.SyncToModel()
 	}
 }
 
