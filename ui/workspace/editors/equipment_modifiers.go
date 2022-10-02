@@ -12,6 +12,7 @@
 package editors
 
 import (
+	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/gcs/v5/ui/widget/ntable"
@@ -44,6 +45,7 @@ func newEquipmentModifiersPanel(entity *gurps.Entity, modifiers *[]*gurps.Equipm
 	}
 	p.provider = NewEquipmentModifiersProvider(p, true)
 	p.table = newTable(p.AsPanel(), p.provider)
+	p.table.RefKey = "equipment-modifiers-" + uuid.New().String()
 	return p
 }
 

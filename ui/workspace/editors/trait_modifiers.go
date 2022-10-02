@@ -12,6 +12,7 @@
 package editors
 
 import (
+	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/gcs/v5/ui/widget/ntable"
@@ -44,6 +45,7 @@ func newTraitModifiersPanel(entity *gurps.Entity, modifiers *[]*gurps.TraitModif
 	}
 	p.provider = NewTraitModifiersProvider(p, true)
 	p.table = newTable(p.AsPanel(), p.provider)
+	p.table.RefKey = "trait-modifiers-" + uuid.New().String()
 	return p
 }
 

@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/res"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/gcs/v5/ui/workspace"
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
@@ -42,6 +43,8 @@ type editor[N gurps.NodeTypes, D gurps.EditorData[N]] struct {
 	unison.Panel
 	owner                widget.Rebuildable
 	target               N
+	previousDockable     unison.Dockable
+	previousFocusKey     string
 	svg                  *unison.SVG
 	undoMgr              *unison.UndoManager
 	applyButton          *unison.Button
@@ -67,6 +70,16 @@ func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner widget.Rebuil
 			svg:    svg,
 		}
 		e.Self = e
+
+		if dc != nil {
+			if e.previousDockable = dc.CurrentDockable(); !toolbox.IsNil(e.previousDockable) {
+				if focus := e.previousDockable.AsPanel().Window().Focus(); focus != nil {
+					if unison.Ancestor[unison.Dockable](focus) == e.previousDockable {
+						e.previousFocusKey = focus.RefKey
+					}
+				}
+			}
+		}
 
 		reflect.ValueOf(&e.beforeData).Elem().Set(reflect.New(reflect.TypeOf(e.beforeData).Elem()))
 		e.beforeData.CopyFrom(target)
@@ -242,6 +255,16 @@ func (e *editor[N, D]) AttemptClose() bool {
 			}
 		}
 		dc.Close(e)
+		if !toolbox.IsNil(e.previousDockable) {
+			if dc = unison.Ancestor[*unison.DockContainer](e.previousDockable); dc != nil {
+				dc.SetCurrentDockable(e.previousDockable)
+				if e.previousFocusKey != "" {
+					if p := e.previousDockable.AsPanel().FindRefKey(e.previousFocusKey); p != nil {
+						p.RequestFocus()
+					}
+				}
+			}
+		}
 	}
 	return true
 }

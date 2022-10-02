@@ -12,6 +12,7 @@
 package editors
 
 import (
+	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/constants"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/weapon"
@@ -52,6 +53,7 @@ func newWeaponsPanel(cmdRoot widget.Rebuildable, weaponOwner gurps.WeaponOwner, 
 	}
 	p.provider = NewWeaponsProvider(p, p.weaponType, false)
 	p.table = newTable(p.AsPanel(), p.provider)
+	p.table.RefKey = weaponType.Key() + "-" + uuid.New().String()
 	var id int
 	switch weaponType {
 	case weapon.Melee:
