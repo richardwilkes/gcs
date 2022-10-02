@@ -25,6 +25,7 @@ import (
 	"github.com/richardwilkes/toolbox/desktop"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio/fs"
+	"github.com/richardwilkes/toolbox/xmath"
 	"github.com/richardwilkes/unison"
 )
 
@@ -44,27 +45,35 @@ var (
 // PDFDockable holds the view for a PDF file.
 type PDFDockable struct {
 	unison.Panel
-	path               string
-	pdf                *pdf.PDF
-	scroll             *unison.ScrollPanel
-	docPanel           *unison.Panel
-	pageNumberField    *unison.Field
-	scaleField         *widget.PercentageField
-	searchField        *unison.Field
-	matchesLabel       *unison.Label
-	backButton         *unison.Button
-	forwardButton      *unison.Button
-	firstPageButton    *unison.Button
-	previousPageButton *unison.Button
-	nextPageButton     *unison.Button
-	lastPageButton     *unison.Button
-	page               *pdf.Page
-	link               *pdf.Link
-	rolloverRect       unison.Rect
-	scale              int
-	historyPos         int
-	history            []int
-	noUpdate           bool
+	path                   string
+	pdf                    *pdf.PDF
+	toolbar                *unison.Panel
+	content                *unison.Panel
+	docScroll              *unison.ScrollPanel
+	docPanel               *unison.Panel
+	tocScroll              *unison.ScrollPanel
+	tocPanel               *unison.Table[*tocNode]
+	divider                *unison.Panel
+	tocScrollLayoutData    *unison.FlexLayoutData
+	pageNumberField        *unison.Field
+	scaleField             *widget.PercentageField
+	searchField            *unison.Field
+	matchesLabel           *unison.Label
+	sideBarButton          *unison.Button
+	backButton             *unison.Button
+	forwardButton          *unison.Button
+	firstPageButton        *unison.Button
+	previousPageButton     *unison.Button
+	nextPageButton         *unison.Button
+	lastPageButton         *unison.Button
+	page                   *pdf.Page
+	link                   *pdf.Link
+	rolloverRect           unison.Rect
+	scale                  int
+	historyPos             int
+	history                []int
+	noUpdate               bool
+	adjustTableSizePending bool
 }
 
 // NewPDFDockable creates a new unison.Dockable for PDF files.
@@ -86,51 +95,51 @@ func NewPDFDockable(filePath string) (unison.Dockable, error) {
 	d.GainedFocusCallback = d.pdf.RequestRenderPriority
 	d.SetLayout(&unison.FlexLayout{Columns: 1})
 
-	d.docPanel = unison.NewPanel()
-	d.docPanel.SetSizer(d.docSizer)
-	d.docPanel.DrawCallback = d.draw
-	d.docPanel.MouseDownCallback = d.mouseDown
-	d.docPanel.MouseMoveCallback = d.mouseMove
-	d.docPanel.MouseUpCallback = d.mouseUp
-	d.docPanel.SetFocusable(true)
+	d.createToolbar()
+	d.createTOC()
+	d.createContent()
 
-	d.scroll = unison.NewScrollPanel()
-	d.scroll.SetLayoutData(&unison.FlexLayoutData{
+	d.AddChild(d.toolbar)
+	d.AddChild(d.content)
+
+	d.noUpdate = false
+	d.LoadPage(0)
+
+	return d, nil
+}
+
+func (d *PDFDockable) createToolbar() {
+	d.toolbar = unison.NewPanel()
+	d.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
+		false), unison.NewEmptyBorder(unison.StdInsets())))
+	d.toolbar.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
 		HGrab:  true,
-		VGrab:  true,
 	})
-	d.scroll.SetContent(d.docPanel, unison.FillBehavior, unison.FillBehavior)
-	d.scroll.ContentView().DrawOverCallback = d.drawOverlay
 
-	d.backButton = unison.NewSVGButton(res.BackSVG)
-	d.backButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Back"))
-	d.backButton.ClickCallback = d.Back
+	d.sideBarButton = unison.NewSVGButton(res.SideBarSVG)
+	d.sideBarButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Toggle the Sidebar"))
+	d.sideBarButton.ClickCallback = d.toggleSideBar
+	d.sideBarButton.SetEnabled(false)
+	d.toolbar.AddChild(d.sideBarButton)
 
-	d.forwardButton = unison.NewSVGButton(res.ForwardSVG)
-	d.forwardButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Forward"))
-	d.forwardButton.ClickCallback = d.Forward
-
-	d.firstPageButton = unison.NewSVGButton(res.FirstSVG)
-	d.firstPageButton.Tooltip = unison.NewTooltipWithText(i18n.Text("First Page"))
-	d.firstPageButton.ClickCallback = func() { d.LoadPage(0) }
-
-	d.previousPageButton = unison.NewSVGButton(res.PreviousSVG)
-	d.previousPageButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Previous Page"))
-	d.previousPageButton.ClickCallback = func() { d.LoadPage(d.pdf.MostRecentPageNumber() - 1) }
-
-	d.nextPageButton = unison.NewSVGButton(res.NextSVG)
-	d.nextPageButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Next Page"))
-	d.nextPageButton.ClickCallback = func() { d.LoadPage(d.pdf.MostRecentPageNumber() + 1) }
-
-	d.lastPageButton = unison.NewSVGButton(res.LastSVG)
-	d.lastPageButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Last Page"))
-	d.lastPageButton.ClickCallback = func() { d.LoadPage(d.pdf.PageCount() - 1) }
+	scaleTitle := i18n.Text("Scale")
+	d.scaleField = widget.NewPercentageField(nil, "", scaleTitle,
+		func() int { return d.scale },
+		func(v int) {
+			if d.noUpdate {
+				return
+			}
+			d.scale = v
+			d.LoadPage(d.pdf.MostRecentPageNumber())
+		}, minPDFDockableScale, maxPDFDockableScale, false, false)
+	d.scaleField.Tooltip = unison.NewTooltipWithText(scaleTitle)
+	d.toolbar.AddChild(d.scaleField)
 
 	pageLabel := unison.NewLabel()
 	pageLabel.Font = unison.DefaultFieldTheme.Font
 	pageLabel.Text = i18n.Text("Page")
+	d.toolbar.AddChild(pageLabel)
 
 	d.pageNumberField = unison.NewField()
 	d.pageNumberField.SetMinimumTextWidthUsing(strconv.Itoa(d.pdf.PageCount() * 10))
@@ -149,22 +158,46 @@ func NewPDFDockable(filePath string) (unison.Dockable, error) {
 		}
 		return true
 	}
+	d.toolbar.AddChild(d.pageNumberField)
 
 	ofLabel := unison.NewLabel()
 	ofLabel.Font = unison.DefaultFieldTheme.Font
 	ofLabel.Text = fmt.Sprintf(i18n.Text("of %d"), d.pdf.PageCount())
+	d.toolbar.AddChild(ofLabel)
 
-	scaleTitle := i18n.Text("Scale")
-	d.scaleField = widget.NewPercentageField(nil, "", scaleTitle,
-		func() int { return d.scale },
-		func(v int) {
-			if d.noUpdate {
-				return
-			}
-			d.scale = v
-			d.LoadPage(d.pdf.MostRecentPageNumber())
-		}, minPDFDockableScale, maxPDFDockableScale, false, false)
-	d.scaleField.Tooltip = unison.NewTooltipWithText(scaleTitle)
+	d.toolbar.AddChild(widget.NewToolbarSeparator(unison.StdHSpacing))
+
+	d.backButton = unison.NewSVGButton(res.BackSVG)
+	d.backButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Back"))
+	d.backButton.ClickCallback = d.Back
+	d.toolbar.AddChild(d.backButton)
+
+	d.forwardButton = unison.NewSVGButton(res.ForwardSVG)
+	d.forwardButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Forward"))
+	d.forwardButton.ClickCallback = d.Forward
+	d.toolbar.AddChild(d.forwardButton)
+
+	d.toolbar.AddChild(widget.NewToolbarSeparator(unison.StdHSpacing))
+
+	d.firstPageButton = unison.NewSVGButton(res.FirstSVG)
+	d.firstPageButton.Tooltip = unison.NewTooltipWithText(i18n.Text("First Page"))
+	d.firstPageButton.ClickCallback = func() { d.LoadPage(0) }
+	d.toolbar.AddChild(d.firstPageButton)
+
+	d.previousPageButton = unison.NewSVGButton(res.PreviousSVG)
+	d.previousPageButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Previous Page"))
+	d.previousPageButton.ClickCallback = func() { d.LoadPage(d.pdf.MostRecentPageNumber() - 1) }
+	d.toolbar.AddChild(d.previousPageButton)
+
+	d.nextPageButton = unison.NewSVGButton(res.NextSVG)
+	d.nextPageButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Next Page"))
+	d.nextPageButton.ClickCallback = func() { d.LoadPage(d.pdf.MostRecentPageNumber() + 1) }
+	d.toolbar.AddChild(d.nextPageButton)
+
+	d.lastPageButton = unison.NewSVGButton(res.LastSVG)
+	d.lastPageButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Last Page"))
+	d.lastPageButton.ClickCallback = func() { d.LoadPage(d.pdf.PageCount() - 1) }
+	d.toolbar.AddChild(d.lastPageButton)
 
 	d.searchField = widget.NewSearchField()
 	pageSearch := i18n.Text("Page Search")
@@ -181,45 +214,99 @@ func NewPDFDockable(filePath string) (unison.Dockable, error) {
 		}
 		d.LoadPage(d.pdf.MostRecentPageNumber())
 	}
+	d.toolbar.AddChild(d.searchField)
 
 	d.matchesLabel = unison.NewLabel()
 	d.matchesLabel.Text = "-"
 	d.matchesLabel.Tooltip = unison.NewTooltipWithText(i18n.Text("Number of matches found"))
+	d.toolbar.AddChild(d.matchesLabel)
 
-	toolbar := unison.NewPanel()
-	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
-		false), unison.NewEmptyBorder(unison.StdInsets())))
-	toolbar.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		HGrab:  true,
-	})
-	toolbar.AddChild(d.scaleField)
-	toolbar.AddChild(pageLabel)
-	toolbar.AddChild(d.pageNumberField)
-	toolbar.AddChild(ofLabel)
-	toolbar.AddChild(widget.NewToolbarSeparator(unison.StdHSpacing))
-	toolbar.AddChild(d.backButton)
-	toolbar.AddChild(d.forwardButton)
-	toolbar.AddChild(widget.NewToolbarSeparator(unison.StdHSpacing))
-	toolbar.AddChild(d.firstPageButton)
-	toolbar.AddChild(d.previousPageButton)
-	toolbar.AddChild(d.nextPageButton)
-	toolbar.AddChild(d.lastPageButton)
-	toolbar.AddChild(widget.NewToolbarSeparator(unison.StdHSpacing))
-	toolbar.AddChild(d.searchField)
-	toolbar.AddChild(d.matchesLabel)
-	toolbar.SetLayout(&unison.FlexLayout{
-		Columns:  len(toolbar.Children()),
+	d.toolbar.SetLayout(&unison.FlexLayout{
+		Columns:  len(d.toolbar.Children()),
 		HSpacing: unison.StdHSpacing,
 	})
+}
 
-	d.AddChild(toolbar)
-	d.AddChild(d.scroll)
+func (d *PDFDockable) createTOC() {
+	d.tocPanel = unison.NewTable[*tocNode](&unison.SimpleTableModel[*tocNode]{})
+	d.tocPanel.ColumnSizes = make([]unison.ColumnSize, 1)
+	d.tocPanel.DoubleClickCallback = d.tocDoubleClick
+	d.tocPanel.SelectionChangedCallback = d.tocSelectionChanged
 
-	d.noUpdate = false
-	d.LoadPage(0)
+	d.tocScroll = unison.NewScrollPanel()
+	d.tocScrollLayoutData = &unison.FlexLayoutData{
+		SizeHint: unison.Size{Width: 200},
+		HAlign:   unison.FillAlignment,
+		VAlign:   unison.FillAlignment,
+		VGrab:    true,
+	}
+	d.tocScroll.SetLayoutData(d.tocScrollLayoutData)
+	d.tocScroll.SetContent(d.tocPanel, unison.FillBehavior, unison.FillBehavior)
 
-	return d, nil
+	d.divider = unison.NewPanel()
+	d.divider.SetLayoutData(&unison.FlexLayoutData{
+		SizeHint: unison.Size{Width: unison.DefaultDockTheme.DockDividerSize()},
+		HAlign:   unison.FillAlignment,
+		VAlign:   unison.FillAlignment,
+		VGrab:    true,
+	})
+	d.divider.UpdateCursorCallback = func(_ unison.Point) *unison.Cursor {
+		return unison.ResizeHorizontalCursor()
+	}
+	d.divider.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+		r := d.divider.ContentRect(true)
+		unison.DefaultDockTheme.DrawHorizontalGripper(gc, r)
+	}
+	var initialPosition float32
+	var eventPosition float32
+	d.divider.MouseDownCallback = func(where unison.Point, button, _ int, _ unison.Modifiers) bool {
+		initialPosition = d.tocScrollLayoutData.SizeHint.Width
+		eventPosition = d.divider.Parent().PointFromRoot(d.divider.PointToRoot(where)).X
+		return true
+	}
+	d.divider.MouseDragCallback = func(where unison.Point, _ int, _ unison.Modifiers) bool {
+		pos := eventPosition - d.divider.Parent().PointFromRoot(d.divider.PointToRoot(where)).X
+		old := d.tocScrollLayoutData.SizeHint.Width
+		d.tocScrollLayoutData.SizeHint.Width = xmath.Max(initialPosition-pos, 1)
+		if old != d.tocScrollLayoutData.SizeHint.Width {
+			d.divider.Parent().MarkForLayoutAndRedraw()
+		}
+		return true
+	}
+}
+
+func (d *PDFDockable) createContent() {
+	d.docPanel = unison.NewPanel()
+	d.docPanel.SetSizer(d.docSizer)
+	d.docPanel.DrawCallback = d.draw
+	d.docPanel.MouseDownCallback = d.mouseDown
+	d.docPanel.MouseMoveCallback = d.mouseMove
+	d.docPanel.MouseUpCallback = d.mouseUp
+	d.docPanel.SetFocusable(true)
+
+	d.docScroll = unison.NewScrollPanel()
+	d.docScroll.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		VAlign: unison.FillAlignment,
+		HGrab:  true,
+		VGrab:  true,
+	})
+	d.docScroll.SetContent(d.docPanel, unison.FillBehavior, unison.FillBehavior)
+	d.docScroll.ContentView().DrawOverCallback = d.drawOverlay
+
+	d.content = unison.NewPanel()
+	d.content.SetLayout(&unison.FlexLayout{
+		Columns: 1,
+		HAlign:  unison.FillAlignment,
+		VAlign:  unison.FillAlignment,
+	})
+	d.content.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		VAlign: unison.FillAlignment,
+		HGrab:  true,
+		VGrab:  true,
+	})
+	d.content.AddChild(d.docScroll)
 }
 
 // ClearHistory clears the existing history.
@@ -233,6 +320,21 @@ func (d *PDFDockable) ClearHistory() {
 // SetSearchText sets the search text and updates the display.
 func (d *PDFDockable) SetSearchText(text string) {
 	d.searchField.SetText(text)
+}
+
+func (d *PDFDockable) toggleSideBar() {
+	if layout, ok := d.content.Layout().(*unison.FlexLayout); ok {
+		if layout.Columns == 1 {
+			layout.Columns = 3
+			d.content.AddChildAtIndex(d.tocScroll, 0)
+			d.content.AddChildAtIndex(d.divider, 1)
+		} else {
+			layout.Columns = 1
+			d.divider.RemoveFromParent()
+			d.tocScroll.RemoveFromParent()
+		}
+		d.content.MarkForLayoutAndRedraw()
+	}
 }
 
 // Back moves back in history one step.
@@ -262,6 +364,16 @@ func (d *PDFDockable) pageLoaded() {
 	defer func() { d.noUpdate = false }()
 
 	d.page = d.pdf.CurrentPage()
+
+	if d.tocPanel.RootRowCount() == 0 {
+		if toc := d.pdf.CurrentPage().TOC; len(toc) != 0 {
+			d.tocPanel.SetRootRows(newTOC(d, nil, toc))
+			d.tocPanel.SizeColumnsToFit(true)
+			d.tocScrollLayoutData.SizeHint.Width = xmath.Max(xmath.Min(d.tocPanel.ColumnSizes[0].Current, 300), d.tocScrollLayoutData.SizeHint.Width)
+			d.sideBarButton.SetEnabled(true)
+		}
+	}
+
 	pageText := ""
 	if d.page.PageNumber >= 0 {
 		pageText = strconv.Itoa(d.page.PageNumber + 1)
@@ -306,7 +418,7 @@ func (d *PDFDockable) pageLoaded() {
 	d.lastPageButton.SetEnabled(pageNumber != lastPageNumber)
 
 	d.docPanel.MarkForLayoutAndRedraw()
-	d.scroll.MarkForLayoutAndRedraw()
+	d.docScroll.MarkForLayoutAndRedraw()
 	d.link = nil
 }
 
@@ -474,7 +586,7 @@ func (d *PDFDockable) drawOverlayMsg(gc *unison.Canvas, dirty unison.Rect, msg s
 		Paint: fgInk.Paint(gc, dirty, unison.Fill),
 	}
 	text := unison.NewText(msg, decoration)
-	r := d.scroll.ContentView().ContentRect(false)
+	r := d.docScroll.ContentView().ContentRect(false)
 	cy := r.CenterY()
 	width := text.Width()
 	height := text.Height()
@@ -552,4 +664,36 @@ func (d *PDFDockable) AttemptClose() bool {
 		dc.Close(d)
 	}
 	return true
+}
+
+func (d *PDFDockable) tocDoubleClick() {
+	altered := false
+	for _, row := range d.tocPanel.SelectedRows(false) {
+		if row.CanHaveChildren() {
+			altered = true
+			row.SetOpen(!row.IsOpen())
+		}
+	}
+	if altered {
+		d.tocPanel.SyncToModel()
+	}
+}
+
+func (d *PDFDockable) tocSelectionChanged() {
+	if d.tocPanel.HasSelection() {
+		d.LoadPage(d.tocPanel.SelectedRows(true)[0].pageNumber)
+	}
+}
+
+func (d *PDFDockable) adjustTableSizeEventually() {
+	if !d.adjustTableSizePending {
+		d.adjustTableSizePending = true
+		unison.InvokeTaskAfter(d.adjustTableSize, time.Millisecond)
+	}
+}
+
+func (d *PDFDockable) adjustTableSize() {
+	d.adjustTableSizePending = false
+	d.tocPanel.SyncToModel()
+	d.tocPanel.SizeColumnsToFit(true)
 }
