@@ -93,17 +93,40 @@ func (p *BodyPanel) addContent(locations *gurps.Body) {
 }
 
 func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
+	hasSubTable := false
+	if depth == 0 {
+		for _, location := range bodyType.Locations {
+			if location.SubTable != nil {
+				hasSubTable = true
+				break
+			}
+		}
+	}
 	for i, location := range bodyType.Locations {
-		prefix := strings.Repeat("   ", depth)
-		label := widget.NewPageLabelCenter(prefix + location.RollRange)
+		rollRange := location.RollRange
+		if rollRange == "-" {
+			rollRange = ""
+		}
+		var label *unison.Label
+		if hasSubTable || depth != 0 {
+			label = widget.NewPageLabel(rollRange)
+		} else {
+			label = widget.NewPageLabelCenter(rollRange)
+		}
 		label.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
+		if depth > 0 {
+			label.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: float32(10 * depth)}))
+		}
 		p.AddChild(label)
 
-		if i == 0 {
+		if i == 0 && depth == 0 {
 			p.addSeparator()
 		}
 
-		name := widget.NewPageLabel(prefix + location.TableName)
+		name := widget.NewPageLabel(location.TableName)
+		if depth > 0 {
+			name.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: float32(10 * depth)}))
+		}
 		if strings.TrimSpace(location.Description) != "" {
 			name.Tooltip = unison.NewTooltipWithText(location.Description)
 		}
@@ -112,7 +135,7 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 		p.AddChild(name)
 		p.AddChild(p.createHitPenaltyField(location))
 
-		if i == 0 {
+		if i == 0 && depth == 0 {
 			p.addSeparator()
 		}
 
