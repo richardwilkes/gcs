@@ -13,6 +13,9 @@ package constants
 
 import "github.com/richardwilkes/unison"
 
+// SkipDeepSync is set on components that should not trigger a deep sync.
+const SkipDeepSync = "!deepsync"
+
 // Menu, Item & Action IDs
 const (
 	NewSheetItemID = unison.UserBaseID + iota

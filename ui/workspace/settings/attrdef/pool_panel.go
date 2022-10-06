@@ -57,7 +57,7 @@ func (p *poolPanel) addThreshold() {
 	}
 	undo.AfterData = clonePoolThresholds(p.def.Thresholds)
 	p.dockable.UndoManager().Add(undo)
-	p.dockable.MarkModified()
+	p.dockable.MarkModified(nil)
 	p.dockable.MarkForLayoutAndRedraw()
 	p.dockable.ValidateLayout()
 	focus := newThreshold.Children()[2]
@@ -86,7 +86,7 @@ func (p *poolPanel) deleteThreshold(target *thresholdPanel) {
 	p.def.Thresholds = slices.Delete(p.def.Thresholds, i, i+1)
 	undo.AfterData = clonePoolThresholds(p.def.Thresholds)
 	p.dockable.UndoManager().Add(undo)
-	p.dockable.MarkModified()
+	p.dockable.MarkModified(nil)
 }
 
 func (p *poolPanel) applyThresholds(thresholds []*gurps.PoolThreshold) {

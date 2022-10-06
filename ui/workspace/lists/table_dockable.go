@@ -289,7 +289,7 @@ func (d *TableDockable[T]) Modified() bool {
 }
 
 // MarkModified implements widget.ModifiableRoot.
-func (d *TableDockable[T]) MarkModified() {
+func (d *TableDockable[T]) MarkModified(_ unison.Paneler) {
 	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
 		dc.UpdateTitle(d)
 	}

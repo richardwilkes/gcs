@@ -33,6 +33,7 @@ import (
 	wsettings "github.com/richardwilkes/gcs/v5/ui/workspace/settings"
 	"github.com/richardwilkes/gcs/v5/ui/workspace/settings/attrdef"
 	"github.com/richardwilkes/gcs/v5/ui/workspace/settings/body"
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio/fs"
@@ -363,16 +364,23 @@ func (s *Sheet) Modified() bool {
 }
 
 // MarkModified implements widget.ModifiableRoot.
-func (s *Sheet) MarkModified() {
+func (s *Sheet) MarkModified(src unison.Paneler) {
 	if !s.awaitingUpdate {
 		s.awaitingUpdate = true
 		h, v := s.scroll.Position()
 		focusRefKey := s.targetMgr.CurrentFocusRef()
+		s.entity.DiscardCaches()
 		s.modifiedFunc()
 		// TODO: This can be too slow when the lists have many rows of content, impinging upon interactive typing.
 		//       Looks like most of the time is spent in updating the tables. Unfortunately, there isn't a fast way to
 		//       determine that the content of a table doesn't need to be refreshed.
-		widget.DeepSync(s)
+		skipDeepSync := false
+		if !toolbox.IsNil(src) {
+			_, skipDeepSync = src.AsPanel().ClientData()[constants.SkipDeepSync]
+		}
+		if !skipDeepSync {
+			widget.DeepSync(s)
+		}
 		if dc := unison.Ancestor[*unison.DockContainer](s); dc != nil {
 			dc.UpdateTitle(s)
 		}
@@ -617,7 +625,7 @@ func (s *Sheet) swapDefaults(_ any) {
 // SheetSettingsUpdated implements gurps.SheetSettingsResponder.
 func (s *Sheet) SheetSettingsUpdated(entity *gurps.Entity, blockLayout bool) {
 	if s.entity == entity {
-		s.MarkModified()
+		s.MarkModified(nil)
 		s.Rebuild(blockLayout)
 	}
 }

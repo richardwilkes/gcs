@@ -184,7 +184,7 @@ func (d *bodyDockable) sync() {
 	d.MarkForLayoutRecursively()
 	d.MarkForRedraw()
 	d.ValidateLayout()
-	d.MarkModified()
+	d.MarkModified(nil)
 	d.targetMgr.ReacquireFocus(focusRefKey, d.toolbar, d.content)
 	scrollRoot.SetPosition(h, v)
 }

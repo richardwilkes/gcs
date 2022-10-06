@@ -17,7 +17,7 @@ import (
 
 // ModifiableRoot marks the root of a modifable tree of components, typically a Dockable.
 type ModifiableRoot interface {
-	MarkModified()
+	MarkModified(src unison.Paneler)
 }
 
 // MarkModified looks for a ModifiableRoot, starting at the panel. If found, it then called MarkModified() on it.
@@ -25,7 +25,7 @@ func MarkModified(panel unison.Paneler) {
 	p := panel.AsPanel()
 	for p != nil {
 		if modifiable, ok := p.Self.(ModifiableRoot); ok {
-			modifiable.MarkModified()
+			modifiable.MarkModified(panel)
 			break
 		}
 		p = p.Parent()

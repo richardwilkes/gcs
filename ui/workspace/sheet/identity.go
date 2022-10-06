@@ -12,6 +12,7 @@
 package sheet
 
 import (
+	"github.com/richardwilkes/gcs/v5/constants"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/ancestry"
 	"github.com/richardwilkes/gcs/v5/model/settings"
@@ -56,27 +57,32 @@ func NewIdentityPanel(entity *gurps.Entity, targetMgr *widget.TargetMgr) *Identi
 	}
 
 	title := i18n.Text("Name")
-	field := widget.NewStringPageField(p.targetMgr, p.prefix+"name", title,
+	nameField := widget.NewStringPageField(p.targetMgr, p.prefix+"name", title,
 		func() string { return p.entity.Profile.Name },
 		func(s string) { p.entity.Profile.Name = s })
 	p.AddChild(widget.NewPageLabelWithRandomizer(title,
 		i18n.Text("Randomize the name using the current ancestry"), func() {
 			p.entity.Profile.Name = p.entity.Ancestry().RandomName(
 				ancestry.AvailableNameGenerators(settings.Global().Libraries()), p.entity.Profile.Gender)
-			SetTextAndMarkModified(field.Field, p.entity.Profile.Name)
+			SetTextAndMarkModified(nameField.Field, p.entity.Profile.Name)
 		}))
-	p.AddChild(field)
+	nameField.ClientData()[constants.SkipDeepSync] = true
+	p.AddChild(nameField)
 
 	title = i18n.Text("Title")
 	p.AddChild(widget.NewPageLabelEnd(title))
-	p.AddChild(widget.NewStringPageField(p.targetMgr, p.prefix+"title", title,
+	titleField := widget.NewStringPageField(p.targetMgr, p.prefix+"title", title,
 		func() string { return p.entity.Profile.Title },
-		func(s string) { p.entity.Profile.Title = s }))
+		func(s string) { p.entity.Profile.Title = s })
+	titleField.ClientData()[constants.SkipDeepSync] = true
+	p.AddChild(titleField)
 
 	title = i18n.Text("Organization")
 	p.AddChild(widget.NewPageLabelEnd(title))
-	p.AddChild(widget.NewStringPageField(p.targetMgr, p.prefix+"org", title,
+	orgField := widget.NewStringPageField(p.targetMgr, p.prefix+"org", title,
 		func() string { return p.entity.Profile.Organization },
-		func(s string) { p.entity.Profile.Organization = s }))
+		func(s string) { p.entity.Profile.Organization = s })
+	orgField.ClientData()[constants.SkipDeepSync] = true
+	p.AddChild(orgField)
 	return p
 }

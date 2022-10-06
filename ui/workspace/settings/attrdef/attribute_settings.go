@@ -176,7 +176,7 @@ func (d *attributesDockable) addToStartToolbar(toolbar *unison.Panel) {
 		d.content.AddChild(p)
 		undo.AfterData = d.defs.Clone()
 		d.UndoManager().Add(undo)
-		d.MarkModified()
+		d.MarkModified(nil)
 		d.MarkForLayoutAndRedraw()
 		d.ValidateLayout()
 		widget.FocusFirstContent(d.toolbar, p.AsPanel())
@@ -240,7 +240,7 @@ func (d *attributesDockable) sync() {
 	}
 	d.MarkForLayoutAndRedraw()
 	d.ValidateLayout()
-	d.MarkModified()
+	d.MarkModified(nil)
 	d.targetMgr.ReacquireFocus(focusRefKey, d.toolbar, d.content)
 	scrollRoot.SetPosition(h, v)
 }
@@ -407,7 +407,7 @@ func (d *attributesDockable) dataDragDrop(_ unison.Point, data map[string]any) {
 				undo.AfterData = d.defs.Clone()
 				d.applyAttrDefs(undo.AfterData)
 				d.UndoManager().Add(undo)
-				d.MarkModified()
+				d.MarkModified(nil)
 				d.MarkForLayoutAndRedraw()
 			}
 		}

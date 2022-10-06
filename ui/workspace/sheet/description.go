@@ -14,6 +14,7 @@ package sheet
 import (
 	"strconv"
 
+	"github.com/richardwilkes/gcs/v5/constants"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
@@ -89,6 +90,7 @@ func (d *DescriptionPanel) createColumn1() *unison.Panel {
 			d.entity.Profile.Gender = d.entity.Ancestry().RandomGender(d.entity.Profile.Gender)
 			SetTextAndMarkModified(genderField.Field, d.entity.Profile.Gender)
 		}))
+	genderField.ClientData()[constants.SkipDeepSync] = true
 	column.AddChild(genderField)
 
 	title = i18n.Text("Age")
@@ -101,6 +103,7 @@ func (d *DescriptionPanel) createColumn1() *unison.Panel {
 			d.entity.Profile.Age = strconv.Itoa(d.entity.Ancestry().RandomAge(d.entity, d.entity.Profile.Gender, age))
 			SetTextAndMarkModified(ageField.Field, d.entity.Profile.Age)
 		}))
+	ageField.ClientData()[constants.SkipDeepSync] = true
 	column.AddChild(ageField)
 
 	title = i18n.Text("Birthday")
@@ -113,13 +116,16 @@ func (d *DescriptionPanel) createColumn1() *unison.Panel {
 			d.entity.Profile.Birthday = global.General.CalendarRef(global.LibrarySet).RandomBirthday(d.entity.Profile.Birthday)
 			SetTextAndMarkModified(birthdayField.Field, d.entity.Profile.Birthday)
 		}))
+	birthdayField.ClientData()[constants.SkipDeepSync] = true
 	column.AddChild(birthdayField)
 
 	title = i18n.Text("Religion")
 	column.AddChild(widget.NewPageLabelEnd(title))
-	column.AddChild(widget.NewStringPageField(d.targetMgr, d.prefix+"religion", title,
+	religionField := widget.NewStringPageField(d.targetMgr, d.prefix+"religion", title,
 		func() string { return d.entity.Profile.Religion },
-		func(s string) { d.entity.Profile.Religion = s }))
+		func(s string) { d.entity.Profile.Religion = s })
+	religionField.ClientData()[constants.SkipDeepSync] = true
+	column.AddChild(religionField)
 
 	return column
 }
@@ -136,6 +142,7 @@ func (d *DescriptionPanel) createColumn2() *unison.Panel {
 			d.entity.Profile.Height = d.entity.Ancestry().RandomHeight(d.entity, d.entity.Profile.Gender, d.entity.Profile.Height)
 			SetTextAndMarkModified(heightField.Field, d.entity.Profile.Height.String())
 		}))
+	heightField.ClientData()[constants.SkipDeepSync] = true
 	column.AddChild(heightField)
 
 	title = i18n.Text("Weight")
@@ -147,6 +154,7 @@ func (d *DescriptionPanel) createColumn2() *unison.Panel {
 			d.entity.Profile.Weight = d.entity.Ancestry().RandomWeight(d.entity, d.entity.Profile.Gender, d.entity.Profile.Weight)
 			SetTextAndMarkModified(weightField.Field, d.entity.Profile.Weight.String())
 		}))
+	weightField.ClientData()[constants.SkipDeepSync] = true
 	column.AddChild(weightField)
 
 	title = i18n.Text("Size")
@@ -180,6 +188,7 @@ func (d *DescriptionPanel) createColumn3() *unison.Panel {
 			d.entity.Profile.Hair = d.entity.Ancestry().RandomHair(d.entity.Profile.Gender, d.entity.Profile.Hair)
 			SetTextAndMarkModified(hairField.Field, d.entity.Profile.Hair)
 		}))
+	hairField.ClientData()[constants.SkipDeepSync] = true
 	column.AddChild(hairField)
 
 	title = i18n.Text("Eyes")
@@ -191,6 +200,7 @@ func (d *DescriptionPanel) createColumn3() *unison.Panel {
 			d.entity.Profile.Eyes = d.entity.Ancestry().RandomEyes(d.entity.Profile.Gender, d.entity.Profile.Eyes)
 			SetTextAndMarkModified(eyesField.Field, d.entity.Profile.Eyes)
 		}))
+	eyesField.ClientData()[constants.SkipDeepSync] = true
 	column.AddChild(eyesField)
 
 	title = i18n.Text("Skin")
@@ -202,6 +212,7 @@ func (d *DescriptionPanel) createColumn3() *unison.Panel {
 			d.entity.Profile.Skin = d.entity.Ancestry().RandomSkin(d.entity.Profile.Gender, d.entity.Profile.Skin)
 			SetTextAndMarkModified(skinField.Field, d.entity.Profile.Skin)
 		}))
+	skinField.ClientData()[constants.SkipDeepSync] = true
 	column.AddChild(skinField)
 
 	title = i18n.Text("Hand")
@@ -213,6 +224,7 @@ func (d *DescriptionPanel) createColumn3() *unison.Panel {
 			d.entity.Profile.Handedness = d.entity.Ancestry().RandomHandedness(d.entity.Profile.Gender, d.entity.Profile.Handedness)
 			SetTextAndMarkModified(handField.Field, d.entity.Profile.Handedness)
 		}))
+	handField.ClientData()[constants.SkipDeepSync] = true
 	column.AddChild(handField)
 
 	return column

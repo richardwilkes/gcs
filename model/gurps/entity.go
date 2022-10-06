@@ -79,14 +79,18 @@ type EntityData struct {
 // Entity holds the base information for various types of entities: PC, NPC, Creature, etc.
 type Entity struct {
 	EntityData
-	LiftingStrengthBonus       fxp.Int
-	StrikingStrengthBonus      fxp.Int
-	ThrowingStrengthBonus      fxp.Int
-	DodgeBonus                 fxp.Int
-	ParryBonus                 fxp.Int
-	BlockBonus                 fxp.Int
-	featureMap                 map[string][]feature.Feature
-	variableResolverExclusions map[string]bool
+	LiftingStrengthBonus            fxp.Int
+	StrikingStrengthBonus           fxp.Int
+	ThrowingStrengthBonus           fxp.Int
+	DodgeBonus                      fxp.Int
+	ParryBonus                      fxp.Int
+	BlockBonus                      fxp.Int
+	featureMap                      map[string][]feature.Feature
+	variableResolverExclusions      map[string]bool
+	cachedBasicLift                 measure.Weight
+	cachedEncumbranceLevel          datafile.Encumbrance
+	cachedEncumbranceLevelForSkills datafile.Encumbrance
+	cachedVariables                 map[string]string
 }
 
 // NewEntityFromFile loads an Entity from a file.
@@ -201,9 +205,18 @@ func (e *Entity) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// DiscardCaches discards the internal caches.
+func (e *Entity) DiscardCaches() {
+	e.cachedBasicLift = -1
+	e.cachedEncumbranceLevel = datafile.LastEncumbrance + 1
+	e.cachedEncumbranceLevelForSkills = datafile.LastEncumbrance + 1
+	e.cachedVariables = nil
+}
+
 // Recalculate the statistics.
 func (e *Entity) Recalculate() {
 	e.ensureAttachments()
+	e.DiscardCaches()
 	e.UpdateSkills()
 	e.UpdateSpells()
 	for i := 0; i < 5; i++ {
@@ -850,11 +863,28 @@ func (e *Entity) Dodge(enc datafile.Encumbrance) int {
 
 // EncumbranceLevel returns the current Encumbrance level.
 func (e *Entity) EncumbranceLevel(forSkills bool) datafile.Encumbrance {
+	if forSkills {
+		if e.cachedEncumbranceLevelForSkills != datafile.LastEncumbrance+1 {
+			return e.cachedEncumbranceLevelForSkills
+		}
+	} else if e.cachedEncumbranceLevel != datafile.LastEncumbrance+1 {
+		return e.cachedEncumbranceLevel
+	}
 	carried := e.WeightCarried(forSkills)
 	for _, one := range datafile.AllEncumbrance {
 		if carried <= e.MaximumCarry(one) {
+			if forSkills {
+				e.cachedEncumbranceLevelForSkills = one
+			} else {
+				e.cachedEncumbranceLevel = one
+			}
 			return one
 		}
+	}
+	if forSkills {
+		e.cachedEncumbranceLevelForSkills = datafile.ExtraHeavy
+	} else {
+		e.cachedEncumbranceLevel = datafile.ExtraHeavy
 	}
 	return datafile.ExtraHeavy
 }
@@ -905,6 +935,9 @@ func (e *Entity) ShiftSlightly() measure.Weight {
 
 // BasicLift returns the entity's Basic Lift.
 func (e *Entity) BasicLift() measure.Weight {
+	if e.cachedBasicLift != -1 {
+		return e.cachedBasicLift
+	}
 	st := (e.StrengthOrZero() + e.LiftingStrengthBonus).Trunc()
 	if IsThresholdOpMet(attribute.HalveST, e.Attributes) {
 		st = st.Div(fxp.Two)
@@ -913,6 +946,7 @@ func (e *Entity) BasicLift() measure.Weight {
 		}
 	}
 	if st < fxp.One {
+		e.cachedBasicLift = 0
 		return 0
 	}
 	var v fxp.Int
@@ -935,7 +969,8 @@ func (e *Entity) BasicLift() measure.Weight {
 	if v >= fxp.Ten {
 		v = v.Round()
 	}
-	return measure.Weight(v.Mul(fxp.Ten).Trunc().Div(fxp.Ten))
+	e.cachedBasicLift = measure.Weight(v.Mul(fxp.Ten).Trunc().Div(fxp.Ten))
+	return e.cachedBasicLift
 }
 
 // ResolveVariable implements eval.VariableResolver.
@@ -946,14 +981,21 @@ func (e *Entity) ResolveVariable(variableName string) string {
 		}
 		return ""
 	}
-
+	if v, ok := e.cachedVariables[variableName]; ok {
+		return v
+	}
+	if e.cachedVariables == nil {
+		e.cachedVariables = make(map[string]string)
+	}
 	if e.variableResolverExclusions == nil {
 		e.variableResolverExclusions = make(map[string]bool)
 	}
 	e.variableResolverExclusions[variableName] = true
 	defer func() { delete(e.variableResolverExclusions, variableName) }()
 	if gid.SizeModifier == variableName {
-		return strconv.Itoa(e.Profile.AdjustedSizeModifier())
+		result := strconv.Itoa(e.Profile.AdjustedSizeModifier())
+		e.cachedVariables[variableName] = result
+		return result
 	}
 	parts := strings.SplitN(variableName, ".", 2)
 	attr := e.Attributes.Set[parts[0]]
@@ -971,9 +1013,13 @@ func (e *Entity) ResolveVariable(variableName string) string {
 		return ""
 	}
 	if def.Type == attribute.Pool && len(parts) > 1 && parts[1] == "current" {
-		return attr.Current().String()
+		result := attr.Current().String()
+		e.cachedVariables[variableName] = result
+		return result
 	}
-	return attr.Maximum().String()
+	result := attr.Maximum().String()
+	e.cachedVariables[variableName] = result
+	return result
 }
 
 // ResolveAttributeDef resolves the given attribute ID to its AttributeDef, or nil.

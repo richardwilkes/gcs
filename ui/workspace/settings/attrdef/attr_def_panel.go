@@ -100,7 +100,7 @@ func (p *attrDefPanel) deleteAttrDef() {
 	delete(p.dockable.defs.Set, p.def.DefID)
 	undo.AfterData = p.dockable.defs.Clone()
 	p.dockable.UndoManager().Add(undo)
-	p.dockable.MarkModified()
+	p.dockable.MarkModified(nil)
 }
 
 func (p *attrDefPanel) createContent() *unison.Panel {

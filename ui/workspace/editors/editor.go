@@ -216,7 +216,7 @@ func (e *editor[N, D]) Modified() bool {
 	return modified
 }
 
-func (e *editor[N, D]) MarkModified() {
+func (e *editor[N, D]) MarkModified(_ unison.Paneler) {
 	if dc := unison.Ancestor[*unison.DockContainer](e); dc != nil {
 		dc.UpdateTitle(e)
 	}
@@ -227,7 +227,7 @@ func (e *editor[N, D]) MarkModified() {
 }
 
 func (e *editor[N, D]) Rebuild(_ bool) {
-	e.MarkModified()
+	e.MarkModified(nil)
 	e.MarkForLayoutRecursively()
 	e.MarkForRedraw()
 }
