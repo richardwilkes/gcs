@@ -8,16 +8,16 @@ require (
 	github.com/richardwilkes/pdf v1.20.4
 	github.com/richardwilkes/rpgtools v1.4.2
 	github.com/richardwilkes/toolbox v1.76.0
-	github.com/richardwilkes/unison v0.35.1-0.20221007221148-85a43f23d01f
+	github.com/richardwilkes/unison v0.36.0
 	github.com/rjeczalik/notify v0.9.2
-	github.com/srwiley/oksvg v0.0.0-20220904191616-8889df18e8f4
+	github.com/srwiley/oksvg v0.0.0-20221002174631-3742d547bf3c
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef
 	github.com/stretchr/testify v1.8.0
 	github.com/tc-hib/winres v0.1.6
 	github.com/yookoala/realpath v1.0.0
-	golang.org/x/exp v0.0.0-20220930202632-ec3f01382ef9
+	golang.org/x/exp v0.0.0-20221006183845-316c7553db56
 	golang.org/x/image v0.0.0-20220902085622-e7cb96979f69
-	golang.org/x/sys v0.0.0-20220928140112-f11e5e49a4ec
+	golang.org/x/sys v0.0.0-20221006211917-84dc82d7e875
 	golang.org/x/text v0.3.7
 )
 
@@ -34,8 +34,8 @@ require (
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/pkg/term v1.1.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	golang.org/x/mod v0.6.0-dev.0.20220922195421-2adab6b8c60e // indirect
-	golang.org/x/net v0.0.0-20220930213112-107f3e3c3b0b // indirect
+	golang.org/x/mod v0.6.0-dev.0.20221005201717-2666ed6287c1 // indirect
+	golang.org/x/net v0.0.0-20221004154528-8021a29435af // indirect
 	golang.org/x/tools v0.1.12 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
