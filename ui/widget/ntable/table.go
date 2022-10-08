@@ -61,6 +61,8 @@ type TableProvider[T gurps.NodeTypes] interface {
 	Serialize() ([]byte, error)
 	Deserialize(data []byte) error
 	RefKey() string
+	Tags() []string
+	FilterByTag(tag string) []T
 }
 
 // NewNodeTable creates a new node table of the specified type, returning the header and table. Pass nil for 'font' if

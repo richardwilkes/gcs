@@ -49,6 +49,14 @@ func (p *notesProvider) RefKey() string {
 	return gurps.BlockLayoutNotesKey
 }
 
+func (p *notesProvider) Tags() []string {
+	return nil
+}
+
+func (p *notesProvider) FilterByTag(_ string) []*gurps.Note {
+	return nil
+}
+
 func (p *notesProvider) SetTable(table *unison.Table[*ntable.Node[*gurps.Note]]) {
 	p.table = table
 }

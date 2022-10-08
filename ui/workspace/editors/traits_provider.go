@@ -20,7 +20,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/ui/widget/ntable"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
+	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
+	"golang.org/x/exp/maps"
 )
 
 var (
@@ -61,6 +63,33 @@ func NewTraitsProvider(provider gurps.TraitListProvider, forPage bool) ntable.Ta
 
 func (p *traitsProvider) RefKey() string {
 	return gurps.BlockLayoutTraitsKey
+}
+
+func (p *traitsProvider) Tags() []string {
+	set := make(map[string]struct{})
+	gurps.Traverse(func(trait *gurps.Trait) bool {
+		for _, tag := range trait.Tags {
+			set[tag] = struct{}{}
+		}
+		return false
+	}, false, false, p.RootData()...)
+	tags := maps.Keys(set)
+	txt.SortStringsNaturalAscending(tags)
+	return tags
+}
+
+func (p *traitsProvider) FilterByTag(tag string) []*gurps.Trait {
+	var traits []*gurps.Trait
+	gurps.Traverse(func(trait *gurps.Trait) bool {
+		for _, one := range trait.Tags {
+			if one == tag {
+				traits = append(traits, trait)
+				break
+			}
+		}
+		return false
+	}, false, false, p.RootData()...)
+	return traits
 }
 
 func (p *traitsProvider) SetTable(table *unison.Table[*ntable.Node[*gurps.Trait]]) {

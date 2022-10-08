@@ -21,7 +21,9 @@ import (
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
+	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
+	"golang.org/x/exp/maps"
 )
 
 var (
@@ -73,6 +75,33 @@ func NewSkillsProvider(provider gurps.SkillListProvider, forPage bool) ntable.Ta
 
 func (p *skillsProvider) RefKey() string {
 	return gurps.BlockLayoutSkillsKey
+}
+
+func (p *skillsProvider) Tags() []string {
+	set := make(map[string]struct{})
+	gurps.Traverse(func(modifier *gurps.Skill) bool {
+		for _, tag := range modifier.Tags {
+			set[tag] = struct{}{}
+		}
+		return false
+	}, false, false, p.RootData()...)
+	tags := maps.Keys(set)
+	txt.SortStringsNaturalAscending(tags)
+	return tags
+}
+
+func (p *skillsProvider) FilterByTag(tag string) []*gurps.Skill {
+	var skills []*gurps.Skill
+	gurps.Traverse(func(skill *gurps.Skill) bool {
+		for _, one := range skill.Tags {
+			if one == tag {
+				skills = append(skills, skill)
+				break
+			}
+		}
+		return false
+	}, false, false, p.RootData()...)
+	return skills
 }
 
 func (p *skillsProvider) SetTable(table *unison.Table[*ntable.Node[*gurps.Skill]]) {

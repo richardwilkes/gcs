@@ -46,6 +46,14 @@ func (p *reactionModProvider) RefKey() string {
 	return gurps.BlockLayoutReactionsKey
 }
 
+func (p *reactionModProvider) Tags() []string {
+	return nil
+}
+
+func (p *reactionModProvider) FilterByTag(_ string) []*gurps.ConditionalModifier {
+	return nil
+}
+
 func (p *reactionModProvider) SetTable(table *unison.Table[*ntable.Node[*gurps.ConditionalModifier]]) {
 	p.table = table
 }

@@ -60,6 +60,7 @@ type TableDockable[T gurps.NodeTypes] struct {
 	scaleField        *widget.PercentageField
 	backButton        *unison.Button
 	forwardButton     *unison.Button
+	filterPopup       *unison.PopupMenu[string]
 	searchField       *unison.Field
 	matchesLabel      *unison.Label
 	scroll            *unison.ScrollPanel
@@ -107,80 +108,7 @@ func NewTableDockable[T gurps.NodeTypes](filePath, extension string, provider nt
 		VGrab:  true,
 	})
 
-	d.hierarchyButton = unison.NewSVGButton(res.HierarchySVG)
-	d.hierarchyButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Opens/closes all hierarchical rows"))
-	d.hierarchyButton.ClickCallback = d.toggleHierarchy
-
-	d.sizeToFitButton = unison.NewSVGButton(res.SizeToFitSVG)
-	d.sizeToFitButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Sets the width of each column to fit its contents"))
-	d.sizeToFitButton.ClickCallback = d.sizeToFit
-
-	scaleTitle := i18n.Text("Scale")
-	d.scaleField = widget.NewPercentageField(nil, "", scaleTitle,
-		func() int { return d.scale },
-		func(v int) {
-			d.scale = v
-			d.applyScale()
-		}, gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, false, false)
-	d.scaleField.Tooltip = unison.NewTooltipWithText(scaleTitle)
-
-	d.backButton = unison.NewSVGButton(res.BackSVG)
-	d.backButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Previous Match"))
-	d.backButton.ClickCallback = d.previousMatch
-	d.backButton.SetEnabled(false)
-
-	d.forwardButton = unison.NewSVGButton(res.ForwardSVG)
-	d.forwardButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Next Match"))
-	d.forwardButton.ClickCallback = d.nextMatch
-	d.forwardButton.SetEnabled(false)
-
-	d.searchField = unison.NewField()
-	search := i18n.Text("Search")
-	d.searchField.Watermark = search
-	d.searchField.Tooltip = unison.NewTooltipWithText(search)
-	d.searchField.ModifiedCallback = d.searchModified
-	d.searchField.KeyDownCallback = func(keyCode unison.KeyCode, mod unison.Modifiers, repeat bool) bool {
-		if keyCode == unison.KeyReturn || keyCode == unison.KeyNumPadEnter {
-			if mod.ShiftDown() {
-				d.previousMatch()
-			} else {
-				d.nextMatch()
-			}
-			return true
-		}
-		return d.searchField.DefaultKeyDown(keyCode, mod, repeat)
-	}
-	d.searchField.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.MiddleAlignment,
-		HGrab:  true,
-	})
-
-	d.matchesLabel = unison.NewLabel()
-	d.matchesLabel.Text = "-"
-	d.matchesLabel.Tooltip = unison.NewTooltipWithText(i18n.Text("Number of matches found"))
-
-	toolbar := unison.NewPanel()
-	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
-		false), unison.NewEmptyBorder(unison.StdInsets())))
-	toolbar.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		HGrab:  true,
-	})
-	toolbar.AddChild(d.scaleField)
-	toolbar.AddChild(d.hierarchyButton)
-	toolbar.AddChild(d.sizeToFitButton)
-	toolbar.AddChild(widget.NewToolbarSeparator(unison.StdHSpacing))
-	toolbar.AddChild(d.backButton)
-	toolbar.AddChild(d.forwardButton)
-	toolbar.AddChild(d.searchField)
-	toolbar.AddChild(d.matchesLabel)
-	toolbar.SetLayout(&unison.FlexLayout{
-		Columns:  len(toolbar.Children()),
-		HSpacing: unison.StdHSpacing,
-	})
-
-	d.AddChild(toolbar)
+	d.AddChild(d.createToolbar())
 	d.AddChild(d.scroll)
 
 	d.applyScale()
@@ -224,6 +152,93 @@ func NewTableDockable[T gurps.NodeTypes](filePath, extension string, provider nt
 
 	d.crc = d.crc64()
 	return d
+}
+
+func (d *TableDockable[T]) createToolbar() *unison.Panel {
+	scaleTitle := i18n.Text("Scale")
+	d.scaleField = widget.NewPercentageField(nil, "", scaleTitle,
+		func() int { return d.scale },
+		func(v int) {
+			d.scale = v
+			d.applyScale()
+		}, gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, false, false)
+	d.scaleField.Tooltip = unison.NewTooltipWithText(scaleTitle)
+
+	d.hierarchyButton = unison.NewSVGButton(res.HierarchySVG)
+	d.hierarchyButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Opens/closes all hierarchical rows"))
+	d.hierarchyButton.ClickCallback = d.toggleHierarchy
+
+	d.sizeToFitButton = unison.NewSVGButton(res.SizeToFitSVG)
+	d.sizeToFitButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Sets the width of each column to fit its contents"))
+	d.sizeToFitButton.ClickCallback = d.sizeToFit
+
+	d.backButton = unison.NewSVGButton(res.BackSVG)
+	d.backButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Previous Match"))
+	d.backButton.ClickCallback = d.previousMatch
+	d.backButton.SetEnabled(false)
+
+	d.forwardButton = unison.NewSVGButton(res.ForwardSVG)
+	d.forwardButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Next Match"))
+	d.forwardButton.ClickCallback = d.nextMatch
+	d.forwardButton.SetEnabled(false)
+
+	d.filterPopup = unison.NewPopupMenu[string]()
+	d.filterPopup.Tooltip = unison.NewTooltipWithText(i18n.Text("Tag Filter"))
+	d.filterPopup.AddItem("")
+	for _, tag := range d.provider.Tags() {
+		d.filterPopup.AddItem(tag)
+	}
+	d.filterPopup.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		VAlign: unison.MiddleAlignment,
+	})
+
+	d.searchField = unison.NewField()
+	search := i18n.Text("Search")
+	d.searchField.Watermark = search
+	d.searchField.Tooltip = unison.NewTooltipWithText(search)
+	d.searchField.ModifiedCallback = d.searchModified
+	d.searchField.KeyDownCallback = func(keyCode unison.KeyCode, mod unison.Modifiers, repeat bool) bool {
+		if keyCode == unison.KeyReturn || keyCode == unison.KeyNumPadEnter {
+			if mod.ShiftDown() {
+				d.previousMatch()
+			} else {
+				d.nextMatch()
+			}
+			return true
+		}
+		return d.searchField.DefaultKeyDown(keyCode, mod, repeat)
+	}
+	d.searchField.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		VAlign: unison.MiddleAlignment,
+		HGrab:  true,
+	})
+
+	d.matchesLabel = unison.NewLabel()
+	d.matchesLabel.Text = "-"
+	d.matchesLabel.Tooltip = unison.NewTooltipWithText(i18n.Text("Number of matches found"))
+
+	toolbar := unison.NewPanel()
+	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
+		false), unison.NewEmptyBorder(unison.StdInsets())))
+	toolbar.AddChild(d.scaleField)
+	toolbar.AddChild(d.hierarchyButton)
+	toolbar.AddChild(d.sizeToFitButton)
+	toolbar.AddChild(d.filterPopup)
+	toolbar.AddChild(d.backButton)
+	toolbar.AddChild(d.forwardButton)
+	toolbar.AddChild(d.searchField)
+	toolbar.AddChild(d.matchesLabel)
+	toolbar.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		HGrab:  true,
+	})
+	toolbar.SetLayout(&unison.FlexLayout{
+		Columns:  len(toolbar.Children()),
+		HSpacing: unison.StdHSpacing,
+	})
+	return toolbar
 }
 
 // Entity implements gurps.EntityProvider

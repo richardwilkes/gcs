@@ -21,7 +21,9 @@ import (
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
+	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
+	"golang.org/x/exp/maps"
 )
 
 var (
@@ -83,6 +85,33 @@ func NewSpellsProvider(provider gurps.SpellListProvider, forPage bool) ntable.Ta
 
 func (p *spellsProvider) RefKey() string {
 	return gurps.BlockLayoutSpellsKey
+}
+
+func (p *spellsProvider) Tags() []string {
+	set := make(map[string]struct{})
+	gurps.Traverse(func(modifier *gurps.Spell) bool {
+		for _, tag := range modifier.Tags {
+			set[tag] = struct{}{}
+		}
+		return false
+	}, false, false, p.RootData()...)
+	tags := maps.Keys(set)
+	txt.SortStringsNaturalAscending(tags)
+	return tags
+}
+
+func (p *spellsProvider) FilterByTag(tag string) []*gurps.Spell {
+	var spells []*gurps.Spell
+	gurps.Traverse(func(spell *gurps.Spell) bool {
+		for _, one := range spell.Tags {
+			if one == tag {
+				spells = append(spells, spell)
+				break
+			}
+		}
+		return false
+	}, false, false, p.RootData()...)
+	return spells
 }
 
 func (p *spellsProvider) SetTable(table *unison.Table[*ntable.Node[*gurps.Spell]]) {

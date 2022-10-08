@@ -22,7 +22,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/ui/widget/ntable"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
+	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
+	"golang.org/x/exp/maps"
 )
 
 var (
@@ -96,6 +98,33 @@ func (p *equipmentProvider) RefKey() string {
 		return gurps.BlockLayoutEquipmentKey
 	}
 	return gurps.BlockLayoutOtherEquipmentKey
+}
+
+func (p *equipmentProvider) Tags() []string {
+	set := make(map[string]struct{})
+	gurps.Traverse(func(modifier *gurps.Equipment) bool {
+		for _, tag := range modifier.Tags {
+			set[tag] = struct{}{}
+		}
+		return false
+	}, false, false, p.RootData()...)
+	tags := maps.Keys(set)
+	txt.SortStringsNaturalAscending(tags)
+	return tags
+}
+
+func (p *equipmentProvider) FilterByTag(tag string) []*gurps.Equipment {
+	var matches []*gurps.Equipment
+	gurps.Traverse(func(equipment *gurps.Equipment) bool {
+		for _, one := range equipment.Tags {
+			if one == tag {
+				matches = append(matches, equipment)
+				break
+			}
+		}
+		return false
+	}, false, false, p.RootData()...)
+	return matches
 }
 
 func (p *equipmentProvider) SetTable(table *unison.Table[*ntable.Node[*gurps.Equipment]]) {

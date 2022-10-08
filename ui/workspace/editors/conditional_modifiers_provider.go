@@ -46,6 +46,14 @@ func (p *condModProvider) RefKey() string {
 	return gurps.BlockLayoutConditionalModifiersKey
 }
 
+func (p *condModProvider) Tags() []string {
+	return nil
+}
+
+func (p *condModProvider) FilterByTag(_ string) []*gurps.ConditionalModifier {
+	return nil
+}
+
 func (p *condModProvider) SetTable(table *unison.Table[*ntable.Node[*gurps.ConditionalModifier]]) {
 	p.table = table
 }
