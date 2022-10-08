@@ -151,6 +151,11 @@ func (a *TraitModifier) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// TagList returns the list of tags.
+func (a *TraitModifier) TagList() []string {
+	return a.Tags
+}
+
 // CellData returns the cell data information for the given column.
 func (a *TraitModifier) CellData(column int, data *CellData) {
 	switch column {
@@ -171,7 +176,7 @@ func (a *TraitModifier) CellData(column int, data *CellData) {
 			data.Primary = a.CostDescription()
 		}
 	case TraitModifierTagsColumn:
-		data.Type = Text
+		data.Type = Tags
 		data.Primary = CombineTags(a.Tags)
 	case TraitModifierReferenceColumn, PageRefCellAlias:
 		data.Type = PageRef

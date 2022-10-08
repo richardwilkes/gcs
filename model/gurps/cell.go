@@ -41,7 +41,7 @@ func (c *CellData) ForSort() string {
 		if c.Checked {
 			return "√"
 		}
-	case PageRef:
+	case PageRef, Tags:
 		return c.Primary
 	}
 	return ""

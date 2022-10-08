@@ -251,7 +251,7 @@ func (s *Spell) CellData(column int, data *CellData) {
 			data.Primary = s.Difficulty.Description(s.Entity)
 		}
 	case SpellTagsColumn:
-		data.Type = Text
+		data.Type = Tags
 		data.Primary = CombineTags(s.Tags)
 	case SpellReferenceColumn, PageRefCellAlias:
 		data.Type = PageRef

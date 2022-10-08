@@ -46,11 +46,7 @@ func (p *condModProvider) RefKey() string {
 	return gurps.BlockLayoutConditionalModifiersKey
 }
 
-func (p *condModProvider) Tags() []string {
-	return nil
-}
-
-func (p *condModProvider) FilterByTag(_ string) []*gurps.ConditionalModifier {
+func (p *condModProvider) AllTags() []string {
 	return nil
 }
 

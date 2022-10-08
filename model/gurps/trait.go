@@ -214,7 +214,7 @@ func (a *Trait) CellData(column int, data *CellData) {
 		data.Primary = a.AdjustedPoints().String()
 		data.Alignment = unison.EndAlignment
 	case TraitTagsColumn:
-		data.Type = Text
+		data.Type = Tags
 		data.Primary = CombineTags(a.Tags)
 	case TraitReferenceColumn, PageRefCellAlias:
 		data.Type = PageRef

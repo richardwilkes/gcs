@@ -174,6 +174,40 @@ func (n *Node[T]) Data() T {
 	return n.data
 }
 
+// HasTag returns true if the specified tag is present on the node. An empty tag will match all nodes.
+func (n *Node[T]) HasTag(tag string) bool {
+	if tag == "" {
+		return true
+	}
+	if tagListable, ok := interface{}(n.Data()).(interface{ TagList() []string }); ok {
+		for _, one := range tagListable.TagList() {
+			if strings.EqualFold(tag, one) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// PartialMatchExceptTag returns true if the specified text is present in the node's displayable columns other than the
+// the tags column. An empty text will match all nodes.
+func (n *Node[T]) PartialMatchExceptTag(text string) bool {
+	if text == "" {
+		return true
+	}
+	text = strings.ToLower(text)
+	for _, column := range n.colMap {
+		var data gurps.CellData
+		n.dataAsNode.CellData(column, &data)
+		if data.Type != gurps.Tags {
+			if strings.Contains(strings.ToLower(data.ForSort()), text) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // Match looks for the text in the node and return true if it is present. Note that calls to this method should always
 // pass in text that has already been run through strings.ToLower().
 func (n *Node[T]) Match(text string) bool {
@@ -191,7 +225,7 @@ func (n *Node[T]) Match(text string) bool {
 // CellFromCellData creates a new panel for the given cell data.
 func (n *Node[T]) CellFromCellData(c *gurps.CellData, width float32, foreground unison.Ink) unison.Paneler {
 	switch c.Type {
-	case gurps.Text:
+	case gurps.Text, gurps.Tags:
 		return n.createLabelCell(c, width, foreground)
 	case gurps.Toggle:
 		return n.createToggleCell(c, foreground)

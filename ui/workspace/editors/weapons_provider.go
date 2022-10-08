@@ -105,11 +105,7 @@ func (p *weaponsProvider) RefKey() string {
 	return p.weaponType.Key()
 }
 
-func (p *weaponsProvider) Tags() []string {
-	return nil
-}
-
-func (p *weaponsProvider) FilterByTag(_ string) []*gurps.Weapon {
+func (p *weaponsProvider) AllTags() []string {
 	return nil
 }
 

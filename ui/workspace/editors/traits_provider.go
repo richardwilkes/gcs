@@ -65,7 +65,7 @@ func (p *traitsProvider) RefKey() string {
 	return gurps.BlockLayoutTraitsKey
 }
 
-func (p *traitsProvider) Tags() []string {
+func (p *traitsProvider) AllTags() []string {
 	set := make(map[string]struct{})
 	gurps.Traverse(func(trait *gurps.Trait) bool {
 		for _, tag := range trait.Tags {
@@ -76,20 +76,6 @@ func (p *traitsProvider) Tags() []string {
 	tags := maps.Keys(set)
 	txt.SortStringsNaturalAscending(tags)
 	return tags
-}
-
-func (p *traitsProvider) FilterByTag(tag string) []*gurps.Trait {
-	var traits []*gurps.Trait
-	gurps.Traverse(func(trait *gurps.Trait) bool {
-		for _, one := range trait.Tags {
-			if one == tag {
-				traits = append(traits, trait)
-				break
-			}
-		}
-		return false
-	}, false, false, p.RootData()...)
-	return traits
 }
 
 func (p *traitsProvider) SetTable(table *unison.Table[*ntable.Node[*gurps.Trait]]) {

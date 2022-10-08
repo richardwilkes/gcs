@@ -58,17 +58,12 @@ type TableDockable[T gurps.NodeTypes] struct {
 	sizeToFitButton   *unison.Button
 	scale             int
 	scaleField        *widget.PercentageField
-	backButton        *unison.Button
-	forwardButton     *unison.Button
 	filterPopup       *unison.PopupMenu[string]
-	searchField       *unison.Field
-	matchesLabel      *unison.Label
+	filterField       *unison.Field
 	scroll            *unison.ScrollPanel
 	tableHeader       *unison.TableHeader[*ntable.Node[T]]
 	table             *unison.Table[*ntable.Node[T]]
 	crc               uint64
-	searchResult      []*ntable.Node[T]
-	searchIndex       int
 	needsSaveAsPrompt bool
 }
 
@@ -127,10 +122,10 @@ func NewTableDockable[T gurps.NodeTypes](filePath, extension string, provider nt
 		func(_ any) { d.save(false) })
 	d.InstallCmdHandlers(constants.SaveAsItemID, unison.AlwaysEnabled, func(_ any) { d.save(true) })
 	d.InstallCmdHandlers(unison.DeleteItemID,
-		func(_ any) bool { return d.table.HasSelection() },
+		func(_ any) bool { return !d.table.IsFiltered() && d.table.HasSelection() },
 		func(_ any) { ntable.DeleteSelection(d.table) })
 	d.InstallCmdHandlers(constants.DuplicateItemID,
-		func(_ any) bool { return d.table.HasSelection() },
+		func(_ any) bool { return !d.table.IsFiltered() && d.table.HasSelection() },
 		func(_ any) { ntable.DuplicateSelection(d.table) })
 	d.InstallCmdHandlers(constants.CopyToSheetItemID, d.canCopySelectionToSheet, d.copySelectionToSheet)
 	d.InstallCmdHandlers(constants.CopyToTemplateItemID, d.canCopySelectionToTemplate, d.copySelectionToTemplate)
@@ -172,52 +167,33 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	d.sizeToFitButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Sets the width of each column to fit its contents"))
 	d.sizeToFitButton.ClickCallback = d.sizeToFit
 
-	d.backButton = unison.NewSVGButton(res.BackSVG)
-	d.backButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Previous Match"))
-	d.backButton.ClickCallback = d.previousMatch
-	d.backButton.SetEnabled(false)
-
-	d.forwardButton = unison.NewSVGButton(res.ForwardSVG)
-	d.forwardButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Next Match"))
-	d.forwardButton.ClickCallback = d.nextMatch
-	d.forwardButton.SetEnabled(false)
-
-	d.filterPopup = unison.NewPopupMenu[string]()
-	d.filterPopup.Tooltip = unison.NewTooltipWithText(i18n.Text("Tag Filter"))
-	d.filterPopup.AddItem("")
-	for _, tag := range d.provider.Tags() {
-		d.filterPopup.AddItem(tag)
-	}
-	d.filterPopup.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.MiddleAlignment,
-	})
-
-	d.searchField = unison.NewField()
-	search := i18n.Text("Search")
-	d.searchField.Watermark = search
-	d.searchField.Tooltip = unison.NewTooltipWithText(search)
-	d.searchField.ModifiedCallback = d.searchModified
-	d.searchField.KeyDownCallback = func(keyCode unison.KeyCode, mod unison.Modifiers, repeat bool) bool {
-		if keyCode == unison.KeyReturn || keyCode == unison.KeyNumPadEnter {
-			if mod.ShiftDown() {
-				d.previousMatch()
-			} else {
-				d.nextMatch()
-			}
-			return true
-		}
-		return d.searchField.DefaultKeyDown(keyCode, mod, repeat)
-	}
-	d.searchField.SetLayoutData(&unison.FlexLayoutData{
+	d.filterField = unison.NewField()
+	filter := i18n.Text("Content Filter")
+	d.filterField.Watermark = filter
+	d.filterField.Tooltip = unison.NewTooltipWithText(filter)
+	d.filterField.ModifiedCallback = d.applyFilter
+	d.filterField.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,
 		VAlign: unison.MiddleAlignment,
 		HGrab:  true,
 	})
 
-	d.matchesLabel = unison.NewLabel()
-	d.matchesLabel.Text = "-"
-	d.matchesLabel.Tooltip = unison.NewTooltipWithText(i18n.Text("Number of matches found"))
+	d.filterPopup = unison.NewPopupMenu[string]()
+	d.filterPopup.Tooltip = unison.NewTooltipWithText(i18n.Text("Tag Filter"))
+	d.filterPopup.AddItem(i18n.Text("Any Tag"))
+	for _, tag := range d.provider.AllTags() {
+		if d.filterPopup.ItemCount() == 1 {
+			d.filterPopup.AddSeparator()
+		}
+		d.filterPopup.AddItem(tag)
+	}
+	d.filterPopup.SelectionCallback = func(index int, tag string) {
+		d.applyFilter()
+	}
+	d.filterPopup.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		VAlign: unison.MiddleAlignment,
+	})
 
 	toolbar := unison.NewPanel()
 	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
@@ -225,11 +201,8 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	toolbar.AddChild(d.scaleField)
 	toolbar.AddChild(d.hierarchyButton)
 	toolbar.AddChild(d.sizeToFitButton)
+	toolbar.AddChild(d.filterField)
 	toolbar.AddChild(d.filterPopup)
-	toolbar.AddChild(d.backButton)
-	toolbar.AddChild(d.forwardButton)
-	toolbar.AddChild(d.searchField)
-	toolbar.AddChild(d.matchesLabel)
 	toolbar.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,
 		HGrab:  true,
@@ -382,56 +355,21 @@ func (d *TableDockable[T]) sizeToFit() {
 	d.table.MarkForRedraw()
 }
 
-func (d *TableDockable[T]) searchModified() {
-	d.searchIndex = 0
-	d.searchResult = nil
-	text := strings.ToLower(d.searchField.Text())
-	for _, row := range d.table.RootRows() {
-		d.search(text, row)
-	}
-	d.adjustForMatch()
-}
-
-func (d *TableDockable[T]) search(text string, row *ntable.Node[T]) {
-	if row.Match(text) {
-		d.searchResult = append(d.searchResult, row)
-	}
-	if row.CanHaveChildren() {
-		for _, child := range row.Children() {
-			d.search(text, child)
+func (d *TableDockable[T]) applyFilter() {
+	tag := ""
+	if index := d.filterPopup.SelectedIndex(); index > 0 {
+		if item, ok := d.filterPopup.ItemAt(index); ok {
+			tag = item
 		}
 	}
-}
-
-func (d *TableDockable[T]) previousMatch() {
-	if d.searchIndex > 0 {
-		d.searchIndex--
-		d.adjustForMatch()
-	}
-}
-
-func (d *TableDockable[T]) nextMatch() {
-	if d.searchIndex < len(d.searchResult)-1 {
-		d.searchIndex++
-		d.adjustForMatch()
-	}
-}
-
-func (d *TableDockable[T]) adjustForMatch() {
-	d.backButton.SetEnabled(d.searchIndex != 0)
-	d.forwardButton.SetEnabled(len(d.searchResult) != 0 && d.searchIndex != len(d.searchResult)-1)
-	if len(d.searchResult) != 0 {
-		d.matchesLabel.Text = fmt.Sprintf(i18n.Text("%d of %d"), d.searchIndex+1, len(d.searchResult))
-		row := d.searchResult[d.searchIndex]
-		d.table.DiscloseRow(row, false)
-		d.table.ClearSelection()
-		rowIndex := d.table.RowToIndex(row)
-		d.table.SelectByIndex(rowIndex)
-		d.table.ScrollRowIntoView(rowIndex)
+	text := strings.TrimSpace(d.filterField.Text())
+	if tag == "" && text == "" {
+		d.table.ApplyFilter(nil)
 	} else {
-		d.matchesLabel.Text = "-"
+		d.table.ApplyFilter(func(row *ntable.Node[T]) bool {
+			return !(row.HasTag(tag) && row.PartialMatchExceptTag(text))
+		})
 	}
-	d.matchesLabel.Parent().MarkForLayoutAndRedraw()
 }
 
 // Rebuild implements widget.Rebuildable.

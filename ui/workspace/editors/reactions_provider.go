@@ -46,11 +46,7 @@ func (p *reactionModProvider) RefKey() string {
 	return gurps.BlockLayoutReactionsKey
 }
 
-func (p *reactionModProvider) Tags() []string {
-	return nil
-}
-
-func (p *reactionModProvider) FilterByTag(_ string) []*gurps.ConditionalModifier {
+func (p *reactionModProvider) AllTags() []string {
 	return nil
 }
 

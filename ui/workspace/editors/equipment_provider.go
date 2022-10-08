@@ -100,7 +100,7 @@ func (p *equipmentProvider) RefKey() string {
 	return gurps.BlockLayoutOtherEquipmentKey
 }
 
-func (p *equipmentProvider) Tags() []string {
+func (p *equipmentProvider) AllTags() []string {
 	set := make(map[string]struct{})
 	gurps.Traverse(func(modifier *gurps.Equipment) bool {
 		for _, tag := range modifier.Tags {
@@ -111,20 +111,6 @@ func (p *equipmentProvider) Tags() []string {
 	tags := maps.Keys(set)
 	txt.SortStringsNaturalAscending(tags)
 	return tags
-}
-
-func (p *equipmentProvider) FilterByTag(tag string) []*gurps.Equipment {
-	var matches []*gurps.Equipment
-	gurps.Traverse(func(equipment *gurps.Equipment) bool {
-		for _, one := range equipment.Tags {
-			if one == tag {
-				matches = append(matches, equipment)
-				break
-			}
-		}
-		return false
-	}, false, false, p.RootData()...)
-	return matches
 }
 
 func (p *equipmentProvider) SetTable(table *unison.Table[*ntable.Node[*gurps.Equipment]]) {

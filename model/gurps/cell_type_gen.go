@@ -22,6 +22,7 @@ import (
 // Possible values.
 const (
 	Text CellType = iota
+	Tags
 	Toggle
 	PageRef
 	LastCellType = PageRef
@@ -31,6 +32,7 @@ var (
 	// AllCellType holds all possible values.
 	AllCellType = []CellType{
 		Text,
+		Tags,
 		Toggle,
 		PageRef,
 	}
@@ -41,6 +43,10 @@ var (
 		{
 			key:    "text",
 			string: i18n.Text("Text"),
+		},
+		{
+			key:    "tags",
+			string: i18n.Text("Tags"),
 		},
 		{
 			key:    "toggle",

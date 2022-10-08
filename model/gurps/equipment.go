@@ -270,7 +270,7 @@ func (e *Equipment) CellData(column int, data *CellData) {
 		data.Primary = units.Format(e.ExtendedWeight(false, units))
 		data.Alignment = unison.EndAlignment
 	case EquipmentTagsColumn:
-		data.Type = Text
+		data.Type = Tags
 		data.Primary = CombineTags(e.Tags)
 	case EquipmentReferenceColumn, PageRefCellAlias:
 		data.Type = PageRef

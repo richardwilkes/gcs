@@ -208,7 +208,7 @@ func (s *Skill) CellData(column int, data *CellData) {
 			data.Primary = s.Difficulty.Description(s.Entity)
 		}
 	case SkillTagsColumn:
-		data.Type = Text
+		data.Type = Tags
 		data.Primary = CombineTags(s.Tags)
 	case SkillReferenceColumn, PageRefCellAlias:
 		data.Type = PageRef

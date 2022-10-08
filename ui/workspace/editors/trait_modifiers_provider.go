@@ -65,7 +65,7 @@ func (p *traitModifierProvider) RefKey() string {
 	return gid.TraitModifier
 }
 
-func (p *traitModifierProvider) Tags() []string {
+func (p *traitModifierProvider) AllTags() []string {
 	set := make(map[string]struct{})
 	gurps.Traverse(func(modifier *gurps.TraitModifier) bool {
 		for _, tag := range modifier.Tags {
@@ -76,20 +76,6 @@ func (p *traitModifierProvider) Tags() []string {
 	tags := maps.Keys(set)
 	txt.SortStringsNaturalAscending(tags)
 	return tags
-}
-
-func (p *traitModifierProvider) FilterByTag(tag string) []*gurps.TraitModifier {
-	var modifiers []*gurps.TraitModifier
-	gurps.Traverse(func(modifier *gurps.TraitModifier) bool {
-		for _, one := range modifier.Tags {
-			if one == tag {
-				modifiers = append(modifiers, modifier)
-				break
-			}
-		}
-		return false
-	}, false, false, p.RootData()...)
-	return modifiers
 }
 
 func (p *traitModifierProvider) SetTable(table *unison.Table[*ntable.Node[*gurps.TraitModifier]]) {

@@ -87,7 +87,7 @@ func (p *spellsProvider) RefKey() string {
 	return gurps.BlockLayoutSpellsKey
 }
 
-func (p *spellsProvider) Tags() []string {
+func (p *spellsProvider) AllTags() []string {
 	set := make(map[string]struct{})
 	gurps.Traverse(func(modifier *gurps.Spell) bool {
 		for _, tag := range modifier.Tags {
@@ -98,20 +98,6 @@ func (p *spellsProvider) Tags() []string {
 	tags := maps.Keys(set)
 	txt.SortStringsNaturalAscending(tags)
 	return tags
-}
-
-func (p *spellsProvider) FilterByTag(tag string) []*gurps.Spell {
-	var spells []*gurps.Spell
-	gurps.Traverse(func(spell *gurps.Spell) bool {
-		for _, one := range spell.Tags {
-			if one == tag {
-				spells = append(spells, spell)
-				break
-			}
-		}
-		return false
-	}, false, false, p.RootData()...)
-	return spells
 }
 
 func (p *spellsProvider) SetTable(table *unison.Table[*ntable.Node[*gurps.Spell]]) {

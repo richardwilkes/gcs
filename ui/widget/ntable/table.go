@@ -61,8 +61,7 @@ type TableProvider[T gurps.NodeTypes] interface {
 	Serialize() ([]byte, error)
 	Deserialize(data []byte) error
 	RefKey() string
-	Tags() []string
-	FilterByTag(tag string) []T
+	AllTags() []string
 }
 
 // NewNodeTable creates a new node table of the specified type, returning the header and table. Pass nil for 'font' if
@@ -199,7 +198,7 @@ func OpenEditor[T gurps.NodeTypes](table *unison.Table[*Node[T]], edit func(item
 
 // DeleteSelection removes the selected nodes from the table.
 func DeleteSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
-	if provider, ok := table.Model.(TableProvider[T]); ok && table.HasSelection() {
+	if provider, ok := table.Model.(TableProvider[T]); ok && !table.IsFiltered() && table.HasSelection() {
 		sel := table.SelectedRows(true)
 		ids := make(map[uuid.UUID]bool, len(sel))
 		list := make([]T, 0, len(sel))
@@ -263,7 +262,7 @@ func DeleteSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 
 // DuplicateSelection duplicates the selected nodes in the table.
 func DuplicateSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
-	if provider, ok := table.Model.(TableProvider[T]); ok && table.HasSelection() {
+	if provider, ok := table.Model.(TableProvider[T]); ok && !table.IsFiltered() && table.HasSelection() {
 		var undo *unison.UndoEdit[*TableUndoEditData[T]]
 		mgr := unison.UndoManagerFor(table)
 		if mgr != nil {
@@ -324,7 +323,7 @@ func DuplicateSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 
 // CopyRowsTo copies the provided rows to the target table.
 func CopyRowsTo[T gurps.NodeTypes](table *unison.Table[*Node[T]], rows []*Node[T], postProcessor func(rows []*Node[T])) {
-	if table == nil {
+	if table == nil || table.IsFiltered() {
 		return
 	}
 	rows = slices.Clone(rows)

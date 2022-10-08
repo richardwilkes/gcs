@@ -40,6 +40,8 @@ github.com/richardwilkes/toolbox v1.76.0 h1:8PcwA0Mp1vOJRjrRVWFff2wBKBBycmvgozmc
 github.com/richardwilkes/toolbox v1.76.0/go.mod h1:aHKgBvWmkeEqgJvo35srRnK+AVp9Bn4RaQFMKzJT00E=
 github.com/richardwilkes/unison v0.36.0 h1:Kgrb8Ke8Wc0kVyYOYpULtIUi8uw0no2h8w5faAUYzvM=
 github.com/richardwilkes/unison v0.36.0/go.mod h1:94Y0agxW1QlApC3NZmU+0RKY4V836Xzdo7kSxIA0qh8=
+github.com/richardwilkes/unison v0.37.0 h1:06w6wykahZVWDNVPr+LPEAwuGfeGx8Gsb78nD6UcWUc=
+github.com/richardwilkes/unison v0.37.0/go.mod h1:94Y0agxW1QlApC3NZmU+0RKY4V836Xzdo7kSxIA0qh8=
 github.com/rjeczalik/notify v0.9.2 h1:MiTWrPj55mNDHEiIX5YUSKefw/+lCQVoAFmD6oQm5w8=
 github.com/rjeczalik/notify v0.9.2/go.mod h1:aErll2f0sUX9PXZnVNyeiObbmTlk5jnMoCa4QEjJeqM=
 github.com/rogpeppe/go-internal v1.8.0 h1:FCbCCtXNOY3UtUuHUYaghJg4y7Fd14rXifAYUAtL9R8=

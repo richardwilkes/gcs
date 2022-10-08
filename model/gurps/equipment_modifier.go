@@ -144,6 +144,11 @@ func (e *EquipmentModifier) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// TagList returns the list of tags.
+func (e *EquipmentModifier) TagList() []string {
+	return e.Tags
+}
+
 // CellData returns the cell data information for the given column.
 func (e *EquipmentModifier) CellData(column int, data *CellData) {
 	switch column {
@@ -174,7 +179,7 @@ func (e *EquipmentModifier) CellData(column int, data *CellData) {
 			data.Primary = e.WeightDescription()
 		}
 	case EquipmentModifierTagsColumn:
-		data.Type = Text
+		data.Type = Tags
 		data.Primary = CombineTags(e.Tags)
 	case EquipmentModifierReferenceColumn, PageRefCellAlias:
 		data.Type = PageRef

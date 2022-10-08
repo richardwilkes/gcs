@@ -69,7 +69,7 @@ func (p *eqpModProvider) RefKey() string {
 	return gid.EquipmentModifier
 }
 
-func (p *eqpModProvider) Tags() []string {
+func (p *eqpModProvider) AllTags() []string {
 	set := make(map[string]struct{})
 	gurps.Traverse(func(modifier *gurps.EquipmentModifier) bool {
 		for _, tag := range modifier.Tags {
@@ -80,20 +80,6 @@ func (p *eqpModProvider) Tags() []string {
 	tags := maps.Keys(set)
 	txt.SortStringsNaturalAscending(tags)
 	return tags
-}
-
-func (p *eqpModProvider) FilterByTag(tag string) []*gurps.EquipmentModifier {
-	var modifiers []*gurps.EquipmentModifier
-	gurps.Traverse(func(modifier *gurps.EquipmentModifier) bool {
-		for _, one := range modifier.Tags {
-			if one == tag {
-				modifiers = append(modifiers, modifier)
-				break
-			}
-		}
-		return false
-	}, false, false, p.RootData()...)
-	return modifiers
 }
 
 func (p *eqpModProvider) SetTable(table *unison.Table[*ntable.Node[*gurps.EquipmentModifier]]) {

@@ -77,7 +77,7 @@ func (p *skillsProvider) RefKey() string {
 	return gurps.BlockLayoutSkillsKey
 }
 
-func (p *skillsProvider) Tags() []string {
+func (p *skillsProvider) AllTags() []string {
 	set := make(map[string]struct{})
 	gurps.Traverse(func(modifier *gurps.Skill) bool {
 		for _, tag := range modifier.Tags {
@@ -88,20 +88,6 @@ func (p *skillsProvider) Tags() []string {
 	tags := maps.Keys(set)
 	txt.SortStringsNaturalAscending(tags)
 	return tags
-}
-
-func (p *skillsProvider) FilterByTag(tag string) []*gurps.Skill {
-	var skills []*gurps.Skill
-	gurps.Traverse(func(skill *gurps.Skill) bool {
-		for _, one := range skill.Tags {
-			if one == tag {
-				skills = append(skills, skill)
-				break
-			}
-		}
-		return false
-	}, false, false, p.RootData()...)
-	return skills
 }
 
 func (p *skillsProvider) SetTable(table *unison.Table[*ntable.Node[*gurps.Skill]]) {

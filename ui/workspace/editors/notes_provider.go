@@ -49,11 +49,7 @@ func (p *notesProvider) RefKey() string {
 	return gurps.BlockLayoutNotesKey
 }
 
-func (p *notesProvider) Tags() []string {
-	return nil
-}
-
-func (p *notesProvider) FilterByTag(_ string) []*gurps.Note {
+func (p *notesProvider) AllTags() []string {
 	return nil
 }
 

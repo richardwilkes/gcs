@@ -915,6 +915,9 @@ func main() {
 				Key: "text",
 			},
 			{
+				Key: "tags",
+			},
+			{
 				Key: "toggle",
 			},
 			{
