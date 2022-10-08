@@ -14,6 +14,7 @@ package settings
 import (
 	"fmt"
 	"io/fs"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -24,6 +25,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/gcs/v5/ui/workspace"
 	"github.com/richardwilkes/gcs/v5/ui/workspace/external"
+	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/desktop"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -109,14 +111,40 @@ Would you like to create one by choosing a PDF to map to this key?`), key), pdfN
 			}
 		}
 		if pageRef != nil {
-			if d, wasOpen := workspace.OpenFile(wnd, pageRef.Path); d != nil {
-				if pdfDockable, ok := d.(*external.PDFDockable); ok {
-					pdfDockable.SetSearchText(highlight)
-					pdfDockable.LoadPage(page + pageRef.Offset - 1) // The pdf package uses 0 for the first page, not 1
-					if !wasOpen {
-						pdfDockable.ClearHistory()
+			if strings.TrimSpace(s.General.ExternalPDFCmdLine) == "" {
+				if d, wasOpen := workspace.OpenFile(wnd, pageRef.Path); d != nil {
+					if pdfDockable, ok := d.(*external.PDFDockable); ok {
+						pdfDockable.SetSearchText(highlight)
+						pdfDockable.LoadPage(page + pageRef.Offset - 1) // The pdf package uses 0 for the first page, not 1
+						if !wasOpen {
+							pdfDockable.ClearHistory()
+						}
 					}
 				}
+			} else {
+				var parts []string
+				parts, err = cmdline.Parse(strings.TrimSpace(strings.ReplaceAll(strings.ReplaceAll(s.General.ExternalPDFCmdLine, "$FILE", pageRef.Path), "$PAGE", strconv.Itoa(page+pageRef.Offset))))
+				errTitle := i18n.Text("Unable to use external PDF command line")
+				if err != nil {
+					unison.ErrorDialogWithError(errTitle, err)
+					return false
+				}
+				if len(parts) == 0 {
+					unison.ErrorDialogWithMessage(errTitle, i18n.Text("invalid path"))
+					return false
+				}
+				cmd := exec.Command(parts[0], parts[1:]...)
+				if err = cmd.Start(); err != nil {
+					unison.ErrorDialogWithError(errTitle, err)
+					return false
+				}
+				go func() {
+					if err = cmd.Wait(); err != nil {
+						unison.InvokeTask(func() {
+							unison.ErrorDialogWithError(i18n.Text("Unexpected response from command"), err)
+						})
+					}
+				}()
 			}
 		}
 	}

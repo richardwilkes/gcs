@@ -14,6 +14,7 @@ package settings
 import (
 	"io/fs"
 	"strconv"
+	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -23,6 +24,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/res"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/gcs/v5/ui/workspace"
+	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jotrotate"
 	"github.com/richardwilkes/unison"
@@ -42,6 +44,7 @@ type generalSettingsDockable struct {
 	tooltipDelayField             *widget.DecimalField
 	tooltipDismissalField         *widget.DecimalField
 	scrollWheelMultiplierField    *widget.DecimalField
+	externalPDFCmdlineField       *widget.StringField
 }
 
 // ShowGeneralSettings the General Settings window.
@@ -96,6 +99,7 @@ func (d *generalSettingsDockable) initContent(content *unison.Panel) {
 	d.createPathInfoField(content, i18n.Text("Settings Path"), settings.Path())
 	d.createPathInfoField(content, i18n.Text("Translations Path"), i18n.Dir)
 	d.createPathInfoField(content, i18n.Text("Log Path"), jotrotate.PathToLog)
+	d.createExternalPDFCmdLineField(content)
 }
 
 func (d *generalSettingsDockable) createPlayerAndDescFields(content *unison.Panel) {
@@ -233,6 +237,27 @@ func (d *generalSettingsDockable) createPathInfoField(content *unison.Panel, tit
 		unison.GlobalClipboard.SetText(value)
 	}
 	content.AddChild(addButton)
+}
+
+func (d *generalSettingsDockable) createExternalPDFCmdLineField(content *unison.Panel) {
+	title := i18n.Text("External PDF Viewer")
+	content.AddChild(widget.NewFieldLeadingLabel(title))
+	d.externalPDFCmdlineField = widget.NewStringField(nil, "", title,
+		func() string { return settings.Global().General.ExternalPDFCmdLine },
+		func(s string) { settings.Global().General.ExternalPDFCmdLine = strings.TrimSpace(s) })
+	d.externalPDFCmdlineField.SetLayoutData(&unison.FlexLayoutData{
+		HSpan:  2,
+		HAlign: unison.FillAlignment,
+		HGrab:  true,
+	})
+	d.externalPDFCmdlineField.ValidateCallback = func() bool {
+		_, err := cmdline.Parse(strings.TrimSpace(d.externalPDFCmdlineField.Text()))
+		return err == nil
+	}
+	d.externalPDFCmdlineField.Tooltip = unison.NewTooltipWithText(i18n.Text(`The internal PDF viewer will be used if the External PDF Viewer field is empty.
+Use $FILE where the full path to the PDF should be placed.
+Use $PAGE where the page number should be placed.`))
+	content.AddChild(d.externalPDFCmdlineField)
 }
 
 func (d *generalSettingsDockable) reset() {

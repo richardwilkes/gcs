@@ -53,6 +53,7 @@ type General struct {
 	DefaultPlayerName     string  `json:"default_player_name,omitempty"`
 	DefaultTechLevel      string  `json:"default_tech_level,omitempty"`
 	CalendarName          string  `json:"calendar_ref,omitempty"`
+	ExternalPDFCmdLine    string  `json:"external_pdf_cmd_line,omitempty"`
 	InitialPoints         fxp.Int `json:"initial_points"`
 	TooltipDelay          fxp.Int `json:"tooltip_delay"`
 	TooltipDismissal      fxp.Int `json:"tooltip_dismissal"`
