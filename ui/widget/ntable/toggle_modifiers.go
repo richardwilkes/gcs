@@ -54,10 +54,16 @@ func processModifiers[T *gurps.TraitModifier | *gurps.EquipmentModifier](modifie
 			if mod.Container() {
 				label := unison.NewLabel()
 				label.Text = mod.FullDescription()
+				if cost := mod.FullCostDescription(); cost != "" {
+					label.Text += " (" + cost + ")"
+				}
 				p = label.AsPanel()
 			} else {
 				cb := unison.NewCheckBox()
 				cb.Text = mod.FullDescription()
+				if cost := mod.FullCostDescription(); cost != "" {
+					cb.Text += " (" + cost + ")"
+				}
 				cb.State = unison.CheckStateFromBool(mod.Enabled())
 				tracker[cb] = mod
 				p = cb.AsPanel()

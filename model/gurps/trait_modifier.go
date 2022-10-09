@@ -53,6 +53,7 @@ type GeneralModifier interface {
 	Container() bool
 	Depth() int
 	FullDescription() string
+	FullCostDescription() string
 	Enabled() bool
 	SetEnabled(enabled bool)
 }
@@ -107,16 +108,16 @@ func NewTraitModifier(entity *Entity, parent *TraitModifier, container bool) *Tr
 }
 
 // Clone implements Node.
-func (a *TraitModifier) Clone(entity *Entity, parent *TraitModifier, preserveID bool) *TraitModifier {
-	other := NewTraitModifier(entity, parent, a.Container())
+func (m *TraitModifier) Clone(entity *Entity, parent *TraitModifier, preserveID bool) *TraitModifier {
+	other := NewTraitModifier(entity, parent, m.Container())
 	if preserveID {
-		other.ID = a.ID
+		other.ID = m.ID
 	}
-	other.IsOpen = a.IsOpen
-	other.TraitModifierEditData.CopyFrom(a)
-	if a.HasChildren() {
-		other.Children = make([]*TraitModifier, 0, len(a.Children))
-		for _, child := range a.Children {
+	other.IsOpen = m.IsOpen
+	other.TraitModifierEditData.CopyFrom(m)
+	if m.HasChildren() {
+		other.Children = make([]*TraitModifier, 0, len(m.Children))
+		for _, child := range m.Children {
 			other.Children = append(other.Children, child.Clone(entity, other, preserveID))
 		}
 	}
@@ -124,13 +125,13 @@ func (a *TraitModifier) Clone(entity *Entity, parent *TraitModifier, preserveID 
 }
 
 // MarshalJSON implements json.Marshaler.
-func (a *TraitModifier) MarshalJSON() ([]byte, error) {
-	a.ClearUnusedFieldsForType()
-	return json.Marshal(&a.TraitModifierData)
+func (m *TraitModifier) MarshalJSON() ([]byte, error) {
+	m.ClearUnusedFieldsForType()
+	return json.Marshal(&m.TraitModifierData)
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (a *TraitModifier) UnmarshalJSON(data []byte) error {
+func (m *TraitModifier) UnmarshalJSON(data []byte) error {
 	var localData struct {
 		TraitModifierData
 		// Old data fields
@@ -140,55 +141,55 @@ func (a *TraitModifier) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	localData.ClearUnusedFieldsForType()
-	a.TraitModifierData = localData.TraitModifierData
-	a.Tags = convertOldCategoriesToTags(a.Tags, localData.Categories)
-	slices.Sort(a.Tags)
-	if a.Container() {
-		for _, one := range a.Children {
-			one.parent = a
+	m.TraitModifierData = localData.TraitModifierData
+	m.Tags = convertOldCategoriesToTags(m.Tags, localData.Categories)
+	slices.Sort(m.Tags)
+	if m.Container() {
+		for _, one := range m.Children {
+			one.parent = m
 		}
 	}
 	return nil
 }
 
 // TagList returns the list of tags.
-func (a *TraitModifier) TagList() []string {
-	return a.Tags
+func (m *TraitModifier) TagList() []string {
+	return m.Tags
 }
 
 // CellData returns the cell data information for the given column.
-func (a *TraitModifier) CellData(column int, data *CellData) {
+func (m *TraitModifier) CellData(column int, data *CellData) {
 	switch column {
 	case TraitModifierEnabledColumn:
-		if !a.Container() {
+		if !m.Container() {
 			data.Type = Toggle
-			data.Checked = a.Enabled()
+			data.Checked = m.Enabled()
 			data.Alignment = unison.MiddleAlignment
 		}
 	case TraitModifierDescriptionColumn:
 		data.Type = Text
-		data.Primary = a.Name
-		data.Secondary = a.SecondaryText(func(option display.Option) bool { return option.Inline() })
-		data.Tooltip = a.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
+		data.Primary = m.Name
+		data.Secondary = m.SecondaryText(func(option display.Option) bool { return option.Inline() })
+		data.Tooltip = m.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 	case TraitModifierCostColumn:
-		if !a.Container() {
+		if !m.Container() {
 			data.Type = Text
-			data.Primary = a.CostDescription()
+			data.Primary = m.CostDescription()
 		}
 	case TraitModifierTagsColumn:
 		data.Type = Tags
-		data.Primary = CombineTags(a.Tags)
+		data.Primary = CombineTags(m.Tags)
 	case TraitModifierReferenceColumn, PageRefCellAlias:
 		data.Type = PageRef
-		data.Primary = a.PageRef
-		data.Secondary = a.Name
+		data.Primary = m.PageRef
+		data.Secondary = m.Name
 	}
 }
 
 // Depth returns the number of parents this node has.
-func (a *TraitModifier) Depth() int {
+func (m *TraitModifier) Depth() int {
 	count := 0
-	p := a.parent
+	p := m.parent
 	for p != nil {
 		count++
 		p = p.parent
@@ -197,133 +198,138 @@ func (a *TraitModifier) Depth() int {
 }
 
 // OwningEntity returns the owning Entity.
-func (a *TraitModifier) OwningEntity() *Entity {
-	return a.Entity
+func (m *TraitModifier) OwningEntity() *Entity {
+	return m.Entity
 }
 
 // SetOwningEntity sets the owning entity and configures any sub-components as needed.
-func (a *TraitModifier) SetOwningEntity(entity *Entity) {
-	a.Entity = entity
-	if a.Container() {
-		for _, child := range a.Children {
+func (m *TraitModifier) SetOwningEntity(entity *Entity) {
+	m.Entity = entity
+	if m.Container() {
+		for _, child := range m.Children {
 			child.SetOwningEntity(entity)
 		}
 	}
 }
 
 // CostModifier returns the total cost modifier.
-func (a *TraitModifier) CostModifier() fxp.Int {
-	if a.Levels > 0 {
-		return a.Cost.Mul(a.Levels)
+func (m *TraitModifier) CostModifier() fxp.Int {
+	if m.Levels > 0 {
+		return m.Cost.Mul(m.Levels)
 	}
-	return a.Cost
+	return m.Cost
 }
 
 // HasLevels returns true if this TraitModifier has levels.
-func (a *TraitModifier) HasLevels() bool {
-	return !a.Container() && a.CostType == trait.Percentage && a.Levels > 0
+func (m *TraitModifier) HasLevels() bool {
+	return !m.Container() && m.CostType == trait.Percentage && m.Levels > 0
 }
 
-func (a *TraitModifier) String() string {
+func (m *TraitModifier) String() string {
 	var buffer strings.Builder
-	buffer.WriteString(a.Name)
-	if a.HasLevels() {
+	buffer.WriteString(m.Name)
+	if m.HasLevels() {
 		buffer.WriteByte(' ')
-		buffer.WriteString(a.Levels.String())
+		buffer.WriteString(m.Levels.String())
 	}
 	return buffer.String()
 }
 
 // SecondaryText returns the "secondary" text: the text display below an Trait.
-func (a *TraitModifier) SecondaryText(optionChecker func(display.Option) bool) string {
+func (m *TraitModifier) SecondaryText(optionChecker func(display.Option) bool) string {
 	var buffer strings.Builder
-	settings := SheetSettingsFor(a.Entity)
-	if a.LocalNotes != "" && optionChecker(settings.NotesDisplay) {
+	settings := SheetSettingsFor(m.Entity)
+	if m.LocalNotes != "" && optionChecker(settings.NotesDisplay) {
 		if buffer.Len() != 0 {
 			buffer.WriteByte('\n')
 		}
-		buffer.WriteString(a.LocalNotes)
+		buffer.WriteString(m.LocalNotes)
 	}
 	return buffer.String()
 }
 
 // FullDescription returns a full description.
-func (a *TraitModifier) FullDescription() string {
+func (m *TraitModifier) FullDescription() string {
 	var buffer strings.Builder
-	buffer.WriteString(a.String())
-	if a.LocalNotes != "" {
+	buffer.WriteString(m.String())
+	if m.LocalNotes != "" {
 		buffer.WriteString(" (")
-		buffer.WriteString(a.LocalNotes)
+		buffer.WriteString(m.LocalNotes)
 		buffer.WriteByte(')')
 	}
-	if SheetSettingsFor(a.Entity).ShowTraitModifierAdj {
+	if SheetSettingsFor(m.Entity).ShowTraitModifierAdj {
 		buffer.WriteString(" [")
-		buffer.WriteString(a.CostDescription())
+		buffer.WriteString(m.CostDescription())
 		buffer.WriteByte(']')
 	}
 	return buffer.String()
 }
 
+// FullCostDescription is the same as CostDescription().
+func (m *TraitModifier) FullCostDescription() string {
+	return m.CostDescription()
+}
+
 // CostDescription returns the formatted cost.
-func (a *TraitModifier) CostDescription() string {
-	if a.Container() {
+func (m *TraitModifier) CostDescription() string {
+	if m.Container() {
 		return ""
 	}
 	var base string
-	switch a.CostType {
+	switch m.CostType {
 	case trait.Percentage:
-		if a.HasLevels() {
-			base = a.Cost.Mul(a.Levels).StringWithSign()
+		if m.HasLevels() {
+			base = m.Cost.Mul(m.Levels).StringWithSign()
 		} else {
-			base = a.Cost.StringWithSign()
+			base = m.Cost.StringWithSign()
 		}
 		base += trait.Percentage.String()
 	case trait.Points:
-		base = a.Cost.StringWithSign()
+		base = m.Cost.StringWithSign()
 	case trait.Multiplier:
-		return a.CostType.String() + a.Cost.String()
+		return m.CostType.String() + m.Cost.String()
 	default:
-		jot.Errorf("unhandled cost type: %d", a.CostType)
-		base = a.Cost.StringWithSign() + trait.Percentage.String()
+		jot.Errorf("unhandled cost type: %d", m.CostType)
+		base = m.Cost.StringWithSign() + trait.Percentage.String()
 	}
-	if desc := a.Affects.AltString(); desc != "" {
+	if desc := m.Affects.AltString(); desc != "" {
 		base += " " + desc
 	}
 	return base
 }
 
 // FillWithNameableKeys adds any nameable keys found in this TraitModifier to the provided map.
-func (a *TraitModifier) FillWithNameableKeys(m map[string]string) {
-	if !a.Container() && a.Enabled() {
-		nameables.Extract(a.Name, m)
-		nameables.Extract(a.LocalNotes, m)
-		nameables.Extract(a.VTTNotes, m)
-		for _, one := range a.Features {
-			one.FillWithNameableKeys(m)
+func (m *TraitModifier) FillWithNameableKeys(keyMap map[string]string) {
+	if !m.Container() && m.Enabled() {
+		nameables.Extract(m.Name, keyMap)
+		nameables.Extract(m.LocalNotes, keyMap)
+		nameables.Extract(m.VTTNotes, keyMap)
+		for _, one := range m.Features {
+			one.FillWithNameableKeys(keyMap)
 		}
 	}
 }
 
 // ApplyNameableKeys replaces any nameable keys found in this TraitModifier with the corresponding values in the provided map.
-func (a *TraitModifier) ApplyNameableKeys(m map[string]string) {
-	if !a.Container() && a.Enabled() {
-		a.Name = nameables.Apply(a.Name, m)
-		a.LocalNotes = nameables.Apply(a.LocalNotes, m)
-		a.VTTNotes = nameables.Apply(a.VTTNotes, m)
-		for _, one := range a.Features {
-			one.ApplyNameableKeys(m)
+func (m *TraitModifier) ApplyNameableKeys(keyMap map[string]string) {
+	if !m.Container() && m.Enabled() {
+		m.Name = nameables.Apply(m.Name, keyMap)
+		m.LocalNotes = nameables.Apply(m.LocalNotes, keyMap)
+		m.VTTNotes = nameables.Apply(m.VTTNotes, keyMap)
+		for _, one := range m.Features {
+			one.ApplyNameableKeys(keyMap)
 		}
 	}
 }
 
 // Enabled returns true if this node is enabled.
-func (a *TraitModifier) Enabled() bool {
-	return !a.Disabled || a.Container()
+func (m *TraitModifier) Enabled() bool {
+	return !m.Disabled || m.Container()
 }
 
 // SetEnabled makes the node enabled, if possible.
-func (a *TraitModifier) SetEnabled(enabled bool) {
-	if !a.Container() {
-		a.Disabled = !enabled
+func (m *TraitModifier) SetEnabled(enabled bool) {
+	if !m.Container() {
+		m.Disabled = !enabled
 	}
 }
