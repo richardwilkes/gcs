@@ -279,7 +279,7 @@ func (e *Entity) processFeatures() {
 	}, true, false, e.Traits...)
 	Traverse(func(s *Skill) bool {
 		for _, f := range s.Features {
-			processFeature(s, m, f, 0)
+			processFeature(s, m, f, s.LevelData.Level)
 		}
 		return false
 	}, false, true, e.Skills...)
