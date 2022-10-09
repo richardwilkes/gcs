@@ -553,20 +553,21 @@ func (e *Entity) SwingFor(st int) *dice.Dice {
 	return e.SheetSettings.DamageProgression.Swing(st)
 }
 
-// AddWeaponComparedDamageBonusesFor adds the bonuses for matching weapons that match to the map. If 'm' is nil, it will
-// be created. The provided map (or the newly created one) will be returned.
-func (e *Entity) AddWeaponComparedDamageBonusesFor(featureID, nameQualifier, specializationQualifier string, tagsQualifier []string, dieCount int, tooltip *xio.ByteBuffer, m map[*feature.WeaponDamageBonus]bool) map[*feature.WeaponDamageBonus]bool {
+// AddWeaponComparedBonusesFor adds the bonuses for matching weapons that match to the map. If 'm' is nil, it will be
+// created. The provided map (or the newly created one) will be returned.
+func (e *Entity) AddWeaponComparedBonusesFor(featureID, nameQualifier, specializationQualifier string, tagsQualifier []string, dieCount int, levels fxp.Int, tooltip *xio.ByteBuffer, m map[*feature.WeaponBonus]bool) map[*feature.WeaponBonus]bool {
 	if m == nil {
-		m = make(map[*feature.WeaponDamageBonus]bool)
+		m = make(map[*feature.WeaponBonus]bool)
 	}
-	for _, one := range e.WeaponComparedDamageBonusesFor(featureID, nameQualifier, specializationQualifier, tagsQualifier, dieCount, tooltip) {
+	for _, one := range e.WeaponComparedBonusesFor(featureID, nameQualifier, specializationQualifier, tagsQualifier,
+		dieCount, levels, tooltip) {
 		m[one] = true
 	}
 	return m
 }
 
-// WeaponComparedDamageBonusesFor returns the bonuses for matching weapons that match.
-func (e *Entity) WeaponComparedDamageBonusesFor(featureID, nameQualifier, specializationQualifier string, tagsQualifier []string, dieCount int, tooltip *xio.ByteBuffer) []*feature.WeaponDamageBonus {
+// WeaponComparedBonusesFor returns the bonuses for matching weapons that match.
+func (e *Entity) WeaponComparedBonusesFor(featureID, nameQualifier, specializationQualifier string, tagsQualifier []string, dieCount int, levels fxp.Int, tooltip *xio.ByteBuffer) []*feature.WeaponBonus {
 	rsl := fxp.Min
 	for _, sk := range e.SkillNamed(nameQualifier, specializationQualifier, true, nil) {
 		if rsl < sk.LevelData.RelativeLevel {
@@ -576,17 +577,21 @@ func (e *Entity) WeaponComparedDamageBonusesFor(featureID, nameQualifier, specia
 	if rsl == fxp.Min {
 		return nil
 	}
-	var bonuses []*feature.WeaponDamageBonus
+	var bonuses []*feature.WeaponBonus
 	for _, f := range e.featureMap[strings.ToLower(featureID)] {
 		//nolint:gocritic // Don't want to invert the logic here
-		if bonus, ok := f.(*feature.WeaponDamageBonus); ok &&
+		if bonus, ok := f.(*feature.WeaponBonus); ok &&
 			bonus.NameCriteria.Matches(nameQualifier) &&
 			bonus.SpecializationCriteria.Matches(specializationQualifier) &&
 			bonus.RelativeLevelCriteria.Matches(rsl) &&
 			bonus.TagsCriteria.MatchesList(tagsQualifier...) {
 			bonuses = append(bonuses, bonus)
 			level := bonus.LeveledAmount.Level
-			bonus.LeveledAmount.Level = fxp.From(dieCount)
+			if bonus.Type == feature.WeaponBonusType {
+				bonus.LeveledAmount.Level = fxp.From(dieCount)
+			} else {
+				bonus.LeveledAmount.Level = levels
+			}
 			bonus.AddToTooltip(tooltip)
 			bonus.LeveledAmount.Level = level
 		}
@@ -632,7 +637,7 @@ func (e *Entity) BonusFor(featureID string, tooltip *xio.ByteBuffer) fxp.Int {
 	var total fxp.Int
 	for _, f := range e.featureMap[strings.ToLower(featureID)] {
 		if bonus, ok := f.(feature.Bonus); ok {
-			if _, ok = bonus.(*feature.WeaponDamageBonus); !ok {
+			if _, ok = bonus.(*feature.WeaponBonus); !ok {
 				total += bonus.AdjustedAmount()
 				bonus.AddToTooltip(tooltip)
 			}
@@ -778,35 +783,40 @@ func (e *Entity) SpellPointComparedBonusFor(featureID, qualifier string, tags []
 	return total
 }
 
-// AddNamedWeaponDamageBonusesFor adds the bonuses for matching weapons that match to the map. If 'm' is nil, it will
+// AddNamedWeaponBonusesFor adds the bonuses for matching weapons that match to the map. If 'm' is nil, it will
 // be created. The provided map (or the newly created one) will be returned.
-func (e *Entity) AddNamedWeaponDamageBonusesFor(featureID, nameQualifier, usageQualifier string, tagsQualifier []string, dieCount int, tooltip *xio.ByteBuffer, m map[*feature.WeaponDamageBonus]bool) map[*feature.WeaponDamageBonus]bool {
+func (e *Entity) AddNamedWeaponBonusesFor(featureID, nameQualifier, usageQualifier string, tagsQualifier []string, dieCount int, levels fxp.Int, tooltip *xio.ByteBuffer, m map[*feature.WeaponBonus]bool) map[*feature.WeaponBonus]bool {
 	if m == nil {
-		m = make(map[*feature.WeaponDamageBonus]bool)
+		m = make(map[*feature.WeaponBonus]bool)
 	}
-	for _, one := range e.NamedWeaponDamageBonusesFor(featureID, nameQualifier, usageQualifier, tagsQualifier, dieCount, tooltip) {
+	for _, one := range e.NamedWeaponBonusesFor(featureID, nameQualifier, usageQualifier, tagsQualifier, dieCount,
+		levels, tooltip) {
 		m[one] = true
 	}
 	return m
 }
 
-// NamedWeaponDamageBonusesFor returns the bonuses for matching weapons.
-func (e *Entity) NamedWeaponDamageBonusesFor(featureID, nameQualifier, usageQualifier string, tagsQualifier []string, dieCount int, tooltip *xio.ByteBuffer) []*feature.WeaponDamageBonus {
+// NamedWeaponBonusesFor returns the bonuses for matching weapons.
+func (e *Entity) NamedWeaponBonusesFor(featureID, nameQualifier, usageQualifier string, tagsQualifier []string, dieCount int, levels fxp.Int, tooltip *xio.ByteBuffer) []*feature.WeaponBonus {
 	list := e.featureMap[strings.ToLower(featureID)]
 	if len(list) == 0 {
 		return nil
 	}
-	var bonuses []*feature.WeaponDamageBonus
+	var bonuses []*feature.WeaponBonus
 	for _, one := range list {
 		//nolint:gocritic // Don't want to invert the logic here
-		if bonus, ok := one.(*feature.WeaponDamageBonus); ok &&
+		if bonus, ok := one.(*feature.WeaponBonus); ok &&
 			bonus.SelectionType == weapon.WithName &&
 			bonus.NameCriteria.Matches(nameQualifier) &&
 			bonus.SpecializationCriteria.Matches(usageQualifier) &&
 			bonus.TagsCriteria.MatchesList(tagsQualifier...) {
 			bonuses = append(bonuses, bonus)
 			level := bonus.LeveledAmount.Level
-			bonus.LeveledAmount.Level = fxp.From(dieCount)
+			if bonus.Type == feature.WeaponBonusType {
+				bonus.LeveledAmount.Level = fxp.From(dieCount)
+			} else {
+				bonus.LeveledAmount.Level = levels
+			}
 			bonus.AddToTooltip(tooltip)
 			bonus.LeveledAmount.Level = level
 		}

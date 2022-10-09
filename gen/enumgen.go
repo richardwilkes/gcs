@@ -521,6 +521,11 @@ func main() {
 				String: "Gives a weapon damage modifier of",
 			},
 			{
+				Name:   "WeaponDRDivisorBonus",
+				Key:    "weapon_dr_divisor_bonus",
+				String: "Gives a weapon DR divisor modifier of",
+			},
+			{
 				Key:    "cost_reduction",
 				String: "Reduces the attribute cost of",
 			},

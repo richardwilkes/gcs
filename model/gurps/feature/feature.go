@@ -47,7 +47,7 @@ func basicAddToTooltip(parent fmt.Stringer, amt *LeveledAmount, buffer *xio.Byte
 		buffer.WriteByte('\n')
 		buffer.WriteString(parentName(parent))
 		buffer.WriteString(" [")
-		buffer.WriteString(amt.FormatWithLevel())
+		buffer.WriteString(amt.FormatWithLevel(false))
 		buffer.WriteByte(']')
 	}
 }

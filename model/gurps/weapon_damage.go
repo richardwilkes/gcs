@@ -178,8 +178,10 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 	if w.Base != nil {
 		*base = *w.Base
 	}
+	var levels fxp.Int
 	t, tOK := w.Owner.Owner.(*Trait)
 	if tOK && t.IsLeveled() {
+		levels = t.Levels
 		multiplyDice(fxp.As[int](t.Levels), base)
 	}
 	intST := fxp.As[int](st)
@@ -211,26 +213,26 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 			}
 		}
 	}
-	bonusSet := make(map[*feature.WeaponDamageBonus]bool)
+	bonusSet := make(map[*feature.WeaponBonus]bool)
 	tags := w.Owner.Owner.TagList()
 	if bestDefault != nil {
-		pc.AddWeaponComparedDamageBonusesFor(feature.SkillNameID+"*", bestDefault.Name, bestDefault.Specialization,
-			tags, base.Count, tooltip, bonusSet)
-		pc.AddWeaponComparedDamageBonusesFor(feature.SkillNameID+"/"+bestDefault.Name, bestDefault.Name,
-			bestDefault.Specialization, tags, base.Count, tooltip, bonusSet)
+		pc.AddWeaponComparedBonusesFor(feature.SkillNameID+"*", bestDefault.Name, bestDefault.Specialization,
+			tags, base.Count, levels, tooltip, bonusSet)
+		pc.AddWeaponComparedBonusesFor(feature.SkillNameID+"/"+bestDefault.Name, bestDefault.Name,
+			bestDefault.Specialization, tags, base.Count, levels, tooltip, bonusSet)
 	}
 	nameQualifier := w.Owner.String()
-	pc.AddNamedWeaponDamageBonusesFor(feature.WeaponNamedIDPrefix+"*", nameQualifier, w.Owner.Usage, tags,
-		base.Count, tooltip, bonusSet)
-	pc.AddNamedWeaponDamageBonusesFor(feature.WeaponNamedIDPrefix+"/"+nameQualifier, nameQualifier, w.Owner.Usage,
-		tags, base.Count, tooltip, bonusSet)
+	pc.AddNamedWeaponBonusesFor(feature.WeaponNamedIDPrefix+"*", nameQualifier, w.Owner.Usage, tags, base.Count, levels,
+		tooltip, bonusSet)
+	pc.AddNamedWeaponBonusesFor(feature.WeaponNamedIDPrefix+"/"+nameQualifier, nameQualifier, w.Owner.Usage, tags,
+		base.Count, levels, tooltip, bonusSet)
 	for _, f := range w.Owner.Owner.FeatureList() {
-		w.extractWeaponDamageBonus(f, bonusSet, base.Count, tooltip)
+		w.extractWeaponBonus(f, bonusSet, fxp.From(base.Count), levels, tooltip)
 	}
 	if tOK {
 		Traverse(func(mod *TraitModifier) bool {
 			for _, f := range mod.Features {
-				w.extractWeaponDamageBonus(f, bonusSet, base.Count, tooltip)
+				w.extractWeaponBonus(f, bonusSet, fxp.From(base.Count), levels, tooltip)
 			}
 			return false
 		}, true, true, t.Modifiers...)
@@ -238,25 +240,38 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 	if eqp, ok := w.Owner.Owner.(*Equipment); ok {
 		Traverse(func(mod *EquipmentModifier) bool {
 			for _, f := range mod.Features {
-				w.extractWeaponDamageBonus(f, bonusSet, base.Count, tooltip)
+				w.extractWeaponBonus(f, bonusSet, fxp.From(base.Count), levels, tooltip)
 			}
 			return false
 		}, true, true, eqp.Modifiers...)
 	}
 	adjustForPhoenixFlame := pc.SheetSettings.DamageProgression == attribute.PhoenixFlameD3 && base.Sides == 3
-	var percent fxp.Int
+	var percentDamageBonus, percentDRDivisorBonus fxp.Int
+	armorDivisor := w.ArmorDivisor
 	for bonus := range bonusSet {
-		if bonus.Percent {
-			percent += bonus.Amount
-		} else {
-			amt := bonus.Amount
-			if bonus.PerLevel {
-				amt = amt.Mul(fxp.From(base.Count))
-				if adjustForPhoenixFlame {
-					amt = amt.Div(fxp.Two)
+		if bonus.Type == feature.WeaponBonusType {
+			if bonus.Percent {
+				percentDamageBonus += bonus.Amount
+			} else {
+				amt := bonus.Amount
+				if bonus.PerLevel {
+					amt = amt.Mul(fxp.From(base.Count))
+					if adjustForPhoenixFlame {
+						amt = amt.Div(fxp.Two)
+					}
 				}
+				base.Modifier += fxp.As[int](amt)
 			}
-			base.Modifier += fxp.As[int](amt)
+		} else {
+			if bonus.Percent {
+				percentDRDivisorBonus += bonus.Amount
+			} else {
+				amt := bonus.Amount
+				if bonus.PerLevel {
+					amt = amt.Mul(levels)
+				}
+				armorDivisor += amt
+			}
 		}
 	}
 	if w.ModifierPerDie != 0 {
@@ -266,16 +281,19 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 		}
 		base.Modifier += fxp.As[int](amt)
 	}
-	if percent != 0 {
-		base = adjustDiceForPercentBonus(base, percent)
+	if percentDamageBonus != 0 {
+		base = adjustDiceForPercentBonus(base, percentDamageBonus)
+	}
+	if percentDRDivisorBonus != 0 {
+		armorDivisor = armorDivisor.Mul(percentDRDivisorBonus).Div(fxp.Hundred)
 	}
 	var buffer strings.Builder
 	if base.Count != 0 || base.Modifier != 0 {
 		buffer.WriteString(base.StringExtra(pc.SheetSettings.UseModifyingDicePlusAdds))
 	}
-	if w.ArmorDivisor != fxp.One {
+	if armorDivisor != fxp.One {
 		buffer.WriteByte('(')
-		buffer.WriteString(w.ArmorDivisor.String())
+		buffer.WriteString(armorDivisor.String())
 		buffer.WriteByte(')')
 	}
 	if strings.TrimSpace(w.Type) != "" {
@@ -304,10 +322,14 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 	return buffer.String()
 }
 
-func (w *WeaponDamage) extractWeaponDamageBonus(f feature.Feature, set map[*feature.WeaponDamageBonus]bool, dieCount int, tooltip *xio.ByteBuffer) {
-	if bonus, ok := f.(*feature.WeaponDamageBonus); ok {
+func (w *WeaponDamage) extractWeaponBonus(f feature.Feature, set map[*feature.WeaponBonus]bool, dieCount, levels fxp.Int, tooltip *xio.ByteBuffer) {
+	if bonus, ok := f.(*feature.WeaponBonus); ok {
 		level := bonus.LeveledAmount.Level
-		bonus.LeveledAmount.Level = fxp.From(dieCount)
+		if bonus.Type == feature.WeaponBonusType {
+			bonus.LeveledAmount.Level = dieCount
+		} else {
+			bonus.LeveledAmount.Level = levels
+		}
 		switch bonus.SelectionType {
 		case weapon.WithRequiredSkill:
 		case weapon.ThisWeapon:

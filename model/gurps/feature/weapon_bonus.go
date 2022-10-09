@@ -30,10 +30,10 @@ const (
 	WeaponNamedIDPrefix = "weapon_named."
 )
 
-var _ Bonus = &WeaponDamageBonus{}
+var _ Bonus = &WeaponBonus{}
 
-// WeaponDamageBonus holds the data for an adjustment to weapon damage.
-type WeaponDamageBonus struct {
+// WeaponBonus holds the data for an adjustment to weapon damage.
+type WeaponBonus struct {
 	Parent                 fmt.Stringer         `json:"-"`
 	Type                   Type                 `json:"type"`
 	Percent                bool                 `json:"percent,omitempty"`
@@ -45,10 +45,19 @@ type WeaponDamageBonus struct {
 	LeveledAmount
 }
 
-// NewWeaponDamageBonus creates a new WeaponDamageBonus.
-func NewWeaponDamageBonus() *WeaponDamageBonus {
-	return &WeaponDamageBonus{
-		Type:          WeaponBonusType,
+// NewWeaponDamageBonus creates a new weapon damage bonus.
+func NewWeaponDamageBonus() *WeaponBonus {
+	return newWeaponDamageBonus(WeaponBonusType)
+}
+
+// NewWeaponDRDivisorBonus creates a new weapon DR divisor bonus.
+func NewWeaponDRDivisorBonus() *WeaponBonus {
+	return newWeaponDamageBonus(WeaponDRDivisorBonusType)
+}
+
+func newWeaponDamageBonus(t Type) *WeaponBonus {
+	return &WeaponBonus{
+		Type:          t,
 		SelectionType: weapon.WithRequiredSkill,
 		NameCriteria: criteria.String{
 			StringData: criteria.StringData{
@@ -75,18 +84,18 @@ func NewWeaponDamageBonus() *WeaponDamageBonus {
 }
 
 // FeatureType implements Feature.
-func (w *WeaponDamageBonus) FeatureType() Type {
+func (w *WeaponBonus) FeatureType() Type {
 	return w.Type
 }
 
 // Clone implements Feature.
-func (w *WeaponDamageBonus) Clone() Feature {
+func (w *WeaponBonus) Clone() Feature {
 	other := *w
 	return &other
 }
 
 // FeatureMapKey implements Feature.
-func (w *WeaponDamageBonus) FeatureMapKey() string {
+func (w *WeaponBonus) FeatureMapKey() string {
 	switch w.SelectionType {
 	case weapon.WithRequiredSkill:
 		return w.buildKey(SkillNameID)
@@ -100,7 +109,7 @@ func (w *WeaponDamageBonus) FeatureMapKey() string {
 	}
 }
 
-func (w *WeaponDamageBonus) buildKey(prefix string) string {
+func (w *WeaponBonus) buildKey(prefix string) string {
 	if w.NameCriteria.Compare == criteria.Is &&
 		(w.SpecializationCriteria.Compare == criteria.Any && w.TagsCriteria.Compare == criteria.Any) {
 		return prefix + "/" + w.NameCriteria.Qualifier
@@ -109,7 +118,7 @@ func (w *WeaponDamageBonus) buildKey(prefix string) string {
 }
 
 // FillWithNameableKeys implements Feature.
-func (w *WeaponDamageBonus) FillWithNameableKeys(m map[string]string) {
+func (w *WeaponBonus) FillWithNameableKeys(m map[string]string) {
 	nameables.Extract(w.SpecializationCriteria.Qualifier, m)
 	if w.SelectionType != weapon.ThisWeapon {
 		nameables.Extract(w.NameCriteria.Qualifier, m)
@@ -119,7 +128,7 @@ func (w *WeaponDamageBonus) FillWithNameableKeys(m map[string]string) {
 }
 
 // ApplyNameableKeys implements Feature.
-func (w *WeaponDamageBonus) ApplyNameableKeys(m map[string]string) {
+func (w *WeaponBonus) ApplyNameableKeys(m map[string]string) {
 	w.SpecializationCriteria.Qualifier = nameables.Apply(w.SpecializationCriteria.Qualifier, m)
 	if w.SelectionType != weapon.ThisWeapon {
 		w.NameCriteria.Qualifier = nameables.Apply(w.NameCriteria.Qualifier, m)
@@ -129,24 +138,27 @@ func (w *WeaponDamageBonus) ApplyNameableKeys(m map[string]string) {
 }
 
 // SetParent implements Bonus.
-func (w *WeaponDamageBonus) SetParent(parent fmt.Stringer) {
+func (w *WeaponBonus) SetParent(parent fmt.Stringer) {
 	w.Parent = parent
 }
 
 // SetLevel implements Bonus.
-func (w *WeaponDamageBonus) SetLevel(level fxp.Int) {
+func (w *WeaponBonus) SetLevel(level fxp.Int) {
 	w.Level = level
 }
 
 // AddToTooltip implements Bonus.
-func (w *WeaponDamageBonus) AddToTooltip(buffer *xio.ByteBuffer) {
+func (w *WeaponBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 	if buffer != nil {
 		buffer.WriteByte('\n')
 		buffer.WriteString(parentName(w.Parent))
 		buffer.WriteString(" [")
-		buffer.WriteString(w.LeveledAmount.Format(i18n.Text("die")))
-		if w.Percent {
-			buffer.WriteByte('%')
+		if w.Type == WeaponBonusType {
+			buffer.WriteString(w.LeveledAmount.Format(w.Percent, i18n.Text("die")))
+			buffer.WriteString(i18n.Text(" to damage"))
+		} else {
+			buffer.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
+			buffer.WriteString(i18n.Text(" to DR divisor"))
 		}
 		buffer.WriteByte(']')
 	}

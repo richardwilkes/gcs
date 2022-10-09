@@ -110,7 +110,7 @@ func (p *featuresPanel) insertFeaturePanel(index int, f feature.Feature) {
 		panel = p.createSpellBonusPanel(one)
 	case *feature.SpellPointBonus:
 		panel = p.createSpellPointBonusPanel(one)
-	case *feature.WeaponDamageBonus:
+	case *feature.WeaponBonus:
 		panel = p.createWeaponDamageBonusPanel(one)
 	default:
 		jot.Warn(errs.Newf("unknown feature type: %s", reflect.TypeOf(f).String()))
@@ -401,7 +401,7 @@ func (p *featuresPanel) createSpellPointBonusPanel(f *feature.SpellPointBonus) *
 	return panel
 }
 
-func (p *featuresPanel) createWeaponDamageBonusPanel(f *feature.WeaponDamageBonus) *unison.Panel {
+func (p *featuresPanel) createWeaponDamageBonusPanel(f *feature.WeaponBonus) *unison.Panel {
 	panel := p.createBasePanel(f)
 	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
 
@@ -448,7 +448,7 @@ func (p *featuresPanel) createWeaponDamageBonusPanel(f *feature.WeaponDamageBonu
 	return panel
 }
 
-func (p *featuresPanel) createSecondaryWeaponPanels(parent *unison.Panel, index int, f *feature.WeaponDamageBonus) {
+func (p *featuresPanel) createSecondaryWeaponPanels(parent *unison.Panel, index int, f *feature.WeaponBonus) {
 	parent.AddChildAtIndex(unison.NewPanel(), index)
 	index++
 	wrapper := unison.NewPanel()
@@ -568,10 +568,17 @@ func (p *featuresPanel) createCostReductionPanel(f *feature.CostReduction) *unis
 func (p *featuresPanel) addLeveledModifierLine(parent *unison.Panel, f feature.Feature, amount *feature.LeveledAmount) {
 	panel := unison.NewPanel()
 	p.addTypeSwitcher(panel, f)
-	if wdb, ok := f.(*feature.WeaponDamageBonus); ok {
-		addLeveledAmountPanel(panel, nil, "", i18n.Text("per die"), amount)
-		addCheckBox(panel, i18n.Text("as a percentage"), &wdb.Percent)
-	} else {
+	switch ft := f.(type) {
+	case *feature.WeaponBonus:
+		var title string
+		if ft.Type == feature.WeaponBonusType {
+			title = i18n.Text("per die")
+		} else {
+			title = i18n.Text("per level")
+		}
+		addLeveledAmountPanel(panel, nil, "", title, amount)
+		addCheckBox(panel, i18n.Text("as a percentage"), &ft.Percent)
+	default:
 		addLeveledAmountPanel(panel, nil, "", i18n.Text("per level"), amount)
 	}
 	panel.SetLayout(&unison.FlexLayout{
@@ -650,6 +657,10 @@ func (p *featuresPanel) createFeatureForType(featureType feature.Type) feature.F
 		return one
 	case feature.WeaponBonusType:
 		one := feature.NewWeaponDamageBonus()
+		one.Parent = p.featureParent
+		return one
+	case feature.WeaponDRDivisorBonusType:
+		one := feature.NewWeaponDRDivisorBonus()
 		one.Parent = p.featureParent
 		return one
 	default:

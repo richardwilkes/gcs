@@ -30,6 +30,7 @@ const (
 	SpellBonusType
 	SpellPointBonusType
 	WeaponBonusType
+	WeaponDRDivisorBonusType
 	CostReductionType
 	ContainedWeightReductionType
 	LastType = ContainedWeightReductionType
@@ -47,6 +48,7 @@ var (
 		SpellBonusType,
 		SpellPointBonusType,
 		WeaponBonusType,
+		WeaponDRDivisorBonusType,
 		CostReductionType,
 		ContainedWeightReductionType,
 	}
@@ -89,6 +91,10 @@ var (
 		{
 			key:    "weapon_bonus",
 			string: i18n.Text("Gives a weapon damage modifier of"),
+		},
+		{
+			key:    "weapon_dr_divisor_bonus",
+			string: i18n.Text("Gives a weapon DR divisor modifier of"),
 		},
 		{
 			key:    "cost_reduction",

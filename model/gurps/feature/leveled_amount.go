@@ -37,15 +37,22 @@ func (l *LeveledAmount) AdjustedAmount() fxp.Int {
 }
 
 // Format the value.
-func (l *LeveledAmount) Format(what string) string {
-	str := l.Amount.StringWithSign()
-	if l.PerLevel {
-		return fmt.Sprintf(i18n.Text("%s (%s per %s)"), l.AdjustedAmount().StringWithSign(), str, what)
+func (l *LeveledAmount) Format(asPercentage bool, what string) string {
+	amt := l.Amount.StringWithSign()
+	if asPercentage {
+		amt += "%"
 	}
-	return str
+	if l.PerLevel {
+		leveled := l.AdjustedAmount().StringWithSign()
+		if asPercentage {
+			leveled += "%"
+		}
+		return fmt.Sprintf(i18n.Text("%s (%s per %s)"), leveled, amt, what)
+	}
+	return amt
 }
 
-// FormatWithLevel calls Format("level").
-func (l *LeveledAmount) FormatWithLevel() string {
-	return l.Format(i18n.Text("level"))
+// FormatWithLevel calls Format(asPercentage, "level").
+func (l *LeveledAmount) FormatWithLevel(asPercentage bool) string {
+	return l.Format(asPercentage, i18n.Text("level"))
 }
