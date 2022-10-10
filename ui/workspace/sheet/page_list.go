@@ -26,7 +26,7 @@ import (
 
 var (
 	_ widget.Syncer = &PageList[*gurps.Trait]{}
-	_ pdfHelper     = &PageList[*gurps.Trait]{}
+	_ pageHelper    = &PageList[*gurps.Trait]{}
 )
 
 // PageList holds a list for a sheet page.

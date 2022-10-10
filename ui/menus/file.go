@@ -66,6 +66,12 @@ var (
 	SaveAs *unison.Action
 	// ExportAsPDF exports the content as a PDF.
 	ExportAsPDF *unison.Action
+	// ExportAsWEBP exports the content as a WEBP.
+	ExportAsWEBP *unison.Action
+	// ExportAsPNG exports the content as a PNG.
+	ExportAsPNG *unison.Action
+	// ExportAsJPEG exports the content as a JPEG.
+	ExportAsJPEG *unison.Action
 	// Print the content.
 	Print *unison.Action
 )
@@ -213,6 +219,24 @@ func registerFileMenuActions() {
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	}
+	ExportAsWEBP = &unison.Action{
+		ID:              constants.ExportAsWEBPItemID,
+		Title:           i18n.Text("WEBP"),
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
+	}
+	ExportAsPNG = &unison.Action{
+		ID:              constants.ExportAsPNGItemID,
+		Title:           i18n.Text("PNG"),
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
+	}
+	ExportAsJPEG = &unison.Action{
+		ID:              constants.ExportAsJPEGItemID,
+		Title:           i18n.Text("JPEG"),
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
+	}
 	Print = &unison.Action{
 		ID:              constants.PrintItemID,
 		Title:           i18n.Text("Print…"),
@@ -235,6 +259,9 @@ func registerFileMenuActions() {
 	settings.RegisterKeyBinding("save", Save)
 	settings.RegisterKeyBinding("save_as", SaveAs)
 	settings.RegisterKeyBinding("export.pdf", ExportAsPDF)
+	settings.RegisterKeyBinding("export.webp", ExportAsWEBP)
+	settings.RegisterKeyBinding("export.png", ExportAsPNG)
+	settings.RegisterKeyBinding("export.jpeg", ExportAsJPEG)
 	settings.RegisterKeyBinding("print", Print)
 }
 
@@ -304,6 +331,9 @@ func exportToUpdater(menu unison.Menu) {
 	menu.RemoveAll()
 	factory := menu.Factory()
 	menu.InsertItem(-1, ExportAsPDF.NewMenuItem(factory))
+	menu.InsertItem(-1, ExportAsWEBP.NewMenuItem(factory))
+	menu.InsertItem(-1, ExportAsPNG.NewMenuItem(factory))
+	menu.InsertItem(-1, ExportAsJPEG.NewMenuItem(factory))
 	menu.InsertSeparator(-1, false)
 	index := 0
 	for _, lib := range settings.Global().Libraries().List() {

@@ -268,6 +268,9 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	})
 	s.InstallCmdHandlers(constants.SwapDefaultsItemID, s.canSwapDefaults, s.swapDefaults)
 	s.InstallCmdHandlers(constants.ExportAsPDFItemID, unison.AlwaysEnabled, func(_ any) { s.exportToPDF() })
+	s.InstallCmdHandlers(constants.ExportAsWEBPItemID, unison.AlwaysEnabled, func(_ any) { s.exportToWEBP() })
+	s.InstallCmdHandlers(constants.ExportAsPNGItemID, unison.AlwaysEnabled, func(_ any) { s.exportToPNG() })
+	s.InstallCmdHandlers(constants.ExportAsJPEGItemID, unison.AlwaysEnabled, func(_ any) { s.exportToJPEG() })
 	s.InstallCmdHandlers(constants.PrintItemID, unison.AlwaysEnabled, func(_ any) { s.print() })
 
 	return s
@@ -434,7 +437,7 @@ func (s *Sheet) save(forceSaveAs bool) bool {
 }
 
 func (s *Sheet) print() {
-	data, err := newPDFExporter(s.entity).exportAsBytes()
+	data, err := newPageExporter(s.entity).exportAsPDFBytes()
 	if err != nil {
 		unison.ErrorDialogWithError(i18n.Text("Unable to create PDF!"), err)
 		return
@@ -462,8 +465,56 @@ func (s *Sheet) exportToPDF() {
 	if dialog.RunModal() {
 		unison.InvokeTaskAfter(func() {
 			if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "pdf", false); ok {
-				if err := newPDFExporter(s.entity).exportAsFile(filePath); err != nil {
+				if err := newPageExporter(s.entity).exportAsPDFFile(filePath); err != nil {
 					unison.ErrorDialogWithError(i18n.Text("Unable to export as PDF!"), err)
+				}
+			}
+		}, time.Millisecond)
+	}
+}
+
+func (s *Sheet) exportToWEBP() {
+	s.Window().ShowCursor()
+	dialog := unison.NewSaveDialog()
+	dialog.SetInitialDirectory(filepath.Dir(s.BackingFilePath()))
+	dialog.SetAllowedExtensions("webp")
+	if dialog.RunModal() {
+		unison.InvokeTaskAfter(func() {
+			if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "webp", false); ok {
+				if err := newPageExporter(s.entity).exportAsWEBPs(filePath); err != nil {
+					unison.ErrorDialogWithError(i18n.Text("Unable to export as WEBP!"), err)
+				}
+			}
+		}, time.Millisecond)
+	}
+}
+
+func (s *Sheet) exportToPNG() {
+	s.Window().ShowCursor()
+	dialog := unison.NewSaveDialog()
+	dialog.SetInitialDirectory(filepath.Dir(s.BackingFilePath()))
+	dialog.SetAllowedExtensions("png")
+	if dialog.RunModal() {
+		unison.InvokeTaskAfter(func() {
+			if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "png", false); ok {
+				if err := newPageExporter(s.entity).exportAsPNGs(filePath); err != nil {
+					unison.ErrorDialogWithError(i18n.Text("Unable to export as PNG!"), err)
+				}
+			}
+		}, time.Millisecond)
+	}
+}
+
+func (s *Sheet) exportToJPEG() {
+	s.Window().ShowCursor()
+	dialog := unison.NewSaveDialog()
+	dialog.SetInitialDirectory(filepath.Dir(s.BackingFilePath()))
+	dialog.SetAllowedExtensions("jpeg")
+	if dialog.RunModal() {
+		unison.InvokeTaskAfter(func() {
+			if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "jpeg", false); ok {
+				if err := newPageExporter(s.entity).exportAsJPEGs(filePath); err != nil {
+					unison.ErrorDialogWithError(i18n.Text("Unable to export as JPEG!"), err)
 				}
 			}
 		}, time.Millisecond)

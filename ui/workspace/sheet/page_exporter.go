@@ -1,7 +1,12 @@
 package sheet
 
 import (
+	"fmt"
+	"os"
+	"strings"
+
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
@@ -9,11 +14,11 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-var _ widget.Rebuildable = &pdfExporter{}
+var _ widget.Rebuildable = &pageExporter{}
 
-const pdfKey = "pdfKey"
+const pageKey = "pageKey"
 
-type pdfExporter struct {
+type pageExporter struct {
 	unison.Panel
 	entity      *gurps.Entity
 	targetMgr   *widget.TargetMgr
@@ -21,8 +26,8 @@ type pdfExporter struct {
 	currentPage int
 }
 
-func newPDFExporter(entity *gurps.Entity) *pdfExporter {
-	p := &pdfExporter{entity: entity}
+func newPageExporter(entity *gurps.Entity) *pageExporter {
+	p := &pageExporter{entity: entity}
 	p.targetMgr = widget.NewTargetMgr(p)
 	pageSize := p.PageSize()
 	r := unison.Rect{Size: pageSize}
@@ -82,9 +87,9 @@ func newPDFExporter(entity *gurps.Entity) *pdfExporter {
 			}
 			remaining := (pageSize.Height - page.insets().Bottom) - rowPanel.FrameRect().Y
 			startNewPage := false
-			data := make([]*pdfState, len(children))
+			data := make([]*pageState, len(children))
 			for i, child := range children {
-				data[i] = newPDFState(child)
+				data[i] = newPageState(child)
 				if remaining < data[i].minimum {
 					startNewPage = true
 				}
@@ -138,26 +143,26 @@ func newPDFExporter(entity *gurps.Entity) *pdfExporter {
 	return p
 }
 
-type pdfHelper interface {
+type pageHelper interface {
 	OverheadHeight() float32
 	RowHeights() []float32
 	CurrentDrawRowRange() (start, endBefore int)
 	SetDrawRowRange(start, endBefore int)
 }
 
-type pdfState struct {
+type pageState struct {
 	child    *unison.Panel
-	helper   pdfHelper
+	helper   pageHelper
 	current  float32
 	overhead float32
 	minimum  float32
 	heights  []float32
 }
 
-func newPDFState(child unison.Paneler) *pdfState {
+func newPageState(child unison.Paneler) *pageState {
 	panel := child.AsPanel()
-	helper := panel.Self.(pdfHelper) //nolint:errcheck // The only things used with this are pdfHelper-compliant
-	state := &pdfState{
+	helper := panel.Self.(pageHelper) //nolint:errcheck // The only things used with this are pageHelper-compliant
+	state := &pageState{
 		child:    panel,
 		helper:   helper,
 		current:  panel.FrameRect().Height,
@@ -172,12 +177,12 @@ func newPDFState(child unison.Paneler) *pdfState {
 	return state
 }
 
-func (s *pdfState) key() string {
-	return s.child.ClientData()[pdfKey].(string)
+func (s *pageState) key() string {
+	return s.child.ClientData()[pageKey].(string)
 }
 
 func addRowPanel[T gurps.NodeTypes](rowPanel *unison.Panel, list *PageList[T], key string, startAtMap map[string]int) {
-	list.ClientData()[pdfKey] = key
+	list.ClientData()[pageKey] = key
 	count := list.RowCount()
 	startAt := startAtMap[key]
 	if count > startAt {
@@ -186,34 +191,27 @@ func addRowPanel[T gurps.NodeTypes](rowPanel *unison.Panel, list *PageList[T], k
 	}
 }
 
-func (p *pdfExporter) exportAsBytes() ([]byte, error) {
+func (p *pageExporter) exportAsPDFBytes() ([]byte, error) {
 	stream := unison.NewMemoryStream()
 	defer stream.Close()
-	if err := p.export(stream); err != nil {
+	if err := p.exportAsPDF(stream); err != nil {
 		return nil, err
 	}
 	return stream.Bytes(), nil
 }
 
-func (p *pdfExporter) exportAsFile(filePath string) error {
+func (p *pageExporter) exportAsPDFFile(filePath string) error {
 	stream, err := unison.NewFileStream(filePath)
 	if err != nil {
 		return err
 	}
 	defer stream.Close()
-	return p.export(stream)
+	return p.exportAsPDF(stream)
 }
 
-func (p *pdfExporter) export(stream unison.Stream) error {
-	savedColorMode := unison.CurrentColorMode()
-	unison.SetColorMode(unison.LightColorMode)
-	unison.ThemeChanged()
-	unison.RebuildDynamicColors()
-	defer func() {
-		unison.SetColorMode(savedColorMode)
-		unison.ThemeChanged()
-		unison.RebuildDynamicColors()
-	}()
+func (p *pageExporter) exportAsPDF(stream unison.Stream) error {
+	savedColorMode := p.saveTheme()
+	defer p.restoreTheme(savedColorMode)
 	if err := unison.CreatePDF(stream, &unison.PDFMetaData{
 		Title:           p.entity.Profile.Name,
 		Author:          toolbox.CurrentUserName(),
@@ -228,20 +226,82 @@ func (p *pdfExporter) export(stream unison.Stream) error {
 	return nil
 }
 
+func (p *pageExporter) exportAsPNGs(filePathBase string) error {
+	return p.exportAsImages(filePathBase, ".png", func(img *unison.Image) ([]byte, error) {
+		return img.ToPNG()
+	})
+}
+
+func (p *pageExporter) exportAsWEBPs(filePathBase string) error {
+	return p.exportAsImages(filePathBase, ".webp", func(img *unison.Image) ([]byte, error) {
+		return img.ToWebp(75)
+	})
+}
+
+func (p *pageExporter) exportAsJPEGs(filePathBase string) error {
+	return p.exportAsImages(filePathBase, ".jpeg", func(img *unison.Image) ([]byte, error) {
+		return img.ToJPEG(80)
+	})
+}
+
+func (p *pageExporter) exportAsImages(filePathBase, extension string, f func(img *unison.Image) ([]byte, error)) error {
+	filePathBase = strings.TrimSuffix(filePathBase, extension)
+	savedColorMode := p.saveTheme()
+	defer p.restoreTheme(savedColorMode)
+	resolution := settings.Global().General.ImageResolution
+	pageNumber := 1
+	for p.HasPage(pageNumber) {
+		size := p.PageSize()
+		var drawErr error
+		img, err := unison.NewImageFromDrawing(int(size.Width), int(size.Height), resolution, func(c *unison.Canvas) {
+			drawErr = p.DrawPage(c, pageNumber)
+		})
+		if err != nil {
+			return err
+		}
+		if drawErr != nil {
+			return drawErr
+		}
+		var data []byte
+		if data, err = f(img); err != nil {
+			return err
+		}
+		if err = os.WriteFile(fmt.Sprintf("%s-%d%s", filePathBase, pageNumber, extension), data, 0o640); err != nil {
+			return err
+		}
+		pageNumber++
+	}
+	return nil
+}
+
+func (p *pageExporter) saveTheme() unison.ColorMode {
+	savedColorMode := unison.CurrentColorMode()
+	unison.SetColorMode(unison.LightColorMode)
+	unison.ThemeChanged()
+	unison.RebuildDynamicColors()
+	return savedColorMode
+}
+
+func (p *pageExporter) restoreTheme(colorMode unison.ColorMode) {
+	unison.SetColorMode(colorMode)
+	unison.ThemeChanged()
+	unison.RebuildDynamicColors()
+}
+
 // HasPage implements unison.PageProvider.
-func (p *pdfExporter) HasPage(pageNumber int) bool {
+func (p *pageExporter) HasPage(pageNumber int) bool {
 	p.currentPage = pageNumber
 	return pageNumber > 0 && pageNumber <= len(p.pages)
 }
 
 // PageSize implements unison.PageProvider.
-func (p *pdfExporter) PageSize() unison.Size {
+func (p *pageExporter) PageSize() unison.Size {
 	w, h := p.entity.SheetSettings.Page.Orientation.Dimensions(p.entity.SheetSettings.Page.Size.Dimensions())
 	return unison.NewSize(w.Pixels(), h.Pixels())
 }
 
 // DrawPage implements unison.PageProvider.
-func (p *pdfExporter) DrawPage(canvas *unison.Canvas, pageNumber int) error {
+func (p *pageExporter) DrawPage(canvas *unison.Canvas, pageNumber int) error {
 	p.currentPage = pageNumber
 	if pageNumber > 0 && pageNumber <= len(p.pages) {
 		page := p.pages[pageNumber-1]
@@ -251,9 +311,9 @@ func (p *pdfExporter) DrawPage(canvas *unison.Canvas, pageNumber int) error {
 	return errs.New("invalid page number")
 }
 
-func (p *pdfExporter) String() string {
+func (p *pageExporter) String() string {
 	return ""
 }
 
-func (p *pdfExporter) Rebuild(_ bool) {
+func (p *pageExporter) Rebuild(_ bool) {
 }

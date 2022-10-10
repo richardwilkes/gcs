@@ -34,6 +34,9 @@ const (
 	SaveAsItemID
 	ExportToMenuID
 	ExportAsPDFItemID
+	ExportAsWEBPItemID
+	ExportAsPNGItemID
+	ExportAsJPEGItemID
 	PrintItemID
 	UndoItemID
 	RedoItemID
