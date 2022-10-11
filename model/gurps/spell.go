@@ -295,6 +295,7 @@ func (s *Spell) CellData(column int, data *CellData) {
 		data.Type = Text
 		data.Primary = s.Description()
 		data.Secondary = s.SecondaryText(func(option display.Option) bool { return option.Inline() })
+		data.UnsatisfiedReason = s.UnsatisfiedReason
 		data.Tooltip = s.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 		if !s.Container() {
 			var buffer strings.Builder

@@ -136,28 +136,27 @@ func (s *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 	if !satisfied && tooltip != nil {
 		tooltip.WriteString(prefix)
 		tooltip.WriteString(HasText(s.Has))
+		tooltip.WriteByte(' ')
 		if s.SubType == spell.CollegeCount {
-			tooltip.WriteString(" college count which ")
+			tooltip.WriteString("college count which ")
 			tooltip.WriteString(s.QuantityCriteria.String())
 		} else {
-			tooltip.WriteByte(' ')
 			tooltip.WriteString(s.QuantityCriteria.String())
 			if s.QuantityCriteria.Qualifier == fxp.One {
 				tooltip.WriteString(" spell ")
 			} else {
 				tooltip.WriteString(" spells ")
 			}
-			tooltip.WriteByte(' ')
 			if s.SubType == spell.Any {
-				tooltip.WriteString(" of any kind")
+				tooltip.WriteString("of any kind")
 			} else {
 				switch s.SubType {
 				case spell.Name:
-					tooltip.WriteString(" whose name ")
+					tooltip.WriteString("whose name ")
 				case spell.Tag:
-					tooltip.WriteString(" whose tag ")
+					tooltip.WriteString("whose tag ")
 				case spell.College:
-					tooltip.WriteString(" whose college ")
+					tooltip.WriteString("whose college ")
 				}
 				tooltip.WriteString(s.QualifierCriteria.String())
 			}
