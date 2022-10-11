@@ -220,17 +220,7 @@ func addLabelAndDecimalField(parent *unison.Panel, targetMgr *widget.TargetMgr, 
 		label.Tooltip = unison.NewTooltipWithText(tooltip)
 	}
 	parent.AddChild(label)
-	field := widget.NewDecimalField(targetMgr, targetKey, labelText,
-		func() fxp.Int { return *fieldData },
-		func(value fxp.Int) {
-			*fieldData = value
-			widget.MarkModified(parent)
-		}, min, max, false, false)
-	if tooltip != "" {
-		field.Tooltip = unison.NewTooltipWithText(tooltip)
-	}
-	parent.AddChild(field)
-	return field
+	return addDecimalField(parent, targetMgr, targetKey, labelText, tooltip, fieldData, min, max)
 }
 
 func addDecimalField(parent *unison.Panel, targetMgr *widget.TargetMgr, targetKey, labelText, tooltip string, fieldData *fxp.Int, min, max fxp.Int) *widget.DecimalField {
@@ -261,10 +251,12 @@ func addWeightField(parent *unison.Panel, targetMgr *widget.TargetMgr, targetKey
 	return field
 }
 
-func addCheckBox(parent *unison.Panel, labelText string, fieldData *bool) {
-	parent.AddChild(widget.NewCheckBox(nil, "", labelText,
+func addCheckBox(parent *unison.Panel, labelText string, fieldData *bool) *widget.CheckBox {
+	checkBox := widget.NewCheckBox(nil, "", labelText,
 		func() unison.CheckState { return unison.CheckStateFromBool(*fieldData) },
-		func(state unison.CheckState) { *fieldData = state == unison.OnCheckState }))
+		func(state unison.CheckState) { *fieldData = state == unison.OnCheckState })
+	parent.AddChild(checkBox)
+	return checkBox
 }
 
 func addInvertedCheckBox(parent *unison.Panel, labelText string, fieldData *bool) {

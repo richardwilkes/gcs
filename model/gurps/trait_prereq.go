@@ -13,6 +13,7 @@ package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/gcs/v5/model/gurps/prereq"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -97,7 +98,11 @@ func (a *TraitPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 		if !a.NotesCriteria.Matches(notes) {
 			return false
 		}
-		satisfied = a.LevelCriteria.Matches(t.Levels.Max(0))
+		var levels fxp.Int
+		if t.IsLeveled() {
+			levels = t.Levels.Max(0)
+		}
+		satisfied = a.LevelCriteria.Matches(levels)
 		return satisfied
 	}, true, false, entity.Traits...)
 	if !a.Has {

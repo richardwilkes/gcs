@@ -41,6 +41,7 @@ type TraitEditData struct {
 	ContainerType  trait.ContainerType   `json:"container_type,omitempty"` // Container only
 	Disabled       bool                  `json:"disabled,omitempty"`
 	RoundCostDown  bool                  `json:"round_down,omitempty"` // Non-container only
+	CanLevel       bool                  `json:"can_level,omitempty"`  // Non-container only
 }
 
 // CopyFrom implements node.EditorData.

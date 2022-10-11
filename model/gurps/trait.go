@@ -160,6 +160,11 @@ func (a *Trait) UnmarshalJSON(data []byte) error {
 		localData.Type = traitTypeKey + ContainerKeyPostfix
 	}
 
+	// Force the CanLevel flag, if needed
+	if !localData.Container() && (localData.Levels != 0 || localData.PointsPerLevel != 0) {
+		localData.CanLevel = true
+	}
+
 	localData.ClearUnusedFieldsForType()
 	a.TraitData = localData.TraitData
 	a.transferOldTypeFlagToTags(i18n.Text("Mental"), localData.Mental)
@@ -263,7 +268,7 @@ func (a *Trait) Notes() string {
 
 // IsLeveled returns true if the Trait is capable of having levels.
 func (a *Trait) IsLeveled() bool {
-	return !a.Container() && a.PointsPerLevel != 0
+	return a.CanLevel && !a.Container()
 }
 
 // AdjustedPoints returns the total points, taking levels and modifiers into account.
@@ -272,7 +277,7 @@ func (a *Trait) AdjustedPoints() fxp.Int {
 		return 0
 	}
 	if !a.Container() {
-		return AdjustedPoints(a.Entity, a.BasePoints, a.Levels, a.PointsPerLevel, a.CR, a.AllModifiers(), a.RoundCostDown)
+		return AdjustedPoints(a.Entity, a.CanLevel, a.BasePoints, a.Levels, a.PointsPerLevel, a.CR, a.AllModifiers(), a.RoundCostDown)
 	}
 	var points fxp.Int
 	if a.ContainerType == trait.AlternativeAbilities {
@@ -483,7 +488,11 @@ func ExtractTags(tags string) []string {
 }
 
 // AdjustedPoints returns the total points, taking levels and modifiers into account. 'entity' may be nil.
-func AdjustedPoints(entity *Entity, basePoints, levels, pointsPerLevel fxp.Int, cr trait.SelfControlRoll, modifiers []*TraitModifier, roundCostDown bool) fxp.Int {
+func AdjustedPoints(entity *Entity, canLevel bool, basePoints, levels, pointsPerLevel fxp.Int, cr trait.SelfControlRoll, modifiers []*TraitModifier, roundCostDown bool) fxp.Int {
+	if !canLevel {
+		levels = 0
+		pointsPerLevel = 0
+	}
 	var baseEnh, levelEnh, baseLim, levelLim fxp.Int
 	multiplier := cr.Multiplier()
 	Traverse(func(mod *TraitModifier) bool {
@@ -514,7 +523,9 @@ func AdjustedPoints(entity *Entity, basePoints, levels, pointsPerLevel fxp.Int, 
 			}
 		case trait.Points:
 			if mod.Affects == trait.LevelsOnly {
-				pointsPerLevel += modifier
+				if canLevel {
+					pointsPerLevel += modifier
+				}
 			} else {
 				basePoints += modifier
 			}

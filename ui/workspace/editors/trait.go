@@ -38,30 +38,44 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	addTagsLabelAndField(content, &e.editorData.Tags)
 	content.AddChild(unison.NewPanel())
 	addInvertedCheckBox(content, i18n.Text("Enabled"), &e.editorData.Disabled)
-	var levelField *widget.DecimalField
+	var perLevelField, levelField *widget.DecimalField
 	if !e.target.Container() {
-		wrapper := addFlowWrapper(content, i18n.Text("Point Cost"), 8)
-		cost := widget.NewNonEditableField(func(field *widget.NonEditableField) {
-			field.Text = gurps.AdjustedPoints(e.target.Entity, e.editorData.BasePoints, e.editorData.Levels,
-				e.editorData.PointsPerLevel, e.editorData.CR, e.editorData.Modifiers,
+		wrapper := addFlowWrapper(content, i18n.Text("Point Cost"), 2)
+		costField := widget.NewNonEditableField(func(field *widget.NonEditableField) {
+			field.Text = gurps.AdjustedPoints(e.target.Entity, e.editorData.CanLevel, e.editorData.BasePoints,
+				e.editorData.Levels, e.editorData.PointsPerLevel, e.editorData.CR, e.editorData.Modifiers,
 				e.editorData.RoundCostDown).String()
 			field.MarkForLayoutAndRedraw()
 		})
-		insets := cost.Border().Insets()
-		cost.SetLayoutData(&unison.FlexLayoutData{
-			MinSize: unison.NewSize(cost.Font.SimpleWidth((-fxp.MaxBasePoints*2).String())+insets.Left+insets.Right, 0),
+		insets := costField.Border().Insets()
+		costField.SetLayoutData(&unison.FlexLayoutData{
+			MinSize: unison.NewSize(costField.Font.SimpleWidth((-fxp.MaxBasePoints*2).String())+insets.Left+insets.Right, 0),
 		})
-		wrapper.AddChild(cost)
+		wrapper.AddChild(costField)
 		addCheckBox(wrapper, i18n.Text("Round Down"), &e.editorData.RoundCostDown)
-		baseCost := i18n.Text("Base Cost")
-		wrapper = addFlowWrapper(content, baseCost, 8)
-		addDecimalField(wrapper, nil, "", baseCost, "", &e.editorData.BasePoints, -fxp.MaxBasePoints,
-			fxp.MaxBasePoints)
-		addLabelAndDecimalField(wrapper, nil, "", i18n.Text("Per Level"), "", &e.editorData.PointsPerLevel,
+
+		addLabelAndDecimalField(content, nil, "", i18n.Text("Base Cost"), "", &e.editorData.BasePoints,
 			-fxp.MaxBasePoints, fxp.MaxBasePoints)
-		levelField = addLabelAndDecimalField(wrapper, nil, "", i18n.Text("Level"), "", &e.editorData.Levels, 0,
+
+		hasLevelsCheckBox := addCheckBox(content, i18n.Text("Levels"), &e.editorData.CanLevel)
+		hasLevelsCheckBox.SetLayoutData(&unison.FlexLayoutData{
+			HAlign: unison.EndAlignment,
+			VAlign: unison.MiddleAlignment,
+		})
+		wrapper = unison.NewPanel()
+		wrapper.SetLayout(&unison.FlexLayout{
+			Columns:  3,
+			HSpacing: unison.StdHSpacing,
+			VSpacing: unison.StdVSpacing,
+			VAlign:   unison.MiddleAlignment,
+		})
+		content.AddChild(wrapper)
+		levelField = addDecimalField(wrapper, nil, "", i18n.Text("Level"), "", &e.editorData.Levels, 0,
 			fxp.MaxBasePoints)
-		adjustFieldBlank(levelField, e.editorData.PointsPerLevel == 0)
+		perLevelField = addLabelAndDecimalField(wrapper, nil, "", i18n.Text("Cost Per Level"), "",
+			&e.editorData.PointsPerLevel, -fxp.MaxBasePoints, fxp.MaxBasePoints)
+		adjustFieldBlank(perLevelField, !e.editorData.CanLevel)
+		adjustFieldBlank(levelField, !e.editorData.CanLevel)
 	}
 	addLabelAndPopup(content, i18n.Text("Self-Control Roll"), "", trait.AllSelfControlRolls, &e.editorData.CR)
 	crAdjPopup := addLabelAndPopup(content, i18n.Text("CR Adjustment"), i18n.Text("Self-Control Roll Adjustment"),
@@ -99,8 +113,11 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	e.InstallCmdHandlers(constants.NewTraitContainerModifierItemID, unison.AlwaysEnabled,
 		func(_ any) { modifiersPanel.provider.CreateItem(e, modifiersPanel.table, ntable.ContainerItemVariant) })
 	return func() {
+		if perLevelField != nil {
+			adjustFieldBlank(perLevelField, !e.editorData.CanLevel)
+		}
 		if levelField != nil {
-			adjustFieldBlank(levelField, e.editorData.PointsPerLevel == 0)
+			adjustFieldBlank(levelField, !e.editorData.CanLevel)
 		}
 		if e.editorData.CR == trait.None {
 			crAdjPopup.SetEnabled(false)

@@ -261,13 +261,17 @@ func (e *Entity) ensureAttachments() {
 func (e *Entity) processFeatures() {
 	m := make(map[string][]feature.Feature)
 	Traverse(func(a *Trait) bool {
+		var levels fxp.Int
+		if a.IsLeveled() {
+			levels = a.Levels.Max(0)
+		}
 		if !a.Container() {
 			for _, f := range a.Features {
-				processFeature(a, m, f, a.Levels.Max(0))
+				processFeature(a, m, f, levels)
 			}
 		}
 		for _, f := range a.CRAdj.Features(a.CR) {
-			processFeature(a, m, f, a.Levels.Max(0))
+			processFeature(a, m, f, levels)
 		}
 		Traverse(func(mod *TraitModifier) bool {
 			for _, f := range mod.Features {

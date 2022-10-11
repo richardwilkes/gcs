@@ -33,6 +33,7 @@ func (d *TraitData) ClearUnusedFieldsForType() {
 		d.BasePoints = 0
 		d.Levels = 0
 		d.PointsPerLevel = 0
+		d.CanLevel = false
 		d.Prereq = nil
 		d.Weapons = nil
 		d.Features = nil
@@ -40,5 +41,9 @@ func (d *TraitData) ClearUnusedFieldsForType() {
 	} else {
 		d.ContainerType = 0
 		d.Ancestry = ""
+		if !d.CanLevel {
+			d.Levels = 0
+			d.PointsPerLevel = 0
+		}
 	}
 }
