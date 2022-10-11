@@ -14,7 +14,7 @@ for arg in "$@"; do
     ;;
   --dist|-d)
     EXTRA_BUILD_FLAGS="-a -trimpath"
-    RELEASE="5.1.0"
+    RELEASE="5.2.0"
     DIST=1
     ;;
   --lint | -l) LINT=1 ;;
