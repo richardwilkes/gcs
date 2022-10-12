@@ -152,10 +152,12 @@ func (a *Attribute) CurrentThreshold() *PoolThreshold {
 	if def == nil || def.IsSeparator() {
 		return nil
 	}
-	cur := a.Current()
-	for _, threshold := range def.Thresholds {
-		if cur <= threshold.Threshold(a.Entity) {
-			return threshold
+	if len(def.Thresholds) != 0 {
+		cur := a.Current()
+		for _, threshold := range def.Thresholds {
+			if cur <= threshold.Threshold(a.Entity) {
+				return threshold
+			}
 		}
 	}
 	return nil
