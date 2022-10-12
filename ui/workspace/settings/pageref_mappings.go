@@ -123,7 +123,7 @@ Would you like to create one by choosing a PDF to map to this key?`), key), pdfN
 				}
 			} else {
 				var parts []string
-				parts, err = cmdline.Parse(strings.TrimSpace(strings.ReplaceAll(strings.ReplaceAll(s.General.ExternalPDFCmdLine, "$FILE", pageRef.Path), "$PAGE", strconv.Itoa(page+pageRef.Offset))))
+				parts, err = cmdline.Parse(strings.TrimSpace(strings.ReplaceAll(strings.ReplaceAll(s.General.ExternalPDFCmdLine, "$FILE", "\""+pageRef.Path+"\""), "$PAGE", strconv.Itoa(page+pageRef.Offset))))
 				errTitle := i18n.Text("Unable to use external PDF command line")
 				if err != nil {
 					unison.ErrorDialogWithError(errTitle, err)
