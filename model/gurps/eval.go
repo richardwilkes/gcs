@@ -33,6 +33,7 @@ func InstallEvaluatorFunctions(m map[string]eval.Function) {
 	m["signed"] = evalSigned
 	m["ssrt"] = evalSSRT
 	m["ssrt_to_yards"] = evalSSRTYards
+	m["enc"] = evalEncumbrance
 }
 
 func evalToBool(e *eval.Evaluator, arguments string) (bool, error) {
@@ -66,6 +67,19 @@ func evalToString(e *eval.Evaluator, arguments string) (string, error) {
 		return "", err
 	}
 	return fmt.Sprintf("%v", v), nil
+}
+
+func evalEncumbrance(e *eval.Evaluator, arguments string) (any, error) {
+	arg, _ := eval.NextArg(arguments)
+	forSkills, err := evalToBool(e, arg)
+	if err != nil {
+		return nil, err
+	}
+	entity, ok := e.Resolver.(*Entity)
+	if !ok || entity.Type != datafile.PC {
+		return fxp.Int(0), nil
+	}
+	return fxp.From(int(entity.EncumbranceLevel(forSkills))), nil
 }
 
 func evalTraitLevel(e *eval.Evaluator, arguments string) (any, error) {
