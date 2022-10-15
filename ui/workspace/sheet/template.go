@@ -18,6 +18,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/constants"
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	gsettings "github.com/richardwilkes/gcs/v5/model/gurps/settings"
@@ -250,11 +251,26 @@ func (d *Template) applyTemplate(_ any) {
 				}
 			}
 		}
-		copyRowsTo(sheet.Traits.Table, d.Traits.Table.RootRows())
-		copyRowsTo(sheet.Skills.Table, d.Skills.Table.RootRows())
-		copyRowsTo(sheet.Spells.Table, d.Spells.Table.RootRows())
-		copyRowsTo(sheet.CarriedEquipment.Table, d.Equipment.Table.RootRows())
-		copyRowsTo(sheet.Notes.Table, d.Notes.Table.RootRows())
+		traits := cloneRows(sheet.Traits.Table, d.Traits.Table.RootRows())
+		skills := cloneRows(sheet.Skills.Table, d.Skills.Table.RootRows())
+		spells := cloneRows(sheet.Spells.Table, d.Spells.Table.RootRows())
+		equipment := cloneRows(sheet.CarriedEquipment.Table, d.Equipment.Table.RootRows())
+		notes := cloneRows(sheet.Notes.Table, d.Notes.Table.RootRows())
+		var abort bool
+		if traits, abort = processPickerRows(traits); abort {
+			return
+		}
+		if skills, abort = processPickerRows(skills); abort {
+			return
+		}
+		if spells, abort = processPickerRows(spells); abort {
+			return
+		}
+		appendRows(sheet.Traits.Table, traits)
+		appendRows(sheet.Skills.Table, skills)
+		appendRows(sheet.Spells.Table, spells)
+		appendRows(sheet.CarriedEquipment.Table, equipment)
+		appendRows(sheet.Notes.Table, notes)
 		sheet.Rebuild(true)
 		ntable.ProcessModifiersForSelection(sheet.Traits.Table)
 		ntable.ProcessModifiersForSelection(sheet.Skills.Table)
@@ -277,17 +293,168 @@ func (d *Template) applyTemplate(_ any) {
 	}
 }
 
-func copyRowsTo[T gurps.NodeTypes](table *unison.Table[*ntable.Node[T]], rows []*ntable.Node[T]) {
+func cloneRows[T gurps.NodeTypes](table *unison.Table[*ntable.Node[T]], rows []*ntable.Node[T]) []*ntable.Node[T] {
 	rows = slices.Clone(rows)
 	for j, row := range rows {
 		rows[j] = row.CloneForTarget(table, nil)
 	}
+	return rows
+}
+
+func appendRows[T gurps.NodeTypes](table *unison.Table[*ntable.Node[T]], rows []*ntable.Node[T]) {
 	table.SetRootRows(append(slices.Clone(table.RootRows()), rows...))
 	selMap := make(map[uuid.UUID]bool, len(rows))
 	for _, row := range rows {
 		selMap[row.UUID()] = true
 	}
 	table.SetSelectionMap(selMap)
+	if provider, ok := table.ClientData()[ntable.TableProviderClientKey]; ok {
+		var tableProvider ntable.TableProvider[T]
+		if tableProvider, ok = provider.(ntable.TableProvider[T]); ok {
+			tableProvider.ProcessDropData(nil, table)
+		}
+	}
+}
+
+func processPickerRows[T gurps.NodeTypes](rows []*ntable.Node[T]) (revised []*ntable.Node[T], abort bool) {
+	for _, one := range ntable.ExtractNodeDataFromList(rows) {
+		result, cancel := processPickerRow(one)
+		if cancel {
+			return nil, true
+		}
+		for _, replacement := range result {
+			revised = append(revised, ntable.NewNodeLike(rows[0], replacement))
+		}
+	}
+	return revised, false
+}
+
+func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
+	n := gurps.AsNode[T](row)
+	if !n.Container() {
+		return []T{row}, false
+	}
+	children := n.NodeChildren()
+	tpp, ok := n.(gurps.TemplatePickerProvider)
+	if !ok || tpp.TemplatePickerData().ShouldOmit() {
+		rowChildren := make([]T, 0, len(children))
+		for _, child := range children {
+			result, cancel := processPickerRow(child)
+			if cancel {
+				return nil, true
+			}
+			rowChildren = append(rowChildren, result...)
+		}
+		n.SetChildren(rowChildren)
+		ntable.SetParents(rowChildren, row)
+		return []T{row}, false
+	}
+	tp := tpp.TemplatePickerData()
+
+	list := unison.NewPanel()
+	list.SetBorder(unison.NewEmptyBorder(unison.NewUniformInsets(unison.StdHSpacing)))
+	list.SetLayout(&unison.FlexLayout{
+		Columns:  1,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+
+	boxes := make([]*unison.CheckBox, 0, len(children))
+	var dialog *unison.Dialog
+	callback := func() {
+		var total fxp.Int
+		for i, box := range boxes {
+			if box.State == unison.OnCheckState {
+				switch tp.Type {
+				case gurps.CountTemplatePickerType:
+					total += fxp.One
+				case gurps.PointsTemplatePickerType:
+					total += rawPoints(children[i])
+				}
+			}
+		}
+		dialog.Button(unison.ModalResponseOK).SetEnabled(tp.Qualifier.Matches(total))
+	}
+	for _, child := range children {
+		checkBox := unison.NewCheckBox()
+		checkBox.Text = fmt.Sprintf("%v", child)
+		if tp.Type == gurps.PointsTemplatePickerType {
+			points := rawPoints(child)
+			pointsLabel := i18n.Text("points")
+			if points == fxp.One {
+				pointsLabel = i18n.Text("point")
+			}
+			checkBox.Text += fmt.Sprintf(" [%s %s]", points.Comma(), pointsLabel)
+		}
+		checkBox.ClickCallback = callback
+		list.AddChild(checkBox)
+		boxes = append(boxes, checkBox)
+	}
+
+	scroll := unison.NewScrollPanel()
+	scroll.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
+	scroll.SetContent(list, unison.FillBehavior, unison.FillBehavior)
+	scroll.BackgroundInk = unison.ContentColor
+	scroll.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		VAlign: unison.FillAlignment,
+		HGrab:  true,
+		VGrab:  true,
+	})
+
+	panel := unison.NewPanel()
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  1,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+		HAlign:   unison.FillAlignment,
+		VAlign:   unison.FillAlignment,
+	})
+	label := unison.NewLabel()
+	label.Text = fmt.Sprintf("%v", row)
+	panel.AddChild(label)
+	label = unison.NewLabel()
+	label.Text = tp.Description()
+	panel.AddChild(label)
+	panel.AddChild(scroll)
+
+	var err error
+	dialog, err = unison.NewDialog(unison.DefaultDialogTheme.QuestionIcon,
+		unison.DefaultDialogTheme.QuestionIconInk, panel,
+		[]*unison.DialogButtonInfo{unison.NewCancelButtonInfo(), unison.NewOKButtonInfo()})
+	if err != nil {
+		jot.Error(err)
+		return nil, true
+	}
+	dialog.Button(unison.ModalResponseOK).SetEnabled(false)
+	if dialog.RunModal() == unison.ModalResponseCancel {
+		return nil, true
+	}
+
+	rowChildren := make([]T, 0, len(children))
+	for i, box := range boxes {
+		if box.State == unison.OnCheckState {
+			result, cancel := processPickerRow(children[i])
+			if cancel {
+				return nil, true
+			}
+			rowChildren = append(rowChildren, result...)
+		}
+	}
+	return rowChildren, false
+}
+
+func rawPoints(child any) fxp.Int {
+	switch nc := child.(type) {
+	case *gurps.Skill:
+		return nc.RawPoints()
+	case *gurps.Spell:
+		return nc.RawPoints()
+	case *gurps.Trait:
+		return nc.AdjustedPoints()
+	default:
+		return 0
+	}
 }
 
 func (d *Template) installNewItemCmdHandlers(itemID, containerID int, creator itemCreator) {

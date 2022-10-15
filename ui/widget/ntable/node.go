@@ -28,7 +28,7 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-const excludeMarker = "exclude"
+const invertColorsMarker = "invert"
 
 var _ unison.TableRowData[*Node[*gurps.Trait]] = &Node[*gurps.Trait]{}
 
@@ -54,6 +54,19 @@ func NewNode[T gurps.NodeTypes](table *unison.Table[*Node[T]], parent *Node[T], 
 		cellCache:  make([]*CellCache, len(colMap)),
 		colMap:     colMap,
 		forPage:    forPage,
+	}
+}
+
+// NewNodeLike creates a new node for a table based on the characteristics of an existing node in that table.
+func NewNodeLike[T gurps.NodeTypes](like *Node[T], data T) *Node[T] {
+	return &Node[T]{
+		table:      like.table,
+		parent:     like.parent,
+		data:       data,
+		dataAsNode: gurps.AsNode(data),
+		cellCache:  make([]*CellCache, len(like.colMap)),
+		colMap:     like.colMap,
+		forPage:    like.forPage,
 	}
 }
 
@@ -143,7 +156,7 @@ func (n *Node[T]) ColumnCell(row, col int, foreground, _ unison.Ink, _, _, _ boo
 
 func applyForegroundInkRecursively(panel *unison.Panel, foreground unison.Ink) {
 	if label, ok := panel.Self.(*unison.Label); ok {
-		if _, exists := label.ClientData()[excludeMarker]; !exists {
+		if _, exists := label.ClientData()[invertColorsMarker]; !exists {
 			label.OnBackgroundInk = foreground
 		}
 	}
@@ -179,7 +192,7 @@ func (n *Node[T]) HasTag(tag string) bool {
 	if tag == "" {
 		return true
 	}
-	if tagListable, ok := interface{}(n.Data()).(interface{ TagList() []string }); ok {
+	if tagListable, ok := any(n.Data()).(interface{ TagList() []string }); ok {
 		for _, one := range tagListable.TagList() {
 			if strings.EqualFold(tag, one) {
 				return true
@@ -250,20 +263,19 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground u
 	if c.UnsatisfiedReason != "" {
 		label := unison.NewLabel()
 		label.Font = n.secondaryFieldFont()
-		baseline := label.Font.Baseline()
+		height := label.Font.LineHeight()
 		label.Drawable = &unison.DrawableSVG{
 			SVG:  unison.TriangleExclamationSVG(),
-			Size: unison.NewSize(baseline, baseline),
+			Size: unison.NewSize(height, height),
 		}
 		label.Text = i18n.Text("Unsatisfied prerequisite(s)")
 		label.HAlign = c.Alignment
-		label.ClientData()[excludeMarker] = true
+		label.VAlign = unison.MiddleAlignment
+		label.ClientData()[invertColorsMarker] = true
 		label.OnBackgroundInk = unison.OnErrorColor
 		label.SetBorder(unison.NewEmptyBorder(unison.Insets{
-			Top:    1,
-			Left:   4,
-			Bottom: 0,
-			Right:  4,
+			Left:  4,
+			Right: 4,
 		}))
 		label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
 			gc.DrawRect(rect, unison.ErrorColor.Paint(gc, rect, unison.Fill))
@@ -271,6 +283,29 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground u
 		}
 		p.AddChild(label)
 		tooltip = c.UnsatisfiedReason
+	}
+	if c.TemplateInfo != "" {
+		label := unison.NewLabel()
+		label.Font = n.secondaryFieldFont()
+		height := label.Font.LineHeight()
+		label.Drawable = &unison.DrawableSVG{
+			SVG:  res.GCSTemplateSVG,
+			Size: unison.NewSize(height, height),
+		}
+		label.Text = c.TemplateInfo
+		label.HAlign = c.Alignment
+		label.VAlign = unison.MiddleAlignment
+		label.ClientData()[invertColorsMarker] = true
+		label.OnBackgroundInk = theme.OnMarkerColor
+		label.SetBorder(unison.NewEmptyBorder(unison.Insets{
+			Left:  4,
+			Right: 4,
+		}))
+		label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+			gc.DrawRect(rect, theme.MarkerColor.Paint(gc, rect, unison.Fill))
+			label.DefaultDraw(gc, rect)
+		}
+		p.AddChild(label)
 	}
 	if tooltip != "" {
 		p.Tooltip = unison.NewTooltipWithText(txt.Wrap("", tooltip, 120))
@@ -573,18 +608,18 @@ func InsertItems[T gurps.NodeTypes](owner widget.Rebuildable, table *unison.Tabl
 		if target = row.Data(); target != zero {
 			if row.CanHaveChildren() {
 				// Target is container, append to end of that container
-				setParents(items, target)
+				SetParents(items, target)
 				row.dataAsNode.SetChildren(append(row.dataAsNode.NodeChildren(), items...))
 			} else {
 				// Target isn't a container. If it has a parent, insert after the target within that parent.
 				parent := row.Parent()
 				if parentData := parent.Data(); parentData != zero {
-					setParents(items, parentData)
+					SetParents(items, parentData)
 					children := parent.dataAsNode.NodeChildren()
 					parent.dataAsNode.SetChildren(slices.Insert(children, slices.Index(children, target)+1, items...))
 				} else {
 					// Otherwise, insert after the target within the top-level list.
-					setParents(items, zero)
+					SetParents(items, zero)
 					list := topList()
 					setTopList(slices.Insert(list, slices.Index(list, target)+1, items...))
 				}
@@ -593,7 +628,7 @@ func InsertItems[T gurps.NodeTypes](owner widget.Rebuildable, table *unison.Tabl
 	}
 	if target == zero {
 		// There was no selection, so append to the end of the top-level list.
-		setParents(items, zero)
+		SetParents(items, zero)
 		setTopList(append(topList(), items...))
 	}
 	widget.MarkModified(table)
@@ -614,7 +649,8 @@ func InsertItems[T gurps.NodeTypes](owner widget.Rebuildable, table *unison.Tabl
 	owner.Rebuild(true)
 }
 
-func setParents[T gurps.NodeTypes](items []T, parent T) {
+// SetParents of each item.
+func SetParents[T gurps.NodeTypes](items []T, parent T) {
 	for _, item := range items {
 		gurps.AsNode(item).SetParent(parent)
 	}

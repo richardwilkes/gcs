@@ -19,7 +19,8 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-const tableProviderClientKey = "table-provider"
+// TableProviderClientKey is the key used to store the table provider with the table.
+const TableProviderClientKey = "table-provider"
 
 // AltDropSupport holds handlers for supporting an alternate drop type that drops onto a specific row, rather than
 // moving or adding rows.
@@ -30,7 +31,7 @@ type AltDropSupport struct {
 
 // InstallTableDropSupport installs our standard drop support on a table.
 func InstallTableDropSupport[T gurps.NodeTypes](table *unison.Table[*Node[T]], provider TableProvider[T]) {
-	table.ClientData()[tableProviderClientKey] = provider
+	table.ClientData()[TableProviderClientKey] = provider
 	unison.InstallDropSupport[*Node[T], *TableDragUndoEditData[T]](table, provider.DragKey(),
 		provider.DropShouldMoveData, willDropCallback[T], didDropCallback[T])
 	table.DragRemovedRowsCallback = func() { widget.MarkModified(table) }
@@ -99,7 +100,7 @@ func willDropCallback[T gurps.NodeTypes](from, to *unison.Table[*Node[T]], move 
 }
 
 func didDropCallback[T gurps.NodeTypes](undo *unison.UndoEdit[*TableDragUndoEditData[T]], from, to *unison.Table[*Node[T]], move bool) {
-	if provider, ok := to.ClientData()[tableProviderClientKey]; ok {
+	if provider, ok := to.ClientData()[TableProviderClientKey]; ok {
 		var tableProvider TableProvider[T]
 		if tableProvider, ok = provider.(TableProvider[T]); ok {
 			tableProvider.ProcessDropData(from, to)

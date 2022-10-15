@@ -418,7 +418,7 @@ func (d *TableDockable[T]) copySelectionToSheet(_ any) {
 				case *gurps.Equipment:
 					table = d.convertTable(s.CarriedEquipment.Table)
 					postProcessor = func(rows []*ntable.Node[T]) {
-						if erows, ok := interface{}(rows).([]*ntable.Node[*gurps.Equipment]); ok {
+						if erows, ok := any(rows).([]*ntable.Node[*gurps.Equipment]); ok {
 							for _, row := range erows {
 								gurps.Traverse(func(e *gurps.Equipment) bool {
 									e.Equipped = true

@@ -47,3 +47,8 @@ func (n Numeric) Matches(value fxp.Int) bool {
 func (n Numeric) String() string {
 	return n.Compare.Describe(n.Qualifier)
 }
+
+// AltString returns the alternate description.
+func (n Numeric) AltString() string {
+	return n.Compare.AltDescribe(n.Qualifier)
+}

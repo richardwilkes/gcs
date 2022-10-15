@@ -436,7 +436,7 @@ func addLevelCriteriaPanel(parent *unison.Panel, targetMgr *widget.TargetMgr, ta
 		numCriteria, 0, fxp.Thousand, hSpan, false, includeEmptyFiller)
 }
 
-func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *widget.TargetMgr, targetKey, prefix, undoTitle string, numCriteria *criteria.Numeric, min, max fxp.Int, hSpan int, integerOnly, includeEmptyFiller bool) {
+func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *widget.TargetMgr, targetKey, prefix, undoTitle string, numCriteria *criteria.Numeric, min, max fxp.Int, hSpan int, integerOnly, includeEmptyFiller bool) (popup *unison.PopupMenu[string], field unison.Paneler) {
 	if includeEmptyFiller {
 		parent.AddChild(unison.NewPanel())
 	}
@@ -452,8 +452,7 @@ func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *widget.TargetMgr, 
 		HAlign: unison.FillAlignment,
 		HGrab:  true,
 	})
-	var field unison.Paneler
-	popup := unison.NewPopupMenu[string]()
+	popup = unison.NewPopupMenu[string]()
 	for _, one := range criteria.PrefixedNumericCompareTypeChoices(prefix) {
 		popup.AddItem(one)
 	}
@@ -477,6 +476,7 @@ func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *widget.TargetMgr, 
 	}
 	adjustFieldBlank(field, numCriteria.Compare == criteria.AnyNumber)
 	parent.AddChild(panel)
+	return popup, field
 }
 
 func addWeightCriteriaPanel(parent *unison.Panel, targetMgr *widget.TargetMgr, targetKey string, entity *gurps.Entity, weightCriteria *criteria.Weight) {
@@ -549,4 +549,28 @@ func addLeveledAmountPanel(parent *unison.Panel, targetMgr *widget.TargetMgr, ta
 			widget.MarkModified(parent)
 		}, fxp.Min, fxp.Max, true, false))
 	addCheckBox(parent, title, &amount.PerLevel)
+}
+
+func addTemplateChoices(parent *unison.Panel, targetmgr *widget.TargetMgr, targetKey string, picker **gurps.TemplatePicker) {
+	if *picker == nil {
+		*picker = &gurps.TemplatePicker{}
+	}
+	last := (*picker).Type
+	wrapper := addFlowWrapper(parent, i18n.Text("Template Choices"), 3)
+	templatePickerTypePopup := addPopup(wrapper, gurps.AllTemplatePickerType, &(*picker).Type)
+	text := i18n.Text("Template Choice Quantifier")
+	popup, field := addNumericCriteriaPanel(wrapper, targetmgr, targetKey, "", text, &(*picker).Qualifier, 0, fxp.Max,
+		1, false, false)
+	templatePickerTypePopup.SelectionCallback = func(_ int, item gurps.TemplatePickerType) {
+		(*picker).Type = item
+		if last == gurps.NotApplicableTemplatePickerType && item != gurps.NotApplicableTemplatePickerType {
+			(*picker).Qualifier.Qualifier = fxp.One
+			field.(widget.Syncer).Sync()
+		}
+		last = item
+		adjustFieldBlank(field, item == gurps.NotApplicableTemplatePickerType || (*picker).Qualifier.Compare == criteria.AnyNumber)
+		adjustPopupBlank(popup, item == gurps.NotApplicableTemplatePickerType)
+		widget.MarkModified(parent)
+	}
+	adjustFieldBlank(field, (*picker).Type == gurps.NotApplicableTemplatePickerType)
 }

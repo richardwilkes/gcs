@@ -930,6 +930,23 @@ func main() {
 			},
 		},
 	})
+	processSourceTemplate(enumTmpl, &enumInfo{
+		Pkg:        "model/gurps",
+		Name:       "template_picker_type",
+		Desc:       "holds the type of template picker",
+		StandAlone: false,
+		Values: []enumValue{
+			{
+				Key: "not_applicable",
+			},
+			{
+				Key: "count",
+			},
+			{
+				Key: "points",
+			},
+		},
+	})
 }
 
 func removeExistingGenFiles() {

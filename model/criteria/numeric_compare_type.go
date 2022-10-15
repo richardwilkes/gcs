@@ -49,6 +49,24 @@ func (n NumericCompareType) EnsureValid() NumericCompareType {
 	return AllNumericCompareTypes[0]
 }
 
+// AltString returns an alternate string for this.
+func (n NumericCompareType) AltString() string {
+	switch n {
+	case AnyNumber:
+		return i18n.Text("anything")
+	case Equals:
+		return ""
+	case NotEquals:
+		return i18n.Text("not")
+	case AtLeast:
+		return i18n.Text("at least")
+	case AtMost:
+		return i18n.Text("at most")
+	default:
+		return AnyNumber.String()
+	}
+}
+
 // String implements fmt.Stringer.
 func (n NumericCompareType) String() string {
 	switch n {
@@ -74,6 +92,19 @@ func (n NumericCompareType) Describe(qualifier fxp.Int) string {
 		return v.String()
 	}
 	return v.String() + " " + qualifier.String()
+}
+
+// AltDescribe returns an alternate description of this NumericCompareType using a qualifier.
+func (n NumericCompareType) AltDescribe(qualifier fxp.Int) string {
+	v := n.EnsureValid()
+	result := v.AltString()
+	if v == AnyNumber {
+		return result
+	}
+	if result != "" {
+		result += " "
+	}
+	return result + qualifier.String()
 }
 
 // Matches performs a comparison and returns true if the data matches.

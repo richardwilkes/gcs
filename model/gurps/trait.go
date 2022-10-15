@@ -31,8 +31,9 @@ import (
 )
 
 var (
-	_ WeaponOwner  = &Trait{}
-	_ Node[*Trait] = &Trait{}
+	_ WeaponOwner            = &Trait{}
+	_ Node[*Trait]           = &Trait{}
+	_ TemplatePickerProvider = &Trait{}
 )
 
 // Columns that can be used with the trait method .CellData()
@@ -98,6 +99,9 @@ func NewTrait(entity *Entity, parent *Trait, container bool) *Trait {
 	}
 	a.Name = a.Kind()
 	a.parent = parent
+	if a.Container() {
+		a.TemplatePicker = &TemplatePicker{}
+	}
 	return a
 }
 
@@ -203,6 +207,11 @@ func (a *Trait) EffectivelyDisabled() bool {
 	return false
 }
 
+// TemplatePickerData returns the TemplatePicker data, if any.
+func (a *Trait) TemplatePickerData() *TemplatePicker {
+	return a.TemplatePicker
+}
+
 // CellData returns the cell data information for the given column.
 func (a *Trait) CellData(column int, data *CellData) {
 	data.Dim = !a.Enabled()
@@ -214,6 +223,7 @@ func (a *Trait) CellData(column int, data *CellData) {
 		data.Disabled = a.EffectivelyDisabled()
 		data.UnsatisfiedReason = a.UnsatisfiedReason
 		data.Tooltip = a.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
+		data.TemplateInfo = a.TemplatePicker.Description()
 	case TraitPointsColumn:
 		data.Type = Text
 		data.Primary = a.AdjustedPoints().String()

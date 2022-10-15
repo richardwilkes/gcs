@@ -95,6 +95,7 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 		}
 		ancestryPopup = addLabelAndPopup(content, i18n.Text("Ancestry"), "", choices, &e.editorData.Ancestry)
 		adjustPopupBlank(ancestryPopup, e.editorData.ContainerType != trait.Race)
+		addTemplateChoices(content, nil, "", &e.editorData.TemplatePicker)
 	}
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	modifiersPanel := newTraitModifiersPanel(e.target.Entity, &e.editorData.Modifiers)

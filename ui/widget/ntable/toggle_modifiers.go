@@ -49,8 +49,8 @@ func processModifiers[T *gurps.TraitModifier | *gurps.EquipmentModifier](modifie
 	})
 	tracker := make(map[*unison.CheckBox]gurps.GeneralModifier)
 	gurps.Traverse[T](func(m T) bool {
-		var p *unison.Panel
 		if mod, ok := any(m).(gurps.GeneralModifier); ok {
+			var p *unison.Panel
 			if mod.Container() {
 				label := unison.NewLabel()
 				label.Text = mod.FullDescription()

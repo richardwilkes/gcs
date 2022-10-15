@@ -37,6 +37,7 @@ var (
 	_ Node[*Skill]                    = &Skill{}
 	_ TechLevelProvider[*Skill]       = &Skill{}
 	_ SkillAdjustmentProvider[*Skill] = &Skill{}
+	_ TemplatePickerProvider          = &Skill{}
 )
 
 // Columns that can be used with the skill method .CellData()
@@ -116,7 +117,9 @@ func newSkill(entity *Entity, parent *Skill, typeKey string, container bool) *Sk
 		Entity: entity,
 	}
 	s.parent = parent
-	if !container {
+	if container {
+		s.TemplatePicker = &TemplatePicker{}
+	} else {
 		if typeKey != gid.Technique {
 			s.Difficulty.Attribute = AttributeIDFor(entity, gid.Dexterity)
 		}
@@ -193,6 +196,11 @@ func (s *Skill) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// TemplatePickerData returns the TemplatePicker data, if any.
+func (s *Skill) TemplatePickerData() *TemplatePicker {
+	return s.TemplatePicker
+}
+
 // CellData returns the cell data information for the given column.
 func (s *Skill) CellData(column int, data *CellData) {
 	switch column {
@@ -202,6 +210,7 @@ func (s *Skill) CellData(column int, data *CellData) {
 		data.Secondary = s.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.UnsatisfiedReason = s.UnsatisfiedReason
 		data.Tooltip = s.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
+		data.TemplateInfo = s.TemplatePicker.Description()
 	case SkillDifficultyColumn:
 		if !s.Container() {
 			data.Type = Text

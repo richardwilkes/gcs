@@ -44,7 +44,9 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 	addNotesLabelAndField(content, &e.editorData.LocalNotes)
 	addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
 	addTagsLabelAndField(content, &e.editorData.Tags)
-	if !e.target.Container() {
+	if e.target.Container() {
+		addTemplateChoices(content, nil, "", &e.editorData.TemplatePicker)
+	} else {
 		if isTechnique {
 			wrapper := addFlowWrapper(content, i18n.Text("Defaults To"), 4)
 			wrapper.SetLayoutData(&unison.FlexLayoutData{

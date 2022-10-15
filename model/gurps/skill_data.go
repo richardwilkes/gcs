@@ -48,7 +48,11 @@ func (d *SkillData) ClearUnusedFieldsForType() {
 		d.Prereq = nil
 		d.Weapons = nil
 		d.Features = nil
+		if d.TemplatePicker == nil {
+			d.TemplatePicker = &TemplatePicker{}
+		}
 	} else {
 		d.Difficulty.omit = false
+		d.TemplatePicker = nil
 	}
 }

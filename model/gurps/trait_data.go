@@ -38,8 +38,12 @@ func (d *TraitData) ClearUnusedFieldsForType() {
 		d.Weapons = nil
 		d.Features = nil
 		d.RoundCostDown = false
+		if d.TemplatePicker == nil {
+			d.TemplatePicker = &TemplatePicker{}
+		}
 	} else {
 		d.ContainerType = 0
+		d.TemplatePicker = nil
 		d.Ancestry = ""
 		if !d.CanLevel {
 			d.Levels = 0

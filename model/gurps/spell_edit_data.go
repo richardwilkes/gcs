@@ -40,6 +40,7 @@ type SpellEditData struct {
 	Points            fxp.Int             `json:"points,omitempty"`           // Non-container only
 	Prereq            *PrereqList         `json:"prereqs,omitempty"`          // Non-container only
 	Weapons           []*Weapon           `json:"weapons,omitempty"`          // Non-container only
+	TemplatePicker    *TemplatePicker     `json:"template_picker,omitempty"`  // Container only
 }
 
 // CopyFrom implements node.EditorData.
@@ -68,4 +69,5 @@ func (d *SpellEditData) copyFrom(entity *Entity, other *SpellEditData, isContain
 			d.Weapons = append(d.Weapons, one.Clone(entity, nil, true))
 		}
 	}
+	d.TemplatePicker = d.TemplatePicker.Clone()
 }

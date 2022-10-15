@@ -16,7 +16,7 @@ type PreservedTableData[T gurps.NodeTypes] struct {
 
 // Collect the data and selection state from a table.
 func (d *PreservedTableData[T]) Collect(table *unison.Table[*Node[T]]) error {
-	provider, ok := table.ClientData()[tableProviderClientKey].(TableProvider[T])
+	provider, ok := table.ClientData()[TableProviderClientKey].(TableProvider[T])
 	if !ok {
 		return errs.New("unable to locate provider")
 	}
@@ -31,7 +31,7 @@ func (d *PreservedTableData[T]) Collect(table *unison.Table[*Node[T]]) error {
 
 // Apply the data and selection state to a table.
 func (d *PreservedTableData[T]) Apply(table *unison.Table[*Node[T]]) error {
-	provider, ok := table.ClientData()[tableProviderClientKey].(TableProvider[T])
+	provider, ok := table.ClientData()[TableProviderClientKey].(TableProvider[T])
 	if !ok {
 		return errs.New("unable to locate provider")
 	}

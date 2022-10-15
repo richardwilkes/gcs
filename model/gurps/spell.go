@@ -37,6 +37,7 @@ var (
 	_ Node[*Spell]                    = &Spell{}
 	_ TechLevelProvider[*Spell]       = &Spell{}
 	_ SkillAdjustmentProvider[*Spell] = &Spell{}
+	_ TemplatePickerProvider          = &Spell{}
 )
 
 // Columns that can be used with the spell method .CellData()
@@ -121,7 +122,9 @@ func newSpell(entity *Entity, parent *Spell, typeKey string, container bool) *Sp
 		Entity: entity,
 	}
 	s.parent = parent
-	if !container {
+	if container {
+		s.TemplatePicker = &TemplatePicker{}
+	} else {
 		s.Difficulty.Attribute = AttributeIDFor(entity, gid.Intelligence)
 		s.Difficulty.Difficulty = skill.Hard
 		s.PowerSource = i18n.Text("Arcane")
@@ -201,6 +204,11 @@ func (s *Spell) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// TemplatePickerData returns the TemplatePicker data, if any.
+func (s *Spell) TemplatePickerData() *TemplatePicker {
+	return s.TemplatePicker
+}
+
 // CellData returns the cell data information for the given column.
 func (s *Spell) CellData(column int, data *CellData) {
 	switch column {
@@ -210,6 +218,7 @@ func (s *Spell) CellData(column int, data *CellData) {
 		data.Secondary = s.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.UnsatisfiedReason = s.UnsatisfiedReason
 		data.Tooltip = s.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
+		data.TemplateInfo = s.TemplatePicker.Description()
 	case SpellResistColumn:
 		if !s.Container() {
 			data.Type = Text
@@ -292,11 +301,7 @@ func (s *Spell) CellData(column int, data *CellData) {
 			data.Tooltip = IncludesModifiersFrom + ":" + tooltip.String()
 		}
 	case SpellDescriptionForPageColumn:
-		data.Type = Text
-		data.Primary = s.Description()
-		data.Secondary = s.SecondaryText(func(option display.Option) bool { return option.Inline() })
-		data.UnsatisfiedReason = s.UnsatisfiedReason
-		data.Tooltip = s.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
+		s.CellData(SpellDescriptionColumn, data)
 		if !s.Container() {
 			var buffer strings.Builder
 			addPartToBuffer(&buffer, i18n.Text("Resistance"), s.Resist)

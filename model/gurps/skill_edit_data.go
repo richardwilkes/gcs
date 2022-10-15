@@ -39,6 +39,7 @@ type SkillEditData struct {
 	Prereq                       *PrereqList         `json:"prereqs,omitempty"`                        // Non-container only
 	Weapons                      []*Weapon           `json:"weapons,omitempty"`                        // Non-container only
 	Features                     feature.Features    `json:"features,omitempty"`                       // Non-container only
+	TemplatePicker               *TemplatePicker     `json:"template_picker,omitempty"`                // Container only
 }
 
 // CopyFrom implements node.EditorData.
@@ -91,4 +92,5 @@ func (d *SkillEditData) copyFrom(entity *Entity, other *SkillEditData, isContain
 		}
 	}
 	d.Features = other.Features.Clone()
+	d.TemplatePicker = d.TemplatePicker.Clone()
 }
