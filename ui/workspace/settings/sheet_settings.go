@@ -190,7 +190,7 @@ func (d *sheetSettingsDockable) createUnitsOfMeasurement(content *unison.Panel) 
 	d.createHeader(panel, i18n.Text("Units of Measurement"), 2)
 	d.lengthUnitsPopup = createSettingPopup(d, panel, i18n.Text("Length Units"), measure.AllLengthUnits,
 		s.DefaultLengthUnits, func(item measure.LengthUnits) { d.settings().DefaultLengthUnits = item })
-	d.weightUnitsPopup = createSettingPopup(d, panel, i18n.Text("Length Units"), measure.AllWeightUnits,
+	d.weightUnitsPopup = createSettingPopup(d, panel, i18n.Text("Weight Units"), measure.AllWeightUnits,
 		s.DefaultWeightUnits, func(item measure.WeightUnits) { d.settings().DefaultWeightUnits = item })
 	content.AddChild(panel)
 }
