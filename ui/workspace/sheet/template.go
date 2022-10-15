@@ -228,8 +228,27 @@ func (d *Template) keyToPanel(key string) *unison.Panel {
 	return p.AsPanel()
 }
 
-func (d *Template) canApplyTemplate(_ any) bool {
+// CanApplyTemplate returns true if a template can be applied.
+func CanApplyTemplate() bool {
 	return len(OpenSheets()) > 0
+}
+
+func (d *Template) canApplyTemplate(_ any) bool {
+	return CanApplyTemplate()
+}
+
+// ApplyTemplate loads the specified template file and applies it to a sheet.
+func ApplyTemplate(filePath string) {
+	d, err := NewTemplateFromFile(filePath)
+	if err != nil {
+		unison.ErrorDialogWithError(i18n.Text("Unable to load template"), err)
+		return
+	}
+	if CanApplyTemplate() {
+		if t, ok := d.(*Template); ok {
+			t.applyTemplate(nil)
+		}
+	}
 }
 
 func (d *Template) applyTemplate(_ any) {

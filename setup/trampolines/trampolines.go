@@ -24,6 +24,8 @@ var (
 	menuSetup                func(wnd *unison.Window)
 	libraryUpdatesAvailable  func()
 	showReleaseNotesMarkdown func(title, content string)
+	canApplyTemplate         func() bool
+	applyTemplate            func(filePath string)
 )
 
 // CallMenuSetup calls the trampoline that sets up the menus for the given window.
@@ -75,5 +77,33 @@ func CallShowReleaseNotesMarkdown(title, content string) {
 func SetShowReleaseNotesMarkdown(f func(title, content string)) {
 	lock.Lock()
 	showReleaseNotesMarkdown = f
+	lock.Unlock()
+}
+
+// CallCanApplyTemplate calls the trampoline that determines if a template can be applied.
+func CallCanApplyTemplate() bool {
+	lock.RLock()
+	defer lock.RUnlock()
+	return canApplyTemplate()
+}
+
+// SetCanApplyTemplate sets the trampoline that determines if a template can be applied.
+func SetCanApplyTemplate(f func() bool) {
+	lock.Lock()
+	canApplyTemplate = f
+	lock.Unlock()
+}
+
+// CallApplyTemplate calls the trampoline that applies a template.
+func CallApplyTemplate(filePath string) {
+	lock.RLock()
+	applyTemplate(filePath)
+	lock.RUnlock()
+}
+
+// SetApplyTemplate sets the trampoline that applies a template.
+func SetApplyTemplate(f func(filePath string)) {
+	lock.Lock()
+	applyTemplate = f
 	lock.Unlock()
 }

@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/ui/workspace/external"
 	"github.com/richardwilkes/gcs/v5/ui/workspace/lists"
 	"github.com/richardwilkes/gcs/v5/ui/workspace/settings"
+	"github.com/richardwilkes/gcs/v5/ui/workspace/sheet"
 )
 
 // Setup the application. This code is here to break circular dependencies.
@@ -28,5 +29,7 @@ func Setup() {
 	lists.RegisterFileTypes()
 	trampolines.SetMenuSetup(menus.Setup)
 	trampolines.SetShowReleaseNotesMarkdown(external.ShowReleaseNotesMarkdown)
+	trampolines.SetCanApplyTemplate(sheet.CanApplyTemplate)
+	trampolines.SetApplyTemplate(sheet.ApplyTemplate)
 	trampolines2.SetShowLibrarySettings(settings.ShowLibrarySettings)
 }

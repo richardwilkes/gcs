@@ -534,6 +534,13 @@ func (n *Navigator) mouseDown(where unison.Point, button, clickCount int, mod un
 			f := unison.DefaultMenuFactory()
 			cm := f.NewMenu(unison.PopupMenuTemporaryBaseID|unison.ContextMenuIDFlag, "", nil)
 			id := 1
+			if len(sel) == 1 && sel[0].nodeType == fileNode {
+				p := sel[0].Path()
+				if filepath.Ext(p) == library.TemplatesExt && trampolines.CallCanApplyTemplate() {
+					cm.InsertItem(-1, newApplyTemplateMenuItem(f, &id, p))
+					cm.InsertSeparator(-1, true)
+				}
+			}
 			cm.InsertItem(-1, newShowNodeOnDiskMenuItem(f, &id, sel))
 			cm.InsertSeparator(-1, true)
 			cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.libraryReleaseNotesButton))
@@ -563,6 +570,15 @@ func (n *Navigator) mouseDown(where unison.Point, button, clickCount int, mod un
 		}
 	}
 	return stop
+}
+
+func newApplyTemplateMenuItem(f unison.MenuFactory, id *int, templatePath string) unison.MenuItem {
+	useID := *id
+	*id++
+	return f.NewItem(unison.PopupMenuTemporaryBaseID+useID, i18n.Text("Apply Template to Character Sheet"),
+		unison.KeyBinding{}, nil, func(item unison.MenuItem) {
+			trampolines.CallApplyTemplate(templatePath)
+		})
 }
 
 func newContextMenuItemFromButton(f unison.MenuFactory, id *int, button *unison.Button) unison.MenuItem {
