@@ -14,6 +14,7 @@ package ntable
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -490,11 +491,16 @@ func (a *traitModifierAdjuster) Apply() {
 	widget.MarkModified(a.Owner)
 }
 
-func convertLinksForPageRef(in string) string {
-	if strings.HasPrefix(strings.ToLower(in), "http") {
-		return i18n.Text("link")
+func convertLinksForPageRef(in string) (string, *unison.SVG) {
+	lower := strings.ToLower(in)
+	switch {
+	case strings.HasPrefix(lower, "http://") || strings.HasPrefix(lower, "https://"):
+		return i18n.Text("link"), res.LinkSVG
+	case strings.HasPrefix(lower, "md:"):
+		return i18n.Text("md"), res.MarkdownFileSVG
+	default:
+		return in, nil
 	}
-	return in
 }
 
 func (n *Node[T]) createPageRefCell(c *gurps.CellData, foreground unison.Ink) unison.Paneler {
@@ -503,25 +509,44 @@ func (n *Node[T]) createPageRefCell(c *gurps.CellData, foreground unison.Ink) un
 	label.Font = n.primaryFieldFont()
 	label.OnBackgroundInk = foreground
 	label.SetEnabled(!c.Dim)
-	parts := strings.FieldsFunc(c.Primary, func(ch rune) bool { return ch == ',' || ch == ';' || ch == ' ' })
+	parts := strings.FieldsFunc(c.Primary, func(ch rune) bool { return ch == ',' || ch == ';' })
 	switch len(parts) {
 	case 0:
 	case 1:
-		label.Text = convertLinksForPageRef(parts[0])
-		if label.Text == i18n.Text("link") {
+		var svg *unison.SVG
+		label.Text, svg = convertLinksForPageRef(parts[0])
+		if svg != nil {
+			label.Text = ""
+			height := label.Font.Baseline()
+			size := unison.NewSize(height, height)
+			size.GrowToInteger()
+			label.Drawable = &unison.DrawableSVG{
+				SVG:  svg,
+				Size: size,
+			}
 			label.Tooltip = unison.NewTooltipWithText(parts[0])
 		}
 	default:
-		label.Text = convertLinksForPageRef(parts[0]) + "+"
+		label.Text, _ = convertLinksForPageRef(parts[0])
+		label.Text += "+"
 		label.Tooltip = unison.NewTooltipWithText(strings.Join(parts, "\n"))
 	}
-	if label.Text != "" {
-		const isLinkKey = "is_link"
+	if label.Text != "" || label.Drawable != nil {
+		over := false
+		pressed := false
 		label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-			if _, exists := label.ClientData()[isLinkKey]; exists {
-				gc.DrawRect(rect, theme.LinkColor.Paint(gc, rect, unison.Fill))
+			if over {
+				var fg, bg *unison.ThemeColor
+				if pressed {
+					fg = theme.OnLinkPressedColor
+					bg = theme.LinkPressedColor
+				} else {
+					fg = theme.OnLinkColor
+					bg = theme.LinkColor
+				}
+				gc.DrawRect(rect, bg.Paint(gc, rect, unison.Fill))
 				save := label.OnBackgroundInk
-				label.OnBackgroundInk = theme.OnLinkColor
+				label.OnBackgroundInk = fg
 				label.DefaultDraw(gc, rect)
 				label.OnBackgroundInk = save
 			} else {
@@ -529,20 +554,39 @@ func (n *Node[T]) createPageRefCell(c *gurps.CellData, foreground unison.Ink) un
 			}
 		}
 		label.MouseEnterCallback = func(where unison.Point, mod unison.Modifiers) bool {
-			label.ClientData()[isLinkKey] = true
+			over = true
 			label.MarkForRedraw()
 			return true
 		}
 		label.MouseExitCallback = func() bool {
-			delete(label.ClientData(), isLinkKey)
+			over = false
 			label.MarkForRedraw()
 			return true
 		}
 		label.MouseDownCallback = func(where unison.Point, button, clickCount int, mod unison.Modifiers) bool {
-			list := settings.ExtractPageReferences(c.Primary)
-			if len(list) != 0 {
-				settings.OpenPageReference(label.Window(), list[0], c.Secondary, nil)
+			pressed = label.ContentRect(true).ContainsPoint(where)
+			label.MarkForRedraw()
+			return true
+		}
+		label.MouseDragCallback = func(where unison.Point, button int, mod unison.Modifiers) bool {
+			in := label.ContentRect(true).ContainsPoint(where)
+			if pressed != in {
+				pressed = in
+				label.MarkForRedraw()
 			}
+			return true
+		}
+		label.MouseUpCallback = func(where unison.Point, button int, mod unison.Modifiers) bool {
+			if over = label.ContentRect(true).ContainsPoint(where); over {
+				list := settings.ExtractPageReferences(c.Primary)
+				if len(list) != 0 {
+					unison.InvokeTaskAfter(
+						func() { settings.OpenPageReference(label.Window(), list[0], c.Secondary, nil) },
+						time.Millisecond)
+				}
+			}
+			pressed = false
+			label.MarkForRedraw()
 			return true
 		}
 	}

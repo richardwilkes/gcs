@@ -28,6 +28,7 @@ import (
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/desktop"
 	"github.com/richardwilkes/toolbox/i18n"
+	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
 )
 
@@ -39,7 +40,7 @@ type pageRefMappingsDockable struct {
 // ExtractPageReferences extracts any page references from the string.
 func ExtractPageReferences(s string) []string {
 	var list []string
-	for _, one := range strings.FieldsFunc(s, func(ch rune) bool { return ch == ',' || ch == ';' || ch == ' ' }) {
+	for _, one := range strings.FieldsFunc(s, func(ch rune) bool { return ch == ',' || ch == ';' }) {
 		if one = strings.TrimSpace(one); one != "" {
 			list = append(list, one)
 		}
@@ -51,12 +52,39 @@ func ExtractPageReferences(s string) []string {
 // for wnd to let it pick the first such window it discovers. Returns true if the the user asked to cancel further
 // processing.
 func OpenPageReference(wnd *unison.Window, ref, highlight string, promptContext map[string]bool) bool {
-	if strings.HasPrefix(strings.ToLower(ref), "http") {
+	lowerRef := strings.ToLower(ref)
+	switch {
+	case strings.HasPrefix(lowerRef, "http://") || strings.HasPrefix(lowerRef, "https://"):
 		if err := desktop.Open(ref); err != nil {
 			unison.ErrorDialogWithError(i18n.Text("Unable to open link"), err)
 		}
 		return false
+	case strings.HasPrefix(lowerRef, "md:"):
+		openMarkdownPageReference(wnd, ref)
+		return false
+	default:
+		return openPDFPageReference(wnd, ref, highlight, promptContext)
 	}
+}
+
+func openMarkdownPageReference(wnd *unison.Window, ref string) {
+	ref = ref[3:]
+	if ref != "" {
+		if !strings.HasSuffix(strings.ToLower(ref), ".md") {
+			ref += ".md"
+		}
+		for _, lib := range settings.Global().LibrarySet.List() {
+			filePath := filepath.Join(lib.Path(), "Markdown", ref)
+			if xfs.FileIsReadable(filePath) {
+				workspace.OpenFile(wnd, filePath)
+				return
+			}
+		}
+	}
+	unison.ErrorDialogWithMessage(i18n.Text("Unable to open markdown"), ref+"\n"+i18n.Text("does not exist in the Markdown directory in any library."))
+}
+
+func openPDFPageReference(wnd *unison.Window, ref, highlight string, promptContext map[string]bool) bool {
 	if promptContext == nil {
 		promptContext = make(map[string]bool)
 	}

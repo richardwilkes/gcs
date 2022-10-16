@@ -44,8 +44,10 @@ var (
 	OverloadedColor         = &unison.ThemeColor{Light: unison.RGB(192, 64, 64), Dark: unison.RGB(115, 37, 37)}
 	OnOverloadedColor       = &unison.ThemeColor{Light: unison.White, Dark: unison.RGB(221, 221, 221)}
 	HintColor               = &unison.ThemeColor{Light: unison.Grey, Dark: unison.RGB(64, 64, 64)}
-	LinkColor               = &unison.ThemeColor{Light: unison.SpringGreen, Dark: unison.SpringGreen}
-	OnLinkColor             = &unison.ThemeColor{Light: unison.Black, Dark: unison.Black}
+	LinkColor               = &unison.ThemeColor{Light: unison.RGB(0, 128, 64), Dark: unison.RGB(0, 128, 64)}
+	OnLinkColor             = &unison.ThemeColor{Light: unison.White, Dark: unison.RGB(221, 221, 221)}
+	LinkPressedColor        = &unison.ThemeColor{Light: unison.RGB(0, 248, 128), Dark: unison.RGB(0, 204, 96)}
+	OnLinkPressedColor      = &unison.ThemeColor{Light: unison.Black, Dark: unison.RGB(30, 30, 30)}
 	PDFLinkHighlightColor   = &unison.ThemeColor{Light: unison.SpringGreen, Dark: unison.SpringGreen}
 	PDFMarkerHighlightColor = &unison.ThemeColor{Light: unison.Yellow, Dark: unison.Yellow}
 )
@@ -105,6 +107,8 @@ var (
 		{ID: "drop_area", Title: i18n.Text("Drop Area"), Color: unison.DropAreaColor},
 		{ID: "link", Title: i18n.Text("Link"), Color: LinkColor},
 		{ID: "on_link", Title: i18n.Text("On Link"), Color: OnLinkColor},
+		{ID: "link_pressed", Title: i18n.Text("Pressed Link"), Color: LinkPressedColor},
+		{ID: "on_link_pressed", Title: i18n.Text("On Pressed Link"), Color: OnLinkPressedColor},
 		{ID: "pdf_link", Title: i18n.Text("PDF Link Highlight"), Color: PDFLinkHighlightColor},
 		{ID: "pdf_marker", Title: i18n.Text("PDF Marker Highlight"), Color: PDFMarkerHighlightColor},
 		{ID: "accent", Title: i18n.Text("Accent"), Color: AccentColor},
