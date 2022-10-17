@@ -77,10 +77,15 @@ func newMarkdownDockable(filePath, title, content string) (unison.Dockable, erro
 		scale: 100,
 	}
 	d.Self = d
-	d.KeyDownCallback = d.keyDown
 	d.SetLayout(&unison.FlexLayout{Columns: 1})
 
 	d.markdown = widget.NewMarkdown()
+	d.markdown.SetFocusable(true)
+	d.markdown.KeyDownCallback = d.keyDown
+	d.markdown.MouseDownCallback = func(where unison.Point, button, clickCount int, mod unison.Modifiers) bool {
+		d.markdown.RequestFocus()
+		return true
+	}
 	d.markdown.MouseWheelCallback = d.mouseWheel
 	if !strings.HasPrefix(d.path, markdownContentOnlyPrefix) {
 		data, err := os.ReadFile(d.BackingFilePath())
@@ -100,6 +105,21 @@ func newMarkdownDockable(filePath, title, content string) (unison.Dockable, erro
 	})
 	d.scroll.SetContent(d.markdown, unison.FillBehavior, unison.FillBehavior)
 
+	info := widget.NewInfoPop()
+	info.Target = d.scroll
+	info.AddHelpInfo(i18n.Text("Within this view, these keys have the following effects:\n"))
+	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyQ}, i18n.Text("Quarter Size (25%)"))
+	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyH}, i18n.Text("Half Size (50%)"))
+	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyT}, i18n.Text("Two-Thirds Size (75%)"))
+	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.Key1}, i18n.Text("100%"))
+	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.Key2}, i18n.Text("200%"))
+	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.Key3}, i18n.Text("300%"))
+	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyMinus}, fmt.Sprintf(i18n.Text("Reduce scale by %d%%"), deltaPDFDockableScale))
+	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyEqual}, fmt.Sprintf(i18n.Text("Increase scale by %d%%"), deltaPDFDockableScale))
+	info.AddHelpInfo(fmt.Sprintf(i18n.Text(`
+In addition, holding down the %s key while using the
+mouse wheel will also change the scale.`), unison.OptionModifier.String()))
+
 	scaleTitle := i18n.Text("Scale")
 	d.scaleField = widget.NewPercentageField(nil, "", scaleTitle,
 		func() int { return d.scale },
@@ -117,6 +137,7 @@ func newMarkdownDockable(filePath, title, content string) (unison.Dockable, erro
 		HAlign: unison.FillAlignment,
 		HGrab:  true,
 	})
+	toolbar.AddChild(info)
 	toolbar.AddChild(d.scaleField)
 	toolbar.SetLayout(&unison.FlexLayout{
 		Columns:  len(toolbar.Children()),

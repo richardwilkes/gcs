@@ -59,17 +59,18 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 		scale: 100,
 	}
 	d.Self = d
-	d.KeyDownCallback = d.keyDown
 	d.SetLayout(&unison.FlexLayout{Columns: 1})
 
 	d.imgPanel = unison.NewPanel()
 	d.imgPanel.SetSizer(d.imageSizer)
+	d.imgPanel.KeyDownCallback = d.keyDown
 	d.imgPanel.DrawCallback = d.draw
 	d.imgPanel.MouseDownCallback = d.mouseDown
 	d.imgPanel.MouseDragCallback = d.mouseDrag
 	d.imgPanel.MouseUpCallback = d.mouseUp
 	d.imgPanel.UpdateCursorCallback = d.updateCursor
 	d.imgPanel.MouseWheelCallback = d.mouseWheel
+	d.imgPanel.SetFocusable(true)
 
 	d.scroll = unison.NewScrollPanel()
 	d.scroll.SetLayoutData(&unison.FlexLayoutData{
@@ -79,6 +80,28 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 		VGrab:  true,
 	})
 	d.scroll.SetContent(d.imgPanel, unison.FillBehavior, unison.FillBehavior)
+
+	info := widget.NewInfoPop()
+	info.Target = d.scroll
+	info.AddHelpInfo(i18n.Text("Within this view, these keys have the following effects:\n"))
+	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyQ}, i18n.Text("Quarter Size (25%)"))
+	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyH}, i18n.Text("Half Size (50%)"))
+	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyT}, i18n.Text("Two-Thirds Size (75%)"))
+	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.Key1}, i18n.Text("100%"))
+	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.Key2}, i18n.Text("200%"))
+	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.Key3}, i18n.Text("300%"))
+	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.Key4}, i18n.Text("400%"))
+	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.Key5}, i18n.Text("500%"))
+	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.Key6}, i18n.Text("600%"))
+	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.Key7}, i18n.Text("700%"))
+	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.Key8}, i18n.Text("800%"))
+	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.Key9}, i18n.Text("900%"))
+	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.Key0}, i18n.Text("1000%"))
+	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyMinus}, fmt.Sprintf(i18n.Text("Reduce scale by %d%%"), deltaImageDockableScale))
+	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyEqual}, fmt.Sprintf(i18n.Text("Increase scale by %d%%"), deltaImageDockableScale))
+	info.AddHelpInfo(fmt.Sprintf(i18n.Text(`
+In addition, holding down the %s key while using the
+mouse wheel will also change the scale.`), unison.OptionModifier.String()))
 
 	scaleTitle := i18n.Text("Scale")
 	d.scaleField = widget.NewPercentageField(nil, "", scaleTitle,
@@ -115,6 +138,7 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 		HAlign: unison.FillAlignment,
 		HGrab:  true,
 	})
+	toolbar.AddChild(info)
 	toolbar.AddChild(d.scaleField)
 	toolbar.AddChild(typeLabel)
 	toolbar.AddChild(sizeLabel)
