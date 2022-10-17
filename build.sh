@@ -16,7 +16,9 @@ for arg in "$@"; do
     EXTRA_BUILD_FLAGS="-a -trimpath"
     RELEASE="5.2.0"
     DIST=1
+    I18N=1
     ;;
+  --i18n|-i) I18N=1 ;;
   --lint | -l) LINT=1 ;;
   --race | -r)
     TEST=1
@@ -27,6 +29,7 @@ for arg in "$@"; do
     echo "$0 [options]"
     echo "  -a, --all  Equivalent to --lint --race"
     echo "  -d, --dist Build for distribution"
+    echo "  -i, --i18n Extract the localization template"
     echo "  -l, --lint Run the linters"
     echo "  -r, --race Run the tests with race-checking enabled"
     echo "  -t, --test Run the tests"
@@ -40,7 +43,6 @@ for arg in "$@"; do
   esac
 done
 
-echo -e "\033[33mBuilding...\033[0m"
 LDFLAGS_ALL="-X github.com/richardwilkes/toolbox/cmdline.AppVersion=$RELEASE"
 STD_FLAGS="-v -buildvcs=true $EXTRA_BUILD_FLAGS"
 
@@ -54,9 +56,21 @@ Darwin*)
 esac
 
 # Generate the source
+echo -e "\033[32mGenerating...\033[0m"
 go generate ./gen/enumgen.go
 
+# Generate the translation file
+if [ "$I18N"x == "1x" ]; then
+  i18n $(go list -f "{{.Dir}}" -m github.com/richardwilkes/json) \
+    $(go list -f "{{.Dir}}" -m github.com/richardwilkes/pdf) \
+    $(go list -f "{{.Dir}}" -m github.com/richardwilkes/rpgtools) \
+    $(go list -f "{{.Dir}}" -m github.com/richardwilkes/toolbox) \
+    $(go list -f "{{.Dir}}" -m github.com/richardwilkes/unison) \
+    .
+fi
+
 # Build our code
+echo -e "\033[33mBuilding...\033[0m"
 case $(uname -s) in
 Darwin*)
   go run $STD_FLAGS -ldflags all="$LDFLAGS_ALL" packaging/main.go
