@@ -69,7 +69,7 @@ if [ "$I18N"x == "1x" ]; then
 fi
 
 # Build our code
-echo -e "\033[33mBuilding...\033[0m"
+echo -e "\033[32mBuilding...\033[0m"
 case $(uname -s) in
 Darwin*)
   go run $STD_FLAGS -ldflags all="$LDFLAGS_ALL" packaging/main.go
@@ -105,7 +105,7 @@ if [ "$LINT"x == "1x" ]; then
   TOOLS_DIR=$PWD/tools
   mkdir -p "$TOOLS_DIR"
   if [ ! -e "$TOOLS_DIR/golangci-lint" ] || [ "$("$TOOLS_DIR/golangci-lint" version 2>&1 | awk '{ print $4 }' || true)x" != "${GOLANGCI_LINT_VERSION}x" ]; then
-    echo -e "\033[33mInstalling version $GOLANGCI_LINT_VERSION of golangci-lint into $TOOLS_DIR...\033[0m"
+    echo -e "\033[32mInstalling version $GOLANGCI_LINT_VERSION of golangci-lint into $TOOLS_DIR...\033[0m"
     curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$TOOLS_DIR" v$GOLANGCI_LINT_VERSION
   fi
   echo -e "\033[32mLinting...\033[0m"
