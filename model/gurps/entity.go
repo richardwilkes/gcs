@@ -58,22 +58,23 @@ type EntityProvider interface {
 
 // EntityData holds the Entity data that is written to disk.
 type EntityData struct {
-	Type             datafile.Type  `json:"type"`
-	Version          int            `json:"version"`
-	ID               uuid.UUID      `json:"id"`
-	TotalPoints      fxp.Int        `json:"total_points"`
-	Profile          *Profile       `json:"profile,omitempty"`
-	SheetSettings    *SheetSettings `json:"settings,omitempty"`
-	Attributes       *Attributes    `json:"attributes,omitempty"`
-	Traits           []*Trait       `json:"traits,alt=advantages,omitempty"`
-	Skills           []*Skill       `json:"skills,omitempty"`
-	Spells           []*Spell       `json:"spells,omitempty"`
-	CarriedEquipment []*Equipment   `json:"equipment,omitempty"`
-	OtherEquipment   []*Equipment   `json:"other_equipment,omitempty"`
-	Notes            []*Note        `json:"notes,omitempty"`
-	CreatedOn        jio.Time       `json:"created_date"`
-	ModifiedOn       jio.Time       `json:"modified_date"`
-	ThirdParty       map[string]any `json:"third_party,omitempty"`
+	Type             datafile.Type   `json:"type"`
+	Version          int             `json:"version"`
+	ID               uuid.UUID       `json:"id"`
+	TotalPoints      fxp.Int         `json:"total_points"`
+	PointsRecord     []*PointsRecord `json:"points_record,omitempty"`
+	Profile          *Profile        `json:"profile,omitempty"`
+	SheetSettings    *SheetSettings  `json:"settings,omitempty"`
+	Attributes       *Attributes     `json:"attributes,omitempty"`
+	Traits           []*Trait        `json:"traits,alt=advantages,omitempty"`
+	Skills           []*Skill        `json:"skills,omitempty"`
+	Spells           []*Spell        `json:"spells,omitempty"`
+	CarriedEquipment []*Equipment    `json:"equipment,omitempty"`
+	OtherEquipment   []*Equipment    `json:"other_equipment,omitempty"`
+	Notes            []*Note         `json:"notes,omitempty"`
+	CreatedOn        jio.Time        `json:"created_date"`
+	ModifiedOn       jio.Time        `json:"modified_date"`
+	ThirdParty       map[string]any  `json:"third_party,omitempty"`
 }
 
 // Entity holds the base information for various types of entities: PC, NPC, Creature, etc.
@@ -113,8 +114,15 @@ func NewEntity(entityType datafile.Type) *Entity {
 			Type:        entityType,
 			ID:          id.NewUUID(),
 			TotalPoints: settings.InitialPoints,
-			Profile:     &Profile{},
-			CreatedOn:   jio.Now(),
+			PointsRecord: []*PointsRecord{
+				{
+					Points: settings.InitialPoints,
+					When:   jio.Now(),
+					Reason: i18n.Text("Initial points"),
+				},
+			},
+			Profile:   &Profile{},
+			CreatedOn: jio.Now(),
 		},
 	}
 	entity.SheetSettings = SettingsProvider.SheetSettings().Clone(entity)
@@ -200,6 +208,18 @@ func (e *Entity) UnmarshalJSON(data []byte) error {
 	}
 	if e.Version < noNeedForRewrapVersion {
 		e.SheetSettings.BodyType.Rewrap()
+	}
+	var total fxp.Int
+	for _, rec := range e.PointsRecord {
+		total += rec.Points
+	}
+	if total != e.TotalPoints {
+		e.PointsRecord = append(e.PointsRecord, &PointsRecord{
+			Points: e.TotalPoints - total,
+			When:   jio.Now(),
+			Reason: i18n.Text("Reconciliation"),
+		})
+		sort.Slice(e.PointsRecord, func(i, j int) bool { return e.PointsRecord[i].When.After(e.PointsRecord[j].When) })
 	}
 	e.Recalculate()
 	return nil
@@ -1356,4 +1376,14 @@ func (e *Entity) CRC64() uint64 {
 		return 0
 	}
 	return crc.Bytes(0, buffer.Bytes())
+}
+
+// SetPointsRecord sets a new points record list, adjusting the total points.
+func (e *Entity) SetPointsRecord(record []*PointsRecord) {
+	e.PointsRecord = ClonePointsRecordList(record)
+	sort.Slice(e.PointsRecord, func(i, j int) bool { return e.PointsRecord[i].When.After(e.PointsRecord[j].When) })
+	e.TotalPoints = 0
+	for _, rec := range record {
+		e.TotalPoints += rec.Points
+	}
 }

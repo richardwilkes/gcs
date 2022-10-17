@@ -25,10 +25,9 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-const (
-	editorGroup    = "editors"
-	subEditorGroup = "sub_editors"
-)
+// EditorGroup is the workspace grouping key to use for editors.
+const EditorGroup = "editors"
+const subEditorGroup = "sub_editors"
 
 var (
 	_ unison.Dockable            = &editor[*gurps.Note, *gurps.NoteEditData]{}
@@ -126,7 +125,7 @@ func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner widget.Rebuil
 		e.ClientData()[workspace.AssociatedUUIDKey] = gurps.AsNode(target).UUID()
 		e.promptForSave = true
 		scroller.Content().AsPanel().ValidateScrollRoot()
-		group := editorGroup
+		group := EditorGroup
 		p := owner.AsPanel()
 		for p != nil {
 			if _, exists := p.ClientData()[workspace.AssociatedUUIDKey]; exists {
@@ -143,7 +142,7 @@ func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner widget.Rebuil
 			var targetLayoutNode unison.DockLayoutNode
 			side := unison.RightSide
 			if group == subEditorGroup {
-				if dc = ws.DocumentDock.ContainerForGroup(editorGroup); dc != nil {
+				if dc = ws.DocumentDock.ContainerForGroup(EditorGroup); dc != nil {
 					targetLayoutNode = dc
 					side = unison.BottomSide
 				}

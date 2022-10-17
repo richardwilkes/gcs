@@ -18,6 +18,8 @@ import (
 	"github.com/richardwilkes/toolbox/errs"
 )
 
+const timeLayout = "Jan _2, 2006, 3:04 PM"
+
 // Time is a time.Time that has been tailored to be used with JSON in this application.
 type Time time.Time
 
@@ -26,13 +28,26 @@ func Now() Time {
 	return Time(time.Now())
 }
 
+// NewTimeFrom returns a time & date from a string.
+func NewTimeFrom(s string) (Time, error) {
+	t, err := time.Parse(time.RFC3339, s)
+	if err != nil {
+		// Try presentation format
+		t, err = time.ParseInLocation(timeLayout, s, time.Now().Location())
+		if err != nil {
+			return Time{}, errs.New("invalid time/date format: " + s)
+		}
+	}
+	return Time(t), nil
+}
+
 // After reports whether this time is after the other time.
 func (e Time) After(other Time) bool {
 	return time.Time(e).After(time.Time(other))
 }
 
 func (e Time) String() string {
-	return time.Time(e).In(time.Local).Format("Jan _2, 2006, 3:04 PM")
+	return time.Time(e).In(time.Local).Format(timeLayout)
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -46,14 +61,10 @@ func (e *Time) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &s); err != nil {
 		return err
 	}
-	t, err := time.Parse(time.RFC3339, s)
+	t, err := NewTimeFrom(s)
 	if err != nil {
-		// Try older format
-		t, err = time.ParseInLocation("Jan _2, 2006, 3:04 PM", s, time.Now().Location())
-		if err != nil {
-			return errs.New("invalid time/date format: " + s)
-		}
+		return err
 	}
-	*e = Time(t)
+	*e = t
 	return nil
 }

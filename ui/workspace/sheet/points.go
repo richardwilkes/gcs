@@ -14,8 +14,9 @@ package sheet
 import (
 	"fmt"
 
-	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/theme"
+	"github.com/richardwilkes/gcs/v5/res"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -27,8 +28,10 @@ type PointsPanel struct {
 	entity       *gurps.Entity
 	targetMgr    *widget.TargetMgr
 	prefix       string
-	pointsBorder *widget.TitledBorder
-	unspent      *widget.DecimalField
+	total        *unison.Label
+	ptsList      *unison.Panel
+	unspentLabel *unison.Label
+	overSpent    int8
 }
 
 // NewPointsPanel creates a new points panel.
@@ -39,40 +42,95 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *widget.TargetMgr) *PointsPa
 		prefix:    targetMgr.NextPrefix(),
 	}
 	p.Self = p
-	p.SetLayout(&unison.FlexLayout{
-		Columns:  2,
-		HSpacing: 4,
-	})
+	p.SetLayout(&unison.FlexLayout{Columns: 1})
 	p.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.EndAlignment,
 		VAlign: unison.FillAlignment,
 		VSpan:  2,
+		VGrab:  true,
 	})
+
+	hdr := unison.NewPanel()
+	hdr.SetLayout(&unison.FlexLayout{
+		Columns: 1,
+		HAlign:  unison.MiddleAlignment,
+	})
+	hdr.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		HGrab:  true,
+	})
+	hdr.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+		gc.DrawRect(rect, theme.HeaderColor.Paint(gc, rect, unison.Fill))
+	}
+
+	hdri := unison.NewPanel()
+	hdri.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: 4,
+	})
+	hdri.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.MiddleAlignment})
+	hdr.AddChild(hdri)
+
 	var overallTotal string
 	if p.entity.SheetSettings.ExcludeUnspentPointsFromTotal {
 		overallTotal = p.entity.SpentPoints().String()
 	} else {
 		overallTotal = p.entity.TotalPoints.String()
 	}
-	p.pointsBorder = &widget.TitledBorder{Title: fmt.Sprintf(i18n.Text("%s Points"), overallTotal)}
-	p.SetBorder(unison.NewCompoundBorder(p.pointsBorder, unison.NewEmptyBorder(unison.Insets{
+	p.total = unison.NewLabel()
+	p.total.Font = theme.PageLabelPrimaryFont
+	p.total.Text = fmt.Sprintf(i18n.Text("%s Points"), overallTotal)
+	p.total.OnBackgroundInk = theme.OnHeaderColor
+	hdri.AddChild(p.total)
+	height := p.total.Font.Baseline() - 2
+	editButton := unison.NewSVGButton(res.EditSVG)
+	editButton.Font = theme.PageLabelPrimaryFont
+	editButton.Drawable.(*unison.DrawableSVG).Size = unison.NewSize(height, height)
+	editButton.ClickCallback = func() {
+		displayPointsEditor(unison.AncestorOrSelf[widget.Rebuildable](p), p.entity)
+	}
+	hdri.AddChild(editButton)
+	p.AddChild(hdr)
+
+	p.ptsList = unison.NewPanel()
+	p.ptsList.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: 4,
+	})
+	p.ptsList.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.EndAlignment,
+		VAlign: unison.FillAlignment,
+		VSpan:  2,
+		VGrab:  true,
+	})
+	p.AddChild(p.ptsList)
+
+	p.ptsList.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(theme.HeaderColor, 0, unison.Insets{
+		Top:    0,
+		Left:   1,
+		Bottom: 1,
+		Right:  1,
+	}, false), unison.NewEmptyBorder(unison.Insets{
 		Top:    1,
 		Left:   2,
 		Bottom: 1,
 		Right:  2,
 	})))
-	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) { drawBandedBackground(p, gc, rect, 0, 2) }
+	p.ptsList.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) { drawBandedBackground(p.ptsList, gc, rect, 0, 2) }
 
-	p.unspent = widget.NewDecimalPageField(p.targetMgr, p.prefix+"unspent", i18n.Text("Unspent Points"),
-		func() fxp.Int { return p.entity.UnspentPoints() },
-		func(v fxp.Int) { p.entity.SetUnspentPoints(v) }, fxp.Min, fxp.Max, true)
-	p.unspent.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.MiddleAlignment,
-	})
-	p.unspent.Tooltip = unison.NewTooltipWithText(i18n.Text("Points earned but not yet spent"))
-	p.AddChild(p.unspent)
-	p.AddChild(widget.NewPageLabel(i18n.Text("Unspent")))
+	p.unspentLabel = p.addPointsField(widget.NewNonEditablePageFieldEnd(func(f *widget.NonEditablePageField) {
+		if text := p.entity.UnspentPoints().String(); text != f.Text {
+			f.Text = text
+			p.adjustUnspent()
+			widget.MarkForLayoutWithinDockable(f)
+		}
+	}), i18n.Text("Unspent"), i18n.Text("Points earned but not yet spent"))
+	p.unspentLabel.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+		if p.overSpent == -1 {
+			gc.DrawRect(rect, unison.ErrorColor.Paint(gc, rect, unison.Fill))
+		}
+		p.unspentLabel.DefaultDraw(gc, rect)
+	}
 	p.addPointsField(widget.NewNonEditablePageFieldEnd(func(f *widget.NonEditablePageField) {
 		_, _, race, _ := p.entity.TraitPoints()
 		if text := race.String(); text != f.Text {
@@ -119,26 +177,49 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *widget.TargetMgr) *PointsPa
 			widget.MarkForLayoutWithinDockable(f)
 		}
 	}), i18n.Text("Spells"), i18n.Text("Total points spent on spells"))
-
+	p.adjustUnspent()
 	return p
 }
 
-func (p *PointsPanel) addPointsField(field *widget.NonEditablePageField, title, tooltip string) {
+func (p *PointsPanel) addPointsField(field *widget.NonEditablePageField, title, tooltip string) *unison.Label {
 	field.Tooltip = unison.NewTooltipWithText(tooltip)
-	p.AddChild(field)
+	p.ptsList.AddChild(field)
 	label := widget.NewPageLabel(title)
 	label.Tooltip = unison.NewTooltipWithText(tooltip)
-	p.AddChild(label)
+	p.ptsList.AddChild(label)
+	return label
+}
+
+func (p *PointsPanel) adjustUnspent() {
+	if p.unspentLabel != nil {
+		last := p.overSpent
+		if p.entity.UnspentPoints() < 0 {
+			if p.overSpent != -1 {
+				p.overSpent = -1
+				p.unspentLabel.OnBackgroundInk = unison.OnErrorColor
+				p.unspentLabel.Text = i18n.Text("Overspent")
+			}
+		} else {
+			if p.overSpent != 1 {
+				p.overSpent = 1
+				p.unspentLabel.OnBackgroundInk = unison.OnContentColor
+				p.unspentLabel.Text = i18n.Text("Unspent")
+			}
+		}
+		if last != p.overSpent {
+			widget.MarkForLayoutWithinDockable(p)
+		}
+	}
 }
 
 // Sync the panel to the current data.
 func (p *PointsPanel) Sync() {
-	p.unspent.Sync()
 	var overallTotal string
 	if p.entity.SheetSettings.ExcludeUnspentPointsFromTotal {
 		overallTotal = p.entity.SpentPoints().String()
 	} else {
 		overallTotal = p.entity.TotalPoints.String()
 	}
-	p.pointsBorder.Title = fmt.Sprintf(i18n.Text("%s Points"), overallTotal)
+	p.total.Text = fmt.Sprintf(i18n.Text("%s Points"), overallTotal)
+	p.MarkForLayoutAndRedraw()
 }
