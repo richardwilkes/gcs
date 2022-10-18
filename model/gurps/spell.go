@@ -310,6 +310,7 @@ func (s *Spell) CellData(column int, data *CellData) {
 			addPartToBuffer(&buffer, i18n.Text("Maintain"), s.MaintenanceCost)
 			addPartToBuffer(&buffer, i18n.Text("Time"), s.CastingTime)
 			addPartToBuffer(&buffer, i18n.Text("Duration"), s.Duration)
+			addPartToBuffer(&buffer, i18n.Text("College"), strings.Join(s.College, ", "))
 			if buffer.Len() != 0 {
 				if data.Secondary == "" {
 					data.Secondary = buffer.String()

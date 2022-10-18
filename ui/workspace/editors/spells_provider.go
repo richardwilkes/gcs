@@ -42,18 +42,16 @@ var (
 	}
 	entitySpellPageColMap = map[int]int{
 		0: gurps.SpellDescriptionForPageColumn,
-		1: gurps.SpellCollegeColumn,
-		2: gurps.SpellLevelColumn,
-		3: gurps.SpellRelativeLevelColumn,
-		4: gurps.SpellPointsColumn,
-		5: gurps.SpellReferenceColumn,
+		1: gurps.SpellLevelColumn,
+		2: gurps.SpellRelativeLevelColumn,
+		3: gurps.SpellPointsColumn,
+		4: gurps.SpellReferenceColumn,
 	}
 	spellPageColMap = map[int]int{
 		0: gurps.SpellDescriptionForPageColumn,
-		1: gurps.SpellCollegeColumn,
-		2: gurps.SpellDifficultyColumn,
-		3: gurps.SpellPointsColumn,
-		4: gurps.SpellReferenceColumn,
+		1: gurps.SpellDifficultyColumn,
+		2: gurps.SpellPointsColumn,
+		3: gurps.SpellReferenceColumn,
 	}
 	_ ntable.TableProvider[*gurps.Spell] = &spellsProvider{}
 )
