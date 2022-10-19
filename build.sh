@@ -16,6 +16,14 @@ for arg in "$@"; do
     EXTRA_BUILD_FLAGS="-a -trimpath"
     RELEASE="5.2.0"
     DIST=1
+    case $(uname -s) in
+    Darwin*)
+      if [ "$(uname -p)" == "arm" ]; then
+        export MACOSX_DEPLOYMENT_TARGET=11
+      else
+        export MACOSX_DEPLOYMENT_TARGET=10.14
+      fi
+    esac
     ;;
   --i18n|-i) I18N=1 ;;
   --lint | -l) LINT=1 ;;
@@ -44,15 +52,6 @@ done
 
 LDFLAGS_ALL="-X github.com/richardwilkes/toolbox/cmdline.AppVersion=$RELEASE"
 STD_FLAGS="-v -buildvcs=true $EXTRA_BUILD_FLAGS"
-
-case $(uname -s) in
-Darwin*)
-  if [ "$(uname -p)" == "arm" ]; then
-    export MACOSX_DEPLOYMENT_TARGET=11
-  else
-    export MACOSX_DEPLOYMENT_TARGET=10.14
-  fi
-esac
 
 # Generate the source
 echo -e "\033[32mGenerating...\033[0m"
