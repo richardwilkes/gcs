@@ -205,6 +205,8 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 			}, gurps.NewNaturalAttacks(nil, nil))
 	})
 	d.InstallCmdHandlers(constants.ApplyTemplateItemID, d.canApplyTemplate, d.applyTemplate)
+	widget.InstallViewScaleHandlers(d, func() int { return settings.Global().General.InitialSheetUIScale },
+		gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, d.adjustScale)
 
 	return d
 }
@@ -504,6 +506,12 @@ func (d *Template) Entity() *gurps.Entity {
 // DockableKind implements widget.DockableKind
 func (d *Template) DockableKind() string {
 	return widget.TemplateDockableKind
+}
+
+func (d *Template) adjustScale(scale int) {
+	if d.scale != scale {
+		widget.SetFieldValue(d.scaleField.Field, d.scaleField.Format(scale))
+	}
 }
 
 func (d *Template) applyScale() {

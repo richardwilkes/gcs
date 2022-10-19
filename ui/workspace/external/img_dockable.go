@@ -84,19 +84,6 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 	info := widget.NewInfoPop()
 	info.Target = d.scroll
 	info.AddHelpInfo(i18n.Text("Within this view, these keys have the following effects:\n"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyQ}, i18n.Text("Quarter Size (25%)"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyH}, i18n.Text("Half Size (50%)"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyT}, i18n.Text("Two-Thirds Size (75%)"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.Key1}, i18n.Text("100%"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.Key2}, i18n.Text("200%"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.Key3}, i18n.Text("300%"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.Key4}, i18n.Text("400%"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.Key5}, i18n.Text("500%"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.Key6}, i18n.Text("600%"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.Key7}, i18n.Text("700%"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.Key8}, i18n.Text("800%"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.Key9}, i18n.Text("900%"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.Key0}, i18n.Text("1000%"))
 	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyMinus}, fmt.Sprintf(i18n.Text("Reduce scale by %d%%"), deltaImageDockableScale))
 	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyEqual}, fmt.Sprintf(i18n.Text("Increase scale by %d%%"), deltaImageDockableScale))
 	info.AddHelpInfo(fmt.Sprintf(i18n.Text(`
@@ -150,6 +137,8 @@ mouse wheel will also change the scale.`), unison.OptionModifier.String()))
 	d.AddChild(toolbar)
 	d.AddChild(d.scroll)
 
+	widget.InstallViewScaleHandlers(d, func() int { return 100 }, minImageDockableScale, maxImageDockableScale, d.adjustScale)
+
 	return d, nil
 }
 
@@ -199,32 +188,6 @@ func (d *ImageDockable) mouseWheel(_, delta unison.Point, mod unison.Modifiers) 
 func (d *ImageDockable) keyDown(keyCode unison.KeyCode, _ unison.Modifiers, _ bool) bool {
 	scale := d.scale
 	switch keyCode {
-	case unison.KeyQ:
-		scale = 25
-	case unison.KeyH:
-		scale = 50
-	case unison.KeyT:
-		scale = 75
-	case unison.Key1:
-		scale = 100
-	case unison.Key2:
-		scale = 200
-	case unison.Key3:
-		scale = 300
-	case unison.Key4:
-		scale = 400
-	case unison.Key5:
-		scale = 500
-	case unison.Key6:
-		scale = 600
-	case unison.Key7:
-		scale = 700
-	case unison.Key8:
-		scale = 800
-	case unison.Key9:
-		scale = 900
-	case unison.Key0:
-		scale = 1000
 	case unison.KeyMinus:
 		scale -= deltaImageDockableScale
 		if scale < minImageDockableScale {
@@ -238,10 +201,14 @@ func (d *ImageDockable) keyDown(keyCode unison.KeyCode, _ unison.Modifiers, _ bo
 	default:
 		return false
 	}
+	d.adjustScale(scale)
+	return true
+}
+
+func (d *ImageDockable) adjustScale(scale int) {
 	if d.scale != scale {
 		widget.SetFieldValue(d.scaleField.Field, d.scaleField.Format(scale))
 	}
-	return true
 }
 
 func (d *ImageDockable) imageSizer(_ unison.Size) (min, pref, max unison.Size) {

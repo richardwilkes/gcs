@@ -105,6 +105,8 @@ func NewPDFDockable(filePath string) (unison.Dockable, error) {
 	d.noUpdate = false
 	d.LoadPage(0)
 
+	widget.InstallViewScaleHandlers(d, func() int { return 100 }, minPDFDockableScale, maxPDFDockableScale, d.adjustScale)
+
 	return d, nil
 }
 
@@ -126,12 +128,6 @@ func (d *PDFDockable) createToolbar() {
 	info := widget.NewInfoPop()
 	info.Target = d.docScroll
 	info.AddHelpInfo(i18n.Text("Within this view, these keys have the following effects:\n"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyQ}, i18n.Text("Quarter Size (25%)"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyH}, i18n.Text("Half Size (50%)"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyT}, i18n.Text("Two-Thirds Size (75%)"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.Key1}, i18n.Text("100%"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.Key2}, i18n.Text("200%"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.Key3}, i18n.Text("300%"))
 	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyMinus}, fmt.Sprintf(i18n.Text("Reduce scale by %d%%"), deltaPDFDockableScale))
 	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyEqual}, fmt.Sprintf(i18n.Text("Increase scale by %d%%"), deltaPDFDockableScale))
 	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyHome}, i18n.Text("Go to first page"))
@@ -494,18 +490,6 @@ func (d *PDFDockable) focusChangeInHierarchy(_, _ *unison.Panel) {
 func (d *PDFDockable) keyDown(keyCode unison.KeyCode, _ unison.Modifiers, _ bool) bool {
 	scale := d.scale
 	switch keyCode {
-	case unison.KeyQ:
-		scale = 25
-	case unison.KeyH:
-		scale = 50
-	case unison.KeyT:
-		scale = 75
-	case unison.Key1:
-		scale = 100
-	case unison.Key2:
-		scale = 200
-	case unison.Key3:
-		scale = 300
 	case unison.KeyMinus:
 		scale -= deltaPDFDockableScale
 		if scale < minPDFDockableScale {
@@ -535,6 +519,12 @@ func (d *PDFDockable) keyDown(keyCode unison.KeyCode, _ unison.Modifiers, _ bool
 		d.LoadPage(d.pdf.MostRecentPageNumber())
 	}
 	return true
+}
+
+func (d *PDFDockable) adjustScale(scale int) {
+	if d.scale != scale {
+		widget.SetFieldValue(d.scaleField.Field, d.scaleField.Format(scale))
+	}
 }
 
 func (d *PDFDockable) mouseWheel(_, delta unison.Point, mod unison.Modifiers) bool {

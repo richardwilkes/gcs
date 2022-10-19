@@ -50,6 +50,7 @@ type FileBackedDockable interface {
 type Navigator struct {
 	unison.Panel
 	toolbar                   *unison.Panel
+	scaleField                *widget.PercentageField
 	hierarchyButton           *unison.Button
 	backButton                *unison.Button
 	forwardButton             *unison.Button
@@ -132,6 +133,9 @@ func newNavigator() *Navigator {
 	n.table.KeyDownCallback = n.tableKeyDown
 
 	n.selectionChanged()
+
+	widget.InstallViewScaleHandlers(n, func() int { return 100 }, gsettings.InitialUIScaleMin,
+		gsettings.InitialUIScaleMax, n.adjustScale)
 	return n
 }
 
@@ -169,17 +173,17 @@ func (n *Navigator) setupToolBar() {
 	n.configLibraryButton.ClickCallback = n.configureSelection
 
 	scaleTitle := i18n.Text("Scale")
-	scaleField := widget.NewPercentageField(nil, "", scaleTitle,
+	n.scaleField = widget.NewPercentageField(nil, "", scaleTitle,
 		func() int { return settings.Global().General.NavigatorUIScale },
 		func(v int) {
 			settings.Global().General.NavigatorUIScale = v
 			n.applyScale()
 		}, gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, false, false)
-	scaleField.SetMarksModified(false)
-	scaleField.Tooltip = unison.NewTooltipWithText(scaleTitle)
+	n.scaleField.SetMarksModified(false)
+	n.scaleField.Tooltip = unison.NewTooltipWithText(scaleTitle)
 
 	first := unison.NewPanel()
-	first.AddChild(scaleField)
+	first.AddChild(n.scaleField)
 	first.AddChild(n.hierarchyButton)
 	first.AddChild(widget.NewToolbarSeparator(unison.StdHSpacing))
 	first.AddChild(addLibraryButton)
@@ -256,6 +260,12 @@ func (n *Navigator) setupToolBar() {
 // InitialFocus causes the navigator to focus its initial component.
 func (n *Navigator) InitialFocus() {
 	widget.FocusFirstContent(n.toolbar, n.table.AsPanel())
+}
+
+func (n *Navigator) adjustScale(scale int) {
+	if settings.Global().General.NavigatorUIScale != scale {
+		widget.SetFieldValue(n.scaleField.Field, n.scaleField.Format(scale))
+	}
 }
 
 func (n *Navigator) applyScale() {

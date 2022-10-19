@@ -79,6 +79,17 @@ const (
 	ReleaseNotesItemID
 	WebSiteItemID
 	MailingListItemID
+	ViewMenuID
+	ScaleDefaultItemID
+	Scale25ItemID
+	Scale50ItemID
+	Scale75ItemID
+	Scale100ItemID
+	Scale200ItemID
+	Scale300ItemID
+	Scale400ItemID
+	Scale500ItemID
+	Scale600ItemID
 
 	FirstNonContainerMarker // Keep this block grouped together
 	NewCarriedEquipmentItemID

@@ -28,6 +28,7 @@ func Setup(wnd *unison.Window) {
 		registerEditMenuActions()
 		registerItemMenuActions()
 		registerSettingsMenuActions()
+		registerViewMenuActions()
 		registerHelpMenuActions()
 	})
 	settings.Global().KeyBindings.MakeCurrent()
@@ -41,7 +42,8 @@ func Setup(wnd *unison.Window) {
 		setupEditMenu(bar)
 		f := bar.Factory()
 		i := insertMenu(bar, bar.Item(unison.EditMenuID).Index()+1, createItemMenu(f))
-		insertMenu(bar, i, createSettingsMenu(f))
+		i = insertMenu(bar, i, createSettingsMenu(f))
+		insertMenu(bar, i, createViewMenu(f))
 		setupHelpMenu(bar)
 	})
 }

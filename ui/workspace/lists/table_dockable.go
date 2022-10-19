@@ -144,6 +144,8 @@ func NewTableDockable[T gurps.NodeTypes](filePath, extension string, provider nt
 				func(_ any) { d.provider.CreateItem(d, d.table, variant) })
 		}
 	}
+	widget.InstallViewScaleHandlers(d, func() int { return settings.Global().General.InitialListUIScale },
+		gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, d.adjustScale)
 
 	d.crc = d.crc64()
 	return d
@@ -227,6 +229,12 @@ func (d *TableDockable[T]) UndoManager() *unison.UndoManager {
 // DockableKind implements widget.DockableKind
 func (d *TableDockable[T]) DockableKind() string {
 	return widget.ListDockableKind
+}
+
+func (d *TableDockable[T]) adjustScale(scale int) {
+	if d.scale != scale {
+		widget.SetFieldValue(d.scaleField.Field, d.scaleField.Format(scale))
+	}
 }
 
 func (d *TableDockable[T]) applyScale() {

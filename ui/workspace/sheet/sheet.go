@@ -272,6 +272,8 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	s.InstallCmdHandlers(constants.ExportAsPNGItemID, unison.AlwaysEnabled, func(_ any) { s.exportToPNG() })
 	s.InstallCmdHandlers(constants.ExportAsJPEGItemID, unison.AlwaysEnabled, func(_ any) { s.exportToJPEG() })
 	s.InstallCmdHandlers(constants.PrintItemID, unison.AlwaysEnabled, func(_ any) { s.print() })
+	widget.InstallViewScaleHandlers(s, func() int { return settings.Global().General.InitialSheetUIScale },
+		gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, s.adjustScale)
 
 	return s
 }
@@ -319,6 +321,12 @@ func (s *Sheet) Entity() *gurps.Entity {
 // UndoManager implements undo.Provider
 func (s *Sheet) UndoManager() *unison.UndoManager {
 	return s.undoMgr
+}
+
+func (s *Sheet) adjustScale(scale int) {
+	if s.scale != scale {
+		widget.SetFieldValue(s.scaleField.Field, s.scaleField.Format(scale))
+	}
 }
 
 func (s *Sheet) applyScale() {
