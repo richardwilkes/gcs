@@ -406,8 +406,8 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 			checkBox.Text += fmt.Sprintf(" [%s %s]", points.Comma(), pointsLabel)
 		}
 		checkBox.ClickCallback = callback
-		list.AddChild(checkBox)
 		boxes = append(boxes, checkBox)
+		list.AddChild(checkBox)
 	}
 
 	scroll := unison.NewScrollPanel()
@@ -432,8 +432,17 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 	label := unison.NewLabel()
 	label.Text = fmt.Sprintf("%v", row)
 	panel.AddChild(label)
+	if notesCapable, hasNotes := any(row).(interface{ Notes() string }); hasNotes {
+		if notes := notesCapable.Notes(); notes != "" {
+			label = unison.NewLabel()
+			label.Text = notes
+			label.Font = theme.FieldSecondaryFont
+			panel.AddChild(label)
+		}
+	}
 	label = unison.NewLabel()
 	label.Text = tp.Description()
+	label.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: unison.StdVSpacing * 2}))
 	panel.AddChild(label)
 	panel.AddChild(scroll)
 
