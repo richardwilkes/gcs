@@ -14,6 +14,7 @@ package external
 import (
 	"fmt"
 
+	"github.com/richardwilkes/gcs/v5/constants"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/gcs/v5/ui/workspace"
@@ -23,9 +24,8 @@ import (
 )
 
 const (
-	minImageDockableScale   = 10
-	maxImageDockableScale   = 1000
-	deltaImageDockableScale = 10
+	minImageDockableScale = 10
+	maxImageDockableScale = 1000
 )
 
 var (
@@ -63,7 +63,6 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 
 	d.imgPanel = unison.NewPanel()
 	d.imgPanel.SetSizer(d.imageSizer)
-	d.imgPanel.KeyDownCallback = d.keyDown
 	d.imgPanel.DrawCallback = d.draw
 	d.imgPanel.MouseDownCallback = d.mouseDown
 	d.imgPanel.MouseDragCallback = d.mouseDrag
@@ -83,12 +82,8 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 
 	info := widget.NewInfoPop()
 	info.Target = d.scroll
-	info.AddHelpInfo(i18n.Text("Within this view, these keys have the following effects:\n"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyMinus}, fmt.Sprintf(i18n.Text("Reduce scale by %d%%"), deltaImageDockableScale))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyEqual}, fmt.Sprintf(i18n.Text("Increase scale by %d%%"), deltaImageDockableScale))
-	info.AddHelpInfo(fmt.Sprintf(i18n.Text(`
-In addition, holding down the %s key while using the
-mouse wheel will also change the scale.`), unison.OptionModifier.String()))
+	info.AddHelpInfo(fmt.Sprintf(i18n.Text(`Holding down the %s key while using
+the mouse wheel will change the scale.`), unison.OptionModifier.String()))
 
 	scaleTitle := i18n.Text("Scale")
 	d.scaleField = widget.NewPercentageField(nil, "", scaleTitle,
@@ -137,7 +132,8 @@ mouse wheel will also change the scale.`), unison.OptionModifier.String()))
 	d.AddChild(toolbar)
 	d.AddChild(d.scroll)
 
-	widget.InstallViewScaleHandlers(d, func() int { return 100 }, minImageDockableScale, maxImageDockableScale, d.adjustScale)
+	widget.InstallViewScaleHandlers(d, func() int { return 100 }, minImageDockableScale, maxImageDockableScale,
+		func() int { return d.scale }, d.adjustScale)
 
 	return d, nil
 }
@@ -175,33 +171,13 @@ func (d *ImageDockable) mouseWheel(_, delta unison.Point, mod unison.Modifiers) 
 	if !mod.OptionDown() {
 		return false
 	}
-	scale := d.scale + int(delta.Y*deltaImageDockableScale)
+	scale := d.scale + int(delta.Y*constants.ScaleDelta)
 	if scale < minImageDockableScale {
 		scale = minImageDockableScale
 	} else if scale > maxImageDockableScale {
 		scale = maxImageDockableScale
 	}
 	widget.SetFieldValue(d.scaleField.Field, d.scaleField.Format(scale))
-	return true
-}
-
-func (d *ImageDockable) keyDown(keyCode unison.KeyCode, _ unison.Modifiers, _ bool) bool {
-	scale := d.scale
-	switch keyCode {
-	case unison.KeyMinus:
-		scale -= deltaImageDockableScale
-		if scale < minImageDockableScale {
-			scale = minImageDockableScale
-		}
-	case unison.KeyEqual:
-		scale += deltaImageDockableScale
-		if scale > maxImageDockableScale {
-			scale = maxImageDockableScale
-		}
-	default:
-		return false
-	}
-	d.adjustScale(scale)
 	return true
 }
 

@@ -135,7 +135,7 @@ func newNavigator() *Navigator {
 	n.selectionChanged()
 
 	widget.InstallViewScaleHandlers(n, func() int { return 100 }, gsettings.InitialUIScaleMin,
-		gsettings.InitialUIScaleMax, n.adjustScale)
+		gsettings.InitialUIScaleMax, func() int { return settings.Global().General.NavigatorUIScale }, n.adjustScale)
 	return n
 }
 

@@ -16,6 +16,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/richardwilkes/gcs/v5/constants"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/gcs/v5/pdf"
@@ -32,8 +33,7 @@ import (
 const (
 	minPDFDockableScale                = 25
 	maxPDFDockableScale                = 300
-	deltaPDFDockableScale              = 10
-	maxElapsedRenderTimeWithoutOverlay = time.Millisecond * 250
+	maxElapsedRenderTimeWithoutOverlay = time.Second / 2
 	renderTimeSlop                     = time.Millisecond * 10
 )
 
@@ -105,7 +105,8 @@ func NewPDFDockable(filePath string) (unison.Dockable, error) {
 	d.noUpdate = false
 	d.LoadPage(0)
 
-	widget.InstallViewScaleHandlers(d, func() int { return 100 }, minPDFDockableScale, maxPDFDockableScale, d.adjustScale)
+	widget.InstallViewScaleHandlers(d, func() int { return 100 }, minPDFDockableScale, maxPDFDockableScale,
+		func() int { return d.scale }, d.adjustScale)
 
 	return d, nil
 }
@@ -128,8 +129,6 @@ func (d *PDFDockable) createToolbar() {
 	info := widget.NewInfoPop()
 	info.Target = d.docScroll
 	info.AddHelpInfo(i18n.Text("Within this view, these keys have the following effects:\n"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyMinus}, fmt.Sprintf(i18n.Text("Reduce scale by %d%%"), deltaPDFDockableScale))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyEqual}, fmt.Sprintf(i18n.Text("Increase scale by %d%%"), deltaPDFDockableScale))
 	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyHome}, i18n.Text("Go to first page"))
 	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyEnd}, i18n.Text("Go to last page"))
 	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyLeft}, i18n.Text("Go to previous page"))
@@ -137,8 +136,8 @@ func (d *PDFDockable) createToolbar() {
 	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyRight}, i18n.Text("Go to next page"))
 	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyDown}, i18n.Text("Go to next page"))
 	info.AddHelpInfo(fmt.Sprintf(i18n.Text(`
-In addition, holding down the %s key while using the
-mouse wheel will also change the scale.`), unison.OptionModifier.String()))
+In addition, holding down the %s key while using
+the mouse wheel will change the scale.`), unison.OptionModifier.String()))
 	d.toolbar.AddChild(info)
 
 	scaleTitle := i18n.Text("Scale")
@@ -488,18 +487,7 @@ func (d *PDFDockable) focusChangeInHierarchy(_, _ *unison.Panel) {
 }
 
 func (d *PDFDockable) keyDown(keyCode unison.KeyCode, _ unison.Modifiers, _ bool) bool {
-	scale := d.scale
 	switch keyCode {
-	case unison.KeyMinus:
-		scale -= deltaPDFDockableScale
-		if scale < minPDFDockableScale {
-			scale = minPDFDockableScale
-		}
-	case unison.KeyEqual:
-		scale += deltaPDFDockableScale
-		if scale > maxPDFDockableScale {
-			scale = maxPDFDockableScale
-		}
 	case unison.KeyHome:
 		d.LoadPage(0)
 	case unison.KeyEnd:
@@ -510,13 +498,6 @@ func (d *PDFDockable) keyDown(keyCode unison.KeyCode, _ unison.Modifiers, _ bool
 		d.LoadPage(d.pdf.MostRecentPageNumber() + 1)
 	default:
 		return false
-	}
-	if d.scale != scale {
-		d.scale = scale
-		d.noUpdate = true
-		widget.SetFieldValue(d.scaleField.Field, d.scaleField.Format(scale))
-		d.noUpdate = false
-		d.LoadPage(d.pdf.MostRecentPageNumber())
 	}
 	return true
 }
@@ -531,7 +512,7 @@ func (d *PDFDockable) mouseWheel(_, delta unison.Point, mod unison.Modifiers) bo
 	if !mod.OptionDown() {
 		return false
 	}
-	scale := d.scale + int(delta.Y*deltaPDFDockableScale)
+	scale := d.scale + int(delta.Y*constants.ScaleDelta)
 	if scale < minPDFDockableScale {
 		scale = minPDFDockableScale
 	} else if scale > maxPDFDockableScale {

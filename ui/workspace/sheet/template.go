@@ -206,7 +206,7 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 	})
 	d.InstallCmdHandlers(constants.ApplyTemplateItemID, d.canApplyTemplate, d.applyTemplate)
 	widget.InstallViewScaleHandlers(d, func() int { return settings.Global().General.InitialSheetUIScale },
-		gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, d.adjustScale)
+		gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, func() int { return d.scale }, d.adjustScale)
 
 	return d
 }

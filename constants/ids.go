@@ -81,6 +81,8 @@ const (
 	MailingListItemID
 	ViewMenuID
 	ScaleDefaultItemID
+	ScaleUpItemID
+	ScaleDownItemID
 	Scale25ItemID
 	Scale50ItemID
 	Scale75ItemID

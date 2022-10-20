@@ -145,7 +145,7 @@ func NewTableDockable[T gurps.NodeTypes](filePath, extension string, provider nt
 		}
 	}
 	widget.InstallViewScaleHandlers(d, func() int { return settings.Global().General.InitialListUIScale },
-		gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, d.adjustScale)
+		gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, func() int { return d.scale }, d.adjustScale)
 
 	d.crc = d.crc64()
 	return d

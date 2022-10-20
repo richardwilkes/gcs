@@ -17,22 +17,38 @@ import (
 )
 
 // InstallViewScaleHandlers installs the standard view scale handlers.
-func InstallViewScaleHandlers(paneler unison.Paneler, def func() int, min, max int, adjuster func(scale int)) {
+func InstallViewScaleHandlers(paneler unison.Paneler, def func() int, min, max int, current func() int, adjuster func(scale int)) {
 	p := paneler.AsPanel()
-	installViewScaleHandler(p, constants.ScaleDefaultItemID, def(), min, max, adjuster)
-	installViewScaleHandler(p, constants.Scale25ItemID, 25, min, max, adjuster)
-	installViewScaleHandler(p, constants.Scale50ItemID, 50, min, max, adjuster)
-	installViewScaleHandler(p, constants.Scale75ItemID, 75, min, max, adjuster)
-	installViewScaleHandler(p, constants.Scale100ItemID, 100, min, max, adjuster)
-	installViewScaleHandler(p, constants.Scale200ItemID, 200, min, max, adjuster)
-	installViewScaleHandler(p, constants.Scale300ItemID, 300, min, max, adjuster)
-	installViewScaleHandler(p, constants.Scale400ItemID, 400, min, max, adjuster)
-	installViewScaleHandler(p, constants.Scale500ItemID, 500, min, max, adjuster)
-	installViewScaleHandler(p, constants.Scale600ItemID, 600, min, max, adjuster)
+	installViewScaleHandler(p, constants.ScaleDefaultItemID, def(), min, max, current, adjuster)
+	installViewDeltaScaleHandler(p, constants.ScaleUpItemID, constants.ScaleDelta, min, max, current, adjuster)
+	installViewDeltaScaleHandler(p, constants.ScaleDownItemID, -constants.ScaleDelta, min, max, current, adjuster)
+	installViewScaleHandler(p, constants.Scale25ItemID, 25, min, max, current, adjuster)
+	installViewScaleHandler(p, constants.Scale50ItemID, 50, min, max, current, adjuster)
+	installViewScaleHandler(p, constants.Scale75ItemID, 75, min, max, current, adjuster)
+	installViewScaleHandler(p, constants.Scale100ItemID, 100, min, max, current, adjuster)
+	installViewScaleHandler(p, constants.Scale200ItemID, 200, min, max, current, adjuster)
+	installViewScaleHandler(p, constants.Scale300ItemID, 300, min, max, current, adjuster)
+	installViewScaleHandler(p, constants.Scale400ItemID, 400, min, max, current, adjuster)
+	installViewScaleHandler(p, constants.Scale500ItemID, 500, min, max, current, adjuster)
+	installViewScaleHandler(p, constants.Scale600ItemID, 600, min, max, current, adjuster)
 }
 
-func installViewScaleHandler(p *unison.Panel, itemID, scale, min, max int, adjuster func(int)) {
+func installViewScaleHandler(p *unison.Panel, itemID, scale, min, max int, current func() int, adjuster func(int)) {
 	if min <= scale && max >= scale {
-		p.InstallCmdHandlers(itemID, unison.AlwaysEnabled, func(_ any) { adjuster(scale) })
+		p.InstallCmdHandlers(itemID, func(_ any) bool { return current() != scale }, func(_ any) { adjuster(scale) })
 	}
+}
+
+func installViewDeltaScaleHandler(p *unison.Panel, itemID, delta, min, max int, current func() int, adjuster func(int)) {
+	calc := func() int {
+		c := current()
+		adjusted := c + delta
+		if adjusted < min {
+			adjusted = min
+		} else if adjusted > max {
+			adjusted = max
+		}
+		return adjusted
+	}
+	p.InstallCmdHandlers(itemID, func(_ any) bool { return calc() != current() }, func(_ any) { adjuster(calc()) })
 }

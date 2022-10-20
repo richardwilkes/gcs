@@ -16,6 +16,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/constants"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/res"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
@@ -81,7 +82,6 @@ func newMarkdownDockable(filePath, title, content string) (unison.Dockable, erro
 
 	d.markdown = widget.NewMarkdown()
 	d.markdown.SetFocusable(true)
-	d.markdown.KeyDownCallback = d.keyDown
 	d.markdown.MouseDownCallback = func(where unison.Point, button, clickCount int, mod unison.Modifiers) bool {
 		d.markdown.RequestFocus()
 		return true
@@ -107,12 +107,8 @@ func newMarkdownDockable(filePath, title, content string) (unison.Dockable, erro
 
 	info := widget.NewInfoPop()
 	info.Target = d.scroll
-	info.AddHelpInfo(i18n.Text("Within this view, these keys have the following effects:\n"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyMinus}, fmt.Sprintf(i18n.Text("Reduce scale by %d%%"), deltaPDFDockableScale))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyEqual}, fmt.Sprintf(i18n.Text("Increase scale by %d%%"), deltaPDFDockableScale))
-	info.AddHelpInfo(fmt.Sprintf(i18n.Text(`
-In addition, holding down the %s key while using the
-mouse wheel will also change the scale.`), unison.OptionModifier.String()))
+	info.AddHelpInfo(fmt.Sprintf(i18n.Text(`Holding down the %s key while using
+the mouse wheel will change the scale.`), unison.OptionModifier.String()))
 
 	scaleTitle := i18n.Text("Scale")
 	d.scaleField = widget.NewPercentageField(nil, "", scaleTitle,
@@ -141,7 +137,8 @@ mouse wheel will also change the scale.`), unison.OptionModifier.String()))
 	d.AddChild(toolbar)
 	d.AddChild(d.scroll)
 
-	widget.InstallViewScaleHandlers(d, func() int { return 100 }, minPDFDockableScale, maxPDFDockableScale, d.adjustScale)
+	widget.InstallViewScaleHandlers(d, func() int { return 100 }, minPDFDockableScale, maxPDFDockableScale,
+		func() int { return d.scale }, d.adjustScale)
 
 	return d, nil
 }
@@ -150,33 +147,13 @@ func (d *MarkdownDockable) mouseWheel(_, delta unison.Point, mod unison.Modifier
 	if !mod.OptionDown() {
 		return false
 	}
-	scale := d.scale + int(delta.Y*deltaPDFDockableScale)
+	scale := d.scale + int(delta.Y*constants.ScaleDelta)
 	if scale < minPDFDockableScale {
 		scale = minPDFDockableScale
 	} else if scale > maxPDFDockableScale {
 		scale = maxPDFDockableScale
 	}
 	widget.SetFieldValue(d.scaleField.Field, d.scaleField.Format(scale))
-	return true
-}
-
-func (d *MarkdownDockable) keyDown(keyCode unison.KeyCode, _ unison.Modifiers, _ bool) bool {
-	scale := d.scale
-	switch keyCode {
-	case unison.KeyMinus:
-		scale -= deltaPDFDockableScale
-		if scale < minPDFDockableScale {
-			scale = minPDFDockableScale
-		}
-	case unison.KeyEqual:
-		scale += deltaPDFDockableScale
-		if scale > maxPDFDockableScale {
-			scale = maxPDFDockableScale
-		}
-	default:
-		return false
-	}
-	d.adjustScale(scale)
 	return true
 }
 

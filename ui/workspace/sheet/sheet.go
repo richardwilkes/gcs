@@ -273,7 +273,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	s.InstallCmdHandlers(constants.ExportAsJPEGItemID, unison.AlwaysEnabled, func(_ any) { s.exportToJPEG() })
 	s.InstallCmdHandlers(constants.PrintItemID, unison.AlwaysEnabled, func(_ any) { s.print() })
 	widget.InstallViewScaleHandlers(s, func() int { return settings.Global().General.InitialSheetUIScale },
-		gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, s.adjustScale)
+		gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, func() int { return s.scale }, s.adjustScale)
 
 	return s
 }

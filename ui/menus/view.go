@@ -24,6 +24,8 @@ import (
 // Scale menu items
 var (
 	ScaleDefault *unison.Action
+	ScaleUp      *unison.Action
+	ScaleDown    *unison.Action
 	Scale25      *unison.Action
 	Scale50      *unison.Action
 	Scale75      *unison.Action
@@ -43,21 +45,38 @@ func registerViewMenuActions() {
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	}
+	ScaleUp = &unison.Action{
+		ID:              constants.ScaleUpItemID,
+		Title:           i18n.Text("Scale Up"),
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyEqual, Modifiers: unison.OSMenuCmdModifier() | unison.OptionModifier},
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
+	}
+	ScaleDown = &unison.Action{
+		ID:              constants.ScaleDownItemID,
+		Title:           i18n.Text("Scale Down"),
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyMinus, Modifiers: unison.OSMenuCmdModifier() | unison.OptionModifier},
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
+	}
 	Scale25 = &unison.Action{
 		ID:              constants.Scale25ItemID,
 		Title:           i18n.Text("25% Scale"),
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyQ, Modifiers: unison.OSMenuCmdModifier() | unison.OptionModifier},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	}
 	Scale50 = &unison.Action{
 		ID:              constants.Scale50ItemID,
 		Title:           i18n.Text("50% Scale"),
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyH, Modifiers: unison.OSMenuCmdModifier() | unison.OptionModifier},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	}
 	Scale75 = &unison.Action{
 		ID:              constants.Scale75ItemID,
 		Title:           i18n.Text("75% Scale"),
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyT, Modifiers: unison.OSMenuCmdModifier() | unison.OptionModifier},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	}
@@ -105,6 +124,8 @@ func registerViewMenuActions() {
 	}
 
 	settings.RegisterKeyBinding("scale.default", ScaleDefault)
+	settings.RegisterKeyBinding("scale.up", ScaleUp)
+	settings.RegisterKeyBinding("scale.down", ScaleDown)
 	settings.RegisterKeyBinding("scale.25", Scale25)
 	settings.RegisterKeyBinding("scale.50", Scale50)
 	settings.RegisterKeyBinding("scale.75", Scale75)
@@ -120,6 +141,8 @@ func createViewMenu(f unison.MenuFactory) unison.Menu {
 	m := f.NewMenu(constants.ViewMenuID, i18n.Text("View"), nil)
 
 	m.InsertItem(-1, ScaleDefault.NewMenuItem(f))
+	m.InsertItem(-1, ScaleUp.NewMenuItem(f))
+	m.InsertItem(-1, ScaleDown.NewMenuItem(f))
 	m.InsertSeparator(-1, false)
 	m.InsertItem(-1, Scale25.NewMenuItem(f))
 	m.InsertItem(-1, Scale50.NewMenuItem(f))
