@@ -238,6 +238,26 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	s.toolbar.AddChild(sheetSettingsButton)
 	s.toolbar.AddChild(attributesButton)
 	s.toolbar.AddChild(bodyTypeButton)
+	s.toolbar.AddChild(widget.NewToolbarSeparator())
+	installSearchTracker(s.toolbar, func() {
+		s.Reactions.Table.ClearSelection()
+		s.ConditionalModifiers.Table.ClearSelection()
+		s.MeleeWeapons.Table.ClearSelection()
+		s.RangedWeapons.Table.ClearSelection()
+		s.Traits.Table.ClearSelection()
+		s.Skills.Table.ClearSelection()
+		s.Spells.Table.ClearSelection()
+		s.CarriedEquipment.Table.ClearSelection()
+		s.OtherEquipment.Table.ClearSelection()
+		s.Notes.Table.ClearSelection()
+	}, func(refList *[]*searchRef, text string) {
+		searchSheetTable(refList, text, s.Traits)
+		searchSheetTable(refList, text, s.Skills)
+		searchSheetTable(refList, text, s.Spells)
+		searchSheetTable(refList, text, s.CarriedEquipment)
+		searchSheetTable(refList, text, s.OtherEquipment)
+		searchSheetTable(refList, text, s.Notes)
+	})
 	s.toolbar.SetLayout(&unison.FlexLayout{
 		Columns:  len(s.toolbar.Children()),
 		HSpacing: unison.StdHSpacing,

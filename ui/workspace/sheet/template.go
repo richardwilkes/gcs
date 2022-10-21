@@ -188,6 +188,19 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 	})
 	d.toolbar.AddChild(d.scaleField)
 	d.toolbar.AddChild(addUserButton)
+	installSearchTracker(d.toolbar, func() {
+		d.Traits.Table.ClearSelection()
+		d.Skills.Table.ClearSelection()
+		d.Spells.Table.ClearSelection()
+		d.Equipment.Table.ClearSelection()
+		d.Notes.Table.ClearSelection()
+	}, func(refList *[]*searchRef, text string) {
+		searchSheetTable(refList, text, d.Traits)
+		searchSheetTable(refList, text, d.Skills)
+		searchSheetTable(refList, text, d.Spells)
+		searchSheetTable(refList, text, d.Equipment)
+		searchSheetTable(refList, text, d.Notes)
+	})
 	d.toolbar.SetLayout(&unison.FlexLayout{
 		Columns:  len(d.toolbar.Children()),
 		HSpacing: unison.StdHSpacing,
