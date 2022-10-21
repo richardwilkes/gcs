@@ -169,7 +169,7 @@ func (e *pointsEditor) createToolbar() unison.Paneler {
 	}
 	toolbar.AddChild(e.cancelButton)
 
-	toolbar.AddChild(widget.NewToolbarSeparator(unison.StdHSpacing))
+	toolbar.AddChild(widget.NewToolbarSeparator())
 
 	addButton := unison.NewSVGButton(res.CircledAddSVG)
 	addButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Add Entry"))

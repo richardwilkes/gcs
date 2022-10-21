@@ -80,9 +80,9 @@ func NewBodyPanel(entity *gurps.Entity) *BodyPanel {
 func (p *BodyPanel) addContent(locations *gurps.Body) {
 	p.RemoveAllChildren()
 	p.AddChild(widget.NewPageHeader(i18n.Text("Roll"), 1))
-	p.AddChild(widget.NewToolbarSeparator(0))
+	p.AddChild(widget.NewInteriorSeparator())
 	p.AddChild(widget.NewPageHeader(i18n.Text("Location"), 2))
-	p.AddChild(widget.NewToolbarSeparator(0))
+	p.AddChild(widget.NewInteriorSeparator())
 	p.AddChild(widget.NewPageHeader(i18n.Text("DR"), 1))
 	p.row = nil
 	p.sepLayoutData = nil

@@ -73,11 +73,11 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 	}
 
 	p.AddChild(widget.NewPageHeader(i18n.Text("Level"), 3))
-	p.AddChild(widget.NewToolbarSeparator(0))
+	p.AddChild(widget.NewInteriorSeparator())
 	p.AddChild(widget.NewPageHeader(i18n.Text("Max Load"), 1))
-	p.AddChild(widget.NewToolbarSeparator(0))
+	p.AddChild(widget.NewInteriorSeparator())
 	p.AddChild(widget.NewPageHeader(i18n.Text("Move"), 1))
-	p.AddChild(widget.NewToolbarSeparator(0))
+	p.AddChild(widget.NewInteriorSeparator())
 	p.AddChild(widget.NewPageHeader(i18n.Text("Dodge"), 1))
 
 	for i, enc := range datafile.AllEncumbrance {

@@ -182,7 +182,7 @@ the mouse wheel will change the scale.`), unison.OptionModifier.String()))
 	ofLabel.Text = fmt.Sprintf(i18n.Text("of %d"), d.pdf.PageCount())
 	d.toolbar.AddChild(ofLabel)
 
-	d.toolbar.AddChild(widget.NewToolbarSeparator(unison.StdHSpacing))
+	d.toolbar.AddChild(widget.NewToolbarSeparator())
 
 	d.backButton = unison.NewSVGButton(res.BackSVG)
 	d.backButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Back"))
@@ -194,7 +194,7 @@ the mouse wheel will change the scale.`), unison.OptionModifier.String()))
 	d.forwardButton.ClickCallback = d.Forward
 	d.toolbar.AddChild(d.forwardButton)
 
-	d.toolbar.AddChild(widget.NewToolbarSeparator(unison.StdHSpacing))
+	d.toolbar.AddChild(widget.NewToolbarSeparator())
 
 	d.firstPageButton = unison.NewSVGButton(res.FirstSVG)
 	d.firstPageButton.Tooltip = unison.NewTooltipWithText(i18n.Text("First Page"))
