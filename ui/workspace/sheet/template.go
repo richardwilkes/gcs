@@ -25,6 +25,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/model/theme"
+	"github.com/richardwilkes/gcs/v5/res"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/gcs/v5/ui/widget/ntable"
 	"github.com/richardwilkes/gcs/v5/ui/workspace"
@@ -170,6 +171,14 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 	d.scaleField.SetMarksModified(false)
 	d.scaleField.Tooltip = unison.NewTooltipWithText(scaleTitle)
 
+	addUserButton := unison.NewSVGButton(res.StamperSVG)
+	addUserButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Apply Template to Character Sheet"))
+	addUserButton.ClickCallback = func() {
+		if CanApplyTemplate() {
+			d.applyTemplate(nil)
+		}
+	}
+
 	d.toolbar = unison.NewPanel()
 	d.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
@@ -178,6 +187,7 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 		HGrab:  true,
 	})
 	d.toolbar.AddChild(d.scaleField)
+	d.toolbar.AddChild(addUserButton)
 	d.toolbar.SetLayout(&unison.FlexLayout{
 		Columns:  len(d.toolbar.Children()),
 		HSpacing: unison.StdHSpacing,
