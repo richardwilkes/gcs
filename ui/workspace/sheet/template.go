@@ -482,6 +482,7 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 			rowChildren = append(rowChildren, result...)
 		}
 	}
+	ntable.SetParents(rowChildren, n.Parent())
 	return rowChildren, false
 }
 
