@@ -35,11 +35,14 @@ var (
 // MarkdownDockable holds the view for an image file.
 type MarkdownDockable struct {
 	unison.Panel
-	path     string
-	title    string
-	scroll   *unison.ScrollPanel
-	markdown *widget.Markdown
-	scale    int
+	path       string
+	title      string
+	scroll     *unison.ScrollPanel
+	markdown   *widget.Markdown
+	scale      int
+	dragStart  unison.Point
+	dragOrigin unison.Point
+	inDrag     bool
 }
 
 // ShowReleaseNotesMarkdown attempts to show the given markdown content in a dockable.
@@ -79,11 +82,11 @@ func newMarkdownDockable(filePath, title, content string) (unison.Dockable, erro
 	d.SetLayout(&unison.FlexLayout{Columns: 1})
 
 	d.markdown = widget.NewMarkdown()
+	d.markdown.MouseDownCallback = d.mouseDown
+	d.markdown.MouseDragCallback = d.mouseDrag
+	d.markdown.MouseUpCallback = d.mouseUp
+	d.markdown.UpdateCursorCallback = d.updateCursor
 	d.markdown.SetFocusable(true)
-	d.markdown.MouseDownCallback = func(where unison.Point, button, clickCount int, mod unison.Modifiers) bool {
-		d.markdown.RequestFocus()
-		return true
-	}
 	if !strings.HasPrefix(d.path, markdownContentOnlyPrefix) {
 		data, err := os.ReadFile(d.BackingFilePath())
 		if err != nil {
@@ -121,6 +124,35 @@ func newMarkdownDockable(filePath, title, content string) (unison.Dockable, erro
 	d.AddChild(d.scroll)
 
 	return d, nil
+}
+
+func (d *MarkdownDockable) updateCursor(_ unison.Point) *unison.Cursor {
+	if d.inDrag {
+		return unison.MoveCursor()
+	}
+	return unison.ArrowCursor()
+}
+
+func (d *MarkdownDockable) mouseDown(where unison.Point, _, _ int, _ unison.Modifiers) bool {
+	d.dragStart = d.markdown.PointToRoot(where)
+	d.dragOrigin.X, d.dragOrigin.Y = d.scroll.Position()
+	d.inDrag = true
+	d.markdown.RequestFocus()
+	d.UpdateCursorNow()
+	return true
+}
+
+func (d *MarkdownDockable) mouseDrag(where unison.Point, _ int, _ unison.Modifiers) bool {
+	pt := d.dragStart
+	pt.Subtract(d.markdown.PointToRoot(where))
+	d.scroll.SetPosition(d.dragOrigin.X+pt.X, d.dragOrigin.Y+pt.Y)
+	return true
+}
+
+func (d *MarkdownDockable) mouseUp(_ unison.Point, _ int, _ unison.Modifiers) bool {
+	d.inDrag = false
+	d.UpdateCursorNow()
+	return true
 }
 
 // TitleIcon implements workspace.FileBackedDockable

@@ -38,9 +38,9 @@ type ImageDockable struct {
 	img        *unison.Image
 	imgPanel   *unison.Panel
 	scroll     *unison.ScrollPanel
+	scale      int
 	dragStart  unison.Point
 	dragOrigin unison.Point
-	scale      int
 	inDrag     bool
 }
 

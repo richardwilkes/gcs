@@ -71,6 +71,9 @@ type PDFDockable struct {
 	scale                  int
 	historyPos             int
 	history                []int
+	dragStart              unison.Point
+	dragOrigin             unison.Point
+	inDrag                 bool
 	noUpdate               bool
 	adjustTableSizePending bool
 }
@@ -287,7 +290,9 @@ func (d *PDFDockable) createContent() {
 	d.docPanel.DrawCallback = d.draw
 	d.docPanel.MouseDownCallback = d.mouseDown
 	d.docPanel.MouseMoveCallback = d.mouseMove
+	d.docPanel.MouseDragCallback = d.mouseDrag
 	d.docPanel.MouseUpCallback = d.mouseUp
+	d.docPanel.UpdateCursorCallback = d.updateCursor
 	d.docPanel.SetFocusable(true)
 
 	d.docScroll = unison.NewScrollPanel()
@@ -440,17 +445,40 @@ func (d *PDFDockable) overLink(where unison.Point) (rect unison.Rect, link *pdf.
 	return rect, nil
 }
 
-func (d *PDFDockable) checkForLinkAt(where unison.Point) {
+func (d *PDFDockable) checkForLinkAt(where unison.Point) bool {
 	r, link := d.overLink(where)
 	if r != d.rolloverRect || link != d.link {
 		d.rolloverRect = r
 		d.link = link
 		d.MarkForRedraw()
 	}
+	return link != nil
 }
 
-func (d *PDFDockable) mouseDown(_ unison.Point, _, _ int, _ unison.Modifiers) bool {
-	d.RequestFocus()
+func (d *PDFDockable) updateCursor(_ unison.Point) *unison.Cursor {
+	if d.inDrag {
+		return unison.MoveCursor()
+	}
+	return unison.ArrowCursor()
+}
+
+func (d *PDFDockable) mouseDown(where unison.Point, _, _ int, _ unison.Modifiers) bool {
+	d.dragStart = d.docPanel.PointToRoot(where)
+	d.dragOrigin.X, d.dragOrigin.Y = d.docScroll.Position()
+	d.inDrag = !d.checkForLinkAt(where)
+	d.docPanel.RequestFocus()
+	d.UpdateCursorNow()
+	return true
+}
+
+func (d *PDFDockable) mouseDrag(where unison.Point, _ int, _ unison.Modifiers) bool {
+	if d.inDrag {
+		pt := d.dragStart
+		pt.Subtract(d.docPanel.PointToRoot(where))
+		d.docScroll.SetPosition(d.dragOrigin.X+pt.X, d.dragOrigin.Y+pt.Y)
+	} else {
+		d.checkForLinkAt(where)
+	}
 	return true
 }
 
@@ -460,12 +488,17 @@ func (d *PDFDockable) mouseMove(where unison.Point, _ unison.Modifiers) bool {
 }
 
 func (d *PDFDockable) mouseUp(where unison.Point, button int, _ unison.Modifiers) bool {
-	d.checkForLinkAt(where)
-	if button == unison.ButtonLeft && d.link != nil {
-		if d.link.PageNumber >= 0 {
-			d.LoadPage(d.link.PageNumber)
-		} else if err := desktop.Open(d.link.URI); err != nil {
-			unison.ErrorDialogWithError(i18n.Text("Unable to open link"), err)
+	if d.inDrag {
+		d.inDrag = false
+		d.UpdateCursorNow()
+	} else {
+		d.checkForLinkAt(where)
+		if button == unison.ButtonLeft && d.link != nil {
+			if d.link.PageNumber >= 0 {
+				d.LoadPage(d.link.PageNumber)
+			} else if err := desktop.Open(d.link.URI); err != nil {
+				unison.ErrorDialogWithError(i18n.Text("Unable to open link"), err)
+			}
 		}
 	}
 	return true
