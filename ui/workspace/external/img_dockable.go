@@ -14,11 +14,9 @@ package external
 import (
 	"fmt"
 
-	"github.com/richardwilkes/gcs/v5/constants"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/gcs/v5/ui/workspace"
-	"github.com/richardwilkes/toolbox/i18n"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
 )
@@ -40,7 +38,6 @@ type ImageDockable struct {
 	img        *unison.Image
 	imgPanel   *unison.Panel
 	scroll     *unison.ScrollPanel
-	scaleField *widget.PercentageField
 	dragStart  unison.Point
 	dragOrigin unison.Point
 	scale      int
@@ -68,7 +65,6 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 	d.imgPanel.MouseDragCallback = d.mouseDrag
 	d.imgPanel.MouseUpCallback = d.mouseUp
 	d.imgPanel.UpdateCursorCallback = d.updateCursor
-	d.imgPanel.MouseWheelCallback = d.mouseWheel
 	d.imgPanel.SetFocusable(true)
 
 	d.scroll = unison.NewScrollPanel()
@@ -79,30 +75,6 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 		VGrab:  true,
 	})
 	d.scroll.SetContent(d.imgPanel, unison.FillBehavior, unison.FillBehavior)
-
-	info := widget.NewInfoPop()
-	info.Target = d.scroll
-	info.AddHelpInfo(fmt.Sprintf(i18n.Text(`Holding down the %s key while using
-the mouse wheel will change the scale.`), unison.OptionModifier.String()))
-
-	scaleTitle := i18n.Text("Scale")
-	d.scaleField = widget.NewPercentageField(nil, "", scaleTitle,
-		func() int { return d.scale },
-		func(v int) {
-			viewRect := d.scroll.ContentView().ContentRect(false)
-			center := d.imgPanel.PointFromRoot(d.scroll.ContentView().PointToRoot(viewRect.Center()))
-			center.X /= float32(d.scale) / 100
-			center.X *= float32(v) / 100
-			center.Y /= float32(d.scale) / 100
-			center.Y *= float32(v) / 100
-			d.scale = v
-			d.scroll.MarkForLayoutAndRedraw()
-			d.scroll.ValidateLayout()
-			viewRect.X = center.X - viewRect.Width/2
-			viewRect.Y = center.Y - viewRect.Height/2
-			d.imgPanel.ScrollRectIntoView(viewRect)
-		}, minImageDockableScale, maxImageDockableScale, false, false)
-	d.scaleField.Tooltip = unison.NewTooltipWithText(scaleTitle)
 
 	typeLabel := unison.NewLabel()
 	typeLabel.Text = unison.EncodedImageFormatForPath(filePath).String()
@@ -120,8 +92,9 @@ the mouse wheel will change the scale.`), unison.OptionModifier.String()))
 		HAlign: unison.FillAlignment,
 		HGrab:  true,
 	})
-	toolbar.AddChild(info)
-	toolbar.AddChild(d.scaleField)
+	toolbar.AddChild(widget.NewDefaultInfoPop(d.scroll))
+	toolbar.AddChild(widget.NewScaleField(minImageDockableScale, maxImageDockableScale, func() int { return 100 },
+		func() int { return d.scale }, func(scale int) { d.scale = scale }, d.scroll, nil, true))
 	toolbar.AddChild(typeLabel)
 	toolbar.AddChild(sizeLabel)
 	toolbar.SetLayout(&unison.FlexLayout{
@@ -131,9 +104,6 @@ the mouse wheel will change the scale.`), unison.OptionModifier.String()))
 
 	d.AddChild(toolbar)
 	d.AddChild(d.scroll)
-
-	widget.InstallViewScaleHandlers(d, func() int { return 100 }, minImageDockableScale, maxImageDockableScale,
-		func() int { return d.scale }, d.adjustScale)
 
 	return d, nil
 }
@@ -167,37 +137,14 @@ func (d *ImageDockable) mouseUp(_ unison.Point, _ int, _ unison.Modifiers) bool 
 	return true
 }
 
-func (d *ImageDockable) mouseWheel(_, delta unison.Point, mod unison.Modifiers) bool {
-	if !mod.OptionDown() {
-		return false
-	}
-	scale := d.scale + int(delta.Y*constants.ScaleDelta)
-	if scale < minImageDockableScale {
-		scale = minImageDockableScale
-	} else if scale > maxImageDockableScale {
-		scale = maxImageDockableScale
-	}
-	widget.SetFieldValue(d.scaleField.Field, d.scaleField.Format(scale))
-	return true
-}
-
-func (d *ImageDockable) adjustScale(scale int) {
-	if d.scale != scale {
-		widget.SetFieldValue(d.scaleField.Field, d.scaleField.Format(scale))
-	}
-}
-
 func (d *ImageDockable) imageSizer(_ unison.Size) (min, pref, max unison.Size) {
 	pref = d.img.Size()
-	pref.Width *= float32(d.scale) / 100
-	pref.Height *= float32(d.scale) / 100
 	return unison.NewSize(50, 50), pref, unison.MaxSize(pref)
 }
 
 func (d *ImageDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
 	gc.DrawRect(dirty, unison.ContentColor.Paint(gc, dirty, unison.Fill))
-	size := d.img.Size()
-	gc.DrawImageInRect(d.img, unison.NewRect(0, 0, size.Width*float32(d.scale)/100, size.Height*float32(d.scale)/100), nil, nil)
+	gc.DrawImage(d.img, 0, 0, nil, nil)
 }
 
 // TitleIcon implements workspace.FileBackedDockable

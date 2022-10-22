@@ -12,9 +12,11 @@
 package widget
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/res"
+	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xmath"
 	"github.com/richardwilkes/unison"
 )
@@ -27,6 +29,14 @@ type InfoPop struct {
 	popup         *unison.Panel
 	savedOverdraw func(*unison.Canvas, unison.Rect)
 	needRestore   bool
+}
+
+// NewDefaultInfoPop creates a new InfoPop with the message about mouse wheel scaling.
+func NewDefaultInfoPop(target unison.Paneler) *InfoPop {
+	p := NewInfoPop()
+	p.Target = target
+	p.AddScalingHelp()
+	return p
 }
 
 // NewInfoPop creates a new InfoPop, which is an icon which shows a forced tooltip while the mouse is over it.
@@ -95,6 +105,12 @@ func NewInfoPop() *InfoPop {
 		return true
 	}
 	return p
+}
+
+// AddScalingHelp adds the help info about scaling.
+func (p *InfoPop) AddScalingHelp() {
+	p.AddHelpInfo(fmt.Sprintf(i18n.Text(`Holding down the %s key while using
+the mouse wheel will change the scale.`), unison.OptionModifier.String()))
 }
 
 // AddHelpInfo adds one or more lines of help text.

@@ -16,7 +16,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/richardwilkes/gcs/v5/constants"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/gcs/v5/pdf"
@@ -101,12 +100,11 @@ func NewPDFDockable(filePath string) (unison.Dockable, error) {
 
 	d.AddChild(d.toolbar)
 	d.AddChild(d.content)
+	d.content.AddChild(d.docScroll)
 
 	d.noUpdate = false
+	d.scaleField.SetEnabled(true)
 	d.LoadPage(0)
-
-	widget.InstallViewScaleHandlers(d, func() int { return 100 }, minPDFDockableScale, maxPDFDockableScale,
-		func() int { return d.scale }, d.adjustScale)
 
 	return d, nil
 }
@@ -135,22 +133,13 @@ func (d *PDFDockable) createToolbar() {
 	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyUp}, i18n.Text("Go to previous page"))
 	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyRight}, i18n.Text("Go to next page"))
 	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyDown}, i18n.Text("Go to next page"))
-	info.AddHelpInfo(fmt.Sprintf(i18n.Text(`
-In addition, holding down the %s key while using
-the mouse wheel will change the scale.`), unison.OptionModifier.String()))
+	info.AddScalingHelp()
 	d.toolbar.AddChild(info)
 
-	scaleTitle := i18n.Text("Scale")
-	d.scaleField = widget.NewPercentageField(nil, "", scaleTitle,
-		func() int { return d.scale },
-		func(v int) {
-			if d.noUpdate {
-				return
-			}
-			d.scale = v
-			d.LoadPage(d.pdf.MostRecentPageNumber())
-		}, minPDFDockableScale, maxPDFDockableScale, false, false)
-	d.scaleField.Tooltip = unison.NewTooltipWithText(scaleTitle)
+	d.scaleField = widget.NewScaleField(minPDFDockableScale, maxPDFDockableScale, func() int { return 100 },
+		func() int { return d.scale }, func(scale int) { d.scale = scale }, d.docScroll,
+		func() { d.LoadPage(d.pdf.MostRecentPageNumber()) }, false)
+	d.scaleField.SetEnabled(false)
 	d.toolbar.AddChild(d.scaleField)
 
 	pageLabel := unison.NewLabel()
@@ -299,7 +288,6 @@ func (d *PDFDockable) createContent() {
 	d.docPanel.MouseDownCallback = d.mouseDown
 	d.docPanel.MouseMoveCallback = d.mouseMove
 	d.docPanel.MouseUpCallback = d.mouseUp
-	d.docPanel.MouseWheelCallback = d.mouseWheel
 	d.docPanel.SetFocusable(true)
 
 	d.docScroll = unison.NewScrollPanel()
@@ -324,7 +312,6 @@ func (d *PDFDockable) createContent() {
 		HGrab:  true,
 		VGrab:  true,
 	})
-	d.content.AddChild(d.docScroll)
 }
 
 // ClearHistory clears the existing history.
@@ -373,13 +360,17 @@ func (d *PDFDockable) Forward() {
 
 // LoadPage loads the specified page.
 func (d *PDFDockable) LoadPage(pageNumber int) {
-	d.pdf.LoadPage(pageNumber, float32(d.scale)/100, d.searchField.Text())
+	d.pdf.LoadPage(pageNumber, d.docPanel.Scale(), d.searchField.Text())
 	d.MarkForRedraw()
 }
 
 func (d *PDFDockable) pageLoaded() {
 	d.noUpdate = true
-	defer func() { d.noUpdate = false }()
+	d.scaleField.SetEnabled(false)
+	defer func() {
+		d.noUpdate = false
+		d.scaleField.SetEnabled(true)
+	}()
 
 	d.page = d.pdf.CurrentPage()
 
@@ -400,8 +391,6 @@ func (d *PDFDockable) pageLoaded() {
 		d.pageNumberField.SetText(pageText)
 		d.pageNumberField.Parent().MarkForLayoutAndRedraw()
 	}
-
-	widget.SetFieldValue(d.scaleField.Field, d.scaleField.Format(d.scale))
 
 	matchText := "-"
 	if d.searchField.Text() != "" {
@@ -502,26 +491,6 @@ func (d *PDFDockable) keyDown(keyCode unison.KeyCode, _ unison.Modifiers, _ bool
 	return true
 }
 
-func (d *PDFDockable) adjustScale(scale int) {
-	if d.scale != scale {
-		widget.SetFieldValue(d.scaleField.Field, d.scaleField.Format(scale))
-	}
-}
-
-func (d *PDFDockable) mouseWheel(_, delta unison.Point, mod unison.Modifiers) bool {
-	if !mod.OptionDown() {
-		return false
-	}
-	scale := d.scale + int(delta.Y*constants.ScaleDelta)
-	if scale < minPDFDockableScale {
-		scale = minPDFDockableScale
-	} else if scale > maxPDFDockableScale {
-		scale = maxPDFDockableScale
-	}
-	widget.SetFieldValue(d.scaleField.Field, d.scaleField.Format(scale))
-	return true
-}
-
 func (d *PDFDockable) docSizer(_ unison.Size) (min, pref, max unison.Size) {
 	if d.page == nil || d.page.Error != nil {
 		pref.Width = 400
@@ -534,13 +503,14 @@ func (d *PDFDockable) docSizer(_ unison.Size) (min, pref, max unison.Size) {
 
 func (d *PDFDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
 	gc.DrawRect(dirty, unison.ContentColor.Paint(gc, dirty, unison.Fill))
-	if d.page == nil {
-		return
-	}
-	if d.page.Image != nil {
+	if d.page != nil && d.page.Image != nil {
+		gc.Save()
+		scale := 1 / d.docPanel.Scale()
+		gc.Scale(scale, scale)
 		r := unison.Rect{Size: d.page.Image.LogicalSize()}
 		gc.DrawRect(r, unison.White.Paint(gc, r, unison.Fill))
-		gc.DrawImageInRect(d.page.Image, r, nil, nil)
+		gc.DrawImage(d.page.Image, 0, 0, nil, nil)
+		gc.Restore()
 		if len(d.page.Matches) != 0 {
 			p := unison.NewPaint()
 			p.SetStyle(unison.Fill)

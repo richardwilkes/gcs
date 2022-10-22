@@ -71,8 +71,6 @@ type Sheet struct {
 	scroll               *unison.ScrollPanel
 	entity               *gurps.Entity
 	crc                  uint64
-	scale                int
-	scaleField           *widget.PercentageField
 	content              *unison.Panel
 	modifiedFunc         func()
 	Reactions            *PageList[*gurps.ConditionalModifier]
@@ -86,6 +84,7 @@ type Sheet struct {
 	OtherEquipment       *PageList[*gurps.Equipment]
 	Notes                *PageList[*gurps.Note]
 	dragReroutePanel     *unison.Panel
+	scale                int
 	awaitingUpdate       bool
 	needsSaveAsPrompt    bool
 }
@@ -217,16 +216,6 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	bodyTypeButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Body Type"))
 	bodyTypeButton.ClickCallback = func() { body.ShowBodySettings(s) }
 
-	scaleTitle := i18n.Text("Scale")
-	s.scaleField = widget.NewPercentageField(nil, "", scaleTitle,
-		func() int { return s.scale },
-		func(v int) {
-			s.scale = v
-			s.applyScale()
-		}, gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, false, false)
-	s.scaleField.SetMarksModified(false)
-	s.scaleField.Tooltip = unison.NewTooltipWithText(scaleTitle)
-
 	s.toolbar = unison.NewPanel()
 	s.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
@@ -234,7 +223,10 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 		HAlign: unison.FillAlignment,
 		HGrab:  true,
 	})
-	s.toolbar.AddChild(s.scaleField)
+	s.toolbar.AddChild(widget.NewDefaultInfoPop(s.scroll))
+	s.toolbar.AddChild(widget.NewScaleField(gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax,
+		func() int { return settings.Global().General.InitialSheetUIScale }, func() int { return s.scale },
+		func(scale int) { s.scale = scale }, s.scroll, nil, false))
 	s.toolbar.AddChild(sheetSettingsButton)
 	s.toolbar.AddChild(attributesButton)
 	s.toolbar.AddChild(bodyTypeButton)
@@ -266,8 +258,6 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	s.AddChild(s.toolbar)
 	s.AddChild(s.scroll)
 
-	s.applyScale()
-
 	s.InstallCmdHandlers(constants.SaveItemID, func(_ any) bool { return s.Modified() }, func(_ any) { s.save(false) })
 	s.InstallCmdHandlers(constants.SaveAsItemID, unison.AlwaysEnabled, func(_ any) { s.save(true) })
 	s.installNewItemCmdHandlers(constants.NewTraitItemID, constants.NewTraitContainerItemID, s.Traits)
@@ -292,8 +282,6 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	s.InstallCmdHandlers(constants.ExportAsPNGItemID, unison.AlwaysEnabled, func(_ any) { s.exportToPNG() })
 	s.InstallCmdHandlers(constants.ExportAsJPEGItemID, unison.AlwaysEnabled, func(_ any) { s.exportToJPEG() })
 	s.InstallCmdHandlers(constants.PrintItemID, unison.AlwaysEnabled, func(_ any) { s.print() })
-	widget.InstallViewScaleHandlers(s, func() int { return settings.Global().General.InitialSheetUIScale },
-		gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, func() int { return s.scale }, s.adjustScale)
 
 	return s
 }
@@ -341,17 +329,6 @@ func (s *Sheet) Entity() *gurps.Entity {
 // UndoManager implements undo.Provider
 func (s *Sheet) UndoManager() *unison.UndoManager {
 	return s.undoMgr
-}
-
-func (s *Sheet) adjustScale(scale int) {
-	if s.scale != scale {
-		widget.SetFieldValue(s.scaleField.Field, s.scaleField.Format(scale))
-	}
-}
-
-func (s *Sheet) applyScale() {
-	s.content.SetScale(float32(s.scale) / 100)
-	s.scroll.Sync()
 }
 
 // TitleIcon implements workspace.FileBackedDockable

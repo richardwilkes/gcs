@@ -56,14 +56,13 @@ type TableDockable[T gurps.NodeTypes] struct {
 	canCreateIDs      map[int]bool
 	hierarchyButton   *unison.Button
 	sizeToFitButton   *unison.Button
-	scale             int
-	scaleField        *widget.PercentageField
 	filterPopup       *unison.PopupMenu[string]
 	filterField       *unison.Field
 	scroll            *unison.ScrollPanel
 	tableHeader       *unison.TableHeader[*ntable.Node[T]]
 	table             *unison.Table[*ntable.Node[T]]
 	crc               uint64
+	scale             int
 	needsSaveAsPrompt bool
 }
 
@@ -106,8 +105,6 @@ func NewTableDockable[T gurps.NodeTypes](filePath, extension string, provider nt
 	d.AddChild(d.createToolbar())
 	d.AddChild(d.scroll)
 
-	d.applyScale()
-
 	d.InstallCmdHandlers(constants.OpenEditorItemID,
 		func(_ any) bool { return d.table.HasSelection() },
 		func(_ any) { d.provider.OpenEditor(d, d.table) })
@@ -144,23 +141,11 @@ func NewTableDockable[T gurps.NodeTypes](filePath, extension string, provider nt
 				func(_ any) { d.provider.CreateItem(d, d.table, variant) })
 		}
 	}
-	widget.InstallViewScaleHandlers(d, func() int { return settings.Global().General.InitialListUIScale },
-		gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, func() int { return d.scale }, d.adjustScale)
-
 	d.crc = d.crc64()
 	return d
 }
 
 func (d *TableDockable[T]) createToolbar() *unison.Panel {
-	scaleTitle := i18n.Text("Scale")
-	d.scaleField = widget.NewPercentageField(nil, "", scaleTitle,
-		func() int { return d.scale },
-		func(v int) {
-			d.scale = v
-			d.applyScale()
-		}, gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, false, false)
-	d.scaleField.Tooltip = unison.NewTooltipWithText(scaleTitle)
-
 	d.hierarchyButton = unison.NewSVGButton(res.HierarchySVG)
 	d.hierarchyButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Opens/closes all hierarchical rows"))
 	d.hierarchyButton.ClickCallback = d.toggleHierarchy
@@ -200,7 +185,10 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	toolbar := unison.NewPanel()
 	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
-	toolbar.AddChild(d.scaleField)
+	toolbar.AddChild(widget.NewDefaultInfoPop(d.scroll))
+	toolbar.AddChild(widget.NewScaleField(gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax,
+		func() int { return settings.Global().General.InitialListUIScale }, func() int { return d.scale },
+		func(scale int) { d.scale = scale }, d.scroll, nil, false))
 	toolbar.AddChild(d.hierarchyButton)
 	toolbar.AddChild(d.sizeToFitButton)
 	toolbar.AddChild(d.filterField)
@@ -229,19 +217,6 @@ func (d *TableDockable[T]) UndoManager() *unison.UndoManager {
 // DockableKind implements widget.DockableKind
 func (d *TableDockable[T]) DockableKind() string {
 	return widget.ListDockableKind
-}
-
-func (d *TableDockable[T]) adjustScale(scale int) {
-	if d.scale != scale {
-		widget.SetFieldValue(d.scaleField.Field, d.scaleField.Format(scale))
-	}
-}
-
-func (d *TableDockable[T]) applyScale() {
-	s := float32(d.scale) / 100
-	d.tableHeader.SetScale(s)
-	d.table.SetScale(s)
-	d.scroll.Sync()
 }
 
 // TitleIcon implements workspace.FileBackedDockable

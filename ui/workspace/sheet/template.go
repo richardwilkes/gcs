@@ -55,15 +55,14 @@ type Template struct {
 	scroll            *unison.ScrollPanel
 	template          *gurps.Template
 	crc               uint64
-	scale             int
 	content           *templateContent
-	scaleField        *widget.PercentageField
 	Traits            *PageList[*gurps.Trait]
 	Skills            *PageList[*gurps.Skill]
 	Spells            *PageList[*gurps.Spell]
 	Equipment         *PageList[*gurps.Equipment]
 	Notes             *PageList[*gurps.Note]
 	dragReroutePanel  *unison.Panel
+	scale             int
 	needsSaveAsPrompt bool
 }
 
@@ -161,16 +160,6 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 		gc.DrawRect(rect, theme.PageVoidColor.Paint(gc, rect, unison.Fill))
 	}
 
-	scaleTitle := i18n.Text("Scale")
-	d.scaleField = widget.NewPercentageField(nil, "", scaleTitle,
-		func() int { return d.scale },
-		func(v int) {
-			d.scale = v
-			d.applyScale()
-		}, gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, false, false)
-	d.scaleField.SetMarksModified(false)
-	d.scaleField.Tooltip = unison.NewTooltipWithText(scaleTitle)
-
 	addUserButton := unison.NewSVGButton(res.StamperSVG)
 	addUserButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Apply Template to Character Sheet"))
 	addUserButton.ClickCallback = func() {
@@ -186,7 +175,10 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 		HAlign: unison.FillAlignment,
 		HGrab:  true,
 	})
-	d.toolbar.AddChild(d.scaleField)
+	d.toolbar.AddChild(widget.NewDefaultInfoPop(d.scroll))
+	d.toolbar.AddChild(widget.NewScaleField(gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax,
+		func() int { return settings.Global().General.InitialSheetUIScale }, func() int { return d.scale },
+		func(scale int) { d.scale = scale }, d.scroll, nil, false))
 	d.toolbar.AddChild(addUserButton)
 	installSearchTracker(d.toolbar, func() {
 		d.Traits.Table.ClearSelection()
@@ -209,8 +201,6 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 	d.AddChild(d.toolbar)
 	d.AddChild(d.scroll)
 
-	d.applyScale()
-
 	d.InstallCmdHandlers(constants.SaveItemID, func(_ any) bool { return d.Modified() }, func(_ any) { d.save(false) })
 	d.InstallCmdHandlers(constants.SaveAsItemID, unison.AlwaysEnabled, func(_ any) { d.save(true) })
 	d.installNewItemCmdHandlers(constants.NewTraitItemID, constants.NewTraitContainerItemID, d.Traits)
@@ -228,8 +218,6 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 			}, gurps.NewNaturalAttacks(nil, nil))
 	})
 	d.InstallCmdHandlers(constants.ApplyTemplateItemID, d.canApplyTemplate, d.applyTemplate)
-	widget.InstallViewScaleHandlers(d, func() int { return settings.Global().General.InitialSheetUIScale },
-		gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, func() int { return d.scale }, d.adjustScale)
 
 	return d
 }
@@ -529,17 +517,6 @@ func (d *Template) Entity() *gurps.Entity {
 // DockableKind implements widget.DockableKind
 func (d *Template) DockableKind() string {
 	return widget.TemplateDockableKind
-}
-
-func (d *Template) adjustScale(scale int) {
-	if d.scale != scale {
-		widget.SetFieldValue(d.scaleField.Field, d.scaleField.Format(scale))
-	}
-}
-
-func (d *Template) applyScale() {
-	d.scroll.Content().AsPanel().SetScale(float32(d.scale) / 100)
-	d.scroll.Sync()
 }
 
 // UndoManager implements undo.Provider

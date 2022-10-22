@@ -16,7 +16,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/constants"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/res"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
@@ -36,12 +35,11 @@ var (
 // MarkdownDockable holds the view for an image file.
 type MarkdownDockable struct {
 	unison.Panel
-	path       string
-	title      string
-	scroll     *unison.ScrollPanel
-	markdown   *widget.Markdown
-	scaleField *widget.PercentageField
-	scale      int
+	path     string
+	title    string
+	scroll   *unison.ScrollPanel
+	markdown *widget.Markdown
+	scale    int
 }
 
 // ShowReleaseNotesMarkdown attempts to show the given markdown content in a dockable.
@@ -86,7 +84,6 @@ func newMarkdownDockable(filePath, title, content string) (unison.Dockable, erro
 		d.markdown.RequestFocus()
 		return true
 	}
-	d.markdown.MouseWheelCallback = d.mouseWheel
 	if !strings.HasPrefix(d.path, markdownContentOnlyPrefix) {
 		data, err := os.ReadFile(d.BackingFilePath())
 		if err != nil {
@@ -105,21 +102,6 @@ func newMarkdownDockable(filePath, title, content string) (unison.Dockable, erro
 	})
 	d.scroll.SetContent(d.markdown, unison.FillBehavior, unison.FillBehavior)
 
-	info := widget.NewInfoPop()
-	info.Target = d.scroll
-	info.AddHelpInfo(fmt.Sprintf(i18n.Text(`Holding down the %s key while using
-the mouse wheel will change the scale.`), unison.OptionModifier.String()))
-
-	scaleTitle := i18n.Text("Scale")
-	d.scaleField = widget.NewPercentageField(nil, "", scaleTitle,
-		func() int { return d.scale },
-		func(v int) {
-			d.scale = v
-			d.markdown.SetScale(float32(d.scale) / 100)
-			d.scroll.Sync()
-		}, minPDFDockableScale, maxPDFDockableScale, false, false)
-	d.scaleField.Tooltip = unison.NewTooltipWithText(scaleTitle)
-
 	toolbar := unison.NewPanel()
 	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
@@ -127,8 +109,9 @@ the mouse wheel will change the scale.`), unison.OptionModifier.String()))
 		HAlign: unison.FillAlignment,
 		HGrab:  true,
 	})
-	toolbar.AddChild(info)
-	toolbar.AddChild(d.scaleField)
+	toolbar.AddChild(widget.NewDefaultInfoPop(d.scroll))
+	toolbar.AddChild(widget.NewScaleField(minPDFDockableScale, maxPDFDockableScale, func() int { return 100 },
+		func() int { return d.scale }, func(scale int) { d.scale = scale }, d.scroll, nil, false))
 	toolbar.SetLayout(&unison.FlexLayout{
 		Columns:  len(toolbar.Children()),
 		HSpacing: unison.StdHSpacing,
@@ -137,30 +120,7 @@ the mouse wheel will change the scale.`), unison.OptionModifier.String()))
 	d.AddChild(toolbar)
 	d.AddChild(d.scroll)
 
-	widget.InstallViewScaleHandlers(d, func() int { return 100 }, minPDFDockableScale, maxPDFDockableScale,
-		func() int { return d.scale }, d.adjustScale)
-
 	return d, nil
-}
-
-func (d *MarkdownDockable) mouseWheel(_, delta unison.Point, mod unison.Modifiers) bool {
-	if !mod.OptionDown() {
-		return false
-	}
-	scale := d.scale + int(delta.Y*constants.ScaleDelta)
-	if scale < minPDFDockableScale {
-		scale = minPDFDockableScale
-	} else if scale > maxPDFDockableScale {
-		scale = maxPDFDockableScale
-	}
-	widget.SetFieldValue(d.scaleField.Field, d.scaleField.Format(scale))
-	return true
-}
-
-func (d *MarkdownDockable) adjustScale(scale int) {
-	if d.scale != scale {
-		widget.SetFieldValue(d.scaleField.Field, d.scaleField.Format(scale))
-	}
 }
 
 // TitleIcon implements workspace.FileBackedDockable

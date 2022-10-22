@@ -50,7 +50,6 @@ type FileBackedDockable interface {
 type Navigator struct {
 	unison.Panel
 	toolbar                   *unison.Panel
-	scaleField                *widget.PercentageField
 	hierarchyButton           *unison.Button
 	backButton                *unison.Button
 	forwardButton             *unison.Button
@@ -133,9 +132,6 @@ func newNavigator() *Navigator {
 	n.table.KeyDownCallback = n.tableKeyDown
 
 	n.selectionChanged()
-
-	widget.InstallViewScaleHandlers(n, func() int { return 100 }, gsettings.InitialUIScaleMin,
-		gsettings.InitialUIScaleMax, func() int { return settings.Global().General.NavigatorUIScale }, n.adjustScale)
 	return n
 }
 
@@ -172,18 +168,11 @@ func (n *Navigator) setupToolBar() {
 	n.configLibraryButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Configure"))
 	n.configLibraryButton.ClickCallback = n.configureSelection
 
-	scaleTitle := i18n.Text("Scale")
-	n.scaleField = widget.NewPercentageField(nil, "", scaleTitle,
-		func() int { return settings.Global().General.NavigatorUIScale },
-		func(v int) {
-			settings.Global().General.NavigatorUIScale = v
-			n.applyScale()
-		}, gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, false, false)
-	n.scaleField.SetMarksModified(false)
-	n.scaleField.Tooltip = unison.NewTooltipWithText(scaleTitle)
-
 	first := unison.NewPanel()
-	first.AddChild(n.scaleField)
+	first.AddChild(widget.NewDefaultInfoPop(n.scroll))
+	first.AddChild(widget.NewScaleField(gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax,
+		func() int { return 100 }, func() int { return settings.Global().General.NavigatorUIScale },
+		func(scale int) { settings.Global().General.NavigatorUIScale = scale }, n.scroll, nil, false))
 	first.AddChild(n.hierarchyButton)
 	first.AddChild(widget.NewToolbarSeparator())
 	first.AddChild(addLibraryButton)
@@ -260,17 +249,6 @@ func (n *Navigator) setupToolBar() {
 // InitialFocus causes the navigator to focus its initial component.
 func (n *Navigator) InitialFocus() {
 	widget.FocusFirstContent(n.toolbar, n.table.AsPanel())
-}
-
-func (n *Navigator) adjustScale(scale int) {
-	if settings.Global().General.NavigatorUIScale != scale {
-		widget.SetFieldValue(n.scaleField.Field, n.scaleField.Format(scale))
-	}
-}
-
-func (n *Navigator) applyScale() {
-	n.table.SetScale(float32(settings.Global().General.NavigatorUIScale) / 100)
-	n.scroll.Sync()
 }
 
 func (n *Navigator) addLibrary() {
