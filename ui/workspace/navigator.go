@@ -169,7 +169,7 @@ func (n *Navigator) setupToolBar() {
 	n.configLibraryButton.ClickCallback = n.configureSelection
 
 	first := unison.NewPanel()
-	first.AddChild(widget.NewDefaultInfoPop(n.scroll))
+	first.AddChild(widget.NewDefaultInfoPop())
 	first.AddChild(widget.NewScaleField(gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax,
 		func() int { return 100 }, func() int { return settings.Global().General.NavigatorUIScale },
 		func(scale int) { settings.Global().General.NavigatorUIScale = scale }, n.scroll, nil, false))

@@ -128,15 +128,14 @@ func (d *PDFDockable) createToolbar() {
 	d.toolbar.AddChild(d.sideBarButton)
 
 	info := widget.NewInfoPop()
-	info.Target = d.docScroll
-	info.AddHelpInfo(i18n.Text("Within this view, these keys have the following effects:\n"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyHome}, i18n.Text("Go to first page"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyEnd}, i18n.Text("Go to last page"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyLeft}, i18n.Text("Go to previous page"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyUp}, i18n.Text("Go to previous page"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyRight}, i18n.Text("Go to next page"))
-	info.AddKeyBindingInfo(unison.KeyBinding{KeyCode: unison.KeyDown}, i18n.Text("Go to next page"))
-	info.AddScalingHelp()
+	widget.AddHelpToInfoPop(info, i18n.Text("Within this view, these keys have the following effects:\n"))
+	widget.AddKeyBindingInfoToInfoPop(info, unison.KeyBinding{KeyCode: unison.KeyHome}, i18n.Text("Go to first page"))
+	widget.AddKeyBindingInfoToInfoPop(info, unison.KeyBinding{KeyCode: unison.KeyEnd}, i18n.Text("Go to last page"))
+	widget.AddKeyBindingInfoToInfoPop(info, unison.KeyBinding{KeyCode: unison.KeyLeft}, i18n.Text("Go to previous page"))
+	widget.AddKeyBindingInfoToInfoPop(info, unison.KeyBinding{KeyCode: unison.KeyUp}, i18n.Text("Go to previous page"))
+	widget.AddKeyBindingInfoToInfoPop(info, unison.KeyBinding{KeyCode: unison.KeyRight}, i18n.Text("Go to next page"))
+	widget.AddKeyBindingInfoToInfoPop(info, unison.KeyBinding{KeyCode: unison.KeyDown}, i18n.Text("Go to next page"))
+	widget.AddScalingHelpToInfoPop(info)
 	d.toolbar.AddChild(info)
 
 	d.scaleField = widget.NewScaleField(minPDFDockableScale, maxPDFDockableScale, func() int { return 100 },

@@ -223,7 +223,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 		HAlign: unison.FillAlignment,
 		HGrab:  true,
 	})
-	s.toolbar.AddChild(widget.NewDefaultInfoPop(s.scroll))
+	s.toolbar.AddChild(widget.NewDefaultInfoPop())
 	s.toolbar.AddChild(widget.NewScaleField(gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax,
 		func() int { return settings.Global().General.InitialSheetUIScale }, func() int { return s.scale },
 		func(scale int) { s.scale = scale }, s.scroll, nil, false))

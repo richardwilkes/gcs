@@ -92,7 +92,7 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 		HAlign: unison.FillAlignment,
 		HGrab:  true,
 	})
-	toolbar.AddChild(widget.NewDefaultInfoPop(d.scroll))
+	toolbar.AddChild(widget.NewDefaultInfoPop())
 	toolbar.AddChild(widget.NewScaleField(minImageDockableScale, maxImageDockableScale, func() int { return 100 },
 		func() int { return d.scale }, func(scale int) { d.scale = scale }, d.scroll, nil, true))
 	toolbar.AddChild(typeLabel)

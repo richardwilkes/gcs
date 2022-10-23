@@ -185,7 +185,7 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	toolbar := unison.NewPanel()
 	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
-	toolbar.AddChild(widget.NewDefaultInfoPop(d.scroll))
+	toolbar.AddChild(widget.NewDefaultInfoPop())
 	toolbar.AddChild(widget.NewScaleField(gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax,
 		func() int { return settings.Global().General.InitialListUIScale }, func() int { return d.scale },
 		func(scale int) { d.scale = scale }, d.scroll, nil, false))

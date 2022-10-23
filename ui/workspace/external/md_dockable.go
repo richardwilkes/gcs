@@ -112,7 +112,7 @@ func newMarkdownDockable(filePath, title, content string) (unison.Dockable, erro
 		HAlign: unison.FillAlignment,
 		HGrab:  true,
 	})
-	toolbar.AddChild(widget.NewDefaultInfoPop(d.scroll))
+	toolbar.AddChild(widget.NewDefaultInfoPop())
 	toolbar.AddChild(widget.NewScaleField(minPDFDockableScale, maxPDFDockableScale, func() int { return 100 },
 		func() int { return d.scale }, func(scale int) { d.scale = scale }, d.scroll, nil, false))
 	toolbar.SetLayout(&unison.FlexLayout{

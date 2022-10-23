@@ -175,7 +175,7 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 		HAlign: unison.FillAlignment,
 		HGrab:  true,
 	})
-	d.toolbar.AddChild(widget.NewDefaultInfoPop(d.scroll))
+	d.toolbar.AddChild(widget.NewDefaultInfoPop())
 	d.toolbar.AddChild(widget.NewScaleField(gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax,
 		func() int { return settings.Global().General.InitialSheetUIScale }, func() int { return d.scale },
 		func(scale int) { d.scale = scale }, d.scroll, nil, false))
