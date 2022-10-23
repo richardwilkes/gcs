@@ -649,8 +649,7 @@ func (s *Spell) SecondaryText(optionChecker func(display.Option) bool) string {
 	var buffer strings.Builder
 	prefs := SheetSettingsFor(s.Entity)
 	if optionChecker(prefs.NotesDisplay) {
-		text := s.Notes()
-		if strings.TrimSpace(text) != "" {
+		if text := strings.TrimSpace(s.Notes()); text != "" {
 			if buffer.Len() != 0 {
 				buffer.WriteByte('\n')
 			}
@@ -661,6 +660,12 @@ func (s *Spell) SecondaryText(optionChecker func(display.Option) bool) string {
 				buffer.WriteByte('\n')
 			}
 			buffer.WriteString(rituals)
+		}
+		if study := StudyHoursProgressText(ResolveStudyHours(s.Study)); study != "" {
+			if buffer.Len() != 0 {
+				buffer.WriteByte('\n')
+			}
+			buffer.WriteString(study)
 		}
 	}
 	if optionChecker(prefs.SkillLevelAdjDisplay) {

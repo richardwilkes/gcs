@@ -40,6 +40,7 @@ type SpellEditData struct {
 	Points            fxp.Int             `json:"points,omitempty"`           // Non-container only
 	Prereq            *PrereqList         `json:"prereqs,omitempty"`          // Non-container only
 	Weapons           []*Weapon           `json:"weapons,omitempty"`          // Non-container only
+	Study             []*Study            `json:"study,omitempty"`            // Non-container only
 	TemplatePicker    *TemplatePicker     `json:"template_picker,omitempty"`  // Container only
 }
 
@@ -64,9 +65,15 @@ func (d *SpellEditData) copyFrom(entity *Entity, other *SpellEditData, isContain
 	d.Prereq = d.Prereq.CloneResolvingEmpty(isContainer, isApply)
 	d.Weapons = nil
 	if len(other.Weapons) != 0 {
-		d.Weapons = make([]*Weapon, 0, len(other.Weapons))
-		for _, one := range other.Weapons {
-			d.Weapons = append(d.Weapons, one.Clone(entity, nil, true))
+		d.Weapons = make([]*Weapon, len(other.Weapons))
+		for i := range other.Weapons {
+			d.Weapons[i] = other.Weapons[i].Clone(entity, nil, true)
+		}
+	}
+	if len(other.Study) != 0 {
+		d.Study = make([]*Study, len(other.Study))
+		for i := range other.Study {
+			d.Study[i] = other.Study[i].Clone()
 		}
 	}
 	d.TemplatePicker = d.TemplatePicker.Clone()

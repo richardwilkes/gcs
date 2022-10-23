@@ -21,6 +21,7 @@ import (
 var (
 	Min           = Int(f64.Min)
 	NegPointEight = FromStringForced("-0.8")
+	Quarter       = FromStringForced("0.25")
 	Half          = FromStringForced("0.5")
 	One           = From[int](1)
 	OneAndAHalf   = FromStringForced("1.5")

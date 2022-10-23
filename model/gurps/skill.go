@@ -365,12 +365,17 @@ func (s *Skill) SecondaryText(optionChecker func(display.Option) bool) string {
 		}
 	}
 	if optionChecker(prefs.NotesDisplay) {
-		text := s.Notes()
-		if strings.TrimSpace(text) != "" {
+		if text := strings.TrimSpace(s.Notes()); text != "" {
 			if buffer.Len() != 0 {
 				buffer.WriteByte('\n')
 			}
 			buffer.WriteString(text)
+		}
+		if study := StudyHoursProgressText(ResolveStudyHours(s.Study)); study != "" {
+			if buffer.Len() != 0 {
+				buffer.WriteByte('\n')
+			}
+			buffer.WriteString(study)
 		}
 	}
 	if optionChecker(prefs.SkillLevelAdjDisplay) {

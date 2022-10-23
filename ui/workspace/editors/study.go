@@ -1,0 +1,168 @@
+/*
+ * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, version 2.0. If a copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * This Source Code Form is "Incompatible With Secondary Licenses", as
+ * defined by the Mozilla Public License, version 2.0.
+ */
+
+package editors
+
+import (
+	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/res"
+	"github.com/richardwilkes/gcs/v5/ui/widget"
+	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/unison"
+	"golang.org/x/exp/slices"
+)
+
+var lastStudyTypeUsed = gurps.SelfStudyType
+
+type studyPanel struct {
+	unison.Panel
+	entity *gurps.Entity
+	study  *[]*gurps.Study
+	total  *unison.Label
+}
+
+func newStudyPanel(entity *gurps.Entity, study *[]*gurps.Study) *studyPanel {
+	p := &studyPanel{
+		entity: entity,
+		study:  study,
+	}
+	p.Self = p
+	p.SetLayout(&unison.FlexLayout{
+		Columns:  1,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	p.SetLayoutData(&unison.FlexLayoutData{
+		HSpan:  2,
+		HAlign: unison.FillAlignment,
+		HGrab:  true,
+	})
+	p.SetBorder(unison.NewCompoundBorder(
+		&widget.TitledBorder{
+			Title: i18n.Text("Study"),
+			Font:  unison.LabelFont,
+		},
+		unison.NewEmptyBorder(unison.NewUniformInsets(2))))
+	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, unison.Fill))
+	}
+
+	top := unison.NewPanel()
+	top.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	p.AddChild(top)
+
+	addButton := unison.NewSVGButton(res.CircledAddSVG)
+	addButton.ClickCallback = func() {
+		def := &gurps.Study{Type: lastStudyTypeUsed}
+		*study = slices.Insert(*study, 0, def)
+		p.insertStudyEntry(1, def, true)
+		unison.Ancestor[*unison.DockContainer](p).MarkForLayoutRecursively()
+		widget.MarkModified(p)
+	}
+	top.AddChild(addButton)
+
+	p.total = unison.NewLabel()
+	p.updateTotal()
+	top.AddChild(p.total)
+
+	for i, one := range *study {
+		p.insertStudyEntry(i+1, one, false)
+	}
+	return p
+}
+
+func (p *studyPanel) insertStudyEntry(index int, entry *gurps.Study, requestFocus bool) {
+	panel := unison.NewPanel()
+
+	deleteButton := unison.NewSVGButton(res.TrashSVG)
+	deleteButton.ClickCallback = func() {
+		if i := slices.IndexFunc(*p.study, func(one *gurps.Study) bool { return one == entry }); i != -1 {
+			*p.study = slices.Delete(*p.study, i, i+1)
+		}
+		panel.RemoveFromParent()
+		unison.Ancestor[*unison.DockContainer](p).MarkForLayoutRecursively()
+		p.updateTotal()
+		widget.MarkModified(p)
+	}
+	panel.AddChild(deleteButton)
+
+	var adjustedHoursField *widget.DecimalField
+
+	info := widget.NewInfoPop()
+	updateLimitations(info, entry.Type)
+	typePopup := addPopup(panel, gurps.AllStudyType, &entry.Type)
+	typePopup.SelectionCallback = func(_ int, studyType gurps.StudyType) {
+		entry.Type = studyType
+		lastStudyTypeUsed = studyType
+		updateLimitations(info, studyType)
+		p.updateTotal()
+		widget.MarkModified(panel)
+	}
+	panel.AddChild(typePopup)
+	panel.AddChild(info)
+
+	hoursField := widget.NewDecimalField(nil, "", i18n.Text("Hours Spent"),
+		func() fxp.Int { return entry.Hours },
+		func(v fxp.Int) {
+			entry.Hours = v
+			p.updateTotal()
+		},
+		0, fxp.Thousand, false, false)
+	panel.AddChild(hoursField)
+
+	adjustedHoursField = widget.NewDecimalField(nil, "", i18n.Text("Hours of Study"),
+		func() fxp.Int { return entry.Hours.Mul(entry.Type.Multiplier()) },
+		func(v fxp.Int) {},
+		0, fxp.Thousand, false, false)
+	adjustedHoursField.SetEnabled(false)
+	panel.AddChild(adjustedHoursField)
+
+	note := i18n.Text("Note")
+	notesField := widget.NewStringField(nil, "", note, func() string { return entry.Note },
+		func(s string) { entry.Note = s })
+	notesField.Watermark = note
+	panel.AddChild(notesField)
+
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  len(panel.Children()),
+		HAlign:   unison.FillAlignment,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	panel.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		HGrab:  true,
+	})
+	p.AddChildAtIndex(panel, index)
+	if requestFocus {
+		hoursField.RequestFocus()
+	}
+}
+
+func updateLimitations(info *unison.Button, studyType gurps.StudyType) {
+	widget.ClearInfoPop(info)
+	for _, one := range studyType.Limitations() {
+		widget.AddHelpToInfoPop(info, txt.Wrap("", "● "+one, 60))
+	}
+}
+
+func (p *studyPanel) updateTotal() {
+	if text := gurps.StudyHoursProgressText(gurps.ResolveStudyHours(*p.study)); text != p.total.Text {
+		p.total.Text = text
+		p.total.MarkForLayoutAndRedraw()
+	}
+}

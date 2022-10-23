@@ -182,6 +182,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 		for _, wt := range weapon.AllType {
 			content.AddChild(newWeaponsPanel(e, e.target, wt, &e.editorData.Weapons))
 		}
+		content.AddChild(newStudyPanel(e.target.Entity, &e.editorData.Study))
 	}
 	return nil
 }

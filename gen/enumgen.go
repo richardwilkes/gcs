@@ -947,6 +947,30 @@ func main() {
 			},
 		},
 	})
+	processSourceTemplate(enumTmpl, &enumInfo{
+		Pkg:        "model/gurps",
+		Name:       "study_type",
+		Desc:       "holds the type of study",
+		StandAlone: false,
+		Values: []enumValue{
+			{
+				Key:    "self",
+				String: "Self-Taught",
+			},
+			{
+				Key:    "job",
+				String: "On-the-Job Training",
+			},
+			{
+				Key:    "teacher",
+				String: "Professional Teacher",
+			},
+			{
+				Key:    "intensive",
+				String: "Intensive Training",
+			},
+		},
+	})
 }
 
 func removeExistingGenFiles() {

@@ -458,11 +458,19 @@ func (a *Trait) SecondaryText(optionChecker func(display.Option) bool) string {
 			buffer.WriteString(notes)
 		}
 	}
-	if a.LocalNotes != "" && optionChecker(settings.NotesDisplay) {
-		if buffer.Len() != 0 {
-			buffer.WriteByte('\n')
+	if optionChecker(settings.NotesDisplay) {
+		if text := strings.TrimSpace(a.Notes()); text != "" {
+			if buffer.Len() != 0 {
+				buffer.WriteByte('\n')
+			}
+			buffer.WriteString(text)
 		}
-		buffer.WriteString(a.LocalNotes)
+		if study := StudyHoursProgressText(ResolveStudyHours(a.Study)); study != "" {
+			if buffer.Len() != 0 {
+				buffer.WriteByte('\n')
+			}
+			buffer.WriteString(study)
+		}
 	}
 	return buffer.String()
 }

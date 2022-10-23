@@ -108,6 +108,7 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 		for _, wt := range weapon.AllType {
 			content.AddChild(newWeaponsPanel(e, e.target, wt, &e.editorData.Weapons))
 		}
+		content.AddChild(newStudyPanel(e.target.Entity, &e.editorData.Study))
 	}
 	e.InstallCmdHandlers(constants.NewTraitModifierItemID, unison.AlwaysEnabled,
 		func(_ any) { modifiersPanel.provider.CreateItem(e, modifiersPanel.table, ntable.NoItemVariant) })
