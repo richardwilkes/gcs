@@ -39,6 +39,7 @@ type generalSettingsDockable struct {
 	techLevelField                *widget.StringField
 	calendarPopup                 *unison.PopupMenu[string]
 	initialListScaleField         *widget.PercentageField
+	initialEditorScaleField       *widget.PercentageField
 	initialSheetScaleField        *widget.PercentageField
 	exportResolutionField         *widget.IntegerField
 	tooltipDelayField             *widget.DecimalField
@@ -85,6 +86,13 @@ func (d *generalSettingsDockable) initContent(content *unison.Panel) {
 		func(v int) { settings.Global().General.InitialListUIScale = v },
 		gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, false, false)
 	content.AddChild(widget.WrapWithSpan(2, d.initialListScaleField))
+	initialEditorScaleTitle := i18n.Text("Initial Editor Scale")
+	content.AddChild(widget.NewFieldLeadingLabel(initialEditorScaleTitle))
+	d.initialEditorScaleField = widget.NewPercentageField(nil, "", initialEditorScaleTitle,
+		func() int { return settings.Global().General.InitialEditorUIScale },
+		func(v int) { settings.Global().General.InitialEditorUIScale = v },
+		gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, false, false)
+	content.AddChild(widget.WrapWithSpan(2, d.initialEditorScaleField))
 	initialSheetScaleTitle := i18n.Text("Initial Sheet Scale")
 	content.AddChild(widget.NewFieldLeadingLabel(initialSheetScaleTitle))
 	d.initialSheetScaleField = widget.NewPercentageField(nil, "", initialSheetScaleTitle,
@@ -274,6 +282,7 @@ func (d *generalSettingsDockable) sync() {
 	d.techLevelField.SetText(s.DefaultTechLevel)
 	d.calendarPopup.Select(s.CalendarRef(settings.Global().Libraries()).Name)
 	widget.SetFieldValue(d.initialListScaleField.Field, d.initialListScaleField.Format(s.InitialListUIScale))
+	widget.SetFieldValue(d.initialEditorScaleField.Field, d.initialEditorScaleField.Format(s.InitialEditorUIScale))
 	widget.SetFieldValue(d.initialSheetScaleField.Field, d.initialSheetScaleField.Format(s.InitialSheetUIScale))
 	d.exportResolutionField.SetText(strconv.Itoa(s.ImageResolution))
 	d.tooltipDelayField.SetText(s.TooltipDelay.String())

@@ -16,6 +16,8 @@ import (
 	"reflect"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	gsettings "github.com/richardwilkes/gcs/v5/model/gurps/settings"
+	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/res"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/gcs/v5/ui/workspace"
@@ -46,11 +48,13 @@ type editor[N gurps.NodeTypes, D gurps.EditorData[N]] struct {
 	previousFocusKey     string
 	svg                  *unison.SVG
 	undoMgr              *unison.UndoManager
+	scroll               *unison.ScrollPanel
 	applyButton          *unison.Button
 	cancelButton         *unison.Button
 	beforeData           D
 	editorData           D
 	modificationCallback func()
+	scale                int
 	promptForSave        bool
 }
 
@@ -67,6 +71,7 @@ func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner widget.Rebuil
 			owner:  owner,
 			target: target,
 			svg:    svg,
+			scale:  settings.Global().General.InitialEditorUIScale,
 		}
 		e.Self = e
 
@@ -88,7 +93,7 @@ func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner widget.Rebuil
 
 		e.undoMgr = unison.NewUndoManager(100, func(err error) { jot.Error(err) })
 		e.SetLayout(&unison.FlexLayout{Columns: 1})
-		e.AddChild(e.createToolbar())
+
 		content := unison.NewPanel()
 		content.SetBorder(unison.NewEmptyBorder(unison.NewUniformInsets(unison.StdHSpacing * 2)))
 		content.SetLayout(&unison.FlexLayout{
@@ -112,19 +117,22 @@ func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner widget.Rebuil
 				return false
 			}
 		}
-		e.modificationCallback = initContent(e, content)
-		scroller := unison.NewScrollPanel()
-		scroller.SetContent(content, unison.HintedFillBehavior, unison.FillBehavior)
-		scroller.SetLayoutData(&unison.FlexLayoutData{
+
+		e.scroll = unison.NewScrollPanel()
+		e.scroll.SetContent(content, unison.HintedFillBehavior, unison.FillBehavior)
+		e.scroll.SetLayoutData(&unison.FlexLayoutData{
 			HAlign: unison.FillAlignment,
 			VAlign: unison.FillAlignment,
 			HGrab:  true,
 			VGrab:  true,
 		})
-		e.AddChild(scroller)
+
+		e.AddChild(e.createToolbar())
+		e.modificationCallback = initContent(e, content)
+		e.AddChild(e.scroll)
 		e.ClientData()[workspace.AssociatedUUIDKey] = gurps.AsNode(target).UUID()
 		e.promptForSave = true
-		scroller.Content().AsPanel().ValidateScrollRoot()
+		e.scroll.Content().AsPanel().ValidateScrollRoot()
 		group := EditorGroup
 		p := owner.AsPanel()
 		for p != nil {
@@ -152,17 +160,20 @@ func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner widget.Rebuil
 				dc.Group = group
 			}
 		}
+		content.RequestFocus()
 	}
 }
 
 func (e *editor[N, D]) createToolbar() unison.Paneler {
 	toolbar := unison.NewPanel()
-	toolbar.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		HGrab:  true,
-	})
 	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
+
+	toolbar.AddChild(widget.NewDefaultInfoPop())
+	toolbar.AddChild(widget.NewScaleField(gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax,
+		func() int { return settings.Global().General.InitialEditorUIScale }, func() int { return e.scale },
+		func(scale int) { e.scale = scale }, e.scroll, nil, false))
+
 	e.applyButton = unison.NewSVGButton(res.CheckmarkSVG)
 	e.applyButton.Tooltip = unison.NewTooltipWithSecondaryText(i18n.Text("Apply Changes"),
 		fmt.Sprintf(i18n.Text("%v%v or %v%v"), unison.OSMenuCmdModifier(), unison.KeyReturn, unison.OSMenuCmdModifier(),
@@ -174,6 +185,7 @@ func (e *editor[N, D]) createToolbar() unison.Paneler {
 		e.AttemptClose()
 	}
 	toolbar.AddChild(e.applyButton)
+
 	e.cancelButton = unison.NewSVGButton(res.NotSVG)
 	e.cancelButton.Tooltip = unison.NewTooltipWithSecondaryText(i18n.Text("Discard Changes"), unison.KeyEscape.String())
 	e.cancelButton.SetEnabled(false)
@@ -182,6 +194,11 @@ func (e *editor[N, D]) createToolbar() unison.Paneler {
 		e.AttemptClose()
 	}
 	toolbar.AddChild(e.cancelButton)
+
+	toolbar.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		HGrab:  true,
+	})
 	toolbar.SetLayout(&unison.FlexLayout{
 		Columns:  len(toolbar.Children()),
 		HSpacing: unison.StdHSpacing,

@@ -45,6 +45,7 @@ var (
 	InitialUIScaleMax          = 400
 	InitialNavigatorUIScaleDef = 100
 	InitialListUIScaleDef      = 100
+	InitialEditorUIScaleDef    = 100
 	InitialSheetUIScaleDef     = 133
 )
 
@@ -60,6 +61,7 @@ type General struct {
 	ScrollWheelMultiplier fxp.Int `json:"scroll_wheel_multiplier"`
 	NavigatorUIScale      int     `json:"navigator_scale"`
 	InitialListUIScale    int     `json:"initial_list_scale"`
+	InitialEditorUIScale  int     `json:"initial_editor_scale"`
 	InitialSheetUIScale   int     `json:"initial_sheet_scale"`
 	ImageResolution       int     `json:"image_resolution"`
 	AutoFillProfile       bool    `json:"auto_fill_profile"`
@@ -77,6 +79,7 @@ func NewGeneral() *General {
 		ScrollWheelMultiplier: fxp.From(unison.MouseWheelMultiplier),
 		NavigatorUIScale:      InitialNavigatorUIScaleDef,
 		InitialListUIScale:    InitialListUIScaleDef,
+		InitialEditorUIScale:  InitialEditorUIScaleDef,
 		InitialSheetUIScale:   InitialSheetUIScaleDef,
 		ImageResolution:       ImageResolutionDef,
 		AutoFillProfile:       true,
@@ -135,5 +138,6 @@ func (s *General) EnsureValidity() {
 	s.ImageResolution = fxp.ResetIfOutOfRangeInt(s.ImageResolution, ImageResolutionMin, ImageResolutionMax, ImageResolutionDef)
 	s.NavigatorUIScale = fxp.ResetIfOutOfRangeInt(s.NavigatorUIScale, InitialUIScaleMin, InitialUIScaleMax, InitialNavigatorUIScaleDef)
 	s.InitialListUIScale = fxp.ResetIfOutOfRangeInt(s.InitialListUIScale, InitialUIScaleMin, InitialUIScaleMax, InitialListUIScaleDef)
+	s.InitialEditorUIScale = fxp.ResetIfOutOfRangeInt(s.InitialEditorUIScale, InitialUIScaleMin, InitialUIScaleMax, InitialEditorUIScaleDef)
 	s.InitialSheetUIScale = fxp.ResetIfOutOfRangeInt(s.InitialSheetUIScale, InitialUIScaleMin, InitialUIScaleMax, InitialSheetUIScaleDef)
 }

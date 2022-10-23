@@ -33,7 +33,7 @@ func NewScaleField(min, max int, def, get func() int, set func(int), scroller *u
 	var scaleField *PercentageField
 	scaleField = NewPercentageField(nil, "", scaleTitle, get,
 		func(scale int) {
-			if !scaleField.Enabled() {
+			if scaleField != nil && !scaleField.Enabled() {
 				SetFieldValue(scaleField.Field, scaleField.Format(get()))
 				return
 			}
