@@ -559,8 +559,8 @@ func addTemplateChoices(parent *unison.Panel, targetmgr *widget.TargetMgr, targe
 	wrapper := addFlowWrapper(parent, i18n.Text("Template Choices"), 3)
 	templatePickerTypePopup := addPopup(wrapper, gurps.AllTemplatePickerType, &(*picker).Type)
 	text := i18n.Text("Template Choice Quantifier")
-	popup, field := addNumericCriteriaPanel(wrapper, targetmgr, targetKey, "", text, &(*picker).Qualifier, 0, fxp.Max,
-		1, false, false)
+	popup, field := addNumericCriteriaPanel(wrapper, targetmgr, targetKey, "", text, &(*picker).Qualifier, fxp.Min,
+		fxp.Max, 1, false, false)
 	templatePickerTypePopup.SelectionCallback = func(_ int, item gurps.TemplatePickerType) {
 		(*picker).Type = item
 		if last == gurps.NotApplicableTemplatePickerType && item != gurps.NotApplicableTemplatePickerType {
