@@ -47,6 +47,9 @@ var (
 	InitialListUIScaleDef      = 100
 	InitialEditorUIScaleDef    = 100
 	InitialSheetUIScaleDef     = 133
+	AutoColWidthMin            = 50
+	AutoColWidthMax            = 9999
+	MaximumAutoColWidthDef     = 800
 )
 
 // General holds settings for a sheet.
@@ -63,6 +66,7 @@ type General struct {
 	InitialListUIScale    int     `json:"initial_list_scale"`
 	InitialEditorUIScale  int     `json:"initial_editor_scale"`
 	InitialSheetUIScale   int     `json:"initial_sheet_scale"`
+	MaximumAutoColWidth   int     `json:"maximum_auto_col_width"`
 	ImageResolution       int     `json:"image_resolution"`
 	AutoFillProfile       bool    `json:"auto_fill_profile"`
 	AutoAddNaturalAttacks bool    `json:"add_natural_attacks"`
@@ -81,6 +85,7 @@ func NewGeneral() *General {
 		InitialListUIScale:    InitialListUIScaleDef,
 		InitialEditorUIScale:  InitialEditorUIScaleDef,
 		InitialSheetUIScale:   InitialSheetUIScaleDef,
+		MaximumAutoColWidth:   MaximumAutoColWidthDef,
 		ImageResolution:       ImageResolutionDef,
 		AutoFillProfile:       true,
 		AutoAddNaturalAttacks: true,
@@ -140,4 +145,5 @@ func (s *General) EnsureValidity() {
 	s.InitialListUIScale = fxp.ResetIfOutOfRangeInt(s.InitialListUIScale, InitialUIScaleMin, InitialUIScaleMax, InitialListUIScaleDef)
 	s.InitialEditorUIScale = fxp.ResetIfOutOfRangeInt(s.InitialEditorUIScale, InitialUIScaleMin, InitialUIScaleMax, InitialEditorUIScaleDef)
 	s.InitialSheetUIScale = fxp.ResetIfOutOfRangeInt(s.InitialSheetUIScale, InitialUIScaleMin, InitialUIScaleMax, InitialSheetUIScaleDef)
+	s.MaximumAutoColWidth = fxp.ResetIfOutOfRangeInt(s.MaximumAutoColWidth, AutoColWidthMin, AutoColWidthMax, MaximumAutoColWidthDef)
 }

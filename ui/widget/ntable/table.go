@@ -18,11 +18,13 @@ import (
 	"github.com/richardwilkes/gcs/v5/constants"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/gcs/v5/ui/widget"
 	"github.com/richardwilkes/gcs/v5/ui/workspace"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/xmath"
 	"github.com/richardwilkes/toolbox/xmath/geom"
 	"github.com/richardwilkes/unison"
 	"golang.org/x/exp/slices"
@@ -91,7 +93,7 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 		_, pref, _ := headers[i].AsPanel().Sizes(unison.Size{})
 		pref.Width += table.Padding.Left + table.Padding.Right
 		table.ColumnSizes[i].AutoMinimum = pref.Width
-		table.ColumnSizes[i].AutoMaximum = 800
+		table.ColumnSizes[i].AutoMaximum = xmath.Max(float32(settings.Global().General.MaximumAutoColWidth), pref.Width)
 		table.ColumnSizes[i].Minimum = pref.Width
 		table.ColumnSizes[i].Maximum = 10000
 	}

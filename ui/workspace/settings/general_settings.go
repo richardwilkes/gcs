@@ -41,6 +41,7 @@ type generalSettingsDockable struct {
 	initialListScaleField         *widget.PercentageField
 	initialEditorScaleField       *widget.PercentageField
 	initialSheetScaleField        *widget.PercentageField
+	maxAutoColWidthField          *widget.IntegerField
 	exportResolutionField         *widget.IntegerField
 	tooltipDelayField             *widget.DecimalField
 	tooltipDismissalField         *widget.DecimalField
@@ -100,6 +101,7 @@ func (d *generalSettingsDockable) initContent(content *unison.Panel) {
 		func(v int) { settings.Global().General.InitialSheetUIScale = v },
 		gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, false, false)
 	content.AddChild(widget.WrapWithSpan(2, d.initialSheetScaleField))
+	d.createCellAutoMaxWidthField(content)
 	d.createImageResolutionField(content)
 	d.createTooltipDelayField(content)
 	d.createTooltipDismissalField(content)
@@ -185,6 +187,17 @@ func (d *generalSettingsDockable) createCalendarPopup(content *unison.Panel) {
 		settings.Global().General.CalendarName = item
 	}
 	content.AddChild(d.calendarPopup)
+}
+
+func (d *generalSettingsDockable) createCellAutoMaxWidthField(content *unison.Panel) {
+	title := i18n.Text("Max Auto Column Width")
+	content.AddChild(widget.NewFieldLeadingLabel(title))
+	d.maxAutoColWidthField = widget.NewIntegerField(nil, "", title,
+		func() int { return settings.Global().General.MaximumAutoColWidth },
+		func(v int) { settings.Global().General.MaximumAutoColWidth = v },
+		gsettings.AutoColWidthMin, gsettings.AutoColWidthMax, false, false)
+	d.maxAutoColWidthField.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
+	content.AddChild(d.maxAutoColWidthField)
 }
 
 func (d *generalSettingsDockable) createImageResolutionField(content *unison.Panel) {
@@ -284,6 +297,7 @@ func (d *generalSettingsDockable) sync() {
 	widget.SetFieldValue(d.initialListScaleField.Field, d.initialListScaleField.Format(s.InitialListUIScale))
 	widget.SetFieldValue(d.initialEditorScaleField.Field, d.initialEditorScaleField.Format(s.InitialEditorUIScale))
 	widget.SetFieldValue(d.initialSheetScaleField.Field, d.initialSheetScaleField.Format(s.InitialSheetUIScale))
+	d.maxAutoColWidthField.SetText(strconv.Itoa(s.MaximumAutoColWidth))
 	d.exportResolutionField.SetText(strconv.Itoa(s.ImageResolution))
 	d.tooltipDelayField.SetText(s.TooltipDelay.String())
 	d.tooltipDismissalField.SetText(s.TooltipDismissal.String())
