@@ -121,28 +121,14 @@ if [ "$DIST"x == "1x" ]; then
     else
       HW=intel
     fi
-    # Installation of https://github.com/mitchellh/gon is required for macOS distributions to succeed
-    # In addition, XCode 13.4.1 should be used. As of Sept 23, 2022, XCode 14 caused linking problems.
-    cat > gon.json <<BLOCK
-{
-  "source": ["./GCS.app"],
-  "bundle_id": "com.trollworks.gcs",
-  "apple_id": {
-    "username": "wilkes@me.com",
-    "password": "@keychain:gcs_app_pw"
-  },
-  "sign": {
-    "application_identity": "Richard Wilkes"
-  },
-  "dmg": {
-    "output_path": "gcs-${RELEASE}-macos-${HW}.dmg",
-    "volume_name": "GCS v${RELEASE}"
-  }
-}
-BLOCK
-    /bin/rm -f gcs-${RELEASE}-macos-${HW}.dmg
-    gon gon.json
-    /bin/rm gon.json
+    codesign -s "Richard Wilkes" -f -v --timestamp --options runtime GCS.app
+    /bin/rm -rf tmp *.dmg
+    mkdir tmp
+    # Installation of https://github.com/create-dmg/create-dmg is required
+    create-dmg --volname "GCS v$RELEASE" --icon-size 128 --window-size 448 280 --add-file GCS.app GCS.app 64 64 \
+      --app-drop-link 256 64 --codesign "Richard Wilkes" --hdiutil-quiet --no-internet-enable --notarize gcs-notary \
+      gcs-$RELEASE-macos-$HW.dmg tmp
+    /bin/rm -rf tmp
     ;;
   Linux*)
     /bin/rm -f gcs-${RELEASE}-linux.tgz
