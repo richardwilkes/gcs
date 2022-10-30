@@ -38,7 +38,7 @@ type DRBonusData struct {
 // DRBonus holds the data for a DR adjustment.
 type DRBonus struct {
 	DRBonusData
-	Parent fmt.Stringer
+	owner fmt.Stringer
 }
 
 // NewDRBonus creates a new DRBonus.
@@ -86,9 +86,14 @@ func (d *DRBonus) FillWithNameableKeys(_ map[string]string) {
 func (d *DRBonus) ApplyNameableKeys(_ map[string]string) {
 }
 
-// SetParent implements Bonus.
-func (d *DRBonus) SetParent(parent fmt.Stringer) {
-	d.Parent = parent
+// Owner implements Bonus.
+func (d *DRBonus) Owner() fmt.Stringer {
+	return d.owner
+}
+
+// SetOwner implements Bonus.
+func (d *DRBonus) SetOwner(owner fmt.Stringer) {
+	d.owner = owner
 }
 
 // SetLevel implements Bonus.
@@ -101,7 +106,7 @@ func (d *DRBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 	if buffer != nil {
 		d.Normalize()
 		buffer.WriteByte('\n')
-		buffer.WriteString(parentName(d.Parent))
+		buffer.WriteString(parentName(d.owner))
 		buffer.WriteString(" [")
 		buffer.WriteString(d.LeveledAmount.FormatWithLevel(false))
 		buffer.WriteString(i18n.Text(" against "))

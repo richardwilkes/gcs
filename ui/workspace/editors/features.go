@@ -40,16 +40,16 @@ var (
 
 type featuresPanel struct {
 	unison.Panel
-	entity        *gurps.Entity
-	featureParent fmt.Stringer
-	features      *feature.Features
+	entity   *gurps.Entity
+	owner    fmt.Stringer
+	features *feature.Features
 }
 
-func newFeaturesPanel(entity *gurps.Entity, featureParent fmt.Stringer, features *feature.Features) *featuresPanel {
+func newFeaturesPanel(entity *gurps.Entity, owner fmt.Stringer, features *feature.Features) *featuresPanel {
 	p := &featuresPanel{
-		entity:        entity,
-		featureParent: featureParent,
-		features:      features,
+		entity:   entity,
+		owner:    owner,
+		features: features,
 	}
 	p.Self = p
 	p.SetLayout(&unison.FlexLayout{
@@ -594,7 +594,7 @@ func (p *featuresPanel) addLeveledModifierLine(parent *unison.Panel, f feature.F
 }
 
 func (p *featuresPanel) featureTypesList() []feature.Type {
-	if e, ok := p.featureParent.(*gurps.Equipment); ok && e.Container() {
+	if e, ok := p.owner.(*gurps.Equipment); ok && e.Container() {
 		return feature.AllType
 	}
 	return feature.AllWithoutContainedWeightType
@@ -618,53 +618,36 @@ func (p *featuresPanel) addTypeSwitcher(parent *unison.Panel, f feature.Feature)
 }
 
 func (p *featuresPanel) createFeatureForType(featureType feature.Type) feature.Feature {
+	var bonus feature.Bonus
 	switch featureType {
 	case feature.AttributeBonusType:
-		one := feature.NewAttributeBonus(lastAttributeIDUsed)
-		one.Parent = p.featureParent
-		return one
+		bonus = feature.NewAttributeBonus(lastAttributeIDUsed)
 	case feature.ConditionalModifierType:
-		one := feature.NewConditionalModifierBonus()
-		one.Parent = p.featureParent
-		return one
+		bonus = feature.NewConditionalModifierBonus()
 	case feature.ContainedWeightReductionType:
 		return feature.NewContainedWeightReduction()
 	case feature.CostReductionType:
 		return feature.NewCostReduction(lastAttributeIDUsed)
 	case feature.DRBonusType:
-		one := feature.NewDRBonus()
-		one.Parent = p.featureParent
-		return one
+		bonus = feature.NewDRBonus()
 	case feature.ReactionBonusType:
-		one := feature.NewReactionBonus()
-		one.Parent = p.featureParent
-		return one
+		bonus = feature.NewReactionBonus()
 	case feature.SkillBonusType:
-		one := feature.NewSkillBonus()
-		one.Parent = p.featureParent
-		return one
+		bonus = feature.NewSkillBonus()
 	case feature.SkillPointBonusType:
-		one := feature.NewSkillPointBonus()
-		one.Parent = p.featureParent
-		return one
+		bonus = feature.NewSkillPointBonus()
 	case feature.SpellBonusType:
-		one := feature.NewSpellBonus()
-		one.Parent = p.featureParent
-		return one
+		bonus = feature.NewSpellBonus()
 	case feature.SpellPointBonusType:
-		one := feature.NewSpellPointBonus()
-		one.Parent = p.featureParent
-		return one
+		bonus = feature.NewSpellPointBonus()
 	case feature.WeaponBonusType:
-		one := feature.NewWeaponDamageBonus()
-		one.Parent = p.featureParent
-		return one
+		bonus = feature.NewWeaponDamageBonus()
 	case feature.WeaponDRDivisorBonusType:
-		one := feature.NewWeaponDRDivisorBonus()
-		one.Parent = p.featureParent
-		return one
+		bonus = feature.NewWeaponDRDivisorBonus()
 	default:
 		jot.Warn(errs.Newf("unknown feature type: %s", featureType.Key()))
 		return nil
 	}
+	bonus.SetOwner(p.owner)
+	return bonus
 }

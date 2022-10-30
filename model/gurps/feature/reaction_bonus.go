@@ -24,10 +24,10 @@ var _ Bonus = &ReactionBonus{}
 
 // ReactionBonus holds a modifier due to a reaction.
 type ReactionBonus struct {
-	Type      Type         `json:"type"`
-	Parent    fmt.Stringer `json:"-"`
-	Situation string       `json:"situation,omitempty"`
+	Type      Type   `json:"type"`
+	Situation string `json:"situation,omitempty"`
 	LeveledAmount
+	owner fmt.Stringer
 }
 
 // NewReactionBonus creates a new ReactionBonus.
@@ -65,9 +65,14 @@ func (r *ReactionBonus) ApplyNameableKeys(m map[string]string) {
 	r.Situation = nameables.Apply(r.Situation, m)
 }
 
-// SetParent implements Bonus.
-func (r *ReactionBonus) SetParent(parent fmt.Stringer) {
-	r.Parent = parent
+// Owner implements Bonus.
+func (r *ReactionBonus) Owner() fmt.Stringer {
+	return r.owner
+}
+
+// SetOwner implements Bonus.
+func (r *ReactionBonus) SetOwner(owner fmt.Stringer) {
+	r.owner = owner
 }
 
 // SetLevel implements Bonus.
@@ -77,5 +82,5 @@ func (r *ReactionBonus) SetLevel(level fxp.Int) {
 
 // AddToTooltip implements Bonus.
 func (r *ReactionBonus) AddToTooltip(buffer *xio.ByteBuffer) {
-	basicAddToTooltip(r.Parent, &r.LeveledAmount, buffer)
+	basicAddToTooltip(r.owner, &r.LeveledAmount, buffer)
 }

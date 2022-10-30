@@ -31,13 +31,13 @@ var _ Bonus = &SkillBonus{}
 
 // SkillBonus holds an adjustment to a skill.
 type SkillBonus struct {
-	Parent                 fmt.Stringer        `json:"-"`
 	Type                   Type                `json:"type"`
 	SelectionType          skill.SelectionType `json:"selection_type"`
 	NameCriteria           criteria.String     `json:"name,omitempty"`
 	SpecializationCriteria criteria.String     `json:"specialization,omitempty"`
 	TagsCriteria           criteria.String     `json:"tags,alt=category,omitempty"`
 	LeveledAmount
+	owner fmt.Stringer
 }
 
 // NewSkillBonus creates a new SkillBonus.
@@ -116,9 +116,14 @@ func (s *SkillBonus) ApplyNameableKeys(m map[string]string) {
 	}
 }
 
-// SetParent implements Bonus.
-func (s *SkillBonus) SetParent(parent fmt.Stringer) {
-	s.Parent = parent
+// Owner implements Bonus.
+func (s *SkillBonus) Owner() fmt.Stringer {
+	return s.owner
+}
+
+// SetOwner implements Bonus.
+func (s *SkillBonus) SetOwner(owner fmt.Stringer) {
+	s.owner = owner
 }
 
 // SetLevel implements Bonus.
@@ -128,5 +133,5 @@ func (s *SkillBonus) SetLevel(level fxp.Int) {
 
 // AddToTooltip implements Bonus.
 func (s *SkillBonus) AddToTooltip(buffer *xio.ByteBuffer) {
-	basicAddToTooltip(s.Parent, &s.LeveledAmount, buffer)
+	basicAddToTooltip(s.owner, &s.LeveledAmount, buffer)
 }

@@ -32,8 +32,10 @@ type Feature interface {
 // Bonus is an extension of a Feature, which provides a numerical bonus or penalty.
 type Bonus interface {
 	Feature
-	// SetParent sets the parent to use.
-	SetParent(parent fmt.Stringer)
+	// Owner returns the owner that is currently set.
+	Owner() fmt.Stringer
+	// SetOwner sets the owner to use.
+	SetOwner(owner fmt.Stringer)
 	// SetLevel sets the level.
 	SetLevel(level fxp.Int)
 	// AdjustedAmount returns the amount, adjusted for level, if requested.

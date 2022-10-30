@@ -24,10 +24,10 @@ var _ Bonus = &ConditionalModifier{}
 
 // ConditionalModifier holds the data for a conditional modifier.
 type ConditionalModifier struct {
-	Type      Type         `json:"type"`
-	Parent    fmt.Stringer `json:"-"`
-	Situation string       `json:"situation,omitempty"`
+	Type      Type   `json:"type"`
+	Situation string `json:"situation,omitempty"`
 	LeveledAmount
+	owner fmt.Stringer
 }
 
 // NewConditionalModifierBonus creates a new ConditionalModifier.
@@ -65,9 +65,14 @@ func (c *ConditionalModifier) ApplyNameableKeys(m map[string]string) {
 	c.Situation = nameables.Apply(c.Situation, m)
 }
 
-// SetParent implements Bonus.
-func (c *ConditionalModifier) SetParent(parent fmt.Stringer) {
-	c.Parent = parent
+// Owner implements Bonus.
+func (c *ConditionalModifier) Owner() fmt.Stringer {
+	return c.owner
+}
+
+// SetOwner implements Bonus.
+func (c *ConditionalModifier) SetOwner(owner fmt.Stringer) {
+	c.owner = owner
 }
 
 // SetLevel implements Bonus.
@@ -77,5 +82,5 @@ func (c *ConditionalModifier) SetLevel(level fxp.Int) {
 
 // AddToTooltip implements Bonus.
 func (c *ConditionalModifier) AddToTooltip(buffer *xio.ByteBuffer) {
-	basicAddToTooltip(c.Parent, &c.LeveledAmount, buffer)
+	basicAddToTooltip(c.owner, &c.LeveledAmount, buffer)
 }

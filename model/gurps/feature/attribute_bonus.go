@@ -25,9 +25,9 @@ var _ Bonus = &AttributeBonus{}
 type AttributeBonus struct {
 	Type       Type                      `json:"type"`
 	Limitation attribute.BonusLimitation `json:"limitation,omitempty"`
-	Parent     fmt.Stringer              `json:"-"`
 	Attribute  string                    `json:"attribute"`
 	LeveledAmount
+	owner fmt.Stringer
 }
 
 // NewAttributeBonus creates a new AttributeBonus.
@@ -68,9 +68,14 @@ func (a *AttributeBonus) FillWithNameableKeys(_ map[string]string) {
 func (a *AttributeBonus) ApplyNameableKeys(_ map[string]string) {
 }
 
-// SetParent implements Bonus.
-func (a *AttributeBonus) SetParent(parent fmt.Stringer) {
-	a.Parent = parent
+// Owner implements Bonus.
+func (a *AttributeBonus) Owner() fmt.Stringer {
+	return a.owner
+}
+
+// SetOwner implements Bonus.
+func (a *AttributeBonus) SetOwner(owner fmt.Stringer) {
+	a.owner = owner
 }
 
 // SetLevel implements Bonus.
@@ -80,5 +85,5 @@ func (a *AttributeBonus) SetLevel(level fxp.Int) {
 
 // AddToTooltip implements Bonus.
 func (a *AttributeBonus) AddToTooltip(buffer *xio.ByteBuffer) {
-	basicAddToTooltip(a.Parent, &a.LeveledAmount, buffer)
+	basicAddToTooltip(a.owner, &a.LeveledAmount, buffer)
 }

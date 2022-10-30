@@ -31,11 +31,11 @@ var _ Bonus = &SkillPointBonus{}
 // SkillPointBonus holds an adjustment to a skill's points.
 type SkillPointBonus struct {
 	Type                   Type            `json:"type"`
-	Parent                 fmt.Stringer    `json:"-"`
 	NameCriteria           criteria.String `json:"name,omitempty"`
 	SpecializationCriteria criteria.String `json:"specialization,omitempty"`
 	TagsCriteria           criteria.String `json:"tags,alt=category,omitempty"`
 	LeveledAmount
+	owner fmt.Stringer
 }
 
 // NewSkillPointBonus creates a new SkillPointBonus.
@@ -95,9 +95,14 @@ func (s *SkillPointBonus) ApplyNameableKeys(m map[string]string) {
 	s.TagsCriteria.Qualifier = nameables.Apply(s.TagsCriteria.Qualifier, m)
 }
 
-// SetParent implements Bonus.
-func (s *SkillPointBonus) SetParent(parent fmt.Stringer) {
-	s.Parent = parent
+// Owner implements Bonus.
+func (s *SkillPointBonus) Owner() fmt.Stringer {
+	return s.owner
+}
+
+// SetOwner implements Bonus.
+func (s *SkillPointBonus) SetOwner(owner fmt.Stringer) {
+	s.owner = owner
 }
 
 // SetLevel implements Bonus.
@@ -109,7 +114,7 @@ func (s *SkillPointBonus) SetLevel(level fxp.Int) {
 func (s *SkillPointBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 	if buffer != nil {
 		buffer.WriteByte('\n')
-		buffer.WriteString(parentName(s.Parent))
+		buffer.WriteString(parentName(s.owner))
 		buffer.WriteString(" [")
 		buffer.WriteString(s.LeveledAmount.FormatWithLevel(false))
 		if s.AdjustedAmount() == fxp.One {

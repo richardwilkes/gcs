@@ -34,7 +34,6 @@ var _ Bonus = &WeaponBonus{}
 
 // WeaponBonus holds the data for an adjustment to weapon damage.
 type WeaponBonus struct {
-	Parent                 fmt.Stringer         `json:"-"`
 	Type                   Type                 `json:"type"`
 	Percent                bool                 `json:"percent,omitempty"`
 	SelectionType          weapon.SelectionType `json:"selection_type"`
@@ -43,6 +42,7 @@ type WeaponBonus struct {
 	RelativeLevelCriteria  criteria.Numeric     `json:"level,omitempty"`
 	TagsCriteria           criteria.String      `json:"tags,alt=category,omitempty"`
 	LeveledAmount
+	owner fmt.Stringer
 }
 
 // NewWeaponDamageBonus creates a new weapon damage bonus.
@@ -137,9 +137,14 @@ func (w *WeaponBonus) ApplyNameableKeys(m map[string]string) {
 	}
 }
 
-// SetParent implements Bonus.
-func (w *WeaponBonus) SetParent(parent fmt.Stringer) {
-	w.Parent = parent
+// Owner implements Bonus.
+func (w *WeaponBonus) Owner() fmt.Stringer {
+	return w.owner
+}
+
+// SetOwner implements Bonus.
+func (w *WeaponBonus) SetOwner(owner fmt.Stringer) {
+	w.owner = owner
 }
 
 // SetLevel implements Bonus.
@@ -151,7 +156,7 @@ func (w *WeaponBonus) SetLevel(level fxp.Int) {
 func (w *WeaponBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 	if buffer != nil {
 		buffer.WriteByte('\n')
-		buffer.WriteString(parentName(w.Parent))
+		buffer.WriteString(parentName(w.owner))
 		buffer.WriteString(" [")
 		if w.Type == WeaponBonusType {
 			buffer.WriteString(w.LeveledAmount.Format(w.Percent, i18n.Text("die")))

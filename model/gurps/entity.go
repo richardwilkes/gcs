@@ -345,11 +345,11 @@ func (e *Entity) processFeatures() {
 	e.BlockBonus = e.BonusFor(feature.AttributeIDPrefix+gid.Block, nil).Trunc()
 }
 
-func processFeature(parent fmt.Stringer, m map[string][]feature.Feature, f feature.Feature, levels fxp.Int) {
+func processFeature(owner fmt.Stringer, m map[string][]feature.Feature, f feature.Feature, levels fxp.Int) {
 	key := strings.ToLower(f.FeatureMapKey())
 	list := m[key]
 	if bonus, ok := f.(feature.Bonus); ok {
-		bonus.SetParent(parent)
+		bonus.SetOwner(owner)
 		bonus.SetLevel(levels)
 	}
 	m[key] = append(list, f)

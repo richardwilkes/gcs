@@ -35,12 +35,12 @@ var _ Bonus = &SpellBonus{}
 
 // SpellBonus holds the data for a bonus to a spell.
 type SpellBonus struct {
-	Parent         fmt.Stringer    `json:"-"`
 	Type           Type            `json:"type"`
 	SpellMatchType spell.MatchType `json:"match"`
 	NameCriteria   criteria.String `json:"name,omitempty"`
 	TagsCriteria   criteria.String `json:"tags,alt=category,omitempty"`
 	LeveledAmount
+	owner fmt.Stringer
 }
 
 // NewSpellBonus creates a new SpellBonus.
@@ -116,9 +116,14 @@ func (s *SpellBonus) ApplyNameableKeys(m map[string]string) {
 	s.TagsCriteria.Qualifier = nameables.Apply(s.TagsCriteria.Qualifier, m)
 }
 
-// SetParent implements Bonus.
-func (s *SpellBonus) SetParent(parent fmt.Stringer) {
-	s.Parent = parent
+// Owner implements Bonus.
+func (s *SpellBonus) Owner() fmt.Stringer {
+	return s.owner
+}
+
+// SetOwner implements Bonus.
+func (s *SpellBonus) SetOwner(owner fmt.Stringer) {
+	s.owner = owner
 }
 
 // SetLevel implements Bonus.
@@ -128,5 +133,5 @@ func (s *SpellBonus) SetLevel(level fxp.Int) {
 
 // AddToTooltip implements Bonus.
 func (s *SpellBonus) AddToTooltip(buffer *xio.ByteBuffer) {
-	basicAddToTooltip(s.Parent, &s.LeveledAmount, buffer)
+	basicAddToTooltip(s.owner, &s.LeveledAmount, buffer)
 }
