@@ -152,7 +152,7 @@ func (p *studyPanel) insertStudyEntry(index int, entry *gurps.Study, requestFocu
 	}
 }
 
-func updateLimitations(info *unison.Button, studyType gurps.StudyType) {
+func updateLimitations(info *unison.Label, studyType gurps.StudyType) {
 	ClearInfoPop(info)
 	for _, one := range studyType.Limitations() {
 		AddHelpToInfoPop(info, txt.Wrap("", "● "+one, 60))

@@ -21,15 +21,23 @@ import (
 )
 
 // NewDefaultInfoPop creates a new InfoPop with the message about mouse wheel scaling.
-func NewDefaultInfoPop() *unison.Button {
-	button := NewInfoPop()
-	AddScalingHelpToInfoPop(button)
-	return button
+func NewDefaultInfoPop() *unison.Label {
+	infoPop := NewInfoPop()
+	AddScalingHelpToInfoPop(infoPop)
+	return infoPop
 }
 
 // NewInfoPop creates a new InfoPop.
-func NewInfoPop() *unison.Button {
-	return unison.NewSVGButton(svg.Info)
+func NewInfoPop() *unison.Label {
+	infoPop := unison.NewLabel()
+	infoPop.OnBackgroundInk = unison.DefaultSVGButtonTheme.OnBackgroundInk
+	baseline := unison.DefaultSVGButtonTheme.Font.Baseline()
+	size := unison.NewSize(baseline, baseline)
+	infoPop.Drawable = &unison.DrawableSVG{
+		SVG:  svg.Info,
+		Size: *size.GrowToInteger(),
+	}
+	return infoPop
 }
 
 // ClearInfoPop clears the InfoPop data.
