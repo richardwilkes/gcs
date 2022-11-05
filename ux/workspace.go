@@ -34,6 +34,12 @@ const workspaceClientDataKey = "workspace"
 // PrintMgr is our PrintManager singleton.
 var PrintMgr printing.PrintManager
 
+// GroupedCloser defines the methods required of a tab that wishes to be closed when another tab is closed.
+type GroupedCloser interface {
+	unison.TabCloser
+	CloseWithGroup(other unison.Paneler) bool
+}
+
 // Workspace holds the data necessary to track the Workspace.
 type Workspace struct {
 	Window       *unison.Window

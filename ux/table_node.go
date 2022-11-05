@@ -31,6 +31,18 @@ const invertColorsMarker = "invert"
 
 var _ unison.TableRowData[*Node[*gurps.Trait]] = &Node[*gurps.Trait]{}
 
+// CellCache holds data for a table row's cell to reduce the need to constantly recreate them.
+type CellCache struct {
+	Panel unison.Paneler
+	Data  gurps.CellData
+	Width float32
+}
+
+// Matches returns true if the provided width and data match the current contents.
+func (c *CellCache) Matches(width float32, data *gurps.CellData) bool {
+	return c != nil && c.Panel != nil && c.Width == width && c.Data == *data
+}
+
 // Node represents a row in a table.
 type Node[T gurps.NodeTypes] struct {
 	table      *unison.Table[*Node[T]]

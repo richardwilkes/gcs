@@ -25,6 +25,47 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
+// Rebuildable defines the methods a rebuildable panel should provide.
+type Rebuildable interface {
+	unison.Paneler
+	fmt.Stringer
+	Rebuild(full bool)
+}
+
+// Syncer should be called to sync an object's UI state to its model.
+type Syncer interface {
+	Sync()
+}
+
+// DeepSync does a depth-first traversal of the panel and all of its descendents and calls Sync() on any Syncer objects
+// it finds.
+func DeepSync(panel unison.Paneler) {
+	p := panel.AsPanel()
+	for _, child := range p.Children() {
+		DeepSync(child)
+	}
+	if syncer, ok := p.Self.(Syncer); ok {
+		syncer.Sync()
+	}
+}
+
+// ModifiableRoot marks the root of a modifable tree of components, typically a Dockable.
+type ModifiableRoot interface {
+	MarkModified(src unison.Paneler)
+}
+
+// MarkModified looks for a ModifiableRoot, starting at the panel. If found, it then called MarkModified() on it.
+func MarkModified(panel unison.Paneler) {
+	p := panel.AsPanel()
+	for p != nil {
+		if modifiable, ok := p.Self.(ModifiableRoot); ok {
+			modifiable.MarkModified(panel)
+			break
+		}
+		p = p.Parent()
+	}
+}
+
 func addNameLabelAndField(parent *unison.Panel, fieldData *string) {
 	addLabelAndStringField(parent, i18n.Text("Name"), "", fieldData)
 }
@@ -572,4 +613,24 @@ func addTemplateChoices(parent *unison.Panel, targetmgr *TargetMgr, targetKey st
 		MarkModified(parent)
 	}
 	adjustFieldBlank(field, (*picker).Type == gurps.NotApplicableTemplatePickerType)
+}
+
+// WrapWithSpan wraps a number of children with a single panel that request to fill in span number of columns.
+func WrapWithSpan(span int, children ...unison.Paneler) *unison.Panel {
+	wrapper := unison.NewPanel()
+	wrapper.SetLayout(&unison.FlexLayout{
+		Columns:  len(children),
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	wrapper.SetLayoutData(&unison.FlexLayoutData{
+		HSpan:  span,
+		HAlign: unison.FillAlignment,
+		VAlign: unison.MiddleAlignment,
+		HGrab:  true,
+	})
+	for _, child := range children {
+		wrapper.AddChild(child)
+	}
+	return wrapper
 }

@@ -28,6 +28,12 @@ import (
 
 var _ GroupedCloser = &sheetSettingsDockable{}
 
+// EntityPanel defines methods for a panel that can hold an entity.
+type EntityPanel interface {
+	unison.Paneler
+	Entity() *gurps.Entity
+}
+
 type sheetSettingsDockable struct {
 	Dockable
 	owner                              EntityPanel
