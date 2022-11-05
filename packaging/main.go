@@ -27,12 +27,9 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/richardwilkes/gcs/v5/early"
 	"github.com/richardwilkes/gcs/v5/model/library"
-	"github.com/richardwilkes/gcs/v5/setup/early"
-	"github.com/richardwilkes/gcs/v5/ui"
-	"github.com/richardwilkes/gcs/v5/ui/svglayer"
-	"github.com/richardwilkes/gcs/v5/ui/workspace/external"
-	"github.com/richardwilkes/gcs/v5/ui/workspace/lists"
+	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/atexit"
 	"github.com/richardwilkes/toolbox/cmdline"
@@ -45,11 +42,11 @@ import (
 	"github.com/tc-hib/winres/version"
 )
 
-//go:embed app-1024.png
+//go:embed images/app-1024.png
 var appImgBytes []byte
 var app image.Image
 
-//go:embed doc-1024.png
+//go:embed images/doc-1024.png
 var docImgBytes []byte
 var doc image.Image
 
@@ -59,8 +56,8 @@ func main() {
 	} else {
 		early.Configure()
 		jot.FatalIfErr(loadBaseImages())
-		external.RegisterFileTypes()
-		lists.RegisterFileTypes()
+		ux.RegisterExternalFileTypes()
+		ux.RegisterGCSFileTypes()
 		switch runtime.GOOS {
 		case toolbox.MacOS:
 			jot.FatalIfErr(packageMacOS())
@@ -154,7 +151,7 @@ func packageMacOS() error {
 func writeDocICNS(dir string, base image.Image) error {
 	for i := range library.KnownFileTypes {
 		if fi := &library.KnownFileTypes[i]; fi.IsGCSData {
-			overlay, err := svglayer.CreateImageFromSVG(fi, 512)
+			overlay, err := ux.CreateImageFromSVG(fi, 512)
 			if err != nil {
 				return err
 			}
@@ -273,7 +270,7 @@ func writePlist(targetPath string) (err error) {
 func packageWindows() (err error) {
 	rs := &winres.ResourceSet{}
 	rs.SetManifest(winres.AppManifest{
-		Description:    ui.AppDescription,
+		Description:    ux.AppDescription,
 		Compatibility:  winres.Win7AndAbove,
 		ExecutionLevel: winres.AsInvoker,
 		DPIAwareness:   winres.DPIAware,
@@ -311,7 +308,7 @@ func addWindowsIcon(rs *winres.ResourceSet) error {
 	for i := range library.KnownFileTypes {
 		if fi := &library.KnownFileTypes[i]; fi.IsGCSData {
 			var overlay image.Image
-			if overlay, err = svglayer.CreateImageFromSVG(fi, 512); err != nil {
+			if overlay, err = ux.CreateImageFromSVG(fi, 512); err != nil {
 				return err
 			}
 			var extIcon *winres.Icon
@@ -333,7 +330,7 @@ func addWindowsVersion(rs *winres.ResourceSet) error {
 	if err := vi.Set(version.LangDefault, version.CompanyName, cmdline.CopyrightHolder); err != nil {
 		return errs.Wrap(err)
 	}
-	if err := vi.Set(version.LangDefault, version.FileDescription, ui.AppDescription); err != nil {
+	if err := vi.Set(version.LangDefault, version.FileDescription, ux.AppDescription); err != nil {
 		return errs.Wrap(err)
 	}
 	if err := vi.Set(version.LangDefault, version.FileVersion, shortAppVersion()); err != nil {

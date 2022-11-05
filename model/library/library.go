@@ -26,7 +26,7 @@ import (
 	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
-	"github.com/richardwilkes/gcs/v5/setup/trampolines"
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
@@ -35,6 +35,9 @@ import (
 )
 
 const releaseFile = "release.txt"
+
+// NotifyOfLibraryChangeFunc will be called to notify of library changes.
+var NotifyOfLibraryChangeFunc func()
 
 // Library holds information about a library of data files.
 type Library struct {
@@ -164,8 +167,8 @@ func (l *Library) CheckForAvailableUpgrade(ctx context.Context, client *http.Cli
 	updated := l.upgrade == nil || *l.upgrade == *upgrade
 	l.upgrade = upgrade
 	l.lock.Unlock()
-	if updated {
-		trampolines.CallLibraryUpdatesAvailable()
+	if updated && NotifyOfLibraryChangeFunc != nil {
+		toolbox.Call(NotifyOfLibraryChangeFunc)
 	}
 }
 

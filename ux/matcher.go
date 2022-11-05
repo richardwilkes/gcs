@@ -9,21 +9,11 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package weapon
+package ux
 
-import (
-	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/unison"
-)
-
-// SVG returns the SVG that should be used for this type.
-func (enum Type) SVG() *unison.SVG {
-	switch enum {
-	case Melee:
-		return svg.MeleeWeapon
-	case Ranged:
-		return svg.RangedWeapon
-	default:
-		return nil
-	}
+// Matcher defines the methods that rows that can participate in searching must implement.
+type Matcher interface {
+	// Match should look for the text in the object and return true if it is present. Note that calls to this method
+	// should always pass in text that has already been run through strings.ToLower().
+	Match(text string) bool
 }

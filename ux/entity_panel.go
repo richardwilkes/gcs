@@ -9,21 +9,15 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package weapon
+package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/unison"
 )
 
-// SVG returns the SVG that should be used for this type.
-func (enum Type) SVG() *unison.SVG {
-	switch enum {
-	case Melee:
-		return svg.MeleeWeapon
-	case Ranged:
-		return svg.RangedWeapon
-	default:
-		return nil
-	}
+// EntityPanel defines methods for a panel that can hold an entity.
+type EntityPanel interface {
+	unison.Paneler
+	Entity() *gurps.Entity
 }

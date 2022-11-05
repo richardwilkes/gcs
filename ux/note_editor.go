@@ -9,21 +9,21 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package weapon
+package ux
 
 import (
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/unison"
 )
 
-// SVG returns the SVG that should be used for this type.
-func (enum Type) SVG() *unison.SVG {
-	switch enum {
-	case Melee:
-		return svg.MeleeWeapon
-	case Ranged:
-		return svg.RangedWeapon
-	default:
-		return nil
-	}
+// EditNote displays the editor for a note.
+func EditNote(owner Rebuildable, note *gurps.Note) {
+	displayEditor[*gurps.Note, *gurps.NoteEditData](owner, note, svg.GCSNotes, initNoteEditor)
+}
+
+func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison.Panel) func() {
+	addNotesLabelAndField(content, &e.editorData.Text)
+	addPageRefLabelAndField(content, &e.editorData.PageRef)
+	return nil
 }

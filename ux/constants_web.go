@@ -9,21 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package weapon
+package ux
 
-import (
-	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/unison"
-)
-
-// SVG returns the SVG that should be used for this type.
-func (enum Type) SVG() *unison.SVG {
-	switch enum {
-	case Melee:
-		return svg.MeleeWeapon
-	case Ranged:
-		return svg.RangedWeapon
-	default:
-		return nil
-	}
-}
+// WebSiteDomain holds the web site domain for GCS.
+const WebSiteDomain = "gurpscharactersheet.com"
