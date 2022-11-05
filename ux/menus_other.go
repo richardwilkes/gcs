@@ -1,3 +1,5 @@
+//go:build !darwin
+
 /*
  * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
  *
@@ -11,5 +13,7 @@
 
 package ux
 
-// ScaleDelta is the delta used when adjusting the view scale incrementally.
-const ScaleDelta = 10
+import "github.com/richardwilkes/unison"
+
+func platformViewMenuAddition(m unison.Menu) {
+}

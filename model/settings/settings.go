@@ -17,7 +17,6 @@ import (
 	"os/user"
 	"path"
 	"path/filepath"
-	"runtime"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -27,7 +26,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/rpgtools/dice"
-	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/toolbox/xio/fs/paths"
@@ -165,11 +163,7 @@ func (s *Settings) ListRecentFiles() []string {
 
 // AddRecentFile adds a file path to the list of recently opened files.
 func (s *Settings) AddRecentFile(filePath string) {
-	ext := path.Ext(filePath)
-	//goland:noinspection GoBoolExpressions
-	if runtime.GOOS == toolbox.MacOS || runtime.GOOS == toolbox.WindowsOS {
-		ext = strings.ToLower(ext)
-	}
+	ext := strings.ToLower(path.Ext(filePath))
 	for _, one := range library.AcceptableExtensions() {
 		if one == ext {
 			full, err := filepath.Abs(filePath)

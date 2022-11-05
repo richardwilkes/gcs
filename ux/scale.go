@@ -17,6 +17,9 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
+// ScaleDelta is the delta used when adjusting the view scale incrementally.
+const ScaleDelta = 10
+
 // NewScaleField creates a new scale field and hooks it into the target.
 func NewScaleField(min, max int, def, get func() int, set func(int), scroller *unison.ScrollPanel, afterApply func(), attemptCenter bool) *PercentageField {
 	applyFunc := func() {

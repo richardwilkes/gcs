@@ -16,19 +16,129 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/export"
 	"github.com/richardwilkes/gcs/v5/model/settings"
-	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
+)
+
+// Menu, Item & Action IDs
+const (
+	NewSheetItemID = unison.UserBaseID + iota
+	NewTemplateItemID
+	NewTraitsLibraryItemID
+	NewTraitModifiersLibraryItemID
+	NewEquipmentLibraryItemID
+	NewEquipmentModifiersLibraryItemID
+	NewNotesLibraryItemID
+	NewSkillsLibraryItemID
+	NewSpellsLibraryItemID
+	OpenItemID
+	CloseTabID
+	RecentFilesMenuID
+	SaveItemID
+	SaveAsItemID
+	ExportToMenuID
+	ExportAsPDFItemID
+	ExportAsWEBPItemID
+	ExportAsPNGItemID
+	ExportAsJPEGItemID
+	PrintItemID
+	UndoItemID
+	RedoItemID
+	DuplicateItemID
+	ConvertToContainerItemID
+	ToggleStateItemID
+	IncrementItemID
+	DecrementItemID
+	IncrementUsesItemID
+	DecrementUsesItemID
+	IncrementSkillLevelItemID
+	DecrementSkillLevelItemID
+	IncrementTechLevelItemID
+	DecrementTechLevelItemID
+	SwapDefaultsItemID
+	ItemMenuID
+	AddNaturalAttacksItemID
+	OpenEditorItemID
+	CopyToSheetItemID
+	CopyToTemplateItemID
+	ApplyTemplateItemID
+	OpenOnePageReferenceItemID
+	OpenEachPageReferenceItemID
+	SettingsMenuID
+	PerSheetSettingsItemID
+	PerSheetAttributeSettingsItemID
+	PerSheetBodyTypeSettingsItemID
+	DefaultSheetSettingsItemID
+	DefaultAttributeSettingsItemID
+	DefaultBodyTypeSettingsItemID
+	GeneralSettingsItemID
+	PageRefMappingsItemID
+	ColorSettingsItemID
+	FontSettingsItemID
+	MenuKeySettingsItemID
+	SponsorGCSDevelopmentItemID
+	MakeDonationItemID
+	UpdateAppStatusItemID
+	CheckForAppUpdatesItemID
+	ReleaseNotesItemID
+	WebSiteItemID
+	MailingListItemID
+	ViewMenuID
+	ScaleDefaultItemID
+	ScaleUpItemID
+	ScaleDownItemID
+	Scale25ItemID
+	Scale50ItemID
+	Scale75ItemID
+	Scale100ItemID
+	Scale200ItemID
+	Scale300ItemID
+	Scale400ItemID
+	Scale500ItemID
+	Scale600ItemID
+
+	FirstNonContainerMarker // Keep this block grouped together
+	NewCarriedEquipmentItemID
+	NewEquipmentModifierItemID
+	NewNoteItemID
+	NewOtherEquipmentItemID
+	NewSkillItemID
+	NewSpellItemID
+	NewTraitItemID
+	NewTraitModifierItemID
+	LastNonContainerMarker
+
+	FirstContainerMarker // Keep this block grouped together
+	NewCarriedEquipmentContainerItemID
+	NewEquipmentContainerModifierItemID
+	NewNoteContainerItemID
+	NewOtherEquipmentContainerItemID
+	NewSkillContainerItemID
+	NewSpellContainerItemID
+	NewTraitContainerItemID
+	NewTraitContainerModifierItemID
+	LastContainerMarker
+
+	FirstAlternateNonContainerMarker // Keep this block grouped together
+	NewRitualMagicSpellItemID
+	NewTechniqueItemID
+	LastAlternateNonContainerMarker
+
+	NewMeleeWeaponItemID
+	NewRangedWeaponItemID
+
+	LibraryBaseItemID
+	RecentFieldBaseItemID  = LibraryBaseItemID + 1000
+	ExportToTextBaseItemID = RecentFieldBaseItemID + 1000
 )
 
 var registerKeyBindingsOnce sync.Once
@@ -197,11 +307,7 @@ func (s menuBarScope) createViewMenu(f unison.MenuFactory) unison.Menu {
 	m.InsertItem(-1, scale400Action.NewMenuItem(f))
 	m.InsertItem(-1, scale500Action.NewMenuItem(f))
 	m.InsertItem(-1, scale600Action.NewMenuItem(f))
-
-	if runtime.GOOS == toolbox.MacOS {
-		m.InsertSeparator(-1, false)
-	}
-
+	platformViewMenuAddition(m)
 	return m
 }
 

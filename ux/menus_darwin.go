@@ -11,5 +11,8 @@
 
 package ux
 
-// WebSiteDomain holds the web site domain for GCS.
-const WebSiteDomain = "gurpscharactersheet.com"
+import "github.com/richardwilkes/unison"
+
+func platformViewMenuAddition(m unison.Menu) {
+	m.InsertSeparator(-1, false)
+}

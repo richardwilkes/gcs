@@ -34,6 +34,9 @@ import (
 	"github.com/richardwilkes/unison/printing"
 )
 
+// SkipDeepSync is set on components that should not trigger a deep sync.
+const SkipDeepSync = "!deepsync"
+
 var (
 	_        FileBackedDockable         = &Sheet{}
 	_        unison.UndoManagerProvider = &Sheet{}

@@ -25,6 +25,9 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
+// WebSiteDomain holds the web site domain for GCS.
+const WebSiteDomain = "gurpscharactersheet.com"
+
 // These actions are registered for key bindings.
 var (
 	addNaturalAttacksAction             *unison.Action
