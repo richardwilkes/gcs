@@ -24,12 +24,24 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
+// Known dockable kinds
+const (
+	SheetDockableKind    = "sheet"
+	TemplateDockableKind = "template"
+	ListDockableKind     = "list"
+)
+
 const settingsGroup = "settings"
 
 var (
 	_ unison.Dockable  = &Dockable{}
 	_ unison.TabCloser = &Dockable{}
 )
+
+// DockableKind defines the method required DockableKinds.
+type DockableKind interface {
+	DockableKind() string
+}
 
 // Dockable holds common settings dockable data.
 type Dockable struct {
