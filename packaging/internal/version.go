@@ -9,15 +9,18 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package main
+package internal
 
 import (
-	"github.com/richardwilkes/gcs/v5/packaging/internal"
-	"github.com/richardwilkes/toolbox/atexit"
-	"github.com/richardwilkes/toolbox/log/jot"
+	"strings"
+
+	"github.com/richardwilkes/toolbox/cmdline"
 )
 
-func main() {
-	jot.FatalIfErr(internal.Package())
-	atexit.Exit(0)
+func shortAppVersion() string {
+	shortVersion := strings.TrimSuffix(cmdline.AppVersion, ".0")
+	if strings.IndexByte(shortVersion, '.') == -1 {
+		return cmdline.AppVersion
+	}
+	return shortVersion
 }

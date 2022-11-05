@@ -9,15 +9,20 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package main
+package internal
 
 import (
-	"github.com/richardwilkes/gcs/v5/packaging/internal"
-	"github.com/richardwilkes/toolbox/atexit"
-	"github.com/richardwilkes/toolbox/log/jot"
+	"github.com/richardwilkes/gcs/v5/early"
+	"github.com/richardwilkes/gcs/v5/ux"
 )
 
-func main() {
-	jot.FatalIfErr(internal.Package())
-	atexit.Exit(0)
+// Package performs the platform-specific packaging for GCS.
+func Package() error {
+	early.Configure()
+	if err := loadBaseImages(); err != nil {
+		return err
+	}
+	ux.RegisterExternalFileTypes()
+	ux.RegisterGCSFileTypes()
+	return platformPackage()
 }
