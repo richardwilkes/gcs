@@ -63,12 +63,12 @@ type Template struct {
 }
 
 // OpenTemplates returns the currently open templates.
-func OpenTemplates() []*Template {
+func OpenTemplates(exclude *Template) []*Template {
 	var templates []*Template
 	ws := FromWindowOrAny(unison.ActiveWindow())
 	ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
 		for _, one := range dc.Dockables() {
-			if template, ok := one.(*Template); ok {
+			if template, ok := one.(*Template); ok && template != exclude {
 				templates = append(templates, template)
 			}
 		}
@@ -239,7 +239,7 @@ func (d *Template) keyToPanel(key string) *unison.Panel {
 
 // CanApplyTemplate returns true if a template can be applied.
 func CanApplyTemplate() bool {
-	return len(OpenSheets()) > 0
+	return len(OpenSheets(nil)) > 0
 }
 
 func (d *Template) canApplyTemplate(_ any) bool {
@@ -261,7 +261,7 @@ func ApplyTemplate(filePath string) {
 }
 
 func (d *Template) applyTemplate(_ any) {
-	for _, sheet := range PromptForDestination(OpenSheets()) {
+	for _, sheet := range PromptForDestination(OpenSheets(nil)) {
 		var undo *unison.UndoEdit[*ApplyTemplateUndoEditData]
 		mgr := unison.UndoManagerFor(sheet)
 		if mgr != nil {

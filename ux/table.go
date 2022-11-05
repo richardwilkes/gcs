@@ -153,7 +153,102 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 		return stop
 	}
 
+	table.InstallCmdHandlers(CopyToSheetItemID, func(_ any) bool { return canCopySelectionToSheet(table) },
+		func(_ any) { copySelectionToSheet(table) })
+	table.InstallCmdHandlers(CopyToTemplateItemID, func(_ any) bool { return canCopySelectionToTemplate(table) },
+		func(_ any) { copySelectionToTemplate(table) })
+
 	return header, table
+}
+
+func isAcceptableTypeForSheetOrTemplate(data any) bool {
+	switch data.(type) {
+	case *gurps.Equipment, *gurps.Note, *gurps.Skill, *gurps.Spell, *gurps.Trait:
+		return true
+	default:
+		return false
+	}
+}
+
+func canCopySelectionToSheet[T gurps.NodeTypes](table *unison.Table[*Node[T]]) bool {
+	var t T
+	return table.HasSelection() && len(OpenSheets(unison.Ancestor[*Sheet](table))) > 0 && isAcceptableTypeForSheetOrTemplate(t)
+}
+
+func canCopySelectionToTemplate[T gurps.NodeTypes](table *unison.Table[*Node[T]]) bool {
+	var t T
+	return table.HasSelection() && len(OpenTemplates(unison.Ancestor[*Template](table))) > 0 && isAcceptableTypeForSheetOrTemplate(t)
+}
+
+func copySelectionToSheet[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
+	if table.HasSelection() {
+		if sheets := PromptForDestination(OpenSheets(unison.Ancestor[*Sheet](table))); len(sheets) > 0 {
+			sel := table.SelectedRows(true)
+			for _, s := range sheets {
+				var targetTable *unison.Table[*Node[T]]
+				var postProcessor func(rows []*Node[T])
+				switch any(sel[0].Data()).(type) {
+				case *gurps.Trait:
+					targetTable = convertTable[T](s.Traits.Table)
+				case *gurps.Skill:
+					targetTable = convertTable[T](s.Skills.Table)
+				case *gurps.Spell:
+					targetTable = convertTable[T](s.Spells.Table)
+				case *gurps.Equipment:
+					targetTable = convertTable[T](s.CarriedEquipment.Table)
+					postProcessor = func(rows []*Node[T]) {
+						if erows, ok := any(rows).([]*Node[*gurps.Equipment]); ok {
+							for _, row := range erows {
+								gurps.Traverse(func(e *gurps.Equipment) bool {
+									e.Equipped = true
+									return false
+								}, false, false, row.Data())
+							}
+						}
+					}
+				case *gurps.Note:
+					targetTable = convertTable[T](s.Notes.Table)
+				default:
+					continue
+				}
+				if targetTable != nil {
+					CopyRowsTo(targetTable, sel, postProcessor)
+					ProcessModifiersForSelection(targetTable)
+					ProcessNameablesForSelection(targetTable)
+				}
+			}
+		}
+	}
+}
+
+func copySelectionToTemplate[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
+	if table.HasSelection() {
+		if templates := PromptForDestination(OpenTemplates(unison.Ancestor[*Template](table))); len(templates) > 0 {
+			sel := table.SelectedRows(true)
+			for _, t := range templates {
+				switch any(sel[0].Data()).(type) {
+				case *gurps.Trait:
+					CopyRowsTo(convertTable[T](t.Traits.Table), sel, nil)
+				case *gurps.Skill:
+					CopyRowsTo(convertTable[T](t.Skills.Table), sel, nil)
+				case *gurps.Spell:
+					CopyRowsTo(convertTable[T](t.Spells.Table), sel, nil)
+				case *gurps.Equipment:
+					CopyRowsTo(convertTable[T](t.Equipment.Table), sel, nil)
+				case *gurps.Note:
+					CopyRowsTo(convertTable[T](t.Notes.Table), sel, nil)
+				}
+			}
+		}
+	}
+}
+
+func convertTable[T gurps.NodeTypes](table any) *unison.Table[*Node[T]] {
+	// This is here just to get around limitations in the way Go generics behave
+	if t, ok := table.(*unison.Table[*Node[T]]); ok {
+		return t
+	}
+	return nil
 }
 
 // InsertCmdContextMenuItem inserts a context menu item for the given command.

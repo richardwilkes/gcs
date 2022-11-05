@@ -118,8 +118,6 @@ func NewTableDockable[T gurps.NodeTypes](filePath, extension string, provider Ta
 	d.InstallCmdHandlers(DuplicateItemID,
 		func(_ any) bool { return !d.table.IsFiltered() && d.table.HasSelection() },
 		func(_ any) { DuplicateSelection(d.table) })
-	d.InstallCmdHandlers(CopyToSheetItemID, d.canCopySelectionToSheet, d.copySelectionToSheet)
-	d.InstallCmdHandlers(CopyToTemplateItemID, d.canCopySelectionToTemplate, d.copySelectionToTemplate)
 	for _, id := range canCreateIDs {
 		variant := ItemVariant(-1)
 		switch {
@@ -372,83 +370,4 @@ func (d *TableDockable[T]) crc64() uint64 {
 		return 0
 	}
 	return crc.Bytes(0, buffer.Bytes())
-}
-
-func (d *TableDockable[T]) canCopySelectionToSheet(_ any) bool {
-	return d.table.HasSelection() && len(OpenSheets()) > 0
-}
-
-func (d *TableDockable[T]) copySelectionToSheet(_ any) {
-	if d.table.HasSelection() {
-		if sheets := PromptForDestination(OpenSheets()); len(sheets) > 0 {
-			sel := d.table.SelectedRows(true)
-			for _, s := range sheets {
-				var table *unison.Table[*Node[T]]
-				var postProcessor func(rows []*Node[T])
-				switch any(sel[0].Data()).(type) {
-				case *gurps.Trait:
-					table = d.convertTable(s.Traits.Table)
-				case *gurps.Skill:
-					table = d.convertTable(s.Skills.Table)
-				case *gurps.Spell:
-					table = d.convertTable(s.Spells.Table)
-				case *gurps.Equipment:
-					table = d.convertTable(s.CarriedEquipment.Table)
-					postProcessor = func(rows []*Node[T]) {
-						if erows, ok := any(rows).([]*Node[*gurps.Equipment]); ok {
-							for _, row := range erows {
-								gurps.Traverse(func(e *gurps.Equipment) bool {
-									e.Equipped = true
-									return false
-								}, false, false, row.Data())
-							}
-						}
-					}
-				case *gurps.Note:
-					table = d.convertTable(s.Notes.Table)
-				default:
-					continue
-				}
-				if table != nil {
-					CopyRowsTo(table, sel, postProcessor)
-					ProcessModifiersForSelection(table)
-					ProcessNameablesForSelection(table)
-				}
-			}
-		}
-	}
-}
-
-func (d *TableDockable[T]) convertTable(table any) *unison.Table[*Node[T]] {
-	// This is here just to get around limitations in the way Go generics behave
-	if t, ok := table.(*unison.Table[*Node[T]]); ok {
-		return t
-	}
-	return nil
-}
-
-func (d *TableDockable[T]) copySelectionToTemplate(_ any) {
-	if d.table.HasSelection() {
-		if templates := PromptForDestination(OpenTemplates()); len(templates) > 0 {
-			sel := d.table.SelectedRows(true)
-			for _, t := range templates {
-				switch any(sel[0].Data()).(type) {
-				case *gurps.Trait:
-					CopyRowsTo(d.convertTable(t.Traits.Table), sel, nil)
-				case *gurps.Skill:
-					CopyRowsTo(d.convertTable(t.Skills.Table), sel, nil)
-				case *gurps.Spell:
-					CopyRowsTo(d.convertTable(t.Spells.Table), sel, nil)
-				case *gurps.Equipment:
-					CopyRowsTo(d.convertTable(t.Equipment.Table), sel, nil)
-				case *gurps.Note:
-					CopyRowsTo(d.convertTable(t.Notes.Table), sel, nil)
-				}
-			}
-		}
-	}
-}
-
-func (d *TableDockable[T]) canCopySelectionToTemplate(_ any) bool {
-	return d.table.HasSelection() && len(OpenTemplates()) > 0
 }
