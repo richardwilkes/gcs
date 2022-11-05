@@ -122,6 +122,10 @@ func (n *Note) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+func (n *Note) String() string {
+	return n.Text
+}
+
 // CellData returns the cell data information for the given column.
 func (n *Note) CellData(column int, data *CellData) {
 	switch column {

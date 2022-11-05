@@ -14,6 +14,7 @@ package ux
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
 )
 
@@ -33,11 +34,11 @@ func ProcessModifiers[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 		gurps.Traverse(func(row T) bool {
 			switch t := (any(row)).(type) {
 			case *gurps.Trait:
-				if processModifiers(t.Modifiers) {
+				if processModifiers(txt.Truncate(gurps.AsNode(row).String(), 40, true), t.Modifiers) {
 					unison.Ancestor[Rebuildable](owner).Rebuild(true)
 				}
 			case *gurps.Equipment:
-				if processModifiers(t.Modifiers) {
+				if processModifiers(txt.Truncate(gurps.AsNode(row).String(), 40, true), t.Modifiers) {
 					unison.Ancestor[Rebuildable](owner).Rebuild(true)
 				}
 			}
@@ -46,7 +47,7 @@ func ProcessModifiers[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 	}
 }
 
-func processModifiers[T *gurps.TraitModifier | *gurps.EquipmentModifier](modifiers []T) bool {
+func processModifiers[T *gurps.TraitModifier | *gurps.EquipmentModifier](title string, modifiers []T) bool {
 	if len(modifiers) == 0 {
 		return false
 	}
@@ -102,7 +103,11 @@ func processModifiers[T *gurps.TraitModifier | *gurps.EquipmentModifier](modifie
 		VAlign:   unison.FillAlignment,
 	})
 	label := unison.NewLabel()
-	label.Text = i18n.Text("Select Modifiers:")
+	label.Text = i18n.Text("Select Modifiers for")
+	panel.AddChild(label)
+	label = unison.NewLabel()
+	label.Text = title
+	label.Font = unison.SystemFont
 	panel.AddChild(label)
 	panel.AddChild(scroll)
 	if unison.QuestionDialogWithPanel(panel) == unison.ModalResponseOK {

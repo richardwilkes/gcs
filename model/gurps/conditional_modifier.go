@@ -12,6 +12,8 @@
 package gurps
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -140,6 +142,10 @@ func (m *ConditionalModifier) NodeChildren() []*ConditionalModifier {
 
 // SetChildren sets the children of this node.
 func (m *ConditionalModifier) SetChildren(_ []*ConditionalModifier) {
+}
+
+func (m *ConditionalModifier) String() string {
+	return fmt.Sprintf("%s %s", m.Total().StringWithSign(), m.From)
 }
 
 // CellData returns the cell data information for the given column.

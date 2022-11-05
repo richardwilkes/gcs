@@ -51,7 +51,7 @@ func ProcessNameables[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 			HSpacing: unison.StdHSpacing,
 			VSpacing: unison.StdVSpacing,
 		})
-		for i := range data {
+		for i, one := range data {
 			keys := make([]string, 0, len(nameables[i]))
 			for k := range nameables[i] {
 				keys = append(keys, k)
@@ -67,6 +67,16 @@ func ProcessNameables[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 				})
 				list.AddChild(sep)
 			}
+			header := unison.NewLabel()
+			header.Text = txt.Truncate(gurps.AsNode(one).String(), 40, true)
+			header.Font = unison.SystemFont
+			header.SetLayoutData(&unison.FlexLayoutData{
+				HSpan:  2,
+				HAlign: unison.FillAlignment,
+				VAlign: unison.MiddleAlignment,
+				HGrab:  true,
+			})
+			list.AddChild(header)
 			for _, k := range keys {
 				label := unison.NewLabel()
 				label.Text = k

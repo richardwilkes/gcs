@@ -12,6 +12,8 @@
 package gurps
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 )
@@ -23,6 +25,7 @@ type NodeTypes interface {
 
 // Node defines the methods required of nodes in our tables.
 type Node[T NodeTypes] interface {
+	fmt.Stringer
 	UUID() uuid.UUID
 	Clone(newEntity *Entity, newParent T, preserveID bool) T
 	OwningEntity() *Entity
