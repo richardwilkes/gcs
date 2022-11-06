@@ -29,7 +29,10 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-const workspaceClientDataKey = "workspace"
+const (
+	dockGroupClientDataKey = "dock.group"
+	workspaceClientDataKey = "workspace"
+)
 
 // PrintMgr is our PrintManager singleton.
 var PrintMgr printing.PrintManager
@@ -240,6 +243,54 @@ func (w *Workspace) LocateDockContainerForExtension(ext ...string) *unison.DockC
 		return false
 	})
 	return extDC
+}
+
+// PlaceInDock places the Dockable into the workspace document dock, grouped with the provided group, if that group is
+// present. 'dc' is the preferred DockContainer to place the Dockable within, which is usually the current one.
+func PlaceInDock(workspace *Workspace, dc *unison.DockContainer, dockable unison.Dockable, group string) {
+	dockable.AsPanel().ClientData()[dockGroupClientDataKey] = group
+	if DockContainerHasGroup(dc, group) {
+		dc.Stack(dockable, -1)
+		return
+	}
+	if dc = DockContainerForGroup(workspace.DocumentDock.Dock, group); dc != nil {
+		dc.Stack(dockable, -1)
+		return
+	}
+	side := unison.RightSide
+	if group == subEditorGroup {
+		if dc = DockContainerForGroup(workspace.DocumentDock.Dock, EditorGroup); dc != nil {
+			side = unison.BottomSide
+		}
+	}
+	workspace.DocumentDock.DockTo(dockable, dc, side)
+}
+
+// DockContainerHasGroup returns true if the DockContainer contains at least one Dockable associated with the given
+// group. May pass nil for the dc.
+func DockContainerHasGroup(dc *unison.DockContainer, group string) bool {
+	if dc == nil {
+		return false
+	}
+	for _, dockable := range dc.Dockables() {
+		if dockable.AsPanel().ClientData()[dockGroupClientDataKey] == group {
+			return true
+		}
+	}
+	return false
+}
+
+// DockContainerForGroup returns the first DockContainer which has a Dockable with the given group, if any.
+func DockContainerForGroup(dock *unison.Dock, group string) *unison.DockContainer {
+	var found *unison.DockContainer
+	dock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
+		if DockContainerHasGroup(dc, group) {
+			found = dc
+			return true
+		}
+		return false
+	})
+	return found
 }
 
 // DockContainerHoldsExtension returns true if an immediate child of the given DockContainer has a FileBackedDockable

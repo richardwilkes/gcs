@@ -68,16 +68,7 @@ func (d *SettingsDockable) Setup(ws *Workspace, dc *unison.DockContainer, addToS
 		VGrab:  true,
 	})
 	d.AddChild(scroller)
-	if dc != nil && dc.Group == settingsGroup {
-		dc.Stack(d, -1)
-	} else if dc = ws.DocumentDock.ContainerForGroup(settingsGroup); dc != nil {
-		dc.Stack(d, -1)
-	} else {
-		ws.DocumentDock.DockTo(d, nil, unison.RightSide)
-		if dc = unison.Ancestor[*unison.DockContainer](d); dc != nil && dc.Group == "" {
-			dc.Group = settingsGroup
-		}
-	}
+	PlaceInDock(ws, dc, d, settingsGroup)
 	FocusFirstContent(toolbar, content)
 }
 

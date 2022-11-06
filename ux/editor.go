@@ -140,24 +140,7 @@ func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner Rebuildable, 
 			}
 			p = p.Parent()
 		}
-		if dc != nil && dc.Group == group {
-			dc.Stack(e, -1)
-		} else if dc = ws.DocumentDock.ContainerForGroup(group); dc != nil {
-			dc.Stack(e, -1)
-		} else {
-			var targetLayoutNode unison.DockLayoutNode
-			side := unison.RightSide
-			if group == subEditorGroup {
-				if dc = ws.DocumentDock.ContainerForGroup(EditorGroup); dc != nil {
-					targetLayoutNode = dc
-					side = unison.BottomSide
-				}
-			}
-			ws.DocumentDock.DockTo(e, targetLayoutNode, side)
-			if dc = unison.Ancestor[*unison.DockContainer](e); dc != nil && dc.Group == "" {
-				dc.Group = group
-			}
-		}
+		PlaceInDock(ws, dc, e, group)
 		content.RequestFocus()
 	}
 }

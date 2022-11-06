@@ -119,18 +119,7 @@ func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 	e.ClientData()[AssociatedUUIDKey] = e.entity.ID
 	e.promptForSave = true
 	scroller.Content().AsPanel().ValidateScrollRoot()
-	group := EditorGroup
-	if dc != nil && dc.Group == group {
-		dc.Stack(e, -1)
-	} else if dc = ws.DocumentDock.ContainerForGroup(group); dc != nil {
-		dc.Stack(e, -1)
-	} else {
-		var targetLayoutNode unison.DockLayoutNode
-		ws.DocumentDock.DockTo(e, targetLayoutNode, unison.RightSide)
-		if dc = unison.Ancestor[*unison.DockContainer](e); dc != nil && dc.Group == "" {
-			dc.Group = group
-		}
-	}
+	PlaceInDock(ws, dc, e, EditorGroup)
 	if children := e.content.Children(); len(children) != 0 {
 		children[3].RequestFocus()
 	}
