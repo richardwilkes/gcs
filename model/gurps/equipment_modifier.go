@@ -295,7 +295,6 @@ func (m *EquipmentModifier) FillWithNameableKeys(keyMap map[string]string) {
 	if m.Enabled() {
 		nameables.Extract(m.Name, keyMap)
 		nameables.Extract(m.LocalNotes, keyMap)
-		nameables.Extract(m.VTTNotes, keyMap)
 		for _, one := range m.Features {
 			one.FillWithNameableKeys(keyMap)
 		}
@@ -307,7 +306,6 @@ func (m *EquipmentModifier) ApplyNameableKeys(keyMap map[string]string) {
 	if m.Enabled() {
 		m.Name = nameables.Apply(m.Name, keyMap)
 		m.LocalNotes = nameables.Apply(m.LocalNotes, keyMap)
-		m.VTTNotes = nameables.Apply(m.VTTNotes, keyMap)
 		for _, one := range m.Features {
 			one.ApplyNameableKeys(keyMap)
 		}

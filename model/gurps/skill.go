@@ -777,7 +777,6 @@ func (s *Skill) Enabled() bool {
 func (s *Skill) FillWithNameableKeys(m map[string]string) {
 	nameables.Extract(s.Name, m)
 	nameables.Extract(s.LocalNotes, m)
-	nameables.Extract(s.VTTNotes, m)
 	nameables.Extract(s.Specialization, m)
 	if s.Prereq != nil {
 		s.Prereq.FillWithNameableKeys(m)
@@ -800,7 +799,6 @@ func (s *Skill) FillWithNameableKeys(m map[string]string) {
 func (s *Skill) ApplyNameableKeys(m map[string]string) {
 	s.Name = nameables.Apply(s.Name, m)
 	s.LocalNotes = nameables.Apply(s.LocalNotes, m)
-	s.VTTNotes = nameables.Apply(s.VTTNotes, m)
 	s.Specialization = nameables.Apply(s.Specialization, m)
 	if s.Prereq != nil {
 		s.Prereq.ApplyNameableKeys(m)

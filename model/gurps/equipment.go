@@ -439,7 +439,6 @@ func ExtendedWeightAdjustedForModifiers(defUnits measure.WeightUnits, qty fxp.In
 func (e *Equipment) FillWithNameableKeys(m map[string]string) {
 	nameables.Extract(e.Name, m)
 	nameables.Extract(e.LocalNotes, m)
-	nameables.Extract(e.VTTNotes, m)
 	if e.Prereq != nil {
 		e.Prereq.FillWithNameableKeys(m)
 	}
@@ -459,7 +458,6 @@ func (e *Equipment) FillWithNameableKeys(m map[string]string) {
 func (e *Equipment) ApplyNameableKeys(m map[string]string) {
 	e.Name = nameables.Apply(e.Name, m)
 	e.LocalNotes = nameables.Apply(e.LocalNotes, m)
-	e.VTTNotes = nameables.Apply(e.VTTNotes, m)
 	if e.Prereq != nil {
 		e.Prereq.ApplyNameableKeys(m)
 	}

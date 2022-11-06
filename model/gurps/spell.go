@@ -783,7 +783,6 @@ func (s *Spell) Enabled() bool {
 func (s *Spell) FillWithNameableKeys(m map[string]string) {
 	nameables.Extract(s.Name, m)
 	nameables.Extract(s.LocalNotes, m)
-	nameables.Extract(s.VTTNotes, m)
 	nameables.Extract(s.PowerSource, m)
 	nameables.Extract(s.Class, m)
 	nameables.Extract(s.Resist, m)
@@ -807,7 +806,6 @@ func (s *Spell) FillWithNameableKeys(m map[string]string) {
 func (s *Spell) ApplyNameableKeys(m map[string]string) {
 	s.Name = nameables.Apply(s.Name, m)
 	s.LocalNotes = nameables.Apply(s.LocalNotes, m)
-	s.VTTNotes = nameables.Apply(s.VTTNotes, m)
 	s.PowerSource = nameables.Apply(s.PowerSource, m)
 	s.Class = nameables.Apply(s.Class, m)
 	s.Resist = nameables.Apply(s.Resist, m)

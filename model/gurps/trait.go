@@ -372,7 +372,6 @@ func (a *Trait) TagList() []string {
 func (a *Trait) FillWithNameableKeys(m map[string]string) {
 	nameables.Extract(a.Name, m)
 	nameables.Extract(a.LocalNotes, m)
-	nameables.Extract(a.VTTNotes, m)
 	nameables.Extract(a.UserDesc, m)
 	if a.Prereq != nil {
 		a.Prereq.FillWithNameableKeys(m)
@@ -393,7 +392,6 @@ func (a *Trait) FillWithNameableKeys(m map[string]string) {
 func (a *Trait) ApplyNameableKeys(m map[string]string) {
 	a.Name = nameables.Apply(a.Name, m)
 	a.LocalNotes = nameables.Apply(a.LocalNotes, m)
-	a.VTTNotes = nameables.Apply(a.VTTNotes, m)
 	a.UserDesc = nameables.Apply(a.UserDesc, m)
 	if a.Prereq != nil {
 		a.Prereq.ApplyNameableKeys(m)
