@@ -77,18 +77,18 @@ func (p *hitLocationSettingsPanel) createButtons() *unison.Panel {
 	})
 	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.MiddleAlignment})
 
-	p.addButton = unison.NewSVGButton(svg.CircledAdd)
-	p.addButton.ClickCallback = p.addSubTable
-	p.addButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Add sub-table"))
-	p.addButton.SetEnabled(p.loc.SubTable == nil)
-	buttons.AddChild(p.addButton)
-
 	p.deleteButton = unison.NewSVGButton(svg.Trash)
 	p.deleteButton.ClickCallback = p.removeHitLocation
 	p.deleteButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Remove hit location"))
 	owningTable := p.loc.OwningTable()
 	p.deleteButton.SetEnabled(owningTable != nil && len(owningTable.Locations) > 1)
 	buttons.AddChild(p.deleteButton)
+
+	p.addButton = unison.NewSVGButton(svg.CircledAdd)
+	p.addButton.ClickCallback = p.addSubTable
+	p.addButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Add sub-table"))
+	p.addButton.SetEnabled(p.loc.SubTable == nil)
+	buttons.AddChild(p.addButton)
 	return buttons
 }
 

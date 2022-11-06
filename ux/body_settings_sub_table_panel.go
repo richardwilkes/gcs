@@ -57,15 +57,15 @@ func (p *bodySettingsSubTablePanel) createButtons() *unison.Panel {
 	})
 	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.MiddleAlignment})
 
-	p.addButton = unison.NewSVGButton(svg.CircledAdd)
-	p.addButton.ClickCallback = p.addHitLocation
-	p.addButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Add hit location"))
-	buttons.AddChild(p.addButton)
-
 	p.deleteButton = unison.NewSVGButton(svg.Trash)
 	p.deleteButton.ClickCallback = p.removeSubTable
 	p.deleteButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Remove sub-table"))
 	buttons.AddChild(p.deleteButton)
+
+	p.addButton = unison.NewSVGButton(svg.CircledAdd)
+	p.addButton.ClickCallback = p.addHitLocation
+	p.addButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Add hit location"))
+	buttons.AddChild(p.addButton)
 	return buttons
 }
 
