@@ -100,7 +100,7 @@ func ActiveSheet() *Sheet {
 // OpenSheets returns the currently open sheets.
 func OpenSheets(exclude *Sheet) []*Sheet {
 	var sheets []*Sheet
-	ws := FromWindowOrAny(unison.ActiveWindow())
+	ws := WorkspaceFromWindowOrAny(unison.ActiveWindow())
 	ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
 		for _, one := range dc.Dockables() {
 			if sheet, ok := one.(*Sheet); ok && sheet != exclude {

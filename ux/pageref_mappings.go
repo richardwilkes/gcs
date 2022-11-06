@@ -178,7 +178,7 @@ Would you like to create one by choosing a PDF to map to this key?`), key), pdfN
 
 // RefreshPageRefMappingsView causes the Page References Mappings view to be refreshed if it is open.
 func RefreshPageRefMappingsView() {
-	ws := Any()
+	ws := AnyWorkspace()
 	if ws == nil {
 		return
 	}

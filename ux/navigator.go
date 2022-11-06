@@ -307,7 +307,7 @@ func (n *Navigator) deleteSelection() {
 }
 
 func (n *Navigator) closeSelection(selection []*NavigatorNode) bool {
-	ws := FromWindowOrAny(n.Window())
+	ws := WorkspaceFromWindowOrAny(n.Window())
 	for _, row := range selection {
 		p := row.Path()
 		if row.nodeType == directoryNode {
@@ -414,7 +414,7 @@ func (n *Navigator) renameSelection() {
 }
 
 func (n *Navigator) adjustBackingFilePath(row *NavigatorNode, oldPath, newPath string) {
-	ws := FromWindowOrAny(n.Window())
+	ws := WorkspaceFromWindowOrAny(n.Window())
 	switch row.nodeType {
 	case directoryNode:
 		if !strings.HasSuffix(oldPath, string(os.PathSeparator)) {
@@ -860,7 +860,7 @@ func (n *Navigator) ApplySelectedPaths(paths []string) {
 // OpenFiles attempts to open the given file paths.
 func OpenFiles(filePaths []string) {
 	for _, wnd := range unison.Windows() {
-		if ws := FromWindow(wnd); ws != nil {
+		if ws := WorkspaceFromWindow(wnd); ws != nil {
 			for _, one := range filePaths {
 				if p, err := filepath.Abs(one); err != nil {
 					unison.ErrorDialogWithError(i18n.Text("Unable to open ")+one, err)
@@ -874,7 +874,7 @@ func OpenFiles(filePaths []string) {
 
 // DisplayNewDockable adds the Dockable to the dock and gives it the focus.
 func DisplayNewDockable(wnd *unison.Window, dockable unison.Dockable) {
-	ws := FromWindowOrAny(wnd)
+	ws := WorkspaceFromWindowOrAny(wnd)
 	if ws == nil {
 		ShowUnableToLocateWorkspaceError()
 		return
@@ -900,7 +900,7 @@ func DisplayNewDockable(wnd *unison.Window, dockable unison.Dockable) {
 // OpenFile attempts to open the given file path in the given window, which should contain a workspace. May pass nil for
 // wnd to let it pick the first such window it discovers.
 func OpenFile(wnd *unison.Window, filePath string) (dockable unison.Dockable, wasOpen bool) {
-	ws := FromWindowOrAny(wnd)
+	ws := WorkspaceFromWindowOrAny(wnd)
 	if ws == nil {
 		ShowUnableToLocateWorkspaceError()
 		return nil, false

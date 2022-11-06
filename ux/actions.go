@@ -154,7 +154,7 @@ func registerActions() {
 		KeyBinding: unison.KeyBinding{KeyCode: unison.KeyW, Modifiers: unison.OSMenuCmdModifier()},
 		EnabledCallback: func(_ *unison.Action, _ any) bool {
 			if wnd := unison.ActiveWindow(); wnd != nil {
-				if FromWindow(wnd) == nil {
+				if WorkspaceFromWindow(wnd) == nil {
 					return true // not the workspace, so allow regular window close
 				}
 				if dc := unison.Ancestor[*unison.DockContainer](wnd.Focus()); dc != nil {
@@ -169,7 +169,7 @@ func registerActions() {
 		},
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			if wnd := unison.ActiveWindow(); wnd != nil {
-				if FromWindow(wnd) == nil {
+				if WorkspaceFromWindow(wnd) == nil {
 					// not the workspace, so allow regular window close
 					wnd.AttemptClose()
 				} else if dc := unison.Ancestor[*unison.DockContainer](wnd.Focus()); dc != nil {

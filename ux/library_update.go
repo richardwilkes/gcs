@@ -30,7 +30,7 @@ Content in other libraries will not be modified`)) != unison.ModalResponseOK {
 		return false
 	}
 
-	ws := Any()
+	ws := AnyWorkspace()
 	if ws == nil {
 		return false
 	}
@@ -119,6 +119,6 @@ func finishLibraryUpdate(wnd *unison.Window, lib *library.Library) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	lib.CheckForAvailableUpgrade(ctx, &http.Client{})
-	FromWindowOrAny(wnd).Navigator.EventuallyReload()
+	WorkspaceFromWindowOrAny(wnd).Navigator.EventuallyReload()
 	wnd.StopModal(unison.ModalResponseOK)
 }

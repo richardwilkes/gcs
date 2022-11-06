@@ -295,7 +295,7 @@ func (d *attributeSettingsDockable) apply() {
 		}
 	}
 	for _, wnd := range unison.Windows() {
-		if ws := FromWindow(wnd); ws != nil {
+		if ws := WorkspaceFromWindow(wnd); ws != nil {
 			ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
 				for _, one := range dc.Dockables() {
 					if s, ok := one.(gurps.SheetSettingsResponder); ok {

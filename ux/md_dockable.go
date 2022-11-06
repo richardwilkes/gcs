@@ -45,7 +45,7 @@ type MarkdownDockable struct {
 
 // ShowReleaseNotesMarkdown attempts to show the given markdown content in a dockable.
 func ShowReleaseNotesMarkdown(title, content string) {
-	ws := FromWindowOrAny(nil)
+	ws := WorkspaceFromWindowOrAny(nil)
 	if d := ws.LocateFileBackedDockable(markdownContentOnlyPrefix + title); d != nil {
 		dc := unison.Ancestor[*unison.DockContainer](d)
 		dc.SetCurrentDockable(d)

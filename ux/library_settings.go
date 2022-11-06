@@ -236,7 +236,7 @@ func (d *librarySettingsDockable) apply() {
 	if err := d.library.SetPath(d.path); err != nil {
 		unison.ErrorDialogWithError(i18n.Text("Unable to update library location"), err)
 	}
-	FromWindowOrAny(wnd).Navigator.Reload()
+	WorkspaceFromWindowOrAny(wnd).Navigator.Reload()
 	go checkForLibraryUpgrade(d.library)
 }
 

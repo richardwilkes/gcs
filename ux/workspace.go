@@ -56,7 +56,7 @@ func ShowUnableToLocateWorkspaceError() {
 // Activate attempts to locate an existing dockable that 'matcher' returns true for. If found, it will have been
 // activated and focused.
 func Activate(matcher func(d unison.Dockable) bool) (ws *Workspace, dc *unison.DockContainer, found bool) {
-	if ws = Any(); ws == nil {
+	if ws = AnyWorkspace(); ws == nil {
 		jot.Error("no workspace available")
 		return nil, nil, false
 	}
@@ -80,7 +80,7 @@ func Activate(matcher func(d unison.Dockable) bool) (ws *Workspace, dc *unison.D
 
 // ActiveDockable returns the currently active dockable in the active window.
 func ActiveDockable() unison.Dockable {
-	ws := FromWindow(unison.ActiveWindow())
+	ws := WorkspaceFromWindow(unison.ActiveWindow())
 	if ws == nil {
 		return nil
 	}
@@ -91,17 +91,17 @@ func ActiveDockable() unison.Dockable {
 	return dc.CurrentDockable()
 }
 
-// FromWindowOrAny first calls FromWindow(wnd) and if that fails to find a Workspace, then calls Any().
-func FromWindowOrAny(wnd *unison.Window) *Workspace {
-	ws := FromWindow(wnd)
+// WorkspaceFromWindowOrAny first calls WorkspaceFromWindow(wnd) and if that fails to find a Workspace, then calls AnyWorkspace().
+func WorkspaceFromWindowOrAny(wnd *unison.Window) *Workspace {
+	ws := WorkspaceFromWindow(wnd)
 	if ws == nil {
-		ws = Any()
+		ws = AnyWorkspace()
 	}
 	return ws
 }
 
-// FromWindow returns the Workspace associated with the given Window, or nil.
-func FromWindow(wnd *unison.Window) *Workspace {
+// WorkspaceFromWindow returns the Workspace associated with the given Window, or nil.
+func WorkspaceFromWindow(wnd *unison.Window) *Workspace {
 	if wnd != nil {
 		if data, ok := wnd.ClientData()[workspaceClientDataKey]; ok {
 			if w, ok2 := data.(*Workspace); ok2 {
@@ -112,14 +112,14 @@ func FromWindow(wnd *unison.Window) *Workspace {
 	return nil
 }
 
-// Any first tries to return the workspace for the active window. If that fails, then it looks for any available
+// AnyWorkspace first tries to return the workspace for the active window. If that fails, then it looks for any available
 // workspace and returns that.
-func Any() *Workspace {
-	if ws := FromWindow(unison.ActiveWindow()); ws != nil {
+func AnyWorkspace() *Workspace {
+	if ws := WorkspaceFromWindow(unison.ActiveWindow()); ws != nil {
 		return ws
 	}
 	for _, wnd := range unison.Windows() {
-		if ws := FromWindow(wnd); ws != nil {
+		if ws := WorkspaceFromWindow(wnd); ws != nil {
 			return ws
 		}
 	}
@@ -266,7 +266,7 @@ const AssociatedUUIDKey = "associated_uuid"
 func CloseUUID(ids map[uuid.UUID]bool) bool {
 	allow := true
 	for _, wnd := range unison.Windows() {
-		if ws := FromWindow(wnd); ws != nil {
+		if ws := WorkspaceFromWindow(wnd); ws != nil {
 			ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
 				for _, other := range dc.Dockables() {
 					if tc, ok := other.(unison.TabCloser); ok {
@@ -324,7 +324,7 @@ func CloseGroup(d unison.Dockable) bool {
 
 func traverseGroup(d unison.Dockable, f func(target GroupedCloser) bool) {
 	for _, wnd := range unison.Windows() {
-		if ws := FromWindow(wnd); ws != nil {
+		if ws := WorkspaceFromWindow(wnd); ws != nil {
 			ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
 				for _, other := range dc.Dockables() {
 					if fe, ok := other.(GroupedCloser); ok && fe.CloseWithGroup(d) {

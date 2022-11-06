@@ -378,7 +378,7 @@ func (d *sheetSettingsDockable) sync() {
 
 func (d *sheetSettingsDockable) syncSheet(full bool) {
 	for _, wnd := range unison.Windows() {
-		if ws := FromWindow(wnd); ws != nil {
+		if ws := WorkspaceFromWindow(wnd); ws != nil {
 			ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
 				var entity *gurps.Entity
 				if d.owner != nil {
