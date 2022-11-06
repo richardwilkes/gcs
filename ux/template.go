@@ -367,8 +367,9 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 	if !ok || tpp.TemplatePickerData().ShouldOmit() {
 		rowChildren := make([]T, 0, len(children))
 		for _, child := range children {
-			result, cancel := processPickerRow(child)
-			if cancel {
+			var result []T
+			result, abort = processPickerRow(child)
+			if abort {
 				return nil, true
 			}
 			rowChildren = append(rowChildren, result...)
@@ -471,8 +472,9 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 	rowChildren := make([]T, 0, len(children))
 	for i, box := range boxes {
 		if box.State == unison.OnCheckState {
-			result, cancel := processPickerRow(children[i])
-			if cancel {
+			var result []T
+			result, abort = processPickerRow(children[i])
+			if abort {
 				return nil, true
 			}
 			rowChildren = append(rowChildren, result...)
