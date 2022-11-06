@@ -297,7 +297,7 @@ func OpenEditor[T gurps.NodeTypes](table *unison.Table[*Node[T]], edit func(item
 
 // DeleteSelection removes the selected nodes from the table.
 func DeleteSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
-	if provider, ok := table.Model.(TableProvider[T]); ok && !table.IsFiltered() && table.HasSelection() {
+	if provider, ok := any(table.Model).(TableProvider[T]); ok && !table.IsFiltered() && table.HasSelection() {
 		sel := table.SelectedRows(true)
 		ids := make(map[uuid.UUID]bool, len(sel))
 		list := make([]T, 0, len(sel))
@@ -361,7 +361,7 @@ func DeleteSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 
 // DuplicateSelection duplicates the selected nodes in the table.
 func DuplicateSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
-	if provider, ok := table.Model.(TableProvider[T]); ok && !table.IsFiltered() && table.HasSelection() {
+	if provider, ok := any(table.Model).(TableProvider[T]); ok && !table.IsFiltered() && table.HasSelection() {
 		var undo *unison.UndoEdit[*TableUndoEditData[T]]
 		mgr := unison.UndoManagerFor(table)
 		if mgr != nil {
