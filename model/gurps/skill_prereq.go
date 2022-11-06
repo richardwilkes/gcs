@@ -84,7 +84,7 @@ func (s *SkillPrereq) ApplyNameableKeys(m map[string]string) {
 }
 
 // Satisfied implements Prereq.
-func (s *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string) bool {
+func (s *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string, _ *bool) bool {
 	satisfied := false
 	var techLevel *string
 	if sk, ok := exclude.(*Skill); ok {

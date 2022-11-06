@@ -27,6 +27,7 @@ const (
 	Attribute
 	ContainedQuantity
 	ContainedWeight
+	EquippedEquipment
 	Skill
 	Spell
 	LastType = Spell
@@ -40,6 +41,7 @@ var (
 		Attribute,
 		ContainedQuantity,
 		ContainedWeight,
+		EquippedEquipment,
 		Skill,
 		Spell,
 	}
@@ -68,6 +70,10 @@ var (
 		{
 			key:    "contained_weight_prereq",
 			string: i18n.Text("a contained weight"),
+		},
+		{
+			key:    "equipped_equipment",
+			string: i18n.Text("has equipped equipment"),
 		},
 		{
 			key:    "skill_prereq",

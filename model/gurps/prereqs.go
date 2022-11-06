@@ -47,6 +47,8 @@ func (p *Prereqs) UnmarshalJSON(data []byte) error {
 			pr = &ContainedQuantityPrereq{}
 		case prereq.ContainedWeight:
 			pr = &ContainedWeightPrereq{}
+		case prereq.EquippedEquipment:
+			pr = &EquippedEquipmentPrereq{}
 		case prereq.Skill:
 			pr = &SkillPrereq{}
 		case prereq.Spell:

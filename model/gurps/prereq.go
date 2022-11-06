@@ -28,7 +28,7 @@ type Prereq interface {
 	Clone(parent *PrereqList) Prereq
 	// Satisfied returns true if this Prereq is satisfied by the specified Entity. 'buffer' will be used, if not nil, to
 	// write a description of what was unsatisfied. 'prefix' will be appended to each line of the description.
-	Satisfied(entity *Entity, exclude any, buffer *xio.ByteBuffer, prefix string) bool
+	Satisfied(entity *Entity, exclude any, buffer *xio.ByteBuffer, prefix string, hasEquipmentPenalty *bool) bool
 }
 
 // HasText returns the appropriate text for has.

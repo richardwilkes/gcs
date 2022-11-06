@@ -319,7 +319,7 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground u
 		p.AddChild(label)
 	}
 	if tooltip != "" {
-		p.Tooltip = unison.NewTooltipWithText(txt.Wrap("", tooltip, 120))
+		p.Tooltip = unison.NewTooltipWithText(strings.ReplaceAll(txt.Wrap("", strings.ReplaceAll(tooltip, " ", "␣"), 120), "␣", " "))
 	}
 	return p
 }

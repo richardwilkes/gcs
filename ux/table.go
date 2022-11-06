@@ -190,24 +190,29 @@ func copySelectionToSheet[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 				switch any(sel[0].Data()).(type) {
 				case *gurps.Trait:
 					targetTable = convertTable[T](s.Traits.Table)
+					postProcessor = func(rows []*Node[T]) {
+						s.Traits.provider.ProcessDropData(nil, s.Traits.Table)
+					}
 				case *gurps.Skill:
 					targetTable = convertTable[T](s.Skills.Table)
+					postProcessor = func(rows []*Node[T]) {
+						s.Skills.provider.ProcessDropData(nil, s.Skills.Table)
+					}
 				case *gurps.Spell:
 					targetTable = convertTable[T](s.Spells.Table)
+					postProcessor = func(rows []*Node[T]) {
+						s.Spells.provider.ProcessDropData(nil, s.Spells.Table)
+					}
 				case *gurps.Equipment:
 					targetTable = convertTable[T](s.CarriedEquipment.Table)
 					postProcessor = func(rows []*Node[T]) {
-						if erows, ok := any(rows).([]*Node[*gurps.Equipment]); ok {
-							for _, row := range erows {
-								gurps.Traverse(func(e *gurps.Equipment) bool {
-									e.Equipped = true
-									return false
-								}, false, false, row.Data())
-							}
-						}
+						s.CarriedEquipment.provider.ProcessDropData(nil, s.CarriedEquipment.Table)
 					}
 				case *gurps.Note:
 					targetTable = convertTable[T](s.Notes.Table)
+					postProcessor = func(rows []*Node[T]) {
+						s.Notes.provider.ProcessDropData(nil, s.Notes.Table)
+					}
 				default:
 					continue
 				}
@@ -437,14 +442,14 @@ func CopyRowsTo[T gurps.NodeTypes](table *unison.Table[*Node[T]], rows []*Node[T
 		}
 	}
 	table.SetRootRows(append(slices.Clone(table.RootRows()), rows...))
-	if postProcessor != nil {
-		postProcessor(rows)
-	}
 	selMap := make(map[uuid.UUID]bool, len(rows))
 	for _, row := range rows {
 		selMap[row.UUID()] = true
 	}
 	table.SetSelectionMap(selMap)
+	if postProcessor != nil {
+		postProcessor(rows)
+	}
 	table.ScrollRowCellIntoView(table.LastSelectedRowIndex(), 0)
 	table.ScrollRowCellIntoView(table.FirstSelectedRowIndex(), 0)
 	if mgr != nil && undo != nil {

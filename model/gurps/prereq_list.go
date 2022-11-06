@@ -101,7 +101,7 @@ func (p *PrereqList) ApplyNameableKeys(m map[string]string) {
 }
 
 // Satisfied implements Prereq.
-func (p *PrereqList) Satisfied(entity *Entity, exclude any, buffer *xio.ByteBuffer, prefix string) bool {
+func (p *PrereqList) Satisfied(entity *Entity, exclude any, buffer *xio.ByteBuffer, prefix string, hasEquipmentPenalty *bool) bool {
 	if p.WhenTL.Compare != criteria.AnyNumber {
 		tl, _, _ := ExtractTechLevel(entity.Profile.TechLevel)
 		if tl < 0 {
@@ -116,25 +116,31 @@ func (p *PrereqList) Satisfied(entity *Entity, exclude any, buffer *xio.ByteBuff
 	if buffer != nil {
 		local = &xio.ByteBuffer{}
 	}
+	eqpPenalty := false
 	for _, one := range p.Prereqs {
-		if one.Satisfied(entity, exclude, local, prefix) {
+		if one.Satisfied(entity, exclude, local, prefix, &eqpPenalty) {
 			count++
 		}
 	}
 	if local != nil && local.Len() != 0 {
-		indented := strings.ReplaceAll(local.String(), "\n", "\n\u00a0\u00a0")
+		indented := strings.ReplaceAll(local.String(), "\n", "\n  ")
 		local = &xio.ByteBuffer{}
 		local.WriteString(indented)
 	}
 	satisfied := count == len(p.Prereqs) || (!p.All && count > 0)
-	if !satisfied && buffer != nil && local != nil {
-		buffer.WriteString(prefix)
-		if p.All {
-			buffer.WriteString(i18n.Text("Requires all of:"))
-		} else {
-			buffer.WriteString(i18n.Text("Requires at least one of:"))
+	if !satisfied {
+		if eqpPenalty {
+			*hasEquipmentPenalty = eqpPenalty
 		}
-		buffer.WriteString(local.String())
+		if buffer != nil && local != nil {
+			buffer.WriteString(prefix)
+			if p.All {
+				buffer.WriteString(i18n.Text("Requires all of:"))
+			} else {
+				buffer.WriteString(i18n.Text("Requires at least one of:"))
+			}
+			buffer.WriteString(local.String())
+		}
 	}
 	return satisfied
 }

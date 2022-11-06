@@ -85,7 +85,7 @@ func (a *TraitPrereq) ApplyNameableKeys(m map[string]string) {
 }
 
 // Satisfied implements Prereq.
-func (a *TraitPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string) bool {
+func (a *TraitPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string, _ *bool) bool {
 	satisfied := false
 	Traverse(func(t *Trait) bool {
 		if exclude == t || !a.NameCriteria.Matches(t.Name) {

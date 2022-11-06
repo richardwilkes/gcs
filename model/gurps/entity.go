@@ -24,6 +24,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/dbg"
 	"github.com/richardwilkes/gcs/v5/model/crc"
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/ancestry"
 	"github.com/richardwilkes/gcs/v5/model/gurps/attribute"
@@ -362,7 +363,8 @@ func (e *Entity) processPrereqs() {
 		a.UnsatisfiedReason = ""
 		if !a.Container() && a.Prereq != nil {
 			var tooltip xio.ByteBuffer
-			if !a.Prereq.Satisfied(e, a, &tooltip, prefix) {
+			var eqpPenalty bool
+			if !a.Prereq.Satisfied(e, a, &tooltip, prefix, &eqpPenalty) {
 				a.UnsatisfiedReason = notMetPrefix + tooltip.String()
 			}
 		}
@@ -374,7 +376,22 @@ func (e *Entity) processPrereqs() {
 			var tooltip xio.ByteBuffer
 			satisfied := true
 			if s.Prereq != nil {
-				satisfied = s.Prereq.Satisfied(e, s, &tooltip, prefix)
+				var eqpPenalty bool
+				satisfied = s.Prereq.Satisfied(e, s, &tooltip, prefix, &eqpPenalty)
+				if eqpPenalty {
+					penalty := feature.NewSkillBonus()
+					penalty.NameCriteria.Qualifier = s.Name
+					penalty.SpecializationCriteria.Compare = criteria.Is
+					penalty.SpecializationCriteria.Qualifier = s.Specialization
+					if s.TechLevel != nil && *s.TechLevel != "" {
+						penalty.LeveledAmount.Amount = -fxp.Ten
+					} else {
+						penalty.LeveledAmount.Amount = -fxp.Five
+					}
+					penalty.SetOwner(s)
+					key := strings.ToLower(penalty.FeatureMapKey())
+					e.featureMap[key] = append(e.featureMap[key], penalty)
+				}
 			}
 			if satisfied && s.Type == gid.Technique {
 				satisfied = s.TechniqueSatisfied(&tooltip, prefix)
@@ -391,7 +408,20 @@ func (e *Entity) processPrereqs() {
 			var tooltip xio.ByteBuffer
 			satisfied := true
 			if s.Prereq != nil {
-				satisfied = s.Prereq.Satisfied(e, s, &tooltip, prefix)
+				var eqpPenalty bool
+				satisfied = s.Prereq.Satisfied(e, s, &tooltip, prefix, &eqpPenalty)
+				if eqpPenalty {
+					penalty := feature.NewSpellBonus()
+					penalty.NameCriteria.Qualifier = s.Name
+					if s.TechLevel != nil && *s.TechLevel != "" {
+						penalty.LeveledAmount.Amount = -fxp.Ten
+					} else {
+						penalty.LeveledAmount.Amount = -fxp.Five
+					}
+					penalty.SetOwner(s)
+					key := strings.ToLower(penalty.FeatureMapKey())
+					e.featureMap[key] = append(e.featureMap[key], penalty)
+				}
 			}
 			if satisfied && s.Type == gid.RitualMagicSpell {
 				satisfied = s.RitualMagicSatisfied(&tooltip, prefix)
@@ -406,7 +436,8 @@ func (e *Entity) processPrereqs() {
 		eqp.UnsatisfiedReason = ""
 		if eqp.Prereq != nil {
 			var tooltip xio.ByteBuffer
-			if !eqp.Prereq.Satisfied(e, eqp, &tooltip, prefix) {
+			var eqpPenalty bool
+			if !eqp.Prereq.Satisfied(e, eqp, &tooltip, prefix, &eqpPenalty) {
 				eqp.UnsatisfiedReason = notMetPrefix + tooltip.String()
 			}
 		}

@@ -111,6 +111,8 @@ func (p *prereqPanel) addToList(parent *unison.Panel, depth, index int, child gu
 		panel = p.createContainedQuantityPrereqPanel(depth, one)
 	case *gurps.ContainedWeightPrereq:
 		panel = p.createContainedWeightPrereqPanel(depth, one)
+	case *gurps.EquippedEquipmentPrereq:
+		panel = p.createEquippedEquipmentPrereqPanel(depth, one)
 	case *gurps.SkillPrereq:
 		panel = p.createSkillPrereqPanel(depth, one)
 	case *gurps.SpellPrereq:
@@ -262,6 +264,10 @@ func (p *prereqPanel) createPrereqForType(prereqType prereq.Type, parentList *gu
 		one := gurps.NewContainedWeightPrereq(p.entity)
 		one.Parent = parentList
 		return one
+	case prereq.EquippedEquipment:
+		one := gurps.NewEquippedEquipmentPrereq()
+		one.Parent = parentList
+		return one
 	case prereq.Skill:
 		one := gurps.NewSkillPrereq()
 		one.Parent = parentList
@@ -385,6 +391,28 @@ func (p *prereqPanel) createContainedWeightPrereqPanel(depth int, pr *gurps.Cont
 	})
 	panel.AddChild(unison.NewPanel())
 	panel.AddChild(second)
+	return panel
+}
+
+func (p *prereqPanel) createEquippedEquipmentPrereqPanel(depth int, pr *gurps.EquippedEquipmentPrereq) *unison.Panel {
+	panel := unison.NewPanel()
+	p.createButtonsPanel(panel, depth, pr)
+	inFront := andOrText(pr) != noAndOr
+	if inFront {
+		p.addAndOr(panel, pr)
+	}
+	// addHasPopup(panel, &pr.Has)
+	p.addPrereqTypeSwitcher(panel, depth, pr)
+	if !inFront {
+		p.addAndOr(panel, pr)
+	}
+	columns := len(panel.Children())
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  columns,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	addNameCriteriaPanel(panel, &pr.NameCriteria, columns-1, true)
 	return panel
 }
 

@@ -568,6 +568,11 @@ func main() {
 				String: "a contained weight",
 			},
 			{
+				Name:   "EquippedEquipment",
+				Key:    "equipped_equipment",
+				String: "has equipped equipment",
+			},
+			{
 				Name:   "Skill",
 				Key:    "skill_prereq",
 				String: "a skill",

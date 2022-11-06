@@ -69,7 +69,7 @@ func (c *ContainedQuantityPrereq) ApplyNameableKeys(_ map[string]string) {
 }
 
 // Satisfied implements Prereq.
-func (c *ContainedQuantityPrereq) Satisfied(_ *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string) bool {
+func (c *ContainedQuantityPrereq) Satisfied(_ *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string, _ *bool) bool {
 	satisfied := false
 	if eqp, ok := exclude.(*Equipment); ok {
 		if satisfied = !eqp.Container(); !satisfied {
