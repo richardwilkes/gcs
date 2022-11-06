@@ -15,6 +15,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"net"
+	"path/filepath"
 	"time"
 
 	"github.com/richardwilkes/json"
@@ -37,7 +38,13 @@ func startHandoffService(pathsChan chan<- []string, paths []string) {
 		}
 		if pathsBuffer == nil {
 			var err error
-			if pathsBuffer, err = json.Marshal(paths); err != nil {
+			absPaths := make([]string, len(paths))
+			for i, p := range paths {
+				if absPaths[i], err = filepath.Abs(p); err != nil {
+					absPaths[i] = p
+				}
+			}
+			if pathsBuffer, err = json.Marshal(absPaths); err != nil {
 				jot.Fatal(1, errs.Wrap(err))
 			}
 		}
