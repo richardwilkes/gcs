@@ -42,7 +42,6 @@ var (
 	_        unison.UndoManagerProvider = &Sheet{}
 	_        ModifiableRoot             = &Sheet{}
 	_        Rebuildable                = &Sheet{}
-	_        DockableKind               = &Sheet{}
 	_        unison.TabCloser           = &Sheet{}
 	dropKeys                            = []string{
 		gid.Equipment,

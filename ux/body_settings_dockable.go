@@ -28,7 +28,7 @@ import (
 var _ GroupedCloser = &bodySettingsDockable{}
 
 type bodySettingsDockable struct {
-	Dockable
+	SettingsDockable
 	owner          EntityPanel
 	targetMgr      *TargetMgr
 	undoMgr        *unison.UndoManager

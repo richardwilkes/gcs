@@ -24,7 +24,7 @@ import (
 )
 
 type menuKeySettingsDockable struct {
-	Dockable
+	SettingsDockable
 	content *unison.Panel
 }
 

@@ -30,15 +30,14 @@ func EditSkill(owner Rebuildable, skill *gurps.Skill) {
 }
 
 func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *unison.Panel) func() {
-	var dockableKind string
-	if one, ok := e.owner.(DockableKind); ok {
-		dockableKind = one.DockableKind()
-	}
+	owner := e.owner.AsPanel().Self
+	_, ownerIsSheet := owner.(*Sheet)
+	_, ownerIsTemplate := owner.(*Template)
 	addNameLabelAndField(content, &e.editorData.Name)
 	isTechnique := strings.HasPrefix(e.target.Type, gid.Technique)
 	if !e.target.Container() && !isTechnique {
 		addSpecializationLabelAndField(content, &e.editorData.Specialization)
-		addTechLevelRequired(content, &e.editorData.TechLevel, dockableKind == SheetDockableKind)
+		addTechLevelRequired(content, &e.editorData.TechLevel, ownerIsSheet)
 	}
 	addNotesLabelAndField(content, &e.editorData.LocalNotes)
 	addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
@@ -135,7 +134,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 			wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("times the current encumbrance level")))
 		}
 
-		if dockableKind == SheetDockableKind || dockableKind == TemplateDockableKind {
+		if ownerIsSheet || ownerIsTemplate {
 			pointsLabel := i18n.Text("Points")
 			wrapper := addFlowWrapper(content, pointsLabel, 3)
 			addDecimalField(wrapper, nil, "", pointsLabel, "", &e.editorData.Points, 0, fxp.MaxBasePoints)

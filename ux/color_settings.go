@@ -24,7 +24,7 @@ import (
 )
 
 type colorSettingsDockable struct {
-	Dockable
+	SettingsDockable
 	content *unison.Panel
 }
 

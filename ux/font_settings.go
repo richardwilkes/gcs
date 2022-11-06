@@ -25,7 +25,7 @@ import (
 )
 
 type fontSettingsDockable struct {
-	Dockable
+	SettingsDockable
 	content  *unison.Panel
 	noUpdate bool
 }

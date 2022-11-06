@@ -35,7 +35,6 @@ var (
 	_ unison.UndoManagerProvider = &TableDockable[*gurps.Trait]{}
 	_ ModifiableRoot             = &TableDockable[*gurps.Trait]{}
 	_ Rebuildable                = &TableDockable[*gurps.Trait]{}
-	_ DockableKind               = &TableDockable[*gurps.Trait]{}
 	_ unison.TabCloser           = &TableDockable[*gurps.Trait]{}
 )
 

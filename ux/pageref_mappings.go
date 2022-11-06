@@ -30,7 +30,7 @@ import (
 )
 
 type pageRefMappingsDockable struct {
-	Dockable
+	SettingsDockable
 	content *unison.Panel
 }
 

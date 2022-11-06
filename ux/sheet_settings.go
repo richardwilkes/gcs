@@ -35,7 +35,7 @@ type EntityPanel interface {
 }
 
 type sheetSettingsDockable struct {
-	Dockable
+	SettingsDockable
 	owner                              EntityPanel
 	damageProgressionPopup             *unison.PopupMenu[attribute.DamageProgression]
 	showTraitModifier                  *unison.CheckBox

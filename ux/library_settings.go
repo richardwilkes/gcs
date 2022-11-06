@@ -29,7 +29,7 @@ import (
 )
 
 type librarySettingsDockable struct {
-	Dockable
+	SettingsDockable
 	library       *library.Library
 	toolbar       *unison.Panel
 	applyButton   *unison.Button

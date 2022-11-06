@@ -37,7 +37,6 @@ var (
 	_ unison.UndoManagerProvider = &Template{}
 	_ ModifiableRoot             = &Template{}
 	_ Rebuildable                = &Template{}
-	_ DockableKind               = &Template{}
 	_ unison.TabCloser           = &Template{}
 )
 

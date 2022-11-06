@@ -31,7 +31,7 @@ const attributeSettingsDragDataKey = "drag.attr"
 var _ GroupedCloser = &attributeSettingsDockable{}
 
 type attributeSettingsDockable struct {
-	Dockable
+	SettingsDockable
 	owner           EntityPanel
 	targetMgr       *TargetMgr
 	undoMgr         *unison.UndoManager

@@ -30,14 +30,13 @@ func EditSpell(owner Rebuildable, spell *gurps.Spell) {
 }
 
 func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *unison.Panel) func() {
-	var dockableKind string
-	if one, ok := e.owner.(DockableKind); ok {
-		dockableKind = one.DockableKind()
-	}
+	owner := e.owner.AsPanel().Self
+	_, ownerIsSheet := owner.(*Sheet)
+	_, ownerIsTemplate := owner.(*Template)
 	isRitualMagic := strings.HasPrefix(e.target.Type, gid.RitualMagicSpell)
 	addNameLabelAndField(content, &e.editorData.Name)
 	if !e.target.Container() {
-		addTechLevelRequired(content, &e.editorData.TechLevel, dockableKind == SheetDockableKind)
+		addTechLevelRequired(content, &e.editorData.TechLevel, ownerIsSheet)
 		addLabelAndListField(content, i18n.Text("College"), i18n.Text("colleges"), (*[]string)(&e.editorData.College))
 		addLabelAndStringField(content, i18n.Text("Class"), "", &e.editorData.Class)
 		addLabelAndStringField(content, i18n.Text("Power Source"), "", &e.editorData.PowerSource)
@@ -51,7 +50,7 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 		} else {
 			addDifficultyLabelAndFields(content, e.target.Entity, &e.editorData.Difficulty)
 		}
-		if dockableKind == SheetDockableKind || dockableKind == TemplateDockableKind {
+		if ownerIsSheet || ownerIsTemplate {
 			pointsLabel := i18n.Text("Points")
 			wrapper := addFlowWrapper(content, pointsLabel, 3)
 			addDecimalField(wrapper, nil, "", pointsLabel, "", &e.editorData.Points, 0, fxp.MaxBasePoints)

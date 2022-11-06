@@ -29,7 +29,7 @@ import (
 )
 
 type generalSettingsDockable struct {
-	Dockable
+	SettingsDockable
 	nameField                     *StringField
 	autoFillProfileCheckbox       *CheckBox
 	autoAddNaturalAttacksCheckbox *CheckBox
