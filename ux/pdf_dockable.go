@@ -135,9 +135,18 @@ func (d *PDFDockable) createToolbar() {
 	AddScalingHelpToInfoPop(info)
 	d.toolbar.AddChild(info)
 
+	pending := false
 	d.scaleField = NewScaleField(minPDFDockableScale, maxPDFDockableScale, func() int { return 100 },
 		func() int { return d.scale }, func(scale int) { d.scale = scale }, d.docScroll,
-		func() { d.LoadPage(d.pdf.MostRecentPageNumber()) }, false)
+		func() {
+			if !pending {
+				pending = true
+				unison.InvokeTaskAfter(func() {
+					pending = false
+					d.LoadPage(d.pdf.MostRecentPageNumber())
+				}, 30*time.Millisecond)
+			}
+		}, false)
 	d.scaleField.SetEnabled(false)
 	d.toolbar.AddChild(d.scaleField)
 

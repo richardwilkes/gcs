@@ -40,7 +40,8 @@ type PDFPage struct {
 	Matches    []unison.Rect
 }
 
-// PDFLink holds a single link on a page. If PageNumber if >= 0, then this is an internal link and the URI will be empty.
+// PDFLink holds a single link on a page. If PageNumber if >= 0, then this is an internal link and the URI will be
+// empty.
 type PDFLink struct {
 	Bounds     unison.Rect
 	PageNumber int
@@ -56,9 +57,8 @@ type pdfParams struct {
 
 // PDFRenderer holds a PDFRenderer page renderer.
 type PDFRenderer struct {
-	MaxSearchMatches     int
-	PPI                  int
-	DisplayScaleAdjust   float32
+	ppi                  float32
+	scaleAdjust          float32
 	doc                  *pdf.Document
 	pageCount            int
 	pageLoadedCallback   func()
@@ -82,9 +82,8 @@ func NewPDFRenderer(filePath string, pageLoadedCallback func()) (*PDFRenderer, e
 	}
 	display := unison.PrimaryDisplay()
 	return &PDFRenderer{
-		MaxSearchMatches:   100,
-		PPI:                display.PPI(),
-		DisplayScaleAdjust: 1 / display.ScaleX,
+		ppi:                float32(display.PPI()),
+		scaleAdjust:        1 / display.ScaleX,
 		doc:                doc,
 		pageCount:          doc.PageCount(),
 		pageLoadedCallback: pageLoadedCallback,
@@ -154,13 +153,13 @@ func (p *PDFRenderer) render(state *pdfParams) {
 		return
 	}
 
-	dpi := int(state.scale * float32(p.PPI) / p.DisplayScaleAdjust)
+	dpi := int(state.scale * p.ppi / p.scaleAdjust)
 	toc := p.doc.TableOfContents(dpi)
 	if p.shouldAbortRender(state) {
 		return
 	}
 
-	page, err := p.doc.RenderPage(state.pageNumber, dpi, p.MaxSearchMatches, state.search)
+	page, err := p.doc.RenderPage(state.pageNumber, dpi, 100, state.search)
 	if err != nil {
 		p.errorDuringRender(state, err)
 		return
@@ -170,23 +169,20 @@ func (p *PDFRenderer) render(state *pdfParams) {
 	}
 
 	var img *unison.Image
-	img, err = unison.NewImageFromPixels(page.Image.Rect.Dx(), page.Image.Rect.Dy(), page.Image.Pix, p.DisplayScaleAdjust)
+	img, err = unison.NewImageFromPixels(page.Image.Rect.Dx(), page.Image.Rect.Dy(), page.Image.Pix, p.scaleAdjust)
 	if err != nil {
 		p.errorDuringRender(state, err)
 		return
 	}
-	p.lock.RLock()
-	displayScaleAdjust := p.DisplayScaleAdjust
-	p.lock.RUnlock()
 	if p.shouldAbortRender(state) {
 		return
 	}
 	pg := &PDFPage{
 		PageNumber: state.pageNumber,
 		Image:      img,
-		TOC:        convertPDFTableOfContentsEntries(toc, displayScaleAdjust),
-		Links:      convertPDFLinks(page.Links, displayScaleAdjust),
-		Matches:    convertPDFMatches(page.SearchHits, displayScaleAdjust),
+		TOC:        p.convertTOCEntries(toc),
+		Links:      p.convertLinks(page.Links),
+		Matches:    p.convertMatches(page.SearchHits),
 	}
 	p.lock.Lock()
 	if state.sequence != p.lastRequest.sequence {
@@ -237,7 +233,7 @@ func (p *PDFRenderer) errorDuringRender(state *pdfParams, err error) {
 	p.pageLoadedCallback()
 }
 
-func convertPDFTableOfContentsEntries(entries []*pdf.TOCEntry, displayScaleAdjust float32) []*PDFTableOfContents {
+func (p *PDFRenderer) convertTOCEntries(entries []*pdf.TOCEntry) []*PDFTableOfContents {
 	if len(entries) == 0 {
 		return nil
 	}
@@ -246,21 +242,21 @@ func convertPDFTableOfContentsEntries(entries []*pdf.TOCEntry, displayScaleAdjus
 		toc[i] = &PDFTableOfContents{
 			Title:        entry.Title,
 			PageNumber:   entry.PageNumber,
-			PageLocation: pointFromPDFPagePoint(entry.PageX, entry.PageY, displayScaleAdjust),
-			Children:     convertPDFTableOfContentsEntries(entry.Children, displayScaleAdjust),
+			PageLocation: p.pointFromPagePoint(entry.PageX, entry.PageY),
+			Children:     p.convertTOCEntries(entry.Children),
 		}
 	}
 	return toc
 }
 
-func convertPDFLinks(pageLinks []*pdf.PageLink, displayScaleAdjust float32) []*PDFLink {
+func (p *PDFRenderer) convertLinks(pageLinks []*pdf.PageLink) []*PDFLink {
 	if len(pageLinks) == 0 {
 		return nil
 	}
 	links := make([]*PDFLink, len(pageLinks))
 	for i, link := range pageLinks {
 		links[i] = &PDFLink{
-			Bounds:     rectFromPDFPageRect(link.Bounds, displayScaleAdjust),
+			Bounds:     p.rectFromPageRect(link.Bounds),
 			PageNumber: link.PageNumber,
 			URI:        link.URI,
 		}
@@ -268,22 +264,22 @@ func convertPDFLinks(pageLinks []*pdf.PageLink, displayScaleAdjust float32) []*P
 	return links
 }
 
-func convertPDFMatches(hits []image.Rectangle, displayScaleAdjust float32) []unison.Rect {
+func (p *PDFRenderer) convertMatches(hits []image.Rectangle) []unison.Rect {
 	if len(hits) == 0 {
 		return nil
 	}
 	matches := make([]unison.Rect, len(hits))
 	for i, hit := range hits {
-		matches[i] = rectFromPDFPageRect(hit, displayScaleAdjust)
+		matches[i] = p.rectFromPageRect(hit)
 	}
 	return matches
 }
 
-func pointFromPDFPagePoint(x, y int, displayScaleAdjust float32) unison.Point {
-	return unison.NewPoint(float32(x)*displayScaleAdjust, float32(y)*displayScaleAdjust)
+func (p *PDFRenderer) pointFromPagePoint(x, y int) unison.Point {
+	return unison.NewPoint(float32(x)*p.scaleAdjust, float32(y)*p.scaleAdjust)
 }
 
-func rectFromPDFPageRect(r image.Rectangle, displayScaleAdjust float32) unison.Rect {
-	return unison.NewRect(float32(r.Min.X)*displayScaleAdjust, float32(r.Min.Y)*displayScaleAdjust,
-		float32(r.Dx())*displayScaleAdjust, float32(r.Dy())*displayScaleAdjust)
+func (p *PDFRenderer) rectFromPageRect(r image.Rectangle) unison.Rect {
+	return unison.NewRect(float32(r.Min.X)*p.scaleAdjust, float32(r.Min.Y)*p.scaleAdjust,
+		float32(r.Dx())*p.scaleAdjust, float32(r.Dy())*p.scaleAdjust)
 }
