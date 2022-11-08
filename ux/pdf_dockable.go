@@ -27,8 +27,9 @@ import (
 )
 
 const (
-	minPDFDockableScale                = 25
-	maxPDFDockableScale                = 300
+	minPDFDockableScale                = 50
+	maxPDFDockableScale                = 200
+	scaleCompensation                  = float32(100) / maxPDFDockableScale
 	maxElapsedRenderTimeWithoutOverlay = time.Second / 2
 	renderTimeSlop                     = time.Millisecond * 10
 )
@@ -135,18 +136,8 @@ func (d *PDFDockable) createToolbar() {
 	AddScalingHelpToInfoPop(info)
 	d.toolbar.AddChild(info)
 
-	pending := false
 	d.scaleField = NewScaleField(minPDFDockableScale, maxPDFDockableScale, func() int { return 100 },
-		func() int { return d.scale }, func(scale int) { d.scale = scale }, d.docScroll,
-		func() {
-			if !pending {
-				pending = true
-				unison.InvokeTaskAfter(func() {
-					pending = false
-					d.LoadPage(d.pdf.MostRecentPageNumber())
-				}, 30*time.Millisecond)
-			}
-		}, false)
+		func() int { return d.scale }, func(scale int) { d.scale = scale }, d.docScroll, d.MarkForRedraw, false)
 	d.scaleField.SetEnabled(false)
 	d.toolbar.AddChild(d.scaleField)
 
@@ -370,7 +361,7 @@ func (d *PDFDockable) Forward() {
 
 // LoadPage loads the specified page.
 func (d *PDFDockable) LoadPage(pageNumber int) {
-	d.pdf.LoadPage(pageNumber, d.docPanel.Scale(), d.searchField.Text())
+	d.pdf.LoadPage(pageNumber, d.searchField.Text())
 	d.MarkForRedraw()
 }
 
@@ -441,6 +432,8 @@ func (d *PDFDockable) pageLoaded() {
 
 func (d *PDFDockable) overLink(where unison.Point) (rect unison.Rect, link *PDFLink) {
 	if d.page != nil && d.page.Links != nil {
+		where.X /= scaleCompensation
+		where.Y /= scaleCompensation
 		for _, link = range d.page.Links {
 			if link.Bounds.ContainsPoint(where) {
 				return link.Bounds, link
@@ -535,6 +528,8 @@ func (d *PDFDockable) docSizer(_ unison.Size) (min, pref, max unison.Size) {
 		pref.Height = 300
 	} else {
 		pref = d.page.Image.LogicalSize()
+		pref.Width *= scaleCompensation
+		pref.Height *= scaleCompensation
 	}
 	return unison.NewSize(50, 50), pref, unison.MaxSize(pref)
 }
@@ -543,12 +538,15 @@ func (d *PDFDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
 	gc.DrawRect(dirty, unison.ContentColor.Paint(gc, dirty, unison.Fill))
 	if d.page != nil && d.page.Image != nil {
 		gc.Save()
-		scale := 1 / d.docPanel.Scale()
-		gc.Scale(scale, scale)
+		gc.Scale(scaleCompensation, scaleCompensation)
 		r := unison.Rect{Size: d.page.Image.LogicalSize()}
 		gc.DrawRect(r, unison.White.Paint(gc, r, unison.Fill))
-		gc.DrawImage(d.page.Image, 0, 0, nil, nil)
-		gc.Restore()
+		gc.DrawImageInRect(d.page.Image, r, &unison.SamplingOptions{
+			UseCubic:       true,
+			CubicResampler: unison.MitchellResampler(),
+			FilterMode:     unison.FilterModeLinear,
+			MipMapMode:     unison.MipMapModeLinear,
+		}, nil)
 		if len(d.page.Matches) != 0 {
 			p := unison.NewPaint()
 			p.SetStyle(unison.Fill)
@@ -565,6 +563,7 @@ func (d *PDFDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
 			p.SetColor(theme.PDFLinkHighlightColor.GetColor())
 			gc.DrawRect(d.rolloverRect, p)
 		}
+		gc.Restore()
 	}
 }
 

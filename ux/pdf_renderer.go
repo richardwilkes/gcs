@@ -52,7 +52,6 @@ type pdfParams struct {
 	sequence   int
 	pageNumber int
 	search     string
-	scale      float32
 }
 
 // PDFRenderer holds a PDFRenderer page renderer.
@@ -115,15 +114,14 @@ func (p *PDFRenderer) MostRecentPageNumber() int {
 	return 0
 }
 
-// LoadPage requests the given page to be loaded and rendered at the specified scale.
-func (p *PDFRenderer) LoadPage(pageNumber int, scale float32, search string) {
+// LoadPage requests the given page to be loaded and rendered.
+func (p *PDFRenderer) LoadPage(pageNumber int, search string) {
 	if pageNumber < 0 || pageNumber >= p.pageCount {
 		return
 	}
 	p.lock.Lock()
 	defer p.lock.Unlock()
-	if p.lastRequest != nil && p.lastRequest.pageNumber == pageNumber && p.lastRequest.scale == scale &&
-		p.lastRequest.search == search {
+	if p.lastRequest != nil && p.lastRequest.pageNumber == pageNumber && p.lastRequest.search == search {
 		return
 	}
 	if p.lastRequest == nil || p.lastRenderedSequence == p.lastRequest.sequence {
@@ -133,7 +131,6 @@ func (p *PDFRenderer) LoadPage(pageNumber int, scale float32, search string) {
 	p.lastRequest = &pdfParams{
 		sequence:   p.sequence,
 		pageNumber: pageNumber,
-		scale:      scale,
 		search:     search,
 	}
 	submitPDF(p, false)
@@ -153,7 +150,7 @@ func (p *PDFRenderer) render(state *pdfParams) {
 		return
 	}
 
-	dpi := int(state.scale * p.ppi / p.scaleAdjust)
+	dpi := int(((maxPDFDockableScale * p.ppi) / 100) / p.scaleAdjust) // We always render the PDF at the largest scale
 	toc := p.doc.TableOfContents(dpi)
 	if p.shouldAbortRender(state) {
 		return
