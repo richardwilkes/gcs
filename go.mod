@@ -7,8 +7,8 @@ require (
 	github.com/richardwilkes/json v0.1.0
 	github.com/richardwilkes/pdf v1.20.5
 	github.com/richardwilkes/rpgtools v1.4.2
-	github.com/richardwilkes/toolbox v1.77.3-0.20221105213608-27631b943679
-	github.com/richardwilkes/unison v0.41.1-0.20221107004309-e0f16d6cc22b
+	github.com/richardwilkes/toolbox v1.78.0
+	github.com/richardwilkes/unison v0.42.0
 	github.com/rjeczalik/notify v0.9.2
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef
@@ -17,7 +17,7 @@ require (
 	github.com/yookoala/realpath v1.0.0
 	golang.org/x/exp v0.0.0-20221106115401-f9659909a136
 	golang.org/x/image v0.1.0
-	golang.org/x/sys v0.1.0
+	golang.org/x/sys v0.2.0
 	golang.org/x/text v0.4.0
 )
 
