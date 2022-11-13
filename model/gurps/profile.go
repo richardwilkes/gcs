@@ -16,7 +16,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/ancestry"
-	"github.com/richardwilkes/gcs/v5/model/gurps/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
 	"github.com/richardwilkes/toolbox/errs"
@@ -55,7 +55,7 @@ type Profile struct {
 
 // Update any derived values.
 func (p *Profile) Update(entity *Entity) {
-	p.SizeModifierBonus = entity.BonusFor(feature.AttributeIDPrefix+gid.SizeModifier, nil)
+	p.SizeModifierBonus = entity.AttributeBonusFor(gid.SizeModifier, attribute.None, nil)
 }
 
 // Portrait returns the portrait image, if there is one.

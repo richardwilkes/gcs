@@ -466,8 +466,7 @@ func (s *Skill) AdjustedPoints(tooltip *xio.ByteBuffer) fxp.Int {
 // AdjustedPointsForNonContainerSkillOrTechnique returns the points, adjusted for any bonuses.
 func AdjustedPointsForNonContainerSkillOrTechnique(entity *Entity, points fxp.Int, name, specialization string, tags []string, tooltip *xio.ByteBuffer) fxp.Int {
 	if entity != nil && entity.Type == datafile.PC {
-		points += entity.SkillPointComparedBonusFor(feature.SkillPointsID+"*", name, specialization, tags, tooltip)
-		points += entity.BonusFor(feature.SkillPointsID+"/"+strings.ToLower(name), tooltip)
+		points += entity.SkillPointBonusFor(name, specialization, tags, tooltip)
 		points = points.Max(0)
 	}
 	return points
@@ -566,10 +565,7 @@ func CalculateSkillLevel(entity *Entity, name, specialization string, tags []str
 				level = def.AdjLevel
 			}
 			if entity != nil {
-				bonus := entity.SkillComparedBonusFor(feature.SkillNameID+"*", name, specialization, tags, &tooltip)
-				level += bonus
-				relativeLevel += bonus
-				bonus = entity.BonusFor(feature.SkillNameID+"/"+strings.ToLower(name), &tooltip)
+				bonus := entity.SkillBonusFor(name, specialization, tags, &tooltip)
 				level += bonus
 				relativeLevel += bonus
 				bonus = entity.EncumbranceLevel(true).Penalty().Mul(encumbrancePenaltyMultiplier)
@@ -611,8 +607,7 @@ func CalculateTechniqueLevel(entity *Entity, name, specialization string, tags [
 				relativeLevel = points
 			}
 			if level != fxp.Min {
-				relativeLevel += entity.BonusFor(feature.SkillNameID+"/"+strings.ToLower(name), &tooltip)
-				relativeLevel += entity.SkillComparedBonusFor(feature.SkillNameID+"*", name, specialization, tags, &tooltip)
+				relativeLevel += entity.SkillBonusFor(name, specialization, tags, &tooltip)
 				level += relativeLevel
 			}
 			if limitModifier != nil {
@@ -687,8 +682,7 @@ func (s *Skill) calcSkillDefaultLevel(def *SkillDefault, excludes map[string]boo
 	level := def.SkillLevel(s.Entity, true, excludes, strings.HasPrefix(s.Type, gid.Skill))
 	if def.SkillBased() {
 		if other := s.Entity.BestSkillNamed(def.Name, def.Specialization, true, excludes); other != nil {
-			level -= s.Entity.SkillComparedBonusFor(feature.SkillNameID+"*", def.Name, def.Specialization, s.Tags, nil)
-			level -= s.Entity.BonusFor(feature.SkillNameID+"/"+strings.ToLower(def.Name), nil)
+			level -= s.Entity.SkillBonusFor(def.Name, def.Specialization, s.Tags, nil)
 		}
 	}
 	return level

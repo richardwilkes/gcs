@@ -203,29 +203,23 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 		}
 		base = addDice(base, thrust)
 	}
-	var bestDefault *SkillDefault
+	var bestDef *SkillDefault
 	best := fxp.Min
 	for _, one := range w.Owner.Defaults {
 		if one.SkillBased() {
 			if level := one.SkillLevelFast(pc, false, nil, true); best < level {
 				best = level
-				bestDefault = one
+				bestDef = one
 			}
 		}
 	}
 	bonusSet := make(map[*feature.WeaponBonus]bool)
 	tags := w.Owner.Owner.TagList()
-	if bestDefault != nil {
-		pc.AddWeaponComparedBonusesFor(feature.SkillNameID+"*", bestDefault.Name, bestDefault.Specialization,
-			tags, base.Count, levels, tooltip, bonusSet)
-		pc.AddWeaponComparedBonusesFor(feature.SkillNameID+"/"+bestDefault.Name, bestDefault.Name,
-			bestDefault.Specialization, tags, base.Count, levels, tooltip, bonusSet)
+	if bestDef != nil {
+		pc.AddWeaponWithSkillBonusesFor(bestDef.Name, bestDef.Specialization, tags, base.Count, levels, tooltip, bonusSet)
 	}
 	nameQualifier := w.Owner.String()
-	pc.AddNamedWeaponBonusesFor(feature.WeaponNamedIDPrefix+"*", nameQualifier, w.Owner.Usage, tags, base.Count, levels,
-		tooltip, bonusSet)
-	pc.AddNamedWeaponBonusesFor(feature.WeaponNamedIDPrefix+"/"+nameQualifier, nameQualifier, w.Owner.Usage, tags,
-		base.Count, levels, tooltip, bonusSet)
+	pc.AddNamedWeaponBonusesFor(nameQualifier, w.Owner.Usage, tags, base.Count, levels, tooltip, bonusSet)
 	for _, f := range w.Owner.Owner.FeatureList() {
 		w.extractWeaponBonus(f, bonusSet, fxp.From(base.Count), levels, tooltip)
 	}

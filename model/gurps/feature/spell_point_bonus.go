@@ -18,17 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/gcs/v5/model/gurps/spell"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio"
-)
-
-const (
-	// SpellPointsID holds the ID for spell point lookups.
-	SpellPointsID = "spell.points"
-	// SpellCollegePointsID holds the ID for spell college point lookups.
-	SpellCollegePointsID = "spell.college.points"
-	// SpellPowerSourcePointsID holds the ID for spell power source point lookups.
-	SpellPowerSourcePointsID = "spell.power_source.points"
 )
 
 var _ Bonus = &SpellPointBonus{}
@@ -73,33 +63,6 @@ func (s *SpellPointBonus) Clone() Feature {
 	return &other
 }
 
-// FeatureMapKey implements Feature.
-func (s *SpellPointBonus) FeatureMapKey() string {
-	if s.TagsCriteria.Compare != criteria.Any {
-		return SpellPointsID + "*"
-	}
-	switch s.SpellMatchType {
-	case spell.AllColleges:
-		return SpellCollegePointsID
-	case spell.CollegeName:
-		return s.buildKey(SpellCollegePointsID)
-	case spell.PowerSource:
-		return s.buildKey(SpellPowerSourcePointsID)
-	case spell.Spell:
-		return s.buildKey(SpellPointsID)
-	default:
-		jot.Fatal(1, "invalid match type: ", s.SpellMatchType)
-		return ""
-	}
-}
-
-func (s *SpellPointBonus) buildKey(prefix string) string {
-	if s.NameCriteria.Compare == criteria.Is {
-		return prefix + "/" + s.NameCriteria.Qualifier
-	}
-	return prefix + "*"
-}
-
 // FillWithNameableKeys implements Feature.
 func (s *SpellPointBonus) FillWithNameableKeys(m map[string]string) {
 	if s.SpellMatchType != spell.AllColleges {
@@ -134,4 +97,9 @@ func (s *SpellPointBonus) SetLevel(level fxp.Int) {
 // AddToTooltip implements Bonus.
 func (s *SpellPointBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 	basicAddToTooltip(s.owner, &s.LeveledAmount, buffer)
+}
+
+// MatchForType returns true if this spell bonus matches the data for its match type.
+func (s *SpellPointBonus) MatchForType(name, powerSource string, colleges []string) bool {
+	return s.SpellMatchType.MatchForType(s.NameCriteria, name, powerSource, colleges)
 }

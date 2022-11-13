@@ -468,9 +468,7 @@ func CalculateSpellLevel(entity *Entity, name, powerSource string, colleges, tag
 			relativeLevel += fxp.One + pts.Div(fxp.Four).Trunc()
 		}
 		if level != fxp.Min {
-			relativeLevel += entity.BestCollegeSpellBonus(tags, colleges, &tooltip)
-			relativeLevel += entity.SpellBonusesFor(feature.SpellPowerSourceID, powerSource, tags, &tooltip)
-			relativeLevel += entity.SpellBonusesFor(feature.SpellNameID, name, tags, &tooltip)
+			relativeLevel += entity.SpellBonusFor(name, powerSource, colleges, tags, &tooltip)
 			relativeLevel = relativeLevel.Trunc()
 			level += relativeLevel
 		}
@@ -500,10 +498,7 @@ func CalculateRitualMagicSpellLevel(entity *Entity, name, powerSource, ritualSki
 	if entity != nil {
 		tooltip := &xio.ByteBuffer{}
 		tooltip.WriteString(skillLevel.Tooltip)
-		levels := entity.BestCollegeSpellBonus(tags, colleges, tooltip)
-		levels += entity.SpellBonusesFor(feature.SpellPowerSourceID, powerSource, tags, tooltip)
-		levels += entity.SpellBonusesFor(feature.SpellNameID, name, tags, tooltip)
-		levels = levels.Trunc()
+		levels := entity.SpellBonusFor(name, powerSource, colleges, tags, tooltip).Trunc()
 		skillLevel.Level += levels
 		skillLevel.RelativeLevel += levels
 		skillLevel.Tooltip = tooltip.String()
@@ -721,37 +716,10 @@ func (s *Spell) AdjustedPoints(tooltip *xio.ByteBuffer) fxp.Int {
 // AdjustedPointsForNonContainerSpell returns the points, adjusted for any bonuses.
 func AdjustedPointsForNonContainerSpell(entity *Entity, points fxp.Int, name, powerSource string, colleges, tags []string, tooltip *xio.ByteBuffer) fxp.Int {
 	if entity != nil && entity.Type == datafile.PC {
-		points += bestCollegeSpellPointBonus(entity, colleges, tags, tooltip)
-		points += entity.SpellPointBonusesFor(feature.SpellPowerSourcePointsID, powerSource, tags, tooltip)
-		points += entity.SpellPointBonusesFor(feature.SpellPointsID, name, tags, tooltip)
+		points += entity.SpellPointBonusFor(name, powerSource, colleges, tags, tooltip)
 		points = points.Max(0)
 	}
 	return points
-}
-
-func bestCollegeSpellPointBonus(entity *Entity, colleges, tags []string, tooltip *xio.ByteBuffer) fxp.Int {
-	best := fxp.Min
-	bestTooltip := ""
-	for _, college := range colleges {
-		var buffer *xio.ByteBuffer
-		if tooltip != nil {
-			buffer = &xio.ByteBuffer{}
-		}
-		points := entity.SpellPointBonusesFor(feature.SpellCollegePointsID, college, tags, buffer)
-		if best < points {
-			best = points
-			if buffer != nil {
-				bestTooltip = buffer.String()
-			}
-		}
-	}
-	if tooltip != nil {
-		tooltip.WriteString(bestTooltip)
-	}
-	if best == fxp.Min {
-		best = 0
-	}
-	return best
 }
 
 // TL implements TechLevelProvider.

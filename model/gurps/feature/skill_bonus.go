@@ -18,13 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/gcs/v5/model/gurps/skill"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio"
-)
-
-const (
-	// SkillNameID holds the ID for skill name lookups.
-	SkillNameID = "skill.name"
 )
 
 var _ Bonus = &SkillBonus{}
@@ -73,29 +67,6 @@ func (s *SkillBonus) FeatureType() Type {
 func (s *SkillBonus) Clone() Feature {
 	other := *s
 	return &other
-}
-
-// FeatureMapKey implements Feature.
-func (s *SkillBonus) FeatureMapKey() string {
-	switch s.SelectionType {
-	case skill.SkillsWithName:
-		return s.buildKey(SkillNameID)
-	case skill.ThisWeapon:
-		return ThisWeaponID
-	case skill.WeaponsWithName:
-		return s.buildKey(WeaponNamedIDPrefix)
-	default:
-		jot.Fatal(1, "invalid selection type: ", s.SelectionType)
-		return ""
-	}
-}
-
-func (s *SkillBonus) buildKey(prefix string) string {
-	if s.NameCriteria.Compare == criteria.Is &&
-		(s.SpecializationCriteria.Compare == criteria.Any && s.TagsCriteria.Compare == criteria.Any) {
-		return prefix + "/" + s.NameCriteria.Qualifier
-	}
-	return prefix + "*"
 }
 
 // FillWithNameableKeys implements Feature.

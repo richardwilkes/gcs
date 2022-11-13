@@ -24,8 +24,6 @@ import (
 type Feature interface {
 	nameables.Nameables
 	FeatureType() Type
-	// FeatureMapKey returns the key used for matching within the feature map.
-	FeatureMapKey() string
 	Clone() Feature
 }
 

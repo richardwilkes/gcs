@@ -51,15 +51,6 @@ func (a *AttributeBonus) Clone() Feature {
 	return &other
 }
 
-// FeatureMapKey implements Feature.
-func (a *AttributeBonus) FeatureMapKey() string {
-	key := AttributeIDPrefix + a.Attribute
-	if a.Limitation != attribute.None {
-		key += "." + a.Limitation.Key()
-	}
-	return key
-}
-
 // FillWithNameableKeys implements Feature.
 func (a *AttributeBonus) FillWithNameableKeys(_ map[string]string) {
 }

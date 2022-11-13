@@ -18,17 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/gcs/v5/model/gurps/spell"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio"
-)
-
-const (
-	// SpellNameID holds the ID for spell name lookups.
-	SpellNameID = "spell.name"
-	// SpellCollegeID holds the ID for spell college name lookups.
-	SpellCollegeID = "spell.college"
-	// SpellPowerSourceID holds the ID for spell power source name lookups.
-	SpellPowerSourceID = "spell.power_source"
 )
 
 var _ Bonus = &SpellBonus{}
@@ -73,33 +63,6 @@ func (s *SpellBonus) Clone() Feature {
 	return &other
 }
 
-// FeatureMapKey implements Feature.
-func (s *SpellBonus) FeatureMapKey() string {
-	if s.TagsCriteria.Compare != criteria.Any {
-		return SpellNameID + "*"
-	}
-	switch s.SpellMatchType {
-	case spell.AllColleges:
-		return SpellCollegeID
-	case spell.CollegeName:
-		return s.buildKey(SpellCollegeID)
-	case spell.PowerSource:
-		return s.buildKey(SpellPowerSourceID)
-	case spell.Spell:
-		return s.buildKey(SpellNameID)
-	default:
-		jot.Fatal(1, "invalid match type: ", s.SpellMatchType)
-		return ""
-	}
-}
-
-func (s *SpellBonus) buildKey(prefix string) string {
-	if s.NameCriteria.Compare == criteria.Is {
-		return prefix + "/" + s.NameCriteria.Qualifier
-	}
-	return prefix + "*"
-}
-
 // FillWithNameableKeys implements Feature.
 func (s *SpellBonus) FillWithNameableKeys(m map[string]string) {
 	if s.SpellMatchType != spell.AllColleges {
@@ -134,4 +97,9 @@ func (s *SpellBonus) SetLevel(level fxp.Int) {
 // AddToTooltip implements Bonus.
 func (s *SpellBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 	basicAddToTooltip(s.owner, &s.LeveledAmount, buffer)
+}
+
+// MatchForType returns true if this spell bonus matches the data for its match type.
+func (s *SpellBonus) MatchForType(name, powerSource string, colleges []string) bool {
+	return s.SpellMatchType.MatchForType(s.NameCriteria, name, powerSource, colleges)
 }

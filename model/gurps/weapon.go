@@ -344,12 +344,7 @@ func (w *Weapon) skillLevelBaseAdjustment(entity *Entity, tooltip *xio.ByteBuffe
 		adj -= minST
 	}
 	nameQualifier := w.String()
-	for _, bonus := range entity.NamedWeaponSkillBonusesFor(feature.WeaponNamedIDPrefix+"*", nameQualifier, w.Usage,
-		w.Owner.TagList(), tooltip) {
-		adj += bonus.AdjustedAmount()
-	}
-	for _, bonus := range entity.NamedWeaponSkillBonusesFor(feature.WeaponNamedIDPrefix+"/"+nameQualifier,
-		nameQualifier, w.Usage, w.Owner.TagList(), tooltip) {
+	for _, bonus := range entity.NamedWeaponSkillBonusesFor(nameQualifier, w.Usage, w.Owner.TagList(), tooltip) {
 		adj += bonus.AdjustedAmount()
 	}
 	for _, f := range w.Owner.FeatureList() {

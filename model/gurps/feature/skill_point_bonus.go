@@ -21,11 +21,6 @@ import (
 	"github.com/richardwilkes/toolbox/xio"
 )
 
-const (
-	// SkillPointsID holds the ID for skill point lookups.
-	SkillPointsID = "skill.points"
-)
-
 var _ Bonus = &SkillPointBonus{}
 
 // SkillPointBonus holds an adjustment to a skill's points.
@@ -70,15 +65,6 @@ func (s *SkillPointBonus) FeatureType() Type {
 func (s *SkillPointBonus) Clone() Feature {
 	other := *s
 	return &other
-}
-
-// FeatureMapKey implements Feature.
-func (s *SkillPointBonus) FeatureMapKey() string {
-	if s.NameCriteria.Compare == criteria.Is &&
-		(s.SpecializationCriteria.Compare == criteria.Any && s.TagsCriteria.Compare == criteria.Any) {
-		return SkillPointsID + "/" + s.NameCriteria.Qualifier
-	}
-	return SkillPointsID + "*"
 }
 
 // FillWithNameableKeys implements Feature.

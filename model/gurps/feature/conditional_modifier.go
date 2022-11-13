@@ -50,11 +50,6 @@ func (c *ConditionalModifier) Clone() Feature {
 	return &other
 }
 
-// FeatureMapKey implements Feature.
-func (c *ConditionalModifier) FeatureMapKey() string {
-	return ConditionalModifierType.Key()
-}
-
 // FillWithNameableKeys implements Feature.
 func (c *ConditionalModifier) FillWithNameableKeys(m map[string]string) {
 	nameables.Extract(c.Situation, m)

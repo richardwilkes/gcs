@@ -15,9 +15,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 )
 
-// AttributeIDPrefix is the prefix all references to attribute IDs should use.
-const AttributeIDPrefix = "attr."
-
 var _ Feature = &CostReduction{}
 
 // CostReduction holds the data for a cost reduction.
@@ -45,11 +42,6 @@ func (c *CostReduction) FeatureType() Type {
 func (c *CostReduction) Clone() Feature {
 	other := *c
 	return &other
-}
-
-// FeatureMapKey implements Feature.
-func (c *CostReduction) FeatureMapKey() string {
-	return AttributeIDPrefix + c.Attribute
 }
 
 // FillWithNameableKeys implements Feature.

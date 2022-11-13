@@ -18,7 +18,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/crc"
-	"github.com/richardwilkes/gcs/v5/model/gurps/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/json"
@@ -136,7 +135,7 @@ func (h *HitLocation) DR(entity *Entity, tooltip *xio.ByteBuffer, drMap map[stri
 			fmt.Fprintf(tooltip, "\n%s [%+d against %s attacks]", h.ChoiceName, h.DRBonus, gid.All)
 		}
 	}
-	drMap = entity.AddDRBonusesFor(feature.HitLocationPrefix+h.LocID, tooltip, drMap)
+	drMap = entity.AddDRBonusesFor(h.LocID, tooltip, drMap)
 	if h.owningTable != nil && h.owningTable.owningLocation != nil {
 		drMap = h.owningTable.owningLocation.DR(entity, tooltip, drMap)
 	}

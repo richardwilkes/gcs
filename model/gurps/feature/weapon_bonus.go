@@ -19,15 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/gcs/v5/model/gurps/weapon"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio"
-)
-
-const (
-	// ThisWeaponID holds the ID for "this weapon".
-	ThisWeaponID = "\u0001"
-	// WeaponNamedIDPrefix the prefix for "weapon named" IDs.
-	WeaponNamedIDPrefix = "weapon_named."
 )
 
 var _ Bonus = &WeaponBonus{}
@@ -92,29 +84,6 @@ func (w *WeaponBonus) FeatureType() Type {
 func (w *WeaponBonus) Clone() Feature {
 	other := *w
 	return &other
-}
-
-// FeatureMapKey implements Feature.
-func (w *WeaponBonus) FeatureMapKey() string {
-	switch w.SelectionType {
-	case weapon.WithRequiredSkill:
-		return w.buildKey(SkillNameID)
-	case weapon.ThisWeapon:
-		return ThisWeaponID
-	case weapon.WithName:
-		return w.buildKey(WeaponNamedIDPrefix)
-	default:
-		jot.Fatal(1, "invalid selection type: ", w.SelectionType)
-		return ""
-	}
-}
-
-func (w *WeaponBonus) buildKey(prefix string) string {
-	if w.NameCriteria.Compare == criteria.Is &&
-		(w.SpecializationCriteria.Compare == criteria.Any && w.TagsCriteria.Compare == criteria.Any) {
-		return prefix + "/" + w.NameCriteria.Qualifier
-	}
-	return prefix + "*"
 }
 
 // FillWithNameableKeys implements Feature.

@@ -50,11 +50,6 @@ func (r *ReactionBonus) Clone() Feature {
 	return &other
 }
 
-// FeatureMapKey implements Feature.
-func (r *ReactionBonus) FeatureMapKey() string {
-	return "reaction"
-}
-
 // FillWithNameableKeys implements Feature.
 func (r *ReactionBonus) FillWithNameableKeys(m map[string]string) {
 	nameables.Extract(r.Situation, m)

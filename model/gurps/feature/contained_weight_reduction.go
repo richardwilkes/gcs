@@ -45,11 +45,6 @@ func (c *ContainedWeightReduction) Clone() Feature {
 	return &other
 }
 
-// FeatureMapKey implements Feature.
-func (c *ContainedWeightReduction) FeatureMapKey() string {
-	return "equipment.weight.sum"
-}
-
 // FillWithNameableKeys implements Feature.
 func (c *ContainedWeightReduction) FillWithNameableKeys(_ map[string]string) {
 }

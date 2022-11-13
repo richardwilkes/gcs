@@ -22,9 +22,6 @@ import (
 	"github.com/richardwilkes/toolbox/xio"
 )
 
-// HitLocationPrefix is the prefix used on all hit locations for DR bonuses.
-const HitLocationPrefix = "hit_location."
-
 var _ Bonus = &DRBonus{}
 
 // DRBonusData is split out so that it can be adjusted before and after being serialized.
@@ -71,11 +68,6 @@ func (d *DRBonus) Normalize() {
 		s = gid.All
 	}
 	d.Specialization = s
-}
-
-// FeatureMapKey implements Feature.
-func (d *DRBonus) FeatureMapKey() string {
-	return HitLocationPrefix + d.Location
 }
 
 // FillWithNameableKeys implements Feature.
