@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package spell
+package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -17,15 +17,15 @@ import (
 )
 
 // MatchForType applies the matcher and returns the result.
-func (enum MatchType) MatchForType(matcher criteria.String, name, powerSource string, colleges []string) bool {
+func (enum SpellMatchType) MatchForType(matcher criteria.String, name, powerSource string, colleges []string) bool {
 	switch enum {
-	case AllColleges:
+	case AllCollegesSpellMatchType:
 		return true
-	case CollegeName:
+	case CollegeNameSpellMatchType:
 		return matcher.MatchesList(colleges...)
-	case PowerSource:
+	case PowerSourceSpellMatchType:
 		return matcher.Matches(powerSource)
-	case Spell:
+	case NameSpellMatchType:
 		return matcher.Matches(name)
 	default:
 		jot.Warnf("unhandled spell match type: %d", enum)

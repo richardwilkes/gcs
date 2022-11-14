@@ -20,7 +20,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/gurps/skill"
-	"github.com/richardwilkes/gcs/v5/model/gurps/spell"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -343,11 +342,11 @@ func (p *featuresPanel) createSpellBonusPanel(f *gurps.SpellBonus) *unison.Panel
 	wrapper := unison.NewPanel()
 	var criteriaPopup *unison.PopupMenu[string]
 	var criteriaField *StringField
-	popup := addPopup(wrapper, spell.AllMatchType, &f.SpellMatchType)
-	popup.SelectionCallback = func(_ int, item spell.MatchType) {
+	popup := addPopup(wrapper, gurps.AllSpellMatchType, &f.SpellMatchType)
+	popup.SelectionCallback = func(_ int, item gurps.SpellMatchType) {
 		f.SpellMatchType = item
-		adjustPopupBlank(criteriaPopup, f.SpellMatchType == spell.AllColleges)
-		adjustFieldBlank(criteriaField, f.SpellMatchType == spell.AllColleges)
+		adjustPopupBlank(criteriaPopup, f.SpellMatchType == gurps.AllCollegesSpellMatchType)
+		adjustFieldBlank(criteriaField, f.SpellMatchType == gurps.AllCollegesSpellMatchType)
 		MarkModified(p)
 	}
 	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", "", i18n.Text("Name Qualifier"), &f.NameCriteria, 1, false)
@@ -360,8 +359,8 @@ func (p *featuresPanel) createSpellBonusPanel(f *gurps.SpellBonus) *unison.Panel
 		HAlign: unison.FillAlignment,
 	})
 	panel.AddChild(wrapper)
-	adjustPopupBlank(criteriaPopup, f.SpellMatchType == spell.AllColleges)
-	adjustFieldBlank(criteriaField, f.SpellMatchType == spell.AllColleges)
+	adjustPopupBlank(criteriaPopup, f.SpellMatchType == gurps.AllCollegesSpellMatchType)
+	adjustFieldBlank(criteriaField, f.SpellMatchType == gurps.AllCollegesSpellMatchType)
 
 	addTagCriteriaPanel(panel, &f.TagsCriteria, 1, true)
 	return panel
@@ -374,11 +373,11 @@ func (p *featuresPanel) createSpellPointBonusPanel(f *gurps.SpellPointBonus) *un
 	wrapper := unison.NewPanel()
 	var criteriaPopup *unison.PopupMenu[string]
 	var criteriaField *StringField
-	popup := addPopup(wrapper, spell.AllMatchType, &f.SpellMatchType)
-	popup.SelectionCallback = func(_ int, item spell.MatchType) {
+	popup := addPopup(wrapper, gurps.AllSpellMatchType, &f.SpellMatchType)
+	popup.SelectionCallback = func(_ int, item gurps.SpellMatchType) {
 		f.SpellMatchType = item
-		adjustPopupBlank(criteriaPopup, f.SpellMatchType == spell.AllColleges)
-		adjustFieldBlank(criteriaField, f.SpellMatchType == spell.AllColleges)
+		adjustPopupBlank(criteriaPopup, f.SpellMatchType == gurps.AllCollegesSpellMatchType)
+		adjustFieldBlank(criteriaField, f.SpellMatchType == gurps.AllCollegesSpellMatchType)
 		MarkModified(p)
 	}
 	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", "", i18n.Text("Name Qualifier"), &f.NameCriteria, 1, false)
@@ -391,8 +390,8 @@ func (p *featuresPanel) createSpellPointBonusPanel(f *gurps.SpellPointBonus) *un
 		HAlign: unison.FillAlignment,
 	})
 	panel.AddChild(wrapper)
-	adjustPopupBlank(criteriaPopup, f.SpellMatchType == spell.AllColleges)
-	adjustFieldBlank(criteriaField, f.SpellMatchType == spell.AllColleges)
+	adjustPopupBlank(criteriaPopup, f.SpellMatchType == gurps.AllCollegesSpellMatchType)
+	adjustFieldBlank(criteriaField, f.SpellMatchType == gurps.AllCollegesSpellMatchType)
 
 	addTagCriteriaPanel(panel, &f.TagsCriteria, 1, true)
 	return panel

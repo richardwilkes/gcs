@@ -16,7 +16,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/spell"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -460,17 +459,17 @@ func (p *prereqPanel) createSpellPrereqPanel(depth int, pr *gurps.SpellPrereq) *
 	})
 	second := unison.NewPanel()
 	second.SetLayoutData(&unison.FlexLayoutData{HSpan: columns - 1})
-	subTypePopup := addPopup[spell.ComparisonType](second, spell.AllComparisonType, &pr.SubType)
+	subTypePopup := addPopup[gurps.SpellComparisonType](second, gurps.AllSpellComparisonType, &pr.SubType)
 	popup, field := addStringCriteriaPanel(second, "", "", i18n.Text("Spell Qualifier"), &pr.QualifierCriteria, 1, false)
 	savedCallback := subTypePopup.SelectionCallback
-	subTypePopup.SelectionCallback = func(index int, item spell.ComparisonType) {
+	subTypePopup.SelectionCallback = func(index int, item gurps.SpellComparisonType) {
 		savedCallback(index, item)
-		blank := pr.SubType == spell.Any || pr.SubType == spell.CollegeCount
+		blank := pr.SubType == gurps.AnySpellComparisonType || pr.SubType == gurps.CollegeCountSpellComparisonType
 		adjustPopupBlank(popup, blank)
 		adjustFieldBlank(field, blank)
 	}
-	adjustPopupBlank(popup, pr.SubType == spell.Any || pr.SubType == spell.CollegeCount)
-	adjustFieldBlank(field, pr.SubType == spell.Any || pr.SubType == spell.CollegeCount)
+	adjustPopupBlank(popup, pr.SubType == gurps.AnySpellComparisonType || pr.SubType == gurps.CollegeCountSpellComparisonType)
+	adjustFieldBlank(field, pr.SubType == gurps.AnySpellComparisonType || pr.SubType == gurps.CollegeCountSpellComparisonType)
 	second.SetLayout(&unison.FlexLayout{
 		Columns:  len(second.Children()),
 		HSpacing: unison.StdHSpacing,

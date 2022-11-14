@@ -11,7 +11,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package spell
+package gurps
 
 import (
 	"strings"
@@ -22,24 +22,24 @@ import (
 
 // Possible values.
 const (
-	Name ComparisonType = iota
-	Tag
-	College
-	CollegeCount
-	Any
-	LastComparisonType = Any
+	NameSpellComparisonType SpellComparisonType = iota
+	TagSpellComparisonType
+	CollegeSpellComparisonType
+	CollegeCountSpellComparisonType
+	AnySpellComparisonType
+	LastSpellComparisonType = AnySpellComparisonType
 )
 
 var (
-	// AllComparisonType holds all possible values.
-	AllComparisonType = []ComparisonType{
-		Name,
-		Tag,
-		College,
-		CollegeCount,
-		Any,
+	// AllSpellComparisonType holds all possible values.
+	AllSpellComparisonType = []SpellComparisonType{
+		NameSpellComparisonType,
+		TagSpellComparisonType,
+		CollegeSpellComparisonType,
+		CollegeCountSpellComparisonType,
+		AnySpellComparisonType,
 	}
-	comparisonTypeData = []struct {
+	spellComparisonTypeData = []struct {
 		key     string
 		oldKeys []string
 		string  string
@@ -68,44 +68,44 @@ var (
 	}
 )
 
-// ComparisonType holds the type of a comparison.
-type ComparisonType byte
+// SpellComparisonType holds the type of a comparison.
+type SpellComparisonType byte
 
 // EnsureValid ensures this is of a known value.
-func (enum ComparisonType) EnsureValid() ComparisonType {
-	if enum <= LastComparisonType {
+func (enum SpellComparisonType) EnsureValid() SpellComparisonType {
+	if enum <= LastSpellComparisonType {
 		return enum
 	}
 	return 0
 }
 
 // Key returns the key used in serialization.
-func (enum ComparisonType) Key() string {
-	return comparisonTypeData[enum.EnsureValid()].key
+func (enum SpellComparisonType) Key() string {
+	return spellComparisonTypeData[enum.EnsureValid()].key
 }
 
 // String implements fmt.Stringer.
-func (enum ComparisonType) String() string {
-	return comparisonTypeData[enum.EnsureValid()].string
+func (enum SpellComparisonType) String() string {
+	return spellComparisonTypeData[enum.EnsureValid()].string
 }
 
-// ExtractComparisonType extracts the value from a string.
-func ExtractComparisonType(str string) ComparisonType {
-	for i, one := range comparisonTypeData {
+// ExtractSpellComparisonType extracts the value from a string.
+func ExtractSpellComparisonType(str string) SpellComparisonType {
+	for i, one := range spellComparisonTypeData {
 		if strings.EqualFold(one.key, str) || txt.CaselessSliceContains(one.oldKeys, str) {
-			return ComparisonType(i)
+			return SpellComparisonType(i)
 		}
 	}
 	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
-func (enum ComparisonType) MarshalText() (text []byte, err error) {
+func (enum SpellComparisonType) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
 // UnmarshalText implements the encoding.TextUnmarshaler interface.
-func (enum *ComparisonType) UnmarshalText(text []byte) error {
-	*enum = ExtractComparisonType(string(text))
+func (enum *SpellComparisonType) UnmarshalText(text []byte) error {
+	*enum = ExtractSpellComparisonType(string(text))
 	return nil
 }

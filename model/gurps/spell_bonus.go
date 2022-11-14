@@ -17,7 +17,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
-	"github.com/richardwilkes/gcs/v5/model/gurps/spell"
 	"github.com/richardwilkes/toolbox/xio"
 )
 
@@ -26,7 +25,7 @@ var _ Bonus = &SpellBonus{}
 // SpellBonus holds the data for a bonus to a spell.
 type SpellBonus struct {
 	Type           FeatureType     `json:"type"`
-	SpellMatchType spell.MatchType `json:"match"`
+	SpellMatchType SpellMatchType  `json:"match"`
 	NameCriteria   criteria.String `json:"name,omitempty"`
 	TagsCriteria   criteria.String `json:"tags,alt=category,omitempty"`
 	LeveledAmount
@@ -37,7 +36,7 @@ type SpellBonus struct {
 func NewSpellBonus() *SpellBonus {
 	return &SpellBonus{
 		Type:           SpellBonusFeatureType,
-		SpellMatchType: spell.AllColleges,
+		SpellMatchType: AllCollegesSpellMatchType,
 		NameCriteria: criteria.String{
 			StringData: criteria.StringData{
 				Compare: criteria.Is,
@@ -65,7 +64,7 @@ func (s *SpellBonus) Clone() Feature {
 
 // FillWithNameableKeys implements Feature.
 func (s *SpellBonus) FillWithNameableKeys(m map[string]string) {
-	if s.SpellMatchType != spell.AllColleges {
+	if s.SpellMatchType != AllCollegesSpellMatchType {
 		nameables.Extract(s.NameCriteria.Qualifier, m)
 	}
 	nameables.Extract(s.TagsCriteria.Qualifier, m)
@@ -73,7 +72,7 @@ func (s *SpellBonus) FillWithNameableKeys(m map[string]string) {
 
 // ApplyNameableKeys implements Feature.
 func (s *SpellBonus) ApplyNameableKeys(m map[string]string) {
-	if s.SpellMatchType != spell.AllColleges {
+	if s.SpellMatchType != AllCollegesSpellMatchType {
 		s.NameCriteria.Qualifier = nameables.Apply(s.NameCriteria.Qualifier, m)
 	}
 	s.TagsCriteria.Qualifier = nameables.Apply(s.TagsCriteria.Qualifier, m)

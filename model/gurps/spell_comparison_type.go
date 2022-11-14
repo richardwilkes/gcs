@@ -9,10 +9,10 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package spell
+package gurps
 
 // UsesStringCriteria returns true if the comparison uses a string value.
-func (enum ComparisonType) UsesStringCriteria() bool {
+func (enum SpellComparisonType) UsesStringCriteria() bool {
 	v := enum.EnsureValid()
-	return v == Name || v == Tag || v == College
+	return v == NameSpellComparisonType || v == TagSpellComparisonType || v == CollegeSpellComparisonType
 }

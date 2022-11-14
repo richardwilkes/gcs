@@ -630,10 +630,9 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/gurps/spell",
-		Name:       "comparison_type",
-		Desc:       "holds the type of a comparison",
-		StandAlone: true,
+		Pkg:  "model/gurps",
+		Name: "spell_comparison_type",
+		Desc: "holds the type of a comparison",
 		Values: []enumValue{
 			{
 				Key:    "name",
@@ -659,10 +658,9 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/gurps/spell",
-		Name:       "match_type",
-		Desc:       "holds the type of a match",
-		StandAlone: true,
+		Pkg:  "model/gurps",
+		Name: "spell_match_type",
+		Desc: "holds the type of a match",
 		Values: []enumValue{
 			{
 				Key:    "all_colleges",
@@ -678,7 +676,7 @@ func main() {
 				String: "to the power source whose name",
 			},
 			{
-				Name:   "Spell",
+				Name:   "Name",
 				Key:    "spell_name",
 				String: "to the spell whose name",
 			},

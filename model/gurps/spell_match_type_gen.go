@@ -11,7 +11,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package spell
+package gurps
 
 import (
 	"strings"
@@ -21,22 +21,22 @@ import (
 
 // Possible values.
 const (
-	AllColleges MatchType = iota
-	CollegeName
-	PowerSource
-	Spell
-	LastMatchType = Spell
+	AllCollegesSpellMatchType SpellMatchType = iota
+	CollegeNameSpellMatchType
+	PowerSourceSpellMatchType
+	NameSpellMatchType
+	LastSpellMatchType = NameSpellMatchType
 )
 
 var (
-	// AllMatchType holds all possible values.
-	AllMatchType = []MatchType{
-		AllColleges,
-		CollegeName,
-		PowerSource,
-		Spell,
+	// AllSpellMatchType holds all possible values.
+	AllSpellMatchType = []SpellMatchType{
+		AllCollegesSpellMatchType,
+		CollegeNameSpellMatchType,
+		PowerSourceSpellMatchType,
+		NameSpellMatchType,
 	}
-	matchTypeData = []struct {
+	spellMatchTypeData = []struct {
 		key    string
 		string string
 	}{
@@ -59,44 +59,44 @@ var (
 	}
 )
 
-// MatchType holds the type of a match.
-type MatchType byte
+// SpellMatchType holds the type of a match.
+type SpellMatchType byte
 
 // EnsureValid ensures this is of a known value.
-func (enum MatchType) EnsureValid() MatchType {
-	if enum <= LastMatchType {
+func (enum SpellMatchType) EnsureValid() SpellMatchType {
+	if enum <= LastSpellMatchType {
 		return enum
 	}
 	return 0
 }
 
 // Key returns the key used in serialization.
-func (enum MatchType) Key() string {
-	return matchTypeData[enum.EnsureValid()].key
+func (enum SpellMatchType) Key() string {
+	return spellMatchTypeData[enum.EnsureValid()].key
 }
 
 // String implements fmt.Stringer.
-func (enum MatchType) String() string {
-	return matchTypeData[enum.EnsureValid()].string
+func (enum SpellMatchType) String() string {
+	return spellMatchTypeData[enum.EnsureValid()].string
 }
 
-// ExtractMatchType extracts the value from a string.
-func ExtractMatchType(str string) MatchType {
-	for i, one := range matchTypeData {
+// ExtractSpellMatchType extracts the value from a string.
+func ExtractSpellMatchType(str string) SpellMatchType {
+	for i, one := range spellMatchTypeData {
 		if strings.EqualFold(one.key, str) {
-			return MatchType(i)
+			return SpellMatchType(i)
 		}
 	}
 	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
-func (enum MatchType) MarshalText() (text []byte, err error) {
+func (enum SpellMatchType) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
 // UnmarshalText implements the encoding.TextUnmarshaler interface.
-func (enum *MatchType) UnmarshalText(text []byte) error {
-	*enum = ExtractMatchType(string(text))
+func (enum *SpellMatchType) UnmarshalText(text []byte) error {
+	*enum = ExtractSpellMatchType(string(text))
 	return nil
 }
