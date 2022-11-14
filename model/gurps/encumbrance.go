@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package datafile
+package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -18,35 +18,35 @@ import (
 // WeightMultiplier returns the weight multiplier associated with the Encumbrance level.
 func (enum Encumbrance) WeightMultiplier() fxp.Int {
 	switch enum {
-	case None:
+	case NoEncumbrance:
 		return fxp.One
-	case Light:
+	case LightEncumbrance:
 		return fxp.Two
-	case Medium:
+	case MediumEncumbrance:
 		return fxp.Three
-	case Heavy:
+	case HeavyEncumbrance:
 		return fxp.Six
-	case ExtraHeavy:
+	case ExtraHeavyEncumbrance:
 		return fxp.Ten
 	default:
-		return None.WeightMultiplier()
+		return NoEncumbrance.WeightMultiplier()
 	}
 }
 
 // Penalty returns the penalty associated with the Encumbrance level.
 func (enum Encumbrance) Penalty() fxp.Int {
 	switch enum {
-	case None:
+	case NoEncumbrance:
 		return 0
-	case Light:
+	case LightEncumbrance:
 		return -fxp.One
-	case Medium:
+	case MediumEncumbrance:
 		return -fxp.Two
-	case Heavy:
+	case HeavyEncumbrance:
 		return -fxp.Three
-	case ExtraHeavy:
+	case ExtraHeavyEncumbrance:
 		return -fxp.Four
 	default:
-		return None.Penalty()
+		return NoEncumbrance.Penalty()
 	}
 }

@@ -16,7 +16,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/datafile"
 	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/errs"
@@ -76,7 +75,7 @@ func evalEncumbrance(e *eval.Evaluator, arguments string) (any, error) {
 		return nil, err
 	}
 	entity, ok := e.Resolver.(*Entity)
-	if !ok || entity.Type != datafile.PC {
+	if !ok || entity.Type != PC {
 		return fxp.Int(0), nil
 	}
 	return fxp.From(int(entity.EncumbranceLevel(forSkills))), nil
@@ -84,7 +83,7 @@ func evalEncumbrance(e *eval.Evaluator, arguments string) (any, error) {
 
 func evalTraitLevel(e *eval.Evaluator, arguments string) (any, error) {
 	entity, ok := e.Resolver.(*Entity)
-	if !ok || entity.Type != datafile.PC {
+	if !ok || entity.Type != PC {
 		return -fxp.One, nil
 	}
 	arguments = strings.Trim(arguments, `"`)

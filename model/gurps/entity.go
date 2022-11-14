@@ -27,7 +27,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/ancestry"
-	"github.com/richardwilkes/gcs/v5/model/gurps/datafile"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
 	"github.com/richardwilkes/gcs/v5/model/id"
@@ -54,7 +53,7 @@ type EntityProvider interface {
 
 // EntityData holds the Entity data that is written to disk.
 type EntityData struct {
-	Type             datafile.Type   `json:"type"`
+	Type             EntityType      `json:"type"`
 	Version          int             `json:"version"`
 	ID               uuid.UUID       `json:"id"`
 	TotalPoints      fxp.Int         `json:"total_points"`
@@ -96,8 +95,8 @@ type Entity struct {
 	features                        features
 	variableResolverExclusions      map[string]bool
 	cachedBasicLift                 measure.Weight
-	cachedEncumbranceLevel          datafile.Encumbrance
-	cachedEncumbranceLevelForSkills datafile.Encumbrance
+	cachedEncumbranceLevel          Encumbrance
+	cachedEncumbranceLevelForSkills Encumbrance
 	cachedVariables                 map[string]string
 }
 
@@ -114,7 +113,7 @@ func NewEntityFromFile(fileSystem fs.FS, filePath string) (*Entity, error) {
 }
 
 // NewEntity creates a new Entity.
-func NewEntity(entityType datafile.Type) *Entity {
+func NewEntity(entityType EntityType) *Entity {
 	settings := SettingsProvider.GeneralSettings()
 	entity := &Entity{
 		EntityData: EntityData{
@@ -186,12 +185,12 @@ func (e *Entity) MarshalJSON() ([]byte, error) {
 			DodgeBonus:            e.DodgeBonus,
 			ParryBonus:            e.ParryBonus,
 			BlockBonus:            e.BlockBonus,
-			Move:                  make([]int, len(datafile.AllEncumbrance)),
-			Dodge:                 make([]int, len(datafile.AllEncumbrance)),
+			Move:                  make([]int, len(AllEncumbrance)),
+			Dodge:                 make([]int, len(AllEncumbrance)),
 		},
 	}
 	data.Version = gid.CurrentDataVersion
-	for i, one := range datafile.AllEncumbrance {
+	for i, one := range AllEncumbrance {
 		data.Calc.Move[i] = e.Move(one)
 		data.Calc.Dodge[i] = e.Dodge(one)
 	}
@@ -235,8 +234,8 @@ func (e *Entity) UnmarshalJSON(data []byte) error {
 // DiscardCaches discards the internal caches.
 func (e *Entity) DiscardCaches() {
 	e.cachedBasicLift = -1
-	e.cachedEncumbranceLevel = datafile.LastEncumbrance + 1
-	e.cachedEncumbranceLevelForSkills = datafile.LastEncumbrance + 1
+	e.cachedEncumbranceLevel = LastEncumbrance + 1
+	e.cachedEncumbranceLevelForSkills = LastEncumbrance + 1
 	e.cachedVariables = nil
 }
 
@@ -802,7 +801,7 @@ func (e *Entity) NamedWeaponSkillBonusesFor(name, usage string, tags []string, t
 }
 
 // Move returns the current Move value for the given Encumbrance.
-func (e *Entity) Move(enc datafile.Encumbrance) int {
+func (e *Entity) Move(enc Encumbrance) int {
 	initialMove := e.ResolveAttributeCurrent(gid.BasicMove).Max(0)
 	divisor := 2 * xmath.Min(CountThresholdOpMet(HalveMoveThresholdOp, e.Attributes), 2)
 	if divisor > 0 {
@@ -859,7 +858,7 @@ func (e *Entity) SkillNamed(name, specialization string, requirePoints bool, exc
 }
 
 // Dodge returns the current Dodge value for the given Encumbrance.
-func (e *Entity) Dodge(enc datafile.Encumbrance) int {
+func (e *Entity) Dodge(enc Encumbrance) int {
 	dodge := fxp.Three + e.DodgeBonus + e.ResolveAttributeCurrent(gid.BasicSpeed).Max(0)
 	divisor := 2 * xmath.Min(CountThresholdOpMet(HalveDodgeThresholdOp, e.Attributes), 2)
 	if divisor > 0 {
@@ -869,16 +868,16 @@ func (e *Entity) Dodge(enc datafile.Encumbrance) int {
 }
 
 // EncumbranceLevel returns the current Encumbrance level.
-func (e *Entity) EncumbranceLevel(forSkills bool) datafile.Encumbrance {
+func (e *Entity) EncumbranceLevel(forSkills bool) Encumbrance {
 	if forSkills {
-		if e.cachedEncumbranceLevelForSkills != datafile.LastEncumbrance+1 {
+		if e.cachedEncumbranceLevelForSkills != LastEncumbrance+1 {
 			return e.cachedEncumbranceLevelForSkills
 		}
-	} else if e.cachedEncumbranceLevel != datafile.LastEncumbrance+1 {
+	} else if e.cachedEncumbranceLevel != LastEncumbrance+1 {
 		return e.cachedEncumbranceLevel
 	}
 	carried := e.WeightCarried(forSkills)
-	for _, one := range datafile.AllEncumbrance {
+	for _, one := range AllEncumbrance {
 		if carried <= e.MaximumCarry(one) {
 			if forSkills {
 				e.cachedEncumbranceLevelForSkills = one
@@ -889,11 +888,11 @@ func (e *Entity) EncumbranceLevel(forSkills bool) datafile.Encumbrance {
 		}
 	}
 	if forSkills {
-		e.cachedEncumbranceLevelForSkills = datafile.ExtraHeavy
+		e.cachedEncumbranceLevelForSkills = ExtraHeavyEncumbrance
 	} else {
-		e.cachedEncumbranceLevel = datafile.ExtraHeavy
+		e.cachedEncumbranceLevel = ExtraHeavyEncumbrance
 	}
-	return datafile.ExtraHeavy
+	return ExtraHeavyEncumbrance
 }
 
 // WeightCarried returns the carried weight.
@@ -906,7 +905,7 @@ func (e *Entity) WeightCarried(forSkills bool) measure.Weight {
 }
 
 // MaximumCarry returns the maximum amount the Entity can carry for the specified encumbrance level.
-func (e *Entity) MaximumCarry(encumbrance datafile.Encumbrance) measure.Weight {
+func (e *Entity) MaximumCarry(encumbrance Encumbrance) measure.Weight {
 	return measure.Weight(fxp.Int(e.BasicLift()).Mul(encumbrance.WeightMultiplier()))
 }
 
@@ -1031,7 +1030,7 @@ func (e *Entity) ResolveVariable(variableName string) string {
 
 // ResolveAttributeDef resolves the given attribute ID to its AttributeDef, or nil.
 func (e *Entity) ResolveAttributeDef(attrID string) *AttributeDef {
-	if e != nil && e.Type == datafile.PC {
+	if e != nil && e.Type == PC {
 		if a, ok := e.Attributes.Set[attrID]; ok {
 			return a.AttributeDef()
 		}
@@ -1049,7 +1048,7 @@ func (e *Entity) ResolveAttributeName(attrID string) string {
 
 // ResolveAttribute resolves the given attribute ID to its Attribute, or nil.
 func (e *Entity) ResolveAttribute(attrID string) *Attribute {
-	if e != nil && e.Type == datafile.PC {
+	if e != nil && e.Type == PC {
 		if a, ok := e.Attributes.Set[attrID]; ok {
 			return a
 		}
@@ -1059,7 +1058,7 @@ func (e *Entity) ResolveAttribute(attrID string) *Attribute {
 
 // ResolveAttributeCurrent resolves the given attribute ID to its current value, or fxp.Min.
 func (e *Entity) ResolveAttributeCurrent(attrID string) fxp.Int {
-	if e != nil && e.Type == datafile.PC {
+	if e != nil && e.Type == PC {
 		return e.Attributes.Current(attrID)
 	}
 	return fxp.Min
@@ -1068,7 +1067,7 @@ func (e *Entity) ResolveAttributeCurrent(attrID string) fxp.Int {
 // PreservesUserDesc returns true if the user description widget should be preserved when written to disk. Normally, only
 // character sheets should return true for this.
 func (e *Entity) PreservesUserDesc() bool {
-	return e.Type == datafile.PC
+	return e.Type == PC
 }
 
 // Ancestry returns the current Ancestry.

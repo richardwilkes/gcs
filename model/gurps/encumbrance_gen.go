@@ -11,7 +11,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package datafile
+package gurps
 
 import (
 	"strings"
@@ -21,22 +21,22 @@ import (
 
 // Possible values.
 const (
-	None Encumbrance = iota
-	Light
-	Medium
-	Heavy
-	ExtraHeavy
-	LastEncumbrance = ExtraHeavy
+	NoEncumbrance Encumbrance = iota
+	LightEncumbrance
+	MediumEncumbrance
+	HeavyEncumbrance
+	ExtraHeavyEncumbrance
+	LastEncumbrance = ExtraHeavyEncumbrance
 )
 
 var (
 	// AllEncumbrance holds all possible values.
 	AllEncumbrance = []Encumbrance{
-		None,
-		Light,
-		Medium,
-		Heavy,
-		ExtraHeavy,
+		NoEncumbrance,
+		LightEncumbrance,
+		MediumEncumbrance,
+		HeavyEncumbrance,
+		ExtraHeavyEncumbrance,
 	}
 	encumbranceData = []struct {
 		key    string

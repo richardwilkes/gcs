@@ -16,7 +16,6 @@ import (
 	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/datafile"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/toolbox/cmdline"
@@ -242,7 +241,7 @@ func registerActions() {
 	})
 	defaultBodyTypeSettingsAction = registerKeyBindableAction("settings.body_type.default", &unison.Action{
 		ID:              DefaultBodyTypeSettingsItemID,
-		Title:           i18n.Text("Default Body Type…"),
+		Title:           i18n.Text("Default Body EntityType…"),
 		ExecuteCallback: func(_ *unison.Action, _ any) { ShowBodySettings(nil) },
 	})
 	defaultSheetSettingsAction = registerKeyBindableAction("settings.sheet.default", &unison.Action{
@@ -345,7 +344,7 @@ func registerActions() {
 		Title:      i18n.Text("New Character Sheet"),
 		KeyBinding: unison.KeyBinding{KeyCode: unison.KeyN, Modifiers: unison.OSMenuCmdModifier()},
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			entity := gurps.NewEntity(datafile.PC)
+			entity := gurps.NewEntity(gurps.PC)
 			DisplayNewDockable(nil, NewSheet(entity.Profile.Name+library.SheetExt, entity))
 		},
 	})
@@ -591,7 +590,7 @@ func registerActions() {
 	})
 	perSheetBodyTypeSettingsAction = registerKeyBindableAction("settings.body_type.per_sheet", &unison.Action{
 		ID:              PerSheetBodyTypeSettingsItemID,
-		Title:           i18n.Text("Body Type…"),
+		Title:           i18n.Text("Body EntityType…"),
 		EnabledCallback: actionEnabledForSheet,
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			if s := ActiveSheet(); s != nil {

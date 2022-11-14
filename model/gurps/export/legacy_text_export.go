@@ -25,7 +25,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/datafile"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/toolbox/errs"
@@ -335,7 +334,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "BODY_TYPE":
 		ex.writeEncodedText(ex.entity.SheetSettings.BodyType.Name)
 	case "ENCUMBRANCE_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(len(datafile.AllEncumbrance)))
+		ex.writeEncodedText(strconv.Itoa(len(gurps.AllEncumbrance)))
 	case "ENCUMBRANCE_LOOP_START":
 		ex.processEncumbranceLoop(ex.extractUpToMarker("ENCUMBRANCE_LOOP_END"))
 	case "HIT_LOCATION_LOOP_COUNT":
@@ -687,7 +686,7 @@ func (ex *legacyExporter) includeCulturalFamiliarities(t *gurps.Trait) bool {
 }
 
 func (ex *legacyExporter) processEncumbranceLoop(buffer []byte) {
-	for _, enc := range datafile.AllEncumbrance {
+	for _, enc := range gurps.AllEncumbrance {
 		ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 			switch key {
 			case "CURRENT_MARKER":

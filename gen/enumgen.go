@@ -315,13 +315,13 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/gurps/datafile",
-		Name:       "encumbrance",
-		Desc:       "holds the encumbrance level",
-		StandAlone: true,
+		Pkg:  "model/gurps",
+		Name: "encumbrance",
+		Desc: "holds the encumbrance level",
 		Values: []enumValue{
 			{
-				Key: "none",
+				Name: "No",
+				Key:  "none",
 			},
 			{
 				Key: "light",
@@ -339,8 +339,8 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/gurps/datafile",
-		Name:       "type",
+		Pkg:        "model/gurps",
+		Name:       "entity_type",
 		Desc:       "holds the type of an Entity",
 		StandAlone: true,
 		Values: []enumValue{

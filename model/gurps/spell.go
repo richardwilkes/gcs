@@ -18,7 +18,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/datafile"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/settings/display"
@@ -591,7 +590,7 @@ func (s *Spell) Notes() string {
 
 // Rituals returns the rituals required to cast the spell.
 func (s *Spell) Rituals() string {
-	if s.Container() || !(s.Entity != nil && s.Entity.Type == datafile.PC && s.Entity.SheetSettings.ShowSpellAdj) {
+	if s.Container() || !(s.Entity != nil && s.Entity.Type == PC && s.Entity.SheetSettings.ShowSpellAdj) {
 		return ""
 	}
 	level := s.CalculateLevel().Level
@@ -712,7 +711,7 @@ func (s *Spell) AdjustedPoints(tooltip *xio.ByteBuffer) fxp.Int {
 
 // AdjustedPointsForNonContainerSpell returns the points, adjusted for any bonuses.
 func AdjustedPointsForNonContainerSpell(entity *Entity, points fxp.Int, name, powerSource string, colleges, tags []string, tooltip *xio.ByteBuffer) fxp.Int {
-	if entity != nil && entity.Type == datafile.PC {
+	if entity != nil && entity.Type == PC {
 		points += entity.SpellPointBonusFor(name, powerSource, colleges, tags, tooltip)
 		points = points.Max(0)
 	}

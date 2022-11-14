@@ -20,7 +20,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/datafile"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/json"
@@ -294,7 +293,7 @@ func (w *Weapon) Entity() *Entity {
 
 // PC returns the owning PC, if any.
 func (w *Weapon) PC() *Entity {
-	if entity := w.Entity(); entity != nil && entity.Type == datafile.PC {
+	if entity := w.Entity(); entity != nil && entity.Type == PC {
 		return entity
 	}
 	return nil

@@ -16,7 +16,6 @@ import (
 	"strconv"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/datafile"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -54,7 +53,7 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 		r.Width = rect.Width
 		gc.DrawRect(r, theme.HeaderColor.Paint(gc, r, unison.Fill))
 		p.current = int(entity.EncumbranceLevel(true))
-		p.overloaded = entity.WeightCarried(false) > entity.MaximumCarry(datafile.ExtraHeavy)
+		p.overloaded = entity.WeightCarried(false) > entity.MaximumCarry(gurps.ExtraHeavyEncumbrance)
 		for i, row := range p.row {
 			var ink unison.Ink
 			switch {
@@ -84,7 +83,7 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 	p.AddChild(NewInteriorSeparator())
 	p.AddChild(NewPageHeader(i18n.Text("Dodge"), 1))
 
-	for i, enc := range datafile.AllEncumbrance {
+	for i, enc := range gurps.AllEncumbrance {
 		rowColor := &encRowColor{
 			owner: p,
 			index: i,
@@ -117,7 +116,7 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 	return p
 }
 
-func (p *EncumbrancePanel) createMarker(entity *gurps.Entity, enc datafile.Encumbrance, rowColor *encRowColor) *unison.Label {
+func (p *EncumbrancePanel) createMarker(entity *gurps.Entity, enc gurps.Encumbrance, rowColor *encRowColor) *unison.Label {
 	marker := NewPageLabel("")
 	marker.OnBackgroundInk = rowColor
 	marker.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: 4}))
@@ -134,7 +133,7 @@ func (p *EncumbrancePanel) createMarker(entity *gurps.Entity, enc datafile.Encum
 	return marker
 }
 
-func (p *EncumbrancePanel) createLevelField(enc datafile.Encumbrance, rowColor *encRowColor) *NonEditablePageField {
+func (p *EncumbrancePanel) createLevelField(enc gurps.Encumbrance, rowColor *encRowColor) *NonEditablePageField {
 	field := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {})
 	field.OnBackgroundInk = rowColor
 	field.Text = strconv.Itoa(int(enc))
@@ -145,7 +144,7 @@ func (p *EncumbrancePanel) createLevelField(enc datafile.Encumbrance, rowColor *
 	return field
 }
 
-func (p *EncumbrancePanel) createMaxCarryField(enc datafile.Encumbrance, rowColor *encRowColor) *NonEditablePageField {
+func (p *EncumbrancePanel) createMaxCarryField(enc gurps.Encumbrance, rowColor *encRowColor) *NonEditablePageField {
 	field := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
 		if text := p.entity.SheetSettings.DefaultWeightUnits.Format(p.entity.MaximumCarry(enc)); text != f.Text {
 			f.Text = text
@@ -157,7 +156,7 @@ func (p *EncumbrancePanel) createMaxCarryField(enc datafile.Encumbrance, rowColo
 	return field
 }
 
-func (p *EncumbrancePanel) createMoveField(enc datafile.Encumbrance, rowColor *encRowColor) *NonEditablePageField {
+func (p *EncumbrancePanel) createMoveField(enc gurps.Encumbrance, rowColor *encRowColor) *NonEditablePageField {
 	field := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
 		if text := strconv.Itoa(p.entity.Move(enc)); text != f.Text {
 			f.Text = text
@@ -169,7 +168,7 @@ func (p *EncumbrancePanel) createMoveField(enc datafile.Encumbrance, rowColor *e
 	return field
 }
 
-func (p *EncumbrancePanel) createDodgeField(enc datafile.Encumbrance, rowColor *encRowColor) *NonEditablePageField {
+func (p *EncumbrancePanel) createDodgeField(enc gurps.Encumbrance, rowColor *encRowColor) *NonEditablePageField {
 	field := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
 		if text := strconv.Itoa(p.entity.Dodge(enc)); text != f.Text {
 			f.Text = text
@@ -187,7 +186,7 @@ func (p *EncumbrancePanel) addSeparator() {
 	sep.Vertical = true
 	sep.LineInk = unison.InteriorDividerColor
 	sep.SetLayoutData(&unison.FlexLayoutData{
-		VSpan:  len(datafile.AllEncumbrance),
+		VSpan:  len(gurps.AllEncumbrance),
 		HAlign: unison.MiddleAlignment,
 		VAlign: unison.FillAlignment,
 		VGrab:  true,

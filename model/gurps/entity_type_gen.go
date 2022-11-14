@@ -11,7 +11,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package datafile
+package gurps
 
 import (
 	"strings"
@@ -21,16 +21,16 @@ import (
 
 // Possible values.
 const (
-	PC       Type = iota
-	LastType      = PC
+	PC             EntityType = iota
+	LastEntityType            = PC
 )
 
 var (
-	// AllType holds all possible values.
-	AllType = []Type{
+	// AllEntityType holds all possible values.
+	AllEntityType = []EntityType{
 		PC,
 	}
-	typeData = []struct {
+	entityTypeData = []struct {
 		key    string
 		string string
 	}{
@@ -41,44 +41,44 @@ var (
 	}
 )
 
-// Type holds the type of an Entity.
-type Type byte
+// EntityType holds the type of an Entity.
+type EntityType byte
 
 // EnsureValid ensures this is of a known value.
-func (enum Type) EnsureValid() Type {
-	if enum <= LastType {
+func (enum EntityType) EnsureValid() EntityType {
+	if enum <= LastEntityType {
 		return enum
 	}
 	return 0
 }
 
 // Key returns the key used in serialization.
-func (enum Type) Key() string {
-	return typeData[enum.EnsureValid()].key
+func (enum EntityType) Key() string {
+	return entityTypeData[enum.EnsureValid()].key
 }
 
 // String implements fmt.Stringer.
-func (enum Type) String() string {
-	return typeData[enum.EnsureValid()].string
+func (enum EntityType) String() string {
+	return entityTypeData[enum.EnsureValid()].string
 }
 
-// ExtractType extracts the value from a string.
-func ExtractType(str string) Type {
-	for i, one := range typeData {
+// ExtractEntityType extracts the value from a string.
+func ExtractEntityType(str string) EntityType {
+	for i, one := range entityTypeData {
 		if strings.EqualFold(one.key, str) {
-			return Type(i)
+			return EntityType(i)
 		}
 	}
 	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
-func (enum Type) MarshalText() (text []byte, err error) {
+func (enum EntityType) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
 // UnmarshalText implements the encoding.TextUnmarshaler interface.
-func (enum *Type) UnmarshalText(text []byte) error {
-	*enum = ExtractType(string(text))
+func (enum *EntityType) UnmarshalText(text []byte) error {
+	*enum = ExtractEntityType(string(text))
 	return nil
 }
