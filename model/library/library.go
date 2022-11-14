@@ -287,7 +287,7 @@ func (l *Library) Download(ctx context.Context, client *http.Client, release Rel
 			if err = os.MkdirAll(parent, 0o750); err != nil {
 				return errs.NewWithCause("unable to create "+parent, err)
 			}
-			if err = extractFile(f, fullPath); err != nil {
+			if err = l.extractFile(f, fullPath); err != nil {
 				return errs.NewWithCause("unable to create "+fullPath, err)
 			}
 		}
@@ -301,7 +301,7 @@ func (l *Library) Download(ctx context.Context, client *http.Client, release Rel
 	return nil
 }
 
-func extractFile(f *zip.File, dst string) (err error) {
+func (l *Library) extractFile(f *zip.File, dst string) (err error) {
 	var r io.ReadCloser
 	if r, err = f.Open(); err != nil {
 		return errs.Wrap(err)
