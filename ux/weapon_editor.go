@@ -14,7 +14,6 @@ package ux
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/weapon"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -28,22 +27,22 @@ func initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.P
 	addLabelAndStringField(content, i18n.Text("Usage"), "", &e.editorData.Usage)
 	addNotesLabelAndField(content, &e.editorData.UsageNotes)
 	addLabelAndStringField(content, i18n.Text("Minimum ST"), "", &e.editorData.MinimumStrength)
-	addLabelAndPopup(content, i18n.Text("Base Damage"), "", weapon.AllStrengthDamage, &e.editorData.Damage.StrengthType)
+	addLabelAndPopup(content, i18n.Text("Base Damage"), "", gurps.AllStrengthDamage, &e.editorData.Damage.StrengthType)
 	addLabelAndNullableDice(content, i18n.Text("Damage Modifier"), "", &e.editorData.Damage.Base)
 	addLabelAndDecimalField(content, nil, "", i18n.Text("Damage Modifier Per Die"), "", &e.editorData.Damage.ModifierPerDie,
 		fxp.Min, fxp.Max)
 	addLabelAndDecimalField(content, nil, "", i18n.Text("Armor Divisor"), "", &e.editorData.Damage.ArmorDivisor, 0, fxp.Max)
-	addLabelAndStringField(content, i18n.Text("Damage Type"), "", &e.editorData.Damage.Type)
+	addLabelAndStringField(content, i18n.Text("Damage WeaponType"), "", &e.editorData.Damage.Type)
 	addLabelAndNullableDice(content, i18n.Text("Fragmentation Base Damage"), "", &e.editorData.Damage.Fragmentation)
 	addLabelAndDecimalField(content, nil, "", i18n.Text("Fragmentation Armor Divisor"), "",
 		&e.editorData.Damage.FragmentationArmorDivisor, 0, fxp.Max)
-	addLabelAndStringField(content, i18n.Text("Fragmentation Type"), "", &e.editorData.Damage.FragmentationType)
+	addLabelAndStringField(content, i18n.Text("Fragmentation WeaponType"), "", &e.editorData.Damage.FragmentationType)
 	switch e.editorData.Type {
-	case weapon.Melee:
+	case gurps.MeleeWeaponType:
 		addLabelAndStringField(content, i18n.Text("Reach"), "", &e.editorData.Reach)
 		addLabelAndStringField(content, i18n.Text("Parry Modifier"), "", &e.editorData.Parry)
 		addLabelAndStringField(content, i18n.Text("Block Modifier"), "", &e.editorData.Block)
-	case weapon.Ranged:
+	case gurps.RangedWeaponType:
 		addLabelAndStringField(content, i18n.Text("Accuracy"), "", &e.editorData.Accuracy)
 		addLabelAndStringField(content, i18n.Text("Rate of Fire"), "", &e.editorData.RateOfFire)
 		addLabelAndStringField(content, i18n.Text("Range"), "", &e.editorData.Range)

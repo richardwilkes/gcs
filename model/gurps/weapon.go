@@ -23,7 +23,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/datafile"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/gurps/skill"
-	"github.com/richardwilkes/gcs/v5/model/gurps/weapon"
 	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
@@ -65,7 +64,7 @@ type WeaponOwner interface {
 // WeaponData holds the Weapon data that is written to disk.
 type WeaponData struct {
 	ID              uuid.UUID       `json:"id"`
-	Type            weapon.Type     `json:"type"`
+	Type            WeaponType      `json:"type"`
 	Damage          WeaponDamage    `json:"damage"`
 	MinimumStrength string          `json:"strength,omitempty"`
 	Usage           string          `json:"usage,omitempty"`
@@ -89,7 +88,7 @@ type Weapon struct {
 }
 
 // ExtractWeaponsOfType filters the input list down to only those weapons of the given type.
-func ExtractWeaponsOfType(desiredType weapon.Type, list []*Weapon) []*Weapon {
+func ExtractWeaponsOfType(desiredType WeaponType, list []*Weapon) []*Weapon {
 	var result []*Weapon
 	for _, w := range list {
 		if w.Type == desiredType {
@@ -103,9 +102,9 @@ func ExtractWeaponsOfType(desiredType weapon.Type, list []*Weapon) []*Weapon {
 func SeparateWeapons(list []*Weapon) (melee, ranged []*Weapon) {
 	for _, w := range list {
 		switch w.Type {
-		case weapon.Melee:
+		case MeleeWeaponType:
 			melee = append(melee, w)
-		case weapon.Ranged:
+		case RangedWeaponType:
 			ranged = append(ranged, w)
 		}
 	}
@@ -113,7 +112,7 @@ func SeparateWeapons(list []*Weapon) (melee, ranged []*Weapon) {
 }
 
 // NewWeapon creates a new weapon of the given type.
-func NewWeapon(owner WeaponOwner, weaponType weapon.Type) *Weapon {
+func NewWeapon(owner WeaponOwner, weaponType WeaponType) *Weapon {
 	w := &Weapon{
 		WeaponData: WeaponData{
 			ID:   id.NewUUID(),
@@ -129,10 +128,10 @@ func NewWeapon(owner WeaponOwner, weaponType weapon.Type) *Weapon {
 		Owner: owner,
 	}
 	switch weaponType {
-	case weapon.Melee:
+	case MeleeWeaponType:
 		w.Reach = "1"
-		w.Damage.StrengthType = weapon.Thrust
-	case weapon.Ranged:
+		w.Damage.StrengthType = ThrustStrengthDamage
+	case RangedWeaponType:
 		w.RateOfFire = "1"
 		w.Damage.Base = dice.New("1d")
 	}
@@ -223,7 +222,7 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 			Damage: w.Damage.ResolvedDamage(nil),
 		},
 	}
-	if w.Type == weapon.Melee {
+	if w.Type == MeleeWeaponType {
 		data.Calc.Parry = w.ResolvedParry(nil)
 		data.Calc.Block = w.ResolvedBlock(nil)
 	} else {
@@ -369,7 +368,7 @@ func (w *Weapon) skillLevelBaseAdjustment(entity *Entity, tooltip *xio.ByteBuffe
 }
 
 func (w *Weapon) skillLevelPostAdjustment(entity *Entity, tooltip *xio.ByteBuffer) fxp.Int {
-	if w.Type.EnsureValid() == weapon.Melee && strings.Contains(w.Parry, "F") {
+	if w.Type.EnsureValid() == MeleeWeaponType && strings.Contains(w.Parry, "F") {
 		return w.EncumbrancePenalty(entity, tooltip)
 	}
 	return 0

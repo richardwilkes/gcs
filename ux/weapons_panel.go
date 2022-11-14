@@ -14,7 +14,6 @@ package ux
 import (
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/weapon"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/unison"
 )
@@ -23,14 +22,14 @@ type weaponsPanel struct {
 	unison.Panel
 	entity      *gurps.Entity
 	weaponOwner gurps.WeaponOwner
-	weaponType  weapon.Type
+	weaponType  gurps.WeaponType
 	allWeapons  *[]*gurps.Weapon
 	weapons     []*gurps.Weapon
 	provider    TableProvider[*gurps.Weapon]
 	table       *unison.Table[*Node[*gurps.Weapon]]
 }
 
-func newWeaponsPanel(cmdRoot Rebuildable, weaponOwner gurps.WeaponOwner, weaponType weapon.Type, weapons *[]*gurps.Weapon) *weaponsPanel {
+func newWeaponsPanel(cmdRoot Rebuildable, weaponOwner gurps.WeaponOwner, weaponType gurps.WeaponType, weapons *[]*gurps.Weapon) *weaponsPanel {
 	p := &weaponsPanel{
 		weaponOwner: weaponOwner,
 		weaponType:  weaponType,
@@ -53,9 +52,9 @@ func newWeaponsPanel(cmdRoot Rebuildable, weaponOwner gurps.WeaponOwner, weaponT
 	p.table.RefKey = weaponType.Key() + "-" + uuid.New().String()
 	var id int
 	switch weaponType {
-	case weapon.Melee:
+	case gurps.MeleeWeaponType:
 		id = NewMeleeWeaponItemID
-	case weapon.Ranged:
+	case gurps.RangedWeaponType:
 		id = NewRangedWeaponItemID
 	default:
 		return p
@@ -73,16 +72,16 @@ func (p *weaponsPanel) WeaponOwner() gurps.WeaponOwner {
 	return p.weaponOwner
 }
 
-func (p *weaponsPanel) Weapons(weaponType weapon.Type) []*gurps.Weapon {
+func (p *weaponsPanel) Weapons(weaponType gurps.WeaponType) []*gurps.Weapon {
 	return gurps.ExtractWeaponsOfType(weaponType, *p.allWeapons)
 }
 
-func (p *weaponsPanel) SetWeapons(weaponType weapon.Type, list []*gurps.Weapon) {
+func (p *weaponsPanel) SetWeapons(weaponType gurps.WeaponType, list []*gurps.Weapon) {
 	melee, ranged := gurps.SeparateWeapons(*p.allWeapons)
 	switch weaponType {
-	case weapon.Melee:
+	case gurps.MeleeWeaponType:
 		melee = list
-	case weapon.Ranged:
+	case gurps.RangedWeaponType:
 		ranged = list
 	}
 	*p.allWeapons = append(append(make([]*gurps.Weapon, 0, len(melee)+len(ranged)), melee...), ranged...)

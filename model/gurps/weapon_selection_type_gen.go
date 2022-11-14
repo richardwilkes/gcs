@@ -11,7 +11,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package weapon
+package gurps
 
 import (
 	"strings"
@@ -21,20 +21,20 @@ import (
 
 // Possible values.
 const (
-	WithRequiredSkill SelectionType = iota
-	ThisWeapon
-	WithName
-	LastSelectionType = WithName
+	WithRequiredSkillWeaponSelectionType WeaponSelectionType = iota
+	ThisWeaponWeaponSelectionType
+	WithNameWeaponSelectionType
+	LastWeaponSelectionType = WithNameWeaponSelectionType
 )
 
 var (
-	// AllSelectionType holds all possible values.
-	AllSelectionType = []SelectionType{
-		WithRequiredSkill,
-		ThisWeapon,
-		WithName,
+	// AllWeaponSelectionType holds all possible values.
+	AllWeaponSelectionType = []WeaponSelectionType{
+		WithRequiredSkillWeaponSelectionType,
+		ThisWeaponWeaponSelectionType,
+		WithNameWeaponSelectionType,
 	}
-	selectionTypeData = []struct {
+	weaponSelectionTypeData = []struct {
 		key    string
 		string string
 	}{
@@ -53,44 +53,44 @@ var (
 	}
 )
 
-// SelectionType holds the type of a selection.
-type SelectionType byte
+// WeaponSelectionType holds the type of a weapon selection.
+type WeaponSelectionType byte
 
 // EnsureValid ensures this is of a known value.
-func (enum SelectionType) EnsureValid() SelectionType {
-	if enum <= LastSelectionType {
+func (enum WeaponSelectionType) EnsureValid() WeaponSelectionType {
+	if enum <= LastWeaponSelectionType {
 		return enum
 	}
 	return 0
 }
 
 // Key returns the key used in serialization.
-func (enum SelectionType) Key() string {
-	return selectionTypeData[enum.EnsureValid()].key
+func (enum WeaponSelectionType) Key() string {
+	return weaponSelectionTypeData[enum.EnsureValid()].key
 }
 
 // String implements fmt.Stringer.
-func (enum SelectionType) String() string {
-	return selectionTypeData[enum.EnsureValid()].string
+func (enum WeaponSelectionType) String() string {
+	return weaponSelectionTypeData[enum.EnsureValid()].string
 }
 
-// ExtractSelectionType extracts the value from a string.
-func ExtractSelectionType(str string) SelectionType {
-	for i, one := range selectionTypeData {
+// ExtractWeaponSelectionType extracts the value from a string.
+func ExtractWeaponSelectionType(str string) WeaponSelectionType {
+	for i, one := range weaponSelectionTypeData {
 		if strings.EqualFold(one.key, str) {
-			return SelectionType(i)
+			return WeaponSelectionType(i)
 		}
 	}
 	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
-func (enum SelectionType) MarshalText() (text []byte, err error) {
+func (enum WeaponSelectionType) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
 // UnmarshalText implements the encoding.TextUnmarshaler interface.
-func (enum *SelectionType) UnmarshalText(text []byte) error {
-	*enum = ExtractSelectionType(string(text))
+func (enum *WeaponSelectionType) UnmarshalText(text []byte) error {
+	*enum = ExtractWeaponSelectionType(string(text))
 	return nil
 }

@@ -28,7 +28,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/datafile"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
-	"github.com/richardwilkes/gcs/v5/model/gurps/weapon"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/xio"
@@ -399,13 +398,13 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "SPELLS_LOOP_START":
 		ex.processSpellsLoop(ex.extractUpToMarker("SPELLS_LOOP_END"))
 	case "MELEE_LOOP_COUNT", "HIERARCHICAL_MELEE_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(len(ex.entity.EquippedWeapons(weapon.Melee))))
+		ex.writeEncodedText(strconv.Itoa(len(ex.entity.EquippedWeapons(gurps.MeleeWeaponType))))
 	case "MELEE_LOOP_START":
 		ex.processMeleeLoop(ex.extractUpToMarker("MELEE_LOOP_END"))
 	case "HIERARCHICAL_MELEE_LOOP_START":
 		ex.processHierarchicalMeleeLoop(ex.extractUpToMarker("HIERARCHICAL_MELEE_LOOP_END"))
 	case "RANGED_LOOP_COUNT", "HIERARCHICAL_RANGED_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(len(ex.entity.EquippedWeapons(weapon.Ranged))))
+		ex.writeEncodedText(strconv.Itoa(len(ex.entity.EquippedWeapons(gurps.RangedWeaponType))))
 	case "RANGED_LOOP_START":
 		ex.processRangedLoop(ex.extractUpToMarker("RANGED_LOOP_END"))
 	case "HIERARCHICAL_RANGED_LOOP_START":
@@ -611,7 +610,7 @@ func (ex *legacyExporter) writeEncodedText(text string) {
 func (ex *legacyExporter) bestWeaponDefense(f func(weapon *gurps.Weapon) string) string {
 	best := "-"
 	bestValue := fxp.Min
-	for _, w := range ex.entity.EquippedWeapons(weapon.Melee) {
+	for _, w := range ex.entity.EquippedWeapons(gurps.MeleeWeaponType) {
 		if s := f(w); s != "" && !strings.EqualFold(s, "no") {
 			if v, rem := fxp.Extract(s); v != 0 || rem != s {
 				if bestValue < v {
@@ -1223,7 +1222,7 @@ func (ex *legacyExporter) processPointPoolLoop(buffer []byte) {
 }
 
 func (ex *legacyExporter) processMeleeLoop(buffer []byte) {
-	for i, w := range ex.entity.EquippedWeapons(weapon.Melee) {
+	for i, w := range ex.entity.EquippedWeapons(gurps.MeleeWeaponType) {
 		ex.processBuffer(buffer, func(key string, buf []byte, index int) int {
 			return ex.processMeleeKeys(key, i, w, nil, buf, index)
 		})
@@ -1232,7 +1231,7 @@ func (ex *legacyExporter) processMeleeLoop(buffer []byte) {
 
 func (ex *legacyExporter) processHierarchicalMeleeLoop(buffer []byte) {
 	m := make(map[string][]*gurps.Weapon)
-	for _, w := range ex.entity.EquippedWeapons(weapon.Melee) {
+	for _, w := range ex.entity.EquippedWeapons(gurps.MeleeWeaponType) {
 		key := w.String()
 		m[key] = append(m[key], w)
 	}
@@ -1249,7 +1248,7 @@ func (ex *legacyExporter) processHierarchicalMeleeLoop(buffer []byte) {
 }
 
 func (ex *legacyExporter) processRangedLoop(buffer []byte) {
-	for i, w := range ex.entity.EquippedWeapons(weapon.Ranged) {
+	for i, w := range ex.entity.EquippedWeapons(gurps.RangedWeaponType) {
 		ex.processBuffer(buffer, func(key string, buf []byte, index int) int {
 			return ex.processRangedKeys(key, i, w, nil, buf, index)
 		})
@@ -1258,7 +1257,7 @@ func (ex *legacyExporter) processRangedLoop(buffer []byte) {
 
 func (ex *legacyExporter) processHierarchicalRangedLoop(buffer []byte) {
 	m := make(map[string][]*gurps.Weapon)
-	for _, w := range ex.entity.EquippedWeapons(weapon.Ranged) {
+	for _, w := range ex.entity.EquippedWeapons(gurps.RangedWeaponType) {
 		key := w.String()
 		m[key] = append(m[key], w)
 	}

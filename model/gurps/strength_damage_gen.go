@@ -11,7 +11,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package weapon
+package gurps
 
 import (
 	"strings"
@@ -21,22 +21,22 @@ import (
 
 // Possible values.
 const (
-	None StrengthDamage = iota
-	Thrust
-	LeveledThrust
-	Swing
-	LeveledSwing
-	LastStrengthDamage = LeveledSwing
+	NoneStrengthDamage StrengthDamage = iota
+	ThrustStrengthDamage
+	LeveledThrustStrengthDamage
+	SwingStrengthDamage
+	LeveledSwingStrengthDamage
+	LastStrengthDamage = LeveledSwingStrengthDamage
 )
 
 var (
 	// AllStrengthDamage holds all possible values.
 	AllStrengthDamage = []StrengthDamage{
-		None,
-		Thrust,
-		LeveledThrust,
-		Swing,
-		LeveledSwing,
+		NoneStrengthDamage,
+		ThrustStrengthDamage,
+		LeveledThrustStrengthDamage,
+		SwingStrengthDamage,
+		LeveledSwingStrengthDamage,
 	}
 	strengthDamageData = []struct {
 		key    string

@@ -11,10 +11,6 @@
 
 package gurps
 
-import (
-	"github.com/richardwilkes/gcs/v5/model/gurps/weapon"
-)
-
 // ListProvider defines the methods needed to access list data.
 type ListProvider interface {
 	TraitListProvider
@@ -91,6 +87,6 @@ type ReactionModifierListProvider interface {
 type WeaponListProvider interface {
 	EntityProvider
 	WeaponOwner() WeaponOwner
-	Weapons(weaponType weapon.Type) []*Weapon
-	SetWeapons(weaponType weapon.Type, list []*Weapon)
+	Weapons(weaponType WeaponType) []*Weapon
+	SetWeapons(weaponType WeaponType, list []*Weapon)
 }

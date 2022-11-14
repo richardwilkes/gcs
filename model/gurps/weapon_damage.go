@@ -17,7 +17,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/attribute"
-	"github.com/richardwilkes/gcs/v5/model/gurps/weapon"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -28,14 +27,14 @@ import (
 
 // WeaponDamageData holds the WeaponDamage data that is written to disk.
 type WeaponDamageData struct {
-	Type                      string                `json:"type"`
-	StrengthType              weapon.StrengthDamage `json:"st,omitempty"`
-	Base                      *dice.Dice            `json:"base,omitempty"`
-	ArmorDivisor              fxp.Int               `json:"armor_divisor,omitempty"`
-	Fragmentation             *dice.Dice            `json:"fragmentation,omitempty"`
-	FragmentationArmorDivisor fxp.Int               `json:"fragmentation_armor_divisor,omitempty"`
-	FragmentationType         string                `json:"fragmentation_type,omitempty"`
-	ModifierPerDie            fxp.Int               `json:"modifier_per_die,omitempty"`
+	Type                      string         `json:"type"`
+	StrengthType              StrengthDamage `json:"st,omitempty"`
+	Base                      *dice.Dice     `json:"base,omitempty"`
+	ArmorDivisor              fxp.Int        `json:"armor_divisor,omitempty"`
+	Fragmentation             *dice.Dice     `json:"fragmentation,omitempty"`
+	FragmentationArmorDivisor fxp.Int        `json:"fragmentation_armor_divisor,omitempty"`
+	FragmentationType         string         `json:"fragmentation_type,omitempty"`
+	ModifierPerDie            fxp.Int        `json:"modifier_per_die,omitempty"`
 }
 
 // WeaponDamage holds the damage information for a weapon.
@@ -97,7 +96,7 @@ func (w *WeaponDamage) MarshalJSON() ([]byte, error) {
 
 func (w *WeaponDamage) String() string {
 	var buffer strings.Builder
-	if w.StrengthType != weapon.None {
+	if w.StrengthType != NoneStrengthDamage {
 		buffer.WriteString(w.StrengthType.String())
 	}
 	convertMods := false
@@ -185,17 +184,17 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 	}
 	intST := fxp.As[int](st)
 	switch w.StrengthType {
-	case weapon.Thrust:
+	case ThrustStrengthDamage:
 		base = addDice(base, pc.ThrustFor(intST))
-	case weapon.LeveledThrust:
+	case LeveledThrustStrengthDamage:
 		thrust := pc.ThrustFor(intST)
 		if tOK && t.IsLeveled() {
 			multiplyDice(fxp.As[int](t.Levels), thrust)
 		}
 		base = addDice(base, thrust)
-	case weapon.Swing:
+	case SwingStrengthDamage:
 		base = addDice(base, pc.SwingFor(intST))
-	case weapon.LeveledSwing:
+	case LeveledSwingStrengthDamage:
 		thrust := pc.SwingFor(intST)
 		if tOK && t.IsLeveled() {
 			multiplyDice(fxp.As[int](t.Levels), thrust)
@@ -324,15 +323,15 @@ func (w *WeaponDamage) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, 
 			bonus.LeveledAmount.Level = levels
 		}
 		switch bonus.SelectionType {
-		case weapon.WithRequiredSkill:
-		case weapon.ThisWeapon:
+		case WithRequiredSkillWeaponSelectionType:
+		case ThisWeaponWeaponSelectionType:
 			if bonus.SpecializationCriteria.Matches(w.Owner.Usage) {
 				if _, exists := set[bonus]; !exists {
 					set[bonus] = true
 					bonus.AddToTooltip(tooltip)
 				}
 			}
-		case weapon.WithName:
+		case WithNameWeaponSelectionType:
 			if bonus.NameCriteria.Matches(w.Owner.String()) && bonus.SpecializationCriteria.Matches(w.Owner.Usage) &&
 				bonus.TagsCriteria.MatchesList(w.Owner.Owner.TagList()...) {
 				if _, exists := set[bonus]; !exists {

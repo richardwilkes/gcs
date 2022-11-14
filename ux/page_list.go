@@ -15,7 +15,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/weapon"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/unison"
 )
@@ -108,12 +107,12 @@ func NewReactionsPageList(entity *gurps.Entity) *PageList[*gurps.ConditionalModi
 
 // NewMeleeWeaponsPageList creates the melee weapons page list.
 func NewMeleeWeaponsPageList(entity *gurps.Entity) *PageList[*gurps.Weapon] {
-	return newPageList(nil, NewWeaponsProvider(entity, weapon.Melee, true))
+	return newPageList(nil, NewWeaponsProvider(entity, gurps.MeleeWeaponType, true))
 }
 
 // NewRangedWeaponsPageList creates the ranged weapons page list.
 func NewRangedWeaponsPageList(entity *gurps.Entity) *PageList[*gurps.Weapon] {
-	return newPageList(nil, NewWeaponsProvider(entity, weapon.Ranged, true))
+	return newPageList(nil, NewWeaponsProvider(entity, gurps.RangedWeaponType, true))
 }
 
 func newPageList[T gurps.NodeTypes](owner Rebuildable, provider TableProvider[T]) *PageList[T] {

@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package weapon
+package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/svg"
@@ -17,11 +17,11 @@ import (
 )
 
 // SVG returns the SVG that should be used for this type.
-func (enum Type) SVG() *unison.SVG {
+func (enum WeaponType) SVG() *unison.SVG {
 	switch enum {
-	case Melee:
+	case MeleeWeaponType:
 		return svg.MeleeWeapon
-	case Ranged:
+	case RangedWeaponType:
 		return svg.RangedWeapon
 	default:
 		return nil

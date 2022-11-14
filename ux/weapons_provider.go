@@ -13,7 +13,6 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/weapon"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -73,25 +72,25 @@ type weaponsProvider struct {
 	table      *unison.Table[*Node[*gurps.Weapon]]
 	colMap     map[int]int
 	provider   gurps.WeaponListProvider
-	weaponType weapon.Type
+	weaponType gurps.WeaponType
 	forPage    bool
 }
 
 // NewWeaponsProvider creates a new table provider for weapons.
-func NewWeaponsProvider(provider gurps.WeaponListProvider, weaponType weapon.Type, forPage bool) TableProvider[*gurps.Weapon] {
+func NewWeaponsProvider(provider gurps.WeaponListProvider, weaponType gurps.WeaponType, forPage bool) TableProvider[*gurps.Weapon] {
 	p := &weaponsProvider{
 		provider:   provider,
 		weaponType: weaponType,
 		forPage:    forPage,
 	}
 	switch {
-	case weaponType == weapon.Melee && forPage:
+	case weaponType == gurps.MeleeWeaponType && forPage:
 		p.colMap = meleeWeaponForPageColMap
-	case weaponType == weapon.Melee:
+	case weaponType == gurps.MeleeWeaponType:
 		p.colMap = meleeWeaponColMap
-	case weaponType == weapon.Ranged && forPage:
+	case weaponType == gurps.RangedWeaponType && forPage:
 		p.colMap = rangedWeaponforPageColMap
-	case weaponType == weapon.Ranged:
+	case weaponType == gurps.RangedWeaponType:
 		p.colMap = rangedWeaponColMap
 	default:
 		jot.Fatalf(1, "unknown weapon type: %d", weaponType)
@@ -174,7 +173,7 @@ func (p *weaponsProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Weap
 			switch {
 			case p.forPage:
 				title = i18n.Text("Usage")
-			case p.weaponType == weapon.Melee:
+			case p.weaponType == gurps.MeleeWeaponType:
 				title = i18n.Text("Melee Weapon Usage")
 			default:
 				title = i18n.Text("Ranged Weapon Usage")
@@ -267,9 +266,9 @@ func (p *weaponsProvider) Deserialize(data []byte) error {
 func (p *weaponsProvider) ContextMenuItems() []ContextMenuItem {
 	var list []ContextMenuItem
 	switch p.weaponType {
-	case weapon.Melee:
+	case gurps.MeleeWeaponType:
 		list = append(list, MeleeWeaponExtraContextMenuItems...)
-	case weapon.Ranged:
+	case gurps.RangedWeaponType:
 		list = append(list, RangedWeaponExtraContextMenuItems...)
 	}
 	return append(list, DefaultContextMenuItems...)

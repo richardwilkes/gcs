@@ -11,7 +11,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package weapon
+package gurps
 
 import (
 	"strings"
@@ -21,18 +21,18 @@ import (
 
 // Possible values.
 const (
-	Melee Type = iota
-	Ranged
-	LastType = Ranged
+	MeleeWeaponType WeaponType = iota
+	RangedWeaponType
+	LastWeaponType = RangedWeaponType
 )
 
 var (
-	// AllType holds all possible values.
-	AllType = []Type{
-		Melee,
-		Ranged,
+	// AllWeaponType holds all possible values.
+	AllWeaponType = []WeaponType{
+		MeleeWeaponType,
+		RangedWeaponType,
 	}
-	typeData = []struct {
+	weaponTypeData = []struct {
 		key    string
 		string string
 		alt    string
@@ -50,49 +50,49 @@ var (
 	}
 )
 
-// Type holds the type of an weapon definition.
-type Type byte
+// WeaponType holds the type of an weapon definition.
+type WeaponType byte
 
 // EnsureValid ensures this is of a known value.
-func (enum Type) EnsureValid() Type {
-	if enum <= LastType {
+func (enum WeaponType) EnsureValid() WeaponType {
+	if enum <= LastWeaponType {
 		return enum
 	}
 	return 0
 }
 
 // Key returns the key used in serialization.
-func (enum Type) Key() string {
-	return typeData[enum.EnsureValid()].key
+func (enum WeaponType) Key() string {
+	return weaponTypeData[enum.EnsureValid()].key
 }
 
 // String implements fmt.Stringer.
-func (enum Type) String() string {
-	return typeData[enum.EnsureValid()].string
+func (enum WeaponType) String() string {
+	return weaponTypeData[enum.EnsureValid()].string
 }
 
 // AltString returns the alternate string.
-func (enum Type) AltString() string {
-	return typeData[enum.EnsureValid()].alt
+func (enum WeaponType) AltString() string {
+	return weaponTypeData[enum.EnsureValid()].alt
 }
 
-// ExtractType extracts the value from a string.
-func ExtractType(str string) Type {
-	for i, one := range typeData {
+// ExtractWeaponType extracts the value from a string.
+func ExtractWeaponType(str string) WeaponType {
+	for i, one := range weaponTypeData {
 		if strings.EqualFold(one.key, str) {
-			return Type(i)
+			return WeaponType(i)
 		}
 	}
 	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
-func (enum Type) MarshalText() (text []byte, err error) {
+func (enum WeaponType) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
 // UnmarshalText implements the encoding.TextUnmarshaler interface.
-func (enum *Type) UnmarshalText(text []byte) error {
-	*enum = ExtractType(string(text))
+func (enum *WeaponType) UnmarshalText(text []byte) error {
+	*enum = ExtractWeaponType(string(text))
 	return nil
 }

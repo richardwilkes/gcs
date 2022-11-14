@@ -33,7 +33,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
 	"github.com/richardwilkes/gcs/v5/model/gurps/skill"
 	"github.com/richardwilkes/gcs/v5/model/gurps/trait"
-	"github.com/richardwilkes/gcs/v5/model/gurps/weapon"
 	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
@@ -745,7 +744,7 @@ func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization string, tags 
 	}
 	if rsl != fxp.Min {
 		for _, bonus := range e.features.weaponBonuses {
-			if bonus.SelectionType == weapon.WithRequiredSkill &&
+			if bonus.SelectionType == WithRequiredSkillWeaponSelectionType &&
 				bonus.NameCriteria.Matches(name) &&
 				bonus.SpecializationCriteria.Matches(specialization) &&
 				bonus.RelativeLevelCriteria.Matches(rsl) &&
@@ -772,7 +771,7 @@ func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, 
 		m = make(map[*WeaponBonus]bool)
 	}
 	for _, bonus := range e.features.weaponBonuses {
-		if bonus.SelectionType == weapon.WithName &&
+		if bonus.SelectionType == WithNameWeaponSelectionType &&
 			bonus.NameCriteria.Matches(nameQualifier) &&
 			bonus.SpecializationCriteria.Matches(usageQualifier) &&
 			bonus.TagsCriteria.MatchesList(tagsQualifier...) {
@@ -1101,17 +1100,17 @@ func (e *Entity) WeaponOwner() WeaponOwner {
 }
 
 // Weapons implements WeaponListProvider.
-func (e *Entity) Weapons(weaponType weapon.Type) []*Weapon {
+func (e *Entity) Weapons(weaponType WeaponType) []*Weapon {
 	return e.EquippedWeapons(weaponType)
 }
 
 // SetWeapons implements WeaponListProvider.
-func (e *Entity) SetWeapons(_ weapon.Type, _ []*Weapon) {
+func (e *Entity) SetWeapons(_ WeaponType, _ []*Weapon) {
 	// Not permitted
 }
 
 // EquippedWeapons returns a sorted list of equipped weapons.
-func (e *Entity) EquippedWeapons(weaponType weapon.Type) []*Weapon {
+func (e *Entity) EquippedWeapons(weaponType WeaponType) []*Weapon {
 	m := make(map[uint32]*Weapon)
 	Traverse(func(a *Trait) bool {
 		for _, w := range a.Weapons {

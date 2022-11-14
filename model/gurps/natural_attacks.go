@@ -14,7 +14,6 @@ package gurps
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
-	"github.com/richardwilkes/gcs/v5/model/gurps/weapon"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/i18n"
 )
@@ -30,7 +29,7 @@ func NewNaturalAttacks(entity *Entity, parent *Trait) *Trait {
 
 func newBite(owner WeaponOwner) *Weapon {
 	no := i18n.Text("No")
-	bite := NewWeapon(owner, weapon.Melee)
+	bite := NewWeapon(owner, MeleeWeaponType)
 	bite.Usage = i18n.Text("Bite")
 	bite.Reach = "C"
 	bite.Parry = no
@@ -45,7 +44,7 @@ func newBite(owner WeaponOwner) *Weapon {
 		},
 	}
 	bite.Damage.Type = "cr"
-	bite.Damage.StrengthType = weapon.Thrust
+	bite.Damage.StrengthType = ThrustStrengthDamage
 	bite.Damage.Base = &dice.Dice{
 		Sides:      6,
 		Modifier:   -1,
@@ -58,7 +57,7 @@ func newBite(owner WeaponOwner) *Weapon {
 }
 
 func newPunch(owner WeaponOwner) *Weapon {
-	punch := NewWeapon(owner, weapon.Melee)
+	punch := NewWeapon(owner, MeleeWeaponType)
 	punch.Usage = i18n.Text("Punch")
 	punch.Reach = "C"
 	punch.Parry = "0"
@@ -80,7 +79,7 @@ func newPunch(owner WeaponOwner) *Weapon {
 		},
 	}
 	punch.Damage.Type = "cr"
-	punch.Damage.StrengthType = weapon.Thrust
+	punch.Damage.StrengthType = ThrustStrengthDamage
 	punch.Damage.Base = &dice.Dice{
 		Sides:      6,
 		Modifier:   -1,
@@ -93,7 +92,7 @@ func newPunch(owner WeaponOwner) *Weapon {
 }
 
 func newKick(owner WeaponOwner) *Weapon {
-	kick := NewWeapon(owner, weapon.Melee)
+	kick := NewWeapon(owner, MeleeWeaponType)
 	kick.Usage = i18n.Text("Kick")
 	kick.Reach = "C,1"
 	kick.Parry = i18n.Text("No")
@@ -118,7 +117,7 @@ func newKick(owner WeaponOwner) *Weapon {
 		},
 	}
 	kick.Damage.Type = "cr"
-	kick.Damage.StrengthType = weapon.Thrust
+	kick.Damage.StrengthType = ThrustStrengthDamage
 	kick.Damage.ArmorDivisor = fxp.One
 	kick.Damage.FragmentationArmorDivisor = fxp.One
 	kick.Damage.Owner = kick

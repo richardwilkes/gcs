@@ -16,7 +16,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/ancestry"
 	"github.com/richardwilkes/gcs/v5/model/gurps/trait"
-	"github.com/richardwilkes/gcs/v5/model/gurps/weapon"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -82,7 +81,7 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	}
 	var ancestryPopup *unison.PopupMenu[string]
 	if e.target.Container() {
-		addLabelAndPopup(content, i18n.Text("Container Type"), "", trait.AllContainerType,
+		addLabelAndPopup(content, i18n.Text("Container WeaponType"), "", trait.AllContainerType,
 			&e.editorData.ContainerType)
 		var choices []string
 		for _, lib := range ancestry.AvailableAncestries(gurps.SettingsProvider.Libraries()) {
@@ -102,7 +101,7 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 		content.AddChild(newPrereqPanel(e.target.Entity, &e.editorData.Prereq))
 		content.AddChild(newFeaturesPanel(e.target.Entity, e.target, &e.editorData.Features))
 		content.AddChild(modifiersPanel)
-		for _, wt := range weapon.AllType {
+		for _, wt := range gurps.AllWeaponType {
 			content.AddChild(newWeaponsPanel(e, e.target, wt, &e.editorData.Weapons))
 		}
 		content.AddChild(newStudyPanel(e.target.Entity, &e.editorData.Study))

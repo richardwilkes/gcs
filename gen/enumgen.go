@@ -688,10 +688,9 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/gurps/weapon",
-		Name:       "selection_type",
-		Desc:       "holds the type of a selection",
-		StandAlone: true,
+		Pkg:  "model/gurps",
+		Name: "weapon_selection_type",
+		Desc: "holds the type of a weapon selection",
 		Values: []enumValue{
 			{
 				Name:   "WithRequiredSkill",
@@ -710,10 +709,9 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/gurps/weapon",
-		Name:       "strength_damage",
-		Desc:       "holds the type of strength dice to add to damage",
-		StandAlone: true,
+		Pkg:  "model/gurps",
+		Name: "strength_damage",
+		Desc: "holds the type of strength dice to add to damage",
 		Values: []enumValue{
 			{
 				Key:    "none",
@@ -744,10 +742,9 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/gurps/weapon",
-		Name:       "type",
-		Desc:       "holds the type of an weapon definition",
-		StandAlone: true,
+		Pkg:  "model/gurps",
+		Name: "weapon_type",
+		Desc: "holds the type of an weapon definition",
 		Values: []enumValue{
 			{
 				Name: "Melee",
