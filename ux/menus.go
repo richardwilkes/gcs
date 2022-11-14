@@ -19,7 +19,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps/export"
+	"github.com/richardwilkes/gcs/v5/model/export"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"

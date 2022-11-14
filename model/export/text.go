@@ -17,7 +17,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/export"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio/fs"
@@ -32,7 +31,7 @@ func ToText(tmplPath string, fileList []string) error {
 			if err != nil {
 				return err
 			}
-			if err = export.LegacyExport(entity, tmplPath, fs.TrimExtension(one)+filepath.Ext(tmplPath)); err != nil {
+			if err = LegacyExport(entity, tmplPath, fs.TrimExtension(one)+filepath.Ext(tmplPath)); err != nil {
 				return err
 			}
 		default:
