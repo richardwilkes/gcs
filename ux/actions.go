@@ -16,7 +16,6 @@ import (
 	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/desktop"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -344,14 +343,14 @@ func registerActions() {
 		KeyBinding: unison.KeyBinding{KeyCode: unison.KeyN, Modifiers: unison.OSMenuCmdModifier()},
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			entity := model.NewEntity(model.PC)
-			DisplayNewDockable(nil, NewSheet(entity.Profile.Name+library.SheetExt, entity))
+			DisplayNewDockable(nil, NewSheet(entity.Profile.Name+model.SheetExt, entity))
 		},
 	})
 	newCharacterTemplateAction = registerKeyBindableAction("new.char.template", &unison.Action{
 		ID:    NewTemplateItemID,
 		Title: i18n.Text("New Character Template"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			DisplayNewDockable(nil, NewTemplate("untitled"+library.TemplatesExt, model.NewTemplate()))
+			DisplayNewDockable(nil, NewTemplate("untitled"+model.TemplatesExt, model.NewTemplate()))
 		},
 	})
 	newEquipmentContainerModifierAction = registerKeyBindableAction("new.eqm.container", &unison.Action{
@@ -365,7 +364,7 @@ func registerActions() {
 		ID:    NewEquipmentLibraryItemID,
 		Title: i18n.Text("New Equipment Library"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			DisplayNewDockable(nil, NewEquipmentTableDockable("Equipment"+library.EquipmentExt, nil))
+			DisplayNewDockable(nil, NewEquipmentTableDockable("Equipment"+model.EquipmentExt, nil))
 		},
 	})
 	newEquipmentModifierAction = registerKeyBindableAction("new.eqm", &unison.Action{
@@ -380,7 +379,7 @@ func registerActions() {
 		Title: i18n.Text("New Equipment Modifiers Library"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			DisplayNewDockable(nil,
-				NewEquipmentModifierTableDockable("Equipment Modifiers"+library.EquipmentModifiersExt, nil))
+				NewEquipmentModifierTableDockable("Equipment Modifiers"+model.EquipmentModifiersExt, nil))
 		},
 	})
 	newMeleeWeaponAction = registerKeyBindableAction("new.melee", &unison.Action{
@@ -408,7 +407,7 @@ func registerActions() {
 		ID:    NewNotesLibraryItemID,
 		Title: i18n.Text("New Notes Library"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			DisplayNewDockable(nil, NewNoteTableDockable("Notes"+library.NotesExt, nil))
+			DisplayNewDockable(nil, NewNoteTableDockable("Notes"+model.NotesExt, nil))
 		},
 	})
 	newOtherEquipmentAction = registerKeyBindableAction("new.eqp.other", &unison.Action{
@@ -457,7 +456,7 @@ func registerActions() {
 		ID:    NewSkillsLibraryItemID,
 		Title: i18n.Text("New Skills Library"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			DisplayNewDockable(nil, NewSkillTableDockable("Skills"+library.SkillsExt, nil))
+			DisplayNewDockable(nil, NewSkillTableDockable("Skills"+model.SkillsExt, nil))
 		},
 	})
 	newSpellAction = registerKeyBindableAction("new.spl", &unison.Action{
@@ -478,7 +477,7 @@ func registerActions() {
 		ID:    NewSpellsLibraryItemID,
 		Title: i18n.Text("New Spells Library"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			DisplayNewDockable(nil, NewSpellTableDockable("Spells"+library.SpellsExt, nil))
+			DisplayNewDockable(nil, NewSpellTableDockable("Spells"+model.SpellsExt, nil))
 		},
 	})
 	newTechniqueAction = registerKeyBindableAction("new.skl.technique", &unison.Action{
@@ -521,14 +520,14 @@ func registerActions() {
 		Title: i18n.Text("New Trait Modifiers Library"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			DisplayNewDockable(nil,
-				NewTraitModifierTableDockable("Trait Modifiers"+library.TraitModifiersExt, nil))
+				NewTraitModifierTableDockable("Trait Modifiers"+model.TraitModifiersExt, nil))
 		},
 	})
 	newTraitsLibraryAction = registerKeyBindableAction("new.adq.lib", &unison.Action{
 		ID:    NewTraitsLibraryItemID,
 		Title: i18n.Text("New Traits Library"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			DisplayNewDockable(nil, NewTraitTableDockable("Traits"+library.TraitsExt, nil))
+			DisplayNewDockable(nil, NewTraitTableDockable("Traits"+model.TraitsExt, nil))
 		},
 	})
 	openAction = registerKeyBindableAction("open", &unison.Action{
@@ -539,7 +538,7 @@ func registerActions() {
 			dialog := unison.NewOpenDialog()
 			dialog.SetAllowsMultipleSelection(true)
 			dialog.SetResolvesAliases(true)
-			dialog.SetAllowedExtensions(library.AcceptableExtensions()...)
+			dialog.SetAllowedExtensions(model.AcceptableExtensions()...)
 			dialog.SetCanChooseDirectories(false)
 			dialog.SetCanChooseFiles(true)
 			global := model.GlobalSettings()

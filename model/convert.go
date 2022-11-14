@@ -18,7 +18,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/toolbox/collection"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -34,8 +33,8 @@ func Convert(paths ...string) error {
 	if err != nil {
 		return err
 	}
-	extSet := collection.NewSet(library.GCSExtensions()...)
-	extSet.Add(library.GCSSecondaryExtensions()...)
+	extSet := collection.NewSet(GCSExtensions()...)
+	extSet.Add(GCSSecondaryExtensions()...)
 	pathSet := collection.NewSet[string]()
 	f := convertWalker(pathSet, extSet)
 	for _, p := range paths {
@@ -46,7 +45,7 @@ func Convert(paths ...string) error {
 	for _, p := range list {
 		fmt.Printf(i18n.Text("Processing %s\n"), p)
 		switch strings.ToLower(filepath.Ext(p)) {
-		case library.TraitsExt:
+		case TraitsExt:
 			var data []*Trait
 			if data, err = NewTraitsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
@@ -54,7 +53,7 @@ func Convert(paths ...string) error {
 			if err = SaveTraits(data, p); err != nil {
 				return err
 			}
-		case library.TraitModifiersExt:
+		case TraitModifiersExt:
 			var data []*TraitModifier
 			if data, err = NewTraitModifiersFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
@@ -62,7 +61,7 @@ func Convert(paths ...string) error {
 			if err = SaveTraitModifiers(data, p); err != nil {
 				return err
 			}
-		case library.EquipmentExt:
+		case EquipmentExt:
 			var data []*Equipment
 			if data, err = NewEquipmentFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
@@ -70,7 +69,7 @@ func Convert(paths ...string) error {
 			if err = SaveEquipment(data, p); err != nil {
 				return err
 			}
-		case library.EquipmentModifiersExt:
+		case EquipmentModifiersExt:
 			var data []*EquipmentModifier
 			if data, err = NewEquipmentModifiersFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
@@ -78,7 +77,7 @@ func Convert(paths ...string) error {
 			if err = SaveEquipmentModifiers(data, p); err != nil {
 				return err
 			}
-		case library.SkillsExt:
+		case SkillsExt:
 			var data []*Skill
 			if data, err = NewSkillsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
@@ -86,7 +85,7 @@ func Convert(paths ...string) error {
 			if err = SaveSkills(data, p); err != nil {
 				return err
 			}
-		case library.SpellsExt:
+		case SpellsExt:
 			var data []*Spell
 			if data, err = NewSpellsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
@@ -94,7 +93,7 @@ func Convert(paths ...string) error {
 			if err = SaveSpells(data, p); err != nil {
 				return err
 			}
-		case library.NotesExt:
+		case NotesExt:
 			var data []*Note
 			if data, err = NewNotesFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
@@ -102,7 +101,7 @@ func Convert(paths ...string) error {
 			if err = SaveNotes(data, p); err != nil {
 				return err
 			}
-		case library.TemplatesExt:
+		case TemplatesExt:
 			var tmpl *Template
 			if tmpl, err = NewTemplateFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
@@ -110,7 +109,7 @@ func Convert(paths ...string) error {
 			if err = tmpl.Save(p); err != nil {
 				return err
 			}
-		case library.SheetExt:
+		case SheetExt:
 			var entity *Entity
 			if entity, err = NewEntityFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
@@ -118,7 +117,7 @@ func Convert(paths ...string) error {
 			if err = entity.Save(p); err != nil {
 				return err
 			}
-		case library.AncestryExt:
+		case AncestryExt:
 			var data *Ancestry
 			if data, err = NewAncestryFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
@@ -126,7 +125,7 @@ func Convert(paths ...string) error {
 			if err = data.Save(p); err != nil {
 				return err
 			}
-		case library.AttributesExt, library.AttributesExtAlt1, library.AttributesExtAlt2:
+		case AttributesExt, AttributesExtAlt1, AttributesExtAlt2:
 			var data *AttributeDefs
 			if data, err = NewAttributeDefsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
@@ -134,7 +133,7 @@ func Convert(paths ...string) error {
 			if err = data.Save(p); err != nil {
 				return err
 			}
-		case library.BodyExt, library.BodyExtAlt:
+		case BodyExt, BodyExtAlt:
 			var data *Body
 			if data, err = NewBodyFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
@@ -142,9 +141,9 @@ func Convert(paths ...string) error {
 			if err = data.Save(p); err != nil {
 				return err
 			}
-		case library.CalendarExt:
+		case CalendarExt:
 			// Currently have no version info, so nothing to update
-		case library.ColorSettingsExt:
+		case ColorSettingsExt:
 			var data *theme.Colors
 			if data, err = theme.NewColorsFromFS(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
@@ -152,7 +151,7 @@ func Convert(paths ...string) error {
 			if err = data.Save(p); err != nil {
 				return err
 			}
-		case library.FontSettingsExt:
+		case FontSettingsExt:
 			var data *theme.Fonts
 			if data, err = theme.NewFontsFromFS(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
@@ -160,7 +159,7 @@ func Convert(paths ...string) error {
 			if err = data.Save(p); err != nil {
 				return err
 			}
-		case library.GeneralSettingsExt:
+		case GeneralSettingsExt:
 			var data *GeneralSheetSettings
 			if data, err = NewGeneralSheetSettingsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
@@ -168,7 +167,7 @@ func Convert(paths ...string) error {
 			if err = data.Save(p); err != nil {
 				return err
 			}
-		case library.KeySettingsExt:
+		case KeySettingsExt:
 			var data *KeyBindings
 			if data, err = NewKeyBindingsFromFS(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
@@ -176,9 +175,9 @@ func Convert(paths ...string) error {
 			if err = data.Save(p); err != nil {
 				return err
 			}
-		case library.NamesExt:
+		case NamesExt:
 			// Currently have no version info, so nothing to update
-		case library.PageRefSettingsExt:
+		case PageRefSettingsExt:
 			var data *PageRefs
 			if data, err = NewPageRefsFromFS(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
@@ -186,7 +185,7 @@ func Convert(paths ...string) error {
 			if err = data.Save(p); err != nil {
 				return err
 			}
-		case library.SheetSettingsExt:
+		case SheetSettingsExt:
 			var data *SheetSettings
 			if data, err = NewSheetSettingsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err

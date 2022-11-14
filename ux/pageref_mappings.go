@@ -20,7 +20,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/desktop"
@@ -204,7 +203,7 @@ func ShowPageRefMappings() {
 		d.Self = d
 		d.TabTitle = i18n.Text("Page Reference Mappings")
 		d.TabIcon = svg.Settings
-		d.Extensions = []string{library.PageRefSettingsExt}
+		d.Extensions = []string{model.PageRefSettingsExt}
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset

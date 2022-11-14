@@ -16,7 +16,6 @@ import (
 	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/unison"
 )
 
@@ -59,7 +58,7 @@ func NewEquipmentTableDockableFromFile(filePath string) (unison.Dockable, error)
 // NewEquipmentTableDockable creates a new unison.Dockable for equipment list files.
 func NewEquipmentTableDockable(filePath string, equipment []*model.Equipment) *TableDockable[*model.Equipment] {
 	provider := &equipmentListProvider{other: equipment}
-	d := NewTableDockable(filePath, library.EquipmentExt, NewEquipmentProvider(provider, false, false),
+	d := NewTableDockable(filePath, model.EquipmentExt, NewEquipmentProvider(provider, false, false),
 		func(path string) error { return model.SaveEquipment(provider.OtherEquipmentList(), path) },
 		NewCarriedEquipmentItemID, NewCarriedEquipmentContainerItemID)
 	d.InstallCmdHandlers(ConvertToContainerItemID,

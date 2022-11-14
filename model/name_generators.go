@@ -14,21 +14,20 @@ package model
 import (
 	"sort"
 
-	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/txt"
 )
 
 // NameGeneratorRef holds a reference to a NameGenerator.
 type NameGeneratorRef struct {
-	FileRef   *library.NamedFileRef
+	FileRef   *NamedFileRef
 	generator *NameGenerator
 }
 
 // AvailableNameGenerators scans the libraries and returns the available name generators.
-func AvailableNameGenerators(libraries library.Libraries) []*NameGeneratorRef {
+func AvailableNameGenerators(libraries Libraries) []*NameGeneratorRef {
 	var list []*NameGeneratorRef
 	seen := make(map[string]bool)
-	for _, set := range library.ScanForNamedFileSets(embeddedFS, "embedded_data", true, libraries, library.NamesExt) {
+	for _, set := range ScanForNamedFileSets(embeddedFS, "embedded_data", true, libraries, NamesExt) {
 		for _, one := range set.List {
 			if seen[one.Name] {
 				continue

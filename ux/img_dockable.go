@@ -14,7 +14,7 @@ package ux
 import (
 	"fmt"
 
-	"github.com/richardwilkes/gcs/v5/model/library"
+	"github.com/richardwilkes/gcs/v5/model"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
 )
@@ -148,7 +148,7 @@ func (d *ImageDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
 // TitleIcon implements workspace.FileBackedDockable
 func (d *ImageDockable) TitleIcon(suggestedSize unison.Size) unison.Drawable {
 	return &unison.DrawableSVG{
-		SVG:  library.FileInfoFor(d.path).SVG,
+		SVG:  model.FileInfoFor(d.path).SVG,
 		Size: suggestedSize,
 	}
 }

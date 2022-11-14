@@ -16,7 +16,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/richardwilkes/gcs/v5/model/library"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/desktop"
@@ -635,7 +635,7 @@ func (d *PDFDockable) drawOverlayMsg(gc *unison.Canvas, dirty unison.Rect, msg s
 // TitleIcon implements workspace.FileBackedDockable
 func (d *PDFDockable) TitleIcon(suggestedSize unison.Size) unison.Drawable {
 	return &unison.DrawableSVG{
-		SVG:  library.FileInfoFor(d.path).SVG,
+		SVG:  model.FileInfoFor(d.path).SVG,
 		Size: suggestedSize,
 	}
 }

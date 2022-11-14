@@ -17,7 +17,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio/fs"
 )
@@ -26,7 +25,7 @@ import (
 func ToText(tmplPath string, fileList []string) error {
 	for _, one := range fileList {
 		switch strings.ToLower(filepath.Ext(one)) {
-		case library.SheetExt:
+		case model.SheetExt:
 			entity, err := model.NewEntityFromFile(os.DirFS(filepath.Dir(one)), filepath.Base(one))
 			if err != nil {
 				return err

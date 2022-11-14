@@ -16,7 +16,6 @@ import (
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -39,7 +38,7 @@ func ShowMenuKeySettings() {
 		d.Self = d
 		d.TabTitle = i18n.Text("Menu Keys")
 		d.TabIcon = svg.Settings
-		d.Extensions = []string{library.KeySettingsExt}
+		d.Extensions = []string{model.KeySettingsExt}
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset

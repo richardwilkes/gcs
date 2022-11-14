@@ -21,7 +21,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/cmdline"
@@ -50,7 +49,7 @@ type NavigatorSettings struct {
 type Settings struct {
 	LastSeenGCSVersion string                `json:"last_seen_gcs_version,omitempty"`
 	General            *GeneralSheetSettings `json:"general,omitempty"`
-	LibrarySet         library.Libraries     `json:"libraries,omitempty"`
+	LibrarySet         Libraries             `json:"libraries,omitempty"`
 	LibraryExplorer    NavigatorSettings     `json:"library_explorer"`
 	RecentFiles        []string              `json:"recent_files,omitempty"`
 	LastDirs           map[string]string     `json:"last_dirs,omitempty"`
@@ -69,7 +68,7 @@ func DefaultSettings() *Settings {
 	return &Settings{
 		LastSeenGCSVersion: cmdline.AppVersion,
 		General:            NewGeneralSheetSettings(),
-		LibrarySet:         library.NewLibraries(),
+		LibrarySet:         NewLibraries(),
 		LibraryExplorer:    NavigatorSettings{DividerPosition: 330},
 		LastDirs:           make(map[string]string),
 		QuickExports:       NewQuickExports(),
@@ -106,7 +105,7 @@ func (s *Settings) EnsureValidity() {
 		s.General.EnsureValidity()
 	}
 	if len(s.LibrarySet) == 0 {
-		s.LibrarySet = library.NewLibraries()
+		s.LibrarySet = NewLibraries()
 	}
 	if s.LastDirs == nil {
 		s.LastDirs = make(map[string]string)
@@ -161,7 +160,7 @@ func (s *Settings) ListRecentFiles() []string {
 // AddRecentFile adds a file path to the list of recently opened files.
 func (s *Settings) AddRecentFile(filePath string) {
 	ext := strings.ToLower(path.Ext(filePath))
-	for _, one := range library.AcceptableExtensions() {
+	for _, one := range AcceptableExtensions() {
 		if one == ext {
 			full, err := filepath.Abs(filePath)
 			if err != nil {
@@ -199,7 +198,7 @@ func (s *Settings) SheetSettings() *SheetSettings {
 }
 
 // Libraries implements gurps.SettingsProvider.
-func (s *Settings) Libraries() library.Libraries {
+func (s *Settings) Libraries() Libraries {
 	return s.LibrarySet
 }
 

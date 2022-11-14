@@ -21,7 +21,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/gid"
-	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
@@ -30,7 +29,7 @@ import (
 
 type librarySettingsDockable struct {
 	SettingsDockable
-	library       *library.Library
+	library       *model.Library
 	toolbar       *unison.Panel
 	applyButton   *unison.Button
 	cancelButton  *unison.Button
@@ -47,7 +46,7 @@ type librarySettingsDockable struct {
 }
 
 // ShowLibrarySettings the Library Settings view for a specific library.
-func ShowLibrarySettings(lib *library.Library) {
+func ShowLibrarySettings(lib *model.Library) {
 	ws, dc, found := Activate(func(d unison.Dockable) bool {
 		if settingsDockable, ok := d.(*librarySettingsDockable); ok && settingsDockable.library == lib {
 			return true
@@ -182,7 +181,7 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 }
 
 func (d *librarySettingsDockable) checkForSpecial() bool {
-	lib := &library.Library{
+	lib := &model.Library{
 		GitHubAccountName: d.github,
 		RepoName:          d.repo,
 	}
@@ -240,7 +239,7 @@ func (d *librarySettingsDockable) apply() {
 	go checkForLibraryUpgrade(d.library)
 }
 
-func checkForLibraryUpgrade(lib *library.Library) {
+func checkForLibraryUpgrade(lib *model.Library) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()
 	lib.CheckForAvailableUpgrade(ctx, &http.Client{})

@@ -21,7 +21,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/richardwilkes/gcs/v5/model/library"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/errs"
@@ -113,8 +113,8 @@ func addWindowsIcon(rs *winres.ResourceSet) error {
 	if err = rs.SetIconTranslation(winres.Name("APP"), 0, winIcon); err != nil {
 		return errs.Wrap(err)
 	}
-	for i := range library.KnownFileTypes {
-		if fi := &library.KnownFileTypes[i]; fi.IsGCSData {
+	for i := range model.KnownFileTypes {
+		if fi := &model.KnownFileTypes[i]; fi.IsGCSData {
 			var overlay image.Image
 			if overlay, err = ux.CreateImageFromSVG(fi, 512); err != nil {
 				return err

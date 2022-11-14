@@ -18,7 +18,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
@@ -124,7 +123,7 @@ func (s *GeneralSheetSettings) UpdateToolTipTiming() {
 }
 
 // CalendarRef returns the CalendarRef these settings refer to.
-func (s *GeneralSheetSettings) CalendarRef(libraries library.Libraries) *CalendarRef {
+func (s *GeneralSheetSettings) CalendarRef(libraries Libraries) *CalendarRef {
 	ref := LookupCalendarRef(s.CalendarName, libraries)
 	if ref == nil {
 		if ref = LookupCalendarRef("Gregorian", libraries); ref == nil {

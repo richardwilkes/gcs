@@ -16,7 +16,6 @@ import (
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -39,7 +38,7 @@ func ShowColorSettings() {
 		d.Self = d
 		d.TabTitle = i18n.Text("Colors")
 		d.TabIcon = svg.Settings
-		d.Extensions = []string{library.ColorSettingsExt}
+		d.Extensions = []string{model.ColorSettingsExt}
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset

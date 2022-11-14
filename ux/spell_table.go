@@ -16,7 +16,6 @@ import (
 	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/unison"
 )
 
@@ -50,7 +49,7 @@ func NewSpellTableDockableFromFile(filePath string) (unison.Dockable, error) {
 // NewSpellTableDockable creates a new unison.Dockable for spell list files.
 func NewSpellTableDockable(filePath string, spells []*model.Spell) *TableDockable[*model.Spell] {
 	provider := &spellListProvider{spells: spells}
-	return NewTableDockable(filePath, library.SpellsExt, NewSpellsProvider(provider, false),
+	return NewTableDockable(filePath, model.SpellsExt, NewSpellsProvider(provider, false),
 		func(path string) error { return model.SaveSpells(provider.SpellList(), path) },
 		NewSpellItemID, NewSpellContainerItemID, NewRitualMagicSpellItemID)
 }

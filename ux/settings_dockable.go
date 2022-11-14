@@ -18,7 +18,6 @@ import (
 	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -187,7 +186,7 @@ func (d *SettingsDockable) showMenu(b *unison.Button) {
 	}
 	if d.Loader != nil {
 		libraries := model.GlobalSettings().Libraries()
-		sets := library.ScanForNamedFileSets(nil, "", false, libraries, d.Extensions...)
+		sets := model.ScanForNamedFileSets(nil, "", false, libraries, d.Extensions...)
 		if len(sets) != 0 {
 			m.InsertSeparator(-1, false)
 			for _, lib := range sets {
@@ -204,7 +203,7 @@ func (d *SettingsDockable) showMenu(b *unison.Button) {
 	m.Popup(b.RectToRoot(b.ContentRect(true)), 0)
 }
 
-func (d *SettingsDockable) insertFileToLoad(m unison.Menu, id int, ref *library.NamedFileRef) {
+func (d *SettingsDockable) insertFileToLoad(m unison.Menu, id int, ref *model.NamedFileRef) {
 	m.InsertItem(-1, m.Factory().NewItem(id, "    "+ref.Name, unison.KeyBinding{}, nil, func(_ unison.MenuItem) {
 		d.doLoad(ref.FileSystem, ref.FilePath)
 	}))

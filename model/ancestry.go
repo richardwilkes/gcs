@@ -18,7 +18,6 @@ import (
 
 	gid2 "github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/gcs/v5/model/library"
 	measure2 "github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/eval"
@@ -46,12 +45,12 @@ type ancestryData struct {
 }
 
 // AvailableAncestries scans the libraries and returns the available ancestries.
-func AvailableAncestries(libraries library.Libraries) []*library.NamedFileSet {
-	return library.ScanForNamedFileSets(embeddedFS, "embedded_data", true, libraries, library.AncestryExt)
+func AvailableAncestries(libraries Libraries) []*NamedFileSet {
+	return ScanForNamedFileSets(embeddedFS, "embedded_data", true, libraries, AncestryExt)
 }
 
 // LookupAncestry an Ancestry by name.
-func LookupAncestry(name string, libraries library.Libraries) *Ancestry {
+func LookupAncestry(name string, libraries Libraries) *Ancestry {
 	for _, lib := range AvailableAncestries(libraries) {
 		for _, one := range lib.List {
 			if one.Name == name {

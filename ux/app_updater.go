@@ -20,7 +20,6 @@ import (
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/desktop"
@@ -33,7 +32,7 @@ import (
 type appUpdater struct {
 	lock     sync.RWMutex
 	result   string
-	releases []library.Release
+	releases []model.Release
 	updating bool
 }
 
@@ -51,7 +50,7 @@ func (u *appUpdater) Reset() bool {
 	return true
 }
 
-func (u *appUpdater) Result() (title string, releases []library.Release, updating bool) {
+func (u *appUpdater) Result() (title string, releases []model.Release, updating bool) {
 	u.lock.RLock()
 	defer u.lock.RUnlock()
 	return u.result, u.releases, u.updating
@@ -64,7 +63,7 @@ func (u *appUpdater) SetResult(str string) {
 	u.lock.Unlock()
 }
 
-func (u *appUpdater) SetReleases(releases []library.Release) {
+func (u *appUpdater) SetReleases(releases []model.Release) {
 	u.lock.Lock()
 	u.result = fmt.Sprintf(i18n.Text("%s v%s is available!"), cmdline.AppName, releases[0].Version)
 	u.releases = releases
@@ -82,7 +81,7 @@ func CheckForAppUpdates() {
 		go func() {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 			defer cancel()
-			releases, err := library.LoadReleases(ctx, &http.Client{}, "richardwilkes", "gcs", cmdline.AppVersion,
+			releases, err := model.LoadReleases(ctx, &http.Client{}, "richardwilkes", "gcs", cmdline.AppVersion,
 				func(version, notes string) bool {
 					// Don't bother showing changes from before 5.0.0, since those were the Java version
 					return txt.NaturalLess(version, "5.0.0", true)
@@ -146,6 +145,6 @@ func NotifyOfAppUpdate() {
 }
 
 // AppUpdateResult returns the current results of any outstanding app update check.
-func AppUpdateResult() (title string, releases []library.Release, updating bool) {
+func AppUpdateResult() (title string, releases []model.Release, updating bool) {
 	return appUpdate.Result()
 }

@@ -19,7 +19,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/export"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox/atexit"
 	"github.com/richardwilkes/toolbox/cmdline"
@@ -58,7 +57,7 @@ Translations dir: "%s"`), model.SettingsPath(), i18n.Dir)
 			cl.FatalMsg(i18n.Text("No files to process."))
 		}
 		for _, one := range fileList {
-			if !library.FileInfoFor(one).IsExportable {
+			if !model.FileInfoFor(one).IsExportable {
 				cl.FatalMsg(one + i18n.Text(" is not exportable."))
 			}
 		}

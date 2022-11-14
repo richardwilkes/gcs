@@ -22,7 +22,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/richardwilkes/gcs/v5/model/library"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
@@ -47,7 +47,7 @@ type NavigatorNode struct {
 	id                       uuid.UUID
 	path                     string
 	nav                      *Navigator
-	library                  *library.Library
+	library                  *model.Library
 	parent                   *NavigatorNode
 	children                 []*NavigatorNode
 	updateCellReleaseVersion string
@@ -55,7 +55,7 @@ type NavigatorNode struct {
 }
 
 // NewLibraryNode creates a new library node.
-func NewLibraryNode(nav *Navigator, lib *library.Library) *NavigatorNode {
+func NewLibraryNode(nav *Navigator, lib *model.Library) *NavigatorNode {
 	n := &NavigatorNode{
 		nodeType: libraryNode,
 		id:       uuid.New(),
@@ -67,7 +67,7 @@ func NewLibraryNode(nav *Navigator, lib *library.Library) *NavigatorNode {
 }
 
 // NewDirectoryNode creates a new DirectoryNode.
-func NewDirectoryNode(nav *Navigator, lib *library.Library, dirPath string, parent *NavigatorNode) *NavigatorNode {
+func NewDirectoryNode(nav *Navigator, lib *model.Library, dirPath string, parent *NavigatorNode) *NavigatorNode {
 	n := &NavigatorNode{
 		nodeType: directoryNode,
 		id:       uuid.New(),
@@ -81,7 +81,7 @@ func NewDirectoryNode(nav *Navigator, lib *library.Library, dirPath string, pare
 }
 
 // NewFileNode creates a new FileNode.
-func NewFileNode(lib *library.Library, filePath string, parent *NavigatorNode) *NavigatorNode {
+func NewFileNode(lib *model.Library, filePath string, parent *NavigatorNode) *NavigatorNode {
 	return &NavigatorNode{
 		nodeType: fileNode,
 		id:       uuid.New(),
@@ -184,12 +184,12 @@ func (n *NavigatorNode) ColumnCell(_, col int, foreground, _ unison.Ink, _, _, _
 	if n.nodeType == fileNode {
 		ext = strings.ToLower(path.Ext(n.path))
 	} else if n.open {
-		ext = library.OpenFolder
+		ext = model.OpenFolder
 	} else {
-		ext = library.ClosedFolder
+		ext = model.ClosedFolder
 	}
 	size := unison.LabelFont.Size() + 5
-	fi := library.FileInfoFor(ext)
+	fi := model.FileInfoFor(ext)
 	label := unison.NewLabel()
 	label.OnBackgroundInk = foreground
 	label.Text = title
@@ -287,7 +287,7 @@ func (n *NavigatorNode) refreshChildren(dirPath string, parent *NavigatorNode) [
 					dirNode := NewDirectoryNode(n.nav, n.library, p, parent)
 					children = append(children, dirNode)
 				}
-			} else if !library.FileInfoFor(name).IsSpecial {
+			} else if !model.FileInfoFor(name).IsSpecial {
 				children = append(children, NewFileNode(n.library, p, parent))
 			}
 		}

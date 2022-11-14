@@ -16,7 +16,6 @@ import (
 	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/unison"
 )
 
@@ -50,7 +49,7 @@ func NewTraitTableDockableFromFile(filePath string) (unison.Dockable, error) {
 // NewTraitTableDockable creates a new unison.Dockable for trait list files.
 func NewTraitTableDockable(filePath string, traits []*model.Trait) *TableDockable[*model.Trait] {
 	provider := &traitListProvider{traits: traits}
-	return NewTableDockable(filePath, library.TraitsExt, NewTraitsProvider(provider, false),
+	return NewTableDockable(filePath, model.TraitsExt, NewTraitsProvider(provider, false),
 		func(path string) error { return model.SaveTraits(provider.TraitList(), path) },
 		NewTraitItemID, NewTraitContainerItemID)
 }

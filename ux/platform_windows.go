@@ -20,7 +20,7 @@ import (
 	"path/filepath"
 	"syscall"
 
-	"github.com/richardwilkes/gcs/v5/model/library"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/formats/icon"
@@ -66,8 +66,8 @@ func configureRegistry() error {
 	if err = os.MkdirAll(appDataDir, 0o755); err != nil {
 		return errs.Wrap(err)
 	}
-	for i := range library.KnownFileTypes {
-		if fi := &library.KnownFileTypes[i]; fi.IsGCSData {
+	for i := range model.KnownFileTypes {
+		if fi := &model.KnownFileTypes[i]; fi.IsGCSData {
 			// Create the doc icon
 			var overlay image.Image
 			if overlay, err = CreateImageFromSVG(fi, 128); err != nil {

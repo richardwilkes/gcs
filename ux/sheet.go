@@ -21,7 +21,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/gid"
-	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox"
@@ -327,7 +326,7 @@ func (s *Sheet) UndoManager() *unison.UndoManager {
 // TitleIcon implements workspace.FileBackedDockable
 func (s *Sheet) TitleIcon(suggestedSize unison.Size) unison.Drawable {
 	return &unison.DrawableSVG{
-		SVG:  library.FileInfoFor(s.path).SVG,
+		SVG:  model.FileInfoFor(s.path).SVG,
 		Size: suggestedSize,
 	}
 }
@@ -421,7 +420,7 @@ func (s *Sheet) AttemptClose() bool {
 func (s *Sheet) save(forceSaveAs bool) bool {
 	success := false
 	if forceSaveAs || s.needsSaveAsPrompt {
-		success = SaveDockableAs(s, library.SheetExt, s.entity.Save, func(path string) {
+		success = SaveDockableAs(s, model.SheetExt, s.entity.Save, func(path string) {
 			s.crc = s.entity.CRC64()
 			s.path = path
 		})

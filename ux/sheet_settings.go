@@ -15,7 +15,6 @@ import (
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/library"
 	measure2 "github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/gcs/v5/model/paper"
 	"github.com/richardwilkes/gcs/v5/svg"
@@ -74,7 +73,7 @@ func ShowSheetSettings(owner EntityPanel) {
 			d.TabTitle = i18n.Text("Default Sheet Settings")
 		}
 		d.TabIcon = svg.Settings
-		d.Extensions = []string{library.SheetSettingsExt}
+		d.Extensions = []string{model.SheetSettingsExt}
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset

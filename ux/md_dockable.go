@@ -16,7 +16,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/library"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
@@ -162,7 +162,7 @@ func (d *MarkdownDockable) TitleIcon(suggestedSize unison.Size) unison.Drawable 
 		}
 	}
 	return &unison.DrawableSVG{
-		SVG:  library.FileInfoFor(d.BackingFilePath()).SVG,
+		SVG:  model.FileInfoFor(d.BackingFilePath()).SVG,
 		Size: suggestedSize,
 	}
 }

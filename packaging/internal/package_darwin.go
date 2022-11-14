@@ -20,7 +20,7 @@ import (
 	"path/filepath"
 	"text/template"
 
-	"github.com/richardwilkes/gcs/v5/model/library"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/errs"
@@ -72,8 +72,8 @@ func writeICNS(dstPath string, img image.Image) (err error) {
 }
 
 func writeDocICNS(dir string, base image.Image) error {
-	for i := range library.KnownFileTypes {
-		if fi := &library.KnownFileTypes[i]; fi.IsGCSData {
+	for i := range model.KnownFileTypes {
+		if fi := &model.KnownFileTypes[i]; fi.IsGCSData {
 			overlay, err := ux.CreateImageFromSVG(fi, 512)
 			if err != nil {
 				return err
@@ -112,8 +112,8 @@ func writePlist(targetPath string) (err error) {
 		Extensions []string
 		MimeTypes  []string
 	}
-	fileInfo := make([]*fileData, 0, len(library.KnownFileTypes))
-	for _, fi := range library.KnownFileTypes {
+	fileInfo := make([]*fileData, 0, len(model.KnownFileTypes))
+	for _, fi := range model.KnownFileTypes {
 		if !fi.IsSpecial {
 			extensions := make([]string, len(fi.Extensions))
 			for i, ext := range fi.Extensions {

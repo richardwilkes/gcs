@@ -16,7 +16,6 @@ import (
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -77,7 +76,7 @@ func ShowAttributeSettings(owner EntityPanel) {
 		d.TabIcon = svg.Attributes
 		d.defs.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
 		d.originalCRC = d.defs.CRC64()
-		d.Extensions = []string{library.AttributesExt, library.AttributesExtAlt1, library.AttributesExtAlt2}
+		d.Extensions = []string{model.AttributesExt, model.AttributesExtAlt1, model.AttributesExtAlt2}
 		d.undoMgr = unison.NewUndoManager(100, func(err error) { jot.Error(err) })
 		d.Loader = d.load
 		d.Saver = d.save

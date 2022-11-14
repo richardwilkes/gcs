@@ -20,7 +20,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gid"
-	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -523,7 +522,7 @@ func (d *Template) UndoManager() *unison.UndoManager {
 // TitleIcon implements workspace.FileBackedDockable
 func (d *Template) TitleIcon(suggestedSize unison.Size) unison.Drawable {
 	return &unison.DrawableSVG{
-		SVG:  library.FileInfoFor(d.path).SVG,
+		SVG:  model.FileInfoFor(d.path).SVG,
 		Size: suggestedSize,
 	}
 }
@@ -603,7 +602,7 @@ func (d *Template) createContent() unison.Paneler {
 func (d *Template) save(forceSaveAs bool) bool {
 	success := false
 	if forceSaveAs || d.needsSaveAsPrompt {
-		success = SaveDockableAs(d, library.TemplatesExt, d.template.Save, func(path string) {
+		success = SaveDockableAs(d, model.TemplatesExt, d.template.Save, func(path string) {
 			d.crc = d.template.CRC64()
 			d.path = path
 		})

@@ -16,7 +16,6 @@ import (
 	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/unison"
 )
 
@@ -50,7 +49,7 @@ func NewSkillTableDockableFromFile(filePath string) (unison.Dockable, error) {
 // NewSkillTableDockable creates a new unison.Dockable for skill list files.
 func NewSkillTableDockable(filePath string, skills []*model.Skill) *TableDockable[*model.Skill] {
 	provider := &skillListProvider{skills: skills}
-	return NewTableDockable(filePath, library.SkillsExt, NewSkillsProvider(provider, false),
+	return NewTableDockable(filePath, model.SkillsExt, NewSkillsProvider(provider, false),
 		func(path string) error { return model.SaveSkills(provider.SkillList(), path) },
 		NewSkillItemID, NewSkillContainerItemID, NewTechniqueItemID)
 }

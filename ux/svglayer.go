@@ -16,7 +16,7 @@ import (
 	"fmt"
 	"image"
 
-	"github.com/richardwilkes/gcs/v5/model/library"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/srwiley/oksvg"
 	"github.com/srwiley/rasterx"
@@ -25,7 +25,7 @@ import (
 // CreateImageFromSVG turns one of our svg-as-a-path objects into an actual SVG document, then renders it into an image
 // at the specified square size. Note that this is not currently GPU accelerated, as I haven't added the necessary bits
 // to unison to support scribbling into arbitrary offscreen images yet.
-func CreateImageFromSVG(fi *library.FileInfo, size int) (image.Image, error) {
+func CreateImageFromSVG(fi *model.FileInfo, size int) (image.Image, error) {
 	var buffer bytes.Buffer
 	fmt.Fprintf(&buffer, `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %f %f"><path d="%s"/></svg>`,
 		fi.SVG.Size().Width, fi.SVG.Size().Height, fi.SVG.PathScaledTo(1).ToSVGString())

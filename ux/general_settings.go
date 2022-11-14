@@ -18,7 +18,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -56,7 +55,7 @@ func ShowGeneralSettings() {
 		d.Self = d
 		d.TabTitle = i18n.Text("General Settings")
 		d.TabIcon = svg.Settings
-		d.Extensions = []string{library.GeneralSettingsExt}
+		d.Extensions = []string{model.GeneralSettingsExt}
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset

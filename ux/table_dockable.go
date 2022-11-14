@@ -20,7 +20,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -211,7 +210,7 @@ func (d *TableDockable[T]) DockableKind() string {
 // TitleIcon implements workspace.FileBackedDockable
 func (d *TableDockable[T]) TitleIcon(suggestedSize unison.Size) unison.Drawable {
 	return &unison.DrawableSVG{
-		SVG:  library.FileInfoFor(d.path).SVG,
+		SVG:  model.FileInfoFor(d.path).SVG,
 		Size: suggestedSize,
 	}
 }
