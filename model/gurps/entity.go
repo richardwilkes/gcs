@@ -32,7 +32,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
 	"github.com/richardwilkes/gcs/v5/model/gurps/skill"
-	"github.com/richardwilkes/gcs/v5/model/gurps/trait"
 	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
@@ -544,7 +543,7 @@ func calculateSingleTraitPoints(t *Trait) (ad, disad, race, quirk fxp.Int) {
 	}
 	if t.Container() {
 		switch t.ContainerType {
-		case trait.Group:
+		case GroupContainerType:
 			for _, child := range t.Children {
 				a, d, r, q := calculateSingleTraitPoints(child)
 				ad += a
@@ -553,7 +552,7 @@ func calculateSingleTraitPoints(t *Trait) (ad, disad, race, quirk fxp.Int) {
 				quirk += q
 			}
 			return
-		case trait.Race:
+		case RaceContainerType:
 			return 0, 0, t.AdjustedPoints(), 0
 		}
 	}
@@ -1078,7 +1077,7 @@ func (e *Entity) PreservesUserDesc() bool {
 func (e *Entity) Ancestry() *ancestry.Ancestry {
 	var anc *ancestry.Ancestry
 	Traverse(func(t *Trait) bool {
-		if t.Container() && t.ContainerType == trait.Race {
+		if t.Container() && t.ContainerType == RaceContainerType {
 			if anc = ancestry.Lookup(t.Ancestry, SettingsProvider.Libraries()); anc != nil {
 				return true
 			}
@@ -1166,7 +1165,7 @@ func (e *Entity) Reactions() []*ConditionalModifier {
 			e.reactionsFromFeatureList(source, mod.Features, m)
 			return false
 		}, true, true, a.Modifiers...)
-		if a.CR != trait.None && a.CRAdj == ReactionPenalty {
+		if a.CR != NoCR && a.CRAdj == ReactionPenalty {
 			amt := fxp.From(ReactionPenalty.Adjustment(a.CR))
 			situation := fmt.Sprintf(i18n.Text("from others when %s is triggered"), a.String())
 			if r, exists := m[situation]; exists {

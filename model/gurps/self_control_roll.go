@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package trait
+package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -18,7 +18,7 @@ import (
 
 // Possible SelfControlRoll values.
 const (
-	None = SelfControlRoll(0)
+	NoCR = SelfControlRoll(0)
 	CR6  = SelfControlRoll(6)
 	CR9  = SelfControlRoll(9)
 	CR12 = SelfControlRoll(12)
@@ -27,7 +27,7 @@ const (
 
 // AllSelfControlRolls is the complete set of SelfControlRoll values.
 var AllSelfControlRolls = []SelfControlRoll{
-	None,
+	NoCR,
 	CR6,
 	CR9,
 	CR12,
@@ -60,7 +60,7 @@ func (s SelfControlRoll) Index() int {
 // String implements fmt.Stringer.
 func (s SelfControlRoll) String() string {
 	switch s {
-	case None:
+	case NoCR:
 		return i18n.Text("None Required")
 	case CR6:
 		return i18n.Text("CR: 6 (Resist rarely)")
@@ -71,14 +71,14 @@ func (s SelfControlRoll) String() string {
 	case CR15:
 		return i18n.Text("CR: 15 (Resist almost all the time)")
 	default:
-		return None.String()
+		return NoCR.String()
 	}
 }
 
 // DescriptionWithCost returns a formatted description that includes the cost multiplier.
 func (s SelfControlRoll) DescriptionWithCost() string {
 	v := s.EnsureValid()
-	if v == None {
+	if v == NoCR {
 		return ""
 	}
 	return v.String() + ", x" + v.Multiplier().String()
@@ -87,7 +87,7 @@ func (s SelfControlRoll) DescriptionWithCost() string {
 // Multiplier returns the cost multiplier.
 func (s SelfControlRoll) Multiplier() fxp.Int {
 	switch s {
-	case None:
+	case NoCR:
 		return fxp.One
 	case CR6:
 		return fxp.Two
@@ -98,7 +98,7 @@ func (s SelfControlRoll) Multiplier() fxp.Int {
 	case CR15:
 		return fxp.Half
 	default:
-		return None.Multiplier()
+		return NoCR.Multiplier()
 	}
 }
 

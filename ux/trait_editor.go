@@ -15,7 +15,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/ancestry"
-	"github.com/richardwilkes/gcs/v5/model/gurps/trait"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -73,15 +72,15 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 		adjustFieldBlank(perLevelField, !e.editorData.CanLevel)
 		adjustFieldBlank(levelField, !e.editorData.CanLevel)
 	}
-	addLabelAndPopup(content, i18n.Text("Self-Control Roll"), "", trait.AllSelfControlRolls, &e.editorData.CR)
+	addLabelAndPopup(content, i18n.Text("Self-Control Roll"), "", gurps.AllSelfControlRolls, &e.editorData.CR)
 	crAdjPopup := addLabelAndPopup(content, i18n.Text("CR Adjustment"), i18n.Text("Self-Control Roll Adjustment"),
 		gurps.AllSelfControlRollAdj, &e.editorData.CRAdj)
-	if e.editorData.CR == trait.None {
+	if e.editorData.CR == gurps.NoCR {
 		crAdjPopup.SetEnabled(false)
 	}
 	var ancestryPopup *unison.PopupMenu[string]
 	if e.target.Container() {
-		addLabelAndPopup(content, i18n.Text("Container WeaponType"), "", trait.AllContainerType,
+		addLabelAndPopup(content, i18n.Text("Container WeaponType"), "", gurps.AllContainerType,
 			&e.editorData.ContainerType)
 		var choices []string
 		for _, lib := range ancestry.AvailableAncestries(gurps.SettingsProvider.Libraries()) {
@@ -90,7 +89,7 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 			}
 		}
 		ancestryPopup = addLabelAndPopup(content, i18n.Text("Ancestry"), "", choices, &e.editorData.Ancestry)
-		adjustPopupBlank(ancestryPopup, e.editorData.ContainerType != trait.Race)
+		adjustPopupBlank(ancestryPopup, e.editorData.ContainerType != gurps.RaceContainerType)
 		addTemplateChoices(content, nil, "", &e.editorData.TemplatePicker)
 	}
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
@@ -117,14 +116,14 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 		if levelField != nil {
 			adjustFieldBlank(levelField, !e.editorData.CanLevel)
 		}
-		if e.editorData.CR == trait.None {
+		if e.editorData.CR == gurps.NoCR {
 			crAdjPopup.SetEnabled(false)
 			crAdjPopup.Select(gurps.NoCRAdj)
 		} else {
 			crAdjPopup.SetEnabled(true)
 		}
 		if ancestryPopup != nil {
-			if e.editorData.ContainerType == trait.Race {
+			if e.editorData.ContainerType == gurps.RaceContainerType {
 				if !ancestryPopup.Enabled() {
 					adjustPopupBlank(ancestryPopup, false)
 					if ancestryPopup.IndexOfItem(e.editorData.Ancestry) == -1 {

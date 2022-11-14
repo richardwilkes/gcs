@@ -15,38 +15,37 @@ import (
 	"fmt"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/trait"
 )
 
 // Adjustment returns the adjustment amount.
-func (enum SelfControlRollAdj) Adjustment(cr trait.SelfControlRoll) int {
-	if cr == trait.None {
+func (enum SelfControlRollAdj) Adjustment(cr SelfControlRoll) int {
+	if cr == NoCR {
 		return 0
 	}
 	switch enum {
 	case NoCRAdj:
 		return 0
 	case ActionPenalty:
-		return cr.Index() - len(trait.AllSelfControlRolls)
+		return cr.Index() - len(AllSelfControlRolls)
 	case ReactionPenalty:
-		return cr.Index() - len(trait.AllSelfControlRolls)
+		return cr.Index() - len(AllSelfControlRolls)
 	case FrightCheckPenalty:
-		return cr.Index() - len(trait.AllSelfControlRolls)
+		return cr.Index() - len(AllSelfControlRolls)
 	case FrightCheckBonus:
-		return len(trait.AllSelfControlRolls) - cr.Index()
+		return len(AllSelfControlRolls) - cr.Index()
 	case MinorCostOfLivingIncrease:
-		return 5 * (len(trait.AllSelfControlRolls) - cr.Index())
+		return 5 * (len(AllSelfControlRolls) - cr.Index())
 	case MajorCostOfLivingIncrease:
-		return 10 * (1 << (len(trait.AllSelfControlRolls) - (cr.Index() + 1)))
+		return 10 * (1 << (len(AllSelfControlRolls) - (cr.Index() + 1)))
 	default:
 		return NoCRAdj.Adjustment(cr)
 	}
 }
 
 // Description returns a formatted description.
-func (enum SelfControlRollAdj) Description(cr trait.SelfControlRoll) string {
+func (enum SelfControlRollAdj) Description(cr SelfControlRoll) string {
 	switch {
-	case cr == trait.None:
+	case cr == NoCR:
 		return ""
 	case enum == NoCRAdj:
 		return enum.AltString()
@@ -56,12 +55,12 @@ func (enum SelfControlRollAdj) Description(cr trait.SelfControlRoll) string {
 }
 
 // Features returns the set of features to apply.
-func (enum SelfControlRollAdj) Features(cr trait.SelfControlRoll) Features {
+func (enum SelfControlRollAdj) Features(cr SelfControlRoll) Features {
 	if enum.EnsureValid() != MajorCostOfLivingIncrease {
 		return nil
 	}
 	f := NewSkillBonus()
 	f.NameCriteria.Qualifier = "Merchant"
-	f.Amount = fxp.From(cr.Index() - len(trait.AllSelfControlRolls))
+	f.Amount = fxp.From(cr.Index() - len(AllSelfControlRolls))
 	return Features{f}
 }

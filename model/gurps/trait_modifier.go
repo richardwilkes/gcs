@@ -19,7 +19,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
-	"github.com/richardwilkes/gcs/v5/model/gurps/trait"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/settings/display"
 	"github.com/richardwilkes/json"
@@ -222,7 +221,7 @@ func (m *TraitModifier) CostModifier() fxp.Int {
 
 // HasLevels returns true if this TraitModifier has levels.
 func (m *TraitModifier) HasLevels() bool {
-	return !m.Container() && m.CostType == trait.Percentage && m.Levels > 0
+	return !m.Container() && m.CostType == PercentageTraitModifierCostType && m.Levels > 0
 }
 
 func (m *TraitModifier) String() string {
@@ -277,20 +276,20 @@ func (m *TraitModifier) CostDescription() string {
 	}
 	var base string
 	switch m.CostType {
-	case trait.Percentage:
+	case PercentageTraitModifierCostType:
 		if m.HasLevels() {
 			base = m.Cost.Mul(m.Levels).StringWithSign()
 		} else {
 			base = m.Cost.StringWithSign()
 		}
-		base += trait.Percentage.String()
-	case trait.Points:
+		base += PercentageTraitModifierCostType.String()
+	case PointsTraitModifierCostType:
 		base = m.Cost.StringWithSign()
-	case trait.Multiplier:
+	case MultiplierTraitModifierCostType:
 		return m.CostType.String() + m.Cost.String()
 	default:
 		jot.Errorf("unhandled cost type: %d", m.CostType)
-		base = m.Cost.StringWithSign() + trait.Percentage.String()
+		base = m.Cost.StringWithSign() + PercentageTraitModifierCostType.String()
 	}
 	if desc := m.Affects.AltString(); desc != "" {
 		base += " " + desc

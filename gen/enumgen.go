@@ -148,10 +148,9 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/gurps/trait",
-		Name:       "affects",
-		Desc:       "describes how a TraitModifier affects the point cost",
-		StandAlone: true,
+		Pkg:  "model/gurps",
+		Name: "affects",
+		Desc: "describes how a TraitModifier affects the point cost",
 		Values: []enumValue{
 			{
 				Key:    "total",
@@ -170,10 +169,9 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/gurps/trait",
-		Name:       "container_type",
-		Desc:       "holds the type of a trait container",
-		StandAlone: true,
+		Pkg:  "model/gurps",
+		Name: "container_type",
+		Desc: "holds the type of a trait container",
 		Values: []enumValue{
 			{
 				Key: "group",
@@ -191,10 +189,9 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/gurps/trait",
-		Name:       "modifier_cost_type",
-		Desc:       "describes how a TraitModifier's point cost is applied",
-		StandAlone: true,
+		Pkg:  "model/gurps",
+		Name: "trait_modifier_cost_type",
+		Desc: "describes how a TraitModifier's point cost is applied",
 		Values: []enumValue{
 			{
 				Key:    "percentage",

@@ -14,7 +14,6 @@ package ux
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/trait"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -38,25 +37,25 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 		wrapper := addFlowWrapper(content, costLabel, 3)
 		addDecimalField(wrapper, nil, "", costLabel, "", &e.editorData.Cost, -fxp.MaxBasePoints, fxp.MaxBasePoints)
 		costTypePopup := addCostTypePopup(wrapper, e)
-		affectsPopup := addPopup(wrapper, trait.AllAffects, &e.editorData.Affects)
+		affectsPopup := addPopup(wrapper, gurps.AllAffects, &e.editorData.Affects)
 		levels := addLabelAndDecimalField(content, nil, "", i18n.Text("Level"), "", &e.editorData.Levels, 0, fxp.Thousand)
 		adjustFieldBlank(levels, !e.target.HasLevels())
 		total := NewNonEditableField(func(field *NonEditableField) {
 			enabled := true
 			switch costTypePopup.SelectedIndex() - 1 {
 			case -1:
-				field.Text = e.editorData.Cost.Mul(e.editorData.Levels).StringWithSign() + trait.Percentage.String()
-			case int(trait.Percentage):
-				field.Text = e.editorData.Cost.StringWithSign() + trait.Percentage.String()
-			case int(trait.Points):
+				field.Text = e.editorData.Cost.Mul(e.editorData.Levels).StringWithSign() + gurps.PercentageTraitModifierCostType.String()
+			case int(gurps.PercentageTraitModifierCostType):
+				field.Text = e.editorData.Cost.StringWithSign() + gurps.PercentageTraitModifierCostType.String()
+			case int(gurps.PointsTraitModifierCostType):
 				field.Text = e.editorData.Cost.StringWithSign()
-			case int(trait.Multiplier):
-				field.Text = trait.Multiplier.String() + e.editorData.Cost.String()
-				affectsPopup.Select(trait.Total)
+			case int(gurps.MultiplierTraitModifierCostType):
+				field.Text = gurps.MultiplierTraitModifierCostType.String() + e.editorData.Cost.String()
+				affectsPopup.Select(gurps.TotalAffects)
 				enabled = false
 			default:
 				jot.Errorf("unhandled cost type popup index: %d", costTypePopup.SelectedIndex())
-				field.Text = e.editorData.Cost.StringWithSign() + trait.Percentage.String()
+				field.Text = e.editorData.Cost.StringWithSign() + gurps.PercentageTraitModifierCostType.String()
 			}
 			affectsPopup.SetEnabled(enabled)
 			field.MarkForLayoutAndRedraw()
@@ -69,12 +68,12 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 		content.AddChild(total)
 		costTypePopup.SelectionCallback = func(index int, _ string) {
 			if index == 0 {
-				e.editorData.CostType = trait.Percentage
+				e.editorData.CostType = gurps.PercentageTraitModifierCostType
 				if e.editorData.Levels < fxp.One {
 					levels.SetText("1")
 				}
 			} else {
-				e.editorData.CostType = trait.AllModifierCostType[index-1]
+				e.editorData.CostType = gurps.AllTraitModifierCostType[index-1]
 				e.editorData.Levels = 0
 			}
 			adjustFieldBlank(levels, index != 0)
@@ -92,7 +91,7 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 func addCostTypePopup(parent *unison.Panel, e *editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]) *unison.PopupMenu[string] {
 	popup := unison.NewPopupMenu[string]()
 	popup.AddItem(i18n.Text("% per level"))
-	for _, one := range trait.AllModifierCostType {
+	for _, one := range gurps.AllTraitModifierCostType {
 		popup.AddItem(one.String())
 	}
 	if e.target.HasLevels() {

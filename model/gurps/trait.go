@@ -19,7 +19,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
-	"github.com/richardwilkes/gcs/v5/model/gurps/trait"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/settings/display"
 	"github.com/richardwilkes/json"
@@ -289,7 +288,7 @@ func (a *Trait) AdjustedPoints() fxp.Int {
 		return AdjustedPoints(a.Entity, a.CanLevel, a.BasePoints, a.Levels, a.PointsPerLevel, a.CR, a.AllModifiers(), a.RoundCostDown)
 	}
 	var points fxp.Int
-	if a.ContainerType == trait.AlternativeAbilities {
+	if a.ContainerType == AlternativeAbilitiesContainerType {
 		values := make([]fxp.Int, len(a.Children))
 		for i, one := range a.Children {
 			values[i] = one.AdjustedPoints()
@@ -423,7 +422,7 @@ func (a *Trait) ActiveModifierFor(name string) *TraitModifier {
 // ModifierNotes returns the notes due to modifiers.
 func (a *Trait) ModifierNotes() string {
 	var buffer strings.Builder
-	if a.CR != trait.None {
+	if a.CR != NoCR {
 		buffer.WriteString(a.CR.String())
 		if a.CRAdj != NoCRAdj {
 			buffer.WriteString(", ")
@@ -503,7 +502,7 @@ func ExtractTags(tags string) []string {
 }
 
 // AdjustedPoints returns the total points, taking levels and modifiers into account. 'entity' may be nil.
-func AdjustedPoints(entity *Entity, canLevel bool, basePoints, levels, pointsPerLevel fxp.Int, cr trait.SelfControlRoll, modifiers []*TraitModifier, roundCostDown bool) fxp.Int {
+func AdjustedPoints(entity *Entity, canLevel bool, basePoints, levels, pointsPerLevel fxp.Int, cr SelfControlRoll, modifiers []*TraitModifier, roundCostDown bool) fxp.Int {
 	if !canLevel {
 		levels = 0
 		pointsPerLevel = 0
@@ -513,9 +512,9 @@ func AdjustedPoints(entity *Entity, canLevel bool, basePoints, levels, pointsPer
 	Traverse(func(mod *TraitModifier) bool {
 		modifier := mod.CostModifier()
 		switch mod.CostType {
-		case trait.Percentage:
+		case PercentageTraitModifierCostType:
 			switch mod.Affects {
-			case trait.Total:
+			case TotalAffects:
 				if modifier < 0 {
 					baseLim += modifier
 					levelLim += modifier
@@ -523,28 +522,28 @@ func AdjustedPoints(entity *Entity, canLevel bool, basePoints, levels, pointsPer
 					baseEnh += modifier
 					levelEnh += modifier
 				}
-			case trait.BaseOnly:
+			case BaseOnlyAffects:
 				if modifier < 0 {
 					baseLim += modifier
 				} else {
 					baseEnh += modifier
 				}
-			case trait.LevelsOnly:
+			case LevelsOnlyAffects:
 				if modifier < 0 {
 					levelLim += modifier
 				} else {
 					levelEnh += modifier
 				}
 			}
-		case trait.Points:
-			if mod.Affects == trait.LevelsOnly {
+		case PointsTraitModifierCostType:
+			if mod.Affects == LevelsOnlyAffects {
 				if canLevel {
 					pointsPerLevel += modifier
 				}
 			} else {
 				basePoints += modifier
 			}
-		case trait.Multiplier:
+		case MultiplierTraitModifierCostType:
 			multiplier = multiplier.Mul(modifier)
 		}
 		return false

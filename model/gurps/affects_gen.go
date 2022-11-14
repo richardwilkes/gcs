@@ -11,7 +11,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package trait
+package gurps
 
 import (
 	"strings"
@@ -21,18 +21,18 @@ import (
 
 // Possible values.
 const (
-	Total Affects = iota
-	BaseOnly
-	LevelsOnly
-	LastAffects = LevelsOnly
+	TotalAffects Affects = iota
+	BaseOnlyAffects
+	LevelsOnlyAffects
+	LastAffects = LevelsOnlyAffects
 )
 
 var (
 	// AllAffects holds all possible values.
 	AllAffects = []Affects{
-		Total,
-		BaseOnly,
-		LevelsOnly,
+		TotalAffects,
+		BaseOnlyAffects,
+		LevelsOnlyAffects,
 	}
 	affectsData = []struct {
 		key    string

@@ -11,7 +11,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package trait
+package gurps
 
 import (
 	"strings"
@@ -21,20 +21,20 @@ import (
 
 // Possible values.
 const (
-	Group ContainerType = iota
-	MetaTrait
-	Race
-	AlternativeAbilities
-	LastContainerType = AlternativeAbilities
+	GroupContainerType ContainerType = iota
+	MetaTraitContainerType
+	RaceContainerType
+	AlternativeAbilitiesContainerType
+	LastContainerType = AlternativeAbilitiesContainerType
 )
 
 var (
 	// AllContainerType holds all possible values.
 	AllContainerType = []ContainerType{
-		Group,
-		MetaTrait,
-		Race,
-		AlternativeAbilities,
+		GroupContainerType,
+		MetaTraitContainerType,
+		RaceContainerType,
+		AlternativeAbilitiesContainerType,
 	}
 	containerTypeData = []struct {
 		key    string
