@@ -14,7 +14,6 @@ package gurps
 import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
-	"github.com/richardwilkes/gcs/v5/model/gurps/prereq"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -24,7 +23,7 @@ var _ Prereq = &ContainedWeightPrereq{}
 // ContainedWeightPrereq holds a prerequisite for an equipment contained weight.
 type ContainedWeightPrereq struct {
 	Parent         *PrereqList     `json:"-"`
-	Type           prereq.Type     `json:"type"`
+	Type           PrereqType      `json:"type"`
 	Has            bool            `json:"has"`
 	WeightCriteria criteria.Weight `json:"qualifier,omitempty"`
 }
@@ -32,7 +31,7 @@ type ContainedWeightPrereq struct {
 // NewContainedWeightPrereq creates a new ContainedWeightPrereq.
 func NewContainedWeightPrereq(entity *Entity) *ContainedWeightPrereq {
 	return &ContainedWeightPrereq{
-		Type: prereq.ContainedWeight,
+		Type: ContainedWeightPrereqType,
 		WeightCriteria: criteria.Weight{
 			WeightData: criteria.WeightData{
 				Compare:   criteria.AtMost,
@@ -44,7 +43,7 @@ func NewContainedWeightPrereq(entity *Entity) *ContainedWeightPrereq {
 }
 
 // PrereqType implements Prereq.
-func (c *ContainedWeightPrereq) PrereqType() prereq.Type {
+func (c *ContainedWeightPrereq) PrereqType() PrereqType {
 	return c.Type
 }
 

@@ -16,7 +16,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
-	"github.com/richardwilkes/gcs/v5/model/gurps/prereq"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -26,14 +25,14 @@ var _ Prereq = &EquippedEquipmentPrereq{}
 // EquippedEquipmentPrereq holds a prerequisite for an equipped piece of equipment.
 type EquippedEquipmentPrereq struct {
 	Parent       *PrereqList     `json:"-"`
-	Type         prereq.Type     `json:"type"`
+	Type         PrereqType      `json:"type"`
 	NameCriteria criteria.String `json:"name,omitempty"`
 }
 
 // NewEquippedEquipmentPrereq creates a new EquippedEquipmentPrereq.
 func NewEquippedEquipmentPrereq() *EquippedEquipmentPrereq {
 	return &EquippedEquipmentPrereq{
-		Type: prereq.EquippedEquipment,
+		Type: EquippedEquipmentPrereqType,
 		NameCriteria: criteria.String{
 			StringData: criteria.StringData{
 				Compare: criteria.Is,
@@ -43,7 +42,7 @@ func NewEquippedEquipmentPrereq() *EquippedEquipmentPrereq {
 }
 
 // PrereqType implements Prereq.
-func (e *EquippedEquipmentPrereq) PrereqType() prereq.Type {
+func (e *EquippedEquipmentPrereq) PrereqType() PrereqType {
 	return e.Type
 }
 

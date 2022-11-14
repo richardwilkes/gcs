@@ -16,7 +16,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/prereq"
 	"github.com/richardwilkes/gcs/v5/model/gurps/spell"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/errs"
@@ -28,7 +27,7 @@ import (
 
 const noAndOr = ""
 
-var lastPrereqTypeUsed = prereq.Trait
+var lastPrereqTypeUsed = gurps.TraitPrereqType
 
 type prereqPanel struct {
 	unison.Panel
@@ -225,8 +224,8 @@ func andOrText(pr gurps.Prereq) string {
 
 func (p *prereqPanel) addPrereqTypeSwitcher(parent *unison.Panel, depth int, pr gurps.Prereq) {
 	prereqType := pr.PrereqType()
-	popup := addPopup(parent, prereq.AllType[1:], &prereqType)
-	popup.SelectionCallback = func(_ int, item prereq.Type) {
+	popup := addPopup(parent, gurps.AllPrereqType[1:], &prereqType)
+	popup.SelectionCallback = func(_ int, item gurps.PrereqType) {
 		parentList := pr.ParentList()
 		if newPrereq := p.createPrereqForType(item, parentList); newPrereq != nil {
 			lastPrereqTypeUsed = item
@@ -242,37 +241,37 @@ func (p *prereqPanel) addPrereqTypeSwitcher(parent *unison.Panel, depth int, pr 
 	}
 }
 
-func (p *prereqPanel) createPrereqForType(prereqType prereq.Type, parentList *gurps.PrereqList) gurps.Prereq {
+func (p *prereqPanel) createPrereqForType(prereqType gurps.PrereqType, parentList *gurps.PrereqList) gurps.Prereq {
 	switch prereqType {
-	case prereq.List:
+	case gurps.ListPrereqType:
 		one := gurps.NewPrereqList()
 		one.Parent = parentList
 		return one
-	case prereq.Trait:
+	case gurps.TraitPrereqType:
 		one := gurps.NewTraitPrereq()
 		one.Parent = parentList
 		return one
-	case prereq.Attribute:
+	case gurps.AttributePrereqType:
 		one := gurps.NewAttributePrereq(p.entity)
 		one.Parent = parentList
 		return one
-	case prereq.ContainedQuantity:
+	case gurps.ContainedQuantityPrereqType:
 		one := gurps.NewContainedQuantityPrereq()
 		one.Parent = parentList
 		return one
-	case prereq.ContainedWeight:
+	case gurps.ContainedWeightPrereqType:
 		one := gurps.NewContainedWeightPrereq(p.entity)
 		one.Parent = parentList
 		return one
-	case prereq.EquippedEquipment:
+	case gurps.EquippedEquipmentPrereqType:
 		one := gurps.NewEquippedEquipmentPrereq()
 		one.Parent = parentList
 		return one
-	case prereq.Skill:
+	case gurps.SkillPrereqType:
 		one := gurps.NewSkillPrereq()
 		one.Parent = parentList
 		return one
-	case prereq.Spell:
+	case gurps.SpellPrereqType:
 		one := gurps.NewSpellPrereq()
 		one.Parent = parentList
 		return one

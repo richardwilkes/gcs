@@ -15,7 +15,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
-	"github.com/richardwilkes/gcs/v5/model/gurps/prereq"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -25,7 +24,7 @@ var _ Prereq = &AttributePrereq{}
 // AttributePrereq holds a prerequisite for an attribute.
 type AttributePrereq struct {
 	Parent            *PrereqList      `json:"-"`
-	Type              prereq.Type      `json:"type"`
+	Type              PrereqType       `json:"type"`
 	Has               bool             `json:"has"`
 	CombinedWith      string           `json:"combined_with,omitempty"`
 	QualifierCriteria criteria.Numeric `json:"qualifier,omitempty"`
@@ -35,7 +34,7 @@ type AttributePrereq struct {
 // NewAttributePrereq creates a new AttributePrereq. 'entity' may be nil.
 func NewAttributePrereq(entity *Entity) *AttributePrereq {
 	return &AttributePrereq{
-		Type: prereq.Attribute,
+		Type: AttributePrereqType,
 		QualifierCriteria: criteria.Numeric{
 			NumericData: criteria.NumericData{
 				Compare:   criteria.AtLeast,
@@ -48,7 +47,7 @@ func NewAttributePrereq(entity *Entity) *AttributePrereq {
 }
 
 // PrereqType implements Prereq.
-func (a *AttributePrereq) PrereqType() prereq.Type {
+func (a *AttributePrereq) PrereqType() PrereqType {
 	return a.Type
 }
 

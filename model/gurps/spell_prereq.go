@@ -15,7 +15,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
-	"github.com/richardwilkes/gcs/v5/model/gurps/prereq"
 	"github.com/richardwilkes/gcs/v5/model/gurps/spell"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -25,7 +24,7 @@ var _ Prereq = &SpellPrereq{}
 // SpellPrereq holds a prerequisite for a spell.
 type SpellPrereq struct {
 	Parent            *PrereqList          `json:"-"`
-	Type              prereq.Type          `json:"type"`
+	Type              PrereqType           `json:"type"`
 	SubType           spell.ComparisonType `json:"sub_type"`
 	Has               bool                 `json:"has"`
 	QualifierCriteria criteria.String      `json:"qualifier,omitempty"`
@@ -35,7 +34,7 @@ type SpellPrereq struct {
 // NewSpellPrereq creates a new SpellPrereq.
 func NewSpellPrereq() *SpellPrereq {
 	return &SpellPrereq{
-		Type:    prereq.Spell,
+		Type:    SpellPrereqType,
 		SubType: spell.Name,
 		QualifierCriteria: criteria.String{
 			StringData: criteria.StringData{
@@ -53,7 +52,7 @@ func NewSpellPrereq() *SpellPrereq {
 }
 
 // PrereqType implements Prereq.
-func (s *SpellPrereq) PrereqType() prereq.Type {
+func (s *SpellPrereq) PrereqType() PrereqType {
 	return s.Type
 }
 

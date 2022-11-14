@@ -15,7 +15,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
-	"github.com/richardwilkes/gcs/v5/model/gurps/prereq"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -25,7 +24,7 @@ var _ Prereq = &PrereqList{}
 // PrereqList holds a prereq that contains a list of prerequisites.
 type PrereqList struct {
 	Parent  *PrereqList      `json:"-"`
-	Type    prereq.Type      `json:"type"`
+	Type    PrereqType       `json:"type"`
 	All     bool             `json:"all"`
 	WhenTL  criteria.Numeric `json:"when_tl,omitempty"`
 	Prereqs Prereqs          `json:"prereqs,omitempty"`
@@ -34,7 +33,7 @@ type PrereqList struct {
 // NewPrereqList creates a new PrereqList.
 func NewPrereqList() *PrereqList {
 	return &PrereqList{
-		Type: prereq.List,
+		Type: ListPrereqType,
 		All:  true,
 	}
 }
@@ -45,7 +44,7 @@ func (p *PrereqList) ShouldOmit() bool {
 }
 
 // PrereqType implements Prereq.
-func (p *PrereqList) PrereqType() prereq.Type {
+func (p *PrereqList) PrereqType() PrereqType {
 	return p.Type
 }
 

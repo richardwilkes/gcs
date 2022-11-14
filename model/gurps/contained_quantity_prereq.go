@@ -14,7 +14,6 @@ package gurps
 import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/prereq"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -24,7 +23,7 @@ var _ Prereq = &ContainedQuantityPrereq{}
 // ContainedQuantityPrereq holds a prerequisite for an equipment contained quantity.
 type ContainedQuantityPrereq struct {
 	Parent            *PrereqList      `json:"-"`
-	Type              prereq.Type      `json:"type"`
+	Type              PrereqType       `json:"type"`
 	Has               bool             `json:"has"`
 	QualifierCriteria criteria.Numeric `json:"qualifier,omitempty"`
 }
@@ -32,7 +31,7 @@ type ContainedQuantityPrereq struct {
 // NewContainedQuantityPrereq creates a new ContainedQuantityPrereq.
 func NewContainedQuantityPrereq() *ContainedQuantityPrereq {
 	return &ContainedQuantityPrereq{
-		Type: prereq.ContainedQuantity,
+		Type: ContainedQuantityPrereqType,
 		QualifierCriteria: criteria.Numeric{
 			NumericData: criteria.NumericData{
 				Compare:   criteria.AtMost,
@@ -44,7 +43,7 @@ func NewContainedQuantityPrereq() *ContainedQuantityPrereq {
 }
 
 // PrereqType implements Prereq.
-func (c *ContainedQuantityPrereq) PrereqType() prereq.Type {
+func (c *ContainedQuantityPrereq) PrereqType() PrereqType {
 	return c.Type
 }
 

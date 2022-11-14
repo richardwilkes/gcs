@@ -11,7 +11,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package prereq
+package gurps
 
 import (
 	"strings"
@@ -22,30 +22,30 @@ import (
 
 // Possible values.
 const (
-	List Type = iota
-	Trait
-	Attribute
-	ContainedQuantity
-	ContainedWeight
-	EquippedEquipment
-	Skill
-	Spell
-	LastType = Spell
+	ListPrereqType PrereqType = iota
+	TraitPrereqType
+	AttributePrereqType
+	ContainedQuantityPrereqType
+	ContainedWeightPrereqType
+	EquippedEquipmentPrereqType
+	SkillPrereqType
+	SpellPrereqType
+	LastPrereqType = SpellPrereqType
 )
 
 var (
-	// AllType holds all possible values.
-	AllType = []Type{
-		List,
-		Trait,
-		Attribute,
-		ContainedQuantity,
-		ContainedWeight,
-		EquippedEquipment,
-		Skill,
-		Spell,
+	// AllPrereqType holds all possible values.
+	AllPrereqType = []PrereqType{
+		ListPrereqType,
+		TraitPrereqType,
+		AttributePrereqType,
+		ContainedQuantityPrereqType,
+		ContainedWeightPrereqType,
+		EquippedEquipmentPrereqType,
+		SkillPrereqType,
+		SpellPrereqType,
 	}
-	typeData = []struct {
+	prereqTypeData = []struct {
 		key     string
 		oldKeys []string
 		string  string
@@ -86,44 +86,44 @@ var (
 	}
 )
 
-// Type holds the type of a Prereq.
-type Type byte
+// PrereqType holds the type of a Prereq.
+type PrereqType byte
 
 // EnsureValid ensures this is of a known value.
-func (enum Type) EnsureValid() Type {
-	if enum <= LastType {
+func (enum PrereqType) EnsureValid() PrereqType {
+	if enum <= LastPrereqType {
 		return enum
 	}
 	return 0
 }
 
 // Key returns the key used in serialization.
-func (enum Type) Key() string {
-	return typeData[enum.EnsureValid()].key
+func (enum PrereqType) Key() string {
+	return prereqTypeData[enum.EnsureValid()].key
 }
 
 // String implements fmt.Stringer.
-func (enum Type) String() string {
-	return typeData[enum.EnsureValid()].string
+func (enum PrereqType) String() string {
+	return prereqTypeData[enum.EnsureValid()].string
 }
 
-// ExtractType extracts the value from a string.
-func ExtractType(str string) Type {
-	for i, one := range typeData {
+// ExtractPrereqType extracts the value from a string.
+func ExtractPrereqType(str string) PrereqType {
+	for i, one := range prereqTypeData {
 		if strings.EqualFold(one.key, str) || txt.CaselessSliceContains(one.oldKeys, str) {
-			return Type(i)
+			return PrereqType(i)
 		}
 	}
 	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
-func (enum Type) MarshalText() (text []byte, err error) {
+func (enum PrereqType) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
 // UnmarshalText implements the encoding.TextUnmarshaler interface.
-func (enum *Type) UnmarshalText(text []byte) error {
-	*enum = ExtractType(string(text))
+func (enum *PrereqType) UnmarshalText(text []byte) error {
+	*enum = ExtractPrereqType(string(text))
 	return nil
 }

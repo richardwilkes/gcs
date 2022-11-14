@@ -13,7 +13,6 @@ package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
-	"github.com/richardwilkes/gcs/v5/model/gurps/prereq"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -21,7 +20,7 @@ import (
 // Prereq holds data necessary to track a prerequisite.
 type Prereq interface {
 	nameables.Nameables
-	PrereqType() prereq.Type
+	PrereqType() PrereqType
 	// ParentList returns the owning parent list, if any.
 	ParentList() *PrereqList
 	// Clone creates a new copy of this Prereq.

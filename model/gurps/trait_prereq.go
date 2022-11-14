@@ -15,7 +15,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
-	"github.com/richardwilkes/gcs/v5/model/gurps/prereq"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -25,7 +24,7 @@ var _ Prereq = &TraitPrereq{}
 // TraitPrereq holds a prereq against a Trait.
 type TraitPrereq struct {
 	Parent        *PrereqList      `json:"-"`
-	Type          prereq.Type      `json:"type"`
+	Type          PrereqType       `json:"type"`
 	Has           bool             `json:"has"`
 	NameCriteria  criteria.String  `json:"name,omitempty"`
 	LevelCriteria criteria.Numeric `json:"level,omitempty"`
@@ -35,7 +34,7 @@ type TraitPrereq struct {
 // NewTraitPrereq creates a new TraitPrereq.
 func NewTraitPrereq() *TraitPrereq {
 	return &TraitPrereq{
-		Type: prereq.Trait,
+		Type: TraitPrereqType,
 		NameCriteria: criteria.String{
 			StringData: criteria.StringData{
 				Compare: criteria.Is,
@@ -56,7 +55,7 @@ func NewTraitPrereq() *TraitPrereq {
 }
 
 // PrereqType implements Prereq.
-func (a *TraitPrereq) PrereqType() prereq.Type {
+func (a *TraitPrereq) PrereqType() PrereqType {
 	return a.Type
 }
 

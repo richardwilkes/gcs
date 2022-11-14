@@ -12,7 +12,6 @@
 package gurps
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/gurps/prereq"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -30,28 +29,28 @@ func (p *Prereqs) UnmarshalJSON(data []byte) error {
 	*p = make([]Prereq, len(s))
 	for i, one := range s {
 		var typeData struct {
-			Type prereq.Type `json:"type"`
+			Type PrereqType `json:"type"`
 		}
 		if err := json.Unmarshal(*one, &typeData); err != nil {
 			return errs.Wrap(err)
 		}
 		var pr Prereq
 		switch typeData.Type {
-		case prereq.List:
+		case ListPrereqType:
 			pr = &PrereqList{}
-		case prereq.Trait:
+		case TraitPrereqType:
 			pr = &TraitPrereq{}
-		case prereq.Attribute:
+		case AttributePrereqType:
 			pr = &AttributePrereq{}
-		case prereq.ContainedQuantity:
+		case ContainedQuantityPrereqType:
 			pr = &ContainedQuantityPrereq{}
-		case prereq.ContainedWeight:
+		case ContainedWeightPrereqType:
 			pr = &ContainedWeightPrereq{}
-		case prereq.EquippedEquipment:
+		case EquippedEquipmentPrereqType:
 			pr = &EquippedEquipmentPrereq{}
-		case prereq.Skill:
+		case SkillPrereqType:
 			pr = &SkillPrereq{}
-		case prereq.Spell:
+		case SpellPrereqType:
 			pr = &SpellPrereq{}
 		default:
 			return errs.Newf(i18n.Text("Unknown prerequisite type: %s"), typeData.Type)

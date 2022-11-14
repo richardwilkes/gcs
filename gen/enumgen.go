@@ -536,10 +536,9 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/gurps/prereq",
-		Name:       "type",
-		Desc:       "holds the type of a Prereq",
-		StandAlone: true,
+		Pkg:  "model/gurps",
+		Name: "prereq_type",
+		Desc: "holds the type of a Prereq",
 		Values: []enumValue{
 			{
 				Name:   "List",
