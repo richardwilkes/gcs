@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package ancestry
+package model
 
 import (
 	"context"
@@ -26,16 +26,16 @@ import (
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 )
 
-// Default holds the name of the default ancestry.
+// DefaultAncestry holds the name of the default ancestry.
 const (
-	Default         = "Human"
+	DefaultAncestry = "Human"
 	ancestryTypeKey = "ancestry"
 )
 
 // Ancestry holds details necessary to generate ancestry-specific customizations.
 type Ancestry struct {
 	Name          string                     `json:"name,omitempty"`
-	CommonOptions *Options                   `json:"common_options,omitempty"`
+	CommonOptions *AncestryOptions           `json:"common_options,omitempty"`
 	GenderOptions []*WeightedAncestryOptions `json:"gender_options,omitempty"`
 }
 
@@ -50,8 +50,8 @@ func AvailableAncestries(libraries library.Libraries) []*library.NamedFileSet {
 	return library.ScanForNamedFileSets(embeddedFS, "embedded_data", true, libraries, library.AncestryExt)
 }
 
-// Lookup an Ancestry by name.
-func Lookup(name string, libraries library.Libraries) *Ancestry {
+// LookupAncestry an Ancestry by name.
+func LookupAncestry(name string, libraries library.Libraries) *Ancestry {
 	for _, lib := range AvailableAncestries(libraries) {
 		for _, one := range lib.List {
 			if one.Name == name {
@@ -99,7 +99,7 @@ func (a *Ancestry) Save(filePath string) error {
 
 // RandomGender returns a randomized gender.
 func (a *Ancestry) RandomGender(not string) string {
-	if choice := ChooseWeightedAncestryOptions(a.GenderOptions, func(o *Options) bool {
+	if choice := ChooseWeightedAncestryOptions(a.GenderOptions, func(o *AncestryOptions) bool {
 		return o.Name == not
 	}); choice != nil {
 		return choice.Name
@@ -108,7 +108,7 @@ func (a *Ancestry) RandomGender(not string) string {
 }
 
 // GenderedOptions returns the options for the specified gender, or nil.
-func (a *Ancestry) GenderedOptions(gender string) *Options {
+func (a *Ancestry) GenderedOptions(gender string) *AncestryOptions {
 	gender = strings.TrimSpace(gender)
 	for _, one := range a.GenderOptions {
 		if strings.EqualFold(one.Value.Name, gender) {

@@ -13,7 +13,6 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/ancestry"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -83,7 +82,7 @@ func initTraitEditor(e *editor[*model.Trait, *model.TraitEditData], content *uni
 		addLabelAndPopup(content, i18n.Text("Container WeaponType"), "", model.AllContainerType,
 			&e.editorData.ContainerType)
 		var choices []string
-		for _, lib := range ancestry.AvailableAncestries(model.GlobalSettings().Libraries()) {
+		for _, lib := range model.AvailableAncestries(model.GlobalSettings().Libraries()) {
 			for _, one := range lib.List {
 				choices = append(choices, one.Name)
 			}
@@ -127,7 +126,7 @@ func initTraitEditor(e *editor[*model.Trait, *model.TraitEditData], content *uni
 				if !ancestryPopup.Enabled() {
 					adjustPopupBlank(ancestryPopup, false)
 					if ancestryPopup.IndexOfItem(e.editorData.Ancestry) == -1 {
-						e.editorData.Ancestry = ancestry.Default
+						e.editorData.Ancestry = model.DefaultAncestry
 					}
 					ancestryPopup.Select(e.editorData.Ancestry)
 				}

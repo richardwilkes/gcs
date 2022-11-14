@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package ancestry
+package model
 
 import (
 	"context"
@@ -22,19 +22,19 @@ import (
 	"github.com/richardwilkes/toolbox/xmath/rand"
 )
 
-type charThreshold struct {
+type nameGenCharThreshold struct {
 	ch        rune
 	threshold int
 }
 
 // NameGenerator holds the data for name generation.
 type NameGenerator struct {
+	initialized  bool
 	Type         NameGenerationType `json:"type"`
 	TrainingData []string           `json:"training_data"`
 	min          int
 	max          int
-	entries      map[string][]charThreshold
-	initialized  bool
+	entries      map[string][]nameGenCharThreshold
 }
 
 // NewNameGeneratorFromFS creates a new NameGenerator from a file.
@@ -56,7 +56,7 @@ func (n *NameGenerator) initializeIfNeeded() {
 			}
 		}
 		n.TrainingData = list
-		if n.Type == MarkovChain {
+		if n.Type == MarkovChainNameGenerationType {
 			n.min = 20
 			n.max = 2
 			builders := make(map[string]map[rune]int)
@@ -79,9 +79,9 @@ func (n *NameGenerator) initializeIfNeeded() {
 					occurrences[runes[i]]++
 				}
 			}
-			n.entries = make(map[string][]charThreshold)
+			n.entries = make(map[string][]nameGenCharThreshold)
 			for k, v := range builders {
-				n.entries[k] = makeCharThresholdEntry(v)
+				n.entries[k] = n.makeCharThresholdEntry(v)
 			}
 		}
 		n.initialized = true
@@ -93,12 +93,12 @@ func (n *NameGenerator) Generate() string {
 	n.initializeIfNeeded()
 	rnd := rand.NewCryptoRand()
 	switch n.Type {
-	case Simple:
+	case SimpleNameGenerationType:
 		if len(n.TrainingData) == 0 {
 			return ""
 		}
 		return txt.FirstToUpper(n.TrainingData[rnd.Intn(len(n.TrainingData))])
-	case MarkovChain:
+	case MarkovChainNameGenerationType:
 		var buffer strings.Builder
 		var sub []rune
 		for k := range n.entries {
@@ -112,7 +112,7 @@ func (n *NameGenerator) Generate() string {
 			if !exists {
 				break
 			}
-			next := chooseCharacter(entry)
+			next := n.chooseCharacter(entry)
 			if next == 0 {
 				break
 			}
@@ -128,8 +128,8 @@ func (n *NameGenerator) Generate() string {
 	}
 }
 
-func makeCharThresholdEntry(occurrences map[rune]int) []charThreshold {
-	ct := make([]charThreshold, len(occurrences))
+func (n *NameGenerator) makeCharThresholdEntry(occurrences map[rune]int) []nameGenCharThreshold {
+	ct := make([]nameGenCharThreshold, len(occurrences))
 	i := 0
 	for k, v := range occurrences {
 		ct[i].ch = k
@@ -142,7 +142,7 @@ func makeCharThresholdEntry(occurrences map[rune]int) []charThreshold {
 	return ct
 }
 
-func chooseCharacter(ct []charThreshold) rune {
+func (n *NameGenerator) chooseCharacter(ct []nameGenCharThreshold) rune {
 	threshold := rand.NewCryptoRand().Intn(ct[len(ct)-1].threshold + 1)
 	for i := range ct {
 		if ct[i].threshold >= threshold {

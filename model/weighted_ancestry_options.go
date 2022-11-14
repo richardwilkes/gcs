@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package ancestry
+package model
 
 import (
 	"github.com/richardwilkes/toolbox/xmath/rand"
@@ -17,8 +17,8 @@ import (
 
 // WeightedAncestryOptions is a string that has a weight associated with it.
 type WeightedAncestryOptions struct {
-	Weight int      `json:"weight"`
-	Value  *Options `json:"value"`
+	Weight int              `json:"weight"`
+	Value  *AncestryOptions `json:"value"`
 }
 
 // Valid returns true if this option has a valid weight.
@@ -27,7 +27,7 @@ func (o *WeightedAncestryOptions) Valid() bool {
 }
 
 // ChooseWeightedAncestryOptions selects a string option from the available set.
-func ChooseWeightedAncestryOptions(options []*WeightedAncestryOptions, omitter func(*Options) bool) *Options {
+func ChooseWeightedAncestryOptions(options []*WeightedAncestryOptions, omitter func(*AncestryOptions) bool) *AncestryOptions {
 	total := 0
 	for _, one := range options {
 		if omitter == nil || !omitter(one.Value) {

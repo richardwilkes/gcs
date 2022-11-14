@@ -18,7 +18,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/ancestry"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/toolbox/collection"
@@ -120,8 +119,8 @@ func Convert(paths ...string) error {
 				return err
 			}
 		case library.AncestryExt:
-			var data *ancestry.Ancestry
-			if data, err = ancestry.NewAncestryFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data *Ancestry
+			if data, err = NewAncestryFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
 			if err = data.Save(p); err != nil {

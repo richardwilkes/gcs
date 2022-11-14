@@ -9,25 +9,25 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package ancestry
+package model
 
 import (
 	"github.com/richardwilkes/toolbox/xmath/rand"
 )
 
-// StringOption is a string that has a weight associated with it.
-type StringOption struct {
+// WeightedStringOption is a string that has a weight associated with it.
+type WeightedStringOption struct {
 	Weight int    `json:"weight"`
 	Value  string `json:"value"`
 }
 
 // Valid returns true if this option has a valid weight.
-func (o *StringOption) Valid() bool {
+func (o *WeightedStringOption) Valid() bool {
 	return o.Weight > 0
 }
 
-// ChooseStringOption selects a string option from the available set.
-func ChooseStringOption(options []*StringOption, not string) string {
+// ChooseWeightedStringOption selects a string option from the available set.
+func ChooseWeightedStringOption(options []*WeightedStringOption, not string) string {
 	total := 0
 	for _, one := range options {
 		if one.Value != not {

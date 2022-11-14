@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package ancestry
+package model
 
 import (
 	"strings"
@@ -21,33 +21,33 @@ import (
 )
 
 const (
-	defaultHeight     = 64
-	defaultWeight     = 140
-	defaultAge        = 18
-	defaultHair       = "Brown"
-	defaultEye        = "Brown"
-	defaultSkin       = "Brown"
-	defaultHandedness = "Right"
-	maximumTries      = 5
+	defaultHeight      = 64
+	defaultWeight      = 140
+	defaultAge         = 18
+	defaultHair        = "Brown"
+	defaultEye         = "Brown"
+	defaultSkin        = "Brown"
+	defaultHandedness  = "Right"
+	maximumRandomTries = 5
 )
 
-// Options holds options that may be randomized for an Entity's ancestry.
-type Options struct {
-	Name              string          `json:"name,omitempty"`
-	HeightFormula     string          `json:"height_formula,omitempty"`
-	WeightFormula     string          `json:"weight_formula,omitempty"`
-	AgeFormula        string          `json:"age_formula,omitempty"`
-	HairOptions       []*StringOption `json:"hair_options,omitempty"`
-	EyeOptions        []*StringOption `json:"eye_options,omitempty"`
-	SkinOptions       []*StringOption `json:"skin_options,omitempty"`
-	HandednessOptions []*StringOption `json:"handedness_options,omitempty"`
-	NameGenerators    []string        `json:"name_generators,omitempty"`
+// AncestryOptions holds options that may be randomized for an Entity's ancestry.
+type AncestryOptions struct {
+	Name              string                  `json:"name,omitempty"`
+	HeightFormula     string                  `json:"height_formula,omitempty"`
+	WeightFormula     string                  `json:"weight_formula,omitempty"`
+	AgeFormula        string                  `json:"age_formula,omitempty"`
+	HairOptions       []*WeightedStringOption `json:"hair_options,omitempty"`
+	EyeOptions        []*WeightedStringOption `json:"eye_options,omitempty"`
+	SkinOptions       []*WeightedStringOption `json:"skin_options,omitempty"`
+	HandednessOptions []*WeightedStringOption `json:"handedness_options,omitempty"`
+	NameGenerators    []string                `json:"name_generators,omitempty"`
 }
 
 // RandomHeight returns a randomized height.
-func (o *Options) RandomHeight(resolver eval.VariableResolver, not measure2.Length) measure2.Length {
+func (o *AncestryOptions) RandomHeight(resolver eval.VariableResolver, not measure2.Length) measure2.Length {
 	def := measure2.LengthFromInteger(defaultHeight, measure2.Inch)
-	for i := 0; i < maximumTries; i++ {
+	for i := 0; i < maximumRandomTries; i++ {
 		value := measure2.Length(fxp.EvaluateToNumber(o.HeightFormula, resolver))
 		if value <= 0 {
 			value = def
@@ -60,9 +60,9 @@ func (o *Options) RandomHeight(resolver eval.VariableResolver, not measure2.Leng
 }
 
 // RandomWeight returns a randomized weight.
-func (o *Options) RandomWeight(resolver eval.VariableResolver, not measure2.Weight) measure2.Weight {
+func (o *AncestryOptions) RandomWeight(resolver eval.VariableResolver, not measure2.Weight) measure2.Weight {
 	def := measure2.WeightFromInteger(defaultWeight, measure2.Pound)
-	for i := 0; i < maximumTries; i++ {
+	for i := 0; i < maximumRandomTries; i++ {
 		value := measure2.Weight(fxp.EvaluateToNumber(o.WeightFormula, resolver))
 		if value <= 0 {
 			value = def
@@ -75,8 +75,8 @@ func (o *Options) RandomWeight(resolver eval.VariableResolver, not measure2.Weig
 }
 
 // RandomAge returns a randomized age.
-func (o *Options) RandomAge(resolver eval.VariableResolver, not int) int {
-	for i := 0; i < maximumTries; i++ {
+func (o *AncestryOptions) RandomAge(resolver eval.VariableResolver, not int) int {
+	for i := 0; i < maximumRandomTries; i++ {
 		age := fxp.As[int](fxp.EvaluateToNumber(o.AgeFormula, resolver))
 		if age <= 0 {
 			age = defaultAge
@@ -89,39 +89,39 @@ func (o *Options) RandomAge(resolver eval.VariableResolver, not int) int {
 }
 
 // RandomHair returns a randomized hair.
-func (o *Options) RandomHair(not string) string {
-	if choice := ChooseStringOption(o.HairOptions, not); choice != "" {
+func (o *AncestryOptions) RandomHair(not string) string {
+	if choice := ChooseWeightedStringOption(o.HairOptions, not); choice != "" {
 		return choice
 	}
 	return defaultHair
 }
 
 // RandomEye returns a randomized eye.
-func (o *Options) RandomEye(not string) string {
-	if choice := ChooseStringOption(o.EyeOptions, not); choice != "" {
+func (o *AncestryOptions) RandomEye(not string) string {
+	if choice := ChooseWeightedStringOption(o.EyeOptions, not); choice != "" {
 		return choice
 	}
 	return defaultEye
 }
 
 // RandomSkin returns a randomized skin.
-func (o *Options) RandomSkin(not string) string {
-	if choice := ChooseStringOption(o.SkinOptions, not); choice != "" {
+func (o *AncestryOptions) RandomSkin(not string) string {
+	if choice := ChooseWeightedStringOption(o.SkinOptions, not); choice != "" {
 		return choice
 	}
 	return defaultSkin
 }
 
 // RandomHandedness returns a randomized handedness.
-func (o *Options) RandomHandedness(not string) string {
-	if choice := ChooseStringOption(o.HandednessOptions, not); choice != "" {
+func (o *AncestryOptions) RandomHandedness(not string) string {
+	if choice := ChooseWeightedStringOption(o.HandednessOptions, not); choice != "" {
 		return choice
 	}
 	return defaultHandedness
 }
 
 // RandomName returns a randomized name.
-func (o *Options) RandomName(nameGeneratorRefs []*NameGeneratorRef) string {
+func (o *AncestryOptions) RandomName(nameGeneratorRefs []*NameGeneratorRef) string {
 	m := make(map[string]*NameGeneratorRef)
 	for _, one := range nameGeneratorRefs {
 		m[one.FileRef.Name] = one

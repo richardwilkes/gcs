@@ -14,7 +14,6 @@ package model
 import (
 	"strconv"
 
-	"github.com/richardwilkes/gcs/v5/model/ancestry"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gid"
 	measure2 "github.com/richardwilkes/gcs/v5/model/measure"
@@ -98,6 +97,6 @@ func (p *Profile) AutoFill(entity *Entity) {
 	p.Handedness = a.RandomHandedness(p.Gender, "")
 	p.Height = a.RandomHeight(entity, p.Gender, 0)
 	p.Weight = a.RandomWeight(entity, p.Gender, 0)
-	p.Name = a.RandomName(ancestry.AvailableNameGenerators(globalSettings.Libraries()), p.Gender)
+	p.Name = a.RandomName(AvailableNameGenerators(globalSettings.Libraries()), p.Gender)
 	p.Birthday = generalSettings.CalendarRef(globalSettings.Libraries()).RandomBirthday(p.Birthday)
 }

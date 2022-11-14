@@ -23,7 +23,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/dbg"
-	"github.com/richardwilkes/gcs/v5/model/ancestry"
 	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -1071,18 +1070,18 @@ func (e *Entity) PreservesUserDesc() bool {
 }
 
 // Ancestry returns the current Ancestry.
-func (e *Entity) Ancestry() *ancestry.Ancestry {
-	var anc *ancestry.Ancestry
+func (e *Entity) Ancestry() *Ancestry {
+	var anc *Ancestry
 	Traverse(func(t *Trait) bool {
 		if t.Container() && t.ContainerType == RaceContainerType {
-			if anc = ancestry.Lookup(t.Ancestry, GlobalSettings().Libraries()); anc != nil {
+			if anc = LookupAncestry(t.Ancestry, GlobalSettings().Libraries()); anc != nil {
 				return true
 			}
 		}
 		return false
 	}, true, false, e.Traits...)
 	if anc == nil {
-		if anc = ancestry.Lookup(ancestry.Default, GlobalSettings().Libraries()); anc == nil {
+		if anc = LookupAncestry(DefaultAncestry, GlobalSettings().Libraries()); anc == nil {
 			jot.Fatal(1, "unable to load default ancestry (Human)")
 		}
 	}

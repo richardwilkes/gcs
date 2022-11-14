@@ -9,18 +9,14 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package ancestry
+package model
 
 import (
-	"embed"
 	"sort"
 
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/toolbox/txt"
 )
-
-//go:embed embedded_data
-var embeddedFS embed.FS
 
 // NameGeneratorRef holds a reference to a NameGenerator.
 type NameGeneratorRef struct {
