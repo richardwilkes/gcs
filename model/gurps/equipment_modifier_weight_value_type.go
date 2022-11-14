@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package equipment
+package gurps
 
 import (
 	"strings"
@@ -18,44 +18,44 @@ import (
 )
 
 // Format returns a formatted version of the value.
-func (enum ModifierWeightValueType) Format(fraction fxp.Fraction) string {
+func (enum EquipmentModifierWeightValueType) Format(fraction fxp.Fraction) string {
 	switch enum {
-	case WeightAddition:
+	case AdditionEquipmentModifierWeightValueType:
 		return fraction.StringWithSign()
-	case WeightPercentageAdder:
+	case PercentageAdderEquipmentModifierWeightValueType:
 		return fraction.StringWithSign() + enum.String()
-	case WeightPercentageMultiplier:
+	case PercentageMultiplierEquipmentModifierWeightValueType:
 		if fraction.Numerator <= 0 {
 			fraction.Numerator = fxp.Hundred
 			fraction.Denominator = fxp.One
 		}
-		return WeightMultiplier.String() + fraction.String() + WeightPercentageAdder.String()
-	case WeightMultiplier:
+		return MultiplierEquipmentModifierWeightValueType.String() + fraction.String() + PercentageAdderEquipmentModifierWeightValueType.String()
+	case MultiplierEquipmentModifierWeightValueType:
 		if fraction.Numerator <= 0 {
 			fraction.Numerator = fxp.One
 			fraction.Denominator = fxp.One
 		}
 		return enum.String() + fraction.String()
 	default:
-		return WeightAddition.Format(fraction)
+		return AdditionEquipmentModifierWeightValueType.Format(fraction)
 	}
 }
 
 // ExtractFraction from the string.
-func (enum ModifierWeightValueType) ExtractFraction(s string) fxp.Fraction {
-	s = strings.TrimLeft(strings.TrimSpace(s), WeightMultiplier.Key())
+func (enum EquipmentModifierWeightValueType) ExtractFraction(s string) fxp.Fraction {
+	s = strings.TrimLeft(strings.TrimSpace(s), MultiplierEquipmentModifierWeightValueType.Key())
 	for len(s) > 0 && (s[len(s)-1] < '0' || s[len(s)-1] > '9') {
 		s = s[:len(s)-1]
 	}
 	fraction := fxp.NewFraction(s)
 	revised := enum.EnsureValid()
 	switch revised {
-	case WeightPercentageMultiplier:
+	case PercentageMultiplierEquipmentModifierWeightValueType:
 		if fraction.Numerator <= 0 {
 			fraction.Numerator = fxp.Hundred
 			fraction.Denominator = fxp.One
 		}
-	case WeightMultiplier:
+	case MultiplierEquipmentModifierWeightValueType:
 		if fraction.Numerator <= 0 {
 			fraction.Numerator = fxp.One
 			fraction.Denominator = fxp.One
@@ -65,18 +65,18 @@ func (enum ModifierWeightValueType) ExtractFraction(s string) fxp.Fraction {
 	return fraction
 }
 
-// DetermineModifierWeightValueTypeFromString examines a string to determine what type it is.
-func DetermineModifierWeightValueTypeFromString(s string) ModifierWeightValueType {
+// FromString examines a string to determine what type it is.
+func (enum EquipmentModifierWeightValueType) FromString(s string) EquipmentModifierWeightValueType {
 	s = strings.ToLower(strings.TrimSpace(s))
 	switch {
 	case strings.HasSuffix(s, "%"):
 		if strings.HasPrefix(s, "x") {
-			return WeightPercentageMultiplier
+			return PercentageMultiplierEquipmentModifierWeightValueType
 		}
-		return WeightPercentageAdder
+		return PercentageAdderEquipmentModifierWeightValueType
 	case strings.HasPrefix(s, "x") || strings.HasSuffix(s, "x"):
-		return WeightMultiplier
+		return MultiplierEquipmentModifierWeightValueType
 	default:
-		return WeightAddition
+		return AdditionEquipmentModifierWeightValueType
 	}
 }

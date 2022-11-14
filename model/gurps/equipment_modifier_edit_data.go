@@ -12,7 +12,6 @@
 package gurps
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/gurps/equipment"
 	"github.com/richardwilkes/toolbox/txt"
 )
 
@@ -20,18 +19,18 @@ var _ EditorData[*EquipmentModifier] = &EquipmentModifierEditData{}
 
 // EquipmentModifierEditData holds the EquipmentModifier data that can be edited by the UI detail editor.
 type EquipmentModifierEditData struct {
-	Name         string                       `json:"name,omitempty"`
-	PageRef      string                       `json:"reference,omitempty"`
-	LocalNotes   string                       `json:"notes,omitempty"`
-	VTTNotes     string                       `json:"vtt_notes,omitempty"`
-	Tags         []string                     `json:"tags,omitempty"`
-	CostType     equipment.ModifierCostType   `json:"cost_type,omitempty"`   // Non-container only
-	WeightType   equipment.ModifierWeightType `json:"weight_type,omitempty"` // Non-container only
-	Disabled     bool                         `json:"disabled,omitempty"`    // Non-container only
-	TechLevel    string                       `json:"tech_level,omitempty"`  // Non-container only
-	CostAmount   string                       `json:"cost,omitempty"`        // Non-container only
-	WeightAmount string                       `json:"weight,omitempty"`      // Non-container only
-	Features     Features                     `json:"features,omitempty"`    // Non-container only
+	Name         string                      `json:"name,omitempty"`
+	PageRef      string                      `json:"reference,omitempty"`
+	LocalNotes   string                      `json:"notes,omitempty"`
+	VTTNotes     string                      `json:"vtt_notes,omitempty"`
+	Tags         []string                    `json:"tags,omitempty"`
+	CostType     EquipmentModifierCostType   `json:"cost_type,omitempty"`   // Non-container only
+	WeightType   EquipmentModifierWeightType `json:"weight_type,omitempty"` // Non-container only
+	Disabled     bool                        `json:"disabled,omitempty"`    // Non-container only
+	TechLevel    string                      `json:"tech_level,omitempty"`  // Non-container only
+	CostAmount   string                      `json:"cost,omitempty"`        // Non-container only
+	WeightAmount string                      `json:"weight,omitempty"`      // Non-container only
+	Features     Features                    `json:"features,omitempty"`    // Non-container only
 }
 
 // CopyFrom implements node.EditorData.

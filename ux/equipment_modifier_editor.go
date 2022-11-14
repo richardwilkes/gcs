@@ -13,7 +13,6 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/equipment"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -60,13 +59,13 @@ func addEquipmentCostFields(parent *unison.Panel, e *editor[*gurps.EquipmentModi
 	field.SetMinimumTextWidthUsing(equipmentCostAndWeightPrototype)
 	wrapper.AddChild(field)
 	popup := unison.NewPopupMenu[string]()
-	for _, one := range equipment.AllModifierCostType {
+	for _, one := range gurps.AllEquipmentModifierCostType {
 		popup.AddItem(one.StringWithExample())
 	}
 	popup.SelectIndex(int(e.editorData.CostType))
 	wrapper.AddChild(popup)
 	popup.SelectionCallback = func(index int, _ string) {
-		e.editorData.CostType = equipment.AllModifierCostType[index]
+		e.editorData.CostType = gurps.AllEquipmentModifierCostType[index]
 		field.SetText(e.editorData.CostType.Format(field.Text()))
 		MarkModified(wrapper)
 	}
@@ -85,13 +84,13 @@ func addEquipmentWeightFields(parent *unison.Panel, e *editor[*gurps.EquipmentMo
 	field.SetMinimumTextWidthUsing(equipmentCostAndWeightPrototype)
 	wrapper.AddChild(field)
 	popup := unison.NewPopupMenu[string]()
-	for _, one := range equipment.AllModifierWeightType {
+	for _, one := range gurps.AllEquipmentModifierWeightType {
 		popup.AddItem(one.StringWithExample())
 	}
 	popup.SelectIndex(int(e.editorData.WeightType))
 	wrapper.AddChild(popup)
 	popup.SelectionCallback = func(index int, _ string) {
-		e.editorData.WeightType = equipment.AllModifierWeightType[index]
+		e.editorData.WeightType = gurps.AllEquipmentModifierWeightType[index]
 		field.SetText(e.editorData.WeightType.Format(field.Text(), units))
 		MarkModified(wrapper)
 	}

@@ -11,7 +11,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package equipment
+package gurps
 
 import (
 	"strings"
@@ -21,22 +21,22 @@ import (
 
 // Possible values.
 const (
-	OriginalCost ModifierCostType = iota
-	BaseCost
-	FinalBaseCost
-	FinalCost
-	LastModifierCostType = FinalCost
+	OriginalEquipmentModifierCostType EquipmentModifierCostType = iota
+	BaseEquipmentModifierCostType
+	FinalBaseEquipmentModifierCostType
+	FinalEquipmentModifierCostType
+	LastEquipmentModifierCostType = FinalEquipmentModifierCostType
 )
 
 var (
-	// AllModifierCostType holds all possible values.
-	AllModifierCostType = []ModifierCostType{
-		OriginalCost,
-		BaseCost,
-		FinalBaseCost,
-		FinalCost,
+	// AllEquipmentModifierCostType holds all possible values.
+	AllEquipmentModifierCostType = []EquipmentModifierCostType{
+		OriginalEquipmentModifierCostType,
+		BaseEquipmentModifierCostType,
+		FinalBaseEquipmentModifierCostType,
+		FinalEquipmentModifierCostType,
 	}
-	modifierCostTypeData = []struct {
+	equipmentModifierCostTypeData = []struct {
 		key    string
 		string string
 		alt    string
@@ -64,49 +64,49 @@ var (
 	}
 )
 
-// ModifierCostType describes how an EquipmentModifier's cost is applied.
-type ModifierCostType byte
+// EquipmentModifierCostType describes how an Equipment Modifier's cost is applied.
+type EquipmentModifierCostType byte
 
 // EnsureValid ensures this is of a known value.
-func (enum ModifierCostType) EnsureValid() ModifierCostType {
-	if enum <= LastModifierCostType {
+func (enum EquipmentModifierCostType) EnsureValid() EquipmentModifierCostType {
+	if enum <= LastEquipmentModifierCostType {
 		return enum
 	}
 	return 0
 }
 
 // Key returns the key used in serialization.
-func (enum ModifierCostType) Key() string {
-	return modifierCostTypeData[enum.EnsureValid()].key
+func (enum EquipmentModifierCostType) Key() string {
+	return equipmentModifierCostTypeData[enum.EnsureValid()].key
 }
 
 // String implements fmt.Stringer.
-func (enum ModifierCostType) String() string {
-	return modifierCostTypeData[enum.EnsureValid()].string
+func (enum EquipmentModifierCostType) String() string {
+	return equipmentModifierCostTypeData[enum.EnsureValid()].string
 }
 
 // AltString returns the alternate string.
-func (enum ModifierCostType) AltString() string {
-	return modifierCostTypeData[enum.EnsureValid()].alt
+func (enum EquipmentModifierCostType) AltString() string {
+	return equipmentModifierCostTypeData[enum.EnsureValid()].alt
 }
 
-// ExtractModifierCostType extracts the value from a string.
-func ExtractModifierCostType(str string) ModifierCostType {
-	for i, one := range modifierCostTypeData {
+// ExtractEquipmentModifierCostType extracts the value from a string.
+func ExtractEquipmentModifierCostType(str string) EquipmentModifierCostType {
+	for i, one := range equipmentModifierCostTypeData {
 		if strings.EqualFold(one.key, str) {
-			return ModifierCostType(i)
+			return EquipmentModifierCostType(i)
 		}
 	}
 	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
-func (enum ModifierCostType) MarshalText() (text []byte, err error) {
+func (enum EquipmentModifierCostType) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
 // UnmarshalText implements the encoding.TextUnmarshaler interface.
-func (enum *ModifierCostType) UnmarshalText(text []byte) error {
-	*enum = ExtractModifierCostType(string(text))
+func (enum *EquipmentModifierCostType) UnmarshalText(text []byte) error {
+	*enum = ExtractEquipmentModifierCostType(string(text))
 	return nil
 }

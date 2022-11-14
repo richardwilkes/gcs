@@ -358,31 +358,30 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/gurps/equipment",
-		Name:       "modifier_cost_type",
-		Desc:       "describes how an EquipmentModifier's cost is applied",
-		StandAlone: true,
+		Pkg:  "model/gurps",
+		Name: "equipment_modifier_cost_type",
+		Desc: "describes how an Equipment Modifier's cost is applied",
 		Values: []enumValue{
 			{
-				Name:   "OriginalCost",
+				Name:   "Original",
 				Key:    "to_original_cost",
 				String: "to original cost",
 				Alt:    `"+5", "-5", "+10%", "-10%", "x3.2"`,
 			},
 			{
-				Name:   "BaseCost",
+				Name:   "Base",
 				Key:    "to_base_cost",
 				String: "to base cost",
 				Alt:    `"x2", "+2 CF", "-0.2 CF"`,
 			},
 			{
-				Name:   "FinalBaseCost",
+				Name:   "FinalBase",
 				Key:    "to_final_base_cost",
 				String: "to final base cost",
 				Alt:    `"+5", "-5", "+10%", "-10%", "x3.2"`,
 			},
 			{
-				Name:   "FinalCost",
+				Name:   "Final",
 				Key:    "to_final_cost",
 				String: "to final cost",
 				Alt:    `"+5", "-5", "+10%", "-10%", "x3.2"`,
@@ -390,10 +389,9 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/gurps/equipment",
-		Name:       "modifier_cost_value_type",
-		Desc:       "describes how an EquipmentModifier's cost is applied",
-		StandAlone: true,
+		Pkg:  "model/gurps",
+		Name: "equipment_modifier_cost_value_type",
+		Desc: "describes how an Equipment Modifier's cost value is applied",
 		Values: []enumValue{
 			{
 				Name: "Addition",
@@ -416,31 +414,30 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/gurps/equipment",
-		Name:       "modifier_weight_type",
-		Desc:       "describes how an EquipmentModifier's weight is applied",
-		StandAlone: true,
+		Pkg:  "model/gurps",
+		Name: "equipment_modifier_weight_type",
+		Desc: "describes how an Equipment Modifier's weight is applied",
 		Values: []enumValue{
 			{
-				Name:   "OriginalWeight",
+				Name:   "Original",
 				Key:    "to_original_weight",
 				String: "to original weight",
 				Alt:    `"+5 lb", "-5 lb", "+10%", "-10%"`,
 			},
 			{
-				Name:   "BaseWeight",
+				Name:   "Base",
 				Key:    "to_base_weight",
 				String: "to base weight",
 				Alt:    `"+5 lb", "-5 lb", "x10%", "x3", "x2/3"`,
 			},
 			{
-				Name:   "FinalBaseWeight",
+				Name:   "FinalBase",
 				Key:    "to_final_base_weight",
 				String: "to final base weight",
 				Alt:    `"+5 lb", "-5 lb", "x10%", "x3", "x2/3"`,
 			},
 			{
-				Name:   "FinalWeight",
+				Name:   "Final",
 				Key:    "to_final_weight",
 				String: "to final weight",
 				Alt:    `"+5 lb", "-5 lb", "x10%", "x3", "x2/3"`,
@@ -448,29 +445,28 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/gurps/equipment",
-		Name:       "modifier_weight_value_type",
-		Desc:       "describes how an EquipmentModifier's weight is applied",
-		StandAlone: true,
+		Pkg:  "model/gurps",
+		Name: "equipment_modifier_weight_value_type",
+		Desc: "describes how an Equipment Modifier's weight value is applied",
 		Values: []enumValue{
 			{
-				Name:       "WeightAddition",
+				Name:       "Addition",
 				Key:        "+",
 				NoLocalize: true,
 			},
 			{
-				Name:       "WeightPercentageAdder",
+				Name:       "PercentageAdder",
 				Key:        "%",
 				NoLocalize: true,
 			},
 			{
-				Name:       "WeightPercentageMultiplier",
+				Name:       "PercentageMultiplier",
 				Key:        "x%",
 				String:     "x%",
 				NoLocalize: true,
 			},
 			{
-				Name:       "WeightMultiplier",
+				Name:       "Multiplier",
 				Key:        "x",
 				String:     "x",
 				NoLocalize: true,

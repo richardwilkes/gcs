@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package equipment
+package gurps
 
 import (
 	"fmt"
@@ -19,22 +19,22 @@ import (
 )
 
 // StringWithExample returns an example along with the normal String() content.
-func (enum ModifierWeightType) StringWithExample() string {
+func (enum EquipmentModifierWeightType) StringWithExample() string {
 	return fmt.Sprintf("%s (e.g. %s)", enum.String(), enum.AltString())
 }
 
-// Permitted returns the permitted ModifierCostValueType values.
-func (enum ModifierWeightType) Permitted() []ModifierWeightValueType {
-	if enum.EnsureValid() == OriginalWeight {
-		return []ModifierWeightValueType{WeightAddition, WeightPercentageAdder}
+// Permitted returns the permitted EquipmentModifierCostValueType values.
+func (enum EquipmentModifierWeightType) Permitted() []EquipmentModifierWeightValueType {
+	if enum.EnsureValid() == OriginalEquipmentModifierWeightType {
+		return []EquipmentModifierWeightValueType{AdditionEquipmentModifierWeightValueType, PercentageAdderEquipmentModifierWeightValueType}
 	}
-	return []ModifierWeightValueType{WeightAddition, WeightPercentageMultiplier, WeightMultiplier}
+	return []EquipmentModifierWeightValueType{AdditionEquipmentModifierWeightValueType, PercentageMultiplierEquipmentModifierWeightValueType, MultiplierEquipmentModifierWeightValueType}
 }
 
 // DetermineModifierWeightValueTypeFromString examines a string to determine what type it is, but restricts the result to
-// those allowed for this ModifierWeightType.
-func (enum ModifierWeightType) DetermineModifierWeightValueTypeFromString(s string) ModifierWeightValueType {
-	mvt := DetermineModifierWeightValueTypeFromString(s)
+// those allowed for this EquipmentModifierWeightType.
+func (enum EquipmentModifierWeightType) DetermineModifierWeightValueTypeFromString(s string) EquipmentModifierWeightValueType {
+	mvt := LastEquipmentModifierWeightValueType.FromString(s)
 	permitted := enum.Permitted()
 	for _, one := range permitted {
 		if one == mvt {
@@ -45,15 +45,15 @@ func (enum ModifierWeightType) DetermineModifierWeightValueTypeFromString(s stri
 }
 
 // ExtractFraction from the string.
-func (enum ModifierWeightType) ExtractFraction(s string) fxp.Fraction {
+func (enum EquipmentModifierWeightType) ExtractFraction(s string) fxp.Fraction {
 	return enum.DetermineModifierWeightValueTypeFromString(s).ExtractFraction(s)
 }
 
 // Format returns a formatted version of the value.
-func (enum ModifierWeightType) Format(s string, defUnits measure.WeightUnits) string {
+func (enum EquipmentModifierWeightType) Format(s string, defUnits measure.WeightUnits) string {
 	t := enum.DetermineModifierWeightValueTypeFromString(s)
 	result := t.Format(t.ExtractFraction(s))
-	if t == WeightAddition {
+	if t == AdditionEquipmentModifierWeightValueType {
 		result += " " + measure.TrailingWeightUnitsFromString(s, defUnits).String()
 	}
 	return result

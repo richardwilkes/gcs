@@ -17,7 +17,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/equipment"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
 	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
@@ -276,7 +275,7 @@ func (m *EquipmentModifier) FullCostDescription() string {
 
 // CostDescription returns the formatted cost.
 func (m *EquipmentModifier) CostDescription() string {
-	if m.Container() || (m.CostType == equipment.OriginalCost && (m.CostAmount == "" || m.CostAmount == "+0")) {
+	if m.Container() || (m.CostType == OriginalEquipmentModifierCostType && (m.CostAmount == "" || m.CostAmount == "+0")) {
 		return ""
 	}
 	return m.CostType.Format(m.CostAmount) + " " + m.CostType.String()
@@ -284,7 +283,7 @@ func (m *EquipmentModifier) CostDescription() string {
 
 // WeightDescription returns the formatted weight.
 func (m *EquipmentModifier) WeightDescription() string {
-	if m.Container() || (m.WeightType == equipment.OriginalWeight && (m.WeightAmount == "" || strings.HasPrefix(m.WeightAmount, "+0 "))) {
+	if m.Container() || (m.WeightType == OriginalEquipmentModifierWeightType && (m.WeightAmount == "" || strings.HasPrefix(m.WeightAmount, "+0 "))) {
 		return ""
 	}
 	return m.WeightType.Format(m.WeightAmount, SheetSettingsFor(m.Entity).DefaultWeightUnits) + " " + m.WeightType.String()
@@ -327,15 +326,15 @@ func (m *EquipmentModifier) SetEnabled(enabled bool) {
 // ValueAdjustedForModifiers returns the value after adjusting it for a set of modifiers.
 func ValueAdjustedForModifiers(value fxp.Int, modifiers []*EquipmentModifier) fxp.Int {
 	// Apply all equipment.OriginalCost
-	cost := processNonCFStep(equipment.OriginalCost, value, modifiers)
+	cost := processNonCFStep(OriginalEquipmentModifierCostType, value, modifiers)
 
 	// Apply all equipment.BaseCost
 	var cf fxp.Int
 	Traverse(func(mod *EquipmentModifier) bool {
-		if mod.CostType == equipment.BaseCost {
-			t := equipment.BaseCost.DetermineModifierCostValueTypeFromString(mod.CostAmount)
+		if mod.CostType == BaseEquipmentModifierCostType {
+			t := BaseEquipmentModifierCostType.FromString(mod.CostAmount)
 			cf += t.ExtractValue(mod.CostAmount)
-			if t == equipment.Multiplier {
+			if t == MultiplierEquipmentModifierCostValueType {
 				cf -= fxp.One
 			}
 		}
@@ -347,27 +346,27 @@ func ValueAdjustedForModifiers(value fxp.Int, modifiers []*EquipmentModifier) fx
 	}
 
 	// Apply all equipment.FinalBaseCost
-	cost = processNonCFStep(equipment.FinalBaseCost, cost, modifiers)
+	cost = processNonCFStep(FinalBaseEquipmentModifierCostType, cost, modifiers)
 
 	// Apply all equipment.FinalCost
-	cost = processNonCFStep(equipment.FinalCost, cost, modifiers)
+	cost = processNonCFStep(FinalEquipmentModifierCostType, cost, modifiers)
 
 	return cost.Max(0)
 }
 
-func processNonCFStep(costType equipment.ModifierCostType, value fxp.Int, modifiers []*EquipmentModifier) fxp.Int {
+func processNonCFStep(costType EquipmentModifierCostType, value fxp.Int, modifiers []*EquipmentModifier) fxp.Int {
 	var percentages, additions fxp.Int
 	cost := value
 	Traverse(func(mod *EquipmentModifier) bool {
 		if mod.CostType == costType {
-			t := costType.DetermineModifierCostValueTypeFromString(mod.CostAmount)
+			t := costType.FromString(mod.CostAmount)
 			amt := t.ExtractValue(mod.CostAmount)
 			switch t {
-			case equipment.Addition:
+			case AdditionEquipmentModifierCostValueType:
 				additions += amt
-			case equipment.Percentage:
+			case PercentageEquipmentModifierCostValueType:
 				percentages += amt
-			case equipment.Multiplier:
+			case MultiplierEquipmentModifierCostValueType:
 				cost = cost.Mul(amt)
 			}
 		}
@@ -387,10 +386,10 @@ func WeightAdjustedForModifiers(weight measure.Weight, modifiers []*EquipmentMod
 
 	// Apply all equipment.OriginalWeight
 	Traverse(func(mod *EquipmentModifier) bool {
-		if mod.WeightType == equipment.OriginalWeight {
-			t := equipment.OriginalWeight.DetermineModifierWeightValueTypeFromString(mod.WeightAmount)
+		if mod.WeightType == OriginalEquipmentModifierWeightType {
+			t := OriginalEquipmentModifierWeightType.DetermineModifierWeightValueTypeFromString(mod.WeightAmount)
 			amt := t.ExtractFraction(mod.WeightAmount).Value()
-			if t == equipment.WeightAddition {
+			if t == AdditionEquipmentModifierWeightValueType {
 				w += measure.TrailingWeightUnitsFromString(mod.WeightAmount, defUnits).ToPounds(amt)
 			} else {
 				percentages += amt
@@ -403,29 +402,29 @@ func WeightAdjustedForModifiers(weight measure.Weight, modifiers []*EquipmentMod
 	}
 
 	// Apply all equipment.BaseWeight
-	w = processMultiplyAddWeightStep(equipment.BaseWeight, w, defUnits, modifiers)
+	w = processMultiplyAddWeightStep(BaseEquipmentModifierWeightType, w, defUnits, modifiers)
 
 	// Apply all equipment.FinalBaseWeight
-	w = processMultiplyAddWeightStep(equipment.FinalBaseWeight, w, defUnits, modifiers)
+	w = processMultiplyAddWeightStep(FinalBaseEquipmentModifierWeightType, w, defUnits, modifiers)
 
 	// Apply all equipment.FinalWeight
-	w = processMultiplyAddWeightStep(equipment.FinalWeight, w, defUnits, modifiers)
+	w = processMultiplyAddWeightStep(FinalEquipmentModifierWeightType, w, defUnits, modifiers)
 
 	return measure.Weight(w.Max(0))
 }
 
-func processMultiplyAddWeightStep(weightType equipment.ModifierWeightType, weight fxp.Int, defUnits measure.WeightUnits, modifiers []*EquipmentModifier) fxp.Int {
+func processMultiplyAddWeightStep(weightType EquipmentModifierWeightType, weight fxp.Int, defUnits measure.WeightUnits, modifiers []*EquipmentModifier) fxp.Int {
 	var sum fxp.Int
 	Traverse(func(mod *EquipmentModifier) bool {
 		if mod.WeightType == weightType {
 			t := weightType.DetermineModifierWeightValueTypeFromString(mod.WeightAmount)
 			f := t.ExtractFraction(mod.WeightAmount)
 			switch t {
-			case equipment.WeightAddition:
+			case AdditionEquipmentModifierWeightValueType:
 				sum += measure.TrailingWeightUnitsFromString(mod.WeightAmount, defUnits).ToPounds(f.Value())
-			case equipment.WeightPercentageMultiplier:
+			case PercentageMultiplierEquipmentModifierWeightValueType:
 				weight = weight.Mul(f.Numerator).Div(f.Denominator.Mul(fxp.Hundred))
-			case equipment.WeightMultiplier:
+			case MultiplierEquipmentModifierWeightValueType:
 				weight = weight.Mul(f.Numerator).Div(f.Denominator)
 			}
 		}

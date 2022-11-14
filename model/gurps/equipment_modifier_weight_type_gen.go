@@ -11,7 +11,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package equipment
+package gurps
 
 import (
 	"strings"
@@ -21,22 +21,22 @@ import (
 
 // Possible values.
 const (
-	OriginalWeight ModifierWeightType = iota
-	BaseWeight
-	FinalBaseWeight
-	FinalWeight
-	LastModifierWeightType = FinalWeight
+	OriginalEquipmentModifierWeightType EquipmentModifierWeightType = iota
+	BaseEquipmentModifierWeightType
+	FinalBaseEquipmentModifierWeightType
+	FinalEquipmentModifierWeightType
+	LastEquipmentModifierWeightType = FinalEquipmentModifierWeightType
 )
 
 var (
-	// AllModifierWeightType holds all possible values.
-	AllModifierWeightType = []ModifierWeightType{
-		OriginalWeight,
-		BaseWeight,
-		FinalBaseWeight,
-		FinalWeight,
+	// AllEquipmentModifierWeightType holds all possible values.
+	AllEquipmentModifierWeightType = []EquipmentModifierWeightType{
+		OriginalEquipmentModifierWeightType,
+		BaseEquipmentModifierWeightType,
+		FinalBaseEquipmentModifierWeightType,
+		FinalEquipmentModifierWeightType,
 	}
-	modifierWeightTypeData = []struct {
+	equipmentModifierWeightTypeData = []struct {
 		key    string
 		string string
 		alt    string
@@ -64,49 +64,49 @@ var (
 	}
 )
 
-// ModifierWeightType describes how an EquipmentModifier's weight is applied.
-type ModifierWeightType byte
+// EquipmentModifierWeightType describes how an Equipment Modifier's weight is applied.
+type EquipmentModifierWeightType byte
 
 // EnsureValid ensures this is of a known value.
-func (enum ModifierWeightType) EnsureValid() ModifierWeightType {
-	if enum <= LastModifierWeightType {
+func (enum EquipmentModifierWeightType) EnsureValid() EquipmentModifierWeightType {
+	if enum <= LastEquipmentModifierWeightType {
 		return enum
 	}
 	return 0
 }
 
 // Key returns the key used in serialization.
-func (enum ModifierWeightType) Key() string {
-	return modifierWeightTypeData[enum.EnsureValid()].key
+func (enum EquipmentModifierWeightType) Key() string {
+	return equipmentModifierWeightTypeData[enum.EnsureValid()].key
 }
 
 // String implements fmt.Stringer.
-func (enum ModifierWeightType) String() string {
-	return modifierWeightTypeData[enum.EnsureValid()].string
+func (enum EquipmentModifierWeightType) String() string {
+	return equipmentModifierWeightTypeData[enum.EnsureValid()].string
 }
 
 // AltString returns the alternate string.
-func (enum ModifierWeightType) AltString() string {
-	return modifierWeightTypeData[enum.EnsureValid()].alt
+func (enum EquipmentModifierWeightType) AltString() string {
+	return equipmentModifierWeightTypeData[enum.EnsureValid()].alt
 }
 
-// ExtractModifierWeightType extracts the value from a string.
-func ExtractModifierWeightType(str string) ModifierWeightType {
-	for i, one := range modifierWeightTypeData {
+// ExtractEquipmentModifierWeightType extracts the value from a string.
+func ExtractEquipmentModifierWeightType(str string) EquipmentModifierWeightType {
+	for i, one := range equipmentModifierWeightTypeData {
 		if strings.EqualFold(one.key, str) {
-			return ModifierWeightType(i)
+			return EquipmentModifierWeightType(i)
 		}
 	}
 	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
-func (enum ModifierWeightType) MarshalText() (text []byte, err error) {
+func (enum EquipmentModifierWeightType) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
 // UnmarshalText implements the encoding.TextUnmarshaler interface.
-func (enum *ModifierWeightType) UnmarshalText(text []byte) error {
-	*enum = ExtractModifierWeightType(string(text))
+func (enum *EquipmentModifierWeightType) UnmarshalText(text []byte) error {
+	*enum = ExtractEquipmentModifierWeightType(string(text))
 	return nil
 }
