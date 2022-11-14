@@ -13,7 +13,6 @@ package model
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -40,7 +39,7 @@ func NewAttributePrereq(entity *Entity) *AttributePrereq {
 				Qualifier: fxp.From(10),
 			},
 		},
-		Which: AttributeIDFor(entity, gid.Strength),
+		Which: AttributeIDFor(entity, StrengthID),
 		Has:   true,
 	}
 }

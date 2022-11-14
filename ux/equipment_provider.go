@@ -15,7 +15,6 @@ import (
 	"fmt"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -24,6 +23,8 @@ import (
 	"github.com/richardwilkes/unison"
 	"golang.org/x/exp/maps"
 )
+
+const equipmentDragKey = "equipment"
 
 var (
 	equipmentListColMap = map[int]int{
@@ -145,7 +146,7 @@ func (p *equipmentProvider) Entity() *model.Entity {
 }
 
 func (p *equipmentProvider) DragKey() string {
-	return gid.Equipment
+	return equipmentDragKey
 }
 
 func (p *equipmentProvider) DragSVG() *unison.SVG {
@@ -180,7 +181,7 @@ func (p *equipmentProvider) ProcessDropData(from, to *unison.Table[*Node[*model.
 
 func (p *equipmentProvider) AltDropSupport() *AltDropSupport {
 	return &AltDropSupport{
-		DragKey: gid.EquipmentModifier,
+		DragKey: equipmentModifierDragKey,
 		Drop: func(rowIndex int, data any) {
 			if tableDragData, ok := data.(*unison.TableDragData[*Node[*model.EquipmentModifier]]); ok {
 				entity := p.Entity()

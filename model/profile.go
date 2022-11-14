@@ -15,7 +15,6 @@ import (
 	"strconv"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gid"
 	measure2 "github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -53,7 +52,7 @@ type Profile struct {
 
 // Update any derived values.
 func (p *Profile) Update(entity *Entity) {
-	p.SizeModifierBonus = entity.AttributeBonusFor(gid.SizeModifier, NoneBonusLimitation, nil)
+	p.SizeModifierBonus = entity.AttributeBonusFor(SizeModifierID, NoneBonusLimitation, nil)
 }
 
 // Portrait returns the portrait image, if there is one.

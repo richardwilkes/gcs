@@ -13,7 +13,6 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox"
@@ -130,7 +129,7 @@ func (p *spellsProvider) Entity() *model.Entity {
 }
 
 func (p *spellsProvider) DragKey() string {
-	return gid.Spell
+	return model.SpellID
 }
 
 func (p *spellsProvider) DragSVG() *unison.SVG {

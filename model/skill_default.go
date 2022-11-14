@@ -15,15 +15,14 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/toolbox/i18n"
 )
 
 var skillBasedDefaultTypes = map[string]bool{
-	gid.Skill: true,
-	gid.Parry: true,
-	gid.Block: true,
+	SkillID: true,
+	ParryID: true,
+	BlockID: true,
 }
 
 // SkillDefault holds data for a Skill default.
@@ -78,11 +77,11 @@ func (s *SkillDefault) FullName(entity *Entity) string {
 			buffer.WriteByte(')')
 		}
 		switch {
-		case strings.EqualFold(gid.Dodge, s.DefaultType):
+		case strings.EqualFold(DodgeID, s.DefaultType):
 			buffer.WriteString(i18n.Text(" Dodge"))
-		case strings.EqualFold(gid.Parry, s.DefaultType):
+		case strings.EqualFold(ParryID, s.DefaultType):
 			buffer.WriteString(i18n.Text(" Parry"))
-		case strings.EqualFold(gid.Block, s.DefaultType):
+		case strings.EqualFold(BlockID, s.DefaultType):
 			buffer.WriteString(i18n.Text(" Block"))
 		}
 		return buffer.String()
@@ -119,19 +118,19 @@ func (s *SkillDefault) SkillBased() bool {
 // SkillLevel returns the base skill level for this SkillDefault.
 func (s *SkillDefault) SkillLevel(entity *Entity, requirePoints bool, excludes map[string]bool, ruleOf20 bool) fxp.Int {
 	switch s.Type() {
-	case gid.Parry:
+	case ParryID:
 		best := s.best(entity, requirePoints, excludes)
 		if best != fxp.Min {
 			best = best.Div(fxp.Two).Trunc() + fxp.Three + entity.ParryBonus
 		}
 		return s.finalLevel(best)
-	case gid.Block:
+	case BlockID:
 		best := s.best(entity, requirePoints, excludes)
 		if best != fxp.Min {
 			best = best.Div(fxp.Two).Trunc() + fxp.Three + entity.BlockBonus
 		}
 		return s.finalLevel(best)
-	case gid.Skill:
+	case SkillID:
 		return s.finalLevel(s.best(entity, requirePoints, excludes))
 	default:
 		return s.SkillLevelFast(entity, requirePoints, excludes, ruleOf20)
@@ -154,25 +153,25 @@ func (s *SkillDefault) best(entity *Entity, requirePoints bool, excludes map[str
 // SkillLevelFast returns the base skill level for this SkillDefault.
 func (s *SkillDefault) SkillLevelFast(entity *Entity, requirePoints bool, excludes map[string]bool, ruleOf20 bool) fxp.Int {
 	switch s.Type() {
-	case gid.Dodge:
+	case DodgeID:
 		level := entity.Dodge(entity.EncumbranceLevel(true))
 		if ruleOf20 && level > 20 {
 			level = 20
 		}
 		return s.finalLevel(fxp.From(level))
-	case gid.Parry:
+	case ParryID:
 		best := s.bestFast(entity, requirePoints, excludes)
 		if best != fxp.Min {
 			best = best.Div(fxp.Two).Trunc() + fxp.Three + entity.ParryBonus
 		}
 		return s.finalLevel(best)
-	case gid.Block:
+	case BlockID:
 		best := s.bestFast(entity, requirePoints, excludes)
 		if best != fxp.Min {
 			best = best.Div(fxp.Two).Trunc() + fxp.Three + entity.BlockBonus
 		}
 		return s.finalLevel(best)
-	case gid.Skill:
+	case SkillID:
 		return s.finalLevel(s.bestFast(entity, requirePoints, excludes))
 	default:
 		level := entity.ResolveAttributeCurrent(s.Type())

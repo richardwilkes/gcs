@@ -25,7 +25,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/dbg"
 	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	gid2 "github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/measure"
@@ -102,9 +101,9 @@ type Entity struct {
 func NewEntityFromFile(fileSystem fs.FS, filePath string) (*Entity, error) {
 	var entity Entity
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &entity); err != nil {
-		return nil, errs.NewWithCause(gid2.InvalidFileDataMsg, err)
+		return nil, errs.NewWithCause(InvalidFileDataMsg, err)
 	}
-	if err := gid2.CheckVersion(entity.Version); err != nil {
+	if err := CheckVersion(entity.Version); err != nil {
 		return nil, err
 	}
 	return &entity, nil
@@ -187,7 +186,7 @@ func (e *Entity) MarshalJSON() ([]byte, error) {
 			Dodge:                 make([]int, len(AllEncumbrance)),
 		},
 	}
-	data.Version = gid2.CurrentDataVersion
+	data.Version = CurrentDataVersion
 	for i, one := range AllEncumbrance {
 		data.Calc.Move[i] = e.Move(one)
 		data.Calc.Dodge[i] = e.Dodge(one)
@@ -326,9 +325,9 @@ func (e *Entity) processFeatures() {
 		}, true, true, eqp.Modifiers...)
 		return false
 	}, false, false, e.CarriedEquipment...)
-	e.LiftingStrengthBonus = e.AttributeBonusFor(gid2.Strength, LiftingOnlyBonusLimitation, nil).Trunc()
-	e.StrikingStrengthBonus = e.AttributeBonusFor(gid2.Strength, StrikingOnlyBonusLimitation, nil).Trunc()
-	e.ThrowingStrengthBonus = e.AttributeBonusFor(gid2.Strength, ThrowingOnlyBonusLimitation, nil).Trunc()
+	e.LiftingStrengthBonus = e.AttributeBonusFor(StrengthID, LiftingOnlyBonusLimitation, nil).Trunc()
+	e.StrikingStrengthBonus = e.AttributeBonusFor(StrengthID, StrikingOnlyBonusLimitation, nil).Trunc()
+	e.ThrowingStrengthBonus = e.AttributeBonusFor(StrengthID, ThrowingOnlyBonusLimitation, nil).Trunc()
 	for _, attr := range e.Attributes.Set {
 		if def := attr.AttributeDef(); def != nil {
 			attr.Bonus = e.AttributeBonusFor(attr.AttrID, NoneBonusLimitation, nil)
@@ -342,9 +341,9 @@ func (e *Entity) processFeatures() {
 		}
 	}
 	e.Profile.Update(e)
-	e.DodgeBonus = e.AttributeBonusFor(gid2.Dodge, NoneBonusLimitation, nil).Trunc()
-	e.ParryBonus = e.AttributeBonusFor(gid2.Parry, NoneBonusLimitation, nil).Trunc()
-	e.BlockBonus = e.AttributeBonusFor(gid2.Block, NoneBonusLimitation, nil).Trunc()
+	e.DodgeBonus = e.AttributeBonusFor(DodgeID, NoneBonusLimitation, nil).Trunc()
+	e.ParryBonus = e.AttributeBonusFor(ParryID, NoneBonusLimitation, nil).Trunc()
+	e.BlockBonus = e.AttributeBonusFor(BlockID, NoneBonusLimitation, nil).Trunc()
 }
 
 func (e *Entity) processFeature(owner fmt.Stringer, f Feature, levels fxp.Int) {
@@ -412,7 +411,7 @@ func (e *Entity) processPrereqs() {
 					e.features.skillBonuses = append(e.features.skillBonuses, penalty)
 				}
 			}
-			if satisfied && s.Type == gid2.Technique {
+			if satisfied && s.Type == TechniqueID {
 				satisfied = s.TechniqueSatisfied(&tooltip, prefix)
 			}
 			if !satisfied {
@@ -441,7 +440,7 @@ func (e *Entity) processPrereqs() {
 					e.features.spellBonuses = append(e.features.spellBonuses, penalty)
 				}
 			}
-			if satisfied && s.Type == gid2.RitualMagicSpell {
+			if satisfied && s.Type == RitualMagicSpellID {
 				satisfied = s.RitualMagicSatisfied(&tooltip, prefix)
 			}
 			if !satisfied {
@@ -603,7 +602,7 @@ func (e *Entity) WealthNotCarried() fxp.Int {
 
 // StrengthOrZero returns the current ST value, or zero if no such attribute exists.
 func (e *Entity) StrengthOrZero() fxp.Int {
-	return e.ResolveAttributeCurrent(gid2.Strength).Max(0)
+	return e.ResolveAttributeCurrent(StrengthID).Max(0)
 }
 
 // Thrust returns the thrust value for the current strength.
@@ -800,7 +799,7 @@ func (e *Entity) NamedWeaponSkillBonusesFor(name, usage string, tags []string, t
 
 // Move returns the current Move value for the given Encumbrance.
 func (e *Entity) Move(enc Encumbrance) int {
-	initialMove := e.ResolveAttributeCurrent(gid2.BasicMove).Max(0)
+	initialMove := e.ResolveAttributeCurrent("basic_move").Max(0)
 	divisor := 2 * xmath.Min(CountThresholdOpMet(HalveMoveThresholdOp, e.Attributes), 2)
 	if divisor > 0 {
 		initialMove = initialMove.Div(fxp.From(divisor)).Ceil()
@@ -842,7 +841,7 @@ func (e *Entity) SkillNamed(name, specialization string, requirePoints bool, exc
 	var list []*Skill
 	Traverse(func(sk *Skill) bool {
 		if !excludes[sk.String()] {
-			if !requirePoints || sk.Type == gid2.Technique || sk.AdjustedPoints(nil) > 0 {
+			if !requirePoints || sk.Type == TechniqueID || sk.AdjustedPoints(nil) > 0 {
 				if strings.EqualFold(sk.Name, name) {
 					if specialization == "" || strings.EqualFold(sk.Specialization, specialization) {
 						list = append(list, sk)
@@ -857,7 +856,7 @@ func (e *Entity) SkillNamed(name, specialization string, requirePoints bool, exc
 
 // Dodge returns the current Dodge value for the given Encumbrance.
 func (e *Entity) Dodge(enc Encumbrance) int {
-	dodge := fxp.Three + e.DodgeBonus + e.ResolveAttributeCurrent(gid2.BasicSpeed).Max(0)
+	dodge := fxp.Three + e.DodgeBonus + e.ResolveAttributeCurrent("basic_speed").Max(0)
 	divisor := 2 * xmath.Min(CountThresholdOpMet(HalveDodgeThresholdOp, e.Attributes), 2)
 	if divisor > 0 {
 		dodge = dodge.Div(fxp.From(divisor)).Ceil()
@@ -996,7 +995,7 @@ func (e *Entity) ResolveVariable(variableName string) string {
 	}
 	e.variableResolverExclusions[variableName] = true
 	defer func() { delete(e.variableResolverExclusions, variableName) }()
-	if gid2.SizeModifier == variableName {
+	if SizeModifierID == variableName {
 		result := strconv.Itoa(e.Profile.AdjustedSizeModifier())
 		e.cachedVariables[variableName] = result
 		return result

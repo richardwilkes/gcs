@@ -18,7 +18,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/crc"
-	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -88,8 +87,8 @@ func (h *HitLocation) MarshalJSON() ([]byte, error) {
 	}
 	if h.Entity != nil {
 		data.Calc.DR = h.DR(h.Entity, nil, nil)
-		if _, exists := data.Calc.DR[gid.All]; !exists {
-			data.Calc.DR[gid.All] = 0
+		if _, exists := data.Calc.DR[AllID]; !exists {
+			data.Calc.DR[AllID] = 0
 		}
 	}
 	return json.Marshal(&data)
@@ -130,9 +129,9 @@ func (h *HitLocation) DR(entity *Entity, tooltip *xio.ByteBuffer, drMap map[stri
 		drMap = make(map[string]int)
 	}
 	if h.DRBonus != 0 {
-		drMap[gid.All] += h.DRBonus
+		drMap[AllID] += h.DRBonus
 		if tooltip != nil {
-			fmt.Fprintf(tooltip, "\n%s [%+d against %s attacks]", h.ChoiceName, h.DRBonus, gid.All)
+			fmt.Fprintf(tooltip, "\n%s [%+d against %s attacks]", h.ChoiceName, h.DRBonus, AllID)
 		}
 	}
 	drMap = entity.AddDRBonusesFor(h.LocID, tooltip, drMap)
@@ -145,12 +144,12 @@ func (h *HitLocation) DR(entity *Entity, tooltip *xio.ByteBuffer, drMap map[stri
 			keys = append(keys, k)
 		}
 		txt.SortStringsNaturalAscending(keys)
-		base := drMap[gid.All]
+		base := drMap[AllID]
 		var buffer bytes.Buffer
 		buffer.WriteByte('\n')
 		for _, k := range keys {
 			value := drMap[k]
-			if !strings.EqualFold(gid.All, k) {
+			if !strings.EqualFold(AllID, k) {
 				value += base
 			}
 			fmt.Fprintf(&buffer, "\n%d against %s attacks", value, k)
@@ -164,14 +163,14 @@ func (h *HitLocation) DR(entity *Entity, tooltip *xio.ByteBuffer, drMap map[stri
 // DisplayDR returns the DR for this location, formatted as a string.
 func (h *HitLocation) DisplayDR(entity *Entity, tooltip *xio.ByteBuffer) string {
 	drMap := h.DR(entity, tooltip, nil)
-	all, exists := drMap[gid.All]
+	all, exists := drMap[AllID]
 	if !exists {
-		drMap[gid.All] = 0
+		drMap[AllID] = 0
 	}
 	keys := make([]string, 0, len(drMap))
-	keys = append(keys, gid.All)
+	keys = append(keys, AllID)
 	for k := range drMap {
-		if k != gid.All {
+		if k != AllID {
 			keys = append(keys, k)
 		}
 	}
@@ -179,7 +178,7 @@ func (h *HitLocation) DisplayDR(entity *Entity, tooltip *xio.ByteBuffer) string 
 	var buffer strings.Builder
 	for _, k := range keys {
 		dr := drMap[k]
-		if k != gid.All {
+		if k != AllID {
 			dr += all
 		}
 		if buffer.Len() != 0 {

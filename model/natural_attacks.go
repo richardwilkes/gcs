@@ -13,7 +13,6 @@ package model
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/i18n"
 )
@@ -36,10 +35,10 @@ func newBite(owner WeaponOwner) *Weapon {
 	bite.Block = no
 	bite.Defaults = []*SkillDefault{
 		{
-			DefaultType: gid.Dexterity,
+			DefaultType: DexterityID,
 		},
 		{
-			DefaultType: gid.Skill,
+			DefaultType: SkillID,
 			Name:        "Brawling",
 		},
 	}
@@ -63,18 +62,18 @@ func newPunch(owner WeaponOwner) *Weapon {
 	punch.Parry = "0"
 	punch.Defaults = []*SkillDefault{
 		{
-			DefaultType: gid.Dexterity,
+			DefaultType: DexterityID,
 		},
 		{
-			DefaultType: gid.Skill,
+			DefaultType: SkillID,
 			Name:        "Boxing",
 		},
 		{
-			DefaultType: gid.Skill,
+			DefaultType: SkillID,
 			Name:        "Brawling",
 		},
 		{
-			DefaultType: gid.Skill,
+			DefaultType: SkillID,
 			Name:        "Karate",
 		},
 	}
@@ -98,20 +97,20 @@ func newKick(owner WeaponOwner) *Weapon {
 	kick.Parry = i18n.Text("No")
 	kick.Defaults = []*SkillDefault{
 		{
-			DefaultType: gid.Dexterity,
+			DefaultType: DexterityID,
 			Modifier:    -fxp.Two,
 		},
 		{
-			DefaultType: gid.Skill,
+			DefaultType: SkillID,
 			Name:        "Brawling",
 			Modifier:    -fxp.Two,
 		},
 		{
-			DefaultType: gid.Skill,
+			DefaultType: SkillID,
 			Name:        "Kicking",
 		},
 		{
-			DefaultType: gid.Skill,
+			DefaultType: SkillID,
 			Name:        "Karate",
 			Modifier:    -fxp.Two,
 		},

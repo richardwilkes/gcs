@@ -17,7 +17,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -29,7 +28,7 @@ import (
 
 var (
 	lastFeatureTypeUsed = model.AttributeBonusFeatureType
-	lastAttributeIDUsed = gid.Strength
+	lastAttributeIDUsed = model.StrengthID
 )
 
 type featuresPanel struct {
@@ -152,10 +151,10 @@ func (p *featuresPanel) createAttributeBonusPanel(f *model.AttributeBonus) *unis
 	attrChoicePopup.SelectionCallback = func(index int, item *model.AttributeChoice) {
 		lastAttributeIDUsed = item.Key
 		callback(index, item)
-		adjustPopupBlank(popup, f.Attribute != gid.Strength)
+		adjustPopupBlank(popup, f.Attribute != model.StrengthID)
 	}
 	popup = addPopup(wrapper, model.AllBonusLimitation, &f.Limitation)
-	adjustPopupBlank(popup, f.Attribute != gid.Strength)
+	adjustPopupBlank(popup, f.Attribute != model.StrengthID)
 	wrapper.SetLayout(&unison.FlexLayout{
 		Columns:  len(wrapper.Children()),
 		HSpacing: unison.StdHSpacing,
@@ -211,7 +210,7 @@ func (p *featuresPanel) createDRBonusPanel(f *model.DRBonus) *unison.Panel {
 			f.Normalize()
 			MarkModified(wrapper)
 		})
-	field.Watermark = gid.All
+	field.Watermark = model.AllID
 	field.SetMinimumTextWidthUsing("Specialization")
 	wrapper.AddChild(field)
 	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("attacks")))

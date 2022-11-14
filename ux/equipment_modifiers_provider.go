@@ -13,7 +13,6 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -22,6 +21,8 @@ import (
 	"github.com/richardwilkes/unison"
 	"golang.org/x/exp/maps"
 )
+
+const equipmentModifierDragKey = "equipment_modifier"
 
 var (
 	equipmentModifierColMap = map[int]int{
@@ -64,7 +65,7 @@ func NewEquipmentModifiersProvider(provider model.EquipmentModifierListProvider,
 }
 
 func (p *eqpModProvider) RefKey() string {
-	return gid.EquipmentModifier
+	return equipmentModifierDragKey
 }
 
 func (p *eqpModProvider) AllTags() []string {
@@ -114,7 +115,7 @@ func (p *eqpModProvider) Entity() *model.Entity {
 }
 
 func (p *eqpModProvider) DragKey() string {
-	return gid.EquipmentModifier
+	return equipmentModifierDragKey
 }
 
 func (p *eqpModProvider) DragSVG() *unison.SVG {

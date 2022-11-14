@@ -15,7 +15,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/toolbox/i18n"
 )
 
@@ -50,25 +49,25 @@ func AttributeChoices(entity *Entity, prefix string, flags AttributeFlags, curre
 		choices = append(choices, &AttributeChoice{})
 	}
 	if flags&TenFlag != 0 {
-		choices = append(choices, &AttributeChoice{Key: gid.Ten, Title: prefix + "10"})
+		choices = append(choices, &AttributeChoice{Key: "10", Title: prefix + "10"})
 	}
 	for _, def := range list {
 		choices = append(choices, &AttributeChoice{Key: def.DefID, Title: prefix + def.Name})
 	}
 	if flags&SizeFlag != 0 {
-		choices = append(choices, &AttributeChoice{Key: gid.SizeModifier, Title: prefix + i18n.Text("Size Modifier")})
+		choices = append(choices, &AttributeChoice{Key: SizeModifierID, Title: prefix + i18n.Text("Size Modifier")})
 	}
 	if flags&DodgeFlag != 0 {
-		choices = append(choices, &AttributeChoice{Key: gid.Dodge, Title: prefix + i18n.Text("Dodge")})
+		choices = append(choices, &AttributeChoice{Key: DodgeID, Title: prefix + i18n.Text("Dodge")})
 	}
 	if flags&ParryFlag != 0 {
-		choices = append(choices, &AttributeChoice{Key: gid.Parry, Title: prefix + i18n.Text("Parry")})
+		choices = append(choices, &AttributeChoice{Key: ParryID, Title: prefix + i18n.Text("Parry")})
 	}
 	if flags&BlockFlag != 0 {
-		choices = append(choices, &AttributeChoice{Key: gid.Block, Title: prefix + i18n.Text("Block")})
+		choices = append(choices, &AttributeChoice{Key: BlockID, Title: prefix + i18n.Text("Block")})
 	}
 	if flags&SkillFlag != 0 {
-		choices = append(choices, &AttributeChoice{Key: gid.Skill, Title: prefix + i18n.Text("Skill")})
+		choices = append(choices, &AttributeChoice{Key: SkillID, Title: prefix + i18n.Text("Skill")})
 	}
 	for _, choice := range choices {
 		if choice.Key == currentKey {

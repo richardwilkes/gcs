@@ -16,7 +16,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -32,7 +31,7 @@ func initSkillEditor(e *editor[*model.Skill, *model.SkillEditData], content *uni
 	_, ownerIsSheet := owner.(*Sheet)
 	_, ownerIsTemplate := owner.(*Template)
 	addNameLabelAndField(content, &e.editorData.Name)
-	isTechnique := strings.HasPrefix(e.target.Type, gid.Technique)
+	isTechnique := strings.HasPrefix(e.target.Type, model.TechniqueID)
 	if !e.target.Container() && !isTechnique {
 		addSpecializationLabelAndField(content, &e.editorData.Specialization)
 		addTechLevelRequired(content, &e.editorData.TechLevel, ownerIsSheet)

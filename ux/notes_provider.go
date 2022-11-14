@@ -13,13 +13,14 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
 )
+
+const noteDragKey = "note"
 
 var (
 	noteColMap = map[int]int{
@@ -85,7 +86,7 @@ func (p *notesProvider) Entity() *model.Entity {
 }
 
 func (p *notesProvider) DragKey() string {
-	return gid.Note
+	return noteDragKey
 }
 
 func (p *notesProvider) DragSVG() *unison.SVG {

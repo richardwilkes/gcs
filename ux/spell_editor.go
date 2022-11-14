@@ -16,7 +16,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -31,7 +30,7 @@ func initSpellEditor(e *editor[*model.Spell, *model.SpellEditData], content *uni
 	owner := e.owner.AsPanel().Self
 	_, ownerIsSheet := owner.(*Sheet)
 	_, ownerIsTemplate := owner.(*Template)
-	isRitualMagic := strings.HasPrefix(e.target.Type, gid.RitualMagicSpell)
+	isRitualMagic := strings.HasPrefix(e.target.Type, model.RitualMagicSpellID)
 	addNameLabelAndField(content, &e.editorData.Name)
 	if !e.target.Container() {
 		addTechLevelRequired(content, &e.editorData.TechLevel, ownerIsSheet)

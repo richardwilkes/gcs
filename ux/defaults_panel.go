@@ -14,14 +14,13 @@ package ux
 import (
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 	"golang.org/x/exp/slices"
 )
 
-var lastDefaultTypeUsed = gid.Dexterity
+var lastDefaultTypeUsed = model.DexterityID
 
 type defaultsPanel struct {
 	unison.Panel
@@ -107,14 +106,14 @@ func (p *defaultsPanel) insertDefaultsPanel(index int, def *model.SkillDefault) 
 	attrChoicePopup.SelectionCallback = func(index int, item *model.AttributeChoice) {
 		lastDefaultTypeUsed = item.Key
 		callback(index, item)
-		adjustFieldBlank(nameField, item.Key != gid.Skill)
-		adjustFieldBlank(specializationField, item.Key != gid.Skill)
+		adjustFieldBlank(nameField, item.Key != model.SkillID)
+		adjustFieldBlank(specializationField, item.Key != model.SkillID)
 	}
 	panel.AddChild(nameField)
 	panel.AddChild(specializationField)
 	panel.AddChild(modifierField)
-	adjustFieldBlank(nameField, def.DefaultType != gid.Skill)
-	adjustFieldBlank(specializationField, def.DefaultType != gid.Skill)
+	adjustFieldBlank(nameField, def.DefaultType != model.SkillID)
+	adjustFieldBlank(specializationField, def.DefaultType != model.SkillID)
 
 	panel.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,

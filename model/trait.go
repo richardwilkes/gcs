@@ -17,7 +17,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	gid2 "github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
@@ -62,15 +61,15 @@ type traitListData struct {
 func NewTraitsFromFile(fileSystem fs.FS, filePath string) ([]*Trait, error) {
 	var data traitListData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(gid2.InvalidFileDataMsg, err)
+		return nil, errs.NewWithCause(InvalidFileDataMsg, err)
 	}
 	if data.Type == "advantage_list" {
 		data.Type = traitListTypeKey
 	}
 	if data.Type != traitListTypeKey {
-		return nil, errs.New(gid2.UnexpectedFileDataMsg)
+		return nil, errs.New(UnexpectedFileDataMsg)
 	}
-	if err := gid2.CheckVersion(data.Version); err != nil {
+	if err := CheckVersion(data.Version); err != nil {
 		return nil, err
 	}
 	return data.Rows, nil
@@ -80,7 +79,7 @@ func NewTraitsFromFile(fileSystem fs.FS, filePath string) ([]*Trait, error) {
 func SaveTraits(traits []*Trait, filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &traitListData{
 		Type:    traitListTypeKey,
-		Version: gid2.CurrentDataVersion,
+		Version: CurrentDataVersion,
 		Rows:    traits,
 	})
 }

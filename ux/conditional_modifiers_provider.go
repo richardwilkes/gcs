@@ -13,7 +13,6 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -80,7 +79,7 @@ func (p *condModProvider) Entity() *model.Entity {
 }
 
 func (p *condModProvider) DragKey() string {
-	return gid.ConditionalModifier
+	return "conditional_modifier"
 }
 
 func (p *condModProvider) DragSVG() *unison.SVG {

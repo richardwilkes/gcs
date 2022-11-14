@@ -14,7 +14,6 @@ package model
 import (
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/toolbox/i18n"
 )
 
@@ -26,7 +25,7 @@ type SkillData struct {
 
 // Kind returns the kind of data.
 func (d *SkillData) Kind() string {
-	if strings.HasPrefix(d.Type, gid.Skill) {
+	if strings.HasPrefix(d.Type, SkillID) {
 		return d.kind(i18n.Text("Skill"))
 	}
 	return d.kind(i18n.Text("Technique"))

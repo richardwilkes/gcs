@@ -20,7 +20,6 @@ import (
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
@@ -176,7 +175,7 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 	content.AddChild(info)
 	content.AddChild(unison.NewPanel())
 	info = unison.NewLabel()
-	info.Text = fmt.Sprintf(i18n.Text(`in the form "v%d.x.y" through "v%d.x.y", where x and y can be any numeric value.`), gid.MinimumLibraryVersion, gid.CurrentDataVersion)
+	info.Text = fmt.Sprintf(i18n.Text(`in the form "v%d.x.y" through "v%d.x.y", where x and y can be any numeric value.`), model.MinimumLibraryVersion, model.CurrentDataVersion)
 	content.AddChild(info)
 }
 

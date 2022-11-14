@@ -13,7 +13,6 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -80,7 +79,7 @@ func (p *reactionModProvider) Entity() *model.Entity {
 }
 
 func (p *reactionModProvider) DragKey() string {
-	return gid.ReactionModifier
+	return "reaction_modifier"
 }
 
 func (p *reactionModProvider) DragSVG() *unison.SVG {

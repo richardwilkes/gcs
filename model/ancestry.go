@@ -16,7 +16,6 @@ import (
 	"io/fs"
 	"strings"
 
-	gid2 "github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	measure2 "github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/toolbox/errs"
@@ -73,12 +72,12 @@ func NewAncestryFromFile(fileSystem fs.FS, filePath string) (*Ancestry, error) {
 	}
 	if ancestry.Type == "" && ancestry.Version == 0 { // for some older files
 		ancestry.Type = ancestryTypeKey
-		ancestry.Version = gid2.CurrentDataVersion
+		ancestry.Version = CurrentDataVersion
 	}
 	if ancestry.Type != ancestryTypeKey {
-		return nil, errs.New(gid2.UnexpectedFileDataMsg)
+		return nil, errs.New(UnexpectedFileDataMsg)
 	}
-	if err := gid2.CheckVersion(ancestry.Version); err != nil {
+	if err := CheckVersion(ancestry.Version); err != nil {
 		return nil, err
 	}
 	if ancestry.Name == "" {
@@ -91,7 +90,7 @@ func NewAncestryFromFile(fileSystem fs.FS, filePath string) (*Ancestry, error) {
 func (a *Ancestry) Save(filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &ancestryData{
 		Type:     ancestryTypeKey,
-		Version:  gid2.CurrentDataVersion,
+		Version:  CurrentDataVersion,
 		Ancestry: *a,
 	})
 }

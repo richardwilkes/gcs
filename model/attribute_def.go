@@ -17,14 +17,13 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/eval"
 )
 
 // ReservedIDs holds a list of IDs that are reserved for internal use.
-var ReservedIDs = []string{gid.Skill, gid.Parry, gid.Block, gid.Dodge, gid.SizeModifier, gid.Ten}
+var ReservedIDs = []string{SkillID, ParryID, BlockID, DodgeID, SizeModifierID, "10"}
 
 // AttributeDef holds the definition of an attribute.
 type AttributeDef struct {

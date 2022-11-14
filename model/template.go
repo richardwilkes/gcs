@@ -18,7 +18,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/crc"
-	gid2 "github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/errs"
@@ -44,12 +43,12 @@ type Template struct {
 func NewTemplateFromFile(fileSystem fs.FS, filePath string) (*Template, error) {
 	var template Template
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &template); err != nil {
-		return nil, errs.NewWithCause(gid2.InvalidFileDataMsg, err)
+		return nil, errs.NewWithCause(InvalidFileDataMsg, err)
 	}
 	if template.Type != templateTypeKey {
-		return nil, errs.New(gid2.UnexpectedFileDataMsg)
+		return nil, errs.New(UnexpectedFileDataMsg)
 	}
-	if err := gid2.CheckVersion(template.Version); err != nil {
+	if err := CheckVersion(template.Version); err != nil {
 		return nil, err
 	}
 	return &template, nil
@@ -71,7 +70,7 @@ func (t *Template) Entity() *Entity {
 
 // Save the Template to a file as JSON.
 func (t *Template) Save(filePath string) error {
-	t.Version = gid2.CurrentDataVersion
+	t.Version = CurrentDataVersion
 	return jio.SaveToFile(context.Background(), filePath, t)
 }
 

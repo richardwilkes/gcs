@@ -20,7 +20,6 @@ import (
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -40,11 +39,11 @@ var (
 	_        Rebuildable                = &Sheet{}
 	_        unison.TabCloser           = &Sheet{}
 	dropKeys                            = []string{
-		gid.Equipment,
-		gid.Skill,
-		gid.Spell,
-		gid.Trait,
-		gid.Note,
+		equipmentDragKey,
+		model.SkillID,
+		model.SpellID,
+		traitDragKey,
+		noteDragKey,
 	}
 )
 
@@ -280,15 +279,15 @@ func NewSheet(filePath string, entity *model.Entity) *Sheet {
 func (s *Sheet) keyToPanel(key string) *unison.Panel {
 	var p unison.Paneler
 	switch key {
-	case gid.Equipment:
+	case equipmentDragKey:
 		p = s.CarriedEquipment.Table
-	case gid.Skill:
+	case model.SkillID:
 		p = s.Skills.Table
-	case gid.Spell:
+	case model.SpellID:
 		p = s.Spells.Table
-	case gid.Trait:
+	case traitDragKey:
 		p = s.Traits.Table
-	case gid.Note:
+	case noteDragKey:
 		p = s.Notes.Table
 	default:
 		return nil
@@ -630,7 +629,7 @@ func (s *Sheet) canSwapDefaults(_ any) bool {
 	canSwap := false
 	for _, skillNode := range s.Skills.SelectedNodes(true) {
 		skill := skillNode.Data()
-		if skill.Type == gid.Technique {
+		if skill.Type == model.TechniqueID {
 			return false
 		}
 		if !skill.CanSwapDefaultsWith(skill.DefaultSkill()) && skill.BestSwappableSkill() == nil {

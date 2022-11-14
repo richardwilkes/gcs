@@ -17,7 +17,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	gid2 "github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
@@ -71,12 +70,12 @@ type traitModifierListData struct {
 func NewTraitModifiersFromFile(fileSystem fs.FS, filePath string) ([]*TraitModifier, error) {
 	var data traitModifierListData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(gid2.InvalidFileDataMsg, err)
+		return nil, errs.NewWithCause(InvalidFileDataMsg, err)
 	}
 	if data.Type != traitModifierListTypeKey {
-		return nil, errs.New(gid2.UnexpectedFileDataMsg)
+		return nil, errs.New(UnexpectedFileDataMsg)
 	}
-	if err := gid2.CheckVersion(data.Version); err != nil {
+	if err := CheckVersion(data.Version); err != nil {
 		return nil, err
 	}
 	return data.Rows, nil
@@ -86,7 +85,7 @@ func NewTraitModifiersFromFile(fileSystem fs.FS, filePath string) ([]*TraitModif
 func SaveTraitModifiers(modifiers []*TraitModifier, filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &traitModifierListData{
 		Type:    traitModifierListTypeKey,
-		Version: gid2.CurrentDataVersion,
+		Version: CurrentDataVersion,
 		Rows:    modifiers,
 	})
 }

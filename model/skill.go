@@ -18,7 +18,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	gid2 "github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
@@ -66,12 +65,12 @@ type skillListData struct {
 func NewSkillsFromFile(fileSystem fs.FS, filePath string) ([]*Skill, error) {
 	var data skillListData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(gid2.InvalidFileDataMsg, err)
+		return nil, errs.NewWithCause(InvalidFileDataMsg, err)
 	}
 	if data.Type != skillListTypeKey {
-		return nil, errs.New(gid2.UnexpectedFileDataMsg)
+		return nil, errs.New(UnexpectedFileDataMsg)
 	}
-	if err := gid2.CheckVersion(data.Version); err != nil {
+	if err := CheckVersion(data.Version); err != nil {
 		return nil, err
 	}
 	return data.Rows, nil
@@ -81,14 +80,14 @@ func NewSkillsFromFile(fileSystem fs.FS, filePath string) ([]*Skill, error) {
 func SaveSkills(skills []*Skill, filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &skillListData{
 		Type:    skillListTypeKey,
-		Version: gid2.CurrentDataVersion,
+		Version: CurrentDataVersion,
 		Rows:    skills,
 	})
 }
 
 // NewSkill creates a new Skill.
 func NewSkill(entity *Entity, parent *Skill, container bool) *Skill {
-	return newSkill(entity, parent, gid2.Skill, container)
+	return newSkill(entity, parent, SkillID, container)
 }
 
 // NewTechnique creates a new technique (i.e. a specialized use of a Skill). All parameters may be nil or empty.
@@ -96,9 +95,9 @@ func NewTechnique(entity *Entity, parent *Skill, skillName string) *Skill {
 	if skillName == "" {
 		skillName = i18n.Text("Skill")
 	}
-	s := newSkill(entity, parent, gid2.Technique, false)
+	s := newSkill(entity, parent, TechniqueID, false)
 	s.TechniqueDefault = &SkillDefault{
-		DefaultType: gid2.Skill,
+		DefaultType: SkillID,
 		Name:        skillName,
 	}
 	return s
@@ -115,8 +114,8 @@ func newSkill(entity *Entity, parent *Skill, typeKey string, container bool) *Sk
 	if container {
 		s.TemplatePicker = &TemplatePicker{}
 	} else {
-		if typeKey != gid2.Technique {
-			s.Difficulty.Attribute = AttributeIDFor(entity, gid2.Dexterity)
+		if typeKey != TechniqueID {
+			s.Difficulty.Attribute = AttributeIDFor(entity, DexterityID)
 		}
 		s.Difficulty.Difficulty = Average
 		s.Points = fxp.One
@@ -128,7 +127,7 @@ func newSkill(entity *Entity, parent *Skill, typeKey string, container bool) *Sk
 // Clone implements Node.
 func (s *Skill) Clone(entity *Entity, parent *Skill, preserveID bool) *Skill {
 	var other *Skill
-	if s.Type == gid2.Technique {
+	if s.Type == TechniqueID {
 		other = NewTechnique(entity, parent, s.TechniqueDefault.Name)
 	} else {
 		other = NewSkill(entity, parent, s.Container())
@@ -252,7 +251,7 @@ func FormatRelativeSkill(entity *Entity, typ string, difficulty AttributeDifficu
 	switch {
 	case rsl == fxp.Min:
 		return "-"
-	case strings.HasPrefix(typ, gid2.Skill) || strings.HasPrefix(typ, gid2.Spell):
+	case strings.HasPrefix(typ, SkillID) || strings.HasPrefix(typ, SpellID):
 		s := ResolveAttributeName(entity, difficulty.Attribute)
 		rsl = rsl.Trunc()
 		if rsl != 0 {
@@ -299,7 +298,7 @@ func (s *Skill) DefaultSkill() *Skill {
 	if s.Entity == nil {
 		return nil
 	}
-	if strings.HasPrefix(s.Type, gid2.Technique) {
+	if strings.HasPrefix(s.Type, TechniqueID) {
 		return s.Entity.BaseSkill(s.TechniqueDefault, true)
 	}
 	return s.Entity.BaseSkill(s.DefaultedFrom, true)
@@ -322,7 +321,7 @@ func (s *Skill) Notes() string {
 
 // ModifierNotes returns the notes due to modifiers.
 func (s *Skill) ModifierNotes() string {
-	if strings.HasPrefix(s.Type, gid2.Technique) {
+	if strings.HasPrefix(s.Type, TechniqueID) {
 		return i18n.Text("Default: ") + s.TechniqueDefault.FullName(s.Entity) + s.TechniqueDefault.ModifierAsString()
 	}
 	if s.Difficulty.Difficulty != Wildcard {
@@ -414,7 +413,7 @@ func (s *Skill) RelativeLevel() string {
 	switch {
 	case rsl == fxp.Min:
 		return "-"
-	case strings.HasPrefix(s.Type, gid2.Skill):
+	case strings.HasPrefix(s.Type, SkillID):
 		return ResolveAttributeName(s.Entity, s.Difficulty.Attribute) + rsl.StringWithSign()
 	default:
 		return rsl.StringWithSign()
@@ -427,7 +426,7 @@ func (s *Skill) AdjustedRelativeLevel() fxp.Int {
 		return fxp.Min
 	}
 	if s.Entity != nil && s.LevelData.Level > 0 {
-		if strings.HasPrefix(s.Type, gid2.Technique) {
+		if strings.HasPrefix(s.Type, TechniqueID) {
 			return s.LevelData.RelativeLevel + s.TechniqueDefault.Modifier
 		}
 		return s.LevelData.RelativeLevel
@@ -521,7 +520,7 @@ func (s *Skill) DecrementSkillLevel() {
 // CalculateLevel returns the computed level without updating it.
 func (s *Skill) CalculateLevel() Level {
 	points := s.AdjustedPoints(nil)
-	if strings.HasPrefix(s.Type, gid2.Skill) {
+	if strings.HasPrefix(s.Type, SkillID) {
 		return CalculateSkillLevel(s.Entity, s.Name, s.Specialization, s.Tags, s.DefaultedFrom, s.Difficulty, points,
 			s.EncumbrancePenaltyMultiplier)
 	}
@@ -584,7 +583,7 @@ func CalculateTechniqueLevel(entity *Entity, name, specialization string, tags [
 	var relativeLevel fxp.Int
 	level := fxp.Min
 	if entity != nil {
-		if def.DefaultType == gid2.Skill {
+		if def.DefaultType == SkillID {
 			if sk := entity.BaseSkill(def, requirePoints); sk != nil {
 				level = sk.CalculateLevel().Level
 			}
@@ -629,7 +628,7 @@ func (s *Skill) UpdateLevel() bool {
 }
 
 func (s *Skill) bestDefaultWithPoints(excluded *SkillDefault) *SkillDefault {
-	if strings.HasPrefix(s.Type, gid2.Technique) {
+	if strings.HasPrefix(s.Type, TechniqueID) {
 		return nil
 	}
 	best := s.bestDefault(excluded)
@@ -674,7 +673,7 @@ func (s *Skill) bestDefault(excluded *SkillDefault) *SkillDefault {
 }
 
 func (s *Skill) calcSkillDefaultLevel(def *SkillDefault, excludes map[string]bool) fxp.Int {
-	level := def.SkillLevel(s.Entity, true, excludes, strings.HasPrefix(s.Type, gid2.Skill))
+	level := def.SkillLevel(s.Entity, true, excludes, strings.HasPrefix(s.Type, SkillID))
 	if def.SkillBased() {
 		if other := s.Entity.BestSkillNamed(def.Name, def.Specialization, true, excludes); other != nil {
 			level -= s.Entity.SkillBonusFor(def.Name, def.Specialization, s.Tags, nil)
@@ -720,11 +719,11 @@ func (s *Skill) resolveToSpecificDefaults() []*SkillDefault {
 
 // TechniqueSatisfied returns true if the Technique is satisfied.
 func (s *Skill) TechniqueSatisfied(tooltip *xio.ByteBuffer, prefix string) bool {
-	if strings.HasPrefix(s.Type, gid2.Skill) || !s.TechniqueDefault.SkillBased() {
+	if strings.HasPrefix(s.Type, SkillID) || !s.TechniqueDefault.SkillBased() {
 		return true
 	}
 	sk := s.Entity.BestSkillNamed(s.TechniqueDefault.Name, s.TechniqueDefault.Specialization, false, nil)
-	satisfied := sk != nil && (strings.HasPrefix(sk.Type, gid2.Technique) || sk.Points > 0)
+	satisfied := sk != nil && (strings.HasPrefix(sk.Type, TechniqueID) || sk.Points > 0)
 	if !satisfied && tooltip != nil {
 		tooltip.WriteString(prefix)
 		if sk == nil {
@@ -808,7 +807,7 @@ func (s *Skill) ApplyNameableKeys(m map[string]string) {
 
 // CanSwapDefaults returns true if this skill's default can be swapped.
 func (s *Skill) CanSwapDefaults() bool {
-	return s.Type != gid2.Technique && !s.Container() && s.AdjustedPoints(nil) > 0
+	return s.Type != TechniqueID && !s.Container() && s.AdjustedPoints(nil) > 0
 }
 
 // CanSwapDefaultsWith returns true if this skill's default can be swapped with the other skill.

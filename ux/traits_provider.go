@@ -13,7 +13,6 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -22,6 +21,8 @@ import (
 	"github.com/richardwilkes/unison"
 	"golang.org/x/exp/maps"
 )
+
+const traitDragKey = "trait"
 
 var (
 	traitListColMap = map[int]int{
@@ -110,7 +111,7 @@ func (p *traitsProvider) Entity() *model.Entity {
 }
 
 func (p *traitsProvider) DragKey() string {
-	return gid.Trait
+	return traitDragKey
 }
 
 func (p *traitsProvider) DragSVG() *unison.SVG {
@@ -126,7 +127,7 @@ func (p *traitsProvider) ProcessDropData(_, _ *unison.Table[*Node[*model.Trait]]
 
 func (p *traitsProvider) AltDropSupport() *AltDropSupport {
 	return &AltDropSupport{
-		DragKey: gid.TraitModifier,
+		DragKey: traitModifierDragKey,
 		Drop: func(rowIndex int, data any) {
 			if tableDragData, ok := data.(*unison.TableDragData[*Node[*model.TraitModifier]]); ok {
 				entity := p.Entity()

@@ -9,12 +9,19 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package gid
+package model
 
-import "github.com/richardwilkes/toolbox/i18n"
-
-// Common messages
-var (
-	InvalidFileDataMsg    = i18n.Text("Invalid file data.")
-	UnexpectedFileDataMsg = i18n.Text("This file does not contain the expected data.")
+// Various commonly used IDs
+const (
+	AllID              = "all"
+	BlockID            = "block"
+	DexterityID        = "dx"
+	DodgeID            = "dodge"
+	ParryID            = "parry"
+	RitualMagicSpellID = "ritual_magic_spell"
+	SizeModifierID     = "sm"
+	SkillID            = "skill"
+	SpellID            = "spell"
+	StrengthID         = "st"
+	TechniqueID        = "technique"
 )

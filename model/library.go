@@ -25,7 +25,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -137,8 +136,8 @@ func (l *Library) CheckForAvailableUpgrade(ctx context.Context, client *http.Cli
 	l.lock.Lock()
 	l.upgrade = nil
 	l.lock.Unlock()
-	incompatibleFutureLibraryVersion := strconv.Itoa(gid.CurrentDataVersion + 1)
-	minimumLibraryVersion := strconv.Itoa(gid.MinimumLibraryVersion)
+	incompatibleFutureLibraryVersion := strconv.Itoa(CurrentDataVersion + 1)
+	minimumLibraryVersion := strconv.Itoa(MinimumLibraryVersion)
 	available, err := LoadReleases(ctx, client, l.GitHubAccountName, l.RepoName, l.VersionOnDisk(),
 		func(version, notes string) bool {
 			return incompatibleFutureLibraryVersion == version ||

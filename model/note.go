@@ -15,7 +15,6 @@ import (
 	"context"
 	"io/fs"
 
-	gid2 "github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
@@ -50,12 +49,12 @@ type noteListData struct {
 func NewNotesFromFile(fileSystem fs.FS, filePath string) ([]*Note, error) {
 	var data noteListData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(gid2.InvalidFileDataMsg, err)
+		return nil, errs.NewWithCause(InvalidFileDataMsg, err)
 	}
 	if data.Type != noteListTypeKey {
-		return nil, errs.New(gid2.UnexpectedFileDataMsg)
+		return nil, errs.New(UnexpectedFileDataMsg)
 	}
-	if err := gid2.CheckVersion(data.Version); err != nil {
+	if err := CheckVersion(data.Version); err != nil {
 		return nil, err
 	}
 	return data.Rows, nil
@@ -65,7 +64,7 @@ func NewNotesFromFile(fileSystem fs.FS, filePath string) ([]*Note, error) {
 func SaveNotes(notes []*Note, filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &noteListData{
 		Type:    noteListTypeKey,
-		Version: gid2.CurrentDataVersion,
+		Version: CurrentDataVersion,
 		Rows:    notes,
 	})
 }

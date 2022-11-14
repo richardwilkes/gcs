@@ -19,7 +19,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/crc"
-	gid2 "github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/errs"
@@ -70,16 +69,16 @@ func NewBodyFromFile(fileSystem fs.FS, filePath string) (*Body, error) {
 		OldHitLocations *Body `json:"hit_locations"`
 	}
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(gid2.InvalidFileDataMsg, err)
+		return nil, errs.NewWithCause(InvalidFileDataMsg, err)
 	}
 	if data.Type != bodyTypeListTypeKey {
 		if data.OldHitLocations != nil {
 			data.Body = data.OldHitLocations
 		} else {
-			return nil, errs.New(gid2.UnexpectedFileDataMsg)
+			return nil, errs.New(UnexpectedFileDataMsg)
 		}
 	}
-	if err := gid2.CheckVersion(data.Version); err != nil {
+	if err := CheckVersion(data.Version); err != nil {
 		return nil, err
 	}
 	if data.Version < noNeedForRewrapVersion {
@@ -115,7 +114,7 @@ func (b *Body) Clone(entity *Entity, owningLocation *HitLocation) *Body {
 func (b *Body) Save(filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &bodyData{
 		Type:    bodyTypeListTypeKey,
-		Version: gid2.CurrentDataVersion,
+		Version: CurrentDataVersion,
 		Body:    b,
 	})
 }

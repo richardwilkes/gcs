@@ -20,7 +20,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
@@ -402,12 +401,12 @@ func (w *Weapon) extractSkillBonusForThisWeapon(f Feature, tooltip *xio.ByteBuff
 
 // ResolvedParry returns the resolved parry level.
 func (w *Weapon) ResolvedParry(tooltip *xio.ByteBuffer) string {
-	return w.resolvedValue(w.Parry, gid.Parry, tooltip)
+	return w.resolvedValue(w.Parry, ParryID, tooltip)
 }
 
 // ResolvedBlock returns the resolved block level.
 func (w *Weapon) ResolvedBlock(tooltip *xio.ByteBuffer) string {
-	return w.resolvedValue(w.Block, gid.Block, tooltip)
+	return w.resolvedValue(w.Block, BlockID, tooltip)
 }
 
 // ResolvedRange returns the range, fully resolved for the user's ST, if possible.
@@ -476,7 +475,7 @@ func (w *Weapon) resolvedValue(input, baseDefaultType string, tooltip *xio.ByteB
 						preAdj := w.skillLevelBaseAdjustment(pc, primaryTooltip)
 						postAdj := w.skillLevelPostAdjustment(pc, primaryTooltip)
 						adj := fxp.Three
-						if baseDefaultType == gid.Parry {
+						if baseDefaultType == ParryID {
 							adj += pc.ParryBonus
 						} else {
 							adj += pc.BlockBonus
@@ -493,7 +492,7 @@ func (w *Weapon) resolvedValue(input, baseDefaultType string, tooltip *xio.ByteB
 							}
 							level += postAdj
 							var possibleTooltip *xio.ByteBuffer
-							if def.Type() == gid.Skill && def.Name == "Karate" {
+							if def.Type() == SkillID && def.Name == "Karate" {
 								if tooltip != nil {
 									possibleTooltip = &xio.ByteBuffer{}
 								}

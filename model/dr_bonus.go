@@ -16,7 +16,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
@@ -44,7 +43,7 @@ func NewDRBonus() *DRBonus {
 		DRBonusData: DRBonusData{
 			Type:           DRBonusFeatureType,
 			Location:       "torso",
-			Specialization: gid.All,
+			Specialization: AllID,
 			LeveledAmount:  LeveledAmount{Amount: fxp.One},
 		},
 	}
@@ -64,8 +63,8 @@ func (d *DRBonus) Clone() Feature {
 // Normalize adjusts the data to it preferred representation.
 func (d *DRBonus) Normalize() {
 	s := strings.TrimSpace(d.Specialization)
-	if s == "" || strings.EqualFold(s, gid.All) {
-		s = gid.All
+	if s == "" || strings.EqualFold(s, AllID) {
+		s = AllID
 	}
 	d.Specialization = s
 }
@@ -110,7 +109,7 @@ func (d *DRBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 // MarshalJSON implements json.Marshaler.
 func (d *DRBonus) MarshalJSON() ([]byte, error) {
 	d.Normalize()
-	if d.Specialization == gid.All {
+	if d.Specialization == AllID {
 		d.Specialization = ""
 	}
 	data, err := json.Marshal(&d.DRBonusData)

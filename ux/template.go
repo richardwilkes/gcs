@@ -19,7 +19,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -216,15 +215,15 @@ func NewTemplate(filePath string, template *model.Template) *Template {
 func (d *Template) keyToPanel(key string) *unison.Panel {
 	var p unison.Paneler
 	switch key {
-	case gid.Equipment:
+	case equipmentDragKey:
 		p = d.Equipment.Table
-	case gid.Skill:
+	case model.SkillID:
 		p = d.Skills.Table
-	case gid.Spell:
+	case model.SpellID:
 		p = d.Spells.Table
-	case gid.Trait:
+	case traitDragKey:
 		p = d.Traits.Table
-	case gid.Note:
+	case noteDragKey:
 		p = d.Notes.Table
 	default:
 		return nil

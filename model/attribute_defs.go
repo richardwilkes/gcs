@@ -18,7 +18,6 @@ import (
 	"sort"
 
 	"github.com/richardwilkes/gcs/v5/model/crc"
-	gid2 "github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
@@ -51,7 +50,7 @@ func DefaultAttributeIDFor(entity *Entity) string {
 	if len(list) != 0 {
 		return list[0].ID()
 	}
-	return gid2.Strength
+	return StrengthID
 }
 
 // AttributeIDFor looks up the preferred ID and if it cannot be found, falls back to a default. 'entity' may be nil.
@@ -63,7 +62,7 @@ func AttributeIDFor(entity *Entity, preferred string) string {
 	if list := defs.List(true); len(list) != 0 {
 		return list[0].ID()
 	}
-	return gid2.Strength
+	return StrengthID
 }
 
 // FactoryAttributeDefs returns the factory AttributeDef set.
@@ -86,15 +85,15 @@ func NewAttributeDefsFromFile(fileSystem fs.FS, filePath string) (*AttributeDefs
 		OldestKey *AttributeDefs `json:"attribute_settings"`
 	}
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(gid2.InvalidFileDataMsg, err)
+		return nil, errs.NewWithCause(InvalidFileDataMsg, err)
 	}
 	if data.Type == "" && data.Version == 2 { // for some older files
 		data.Type = attributeSettingsListTypeKey
 	}
 	if data.Type != attributeSettingsListTypeKey {
-		return nil, errs.New(gid2.UnexpectedFileDataMsg)
+		return nil, errs.New(UnexpectedFileDataMsg)
 	}
-	if err := gid2.CheckVersion(data.Version); err != nil {
+	if err := CheckVersion(data.Version); err != nil {
 		return nil, err
 	}
 	var defs *AttributeDefs
@@ -114,7 +113,7 @@ func NewAttributeDefsFromFile(fileSystem fs.FS, filePath string) (*AttributeDefs
 func (a *AttributeDefs) Save(filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &attributeDefsData{
 		Type:    attributeSettingsListTypeKey,
-		Version: gid2.CurrentDataVersion,
+		Version: CurrentDataVersion,
 		Rows:    a,
 	})
 }

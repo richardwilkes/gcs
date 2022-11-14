@@ -18,7 +18,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	gid2 "github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
@@ -74,12 +73,12 @@ type spellListData struct {
 func NewSpellsFromFile(fileSystem fs.FS, filePath string) ([]*Spell, error) {
 	var data spellListData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(gid2.InvalidFileDataMsg, err)
+		return nil, errs.NewWithCause(InvalidFileDataMsg, err)
 	}
 	if data.Type != spellListTypeKey {
-		return nil, errs.New(gid2.UnexpectedFileDataMsg)
+		return nil, errs.New(UnexpectedFileDataMsg)
 	}
-	if err := gid2.CheckVersion(data.Version); err != nil {
+	if err := CheckVersion(data.Version); err != nil {
 		return nil, err
 	}
 	return data.Rows, nil
@@ -89,21 +88,21 @@ func NewSpellsFromFile(fileSystem fs.FS, filePath string) ([]*Spell, error) {
 func SaveSpells(spells []*Spell, filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &spellListData{
 		Type:    spellListTypeKey,
-		Version: gid2.CurrentDataVersion,
+		Version: CurrentDataVersion,
 		Rows:    spells,
 	})
 }
 
 // NewSpell creates a new Spell.
 func NewSpell(entity *Entity, parent *Spell, container bool) *Spell {
-	s := newSpell(entity, parent, gid2.Spell, container)
+	s := newSpell(entity, parent, SpellID, container)
 	s.UpdateLevel()
 	return s
 }
 
 // NewRitualMagicSpell creates a new Ritual Magic Spell.
 func NewRitualMagicSpell(entity *Entity, parent *Spell, _ bool) *Spell {
-	s := newSpell(entity, parent, gid2.RitualMagicSpell, false)
+	s := newSpell(entity, parent, RitualMagicSpellID, false)
 	s.RitualSkillName = "Ritual Magic"
 	s.SetRawPoints(0)
 	return s
@@ -120,7 +119,7 @@ func newSpell(entity *Entity, parent *Spell, typeKey string, container bool) *Sp
 	if container {
 		s.TemplatePicker = &TemplatePicker{}
 	} else {
-		s.Difficulty.Attribute = AttributeIDFor(entity, gid2.Intelligence)
+		s.Difficulty.Attribute = AttributeIDFor(entity, "iq")
 		s.Difficulty.Difficulty = Hard
 		s.PowerSource = i18n.Text("Arcane")
 		s.Class = i18n.Text("Regular")
@@ -136,7 +135,7 @@ func newSpell(entity *Entity, parent *Spell, typeKey string, container bool) *Sp
 // Clone implements Node.
 func (s *Spell) Clone(entity *Entity, parent *Spell, preserveID bool) *Spell {
 	var other *Spell
-	if s.Type == gid2.RitualMagicSpell {
+	if s.Type == RitualMagicSpellID {
 		other = NewRitualMagicSpell(entity, parent, false)
 	} else {
 		other = NewSpell(entity, parent, s.Container())
@@ -348,7 +347,7 @@ func (s *Spell) RelativeLevel() string {
 	switch {
 	case rsl == fxp.Min:
 		return "-"
-	case s.Type != gid2.RitualMagicSpell:
+	case s.Type != RitualMagicSpellID:
 		return ResolveAttributeName(s.Entity, s.Difficulty.Attribute) + rsl.StringWithSign()
 	default:
 		return rsl.StringWithSign()
@@ -369,7 +368,7 @@ func (s *Spell) AdjustedRelativeLevel() fxp.Int {
 // UpdateLevel updates the level of the spell, returning true if it has changed.
 func (s *Spell) UpdateLevel() bool {
 	saved := s.LevelData
-	if strings.HasPrefix(s.Type, gid2.Spell) {
+	if strings.HasPrefix(s.Type, SpellID) {
 		s.LevelData = CalculateSpellLevel(s.Entity, s.Name, s.PowerSource, s.College, s.Tags, s.Difficulty,
 			s.AdjustedPoints(nil))
 	} else {
@@ -381,7 +380,7 @@ func (s *Spell) UpdateLevel() bool {
 
 // CalculateLevel returns the computed level without updating it.
 func (s *Spell) CalculateLevel() Level {
-	if strings.HasPrefix(s.Type, gid2.Spell) {
+	if strings.HasPrefix(s.Type, SpellID) {
 		return CalculateSpellLevel(s.Entity, s.Name, s.PowerSource, s.College, s.Tags, s.Difficulty,
 			s.AdjustedPoints(nil))
 	}
@@ -503,7 +502,7 @@ func CalculateRitualMagicSpellLevel(entity *Entity, name, powerSource, ritualSki
 
 func determineRitualMagicSkillLevelForCollege(entity *Entity, name, college, ritualSkillName string, ritualPrereqCount int, tags []string, difficulty AttributeDifficulty, points fxp.Int) Level {
 	def := &SkillDefault{
-		DefaultType:    gid2.Skill,
+		DefaultType:    SkillID,
 		Name:           ritualSkillName,
 		Specialization: college,
 		Modifier:       fxp.From(-ritualPrereqCount),
@@ -527,7 +526,7 @@ func determineRitualMagicSkillLevelForCollege(entity *Entity, name, college, rit
 
 // RitualMagicSatisfied returns true if the Ritual Magic Spell is satisfied.
 func (s *Spell) RitualMagicSatisfied(tooltip *xio.ByteBuffer, prefix string) bool {
-	if s.Type != gid2.RitualMagicSpell {
+	if s.Type != RitualMagicSpellID {
 		return true
 	}
 	if len(s.College) == 0 {

@@ -18,7 +18,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	gid2 "github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	measure2 "github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/json"
@@ -80,12 +79,12 @@ type equipmentListData struct {
 func NewEquipmentFromFile(fileSystem fs.FS, filePath string) ([]*Equipment, error) {
 	var data equipmentListData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(gid2.InvalidFileDataMsg, err)
+		return nil, errs.NewWithCause(InvalidFileDataMsg, err)
 	}
 	if data.Type != equipmentListTypeKey {
-		return nil, errs.New(gid2.UnexpectedFileDataMsg)
+		return nil, errs.New(UnexpectedFileDataMsg)
 	}
-	if err := gid2.CheckVersion(data.Version); err != nil {
+	if err := CheckVersion(data.Version); err != nil {
 		return nil, err
 	}
 	return data.Rows, nil
@@ -95,7 +94,7 @@ func NewEquipmentFromFile(fileSystem fs.FS, filePath string) ([]*Equipment, erro
 func SaveEquipment(equipment []*Equipment, filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &equipmentListData{
 		Type:    equipmentListTypeKey,
-		Version: gid2.CurrentDataVersion,
+		Version: CurrentDataVersion,
 		Rows:    equipment,
 	})
 }

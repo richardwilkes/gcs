@@ -13,7 +13,6 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -22,6 +21,8 @@ import (
 	"github.com/richardwilkes/unison"
 	"golang.org/x/exp/maps"
 )
+
+const traitModifierDragKey = "trait_modifier"
 
 var (
 	traitModifierColMap = map[int]int{
@@ -60,7 +61,7 @@ func NewTraitModifiersProvider(provider model.TraitModifierListProvider, forEdit
 }
 
 func (p *traitModifiersProvider) RefKey() string {
-	return gid.TraitModifier
+	return traitModifierDragKey
 }
 
 func (p *traitModifiersProvider) AllTags() []string {
@@ -110,7 +111,7 @@ func (p *traitModifiersProvider) Entity() *model.Entity {
 }
 
 func (p *traitModifiersProvider) DragKey() string {
-	return gid.TraitModifier
+	return traitModifierDragKey
 }
 
 func (p *traitModifiersProvider) DragSVG() *unison.SVG {

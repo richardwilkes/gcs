@@ -24,7 +24,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio"
@@ -45,6 +44,8 @@ const (
 	techLevelExportKey          = "TL"
 	typeExportKey               = "TYPE"
 	weightExportKey             = "WEIGHT"
+	hpAttrID                    = "hp"
+	fpAttrID                    = "fp"
 )
 
 type legacyExporter struct {
@@ -185,25 +186,25 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "ATTRIBUTE_POINTS":
 		ex.writeEncodedText(ex.entity.AttributePoints().String())
 	case "ST_POINTS":
-		ex.writeEncodedText(ex.entity.Attributes.Cost(gid.Strength).String())
+		ex.writeEncodedText(ex.entity.Attributes.Cost(StrengthID).String())
 	case "DX_POINTS":
-		ex.writeEncodedText(ex.entity.Attributes.Cost(gid.Dexterity).String())
+		ex.writeEncodedText(ex.entity.Attributes.Cost(DexterityID).String())
 	case "IQ_POINTS":
-		ex.writeEncodedText(ex.entity.Attributes.Cost(gid.Intelligence).String())
+		ex.writeEncodedText(ex.entity.Attributes.Cost("iq").String())
 	case "HT_POINTS":
-		ex.writeEncodedText(ex.entity.Attributes.Cost(gid.Health).String())
+		ex.writeEncodedText(ex.entity.Attributes.Cost("ht").String())
 	case "PERCEPTION_POINTS":
-		ex.writeEncodedText(ex.entity.Attributes.Cost(gid.Perception).String())
+		ex.writeEncodedText(ex.entity.Attributes.Cost("perception").String())
 	case "WILL_POINTS":
-		ex.writeEncodedText(ex.entity.Attributes.Cost(gid.Will).String())
+		ex.writeEncodedText(ex.entity.Attributes.Cost("will").String())
 	case "FP_POINTS":
-		ex.writeEncodedText(ex.entity.Attributes.Cost(gid.FatiguePoints).String())
+		ex.writeEncodedText(ex.entity.Attributes.Cost(fpAttrID).String())
 	case "HP_POINTS":
-		ex.writeEncodedText(ex.entity.Attributes.Cost(gid.HitPoints).String())
+		ex.writeEncodedText(ex.entity.Attributes.Cost(hpAttrID).String())
 	case "BASIC_SPEED_POINTS":
-		ex.writeEncodedText(ex.entity.Attributes.Cost(gid.BasicSpeed).String())
+		ex.writeEncodedText(ex.entity.Attributes.Cost("basic_speed").String())
 	case "BASIC_MOVE_POINTS":
-		ex.writeEncodedText(ex.entity.Attributes.Cost(gid.BasicMove).String())
+		ex.writeEncodedText(ex.entity.Attributes.Cost("basic_move").String())
 	case "ADVANTAGE_POINTS":
 		pts, _, _, _ := ex.entity.TraitPoints()
 		ex.writeEncodedText(pts.String())
@@ -245,47 +246,47 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "HAND":
 		ex.writeEncodedText(ex.entity.Profile.Handedness)
 	case "ST":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gid.Strength).String())
+		ex.writeEncodedText(ex.entity.Attributes.Current(StrengthID).String())
 	case "DX":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gid.Dexterity).String())
+		ex.writeEncodedText(ex.entity.Attributes.Current(DexterityID).String())
 	case "IQ":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gid.Intelligence).String())
+		ex.writeEncodedText(ex.entity.Attributes.Current("iq").String())
 	case "HT":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gid.Health).String())
+		ex.writeEncodedText(ex.entity.Attributes.Current("ht").String())
 	case "FP":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gid.FatiguePoints).String())
+		ex.writeEncodedText(ex.entity.Attributes.Current(fpAttrID).String())
 	case "BASIC_FP":
-		ex.writeEncodedText(ex.entity.Attributes.Maximum(gid.FatiguePoints).String())
+		ex.writeEncodedText(ex.entity.Attributes.Maximum(fpAttrID).String())
 	case "HP":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gid.HitPoints).String())
+		ex.writeEncodedText(ex.entity.Attributes.Current(hpAttrID).String())
 	case "BASIC_HP":
-		ex.writeEncodedText(ex.entity.Attributes.Maximum(gid.HitPoints).String())
+		ex.writeEncodedText(ex.entity.Attributes.Maximum(hpAttrID).String())
 	case "WILL":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gid.Will).String())
+		ex.writeEncodedText(ex.entity.Attributes.Current("will").String())
 	case "FRIGHT_CHECK":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gid.FrightCheck).String())
+		ex.writeEncodedText(ex.entity.Attributes.Current("fright_check").String())
 	case "BASIC_SPEED":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gid.BasicSpeed).String())
+		ex.writeEncodedText(ex.entity.Attributes.Current("basic_speed").String())
 	case "BASIC_MOVE":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gid.BasicMove).String())
+		ex.writeEncodedText(ex.entity.Attributes.Current("basic_move").String())
 	case "PERCEPTION":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gid.Perception).String())
+		ex.writeEncodedText(ex.entity.Attributes.Current("perception").String())
 	case "VISION":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gid.Vision).String())
+		ex.writeEncodedText(ex.entity.Attributes.Current("vision").String())
 	case "HEARING":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gid.Hearing).String())
+		ex.writeEncodedText(ex.entity.Attributes.Current("hearing").String())
 	case "TASTE_SMELL":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gid.TasteSmell).String())
+		ex.writeEncodedText(ex.entity.Attributes.Current("taste_smell").String())
 	case "TOUCH":
-		ex.writeEncodedText(ex.entity.Attributes.Current(gid.Touch).String())
+		ex.writeEncodedText(ex.entity.Attributes.Current("touch").String())
 	case "THRUST":
 		ex.writeEncodedText(ex.entity.Thrust().String())
 	case "SWING":
 		ex.writeEncodedText(ex.entity.Swing().String())
 	case "GENERAL_DR":
 		dr := 0
-		if torso := ex.entity.SheetSettings.BodyType.LookupLocationByID(ex.entity, gid.Torso); torso != nil {
-			dr = torso.DR(ex.entity, nil, nil)[gid.All]
+		if torso := ex.entity.SheetSettings.BodyType.LookupLocationByID(ex.entity, "torso"); torso != nil {
+			dr = torso.DR(ex.entity, nil, nil)[AllID]
 		}
 		ex.writeEncodedText(strconv.Itoa(dr))
 	case "CURRENT_DODGE":
@@ -297,25 +298,25 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "BEST_CURRENT_BLOCK":
 		ex.writeEncodedText(ex.bestWeaponDefense(func(w *Weapon) string { return w.ResolvedBlock(nil) }))
 	case "TIRED":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gid.FatiguePoints, "tired").String())
+		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(fpAttrID, "tired").String())
 	case "FP_COLLAPSE":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gid.FatiguePoints, "collapse").String())
+		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(fpAttrID, "collapse").String())
 	case "UNCONSCIOUS":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gid.FatiguePoints, "unconscious").String())
+		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(fpAttrID, "unconscious").String())
 	case "REELING":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gid.HitPoints, "reeling").String())
+		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(hpAttrID, "reeling").String())
 	case "HP_COLLAPSE":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gid.HitPoints, "collapse").String())
+		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(hpAttrID, "collapse").String())
 	case "DEATH_CHECK_1":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gid.HitPoints, "dying #1").String())
+		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(hpAttrID, "dying #1").String())
 	case "DEATH_CHECK_2":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gid.HitPoints, "dying #2").String())
+		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(hpAttrID, "dying #2").String())
 	case "DEATH_CHECK_3":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gid.HitPoints, "dying #3").String())
+		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(hpAttrID, "dying #3").String())
 	case "DEATH_CHECK_4":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gid.HitPoints, "dying #4").String())
+		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(hpAttrID, "dying #4").String())
 	case "DEAD":
-		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gid.HitPoints, "dead").String())
+		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(hpAttrID, "dead").String())
 	case "BASIC_LIFT":
 		ex.writeEncodedText(ex.entity.SheetSettings.DefaultWeightUnits.Format(ex.entity.BasicLift()))
 	case "ONE_HANDED_LIFT":

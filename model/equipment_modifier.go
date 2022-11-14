@@ -17,7 +17,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	gid2 "github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	measure2 "github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/json"
@@ -63,12 +62,12 @@ type equipmentModifierListData struct {
 func NewEquipmentModifiersFromFile(fileSystem fs.FS, filePath string) ([]*EquipmentModifier, error) {
 	var data equipmentModifierListData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(gid2.InvalidFileDataMsg, err)
+		return nil, errs.NewWithCause(InvalidFileDataMsg, err)
 	}
 	if data.Type != equipmentModifierListTypeKey {
-		return nil, errs.New(gid2.UnexpectedFileDataMsg)
+		return nil, errs.New(UnexpectedFileDataMsg)
 	}
-	if err := gid2.CheckVersion(data.Version); err != nil {
+	if err := CheckVersion(data.Version); err != nil {
 		return nil, err
 	}
 	return data.Rows, nil
@@ -78,7 +77,7 @@ func NewEquipmentModifiersFromFile(fileSystem fs.FS, filePath string) ([]*Equipm
 func SaveEquipmentModifiers(modifiers []*EquipmentModifier, filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &equipmentModifierListData{
 		Type:    equipmentModifierListTypeKey,
-		Version: gid2.CurrentDataVersion,
+		Version: CurrentDataVersion,
 		Rows:    modifiers,
 	})
 }
