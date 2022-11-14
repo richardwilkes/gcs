@@ -19,7 +19,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	gsettings "github.com/richardwilkes/gcs/v5/model/gurps/settings"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
@@ -177,7 +176,7 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	toolbar.AddChild(NewDefaultInfoPop())
-	toolbar.AddChild(NewScaleField(gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax,
+	toolbar.AddChild(NewScaleField(gurps.InitialUIScaleMin, gurps.InitialUIScaleMax,
 		func() int { return settings.Global().General.InitialListUIScale }, func() int { return d.scale },
 		func(scale int) { d.scale = scale }, d.scroll, nil, false))
 	toolbar.AddChild(d.hierarchyButton)

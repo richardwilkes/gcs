@@ -16,7 +16,6 @@ import (
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
-	"github.com/richardwilkes/gcs/v5/model/gurps/settings"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings/display"
@@ -28,7 +27,7 @@ import (
 // SettingsProvider must be initialized prior to using this package. It provides access to settings to avoid circular
 // references.
 var SettingsProvider interface {
-	GeneralSettings() *settings.General
+	GeneralSettings() *GeneralSheetSettings
 	SheetSettings() *SheetSettings
 	Libraries() library.Libraries
 }
@@ -43,7 +42,7 @@ type SheetSettingsResponder interface {
 
 // SheetSettingsData holds the SheetSettings data that is written to disk.
 type SheetSettingsData struct {
-	Page                          *settings.Page      `json:"page,omitempty"`
+	Page                          *PageSettings       `json:"page,omitempty"`
 	BlockLayout                   *BlockLayout        `json:"block_layout,omitempty"`
 	Attributes                    *AttributeDefs      `json:"attributes,omitempty"`
 	BodyType                      *Body               `json:"body_type,alt=hit_locations,omitempty"`
@@ -84,7 +83,7 @@ func SheetSettingsFor(entity *Entity) *SheetSettings {
 func FactorySheetSettings() *SheetSettings {
 	return &SheetSettings{
 		SheetSettingsData: SheetSettingsData{
-			Page:                   settings.NewPage(),
+			Page:                   NewPageSettings(),
 			BlockLayout:            NewBlockLayout(),
 			Attributes:             FactoryAttributeDefs(),
 			BodyType:               FactoryBody(),
@@ -123,7 +122,7 @@ func NewSheetSettingsFromFile(fileSystem fs.FS, filePath string) (*SheetSettings
 // EnsureValidity checks the current settings for validity and if they aren't valid, makes them so.
 func (s *SheetSettings) EnsureValidity() {
 	if s.Page == nil {
-		s.Page = settings.NewPage()
+		s.Page = NewPageSettings()
 	} else {
 		s.Page.EnsureValidity()
 	}

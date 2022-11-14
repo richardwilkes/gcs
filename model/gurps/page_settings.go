@@ -9,14 +9,14 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package settings
+package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/paper"
 )
 
-// Page holds page settings.
-type Page struct {
+// PageSettings holds page settings.
+type PageSettings struct {
 	Size         paper.Size        `json:"paper_size"`
 	Orientation  paper.Orientation `json:"orientation"`
 	TopMargin    paper.Length      `json:"top_margin"`
@@ -25,9 +25,9 @@ type Page struct {
 	RightMargin  paper.Length      `json:"right_margin"`
 }
 
-// NewPage returns new settings with factory defaults.
-func NewPage() *Page {
-	return &Page{
+// NewPageSettings returns new settings with factory defaults.
+func NewPageSettings() *PageSettings {
+	return &PageSettings{
 		Size:         paper.Letter,
 		Orientation:  paper.Portrait,
 		TopMargin:    paper.Length{Length: 0.25, Units: paper.Inch},
@@ -38,7 +38,7 @@ func NewPage() *Page {
 }
 
 // EnsureValidity checks the current settings for validity and if they aren't valid, makes them so.
-func (p *Page) EnsureValidity() {
+func (p *PageSettings) EnsureValidity() {
 	p.Size = p.Size.EnsureValid()
 	p.Orientation = p.Orientation.EnsureValid()
 	p.TopMargin.EnsureValidity()
@@ -48,7 +48,7 @@ func (p *Page) EnsureValidity() {
 }
 
 // Clone a copy of this.
-func (p *Page) Clone() *Page {
+func (p *PageSettings) Clone() *PageSettings {
 	clone := *p
 	return &clone
 }

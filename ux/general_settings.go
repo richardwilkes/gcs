@@ -18,7 +18,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	gsettings "github.com/richardwilkes/gcs/v5/model/gurps/settings"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/svg"
@@ -83,21 +82,21 @@ func (d *generalSettingsDockable) initContent(content *unison.Panel) {
 	d.initialListScaleField = NewPercentageField(nil, "", initialListScaleTitle,
 		func() int { return settings.Global().General.InitialListUIScale },
 		func(v int) { settings.Global().General.InitialListUIScale = v },
-		gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, false, false)
+		gurps.InitialUIScaleMin, gurps.InitialUIScaleMax, false, false)
 	content.AddChild(WrapWithSpan(2, d.initialListScaleField))
 	initialEditorScaleTitle := i18n.Text("Initial Editor Scale")
 	content.AddChild(NewFieldLeadingLabel(initialEditorScaleTitle))
 	d.initialEditorScaleField = NewPercentageField(nil, "", initialEditorScaleTitle,
 		func() int { return settings.Global().General.InitialEditorUIScale },
 		func(v int) { settings.Global().General.InitialEditorUIScale = v },
-		gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, false, false)
+		gurps.InitialUIScaleMin, gurps.InitialUIScaleMax, false, false)
 	content.AddChild(WrapWithSpan(2, d.initialEditorScaleField))
 	initialSheetScaleTitle := i18n.Text("Initial Sheet Scale")
 	content.AddChild(NewFieldLeadingLabel(initialSheetScaleTitle))
 	d.initialSheetScaleField = NewPercentageField(nil, "", initialSheetScaleTitle,
 		func() int { return settings.Global().General.InitialSheetUIScale },
 		func(v int) { settings.Global().General.InitialSheetUIScale = v },
-		gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax, false, false)
+		gurps.InitialUIScaleMin, gurps.InitialUIScaleMax, false, false)
 	content.AddChild(WrapWithSpan(2, d.initialSheetScaleField))
 	d.createCellAutoMaxWidthField(content)
 	d.createImageResolutionField(content)
@@ -151,8 +150,8 @@ func (d *generalSettingsDockable) createInitialPointsFields(content *unison.Pane
 	content.AddChild(NewFieldLeadingLabel(title))
 	d.pointsField = NewDecimalField(nil, "", title,
 		func() fxp.Int { return settings.Global().General.InitialPoints },
-		func(v fxp.Int) { settings.Global().General.InitialPoints = v }, gsettings.InitialPointsMin,
-		gsettings.InitialPointsMax, false, false)
+		func(v fxp.Int) { settings.Global().General.InitialPoints = v }, gurps.InitialPointsMin,
+		gurps.InitialPointsMax, false, false)
 	d.pointsField.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(d.pointsField)
 }
@@ -173,7 +172,7 @@ func (d *generalSettingsDockable) createCalendarPopup(content *unison.Panel) {
 	content.AddChild(NewFieldLeadingLabel(i18n.Text("Calendar")))
 	d.calendarPopup = unison.NewPopupMenu[string]()
 	libraries := settings.Global().Libraries()
-	for _, lib := range gsettings.AvailableCalendarRefs(libraries) {
+	for _, lib := range gurps.AvailableCalendarRefs(libraries) {
 		d.calendarPopup.AddDisabledItem(lib.Name)
 		for _, one := range lib.List {
 			d.calendarPopup.AddItem(one.Name)
@@ -193,7 +192,7 @@ func (d *generalSettingsDockable) createCellAutoMaxWidthField(content *unison.Pa
 	d.maxAutoColWidthField = NewIntegerField(nil, "", title,
 		func() int { return settings.Global().General.MaximumAutoColWidth },
 		func(v int) { settings.Global().General.MaximumAutoColWidth = v },
-		gsettings.AutoColWidthMin, gsettings.AutoColWidthMax, false, false)
+		gurps.AutoColWidthMin, gurps.AutoColWidthMax, false, false)
 	d.maxAutoColWidthField.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(d.maxAutoColWidthField)
 }
@@ -204,7 +203,7 @@ func (d *generalSettingsDockable) createImageResolutionField(content *unison.Pan
 	d.exportResolutionField = NewIntegerField(nil, "", title,
 		func() int { return settings.Global().General.ImageResolution },
 		func(v int) { settings.Global().General.ImageResolution = v },
-		gsettings.ImageResolutionMin, gsettings.ImageResolutionMax, false, false)
+		gurps.ImageResolutionMin, gurps.ImageResolutionMax, false, false)
 	content.AddChild(WrapWithSpan(2, d.exportResolutionField, NewFieldTrailingLabel(i18n.Text("ppi"))))
 }
 
@@ -217,7 +216,7 @@ func (d *generalSettingsDockable) createTooltipDelayField(content *unison.Panel)
 			general := settings.Global().General
 			general.TooltipDelay = v
 			general.UpdateToolTipTiming()
-		}, gsettings.TooltipDelayMin, gsettings.TooltipDelayMax, false, false)
+		}, gurps.TooltipDelayMin, gurps.TooltipDelayMax, false, false)
 	content.AddChild(WrapWithSpan(2, d.tooltipDelayField, NewFieldTrailingLabel(i18n.Text("seconds"))))
 }
 
@@ -230,7 +229,7 @@ func (d *generalSettingsDockable) createTooltipDismissalField(content *unison.Pa
 			general := settings.Global().General
 			general.TooltipDismissal = v
 			general.UpdateToolTipTiming()
-		}, gsettings.TooltipDismissalMin, gsettings.TooltipDismissalMax, false, false)
+		}, gurps.TooltipDismissalMin, gurps.TooltipDismissalMax, false, false)
 	content.AddChild(WrapWithSpan(2, d.tooltipDismissalField, NewFieldTrailingLabel(i18n.Text("seconds"))))
 }
 
@@ -240,7 +239,7 @@ func (d *generalSettingsDockable) createScrollWheelMultiplierField(content *unis
 	d.scrollWheelMultiplierField = NewDecimalField(nil, "", title,
 		func() fxp.Int { return settings.Global().General.ScrollWheelMultiplier },
 		func(v fxp.Int) { settings.Global().General.ScrollWheelMultiplier = v },
-		gsettings.ScrollWheelMultiplierMin, gsettings.ScrollWheelMultiplierMax, false, false)
+		gurps.ScrollWheelMultiplierMin, gurps.ScrollWheelMultiplierMax, false, false)
 	d.scrollWheelMultiplierField.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(d.scrollWheelMultiplierField)
 }
@@ -280,7 +279,7 @@ Use $PAGE where the page number should be placed.`))
 }
 
 func (d *generalSettingsDockable) reset() {
-	*settings.Global().General = *gsettings.NewGeneral()
+	*settings.Global().General = *gurps.NewGeneralSheetSettings()
 	d.sync()
 }
 
@@ -304,7 +303,7 @@ func (d *generalSettingsDockable) sync() {
 }
 
 func (d *generalSettingsDockable) load(fileSystem fs.FS, filePath string) error {
-	s, err := gsettings.NewGeneralFromFile(fileSystem, filePath)
+	s, err := gurps.NewGeneralSheetSettingsFromFile(fileSystem, filePath)
 	if err != nil {
 		return err
 	}

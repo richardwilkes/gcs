@@ -9,11 +9,10 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package settings
+package gurps
 
 import (
 	"context"
-	"embed"
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -23,9 +22,6 @@ import (
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/toolbox/xmath/rand"
 )
-
-//go:embed embedded_data
-var embeddedFS embed.FS
 
 // CalendarRef holds a named reference to a calendar.
 type CalendarRef struct {

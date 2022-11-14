@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package settings
+package gurps
 
 import (
 	"context"
@@ -52,8 +52,8 @@ var (
 	MaximumAutoColWidthDef     = 800
 )
 
-// General holds settings for a sheet.
-type General struct {
+// GeneralSheetSettings holds general settings for a sheet.
+type GeneralSheetSettings struct {
 	DefaultPlayerName     string  `json:"default_player_name,omitempty"`
 	DefaultTechLevel      string  `json:"default_tech_level,omitempty"`
 	CalendarName          string  `json:"calendar_ref,omitempty"`
@@ -72,9 +72,9 @@ type General struct {
 	AutoAddNaturalAttacks bool    `json:"add_natural_attacks"`
 }
 
-// NewGeneral creates settings with factory defaults.
-func NewGeneral() *General {
-	return &General{
+// NewGeneralSheetSettings creates settings with factory defaults.
+func NewGeneralSheetSettings() *GeneralSheetSettings {
+	return &GeneralSheetSettings{
 		DefaultPlayerName:     toolbox.CurrentUserName(),
 		DefaultTechLevel:      "3",
 		InitialPoints:         InitialPointsDef,
@@ -92,20 +92,20 @@ func NewGeneral() *General {
 	}
 }
 
-// NewGeneralFromFile loads new settings from a file.
-func NewGeneralFromFile(fileSystem fs.FS, filePath string) (*General, error) {
+// NewGeneralSheetSettingsFromFile loads new settings from a file.
+func NewGeneralSheetSettingsFromFile(fileSystem fs.FS, filePath string) (*GeneralSheetSettings, error) {
 	var data struct {
-		General     `json:",inline"`
-		OldLocation *General `json:"general"`
+		GeneralSheetSettings `json:",inline"`
+		OldLocation          *GeneralSheetSettings `json:"general"`
 	}
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
 		return nil, err
 	}
-	var s *General
+	var s *GeneralSheetSettings
 	if data.OldLocation != nil {
 		s = data.OldLocation
 	} else {
-		settings := data.General
+		settings := data.GeneralSheetSettings
 		s = &settings
 	}
 	s.EnsureValidity()
@@ -113,18 +113,18 @@ func NewGeneralFromFile(fileSystem fs.FS, filePath string) (*General, error) {
 }
 
 // Save writes the settings to the file as JSON.
-func (s *General) Save(filePath string) error {
+func (s *GeneralSheetSettings) Save(filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, s)
 }
 
 // UpdateToolTipTiming updates the default tooltip theme to use the timing values from this object.
-func (s *General) UpdateToolTipTiming() {
+func (s *GeneralSheetSettings) UpdateToolTipTiming() {
 	unison.DefaultTooltipTheme.Delay = time.Duration(fxp.As[int64](s.TooltipDelay.Mul(fxp.Thousand))) * time.Millisecond
 	unison.DefaultTooltipTheme.Dismissal = time.Duration(fxp.As[int64](s.TooltipDismissal.Mul(fxp.Thousand))) * time.Millisecond
 }
 
 // CalendarRef returns the CalendarRef these settings refer to.
-func (s *General) CalendarRef(libraries library.Libraries) *CalendarRef {
+func (s *GeneralSheetSettings) CalendarRef(libraries library.Libraries) *CalendarRef {
 	ref := LookupCalendarRef(s.CalendarName, libraries)
 	if ref == nil {
 		if ref = LookupCalendarRef("Gregorian", libraries); ref == nil {
@@ -135,7 +135,7 @@ func (s *General) CalendarRef(libraries library.Libraries) *CalendarRef {
 }
 
 // EnsureValidity checks the current settings for validity and if they aren't valid, makes them so.
-func (s *General) EnsureValidity() {
+func (s *GeneralSheetSettings) EnsureValidity() {
 	s.InitialPoints = fxp.ResetIfOutOfRange(s.InitialPoints, InitialPointsMin, InitialPointsMax, InitialPointsDef)
 	s.TooltipDelay = fxp.ResetIfOutOfRange(s.TooltipDelay, TooltipDelayMin, TooltipDelayMax, TooltipDelayDef)
 	s.TooltipDismissal = fxp.ResetIfOutOfRange(s.TooltipDismissal, TooltipDismissalMin, TooltipDismissalMax, TooltipDismissalDef)

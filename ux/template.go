@@ -20,7 +20,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
-	gsettings "github.com/richardwilkes/gcs/v5/model/gurps/settings"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/model/theme"
@@ -171,7 +170,7 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 		HGrab:  true,
 	})
 	d.toolbar.AddChild(NewDefaultInfoPop())
-	d.toolbar.AddChild(NewScaleField(gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax,
+	d.toolbar.AddChild(NewScaleField(gurps.InitialUIScaleMin, gurps.InitialUIScaleMax,
 		func() int { return settings.Global().General.InitialSheetUIScale }, func() int { return d.scale },
 		func(scale int) { d.scale = scale }, d.scroll, nil, false))
 	d.toolbar.AddChild(addUserButton)

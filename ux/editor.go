@@ -16,7 +16,6 @@ import (
 	"reflect"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	gsettings "github.com/richardwilkes/gcs/v5/model/gurps/settings"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox"
@@ -151,7 +150,7 @@ func (e *editor[N, D]) createToolbar() unison.Paneler {
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 
 	toolbar.AddChild(NewDefaultInfoPop())
-	toolbar.AddChild(NewScaleField(gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax,
+	toolbar.AddChild(NewScaleField(gurps.InitialUIScaleMin, gurps.InitialUIScaleMax,
 		func() int { return settings.Global().General.InitialEditorUIScale }, func() int { return e.scale },
 		func(scale int) { e.scale = scale }, e.scroll, nil, false))
 

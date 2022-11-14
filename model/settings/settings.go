@@ -21,7 +21,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/settings"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/theme"
@@ -50,27 +49,27 @@ type NavigatorSettings struct {
 
 // Settings holds the application settings.
 type Settings struct {
-	LastSeenGCSVersion string               `json:"last_seen_gcs_version,omitempty"`
-	General            *settings.General    `json:"general,omitempty"`
-	LibrarySet         library.Libraries    `json:"libraries,omitempty"`
-	LibraryExplorer    NavigatorSettings    `json:"library_explorer"`
-	RecentFiles        []string             `json:"recent_files,omitempty"`
-	LastDirs           map[string]string    `json:"last_dirs,omitempty"`
-	PageRefs           PageRefs             `json:"page_refs,omitempty"`
-	KeyBindings        KeyBindings          `json:"key_bindings,omitempty"`
-	WorkspaceFrame     *unison.Rect         `json:"workspace_frame,omitempty"`
-	Colors             theme.Colors         `json:"colors"`
-	Fonts              theme.Fonts          `json:"fonts"`
-	QuickExports       *gurps.QuickExports  `json:"quick_exports,omitempty"`
-	Sheet              *gurps.SheetSettings `json:"sheet_settings,omitempty"`
-	ColorMode          unison.ColorMode     `json:"color_mode"`
+	LastSeenGCSVersion string                      `json:"last_seen_gcs_version,omitempty"`
+	General            *gurps.GeneralSheetSettings `json:"general,omitempty"`
+	LibrarySet         library.Libraries           `json:"libraries,omitempty"`
+	LibraryExplorer    NavigatorSettings           `json:"library_explorer"`
+	RecentFiles        []string                    `json:"recent_files,omitempty"`
+	LastDirs           map[string]string           `json:"last_dirs,omitempty"`
+	PageRefs           PageRefs                    `json:"page_refs,omitempty"`
+	KeyBindings        KeyBindings                 `json:"key_bindings,omitempty"`
+	WorkspaceFrame     *unison.Rect                `json:"workspace_frame,omitempty"`
+	Colors             theme.Colors                `json:"colors"`
+	Fonts              theme.Fonts                 `json:"fonts"`
+	QuickExports       *gurps.QuickExports         `json:"quick_exports,omitempty"`
+	Sheet              *gurps.SheetSettings        `json:"sheet_settings,omitempty"`
+	ColorMode          unison.ColorMode            `json:"color_mode"`
 }
 
 // Default returns new default settings.
 func Default() *Settings {
 	return &Settings{
 		LastSeenGCSVersion: cmdline.AppVersion,
-		General:            settings.NewGeneral(),
+		General:            gurps.NewGeneralSheetSettings(),
 		LibrarySet:         library.NewLibraries(),
 		LibraryExplorer:    NavigatorSettings{DividerPosition: 330},
 		LastDirs:           make(map[string]string),
@@ -104,7 +103,7 @@ func (s *Settings) Save() error {
 // EnsureValidity checks the current settings for validity and if they aren't valid, makes them so.
 func (s *Settings) EnsureValidity() {
 	if s.General == nil {
-		s.General = settings.NewGeneral()
+		s.General = gurps.NewGeneralSheetSettings()
 	} else {
 		s.General.EnsureValidity()
 	}
@@ -192,7 +191,7 @@ func (s *Settings) AddRecentFile(filePath string) {
 }
 
 // GeneralSettings implements gurps.SettingsProvider.
-func (s *Settings) GeneralSettings() *settings.General {
+func (s *Settings) GeneralSettings() *gurps.GeneralSheetSettings {
 	return s.General
 }
 

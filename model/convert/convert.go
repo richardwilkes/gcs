@@ -20,7 +20,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/ancestry"
-	gsettings "github.com/richardwilkes/gcs/v5/model/gurps/settings"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/model/theme"
@@ -165,8 +164,8 @@ func Convert(paths ...string) error {
 				return err
 			}
 		case library.GeneralSettingsExt:
-			var data *gsettings.General
-			if data, err = gsettings.NewGeneralFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data *gurps.GeneralSheetSettings
+			if data, err = gurps.NewGeneralSheetSettingsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
 			if err = data.Save(p); err != nil {

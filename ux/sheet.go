@@ -21,7 +21,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
-	gsettings "github.com/richardwilkes/gcs/v5/model/gurps/settings"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/model/theme"
@@ -219,7 +218,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 		HGrab:  true,
 	})
 	s.toolbar.AddChild(NewDefaultInfoPop())
-	s.toolbar.AddChild(NewScaleField(gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax,
+	s.toolbar.AddChild(NewScaleField(gurps.InitialUIScaleMin, gurps.InitialUIScaleMax,
 		func() int { return settings.Global().General.InitialSheetUIScale }, func() int { return s.scale },
 		func(scale int) { s.scale = scale }, s.scroll, nil, false))
 	s.toolbar.AddChild(sheetSettingsButton)

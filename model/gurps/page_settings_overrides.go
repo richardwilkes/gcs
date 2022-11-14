@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package settings
+package gurps
 
 import (
 	"strings"
@@ -17,8 +17,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/paper"
 )
 
-// PageOverrides holds page setting overrides.
-type PageOverrides struct {
+// PageSettingsOverrides holds page setting overrides.
+type PageSettingsOverrides struct {
 	Size         *paper.Size
 	Orientation  *paper.Orientation
 	TopMargin    *paper.Length
@@ -28,7 +28,7 @@ type PageOverrides struct {
 }
 
 // ParseSize and set the override, if applicable.
-func (p *PageOverrides) ParseSize(in string) {
+func (p *PageSettingsOverrides) ParseSize(in string) {
 	in = strings.TrimSpace(in)
 	if in != "" {
 		size := paper.ExtractSize(in)
@@ -37,7 +37,7 @@ func (p *PageOverrides) ParseSize(in string) {
 }
 
 // ParseOrientation and set the override, if applicable.
-func (p *PageOverrides) ParseOrientation(in string) {
+func (p *PageSettingsOverrides) ParseOrientation(in string) {
 	in = strings.TrimSpace(in)
 	if in != "" {
 		orientation := paper.ExtractOrientation(in)
@@ -46,22 +46,22 @@ func (p *PageOverrides) ParseOrientation(in string) {
 }
 
 // ParseTopMargin and set the override, if applicable.
-func (p *PageOverrides) ParseTopMargin(in string) {
+func (p *PageSettingsOverrides) ParseTopMargin(in string) {
 	p.TopMargin = parseLengthString(in)
 }
 
 // ParseLeftMargin and set the override, if applicable.
-func (p *PageOverrides) ParseLeftMargin(in string) {
+func (p *PageSettingsOverrides) ParseLeftMargin(in string) {
 	p.LeftMargin = parseLengthString(in)
 }
 
 // ParseBottomMargin and set the override, if applicable.
-func (p *PageOverrides) ParseBottomMargin(in string) {
+func (p *PageSettingsOverrides) ParseBottomMargin(in string) {
 	p.BottomMargin = parseLengthString(in)
 }
 
 // ParseRightMargin and set the override, if applicable.
-func (p *PageOverrides) ParseRightMargin(in string) {
+func (p *PageSettingsOverrides) ParseRightMargin(in string) {
 	p.RightMargin = parseLengthString(in)
 }
 
@@ -75,7 +75,7 @@ func parseLengthString(in string) *paper.Length {
 }
 
 // Apply the overrides to a Page.
-func (p *PageOverrides) Apply(page *Page) {
+func (p *PageSettingsOverrides) Apply(page *PageSettings) {
 	if p.Size != nil {
 		page.Size = *p.Size
 	}
