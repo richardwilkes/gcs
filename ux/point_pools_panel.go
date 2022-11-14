@@ -16,7 +16,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/attribute"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -69,7 +68,7 @@ func (p *PointPoolsPanel) rebuild(attrs *gurps.AttributeDefs) {
 	p.RemoveAllChildren()
 	for _, def := range attrs.List(false) {
 		if def.Pool() {
-			if def.Type == attribute.PoolSeparator {
+			if def.Type == gurps.PoolSeparatorAttributeType {
 				p.AddChild(NewPageInternalHeader(def.Name, 6))
 			} else {
 				attr, ok := p.entity.Attributes.Set[def.ID()]

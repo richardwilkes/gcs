@@ -15,7 +15,6 @@ import (
 	"fmt"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -52,12 +51,12 @@ func (r *ReactionBonus) Clone() Feature {
 
 // FillWithNameableKeys implements Feature.
 func (r *ReactionBonus) FillWithNameableKeys(m map[string]string) {
-	nameables.Extract(r.Situation, m)
+	Extract(r.Situation, m)
 }
 
 // ApplyNameableKeys implements Feature.
 func (r *ReactionBonus) ApplyNameableKeys(m map[string]string) {
-	r.Situation = nameables.Apply(r.Situation, m)
+	r.Situation = Apply(r.Situation, m)
 }
 
 // Owner implements Bonus.

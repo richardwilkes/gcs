@@ -19,7 +19,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
-	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/settings/display"
 	"github.com/richardwilkes/json"
@@ -292,8 +291,8 @@ func (m *EquipmentModifier) WeightDescription() string {
 // FillWithNameableKeys adds any nameable keys found in this EquipmentModifier to the provided map.
 func (m *EquipmentModifier) FillWithNameableKeys(keyMap map[string]string) {
 	if m.Enabled() {
-		nameables.Extract(m.Name, keyMap)
-		nameables.Extract(m.LocalNotes, keyMap)
+		Extract(m.Name, keyMap)
+		Extract(m.LocalNotes, keyMap)
 		for _, one := range m.Features {
 			one.FillWithNameableKeys(keyMap)
 		}
@@ -303,8 +302,8 @@ func (m *EquipmentModifier) FillWithNameableKeys(keyMap map[string]string) {
 // ApplyNameableKeys replaces any nameable keys found in this EquipmentModifier with the corresponding values in the provided map.
 func (m *EquipmentModifier) ApplyNameableKeys(keyMap map[string]string) {
 	if m.Enabled() {
-		m.Name = nameables.Apply(m.Name, keyMap)
-		m.LocalNotes = nameables.Apply(m.LocalNotes, keyMap)
+		m.Name = Apply(m.Name, keyMap)
+		m.LocalNotes = Apply(m.LocalNotes, keyMap)
 		for _, one := range m.Features {
 			one.ApplyNameableKeys(keyMap)
 		}

@@ -11,7 +11,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package attribute
+package gurps
 
 import (
 	"strings"
@@ -21,20 +21,20 @@ import (
 
 // Possible values.
 const (
-	None BonusLimitation = iota
-	StrikingOnly
-	LiftingOnly
-	ThrowingOnly
-	LastBonusLimitation = ThrowingOnly
+	NoneBonusLimitation BonusLimitation = iota
+	StrikingOnlyBonusLimitation
+	LiftingOnlyBonusLimitation
+	ThrowingOnlyBonusLimitation
+	LastBonusLimitation = ThrowingOnlyBonusLimitation
 )
 
 var (
 	// AllBonusLimitation holds all possible values.
 	AllBonusLimitation = []BonusLimitation{
-		None,
-		StrikingOnly,
-		LiftingOnly,
-		ThrowingOnly,
+		NoneBonusLimitation,
+		StrikingOnlyBonusLimitation,
+		LiftingOnlyBonusLimitation,
+		ThrowingOnlyBonusLimitation,
 	}
 	bonusLimitationData = []struct {
 		key    string

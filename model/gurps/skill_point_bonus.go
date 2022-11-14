@@ -16,7 +16,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -69,16 +68,16 @@ func (s *SkillPointBonus) Clone() Feature {
 
 // FillWithNameableKeys implements Feature.
 func (s *SkillPointBonus) FillWithNameableKeys(m map[string]string) {
-	nameables.Extract(s.NameCriteria.Qualifier, m)
-	nameables.Extract(s.SpecializationCriteria.Qualifier, m)
-	nameables.Extract(s.TagsCriteria.Qualifier, m)
+	Extract(s.NameCriteria.Qualifier, m)
+	Extract(s.SpecializationCriteria.Qualifier, m)
+	Extract(s.TagsCriteria.Qualifier, m)
 }
 
 // ApplyNameableKeys implements Feature.
 func (s *SkillPointBonus) ApplyNameableKeys(m map[string]string) {
-	s.NameCriteria.Qualifier = nameables.Apply(s.NameCriteria.Qualifier, m)
-	s.SpecializationCriteria.Qualifier = nameables.Apply(s.SpecializationCriteria.Qualifier, m)
-	s.TagsCriteria.Qualifier = nameables.Apply(s.TagsCriteria.Qualifier, m)
+	s.NameCriteria.Qualifier = Apply(s.NameCriteria.Qualifier, m)
+	s.SpecializationCriteria.Qualifier = Apply(s.SpecializationCriteria.Qualifier, m)
+	s.TagsCriteria.Qualifier = Apply(s.TagsCriteria.Qualifier, m)
 }
 
 // Owner implements Bonus.

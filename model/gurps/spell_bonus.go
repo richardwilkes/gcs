@@ -16,7 +16,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/toolbox/xio"
 )
 
@@ -65,17 +64,17 @@ func (s *SpellBonus) Clone() Feature {
 // FillWithNameableKeys implements Feature.
 func (s *SpellBonus) FillWithNameableKeys(m map[string]string) {
 	if s.SpellMatchType != AllCollegesSpellMatchType {
-		nameables.Extract(s.NameCriteria.Qualifier, m)
+		Extract(s.NameCriteria.Qualifier, m)
 	}
-	nameables.Extract(s.TagsCriteria.Qualifier, m)
+	Extract(s.TagsCriteria.Qualifier, m)
 }
 
 // ApplyNameableKeys implements Feature.
 func (s *SpellBonus) ApplyNameableKeys(m map[string]string) {
 	if s.SpellMatchType != AllCollegesSpellMatchType {
-		s.NameCriteria.Qualifier = nameables.Apply(s.NameCriteria.Qualifier, m)
+		s.NameCriteria.Qualifier = Apply(s.NameCriteria.Qualifier, m)
 	}
-	s.TagsCriteria.Qualifier = nameables.Apply(s.TagsCriteria.Qualifier, m)
+	s.TagsCriteria.Qualifier = Apply(s.TagsCriteria.Qualifier, m)
 }
 
 // Owner implements Bonus.

@@ -11,7 +11,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package attribute
+package gurps
 
 import (
 	"strings"
@@ -21,26 +21,26 @@ import (
 
 // Possible values.
 const (
-	Integer Type = iota
-	Decimal
-	Pool
-	PrimarySeparator
-	SecondarySeparator
-	PoolSeparator
-	LastType = PoolSeparator
+	IntegerAttributeType AttributeType = iota
+	DecimalAttributeType
+	PoolAttributeType
+	PrimarySeparatorAttributeType
+	SecondarySeparatorAttributeType
+	PoolSeparatorAttributeType
+	LastAttributeType = PoolSeparatorAttributeType
 )
 
 var (
-	// AllType holds all possible values.
-	AllType = []Type{
-		Integer,
-		Decimal,
-		Pool,
-		PrimarySeparator,
-		SecondarySeparator,
-		PoolSeparator,
+	// AllAttributeType holds all possible values.
+	AllAttributeType = []AttributeType{
+		IntegerAttributeType,
+		DecimalAttributeType,
+		PoolAttributeType,
+		PrimarySeparatorAttributeType,
+		SecondarySeparatorAttributeType,
+		PoolSeparatorAttributeType,
 	}
-	typeData = []struct {
+	attributeTypeData = []struct {
 		key    string
 		string string
 	}{
@@ -71,44 +71,44 @@ var (
 	}
 )
 
-// Type holds the type of an attribute definition.
-type Type byte
+// AttributeType holds the type of an attribute definition.
+type AttributeType byte
 
 // EnsureValid ensures this is of a known value.
-func (enum Type) EnsureValid() Type {
-	if enum <= LastType {
+func (enum AttributeType) EnsureValid() AttributeType {
+	if enum <= LastAttributeType {
 		return enum
 	}
 	return 0
 }
 
 // Key returns the key used in serialization.
-func (enum Type) Key() string {
-	return typeData[enum.EnsureValid()].key
+func (enum AttributeType) Key() string {
+	return attributeTypeData[enum.EnsureValid()].key
 }
 
 // String implements fmt.Stringer.
-func (enum Type) String() string {
-	return typeData[enum.EnsureValid()].string
+func (enum AttributeType) String() string {
+	return attributeTypeData[enum.EnsureValid()].string
 }
 
-// ExtractType extracts the value from a string.
-func ExtractType(str string) Type {
-	for i, one := range typeData {
+// ExtractAttributeType extracts the value from a string.
+func ExtractAttributeType(str string) AttributeType {
+	for i, one := range attributeTypeData {
 		if strings.EqualFold(one.key, str) {
-			return Type(i)
+			return AttributeType(i)
 		}
 	}
 	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
-func (enum Type) MarshalText() (text []byte, err error) {
+func (enum AttributeType) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
 // UnmarshalText implements the encoding.TextUnmarshaler interface.
-func (enum *Type) UnmarshalText(text []byte) error {
-	*enum = ExtractType(string(text))
+func (enum *AttributeType) UnmarshalText(text []byte) error {
+	*enum = ExtractAttributeType(string(text))
 	return nil
 }

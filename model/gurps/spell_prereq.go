@@ -14,7 +14,6 @@ package gurps
 import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/toolbox/xio"
 )
 
@@ -70,14 +69,14 @@ func (s *SpellPrereq) Clone(parent *PrereqList) Prereq {
 // FillWithNameableKeys implements Prereq.
 func (s *SpellPrereq) FillWithNameableKeys(m map[string]string) {
 	if s.SubType.UsesStringCriteria() {
-		nameables.Extract(s.QualifierCriteria.Qualifier, m)
+		Extract(s.QualifierCriteria.Qualifier, m)
 	}
 }
 
 // ApplyNameableKeys implements Prereq.
 func (s *SpellPrereq) ApplyNameableKeys(m map[string]string) {
 	if s.SubType.UsesStringCriteria() {
-		s.QualifierCriteria.Qualifier = nameables.Apply(s.QualifierCriteria.Qualifier, m)
+		s.QualifierCriteria.Qualifier = Apply(s.QualifierCriteria.Qualifier, m)
 	}
 }
 

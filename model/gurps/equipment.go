@@ -20,7 +20,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
-	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/settings/display"
 	"github.com/richardwilkes/json"
@@ -436,8 +435,8 @@ func ExtendedWeightAdjustedForModifiers(defUnits measure.WeightUnits, qty fxp.In
 
 // FillWithNameableKeys adds any nameable keys found to the provided map.
 func (e *Equipment) FillWithNameableKeys(m map[string]string) {
-	nameables.Extract(e.Name, m)
-	nameables.Extract(e.LocalNotes, m)
+	Extract(e.Name, m)
+	Extract(e.LocalNotes, m)
 	if e.Prereq != nil {
 		e.Prereq.FillWithNameableKeys(m)
 	}
@@ -455,8 +454,8 @@ func (e *Equipment) FillWithNameableKeys(m map[string]string) {
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
 func (e *Equipment) ApplyNameableKeys(m map[string]string) {
-	e.Name = nameables.Apply(e.Name, m)
-	e.LocalNotes = nameables.Apply(e.LocalNotes, m)
+	e.Name = Apply(e.Name, m)
+	e.LocalNotes = Apply(e.LocalNotes, m)
 	if e.Prereq != nil {
 		e.Prereq.ApplyNameableKeys(m)
 	}

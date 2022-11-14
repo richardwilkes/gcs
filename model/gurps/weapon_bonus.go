@@ -16,7 +16,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -87,21 +86,21 @@ func (w *WeaponBonus) Clone() Feature {
 
 // FillWithNameableKeys implements Feature.
 func (w *WeaponBonus) FillWithNameableKeys(m map[string]string) {
-	nameables.Extract(w.SpecializationCriteria.Qualifier, m)
+	Extract(w.SpecializationCriteria.Qualifier, m)
 	if w.SelectionType != ThisWeaponWeaponSelectionType {
-		nameables.Extract(w.NameCriteria.Qualifier, m)
-		nameables.Extract(w.SpecializationCriteria.Qualifier, m)
-		nameables.Extract(w.TagsCriteria.Qualifier, m)
+		Extract(w.NameCriteria.Qualifier, m)
+		Extract(w.SpecializationCriteria.Qualifier, m)
+		Extract(w.TagsCriteria.Qualifier, m)
 	}
 }
 
 // ApplyNameableKeys implements Feature.
 func (w *WeaponBonus) ApplyNameableKeys(m map[string]string) {
-	w.SpecializationCriteria.Qualifier = nameables.Apply(w.SpecializationCriteria.Qualifier, m)
+	w.SpecializationCriteria.Qualifier = Apply(w.SpecializationCriteria.Qualifier, m)
 	if w.SelectionType != ThisWeaponWeaponSelectionType {
-		w.NameCriteria.Qualifier = nameables.Apply(w.NameCriteria.Qualifier, m)
-		w.SpecializationCriteria.Qualifier = nameables.Apply(w.SpecializationCriteria.Qualifier, m)
-		w.TagsCriteria.Qualifier = nameables.Apply(w.TagsCriteria.Qualifier, m)
+		w.NameCriteria.Qualifier = Apply(w.NameCriteria.Qualifier, m)
+		w.SpecializationCriteria.Qualifier = Apply(w.SpecializationCriteria.Qualifier, m)
+		w.TagsCriteria.Qualifier = Apply(w.TagsCriteria.Qualifier, m)
 	}
 }
 

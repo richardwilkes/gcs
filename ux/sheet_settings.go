@@ -15,7 +15,6 @@ import (
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/paper"
@@ -37,7 +36,7 @@ type EntityPanel interface {
 type sheetSettingsDockable struct {
 	SettingsDockable
 	owner                              EntityPanel
-	damageProgressionPopup             *unison.PopupMenu[attribute.DamageProgression]
+	damageProgressionPopup             *unison.PopupMenu[gurps.DamageProgression]
 	showTraitModifier                  *unison.CheckBox
 	showEquipmentModifier              *unison.CheckBox
 	showSpellAdjustments               *unison.CheckBox
@@ -119,8 +118,8 @@ func (d *sheetSettingsDockable) createDamageProgression(content *unison.Panel) {
 		VSpacing: unison.StdVSpacing,
 	})
 	d.damageProgressionPopup = createSettingPopup(d, panel, i18n.Text("Damage Progression"),
-		attribute.AllDamageProgression, s.DamageProgression,
-		func(item attribute.DamageProgression) {
+		gurps.AllDamageProgression, s.DamageProgression,
+		func(item gurps.DamageProgression) {
 			d.damageProgressionPopup.Tooltip = unison.NewTooltipWithText(item.Tooltip())
 			d.settings().DamageProgression = item
 		})

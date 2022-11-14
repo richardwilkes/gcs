@@ -25,7 +25,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/datafile"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/theme"
@@ -451,7 +450,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "PRIMARY_ATTRIBUTE_LOOP_COUNT":
 		count := 0
 		for _, def := range ex.entity.SheetSettings.Attributes.List(true) {
-			if def.Type != attribute.Pool && def.Primary() {
+			if def.Type != gurps.PoolAttributeType && def.Primary() {
 				if _, exists := ex.entity.Attributes.Set[def.DefID]; exists {
 					count++
 				}
@@ -463,7 +462,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "SECONDARY_ATTRIBUTE_LOOP_COUNT":
 		count := 0
 		for _, def := range ex.entity.SheetSettings.Attributes.List(true) {
-			if def.Type != attribute.Pool && !def.Primary() {
+			if def.Type != gurps.PoolAttributeType && !def.Primary() {
 				if _, exists := ex.entity.Attributes.Set[def.DefID]; exists {
 					count++
 				}
@@ -475,7 +474,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "POINT_POOL_LOOP_COUNT":
 		count := 0
 		for _, def := range ex.entity.SheetSettings.Attributes.List(true) {
-			if def.Type == attribute.Pool {
+			if def.Type == gurps.PoolAttributeType {
 				if _, exists := ex.entity.Attributes.Set[def.DefID]; exists {
 					count++
 				}
@@ -1165,7 +1164,7 @@ func (ex *legacyExporter) processConditionalModifiersLoop(list []*gurps.Conditio
 
 func (ex *legacyExporter) processAttributesLoop(buffer []byte, primary bool) {
 	for _, def := range ex.entity.SheetSettings.Attributes.List(true) {
-		if def.Type != attribute.Pool && def.Primary() == primary {
+		if def.Type != gurps.PoolAttributeType && def.Primary() == primary {
 			if attr, ok := ex.entity.Attributes.Set[def.DefID]; ok {
 				ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 					switch key {
@@ -1193,7 +1192,7 @@ func (ex *legacyExporter) processAttributesLoop(buffer []byte, primary bool) {
 
 func (ex *legacyExporter) processPointPoolLoop(buffer []byte) {
 	for _, def := range ex.entity.SheetSettings.Attributes.List(true) {
-		if def.Type == attribute.Pool {
+		if def.Type == gurps.PoolAttributeType {
 			if attr, ok := ex.entity.Attributes.Set[def.DefID]; ok {
 				ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 					switch key {

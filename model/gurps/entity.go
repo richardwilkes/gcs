@@ -27,7 +27,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/ancestry"
-	"github.com/richardwilkes/gcs/v5/model/gurps/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/datafile"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
@@ -330,13 +329,13 @@ func (e *Entity) processFeatures() {
 		}, true, true, eqp.Modifiers...)
 		return false
 	}, false, false, e.CarriedEquipment...)
-	e.LiftingStrengthBonus = e.AttributeBonusFor(gid.Strength, attribute.LiftingOnly, nil).Trunc()
-	e.StrikingStrengthBonus = e.AttributeBonusFor(gid.Strength, attribute.StrikingOnly, nil).Trunc()
-	e.ThrowingStrengthBonus = e.AttributeBonusFor(gid.Strength, attribute.ThrowingOnly, nil).Trunc()
+	e.LiftingStrengthBonus = e.AttributeBonusFor(gid.Strength, LiftingOnlyBonusLimitation, nil).Trunc()
+	e.StrikingStrengthBonus = e.AttributeBonusFor(gid.Strength, StrikingOnlyBonusLimitation, nil).Trunc()
+	e.ThrowingStrengthBonus = e.AttributeBonusFor(gid.Strength, ThrowingOnlyBonusLimitation, nil).Trunc()
 	for _, attr := range e.Attributes.Set {
 		if def := attr.AttributeDef(); def != nil {
-			attr.Bonus = e.AttributeBonusFor(attr.AttrID, attribute.None, nil)
-			if def.Type != attribute.Decimal {
+			attr.Bonus = e.AttributeBonusFor(attr.AttrID, NoneBonusLimitation, nil)
+			if def.Type != DecimalAttributeType {
 				attr.Bonus = attr.Bonus.Trunc()
 			}
 			attr.CostReduction = e.CostReductionFor(attr.AttrID)
@@ -346,9 +345,9 @@ func (e *Entity) processFeatures() {
 		}
 	}
 	e.Profile.Update(e)
-	e.DodgeBonus = e.AttributeBonusFor(gid.Dodge, attribute.None, nil).Trunc()
-	e.ParryBonus = e.AttributeBonusFor(gid.Parry, attribute.None, nil).Trunc()
-	e.BlockBonus = e.AttributeBonusFor(gid.Block, attribute.None, nil).Trunc()
+	e.DodgeBonus = e.AttributeBonusFor(gid.Dodge, NoneBonusLimitation, nil).Trunc()
+	e.ParryBonus = e.AttributeBonusFor(gid.Parry, NoneBonusLimitation, nil).Trunc()
+	e.BlockBonus = e.AttributeBonusFor(gid.Block, NoneBonusLimitation, nil).Trunc()
 }
 
 func (e *Entity) processFeature(owner fmt.Stringer, f Feature, levels fxp.Int) {
@@ -631,7 +630,7 @@ func (e *Entity) SwingFor(st int) *dice.Dice {
 }
 
 // AttributeBonusFor returns the bonus for the given attribute.
-func (e *Entity) AttributeBonusFor(attributeID string, limitation attribute.BonusLimitation, tooltip *xio.ByteBuffer) fxp.Int {
+func (e *Entity) AttributeBonusFor(attributeID string, limitation BonusLimitation, tooltip *xio.ByteBuffer) fxp.Int {
 	var total fxp.Int
 	for _, one := range e.features.attributeBonuses {
 		if one.Limitation == limitation && one.Attribute == attributeID {
@@ -805,7 +804,7 @@ func (e *Entity) NamedWeaponSkillBonusesFor(name, usage string, tags []string, t
 // Move returns the current Move value for the given Encumbrance.
 func (e *Entity) Move(enc datafile.Encumbrance) int {
 	initialMove := e.ResolveAttributeCurrent(gid.BasicMove).Max(0)
-	divisor := 2 * xmath.Min(CountThresholdOpMet(attribute.HalveMove, e.Attributes), 2)
+	divisor := 2 * xmath.Min(CountThresholdOpMet(HalveMoveThresholdOp, e.Attributes), 2)
 	if divisor > 0 {
 		initialMove = initialMove.Div(fxp.From(divisor)).Ceil()
 	}
@@ -862,7 +861,7 @@ func (e *Entity) SkillNamed(name, specialization string, requirePoints bool, exc
 // Dodge returns the current Dodge value for the given Encumbrance.
 func (e *Entity) Dodge(enc datafile.Encumbrance) int {
 	dodge := fxp.Three + e.DodgeBonus + e.ResolveAttributeCurrent(gid.BasicSpeed).Max(0)
-	divisor := 2 * xmath.Min(CountThresholdOpMet(attribute.HalveDodge, e.Attributes), 2)
+	divisor := 2 * xmath.Min(CountThresholdOpMet(HalveDodgeThresholdOp, e.Attributes), 2)
 	if divisor > 0 {
 		dodge = dodge.Div(fxp.From(divisor)).Ceil()
 	}
@@ -947,7 +946,7 @@ func (e *Entity) BasicLift() measure.Weight {
 		return e.cachedBasicLift
 	}
 	st := (e.StrengthOrZero() + e.LiftingStrengthBonus).Trunc()
-	if IsThresholdOpMet(attribute.HalveST, e.Attributes) {
+	if IsThresholdOpMet(HalveSTThresholdOp, e.Attributes) {
 		st = st.Div(fxp.Two)
 		if st != st.Trunc() {
 			st = st.Trunc() + fxp.One
@@ -958,7 +957,7 @@ func (e *Entity) BasicLift() measure.Weight {
 		return 0
 	}
 	var v fxp.Int
-	if e.SheetSettings.DamageProgression == attribute.KnowingYourOwnStrength {
+	if e.SheetSettings.DamageProgression == KnowingYourOwnStrength {
 		var diff fxp.Int
 		if st > fxp.Nineteen {
 			diff = st.Div(fxp.Ten).Trunc() - fxp.One
@@ -1020,7 +1019,7 @@ func (e *Entity) ResolveVariable(variableName string) string {
 		}
 		return ""
 	}
-	if def.Type == attribute.Pool && len(parts) > 1 && parts[1] == "current" {
+	if def.Type == PoolAttributeType && len(parts) > 1 && parts[1] == "current" {
 		result := attr.Current().String()
 		e.cachedVariables[variableName] = result
 		return result

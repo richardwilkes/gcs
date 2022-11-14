@@ -16,7 +16,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
-	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/toolbox/i18n"
 )
@@ -93,15 +92,15 @@ func (s *SkillDefault) FullName(entity *Entity) string {
 
 // FillWithNameableKeys adds any nameable keys found in this SkillDefault to the provided map.
 func (s *SkillDefault) FillWithNameableKeys(m map[string]string) {
-	nameables.Extract(s.Name, m)
-	nameables.Extract(s.Specialization, m)
+	Extract(s.Name, m)
+	Extract(s.Specialization, m)
 }
 
 // ApplyNameableKeys replaces any nameable keys found in this SkillDefault with the corresponding values in the provided
 // map.
 func (s *SkillDefault) ApplyNameableKeys(m map[string]string) {
-	s.Name = nameables.Apply(s.Name, m)
-	s.Specialization = nameables.Apply(s.Specialization, m)
+	s.Name = Apply(s.Name, m)
+	s.Specialization = Apply(s.Specialization, m)
 }
 
 // ModifierAsString returns the modifier as a string suitable for appending.

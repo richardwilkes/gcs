@@ -15,7 +15,6 @@ import (
 	"fmt"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/attribute"
 	"github.com/richardwilkes/toolbox/xio"
 )
 
@@ -23,9 +22,9 @@ var _ Bonus = &AttributeBonus{}
 
 // AttributeBonus holds the data for a bonus to an attribute.
 type AttributeBonus struct {
-	Type       FeatureType               `json:"type"`
-	Limitation attribute.BonusLimitation `json:"limitation,omitempty"`
-	Attribute  string                    `json:"attribute"`
+	Type       FeatureType     `json:"type"`
+	Limitation BonusLimitation `json:"limitation,omitempty"`
+	Attribute  string          `json:"attribute"`
 	LeveledAmount
 	owner fmt.Stringer
 }
@@ -35,7 +34,7 @@ func NewAttributeBonus(attrID string) *AttributeBonus {
 	return &AttributeBonus{
 		Type:          AttributeBonusFeatureType,
 		Attribute:     attrID,
-		Limitation:    attribute.None,
+		Limitation:    NoneBonusLimitation,
 		LeveledAmount: LeveledAmount{Amount: fxp.One},
 	}
 }

@@ -16,7 +16,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/attribute"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -70,7 +69,7 @@ func (p *SecondaryAttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 	p.RemoveAllChildren()
 	for _, def := range attrs.List(false) {
 		if def.Secondary() {
-			if def.Type == attribute.SecondarySeparator {
+			if def.Type == gurps.SecondarySeparatorAttributeType {
 				p.AddChild(NewPageInternalHeader(def.Name, 3))
 			} else {
 				attr, ok := p.entity.Attributes.Set[def.ID()]

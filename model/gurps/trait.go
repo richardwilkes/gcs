@@ -18,7 +18,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
-	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/settings/display"
 	"github.com/richardwilkes/json"
@@ -368,9 +367,9 @@ func (a *Trait) TagList() []string {
 
 // FillWithNameableKeys adds any nameable keys found to the provided map.
 func (a *Trait) FillWithNameableKeys(m map[string]string) {
-	nameables.Extract(a.Name, m)
-	nameables.Extract(a.LocalNotes, m)
-	nameables.Extract(a.UserDesc, m)
+	Extract(a.Name, m)
+	Extract(a.LocalNotes, m)
+	Extract(a.UserDesc, m)
 	if a.Prereq != nil {
 		a.Prereq.FillWithNameableKeys(m)
 	}
@@ -388,9 +387,9 @@ func (a *Trait) FillWithNameableKeys(m map[string]string) {
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
 func (a *Trait) ApplyNameableKeys(m map[string]string) {
-	a.Name = nameables.Apply(a.Name, m)
-	a.LocalNotes = nameables.Apply(a.LocalNotes, m)
-	a.UserDesc = nameables.Apply(a.UserDesc, m)
+	a.Name = Apply(a.Name, m)
+	a.LocalNotes = Apply(a.LocalNotes, m)
+	a.UserDesc = Apply(a.UserDesc, m)
 	if a.Prereq != nil {
 		a.Prereq.ApplyNameableKeys(m)
 	}

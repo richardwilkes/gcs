@@ -15,7 +15,6 @@ import (
 	"fmt"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -52,12 +51,12 @@ func (c *ConditionalModifierBonus) Clone() Feature {
 
 // FillWithNameableKeys implements Feature.
 func (c *ConditionalModifierBonus) FillWithNameableKeys(m map[string]string) {
-	nameables.Extract(c.Situation, m)
+	Extract(c.Situation, m)
 }
 
 // ApplyNameableKeys implements Feature.
 func (c *ConditionalModifierBonus) ApplyNameableKeys(m map[string]string) {
-	c.Situation = nameables.Apply(c.Situation, m)
+	c.Situation = Apply(c.Situation, m)
 }
 
 // Owner implements Bonus.

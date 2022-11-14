@@ -17,7 +17,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/errs"
@@ -146,7 +145,7 @@ func (p *featuresPanel) createAttributeBonusPanel(f *gurps.AttributeBonus) *unis
 	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
 	panel.AddChild(unison.NewPanel())
 	wrapper := unison.NewPanel()
-	var popup *unison.PopupMenu[attribute.BonusLimitation]
+	var popup *unison.PopupMenu[gurps.BonusLimitation]
 	attrChoicePopup := addAttributeChoicePopup(wrapper, p.entity, i18n.Text("to"), &f.Attribute,
 		gurps.SizeFlag|gurps.DodgeFlag|gurps.ParryFlag|gurps.BlockFlag)
 	callback := attrChoicePopup.SelectionCallback
@@ -155,7 +154,7 @@ func (p *featuresPanel) createAttributeBonusPanel(f *gurps.AttributeBonus) *unis
 		callback(index, item)
 		adjustPopupBlank(popup, f.Attribute != gid.Strength)
 	}
-	popup = addPopup(wrapper, attribute.AllBonusLimitation, &f.Limitation)
+	popup = addPopup(wrapper, gurps.AllBonusLimitation, &f.Limitation)
 	adjustPopupBlank(popup, f.Attribute != gid.Strength)
 	wrapper.SetLayout(&unison.FlexLayout{
 		Columns:  len(wrapper.Children()),

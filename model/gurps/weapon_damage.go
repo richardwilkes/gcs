@@ -16,7 +16,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/attribute"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -237,7 +236,7 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 			return false
 		}, true, true, eqp.Modifiers...)
 	}
-	adjustForPhoenixFlame := pc.SheetSettings.DamageProgression == attribute.PhoenixFlameD3 && base.Sides == 3
+	adjustForPhoenixFlame := pc.SheetSettings.DamageProgression == PhoenixFlameD3 && base.Sides == 3
 	var percentDamageBonus, percentDRDivisorBonus fxp.Int
 	armorDivisor := w.ArmorDivisor
 	for bonus := range bonusSet {

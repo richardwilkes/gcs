@@ -16,7 +16,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/attribute"
 	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -87,7 +86,7 @@ func (p *attrDefSettingsPanel) createButtons() *unison.Panel {
 	p.addThresholdButton = unison.NewSVGButton(svg.CircledAdd)
 	p.addThresholdButton.ClickCallback = func() { p.poolPanel.addThreshold() }
 	p.addThresholdButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Add pool threshold"))
-	p.addThresholdButton.SetEnabled(p.def.Type == attribute.Pool)
+	p.addThresholdButton.SetEnabled(p.def.Type == gurps.PoolAttributeType)
 	buttons.AddChild(p.addThresholdButton)
 	return buttons
 }
@@ -201,12 +200,12 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 
 	text = i18n.Text("Attribute Type")
 	content.AddChild(NewFieldLeadingLabel(text))
-	content.AddChild(NewPopup[attribute.Type](p.dockable.targetMgr, p.def.KeyPrefix+"type", text,
-		func() attribute.Type { return p.def.Type },
-		func(typ attribute.Type) { p.applyAttributeType(typ) },
-		attribute.AllType...))
+	content.AddChild(NewPopup[gurps.AttributeType](p.dockable.targetMgr, p.def.KeyPrefix+"type", text,
+		func() gurps.AttributeType { return p.def.Type },
+		func(typ gurps.AttributeType) { p.applyAttributeType(typ) },
+		gurps.AllAttributeType...))
 
-	if p.def.Type == attribute.Pool {
+	if p.def.Type == gurps.PoolAttributeType {
 		p.poolPanel = newPoolSettingsPanel(p.dockable, p.def)
 		content.AddChild(p.poolPanel)
 	} else {
@@ -229,9 +228,9 @@ func (p *attrDefSettingsPanel) validateAttrID(attrID string) bool {
 	return false
 }
 
-func (p *attrDefSettingsPanel) applyAttributeType(attrType attribute.Type) {
+func (p *attrDefSettingsPanel) applyAttributeType(attrType gurps.AttributeType) {
 	p.def.Type = attrType
-	if p.def.Type == attribute.Pool && len(p.def.Thresholds) == 0 {
+	if p.def.Type == gurps.PoolAttributeType && len(p.def.Thresholds) == 0 {
 		p.def.Thresholds = append(p.def.Thresholds, &gurps.PoolThreshold{KeyPrefix: p.dockable.targetMgr.NextPrefix()})
 	} else if p.def.IsSeparator() {
 		p.def.FullName = ""

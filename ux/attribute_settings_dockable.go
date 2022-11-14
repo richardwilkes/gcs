@@ -16,7 +16,6 @@ import (
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/attribute"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/svg"
@@ -337,7 +336,7 @@ func (d *attributeSettingsDockable) dataDragOver(where unison.Point, data map[st
 				}
 			} else {
 				for i, def := range d.defs.List(false) {
-					if def == dd.def && def.Type == attribute.Pool {
+					if def == dd.def && def.Type == gurps.PoolAttributeType {
 						p := children[i].Self.(*attrDefSettingsPanel).poolPanel
 						pt := p.PointFromRoot(rootPt)
 						for j, child := range p.Children() {

@@ -15,14 +15,13 @@ import (
 	"fmt"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
 
 // Feature holds data that affects another object.
 type Feature interface {
-	nameables.Nameables
+	Nameables
 	FeatureType() FeatureType
 	Clone() Feature
 }

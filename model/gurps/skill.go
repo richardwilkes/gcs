@@ -20,7 +20,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/datafile"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
-	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/settings/display"
 	"github.com/richardwilkes/json"
@@ -767,9 +766,9 @@ func (s *Skill) Enabled() bool {
 
 // FillWithNameableKeys adds any nameable keys found to the provided map.
 func (s *Skill) FillWithNameableKeys(m map[string]string) {
-	nameables.Extract(s.Name, m)
-	nameables.Extract(s.LocalNotes, m)
-	nameables.Extract(s.Specialization, m)
+	Extract(s.Name, m)
+	Extract(s.LocalNotes, m)
+	Extract(s.Specialization, m)
 	if s.Prereq != nil {
 		s.Prereq.FillWithNameableKeys(m)
 	}
@@ -789,9 +788,9 @@ func (s *Skill) FillWithNameableKeys(m map[string]string) {
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
 func (s *Skill) ApplyNameableKeys(m map[string]string) {
-	s.Name = nameables.Apply(s.Name, m)
-	s.LocalNotes = nameables.Apply(s.LocalNotes, m)
-	s.Specialization = nameables.Apply(s.Specialization, m)
+	s.Name = Apply(s.Name, m)
+	s.LocalNotes = Apply(s.LocalNotes, m)
+	s.Specialization = Apply(s.Specialization, m)
 	if s.Prereq != nil {
 		s.Prereq.ApplyNameableKeys(m)
 	}

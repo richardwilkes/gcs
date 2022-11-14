@@ -11,7 +11,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package attribute
+package gurps
 
 import (
 	"strings"
@@ -21,20 +21,20 @@ import (
 
 // Possible values.
 const (
-	Unknown ThresholdOp = iota
-	HalveMove
-	HalveDodge
-	HalveST
-	LastThresholdOp = HalveST
+	UnknownThresholdOp ThresholdOp = iota
+	HalveMoveThresholdOp
+	HalveDodgeThresholdOp
+	HalveSTThresholdOp
+	LastThresholdOp = HalveSTThresholdOp
 )
 
 var (
 	// AllThresholdOp holds all possible values.
 	AllThresholdOp = []ThresholdOp{
-		Unknown,
-		HalveMove,
-		HalveDodge,
-		HalveST,
+		UnknownThresholdOp,
+		HalveMoveThresholdOp,
+		HalveDodgeThresholdOp,
+		HalveSTThresholdOp,
 	}
 	thresholdOpData = []struct {
 		key    string

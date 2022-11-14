@@ -15,7 +15,6 @@ import (
 	"fmt"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
-	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -60,12 +59,12 @@ func (e *EquippedEquipmentPrereq) Clone(parent *PrereqList) Prereq {
 
 // FillWithNameableKeys implements Prereq.
 func (e *EquippedEquipmentPrereq) FillWithNameableKeys(m map[string]string) {
-	nameables.Extract(e.NameCriteria.Qualifier, m)
+	Extract(e.NameCriteria.Qualifier, m)
 }
 
 // ApplyNameableKeys implements Prereq.
 func (e *EquippedEquipmentPrereq) ApplyNameableKeys(m map[string]string) {
-	e.NameCriteria.Qualifier = nameables.Apply(e.NameCriteria.Qualifier, m)
+	e.NameCriteria.Qualifier = Apply(e.NameCriteria.Qualifier, m)
 }
 
 // Satisfied implements Prereq.

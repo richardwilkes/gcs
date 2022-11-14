@@ -208,10 +208,9 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/gurps/attribute",
-		Name:       "bonus_limitation",
-		Desc:       "holds a limitation for an AttributeBonus",
-		StandAlone: true,
+		Pkg:  "model/gurps",
+		Name: "bonus_limitation",
+		Desc: "holds a limitation for an AttributeBonus",
 		Values: []enumValue{
 			{
 				Key:           "none",
@@ -233,7 +232,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/gurps/attribute",
+		Pkg:        "model/gurps",
 		Name:       "damage_progression",
 		Desc:       "controls how Thrust and Swing are calculated",
 		StandAlone: true,
@@ -266,10 +265,9 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/gurps/attribute",
-		Name:       "threshold_op",
-		Desc:       "holds an operation to apply when a pool threshold is hit",
-		StandAlone: true,
+		Pkg:  "model/gurps",
+		Name: "threshold_op",
+		Desc: "holds an operation to apply when a pool threshold is hit",
 		Values: []enumValue{
 			{
 				Key: "unknown",
@@ -292,10 +290,9 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/gurps/attribute",
-		Name:       "type",
-		Desc:       "holds the type of an attribute definition",
-		StandAlone: true,
+		Pkg:  "model/gurps",
+		Name: "attribute_type",
+		Desc: "holds the type of an attribute definition",
 		Values: []enumValue{
 			{
 				Key: "integer",

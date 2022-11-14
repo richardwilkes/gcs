@@ -14,7 +14,6 @@ package gurps
 import (
 	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/attribute"
 	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/json"
 )
@@ -68,7 +67,7 @@ func (a *Attribute) MarshalJSON() ([]byte, error) {
 					Points: a.PointCost(),
 				},
 			}
-			if def.Type == attribute.Pool {
+			if def.Type == PoolAttributeType {
 				current := a.Current()
 				data.Calc.Current = &current
 			}
@@ -117,7 +116,7 @@ func (a *Attribute) Maximum() fxp.Int {
 		return 0
 	}
 	max := def.BaseValue(a.Entity) + a.Adjustment + a.Bonus
-	if def.Type != attribute.Decimal {
+	if def.Type != DecimalAttributeType {
 		max = max.Trunc()
 	}
 	return max
@@ -140,7 +139,7 @@ func (a *Attribute) Current() fxp.Int {
 		return 0
 	}
 	max := a.Maximum()
-	if def.Type != attribute.Pool {
+	if def.Type != PoolAttributeType {
 		return max
 	}
 	return max - a.Damage
@@ -177,7 +176,7 @@ func (a *Attribute) PointCost() fxp.Int {
 }
 
 // IsThresholdOpMet if the given ThresholdOp is met.
-func IsThresholdOpMet(op attribute.ThresholdOp, attributes *Attributes) bool {
+func IsThresholdOpMet(op ThresholdOp, attributes *Attributes) bool {
 	for _, one := range attributes.Set {
 		if threshold := one.CurrentThreshold(); threshold != nil && threshold.ContainsOp(op) {
 			return true
@@ -187,7 +186,7 @@ func IsThresholdOpMet(op attribute.ThresholdOp, attributes *Attributes) bool {
 }
 
 // CountThresholdOpMet counts the number of times the given ThresholdOp is met.
-func CountThresholdOpMet(op attribute.ThresholdOp, attributes *Attributes) int {
+func CountThresholdOpMet(op ThresholdOp, attributes *Attributes) int {
 	total := 0
 	for _, one := range attributes.Set {
 		if threshold := one.CurrentThreshold(); threshold != nil && threshold.ContainsOp(op) {
