@@ -14,9 +14,9 @@ package main
 import (
 	"fmt"
 
-	"github.com/richardwilkes/gcs/v5/dbg"
 	"github.com/richardwilkes/gcs/v5/early"
 	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/dbg"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox/atexit"

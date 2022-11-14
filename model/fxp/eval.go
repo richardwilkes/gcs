@@ -12,7 +12,7 @@
 package fxp
 
 import (
-	"github.com/richardwilkes/gcs/v5/dbg"
+	"github.com/richardwilkes/gcs/v5/model/dbg"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/eval"
 	"github.com/richardwilkes/toolbox/log/jot"
