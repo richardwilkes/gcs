@@ -12,8 +12,8 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/ancestry"
+	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/ancestry"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -22,13 +22,13 @@ import (
 // IdentityPanel holds the contents of the identity block on the sheet.
 type IdentityPanel struct {
 	unison.Panel
-	entity    *gurps.Entity
+	entity    *model.Entity
 	targetMgr *TargetMgr
 	prefix    string
 }
 
 // NewIdentityPanel creates a new identity panel.
-func NewIdentityPanel(entity *gurps.Entity, targetMgr *TargetMgr) *IdentityPanel {
+func NewIdentityPanel(entity *model.Entity, targetMgr *TargetMgr) *IdentityPanel {
 	p := &IdentityPanel{
 		entity:    entity,
 		targetMgr: targetMgr,

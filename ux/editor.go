@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox"
@@ -29,15 +29,15 @@ const EditorGroup = "editors"
 const subEditorGroup = "sub_editors"
 
 var (
-	_ unison.Dockable            = &editor[*gurps.Note, *gurps.NoteEditData]{}
-	_ unison.TabCloser           = &editor[*gurps.Note, *gurps.NoteEditData]{}
-	_ ModifiableRoot             = &editor[*gurps.Note, *gurps.NoteEditData]{}
-	_ unison.UndoManagerProvider = &editor[*gurps.Note, *gurps.NoteEditData]{}
-	_ GroupedCloser              = &editor[*gurps.Note, *gurps.NoteEditData]{}
-	_ Rebuildable                = &editor[*gurps.Note, *gurps.NoteEditData]{}
+	_ unison.Dockable            = &editor[*model.Note, *model.NoteEditData]{}
+	_ unison.TabCloser           = &editor[*model.Note, *model.NoteEditData]{}
+	_ ModifiableRoot             = &editor[*model.Note, *model.NoteEditData]{}
+	_ unison.UndoManagerProvider = &editor[*model.Note, *model.NoteEditData]{}
+	_ GroupedCloser              = &editor[*model.Note, *model.NoteEditData]{}
+	_ Rebuildable                = &editor[*model.Note, *model.NoteEditData]{}
 )
 
-type editor[N gurps.NodeTypes, D gurps.EditorData[N]] struct {
+type editor[N model.NodeTypes, D model.EditorData[N]] struct {
 	unison.Panel
 	owner                Rebuildable
 	target               N
@@ -55,11 +55,11 @@ type editor[N gurps.NodeTypes, D gurps.EditorData[N]] struct {
 	promptForSave        bool
 }
 
-func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner Rebuildable, target N, svg *unison.SVG, initContent func(*editor[N, D], *unison.Panel) func()) {
-	lookFor := gurps.AsNode(target).UUID()
+func displayEditor[N model.NodeTypes, D model.EditorData[N]](owner Rebuildable, target N, svg *unison.SVG, initContent func(*editor[N, D], *unison.Panel) func()) {
+	lookFor := model.AsNode(target).UUID()
 	ws, dc, found := Activate(func(d unison.Dockable) bool {
 		if e, ok := d.(*editor[N, D]); ok {
-			return e.owner == owner && gurps.AsNode(e.target).UUID() == lookFor
+			return e.owner == owner && model.AsNode(e.target).UUID() == lookFor
 		}
 		return false
 	})
@@ -127,7 +127,7 @@ func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner Rebuildable, 
 		e.AddChild(e.createToolbar())
 		e.modificationCallback = initContent(e, content)
 		e.AddChild(e.scroll)
-		e.ClientData()[AssociatedUUIDKey] = gurps.AsNode(target).UUID()
+		e.ClientData()[AssociatedUUIDKey] = model.AsNode(target).UUID()
 		e.promptForSave = true
 		e.scroll.Content().AsPanel().ValidateScrollRoot()
 		group := EditorGroup
@@ -150,7 +150,7 @@ func (e *editor[N, D]) createToolbar() unison.Paneler {
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 
 	toolbar.AddChild(NewDefaultInfoPop())
-	toolbar.AddChild(NewScaleField(gurps.InitialUIScaleMin, gurps.InitialUIScaleMax,
+	toolbar.AddChild(NewScaleField(model.InitialUIScaleMin, model.InitialUIScaleMax,
 		func() int { return settings.Global().General.InitialEditorUIScale }, func() int { return e.scale },
 		func(scale int) { e.scale = scale }, e.scroll, nil, false))
 
@@ -194,7 +194,7 @@ func (e *editor[N, D]) TitleIcon(suggestedSize unison.Size) unison.Drawable {
 }
 
 func (e *editor[N, D]) Title() string {
-	return fmt.Sprintf(i18n.Text("%s Editor for %s"), gurps.AsNode(e.target).Kind(), e.owner.String())
+	return fmt.Sprintf(i18n.Text("%s Editor for %s"), model.AsNode(e.target).Kind(), e.owner.String())
 }
 
 func (e *editor[N, D]) String() string {
@@ -276,7 +276,7 @@ func (e *editor[N, D]) apply() {
 		target := e.target
 		mgr.Add(&unison.UndoEdit[D]{
 			ID:       unison.NextUndoID(),
-			EditName: fmt.Sprintf(i18n.Text("%s Changes"), gurps.AsNode(target).Kind()),
+			EditName: fmt.Sprintf(i18n.Text("%s Changes"), model.AsNode(target).Kind()),
 			UndoFunc: func(edit *unison.UndoEdit[D]) {
 				edit.BeforeData.ApplyTo(target)
 				owner.Rebuild(true)

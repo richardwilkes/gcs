@@ -15,31 +15,31 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/unison"
 )
 
 type equipmentModifierListProvider struct {
-	modifiers []*gurps.EquipmentModifier
+	modifiers []*model.EquipmentModifier
 }
 
-func (p *equipmentModifierListProvider) Entity() *gurps.Entity {
+func (p *equipmentModifierListProvider) Entity() *model.Entity {
 	return nil
 }
 
-func (p *equipmentModifierListProvider) EquipmentModifierList() []*gurps.EquipmentModifier {
+func (p *equipmentModifierListProvider) EquipmentModifierList() []*model.EquipmentModifier {
 	return p.modifiers
 }
 
-func (p *equipmentModifierListProvider) SetEquipmentModifierList(list []*gurps.EquipmentModifier) {
+func (p *equipmentModifierListProvider) SetEquipmentModifierList(list []*model.EquipmentModifier) {
 	p.modifiers = list
 }
 
 // NewEquipmentModifierTableDockableFromFile loads a list of equipment modifiers from a file and creates a new
 // unison.Dockable for them.
 func NewEquipmentModifierTableDockableFromFile(filePath string) (unison.Dockable, error) {
-	modifiers, err := gurps.NewEquipmentModifiersFromFile(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath))
+	modifiers, err := model.NewEquipmentModifiersFromFile(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath))
 	if err != nil {
 		return nil, err
 	}
@@ -49,10 +49,10 @@ func NewEquipmentModifierTableDockableFromFile(filePath string) (unison.Dockable
 }
 
 // NewEquipmentModifierTableDockable creates a new unison.Dockable for equipment modifier list files.
-func NewEquipmentModifierTableDockable(filePath string, modifiers []*gurps.EquipmentModifier) *TableDockable[*gurps.EquipmentModifier] {
+func NewEquipmentModifierTableDockable(filePath string, modifiers []*model.EquipmentModifier) *TableDockable[*model.EquipmentModifier] {
 	provider := &equipmentModifierListProvider{modifiers: modifiers}
 	return NewTableDockable(filePath, library.EquipmentModifiersExt,
 		NewEquipmentModifiersProvider(provider, false),
-		func(path string) error { return gurps.SaveEquipmentModifiers(provider.EquipmentModifierList(), path) },
+		func(path string) error { return model.SaveEquipmentModifiers(provider.EquipmentModifierList(), path) },
 		NewEquipmentModifierItemID, NewEquipmentContainerModifierItemID)
 }

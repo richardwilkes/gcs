@@ -14,7 +14,7 @@ package ux
 import (
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/rpgtools/dice"
@@ -30,12 +30,12 @@ const (
 type hitLocationSettingsPanel struct {
 	unison.Panel
 	dockable     *bodySettingsDockable
-	loc          *gurps.HitLocation
+	loc          *model.HitLocation
 	addButton    *unison.Button
 	deleteButton *unison.Button
 }
 
-func newHitLocationSettingsPanel(dockable *bodySettingsDockable, loc *gurps.HitLocation) *hitLocationSettingsPanel {
+func newHitLocationSettingsPanel(dockable *bodySettingsDockable, loc *model.HitLocation) *hitLocationSettingsPanel {
 	p := &hitLocationSettingsPanel{
 		dockable: dockable,
 		loc:      loc,
@@ -94,13 +94,13 @@ func (p *hitLocationSettingsPanel) createButtons() *unison.Panel {
 
 func (p *hitLocationSettingsPanel) addSubTable() {
 	undo := p.dockable.prepareUndo(i18n.Text("Add Sub-Table"))
-	p.loc.SubTable = &gurps.Body{
+	p.loc.SubTable = &model.Body{
 		Roll:      dice.New("1d"),
 		KeyPrefix: p.dockable.targetMgr.NextPrefix(),
 	}
 	p.loc.SubTable.SetOwningLocation(p.loc)
 	p.loc.SubTable.Update(p.dockable.Entity())
-	p.loc.SubTable.AddLocation(gurps.NewHitLocation(p.dockable.Entity(), p.dockable.targetMgr.NextPrefix()))
+	p.loc.SubTable.AddLocation(model.NewHitLocation(p.dockable.Entity(), p.dockable.targetMgr.NextPrefix()))
 	p.dockable.finishAndPostUndo(undo)
 	p.dockable.sync()
 	if focus := p.dockable.targetMgr.Find(p.loc.SubTable.KeyPrefix + "subroll"); focus != nil {
@@ -133,7 +133,7 @@ func (p *hitLocationSettingsPanel) createContent() *unison.Panel {
 				p.loc.SetID(strings.TrimSpace(strings.ToLower(s)))
 			}
 		})
-	field.ValidateCallback = func(field *StringField, loc *gurps.HitLocation) func() bool {
+	field.ValidateCallback = func(field *StringField, loc *model.HitLocation) func() bool {
 		return func() bool { return p.validateLocID(field.Text()) }
 	}(field, p.loc)
 	field.SetMinimumTextWidthUsing(prototypeMinIDWidth)
@@ -211,7 +211,7 @@ func (p *hitLocationSettingsPanel) createContent() *unison.Panel {
 
 func (p *hitLocationSettingsPanel) validateLocID(locID string) bool {
 	if key := strings.TrimSpace(strings.ToLower(locID)); key != "" {
-		return key == id.Sanitize(key, false, gurps.ReservedIDs...)
+		return key == id.Sanitize(key, false, model.ReservedIDs...)
 	}
 	return false
 }

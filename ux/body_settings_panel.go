@@ -12,7 +12,7 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -68,7 +68,7 @@ func (p *bodySettingsPanel) createButtons() *unison.Panel {
 
 func (p *bodySettingsPanel) addHitLocation() {
 	undo := p.dockable.prepareUndo(i18n.Text("Add Hit Location"))
-	location := gurps.NewHitLocation(p.dockable.Entity(), p.dockable.targetMgr.NextPrefix())
+	location := model.NewHitLocation(p.dockable.Entity(), p.dockable.targetMgr.NextPrefix())
 	p.dockable.body.AddLocation(location)
 	p.dockable.finishAndPostUndo(undo)
 	p.dockable.sync()

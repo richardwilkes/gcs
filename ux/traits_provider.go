@@ -12,8 +12,8 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
+	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -25,28 +25,28 @@ import (
 
 var (
 	traitListColMap = map[int]int{
-		0: gurps.TraitDescriptionColumn,
-		1: gurps.TraitPointsColumn,
-		2: gurps.TraitTagsColumn,
-		3: gurps.TraitReferenceColumn,
+		0: model.TraitDescriptionColumn,
+		1: model.TraitPointsColumn,
+		2: model.TraitTagsColumn,
+		3: model.TraitReferenceColumn,
 	}
 	traitPageColMap = map[int]int{
-		0: gurps.TraitDescriptionColumn,
-		1: gurps.TraitPointsColumn,
-		2: gurps.TraitReferenceColumn,
+		0: model.TraitDescriptionColumn,
+		1: model.TraitPointsColumn,
+		2: model.TraitReferenceColumn,
 	}
-	_ TableProvider[*gurps.Trait] = &traitsProvider{}
+	_ TableProvider[*model.Trait] = &traitsProvider{}
 )
 
 type traitsProvider struct {
-	table    *unison.Table[*Node[*gurps.Trait]]
+	table    *unison.Table[*Node[*model.Trait]]
 	colMap   map[int]int
-	provider gurps.TraitListProvider
+	provider model.TraitListProvider
 	forPage  bool
 }
 
 // NewTraitsProvider creates a new table provider for traits.
-func NewTraitsProvider(provider gurps.TraitListProvider, forPage bool) TableProvider[*gurps.Trait] {
+func NewTraitsProvider(provider model.TraitListProvider, forPage bool) TableProvider[*model.Trait] {
 	p := &traitsProvider{
 		provider: provider,
 		forPage:  forPage,
@@ -60,12 +60,12 @@ func NewTraitsProvider(provider gurps.TraitListProvider, forPage bool) TableProv
 }
 
 func (p *traitsProvider) RefKey() string {
-	return gurps.BlockLayoutTraitsKey
+	return model.BlockLayoutTraitsKey
 }
 
 func (p *traitsProvider) AllTags() []string {
 	set := make(map[string]struct{})
-	gurps.Traverse(func(trait *gurps.Trait) bool {
+	model.Traverse(func(trait *model.Trait) bool {
 		for _, tag := range trait.Tags {
 			set[tag] = struct{}{}
 		}
@@ -76,7 +76,7 @@ func (p *traitsProvider) AllTags() []string {
 	return tags
 }
 
-func (p *traitsProvider) SetTable(table *unison.Table[*Node[*gurps.Trait]]) {
+func (p *traitsProvider) SetTable(table *unison.Table[*Node[*model.Trait]]) {
 	p.table = table
 }
 
@@ -84,28 +84,28 @@ func (p *traitsProvider) RootRowCount() int {
 	return len(p.provider.TraitList())
 }
 
-func (p *traitsProvider) RootRows() []*Node[*gurps.Trait] {
+func (p *traitsProvider) RootRows() []*Node[*model.Trait] {
 	data := p.provider.TraitList()
-	rows := make([]*Node[*gurps.Trait], 0, len(data))
+	rows := make([]*Node[*model.Trait], 0, len(data))
 	for _, one := range data {
-		rows = append(rows, NewNode[*gurps.Trait](p.table, nil, p.colMap, one, p.forPage))
+		rows = append(rows, NewNode[*model.Trait](p.table, nil, p.colMap, one, p.forPage))
 	}
 	return rows
 }
 
-func (p *traitsProvider) SetRootRows(rows []*Node[*gurps.Trait]) {
+func (p *traitsProvider) SetRootRows(rows []*Node[*model.Trait]) {
 	p.provider.SetTraitList(ExtractNodeDataFromList(rows))
 }
 
-func (p *traitsProvider) RootData() []*gurps.Trait {
+func (p *traitsProvider) RootData() []*model.Trait {
 	return p.provider.TraitList()
 }
 
-func (p *traitsProvider) SetRootData(data []*gurps.Trait) {
+func (p *traitsProvider) SetRootData(data []*model.Trait) {
 	p.provider.SetTraitList(data)
 }
 
-func (p *traitsProvider) Entity() *gurps.Entity {
+func (p *traitsProvider) Entity() *model.Entity {
 	return p.provider.Entity()
 }
 
@@ -117,20 +117,20 @@ func (p *traitsProvider) DragSVG() *unison.SVG {
 	return svg.GCSTraits
 }
 
-func (p *traitsProvider) DropShouldMoveData(from, to *unison.Table[*Node[*gurps.Trait]]) bool {
+func (p *traitsProvider) DropShouldMoveData(from, to *unison.Table[*Node[*model.Trait]]) bool {
 	return from == to
 }
 
-func (p *traitsProvider) ProcessDropData(_, _ *unison.Table[*Node[*gurps.Trait]]) {
+func (p *traitsProvider) ProcessDropData(_, _ *unison.Table[*Node[*model.Trait]]) {
 }
 
 func (p *traitsProvider) AltDropSupport() *AltDropSupport {
 	return &AltDropSupport{
 		DragKey: gid.TraitModifier,
 		Drop: func(rowIndex int, data any) {
-			if tableDragData, ok := data.(*unison.TableDragData[*Node[*gurps.TraitModifier]]); ok {
+			if tableDragData, ok := data.(*unison.TableDragData[*Node[*model.TraitModifier]]); ok {
 				entity := p.Entity()
-				rows := make([]*gurps.TraitModifier, 0, len(tableDragData.Rows))
+				rows := make([]*model.TraitModifier, 0, len(tableDragData.Rows))
 				for _, row := range tableDragData.Rows {
 					rows = append(rows, row.Data().Clone(entity, nil, false))
 				}
@@ -153,18 +153,18 @@ func (p *traitsProvider) ItemNames() (singular, plural string) {
 	return i18n.Text("Trait"), i18n.Text("Traits")
 }
 
-func (p *traitsProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Trait]] {
-	var headers []unison.TableColumnHeader[*Node[*gurps.Trait]]
+func (p *traitsProvider) Headers() []unison.TableColumnHeader[*Node[*model.Trait]] {
+	var headers []unison.TableColumnHeader[*Node[*model.Trait]]
 	for i := 0; i < len(p.colMap); i++ {
 		switch p.colMap[i] {
-		case gurps.TraitDescriptionColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Trait](i18n.Text("Trait"), "", p.forPage))
-		case gurps.TraitPointsColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Trait](i18n.Text("Pts"), i18n.Text("Points"), p.forPage))
-		case gurps.TraitTagsColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Trait](i18n.Text("Tags"), "", p.forPage))
-		case gurps.TraitReferenceColumn:
-			headers = append(headers, NewEditorPageRefHeader[*gurps.Trait](p.forPage))
+		case model.TraitDescriptionColumn:
+			headers = append(headers, NewEditorListHeader[*model.Trait](i18n.Text("Trait"), "", p.forPage))
+		case model.TraitPointsColumn:
+			headers = append(headers, NewEditorListHeader[*model.Trait](i18n.Text("Pts"), i18n.Text("Points"), p.forPage))
+		case model.TraitTagsColumn:
+			headers = append(headers, NewEditorListHeader[*model.Trait](i18n.Text("Tags"), "", p.forPage))
+		case model.TraitReferenceColumn:
+			headers = append(headers, NewEditorPageRefHeader[*model.Trait](p.forPage))
 		default:
 			jot.Fatalf(1, "invalid trait column: %d", p.colMap[i])
 		}
@@ -172,12 +172,12 @@ func (p *traitsProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Trait
 	return headers
 }
 
-func (p *traitsProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*gurps.Trait]]) {
+func (p *traitsProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*model.Trait]]) {
 }
 
 func (p *traitsProvider) HierarchyColumnIndex() int {
 	for k, v := range p.colMap {
-		if v == gurps.TraitDescriptionColumn {
+		if v == model.TraitDescriptionColumn {
 			return k
 		}
 	}
@@ -188,14 +188,14 @@ func (p *traitsProvider) ExcessWidthColumnIndex() int {
 	return p.HierarchyColumnIndex()
 }
 
-func (p *traitsProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*gurps.Trait]]) {
-	OpenEditor[*gurps.Trait](table, func(item *gurps.Trait) { EditTrait(owner, item) })
+func (p *traitsProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*model.Trait]]) {
+	OpenEditor[*model.Trait](table, func(item *model.Trait) { EditTrait(owner, item) })
 }
 
-func (p *traitsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Trait]], variant ItemVariant) {
-	item := gurps.NewTrait(p.Entity(), nil, variant == ContainerItemVariant)
-	InsertItems[*gurps.Trait](owner, table, p.provider.TraitList, p.provider.SetTraitList,
-		func(_ *unison.Table[*Node[*gurps.Trait]]) []*Node[*gurps.Trait] { return p.RootRows() }, item)
+func (p *traitsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*model.Trait]], variant ItemVariant) {
+	item := model.NewTrait(p.Entity(), nil, variant == ContainerItemVariant)
+	InsertItems[*model.Trait](owner, table, p.provider.TraitList, p.provider.SetTraitList,
+		func(_ *unison.Table[*Node[*model.Trait]]) []*Node[*model.Trait] { return p.RootRows() }, item)
 	EditTrait(owner, item)
 }
 
@@ -204,7 +204,7 @@ func (p *traitsProvider) Serialize() ([]byte, error) {
 }
 
 func (p *traitsProvider) Deserialize(data []byte) error {
-	var rows []*gurps.Trait
+	var rows []*model.Trait
 	if err := jio.DecompressAndDeserialize(data, &rows); err != nil {
 		return err
 	}

@@ -16,8 +16,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/svg"
@@ -82,21 +82,21 @@ func (d *generalSettingsDockable) initContent(content *unison.Panel) {
 	d.initialListScaleField = NewPercentageField(nil, "", initialListScaleTitle,
 		func() int { return settings.Global().General.InitialListUIScale },
 		func(v int) { settings.Global().General.InitialListUIScale = v },
-		gurps.InitialUIScaleMin, gurps.InitialUIScaleMax, false, false)
+		model.InitialUIScaleMin, model.InitialUIScaleMax, false, false)
 	content.AddChild(WrapWithSpan(2, d.initialListScaleField))
 	initialEditorScaleTitle := i18n.Text("Initial Editor Scale")
 	content.AddChild(NewFieldLeadingLabel(initialEditorScaleTitle))
 	d.initialEditorScaleField = NewPercentageField(nil, "", initialEditorScaleTitle,
 		func() int { return settings.Global().General.InitialEditorUIScale },
 		func(v int) { settings.Global().General.InitialEditorUIScale = v },
-		gurps.InitialUIScaleMin, gurps.InitialUIScaleMax, false, false)
+		model.InitialUIScaleMin, model.InitialUIScaleMax, false, false)
 	content.AddChild(WrapWithSpan(2, d.initialEditorScaleField))
 	initialSheetScaleTitle := i18n.Text("Initial Sheet Scale")
 	content.AddChild(NewFieldLeadingLabel(initialSheetScaleTitle))
 	d.initialSheetScaleField = NewPercentageField(nil, "", initialSheetScaleTitle,
 		func() int { return settings.Global().General.InitialSheetUIScale },
 		func(v int) { settings.Global().General.InitialSheetUIScale = v },
-		gurps.InitialUIScaleMin, gurps.InitialUIScaleMax, false, false)
+		model.InitialUIScaleMin, model.InitialUIScaleMax, false, false)
 	content.AddChild(WrapWithSpan(2, d.initialSheetScaleField))
 	d.createCellAutoMaxWidthField(content)
 	d.createImageResolutionField(content)
@@ -150,8 +150,8 @@ func (d *generalSettingsDockable) createInitialPointsFields(content *unison.Pane
 	content.AddChild(NewFieldLeadingLabel(title))
 	d.pointsField = NewDecimalField(nil, "", title,
 		func() fxp.Int { return settings.Global().General.InitialPoints },
-		func(v fxp.Int) { settings.Global().General.InitialPoints = v }, gurps.InitialPointsMin,
-		gurps.InitialPointsMax, false, false)
+		func(v fxp.Int) { settings.Global().General.InitialPoints = v }, model.InitialPointsMin,
+		model.InitialPointsMax, false, false)
 	d.pointsField.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(d.pointsField)
 }
@@ -162,7 +162,7 @@ func (d *generalSettingsDockable) createTechLevelField(content *unison.Panel) {
 	d.techLevelField = NewStringField(nil, "", title,
 		func() string { return settings.Global().General.DefaultTechLevel },
 		func(s string) { settings.Global().General.DefaultTechLevel = s })
-	d.techLevelField.Tooltip = unison.NewTooltipWithText(gurps.TechLevelInfo)
+	d.techLevelField.Tooltip = unison.NewTooltipWithText(model.TechLevelInfo)
 	d.techLevelField.SetMinimumTextWidthUsing("12^")
 	d.techLevelField.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(d.techLevelField)
@@ -172,7 +172,7 @@ func (d *generalSettingsDockable) createCalendarPopup(content *unison.Panel) {
 	content.AddChild(NewFieldLeadingLabel(i18n.Text("Calendar")))
 	d.calendarPopup = unison.NewPopupMenu[string]()
 	libraries := settings.Global().Libraries()
-	for _, lib := range gurps.AvailableCalendarRefs(libraries) {
+	for _, lib := range model.AvailableCalendarRefs(libraries) {
 		d.calendarPopup.AddDisabledItem(lib.Name)
 		for _, one := range lib.List {
 			d.calendarPopup.AddItem(one.Name)
@@ -192,7 +192,7 @@ func (d *generalSettingsDockable) createCellAutoMaxWidthField(content *unison.Pa
 	d.maxAutoColWidthField = NewIntegerField(nil, "", title,
 		func() int { return settings.Global().General.MaximumAutoColWidth },
 		func(v int) { settings.Global().General.MaximumAutoColWidth = v },
-		gurps.AutoColWidthMin, gurps.AutoColWidthMax, false, false)
+		model.AutoColWidthMin, model.AutoColWidthMax, false, false)
 	d.maxAutoColWidthField.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(d.maxAutoColWidthField)
 }
@@ -203,7 +203,7 @@ func (d *generalSettingsDockable) createImageResolutionField(content *unison.Pan
 	d.exportResolutionField = NewIntegerField(nil, "", title,
 		func() int { return settings.Global().General.ImageResolution },
 		func(v int) { settings.Global().General.ImageResolution = v },
-		gurps.ImageResolutionMin, gurps.ImageResolutionMax, false, false)
+		model.ImageResolutionMin, model.ImageResolutionMax, false, false)
 	content.AddChild(WrapWithSpan(2, d.exportResolutionField, NewFieldTrailingLabel(i18n.Text("ppi"))))
 }
 
@@ -216,7 +216,7 @@ func (d *generalSettingsDockable) createTooltipDelayField(content *unison.Panel)
 			general := settings.Global().General
 			general.TooltipDelay = v
 			general.UpdateToolTipTiming()
-		}, gurps.TooltipDelayMin, gurps.TooltipDelayMax, false, false)
+		}, model.TooltipDelayMin, model.TooltipDelayMax, false, false)
 	content.AddChild(WrapWithSpan(2, d.tooltipDelayField, NewFieldTrailingLabel(i18n.Text("seconds"))))
 }
 
@@ -229,7 +229,7 @@ func (d *generalSettingsDockable) createTooltipDismissalField(content *unison.Pa
 			general := settings.Global().General
 			general.TooltipDismissal = v
 			general.UpdateToolTipTiming()
-		}, gurps.TooltipDismissalMin, gurps.TooltipDismissalMax, false, false)
+		}, model.TooltipDismissalMin, model.TooltipDismissalMax, false, false)
 	content.AddChild(WrapWithSpan(2, d.tooltipDismissalField, NewFieldTrailingLabel(i18n.Text("seconds"))))
 }
 
@@ -239,7 +239,7 @@ func (d *generalSettingsDockable) createScrollWheelMultiplierField(content *unis
 	d.scrollWheelMultiplierField = NewDecimalField(nil, "", title,
 		func() fxp.Int { return settings.Global().General.ScrollWheelMultiplier },
 		func(v fxp.Int) { settings.Global().General.ScrollWheelMultiplier = v },
-		gurps.ScrollWheelMultiplierMin, gurps.ScrollWheelMultiplierMax, false, false)
+		model.ScrollWheelMultiplierMin, model.ScrollWheelMultiplierMax, false, false)
 	d.scrollWheelMultiplierField.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(d.scrollWheelMultiplierField)
 }
@@ -279,7 +279,7 @@ Use $PAGE where the page number should be placed.`))
 }
 
 func (d *generalSettingsDockable) reset() {
-	*settings.Global().General = *gurps.NewGeneralSheetSettings()
+	*settings.Global().General = *model.NewGeneralSheetSettings()
 	d.sync()
 }
 
@@ -303,7 +303,7 @@ func (d *generalSettingsDockable) sync() {
 }
 
 func (d *generalSettingsDockable) load(fileSystem fs.FS, filePath string) error {
-	s, err := gurps.NewGeneralSheetSettingsFromFile(fileSystem, filePath)
+	s, err := model.NewGeneralSheetSettingsFromFile(fileSystem, filePath)
 	if err != nil {
 		return err
 	}

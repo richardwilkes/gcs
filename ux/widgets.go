@@ -14,10 +14,10 @@ package ux
 import (
 	"fmt"
 
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
+	"github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -73,7 +73,7 @@ func addSpecializationLabelAndField(parent *unison.Panel, fieldData *string) {
 }
 
 func addPageRefLabelAndField(parent *unison.Panel, fieldData *string) {
-	addLabelAndStringField(parent, i18n.Text("Page Reference"), gurps.PageRefTooltipText, fieldData)
+	addLabelAndStringField(parent, i18n.Text("Page Reference"), model.PageRefTooltipText, fieldData)
 }
 
 func addNotesLabelAndField(parent *unison.Panel, fieldData *string) {
@@ -109,7 +109,7 @@ func addTechLevelRequired(parent *unison.Panel, fieldData **string, includeField
 			**fieldData = value
 			MarkModified(parent)
 		})
-		field.Tooltip = unison.NewTooltipWithText(gurps.TechLevelInfo)
+		field.Tooltip = unison.NewTooltipWithText(model.TechLevelInfo)
 		if *fieldData == nil {
 			field.SetEnabled(false)
 		}
@@ -143,31 +143,31 @@ func addTechLevelRequired(parent *unison.Panel, fieldData **string, includeField
 		}))
 }
 
-func addHitLocationChoicePopup(parent *unison.Panel, entity *gurps.Entity, prefix string, fieldData *string) *unison.PopupMenu[*gurps.HitLocationChoice] {
-	choices, current := gurps.HitLocationChoices(entity, prefix, *fieldData)
+func addHitLocationChoicePopup(parent *unison.Panel, entity *model.Entity, prefix string, fieldData *string) *unison.PopupMenu[*model.HitLocationChoice] {
+	choices, current := model.HitLocationChoices(entity, prefix, *fieldData)
 	popup := addPopup(parent, choices, &current)
-	popup.SelectionCallback = func(index int, _ *gurps.HitLocationChoice) {
+	popup.SelectionCallback = func(index int, _ *model.HitLocationChoice) {
 		*fieldData = choices[index].Key
 		MarkModified(parent)
 	}
 	return popup
 }
 
-func addAttributeChoicePopup(parent *unison.Panel, entity *gurps.Entity, prefix string, fieldData *string, flags gurps.AttributeFlags) *unison.PopupMenu[*gurps.AttributeChoice] {
-	choices, current := gurps.AttributeChoices(entity, prefix, flags, *fieldData)
+func addAttributeChoicePopup(parent *unison.Panel, entity *model.Entity, prefix string, fieldData *string, flags model.AttributeFlags) *unison.PopupMenu[*model.AttributeChoice] {
+	choices, current := model.AttributeChoices(entity, prefix, flags, *fieldData)
 	popup := addPopup(parent, choices, &current)
-	popup.SelectionCallback = func(index int, _ *gurps.AttributeChoice) {
+	popup.SelectionCallback = func(index int, _ *model.AttributeChoice) {
 		*fieldData = choices[index].Key
 		MarkModified(parent)
 	}
 	return popup
 }
 
-func addDifficultyLabelAndFields(parent *unison.Panel, entity *gurps.Entity, difficulty *gurps.AttributeDifficulty) {
+func addDifficultyLabelAndFields(parent *unison.Panel, entity *model.Entity, difficulty *model.AttributeDifficulty) {
 	wrapper := addFlowWrapper(parent, i18n.Text("Difficulty"), 3)
-	addAttributeChoicePopup(wrapper, entity, "", &difficulty.Attribute, gurps.TenFlag)
+	addAttributeChoicePopup(wrapper, entity, "", &difficulty.Attribute, model.TenFlag)
 	wrapper.AddChild(NewFieldTrailingLabel("/"))
-	addPopup(wrapper, gurps.AllDifficulty, &difficulty.Difficulty)
+	addPopup(wrapper, model.AllDifficulty, &difficulty.Difficulty)
 }
 
 func addTagsLabelAndField(parent *unison.Panel, fieldData *[]string) {
@@ -182,9 +182,9 @@ func addLabelAndListField(parent *unison.Panel, labelText, pluralForTooltip stri
 	}
 	parent.AddChild(label)
 	field := NewMultiLineStringField(nil, "", labelText,
-		func() string { return gurps.CombineTags(*fieldData) },
+		func() string { return model.CombineTags(*fieldData) },
 		func(value string) {
-			*fieldData = gurps.ExtractTags(value)
+			*fieldData = model.ExtractTags(value)
 			parent.MarkForLayoutAndRedraw()
 			MarkModified(parent)
 		})
@@ -275,7 +275,7 @@ func addDecimalField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labe
 	return field
 }
 
-func addWeightField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, entity *gurps.Entity, fieldData *measure.Weight, noMinWidth bool) *WeightField {
+func addWeightField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, entity *model.Entity, fieldData *measure.Weight, noMinWidth bool) *WeightField {
 	field := NewWeightField(targetMgr, targetKey, labelText, entity,
 		func() measure.Weight { return *fieldData },
 		func(value measure.Weight) {
@@ -517,7 +517,7 @@ func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetK
 	return popup, field
 }
 
-func addWeightCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey string, entity *gurps.Entity, weightCriteria *criteria.Weight) {
+func addWeightCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey string, entity *model.Entity, weightCriteria *criteria.Weight) {
 	popup := unison.NewPopupMenu[string]()
 	for _, one := range criteria.PrefixedNumericCompareTypeChoices(i18n.Text("which")) {
 		popup.AddItem(one)
@@ -579,7 +579,7 @@ func addQuantityCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, target
 		}, 0, 9999, false, false))
 }
 
-func addLeveledAmountPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey, title string, amount *gurps.LeveledAmount) {
+func addLeveledAmountPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey, title string, amount *model.LeveledAmount) {
 	parent.AddChild(NewDecimalField(targetMgr, targetKey, i18n.Text("Amount"),
 		func() fxp.Int { return amount.Amount },
 		func(value fxp.Int) {
@@ -589,28 +589,28 @@ func addLeveledAmountPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey
 	addCheckBox(parent, title, &amount.PerLevel)
 }
 
-func addTemplateChoices(parent *unison.Panel, targetmgr *TargetMgr, targetKey string, picker **gurps.TemplatePicker) {
+func addTemplateChoices(parent *unison.Panel, targetmgr *TargetMgr, targetKey string, picker **model.TemplatePicker) {
 	if *picker == nil {
-		*picker = &gurps.TemplatePicker{}
+		*picker = &model.TemplatePicker{}
 	}
 	last := (*picker).Type
 	wrapper := addFlowWrapper(parent, i18n.Text("Template Choices"), 3)
-	templatePickerTypePopup := addPopup(wrapper, gurps.AllTemplatePickerType, &(*picker).Type)
+	templatePickerTypePopup := addPopup(wrapper, model.AllTemplatePickerType, &(*picker).Type)
 	text := i18n.Text("Template Choice Quantifier")
 	popup, field := addNumericCriteriaPanel(wrapper, targetmgr, targetKey, "", text, &(*picker).Qualifier, fxp.Min,
 		fxp.Max, 1, false, false)
-	templatePickerTypePopup.SelectionCallback = func(_ int, item gurps.TemplatePickerType) {
+	templatePickerTypePopup.SelectionCallback = func(_ int, item model.TemplatePickerType) {
 		(*picker).Type = item
-		if last == gurps.NotApplicableTemplatePickerType && item != gurps.NotApplicableTemplatePickerType {
+		if last == model.NotApplicableTemplatePickerType && item != model.NotApplicableTemplatePickerType {
 			(*picker).Qualifier.Qualifier = fxp.One
 			field.(Syncer).Sync()
 		}
 		last = item
-		adjustFieldBlank(field, item == gurps.NotApplicableTemplatePickerType || (*picker).Qualifier.Compare == criteria.AnyNumber)
-		adjustPopupBlank(popup, item == gurps.NotApplicableTemplatePickerType)
+		adjustFieldBlank(field, item == model.NotApplicableTemplatePickerType || (*picker).Qualifier.Compare == criteria.AnyNumber)
+		adjustPopupBlank(popup, item == model.NotApplicableTemplatePickerType)
 		MarkModified(parent)
 	}
-	adjustFieldBlank(field, (*picker).Type == gurps.NotApplicableTemplatePickerType)
+	adjustFieldBlank(field, (*picker).Type == model.NotApplicableTemplatePickerType)
 }
 
 // WrapWithSpan wraps a number of children with a single panel that request to fill in span number of columns.

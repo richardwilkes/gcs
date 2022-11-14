@@ -12,11 +12,11 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/unison"
 )
 
-func createPageTopBlock(entity *gurps.Entity, targetMgr *TargetMgr) (page *Page, modifiedFunc func()) {
+func createPageTopBlock(entity *model.Entity, targetMgr *TargetMgr) (page *Page, modifiedFunc func()) {
 	page = NewPage(entity)
 	var top *unison.Panel
 	top, modifiedFunc = createPageFirstRow(entity, targetMgr)
@@ -25,7 +25,7 @@ func createPageTopBlock(entity *gurps.Entity, targetMgr *TargetMgr) (page *Page,
 	return page, modifiedFunc
 }
 
-func createPageFirstRow(entity *gurps.Entity, targetMgr *TargetMgr) (top *unison.Panel, modifiedFunc func()) {
+func createPageFirstRow(entity *model.Entity, targetMgr *TargetMgr) (top *unison.Panel, modifiedFunc func()) {
 	right := unison.NewPanel()
 	right.SetLayout(&unison.FlexLayout{
 		Columns:  3,
@@ -57,7 +57,7 @@ func createPageFirstRow(entity *gurps.Entity, targetMgr *TargetMgr) (top *unison
 	return top, miscPanel.UpdateModified
 }
 
-func createPageSecondRow(entity *gurps.Entity, targetMgr *TargetMgr) *unison.Panel {
+func createPageSecondRow(entity *model.Entity, targetMgr *TargetMgr) *unison.Panel {
 	p := unison.NewPanel()
 	p.SetLayout(&unison.FlexLayout{
 		Columns:  4,

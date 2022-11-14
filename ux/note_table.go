@@ -15,30 +15,30 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/unison"
 )
 
 type noteListProvider struct {
-	notes []*gurps.Note
+	notes []*model.Note
 }
 
-func (p *noteListProvider) Entity() *gurps.Entity {
+func (p *noteListProvider) Entity() *model.Entity {
 	return nil
 }
 
-func (p *noteListProvider) NoteList() []*gurps.Note {
+func (p *noteListProvider) NoteList() []*model.Note {
 	return p.notes
 }
 
-func (p *noteListProvider) SetNoteList(list []*gurps.Note) {
+func (p *noteListProvider) SetNoteList(list []*model.Note) {
 	p.notes = list
 }
 
 // NewNoteTableDockableFromFile loads a list of notes from a file and creates a new unison.Dockable for them.
 func NewNoteTableDockableFromFile(filePath string) (unison.Dockable, error) {
-	notes, err := gurps.NewNotesFromFile(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath))
+	notes, err := model.NewNotesFromFile(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath))
 	if err != nil {
 		return nil, err
 	}
@@ -48,9 +48,9 @@ func NewNoteTableDockableFromFile(filePath string) (unison.Dockable, error) {
 }
 
 // NewNoteTableDockable creates a new unison.Dockable for note list files.
-func NewNoteTableDockable(filePath string, notes []*gurps.Note) *TableDockable[*gurps.Note] {
+func NewNoteTableDockable(filePath string, notes []*model.Note) *TableDockable[*model.Note] {
 	provider := &noteListProvider{notes: notes}
 	return NewTableDockable(filePath, library.NotesExt, NewNotesProvider(provider, false),
-		func(path string) error { return gurps.SaveNotes(provider.NoteList(), path) },
+		func(path string) error { return model.SaveNotes(provider.NoteList(), path) },
 		NewNoteItemID, NewNoteContainerItemID)
 }

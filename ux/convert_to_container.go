@@ -12,7 +12,7 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -32,11 +32,11 @@ func (c *containerConversionList) Apply() {
 }
 
 type containerConversion struct {
-	Target *gurps.Equipment
+	Target *model.Equipment
 	Type   string
 }
 
-func newContainerConversion(target *gurps.Equipment) *containerConversion {
+func newContainerConversion(target *model.Equipment) *containerConversion {
 	return &containerConversion{
 		Target: target,
 		Type:   target.Type,
@@ -48,7 +48,7 @@ func (c *containerConversion) Apply() {
 }
 
 // CanConvertToContainer returns true if the table's current selection has a row that can be converted to a container.
-func CanConvertToContainer(table *unison.Table[*Node[*gurps.Equipment]]) bool {
+func CanConvertToContainer(table *unison.Table[*Node[*model.Equipment]]) bool {
 	for _, row := range table.SelectedRows(false) {
 		if eqp := row.Data(); eqp != nil && !eqp.Container() {
 			return true
@@ -58,13 +58,13 @@ func CanConvertToContainer(table *unison.Table[*Node[*gurps.Equipment]]) bool {
 }
 
 // ConvertToContainer converts any selected rows to containers, if possible.
-func ConvertToContainer(owner Rebuildable, table *unison.Table[*Node[*gurps.Equipment]]) {
+func ConvertToContainer(owner Rebuildable, table *unison.Table[*Node[*model.Equipment]]) {
 	before := &containerConversionList{Owner: owner}
 	after := &containerConversionList{Owner: owner}
 	for _, row := range table.SelectedRows(false) {
 		if eqp := row.Data(); eqp != nil && !eqp.Container() {
 			before.List = append(before.List, newContainerConversion(eqp))
-			eqp.Type += gurps.ContainerKeyPostfix
+			eqp.Type += model.ContainerKeyPostfix
 			after.List = append(after.List, newContainerConversion(eqp))
 		}
 	}

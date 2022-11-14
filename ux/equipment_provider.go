@@ -14,8 +14,8 @@ package ux
 import (
 	"fmt"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
+	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -27,53 +27,53 @@ import (
 
 var (
 	equipmentListColMap = map[int]int{
-		0: gurps.EquipmentDescriptionColumn,
-		1: gurps.EquipmentMaxUsesColumn,
-		2: gurps.EquipmentTLColumn,
-		3: gurps.EquipmentLCColumn,
-		4: gurps.EquipmentCostColumn,
-		5: gurps.EquipmentWeightColumn,
-		6: gurps.EquipmentTagsColumn,
-		7: gurps.EquipmentReferenceColumn,
+		0: model.EquipmentDescriptionColumn,
+		1: model.EquipmentMaxUsesColumn,
+		2: model.EquipmentTLColumn,
+		3: model.EquipmentLCColumn,
+		4: model.EquipmentCostColumn,
+		5: model.EquipmentWeightColumn,
+		6: model.EquipmentTagsColumn,
+		7: model.EquipmentReferenceColumn,
 	}
 	carriedEquipmentPageColMap = map[int]int{
-		0:  gurps.EquipmentEquippedColumn,
-		1:  gurps.EquipmentQuantityColumn,
-		2:  gurps.EquipmentDescriptionColumn,
-		3:  gurps.EquipmentUsesColumn,
-		4:  gurps.EquipmentTLColumn,
-		5:  gurps.EquipmentLCColumn,
-		6:  gurps.EquipmentCostColumn,
-		7:  gurps.EquipmentWeightColumn,
-		8:  gurps.EquipmentExtendedCostColumn,
-		9:  gurps.EquipmentExtendedWeightColumn,
-		10: gurps.EquipmentReferenceColumn,
+		0:  model.EquipmentEquippedColumn,
+		1:  model.EquipmentQuantityColumn,
+		2:  model.EquipmentDescriptionColumn,
+		3:  model.EquipmentUsesColumn,
+		4:  model.EquipmentTLColumn,
+		5:  model.EquipmentLCColumn,
+		6:  model.EquipmentCostColumn,
+		7:  model.EquipmentWeightColumn,
+		8:  model.EquipmentExtendedCostColumn,
+		9:  model.EquipmentExtendedWeightColumn,
+		10: model.EquipmentReferenceColumn,
 	}
 	otherEquipmentPageColMap = map[int]int{
-		0: gurps.EquipmentQuantityColumn,
-		1: gurps.EquipmentDescriptionColumn,
-		2: gurps.EquipmentUsesColumn,
-		3: gurps.EquipmentTLColumn,
-		4: gurps.EquipmentLCColumn,
-		5: gurps.EquipmentCostColumn,
-		6: gurps.EquipmentWeightColumn,
-		7: gurps.EquipmentExtendedCostColumn,
-		8: gurps.EquipmentExtendedWeightColumn,
-		9: gurps.EquipmentReferenceColumn,
+		0: model.EquipmentQuantityColumn,
+		1: model.EquipmentDescriptionColumn,
+		2: model.EquipmentUsesColumn,
+		3: model.EquipmentTLColumn,
+		4: model.EquipmentLCColumn,
+		5: model.EquipmentCostColumn,
+		6: model.EquipmentWeightColumn,
+		7: model.EquipmentExtendedCostColumn,
+		8: model.EquipmentExtendedWeightColumn,
+		9: model.EquipmentReferenceColumn,
 	}
-	_ TableProvider[*gurps.Equipment] = &equipmentProvider{}
+	_ TableProvider[*model.Equipment] = &equipmentProvider{}
 )
 
 type equipmentProvider struct {
-	table    *unison.Table[*Node[*gurps.Equipment]]
+	table    *unison.Table[*Node[*model.Equipment]]
 	colMap   map[int]int
-	provider gurps.EquipmentListProvider
+	provider model.EquipmentListProvider
 	forPage  bool
 	carried  bool
 }
 
 // NewEquipmentProvider creates a new table provider for equipment. 'carried' is only relevant if 'forPage' is true.
-func NewEquipmentProvider(provider gurps.EquipmentListProvider, forPage, carried bool) TableProvider[*gurps.Equipment] {
+func NewEquipmentProvider(provider model.EquipmentListProvider, forPage, carried bool) TableProvider[*model.Equipment] {
 	p := &equipmentProvider{
 		provider: provider,
 		forPage:  forPage,
@@ -93,14 +93,14 @@ func NewEquipmentProvider(provider gurps.EquipmentListProvider, forPage, carried
 
 func (p *equipmentProvider) RefKey() string {
 	if p.carried {
-		return gurps.BlockLayoutEquipmentKey
+		return model.BlockLayoutEquipmentKey
 	}
-	return gurps.BlockLayoutOtherEquipmentKey
+	return model.BlockLayoutOtherEquipmentKey
 }
 
 func (p *equipmentProvider) AllTags() []string {
 	set := make(map[string]struct{})
-	gurps.Traverse(func(modifier *gurps.Equipment) bool {
+	model.Traverse(func(modifier *model.Equipment) bool {
 		for _, tag := range modifier.Tags {
 			set[tag] = struct{}{}
 		}
@@ -111,7 +111,7 @@ func (p *equipmentProvider) AllTags() []string {
 	return tags
 }
 
-func (p *equipmentProvider) SetTable(table *unison.Table[*Node[*gurps.Equipment]]) {
+func (p *equipmentProvider) SetTable(table *unison.Table[*Node[*model.Equipment]]) {
 	p.table = table
 }
 
@@ -119,28 +119,28 @@ func (p *equipmentProvider) RootRowCount() int {
 	return len(p.equipmentList())
 }
 
-func (p *equipmentProvider) RootRows() []*Node[*gurps.Equipment] {
+func (p *equipmentProvider) RootRows() []*Node[*model.Equipment] {
 	data := p.equipmentList()
-	rows := make([]*Node[*gurps.Equipment], 0, len(data))
+	rows := make([]*Node[*model.Equipment], 0, len(data))
 	for _, one := range data {
-		rows = append(rows, NewNode[*gurps.Equipment](p.table, nil, p.colMap, one, p.forPage))
+		rows = append(rows, NewNode[*model.Equipment](p.table, nil, p.colMap, one, p.forPage))
 	}
 	return rows
 }
 
-func (p *equipmentProvider) SetRootRows(rows []*Node[*gurps.Equipment]) {
+func (p *equipmentProvider) SetRootRows(rows []*Node[*model.Equipment]) {
 	p.setEquipmentList(ExtractNodeDataFromList(rows))
 }
 
-func (p *equipmentProvider) RootData() []*gurps.Equipment {
+func (p *equipmentProvider) RootData() []*model.Equipment {
 	return p.equipmentList()
 }
 
-func (p *equipmentProvider) SetRootData(data []*gurps.Equipment) {
+func (p *equipmentProvider) SetRootData(data []*model.Equipment) {
 	p.setEquipmentList(data)
 }
 
-func (p *equipmentProvider) Entity() *gurps.Entity {
+func (p *equipmentProvider) Entity() *model.Entity {
 	return p.provider.Entity()
 }
 
@@ -152,7 +152,7 @@ func (p *equipmentProvider) DragSVG() *unison.SVG {
 	return svg.GCSEquipment
 }
 
-func (p *equipmentProvider) DropShouldMoveData(from, to *unison.Table[*Node[*gurps.Equipment]]) bool {
+func (p *equipmentProvider) DropShouldMoveData(from, to *unison.Table[*Node[*model.Equipment]]) bool {
 	// Within same table?
 	if from == to {
 		return true
@@ -165,11 +165,11 @@ func (p *equipmentProvider) DropShouldMoveData(from, to *unison.Table[*Node[*gur
 	return false
 }
 
-func (p *equipmentProvider) ProcessDropData(from, to *unison.Table[*Node[*gurps.Equipment]]) {
+func (p *equipmentProvider) ProcessDropData(from, to *unison.Table[*Node[*model.Equipment]]) {
 	if p.carried && from != to {
 		for _, row := range to.SelectedRows(true) {
-			if equipmentRow, ok := any(row).(*Node[*gurps.Equipment]); ok {
-				gurps.Traverse(func(e *gurps.Equipment) bool {
+			if equipmentRow, ok := any(row).(*Node[*model.Equipment]); ok {
+				model.Traverse(func(e *model.Equipment) bool {
 					e.Equipped = true
 					return false
 				}, false, false, equipmentRow.Data())
@@ -182,9 +182,9 @@ func (p *equipmentProvider) AltDropSupport() *AltDropSupport {
 	return &AltDropSupport{
 		DragKey: gid.EquipmentModifier,
 		Drop: func(rowIndex int, data any) {
-			if tableDragData, ok := data.(*unison.TableDragData[*Node[*gurps.EquipmentModifier]]); ok {
+			if tableDragData, ok := data.(*unison.TableDragData[*Node[*model.EquipmentModifier]]); ok {
 				entity := p.Entity()
-				rows := make([]*gurps.EquipmentModifier, 0, len(tableDragData.Rows))
+				rows := make([]*model.EquipmentModifier, 0, len(tableDragData.Rows))
 				for _, row := range tableDragData.Rows {
 					rows = append(rows, row.Data().Clone(entity, nil, false))
 				}
@@ -207,36 +207,36 @@ func (p *equipmentProvider) ItemNames() (singular, plural string) {
 	return i18n.Text("Equipment Item"), i18n.Text("Equipment Items")
 }
 
-func (p *equipmentProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Equipment]] {
-	var headers []unison.TableColumnHeader[*Node[*gurps.Equipment]]
+func (p *equipmentProvider) Headers() []unison.TableColumnHeader[*Node[*model.Equipment]] {
+	var headers []unison.TableColumnHeader[*Node[*model.Equipment]]
 	for i := 0; i < len(p.colMap); i++ {
 		switch p.colMap[i] {
-		case gurps.EquipmentEquippedColumn:
-			headers = append(headers, NewEditorEquippedHeader[*gurps.Equipment](p.forPage))
-		case gurps.EquipmentQuantityColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Equipment](i18n.Text("#"), i18n.Text("Quantity"), p.forPage))
-		case gurps.EquipmentDescriptionColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Equipment](p.descriptionText(), "", p.forPage))
-		case gurps.EquipmentUsesColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Equipment](i18n.Text("Uses"), i18n.Text("The number of uses remaining"), p.forPage))
-		case gurps.EquipmentMaxUsesColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Equipment](i18n.Text("Uses"), i18n.Text("The maximum number of uses"), p.forPage))
-		case gurps.EquipmentTLColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Equipment](i18n.Text("TL"), i18n.Text("Tech Level"), p.forPage))
-		case gurps.EquipmentLCColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Equipment](i18n.Text("LC"), i18n.Text("Legality Class"), p.forPage))
-		case gurps.EquipmentCostColumn:
-			headers = append(headers, NewMoneyHeader[*gurps.Equipment](p.forPage))
-		case gurps.EquipmentExtendedCostColumn:
-			headers = append(headers, NewExtendedMoneyHeader[*gurps.Equipment](p.forPage))
-		case gurps.EquipmentWeightColumn:
-			headers = append(headers, NewWeightHeader[*gurps.Equipment](p.forPage))
-		case gurps.EquipmentExtendedWeightColumn:
-			headers = append(headers, NewEditorExtendedWeightHeader[*gurps.Equipment](p.forPage))
-		case gurps.EquipmentTagsColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Equipment](i18n.Text("Tags"), "", p.forPage))
-		case gurps.EquipmentReferenceColumn:
-			headers = append(headers, NewEditorPageRefHeader[*gurps.Equipment](p.forPage))
+		case model.EquipmentEquippedColumn:
+			headers = append(headers, NewEditorEquippedHeader[*model.Equipment](p.forPage))
+		case model.EquipmentQuantityColumn:
+			headers = append(headers, NewEditorListHeader[*model.Equipment](i18n.Text("#"), i18n.Text("Quantity"), p.forPage))
+		case model.EquipmentDescriptionColumn:
+			headers = append(headers, NewEditorListHeader[*model.Equipment](p.descriptionText(), "", p.forPage))
+		case model.EquipmentUsesColumn:
+			headers = append(headers, NewEditorListHeader[*model.Equipment](i18n.Text("Uses"), i18n.Text("The number of uses remaining"), p.forPage))
+		case model.EquipmentMaxUsesColumn:
+			headers = append(headers, NewEditorListHeader[*model.Equipment](i18n.Text("Uses"), i18n.Text("The maximum number of uses"), p.forPage))
+		case model.EquipmentTLColumn:
+			headers = append(headers, NewEditorListHeader[*model.Equipment](i18n.Text("TL"), i18n.Text("Tech Level"), p.forPage))
+		case model.EquipmentLCColumn:
+			headers = append(headers, NewEditorListHeader[*model.Equipment](i18n.Text("LC"), i18n.Text("Legality Class"), p.forPage))
+		case model.EquipmentCostColumn:
+			headers = append(headers, NewMoneyHeader[*model.Equipment](p.forPage))
+		case model.EquipmentExtendedCostColumn:
+			headers = append(headers, NewExtendedMoneyHeader[*model.Equipment](p.forPage))
+		case model.EquipmentWeightColumn:
+			headers = append(headers, NewWeightHeader[*model.Equipment](p.forPage))
+		case model.EquipmentExtendedWeightColumn:
+			headers = append(headers, NewEditorExtendedWeightHeader[*model.Equipment](p.forPage))
+		case model.EquipmentTagsColumn:
+			headers = append(headers, NewEditorListHeader[*model.Equipment](i18n.Text("Tags"), "", p.forPage))
+		case model.EquipmentReferenceColumn:
+			headers = append(headers, NewEditorPageRefHeader[*model.Equipment](p.forPage))
 		default:
 			jot.Fatalf(1, "invalid equipment column: %d", p.colMap[i])
 		}
@@ -244,11 +244,11 @@ func (p *equipmentProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Eq
 	return headers
 }
 
-func (p *equipmentProvider) SyncHeader(headers []unison.TableColumnHeader[*Node[*gurps.Equipment]]) {
+func (p *equipmentProvider) SyncHeader(headers []unison.TableColumnHeader[*Node[*model.Equipment]]) {
 	if p.forPage {
 		for i := 0; i < len(p.colMap); i++ {
-			if p.colMap[i] == gurps.EquipmentDescriptionColumn {
-				if header, ok2 := headers[i].(*PageTableColumnHeader[*gurps.Equipment]); ok2 {
+			if p.colMap[i] == model.EquipmentDescriptionColumn {
+				if header, ok2 := headers[i].(*PageTableColumnHeader[*model.Equipment]); ok2 {
 					header.Label.Text = p.descriptionText()
 				}
 				break
@@ -259,7 +259,7 @@ func (p *equipmentProvider) SyncHeader(headers []unison.TableColumnHeader[*Node[
 
 func (p *equipmentProvider) HierarchyColumnIndex() int {
 	for k, v := range p.colMap {
-		if v == gurps.EquipmentDescriptionColumn {
+		if v == model.EquipmentDescriptionColumn {
 			return k
 		}
 	}
@@ -268,7 +268,7 @@ func (p *equipmentProvider) HierarchyColumnIndex() int {
 
 func (p *equipmentProvider) ExcessWidthColumnIndex() int {
 	for k, v := range p.colMap {
-		if v == gurps.EquipmentDescriptionColumn {
+		if v == model.EquipmentDescriptionColumn {
 			return k
 		}
 	}
@@ -278,7 +278,7 @@ func (p *equipmentProvider) ExcessWidthColumnIndex() int {
 func (p *equipmentProvider) descriptionText() string {
 	title := i18n.Text("Equipment")
 	if p.forPage {
-		if entity, ok := p.provider.(*gurps.Entity); ok {
+		if entity, ok := p.provider.(*model.Entity); ok {
 			if p.carried {
 				title = fmt.Sprintf(i18n.Text("Carried Equipment (%s; $%s)"),
 					entity.SheetSettings.DefaultWeightUnits.Format(entity.WeightCarried(false)),
@@ -291,33 +291,33 @@ func (p *equipmentProvider) descriptionText() string {
 	return title
 }
 
-func (p *equipmentProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*gurps.Equipment]]) {
-	OpenEditor[*gurps.Equipment](table, func(item *gurps.Equipment) { EditEquipment(owner, item, p.carried) })
+func (p *equipmentProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*model.Equipment]]) {
+	OpenEditor[*model.Equipment](table, func(item *model.Equipment) { EditEquipment(owner, item, p.carried) })
 }
 
-func (p *equipmentProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Equipment]], variant ItemVariant) {
+func (p *equipmentProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*model.Equipment]], variant ItemVariant) {
 	topListFunc := p.provider.OtherEquipmentList
 	setTopListFunc := p.provider.SetOtherEquipmentList
 	if p.carried {
 		topListFunc = p.provider.CarriedEquipmentList
 		setTopListFunc = p.provider.SetCarriedEquipmentList
 	}
-	item := gurps.NewEquipment(p.Entity(), nil, variant == ContainerItemVariant)
-	InsertItems[*gurps.Equipment](owner, table, topListFunc, setTopListFunc,
-		func(_ *unison.Table[*Node[*gurps.Equipment]]) []*Node[*gurps.Equipment] {
+	item := model.NewEquipment(p.Entity(), nil, variant == ContainerItemVariant)
+	InsertItems[*model.Equipment](owner, table, topListFunc, setTopListFunc,
+		func(_ *unison.Table[*Node[*model.Equipment]]) []*Node[*model.Equipment] {
 			return p.RootRows()
 		}, item)
 	EditEquipment(owner, item, p.carried)
 }
 
-func (p *equipmentProvider) equipmentList() []*gurps.Equipment {
+func (p *equipmentProvider) equipmentList() []*model.Equipment {
 	if p.carried {
 		return p.provider.CarriedEquipmentList()
 	}
 	return p.provider.OtherEquipmentList()
 }
 
-func (p *equipmentProvider) setEquipmentList(list []*gurps.Equipment) {
+func (p *equipmentProvider) setEquipmentList(list []*model.Equipment) {
 	if p.carried {
 		p.provider.SetCarriedEquipmentList(list)
 	} else {
@@ -330,7 +330,7 @@ func (p *equipmentProvider) Serialize() ([]byte, error) {
 }
 
 func (p *equipmentProvider) Deserialize(data []byte) error {
-	var rows []*gurps.Equipment
+	var rows []*model.Equipment
 	if err := jio.DecompressAndDeserialize(data, &rows); err != nil {
 		return err
 	}

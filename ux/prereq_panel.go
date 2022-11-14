@@ -14,8 +14,8 @@ package ux
 import (
 	"reflect"
 
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -26,20 +26,20 @@ import (
 
 const noAndOr = ""
 
-var lastPrereqTypeUsed = gurps.TraitPrereqType
+var lastPrereqTypeUsed = model.TraitPrereqType
 
 type prereqPanel struct {
 	unison.Panel
-	entity   *gurps.Entity
-	root     **gurps.PrereqList
-	andOrMap map[gurps.Prereq]*unison.Label
+	entity   *model.Entity
+	root     **model.PrereqList
+	andOrMap map[model.Prereq]*unison.Label
 }
 
-func newPrereqPanel(entity *gurps.Entity, root **gurps.PrereqList) *prereqPanel {
+func newPrereqPanel(entity *model.Entity, root **model.PrereqList) *prereqPanel {
 	p := &prereqPanel{
 		entity:   entity,
 		root:     root,
-		andOrMap: make(map[gurps.Prereq]*unison.Label),
+		andOrMap: make(map[model.Prereq]*unison.Label),
 	}
 	p.Self = p
 	p.SetLayout(&unison.FlexLayout{Columns: 1})
@@ -61,7 +61,7 @@ func newPrereqPanel(entity *gurps.Entity, root **gurps.PrereqList) *prereqPanel 
 	return p
 }
 
-func (p *prereqPanel) createPrereqListPanel(depth int, list *gurps.PrereqList) *unison.Panel {
+func (p *prereqPanel) createPrereqListPanel(depth int, list *model.PrereqList) *unison.Panel {
 	panel := unison.NewPanel()
 	p.createButtonsPanel(panel, depth, list)
 	inFront := andOrText(list) != noAndOr
@@ -96,24 +96,24 @@ func (p *prereqPanel) createPrereqListPanel(depth int, list *gurps.PrereqList) *
 	return panel
 }
 
-func (p *prereqPanel) addToList(parent *unison.Panel, depth, index int, child gurps.Prereq) {
+func (p *prereqPanel) addToList(parent *unison.Panel, depth, index int, child model.Prereq) {
 	var panel *unison.Panel
 	switch one := child.(type) {
-	case *gurps.PrereqList:
+	case *model.PrereqList:
 		panel = p.createPrereqListPanel(depth, one)
-	case *gurps.TraitPrereq:
+	case *model.TraitPrereq:
 		panel = p.createTraitPrereqPanel(depth, one)
-	case *gurps.AttributePrereq:
+	case *model.AttributePrereq:
 		panel = p.createAttributePrereqPanel(depth, one)
-	case *gurps.ContainedQuantityPrereq:
+	case *model.ContainedQuantityPrereq:
 		panel = p.createContainedQuantityPrereqPanel(depth, one)
-	case *gurps.ContainedWeightPrereq:
+	case *model.ContainedWeightPrereq:
 		panel = p.createContainedWeightPrereqPanel(depth, one)
-	case *gurps.EquippedEquipmentPrereq:
+	case *model.EquippedEquipmentPrereq:
 		panel = p.createEquippedEquipmentPrereqPanel(depth, one)
-	case *gurps.SkillPrereq:
+	case *model.SkillPrereq:
 		panel = p.createSkillPrereqPanel(depth, one)
-	case *gurps.SpellPrereq:
+	case *model.SpellPrereq:
 		panel = p.createSpellPrereqPanel(depth, one)
 	default:
 		jot.Warn(errs.Newf("unknown prerequisite type: %s", reflect.TypeOf(child).String()))
@@ -133,11 +133,11 @@ func (p *prereqPanel) addToList(parent *unison.Panel, depth, index int, child gu
 	}
 }
 
-func (p *prereqPanel) createButtonsPanel(parent *unison.Panel, depth int, data gurps.Prereq) {
+func (p *prereqPanel) createButtonsPanel(parent *unison.Panel, depth int, data model.Prereq) {
 	buttons := unison.NewPanel()
 	buttons.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: float32(depth * 20)}))
 	parent.AddChild(buttons)
-	if prereqList, ok := data.(*gurps.PrereqList); ok {
+	if prereqList, ok := data.(*model.PrereqList); ok {
 		addPrereqButton := unison.NewSVGButton(svg.CircledAdd)
 		addPrereqButton.ClickCallback = func() {
 			if created := p.createPrereqForType(lastPrereqTypeUsed, prereqList); created != nil {
@@ -152,9 +152,9 @@ func (p *prereqPanel) createButtonsPanel(parent *unison.Panel, depth int, data g
 
 		addPrereqListButton := unison.NewSVGButton(svg.CircledVerticalEllipsis)
 		addPrereqListButton.ClickCallback = func() {
-			newList := gurps.NewPrereqList()
+			newList := model.NewPrereqList()
 			newList.Parent = prereqList
-			prereqList.Prereqs = slices.Insert(prereqList.Prereqs, 0, gurps.Prereq(newList))
+			prereqList.Prereqs = slices.Insert(prereqList.Prereqs, 0, model.Prereq(newList))
 			p.addToList(parent, depth+1, 0, newList)
 			p.adjustAndOrForList(prereqList)
 			unison.Ancestor[*unison.DockContainer](p).MarkForLayoutRecursively()
@@ -167,7 +167,7 @@ func (p *prereqPanel) createButtonsPanel(parent *unison.Panel, depth int, data g
 		deleteButton := unison.NewSVGButton(svg.Trash)
 		deleteButton.ClickCallback = func() {
 			delete(p.andOrMap, data)
-			if i := slices.IndexFunc(parentList.Prereqs, func(elem gurps.Prereq) bool { return elem == data }); i != -1 {
+			if i := slices.IndexFunc(parentList.Prereqs, func(elem model.Prereq) bool { return elem == data }); i != -1 {
 				parentList.Prereqs = slices.Delete(parentList.Prereqs, i, i+1)
 			}
 			parent.RemoveFromParent()
@@ -182,20 +182,20 @@ func (p *prereqPanel) createButtonsPanel(parent *unison.Panel, depth int, data g
 	})
 }
 
-func (p *prereqPanel) addAndOr(parent *unison.Panel, data gurps.Prereq) {
+func (p *prereqPanel) addAndOr(parent *unison.Panel, data model.Prereq) {
 	label := NewFieldLeadingLabel(andOrText(data))
 	parent.AddChild(label)
 	p.andOrMap[data] = label
 }
 
-func (p *prereqPanel) adjustAndOrForList(list *gurps.PrereqList) {
+func (p *prereqPanel) adjustAndOrForList(list *model.PrereqList) {
 	for _, one := range list.Prereqs {
 		p.adjustAndOr(one)
 	}
 	p.MarkForLayoutRecursively()
 }
 
-func (p *prereqPanel) adjustAndOr(data gurps.Prereq) {
+func (p *prereqPanel) adjustAndOr(data model.Prereq) {
 	if label, ok := p.andOrMap[data]; ok {
 		if text := andOrText(data); text != label.Text {
 			parent := label.Parent()
@@ -210,7 +210,7 @@ func (p *prereqPanel) adjustAndOr(data gurps.Prereq) {
 	}
 }
 
-func andOrText(pr gurps.Prereq) string {
+func andOrText(pr model.Prereq) string {
 	list := pr.ParentList()
 	if list == nil || len(list.Prereqs) < 2 || list.Prereqs[0] == pr {
 		return noAndOr
@@ -221,17 +221,17 @@ func andOrText(pr gurps.Prereq) string {
 	return i18n.Text("or")
 }
 
-func (p *prereqPanel) addPrereqTypeSwitcher(parent *unison.Panel, depth int, pr gurps.Prereq) {
+func (p *prereqPanel) addPrereqTypeSwitcher(parent *unison.Panel, depth int, pr model.Prereq) {
 	prereqType := pr.PrereqType()
-	popup := addPopup(parent, gurps.AllPrereqType[1:], &prereqType)
-	popup.SelectionCallback = func(_ int, item gurps.PrereqType) {
+	popup := addPopup(parent, model.AllPrereqType[1:], &prereqType)
+	popup.SelectionCallback = func(_ int, item model.PrereqType) {
 		parentList := pr.ParentList()
 		if newPrereq := p.createPrereqForType(item, parentList); newPrereq != nil {
 			lastPrereqTypeUsed = item
 			parentOfParent := parent.Parent()
 			parent.RemoveFromParent()
 			list := parentList.Prereqs
-			i := slices.IndexFunc(list, func(one gurps.Prereq) bool { return one == pr })
+			i := slices.IndexFunc(list, func(one model.Prereq) bool { return one == pr })
 			list[i] = newPrereq
 			p.addToList(parentOfParent, depth, i, newPrereq)
 			unison.Ancestor[*unison.DockContainer](p).MarkForLayoutRecursively()
@@ -240,38 +240,38 @@ func (p *prereqPanel) addPrereqTypeSwitcher(parent *unison.Panel, depth int, pr 
 	}
 }
 
-func (p *prereqPanel) createPrereqForType(prereqType gurps.PrereqType, parentList *gurps.PrereqList) gurps.Prereq {
+func (p *prereqPanel) createPrereqForType(prereqType model.PrereqType, parentList *model.PrereqList) model.Prereq {
 	switch prereqType {
-	case gurps.ListPrereqType:
-		one := gurps.NewPrereqList()
+	case model.ListPrereqType:
+		one := model.NewPrereqList()
 		one.Parent = parentList
 		return one
-	case gurps.TraitPrereqType:
-		one := gurps.NewTraitPrereq()
+	case model.TraitPrereqType:
+		one := model.NewTraitPrereq()
 		one.Parent = parentList
 		return one
-	case gurps.AttributePrereqType:
-		one := gurps.NewAttributePrereq(p.entity)
+	case model.AttributePrereqType:
+		one := model.NewAttributePrereq(p.entity)
 		one.Parent = parentList
 		return one
-	case gurps.ContainedQuantityPrereqType:
-		one := gurps.NewContainedQuantityPrereq()
+	case model.ContainedQuantityPrereqType:
+		one := model.NewContainedQuantityPrereq()
 		one.Parent = parentList
 		return one
-	case gurps.ContainedWeightPrereqType:
-		one := gurps.NewContainedWeightPrereq(p.entity)
+	case model.ContainedWeightPrereqType:
+		one := model.NewContainedWeightPrereq(p.entity)
 		one.Parent = parentList
 		return one
-	case gurps.EquippedEquipmentPrereqType:
-		one := gurps.NewEquippedEquipmentPrereq()
+	case model.EquippedEquipmentPrereqType:
+		one := model.NewEquippedEquipmentPrereq()
 		one.Parent = parentList
 		return one
-	case gurps.SkillPrereqType:
-		one := gurps.NewSkillPrereq()
+	case model.SkillPrereqType:
+		one := model.NewSkillPrereq()
 		one.Parent = parentList
 		return one
-	case gurps.SpellPrereqType:
-		one := gurps.NewSpellPrereq()
+	case model.SpellPrereqType:
+		one := model.NewSpellPrereq()
 		one.Parent = parentList
 		return one
 	default:
@@ -280,7 +280,7 @@ func (p *prereqPanel) createPrereqForType(prereqType gurps.PrereqType, parentLis
 	}
 }
 
-func (p *prereqPanel) createTraitPrereqPanel(depth int, pr *gurps.TraitPrereq) *unison.Panel {
+func (p *prereqPanel) createTraitPrereqPanel(depth int, pr *model.TraitPrereq) *unison.Panel {
 	panel := unison.NewPanel()
 	p.createButtonsPanel(panel, depth, pr)
 	inFront := andOrText(pr) != noAndOr
@@ -304,7 +304,7 @@ func (p *prereqPanel) createTraitPrereqPanel(depth int, pr *gurps.TraitPrereq) *
 	return panel
 }
 
-func (p *prereqPanel) createAttributePrereqPanel(depth int, pr *gurps.AttributePrereq) *unison.Panel {
+func (p *prereqPanel) createAttributePrereqPanel(depth int, pr *model.AttributePrereq) *unison.Panel {
 	panel := unison.NewPanel()
 	p.createButtonsPanel(panel, depth, pr)
 	inFront := andOrText(pr) != noAndOr
@@ -324,9 +324,9 @@ func (p *prereqPanel) createAttributePrereqPanel(depth int, pr *gurps.AttributeP
 	})
 	second := unison.NewPanel()
 	second.SetLayoutData(&unison.FlexLayoutData{HSpan: columns - 1})
-	extra := gurps.SizeFlag | gurps.DodgeFlag | gurps.ParryFlag | gurps.BlockFlag
+	extra := model.SizeFlag | model.DodgeFlag | model.ParryFlag | model.BlockFlag
 	addAttributeChoicePopup(second, p.entity, noAndOr, &pr.Which, extra)
-	addAttributeChoicePopup(second, p.entity, i18n.Text("combined with"), &pr.CombinedWith, extra|gurps.BlankFlag)
+	addAttributeChoicePopup(second, p.entity, i18n.Text("combined with"), &pr.CombinedWith, extra|model.BlankFlag)
 	addNumericCriteriaPanel(second, nil, "", i18n.Text("which"), i18n.Text("Attribute Qualifier"),
 		&pr.QualifierCriteria, fxp.Min, fxp.Max, 1, false, false)
 	second.SetLayout(&unison.FlexLayout{
@@ -339,7 +339,7 @@ func (p *prereqPanel) createAttributePrereqPanel(depth int, pr *gurps.AttributeP
 	return panel
 }
 
-func (p *prereqPanel) createContainedQuantityPrereqPanel(depth int, pr *gurps.ContainedQuantityPrereq) *unison.Panel {
+func (p *prereqPanel) createContainedQuantityPrereqPanel(depth int, pr *model.ContainedQuantityPrereq) *unison.Panel {
 	panel := unison.NewPanel()
 	p.createButtonsPanel(panel, depth, pr)
 	inFront := andOrText(pr) != noAndOr
@@ -361,7 +361,7 @@ func (p *prereqPanel) createContainedQuantityPrereqPanel(depth int, pr *gurps.Co
 	return panel
 }
 
-func (p *prereqPanel) createContainedWeightPrereqPanel(depth int, pr *gurps.ContainedWeightPrereq) *unison.Panel {
+func (p *prereqPanel) createContainedWeightPrereqPanel(depth int, pr *model.ContainedWeightPrereq) *unison.Panel {
 	panel := unison.NewPanel()
 	p.createButtonsPanel(panel, depth, pr)
 	inFront := andOrText(pr) != noAndOr
@@ -392,7 +392,7 @@ func (p *prereqPanel) createContainedWeightPrereqPanel(depth int, pr *gurps.Cont
 	return panel
 }
 
-func (p *prereqPanel) createEquippedEquipmentPrereqPanel(depth int, pr *gurps.EquippedEquipmentPrereq) *unison.Panel {
+func (p *prereqPanel) createEquippedEquipmentPrereqPanel(depth int, pr *model.EquippedEquipmentPrereq) *unison.Panel {
 	panel := unison.NewPanel()
 	p.createButtonsPanel(panel, depth, pr)
 	inFront := andOrText(pr) != noAndOr
@@ -414,7 +414,7 @@ func (p *prereqPanel) createEquippedEquipmentPrereqPanel(depth int, pr *gurps.Eq
 	return panel
 }
 
-func (p *prereqPanel) createSkillPrereqPanel(depth int, pr *gurps.SkillPrereq) *unison.Panel {
+func (p *prereqPanel) createSkillPrereqPanel(depth int, pr *model.SkillPrereq) *unison.Panel {
 	panel := unison.NewPanel()
 	p.createButtonsPanel(panel, depth, pr)
 	inFront := andOrText(pr) != noAndOr
@@ -438,7 +438,7 @@ func (p *prereqPanel) createSkillPrereqPanel(depth int, pr *gurps.SkillPrereq) *
 	return panel
 }
 
-func (p *prereqPanel) createSpellPrereqPanel(depth int, pr *gurps.SpellPrereq) *unison.Panel {
+func (p *prereqPanel) createSpellPrereqPanel(depth int, pr *model.SpellPrereq) *unison.Panel {
 	panel := unison.NewPanel()
 	p.createButtonsPanel(panel, depth, pr)
 	inFront := andOrText(pr) != noAndOr
@@ -459,17 +459,17 @@ func (p *prereqPanel) createSpellPrereqPanel(depth int, pr *gurps.SpellPrereq) *
 	})
 	second := unison.NewPanel()
 	second.SetLayoutData(&unison.FlexLayoutData{HSpan: columns - 1})
-	subTypePopup := addPopup[gurps.SpellComparisonType](second, gurps.AllSpellComparisonType, &pr.SubType)
+	subTypePopup := addPopup[model.SpellComparisonType](second, model.AllSpellComparisonType, &pr.SubType)
 	popup, field := addStringCriteriaPanel(second, "", "", i18n.Text("Spell Qualifier"), &pr.QualifierCriteria, 1, false)
 	savedCallback := subTypePopup.SelectionCallback
-	subTypePopup.SelectionCallback = func(index int, item gurps.SpellComparisonType) {
+	subTypePopup.SelectionCallback = func(index int, item model.SpellComparisonType) {
 		savedCallback(index, item)
-		blank := pr.SubType == gurps.AnySpellComparisonType || pr.SubType == gurps.CollegeCountSpellComparisonType
+		blank := pr.SubType == model.AnySpellComparisonType || pr.SubType == model.CollegeCountSpellComparisonType
 		adjustPopupBlank(popup, blank)
 		adjustFieldBlank(field, blank)
 	}
-	adjustPopupBlank(popup, pr.SubType == gurps.AnySpellComparisonType || pr.SubType == gurps.CollegeCountSpellComparisonType)
-	adjustFieldBlank(field, pr.SubType == gurps.AnySpellComparisonType || pr.SubType == gurps.CollegeCountSpellComparisonType)
+	adjustPopupBlank(popup, pr.SubType == model.AnySpellComparisonType || pr.SubType == model.CollegeCountSpellComparisonType)
+	adjustFieldBlank(field, pr.SubType == model.AnySpellComparisonType || pr.SubType == model.CollegeCountSpellComparisonType)
 	second.SetLayout(&unison.FlexLayout{
 		Columns:  len(second.Children()),
 		HSpacing: unison.StdHSpacing,

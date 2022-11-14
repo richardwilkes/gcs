@@ -12,8 +12,8 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
+	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox"
@@ -26,41 +26,41 @@ import (
 
 var (
 	skillListColMap = map[int]int{
-		0: gurps.SkillDescriptionColumn,
-		1: gurps.SkillDifficultyColumn,
-		2: gurps.SkillTagsColumn,
-		3: gurps.SkillReferenceColumn,
+		0: model.SkillDescriptionColumn,
+		1: model.SkillDifficultyColumn,
+		2: model.SkillTagsColumn,
+		3: model.SkillReferenceColumn,
 	}
 	entitySkillPageColMap = map[int]int{
-		0: gurps.SkillDescriptionColumn,
-		1: gurps.SkillLevelColumn,
-		2: gurps.SkillRelativeLevelColumn,
-		3: gurps.SkillPointsColumn,
-		4: gurps.SkillReferenceColumn,
+		0: model.SkillDescriptionColumn,
+		1: model.SkillLevelColumn,
+		2: model.SkillRelativeLevelColumn,
+		3: model.SkillPointsColumn,
+		4: model.SkillReferenceColumn,
 	}
 	skillPageColMap = map[int]int{
-		0: gurps.SkillDescriptionColumn,
-		1: gurps.SkillPointsColumn,
-		2: gurps.SkillReferenceColumn,
+		0: model.SkillDescriptionColumn,
+		1: model.SkillPointsColumn,
+		2: model.SkillReferenceColumn,
 	}
-	_ TableProvider[*gurps.Skill] = &skillsProvider{}
+	_ TableProvider[*model.Skill] = &skillsProvider{}
 )
 
 type skillsProvider struct {
-	table    *unison.Table[*Node[*gurps.Skill]]
+	table    *unison.Table[*Node[*model.Skill]]
 	colMap   map[int]int
-	provider gurps.SkillListProvider
+	provider model.SkillListProvider
 	forPage  bool
 }
 
 // NewSkillsProvider creates a new table provider for skills.
-func NewSkillsProvider(provider gurps.SkillListProvider, forPage bool) TableProvider[*gurps.Skill] {
+func NewSkillsProvider(provider model.SkillListProvider, forPage bool) TableProvider[*model.Skill] {
 	p := &skillsProvider{
 		provider: provider,
 		forPage:  forPage,
 	}
 	if forPage {
-		if _, ok := provider.(*gurps.Entity); ok {
+		if _, ok := provider.(*model.Entity); ok {
 			p.colMap = entitySkillPageColMap
 		} else {
 			p.colMap = skillPageColMap
@@ -72,12 +72,12 @@ func NewSkillsProvider(provider gurps.SkillListProvider, forPage bool) TableProv
 }
 
 func (p *skillsProvider) RefKey() string {
-	return gurps.BlockLayoutSkillsKey
+	return model.BlockLayoutSkillsKey
 }
 
 func (p *skillsProvider) AllTags() []string {
 	set := make(map[string]struct{})
-	gurps.Traverse(func(modifier *gurps.Skill) bool {
+	model.Traverse(func(modifier *model.Skill) bool {
 		for _, tag := range modifier.Tags {
 			set[tag] = struct{}{}
 		}
@@ -88,7 +88,7 @@ func (p *skillsProvider) AllTags() []string {
 	return tags
 }
 
-func (p *skillsProvider) SetTable(table *unison.Table[*Node[*gurps.Skill]]) {
+func (p *skillsProvider) SetTable(table *unison.Table[*Node[*model.Skill]]) {
 	p.table = table
 }
 
@@ -96,28 +96,28 @@ func (p *skillsProvider) RootRowCount() int {
 	return len(p.provider.SkillList())
 }
 
-func (p *skillsProvider) RootRows() []*Node[*gurps.Skill] {
+func (p *skillsProvider) RootRows() []*Node[*model.Skill] {
 	data := p.provider.SkillList()
-	rows := make([]*Node[*gurps.Skill], 0, len(data))
+	rows := make([]*Node[*model.Skill], 0, len(data))
 	for _, one := range data {
-		rows = append(rows, NewNode[*gurps.Skill](p.table, nil, p.colMap, one, p.forPage))
+		rows = append(rows, NewNode[*model.Skill](p.table, nil, p.colMap, one, p.forPage))
 	}
 	return rows
 }
 
-func (p *skillsProvider) SetRootRows(rows []*Node[*gurps.Skill]) {
+func (p *skillsProvider) SetRootRows(rows []*Node[*model.Skill]) {
 	p.provider.SetSkillList(ExtractNodeDataFromList(rows))
 }
 
-func (p *skillsProvider) RootData() []*gurps.Skill {
+func (p *skillsProvider) RootData() []*model.Skill {
 	return p.provider.SkillList()
 }
 
-func (p *skillsProvider) SetRootData(data []*gurps.Skill) {
+func (p *skillsProvider) SetRootData(data []*model.Skill) {
 	p.provider.SetSkillList(data)
 }
 
-func (p *skillsProvider) Entity() *gurps.Entity {
+func (p *skillsProvider) Entity() *model.Entity {
 	return p.provider.Entity()
 }
 
@@ -129,17 +129,17 @@ func (p *skillsProvider) DragSVG() *unison.SVG {
 	return svg.GCSSkills
 }
 
-func (p *skillsProvider) DropShouldMoveData(from, to *unison.Table[*Node[*gurps.Skill]]) bool {
+func (p *skillsProvider) DropShouldMoveData(from, to *unison.Table[*Node[*model.Skill]]) bool {
 	return from == to
 }
 
-func (p *skillsProvider) ProcessDropData(_, to *unison.Table[*Node[*gurps.Skill]]) {
-	entityProvider := unison.Ancestor[gurps.EntityProvider](to)
+func (p *skillsProvider) ProcessDropData(_, to *unison.Table[*Node[*model.Skill]]) {
+	entityProvider := unison.Ancestor[model.EntityProvider](to)
 	if !toolbox.IsNil(entityProvider) {
 		entity := entityProvider.Entity()
 		if entity != nil {
 			for _, row := range to.SelectedRows(true) {
-				gurps.Traverse(func(skill *gurps.Skill) bool {
+				model.Traverse(func(skill *model.Skill) bool {
 					if skill.TechLevel != nil && *skill.TechLevel == "" {
 						tl := entity.Profile.TechLevel
 						skill.TechLevel = &tl
@@ -159,24 +159,24 @@ func (p *skillsProvider) ItemNames() (singular, plural string) {
 	return i18n.Text("Skill"), i18n.Text("Skills")
 }
 
-func (p *skillsProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Skill]] {
-	var headers []unison.TableColumnHeader[*Node[*gurps.Skill]]
+func (p *skillsProvider) Headers() []unison.TableColumnHeader[*Node[*model.Skill]] {
+	var headers []unison.TableColumnHeader[*Node[*model.Skill]]
 	for i := 0; i < len(p.colMap); i++ {
 		switch p.colMap[i] {
-		case gurps.SkillDescriptionColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Skill](i18n.Text("Skill / Technique"), "", p.forPage))
-		case gurps.SkillDifficultyColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Skill](i18n.Text("Diff"), i18n.Text("Difficulty"), p.forPage))
-		case gurps.SkillTagsColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Skill](i18n.Text("Tags"), "", p.forPage))
-		case gurps.SkillReferenceColumn:
-			headers = append(headers, NewEditorPageRefHeader[*gurps.Skill](p.forPage))
-		case gurps.SkillLevelColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Skill](i18n.Text("SL"), i18n.Text("Skill Level"), p.forPage))
-		case gurps.SkillRelativeLevelColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Skill](i18n.Text("RSL"), i18n.Text("Relative Skill Level"), p.forPage))
-		case gurps.SkillPointsColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Skill](i18n.Text("Pts"), i18n.Text("Points"), p.forPage))
+		case model.SkillDescriptionColumn:
+			headers = append(headers, NewEditorListHeader[*model.Skill](i18n.Text("Skill / Technique"), "", p.forPage))
+		case model.SkillDifficultyColumn:
+			headers = append(headers, NewEditorListHeader[*model.Skill](i18n.Text("Diff"), i18n.Text("Difficulty"), p.forPage))
+		case model.SkillTagsColumn:
+			headers = append(headers, NewEditorListHeader[*model.Skill](i18n.Text("Tags"), "", p.forPage))
+		case model.SkillReferenceColumn:
+			headers = append(headers, NewEditorPageRefHeader[*model.Skill](p.forPage))
+		case model.SkillLevelColumn:
+			headers = append(headers, NewEditorListHeader[*model.Skill](i18n.Text("SL"), i18n.Text("Skill Level"), p.forPage))
+		case model.SkillRelativeLevelColumn:
+			headers = append(headers, NewEditorListHeader[*model.Skill](i18n.Text("RSL"), i18n.Text("Relative Skill Level"), p.forPage))
+		case model.SkillPointsColumn:
+			headers = append(headers, NewEditorListHeader[*model.Skill](i18n.Text("Pts"), i18n.Text("Points"), p.forPage))
 		default:
 			jot.Fatalf(1, "invalid skill column: %d", p.colMap[i])
 		}
@@ -184,12 +184,12 @@ func (p *skillsProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Skill
 	return headers
 }
 
-func (p *skillsProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*gurps.Skill]]) {
+func (p *skillsProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*model.Skill]]) {
 }
 
 func (p *skillsProvider) HierarchyColumnIndex() int {
 	for k, v := range p.colMap {
-		if v == gurps.SkillDescriptionColumn {
+		if v == model.SkillDescriptionColumn {
 			return k
 		}
 	}
@@ -200,24 +200,24 @@ func (p *skillsProvider) ExcessWidthColumnIndex() int {
 	return p.HierarchyColumnIndex()
 }
 
-func (p *skillsProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*gurps.Skill]]) {
-	OpenEditor[*gurps.Skill](table, func(item *gurps.Skill) { EditSkill(owner, item) })
+func (p *skillsProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*model.Skill]]) {
+	OpenEditor[*model.Skill](table, func(item *model.Skill) { EditSkill(owner, item) })
 }
 
-func (p *skillsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Skill]], variant ItemVariant) {
-	var item *gurps.Skill
+func (p *skillsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*model.Skill]], variant ItemVariant) {
+	var item *model.Skill
 	switch variant {
 	case NoItemVariant:
-		item = gurps.NewSkill(p.Entity(), nil, false)
+		item = model.NewSkill(p.Entity(), nil, false)
 	case ContainerItemVariant:
-		item = gurps.NewSkill(p.Entity(), nil, true)
+		item = model.NewSkill(p.Entity(), nil, true)
 	case AlternateItemVariant:
-		item = gurps.NewTechnique(p.Entity(), nil, "")
+		item = model.NewTechnique(p.Entity(), nil, "")
 	default:
 		jot.Fatal(1, "unhandled variant")
 	}
-	InsertItems[*gurps.Skill](owner, table, p.provider.SkillList, p.provider.SetSkillList,
-		func(_ *unison.Table[*Node[*gurps.Skill]]) []*Node[*gurps.Skill] { return p.RootRows() }, item)
+	InsertItems[*model.Skill](owner, table, p.provider.SkillList, p.provider.SetSkillList,
+		func(_ *unison.Table[*Node[*model.Skill]]) []*Node[*model.Skill] { return p.RootRows() }, item)
 	EditSkill(owner, item)
 }
 
@@ -226,7 +226,7 @@ func (p *skillsProvider) Serialize() ([]byte, error) {
 }
 
 func (p *skillsProvider) Deserialize(data []byte) error {
-	var rows []*gurps.Skill
+	var rows []*model.Skill
 	if err := jio.DecompressAndDeserialize(data, &rows); err != nil {
 		return err
 	}

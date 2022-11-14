@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/toolbox/cmdline"
@@ -344,7 +344,7 @@ func registerActions() {
 		Title:      i18n.Text("New Character Sheet"),
 		KeyBinding: unison.KeyBinding{KeyCode: unison.KeyN, Modifiers: unison.OSMenuCmdModifier()},
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			entity := gurps.NewEntity(gurps.PC)
+			entity := model.NewEntity(model.PC)
 			DisplayNewDockable(nil, NewSheet(entity.Profile.Name+library.SheetExt, entity))
 		},
 	})
@@ -352,7 +352,7 @@ func registerActions() {
 		ID:    NewTemplateItemID,
 		Title: i18n.Text("New Character Template"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			DisplayNewDockable(nil, NewTemplate("untitled"+library.TemplatesExt, gurps.NewTemplate()))
+			DisplayNewDockable(nil, NewTemplate("untitled"+library.TemplatesExt, model.NewTemplate()))
 		},
 	})
 	newEquipmentContainerModifierAction = registerKeyBindableAction("new.eqm.container", &unison.Action{

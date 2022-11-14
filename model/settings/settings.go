@@ -19,8 +19,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/theme"
@@ -50,7 +50,7 @@ type NavigatorSettings struct {
 // Settings holds the application settings.
 type Settings struct {
 	LastSeenGCSVersion string                      `json:"last_seen_gcs_version,omitempty"`
-	General            *gurps.GeneralSheetSettings `json:"general,omitempty"`
+	General            *model.GeneralSheetSettings `json:"general,omitempty"`
 	LibrarySet         library.Libraries           `json:"libraries,omitempty"`
 	LibraryExplorer    NavigatorSettings           `json:"library_explorer"`
 	RecentFiles        []string                    `json:"recent_files,omitempty"`
@@ -60,8 +60,8 @@ type Settings struct {
 	WorkspaceFrame     *unison.Rect                `json:"workspace_frame,omitempty"`
 	Colors             theme.Colors                `json:"colors"`
 	Fonts              theme.Fonts                 `json:"fonts"`
-	QuickExports       *gurps.QuickExports         `json:"quick_exports,omitempty"`
-	Sheet              *gurps.SheetSettings        `json:"sheet_settings,omitempty"`
+	QuickExports       *model.QuickExports         `json:"quick_exports,omitempty"`
+	Sheet              *model.SheetSettings        `json:"sheet_settings,omitempty"`
 	ColorMode          unison.ColorMode            `json:"color_mode"`
 }
 
@@ -69,12 +69,12 @@ type Settings struct {
 func Default() *Settings {
 	return &Settings{
 		LastSeenGCSVersion: cmdline.AppVersion,
-		General:            gurps.NewGeneralSheetSettings(),
+		General:            model.NewGeneralSheetSettings(),
 		LibrarySet:         library.NewLibraries(),
 		LibraryExplorer:    NavigatorSettings{DividerPosition: 330},
 		LastDirs:           make(map[string]string),
-		QuickExports:       gurps.NewQuickExports(),
-		Sheet:              gurps.FactorySheetSettings(),
+		QuickExports:       model.NewQuickExports(),
+		Sheet:              model.FactorySheetSettings(),
 	}
 }
 
@@ -86,8 +86,8 @@ func Global() *Settings {
 			global = Default()
 		}
 		global.EnsureValidity()
-		gurps.SettingsProvider = global
-		gurps.InstallEvaluatorFunctions(fxp.EvalFuncs)
+		model.SettingsProvider = global
+		model.InstallEvaluatorFunctions(fxp.EvalFuncs)
 		unison.SetColorMode(global.ColorMode)
 		global.Colors.MakeCurrent()
 		global.Fonts.MakeCurrent()
@@ -103,7 +103,7 @@ func (s *Settings) Save() error {
 // EnsureValidity checks the current settings for validity and if they aren't valid, makes them so.
 func (s *Settings) EnsureValidity() {
 	if s.General == nil {
-		s.General = gurps.NewGeneralSheetSettings()
+		s.General = model.NewGeneralSheetSettings()
 	} else {
 		s.General.EnsureValidity()
 	}
@@ -114,10 +114,10 @@ func (s *Settings) EnsureValidity() {
 		s.LastDirs = make(map[string]string)
 	}
 	if s.QuickExports == nil {
-		s.QuickExports = gurps.NewQuickExports()
+		s.QuickExports = model.NewQuickExports()
 	}
 	if s.Sheet == nil {
-		s.Sheet = gurps.FactorySheetSettings()
+		s.Sheet = model.FactorySheetSettings()
 	} else {
 		s.Sheet.EnsureValidity()
 	}
@@ -191,12 +191,12 @@ func (s *Settings) AddRecentFile(filePath string) {
 }
 
 // GeneralSettings implements gurps.SettingsProvider.
-func (s *Settings) GeneralSettings() *gurps.GeneralSheetSettings {
+func (s *Settings) GeneralSettings() *model.GeneralSheetSettings {
 	return s.General
 }
 
 // SheetSettings implements gurps.SettingsProvider.
-func (s *Settings) SheetSettings() *gurps.SheetSettings {
+func (s *Settings) SheetSettings() *model.SheetSettings {
 	return s.Sheet
 }
 

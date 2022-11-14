@@ -18,8 +18,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/ancestry"
+	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/ancestry"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/model/theme"
@@ -50,72 +50,72 @@ func Convert(paths ...string) error {
 		fmt.Printf(i18n.Text("Processing %s\n"), p)
 		switch strings.ToLower(filepath.Ext(p)) {
 		case library.TraitsExt:
-			var data []*gurps.Trait
-			if data, err = gurps.NewTraitsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data []*model.Trait
+			if data, err = model.NewTraitsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
-			if err = gurps.SaveTraits(data, p); err != nil {
+			if err = model.SaveTraits(data, p); err != nil {
 				return err
 			}
 		case library.TraitModifiersExt:
-			var data []*gurps.TraitModifier
-			if data, err = gurps.NewTraitModifiersFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data []*model.TraitModifier
+			if data, err = model.NewTraitModifiersFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
-			if err = gurps.SaveTraitModifiers(data, p); err != nil {
+			if err = model.SaveTraitModifiers(data, p); err != nil {
 				return err
 			}
 		case library.EquipmentExt:
-			var data []*gurps.Equipment
-			if data, err = gurps.NewEquipmentFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data []*model.Equipment
+			if data, err = model.NewEquipmentFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
-			if err = gurps.SaveEquipment(data, p); err != nil {
+			if err = model.SaveEquipment(data, p); err != nil {
 				return err
 			}
 		case library.EquipmentModifiersExt:
-			var data []*gurps.EquipmentModifier
-			if data, err = gurps.NewEquipmentModifiersFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data []*model.EquipmentModifier
+			if data, err = model.NewEquipmentModifiersFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
-			if err = gurps.SaveEquipmentModifiers(data, p); err != nil {
+			if err = model.SaveEquipmentModifiers(data, p); err != nil {
 				return err
 			}
 		case library.SkillsExt:
-			var data []*gurps.Skill
-			if data, err = gurps.NewSkillsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data []*model.Skill
+			if data, err = model.NewSkillsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
-			if err = gurps.SaveSkills(data, p); err != nil {
+			if err = model.SaveSkills(data, p); err != nil {
 				return err
 			}
 		case library.SpellsExt:
-			var data []*gurps.Spell
-			if data, err = gurps.NewSpellsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data []*model.Spell
+			if data, err = model.NewSpellsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
-			if err = gurps.SaveSpells(data, p); err != nil {
+			if err = model.SaveSpells(data, p); err != nil {
 				return err
 			}
 		case library.NotesExt:
-			var data []*gurps.Note
-			if data, err = gurps.NewNotesFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data []*model.Note
+			if data, err = model.NewNotesFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
-			if err = gurps.SaveNotes(data, p); err != nil {
+			if err = model.SaveNotes(data, p); err != nil {
 				return err
 			}
 		case library.TemplatesExt:
-			var tmpl *gurps.Template
-			if tmpl, err = gurps.NewTemplateFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var tmpl *model.Template
+			if tmpl, err = model.NewTemplateFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
 			if err = tmpl.Save(p); err != nil {
 				return err
 			}
 		case library.SheetExt:
-			var entity *gurps.Entity
-			if entity, err = gurps.NewEntityFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var entity *model.Entity
+			if entity, err = model.NewEntityFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
 			if err = entity.Save(p); err != nil {
@@ -130,16 +130,16 @@ func Convert(paths ...string) error {
 				return err
 			}
 		case library.AttributesExt, library.AttributesExtAlt1, library.AttributesExtAlt2:
-			var data *gurps.AttributeDefs
-			if data, err = gurps.NewAttributeDefsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data *model.AttributeDefs
+			if data, err = model.NewAttributeDefsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
 			if err = data.Save(p); err != nil {
 				return err
 			}
 		case library.BodyExt, library.BodyExtAlt:
-			var data *gurps.Body
-			if data, err = gurps.NewBodyFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data *model.Body
+			if data, err = model.NewBodyFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
 			if err = data.Save(p); err != nil {
@@ -164,8 +164,8 @@ func Convert(paths ...string) error {
 				return err
 			}
 		case library.GeneralSettingsExt:
-			var data *gurps.GeneralSheetSettings
-			if data, err = gurps.NewGeneralSheetSettingsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data *model.GeneralSheetSettings
+			if data, err = model.NewGeneralSheetSettingsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
 			if err = data.Save(p); err != nil {
@@ -190,8 +190,8 @@ func Convert(paths ...string) error {
 				return err
 			}
 		case library.SheetSettingsExt:
-			var data *gurps.SheetSettings
-			if data, err = gurps.NewSheetSettingsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data *model.SheetSettings
+			if data, err = model.NewSheetSettingsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
 			if err = data.Save(p); err != nil {

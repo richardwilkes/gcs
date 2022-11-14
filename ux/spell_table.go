@@ -15,30 +15,30 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/unison"
 )
 
 type spellListProvider struct {
-	spells []*gurps.Spell
+	spells []*model.Spell
 }
 
-func (p *spellListProvider) Entity() *gurps.Entity {
+func (p *spellListProvider) Entity() *model.Entity {
 	return nil
 }
 
-func (p *spellListProvider) SpellList() []*gurps.Spell {
+func (p *spellListProvider) SpellList() []*model.Spell {
 	return p.spells
 }
 
-func (p *spellListProvider) SetSpellList(list []*gurps.Spell) {
+func (p *spellListProvider) SetSpellList(list []*model.Spell) {
 	p.spells = list
 }
 
 // NewSpellTableDockableFromFile loads a list of spells from a file and creates a new unison.Dockable for them.
 func NewSpellTableDockableFromFile(filePath string) (unison.Dockable, error) {
-	spells, err := gurps.NewSpellsFromFile(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath))
+	spells, err := model.NewSpellsFromFile(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath))
 	if err != nil {
 		return nil, err
 	}
@@ -48,9 +48,9 @@ func NewSpellTableDockableFromFile(filePath string) (unison.Dockable, error) {
 }
 
 // NewSpellTableDockable creates a new unison.Dockable for spell list files.
-func NewSpellTableDockable(filePath string, spells []*gurps.Spell) *TableDockable[*gurps.Spell] {
+func NewSpellTableDockable(filePath string, spells []*model.Spell) *TableDockable[*model.Spell] {
 	provider := &spellListProvider{spells: spells}
 	return NewTableDockable(filePath, library.SpellsExt, NewSpellsProvider(provider, false),
-		func(path string) error { return gurps.SaveSpells(provider.SpellList(), path) },
+		func(path string) error { return model.SaveSpells(provider.SpellList(), path) },
 		NewSpellItemID, NewSpellContainerItemID, NewRitualMagicSpellItemID)
 }

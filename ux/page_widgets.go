@@ -12,9 +12,9 @@
 package ux
 
 import (
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
+	measure2 "github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/unison"
@@ -183,7 +183,7 @@ func NewStringPageFieldNoGrab(targetMgr *TargetMgr, targetKey, undoTitle string,
 }
 
 // NewHeightPageField creates a new height entry field for a sheet page.
-func NewHeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() measure.Length, set func(measure.Length), min, max measure.Length, noMinWidth bool) *LengthField {
+func NewHeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *model.Entity, get func() measure2.Length, set func(measure2.Length), min, max measure2.Length, noMinWidth bool) *LengthField {
 	field := NewLengthField(targetMgr, targetKey, undoTitle, entity, get, set, min, max, noMinWidth)
 	field.Font = theme.PageFieldPrimaryFont
 	field.FocusedBorder = unison.NewLineBorder(theme.AccentColor, 0, unison.Insets{Bottom: 1}, false)
@@ -197,7 +197,7 @@ func NewHeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entit
 }
 
 // NewWeightPageField creates a new weight entry field for a sheet page.
-func NewWeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() measure.Weight, set func(measure.Weight), min, max measure.Weight, noMinWidth bool) *WeightField {
+func NewWeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *model.Entity, get func() measure2.Weight, set func(measure2.Weight), min, max measure2.Weight, noMinWidth bool) *WeightField {
 	field := NewWeightField(targetMgr, targetKey, undoTitle, entity, get, set, min, max, noMinWidth)
 	field.Font = theme.PageFieldPrimaryFont
 	field.FocusedBorder = unison.NewLineBorder(theme.AccentColor, 0, unison.Insets{Bottom: 1}, false)

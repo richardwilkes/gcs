@@ -14,9 +14,9 @@ package ux
 import (
 	"io/fs"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/library"
+	measure2 "github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/gcs/v5/model/paper"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/model/settings/display"
@@ -30,13 +30,13 @@ var _ GroupedCloser = &sheetSettingsDockable{}
 // EntityPanel defines methods for a panel that can hold an entity.
 type EntityPanel interface {
 	unison.Paneler
-	Entity() *gurps.Entity
+	Entity() *model.Entity
 }
 
 type sheetSettingsDockable struct {
 	SettingsDockable
 	owner                              EntityPanel
-	damageProgressionPopup             *unison.PopupMenu[gurps.DamageProgression]
+	damageProgressionPopup             *unison.PopupMenu[model.DamageProgression]
 	showTraitModifier                  *unison.CheckBox
 	showEquipmentModifier              *unison.CheckBox
 	showSpellAdjustments               *unison.CheckBox
@@ -44,8 +44,8 @@ type sheetSettingsDockable struct {
 	useMultiplicativeModifiers         *unison.CheckBox
 	useModifyDicePlusAdds              *unison.CheckBox
 	excludeUnspentPointsFromTotal      *unison.CheckBox
-	lengthUnitsPopup                   *unison.PopupMenu[measure.LengthUnits]
-	weightUnitsPopup                   *unison.PopupMenu[measure.WeightUnits]
+	lengthUnitsPopup                   *unison.PopupMenu[measure2.LengthUnits]
+	weightUnitsPopup                   *unison.PopupMenu[measure2.WeightUnits]
 	userDescDisplayPopup               *unison.PopupMenu[display.Option]
 	modifiersDisplayPopup              *unison.PopupMenu[display.Option]
 	notesDisplayPopup                  *unison.PopupMenu[display.Option]
@@ -88,7 +88,7 @@ func (d *sheetSettingsDockable) CloseWithGroup(other unison.Paneler) bool {
 	return d.owner != nil && d.owner == other
 }
 
-func (d *sheetSettingsDockable) settings() *gurps.SheetSettings {
+func (d *sheetSettingsDockable) settings() *model.SheetSettings {
 	if d.owner != nil {
 		return d.owner.Entity().SheetSettings
 	}
@@ -118,8 +118,8 @@ func (d *sheetSettingsDockable) createDamageProgression(content *unison.Panel) {
 		VSpacing: unison.StdVSpacing,
 	})
 	d.damageProgressionPopup = createSettingPopup(d, panel, i18n.Text("Damage Progression"),
-		gurps.AllDamageProgression, s.DamageProgression,
-		func(item gurps.DamageProgression) {
+		model.AllDamageProgression, s.DamageProgression,
+		func(item model.DamageProgression) {
 			d.damageProgressionPopup.Tooltip = unison.NewTooltipWithText(item.Tooltip())
 			d.settings().DamageProgression = item
 		})
@@ -191,10 +191,10 @@ func (d *sheetSettingsDockable) createUnitsOfMeasurement(content *unison.Panel) 
 	})
 	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
 	d.createHeader(panel, i18n.Text("Units of Measurement"), 2)
-	d.lengthUnitsPopup = createSettingPopup(d, panel, i18n.Text("Length Units"), measure.AllLengthUnits,
-		s.DefaultLengthUnits, func(item measure.LengthUnits) { d.settings().DefaultLengthUnits = item })
-	d.weightUnitsPopup = createSettingPopup(d, panel, i18n.Text("Weight Units"), measure.AllWeightUnits,
-		s.DefaultWeightUnits, func(item measure.WeightUnits) { d.settings().DefaultWeightUnits = item })
+	d.lengthUnitsPopup = createSettingPopup(d, panel, i18n.Text("Length Units"), measure2.AllLengthUnits,
+		s.DefaultLengthUnits, func(item measure2.LengthUnits) { d.settings().DefaultLengthUnits = item })
+	d.weightUnitsPopup = createSettingPopup(d, panel, i18n.Text("Weight Units"), measure2.AllWeightUnits,
+		s.DefaultWeightUnits, func(item measure2.WeightUnits) { d.settings().DefaultWeightUnits = item })
 	content.AddChild(panel)
 }
 
@@ -263,11 +263,11 @@ func (d *sheetSettingsDockable) createBlockLayout(content *unison.Panel) {
 	lastBlockLayout := s.BlockLayout.String()
 	d.blockLayoutField.SetText(lastBlockLayout)
 	d.blockLayoutField.ValidateCallback = func() bool {
-		_, valid := gurps.NewBlockLayoutFromString(d.blockLayoutField.Text())
+		_, valid := model.NewBlockLayoutFromString(d.blockLayoutField.Text())
 		return valid
 	}
 	d.blockLayoutField.ModifiedCallback = func() {
-		if blockLayout, valid := gurps.NewBlockLayoutFromString(d.blockLayoutField.Text()); valid {
+		if blockLayout, valid := model.NewBlockLayoutFromString(d.blockLayoutField.Text()); valid {
 			localSettings := d.settings()
 			currentBlockLayout := blockLayout.String()
 			if lastBlockLayout != currentBlockLayout {
@@ -344,7 +344,7 @@ func (d *sheetSettingsDockable) reset() {
 		entity := d.owner.Entity()
 		entity.SheetSettings = settings.Global().Sheet.Clone(entity)
 	} else {
-		settings.Global().Sheet = gurps.FactorySheetSettings()
+		settings.Global().Sheet = model.FactorySheetSettings()
 	}
 	d.sync()
 }
@@ -379,12 +379,12 @@ func (d *sheetSettingsDockable) syncSheet(full bool) {
 	for _, wnd := range unison.Windows() {
 		if ws := WorkspaceFromWindow(wnd); ws != nil {
 			ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
-				var entity *gurps.Entity
+				var entity *model.Entity
 				if d.owner != nil {
 					entity = d.owner.Entity()
 				}
 				for _, one := range dc.Dockables() {
-					if s, ok := one.(gurps.SheetSettingsResponder); ok {
+					if s, ok := one.(model.SheetSettingsResponder); ok {
 						s.SheetSettingsUpdated(entity, full)
 					}
 				}
@@ -395,7 +395,7 @@ func (d *sheetSettingsDockable) syncSheet(full bool) {
 }
 
 func (d *sheetSettingsDockable) load(fileSystem fs.FS, filePath string) error {
-	s, err := gurps.NewSheetSettingsFromFile(fileSystem, filePath)
+	s, err := model.NewSheetSettingsFromFile(fileSystem, filePath)
 	if err != nil {
 		return err
 	}

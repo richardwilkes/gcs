@@ -16,7 +16,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
@@ -30,13 +30,13 @@ const pageKey = "pageKey"
 
 type pageExporter struct {
 	unison.Panel
-	entity      *gurps.Entity
+	entity      *model.Entity
 	targetMgr   *TargetMgr
 	pages       []*Page
 	currentPage int
 }
 
-func newPageExporter(entity *gurps.Entity) *pageExporter {
+func newPageExporter(entity *model.Entity) *pageExporter {
 	p := &pageExporter{entity: entity}
 	p.targetMgr = NewTargetMgr(p)
 	pageSize := p.PageSize()
@@ -54,26 +54,26 @@ func newPageExporter(entity *gurps.Entity) *pageExporter {
 			})
 			for _, c := range col {
 				switch c {
-				case gurps.BlockLayoutReactionsKey:
-					addRowPanel(rowPanel, NewReactionsPageList(entity), gurps.BlockLayoutReactionsKey, startAt)
-				case gurps.BlockLayoutConditionalModifiersKey:
-					addRowPanel(rowPanel, NewConditionalModifiersPageList(entity), gurps.BlockLayoutConditionalModifiersKey, startAt)
-				case gurps.BlockLayoutMeleeKey:
-					addRowPanel(rowPanel, NewMeleeWeaponsPageList(entity), gurps.BlockLayoutMeleeKey, startAt)
-				case gurps.BlockLayoutRangedKey:
-					addRowPanel(rowPanel, NewRangedWeaponsPageList(entity), gurps.BlockLayoutRangedKey, startAt)
-				case gurps.BlockLayoutTraitsKey:
-					addRowPanel(rowPanel, NewTraitsPageList(p, entity), gurps.BlockLayoutTraitsKey, startAt)
-				case gurps.BlockLayoutSkillsKey:
-					addRowPanel(rowPanel, NewSkillsPageList(p, entity), gurps.BlockLayoutSkillsKey, startAt)
-				case gurps.BlockLayoutSpellsKey:
-					addRowPanel(rowPanel, NewSpellsPageList(p, entity), gurps.BlockLayoutSpellsKey, startAt)
-				case gurps.BlockLayoutEquipmentKey:
-					addRowPanel(rowPanel, NewCarriedEquipmentPageList(p, entity), gurps.BlockLayoutEquipmentKey, startAt)
-				case gurps.BlockLayoutOtherEquipmentKey:
-					addRowPanel(rowPanel, NewOtherEquipmentPageList(p, entity), gurps.BlockLayoutOtherEquipmentKey, startAt)
-				case gurps.BlockLayoutNotesKey:
-					addRowPanel(rowPanel, NewNotesPageList(p, entity), gurps.BlockLayoutNotesKey, startAt)
+				case model.BlockLayoutReactionsKey:
+					addRowPanel(rowPanel, NewReactionsPageList(entity), model.BlockLayoutReactionsKey, startAt)
+				case model.BlockLayoutConditionalModifiersKey:
+					addRowPanel(rowPanel, NewConditionalModifiersPageList(entity), model.BlockLayoutConditionalModifiersKey, startAt)
+				case model.BlockLayoutMeleeKey:
+					addRowPanel(rowPanel, NewMeleeWeaponsPageList(entity), model.BlockLayoutMeleeKey, startAt)
+				case model.BlockLayoutRangedKey:
+					addRowPanel(rowPanel, NewRangedWeaponsPageList(entity), model.BlockLayoutRangedKey, startAt)
+				case model.BlockLayoutTraitsKey:
+					addRowPanel(rowPanel, NewTraitsPageList(p, entity), model.BlockLayoutTraitsKey, startAt)
+				case model.BlockLayoutSkillsKey:
+					addRowPanel(rowPanel, NewSkillsPageList(p, entity), model.BlockLayoutSkillsKey, startAt)
+				case model.BlockLayoutSpellsKey:
+					addRowPanel(rowPanel, NewSpellsPageList(p, entity), model.BlockLayoutSpellsKey, startAt)
+				case model.BlockLayoutEquipmentKey:
+					addRowPanel(rowPanel, NewCarriedEquipmentPageList(p, entity), model.BlockLayoutEquipmentKey, startAt)
+				case model.BlockLayoutOtherEquipmentKey:
+					addRowPanel(rowPanel, NewOtherEquipmentPageList(p, entity), model.BlockLayoutOtherEquipmentKey, startAt)
+				case model.BlockLayoutNotesKey:
+					addRowPanel(rowPanel, NewNotesPageList(p, entity), model.BlockLayoutNotesKey, startAt)
 				}
 			}
 			children := rowPanel.Children()
@@ -191,7 +191,7 @@ func (s *pageState) key() string {
 	return s.child.ClientData()[pageKey].(string)
 }
 
-func addRowPanel[T gurps.NodeTypes](rowPanel *unison.Panel, list *PageList[T], key string, startAtMap map[string]int) {
+func addRowPanel[T model.NodeTypes](rowPanel *unison.Panel, list *PageList[T], key string, startAtMap map[string]int) {
 	list.ClientData()[pageKey] = key
 	count := list.RowCount()
 	startAt := startAtMap[key]

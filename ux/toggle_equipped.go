@@ -12,7 +12,7 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -40,11 +40,11 @@ func (a *toggleEquippedList) Finish() {
 }
 
 type equippedAdjuster struct {
-	Target   *gurps.Equipment
+	Target   *model.Equipment
 	Equipped bool
 }
 
-func newEquippedAdjuster(target *gurps.Equipment) *equippedAdjuster {
+func newEquippedAdjuster(target *model.Equipment) *equippedAdjuster {
 	return &equippedAdjuster{
 		Target:   target,
 		Equipped: target.Equipped,
@@ -55,7 +55,7 @@ func (a *equippedAdjuster) Apply() {
 	a.Target.Equipped = a.Equipped
 }
 
-func canToggleEquipped(table *unison.Table[*Node[*gurps.Equipment]]) bool {
+func canToggleEquipped(table *unison.Table[*Node[*model.Equipment]]) bool {
 	for _, row := range table.SelectedRows(false) {
 		if eqp := row.Data(); eqp != nil {
 			return true
@@ -64,7 +64,7 @@ func canToggleEquipped(table *unison.Table[*Node[*gurps.Equipment]]) bool {
 	return false
 }
 
-func toggleEquipped(owner Rebuildable, table *unison.Table[*Node[*gurps.Equipment]]) {
+func toggleEquipped(owner Rebuildable, table *unison.Table[*Node[*model.Equipment]]) {
 	before := &toggleEquippedList{Owner: owner}
 	after := &toggleEquippedList{Owner: owner}
 	for _, row := range table.SelectedRows(false) {

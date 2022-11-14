@@ -12,15 +12,15 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/unison"
 )
 
 // CanOpenPageRef returns true if the current selection on the table has a page reference.
-func CanOpenPageRef[T gurps.NodeTypes](table *unison.Table[*Node[T]]) bool {
+func CanOpenPageRef[T model.NodeTypes](table *unison.Table[*Node[T]]) bool {
 	for _, row := range table.SelectedRows(false) {
-		var data gurps.CellData
-		gurps.AsNode(row.Data()).CellData(gurps.PageRefCellAlias, &data)
+		var data model.CellData
+		model.AsNode(row.Data()).CellData(model.PageRefCellAlias, &data)
 		if len(ExtractPageReferences(data.Primary)) != 0 {
 			return true
 		}
@@ -29,11 +29,11 @@ func CanOpenPageRef[T gurps.NodeTypes](table *unison.Table[*Node[T]]) bool {
 }
 
 // OpenPageRef opens the first page reference on each selected item in the table.
-func OpenPageRef[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
+func OpenPageRef[T model.NodeTypes](table *unison.Table[*Node[T]]) {
 	promptCtx := make(map[string]bool)
 	for _, row := range table.SelectedRows(false) {
-		var data gurps.CellData
-		gurps.AsNode(row.Data()).CellData(gurps.PageRefCellAlias, &data)
+		var data model.CellData
+		model.AsNode(row.Data()).CellData(model.PageRefCellAlias, &data)
 		for _, one := range ExtractPageReferences(data.Primary) {
 			OpenPageReference(table.Window(), one, data.Secondary, promptCtx)
 			break
@@ -42,11 +42,11 @@ func OpenPageRef[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 }
 
 // OpenEachPageRef opens the all page references on each selected item in the table.
-func OpenEachPageRef[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
+func OpenEachPageRef[T model.NodeTypes](table *unison.Table[*Node[T]]) {
 	promptCtx := make(map[string]bool)
 	for _, row := range table.SelectedRows(false) {
-		var data gurps.CellData
-		gurps.AsNode(row.Data()).CellData(gurps.PageRefCellAlias, &data)
+		var data model.CellData
+		model.AsNode(row.Data()).CellData(model.PageRefCellAlias, &data)
 		for _, one := range ExtractPageReferences(data.Primary) {
 			if OpenPageReference(table.Window(), one, data.Secondary, promptCtx) {
 				return

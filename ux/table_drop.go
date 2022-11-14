@@ -12,7 +12,7 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -29,7 +29,7 @@ type AltDropSupport struct {
 }
 
 // InstallTableDropSupport installs our standard drop support on a table.
-func InstallTableDropSupport[T gurps.NodeTypes](table *unison.Table[*Node[T]], provider TableProvider[T]) {
+func InstallTableDropSupport[T model.NodeTypes](table *unison.Table[*Node[T]], provider TableProvider[T]) {
 	table.ClientData()[TableProviderClientKey] = provider
 	unison.InstallDropSupport[*Node[T], *TableDragUndoEditData[T]](table, provider.DragKey(),
 		provider.DropShouldMoveData, willDropCallback[T], didDropCallback[T])
@@ -80,7 +80,7 @@ func InstallTableDropSupport[T gurps.NodeTypes](table *unison.Table[*Node[T]], p
 	}
 }
 
-func willDropCallback[T gurps.NodeTypes](from, to *unison.Table[*Node[T]], move bool) *unison.UndoEdit[*TableDragUndoEditData[T]] {
+func willDropCallback[T model.NodeTypes](from, to *unison.Table[*Node[T]], move bool) *unison.UndoEdit[*TableDragUndoEditData[T]] {
 	mgr := unison.UndoManagerFor(to)
 	if mgr == nil {
 		return nil
@@ -98,16 +98,16 @@ func willDropCallback[T gurps.NodeTypes](from, to *unison.Table[*Node[T]], move 
 	}
 }
 
-func didDropCallback[T gurps.NodeTypes](undo *unison.UndoEdit[*TableDragUndoEditData[T]], from, to *unison.Table[*Node[T]], move bool) {
+func didDropCallback[T model.NodeTypes](undo *unison.UndoEdit[*TableDragUndoEditData[T]], from, to *unison.Table[*Node[T]], move bool) {
 	if provider, ok := to.ClientData()[TableProviderClientKey]; ok {
 		var tableProvider TableProvider[T]
 		if tableProvider, ok = provider.(TableProvider[T]); ok {
 			tableProvider.ProcessDropData(from, to)
 		}
 	}
-	entityProvider := unison.Ancestor[gurps.EntityProvider](to)
+	entityProvider := unison.Ancestor[model.EntityProvider](to)
 	if !toolbox.IsNil(entityProvider) && entityProvider.Entity() != nil {
-		if entityProvider != unison.Ancestor[gurps.EntityProvider](from) {
+		if entityProvider != unison.Ancestor[model.EntityProvider](from) {
 			if rebuilder := unison.Ancestor[Rebuildable](to); rebuilder != nil {
 				rebuilder.Rebuild(true)
 			}
@@ -118,7 +118,7 @@ func didDropCallback[T gurps.NodeTypes](undo *unison.UndoEdit[*TableDragUndoEdit
 	finishDidDrop(undo, from, to, move)
 }
 
-func finishDidDrop[T gurps.NodeTypes](undo *unison.UndoEdit[*TableDragUndoEditData[T]], from, to *unison.Table[*Node[T]], move bool) {
+func finishDidDrop[T model.NodeTypes](undo *unison.UndoEdit[*TableDragUndoEditData[T]], from, to *unison.Table[*Node[T]], move bool) {
 	if undo == nil {
 		return
 	}

@@ -12,7 +12,7 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -40,11 +40,11 @@ func (a *toggleDisabledList) Finish() {
 }
 
 type disabledAdjuster struct {
-	Target   *gurps.Trait
+	Target   *model.Trait
 	Disabled bool
 }
 
-func newDisabledAdjuster(target *gurps.Trait) *disabledAdjuster {
+func newDisabledAdjuster(target *model.Trait) *disabledAdjuster {
 	return &disabledAdjuster{
 		Target:   target,
 		Disabled: target.Disabled,
@@ -55,7 +55,7 @@ func (a *disabledAdjuster) Apply() {
 	a.Target.Disabled = a.Disabled
 }
 
-func canToggleDisabled(table *unison.Table[*Node[*gurps.Trait]]) bool {
+func canToggleDisabled(table *unison.Table[*Node[*model.Trait]]) bool {
 	for _, row := range table.SelectedRows(false) {
 		if t := row.Data(); t != nil {
 			return true
@@ -64,7 +64,7 @@ func canToggleDisabled(table *unison.Table[*Node[*gurps.Trait]]) bool {
 	return false
 }
 
-func toggleDisabled(owner Rebuildable, table *unison.Table[*Node[*gurps.Trait]]) {
+func toggleDisabled(owner Rebuildable, table *unison.Table[*Node[*model.Trait]]) {
 	before := &toggleDisabledList{Owner: owner}
 	after := &toggleDisabledList{Owner: owner}
 	for _, row := range table.SelectedRows(false) {

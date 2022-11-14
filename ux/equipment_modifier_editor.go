@@ -12,7 +12,7 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -21,15 +21,15 @@ import (
 const equipmentCostAndWeightPrototype = "-99.99 CF"
 
 // EditEquipmentModifier displays the editor for an equipment modifier.
-func EditEquipmentModifier(owner Rebuildable, modifier *gurps.EquipmentModifier) {
-	displayEditor[*gurps.EquipmentModifier, *gurps.EquipmentModifierEditData](owner, modifier,
+func EditEquipmentModifier(owner Rebuildable, modifier *model.EquipmentModifier) {
+	displayEditor[*model.EquipmentModifier, *model.EquipmentModifierEditData](owner, modifier,
 		svg.GCSEquipmentModifiers, initEquipmentModifierEditor)
 }
 
-func initEquipmentModifierEditor(e *editor[*gurps.EquipmentModifier, *gurps.EquipmentModifierEditData], content *unison.Panel) func() {
+func initEquipmentModifierEditor(e *editor[*model.EquipmentModifier, *model.EquipmentModifierEditData], content *unison.Panel) func() {
 	addNameLabelAndField(content, &e.editorData.Name)
 	if !e.target.Container() {
-		addLabelAndStringField(content, i18n.Text("Tech Level"), gurps.TechLevelInfo, &e.editorData.TechLevel)
+		addLabelAndStringField(content, i18n.Text("Tech Level"), model.TechLevelInfo, &e.editorData.TechLevel)
 	}
 	addNotesLabelAndField(content, &e.editorData.LocalNotes)
 	addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
@@ -47,7 +47,7 @@ func initEquipmentModifierEditor(e *editor[*gurps.EquipmentModifier, *gurps.Equi
 	return nil
 }
 
-func addEquipmentCostFields(parent *unison.Panel, e *editor[*gurps.EquipmentModifier, *gurps.EquipmentModifierEditData]) {
+func addEquipmentCostFields(parent *unison.Panel, e *editor[*model.EquipmentModifier, *model.EquipmentModifierEditData]) {
 	label := i18n.Text("Cost Modifier")
 	wrapper := addFlowWrapper(parent, label, 2)
 	field := NewStringField(nil, "", label,
@@ -59,20 +59,20 @@ func addEquipmentCostFields(parent *unison.Panel, e *editor[*gurps.EquipmentModi
 	field.SetMinimumTextWidthUsing(equipmentCostAndWeightPrototype)
 	wrapper.AddChild(field)
 	popup := unison.NewPopupMenu[string]()
-	for _, one := range gurps.AllEquipmentModifierCostType {
+	for _, one := range model.AllEquipmentModifierCostType {
 		popup.AddItem(one.StringWithExample())
 	}
 	popup.SelectIndex(int(e.editorData.CostType))
 	wrapper.AddChild(popup)
 	popup.SelectionCallback = func(index int, _ string) {
-		e.editorData.CostType = gurps.AllEquipmentModifierCostType[index]
+		e.editorData.CostType = model.AllEquipmentModifierCostType[index]
 		field.SetText(e.editorData.CostType.Format(field.Text()))
 		MarkModified(wrapper)
 	}
 }
 
-func addEquipmentWeightFields(parent *unison.Panel, e *editor[*gurps.EquipmentModifier, *gurps.EquipmentModifierEditData]) {
-	units := gurps.SheetSettingsFor(e.target.Entity).DefaultWeightUnits
+func addEquipmentWeightFields(parent *unison.Panel, e *editor[*model.EquipmentModifier, *model.EquipmentModifierEditData]) {
+	units := model.SheetSettingsFor(e.target.Entity).DefaultWeightUnits
 	label := i18n.Text("Weight Modifier")
 	wrapper := addFlowWrapper(parent, label, 2)
 	field := NewStringField(nil, "", label,
@@ -84,13 +84,13 @@ func addEquipmentWeightFields(parent *unison.Panel, e *editor[*gurps.EquipmentMo
 	field.SetMinimumTextWidthUsing(equipmentCostAndWeightPrototype)
 	wrapper.AddChild(field)
 	popup := unison.NewPopupMenu[string]()
-	for _, one := range gurps.AllEquipmentModifierWeightType {
+	for _, one := range model.AllEquipmentModifierWeightType {
 		popup.AddItem(one.StringWithExample())
 	}
 	popup.SelectIndex(int(e.editorData.WeightType))
 	wrapper.AddChild(popup)
 	popup.SelectionCallback = func(index int, _ string) {
-		e.editorData.WeightType = gurps.AllEquipmentModifierWeightType[index]
+		e.editorData.WeightType = model.AllEquipmentModifierWeightType[index]
 		field.SetText(e.editorData.WeightType.Format(field.Text(), units))
 		MarkModified(wrapper)
 	}

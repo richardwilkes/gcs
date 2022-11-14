@@ -12,7 +12,7 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 	"golang.org/x/exp/slices"
@@ -21,10 +21,10 @@ import (
 type poolSettingsPanel struct {
 	unison.Panel
 	dockable *attributeSettingsDockable
-	def      *gurps.AttributeDef
+	def      *model.AttributeDef
 }
 
-func newPoolSettingsPanel(dockable *attributeSettingsDockable, def *gurps.AttributeDef) *poolSettingsPanel {
+func newPoolSettingsPanel(dockable *attributeSettingsDockable, def *model.AttributeDef) *poolSettingsPanel {
 	p := &poolSettingsPanel{
 		dockable: dockable,
 		def:      def,
@@ -47,19 +47,19 @@ func newPoolSettingsPanel(dockable *attributeSettingsDockable, def *gurps.Attrib
 }
 
 func (p *poolSettingsPanel) addThreshold() {
-	undo := &unison.UndoEdit[[]*gurps.PoolThreshold]{
+	undo := &unison.UndoEdit[[]*model.PoolThreshold]{
 		ID:       unison.NextUndoID(),
 		EditName: i18n.Text("Add Pool Threshold"),
-		UndoFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold]) {
+		UndoFunc: func(e *unison.UndoEdit[[]*model.PoolThreshold]) {
 			p.applyThresholds(e.BeforeData)
 		},
-		RedoFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold]) {
+		RedoFunc: func(e *unison.UndoEdit[[]*model.PoolThreshold]) {
 			p.applyThresholds(e.AfterData)
 		},
-		AbsorbFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold], other unison.Undoable) bool { return false },
+		AbsorbFunc: func(e *unison.UndoEdit[[]*model.PoolThreshold], other unison.Undoable) bool { return false },
 	}
 	undo.BeforeData = clonePoolThresholds(p.def.Thresholds)
-	threshold := &gurps.PoolThreshold{KeyPrefix: p.dockable.targetMgr.NextPrefix()}
+	threshold := &model.PoolThreshold{KeyPrefix: p.dockable.targetMgr.NextPrefix()}
 	p.def.Thresholds = append(p.def.Thresholds, threshold)
 	newThreshold := newThresholdSettingsPanel(p, threshold)
 	p.AddChild(newThreshold)
@@ -82,16 +82,16 @@ func (p *poolSettingsPanel) deleteThreshold(target *thresholdSettingsPanel) {
 	if children := p.Children(); len(children) == 1 {
 		children[0].Self.(*thresholdSettingsPanel).deleteButton.SetEnabled(false)
 	}
-	undo := &unison.UndoEdit[[]*gurps.PoolThreshold]{
+	undo := &unison.UndoEdit[[]*model.PoolThreshold]{
 		ID:       unison.NextUndoID(),
 		EditName: i18n.Text("Delete Pool Threshold"),
-		UndoFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold]) {
+		UndoFunc: func(e *unison.UndoEdit[[]*model.PoolThreshold]) {
 			p.applyThresholds(e.BeforeData)
 		},
-		RedoFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold]) {
+		RedoFunc: func(e *unison.UndoEdit[[]*model.PoolThreshold]) {
 			p.applyThresholds(e.AfterData)
 		},
-		AbsorbFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold], other unison.Undoable) bool { return false },
+		AbsorbFunc: func(e *unison.UndoEdit[[]*model.PoolThreshold], other unison.Undoable) bool { return false },
 	}
 	undo.BeforeData = clonePoolThresholds(p.def.Thresholds)
 	p.def.Thresholds = slices.Delete(p.def.Thresholds, i, i+1)
@@ -100,13 +100,13 @@ func (p *poolSettingsPanel) deleteThreshold(target *thresholdSettingsPanel) {
 	p.dockable.MarkModified(nil)
 }
 
-func (p *poolSettingsPanel) applyThresholds(thresholds []*gurps.PoolThreshold) {
+func (p *poolSettingsPanel) applyThresholds(thresholds []*model.PoolThreshold) {
 	p.def.Thresholds = clonePoolThresholds(thresholds)
 	p.dockable.sync()
 }
 
-func clonePoolThresholds(in []*gurps.PoolThreshold) []*gurps.PoolThreshold {
-	thresholds := make([]*gurps.PoolThreshold, len(in))
+func clonePoolThresholds(in []*model.PoolThreshold) []*model.PoolThreshold {
+	thresholds := make([]*model.PoolThreshold, len(in))
 	for i, one := range in {
 		thresholds[i] = one.Clone()
 	}

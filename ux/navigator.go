@@ -19,7 +19,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	gsettings "github.com/richardwilkes/gcs/v5/model/gurps"
+	gsettings "github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/svg"

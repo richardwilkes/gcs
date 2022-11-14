@@ -19,7 +19,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
+	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/svg"

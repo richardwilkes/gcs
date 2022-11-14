@@ -12,8 +12,8 @@
 package ux
 
 import (
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
@@ -21,16 +21,16 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-var lastStudyTypeUsed = gurps.SelfStudyType
+var lastStudyTypeUsed = model.SelfStudyType
 
 type studyPanel struct {
 	unison.Panel
-	entity *gurps.Entity
-	study  *[]*gurps.Study
+	entity *model.Entity
+	study  *[]*model.Study
 	total  *unison.Label
 }
 
-func newStudyPanel(entity *gurps.Entity, study *[]*gurps.Study) *studyPanel {
+func newStudyPanel(entity *model.Entity, study *[]*model.Study) *studyPanel {
 	p := &studyPanel{
 		entity: entity,
 		study:  study,
@@ -66,7 +66,7 @@ func newStudyPanel(entity *gurps.Entity, study *[]*gurps.Study) *studyPanel {
 
 	addButton := unison.NewSVGButton(svg.CircledAdd)
 	addButton.ClickCallback = func() {
-		def := &gurps.Study{Type: lastStudyTypeUsed}
+		def := &model.Study{Type: lastStudyTypeUsed}
 		*study = slices.Insert(*study, 0, def)
 		p.insertStudyEntry(1, def, true)
 		unison.Ancestor[*unison.DockContainer](p).MarkForLayoutRecursively()
@@ -84,12 +84,12 @@ func newStudyPanel(entity *gurps.Entity, study *[]*gurps.Study) *studyPanel {
 	return p
 }
 
-func (p *studyPanel) insertStudyEntry(index int, entry *gurps.Study, requestFocus bool) {
+func (p *studyPanel) insertStudyEntry(index int, entry *model.Study, requestFocus bool) {
 	panel := unison.NewPanel()
 
 	deleteButton := unison.NewSVGButton(svg.Trash)
 	deleteButton.ClickCallback = func() {
-		if i := slices.IndexFunc(*p.study, func(one *gurps.Study) bool { return one == entry }); i != -1 {
+		if i := slices.IndexFunc(*p.study, func(one *model.Study) bool { return one == entry }); i != -1 {
 			*p.study = slices.Delete(*p.study, i, i+1)
 		}
 		panel.RemoveFromParent()
@@ -103,8 +103,8 @@ func (p *studyPanel) insertStudyEntry(index int, entry *gurps.Study, requestFocu
 
 	info := NewInfoPop()
 	updateLimitations(info, entry.Type)
-	typePopup := addPopup(panel, gurps.AllStudyType, &entry.Type)
-	typePopup.SelectionCallback = func(_ int, studyType gurps.StudyType) {
+	typePopup := addPopup(panel, model.AllStudyType, &entry.Type)
+	typePopup.SelectionCallback = func(_ int, studyType model.StudyType) {
 		entry.Type = studyType
 		lastStudyTypeUsed = studyType
 		updateLimitations(info, studyType)
@@ -152,7 +152,7 @@ func (p *studyPanel) insertStudyEntry(index int, entry *gurps.Study, requestFocu
 	}
 }
 
-func updateLimitations(info *unison.Label, studyType gurps.StudyType) {
+func updateLimitations(info *unison.Label, studyType model.StudyType) {
 	ClearInfoPop(info)
 	for _, one := range studyType.Limitations() {
 		AddHelpToInfoPop(info, txt.Wrap("", "● "+one, 60))
@@ -160,7 +160,7 @@ func updateLimitations(info *unison.Label, studyType gurps.StudyType) {
 }
 
 func (p *studyPanel) updateTotal() {
-	if text := gurps.StudyHoursProgressText(gurps.ResolveStudyHours(*p.study)); text != p.total.Text {
+	if text := model.StudyHoursProgressText(model.ResolveStudyHours(*p.study)); text != p.total.Text {
 		p.total.Text = text
 		p.total.MarkForLayoutAndRedraw()
 	}

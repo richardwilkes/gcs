@@ -14,8 +14,8 @@ package ux
 import (
 	"fmt"
 
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -25,14 +25,14 @@ import (
 // SecondaryAttrPanel holds the contents of the secondary attributes block on the sheet.
 type SecondaryAttrPanel struct {
 	unison.Panel
-	entity    *gurps.Entity
+	entity    *model.Entity
 	targetMgr *TargetMgr
 	prefix    string
 	crc       uint64
 }
 
 // NewSecondaryAttrPanel creates a new secondary attributes panel.
-func NewSecondaryAttrPanel(entity *gurps.Entity, targetMgr *TargetMgr) *SecondaryAttrPanel {
+func NewSecondaryAttrPanel(entity *model.Entity, targetMgr *TargetMgr) *SecondaryAttrPanel {
 	p := &SecondaryAttrPanel{
 		entity:    entity,
 		targetMgr: targetMgr,
@@ -58,18 +58,18 @@ func NewSecondaryAttrPanel(entity *gurps.Entity, targetMgr *TargetMgr) *Secondar
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
 		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, unison.Fill))
 	}
-	attrs := gurps.SheetSettingsFor(p.entity).Attributes
+	attrs := model.SheetSettingsFor(p.entity).Attributes
 	p.crc = attrs.CRC64()
 	p.rebuild(attrs)
 	return p
 }
 
-func (p *SecondaryAttrPanel) rebuild(attrs *gurps.AttributeDefs) {
+func (p *SecondaryAttrPanel) rebuild(attrs *model.AttributeDefs) {
 	focusRefKey := p.targetMgr.CurrentFocusRef()
 	p.RemoveAllChildren()
 	for _, def := range attrs.List(false) {
 		if def.Secondary() {
-			if def.Type == gurps.SecondarySeparatorAttributeType {
+			if def.Type == model.SecondarySeparatorAttributeType {
 				p.AddChild(NewPageInternalHeader(def.Name, 3))
 			} else {
 				attr, ok := p.entity.Attributes.Set[def.ID()]
@@ -90,7 +90,7 @@ func (p *SecondaryAttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 	}
 }
 
-func (p *SecondaryAttrPanel) createPointsField(attr *gurps.Attribute) *NonEditablePageField {
+func (p *SecondaryAttrPanel) createPointsField(attr *model.Attribute) *NonEditablePageField {
 	field := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
 		if text := "[" + attr.PointCost().String() + "]"; text != f.Text {
 			f.Text = text
@@ -104,7 +104,7 @@ func (p *SecondaryAttrPanel) createPointsField(attr *gurps.Attribute) *NonEditab
 	return field
 }
 
-func (p *SecondaryAttrPanel) createValueField(def *gurps.AttributeDef, attr *gurps.Attribute) *DecimalField {
+func (p *SecondaryAttrPanel) createValueField(def *model.AttributeDef, attr *model.Attribute) *DecimalField {
 	field := NewDecimalPageField(p.targetMgr, p.prefix+attr.AttrID, def.CombinedName(),
 		func() fxp.Int { return attr.Maximum() },
 		func(v fxp.Int) { attr.SetMaximum(v) }, fxp.Min, fxp.Max, true)
@@ -113,7 +113,7 @@ func (p *SecondaryAttrPanel) createValueField(def *gurps.AttributeDef, attr *gur
 
 // Sync the panel to the current data.
 func (p *SecondaryAttrPanel) Sync() {
-	attrs := gurps.SheetSettingsFor(p.entity).Attributes
+	attrs := model.SheetSettingsFor(p.entity).Attributes
 	if crc := attrs.CRC64(); crc != p.crc {
 		p.crc = crc
 		p.rebuild(attrs)

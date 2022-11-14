@@ -12,7 +12,7 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -20,7 +20,7 @@ import (
 )
 
 // NewEditorListHeader creates a new list header for an editor.
-func NewEditorListHeader[T gurps.NodeTypes](title, tooltip string, forPage bool) unison.TableColumnHeader[*Node[T]] {
+func NewEditorListHeader[T model.NodeTypes](title, tooltip string, forPage bool) unison.TableColumnHeader[*Node[T]] {
 	if forPage {
 		return NewPageTableColumnHeader[T](title, tooltip)
 	}
@@ -30,7 +30,7 @@ func NewEditorListHeader[T gurps.NodeTypes](title, tooltip string, forPage bool)
 }
 
 // NewEditorListSVGHeader creates a new list header with an SVG image as its content rather than text.
-func NewEditorListSVGHeader[T gurps.NodeTypes](svg *unison.SVG, tooltip string, forPage bool) unison.TableColumnHeader[*Node[T]] {
+func NewEditorListSVGHeader[T model.NodeTypes](svg *unison.SVG, tooltip string, forPage bool) unison.TableColumnHeader[*Node[T]] {
 	if forPage {
 		header := NewPageTableColumnHeader[T]("", tooltip)
 		baseline := header.Font.Baseline()
@@ -51,7 +51,7 @@ func NewEditorListSVGHeader[T gurps.NodeTypes](svg *unison.SVG, tooltip string, 
 }
 
 // NewEditorListSVGPairHeader creates a new list header with a pair of SVG images as its content rather than text.
-func NewEditorListSVGPairHeader[T gurps.NodeTypes](leftSVG, rightSVG *unison.SVG, tooltip string, forPage bool) unison.TableColumnHeader[*Node[T]] {
+func NewEditorListSVGPairHeader[T model.NodeTypes](leftSVG, rightSVG *unison.SVG, tooltip string, forPage bool) unison.TableColumnHeader[*Node[T]] {
 	if forPage {
 		header := NewPageTableColumnHeader[T]("", tooltip)
 		baseline := header.Font.Baseline()
@@ -74,46 +74,46 @@ func NewEditorListSVGPairHeader[T gurps.NodeTypes](leftSVG, rightSVG *unison.SVG
 }
 
 // NewEditorPageRefHeader creates a new page reference header.
-func NewEditorPageRefHeader[T gurps.NodeTypes](forPage bool) unison.TableColumnHeader[*Node[T]] {
-	return NewEditorListSVGHeader[T](svg.Bookmark, gurps.PageRefTooltipText, forPage)
+func NewEditorPageRefHeader[T model.NodeTypes](forPage bool) unison.TableColumnHeader[*Node[T]] {
+	return NewEditorListSVGHeader[T](svg.Bookmark, model.PageRefTooltipText, forPage)
 }
 
 // NewEditorEquippedHeader creates a new equipped header.
-func NewEditorEquippedHeader[T gurps.NodeTypes](forPage bool) unison.TableColumnHeader[*Node[T]] {
+func NewEditorEquippedHeader[T model.NodeTypes](forPage bool) unison.TableColumnHeader[*Node[T]] {
 	return NewEditorListSVGHeader[T](svg.Checkmark,
 		i18n.Text(`Whether this piece of equipment is equipped or just carried. Items that are not equipped do not apply any features they may normally contribute to the character.`),
 		forPage)
 }
 
 // NewEnabledHeader creates a new enabled header.
-func NewEnabledHeader[T gurps.NodeTypes](forPage bool) unison.TableColumnHeader[*Node[T]] {
+func NewEnabledHeader[T model.NodeTypes](forPage bool) unison.TableColumnHeader[*Node[T]] {
 	return NewEditorListSVGHeader[T](svg.Checkmark,
 		i18n.Text(`Whether this item is enabled. Items that are not enabled do not apply any features they may normally contribute to the character.`),
 		forPage)
 }
 
 // NewMoneyHeader creates a new money header.
-func NewMoneyHeader[T gurps.NodeTypes](forPage bool) unison.TableColumnHeader[*Node[T]] {
+func NewMoneyHeader[T model.NodeTypes](forPage bool) unison.TableColumnHeader[*Node[T]] {
 	return NewEditorListSVGHeader[T](svg.Coins,
 		i18n.Text(`The value of one of these pieces of equipment`),
 		forPage)
 }
 
 // NewExtendedMoneyHeader creates a new extended money page header.
-func NewExtendedMoneyHeader[T gurps.NodeTypes](forPage bool) unison.TableColumnHeader[*Node[T]] {
+func NewExtendedMoneyHeader[T model.NodeTypes](forPage bool) unison.TableColumnHeader[*Node[T]] {
 	return NewEditorListSVGPairHeader[T](svg.Stack, svg.Coins,
 		i18n.Text(`The value of all of these pieces of equipment, plus the value of any contained equipment`), forPage)
 }
 
 // NewWeightHeader creates a new weight page header.
-func NewWeightHeader[T gurps.NodeTypes](forPage bool) unison.TableColumnHeader[*Node[T]] {
+func NewWeightHeader[T model.NodeTypes](forPage bool) unison.TableColumnHeader[*Node[T]] {
 	return NewEditorListSVGHeader[T](svg.Weight,
 		i18n.Text(`The weight of one of these pieces of equipment`),
 		forPage)
 }
 
 // NewEditorExtendedWeightHeader creates a new extended weight page header.
-func NewEditorExtendedWeightHeader[T gurps.NodeTypes](forPage bool) unison.TableColumnHeader[*Node[T]] {
+func NewEditorExtendedWeightHeader[T model.NodeTypes](forPage bool) unison.TableColumnHeader[*Node[T]] {
 	return NewEditorListSVGPairHeader[T](svg.Stack, svg.Weight,
 		i18n.Text(`The weight of all of these pieces of equipment, plus the weight of any contained equipment`), forPage)
 }
@@ -129,16 +129,16 @@ var PageTableColumnHeaderTheme = unison.LabelTheme{
 	Side:            unison.LeftSide,
 }
 
-var _ unison.TableColumnHeader[*Node[*gurps.Trait]] = &PageTableColumnHeader[*gurps.Trait]{}
+var _ unison.TableColumnHeader[*Node[*model.Trait]] = &PageTableColumnHeader[*model.Trait]{}
 
 // PageTableColumnHeader provides a default page table column header panel.
-type PageTableColumnHeader[T gurps.NodeTypes] struct {
+type PageTableColumnHeader[T model.NodeTypes] struct {
 	unison.Label
 	sortState unison.SortState
 }
 
 // NewPageTableColumnHeader creates a new page table column header panel with the given title.
-func NewPageTableColumnHeader[T gurps.NodeTypes](title, tooltip string) *PageTableColumnHeader[T] {
+func NewPageTableColumnHeader[T model.NodeTypes](title, tooltip string) *PageTableColumnHeader[T] {
 	h := &PageTableColumnHeader[T]{
 		Label: unison.Label{
 			LabelTheme: PageTableColumnHeaderTheme,

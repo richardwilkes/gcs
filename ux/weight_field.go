@@ -12,16 +12,16 @@
 package ux
 
 import (
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
+	"github.com/richardwilkes/gcs/v5/model/measure"
 )
 
 // WeightField is field that holds a weight value.
 type WeightField = NumericField[measure.Weight]
 
 // NewWeightField creates a new field that holds a fixed-point number.
-func NewWeightField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() measure.Weight, set func(measure.Weight), min, max measure.Weight, noMinWidth bool) *WeightField {
+func NewWeightField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *model.Entity, get func() measure.Weight, set func(measure.Weight), min, max measure.Weight, noMinWidth bool) *WeightField {
 	var getPrototypes func(min, max measure.Weight) []measure.Weight
 	if !noMinWidth {
 		getPrototypes = func(min, max measure.Weight) []measure.Weight {
@@ -37,10 +37,10 @@ func NewWeightField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *g
 		}
 	}
 	format := func(value measure.Weight) string {
-		return gurps.SheetSettingsFor(entity).DefaultWeightUnits.Format(value)
+		return model.SheetSettingsFor(entity).DefaultWeightUnits.Format(value)
 	}
 	extract := func(s string) (measure.Weight, error) {
-		return measure.WeightFromString(s, gurps.SheetSettingsFor(entity).DefaultWeightUnits)
+		return measure.WeightFromString(s, model.SheetSettingsFor(entity).DefaultWeightUnits)
 	}
 	f := NewNumericField[measure.Weight](targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, min, max)
 	f.RuneTypedCallback = f.DefaultRuneTyped

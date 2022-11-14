@@ -17,8 +17,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/crc"
-	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/settings"
@@ -30,15 +30,15 @@ import (
 )
 
 var (
-	_ FileBackedDockable         = &TableDockable[*gurps.Trait]{}
-	_ unison.UndoManagerProvider = &TableDockable[*gurps.Trait]{}
-	_ ModifiableRoot             = &TableDockable[*gurps.Trait]{}
-	_ Rebuildable                = &TableDockable[*gurps.Trait]{}
-	_ unison.TabCloser           = &TableDockable[*gurps.Trait]{}
+	_ FileBackedDockable         = &TableDockable[*model.Trait]{}
+	_ unison.UndoManagerProvider = &TableDockable[*model.Trait]{}
+	_ ModifiableRoot             = &TableDockable[*model.Trait]{}
+	_ Rebuildable                = &TableDockable[*model.Trait]{}
+	_ unison.TabCloser           = &TableDockable[*model.Trait]{}
 )
 
 // TableDockable holds the view for a file that contains a (potentially hierarchical) list of data.
-type TableDockable[T gurps.NodeTypes] struct {
+type TableDockable[T model.NodeTypes] struct {
 	unison.Panel
 	path              string
 	extension         string
@@ -59,7 +59,7 @@ type TableDockable[T gurps.NodeTypes] struct {
 }
 
 // NewTableDockable creates a new TableDockable for list data files.
-func NewTableDockable[T gurps.NodeTypes](filePath, extension string, provider TableProvider[T], saver func(path string) error, canCreateIDs ...int) *TableDockable[T] {
+func NewTableDockable[T model.NodeTypes](filePath, extension string, provider TableProvider[T], saver func(path string) error, canCreateIDs ...int) *TableDockable[T] {
 	header, table := NewNodeTable[T](provider, nil)
 	d := &TableDockable[T]{
 		path:              filePath,
@@ -176,7 +176,7 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	toolbar.AddChild(NewDefaultInfoPop())
-	toolbar.AddChild(NewScaleField(gurps.InitialUIScaleMin, gurps.InitialUIScaleMax,
+	toolbar.AddChild(NewScaleField(model.InitialUIScaleMin, model.InitialUIScaleMax,
 		func() int { return settings.Global().General.InitialListUIScale }, func() int { return d.scale },
 		func(scale int) { d.scale = scale }, d.scroll, nil, false))
 	toolbar.AddChild(d.hierarchyButton)
@@ -195,7 +195,7 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 }
 
 // Entity implements gurps.EntityProvider
-func (d *TableDockable[T]) Entity() *gurps.Entity {
+func (d *TableDockable[T]) Entity() *model.Entity {
 	return nil
 }
 
@@ -314,7 +314,7 @@ func (d *TableDockable[T]) toggleHierarchy() {
 	d.table.SyncToModel()
 }
 
-func setTableDockableRowOpen[T gurps.NodeTypes](row *Node[T], open bool) {
+func setTableDockableRowOpen[T model.NodeTypes](row *Node[T], open bool) {
 	row.SetOpen(open)
 	for _, child := range row.Children() {
 		if child.CanHaveChildren() {

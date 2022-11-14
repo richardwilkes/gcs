@@ -14,7 +14,7 @@ package ux
 import (
 	"fmt"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -26,13 +26,13 @@ import (
 type Page struct {
 	unison.Panel
 	flex       *unison.FlexLayout
-	entity     *gurps.Entity
+	entity     *model.Entity
 	lastInsets unison.Insets
 	Force      bool
 }
 
 // NewPage creates a new page.
-func NewPage(entity *gurps.Entity) *Page {
+func NewPage(entity *model.Entity) *Page {
 	p := &Page{
 		entity: entity,
 		flex: &unison.FlexLayout{
@@ -51,7 +51,7 @@ func NewPage(entity *gurps.Entity) *Page {
 
 // LayoutSizes implements unison.Layout
 func (p *Page) LayoutSizes(_ *unison.Panel, _ unison.Size) (min, pref, max unison.Size) {
-	s := gurps.SheetSettingsFor(p.entity)
+	s := model.SheetSettingsFor(p.entity)
 	w, h := s.Page.Orientation.Dimensions(s.Page.Size.Dimensions())
 	if insets := p.insets(); insets != p.lastInsets {
 		p.lastInsets = insets
@@ -82,7 +82,7 @@ func (p *Page) ApplyPreferredSize() {
 }
 
 func (p *Page) insets() unison.Insets {
-	sheetSettings := gurps.SheetSettingsFor(p.entity)
+	sheetSettings := model.SheetSettingsFor(p.entity)
 	insets := unison.Insets{
 		Top:    sheetSettings.Page.TopMargin.Pixels(),
 		Left:   sheetSettings.Page.LeftMargin.Pixels(),
@@ -116,7 +116,7 @@ func (p *Page) drawSelf(gc *unison.Canvas, _ unison.Rect) {
 	}
 
 	var title string
-	if gurps.SheetSettingsFor(p.entity).UseTitleInFooter {
+	if model.SheetSettingsFor(p.entity).UseTitleInFooter {
 		title = p.entity.Profile.Title
 	} else {
 		title = p.entity.Profile.Name

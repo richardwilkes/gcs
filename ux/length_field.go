@@ -12,16 +12,16 @@
 package ux
 
 import (
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
+	"github.com/richardwilkes/gcs/v5/model/measure"
 )
 
 // LengthField is field that holds a length value.
 type LengthField = NumericField[measure.Length]
 
 // NewLengthField creates a new field that holds a fixed-point number.
-func NewLengthField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() measure.Length, set func(measure.Length), min, max measure.Length, noMinWidth bool) *LengthField {
+func NewLengthField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *model.Entity, get func() measure.Length, set func(measure.Length), min, max measure.Length, noMinWidth bool) *LengthField {
 	var getPrototypes func(min, max measure.Length) []measure.Length
 	if !noMinWidth {
 		getPrototypes = func(min, max measure.Length) []measure.Length {
@@ -37,10 +37,10 @@ func NewLengthField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *g
 		}
 	}
 	format := func(value measure.Length) string {
-		return gurps.SheetSettingsFor(entity).DefaultLengthUnits.Format(value)
+		return model.SheetSettingsFor(entity).DefaultLengthUnits.Format(value)
 	}
 	extract := func(s string) (measure.Length, error) {
-		return measure.LengthFromString(s, gurps.SheetSettingsFor(entity).DefaultLengthUnits)
+		return measure.LengthFromString(s, model.SheetSettingsFor(entity).DefaultLengthUnits)
 	}
 	f := NewNumericField[measure.Length](targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, min, max)
 	f.RuneTypedCallback = f.DefaultRuneTyped

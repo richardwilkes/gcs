@@ -15,30 +15,30 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/unison"
 )
 
 type skillListProvider struct {
-	skills []*gurps.Skill
+	skills []*model.Skill
 }
 
-func (p *skillListProvider) Entity() *gurps.Entity {
+func (p *skillListProvider) Entity() *model.Entity {
 	return nil
 }
 
-func (p *skillListProvider) SkillList() []*gurps.Skill {
+func (p *skillListProvider) SkillList() []*model.Skill {
 	return p.skills
 }
 
-func (p *skillListProvider) SetSkillList(list []*gurps.Skill) {
+func (p *skillListProvider) SetSkillList(list []*model.Skill) {
 	p.skills = list
 }
 
 // NewSkillTableDockableFromFile loads a list of skills from a file and creates a new unison.Dockable for them.
 func NewSkillTableDockableFromFile(filePath string) (unison.Dockable, error) {
-	skills, err := gurps.NewSkillsFromFile(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath))
+	skills, err := model.NewSkillsFromFile(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath))
 	if err != nil {
 		return nil, err
 	}
@@ -48,9 +48,9 @@ func NewSkillTableDockableFromFile(filePath string) (unison.Dockable, error) {
 }
 
 // NewSkillTableDockable creates a new unison.Dockable for skill list files.
-func NewSkillTableDockable(filePath string, skills []*gurps.Skill) *TableDockable[*gurps.Skill] {
+func NewSkillTableDockable(filePath string, skills []*model.Skill) *TableDockable[*model.Skill] {
 	provider := &skillListProvider{skills: skills}
 	return NewTableDockable(filePath, library.SkillsExt, NewSkillsProvider(provider, false),
-		func(path string) error { return gurps.SaveSkills(provider.SkillList(), path) },
+		func(path string) error { return model.SaveSkills(provider.SkillList(), path) },
 		NewSkillItemID, NewSkillContainerItemID, NewTechniqueItemID)
 }

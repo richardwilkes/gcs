@@ -14,7 +14,7 @@ package ux
 import (
 	"fmt"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -24,7 +24,7 @@ import (
 // PointsPanel holds the contents of the points block on the sheet.
 type PointsPanel struct {
 	unison.Panel
-	entity       *gurps.Entity
+	entity       *model.Entity
 	targetMgr    *TargetMgr
 	prefix       string
 	total        *unison.Label
@@ -34,7 +34,7 @@ type PointsPanel struct {
 }
 
 // NewPointsPanel creates a new points panel.
-func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
+func NewPointsPanel(entity *model.Entity, targetMgr *TargetMgr) *PointsPanel {
 	p := &PointsPanel{
 		entity:    entity,
 		targetMgr: targetMgr,

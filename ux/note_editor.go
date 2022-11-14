@@ -12,17 +12,17 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/unison"
 )
 
 // EditNote displays the editor for a note.
-func EditNote(owner Rebuildable, note *gurps.Note) {
-	displayEditor[*gurps.Note, *gurps.NoteEditData](owner, note, svg.GCSNotes, initNoteEditor)
+func EditNote(owner Rebuildable, note *model.Note) {
+	displayEditor[*model.Note, *model.NoteEditData](owner, note, svg.GCSNotes, initNoteEditor)
 }
 
-func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison.Panel) func() {
+func initNoteEditor(e *editor[*model.Note, *model.NoteEditData], content *unison.Panel) func() {
 	addNotesLabelAndField(content, &e.editorData.Text)
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	return nil

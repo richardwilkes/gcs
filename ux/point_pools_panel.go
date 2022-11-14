@@ -14,8 +14,8 @@ package ux
 import (
 	"fmt"
 
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -25,14 +25,14 @@ import (
 // PointPoolsPanel holds the contents of the point pools block on the sheet.
 type PointPoolsPanel struct {
 	unison.Panel
-	entity    *gurps.Entity
+	entity    *model.Entity
 	targetMgr *TargetMgr
 	prefix    string
 	crc       uint64
 }
 
 // NewPointPoolsPanel creates a new point pools panel.
-func NewPointPoolsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointPoolsPanel {
+func NewPointPoolsPanel(entity *model.Entity, targetMgr *TargetMgr) *PointPoolsPanel {
 	p := &PointPoolsPanel{
 		entity:    entity,
 		targetMgr: targetMgr,
@@ -57,18 +57,18 @@ func NewPointPoolsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointPoolsP
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
 		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, unison.Fill))
 	}
-	attrs := gurps.SheetSettingsFor(p.entity).Attributes
+	attrs := model.SheetSettingsFor(p.entity).Attributes
 	p.crc = attrs.CRC64()
 	p.rebuild(attrs)
 	return p
 }
 
-func (p *PointPoolsPanel) rebuild(attrs *gurps.AttributeDefs) {
+func (p *PointPoolsPanel) rebuild(attrs *model.AttributeDefs) {
 	focusRefKey := p.targetMgr.CurrentFocusRef()
 	p.RemoveAllChildren()
 	for _, def := range attrs.List(false) {
 		if def.Pool() {
-			if def.Type == gurps.PoolSeparatorAttributeType {
+			if def.Type == model.PoolSeparatorAttributeType {
 				p.AddChild(NewPageInternalHeader(def.Name, 6))
 			} else {
 				attr, ok := p.entity.Attributes.Set[def.ID()]
@@ -125,7 +125,7 @@ func (p *PointPoolsPanel) rebuild(attrs *gurps.AttributeDefs) {
 	}
 }
 
-func (p *PointPoolsPanel) createPointsField(attr *gurps.Attribute) *NonEditablePageField {
+func (p *PointPoolsPanel) createPointsField(attr *model.Attribute) *NonEditablePageField {
 	field := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
 		if text := "[" + attr.PointCost().String() + "]"; text != f.Text {
 			f.Text = text
@@ -144,7 +144,7 @@ func (p *PointPoolsPanel) Sync() {
 	attrs := p.entity.Attributes
 	if crc := attrs.CRC64(); crc != p.crc {
 		p.crc = crc
-		p.rebuild(gurps.SheetSettingsFor(p.entity).Attributes)
+		p.rebuild(model.SheetSettingsFor(p.entity).Attributes)
 		MarkForLayoutWithinDockable(p)
 	}
 }

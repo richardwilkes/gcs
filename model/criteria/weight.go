@@ -13,7 +13,7 @@ package criteria
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
+	"github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/json"
 )
 

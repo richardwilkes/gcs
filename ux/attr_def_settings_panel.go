@@ -14,8 +14,8 @@ package ux
 import (
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -25,13 +25,13 @@ import (
 type attrDefSettingsPanel struct {
 	unison.Panel
 	dockable           *attributeSettingsDockable
-	def                *gurps.AttributeDef
+	def                *model.AttributeDef
 	deleteButton       *unison.Button
 	addThresholdButton *unison.Button
 	poolPanel          *poolSettingsPanel
 }
 
-func newAttrDefSettingsPanel(dockable *attributeSettingsDockable, def *gurps.AttributeDef) *attrDefSettingsPanel {
+func newAttrDefSettingsPanel(dockable *attributeSettingsDockable, def *model.AttributeDef) *attrDefSettingsPanel {
 	p := &attrDefSettingsPanel{
 		dockable: dockable,
 		def:      def,
@@ -86,7 +86,7 @@ func (p *attrDefSettingsPanel) createButtons() *unison.Panel {
 	p.addThresholdButton = unison.NewSVGButton(svg.CircledAdd)
 	p.addThresholdButton.ClickCallback = func() { p.poolPanel.addThreshold() }
 	p.addThresholdButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Add pool threshold"))
-	p.addThresholdButton.SetEnabled(p.def.Type == gurps.PoolAttributeType)
+	p.addThresholdButton.SetEnabled(p.def.Type == model.PoolAttributeType)
 	buttons.AddChild(p.addThresholdButton)
 	return buttons
 }
@@ -98,12 +98,12 @@ func (p *attrDefSettingsPanel) deleteAttrDef() {
 	if len(children) == 1 {
 		children[0].Self.(*attrDefSettingsPanel).deleteButton.SetEnabled(false)
 	}
-	undo := &unison.UndoEdit[*gurps.AttributeDefs]{
+	undo := &unison.UndoEdit[*model.AttributeDefs]{
 		ID:         unison.NextUndoID(),
 		EditName:   i18n.Text("Delete Attribute"),
-		UndoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { p.dockable.applyAttrDefs(e.BeforeData) },
-		RedoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { p.dockable.applyAttrDefs(e.AfterData) },
-		AbsorbFunc: func(e *unison.UndoEdit[*gurps.AttributeDefs], other unison.Undoable) bool { return false },
+		UndoFunc:   func(e *unison.UndoEdit[*model.AttributeDefs]) { p.dockable.applyAttrDefs(e.BeforeData) },
+		RedoFunc:   func(e *unison.UndoEdit[*model.AttributeDefs]) { p.dockable.applyAttrDefs(e.AfterData) },
+		AbsorbFunc: func(e *unison.UndoEdit[*model.AttributeDefs], other unison.Undoable) bool { return false },
 	}
 	undo.BeforeData = p.dockable.defs.Clone()
 	delete(p.dockable.defs.Set, p.def.DefID)
@@ -135,7 +135,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 				p.dockable.defs.Set[p.def.DefID] = p.def
 			}
 		})
-	field.ValidateCallback = func(field *StringField, def *gurps.AttributeDef) func() bool {
+	field.ValidateCallback = func(field *StringField, def *model.AttributeDef) func() bool {
 		return func() bool { return p.validateAttrID(field.Text()) }
 	}(field, p.def)
 	field.SetMinimumTextWidthUsing(prototypeMinIDWidth)
@@ -200,12 +200,12 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 
 	text = i18n.Text("Attribute Type")
 	content.AddChild(NewFieldLeadingLabel(text))
-	content.AddChild(NewPopup[gurps.AttributeType](p.dockable.targetMgr, p.def.KeyPrefix+"type", text,
-		func() gurps.AttributeType { return p.def.Type },
-		func(typ gurps.AttributeType) { p.applyAttributeType(typ) },
-		gurps.AllAttributeType...))
+	content.AddChild(NewPopup[model.AttributeType](p.dockable.targetMgr, p.def.KeyPrefix+"type", text,
+		func() model.AttributeType { return p.def.Type },
+		func(typ model.AttributeType) { p.applyAttributeType(typ) },
+		model.AllAttributeType...))
 
-	if p.def.Type == gurps.PoolAttributeType {
+	if p.def.Type == model.PoolAttributeType {
 		p.poolPanel = newPoolSettingsPanel(p.dockable, p.def)
 		content.AddChild(p.poolPanel)
 	} else {
@@ -216,7 +216,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 
 func (p *attrDefSettingsPanel) validateAttrID(attrID string) bool {
 	if key := strings.TrimSpace(strings.ToLower(attrID)); key != "" {
-		if key != id.Sanitize(key, false, gurps.ReservedIDs...) {
+		if key != id.Sanitize(key, false, model.ReservedIDs...) {
 			return false
 		}
 		if key == p.def.DefID {
@@ -228,10 +228,10 @@ func (p *attrDefSettingsPanel) validateAttrID(attrID string) bool {
 	return false
 }
 
-func (p *attrDefSettingsPanel) applyAttributeType(attrType gurps.AttributeType) {
+func (p *attrDefSettingsPanel) applyAttributeType(attrType model.AttributeType) {
 	p.def.Type = attrType
-	if p.def.Type == gurps.PoolAttributeType && len(p.def.Thresholds) == 0 {
-		p.def.Thresholds = append(p.def.Thresholds, &gurps.PoolThreshold{KeyPrefix: p.dockable.targetMgr.NextPrefix()})
+	if p.def.Type == model.PoolAttributeType && len(p.def.Thresholds) == 0 {
+		p.def.Thresholds = append(p.def.Thresholds, &model.PoolThreshold{KeyPrefix: p.dockable.targetMgr.NextPrefix()})
 	} else if p.def.IsSeparator() {
 		p.def.FullName = ""
 		p.def.AttributeBase = ""

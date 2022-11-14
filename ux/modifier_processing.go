@@ -12,14 +12,14 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
 )
 
 // ProcessModifiersForSelection processes the selected rows for modifiers that can be toggled on or off.
-func ProcessModifiersForSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
+func ProcessModifiersForSelection[T model.NodeTypes](table *unison.Table[*Node[T]]) {
 	rows := table.SelectedRows(true)
 	data := make([]T, 0, len(rows))
 	for _, row := range rows {
@@ -29,16 +29,16 @@ func ProcessModifiersForSelection[T gurps.NodeTypes](table *unison.Table[*Node[T
 }
 
 // ProcessModifiers processes the rows for modifiers that can be toggled on or off.
-func ProcessModifiers[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
+func ProcessModifiers[T model.NodeTypes](owner unison.Paneler, rows []T) {
 	for _, row := range rows {
-		gurps.Traverse(func(row T) bool {
+		model.Traverse(func(row T) bool {
 			switch t := (any(row)).(type) {
-			case *gurps.Trait:
-				if processModifiers(txt.Truncate(gurps.AsNode(row).String(), 40, true), t.Modifiers) {
+			case *model.Trait:
+				if processModifiers(txt.Truncate(model.AsNode(row).String(), 40, true), t.Modifiers) {
 					unison.Ancestor[Rebuildable](owner).Rebuild(true)
 				}
-			case *gurps.Equipment:
-				if processModifiers(txt.Truncate(gurps.AsNode(row).String(), 40, true), t.Modifiers) {
+			case *model.Equipment:
+				if processModifiers(txt.Truncate(model.AsNode(row).String(), 40, true), t.Modifiers) {
 					unison.Ancestor[Rebuildable](owner).Rebuild(true)
 				}
 			}
@@ -47,7 +47,7 @@ func ProcessModifiers[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 	}
 }
 
-func processModifiers[T *gurps.TraitModifier | *gurps.EquipmentModifier](title string, modifiers []T) bool {
+func processModifiers[T *model.TraitModifier | *model.EquipmentModifier](title string, modifiers []T) bool {
 	if len(modifiers) == 0 {
 		return false
 	}
@@ -58,9 +58,9 @@ func processModifiers[T *gurps.TraitModifier | *gurps.EquipmentModifier](title s
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	tracker := make(map[*unison.CheckBox]gurps.GeneralModifier)
-	gurps.Traverse[T](func(m T) bool {
-		if mod, ok := any(m).(gurps.GeneralModifier); ok {
+	tracker := make(map[*unison.CheckBox]model.GeneralModifier)
+	model.Traverse[T](func(m T) bool {
+		if mod, ok := any(m).(model.GeneralModifier); ok {
 			var p *unison.Panel
 			if mod.Container() {
 				label := unison.NewLabel()
@@ -114,7 +114,7 @@ func processModifiers[T *gurps.TraitModifier | *gurps.EquipmentModifier](title s
 		changed := false
 		for _, row := range list.Children() {
 			if cb, ok := row.Self.(*unison.CheckBox); ok {
-				var mod gurps.GeneralModifier
+				var mod model.GeneralModifier
 				if mod, ok = tracker[cb]; ok {
 					if on := cb.State == unison.OnCheckState; mod.Enabled() != on {
 						mod.SetEnabled(on)

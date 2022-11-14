@@ -15,7 +15,7 @@ import (
 	"context"
 	"io/fs"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
+	gid2 "github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
@@ -105,17 +105,17 @@ func NewFontsFromFS(fileSystem fs.FS, filePath string) (*Fonts, error) {
 		// During development of v5, forgot to add the type & version initially, so try and fix that up
 		if current.Type == "" {
 			current.Type = fontsTypeKey
-			current.Version = gid.CurrentDataVersion
+			current.Version = gid2.CurrentDataVersion
 		}
 	case 1:
 		current.Type = fontsTypeKey
-		current.Version = gid.CurrentDataVersion
+		current.Version = gid2.CurrentDataVersion
 	default:
 	}
 	if current.Type != fontsTypeKey {
-		return nil, errs.New(gid.UnexpectedFileDataMsg)
+		return nil, errs.New(gid2.UnexpectedFileDataMsg)
 	}
-	if err := gid.CheckVersion(current.Version); err != nil {
+	if err := gid2.CheckVersion(current.Version); err != nil {
 		return nil, err
 	}
 	return &current.Fonts, nil
@@ -125,7 +125,7 @@ func NewFontsFromFS(fileSystem fs.FS, filePath string) (*Fonts, error) {
 func (f *Fonts) Save(filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &fontsData{
 		Type:    fontsTypeKey,
-		Version: gid.CurrentDataVersion,
+		Version: gid2.CurrentDataVersion,
 		Fonts:   *f,
 	})
 }

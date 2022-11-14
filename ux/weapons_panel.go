@@ -13,28 +13,28 @@ package ux
 
 import (
 	"github.com/google/uuid"
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/unison"
 )
 
 type weaponsPanel struct {
 	unison.Panel
-	entity      *gurps.Entity
-	weaponOwner gurps.WeaponOwner
-	weaponType  gurps.WeaponType
-	allWeapons  *[]*gurps.Weapon
-	weapons     []*gurps.Weapon
-	provider    TableProvider[*gurps.Weapon]
-	table       *unison.Table[*Node[*gurps.Weapon]]
+	entity      *model.Entity
+	weaponOwner model.WeaponOwner
+	weaponType  model.WeaponType
+	allWeapons  *[]*model.Weapon
+	weapons     []*model.Weapon
+	provider    TableProvider[*model.Weapon]
+	table       *unison.Table[*Node[*model.Weapon]]
 }
 
-func newWeaponsPanel(cmdRoot Rebuildable, weaponOwner gurps.WeaponOwner, weaponType gurps.WeaponType, weapons *[]*gurps.Weapon) *weaponsPanel {
+func newWeaponsPanel(cmdRoot Rebuildable, weaponOwner model.WeaponOwner, weaponType model.WeaponType, weapons *[]*model.Weapon) *weaponsPanel {
 	p := &weaponsPanel{
 		weaponOwner: weaponOwner,
 		weaponType:  weaponType,
 		allWeapons:  weapons,
-		weapons:     gurps.ExtractWeaponsOfType(weaponType, *weapons),
+		weapons:     model.ExtractWeaponsOfType(weaponType, *weapons),
 	}
 	p.Self = p
 	p.SetLayout(&unison.FlexLayout{Columns: 1})
@@ -52,9 +52,9 @@ func newWeaponsPanel(cmdRoot Rebuildable, weaponOwner gurps.WeaponOwner, weaponT
 	p.table.RefKey = weaponType.Key() + "-" + uuid.New().String()
 	var id int
 	switch weaponType {
-	case gurps.MeleeWeaponType:
+	case model.MeleeWeaponType:
 		id = NewMeleeWeaponItemID
-	case gurps.RangedWeaponType:
+	case model.RangedWeaponType:
 		id = NewRangedWeaponItemID
 	default:
 		return p
@@ -64,27 +64,27 @@ func newWeaponsPanel(cmdRoot Rebuildable, weaponOwner gurps.WeaponOwner, weaponT
 	return p
 }
 
-func (p *weaponsPanel) Entity() *gurps.Entity {
+func (p *weaponsPanel) Entity() *model.Entity {
 	return p.entity
 }
 
-func (p *weaponsPanel) WeaponOwner() gurps.WeaponOwner {
+func (p *weaponsPanel) WeaponOwner() model.WeaponOwner {
 	return p.weaponOwner
 }
 
-func (p *weaponsPanel) Weapons(weaponType gurps.WeaponType) []*gurps.Weapon {
-	return gurps.ExtractWeaponsOfType(weaponType, *p.allWeapons)
+func (p *weaponsPanel) Weapons(weaponType model.WeaponType) []*model.Weapon {
+	return model.ExtractWeaponsOfType(weaponType, *p.allWeapons)
 }
 
-func (p *weaponsPanel) SetWeapons(weaponType gurps.WeaponType, list []*gurps.Weapon) {
-	melee, ranged := gurps.SeparateWeapons(*p.allWeapons)
+func (p *weaponsPanel) SetWeapons(weaponType model.WeaponType, list []*model.Weapon) {
+	melee, ranged := model.SeparateWeapons(*p.allWeapons)
 	switch weaponType {
-	case gurps.MeleeWeaponType:
+	case model.MeleeWeaponType:
 		melee = list
-	case gurps.RangedWeaponType:
+	case model.RangedWeaponType:
 		ranged = list
 	}
-	*p.allWeapons = append(append(make([]*gurps.Weapon, 0, len(melee)+len(ranged)), melee...), ranged...)
+	*p.allWeapons = append(append(make([]*model.Weapon, 0, len(melee)+len(ranged)), melee...), ranged...)
 	sel := p.table.CopySelectionMap()
 	p.table.SyncToModel()
 	p.table.SetSelectionMap(sel)

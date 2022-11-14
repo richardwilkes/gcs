@@ -12,7 +12,7 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -32,11 +32,11 @@ func (a *adjustUsesList) Apply() {
 }
 
 type usesAdjuster struct {
-	Target *gurps.Equipment
+	Target *model.Equipment
 	Uses   int
 }
 
-func newUsesAdjuster(target *gurps.Equipment) *usesAdjuster {
+func newUsesAdjuster(target *model.Equipment) *usesAdjuster {
 	return &usesAdjuster{
 		Target: target,
 		Uses:   target.Uses,
@@ -47,7 +47,7 @@ func (a *usesAdjuster) Apply() {
 	a.Target.Uses = a.Uses
 }
 
-func canAdjustUses(table *unison.Table[*Node[*gurps.Equipment]], amount int) bool {
+func canAdjustUses(table *unison.Table[*Node[*model.Equipment]], amount int) bool {
 	for _, row := range table.SelectedRows(false) {
 		if eqp := row.Data(); eqp != nil {
 			if eqp.Uses+amount <= eqp.MaxUses {
@@ -58,7 +58,7 @@ func canAdjustUses(table *unison.Table[*Node[*gurps.Equipment]], amount int) boo
 	return false
 }
 
-func adjustUses(owner Rebuildable, table *unison.Table[*Node[*gurps.Equipment]], amount int) {
+func adjustUses(owner Rebuildable, table *unison.Table[*Node[*model.Equipment]], amount int) {
 	before := &adjustUsesList{Owner: owner}
 	after := &adjustUsesList{Owner: owner}
 	for _, row := range table.SelectedRows(false) {

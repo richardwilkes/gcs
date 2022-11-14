@@ -12,9 +12,9 @@
 package ux
 
 import (
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
+	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -25,11 +25,11 @@ var lastDefaultTypeUsed = gid.Dexterity
 
 type defaultsPanel struct {
 	unison.Panel
-	entity   *gurps.Entity
-	defaults *[]*gurps.SkillDefault
+	entity   *model.Entity
+	defaults *[]*model.SkillDefault
 }
 
-func newDefaultsPanel(entity *gurps.Entity, defaults *[]*gurps.SkillDefault) *defaultsPanel {
+func newDefaultsPanel(entity *model.Entity, defaults *[]*model.SkillDefault) *defaultsPanel {
 	p := &defaultsPanel{
 		entity:   entity,
 		defaults: defaults,
@@ -56,7 +56,7 @@ func newDefaultsPanel(entity *gurps.Entity, defaults *[]*gurps.SkillDefault) *de
 	}
 	addButton := unison.NewSVGButton(svg.CircledAdd)
 	addButton.ClickCallback = func() {
-		def := &gurps.SkillDefault{DefaultType: lastDefaultTypeUsed}
+		def := &model.SkillDefault{DefaultType: lastDefaultTypeUsed}
 		*defaults = slices.Insert(*defaults, 0, def)
 		p.insertDefaultsPanel(1, def)
 		unison.Ancestor[*unison.DockContainer](p).MarkForLayoutRecursively()
@@ -69,7 +69,7 @@ func newDefaultsPanel(entity *gurps.Entity, defaults *[]*gurps.SkillDefault) *de
 	return p
 }
 
-func (p *defaultsPanel) insertDefaultsPanel(index int, def *gurps.SkillDefault) {
+func (p *defaultsPanel) insertDefaultsPanel(index int, def *model.SkillDefault) {
 	panel := unison.NewPanel()
 	panel.SetLayout(&unison.FlexLayout{
 		Columns:  5,
@@ -80,7 +80,7 @@ func (p *defaultsPanel) insertDefaultsPanel(index int, def *gurps.SkillDefault) 
 
 	deleteButton := unison.NewSVGButton(svg.Trash)
 	deleteButton.ClickCallback = func() {
-		if i := slices.IndexFunc(*p.defaults, func(elem *gurps.SkillDefault) bool { return elem == def }); i != -1 {
+		if i := slices.IndexFunc(*p.defaults, func(elem *model.SkillDefault) bool { return elem == def }); i != -1 {
 			*p.defaults = slices.Delete(*p.defaults, i, i+1)
 		}
 		panel.RemoveFromParent()
@@ -102,9 +102,9 @@ func (p *defaultsPanel) insertDefaultsPanel(index int, def *gurps.SkillDefault) 
 		func(v fxp.Int) { def.Modifier = v },
 		-fxp.Thousand, fxp.Thousand, true, false)
 	attrChoicePopup := addAttributeChoicePopup(panel, p.entity, "", &def.DefaultType,
-		gurps.TenFlag|gurps.ParryFlag|gurps.BlockFlag|gurps.SkillFlag)
+		model.TenFlag|model.ParryFlag|model.BlockFlag|model.SkillFlag)
 	callback := attrChoicePopup.SelectionCallback
-	attrChoicePopup.SelectionCallback = func(index int, item *gurps.AttributeChoice) {
+	attrChoicePopup.SelectionCallback = func(index int, item *model.AttributeChoice) {
 		lastDefaultTypeUsed = item.Key
 		callback(index, item)
 		adjustFieldBlank(nameField, item.Key != gid.Skill)

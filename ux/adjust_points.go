@@ -12,13 +12,13 @@
 package ux
 
 import (
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
 
-type adjustRawPointsList[T gurps.NodeTypes] struct {
+type adjustRawPointsList[T model.NodeTypes] struct {
 	Owner Rebuildable
 	List  []*rawPointsAdjuster[T]
 }
@@ -38,12 +38,12 @@ func (a *adjustRawPointsList[T]) Finish() {
 	MarkModified(a.Owner)
 }
 
-type rawPointsAdjuster[T gurps.NodeTypes] struct {
-	Target gurps.RawPointsAdjuster[T]
+type rawPointsAdjuster[T model.NodeTypes] struct {
+	Target model.RawPointsAdjuster[T]
 	Points fxp.Int
 }
 
-func newRawPointsAdjuster[T gurps.NodeTypes](target gurps.RawPointsAdjuster[T]) *rawPointsAdjuster[T] {
+func newRawPointsAdjuster[T model.NodeTypes](target model.RawPointsAdjuster[T]) *rawPointsAdjuster[T] {
 	return &rawPointsAdjuster[T]{
 		Target: target,
 		Points: target.RawPoints(),
@@ -54,9 +54,9 @@ func (a *rawPointsAdjuster[T]) Apply() {
 	a.Target.SetRawPoints(a.Points)
 }
 
-func canAdjustRawPoints[T gurps.NodeTypes](table *unison.Table[*Node[T]], increment bool) bool {
+func canAdjustRawPoints[T model.NodeTypes](table *unison.Table[*Node[T]], increment bool) bool {
 	for _, row := range table.SelectedRows(false) {
-		if provider, ok := any(row.Data()).(gurps.RawPointsAdjuster[T]); ok && !provider.Container() {
+		if provider, ok := any(row.Data()).(model.RawPointsAdjuster[T]); ok && !provider.Container() {
 			if increment || provider.RawPoints() > 0 {
 				return true
 			}
@@ -65,11 +65,11 @@ func canAdjustRawPoints[T gurps.NodeTypes](table *unison.Table[*Node[T]], increm
 	return false
 }
 
-func adjustRawPoints[T gurps.NodeTypes](owner Rebuildable, table *unison.Table[*Node[T]], increment bool) {
+func adjustRawPoints[T model.NodeTypes](owner Rebuildable, table *unison.Table[*Node[T]], increment bool) {
 	before := &adjustRawPointsList[T]{Owner: owner}
 	after := &adjustRawPointsList[T]{Owner: owner}
 	for _, row := range table.SelectedRows(false) {
-		if provider, ok := any(row.Data()).(gurps.RawPointsAdjuster[T]); ok {
+		if provider, ok := any(row.Data()).(model.RawPointsAdjuster[T]); ok {
 			if increment || provider.RawPoints() > 0 {
 				before.List = append(before.List, newRawPointsAdjuster[T](provider))
 				rawPts := provider.RawPoints()

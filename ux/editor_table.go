@@ -12,11 +12,11 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/unison"
 )
 
-func newEditorTable[T gurps.NodeTypes](parent *unison.Panel, provider TableProvider[T]) *unison.Table[*Node[T]] {
+func newEditorTable[T model.NodeTypes](parent *unison.Panel, provider TableProvider[T]) *unison.Table[*Node[T]] {
 	header, table := NewNodeTable[T](provider, unison.FieldFont)
 	table.InstallCmdHandlers(OpenEditorItemID, func(_ any) bool { return table.HasSelection() },
 		func(_ any) { provider.OpenEditor(unison.AncestorOrSelf[Rebuildable](table), table) })

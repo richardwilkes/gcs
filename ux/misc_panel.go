@@ -12,7 +12,7 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -21,13 +21,13 @@ import (
 // MiscPanel holds the contents of the miscellaneous block on the sheet.
 type MiscPanel struct {
 	unison.Panel
-	entity    *gurps.Entity
+	entity    *model.Entity
 	targetMgr *TargetMgr
 	prefix    string
 }
 
 // NewMiscPanel creates a new miscellaneous panel.
-func NewMiscPanel(entity *gurps.Entity, targetMgr *TargetMgr) *MiscPanel {
+func NewMiscPanel(entity *model.Entity, targetMgr *TargetMgr) *MiscPanel {
 	m := &MiscPanel{
 		entity:    entity,
 		targetMgr: targetMgr,

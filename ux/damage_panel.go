@@ -12,7 +12,7 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -20,11 +20,11 @@ import (
 // DamagePanel holds the contents of the damage block on the sheet.
 type DamagePanel struct {
 	unison.Panel
-	entity *gurps.Entity
+	entity *model.Entity
 }
 
 // NewDamagePanel creates a new damage panel.
-func NewDamagePanel(entity *gurps.Entity) *DamagePanel {
+func NewDamagePanel(entity *model.Entity) *DamagePanel {
 	p := &DamagePanel{entity: entity}
 	p.Self = p
 	p.SetLayout(&unison.FlexLayout{
