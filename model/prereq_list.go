@@ -14,7 +14,6 @@ package model
 import (
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -23,11 +22,11 @@ var _ Prereq = &PrereqList{}
 
 // PrereqList holds a prereq that contains a list of prerequisites.
 type PrereqList struct {
-	Parent  *PrereqList      `json:"-"`
-	Type    PrereqType       `json:"type"`
-	All     bool             `json:"all"`
-	WhenTL  criteria.Numeric `json:"when_tl,omitempty"`
-	Prereqs Prereqs          `json:"prereqs,omitempty"`
+	Parent  *PrereqList     `json:"-"`
+	Type    PrereqType      `json:"type"`
+	All     bool            `json:"all"`
+	WhenTL  NumericCriteria `json:"when_tl,omitempty"`
+	Prereqs Prereqs         `json:"prereqs,omitempty"`
 }
 
 // NewPrereqList creates a new PrereqList.
@@ -101,7 +100,7 @@ func (p *PrereqList) ApplyNameableKeys(m map[string]string) {
 
 // Satisfied implements Prereq.
 func (p *PrereqList) Satisfied(entity *Entity, exclude any, buffer *xio.ByteBuffer, prefix string, hasEquipmentPenalty *bool) bool {
-	if p.WhenTL.Compare != criteria.AnyNumber {
+	if p.WhenTL.Compare != AnyNumber {
 		tl, _, _ := ExtractTechLevel(entity.Profile.TechLevel)
 		if tl < 0 {
 			tl = 0

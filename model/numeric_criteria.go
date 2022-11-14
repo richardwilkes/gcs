@@ -9,46 +9,46 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package criteria
+package model
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/json"
 )
 
-// Numeric holds the criteria for matching a number.
-type Numeric struct {
-	NumericData
+// NumericCriteria holds the criteria for matching a number.
+type NumericCriteria struct {
+	NumericCriteriaData
 }
 
-// NumericData holds the criteria for matching a number that should be written to disk.
-type NumericData struct {
+// NumericCriteriaData holds the criteria for matching a number that should be written to disk.
+type NumericCriteriaData struct {
 	Compare   NumericCompareType `json:"compare,omitempty"`
 	Qualifier fxp.Int            `json:"qualifier,omitempty"`
 }
 
 // ShouldOmit implements json.Omitter.
-func (n Numeric) ShouldOmit() bool {
+func (n NumericCriteria) ShouldOmit() bool {
 	return n.Compare.EnsureValid() == AnyNumber
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (n *Numeric) UnmarshalJSON(data []byte) error {
-	err := json.Unmarshal(data, &n.NumericData)
+func (n *NumericCriteria) UnmarshalJSON(data []byte) error {
+	err := json.Unmarshal(data, &n.NumericCriteriaData)
 	n.Compare = n.Compare.EnsureValid()
 	return err
 }
 
 // Matches performs a comparison and returns true if the data matches.
-func (n Numeric) Matches(value fxp.Int) bool {
+func (n NumericCriteria) Matches(value fxp.Int) bool {
 	return n.Compare.Matches(n.Qualifier, value)
 }
 
-func (n Numeric) String() string {
+func (n NumericCriteria) String() string {
 	return n.Compare.Describe(n.Qualifier)
 }
 
 // AltString returns the alternate description.
-func (n Numeric) AltString() string {
+func (n NumericCriteria) AltString() string {
 	return n.Compare.AltDescribe(n.Qualifier)
 }

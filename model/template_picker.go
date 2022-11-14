@@ -14,7 +14,6 @@ package model
 import (
 	"fmt"
 
-	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -30,7 +29,7 @@ type TemplatePickerProvider interface {
 // TemplatePicker holds the data necessary to allow a template choice to be made.
 type TemplatePicker struct {
 	Type      TemplatePickerType `json:"type"`
-	Qualifier criteria.Numeric   `json:"qualifier"`
+	Qualifier NumericCriteria    `json:"qualifier"`
 }
 
 // Clone creates a copy of the TemplatePicker.

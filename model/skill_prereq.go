@@ -12,7 +12,6 @@
 package model
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -21,31 +20,31 @@ var _ Prereq = &SkillPrereq{}
 
 // SkillPrereq holds a prerequisite for a skill.
 type SkillPrereq struct {
-	Parent                 *PrereqList      `json:"-"`
-	Type                   PrereqType       `json:"type"`
-	Has                    bool             `json:"has"`
-	NameCriteria           criteria.String  `json:"name,omitempty"`
-	LevelCriteria          criteria.Numeric `json:"level,omitempty"`
-	SpecializationCriteria criteria.String  `json:"specialization,omitempty"`
+	Parent                 *PrereqList     `json:"-"`
+	Type                   PrereqType      `json:"type"`
+	Has                    bool            `json:"has"`
+	NameCriteria           StringCriteria  `json:"name,omitempty"`
+	LevelCriteria          NumericCriteria `json:"level,omitempty"`
+	SpecializationCriteria StringCriteria  `json:"specialization,omitempty"`
 }
 
 // NewSkillPrereq creates a new SkillPrereq.
 func NewSkillPrereq() *SkillPrereq {
 	return &SkillPrereq{
 		Type: SkillPrereqType,
-		NameCriteria: criteria.String{
-			StringData: criteria.StringData{
-				Compare: criteria.Is,
+		NameCriteria: StringCriteria{
+			StringCriteriaData: StringCriteriaData{
+				Compare: IsString,
 			},
 		},
-		LevelCriteria: criteria.Numeric{
-			NumericData: criteria.NumericData{
-				Compare: criteria.AtLeast,
+		LevelCriteria: NumericCriteria{
+			NumericCriteriaData: NumericCriteriaData{
+				Compare: AtLeastNumber,
 			},
 		},
-		SpecializationCriteria: criteria.String{
-			StringData: criteria.StringData{
-				Compare: criteria.Any,
+		SpecializationCriteria: StringCriteria{
+			StringCriteriaData: StringCriteriaData{
+				Compare: AnyString,
 			},
 		},
 		Has: true,
@@ -106,7 +105,7 @@ func (s *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 		tooltip.WriteString(HasText(s.Has))
 		tooltip.WriteString(i18n.Text(" a skill whose name "))
 		tooltip.WriteString(s.NameCriteria.String())
-		if s.SpecializationCriteria.Compare != criteria.Any {
+		if s.SpecializationCriteria.Compare != AnyString {
 			tooltip.WriteString(i18n.Text(", specialization "))
 			tooltip.WriteString(s.SpecializationCriteria.String())
 			tooltip.WriteByte(',')
@@ -115,7 +114,7 @@ func (s *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 			tooltip.WriteString(i18n.Text(" and level "))
 			tooltip.WriteString(s.LevelCriteria.String())
 		} else {
-			if s.SpecializationCriteria.Compare != criteria.Any {
+			if s.SpecializationCriteria.Compare != AnyString {
 				tooltip.WriteByte(',')
 			}
 			tooltip.WriteString(i18n.Text(" level "))

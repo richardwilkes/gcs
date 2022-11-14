@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package criteria
+package model
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -17,34 +17,34 @@ import (
 	"github.com/richardwilkes/json"
 )
 
-// Weight holds the criteria for matching a number.
-type Weight struct {
-	WeightData
+// WeightCriteria holds the criteria for matching a number.
+type WeightCriteria struct {
+	WeightCriteriaData
 }
 
-// WeightData holds the criteria for matching a number that should be written to disk.
-type WeightData struct {
+// WeightCriteriaData holds the criteria for matching a number that should be written to disk.
+type WeightCriteriaData struct {
 	Compare   NumericCompareType `json:"compare,omitempty"`
 	Qualifier measure.Weight     `json:"qualifier,omitempty"`
 }
 
 // ShouldOmit implements json.Omitter.
-func (w Weight) ShouldOmit() bool {
+func (w WeightCriteria) ShouldOmit() bool {
 	return w.Compare.EnsureValid() == AnyNumber
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (w *Weight) UnmarshalJSON(data []byte) error {
-	err := json.Unmarshal(data, &w.WeightData)
+func (w *WeightCriteria) UnmarshalJSON(data []byte) error {
+	err := json.Unmarshal(data, &w.WeightCriteriaData)
 	w.Compare = w.Compare.EnsureValid()
 	return err
 }
 
 // Matches performs a comparison and returns true if the data matches.
-func (w Weight) Matches(value measure.Weight) bool {
+func (w WeightCriteria) Matches(value measure.Weight) bool {
 	return w.Compare.Matches(fxp.Int(w.Qualifier), fxp.Int(value))
 }
 
-func (w Weight) String() string {
+func (w WeightCriteria) String() string {
 	return w.Compare.Describe(fxp.Int(w.Qualifier))
 }

@@ -14,7 +14,6 @@ package model
 import (
 	"fmt"
 
-	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -23,10 +22,10 @@ var _ Bonus = &SpellBonus{}
 
 // SpellBonus holds the data for a bonus to a spell.
 type SpellBonus struct {
-	Type           FeatureType     `json:"type"`
-	SpellMatchType SpellMatchType  `json:"match"`
-	NameCriteria   criteria.String `json:"name,omitempty"`
-	TagsCriteria   criteria.String `json:"tags,alt=category,omitempty"`
+	Type           FeatureType    `json:"type"`
+	SpellMatchType SpellMatchType `json:"match"`
+	NameCriteria   StringCriteria `json:"name,omitempty"`
+	TagsCriteria   StringCriteria `json:"tags,alt=category,omitempty"`
 	LeveledAmount
 	owner fmt.Stringer
 }
@@ -36,14 +35,14 @@ func NewSpellBonus() *SpellBonus {
 	return &SpellBonus{
 		Type:           SpellBonusFeatureType,
 		SpellMatchType: AllCollegesSpellMatchType,
-		NameCriteria: criteria.String{
-			StringData: criteria.StringData{
-				Compare: criteria.Is,
+		NameCriteria: StringCriteria{
+			StringCriteriaData: StringCriteriaData{
+				Compare: IsString,
 			},
 		},
-		TagsCriteria: criteria.String{
-			StringData: criteria.StringData{
-				Compare: criteria.Any,
+		TagsCriteria: StringCriteria{
+			StringCriteriaData: StringCriteriaData{
+				Compare: AnyString,
 			},
 		},
 		LeveledAmount: LeveledAmount{Amount: fxp.One},

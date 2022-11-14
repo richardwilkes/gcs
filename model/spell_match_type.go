@@ -12,12 +12,11 @@
 package model
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/toolbox/log/jot"
 )
 
 // MatchForType applies the matcher and returns the result.
-func (enum SpellMatchType) MatchForType(matcher criteria.String, name, powerSource string, colleges []string) bool {
+func (enum SpellMatchType) MatchForType(matcher StringCriteria, name, powerSource string, colleges []string) bool {
 	switch enum {
 	case AllCollegesSpellMatchType:
 		return true

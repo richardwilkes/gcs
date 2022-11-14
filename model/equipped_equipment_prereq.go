@@ -14,7 +14,6 @@ package model
 import (
 	"fmt"
 
-	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -23,18 +22,18 @@ var _ Prereq = &EquippedEquipmentPrereq{}
 
 // EquippedEquipmentPrereq holds a prerequisite for an equipped piece of equipment.
 type EquippedEquipmentPrereq struct {
-	Parent       *PrereqList     `json:"-"`
-	Type         PrereqType      `json:"type"`
-	NameCriteria criteria.String `json:"name,omitempty"`
+	Parent       *PrereqList    `json:"-"`
+	Type         PrereqType     `json:"type"`
+	NameCriteria StringCriteria `json:"name,omitempty"`
 }
 
 // NewEquippedEquipmentPrereq creates a new EquippedEquipmentPrereq.
 func NewEquippedEquipmentPrereq() *EquippedEquipmentPrereq {
 	return &EquippedEquipmentPrereq{
 		Type: EquippedEquipmentPrereqType,
-		NameCriteria: criteria.String{
-			StringData: criteria.StringData{
-				Compare: criteria.Is,
+		NameCriteria: StringCriteria{
+			StringCriteriaData: StringCriteriaData{
+				Compare: IsString,
 			},
 		},
 	}

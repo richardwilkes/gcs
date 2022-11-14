@@ -12,7 +12,6 @@
 package model
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
@@ -22,19 +21,19 @@ var _ Prereq = &ContainedWeightPrereq{}
 
 // ContainedWeightPrereq holds a prerequisite for an equipment contained weight.
 type ContainedWeightPrereq struct {
-	Parent         *PrereqList     `json:"-"`
-	Type           PrereqType      `json:"type"`
-	Has            bool            `json:"has"`
-	WeightCriteria criteria.Weight `json:"qualifier,omitempty"`
+	Parent         *PrereqList    `json:"-"`
+	Type           PrereqType     `json:"type"`
+	Has            bool           `json:"has"`
+	WeightCriteria WeightCriteria `json:"qualifier,omitempty"`
 }
 
 // NewContainedWeightPrereq creates a new ContainedWeightPrereq.
 func NewContainedWeightPrereq(entity *Entity) *ContainedWeightPrereq {
 	return &ContainedWeightPrereq{
 		Type: ContainedWeightPrereqType,
-		WeightCriteria: criteria.Weight{
-			WeightData: criteria.WeightData{
-				Compare:   criteria.AtMost,
+		WeightCriteria: WeightCriteria{
+			WeightCriteriaData: WeightCriteriaData{
+				Compare:   AtMostNumber,
 				Qualifier: measure.WeightFromInteger(5, SheetSettingsFor(entity).DefaultWeightUnits),
 			},
 		},

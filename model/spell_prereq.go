@@ -12,7 +12,6 @@
 package model
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -25,8 +24,8 @@ type SpellPrereq struct {
 	Type              PrereqType          `json:"type"`
 	SubType           SpellComparisonType `json:"sub_type"`
 	Has               bool                `json:"has"`
-	QualifierCriteria criteria.String     `json:"qualifier,omitempty"`
-	QuantityCriteria  criteria.Numeric    `json:"quantity,omitempty"`
+	QualifierCriteria StringCriteria      `json:"qualifier,omitempty"`
+	QuantityCriteria  NumericCriteria     `json:"quantity,omitempty"`
 }
 
 // NewSpellPrereq creates a new SpellPrereq.
@@ -34,14 +33,14 @@ func NewSpellPrereq() *SpellPrereq {
 	return &SpellPrereq{
 		Type:    SpellPrereqType,
 		SubType: NameSpellComparisonType,
-		QualifierCriteria: criteria.String{
-			StringData: criteria.StringData{
-				Compare: criteria.Is,
+		QualifierCriteria: StringCriteria{
+			StringCriteriaData: StringCriteriaData{
+				Compare: IsString,
 			},
 		},
-		QuantityCriteria: criteria.Numeric{
-			NumericData: criteria.NumericData{
-				Compare:   criteria.AtLeast,
+		QuantityCriteria: NumericCriteria{
+			NumericCriteriaData: NumericCriteriaData{
+				Compare:   AtLeastNumber,
 				Qualifier: fxp.One,
 			},
 		},

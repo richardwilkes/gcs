@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package criteria
+package model
 
 import (
 	"strings"
@@ -19,28 +19,28 @@ import (
 
 // Possible StringCompareType values.
 const (
-	Any              = StringCompareType("")
-	Is               = StringCompareType("is")
-	IsNot            = StringCompareType("is_not")
-	Contains         = StringCompareType("contains")
-	DoesNotContain   = StringCompareType("does_not_contain")
-	StartsWith       = StringCompareType("starts_with")
-	DoesNotStartWith = StringCompareType("does_not_start_with")
-	EndsWith         = StringCompareType("ends_with")
-	DoesNotEndWith   = StringCompareType("does_not_end_with")
+	AnyString              = StringCompareType("")
+	IsString               = StringCompareType("is")
+	IsNotString            = StringCompareType("is_not")
+	ContainsString         = StringCompareType("contains")
+	DoesNotContainString   = StringCompareType("does_not_contain")
+	StartsWithString       = StringCompareType("starts_with")
+	DoesNotStartWithString = StringCompareType("does_not_start_with")
+	EndsWithString         = StringCompareType("ends_with")
+	DoesNotEndWithString   = StringCompareType("does_not_end_with")
 )
 
 // AllStringCompareTypes is the complete set of StringCompareType values.
 var AllStringCompareTypes = []StringCompareType{
-	Any,
-	Is,
-	IsNot,
-	Contains,
-	DoesNotContain,
-	StartsWith,
-	DoesNotStartWith,
-	EndsWith,
-	DoesNotEndWith,
+	AnyString,
+	IsString,
+	IsNotString,
+	ContainsString,
+	DoesNotContainString,
+	StartsWithString,
+	DoesNotStartWithString,
+	EndsWithString,
+	DoesNotEndWithString,
 }
 
 // StringCompareType holds the type for a string comparison.
@@ -59,39 +59,39 @@ func (s StringCompareType) EnsureValid() StringCompareType {
 // String implements fmt.Stringer.
 func (s StringCompareType) String() string {
 	switch s {
-	case Any:
+	case AnyString:
 		return i18n.Text("is anything")
-	case Is:
+	case IsString:
 		return i18n.Text("is")
-	case IsNot:
+	case IsNotString:
 		return i18n.Text("is not")
-	case Contains:
+	case ContainsString:
 		return i18n.Text("contains")
-	case DoesNotContain:
+	case DoesNotContainString:
 		return i18n.Text("does not contain")
-	case StartsWith:
+	case StartsWithString:
 		return i18n.Text("starts with")
-	case DoesNotStartWith:
+	case DoesNotStartWithString:
 		return i18n.Text("does not start with")
-	case EndsWith:
+	case EndsWithString:
 		return i18n.Text("ends with")
-	case DoesNotEndWith:
+	case DoesNotEndWithString:
 		return i18n.Text("does not end with")
 	default:
-		return Any.String()
+		return AnyString.String()
 	}
 }
 
 // AltString provides a variant of String() for the not cases.
 func (s StringCompareType) AltString() string {
 	switch s {
-	case IsNot:
+	case IsNotString:
 		return i18n.Text("are not")
-	case DoesNotContain:
+	case DoesNotContainString:
 		return i18n.Text("do not contain")
-	case DoesNotStartWith:
+	case DoesNotStartWithString:
 		return i18n.Text("do not start with")
-	case DoesNotEndWith:
+	case DoesNotEndWithString:
 		return i18n.Text("do not end with")
 	default:
 		return s.String()
@@ -101,7 +101,7 @@ func (s StringCompareType) AltString() string {
 // Describe returns a description of this StringCompareType using a qualifier.
 func (s StringCompareType) Describe(qualifier string) string {
 	v := s.EnsureValid()
-	if v == Any {
+	if v == AnyString {
 		return v.String()
 	}
 	return v.String() + ` "` + qualifier + `"`
@@ -110,26 +110,26 @@ func (s StringCompareType) Describe(qualifier string) string {
 // Matches performs a comparison and returns true if the data matches.
 func (s StringCompareType) Matches(qualifier, data string) bool {
 	switch s {
-	case Any:
+	case AnyString:
 		return true
-	case Is:
+	case IsString:
 		return strings.EqualFold(data, qualifier)
-	case IsNot:
+	case IsNotString:
 		return !strings.EqualFold(data, qualifier)
-	case Contains:
+	case ContainsString:
 		return strings.Contains(strings.ToLower(data), strings.ToLower(qualifier))
-	case DoesNotContain:
+	case DoesNotContainString:
 		return !strings.Contains(strings.ToLower(data), strings.ToLower(qualifier))
-	case StartsWith:
+	case StartsWithString:
 		return strings.HasPrefix(strings.ToLower(data), strings.ToLower(qualifier))
-	case DoesNotStartWith:
+	case DoesNotStartWithString:
 		return !strings.HasPrefix(strings.ToLower(data), strings.ToLower(qualifier))
-	case EndsWith:
+	case EndsWithString:
 		return strings.HasSuffix(strings.ToLower(data), strings.ToLower(qualifier))
-	case DoesNotEndWith:
+	case DoesNotEndWithString:
 		return !strings.HasSuffix(strings.ToLower(data), strings.ToLower(qualifier))
 	default:
-		return Any.Matches(qualifier, data)
+		return AnyString.Matches(qualifier, data)
 	}
 }
 
@@ -147,7 +147,7 @@ func ExtractStringCompareTypeIndex(str string) int {
 func PrefixedStringCompareTypeChoices(prefix, notPrefix string) []string {
 	choices := make([]string, len(AllStringCompareTypes))
 	for i, choice := range AllStringCompareTypes {
-		if prefix == notPrefix || choice == Any || choice == Is || choice == Contains || choice == StartsWith || choice == EndsWith {
+		if prefix == notPrefix || choice == AnyString || choice == IsString || choice == ContainsString || choice == StartsWithString || choice == EndsWithString {
 			choices[i] = prefix + " " + choice.String()
 		} else {
 			choices[i] = notPrefix + " " + choice.AltString()

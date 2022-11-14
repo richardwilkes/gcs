@@ -12,7 +12,6 @@
 package model
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
@@ -22,19 +21,19 @@ var _ Prereq = &ContainedQuantityPrereq{}
 
 // ContainedQuantityPrereq holds a prerequisite for an equipment contained quantity.
 type ContainedQuantityPrereq struct {
-	Parent            *PrereqList      `json:"-"`
-	Type              PrereqType       `json:"type"`
-	Has               bool             `json:"has"`
-	QualifierCriteria criteria.Numeric `json:"qualifier,omitempty"`
+	Parent            *PrereqList     `json:"-"`
+	Type              PrereqType      `json:"type"`
+	Has               bool            `json:"has"`
+	QualifierCriteria NumericCriteria `json:"qualifier,omitempty"`
 }
 
 // NewContainedQuantityPrereq creates a new ContainedQuantityPrereq.
 func NewContainedQuantityPrereq() *ContainedQuantityPrereq {
 	return &ContainedQuantityPrereq{
 		Type: ContainedQuantityPrereqType,
-		QualifierCriteria: criteria.Numeric{
-			NumericData: criteria.NumericData{
-				Compare:   criteria.AtMost,
+		QualifierCriteria: NumericCriteria{
+			NumericCriteriaData: NumericCriteriaData{
+				Compare:   AtMostNumber,
 				Qualifier: fxp.One,
 			},
 		},

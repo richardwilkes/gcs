@@ -15,7 +15,6 @@ import (
 	"fmt"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/rpgtools/dice"
@@ -416,26 +415,26 @@ func adjustPopupBlank[T comparable](popup *unison.PopupMenu[T], blank bool) {
 	}
 }
 
-func addNameCriteriaPanel(parent *unison.Panel, strCriteria *criteria.String, hSpan int, includeEmptyFiller bool) {
+func addNameCriteriaPanel(parent *unison.Panel, strCriteria *model.StringCriteria, hSpan int, includeEmptyFiller bool) {
 	prefix := i18n.Text("whose name")
 	addStringCriteriaPanel(parent, prefix, prefix, i18n.Text("Name Qualifier"), strCriteria, hSpan, includeEmptyFiller)
 }
 
-func addSpecializationCriteriaPanel(parent *unison.Panel, strCriteria *criteria.String, hSpan int, includeEmptyFiller bool) {
+func addSpecializationCriteriaPanel(parent *unison.Panel, strCriteria *model.StringCriteria, hSpan int, includeEmptyFiller bool) {
 	prefix := i18n.Text("and whose specialization")
 	addStringCriteriaPanel(parent, prefix, prefix, i18n.Text("Specialization Qualifier"), strCriteria, hSpan, includeEmptyFiller)
 }
 
-func addTagCriteriaPanel(parent *unison.Panel, strCriteria *criteria.String, hSpan int, includeEmptyFiller bool) {
+func addTagCriteriaPanel(parent *unison.Panel, strCriteria *model.StringCriteria, hSpan int, includeEmptyFiller bool) {
 	addStringCriteriaPanel(parent, i18n.Text("and at least one tag"), i18n.Text("and all tags"), i18n.Text("Tag Qualifier"), strCriteria, hSpan, includeEmptyFiller)
 }
 
-func addNotesCriteriaPanel(parent *unison.Panel, strCriteria *criteria.String, hSpan int, includeEmptyFiller bool) {
+func addNotesCriteriaPanel(parent *unison.Panel, strCriteria *model.StringCriteria, hSpan int, includeEmptyFiller bool) {
 	prefix := i18n.Text("and whose notes")
 	addStringCriteriaPanel(parent, prefix, prefix, i18n.Text("Notes Qualifier"), strCriteria, hSpan, includeEmptyFiller)
 }
 
-func addStringCriteriaPanel(parent *unison.Panel, prefix, notPrefix, undoTitle string, strCriteria *criteria.String, hSpan int, includeEmptyFiller bool) (*unison.PopupMenu[string], *StringField) {
+func addStringCriteriaPanel(parent *unison.Panel, prefix, notPrefix, undoTitle string, strCriteria *model.StringCriteria, hSpan int, includeEmptyFiller bool) (*unison.PopupMenu[string], *StringField) {
 	if includeEmptyFiller {
 		parent.AddChild(unison.NewPanel())
 	}
@@ -453,28 +452,28 @@ func addStringCriteriaPanel(parent *unison.Panel, prefix, notPrefix, undoTitle s
 	})
 	var criteriaField *StringField
 	popup := unison.NewPopupMenu[string]()
-	for _, one := range criteria.PrefixedStringCompareTypeChoices(prefix, notPrefix) {
+	for _, one := range model.PrefixedStringCompareTypeChoices(prefix, notPrefix) {
 		popup.AddItem(one)
 	}
-	popup.SelectIndex(criteria.ExtractStringCompareTypeIndex(string(strCriteria.Compare)))
+	popup.SelectIndex(model.ExtractStringCompareTypeIndex(string(strCriteria.Compare)))
 	popup.SelectionCallback = func(index int, _ string) {
-		strCriteria.Compare = criteria.AllStringCompareTypes[index]
-		adjustFieldBlank(criteriaField, strCriteria.Compare == criteria.Any)
+		strCriteria.Compare = model.AllStringCompareTypes[index]
+		adjustFieldBlank(criteriaField, strCriteria.Compare == model.AnyString)
 		MarkModified(panel)
 	}
 	panel.AddChild(popup)
 	criteriaField = addStringField(panel, undoTitle, "", &strCriteria.Qualifier)
-	adjustFieldBlank(criteriaField, strCriteria.Compare == criteria.Any)
+	adjustFieldBlank(criteriaField, strCriteria.Compare == model.AnyString)
 	parent.AddChild(panel)
 	return popup, criteriaField
 }
 
-func addLevelCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey string, numCriteria *criteria.Numeric, hSpan int, includeEmptyFiller bool) {
+func addLevelCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey string, numCriteria *model.NumericCriteria, hSpan int, includeEmptyFiller bool) {
 	addNumericCriteriaPanel(parent, targetMgr, targetKey, i18n.Text("and whose level"), i18n.Text("Level Qualifier"),
 		numCriteria, 0, fxp.Thousand, hSpan, false, includeEmptyFiller)
 }
 
-func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey, prefix, undoTitle string, numCriteria *criteria.Numeric, min, max fxp.Int, hSpan int, integerOnly, includeEmptyFiller bool) (popup *unison.PopupMenu[string], field unison.Paneler) {
+func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey, prefix, undoTitle string, numCriteria *model.NumericCriteria, min, max fxp.Int, hSpan int, integerOnly, includeEmptyFiller bool) (popup *unison.PopupMenu[string], field unison.Paneler) {
 	if includeEmptyFiller {
 		parent.AddChild(unison.NewPanel())
 	}
@@ -491,13 +490,13 @@ func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetK
 		HGrab:  true,
 	})
 	popup = unison.NewPopupMenu[string]()
-	for _, one := range criteria.PrefixedNumericCompareTypeChoices(prefix) {
+	for _, one := range model.PrefixedNumericCompareTypeChoices(prefix) {
 		popup.AddItem(one)
 	}
-	popup.SelectIndex(criteria.ExtractNumericCompareTypeIndex(string(numCriteria.Compare)))
+	popup.SelectIndex(model.ExtractNumericCompareTypeIndex(string(numCriteria.Compare)))
 	popup.SelectionCallback = func(index int, _ string) {
-		numCriteria.Compare = criteria.AllNumericCompareTypes[index]
-		adjustFieldBlank(field, numCriteria.Compare == criteria.AnyNumber)
+		numCriteria.Compare = model.AllNumericCompareTypes[index]
+		adjustFieldBlank(field, numCriteria.Compare == model.AnyNumber)
 		MarkModified(panel)
 	}
 	panel.AddChild(popup)
@@ -512,26 +511,26 @@ func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetK
 	} else {
 		field = addDecimalField(panel, targetMgr, targetKey, undoTitle, "", &numCriteria.Qualifier, min, max)
 	}
-	adjustFieldBlank(field, numCriteria.Compare == criteria.AnyNumber)
+	adjustFieldBlank(field, numCriteria.Compare == model.AnyNumber)
 	parent.AddChild(panel)
 	return popup, field
 }
 
-func addWeightCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey string, entity *model.Entity, weightCriteria *criteria.Weight) {
+func addWeightCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey string, entity *model.Entity, weightCriteria *model.WeightCriteria) {
 	popup := unison.NewPopupMenu[string]()
-	for _, one := range criteria.PrefixedNumericCompareTypeChoices(i18n.Text("which")) {
+	for _, one := range model.PrefixedNumericCompareTypeChoices(i18n.Text("which")) {
 		popup.AddItem(one)
 	}
-	popup.SelectIndex(criteria.ExtractNumericCompareTypeIndex(string(weightCriteria.Compare)))
+	popup.SelectIndex(model.ExtractNumericCompareTypeIndex(string(weightCriteria.Compare)))
 	parent.AddChild(popup)
 	field := addWeightField(parent, targetMgr, targetKey, i18n.Text("Weight Qualifier"), "", entity,
 		&weightCriteria.Qualifier, false)
 	popup.SelectionCallback = func(index int, _ string) {
-		weightCriteria.Compare = criteria.AllNumericCompareTypes[index]
-		adjustFieldBlank(field, weightCriteria.Compare == criteria.AnyNumber)
+		weightCriteria.Compare = model.AllNumericCompareTypes[index]
+		adjustFieldBlank(field, weightCriteria.Compare == model.AnyNumber)
 		MarkModified(parent)
 	}
-	adjustFieldBlank(field, weightCriteria.Compare == criteria.AnyNumber)
+	adjustFieldBlank(field, weightCriteria.Compare == model.AnyNumber)
 	parent.SetLayout(&unison.FlexLayout{
 		Columns:  len(parent.Children()),
 		HSpacing: unison.StdHSpacing,
@@ -539,7 +538,7 @@ func addWeightCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKe
 	})
 }
 
-func addQuantityCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey string, numCriteria *criteria.Numeric) {
+func addQuantityCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey string, numCriteria *model.NumericCriteria) {
 	choices := []string{
 		i18n.Text("exactly"),
 		i18n.Text("at least"),
@@ -547,9 +546,9 @@ func addQuantityCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, target
 	}
 	var numType string
 	switch numCriteria.Compare {
-	case criteria.AtLeast:
+	case model.AtLeastNumber:
 		numType = choices[1]
-	case criteria.AtMost:
+	case model.AtMostNumber:
 		numType = choices[2]
 	default:
 		numType = choices[0]
@@ -562,11 +561,11 @@ func addQuantityCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, target
 	popup.SelectionCallback = func(index int, _ string) {
 		switch index {
 		case 0:
-			numCriteria.Compare = criteria.Equals
+			numCriteria.Compare = model.EqualsNumber
 		case 1:
-			numCriteria.Compare = criteria.AtLeast
+			numCriteria.Compare = model.AtLeastNumber
 		case 2:
-			numCriteria.Compare = criteria.AtMost
+			numCriteria.Compare = model.AtMostNumber
 		}
 		MarkModified(parent)
 	}
@@ -606,7 +605,7 @@ func addTemplateChoices(parent *unison.Panel, targetmgr *TargetMgr, targetKey st
 			field.(Syncer).Sync()
 		}
 		last = item
-		adjustFieldBlank(field, item == model.NotApplicableTemplatePickerType || (*picker).Qualifier.Compare == criteria.AnyNumber)
+		adjustFieldBlank(field, item == model.NotApplicableTemplatePickerType || (*picker).Qualifier.Compare == model.AnyNumber)
 		adjustPopupBlank(popup, item == model.NotApplicableTemplatePickerType)
 		MarkModified(parent)
 	}

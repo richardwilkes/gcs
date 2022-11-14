@@ -12,7 +12,6 @@
 package model
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
@@ -22,31 +21,31 @@ var _ Prereq = &TraitPrereq{}
 
 // TraitPrereq holds a prereq against a Trait.
 type TraitPrereq struct {
-	Parent        *PrereqList      `json:"-"`
-	Type          PrereqType       `json:"type"`
-	Has           bool             `json:"has"`
-	NameCriteria  criteria.String  `json:"name,omitempty"`
-	LevelCriteria criteria.Numeric `json:"level,omitempty"`
-	NotesCriteria criteria.String  `json:"notes,omitempty"`
+	Parent        *PrereqList     `json:"-"`
+	Type          PrereqType      `json:"type"`
+	Has           bool            `json:"has"`
+	NameCriteria  StringCriteria  `json:"name,omitempty"`
+	LevelCriteria NumericCriteria `json:"level,omitempty"`
+	NotesCriteria StringCriteria  `json:"notes,omitempty"`
 }
 
 // NewTraitPrereq creates a new TraitPrereq.
 func NewTraitPrereq() *TraitPrereq {
 	return &TraitPrereq{
 		Type: TraitPrereqType,
-		NameCriteria: criteria.String{
-			StringData: criteria.StringData{
-				Compare: criteria.Is,
+		NameCriteria: StringCriteria{
+			StringCriteriaData: StringCriteriaData{
+				Compare: IsString,
 			},
 		},
-		LevelCriteria: criteria.Numeric{
-			NumericData: criteria.NumericData{
-				Compare: criteria.AtLeast,
+		LevelCriteria: NumericCriteria{
+			NumericCriteriaData: NumericCriteriaData{
+				Compare: AtLeastNumber,
 			},
 		},
-		NotesCriteria: criteria.String{
-			StringData: criteria.StringData{
-				Compare: criteria.Any,
+		NotesCriteria: StringCriteria{
+			StringCriteriaData: StringCriteriaData{
+				Compare: AnyString,
 			},
 		},
 		Has: true,
@@ -111,7 +110,7 @@ func (a *TraitPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 		tooltip.WriteString(HasText(a.Has))
 		tooltip.WriteString(i18n.Text(" a trait whose name "))
 		tooltip.WriteString(a.NameCriteria.String())
-		if a.NotesCriteria.Compare != criteria.Any {
+		if a.NotesCriteria.Compare != AnyString {
 			tooltip.WriteString(i18n.Text(", notes "))
 			tooltip.WriteString(a.NotesCriteria.String())
 			tooltip.WriteByte(',')

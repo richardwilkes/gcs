@@ -24,7 +24,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/dbg"
 	"github.com/richardwilkes/gcs/v5/model/crc"
-	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	gid2 "github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/id"
@@ -402,7 +401,7 @@ func (e *Entity) processPrereqs() {
 				if eqpPenalty {
 					penalty := NewSkillBonus()
 					penalty.NameCriteria.Qualifier = s.Name
-					penalty.SpecializationCriteria.Compare = criteria.Is
+					penalty.SpecializationCriteria.Compare = IsString
 					penalty.SpecializationCriteria.Qualifier = s.Specialization
 					if s.TechLevel != nil && *s.TechLevel != "" {
 						penalty.LeveledAmount.Amount = -fxp.Ten

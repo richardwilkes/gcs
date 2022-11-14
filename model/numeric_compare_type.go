@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package criteria
+package model
 
 import (
 	"strings"
@@ -20,20 +20,20 @@ import (
 
 // Possible NumericCompareType values.
 const (
-	AnyNumber = NumericCompareType("")
-	Equals    = NumericCompareType("is")
-	NotEquals = NumericCompareType("is_not")
-	AtLeast   = NumericCompareType("at_least")
-	AtMost    = NumericCompareType("at_most")
+	AnyNumber       = NumericCompareType("")
+	EqualsNumber    = NumericCompareType("is")
+	NotEqualsNumber = NumericCompareType("is_not")
+	AtLeastNumber   = NumericCompareType("at_least")
+	AtMostNumber    = NumericCompareType("at_most")
 )
 
 // AllNumericCompareTypes is the complete set of NumericCompareType values.
 var AllNumericCompareTypes = []NumericCompareType{
 	AnyNumber,
-	Equals,
-	NotEquals,
-	AtLeast,
-	AtMost,
+	EqualsNumber,
+	NotEqualsNumber,
+	AtLeastNumber,
+	AtMostNumber,
 }
 
 // NumericCompareType holds the type for a numeric comparison.
@@ -54,13 +54,13 @@ func (n NumericCompareType) AltString() string {
 	switch n {
 	case AnyNumber:
 		return i18n.Text("anything")
-	case Equals:
+	case EqualsNumber:
 		return ""
-	case NotEquals:
+	case NotEqualsNumber:
 		return i18n.Text("not")
-	case AtLeast:
+	case AtLeastNumber:
 		return i18n.Text("at least")
-	case AtMost:
+	case AtMostNumber:
 		return i18n.Text("at most")
 	default:
 		return AnyNumber.String()
@@ -72,13 +72,13 @@ func (n NumericCompareType) String() string {
 	switch n {
 	case AnyNumber:
 		return i18n.Text("is anything")
-	case Equals:
+	case EqualsNumber:
 		return i18n.Text("is")
-	case NotEquals:
+	case NotEqualsNumber:
 		return i18n.Text("is not")
-	case AtLeast:
+	case AtLeastNumber:
 		return i18n.Text("is at least")
-	case AtMost:
+	case AtMostNumber:
 		return i18n.Text("is at most")
 	default:
 		return AnyNumber.String()
@@ -112,13 +112,13 @@ func (n NumericCompareType) Matches(qualifier, data fxp.Int) bool {
 	switch n {
 	case AnyNumber:
 		return true
-	case Equals:
+	case EqualsNumber:
 		return data == qualifier
-	case NotEquals:
+	case NotEqualsNumber:
 		return data != qualifier
-	case AtLeast:
+	case AtLeastNumber:
 		return data >= qualifier
-	case AtMost:
+	case AtMostNumber:
 		return data <= qualifier
 	default:
 		return AnyNumber.Matches(qualifier, data)

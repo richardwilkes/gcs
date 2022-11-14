@@ -12,7 +12,6 @@
 package model
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -23,21 +22,21 @@ var _ Prereq = &AttributePrereq{}
 
 // AttributePrereq holds a prerequisite for an attribute.
 type AttributePrereq struct {
-	Parent            *PrereqList      `json:"-"`
-	Type              PrereqType       `json:"type"`
-	Has               bool             `json:"has"`
-	CombinedWith      string           `json:"combined_with,omitempty"`
-	QualifierCriteria criteria.Numeric `json:"qualifier,omitempty"`
-	Which             string           `json:"which"`
+	Parent            *PrereqList     `json:"-"`
+	Type              PrereqType      `json:"type"`
+	Has               bool            `json:"has"`
+	CombinedWith      string          `json:"combined_with,omitempty"`
+	QualifierCriteria NumericCriteria `json:"qualifier,omitempty"`
+	Which             string          `json:"which"`
 }
 
 // NewAttributePrereq creates a new AttributePrereq. 'entity' may be nil.
 func NewAttributePrereq(entity *Entity) *AttributePrereq {
 	return &AttributePrereq{
 		Type: AttributePrereqType,
-		QualifierCriteria: criteria.Numeric{
-			NumericData: criteria.NumericData{
-				Compare:   criteria.AtLeast,
+		QualifierCriteria: NumericCriteria{
+			NumericCriteriaData: NumericCriteriaData{
+				Compare:   AtLeastNumber,
 				Qualifier: fxp.From(10),
 			},
 		},

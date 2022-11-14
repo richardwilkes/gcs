@@ -14,7 +14,6 @@ package model
 import (
 	"fmt"
 
-	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -25,9 +24,9 @@ var _ Bonus = &SkillBonus{}
 type SkillBonus struct {
 	Type                   FeatureType        `json:"type"`
 	SelectionType          SkillSelectionType `json:"selection_type"`
-	NameCriteria           criteria.String    `json:"name,omitempty"`
-	SpecializationCriteria criteria.String    `json:"specialization,omitempty"`
-	TagsCriteria           criteria.String    `json:"tags,alt=category,omitempty"`
+	NameCriteria           StringCriteria     `json:"name,omitempty"`
+	SpecializationCriteria StringCriteria     `json:"specialization,omitempty"`
+	TagsCriteria           StringCriteria     `json:"tags,alt=category,omitempty"`
 	LeveledAmount
 	owner fmt.Stringer
 }
@@ -37,19 +36,19 @@ func NewSkillBonus() *SkillBonus {
 	return &SkillBonus{
 		Type:          SkillBonusFeatureType,
 		SelectionType: NameSkillSelectionType,
-		NameCriteria: criteria.String{
-			StringData: criteria.StringData{
-				Compare: criteria.Is,
+		NameCriteria: StringCriteria{
+			StringCriteriaData: StringCriteriaData{
+				Compare: IsString,
 			},
 		},
-		SpecializationCriteria: criteria.String{
-			StringData: criteria.StringData{
-				Compare: criteria.Any,
+		SpecializationCriteria: StringCriteria{
+			StringCriteriaData: StringCriteriaData{
+				Compare: AnyString,
 			},
 		},
-		TagsCriteria: criteria.String{
-			StringData: criteria.StringData{
-				Compare: criteria.Any,
+		TagsCriteria: StringCriteria{
+			StringCriteriaData: StringCriteriaData{
+				Compare: AnyString,
 			},
 		},
 		LeveledAmount: LeveledAmount{Amount: fxp.One},

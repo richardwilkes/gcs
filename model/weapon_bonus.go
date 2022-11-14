@@ -14,7 +14,6 @@ package model
 import (
 	"fmt"
 
-	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
@@ -27,10 +26,10 @@ type WeaponBonus struct {
 	Type                   FeatureType         `json:"type"`
 	Percent                bool                `json:"percent,omitempty"`
 	SelectionType          WeaponSelectionType `json:"selection_type"`
-	NameCriteria           criteria.String     `json:"name,omitempty"`
-	SpecializationCriteria criteria.String     `json:"specialization,omitempty"`
-	RelativeLevelCriteria  criteria.Numeric    `json:"level,omitempty"`
-	TagsCriteria           criteria.String     `json:"tags,alt=category,omitempty"`
+	NameCriteria           StringCriteria      `json:"name,omitempty"`
+	SpecializationCriteria StringCriteria      `json:"specialization,omitempty"`
+	RelativeLevelCriteria  NumericCriteria     `json:"level,omitempty"`
+	TagsCriteria           StringCriteria      `json:"tags,alt=category,omitempty"`
 	LeveledAmount
 	owner fmt.Stringer
 }
@@ -49,24 +48,24 @@ func newWeaponDamageBonus(t FeatureType) *WeaponBonus {
 	return &WeaponBonus{
 		Type:          t,
 		SelectionType: WithRequiredSkillWeaponSelectionType,
-		NameCriteria: criteria.String{
-			StringData: criteria.StringData{
-				Compare: criteria.Is,
+		NameCriteria: StringCriteria{
+			StringCriteriaData: StringCriteriaData{
+				Compare: IsString,
 			},
 		},
-		SpecializationCriteria: criteria.String{
-			StringData: criteria.StringData{
-				Compare: criteria.Any,
+		SpecializationCriteria: StringCriteria{
+			StringCriteriaData: StringCriteriaData{
+				Compare: AnyString,
 			},
 		},
-		RelativeLevelCriteria: criteria.Numeric{
-			NumericData: criteria.NumericData{
-				Compare: criteria.AtLeast,
+		RelativeLevelCriteria: NumericCriteria{
+			NumericCriteriaData: NumericCriteriaData{
+				Compare: AtLeastNumber,
 			},
 		},
-		TagsCriteria: criteria.String{
-			StringData: criteria.StringData{
-				Compare: criteria.Any,
+		TagsCriteria: StringCriteria{
+			StringCriteriaData: StringCriteriaData{
+				Compare: AnyString,
 			},
 		},
 		LeveledAmount: LeveledAmount{Amount: fxp.One},
