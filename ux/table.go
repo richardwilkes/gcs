@@ -17,7 +17,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xmath"
@@ -79,7 +78,7 @@ func NewNodeTable[T model.NodeTypes](provider TableProvider[T], font unison.Font
 		table.Padding.Bottom = 0
 		table.HierarchyIndent = font.LineHeight()
 		table.MinimumRowHeight = font.LineHeight()
-		layoutData.MinSize = unison.Size{Height: 4 + theme.PageFieldPrimaryFont.LineHeight()}
+		layoutData.MinSize = unison.Size{Height: 4 + model.PageFieldPrimaryFont.LineHeight()}
 	}
 	table.SetLayoutData(layoutData)
 
@@ -95,7 +94,7 @@ func NewNodeTable[T model.NodeTypes](provider TableProvider[T], font unison.Font
 	}
 	header = unison.NewTableHeader(table, headers...)
 	header.Less = flexibleLess
-	header.BackgroundInk = theme.HeaderColor
+	header.BackgroundInk = model.HeaderColor
 	header.SetBorder(header.HeaderBorder)
 	header.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,

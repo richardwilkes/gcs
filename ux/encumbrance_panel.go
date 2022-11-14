@@ -16,7 +16,6 @@ import (
 	"strconv"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -51,7 +50,7 @@ func NewEncumbrancePanel(entity *model.Entity) *EncumbrancePanel {
 		r := p.Children()[0].FrameRect()
 		r.X = rect.X
 		r.Width = rect.Width
-		gc.DrawRect(r, theme.HeaderColor.Paint(gc, r, unison.Fill))
+		gc.DrawRect(r, model.HeaderColor.Paint(gc, r, unison.Fill))
 		p.current = int(entity.EncumbranceLevel(true))
 		p.overloaded = entity.WeightCarried(false) > entity.MaximumCarry(model.ExtraHeavyEncumbrance)
 		for i, row := range p.row {
@@ -59,9 +58,9 @@ func NewEncumbrancePanel(entity *model.Entity) *EncumbrancePanel {
 			switch {
 			case p.current == i:
 				if p.overloaded {
-					ink = theme.OverloadedColor
+					ink = model.OverloadedColor
 				} else {
-					ink = theme.MarkerColor
+					ink = model.MarkerColor
 				}
 			case i&1 == 1:
 				ink = unison.BandingColor
@@ -203,9 +202,9 @@ func (c *encRowColor) GetColor() unison.Color {
 	switch {
 	case c.owner.current == c.index:
 		if c.owner.overloaded {
-			return theme.OnOverloadedColor.GetColor()
+			return model.OnOverloadedColor.GetColor()
 		}
-		return theme.OnMarkerColor.GetColor()
+		return model.OnMarkerColor.GetColor()
 	case c.index&1 == 1:
 		return unison.OnBandingColor.GetColor()
 	default:

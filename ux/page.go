@@ -15,7 +15,6 @@ import (
 	"fmt"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xmath"
@@ -89,8 +88,8 @@ func (p *Page) insets() unison.Insets {
 		Bottom: sheetSettings.Page.BottomMargin.Pixels(),
 		Right:  sheetSettings.Page.RightMargin.Pixels(),
 	}
-	height := theme.PageFooterSecondaryFont.LineHeight()
-	insets.Bottom += xmath.Max(theme.PageFooterPrimaryFont.LineHeight(), height) + height
+	height := model.PageFooterSecondaryFont.LineHeight()
+	insets.Bottom += xmath.Max(model.PageFooterPrimaryFont.LineHeight(), height) + height
 	return insets
 }
 
@@ -98,7 +97,7 @@ func (p *Page) drawSelf(gc *unison.Canvas, _ unison.Rect) {
 	insets := p.insets()
 	_, prefSize, _ := p.LayoutSizes(nil, unison.Size{})
 	r := unison.Rect{Size: prefSize}
-	gc.DrawRect(r, theme.PageColor.Paint(gc, r, unison.Fill))
+	gc.DrawRect(r, model.PageColor.Paint(gc, r, unison.Fill))
 	r.X += insets.Left
 	r.Width -= insets.Left + insets.Right
 	r.Y = r.Bottom() - insets.Bottom
@@ -107,11 +106,11 @@ func (p *Page) drawSelf(gc *unison.Canvas, _ unison.Rect) {
 	pageNumber := parent.IndexOfChild(p) + 1
 
 	primaryDecorations := &unison.TextDecoration{
-		Font:  theme.PageFooterPrimaryFont,
-		Paint: theme.OnPageColor.Paint(gc, r, unison.Fill),
+		Font:  model.PageFooterPrimaryFont,
+		Paint: model.OnPageColor.Paint(gc, r, unison.Fill),
 	}
 	secondaryDecorations := &unison.TextDecoration{
-		Font:  theme.PageFooterSecondaryFont,
+		Font:  model.PageFooterSecondaryFont,
 		Paint: primaryDecorations.Paint,
 	}
 

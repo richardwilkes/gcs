@@ -16,7 +16,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
@@ -98,7 +97,7 @@ func (p *PrimaryAttrPanel) createPointsField(attr *model.Attribute) *NonEditable
 			f.Tooltip = unison.NewTooltipWithText(fmt.Sprintf(i18n.Text("Points spent on %s"), def.CombinedName()))
 		}
 	})
-	field.Font = theme.PageFieldSecondaryFont
+	field.Font = model.PageFieldSecondaryFont
 	return field
 }
 

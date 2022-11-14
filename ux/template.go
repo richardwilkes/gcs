@@ -20,7 +20,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gid"
-	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -149,7 +148,7 @@ func NewTemplate(filePath string, template *model.Template) *Template {
 		VGrab:  true,
 	})
 	d.scroll.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, theme.PageVoidColor.Paint(gc, rect, unison.Fill))
+		gc.DrawRect(rect, model.PageVoidColor.Paint(gc, rect, unison.Fill))
 	}
 
 	addUserButton := unison.NewSVGButton(svg.Stamper)
@@ -442,7 +441,7 @@ func processPickerRow[T model.NodeTypes](row T) (revised []T, abort bool) {
 		if notes := notesCapable.Notes(); notes != "" {
 			label = unison.NewLabel()
 			label.Text = notes
-			label.Font = theme.FieldSecondaryFont
+			label.Font = model.FieldSecondaryFont
 			panel.AddChild(label)
 		}
 	}

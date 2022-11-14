@@ -13,7 +13,6 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -25,7 +24,7 @@ func NewEditorListHeader[T model.NodeTypes](title, tooltip string, forPage bool)
 		return NewPageTableColumnHeader[T](title, tooltip)
 	}
 	header := unison.NewTableColumnHeader[*Node[T]](title, tooltip)
-	header.OnBackgroundInk = theme.OnHeaderColor
+	header.OnBackgroundInk = model.OnHeaderColor
 	return header
 }
 
@@ -46,7 +45,7 @@ func NewEditorListSVGHeader[T model.NodeTypes](svg *unison.SVG, tooltip string, 
 		SVG:  svg,
 		Size: unison.NewSize(baseline, baseline),
 	}
-	header.OnBackgroundInk = theme.OnHeaderColor
+	header.OnBackgroundInk = model.OnHeaderColor
 	return header
 }
 
@@ -69,7 +68,7 @@ func NewEditorListSVGPairHeader[T model.NodeTypes](leftSVG, rightSVG *unison.SVG
 		Right: rightSVG,
 		Size:  unison.NewSize(baseline*2+4, baseline),
 	}
-	header.OnBackgroundInk = theme.OnHeaderColor
+	header.OnBackgroundInk = model.OnHeaderColor
 	return header
 }
 
@@ -121,8 +120,8 @@ func NewEditorExtendedWeightHeader[T model.NodeTypes](forPage bool) unison.Table
 // PageTableColumnHeaderTheme holds the theme values for PageTableColumnHeaders. Modifying this data will not alter
 // existing PageTableColumnHeaders, but will alter any PageTableColumnHeaders created in the future.
 var PageTableColumnHeaderTheme = unison.LabelTheme{
-	Font:            theme.PageLabelPrimaryFont,
-	OnBackgroundInk: theme.OnHeaderColor,
+	Font:            model.PageLabelPrimaryFont,
+	OnBackgroundInk: model.OnHeaderColor,
 	Gap:             3,
 	HAlign:          unison.MiddleAlignment,
 	VAlign:          unison.MiddleAlignment,
@@ -175,9 +174,9 @@ func (h *PageTableColumnHeader[T]) DefaultSizes(hint unison.Size) (min, pref, ma
 // DefaultDraw provides the default drawing.
 func (h *PageTableColumnHeader[T]) DefaultDraw(canvas *unison.Canvas, dirty unison.Rect) {
 	if h.sortState.Order == 0 {
-		canvas.DrawRect(dirty, theme.MarkerColor.Paint(canvas, dirty, unison.Fill))
+		canvas.DrawRect(dirty, model.MarkerColor.Paint(canvas, dirty, unison.Fill))
 		save := h.OnBackgroundInk
-		h.OnBackgroundInk = theme.OnMarkerColor
+		h.OnBackgroundInk = model.OnMarkerColor
 		h.Label.DefaultDraw(canvas, dirty)
 		h.OnBackgroundInk = save
 	} else {

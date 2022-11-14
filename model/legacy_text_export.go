@@ -25,7 +25,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gid"
-	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio"
@@ -1550,9 +1549,9 @@ func (ex *legacyExporter) handleColor(key string) {
 	case "divider":
 		c = unison.DividerColor
 	case "header":
-		c = theme.HeaderColor
+		c = HeaderColor
 	case "on_header":
-		c = theme.OnHeaderColor
+		c = OnHeaderColor
 	case "tab_focused":
 		c = unison.TabFocusedColor
 	case "on_tab_focused":
@@ -1582,7 +1581,7 @@ func (ex *legacyExporter) handleColor(key string) {
 	case "scroll_edge":
 		c = unison.ScrollEdgeColor
 	case "accent":
-		c = theme.AccentColor
+		c = AccentColor
 	case "control":
 		c = unison.ControlColor
 	case "on_control":
@@ -1604,19 +1603,19 @@ func (ex *legacyExporter) handleColor(key string) {
 	case "on_tooltip":
 		c = unison.OnTooltipColor
 	case "search_list":
-		c = theme.SearchListColor
+		c = SearchListColor
 	case "on_search_list":
-		c = theme.OnSearchListColor
+		c = OnSearchListColor
 	case "page":
-		c = theme.PageColor
+		c = PageColor
 	case "on_page":
-		c = theme.OnPageColor
+		c = OnPageColor
 	case "page_void":
-		c = theme.PageVoidColor
+		c = PageVoidColor
 	case "marker":
-		c = theme.MarkerColor
+		c = MarkerColor
 	case "on_marker":
-		c = theme.OnMarkerColor
+		c = OnMarkerColor
 	case "error":
 		c = unison.ErrorColor
 	case "on_error":
@@ -1626,15 +1625,15 @@ func (ex *legacyExporter) handleColor(key string) {
 	case "on_warning":
 		c = unison.OnWarningColor
 	case "overloaded":
-		c = theme.OverloadedColor
+		c = OverloadedColor
 	case "on_overloaded":
-		c = theme.OnOverloadedColor
+		c = OnOverloadedColor
 	case "hint":
-		c = theme.HintColor
+		c = HintColor
 	case "link":
-		c = theme.LinkColor
+		c = LinkColor
 	case "on_link":
-		c = theme.OnLinkColor
+		c = OnLinkColor
 	default:
 		ex.unidentifiedKey(key)
 	}

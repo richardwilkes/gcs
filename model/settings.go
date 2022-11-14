@@ -21,7 +21,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/xio/fs"
@@ -56,8 +55,8 @@ type Settings struct {
 	PageRefs           PageRefs              `json:"page_refs,omitempty"`
 	KeyBindings        KeyBindings           `json:"key_bindings,omitempty"`
 	WorkspaceFrame     *unison.Rect          `json:"workspace_frame,omitempty"`
-	Colors             theme.Colors          `json:"colors"`
-	Fonts              theme.Fonts           `json:"fonts"`
+	Colors             Colors                `json:"colors"`
+	Fonts              Fonts                 `json:"fonts"`
 	QuickExports       *QuickExports         `json:"quick_exports,omitempty"`
 	Sheet              *SheetSettings        `json:"sheet_settings,omitempty"`
 	ColorMode          unison.ColorMode      `json:"color_mode"`

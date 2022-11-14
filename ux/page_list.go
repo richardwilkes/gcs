@@ -15,7 +15,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/unison"
 )
 
@@ -116,7 +115,7 @@ func NewRangedWeaponsPageList(entity *model.Entity) *PageList[*model.Weapon] {
 }
 
 func newPageList[T model.NodeTypes](owner Rebuildable, provider TableProvider[T]) *PageList[T] {
-	header, table := NewNodeTable[T](provider, theme.PageFieldPrimaryFont)
+	header, table := NewNodeTable[T](provider, model.PageFieldPrimaryFont)
 	table.RefKey = provider.RefKey()
 	p := &PageList[T]{
 		tableHeader: header,
@@ -125,7 +124,7 @@ func newPageList[T model.NodeTypes](owner Rebuildable, provider TableProvider[T]
 	}
 	p.Self = p
 	p.SetLayout(&unison.FlexLayout{Columns: 1})
-	p.SetBorder(unison.NewLineBorder(theme.HeaderColor, 0, unison.NewUniformInsets(1), false))
+	p.SetBorder(unison.NewLineBorder(model.HeaderColor, 0, unison.NewUniformInsets(1), false))
 
 	p.Table.PreventUserColumnResize = true
 	p.tableHeader.DrawCallback = func(gc *unison.Canvas, dirty unison.Rect) {
@@ -141,7 +140,7 @@ func newPageList[T model.NodeTypes](owner Rebuildable, provider TableProvider[T]
 			r := p.tableHeader.ColumnFrame(sortedOn)
 			r.X -= p.Table.Padding.Left
 			r.Width += p.Table.Padding.Left + p.Table.Padding.Right
-			gc.DrawRect(r, theme.MarkerColor.Paint(gc, r, unison.Fill))
+			gc.DrawRect(r, model.MarkerColor.Paint(gc, r, unison.Fill))
 			save := p.tableHeader.BackgroundInk
 			p.tableHeader.BackgroundInk = unison.Transparent
 			p.tableHeader.DefaultDraw(gc, dirty)

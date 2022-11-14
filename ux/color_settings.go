@@ -16,7 +16,6 @@ import (
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -86,7 +85,7 @@ func (d *colorSettingsDockable) sync() {
 }
 
 func (d *colorSettingsDockable) fill() {
-	for i, one := range theme.CurrentColors {
+	for i, one := range model.CurrentColors {
 		if i%2 == 0 {
 			d.content.AddChild(NewFieldLeadingLabel(one.Title))
 		} else {
@@ -98,7 +97,7 @@ func (d *colorSettingsDockable) fill() {
 	}
 }
 
-func (d *colorSettingsDockable) createColorWellField(c *theme.ThemedColor, light bool) {
+func (d *colorSettingsDockable) createColorWellField(c *model.ThemedColor, light bool) {
 	w := unison.NewWell()
 	w.Mask = unison.ColorWellMask
 	if light {
@@ -123,12 +122,12 @@ func (d *colorSettingsDockable) createColorWellField(c *theme.ThemedColor, light
 	d.content.AddChild(w)
 }
 
-func (d *colorSettingsDockable) createResetField(c *theme.ThemedColor) {
+func (d *colorSettingsDockable) createResetField(c *model.ThemedColor) {
 	b := unison.NewSVGButton(svg.Reset)
 	b.Tooltip = unison.NewTooltipWithText("Reset this color")
 	b.ClickCallback = func() {
 		if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to reset %s?"), c.Title), "") == unison.ModalResponseOK {
-			for _, v := range theme.FactoryColors {
+			for _, v := range model.FactoryColors {
 				if v.ID != c.ID {
 					continue
 				}
@@ -154,7 +153,7 @@ func (d *colorSettingsDockable) createResetField(c *theme.ThemedColor) {
 }
 
 func (d *colorSettingsDockable) load(fileSystem fs.FS, filePath string) error {
-	s, err := theme.NewColorsFromFS(fileSystem, filePath)
+	s, err := model.NewColorsFromFS(fileSystem, filePath)
 	if err != nil {
 		return err
 	}

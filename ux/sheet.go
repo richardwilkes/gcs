@@ -21,7 +21,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/gid"
-	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -193,7 +192,7 @@ func NewSheet(filePath string, entity *model.Entity) *Sheet {
 		VGrab:  true,
 	})
 	s.scroll.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, theme.PageVoidColor.Paint(gc, rect, unison.Fill))
+		gc.DrawRect(rect, model.PageVoidColor.Paint(gc, rect, unison.Fill))
 	}
 
 	sheetSettingsButton := unison.NewSVGButton(svg.Settings)

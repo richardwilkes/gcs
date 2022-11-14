@@ -16,7 +16,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/unison"
@@ -58,7 +57,7 @@ func NewBodyPanel(entity *model.Entity) *BodyPanel {
 		r := p.Children()[0].FrameRect()
 		r.X = rect.X
 		r.Width = rect.Width
-		gc.DrawRect(r, theme.HeaderColor.Paint(gc, r, unison.Fill))
+		gc.DrawRect(r, model.HeaderColor.Paint(gc, r, unison.Fill))
 		for i, row := range p.row {
 			var ink unison.Ink
 			if i&1 == 1 {

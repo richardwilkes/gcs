@@ -18,7 +18,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -307,13 +306,13 @@ func (n *Node[T]) createLabelCell(c *model.CellData, width float32, foreground u
 		label.HAlign = c.Alignment
 		label.VAlign = unison.MiddleAlignment
 		label.ClientData()[invertColorsMarker] = true
-		label.OnBackgroundInk = theme.OnMarkerColor
+		label.OnBackgroundInk = model.OnMarkerColor
 		label.SetBorder(unison.NewEmptyBorder(unison.Insets{
 			Left:  4,
 			Right: 4,
 		}))
 		label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-			gc.DrawRect(rect, theme.MarkerColor.Paint(gc, rect, unison.Fill))
+			gc.DrawRect(rect, model.MarkerColor.Paint(gc, rect, unison.Fill))
 			label.DefaultDraw(gc, rect)
 		}
 		p.AddChild(label)
@@ -548,11 +547,11 @@ func (n *Node[T]) createPageRefCell(c *model.CellData, foreground unison.Ink) un
 			if over {
 				var fg, bg *unison.ThemeColor
 				if pressed {
-					fg = theme.OnLinkPressedColor
-					bg = theme.LinkPressedColor
+					fg = model.OnLinkPressedColor
+					bg = model.LinkPressedColor
 				} else {
-					fg = theme.OnLinkColor
-					bg = theme.LinkColor
+					fg = model.OnLinkColor
+					bg = model.LinkColor
 				}
 				gc.DrawRect(rect, bg.Paint(gc, rect, unison.Fill))
 				save := label.OnBackgroundInk
@@ -605,16 +604,16 @@ func (n *Node[T]) createPageRefCell(c *model.CellData, foreground unison.Ink) un
 
 func (n *Node[T]) primaryFieldFont() unison.Font {
 	if n.forPage {
-		return theme.PageFieldPrimaryFont
+		return model.PageFieldPrimaryFont
 	}
 	return unison.FieldFont
 }
 
 func (n *Node[T]) secondaryFieldFont() unison.Font {
 	if n.forPage {
-		return theme.PageFieldSecondaryFont
+		return model.PageFieldSecondaryFont
 	}
-	return theme.FieldSecondaryFont
+	return model.FieldSecondaryFont
 }
 
 // FindRowIndexByID returns the row index of the row with the given ID in the given table.

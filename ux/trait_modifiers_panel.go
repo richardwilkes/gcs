@@ -14,7 +14,6 @@ package ux
 import (
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/unison"
 )
 
@@ -38,7 +37,7 @@ func newTraitModifiersPanel(entity *model.Entity, modifiers *[]*model.TraitModif
 		HAlign: unison.FillAlignment,
 		HGrab:  true,
 	})
-	p.SetBorder(unison.NewLineBorder(theme.HeaderColor, 0, unison.NewUniformInsets(1), false))
+	p.SetBorder(unison.NewLineBorder(model.HeaderColor, 0, unison.NewUniformInsets(1), false))
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
 		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, unison.Fill))
 	}

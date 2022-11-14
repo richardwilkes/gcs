@@ -12,7 +12,7 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/theme"
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/unison"
 )
 
@@ -26,7 +26,7 @@ type TitledBorder struct {
 
 func (t *TitledBorder) font() unison.Font {
 	if t.Font == nil {
-		return theme.PageLabelPrimaryFont
+		return model.PageLabelPrimaryFont
 	}
 	return t.Font
 }
@@ -49,10 +49,10 @@ func (t *TitledBorder) Draw(gc *unison.Canvas, rect unison.Rect) {
 	path.SetFillType(unison.EvenOdd)
 	path.Rect(rect)
 	path.Rect(clip)
-	gc.DrawPath(path, theme.HeaderColor.Paint(gc, rect, unison.Fill))
+	gc.DrawPath(path, model.HeaderColor.Paint(gc, rect, unison.Fill))
 	text := unison.NewText(t.Title, &unison.TextDecoration{
 		Font:  t.font(),
-		Paint: theme.OnHeaderColor.Paint(gc, rect, unison.Fill),
+		Paint: model.OnHeaderColor.Paint(gc, rect, unison.Fill),
 	})
 	text.Draw(gc, rect.X+(rect.Width-text.Width())/2, rect.Y+1+text.Baseline())
 }

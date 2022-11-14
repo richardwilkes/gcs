@@ -15,7 +15,6 @@ import (
 	"fmt"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -59,7 +58,7 @@ func NewPointsPanel(entity *model.Entity, targetMgr *TargetMgr) *PointsPanel {
 		HGrab:  true,
 	})
 	hdr.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, theme.HeaderColor.Paint(gc, rect, unison.Fill))
+		gc.DrawRect(rect, model.HeaderColor.Paint(gc, rect, unison.Fill))
 	}
 
 	hdri := unison.NewPanel()
@@ -77,13 +76,13 @@ func NewPointsPanel(entity *model.Entity, targetMgr *TargetMgr) *PointsPanel {
 		overallTotal = p.entity.TotalPoints.String()
 	}
 	p.total = unison.NewLabel()
-	p.total.Font = theme.PageLabelPrimaryFont
+	p.total.Font = model.PageLabelPrimaryFont
 	p.total.Text = fmt.Sprintf(i18n.Text("%s Points"), overallTotal)
-	p.total.OnBackgroundInk = theme.OnHeaderColor
+	p.total.OnBackgroundInk = model.OnHeaderColor
 	hdri.AddChild(p.total)
 	height := p.total.Font.Baseline() - 2
 	editButton := unison.NewSVGButton(svg.Edit)
-	editButton.Font = theme.PageLabelPrimaryFont
+	editButton.Font = model.PageLabelPrimaryFont
 	editButton.Drawable.(*unison.DrawableSVG).Size = unison.NewSize(height, height)
 	editButton.ClickCallback = func() {
 		displayPointsEditor(unison.AncestorOrSelf[Rebuildable](p), p.entity)
@@ -104,7 +103,7 @@ func NewPointsPanel(entity *model.Entity, targetMgr *TargetMgr) *PointsPanel {
 	})
 	p.AddChild(p.ptsList)
 
-	p.ptsList.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(theme.HeaderColor, 0, unison.Insets{
+	p.ptsList.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(model.HeaderColor, 0, unison.Insets{
 		Top:    0,
 		Left:   1,
 		Bottom: 1,

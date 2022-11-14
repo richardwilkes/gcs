@@ -17,7 +17,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -72,7 +71,7 @@ func (d *fontSettingsDockable) sync() {
 }
 
 func (d *fontSettingsDockable) fill() {
-	for i, one := range theme.CurrentFonts {
+	for i, one := range model.CurrentFonts {
 		if i%2 == 0 {
 			d.content.AddChild(NewFieldLeadingLabel(one.Title))
 		} else {
@@ -103,12 +102,12 @@ func (d *fontSettingsDockable) createFamilyField(index int) {
 	for _, family := range unison.FontFamilies() {
 		p.AddItem(family)
 	}
-	p.Select(theme.CurrentFonts[index].Font.Descriptor().Family)
+	p.Select(model.CurrentFonts[index].Font.Descriptor().Family)
 	p.SelectionCallback = func(_ int, family string) {
 		if d.noUpdate {
 			return
 		}
-		fd := theme.CurrentFonts[index].Font.Descriptor()
+		fd := model.CurrentFonts[index].Font.Descriptor()
 		fd.Family = family
 		d.applyFont(index, fd)
 	}
@@ -117,10 +116,10 @@ func (d *fontSettingsDockable) createFamilyField(index int) {
 
 func (d *fontSettingsDockable) createSizeField(index int) {
 	field := NewDecimalField(nil, "", i18n.Text("Font Size"),
-		func() fxp.Int { return fxp.From(theme.CurrentFonts[index].Font.Size()) },
+		func() fxp.Int { return fxp.From(model.CurrentFonts[index].Font.Size()) },
 		func(v fxp.Int) {
 			if !d.noUpdate {
-				fd := theme.CurrentFonts[index].Font.Descriptor()
+				fd := model.CurrentFonts[index].Font.Descriptor()
 				fd.Size = fxp.As[float32](v)
 				d.applyFont(index, fd)
 			}
@@ -137,12 +136,12 @@ func (d *fontSettingsDockable) createWeightField(index int) {
 	for _, s := range unison.FontWeights {
 		p.AddItem(s)
 	}
-	p.Select(theme.CurrentFonts[index].Font.Descriptor().Weight)
+	p.Select(model.CurrentFonts[index].Font.Descriptor().Weight)
 	p.SelectionCallback = func(_ int, item unison.FontWeight) {
 		if d.noUpdate {
 			return
 		}
-		fd := theme.CurrentFonts[index].Font.Descriptor()
+		fd := model.CurrentFonts[index].Font.Descriptor()
 		fd.Weight = item
 		d.applyFont(index, fd)
 	}
@@ -154,12 +153,12 @@ func (d *fontSettingsDockable) createSpacingField(index int) {
 	for _, s := range unison.Spacings {
 		p.AddItem(s)
 	}
-	p.Select(theme.CurrentFonts[index].Font.Descriptor().Spacing)
+	p.Select(model.CurrentFonts[index].Font.Descriptor().Spacing)
 	p.SelectionCallback = func(_ int, item unison.FontSpacing) {
 		if d.noUpdate {
 			return
 		}
-		fd := theme.CurrentFonts[index].Font.Descriptor()
+		fd := model.CurrentFonts[index].Font.Descriptor()
 		fd.Spacing = item
 		d.applyFont(index, fd)
 	}
@@ -171,12 +170,12 @@ func (d *fontSettingsDockable) createSlantField(index int) {
 	for _, s := range unison.Slants {
 		p.AddItem(s)
 	}
-	p.Select(theme.CurrentFonts[index].Font.Descriptor().Slant)
+	p.Select(model.CurrentFonts[index].Font.Descriptor().Slant)
 	p.SelectionCallback = func(_ int, item unison.FontSlant) {
 		if d.noUpdate {
 			return
 		}
-		fd := theme.CurrentFonts[index].Font.Descriptor()
+		fd := model.CurrentFonts[index].Font.Descriptor()
 		fd.Slant = item
 		d.applyFont(index, fd)
 	}
@@ -188,9 +187,9 @@ func (d *fontSettingsDockable) createResetField(index int) {
 	b.Tooltip = unison.NewTooltipWithText("Reset this font")
 	b.ClickCallback = func() {
 		if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to reset %s?"),
-			theme.CurrentFonts[index].Title), "") == unison.ModalResponseOK {
-			for _, v := range theme.FactoryFonts {
-				if v.ID != theme.CurrentFonts[index].ID {
+			model.CurrentFonts[index].Title), "") == unison.ModalResponseOK {
+			for _, v := range model.FactoryFonts {
+				if v.ID != model.CurrentFonts[index].ID {
 					continue
 				}
 				d.applyFont(index, v.Font.Descriptor())
@@ -206,10 +205,10 @@ func (d *fontSettingsDockable) createResetField(index int) {
 }
 
 func (d *fontSettingsDockable) applyFont(index int, fd unison.FontDescriptor) {
-	theme.CurrentFonts[index].Font.Font = fd.Font()
+	model.CurrentFonts[index].Font.Font = fd.Font()
 	children := d.content.Children()
 	i := index * 7
-	fd = theme.CurrentFonts[index].Font.Descriptor()
+	fd = model.CurrentFonts[index].Font.Descriptor()
 	d.noUpdate = true
 	if p, ok := children[i+1].Self.(*unison.PopupMenu[string]); ok {
 		p.Select(fd.Family)
@@ -231,7 +230,7 @@ func (d *fontSettingsDockable) applyFont(index int, fd unison.FontDescriptor) {
 }
 
 func (d *fontSettingsDockable) load(fileSystem fs.FS, filePath string) error {
-	s, err := theme.NewFontsFromFS(fileSystem, filePath)
+	s, err := model.NewFontsFromFS(fileSystem, filePath)
 	if err != nil {
 		return err
 	}

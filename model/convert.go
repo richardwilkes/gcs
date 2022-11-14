@@ -18,7 +18,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/toolbox/collection"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
@@ -144,16 +143,16 @@ func Convert(paths ...string) error {
 		case CalendarExt:
 			// Currently have no version info, so nothing to update
 		case ColorSettingsExt:
-			var data *theme.Colors
-			if data, err = theme.NewColorsFromFS(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data *Colors
+			if data, err = NewColorsFromFS(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
 			if err = data.Save(p); err != nil {
 				return err
 			}
 		case FontSettingsExt:
-			var data *theme.Fonts
-			if data, err = theme.NewFontsFromFS(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data *Fonts
+			if data, err = NewFontsFromFS(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
 			if err = data.Save(p); err != nil {
