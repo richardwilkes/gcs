@@ -22,7 +22,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/datafile"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
-	"github.com/richardwilkes/gcs/v5/model/gurps/skill"
 	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
@@ -392,7 +391,7 @@ func (w *Weapon) EncumbrancePenalty(entity *Entity, tooltip *xio.ByteBuffer) fxp
 
 func (w *Weapon) extractSkillBonusForThisWeapon(f Feature, tooltip *xio.ByteBuffer) fxp.Int {
 	if sb, ok := f.(*SkillBonus); ok {
-		if sb.SelectionType.EnsureValid() == skill.ThisWeapon {
+		if sb.SelectionType.EnsureValid() == ThisWeaponSkillSelectionType {
 			if sb.SpecializationCriteria.Matches(w.Usage) {
 				sb.AddToTooltip(tooltip)
 				return sb.AdjustedAmount()

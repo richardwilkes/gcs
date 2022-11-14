@@ -17,7 +17,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
-	"github.com/richardwilkes/gcs/v5/model/gurps/skill"
 	"github.com/richardwilkes/toolbox/xio"
 )
 
@@ -25,11 +24,11 @@ var _ Bonus = &SkillBonus{}
 
 // SkillBonus holds an adjustment to a skill.
 type SkillBonus struct {
-	Type                   FeatureType         `json:"type"`
-	SelectionType          skill.SelectionType `json:"selection_type"`
-	NameCriteria           criteria.String     `json:"name,omitempty"`
-	SpecializationCriteria criteria.String     `json:"specialization,omitempty"`
-	TagsCriteria           criteria.String     `json:"tags,alt=category,omitempty"`
+	Type                   FeatureType        `json:"type"`
+	SelectionType          SkillSelectionType `json:"selection_type"`
+	NameCriteria           criteria.String    `json:"name,omitempty"`
+	SpecializationCriteria criteria.String    `json:"specialization,omitempty"`
+	TagsCriteria           criteria.String    `json:"tags,alt=category,omitempty"`
 	LeveledAmount
 	owner fmt.Stringer
 }
@@ -38,7 +37,7 @@ type SkillBonus struct {
 func NewSkillBonus() *SkillBonus {
 	return &SkillBonus{
 		Type:          SkillBonusFeatureType,
-		SelectionType: skill.SkillsWithName,
+		SelectionType: NameSkillSelectionType,
 		NameCriteria: criteria.String{
 			StringData: criteria.StringData{
 				Compare: criteria.Is,
@@ -72,7 +71,7 @@ func (s *SkillBonus) Clone() Feature {
 // FillWithNameableKeys implements Feature.
 func (s *SkillBonus) FillWithNameableKeys(m map[string]string) {
 	nameables.Extract(s.SpecializationCriteria.Qualifier, m)
-	if s.SelectionType != skill.ThisWeapon {
+	if s.SelectionType != ThisWeaponSkillSelectionType {
 		nameables.Extract(s.NameCriteria.Qualifier, m)
 		nameables.Extract(s.TagsCriteria.Qualifier, m)
 	}
@@ -81,7 +80,7 @@ func (s *SkillBonus) FillWithNameableKeys(m map[string]string) {
 // ApplyNameableKeys implements Feature.
 func (s *SkillBonus) ApplyNameableKeys(m map[string]string) {
 	s.SpecializationCriteria.Qualifier = nameables.Apply(s.SpecializationCriteria.Qualifier, m)
-	if s.SelectionType != skill.ThisWeapon {
+	if s.SelectionType != ThisWeaponSkillSelectionType {
 		s.NameCriteria.Qualifier = nameables.Apply(s.NameCriteria.Qualifier, m)
 		s.TagsCriteria.Qualifier = nameables.Apply(s.TagsCriteria.Qualifier, m)
 	}

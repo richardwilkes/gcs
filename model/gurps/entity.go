@@ -31,7 +31,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/datafile"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
-	"github.com/richardwilkes/gcs/v5/model/gurps/skill"
 	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
@@ -676,7 +675,7 @@ func (e *Entity) AddDRBonusesFor(locationID string, tooltip *xio.ByteBuffer, drM
 func (e *Entity) SkillBonusFor(name, specialization string, tags []string, tooltip *xio.ByteBuffer) fxp.Int {
 	var total fxp.Int
 	for _, bonus := range e.features.skillBonuses {
-		if bonus.SelectionType == skill.SkillsWithName &&
+		if bonus.SelectionType == NameSkillSelectionType &&
 			bonus.NameCriteria.Matches(name) &&
 			bonus.SpecializationCriteria.Matches(specialization) &&
 			bonus.TagsCriteria.MatchesList(tags...) {
@@ -792,7 +791,7 @@ func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, 
 func (e *Entity) NamedWeaponSkillBonusesFor(name, usage string, tags []string, tooltip *xio.ByteBuffer) []*SkillBonus {
 	var bonuses []*SkillBonus
 	for _, bonus := range e.features.skillBonuses {
-		if bonus.SelectionType == skill.WeaponsWithName &&
+		if bonus.SelectionType == WeaponsWithNameSkillSelectionType &&
 			bonus.NameCriteria.Matches(name) &&
 			bonus.SpecializationCriteria.Matches(usage) &&
 			bonus.TagsCriteria.MatchesList(tags...) {

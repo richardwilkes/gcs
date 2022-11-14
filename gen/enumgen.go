@@ -576,7 +576,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/gurps/skill",
+		Pkg:        "model/gurps",
 		Name:       "difficulty",
 		Desc:       "holds the difficulty level of a skill",
 		StandAlone: true,
@@ -610,12 +610,12 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/gurps/skill",
-		Name:       "selection_type",
-		Desc:       "holds the type of a selection",
-		StandAlone: true,
+		Pkg:  "model/gurps",
+		Name: "skill_selection_type",
+		Desc: "holds the type of a selection",
 		Values: []enumValue{
 			{
+				Name:   "Name",
 				Key:    "skills_with_name",
 				String: "to skills whose name",
 			},

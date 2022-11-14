@@ -21,7 +21,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/datafile"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
-	"github.com/richardwilkes/gcs/v5/model/gurps/skill"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/settings/display"
 	"github.com/richardwilkes/json"
@@ -64,7 +63,7 @@ const spellListTypeKey = "spell_list"
 type Spell struct {
 	SpellData
 	Entity            *Entity
-	LevelData         skill.Level
+	LevelData         Level
 	UnsatisfiedReason string
 }
 
@@ -125,7 +124,7 @@ func newSpell(entity *Entity, parent *Spell, typeKey string, container bool) *Sp
 		s.TemplatePicker = &TemplatePicker{}
 	} else {
 		s.Difficulty.Attribute = AttributeIDFor(entity, gid.Intelligence)
-		s.Difficulty.Difficulty = skill.Hard
+		s.Difficulty.Difficulty = Hard
 		s.PowerSource = i18n.Text("Arcane")
 		s.Class = i18n.Text("Regular")
 		s.CastingCost = "1"
@@ -384,7 +383,7 @@ func (s *Spell) UpdateLevel() bool {
 }
 
 // CalculateLevel returns the computed level without updating it.
-func (s *Spell) CalculateLevel() skill.Level {
+func (s *Spell) CalculateLevel() Level {
 	if strings.HasPrefix(s.Type, gid.Spell) {
 		return CalculateSpellLevel(s.Entity, s.Name, s.PowerSource, s.College, s.Tags, s.Difficulty,
 			s.AdjustedPoints(nil))
@@ -398,7 +397,7 @@ func (s *Spell) IncrementSkillLevel() {
 	if !s.Container() {
 		basePoints := s.Points.Trunc() + fxp.One
 		maxPoints := basePoints
-		if s.Difficulty.Difficulty == skill.Wildcard {
+		if s.Difficulty.Difficulty == Wildcard {
 			maxPoints += fxp.Twelve
 		} else {
 			maxPoints += fxp.Four
@@ -418,7 +417,7 @@ func (s *Spell) DecrementSkillLevel() {
 	if !s.Container() && s.Points > 0 {
 		basePoints := s.Points.Trunc()
 		minPoints := basePoints
-		if s.Difficulty.Difficulty == skill.Wildcard {
+		if s.Difficulty.Difficulty == Wildcard {
 			minPoints -= fxp.Twelve
 		} else {
 			minPoints -= fxp.Four
@@ -445,14 +444,14 @@ func (s *Spell) DecrementSkillLevel() {
 }
 
 // CalculateSpellLevel returns the calculated spell level.
-func CalculateSpellLevel(entity *Entity, name, powerSource string, colleges, tags []string, difficulty AttributeDifficulty, pts fxp.Int) skill.Level {
+func CalculateSpellLevel(entity *Entity, name, powerSource string, colleges, tags []string, difficulty AttributeDifficulty, pts fxp.Int) Level {
 	var tooltip xio.ByteBuffer
 	relativeLevel := difficulty.Difficulty.BaseRelativeLevel()
 	level := fxp.Min
 	if entity != nil {
 		pts = pts.Trunc()
 		level = entity.ResolveAttributeCurrent(difficulty.Attribute)
-		if difficulty.Difficulty == skill.Wildcard {
+		if difficulty.Difficulty == Wildcard {
 			pts = pts.Div(fxp.Three).Trunc()
 		}
 		switch {
@@ -472,7 +471,7 @@ func CalculateSpellLevel(entity *Entity, name, powerSource string, colleges, tag
 			level += relativeLevel
 		}
 	}
-	return skill.Level{
+	return Level{
 		Level:         level,
 		RelativeLevel: relativeLevel,
 		Tooltip:       tooltip.String(),
@@ -480,8 +479,8 @@ func CalculateSpellLevel(entity *Entity, name, powerSource string, colleges, tag
 }
 
 // CalculateRitualMagicSpellLevel returns the calculated spell level.
-func CalculateRitualMagicSpellLevel(entity *Entity, name, powerSource, ritualSkillName string, ritualPrereqCount int, colleges, tags []string, difficulty AttributeDifficulty, points fxp.Int) skill.Level {
-	var skillLevel skill.Level
+func CalculateRitualMagicSpellLevel(entity *Entity, name, powerSource, ritualSkillName string, ritualPrereqCount int, colleges, tags []string, difficulty AttributeDifficulty, points fxp.Int) Level {
+	var skillLevel Level
 	if len(colleges) == 0 {
 		skillLevel = determineRitualMagicSkillLevelForCollege(entity, name, "", ritualSkillName, ritualPrereqCount,
 			tags, difficulty, points)
@@ -505,7 +504,7 @@ func CalculateRitualMagicSpellLevel(entity *Entity, name, powerSource, ritualSki
 	return skillLevel
 }
 
-func determineRitualMagicSkillLevelForCollege(entity *Entity, name, college, ritualSkillName string, ritualPrereqCount int, tags []string, difficulty AttributeDifficulty, points fxp.Int) skill.Level {
+func determineRitualMagicSkillLevelForCollege(entity *Entity, name, college, ritualSkillName string, ritualPrereqCount int, tags []string, difficulty AttributeDifficulty, points fxp.Int) Level {
 	def := &SkillDefault{
 		DefaultType:    gid.Skill,
 		Name:           ritualSkillName,

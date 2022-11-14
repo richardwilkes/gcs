@@ -19,7 +19,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
-	"github.com/richardwilkes/gcs/v5/model/gurps/skill"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -250,15 +249,15 @@ func (p *featuresPanel) createSkillBonusPanel(f *gurps.SkillBonus) *unison.Panel
 	wrapper := unison.NewPanel()
 	var criteriaPopup *unison.PopupMenu[string]
 	var criteriaField *StringField
-	popup := addPopup(wrapper, skill.AllSelectionType, &f.SelectionType)
-	popup.SelectionCallback = func(_ int, item skill.SelectionType) {
+	popup := addPopup(wrapper, gurps.AllSkillSelectionType, &f.SelectionType)
+	popup.SelectionCallback = func(_ int, item gurps.SkillSelectionType) {
 		count := 4
-		if f.SelectionType == skill.ThisWeapon {
+		if f.SelectionType == gurps.ThisWeaponSkillSelectionType {
 			count = 2
 		}
 		f.SelectionType = item
-		adjustPopupBlank(criteriaPopup, f.SelectionType == skill.ThisWeapon)
-		adjustFieldBlank(criteriaField, f.SelectionType == skill.ThisWeapon)
+		adjustPopupBlank(criteriaPopup, f.SelectionType == gurps.ThisWeaponSkillSelectionType)
+		adjustFieldBlank(criteriaField, f.SelectionType == gurps.ThisWeaponSkillSelectionType)
 		i := panel.IndexOfChild(wrapper) + 1
 		for j := count - 1; j >= 0; j-- {
 			panel.RemoveChildAtIndex(i + j)
@@ -277,8 +276,8 @@ func (p *featuresPanel) createSkillBonusPanel(f *gurps.SkillBonus) *unison.Panel
 		HAlign: unison.FillAlignment,
 	})
 	panel.AddChild(wrapper)
-	adjustPopupBlank(criteriaPopup, f.SelectionType == skill.ThisWeapon)
-	adjustFieldBlank(criteriaField, f.SelectionType == skill.ThisWeapon)
+	adjustPopupBlank(criteriaPopup, f.SelectionType == gurps.ThisWeaponSkillSelectionType)
+	adjustFieldBlank(criteriaField, f.SelectionType == gurps.ThisWeaponSkillSelectionType)
 
 	p.createSecondarySkillPanels(panel, len(panel.Children()), f)
 	return panel
@@ -289,9 +288,9 @@ func (p *featuresPanel) createSecondarySkillPanels(parent *unison.Panel, index i
 	index++
 	wrapper := unison.NewPanel()
 	switch f.SelectionType {
-	case skill.SkillsWithName:
+	case gurps.NameSkillSelectionType:
 		addSpecializationCriteriaPanel(wrapper, &f.SpecializationCriteria, 1, false)
-	case skill.ThisWeapon, skill.WeaponsWithName:
+	case gurps.ThisWeaponSkillSelectionType, gurps.WeaponsWithNameSkillSelectionType:
 		prefix := i18n.Text("and whose usage")
 		addStringCriteriaPanel(wrapper, prefix, prefix, i18n.Text("Usage Qualifier"), &f.SpecializationCriteria, 1, false)
 	default:
@@ -308,7 +307,7 @@ func (p *featuresPanel) createSecondarySkillPanels(parent *unison.Panel, index i
 	parent.AddChildAtIndex(wrapper, index)
 	index++
 
-	if f.SelectionType != skill.ThisWeapon {
+	if f.SelectionType != gurps.ThisWeaponSkillSelectionType {
 		parent.AddChildAtIndex(unison.NewPanel(), index)
 		index++
 		wrapper = unison.NewPanel()

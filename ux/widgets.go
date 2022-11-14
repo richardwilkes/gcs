@@ -18,7 +18,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
-	"github.com/richardwilkes/gcs/v5/model/gurps/skill"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -168,7 +167,7 @@ func addDifficultyLabelAndFields(parent *unison.Panel, entity *gurps.Entity, dif
 	wrapper := addFlowWrapper(parent, i18n.Text("Difficulty"), 3)
 	addAttributeChoicePopup(wrapper, entity, "", &difficulty.Attribute, gurps.TenFlag)
 	wrapper.AddChild(NewFieldTrailingLabel("/"))
-	addPopup(wrapper, skill.AllDifficulty, &difficulty.Difficulty)
+	addPopup(wrapper, gurps.AllDifficulty, &difficulty.Difficulty)
 }
 
 func addTagsLabelAndField(parent *unison.Panel, fieldData *[]string) {

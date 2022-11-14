@@ -17,7 +17,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
-	"github.com/richardwilkes/gcs/v5/model/gurps/skill"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -70,7 +69,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 				HAlign: unison.FillAlignment,
 				HGrab:  true,
 			})
-			lastWasSkillBased := skill.DefaultTypeIsSkillBased(e.editorData.TechniqueDefault.DefaultType)
+			lastWasSkillBased := gurps.DefaultTypeIsSkillBased(e.editorData.TechniqueDefault.DefaultType)
 			if !lastWasSkillBased {
 				skillDefNameField.RemoveFromParent()
 				skillDefSpecialtyField.RemoveFromParent()
@@ -80,7 +79,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 				fxp.NinetyNine)
 			attrChoicePopup.SelectionCallback = func(_ int, item *gurps.AttributeChoice) {
 				e.editorData.TechniqueDefault.DefaultType = item.Key
-				if skillBased := skill.DefaultTypeIsSkillBased(e.editorData.TechniqueDefault.DefaultType); skillBased != lastWasSkillBased {
+				if skillBased := gurps.DefaultTypeIsSkillBased(e.editorData.TechniqueDefault.DefaultType); skillBased != lastWasSkillBased {
 					lastWasSkillBased = skillBased
 					if skillBased {
 						wrapper.AddChildAtIndex(skillDefNameField, len(wrapper.Children())-1)
@@ -123,7 +122,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 				}))
 			adjustFieldBlank(limitField, e.editorData.TechniqueLimitModifier == nil)
 			wrapper2.AddChild(limitField)
-			addLabelAndPopup(content, i18n.Text("Difficulty"), "", skill.AllTechniqueDifficulty,
+			addLabelAndPopup(content, i18n.Text("Difficulty"), "", gurps.AllTechniqueDifficulty,
 				&e.editorData.Difficulty.Difficulty)
 		} else {
 			addDifficultyLabelAndFields(content, e.target.Entity, &e.editorData.Difficulty)
@@ -141,7 +140,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 			levelField := NewNonEditableField(func(field *NonEditableField) {
 				points := gurps.AdjustedPointsForNonContainerSkillOrTechnique(e.target.Entity, e.editorData.Points,
 					e.editorData.Name, e.editorData.Specialization, e.editorData.Tags, nil)
-				var level skill.Level
+				var level gurps.Level
 				if isTechnique {
 					level = gurps.CalculateTechniqueLevel(e.target.Entity, e.editorData.Name,
 						e.editorData.Specialization, e.editorData.Tags, e.editorData.TechniqueDefault,

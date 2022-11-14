@@ -17,7 +17,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
-	"github.com/richardwilkes/gcs/v5/model/gurps/skill"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -42,7 +41,7 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 		if isRitualMagic {
 			addLabelAndStringField(content, i18n.Text("Base Skill"), "", &e.editorData.RitualSkillName)
 			wrapper := addFlowWrapper(content, i18n.Text("Difficulty"), 3)
-			addPopup(wrapper, skill.AllTechniqueDifficulty, &e.editorData.Difficulty.Difficulty)
+			addPopup(wrapper, gurps.AllTechniqueDifficulty, &e.editorData.Difficulty.Difficulty)
 			prereqCount := i18n.Text("Prerequisite Count")
 			wrapper.AddChild(NewFieldInteriorLeadingLabel(prereqCount))
 			addIntegerField(wrapper, nil, "", prereqCount, "", &e.editorData.RitualPrereqCount, 0, 99)
@@ -57,7 +56,7 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 			levelField := NewNonEditableField(func(field *NonEditableField) {
 				points := gurps.AdjustedPointsForNonContainerSpell(e.target.Entity, e.editorData.Points,
 					e.editorData.Name, e.editorData.PowerSource, e.editorData.College, e.editorData.Tags, nil)
-				var level skill.Level
+				var level gurps.Level
 				if isRitualMagic {
 					level = gurps.CalculateRitualMagicSpellLevel(e.target.Entity, e.editorData.Name,
 						e.editorData.PowerSource, e.editorData.RitualSkillName, e.editorData.RitualPrereqCount,

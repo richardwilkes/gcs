@@ -21,7 +21,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/datafile"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
-	"github.com/richardwilkes/gcs/v5/model/gurps/skill"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/settings/display"
 	"github.com/richardwilkes/json"
@@ -56,7 +55,7 @@ const skillListTypeKey = "skill_list"
 type Skill struct {
 	SkillData
 	Entity            *Entity
-	LevelData         skill.Level
+	LevelData         Level
 	UnsatisfiedReason string
 }
 
@@ -122,7 +121,7 @@ func newSkill(entity *Entity, parent *Skill, typeKey string, container bool) *Sk
 		if typeKey != gid.Technique {
 			s.Difficulty.Attribute = AttributeIDFor(entity, gid.Dexterity)
 		}
-		s.Difficulty.Difficulty = skill.Average
+		s.Difficulty.Difficulty = Average
 		s.Points = fxp.One
 	}
 	s.Name = s.Kind()
@@ -329,7 +328,7 @@ func (s *Skill) ModifierNotes() string {
 	if strings.HasPrefix(s.Type, gid.Technique) {
 		return i18n.Text("Default: ") + s.TechniqueDefault.FullName(s.Entity) + s.TechniqueDefault.ModifierAsString()
 	}
-	if s.Difficulty.Difficulty != skill.Wildcard {
+	if s.Difficulty.Difficulty != Wildcard {
 		defSkill := s.DefaultSkill()
 		if defSkill != nil && s.DefaultedFrom != nil {
 			return i18n.Text("Default: ") + defSkill.String() + s.DefaultedFrom.ModifierAsString()
@@ -476,7 +475,7 @@ func (s *Skill) IncrementSkillLevel() {
 	if !s.Container() {
 		basePoints := s.Points.Trunc() + fxp.One
 		maxPoints := basePoints
-		if s.Difficulty.Difficulty == skill.Wildcard {
+		if s.Difficulty.Difficulty == Wildcard {
 			maxPoints += fxp.Twelve
 		} else {
 			maxPoints += fxp.Four
@@ -496,7 +495,7 @@ func (s *Skill) DecrementSkillLevel() {
 	if !s.Container() && s.Points > 0 {
 		basePoints := s.Points.Trunc()
 		minPoints := basePoints
-		if s.Difficulty.Difficulty == skill.Wildcard {
+		if s.Difficulty.Difficulty == Wildcard {
 			minPoints -= fxp.Twelve
 		} else {
 			minPoints -= fxp.Four
@@ -523,7 +522,7 @@ func (s *Skill) DecrementSkillLevel() {
 }
 
 // CalculateLevel returns the computed level without updating it.
-func (s *Skill) CalculateLevel() skill.Level {
+func (s *Skill) CalculateLevel() Level {
 	points := s.AdjustedPoints(nil)
 	if strings.HasPrefix(s.Type, gid.Skill) {
 		return CalculateSkillLevel(s.Entity, s.Name, s.Specialization, s.Tags, s.DefaultedFrom, s.Difficulty, points,
@@ -534,12 +533,12 @@ func (s *Skill) CalculateLevel() skill.Level {
 }
 
 // CalculateSkillLevel returns the calculated level for a skill.
-func CalculateSkillLevel(entity *Entity, name, specialization string, tags []string, def *SkillDefault, difficulty AttributeDifficulty, points, encumbrancePenaltyMultiplier fxp.Int) skill.Level {
+func CalculateSkillLevel(entity *Entity, name, specialization string, tags []string, def *SkillDefault, difficulty AttributeDifficulty, points, encumbrancePenaltyMultiplier fxp.Int) Level {
 	var tooltip xio.ByteBuffer
 	relativeLevel := difficulty.Difficulty.BaseRelativeLevel()
 	level := entity.ResolveAttributeCurrent(difficulty.Attribute)
 	if level != fxp.Min {
-		if difficulty.Difficulty == skill.Wildcard {
+		if difficulty.Difficulty == Wildcard {
 			points = points.Div(fxp.Three)
 		} else if def != nil && def.Points > 0 {
 			points += def.Points
@@ -552,7 +551,7 @@ func CalculateSkillLevel(entity *Entity, name, specialization string, tags []str
 			relativeLevel += fxp.One
 		case points >= fxp.Four:
 			relativeLevel += fxp.One + points.Div(fxp.Four).Trunc()
-		case difficulty.Difficulty != skill.Wildcard && def != nil && def.Points < 0:
+		case difficulty.Difficulty != Wildcard && def != nil && def.Points < 0:
 			relativeLevel = def.AdjLevel - level
 		default:
 			level = fxp.Min
@@ -560,7 +559,7 @@ func CalculateSkillLevel(entity *Entity, name, specialization string, tags []str
 		}
 		if level != fxp.Min {
 			level += relativeLevel
-			if difficulty.Difficulty != skill.Wildcard && def != nil && level < def.AdjLevel {
+			if difficulty.Difficulty != Wildcard && def != nil && level < def.AdjLevel {
 				level = def.AdjLevel
 			}
 			if entity != nil {
@@ -575,7 +574,7 @@ func CalculateSkillLevel(entity *Entity, name, specialization string, tags []str
 			}
 		}
 	}
-	return skill.Level{
+	return Level{
 		Level:         level,
 		RelativeLevel: relativeLevel,
 		Tooltip:       tooltip.String(),
@@ -583,7 +582,7 @@ func CalculateSkillLevel(entity *Entity, name, specialization string, tags []str
 }
 
 // CalculateTechniqueLevel returns the calculated level for a technique.
-func CalculateTechniqueLevel(entity *Entity, name, specialization string, tags []string, def *SkillDefault, difficulty skill.Difficulty, points fxp.Int, requirePoints bool, limitModifier *fxp.Int) skill.Level {
+func CalculateTechniqueLevel(entity *Entity, name, specialization string, tags []string, def *SkillDefault, difficulty Difficulty, points fxp.Int, requirePoints bool, limitModifier *fxp.Int) Level {
 	var tooltip xio.ByteBuffer
 	var relativeLevel fxp.Int
 	level := fxp.Min
@@ -599,7 +598,7 @@ func CalculateTechniqueLevel(entity *Entity, name, specialization string, tags [
 		if level != fxp.Min {
 			baseLevel := level
 			level += def.Modifier
-			if difficulty == skill.Hard {
+			if difficulty == Hard {
 				points -= fxp.One
 			}
 			if points > 0 {
@@ -617,7 +616,7 @@ func CalculateTechniqueLevel(entity *Entity, name, specialization string, tags [
 			}
 		}
 	}
-	return skill.Level{
+	return Level{
 		Level:         level,
 		RelativeLevel: relativeLevel,
 		Tooltip:       tooltip.String(),

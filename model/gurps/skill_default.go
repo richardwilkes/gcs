@@ -38,6 +38,11 @@ type SkillDefault struct {
 	Points         fxp.Int `json:"points,omitempty"`
 }
 
+// DefaultTypeIsSkillBased returns true if the SkillDefault type is Skill-based.
+func DefaultTypeIsSkillBased(skillDefaultType string) bool {
+	return skillBasedDefaultTypes[strings.ToLower(strings.TrimSpace(skillDefaultType))]
+}
+
 // CloneWithoutLevelOrPoints creates a copy, but without the level or points set.
 func (s *SkillDefault) CloneWithoutLevelOrPoints() *SkillDefault {
 	clone := *s

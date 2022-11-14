@@ -14,7 +14,6 @@ package gurps
 import (
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps/skill"
 	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/json"
 )
@@ -22,7 +21,7 @@ import (
 // AttributeDifficulty holds an attribute ID and a difficulty.
 type AttributeDifficulty struct {
 	Attribute  string
-	Difficulty skill.Difficulty
+	Difficulty Difficulty
 	omit       bool
 }
 
@@ -66,7 +65,7 @@ func (a *AttributeDifficulty) UnmarshalJSON(data []byte) error {
 		s = parts[1]
 		a.Attribute = strings.TrimSpace(parts[0])
 	}
-	a.Difficulty = skill.ExtractDifficulty(strings.TrimSpace(s))
+	a.Difficulty = ExtractDifficulty(strings.TrimSpace(s))
 	return nil
 }
 

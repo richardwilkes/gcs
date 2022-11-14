@@ -13,7 +13,6 @@ package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/skill"
 	"github.com/richardwilkes/toolbox/txt"
 )
 
@@ -74,7 +73,7 @@ func (d *SkillEditData) copyFrom(entity *Entity, other *SkillEditData, isContain
 	if other.TechniqueDefault != nil {
 		def := *other.TechniqueDefault
 		d.TechniqueDefault = &def
-		if !skill.DefaultTypeIsSkillBased(other.TechniqueDefault.DefaultType) {
+		if !DefaultTypeIsSkillBased(other.TechniqueDefault.DefaultType) {
 			d.TechniqueDefault.Name = ""
 			d.TechniqueDefault.Specialization = ""
 		}

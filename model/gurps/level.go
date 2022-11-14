@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package skill
+package gurps
 
 import "github.com/richardwilkes/gcs/v5/model/fxp"
 
