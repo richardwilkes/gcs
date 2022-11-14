@@ -17,7 +17,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/dbg"
 	"github.com/richardwilkes/gcs/v5/early"
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/convert"
 	"github.com/richardwilkes/gcs/v5/model/export"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/library"
@@ -51,7 +50,7 @@ Translations dir: "%s"`), model.SettingsPath(), i18n.Dir)
 	}
 	switch {
 	case convertFiles:
-		if err := convert.Convert(fileList...); err != nil {
+		if err := model.Convert(fileList...); err != nil {
 			cl.FatalMsg(err.Error())
 		}
 	case textTmplPath != "":

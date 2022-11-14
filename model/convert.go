@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package convert
+package model
 
 import (
 	"fmt"
@@ -18,7 +18,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/ancestry"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	"github.com/richardwilkes/gcs/v5/model/theme"
@@ -49,72 +48,72 @@ func Convert(paths ...string) error {
 		fmt.Printf(i18n.Text("Processing %s\n"), p)
 		switch strings.ToLower(filepath.Ext(p)) {
 		case library.TraitsExt:
-			var data []*model.Trait
-			if data, err = model.NewTraitsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data []*Trait
+			if data, err = NewTraitsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
-			if err = model.SaveTraits(data, p); err != nil {
+			if err = SaveTraits(data, p); err != nil {
 				return err
 			}
 		case library.TraitModifiersExt:
-			var data []*model.TraitModifier
-			if data, err = model.NewTraitModifiersFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data []*TraitModifier
+			if data, err = NewTraitModifiersFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
-			if err = model.SaveTraitModifiers(data, p); err != nil {
+			if err = SaveTraitModifiers(data, p); err != nil {
 				return err
 			}
 		case library.EquipmentExt:
-			var data []*model.Equipment
-			if data, err = model.NewEquipmentFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data []*Equipment
+			if data, err = NewEquipmentFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
-			if err = model.SaveEquipment(data, p); err != nil {
+			if err = SaveEquipment(data, p); err != nil {
 				return err
 			}
 		case library.EquipmentModifiersExt:
-			var data []*model.EquipmentModifier
-			if data, err = model.NewEquipmentModifiersFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data []*EquipmentModifier
+			if data, err = NewEquipmentModifiersFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
-			if err = model.SaveEquipmentModifiers(data, p); err != nil {
+			if err = SaveEquipmentModifiers(data, p); err != nil {
 				return err
 			}
 		case library.SkillsExt:
-			var data []*model.Skill
-			if data, err = model.NewSkillsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data []*Skill
+			if data, err = NewSkillsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
-			if err = model.SaveSkills(data, p); err != nil {
+			if err = SaveSkills(data, p); err != nil {
 				return err
 			}
 		case library.SpellsExt:
-			var data []*model.Spell
-			if data, err = model.NewSpellsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data []*Spell
+			if data, err = NewSpellsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
-			if err = model.SaveSpells(data, p); err != nil {
+			if err = SaveSpells(data, p); err != nil {
 				return err
 			}
 		case library.NotesExt:
-			var data []*model.Note
-			if data, err = model.NewNotesFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data []*Note
+			if data, err = NewNotesFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
-			if err = model.SaveNotes(data, p); err != nil {
+			if err = SaveNotes(data, p); err != nil {
 				return err
 			}
 		case library.TemplatesExt:
-			var tmpl *model.Template
-			if tmpl, err = model.NewTemplateFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var tmpl *Template
+			if tmpl, err = NewTemplateFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
 			if err = tmpl.Save(p); err != nil {
 				return err
 			}
 		case library.SheetExt:
-			var entity *model.Entity
-			if entity, err = model.NewEntityFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var entity *Entity
+			if entity, err = NewEntityFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
 			if err = entity.Save(p); err != nil {
@@ -129,16 +128,16 @@ func Convert(paths ...string) error {
 				return err
 			}
 		case library.AttributesExt, library.AttributesExtAlt1, library.AttributesExtAlt2:
-			var data *model.AttributeDefs
-			if data, err = model.NewAttributeDefsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data *AttributeDefs
+			if data, err = NewAttributeDefsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
 			if err = data.Save(p); err != nil {
 				return err
 			}
 		case library.BodyExt, library.BodyExtAlt:
-			var data *model.Body
-			if data, err = model.NewBodyFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data *Body
+			if data, err = NewBodyFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
 			if err = data.Save(p); err != nil {
@@ -163,16 +162,16 @@ func Convert(paths ...string) error {
 				return err
 			}
 		case library.GeneralSettingsExt:
-			var data *model.GeneralSheetSettings
-			if data, err = model.NewGeneralSheetSettingsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data *GeneralSheetSettings
+			if data, err = NewGeneralSheetSettingsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
 			if err = data.Save(p); err != nil {
 				return err
 			}
 		case library.KeySettingsExt:
-			var data *model.KeyBindings
-			if data, err = model.NewKeyBindingsFromFS(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data *KeyBindings
+			if data, err = NewKeyBindingsFromFS(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
 			if err = data.Save(p); err != nil {
@@ -181,16 +180,16 @@ func Convert(paths ...string) error {
 		case library.NamesExt:
 			// Currently have no version info, so nothing to update
 		case library.PageRefSettingsExt:
-			var data *model.PageRefs
-			if data, err = model.NewPageRefsFromFS(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data *PageRefs
+			if data, err = NewPageRefsFromFS(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
 			if err = data.Save(p); err != nil {
 				return err
 			}
 		case library.SheetSettingsExt:
-			var data *model.SheetSettings
-			if data, err = model.NewSheetSettingsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data *SheetSettings
+			if data, err = NewSheetSettingsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
 			if err = data.Save(p); err != nil {
