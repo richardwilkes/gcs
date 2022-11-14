@@ -14,7 +14,6 @@ package model
 import (
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/json"
 )
 
@@ -95,5 +94,5 @@ func (a *AttributeDifficulty) Normalize(entity *Entity) {
 	if attr != nil {
 		text = attr.ID()
 	}
-	a.Attribute = id.Sanitize(text, true)
+	a.Attribute = SanitizeID(text, true)
 }

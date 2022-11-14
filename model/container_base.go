@@ -16,7 +16,6 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/toolbox/i18n"
 )
 
@@ -37,7 +36,7 @@ func newContainerBase[T NodeTypes](typeKey string, isContainer bool) ContainerBa
 		typeKey += ContainerKeyPostfix
 	}
 	return ContainerBase[T]{
-		ID:     id.NewUUID(),
+		ID:     NewUUID(),
 		Type:   typeKey,
 		IsOpen: isContainer,
 	}

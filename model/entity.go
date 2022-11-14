@@ -25,7 +25,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/dbg"
 	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/json"
@@ -115,7 +114,7 @@ func NewEntity(entityType EntityType) *Entity {
 	entity := &Entity{
 		EntityData: EntityData{
 			Type:        entityType,
-			ID:          id.NewUUID(),
+			ID:          NewUUID(),
 			TotalPoints: settings.InitialPoints,
 			PointsRecord: []*PointsRecord{
 				{

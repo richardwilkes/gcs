@@ -15,7 +15,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -211,7 +210,7 @@ func (p *hitLocationSettingsPanel) createContent() *unison.Panel {
 
 func (p *hitLocationSettingsPanel) validateLocID(locID string) bool {
 	if key := strings.TrimSpace(strings.ToLower(locID)); key != "" {
-		return key == id.Sanitize(key, false, model.ReservedIDs...)
+		return key == model.SanitizeID(key, false, model.ReservedIDs...)
 	}
 	return false
 }

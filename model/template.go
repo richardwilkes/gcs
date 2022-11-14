@@ -18,7 +18,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/crc"
-	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/errs"
 )
@@ -58,7 +57,7 @@ func NewTemplateFromFile(fileSystem fs.FS, filePath string) (*Template, error) {
 func NewTemplate() *Template {
 	template := &Template{
 		Type: templateTypeKey,
-		ID:   id.NewUUID(),
+		ID:   NewUUID(),
 	}
 	return template
 }

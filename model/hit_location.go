@@ -18,7 +18,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/crc"
-	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
@@ -114,7 +113,7 @@ func (h *HitLocation) ID() string {
 // SetID sets the ID, sanitizing it in the process (i.e. it may be changed from what you set -- read it back if you want
 // to be sure of what it gets set to.
 func (h *HitLocation) SetID(value string) {
-	h.LocID = id.Sanitize(value, false, ReservedIDs...)
+	h.LocID = SanitizeID(value, false, ReservedIDs...)
 }
 
 // OwningTable returns the owning table.

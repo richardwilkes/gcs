@@ -16,7 +16,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -216,7 +215,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 
 func (p *attrDefSettingsPanel) validateAttrID(attrID string) bool {
 	if key := strings.TrimSpace(strings.ToLower(attrID)); key != "" {
-		if key != id.Sanitize(key, false, model.ReservedIDs...) {
+		if key != model.SanitizeID(key, false, model.ReservedIDs...) {
 			return false
 		}
 		if key == p.def.DefID {

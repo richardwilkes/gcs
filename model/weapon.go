@@ -20,7 +20,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -112,7 +111,7 @@ func SeparateWeapons(list []*Weapon) (melee, ranged []*Weapon) {
 func NewWeapon(owner WeaponOwner, weaponType WeaponType) *Weapon {
 	w := &Weapon{
 		WeaponData: WeaponData{
-			ID:   id.NewUUID(),
+			ID:   NewUUID(),
 			Type: weaponType,
 			Damage: WeaponDamage{
 				WeaponDamageData: WeaponDamageData{
@@ -235,7 +234,7 @@ func (w *Weapon) UnmarshalJSON(data []byte) error {
 	}
 	var zero uuid.UUID
 	if w.WeaponData.ID == zero {
-		w.WeaponData.ID = id.NewUUID()
+		w.WeaponData.ID = NewUUID()
 	}
 	return nil
 }

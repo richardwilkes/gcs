@@ -14,7 +14,6 @@ package model
 import (
 	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/json"
 )
 
@@ -98,7 +97,7 @@ func (a *Attribute) ID() string {
 // SetID sets the ID, sanitizing it in the process (i.e. it may be changed from what you set -- read it back if you want
 // to be sure of what it gets set to.
 func (a *Attribute) SetID(value string) {
-	a.AttrID = id.Sanitize(value, false, ReservedIDs...)
+	a.AttrID = SanitizeID(value, false, ReservedIDs...)
 }
 
 // AttributeDef looks up the AttributeDef this Attribute references from the Entity. May return nil.

@@ -17,7 +17,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/eval"
 )
@@ -88,7 +87,7 @@ func (a *AttributeDef) ID() string {
 // SetID sets the ID, sanitizing it in the process (i.e. it may be changed from what you set -- read it back if you want
 // to be sure of what it gets set to.
 func (a *AttributeDef) SetID(value string) {
-	a.DefID = id.Sanitize(value, false, ReservedIDs...)
+	a.DefID = SanitizeID(value, false, ReservedIDs...)
 }
 
 // ResolveFullName returns the full name, using the short name if full name is empty.

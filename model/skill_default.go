@@ -15,7 +15,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/id"
 	"github.com/richardwilkes/toolbox/i18n"
 )
 
@@ -63,7 +62,7 @@ func (s *SkillDefault) Type() string {
 
 // SetType sets the type of the SkillDefault.
 func (s *SkillDefault) SetType(t string) {
-	s.DefaultType = id.Sanitize(t, true)
+	s.DefaultType = SanitizeID(t, true)
 }
 
 // FullName returns the full name of the skill to default from.
