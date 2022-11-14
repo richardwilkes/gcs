@@ -16,7 +16,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -274,13 +273,13 @@ func addDecimalField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labe
 	return field
 }
 
-func addWeightField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, entity *model.Entity, fieldData *measure.Weight, noMinWidth bool) *WeightField {
+func addWeightField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, entity *model.Entity, fieldData *model.Weight, noMinWidth bool) *WeightField {
 	field := NewWeightField(targetMgr, targetKey, labelText, entity,
-		func() measure.Weight { return *fieldData },
-		func(value measure.Weight) {
+		func() model.Weight { return *fieldData },
+		func(value model.Weight) {
 			*fieldData = value
 			MarkModified(parent)
-		}, 0, measure.Weight(fxp.Max), noMinWidth)
+		}, 0, model.Weight(fxp.Max), noMinWidth)
 	if tooltip != "" {
 		field.Tooltip = unison.NewTooltipWithText(tooltip)
 	}

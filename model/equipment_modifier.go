@@ -18,7 +18,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	measure2 "github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/unison"
@@ -377,7 +376,7 @@ func processNonCFStep(costType EquipmentModifierCostType, value fxp.Int, modifie
 }
 
 // WeightAdjustedForModifiers returns the weight after adjusting it for a set of modifiers.
-func WeightAdjustedForModifiers(weight measure2.Weight, modifiers []*EquipmentModifier, defUnits measure2.WeightUnits) measure2.Weight {
+func WeightAdjustedForModifiers(weight Weight, modifiers []*EquipmentModifier, defUnits WeightUnits) Weight {
 	var percentages fxp.Int
 	w := fxp.Int(weight)
 
@@ -387,7 +386,7 @@ func WeightAdjustedForModifiers(weight measure2.Weight, modifiers []*EquipmentMo
 			t := OriginalEquipmentModifierWeightType.DetermineModifierWeightValueTypeFromString(mod.WeightAmount)
 			amt := t.ExtractFraction(mod.WeightAmount).Value()
 			if t == AdditionEquipmentModifierWeightValueType {
-				w += measure2.TrailingWeightUnitsFromString(mod.WeightAmount, defUnits).ToPounds(amt)
+				w += TrailingWeightUnitsFromString(mod.WeightAmount, defUnits).ToPounds(amt)
 			} else {
 				percentages += amt
 			}
@@ -407,10 +406,10 @@ func WeightAdjustedForModifiers(weight measure2.Weight, modifiers []*EquipmentMo
 	// Apply all equipment.FinalWeight
 	w = processMultiplyAddWeightStep(FinalEquipmentModifierWeightType, w, defUnits, modifiers)
 
-	return measure2.Weight(w.Max(0))
+	return Weight(w.Max(0))
 }
 
-func processMultiplyAddWeightStep(weightType EquipmentModifierWeightType, weight fxp.Int, defUnits measure2.WeightUnits, modifiers []*EquipmentModifier) fxp.Int {
+func processMultiplyAddWeightStep(weightType EquipmentModifierWeightType, weight fxp.Int, defUnits WeightUnits, modifiers []*EquipmentModifier) fxp.Int {
 	var sum fxp.Int
 	Traverse(func(mod *EquipmentModifier) bool {
 		if mod.WeightType == weightType {
@@ -418,7 +417,7 @@ func processMultiplyAddWeightStep(weightType EquipmentModifierWeightType, weight
 			f := t.ExtractFraction(mod.WeightAmount)
 			switch t {
 			case AdditionEquipmentModifierWeightValueType:
-				sum += measure2.TrailingWeightUnitsFromString(mod.WeightAmount, defUnits).ToPounds(f.Value())
+				sum += TrailingWeightUnitsFromString(mod.WeightAmount, defUnits).ToPounds(f.Value())
 			case PercentageMultiplierEquipmentModifierWeightValueType:
 				weight = weight.Mul(f.Numerator).Div(f.Denominator.Mul(fxp.Hundred))
 			case MultiplierEquipmentModifierWeightValueType:

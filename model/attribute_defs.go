@@ -17,7 +17,6 @@ import (
 	"io/fs"
 	"sort"
 
-	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
@@ -165,7 +164,7 @@ func (a *AttributeDefs) List(omitSeparators bool) []*AttributeDef {
 
 // CRC64 calculates a CRC-64 for this data.
 func (a *AttributeDefs) CRC64() uint64 {
-	c := crc.Number(0, len(a.Set))
+	c := CRCNumber(0, len(a.Set))
 	for _, one := range a.List(false) {
 		c = one.crc64(c)
 	}

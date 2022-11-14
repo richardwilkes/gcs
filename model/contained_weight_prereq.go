@@ -12,7 +12,6 @@
 package model
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -34,7 +33,7 @@ func NewContainedWeightPrereq(entity *Entity) *ContainedWeightPrereq {
 		WeightCriteria: WeightCriteria{
 			WeightCriteriaData: WeightCriteriaData{
 				Compare:   AtMostNumber,
-				Qualifier: measure.WeightFromInteger(5, SheetSettingsFor(entity).DefaultWeightUnits),
+				Qualifier: WeightFromInteger(5, SheetSettingsFor(entity).DefaultWeightUnits),
 			},
 		},
 		Has: true,

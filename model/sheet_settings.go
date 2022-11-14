@@ -16,7 +16,6 @@ import (
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	measure2 "github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/json"
 )
 
@@ -30,24 +29,24 @@ type SheetSettingsResponder interface {
 
 // SheetSettingsData holds the SheetSettings data that is written to disk.
 type SheetSettingsData struct {
-	Page                          *PageSettings        `json:"page,omitempty"`
-	BlockLayout                   *BlockLayout         `json:"block_layout,omitempty"`
-	Attributes                    *AttributeDefs       `json:"attributes,omitempty"`
-	BodyType                      *Body                `json:"body_type,alt=hit_locations,omitempty"`
-	DamageProgression             DamageProgression    `json:"damage_progression"`
-	DefaultLengthUnits            measure2.LengthUnits `json:"default_length_units"`
-	DefaultWeightUnits            measure2.WeightUnits `json:"default_weight_units"`
-	UserDescriptionDisplay        DisplayOption        `json:"user_description_display"`
-	ModifiersDisplay              DisplayOption        `json:"modifiers_display"`
-	NotesDisplay                  DisplayOption        `json:"notes_display"`
-	SkillLevelAdjDisplay          DisplayOption        `json:"skill_level_adj_display"`
-	UseMultiplicativeModifiers    bool                 `json:"use_multiplicative_modifiers,omitempty"`
-	UseModifyingDicePlusAdds      bool                 `json:"use_modifying_dice_plus_adds,omitempty"`
-	ShowTraitModifierAdj          bool                 `json:"show_trait_modifier_adj,alt=show_advantage_modifier_adj,omitempty"`
-	ShowEquipmentModifierAdj      bool                 `json:"show_equipment_modifier_adj,omitempty"`
-	ShowSpellAdj                  bool                 `json:"show_spell_adj,omitempty"`
-	UseTitleInFooter              bool                 `json:"use_title_in_footer,omitempty"`
-	ExcludeUnspentPointsFromTotal bool                 `json:"exclude_unspent_points_from_total"`
+	Page                          *PageSettings     `json:"page,omitempty"`
+	BlockLayout                   *BlockLayout      `json:"block_layout,omitempty"`
+	Attributes                    *AttributeDefs    `json:"attributes,omitempty"`
+	BodyType                      *Body             `json:"body_type,alt=hit_locations,omitempty"`
+	DamageProgression             DamageProgression `json:"damage_progression"`
+	DefaultLengthUnits            LengthUnits       `json:"default_length_units"`
+	DefaultWeightUnits            WeightUnits       `json:"default_weight_units"`
+	UserDescriptionDisplay        DisplayOption     `json:"user_description_display"`
+	ModifiersDisplay              DisplayOption     `json:"modifiers_display"`
+	NotesDisplay                  DisplayOption     `json:"notes_display"`
+	SkillLevelAdjDisplay          DisplayOption     `json:"skill_level_adj_display"`
+	UseMultiplicativeModifiers    bool              `json:"use_multiplicative_modifiers,omitempty"`
+	UseModifyingDicePlusAdds      bool              `json:"use_modifying_dice_plus_adds,omitempty"`
+	ShowTraitModifierAdj          bool              `json:"show_trait_modifier_adj,alt=show_advantage_modifier_adj,omitempty"`
+	ShowEquipmentModifierAdj      bool              `json:"show_equipment_modifier_adj,omitempty"`
+	ShowSpellAdj                  bool              `json:"show_spell_adj,omitempty"`
+	UseTitleInFooter              bool              `json:"use_title_in_footer,omitempty"`
+	ExcludeUnspentPointsFromTotal bool              `json:"exclude_unspent_points_from_total"`
 }
 
 // SheetSettings holds sheet settings.
@@ -73,8 +72,8 @@ func FactorySheetSettings() *SheetSettings {
 			Attributes:             FactoryAttributeDefs(),
 			BodyType:               FactoryBody(),
 			DamageProgression:      BasicSet,
-			DefaultLengthUnits:     measure2.FeetAndInches,
-			DefaultWeightUnits:     measure2.Pound,
+			DefaultLengthUnits:     FeetAndInches,
+			DefaultWeightUnits:     Pound,
 			UserDescriptionDisplay: TooltipDisplayOption,
 			ModifiersDisplay:       InlineDisplayOption,
 			NotesDisplay:           InlineDisplayOption,

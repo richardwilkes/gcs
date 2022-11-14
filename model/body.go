@@ -18,7 +18,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/errs"
@@ -208,9 +207,9 @@ func (b *Body) CRC64() uint64 {
 }
 
 func (b *Body) crc64(c uint64) uint64 {
-	c = crc.String(c, b.Name)
-	c = crc.String(c, b.Roll.String())
-	c = crc.Number(c, len(b.Locations))
+	c = CRCString(c, b.Name)
+	c = CRCString(c, b.Roll.String())
+	c = CRCNumber(c, len(b.Locations))
 	for _, loc := range b.Locations {
 		c = loc.crc64(c)
 	}

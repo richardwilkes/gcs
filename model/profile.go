@@ -15,7 +15,6 @@ import (
 	"strconv"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	measure2 "github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
@@ -29,25 +28,25 @@ const (
 
 // Profile holds the profile information for an NPC.
 type Profile struct {
-	PlayerName        string          `json:"player_name,omitempty"`
-	Name              string          `json:"name,omitempty"`
-	Title             string          `json:"title,omitempty"`
-	Organization      string          `json:"organization,omitempty"`
-	Religion          string          `json:"religion,omitempty"`
-	Age               string          `json:"age,omitempty"`
-	Birthday          string          `json:"birthday,omitempty"`
-	Eyes              string          `json:"eyes,omitempty"`
-	Hair              string          `json:"hair,omitempty"`
-	Skin              string          `json:"skin,omitempty"`
-	Handedness        string          `json:"handedness,omitempty"`
-	Gender            string          `json:"gender,omitempty"`
-	TechLevel         string          `json:"tech_level,omitempty"`
-	PortraitData      []byte          `json:"portrait,omitempty"`
-	PortraitImage     *unison.Image   `json:"-"`
-	Height            measure2.Length `json:"height,omitempty"`
-	Weight            measure2.Weight `json:"weight,omitempty"`
-	SizeModifier      int             `json:"SM,omitempty"`
-	SizeModifierBonus fxp.Int         `json:"-"`
+	PlayerName        string        `json:"player_name,omitempty"`
+	Name              string        `json:"name,omitempty"`
+	Title             string        `json:"title,omitempty"`
+	Organization      string        `json:"organization,omitempty"`
+	Religion          string        `json:"religion,omitempty"`
+	Age               string        `json:"age,omitempty"`
+	Birthday          string        `json:"birthday,omitempty"`
+	Eyes              string        `json:"eyes,omitempty"`
+	Hair              string        `json:"hair,omitempty"`
+	Skin              string        `json:"skin,omitempty"`
+	Handedness        string        `json:"handedness,omitempty"`
+	Gender            string        `json:"gender,omitempty"`
+	TechLevel         string        `json:"tech_level,omitempty"`
+	PortraitData      []byte        `json:"portrait,omitempty"`
+	PortraitImage     *unison.Image `json:"-"`
+	Height            Length        `json:"height,omitempty"`
+	Weight            Weight        `json:"weight,omitempty"`
+	SizeModifier      int           `json:"SM,omitempty"`
+	SizeModifierBonus fxp.Int       `json:"-"`
 }
 
 // Update any derived values.

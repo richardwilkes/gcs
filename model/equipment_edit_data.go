@@ -13,7 +13,6 @@ package model
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/toolbox/txt"
 )
 
@@ -31,7 +30,7 @@ type EquipmentEditData struct {
 	Modifiers              []*EquipmentModifier `json:"modifiers,omitempty"`
 	Quantity               fxp.Int              `json:"quantity,omitempty"`
 	Value                  fxp.Int              `json:"value,omitempty"`
-	Weight                 measure.Weight       `json:"weight,omitempty"`
+	Weight                 Weight               `json:"weight,omitempty"`
 	MaxUses                int                  `json:"max_uses,omitempty"`
 	Uses                   int                  `json:"uses,omitempty"`
 	Prereq                 *PrereqList          `json:"prereqs,omitempty"`

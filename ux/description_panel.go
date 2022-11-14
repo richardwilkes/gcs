@@ -16,7 +16,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	measure2 "github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -132,8 +131,8 @@ func (d *DescriptionPanel) createColumn2() *unison.Panel {
 
 	title := i18n.Text("Height")
 	heightField := NewHeightPageField(d.targetMgr, d.prefix+"height", title, d.entity,
-		func() measure2.Length { return d.entity.Profile.Height },
-		func(v measure2.Length) { d.entity.Profile.Height = v }, 0, measure2.Length(fxp.Max), true)
+		func() model.Length { return d.entity.Profile.Height },
+		func(v model.Length) { d.entity.Profile.Height = v }, 0, model.Length(fxp.Max), true)
 	column.AddChild(NewPageLabelWithRandomizer(title,
 		i18n.Text("Randomize the height using the current ancestry"), func() {
 			d.entity.Profile.Height = d.entity.Ancestry().RandomHeight(d.entity, d.entity.Profile.Gender, d.entity.Profile.Height)
@@ -144,8 +143,8 @@ func (d *DescriptionPanel) createColumn2() *unison.Panel {
 
 	title = i18n.Text("Weight")
 	weightField := NewWeightPageField(d.targetMgr, d.prefix+"weight", title, d.entity,
-		func() measure2.Weight { return d.entity.Profile.Weight },
-		func(v measure2.Weight) { d.entity.Profile.Weight = v }, 0, measure2.Weight(fxp.Max), true)
+		func() model.Weight { return d.entity.Profile.Weight },
+		func(v model.Weight) { d.entity.Profile.Weight = v }, 0, model.Weight(fxp.Max), true)
 	column.AddChild(NewPageLabelWithRandomizer(title,
 		i18n.Text("Randomize the weight using the current ancestry"), func() {
 			d.entity.Profile.Weight = d.entity.Ancestry().RandomWeight(d.entity, d.entity.Profile.Gender, d.entity.Profile.Weight)

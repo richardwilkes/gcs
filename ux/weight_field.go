@@ -14,35 +14,34 @@ package ux
 import (
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/measure"
 )
 
 // WeightField is field that holds a weight value.
-type WeightField = NumericField[measure.Weight]
+type WeightField = NumericField[model.Weight]
 
 // NewWeightField creates a new field that holds a fixed-point number.
-func NewWeightField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *model.Entity, get func() measure.Weight, set func(measure.Weight), min, max measure.Weight, noMinWidth bool) *WeightField {
-	var getPrototypes func(min, max measure.Weight) []measure.Weight
+func NewWeightField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *model.Entity, get func() model.Weight, set func(model.Weight), min, max model.Weight, noMinWidth bool) *WeightField {
+	var getPrototypes func(min, max model.Weight) []model.Weight
 	if !noMinWidth {
-		getPrototypes = func(min, max measure.Weight) []measure.Weight {
-			if min == measure.Weight(fxp.Min) {
-				min = measure.Weight(-fxp.One)
+		getPrototypes = func(min, max model.Weight) []model.Weight {
+			if min == model.Weight(fxp.Min) {
+				min = model.Weight(-fxp.One)
 			}
-			min = measure.Weight(fxp.Int(min).Trunc() + fxp.One - 1)
-			if max == measure.Weight(fxp.Max) {
-				max = measure.Weight(fxp.One)
+			min = model.Weight(fxp.Int(min).Trunc() + fxp.One - 1)
+			if max == model.Weight(fxp.Max) {
+				max = model.Weight(fxp.One)
 			}
-			max = measure.Weight(fxp.Int(max).Trunc() + fxp.One - 1)
-			return []measure.Weight{min, measure.Weight(fxp.Two - 1), max}
+			max = model.Weight(fxp.Int(max).Trunc() + fxp.One - 1)
+			return []model.Weight{min, model.Weight(fxp.Two - 1), max}
 		}
 	}
-	format := func(value measure.Weight) string {
+	format := func(value model.Weight) string {
 		return model.SheetSettingsFor(entity).DefaultWeightUnits.Format(value)
 	}
-	extract := func(s string) (measure.Weight, error) {
-		return measure.WeightFromString(s, model.SheetSettingsFor(entity).DefaultWeightUnits)
+	extract := func(s string) (model.Weight, error) {
+		return model.WeightFromString(s, model.SheetSettingsFor(entity).DefaultWeightUnits)
 	}
-	f := NewNumericField[measure.Weight](targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, min, max)
+	f := NewNumericField[model.Weight](targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, min, max)
 	f.RuneTypedCallback = f.DefaultRuneTyped
 	return f
 }

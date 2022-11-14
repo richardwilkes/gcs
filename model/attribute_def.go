@@ -15,7 +15,6 @@ import (
 	"bytes"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/eval"
@@ -170,14 +169,14 @@ func (a *AttributeDef) ComputeCost(entity *Entity, value, costReduction fxp.Int,
 }
 
 func (a *AttributeDef) crc64(c uint64) uint64 {
-	c = crc.String(c, a.DefID)
-	c = crc.Byte(c, byte(a.Type))
-	c = crc.String(c, a.Name)
-	c = crc.String(c, a.FullName)
-	c = crc.String(c, a.AttributeBase)
-	c = crc.Number(c, a.CostPerPoint)
-	c = crc.Number(c, a.CostAdjPercentPerSM)
-	c = crc.Number(c, len(a.Thresholds))
+	c = CRCString(c, a.DefID)
+	c = CRCByte(c, byte(a.Type))
+	c = CRCString(c, a.Name)
+	c = CRCString(c, a.FullName)
+	c = CRCString(c, a.AttributeBase)
+	c = CRCNumber(c, a.CostPerPoint)
+	c = CRCNumber(c, a.CostAdjPercentPerSM)
+	c = CRCNumber(c, len(a.Thresholds))
 	for _, one := range a.Thresholds {
 		c = one.crc64(c)
 	}

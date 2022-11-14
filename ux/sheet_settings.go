@@ -15,7 +15,6 @@ import (
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	measure2 "github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -40,8 +39,8 @@ type sheetSettingsDockable struct {
 	useMultiplicativeModifiers         *unison.CheckBox
 	useModifyDicePlusAdds              *unison.CheckBox
 	excludeUnspentPointsFromTotal      *unison.CheckBox
-	lengthUnitsPopup                   *unison.PopupMenu[measure2.LengthUnits]
-	weightUnitsPopup                   *unison.PopupMenu[measure2.WeightUnits]
+	lengthUnitsPopup                   *unison.PopupMenu[model.LengthUnits]
+	weightUnitsPopup                   *unison.PopupMenu[model.WeightUnits]
 	userDescDisplayPopup               *unison.PopupMenu[model.DisplayOption]
 	modifiersDisplayPopup              *unison.PopupMenu[model.DisplayOption]
 	notesDisplayPopup                  *unison.PopupMenu[model.DisplayOption]
@@ -187,10 +186,10 @@ func (d *sheetSettingsDockable) createUnitsOfMeasurement(content *unison.Panel) 
 	})
 	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
 	d.createHeader(panel, i18n.Text("Units of Measurement"), 2)
-	d.lengthUnitsPopup = createSettingPopup(d, panel, i18n.Text("Length Units"), measure2.AllLengthUnits,
-		s.DefaultLengthUnits, func(item measure2.LengthUnits) { d.settings().DefaultLengthUnits = item })
-	d.weightUnitsPopup = createSettingPopup(d, panel, i18n.Text("Weight Units"), measure2.AllWeightUnits,
-		s.DefaultWeightUnits, func(item measure2.WeightUnits) { d.settings().DefaultWeightUnits = item })
+	d.lengthUnitsPopup = createSettingPopup(d, panel, i18n.Text("Length Units"), model.AllLengthUnits,
+		s.DefaultLengthUnits, func(item model.LengthUnits) { d.settings().DefaultLengthUnits = item })
+	d.weightUnitsPopup = createSettingPopup(d, panel, i18n.Text("Weight Units"), model.AllWeightUnits,
+		s.DefaultWeightUnits, func(item model.WeightUnits) { d.settings().DefaultWeightUnits = item })
 	content.AddChild(panel)
 }
 

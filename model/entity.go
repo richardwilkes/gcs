@@ -23,10 +23,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/dbg"
-	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/errs"
@@ -90,7 +88,7 @@ type Entity struct {
 	BlockBonus                      fxp.Int
 	features                        features
 	variableResolverExclusions      map[string]bool
-	cachedBasicLift                 measure.Weight
+	cachedBasicLift                 Weight
 	cachedEncumbranceLevel          Encumbrance
 	cachedEncumbranceLevelForSkills Encumbrance
 	cachedVariables                 map[string]string
@@ -154,17 +152,17 @@ func (e *Entity) Save(filePath string) error {
 func (e *Entity) MarshalJSON() ([]byte, error) {
 	e.Recalculate()
 	type calc struct {
-		Swing                 *dice.Dice     `json:"swing"`
-		Thrust                *dice.Dice     `json:"thrust"`
-		BasicLift             measure.Weight `json:"basic_lift"`
-		LiftingStrengthBonus  fxp.Int        `json:"lifting_st_bonus,omitempty"`
-		StrikingStrengthBonus fxp.Int        `json:"striking_st_bonus,omitempty"`
-		ThrowingStrengthBonus fxp.Int        `json:"throwing_st_bonus,omitempty"`
-		DodgeBonus            fxp.Int        `json:"dodge_bonus,omitempty"`
-		ParryBonus            fxp.Int        `json:"parry_bonus,omitempty"`
-		BlockBonus            fxp.Int        `json:"block_bonus,omitempty"`
-		Move                  []int          `json:"move"`
-		Dodge                 []int          `json:"dodge"`
+		Swing                 *dice.Dice `json:"swing"`
+		Thrust                *dice.Dice `json:"thrust"`
+		BasicLift             Weight     `json:"basic_lift"`
+		LiftingStrengthBonus  fxp.Int    `json:"lifting_st_bonus,omitempty"`
+		StrikingStrengthBonus fxp.Int    `json:"striking_st_bonus,omitempty"`
+		ThrowingStrengthBonus fxp.Int    `json:"throwing_st_bonus,omitempty"`
+		DodgeBonus            fxp.Int    `json:"dodge_bonus,omitempty"`
+		ParryBonus            fxp.Int    `json:"parry_bonus,omitempty"`
+		BlockBonus            fxp.Int    `json:"block_bonus,omitempty"`
+		Move                  []int      `json:"move"`
+		Dodge                 []int      `json:"dodge"`
 	}
 	data := struct {
 		EntityData
@@ -892,8 +890,8 @@ func (e *Entity) EncumbranceLevel(forSkills bool) Encumbrance {
 }
 
 // WeightCarried returns the carried weight.
-func (e *Entity) WeightCarried(forSkills bool) measure.Weight {
-	var total measure.Weight
+func (e *Entity) WeightCarried(forSkills bool) Weight {
+	var total Weight
 	for _, one := range e.CarriedEquipment {
 		total += one.ExtendedWeight(forSkills, e.SheetSettings.DefaultWeightUnits)
 	}
@@ -901,42 +899,42 @@ func (e *Entity) WeightCarried(forSkills bool) measure.Weight {
 }
 
 // MaximumCarry returns the maximum amount the Entity can carry for the specified encumbrance level.
-func (e *Entity) MaximumCarry(encumbrance Encumbrance) measure.Weight {
-	return measure.Weight(fxp.Int(e.BasicLift()).Mul(encumbrance.WeightMultiplier()))
+func (e *Entity) MaximumCarry(encumbrance Encumbrance) Weight {
+	return Weight(fxp.Int(e.BasicLift()).Mul(encumbrance.WeightMultiplier()))
 }
 
 // OneHandedLift returns the one-handed lift value.
-func (e *Entity) OneHandedLift() measure.Weight {
-	return measure.Weight(fxp.Int(e.BasicLift()).Mul(fxp.Two))
+func (e *Entity) OneHandedLift() Weight {
+	return Weight(fxp.Int(e.BasicLift()).Mul(fxp.Two))
 }
 
 // TwoHandedLift returns the two-handed lift value.
-func (e *Entity) TwoHandedLift() measure.Weight {
-	return measure.Weight(fxp.Int(e.BasicLift()).Mul(fxp.Eight))
+func (e *Entity) TwoHandedLift() Weight {
+	return Weight(fxp.Int(e.BasicLift()).Mul(fxp.Eight))
 }
 
 // ShoveAndKnockOver returns the shove & knock over value.
-func (e *Entity) ShoveAndKnockOver() measure.Weight {
-	return measure.Weight(fxp.Int(e.BasicLift()).Mul(fxp.Twelve))
+func (e *Entity) ShoveAndKnockOver() Weight {
+	return Weight(fxp.Int(e.BasicLift()).Mul(fxp.Twelve))
 }
 
 // RunningShoveAndKnockOver returns the running shove & knock over value.
-func (e *Entity) RunningShoveAndKnockOver() measure.Weight {
-	return measure.Weight(fxp.Int(e.BasicLift()).Mul(fxp.TwentyFour))
+func (e *Entity) RunningShoveAndKnockOver() Weight {
+	return Weight(fxp.Int(e.BasicLift()).Mul(fxp.TwentyFour))
 }
 
 // CarryOnBack returns the carry on back value.
-func (e *Entity) CarryOnBack() measure.Weight {
-	return measure.Weight(fxp.Int(e.BasicLift()).Mul(fxp.Fifteen))
+func (e *Entity) CarryOnBack() Weight {
+	return Weight(fxp.Int(e.BasicLift()).Mul(fxp.Fifteen))
 }
 
 // ShiftSlightly returns the shift slightly value.
-func (e *Entity) ShiftSlightly() measure.Weight {
-	return measure.Weight(fxp.Int(e.BasicLift()).Mul(fxp.Fifty))
+func (e *Entity) ShiftSlightly() Weight {
+	return Weight(fxp.Int(e.BasicLift()).Mul(fxp.Fifty))
 }
 
 // BasicLift returns the entity's Basic Lift.
-func (e *Entity) BasicLift() measure.Weight {
+func (e *Entity) BasicLift() Weight {
 	if e.cachedBasicLift != -1 {
 		return e.cachedBasicLift
 	}
@@ -971,7 +969,7 @@ func (e *Entity) BasicLift() measure.Weight {
 	if v >= fxp.Ten {
 		v = v.Round()
 	}
-	e.cachedBasicLift = measure.Weight(v.Mul(fxp.Ten).Trunc().Div(fxp.Ten))
+	e.cachedBasicLift = Weight(v.Mul(fxp.Ten).Trunc().Div(fxp.Ten))
 	return e.cachedBasicLift
 }
 
@@ -1343,7 +1341,7 @@ func (e *Entity) CRC64() uint64 {
 	if err := jio.Save(context.Background(), &buffer, e); err != nil {
 		return 0
 	}
-	return crc.Bytes(0, buffer.Bytes())
+	return CRCBytes(0, buffer.Bytes())
 }
 
 // SetPointsRecord sets a new points record list, adjusting the total points.

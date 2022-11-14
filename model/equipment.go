@@ -19,7 +19,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	measure2 "github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -137,9 +136,9 @@ func (e *Equipment) Clone(entity *Entity, parent *Equipment, preserveID bool) *E
 // MarshalJSON implements json.Marshaler.
 func (e *Equipment) MarshalJSON() ([]byte, error) {
 	type calc struct {
-		ExtendedValue           fxp.Int          `json:"extended_value"`
-		ExtendedWeight          measure2.Weight  `json:"extended_weight"`
-		ExtendedWeightForSkills *measure2.Weight `json:"extended_weight_for_skills,omitempty"`
+		ExtendedValue           fxp.Int `json:"extended_value"`
+		ExtendedWeight          Weight  `json:"extended_weight"`
+		ExtendedWeightForSkills *Weight `json:"extended_weight_for_skills,omitempty"`
 	}
 	e.ClearUnusedFieldsForType()
 	defUnits := SheetSettingsFor(e.Entity).DefaultWeightUnits
@@ -356,7 +355,7 @@ func (e *Equipment) ExtendedValue() fxp.Int {
 }
 
 // AdjustedWeight returns the weight after adjustments for any modifiers. Does not include the weight of children.
-func (e *Equipment) AdjustedWeight(forSkills bool, defUnits measure2.WeightUnits) measure2.Weight {
+func (e *Equipment) AdjustedWeight(forSkills bool, defUnits WeightUnits) Weight {
 	if forSkills && e.WeightIgnoredForSkills {
 		return 0
 	}
@@ -364,12 +363,12 @@ func (e *Equipment) AdjustedWeight(forSkills bool, defUnits measure2.WeightUnits
 }
 
 // ExtendedWeight returns the extended weight.
-func (e *Equipment) ExtendedWeight(forSkills bool, defUnits measure2.WeightUnits) measure2.Weight {
+func (e *Equipment) ExtendedWeight(forSkills bool, defUnits WeightUnits) Weight {
 	return ExtendedWeightAdjustedForModifiers(defUnits, e.Quantity, e.Weight, e.Modifiers, e.Features, e.Children, forSkills, e.WeightIgnoredForSkills)
 }
 
 // ExtendedWeightAdjustedForModifiers calculates the extended weight.
-func ExtendedWeightAdjustedForModifiers(defUnits measure2.WeightUnits, qty fxp.Int, baseWeight measure2.Weight, modifiers []*EquipmentModifier, features Features, children []*Equipment, forSkills, weightIgnoredForSkills bool) measure2.Weight {
+func ExtendedWeightAdjustedForModifiers(defUnits WeightUnits, qty fxp.Int, baseWeight Weight, modifiers []*EquipmentModifier, features Features, children []*Equipment, forSkills, weightIgnoredForSkills bool) Weight {
 	if qty <= 0 {
 		return 0
 	}
@@ -411,7 +410,7 @@ func ExtendedWeightAdjustedForModifiers(defUnits measure2.WeightUnits, qty fxp.I
 		}
 		base += (contained - reduction).Max(0)
 	}
-	return measure2.Weight(base.Mul(qty))
+	return Weight(base.Mul(qty))
 }
 
 // FillWithNameableKeys adds any nameable keys found to the provided map.

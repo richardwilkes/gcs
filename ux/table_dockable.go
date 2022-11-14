@@ -18,7 +18,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -365,5 +364,5 @@ func (d *TableDockable[T]) crc64() uint64 {
 	if err := jio.Save(context.Background(), &buffer, data); err != nil {
 		return 0
 	}
-	return crc.Bytes(0, buffer.Bytes())
+	return model.CRCBytes(0, buffer.Bytes())
 }

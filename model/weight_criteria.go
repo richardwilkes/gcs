@@ -13,7 +13,6 @@ package model
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/json"
 )
 
@@ -25,7 +24,7 @@ type WeightCriteria struct {
 // WeightCriteriaData holds the criteria for matching a number that should be written to disk.
 type WeightCriteriaData struct {
 	Compare   NumericCompareType `json:"compare,omitempty"`
-	Qualifier measure.Weight     `json:"qualifier,omitempty"`
+	Qualifier Weight             `json:"qualifier,omitempty"`
 }
 
 // ShouldOmit implements json.Omitter.
@@ -41,7 +40,7 @@ func (w *WeightCriteria) UnmarshalJSON(data []byte) error {
 }
 
 // Matches performs a comparison and returns true if the data matches.
-func (w WeightCriteria) Matches(value measure.Weight) bool {
+func (w WeightCriteria) Matches(value Weight) bool {
 	return w.Compare.Matches(fxp.Int(w.Qualifier), fxp.Int(value))
 }
 

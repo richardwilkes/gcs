@@ -15,7 +15,6 @@ import (
 	"fmt"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	measure2 "github.com/richardwilkes/gcs/v5/model/measure"
 )
 
 // StringWithExample returns an example along with the normal String() content.
@@ -50,11 +49,11 @@ func (enum EquipmentModifierWeightType) ExtractFraction(s string) fxp.Fraction {
 }
 
 // Format returns a formatted version of the value.
-func (enum EquipmentModifierWeightType) Format(s string, defUnits measure2.WeightUnits) string {
+func (enum EquipmentModifierWeightType) Format(s string, defUnits WeightUnits) string {
 	t := enum.DetermineModifierWeightValueTypeFromString(s)
 	result := t.Format(t.ExtractFraction(s))
 	if t == AdditionEquipmentModifierWeightValueType {
-		result += " " + measure2.TrailingWeightUnitsFromString(s, defUnits).String()
+		result += " " + TrailingWeightUnitsFromString(s, defUnits).String()
 	}
 	return result
 }

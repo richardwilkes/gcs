@@ -17,7 +17,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
@@ -222,13 +221,13 @@ func (h *HitLocation) updateRollRange(start int) int {
 }
 
 func (h *HitLocation) crc64(c uint64) uint64 {
-	c = crc.String(c, h.LocID)
-	c = crc.String(c, h.ChoiceName)
-	c = crc.String(c, h.TableName)
-	c = crc.Number(c, h.Slots)
-	c = crc.Number(c, h.HitPenalty)
-	c = crc.Number(c, h.DRBonus)
-	c = crc.String(c, h.Description)
+	c = CRCString(c, h.LocID)
+	c = CRCString(c, h.ChoiceName)
+	c = CRCString(c, h.TableName)
+	c = CRCNumber(c, h.Slots)
+	c = CRCNumber(c, h.HitPenalty)
+	c = CRCNumber(c, h.DRBonus)
+	c = CRCString(c, h.Description)
 	if h.SubTable != nil {
 		c = h.SubTable.crc64(c)
 	}

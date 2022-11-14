@@ -14,7 +14,6 @@ package ux
 import (
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	measure2 "github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/unison"
 )
@@ -182,7 +181,7 @@ func NewStringPageFieldNoGrab(targetMgr *TargetMgr, targetKey, undoTitle string,
 }
 
 // NewHeightPageField creates a new height entry field for a sheet page.
-func NewHeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *model.Entity, get func() measure2.Length, set func(measure2.Length), min, max measure2.Length, noMinWidth bool) *LengthField {
+func NewHeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *model.Entity, get func() model.Length, set func(model.Length), min, max model.Length, noMinWidth bool) *LengthField {
 	field := NewLengthField(targetMgr, targetKey, undoTitle, entity, get, set, min, max, noMinWidth)
 	field.Font = model.PageFieldPrimaryFont
 	field.FocusedBorder = unison.NewLineBorder(model.AccentColor, 0, unison.Insets{Bottom: 1}, false)
@@ -196,7 +195,7 @@ func NewHeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entit
 }
 
 // NewWeightPageField creates a new weight entry field for a sheet page.
-func NewWeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *model.Entity, get func() measure2.Weight, set func(measure2.Weight), min, max measure2.Weight, noMinWidth bool) *WeightField {
+func NewWeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *model.Entity, get func() model.Weight, set func(model.Weight), min, max model.Weight, noMinWidth bool) *WeightField {
 	field := NewWeightField(targetMgr, targetKey, undoTitle, entity, get, set, min, max, noMinWidth)
 	field.Font = model.PageFieldPrimaryFont
 	field.FocusedBorder = unison.NewLineBorder(model.AccentColor, 0, unison.Insets{Bottom: 1}, false)

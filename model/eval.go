@@ -16,7 +16,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	measure2 "github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/eval"
@@ -181,8 +180,8 @@ func evalSSRT(e *eval.Evaluator, arguments string) (any, error) {
 	if wantSize, err = evalToBool(e, arg); err != nil {
 		return nil, err
 	}
-	var length measure2.Length
-	if length, err = measure2.LengthFromString(n+" "+units, measure2.Yard); err != nil {
+	var length Length
+	if length, err = LengthFromString(n+" "+units, Yard); err != nil {
 		return nil, err
 	}
 	result := yardsToValue(length, wantSize)
@@ -200,7 +199,7 @@ func evalSSRTYards(e *eval.Evaluator, arguments string) (any, error) {
 	return valueToYards(fxp.As[int](v)), nil
 }
 
-func yardsToValue(length measure2.Length, allowNegative bool) int {
+func yardsToValue(length Length, allowNegative bool) int {
 	inches := fxp.Int(length)
 	yards := inches.Div(fxp.ThirtySix)
 	if allowNegative {

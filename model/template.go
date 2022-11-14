@@ -17,7 +17,6 @@ import (
 	"io/fs"
 
 	"github.com/google/uuid"
-	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/errs"
 )
@@ -138,5 +137,5 @@ func (t *Template) CRC64() uint64 {
 	if err := jio.Save(context.Background(), &buffer, t); err != nil {
 		return 0
 	}
-	return crc.Bytes(0, buffer.Bytes())
+	return CRCBytes(0, buffer.Bytes())
 }

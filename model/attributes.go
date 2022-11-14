@@ -16,7 +16,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/json"
 )
@@ -81,7 +80,7 @@ func (a *Attributes) List() []*Attribute {
 
 // CRC64 calculates a CRC-64 for this data.
 func (a *Attributes) CRC64() uint64 {
-	c := crc.Number(0, len(a.Set))
+	c := CRCNumber(0, len(a.Set))
 	for _, one := range a.List() {
 		c = one.crc64(c)
 	}

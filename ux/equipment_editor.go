@@ -16,7 +16,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -62,7 +61,7 @@ func EditEquipment(owner Rebuildable, equipment *model.Equipment, carried bool) 
 			addWeightField(wrapper, nil, "", weightLabel, "", e.target.Entity, &e.editorData.Weight, false)
 			wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Extended")))
 			wrapper.AddChild(NewNonEditableField(func(field *NonEditableField) {
-				var weight measure.Weight
+				var weight model.Weight
 				defUnits := model.SheetSettingsFor(e.target.Entity).DefaultWeightUnits
 				if e.editorData.Quantity > 0 {
 					weight = model.ExtendedWeightAdjustedForModifiers(defUnits, e.editorData.Quantity, e.editorData.Weight,

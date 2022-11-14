@@ -12,7 +12,6 @@
 package model
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/json"
 )
@@ -196,16 +195,16 @@ func CountThresholdOpMet(op ThresholdOp, attributes *Attributes) int {
 }
 
 func (a *Attribute) crc64(c uint64) uint64 {
-	c = crc.String(c, a.AttrID)
-	c = crc.Number(c, a.Adjustment)
-	c = crc.Number(c, a.Damage)
-	c = crc.Number(c, a.Bonus)
-	c = crc.Number(c, a.CostReduction)
-	c = crc.Number(c, a.Order)
+	c = CRCString(c, a.AttrID)
+	c = CRCNumber(c, a.Adjustment)
+	c = CRCNumber(c, a.Damage)
+	c = CRCNumber(c, a.Bonus)
+	c = CRCNumber(c, a.CostReduction)
+	c = CRCNumber(c, a.Order)
 	if def := a.AttributeDef(); def != nil {
 		c = def.crc64(c)
 	} else {
-		c = crc.Number(c, 0)
+		c = CRCNumber(c, 0)
 	}
 	return c
 }

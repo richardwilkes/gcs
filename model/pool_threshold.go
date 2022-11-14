@@ -14,7 +14,6 @@ package model
 import (
 	"bytes"
 
-	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/eval"
@@ -137,12 +136,12 @@ func (p *PoolThreshold) RemoveOp(op ThresholdOp) {
 }
 
 func (p *PoolThreshold) crc64(c uint64) uint64 {
-	c = crc.String(c, p.State)
-	c = crc.String(c, p.Expression)
-	c = crc.String(c, p.Explanation)
-	c = crc.Number(c, len(p.Ops))
+	c = CRCString(c, p.State)
+	c = CRCString(c, p.Expression)
+	c = CRCString(c, p.Explanation)
+	c = CRCNumber(c, len(p.Ops))
 	for _, one := range p.Ops {
-		c = crc.Byte(c, byte(one))
+		c = CRCByte(c, byte(one))
 	}
 	return c
 }

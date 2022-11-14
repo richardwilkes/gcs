@@ -14,35 +14,34 @@ package ux
 import (
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/measure"
 )
 
 // LengthField is field that holds a length value.
-type LengthField = NumericField[measure.Length]
+type LengthField = NumericField[model.Length]
 
 // NewLengthField creates a new field that holds a fixed-point number.
-func NewLengthField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *model.Entity, get func() measure.Length, set func(measure.Length), min, max measure.Length, noMinWidth bool) *LengthField {
-	var getPrototypes func(min, max measure.Length) []measure.Length
+func NewLengthField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *model.Entity, get func() model.Length, set func(model.Length), min, max model.Length, noMinWidth bool) *LengthField {
+	var getPrototypes func(min, max model.Length) []model.Length
 	if !noMinWidth {
-		getPrototypes = func(min, max measure.Length) []measure.Length {
-			if min == measure.Length(fxp.Min) {
-				min = measure.Length(-fxp.One)
+		getPrototypes = func(min, max model.Length) []model.Length {
+			if min == model.Length(fxp.Min) {
+				min = model.Length(-fxp.One)
 			}
-			min = measure.Length(fxp.Int(min).Trunc() + fxp.One - 1)
-			if max == measure.Length(fxp.Max) {
-				max = measure.Length(fxp.One)
+			min = model.Length(fxp.Int(min).Trunc() + fxp.One - 1)
+			if max == model.Length(fxp.Max) {
+				max = model.Length(fxp.One)
 			}
-			max = measure.Length(fxp.Int(max).Trunc() + fxp.One - 1)
-			return []measure.Length{min, measure.Length(fxp.Two - 1), max}
+			max = model.Length(fxp.Int(max).Trunc() + fxp.One - 1)
+			return []model.Length{min, model.Length(fxp.Two - 1), max}
 		}
 	}
-	format := func(value measure.Length) string {
+	format := func(value model.Length) string {
 		return model.SheetSettingsFor(entity).DefaultLengthUnits.Format(value)
 	}
-	extract := func(s string) (measure.Length, error) {
-		return measure.LengthFromString(s, model.SheetSettingsFor(entity).DefaultLengthUnits)
+	extract := func(s string) (model.Length, error) {
+		return model.LengthFromString(s, model.SheetSettingsFor(entity).DefaultLengthUnits)
 	}
-	f := NewNumericField[measure.Length](targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, min, max)
+	f := NewNumericField[model.Length](targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, min, max)
 	f.RuneTypedCallback = f.DefaultRuneTyped
 	return f
 }

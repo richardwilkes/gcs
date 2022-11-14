@@ -15,7 +15,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	measure2 "github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/toolbox/eval"
 	"github.com/richardwilkes/toolbox/log/jot"
 )
@@ -45,10 +44,10 @@ type AncestryOptions struct {
 }
 
 // RandomHeight returns a randomized height.
-func (o *AncestryOptions) RandomHeight(resolver eval.VariableResolver, not measure2.Length) measure2.Length {
-	def := measure2.LengthFromInteger(defaultHeight, measure2.Inch)
+func (o *AncestryOptions) RandomHeight(resolver eval.VariableResolver, not Length) Length {
+	def := LengthFromInteger(defaultHeight, Inch)
 	for i := 0; i < maximumRandomTries; i++ {
-		value := measure2.Length(fxp.EvaluateToNumber(o.HeightFormula, resolver))
+		value := Length(fxp.EvaluateToNumber(o.HeightFormula, resolver))
 		if value <= 0 {
 			value = def
 		}
@@ -60,10 +59,10 @@ func (o *AncestryOptions) RandomHeight(resolver eval.VariableResolver, not measu
 }
 
 // RandomWeight returns a randomized weight.
-func (o *AncestryOptions) RandomWeight(resolver eval.VariableResolver, not measure2.Weight) measure2.Weight {
-	def := measure2.WeightFromInteger(defaultWeight, measure2.Pound)
+func (o *AncestryOptions) RandomWeight(resolver eval.VariableResolver, not Weight) Weight {
+	def := WeightFromInteger(defaultWeight, Pound)
 	for i := 0; i < maximumRandomTries; i++ {
-		value := measure2.Weight(fxp.EvaluateToNumber(o.WeightFormula, resolver))
+		value := Weight(fxp.EvaluateToNumber(o.WeightFormula, resolver))
 		if value <= 0 {
 			value = def
 		}
