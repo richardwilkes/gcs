@@ -127,10 +127,9 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/display",
-		Name:       "option",
-		Desc:       "holds a display option",
-		StandAlone: true,
+		Pkg:  "model",
+		Name: "display_option",
+		Desc: "holds a display option",
 		Values: []enumValue{
 			{
 				Key: "not_shown",

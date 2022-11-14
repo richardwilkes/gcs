@@ -71,7 +71,7 @@ func ShowAttributeSettings(owner EntityPanel) {
 			d.defs = d.owner.Entity().SheetSettings.Attributes.Clone()
 			d.TabTitle = i18n.Text("Attributes: " + owner.Entity().Profile.Name)
 		} else {
-			d.defs = model.Global().Sheet.Attributes.Clone()
+			d.defs = model.GlobalSettings().Sheet.Attributes.Clone()
 			d.TabTitle = i18n.Text("Default Attributes")
 		}
 		d.TabIcon = svg.Attributes
@@ -222,7 +222,7 @@ func (d *attributeSettingsDockable) reset() {
 		BeforeData: d.defs.Clone(),
 	}
 	if d.owner != nil {
-		d.defs = model.Global().Sheet.Attributes.Clone()
+		d.defs = model.GlobalSettings().Sheet.Attributes.Clone()
 	} else {
 		d.defs = model.FactoryAttributeDefs()
 	}
@@ -275,7 +275,7 @@ func (d *attributeSettingsDockable) save(filePath string) error {
 func (d *attributeSettingsDockable) apply() {
 	d.Window().FocusNext() // Intentionally move the focus to ensure any pending edits are flushed
 	if d.owner == nil {
-		model.Global().Sheet.Attributes = d.defs.Clone()
+		model.GlobalSettings().Sheet.Attributes = d.defs.Clone()
 		return
 	}
 	entity := d.owner.Entity()

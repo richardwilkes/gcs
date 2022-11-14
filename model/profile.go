@@ -85,7 +85,8 @@ func (p *Profile) SetAdjustedSizeModifier(value int) {
 
 // AutoFill fills in the default profile entries.
 func (p *Profile) AutoFill(entity *Entity) {
-	generalSettings := SettingsProvider.GeneralSettings()
+	globalSettings := GlobalSettings()
+	generalSettings := globalSettings.GeneralSettings()
 	p.TechLevel = generalSettings.DefaultTechLevel
 	p.PlayerName = generalSettings.DefaultPlayerName
 	a := entity.Ancestry()
@@ -97,6 +98,6 @@ func (p *Profile) AutoFill(entity *Entity) {
 	p.Handedness = a.RandomHandedness(p.Gender, "")
 	p.Height = a.RandomHeight(entity, p.Gender, 0)
 	p.Weight = a.RandomWeight(entity, p.Gender, 0)
-	p.Name = a.RandomName(ancestry.AvailableNameGenerators(SettingsProvider.Libraries()), p.Gender)
-	p.Birthday = generalSettings.CalendarRef(SettingsProvider.Libraries()).RandomBirthday(p.Birthday)
+	p.Name = a.RandomName(ancestry.AvailableNameGenerators(globalSettings.Libraries()), p.Gender)
+	p.Birthday = generalSettings.CalendarRef(globalSettings.Libraries()).RandomBirthday(p.Birthday)
 }

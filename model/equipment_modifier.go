@@ -16,7 +16,6 @@ import (
 	"io/fs"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/display"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	gid2 "github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -159,8 +158,8 @@ func (m *EquipmentModifier) CellData(column int, data *CellData) {
 	case EquipmentModifierDescriptionColumn:
 		data.Type = TextCellType
 		data.Primary = m.Name
-		data.Secondary = m.SecondaryText(func(option display.Option) bool { return option.Inline() })
-		data.Tooltip = m.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
+		data.Secondary = m.SecondaryText(func(option DisplayOption) bool { return option.Inline() })
+		data.Tooltip = m.SecondaryText(func(option DisplayOption) bool { return option.Tooltip() })
 	case EquipmentModifierTechLevelColumn:
 		if !m.Container() {
 			data.Type = TextCellType
@@ -217,7 +216,7 @@ func (m *EquipmentModifier) String() string {
 }
 
 // SecondaryText returns the "secondary" text: the text display below an Trait.
-func (m *EquipmentModifier) SecondaryText(optionChecker func(display.Option) bool) string {
+func (m *EquipmentModifier) SecondaryText(optionChecker func(DisplayOption) bool) string {
 	var buffer strings.Builder
 	settings := SheetSettingsFor(m.Entity)
 	if m.LocalNotes != "" && optionChecker(settings.NotesDisplay) {

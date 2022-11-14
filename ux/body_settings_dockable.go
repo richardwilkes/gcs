@@ -64,7 +64,7 @@ func ShowBodySettings(owner EntityPanel) {
 			d.body = entity.SheetSettings.BodyType.Clone(entity, nil)
 			d.TabTitle = i18n.Text("Body Type: " + owner.Entity().Profile.Name)
 		} else {
-			d.body = model.Global().Sheet.BodyType.Clone(nil, nil)
+			d.body = model.GlobalSettings().Sheet.BodyType.Clone(nil, nil)
 			d.TabTitle = i18n.Text("Default Body Type")
 		}
 		d.TabIcon = svg.BodyType
@@ -173,7 +173,7 @@ func (d *bodySettingsDockable) applyBodyType(bodyType *model.Body) {
 func (d *bodySettingsDockable) reset() {
 	undo := d.prepareUndo(i18n.Text("Reset Body Type"))
 	if d.owner != nil {
-		d.body = model.Global().Sheet.BodyType.Clone(d.Entity(), nil)
+		d.body = model.GlobalSettings().Sheet.BodyType.Clone(d.Entity(), nil)
 	} else {
 		d.body = model.FactoryBody()
 	}
@@ -216,7 +216,7 @@ func (d *bodySettingsDockable) save(filePath string) error {
 func (d *bodySettingsDockable) apply() {
 	d.Window().FocusNext() // Intentionally move the focus to ensure any pending edits are flushed
 	if d.owner == nil {
-		model.Global().Sheet.BodyType = d.body.Clone(nil, nil)
+		model.GlobalSettings().Sheet.BodyType = d.body.Clone(nil, nil)
 		return
 	}
 	entity := d.owner.Entity()

@@ -31,7 +31,7 @@ var appIconBytes []byte
 func Start(files []string) {
 	pathsChan := make(chan []string, 32)
 	startHandoffService(pathsChan, files)
-	libs := model.Global().LibrarySet
+	libs := model.GlobalSettings().LibrarySet
 	go libs.PerformUpdateChecks()
 	unison.Start(
 		unison.StartupFinishedCallback(func() {

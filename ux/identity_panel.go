@@ -60,7 +60,7 @@ func NewIdentityPanel(entity *model.Entity, targetMgr *TargetMgr) *IdentityPanel
 	p.AddChild(NewPageLabelWithRandomizer(title,
 		i18n.Text("Randomize the name using the current ancestry"), func() {
 			p.entity.Profile.Name = p.entity.Ancestry().RandomName(
-				ancestry.AvailableNameGenerators(model.Global().Libraries()), p.entity.Profile.Gender)
+				ancestry.AvailableNameGenerators(model.GlobalSettings().Libraries()), p.entity.Profile.Gender)
 			SetTextAndMarkModified(nameField.Field, p.entity.Profile.Name)
 		}))
 	nameField.ClientData()[SkipDeepSync] = true

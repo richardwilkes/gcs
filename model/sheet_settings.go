@@ -15,22 +15,10 @@ import (
 	"context"
 	"io/fs"
 
-	"github.com/richardwilkes/gcs/v5/model/display"
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/gcs/v5/model/library"
 	measure2 "github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/log/jot"
 )
-
-// SettingsProvider must be initialized prior to using this package. It provides access to settings to avoid circular
-// references.
-var SettingsProvider interface {
-	GeneralSettings() *GeneralSheetSettings
-	SheetSettings() *SheetSettings
-	Libraries() library.Libraries
-}
 
 // SheetSettingsResponder defines the method required to be notified of updates to the SheetSettings.
 type SheetSettingsResponder interface {
@@ -49,10 +37,10 @@ type SheetSettingsData struct {
 	DamageProgression             DamageProgression    `json:"damage_progression"`
 	DefaultLengthUnits            measure2.LengthUnits `json:"default_length_units"`
 	DefaultWeightUnits            measure2.WeightUnits `json:"default_weight_units"`
-	UserDescriptionDisplay        display.Option       `json:"user_description_display"`
-	ModifiersDisplay              display.Option       `json:"modifiers_display"`
-	NotesDisplay                  display.Option       `json:"notes_display"`
-	SkillLevelAdjDisplay          display.Option       `json:"skill_level_adj_display"`
+	UserDescriptionDisplay        DisplayOption        `json:"user_description_display"`
+	ModifiersDisplay              DisplayOption        `json:"modifiers_display"`
+	NotesDisplay                  DisplayOption        `json:"notes_display"`
+	SkillLevelAdjDisplay          DisplayOption        `json:"skill_level_adj_display"`
 	UseMultiplicativeModifiers    bool                 `json:"use_multiplicative_modifiers,omitempty"`
 	UseModifyingDicePlusAdds      bool                 `json:"use_modifying_dice_plus_adds,omitempty"`
 	ShowTraitModifierAdj          bool                 `json:"show_trait_modifier_adj,alt=show_advantage_modifier_adj,omitempty"`
@@ -71,10 +59,7 @@ type SheetSettings struct {
 // SheetSettingsFor returns the SheetSettings for the given Entity, or the global settings if the Entity is nil.
 func SheetSettingsFor(entity *Entity) *SheetSettings {
 	if entity == nil {
-		if SettingsProvider == nil {
-			jot.Fatal(1, errs.New("SettingsProvider has not been set yet"))
-		}
-		return SettingsProvider.SheetSettings()
+		return GlobalSettings().SheetSettings()
 	}
 	return entity.SheetSettings
 }
@@ -90,10 +75,10 @@ func FactorySheetSettings() *SheetSettings {
 			DamageProgression:      BasicSet,
 			DefaultLengthUnits:     measure2.FeetAndInches,
 			DefaultWeightUnits:     measure2.Pound,
-			UserDescriptionDisplay: display.Tooltip,
-			ModifiersDisplay:       display.Inline,
-			NotesDisplay:           display.Inline,
-			SkillLevelAdjDisplay:   display.Tooltip,
+			UserDescriptionDisplay: TooltipDisplayOption,
+			ModifiersDisplay:       InlineDisplayOption,
+			NotesDisplay:           InlineDisplayOption,
+			SkillLevelAdjDisplay:   TooltipDisplayOption,
 			ShowSpellAdj:           true,
 		},
 	}

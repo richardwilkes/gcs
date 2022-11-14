@@ -109,7 +109,7 @@ func (d *DescriptionPanel) createColumn1() *unison.Panel {
 		func(s string) { d.entity.Profile.Birthday = s })
 	column.AddChild(NewPageLabelWithRandomizer(title,
 		i18n.Text("Randomize the birthday using the current calendar"), func() {
-			global := model.Global()
+			global := model.GlobalSettings()
 			d.entity.Profile.Birthday = global.General.CalendarRef(global.LibrarySet).RandomBirthday(d.entity.Profile.Birthday)
 			SetTextAndMarkModified(birthdayField.Field, d.entity.Profile.Birthday)
 		}))

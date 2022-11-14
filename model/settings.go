@@ -64,8 +64,8 @@ type Settings struct {
 	ColorMode          unison.ColorMode      `json:"color_mode"`
 }
 
-// Default returns new default settings.
-func Default() *Settings {
+// DefaultSettings returns new default settings.
+func DefaultSettings() *Settings {
 	return &Settings{
 		LastSeenGCSVersion: cmdline.AppVersion,
 		General:            NewGeneralSheetSettings(),
@@ -77,15 +77,14 @@ func Default() *Settings {
 	}
 }
 
-// Global returns the global settings.
-func Global() *Settings {
+// GlobalSettings returns the global settings.
+func GlobalSettings() *Settings {
 	if global == nil {
 		dice.GURPSFormat = true
-		if err := jio.LoadFromFile(context.Background(), Path(), &global); err != nil {
-			global = Default()
+		if err := jio.LoadFromFile(context.Background(), SettingsPath(), &global); err != nil {
+			global = DefaultSettings()
 		}
 		global.EnsureValidity()
-		SettingsProvider = global
 		InstallEvaluatorFunctions(fxp.EvalFuncs)
 		unison.SetColorMode(global.ColorMode)
 		global.Colors.MakeCurrent()
@@ -96,7 +95,7 @@ func Global() *Settings {
 
 // Save to the standard path.
 func (s *Settings) Save() error {
-	return jio.SaveToFile(context.Background(), Path(), s)
+	return jio.SaveToFile(context.Background(), SettingsPath(), s)
 }
 
 // EnsureValidity checks the current settings for validity and if they aren't valid, makes them so.
@@ -204,7 +203,7 @@ func (s *Settings) Libraries() library.Libraries {
 	return s.LibrarySet
 }
 
-// Path returns the path to our settings file.
-func Path() string {
+// SettingsPath returns the path to our settings file.
+func SettingsPath() string {
 	return filepath.Join(paths.AppDataDir(), cmdline.AppCmdName+"_prefs.json")
 }

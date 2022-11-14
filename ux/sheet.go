@@ -128,7 +128,7 @@ func NewSheet(filePath string, entity *model.Entity) *Sheet {
 		scroll:            unison.NewScrollPanel(),
 		entity:            entity,
 		crc:               entity.CRC64(),
-		scale:             model.Global().General.InitialSheetUIScale,
+		scale:             model.GlobalSettings().General.InitialSheetUIScale,
 		content:           unison.NewPanel(),
 		needsSaveAsPrompt: true,
 	}
@@ -218,7 +218,7 @@ func NewSheet(filePath string, entity *model.Entity) *Sheet {
 	})
 	s.toolbar.AddChild(NewDefaultInfoPop())
 	s.toolbar.AddChild(NewScaleField(model.InitialUIScaleMin, model.InitialUIScaleMax,
-		func() int { return model.Global().General.InitialSheetUIScale }, func() int { return s.scale },
+		func() int { return model.GlobalSettings().General.InitialSheetUIScale }, func() int { return s.scale },
 		func(scale int) { s.scale = scale }, s.scroll, nil, false))
 	s.toolbar.AddChild(sheetSettingsButton)
 	s.toolbar.AddChild(attributesButton)

@@ -76,7 +76,7 @@ func newNavigator() *Navigator {
 	n.setupToolBar()
 
 	n.table.ColumnSizes = make([]unison.ColumnSize, 1)
-	globalSettings := gsettings.Global()
+	globalSettings := gsettings.GlobalSettings()
 	libs := globalSettings.LibrarySet.List()
 	rows := make([]*NavigatorNode, 0, len(libs))
 	n.needReload = true
@@ -85,7 +85,7 @@ func newNavigator() *Navigator {
 		rows = append(rows, NewLibraryNode(n, lib))
 	}
 	n.needReload = false
-	n.table.SetScale(float32(gsettings.Global().General.NavigatorUIScale) / 100)
+	n.table.SetScale(float32(gsettings.GlobalSettings().General.NavigatorUIScale) / 100)
 	n.table.SetRootRows(rows)
 	n.ApplyDisclosedPaths(globalSettings.LibraryExplorer.OpenRowKeys)
 	n.table.SizeColumnsToFit(true)
@@ -152,8 +152,8 @@ func (n *Navigator) setupToolBar() {
 	first := unison.NewPanel()
 	first.AddChild(NewDefaultInfoPop())
 	first.AddChild(NewScaleField(gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax,
-		func() int { return 100 }, func() int { return gsettings.Global().General.NavigatorUIScale },
-		func(scale int) { gsettings.Global().General.NavigatorUIScale = scale }, n.scroll, nil, false))
+		func() int { return 100 }, func() int { return gsettings.GlobalSettings().General.NavigatorUIScale },
+		func(scale int) { gsettings.GlobalSettings().General.NavigatorUIScale = scale }, n.scroll, nil, false))
 	first.AddChild(n.hierarchyButton)
 	first.AddChild(NewToolbarSeparator())
 	first.AddChild(addLibraryButton)
@@ -272,7 +272,7 @@ func (n *Navigator) deleteSelection() {
 			header := txt.Wrap("", fmt.Sprintf(i18n.Text("Are you sure you want to remove %s?"), title), 100)
 			if unison.QuestionDialog(header,
 				i18n.Text("Note: This action will NOT remove any files from disk.")) == unison.ModalResponseOK {
-				libs := gsettings.Global().LibrarySet
+				libs := gsettings.GlobalSettings().LibrarySet
 				for _, row := range selection {
 					delete(libs, row.library.Key())
 					row.library.StopAllWatches()
@@ -603,7 +603,7 @@ func (n *Navigator) Reload() {
 	n.tokens = nil
 	disclosed := n.DisclosedPaths()
 	selection := n.SelectedPaths()
-	libs := gsettings.Global().LibrarySet.List()
+	libs := gsettings.GlobalSettings().LibrarySet.List()
 	rows := make([]*NavigatorNode, 0, len(libs))
 	for _, lib := range libs {
 		n.tokens = append(n.tokens, lib.Watch(n.watchCallback, true))
@@ -924,7 +924,7 @@ func OpenFile(wnd *unison.Window, filePath string) (dockable unison.Dockable, wa
 		unison.ErrorDialogWithError(i18n.Text("Unable to open file"), err)
 		return nil, false
 	}
-	gsettings.Global().AddRecentFile(filePath)
+	gsettings.GlobalSettings().AddRecentFile(filePath)
 	DisplayNewDockable(wnd, d)
 	return d, false
 }

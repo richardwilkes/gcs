@@ -70,7 +70,7 @@ func NewTableDockable[T model.NodeTypes](filePath, extension string, provider Ta
 		scroll:            unison.NewScrollPanel(),
 		tableHeader:       header,
 		table:             table,
-		scale:             model.Global().General.InitialListUIScale,
+		scale:             model.GlobalSettings().General.InitialListUIScale,
 		needsSaveAsPrompt: true,
 	}
 	d.Self = d
@@ -176,7 +176,7 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	toolbar.AddChild(NewDefaultInfoPop())
 	toolbar.AddChild(NewScaleField(model.InitialUIScaleMin, model.InitialUIScaleMax,
-		func() int { return model.Global().General.InitialListUIScale }, func() int { return d.scale },
+		func() int { return model.GlobalSettings().General.InitialListUIScale }, func() int { return d.scale },
 		func(scale int) { d.scale = scale }, d.scroll, nil, false))
 	toolbar.AddChild(d.hierarchyButton)
 	toolbar.AddChild(d.sizeToFitButton)

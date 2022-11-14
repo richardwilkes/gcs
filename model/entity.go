@@ -114,7 +114,7 @@ func NewEntityFromFile(fileSystem fs.FS, filePath string) (*Entity, error) {
 
 // NewEntity creates a new Entity.
 func NewEntity(entityType EntityType) *Entity {
-	settings := SettingsProvider.GeneralSettings()
+	settings := GlobalSettings().GeneralSettings()
 	entity := &Entity{
 		EntityData: EntityData{
 			Type:        entityType,
@@ -131,7 +131,7 @@ func NewEntity(entityType EntityType) *Entity {
 			CreatedOn: jio.Now(),
 		},
 	}
-	entity.SheetSettings = SettingsProvider.SheetSettings().Clone(entity)
+	entity.SheetSettings = GlobalSettings().SheetSettings().Clone(entity)
 	entity.Attributes = NewAttributes(entity)
 	if settings.AutoFillProfile {
 		entity.Profile.AutoFill(entity)
@@ -204,7 +204,7 @@ func (e *Entity) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if e.SheetSettings == nil {
-		e.SheetSettings = SettingsProvider.SheetSettings().Clone(e)
+		e.SheetSettings = GlobalSettings().SheetSettings().Clone(e)
 	}
 	if e.Profile == nil {
 		e.Profile = &Profile{}
@@ -1075,14 +1075,14 @@ func (e *Entity) Ancestry() *ancestry.Ancestry {
 	var anc *ancestry.Ancestry
 	Traverse(func(t *Trait) bool {
 		if t.Container() && t.ContainerType == RaceContainerType {
-			if anc = ancestry.Lookup(t.Ancestry, SettingsProvider.Libraries()); anc != nil {
+			if anc = ancestry.Lookup(t.Ancestry, GlobalSettings().Libraries()); anc != nil {
 				return true
 			}
 		}
 		return false
 	}, true, false, e.Traits...)
 	if anc == nil {
-		if anc = ancestry.Lookup(ancestry.Default, SettingsProvider.Libraries()); anc == nil {
+		if anc = ancestry.Lookup(ancestry.Default, GlobalSettings().Libraries()); anc == nil {
 			jot.Fatal(1, "unable to load default ancestry (Human)")
 		}
 	}

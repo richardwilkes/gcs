@@ -83,7 +83,7 @@ func initTraitEditor(e *editor[*model.Trait, *model.TraitEditData], content *uni
 		addLabelAndPopup(content, i18n.Text("Container WeaponType"), "", model.AllContainerType,
 			&e.editorData.ContainerType)
 		var choices []string
-		for _, lib := range ancestry.AvailableAncestries(model.SettingsProvider.Libraries()) {
+		for _, lib := range ancestry.AvailableAncestries(model.GlobalSettings().Libraries()) {
 			for _, one := range lib.List {
 				choices = append(choices, one.Name)
 			}

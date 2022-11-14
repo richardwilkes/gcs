@@ -9,14 +9,14 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package display
+package model
 
 // Inline returns true if inline notes should be shown.
-func (enum Option) Inline() bool {
-	return enum == Inline || enum == InlineAndTooltip
+func (enum DisplayOption) Inline() bool {
+	return enum == InlineDisplayOption || enum == InlineAndTooltipDisplayOption
 }
 
 // Tooltip returns true if tooltips should be shown.
-func (enum Option) Tooltip() bool {
-	return enum == Tooltip || enum == InlineAndTooltip
+func (enum DisplayOption) Tooltip() bool {
+	return enum == TooltipDisplayOption || enum == InlineAndTooltipDisplayOption
 }

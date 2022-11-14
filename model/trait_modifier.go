@@ -16,7 +16,6 @@ import (
 	"io/fs"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/display"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	gid2 "github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -167,8 +166,8 @@ func (m *TraitModifier) CellData(column int, data *CellData) {
 	case TraitModifierDescriptionColumn:
 		data.Type = TextCellType
 		data.Primary = m.Name
-		data.Secondary = m.SecondaryText(func(option display.Option) bool { return option.Inline() })
-		data.Tooltip = m.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
+		data.Secondary = m.SecondaryText(func(option DisplayOption) bool { return option.Inline() })
+		data.Tooltip = m.SecondaryText(func(option DisplayOption) bool { return option.Tooltip() })
 	case TraitModifierCostColumn:
 		if !m.Container() {
 			data.Type = TextCellType
@@ -234,7 +233,7 @@ func (m *TraitModifier) String() string {
 }
 
 // SecondaryText returns the "secondary" text: the text display below an Trait.
-func (m *TraitModifier) SecondaryText(optionChecker func(display.Option) bool) string {
+func (m *TraitModifier) SecondaryText(optionChecker func(DisplayOption) bool) string {
 	var buffer strings.Builder
 	settings := SheetSettingsFor(m.Entity)
 	if m.LocalNotes != "" && optionChecker(settings.NotesDisplay) {

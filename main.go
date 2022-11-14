@@ -35,7 +35,7 @@ func main() {
 	cl := cmdline.New(true)
 	cl.Description = ux.AppDescription
 	cl.UsageTrailer = fmt.Sprintf(i18n.Text(`   Settings path: "%s"
-Translations dir: "%s"`), model.Path(), i18n.Dir)
+Translations dir: "%s"`), model.SettingsPath(), i18n.Dir)
 	var textTmplPath string
 	cl.NewGeneralOption(&textTmplPath).SetName("text").SetSingle('x').SetArg("file").
 		SetUsage(i18n.Text("Export sheets using the specified template file"))
@@ -45,9 +45,9 @@ Translations dir: "%s"`), model.Path(), i18n.Dir)
 	cl.NewGeneralOption(&dbg.VariableResolver).SetName("debug-variable-resolver")
 	fileList := jotrotate.ParseAndSetup(cl)
 	ux.RegisterKnownFileTypes()
-	model.Global() // Here to force early initialization
+	model.GlobalSettings() // Here to force early initialization
 	unison.DefaultScrollPanelTheme.MouseWheelMultiplier = func() float32 {
-		return fxp.As[float32](model.Global().General.ScrollWheelMultiplier)
+		return fxp.As[float32](model.GlobalSettings().General.ScrollWheelMultiplier)
 	}
 	switch {
 	case convertFiles:

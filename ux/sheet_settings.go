@@ -15,7 +15,6 @@ import (
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/display"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	measure2 "github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/gcs/v5/model/paper"
@@ -45,10 +44,10 @@ type sheetSettingsDockable struct {
 	excludeUnspentPointsFromTotal      *unison.CheckBox
 	lengthUnitsPopup                   *unison.PopupMenu[measure2.LengthUnits]
 	weightUnitsPopup                   *unison.PopupMenu[measure2.WeightUnits]
-	userDescDisplayPopup               *unison.PopupMenu[display.Option]
-	modifiersDisplayPopup              *unison.PopupMenu[display.Option]
-	notesDisplayPopup                  *unison.PopupMenu[display.Option]
-	skillLevelAdjDisplayPopup          *unison.PopupMenu[display.Option]
+	userDescDisplayPopup               *unison.PopupMenu[model.DisplayOption]
+	modifiersDisplayPopup              *unison.PopupMenu[model.DisplayOption]
+	notesDisplayPopup                  *unison.PopupMenu[model.DisplayOption]
+	skillLevelAdjDisplayPopup          *unison.PopupMenu[model.DisplayOption]
 	paperSizePopup                     *unison.PopupMenu[paper.Size]
 	orientationPopup                   *unison.PopupMenu[paper.Orientation]
 	topMarginField                     *unison.Field
@@ -91,7 +90,7 @@ func (d *sheetSettingsDockable) settings() *model.SheetSettings {
 	if d.owner != nil {
 		return d.owner.Entity().SheetSettings
 	}
-	return model.Global().Sheet
+	return model.GlobalSettings().Sheet
 }
 
 func (d *sheetSettingsDockable) initContent(content *unison.Panel) {
@@ -207,14 +206,14 @@ func (d *sheetSettingsDockable) createWhereToDisplay(content *unison.Panel) {
 	})
 	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
 	d.createHeader(panel, i18n.Text("Where to display…"), 2)
-	d.userDescDisplayPopup = createSettingPopup(d, panel, i18n.Text("User Description"), display.AllOption,
-		s.UserDescriptionDisplay, func(option display.Option) { d.settings().UserDescriptionDisplay = option })
-	d.modifiersDisplayPopup = createSettingPopup(d, panel, i18n.Text("Modifiers"), display.AllOption,
-		s.ModifiersDisplay, func(option display.Option) { d.settings().ModifiersDisplay = option })
-	d.notesDisplayPopup = createSettingPopup(d, panel, i18n.Text("Notes"), display.AllOption, s.NotesDisplay,
-		func(option display.Option) { d.settings().NotesDisplay = option })
-	d.skillLevelAdjDisplayPopup = createSettingPopup(d, panel, i18n.Text("Skill Level Adjustments"), display.AllOption,
-		s.SkillLevelAdjDisplay, func(option display.Option) { d.settings().SkillLevelAdjDisplay = option })
+	d.userDescDisplayPopup = createSettingPopup(d, panel, i18n.Text("User Description"), model.AllDisplayOption,
+		s.UserDescriptionDisplay, func(option model.DisplayOption) { d.settings().UserDescriptionDisplay = option })
+	d.modifiersDisplayPopup = createSettingPopup(d, panel, i18n.Text("Modifiers"), model.AllDisplayOption,
+		s.ModifiersDisplay, func(option model.DisplayOption) { d.settings().ModifiersDisplay = option })
+	d.notesDisplayPopup = createSettingPopup(d, panel, i18n.Text("Notes"), model.AllDisplayOption, s.NotesDisplay,
+		func(option model.DisplayOption) { d.settings().NotesDisplay = option })
+	d.skillLevelAdjDisplayPopup = createSettingPopup(d, panel, i18n.Text("Skill Level Adjustments"), model.AllDisplayOption,
+		s.SkillLevelAdjDisplay, func(option model.DisplayOption) { d.settings().SkillLevelAdjDisplay = option })
 	content.AddChild(panel)
 }
 
@@ -341,9 +340,9 @@ func (d *sheetSettingsDockable) createHeader(panel *unison.Panel, title string, 
 func (d *sheetSettingsDockable) reset() {
 	if d.owner != nil {
 		entity := d.owner.Entity()
-		entity.SheetSettings = model.Global().Sheet.Clone(entity)
+		entity.SheetSettings = model.GlobalSettings().Sheet.Clone(entity)
 	} else {
-		model.Global().Sheet = model.FactorySheetSettings()
+		model.GlobalSettings().Sheet = model.FactorySheetSettings()
 	}
 	d.sync()
 }
@@ -403,7 +402,7 @@ func (d *sheetSettingsDockable) load(fileSystem fs.FS, filePath string) error {
 		entity.SheetSettings = s
 		s.SetOwningEntity(entity)
 	} else {
-		model.Global().Sheet = s
+		model.GlobalSettings().Sheet = s
 	}
 	d.sync()
 	return nil

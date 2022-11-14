@@ -75,7 +75,7 @@ func (p *PortraitPanel) mouseDown(_ unison.Point, button, clickCount int, _ unis
 		d.SetAllowedExtensions(unison.KnownImageFormatExtensions...)
 		d.SetCanChooseDirectories(false)
 		d.SetCanChooseFiles(true)
-		global := model.Global()
+		global := model.GlobalSettings()
 		d.SetInitialDirectory(global.LastDir(model.ImagesDirKey))
 		if d.RunModal() {
 			file := d.Path()

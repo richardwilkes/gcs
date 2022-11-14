@@ -17,7 +17,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/display"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	gid2 "github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -209,9 +208,9 @@ func (e *Equipment) CellData(column int, data *CellData) {
 	case EquipmentDescriptionColumn:
 		data.Type = TextCellType
 		data.Primary = e.Description()
-		data.Secondary = e.SecondaryText(func(option display.Option) bool { return option.Inline() })
+		data.Secondary = e.SecondaryText(func(option DisplayOption) bool { return option.Inline() })
 		data.UnsatisfiedReason = e.UnsatisfiedReason
-		data.Tooltip = e.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
+		data.Tooltip = e.SecondaryText(func(option DisplayOption) bool { return option.Tooltip() })
 	case EquipmentUsesColumn:
 		if e.MaxUses > 0 {
 			data.Type = TextCellType
@@ -298,7 +297,7 @@ func (e *Equipment) Description() string {
 }
 
 // SecondaryText returns the "secondary" text: the text display below the description.
-func (e *Equipment) SecondaryText(optionChecker func(display.Option) bool) string {
+func (e *Equipment) SecondaryText(optionChecker func(DisplayOption) bool) string {
 	var buffer strings.Builder
 	settings := SheetSettingsFor(e.Entity)
 	if optionChecker(settings.ModifiersDisplay) {

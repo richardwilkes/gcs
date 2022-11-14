@@ -257,7 +257,7 @@ func (p *pageExporter) exportAsImages(filePathBase, extension string, f func(img
 	filePathBase = strings.TrimSuffix(filePathBase, extension)
 	savedColorMode := p.saveTheme()
 	defer p.restoreTheme(savedColorMode)
-	resolution := model.Global().General.ImageResolution
+	resolution := model.GlobalSettings().General.ImageResolution
 	pageNumber := 1
 	for p.HasPage(pageNumber) {
 		size := p.PageSize()

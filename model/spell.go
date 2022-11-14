@@ -17,7 +17,6 @@ import (
 	"io/fs"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/display"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	gid2 "github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -211,9 +210,9 @@ func (s *Spell) CellData(column int, data *CellData) {
 	case SpellDescriptionColumn:
 		data.Type = TextCellType
 		data.Primary = s.Description()
-		data.Secondary = s.SecondaryText(func(option display.Option) bool { return option.Inline() })
+		data.Secondary = s.SecondaryText(func(option DisplayOption) bool { return option.Inline() })
 		data.UnsatisfiedReason = s.UnsatisfiedReason
-		data.Tooltip = s.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
+		data.Tooltip = s.SecondaryText(func(option DisplayOption) bool { return option.Tooltip() })
 		data.TemplateInfo = s.TemplatePicker.Description()
 	case SpellResistColumn:
 		if !s.Container() {
@@ -636,7 +635,7 @@ func (s *Spell) Description() string {
 }
 
 // SecondaryText returns the less important information that should be displayed with the description.
-func (s *Spell) SecondaryText(optionChecker func(display.Option) bool) string {
+func (s *Spell) SecondaryText(optionChecker func(DisplayOption) bool) string {
 	var buffer strings.Builder
 	prefs := SheetSettingsFor(s.Entity)
 	if optionChecker(prefs.NotesDisplay) {

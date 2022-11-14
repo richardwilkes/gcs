@@ -92,7 +92,7 @@ func NewTemplate(filePath string, template *model.Template) *Template {
 		undoMgr:           unison.NewUndoManager(200, func(err error) { jot.Error(err) }),
 		scroll:            unison.NewScrollPanel(),
 		template:          template,
-		scale:             model.Global().General.InitialSheetUIScale,
+		scale:             model.GlobalSettings().General.InitialSheetUIScale,
 		crc:               template.CRC64(),
 		needsSaveAsPrompt: true,
 	}
@@ -170,7 +170,7 @@ func NewTemplate(filePath string, template *model.Template) *Template {
 	})
 	d.toolbar.AddChild(NewDefaultInfoPop())
 	d.toolbar.AddChild(NewScaleField(model.InitialUIScaleMin, model.InitialUIScaleMax,
-		func() int { return model.Global().General.InitialSheetUIScale }, func() int { return d.scale },
+		func() int { return model.GlobalSettings().General.InitialSheetUIScale }, func() int { return d.scale },
 		func(scale int) { d.scale = scale }, d.scroll, nil, false))
 	d.toolbar.AddChild(addUserButton)
 	installSearchTracker(d.toolbar, func() {
@@ -640,7 +640,7 @@ func (d *Template) createLists() {
 		}
 	}
 	d.content.RemoveAllChildren()
-	for _, col := range model.Global().Sheet.BlockLayout.ByRow() {
+	for _, col := range model.GlobalSettings().Sheet.BlockLayout.ByRow() {
 		rowPanel := unison.NewPanel()
 		for _, c := range col {
 			switch c {

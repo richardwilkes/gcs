@@ -186,7 +186,7 @@ func (d *SettingsDockable) showMenu(b *unison.Button) {
 		id++
 	}
 	if d.Loader != nil {
-		libraries := model.Global().Libraries()
+		libraries := model.GlobalSettings().Libraries()
 		sets := library.ScanForNamedFileSets(nil, "", false, libraries, d.Extensions...)
 		if len(sets) != 0 {
 			m.InsertSeparator(-1, false)
@@ -223,7 +223,7 @@ func (d *SettingsDockable) handleImport(_ unison.MenuItem) {
 	dialog.SetAllowedExtensions(d.Extensions...)
 	dialog.SetCanChooseDirectories(false)
 	dialog.SetCanChooseFiles(true)
-	global := model.Global()
+	global := model.GlobalSettings()
 	dialog.SetInitialDirectory(global.LastDir(model.DefaultLastDirKey))
 	if dialog.RunModal() {
 		p := dialog.Path()
@@ -236,7 +236,7 @@ func (d *SettingsDockable) handleImport(_ unison.MenuItem) {
 func (d *SettingsDockable) handleExport(_ unison.MenuItem) {
 	dialog := unison.NewSaveDialog()
 	dialog.SetAllowedExtensions(d.Extensions[0])
-	global := model.Global()
+	global := model.GlobalSettings()
 	dialog.SetInitialDirectory(global.LastDir(model.DefaultLastDirKey))
 	if dialog.RunModal() {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), d.Extensions[0], false); ok {

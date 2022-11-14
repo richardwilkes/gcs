@@ -198,7 +198,7 @@ func (d *librarySettingsDockable) choosePath() {
 	if xfs.IsDir(d.path) {
 		dlg.SetInitialDirectory(d.path)
 	} else {
-		dlg.SetInitialDirectory(model.Global().LastDir(model.DefaultLastDirKey))
+		dlg.SetInitialDirectory(model.GlobalSettings().LastDir(model.DefaultLastDirKey))
 	}
 	if dlg.RunModal() {
 		p, err := filepath.Abs(dlg.Path())
@@ -227,7 +227,7 @@ func (d *librarySettingsDockable) updateToolbar() {
 func (d *librarySettingsDockable) apply() {
 	wnd := d.Window()
 	wnd.FocusNext() // Intentionally move the focus to ensure any pending edits are flushed
-	libs := model.Global().LibrarySet
+	libs := model.GlobalSettings().LibrarySet
 	delete(libs, d.library.Key())
 	d.library.Title = d.name
 	d.library.GitHubAccountName = d.github

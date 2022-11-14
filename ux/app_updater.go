@@ -136,7 +136,7 @@ func NotifyOfAppUpdate() {
 			jot.Error(err)
 			return
 		}
-		model.Global().LastSeenGCSVersion = releases[0].Version
+		model.GlobalSettings().LastSeenGCSVersion = releases[0].Version
 		if dialog.RunModal() == unison.ModalResponseOK {
 			if err = desktop.Open("https://" + WebSiteDomain); err != nil {
 				unison.ErrorDialogWithError(i18n.Text("Unable to open web page for download"), err)

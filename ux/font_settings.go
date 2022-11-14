@@ -60,7 +60,7 @@ func (d *fontSettingsDockable) initContent(content *unison.Panel) {
 }
 
 func (d *fontSettingsDockable) reset() {
-	g := model.Global()
+	g := model.GlobalSettings()
 	g.Fonts.Reset()
 	g.Fonts.MakeCurrent()
 	d.sync()
@@ -236,7 +236,7 @@ func (d *fontSettingsDockable) load(fileSystem fs.FS, filePath string) error {
 	if err != nil {
 		return err
 	}
-	g := model.Global()
+	g := model.GlobalSettings()
 	g.Fonts = *s
 	g.Fonts.MakeCurrent()
 	d.sync()
@@ -244,5 +244,5 @@ func (d *fontSettingsDockable) load(fileSystem fs.FS, filePath string) error {
 }
 
 func (d *fontSettingsDockable) save(filePath string) error {
-	return model.Global().Fonts.Save(filePath)
+	return model.GlobalSettings().Fonts.Save(filePath)
 }

@@ -89,7 +89,7 @@ func NewNodeTable[T model.NodeTypes](provider TableProvider[T], font unison.Font
 		_, pref, _ := headers[i].AsPanel().Sizes(unison.Size{})
 		pref.Width += table.Padding.Left + table.Padding.Right
 		table.ColumnSizes[i].AutoMinimum = pref.Width
-		table.ColumnSizes[i].AutoMaximum = xmath.Max(float32(model.Global().General.MaximumAutoColWidth), pref.Width)
+		table.ColumnSizes[i].AutoMaximum = xmath.Max(float32(model.GlobalSettings().General.MaximumAutoColWidth), pref.Width)
 		table.ColumnSizes[i].Minimum = pref.Width
 		table.ColumnSizes[i].Maximum = 10000
 	}

@@ -67,7 +67,7 @@ func displayEditor[N model.NodeTypes, D model.EditorData[N]](owner Rebuildable, 
 			owner:  owner,
 			target: target,
 			svg:    svg,
-			scale:  model.Global().General.InitialEditorUIScale,
+			scale:  model.GlobalSettings().General.InitialEditorUIScale,
 		}
 		e.Self = e
 
@@ -150,7 +150,7 @@ func (e *editor[N, D]) createToolbar() unison.Paneler {
 
 	toolbar.AddChild(NewDefaultInfoPop())
 	toolbar.AddChild(NewScaleField(model.InitialUIScaleMin, model.InitialUIScaleMax,
-		func() int { return model.Global().General.InitialEditorUIScale }, func() int { return e.scale },
+		func() int { return model.GlobalSettings().General.InitialEditorUIScale }, func() int { return e.scale },
 		func(scale int) { e.scale = scale }, e.scroll, nil, false))
 
 	e.applyButton = unison.NewSVGButton(svg.Checkmark)

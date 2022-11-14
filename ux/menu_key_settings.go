@@ -58,7 +58,7 @@ func (d *menuKeySettingsDockable) initContent(content *unison.Panel) {
 }
 
 func (d *menuKeySettingsDockable) reset() {
-	g := model.Global()
+	g := model.GlobalSettings()
 	g.KeyBindings.Reset()
 	g.KeyBindings.MakeCurrent()
 	d.sync()
@@ -138,7 +138,7 @@ func (d *menuKeySettingsDockable) createBindingButton(binding *model.Binding) {
 				fallthrough
 			case unison.ModalResponseOK:
 				binding.KeyBinding = localBinding
-				g := model.Global()
+				g := model.GlobalSettings()
 				g.KeyBindings.Set(binding.ID, localBinding)
 				g.KeyBindings.MakeCurrent()
 				b.Text = localBinding.String()
@@ -155,7 +155,7 @@ func (d *menuKeySettingsDockable) createResetField(binding *model.Binding) {
 	b.Tooltip = unison.NewTooltipWithText("Reset this key binding")
 	b.ClickCallback = func() {
 		if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to reset '%s'?"), binding.Action.Title), "") == unison.ModalResponseOK {
-			g := model.Global()
+			g := model.GlobalSettings()
 			g.KeyBindings.ResetOne(binding.ID)
 			g.KeyBindings.MakeCurrent()
 			binding.KeyBinding = g.KeyBindings.Current(binding.ID)
@@ -177,7 +177,7 @@ func (d *menuKeySettingsDockable) load(fileSystem fs.FS, filePath string) error 
 	if err != nil {
 		return err
 	}
-	g := model.Global()
+	g := model.GlobalSettings()
 	g.KeyBindings = *b
 	g.KeyBindings.MakeCurrent()
 	d.sync()
@@ -185,5 +185,5 @@ func (d *menuKeySettingsDockable) load(fileSystem fs.FS, filePath string) error 
 }
 
 func (d *menuKeySettingsDockable) save(filePath string) error {
-	return model.Global().KeyBindings.Save(filePath)
+	return model.GlobalSettings().KeyBindings.Save(filePath)
 }

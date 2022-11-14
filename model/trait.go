@@ -16,7 +16,6 @@ import (
 	"io/fs"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/display"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	gid2 "github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -216,10 +215,10 @@ func (a *Trait) CellData(column int, data *CellData) {
 	case TraitDescriptionColumn:
 		data.Type = TextCellType
 		data.Primary = a.String()
-		data.Secondary = a.SecondaryText(func(option display.Option) bool { return option.Inline() })
+		data.Secondary = a.SecondaryText(func(option DisplayOption) bool { return option.Inline() })
 		data.Disabled = a.EffectivelyDisabled()
 		data.UnsatisfiedReason = a.UnsatisfiedReason
-		data.Tooltip = a.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
+		data.Tooltip = a.SecondaryText(func(option DisplayOption) bool { return option.Tooltip() })
 		data.TemplateInfo = a.TemplatePicker.Description()
 	case TraitPointsColumn:
 		data.Type = TextCellType
@@ -439,7 +438,7 @@ func (a *Trait) ModifierNotes() string {
 }
 
 // SecondaryText returns the "secondary" text: the text display below an Trait.
-func (a *Trait) SecondaryText(optionChecker func(display.Option) bool) string {
+func (a *Trait) SecondaryText(optionChecker func(DisplayOption) bool) string {
 	var buffer strings.Builder
 	settings := SheetSettingsFor(a.Entity)
 	if a.UserDesc != "" && optionChecker(settings.UserDescriptionDisplay) {

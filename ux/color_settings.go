@@ -65,16 +65,16 @@ func (d *colorSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 	for _, mode := range unison.AllColorModes {
 		p.AddItem(mode)
 	}
-	p.Select(model.Global().ColorMode)
+	p.Select(model.GlobalSettings().ColorMode)
 	p.SelectionCallback = func(_ int, mode unison.ColorMode) {
-		model.Global().ColorMode = mode
+		model.GlobalSettings().ColorMode = mode
 		unison.SetColorMode(mode)
 	}
 	toolbar.AddChild(p)
 }
 
 func (d *colorSettingsDockable) reset() {
-	g := model.Global()
+	g := model.GlobalSettings()
 	g.Colors.Reset()
 	g.Colors.MakeCurrent()
 	d.sync()
@@ -159,7 +159,7 @@ func (d *colorSettingsDockable) load(fileSystem fs.FS, filePath string) error {
 	if err != nil {
 		return err
 	}
-	g := model.Global()
+	g := model.GlobalSettings()
 	g.Colors = *s
 	g.Colors.MakeCurrent()
 	d.sync()
@@ -167,5 +167,5 @@ func (d *colorSettingsDockable) load(fileSystem fs.FS, filePath string) error {
 }
 
 func (d *colorSettingsDockable) save(filePath string) error {
-	return model.Global().Colors.Save(filePath)
+	return model.GlobalSettings().Colors.Save(filePath)
 }

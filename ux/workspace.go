@@ -145,7 +145,7 @@ func NewWorkspace(wnd *unison.Window) *Workspace {
 	wnd.ClientData()[workspaceClientDataKey] = w
 	wnd.AllowCloseCallback = w.allowClose
 	wnd.WillCloseCallback = w.willClose
-	global := model.Global()
+	global := model.GlobalSettings()
 	if global.WorkspaceFrame != nil {
 		r := *global.WorkspaceFrame
 		if r.Width < 10 {
@@ -194,7 +194,7 @@ func (w *Workspace) allowClose() bool {
 }
 
 func (w *Workspace) willClose() {
-	global := model.Global()
+	global := model.GlobalSettings()
 	global.LibraryExplorer.OpenRowKeys = w.Navigator.DisclosedPaths()
 	global.LibraryExplorer.DividerPosition = w.TopDock.RootDockLayout().DividerPosition()
 	frame := w.Window.FrameRect()
@@ -423,7 +423,7 @@ func SaveDockableAs(d FileBackedDockable, extension string, saver func(filePath 
 			return false
 		}
 		setUnmodifiedAndNewPath(filePath)
-		model.Global().AddRecentFile(filePath)
+		model.GlobalSettings().AddRecentFile(filePath)
 		if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
 			dc.UpdateTitle(d)
 		}

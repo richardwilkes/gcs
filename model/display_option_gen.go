@@ -11,7 +11,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package display
+package model
 
 import (
 	"strings"
@@ -21,22 +21,22 @@ import (
 
 // Possible values.
 const (
-	NotShown Option = iota
-	Inline
-	Tooltip
-	InlineAndTooltip
-	LastOption = InlineAndTooltip
+	NotShownDisplayOption DisplayOption = iota
+	InlineDisplayOption
+	TooltipDisplayOption
+	InlineAndTooltipDisplayOption
+	LastDisplayOption = InlineAndTooltipDisplayOption
 )
 
 var (
-	// AllOption holds all possible values.
-	AllOption = []Option{
-		NotShown,
-		Inline,
-		Tooltip,
-		InlineAndTooltip,
+	// AllDisplayOption holds all possible values.
+	AllDisplayOption = []DisplayOption{
+		NotShownDisplayOption,
+		InlineDisplayOption,
+		TooltipDisplayOption,
+		InlineAndTooltipDisplayOption,
 	}
-	optionData = []struct {
+	displayOptionData = []struct {
 		key    string
 		string string
 	}{
@@ -59,44 +59,44 @@ var (
 	}
 )
 
-// Option holds a display option.
-type Option byte
+// DisplayOption holds a display option.
+type DisplayOption byte
 
 // EnsureValid ensures this is of a known value.
-func (enum Option) EnsureValid() Option {
-	if enum <= LastOption {
+func (enum DisplayOption) EnsureValid() DisplayOption {
+	if enum <= LastDisplayOption {
 		return enum
 	}
 	return 0
 }
 
 // Key returns the key used in serialization.
-func (enum Option) Key() string {
-	return optionData[enum.EnsureValid()].key
+func (enum DisplayOption) Key() string {
+	return displayOptionData[enum.EnsureValid()].key
 }
 
 // String implements fmt.Stringer.
-func (enum Option) String() string {
-	return optionData[enum.EnsureValid()].string
+func (enum DisplayOption) String() string {
+	return displayOptionData[enum.EnsureValid()].string
 }
 
-// ExtractOption extracts the value from a string.
-func ExtractOption(str string) Option {
-	for i, one := range optionData {
+// ExtractDisplayOption extracts the value from a string.
+func ExtractDisplayOption(str string) DisplayOption {
+	for i, one := range displayOptionData {
 		if strings.EqualFold(one.key, str) {
-			return Option(i)
+			return DisplayOption(i)
 		}
 	}
 	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
-func (enum Option) MarshalText() (text []byte, err error) {
+func (enum DisplayOption) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
 // UnmarshalText implements the encoding.TextUnmarshaler interface.
-func (enum *Option) UnmarshalText(text []byte) error {
-	*enum = ExtractOption(string(text))
+func (enum *DisplayOption) UnmarshalText(text []byte) error {
+	*enum = ExtractDisplayOption(string(text))
 	return nil
 }

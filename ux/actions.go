@@ -542,7 +542,7 @@ func registerActions() {
 			dialog.SetAllowedExtensions(library.AcceptableExtensions()...)
 			dialog.SetCanChooseDirectories(false)
 			dialog.SetCanChooseFiles(true)
-			global := model.Global()
+			global := model.GlobalSettings()
 			dialog.SetInitialDirectory(global.LastDir(model.DefaultLastDirKey))
 			if dialog.RunModal() {
 				paths := dialog.Paths()
@@ -781,7 +781,7 @@ func registerActions() {
 			return !updating && releases == nil
 		},
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			model.Global().LastSeenGCSVersion = ""
+			model.GlobalSettings().LastSeenGCSVersion = ""
 			CheckForAppUpdates()
 		},
 	}
