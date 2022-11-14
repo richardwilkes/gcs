@@ -15,7 +15,6 @@ import (
 	"fmt"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/trait"
 )
 
@@ -57,12 +56,12 @@ func (enum SelfControlRollAdj) Description(cr trait.SelfControlRoll) string {
 }
 
 // Features returns the set of features to apply.
-func (enum SelfControlRollAdj) Features(cr trait.SelfControlRoll) feature.Features {
+func (enum SelfControlRollAdj) Features(cr trait.SelfControlRoll) Features {
 	if enum.EnsureValid() != MajorCostOfLivingIncrease {
 		return nil
 	}
-	f := feature.NewSkillBonus()
+	f := NewSkillBonus()
 	f.NameCriteria.Qualifier = "Merchant"
 	f.Amount = fxp.From(cr.Index() - len(trait.AllSelfControlRolls))
-	return feature.Features{f}
+	return Features{f}
 }

@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package feature
+package gurps
 
 import (
 	"fmt"
@@ -24,8 +24,8 @@ var _ Bonus = &ReactionBonus{}
 
 // ReactionBonus holds a modifier due to a reaction.
 type ReactionBonus struct {
-	Type      Type   `json:"type"`
-	Situation string `json:"situation,omitempty"`
+	Type      FeatureType `json:"type"`
+	Situation string      `json:"situation,omitempty"`
 	LeveledAmount
 	owner fmt.Stringer
 }
@@ -33,14 +33,14 @@ type ReactionBonus struct {
 // NewReactionBonus creates a new ReactionBonus.
 func NewReactionBonus() *ReactionBonus {
 	return &ReactionBonus{
-		Type:          ReactionBonusType,
+		Type:          ReactionBonusFeatureType,
 		Situation:     i18n.Text("from others"),
 		LeveledAmount: LeveledAmount{Amount: fxp.One},
 	}
 }
 
 // FeatureType implements Feature.
-func (r *ReactionBonus) FeatureType() Type {
+func (r *ReactionBonus) FeatureType() FeatureType {
 	return r.Type
 }
 

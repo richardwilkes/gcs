@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package feature
+package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -19,22 +19,22 @@ var _ Feature = &CostReduction{}
 
 // CostReduction holds the data for a cost reduction.
 type CostReduction struct {
-	Type       Type    `json:"type"`
-	Attribute  string  `json:"attribute,omitempty"`
-	Percentage fxp.Int `json:"percentage,omitempty"`
+	Type       FeatureType `json:"type"`
+	Attribute  string      `json:"attribute,omitempty"`
+	Percentage fxp.Int     `json:"percentage,omitempty"`
 }
 
 // NewCostReduction creates a new CostReduction.
 func NewCostReduction(attrID string) *CostReduction {
 	return &CostReduction{
-		Type:       CostReductionType,
+		Type:       CostReductionFeatureType,
 		Attribute:  attrID,
 		Percentage: fxp.Forty,
 	}
 }
 
 // FeatureType implements Feature.
-func (c *CostReduction) FeatureType() Type {
+func (c *CostReduction) FeatureType() FeatureType {
 	return c.Type
 }
 

@@ -13,7 +13,6 @@ package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
 	"github.com/richardwilkes/toolbox/txt"
 )
@@ -37,7 +36,7 @@ type EquipmentEditData struct {
 	Uses                   int                  `json:"uses,omitempty"`
 	Prereq                 *PrereqList          `json:"prereqs,omitempty"`
 	Weapons                []*Weapon            `json:"weapons,omitempty"`
-	Features               feature.Features     `json:"features,omitempty"`
+	Features               Features             `json:"features,omitempty"`
 	Equipped               bool                 `json:"equipped,omitempty"`
 	WeightIgnoredForSkills bool                 `json:"ignore_weight_for_skills,omitempty"`
 }

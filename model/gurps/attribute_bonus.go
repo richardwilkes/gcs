@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package feature
+package gurps
 
 import (
 	"fmt"
@@ -23,7 +23,7 @@ var _ Bonus = &AttributeBonus{}
 
 // AttributeBonus holds the data for a bonus to an attribute.
 type AttributeBonus struct {
-	Type       Type                      `json:"type"`
+	Type       FeatureType               `json:"type"`
 	Limitation attribute.BonusLimitation `json:"limitation,omitempty"`
 	Attribute  string                    `json:"attribute"`
 	LeveledAmount
@@ -33,7 +33,7 @@ type AttributeBonus struct {
 // NewAttributeBonus creates a new AttributeBonus.
 func NewAttributeBonus(attrID string) *AttributeBonus {
 	return &AttributeBonus{
-		Type:          AttributeBonusType,
+		Type:          AttributeBonusFeatureType,
 		Attribute:     attrID,
 		Limitation:    attribute.None,
 		LeveledAmount: LeveledAmount{Amount: fxp.One},
@@ -41,7 +41,7 @@ func NewAttributeBonus(attrID string) *AttributeBonus {
 }
 
 // FeatureType implements Feature.
-func (a *AttributeBonus) FeatureType() Type {
+func (a *AttributeBonus) FeatureType() FeatureType {
 	return a.Type
 }
 

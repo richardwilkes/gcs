@@ -9,15 +9,15 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package feature
+package gurps
 
-// AllWithoutContainedWeightType holds the possible Type values, minus the ContainedWeightReductionType.
-var AllWithoutContainedWeightType []Type
+// AllFeatureTypesWithoutContainedWeightType holds the possible FeatureType values, minus the ContainedWeightReductionFeatureType.
+var AllFeatureTypesWithoutContainedWeightType []FeatureType
 
 func init() {
-	for _, one := range AllType {
-		if one != ContainedWeightReductionType {
-			AllWithoutContainedWeightType = append(AllWithoutContainedWeightType, one)
+	for _, one := range AllFeatureType {
+		if one != ContainedWeightReductionFeatureType {
+			AllFeatureTypesWithoutContainedWeightType = append(AllFeatureTypesWithoutContainedWeightType, one)
 		}
 	}
 }

@@ -13,7 +13,6 @@ package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/equipment"
-	"github.com/richardwilkes/gcs/v5/model/gurps/feature"
 	"github.com/richardwilkes/toolbox/txt"
 )
 
@@ -32,7 +31,7 @@ type EquipmentModifierEditData struct {
 	TechLevel    string                       `json:"tech_level,omitempty"`  // Non-container only
 	CostAmount   string                       `json:"cost,omitempty"`        // Non-container only
 	WeightAmount string                       `json:"weight,omitempty"`      // Non-container only
-	Features     feature.Features             `json:"features,omitempty"`    // Non-container only
+	Features     Features                     `json:"features,omitempty"`    // Non-container only
 }
 
 // CopyFrom implements node.EditorData.

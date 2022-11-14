@@ -478,10 +478,9 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/gurps/feature",
-		Name:       "type",
-		Desc:       "holds the type of a Feature",
-		StandAlone: false,
+		Pkg:  "model/gurps",
+		Name: "feature_type",
+		Desc: "holds the type of a Feature",
 		Values: []enumValue{
 			{
 				Key:    "attribute_bonus",

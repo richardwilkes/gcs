@@ -19,7 +19,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/datafile"
-	"github.com/richardwilkes/gcs/v5/model/gurps/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/gcs/v5/model/gurps/skill"
@@ -340,7 +339,7 @@ func (s *Skill) ModifierNotes() string {
 }
 
 // FeatureList returns the list of Features.
-func (s *Skill) FeatureList() feature.Features {
+func (s *Skill) FeatureList() Features {
 	return s.Features
 }
 

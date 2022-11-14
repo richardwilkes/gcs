@@ -19,7 +19,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/datafile"
-	"github.com/richardwilkes/gcs/v5/model/gurps/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/gcs/v5/model/gurps/skill"
@@ -625,7 +624,7 @@ func (s *Spell) Rituals() string {
 }
 
 // FeatureList returns the list of Features.
-func (s *Spell) FeatureList() feature.Features {
+func (s *Spell) FeatureList() Features {
 	return nil
 }
 

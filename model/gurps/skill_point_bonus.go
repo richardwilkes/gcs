@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package feature
+package gurps
 
 import (
 	"fmt"
@@ -25,7 +25,7 @@ var _ Bonus = &SkillPointBonus{}
 
 // SkillPointBonus holds an adjustment to a skill's points.
 type SkillPointBonus struct {
-	Type                   Type            `json:"type"`
+	Type                   FeatureType     `json:"type"`
 	NameCriteria           criteria.String `json:"name,omitempty"`
 	SpecializationCriteria criteria.String `json:"specialization,omitempty"`
 	TagsCriteria           criteria.String `json:"tags,alt=category,omitempty"`
@@ -36,7 +36,7 @@ type SkillPointBonus struct {
 // NewSkillPointBonus creates a new SkillPointBonus.
 func NewSkillPointBonus() *SkillPointBonus {
 	return &SkillPointBonus{
-		Type: SkillPointBonusType,
+		Type: SkillPointBonusFeatureType,
 		NameCriteria: criteria.String{
 			StringData: criteria.StringData{
 				Compare: criteria.Is,
@@ -57,7 +57,7 @@ func NewSkillPointBonus() *SkillPointBonus {
 }
 
 // FeatureType implements Feature.
-func (s *SkillPointBonus) FeatureType() Type {
+func (s *SkillPointBonus) FeatureType() FeatureType {
 	return s.Type
 }
 

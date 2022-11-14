@@ -11,7 +11,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package feature
+package gurps
 
 import (
 	"strings"
@@ -21,38 +21,38 @@ import (
 
 // Possible values.
 const (
-	AttributeBonusType Type = iota
-	ConditionalModifierType
-	DRBonusType
-	ReactionBonusType
-	SkillBonusType
-	SkillPointBonusType
-	SpellBonusType
-	SpellPointBonusType
-	WeaponBonusType
-	WeaponDRDivisorBonusType
-	CostReductionType
-	ContainedWeightReductionType
-	LastType = ContainedWeightReductionType
+	AttributeBonusFeatureType FeatureType = iota
+	ConditionalModifierFeatureType
+	DRBonusFeatureType
+	ReactionBonusFeatureType
+	SkillBonusFeatureType
+	SkillPointBonusFeatureType
+	SpellBonusFeatureType
+	SpellPointBonusFeatureType
+	WeaponBonusFeatureType
+	WeaponDRDivisorBonusFeatureType
+	CostReductionFeatureType
+	ContainedWeightReductionFeatureType
+	LastFeatureType = ContainedWeightReductionFeatureType
 )
 
 var (
-	// AllType holds all possible values.
-	AllType = []Type{
-		AttributeBonusType,
-		ConditionalModifierType,
-		DRBonusType,
-		ReactionBonusType,
-		SkillBonusType,
-		SkillPointBonusType,
-		SpellBonusType,
-		SpellPointBonusType,
-		WeaponBonusType,
-		WeaponDRDivisorBonusType,
-		CostReductionType,
-		ContainedWeightReductionType,
+	// AllFeatureType holds all possible values.
+	AllFeatureType = []FeatureType{
+		AttributeBonusFeatureType,
+		ConditionalModifierFeatureType,
+		DRBonusFeatureType,
+		ReactionBonusFeatureType,
+		SkillBonusFeatureType,
+		SkillPointBonusFeatureType,
+		SpellBonusFeatureType,
+		SpellPointBonusFeatureType,
+		WeaponBonusFeatureType,
+		WeaponDRDivisorBonusFeatureType,
+		CostReductionFeatureType,
+		ContainedWeightReductionFeatureType,
 	}
-	typeData = []struct {
+	featureTypeData = []struct {
 		key    string
 		string string
 	}{
@@ -107,44 +107,44 @@ var (
 	}
 )
 
-// Type holds the type of a Feature.
-type Type byte
+// FeatureType holds the type of a Feature.
+type FeatureType byte
 
 // EnsureValid ensures this is of a known value.
-func (enum Type) EnsureValid() Type {
-	if enum <= LastType {
+func (enum FeatureType) EnsureValid() FeatureType {
+	if enum <= LastFeatureType {
 		return enum
 	}
 	return 0
 }
 
 // Key returns the key used in serialization.
-func (enum Type) Key() string {
-	return typeData[enum.EnsureValid()].key
+func (enum FeatureType) Key() string {
+	return featureTypeData[enum.EnsureValid()].key
 }
 
 // String implements fmt.Stringer.
-func (enum Type) String() string {
-	return typeData[enum.EnsureValid()].string
+func (enum FeatureType) String() string {
+	return featureTypeData[enum.EnsureValid()].string
 }
 
-// ExtractType extracts the value from a string.
-func ExtractType(str string) Type {
-	for i, one := range typeData {
+// ExtractFeatureType extracts the value from a string.
+func ExtractFeatureType(str string) FeatureType {
+	for i, one := range featureTypeData {
 		if strings.EqualFold(one.key, str) {
-			return Type(i)
+			return FeatureType(i)
 		}
 	}
 	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
-func (enum Type) MarshalText() (text []byte, err error) {
+func (enum FeatureType) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
 // UnmarshalText implements the encoding.TextUnmarshaler interface.
-func (enum *Type) UnmarshalText(text []byte) error {
-	*enum = ExtractType(string(text))
+func (enum *FeatureType) UnmarshalText(text []byte) error {
+	*enum = ExtractFeatureType(string(text))
 	return nil
 }

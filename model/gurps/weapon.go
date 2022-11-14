@@ -21,7 +21,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/datafile"
-	"github.com/richardwilkes/gcs/v5/model/gurps/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/gurps/skill"
 	"github.com/richardwilkes/gcs/v5/model/gurps/weapon"
@@ -59,7 +58,7 @@ type WeaponOwner interface {
 	OwningEntity() *Entity
 	Description() string
 	Notes() string
-	FeatureList() feature.Features
+	FeatureList() Features
 	TagList() []string
 }
 
@@ -392,8 +391,8 @@ func (w *Weapon) EncumbrancePenalty(entity *Entity, tooltip *xio.ByteBuffer) fxp
 	return penalty
 }
 
-func (w *Weapon) extractSkillBonusForThisWeapon(f feature.Feature, tooltip *xio.ByteBuffer) fxp.Int {
-	if sb, ok := f.(*feature.SkillBonus); ok {
+func (w *Weapon) extractSkillBonusForThisWeapon(f Feature, tooltip *xio.ByteBuffer) fxp.Int {
+	if sb, ok := f.(*SkillBonus); ok {
 		if sb.SelectionType.EnsureValid() == skill.ThisWeapon {
 			if sb.SpecializationCriteria.Matches(w.Usage) {
 				sb.AddToTooltip(tooltip)

@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package feature
+package gurps
 
 import (
 	"github.com/richardwilkes/json"
@@ -41,34 +41,34 @@ func (f *Features) UnmarshalJSON(data []byte) error {
 	*f = make([]Feature, len(s))
 	for i, one := range s {
 		var justTypeData struct {
-			Type Type `json:"type"`
+			Type FeatureType `json:"type"`
 		}
 		if err := json.Unmarshal(*one, &justTypeData); err != nil {
 			return errs.Wrap(err)
 		}
 		var feature Feature
 		switch justTypeData.Type {
-		case AttributeBonusType:
+		case AttributeBonusFeatureType:
 			feature = &AttributeBonus{}
-		case ConditionalModifierType:
-			feature = &ConditionalModifier{}
-		case ContainedWeightReductionType:
+		case ConditionalModifierFeatureType:
+			feature = &ConditionalModifierBonus{}
+		case ContainedWeightReductionFeatureType:
 			feature = &ContainedWeightReduction{}
-		case CostReductionType:
+		case CostReductionFeatureType:
 			feature = &CostReduction{}
-		case DRBonusType:
+		case DRBonusFeatureType:
 			feature = &DRBonus{}
-		case ReactionBonusType:
+		case ReactionBonusFeatureType:
 			feature = &ReactionBonus{}
-		case SkillBonusType:
+		case SkillBonusFeatureType:
 			feature = &SkillBonus{}
-		case SkillPointBonusType:
+		case SkillPointBonusFeatureType:
 			feature = &SkillPointBonus{}
-		case SpellBonusType:
+		case SpellBonusFeatureType:
 			feature = &SpellBonus{}
-		case SpellPointBonusType:
+		case SpellPointBonusFeatureType:
 			feature = &SpellPointBonus{}
-		case WeaponBonusType, WeaponDRDivisorBonusType:
+		case WeaponBonusFeatureType, WeaponDRDivisorBonusFeatureType:
 			feature = &WeaponBonus{}
 		default:
 			return errs.Newf(i18n.Text("Unknown feature type: %s"), justTypeData.Type)

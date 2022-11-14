@@ -29,7 +29,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/ancestry"
 	"github.com/richardwilkes/gcs/v5/model/gurps/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/datafile"
-	"github.com/richardwilkes/gcs/v5/model/gurps/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
 	"github.com/richardwilkes/gcs/v5/model/gurps/skill"
@@ -79,14 +78,14 @@ type EntityData struct {
 }
 
 type features struct {
-	attributeBonuses  []*feature.AttributeBonus
-	costReductions    []*feature.CostReduction
-	drBonuses         []*feature.DRBonus
-	skillBonuses      []*feature.SkillBonus
-	skillPointBonuses []*feature.SkillPointBonus
-	spellBonuses      []*feature.SpellBonus
-	spellPointBonuses []*feature.SpellPointBonus
-	weaponBonuses     []*feature.WeaponBonus
+	attributeBonuses  []*AttributeBonus
+	costReductions    []*CostReduction
+	drBonuses         []*DRBonus
+	skillBonuses      []*SkillBonus
+	skillPointBonuses []*SkillPointBonus
+	spellBonuses      []*SpellBonus
+	spellPointBonuses []*SpellPointBonus
+	weaponBonuses     []*WeaponBonus
 }
 
 // Entity holds the base information for various types of entities: PC, NPC, Creature, etc.
@@ -355,29 +354,29 @@ func (e *Entity) processFeatures() {
 	e.BlockBonus = e.AttributeBonusFor(gid.Block, attribute.None, nil).Trunc()
 }
 
-func (e *Entity) processFeature(owner fmt.Stringer, f feature.Feature, levels fxp.Int) {
-	if bonus, ok := f.(feature.Bonus); ok {
+func (e *Entity) processFeature(owner fmt.Stringer, f Feature, levels fxp.Int) {
+	if bonus, ok := f.(Bonus); ok {
 		bonus.SetOwner(owner)
 		bonus.SetLevel(levels)
 	}
 	switch actual := f.(type) {
-	case *feature.AttributeBonus:
+	case *AttributeBonus:
 		e.features.attributeBonuses = append(e.features.attributeBonuses, actual)
-	case *feature.CostReduction:
+	case *CostReduction:
 		e.features.costReductions = append(e.features.costReductions, actual)
-	case *feature.DRBonus:
+	case *DRBonus:
 		e.features.drBonuses = append(e.features.drBonuses, actual)
-	case *feature.SkillBonus:
+	case *SkillBonus:
 		e.features.skillBonuses = append(e.features.skillBonuses, actual)
-	case *feature.SkillPointBonus:
+	case *SkillPointBonus:
 		e.features.skillPointBonuses = append(e.features.skillPointBonuses, actual)
-	case *feature.SpellBonus:
+	case *SpellBonus:
 		e.features.spellBonuses = append(e.features.spellBonuses, actual)
-	case *feature.SpellPointBonus:
+	case *SpellPointBonus:
 		e.features.spellPointBonuses = append(e.features.spellPointBonuses, actual)
-	case *feature.WeaponBonus:
+	case *WeaponBonus:
 		e.features.weaponBonuses = append(e.features.weaponBonuses, actual)
-	case *feature.ConditionalModifier, *feature.ContainedWeightReduction, *feature.ReactionBonus:
+	case *ConditionalModifierBonus, *ContainedWeightReduction, *ReactionBonus:
 		// Not collected at this stage
 	default:
 		jot.Warnf("unhandled feature type: %s", f.FeatureType())
@@ -407,7 +406,7 @@ func (e *Entity) processPrereqs() {
 				var eqpPenalty bool
 				satisfied = s.Prereq.Satisfied(e, s, &tooltip, prefix, &eqpPenalty)
 				if eqpPenalty {
-					penalty := feature.NewSkillBonus()
+					penalty := NewSkillBonus()
 					penalty.NameCriteria.Qualifier = s.Name
 					penalty.SpecializationCriteria.Compare = criteria.Is
 					penalty.SpecializationCriteria.Qualifier = s.Specialization
@@ -438,7 +437,7 @@ func (e *Entity) processPrereqs() {
 				var eqpPenalty bool
 				satisfied = s.Prereq.Satisfied(e, s, &tooltip, prefix, &eqpPenalty)
 				if eqpPenalty {
-					penalty := feature.NewSpellBonus()
+					penalty := NewSpellBonus()
 					penalty.NameCriteria.Qualifier = s.Name
 					if s.TechLevel != nil && *s.TechLevel != "" {
 						penalty.LeveledAmount.Amount = -fxp.Ten
@@ -734,9 +733,9 @@ func (e *Entity) SpellPointBonusFor(name, powerSource string, colleges, tags []s
 
 // AddWeaponWithSkillBonusesFor adds the bonuses for matching weapons that match to the map. If 'm' is nil, it will be
 // created. The provided map (or the newly created one) will be returned.
-func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization string, tags []string, dieCount int, levels fxp.Int, tooltip *xio.ByteBuffer, m map[*feature.WeaponBonus]bool) map[*feature.WeaponBonus]bool {
+func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization string, tags []string, dieCount int, levels fxp.Int, tooltip *xio.ByteBuffer, m map[*WeaponBonus]bool) map[*WeaponBonus]bool {
 	if m == nil {
-		m = make(map[*feature.WeaponBonus]bool)
+		m = make(map[*WeaponBonus]bool)
 	}
 	rsl := fxp.Min
 	for _, sk := range e.SkillNamed(name, specialization, true, nil) {
@@ -752,7 +751,7 @@ func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization string, tags 
 				bonus.RelativeLevelCriteria.Matches(rsl) &&
 				bonus.TagsCriteria.MatchesList(tags...) {
 				level := bonus.LeveledAmount.Level
-				if bonus.Type == feature.WeaponBonusType {
+				if bonus.Type == WeaponBonusFeatureType {
 					bonus.LeveledAmount.Level = fxp.From(dieCount)
 				} else {
 					bonus.LeveledAmount.Level = levels
@@ -768,9 +767,9 @@ func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization string, tags 
 
 // AddNamedWeaponBonusesFor adds the bonuses for matching weapons that match to the map. If 'm' is nil, it will
 // be created. The provided map (or the newly created one) will be returned.
-func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, tagsQualifier []string, dieCount int, levels fxp.Int, tooltip *xio.ByteBuffer, m map[*feature.WeaponBonus]bool) map[*feature.WeaponBonus]bool {
+func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, tagsQualifier []string, dieCount int, levels fxp.Int, tooltip *xio.ByteBuffer, m map[*WeaponBonus]bool) map[*WeaponBonus]bool {
 	if m == nil {
-		m = make(map[*feature.WeaponBonus]bool)
+		m = make(map[*WeaponBonus]bool)
 	}
 	for _, bonus := range e.features.weaponBonuses {
 		if bonus.SelectionType == weapon.WithName &&
@@ -778,7 +777,7 @@ func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, 
 			bonus.SpecializationCriteria.Matches(usageQualifier) &&
 			bonus.TagsCriteria.MatchesList(tagsQualifier...) {
 			level := bonus.LeveledAmount.Level
-			if bonus.Type == feature.WeaponBonusType {
+			if bonus.Type == WeaponBonusFeatureType {
 				bonus.LeveledAmount.Level = fxp.From(dieCount)
 			} else {
 				bonus.LeveledAmount.Level = levels
@@ -792,8 +791,8 @@ func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, 
 }
 
 // NamedWeaponSkillBonusesFor returns the bonuses for matching weapons.
-func (e *Entity) NamedWeaponSkillBonusesFor(name, usage string, tags []string, tooltip *xio.ByteBuffer) []*feature.SkillBonus {
-	var bonuses []*feature.SkillBonus
+func (e *Entity) NamedWeaponSkillBonusesFor(name, usage string, tags []string, tooltip *xio.ByteBuffer) []*SkillBonus {
+	var bonuses []*SkillBonus
 	for _, bonus := range e.features.skillBonuses {
 		if bonus.SelectionType == skill.WeaponsWithName &&
 			bonus.NameCriteria.Matches(name) &&
@@ -1174,7 +1173,7 @@ func (e *Entity) Reactions() []*ConditionalModifier {
 			if r, exists := m[situation]; exists {
 				r.Add(source, amt)
 			} else {
-				m[situation] = NewReaction(source, situation, amt)
+				m[situation] = NewConditionalModifier(source, situation, amt)
 			}
 		}
 		return false
@@ -1202,14 +1201,14 @@ func (e *Entity) Reactions() []*ConditionalModifier {
 	return list
 }
 
-func (e *Entity) reactionsFromFeatureList(source string, features feature.Features, m map[string]*ConditionalModifier) {
+func (e *Entity) reactionsFromFeatureList(source string, features Features, m map[string]*ConditionalModifier) {
 	for _, f := range features {
-		if bonus, ok := f.(*feature.ReactionBonus); ok {
+		if bonus, ok := f.(*ReactionBonus); ok {
 			amt := bonus.AdjustedAmount()
 			if r, exists := m[bonus.Situation]; exists {
 				r.Add(source, amt)
 			} else {
-				m[bonus.Situation] = NewReaction(source, bonus.Situation, amt)
+				m[bonus.Situation] = NewConditionalModifier(source, bonus.Situation, amt)
 			}
 		}
 	}
@@ -1252,14 +1251,14 @@ func (e *Entity) ConditionalModifiers() []*ConditionalModifier {
 	return list
 }
 
-func (e *Entity) conditionalModifiersFromFeatureList(source string, features feature.Features, m map[string]*ConditionalModifier) {
+func (e *Entity) conditionalModifiersFromFeatureList(source string, features Features, m map[string]*ConditionalModifier) {
 	for _, f := range features {
-		if bonus, ok := f.(*feature.ConditionalModifier); ok {
+		if bonus, ok := f.(*ConditionalModifierBonus); ok {
 			amt := bonus.AdjustedAmount()
 			if r, exists := m[bonus.Situation]; exists {
 				r.Add(source, amt)
 			} else {
-				m[bonus.Situation] = NewReaction(source, bonus.Situation, amt)
+				m[bonus.Situation] = NewConditionalModifier(source, bonus.Situation, amt)
 			}
 		}
 	}

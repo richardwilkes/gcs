@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package feature
+package gurps
 
 import (
 	"fmt"
@@ -26,7 +26,7 @@ var _ Bonus = &WeaponBonus{}
 
 // WeaponBonus holds the data for an adjustment to weapon damage.
 type WeaponBonus struct {
-	Type                   Type                 `json:"type"`
+	Type                   FeatureType          `json:"type"`
 	Percent                bool                 `json:"percent,omitempty"`
 	SelectionType          weapon.SelectionType `json:"selection_type"`
 	NameCriteria           criteria.String      `json:"name,omitempty"`
@@ -39,15 +39,15 @@ type WeaponBonus struct {
 
 // NewWeaponDamageBonus creates a new weapon damage bonus.
 func NewWeaponDamageBonus() *WeaponBonus {
-	return newWeaponDamageBonus(WeaponBonusType)
+	return newWeaponDamageBonus(WeaponBonusFeatureType)
 }
 
 // NewWeaponDRDivisorBonus creates a new weapon DR divisor bonus.
 func NewWeaponDRDivisorBonus() *WeaponBonus {
-	return newWeaponDamageBonus(WeaponDRDivisorBonusType)
+	return newWeaponDamageBonus(WeaponDRDivisorBonusFeatureType)
 }
 
-func newWeaponDamageBonus(t Type) *WeaponBonus {
+func newWeaponDamageBonus(t FeatureType) *WeaponBonus {
 	return &WeaponBonus{
 		Type:          t,
 		SelectionType: weapon.WithRequiredSkill,
@@ -76,7 +76,7 @@ func newWeaponDamageBonus(t Type) *WeaponBonus {
 }
 
 // FeatureType implements Feature.
-func (w *WeaponBonus) FeatureType() Type {
+func (w *WeaponBonus) FeatureType() FeatureType {
 	return w.Type
 }
 
@@ -127,7 +127,7 @@ func (w *WeaponBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 		buffer.WriteByte('\n')
 		buffer.WriteString(parentName(w.owner))
 		buffer.WriteString(" [")
-		if w.Type == WeaponBonusType {
+		if w.Type == WeaponBonusFeatureType {
 			buffer.WriteString(w.LeveledAmount.Format(w.Percent, i18n.Text("die")))
 			buffer.WriteString(i18n.Text(" to damage"))
 		} else {

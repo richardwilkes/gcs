@@ -38,8 +38,8 @@ type ConditionalModifier struct {
 	Sources []string
 }
 
-// NewReaction creates a new ConditionalModifier.
-func NewReaction(source, from string, amt fxp.Int) *ConditionalModifier {
+// NewConditionalModifier creates a new ConditionalModifier.
+func NewConditionalModifier(source, from string, amt fxp.Int) *ConditionalModifier {
 	return &ConditionalModifier{
 		ID:      uuid.New(),
 		From:    from,

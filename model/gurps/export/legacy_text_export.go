@@ -27,7 +27,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/datafile"
-	"github.com/richardwilkes/gcs/v5/model/gurps/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/gurps/weapon"
 	"github.com/richardwilkes/gcs/v5/model/theme"
@@ -767,7 +766,7 @@ func (ex *legacyExporter) hitLocationEquipment(location *gurps.HitLocation) []st
 	gurps.Traverse(func(eqp *gurps.Equipment) bool {
 		if eqp.Equipped {
 			for _, f := range eqp.Features {
-				if bonus, ok := f.(*feature.DRBonus); ok {
+				if bonus, ok := f.(*gurps.DRBonus); ok {
 					if strings.EqualFold(location.LocID, bonus.Location) {
 						list = append(list, eqp.Name)
 					}

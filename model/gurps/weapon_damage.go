@@ -17,7 +17,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/attribute"
-	"github.com/richardwilkes/gcs/v5/model/gurps/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/weapon"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
@@ -213,7 +212,7 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 			}
 		}
 	}
-	bonusSet := make(map[*feature.WeaponBonus]bool)
+	bonusSet := make(map[*WeaponBonus]bool)
 	tags := w.Owner.Owner.TagList()
 	if bestDef != nil {
 		pc.AddWeaponWithSkillBonusesFor(bestDef.Name, bestDef.Specialization, tags, base.Count, levels, tooltip, bonusSet)
@@ -243,7 +242,7 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 	var percentDamageBonus, percentDRDivisorBonus fxp.Int
 	armorDivisor := w.ArmorDivisor
 	for bonus := range bonusSet {
-		if bonus.Type == feature.WeaponBonusType {
+		if bonus.Type == WeaponBonusFeatureType {
 			if bonus.Percent {
 				percentDamageBonus += bonus.Amount
 			} else {
@@ -316,10 +315,10 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 	return buffer.String()
 }
 
-func (w *WeaponDamage) extractWeaponBonus(f feature.Feature, set map[*feature.WeaponBonus]bool, dieCount, levels fxp.Int, tooltip *xio.ByteBuffer) {
-	if bonus, ok := f.(*feature.WeaponBonus); ok {
+func (w *WeaponDamage) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, dieCount, levels fxp.Int, tooltip *xio.ByteBuffer) {
+	if bonus, ok := f.(*WeaponBonus); ok {
 		level := bonus.LeveledAmount.Level
-		if bonus.Type == feature.WeaponBonusType {
+		if bonus.Type == WeaponBonusFeatureType {
 			bonus.LeveledAmount.Level = dieCount
 		} else {
 			bonus.LeveledAmount.Level = levels

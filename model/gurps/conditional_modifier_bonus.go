@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package feature
+package gurps
 
 import (
 	"fmt"
@@ -20,62 +20,62 @@ import (
 	"github.com/richardwilkes/toolbox/xio"
 )
 
-var _ Bonus = &ConditionalModifier{}
+var _ Bonus = &ConditionalModifierBonus{}
 
-// ConditionalModifier holds the data for a conditional modifier.
-type ConditionalModifier struct {
-	Type      Type   `json:"type"`
-	Situation string `json:"situation,omitempty"`
+// ConditionalModifierBonus holds the data for a conditional modifier bonus.
+type ConditionalModifierBonus struct {
+	Type      FeatureType `json:"type"`
+	Situation string      `json:"situation,omitempty"`
 	LeveledAmount
 	owner fmt.Stringer
 }
 
-// NewConditionalModifierBonus creates a new ConditionalModifier.
-func NewConditionalModifierBonus() *ConditionalModifier {
-	return &ConditionalModifier{
-		Type:          ConditionalModifierType,
+// NewConditionalModifierBonus creates a new ConditionalModifierBonus.
+func NewConditionalModifierBonus() *ConditionalModifierBonus {
+	return &ConditionalModifierBonus{
+		Type:          ConditionalModifierFeatureType,
 		Situation:     i18n.Text("triggering condition"),
 		LeveledAmount: LeveledAmount{Amount: fxp.One},
 	}
 }
 
 // FeatureType implements Feature.
-func (c *ConditionalModifier) FeatureType() Type {
+func (c *ConditionalModifierBonus) FeatureType() FeatureType {
 	return c.Type
 }
 
 // Clone implements Feature.
-func (c *ConditionalModifier) Clone() Feature {
+func (c *ConditionalModifierBonus) Clone() Feature {
 	other := *c
 	return &other
 }
 
 // FillWithNameableKeys implements Feature.
-func (c *ConditionalModifier) FillWithNameableKeys(m map[string]string) {
+func (c *ConditionalModifierBonus) FillWithNameableKeys(m map[string]string) {
 	nameables.Extract(c.Situation, m)
 }
 
 // ApplyNameableKeys implements Feature.
-func (c *ConditionalModifier) ApplyNameableKeys(m map[string]string) {
+func (c *ConditionalModifierBonus) ApplyNameableKeys(m map[string]string) {
 	c.Situation = nameables.Apply(c.Situation, m)
 }
 
 // Owner implements Bonus.
-func (c *ConditionalModifier) Owner() fmt.Stringer {
+func (c *ConditionalModifierBonus) Owner() fmt.Stringer {
 	return c.owner
 }
 
 // SetOwner implements Bonus.
-func (c *ConditionalModifier) SetOwner(owner fmt.Stringer) {
+func (c *ConditionalModifierBonus) SetOwner(owner fmt.Stringer) {
 	c.owner = owner
 }
 
 // SetLevel implements Bonus.
-func (c *ConditionalModifier) SetLevel(level fxp.Int) {
+func (c *ConditionalModifierBonus) SetLevel(level fxp.Int) {
 	c.Level = level
 }
 
 // AddToTooltip implements Bonus.
-func (c *ConditionalModifier) AddToTooltip(buffer *xio.ByteBuffer) {
+func (c *ConditionalModifierBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 	basicAddToTooltip(c.owner, &c.LeveledAmount, buffer)
 }

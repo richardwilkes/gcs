@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package feature
+package gurps
 
 import (
 	"fmt"
@@ -21,11 +21,11 @@ import (
 	"github.com/richardwilkes/toolbox/xio"
 )
 
-var _ Bonus = &SpellBonus{}
+var _ Bonus = &SpellPointBonus{}
 
-// SpellBonus holds the data for a bonus to a spell.
-type SpellBonus struct {
-	Type           Type            `json:"type"`
+// SpellPointBonus holds an adjustment to a spell's points.
+type SpellPointBonus struct {
+	Type           FeatureType     `json:"type"`
 	SpellMatchType spell.MatchType `json:"match"`
 	NameCriteria   criteria.String `json:"name,omitempty"`
 	TagsCriteria   criteria.String `json:"tags,alt=category,omitempty"`
@@ -33,10 +33,10 @@ type SpellBonus struct {
 	owner fmt.Stringer
 }
 
-// NewSpellBonus creates a new SpellBonus.
-func NewSpellBonus() *SpellBonus {
-	return &SpellBonus{
-		Type:           SpellBonusType,
+// NewSpellPointBonus creates a new SpellPointBonus.
+func NewSpellPointBonus() *SpellPointBonus {
+	return &SpellPointBonus{
+		Type:           SpellPointBonusFeatureType,
 		SpellMatchType: spell.AllColleges,
 		NameCriteria: criteria.String{
 			StringData: criteria.StringData{
@@ -53,18 +53,18 @@ func NewSpellBonus() *SpellBonus {
 }
 
 // FeatureType implements Feature.
-func (s *SpellBonus) FeatureType() Type {
+func (s *SpellPointBonus) FeatureType() FeatureType {
 	return s.Type
 }
 
 // Clone implements Feature.
-func (s *SpellBonus) Clone() Feature {
+func (s *SpellPointBonus) Clone() Feature {
 	other := *s
 	return &other
 }
 
 // FillWithNameableKeys implements Feature.
-func (s *SpellBonus) FillWithNameableKeys(m map[string]string) {
+func (s *SpellPointBonus) FillWithNameableKeys(m map[string]string) {
 	if s.SpellMatchType != spell.AllColleges {
 		nameables.Extract(s.NameCriteria.Qualifier, m)
 	}
@@ -72,7 +72,7 @@ func (s *SpellBonus) FillWithNameableKeys(m map[string]string) {
 }
 
 // ApplyNameableKeys implements Feature.
-func (s *SpellBonus) ApplyNameableKeys(m map[string]string) {
+func (s *SpellPointBonus) ApplyNameableKeys(m map[string]string) {
 	if s.SpellMatchType != spell.AllColleges {
 		s.NameCriteria.Qualifier = nameables.Apply(s.NameCriteria.Qualifier, m)
 	}
@@ -80,26 +80,26 @@ func (s *SpellBonus) ApplyNameableKeys(m map[string]string) {
 }
 
 // Owner implements Bonus.
-func (s *SpellBonus) Owner() fmt.Stringer {
+func (s *SpellPointBonus) Owner() fmt.Stringer {
 	return s.owner
 }
 
 // SetOwner implements Bonus.
-func (s *SpellBonus) SetOwner(owner fmt.Stringer) {
+func (s *SpellPointBonus) SetOwner(owner fmt.Stringer) {
 	s.owner = owner
 }
 
 // SetLevel implements Bonus.
-func (s *SpellBonus) SetLevel(level fxp.Int) {
+func (s *SpellPointBonus) SetLevel(level fxp.Int) {
 	s.Level = level
 }
 
 // AddToTooltip implements Bonus.
-func (s *SpellBonus) AddToTooltip(buffer *xio.ByteBuffer) {
+func (s *SpellPointBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 	basicAddToTooltip(s.owner, &s.LeveledAmount, buffer)
 }
 
 // MatchForType returns true if this spell bonus matches the data for its match type.
-func (s *SpellBonus) MatchForType(name, powerSource string, colleges []string) bool {
+func (s *SpellPointBonus) MatchForType(name, powerSource string, colleges []string) bool {
 	return s.SpellMatchType.MatchForType(s.NameCriteria, name, powerSource, colleges)
 }

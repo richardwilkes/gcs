@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package feature
+package gurps
 
 import (
 	"fmt"
@@ -26,9 +26,9 @@ var _ Bonus = &DRBonus{}
 
 // DRBonusData is split out so that it can be adjusted before and after being serialized.
 type DRBonusData struct {
-	Type           Type   `json:"type"`
-	Location       string `json:"location"`
-	Specialization string `json:"specialization,omitempty"`
+	Type           FeatureType `json:"type"`
+	Location       string      `json:"location"`
+	Specialization string      `json:"specialization,omitempty"`
 	LeveledAmount
 }
 
@@ -42,7 +42,7 @@ type DRBonus struct {
 func NewDRBonus() *DRBonus {
 	return &DRBonus{
 		DRBonusData: DRBonusData{
-			Type:           DRBonusType,
+			Type:           DRBonusFeatureType,
 			Location:       "torso",
 			Specialization: gid.All,
 			LeveledAmount:  LeveledAmount{Amount: fxp.One},
@@ -51,7 +51,7 @@ func NewDRBonus() *DRBonus {
 }
 
 // FeatureType implements Feature.
-func (d *DRBonus) FeatureType() Type {
+func (d *DRBonus) FeatureType() FeatureType {
 	return d.Type
 }
 

@@ -17,7 +17,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
 	"github.com/richardwilkes/gcs/v5/model/gurps/trait"
@@ -359,7 +358,7 @@ func (a *Trait) String() string {
 }
 
 // FeatureList returns the list of Features.
-func (a *Trait) FeatureList() feature.Features {
+func (a *Trait) FeatureList() Features {
 	return a.Features
 }
 

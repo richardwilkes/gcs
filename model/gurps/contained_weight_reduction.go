@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package feature
+package gurps
 
 import (
 	"strings"
@@ -22,20 +22,20 @@ var _ Feature = &ContainedWeightReduction{}
 
 // ContainedWeightReduction holds the data for a weight reduction that can be applied to a container's contents.
 type ContainedWeightReduction struct {
-	Type      Type   `json:"type"`
-	Reduction string `json:"reduction"`
+	Type      FeatureType `json:"type"`
+	Reduction string      `json:"reduction"`
 }
 
 // NewContainedWeightReduction creates a new ContainedWeightReduction.
 func NewContainedWeightReduction() *ContainedWeightReduction {
 	return &ContainedWeightReduction{
-		Type:      ContainedWeightReductionType,
+		Type:      ContainedWeightReductionFeatureType,
 		Reduction: "0%",
 	}
 }
 
 // FeatureType implements Feature.
-func (c *ContainedWeightReduction) FeatureType() Type {
+func (c *ContainedWeightReduction) FeatureType() FeatureType {
 	return c.Type
 }
 

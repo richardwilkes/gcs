@@ -13,7 +13,6 @@ package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/trait"
 	"github.com/richardwilkes/toolbox/txt"
 )
@@ -32,7 +31,7 @@ type TraitModifierEditData struct {
 	Affects    trait.Affects          `json:"affects,omitempty"`   // Non-container only
 	CostType   trait.ModifierCostType `json:"cost_type,omitempty"` // Non-container only
 	Disabled   bool                   `json:"disabled,omitempty"`  // Non-container only
-	Features   feature.Features       `json:"features,omitempty"`  // Non-container only
+	Features   Features               `json:"features,omitempty"`  // Non-container only
 }
 
 // CopyFrom implements node.EditorData.

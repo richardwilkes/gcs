@@ -13,7 +13,6 @@ package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/trait"
 	"github.com/richardwilkes/toolbox/txt"
 )
@@ -35,7 +34,7 @@ type TraitEditData struct {
 	PointsPerLevel fxp.Int               `json:"points_per_level,omitempty"` // Non-container only
 	Prereq         *PrereqList           `json:"prereqs,omitempty"`          // Non-container only
 	Weapons        []*Weapon             `json:"weapons,omitempty"`          // Non-container only
-	Features       feature.Features      `json:"features,omitempty"`         // Non-container only
+	Features       Features              `json:"features,omitempty"`         // Non-container only
 	Study          []*Study              `json:"study,omitempty"`            // Non-container only
 	TemplatePicker *TemplatePicker       `json:"template_picker,omitempty"`  // Container only
 	CR             trait.SelfControlRoll `json:"cr,omitempty"`

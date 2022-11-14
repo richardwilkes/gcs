@@ -13,7 +13,6 @@ package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/skill"
 	"github.com/richardwilkes/toolbox/txt"
 )
@@ -38,7 +37,7 @@ type SkillEditData struct {
 	TechniqueLimitModifier       *fxp.Int            `json:"limit,omitempty"`                          // Non-container only
 	Prereq                       *PrereqList         `json:"prereqs,omitempty"`                        // Non-container only
 	Weapons                      []*Weapon           `json:"weapons,omitempty"`                        // Non-container only
-	Features                     feature.Features    `json:"features,omitempty"`                       // Non-container only
+	Features                     Features            `json:"features,omitempty"`                       // Non-container only
 	Study                        []*Study            `json:"study,omitempty"`                          // Non-container only
 	TemplatePicker               *TemplatePicker     `json:"template_picker,omitempty"`                // Container only
 }

@@ -18,7 +18,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/gid"
 	"github.com/richardwilkes/gcs/v5/model/gurps/measure"
 	"github.com/richardwilkes/gcs/v5/model/gurps/nameables"
@@ -348,7 +347,7 @@ func (e *Equipment) Notes() string {
 }
 
 // FeatureList returns the list of Features.
-func (e *Equipment) FeatureList() feature.Features {
+func (e *Equipment) FeatureList() Features {
 	return e.Features
 }
 
@@ -390,7 +389,7 @@ func (e *Equipment) ExtendedWeight(forSkills bool, defUnits measure.WeightUnits)
 }
 
 // ExtendedWeightAdjustedForModifiers calculates the extended weight.
-func ExtendedWeightAdjustedForModifiers(defUnits measure.WeightUnits, qty fxp.Int, baseWeight measure.Weight, modifiers []*EquipmentModifier, features feature.Features, children []*Equipment, forSkills, weightIgnoredForSkills bool) measure.Weight {
+func ExtendedWeightAdjustedForModifiers(defUnits measure.WeightUnits, qty fxp.Int, baseWeight measure.Weight, modifiers []*EquipmentModifier, features Features, children []*Equipment, forSkills, weightIgnoredForSkills bool) measure.Weight {
 	if qty <= 0 {
 		return 0
 	}
@@ -405,7 +404,7 @@ func ExtendedWeightAdjustedForModifiers(defUnits measure.WeightUnits, qty fxp.In
 		}
 		var percentage, reduction fxp.Int
 		for _, one := range features {
-			if cwr, ok := one.(*feature.ContainedWeightReduction); ok {
+			if cwr, ok := one.(*ContainedWeightReduction); ok {
 				if cwr.IsPercentageReduction() {
 					percentage += cwr.PercentageReduction()
 				} else {
@@ -415,7 +414,7 @@ func ExtendedWeightAdjustedForModifiers(defUnits measure.WeightUnits, qty fxp.In
 		}
 		Traverse(func(mod *EquipmentModifier) bool {
 			for _, f := range mod.Features {
-				if cwr, ok := f.(*feature.ContainedWeightReduction); ok {
+				if cwr, ok := f.(*ContainedWeightReduction); ok {
 					if cwr.IsPercentageReduction() {
 						percentage += cwr.PercentageReduction()
 					} else {

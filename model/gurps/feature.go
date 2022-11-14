@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package feature
+package gurps
 
 import (
 	"fmt"
@@ -23,7 +23,7 @@ import (
 // Feature holds data that affects another object.
 type Feature interface {
 	nameables.Nameables
-	FeatureType() Type
+	FeatureType() FeatureType
 	Clone() Feature
 }
 
