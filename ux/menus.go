@@ -20,7 +20,6 @@ import (
 	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/export"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -414,7 +413,7 @@ func (s menuBarScope) createExportToTextAction(index int, path string) *unison.A
 				dialog.SetAllowedExtensions(ext)
 				if dialog.RunModal() {
 					if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), ext, false); ok {
-						if err := export.LegacyExport(s.Entity(), path, filePath); err != nil {
+						if err := model.LegacyExport(s.Entity(), path, filePath); err != nil {
 							unison.ErrorDialogWithError(i18n.Text("Export failed"), err)
 						}
 					}

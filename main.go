@@ -17,7 +17,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/dbg"
 	"github.com/richardwilkes/gcs/v5/early"
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/export"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox/atexit"
@@ -61,7 +60,7 @@ Translations dir: "%s"`), model.SettingsPath(), i18n.Dir)
 				cl.FatalMsg(one + i18n.Text(" is not exportable."))
 			}
 		}
-		if err := export.ToText(textTmplPath, fileList); err != nil {
+		if err := model.LegacyExportMultiple(textTmplPath, fileList); err != nil {
 			cl.FatalMsg(err.Error())
 		}
 	default:

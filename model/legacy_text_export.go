@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package export
+package model
 
 import (
 	"bufio"
@@ -23,33 +23,33 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
 )
 
 const (
-	descriptionKey        = "DESCRIPTION"
-	descriptionPrimaryKey = "DESCRIPTION_PRIMARY"
-	idKey                 = "ID"
-	nameKey               = "NAME"
-	parentIDKey           = "PARENT_ID"
-	pointsKey             = "POINTS"
-	refKey                = "REF"
-	satisfiedKey          = "SATISFIED"
-	styleIndentWarningKey = "STYLE_INDENT_WARNING"
-	techLevelKey          = "TL"
-	typeKey               = "TYPE"
-	weightKey             = "WEIGHT"
+	descriptionExportKey        = "DESCRIPTION"
+	descriptionPrimaryExportKey = "DESCRIPTION_PRIMARY"
+	idExportKey                 = "ID"
+	nameExportKey               = "NAME"
+	parentIDExportKey           = "PARENT_ID"
+	pointsExportKey             = "POINTS"
+	refExportKey                = "REF"
+	satisfiedExportKey          = "SATISFIED"
+	styleIndentWarningExportKey = "STYLE_INDENT_WARNING"
+	techLevelExportKey          = "TL"
+	typeExportKey               = "TYPE"
+	weightExportKey             = "WEIGHT"
 )
 
 type legacyExporter struct {
-	entity             *model.Entity
+	entity             *Entity
 	template           []byte
 	pos                int
 	exportPath         string
@@ -60,8 +60,27 @@ type legacyExporter struct {
 	enhancedKeyParsing bool
 }
 
+// LegacyExportMultiple exports the files to a text representation.
+func LegacyExportMultiple(tmplPath string, fileList []string) error {
+	for _, one := range fileList {
+		switch strings.ToLower(filepath.Ext(one)) {
+		case SheetExt:
+			entity, err := NewEntityFromFile(os.DirFS(filepath.Dir(one)), filepath.Base(one))
+			if err != nil {
+				return err
+			}
+			if err = LegacyExport(entity, tmplPath, fs.TrimExtension(one)+filepath.Ext(tmplPath)); err != nil {
+				return err
+			}
+		default:
+			jot.Warn("ignoring: " + one)
+		}
+	}
+	return nil
+}
+
 // LegacyExport performs the text template export function that matches the old Java code base.
-func LegacyExport(entity *model.Entity, templatePath, exportPath string) (err error) {
+func LegacyExport(entity *Entity, templatePath, exportPath string) (err error) {
 	entity.Recalculate()
 	ex := &legacyExporter{
 		entity:       entity,
@@ -144,7 +163,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 			ex.out.WriteString("data:image/png;base64,")
 			ex.out.WriteString(base64.URLEncoding.EncodeToString(ex.entity.Profile.PortraitData))
 		}
-	case nameKey:
+	case nameExportKey:
 		ex.writeEncodedText(ex.entity.Profile.Name)
 	case "TITLE":
 		ex.writeEncodedText(ex.entity.Profile.Title)
@@ -206,7 +225,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 		ex.writeEncodedText(ex.entity.UnspentPoints().String())
 	case "HEIGHT":
 		ex.writeEncodedText(ex.entity.SheetSettings.DefaultLengthUnits.Format(ex.entity.Profile.Height))
-	case weightKey:
+	case weightExportKey:
 		ex.writeEncodedText(ex.entity.SheetSettings.DefaultWeightUnits.Format(ex.entity.Profile.Weight))
 	case "GENDER":
 		ex.writeEncodedText(ex.entity.Profile.Gender)
@@ -222,7 +241,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 		ex.writeEncodedText(ex.entity.Profile.Skin)
 	case "BIRTHDAY":
 		ex.writeEncodedText(ex.entity.Profile.Birthday)
-	case techLevelKey:
+	case techLevelExportKey:
 		ex.writeEncodedText(ex.entity.Profile.TechLevel)
 	case "HAND":
 		ex.writeEncodedText(ex.entity.Profile.Handedness)
@@ -275,9 +294,9 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "CURRENT_MOVE":
 		ex.writeEncodedText(strconv.Itoa(ex.entity.Move(ex.entity.EncumbranceLevel(false))))
 	case "BEST_CURRENT_PARRY":
-		ex.writeEncodedText(ex.bestWeaponDefense(func(w *model.Weapon) string { return w.ResolvedParry(nil) }))
+		ex.writeEncodedText(ex.bestWeaponDefense(func(w *Weapon) string { return w.ResolvedParry(nil) }))
 	case "BEST_CURRENT_BLOCK":
-		ex.writeEncodedText(ex.bestWeaponDefense(func(w *model.Weapon) string { return w.ResolvedBlock(nil) }))
+		ex.writeEncodedText(ex.bestWeaponDefense(func(w *Weapon) string { return w.ResolvedBlock(nil) }))
 	case "TIRED":
 		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(gid.FatiguePoints, "tired").String())
 	case "FP_COLLAPSE":
@@ -320,7 +339,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 		ex.writeEncodedText("$" + ex.entity.WealthNotCarried().String())
 	case "NOTES":
 		needBlanks := false
-		model.Traverse(func(n *model.Note) bool {
+		Traverse(func(n *Note) bool {
 			if needBlanks {
 				ex.out.WriteString("\n\n")
 			} else {
@@ -334,7 +353,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "BODY_TYPE":
 		ex.writeEncodedText(ex.entity.SheetSettings.BodyType.Name)
 	case "ENCUMBRANCE_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(len(model.AllEncumbrance)))
+		ex.writeEncodedText(strconv.Itoa(len(AllEncumbrance)))
 	case "ENCUMBRANCE_LOOP_START":
 		ex.processEncumbranceLoop(ex.extractUpToMarker("ENCUMBRANCE_LOOP_END"))
 	case "HIT_LOCATION_LOOP_COUNT":
@@ -379,7 +398,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 		ex.processTraitLoop(ex.extractUpToMarker("CULTURAL_FAMILIARITIES_LOOP_END"), ex.includeCulturalFamiliarities)
 	case "SKILLS_LOOP_COUNT":
 		count := 0
-		model.Traverse(func(_ *model.Skill) bool {
+		Traverse(func(_ *Skill) bool {
 			count++
 			return false
 		}, false, true, ex.entity.Skills...)
@@ -388,7 +407,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 		ex.processSkillsLoop(ex.extractUpToMarker("SKILLS_LOOP_END"))
 	case "SPELLS_LOOP_COUNT":
 		count := 0
-		model.Traverse(func(_ *model.Spell) bool {
+		Traverse(func(_ *Spell) bool {
 			count++
 			return false
 		}, false, false, ex.entity.Spells...)
@@ -396,20 +415,20 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "SPELLS_LOOP_START":
 		ex.processSpellsLoop(ex.extractUpToMarker("SPELLS_LOOP_END"))
 	case "MELEE_LOOP_COUNT", "HIERARCHICAL_MELEE_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(len(ex.entity.EquippedWeapons(model.MeleeWeaponType))))
+		ex.writeEncodedText(strconv.Itoa(len(ex.entity.EquippedWeapons(MeleeWeaponType))))
 	case "MELEE_LOOP_START":
 		ex.processMeleeLoop(ex.extractUpToMarker("MELEE_LOOP_END"))
 	case "HIERARCHICAL_MELEE_LOOP_START":
 		ex.processHierarchicalMeleeLoop(ex.extractUpToMarker("HIERARCHICAL_MELEE_LOOP_END"))
 	case "RANGED_LOOP_COUNT", "HIERARCHICAL_RANGED_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(len(ex.entity.EquippedWeapons(model.RangedWeaponType))))
+		ex.writeEncodedText(strconv.Itoa(len(ex.entity.EquippedWeapons(RangedWeaponType))))
 	case "RANGED_LOOP_START":
 		ex.processRangedLoop(ex.extractUpToMarker("RANGED_LOOP_END"))
 	case "HIERARCHICAL_RANGED_LOOP_START":
 		ex.processHierarchicalRangedLoop(ex.extractUpToMarker("HIERARCHICAL_RANGED_LOOP_END"))
 	case "EQUIPMENT_LOOP_COUNT":
 		count := 0
-		model.Traverse(func(eqp *model.Equipment) bool {
+		Traverse(func(eqp *Equipment) bool {
 			if ex.includeByTags(eqp.Tags) {
 				count++
 			}
@@ -420,7 +439,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 		ex.processEquipmentLoop(ex.extractUpToMarker("EQUIPMENT_LOOP_END"), true)
 	case "OTHER_EQUIPMENT_LOOP_COUNT":
 		count := 0
-		model.Traverse(func(eqp *model.Equipment) bool {
+		Traverse(func(eqp *Equipment) bool {
 			if ex.includeByTags(eqp.Tags) {
 				count++
 			}
@@ -431,7 +450,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 		ex.processEquipmentLoop(ex.extractUpToMarker("EQUIPMENT_LOOP_END"), false)
 	case "NOTES_LOOP_COUNT":
 		count := 0
-		model.Traverse(func(_ *model.Note) bool {
+		Traverse(func(_ *Note) bool {
 			count++
 			return false
 		}, false, false, ex.entity.Notes...)
@@ -449,7 +468,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "PRIMARY_ATTRIBUTE_LOOP_COUNT":
 		count := 0
 		for _, def := range ex.entity.SheetSettings.Attributes.List(true) {
-			if def.Type != model.PoolAttributeType && def.Primary() {
+			if def.Type != PoolAttributeType && def.Primary() {
 				if _, exists := ex.entity.Attributes.Set[def.DefID]; exists {
 					count++
 				}
@@ -461,7 +480,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "SECONDARY_ATTRIBUTE_LOOP_COUNT":
 		count := 0
 		for _, def := range ex.entity.SheetSettings.Attributes.List(true) {
-			if def.Type != model.PoolAttributeType && !def.Primary() {
+			if def.Type != PoolAttributeType && !def.Primary() {
 				if _, exists := ex.entity.Attributes.Set[def.DefID]; exists {
 					count++
 				}
@@ -473,7 +492,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "POINT_POOL_LOOP_COUNT":
 		count := 0
 		for _, def := range ex.entity.SheetSettings.Attributes.List(true) {
-			if def.Type == model.PoolAttributeType {
+			if def.Type == PoolAttributeType {
 				if _, exists := ex.entity.Attributes.Set[def.DefID]; exists {
 					count++
 				}
@@ -605,10 +624,10 @@ func (ex *legacyExporter) writeEncodedText(text string) {
 	}
 }
 
-func (ex *legacyExporter) bestWeaponDefense(f func(weapon *model.Weapon) string) string {
+func (ex *legacyExporter) bestWeaponDefense(f func(weapon *Weapon) string) string {
 	best := "-"
 	bestValue := fxp.Min
-	for _, w := range ex.entity.EquippedWeapons(model.MeleeWeaponType) {
+	for _, w := range ex.entity.EquippedWeapons(MeleeWeaponType) {
 		if s := f(w); s != "" && !strings.EqualFold(s, "no") {
 			if v, rem := fxp.Extract(s); v != 0 || rem != s {
 				if bestValue < v {
@@ -621,9 +640,9 @@ func (ex *legacyExporter) bestWeaponDefense(f func(weapon *model.Weapon) string)
 	return best
 }
 
-func (ex *legacyExporter) writeTraitLoopCount(f func(*model.Trait) bool) {
+func (ex *legacyExporter) writeTraitLoopCount(f func(*Trait) bool) {
 	count := 0
-	model.Traverse(func(t *model.Trait) bool {
+	Traverse(func(t *Trait) bool {
 		if f(t) {
 			count++
 		}
@@ -634,7 +653,7 @@ func (ex *legacyExporter) writeTraitLoopCount(f func(*model.Trait) bool) {
 
 func (ex *legacyExporter) includeByTags(tags []string) bool {
 	for cat := range ex.onlyTags {
-		if model.HasTag(cat, tags) {
+		if HasTag(cat, tags) {
 			return true
 		}
 	}
@@ -642,51 +661,51 @@ func (ex *legacyExporter) includeByTags(tags []string) bool {
 		return false
 	}
 	for cat := range ex.excludedTags {
-		if model.HasTag(cat, tags) {
+		if HasTag(cat, tags) {
 			return false
 		}
 	}
 	return true
 }
 
-func (ex *legacyExporter) includeByTraitTags(t *model.Trait) bool {
+func (ex *legacyExporter) includeByTraitTags(t *Trait) bool {
 	return ex.includeByTags(t.Tags)
 }
 
-func (ex *legacyExporter) includeAdvantages(t *model.Trait) bool {
+func (ex *legacyExporter) includeAdvantages(t *Trait) bool {
 	return t.AdjustedPoints() > fxp.One && ex.includeByTraitTags(t)
 }
 
-func (ex *legacyExporter) includePerks(t *model.Trait) bool {
+func (ex *legacyExporter) includePerks(t *Trait) bool {
 	return t.AdjustedPoints() == fxp.One && ex.includeByTraitTags(t)
 }
 
-func (ex *legacyExporter) includeAdvantagesAndPerks(t *model.Trait) bool {
+func (ex *legacyExporter) includeAdvantagesAndPerks(t *Trait) bool {
 	return t.AdjustedPoints() > 0 && ex.includeByTraitTags(t)
 }
 
-func (ex *legacyExporter) includeDisadvantages(t *model.Trait) bool {
+func (ex *legacyExporter) includeDisadvantages(t *Trait) bool {
 	return t.AdjustedPoints() < -fxp.One && ex.includeByTraitTags(t)
 }
 
-func (ex *legacyExporter) includeQuirks(t *model.Trait) bool {
+func (ex *legacyExporter) includeQuirks(t *Trait) bool {
 	return t.AdjustedPoints() == -fxp.One && ex.includeByTraitTags(t)
 }
 
-func (ex *legacyExporter) includeDisadvantagesAndQuirks(t *model.Trait) bool {
+func (ex *legacyExporter) includeDisadvantagesAndQuirks(t *Trait) bool {
 	return t.AdjustedPoints() < 0 && ex.includeByTraitTags(t)
 }
 
-func (ex *legacyExporter) includeLanguages(t *model.Trait) bool {
-	return model.HasTag("Language", t.Tags) && ex.includeByTraitTags(t)
+func (ex *legacyExporter) includeLanguages(t *Trait) bool {
+	return HasTag("Language", t.Tags) && ex.includeByTraitTags(t)
 }
 
-func (ex *legacyExporter) includeCulturalFamiliarities(t *model.Trait) bool {
+func (ex *legacyExporter) includeCulturalFamiliarities(t *Trait) bool {
 	return strings.HasPrefix(strings.ToLower(t.Name), "cultural familiarity (") && ex.includeByTraitTags(t)
 }
 
 func (ex *legacyExporter) processEncumbranceLoop(buffer []byte) {
-	for _, enc := range model.AllEncumbrance {
+	for _, enc := range AllEncumbrance {
 		ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 			switch key {
 			case "CURRENT_MARKER":
@@ -728,7 +747,7 @@ func (ex *legacyExporter) processHitLocationLoop(buffer []byte) {
 	for i, location := range ex.entity.SheetSettings.BodyType.Locations {
 		ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 			switch key {
-			case idKey:
+			case idExportKey:
 				ex.writeEncodedText(strconv.Itoa(i))
 			case "ROLL":
 				ex.writeEncodedText(location.RollRange)
@@ -758,12 +777,12 @@ func (ex *legacyExporter) processHitLocationLoop(buffer []byte) {
 	}
 }
 
-func (ex *legacyExporter) hitLocationEquipment(location *model.HitLocation) []string {
+func (ex *legacyExporter) hitLocationEquipment(location *HitLocation) []string {
 	var list []string
-	model.Traverse(func(eqp *model.Equipment) bool {
+	Traverse(func(eqp *Equipment) bool {
 		if eqp.Equipped {
 			for _, f := range eqp.Features {
-				if bonus, ok := f.(*model.DRBonus); ok {
+				if bonus, ok := f.(*DRBonus); ok {
 					if strings.EqualFold(location.LocID, bonus.Location) {
 						list = append(list, eqp.Name)
 					}
@@ -775,31 +794,31 @@ func (ex *legacyExporter) hitLocationEquipment(location *model.HitLocation) []st
 	return list
 }
 
-func (ex *legacyExporter) processTraitLoop(buffer []byte, f func(*model.Trait) bool) {
-	model.Traverse(func(t *model.Trait) bool {
+func (ex *legacyExporter) processTraitLoop(buffer []byte, f func(*Trait) bool) {
+	Traverse(func(t *Trait) bool {
 		if f(t) {
 			ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 				switch key {
-				case idKey:
+				case idExportKey:
 					ex.writeEncodedText(t.ID.String())
-				case parentIDKey:
+				case parentIDExportKey:
 					parent := t.Parent()
 					if parent != nil {
 						ex.writeEncodedText(parent.ID.String())
 					}
-				case typeKey:
+				case typeExportKey:
 					if t.Container() {
 						ex.writeEncodedText(strings.ToUpper(t.ContainerType.Key()))
 					} else {
 						ex.writeEncodedText("ITEM")
 					}
-				case pointsKey:
+				case pointsExportKey:
 					ex.writeEncodedText(t.AdjustedPoints().String())
-				case descriptionKey:
+				case descriptionExportKey:
 					ex.writeEncodedText(t.String())
 					ex.writeNote(t.ModifierNotes())
 					ex.writeNote(t.Notes())
-				case descriptionPrimaryKey:
+				case descriptionPrimaryExportKey:
 					ex.writeEncodedText(t.String())
 				case "DESCRIPTION_USER":
 					ex.writeEncodedText(t.UserDesc)
@@ -811,11 +830,11 @@ func (ex *legacyExporter) processTraitLoop(buffer []byte, f func(*model.Trait) b
 							ex.out.WriteString("</p>\n")
 						}
 					}
-				case refKey:
+				case refExportKey:
 					ex.writeEncodedText(t.PageRef)
-				case styleIndentWarningKey:
+				case styleIndentWarningExportKey:
 					ex.handleStyleIndentWarning(t.Depth(), t.UnsatisfiedReason == "")
-				case satisfiedKey:
+				case satisfiedExportKey:
 					ex.handleSatisfied(t.UnsatisfiedReason == "")
 				default:
 					switch {
@@ -843,29 +862,29 @@ func (ex *legacyExporter) processTraitLoop(buffer []byte, f func(*model.Trait) b
 }
 
 func (ex *legacyExporter) processSkillsLoop(buffer []byte) {
-	model.Traverse(func(s *model.Skill) bool {
+	Traverse(func(s *Skill) bool {
 		ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 			switch key {
-			case idKey:
+			case idExportKey:
 				ex.writeEncodedText(s.ID.String())
-			case parentIDKey:
+			case parentIDExportKey:
 				parent := s.Parent()
 				if parent != nil {
 					ex.writeEncodedText(parent.ID.String())
 				}
-			case typeKey:
+			case typeExportKey:
 				if s.Container() {
 					ex.writeEncodedText("GROUP")
 				} else {
 					ex.writeEncodedText("ITEM")
 				}
-			case pointsKey:
+			case pointsExportKey:
 				ex.writeEncodedText(s.AdjustedPoints(nil).String())
-			case descriptionKey:
+			case descriptionExportKey:
 				ex.writeEncodedText(s.String())
 				ex.writeNote(s.ModifierNotes())
 				ex.writeNote(s.Notes())
-			case descriptionPrimaryKey:
+			case descriptionPrimaryExportKey:
 				ex.writeEncodedText(s.String())
 			case "SL":
 				ex.writeEncodedText(s.CalculateLevel().LevelAsString(s.Container()))
@@ -875,11 +894,11 @@ func (ex *legacyExporter) processSkillsLoop(buffer []byte) {
 				if !s.Container() {
 					ex.writeEncodedText(s.Difficulty.Description(s.Entity))
 				}
-			case refKey:
+			case refExportKey:
 				ex.writeEncodedText(s.PageRef)
-			case styleIndentWarningKey:
+			case styleIndentWarningExportKey:
 				ex.handleStyleIndentWarning(s.Depth(), s.UnsatisfiedReason == "")
-			case satisfiedKey:
+			case satisfiedExportKey:
 				ex.handleSatisfied(s.UnsatisfiedReason == "")
 			default:
 				switch {
@@ -900,29 +919,29 @@ func (ex *legacyExporter) processSkillsLoop(buffer []byte) {
 }
 
 func (ex *legacyExporter) processSpellsLoop(buffer []byte) {
-	model.Traverse(func(s *model.Spell) bool {
+	Traverse(func(s *Spell) bool {
 		ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 			switch key {
-			case idKey:
+			case idExportKey:
 				ex.writeEncodedText(s.ID.String())
-			case parentIDKey:
+			case parentIDExportKey:
 				parent := s.Parent()
 				if parent != nil {
 					ex.writeEncodedText(parent.ID.String())
 				}
-			case typeKey:
+			case typeExportKey:
 				if s.Container() {
 					ex.writeEncodedText("GROUP")
 				} else {
 					ex.writeEncodedText("ITEM")
 				}
-			case pointsKey:
+			case pointsExportKey:
 				ex.writeEncodedText(s.AdjustedPoints(nil).String())
-			case descriptionKey:
+			case descriptionExportKey:
 				ex.writeEncodedText(s.String())
 				ex.writeNote(s.Notes())
 				ex.writeNote(s.Rituals())
-			case descriptionPrimaryKey:
+			case descriptionPrimaryExportKey:
 				ex.writeEncodedText(s.String())
 			case "SL":
 				ex.writeEncodedText(s.CalculateLevel().LevelAsString(s.Container()))
@@ -946,11 +965,11 @@ func (ex *legacyExporter) processSpellsLoop(buffer []byte) {
 				ex.writeEncodedText(s.Duration)
 			case "RESIST":
 				ex.writeEncodedText(s.Resist)
-			case refKey:
+			case refExportKey:
 				ex.writeEncodedText(s.PageRef)
-			case styleIndentWarningKey:
+			case styleIndentWarningExportKey:
 				ex.handleStyleIndentWarning(s.Depth(), s.UnsatisfiedReason == "")
-			case satisfiedKey:
+			case satisfiedExportKey:
 				ex.handleSatisfied(s.UnsatisfiedReason == "")
 			default:
 				switch {
@@ -979,40 +998,40 @@ func (ex *legacyExporter) processSpellsLoop(buffer []byte) {
 }
 
 func (ex *legacyExporter) processEquipmentLoop(buffer []byte, carried bool) {
-	var eqpList []*model.Equipment
+	var eqpList []*Equipment
 	if carried {
 		eqpList = ex.entity.CarriedEquipment
 	} else {
 		eqpList = ex.entity.OtherEquipment
 	}
-	model.Traverse(func(eqp *model.Equipment) bool {
+	Traverse(func(eqp *Equipment) bool {
 		if ex.includeByTags(eqp.Tags) {
 			ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 				switch key {
-				case idKey:
+				case idExportKey:
 					ex.writeEncodedText(eqp.ID.String())
-				case parentIDKey:
+				case parentIDExportKey:
 					parent := eqp.Parent()
 					if parent != nil {
 						ex.writeEncodedText(parent.ID.String())
 					}
-				case typeKey:
+				case typeExportKey:
 					if eqp.Container() {
 						ex.writeEncodedText("GROUP")
 					} else {
 						ex.writeEncodedText("ITEM")
 					}
-				case descriptionKey:
+				case descriptionExportKey:
 					ex.writeEncodedText(eqp.String())
 					ex.writeNote(eqp.ModifierNotes())
 					ex.writeNote(eqp.Notes())
-				case descriptionPrimaryKey:
+				case descriptionPrimaryExportKey:
 					ex.writeEncodedText(eqp.String())
-				case refKey:
+				case refExportKey:
 					ex.writeEncodedText(eqp.PageRef)
-				case styleIndentWarningKey:
+				case styleIndentWarningExportKey:
 					ex.handleStyleIndentWarning(eqp.Depth(), eqp.UnsatisfiedReason == "")
-				case satisfiedKey:
+				case satisfiedExportKey:
 					ex.handleSatisfied(eqp.UnsatisfiedReason == "")
 				case "STATE":
 					switch {
@@ -1050,7 +1069,7 @@ func (ex *legacyExporter) processEquipmentLoop(buffer []byte, carried bool) {
 					ex.writeEncodedText(eqp.Quantity.String())
 				case "COST":
 					ex.writeEncodedText(eqp.AdjustedValue().String())
-				case weightKey:
+				case weightExportKey:
 					ex.writeEncodedText(ex.entity.SheetSettings.DefaultWeightUnits.Format(eqp.AdjustedWeight(false, ex.entity.SheetSettings.DefaultWeightUnits)))
 				case "COST_SUMMARY":
 					ex.writeEncodedText(eqp.ExtendedValue().String())
@@ -1058,12 +1077,12 @@ func (ex *legacyExporter) processEquipmentLoop(buffer []byte, carried bool) {
 					ex.writeEncodedText(ex.entity.SheetSettings.DefaultWeightUnits.Format(eqp.ExtendedWeight(false, ex.entity.SheetSettings.DefaultWeightUnits)))
 				case "WEIGHT_RAW":
 					ex.writeEncodedText(fxp.Int(eqp.AdjustedWeight(false, ex.entity.SheetSettings.DefaultWeightUnits)).String())
-				case techLevelKey:
+				case techLevelExportKey:
 					ex.writeEncodedText(eqp.TechLevel)
 				case "LEGALITY_CLASS", "LC":
 					ex.writeEncodedText(eqp.LegalityClass)
 				case "TAGS", "CATEGORIES":
-					ex.writeEncodedText(model.CombineTags(eqp.Tags))
+					ex.writeEncodedText(CombineTags(eqp.Tags))
 				case "LOCATION":
 					parent := eqp.Parent()
 					if parent != nil {
@@ -1099,23 +1118,23 @@ func (ex *legacyExporter) processEquipmentLoop(buffer []byte, carried bool) {
 }
 
 func (ex *legacyExporter) processNotesLoop(buffer []byte) {
-	model.Traverse(func(n *model.Note) bool {
+	Traverse(func(n *Note) bool {
 		ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 			switch key {
-			case idKey:
+			case idExportKey:
 				ex.writeEncodedText(n.ID.String())
-			case parentIDKey:
+			case parentIDExportKey:
 				parent := n.Parent()
 				if parent != nil {
 					ex.writeEncodedText(parent.ID.String())
 				}
-			case typeKey:
+			case typeExportKey:
 				if n.Container() {
 					ex.writeEncodedText("GROUP")
 				} else {
 					ex.writeEncodedText("ITEM")
 				}
-			case refKey:
+			case refExportKey:
 				ex.writeEncodedText(n.PageRef)
 			case "NOTE":
 				ex.writeEncodedText(n.Text)
@@ -1127,7 +1146,7 @@ func (ex *legacyExporter) processNotesLoop(buffer []byte) {
 						ex.out.WriteString("</p>\n")
 					}
 				}
-			case styleIndentWarningKey:
+			case styleIndentWarningExportKey:
 				ex.handleStyleIndentWarning(n.Depth(), true)
 			default:
 				switch {
@@ -1143,11 +1162,11 @@ func (ex *legacyExporter) processNotesLoop(buffer []byte) {
 	}, false, false, ex.entity.Notes...)
 }
 
-func (ex *legacyExporter) processConditionalModifiersLoop(list []*model.ConditionalModifier, buffer []byte) {
+func (ex *legacyExporter) processConditionalModifiersLoop(list []*ConditionalModifier, buffer []byte) {
 	for i, one := range list {
 		ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 			switch key {
-			case idKey:
+			case idExportKey:
 				ex.writeEncodedText(strconv.Itoa(i))
 			case "MODIFIER":
 				ex.writeEncodedText(one.Total().StringWithSign())
@@ -1163,13 +1182,13 @@ func (ex *legacyExporter) processConditionalModifiersLoop(list []*model.Conditio
 
 func (ex *legacyExporter) processAttributesLoop(buffer []byte, primary bool) {
 	for _, def := range ex.entity.SheetSettings.Attributes.List(true) {
-		if def.Type != model.PoolAttributeType && def.Primary() == primary {
+		if def.Type != PoolAttributeType && def.Primary() == primary {
 			if attr, ok := ex.entity.Attributes.Set[def.DefID]; ok {
 				ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 					switch key {
-					case idKey:
+					case idExportKey:
 						ex.writeEncodedText(def.DefID)
-					case nameKey:
+					case nameExportKey:
 						ex.writeEncodedText(def.Name)
 					case "FULL_NAME":
 						ex.writeEncodedText(def.ResolveFullName())
@@ -1191,13 +1210,13 @@ func (ex *legacyExporter) processAttributesLoop(buffer []byte, primary bool) {
 
 func (ex *legacyExporter) processPointPoolLoop(buffer []byte) {
 	for _, def := range ex.entity.SheetSettings.Attributes.List(true) {
-		if def.Type == model.PoolAttributeType {
+		if def.Type == PoolAttributeType {
 			if attr, ok := ex.entity.Attributes.Set[def.DefID]; ok {
 				ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 					switch key {
-					case idKey:
+					case idExportKey:
 						ex.writeEncodedText(def.DefID)
-					case nameKey:
+					case nameExportKey:
 						ex.writeEncodedText(def.Name)
 					case "FULL_NAME":
 						ex.writeEncodedText(def.ResolveFullName())
@@ -1220,7 +1239,7 @@ func (ex *legacyExporter) processPointPoolLoop(buffer []byte) {
 }
 
 func (ex *legacyExporter) processMeleeLoop(buffer []byte) {
-	for i, w := range ex.entity.EquippedWeapons(model.MeleeWeaponType) {
+	for i, w := range ex.entity.EquippedWeapons(MeleeWeaponType) {
 		ex.processBuffer(buffer, func(key string, buf []byte, index int) int {
 			return ex.processMeleeKeys(key, i, w, nil, buf, index)
 		})
@@ -1228,12 +1247,12 @@ func (ex *legacyExporter) processMeleeLoop(buffer []byte) {
 }
 
 func (ex *legacyExporter) processHierarchicalMeleeLoop(buffer []byte) {
-	m := make(map[string][]*model.Weapon)
-	for _, w := range ex.entity.EquippedWeapons(model.MeleeWeaponType) {
+	m := make(map[string][]*Weapon)
+	for _, w := range ex.entity.EquippedWeapons(MeleeWeaponType) {
 		key := w.String()
 		m[key] = append(m[key], w)
 	}
-	list := make([]*model.Weapon, 0, len(m))
+	list := make([]*Weapon, 0, len(m))
 	for _, v := range m {
 		list = append(list, v[0])
 	}
@@ -1246,7 +1265,7 @@ func (ex *legacyExporter) processHierarchicalMeleeLoop(buffer []byte) {
 }
 
 func (ex *legacyExporter) processRangedLoop(buffer []byte) {
-	for i, w := range ex.entity.EquippedWeapons(model.RangedWeaponType) {
+	for i, w := range ex.entity.EquippedWeapons(RangedWeaponType) {
 		ex.processBuffer(buffer, func(key string, buf []byte, index int) int {
 			return ex.processRangedKeys(key, i, w, nil, buf, index)
 		})
@@ -1254,12 +1273,12 @@ func (ex *legacyExporter) processRangedLoop(buffer []byte) {
 }
 
 func (ex *legacyExporter) processHierarchicalRangedLoop(buffer []byte) {
-	m := make(map[string][]*model.Weapon)
-	for _, w := range ex.entity.EquippedWeapons(model.RangedWeaponType) {
+	m := make(map[string][]*Weapon)
+	for _, w := range ex.entity.EquippedWeapons(RangedWeaponType) {
 		key := w.String()
 		m[key] = append(m[key], w)
 	}
-	list := make([]*model.Weapon, 0, len(m))
+	list := make([]*Weapon, 0, len(m))
 	for _, v := range m {
 		list = append(list, v[0])
 	}
@@ -1271,7 +1290,7 @@ func (ex *legacyExporter) processHierarchicalRangedLoop(buffer []byte) {
 	}
 }
 
-func (ex *legacyExporter) processMeleeKeys(key string, currentID int, w *model.Weapon, attackModes []*model.Weapon, buf []byte, index int) int {
+func (ex *legacyExporter) processMeleeKeys(key string, currentID int, w *Weapon, attackModes []*Weapon, buf []byte, index int) int {
 	switch key {
 	case "PARRY":
 		ex.writeEncodedText(w.ResolvedParry(nil))
@@ -1298,7 +1317,7 @@ func (ex *legacyExporter) processMeleeKeys(key string, currentID int, w *model.W
 	return index
 }
 
-func (ex *legacyExporter) processRangedKeys(key string, currentID int, w *model.Weapon, attackModes []*model.Weapon, buf []byte, index int) int {
+func (ex *legacyExporter) processRangedKeys(key string, currentID int, w *Weapon, attackModes []*Weapon, buf []byte, index int) int {
 	switch key {
 	case "BULK":
 		ex.writeEncodedText(w.Bulk)
@@ -1331,14 +1350,14 @@ func (ex *legacyExporter) processRangedKeys(key string, currentID int, w *model.
 	return index
 }
 
-func (ex *legacyExporter) processWeaponKeys(key string, currentID int, w *model.Weapon) {
+func (ex *legacyExporter) processWeaponKeys(key string, currentID int, w *Weapon) {
 	switch key {
-	case idKey:
+	case idExportKey:
 		ex.writeEncodedText(strconv.Itoa(currentID))
-	case descriptionKey:
+	case descriptionExportKey:
 		ex.writeEncodedText(w.String())
 		ex.writeNote(w.Notes())
-	case descriptionPrimaryKey:
+	case descriptionPrimaryExportKey:
 		ex.writeEncodedText(w.String())
 	case "USAGE":
 		ex.writeEncodedText(w.Usage)
@@ -1354,23 +1373,23 @@ func (ex *legacyExporter) processWeaponKeys(key string, currentID int, w *model.
 		v, _ := fxp.Extract(w.MinimumStrength)
 		ex.writeEncodedText(v.String())
 	case "COST":
-		if eqp, ok := w.Owner.(*model.Equipment); ok {
+		if eqp, ok := w.Owner.(*Equipment); ok {
 			ex.writeEncodedText(eqp.AdjustedValue().String())
 		}
 	case "LEGALITY_CLASS", "LC":
-		if eqp, ok := w.Owner.(*model.Equipment); ok {
+		if eqp, ok := w.Owner.(*Equipment); ok {
 			ex.writeEncodedText(eqp.LegalityClass)
 		}
-	case techLevelKey:
-		if eqp, ok := w.Owner.(*model.Equipment); ok {
+	case techLevelExportKey:
+		if eqp, ok := w.Owner.(*Equipment); ok {
 			ex.writeEncodedText(eqp.TechLevel)
 		}
-	case weightKey:
-		if eqp, ok := w.Owner.(*model.Equipment); ok {
+	case weightExportKey:
+		if eqp, ok := w.Owner.(*Equipment); ok {
 			ex.writeEncodedText(ex.entity.SheetSettings.DefaultWeightUnits.Format(eqp.AdjustedWeight(false, ex.entity.SheetSettings.DefaultWeightUnits)))
 		}
 	case "AMMO":
-		if eqp, ok := w.Owner.(*model.Equipment); ok {
+		if eqp, ok := w.Owner.(*Equipment); ok {
 			ex.writeEncodedText(ex.ammoFor(eqp).String())
 		}
 	default:
@@ -1383,7 +1402,7 @@ func (ex *legacyExporter) processWeaponKeys(key string, currentID int, w *model.
 	}
 }
 
-func (ex *legacyExporter) ammoFor(weaponEqp *model.Equipment) fxp.Int {
+func (ex *legacyExporter) ammoFor(weaponEqp *Equipment) fxp.Int {
 	uses := ""
 	for _, cat := range weaponEqp.TagList() {
 		if strings.HasPrefix(strings.ToLower(cat), "usesammotype:") {
@@ -1395,7 +1414,7 @@ func (ex *legacyExporter) ammoFor(weaponEqp *model.Equipment) fxp.Int {
 		return 0
 	}
 	var total fxp.Int
-	model.Traverse(func(eqp *model.Equipment) bool {
+	Traverse(func(eqp *Equipment) bool {
 		if eqp.Equipped && eqp.Quantity > 0 {
 			for _, cat := range eqp.Tags {
 				if strings.HasPrefix(strings.ToLower(cat), "ammotype:") {
