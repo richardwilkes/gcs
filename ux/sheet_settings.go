@@ -16,7 +16,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model"
 	measure2 "github.com/richardwilkes/gcs/v5/model/measure"
-	"github.com/richardwilkes/gcs/v5/model/paper"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -47,8 +46,8 @@ type sheetSettingsDockable struct {
 	modifiersDisplayPopup              *unison.PopupMenu[model.DisplayOption]
 	notesDisplayPopup                  *unison.PopupMenu[model.DisplayOption]
 	skillLevelAdjDisplayPopup          *unison.PopupMenu[model.DisplayOption]
-	paperSizePopup                     *unison.PopupMenu[paper.Size]
-	orientationPopup                   *unison.PopupMenu[paper.Orientation]
+	paperSizePopup                     *unison.PopupMenu[model.PaperSize]
+	orientationPopup                   *unison.PopupMenu[model.PaperOrientation]
 	topMarginField                     *unison.Field
 	leftMarginField                    *unison.Field
 	bottomMarginField                  *unison.Field
@@ -226,18 +225,18 @@ func (d *sheetSettingsDockable) createPageSettings(content *unison.Panel) {
 	})
 	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
 	d.createHeader(panel, i18n.Text("Page Settings"), 4)
-	d.paperSizePopup = createSettingPopup(d, panel, i18n.Text("Paper Size"), paper.AllSize,
-		s.Page.Size, func(option paper.Size) { d.settings().Page.Size = option })
-	d.orientationPopup = createSettingPopup(d, panel, i18n.Text("Orientation"), paper.AllOrientation,
-		s.Page.Orientation, func(option paper.Orientation) { d.settings().Page.Orientation = option })
+	d.paperSizePopup = createSettingPopup(d, panel, i18n.Text("Paper Size"), model.AllPaperSize,
+		s.Page.Size, func(option model.PaperSize) { d.settings().Page.Size = option })
+	d.orientationPopup = createSettingPopup(d, panel, i18n.Text("Orientation"), model.AllPaperOrientation,
+		s.Page.Orientation, func(option model.PaperOrientation) { d.settings().Page.Orientation = option })
 	d.topMarginField = d.createPaperMarginField(panel, i18n.Text("Top Margin"), s.Page.TopMargin,
-		func(value paper.Length) { d.settings().Page.TopMargin = value })
+		func(value model.PaperLength) { d.settings().Page.TopMargin = value })
 	d.bottomMarginField = d.createPaperMarginField(panel, i18n.Text("Bottom Margin"), s.Page.BottomMargin,
-		func(value paper.Length) { d.settings().Page.BottomMargin = value })
+		func(value model.PaperLength) { d.settings().Page.BottomMargin = value })
 	d.leftMarginField = d.createPaperMarginField(panel, i18n.Text("Left Margin"), s.Page.LeftMargin,
-		func(value paper.Length) { d.settings().Page.LeftMargin = value })
+		func(value model.PaperLength) { d.settings().Page.LeftMargin = value })
 	d.rightMarginField = d.createPaperMarginField(panel, i18n.Text("Right Margin"), s.Page.RightMargin,
-		func(value paper.Length) { d.settings().Page.RightMargin = value })
+		func(value model.PaperLength) { d.settings().Page.RightMargin = value })
 	content.AddChild(panel)
 }
 
@@ -282,16 +281,16 @@ func (d *sheetSettingsDockable) createBlockLayout(content *unison.Panel) {
 	content.AddChild(panel)
 }
 
-func (d *sheetSettingsDockable) createPaperMarginField(panel *unison.Panel, title string, current paper.Length, set func(value paper.Length)) *unison.Field {
+func (d *sheetSettingsDockable) createPaperMarginField(panel *unison.Panel, title string, current model.PaperLength, set func(value model.PaperLength)) *unison.Field {
 	panel.AddChild(NewFieldLeadingLabel(title))
 	field := unison.NewField()
 	field.SetText(current.String())
 	field.ValidateCallback = func() bool {
-		_, err := paper.ParseLengthFromString(field.Text())
+		_, err := model.ParsePaperLengthFromString(field.Text())
 		return err == nil
 	}
 	field.ModifiedCallback = func() {
-		if value, err := paper.ParseLengthFromString(field.Text()); err == nil {
+		if value, err := model.ParsePaperLengthFromString(field.Text()); err == nil {
 			set(value)
 			d.syncSheet(false)
 		}

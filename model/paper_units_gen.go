@@ -11,7 +11,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package paper
+package model
 
 import (
 	"strings"
@@ -19,20 +19,20 @@ import (
 
 // Possible values.
 const (
-	Inch Units = iota
-	Centimeter
-	Millimeter
-	LastUnits = Millimeter
+	InchPaperUnits PaperUnits = iota
+	CentimeterPaperUnits
+	MillimeterPaperUnits
+	LastPaperUnits = MillimeterPaperUnits
 )
 
 var (
-	// AllUnits holds all possible values.
-	AllUnits = []Units{
-		Inch,
-		Centimeter,
-		Millimeter,
+	// AllPaperUnits holds all possible values.
+	AllPaperUnits = []PaperUnits{
+		InchPaperUnits,
+		CentimeterPaperUnits,
+		MillimeterPaperUnits,
 	}
-	unitsData = []struct {
+	paperUnitsData = []struct {
 		key    string
 		string string
 	}{
@@ -51,44 +51,44 @@ var (
 	}
 )
 
-// Units holds the real-world length unit type.
-type Units byte
+// PaperUnits holds the real-world length unit type.
+type PaperUnits byte
 
 // EnsureValid ensures this is of a known value.
-func (enum Units) EnsureValid() Units {
-	if enum <= LastUnits {
+func (enum PaperUnits) EnsureValid() PaperUnits {
+	if enum <= LastPaperUnits {
 		return enum
 	}
 	return 0
 }
 
 // Key returns the key used in serialization.
-func (enum Units) Key() string {
-	return unitsData[enum.EnsureValid()].key
+func (enum PaperUnits) Key() string {
+	return paperUnitsData[enum.EnsureValid()].key
 }
 
 // String implements fmt.Stringer.
-func (enum Units) String() string {
-	return unitsData[enum.EnsureValid()].string
+func (enum PaperUnits) String() string {
+	return paperUnitsData[enum.EnsureValid()].string
 }
 
-// ExtractUnits extracts the value from a string.
-func ExtractUnits(str string) Units {
-	for i, one := range unitsData {
+// ExtractPaperUnits extracts the value from a string.
+func ExtractPaperUnits(str string) PaperUnits {
+	for i, one := range paperUnitsData {
 		if strings.EqualFold(one.key, str) {
-			return Units(i)
+			return PaperUnits(i)
 		}
 	}
 	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
-func (enum Units) MarshalText() (text []byte, err error) {
+func (enum PaperUnits) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
 // UnmarshalText implements the encoding.TextUnmarshaler interface.
-func (enum *Units) UnmarshalText(text []byte) error {
-	*enum = ExtractUnits(string(text))
+func (enum *PaperUnits) UnmarshalText(text []byte) error {
+	*enum = ExtractPaperUnits(string(text))
 	return nil
 }

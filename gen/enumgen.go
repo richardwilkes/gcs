@@ -49,24 +49,19 @@ func main() {
 	)
 	removeExistingGenFiles()
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/paper",
-		Name:       "orientation",
+		Pkg:        "model",
+		Name:       "paper_orientation",
 		Desc:       "holds the orientation of the page",
 		StandAlone: true,
 		Values: []enumValue{
-			{
-				Key: "portrait",
-			},
-			{
-				Key: "landscape",
-			},
+			{Key: "portrait"},
+			{Key: "landscape"},
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/paper",
-		Name:       "units",
-		Desc:       "holds the real-world length unit type",
-		StandAlone: true,
+		Pkg:  "model",
+		Name: "paper_units",
+		Desc: "holds the real-world length unit type",
 		Values: []enumValue{
 			{
 				Name:       "Inch",
@@ -89,41 +84,20 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/paper",
-		Name:       "size",
-		Desc:       "holds a standard paper dimension",
-		StandAlone: true,
+		Pkg:  "model",
+		Name: "paper_size",
+		Desc: "holds a standard paper dimension",
 		Values: []enumValue{
-			{
-				Key: "letter",
-			},
-			{
-				Key: "legal",
-			},
-			{
-				Key: "tabloid",
-			},
-			{
-				Key: "a0",
-			},
-			{
-				Key: "a1",
-			},
-			{
-				Key: "a2",
-			},
-			{
-				Key: "a3",
-			},
-			{
-				Key: "a4",
-			},
-			{
-				Key: "a5",
-			},
-			{
-				Key: "a6",
-			},
+			{Key: "letter"},
+			{Key: "legal"},
+			{Key: "tabloid"},
+			{Key: "a0"},
+			{Key: "a1"},
+			{Key: "a2"},
+			{Key: "a3"},
+			{Key: "a4"},
+			{Key: "a5"},
+			{Key: "a6"},
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
@@ -131,15 +105,9 @@ func main() {
 		Name: "display_option",
 		Desc: "holds a display option",
 		Values: []enumValue{
-			{
-				Key: "not_shown",
-			},
-			{
-				Key: "inline",
-			},
-			{
-				Key: "tooltip",
-			},
+			{Key: "not_shown"},
+			{Key: "inline"},
+			{Key: "tooltip"},
 			{
 				Key:    "inline_and_tooltip",
 				String: "Inline & Tooltip",
@@ -172,19 +140,13 @@ func main() {
 		Name: "container_type",
 		Desc: "holds the type of a trait container",
 		Values: []enumValue{
-			{
-				Key: "group",
-			},
+			{Key: "group"},
 			{
 				Key:    "meta_trait",
 				String: "Meta-Trait",
 			},
-			{
-				Key: "race",
-			},
-			{
-				Key: "alternative_abilities",
-			},
+			{Key: "race"},
+			{Key: "alternative_abilities"},
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
@@ -236,9 +198,7 @@ func main() {
 		Desc:       "controls how Thrust and Swing are calculated",
 		StandAlone: true,
 		Values: []enumValue{
-			{
-				Key: "basic_set",
-			},
+			{Key: "basic_set"},
 			{
 				Key: "knowing_your_own_strength",
 				Alt: "Pyramid 3-83, pages 16-19",
@@ -293,24 +253,12 @@ func main() {
 		Name: "attribute_type",
 		Desc: "holds the type of an attribute definition",
 		Values: []enumValue{
-			{
-				Key: "integer",
-			},
-			{
-				Key: "decimal",
-			},
-			{
-				Key: "pool",
-			},
-			{
-				Key: "primary_separator",
-			},
-			{
-				Key: "secondary_separator",
-			},
-			{
-				Key: "pool_separator",
-			},
+			{Key: "integer"},
+			{Key: "decimal"},
+			{Key: "pool"},
+			{Key: "primary_separator"},
+			{Key: "secondary_separator"},
+			{Key: "pool_separator"},
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
@@ -322,15 +270,9 @@ func main() {
 				Name: "No",
 				Key:  "none",
 			},
-			{
-				Key: "light",
-			},
-			{
-				Key: "medium",
-			},
-			{
-				Key: "heavy",
-			},
+			{Key: "light"},
+			{Key: "medium"},
+			{Key: "heavy"},
 			{
 				Key:    "extra_heavy",
 				String: "X-Heavy",
@@ -902,18 +844,10 @@ func main() {
 		Name: "cell_type",
 		Desc: "holds the type of table cell",
 		Values: []enumValue{
-			{
-				Key: "text",
-			},
-			{
-				Key: "tags",
-			},
-			{
-				Key: "toggle",
-			},
-			{
-				Key: "page_ref",
-			},
+			{Key: "text"},
+			{Key: "tags"},
+			{Key: "toggle"},
+			{Key: "page_ref"},
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
@@ -922,15 +856,9 @@ func main() {
 		Desc:       "holds the type of template picker",
 		StandAlone: false,
 		Values: []enumValue{
-			{
-				Key: "not_applicable",
-			},
-			{
-				Key: "count",
-			},
-			{
-				Key: "points",
-			},
+			{Key: "not_applicable"},
+			{Key: "count"},
+			{Key: "points"},
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
@@ -962,12 +890,8 @@ func main() {
 		Name: "name_generation_type",
 		Desc: "holds a name generation type",
 		Values: []enumValue{
-			{
-				Key: "simple",
-			},
-			{
-				Key: "markov_chain",
-			},
+			{Key: "simple"},
+			{Key: "markov_chain"},
 		},
 	})
 }

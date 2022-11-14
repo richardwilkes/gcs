@@ -13,25 +13,23 @@ package model
 
 import (
 	"strings"
-
-	"github.com/richardwilkes/gcs/v5/model/paper"
 )
 
 // PageSettingsOverrides holds page setting overrides.
 type PageSettingsOverrides struct {
-	Size         *paper.Size
-	Orientation  *paper.Orientation
-	TopMargin    *paper.Length
-	LeftMargin   *paper.Length
-	BottomMargin *paper.Length
-	RightMargin  *paper.Length
+	Size         *PaperSize
+	Orientation  *PaperOrientation
+	TopMargin    *PaperLength
+	LeftMargin   *PaperLength
+	BottomMargin *PaperLength
+	RightMargin  *PaperLength
 }
 
 // ParseSize and set the override, if applicable.
 func (p *PageSettingsOverrides) ParseSize(in string) {
 	in = strings.TrimSpace(in)
 	if in != "" {
-		size := paper.ExtractSize(in)
+		size := ExtractPaperSize(in)
 		p.Size = &size
 	}
 }
@@ -40,7 +38,7 @@ func (p *PageSettingsOverrides) ParseSize(in string) {
 func (p *PageSettingsOverrides) ParseOrientation(in string) {
 	in = strings.TrimSpace(in)
 	if in != "" {
-		orientation := paper.ExtractOrientation(in)
+		orientation := ExtractPaperOrientation(in)
 		p.Orientation = &orientation
 	}
 }
@@ -65,12 +63,12 @@ func (p *PageSettingsOverrides) ParseRightMargin(in string) {
 	p.RightMargin = parseLengthString(in)
 }
 
-func parseLengthString(in string) *paper.Length {
+func parseLengthString(in string) *PaperLength {
 	in = strings.TrimSpace(in)
 	if in == "" {
 		return nil
 	}
-	length := paper.LengthFromString(in)
+	length := PaperLengthFromString(in)
 	return &length
 }
 

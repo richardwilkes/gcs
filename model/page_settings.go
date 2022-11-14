@@ -11,29 +11,25 @@
 
 package model
 
-import (
-	"github.com/richardwilkes/gcs/v5/model/paper"
-)
-
 // PageSettings holds page settings.
 type PageSettings struct {
-	Size         paper.Size        `json:"paper_size"`
-	Orientation  paper.Orientation `json:"orientation"`
-	TopMargin    paper.Length      `json:"top_margin"`
-	LeftMargin   paper.Length      `json:"left_margin"`
-	BottomMargin paper.Length      `json:"bottom_margin"`
-	RightMargin  paper.Length      `json:"right_margin"`
+	Size         PaperSize        `json:"paper_size"`
+	Orientation  PaperOrientation `json:"orientation"`
+	TopMargin    PaperLength      `json:"top_margin"`
+	LeftMargin   PaperLength      `json:"left_margin"`
+	BottomMargin PaperLength      `json:"bottom_margin"`
+	RightMargin  PaperLength      `json:"right_margin"`
 }
 
 // NewPageSettings returns new settings with factory defaults.
 func NewPageSettings() *PageSettings {
 	return &PageSettings{
-		Size:         paper.Letter,
-		Orientation:  paper.Portrait,
-		TopMargin:    paper.Length{Length: 0.25, Units: paper.Inch},
-		LeftMargin:   paper.Length{Length: 0.25, Units: paper.Inch},
-		BottomMargin: paper.Length{Length: 0.25, Units: paper.Inch},
-		RightMargin:  paper.Length{Length: 0.25, Units: paper.Inch},
+		Size:         LetterPaperSize,
+		Orientation:  Portrait,
+		TopMargin:    PaperLength{Length: 0.25, Units: InchPaperUnits},
+		LeftMargin:   PaperLength{Length: 0.25, Units: InchPaperUnits},
+		BottomMargin: PaperLength{Length: 0.25, Units: InchPaperUnits},
+		RightMargin:  PaperLength{Length: 0.25, Units: InchPaperUnits},
 	}
 }
 

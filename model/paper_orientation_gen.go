@@ -11,7 +11,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package paper
+package model
 
 import (
 	"strings"
@@ -21,18 +21,18 @@ import (
 
 // Possible values.
 const (
-	Portrait Orientation = iota
+	Portrait PaperOrientation = iota
 	Landscape
-	LastOrientation = Landscape
+	LastPaperOrientation = Landscape
 )
 
 var (
-	// AllOrientation holds all possible values.
-	AllOrientation = []Orientation{
+	// AllPaperOrientation holds all possible values.
+	AllPaperOrientation = []PaperOrientation{
 		Portrait,
 		Landscape,
 	}
-	orientationData = []struct {
+	paperOrientationData = []struct {
 		key    string
 		string string
 	}{
@@ -47,44 +47,44 @@ var (
 	}
 )
 
-// Orientation holds the orientation of the page.
-type Orientation byte
+// PaperOrientation holds the orientation of the page.
+type PaperOrientation byte
 
 // EnsureValid ensures this is of a known value.
-func (enum Orientation) EnsureValid() Orientation {
-	if enum <= LastOrientation {
+func (enum PaperOrientation) EnsureValid() PaperOrientation {
+	if enum <= LastPaperOrientation {
 		return enum
 	}
 	return 0
 }
 
 // Key returns the key used in serialization.
-func (enum Orientation) Key() string {
-	return orientationData[enum.EnsureValid()].key
+func (enum PaperOrientation) Key() string {
+	return paperOrientationData[enum.EnsureValid()].key
 }
 
 // String implements fmt.Stringer.
-func (enum Orientation) String() string {
-	return orientationData[enum.EnsureValid()].string
+func (enum PaperOrientation) String() string {
+	return paperOrientationData[enum.EnsureValid()].string
 }
 
-// ExtractOrientation extracts the value from a string.
-func ExtractOrientation(str string) Orientation {
-	for i, one := range orientationData {
+// ExtractPaperOrientation extracts the value from a string.
+func ExtractPaperOrientation(str string) PaperOrientation {
+	for i, one := range paperOrientationData {
 		if strings.EqualFold(one.key, str) {
-			return Orientation(i)
+			return PaperOrientation(i)
 		}
 	}
 	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
-func (enum Orientation) MarshalText() (text []byte, err error) {
+func (enum PaperOrientation) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
 // UnmarshalText implements the encoding.TextUnmarshaler interface.
-func (enum *Orientation) UnmarshalText(text []byte) error {
-	*enum = ExtractOrientation(string(text))
+func (enum *PaperOrientation) UnmarshalText(text []byte) error {
+	*enum = ExtractPaperOrientation(string(text))
 	return nil
 }

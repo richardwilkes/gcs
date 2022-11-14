@@ -11,7 +11,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package paper
+package model
 
 import (
 	"strings"
@@ -21,34 +21,34 @@ import (
 
 // Possible values.
 const (
-	Letter Size = iota
-	Legal
-	Tabloid
-	A0
-	A1
-	A2
-	A3
-	A4
-	A5
-	A6
-	LastSize = A6
+	LetterPaperSize PaperSize = iota
+	LegalPaperSize
+	TabloidPaperSize
+	A0PaperSize
+	A1PaperSize
+	A2PaperSize
+	A3PaperSize
+	A4PaperSize
+	A5PaperSize
+	A6PaperSize
+	LastPaperSize = A6PaperSize
 )
 
 var (
-	// AllSize holds all possible values.
-	AllSize = []Size{
-		Letter,
-		Legal,
-		Tabloid,
-		A0,
-		A1,
-		A2,
-		A3,
-		A4,
-		A5,
-		A6,
+	// AllPaperSize holds all possible values.
+	AllPaperSize = []PaperSize{
+		LetterPaperSize,
+		LegalPaperSize,
+		TabloidPaperSize,
+		A0PaperSize,
+		A1PaperSize,
+		A2PaperSize,
+		A3PaperSize,
+		A4PaperSize,
+		A5PaperSize,
+		A6PaperSize,
 	}
-	sizeData = []struct {
+	paperSizeData = []struct {
 		key    string
 		string string
 	}{
@@ -95,45 +95,44 @@ var (
 	}
 )
 
-// Size holds a standard paper dimension.
-type Size byte
+// PaperSize holds a standard paper dimension.
+type PaperSize byte
 
 // EnsureValid ensures this is of a known value.
-func (enum Size) EnsureValid() Size {
-	if enum <= LastSize {
+func (enum PaperSize) EnsureValid() PaperSize {
+	if enum <= LastPaperSize {
 		return enum
 	}
 	return 0
 }
 
 // Key returns the key used in serialization.
-func (enum Size) Key() string {
-	return sizeData[enum.EnsureValid()].key
+func (enum PaperSize) Key() string {
+	return paperSizeData[enum.EnsureValid()].key
 }
 
 // String implements fmt.Stringer.
-func (enum Size) String() string {
-	return sizeData[enum.EnsureValid()].string
+func (enum PaperSize) String() string {
+	return paperSizeData[enum.EnsureValid()].string
 }
 
-// ExtractSize extracts the value from a string.
-func ExtractSize(str string) Size {
-	str = strings.TrimPrefix(strings.TrimPrefix(str, "na-"), "iso-") // For older files that had the Java prefixes
-	for i, one := range sizeData {
+// ExtractPaperSize extracts the value from a string.
+func ExtractPaperSize(str string) PaperSize {
+	for i, one := range paperSizeData {
 		if strings.EqualFold(one.key, str) {
-			return Size(i)
+			return PaperSize(i)
 		}
 	}
 	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
-func (enum Size) MarshalText() (text []byte, err error) {
+func (enum PaperSize) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil
 }
 
 // UnmarshalText implements the encoding.TextUnmarshaler interface.
-func (enum *Size) UnmarshalText(text []byte) error {
-	*enum = ExtractSize(string(text))
+func (enum *PaperSize) UnmarshalText(text []byte) error {
+	*enum = ExtractPaperSize(string(text))
 	return nil
 }
