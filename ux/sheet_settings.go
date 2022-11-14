@@ -15,11 +15,10 @@ import (
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/display"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	measure2 "github.com/richardwilkes/gcs/v5/model/measure"
 	"github.com/richardwilkes/gcs/v5/model/paper"
-	"github.com/richardwilkes/gcs/v5/model/settings"
-	"github.com/richardwilkes/gcs/v5/model/settings/display"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -92,7 +91,7 @@ func (d *sheetSettingsDockable) settings() *model.SheetSettings {
 	if d.owner != nil {
 		return d.owner.Entity().SheetSettings
 	}
-	return settings.Global().Sheet
+	return model.Global().Sheet
 }
 
 func (d *sheetSettingsDockable) initContent(content *unison.Panel) {
@@ -342,9 +341,9 @@ func (d *sheetSettingsDockable) createHeader(panel *unison.Panel, title string, 
 func (d *sheetSettingsDockable) reset() {
 	if d.owner != nil {
 		entity := d.owner.Entity()
-		entity.SheetSettings = settings.Global().Sheet.Clone(entity)
+		entity.SheetSettings = model.Global().Sheet.Clone(entity)
 	} else {
-		settings.Global().Sheet = model.FactorySheetSettings()
+		model.Global().Sheet = model.FactorySheetSettings()
 	}
 	d.sync()
 }
@@ -404,7 +403,7 @@ func (d *sheetSettingsDockable) load(fileSystem fs.FS, filePath string) error {
 		entity.SheetSettings = s
 		s.SetOwningEntity(entity)
 	} else {
-		settings.Global().Sheet = s
+		model.Global().Sheet = s
 	}
 	d.sync()
 	return nil

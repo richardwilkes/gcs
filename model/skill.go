@@ -17,10 +17,10 @@ import (
 	"io/fs"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/display"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	gid2 "github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/gcs/v5/model/settings/display"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -201,7 +201,7 @@ func (s *Skill) TemplatePickerData() *TemplatePicker {
 func (s *Skill) CellData(column int, data *CellData) {
 	switch column {
 	case SkillDescriptionColumn:
-		data.Type = Text
+		data.Type = TextCellType
 		data.Primary = s.Description()
 		data.Secondary = s.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.UnsatisfiedReason = s.UnsatisfiedReason
@@ -209,19 +209,19 @@ func (s *Skill) CellData(column int, data *CellData) {
 		data.TemplateInfo = s.TemplatePicker.Description()
 	case SkillDifficultyColumn:
 		if !s.Container() {
-			data.Type = Text
+			data.Type = TextCellType
 			data.Primary = s.Difficulty.Description(s.Entity)
 		}
 	case SkillTagsColumn:
-		data.Type = Tags
+		data.Type = TagsCellType
 		data.Primary = CombineTags(s.Tags)
 	case SkillReferenceColumn, PageRefCellAlias:
-		data.Type = PageRef
+		data.Type = PageRefCellType
 		data.Primary = s.PageRef
 		data.Secondary = s.Name
 	case SkillLevelColumn:
 		if !s.Container() {
-			data.Type = Text
+			data.Type = TextCellType
 			level := s.CalculateLevel()
 			data.Primary = level.LevelAsString(s.Container())
 			if level.Tooltip != "" {
@@ -231,14 +231,14 @@ func (s *Skill) CellData(column int, data *CellData) {
 		}
 	case SkillRelativeLevelColumn:
 		if !s.Container() {
-			data.Type = Text
+			data.Type = TextCellType
 			data.Primary = FormatRelativeSkill(s.Entity, s.Type, s.Difficulty, s.AdjustedRelativeLevel())
 			if tooltip := s.CalculateLevel().Tooltip; tooltip != "" {
 				data.Tooltip = IncludesModifiersFrom + ":" + tooltip
 			}
 		}
 	case SkillPointsColumn:
-		data.Type = Text
+		data.Type = TextCellType
 		var tooltip xio.ByteBuffer
 		data.Primary = s.AdjustedPoints(&tooltip).String()
 		data.Alignment = unison.EndAlignment

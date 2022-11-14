@@ -16,11 +16,11 @@ import (
 	"io/fs"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/display"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	gid2 "github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	measure2 "github.com/richardwilkes/gcs/v5/model/measure"
-	"github.com/richardwilkes/gcs/v5/model/settings/display"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/unison"
@@ -152,35 +152,35 @@ func (m *EquipmentModifier) CellData(column int, data *CellData) {
 	switch column {
 	case EquipmentModifierEnabledColumn:
 		if !m.Container() {
-			data.Type = Toggle
+			data.Type = ToggleCellType
 			data.Checked = m.Enabled()
 			data.Alignment = unison.MiddleAlignment
 		}
 	case EquipmentModifierDescriptionColumn:
-		data.Type = Text
+		data.Type = TextCellType
 		data.Primary = m.Name
 		data.Secondary = m.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.Tooltip = m.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 	case EquipmentModifierTechLevelColumn:
 		if !m.Container() {
-			data.Type = Text
+			data.Type = TextCellType
 			data.Primary = m.TechLevel
 		}
 	case EquipmentModifierCostColumn:
 		if !m.Container() {
-			data.Type = Text
+			data.Type = TextCellType
 			data.Primary = m.CostDescription()
 		}
 	case EquipmentModifierWeightColumn:
 		if !m.Container() {
-			data.Type = Text
+			data.Type = TextCellType
 			data.Primary = m.WeightDescription()
 		}
 	case EquipmentModifierTagsColumn:
-		data.Type = Tags
+		data.Type = TagsCellType
 		data.Primary = CombineTags(m.Tags)
 	case EquipmentModifierReferenceColumn, PageRefCellAlias:
-		data.Type = PageRef
+		data.Type = PageRefCellType
 		data.Primary = m.PageRef
 		data.Secondary = m.Name
 	}

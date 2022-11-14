@@ -17,7 +17,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/xmath"
@@ -258,7 +257,7 @@ func (p *pageExporter) exportAsImages(filePathBase, extension string, f func(img
 	filePathBase = strings.TrimSuffix(filePathBase, extension)
 	savedColorMode := p.saveTheme()
 	defer p.restoreTheme(savedColorMode)
-	resolution := settings.Global().General.ImageResolution
+	resolution := model.Global().General.ImageResolution
 	pageNumber := 1
 	for p.HasPage(pageNumber) {
 		size := p.PageSize()

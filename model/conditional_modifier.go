@@ -152,14 +152,14 @@ func (m *ConditionalModifier) String() string {
 func (m *ConditionalModifier) CellData(column int, data *CellData) {
 	switch column {
 	case ConditionalModifierValueColumn:
-		data.Type = Text
+		data.Type = TextCellType
 		data.Primary = m.Total().StringWithSign()
 		data.Alignment = unison.EndAlignment
 	case ConditionalModifierDescriptionColumn:
-		data.Type = Text
+		data.Type = TextCellType
 		data.Primary = m.From
 	case PageRefCellAlias:
-		data.Type = PageRef
+		data.Type = PageRefCellType
 	}
 }
 

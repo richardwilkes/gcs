@@ -17,7 +17,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/library"
-	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -72,7 +71,7 @@ func ShowAttributeSettings(owner EntityPanel) {
 			d.defs = d.owner.Entity().SheetSettings.Attributes.Clone()
 			d.TabTitle = i18n.Text("Attributes: " + owner.Entity().Profile.Name)
 		} else {
-			d.defs = settings.Global().Sheet.Attributes.Clone()
+			d.defs = model.Global().Sheet.Attributes.Clone()
 			d.TabTitle = i18n.Text("Default Attributes")
 		}
 		d.TabIcon = svg.Attributes
@@ -223,7 +222,7 @@ func (d *attributeSettingsDockable) reset() {
 		BeforeData: d.defs.Clone(),
 	}
 	if d.owner != nil {
-		d.defs = settings.Global().Sheet.Attributes.Clone()
+		d.defs = model.Global().Sheet.Attributes.Clone()
 	} else {
 		d.defs = model.FactoryAttributeDefs()
 	}
@@ -276,7 +275,7 @@ func (d *attributeSettingsDockable) save(filePath string) error {
 func (d *attributeSettingsDockable) apply() {
 	d.Window().FocusNext() // Intentionally move the focus to ensure any pending edits are flushed
 	if d.owner == nil {
-		settings.Global().Sheet.Attributes = d.defs.Clone()
+		model.Global().Sheet.Attributes = d.defs.Clone()
 		return
 	}
 	entity := d.owner.Entity()

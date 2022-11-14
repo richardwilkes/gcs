@@ -19,8 +19,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/library"
-	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/desktop"
@@ -70,7 +70,7 @@ func openMarkdownPageReference(wnd *unison.Window, ref string) {
 		if !strings.HasSuffix(strings.ToLower(ref), ".md") {
 			ref += ".md"
 		}
-		for _, lib := range settings.Global().LibrarySet.List() {
+		for _, lib := range model.Global().LibrarySet.List() {
 			filePath := filepath.Join(lib.Path(), "Markdown", ref)
 			if xfs.FileIsReadable(filePath) {
 				OpenFile(wnd, filePath)
@@ -101,7 +101,7 @@ func openPDFPageReference(wnd *unison.Window, ref, highlight string, promptConte
 			return false
 		}
 		key := ref[:i]
-		s := settings.Global()
+		s := model.Global()
 		pageRef := s.PageRefs.Lookup(key)
 		if pageRef == nil && !promptContext[key] {
 			pdfName := PageRefKeyToName(key)
@@ -119,12 +119,12 @@ Would you like to create one by choosing a PDF to map to this key?`), key), pdfN
 				dialog.SetAllowedExtensions("pdf")
 				dialog.SetCanChooseDirectories(false)
 				dialog.SetCanChooseFiles(true)
-				global := settings.Global()
-				dialog.SetInitialDirectory(global.LastDir(settings.DefaultLastDirKey))
+				global := model.Global()
+				dialog.SetInitialDirectory(global.LastDir(model.DefaultLastDirKey))
 				if dialog.RunModal() {
 					p := dialog.Path()
-					global.SetLastDir(settings.DefaultLastDirKey, filepath.Dir(p))
-					pageRef = &settings.PageRef{
+					global.SetLastDir(model.DefaultLastDirKey, filepath.Dir(p))
+					pageRef = &model.PageRef{
 						ID:   key,
 						Path: p,
 					}
@@ -226,13 +226,13 @@ func (d *pageRefMappingsDockable) initContent(content *unison.Panel) {
 }
 
 func (d *pageRefMappingsDockable) reset() {
-	settings.Global().PageRefs = settings.PageRefs{}
+	model.Global().PageRefs = model.PageRefs{}
 	d.sync()
 }
 
 func (d *pageRefMappingsDockable) sync() {
 	d.content.RemoveAllChildren()
-	for _, one := range settings.Global().PageRefs.List() {
+	for _, one := range model.Global().PageRefs.List() {
 		d.createIDField(one)
 		d.createOffsetField(one)
 		d.createNameField(one)
@@ -241,7 +241,7 @@ func (d *pageRefMappingsDockable) sync() {
 	d.MarkForRedraw()
 }
 
-func (d *pageRefMappingsDockable) createIDField(ref *settings.PageRef) {
+func (d *pageRefMappingsDockable) createIDField(ref *model.PageRef) {
 	p := unison.NewLabel()
 	p.Text = ref.ID
 	p.HAlign = unison.MiddleAlignment
@@ -264,12 +264,12 @@ func (d *pageRefMappingsDockable) createIDField(ref *settings.PageRef) {
 	d.content.AddChild(p)
 }
 
-func (d *pageRefMappingsDockable) createOffsetField(ref *settings.PageRef) {
+func (d *pageRefMappingsDockable) createOffsetField(ref *model.PageRef) {
 	p := NewIntegerField(nil, "", i18n.Text("Page Offset"),
 		func() int { return ref.Offset },
 		func(v int) {
 			ref.Offset = v
-			settings.Global().PageRefs.Set(ref)
+			model.Global().PageRefs.Set(ref)
 		}, -9999, 9999, true, false)
 	p.Tooltip = unison.NewTooltipWithText(i18n.Text(`If your PDF is opening up to the wrong page when opening
 page references, enter an offset here to compensate.`))
@@ -280,7 +280,7 @@ page references, enter an offset here to compensate.`))
 	d.content.AddChild(p)
 }
 
-func (d *pageRefMappingsDockable) createNameField(ref *settings.PageRef) {
+func (d *pageRefMappingsDockable) createNameField(ref *model.PageRef) {
 	p := unison.NewLabel()
 	p.Text = filepath.Base(ref.Path)
 	p.Tooltip = unison.NewTooltipWithText(ref.Path)
@@ -292,12 +292,12 @@ func (d *pageRefMappingsDockable) createNameField(ref *settings.PageRef) {
 	d.content.AddChild(p)
 }
 
-func (d *pageRefMappingsDockable) createTrashField(ref *settings.PageRef) {
+func (d *pageRefMappingsDockable) createTrashField(ref *model.PageRef) {
 	b := unison.NewSVGButton(svg.Trash)
 	b.ClickCallback = func() {
 		if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to remove\n%s (%s)?"), ref.ID,
 			filepath.Base(ref.Path)), "") == unison.ModalResponseOK {
-			settings.Global().PageRefs.Remove(ref.ID)
+			model.Global().PageRefs.Remove(ref.ID)
 			parent := b.Parent()
 			index := parent.IndexOfChild(b)
 			for i := index; i > index-4; i-- {
@@ -314,15 +314,15 @@ func (d *pageRefMappingsDockable) createTrashField(ref *settings.PageRef) {
 }
 
 func (d *pageRefMappingsDockable) load(fileSystem fs.FS, filePath string) error {
-	s, err := settings.NewPageRefsFromFS(fileSystem, filePath)
+	s, err := model.NewPageRefsFromFS(fileSystem, filePath)
 	if err != nil {
 		return err
 	}
-	settings.Global().PageRefs = *s
+	model.Global().PageRefs = *s
 	d.sync()
 	return nil
 }
 
 func (d *pageRefMappingsDockable) save(filePath string) error {
-	return settings.Global().PageRefs.Save(filePath)
+	return model.Global().PageRefs.Save(filePath)
 }

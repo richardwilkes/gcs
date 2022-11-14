@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package settings
+package model
 
 import (
 	"context"
@@ -19,7 +19,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/library"
@@ -49,32 +48,32 @@ type NavigatorSettings struct {
 
 // Settings holds the application settings.
 type Settings struct {
-	LastSeenGCSVersion string                      `json:"last_seen_gcs_version,omitempty"`
-	General            *model.GeneralSheetSettings `json:"general,omitempty"`
-	LibrarySet         library.Libraries           `json:"libraries,omitempty"`
-	LibraryExplorer    NavigatorSettings           `json:"library_explorer"`
-	RecentFiles        []string                    `json:"recent_files,omitempty"`
-	LastDirs           map[string]string           `json:"last_dirs,omitempty"`
-	PageRefs           PageRefs                    `json:"page_refs,omitempty"`
-	KeyBindings        KeyBindings                 `json:"key_bindings,omitempty"`
-	WorkspaceFrame     *unison.Rect                `json:"workspace_frame,omitempty"`
-	Colors             theme.Colors                `json:"colors"`
-	Fonts              theme.Fonts                 `json:"fonts"`
-	QuickExports       *model.QuickExports         `json:"quick_exports,omitempty"`
-	Sheet              *model.SheetSettings        `json:"sheet_settings,omitempty"`
-	ColorMode          unison.ColorMode            `json:"color_mode"`
+	LastSeenGCSVersion string                `json:"last_seen_gcs_version,omitempty"`
+	General            *GeneralSheetSettings `json:"general,omitempty"`
+	LibrarySet         library.Libraries     `json:"libraries,omitempty"`
+	LibraryExplorer    NavigatorSettings     `json:"library_explorer"`
+	RecentFiles        []string              `json:"recent_files,omitempty"`
+	LastDirs           map[string]string     `json:"last_dirs,omitempty"`
+	PageRefs           PageRefs              `json:"page_refs,omitempty"`
+	KeyBindings        KeyBindings           `json:"key_bindings,omitempty"`
+	WorkspaceFrame     *unison.Rect          `json:"workspace_frame,omitempty"`
+	Colors             theme.Colors          `json:"colors"`
+	Fonts              theme.Fonts           `json:"fonts"`
+	QuickExports       *QuickExports         `json:"quick_exports,omitempty"`
+	Sheet              *SheetSettings        `json:"sheet_settings,omitempty"`
+	ColorMode          unison.ColorMode      `json:"color_mode"`
 }
 
 // Default returns new default settings.
 func Default() *Settings {
 	return &Settings{
 		LastSeenGCSVersion: cmdline.AppVersion,
-		General:            model.NewGeneralSheetSettings(),
+		General:            NewGeneralSheetSettings(),
 		LibrarySet:         library.NewLibraries(),
 		LibraryExplorer:    NavigatorSettings{DividerPosition: 330},
 		LastDirs:           make(map[string]string),
-		QuickExports:       model.NewQuickExports(),
-		Sheet:              model.FactorySheetSettings(),
+		QuickExports:       NewQuickExports(),
+		Sheet:              FactorySheetSettings(),
 	}
 }
 
@@ -86,8 +85,8 @@ func Global() *Settings {
 			global = Default()
 		}
 		global.EnsureValidity()
-		model.SettingsProvider = global
-		model.InstallEvaluatorFunctions(fxp.EvalFuncs)
+		SettingsProvider = global
+		InstallEvaluatorFunctions(fxp.EvalFuncs)
 		unison.SetColorMode(global.ColorMode)
 		global.Colors.MakeCurrent()
 		global.Fonts.MakeCurrent()
@@ -103,7 +102,7 @@ func (s *Settings) Save() error {
 // EnsureValidity checks the current settings for validity and if they aren't valid, makes them so.
 func (s *Settings) EnsureValidity() {
 	if s.General == nil {
-		s.General = model.NewGeneralSheetSettings()
+		s.General = NewGeneralSheetSettings()
 	} else {
 		s.General.EnsureValidity()
 	}
@@ -114,10 +113,10 @@ func (s *Settings) EnsureValidity() {
 		s.LastDirs = make(map[string]string)
 	}
 	if s.QuickExports == nil {
-		s.QuickExports = model.NewQuickExports()
+		s.QuickExports = NewQuickExports()
 	}
 	if s.Sheet == nil {
-		s.Sheet = model.FactorySheetSettings()
+		s.Sheet = FactorySheetSettings()
 	} else {
 		s.Sheet.EnsureValidity()
 	}
@@ -191,12 +190,12 @@ func (s *Settings) AddRecentFile(filePath string) {
 }
 
 // GeneralSettings implements gurps.SettingsProvider.
-func (s *Settings) GeneralSettings() *model.GeneralSheetSettings {
+func (s *Settings) GeneralSettings() *GeneralSheetSettings {
 	return s.General
 }
 
 // SheetSettings implements gurps.SettingsProvider.
-func (s *Settings) SheetSettings() *model.SheetSettings {
+func (s *Settings) SheetSettings() *SheetSettings {
 	return s.Sheet
 }
 

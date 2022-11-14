@@ -15,8 +15,8 @@ import (
 	"fmt"
 	"io/fs"
 
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/library"
-	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -65,16 +65,16 @@ func (d *colorSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 	for _, mode := range unison.AllColorModes {
 		p.AddItem(mode)
 	}
-	p.Select(settings.Global().ColorMode)
+	p.Select(model.Global().ColorMode)
 	p.SelectionCallback = func(_ int, mode unison.ColorMode) {
-		settings.Global().ColorMode = mode
+		model.Global().ColorMode = mode
 		unison.SetColorMode(mode)
 	}
 	toolbar.AddChild(p)
 }
 
 func (d *colorSettingsDockable) reset() {
-	g := settings.Global()
+	g := model.Global()
 	g.Colors.Reset()
 	g.Colors.MakeCurrent()
 	d.sync()
@@ -159,7 +159,7 @@ func (d *colorSettingsDockable) load(fileSystem fs.FS, filePath string) error {
 	if err != nil {
 		return err
 	}
-	g := settings.Global()
+	g := model.Global()
 	g.Colors = *s
 	g.Colors.MakeCurrent()
 	d.sync()
@@ -167,5 +167,5 @@ func (d *colorSettingsDockable) load(fileSystem fs.FS, filePath string) error {
 }
 
 func (d *colorSettingsDockable) save(filePath string) error {
-	return settings.Global().Colors.Save(filePath)
+	return model.Global().Colors.Save(filePath)
 }

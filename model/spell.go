@@ -17,10 +17,10 @@ import (
 	"io/fs"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/display"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	gid2 "github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/gcs/v5/model/settings/display"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -209,7 +209,7 @@ func (s *Spell) TemplatePickerData() *TemplatePicker {
 func (s *Spell) CellData(column int, data *CellData) {
 	switch column {
 	case SpellDescriptionColumn:
-		data.Type = Text
+		data.Type = TextCellType
 		data.Primary = s.Description()
 		data.Secondary = s.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.UnsatisfiedReason = s.UnsatisfiedReason
@@ -217,54 +217,54 @@ func (s *Spell) CellData(column int, data *CellData) {
 		data.TemplateInfo = s.TemplatePicker.Description()
 	case SpellResistColumn:
 		if !s.Container() {
-			data.Type = Text
+			data.Type = TextCellType
 			data.Primary = s.Resist
 		}
 	case SpellClassColumn:
 		if !s.Container() {
-			data.Type = Text
+			data.Type = TextCellType
 			data.Primary = s.Class
 		}
 	case SpellCollegeColumn:
 		if !s.Container() {
-			data.Type = Text
+			data.Type = TextCellType
 			data.Primary = strings.Join(s.College, ", ")
 		}
 	case SpellCastCostColumn:
 		if !s.Container() {
-			data.Type = Text
+			data.Type = TextCellType
 			data.Primary = s.CastingCost
 		}
 	case SpellMaintainCostColumn:
 		if !s.Container() {
-			data.Type = Text
+			data.Type = TextCellType
 			data.Primary = s.MaintenanceCost
 		}
 	case SpellCastTimeColumn:
 		if !s.Container() {
-			data.Type = Text
+			data.Type = TextCellType
 			data.Primary = s.CastingTime
 		}
 	case SpellDurationColumn:
 		if !s.Container() {
-			data.Type = Text
+			data.Type = TextCellType
 			data.Primary = s.Duration
 		}
 	case SpellDifficultyColumn:
 		if !s.Container() {
-			data.Type = Text
+			data.Type = TextCellType
 			data.Primary = s.Difficulty.Description(s.Entity)
 		}
 	case SpellTagsColumn:
-		data.Type = Tags
+		data.Type = TagsCellType
 		data.Primary = CombineTags(s.Tags)
 	case SpellReferenceColumn, PageRefCellAlias:
-		data.Type = PageRef
+		data.Type = PageRefCellType
 		data.Primary = s.PageRef
 		data.Secondary = s.Name
 	case SpellLevelColumn:
 		if !s.Container() {
-			data.Type = Text
+			data.Type = TextCellType
 			level := s.CalculateLevel()
 			data.Primary = level.LevelAsString(s.Container())
 			if level.Tooltip != "" {
@@ -274,7 +274,7 @@ func (s *Spell) CellData(column int, data *CellData) {
 		}
 	case SpellRelativeLevelColumn:
 		if !s.Container() {
-			data.Type = Text
+			data.Type = TextCellType
 			rsl := s.AdjustedRelativeLevel()
 			if rsl == fxp.Min {
 				data.Primary = "-"
@@ -289,7 +289,7 @@ func (s *Spell) CellData(column int, data *CellData) {
 			}
 		}
 	case SpellPointsColumn:
-		data.Type = Text
+		data.Type = TextCellType
 		var tooltip xio.ByteBuffer
 		data.Primary = s.AdjustedPoints(&tooltip).String()
 		data.Alignment = unison.EndAlignment

@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package settings
+package model
 
 import (
 	"context"

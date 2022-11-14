@@ -659,7 +659,7 @@ func (w *Weapon) SetChildren(_ []*Weapon) {
 // CellData returns the cell data information for the given column.
 func (w *Weapon) CellData(column int, data *CellData) {
 	var buffer xio.ByteBuffer
-	data.Type = Text
+	data.Type = TextCellType
 	switch column {
 	case WeaponDescriptionColumn:
 		data.Primary = w.String()
@@ -691,7 +691,7 @@ func (w *Weapon) CellData(column int, data *CellData) {
 	case WeaponRecoilColumn:
 		data.Primary = w.Recoil
 	case PageRefCellAlias:
-		data.Type = PageRef
+		data.Type = PageRefCellType
 	}
 	if buffer.Len() > 0 {
 		data.Tooltip = i18n.Text("Includes modifiers from:") + buffer.String()

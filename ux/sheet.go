@@ -22,7 +22,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/library"
-	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox"
@@ -129,7 +128,7 @@ func NewSheet(filePath string, entity *model.Entity) *Sheet {
 		scroll:            unison.NewScrollPanel(),
 		entity:            entity,
 		crc:               entity.CRC64(),
-		scale:             settings.Global().General.InitialSheetUIScale,
+		scale:             model.Global().General.InitialSheetUIScale,
 		content:           unison.NewPanel(),
 		needsSaveAsPrompt: true,
 	}
@@ -219,7 +218,7 @@ func NewSheet(filePath string, entity *model.Entity) *Sheet {
 	})
 	s.toolbar.AddChild(NewDefaultInfoPop())
 	s.toolbar.AddChild(NewScaleField(model.InitialUIScaleMin, model.InitialUIScaleMax,
-		func() int { return settings.Global().General.InitialSheetUIScale }, func() int { return s.scale },
+		func() int { return model.Global().General.InitialSheetUIScale }, func() int { return s.scale },
 		func(scale int) { s.scale = scale }, s.scroll, nil, false))
 	s.toolbar.AddChild(sheetSettingsButton)
 	s.toolbar.AddChild(attributesButton)

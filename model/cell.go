@@ -33,16 +33,16 @@ type CellData struct {
 // ForSort returns a string that can be used to sort or search against for this data.
 func (c *CellData) ForSort() string {
 	switch c.Type {
-	case Text:
+	case TextCellType:
 		if c.Secondary != "" {
 			return c.Primary + "\n" + c.Secondary
 		}
 		return c.Primary
-	case Toggle:
+	case ToggleCellType:
 		if c.Checked {
 			return "√"
 		}
-	case PageRef, Tags:
+	case PageRefCellType, TagsCellType:
 		return c.Primary
 	}
 	return ""

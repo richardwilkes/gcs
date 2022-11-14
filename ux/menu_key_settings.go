@@ -15,8 +15,8 @@ import (
 	"fmt"
 	"io/fs"
 
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/library"
-	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -58,7 +58,7 @@ func (d *menuKeySettingsDockable) initContent(content *unison.Panel) {
 }
 
 func (d *menuKeySettingsDockable) reset() {
-	g := settings.Global()
+	g := model.Global()
 	g.KeyBindings.Reset()
 	g.KeyBindings.MakeCurrent()
 	d.sync()
@@ -71,14 +71,14 @@ func (d *menuKeySettingsDockable) sync() {
 }
 
 func (d *menuKeySettingsDockable) fill() {
-	for _, b := range settings.CurrentBindings() {
+	for _, b := range model.CurrentBindings() {
 		d.content.AddChild(NewFieldLeadingLabel(b.Action.Title))
 		d.createBindingButton(b)
 		d.createResetField(b)
 	}
 }
 
-func (d *menuKeySettingsDockable) createBindingButton(binding *settings.Binding) {
+func (d *menuKeySettingsDockable) createBindingButton(binding *model.Binding) {
 	b := unison.NewButton()
 	b.Font = unison.KeyboardFont
 	b.Text = binding.Action.KeyBinding.String()
@@ -138,7 +138,7 @@ func (d *menuKeySettingsDockable) createBindingButton(binding *settings.Binding)
 				fallthrough
 			case unison.ModalResponseOK:
 				binding.KeyBinding = localBinding
-				g := settings.Global()
+				g := model.Global()
 				g.KeyBindings.Set(binding.ID, localBinding)
 				g.KeyBindings.MakeCurrent()
 				b.Text = localBinding.String()
@@ -150,12 +150,12 @@ func (d *menuKeySettingsDockable) createBindingButton(binding *settings.Binding)
 	d.content.AddChild(b)
 }
 
-func (d *menuKeySettingsDockable) createResetField(binding *settings.Binding) {
+func (d *menuKeySettingsDockable) createResetField(binding *model.Binding) {
 	b := unison.NewSVGButton(svg.Reset)
 	b.Tooltip = unison.NewTooltipWithText("Reset this key binding")
 	b.ClickCallback = func() {
 		if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to reset '%s'?"), binding.Action.Title), "") == unison.ModalResponseOK {
-			g := settings.Global()
+			g := model.Global()
 			g.KeyBindings.ResetOne(binding.ID)
 			g.KeyBindings.MakeCurrent()
 			binding.KeyBinding = g.KeyBindings.Current(binding.ID)
@@ -173,11 +173,11 @@ func (d *menuKeySettingsDockable) createResetField(binding *settings.Binding) {
 }
 
 func (d *menuKeySettingsDockable) load(fileSystem fs.FS, filePath string) error {
-	b, err := settings.NewKeyBindingsFromFS(fileSystem, filePath)
+	b, err := model.NewKeyBindingsFromFS(fileSystem, filePath)
 	if err != nil {
 		return err
 	}
-	g := settings.Global()
+	g := model.Global()
 	g.KeyBindings = *b
 	g.KeyBindings.MakeCurrent()
 	d.sync()
@@ -185,5 +185,5 @@ func (d *menuKeySettingsDockable) load(fileSystem fs.FS, filePath string) error 
 }
 
 func (d *menuKeySettingsDockable) save(filePath string) error {
-	return settings.Global().KeyBindings.Save(filePath)
+	return model.Global().KeyBindings.Save(filePath)
 }

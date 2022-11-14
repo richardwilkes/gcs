@@ -19,9 +19,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/library"
-	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
@@ -198,7 +198,7 @@ func (d *librarySettingsDockable) choosePath() {
 	if xfs.IsDir(d.path) {
 		dlg.SetInitialDirectory(d.path)
 	} else {
-		dlg.SetInitialDirectory(settings.Global().LastDir(settings.DefaultLastDirKey))
+		dlg.SetInitialDirectory(model.Global().LastDir(model.DefaultLastDirKey))
 	}
 	if dlg.RunModal() {
 		p, err := filepath.Abs(dlg.Path())
@@ -227,7 +227,7 @@ func (d *librarySettingsDockable) updateToolbar() {
 func (d *librarySettingsDockable) apply() {
 	wnd := d.Window()
 	wnd.FocusNext() // Intentionally move the focus to ensure any pending edits are flushed
-	libs := settings.Global().LibrarySet
+	libs := model.Global().LibrarySet
 	delete(libs, d.library.Key())
 	d.library.Title = d.name
 	d.library.GitHubAccountName = d.github

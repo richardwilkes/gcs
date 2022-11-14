@@ -15,9 +15,9 @@ import (
 	"fmt"
 	"io/fs"
 
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/library"
-	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -60,7 +60,7 @@ func (d *fontSettingsDockable) initContent(content *unison.Panel) {
 }
 
 func (d *fontSettingsDockable) reset() {
-	g := settings.Global()
+	g := model.Global()
 	g.Fonts.Reset()
 	g.Fonts.MakeCurrent()
 	d.sync()
@@ -236,7 +236,7 @@ func (d *fontSettingsDockable) load(fileSystem fs.FS, filePath string) error {
 	if err != nil {
 		return err
 	}
-	g := settings.Global()
+	g := model.Global()
 	g.Fonts = *s
 	g.Fonts.MakeCurrent()
 	d.sync()
@@ -244,5 +244,5 @@ func (d *fontSettingsDockable) load(fileSystem fs.FS, filePath string) error {
 }
 
 func (d *fontSettingsDockable) save(filePath string) error {
-	return settings.Global().Fonts.Save(filePath)
+	return model.Global().Fonts.Save(filePath)
 }

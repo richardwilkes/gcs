@@ -19,8 +19,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/export"
-	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -152,7 +152,7 @@ type ContextMenuItem struct {
 // SetupMenuBar the menu bar for the window.
 func SetupMenuBar(wnd *unison.Window) {
 	registerKeyBindingsOnce.Do(func() { registerActions() })
-	settings.Global().KeyBindings.MakeCurrent()
+	model.Global().KeyBindings.MakeCurrent()
 	unison.DefaultMenuFactory().BarForWindow(wnd, func(bar unison.Menu) {
 		unison.InsertStdMenus(bar, ShowAbout, nil, nil)
 		std := bar.Item(unison.PreferencesItemID)
@@ -334,7 +334,7 @@ func (s menuBarScope) setupHelpMenu(bar unison.Menu) {
 
 func (s menuBarScope) recentFilesUpdater(menu unison.Menu) {
 	menu.RemoveAll()
-	list := settings.Global().ListRecentFiles()
+	list := model.Global().ListRecentFiles()
 	m := make(map[string]int, len(list))
 	for _, f := range list {
 		title := filepath.Base(f)
@@ -370,7 +370,7 @@ func (s menuBarScope) exportToUpdater(menu unison.Menu) {
 	menu.InsertItem(-1, exportAsJPEGAction.NewMenuItem(factory))
 	menu.InsertSeparator(-1, false)
 	index := 0
-	for _, lib := range settings.Global().Libraries().List() {
+	for _, lib := range model.Global().Libraries().List() {
 		dir := lib.Path()
 		entries, err := fs.ReadDir(os.DirFS(dir), outputTemplatesDirName)
 		if err != nil {

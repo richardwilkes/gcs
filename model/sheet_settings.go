@@ -15,10 +15,10 @@ import (
 	"context"
 	"io/fs"
 
+	"github.com/richardwilkes/gcs/v5/model/display"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/library"
 	measure2 "github.com/richardwilkes/gcs/v5/model/measure"
-	"github.com/richardwilkes/gcs/v5/model/settings/display"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/log/jot"

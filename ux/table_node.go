@@ -223,7 +223,7 @@ func (n *Node[T]) PartialMatchExceptTag(text string) bool {
 	for _, column := range n.colMap {
 		var data model.CellData
 		n.dataAsNode.CellData(column, &data)
-		if data.Type != model.Tags {
+		if data.Type != model.TagsCellType {
 			if strings.Contains(strings.ToLower(data.ForSort()), text) {
 				return true
 			}
@@ -249,11 +249,11 @@ func (n *Node[T]) Match(text string) bool {
 // CellFromCellData creates a new panel for the given cell data.
 func (n *Node[T]) CellFromCellData(c *model.CellData, width float32, foreground unison.Ink) unison.Paneler {
 	switch c.Type {
-	case model.Text, model.Tags:
+	case model.TextCellType, model.TagsCellType:
 		return n.createLabelCell(c, width, foreground)
-	case model.Toggle:
+	case model.ToggleCellType:
 		return n.createToggleCell(c, foreground)
-	case model.PageRef:
+	case model.PageRefCellType:
 		return n.createPageRefCell(c, foreground)
 	default:
 		return unison.NewPanel()

@@ -17,7 +17,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	measure2 "github.com/richardwilkes/gcs/v5/model/measure"
-	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -110,7 +109,7 @@ func (d *DescriptionPanel) createColumn1() *unison.Panel {
 		func(s string) { d.entity.Profile.Birthday = s })
 	column.AddChild(NewPageLabelWithRandomizer(title,
 		i18n.Text("Randomize the birthday using the current calendar"), func() {
-			global := settings.Global()
+			global := model.Global()
 			d.entity.Profile.Birthday = global.General.CalendarRef(global.LibrarySet).RandomBirthday(d.entity.Profile.Birthday)
 			SetTextAndMarkModified(birthdayField.Field, d.entity.Profile.Birthday)
 		}))

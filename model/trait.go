@@ -16,10 +16,10 @@ import (
 	"io/fs"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/display"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	gid2 "github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/gcs/v5/model/settings/display"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -214,7 +214,7 @@ func (a *Trait) CellData(column int, data *CellData) {
 	data.Dim = !a.Enabled()
 	switch column {
 	case TraitDescriptionColumn:
-		data.Type = Text
+		data.Type = TextCellType
 		data.Primary = a.String()
 		data.Secondary = a.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.Disabled = a.EffectivelyDisabled()
@@ -222,14 +222,14 @@ func (a *Trait) CellData(column int, data *CellData) {
 		data.Tooltip = a.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 		data.TemplateInfo = a.TemplatePicker.Description()
 	case TraitPointsColumn:
-		data.Type = Text
+		data.Type = TextCellType
 		data.Primary = a.AdjustedPoints().String()
 		data.Alignment = unison.EndAlignment
 	case TraitTagsColumn:
-		data.Type = Tags
+		data.Type = TagsCellType
 		data.Primary = CombineTags(a.Tags)
 	case TraitReferenceColumn, PageRefCellAlias:
-		data.Type = PageRef
+		data.Type = PageRefCellType
 		data.Primary = a.PageRef
 		data.Secondary = a.Name
 	}

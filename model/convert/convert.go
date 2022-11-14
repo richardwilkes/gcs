@@ -21,7 +21,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/ancestry"
 	"github.com/richardwilkes/gcs/v5/model/library"
-	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/toolbox/collection"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -172,8 +171,8 @@ func Convert(paths ...string) error {
 				return err
 			}
 		case library.KeySettingsExt:
-			var data *settings.KeyBindings
-			if data, err = settings.NewKeyBindingsFromFS(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data *model.KeyBindings
+			if data, err = model.NewKeyBindingsFromFS(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
 			if err = data.Save(p); err != nil {
@@ -182,8 +181,8 @@ func Convert(paths ...string) error {
 		case library.NamesExt:
 			// Currently have no version info, so nothing to update
 		case library.PageRefSettingsExt:
-			var data *settings.PageRefs
-			if data, err = settings.NewPageRefsFromFS(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data *model.PageRefs
+			if data, err = model.NewPageRefsFromFS(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
 			if err = data.Save(p); err != nil {

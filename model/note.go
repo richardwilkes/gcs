@@ -129,10 +129,10 @@ func (n *Note) String() string {
 func (n *Note) CellData(column int, data *CellData) {
 	switch column {
 	case NoteTextColumn:
-		data.Type = Text
+		data.Type = TextCellType
 		data.Primary = n.Text
 	case NoteReferenceColumn, PageRefCellAlias:
-		data.Type = PageRef
+		data.Type = PageRefCellType
 		data.Primary = n.PageRef
 		data.Secondary = n.Text
 	}

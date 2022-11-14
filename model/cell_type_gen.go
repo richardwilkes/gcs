@@ -21,20 +21,20 @@ import (
 
 // Possible values.
 const (
-	Text CellType = iota
-	Tags
-	Toggle
-	PageRef
-	LastCellType = PageRef
+	TextCellType CellType = iota
+	TagsCellType
+	ToggleCellType
+	PageRefCellType
+	LastCellType = PageRefCellType
 )
 
 var (
 	// AllCellType holds all possible values.
 	AllCellType = []CellType{
-		Text,
-		Tags,
-		Toggle,
-		PageRef,
+		TextCellType,
+		TagsCellType,
+		ToggleCellType,
+		PageRefCellType,
 	}
 	cellTypeData = []struct {
 		key    string

@@ -17,11 +17,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/display"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	gid2 "github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	measure2 "github.com/richardwilkes/gcs/v5/model/measure"
-	"github.com/richardwilkes/gcs/v5/model/settings/display"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -199,62 +199,62 @@ func (e *Equipment) UnmarshalJSON(data []byte) error {
 func (e *Equipment) CellData(column int, data *CellData) {
 	switch column {
 	case EquipmentEquippedColumn:
-		data.Type = Toggle
+		data.Type = ToggleCellType
 		data.Checked = e.Equipped
 		data.Alignment = unison.MiddleAlignment
 	case EquipmentQuantityColumn:
-		data.Type = Text
+		data.Type = TextCellType
 		data.Primary = e.Quantity.String()
 		data.Alignment = unison.EndAlignment
 	case EquipmentDescriptionColumn:
-		data.Type = Text
+		data.Type = TextCellType
 		data.Primary = e.Description()
 		data.Secondary = e.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.UnsatisfiedReason = e.UnsatisfiedReason
 		data.Tooltip = e.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 	case EquipmentUsesColumn:
 		if e.MaxUses > 0 {
-			data.Type = Text
+			data.Type = TextCellType
 			data.Primary = strconv.Itoa(e.Uses)
 			data.Alignment = unison.EndAlignment
 		}
 	case EquipmentMaxUsesColumn:
 		if e.MaxUses > 0 {
-			data.Type = Text
+			data.Type = TextCellType
 			data.Primary = strconv.Itoa(e.MaxUses)
 			data.Alignment = unison.EndAlignment
 		}
 	case EquipmentTLColumn:
-		data.Type = Text
+		data.Type = TextCellType
 		data.Primary = e.TechLevel
 		data.Alignment = unison.EndAlignment
 	case EquipmentLCColumn:
-		data.Type = Text
+		data.Type = TextCellType
 		data.Primary = e.LegalityClass
 		data.Alignment = unison.EndAlignment
 	case EquipmentCostColumn:
-		data.Type = Text
+		data.Type = TextCellType
 		data.Primary = e.AdjustedValue().String()
 		data.Alignment = unison.EndAlignment
 	case EquipmentExtendedCostColumn:
-		data.Type = Text
+		data.Type = TextCellType
 		data.Primary = e.ExtendedValue().String()
 		data.Alignment = unison.EndAlignment
 	case EquipmentWeightColumn:
-		data.Type = Text
+		data.Type = TextCellType
 		units := SheetSettingsFor(e.Entity).DefaultWeightUnits
 		data.Primary = units.Format(e.AdjustedWeight(false, units))
 		data.Alignment = unison.EndAlignment
 	case EquipmentExtendedWeightColumn:
-		data.Type = Text
+		data.Type = TextCellType
 		units := SheetSettingsFor(e.Entity).DefaultWeightUnits
 		data.Primary = units.Format(e.ExtendedWeight(false, units))
 		data.Alignment = unison.EndAlignment
 	case EquipmentTagsColumn:
-		data.Type = Tags
+		data.Type = TagsCellType
 		data.Primary = CombineTags(e.Tags)
 	case EquipmentReferenceColumn, PageRefCellAlias:
-		data.Type = PageRef
+		data.Type = PageRefCellType
 		data.Primary = e.PageRef
 		data.Secondary = e.Name
 	}

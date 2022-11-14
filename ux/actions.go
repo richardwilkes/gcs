@@ -17,7 +17,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/library"
-	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/desktop"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -127,11 +126,11 @@ var (
 
 func registerActions() {
 	// Standard actions that may be assigned a key binding
-	settings.RegisterKeyBinding("cut", unison.CutAction)
-	settings.RegisterKeyBinding("copy", unison.CopyAction)
-	settings.RegisterKeyBinding("paste", unison.PasteAction)
-	settings.RegisterKeyBinding("delete", unison.DeleteAction)
-	settings.RegisterKeyBinding("select.all", unison.SelectAllAction)
+	model.RegisterKeyBinding("cut", unison.CutAction)
+	model.RegisterKeyBinding("copy", unison.CopyAction)
+	model.RegisterKeyBinding("paste", unison.PasteAction)
+	model.RegisterKeyBinding("delete", unison.DeleteAction)
+	model.RegisterKeyBinding("select.all", unison.SelectAllAction)
 
 	// Actions that may be assigned a key binding
 	addNaturalAttacksAction = registerKeyBindableAction("add.natural.attacks", &unison.Action{
@@ -543,11 +542,11 @@ func registerActions() {
 			dialog.SetAllowedExtensions(library.AcceptableExtensions()...)
 			dialog.SetCanChooseDirectories(false)
 			dialog.SetCanChooseFiles(true)
-			global := settings.Global()
-			dialog.SetInitialDirectory(global.LastDir(settings.DefaultLastDirKey))
+			global := model.Global()
+			dialog.SetInitialDirectory(global.LastDir(model.DefaultLastDirKey))
 			if dialog.RunModal() {
 				paths := dialog.Paths()
-				global.SetLastDir(settings.DefaultLastDirKey, filepath.Dir(paths[0]))
+				global.SetLastDir(model.DefaultLastDirKey, filepath.Dir(paths[0]))
 				OpenFiles(paths)
 			}
 		},
@@ -782,7 +781,7 @@ func registerActions() {
 			return !updating && releases == nil
 		},
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			settings.Global().LastSeenGCSVersion = ""
+			model.Global().LastSeenGCSVersion = ""
 			CheckForAppUpdates()
 		},
 	}
@@ -847,7 +846,7 @@ func registerActions() {
 }
 
 func registerKeyBindableAction(key string, action *unison.Action) *unison.Action {
-	settings.RegisterKeyBinding(key, action)
+	model.RegisterKeyBinding(key, action)
 	return action
 }
 

@@ -17,7 +17,6 @@ import (
 	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -76,11 +75,11 @@ func (p *PortraitPanel) mouseDown(_ unison.Point, button, clickCount int, _ unis
 		d.SetAllowedExtensions(unison.KnownImageFormatExtensions...)
 		d.SetCanChooseDirectories(false)
 		d.SetCanChooseFiles(true)
-		global := settings.Global()
-		d.SetInitialDirectory(global.LastDir(settings.ImagesDirKey))
+		global := model.Global()
+		d.SetInitialDirectory(global.LastDir(model.ImagesDirKey))
 		if d.RunModal() {
 			file := d.Path()
-			global.SetLastDir(settings.DefaultLastDirKey, filepath.Dir(file))
+			global.SetLastDir(model.DefaultLastDirKey, filepath.Dir(file))
 			p.fileDrop([]string{file})
 		}
 	}

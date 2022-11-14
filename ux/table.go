@@ -17,7 +17,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
@@ -90,7 +89,7 @@ func NewNodeTable[T model.NodeTypes](provider TableProvider[T], font unison.Font
 		_, pref, _ := headers[i].AsPanel().Sizes(unison.Size{})
 		pref.Width += table.Padding.Left + table.Padding.Right
 		table.ColumnSizes[i].AutoMinimum = pref.Width
-		table.ColumnSizes[i].AutoMaximum = xmath.Max(float32(settings.Global().General.MaximumAutoColWidth), pref.Width)
+		table.ColumnSizes[i].AutoMaximum = xmath.Max(float32(model.Global().General.MaximumAutoColWidth), pref.Width)
 		table.ColumnSizes[i].Minimum = pref.Width
 		table.ColumnSizes[i].Maximum = 10000
 	}

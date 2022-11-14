@@ -21,7 +21,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gid"
 	"github.com/richardwilkes/gcs/v5/model/library"
-	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/model/theme"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -93,7 +92,7 @@ func NewTemplate(filePath string, template *model.Template) *Template {
 		undoMgr:           unison.NewUndoManager(200, func(err error) { jot.Error(err) }),
 		scroll:            unison.NewScrollPanel(),
 		template:          template,
-		scale:             settings.Global().General.InitialSheetUIScale,
+		scale:             model.Global().General.InitialSheetUIScale,
 		crc:               template.CRC64(),
 		needsSaveAsPrompt: true,
 	}
@@ -171,7 +170,7 @@ func NewTemplate(filePath string, template *model.Template) *Template {
 	})
 	d.toolbar.AddChild(NewDefaultInfoPop())
 	d.toolbar.AddChild(NewScaleField(model.InitialUIScaleMin, model.InitialUIScaleMax,
-		func() int { return settings.Global().General.InitialSheetUIScale }, func() int { return d.scale },
+		func() int { return model.Global().General.InitialSheetUIScale }, func() int { return d.scale },
 		func(scale int) { d.scale = scale }, d.scroll, nil, false))
 	d.toolbar.AddChild(addUserButton)
 	installSearchTracker(d.toolbar, func() {
@@ -641,7 +640,7 @@ func (d *Template) createLists() {
 		}
 	}
 	d.content.RemoveAllChildren()
-	for _, col := range settings.Global().Sheet.BlockLayout.ByRow() {
+	for _, col := range model.Global().Sheet.BlockLayout.ByRow() {
 		rowPanel := unison.NewPanel()
 		for _, c := range col {
 			switch c {

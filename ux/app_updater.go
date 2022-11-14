@@ -19,8 +19,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/library"
-	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/desktop"
@@ -136,7 +136,7 @@ func NotifyOfAppUpdate() {
 			jot.Error(err)
 			return
 		}
-		settings.Global().LastSeenGCSVersion = releases[0].Version
+		model.Global().LastSeenGCSVersion = releases[0].Version
 		if dialog.RunModal() == unison.ModalResponseOK {
 			if err = desktop.Open("https://" + WebSiteDomain); err != nil {
 				unison.ErrorDialogWithError(i18n.Text("Unable to open web page for download"), err)

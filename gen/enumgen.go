@@ -127,7 +127,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/settings/display",
+		Pkg:        "model/display",
 		Name:       "option",
 		Desc:       "holds a display option",
 		StandAlone: true,
@@ -899,10 +899,9 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model",
-		Name:       "cell_type",
-		Desc:       "holds the type of table cell",
-		StandAlone: true,
+		Pkg:  "model",
+		Name: "cell_type",
+		Desc: "holds the type of table cell",
 		Values: []enumValue{
 			{
 				Key: "text",

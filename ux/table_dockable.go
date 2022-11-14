@@ -21,7 +21,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/library"
-	"github.com/richardwilkes/gcs/v5/model/settings"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -71,7 +70,7 @@ func NewTableDockable[T model.NodeTypes](filePath, extension string, provider Ta
 		scroll:            unison.NewScrollPanel(),
 		tableHeader:       header,
 		table:             table,
-		scale:             settings.Global().General.InitialListUIScale,
+		scale:             model.Global().General.InitialListUIScale,
 		needsSaveAsPrompt: true,
 	}
 	d.Self = d
@@ -177,7 +176,7 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	toolbar.AddChild(NewDefaultInfoPop())
 	toolbar.AddChild(NewScaleField(model.InitialUIScaleMin, model.InitialUIScaleMax,
-		func() int { return settings.Global().General.InitialListUIScale }, func() int { return d.scale },
+		func() int { return model.Global().General.InitialListUIScale }, func() int { return d.scale },
 		func(scale int) { d.scale = scale }, d.scroll, nil, false))
 	toolbar.AddChild(d.hierarchyButton)
 	toolbar.AddChild(d.sizeToFitButton)
