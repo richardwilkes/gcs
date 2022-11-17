@@ -165,7 +165,7 @@ func (a *AttributeDef) ComputeCost(entity *Entity, value, costReduction fxp.Int,
 		}
 		cost = cost.Mul(fxp.Hundred - costReduction).Div(fxp.Hundred)
 	}
-	return cost.Round()
+	return fxp.ApplyRounding(cost, false)
 }
 
 func (a *AttributeDef) crc64(c uint64) uint64 {
