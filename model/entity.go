@@ -88,6 +88,7 @@ type Entity struct {
 	BlockBonus                      fxp.Int
 	features                        features
 	variableResolverExclusions      map[string]bool
+	skillResolverExclusions         map[string]bool
 	cachedBasicLift                 Weight
 	cachedEncumbranceLevel          Encumbrance
 	cachedEncumbranceLevelForSkills Encumbrance
@@ -971,6 +972,34 @@ func (e *Entity) BasicLift() Weight {
 	}
 	e.cachedBasicLift = Weight(v.Mul(fxp.Ten).Trunc().Div(fxp.Ten))
 	return e.cachedBasicLift
+}
+
+func (e *Entity) isSkillLevelResolutionExcluded(name, specialization string) bool {
+	if e.skillResolverExclusions[e.skillLevelResolutionKey(name, specialization)] {
+		if dbg.VariableResolver {
+			if specialization != "" {
+				name += " (" + specialization + ")"
+			}
+			jot.Warnf("attempt to resolve skill level via itself: %s", name)
+		}
+		return true
+	}
+	return false
+}
+
+func (e *Entity) registerSkillLevelResolutionExclusion(name, specialization string) {
+	if e.skillResolverExclusions == nil {
+		e.skillResolverExclusions = make(map[string]bool)
+	}
+	e.skillResolverExclusions[e.skillLevelResolutionKey(name, specialization)] = true
+}
+
+func (e *Entity) unregisterSkillLevelResolutionExclusion(name, specialization string) {
+	delete(e.skillResolverExclusions, e.skillLevelResolutionKey(name, specialization))
+}
+
+func (e *Entity) skillLevelResolutionKey(name, specialization string) string {
+	return name + "\u0000" + specialization
 }
 
 // ResolveVariable implements eval.VariableResolver.

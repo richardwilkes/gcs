@@ -25,13 +25,14 @@ import (
 // InstallEvaluatorFunctions installs additional functions for the evaluator.
 func InstallEvaluatorFunctions(m map[string]eval.Function) {
 	m["advantage_level"] = evalTraitLevel // For older files
-	m["trait_level"] = evalTraitLevel
 	m["dice"] = evalDice
+	m["enc"] = evalEncumbrance
 	m["roll"] = evalRoll
 	m["signed"] = evalSigned
+	m["skill_level"] = evalSkillLevel
 	m["ssrt"] = evalSSRT
 	m["ssrt_to_yards"] = evalSSRTYards
-	m["enc"] = evalEncumbrance
+	m["trait_level"] = evalTraitLevel
 }
 
 func evalToBool(e *eval.Evaluator, arguments string) (bool, error) {
@@ -67,17 +68,77 @@ func evalToString(e *eval.Evaluator, arguments string) (string, error) {
 	return fmt.Sprintf("%v", v), nil
 }
 
+// evalEncumbrance takes up to 2 arguments: forSkills (bool, required) and returnFactor (bool, optional)
 func evalEncumbrance(e *eval.Evaluator, arguments string) (any, error) {
-	arg, _ := eval.NextArg(arguments)
+	arg, remaining := eval.NextArg(arguments)
 	forSkills, err := evalToBool(e, arg)
 	if err != nil {
 		return nil, err
+	}
+	var returnFactor bool
+	arg, _ = eval.NextArg(remaining)
+	if arg = strings.TrimSpace(arg); arg != "" {
+		if returnFactor, err = evalToBool(e, remaining); err != nil {
+			return nil, err
+		}
 	}
 	entity, ok := e.Resolver.(*Entity)
 	if !ok || entity.Type != PC {
 		return fxp.Int(0), nil
 	}
-	return fxp.From(int(entity.EncumbranceLevel(forSkills))), nil
+	level := fxp.From(int(entity.EncumbranceLevel(forSkills)))
+	if returnFactor {
+		return fxp.One - level.Mul(fxp.Two).Div(fxp.Ten), nil
+	}
+	return level, nil
+}
+
+// evalSkillLevel takes up to 3 arguments: name (string, required), specialization (string, optional), relative (bool, optional)
+func evalSkillLevel(e *eval.Evaluator, arguments string) (any, error) {
+	entity, ok := e.Resolver.(*Entity)
+	if !ok || entity.Type != PC {
+		return fxp.Int(0), nil
+	}
+	name, remaining := eval.NextArg(arguments)
+	var err error
+	if name, err = evalToString(e, name); err != nil {
+		return fxp.Int(0), err
+	}
+	name = strings.Trim(name, `"`)
+	var specialization string
+	specialization, remaining = eval.NextArg(remaining)
+	if specialization = strings.TrimSpace(specialization); specialization != "" {
+		if specialization, err = evalToString(e, specialization); err != nil {
+			return fxp.Int(0), err
+		}
+		specialization = strings.Trim(specialization, `"`)
+	}
+	var relative bool
+	arg, _ := eval.NextArg(remaining)
+	if arg = strings.TrimSpace(arg); arg != "" {
+		if relative, err = evalToBool(e, arg); err != nil {
+			return fxp.Int(0), err
+		}
+	}
+	if entity.isSkillLevelResolutionExcluded(name, specialization) {
+		return fxp.Int(0), nil
+	}
+	entity.registerSkillLevelResolutionExclusion(name, specialization)
+	defer entity.unregisterSkillLevelResolutionExclusion(name, specialization)
+	var level fxp.Int
+	Traverse(func(s *Skill) bool {
+		if strings.EqualFold(s.Name, name) && strings.EqualFold(s.Specialization, specialization) {
+			s.UpdateLevel()
+			if relative {
+				level = s.LevelData.RelativeLevel
+			} else {
+				level = s.LevelData.Level
+			}
+			return true
+		}
+		return false
+	}, true, true, entity.Skills...)
+	return level, nil
 }
 
 func evalTraitLevel(e *eval.Evaluator, arguments string) (any, error) {
