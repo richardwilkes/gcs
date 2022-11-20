@@ -53,6 +53,7 @@ const (
 	UndoItemID
 	RedoItemID
 	DuplicateItemID
+	ClearPortraitItemID
 	ConvertToContainerItemID
 	ToggleStateItemID
 	IncrementItemID
@@ -211,7 +212,9 @@ func (s menuBarScope) setupEditMenu(bar unison.Menu) {
 	i = s.insertMenuItem(m, i, redoAction.NewMenuItem(f))
 	s.insertMenuSeparator(m, i)
 
-	m.InsertItem(m.Item(unison.DeleteItemID).Index(), duplicateAction.NewMenuItem(f))
+	deleteIndex := m.Item(unison.DeleteItemID).Index()
+	m.InsertItem(deleteIndex+1, clearPortraitAction.NewMenuItem(f))
+	m.InsertItem(deleteIndex, duplicateAction.NewMenuItem(f))
 
 	i = s.insertMenuSeparator(m, m.Item(unison.SelectAllItemID).Index()+1)
 	i = s.insertMenuItem(m, i, openEditorAction.NewMenuItem(f))

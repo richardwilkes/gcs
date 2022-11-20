@@ -272,8 +272,34 @@ func NewSheet(filePath string, entity *model.Entity) *Sheet {
 	s.InstallCmdHandlers(ExportAsPNGItemID, unison.AlwaysEnabled, func(_ any) { s.exportToPNG() })
 	s.InstallCmdHandlers(ExportAsJPEGItemID, unison.AlwaysEnabled, func(_ any) { s.exportToJPEG() })
 	s.InstallCmdHandlers(PrintItemID, unison.AlwaysEnabled, func(_ any) { s.print() })
+	s.InstallCmdHandlers(ClearPortraitItemID, s.canClearPortrait, s.clearPortrait)
 
 	return s
+}
+
+func (s *Sheet) canClearPortrait(_ any) bool {
+	return len(s.entity.Profile.PortraitData) != 0
+}
+
+func (s *Sheet) clearPortrait(_ any) {
+	if s.canClearPortrait(nil) {
+		s.undoMgr.Add(&unison.UndoEdit[[]byte]{
+			ID:         unison.NextUndoID(),
+			EditName:   clearPortraitAction.Title,
+			UndoFunc:   func(edit *unison.UndoEdit[[]byte]) { s.updatePortrait(edit.BeforeData) },
+			RedoFunc:   func(edit *unison.UndoEdit[[]byte]) { s.updatePortrait(edit.AfterData) },
+			BeforeData: s.entity.Profile.PortraitData,
+			AfterData:  nil,
+		})
+		s.updatePortrait(nil)
+	}
+}
+
+func (s *Sheet) updatePortrait(data []byte) {
+	s.entity.Profile.PortraitData = data
+	s.entity.Profile.PortraitImage = nil
+	s.MarkForRedraw()
+	s.MarkModified(s)
 }
 
 func (s *Sheet) keyToPanel(key string) *unison.Panel {

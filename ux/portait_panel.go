@@ -136,9 +136,15 @@ func (p *PortraitPanel) fileDrop(files []string) {
 				continue
 			}
 		}
-		p.entity.Profile.PortraitData = data
-		p.entity.Profile.PortraitImage = img
-		p.MarkForRedraw()
-		MarkModified(p)
+		sheet := unison.Ancestor[*Sheet](p)
+		sheet.undoMgr.Add(&unison.UndoEdit[[]byte]{
+			ID:         unison.NextUndoID(),
+			EditName:   i18n.Text("Set Portrait"),
+			UndoFunc:   func(edit *unison.UndoEdit[[]byte]) { sheet.updatePortrait(edit.BeforeData) },
+			RedoFunc:   func(edit *unison.UndoEdit[[]byte]) { sheet.updatePortrait(edit.AfterData) },
+			BeforeData: sheet.entity.Profile.PortraitData,
+			AfterData:  data,
+		})
+		sheet.updatePortrait(data)
 	}
 }

@@ -29,6 +29,7 @@ const WebSiteDomain = "gurpscharactersheet.com"
 var (
 	addNaturalAttacksAction             *unison.Action
 	applyTemplateAction                 *unison.Action
+	clearPortraitAction                 *unison.Action
 	closeTabAction                      *unison.Action
 	colorSettingsAction                 *unison.Action
 	convertToContainerAction            *unison.Action
@@ -142,6 +143,12 @@ func registerActions() {
 		ID:              ApplyTemplateItemID,
 		Title:           i18n.Text("Apply Template to Character Sheet"),
 		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyA, Modifiers: unison.ShiftModifier | unison.OSMenuCmdModifier()},
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
+	})
+	clearPortraitAction = registerKeyBindableAction("clear.portrait", &unison.Action{
+		ID:              ClearPortraitItemID,
+		Title:           i18n.Text("Clear Portrait"),
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
