@@ -74,8 +74,20 @@ func (p *PrimaryAttrPanel) rebuild(attrs *model.AttributeDefs) {
 					jot.Warnf("unable to locate attribute data for '%s'", def.ID())
 					continue
 				}
-				p.AddChild(p.createPointsField(attr))
-				p.AddChild(p.createValueField(def, attr))
+				if def.Type == model.IntegerRefAttributeType || def.Type == model.DecimalRefAttributeType {
+					field := NewNonEditablePageFieldEnd(func(field *NonEditablePageField) {
+						field.Text = attr.Maximum().String()
+					})
+					field.SetLayoutData(&unison.FlexLayoutData{
+						HSpan:  2,
+						HAlign: unison.FillAlignment,
+						VAlign: unison.MiddleAlignment,
+					})
+					p.AddChild(field)
+				} else {
+					p.AddChild(p.createPointsField(attr))
+					p.AddChild(p.createValueField(def, attr))
+				}
 				p.AddChild(NewPageLabel(def.CombinedName()))
 			}
 		}
@@ -102,10 +114,9 @@ func (p *PrimaryAttrPanel) createPointsField(attr *model.Attribute) *NonEditable
 }
 
 func (p *PrimaryAttrPanel) createValueField(def *model.AttributeDef, attr *model.Attribute) *DecimalField {
-	field := NewDecimalPageField(p.targetMgr, p.prefix+attr.AttrID, def.CombinedName(),
+	return NewDecimalPageField(p.targetMgr, p.prefix+attr.AttrID, def.CombinedName(),
 		func() fxp.Int { return attr.Maximum() },
 		func(v fxp.Int) { attr.SetMaximum(v) }, fxp.Min, fxp.Max, true)
-	return field
 }
 
 // Sync the panel to the current data.
