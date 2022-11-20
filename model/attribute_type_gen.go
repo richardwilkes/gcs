@@ -54,7 +54,7 @@ var (
 		},
 		{
 			key:    "integer_ref",
-			string: i18n.Text("Integer (Reference Only)"),
+			string: i18n.Text("Integer (Display Only)"),
 		},
 		{
 			key:    "decimal",
@@ -62,7 +62,7 @@ var (
 		},
 		{
 			key:    "decimal_ref",
-			string: i18n.Text("Decimal (Reference Only)"),
+			string: i18n.Text("Decimal (Display Only)"),
 		},
 		{
 			key:    "pool",
