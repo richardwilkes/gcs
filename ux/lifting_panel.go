@@ -36,6 +36,7 @@ func NewLiftingPanel(entity *model.Entity) *LiftingPanel {
 		HAlign: unison.FillAlignment,
 		VAlign: unison.FillAlignment,
 		HGrab:  true,
+		VGrab:  true,
 	})
 	p.SetBorder(unison.NewCompoundBorder(&TitledBorder{Title: i18n.Text("Lifting & Moving Things")}, unison.NewEmptyBorder(unison.Insets{
 		Top:    1,

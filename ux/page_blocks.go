@@ -82,6 +82,7 @@ func createPageSecondRow(entity *model.Entity, targetMgr *TargetMgr) *unison.Pan
 		HAlign: unison.FillAlignment,
 		VAlign: unison.FillAlignment,
 		HGrab:  true,
+		VGrab:  true,
 	})
 	endWrapper.AddChild(NewEncumbrancePanel(entity))
 	endWrapper.AddChild(NewLiftingPanel(entity))

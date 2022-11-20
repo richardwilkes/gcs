@@ -254,7 +254,9 @@ func main() {
 		Desc: "holds the type of an attribute definition",
 		Values: []enumValue{
 			{Key: "integer"},
+			{Key: "integer_ref", String: "Integer (Reference Only)"},
 			{Key: "decimal"},
+			{Key: "decimal_ref", String: "Decimal (Reference Only)"},
 			{Key: "pool"},
 			{Key: "primary_separator"},
 			{Key: "secondary_separator"},

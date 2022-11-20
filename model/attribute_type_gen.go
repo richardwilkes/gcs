@@ -22,7 +22,9 @@ import (
 // Possible values.
 const (
 	IntegerAttributeType AttributeType = iota
+	IntegerRefAttributeType
 	DecimalAttributeType
+	DecimalRefAttributeType
 	PoolAttributeType
 	PrimarySeparatorAttributeType
 	SecondarySeparatorAttributeType
@@ -34,7 +36,9 @@ var (
 	// AllAttributeType holds all possible values.
 	AllAttributeType = []AttributeType{
 		IntegerAttributeType,
+		IntegerRefAttributeType,
 		DecimalAttributeType,
+		DecimalRefAttributeType,
 		PoolAttributeType,
 		PrimarySeparatorAttributeType,
 		SecondarySeparatorAttributeType,
@@ -49,8 +53,16 @@ var (
 			string: i18n.Text("Integer"),
 		},
 		{
+			key:    "integer_ref",
+			string: i18n.Text("Integer (Reference Only)"),
+		},
+		{
 			key:    "decimal",
 			string: i18n.Text("Decimal"),
+		},
+		{
+			key:    "decimal_ref",
+			string: i18n.Text("Decimal (Reference Only)"),
 		},
 		{
 			key:    "pool",
