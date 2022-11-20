@@ -141,6 +141,13 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text("A unique ID for the attribute"))
 	content.AddChild(field)
 
+	text = i18n.Text("Attribute Type")
+	content.AddChild(NewFieldLeadingLabel(text))
+	content.AddChild(NewPopup[model.AttributeType](p.dockable.targetMgr, p.def.KeyPrefix+"type", text,
+		func() model.AttributeType { return p.def.Type },
+		func(typ model.AttributeType) { p.applyAttributeType(typ) },
+		model.AllAttributeType...))
+
 	if p.def.IsSeparator() {
 		text = i18n.Text("Name")
 		content.AddChild(NewFieldLeadingLabel(text))
@@ -178,31 +185,26 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 		field.Tooltip = unison.NewTooltipWithText(i18n.Text("The base value, which may be a number or a formula"))
 		content.AddChild(field)
 
-		text = i18n.Text("Cost per Point")
-		content.AddChild(NewFieldLeadingLabel(text))
-		numField := NewIntegerField(p.dockable.targetMgr, p.def.KeyPrefix+"cost", text,
-			func() int { return fxp.As[int](p.def.CostPerPoint) },
-			func(v int) { p.def.CostPerPoint = fxp.From(v) },
-			0, 9999, false, false)
-		numField.Tooltip = unison.NewTooltipWithText(i18n.Text("The cost per point difference from the base"))
-		content.AddChild(numField)
+		if p.def.Type != model.IntegerRefAttributeType && p.def.Type != model.DecimalRefAttributeType {
+			text = i18n.Text("Cost per Point")
+			content.AddChild(NewFieldLeadingLabel(text))
+			numField := NewIntegerField(p.dockable.targetMgr, p.def.KeyPrefix+"cost", text,
+				func() int { return fxp.As[int](p.def.CostPerPoint) },
+				func(v int) { p.def.CostPerPoint = fxp.From(v) },
+				0, 9999, false, false)
+			numField.Tooltip = unison.NewTooltipWithText(i18n.Text("The cost per point difference from the base"))
+			content.AddChild(numField)
 
-		text = i18n.Text("SM Reduction")
-		content.AddChild(NewFieldLeadingLabel(text))
-		numField = NewPercentageField(p.dockable.targetMgr, p.def.KeyPrefix+"sm", text,
-			func() int { return fxp.As[int](p.def.CostAdjPercentPerSM) },
-			func(v int) { p.def.CostAdjPercentPerSM = fxp.From(v) },
-			0, 80, false, false)
-		numField.Tooltip = unison.NewTooltipWithText(i18n.Text("The reduction in cost for each SM greater than 0"))
-		content.AddChild(numField)
+			text = i18n.Text("SM Reduction")
+			content.AddChild(NewFieldLeadingLabel(text))
+			numField = NewPercentageField(p.dockable.targetMgr, p.def.KeyPrefix+"sm", text,
+				func() int { return fxp.As[int](p.def.CostAdjPercentPerSM) },
+				func(v int) { p.def.CostAdjPercentPerSM = fxp.From(v) },
+				0, 80, false, false)
+			numField.Tooltip = unison.NewTooltipWithText(i18n.Text("The reduction in cost for each SM greater than 0"))
+			content.AddChild(numField)
+		}
 	}
-
-	text = i18n.Text("Attribute Type")
-	content.AddChild(NewFieldLeadingLabel(text))
-	content.AddChild(NewPopup[model.AttributeType](p.dockable.targetMgr, p.def.KeyPrefix+"type", text,
-		func() model.AttributeType { return p.def.Type },
-		func(typ model.AttributeType) { p.applyAttributeType(typ) },
-		model.AllAttributeType...))
 
 	if p.def.Type == model.PoolAttributeType {
 		p.poolPanel = newPoolSettingsPanel(p.dockable, p.def)
