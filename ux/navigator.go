@@ -863,6 +863,7 @@ func OpenFiles(filePaths []string) {
 				if p, err := filepath.Abs(one); err != nil {
 					unison.ErrorDialogWithError(i18n.Text("Unable to open ")+one, err)
 				} else {
+					wnd.ToFront()
 					OpenFile(wnd, p)
 				}
 			}

@@ -49,7 +49,6 @@ func Start(files []string) {
 			OpenFiles(files)
 			go func() {
 				for paths := range pathsChan {
-					wnd.ToFront()
 					unison.InvokeTask(func() { OpenFiles(paths) })
 				}
 			}()
