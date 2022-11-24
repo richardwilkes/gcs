@@ -596,8 +596,8 @@ func (d *PDFDockable) drawOverlayMsg(gc *unison.Canvas, dirty unison.Rect, msg s
 		bgInk = unison.ContentColor.GetColor().SetAlphaIntensity(0.7)
 	}
 	decoration := &unison.TextDecoration{
-		Font:  font,
-		Paint: fgInk.Paint(gc, dirty, unison.Fill),
+		Font:       font,
+		Foreground: fgInk,
 	}
 	text := unison.NewText(msg, decoration)
 	r := d.docScroll.ContentView().ContentRect(false)
@@ -625,7 +625,8 @@ func (d *PDFDockable) drawOverlayMsg(gc *unison.Canvas, dirty unison.Rect, msg s
 	gc.DrawRoundedRect(r, 10, 10, bgInk.Paint(gc, dirty, unison.Fill))
 	x := r.X + (r.Width-width)/2
 	if icon != nil {
-		icon.DrawInRect(gc, unison.NewRect(x, r.Y+(r.Height-iconSize.Height)/2, iconSize.Width, iconSize.Height), nil, decoration.Paint)
+		icon.DrawInRect(gc, unison.NewRect(x, r.Y+(r.Height-iconSize.Height)/2, iconSize.Width, iconSize.Height), nil,
+			decoration.Foreground.Paint(gc, r, unison.Fill))
 		x += iconSize.Width + unison.StdHSpacing
 	}
 	text.Draw(gc, x, r.Y+(r.Height-height)/2+baseline)

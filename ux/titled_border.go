@@ -51,8 +51,8 @@ func (t *TitledBorder) Draw(gc *unison.Canvas, rect unison.Rect) {
 	path.Rect(clip)
 	gc.DrawPath(path, model.HeaderColor.Paint(gc, rect, unison.Fill))
 	text := unison.NewText(t.Title, &unison.TextDecoration{
-		Font:  t.font(),
-		Paint: model.OnHeaderColor.Paint(gc, rect, unison.Fill),
+		Font:       t.font(),
+		Foreground: model.OnHeaderColor,
 	})
 	text.Draw(gc, rect.X+(rect.Width-text.Width())/2, rect.Y+1+text.Baseline())
 }

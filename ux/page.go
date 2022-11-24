@@ -106,12 +106,12 @@ func (p *Page) drawSelf(gc *unison.Canvas, _ unison.Rect) {
 	pageNumber := parent.IndexOfChild(p) + 1
 
 	primaryDecorations := &unison.TextDecoration{
-		Font:  model.PageFooterPrimaryFont,
-		Paint: model.OnPageColor.Paint(gc, r, unison.Fill),
+		Font:       model.PageFooterPrimaryFont,
+		Foreground: model.OnPageColor,
 	}
 	secondaryDecorations := &unison.TextDecoration{
-		Font:  model.PageFooterSecondaryFont,
-		Paint: primaryDecorations.Paint,
+		Font:       model.PageFooterSecondaryFont,
+		Foreground: primaryDecorations.Foreground,
 	}
 
 	var title string
