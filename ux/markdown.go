@@ -39,7 +39,6 @@ const DefaultMarkdownWidth = 8 * 100
 // Markdown provides a simple markdown display widget. It is currently *very* limited in what it can display.
 type Markdown struct {
 	unison.Panel
-	maxWidth   int
 	node       ast.Node
 	content    []byte
 	block      *unison.Panel
@@ -48,29 +47,44 @@ type Markdown struct {
 	decoration *unison.TextDecoration
 	imgCache   map[string]*unison.Image
 	index      int
+	maxWidth   float32
 	ordered    bool
 	isHeader   bool
 }
 
 // NewMarkdown creates a new markdown widget.
 func NewMarkdown() *Markdown {
-	m := &Markdown{
-		maxWidth: DefaultMarkdownWidth,
-		imgCache: make(map[string]*unison.Image),
-	}
+	m := &Markdown{imgCache: make(map[string]*unison.Image)}
 	m.Self = &m
+	m.ParentChangedCallback = func() {
+		// TODO: This is fragile... need to have a better way to achieve dynamic sizing
+		if m.Parent() != nil {
+			m.Parent().FrameChangeCallback = func() {
+				w := m.Parent().ContentRect(false).Width - 20
+				if border := m.Border(); border != nil {
+					insets := border.Insets()
+					w -= insets.Width()
+				}
+				m.SetContentBytes(m.content, w)
+			}
+		}
+	}
 	return m
 }
 
 // SetContent replaces the current markdown content.
-func (m *Markdown) SetContent(content string, maxWidth int) {
+func (m *Markdown) SetContent(content string, maxWidth float32) {
 	m.SetContentBytes([]byte(content), maxWidth)
 }
 
 // SetContentBytes replaces the current markdown content.
-func (m *Markdown) SetContentBytes(content []byte, maxWidth int) {
+func (m *Markdown) SetContentBytes(content []byte, maxWidth float32) {
 	if maxWidth < 1 {
-		maxWidth = DefaultMarkdownWidth
+		if p := m.Parent(); p != nil {
+			maxWidth = p.ContentRect(false).Width
+		} else {
+			maxWidth = DefaultMarkdownWidth
+		}
 	}
 	if m.maxWidth == maxWidth && bytes.Equal(m.content, content) {
 		return
@@ -103,7 +117,6 @@ func (m *Markdown) SetContentBytes(content []byte, maxWidth int) {
 	})
 	m.SetBorder(unison.NewEmptyBorder(unison.NewUniformInsets(spacing)))
 	m.node = goldmark.New(goldmark.WithExtensions(extension.GFM)).Parser().Parse(text.NewReader(m.content))
-	m.node.Dump(m.content, 0) // TODO: Remove before shipping
 	m.walk(m.node)
 	m.MarkForLayoutAndRedraw()
 }
@@ -198,8 +211,10 @@ func (m *Markdown) processHeading() {
 		case 2:
 			fd.Size *= 2
 		case 3:
-			fd.Size *= 1.5
+			fd.Size *= 1.75
 		case 4:
+			fd.Size *= 1.5
+		case 5:
 			fd.Size *= 1.25
 		default:
 			// Remaining are normal sized
@@ -350,10 +365,6 @@ func (m *Markdown) processTable() {
 			p := unison.NewPanel()
 			p.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
 			p.SetLayout(&unison.FlexLayout{Columns: len(table.Alignments)})
-			p.SetLayoutData(&unison.FlexLayoutData{
-				HAlign: unison.FillAlignment,
-				HGrab:  true,
-			})
 			m.block.AddChild(p)
 			m.block = p
 			m.processChildren()
@@ -397,7 +408,6 @@ func (m *Markdown) processTableCell() {
 		p.SetLayoutData(&unison.FlexLayoutData{
 			HAlign: unison.FillAlignment,
 			VAlign: unison.FillAlignment,
-			HGrab:  true,
 			VGrab:  true,
 		})
 		m.block.AddChild(p)
@@ -448,15 +458,6 @@ func (m *Markdown) processText() {
 			m.issueLineBreak()
 		}
 	}
-}
-
-func (m *Markdown) issueLineBreak() {
-	m.flushText()
-	label := unison.NewRichLabel()
-	label.Text = m.text
-	m.addToTextRow(label)
-	m.textRow = nil
-	m.text = unison.NewText("", m.decoration)
 }
 
 func (m *Markdown) processEmphasis() {
@@ -641,11 +642,47 @@ func (m *Markdown) addToTextRow(p unison.Paneler) {
 	m.textRow.AddChild(p)
 }
 
+func (m *Markdown) addLabelToTextRow(t *unison.Text) {
+	label := unison.NewRichLabel()
+	label.Text = t
+	m.addToTextRow(label)
+}
+
+func (m *Markdown) issueLineBreak() {
+	m.flushText()
+	m.addToTextRow(unison.NewRichLabel())
+	m.textRow = nil
+}
+
 func (m *Markdown) flushText() {
 	if len(m.text.Runes()) != 0 {
-		label := unison.NewRichLabel()
-		label.Text = m.text
-		m.addToTextRow(label)
+		remaining := m.maxWidth
+		if m.textRow != nil {
+			_, prefSize, _ := m.textRow.Sizes(unison.Size{Width: m.maxWidth})
+			remaining -= prefSize.Width
+		}
+		min := m.decoration.Font.SimpleWidth("W")
+		if remaining < min {
+			// Remaining space is less than the width of a W, so go to the next line
+			m.addToTextRow(unison.NewRichLabel())
+			m.textRow = nil
+			remaining = m.maxWidth
+		}
+		if remaining < m.text.Width() {
+			// Remaining space isn't large enough for the text we have, so put a chunk that will fit on this line, then
+			// go to the next line
+			part := m.text.BreakToWidth(remaining)[0]
+			m.text = m.text.Slice(len(part.Runes()), len(m.text.Runes()))
+			m.addLabelToTextRow(part)
+			m.textRow = nil
+			// Now break the remaining text up to the max width size and add each line
+			for _, part = range m.text.BreakToWidth(m.maxWidth) {
+				m.textRow = nil
+				m.addLabelToTextRow(part)
+			}
+		} else {
+			m.addLabelToTextRow(m.text)
+		}
 		m.text = unison.NewText("", m.decoration)
 	}
 }
