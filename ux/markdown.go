@@ -201,7 +201,7 @@ func (m *Markdown) processHeading() {
 		saveBlock := m.block
 		m.decoration = m.decoration.Clone()
 		fd := m.decoration.Font.Descriptor()
-		fd.Weight = unison.BoldFontWeight
+		fd.Weight = unison.BlackFontWeight
 		fd.Slant = unison.NoSlant
 		fd.Spacing = unison.StandardSpacing
 		fd.Size = unison.LabelFont.Size()
@@ -391,7 +391,7 @@ func (m *Markdown) processTableCell() {
 		m.decoration = m.decoration.Clone()
 		if m.isHeader {
 			fd := m.decoration.Font.Descriptor()
-			fd.Weight = unison.BoldFontWeight
+			fd.Weight = unison.BlackFontWeight
 			fd.Slant = unison.NoSlant
 			fd.Spacing = unison.StandardSpacing
 			m.decoration.Font = fd.Font()
@@ -468,7 +468,7 @@ func (m *Markdown) processEmphasis() {
 		if emphasis.Level == 1 {
 			fd.Slant = unison.ItalicSlant
 		} else {
-			fd.Weight = unison.BoldFontWeight
+			fd.Weight = unison.BlackFontWeight
 		}
 		m.decoration.Font = fd.Font()
 		m.processChildren()
@@ -655,7 +655,7 @@ func (m *Markdown) issueLineBreak() {
 }
 
 func (m *Markdown) flushText() {
-	if len(m.text.Runes()) != 0 {
+	if m.text != nil && len(m.text.Runes()) != 0 {
 		remaining := m.maxWidth
 		if m.textRow != nil {
 			_, prefSize, _ := m.textRow.Sizes(unison.Size{Width: m.maxWidth})
