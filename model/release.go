@@ -42,7 +42,7 @@ func (r *Release) HasReleaseNotes() bool {
 }
 
 // LoadReleases loads the list of releases available from a given GitHub repo.
-func LoadReleases(ctx context.Context, client *http.Client, githubAccountName, repoName, currentVersion string, filter func(version, notes string) bool) ([]Release, error) {
+func LoadReleases(ctx context.Context, client *http.Client, githubAccountName, accessToken, repoName, currentVersion string, filter func(version, notes string) bool) ([]Release, error) {
 	if githubAccountName == "" || repoName == "" {
 		return nil, nil
 	}
@@ -51,6 +51,9 @@ func LoadReleases(ctx context.Context, client *http.Client, githubAccountName, r
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, uri, http.NoBody)
 	if err != nil {
 		return nil, errs.NewWithCause("unable to create GitHub API request "+uri, err)
+	}
+	if accessToken != "" {
+		req.Header.Set("Authorization", "Bearer "+accessToken)
 	}
 	var rsp *http.Response
 	if rsp, err = client.Do(req); err != nil {

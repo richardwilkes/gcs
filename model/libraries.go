@@ -16,6 +16,7 @@ import (
 	"io/fs"
 	"net/http"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -61,6 +62,9 @@ func (l *Libraries) UnmarshalJSON(data []byte) error {
 	libs := make(map[string]*Library)
 	for k, lib := range loaded {
 		if lib.Valid() {
+			if strings.HasPrefix(k, "*/") { // GCS v5.4 and earlier use * for local dirs that weren't on github
+				k = k[1:]
+			}
 			lib.ConfigureForKey(k)
 			lib.monitor = newMonitor(lib)
 			libs[lib.Key()] = lib
@@ -74,7 +78,7 @@ func (l *Libraries) UnmarshalJSON(data []byte) error {
 func (l Libraries) Master() *Library {
 	lib, ok := l[masterGitHubAccountName+"/"+masterRepoName]
 	if !ok {
-		lib = NewLibrary(i18n.Text("Master Library"), masterGitHubAccountName, masterRepoName, DefaultMasterLibraryPath())
+		lib = NewLibrary(i18n.Text("Master Library"), masterGitHubAccountName, "", masterRepoName, DefaultMasterLibraryPath())
 		l[lib.Key()] = lib
 	}
 	return lib
@@ -84,7 +88,7 @@ func (l Libraries) Master() *Library {
 func (l Libraries) User() *Library {
 	lib, ok := l["/"+userRepoName]
 	if !ok {
-		lib = NewLibrary(i18n.Text("User Library"), "", userRepoName, DefaultUserLibraryPath())
+		lib = NewLibrary(i18n.Text("User Library"), "", "", userRepoName, DefaultUserLibraryPath())
 		l[lib.Key()] = lib
 	}
 	return lib

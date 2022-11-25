@@ -81,7 +81,7 @@ func CheckForAppUpdates() {
 		go func() {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 			defer cancel()
-			releases, err := model.LoadReleases(ctx, &http.Client{}, "richardwilkes", "gcs", cmdline.AppVersion,
+			releases, err := model.LoadReleases(ctx, &http.Client{}, "richardwilkes", "", "gcs", cmdline.AppVersion,
 				func(version, notes string) bool {
 					// Don't bother showing changes from before 5.0.0, since those were the Java version
 					return txt.NaturalLess(version, "5.0.0", true)

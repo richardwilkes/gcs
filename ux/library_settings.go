@@ -34,10 +34,12 @@ type librarySettingsDockable struct {
 	cancelButton  *unison.Button
 	nameField     *StringField
 	githubField   *StringField
+	tokenField    *StringField
 	repoField     *StringField
 	pathField     *StringField
 	name          string
 	github        string
+	token         string
 	repo          string
 	path          string
 	special       bool
@@ -57,6 +59,7 @@ func ShowLibrarySettings(lib *model.Library) {
 			library: lib,
 			name:    lib.Title,
 			github:  lib.GitHubAccountName,
+			token:   lib.AccessToken,
 			repo:    lib.RepoName,
 			path:    lib.PathOnDisk,
 			special: lib.IsMaster() || lib.IsUser(),
@@ -127,14 +130,20 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 	}
 	content.AddChild(d.githubField)
 
-	content.AddChild(unison.NewPanel())
-	info := unison.NewLabel()
-	info.Text = i18n.Text("Leave the GitHub Account blank for local directories not on GitHub")
-	fd := info.Font.Descriptor()
-	fd.Slant = unison.ItalicSlant
-	fd.Size--
-	info.Font = fd.Font()
-	content.AddChild(info)
+	d.addNote(content, fmt.Sprintf(i18n.Text("Leave the GitHub Account blank for local directories not on GitHub")))
+
+	title = i18n.Text("GitHub Access Token")
+	content.AddChild(NewFieldLeadingLabel(title))
+	d.tokenField = NewStringField(nil, "", title,
+		func() string { return d.token },
+		func(s string) {
+			d.token = s
+			d.updateToolbar()
+		})
+	d.tokenField.SetEnabled(!d.special)
+	content.AddChild(d.tokenField)
+
+	d.addNote(content, fmt.Sprintf(i18n.Text(`The GitHub Access Token is only needed for private repositories and only needs the read-only "Content" permission for access to this repo`)))
 
 	title = i18n.Text("Repository")
 	content.AddChild(NewFieldLeadingLabel(title))
@@ -177,15 +186,23 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 
 	content.AddChild(wrapper)
 
-	for _, line := range unison.NewTextWrappedLines(fmt.Sprintf(i18n.Text(`Once configured, GitHub repositories will be scanned for release tags in the form "v%d.x.y" through "v%d.x.y", where x and y can be any numeric value.`),
-		model.MinimumLibraryVersion, model.CurrentDataVersion), &unison.TextDecoration{
-		Font:       fd.Font(),
+	d.addNote(content, fmt.Sprintf(i18n.Text(`Once configured, GitHub repositories will be scanned for release tags in the form "v%d.x.y" through "v%d.x.y", where x and y can be any numeric value`),
+		model.MinimumLibraryVersion, model.CurrentDataVersion))
+}
+
+func (d *librarySettingsDockable) addNote(parent *unison.Panel, note string) {
+	fd := unison.DefaultLabelTheme.Font.Descriptor()
+	fd.Slant = unison.ItalicSlant
+	fd.Size--
+	font := fd.Font()
+	for _, line := range unison.NewTextWrappedLines(note, &unison.TextDecoration{
+		Font:       font,
 		Foreground: unison.DefaultLabelTheme.OnBackgroundInk,
 	}, 400) {
 		label := unison.NewRichLabel()
 		label.Text = line
-		content.AddChild(unison.NewPanel())
-		content.AddChild(label)
+		parent.AddChild(unison.NewPanel())
+		parent.AddChild(label)
 	}
 }
 
@@ -231,7 +248,7 @@ func (d *librarySettingsDockable) updateToolbar() {
 	d.repoField.Validate()
 	d.pathField.Validate()
 	modified := d.library.Title != d.name || d.library.GitHubAccountName != d.github ||
-		d.library.RepoName != d.repo || d.library.PathOnDisk != d.path
+		d.library.AccessToken != d.token || d.library.RepoName != d.repo || d.library.PathOnDisk != d.path
 	d.applyButton.SetEnabled(modified &&
 		!(d.nameField.Invalid() || d.githubField.Invalid() || d.repoField.Invalid() || d.pathField.Invalid()))
 	d.cancelButton.SetEnabled(modified)
@@ -244,6 +261,7 @@ func (d *librarySettingsDockable) apply() {
 	delete(libs, d.library.Key())
 	d.library.Title = d.name
 	d.library.GitHubAccountName = d.github
+	d.library.AccessToken = d.token
 	d.library.RepoName = d.repo
 	libs[d.library.Key()] = d.library
 	if err := d.library.SetPath(d.path); err != nil {

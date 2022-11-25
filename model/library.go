@@ -42,6 +42,7 @@ var NotifyOfLibraryChangeFunc func()
 type Library struct {
 	Title             string `json:"title,omitempty"`
 	GitHubAccountName string `json:"-"`
+	AccessToken       string `json:"access_token,omitempty"`
 	RepoName          string `json:"-"`
 	PathOnDisk        string `json:"path,omitempty"`
 	CachedVersion     string `json:"-"`
@@ -51,10 +52,11 @@ type Library struct {
 }
 
 // NewLibrary creates a new library.
-func NewLibrary(title, githubAccountName, repoName, pathOnDisk string) *Library {
+func NewLibrary(title, githubAccountName, accessToken, repoName, pathOnDisk string) *Library {
 	lib := &Library{
 		Title:             title,
 		GitHubAccountName: githubAccountName,
+		AccessToken:       accessToken,
 		RepoName:          repoName,
 		PathOnDisk:        pathOnDisk,
 	}
@@ -72,9 +74,6 @@ func (l *Library) Valid() bool {
 func (l *Library) ConfigureForKey(key string) {
 	parts := strings.SplitN(key, "/", 2)
 	l.GitHubAccountName = strings.TrimSpace(parts[0])
-	if l.GitHubAccountName == "*" { // v5.4 and earlier use * for local dirs that weren't on github
-		l.GitHubAccountName = ""
-	}
 	l.RepoName = strings.TrimSpace(parts[1])
 }
 
@@ -141,7 +140,7 @@ func (l *Library) CheckForAvailableUpgrade(ctx context.Context, client *http.Cli
 	l.lock.Unlock()
 	incompatibleFutureLibraryVersion := strconv.Itoa(CurrentDataVersion + 1)
 	minimumLibraryVersion := strconv.Itoa(MinimumLibraryVersion)
-	available, err := LoadReleases(ctx, client, l.GitHubAccountName, l.RepoName, l.VersionOnDisk(),
+	available, err := LoadReleases(ctx, client, l.GitHubAccountName, l.AccessToken, l.RepoName, l.VersionOnDisk(),
 		func(version, notes string) bool {
 			return incompatibleFutureLibraryVersion == version ||
 				txt.NaturalLess(version, minimumLibraryVersion, true) ||
@@ -326,6 +325,9 @@ func (l *Library) downloadRelease(ctx context.Context, client *http.Client, rele
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, release.ZipFileURL, http.NoBody)
 	if err != nil {
 		return nil, errs.NewWithCause("unable to create request for "+release.ZipFileURL, err)
+	}
+	if l.AccessToken != "" {
+		req.Header.Set("Authorization", "Bearer "+l.AccessToken)
 	}
 	var rsp *http.Response
 	if rsp, err = client.Do(req); err != nil {
