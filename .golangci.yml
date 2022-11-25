@@ -5,7 +5,7 @@ output:
   sort-results: true
 linters-settings:
   depguard:
-    list-type: denylist
+    list-type: blacklist
     include-go-root: true
     packages:
       - log
@@ -54,19 +54,19 @@ linters-settings:
           - NewWithCausef
   misspell:
     locale: US
+  staticcheck:
+    go: "1.19"
+    checks: [ "all", "-SA3000" ]
   unused:
     check-exported: false
 linters:
   disable-all: true
   enable:
-    # Re-enable the commented-out ones once they work correctly with Go 1.18+
-    - deadcode
     - depguard
     - errcheck
     - errorlint
     - exportloopref
     - goconst
-#    - gocritic
     - gofumpt
     - goimports
     - gosec
@@ -79,15 +79,14 @@ linters:
     - predeclared
     - revive
     - staticcheck
-#    - structcheck
+    - typecheck
     - unconvert
     - unused
-    - varcheck
-#    - wastedassign
 issues:
   exclude-use-default: false
   exclude:
     - "fieldalignment: struct with \\d+ pointer bytes could be"
+    - "package-comments: should have a package comment"
     - "stdmethods: method MarshalJSON"
     - "stdmethods: method UnmarshalJSON"
     - "G104:"

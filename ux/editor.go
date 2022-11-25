@@ -23,9 +23,11 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// EditorGroup is the workspace grouping key to use for editors.
-const EditorGroup = "editors"
-const subEditorGroup = "sub_editors"
+const (
+	// EditorGroup is the workspace grouping key to use for editors.
+	EditorGroup    = "editors"
+	subEditorGroup = "sub_editors"
+)
 
 var (
 	_ unison.Dockable            = &editor[*model.Note, *model.NoteEditData]{}

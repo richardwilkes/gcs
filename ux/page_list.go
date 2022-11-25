@@ -332,24 +332,29 @@ func (p *PageList[T]) CreateItem(owner Rebuildable, variant ItemVariant) {
 	p.provider.CreateItem(owner, p.Table, variant)
 }
 
+// OverheadHeight returns the overhead for this page list, i.e. the border and header space.
 func (p *PageList[T]) OverheadHeight() float32 {
 	_, pref, _ := p.tableHeader.Sizes(unison.Size{})
 	insets := p.Border().Insets()
 	return insets.Height() + pref.Height
 }
 
+// RowHeights returns the heights of each row.
 func (p *PageList[T]) RowHeights() []float32 {
 	return p.Table.RowHeights()
 }
 
+// RowCount returns the number of rows.
 func (p *PageList[T]) RowCount() int {
 	return p.Table.LastRowIndex() + 1
 }
 
+// CurrentDrawRowRange returns the current row range that will be drawn.
 func (p *PageList[T]) CurrentDrawRowRange() (start, endBefore int) {
 	return p.Table.CurrentDrawRowRange()
 }
 
+// SetDrawRowRange sets the row range that will be drawn.
 func (p *PageList[T]) SetDrawRowRange(start, endBefore int) {
 	p.Table.SetDrawRowRange(start, endBefore)
 }
