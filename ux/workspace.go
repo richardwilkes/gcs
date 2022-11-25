@@ -411,6 +411,8 @@ func SaveDockableAs(d FileBackedDockable, extension string, saver func(filePath 
 	dir := filepath.Dir(existingPath)
 	if existingPath != dir {
 		dialog.SetInitialDirectory(dir)
+	} else {
+		dialog.SetInitialDirectory(model.GlobalSettings().LastDir(model.DefaultLastDirKey))
 	}
 	dialog.SetAllowedExtensions(extension)
 	if dialog.RunModal() {
@@ -418,6 +420,7 @@ func SaveDockableAs(d FileBackedDockable, extension string, saver func(filePath 
 		if !ok {
 			return false
 		}
+		model.GlobalSettings().SetLastDir(model.DefaultLastDirKey, filepath.Dir(filePath))
 		if err := saver(filePath); err != nil {
 			unison.ErrorDialogWithError(i18n.Text("Unable to save as ")+fs.BaseName(filePath), err)
 			return false

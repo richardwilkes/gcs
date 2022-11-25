@@ -223,11 +223,11 @@ func (d *SettingsDockable) handleImport(_ unison.MenuItem) {
 	dialog.SetCanChooseDirectories(false)
 	dialog.SetCanChooseFiles(true)
 	global := model.GlobalSettings()
-	dialog.SetInitialDirectory(global.LastDir(model.DefaultLastDirKey))
+	dialog.SetInitialDirectory(global.LastDir(model.SettingsLastDirKey))
 	if dialog.RunModal() {
 		p := dialog.Path()
 		dir := filepath.Dir(p)
-		global.SetLastDir(model.DefaultLastDirKey, dir)
+		global.SetLastDir(model.SettingsLastDirKey, dir)
 		d.doLoad(os.DirFS(dir), filepath.Base(p))
 	}
 }
@@ -236,10 +236,10 @@ func (d *SettingsDockable) handleExport(_ unison.MenuItem) {
 	dialog := unison.NewSaveDialog()
 	dialog.SetAllowedExtensions(d.Extensions[0])
 	global := model.GlobalSettings()
-	dialog.SetInitialDirectory(global.LastDir(model.DefaultLastDirKey))
+	dialog.SetInitialDirectory(global.LastDir(model.SettingsLastDirKey))
 	if dialog.RunModal() {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), d.Extensions[0], false); ok {
-			global.SetLastDir(model.DefaultLastDirKey, filepath.Dir(filePath))
+			global.SetLastDir(model.SettingsLastDirKey, filepath.Dir(filePath))
 			if err := d.Saver(filePath); err != nil {
 				unison.ErrorDialogWithError(i18n.Text("Unable to save ")+d.TabTitle, err)
 			}

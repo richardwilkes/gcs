@@ -193,16 +193,21 @@ func (d *librarySettingsDockable) choosePath() {
 	dlg.SetResolvesAliases(true)
 	dlg.SetCanChooseDirectories(true)
 	dlg.SetCanChooseFiles(false)
+	usedLastDir := false
 	if xfs.IsDir(d.path) {
-		dlg.SetInitialDirectory(d.path)
+		dlg.SetInitialDirectory(filepath.Dir(d.path))
 	} else {
 		dlg.SetInitialDirectory(model.GlobalSettings().LastDir(model.DefaultLastDirKey))
+		usedLastDir = true
 	}
 	if dlg.RunModal() {
 		p, err := filepath.Abs(dlg.Path())
 		if err != nil {
 			unison.ErrorDialogWithMessage(i18n.Text("Unable to resolve absolute path"), dlg.Path())
 		} else {
+			if usedLastDir {
+				model.GlobalSettings().SetLastDir(model.DefaultLastDirKey, filepath.Dir(p))
+			}
 			d.pathField.SetText(p)
 		}
 		d.pathField.SelectAll()

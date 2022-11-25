@@ -412,10 +412,12 @@ func (s menuBarScope) createExportToTextAction(index int, path string) *unison.A
 			if s := ActiveSheet(); s != nil {
 				dialog := unison.NewSaveDialog()
 				ext := filepath.Ext(path)
-				dialog.SetInitialDirectory(filepath.Dir(path))
+				settings := model.GlobalSettings()
+				dialog.SetInitialDirectory(settings.LastDir(model.DefaultLastDirKey))
 				dialog.SetAllowedExtensions(ext)
 				if dialog.RunModal() {
 					if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), ext, false); ok {
+						settings.SetLastDir(model.DefaultLastDirKey, filepath.Dir(filePath))
 						if err := model.LegacyExport(s.Entity(), path, filePath); err != nil {
 							unison.ErrorDialogWithError(i18n.Text("Export failed"), err)
 						}

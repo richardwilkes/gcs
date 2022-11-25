@@ -30,10 +30,11 @@ import (
 
 const maxRecentFiles = 20
 
-// Dir keys
+// Last directory keys
 const (
-	DefaultLastDirKey = "default"
-	ImagesDirKey      = "images"
+	DefaultLastDirKey  = "default"
+	ImagesLastDirKey   = "images"
+	SettingsLastDirKey = "settings"
 )
 
 var global *Settings
