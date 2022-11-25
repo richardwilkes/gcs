@@ -27,7 +27,6 @@ import (
 const (
 	masterGitHubAccountName = "richardwilkes"
 	masterRepoName          = "gcs_master_library"
-	userGitHubAccountName   = "*"
 	userRepoName            = "gcs_user_library"
 )
 
@@ -55,16 +54,17 @@ func NewLibrariesFromFS(fileSystem fs.FS, filePath string) (Libraries, error) {
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (l *Libraries) UnmarshalJSON(data []byte) error {
-	var libs map[string]*Library
-	if err := json.Unmarshal(data, &libs); err != nil {
+	var loaded map[string]*Library
+	if err := json.Unmarshal(data, &loaded); err != nil {
 		return err
 	}
-	for k, lib := range libs {
-		if !lib.Valid() {
-			delete(libs, k)
+	libs := make(map[string]*Library)
+	for k, lib := range loaded {
+		if lib.Valid() {
+			lib.ConfigureForKey(k)
+			lib.monitor = newMonitor(lib)
+			libs[lib.Key()] = lib
 		}
-		lib.ConfigureForKey(k)
-		lib.monitor = newMonitor(lib)
 	}
 	*l = libs
 	return nil
@@ -82,9 +82,9 @@ func (l Libraries) Master() *Library {
 
 // User holds information about the user library.
 func (l Libraries) User() *Library {
-	lib, ok := l[userGitHubAccountName+"/"+userRepoName]
+	lib, ok := l["/"+userRepoName]
 	if !ok {
-		lib = NewLibrary(i18n.Text("User Library"), userGitHubAccountName, userRepoName, DefaultUserLibraryPath())
+		lib = NewLibrary(i18n.Text("User Library"), "", userRepoName, DefaultUserLibraryPath())
 		l[lib.Key()] = lib
 	}
 	return lib

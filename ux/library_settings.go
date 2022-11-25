@@ -123,9 +123,18 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 		})
 	d.githubField.SetEnabled(!d.special)
 	if !d.special {
-		d.githubField.ValidateCallback = func() bool { return d.github != "" && !d.checkForSpecial() }
+		d.githubField.ValidateCallback = func() bool { return !d.checkForSpecial() }
 	}
 	content.AddChild(d.githubField)
+
+	content.AddChild(unison.NewPanel())
+	info := unison.NewLabel()
+	info.Text = i18n.Text("Leave the GitHub Account blank for local directories not on GitHub")
+	fd := info.Font.Descriptor()
+	fd.Slant = unison.ItalicSlant
+	fd.Size--
+	info.Font = fd.Font()
+	content.AddChild(info)
 
 	title = i18n.Text("Repository")
 	content.AddChild(NewFieldLeadingLabel(title))
@@ -168,15 +177,16 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 
 	content.AddChild(wrapper)
 
-	content.AddChild(unison.NewPanel())
-	info := unison.NewLabel()
-	info.Text = i18n.Text("Once configured, the repository specified above will be scanned for release tags")
-	info.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: unison.StdVSpacing * 2}))
-	content.AddChild(info)
-	content.AddChild(unison.NewPanel())
-	info = unison.NewLabel()
-	info.Text = fmt.Sprintf(i18n.Text(`in the form "v%d.x.y" through "v%d.x.y", where x and y can be any numeric value.`), model.MinimumLibraryVersion, model.CurrentDataVersion)
-	content.AddChild(info)
+	for _, line := range unison.NewTextWrappedLines(fmt.Sprintf(i18n.Text(`Once configured, GitHub repositories will be scanned for release tags in the form "v%d.x.y" through "v%d.x.y", where x and y can be any numeric value.`),
+		model.MinimumLibraryVersion, model.CurrentDataVersion), &unison.TextDecoration{
+		Font:       fd.Font(),
+		Foreground: unison.DefaultLabelTheme.OnBackgroundInk,
+	}, 400) {
+		label := unison.NewRichLabel()
+		label.Text = line
+		content.AddChild(unison.NewPanel())
+		content.AddChild(label)
+	}
 }
 
 func (d *librarySettingsDockable) checkForSpecial() bool {

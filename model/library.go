@@ -72,6 +72,9 @@ func (l *Library) Valid() bool {
 func (l *Library) ConfigureForKey(key string) {
 	parts := strings.SplitN(key, "/", 2)
 	l.GitHubAccountName = strings.TrimSpace(parts[0])
+	if l.GitHubAccountName == "*" { // v5.4 and earlier use * for local dirs that weren't on github
+		l.GitHubAccountName = ""
+	}
 	l.RepoName = strings.TrimSpace(parts[1])
 }
 
@@ -128,7 +131,7 @@ func (l *Library) IsMaster() bool {
 
 // IsUser returns true if this is the User Library.
 func (l *Library) IsUser() bool {
-	return l.GitHubAccountName == userGitHubAccountName && l.RepoName == userRepoName
+	return l.GitHubAccountName == "" && l.RepoName == userRepoName
 }
 
 // CheckForAvailableUpgrade returns releases that can be upgraded to.
