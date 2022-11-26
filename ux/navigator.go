@@ -631,7 +631,7 @@ func (n *Navigator) adjustTableSize() {
 // TitleIcon implements unison.Dockable
 func (n *Navigator) TitleIcon(suggestedSize unison.Size) unison.Drawable {
 	return &unison.DrawableSVG{
-		SVG:  unison.DocumentSVG(),
+		SVG:  unison.DocumentSVG,
 		Size: suggestedSize,
 	}
 }

@@ -36,7 +36,7 @@ type MarkdownDockable struct {
 	path       string
 	title      string
 	scroll     *unison.ScrollPanel
-	markdown   *Markdown
+	markdown   *unison.Markdown
 	scale      int
 	dragStart  unison.Point
 	dragOrigin unison.Point
@@ -79,7 +79,7 @@ func newMarkdownDockable(filePath, title, content string) (unison.Dockable, erro
 	d.Self = d
 	d.SetLayout(&unison.FlexLayout{Columns: 1})
 
-	d.markdown = NewMarkdown()
+	d.markdown = unison.NewMarkdown(true)
 	d.markdown.MouseDownCallback = d.mouseDown
 	d.markdown.MouseDragCallback = d.mouseDrag
 	d.markdown.MouseUpCallback = d.mouseUp

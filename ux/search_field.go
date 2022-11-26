@@ -25,7 +25,7 @@ func NewSearchField() *unison.Field {
 		HAlign:  unison.EndAlignment,
 		VAlign:  unison.MiddleAlignment,
 	})
-	b := unison.NewSVGButton(unison.CircledXSVG())
+	b := unison.NewSVGButton(unison.CircledXSVG)
 	b.OnSelectionInk = f.OnEditableInk
 	b.SetEnabled(false)
 	b.UpdateCursorCallback = func(_ unison.Point) *unison.Cursor { return unison.ArrowCursor() }

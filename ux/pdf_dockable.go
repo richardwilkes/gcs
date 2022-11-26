@@ -588,7 +588,7 @@ func (d *PDFDockable) drawOverlayMsg(gc *unison.Canvas, dirty unison.Rect, msg s
 		fgInk = unison.OnErrorColor
 		bgInk = unison.ErrorColor.GetColor().SetAlphaIntensity(0.7)
 		icon = &unison.DrawableSVG{
-			SVG:  unison.CircledExclamationSVG(),
+			SVG:  unison.CircledExclamationSVG,
 			Size: unison.NewSize(baseline, baseline),
 		}
 	} else {

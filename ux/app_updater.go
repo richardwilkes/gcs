@@ -115,7 +115,7 @@ func NotifyOfAppUpdate() {
 			buffer.WriteByte('\n')
 		}
 
-		md := NewMarkdown()
+		md := unison.NewMarkdown(true)
 		md.SetContent(buffer.String(), 0)
 
 		scroll := unison.NewScrollPanel()

@@ -35,7 +35,7 @@ func NewDocumentDock() *DocumentDock {
 // TitleIcon implements unison.Dockable
 func (d *DocumentDock) TitleIcon(suggestedSize unison.Size) unison.Drawable {
 	return &unison.DrawableSVG{
-		SVG:  unison.DocumentSVG(),
+		SVG:  unison.DocumentSVG,
 		Size: suggestedSize,
 	}
 }

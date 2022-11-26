@@ -275,7 +275,7 @@ func (n *Node[T]) createLabelCell(c *model.CellData, width float32, foreground u
 		label.Font = n.secondaryFieldFont()
 		height := label.Font.LineHeight()
 		label.Drawable = &unison.DrawableSVG{
-			SVG:  unison.TriangleExclamationSVG(),
+			SVG:  unison.TriangleExclamationSVG,
 			Size: unison.NewSize(height, height),
 		}
 		label.Text = i18n.Text("Unsatisfied prerequisite(s)")
