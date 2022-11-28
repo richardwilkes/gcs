@@ -31,24 +31,21 @@ const colorsTypeKey = "theme_colors"
 // Additional colors over and above what unison provides by default.
 var (
 	HeaderColor             = &unison.ThemeColor{Light: unison.RGB(43, 43, 43), Dark: unison.RGB(64, 64, 64)}
-	OnHeaderColor           = &unison.ThemeColor{Light: unison.White, Dark: unison.Silver}
-	AccentColor             = &unison.ThemeColor{Light: unison.RGB(0, 102, 102), Dark: unison.RGB(100, 153, 153)}
-	SearchListColor         = &unison.ThemeColor{Light: unison.LightCyan, Dark: unison.RGB(0, 43, 43)}
-	OnSearchListColor       = &unison.ThemeColor{Light: unison.Black, Dark: unison.RGB(204, 204, 204)}
-	PageColor               = &unison.ThemeColor{Light: unison.White, Dark: unison.RGB(16, 16, 16)}
-	OnPageColor             = &unison.ThemeColor{Light: unison.Black, Dark: unison.RGB(160, 160, 160)}
-	PageVoidColor           = &unison.ThemeColor{Light: unison.Grey, Dark: unison.Black}
-	MarkerColor             = &unison.ThemeColor{Light: unison.RGB(252, 242, 196), Dark: unison.RGB(0, 51, 0)}
-	OnMarkerColor           = &unison.ThemeColor{Light: unison.Black, Dark: unison.RGB(221, 221, 221)}
-	OverloadedColor         = &unison.ThemeColor{Light: unison.RGB(192, 64, 64), Dark: unison.RGB(115, 37, 37)}
-	OnOverloadedColor       = &unison.ThemeColor{Light: unison.White, Dark: unison.RGB(221, 221, 221)}
 	HintColor               = &unison.ThemeColor{Light: unison.Grey, Dark: unison.RGB(64, 64, 64)}
-	LinkColor               = &unison.ThemeColor{Light: unison.RGB(0, 128, 64), Dark: unison.RGB(0, 128, 64)}
-	OnLinkColor             = &unison.ThemeColor{Light: unison.White, Dark: unison.RGB(221, 221, 221)}
-	LinkPressedColor        = &unison.ThemeColor{Light: unison.RGB(0, 248, 128), Dark: unison.RGB(0, 204, 96)}
-	OnLinkPressedColor      = &unison.ThemeColor{Light: unison.Black, Dark: unison.RGB(30, 30, 30)}
+	MarkerColor             = &unison.ThemeColor{Light: unison.RGB(252, 242, 196), Dark: unison.RGB(0, 51, 0)}
+	OnHeaderColor           = &unison.ThemeColor{Light: unison.White, Dark: unison.Silver}
+	OnMarkerColor           = &unison.ThemeColor{Light: unison.Black, Dark: unison.RGB(221, 221, 221)}
+	OnOverloadedColor       = &unison.ThemeColor{Light: unison.White, Dark: unison.RGB(221, 221, 221)}
+	OnPageColor             = &unison.ThemeColor{Light: unison.Black, Dark: unison.RGB(160, 160, 160)}
+	OnPageStandoutColor     = &unison.ThemeColor{Light: unison.Black, Dark: unison.RGB(160, 160, 160)}
+	OnSearchListColor       = &unison.ThemeColor{Light: unison.Black, Dark: unison.RGB(204, 204, 204)}
+	OverloadedColor         = &unison.ThemeColor{Light: unison.RGB(192, 64, 64), Dark: unison.RGB(115, 37, 37)}
 	PDFLinkHighlightColor   = &unison.ThemeColor{Light: unison.SpringGreen, Dark: unison.SpringGreen}
 	PDFMarkerHighlightColor = &unison.ThemeColor{Light: unison.Yellow, Dark: unison.Yellow}
+	PageColor               = &unison.ThemeColor{Light: unison.White, Dark: unison.RGB(16, 16, 16)}
+	PageStandoutColor       = &unison.ThemeColor{Light: unison.RGB(221, 221, 221), Dark: unison.RGB(64, 64, 64)}
+	PageVoidColor           = &unison.ThemeColor{Light: unison.Grey, Dark: unison.Black}
+	SearchListColor         = &unison.ThemeColor{Light: unison.LightCyan, Dark: unison.RGB(0, 43, 43)}
 )
 
 var (
@@ -102,15 +99,16 @@ var (
 		{ID: "on_overloaded", Title: i18n.Text("On Overloaded"), Color: OnOverloadedColor},
 		{ID: "page", Title: i18n.Text("Page"), Color: PageColor},
 		{ID: "on_page", Title: i18n.Text("On Page"), Color: OnPageColor},
+		{ID: "page_standout", Title: i18n.Text("Page Standout"), Color: PageStandoutColor},
+		{ID: "on_page_standout", Title: i18n.Text("On Page Standout"), Color: OnPageStandoutColor},
 		{ID: "page_void", Title: i18n.Text("Page Void"), Color: PageVoidColor},
 		{ID: "drop_area", Title: i18n.Text("Drop Area"), Color: unison.DropAreaColor},
-		{ID: "link", Title: i18n.Text("Link"), Color: LinkColor},
-		{ID: "on_link", Title: i18n.Text("On Link"), Color: OnLinkColor},
-		{ID: "link_pressed", Title: i18n.Text("Pressed Link"), Color: LinkPressedColor},
-		{ID: "on_link_pressed", Title: i18n.Text("On Pressed Link"), Color: OnLinkPressedColor},
+		{ID: "link", Title: i18n.Text("Link"), Color: unison.LinkColor},
+		{ID: "link_pressed", Title: i18n.Text("Pressed Link"), Color: unison.LinkPressedColor},
+		{ID: "link_rollover", Title: i18n.Text("Rollover Link"), Color: unison.LinkRolloverColor},
 		{ID: "pdf_link", Title: i18n.Text("PDF Link Highlight"), Color: PDFLinkHighlightColor},
 		{ID: "pdf_marker", Title: i18n.Text("PDF Marker Highlight"), Color: PDFMarkerHighlightColor},
-		{ID: "accent", Title: i18n.Text("Accent"), Color: AccentColor},
+		{ID: "accent", Title: i18n.Text("Accent"), Color: unison.AccentColor},
 	}
 	// FactoryColors holds the original theme before any modifications.
 	FactoryColors []*ThemedColor

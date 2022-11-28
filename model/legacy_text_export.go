@@ -28,7 +28,6 @@ import (
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/toolbox/xio/fs"
-	"github.com/richardwilkes/unison"
 )
 
 const (
@@ -1535,110 +1534,12 @@ func (ex *legacyExporter) subBufferExtractUpToMarker(marker string, buf []byte, 
 }
 
 func (ex *legacyExporter) handleColor(key string) {
-	var c *unison.ThemeColor
-	switch strings.ToLower(key[len("COLOR_"):]) {
-	case "background":
-		c = unison.BackgroundColor
-	case "on_background":
-		c = unison.OnBackgroundColor
-	case "content":
-		c = unison.ContentColor
-	case "on_content":
-		c = unison.OnContentColor
-	case "banding":
-		c = unison.BandingColor
-	case "divider":
-		c = unison.DividerColor
-	case "header":
-		c = HeaderColor
-	case "on_header":
-		c = OnHeaderColor
-	case "tab_focused":
-		c = unison.TabFocusedColor
-	case "on_tab_focused":
-		c = unison.OnTabFocusedColor
-	case "tab_current":
-		c = unison.TabCurrentColor
-	case "on_tab_current":
-		c = unison.OnTabCurrentColor
-	case "drop_area":
-		c = unison.DropAreaColor
-	case "editable":
-		c = unison.EditableColor
-	case "on_editable":
-		c = unison.OnEditableColor
-	case "selection":
-		c = unison.SelectionColor
-	case "on_selection":
-		c = unison.OnSelectionColor
-	case "inactive_selection":
-		c = unison.InactiveSelectionColor
-	case "on_inactive_selection":
-		c = unison.OnInactiveSelectionColor
-	case "scroll":
-		c = unison.ScrollColor
-	case "scroll_rollover":
-		c = unison.ScrollRolloverColor
-	case "scroll_edge":
-		c = unison.ScrollEdgeColor
-	case "accent":
-		c = AccentColor
-	case "control":
-		c = unison.ControlColor
-	case "on_control":
-		c = unison.OnControlColor
-	case "control_pressed":
-		c = unison.ControlPressedColor
-	case "on_control_pressed":
-		c = unison.OnControlPressedColor
-	case "control_edge":
-		c = unison.ControlEdgeColor
-	case "icon_button":
-		c = unison.IconButtonColor
-	case "icon_button_rollover":
-		c = unison.IconButtonRolloverColor
-	case "icon_button_pressed":
-		c = unison.IconButtonPressedColor
-	case "tooltip":
-		c = unison.TooltipColor
-	case "on_tooltip":
-		c = unison.OnTooltipColor
-	case "search_list":
-		c = SearchListColor
-	case "on_search_list":
-		c = OnSearchListColor
-	case "page":
-		c = PageColor
-	case "on_page":
-		c = OnPageColor
-	case "page_void":
-		c = PageVoidColor
-	case "marker":
-		c = MarkerColor
-	case "on_marker":
-		c = OnMarkerColor
-	case "error":
-		c = unison.ErrorColor
-	case "on_error":
-		c = unison.OnErrorColor
-	case "warning":
-		c = unison.WarningColor
-	case "on_warning":
-		c = unison.OnWarningColor
-	case "overloaded":
-		c = OverloadedColor
-	case "on_overloaded":
-		c = OnOverloadedColor
-	case "hint":
-		c = HintColor
-	case "link":
-		c = LinkColor
-	case "on_link":
-		c = OnLinkColor
-	default:
-		ex.unidentifiedKey(key)
+	id := strings.ToLower(key[len("COLOR_"):])
+	for _, c := range CurrentColors {
+		if c.ID == id {
+			ex.out.WriteString(c.Color.GetColor().String())
+			return
+		}
 	}
-	if c != nil {
-		ex.out.WriteString(c.GetColor().String())
-	}
+	ex.unidentifiedKey(key)
 }

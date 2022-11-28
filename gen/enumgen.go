@@ -850,6 +850,7 @@ func main() {
 			{Key: "tags"},
 			{Key: "toggle"},
 			{Key: "page_ref"},
+			{Key: "markdown"},
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{

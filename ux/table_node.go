@@ -165,6 +165,13 @@ func (n *Node[T]) ColumnCell(row, col int, foreground, _ unison.Ink, _, _, _ boo
 }
 
 func applyForegroundInkRecursively(panel *unison.Panel, foreground unison.Ink) {
+	if markdown, ok := panel.Self.(*unison.Markdown); ok {
+		var ic *unison.IndirectInk
+		if ic, ok = markdown.Foreground.(*unison.IndirectInk); ok {
+			ic.Target = foreground
+		}
+		return
+	}
 	if label, ok := panel.Self.(*unison.Label); ok {
 		if _, exists := label.ClientData()[invertColorsMarker]; !exists {
 			label.OnBackgroundInk = foreground
@@ -254,9 +261,21 @@ func (n *Node[T]) CellFromCellData(c *model.CellData, width float32, foreground 
 		return n.createToggleCell(c, foreground)
 	case model.PageRefCellType:
 		return n.createPageRefCell(c, foreground)
+	case model.MarkdownCellType:
+		return n.createMarkdownCell(c, width, foreground)
 	default:
 		return unison.NewPanel()
 	}
+}
+
+func (n *Node[T]) createMarkdownCell(c *model.CellData, width float32, foreground unison.Ink) unison.Paneler {
+	m := unison.NewMarkdown(false)
+	adjustMarkdownThemeForPage(m)
+	if i, ok := m.Foreground.(*unison.IndirectInk); ok {
+		i.Target = foreground
+	}
+	m.SetContent(c.Primary, width)
+	return m
 }
 
 func (n *Node[T]) createLabelCell(c *model.CellData, width float32, foreground unison.Ink) unison.Paneler {
@@ -349,9 +368,12 @@ func (n *Node[T]) addLabelCell(c *model.CellData, parent *unison.Panel, width fl
 func (n *Node[T]) createToggleCell(c *model.CellData, foreground unison.Ink) unison.Paneler {
 	check := unison.NewLabel()
 	check.VAlign = unison.StartAlignment
-	check.Font = n.primaryFieldFont()
+	font := n.primaryFieldFont()
+	fd := font.Descriptor()
+	fd.Size -= 2
+	check.Font = fd.Font()
 	check.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: 1}))
-	baseline := check.Font.Baseline()
+	baseline := font.Baseline()
 	if c.Checked {
 		check.Drawable = &unison.DrawableSVG{
 			SVG:  svg.Checkmark,
@@ -545,26 +567,26 @@ func (n *Node[T]) createPageRefCell(c *model.CellData, foreground unison.Ink) un
 		pressed := false
 		label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
 			if over {
-				var fg, bg *unison.ThemeColor
 				if pressed {
-					fg = model.OnLinkPressedColor
-					bg = model.LinkPressedColor
+					label.OnBackgroundInk = unison.LinkPressedColor
 				} else {
-					fg = model.OnLinkColor
-					bg = model.LinkColor
+					label.OnBackgroundInk = unison.LinkRolloverColor
 				}
-				gc.DrawRect(rect, bg.Paint(gc, rect, unison.Fill))
-				save := label.OnBackgroundInk
-				label.OnBackgroundInk = fg
-				label.DefaultDraw(gc, rect)
-				label.OnBackgroundInk = save
 			} else {
-				label.DefaultDraw(gc, rect)
+				label.OnBackgroundInk = unison.LinkColor
 			}
+			label.DefaultDraw(gc, rect)
 		}
 		label.MouseEnterCallback = func(where unison.Point, mod unison.Modifiers) bool {
 			over = true
 			label.MarkForRedraw()
+			return true
+		}
+		label.MouseMoveCallback = func(where unison.Point, mod unison.Modifiers) bool {
+			if over != label.ContentRect(true).ContainsPoint(where) {
+				over = !over
+				label.MarkForRedraw()
+			}
 			return true
 		}
 		label.MouseExitCallback = func() bool {

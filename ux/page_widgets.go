@@ -155,7 +155,7 @@ func NewPageLabelWithRandomizer(title, tooltip string, clickCallback func()) *un
 func NewStringPageField(targetMgr *TargetMgr, targetKey, undoTitle string, get func() string, set func(string)) *StringField {
 	field := NewStringField(targetMgr, targetKey, undoTitle, get, set)
 	field.Font = model.PageFieldPrimaryFont
-	field.FocusedBorder = unison.NewLineBorder(model.AccentColor, 0, unison.Insets{Bottom: 1}, false)
+	field.FocusedBorder = unison.NewLineBorder(unison.AccentColor, 0, unison.Insets{Bottom: 1}, false)
 	field.UnfocusedBorder = unison.NewLineBorder(unison.ControlEdgeColor, 0, unison.Insets{Bottom: 1}, false)
 	field.SetBorder(field.UnfocusedBorder)
 	field.SetLayoutData(&unison.FlexLayoutData{
@@ -170,7 +170,7 @@ func NewStringPageField(targetMgr *TargetMgr, targetKey, undoTitle string, get f
 func NewStringPageFieldNoGrab(targetMgr *TargetMgr, targetKey, undoTitle string, get func() string, set func(string)) *StringField {
 	field := NewStringField(targetMgr, targetKey, undoTitle, get, set)
 	field.Font = model.PageFieldPrimaryFont
-	field.FocusedBorder = unison.NewLineBorder(model.AccentColor, 0, unison.Insets{Bottom: 1}, false)
+	field.FocusedBorder = unison.NewLineBorder(unison.AccentColor, 0, unison.Insets{Bottom: 1}, false)
 	field.UnfocusedBorder = unison.NewLineBorder(unison.ControlEdgeColor, 0, unison.Insets{Bottom: 1}, false)
 	field.SetBorder(field.UnfocusedBorder)
 	field.SetLayoutData(&unison.FlexLayoutData{
@@ -184,7 +184,7 @@ func NewStringPageFieldNoGrab(targetMgr *TargetMgr, targetKey, undoTitle string,
 func NewHeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *model.Entity, get func() model.Length, set func(model.Length), min, max model.Length, noMinWidth bool) *LengthField {
 	field := NewLengthField(targetMgr, targetKey, undoTitle, entity, get, set, min, max, noMinWidth)
 	field.Font = model.PageFieldPrimaryFont
-	field.FocusedBorder = unison.NewLineBorder(model.AccentColor, 0, unison.Insets{Bottom: 1}, false)
+	field.FocusedBorder = unison.NewLineBorder(unison.AccentColor, 0, unison.Insets{Bottom: 1}, false)
 	field.UnfocusedBorder = unison.NewLineBorder(unison.ControlEdgeColor, 0, unison.Insets{Bottom: 1}, false)
 	field.SetBorder(field.UnfocusedBorder)
 	field.SetLayoutData(&unison.FlexLayoutData{
@@ -198,7 +198,7 @@ func NewHeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entit
 func NewWeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *model.Entity, get func() model.Weight, set func(model.Weight), min, max model.Weight, noMinWidth bool) *WeightField {
 	field := NewWeightField(targetMgr, targetKey, undoTitle, entity, get, set, min, max, noMinWidth)
 	field.Font = model.PageFieldPrimaryFont
-	field.FocusedBorder = unison.NewLineBorder(model.AccentColor, 0, unison.Insets{Bottom: 1}, false)
+	field.FocusedBorder = unison.NewLineBorder(unison.AccentColor, 0, unison.Insets{Bottom: 1}, false)
 	field.UnfocusedBorder = unison.NewLineBorder(unison.ControlEdgeColor, 0, unison.Insets{Bottom: 1}, false)
 	field.SetBorder(field.UnfocusedBorder)
 	field.SetLayoutData(&unison.FlexLayoutData{
@@ -213,7 +213,7 @@ func NewIntegerPageField(targetMgr *TargetMgr, targetKey, undoTitle string, get 
 	field := NewIntegerField(targetMgr, targetKey, undoTitle, get, set, min, max, showSign, false)
 	field.HAlign = unison.EndAlignment
 	field.Font = model.PageFieldPrimaryFont
-	field.FocusedBorder = unison.NewLineBorder(model.AccentColor, 0, unison.Insets{Bottom: 1}, false)
+	field.FocusedBorder = unison.NewLineBorder(unison.AccentColor, 0, unison.Insets{Bottom: 1}, false)
 	field.UnfocusedBorder = unison.NewLineBorder(unison.ControlEdgeColor, 0, unison.Insets{Bottom: 1}, false)
 	field.SetBorder(field.UnfocusedBorder)
 	field.SetLayoutData(&unison.FlexLayoutData{
@@ -228,7 +228,7 @@ func NewDecimalPageField(targetMgr *TargetMgr, targetKey, undoTitle string, get 
 	field := NewDecimalField(targetMgr, targetKey, undoTitle, get, set, min, max, false, noMinWidth)
 	field.HAlign = unison.EndAlignment
 	field.Font = model.PageFieldPrimaryFont
-	field.FocusedBorder = unison.NewLineBorder(model.AccentColor, 0, unison.Insets{Bottom: 1}, false)
+	field.FocusedBorder = unison.NewLineBorder(unison.AccentColor, 0, unison.Insets{Bottom: 1}, false)
 	field.UnfocusedBorder = unison.NewLineBorder(unison.ControlEdgeColor, 0, unison.Insets{Bottom: 1}, false)
 	field.SetBorder(field.UnfocusedBorder)
 	if !noMinWidth && min != fxp.Min && max != fxp.Max {

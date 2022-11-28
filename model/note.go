@@ -128,7 +128,7 @@ func (n *Note) String() string {
 func (n *Note) CellData(column int, data *CellData) {
 	switch column {
 	case NoteTextColumn:
-		data.Type = TextCellType
+		data.Type = MarkdownCellType
 		data.Primary = n.Text
 	case NoteReferenceColumn, PageRefCellAlias:
 		data.Type = PageRefCellType

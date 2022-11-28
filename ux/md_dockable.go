@@ -80,6 +80,7 @@ func newMarkdownDockable(filePath, title, content string) (unison.Dockable, erro
 	d.SetLayout(&unison.FlexLayout{Columns: 1})
 
 	d.markdown = unison.NewMarkdown(true)
+	d.markdown.SetBorder(unison.NewEmptyBorder(unison.StdInsets()))
 	d.markdown.MouseDownCallback = d.mouseDown
 	d.markdown.MouseDragCallback = d.mouseDrag
 	d.markdown.MouseUpCallback = d.mouseUp

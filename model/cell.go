@@ -42,7 +42,7 @@ func (c *CellData) ForSort() string {
 		if c.Checked {
 			return "√"
 		}
-	case PageRefCellType, TagsCellType:
+	case PageRefCellType, TagsCellType, MarkdownCellType:
 		return c.Primary
 	}
 	return ""

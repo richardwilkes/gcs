@@ -25,7 +25,8 @@ const (
 	TagsCellType
 	ToggleCellType
 	PageRefCellType
-	LastCellType = PageRefCellType
+	MarkdownCellType
+	LastCellType = MarkdownCellType
 )
 
 var (
@@ -35,6 +36,7 @@ var (
 		TagsCellType,
 		ToggleCellType,
 		PageRefCellType,
+		MarkdownCellType,
 	}
 	cellTypeData = []struct {
 		key    string
@@ -55,6 +57,10 @@ var (
 		{
 			key:    "page_ref",
 			string: i18n.Text("Page Ref"),
+		},
+		{
+			key:    "markdown",
+			string: i18n.Text("Markdown"),
 		},
 	}
 )
