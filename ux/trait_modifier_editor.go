@@ -22,7 +22,7 @@ import (
 
 // EditTraitModifier displays the editor for a trait modifier.
 func EditTraitModifier(owner Rebuildable, modifier *model.TraitModifier) {
-	displayEditor[*model.TraitModifier, *model.TraitModifierEditData](owner, modifier, svg.GCSTraitModifiers,
+	displayEditor[*model.TraitModifier, *model.TraitModifierEditData](owner, modifier, svg.GCSTraitModifiers, nil,
 		initTraitModifierEditor)
 }
 

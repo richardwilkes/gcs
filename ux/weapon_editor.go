@@ -20,7 +20,7 @@ import (
 
 // EditWeapon displays the editor for a weapon.
 func EditWeapon(owner Rebuildable, w *model.Weapon) {
-	displayEditor[*model.Weapon, *model.Weapon](owner, w, w.Type.SVG(), initWeaponEditor)
+	displayEditor[*model.Weapon, *model.Weapon](owner, w, w.Type.SVG(), nil, initWeaponEditor)
 }
 
 func initWeaponEditor(e *editor[*model.Weapon, *model.Weapon], content *unison.Panel) func() {

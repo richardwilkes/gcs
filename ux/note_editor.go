@@ -20,7 +20,7 @@ import (
 
 // EditNote displays the editor for a note.
 func EditNote(owner Rebuildable, note *model.Note) {
-	displayEditor[*model.Note, *model.NoteEditData](owner, note, svg.GCSNotes, initNoteEditor)
+	displayEditor[*model.Note, *model.NoteEditData](owner, note, svg.GCSNotes, initNoteToolbar, initNoteEditor)
 }
 
 func adjustMarkdownThemeForPage(markdown *unison.Markdown) {
@@ -41,6 +41,13 @@ func adjustMarkdownThemeForPage(markdown *unison.Markdown) {
 	}
 	markdown.CodeBackground = model.PageStandoutColor
 	markdown.OnCodeBackground = model.OnPageStandoutColor
+}
+
+func initNoteToolbar(_ *editor[*model.Note, *model.NoteEditData], toolbar *unison.Panel) {
+	filler := unison.NewPanel()
+	filler.SetLayoutData(&unison.FlexLayoutData{HGrab: true})
+	toolbar.AddChild(filler)
+	toolbar.AddChild(unison.NewLink(i18n.Text("Markdown Guide"), "", "md:Markdown Guide", unison.DefaultLinkTheme, HandleLink))
 }
 
 func initNoteEditor(e *editor[*model.Note, *model.NoteEditData], content *unison.Panel) func() {
@@ -68,6 +75,9 @@ func initNoteEditor(e *editor[*model.Note, *model.NoteEditData], content *unison
 			MarkModified(content)
 		})
 	field.AutoScroll = false
+	fd := unison.MonospacedFont.Descriptor()
+	fd.Size = field.Font.Size()
+	field.Font = fd.Font()
 	content.AddChild(field)
 
 	addPageRefLabelAndField(content, &e.editorData.PageRef)

@@ -23,7 +23,7 @@ import (
 
 // EditSpell displays the editor for an spell.
 func EditSpell(owner Rebuildable, spell *model.Spell) {
-	displayEditor[*model.Spell, *model.SpellEditData](owner, spell, svg.GCSSpells, initSpellEditor)
+	displayEditor[*model.Spell, *model.SpellEditData](owner, spell, svg.GCSSpells, nil, initSpellEditor)
 }
 
 func initSpellEditor(e *editor[*model.Spell, *model.SpellEditData], content *unison.Panel) func() {

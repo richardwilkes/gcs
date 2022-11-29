@@ -23,7 +23,7 @@ import (
 
 // EditEquipment displays the editor for equipment.
 func EditEquipment(owner Rebuildable, equipment *model.Equipment, carried bool) {
-	displayEditor[*model.Equipment, *model.EquipmentEditData](owner, equipment, svg.GCSEquipment,
+	displayEditor[*model.Equipment, *model.EquipmentEditData](owner, equipment, svg.GCSEquipment, nil,
 		func(e *editor[*model.Equipment, *model.EquipmentEditData], content *unison.Panel) func() {
 			addNameLabelAndField(content, &e.editorData.Name)
 			addNotesLabelAndField(content, &e.editorData.LocalNotes)

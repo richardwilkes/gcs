@@ -855,6 +855,16 @@ func (n *Navigator) ApplySelectedPaths(paths []string) {
 	n.table.SetSelectionMap(selMap)
 }
 
+// HandleLink will try to open http, https, and md links, as well as resolve page references.
+func HandleLink(target string) {
+	ws := AnyWorkspace()
+	if ws == nil {
+		ShowUnableToLocateWorkspaceError()
+		return
+	}
+	OpenPageReference(ws.Window, target, "", nil)
+}
+
 // OpenFiles attempts to open the given file paths.
 func OpenFiles(filePaths []string) {
 	for _, wnd := range unison.Windows() {

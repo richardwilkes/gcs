@@ -36,6 +36,7 @@ func Start(files []string) {
 	unison.Start(
 		unison.StartupFinishedCallback(func() {
 			performPlatformStartup()
+			unison.DefaultMarkdownTheme.LinkHandler = HandleLink
 			if appIcon, err := unison.NewImageFromBytes(appIconBytes, 0.5); err != nil {
 				jot.Error(err)
 			} else {
