@@ -140,10 +140,10 @@ func (p *PointPoolsPanel) createPointsField(attr *model.Attribute) *NonEditableP
 
 // Sync the panel to the current data.
 func (p *PointPoolsPanel) Sync() {
-	attrs := p.entity.Attributes
+	attrs := model.SheetSettingsFor(p.entity).Attributes
 	if crc := attrs.CRC64(); crc != p.crc {
 		p.crc = crc
-		p.rebuild(model.SheetSettingsFor(p.entity).Attributes)
+		p.rebuild(attrs)
 		MarkForLayoutWithinDockable(p)
 	}
 }
