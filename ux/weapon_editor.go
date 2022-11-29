@@ -32,11 +32,11 @@ func initWeaponEditor(e *editor[*model.Weapon, *model.Weapon], content *unison.P
 	addLabelAndDecimalField(content, nil, "", i18n.Text("Damage Modifier Per Die"), "", &e.editorData.Damage.ModifierPerDie,
 		fxp.Min, fxp.Max)
 	addLabelAndDecimalField(content, nil, "", i18n.Text("Armor Divisor"), "", &e.editorData.Damage.ArmorDivisor, 0, fxp.Max)
-	addLabelAndStringField(content, i18n.Text("Damage WeaponType"), "", &e.editorData.Damage.Type)
+	addLabelAndStringField(content, i18n.Text("Damage Type"), "", &e.editorData.Damage.Type)
 	addLabelAndNullableDice(content, i18n.Text("Fragmentation Base Damage"), "", &e.editorData.Damage.Fragmentation)
 	addLabelAndDecimalField(content, nil, "", i18n.Text("Fragmentation Armor Divisor"), "",
 		&e.editorData.Damage.FragmentationArmorDivisor, 0, fxp.Max)
-	addLabelAndStringField(content, i18n.Text("Fragmentation WeaponType"), "", &e.editorData.Damage.FragmentationType)
+	addLabelAndStringField(content, i18n.Text("Fragmentation Type"), "", &e.editorData.Damage.FragmentationType)
 	switch e.editorData.Type {
 	case model.MeleeWeaponType:
 		addLabelAndStringField(content, i18n.Text("Reach"), "", &e.editorData.Reach)

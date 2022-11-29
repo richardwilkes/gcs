@@ -79,7 +79,7 @@ func initTraitEditor(e *editor[*model.Trait, *model.TraitEditData], content *uni
 	}
 	var ancestryPopup *unison.PopupMenu[string]
 	if e.target.Container() {
-		addLabelAndPopup(content, i18n.Text("Container WeaponType"), "", model.AllContainerType,
+		addLabelAndPopup(content, i18n.Text("Container Type"), "", model.AllContainerType,
 			&e.editorData.ContainerType)
 		var choices []string
 		for _, lib := range model.AvailableAncestries(model.GlobalSettings().Libraries()) {
