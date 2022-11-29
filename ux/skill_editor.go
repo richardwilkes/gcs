@@ -121,8 +121,19 @@ func initSkillEditor(e *editor[*model.Skill, *model.SkillEditData], content *uni
 				}))
 			adjustFieldBlank(limitField, e.editorData.TechniqueLimitModifier == nil)
 			wrapper2.AddChild(limitField)
-			addLabelAndPopup(content, i18n.Text("Difficulty"), "", model.AllTechniqueDifficulty,
+			difficultyPopup := addLabelAndPopup(content, i18n.Text("Difficulty"), "", model.AllTechniqueDifficulty,
 				&e.editorData.Difficulty.Difficulty)
+			difficultyPopup.SelectionCallback = func(_ int, item model.Difficulty) {
+				e.editorData.Difficulty.Difficulty = item
+				if !ownerIsSheet && !ownerIsTemplate {
+					if item == model.Hard {
+						e.editorData.Points = fxp.Two
+					} else {
+						e.editorData.Points = fxp.One
+					}
+				}
+				MarkModified(difficultyPopup)
+			}
 		} else {
 			addDifficultyLabelAndFields(content, e.target.Entity, &e.editorData.Difficulty)
 			encLabel := i18n.Text("Encumbrance Penalty")

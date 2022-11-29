@@ -73,6 +73,16 @@ func NewSkillsFromFile(fileSystem fs.FS, filePath string) ([]*Skill, error) {
 	if err := CheckVersion(data.Version); err != nil {
 		return nil, err
 	}
+
+	// Fix up some bad data in standalone skill lists where Hard techniques incorrectly had 1 point assigned to them
+	// instead of 2.
+	Traverse(func(skill *Skill) bool {
+		if strings.HasPrefix(skill.Type, TechniqueID) && skill.Difficulty.Difficulty == Hard && skill.Points == fxp.One {
+			skill.Points = fxp.Two
+		}
+		return false
+	}, false, true, data.Rows...)
+
 	return data.Rows, nil
 }
 
