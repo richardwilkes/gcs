@@ -100,7 +100,7 @@ func registerMarkdownFileInfo() {
 		GroupWith:  extensions,
 		MimeTypes:  []string{"text/markdown"},
 		SVG:        svg.MarkdownFile,
-		Load:       NewMarkdownDockable,
+		Load:       func(filePath string) (unison.Dockable, error) { return NewMarkdownDockable(filePath, true, false) },
 	}.Register()
 }
 

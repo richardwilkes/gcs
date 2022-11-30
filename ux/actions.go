@@ -62,6 +62,7 @@ var (
 	newEquipmentLibraryAction           *unison.Action
 	newEquipmentModifierAction          *unison.Action
 	newEquipmentModifiersLibraryAction  *unison.Action
+	newMarkdownFileAction               *unison.Action
 	newMeleeWeaponAction                *unison.Action
 	newNoteAction                       *unison.Action
 	newNoteContainerAction              *unison.Action
@@ -387,6 +388,18 @@ func registerActions() {
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			DisplayNewDockable(nil,
 				NewEquipmentModifierTableDockable("Equipment Modifiers"+model.EquipmentModifiersExt, nil))
+		},
+	})
+	newMarkdownFileAction = registerKeyBindableAction("new.markdown", &unison.Action{
+		ID:    NewMarkdownFileItemID,
+		Title: i18n.Text("New Markdown File"),
+		ExecuteCallback: func(_ *unison.Action, _ any) {
+			d, err := NewMarkdownDockableWithContent("untitled.md", "", true, true)
+			if err != nil {
+				unison.ErrorDialogWithError(i18n.Text("Unable to create new markdown file"), err)
+			} else {
+				DisplayNewDockable(nil, d)
+			}
 		},
 	})
 	newMeleeWeaponAction = registerKeyBindableAction("new.melee", &unison.Action{

@@ -166,9 +166,18 @@ func NewTemplate(filePath string, template *model.Template) *Template {
 		HGrab:  true,
 	})
 	d.toolbar.AddChild(NewDefaultInfoPop())
-	d.toolbar.AddChild(NewScaleField(model.InitialUIScaleMin, model.InitialUIScaleMax,
-		func() int { return model.GlobalSettings().General.InitialSheetUIScale }, func() int { return d.scale },
-		func(scale int) { d.scale = scale }, d.scroll, nil, false))
+	d.toolbar.AddChild(
+		NewScaleField(
+			model.InitialUIScaleMin,
+			model.InitialUIScaleMax,
+			func() int { return model.GlobalSettings().General.InitialSheetUIScale },
+			func() int { return d.scale },
+			func(scale int) { d.scale = scale },
+			nil,
+			false,
+			d.scroll,
+		),
+	)
 	d.toolbar.AddChild(addUserButton)
 	installSearchTracker(d.toolbar, func() {
 		d.Traits.Table.ClearSelection()

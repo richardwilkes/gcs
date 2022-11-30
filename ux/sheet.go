@@ -214,9 +214,18 @@ func NewSheet(filePath string, entity *model.Entity) *Sheet {
 		HGrab:  true,
 	})
 	s.toolbar.AddChild(NewDefaultInfoPop())
-	s.toolbar.AddChild(NewScaleField(model.InitialUIScaleMin, model.InitialUIScaleMax,
-		func() int { return model.GlobalSettings().General.InitialSheetUIScale }, func() int { return s.scale },
-		func(scale int) { s.scale = scale }, s.scroll, nil, false))
+	s.toolbar.AddChild(
+		NewScaleField(
+			model.InitialUIScaleMin,
+			model.InitialUIScaleMax,
+			func() int { return model.GlobalSettings().General.InitialSheetUIScale },
+			func() int { return s.scale },
+			func(scale int) { s.scale = scale },
+			nil,
+			false,
+			s.scroll,
+		),
+	)
 	s.toolbar.AddChild(sheetSettingsButton)
 	s.toolbar.AddChild(attributesButton)
 	s.toolbar.AddChild(bodyTypeButton)

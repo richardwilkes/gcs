@@ -151,9 +151,18 @@ func (e *editor[N, D]) createToolbar(initToolbar func(*editor[N, D], *unison.Pan
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 
 	toolbar.AddChild(NewDefaultInfoPop())
-	toolbar.AddChild(NewScaleField(model.InitialUIScaleMin, model.InitialUIScaleMax,
-		func() int { return model.GlobalSettings().General.InitialEditorUIScale }, func() int { return e.scale },
-		func(scale int) { e.scale = scale }, e.scroll, nil, false))
+	toolbar.AddChild(
+		NewScaleField(
+			model.InitialUIScaleMin,
+			model.InitialUIScaleMax,
+			func() int { return model.GlobalSettings().General.InitialEditorUIScale },
+			func() int { return e.scale },
+			func(scale int) { e.scale = scale },
+			nil,
+			false,
+			e.scroll,
+		),
+	)
 
 	e.applyButton = unison.NewSVGButton(svg.Checkmark)
 	e.applyButton.Tooltip = unison.NewTooltipWithSecondaryText(i18n.Text("Apply Changes"),

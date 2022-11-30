@@ -13,13 +13,18 @@ package ux
 
 import (
 	"fmt"
+	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/log/jot"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
+	"github.com/richardwilkes/toolbox/xio/fs/safe"
 	"github.com/richardwilkes/unison"
 )
 
@@ -28,19 +33,28 @@ const markdownContentOnlyPrefix = "//////////"
 var (
 	_ FileBackedDockable = &MarkdownDockable{}
 	_ unison.TabCloser   = &MarkdownDockable{}
+	_ ModifiableRoot     = &MarkdownDockable{}
 )
 
 // MarkdownDockable holds the view for an image file.
 type MarkdownDockable struct {
 	unison.Panel
-	path       string
-	title      string
-	scroll     *unison.ScrollPanel
-	markdown   *unison.Markdown
-	scale      int
-	dragStart  unison.Point
-	dragOrigin unison.Point
-	inDrag     bool
+	path              string
+	title             string
+	original          string
+	content           string
+	undoMgr           *unison.UndoManager
+	scroller          *unison.ScrollPanel
+	markdown          *unison.Markdown
+	editor            *StringField
+	scale             int
+	dragStart         unison.Point
+	dragOrigin        unison.Point
+	savedScrollX      float32
+	savedScrollY      float32
+	inDrag            bool
+	allowEditing      bool
+	needsSaveAsPrompt bool
 }
 
 // ShowReleaseNotesMarkdown attempts to show the given markdown content in a dockable.
@@ -52,7 +66,7 @@ func ShowReleaseNotesMarkdown(title, content string) {
 		dc.AcquireFocus()
 		return
 	}
-	d, err := NewMarkdownDockableWithContent(title, content)
+	d, err := NewMarkdownDockableWithContent(title, content, false, false)
 	if err != nil {
 		unison.ErrorDialogWithError(fmt.Sprintf(i18n.Text("Unable to open %s"), title), err)
 		return
@@ -61,20 +75,28 @@ func ShowReleaseNotesMarkdown(title, content string) {
 }
 
 // NewMarkdownDockable creates a new unison.Dockable for markdown files.
-func NewMarkdownDockable(filePath string) (unison.Dockable, error) {
-	return newMarkdownDockable(filePath, "", "")
+func NewMarkdownDockable(filePath string, allowEditing, startInEditMode bool) (unison.Dockable, error) {
+	d, err := newMarkdownDockable(filePath, "", "", allowEditing, startInEditMode)
+	if err != nil {
+		return nil, err
+	}
+	d.needsSaveAsPrompt = false
+	return d, nil
 }
 
 // NewMarkdownDockableWithContent creates a new unison.Dockable for markdown content.
-func NewMarkdownDockableWithContent(title, content string) (unison.Dockable, error) {
-	return newMarkdownDockable(markdownContentOnlyPrefix+title, title, content)
+func NewMarkdownDockableWithContent(title, content string, allowEditing, startInEditMode bool) (unison.Dockable, error) {
+	return newMarkdownDockable(markdownContentOnlyPrefix+title, title, content, allowEditing, startInEditMode)
 }
 
-func newMarkdownDockable(filePath, title, content string) (unison.Dockable, error) {
+func newMarkdownDockable(filePath, title, content string, allowEditing, startInEditMode bool) (*MarkdownDockable, error) {
 	d := &MarkdownDockable{
-		path:  filePath,
-		title: title,
-		scale: 100,
+		path:              filePath,
+		undoMgr:           unison.NewUndoManager(200, func(err error) { jot.Error(err) }),
+		title:             title,
+		scale:             100,
+		allowEditing:      allowEditing,
+		needsSaveAsPrompt: true,
 	}
 	d.Self = d
 	d.SetLayout(&unison.FlexLayout{Columns: 1})
@@ -86,23 +108,43 @@ func newMarkdownDockable(filePath, title, content string) (unison.Dockable, erro
 	d.markdown.MouseUpCallback = d.mouseUp
 	d.markdown.UpdateCursorCallback = d.updateCursor
 	d.markdown.SetFocusable(true)
+	d.original = content
 	if !strings.HasPrefix(d.path, markdownContentOnlyPrefix) {
 		data, err := os.ReadFile(d.BackingFilePath())
 		if err != nil {
 			return nil, err
 		}
-		content = string(data)
+		d.original = string(data)
 	}
-	d.markdown.SetContent(content, 0)
+	d.content = d.original
+	d.markdown.SetContent(d.content, 0)
 
-	d.scroll = unison.NewScrollPanel()
-	d.scroll.SetLayoutData(&unison.FlexLayoutData{
+	d.editor = NewMultiLineStringField(nil, "", "",
+		func() string { return d.content },
+		func(value string) {
+			d.content = value
+			d.markdown.SetContent(value, 0)
+			d.editor.MarkForLayoutAndRedraw()
+			MarkModified(d.editor)
+		})
+	d.editor.NoSelectAllOnFocus = true
+	d.editor.AutoScroll = false
+	fd := unison.MonospacedFont.Descriptor()
+	fd.Size = d.editor.Font.Size()
+	d.editor.Font = fd.Font()
+
+	d.scroller = unison.NewScrollPanel()
+	d.scroller.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,
 		VAlign: unison.FillAlignment,
 		HGrab:  true,
 		VGrab:  true,
 	})
-	d.scroll.SetContent(d.markdown, unison.FillBehavior, unison.FillBehavior)
+	if allowEditing && startInEditMode {
+		d.scroller.SetContent(d.editor, unison.FollowBehavior, unison.FillBehavior)
+	} else {
+		d.scroller.SetContent(d.markdown, unison.FillBehavior, unison.FillBehavior)
+	}
 
 	toolbar := unison.NewPanel()
 	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
@@ -112,15 +154,52 @@ func newMarkdownDockable(filePath, title, content string) (unison.Dockable, erro
 		HGrab:  true,
 	})
 	toolbar.AddChild(NewDefaultInfoPop())
-	toolbar.AddChild(NewScaleField(minPDFDockableScale, maxPDFDockableScale, func() int { return 100 },
-		func() int { return d.scale }, func(scale int) { d.scale = scale }, d.scroll, nil, false))
+	toolbar.AddChild(
+		NewScaleField(
+			minPDFDockableScale,
+			maxPDFDockableScale,
+			func() int { return 100 },
+			func() int { return d.scale },
+			func(scale int) { d.scale = scale },
+			nil,
+			false,
+			d.scroller,
+		),
+	)
+
+	if allowEditing {
+		editToggle := unison.NewSVGButton(svg.Edit)
+		editToggle.Sticky = startInEditMode
+		editToggle.Tooltip = unison.NewTooltipWithText(i18n.Text("Toggle Edit Mode"))
+		editToggle.ClickCallback = func() {
+			editToggle.Sticky = !editToggle.Sticky
+			editToggle.MarkForRedraw()
+			x, y := d.scroller.Position()
+			if editToggle.Sticky {
+				d.editor.SetScale(d.markdown.Scale())
+				d.scroller.SetContent(d.editor, unison.FollowBehavior, unison.FillBehavior)
+				d.editor.RequestFocus()
+			} else {
+				d.markdown.SetScale(d.editor.Scale())
+				d.scroller.SetContent(d.markdown, unison.FillBehavior, unison.FillBehavior)
+				d.markdown.RequestFocus()
+			}
+			d.scroller.SetPosition(d.savedScrollX, d.savedScrollY)
+			d.savedScrollX, d.savedScrollY = x, y
+		}
+		toolbar.AddChild(editToggle)
+	}
+
 	toolbar.SetLayout(&unison.FlexLayout{
 		Columns:  len(toolbar.Children()),
 		HSpacing: unison.StdHSpacing,
 	})
 
 	d.AddChild(toolbar)
-	d.AddChild(d.scroll)
+	d.AddChild(d.scroller)
+
+	d.InstallCmdHandlers(SaveItemID, func(_ any) bool { return d.Modified() }, func(_ any) { d.save(false) })
+	d.InstallCmdHandlers(SaveAsItemID, func(_ any) bool { return d.allowEditing }, func(_ any) { d.save(true) })
 
 	return d, nil
 }
@@ -134,7 +213,7 @@ func (d *MarkdownDockable) updateCursor(_ unison.Point) *unison.Cursor {
 
 func (d *MarkdownDockable) mouseDown(where unison.Point, _, _ int, _ unison.Modifiers) bool {
 	d.dragStart = d.markdown.PointToRoot(where)
-	d.dragOrigin.X, d.dragOrigin.Y = d.scroll.Position()
+	d.dragOrigin.X, d.dragOrigin.Y = d.scroller.Position()
 	d.inDrag = true
 	d.markdown.RequestFocus()
 	d.UpdateCursorNow()
@@ -144,7 +223,7 @@ func (d *MarkdownDockable) mouseDown(where unison.Point, _, _ int, _ unison.Modi
 func (d *MarkdownDockable) mouseDrag(where unison.Point, _ int, _ unison.Modifiers) bool {
 	pt := d.dragStart
 	pt.Subtract(d.markdown.PointToRoot(where))
-	d.scroll.SetPosition(d.dragOrigin.X+pt.X, d.dragOrigin.Y+pt.Y)
+	d.scroller.SetPosition(d.dragOrigin.X+pt.X, d.dragOrigin.Y+pt.Y)
 	return true
 }
 
@@ -152,6 +231,11 @@ func (d *MarkdownDockable) mouseUp(_ unison.Point, _ int, _ unison.Modifiers) bo
 	d.inDrag = false
 	d.UpdateCursorNow()
 	return true
+}
+
+// UndoManager implements undo.Provider
+func (d *MarkdownDockable) UndoManager() *unison.UndoManager {
+	return d.undoMgr
 }
 
 // TitleIcon implements workspace.FileBackedDockable
@@ -199,7 +283,14 @@ func (d *MarkdownDockable) SetBackingFilePath(p string) {
 
 // Modified implements workspace.FileBackedDockable
 func (d *MarkdownDockable) Modified() bool {
-	return false
+	return d.original != d.content
+}
+
+// MarkModified implements ModifiableRoot.
+func (d *MarkdownDockable) MarkModified(_ unison.Paneler) {
+	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
+		dc.UpdateTitle(d)
+	}
 }
 
 // MayAttemptClose implements unison.TabCloser
@@ -209,8 +300,51 @@ func (d *MarkdownDockable) MayAttemptClose() bool {
 
 // AttemptClose implements unison.TabCloser
 func (d *MarkdownDockable) AttemptClose() bool {
+	if d.Modified() {
+		switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Save changes made to\n%s?"), d.Title()), "") {
+		case unison.ModalResponseDiscard:
+		case unison.ModalResponseOK:
+			if !d.save(false) {
+				return false
+			}
+		case unison.ModalResponseCancel:
+			return false
+		}
+	}
 	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
 		dc.Close(d)
 	}
 	return true
+}
+
+func (d *MarkdownDockable) save(forceSaveAs bool) bool {
+	success := false
+	if forceSaveAs || d.needsSaveAsPrompt {
+		success = SaveDockableAs(d, "md", d.saveData, func(path string) {
+			d.path = path
+			d.original = d.content
+		})
+	} else {
+		success = SaveDockable(d, d.saveData, func() { d.original = d.content })
+	}
+	if success {
+		d.needsSaveAsPrompt = false
+	}
+	return success
+}
+
+func (d *MarkdownDockable) saveData(filePath string) error {
+	dirPath := filepath.Dir(filePath)
+	if err := os.MkdirAll(dirPath, 0o750); err != nil {
+		return errs.NewWithCause(dirPath, err)
+	}
+	if err := safe.WriteFileWithMode(filePath, func(w io.Writer) error {
+		if _, innerErr := w.Write([]byte(d.content)); innerErr != nil {
+			return errs.NewWithCause(filePath, innerErr)
+		}
+		return nil
+	}, 0o640); err != nil {
+		return errs.NewWithCause(filePath, err)
+	}
+	return nil
 }

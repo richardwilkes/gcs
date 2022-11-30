@@ -13,6 +13,7 @@ package ux
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -150,9 +151,18 @@ func (n *Navigator) setupToolBar() {
 
 	first := unison.NewPanel()
 	first.AddChild(NewDefaultInfoPop())
-	first.AddChild(NewScaleField(gsettings.InitialUIScaleMin, gsettings.InitialUIScaleMax,
-		func() int { return 100 }, func() int { return gsettings.GlobalSettings().General.NavigatorUIScale },
-		func(scale int) { gsettings.GlobalSettings().General.NavigatorUIScale = scale }, n.scroll, nil, false))
+	first.AddChild(
+		NewScaleField(
+			gsettings.InitialUIScaleMin,
+			gsettings.InitialUIScaleMax,
+			func() int { return 100 },
+			func() int { return gsettings.GlobalSettings().General.NavigatorUIScale },
+			func(scale int) { gsettings.GlobalSettings().General.NavigatorUIScale = scale },
+			nil,
+			false,
+			n.scroll,
+		),
+	)
 	first.AddChild(n.hierarchyButton)
 	first.AddChild(NewToolbarSeparator())
 	first.AddChild(addLibraryButton)
@@ -857,6 +867,11 @@ func (n *Navigator) ApplySelectedPaths(paths []string) {
 
 // HandleLink will try to open http, https, and md links, as well as resolve page references.
 func HandleLink(target string) {
+	if strings.HasPrefix(strings.ToLower(target), "md:") {
+		if revised, err := url.PathUnescape(target); err == nil {
+			target = revised
+		}
+	}
 	ws := AnyWorkspace()
 	if ws == nil {
 		ShowUnableToLocateWorkspaceError()

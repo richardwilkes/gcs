@@ -39,6 +39,7 @@ const (
 	NewNotesLibraryItemID
 	NewSkillsLibraryItemID
 	NewSpellsLibraryItemID
+	NewMarkdownFileItemID
 	OpenItemID
 	CloseTabID
 	RecentFilesMenuID
@@ -186,6 +187,9 @@ func (s menuBarScope) setupFileMenu(bar unison.Menu) {
 	i = s.insertMenuItem(m, i, newEquipmentLibraryAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, newEquipmentModifiersLibraryAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, newNotesLibraryAction.NewMenuItem(f))
+
+	i = s.insertMenuSeparator(m, i)
+	i = s.insertMenuItem(m, i, newMarkdownFileAction.NewMenuItem(f))
 
 	i = s.insertMenuSeparator(m, i)
 	i = s.insertMenuItem(m, i, openAction.NewMenuItem(f))

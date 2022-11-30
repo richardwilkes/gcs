@@ -91,8 +91,18 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 		HGrab:  true,
 	})
 	toolbar.AddChild(NewDefaultInfoPop())
-	toolbar.AddChild(NewScaleField(minImageDockableScale, maxImageDockableScale, func() int { return 100 },
-		func() int { return d.scale }, func(scale int) { d.scale = scale }, d.scroll, nil, true))
+	toolbar.AddChild(
+		NewScaleField(
+			minImageDockableScale,
+			maxImageDockableScale,
+			func() int { return 100 },
+			func() int { return d.scale },
+			func(scale int) { d.scale = scale },
+			nil,
+			true,
+			d.scroll,
+		),
+	)
 	toolbar.AddChild(typeLabel)
 	toolbar.AddChild(sizeLabel)
 	toolbar.SetLayout(&unison.FlexLayout{

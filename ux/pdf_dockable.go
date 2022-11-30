@@ -135,8 +135,16 @@ func (d *PDFDockable) createToolbar() {
 	AddScalingHelpToInfoPop(info)
 	d.toolbar.AddChild(info)
 
-	d.scaleField = NewScaleField(minPDFDockableScale, maxPDFDockableScale, func() int { return 100 },
-		func() int { return d.scale }, func(scale int) { d.scale = scale }, d.docScroll, d.MarkForRedraw, false)
+	d.scaleField = NewScaleField(
+		minPDFDockableScale,
+		maxPDFDockableScale,
+		func() int { return 100 },
+		func() int { return d.scale },
+		func(scale int) { d.scale = scale },
+		d.MarkForRedraw,
+		false,
+		d.docScroll,
+	)
 	d.scaleField.SetEnabled(false)
 	d.toolbar.AddChild(d.scaleField)
 

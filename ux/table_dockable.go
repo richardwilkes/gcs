@@ -173,9 +173,18 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	toolbar.AddChild(NewDefaultInfoPop())
-	toolbar.AddChild(NewScaleField(model.InitialUIScaleMin, model.InitialUIScaleMax,
-		func() int { return model.GlobalSettings().General.InitialListUIScale }, func() int { return d.scale },
-		func(scale int) { d.scale = scale }, d.scroll, nil, false))
+	toolbar.AddChild(
+		NewScaleField(
+			model.InitialUIScaleMin,
+			model.InitialUIScaleMax,
+			func() int { return model.GlobalSettings().General.InitialListUIScale },
+			func() int { return d.scale },
+			func(scale int) { d.scale = scale },
+			nil,
+			false,
+			d.scroll,
+		),
+	)
 	toolbar.AddChild(d.hierarchyButton)
 	toolbar.AddChild(d.sizeToFitButton)
 	toolbar.AddChild(d.filterField)
