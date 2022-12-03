@@ -145,4 +145,5 @@ func (s *GeneralSheetSettings) EnsureValidity() {
 	s.InitialEditorUIScale = fxp.ResetIfOutOfRangeInt(s.InitialEditorUIScale, InitialUIScaleMin, InitialUIScaleMax, InitialEditorUIScaleDef)
 	s.InitialSheetUIScale = fxp.ResetIfOutOfRangeInt(s.InitialSheetUIScale, InitialUIScaleMin, InitialUIScaleMax, InitialSheetUIScaleDef)
 	s.MaximumAutoColWidth = fxp.ResetIfOutOfRangeInt(s.MaximumAutoColWidth, AutoColWidthMin, AutoColWidthMax, MaximumAutoColWidthDef)
+	s.UpdateToolTipTiming()
 }
