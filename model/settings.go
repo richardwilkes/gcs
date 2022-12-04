@@ -80,6 +80,7 @@ func DefaultSettings() *Settings {
 func GlobalSettings() *Settings {
 	if global == nil {
 		dice.GURPSFormat = true
+		fixupMovedSettingsFileIfNeeded()
 		if err := jio.LoadFromFile(context.Background(), SettingsPath(), &global); err != nil {
 			global = DefaultSettings()
 		}
