@@ -608,7 +608,7 @@ func registerActions() {
 	})
 	perSheetBodyTypeSettingsAction = registerKeyBindableAction("settings.body_type.per_sheet", &unison.Action{
 		ID:              PerSheetBodyTypeSettingsItemID,
-		Title:           i18n.Text("Body EntityType…"),
+		Title:           i18n.Text("Body Type…"),
 		EnabledCallback: actionEnabledForSheet,
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			if s := ActiveSheet(); s != nil {
