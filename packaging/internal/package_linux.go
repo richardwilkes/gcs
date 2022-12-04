@@ -13,6 +13,12 @@ package internal
 
 import "github.com/richardwilkes/toolbox/errs"
 
+// Just here to silence the linter
+var (
+	_ image.Image = appImg
+	_ image.Image = docImg
+)
+
 func platformPackage() error {
-	return errs.New("no implementation")
+	return errs.New("no implementation " + shortAppVersion())
 }
