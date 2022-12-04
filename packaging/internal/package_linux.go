@@ -11,7 +11,11 @@
 
 package internal
 
-import "github.com/richardwilkes/toolbox/errs"
+import (
+	"image"
+
+	"github.com/richardwilkes/toolbox/errs"
+)
 
 // Just here to silence the linter
 var (
