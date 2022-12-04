@@ -25,6 +25,7 @@ import (
 	"github.com/richardwilkes/toolbox/desktop"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/toolbox/xmath/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/rjeczalik/notify"
@@ -866,7 +867,7 @@ func (n *Navigator) ApplySelectedPaths(paths []string) {
 }
 
 // HandleLink will try to open http, https, and md links, as well as resolve page references.
-func HandleLink(target string) {
+func HandleLink(src unison.Paneler, target string) {
 	if strings.HasPrefix(strings.ToLower(target), "md:") {
 		if revised, err := url.PathUnescape(target); err == nil {
 			target = revised
@@ -876,6 +877,18 @@ func HandleLink(target string) {
 	if ws == nil {
 		ShowUnableToLocateWorkspaceError()
 		return
+	}
+	if strings.HasPrefix(target, "./") || strings.HasPrefix(target, "../") {
+		if md, ok := src.AsPanel().Self.(*unison.Markdown); ok && md.WorkingDir != "" {
+			p := target
+			if revised, err := url.PathUnescape(p); err == nil {
+				p = revised
+			}
+			if p = filepath.Join(md.WorkingDir, p); fs.FileIsReadable(p) {
+				OpenFile(ws.Window, p)
+				return
+			}
+		}
 	}
 	OpenPageReference(ws.Window, target, "", nil)
 }

@@ -108,6 +108,9 @@ func newMarkdownDockable(filePath, title, content string, allowEditing, startInE
 	d.markdown.MouseUpCallback = d.mouseUp
 	d.markdown.UpdateCursorCallback = d.updateCursor
 	d.markdown.SetFocusable(true)
+	if !strings.HasPrefix(filePath, markdownContentOnlyPrefix) {
+		d.markdown.WorkingDir = filepath.Dir(filePath)
+	}
 	d.original = content
 	if !strings.HasPrefix(d.path, markdownContentOnlyPrefix) {
 		data, err := os.ReadFile(d.BackingFilePath())
