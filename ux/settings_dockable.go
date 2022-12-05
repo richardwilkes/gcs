@@ -150,6 +150,7 @@ func (d *SettingsDockable) createToolbar(addToStartToolbar, addToEndToolbar func
 	}
 	if d.Loader != nil || d.Saver != nil {
 		b := unison.NewSVGButton(svg.Menu)
+		b.Tooltip = unison.NewTooltipWithText(i18n.Text("Menu"))
 		b.ClickCallback = func() { d.showMenu(b) }
 		toolbar.AddChild(b)
 	}

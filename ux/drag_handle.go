@@ -13,6 +13,7 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
 
@@ -33,6 +34,7 @@ func NewDragHandle(data map[string]any) *DragHandle {
 	h.MouseExitCallback = h.mouseExit
 	h.MouseDownCallback = h.mouseDown
 	h.MouseDragCallback = h.mouseDrag
+	h.Tooltip = unison.NewTooltipWithText(i18n.Text("Click and drag this handle to rearrange"))
 	baseline := unison.DefaultButtonTheme.Font.Baseline()
 	size := unison.NewSize(baseline, baseline)
 	h.svg = &unison.DrawableSVG{
