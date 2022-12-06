@@ -151,9 +151,12 @@ func evalTraitLevel(e *eval.Evaluator, arguments string) (any, error) {
 	Traverse(func(t *Trait) bool {
 		if strings.EqualFold(t.Name, arguments) {
 			if t.IsLeveled() {
-				levels = t.Levels
+				if levels == -fxp.One {
+					levels = t.Levels
+				} else {
+					levels += t.Levels
+				}
 			}
-			return true
 		}
 		return false
 	}, true, false, entity.Traits...)
