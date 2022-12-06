@@ -161,11 +161,13 @@ func (f *Fonts) UnmarshalJSON(data []byte) error {
 		for _, ff := range FactoryFonts {
 			if of, ok := old[ff.ID]; ok {
 				f.data[ff.ID] = unison.FontDescriptor{
-					Family:  of.Name,
-					Size:    float32(of.Size),
-					Weight:  unison.WeightFromString(of.Style),
-					Spacing: unison.SpacingFromString(of.Style),
-					Slant:   unison.SlantFromString(of.Style),
+					FontFaceDescriptor: unison.FontFaceDescriptor{
+						Family:  of.Name,
+						Weight:  unison.WeightFromString(of.Style),
+						Spacing: unison.SpacingFromString(of.Style),
+						Slant:   unison.SlantFromString(of.Style),
+					},
+					Size: float32(of.Size),
 				}
 			} else {
 				f.data[ff.ID] = ff.Font.Descriptor()
