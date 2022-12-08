@@ -75,9 +75,13 @@ func initNoteEditor(e *editor[*model.Note, *model.NoteEditData], content *unison
 			MarkModified(content)
 		})
 	field.AutoScroll = false
-	fd := unison.MonospacedFont.Descriptor()
-	fd.Size = field.Font.Size()
-	field.Font = fd.Font()
+	field.Font = &unison.DynamicFont{
+		Resolver: func() unison.FontDescriptor {
+			fd := unison.MonospacedFont.Font.Descriptor()
+			fd.Size = unison.DefaultFieldTheme.Font.Size()
+			return fd
+		},
+	}
 	content.AddChild(field)
 
 	addPageRefLabelAndField(content, &e.editorData.PageRef)

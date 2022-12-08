@@ -24,9 +24,10 @@ import (
 
 type fontSettingsDockable struct {
 	SettingsDockable
-	content  *unison.Panel
-	allFaces []unison.FontFaceDescriptor
-	noUpdate bool
+	content         *unison.Panel
+	allFaces        []unison.FontFaceDescriptor
+	monospacedFaces []unison.FontFaceDescriptor
+	noUpdate        bool
 }
 
 // ShowFontSettings shows the Font settings.
@@ -36,7 +37,8 @@ func ShowFontSettings() {
 		return ok
 	})
 	if !found && ws != nil {
-		d := &fontSettingsDockable{allFaces: unison.AllFontFaces()}
+		all, monospaced := unison.AllFontFaces()
+		d := &fontSettingsDockable{allFaces: all, monospacedFaces: monospaced}
 		d.Self = d
 		d.TabTitle = i18n.Text("Fonts")
 		d.TabIcon = svg.Settings
@@ -97,7 +99,13 @@ func (d *fontSettingsDockable) fill() {
 
 func (d *fontSettingsDockable) createFaceField(index int) {
 	p := unison.NewPopupMenu[unison.FontFaceDescriptor]()
-	for _, ffd := range d.allFaces {
+	var list []unison.FontFaceDescriptor
+	if model.CurrentFonts[index].ID == "monospaced" {
+		list = d.monospacedFaces
+	} else {
+		list = d.allFaces
+	}
+	for _, ffd := range list {
 		p.AddItem(ffd)
 	}
 	p.Select(model.CurrentFonts[index].Font.Descriptor().FontFaceDescriptor)

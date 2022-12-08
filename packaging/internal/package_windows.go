@@ -116,7 +116,7 @@ func addWindowsIcon(rs *winres.ResourceSet) error {
 	for i := range model.KnownFileTypes {
 		if fi := &model.KnownFileTypes[i]; fi.IsGCSData {
 			var overlay image.Image
-			if overlay, err = ux.CreateImageFromSVG(fi, 512); err != nil {
+			if overlay, err = createImageFromSVG(fi, 512); err != nil {
 				return err
 			}
 			var extIcon *winres.Icon

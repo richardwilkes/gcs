@@ -24,6 +24,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/packaging/internal"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/formats/icon"
@@ -102,7 +103,7 @@ func installDesktopIcons() error {
 	for i := range model.KnownFileTypes {
 		if fi := &model.KnownFileTypes[i]; fi.IsGCSData {
 			var overlay image.Image
-			overlay, err = CreateImageFromSVG(fi, 128)
+			overlay, err = internal.CreateImageFromSVG(fi, 128)
 			if err != nil {
 				return err
 			}

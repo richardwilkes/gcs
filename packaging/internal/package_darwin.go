@@ -21,7 +21,6 @@ import (
 	"text/template"
 
 	"github.com/richardwilkes/gcs/v5/model"
-	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/formats/icon"
@@ -74,7 +73,7 @@ func writeICNS(dstPath string, img image.Image) (err error) {
 func writeDocICNS(dir string, base image.Image) error {
 	for i := range model.KnownFileTypes {
 		if fi := &model.KnownFileTypes[i]; fi.IsGCSData {
-			overlay, err := ux.CreateImageFromSVG(fi, 512)
+			overlay, err := createImageFromSVG(fi, 512)
 			if err != nil {
 				return err
 			}

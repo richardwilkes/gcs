@@ -132,9 +132,13 @@ func newMarkdownDockable(filePath, title, content string, allowEditing, startInE
 		})
 	d.editor.NoSelectAllOnFocus = true
 	d.editor.AutoScroll = false
-	fd := unison.MonospacedFont.Descriptor()
-	fd.Size = d.editor.Font.Size()
-	d.editor.Font = fd.Font()
+	d.editor.Font = &unison.DynamicFont{
+		Resolver: func() unison.FontDescriptor {
+			fd := unison.MonospacedFont.Font.Descriptor()
+			fd.Size = unison.DefaultFieldTheme.Font.Size()
+			return fd
+		},
+	}
 
 	d.scroller = unison.NewScrollPanel()
 	d.scroller.SetLayoutData(&unison.FlexLayoutData{

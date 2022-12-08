@@ -21,6 +21,7 @@ import (
 	"syscall"
 
 	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/packaging/internal"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/formats/icon"
@@ -70,7 +71,7 @@ func configureRegistry() error {
 		if fi := &model.KnownFileTypes[i]; fi.IsGCSData {
 			// Create the doc icon
 			var overlay image.Image
-			if overlay, err = CreateImageFromSVG(fi, 128); err != nil {
+			if overlay, err = internal.CreateImageFromSVG(fi, 128); err != nil {
 				return err
 			}
 			docPath := filepath.Join(appDataDir, fi.Extensions[0][1:]+".ico")

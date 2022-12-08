@@ -54,6 +54,7 @@ var (
 		{ID: "page.label.secondary", Title: i18n.Text("Page Secondary Labels"), Font: PageLabelSecondaryFont},
 		{ID: "page.footer.primary", Title: i18n.Text("Page Primary Footer"), Font: PageFooterPrimaryFont},
 		{ID: "page.footer.secondary", Title: i18n.Text("Page Secondary Footer"), Font: PageFooterSecondaryFont},
+		{ID: "monospaced", Title: i18n.Text("Monospaced"), Font: unison.MonospacedFont},
 	}
 	// FactoryFonts holds the original theme before any modifications.
 	FactoryFonts []*ThemedFont
