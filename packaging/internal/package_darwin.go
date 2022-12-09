@@ -73,7 +73,7 @@ func writeICNS(dstPath string, img image.Image) (err error) {
 func writeDocICNS(dir string, base image.Image) error {
 	for i := range model.KnownFileTypes {
 		if fi := &model.KnownFileTypes[i]; fi.IsGCSData {
-			overlay, err := createImageFromSVG(fi, 512)
+			overlay, err := model.CreateImageFromSVG(fi, 512)
 			if err != nil {
 				return err
 			}
