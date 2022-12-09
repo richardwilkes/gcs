@@ -889,6 +889,9 @@ func HandleLink(src unison.Paneler, target string) {
 				return
 			}
 		}
+		unison.ErrorDialogWithMessage(i18n.Text("Unable to open ")+target,
+			i18n.Text("Does the file exist and do you have access to read it?"))
+		return
 	}
 	OpenPageReference(ws.Window, target, "", nil)
 }
