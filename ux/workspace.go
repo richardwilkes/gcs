@@ -409,7 +409,7 @@ func SaveDockableAs(d FileBackedDockable, extension string, saver func(filePath 
 	dialog := unison.NewSaveDialog()
 	existingPath := d.BackingFilePath()
 	dir := filepath.Dir(existingPath)
-	if existingPath != dir {
+	if !strings.HasPrefix(existingPath, markdownContentOnlyPrefix) && existingPath != dir {
 		dialog.SetInitialDirectory(dir)
 	} else {
 		dialog.SetInitialDirectory(model.GlobalSettings().LastDir(model.DefaultLastDirKey))
