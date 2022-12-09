@@ -47,7 +47,7 @@ func initNoteToolbar(_ *editor[*model.Note, *model.NoteEditData], toolbar *uniso
 	filler := unison.NewPanel()
 	filler.SetLayoutData(&unison.FlexLayoutData{HGrab: true})
 	toolbar.AddChild(filler)
-	toolbar.AddChild(unison.NewLink(i18n.Text("Markdown Guide"), "", "md:Markdown Guide", unison.DefaultLinkTheme, HandleLink))
+	toolbar.AddChild(unison.NewLink(i18n.Text("Markdown Guide"), "", "md:Help/Markdown Guide", unison.DefaultLinkTheme, HandleLink))
 }
 
 func initNoteEditor(e *editor[*model.Note, *model.NoteEditData], content *unison.Panel) func() {
