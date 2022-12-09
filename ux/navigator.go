@@ -465,7 +465,7 @@ func (n *Navigator) showSelectionReleaseNotes() {
 			if rel == nil || !rel.HasUpdate() {
 				return
 			}
-			ShowReleaseNotesMarkdown(fmt.Sprintf("%s v%s Release Notes", row.library.Title,
+			ShowReadOnlyMarkdown(fmt.Sprintf("%s v%s Release Notes", row.library.Title,
 				filterVersion(rel.Version)), fmt.Sprintf("## Version %s\n%s", rel.Version, rel.Notes))
 		}
 	}

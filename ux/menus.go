@@ -91,6 +91,7 @@ const (
 	UpdateAppStatusItemID
 	CheckForAppUpdatesItemID
 	ReleaseNotesItemID
+	LicenseItemID
 	WebSiteItemID
 	MailingListItemID
 	ViewMenuID

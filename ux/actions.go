@@ -12,6 +12,7 @@
 package ux
 
 import (
+	_ "embed"
 	"fmt"
 	"path/filepath"
 
@@ -24,6 +25,9 @@ import (
 
 // WebSiteDomain holds the web site domain for GCS.
 const WebSiteDomain = "gurpscharactersheet.com"
+
+//go:embed license.md
+var licenseMarkdownContent string
 
 // These actions are registered for key bindings.
 var (
@@ -805,10 +809,10 @@ func registerActions() {
 		},
 	}
 	licenseAction = &unison.Action{
-		ID:    ReleaseNotesItemID,
+		ID:    LicenseItemID,
 		Title: i18n.Text("License"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			showWebPage("https://github.com/richardwilkes/gcs/blob/master/LICENSE")
+			ShowReadOnlyMarkdown(i18n.Text("License"), licenseMarkdownContent)
 		},
 	}
 	mailingListAction = &unison.Action{

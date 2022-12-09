@@ -57,8 +57,8 @@ type MarkdownDockable struct {
 	needsSaveAsPrompt bool
 }
 
-// ShowReleaseNotesMarkdown attempts to show the given markdown content in a dockable.
-func ShowReleaseNotesMarkdown(title, content string) {
+// ShowReadOnlyMarkdown attempts to show the given markdown content in a dockable.
+func ShowReadOnlyMarkdown(title, content string) {
 	ws := WorkspaceFromWindowOrAny(nil)
 	if d := ws.LocateFileBackedDockable(markdownContentOnlyPrefix + title); d != nil {
 		dc := unison.Ancestor[*unison.DockContainer](d)
