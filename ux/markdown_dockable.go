@@ -128,6 +128,9 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 			d.editor.MarkForLayoutAndRedraw()
 			MarkModified(d.editor)
 		})
+	d.editor.FocusedBorder = unison.NewEmptyBorder(unison.NewUniformInsets(20))
+	d.editor.UnfocusedBorder = unison.NewEmptyBorder(unison.NewUniformInsets(20))
+	d.editor.SetBorder(unison.NewEmptyBorder(unison.NewUniformInsets(20)))
 	d.editor.NoSelectAllOnFocus = true
 	d.editor.AutoScroll = false
 	d.editor.Font = &unison.DynamicFont{
