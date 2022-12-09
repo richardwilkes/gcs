@@ -179,6 +179,7 @@ func (s menuBarScope) setupFileMenu(bar unison.Menu) {
 	m := bar.Menu(unison.FileMenuID)
 	i := s.insertMenuItem(m, 0, newCharacterSheetAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, newCharacterTemplateAction.NewMenuItem(f))
+	i = s.insertMenuItem(m, i, newMarkdownFileAction.NewMenuItem(f))
 
 	i = s.insertMenuSeparator(m, i)
 	i = s.insertMenuItem(m, i, newTraitsLibraryAction.NewMenuItem(f))
@@ -188,9 +189,6 @@ func (s menuBarScope) setupFileMenu(bar unison.Menu) {
 	i = s.insertMenuItem(m, i, newEquipmentLibraryAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, newEquipmentModifiersLibraryAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, newNotesLibraryAction.NewMenuItem(f))
-
-	i = s.insertMenuSeparator(m, i)
-	i = s.insertMenuItem(m, i, newMarkdownFileAction.NewMenuItem(f))
 
 	i = s.insertMenuSeparator(m, i)
 	i = s.insertMenuItem(m, i, openAction.NewMenuItem(f))
