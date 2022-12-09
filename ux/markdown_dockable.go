@@ -40,7 +40,6 @@ var (
 type MarkdownDockable struct {
 	unison.Panel
 	path              string
-	title             string
 	original          string
 	content           string
 	undoMgr           *unison.UndoManager
@@ -76,7 +75,7 @@ func ShowReadOnlyMarkdown(title, content string) {
 
 // NewMarkdownDockable creates a new unison.Dockable for markdown files.
 func NewMarkdownDockable(filePath string, allowEditing, startInEditMode bool) (unison.Dockable, error) {
-	d, err := newMarkdownDockable(filePath, "", "", allowEditing, startInEditMode)
+	d, err := newMarkdownDockable(filePath, "", allowEditing, startInEditMode)
 	if err != nil {
 		return nil, err
 	}
@@ -86,14 +85,13 @@ func NewMarkdownDockable(filePath string, allowEditing, startInEditMode bool) (u
 
 // NewMarkdownDockableWithContent creates a new unison.Dockable for markdown content.
 func NewMarkdownDockableWithContent(title, content string, allowEditing, startInEditMode bool) (unison.Dockable, error) {
-	return newMarkdownDockable(markdownContentOnlyPrefix+title, title, content, allowEditing, startInEditMode)
+	return newMarkdownDockable(markdownContentOnlyPrefix+title, content, allowEditing, startInEditMode)
 }
 
-func newMarkdownDockable(filePath, title, content string, allowEditing, startInEditMode bool) (*MarkdownDockable, error) {
+func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode bool) (*MarkdownDockable, error) {
 	d := &MarkdownDockable{
 		path:              filePath,
 		undoMgr:           unison.NewUndoManager(200, func(err error) { jot.Error(err) }),
-		title:             title,
 		scale:             100,
 		allowEditing:      allowEditing,
 		needsSaveAsPrompt: true,
@@ -261,9 +259,6 @@ func (d *MarkdownDockable) TitleIcon(suggestedSize unison.Size) unison.Drawable 
 
 // Title implements workspace.FileBackedDockable
 func (d *MarkdownDockable) Title() string {
-	if d.title != "" {
-		return d.title
-	}
 	return xfs.BaseName(d.path)
 }
 

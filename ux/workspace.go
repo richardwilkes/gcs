@@ -408,9 +408,8 @@ func SaveDockable(d FileBackedDockable, saver func(filePath string) error, setUn
 func SaveDockableAs(d FileBackedDockable, extension string, saver func(filePath string) error, setUnmodifiedAndNewPath func(filePath string)) bool {
 	dialog := unison.NewSaveDialog()
 	existingPath := d.BackingFilePath()
-	dir := filepath.Dir(existingPath)
-	if !strings.HasPrefix(existingPath, markdownContentOnlyPrefix) && existingPath != dir {
-		dialog.SetInitialDirectory(dir)
+	if !strings.HasPrefix(existingPath, markdownContentOnlyPrefix) && fs.FileExists(existingPath) {
+		dialog.SetInitialDirectory(filepath.Dir(existingPath))
 	} else {
 		dialog.SetInitialDirectory(model.GlobalSettings().LastDir(model.DefaultLastDirKey))
 	}
