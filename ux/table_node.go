@@ -270,7 +270,9 @@ func (n *Node[T]) CellFromCellData(c *model.CellData, width float32, foreground 
 
 func (n *Node[T]) createMarkdownCell(c *model.CellData, width float32, foreground unison.Ink) unison.Paneler {
 	m := unison.NewMarkdown(false)
-	adjustMarkdownThemeForPage(m)
+	if n.forPage {
+		adjustMarkdownThemeForPage(m)
+	}
 	if i, ok := m.Foreground.(*unison.IndirectInk); ok {
 		i.Target = foreground
 	}
