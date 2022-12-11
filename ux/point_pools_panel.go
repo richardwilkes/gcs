@@ -24,10 +24,11 @@ import (
 // PointPoolsPanel holds the contents of the point pools block on the sheet.
 type PointPoolsPanel struct {
 	unison.Panel
-	entity    *model.Entity
-	targetMgr *TargetMgr
-	prefix    string
-	crc       uint64
+	entity      *model.Entity
+	targetMgr   *TargetMgr
+	stateLabels map[string]*unison.Label
+	prefix      string
+	crc         uint64
 }
 
 // NewPointPoolsPanel creates a new point pools panel.
@@ -65,6 +66,7 @@ func NewPointPoolsPanel(entity *model.Entity, targetMgr *TargetMgr) *PointPoolsP
 func (p *PointPoolsPanel) rebuild(attrs *model.AttributeDefs) {
 	focusRefKey := p.targetMgr.CurrentFocusRef()
 	p.RemoveAllChildren()
+	p.stateLabels = make(map[string]*unison.Label)
 	for _, def := range attrs.List(false) {
 		if def.Pool() {
 			if def.Type == model.PoolSeparatorAttributeType {
@@ -111,6 +113,7 @@ func (p *PointPoolsPanel) rebuild(attrs *model.AttributeDefs) {
 						state.Tooltip = unison.NewTooltipWithText(threshold.Explanation)
 					}
 					p.AddChild(state)
+					p.stateLabels[def.ID()] = state
 				} else {
 					p.AddChild(unison.NewPanel())
 				}
@@ -144,6 +147,26 @@ func (p *PointPoolsPanel) Sync() {
 	if crc := attrs.CRC64(); crc != p.crc {
 		p.crc = crc
 		p.rebuild(attrs)
+		MarkForLayoutWithinDockable(p)
+	} else {
+		for _, def := range attrs.List(false) {
+			if def.Pool() && def.Type != model.PoolSeparatorAttributeType {
+				id := def.ID()
+				if label, exists := p.stateLabels[id]; exists {
+					if attr, ok := p.entity.Attributes.Set[id]; ok {
+						if threshold := attr.CurrentThreshold(); threshold != nil {
+							label.Text = "[" + threshold.State + "]"
+							if threshold.Explanation != "" {
+								label.Tooltip = unison.NewTooltipWithText(threshold.Explanation)
+							}
+						} else {
+							label.Text = ""
+							label.Tooltip = nil
+						}
+					}
+				}
+			}
+		}
 		MarkForLayoutWithinDockable(p)
 	}
 }
