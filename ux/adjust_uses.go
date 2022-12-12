@@ -50,7 +50,8 @@ func (a *usesAdjuster) Apply() {
 func canAdjustUses(table *unison.Table[*Node[*model.Equipment]], amount int) bool {
 	for _, row := range table.SelectedRows(false) {
 		if eqp := row.Data(); eqp != nil {
-			if eqp.Uses+amount <= eqp.MaxUses {
+			total := eqp.Uses + amount
+			if total >= 0 && total <= eqp.MaxUses {
 				return true
 			}
 		}
@@ -63,9 +64,10 @@ func adjustUses(owner Rebuildable, table *unison.Table[*Node[*model.Equipment]],
 	after := &adjustUsesList{Owner: owner}
 	for _, row := range table.SelectedRows(false) {
 		if eqp := row.Data(); eqp != nil {
-			if eqp.Uses+amount <= eqp.MaxUses {
+			total := eqp.Uses + amount
+			if total >= 0 && total <= eqp.MaxUses {
 				before.List = append(before.List, newUsesAdjuster(eqp))
-				eqp.Uses += amount
+				eqp.Uses = total
 				after.List = append(after.List, newUsesAdjuster(eqp))
 			}
 		}
