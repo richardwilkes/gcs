@@ -467,7 +467,7 @@ func processPickerRow[T model.NodeTypes](row T) (revised []T, abort bool) {
 		jot.Error(err)
 		return nil, true
 	}
-	dialog.Button(unison.ModalResponseOK).SetEnabled(false)
+	callback()
 	if dialog.RunModal() == unison.ModalResponseCancel {
 		return nil, true
 	}
