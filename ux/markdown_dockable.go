@@ -327,6 +327,7 @@ func (d *MarkdownDockable) save(forceSaveAs bool) bool {
 	success := false
 	if forceSaveAs || d.needsSaveAsPrompt {
 		success = SaveDockableAs(d, "md", d.saveData, func(path string) {
+			d.markdown.WorkingDir = filepath.Dir(path)
 			d.path = path
 			d.original = d.content
 		})
