@@ -61,8 +61,6 @@ func NewEquipmentTableDockable(filePath string, equipment []*model.Equipment) *T
 	d := NewTableDockable(filePath, model.EquipmentExt, NewEquipmentProvider(provider, false, false),
 		func(path string) error { return model.SaveEquipment(provider.OtherEquipmentList(), path) },
 		NewOtherEquipmentItemID, NewOtherEquipmentContainerItemID)
-	d.InstallCmdHandlers(ConvertToContainerItemID,
-		func(_ any) bool { return CanConvertToContainer(d.table) },
-		func(_ any) { ConvertToContainer(d, d.table) })
+	InstallContainerConversionHandlers(d, d, d.table)
 	return d
 }

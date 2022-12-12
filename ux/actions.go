@@ -37,6 +37,7 @@ var (
 	closeTabAction                      *unison.Action
 	colorSettingsAction                 *unison.Action
 	convertToContainerAction            *unison.Action
+	convertToNonContainerAction         *unison.Action
 	copyToSheetAction                   *unison.Action
 	copyToTemplateAction                *unison.Action
 	decreaseSkillLevelAction            *unison.Action
@@ -199,6 +200,12 @@ func registerActions() {
 	convertToContainerAction = registerKeyBindableAction("convert.to_container", &unison.Action{
 		ID:              ConvertToContainerItemID,
 		Title:           i18n.Text("Convert to Container"),
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
+	})
+	convertToNonContainerAction = registerKeyBindableAction("convert.to_non_container", &unison.Action{
+		ID:              ConvertToNonContainerItemID,
+		Title:           i18n.Text("Convert to Non-Container"),
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})

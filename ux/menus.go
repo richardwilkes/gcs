@@ -56,6 +56,7 @@ const (
 	DuplicateItemID
 	ClearPortraitItemID
 	ConvertToContainerItemID
+	ConvertToNonContainerItemID
 	ToggleStateItemID
 	IncrementItemID
 	DecrementItemID
@@ -240,7 +241,8 @@ func (s menuBarScope) setupEditMenu(bar unison.Menu) {
 	i = s.insertMenuSeparator(m, i)
 	i = s.insertMenuItem(m, i, toggleStateAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, swapDefaultsAction.NewMenuItem(f))
-	s.insertMenuItem(m, i, convertToContainerAction.NewMenuItem(f))
+	i = s.insertMenuItem(m, i, convertToContainerAction.NewMenuItem(f))
+	s.insertMenuItem(m, i, convertToNonContainerAction.NewMenuItem(f))
 }
 
 func (s menuBarScope) createItemMenu(f unison.MenuFactory) unison.Menu {
@@ -475,6 +477,7 @@ var DefaultContextMenuItems = []ContextMenuItem{
 	{i18n.Text("Toggle State"), ToggleStateItemID},
 	{i18n.Text("Swap Defaults"), SwapDefaultsItemID},
 	{i18n.Text("Convert to Container"), ConvertToContainerItemID},
+	{i18n.Text("Convert to Non-Container"), ConvertToNonContainerItemID},
 	{"", -1},
 	{i18n.Text("Open Page Reference"), OpenOnePageReferenceItemID},
 	{i18n.Text("Open Each Page Reference"), OpenEachPageReferenceItemID},

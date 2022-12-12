@@ -50,7 +50,7 @@ func NewCarriedEquipmentPageList(owner Rebuildable, provider model.ListProvider)
 	p.installDecrementUsesHandler(owner)
 	p.installIncrementTechLevelHandler(owner)
 	p.installDecrementTechLevelHandler(owner)
-	p.installConvertToContainerHandler(owner)
+	p.installContainerConversionHandlers(owner)
 	return p
 }
 
@@ -63,7 +63,7 @@ func NewOtherEquipmentPageList(owner Rebuildable, provider model.ListProvider) *
 	p.installDecrementUsesHandler(owner)
 	p.installIncrementTechLevelHandler(owner)
 	p.installDecrementTechLevelHandler(owner)
-	p.installConvertToContainerHandler(owner)
+	p.installContainerConversionHandlers(owner)
 	return p
 }
 
@@ -91,7 +91,9 @@ func NewSpellsPageList(owner Rebuildable, provider model.SpellListProvider) *Pag
 
 // NewNotesPageList creates the notes page list.
 func NewNotesPageList(owner Rebuildable, provider model.ListProvider) *PageList[*model.Note] {
-	return newPageList(owner, NewNotesProvider(provider, true))
+	p := newPageList(owner, NewNotesProvider(provider, true))
+	p.installContainerConversionHandlers(owner)
+	return p
 }
 
 // NewConditionalModifiersPageList creates the conditional modifiers page list.
@@ -282,11 +284,13 @@ func (p *PageList[T]) installDecrementTechLevelHandler(owner Rebuildable) {
 		func(_ any) { adjustTechLevel(owner, p.Table, -fxp.One) })
 }
 
-func (p *PageList[T]) installConvertToContainerHandler(owner Rebuildable) {
+func (p *PageList[T]) installContainerConversionHandlers(owner Rebuildable) {
 	if t, ok := (any(p.Table)).(*unison.Table[*Node[*model.Equipment]]); ok {
-		p.InstallCmdHandlers(ConvertToContainerItemID,
-			func(_ any) bool { return CanConvertToContainer(t) },
-			func(_ any) { ConvertToContainer(owner, t) })
+		InstallContainerConversionHandlers(p, owner, t)
+		return
+	}
+	if t, ok := (any(p.Table)).(*unison.Table[*Node[*model.Note]]); ok {
+		InstallContainerConversionHandlers(p, owner, t)
 	}
 }
 

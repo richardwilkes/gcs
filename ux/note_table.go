@@ -49,7 +49,9 @@ func NewNoteTableDockableFromFile(filePath string) (unison.Dockable, error) {
 // NewNoteTableDockable creates a new unison.Dockable for note list files.
 func NewNoteTableDockable(filePath string, notes []*model.Note) *TableDockable[*model.Note] {
 	provider := &noteListProvider{notes: notes}
-	return NewTableDockable(filePath, model.NotesExt, NewNotesProvider(provider, false),
+	d := NewTableDockable(filePath, model.NotesExt, NewNotesProvider(provider, false),
 		func(path string) error { return model.SaveNotes(provider.NoteList(), path) },
 		NewNoteItemID, NewNoteContainerItemID)
+	InstallContainerConversionHandlers(d, d, d.table)
+	return d
 }

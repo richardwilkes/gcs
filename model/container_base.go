@@ -59,6 +59,16 @@ func (c *ContainerBase[T]) kind(base string) string {
 	return base
 }
 
+// GetType returns the type.
+func (c *ContainerBase[T]) GetType() string {
+	return c.Type
+}
+
+// SetType sets the type.
+func (c *ContainerBase[T]) SetType(t string) {
+	c.Type = t
+}
+
 // Open returns true if this node is currently open.
 func (c *ContainerBase[T]) Open() bool {
 	return c.IsOpen && c.Container()
