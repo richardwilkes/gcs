@@ -249,7 +249,7 @@ func (p *equipmentProvider) SyncHeader(headers []unison.TableColumnHeader[*Node[
 	if p.forPage {
 		for i := 0; i < len(p.colMap); i++ {
 			if p.colMap[i] == model.EquipmentDescriptionColumn {
-				if header, ok2 := headers[i].(*PageTableColumnHeader[*model.Equipment]); ok2 {
+				if header, ok := headers[i].(*PageTableColumnHeader[*model.Equipment]); ok {
 					header.Label.Text = p.descriptionText()
 				}
 				break
