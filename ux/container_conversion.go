@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
+// ConvertableNodeTypes defines the types that the container conversion can work on.
 type ConvertableNodeTypes interface {
 	*model.Equipment | *model.Note
 	Container() bool
