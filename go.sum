@@ -40,8 +40,8 @@ github.com/richardwilkes/rpgtools v1.4.2 h1:pARC8K5+SD+6BblzTjC73flLJnsO7Jql4eni
 github.com/richardwilkes/rpgtools v1.4.2/go.mod h1:AzjxgmnZi8AJD4OaGYGqm9QiKQS5M9k5C99H3kEagSk=
 github.com/richardwilkes/toolbox v1.80.1 h1:huNCjMelbjazqsx/3qbfMhEFYIBe293PJ7d9OPckfvY=
 github.com/richardwilkes/toolbox v1.80.1/go.mod h1:n93THloaGFUBnk7YmWx8B1jkcc+aKbE+mMck8Iirx+0=
-github.com/richardwilkes/unison v0.47.5-0.20221217222934-c41dadd0d984 h1:LBTRz7THjyNAlz6w4NlCqCoRWCPe5Iw0ac6bEX5G8Dc=
-github.com/richardwilkes/unison v0.47.5-0.20221217222934-c41dadd0d984/go.mod h1:jjXv1COEiUmxTNZm3oTO1DVlN4AAWhed+4jiWBRJ9OI=
+github.com/richardwilkes/unison v0.47.5-0.20221218052505-9f7055d68e18 h1:NlwB1Du6lnzVlmTa62gJpGa5cWZjgelh2L/rqjp+DIE=
+github.com/richardwilkes/unison v0.47.5-0.20221218052505-9f7055d68e18/go.mod h1:jjXv1COEiUmxTNZm3oTO1DVlN4AAWhed+4jiWBRJ9OI=
 github.com/rjeczalik/notify v0.9.2 h1:MiTWrPj55mNDHEiIX5YUSKefw/+lCQVoAFmD6oQm5w8=
 github.com/rjeczalik/notify v0.9.2/go.mod h1:aErll2f0sUX9PXZnVNyeiObbmTlk5jnMoCa4QEjJeqM=
 github.com/rogpeppe/go-internal v1.8.0 h1:FCbCCtXNOY3UtUuHUYaghJg4y7Fd14rXifAYUAtL9R8=
