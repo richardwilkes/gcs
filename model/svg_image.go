@@ -27,7 +27,7 @@ import (
 func CreateImageFromSVG(fi *FileInfo, size int) (image.Image, error) {
 	var buffer bytes.Buffer
 	fmt.Fprintf(&buffer, `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %f %f"><path d="%s"/></svg>`,
-		fi.SVG.Size().Width, fi.SVG.Size().Height, fi.SVG.PathScaledTo(1).ToSVGString())
+		fi.SVG.Size().Width, fi.SVG.Size().Height, fi.SVG.PathScaledTo(1).ToSVGString(true))
 	svg, err := oksvg.ReadIconStream(&buffer)
 	if err != nil {
 		return nil, errs.Wrap(err)
