@@ -153,7 +153,7 @@ func (e *Equipment) MarshalJSON() ([]byte, error) {
 			ExtendedWeightForSkills: nil,
 		},
 	}
-	if e.WeightIgnoredForSkills {
+	if e.WeightIgnoredForSkills && e.Equipped {
 		w := e.ExtendedWeight(true, defUnits)
 		data.Calc.ExtendedWeightForSkills = &w
 	}
@@ -356,7 +356,7 @@ func (e *Equipment) ExtendedValue() fxp.Int {
 
 // AdjustedWeight returns the weight after adjustments for any modifiers. Does not include the weight of children.
 func (e *Equipment) AdjustedWeight(forSkills bool, defUnits WeightUnits) Weight {
-	if forSkills && e.WeightIgnoredForSkills {
+	if forSkills && e.WeightIgnoredForSkills && e.Equipped {
 		return 0
 	}
 	return WeightAdjustedForModifiers(e.Weight, e.Modifiers, defUnits)
@@ -364,7 +364,7 @@ func (e *Equipment) AdjustedWeight(forSkills bool, defUnits WeightUnits) Weight 
 
 // ExtendedWeight returns the extended weight.
 func (e *Equipment) ExtendedWeight(forSkills bool, defUnits WeightUnits) Weight {
-	return ExtendedWeightAdjustedForModifiers(defUnits, e.Quantity, e.Weight, e.Modifiers, e.Features, e.Children, forSkills, e.WeightIgnoredForSkills)
+	return ExtendedWeightAdjustedForModifiers(defUnits, e.Quantity, e.Weight, e.Modifiers, e.Features, e.Children, forSkills, e.WeightIgnoredForSkills && e.Equipped)
 }
 
 // ExtendedWeightAdjustedForModifiers calculates the extended weight.

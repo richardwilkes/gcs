@@ -153,7 +153,7 @@ func (s *SkillDefault) best(entity *Entity, requirePoints bool, excludes map[str
 func (s *SkillDefault) SkillLevelFast(entity *Entity, requirePoints bool, excludes map[string]bool, ruleOf20 bool) fxp.Int {
 	switch s.Type() {
 	case DodgeID:
-		level := entity.Dodge(entity.EncumbranceLevel(true))
+		level := entity.Dodge(entity.EncumbranceLevel(false))
 		if ruleOf20 && level > 20 {
 			level = 20
 		}

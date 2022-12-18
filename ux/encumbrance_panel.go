@@ -51,7 +51,7 @@ func NewEncumbrancePanel(entity *model.Entity) *EncumbrancePanel {
 		r.X = rect.X
 		r.Width = rect.Width
 		gc.DrawRect(r, model.HeaderColor.Paint(gc, r, unison.Fill))
-		p.current = int(entity.EncumbranceLevel(true))
+		p.current = int(entity.EncumbranceLevel(false))
 		p.overloaded = entity.WeightCarried(false) > entity.MaximumCarry(model.ExtraHeavyEncumbrance)
 		for i, row := range p.row {
 			var ink unison.Ink
@@ -125,7 +125,7 @@ func (p *EncumbrancePanel) createMarker(entity *model.Entity, enc model.Encumbra
 		Size: unison.Size{Width: baseline, Height: baseline},
 	}
 	marker.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		if enc == entity.EncumbranceLevel(true) {
+		if enc == entity.EncumbranceLevel(false) {
 			marker.DefaultDraw(gc, rect)
 		}
 	}
