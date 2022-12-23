@@ -13,6 +13,7 @@ package model
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -155,6 +156,14 @@ func (m *ConditionalModifier) CellData(column int, data *CellData) {
 		data.Type = TextCellType
 		data.Primary = m.Total().StringWithSign()
 		data.Alignment = unison.EndAlignment
+		var buffer strings.Builder
+		for i, amt := range m.Amounts {
+			if i != 0 {
+				buffer.WriteByte('\n')
+			}
+			fmt.Fprintf(&buffer, "%s %s", amt.CommaWithSign(), m.Sources[i])
+		}
+		data.Tooltip = buffer.String()
 	case ConditionalModifierDescriptionColumn:
 		data.Type = TextCellType
 		data.Primary = m.From
