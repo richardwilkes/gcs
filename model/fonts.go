@@ -35,6 +35,7 @@ var (
 	PageLabelSecondaryFont  = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, unison.NormalFontWeight, unison.StandardSpacing, unison.NoSlant).Font(6)}
 	PageFooterPrimaryFont   = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, unison.MediumFontWeight, unison.StandardSpacing, unison.NoSlant).Font(6)}
 	PageFooterSecondaryFont = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, unison.NormalFontWeight, unison.StandardSpacing, unison.NoSlant).Font(5)}
+	BaseMarkdownFont        = &unison.IndirectFont{Font: unison.LabelFont.Face().Font(unison.LabelFont.Size())}
 )
 
 var (
@@ -54,6 +55,7 @@ var (
 		{ID: "page.label.secondary", Title: i18n.Text("Page Secondary Labels"), Font: PageLabelSecondaryFont},
 		{ID: "page.footer.primary", Title: i18n.Text("Page Primary Footer"), Font: PageFooterPrimaryFont},
 		{ID: "page.footer.secondary", Title: i18n.Text("Page Secondary Footer"), Font: PageFooterSecondaryFont},
+		{ID: "markdown.base", Title: i18n.Text("Base Markdown"), Font: BaseMarkdownFont},
 		{ID: "monospaced", Title: i18n.Text("Monospaced"), Font: unison.MonospacedFont},
 	}
 	// FactoryFonts holds the original theme before any modifications.
@@ -74,6 +76,7 @@ func init() {
 			},
 		}
 	}
+	unison.DefaultMarkdownTheme.Font = BaseMarkdownFont
 }
 
 // ThemedFont holds a themed font.
@@ -194,6 +197,10 @@ func (f *Fonts) MakeCurrent() {
 		}
 	}
 	unison.ThemeChanged()
+	for _, wnd := range unison.Windows() {
+		wnd.Content().MarkForLayoutRecursively()
+		wnd.ValidateLayout()
+	}
 }
 
 // Reset to factory defaults.
