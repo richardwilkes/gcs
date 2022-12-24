@@ -264,10 +264,9 @@ func (e *editor[N, D]) AttemptClose() bool {
 				return false
 			}
 		}
-		dc.Close(e)
 		if !toolbox.IsNil(e.previousDockable) {
-			if dc = unison.Ancestor[*unison.DockContainer](e.previousDockable); dc != nil {
-				dc.SetCurrentDockable(e.previousDockable)
+			if pdc := unison.Ancestor[*unison.DockContainer](e.previousDockable); pdc != nil {
+				pdc.SetCurrentDockable(e.previousDockable)
 				if e.previousFocusKey != "" {
 					if p := e.previousDockable.AsPanel().FindRefKey(e.previousFocusKey); p != nil {
 						p.RequestFocus()
@@ -275,6 +274,7 @@ func (e *editor[N, D]) AttemptClose() bool {
 				}
 			}
 		}
+		dc.Close(e)
 	}
 	return true
 }
