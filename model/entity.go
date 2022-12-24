@@ -99,7 +99,7 @@ type Entity struct {
 func NewEntityFromFile(fileSystem fs.FS, filePath string) (*Entity, error) {
 	var entity Entity
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &entity); err != nil {
-		return nil, errs.NewWithCause(InvalidFileDataMsg, err)
+		return nil, errs.NewWithCause(invalidFileDataMsg(), err)
 	}
 	if err := CheckVersion(entity.Version); err != nil {
 		return nil, err

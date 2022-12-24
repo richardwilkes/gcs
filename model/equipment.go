@@ -49,13 +49,6 @@ const (
 	EquipmentReferenceColumn
 )
 
-// LegalityClassInfo holds the LC list
-var LegalityClassInfo = i18n.Text(`LC0: Banned
-LC1: Military
-LC2: Restricted
-LC3: Licensed
-LC4: Open`)
-
 const (
 	equipmentListTypeKey = "equipment_list"
 	equipmentTypeKey     = "equipment"
@@ -78,10 +71,10 @@ type equipmentListData struct {
 func NewEquipmentFromFile(fileSystem fs.FS, filePath string) ([]*Equipment, error) {
 	var data equipmentListData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(InvalidFileDataMsg, err)
+		return nil, errs.NewWithCause(invalidFileDataMsg(), err)
 	}
 	if data.Type != equipmentListTypeKey {
-		return nil, errs.New(UnexpectedFileDataMsg)
+		return nil, errs.New(unexpectedFileDataMsg())
 	}
 	if err := CheckVersion(data.Version); err != nil {
 		return nil, err

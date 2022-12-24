@@ -27,34 +27,12 @@ const (
 	LastAffects = LevelsOnlyAffects
 )
 
-var (
-	// AllAffects holds all possible values.
-	AllAffects = []Affects{
-		TotalAffects,
-		BaseOnlyAffects,
-		LevelsOnlyAffects,
-	}
-	affectsData = []struct {
-		key    string
-		string string
-		alt    string
-	}{
-		{
-			key:    "total",
-			string: i18n.Text("to cost"),
-		},
-		{
-			key:    "base_only",
-			string: i18n.Text("to base cost only"),
-			alt:    i18n.Text("(base only)"),
-		},
-		{
-			key:    "levels_only",
-			string: i18n.Text("to leveled cost only"),
-			alt:    i18n.Text("(levels only)"),
-		},
-	}
-)
+// AllAffects holds all possible values.
+var AllAffects = []Affects{
+	TotalAffects,
+	BaseOnlyAffects,
+	LevelsOnlyAffects,
+}
 
 // Affects describes how a TraitModifier affects the point cost.
 type Affects byte
@@ -69,27 +47,44 @@ func (enum Affects) EnsureValid() Affects {
 
 // Key returns the key used in serialization.
 func (enum Affects) Key() string {
-	return affectsData[enum.EnsureValid()].key
+	switch enum {
+	case TotalAffects:
+		return "total"
+	case BaseOnlyAffects:
+		return "base_only"
+	case LevelsOnlyAffects:
+		return "levels_only"
+	default:
+		return Affects(0).Key()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum Affects) String() string {
-	return affectsData[enum.EnsureValid()].string
+	switch enum {
+	case TotalAffects:
+		return i18n.Text("to cost")
+	case BaseOnlyAffects:
+		return i18n.Text("to base cost only")
+	case LevelsOnlyAffects:
+		return i18n.Text("to leveled cost only")
+	default:
+		return Affects(0).String()
+	}
 }
 
 // AltString returns the alternate string.
 func (enum Affects) AltString() string {
-	return affectsData[enum.EnsureValid()].alt
-}
-
-// ExtractAffects extracts the value from a string.
-func ExtractAffects(str string) Affects {
-	for i, one := range affectsData {
-		if strings.EqualFold(one.key, str) {
-			return Affects(i)
-		}
+	switch enum {
+	case TotalAffects:
+		return ""
+	case BaseOnlyAffects:
+		return i18n.Text("(base only)")
+	case LevelsOnlyAffects:
+		return i18n.Text("(levels only)")
+	default:
+		return Affects(0).AltString()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -101,4 +96,14 @@ func (enum Affects) MarshalText() (text []byte, err error) {
 func (enum *Affects) UnmarshalText(text []byte) error {
 	*enum = ExtractAffects(string(text))
 	return nil
+}
+
+// ExtractAffects extracts the value from a string.
+func ExtractAffects(str string) Affects {
+	for _, enum := range AllAffects {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+	}
+	return 0
 }

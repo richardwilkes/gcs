@@ -28,36 +28,13 @@ const (
 	LastSpellMatchType = NameSpellMatchType
 )
 
-var (
-	// AllSpellMatchType holds all possible values.
-	AllSpellMatchType = []SpellMatchType{
-		AllCollegesSpellMatchType,
-		CollegeNameSpellMatchType,
-		PowerSourceSpellMatchType,
-		NameSpellMatchType,
-	}
-	spellMatchTypeData = []struct {
-		key    string
-		string string
-	}{
-		{
-			key:    "all_colleges",
-			string: i18n.Text("to all colleges"),
-		},
-		{
-			key:    "college_name",
-			string: i18n.Text("to the college whose name"),
-		},
-		{
-			key:    "power_source_name",
-			string: i18n.Text("to the power source whose name"),
-		},
-		{
-			key:    "spell_name",
-			string: i18n.Text("to the spell whose name"),
-		},
-	}
-)
+// AllSpellMatchType holds all possible values.
+var AllSpellMatchType = []SpellMatchType{
+	AllCollegesSpellMatchType,
+	CollegeNameSpellMatchType,
+	PowerSourceSpellMatchType,
+	NameSpellMatchType,
+}
 
 // SpellMatchType holds the type of a match.
 type SpellMatchType byte
@@ -72,22 +49,34 @@ func (enum SpellMatchType) EnsureValid() SpellMatchType {
 
 // Key returns the key used in serialization.
 func (enum SpellMatchType) Key() string {
-	return spellMatchTypeData[enum.EnsureValid()].key
+	switch enum {
+	case AllCollegesSpellMatchType:
+		return "all_colleges"
+	case CollegeNameSpellMatchType:
+		return "college_name"
+	case PowerSourceSpellMatchType:
+		return "power_source_name"
+	case NameSpellMatchType:
+		return "spell_name"
+	default:
+		return SpellMatchType(0).Key()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum SpellMatchType) String() string {
-	return spellMatchTypeData[enum.EnsureValid()].string
-}
-
-// ExtractSpellMatchType extracts the value from a string.
-func ExtractSpellMatchType(str string) SpellMatchType {
-	for i, one := range spellMatchTypeData {
-		if strings.EqualFold(one.key, str) {
-			return SpellMatchType(i)
-		}
+	switch enum {
+	case AllCollegesSpellMatchType:
+		return i18n.Text("to all colleges")
+	case CollegeNameSpellMatchType:
+		return i18n.Text("to the college whose name")
+	case PowerSourceSpellMatchType:
+		return i18n.Text("to the power source whose name")
+	case NameSpellMatchType:
+		return i18n.Text("to the spell whose name")
+	default:
+		return SpellMatchType(0).String()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -99,4 +88,14 @@ func (enum SpellMatchType) MarshalText() (text []byte, err error) {
 func (enum *SpellMatchType) UnmarshalText(text []byte) error {
 	*enum = ExtractSpellMatchType(string(text))
 	return nil
+}
+
+// ExtractSpellMatchType extracts the value from a string.
+func ExtractSpellMatchType(str string) SpellMatchType {
+	for _, enum := range AllSpellMatchType {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+	}
+	return 0
 }

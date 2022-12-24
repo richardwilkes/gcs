@@ -71,7 +71,7 @@ func addSpecializationLabelAndField(parent *unison.Panel, fieldData *string) {
 }
 
 func addPageRefLabelAndField(parent *unison.Panel, fieldData *string) {
-	addLabelAndStringField(parent, i18n.Text("Page Reference"), model.PageRefTooltipText, fieldData)
+	addLabelAndStringField(parent, i18n.Text("Page Reference"), pageRefTooltipText(), fieldData)
 }
 
 func addNotesLabelAndField(parent *unison.Panel, fieldData *string) {
@@ -107,7 +107,7 @@ func addTechLevelRequired(parent *unison.Panel, fieldData **string, includeField
 			**fieldData = value
 			MarkModified(parent)
 		})
-		field.Tooltip = unison.NewTooltipWithText(model.TechLevelInfo)
+		field.Tooltip = unison.NewTooltipWithText(techLevelInfo())
 		if *fieldData == nil {
 			field.SetEnabled(false)
 		}
@@ -629,4 +629,24 @@ func WrapWithSpan(span int, children ...unison.Paneler) *unison.Panel {
 		wrapper.AddChild(child)
 	}
 	return wrapper
+}
+
+func pageRefTooltipText() string {
+	return i18n.Text(`A reference to the book and page the item appears on e.g. B22 would refer to "Basic Set", page 22`)
+}
+
+func techLevelInfo() string {
+	return i18n.Text(`TL0: Stone Age (Prehistory)
+TL1: Bronze Age (3500 B.C.+)
+TL2: Iron Age (1200 B.C.+)
+TL3: Medieval (600 A.D.+)
+TL4: Age of Sail (1450+)
+TL5: Industrial Revolution (1730+)
+TL6: Mechanized Age (1880+)
+TL7: Nuclear Age (1940+)
+TL8: Digital Age (1980+)
+TL9: Microtech Age (2025+?)
+TL10: Robotic Age (2070+?)
+TL11: Age of Exotic Matter
+TL12: Anything Goes`)
 }

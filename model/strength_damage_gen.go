@@ -29,41 +29,14 @@ const (
 	LastStrengthDamage = LeveledSwingStrengthDamage
 )
 
-var (
-	// AllStrengthDamage holds all possible values.
-	AllStrengthDamage = []StrengthDamage{
-		NoneStrengthDamage,
-		ThrustStrengthDamage,
-		LeveledThrustStrengthDamage,
-		SwingStrengthDamage,
-		LeveledSwingStrengthDamage,
-	}
-	strengthDamageData = []struct {
-		key    string
-		string string
-	}{
-		{
-			key:    "none",
-			string: i18n.Text("None"),
-		},
-		{
-			key:    "thr",
-			string: "thr",
-		},
-		{
-			key:    "thr_leveled",
-			string: i18n.Text("thr (leveled)"),
-		},
-		{
-			key:    "sw",
-			string: "sw",
-		},
-		{
-			key:    "sw_leveled",
-			string: i18n.Text("sw (leveled)"),
-		},
-	}
-)
+// AllStrengthDamage holds all possible values.
+var AllStrengthDamage = []StrengthDamage{
+	NoneStrengthDamage,
+	ThrustStrengthDamage,
+	LeveledThrustStrengthDamage,
+	SwingStrengthDamage,
+	LeveledSwingStrengthDamage,
+}
 
 // StrengthDamage holds the type of strength dice to add to damage.
 type StrengthDamage byte
@@ -78,22 +51,38 @@ func (enum StrengthDamage) EnsureValid() StrengthDamage {
 
 // Key returns the key used in serialization.
 func (enum StrengthDamage) Key() string {
-	return strengthDamageData[enum.EnsureValid()].key
+	switch enum {
+	case NoneStrengthDamage:
+		return "none"
+	case ThrustStrengthDamage:
+		return "thr"
+	case LeveledThrustStrengthDamage:
+		return "thr_leveled"
+	case SwingStrengthDamage:
+		return "sw"
+	case LeveledSwingStrengthDamage:
+		return "sw_leveled"
+	default:
+		return StrengthDamage(0).Key()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum StrengthDamage) String() string {
-	return strengthDamageData[enum.EnsureValid()].string
-}
-
-// ExtractStrengthDamage extracts the value from a string.
-func ExtractStrengthDamage(str string) StrengthDamage {
-	for i, one := range strengthDamageData {
-		if strings.EqualFold(one.key, str) {
-			return StrengthDamage(i)
-		}
+	switch enum {
+	case NoneStrengthDamage:
+		return i18n.Text("None")
+	case ThrustStrengthDamage:
+		return "thr"
+	case LeveledThrustStrengthDamage:
+		return i18n.Text("thr (leveled)")
+	case SwingStrengthDamage:
+		return "sw"
+	case LeveledSwingStrengthDamage:
+		return i18n.Text("sw (leveled)")
+	default:
+		return StrengthDamage(0).String()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -105,4 +94,14 @@ func (enum StrengthDamage) MarshalText() (text []byte, err error) {
 func (enum *StrengthDamage) UnmarshalText(text []byte) error {
 	*enum = ExtractStrengthDamage(string(text))
 	return nil
+}
+
+// ExtractStrengthDamage extracts the value from a string.
+func ExtractStrengthDamage(str string) StrengthDamage {
+	for _, enum := range AllStrengthDamage {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+	}
+	return 0
 }

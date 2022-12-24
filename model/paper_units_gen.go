@@ -25,31 +25,12 @@ const (
 	LastPaperUnits = MillimeterPaperUnits
 )
 
-var (
-	// AllPaperUnits holds all possible values.
-	AllPaperUnits = []PaperUnits{
-		InchPaperUnits,
-		CentimeterPaperUnits,
-		MillimeterPaperUnits,
-	}
-	paperUnitsData = []struct {
-		key    string
-		string string
-	}{
-		{
-			key:    "in",
-			string: "in",
-		},
-		{
-			key:    "cm",
-			string: "cm",
-		},
-		{
-			key:    "mm",
-			string: "mm",
-		},
-	}
-)
+// AllPaperUnits holds all possible values.
+var AllPaperUnits = []PaperUnits{
+	InchPaperUnits,
+	CentimeterPaperUnits,
+	MillimeterPaperUnits,
+}
 
 // PaperUnits holds the real-world length unit type.
 type PaperUnits byte
@@ -64,22 +45,30 @@ func (enum PaperUnits) EnsureValid() PaperUnits {
 
 // Key returns the key used in serialization.
 func (enum PaperUnits) Key() string {
-	return paperUnitsData[enum.EnsureValid()].key
+	switch enum {
+	case InchPaperUnits:
+		return "in"
+	case CentimeterPaperUnits:
+		return "cm"
+	case MillimeterPaperUnits:
+		return "mm"
+	default:
+		return PaperUnits(0).Key()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum PaperUnits) String() string {
-	return paperUnitsData[enum.EnsureValid()].string
-}
-
-// ExtractPaperUnits extracts the value from a string.
-func ExtractPaperUnits(str string) PaperUnits {
-	for i, one := range paperUnitsData {
-		if strings.EqualFold(one.key, str) {
-			return PaperUnits(i)
-		}
+	switch enum {
+	case InchPaperUnits:
+		return "in"
+	case CentimeterPaperUnits:
+		return "cm"
+	case MillimeterPaperUnits:
+		return "mm"
+	default:
+		return PaperUnits(0).String()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -91,4 +80,14 @@ func (enum PaperUnits) MarshalText() (text []byte, err error) {
 func (enum *PaperUnits) UnmarshalText(text []byte) error {
 	*enum = ExtractPaperUnits(string(text))
 	return nil
+}
+
+// ExtractPaperUnits extracts the value from a string.
+func ExtractPaperUnits(str string) PaperUnits {
+	for _, enum := range AllPaperUnits {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+	}
+	return 0
 }

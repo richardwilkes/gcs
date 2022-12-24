@@ -28,41 +28,13 @@ const (
 	LastEquipmentModifierWeightType = FinalEquipmentModifierWeightType
 )
 
-var (
-	// AllEquipmentModifierWeightType holds all possible values.
-	AllEquipmentModifierWeightType = []EquipmentModifierWeightType{
-		OriginalEquipmentModifierWeightType,
-		BaseEquipmentModifierWeightType,
-		FinalBaseEquipmentModifierWeightType,
-		FinalEquipmentModifierWeightType,
-	}
-	equipmentModifierWeightTypeData = []struct {
-		key    string
-		string string
-		alt    string
-	}{
-		{
-			key:    "to_original_weight",
-			string: i18n.Text("to original weight"),
-			alt:    i18n.Text("\"+5 lb\", \"-5 lb\", \"+10%\", \"-10%\""),
-		},
-		{
-			key:    "to_base_weight",
-			string: i18n.Text("to base weight"),
-			alt:    i18n.Text("\"+5 lb\", \"-5 lb\", \"x10%\", \"x3\", \"x2/3\""),
-		},
-		{
-			key:    "to_final_base_weight",
-			string: i18n.Text("to final base weight"),
-			alt:    i18n.Text("\"+5 lb\", \"-5 lb\", \"x10%\", \"x3\", \"x2/3\""),
-		},
-		{
-			key:    "to_final_weight",
-			string: i18n.Text("to final weight"),
-			alt:    i18n.Text("\"+5 lb\", \"-5 lb\", \"x10%\", \"x3\", \"x2/3\""),
-		},
-	}
-)
+// AllEquipmentModifierWeightType holds all possible values.
+var AllEquipmentModifierWeightType = []EquipmentModifierWeightType{
+	OriginalEquipmentModifierWeightType,
+	BaseEquipmentModifierWeightType,
+	FinalBaseEquipmentModifierWeightType,
+	FinalEquipmentModifierWeightType,
+}
 
 // EquipmentModifierWeightType describes how an Equipment Modifier's weight is applied.
 type EquipmentModifierWeightType byte
@@ -77,27 +49,50 @@ func (enum EquipmentModifierWeightType) EnsureValid() EquipmentModifierWeightTyp
 
 // Key returns the key used in serialization.
 func (enum EquipmentModifierWeightType) Key() string {
-	return equipmentModifierWeightTypeData[enum.EnsureValid()].key
+	switch enum {
+	case OriginalEquipmentModifierWeightType:
+		return "to_original_weight"
+	case BaseEquipmentModifierWeightType:
+		return "to_base_weight"
+	case FinalBaseEquipmentModifierWeightType:
+		return "to_final_base_weight"
+	case FinalEquipmentModifierWeightType:
+		return "to_final_weight"
+	default:
+		return EquipmentModifierWeightType(0).Key()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum EquipmentModifierWeightType) String() string {
-	return equipmentModifierWeightTypeData[enum.EnsureValid()].string
+	switch enum {
+	case OriginalEquipmentModifierWeightType:
+		return i18n.Text("to original weight")
+	case BaseEquipmentModifierWeightType:
+		return i18n.Text("to base weight")
+	case FinalBaseEquipmentModifierWeightType:
+		return i18n.Text("to final base weight")
+	case FinalEquipmentModifierWeightType:
+		return i18n.Text("to final weight")
+	default:
+		return EquipmentModifierWeightType(0).String()
+	}
 }
 
 // AltString returns the alternate string.
 func (enum EquipmentModifierWeightType) AltString() string {
-	return equipmentModifierWeightTypeData[enum.EnsureValid()].alt
-}
-
-// ExtractEquipmentModifierWeightType extracts the value from a string.
-func ExtractEquipmentModifierWeightType(str string) EquipmentModifierWeightType {
-	for i, one := range equipmentModifierWeightTypeData {
-		if strings.EqualFold(one.key, str) {
-			return EquipmentModifierWeightType(i)
-		}
+	switch enum {
+	case OriginalEquipmentModifierWeightType:
+		return i18n.Text("\"+5 lb\", \"-5 lb\", \"+10%\", \"-10%\"")
+	case BaseEquipmentModifierWeightType:
+		return i18n.Text("\"+5 lb\", \"-5 lb\", \"x10%\", \"x3\", \"x2/3\"")
+	case FinalBaseEquipmentModifierWeightType:
+		return i18n.Text("\"+5 lb\", \"-5 lb\", \"x10%\", \"x3\", \"x2/3\"")
+	case FinalEquipmentModifierWeightType:
+		return i18n.Text("\"+5 lb\", \"-5 lb\", \"x10%\", \"x3\", \"x2/3\"")
+	default:
+		return EquipmentModifierWeightType(0).AltString()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -109,4 +104,14 @@ func (enum EquipmentModifierWeightType) MarshalText() (text []byte, err error) {
 func (enum *EquipmentModifierWeightType) UnmarshalText(text []byte) error {
 	*enum = ExtractEquipmentModifierWeightType(string(text))
 	return nil
+}
+
+// ExtractEquipmentModifierWeightType extracts the value from a string.
+func ExtractEquipmentModifierWeightType(str string) EquipmentModifierWeightType {
+	for _, enum := range AllEquipmentModifierWeightType {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+	}
+	return 0
 }

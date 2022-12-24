@@ -89,6 +89,9 @@ func GlobalSettings() *Settings {
 		unison.SetColorMode(global.ColorMode)
 		global.Colors.MakeCurrent()
 		global.Fonts.MakeCurrent()
+		unison.DefaultScrollPanelTheme.MouseWheelMultiplier = func() float32 {
+			return fxp.As[float32](global.General.ScrollWheelMultiplier)
+		}
 	}
 	return global
 }

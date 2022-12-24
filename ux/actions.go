@@ -132,11 +132,11 @@ var (
 
 func registerActions() {
 	// Standard actions that may be assigned a key binding
-	model.RegisterKeyBinding("cut", unison.CutAction)
-	model.RegisterKeyBinding("copy", unison.CopyAction)
-	model.RegisterKeyBinding("paste", unison.PasteAction)
-	model.RegisterKeyBinding("delete", unison.DeleteAction)
-	model.RegisterKeyBinding("select.all", unison.SelectAllAction)
+	model.RegisterKeyBinding("cut", unison.CutAction())
+	model.RegisterKeyBinding("copy", unison.CopyAction())
+	model.RegisterKeyBinding("paste", unison.PasteAction())
+	model.RegisterKeyBinding("delete", unison.DeleteAction())
+	model.RegisterKeyBinding("select.all", unison.SelectAllAction())
 
 	// Actions that may be assigned a key binding
 	addNaturalAttacksAction = registerKeyBindableAction("add.natural.attacks", &unison.Action{

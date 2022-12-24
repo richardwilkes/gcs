@@ -65,10 +65,10 @@ type skillListData struct {
 func NewSkillsFromFile(fileSystem fs.FS, filePath string) ([]*Skill, error) {
 	var data skillListData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(InvalidFileDataMsg, err)
+		return nil, errs.NewWithCause(invalidFileDataMsg(), err)
 	}
 	if data.Type != skillListTypeKey {
-		return nil, errs.New(UnexpectedFileDataMsg)
+		return nil, errs.New(unexpectedFileDataMsg())
 	}
 	if err := CheckVersion(data.Version); err != nil {
 		return nil, err
@@ -233,7 +233,7 @@ func (s *Skill) CellData(column int, data *CellData) {
 			level := s.CalculateLevel()
 			data.Primary = level.LevelAsString(s.Container())
 			if level.Tooltip != "" {
-				data.Tooltip = IncludesModifiersFrom + ":" + level.Tooltip
+				data.Tooltip = includesModifiersFrom() + ":" + level.Tooltip
 			}
 			data.Alignment = unison.EndAlignment
 		}
@@ -242,7 +242,7 @@ func (s *Skill) CellData(column int, data *CellData) {
 			data.Type = TextCellType
 			data.Primary = FormatRelativeSkill(s.Entity, s.Type, s.Difficulty, s.AdjustedRelativeLevel())
 			if tooltip := s.CalculateLevel().Tooltip; tooltip != "" {
-				data.Tooltip = IncludesModifiersFrom + ":" + tooltip
+				data.Tooltip = includesModifiersFrom() + ":" + tooltip
 			}
 		}
 	case SkillPointsColumn:
@@ -251,7 +251,7 @@ func (s *Skill) CellData(column int, data *CellData) {
 		data.Primary = s.AdjustedPoints(&tooltip).String()
 		data.Alignment = unison.EndAlignment
 		if tooltip.Len() != 0 {
-			data.Tooltip = IncludesModifiersFrom + ":" + tooltip.String()
+			data.Tooltip = includesModifiersFrom() + ":" + tooltip.String()
 		}
 	}
 }
@@ -383,13 +383,14 @@ func (s *Skill) SecondaryText(optionChecker func(DisplayOption) bool) string {
 		}
 	}
 	if optionChecker(prefs.SkillLevelAdjDisplay) {
-		if s.LevelData.Tooltip != "" && s.LevelData.Tooltip != NoAdditionalModifiers {
+		if s.LevelData.Tooltip != "" && s.LevelData.Tooltip != noAdditionalModifiers() {
 			if buffer.Len() != 0 {
 				buffer.WriteByte('\n')
 			}
 			levelTooltip := strings.ReplaceAll(strings.TrimSpace(s.LevelData.Tooltip), "\n", ", ")
-			if strings.HasPrefix(levelTooltip, IncludesModifiersFrom+",") {
-				levelTooltip = IncludesModifiersFrom + ":" + levelTooltip[len(IncludesModifiersFrom)+1:]
+			msg := includesModifiersFrom()
+			if strings.HasPrefix(levelTooltip, msg+",") {
+				levelTooltip = msg + ":" + levelTooltip[len(msg)+1:]
 			}
 			buffer.WriteString(levelTooltip)
 		}

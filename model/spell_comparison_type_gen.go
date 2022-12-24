@@ -30,43 +30,14 @@ const (
 	LastSpellComparisonType = AnySpellComparisonType
 )
 
-var (
-	// AllSpellComparisonType holds all possible values.
-	AllSpellComparisonType = []SpellComparisonType{
-		NameSpellComparisonType,
-		TagSpellComparisonType,
-		CollegeSpellComparisonType,
-		CollegeCountSpellComparisonType,
-		AnySpellComparisonType,
-	}
-	spellComparisonTypeData = []struct {
-		key     string
-		oldKeys []string
-		string  string
-	}{
-		{
-			key:    "name",
-			string: i18n.Text("whose name"),
-		},
-		{
-			key:     "tag",
-			oldKeys: []string{"category"},
-			string:  i18n.Text("with a tag which"),
-		},
-		{
-			key:    "college",
-			string: i18n.Text("whose college name"),
-		},
-		{
-			key:    "college_count",
-			string: i18n.Text("from different colleges"),
-		},
-		{
-			key:    "any",
-			string: i18n.Text("of any kind"),
-		},
-	}
-)
+// AllSpellComparisonType holds all possible values.
+var AllSpellComparisonType = []SpellComparisonType{
+	NameSpellComparisonType,
+	TagSpellComparisonType,
+	CollegeSpellComparisonType,
+	CollegeCountSpellComparisonType,
+	AnySpellComparisonType,
+}
 
 // SpellComparisonType holds the type of a comparison.
 type SpellComparisonType byte
@@ -81,22 +52,55 @@ func (enum SpellComparisonType) EnsureValid() SpellComparisonType {
 
 // Key returns the key used in serialization.
 func (enum SpellComparisonType) Key() string {
-	return spellComparisonTypeData[enum.EnsureValid()].key
+	switch enum {
+	case NameSpellComparisonType:
+		return "name"
+	case TagSpellComparisonType:
+		return "tag"
+	case CollegeSpellComparisonType:
+		return "college"
+	case CollegeCountSpellComparisonType:
+		return "college_count"
+	case AnySpellComparisonType:
+		return "any"
+	default:
+		return SpellComparisonType(0).Key()
+	}
+}
+
+func (enum SpellComparisonType) oldKeys() []string {
+	switch enum {
+	case NameSpellComparisonType:
+		return nil
+	case TagSpellComparisonType:
+		return []string{"category"}
+	case CollegeSpellComparisonType:
+		return nil
+	case CollegeCountSpellComparisonType:
+		return nil
+	case AnySpellComparisonType:
+		return nil
+	default:
+		return SpellComparisonType(0).oldKeys()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum SpellComparisonType) String() string {
-	return spellComparisonTypeData[enum.EnsureValid()].string
-}
-
-// ExtractSpellComparisonType extracts the value from a string.
-func ExtractSpellComparisonType(str string) SpellComparisonType {
-	for i, one := range spellComparisonTypeData {
-		if strings.EqualFold(one.key, str) || txt.CaselessSliceContains(one.oldKeys, str) {
-			return SpellComparisonType(i)
-		}
+	switch enum {
+	case NameSpellComparisonType:
+		return i18n.Text("whose name")
+	case TagSpellComparisonType:
+		return i18n.Text("with a tag which")
+	case CollegeSpellComparisonType:
+		return i18n.Text("whose college name")
+	case CollegeCountSpellComparisonType:
+		return i18n.Text("from different colleges")
+	case AnySpellComparisonType:
+		return i18n.Text("of any kind")
+	default:
+		return SpellComparisonType(0).String()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -108,4 +112,14 @@ func (enum SpellComparisonType) MarshalText() (text []byte, err error) {
 func (enum *SpellComparisonType) UnmarshalText(text []byte) error {
 	*enum = ExtractSpellComparisonType(string(text))
 	return nil
+}
+
+// ExtractSpellComparisonType extracts the value from a string.
+func ExtractSpellComparisonType(str string) SpellComparisonType {
+	for _, enum := range AllSpellComparisonType {
+		if strings.EqualFold(enum.Key(), str) || txt.CaselessSliceContains(enum.oldKeys(), str) {
+			return enum
+		}
+	}
+	return 0
 }

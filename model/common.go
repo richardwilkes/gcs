@@ -18,12 +18,21 @@ import (
 	"github.com/richardwilkes/toolbox/txt"
 )
 
-// String constants
-var (
-	NoAdditionalModifiers = i18n.Text("No additional modifiers")
-	IncludesModifiersFrom = i18n.Text("Includes modifiers from")
-	PageRefTooltipText    = i18n.Text(`A reference to the book and page the item appears on e.g. B22 would refer to "Basic Set", page 22`)
-)
+func invalidFileDataMsg() string {
+	return i18n.Text("Invalid file data.")
+}
+
+func unexpectedFileDataMsg() string {
+	return i18n.Text("This file does not contain the expected data.")
+}
+
+func noAdditionalModifiers() string {
+	return i18n.Text("No additional modifiers")
+}
+
+func includesModifiersFrom() string {
+	return i18n.Text("Includes modifiers from")
+}
 
 func convertOldCategoriesToTags(tags, categories []string) []string {
 	if categories == nil {

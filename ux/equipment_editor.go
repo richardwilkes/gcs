@@ -28,8 +28,10 @@ func EditEquipment(owner Rebuildable, equipment *model.Equipment, carried bool) 
 			addNameLabelAndField(content, &e.editorData.Name)
 			addNotesLabelAndField(content, &e.editorData.LocalNotes)
 			addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
-			addLabelAndStringField(content, i18n.Text("Tech Level"), model.TechLevelInfo, &e.editorData.TechLevel)
-			addLabelAndStringField(content, i18n.Text("Legality Class"), model.LegalityClassInfo, &e.editorData.LegalityClass)
+			addLabelAndStringField(content, i18n.Text("Tech Level"), techLevelInfo(), &e.editorData.TechLevel)
+			addLabelAndStringField(content, i18n.Text("Legality Class"),
+				i18n.Text("LC0: Banned\nLC1: Military\nLC2: Restricted\nLC3: Licensed\nLC4: Open"),
+				&e.editorData.LegalityClass)
 			qtyLabel := i18n.Text("Quantity")
 			if carried {
 				wrapper := addFlowWrapper(content, qtyLabel, 2)

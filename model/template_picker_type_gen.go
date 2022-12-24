@@ -27,31 +27,12 @@ const (
 	LastTemplatePickerType = PointsTemplatePickerType
 )
 
-var (
-	// AllTemplatePickerType holds all possible values.
-	AllTemplatePickerType = []TemplatePickerType{
-		NotApplicableTemplatePickerType,
-		CountTemplatePickerType,
-		PointsTemplatePickerType,
-	}
-	templatePickerTypeData = []struct {
-		key    string
-		string string
-	}{
-		{
-			key:    "not_applicable",
-			string: i18n.Text("Not Applicable"),
-		},
-		{
-			key:    "count",
-			string: i18n.Text("Count"),
-		},
-		{
-			key:    "points",
-			string: i18n.Text("Points"),
-		},
-	}
-)
+// AllTemplatePickerType holds all possible values.
+var AllTemplatePickerType = []TemplatePickerType{
+	NotApplicableTemplatePickerType,
+	CountTemplatePickerType,
+	PointsTemplatePickerType,
+}
 
 // TemplatePickerType holds the type of template picker.
 type TemplatePickerType byte
@@ -66,22 +47,30 @@ func (enum TemplatePickerType) EnsureValid() TemplatePickerType {
 
 // Key returns the key used in serialization.
 func (enum TemplatePickerType) Key() string {
-	return templatePickerTypeData[enum.EnsureValid()].key
+	switch enum {
+	case NotApplicableTemplatePickerType:
+		return "not_applicable"
+	case CountTemplatePickerType:
+		return "count"
+	case PointsTemplatePickerType:
+		return "points"
+	default:
+		return TemplatePickerType(0).Key()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum TemplatePickerType) String() string {
-	return templatePickerTypeData[enum.EnsureValid()].string
-}
-
-// ExtractTemplatePickerType extracts the value from a string.
-func ExtractTemplatePickerType(str string) TemplatePickerType {
-	for i, one := range templatePickerTypeData {
-		if strings.EqualFold(one.key, str) {
-			return TemplatePickerType(i)
-		}
+	switch enum {
+	case NotApplicableTemplatePickerType:
+		return i18n.Text("Not Applicable")
+	case CountTemplatePickerType:
+		return i18n.Text("Count")
+	case PointsTemplatePickerType:
+		return i18n.Text("Points")
+	default:
+		return TemplatePickerType(0).String()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -93,4 +82,14 @@ func (enum TemplatePickerType) MarshalText() (text []byte, err error) {
 func (enum *TemplatePickerType) UnmarshalText(text []byte) error {
 	*enum = ExtractTemplatePickerType(string(text))
 	return nil
+}
+
+// ExtractTemplatePickerType extracts the value from a string.
+func ExtractTemplatePickerType(str string) TemplatePickerType {
+	for _, enum := range AllTemplatePickerType {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+	}
+	return 0
 }

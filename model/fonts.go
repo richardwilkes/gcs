@@ -14,6 +14,7 @@ package model
 import (
 	"context"
 	"io/fs"
+	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
@@ -39,45 +40,10 @@ var (
 )
 
 var (
-	// CurrentFonts holds the current theme fonts.
-	CurrentFonts = []*ThemedFont{
-		{ID: "system", Title: i18n.Text("System"), Font: unison.SystemFont},
-		{ID: "system.emphasized", Title: i18n.Text("System (Emphasized)"), Font: unison.EmphasizedSystemFont},
-		{ID: "system.small", Title: i18n.Text("System (Small)"), Font: unison.SmallSystemFont},
-		{ID: "system.small.emphasized", Title: i18n.Text("System (Small, Emphasized)"), Font: unison.EmphasizedSmallSystemFont},
-		{ID: "label", Title: i18n.Text("Label"), Font: unison.LabelFont},
-		{ID: "field", Title: i18n.Text("Field"), Font: unison.FieldFont},
-		{ID: "field.secondary", Title: i18n.Text("Secondary Fields"), Font: FieldSecondaryFont},
-		{ID: "keyboard", Title: i18n.Text("Keyboard"), Font: unison.KeyboardFont},
-		{ID: "page.field.primary", Title: i18n.Text("Page Primary Fields"), Font: PageFieldPrimaryFont},
-		{ID: "page.field.secondary", Title: i18n.Text("Page Secondary Fields"), Font: PageFieldSecondaryFont},
-		{ID: "page.label.primary", Title: i18n.Text("Page Primary Labels"), Font: PageLabelPrimaryFont},
-		{ID: "page.label.secondary", Title: i18n.Text("Page Secondary Labels"), Font: PageLabelSecondaryFont},
-		{ID: "page.footer.primary", Title: i18n.Text("Page Primary Footer"), Font: PageFooterPrimaryFont},
-		{ID: "page.footer.secondary", Title: i18n.Text("Page Secondary Footer"), Font: PageFooterSecondaryFont},
-		{ID: "markdown.base", Title: i18n.Text("Base Markdown"), Font: BaseMarkdownFont},
-		{ID: "monospaced", Title: i18n.Text("Monospaced"), Font: unison.MonospacedFont},
-	}
-	// FactoryFonts holds the original theme before any modifications.
-	FactoryFonts []*ThemedFont
+	fontsOnce    sync.Once
+	currentFonts []*ThemedFont
+	factoryFonts []*ThemedFont
 )
-
-func init() {
-	FactoryFonts = make([]*ThemedFont, len(CurrentFonts))
-	for i, c := range CurrentFonts {
-		if c.Font.Font == nil {
-			jot.Fatal(1, i, c)
-		}
-		FactoryFonts[i] = &ThemedFont{
-			ID:    c.ID,
-			Title: c.Title,
-			Font: &unison.IndirectFont{
-				Font: c.Font.Font,
-			},
-		}
-	}
-	unison.DefaultMarkdownTheme.Font = BaseMarkdownFont
-}
 
 // ThemedFont holds a themed font.
 type ThemedFont struct {
@@ -95,6 +61,53 @@ type fontsData struct {
 	Type    string `json:"type"`
 	Version int    `json:"version"`
 	Fonts
+}
+
+// CurrentFonts returns the current theme fonts.
+func CurrentFonts() []*ThemedFont {
+	fontsOnce.Do(initFonts)
+	return currentFonts
+}
+
+// FactoryFonts returns the original theme before any modifications.
+func FactoryFonts() []*ThemedFont {
+	fontsOnce.Do(initFonts)
+	return factoryFonts
+}
+
+func initFonts() {
+	currentFonts = []*ThemedFont{
+		{ID: "system", Title: i18n.Text("System"), Font: unison.SystemFont},
+		{ID: "system.emphasized", Title: i18n.Text("System (Emphasized)"), Font: unison.EmphasizedSystemFont},
+		{ID: "system.small", Title: i18n.Text("System (Small)"), Font: unison.SmallSystemFont},
+		{ID: "system.small.emphasized", Title: i18n.Text("System (Small, Emphasized)"), Font: unison.EmphasizedSmallSystemFont},
+		{ID: "label", Title: i18n.Text("Label"), Font: unison.LabelFont},
+		{ID: "field", Title: i18n.Text("Field"), Font: unison.FieldFont},
+		{ID: "field.secondary", Title: i18n.Text("Secondary Fields"), Font: FieldSecondaryFont},
+		{ID: "keyboard", Title: i18n.Text("Keyboard"), Font: unison.KeyboardFont},
+		{ID: "page.field.primary", Title: i18n.Text("Page Primary Fields"), Font: PageFieldPrimaryFont},
+		{ID: "page.field.secondary", Title: i18n.Text("Page Secondary Fields"), Font: PageFieldSecondaryFont},
+		{ID: "page.label.primary", Title: i18n.Text("Page Primary Labels"), Font: PageLabelPrimaryFont},
+		{ID: "page.label.secondary", Title: i18n.Text("Page Secondary Labels"), Font: PageLabelSecondaryFont},
+		{ID: "page.footer.primary", Title: i18n.Text("Page Primary Footer"), Font: PageFooterPrimaryFont},
+		{ID: "page.footer.secondary", Title: i18n.Text("Page Secondary Footer"), Font: PageFooterSecondaryFont},
+		{ID: "markdown.base", Title: i18n.Text("Base Markdown"), Font: BaseMarkdownFont},
+		{ID: "monospaced", Title: i18n.Text("Monospaced"), Font: unison.MonospacedFont},
+	}
+	factoryFonts = make([]*ThemedFont, len(currentFonts))
+	for i, c := range currentFonts {
+		if c.Font.Font == nil {
+			jot.Fatal(1, i, c)
+		}
+		factoryFonts[i] = &ThemedFont{
+			ID:    c.ID,
+			Title: c.Title,
+			Font: &unison.IndirectFont{
+				Font: c.Font.Font,
+			},
+		}
+	}
+	unison.DefaultMarkdownTheme.Font = BaseMarkdownFont
 }
 
 // NewFontsFromFS creates a new set of fonts from a file. Any missing values will be filled in with defaults.
@@ -116,7 +129,7 @@ func NewFontsFromFS(fileSystem fs.FS, filePath string) (*Fonts, error) {
 	default:
 	}
 	if current.Type != fontsTypeKey {
-		return nil, errs.New(UnexpectedFileDataMsg)
+		return nil, errs.New(unexpectedFileDataMsg())
 	}
 	if err := CheckVersion(current.Version); err != nil {
 		return nil, err
@@ -135,8 +148,8 @@ func (f *Fonts) Save(filePath string) error {
 
 // MarshalJSON implements json.Marshaler.
 func (f *Fonts) MarshalJSON() ([]byte, error) {
-	f.data = make(map[string]unison.FontDescriptor, len(CurrentFonts))
-	for _, one := range CurrentFonts {
+	f.data = make(map[string]unison.FontDescriptor, len(CurrentFonts()))
+	for _, one := range CurrentFonts() {
 		f.data[one.ID] = one.Font.Descriptor()
 	}
 	return json.Marshal(&f.data)
@@ -144,7 +157,7 @@ func (f *Fonts) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (f *Fonts) UnmarshalJSON(data []byte) error {
-	f.data = make(map[string]unison.FontDescriptor, len(FactoryFonts))
+	f.data = make(map[string]unison.FontDescriptor, len(FactoryFonts()))
 	var err error
 	toolbox.CallWithHandler(func() {
 		err = json.Unmarshal(data, &f.data)
@@ -161,8 +174,8 @@ func (f *Fonts) UnmarshalJSON(data []byte) error {
 		if err = json.Unmarshal(data, &old); err != nil {
 			return errs.New("invalid font data")
 		}
-		f.data = make(map[string]unison.FontDescriptor, len(FactoryFonts))
-		for _, ff := range FactoryFonts {
+		f.data = make(map[string]unison.FontDescriptor, len(FactoryFonts()))
+		for _, ff := range FactoryFonts() {
 			if of, ok := old[ff.ID]; ok {
 				f.data[ff.ID] = unison.FontDescriptor{
 					FontFaceDescriptor: unison.FontFaceDescriptor{
@@ -179,9 +192,9 @@ func (f *Fonts) UnmarshalJSON(data []byte) error {
 		}
 	}
 	if f.data == nil {
-		f.data = make(map[string]unison.FontDescriptor, len(FactoryFonts))
+		f.data = make(map[string]unison.FontDescriptor, len(FactoryFonts()))
 	}
-	for _, one := range FactoryFonts {
+	for _, one := range FactoryFonts() {
 		if _, ok := f.data[one.ID]; !ok {
 			f.data[one.ID] = one.Font.Descriptor()
 		}
@@ -191,7 +204,7 @@ func (f *Fonts) UnmarshalJSON(data []byte) error {
 
 // MakeCurrent applies these fonts to the current theme font set and updates all windows.
 func (f *Fonts) MakeCurrent() {
-	for _, one := range CurrentFonts {
+	for _, one := range CurrentFonts() {
 		if v, ok := f.data[one.ID]; ok {
 			one.Font.Font = v.Font()
 		}
@@ -205,14 +218,14 @@ func (f *Fonts) MakeCurrent() {
 
 // Reset to factory defaults.
 func (f *Fonts) Reset() {
-	for _, one := range FactoryFonts {
+	for _, one := range FactoryFonts() {
 		f.data[one.ID] = one.Font.Descriptor()
 	}
 }
 
 // ResetOne resets one font by ID to factory defaults.
 func (f *Fonts) ResetOne(id string) {
-	for _, v := range FactoryFonts {
+	for _, v := range FactoryFonts() {
 		if v.ID == id {
 			f.data[id] = v.Font.Descriptor()
 			break

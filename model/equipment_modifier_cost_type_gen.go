@@ -28,41 +28,13 @@ const (
 	LastEquipmentModifierCostType = FinalEquipmentModifierCostType
 )
 
-var (
-	// AllEquipmentModifierCostType holds all possible values.
-	AllEquipmentModifierCostType = []EquipmentModifierCostType{
-		OriginalEquipmentModifierCostType,
-		BaseEquipmentModifierCostType,
-		FinalBaseEquipmentModifierCostType,
-		FinalEquipmentModifierCostType,
-	}
-	equipmentModifierCostTypeData = []struct {
-		key    string
-		string string
-		alt    string
-	}{
-		{
-			key:    "to_original_cost",
-			string: i18n.Text("to original cost"),
-			alt:    i18n.Text("\"+5\", \"-5\", \"+10%\", \"-10%\", \"x3.2\""),
-		},
-		{
-			key:    "to_base_cost",
-			string: i18n.Text("to base cost"),
-			alt:    i18n.Text("\"x2\", \"+2 CF\", \"-0.2 CF\""),
-		},
-		{
-			key:    "to_final_base_cost",
-			string: i18n.Text("to final base cost"),
-			alt:    i18n.Text("\"+5\", \"-5\", \"+10%\", \"-10%\", \"x3.2\""),
-		},
-		{
-			key:    "to_final_cost",
-			string: i18n.Text("to final cost"),
-			alt:    i18n.Text("\"+5\", \"-5\", \"+10%\", \"-10%\", \"x3.2\""),
-		},
-	}
-)
+// AllEquipmentModifierCostType holds all possible values.
+var AllEquipmentModifierCostType = []EquipmentModifierCostType{
+	OriginalEquipmentModifierCostType,
+	BaseEquipmentModifierCostType,
+	FinalBaseEquipmentModifierCostType,
+	FinalEquipmentModifierCostType,
+}
 
 // EquipmentModifierCostType describes how an Equipment Modifier's cost is applied.
 type EquipmentModifierCostType byte
@@ -77,27 +49,50 @@ func (enum EquipmentModifierCostType) EnsureValid() EquipmentModifierCostType {
 
 // Key returns the key used in serialization.
 func (enum EquipmentModifierCostType) Key() string {
-	return equipmentModifierCostTypeData[enum.EnsureValid()].key
+	switch enum {
+	case OriginalEquipmentModifierCostType:
+		return "to_original_cost"
+	case BaseEquipmentModifierCostType:
+		return "to_base_cost"
+	case FinalBaseEquipmentModifierCostType:
+		return "to_final_base_cost"
+	case FinalEquipmentModifierCostType:
+		return "to_final_cost"
+	default:
+		return EquipmentModifierCostType(0).Key()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum EquipmentModifierCostType) String() string {
-	return equipmentModifierCostTypeData[enum.EnsureValid()].string
+	switch enum {
+	case OriginalEquipmentModifierCostType:
+		return i18n.Text("to original cost")
+	case BaseEquipmentModifierCostType:
+		return i18n.Text("to base cost")
+	case FinalBaseEquipmentModifierCostType:
+		return i18n.Text("to final base cost")
+	case FinalEquipmentModifierCostType:
+		return i18n.Text("to final cost")
+	default:
+		return EquipmentModifierCostType(0).String()
+	}
 }
 
 // AltString returns the alternate string.
 func (enum EquipmentModifierCostType) AltString() string {
-	return equipmentModifierCostTypeData[enum.EnsureValid()].alt
-}
-
-// ExtractEquipmentModifierCostType extracts the value from a string.
-func ExtractEquipmentModifierCostType(str string) EquipmentModifierCostType {
-	for i, one := range equipmentModifierCostTypeData {
-		if strings.EqualFold(one.key, str) {
-			return EquipmentModifierCostType(i)
-		}
+	switch enum {
+	case OriginalEquipmentModifierCostType:
+		return i18n.Text("\"+5\", \"-5\", \"+10%\", \"-10%\", \"x3.2\"")
+	case BaseEquipmentModifierCostType:
+		return i18n.Text("\"x2\", \"+2 CF\", \"-0.2 CF\"")
+	case FinalBaseEquipmentModifierCostType:
+		return i18n.Text("\"+5\", \"-5\", \"+10%\", \"-10%\", \"x3.2\"")
+	case FinalEquipmentModifierCostType:
+		return i18n.Text("\"+5\", \"-5\", \"+10%\", \"-10%\", \"x3.2\"")
+	default:
+		return EquipmentModifierCostType(0).AltString()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -109,4 +104,14 @@ func (enum EquipmentModifierCostType) MarshalText() (text []byte, err error) {
 func (enum *EquipmentModifierCostType) UnmarshalText(text []byte) error {
 	*enum = ExtractEquipmentModifierCostType(string(text))
 	return nil
+}
+
+// ExtractEquipmentModifierCostType extracts the value from a string.
+func ExtractEquipmentModifierCostType(str string) EquipmentModifierCostType {
+	for _, enum := range AllEquipmentModifierCostType {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+	}
+	return 0
 }

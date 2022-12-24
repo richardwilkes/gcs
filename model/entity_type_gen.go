@@ -25,21 +25,10 @@ const (
 	LastEntityType            = PC
 )
 
-var (
-	// AllEntityType holds all possible values.
-	AllEntityType = []EntityType{
-		PC,
-	}
-	entityTypeData = []struct {
-		key    string
-		string string
-	}{
-		{
-			key:    "character",
-			string: i18n.Text("PC"),
-		},
-	}
-)
+// AllEntityType holds all possible values.
+var AllEntityType = []EntityType{
+	PC,
+}
 
 // EntityType holds the type of an Entity.
 type EntityType byte
@@ -54,22 +43,22 @@ func (enum EntityType) EnsureValid() EntityType {
 
 // Key returns the key used in serialization.
 func (enum EntityType) Key() string {
-	return entityTypeData[enum.EnsureValid()].key
+	switch enum {
+	case PC:
+		return "character"
+	default:
+		return EntityType(0).Key()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum EntityType) String() string {
-	return entityTypeData[enum.EnsureValid()].string
-}
-
-// ExtractEntityType extracts the value from a string.
-func ExtractEntityType(str string) EntityType {
-	for i, one := range entityTypeData {
-		if strings.EqualFold(one.key, str) {
-			return EntityType(i)
-		}
+	switch enum {
+	case PC:
+		return i18n.Text("PC")
+	default:
+		return EntityType(0).String()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -81,4 +70,14 @@ func (enum EntityType) MarshalText() (text []byte, err error) {
 func (enum *EntityType) UnmarshalText(text []byte) error {
 	*enum = ExtractEntityType(string(text))
 	return nil
+}
+
+// ExtractEntityType extracts the value from a string.
+func ExtractEntityType(str string) EntityType {
+	for _, enum := range AllEntityType {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+	}
+	return 0
 }

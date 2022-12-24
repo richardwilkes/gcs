@@ -61,13 +61,13 @@ type traitListData struct {
 func NewTraitsFromFile(fileSystem fs.FS, filePath string) ([]*Trait, error) {
 	var data traitListData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(InvalidFileDataMsg, err)
+		return nil, errs.NewWithCause(invalidFileDataMsg(), err)
 	}
 	if data.Type == "advantage_list" {
 		data.Type = traitListTypeKey
 	}
 	if data.Type != traitListTypeKey {
-		return nil, errs.New(UnexpectedFileDataMsg)
+		return nil, errs.New(unexpectedFileDataMsg())
 	}
 	if err := CheckVersion(data.Version); err != nil {
 		return nil, err

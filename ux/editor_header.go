@@ -74,7 +74,7 @@ func NewEditorListSVGPairHeader[T model.NodeTypes](leftSVG, rightSVG *unison.SVG
 
 // NewEditorPageRefHeader creates a new page reference header.
 func NewEditorPageRefHeader[T model.NodeTypes](forPage bool) unison.TableColumnHeader[*Node[T]] {
-	return NewEditorListSVGHeader[T](svg.Bookmark, model.PageRefTooltipText, forPage)
+	return NewEditorListSVGHeader[T](svg.Bookmark, pageRefTooltipText(), forPage)
 }
 
 // NewEditorEquippedHeader creates a new equipped header.

@@ -36,76 +36,21 @@ const (
 	LastFeatureType = ContainedWeightReductionFeatureType
 )
 
-var (
-	// AllFeatureType holds all possible values.
-	AllFeatureType = []FeatureType{
-		AttributeBonusFeatureType,
-		ConditionalModifierFeatureType,
-		DRBonusFeatureType,
-		ReactionBonusFeatureType,
-		SkillBonusFeatureType,
-		SkillPointBonusFeatureType,
-		SpellBonusFeatureType,
-		SpellPointBonusFeatureType,
-		WeaponBonusFeatureType,
-		WeaponDRDivisorBonusFeatureType,
-		CostReductionFeatureType,
-		ContainedWeightReductionFeatureType,
-	}
-	featureTypeData = []struct {
-		key    string
-		string string
-	}{
-		{
-			key:    "attribute_bonus",
-			string: i18n.Text("Gives an attribute modifier of"),
-		},
-		{
-			key:    "conditional_modifier",
-			string: i18n.Text("Gives a conditional modifier of"),
-		},
-		{
-			key:    "dr_bonus",
-			string: i18n.Text("Gives a DR bonus of"),
-		},
-		{
-			key:    "reaction_bonus",
-			string: i18n.Text("Gives a reaction modifier of"),
-		},
-		{
-			key:    "skill_bonus",
-			string: i18n.Text("Gives a skill level modifier of"),
-		},
-		{
-			key:    "skill_point_bonus",
-			string: i18n.Text("Gives a skill point modifier of"),
-		},
-		{
-			key:    "spell_bonus",
-			string: i18n.Text("Gives a spell level modifier of"),
-		},
-		{
-			key:    "spell_point_bonus",
-			string: i18n.Text("Gives a spell point modifier of"),
-		},
-		{
-			key:    "weapon_bonus",
-			string: i18n.Text("Gives a weapon damage modifier of"),
-		},
-		{
-			key:    "weapon_dr_divisor_bonus",
-			string: i18n.Text("Gives a weapon DR divisor modifier of"),
-		},
-		{
-			key:    "cost_reduction",
-			string: i18n.Text("Reduces the attribute cost of"),
-		},
-		{
-			key:    "contained_weight_reduction",
-			string: i18n.Text("Reduces the contained weight by"),
-		},
-	}
-)
+// AllFeatureType holds all possible values.
+var AllFeatureType = []FeatureType{
+	AttributeBonusFeatureType,
+	ConditionalModifierFeatureType,
+	DRBonusFeatureType,
+	ReactionBonusFeatureType,
+	SkillBonusFeatureType,
+	SkillPointBonusFeatureType,
+	SpellBonusFeatureType,
+	SpellPointBonusFeatureType,
+	WeaponBonusFeatureType,
+	WeaponDRDivisorBonusFeatureType,
+	CostReductionFeatureType,
+	ContainedWeightReductionFeatureType,
+}
 
 // FeatureType holds the type of a Feature.
 type FeatureType byte
@@ -120,22 +65,66 @@ func (enum FeatureType) EnsureValid() FeatureType {
 
 // Key returns the key used in serialization.
 func (enum FeatureType) Key() string {
-	return featureTypeData[enum.EnsureValid()].key
+	switch enum {
+	case AttributeBonusFeatureType:
+		return "attribute_bonus"
+	case ConditionalModifierFeatureType:
+		return "conditional_modifier"
+	case DRBonusFeatureType:
+		return "dr_bonus"
+	case ReactionBonusFeatureType:
+		return "reaction_bonus"
+	case SkillBonusFeatureType:
+		return "skill_bonus"
+	case SkillPointBonusFeatureType:
+		return "skill_point_bonus"
+	case SpellBonusFeatureType:
+		return "spell_bonus"
+	case SpellPointBonusFeatureType:
+		return "spell_point_bonus"
+	case WeaponBonusFeatureType:
+		return "weapon_bonus"
+	case WeaponDRDivisorBonusFeatureType:
+		return "weapon_dr_divisor_bonus"
+	case CostReductionFeatureType:
+		return "cost_reduction"
+	case ContainedWeightReductionFeatureType:
+		return "contained_weight_reduction"
+	default:
+		return FeatureType(0).Key()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum FeatureType) String() string {
-	return featureTypeData[enum.EnsureValid()].string
-}
-
-// ExtractFeatureType extracts the value from a string.
-func ExtractFeatureType(str string) FeatureType {
-	for i, one := range featureTypeData {
-		if strings.EqualFold(one.key, str) {
-			return FeatureType(i)
-		}
+	switch enum {
+	case AttributeBonusFeatureType:
+		return i18n.Text("Gives an attribute modifier of")
+	case ConditionalModifierFeatureType:
+		return i18n.Text("Gives a conditional modifier of")
+	case DRBonusFeatureType:
+		return i18n.Text("Gives a DR bonus of")
+	case ReactionBonusFeatureType:
+		return i18n.Text("Gives a reaction modifier of")
+	case SkillBonusFeatureType:
+		return i18n.Text("Gives a skill level modifier of")
+	case SkillPointBonusFeatureType:
+		return i18n.Text("Gives a skill point modifier of")
+	case SpellBonusFeatureType:
+		return i18n.Text("Gives a spell level modifier of")
+	case SpellPointBonusFeatureType:
+		return i18n.Text("Gives a spell point modifier of")
+	case WeaponBonusFeatureType:
+		return i18n.Text("Gives a weapon damage modifier of")
+	case WeaponDRDivisorBonusFeatureType:
+		return i18n.Text("Gives a weapon DR divisor modifier of")
+	case CostReductionFeatureType:
+		return i18n.Text("Reduces the attribute cost of")
+	case ContainedWeightReductionFeatureType:
+		return i18n.Text("Reduces the contained weight by")
+	default:
+		return FeatureType(0).String()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -147,4 +136,14 @@ func (enum FeatureType) MarshalText() (text []byte, err error) {
 func (enum *FeatureType) UnmarshalText(text []byte) error {
 	*enum = ExtractFeatureType(string(text))
 	return nil
+}
+
+// ExtractFeatureType extracts the value from a string.
+func ExtractFeatureType(str string) FeatureType {
+	for _, enum := range AllFeatureType {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+	}
+	return 0
 }

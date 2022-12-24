@@ -32,56 +32,17 @@ const (
 	LastAttributeType = PoolSeparatorAttributeType
 )
 
-var (
-	// AllAttributeType holds all possible values.
-	AllAttributeType = []AttributeType{
-		IntegerAttributeType,
-		IntegerRefAttributeType,
-		DecimalAttributeType,
-		DecimalRefAttributeType,
-		PoolAttributeType,
-		PrimarySeparatorAttributeType,
-		SecondarySeparatorAttributeType,
-		PoolSeparatorAttributeType,
-	}
-	attributeTypeData = []struct {
-		key    string
-		string string
-	}{
-		{
-			key:    "integer",
-			string: i18n.Text("Integer"),
-		},
-		{
-			key:    "integer_ref",
-			string: i18n.Text("Integer (Display Only)"),
-		},
-		{
-			key:    "decimal",
-			string: i18n.Text("Decimal"),
-		},
-		{
-			key:    "decimal_ref",
-			string: i18n.Text("Decimal (Display Only)"),
-		},
-		{
-			key:    "pool",
-			string: i18n.Text("Pool"),
-		},
-		{
-			key:    "primary_separator",
-			string: i18n.Text("Primary Separator"),
-		},
-		{
-			key:    "secondary_separator",
-			string: i18n.Text("Secondary Separator"),
-		},
-		{
-			key:    "pool_separator",
-			string: i18n.Text("Pool Separator"),
-		},
-	}
-)
+// AllAttributeType holds all possible values.
+var AllAttributeType = []AttributeType{
+	IntegerAttributeType,
+	IntegerRefAttributeType,
+	DecimalAttributeType,
+	DecimalRefAttributeType,
+	PoolAttributeType,
+	PrimarySeparatorAttributeType,
+	SecondarySeparatorAttributeType,
+	PoolSeparatorAttributeType,
+}
 
 // AttributeType holds the type of an attribute definition.
 type AttributeType byte
@@ -96,22 +57,50 @@ func (enum AttributeType) EnsureValid() AttributeType {
 
 // Key returns the key used in serialization.
 func (enum AttributeType) Key() string {
-	return attributeTypeData[enum.EnsureValid()].key
+	switch enum {
+	case IntegerAttributeType:
+		return "integer"
+	case IntegerRefAttributeType:
+		return "integer_ref"
+	case DecimalAttributeType:
+		return "decimal"
+	case DecimalRefAttributeType:
+		return "decimal_ref"
+	case PoolAttributeType:
+		return "pool"
+	case PrimarySeparatorAttributeType:
+		return "primary_separator"
+	case SecondarySeparatorAttributeType:
+		return "secondary_separator"
+	case PoolSeparatorAttributeType:
+		return "pool_separator"
+	default:
+		return AttributeType(0).Key()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum AttributeType) String() string {
-	return attributeTypeData[enum.EnsureValid()].string
-}
-
-// ExtractAttributeType extracts the value from a string.
-func ExtractAttributeType(str string) AttributeType {
-	for i, one := range attributeTypeData {
-		if strings.EqualFold(one.key, str) {
-			return AttributeType(i)
-		}
+	switch enum {
+	case IntegerAttributeType:
+		return i18n.Text("Integer")
+	case IntegerRefAttributeType:
+		return i18n.Text("Integer (Display Only)")
+	case DecimalAttributeType:
+		return i18n.Text("Decimal")
+	case DecimalRefAttributeType:
+		return i18n.Text("Decimal (Display Only)")
+	case PoolAttributeType:
+		return i18n.Text("Pool")
+	case PrimarySeparatorAttributeType:
+		return i18n.Text("Primary Separator")
+	case SecondarySeparatorAttributeType:
+		return i18n.Text("Secondary Separator")
+	case PoolSeparatorAttributeType:
+		return i18n.Text("Pool Separator")
+	default:
+		return AttributeType(0).String()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -123,4 +112,14 @@ func (enum AttributeType) MarshalText() (text []byte, err error) {
 func (enum *AttributeType) UnmarshalText(text []byte) error {
 	*enum = ExtractAttributeType(string(text))
 	return nil
+}
+
+// ExtractAttributeType extracts the value from a string.
+func ExtractAttributeType(str string) AttributeType {
+	for _, enum := range AllAttributeType {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+	}
+	return 0
 }

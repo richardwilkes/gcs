@@ -165,6 +165,9 @@ func (p *notesProvider) Deserialize(data []byte) error {
 
 func (p *notesProvider) ContextMenuItems() []ContextMenuItem {
 	var list []ContextMenuItem
-	list = append(list, NoteExtraContextMenuItems...)
-	return append(list, DefaultContextMenuItems...)
+	list = append(list,
+		ContextMenuItem{i18n.Text("New Note"), NewNoteItemID},
+		ContextMenuItem{i18n.Text("New Note Container"), NewNoteContainerItemID},
+	)
+	return AppendDefaultContextMenuItems(list)
 }

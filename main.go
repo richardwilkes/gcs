@@ -17,7 +17,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/early"
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/dbg"
-	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox/atexit"
 	"github.com/richardwilkes/toolbox/cmdline"
@@ -28,9 +27,10 @@ import (
 
 func main() {
 	early.Configure()
+	ux.LoadLanguageSetting()
 	unison.AttachConsole()
 	cl := cmdline.New(true)
-	cl.Description = ux.AppDescription
+	cl.Description = ux.AppDescription()
 	cl.UsageTrailer = fmt.Sprintf(i18n.Text(`   Settings path: "%s"
 Translations dir: "%s"`), model.SettingsPath(), i18n.Dir)
 	var textTmplPath string
@@ -43,9 +43,6 @@ Translations dir: "%s"`), model.SettingsPath(), i18n.Dir)
 	fileList := jotrotate.ParseAndSetup(cl)
 	ux.RegisterKnownFileTypes()
 	model.GlobalSettings() // Here to force early initialization
-	unison.DefaultScrollPanelTheme.MouseWheelMultiplier = func() float32 {
-		return fxp.As[float32](model.GlobalSettings().General.ScrollWheelMultiplier)
-	}
 	switch {
 	case convertFiles:
 		if err := model.Convert(fileList...); err != nil {

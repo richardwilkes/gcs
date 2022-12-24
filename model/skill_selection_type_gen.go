@@ -27,31 +27,12 @@ const (
 	LastSkillSelectionType = WeaponsWithNameSkillSelectionType
 )
 
-var (
-	// AllSkillSelectionType holds all possible values.
-	AllSkillSelectionType = []SkillSelectionType{
-		NameSkillSelectionType,
-		ThisWeaponSkillSelectionType,
-		WeaponsWithNameSkillSelectionType,
-	}
-	skillSelectionTypeData = []struct {
-		key    string
-		string string
-	}{
-		{
-			key:    "skills_with_name",
-			string: i18n.Text("to skills whose name"),
-		},
-		{
-			key:    "this_weapon",
-			string: i18n.Text("to this weapon"),
-		},
-		{
-			key:    "weapons_with_name",
-			string: i18n.Text("to weapons whose name"),
-		},
-	}
-)
+// AllSkillSelectionType holds all possible values.
+var AllSkillSelectionType = []SkillSelectionType{
+	NameSkillSelectionType,
+	ThisWeaponSkillSelectionType,
+	WeaponsWithNameSkillSelectionType,
+}
 
 // SkillSelectionType holds the type of a selection.
 type SkillSelectionType byte
@@ -66,22 +47,30 @@ func (enum SkillSelectionType) EnsureValid() SkillSelectionType {
 
 // Key returns the key used in serialization.
 func (enum SkillSelectionType) Key() string {
-	return skillSelectionTypeData[enum.EnsureValid()].key
+	switch enum {
+	case NameSkillSelectionType:
+		return "skills_with_name"
+	case ThisWeaponSkillSelectionType:
+		return "this_weapon"
+	case WeaponsWithNameSkillSelectionType:
+		return "weapons_with_name"
+	default:
+		return SkillSelectionType(0).Key()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum SkillSelectionType) String() string {
-	return skillSelectionTypeData[enum.EnsureValid()].string
-}
-
-// ExtractSkillSelectionType extracts the value from a string.
-func ExtractSkillSelectionType(str string) SkillSelectionType {
-	for i, one := range skillSelectionTypeData {
-		if strings.EqualFold(one.key, str) {
-			return SkillSelectionType(i)
-		}
+	switch enum {
+	case NameSkillSelectionType:
+		return i18n.Text("to skills whose name")
+	case ThisWeaponSkillSelectionType:
+		return i18n.Text("to this weapon")
+	case WeaponsWithNameSkillSelectionType:
+		return i18n.Text("to weapons whose name")
+	default:
+		return SkillSelectionType(0).String()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -93,4 +82,14 @@ func (enum SkillSelectionType) MarshalText() (text []byte, err error) {
 func (enum *SkillSelectionType) UnmarshalText(text []byte) error {
 	*enum = ExtractSkillSelectionType(string(text))
 	return nil
+}
+
+// ExtractSkillSelectionType extracts the value from a string.
+func ExtractSkillSelectionType(str string) SkillSelectionType {
+	for _, enum := range AllSkillSelectionType {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+	}
+	return 0
 }

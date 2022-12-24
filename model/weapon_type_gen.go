@@ -26,29 +26,11 @@ const (
 	LastWeaponType = RangedWeaponType
 )
 
-var (
-	// AllWeaponType holds all possible values.
-	AllWeaponType = []WeaponType{
-		MeleeWeaponType,
-		RangedWeaponType,
-	}
-	weaponTypeData = []struct {
-		key    string
-		string string
-		alt    string
-	}{
-		{
-			key:    "melee_weapon",
-			string: i18n.Text("Melee Weapon"),
-			alt:    i18n.Text("Melee Weapons"),
-		},
-		{
-			key:    "ranged_weapon",
-			string: i18n.Text("Ranged Weapon"),
-			alt:    i18n.Text("Ranged Weapons"),
-		},
-	}
-)
+// AllWeaponType holds all possible values.
+var AllWeaponType = []WeaponType{
+	MeleeWeaponType,
+	RangedWeaponType,
+}
 
 // WeaponType holds the type of an weapon definition.
 type WeaponType byte
@@ -63,27 +45,38 @@ func (enum WeaponType) EnsureValid() WeaponType {
 
 // Key returns the key used in serialization.
 func (enum WeaponType) Key() string {
-	return weaponTypeData[enum.EnsureValid()].key
+	switch enum {
+	case MeleeWeaponType:
+		return "melee_weapon"
+	case RangedWeaponType:
+		return "ranged_weapon"
+	default:
+		return WeaponType(0).Key()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum WeaponType) String() string {
-	return weaponTypeData[enum.EnsureValid()].string
+	switch enum {
+	case MeleeWeaponType:
+		return i18n.Text("Melee Weapon")
+	case RangedWeaponType:
+		return i18n.Text("Ranged Weapon")
+	default:
+		return WeaponType(0).String()
+	}
 }
 
 // AltString returns the alternate string.
 func (enum WeaponType) AltString() string {
-	return weaponTypeData[enum.EnsureValid()].alt
-}
-
-// ExtractWeaponType extracts the value from a string.
-func ExtractWeaponType(str string) WeaponType {
-	for i, one := range weaponTypeData {
-		if strings.EqualFold(one.key, str) {
-			return WeaponType(i)
-		}
+	switch enum {
+	case MeleeWeaponType:
+		return i18n.Text("Melee Weapons")
+	case RangedWeaponType:
+		return i18n.Text("Ranged Weapons")
+	default:
+		return WeaponType(0).AltString()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -95,4 +88,14 @@ func (enum WeaponType) MarshalText() (text []byte, err error) {
 func (enum *WeaponType) UnmarshalText(text []byte) error {
 	*enum = ExtractWeaponType(string(text))
 	return nil
+}
+
+// ExtractWeaponType extracts the value from a string.
+func ExtractWeaponType(str string) WeaponType {
+	for _, enum := range AllWeaponType {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+	}
+	return 0
 }

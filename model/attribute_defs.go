@@ -84,13 +84,13 @@ func NewAttributeDefsFromFile(fileSystem fs.FS, filePath string) (*AttributeDefs
 		OldestKey *AttributeDefs `json:"attribute_settings"`
 	}
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(InvalidFileDataMsg, err)
+		return nil, errs.NewWithCause(invalidFileDataMsg(), err)
 	}
 	if data.Type == "" && data.Version == 2 { // for some older files
 		data.Type = attributeSettingsListTypeKey
 	}
 	if data.Type != attributeSettingsListTypeKey {
-		return nil, errs.New(UnexpectedFileDataMsg)
+		return nil, errs.New(unexpectedFileDataMsg())
 	}
 	if err := CheckVersion(data.Version); err != nil {
 		return nil, err

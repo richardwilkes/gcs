@@ -29,7 +29,7 @@ func EditEquipmentModifier(owner Rebuildable, modifier *model.EquipmentModifier)
 func initEquipmentModifierEditor(e *editor[*model.EquipmentModifier, *model.EquipmentModifierEditData], content *unison.Panel) func() {
 	addNameLabelAndField(content, &e.editorData.Name)
 	if !e.target.Container() {
-		addLabelAndStringField(content, i18n.Text("Tech Level"), model.TechLevelInfo, &e.editorData.TechLevel)
+		addLabelAndStringField(content, i18n.Text("Tech Level"), techLevelInfo(), &e.editorData.TechLevel)
 	}
 	addNotesLabelAndField(content, &e.editorData.LocalNotes)
 	addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)

@@ -17,6 +17,7 @@ import (
 	"io/fs"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
@@ -49,8 +50,43 @@ var (
 )
 
 var (
-	// CurrentColors holds the current theme.
-	CurrentColors = []*ThemedColor{
+	colorsOnce    sync.Once
+	currentColors []*ThemedColor
+	factoryColors []*ThemedColor
+)
+
+// ThemedColor holds a themed color.
+type ThemedColor struct {
+	ID    string
+	Title string
+	Color *unison.ThemeColor
+}
+
+// Colors holds a set of themed colors.
+type Colors struct {
+	data map[string]*unison.ThemeColor // Just here for serialization
+}
+
+type colorsData struct {
+	Type    string `json:"type"`
+	Version int    `json:"version"`
+	Colors
+}
+
+// CurrentColors returns the current theme.
+func CurrentColors() []*ThemedColor {
+	colorsOnce.Do(initColors)
+	return currentColors
+}
+
+// FactoryColors returns the original theme before any modifications.
+func FactoryColors() []*ThemedColor {
+	colorsOnce.Do(initColors)
+	return factoryColors
+}
+
+func initColors() {
+	currentColors = []*ThemedColor{
 		{ID: "background", Title: i18n.Text("Background"), Color: unison.BackgroundColor},
 		{ID: "on_background", Title: i18n.Text("On Background"), Color: unison.OnBackgroundColor},
 		{ID: "content", Title: i18n.Text("Content"), Color: unison.ContentColor},
@@ -110,14 +146,9 @@ var (
 		{ID: "pdf_marker", Title: i18n.Text("PDF Marker Highlight"), Color: PDFMarkerHighlightColor},
 		{ID: "accent", Title: i18n.Text("Accent"), Color: unison.AccentColor},
 	}
-	// FactoryColors holds the original theme before any modifications.
-	FactoryColors []*ThemedColor
-)
-
-func init() {
-	FactoryColors = make([]*ThemedColor, len(CurrentColors))
-	for i, c := range CurrentColors {
-		FactoryColors[i] = &ThemedColor{
+	factoryColors = make([]*ThemedColor, len(currentColors))
+	for i, c := range currentColors {
+		factoryColors[i] = &ThemedColor{
 			ID:    c.ID,
 			Title: c.Title,
 			Color: &unison.ThemeColor{
@@ -126,24 +157,6 @@ func init() {
 			},
 		}
 	}
-}
-
-// ThemedColor holds a themed color.
-type ThemedColor struct {
-	ID    string
-	Title string
-	Color *unison.ThemeColor
-}
-
-// Colors holds a set of themed colors.
-type Colors struct {
-	data map[string]*unison.ThemeColor // Just here for serialization
-}
-
-type colorsData struct {
-	Type    string `json:"type"`
-	Version int    `json:"version"`
-	Colors
 }
 
 // NewColorsFromFS creates a new set of colors from a file. Any missing values will be filled in with defaults.
@@ -165,7 +178,7 @@ func NewColorsFromFS(fileSystem fs.FS, filePath string) (*Colors, error) {
 	default:
 	}
 	if current.Type != colorsTypeKey {
-		return nil, errs.New(UnexpectedFileDataMsg)
+		return nil, errs.New(unexpectedFileDataMsg())
 	}
 	if err := CheckVersion(current.Version); err != nil {
 		return nil, err
@@ -184,8 +197,8 @@ func (c *Colors) Save(filePath string) error {
 
 // MarshalJSON implements json.Marshaler.
 func (c *Colors) MarshalJSON() ([]byte, error) {
-	c.data = make(map[string]*unison.ThemeColor, len(CurrentColors))
-	for _, one := range CurrentColors {
+	c.data = make(map[string]*unison.ThemeColor, len(CurrentColors()))
+	for _, one := range CurrentColors() {
 		c.data[one.ID] = one.Color
 	}
 	return json.Marshal(&c.data)
@@ -193,7 +206,7 @@ func (c *Colors) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (c *Colors) UnmarshalJSON(data []byte) error {
-	c.data = make(map[string]*unison.ThemeColor, len(CurrentColors))
+	c.data = make(map[string]*unison.ThemeColor, len(CurrentColors()))
 	var err error
 	toolbox.CallWithHandler(func() {
 		err = json.Unmarshal(data, &c.data)
@@ -205,8 +218,8 @@ func (c *Colors) UnmarshalJSON(data []byte) error {
 		if err = json.Unmarshal(data, &old); err != nil {
 			return errs.New("invalid color data")
 		}
-		c.data = make(map[string]*unison.ThemeColor, len(CurrentColors))
-		for _, fc := range CurrentColors {
+		c.data = make(map[string]*unison.ThemeColor, len(CurrentColors()))
+		for _, fc := range CurrentColors() {
 			local := *fc.Color
 			c.data[fc.ID] = &local
 			if cc, ok := old[fc.ID]; ok {
@@ -232,9 +245,9 @@ func (c *Colors) UnmarshalJSON(data []byte) error {
 		}
 	}
 	if c.data == nil {
-		c.data = make(map[string]*unison.ThemeColor, len(CurrentColors))
+		c.data = make(map[string]*unison.ThemeColor, len(CurrentColors()))
 	}
-	for _, one := range FactoryColors {
+	for _, one := range FactoryColors() {
 		if _, ok := c.data[one.ID]; !ok {
 			clr := *one.Color
 			c.data[one.ID] = &clr
@@ -245,7 +258,7 @@ func (c *Colors) UnmarshalJSON(data []byte) error {
 
 // MakeCurrent applies these colors to the current theme color set and updates all windows.
 func (c *Colors) MakeCurrent() {
-	for _, one := range CurrentColors {
+	for _, one := range CurrentColors() {
 		if v, ok := c.data[one.ID]; ok {
 			*one.Color = *v
 		}
@@ -255,14 +268,14 @@ func (c *Colors) MakeCurrent() {
 
 // Reset to factory defaults.
 func (c *Colors) Reset() {
-	for _, one := range FactoryColors {
+	for _, one := range FactoryColors() {
 		*c.data[one.ID] = *one.Color
 	}
 }
 
 // ResetOne resets one color by ID to factory defaults.
 func (c *Colors) ResetOne(id string) {
-	for _, v := range FactoryColors {
+	for _, v := range FactoryColors() {
 		if v.ID == id {
 			*c.data[id] = *v.Color
 			break

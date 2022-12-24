@@ -27,41 +27,14 @@ const (
 	LastDifficulty = Wildcard
 )
 
-var (
-	// AllDifficulty holds all possible values.
-	AllDifficulty = []Difficulty{
-		Easy,
-		Average,
-		Hard,
-		VeryHard,
-		Wildcard,
-	}
-	difficultyData = []struct {
-		key    string
-		string string
-	}{
-		{
-			key:    "e",
-			string: "E",
-		},
-		{
-			key:    "a",
-			string: "A",
-		},
-		{
-			key:    "h",
-			string: "H",
-		},
-		{
-			key:    "vh",
-			string: "VH",
-		},
-		{
-			key:    "w",
-			string: "W",
-		},
-	}
-)
+// AllDifficulty holds all possible values.
+var AllDifficulty = []Difficulty{
+	Easy,
+	Average,
+	Hard,
+	VeryHard,
+	Wildcard,
+}
 
 // Difficulty holds the difficulty level of a skill.
 type Difficulty byte
@@ -76,22 +49,38 @@ func (enum Difficulty) EnsureValid() Difficulty {
 
 // Key returns the key used in serialization.
 func (enum Difficulty) Key() string {
-	return difficultyData[enum.EnsureValid()].key
+	switch enum {
+	case Easy:
+		return "e"
+	case Average:
+		return "a"
+	case Hard:
+		return "h"
+	case VeryHard:
+		return "vh"
+	case Wildcard:
+		return "w"
+	default:
+		return Difficulty(0).Key()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum Difficulty) String() string {
-	return difficultyData[enum.EnsureValid()].string
-}
-
-// ExtractDifficulty extracts the value from a string.
-func ExtractDifficulty(str string) Difficulty {
-	for i, one := range difficultyData {
-		if strings.EqualFold(one.key, str) {
-			return Difficulty(i)
-		}
+	switch enum {
+	case Easy:
+		return "E"
+	case Average:
+		return "A"
+	case Hard:
+		return "H"
+	case VeryHard:
+		return "VH"
+	case Wildcard:
+		return "W"
+	default:
+		return Difficulty(0).String()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -103,4 +92,14 @@ func (enum Difficulty) MarshalText() (text []byte, err error) {
 func (enum *Difficulty) UnmarshalText(text []byte) error {
 	*enum = ExtractDifficulty(string(text))
 	return nil
+}
+
+// ExtractDifficulty extracts the value from a string.
+func ExtractDifficulty(str string) Difficulty {
+	for _, enum := range AllDifficulty {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+	}
+	return 0
 }

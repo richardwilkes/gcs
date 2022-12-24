@@ -37,7 +37,7 @@ func platformPackage() (err error) {
 	}
 	rs := &winres.ResourceSet{}
 	rs.SetManifest(winres.AppManifest{
-		Description:    ux.AppDescription,
+		Description:    ux.AppDescription(),
 		Compatibility:  winres.Win7AndAbove,
 		ExecutionLevel: winres.AsInvoker,
 		DPIAwareness:   winres.DPIAware,
@@ -138,7 +138,7 @@ func addWindowsVersion(rs *winres.ResourceSet) error {
 	if err := vi.Set(version.LangDefault, version.CompanyName, cmdline.CopyrightHolder); err != nil {
 		return errs.Wrap(err)
 	}
-	if err := vi.Set(version.LangDefault, version.FileDescription, ux.AppDescription); err != nil {
+	if err := vi.Set(version.LangDefault, version.FileDescription, ux.AppDescription()); err != nil {
 		return errs.Wrap(err)
 	}
 	if err := vi.Set(version.LangDefault, version.FileVersion, shortAppVersion()); err != nil {

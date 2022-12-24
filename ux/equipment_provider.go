@@ -342,9 +342,15 @@ func (p *equipmentProvider) Deserialize(data []byte) error {
 func (p *equipmentProvider) ContextMenuItems() []ContextMenuItem {
 	var list []ContextMenuItem
 	if p.carried {
-		list = append(list, CarriedEquipmentExtraContextMenuItems...)
+		list = append(list,
+			ContextMenuItem{i18n.Text("New Carried Equipment"), NewCarriedEquipmentItemID},
+			ContextMenuItem{i18n.Text("New Carried Equipment Container"), NewCarriedEquipmentContainerItemID},
+		)
 	} else {
-		list = append(list, OtherEquipmentExtraContextMenuItems...)
+		list = append(list,
+			ContextMenuItem{i18n.Text("New Other Equipment"), NewOtherEquipmentItemID},
+			ContextMenuItem{i18n.Text("New Other Equipment Container"), NewOtherEquipmentContainerItemID},
+		)
 	}
-	return append(list, DefaultContextMenuItems...)
+	return AppendDefaultContextMenuItems(list)
 }

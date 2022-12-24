@@ -1,6 +1,5 @@
 {{- $info := .}}
 {{- $name := toIdentifier .Name}}
-{{- $pname := .LocalType}}
 /*
  * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
  *
@@ -30,34 +29,12 @@ const (
 	Last{{$name}} = {{$info.IDFor (last .Values)}}
 )
 
-var (
-    {{wrapComment (printf "All%s holds all possible values." $name) 116}}
-    All{{$name}} = []{{$name}}{
-        {{- range .Values}}
-        {{$info.IDFor .}},
-        {{- end}}
-    }
-    {{$pname}} = []struct {
-    	key string
-    	{{- if .HasOldKeys}}
-    	oldKeys []string
-    	{{- end}}
-	    string string
-        {{- if .HasAlt}}
-	    alt string
-	    {{- end}}
-    }{
-        {{- range .Values}}
-        {
-            key: "{{.Key}}",
-            {{- if .OldKeys}}
-            oldKeys: []string{ {{join .OldKeys}} },{{end}}
-            string: {{if not .NoLocalize}}i18n.Text({{end}}{{printf "%q" .StringValue}}{{if not .NoLocalize}}){{end}},
-            {{if .Alt}}alt: i18n.Text({{printf "%q" .Alt}}),{{end}}
-        },
-        {{- end}}
-    }
-)
+{{wrapComment (printf "All%s holds all possible values." $name) 116}}
+var All{{$name}} = []{{$name}}{
+    {{- range .Values}}
+    {{$info.IDFor .}},
+    {{- end}}
+}
 
 {{wrapComment (printf "%s %s." $name .Desc) 120}}
 type {{$name}} byte
@@ -72,33 +49,54 @@ func (enum {{$name}}) EnsureValid() {{$name}} {
 
 // Key returns the key used in serialization.
 func (enum {{$name}}) Key() string {
-	return {{$pname}}[enum.EnsureValid()].key
+    switch enum {
+    {{- range .Values}}
+    case {{$info.IDFor .}}:
+        return "{{.Key}}"
+    {{- end}}
+    default:
+        return {{$name}}(0).Key()
+    }
 }
+
+{{if .HasOldKeys -}}
+func (enum {{$name}}) oldKeys() []string {
+    switch enum {
+    {{- range .Values}}
+    case {{$info.IDFor .}}:
+        return {{if .OldKeys}}[]string{ {{join .OldKeys}} }{{else}}nil{{end}}
+    {{- end}}
+    default:
+        return {{$name}}(0).oldKeys()
+    }
+}
+{{- end}}
 
 // String implements fmt.Stringer.
 func (enum {{$name}}) String() string {
-	return {{$pname}}[enum.EnsureValid()].string
+    switch enum {
+    {{- range .Values}}
+    case {{$info.IDFor .}}:
+        return {{if not .NoLocalize}}i18n.Text({{end}}{{printf "%q" .StringValue}}{{if not .NoLocalize}}){{end}}
+    {{- end}}
+    default:
+        return {{$name}}(0).String()
+    }
 }
 
-{{- if .HasAlt}}
+{{if .HasAlt -}}
 // AltString returns the alternate string.
 func (enum {{$name}}) AltString() string {
-	return {{$pname}}[enum.EnsureValid()].alt
-}
-{{end}}
-
-{{wrapComment (printf "Extract%s extracts the value from a string." $name) 120}}
-func Extract{{$name}}(str string) {{$name}} {
-{{- if and (eq .Name "size") (eq .Pkg "model/paper")}}
-	str = strings.TrimPrefix(strings.TrimPrefix(str, "na-"), "iso-") // For older files that had the Java prefixes
-{{- end}}
-    for i, one := range {{$pname}} {
-        if strings.EqualFold(one.key, str){{if .HasOldKeys}} || txt.CaselessSliceContains(one.oldKeys, str){{end}} {
-            return {{$name}}(i)
-        }
+    switch enum {
+    {{- range .Values}}
+    case {{$info.IDFor .}}:
+        return {{if .Alt}}i18n.Text({{printf "%q" .Alt}}){{else}}""{{end}}
+    {{- end}}
+    default:
+        return {{$name}}(0).AltString()
     }
-    return 0
 }
+{{- end}}
 
 // MarshalText implements the encoding.TextMarshaler interface.
 func (enum {{$name}}) MarshalText() (text []byte, err error) {
@@ -109,4 +107,17 @@ func (enum {{$name}}) MarshalText() (text []byte, err error) {
 func (enum *{{$name}}) UnmarshalText(text []byte) error {
     *enum = Extract{{$name}}(string(text))
     return nil
+}
+
+{{wrapComment (printf "Extract%s extracts the value from a string." $name) 120}}
+func Extract{{$name}}(str string) {{$name}} {
+{{- if and (eq .Name "size") (eq .Pkg "model/paper")}}
+	str = strings.TrimPrefix(strings.TrimPrefix(str, "na-"), "iso-") // For older files that had the Java prefixes
+{{- end}}
+    for _, enum := range All{{$name}} {
+        if strings.EqualFold(enum.Key(), str){{if .HasOldKeys}} || txt.CaselessSliceContains(enum.oldKeys(), str){{end}} {
+            return enum
+        }
+    }
+    return 0
 }

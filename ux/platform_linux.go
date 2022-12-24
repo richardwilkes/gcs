@@ -73,7 +73,7 @@ MimeType=%s;
 Categories=Game;Utility;RolePlaying;
 Keywords=gurps;character;sheet;rpg;roleplaying;utility;
 Terminal=false
-`, cmdline.AppName, AppDescription, exePath, cmdline.AppIdentifier, strings.Join(model.RegisteredMimeTypes(), ";"))
+`, cmdline.AppName, AppDescription(), exePath, cmdline.AppIdentifier, strings.Join(model.RegisteredMimeTypes(), ";"))
 	if err := os.WriteFile(filepath.Join(dir, cmdline.AppIdentifier+".desktop"), []byte(data), 0o640); err != nil {
 		return errs.Wrap(err)
 	}

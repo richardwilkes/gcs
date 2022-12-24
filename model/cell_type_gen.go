@@ -29,41 +29,14 @@ const (
 	LastCellType = MarkdownCellType
 )
 
-var (
-	// AllCellType holds all possible values.
-	AllCellType = []CellType{
-		TextCellType,
-		TagsCellType,
-		ToggleCellType,
-		PageRefCellType,
-		MarkdownCellType,
-	}
-	cellTypeData = []struct {
-		key    string
-		string string
-	}{
-		{
-			key:    "text",
-			string: i18n.Text("Text"),
-		},
-		{
-			key:    "tags",
-			string: i18n.Text("Tags"),
-		},
-		{
-			key:    "toggle",
-			string: i18n.Text("Toggle"),
-		},
-		{
-			key:    "page_ref",
-			string: i18n.Text("Page Ref"),
-		},
-		{
-			key:    "markdown",
-			string: i18n.Text("Markdown"),
-		},
-	}
-)
+// AllCellType holds all possible values.
+var AllCellType = []CellType{
+	TextCellType,
+	TagsCellType,
+	ToggleCellType,
+	PageRefCellType,
+	MarkdownCellType,
+}
 
 // CellType holds the type of table cell.
 type CellType byte
@@ -78,22 +51,38 @@ func (enum CellType) EnsureValid() CellType {
 
 // Key returns the key used in serialization.
 func (enum CellType) Key() string {
-	return cellTypeData[enum.EnsureValid()].key
+	switch enum {
+	case TextCellType:
+		return "text"
+	case TagsCellType:
+		return "tags"
+	case ToggleCellType:
+		return "toggle"
+	case PageRefCellType:
+		return "page_ref"
+	case MarkdownCellType:
+		return "markdown"
+	default:
+		return CellType(0).Key()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum CellType) String() string {
-	return cellTypeData[enum.EnsureValid()].string
-}
-
-// ExtractCellType extracts the value from a string.
-func ExtractCellType(str string) CellType {
-	for i, one := range cellTypeData {
-		if strings.EqualFold(one.key, str) {
-			return CellType(i)
-		}
+	switch enum {
+	case TextCellType:
+		return i18n.Text("Text")
+	case TagsCellType:
+		return i18n.Text("Tags")
+	case ToggleCellType:
+		return i18n.Text("Toggle")
+	case PageRefCellType:
+		return i18n.Text("Page Ref")
+	case MarkdownCellType:
+		return i18n.Text("Markdown")
+	default:
+		return CellType(0).String()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -105,4 +94,14 @@ func (enum CellType) MarshalText() (text []byte, err error) {
 func (enum *CellType) UnmarshalText(text []byte) error {
 	*enum = ExtractCellType(string(text))
 	return nil
+}
+
+// ExtractCellType extracts the value from a string.
+func ExtractCellType(str string) CellType {
+	for _, enum := range AllCellType {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+	}
+	return 0
 }

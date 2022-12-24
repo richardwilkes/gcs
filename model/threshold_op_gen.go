@@ -28,41 +28,13 @@ const (
 	LastThresholdOp = HalveSTThresholdOp
 )
 
-var (
-	// AllThresholdOp holds all possible values.
-	AllThresholdOp = []ThresholdOp{
-		UnknownThresholdOp,
-		HalveMoveThresholdOp,
-		HalveDodgeThresholdOp,
-		HalveSTThresholdOp,
-	}
-	thresholdOpData = []struct {
-		key    string
-		string string
-		alt    string
-	}{
-		{
-			key:    "unknown",
-			string: i18n.Text("Unknown"),
-			alt:    i18n.Text("Unknown"),
-		},
-		{
-			key:    "halve_move",
-			string: i18n.Text("Halve Move"),
-			alt:    i18n.Text("Halve Move (round up)"),
-		},
-		{
-			key:    "halve_dodge",
-			string: i18n.Text("Halve Dodge"),
-			alt:    i18n.Text("Halve Dodge (round up)"),
-		},
-		{
-			key:    "halve_st",
-			string: i18n.Text("Halve Strength"),
-			alt:    i18n.Text("Halve Strength (round up; does not affect HP and damage)"),
-		},
-	}
-)
+// AllThresholdOp holds all possible values.
+var AllThresholdOp = []ThresholdOp{
+	UnknownThresholdOp,
+	HalveMoveThresholdOp,
+	HalveDodgeThresholdOp,
+	HalveSTThresholdOp,
+}
 
 // ThresholdOp holds an operation to apply when a pool threshold is hit.
 type ThresholdOp byte
@@ -77,27 +49,50 @@ func (enum ThresholdOp) EnsureValid() ThresholdOp {
 
 // Key returns the key used in serialization.
 func (enum ThresholdOp) Key() string {
-	return thresholdOpData[enum.EnsureValid()].key
+	switch enum {
+	case UnknownThresholdOp:
+		return "unknown"
+	case HalveMoveThresholdOp:
+		return "halve_move"
+	case HalveDodgeThresholdOp:
+		return "halve_dodge"
+	case HalveSTThresholdOp:
+		return "halve_st"
+	default:
+		return ThresholdOp(0).Key()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum ThresholdOp) String() string {
-	return thresholdOpData[enum.EnsureValid()].string
+	switch enum {
+	case UnknownThresholdOp:
+		return i18n.Text("Unknown")
+	case HalveMoveThresholdOp:
+		return i18n.Text("Halve Move")
+	case HalveDodgeThresholdOp:
+		return i18n.Text("Halve Dodge")
+	case HalveSTThresholdOp:
+		return i18n.Text("Halve Strength")
+	default:
+		return ThresholdOp(0).String()
+	}
 }
 
 // AltString returns the alternate string.
 func (enum ThresholdOp) AltString() string {
-	return thresholdOpData[enum.EnsureValid()].alt
-}
-
-// ExtractThresholdOp extracts the value from a string.
-func ExtractThresholdOp(str string) ThresholdOp {
-	for i, one := range thresholdOpData {
-		if strings.EqualFold(one.key, str) {
-			return ThresholdOp(i)
-		}
+	switch enum {
+	case UnknownThresholdOp:
+		return i18n.Text("Unknown")
+	case HalveMoveThresholdOp:
+		return i18n.Text("Halve Move (round up)")
+	case HalveDodgeThresholdOp:
+		return i18n.Text("Halve Dodge (round up)")
+	case HalveSTThresholdOp:
+		return i18n.Text("Halve Strength (round up; does not affect HP and damage)")
+	default:
+		return ThresholdOp(0).AltString()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -109,4 +104,14 @@ func (enum ThresholdOp) MarshalText() (text []byte, err error) {
 func (enum *ThresholdOp) UnmarshalText(text []byte) error {
 	*enum = ExtractThresholdOp(string(text))
 	return nil
+}
+
+// ExtractThresholdOp extracts the value from a string.
+func ExtractThresholdOp(str string) ThresholdOp {
+	for _, enum := range AllThresholdOp {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+	}
+	return 0
 }

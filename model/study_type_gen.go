@@ -28,36 +28,13 @@ const (
 	LastStudyType = IntensiveStudyType
 )
 
-var (
-	// AllStudyType holds all possible values.
-	AllStudyType = []StudyType{
-		SelfStudyType,
-		JobStudyType,
-		TeacherStudyType,
-		IntensiveStudyType,
-	}
-	studyTypeData = []struct {
-		key    string
-		string string
-	}{
-		{
-			key:    "self",
-			string: i18n.Text("Self-Taught"),
-		},
-		{
-			key:    "job",
-			string: i18n.Text("On-the-Job Training"),
-		},
-		{
-			key:    "teacher",
-			string: i18n.Text("Professional Teacher"),
-		},
-		{
-			key:    "intensive",
-			string: i18n.Text("Intensive Training"),
-		},
-	}
-)
+// AllStudyType holds all possible values.
+var AllStudyType = []StudyType{
+	SelfStudyType,
+	JobStudyType,
+	TeacherStudyType,
+	IntensiveStudyType,
+}
 
 // StudyType holds the type of study.
 type StudyType byte
@@ -72,22 +49,34 @@ func (enum StudyType) EnsureValid() StudyType {
 
 // Key returns the key used in serialization.
 func (enum StudyType) Key() string {
-	return studyTypeData[enum.EnsureValid()].key
+	switch enum {
+	case SelfStudyType:
+		return "self"
+	case JobStudyType:
+		return "job"
+	case TeacherStudyType:
+		return "teacher"
+	case IntensiveStudyType:
+		return "intensive"
+	default:
+		return StudyType(0).Key()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum StudyType) String() string {
-	return studyTypeData[enum.EnsureValid()].string
-}
-
-// ExtractStudyType extracts the value from a string.
-func ExtractStudyType(str string) StudyType {
-	for i, one := range studyTypeData {
-		if strings.EqualFold(one.key, str) {
-			return StudyType(i)
-		}
+	switch enum {
+	case SelfStudyType:
+		return i18n.Text("Self-Taught")
+	case JobStudyType:
+		return i18n.Text("On-the-Job Training")
+	case TeacherStudyType:
+		return i18n.Text("Professional Teacher")
+	case IntensiveStudyType:
+		return i18n.Text("Intensive Training")
+	default:
+		return StudyType(0).String()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -99,4 +88,14 @@ func (enum StudyType) MarshalText() (text []byte, err error) {
 func (enum *StudyType) UnmarshalText(text []byte) error {
 	*enum = ExtractStudyType(string(text))
 	return nil
+}
+
+// ExtractStudyType extracts the value from a string.
+func ExtractStudyType(str string) StudyType {
+	for _, enum := range AllStudyType {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+	}
+	return 0
 }

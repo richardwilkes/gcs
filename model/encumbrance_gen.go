@@ -29,41 +29,14 @@ const (
 	LastEncumbrance = ExtraHeavyEncumbrance
 )
 
-var (
-	// AllEncumbrance holds all possible values.
-	AllEncumbrance = []Encumbrance{
-		NoEncumbrance,
-		LightEncumbrance,
-		MediumEncumbrance,
-		HeavyEncumbrance,
-		ExtraHeavyEncumbrance,
-	}
-	encumbranceData = []struct {
-		key    string
-		string string
-	}{
-		{
-			key:    "none",
-			string: i18n.Text("None"),
-		},
-		{
-			key:    "light",
-			string: i18n.Text("Light"),
-		},
-		{
-			key:    "medium",
-			string: i18n.Text("Medium"),
-		},
-		{
-			key:    "heavy",
-			string: i18n.Text("Heavy"),
-		},
-		{
-			key:    "extra_heavy",
-			string: i18n.Text("X-Heavy"),
-		},
-	}
-)
+// AllEncumbrance holds all possible values.
+var AllEncumbrance = []Encumbrance{
+	NoEncumbrance,
+	LightEncumbrance,
+	MediumEncumbrance,
+	HeavyEncumbrance,
+	ExtraHeavyEncumbrance,
+}
 
 // Encumbrance holds the encumbrance level.
 type Encumbrance byte
@@ -78,22 +51,38 @@ func (enum Encumbrance) EnsureValid() Encumbrance {
 
 // Key returns the key used in serialization.
 func (enum Encumbrance) Key() string {
-	return encumbranceData[enum.EnsureValid()].key
+	switch enum {
+	case NoEncumbrance:
+		return "none"
+	case LightEncumbrance:
+		return "light"
+	case MediumEncumbrance:
+		return "medium"
+	case HeavyEncumbrance:
+		return "heavy"
+	case ExtraHeavyEncumbrance:
+		return "extra_heavy"
+	default:
+		return Encumbrance(0).Key()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum Encumbrance) String() string {
-	return encumbranceData[enum.EnsureValid()].string
-}
-
-// ExtractEncumbrance extracts the value from a string.
-func ExtractEncumbrance(str string) Encumbrance {
-	for i, one := range encumbranceData {
-		if strings.EqualFold(one.key, str) {
-			return Encumbrance(i)
-		}
+	switch enum {
+	case NoEncumbrance:
+		return i18n.Text("None")
+	case LightEncumbrance:
+		return i18n.Text("Light")
+	case MediumEncumbrance:
+		return i18n.Text("Medium")
+	case HeavyEncumbrance:
+		return i18n.Text("Heavy")
+	case ExtraHeavyEncumbrance:
+		return i18n.Text("X-Heavy")
+	default:
+		return Encumbrance(0).String()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -105,4 +94,14 @@ func (enum Encumbrance) MarshalText() (text []byte, err error) {
 func (enum *Encumbrance) UnmarshalText(text []byte) error {
 	*enum = ExtractEncumbrance(string(text))
 	return nil
+}
+
+// ExtractEncumbrance extracts the value from a string.
+func ExtractEncumbrance(str string) Encumbrance {
+	for _, enum := range AllEncumbrance {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+	}
+	return 0
 }

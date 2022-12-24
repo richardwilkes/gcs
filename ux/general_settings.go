@@ -12,7 +12,10 @@
 package ux
 
 import (
+	"errors"
 	"io/fs"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -20,10 +23,16 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/cmdline"
+	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/log/jotrotate"
+	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/xio/fs/paths"
 	"github.com/richardwilkes/unison"
 )
+
+var languageSetting string
 
 type generalSettingsDockable struct {
 	SettingsDockable
@@ -42,6 +51,7 @@ type generalSettingsDockable struct {
 	tooltipDismissalField         *DecimalField
 	scrollWheelMultiplierField    *DecimalField
 	externalPDFCmdlineField       *StringField
+	localeField                   *StringField
 }
 
 // ShowGeneralSettings the General Settings window.
@@ -59,6 +69,7 @@ func ShowGeneralSettings() {
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset
+		d.WillCloseCallback = d.willClose
 		d.Setup(ws, dc, nil, nil, d.initContent)
 		d.nameField.RequestFocus()
 	}
@@ -105,6 +116,7 @@ func (d *generalSettingsDockable) initContent(content *unison.Panel) {
 	d.createPathInfoField(content, i18n.Text("Translations Path"), i18n.Dir)
 	d.createPathInfoField(content, i18n.Text("Log Path"), jotrotate.PathToLog)
 	d.createExternalPDFCmdLineField(content)
+	d.createLocaleField(content)
 }
 
 func (d *generalSettingsDockable) createPlayerAndDescFields(content *unison.Panel) {
@@ -162,7 +174,7 @@ func (d *generalSettingsDockable) createTechLevelField(content *unison.Panel) {
 	d.techLevelField = NewStringField(nil, "", title,
 		func() string { return model.GlobalSettings().General.DefaultTechLevel },
 		func(s string) { model.GlobalSettings().General.DefaultTechLevel = s })
-	d.techLevelField.Tooltip = unison.NewTooltipWithText(model.TechLevelInfo)
+	d.techLevelField.Tooltip = unison.NewTooltipWithText(techLevelInfo())
 	d.techLevelField.SetMinimumTextWidthUsing("12^")
 	d.techLevelField.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(d.techLevelField)
@@ -274,12 +286,30 @@ func (d *generalSettingsDockable) createExternalPDFCmdLineField(content *unison.
 	}
 	d.externalPDFCmdlineField.Tooltip = unison.NewTooltipWithText(i18n.Text(`The internal PDF viewer will be used if the External PDF Viewer field is empty.
 Use $FILE where the full path to the PDF should be placed.
-Use $PAGE where the page number should be placed.`))
+Use $PAGE where the page number should be placed.
+
+In most cases, you'll want to surround the $FILE variable with quotes.`))
 	content.AddChild(d.externalPDFCmdlineField)
+}
+
+func (d *generalSettingsDockable) createLocaleField(content *unison.Panel) {
+	title := i18n.Text("Interface Locale")
+	content.AddChild(NewFieldLeadingLabel(title))
+	d.localeField = NewStringField(nil, "", title,
+		func() string { return languageSetting },
+		func(s string) { languageSetting = strings.TrimSpace(s) })
+	d.localeField.SetLayoutData(&unison.FlexLayoutData{
+		HSpan:  2,
+		HAlign: unison.FillAlignment,
+		HGrab:  true,
+	})
+	d.localeField.Tooltip = unison.NewTooltipWithText(txt.Wrap("", i18n.Text(`The locale to use when presenting text in the user interface. This does not affect the content of data files. Leave this value blank to use the system default. Note that changes to this generally require quitting and restarting GCS to have the desired effect.`), 100))
+	content.AddChild(d.localeField)
 }
 
 func (d *generalSettingsDockable) reset() {
 	*model.GlobalSettings().General = *model.NewGeneralSheetSettings()
+	languageSetting = ""
 	d.sync()
 }
 
@@ -299,6 +329,8 @@ func (d *generalSettingsDockable) sync() {
 	d.tooltipDelayField.SetText(s.TooltipDelay.String())
 	d.tooltipDismissalField.SetText(s.TooltipDismissal.String())
 	d.scrollWheelMultiplierField.SetText(s.ScrollWheelMultiplier.String())
+	SetFieldValue(d.externalPDFCmdlineField.Field, s.ExternalPDFCmdLine)
+	SetFieldValue(d.localeField.Field, languageSetting)
 	d.MarkForRedraw()
 }
 
@@ -314,4 +346,33 @@ func (d *generalSettingsDockable) load(fileSystem fs.FS, filePath string) error 
 
 func (d *generalSettingsDockable) save(filePath string) error {
 	return model.GlobalSettings().General.Save(filePath)
+}
+
+func (d *generalSettingsDockable) willClose() bool {
+	if languageSetting == "" {
+		i18n.Language = i18n.Locale()
+		if err := os.Remove(languageSettingPath()); err != nil && !errors.Is(err, os.ErrNotExist) {
+			jot.Error(errs.Wrap(err))
+		}
+	} else {
+		i18n.Language = languageSetting
+		if err := os.WriteFile(languageSettingPath(), []byte(languageSetting), 0o640); err != nil {
+			jot.Error(errs.Wrap(err))
+		}
+	}
+	return true
+}
+
+// LoadLanguageSetting loads the language setting from disk, if present, and applies it.
+func LoadLanguageSetting() {
+	if data, err := os.ReadFile(languageSettingPath()); err == nil {
+		if s := strings.TrimSpace(strings.SplitN(strings.TrimSpace(string(data)), "\n", 2)[0]); len(s) > 1 && len(s) < 20 {
+			i18n.Language = s
+			languageSetting = s
+		}
+	}
+}
+
+func languageSettingPath() string {
+	return filepath.Join(paths.AppDataDir(), cmdline.AppCmdName+"_language.txt")
 }

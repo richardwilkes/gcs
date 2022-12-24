@@ -21,9 +21,6 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// AppDescription of the software
-var AppDescription = i18n.Text("GURPS Character Sheet is an interactive character sheet editor for the GURPS Fourth Edition roleplaying game.")
-
 //go:embed images/app-256.png
 var appIconBytes []byte
 
@@ -65,4 +62,9 @@ func Start(files []string) {
 			return true
 		}),
 	) // Never returns
+}
+
+// AppDescription returns a description of the software.
+func AppDescription() string {
+	return i18n.Text("GURPS Character Sheet is an interactive character sheet editor for the GURPS Fourth Edition roleplaying game.")
 }

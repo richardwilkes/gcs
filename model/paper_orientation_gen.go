@@ -26,26 +26,11 @@ const (
 	LastPaperOrientation = Landscape
 )
 
-var (
-	// AllPaperOrientation holds all possible values.
-	AllPaperOrientation = []PaperOrientation{
-		Portrait,
-		Landscape,
-	}
-	paperOrientationData = []struct {
-		key    string
-		string string
-	}{
-		{
-			key:    "portrait",
-			string: i18n.Text("Portrait"),
-		},
-		{
-			key:    "landscape",
-			string: i18n.Text("Landscape"),
-		},
-	}
-)
+// AllPaperOrientation holds all possible values.
+var AllPaperOrientation = []PaperOrientation{
+	Portrait,
+	Landscape,
+}
 
 // PaperOrientation holds the orientation of the page.
 type PaperOrientation byte
@@ -60,22 +45,26 @@ func (enum PaperOrientation) EnsureValid() PaperOrientation {
 
 // Key returns the key used in serialization.
 func (enum PaperOrientation) Key() string {
-	return paperOrientationData[enum.EnsureValid()].key
+	switch enum {
+	case Portrait:
+		return "portrait"
+	case Landscape:
+		return "landscape"
+	default:
+		return PaperOrientation(0).Key()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum PaperOrientation) String() string {
-	return paperOrientationData[enum.EnsureValid()].string
-}
-
-// ExtractPaperOrientation extracts the value from a string.
-func ExtractPaperOrientation(str string) PaperOrientation {
-	for i, one := range paperOrientationData {
-		if strings.EqualFold(one.key, str) {
-			return PaperOrientation(i)
-		}
+	switch enum {
+	case Portrait:
+		return i18n.Text("Portrait")
+	case Landscape:
+		return i18n.Text("Landscape")
+	default:
+		return PaperOrientation(0).String()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -87,4 +76,14 @@ func (enum PaperOrientation) MarshalText() (text []byte, err error) {
 func (enum *PaperOrientation) UnmarshalText(text []byte) error {
 	*enum = ExtractPaperOrientation(string(text))
 	return nil
+}
+
+// ExtractPaperOrientation extracts the value from a string.
+func ExtractPaperOrientation(str string) PaperOrientation {
+	for _, enum := range AllPaperOrientation {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+	}
+	return 0
 }

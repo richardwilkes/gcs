@@ -28,36 +28,13 @@ const (
 	LastDisplayOption = InlineAndTooltipDisplayOption
 )
 
-var (
-	// AllDisplayOption holds all possible values.
-	AllDisplayOption = []DisplayOption{
-		NotShownDisplayOption,
-		InlineDisplayOption,
-		TooltipDisplayOption,
-		InlineAndTooltipDisplayOption,
-	}
-	displayOptionData = []struct {
-		key    string
-		string string
-	}{
-		{
-			key:    "not_shown",
-			string: i18n.Text("Not Shown"),
-		},
-		{
-			key:    "inline",
-			string: i18n.Text("Inline"),
-		},
-		{
-			key:    "tooltip",
-			string: i18n.Text("Tooltip"),
-		},
-		{
-			key:    "inline_and_tooltip",
-			string: i18n.Text("Inline & Tooltip"),
-		},
-	}
-)
+// AllDisplayOption holds all possible values.
+var AllDisplayOption = []DisplayOption{
+	NotShownDisplayOption,
+	InlineDisplayOption,
+	TooltipDisplayOption,
+	InlineAndTooltipDisplayOption,
+}
 
 // DisplayOption holds a display option.
 type DisplayOption byte
@@ -72,22 +49,34 @@ func (enum DisplayOption) EnsureValid() DisplayOption {
 
 // Key returns the key used in serialization.
 func (enum DisplayOption) Key() string {
-	return displayOptionData[enum.EnsureValid()].key
+	switch enum {
+	case NotShownDisplayOption:
+		return "not_shown"
+	case InlineDisplayOption:
+		return "inline"
+	case TooltipDisplayOption:
+		return "tooltip"
+	case InlineAndTooltipDisplayOption:
+		return "inline_and_tooltip"
+	default:
+		return DisplayOption(0).Key()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum DisplayOption) String() string {
-	return displayOptionData[enum.EnsureValid()].string
-}
-
-// ExtractDisplayOption extracts the value from a string.
-func ExtractDisplayOption(str string) DisplayOption {
-	for i, one := range displayOptionData {
-		if strings.EqualFold(one.key, str) {
-			return DisplayOption(i)
-		}
+	switch enum {
+	case NotShownDisplayOption:
+		return i18n.Text("Not Shown")
+	case InlineDisplayOption:
+		return i18n.Text("Inline")
+	case TooltipDisplayOption:
+		return i18n.Text("Tooltip")
+	case InlineAndTooltipDisplayOption:
+		return i18n.Text("Inline & Tooltip")
+	default:
+		return DisplayOption(0).String()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -99,4 +88,14 @@ func (enum DisplayOption) MarshalText() (text []byte, err error) {
 func (enum *DisplayOption) UnmarshalText(text []byte) error {
 	*enum = ExtractDisplayOption(string(text))
 	return nil
+}
+
+// ExtractDisplayOption extracts the value from a string.
+func ExtractDisplayOption(str string) DisplayOption {
+	for _, enum := range AllDisplayOption {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+	}
+	return 0
 }

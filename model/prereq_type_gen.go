@@ -33,58 +33,17 @@ const (
 	LastPrereqType = SpellPrereqType
 )
 
-var (
-	// AllPrereqType holds all possible values.
-	AllPrereqType = []PrereqType{
-		ListPrereqType,
-		TraitPrereqType,
-		AttributePrereqType,
-		ContainedQuantityPrereqType,
-		ContainedWeightPrereqType,
-		EquippedEquipmentPrereqType,
-		SkillPrereqType,
-		SpellPrereqType,
-	}
-	prereqTypeData = []struct {
-		key     string
-		oldKeys []string
-		string  string
-	}{
-		{
-			key:    "prereq_list",
-			string: i18n.Text("a list"),
-		},
-		{
-			key:     "trait_prereq",
-			oldKeys: []string{"advantage_prereq"},
-			string:  i18n.Text("a trait"),
-		},
-		{
-			key:    "attribute_prereq",
-			string: i18n.Text("the attribute"),
-		},
-		{
-			key:    "contained_quantity_prereq",
-			string: i18n.Text("a contained quantity of"),
-		},
-		{
-			key:    "contained_weight_prereq",
-			string: i18n.Text("a contained weight"),
-		},
-		{
-			key:    "equipped_equipment",
-			string: i18n.Text("has equipped equipment"),
-		},
-		{
-			key:    "skill_prereq",
-			string: i18n.Text("a skill"),
-		},
-		{
-			key:    "spell_prereq",
-			string: i18n.Text("spell(s)"),
-		},
-	}
-)
+// AllPrereqType holds all possible values.
+var AllPrereqType = []PrereqType{
+	ListPrereqType,
+	TraitPrereqType,
+	AttributePrereqType,
+	ContainedQuantityPrereqType,
+	ContainedWeightPrereqType,
+	EquippedEquipmentPrereqType,
+	SkillPrereqType,
+	SpellPrereqType,
+}
 
 // PrereqType holds the type of a Prereq.
 type PrereqType byte
@@ -99,22 +58,73 @@ func (enum PrereqType) EnsureValid() PrereqType {
 
 // Key returns the key used in serialization.
 func (enum PrereqType) Key() string {
-	return prereqTypeData[enum.EnsureValid()].key
+	switch enum {
+	case ListPrereqType:
+		return "prereq_list"
+	case TraitPrereqType:
+		return "trait_prereq"
+	case AttributePrereqType:
+		return "attribute_prereq"
+	case ContainedQuantityPrereqType:
+		return "contained_quantity_prereq"
+	case ContainedWeightPrereqType:
+		return "contained_weight_prereq"
+	case EquippedEquipmentPrereqType:
+		return "equipped_equipment"
+	case SkillPrereqType:
+		return "skill_prereq"
+	case SpellPrereqType:
+		return "spell_prereq"
+	default:
+		return PrereqType(0).Key()
+	}
+}
+
+func (enum PrereqType) oldKeys() []string {
+	switch enum {
+	case ListPrereqType:
+		return nil
+	case TraitPrereqType:
+		return []string{"advantage_prereq"}
+	case AttributePrereqType:
+		return nil
+	case ContainedQuantityPrereqType:
+		return nil
+	case ContainedWeightPrereqType:
+		return nil
+	case EquippedEquipmentPrereqType:
+		return nil
+	case SkillPrereqType:
+		return nil
+	case SpellPrereqType:
+		return nil
+	default:
+		return PrereqType(0).oldKeys()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum PrereqType) String() string {
-	return prereqTypeData[enum.EnsureValid()].string
-}
-
-// ExtractPrereqType extracts the value from a string.
-func ExtractPrereqType(str string) PrereqType {
-	for i, one := range prereqTypeData {
-		if strings.EqualFold(one.key, str) || txt.CaselessSliceContains(one.oldKeys, str) {
-			return PrereqType(i)
-		}
+	switch enum {
+	case ListPrereqType:
+		return i18n.Text("a list")
+	case TraitPrereqType:
+		return i18n.Text("a trait")
+	case AttributePrereqType:
+		return i18n.Text("the attribute")
+	case ContainedQuantityPrereqType:
+		return i18n.Text("a contained quantity of")
+	case ContainedWeightPrereqType:
+		return i18n.Text("a contained weight")
+	case EquippedEquipmentPrereqType:
+		return i18n.Text("has equipped equipment")
+	case SkillPrereqType:
+		return i18n.Text("a skill")
+	case SpellPrereqType:
+		return i18n.Text("spell(s)")
+	default:
+		return PrereqType(0).String()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -126,4 +136,14 @@ func (enum PrereqType) MarshalText() (text []byte, err error) {
 func (enum *PrereqType) UnmarshalText(text []byte) error {
 	*enum = ExtractPrereqType(string(text))
 	return nil
+}
+
+// ExtractPrereqType extracts the value from a string.
+func ExtractPrereqType(str string) PrereqType {
+	for _, enum := range AllPrereqType {
+		if strings.EqualFold(enum.Key(), str) || txt.CaselessSliceContains(enum.oldKeys(), str) {
+			return enum
+		}
+	}
+	return 0
 }

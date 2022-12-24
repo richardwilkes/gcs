@@ -26,26 +26,11 @@ const (
 	LastNameGenerationType = MarkovChainNameGenerationType
 )
 
-var (
-	// AllNameGenerationType holds all possible values.
-	AllNameGenerationType = []NameGenerationType{
-		SimpleNameGenerationType,
-		MarkovChainNameGenerationType,
-	}
-	nameGenerationTypeData = []struct {
-		key    string
-		string string
-	}{
-		{
-			key:    "simple",
-			string: i18n.Text("Simple"),
-		},
-		{
-			key:    "markov_chain",
-			string: i18n.Text("Markov Chain"),
-		},
-	}
-)
+// AllNameGenerationType holds all possible values.
+var AllNameGenerationType = []NameGenerationType{
+	SimpleNameGenerationType,
+	MarkovChainNameGenerationType,
+}
 
 // NameGenerationType holds a name generation type.
 type NameGenerationType byte
@@ -60,22 +45,26 @@ func (enum NameGenerationType) EnsureValid() NameGenerationType {
 
 // Key returns the key used in serialization.
 func (enum NameGenerationType) Key() string {
-	return nameGenerationTypeData[enum.EnsureValid()].key
+	switch enum {
+	case SimpleNameGenerationType:
+		return "simple"
+	case MarkovChainNameGenerationType:
+		return "markov_chain"
+	default:
+		return NameGenerationType(0).Key()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum NameGenerationType) String() string {
-	return nameGenerationTypeData[enum.EnsureValid()].string
-}
-
-// ExtractNameGenerationType extracts the value from a string.
-func ExtractNameGenerationType(str string) NameGenerationType {
-	for i, one := range nameGenerationTypeData {
-		if strings.EqualFold(one.key, str) {
-			return NameGenerationType(i)
-		}
+	switch enum {
+	case SimpleNameGenerationType:
+		return i18n.Text("Simple")
+	case MarkovChainNameGenerationType:
+		return i18n.Text("Markov Chain")
+	default:
+		return NameGenerationType(0).String()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -87,4 +76,14 @@ func (enum NameGenerationType) MarshalText() (text []byte, err error) {
 func (enum *NameGenerationType) UnmarshalText(text []byte) error {
 	*enum = ExtractNameGenerationType(string(text))
 	return nil
+}
+
+// ExtractNameGenerationType extracts the value from a string.
+func ExtractNameGenerationType(str string) NameGenerationType {
+	for _, enum := range AllNameGenerationType {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+	}
+	return 0
 }

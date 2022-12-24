@@ -267,9 +267,9 @@ func (p *weaponsProvider) ContextMenuItems() []ContextMenuItem {
 	var list []ContextMenuItem
 	switch p.weaponType {
 	case model.MeleeWeaponType:
-		list = append(list, MeleeWeaponExtraContextMenuItems...)
+		list = append(list, ContextMenuItem{i18n.Text("New Melee Weapon"), NewMeleeWeaponItemID})
 	case model.RangedWeaponType:
-		list = append(list, RangedWeaponExtraContextMenuItems...)
+		list = append(list, ContextMenuItem{i18n.Text("New Ranged Weapon"), NewRangedWeaponItemID})
 	}
-	return append(list, DefaultContextMenuItems...)
+	return AppendDefaultContextMenuItems(list)
 }

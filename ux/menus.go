@@ -453,93 +453,34 @@ func (s menuBarScope) appendDisabledMenuItem(menu unison.Menu, title string) {
 	menu.InsertItem(-1, item)
 }
 
-// DefaultContextMenuItems holds the default set of context menu items for lists.
-var DefaultContextMenuItems = []ContextMenuItem{
-	{"", -1},
-	{i18n.Text("Open Detail Editor"), OpenEditorItemID},
-	{"", -1},
-	{i18n.Text("Duplicate"), DuplicateItemID},
-	{i18n.Text("Delete"), unison.DeleteItemID},
-	{"", -1},
-	{i18n.Text("Apply Template to Character Sheet"), ApplyTemplateItemID},
-	{i18n.Text("Copy to Character Sheet"), CopyToSheetItemID},
-	{i18n.Text("Copy to Template"), CopyToTemplateItemID},
-	{"", -1},
-	{i18n.Text("Increment"), IncrementItemID},
-	{i18n.Text("Decrement"), DecrementItemID},
-	{i18n.Text("Increase Uses"), IncrementUsesItemID},
-	{i18n.Text("Decrease Uses"), DecrementUsesItemID},
-	{i18n.Text("Increase Skill Level"), IncrementSkillLevelItemID},
-	{i18n.Text("Decrease Skill Level"), DecrementSkillLevelItemID},
-	{i18n.Text("Increase Tech Level"), IncrementTechLevelItemID},
-	{i18n.Text("Decrease Tech Level"), DecrementTechLevelItemID},
-	{"", -1},
-	{i18n.Text("Toggle State"), ToggleStateItemID},
-	{i18n.Text("Swap Defaults"), SwapDefaultsItemID},
-	{i18n.Text("Convert to Container"), ConvertToContainerItemID},
-	{i18n.Text("Convert to Non-Container"), ConvertToNonContainerItemID},
-	{"", -1},
-	{i18n.Text("Open Page Reference"), OpenOnePageReferenceItemID},
-	{i18n.Text("Open Each Page Reference"), OpenEachPageReferenceItemID},
-}
-
-// CarriedEquipmentExtraContextMenuItems holds context menu items specific to the carried equipment list.
-var CarriedEquipmentExtraContextMenuItems = []ContextMenuItem{
-	{i18n.Text("New Carried Equipment"), NewCarriedEquipmentItemID},
-	{i18n.Text("New Carried Equipment Container"), NewCarriedEquipmentContainerItemID},
-}
-
-// EquipmentModifierExtraContextMenuItems holds context menu items specific to the equipment modifier list.
-var EquipmentModifierExtraContextMenuItems = []ContextMenuItem{
-	{i18n.Text("New Equipment Modifier"), NewEquipmentModifierItemID},
-	{i18n.Text("New Equipment Modifier Container"), NewEquipmentContainerModifierItemID},
-}
-
-// MeleeWeaponExtraContextMenuItems holds context menu items specific to the melee weapon list.
-var MeleeWeaponExtraContextMenuItems = []ContextMenuItem{
-	{i18n.Text("New Melee Weapon"), NewMeleeWeaponItemID},
-}
-
-// NoteExtraContextMenuItems holds context menu items specific to the note list.
-var NoteExtraContextMenuItems = []ContextMenuItem{
-	{i18n.Text("New Note"), NewNoteItemID},
-	{i18n.Text("New Note Container"), NewNoteContainerItemID},
-}
-
-// OtherEquipmentExtraContextMenuItems holds context menu items specific to the other equipment list.
-var OtherEquipmentExtraContextMenuItems = []ContextMenuItem{
-	{i18n.Text("New Other Equipment"), NewOtherEquipmentItemID},
-	{i18n.Text("New Other Equipment Container"), NewOtherEquipmentContainerItemID},
-}
-
-// RangedWeaponExtraContextMenuItems holds context menu items specific to the ranged weapon list.
-var RangedWeaponExtraContextMenuItems = []ContextMenuItem{
-	{i18n.Text("New Ranged Weapon"), NewRangedWeaponItemID},
-}
-
-// SkillExtraContextMenuItems holds context menu items specific to the skill list.
-var SkillExtraContextMenuItems = []ContextMenuItem{
-	{i18n.Text("New Skill"), NewSkillItemID},
-	{i18n.Text("New Skill Container"), NewSkillContainerItemID},
-	{i18n.Text("New Technique"), NewTechniqueItemID},
-}
-
-// SpellExtraContextMenuItems holds context menu items specific to the spell list.
-var SpellExtraContextMenuItems = []ContextMenuItem{
-	{i18n.Text("New Spell"), NewSpellItemID},
-	{i18n.Text("New Spell Container"), NewSpellContainerItemID},
-	{i18n.Text("New Ritual Magic Spell"), NewRitualMagicSpellItemID},
-}
-
-// TraitExtraContextMenuItems holds context menu items specific to the trait list.
-var TraitExtraContextMenuItems = []ContextMenuItem{
-	{i18n.Text("New Trait"), NewTraitItemID},
-	{i18n.Text("New Trait Container"), NewTraitContainerItemID},
-	{i18n.Text("Add Natural Attacks"), AddNaturalAttacksItemID},
-}
-
-// TraitModifierExtraContextMenuItems holds context menu items specific to the trait modifier list.
-var TraitModifierExtraContextMenuItems = []ContextMenuItem{
-	{i18n.Text("New Trait Modifier"), NewTraitModifierItemID},
-	{i18n.Text("New Trait Modifier Container"), NewTraitContainerModifierItemID},
+// AppendDefaultContextMenuItems appends the default set of context menu items for lists.
+func AppendDefaultContextMenuItems(list []ContextMenuItem) []ContextMenuItem {
+	return append(list,
+		ContextMenuItem{"", -1},
+		ContextMenuItem{i18n.Text("Open Detail Editor"), OpenEditorItemID},
+		ContextMenuItem{"", -1},
+		ContextMenuItem{i18n.Text("Duplicate"), DuplicateItemID},
+		ContextMenuItem{i18n.Text("Delete"), unison.DeleteItemID},
+		ContextMenuItem{"", -1},
+		ContextMenuItem{i18n.Text("Apply Template to Character Sheet"), ApplyTemplateItemID},
+		ContextMenuItem{i18n.Text("Copy to Character Sheet"), CopyToSheetItemID},
+		ContextMenuItem{i18n.Text("Copy to Template"), CopyToTemplateItemID},
+		ContextMenuItem{"", -1},
+		ContextMenuItem{i18n.Text("Increment"), IncrementItemID},
+		ContextMenuItem{i18n.Text("Decrement"), DecrementItemID},
+		ContextMenuItem{i18n.Text("Increase Uses"), IncrementUsesItemID},
+		ContextMenuItem{i18n.Text("Decrease Uses"), DecrementUsesItemID},
+		ContextMenuItem{i18n.Text("Increase Skill Level"), IncrementSkillLevelItemID},
+		ContextMenuItem{i18n.Text("Decrease Skill Level"), DecrementSkillLevelItemID},
+		ContextMenuItem{i18n.Text("Increase Tech Level"), IncrementTechLevelItemID},
+		ContextMenuItem{i18n.Text("Decrease Tech Level"), DecrementTechLevelItemID},
+		ContextMenuItem{"", -1},
+		ContextMenuItem{i18n.Text("Toggle State"), ToggleStateItemID},
+		ContextMenuItem{i18n.Text("Swap Defaults"), SwapDefaultsItemID},
+		ContextMenuItem{i18n.Text("Convert to Container"), ConvertToContainerItemID},
+		ContextMenuItem{i18n.Text("Convert to Non-Container"), ConvertToNonContainerItemID},
+		ContextMenuItem{"", -1},
+		ContextMenuItem{i18n.Text("Open Page Reference"), OpenOnePageReferenceItemID},
+		ContextMenuItem{i18n.Text("Open Each Page Reference"), OpenEachPageReferenceItemID},
+	)
 }

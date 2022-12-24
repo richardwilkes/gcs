@@ -1535,7 +1535,7 @@ func (ex *legacyExporter) subBufferExtractUpToMarker(marker string, buf []byte, 
 
 func (ex *legacyExporter) handleColor(key string) {
 	id := strings.ToLower(key[len("COLOR_"):])
-	for _, c := range CurrentColors {
+	for _, c := range CurrentColors() {
 		if c.ID == id {
 			ex.out.WriteString(c.Color.GetColor().String())
 			return

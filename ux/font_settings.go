@@ -74,7 +74,7 @@ func (d *fontSettingsDockable) sync() {
 }
 
 func (d *fontSettingsDockable) fill() {
-	for i, one := range model.CurrentFonts {
+	for i, one := range model.CurrentFonts() {
 		if i%2 == 0 {
 			d.content.AddChild(NewFieldLeadingLabel(one.Title))
 		} else {
@@ -100,7 +100,7 @@ func (d *fontSettingsDockable) fill() {
 func (d *fontSettingsDockable) createFaceField(index int) {
 	p := unison.NewPopupMenu[unison.FontFaceDescriptor]()
 	var list []unison.FontFaceDescriptor
-	if model.CurrentFonts[index].ID == "monospaced" {
+	if model.CurrentFonts()[index].ID == "monospaced" {
 		list = d.monospacedFaces
 	} else {
 		list = d.allFaces
@@ -108,12 +108,12 @@ func (d *fontSettingsDockable) createFaceField(index int) {
 	for _, ffd := range list {
 		p.AddItem(ffd)
 	}
-	p.Select(model.CurrentFonts[index].Font.Descriptor().FontFaceDescriptor)
+	p.Select(model.CurrentFonts()[index].Font.Descriptor().FontFaceDescriptor)
 	p.SelectionCallback = func(_ int, ffd unison.FontFaceDescriptor) {
 		if d.noUpdate {
 			return
 		}
-		fd2 := model.CurrentFonts[index].Font.Descriptor()
+		fd2 := model.CurrentFonts()[index].Font.Descriptor()
 		fd2.FontFaceDescriptor = ffd
 		d.applyFont(index, fd2)
 	}
@@ -122,10 +122,10 @@ func (d *fontSettingsDockable) createFaceField(index int) {
 
 func (d *fontSettingsDockable) createSizeField(index int) {
 	field := NewDecimalField(nil, "", i18n.Text("Font Size"),
-		func() fxp.Int { return fxp.From(model.CurrentFonts[index].Font.Size()) },
+		func() fxp.Int { return fxp.From(model.CurrentFonts()[index].Font.Size()) },
 		func(v fxp.Int) {
 			if !d.noUpdate {
-				fd := model.CurrentFonts[index].Font.Descriptor()
+				fd := model.CurrentFonts()[index].Font.Descriptor()
 				fd.Size = fxp.As[float32](v)
 				d.applyFont(index, fd)
 			}
@@ -142,9 +142,9 @@ func (d *fontSettingsDockable) createResetField(index int) {
 	b.Tooltip = unison.NewTooltipWithText("Reset this font")
 	b.ClickCallback = func() {
 		if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to reset %s?"),
-			model.CurrentFonts[index].Title), "") == unison.ModalResponseOK {
-			for _, v := range model.FactoryFonts {
-				if v.ID != model.CurrentFonts[index].ID {
+			model.CurrentFonts()[index].Title), "") == unison.ModalResponseOK {
+			for _, v := range model.FactoryFonts() {
+				if v.ID != model.CurrentFonts()[index].ID {
 					continue
 				}
 				d.applyFont(index, v.Font.Descriptor())
@@ -160,10 +160,10 @@ func (d *fontSettingsDockable) createResetField(index int) {
 }
 
 func (d *fontSettingsDockable) applyFont(index int, fd unison.FontDescriptor) {
-	model.CurrentFonts[index].Font.Font = fd.Font()
+	model.CurrentFonts()[index].Font.Font = fd.Font()
 	children := d.content.Children()
 	i := index * 4
-	fd = model.CurrentFonts[index].Font.Descriptor()
+	fd = model.CurrentFonts()[index].Font.Descriptor()
 	d.noUpdate = true
 	if p, ok := children[i+1].Self.(*unison.PopupMenu[unison.FontFaceDescriptor]); ok {
 		p.Select(fd.FontFaceDescriptor)

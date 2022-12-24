@@ -61,10 +61,10 @@ type equipmentModifierListData struct {
 func NewEquipmentModifiersFromFile(fileSystem fs.FS, filePath string) ([]*EquipmentModifier, error) {
 	var data equipmentModifierListData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(InvalidFileDataMsg, err)
+		return nil, errs.NewWithCause(invalidFileDataMsg(), err)
 	}
 	if data.Type != equipmentModifierListTypeKey {
-		return nil, errs.New(UnexpectedFileDataMsg)
+		return nil, errs.New(unexpectedFileDataMsg())
 	}
 	if err := CheckVersion(data.Version); err != nil {
 		return nil, err

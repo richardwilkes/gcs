@@ -27,31 +27,12 @@ const (
 	LastTraitModifierCostType = MultiplierTraitModifierCostType
 )
 
-var (
-	// AllTraitModifierCostType holds all possible values.
-	AllTraitModifierCostType = []TraitModifierCostType{
-		PercentageTraitModifierCostType,
-		PointsTraitModifierCostType,
-		MultiplierTraitModifierCostType,
-	}
-	traitModifierCostTypeData = []struct {
-		key    string
-		string string
-	}{
-		{
-			key:    "percentage",
-			string: i18n.Text("%"),
-		},
-		{
-			key:    "points",
-			string: i18n.Text("points"),
-		},
-		{
-			key:    "multiplier",
-			string: i18n.Text("×"),
-		},
-	}
-)
+// AllTraitModifierCostType holds all possible values.
+var AllTraitModifierCostType = []TraitModifierCostType{
+	PercentageTraitModifierCostType,
+	PointsTraitModifierCostType,
+	MultiplierTraitModifierCostType,
+}
 
 // TraitModifierCostType describes how a TraitModifier's point cost is applied.
 type TraitModifierCostType byte
@@ -66,22 +47,30 @@ func (enum TraitModifierCostType) EnsureValid() TraitModifierCostType {
 
 // Key returns the key used in serialization.
 func (enum TraitModifierCostType) Key() string {
-	return traitModifierCostTypeData[enum.EnsureValid()].key
+	switch enum {
+	case PercentageTraitModifierCostType:
+		return "percentage"
+	case PointsTraitModifierCostType:
+		return "points"
+	case MultiplierTraitModifierCostType:
+		return "multiplier"
+	default:
+		return TraitModifierCostType(0).Key()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum TraitModifierCostType) String() string {
-	return traitModifierCostTypeData[enum.EnsureValid()].string
-}
-
-// ExtractTraitModifierCostType extracts the value from a string.
-func ExtractTraitModifierCostType(str string) TraitModifierCostType {
-	for i, one := range traitModifierCostTypeData {
-		if strings.EqualFold(one.key, str) {
-			return TraitModifierCostType(i)
-		}
+	switch enum {
+	case PercentageTraitModifierCostType:
+		return i18n.Text("%")
+	case PointsTraitModifierCostType:
+		return i18n.Text("points")
+	case MultiplierTraitModifierCostType:
+		return i18n.Text("×")
+	default:
+		return TraitModifierCostType(0).String()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -93,4 +82,14 @@ func (enum TraitModifierCostType) MarshalText() (text []byte, err error) {
 func (enum *TraitModifierCostType) UnmarshalText(text []byte) error {
 	*enum = ExtractTraitModifierCostType(string(text))
 	return nil
+}
+
+// ExtractTraitModifierCostType extracts the value from a string.
+func ExtractTraitModifierCostType(str string) TraitModifierCostType {
+	for _, enum := range AllTraitModifierCostType {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+	}
+	return 0
 }

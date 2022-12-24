@@ -26,36 +26,13 @@ const (
 	LastEquipmentModifierWeightValueType = MultiplierEquipmentModifierWeightValueType
 )
 
-var (
-	// AllEquipmentModifierWeightValueType holds all possible values.
-	AllEquipmentModifierWeightValueType = []EquipmentModifierWeightValueType{
-		AdditionEquipmentModifierWeightValueType,
-		PercentageAdderEquipmentModifierWeightValueType,
-		PercentageMultiplierEquipmentModifierWeightValueType,
-		MultiplierEquipmentModifierWeightValueType,
-	}
-	equipmentModifierWeightValueTypeData = []struct {
-		key    string
-		string string
-	}{
-		{
-			key:    "+",
-			string: "+",
-		},
-		{
-			key:    "%",
-			string: "%",
-		},
-		{
-			key:    "x%",
-			string: "x%",
-		},
-		{
-			key:    "x",
-			string: "x",
-		},
-	}
-)
+// AllEquipmentModifierWeightValueType holds all possible values.
+var AllEquipmentModifierWeightValueType = []EquipmentModifierWeightValueType{
+	AdditionEquipmentModifierWeightValueType,
+	PercentageAdderEquipmentModifierWeightValueType,
+	PercentageMultiplierEquipmentModifierWeightValueType,
+	MultiplierEquipmentModifierWeightValueType,
+}
 
 // EquipmentModifierWeightValueType describes how an Equipment Modifier's weight value is applied.
 type EquipmentModifierWeightValueType byte
@@ -70,22 +47,34 @@ func (enum EquipmentModifierWeightValueType) EnsureValid() EquipmentModifierWeig
 
 // Key returns the key used in serialization.
 func (enum EquipmentModifierWeightValueType) Key() string {
-	return equipmentModifierWeightValueTypeData[enum.EnsureValid()].key
+	switch enum {
+	case AdditionEquipmentModifierWeightValueType:
+		return "+"
+	case PercentageAdderEquipmentModifierWeightValueType:
+		return "%"
+	case PercentageMultiplierEquipmentModifierWeightValueType:
+		return "x%"
+	case MultiplierEquipmentModifierWeightValueType:
+		return "x"
+	default:
+		return EquipmentModifierWeightValueType(0).Key()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum EquipmentModifierWeightValueType) String() string {
-	return equipmentModifierWeightValueTypeData[enum.EnsureValid()].string
-}
-
-// ExtractEquipmentModifierWeightValueType extracts the value from a string.
-func ExtractEquipmentModifierWeightValueType(str string) EquipmentModifierWeightValueType {
-	for i, one := range equipmentModifierWeightValueTypeData {
-		if strings.EqualFold(one.key, str) {
-			return EquipmentModifierWeightValueType(i)
-		}
+	switch enum {
+	case AdditionEquipmentModifierWeightValueType:
+		return "+"
+	case PercentageAdderEquipmentModifierWeightValueType:
+		return "%"
+	case PercentageMultiplierEquipmentModifierWeightValueType:
+		return "x%"
+	case MultiplierEquipmentModifierWeightValueType:
+		return "x"
+	default:
+		return EquipmentModifierWeightValueType(0).String()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -97,4 +86,14 @@ func (enum EquipmentModifierWeightValueType) MarshalText() (text []byte, err err
 func (enum *EquipmentModifierWeightValueType) UnmarshalText(text []byte) error {
 	*enum = ExtractEquipmentModifierWeightValueType(string(text))
 	return nil
+}
+
+// ExtractEquipmentModifierWeightValueType extracts the value from a string.
+func ExtractEquipmentModifierWeightValueType(str string) EquipmentModifierWeightValueType {
+	for _, enum := range AllEquipmentModifierWeightValueType {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+	}
+	return 0
 }

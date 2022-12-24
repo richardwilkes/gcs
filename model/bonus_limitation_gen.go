@@ -28,36 +28,13 @@ const (
 	LastBonusLimitation = ThrowingOnlyBonusLimitation
 )
 
-var (
-	// AllBonusLimitation holds all possible values.
-	AllBonusLimitation = []BonusLimitation{
-		NoneBonusLimitation,
-		StrikingOnlyBonusLimitation,
-		LiftingOnlyBonusLimitation,
-		ThrowingOnlyBonusLimitation,
-	}
-	bonusLimitationData = []struct {
-		key    string
-		string string
-	}{
-		{
-			key:    "none",
-			string: "",
-		},
-		{
-			key:    "striking_only",
-			string: i18n.Text("for striking only"),
-		},
-		{
-			key:    "lifting_only",
-			string: i18n.Text("for lifting only"),
-		},
-		{
-			key:    "throwing_only",
-			string: i18n.Text("for throwing only"),
-		},
-	}
-)
+// AllBonusLimitation holds all possible values.
+var AllBonusLimitation = []BonusLimitation{
+	NoneBonusLimitation,
+	StrikingOnlyBonusLimitation,
+	LiftingOnlyBonusLimitation,
+	ThrowingOnlyBonusLimitation,
+}
 
 // BonusLimitation holds a limitation for an AttributeBonus.
 type BonusLimitation byte
@@ -72,22 +49,34 @@ func (enum BonusLimitation) EnsureValid() BonusLimitation {
 
 // Key returns the key used in serialization.
 func (enum BonusLimitation) Key() string {
-	return bonusLimitationData[enum.EnsureValid()].key
+	switch enum {
+	case NoneBonusLimitation:
+		return "none"
+	case StrikingOnlyBonusLimitation:
+		return "striking_only"
+	case LiftingOnlyBonusLimitation:
+		return "lifting_only"
+	case ThrowingOnlyBonusLimitation:
+		return "throwing_only"
+	default:
+		return BonusLimitation(0).Key()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum BonusLimitation) String() string {
-	return bonusLimitationData[enum.EnsureValid()].string
-}
-
-// ExtractBonusLimitation extracts the value from a string.
-func ExtractBonusLimitation(str string) BonusLimitation {
-	for i, one := range bonusLimitationData {
-		if strings.EqualFold(one.key, str) {
-			return BonusLimitation(i)
-		}
+	switch enum {
+	case NoneBonusLimitation:
+		return ""
+	case StrikingOnlyBonusLimitation:
+		return i18n.Text("for striking only")
+	case LiftingOnlyBonusLimitation:
+		return i18n.Text("for lifting only")
+	case ThrowingOnlyBonusLimitation:
+		return i18n.Text("for throwing only")
+	default:
+		return BonusLimitation(0).String()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -99,4 +88,14 @@ func (enum BonusLimitation) MarshalText() (text []byte, err error) {
 func (enum *BonusLimitation) UnmarshalText(text []byte) error {
 	*enum = ExtractBonusLimitation(string(text))
 	return nil
+}
+
+// ExtractBonusLimitation extracts the value from a string.
+func ExtractBonusLimitation(str string) BonusLimitation {
+	for _, enum := range AllBonusLimitation {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+	}
+	return 0
 }

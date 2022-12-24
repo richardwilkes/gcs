@@ -31,59 +31,16 @@ const (
 	LastSelfControlRollAdj = MajorCostOfLivingIncrease
 )
 
-var (
-	// AllSelfControlRollAdj holds all possible values.
-	AllSelfControlRollAdj = []SelfControlRollAdj{
-		NoCRAdj,
-		ActionPenalty,
-		ReactionPenalty,
-		FrightCheckPenalty,
-		FrightCheckBonus,
-		MinorCostOfLivingIncrease,
-		MajorCostOfLivingIncrease,
-	}
-	selfControlRollAdjData = []struct {
-		key    string
-		string string
-		alt    string
-	}{
-		{
-			key:    "none",
-			string: i18n.Text("None"),
-			alt:    i18n.Text("None"),
-		},
-		{
-			key:    "action_penalty",
-			string: i18n.Text("Includes an Action Penalty for Failure"),
-			alt:    i18n.Text("%d Action Penalty"),
-		},
-		{
-			key:    "reaction_penalty",
-			string: i18n.Text("Includes a Reaction Penalty for Failure"),
-			alt:    i18n.Text("%d Reaction Penalty"),
-		},
-		{
-			key:    "fright_check_penalty",
-			string: i18n.Text("Includes Fright Check Penalty"),
-			alt:    i18n.Text("%d Fright Check Penalty"),
-		},
-		{
-			key:    "fright_check_bonus",
-			string: i18n.Text("Includes Fright Check Bonus"),
-			alt:    i18n.Text("+%d Fright Check Bonus"),
-		},
-		{
-			key:    "minor_cost_of_living_increase",
-			string: i18n.Text("Includes a Minor Cost of Living Increase"),
-			alt:    i18n.Text("+%d%% Cost of Living Increase"),
-		},
-		{
-			key:    "major_cost_of_living_increase",
-			string: i18n.Text("Includes a Major Cost of Living Increase and Merchant Skill Penalty"),
-			alt:    i18n.Text("+%d%% Cost of Living Increase"),
-		},
-	}
-)
+// AllSelfControlRollAdj holds all possible values.
+var AllSelfControlRollAdj = []SelfControlRollAdj{
+	NoCRAdj,
+	ActionPenalty,
+	ReactionPenalty,
+	FrightCheckPenalty,
+	FrightCheckBonus,
+	MinorCostOfLivingIncrease,
+	MajorCostOfLivingIncrease,
+}
 
 // SelfControlRollAdj holds an Adjustment for a self-control roll.
 type SelfControlRollAdj byte
@@ -98,27 +55,68 @@ func (enum SelfControlRollAdj) EnsureValid() SelfControlRollAdj {
 
 // Key returns the key used in serialization.
 func (enum SelfControlRollAdj) Key() string {
-	return selfControlRollAdjData[enum.EnsureValid()].key
+	switch enum {
+	case NoCRAdj:
+		return "none"
+	case ActionPenalty:
+		return "action_penalty"
+	case ReactionPenalty:
+		return "reaction_penalty"
+	case FrightCheckPenalty:
+		return "fright_check_penalty"
+	case FrightCheckBonus:
+		return "fright_check_bonus"
+	case MinorCostOfLivingIncrease:
+		return "minor_cost_of_living_increase"
+	case MajorCostOfLivingIncrease:
+		return "major_cost_of_living_increase"
+	default:
+		return SelfControlRollAdj(0).Key()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum SelfControlRollAdj) String() string {
-	return selfControlRollAdjData[enum.EnsureValid()].string
+	switch enum {
+	case NoCRAdj:
+		return i18n.Text("None")
+	case ActionPenalty:
+		return i18n.Text("Includes an Action Penalty for Failure")
+	case ReactionPenalty:
+		return i18n.Text("Includes a Reaction Penalty for Failure")
+	case FrightCheckPenalty:
+		return i18n.Text("Includes Fright Check Penalty")
+	case FrightCheckBonus:
+		return i18n.Text("Includes Fright Check Bonus")
+	case MinorCostOfLivingIncrease:
+		return i18n.Text("Includes a Minor Cost of Living Increase")
+	case MajorCostOfLivingIncrease:
+		return i18n.Text("Includes a Major Cost of Living Increase and Merchant Skill Penalty")
+	default:
+		return SelfControlRollAdj(0).String()
+	}
 }
 
 // AltString returns the alternate string.
 func (enum SelfControlRollAdj) AltString() string {
-	return selfControlRollAdjData[enum.EnsureValid()].alt
-}
-
-// ExtractSelfControlRollAdj extracts the value from a string.
-func ExtractSelfControlRollAdj(str string) SelfControlRollAdj {
-	for i, one := range selfControlRollAdjData {
-		if strings.EqualFold(one.key, str) {
-			return SelfControlRollAdj(i)
-		}
+	switch enum {
+	case NoCRAdj:
+		return i18n.Text("None")
+	case ActionPenalty:
+		return i18n.Text("%d Action Penalty")
+	case ReactionPenalty:
+		return i18n.Text("%d Reaction Penalty")
+	case FrightCheckPenalty:
+		return i18n.Text("%d Fright Check Penalty")
+	case FrightCheckBonus:
+		return i18n.Text("+%d Fright Check Bonus")
+	case MinorCostOfLivingIncrease:
+		return i18n.Text("+%d%% Cost of Living Increase")
+	case MajorCostOfLivingIncrease:
+		return i18n.Text("+%d%% Cost of Living Increase")
+	default:
+		return SelfControlRollAdj(0).AltString()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -130,4 +128,14 @@ func (enum SelfControlRollAdj) MarshalText() (text []byte, err error) {
 func (enum *SelfControlRollAdj) UnmarshalText(text []byte) error {
 	*enum = ExtractSelfControlRollAdj(string(text))
 	return nil
+}
+
+// ExtractSelfControlRollAdj extracts the value from a string.
+func ExtractSelfControlRollAdj(str string) SelfControlRollAdj {
+	for _, enum := range AllSelfControlRollAdj {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+	}
+	return 0
 }

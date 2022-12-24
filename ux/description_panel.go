@@ -166,7 +166,7 @@ func (d *DescriptionPanel) createColumn2() *unison.Panel {
 	tlField := NewStringPageField(d.targetMgr, d.prefix+"tl", title,
 		func() string { return d.entity.Profile.TechLevel },
 		func(s string) { d.entity.Profile.TechLevel = s })
-	tlField.Tooltip = unison.NewTooltipWithText(model.TechLevelInfo)
+	tlField.Tooltip = unison.NewTooltipWithText(techLevelInfo())
 	column.AddChild(tlField)
 
 	return column

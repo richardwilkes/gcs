@@ -85,7 +85,7 @@ func (d *colorSettingsDockable) sync() {
 }
 
 func (d *colorSettingsDockable) fill() {
-	for i, one := range model.CurrentColors {
+	for i, one := range model.CurrentColors() {
 		if i%2 == 0 {
 			d.content.AddChild(NewFieldLeadingLabel(one.Title))
 		} else {
@@ -127,7 +127,7 @@ func (d *colorSettingsDockable) createResetField(c *model.ThemedColor) {
 	b.Tooltip = unison.NewTooltipWithText("Reset this color")
 	b.ClickCallback = func() {
 		if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to reset %s?"), c.Title), "") == unison.ModalResponseOK {
-			for _, v := range model.FactoryColors {
+			for _, v := range model.FactoryColors() {
 				if v.ID != c.ID {
 					continue
 				}

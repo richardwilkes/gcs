@@ -34,66 +34,19 @@ const (
 	LastPaperSize = A6PaperSize
 )
 
-var (
-	// AllPaperSize holds all possible values.
-	AllPaperSize = []PaperSize{
-		LetterPaperSize,
-		LegalPaperSize,
-		TabloidPaperSize,
-		A0PaperSize,
-		A1PaperSize,
-		A2PaperSize,
-		A3PaperSize,
-		A4PaperSize,
-		A5PaperSize,
-		A6PaperSize,
-	}
-	paperSizeData = []struct {
-		key    string
-		string string
-	}{
-		{
-			key:    "letter",
-			string: i18n.Text("Letter"),
-		},
-		{
-			key:    "legal",
-			string: i18n.Text("Legal"),
-		},
-		{
-			key:    "tabloid",
-			string: i18n.Text("Tabloid"),
-		},
-		{
-			key:    "a0",
-			string: i18n.Text("A0"),
-		},
-		{
-			key:    "a1",
-			string: i18n.Text("A1"),
-		},
-		{
-			key:    "a2",
-			string: i18n.Text("A2"),
-		},
-		{
-			key:    "a3",
-			string: i18n.Text("A3"),
-		},
-		{
-			key:    "a4",
-			string: i18n.Text("A4"),
-		},
-		{
-			key:    "a5",
-			string: i18n.Text("A5"),
-		},
-		{
-			key:    "a6",
-			string: i18n.Text("A6"),
-		},
-	}
-)
+// AllPaperSize holds all possible values.
+var AllPaperSize = []PaperSize{
+	LetterPaperSize,
+	LegalPaperSize,
+	TabloidPaperSize,
+	A0PaperSize,
+	A1PaperSize,
+	A2PaperSize,
+	A3PaperSize,
+	A4PaperSize,
+	A5PaperSize,
+	A6PaperSize,
+}
 
 // PaperSize holds a standard paper dimension.
 type PaperSize byte
@@ -108,22 +61,58 @@ func (enum PaperSize) EnsureValid() PaperSize {
 
 // Key returns the key used in serialization.
 func (enum PaperSize) Key() string {
-	return paperSizeData[enum.EnsureValid()].key
+	switch enum {
+	case LetterPaperSize:
+		return "letter"
+	case LegalPaperSize:
+		return "legal"
+	case TabloidPaperSize:
+		return "tabloid"
+	case A0PaperSize:
+		return "a0"
+	case A1PaperSize:
+		return "a1"
+	case A2PaperSize:
+		return "a2"
+	case A3PaperSize:
+		return "a3"
+	case A4PaperSize:
+		return "a4"
+	case A5PaperSize:
+		return "a5"
+	case A6PaperSize:
+		return "a6"
+	default:
+		return PaperSize(0).Key()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum PaperSize) String() string {
-	return paperSizeData[enum.EnsureValid()].string
-}
-
-// ExtractPaperSize extracts the value from a string.
-func ExtractPaperSize(str string) PaperSize {
-	for i, one := range paperSizeData {
-		if strings.EqualFold(one.key, str) {
-			return PaperSize(i)
-		}
+	switch enum {
+	case LetterPaperSize:
+		return i18n.Text("Letter")
+	case LegalPaperSize:
+		return i18n.Text("Legal")
+	case TabloidPaperSize:
+		return i18n.Text("Tabloid")
+	case A0PaperSize:
+		return i18n.Text("A0")
+	case A1PaperSize:
+		return i18n.Text("A1")
+	case A2PaperSize:
+		return i18n.Text("A2")
+	case A3PaperSize:
+		return i18n.Text("A3")
+	case A4PaperSize:
+		return i18n.Text("A4")
+	case A5PaperSize:
+		return i18n.Text("A5")
+	case A6PaperSize:
+		return i18n.Text("A6")
+	default:
+		return PaperSize(0).String()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -135,4 +124,14 @@ func (enum PaperSize) MarshalText() (text []byte, err error) {
 func (enum *PaperSize) UnmarshalText(text []byte) error {
 	*enum = ExtractPaperSize(string(text))
 	return nil
+}
+
+// ExtractPaperSize extracts the value from a string.
+func ExtractPaperSize(str string) PaperSize {
+	for _, enum := range AllPaperSize {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+	}
+	return 0
 }

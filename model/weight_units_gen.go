@@ -29,51 +29,16 @@ const (
 	LastWeightUnits = Gram
 )
 
-var (
-	// AllWeightUnits holds all possible values.
-	AllWeightUnits = []WeightUnits{
-		Pound,
-		PoundAlt,
-		Ounce,
-		Ton,
-		TonAlt,
-		Kilogram,
-		Gram,
-	}
-	weightUnitsData = []struct {
-		key    string
-		string string
-	}{
-		{
-			key:    "lb",
-			string: "lb",
-		},
-		{
-			key:    "#",
-			string: "#",
-		},
-		{
-			key:    "oz",
-			string: "oz",
-		},
-		{
-			key:    "tn",
-			string: "tn",
-		},
-		{
-			key:    "t",
-			string: "t",
-		},
-		{
-			key:    "kg",
-			string: "kg",
-		},
-		{
-			key:    "g",
-			string: "g",
-		},
-	}
-)
+// AllWeightUnits holds all possible values.
+var AllWeightUnits = []WeightUnits{
+	Pound,
+	PoundAlt,
+	Ounce,
+	Ton,
+	TonAlt,
+	Kilogram,
+	Gram,
+}
 
 // WeightUnits holds the weight unit type. Note that conversions to/from metric are done using the simplified GURPS
 // metric conversion of 1 lb = 0.5kg. For consistency, all metric weights are converted to kilograms, then to pounds,
@@ -90,22 +55,46 @@ func (enum WeightUnits) EnsureValid() WeightUnits {
 
 // Key returns the key used in serialization.
 func (enum WeightUnits) Key() string {
-	return weightUnitsData[enum.EnsureValid()].key
+	switch enum {
+	case Pound:
+		return "lb"
+	case PoundAlt:
+		return "#"
+	case Ounce:
+		return "oz"
+	case Ton:
+		return "tn"
+	case TonAlt:
+		return "t"
+	case Kilogram:
+		return "kg"
+	case Gram:
+		return "g"
+	default:
+		return WeightUnits(0).Key()
+	}
 }
 
 // String implements fmt.Stringer.
 func (enum WeightUnits) String() string {
-	return weightUnitsData[enum.EnsureValid()].string
-}
-
-// ExtractWeightUnits extracts the value from a string.
-func ExtractWeightUnits(str string) WeightUnits {
-	for i, one := range weightUnitsData {
-		if strings.EqualFold(one.key, str) {
-			return WeightUnits(i)
-		}
+	switch enum {
+	case Pound:
+		return "lb"
+	case PoundAlt:
+		return "#"
+	case Ounce:
+		return "oz"
+	case Ton:
+		return "tn"
+	case TonAlt:
+		return "t"
+	case Kilogram:
+		return "kg"
+	case Gram:
+		return "g"
+	default:
+		return WeightUnits(0).String()
 	}
-	return 0
 }
 
 // MarshalText implements the encoding.TextMarshaler interface.
@@ -117,4 +106,14 @@ func (enum WeightUnits) MarshalText() (text []byte, err error) {
 func (enum *WeightUnits) UnmarshalText(text []byte) error {
 	*enum = ExtractWeightUnits(string(text))
 	return nil
+}
+
+// ExtractWeightUnits extracts the value from a string.
+func ExtractWeightUnits(str string) WeightUnits {
+	for _, enum := range AllWeightUnits {
+		if strings.EqualFold(enum.Key(), str) {
+			return enum
+		}
+	}
+	return 0
 }
