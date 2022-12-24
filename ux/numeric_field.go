@@ -24,7 +24,6 @@ import (
 // NumericField holds a numeric value that can be edited.
 type NumericField[T xmath.Numeric] struct {
 	*unison.Field
-	undoID        int64
 	targetMgr     *TargetMgr
 	targetKey     string
 	undoTitle     string
@@ -38,14 +37,12 @@ type NumericField[T xmath.Numeric] struct {
 	max           T
 	useGet        bool
 	marksModified bool
-	inUndo        bool
 }
 
 // NewNumericField creates a new field that formats its content.
 func NewNumericField[T xmath.Numeric](targetMgr *TargetMgr, targetKey, undoTitle string, getPrototypes func(min, max T) []T, get func() T, set func(T), format func(T) string, extract func(s string) (T, error), min, max T) *NumericField[T] {
 	f := &NumericField[T]{
 		Field:         unison.NewField(),
-		undoID:        unison.NextUndoID(),
 		targetMgr:     targetMgr,
 		targetKey:     targetKey,
 		undoTitle:     undoTitle,
@@ -132,23 +129,27 @@ func (f *NumericField[T]) runeTyped(ch rune) bool {
 	return f.DefaultRuneTyped(ch)
 }
 
-func (f *NumericField[T]) modified() {
-	text := f.Text()
-	if !f.inUndo && f.undoID != unison.NoUndoID {
+func (f *NumericField[T]) modified(before, after *unison.FieldState) {
+	if f.CurrentUndoID() != unison.NoUndoID {
 		if mgr := unison.UndoManagerFor(f); mgr != nil {
-			undo := NewTargetUndo(f.targetMgr, f.targetKey, f.undoTitle, f.undoID, func(target *unison.Panel, data string) {
-				self := f
-				if target != nil {
-					if field, ok := target.Self.(*NumericField[T]); ok {
-						self = field
+			undo := NewTargetUndo(f.targetMgr, f.targetKey, f.undoTitle, f.CurrentUndoID(),
+				func(target *unison.Panel, data *unison.FieldState) {
+					self := f
+					if target != nil {
+						if field, ok := target.Self.(*NumericField[T]); ok {
+							self = field
+						}
 					}
-				}
-				self.setWithoutUndo(data, true)
-			}, f.Format(f.get()))
-			undo.AfterData = text
+					self.setWithoutUndo(data, true)
+				}, before)
+			undo.AfterData = after
 			mgr.Add(undo)
 		}
 	}
+	f.adjustForText()
+}
+
+func (f *NumericField[T]) adjustForText() {
 	if v := f.mustExtract(f.Text()); f.last != v {
 		f.last = v
 		f.set(v)
@@ -159,13 +160,11 @@ func (f *NumericField[T]) modified() {
 	}
 }
 
-func (f *NumericField[T]) setWithoutUndo(text string, focus bool) {
-	f.inUndo = true
-	f.SetText(text)
-	f.inUndo = false
+func (f *NumericField[T]) setWithoutUndo(state *unison.FieldState, focus bool) {
+	f.ApplyFieldState(state)
+	f.adjustForText()
 	if focus {
 		f.RequestFocus()
-		f.SelectAll()
 	}
 }
 
@@ -174,7 +173,9 @@ func (f *NumericField[T]) Sync() {
 	if !f.Focused() {
 		f.useGet = true
 	}
-	f.setWithoutUndo(f.getData(), false)
+	state := f.GetFieldState()
+	state.Text = f.getData()
+	f.setWithoutUndo(state, false)
 }
 
 // Min returns the minimum value allowed.

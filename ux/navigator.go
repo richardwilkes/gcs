@@ -753,7 +753,7 @@ func setNavigatorRowOpen(row *NavigatorNode, open bool) {
 	}
 }
 
-func (n *Navigator) searchModified() {
+func (n *Navigator) searchModified(_, _ *unison.FieldState) {
 	n.searchIndex = 0
 	n.searchResult = nil
 	text := strings.ToLower(n.searchField.Text())

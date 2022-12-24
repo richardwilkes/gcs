@@ -128,8 +128,8 @@ func createNameableField(key string, m map[string]string) *unison.Field {
 		HGrab:  true,
 	})
 	m[key] = ""
-	field.ModifiedCallback = func() {
-		m[key] = field.Text()
+	field.ModifiedCallback = func(_, after *unison.FieldState) {
+		m[key] = after.Text
 	}
 	return field
 }

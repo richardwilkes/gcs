@@ -155,11 +155,11 @@ func (d *PDFDockable) createToolbar() {
 
 	d.pageNumberField = unison.NewField()
 	d.pageNumberField.SetMinimumTextWidthUsing(strconv.Itoa(d.pdf.PageCount() * 10))
-	d.pageNumberField.ModifiedCallback = func() {
+	d.pageNumberField.ModifiedCallback = func(_, after *unison.FieldState) {
 		if d.noUpdate {
 			return
 		}
-		if pageNum, e := strconv.Atoi(d.pageNumberField.Text()); e == nil && pageNum > 0 && pageNum <= d.pdf.PageCount() {
+		if pageNum, e := strconv.Atoi(after.Text); e == nil && pageNum > 0 && pageNum <= d.pdf.PageCount() {
 			d.LoadPage(pageNum - 1)
 		}
 	}
@@ -220,7 +220,7 @@ func (d *PDFDockable) createToolbar() {
 		VAlign: unison.MiddleAlignment,
 		HGrab:  true,
 	})
-	d.searchField.ModifiedCallback = func() {
+	d.searchField.ModifiedCallback = func(_, _ *unison.FieldState) {
 		if d.noUpdate {
 			return
 		}

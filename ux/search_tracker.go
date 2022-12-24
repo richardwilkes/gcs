@@ -84,11 +84,10 @@ func installSearchTracker(toolbar *unison.Panel, clearTableSelections func(), fi
 	toolbar.AddChild(s.matchesLabel)
 }
 
-func (s *searchTracker) searchModified() {
+func (s *searchTracker) searchModified(_, after *unison.FieldState) {
 	s.searchIndex = 0
 	s.searchResult = nil
-	text := strings.ToLower(s.searchField.Text())
-	s.findMatches(&s.searchResult, text)
+	s.findMatches(&s.searchResult, strings.ToLower(after.Text))
 	s.adjustForMatch()
 }
 

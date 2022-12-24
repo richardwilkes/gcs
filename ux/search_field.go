@@ -30,7 +30,7 @@ func NewSearchField() *unison.Field {
 	b.SetEnabled(false)
 	b.UpdateCursorCallback = func(_ unison.Point) *unison.Cursor { return unison.ArrowCursor() }
 	b.ClickCallback = func() { f.SetText("") }
-	f.ModifiedCallback = func() { b.SetEnabled(f.Text() != "") }
+	f.ModifiedCallback = func(_, after *unison.FieldState) { b.SetEnabled(after.Text != "") }
 	f.AddChild(b)
 	return f
 }

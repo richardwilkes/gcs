@@ -261,8 +261,8 @@ func (d *sheetSettingsDockable) createBlockLayout(content *unison.Panel) {
 		_, valid := model.NewBlockLayoutFromString(d.blockLayoutField.Text())
 		return valid
 	}
-	d.blockLayoutField.ModifiedCallback = func() {
-		if blockLayout, valid := model.NewBlockLayoutFromString(d.blockLayoutField.Text()); valid {
+	d.blockLayoutField.ModifiedCallback = func(_, after *unison.FieldState) {
+		if blockLayout, valid := model.NewBlockLayoutFromString(after.Text); valid {
 			localSettings := d.settings()
 			currentBlockLayout := blockLayout.String()
 			if lastBlockLayout != currentBlockLayout {
@@ -288,8 +288,8 @@ func (d *sheetSettingsDockable) createPaperMarginField(panel *unison.Panel, titl
 		_, err := model.ParsePaperLengthFromString(field.Text())
 		return err == nil
 	}
-	field.ModifiedCallback = func() {
-		if value, err := model.ParsePaperLengthFromString(field.Text()); err == nil {
+	field.ModifiedCallback = func(_, after *unison.FieldState) {
+		if value, err := model.ParsePaperLengthFromString(after.Text); err == nil {
 			set(value)
 			d.syncSheet(false)
 		}

@@ -162,7 +162,7 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 		d.filterPopup.AddItem(tag)
 	}
 	d.filterPopup.SelectionCallback = func(index int, tag string) {
-		d.applyFilter()
+		d.applyFilter(nil, d.filterField.GetFieldState())
 	}
 	d.filterPopup.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,
@@ -334,14 +334,14 @@ func (d *TableDockable[T]) sizeToFit() {
 	d.table.MarkForRedraw()
 }
 
-func (d *TableDockable[T]) applyFilter() {
+func (d *TableDockable[T]) applyFilter(_, after *unison.FieldState) {
 	tag := ""
 	if index := d.filterPopup.SelectedIndex(); index > 0 {
 		if item, ok := d.filterPopup.ItemAt(index); ok {
 			tag = item
 		}
 	}
-	text := strings.TrimSpace(d.filterField.Text())
+	text := strings.TrimSpace(after.Text)
 	if tag == "" && text == "" {
 		d.table.ApplyFilter(nil)
 	} else {

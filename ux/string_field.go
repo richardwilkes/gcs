@@ -18,7 +18,6 @@ import (
 // StringField holds the value for a string field.
 type StringField struct {
 	*unison.Field
-	undoID    int64
 	targetMgr *TargetMgr
 	targetKey string
 	undoTitle string
@@ -26,7 +25,6 @@ type StringField struct {
 	get       func() string
 	set       func(string)
 	useGet    bool
-	inUndo    bool
 }
 
 // NewMultiLineStringField creates a new field for editing a string.
@@ -44,7 +42,6 @@ func NewStringField(targetMgr *TargetMgr, targetKey, undoTitle string, get func(
 func newStringField(field *unison.Field, targetMgr *TargetMgr, targetKey, undoTitle string, get func() string, set func(string)) *StringField {
 	f := &StringField{
 		Field:     field,
-		undoID:    unison.NextUndoID(),
 		targetMgr: targetMgr,
 		targetKey: targetKey,
 		undoTitle: undoTitle,
@@ -81,23 +78,28 @@ func (f *StringField) getData() string {
 	return f.Text()
 }
 
-func (f *StringField) modified() {
-	text := f.Text()
-	if !f.inUndo && f.undoID != unison.NoUndoID {
+func (f *StringField) modified(before, after *unison.FieldState) {
+	if f.CurrentUndoID() != unison.NoUndoID {
 		if mgr := unison.UndoManagerFor(f); mgr != nil {
-			undo := NewTargetUndo(f.targetMgr, f.targetKey, f.undoTitle, f.undoID, func(target *unison.Panel, data string) {
-				self := f
-				if target != nil {
-					if field, ok := target.Self.(*StringField); ok {
-						self = field
+			undo := NewTargetUndo(f.targetMgr, f.targetKey, f.undoTitle, f.CurrentUndoID(),
+				func(target *unison.Panel, data *unison.FieldState) {
+					self := f
+					if target != nil {
+						if field, ok := target.Self.(*StringField); ok {
+							self = field
+						}
 					}
-				}
-				self.setWithoutUndo(data, true)
-			}, f.get())
-			undo.AfterData = text
+					self.setWithoutUndo(data, true)
+				}, before)
+			undo.AfterData = after
 			mgr.Add(undo)
 		}
 	}
+	f.adjustForText()
+}
+
+func (f *StringField) adjustForText() {
+	text := f.Text()
 	if f.last != text {
 		f.last = text
 		f.set(text)
@@ -106,13 +108,11 @@ func (f *StringField) modified() {
 	}
 }
 
-func (f *StringField) setWithoutUndo(text string, focus bool) {
-	f.inUndo = true
-	f.SetText(text)
-	f.inUndo = false
+func (f *StringField) setWithoutUndo(state *unison.FieldState, focus bool) {
+	f.ApplyFieldState(state)
+	f.adjustForText()
 	if focus {
 		f.RequestFocus()
-		f.SelectAll()
 	}
 }
 
@@ -121,5 +121,7 @@ func (f *StringField) Sync() {
 	if !f.Focused() {
 		f.useGet = true
 	}
-	f.setWithoutUndo(f.getData(), false)
+	state := f.GetFieldState()
+	state.Text = f.getData()
+	f.setWithoutUndo(state, false)
 }
