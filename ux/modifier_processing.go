@@ -15,6 +15,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/xmath"
 	"github.com/richardwilkes/unison"
 )
 
@@ -56,34 +57,73 @@ func processModifiers[T *model.TraitModifier | *model.EquipmentModifier](title s
 	list.SetLayout(&unison.FlexLayout{
 		Columns:  1,
 		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
 	})
 	tracker := make(map[*unison.CheckBox]model.GeneralModifier)
 	model.Traverse[T](func(m T) bool {
 		if mod, ok := any(m).(model.GeneralModifier); ok {
-			var p *unison.Panel
-			if mod.Container() {
-				label := unison.NewLabel()
-				label.Text = mod.FullDescription()
-				if cost := mod.FullCostDescription(); cost != "" {
-					label.Text += " (" + cost + ")"
-				}
-				p = label.AsPanel()
-			} else {
-				cb := unison.NewCheckBox()
-				cb.Text = mod.FullDescription()
-				if cost := mod.FullCostDescription(); cost != "" {
-					cb.Text += " (" + cost + ")"
-				}
-				cb.State = unison.CheckStateFromBool(mod.Enabled())
-				tracker[cb] = mod
-				p = cb.AsPanel()
+			text := mod.FullDescription()
+			if cost := mod.FullCostDescription(); cost != "" {
+				text += " (" + cost + ")"
 			}
-			p.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: float32(mod.Depth()) * 16}))
-			list.AddChild(p)
+			indent := float32(mod.Depth()) * 16
+			lines := unison.NewTextWrappedLines(text, &unison.TextDecoration{
+				Font: unison.DefaultCheckBoxTheme.Font,
+			}, xmath.Max(400, 800-indent))
+			var cb *unison.CheckBox
+			if !mod.Container() {
+				cb = unison.NewCheckBox()
+				cb.Text = lines[0].String()
+				cb.State = unison.CheckStateFromBool(mod.Enabled())
+				_, cbPref, _ := cb.Sizes(unison.Size{})
+				label := unison.NewLabel()
+				label.Font = unison.DefaultCheckBoxTheme.Font
+				label.Text = cb.Text
+				_, labelPref, _ := label.Sizes(unison.Size{})
+				tracker[cb] = mod
+				vspacing := float32(unison.StdVSpacing)
+				if len(lines) == 1 {
+					vspacing *= 2
+				}
+				cb.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: indent, Bottom: vspacing}))
+				list.AddChild(cb)
+				lines = lines[1:]
+				indent += cbPref.Width - labelPref.Width
+			}
+			for i, line := range lines {
+				label := unison.NewLabel()
+				label.Font = unison.DefaultCheckBoxTheme.Font
+				label.Text = line.String()
+				vspacing := float32(unison.StdVSpacing)
+				if len(lines)-1 == i {
+					vspacing *= 2
+				}
+				label.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: indent, Bottom: vspacing}))
+				if cb != nil {
+					label.MouseDownCallback = func(_ unison.Point, _, _ int, _ unison.Modifiers) bool {
+						return true
+					}
+					label.MouseUpCallback = func(where unison.Point, _ int, _ unison.Modifiers) bool {
+						rect := label.ContentRect(false)
+						if rect.ContainsPoint(where) {
+							cb.Click()
+						}
+						return true
+					}
+					label.UpdateCursorCallback = func(_ unison.Point) *unison.Cursor {
+						return unison.PointingCursor()
+					}
+				}
+				list.AddChild(label)
+			}
 		}
 		return false
 	}, false, false, modifiers...)
+	children := list.Children()
+	if border, ok := children[len(children)-1].Border().(*unison.EmptyBorder); ok {
+		insets := border.Insets()
+		insets.Bottom = 0
+		children[len(children)-1].SetBorder(unison.NewEmptyBorder(insets))
+	}
 	scroll := unison.NewScrollPanel()
 	scroll.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
 	scroll.SetContent(list, unison.FillBehavior, unison.FillBehavior)
