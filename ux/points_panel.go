@@ -82,6 +82,11 @@ func NewPointsPanel(entity *model.Entity, targetMgr *TargetMgr) *PointsPanel {
 	hdri.AddChild(p.total)
 	height := p.total.Font.Baseline() - 2
 	editButton := unison.NewSVGButton(svg.Edit)
+	editButton.OnBackgroundInk = model.OnHeaderColor
+	// These next two really should be different, but since this is on the header background we'd have to make new
+	// colors and I don't want to do that right now just for a single case
+	editButton.RolloverInk = model.OnHeaderColor
+	editButton.OnSelectionInk = model.OnHeaderColor
 	editButton.Font = model.PageLabelPrimaryFont
 	editButton.Drawable.(*unison.DrawableSVG).Size = unison.NewSize(height, height)
 	editButton.ClickCallback = func() {
