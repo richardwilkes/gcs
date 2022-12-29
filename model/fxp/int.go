@@ -42,6 +42,7 @@ var (
 	One            = From(1)
 	OnePointOne    = FromStringForced("1.1")
 	OnePointTwo    = FromStringForced("1.2")
+	OneAndAQuarter = FromStringForced("1.25")
 	OneAndAHalf    = FromStringForced("1.5")
 	Two            = From(2)
 	TwoAndAHalf    = FromStringForced("2.5")

@@ -114,7 +114,7 @@ func (a *Attribute) Maximum() fxp.Int {
 		return 0
 	}
 	max := def.BaseValue(a.Entity) + a.Adjustment + a.Bonus
-	if def.Type != DecimalAttributeType && def.Type != DecimalRefAttributeType {
+	if !def.AllowsDecimal() {
 		max = max.Trunc()
 	}
 	return max

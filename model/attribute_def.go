@@ -142,6 +142,11 @@ func (a *AttributeDef) Pool() bool {
 	return a.Type == PoolSeparatorAttributeType || a.Type == PoolAttributeType
 }
 
+// AllowsDecimal returns true if the value can have a decimal point in it.
+func (a *AttributeDef) AllowsDecimal() bool {
+	return a.Type == DecimalAttributeType || a.Type == DecimalRefAttributeType
+}
+
 // BaseValue returns the resolved base value.
 func (a *AttributeDef) BaseValue(resolver eval.VariableResolver) fxp.Int {
 	if a.IsSeparator() {

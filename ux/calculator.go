@@ -22,66 +22,126 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
+	"golang.org/x/exp/slices"
 )
 
 var (
 	_ unison.Dockable            = &Calculator{}
 	_ unison.UndoManagerProvider = &Calculator{}
 	_ GroupedCloser              = &Calculator{}
+
+	terrain = []terrainModifier{
+		{Name: i18n.Text("Broken Ground"), Modifier: fxp.Half},
+		{Name: i18n.Text("Deep Snow"), Modifier: fxp.Fifth, IsSnow: true},
+		{Name: i18n.Text("Desert"), Modifier: fxp.Fifth},
+		{Name: i18n.Text("Desert, Hard-packed"), Modifier: fxp.OneAndAQuarter},
+		{Name: i18n.Text("Forest"), Modifier: fxp.Half},
+		{Name: i18n.Text("Forest, Dense"), Modifier: fxp.Fifth},
+		{Name: i18n.Text("Forest, Light"), Modifier: fxp.One},
+		{Name: i18n.Text("Frozen Lake"), Modifier: fxp.Half, IsIce: true},
+		{Name: i18n.Text("Frozen River"), Modifier: fxp.Half, IsIce: true},
+		{Name: i18n.Text("Hills, Rolling"), Modifier: fxp.One},
+		{Name: i18n.Text("Hills, Steep"), Modifier: fxp.Half},
+		{Name: i18n.Text("Jungle"), Modifier: fxp.Fifth},
+		{Name: i18n.Text("Mountains"), Modifier: fxp.Fifth},
+		{Name: i18n.Text("Mud"), Modifier: fxp.Fifth},
+		{Name: i18n.Text("Plains, Level"), Modifier: fxp.OneAndAQuarter},
+		{Name: i18n.Text("Road, Cobblestone"), Modifier: fxp.One, IsRoad: true},
+		{Name: i18n.Text("Road, Dirt"), Modifier: fxp.One, ModifierInRain: fxp.Fifth, IsRoad: true, Default: true},
+		{Name: i18n.Text("Road, Gravel"), Modifier: fxp.One, ModifierInRain: fxp.Fifth, IsRoad: true},
+		{Name: i18n.Text("Road, Paved"), Modifier: fxp.OneAndAQuarter, ModifierInRain: fxp.One, IsRoad: true},
+		{Name: i18n.Text("Sand"), Modifier: fxp.Fifth},
+		{Name: i18n.Text("Sand, Hard-packed"), Modifier: fxp.OneAndAQuarter},
+		{Name: i18n.Text("Swamp"), Modifier: fxp.Fifth},
+	}
+
+	weather = []terrainModifier{
+		{Name: i18n.Text("Normal"), Modifier: fxp.One, Default: true},
+		{Name: i18n.Text("Rain"), Modifier: fxp.Half, IsRain: true},
+		{Name: i18n.Text("Sleet"), Modifier: fxp.Half, IsIce: true},
+		{Name: i18n.Text("Snow"), Modifier: fxp.Half, IsSnow: true},
+		{Name: i18n.Text("Snow, Heavy"), Modifier: fxp.Quarter, IsSnow: true},
+	}
 )
+
+type terrainModifier struct {
+	Name           string
+	Modifier       fxp.Int
+	ModifierInRain fxp.Int
+	IsRoad         bool
+	IsRain         bool
+	IsSnow         bool
+	IsIce          bool
+	Default        bool
+}
+
+func (t terrainModifier) String() string {
+	return t.Name
+}
 
 // Calculator provides calculations for various physical tasks, such as jumping.
 type Calculator struct {
 	unison.Panel
 	sheet                      *Sheet
 	undoMgr                    *unison.UndoManager
+	content                    *unison.Panel
 	scroll                     *unison.ScrollPanel
 	jumpingLabel               *unison.Label
 	highJumpResult             *unison.Label
 	broadJumpResult            *unison.Label
 	throwingDistanceResult     *unison.Label
 	throwingDamageResult       *unison.Label
+	hikingResult               *unison.Label
 	scale                      int
-	jumpRunningStartYards      fxp.Int
-	objectWeight               model.Weight
+	jumpingRunningStartYards   fxp.Int
+	throwingObjectWeight       model.Weight
 	jumpingExtraEffortPenalty  int
 	throwingExtraEffortPenalty int
+	hikingExtraEffortPenalty   int
+	terrainIndex               int
+	weatherIndex               int
+	usingSkis                  bool
+	usingSkates                bool
+	roadsAreCleared            bool
+	successfulHikingRoll       bool
 }
 
 // DisplayCalculator displays the calculator for the given Sheet.
 func DisplayCalculator(sheet *Sheet) {
 	ws, dc, found := Activate(func(d unison.Dockable) bool {
-		if e, ok := d.(*Calculator); ok {
-			return e.sheet == sheet
+		if c, ok := d.(*Calculator); ok {
+			return c.sheet == sheet
 		}
 		return false
 	})
 	if !found && ws != nil {
-		e := &Calculator{
-			sheet:        sheet,
-			scale:        model.GlobalSettings().General.InitialEditorUIScale,
-			objectWeight: model.Weight(fxp.One),
+		c := &Calculator{
+			sheet:                sheet,
+			scale:                model.GlobalSettings().General.InitialEditorUIScale,
+			throwingObjectWeight: model.Weight(fxp.One),
+			terrainIndex:         slices.IndexFunc(terrain, func(t terrainModifier) bool { return t.Default }),
+			weatherIndex:         slices.IndexFunc(weather, func(t terrainModifier) bool { return t.Default }),
 		}
-		e.Self = e
+		c.Self = c
 
-		e.undoMgr = unison.NewUndoManager(100, func(err error) { jot.Error(err) })
-		e.SetLayout(&unison.FlexLayout{Columns: 1})
+		c.undoMgr = unison.NewUndoManager(100, func(err error) { jot.Error(err) })
+		c.SetLayout(&unison.FlexLayout{Columns: 1})
 
-		content := e.createContent()
+		c.createContent()
 
-		e.scroll = unison.NewScrollPanel()
-		e.scroll.SetContent(content, unison.HintedFillBehavior, unison.FillBehavior)
-		e.scroll.SetLayoutData(&unison.FlexLayoutData{
+		c.scroll = unison.NewScrollPanel()
+		c.scroll.SetContent(c.content, unison.HintedFillBehavior, unison.FillBehavior)
+		c.scroll.SetLayoutData(&unison.FlexLayoutData{
 			HAlign: unison.FillAlignment,
 			VAlign: unison.FillAlignment,
 			HGrab:  true,
 			VGrab:  true,
 		})
 
-		e.AddChild(e.createToolbar())
-		e.AddChild(e.scroll)
-		e.ClientData()[AssociatedUUIDKey] = sheet.Entity().ID
-		e.scroll.Content().AsPanel().ValidateScrollRoot()
+		c.AddChild(c.createToolbar())
+		c.AddChild(c.scroll)
+		c.ClientData()[AssociatedUUIDKey] = sheet.Entity().ID
+		c.content.ValidateScrollRoot()
 		group := EditorGroup
 		p := sheet.AsPanel()
 		for p != nil {
@@ -91,8 +151,8 @@ func DisplayCalculator(sheet *Sheet) {
 			}
 			p = p.Parent()
 		}
-		PlaceInDock(ws, dc, e, group)
-		content.RequestFocus()
+		PlaceInDock(ws, dc, c, group)
+		c.content.RequestFocus()
 	}
 }
 
@@ -103,7 +163,11 @@ func UpdateCalculator(sheet *Sheet) {
 			ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
 				for _, other := range dc.Dockables() {
 					if c, ok := other.(*Calculator); ok && c.sheet == sheet {
-						c.updateAll()
+						c.updateJumpingResult()
+						c.updateThrowingResult()
+						c.updateHikingResult()
+						c.content.MarkForLayoutRecursively()
+						c.content.MarkForRedraw()
 						return true
 					}
 				}
@@ -139,39 +203,41 @@ func (c *Calculator) createToolbar() *unison.Panel {
 	toolbar.SetLayout(&unison.FlexLayout{
 		Columns:  len(toolbar.Children()),
 		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
 	})
 	return toolbar
 }
 
-func (c *Calculator) createContent() *unison.Panel {
-	content := unison.NewPanel()
-	content.SetBorder(unison.NewEmptyBorder(unison.NewUniformInsets(unison.StdHSpacing * 2)))
-	content.SetLayout(&unison.FlexLayout{
+func (c *Calculator) createContent() {
+	c.content = unison.NewPanel()
+	c.content.SetBorder(unison.NewEmptyBorder(unison.NewUniformInsets(unison.StdHSpacing * 2)))
+	c.content.SetLayout(&unison.FlexLayout{
 		Columns:  1,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	c.addJumpingSection(content)
-	c.addThrowingSection(content)
-	return content
+	c.addJumpingSection()
+	c.addThrowingSection()
+	c.addHikingSection()
 }
 
-func (c *Calculator) addJumpingSection(content *unison.Panel) {
-	content.AddChild(c.createHeader(i18n.Text("Jumping"), "B352", "Jumping", 0))
+func (c *Calculator) addJumpingSection() {
+	c.content.AddChild(c.createHeader(i18n.Text("Jumping"), "BX352", "Jumping", 0))
 
 	wrapper := unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{
 		Columns:  5,
 		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
 	})
 	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
 	label := unison.NewLabel()
 	label.Text = i18n.Text("With a")
 	wrapper.AddChild(label)
 	field := NewDecimalField(nil, "", i18n.Text("Jump Running Start"),
-		func() fxp.Int { return c.jumpRunningStartYards },
+		func() fxp.Int { return c.jumpingRunningStartYards },
 		func(v fxp.Int) {
-			c.jumpRunningStartYards = v
+			c.jumpingRunningStartYards = v
 			c.updateJumpingResult()
 		},
 		0, fxp.Max, false, false)
@@ -188,12 +254,13 @@ func (c *Calculator) addJumpingSection(content *unison.Panel) {
 	label = unison.NewLabel()
 	label.Text = i18n.Text("penalty for extra effort:")
 	wrapper.AddChild(label)
-	content.AddChild(wrapper)
+	c.content.AddChild(wrapper)
 
 	wrapper = unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{
 		Columns:  2,
 		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
 	})
 	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 4}))
 	label = unison.NewLabel()
@@ -207,16 +274,17 @@ func (c *Calculator) addJumpingSection(content *unison.Panel) {
 	c.broadJumpResult = unison.NewLabel()
 	c.updateJumpingResult()
 	wrapper.AddChild(c.broadJumpResult)
-	content.AddChild(wrapper)
+	c.content.AddChild(wrapper)
 }
 
-func (c *Calculator) addThrowingSection(content *unison.Panel) {
-	content.AddChild(c.createHeader(i18n.Text("Throwing"), "B355", "Throwing", unison.StdVSpacing*3))
+func (c *Calculator) addThrowingSection() {
+	c.content.AddChild(c.createHeader(i18n.Text("Throwing"), "BX355", "Throwing", unison.StdVSpacing*3))
 
 	wrapper := unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{
 		Columns:  5,
 		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
 	})
 	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
 	label := unison.NewLabel()
@@ -224,9 +292,9 @@ func (c *Calculator) addThrowingSection(content *unison.Panel) {
 	wrapper.AddChild(label)
 	wrapper.AddChild(NewWeightField(nil, "", i18n.Text("Object Weight"),
 		c.sheet.Entity(),
-		func() model.Weight { return c.objectWeight },
+		func() model.Weight { return c.throwingObjectWeight },
 		func(v model.Weight) {
-			c.objectWeight = v
+			c.throwingObjectWeight = v
 			c.updateThrowingResult()
 		},
 		0, model.Weight(fxp.Max), false))
@@ -243,12 +311,13 @@ func (c *Calculator) addThrowingSection(content *unison.Panel) {
 	label = unison.NewLabel()
 	label.Text = i18n.Text("penalty for extra effort:")
 	wrapper.AddChild(label)
-	content.AddChild(wrapper)
+	c.content.AddChild(wrapper)
 
 	wrapper = unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{
 		Columns:  2,
 		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
 	})
 	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 4}))
 	label = unison.NewLabel()
@@ -262,7 +331,158 @@ func (c *Calculator) addThrowingSection(content *unison.Panel) {
 	c.throwingDamageResult = unison.NewLabel()
 	wrapper.AddChild(c.throwingDamageResult)
 	c.updateThrowingResult()
-	content.AddChild(wrapper)
+	c.content.AddChild(wrapper)
+}
+
+func (c *Calculator) addHikingSection() {
+	c.content.AddChild(c.createHeader(i18n.Text("Hiking"), "BX351", "Hiking", unison.StdVSpacing*3))
+
+	wrapper := unison.NewPanel()
+	wrapper.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
+
+	terrainPopup := unison.NewPopupMenu[terrainModifier]()
+	roadsAreClearedCheckbox := unison.NewCheckBox()
+	usingSkisCheckbox := unison.NewCheckBox()
+	usingSkatesCheckbox := unison.NewCheckBox()
+	successfulHikingRollCheckbox := unison.NewCheckBox()
+	extraEffortPenaltyField := NewIntegerField(nil, "", i18n.Text("Hiking Extra Effort Penalty"),
+		func() int { return c.hikingExtraEffortPenalty },
+		func(v int) {
+			c.hikingExtraEffortPenalty = v
+			c.updateHikingResult()
+		},
+		-100, 0, false, false)
+	hikingAdjuster := func() {
+		switch {
+		case c.usingSkis:
+			successfulHikingRollCheckbox.Text = i18n.Text("Made a successful Skiing (B221) roll")
+			usingSkatesCheckbox.SetEnabled(false)
+		case c.usingSkates:
+			successfulHikingRollCheckbox.Text = i18n.Text("Made a successful Skating (B220) roll")
+			usingSkisCheckbox.SetEnabled(false)
+		default:
+			successfulHikingRollCheckbox.Text = i18n.Text("Made a successful Hiking (B200) roll")
+			usingSkatesCheckbox.SetEnabled(true)
+			usingSkisCheckbox.SetEnabled(true)
+		}
+		w := weather[c.weatherIndex]
+		roadsAreClearedCheckbox.SetEnabled(terrain[c.terrainIndex].IsRoad && (w.IsIce || w.IsSnow))
+		extraEffortPenaltyField.SetEnabled(c.successfulHikingRoll)
+		c.content.MarkForLayoutRecursively()
+		c.content.MarkForLayoutRecursivelyUpward()
+		c.content.MarkForRedraw()
+	}
+
+	label := unison.NewLabel()
+	label.Text = i18n.Text("Terrain:")
+	wrapper.AddChild(label)
+
+	terrainPopup.AddItem(terrain...)
+	terrainPopup.SelectIndex(c.terrainIndex)
+	terrainPopup.SelectionCallback = func(index int, _ terrainModifier) {
+		c.terrainIndex = index
+		hikingAdjuster()
+		c.updateHikingResult()
+	}
+	wrapper.AddChild(terrainPopup)
+
+	label = unison.NewLabel()
+	label.Text = i18n.Text("Weather:")
+	wrapper.AddChild(label)
+
+	weatherPopup := unison.NewPopupMenu[terrainModifier]()
+	weatherPopup.AddItem(weather...)
+	weatherPopup.SelectIndex(c.weatherIndex)
+	weatherPopup.SelectionCallback = func(index int, _ terrainModifier) {
+		c.weatherIndex = index
+		hikingAdjuster()
+		c.updateHikingResult()
+	}
+	wrapper.AddChild(weatherPopup)
+
+	c.content.AddChild(wrapper)
+
+	roadsAreClearedCheckbox.Text = i18n.Text("Roads are cleared")
+	roadsAreClearedCheckbox.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
+	roadsAreClearedCheckbox.ClickCallback = func() {
+		c.roadsAreCleared = roadsAreClearedCheckbox.State == unison.OnCheckState
+		c.updateHikingResult()
+	}
+	c.content.AddChild(roadsAreClearedCheckbox)
+
+	usingSkisCheckbox.Text = i18n.Text("Using skis")
+	usingSkisCheckbox.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
+	usingSkisCheckbox.ClickCallback = func() {
+		c.usingSkis = usingSkisCheckbox.State == unison.OnCheckState
+		hikingAdjuster()
+		c.updateHikingResult()
+	}
+	c.content.AddChild(usingSkisCheckbox)
+
+	usingSkatesCheckbox.Text = i18n.Text("Using skates")
+	usingSkatesCheckbox.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
+	usingSkatesCheckbox.ClickCallback = func() {
+		c.usingSkates = usingSkatesCheckbox.State == unison.OnCheckState
+		hikingAdjuster()
+		c.updateHikingResult()
+	}
+	c.content.AddChild(usingSkatesCheckbox)
+
+	hikingAdjuster()
+	successfulHikingRollCheckbox.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
+	successfulHikingRollCheckbox.ClickCallback = func() {
+		c.successfulHikingRoll = successfulHikingRollCheckbox.State == unison.OnCheckState
+		hikingAdjuster()
+		c.updateHikingResult()
+	}
+	c.content.AddChild(successfulHikingRollCheckbox)
+
+	wrapper = unison.NewPanel()
+	wrapper.SetLayout(&unison.FlexLayout{
+		Columns:  3,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 5}))
+	label = unison.NewLabel()
+	label.Text = i18n.Text("…using a")
+	wrapper.AddChild(label)
+	wrapper.AddChild(extraEffortPenaltyField)
+	label = unison.NewLabel()
+	label.Text = i18n.Text("penalty for extra effort.")
+	wrapper.AddChild(label)
+	c.content.AddChild(wrapper)
+
+	wrapper = unison.NewPanel()
+	wrapper.SetLayout(&unison.FlexLayout{
+		Columns:  3,
+		VSpacing: unison.StdVSpacing,
+	})
+	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
+
+	c.hikingResult = unison.NewLabel()
+	c.hikingResult.Font = &unison.DynamicFont{
+		Resolver: func() unison.FontDescriptor {
+			desc := unison.DefaultLabelTheme.Font.Descriptor()
+			desc.Weight = unison.BoldFontWeight
+			return desc
+		},
+	}
+	c.updateHikingResult()
+	label = unison.NewLabel()
+	label.Text = i18n.Text("You can travel ")
+	wrapper.AddChild(label)
+	wrapper.AddChild(c.hikingResult)
+	label = unison.NewLabel()
+	label.Text = i18n.Text(" per full day.")
+	wrapper.AddChild(label)
+
+	c.content.AddChild(wrapper)
 }
 
 func (c *Calculator) createHeader(text, linkRef, linkHighlight string, topMargin float32) *unison.Panel {
@@ -287,7 +507,13 @@ func (c *Calculator) createHeader(text, linkRef, linkHighlight string, topMargin
 	link := NewLink(linkRef, func() {
 		OpenPageReference(nil, linkRef, linkHighlight, nil)
 	})
-	link.Font = first.Font
+	link.Font = &unison.DynamicFont{
+		Resolver: func() unison.FontDescriptor {
+			desc := unison.LabelFont.Descriptor()
+			desc.Weight = unison.BoldFontWeight
+			return desc
+		},
+	}
 	wrapper.AddChild(link)
 
 	last := unison.NewLabel()
@@ -356,7 +582,7 @@ func (c *Calculator) computeJump(broad bool) fxp.Int {
 	basicMoveWithoutRun := basicMove
 
 	// Adjust Basic Move for running
-	if c.jumpRunningStartYards > 0 {
+	if c.jumpingRunningStartYards > 0 {
 		enhMove := -fxp.One
 		model.Traverse(func(t *model.Trait) bool {
 			if strings.EqualFold(t.Name, "enhanced move (ground)") && t.IsLeveled() {
@@ -368,7 +594,7 @@ func (c *Calculator) computeJump(broad bool) fxp.Int {
 			}
 			return false
 		}, true, false, entity.Traits...)
-		basicMove += c.jumpRunningStartYards
+		basicMove += c.jumpingRunningStartYards
 		if enhMove > 0 {
 			if adjusted := basicMoveWithoutRun.Mul(enhMove + fxp.One); adjusted > basicMove {
 				basicMove = adjusted
@@ -444,7 +670,9 @@ func (c *Calculator) computeJump(broad bool) fxp.Int {
 
 func (c *Calculator) updateJumpingResult() {
 	c.highJumpResult.Text = c.distanceToText(c.computeJump(false))
+	c.highJumpResult.MarkForLayoutRecursivelyUpward()
 	c.broadJumpResult.Text = c.distanceToText(c.computeJump(true))
+	c.broadJumpResult.MarkForLayoutRecursivelyUpward()
 	var units string
 	if c.useMeters() {
 		units = i18n.Text("meter")
@@ -452,10 +680,11 @@ func (c *Calculator) updateJumpingResult() {
 		units = i18n.Text("yard")
 	}
 	c.jumpingLabel.Text = fmt.Sprintf(i18n.Text("%s running start and a"), units)
+	c.jumpingLabel.MarkForLayoutRecursivelyUpward()
 }
 
 func (c *Calculator) updateThrowingResult() {
-	if c.objectWeight <= 0 {
+	if c.throwingObjectWeight <= 0 {
 		c.throwingDistanceResult.Text = i18n.Text("None")
 		c.throwingDamageResult.Text = i18n.Text("None")
 		return
@@ -507,7 +736,7 @@ func (c *Calculator) updateThrowingResult() {
 	basicLift := entity.BasicLiftForST(st)
 	var weightRatio fxp.Int
 	if basicLift > 0 {
-		weightRatio = fxp.Int(c.objectWeight).Div(fxp.Int(basicLift))
+		weightRatio = fxp.Int(c.throwingObjectWeight).Div(fxp.Int(basicLift))
 	}
 	var modifier fxp.Int
 	switch {
@@ -568,7 +797,7 @@ func (c *Calculator) updateThrowingResult() {
 	thrust.Modifier += thrust.Count * damageBonus
 	basicLift = entity.BasicLiftForST(st - fxp.From(distanceBonus))
 	if basicLift > 0 {
-		weightRatio = fxp.Int(c.objectWeight).Div(fxp.Int(basicLift))
+		weightRatio = fxp.Int(c.throwingObjectWeight).Div(fxp.Int(basicLift))
 	} else {
 		weightRatio = 0
 	}
@@ -589,6 +818,96 @@ func (c *Calculator) updateThrowingResult() {
 
 	c.throwingDistanceResult.Text = c.distanceToText(inches)
 	c.throwingDamageResult.Text = thrust.StringExtra(entity.SheetSettings.UseModifyingDicePlusAdds)
+	c.throwingDistanceResult.MarkForLayoutRecursivelyUpward()
+	c.throwingDamageResult.MarkForLayoutRecursivelyUpward()
+}
+
+func (c *Calculator) updateHikingResult() {
+	entity := c.sheet.Entity()
+	distance := fxp.From(entity.Move(entity.EncumbranceLevel(false)) * 10)
+
+	// Adjust for enhanced move (ground), if any
+	enhMove := -fxp.One
+	model.Traverse(func(t *model.Trait) bool {
+		if strings.EqualFold(t.Name, "enhanced move (ground)") && t.IsLeveled() {
+			if enhMove == -fxp.One {
+				enhMove = t.Levels
+			} else {
+				enhMove += t.Levels
+			}
+		}
+		return false
+	}, true, false, entity.Traits...)
+	if enhMove > 0 {
+		distance = distance.Mul(fxp.One + enhMove)
+	}
+
+	// Adjust for terrain
+	t := terrain[c.terrainIndex]
+	mod := t.Modifier
+	if t.IsIce && c.usingSkates {
+		mod = fxp.OneAndAQuarter
+	}
+	if t.IsSnow && c.usingSkis {
+		mod = fxp.One
+	}
+
+	// Adjust for weather
+	w := weather[c.weatherIndex]
+	switch {
+	case w.IsRain:
+		if t.IsRoad {
+			if t.ModifierInRain != 0 {
+				mod = t.ModifierInRain
+			}
+		} else {
+			mod = mod.Mul(w.Modifier)
+		}
+	case w.IsSnow:
+		if t.IsRoad {
+			mod = fxp.One
+		}
+		if (!t.IsRoad || !c.roadsAreCleared) && !c.usingSkis {
+			mod = mod.Mul(w.Modifier)
+		}
+	case w.IsIce:
+		if t.IsRoad {
+			mod = fxp.One
+		}
+		if (!t.IsRoad || !c.roadsAreCleared) && !c.usingSkates {
+			mod = mod.Mul(w.Modifier)
+		}
+	}
+	distance = distance.Mul(mod)
+
+	// Adjust for making the hiking/skiing/skating check
+	mod = fxp.One
+	if c.successfulHikingRoll {
+		mod = fxp.OnePointTwo
+		if c.hikingExtraEffortPenalty < 0 {
+			mod += fxp.From(-5 * c.hikingExtraEffortPenalty).Div(fxp.Hundred)
+		}
+	}
+	distance = distance.Mul(mod)
+
+	var units string
+	if c.useMeters() {
+		// miles -> inches -> GURPS kilometers
+		distance = distance.Mul(fxp.From(63360)).Div(fxp.From(36000))
+		if distance == fxp.One {
+			units = i18n.Text("kilometer")
+		} else {
+			units = i18n.Text("kilometers")
+		}
+	} else {
+		if distance == fxp.One {
+			units = i18n.Text("mile")
+		} else {
+			units = i18n.Text("miles")
+		}
+	}
+	c.hikingResult.Text = fmt.Sprintf("%s %s", distance.Comma(), units)
+	c.hikingResult.MarkForLayoutRecursivelyUpward()
 }
 
 func (c *Calculator) useMeters() bool {
@@ -639,12 +958,4 @@ func (c *Calculator) distanceToText(inches fxp.Int) string {
 		}
 	}
 	return buffer.String()
-}
-
-func (c *Calculator) updateAll() {
-	c.updateJumpingResult()
-	c.updateThrowingResult()
-	content := c.scroll.Content().AsPanel()
-	content.MarkForLayoutRecursively()
-	content.MarkForRedraw()
 }

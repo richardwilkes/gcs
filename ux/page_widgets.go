@@ -209,8 +209,8 @@ func NewWeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entit
 }
 
 // NewIntegerPageField creates a new integer entry field for a sheet page.
-func NewIntegerPageField(targetMgr *TargetMgr, targetKey, undoTitle string, get func() int, set func(int), min, max int, showSign bool) *IntegerField {
-	field := NewIntegerField(targetMgr, targetKey, undoTitle, get, set, min, max, showSign, false)
+func NewIntegerPageField(targetMgr *TargetMgr, targetKey, undoTitle string, get func() int, set func(int), min, max int, showSign, noMinWidth bool) *IntegerField {
+	field := NewIntegerField(targetMgr, targetKey, undoTitle, get, set, min, max, showSign, noMinWidth)
 	field.HAlign = unison.EndAlignment
 	field.Font = model.PageFieldPrimaryFont
 	field.FocusedBorder = unison.NewLineBorder(unison.AccentColor, 0, unison.Insets{Bottom: 1}, false)

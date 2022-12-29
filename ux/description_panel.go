@@ -157,7 +157,7 @@ func (d *DescriptionPanel) createColumn2() *unison.Panel {
 	column.AddChild(NewPageLabelEnd(title))
 	field := NewIntegerPageField(d.targetMgr, d.prefix+"size", title,
 		func() int { return d.entity.Profile.AdjustedSizeModifier() },
-		func(v int) { d.entity.Profile.SetAdjustedSizeModifier(v) }, -99, 99, true)
+		func(v int) { d.entity.Profile.SetAdjustedSizeModifier(v) }, -99, 99, true, false)
 	field.HAlign = unison.StartAlignment
 	column.AddChild(field)
 

@@ -116,9 +116,14 @@ func (p *SecondaryAttrPanel) createPointsField(attr *model.Attribute) unison.Pan
 }
 
 func (p *SecondaryAttrPanel) createValueField(def *model.AttributeDef, attr *model.Attribute) unison.Paneler {
-	return NewDecimalPageField(p.targetMgr, p.prefix+attr.AttrID, def.CombinedName(),
-		func() fxp.Int { return attr.Maximum() },
-		func(v fxp.Int) { attr.SetMaximum(v) }, fxp.Min, fxp.Max, true)
+	if def.AllowsDecimal() {
+		return NewDecimalPageField(p.targetMgr, p.prefix+attr.AttrID, def.CombinedName(),
+			func() fxp.Int { return attr.Maximum() },
+			func(v fxp.Int) { attr.SetMaximum(v) }, fxp.Min, fxp.Max, true)
+	}
+	return NewIntegerPageField(p.targetMgr, p.prefix+attr.AttrID, def.CombinedName(),
+		func() int { return fxp.As[int](attr.Maximum().Trunc()) },
+		func(v int) { attr.SetMaximum(fxp.From(v)) }, fxp.As[int](fxp.Min.Trunc()), fxp.As[int](fxp.Max.Trunc()), false, true)
 }
 
 // Sync the panel to the current data.

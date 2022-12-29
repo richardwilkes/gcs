@@ -329,7 +329,7 @@ func (e *Entity) processFeatures() {
 	for _, attr := range e.Attributes.Set {
 		if def := attr.AttributeDef(); def != nil {
 			attr.Bonus = e.AttributeBonusFor(attr.AttrID, NoneBonusLimitation, nil)
-			if def.Type != DecimalAttributeType && def.Type != DecimalRefAttributeType {
+			if !def.AllowsDecimal() {
 				attr.Bonus = attr.Bonus.Trunc()
 			}
 			attr.CostReduction = e.CostReductionFor(attr.AttrID)
