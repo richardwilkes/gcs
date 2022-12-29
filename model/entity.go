@@ -939,7 +939,13 @@ func (e *Entity) BasicLift() Weight {
 	if e.cachedBasicLift != -1 {
 		return e.cachedBasicLift
 	}
-	st := (e.StrengthOrZero() + e.LiftingStrengthBonus).Trunc()
+	e.cachedBasicLift = e.BasicLiftForST(e.StrengthOrZero())
+	return e.cachedBasicLift
+}
+
+// BasicLiftForST returns the entity's Basic Lift as if their base ST was the given value.
+func (e *Entity) BasicLiftForST(st fxp.Int) Weight {
+	st = (st + e.LiftingStrengthBonus).Trunc()
 	if IsThresholdOpMet(HalveSTThresholdOp, e.Attributes) {
 		st = st.Div(fxp.Two)
 		if st != st.Trunc() {
@@ -947,7 +953,6 @@ func (e *Entity) BasicLift() Weight {
 		}
 	}
 	if st < fxp.One {
-		e.cachedBasicLift = 0
 		return 0
 	}
 	var v fxp.Int
@@ -970,8 +975,7 @@ func (e *Entity) BasicLift() Weight {
 	if v >= fxp.Ten {
 		v = v.Round()
 	}
-	e.cachedBasicLift = Weight(v.Mul(fxp.Ten).Trunc().Div(fxp.Ten))
-	return e.cachedBasicLift
+	return Weight(v.Mul(fxp.Ten).Trunc().Div(fxp.Ten))
 }
 
 func (e *Entity) isSkillLevelResolutionExcluded(name, specialization string) bool {

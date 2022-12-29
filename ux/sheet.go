@@ -206,6 +206,10 @@ func NewSheet(filePath string, entity *model.Entity) *Sheet {
 	bodyTypeButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Body Type"))
 	bodyTypeButton.ClickCallback = func() { ShowBodySettings(s) }
 
+	calcButton := unison.NewSVGButton(svg.Calculator)
+	calcButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Calculators (jumping, throwing, hiking, etc.)"))
+	calcButton.ClickCallback = func() { DisplayCalculator(s) }
+
 	s.toolbar = unison.NewPanel()
 	s.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
@@ -229,6 +233,8 @@ func NewSheet(filePath string, entity *model.Entity) *Sheet {
 	s.toolbar.AddChild(sheetSettingsButton)
 	s.toolbar.AddChild(attributesButton)
 	s.toolbar.AddChild(bodyTypeButton)
+	s.toolbar.AddChild(NewToolbarSeparator())
+	s.toolbar.AddChild(calcButton)
 	s.toolbar.AddChild(NewToolbarSeparator())
 	installSearchTracker(s.toolbar, func() {
 		s.Reactions.Table.ClearSelection()
@@ -420,6 +426,7 @@ func (s *Sheet) MarkModified(src unison.Paneler) {
 		s.awaitingUpdate = false
 		s.targetMgr.ReacquireFocus(focusRefKey, s.toolbar, s.scroll.Content())
 		s.scroll.SetPosition(h, v)
+		UpdateCalculator(s)
 	}
 }
 
@@ -742,6 +749,7 @@ func (s *Sheet) Rebuild(full bool) {
 	}
 	s.targetMgr.ReacquireFocus(focusRefKey, s.toolbar, s.scroll.Content())
 	s.scroll.SetPosition(h, v)
+	UpdateCalculator(s)
 }
 
 func drawBandedBackground(p unison.Paneler, gc *unison.Canvas, rect unison.Rect, start, step int) {
