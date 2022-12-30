@@ -226,14 +226,11 @@ func (c *Calculator) addJumpingSection() {
 
 	wrapper := unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  5,
+		Columns:  2,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
 	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
-	label := unison.NewLabel()
-	label.Text = i18n.Text("With a")
-	wrapper.AddChild(label)
 	field := NewDecimalField(nil, "", i18n.Text("Jump Running Start"),
 		func() fxp.Int { return c.jumpingRunningStartYards },
 		func(v fxp.Int) {
@@ -244,6 +241,15 @@ func (c *Calculator) addJumpingSection() {
 	wrapper.AddChild(field)
 	c.jumpingLabel = unison.NewLabel()
 	wrapper.AddChild(c.jumpingLabel)
+	c.content.AddChild(wrapper)
+
+	wrapper = unison.NewPanel()
+	wrapper.SetLayout(&unison.FlexLayout{
+		Columns:  3,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
 	wrapper.AddChild(NewIntegerField(nil, "", i18n.Text("Jumping Extra Effort Penalty"),
 		func() int { return c.jumpingExtraEffortPenalty },
 		func(v int) {
@@ -251,8 +257,8 @@ func (c *Calculator) addJumpingSection() {
 			c.updateJumpingResult()
 		},
 		-100, 0, false, false))
-	label = unison.NewLabel()
-	label.Text = i18n.Text("penalty for extra effort:")
+	label := unison.NewLabel()
+	label.Text = i18n.Text("penalty for extra effort")
 	wrapper.AddChild(label)
 	c.content.AddChild(wrapper)
 
@@ -262,16 +268,24 @@ func (c *Calculator) addJumpingSection() {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 4}))
+	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
+	divider := unison.NewSeparator()
+	divider.SetBorder(unison.NewEmptyBorder(unison.NewVerticalInsets(unison.StdVSpacing * 2)))
+	divider.SetLayoutData(&unison.FlexLayoutData{
+		HSpan:  2,
+		HAlign: unison.FillAlignment,
+		HGrab:  true,
+	})
+	wrapper.AddChild(divider)
 	label = unison.NewLabel()
 	label.Text = i18n.Text("High Jump:")
 	wrapper.AddChild(label)
-	c.highJumpResult = unison.NewLabel()
+	c.highJumpResult = c.createResultLabel()
 	wrapper.AddChild(c.highJumpResult)
 	label = unison.NewLabel()
 	label.Text = i18n.Text("Broad Jump:")
 	wrapper.AddChild(label)
-	c.broadJumpResult = unison.NewLabel()
+	c.broadJumpResult = c.createResultLabel()
 	c.updateJumpingResult()
 	wrapper.AddChild(c.broadJumpResult)
 	c.content.AddChild(wrapper)
@@ -282,14 +296,11 @@ func (c *Calculator) addThrowingSection() {
 
 	wrapper := unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  5,
+		Columns:  2,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
 	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
-	label := unison.NewLabel()
-	label.Text = i18n.Text("A")
-	wrapper.AddChild(label)
 	wrapper.AddChild(NewWeightField(nil, "", i18n.Text("Object Weight"),
 		c.sheet.Entity(),
 		func() model.Weight { return c.throwingObjectWeight },
@@ -298,18 +309,8 @@ func (c *Calculator) addThrowingSection() {
 			c.updateThrowingResult()
 		},
 		0, model.Weight(fxp.Max), false))
-	label = unison.NewLabel()
-	label.Text = i18n.Text("object and a")
-	wrapper.AddChild(label)
-	wrapper.AddChild(NewIntegerField(nil, "", i18n.Text("Throwing Extra Effort Penalty"),
-		func() int { return c.throwingExtraEffortPenalty },
-		func(v int) {
-			c.throwingExtraEffortPenalty = v
-			c.updateThrowingResult()
-		},
-		-100, 0, false, false))
-	label = unison.NewLabel()
-	label.Text = i18n.Text("penalty for extra effort:")
+	label := unison.NewLabel()
+	label.Text = i18n.Text("object")
 	wrapper.AddChild(label)
 	c.content.AddChild(wrapper)
 
@@ -319,16 +320,43 @@ func (c *Calculator) addThrowingSection() {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 4}))
+	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
+	wrapper.AddChild(NewIntegerField(nil, "", i18n.Text("Throwing Extra Effort Penalty"),
+		func() int { return c.throwingExtraEffortPenalty },
+		func(v int) {
+			c.throwingExtraEffortPenalty = v
+			c.updateThrowingResult()
+		},
+		-100, 0, false, false))
+	label = unison.NewLabel()
+	label.Text = i18n.Text("penalty for extra effort")
+	wrapper.AddChild(label)
+	c.content.AddChild(wrapper)
+
+	wrapper = unison.NewPanel()
+	wrapper.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
+	divider := unison.NewSeparator()
+	divider.SetBorder(unison.NewEmptyBorder(unison.NewVerticalInsets(unison.StdVSpacing * 2)))
+	divider.SetLayoutData(&unison.FlexLayoutData{
+		HSpan:  2,
+		HAlign: unison.FillAlignment,
+		HGrab:  true,
+	})
+	wrapper.AddChild(divider)
 	label = unison.NewLabel()
 	label.Text = i18n.Text("Distance:")
 	wrapper.AddChild(label)
-	c.throwingDistanceResult = unison.NewLabel()
+	c.throwingDistanceResult = c.createResultLabel()
 	wrapper.AddChild(c.throwingDistanceResult)
 	label = unison.NewLabel()
 	label.Text = i18n.Text("Damage:")
 	wrapper.AddChild(label)
-	c.throwingDamageResult = unison.NewLabel()
+	c.throwingDamageResult = c.createResultLabel()
 	wrapper.AddChild(c.throwingDamageResult)
 	c.updateThrowingResult()
 	c.content.AddChild(wrapper)
@@ -444,14 +472,11 @@ func (c *Calculator) addHikingSection() {
 
 	wrapper = unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  3,
+		Columns:  2,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 5}))
-	label = unison.NewLabel()
-	label.Text = i18n.Text("…using a")
-	wrapper.AddChild(label)
+	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
 	wrapper.AddChild(extraEffortPenaltyField)
 	label = unison.NewLabel()
 	label.Text = i18n.Text("penalty for extra effort.")
@@ -460,29 +485,37 @@ func (c *Calculator) addHikingSection() {
 
 	wrapper = unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  3,
+		Columns:  2,
 		VSpacing: unison.StdVSpacing,
 	})
 	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
+	divider := unison.NewSeparator()
+	divider.SetBorder(unison.NewEmptyBorder(unison.NewVerticalInsets(unison.StdVSpacing * 2)))
+	divider.SetLayoutData(&unison.FlexLayoutData{
+		HSpan:  2,
+		HAlign: unison.FillAlignment,
+		HGrab:  true,
+	})
+	wrapper.AddChild(divider)
+	c.hikingResult = c.createResultLabel()
+	c.updateHikingResult()
+	wrapper.AddChild(c.hikingResult)
+	label = unison.NewLabel()
+	label.Text = i18n.Text(" per full day")
+	wrapper.AddChild(label)
+	c.content.AddChild(wrapper)
+}
 
-	c.hikingResult = unison.NewLabel()
-	c.hikingResult.Font = &unison.DynamicFont{
+func (c *Calculator) createResultLabel() *unison.Label {
+	label := unison.NewLabel()
+	label.Font = &unison.DynamicFont{
 		Resolver: func() unison.FontDescriptor {
 			desc := unison.DefaultLabelTheme.Font.Descriptor()
 			desc.Weight = unison.BoldFontWeight
 			return desc
 		},
 	}
-	c.updateHikingResult()
-	label = unison.NewLabel()
-	label.Text = i18n.Text("You can travel ")
-	wrapper.AddChild(label)
-	wrapper.AddChild(c.hikingResult)
-	label = unison.NewLabel()
-	label.Text = i18n.Text(" per full day.")
-	wrapper.AddChild(label)
-
-	c.content.AddChild(wrapper)
+	return label
 }
 
 func (c *Calculator) createHeader(text, linkRef, linkHighlight string, topMargin float32) *unison.Panel {
@@ -679,7 +712,7 @@ func (c *Calculator) updateJumpingResult() {
 	} else {
 		units = i18n.Text("yard")
 	}
-	c.jumpingLabel.Text = fmt.Sprintf(i18n.Text("%s running start and a"), units)
+	c.jumpingLabel.Text = fmt.Sprintf(i18n.Text("%s running start"), units)
 	c.jumpingLabel.MarkForLayoutRecursivelyUpward()
 }
 
