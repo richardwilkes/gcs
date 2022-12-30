@@ -304,6 +304,7 @@ func (d *generalSettingsDockable) createLocaleField(content *unison.Panel) {
 		HGrab:  true,
 	})
 	d.localeField.Tooltip = unison.NewTooltipWithText(txt.Wrap("", i18n.Text(`The locale to use when presenting text in the user interface. This does not affect the content of data files. Leave this value blank to use the system default. Note that changes to this generally require quitting and restarting GCS to have the desired effect.`), 100))
+	d.localeField.Watermark = i18n.Locale()
 	content.AddChild(d.localeField)
 }
 
