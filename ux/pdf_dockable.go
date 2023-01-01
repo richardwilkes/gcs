@@ -150,7 +150,7 @@ func (d *PDFDockable) createToolbar() {
 
 	pageLabel := unison.NewLabel()
 	pageLabel.Font = unison.DefaultFieldTheme.Font
-	pageLabel.Text = i18n.Text("PDFPage")
+	pageLabel.Text = i18n.Text("Page")
 	d.toolbar.AddChild(pageLabel)
 
 	d.pageNumberField = unison.NewField()
@@ -192,27 +192,27 @@ func (d *PDFDockable) createToolbar() {
 	d.toolbar.AddChild(NewToolbarSeparator())
 
 	d.firstPageButton = unison.NewSVGButton(svg.First)
-	d.firstPageButton.Tooltip = unison.NewTooltipWithText(i18n.Text("First PDFPage"))
+	d.firstPageButton.Tooltip = unison.NewTooltipWithText(i18n.Text("First Page"))
 	d.firstPageButton.ClickCallback = func() { d.LoadPage(0) }
 	d.toolbar.AddChild(d.firstPageButton)
 
 	d.previousPageButton = unison.NewSVGButton(svg.Previous)
-	d.previousPageButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Previous PDFPage"))
+	d.previousPageButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Previous Page"))
 	d.previousPageButton.ClickCallback = func() { d.LoadPage(d.pdf.MostRecentPageNumber() - 1) }
 	d.toolbar.AddChild(d.previousPageButton)
 
 	d.nextPageButton = unison.NewSVGButton(svg.Next)
-	d.nextPageButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Next PDFPage"))
+	d.nextPageButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Next Page"))
 	d.nextPageButton.ClickCallback = func() { d.LoadPage(d.pdf.MostRecentPageNumber() + 1) }
 	d.toolbar.AddChild(d.nextPageButton)
 
 	d.lastPageButton = unison.NewSVGButton(svg.Last)
-	d.lastPageButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Last PDFPage"))
+	d.lastPageButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Last Page"))
 	d.lastPageButton.ClickCallback = func() { d.LoadPage(d.pdf.PageCount() - 1) }
 	d.toolbar.AddChild(d.lastPageButton)
 
 	d.searchField = NewSearchField()
-	pageSearch := i18n.Text("PDFPage Search")
+	pageSearch := i18n.Text("Page Search")
 	d.searchField.Watermark = pageSearch
 	d.searchField.Tooltip = unison.NewTooltipWithText(pageSearch)
 	d.searchField.SetLayoutData(&unison.FlexLayoutData{
