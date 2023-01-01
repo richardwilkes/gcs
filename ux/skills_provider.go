@@ -23,51 +23,20 @@ import (
 	"golang.org/x/exp/maps"
 )
 
-var (
-	skillListColMap = map[int]int{
-		0: model.SkillDescriptionColumn,
-		1: model.SkillDifficultyColumn,
-		2: model.SkillTagsColumn,
-		3: model.SkillReferenceColumn,
-	}
-	entitySkillPageColMap = map[int]int{
-		0: model.SkillDescriptionColumn,
-		1: model.SkillLevelColumn,
-		2: model.SkillRelativeLevelColumn,
-		3: model.SkillPointsColumn,
-		4: model.SkillReferenceColumn,
-	}
-	skillPageColMap = map[int]int{
-		0: model.SkillDescriptionColumn,
-		1: model.SkillPointsColumn,
-		2: model.SkillReferenceColumn,
-	}
-	_ TableProvider[*model.Skill] = &skillsProvider{}
-)
+var _ TableProvider[*model.Skill] = &skillsProvider{}
 
 type skillsProvider struct {
 	table    *unison.Table[*Node[*model.Skill]]
-	colMap   map[int]int
 	provider model.SkillListProvider
 	forPage  bool
 }
 
 // NewSkillsProvider creates a new table provider for skills.
 func NewSkillsProvider(provider model.SkillListProvider, forPage bool) TableProvider[*model.Skill] {
-	p := &skillsProvider{
+	return &skillsProvider{
 		provider: provider,
 		forPage:  forPage,
 	}
-	if forPage {
-		if _, ok := provider.(*model.Entity); ok {
-			p.colMap = entitySkillPageColMap
-		} else {
-			p.colMap = skillPageColMap
-		}
-	} else {
-		p.colMap = skillListColMap
-	}
-	return p
 }
 
 func (p *skillsProvider) RefKey() string {
@@ -99,7 +68,7 @@ func (p *skillsProvider) RootRows() []*Node[*model.Skill] {
 	data := p.provider.SkillList()
 	rows := make([]*Node[*model.Skill], 0, len(data))
 	for _, one := range data {
-		rows = append(rows, NewNode[*model.Skill](p.table, nil, p.colMap, one, p.forPage))
+		rows = append(rows, NewNode[*model.Skill](p.table, nil, one, p.forPage))
 	}
 	return rows
 }
@@ -159,9 +128,10 @@ func (p *skillsProvider) ItemNames() (singular, plural string) {
 }
 
 func (p *skillsProvider) Headers() []unison.TableColumnHeader[*Node[*model.Skill]] {
-	var headers []unison.TableColumnHeader[*Node[*model.Skill]]
-	for i := 0; i < len(p.colMap); i++ {
-		switch p.colMap[i] {
+	ids := p.ColumnIDs()
+	headers := make([]unison.TableColumnHeader[*Node[*model.Skill]], 0, len(ids))
+	for _, id := range ids {
+		switch id {
 		case model.SkillDescriptionColumn:
 			headers = append(headers, NewEditorListHeader[*model.Skill](i18n.Text("Skill / Technique"), "", p.forPage))
 		case model.SkillDifficultyColumn:
@@ -176,8 +146,6 @@ func (p *skillsProvider) Headers() []unison.TableColumnHeader[*Node[*model.Skill
 			headers = append(headers, NewEditorListHeader[*model.Skill](i18n.Text("RSL"), i18n.Text("Relative Skill Level"), p.forPage))
 		case model.SkillPointsColumn:
 			headers = append(headers, NewEditorListHeader[*model.Skill](i18n.Text("Pts"), i18n.Text("Points"), p.forPage))
-		default:
-			jot.Fatalf(1, "invalid skill column: %d", p.colMap[i])
 		}
 	}
 	return headers
@@ -186,17 +154,32 @@ func (p *skillsProvider) Headers() []unison.TableColumnHeader[*Node[*model.Skill
 func (p *skillsProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*model.Skill]]) {
 }
 
-func (p *skillsProvider) HierarchyColumnIndex() int {
-	for k, v := range p.colMap {
-		if v == model.SkillDescriptionColumn {
-			return k
+func (p *skillsProvider) ColumnIDs() []int {
+	columnIDs := make([]int, 0, 5)
+	columnIDs = append(columnIDs, model.SkillDescriptionColumn)
+	if p.forPage {
+		if _, ok := p.provider.(*model.Entity); ok {
+			columnIDs = append(columnIDs,
+				model.SkillLevelColumn,
+				model.SkillRelativeLevelColumn,
+			)
 		}
+		columnIDs = append(columnIDs, model.SkillPointsColumn)
+	} else {
+		columnIDs = append(columnIDs,
+			model.SkillDifficultyColumn,
+			model.SkillTagsColumn,
+		)
 	}
-	return 0
+	return append(columnIDs, model.SkillReferenceColumn)
 }
 
-func (p *skillsProvider) ExcessWidthColumnIndex() int {
-	return p.HierarchyColumnIndex()
+func (p *skillsProvider) HierarchyColumnID() int {
+	return model.SkillDescriptionColumn
+}
+
+func (p *skillsProvider) ExcessWidthColumnID() int {
+	return model.SkillDescriptionColumn
 }
 
 func (p *skillsProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*model.Skill]]) {

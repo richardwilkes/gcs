@@ -15,17 +15,10 @@ import (
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
 )
 
-var (
-	reactionsColMap = map[int]int{
-		0: model.ConditionalModifierValueColumn,
-		1: model.ConditionalModifierDescriptionColumn,
-	}
-	_ TableProvider[*model.ConditionalModifier] = &reactionModProvider{}
-)
+var _ TableProvider[*model.ConditionalModifier] = &reactionModProvider{}
 
 type reactionModProvider struct {
 	table    *unison.Table[*Node[*model.ConditionalModifier]]
@@ -34,9 +27,7 @@ type reactionModProvider struct {
 
 // NewReactionModifiersProvider creates a new table provider for reaction modifiers.
 func NewReactionModifiersProvider(provider model.ReactionModifierListProvider) TableProvider[*model.ConditionalModifier] {
-	return &reactionModProvider{
-		provider: provider,
-	}
+	return &reactionModProvider{provider: provider}
 }
 
 func (p *reactionModProvider) RefKey() string {
@@ -59,7 +50,7 @@ func (p *reactionModProvider) RootRows() []*Node[*model.ConditionalModifier] {
 	data := p.provider.Reactions()
 	rows := make([]*Node[*model.ConditionalModifier], 0, len(data))
 	for _, one := range data {
-		rows = append(rows, NewNode[*model.ConditionalModifier](p.table, nil, conditionalModifierColMap, one, true))
+		rows = append(rows, NewNode[*model.ConditionalModifier](p.table, nil, one, true))
 	}
 	return rows
 }
@@ -103,34 +94,28 @@ func (p *reactionModProvider) ItemNames() (singular, plural string) {
 }
 
 func (p *reactionModProvider) Headers() []unison.TableColumnHeader[*Node[*model.ConditionalModifier]] {
-	var headers []unison.TableColumnHeader[*Node[*model.ConditionalModifier]]
-	for i := 0; i < len(reactionsColMap); i++ {
-		switch conditionalModifierColMap[i] {
-		case model.ConditionalModifierValueColumn:
-			headers = append(headers, NewEditorListHeader[*model.ConditionalModifier]("±", i18n.Text("Modifier"), true))
-		case model.ConditionalModifierDescriptionColumn:
-			headers = append(headers, NewEditorListHeader[*model.ConditionalModifier](i18n.Text("Reaction"), "", true))
-		default:
-			jot.Fatalf(1, "invalid reaction modifier column: %d", reactionsColMap[i])
-		}
+	return []unison.TableColumnHeader[*Node[*model.ConditionalModifier]]{
+		NewEditorListHeader[*model.ConditionalModifier]("±", i18n.Text("Modifier"), true),
+		NewEditorListHeader[*model.ConditionalModifier](i18n.Text("Reaction"), "", true),
 	}
-	return headers
 }
 
 func (p *reactionModProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*model.ConditionalModifier]]) {
 }
 
-func (p *reactionModProvider) HierarchyColumnIndex() int {
+func (p *reactionModProvider) ColumnIDs() []int {
+	return []int{
+		model.ConditionalModifierValueColumn,
+		model.ConditionalModifierDescriptionColumn,
+	}
+}
+
+func (p *reactionModProvider) HierarchyColumnID() int {
 	return -1
 }
 
-func (p *reactionModProvider) ExcessWidthColumnIndex() int {
-	for k, v := range conditionalModifierColMap {
-		if v == model.ConditionalModifierDescriptionColumn {
-			return k
-		}
-	}
-	return 0
+func (p *reactionModProvider) ExcessWidthColumnID() int {
+	return model.ConditionalModifierDescriptionColumn
 }
 
 func (p *reactionModProvider) OpenEditor(_ Rebuildable, _ *unison.Table[*Node[*model.ConditionalModifier]]) {

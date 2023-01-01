@@ -16,7 +16,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
 	"golang.org/x/exp/maps"
@@ -24,40 +23,20 @@ import (
 
 const traitDragKey = "trait"
 
-var (
-	traitListColMap = map[int]int{
-		0: model.TraitDescriptionColumn,
-		1: model.TraitPointsColumn,
-		2: model.TraitTagsColumn,
-		3: model.TraitReferenceColumn,
-	}
-	traitPageColMap = map[int]int{
-		0: model.TraitDescriptionColumn,
-		1: model.TraitPointsColumn,
-		2: model.TraitReferenceColumn,
-	}
-	_ TableProvider[*model.Trait] = &traitsProvider{}
-)
+var _ TableProvider[*model.Trait] = &traitsProvider{}
 
 type traitsProvider struct {
 	table    *unison.Table[*Node[*model.Trait]]
-	colMap   map[int]int
 	provider model.TraitListProvider
 	forPage  bool
 }
 
 // NewTraitsProvider creates a new table provider for traits.
 func NewTraitsProvider(provider model.TraitListProvider, forPage bool) TableProvider[*model.Trait] {
-	p := &traitsProvider{
+	return &traitsProvider{
 		provider: provider,
 		forPage:  forPage,
 	}
-	if forPage {
-		p.colMap = traitPageColMap
-	} else {
-		p.colMap = traitListColMap
-	}
-	return p
 }
 
 func (p *traitsProvider) RefKey() string {
@@ -89,7 +68,7 @@ func (p *traitsProvider) RootRows() []*Node[*model.Trait] {
 	data := p.provider.TraitList()
 	rows := make([]*Node[*model.Trait], 0, len(data))
 	for _, one := range data {
-		rows = append(rows, NewNode[*model.Trait](p.table, nil, p.colMap, one, p.forPage))
+		rows = append(rows, NewNode[*model.Trait](p.table, nil, one, p.forPage))
 	}
 	return rows
 }
@@ -155,9 +134,10 @@ func (p *traitsProvider) ItemNames() (singular, plural string) {
 }
 
 func (p *traitsProvider) Headers() []unison.TableColumnHeader[*Node[*model.Trait]] {
-	var headers []unison.TableColumnHeader[*Node[*model.Trait]]
-	for i := 0; i < len(p.colMap); i++ {
-		switch p.colMap[i] {
+	ids := p.ColumnIDs()
+	headers := make([]unison.TableColumnHeader[*Node[*model.Trait]], 0, len(ids))
+	for _, id := range ids {
+		switch id {
 		case model.TraitDescriptionColumn:
 			headers = append(headers, NewEditorListHeader[*model.Trait](i18n.Text("Trait"), "", p.forPage))
 		case model.TraitPointsColumn:
@@ -166,8 +146,6 @@ func (p *traitsProvider) Headers() []unison.TableColumnHeader[*Node[*model.Trait
 			headers = append(headers, NewEditorListHeader[*model.Trait](i18n.Text("Tags"), "", p.forPage))
 		case model.TraitReferenceColumn:
 			headers = append(headers, NewEditorPageRefHeader[*model.Trait](p.forPage))
-		default:
-			jot.Fatalf(1, "invalid trait column: %d", p.colMap[i])
 		}
 	}
 	return headers
@@ -176,17 +154,23 @@ func (p *traitsProvider) Headers() []unison.TableColumnHeader[*Node[*model.Trait
 func (p *traitsProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*model.Trait]]) {
 }
 
-func (p *traitsProvider) HierarchyColumnIndex() int {
-	for k, v := range p.colMap {
-		if v == model.TraitDescriptionColumn {
-			return k
-		}
+func (p *traitsProvider) ColumnIDs() []int {
+	columnIDs := append(make([]int, 0, 4),
+		model.TraitDescriptionColumn,
+		model.TraitPointsColumn,
+	)
+	if !p.forPage {
+		columnIDs = append(columnIDs, model.TraitTagsColumn)
 	}
-	return 0
+	return append(columnIDs, model.TraitReferenceColumn)
 }
 
-func (p *traitsProvider) ExcessWidthColumnIndex() int {
-	return p.HierarchyColumnIndex()
+func (p *traitsProvider) HierarchyColumnID() int {
+	return model.TraitDescriptionColumn
+}
+
+func (p *traitsProvider) ExcessWidthColumnID() int {
+	return model.TraitDescriptionColumn
 }
 
 func (p *traitsProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*model.Trait]]) {

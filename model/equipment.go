@@ -186,8 +186,8 @@ func (e *Equipment) UnmarshalJSON(data []byte) error {
 }
 
 // CellData returns the cell data information for the given column.
-func (e *Equipment) CellData(column int, data *CellData) {
-	switch column {
+func (e *Equipment) CellData(columnID int, data *CellData) {
+	switch columnID {
 	case EquipmentEquippedColumn:
 		data.Type = ToggleCellType
 		data.Checked = e.Equipped

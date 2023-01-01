@@ -15,17 +15,10 @@ import (
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
 )
 
-var (
-	conditionalModifierColMap = map[int]int{
-		0: model.ConditionalModifierValueColumn,
-		1: model.ConditionalModifierDescriptionColumn,
-	}
-	_ TableProvider[*model.ConditionalModifier] = &condModProvider{}
-)
+var _ TableProvider[*model.ConditionalModifier] = &condModProvider{}
 
 type condModProvider struct {
 	table    *unison.Table[*Node[*model.ConditionalModifier]]
@@ -34,9 +27,7 @@ type condModProvider struct {
 
 // NewConditionalModifiersProvider creates a new table provider for conditional modifiers.
 func NewConditionalModifiersProvider(provider model.ConditionalModifierListProvider) TableProvider[*model.ConditionalModifier] {
-	return &condModProvider{
-		provider: provider,
-	}
+	return &condModProvider{provider: provider}
 }
 
 func (p *condModProvider) RefKey() string {
@@ -59,7 +50,7 @@ func (p *condModProvider) RootRows() []*Node[*model.ConditionalModifier] {
 	data := p.provider.ConditionalModifiers()
 	rows := make([]*Node[*model.ConditionalModifier], 0, len(data))
 	for _, one := range data {
-		rows = append(rows, NewNode[*model.ConditionalModifier](p.table, nil, conditionalModifierColMap, one, true))
+		rows = append(rows, NewNode[*model.ConditionalModifier](p.table, nil, one, true))
 	}
 	return rows
 }
@@ -103,34 +94,28 @@ func (p *condModProvider) ItemNames() (singular, plural string) {
 }
 
 func (p *condModProvider) Headers() []unison.TableColumnHeader[*Node[*model.ConditionalModifier]] {
-	var headers []unison.TableColumnHeader[*Node[*model.ConditionalModifier]]
-	for i := 0; i < len(conditionalModifierColMap); i++ {
-		switch conditionalModifierColMap[i] {
-		case model.ConditionalModifierValueColumn:
-			headers = append(headers, NewEditorListHeader[*model.ConditionalModifier]("±", i18n.Text("Modifier"), true))
-		case model.ConditionalModifierDescriptionColumn:
-			headers = append(headers, NewEditorListHeader[*model.ConditionalModifier](i18n.Text("Condition"), "", true))
-		default:
-			jot.Fatalf(1, "invalid conditional modifier column: %d", conditionalModifierColMap[i])
-		}
+	return []unison.TableColumnHeader[*Node[*model.ConditionalModifier]]{
+		NewEditorListHeader[*model.ConditionalModifier]("±", i18n.Text("Modifier"), true),
+		NewEditorListHeader[*model.ConditionalModifier](i18n.Text("Condition"), "", true),
 	}
-	return headers
 }
 
 func (p *condModProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*model.ConditionalModifier]]) {
 }
 
-func (p *condModProvider) HierarchyColumnIndex() int {
+func (p *condModProvider) ColumnIDs() []int {
+	return []int{
+		model.ConditionalModifierValueColumn,
+		model.ConditionalModifierDescriptionColumn,
+	}
+}
+
+func (p *condModProvider) HierarchyColumnID() int {
 	return -1
 }
 
-func (p *condModProvider) ExcessWidthColumnIndex() int {
-	for k, v := range conditionalModifierColMap {
-		if v == model.ConditionalModifierDescriptionColumn {
-			return k
-		}
-	}
-	return 0
+func (p *condModProvider) ExcessWidthColumnID() int {
+	return model.ConditionalModifierDescriptionColumn
 }
 
 func (p *condModProvider) OpenEditor(_ Rebuildable, _ *unison.Table[*Node[*model.ConditionalModifier]]) {

@@ -18,7 +18,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
 	"golang.org/x/exp/maps"
@@ -26,48 +25,10 @@ import (
 
 const equipmentDragKey = "equipment"
 
-var (
-	equipmentListColMap = map[int]int{
-		0: model.EquipmentDescriptionColumn,
-		1: model.EquipmentMaxUsesColumn,
-		2: model.EquipmentTLColumn,
-		3: model.EquipmentLCColumn,
-		4: model.EquipmentCostColumn,
-		5: model.EquipmentWeightColumn,
-		6: model.EquipmentTagsColumn,
-		7: model.EquipmentReferenceColumn,
-	}
-	carriedEquipmentPageColMap = map[int]int{
-		0:  model.EquipmentEquippedColumn,
-		1:  model.EquipmentQuantityColumn,
-		2:  model.EquipmentDescriptionColumn,
-		3:  model.EquipmentUsesColumn,
-		4:  model.EquipmentTLColumn,
-		5:  model.EquipmentLCColumn,
-		6:  model.EquipmentCostColumn,
-		7:  model.EquipmentWeightColumn,
-		8:  model.EquipmentExtendedCostColumn,
-		9:  model.EquipmentExtendedWeightColumn,
-		10: model.EquipmentReferenceColumn,
-	}
-	otherEquipmentPageColMap = map[int]int{
-		0: model.EquipmentQuantityColumn,
-		1: model.EquipmentDescriptionColumn,
-		2: model.EquipmentUsesColumn,
-		3: model.EquipmentTLColumn,
-		4: model.EquipmentLCColumn,
-		5: model.EquipmentCostColumn,
-		6: model.EquipmentWeightColumn,
-		7: model.EquipmentExtendedCostColumn,
-		8: model.EquipmentExtendedWeightColumn,
-		9: model.EquipmentReferenceColumn,
-	}
-	_ TableProvider[*model.Equipment] = &equipmentProvider{}
-)
+var _ TableProvider[*model.Equipment] = &equipmentProvider{}
 
 type equipmentProvider struct {
 	table    *unison.Table[*Node[*model.Equipment]]
-	colMap   map[int]int
 	provider model.EquipmentListProvider
 	forPage  bool
 	carried  bool
@@ -75,21 +36,11 @@ type equipmentProvider struct {
 
 // NewEquipmentProvider creates a new table provider for equipment. 'carried' is only relevant if 'forPage' is true.
 func NewEquipmentProvider(provider model.EquipmentListProvider, forPage, carried bool) TableProvider[*model.Equipment] {
-	p := &equipmentProvider{
+	return &equipmentProvider{
 		provider: provider,
 		forPage:  forPage,
 		carried:  carried,
 	}
-	if forPage {
-		if carried {
-			p.colMap = carriedEquipmentPageColMap
-		} else {
-			p.colMap = otherEquipmentPageColMap
-		}
-	} else {
-		p.colMap = equipmentListColMap
-	}
-	return p
 }
 
 func (p *equipmentProvider) RefKey() string {
@@ -124,7 +75,7 @@ func (p *equipmentProvider) RootRows() []*Node[*model.Equipment] {
 	data := p.equipmentList()
 	rows := make([]*Node[*model.Equipment], 0, len(data))
 	for _, one := range data {
-		rows = append(rows, NewNode[*model.Equipment](p.table, nil, p.colMap, one, p.forPage))
+		rows = append(rows, NewNode[*model.Equipment](p.table, nil, one, p.forPage))
 	}
 	return rows
 }
@@ -209,9 +160,10 @@ func (p *equipmentProvider) ItemNames() (singular, plural string) {
 }
 
 func (p *equipmentProvider) Headers() []unison.TableColumnHeader[*Node[*model.Equipment]] {
-	var headers []unison.TableColumnHeader[*Node[*model.Equipment]]
-	for i := 0; i < len(p.colMap); i++ {
-		switch p.colMap[i] {
+	ids := p.ColumnIDs()
+	headers := make([]unison.TableColumnHeader[*Node[*model.Equipment]], 0, len(ids))
+	for _, id := range ids {
+		switch id {
 		case model.EquipmentEquippedColumn:
 			headers = append(headers, NewEditorEquippedHeader[*model.Equipment](p.forPage))
 		case model.EquipmentQuantityColumn:
@@ -238,8 +190,6 @@ func (p *equipmentProvider) Headers() []unison.TableColumnHeader[*Node[*model.Eq
 			headers = append(headers, NewEditorListHeader[*model.Equipment](i18n.Text("Tags"), "", p.forPage))
 		case model.EquipmentReferenceColumn:
 			headers = append(headers, NewEditorPageRefHeader[*model.Equipment](p.forPage))
-		default:
-			jot.Fatalf(1, "invalid equipment column: %d", p.colMap[i])
 		}
 	}
 	return headers
@@ -247,33 +197,51 @@ func (p *equipmentProvider) Headers() []unison.TableColumnHeader[*Node[*model.Eq
 
 func (p *equipmentProvider) SyncHeader(headers []unison.TableColumnHeader[*Node[*model.Equipment]]) {
 	if p.forPage {
-		for i := 0; i < len(p.colMap); i++ {
-			if p.colMap[i] == model.EquipmentDescriptionColumn {
-				if header, ok := headers[i].(*PageTableColumnHeader[*model.Equipment]); ok {
-					header.Label.Text = p.descriptionText()
-				}
-				break
+		if i := p.table.ColumnIndexForID(model.EquipmentDescriptionColumn); i != -1 {
+			if header, ok := headers[i].(*PageTableColumnHeader[*model.Equipment]); ok {
+				header.Label.Text = p.descriptionText()
 			}
 		}
 	}
 }
 
-func (p *equipmentProvider) HierarchyColumnIndex() int {
-	for k, v := range p.colMap {
-		if v == model.EquipmentDescriptionColumn {
-			return k
+func (p *equipmentProvider) ColumnIDs() []int {
+	columnIDs := make([]int, 0, 11)
+	if p.forPage {
+		if p.carried {
+			columnIDs = append(columnIDs, model.EquipmentEquippedColumn)
 		}
+		columnIDs = append(columnIDs, model.EquipmentQuantityColumn)
 	}
-	return -1
+	columnIDs = append(columnIDs, model.EquipmentDescriptionColumn)
+	if p.forPage {
+		columnIDs = append(columnIDs, model.EquipmentUsesColumn)
+	} else {
+		columnIDs = append(columnIDs, model.EquipmentMaxUsesColumn)
+	}
+	columnIDs = append(columnIDs,
+		model.EquipmentTLColumn,
+		model.EquipmentLCColumn,
+		model.EquipmentCostColumn,
+		model.EquipmentWeightColumn,
+	)
+	if p.forPage {
+		columnIDs = append(columnIDs,
+			model.EquipmentExtendedCostColumn,
+			model.EquipmentExtendedWeightColumn,
+		)
+	} else {
+		columnIDs = append(columnIDs, model.EquipmentTagsColumn)
+	}
+	return append(columnIDs, model.EquipmentReferenceColumn)
 }
 
-func (p *equipmentProvider) ExcessWidthColumnIndex() int {
-	for k, v := range p.colMap {
-		if v == model.EquipmentDescriptionColumn {
-			return k
-		}
-	}
-	return 0
+func (p *equipmentProvider) HierarchyColumnID() int {
+	return model.EquipmentDescriptionColumn
+}
+
+func (p *equipmentProvider) ExcessWidthColumnID() int {
+	return model.EquipmentDescriptionColumn
 }
 
 func (p *equipmentProvider) descriptionText() string {

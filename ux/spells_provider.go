@@ -23,59 +23,20 @@ import (
 	"golang.org/x/exp/maps"
 )
 
-var (
-	spellListColMap = map[int]int{
-		0:  model.SpellDescriptionColumn,
-		1:  model.SpellCollegeColumn,
-		2:  model.SpellResistColumn,
-		3:  model.SpellClassColumn,
-		4:  model.SpellCastCostColumn,
-		5:  model.SpellMaintainCostColumn,
-		6:  model.SpellCastTimeColumn,
-		7:  model.SpellDurationColumn,
-		8:  model.SpellDifficultyColumn,
-		9:  model.SpellTagsColumn,
-		10: model.SpellReferenceColumn,
-	}
-	entitySpellPageColMap = map[int]int{
-		0: model.SpellDescriptionForPageColumn,
-		1: model.SpellLevelColumn,
-		2: model.SpellRelativeLevelColumn,
-		3: model.SpellPointsColumn,
-		4: model.SpellReferenceColumn,
-	}
-	spellPageColMap = map[int]int{
-		0: model.SpellDescriptionForPageColumn,
-		1: model.SpellDifficultyColumn,
-		2: model.SpellPointsColumn,
-		3: model.SpellReferenceColumn,
-	}
-	_ TableProvider[*model.Spell] = &spellsProvider{}
-)
+var _ TableProvider[*model.Spell] = &spellsProvider{}
 
 type spellsProvider struct {
 	table    *unison.Table[*Node[*model.Spell]]
-	colMap   map[int]int
 	provider model.SpellListProvider
 	forPage  bool
 }
 
 // NewSpellsProvider creates a new table provider for spells.
 func NewSpellsProvider(provider model.SpellListProvider, forPage bool) TableProvider[*model.Spell] {
-	p := &spellsProvider{
+	return &spellsProvider{
 		provider: provider,
 		forPage:  forPage,
 	}
-	if forPage {
-		if _, ok := provider.(*model.Entity); ok {
-			p.colMap = entitySpellPageColMap
-		} else {
-			p.colMap = spellPageColMap
-		}
-	} else {
-		p.colMap = spellListColMap
-	}
-	return p
 }
 
 func (p *spellsProvider) RefKey() string {
@@ -107,7 +68,7 @@ func (p *spellsProvider) RootRows() []*Node[*model.Spell] {
 	data := p.provider.SpellList()
 	rows := make([]*Node[*model.Spell], 0, len(data))
 	for _, one := range data {
-		rows = append(rows, NewNode[*model.Spell](p.table, nil, p.colMap, one, p.forPage))
+		rows = append(rows, NewNode[*model.Spell](p.table, nil, one, p.forPage))
 	}
 	return rows
 }
@@ -167,9 +128,10 @@ func (p *spellsProvider) ItemNames() (singular, plural string) {
 }
 
 func (p *spellsProvider) Headers() []unison.TableColumnHeader[*Node[*model.Spell]] {
-	var headers []unison.TableColumnHeader[*Node[*model.Spell]]
-	for i := 0; i < len(p.colMap); i++ {
-		switch p.colMap[i] {
+	ids := p.ColumnIDs()
+	headers := make([]unison.TableColumnHeader[*Node[*model.Spell]], 0, len(ids))
+	for _, id := range ids {
+		switch id {
 		case model.SpellDescriptionColumn, model.SpellDescriptionForPageColumn:
 			headers = append(headers, NewEditorListHeader[*model.Spell](i18n.Text("Spell"), "", p.forPage))
 		case model.SpellResistColumn:
@@ -201,8 +163,6 @@ func (p *spellsProvider) Headers() []unison.TableColumnHeader[*Node[*model.Spell
 			headers = append(headers, NewEditorListHeader[*model.Spell](i18n.Text("RSL"), i18n.Text("Relative Skill Level"), p.forPage))
 		case model.SpellPointsColumn:
 			headers = append(headers, NewEditorListHeader[*model.Spell](i18n.Text("Pts"), i18n.Text("Points"), p.forPage))
-		default:
-			jot.Fatalf(1, "invalid spell column: %d", p.colMap[i])
 		}
 	}
 	return headers
@@ -211,17 +171,49 @@ func (p *spellsProvider) Headers() []unison.TableColumnHeader[*Node[*model.Spell
 func (p *spellsProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*model.Spell]]) {
 }
 
-func (p *spellsProvider) HierarchyColumnIndex() int {
-	for k, v := range p.colMap {
-		if v == model.SpellDescriptionColumn || v == model.SpellDescriptionForPageColumn {
-			return k
+func (p *spellsProvider) ColumnIDs() []int {
+	columnIDs := make([]int, 0, 11)
+	if p.forPage {
+		if _, ok := p.provider.(*model.Entity); ok {
+			columnIDs = append(columnIDs,
+				model.SpellDescriptionForPageColumn,
+				model.SpellLevelColumn,
+				model.SpellRelativeLevelColumn,
+				model.SpellPointsColumn,
+			)
+		} else {
+			columnIDs = append(columnIDs,
+				model.SpellDescriptionForPageColumn,
+				model.SpellDifficultyColumn,
+				model.SpellPointsColumn,
+			)
 		}
+	} else {
+		columnIDs = append(columnIDs,
+			model.SpellDescriptionColumn,
+			model.SpellCollegeColumn,
+			model.SpellResistColumn,
+			model.SpellClassColumn,
+			model.SpellCastCostColumn,
+			model.SpellMaintainCostColumn,
+			model.SpellCastTimeColumn,
+			model.SpellDurationColumn,
+			model.SpellDifficultyColumn,
+			model.SpellTagsColumn,
+		)
 	}
-	return 0
+	return append(columnIDs, model.SpellReferenceColumn)
 }
 
-func (p *spellsProvider) ExcessWidthColumnIndex() int {
-	return p.HierarchyColumnIndex()
+func (p *spellsProvider) HierarchyColumnID() int {
+	if p.forPage {
+		return model.SpellDescriptionForPageColumn
+	}
+	return model.SpellDescriptionColumn
+}
+
+func (p *spellsProvider) ExcessWidthColumnID() int {
+	return p.HierarchyColumnID()
 }
 
 func (p *spellsProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*model.Spell]]) {

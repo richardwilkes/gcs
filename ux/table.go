@@ -50,8 +50,9 @@ type TableProvider[T model.NodeTypes] interface {
 	ItemNames() (singular, plural string)
 	Headers() []unison.TableColumnHeader[*Node[T]]
 	SyncHeader(headers []unison.TableColumnHeader[*Node[T]])
-	HierarchyColumnIndex() int
-	ExcessWidthColumnIndex() int
+	ColumnIDs() []int
+	HierarchyColumnID() int
+	ExcessWidthColumnID() int
 	ContextMenuItems() []ContextMenuItem
 	OpenEditor(owner Rebuildable, table *unison.Table[*Node[T]])
 	CreateItem(owner Rebuildable, table *unison.Table[*Node[T]], variant ItemVariant)
@@ -66,7 +67,7 @@ type TableProvider[T model.NodeTypes] interface {
 func NewNodeTable[T model.NodeTypes](provider TableProvider[T], font unison.Font) (header *unison.TableHeader[*Node[T]], table *unison.Table[*Node[T]]) {
 	table = unison.NewTable[*Node[T]](provider)
 	provider.SetTable(table)
-	table.HierarchyColumnIndex = provider.HierarchyColumnIndex()
+	table.HierarchyColumnID = provider.HierarchyColumnID()
 	layoutData := &unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,
 		VAlign: unison.FillAlignment,
@@ -82,15 +83,17 @@ func NewNodeTable[T model.NodeTypes](provider TableProvider[T], font unison.Font
 	}
 	table.SetLayoutData(layoutData)
 
+	ids := provider.ColumnIDs()
 	headers := provider.Headers()
-	table.ColumnSizes = make([]unison.ColumnSize, len(headers))
-	for i := range table.ColumnSizes {
+	table.Columns = make([]unison.ColumnInfo, len(headers))
+	for i := range table.Columns {
 		_, pref, _ := headers[i].AsPanel().Sizes(unison.Size{})
 		pref.Width += table.Padding.Left + table.Padding.Right
-		table.ColumnSizes[i].AutoMinimum = pref.Width
-		table.ColumnSizes[i].AutoMaximum = xmath.Max(float32(model.GlobalSettings().General.MaximumAutoColWidth), pref.Width)
-		table.ColumnSizes[i].Minimum = pref.Width
-		table.ColumnSizes[i].Maximum = 10000
+		table.Columns[i].ID = ids[i]
+		table.Columns[i].AutoMinimum = pref.Width
+		table.Columns[i].AutoMaximum = xmath.Max(float32(model.GlobalSettings().General.MaximumAutoColWidth), pref.Width)
+		table.Columns[i].Minimum = pref.Width
+		table.Columns[i].Maximum = 10000
 	}
 	header = unison.NewTableHeader(table, headers...)
 	header.Less = flexibleLess
@@ -114,7 +117,7 @@ func NewNodeTable[T model.NodeTypes](provider TableProvider[T], font unison.Font
 	table.InstallDragSupport(provider.DragSVG(), provider.DragKey(), singular, plural)
 	if font != nil {
 		table.FrameChangeCallback = func() {
-			table.SizeColumnsToFitWithExcessIn(provider.ExcessWidthColumnIndex())
+			table.SizeColumnsToFitWithExcessIn(provider.ExcessWidthColumnID())
 		}
 	}
 

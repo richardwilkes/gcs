@@ -16,7 +16,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
 	"golang.org/x/exp/maps"
@@ -24,40 +23,20 @@ import (
 
 const traitModifierDragKey = "trait_modifier"
 
-var (
-	traitModifierColMap = map[int]int{
-		0: model.TraitModifierDescriptionColumn,
-		1: model.TraitModifierCostColumn,
-		2: model.TraitModifierTagsColumn,
-		3: model.TraitModifierReferenceColumn,
-	}
-	traitModifierInEditorColMap = map[int]int{
-		0: model.TraitModifierEnabledColumn,
-		1: model.TraitModifierDescriptionColumn,
-		2: model.TraitModifierCostColumn,
-		3: model.TraitModifierTagsColumn,
-		4: model.TraitModifierReferenceColumn,
-	}
-	_ TableProvider[*model.TraitModifier] = &traitModifiersProvider{}
-)
+var _ TableProvider[*model.TraitModifier] = &traitModifiersProvider{}
 
 type traitModifiersProvider struct {
-	table    *unison.Table[*Node[*model.TraitModifier]]
-	colMap   map[int]int
-	provider model.TraitModifierListProvider
+	table     *unison.Table[*Node[*model.TraitModifier]]
+	provider  model.TraitModifierListProvider
+	forEditor bool
 }
 
 // NewTraitModifiersProvider creates a new table provider for trait modifiers.
 func NewTraitModifiersProvider(provider model.TraitModifierListProvider, forEditor bool) TableProvider[*model.TraitModifier] {
-	p := &traitModifiersProvider{
-		provider: provider,
+	return &traitModifiersProvider{
+		provider:  provider,
+		forEditor: forEditor,
 	}
-	if forEditor {
-		p.colMap = traitModifierInEditorColMap
-	} else {
-		p.colMap = traitModifierColMap
-	}
-	return p
 }
 
 func (p *traitModifiersProvider) RefKey() string {
@@ -89,7 +68,7 @@ func (p *traitModifiersProvider) RootRows() []*Node[*model.TraitModifier] {
 	data := p.provider.TraitModifierList()
 	rows := make([]*Node[*model.TraitModifier], 0, len(data))
 	for _, one := range data {
-		rows = append(rows, NewNode[*model.TraitModifier](p.table, nil, p.colMap, one, false))
+		rows = append(rows, NewNode[*model.TraitModifier](p.table, nil, one, false))
 	}
 	return rows
 }
@@ -134,9 +113,10 @@ func (p *traitModifiersProvider) ItemNames() (singular, plural string) {
 }
 
 func (p *traitModifiersProvider) Headers() []unison.TableColumnHeader[*Node[*model.TraitModifier]] {
-	var headers []unison.TableColumnHeader[*Node[*model.TraitModifier]]
-	for i := 0; i < len(p.colMap); i++ {
-		switch p.colMap[i] {
+	ids := p.ColumnIDs()
+	headers := make([]unison.TableColumnHeader[*Node[*model.TraitModifier]], 0, len(ids))
+	for _, id := range ids {
+		switch id {
 		case model.TraitModifierEnabledColumn:
 			headers = append(headers, NewEnabledHeader[*model.TraitModifier](false))
 		case model.TraitModifierDescriptionColumn:
@@ -147,8 +127,6 @@ func (p *traitModifiersProvider) Headers() []unison.TableColumnHeader[*Node[*mod
 			headers = append(headers, NewEditorListHeader[*model.TraitModifier](i18n.Text("Tags"), "", false))
 		case model.TraitModifierReferenceColumn:
 			headers = append(headers, NewEditorPageRefHeader[*model.TraitModifier](false))
-		default:
-			jot.Fatalf(1, "invalid trait modifier column: %d", p.colMap[i])
 		}
 	}
 	return headers
@@ -157,17 +135,25 @@ func (p *traitModifiersProvider) Headers() []unison.TableColumnHeader[*Node[*mod
 func (p *traitModifiersProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*model.TraitModifier]]) {
 }
 
-func (p *traitModifiersProvider) HierarchyColumnIndex() int {
-	for k, v := range p.colMap {
-		if v == model.TraitModifierDescriptionColumn {
-			return k
-		}
+func (p *traitModifiersProvider) ColumnIDs() []int {
+	columnIDs := make([]int, 0, 5)
+	if p.forEditor {
+		columnIDs = append(columnIDs, model.TraitModifierEnabledColumn)
 	}
-	return 0
+	return append(columnIDs,
+		model.TraitModifierDescriptionColumn,
+		model.TraitModifierCostColumn,
+		model.TraitModifierTagsColumn,
+		model.TraitModifierReferenceColumn,
+	)
 }
 
-func (p *traitModifiersProvider) ExcessWidthColumnIndex() int {
-	return p.HierarchyColumnIndex()
+func (p *traitModifiersProvider) HierarchyColumnID() int {
+	return model.TraitModifierDescriptionColumn
+}
+
+func (p *traitModifiersProvider) ExcessWidthColumnID() int {
+	return model.TraitModifierDescriptionColumn
 }
 
 func (p *traitModifiersProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*model.TraitModifier]]) {

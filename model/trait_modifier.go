@@ -154,8 +154,8 @@ func (m *TraitModifier) TagList() []string {
 }
 
 // CellData returns the cell data information for the given column.
-func (m *TraitModifier) CellData(column int, data *CellData) {
-	switch column {
+func (m *TraitModifier) CellData(columnID int, data *CellData) {
+	switch columnID {
 	case TraitModifierEnabledColumn:
 		if !m.Container() {
 			data.Type = ToggleCellType

@@ -208,9 +208,9 @@ func (a *Trait) TemplatePickerData() *TemplatePicker {
 }
 
 // CellData returns the cell data information for the given column.
-func (a *Trait) CellData(column int, data *CellData) {
+func (a *Trait) CellData(columnID int, data *CellData) {
 	data.Dim = !a.Enabled()
-	switch column {
+	switch columnID {
 	case TraitDescriptionColumn:
 		data.Type = TextCellType
 		data.Primary = a.String()

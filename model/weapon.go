@@ -655,10 +655,10 @@ func (w *Weapon) SetChildren(_ []*Weapon) {
 }
 
 // CellData returns the cell data information for the given column.
-func (w *Weapon) CellData(column int, data *CellData) {
+func (w *Weapon) CellData(columnID int, data *CellData) {
 	var buffer xio.ByteBuffer
 	data.Type = TextCellType
-	switch column {
+	switch columnID {
 	case WeaponDescriptionColumn:
 		data.Primary = w.String()
 		data.Secondary = w.Notes()

@@ -204,8 +204,8 @@ func (s *Spell) TemplatePickerData() *TemplatePicker {
 }
 
 // CellData returns the cell data information for the given column.
-func (s *Spell) CellData(column int, data *CellData) {
-	switch column {
+func (s *Spell) CellData(columnID int, data *CellData) {
+	switch columnID {
 	case SpellDescriptionColumn:
 		data.Type = TextCellType
 		data.Primary = s.Description()

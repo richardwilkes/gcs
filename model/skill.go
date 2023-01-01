@@ -206,8 +206,8 @@ func (s *Skill) TemplatePickerData() *TemplatePicker {
 }
 
 // CellData returns the cell data information for the given column.
-func (s *Skill) CellData(column int, data *CellData) {
-	switch column {
+func (s *Skill) CellData(columnID int, data *CellData) {
+	switch columnID {
 	case SkillDescriptionColumn:
 		data.Type = TextCellType
 		data.Primary = s.Description()

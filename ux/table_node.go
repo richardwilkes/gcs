@@ -50,19 +50,17 @@ type Node[T model.NodeTypes] struct {
 	dataAsNode model.Node[T]
 	children   []*Node[T]
 	cellCache  []*CellCache
-	colMap     map[int]int
 	forPage    bool
 }
 
 // NewNode creates a new node for a table.
-func NewNode[T model.NodeTypes](table *unison.Table[*Node[T]], parent *Node[T], colMap map[int]int, data T, forPage bool) *Node[T] {
+func NewNode[T model.NodeTypes](table *unison.Table[*Node[T]], parent *Node[T], data T, forPage bool) *Node[T] {
 	return &Node[T]{
 		table:      table,
 		parent:     parent,
 		data:       data,
 		dataAsNode: model.AsNode(data),
-		cellCache:  make([]*CellCache, len(colMap)),
-		colMap:     colMap,
+		cellCache:  make([]*CellCache, len(table.Columns)),
 		forPage:    forPage,
 	}
 }
@@ -74,8 +72,7 @@ func NewNodeLike[T model.NodeTypes](like *Node[T], data T) *Node[T] {
 		parent:     like.parent,
 		data:       data,
 		dataAsNode: model.AsNode(data),
-		cellCache:  make([]*CellCache, len(like.colMap)),
-		colMap:     like.colMap,
+		cellCache:  make([]*CellCache, len(like.table.Columns)),
 		forPage:    like.forPage,
 	}
 }
@@ -87,8 +84,7 @@ func (n *Node[T]) CloneForTarget(target unison.Paneler, newParent *Node[T]) *Nod
 		jot.Fatal(1, "unable to convert to table")
 	}
 	if provider := unison.AncestorOrSelf[model.EntityProvider](target); provider != nil {
-		return NewNode[T](table, newParent, n.colMap, n.dataAsNode.Clone(provider.Entity(), newParent.Data(), false),
-			n.forPage)
+		return NewNode[T](table, newParent, n.dataAsNode.Clone(provider.Entity(), newParent.Data(), false), n.forPage)
 	}
 	jot.Fatal(1, "unable to locate entity provider")
 	return nil // Never reaches here
@@ -120,7 +116,7 @@ func (n *Node[T]) Children() []*Node[T] {
 		children := n.dataAsNode.NodeChildren()
 		n.children = make([]*Node[T], len(children))
 		for i, one := range children {
-			n.children[i] = NewNode[T](n.table, n, n.colMap, one, n.forPage)
+			n.children[i] = NewNode[T](n.table, n, one, n.forPage)
 		}
 	}
 	return n.children
@@ -136,20 +132,15 @@ func (n *Node[T]) SetChildren(children []*Node[T]) {
 
 // CellDataForSort implements unison.TableRowData.
 func (n *Node[T]) CellDataForSort(index int) string {
-	if column, exists := n.colMap[index]; exists {
-		var data model.CellData
-		n.dataAsNode.CellData(column, &data)
-		return data.ForSort()
-	}
-	return ""
+	var data model.CellData
+	n.dataAsNode.CellData(n.table.Columns[index].ID, &data)
+	return data.ForSort()
 }
 
 // ColumnCell implements unison.TableRowData.
 func (n *Node[T]) ColumnCell(row, col int, foreground, _ unison.Ink, _, _, _ bool) unison.Paneler {
 	var cellData model.CellData
-	if column, exists := n.colMap[col]; exists {
-		n.dataAsNode.CellData(column, &cellData)
-	}
+	n.dataAsNode.CellData(n.table.Columns[col].ID, &cellData)
 	width := n.table.CellWidth(row, col)
 	if n.cellCache[col].Matches(width, &cellData) {
 		applyForegroundInkRecursively(n.cellCache[col].Panel.AsPanel(), foreground)
@@ -226,9 +217,9 @@ func (n *Node[T]) PartialMatchExceptTag(text string) bool {
 		return true
 	}
 	text = strings.ToLower(text)
-	for _, column := range n.colMap {
+	for i := range n.table.Columns {
 		var data model.CellData
-		n.dataAsNode.CellData(column, &data)
+		n.dataAsNode.CellData(n.table.Columns[i].ID, &data)
 		if data.Type != model.TagsCellType {
 			if strings.Contains(strings.ToLower(data.ForSort()), text) {
 				return true
@@ -242,8 +233,7 @@ func (n *Node[T]) PartialMatchExceptTag(text string) bool {
 // pass in text that has already been run through strings.ToLower().
 func (n *Node[T]) Match(text string) bool {
 	if text != "" {
-		count := len(n.colMap)
-		for i := 0; i < count; i++ {
+		for i := range n.table.Columns {
 			if strings.Contains(strings.ToLower(n.CellDataForSort(i)), text) {
 				return true
 			}

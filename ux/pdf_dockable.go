@@ -241,7 +241,7 @@ func (d *PDFDockable) createToolbar() {
 
 func (d *PDFDockable) createTOC() {
 	d.tocPanel = unison.NewTable[*tocNode](&unison.SimpleTableModel[*tocNode]{})
-	d.tocPanel.ColumnSizes = make([]unison.ColumnSize, 1)
+	d.tocPanel.Columns = make([]unison.ColumnInfo, 1)
 	d.tocPanel.DoubleClickCallback = d.tocDoubleClick
 	d.tocPanel.SelectionChangedCallback = d.tocSelectionChanged
 
@@ -386,7 +386,7 @@ func (d *PDFDockable) pageLoaded() {
 		if toc := d.pdf.CurrentPage().TOC; len(toc) != 0 {
 			d.tocPanel.SetRootRows(newTOC(d, nil, toc))
 			d.tocPanel.SizeColumnsToFit(true)
-			d.tocScrollLayoutData.SizeHint.Width = xmath.Max(xmath.Min(d.tocPanel.ColumnSizes[0].Current, 300), d.tocScrollLayoutData.SizeHint.Width)
+			d.tocScrollLayoutData.SizeHint.Width = xmath.Max(xmath.Min(d.tocPanel.Columns[0].Current, 300), d.tocScrollLayoutData.SizeHint.Width)
 			d.sideBarButton.SetEnabled(true)
 		}
 	}

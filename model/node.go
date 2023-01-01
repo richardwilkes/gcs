@@ -40,7 +40,7 @@ type Node[T NodeTypes] interface {
 	Enabled() bool
 	Open() bool
 	SetOpen(open bool)
-	CellData(column int, data *CellData)
+	CellData(columnID int, data *CellData)
 	FillWithNameableKeys(m map[string]string)
 	ApplyNameableKeys(m map[string]string)
 }

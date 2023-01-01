@@ -16,19 +16,12 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
 )
 
 const noteDragKey = "note"
 
-var (
-	noteColMap = map[int]int{
-		0: model.NoteTextColumn,
-		1: model.NoteReferenceColumn,
-	}
-	_ TableProvider[*model.Note] = &notesProvider{}
-)
+var _ TableProvider[*model.Note] = &notesProvider{}
 
 type notesProvider struct {
 	table    *unison.Table[*Node[*model.Note]]
@@ -64,7 +57,7 @@ func (p *notesProvider) RootRows() []*Node[*model.Note] {
 	data := p.provider.NoteList()
 	rows := make([]*Node[*model.Note], 0, len(data))
 	for _, one := range data {
-		rows = append(rows, NewNode[*model.Note](p.table, nil, noteColMap, one, p.forPage))
+		rows = append(rows, NewNode[*model.Note](p.table, nil, one, p.forPage))
 	}
 	return rows
 }
@@ -109,34 +102,28 @@ func (p *notesProvider) ItemNames() (singular, plural string) {
 }
 
 func (p *notesProvider) Headers() []unison.TableColumnHeader[*Node[*model.Note]] {
-	var headers []unison.TableColumnHeader[*Node[*model.Note]]
-	for i := 0; i < len(noteColMap); i++ {
-		switch noteColMap[i] {
-		case model.NoteTextColumn:
-			headers = append(headers, NewEditorListHeader[*model.Note](i18n.Text("Note"), "", p.forPage))
-		case model.NoteReferenceColumn:
-			headers = append(headers, NewEditorPageRefHeader[*model.Note](p.forPage))
-		default:
-			jot.Fatalf(1, "invalid note column: %d", noteColMap[i])
-		}
+	return []unison.TableColumnHeader[*Node[*model.Note]]{
+		NewEditorListHeader[*model.Note](i18n.Text("Note"), "", p.forPage),
+		NewEditorPageRefHeader[*model.Note](p.forPage),
 	}
-	return headers
 }
 
 func (p *notesProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*model.Note]]) {
 }
 
-func (p *notesProvider) HierarchyColumnIndex() int {
-	for k, v := range noteColMap {
-		if v == model.NoteTextColumn {
-			return k
-		}
+func (p *notesProvider) ColumnIDs() []int {
+	return []int{
+		model.NoteTextColumn,
+		model.NoteReferenceColumn,
 	}
-	return 0
 }
 
-func (p *notesProvider) ExcessWidthColumnIndex() int {
-	return p.HierarchyColumnIndex()
+func (p *notesProvider) HierarchyColumnID() int {
+	return model.NoteTextColumn
+}
+
+func (p *notesProvider) ExcessWidthColumnID() int {
+	return model.NoteTextColumn
 }
 
 func (p *notesProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*model.Note]]) {

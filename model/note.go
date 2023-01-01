@@ -125,8 +125,8 @@ func (n *Note) String() string {
 }
 
 // CellData returns the cell data information for the given column.
-func (n *Note) CellData(column int, data *CellData) {
-	switch column {
+func (n *Note) CellData(columnID int, data *CellData) {
+	switch columnID {
 	case NoteTextColumn:
 		data.Type = MarkdownCellType
 		data.Primary = n.Text

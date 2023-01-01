@@ -150,8 +150,8 @@ func (m *ConditionalModifier) String() string {
 }
 
 // CellData returns the cell data information for the given column.
-func (m *ConditionalModifier) CellData(column int, data *CellData) {
-	switch column {
+func (m *ConditionalModifier) CellData(columnID int, data *CellData) {
+	switch columnID {
 	case ConditionalModifierValueColumn:
 		data.Type = TextCellType
 		data.Primary = m.Total().StringWithSign()

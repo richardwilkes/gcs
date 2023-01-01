@@ -16,61 +16,13 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
 )
 
-var (
-	meleeWeaponColMap = map[int]int{
-		0: model.WeaponUsageColumn,
-		1: model.WeaponSLColumn,
-		2: model.WeaponParryColumn,
-		3: model.WeaponBlockColumn,
-		4: model.WeaponDamageColumn,
-		5: model.WeaponReachColumn,
-		6: model.WeaponSTColumn,
-	}
-	meleeWeaponForPageColMap = map[int]int{
-		0: model.WeaponDescriptionColumn,
-		1: model.WeaponUsageColumn,
-		2: model.WeaponSLColumn,
-		3: model.WeaponParryColumn,
-		4: model.WeaponBlockColumn,
-		5: model.WeaponDamageColumn,
-		6: model.WeaponReachColumn,
-		7: model.WeaponSTColumn,
-	}
-	rangedWeaponColMap = map[int]int{
-		0: model.WeaponUsageColumn,
-		1: model.WeaponSLColumn,
-		2: model.WeaponAccColumn,
-		3: model.WeaponDamageColumn,
-		4: model.WeaponRangeColumn,
-		5: model.WeaponRoFColumn,
-		6: model.WeaponShotsColumn,
-		7: model.WeaponBulkColumn,
-		8: model.WeaponRecoilColumn,
-		9: model.WeaponSTColumn,
-	}
-	rangedWeaponforPageColMap = map[int]int{
-		0:  model.WeaponDescriptionColumn,
-		1:  model.WeaponUsageColumn,
-		2:  model.WeaponSLColumn,
-		3:  model.WeaponAccColumn,
-		4:  model.WeaponDamageColumn,
-		5:  model.WeaponRangeColumn,
-		6:  model.WeaponRoFColumn,
-		7:  model.WeaponShotsColumn,
-		8:  model.WeaponBulkColumn,
-		9:  model.WeaponRecoilColumn,
-		10: model.WeaponSTColumn,
-	}
-	_ TableProvider[*model.Weapon] = &weaponsProvider{}
-)
+var _ TableProvider[*model.Weapon] = &weaponsProvider{}
 
 type weaponsProvider struct {
 	table      *unison.Table[*Node[*model.Weapon]]
-	colMap     map[int]int
 	provider   model.WeaponListProvider
 	weaponType model.WeaponType
 	forPage    bool
@@ -78,24 +30,11 @@ type weaponsProvider struct {
 
 // NewWeaponsProvider creates a new table provider for weapons.
 func NewWeaponsProvider(provider model.WeaponListProvider, weaponType model.WeaponType, forPage bool) TableProvider[*model.Weapon] {
-	p := &weaponsProvider{
+	return &weaponsProvider{
 		provider:   provider,
 		weaponType: weaponType,
 		forPage:    forPage,
 	}
-	switch {
-	case weaponType == model.MeleeWeaponType && forPage:
-		p.colMap = meleeWeaponForPageColMap
-	case weaponType == model.MeleeWeaponType:
-		p.colMap = meleeWeaponColMap
-	case weaponType == model.RangedWeaponType && forPage:
-		p.colMap = rangedWeaponforPageColMap
-	case weaponType == model.RangedWeaponType:
-		p.colMap = rangedWeaponColMap
-	default:
-		jot.Fatalf(1, "unknown weapon type: %d", weaponType)
-	}
-	return p
 }
 
 func (p *weaponsProvider) RefKey() string {
@@ -118,7 +57,7 @@ func (p *weaponsProvider) RootRows() []*Node[*model.Weapon] {
 	data := p.provider.Weapons(p.weaponType)
 	rows := make([]*Node[*model.Weapon], 0, len(data))
 	for _, one := range data {
-		rows = append(rows, NewNode[*model.Weapon](p.table, nil, p.colMap, one, p.forPage))
+		rows = append(rows, NewNode[*model.Weapon](p.table, nil, one, p.forPage))
 	}
 	return rows
 }
@@ -163,9 +102,10 @@ func (p *weaponsProvider) ItemNames() (singular, plural string) {
 }
 
 func (p *weaponsProvider) Headers() []unison.TableColumnHeader[*Node[*model.Weapon]] {
-	var headers []unison.TableColumnHeader[*Node[*model.Weapon]]
-	for i := 0; i < len(p.colMap); i++ {
-		switch p.colMap[i] {
+	ids := p.ColumnIDs()
+	headers := make([]unison.TableColumnHeader[*Node[*model.Weapon]], 0, len(ids))
+	for _, id := range ids {
+		switch id {
 		case model.WeaponDescriptionColumn:
 			headers = append(headers, NewEditorListHeader[*model.Weapon](p.weaponType.String(), "", p.forPage))
 		case model.WeaponUsageColumn:
@@ -203,8 +143,6 @@ func (p *weaponsProvider) Headers() []unison.TableColumnHeader[*Node[*model.Weap
 			headers = append(headers, NewEditorListHeader[*model.Weapon](i18n.Text("Bulk"), "", p.forPage))
 		case model.WeaponRecoilColumn:
 			headers = append(headers, NewEditorListHeader[*model.Weapon](i18n.Text("Recoil"), "", p.forPage))
-		default:
-			jot.Fatalf(1, "invalid weapon column: %d", p.colMap[i])
 		}
 	}
 	return headers
@@ -213,17 +151,43 @@ func (p *weaponsProvider) Headers() []unison.TableColumnHeader[*Node[*model.Weap
 func (p *weaponsProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*model.Weapon]]) {
 }
 
-func (p *weaponsProvider) HierarchyColumnIndex() int {
+func (p *weaponsProvider) ColumnIDs() []int {
+	columnIDs := make([]int, 0, 11)
+	if p.forPage {
+		columnIDs = append(columnIDs, model.WeaponDescriptionColumn)
+	}
+	columnIDs = append(columnIDs,
+		model.WeaponUsageColumn,
+		model.WeaponSLColumn,
+	)
+	switch p.weaponType {
+	case model.MeleeWeaponType:
+		columnIDs = append(columnIDs,
+			model.WeaponParryColumn,
+			model.WeaponBlockColumn,
+			model.WeaponDamageColumn,
+			model.WeaponReachColumn,
+		)
+	case model.RangedWeaponType:
+		columnIDs = append(columnIDs,
+			model.WeaponAccColumn,
+			model.WeaponDamageColumn,
+			model.WeaponRangeColumn,
+			model.WeaponRoFColumn,
+			model.WeaponShotsColumn,
+			model.WeaponBulkColumn,
+			model.WeaponRecoilColumn,
+		)
+	}
+	return append(columnIDs, model.WeaponSTColumn)
+}
+
+func (p *weaponsProvider) HierarchyColumnID() int {
 	return -1
 }
 
-func (p *weaponsProvider) ExcessWidthColumnIndex() int {
-	for k, v := range p.colMap {
-		if v == model.WeaponDescriptionColumn {
-			return k
-		}
-	}
-	return 0
+func (p *weaponsProvider) ExcessWidthColumnID() int {
+	return model.WeaponDescriptionColumn
 }
 
 func (p *weaponsProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*model.Weapon]]) {

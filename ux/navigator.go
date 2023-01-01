@@ -76,7 +76,7 @@ func newNavigator() *Navigator {
 	n.Self = n
 	n.setupToolBar()
 
-	n.table.ColumnSizes = make([]unison.ColumnSize, 1)
+	n.table.Columns = make([]unison.ColumnInfo, 1)
 	globalSettings := gsettings.GlobalSettings()
 	libs := globalSettings.LibrarySet.List()
 	rows := make([]*NavigatorNode, 0, len(libs))

@@ -16,7 +16,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
 	"golang.org/x/exp/maps"
@@ -24,44 +23,20 @@ import (
 
 const equipmentModifierDragKey = "equipment_modifier"
 
-var (
-	equipmentModifierColMap = map[int]int{
-		0: model.EquipmentModifierDescriptionColumn,
-		1: model.EquipmentModifierTechLevelColumn,
-		2: model.EquipmentModifierCostColumn,
-		3: model.EquipmentModifierWeightColumn,
-		4: model.EquipmentModifierTagsColumn,
-		5: model.EquipmentModifierReferenceColumn,
-	}
-	equipmentModifierInEditorColMap = map[int]int{
-		0: model.EquipmentModifierEnabledColumn,
-		1: model.EquipmentModifierDescriptionColumn,
-		2: model.EquipmentModifierTechLevelColumn,
-		3: model.EquipmentModifierCostColumn,
-		4: model.EquipmentModifierWeightColumn,
-		5: model.EquipmentModifierTagsColumn,
-		6: model.EquipmentModifierReferenceColumn,
-	}
-	_ TableProvider[*model.EquipmentModifier] = &eqpModProvider{}
-)
+var _ TableProvider[*model.EquipmentModifier] = &eqpModProvider{}
 
 type eqpModProvider struct {
-	table    *unison.Table[*Node[*model.EquipmentModifier]]
-	colMap   map[int]int
-	provider model.EquipmentModifierListProvider
+	table     *unison.Table[*Node[*model.EquipmentModifier]]
+	provider  model.EquipmentModifierListProvider
+	forEditor bool
 }
 
 // NewEquipmentModifiersProvider creates a new table provider for equipment modifiers.
 func NewEquipmentModifiersProvider(provider model.EquipmentModifierListProvider, forEditor bool) TableProvider[*model.EquipmentModifier] {
-	p := &eqpModProvider{
-		provider: provider,
+	return &eqpModProvider{
+		provider:  provider,
+		forEditor: forEditor,
 	}
-	if forEditor {
-		p.colMap = equipmentModifierInEditorColMap
-	} else {
-		p.colMap = equipmentModifierColMap
-	}
-	return p
 }
 
 func (p *eqpModProvider) RefKey() string {
@@ -93,7 +68,7 @@ func (p *eqpModProvider) RootRows() []*Node[*model.EquipmentModifier] {
 	data := p.provider.EquipmentModifierList()
 	rows := make([]*Node[*model.EquipmentModifier], 0, len(data))
 	for _, one := range data {
-		rows = append(rows, NewNode[*model.EquipmentModifier](p.table, nil, p.colMap, one, false))
+		rows = append(rows, NewNode[*model.EquipmentModifier](p.table, nil, one, false))
 	}
 	return rows
 }
@@ -138,44 +113,44 @@ func (p *eqpModProvider) ItemNames() (singular, plural string) {
 }
 
 func (p *eqpModProvider) Headers() []unison.TableColumnHeader[*Node[*model.EquipmentModifier]] {
-	var headers []unison.TableColumnHeader[*Node[*model.EquipmentModifier]]
-	for i := 0; i < len(p.colMap); i++ {
-		switch p.colMap[i] {
-		case model.EquipmentModifierEnabledColumn:
-			headers = append(headers, NewEnabledHeader[*model.EquipmentModifier](false))
-		case model.EquipmentModifierDescriptionColumn:
-			headers = append(headers, NewEditorListHeader[*model.EquipmentModifier](i18n.Text("Equipment Modifier"), "", false))
-		case model.EquipmentModifierTechLevelColumn:
-			headers = append(headers, NewEditorListHeader[*model.EquipmentModifier](i18n.Text("TL"), i18n.Text("Tech Level"), false))
-		case model.EquipmentModifierCostColumn:
-			headers = append(headers, NewEditorListHeader[*model.EquipmentModifier](i18n.Text("Cost Adjustment"), "", false))
-		case model.EquipmentModifierWeightColumn:
-			headers = append(headers, NewEditorListHeader[*model.EquipmentModifier](i18n.Text("Weight Adjustment"), "", false))
-		case model.EquipmentModifierTagsColumn:
-			headers = append(headers, NewEditorListHeader[*model.EquipmentModifier](i18n.Text("Tags"), "", false))
-		case model.EquipmentModifierReferenceColumn:
-			headers = append(headers, NewEditorPageRefHeader[*model.EquipmentModifier](false))
-		default:
-			jot.Fatalf(1, "invalid equipment modifier column: %d", p.colMap[i])
-		}
+	headers := make([]unison.TableColumnHeader[*Node[*model.EquipmentModifier]], 0, 7)
+	if p.forEditor {
+		headers = append(headers, NewEnabledHeader[*model.EquipmentModifier](false))
 	}
-	return headers
+	return append(headers,
+		NewEditorListHeader[*model.EquipmentModifier](i18n.Text("Equipment Modifier"), "", false),
+		NewEditorListHeader[*model.EquipmentModifier](i18n.Text("TL"), i18n.Text("Tech Level"), false),
+		NewEditorListHeader[*model.EquipmentModifier](i18n.Text("Cost Adjustment"), "", false),
+		NewEditorListHeader[*model.EquipmentModifier](i18n.Text("Weight Adjustment"), "", false),
+		NewEditorListHeader[*model.EquipmentModifier](i18n.Text("Tags"), "", false),
+		NewEditorPageRefHeader[*model.EquipmentModifier](false),
+	)
 }
 
 func (p *eqpModProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*model.EquipmentModifier]]) {
 }
 
-func (p *eqpModProvider) HierarchyColumnIndex() int {
-	for k, v := range p.colMap {
-		if v == model.EquipmentModifierDescriptionColumn {
-			return k
-		}
+func (p *eqpModProvider) ColumnIDs() []int {
+	columnIDs := make([]int, 0, 7)
+	if p.forEditor {
+		columnIDs = append(columnIDs, model.EquipmentModifierEnabledColumn)
 	}
-	return 0
+	return append(columnIDs,
+		model.EquipmentModifierDescriptionColumn,
+		model.EquipmentModifierTechLevelColumn,
+		model.EquipmentModifierCostColumn,
+		model.EquipmentModifierWeightColumn,
+		model.EquipmentModifierTagsColumn,
+		model.EquipmentModifierReferenceColumn,
+	)
 }
 
-func (p *eqpModProvider) ExcessWidthColumnIndex() int {
-	return p.HierarchyColumnIndex()
+func (p *eqpModProvider) HierarchyColumnID() int {
+	return model.EquipmentModifierDescriptionColumn
+}
+
+func (p *eqpModProvider) ExcessWidthColumnID() int {
+	return model.EquipmentModifierDescriptionColumn
 }
 
 func (p *eqpModProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*model.EquipmentModifier]]) {
