@@ -119,6 +119,7 @@ func newPageExporter(entity *model.Entity) *pageExporter {
 				}
 				remaining = (pageSize.Height - page.insets().Bottom) - rowPanel.FrameRect().Y
 			}
+			startNewPage = false
 			for _, one := range data {
 				allowed := remaining - one.overhead
 				start, endBefore := one.helper.CurrentDrawRowRange()
@@ -137,9 +138,16 @@ func newPageExporter(entity *model.Entity) *pageExporter {
 							i = start + 1
 						}
 						startAt[one.key()] = i
+						startNewPage = true
 						break
 					}
 				}
+			}
+			if startNewPage {
+				// We've filled the page, so add another
+				page = NewPage(entity)
+				p.AddChild(page)
+				p.pages = append(p.pages, page)
 			}
 		}
 	}
