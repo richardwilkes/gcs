@@ -12,7 +12,9 @@
 package ux
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"strings"
 
@@ -218,6 +220,9 @@ func (p *pageExporter) exportAsPDFBytes() ([]byte, error) {
 }
 
 func (p *pageExporter) exportAsPDFFile(filePath string) error {
+	if err := os.Remove(filePath); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return errs.Wrap(err)
+	}
 	stream, err := unison.NewFileStream(filePath)
 	if err != nil {
 		return err
