@@ -537,16 +537,17 @@ func (c *Calculator) createHeader(text, linkRef, linkHighlight string, topMargin
 	}
 	wrapper.AddChild(first)
 
-	link := NewLink(linkRef, func() {
-		OpenPageReference(nil, linkRef, linkHighlight, nil)
-	})
-	link.Font = &unison.DynamicFont{
+	linkTheme := unison.DefaultLinkTheme
+	linkTheme.Font = &unison.DynamicFont{
 		Resolver: func() unison.FontDescriptor {
 			desc := unison.LabelFont.Descriptor()
 			desc.Weight = unison.BoldFontWeight
 			return desc
 		},
 	}
+	link := unison.NewLink(linkRef, "", linkRef, linkTheme, func(_ unison.Paneler, _ string) {
+		OpenPageReference(nil, linkRef, linkHighlight, nil)
+	})
 	wrapper.AddChild(link)
 
 	last := unison.NewLabel()
