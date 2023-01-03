@@ -25,7 +25,8 @@ const (
 	MetaTraitContainerType
 	RaceContainerType
 	AlternativeAbilitiesContainerType
-	LastContainerType = AlternativeAbilitiesContainerType
+	AttributesContainerType
+	LastContainerType = AttributesContainerType
 )
 
 // AllContainerType holds all possible values.
@@ -34,6 +35,7 @@ var AllContainerType = []ContainerType{
 	MetaTraitContainerType,
 	RaceContainerType,
 	AlternativeAbilitiesContainerType,
+	AttributesContainerType,
 }
 
 // ContainerType holds the type of a trait container.
@@ -58,6 +60,8 @@ func (enum ContainerType) Key() string {
 		return "race"
 	case AlternativeAbilitiesContainerType:
 		return "alternative_abilities"
+	case AttributesContainerType:
+		return "attributes"
 	default:
 		return ContainerType(0).Key()
 	}
@@ -74,6 +78,8 @@ func (enum ContainerType) String() string {
 		return i18n.Text("Race")
 	case AlternativeAbilitiesContainerType:
 		return i18n.Text("Alternative Abilities")
+	case AttributesContainerType:
+		return i18n.Text("Attributes")
 	default:
 		return ContainerType(0).String()
 	}

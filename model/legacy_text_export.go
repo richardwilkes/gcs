@@ -49,6 +49,7 @@ const (
 
 type legacyExporter struct {
 	entity             *Entity
+	points             *PointsBreakdown
 	template           []byte
 	pos                int
 	exportPath         string
@@ -83,6 +84,7 @@ func LegacyExport(entity *Entity, templatePath, exportPath string) (err error) {
 	entity.Recalculate()
 	ex := &legacyExporter{
 		entity:       entity,
+		points:       entity.PointsBreakdown(),
 		exportPath:   exportPath,
 		onlyTags:     make(map[string]bool),
 		excludedTags: make(map[string]bool),
@@ -178,12 +180,12 @@ func (ex *legacyExporter) emitKey(key string) error {
 		ex.writeEncodedText(ex.entity.ModifiedOn.String())
 	case "TOTAL_POINTS":
 		if ex.entity.SheetSettings.ExcludeUnspentPointsFromTotal {
-			ex.writeEncodedText(ex.entity.SpentPoints().String())
+			ex.writeEncodedText(ex.points.Total().String())
 		} else {
 			ex.writeEncodedText(ex.entity.TotalPoints.String())
 		}
 	case "ATTRIBUTE_POINTS":
-		ex.writeEncodedText(ex.entity.AttributePoints().String())
+		ex.writeEncodedText(ex.points.Attributes.String())
 	case "ST_POINTS":
 		ex.writeEncodedText(ex.entity.Attributes.Cost(StrengthID).String())
 	case "DX_POINTS":
@@ -205,21 +207,17 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "BASIC_MOVE_POINTS":
 		ex.writeEncodedText(ex.entity.Attributes.Cost("basic_move").String())
 	case "ADVANTAGE_POINTS":
-		pts, _, _, _ := ex.entity.TraitPoints()
-		ex.writeEncodedText(pts.String())
+		ex.writeEncodedText(ex.points.Advantages.String())
 	case "DISADVANTAGE_POINTS":
-		_, pts, _, _ := ex.entity.TraitPoints()
-		ex.writeEncodedText(pts.String())
+		ex.writeEncodedText(ex.points.Disadvantages.String())
 	case "QUIRK_POINTS":
-		_, _, _, pts := ex.entity.TraitPoints()
-		ex.writeEncodedText(pts.String())
+		ex.writeEncodedText(ex.points.Quirks.String())
 	case "RACE_POINTS":
-		_, _, pts, _ := ex.entity.TraitPoints()
-		ex.writeEncodedText(pts.String())
+		ex.writeEncodedText(ex.points.Race.String())
 	case "SKILL_POINTS":
-		ex.writeEncodedText(ex.entity.SkillPoints().String())
+		ex.writeEncodedText(ex.points.Skills.String())
 	case "SPELL_POINTS":
-		ex.writeEncodedText(ex.entity.SpellPoints().String())
+		ex.writeEncodedText(ex.points.Spells.String())
 	case "UNSPENT_POINTS", "EARNED_POINTS":
 		ex.writeEncodedText(ex.entity.UnspentPoints().String())
 	case "HEIGHT":

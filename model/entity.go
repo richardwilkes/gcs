@@ -45,6 +45,22 @@ type EntityProvider interface {
 	Entity() *Entity
 }
 
+// PointsBreakdown holds the points spent on a character.
+type PointsBreakdown struct {
+	Race          fxp.Int
+	Attributes    fxp.Int
+	Advantages    fxp.Int
+	Disadvantages fxp.Int
+	Quirks        fxp.Int
+	Skills        fxp.Int
+	Spells        fxp.Int
+}
+
+// Total returns the total number of points spent on a character.
+func (pb *PointsBreakdown) Total() fxp.Int {
+	return pb.Race + pb.Attributes + pb.Advantages + pb.Disadvantages + pb.Quirks + pb.Skills + pb.Spells
+}
+
 // EntityData holds the Entity data that is written to disk.
 type EntityData struct {
 	Type             EntityType      `json:"type"`
@@ -486,50 +502,39 @@ func (e *Entity) UpdateSpells() bool {
 	return changed
 }
 
-// SpentPoints returns the number of spent points.
-func (e *Entity) SpentPoints() fxp.Int {
-	total := e.AttributePoints()
-	ad, disad, race, quirk := e.TraitPoints()
-	total += ad + disad + race + quirk
-	total += e.SkillPoints()
-	total += e.SpellPoints()
-	return total
-}
-
 // UnspentPoints returns the number of unspent points.
 func (e *Entity) UnspentPoints() fxp.Int {
-	return e.TotalPoints - e.SpentPoints()
+	return e.TotalPoints - e.PointsBreakdown().Total()
 }
 
 // SetUnspentPoints sets the number of unspent points.
 func (e *Entity) SetUnspentPoints(unspent fxp.Int) {
 	if unspent != e.UnspentPoints() {
-		e.TotalPoints = unspent + e.SpentPoints()
+		e.TotalPoints = unspent + e.PointsBreakdown().Total()
 	}
 }
 
-// AttributePoints returns the number of points spent on attributes.
-func (e *Entity) AttributePoints() fxp.Int {
-	var total fxp.Int
+// PointsBreakdown returns the point breakdown for spent points.
+func (e *Entity) PointsBreakdown() *PointsBreakdown {
+	var pb PointsBreakdown
 	for _, attr := range e.Attributes.Set {
-		total += attr.PointCost()
+		pb.Attributes += attr.PointCost()
 	}
-	return total
-}
-
-// TraitPoints returns the number of points spent on traits.
-func (e *Entity) TraitPoints() (ad, disad, race, quirk fxp.Int) {
 	for _, one := range e.Traits {
-		a, d, r, q := calculateSingleTraitPoints(one)
-		ad += a
-		disad += d
-		race += r
-		quirk += q
+		calculateSingleTraitPoints(one, &pb)
 	}
-	return
+	Traverse(func(s *Skill) bool {
+		pb.Skills += s.Points
+		return false
+	}, false, true, e.Skills...)
+	Traverse(func(s *Spell) bool {
+		pb.Spells += s.Points
+		return false
+	}, false, true, e.Spells...)
+	return &pb
 }
 
-func calculateSingleTraitPoints(t *Trait) (ad, disad, race, quirk fxp.Int) {
+func calculateSingleTraitPoints(t *Trait, pb *PointsBreakdown) {
 	if t.Disabled {
 		return
 	}
@@ -537,47 +542,26 @@ func calculateSingleTraitPoints(t *Trait) (ad, disad, race, quirk fxp.Int) {
 		switch t.ContainerType {
 		case GroupContainerType:
 			for _, child := range t.Children {
-				a, d, r, q := calculateSingleTraitPoints(child)
-				ad += a
-				disad += d
-				race += r
-				quirk += q
+				calculateSingleTraitPoints(child, pb)
 			}
 			return
 		case RaceContainerType:
-			return 0, 0, t.AdjustedPoints(), 0
+			pb.Race += t.AdjustedPoints()
+			return
+		case AttributesContainerType:
+			pb.Attributes += t.AdjustedPoints()
+			return
 		}
 	}
 	pts := t.AdjustedPoints()
 	switch {
 	case pts == -fxp.One:
-		quirk += pts
+		pb.Quirks += pts
 	case pts > 0:
-		ad += pts
+		pb.Advantages += pts
 	case pts < 0:
-		disad += pts
+		pb.Disadvantages += pts
 	}
-	return
-}
-
-// SkillPoints returns the number of points spent on skills.
-func (e *Entity) SkillPoints() fxp.Int {
-	var total fxp.Int
-	Traverse(func(s *Skill) bool {
-		total += s.Points
-		return false
-	}, false, true, e.Skills...)
-	return total
-}
-
-// SpellPoints returns the number of points spent on spells.
-func (e *Entity) SpellPoints() fxp.Int {
-	var total fxp.Int
-	Traverse(func(s *Spell) bool {
-		total += s.Points
-		return false
-	}, false, true, e.Spells...)
-	return total
 }
 
 // WealthCarried returns the current wealth being carried.

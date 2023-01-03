@@ -147,6 +147,7 @@ func main() {
 			},
 			{Key: "race"},
 			{Key: "alternative_abilities"},
+			{Key: "attributes"},
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{

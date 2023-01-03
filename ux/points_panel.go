@@ -71,7 +71,7 @@ func NewPointsPanel(entity *model.Entity, targetMgr *TargetMgr) *PointsPanel {
 
 	var overallTotal string
 	if p.entity.SheetSettings.ExcludeUnspentPointsFromTotal {
-		overallTotal = p.entity.SpentPoints().String()
+		overallTotal = p.entity.PointsBreakdown().Total().String()
 	} else {
 		overallTotal = p.entity.TotalPoints.String()
 	}
@@ -135,47 +135,43 @@ func NewPointsPanel(entity *model.Entity, targetMgr *TargetMgr) *PointsPanel {
 		p.unspentLabel.DefaultDraw(gc, rect)
 	}
 	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		_, _, race, _ := p.entity.TraitPoints()
-		if text := race.String(); text != f.Text {
+		if text := p.entity.PointsBreakdown().Race.String(); text != f.Text {
 			f.Text = text
 			MarkForLayoutWithinDockable(f)
 		}
 	}), i18n.Text("Race"), i18n.Text("Total points spent on a racial package"))
 	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.AttributePoints().String(); text != f.Text {
+		if text := p.entity.PointsBreakdown().Attributes.String(); text != f.Text {
 			f.Text = text
 			MarkForLayoutWithinDockable(f)
 		}
 	}), i18n.Text("Attributes"), i18n.Text("Total points spent on attributes"))
 	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		ad, _, _, _ := p.entity.TraitPoints()
-		if text := ad.String(); text != f.Text {
+		if text := p.entity.PointsBreakdown().Advantages.String(); text != f.Text {
 			f.Text = text
 			MarkForLayoutWithinDockable(f)
 		}
 	}), i18n.Text("Advantages"), i18n.Text("Total points spent on advantages"))
 	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		_, disad, _, _ := p.entity.TraitPoints()
-		if text := disad.String(); text != f.Text {
+		if text := p.entity.PointsBreakdown().Disadvantages.String(); text != f.Text {
 			f.Text = text
 			MarkForLayoutWithinDockable(f)
 		}
 	}), i18n.Text("Disadvantages"), i18n.Text("Total points spent on disadvantages"))
 	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		_, _, _, quirk := p.entity.TraitPoints()
-		if text := quirk.String(); text != f.Text {
+		if text := p.entity.PointsBreakdown().Quirks.String(); text != f.Text {
 			f.Text = text
 			MarkForLayoutWithinDockable(f)
 		}
 	}), i18n.Text("Quirks"), i18n.Text("Total points spent on quirks"))
 	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.SkillPoints().String(); text != f.Text {
+		if text := p.entity.PointsBreakdown().Skills.String(); text != f.Text {
 			f.Text = text
 			MarkForLayoutWithinDockable(f)
 		}
 	}), i18n.Text("Skills"), i18n.Text("Total points spent on skills"))
 	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.SpellPoints().String(); text != f.Text {
+		if text := p.entity.PointsBreakdown().Spells.String(); text != f.Text {
 			f.Text = text
 			MarkForLayoutWithinDockable(f)
 		}
@@ -219,7 +215,7 @@ func (p *PointsPanel) adjustUnspent() {
 func (p *PointsPanel) Sync() {
 	var overallTotal string
 	if p.entity.SheetSettings.ExcludeUnspentPointsFromTotal {
-		overallTotal = p.entity.SpentPoints().String()
+		overallTotal = p.entity.PointsBreakdown().Total().String()
 	} else {
 		overallTotal = p.entity.TotalPoints.String()
 	}
