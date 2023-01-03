@@ -39,6 +39,7 @@ type sheetSettingsDockable struct {
 	useMultiplicativeModifiers         *unison.CheckBox
 	useModifyDicePlusAdds              *unison.CheckBox
 	excludeUnspentPointsFromTotal      *unison.CheckBox
+	useHalfStatDefaults                *unison.CheckBox
 	lengthUnitsPopup                   *unison.PopupMenu[model.LengthUnits]
 	weightUnitsPopup                   *unison.PopupMenu[model.WeightUnits]
 	userDescDisplayPopup               *unison.PopupMenu[model.DisplayOption]
@@ -149,12 +150,17 @@ func (d *sheetSettingsDockable) createOptions(content *unison.Panel) {
 			d.settings().UseTitleInFooter = d.showTitleInsteadOfNameInPageFooter.State == unison.OnCheckState
 			d.syncSheet(false)
 		})
-	d.useMultiplicativeModifiers = d.addCheckBox(panel,
-		i18n.Text("Use Multiplicative Modifiers (PW102; changes point value)"), s.UseMultiplicativeModifiers, func() {
+	d.useMultiplicativeModifiers = d.addCheckBoxWithLink(panel,
+		i18n.Text("Use Multiplicative Modifiers"), "P102", s.UseMultiplicativeModifiers, func() {
 			d.settings().UseMultiplicativeModifiers = d.useMultiplicativeModifiers.State == unison.OnCheckState
 			d.syncSheet(false)
 		})
-	d.useModifyDicePlusAdds = d.addCheckBox(panel, i18n.Text("Use Modifying Dice + Adds (B269)"),
+	d.useHalfStatDefaults = d.addCheckBoxWithLink(panel, i18n.Text("Use Half-Stat Defaults"), "PY65:30",
+		s.UseHalfStatDefaults, func() {
+			d.settings().UseHalfStatDefaults = d.useHalfStatDefaults.State == unison.OnCheckState
+			d.syncSheet(false)
+		})
+	d.useModifyDicePlusAdds = d.addCheckBoxWithLink(panel, i18n.Text("Use Modifying Dice + Adds"), "B269",
 		s.UseModifyingDicePlusAdds, func() {
 			d.settings().UseModifyingDicePlusAdds = d.useModifyDicePlusAdds.State == unison.OnCheckState
 			d.syncSheet(false)
@@ -173,6 +179,29 @@ func (d *sheetSettingsDockable) addCheckBox(panel *unison.Panel, title string, c
 	checkbox.State = unison.CheckStateFromBool(checked)
 	checkbox.ClickCallback = onClick
 	panel.AddChild(checkbox)
+	return checkbox
+}
+
+func (d *sheetSettingsDockable) addCheckBoxWithLink(panel *unison.Panel, title, ref string, checked bool, onClick func()) *unison.CheckBox {
+	wrapper := unison.NewPanel()
+	wrapper.SetLayout(&unison.FlexLayout{Columns: 4})
+	checkbox := unison.NewCheckBox()
+	checkbox.Text = title
+	checkbox.State = unison.CheckStateFromBool(checked)
+	checkbox.ClickCallback = onClick
+	wrapper.AddChild(checkbox)
+	label := unison.NewLabel()
+	label.Font = checkbox.Font
+	label.Text = " ("
+	wrapper.AddChild(label)
+	wrapper.AddChild(unison.NewLink(ref, "", ref, unison.DefaultLinkTheme, func(_ unison.Paneler, _ string) {
+		OpenPageReference(d.Window(), ref, "", nil)
+	}))
+	label = unison.NewLabel()
+	label.Font = checkbox.Font
+	label.Text = ")"
+	wrapper.AddChild(label)
+	panel.AddChild(wrapper)
 	return checkbox
 }
 
@@ -352,6 +381,7 @@ func (d *sheetSettingsDockable) sync() {
 	d.showSpellAdjustments.State = unison.CheckStateFromBool(s.ShowSpellAdj)
 	d.showTitleInsteadOfNameInPageFooter.State = unison.CheckStateFromBool(s.UseTitleInFooter)
 	d.useMultiplicativeModifiers.State = unison.CheckStateFromBool(s.UseMultiplicativeModifiers)
+	d.useHalfStatDefaults.State = unison.CheckStateFromBool(s.UseHalfStatDefaults)
 	d.useModifyDicePlusAdds.State = unison.CheckStateFromBool(s.UseModifyingDicePlusAdds)
 	d.excludeUnspentPointsFromTotal.State = unison.CheckStateFromBool(s.ExcludeUnspentPointsFromTotal)
 	d.lengthUnitsPopup.Select(s.DefaultLengthUnits)

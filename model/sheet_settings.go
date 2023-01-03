@@ -42,6 +42,7 @@ type SheetSettingsData struct {
 	SkillLevelAdjDisplay          DisplayOption     `json:"skill_level_adj_display"`
 	UseMultiplicativeModifiers    bool              `json:"use_multiplicative_modifiers,omitempty"`
 	UseModifyingDicePlusAdds      bool              `json:"use_modifying_dice_plus_adds,omitempty"`
+	UseHalfStatDefaults           bool              `json:"use_half_stat_defaults,omitempty"`
 	ShowTraitModifierAdj          bool              `json:"show_trait_modifier_adj,alt=show_advantage_modifier_adj,omitempty"`
 	ShowEquipmentModifierAdj      bool              `json:"show_equipment_modifier_adj,omitempty"`
 	ShowSpellAdj                  bool              `json:"show_spell_adj,omitempty"`

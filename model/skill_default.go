@@ -177,6 +177,9 @@ func (s *SkillDefault) SkillLevelFast(entity *Entity, requirePoints bool, exclud
 		if ruleOf20 {
 			level = level.Min(fxp.Twenty)
 		}
+		if entity.SheetSettings.UseHalfStatDefaults {
+			level = level.Div(fxp.Two).Trunc() + fxp.Five
+		}
 		return s.finalLevel(level)
 	}
 }

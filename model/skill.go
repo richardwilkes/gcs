@@ -545,6 +545,9 @@ func CalculateSkillLevel(entity *Entity, name, specialization string, tags []str
 	relativeLevel := difficulty.Difficulty.BaseRelativeLevel()
 	level := entity.ResolveAttributeCurrent(difficulty.Attribute)
 	if level != fxp.Min {
+		if entity.SheetSettings.UseHalfStatDefaults {
+			level = level.Div(fxp.Two).Trunc() + fxp.Five
+		}
 		if difficulty.Difficulty == Wildcard {
 			points = points.Div(fxp.Three)
 		} else if def != nil && def.Points > 0 {
