@@ -13,6 +13,7 @@ package ux
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model"
@@ -24,6 +25,8 @@ import (
 	"github.com/richardwilkes/unison"
 	"golang.org/x/exp/slices"
 )
+
+const containerMarker = "\000"
 
 // ItemVariant holds the type of item variant to create.
 type ItemVariant int
@@ -270,6 +273,17 @@ func InsertCmdContextMenuItem[T model.NodeTypes](table *unison.Table[*Node[T]], 
 }
 
 func flexibleLess(s1, s2 string) bool {
+	c1 := strings.HasPrefix(s1, containerMarker)
+	c2 := strings.HasPrefix(s2, containerMarker)
+	if c1 != c2 {
+		return c1
+	}
+	if c1 {
+		s1 = s1[1:]
+	}
+	if c2 {
+		s2 = s2[1:]
+	}
 	if n1, err := fxp.FromString(s1); err == nil {
 		var n2 fxp.Int
 		if n2, err = fxp.FromString(s2); err == nil {

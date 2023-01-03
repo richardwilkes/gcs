@@ -69,6 +69,7 @@ type GeneralSheetSettings struct {
 	ImageResolution       int     `json:"image_resolution"`
 	AutoFillProfile       bool    `json:"auto_fill_profile"`
 	AutoAddNaturalAttacks bool    `json:"add_natural_attacks"`
+	GroupContainersOnSort bool    `json:"group_containers_on_sort"`
 }
 
 // NewGeneralSheetSettings creates settings with factory defaults.

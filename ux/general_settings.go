@@ -39,6 +39,7 @@ type generalSettingsDockable struct {
 	nameField                     *StringField
 	autoFillProfileCheckbox       *CheckBox
 	autoAddNaturalAttacksCheckbox *CheckBox
+	groupContainersOnSortCheckbox *CheckBox
 	pointsField                   *DecimalField
 	techLevelField                *StringField
 	calendarPopup                 *unison.PopupMenu[string]
@@ -144,6 +145,17 @@ func (d *generalSettingsDockable) createCheckboxBlock(content *unison.Panel) {
 	d.autoFillProfileCheckbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(NewFieldLeadingLabel(""))
 	content.AddChild(d.autoFillProfileCheckbox)
+
+	d.groupContainersOnSortCheckbox = NewCheckBox(nil, "", i18n.Text("Group containers when sorting"),
+		func() unison.CheckState {
+			return unison.CheckStateFromBool(model.GlobalSettings().General.GroupContainersOnSort)
+		},
+		func(state unison.CheckState) {
+			model.GlobalSettings().General.GroupContainersOnSort = state == unison.OnCheckState
+		})
+	d.groupContainersOnSortCheckbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
+	content.AddChild(NewFieldLeadingLabel(""))
+	content.AddChild(d.groupContainersOnSortCheckbox)
 
 	d.autoAddNaturalAttacksCheckbox = NewCheckBox(nil, "", i18n.Text("Add natural attacks to new sheets"),
 		func() unison.CheckState {
@@ -318,6 +330,7 @@ func (d *generalSettingsDockable) sync() {
 	s := model.GlobalSettings().General
 	d.nameField.SetText(s.DefaultPlayerName)
 	SetCheckBoxState(d.autoFillProfileCheckbox, s.AutoFillProfile)
+	SetCheckBoxState(d.groupContainersOnSortCheckbox, s.GroupContainersOnSort)
 	SetCheckBoxState(d.autoAddNaturalAttacksCheckbox, s.AutoAddNaturalAttacks)
 	d.pointsField.SetText(s.InitialPoints.String())
 	d.techLevelField.SetText(s.DefaultTechLevel)

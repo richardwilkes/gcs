@@ -134,7 +134,11 @@ func (n *Node[T]) SetChildren(children []*Node[T]) {
 func (n *Node[T]) CellDataForSort(index int) string {
 	var data model.CellData
 	n.dataAsNode.CellData(n.table.Columns[index].ID, &data)
-	return data.ForSort()
+	s := data.ForSort()
+	if model.GlobalSettings().General.GroupContainersOnSort && n.dataAsNode.Container() {
+		return containerMarker + s
+	}
+	return s
 }
 
 // ColumnCell implements unison.TableRowData.
