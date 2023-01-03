@@ -16,11 +16,13 @@ import (
 	"io/fs"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/desktop"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -51,6 +53,9 @@ func OpenPageReference(wnd *unison.Window, ref, highlight string, promptContext 
 	lowerRef := strings.ToLower(ref)
 	switch {
 	case strings.HasPrefix(lowerRef, "http://") || strings.HasPrefix(lowerRef, "https://"):
+		if runtime.GOOS == toolbox.WindowsOS {
+			ref = `"` + ref + `"`
+		}
 		if err := desktop.Open(ref); err != nil {
 			unison.ErrorDialogWithError(i18n.Text("Unable to open link"), err)
 		}
