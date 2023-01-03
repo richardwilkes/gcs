@@ -145,7 +145,7 @@ func (p *weaponsProvider) Headers() []unison.TableColumnHeader[*Node[*model.Weap
 			headers = append(headers, NewEditorListHeader[*model.Weapon](i18n.Text("Recoil"), "", p.forPage))
 		}
 	}
-	return headers
+	return DisableSorting(headers)
 }
 
 func (p *weaponsProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*model.Weapon]]) {

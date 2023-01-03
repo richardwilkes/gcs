@@ -459,3 +459,13 @@ func CopyRowsTo[T model.NodeTypes](table *unison.Table[*Node[T]], rows []*Node[T
 	}
 	unison.Ancestor[Rebuildable](table).Rebuild(true)
 }
+
+// DisableSorting disables the sorting capability in the table headers.
+func DisableSorting[T unison.TableRowConstraint[T]](headers []unison.TableColumnHeader[T]) []unison.TableColumnHeader[T] {
+	for _, header := range headers {
+		state := header.SortState()
+		state.Sortable = false
+		header.SetSortState(state)
+	}
+	return headers
+}

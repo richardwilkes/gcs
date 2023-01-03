@@ -94,10 +94,10 @@ func (p *condModProvider) ItemNames() (singular, plural string) {
 }
 
 func (p *condModProvider) Headers() []unison.TableColumnHeader[*Node[*model.ConditionalModifier]] {
-	return []unison.TableColumnHeader[*Node[*model.ConditionalModifier]]{
+	return DisableSorting([]unison.TableColumnHeader[*Node[*model.ConditionalModifier]]{
 		NewEditorListHeader[*model.ConditionalModifier]("±", i18n.Text("Modifier"), true),
 		NewEditorListHeader[*model.ConditionalModifier](i18n.Text("Condition"), "", true),
-	}
+	})
 }
 
 func (p *condModProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*model.ConditionalModifier]]) {
