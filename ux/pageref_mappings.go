@@ -112,24 +112,7 @@ Would you like to create one by choosing a PDF to map to this key?`), key), pdfN
 			case unison.ModalResponseDiscard:
 				promptContext[key] = true
 			case unison.ModalResponseOK:
-				dialog := unison.NewOpenDialog()
-				dialog.SetAllowsMultipleSelection(false)
-				dialog.SetResolvesAliases(true)
-				dialog.SetAllowedExtensions("pdf")
-				dialog.SetCanChooseDirectories(false)
-				dialog.SetCanChooseFiles(true)
-				global := model.GlobalSettings()
-				dialog.SetInitialDirectory(global.LastDir(model.DefaultLastDirKey))
-				if dialog.RunModal() {
-					p := dialog.Path()
-					global.SetLastDir(model.DefaultLastDirKey, filepath.Dir(p))
-					pageRef = &model.PageRef{
-						ID:   key,
-						Path: p,
-					}
-					s.PageRefs.Set(pageRef)
-					RefreshPageRefMappingsView()
-				}
+				pageRef = askUserForPageRefPath(key, 0)
 			case unison.ModalResponseCancel:
 				return true
 			}
@@ -175,6 +158,30 @@ Would you like to create one by choosing a PDF to map to this key?`), key), pdfN
 	return false
 }
 
+func askUserForPageRefPath(key string, offset int) *model.PageRef {
+	dialog := unison.NewOpenDialog()
+	dialog.SetAllowsMultipleSelection(false)
+	dialog.SetResolvesAliases(true)
+	dialog.SetAllowedExtensions("pdf")
+	dialog.SetCanChooseDirectories(false)
+	dialog.SetCanChooseFiles(true)
+	global := model.GlobalSettings()
+	dialog.SetInitialDirectory(global.LastDir(model.DefaultLastDirKey))
+	if !dialog.RunModal() {
+		return nil
+	}
+	p := dialog.Path()
+	global.SetLastDir(model.DefaultLastDirKey, filepath.Dir(p))
+	pageRef := &model.PageRef{
+		ID:     key,
+		Path:   p,
+		Offset: offset,
+	}
+	model.GlobalSettings().PageRefs.Set(pageRef)
+	RefreshPageRefMappingsView()
+	return pageRef
+}
+
 // RefreshPageRefMappingsView causes the Page References Mappings view to be refreshed if it is open.
 func RefreshPageRefMappingsView() {
 	ws := AnyWorkspace()
@@ -217,7 +224,7 @@ func ShowPageRefMappings() {
 func (d *pageRefMappingsDockable) initContent(content *unison.Panel) {
 	d.content = content
 	d.content.SetLayout(&unison.FlexLayout{
-		Columns:  4,
+		Columns:  5,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
@@ -232,10 +239,11 @@ func (d *pageRefMappingsDockable) reset() {
 func (d *pageRefMappingsDockable) sync() {
 	d.content.RemoveAllChildren()
 	for _, one := range model.GlobalSettings().PageRefs.List() {
+		d.createTrashField(one)
 		d.createIDField(one)
 		d.createOffsetField(one)
+		d.createEditField(one)
 		d.createNameField(one)
-		d.createTrashField(one)
 	}
 	d.MarkForRedraw()
 }
@@ -284,11 +292,22 @@ func (d *pageRefMappingsDockable) createNameField(ref *model.PageRef) {
 	p.Text = filepath.Base(ref.Path)
 	p.Tooltip = unison.NewTooltipWithText(ref.Path)
 	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: unison.StartAlignment,
 		VAlign: unison.MiddleAlignment,
-		HGrab:  true,
 	})
 	d.content.AddChild(p)
+}
+
+func (d *pageRefMappingsDockable) createEditField(ref *model.PageRef) {
+	b := unison.NewSVGButton(svg.Edit)
+	b.ClickCallback = func() {
+		askUserForPageRefPath(ref.ID, ref.Offset)
+	}
+	b.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.MiddleAlignment,
+		VAlign: unison.MiddleAlignment,
+	})
+	d.content.AddChild(b)
 }
 
 func (d *pageRefMappingsDockable) createTrashField(ref *model.PageRef) {
