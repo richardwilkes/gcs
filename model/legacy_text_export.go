@@ -269,7 +269,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "BASIC_MOVE":
 		ex.writeEncodedText(ex.entity.Attributes.Current("basic_move").String())
 	case "PERCEPTION":
-		ex.writeEncodedText(ex.entity.Attributes.Current("perception").String())
+		ex.writeEncodedText(ex.entity.Attributes.Current("per").String())
 	case "VISION":
 		ex.writeEncodedText(ex.entity.Attributes.Current("vision").String())
 	case "HEARING":
