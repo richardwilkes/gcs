@@ -144,9 +144,11 @@ func addTechLevelRequired(parent *unison.Panel, fieldData **string, includeField
 func addHitLocationChoicePopup(parent *unison.Panel, entity *model.Entity, prefix string, fieldData *string) *unison.PopupMenu[*model.HitLocationChoice] {
 	choices, current := model.HitLocationChoices(entity, prefix, *fieldData)
 	popup := addPopup(parent, choices, &current)
-	popup.SelectionCallback = func(index int, _ *model.HitLocationChoice) {
-		*fieldData = choices[index].Key
-		MarkModified(parent)
+	popup.SelectionChangedCallback = func(p *unison.PopupMenu[*model.HitLocationChoice]) {
+		if choice, ok := p.Selected(); ok {
+			*fieldData = choice.Key
+			MarkModified(parent)
+		}
 	}
 	return popup
 }
@@ -154,9 +156,11 @@ func addHitLocationChoicePopup(parent *unison.Panel, entity *model.Entity, prefi
 func addAttributeChoicePopup(parent *unison.Panel, entity *model.Entity, prefix string, fieldData *string, flags model.AttributeFlags) *unison.PopupMenu[*model.AttributeChoice] {
 	choices, current := model.AttributeChoices(entity, prefix, flags, *fieldData)
 	popup := addPopup(parent, choices, &current)
-	popup.SelectionCallback = func(index int, _ *model.AttributeChoice) {
-		*fieldData = choices[index].Key
-		MarkModified(parent)
+	popup.SelectionChangedCallback = func(p *unison.PopupMenu[*model.AttributeChoice]) {
+		if choice, ok := p.Selected(); ok {
+			*fieldData = choice.Key
+			MarkModified(parent)
+		}
 	}
 	return popup
 }
@@ -355,9 +359,11 @@ func addPopup[T comparable](parent *unison.Panel, choices []T, fieldData *T) *un
 		popup.AddItem(one)
 	}
 	popup.Select(*fieldData)
-	popup.SelectionCallback = func(_ int, item T) {
-		*fieldData = item
-		MarkModified(parent)
+	popup.SelectionChangedCallback = func(p *unison.PopupMenu[T]) {
+		if item, ok := p.Selected(); ok {
+			*fieldData = item
+			MarkModified(parent)
+		}
 	}
 	parent.AddChild(popup)
 	return popup
@@ -372,8 +378,8 @@ func addBoolPopup(parent *unison.Panel, trueChoice, falseChoice string, fieldDat
 	} else {
 		popup.SelectIndex(1)
 	}
-	popup.SelectionCallback = func(index int, _ string) {
-		*fieldData = index == 0
+	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
+		*fieldData = p.SelectedIndex() == 0
 		MarkModified(parent)
 	}
 	parent.AddChild(popup)
@@ -455,8 +461,8 @@ func addStringCriteriaPanel(parent *unison.Panel, prefix, notPrefix, undoTitle s
 		popup.AddItem(one)
 	}
 	popup.SelectIndex(model.ExtractStringCompareTypeIndex(string(strCriteria.Compare)))
-	popup.SelectionCallback = func(index int, _ string) {
-		strCriteria.Compare = model.AllStringCompareTypes[index]
+	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
+		strCriteria.Compare = model.AllStringCompareTypes[p.SelectedIndex()]
 		adjustFieldBlank(criteriaField, strCriteria.Compare == model.AnyString)
 		MarkModified(panel)
 	}
@@ -493,8 +499,8 @@ func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetK
 		popup.AddItem(one)
 	}
 	popup.SelectIndex(model.ExtractNumericCompareTypeIndex(string(numCriteria.Compare)))
-	popup.SelectionCallback = func(index int, _ string) {
-		numCriteria.Compare = model.AllNumericCompareTypes[index]
+	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
+		numCriteria.Compare = model.AllNumericCompareTypes[p.SelectedIndex()]
 		adjustFieldBlank(field, numCriteria.Compare == model.AnyNumber)
 		MarkModified(panel)
 	}
@@ -524,8 +530,8 @@ func addWeightCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKe
 	parent.AddChild(popup)
 	field := addWeightField(parent, targetMgr, targetKey, i18n.Text("Weight Qualifier"), "", entity,
 		&weightCriteria.Qualifier, false)
-	popup.SelectionCallback = func(index int, _ string) {
-		weightCriteria.Compare = model.AllNumericCompareTypes[index]
+	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
+		weightCriteria.Compare = model.AllNumericCompareTypes[p.SelectedIndex()]
 		adjustFieldBlank(field, weightCriteria.Compare == model.AnyNumber)
 		MarkModified(parent)
 	}
@@ -557,8 +563,8 @@ func addQuantityCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, target
 		popup.AddItem(one)
 	}
 	popup.Select(numType)
-	popup.SelectionCallback = func(index int, _ string) {
-		switch index {
+	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
+		switch p.SelectedIndex() {
 		case 0:
 			numCriteria.Compare = model.EqualsNumber
 		case 1:
@@ -597,16 +603,18 @@ func addTemplateChoices(parent *unison.Panel, targetmgr *TargetMgr, targetKey st
 	text := i18n.Text("Template Choice Quantifier")
 	popup, field := addNumericCriteriaPanel(wrapper, targetmgr, targetKey, "", text, &(*picker).Qualifier, fxp.Min,
 		fxp.Max, 1, false, false)
-	templatePickerTypePopup.SelectionCallback = func(_ int, item model.TemplatePickerType) {
-		(*picker).Type = item
-		if last == model.NotApplicableTemplatePickerType && item != model.NotApplicableTemplatePickerType {
-			(*picker).Qualifier.Qualifier = fxp.One
-			field.(Syncer).Sync()
+	templatePickerTypePopup.SelectionChangedCallback = func(p *unison.PopupMenu[model.TemplatePickerType]) {
+		if item, ok := p.Selected(); ok {
+			(*picker).Type = item
+			if last == model.NotApplicableTemplatePickerType && item != model.NotApplicableTemplatePickerType {
+				(*picker).Qualifier.Qualifier = fxp.One
+				field.(Syncer).Sync()
+			}
+			last = item
+			adjustFieldBlank(field, item == model.NotApplicableTemplatePickerType || (*picker).Qualifier.Compare == model.AnyNumber)
+			adjustPopupBlank(popup, item == model.NotApplicableTemplatePickerType)
+			MarkModified(parent)
 		}
-		last = item
-		adjustFieldBlank(field, item == model.NotApplicableTemplatePickerType || (*picker).Qualifier.Compare == model.AnyNumber)
-		adjustPopupBlank(popup, item == model.NotApplicableTemplatePickerType)
-		MarkModified(parent)
 	}
 	adjustFieldBlank(field, (*picker).Type == model.NotApplicableTemplatePickerType)
 }

@@ -147,11 +147,13 @@ func (p *featuresPanel) createAttributeBonusPanel(f *model.AttributeBonus) *unis
 	var popup *unison.PopupMenu[model.BonusLimitation]
 	attrChoicePopup := addAttributeChoicePopup(wrapper, p.entity, i18n.Text("to"), &f.Attribute,
 		model.SizeFlag|model.DodgeFlag|model.ParryFlag|model.BlockFlag)
-	callback := attrChoicePopup.SelectionCallback
-	attrChoicePopup.SelectionCallback = func(index int, item *model.AttributeChoice) {
-		lastAttributeIDUsed = item.Key
-		callback(index, item)
-		adjustPopupBlank(popup, f.Attribute != model.StrengthID)
+	callback := attrChoicePopup.SelectionChangedCallback
+	attrChoicePopup.SelectionChangedCallback = func(popup *unison.PopupMenu[*model.AttributeChoice]) {
+		if item, ok := popup.Selected(); ok {
+			lastAttributeIDUsed = item.Key
+			callback(popup)
+			adjustPopupBlank(popup, f.Attribute != model.StrengthID)
+		}
 	}
 	popup = addPopup(wrapper, model.AllBonusLimitation, &f.Limitation)
 	adjustPopupBlank(popup, f.Attribute != model.StrengthID)
@@ -248,7 +250,8 @@ func (p *featuresPanel) createSkillBonusPanel(f *model.SkillBonus) *unison.Panel
 	var criteriaPopup *unison.PopupMenu[string]
 	var criteriaField *StringField
 	popup := addPopup(wrapper, model.AllSkillSelectionType, &f.SelectionType)
-	popup.SelectionCallback = func(_ int, item model.SkillSelectionType) {
+	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[model.SkillSelectionType], index int, item model.SkillSelectionType) {
+		pop.SelectIndex(index)
 		count := 4
 		if f.SelectionType == model.ThisWeaponSkillSelectionType {
 			count = 2
@@ -340,7 +343,8 @@ func (p *featuresPanel) createSpellBonusPanel(f *model.SpellBonus) *unison.Panel
 	var criteriaPopup *unison.PopupMenu[string]
 	var criteriaField *StringField
 	popup := addPopup(wrapper, model.AllSpellMatchType, &f.SpellMatchType)
-	popup.SelectionCallback = func(_ int, item model.SpellMatchType) {
+	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[model.SpellMatchType], index int, item model.SpellMatchType) {
+		pop.SelectIndex(index)
 		f.SpellMatchType = item
 		adjustPopupBlank(criteriaPopup, f.SpellMatchType == model.AllCollegesSpellMatchType)
 		adjustFieldBlank(criteriaField, f.SpellMatchType == model.AllCollegesSpellMatchType)
@@ -371,7 +375,8 @@ func (p *featuresPanel) createSpellPointBonusPanel(f *model.SpellPointBonus) *un
 	var criteriaPopup *unison.PopupMenu[string]
 	var criteriaField *StringField
 	popup := addPopup(wrapper, model.AllSpellMatchType, &f.SpellMatchType)
-	popup.SelectionCallback = func(_ int, item model.SpellMatchType) {
+	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[model.SpellMatchType], index int, item model.SpellMatchType) {
+		pop.SelectIndex(index)
 		f.SpellMatchType = item
 		adjustPopupBlank(criteriaPopup, f.SpellMatchType == model.AllCollegesSpellMatchType)
 		adjustFieldBlank(criteriaField, f.SpellMatchType == model.AllCollegesSpellMatchType)
@@ -403,7 +408,8 @@ func (p *featuresPanel) createWeaponDamageBonusPanel(f *model.WeaponBonus) *unis
 	var criteriaPopup *unison.PopupMenu[string]
 	var criteriaField *StringField
 	popup := addPopup(wrapper, model.AllWeaponSelectionType, &f.SelectionType)
-	popup.SelectionCallback = func(_ int, item model.WeaponSelectionType) {
+	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[model.WeaponSelectionType], index int, item model.WeaponSelectionType) {
+		pop.SelectIndex(index)
 		var count int
 		switch f.SelectionType {
 		case model.WithRequiredSkillWeaponSelectionType:
@@ -541,7 +547,8 @@ func (p *featuresPanel) createCostReductionPanel(f *model.CostReduction) *unison
 		choices = append(choices, fmt.Sprintf(i18n.Text("by %d%%"), i))
 	}
 	choice := choices[xmath.Max(xmath.Min((fxp.As[int](f.Percentage)/5)-1, 15), 0)]
-	addPopup(wrapper, choices, &choice).SelectionCallback = func(index int, item string) {
+	addPopup(wrapper, choices, &choice).ChoiceMadeCallback = func(popup *unison.PopupMenu[string], index int, item string) {
+		popup.SelectIndex(index)
 		f.Percentage = fxp.From[int]((index + 1) * 5)
 		MarkModified(wrapper)
 	}
@@ -596,7 +603,8 @@ func (p *featuresPanel) featureTypesList() []model.FeatureType {
 func (p *featuresPanel) addTypeSwitcher(parent *unison.Panel, f model.Feature) {
 	currentType := f.FeatureType()
 	popup := addPopup(parent, p.featureTypesList(), &currentType)
-	popup.SelectionCallback = func(_ int, item model.FeatureType) {
+	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[model.FeatureType], index int, item model.FeatureType) {
+		pop.SelectIndex(index)
 		if newFeature := p.createFeatureForType(item); newFeature != nil {
 			lastFeatureTypeUsed = item
 			parent.Parent().RemoveFromParent()

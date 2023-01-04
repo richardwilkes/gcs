@@ -76,19 +76,21 @@ func initSkillEditor(e *editor[*model.Skill, *model.SkillEditData], content *uni
 			addDecimalField(wrapper, nil, "", i18n.Text("Technique Default Adjustment"),
 				i18n.Text("Default Adjustment"), &e.editorData.TechniqueDefault.Modifier, -fxp.NinetyNine,
 				fxp.NinetyNine)
-			attrChoicePopup.SelectionCallback = func(_ int, item *model.AttributeChoice) {
-				e.editorData.TechniqueDefault.DefaultType = item.Key
-				if skillBased := model.DefaultTypeIsSkillBased(e.editorData.TechniqueDefault.DefaultType); skillBased != lastWasSkillBased {
-					lastWasSkillBased = skillBased
-					if skillBased {
-						wrapper.AddChildAtIndex(skillDefNameField, len(wrapper.Children())-1)
-						wrapper.AddChildAtIndex(skillDefSpecialtyField, len(wrapper.Children())-1)
-					} else {
-						skillDefNameField.RemoveFromParent()
-						skillDefSpecialtyField.RemoveFromParent()
+			attrChoicePopup.SelectionChangedCallback = func(popup *unison.PopupMenu[*model.AttributeChoice]) {
+				if item, ok := popup.Selected(); ok {
+					e.editorData.TechniqueDefault.DefaultType = item.Key
+					if skillBased := model.DefaultTypeIsSkillBased(e.editorData.TechniqueDefault.DefaultType); skillBased != lastWasSkillBased {
+						lastWasSkillBased = skillBased
+						if skillBased {
+							wrapper.AddChildAtIndex(skillDefNameField, len(wrapper.Children())-1)
+							wrapper.AddChildAtIndex(skillDefSpecialtyField, len(wrapper.Children())-1)
+						} else {
+							skillDefNameField.RemoveFromParent()
+							skillDefSpecialtyField.RemoveFromParent()
+						}
 					}
+					MarkModified(content)
 				}
-				MarkModified(content)
 			}
 			wrapper2 := addFlowWrapper(content, "", 2)
 			limitField := NewDecimalField(nil, "", i18n.Text("Limit"),
@@ -123,16 +125,18 @@ func initSkillEditor(e *editor[*model.Skill, *model.SkillEditData], content *uni
 			wrapper2.AddChild(limitField)
 			difficultyPopup := addLabelAndPopup(content, i18n.Text("Difficulty"), "", model.AllTechniqueDifficulty,
 				&e.editorData.Difficulty.Difficulty)
-			difficultyPopup.SelectionCallback = func(_ int, item model.Difficulty) {
-				e.editorData.Difficulty.Difficulty = item
-				if !ownerIsSheet && !ownerIsTemplate {
-					if item == model.Hard {
-						e.editorData.Points = fxp.Two
-					} else {
-						e.editorData.Points = fxp.One
+			difficultyPopup.SelectionChangedCallback = func(popup *unison.PopupMenu[model.Difficulty]) {
+				if item, ok := popup.Selected(); ok {
+					e.editorData.Difficulty.Difficulty = item
+					if !ownerIsSheet && !ownerIsTemplate {
+						if item == model.Hard {
+							e.editorData.Points = fxp.Two
+						} else {
+							e.editorData.Points = fxp.One
+						}
 					}
+					MarkModified(difficultyPopup)
 				}
-				MarkModified(difficultyPopup)
 			}
 		} else {
 			addDifficultyLabelAndFields(content, e.target.Entity, &e.editorData.Difficulty)

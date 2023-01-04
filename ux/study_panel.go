@@ -104,12 +104,14 @@ func (p *studyPanel) insertStudyEntry(index int, entry *model.Study, requestFocu
 	info := NewInfoPop()
 	updateLimitations(info, entry.Type)
 	typePopup := addPopup(panel, model.AllStudyType, &entry.Type)
-	typePopup.SelectionCallback = func(_ int, studyType model.StudyType) {
-		entry.Type = studyType
-		lastStudyTypeUsed = studyType
-		updateLimitations(info, studyType)
-		p.updateTotal()
-		MarkModified(panel)
+	typePopup.SelectionChangedCallback = func(popup *unison.PopupMenu[model.StudyType]) {
+		if studyType, ok := popup.Selected(); ok {
+			entry.Type = studyType
+			lastStudyTypeUsed = studyType
+			updateLimitations(info, studyType)
+			p.updateTotal()
+			MarkModified(panel)
+		}
 	}
 	panel.AddChild(typePopup)
 	panel.AddChild(info)

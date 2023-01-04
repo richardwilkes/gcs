@@ -204,8 +204,10 @@ func (d *generalSettingsDockable) createCalendarPopup(content *unison.Panel) {
 	}
 	d.calendarPopup.Select(model.GlobalSettings().General.CalendarRef(libraries).Name)
 	d.calendarPopup.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
-	d.calendarPopup.SelectionCallback = func(_ int, item string) {
-		model.GlobalSettings().General.CalendarName = item
+	d.calendarPopup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
+		if item, ok := p.Selected(); ok {
+			model.GlobalSettings().General.CalendarName = item
+		}
 	}
 	content.AddChild(d.calendarPopup)
 }

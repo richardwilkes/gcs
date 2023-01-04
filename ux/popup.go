@@ -42,26 +42,28 @@ func NewPopup[T comparable](targetMgr *TargetMgr, targetKey, undoTitle string, g
 		p.AddItem(item)
 	}
 	p.Sync()
-	p.SelectionCallback = func(index int, item T) {
-		if p.last != item {
-			p.last = item
-			if mgr := unison.UndoManagerFor(p); mgr != nil {
-				undo := NewTargetUndo(p.targetMgr, p.targetKey, p.undoTitle, p.undoID, func(target *unison.Panel, data T) {
-					self := p
-					if target != nil {
-						if field, ok := target.Self.(*Popup[T]); ok {
-							self = field
+	p.SelectionChangedCallback = func(popup *unison.PopupMenu[T]) {
+		if item, ok := popup.Selected(); ok {
+			if p.last != item {
+				p.last = item
+				if mgr := unison.UndoManagerFor(p); mgr != nil {
+					undo := NewTargetUndo(p.targetMgr, p.targetKey, p.undoTitle, p.undoID, func(target *unison.Panel, data T) {
+						self := p
+						if target != nil {
+							if field, ok := target.Self.(*Popup[T]); ok {
+								self = field
+							}
 						}
-					}
-					self.set(data)
-					MarkModified(self)
-				}, p.get())
-				undo.AfterData, _ = p.Selected()
-				mgr.Add(undo)
+						self.set(data)
+						MarkModified(self)
+					}, p.get())
+					undo.AfterData, _ = p.Selected()
+					mgr.Add(undo)
+				}
 			}
+			p.set(item)
+			MarkModified(p)
 		}
-		p.set(item)
-		MarkModified(p)
 	}
 	if targetMgr != nil && targetKey != "" {
 		p.RefKey = targetKey

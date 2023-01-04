@@ -64,9 +64,11 @@ func (d *colorSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 		p.AddItem(mode)
 	}
 	p.Select(model.GlobalSettings().ColorMode)
-	p.SelectionCallback = func(_ int, mode unison.ColorMode) {
-		model.GlobalSettings().ColorMode = mode
-		unison.SetColorMode(mode)
+	p.SelectionChangedCallback = func(popup *unison.PopupMenu[unison.ColorMode]) {
+		if mode, ok := popup.Selected(); ok {
+			model.GlobalSettings().ColorMode = mode
+			unison.SetColorMode(mode)
+		}
 	}
 	toolbar.AddChild(p)
 }

@@ -24,6 +24,7 @@ import (
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
+	"golang.org/x/exp/maps"
 )
 
 var (
@@ -153,7 +154,6 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	})
 
 	d.filterPopup = unison.NewPopupMenu[string]()
-	d.filterPopup.Tooltip = unison.NewTooltipWithText(i18n.Text("Tag Filter"))
 	d.filterPopup.AddItem(i18n.Text("Any Tag"))
 	for _, tag := range d.provider.AllTags() {
 		if d.filterPopup.ItemCount() == 1 {
@@ -161,8 +161,47 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 		}
 		d.filterPopup.AddItem(tag)
 	}
-	d.filterPopup.SelectionCallback = func(index int, tag string) {
+	d.filterPopup.Tooltip = unison.NewTooltipWithText(i18n.Text("Tag Filter"))
+	d.filterPopup.SelectIndex(0)
+	d.filterPopup.ChoiceMadeCallback = func(popup *unison.PopupMenu[string], index int, item string) {
+		if index == 0 {
+			popup.SelectIndex(0)
+		} else {
+			m := make(map[int]bool)
+			wasSelected := false
+			for _, i := range popup.SelectedIndexes() {
+				if i != 0 {
+					if index == i {
+						wasSelected = true
+					} else {
+						m[i] = true
+					}
+				}
+			}
+			if !wasSelected {
+				m[index] = true
+			}
+			if len(m) == 0 {
+				popup.SelectIndex(0)
+			} else {
+				popup.SelectIndex(maps.Keys(m)...)
+			}
+		}
+	}
+	d.filterPopup.SelectionChangedCallback = func(popup *unison.PopupMenu[string]) {
 		d.applyFilter(nil, d.filterField.GetFieldState())
+		indexes := popup.SelectedIndexes()
+		if len(indexes) == 1 {
+			d.filterPopup.Tooltip = unison.NewTooltipWithText(i18n.Text("Tag Filter"))
+		} else {
+			tags := make([]string, 0, len(indexes))
+			for _, i := range indexes {
+				if tag, ok := popup.ItemAt(i); ok {
+					tags = append(tags, tag)
+				}
+			}
+			d.filterPopup.Tooltip = unison.NewTooltipWithText(i18n.Text("Tag Filter\n\nRequires these tags:\n● ") + strings.Join(tags, "\n● "))
+		}
 	}
 	d.filterPopup.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,
@@ -335,18 +374,28 @@ func (d *TableDockable[T]) sizeToFit() {
 }
 
 func (d *TableDockable[T]) applyFilter(_, after *unison.FieldState) {
-	tag := ""
-	if index := d.filterPopup.SelectedIndex(); index > 0 {
-		if item, ok := d.filterPopup.ItemAt(index); ok {
-			tag = item
+	tags := make(map[string]bool)
+	for _, i := range d.filterPopup.SelectedIndexes() {
+		if i != 0 {
+			if item, ok := d.filterPopup.ItemAt(i); ok {
+				tags[item] = true
+			}
 		}
 	}
 	text := strings.TrimSpace(after.Text)
-	if tag == "" && text == "" {
+	if len(tags) == 0 && text == "" {
 		d.table.ApplyFilter(nil)
 	} else {
 		d.table.ApplyFilter(func(row *Node[T]) bool {
-			return !(row.HasTag(tag) && row.PartialMatchExceptTag(text))
+			if row.PartialMatchExceptTag(text) {
+				for tag := range tags {
+					if !row.HasTag(tag) {
+						return true
+					}
+				}
+				return false
+			}
+			return true
 		})
 	}
 }

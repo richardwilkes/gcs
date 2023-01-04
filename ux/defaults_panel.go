@@ -102,12 +102,14 @@ func (p *defaultsPanel) insertDefaultsPanel(index int, def *model.SkillDefault) 
 		-fxp.Thousand, fxp.Thousand, true, false)
 	attrChoicePopup := addAttributeChoicePopup(panel, p.entity, "", &def.DefaultType,
 		model.TenFlag|model.ParryFlag|model.BlockFlag|model.SkillFlag)
-	callback := attrChoicePopup.SelectionCallback
-	attrChoicePopup.SelectionCallback = func(index int, item *model.AttributeChoice) {
-		lastDefaultTypeUsed = item.Key
-		callback(index, item)
-		adjustFieldBlank(nameField, item.Key != model.SkillID)
-		adjustFieldBlank(specializationField, item.Key != model.SkillID)
+	callback := attrChoicePopup.SelectionChangedCallback
+	attrChoicePopup.SelectionChangedCallback = func(popup *unison.PopupMenu[*model.AttributeChoice]) {
+		if item, ok := popup.Selected(); ok {
+			lastDefaultTypeUsed = item.Key
+			callback(popup)
+			adjustFieldBlank(nameField, item.Key != model.SkillID)
+			adjustFieldBlank(specializationField, item.Key != model.SkillID)
+		}
 	}
 	panel.AddChild(nameField)
 	panel.AddChild(specializationField)

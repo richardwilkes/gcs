@@ -66,7 +66,8 @@ func initTraitModifierEditor(e *editor[*model.TraitModifier, *model.TraitModifie
 		})
 		content.AddChild(NewFieldLeadingLabel(i18n.Text("Total")))
 		content.AddChild(total)
-		costTypePopup.SelectionCallback = func(index int, _ string) {
+		costTypePopup.SelectionChangedCallback = func(popup *unison.PopupMenu[string]) {
+			index := popup.SelectedIndex()
 			if index == 0 {
 				e.editorData.CostType = model.PercentageTraitModifierCostType
 				if e.editorData.Levels < fxp.One {

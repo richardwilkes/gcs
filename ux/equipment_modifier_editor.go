@@ -64,8 +64,8 @@ func addEquipmentCostFields(parent *unison.Panel, e *editor[*model.EquipmentModi
 	}
 	popup.SelectIndex(int(e.editorData.CostType))
 	wrapper.AddChild(popup)
-	popup.SelectionCallback = func(index int, _ string) {
-		e.editorData.CostType = model.AllEquipmentModifierCostType[index]
+	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
+		e.editorData.CostType = model.AllEquipmentModifierCostType[p.SelectedIndex()]
 		field.SetText(e.editorData.CostType.Format(field.Text()))
 		MarkModified(wrapper)
 	}
@@ -89,8 +89,8 @@ func addEquipmentWeightFields(parent *unison.Panel, e *editor[*model.EquipmentMo
 	}
 	popup.SelectIndex(int(e.editorData.WeightType))
 	wrapper.AddChild(popup)
-	popup.SelectionCallback = func(index int, _ string) {
-		e.editorData.WeightType = model.AllEquipmentModifierWeightType[index]
+	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
+		e.editorData.WeightType = model.AllEquipmentModifierWeightType[p.SelectedIndex()]
 		field.SetText(e.editorData.WeightType.Format(field.Text(), units))
 		MarkModified(wrapper)
 	}

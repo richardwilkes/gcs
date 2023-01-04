@@ -338,9 +338,11 @@ func createSettingPopup[T comparable](d *sheetSettingsDockable, panel *unison.Pa
 		popup.AddItem(one)
 	}
 	popup.Select(current)
-	popup.SelectionCallback = func(_ int, item T) {
-		set(item)
-		d.syncSheet(false)
+	popup.SelectionChangedCallback = func(p *unison.PopupMenu[T]) {
+		if item, ok := p.Selected(); ok {
+			set(item)
+			d.syncSheet(false)
+		}
 	}
 	panel.AddChild(popup)
 	return popup

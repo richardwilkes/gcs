@@ -412,8 +412,8 @@ func (c *Calculator) addHikingSection() {
 
 	terrainPopup.AddItem(terrain...)
 	terrainPopup.SelectIndex(c.terrainIndex)
-	terrainPopup.SelectionCallback = func(index int, _ terrainModifier) {
-		c.terrainIndex = index
+	terrainPopup.SelectionChangedCallback = func(popup *unison.PopupMenu[terrainModifier]) {
+		c.terrainIndex = popup.SelectedIndex()
 		hikingAdjuster()
 		c.updateHikingResult()
 	}
@@ -426,8 +426,8 @@ func (c *Calculator) addHikingSection() {
 	weatherPopup := unison.NewPopupMenu[terrainModifier]()
 	weatherPopup.AddItem(weather...)
 	weatherPopup.SelectIndex(c.weatherIndex)
-	weatherPopup.SelectionCallback = func(index int, _ terrainModifier) {
-		c.weatherIndex = index
+	weatherPopup.SelectionChangedCallback = func(popup *unison.PopupMenu[terrainModifier]) {
+		c.weatherIndex = popup.SelectedIndex()
 		hikingAdjuster()
 		c.updateHikingResult()
 	}

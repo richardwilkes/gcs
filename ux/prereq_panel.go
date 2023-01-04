@@ -71,9 +71,9 @@ func (p *prereqPanel) createPrereqListPanel(depth int, list *model.PrereqList) *
 	addNumericCriteriaPanel(panel, nil, "", i18n.Text("When the Tech Level"), i18n.Text("When Tech Level"),
 		&list.WhenTL, 0, fxp.Twelve, 1, true, true)
 	popup := addBoolPopup(panel, i18n.Text("requires all of:"), i18n.Text("requires at least one of:"), &list.All)
-	callback := popup.SelectionCallback
-	popup.SelectionCallback = func(index int, item string) {
-		callback(index, item)
+	callback := popup.SelectionChangedCallback
+	popup.SelectionChangedCallback = func(pop *unison.PopupMenu[string]) {
+		callback(pop)
 		p.adjustAndOrForList(list)
 	}
 	if !inFront {
@@ -224,18 +224,20 @@ func andOrText(pr model.Prereq) string {
 func (p *prereqPanel) addPrereqTypeSwitcher(parent *unison.Panel, depth int, pr model.Prereq) {
 	prereqType := pr.PrereqType()
 	popup := addPopup(parent, model.AllPrereqType[1:], &prereqType)
-	popup.SelectionCallback = func(_ int, item model.PrereqType) {
-		parentList := pr.ParentList()
-		if newPrereq := p.createPrereqForType(item, parentList); newPrereq != nil {
-			lastPrereqTypeUsed = item
-			parentOfParent := parent.Parent()
-			parent.RemoveFromParent()
-			list := parentList.Prereqs
-			i := slices.IndexFunc(list, func(one model.Prereq) bool { return one == pr })
-			list[i] = newPrereq
-			p.addToList(parentOfParent, depth, i, newPrereq)
-			unison.Ancestor[*unison.DockContainer](p).MarkForLayoutRecursively()
-			MarkModified(p)
+	popup.SelectionChangedCallback = func(pop *unison.PopupMenu[model.PrereqType]) {
+		if item, ok := pop.Selected(); ok {
+			parentList := pr.ParentList()
+			if newPrereq := p.createPrereqForType(item, parentList); newPrereq != nil {
+				lastPrereqTypeUsed = item
+				parentOfParent := parent.Parent()
+				parent.RemoveFromParent()
+				list := parentList.Prereqs
+				i := slices.IndexFunc(list, func(one model.Prereq) bool { return one == pr })
+				list[i] = newPrereq
+				p.addToList(parentOfParent, depth, i, newPrereq)
+				unison.Ancestor[*unison.DockContainer](p).MarkForLayoutRecursively()
+				MarkModified(p)
+			}
 		}
 	}
 }
@@ -461,9 +463,9 @@ func (p *prereqPanel) createSpellPrereqPanel(depth int, pr *model.SpellPrereq) *
 	second.SetLayoutData(&unison.FlexLayoutData{HSpan: columns - 1})
 	subTypePopup := addPopup[model.SpellComparisonType](second, model.AllSpellComparisonType, &pr.SubType)
 	popup, field := addStringCriteriaPanel(second, "", "", i18n.Text("Spell Qualifier"), &pr.QualifierCriteria, 1, false)
-	savedCallback := subTypePopup.SelectionCallback
-	subTypePopup.SelectionCallback = func(index int, item model.SpellComparisonType) {
-		savedCallback(index, item)
+	savedCallback := subTypePopup.SelectionChangedCallback
+	subTypePopup.SelectionChangedCallback = func(pop *unison.PopupMenu[model.SpellComparisonType]) {
+		savedCallback(pop)
 		blank := pr.SubType == model.AnySpellComparisonType || pr.SubType == model.CollegeCountSpellComparisonType
 		adjustPopupBlank(popup, blank)
 		adjustFieldBlank(field, blank)

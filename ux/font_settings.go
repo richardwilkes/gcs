@@ -109,13 +109,15 @@ func (d *fontSettingsDockable) createFaceField(index int) {
 		p.AddItem(ffd)
 	}
 	p.Select(model.CurrentFonts()[index].Font.Descriptor().FontFaceDescriptor)
-	p.SelectionCallback = func(_ int, ffd unison.FontFaceDescriptor) {
+	p.SelectionChangedCallback = func(popup *unison.PopupMenu[unison.FontFaceDescriptor]) {
 		if d.noUpdate {
 			return
 		}
-		fd2 := model.CurrentFonts()[index].Font.Descriptor()
-		fd2.FontFaceDescriptor = ffd
-		d.applyFont(index, fd2)
+		if ffd, ok := popup.Selected(); ok {
+			fd2 := model.CurrentFonts()[index].Font.Descriptor()
+			fd2.FontFaceDescriptor = ffd
+			d.applyFont(index, fd2)
+		}
 	}
 	d.content.AddChild(p)
 }
