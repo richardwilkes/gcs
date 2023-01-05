@@ -21,7 +21,8 @@ import (
 
 // EditTrait displays the editor for a trait.
 func EditTrait(owner Rebuildable, t *model.Trait) {
-	displayEditor[*model.Trait, *model.TraitEditData](owner, t, svg.GCSTraits, nil, initTraitEditor)
+	displayEditor[*model.Trait, *model.TraitEditData](owner, t, svg.GCSTraits, "md:Help/Interface/Trait", nil,
+		initTraitEditor)
 }
 
 func initTraitEditor(e *editor[*model.Trait, *model.TraitEditData], content *unison.Panel) func() {

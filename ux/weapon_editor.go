@@ -20,7 +20,14 @@ import (
 
 // EditWeapon displays the editor for a weapon.
 func EditWeapon(owner Rebuildable, w *model.Weapon) {
-	displayEditor[*model.Weapon, *model.Weapon](owner, w, w.Type.SVG(), nil, initWeaponEditor)
+	var help string
+	switch w.Type {
+	case model.MeleeWeaponType:
+		help = "md:Help/Interface/Melee Weapon Usage"
+	case model.RangedWeaponType:
+		help = "md:Help/Interface/Ranged Weapon Usage"
+	}
+	displayEditor[*model.Weapon, *model.Weapon](owner, w, w.Type.SVG(), help, nil, initWeaponEditor)
 }
 
 func initWeaponEditor(e *editor[*model.Weapon, *model.Weapon], content *unison.Panel) func() {

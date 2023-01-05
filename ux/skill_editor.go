@@ -23,7 +23,8 @@ import (
 
 // EditSkill displays the editor for an skill.
 func EditSkill(owner Rebuildable, skill *model.Skill) {
-	displayEditor[*model.Skill, *model.SkillEditData](owner, skill, svg.GCSSkills, nil, initSkillEditor)
+	displayEditor[*model.Skill, *model.SkillEditData](owner, skill, svg.GCSSkills, "md:Help/Interface/Skill", nil,
+		initSkillEditor)
 }
 
 func initSkillEditor(e *editor[*model.Skill, *model.SkillEditData], content *unison.Panel) func() {

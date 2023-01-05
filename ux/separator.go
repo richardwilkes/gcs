@@ -29,6 +29,14 @@ func NewToolbarSeparator() *unison.Separator {
 	spacer.Vertical = true
 	spacer.SetBorder(unison.NewEmptyBorder(unison.NewHorizontalInsets(unison.StdHSpacing)))
 	spacer.SetLayoutData(&unison.FlexLayoutData{VAlign: unison.FillAlignment})
+	spacer.SetSizer(func(hint unison.Size) (min, pref, max unison.Size) {
+		min, pref, max = spacer.DefaultSizes(hint)
+		baseline := unison.DefaultSVGButtonTheme.Font.Baseline()
+		min.Height = baseline
+		pref.Height = baseline
+		max.Height = baseline
+		return
+	})
 	spacer.DrawCallback = func(canvas *unison.Canvas, _ unison.Rect) {
 		rect := spacer.ContentRect(false)
 		paint := spacer.LineInk.Paint(canvas, rect, unison.Stroke)

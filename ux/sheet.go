@@ -194,6 +194,10 @@ func NewSheet(filePath string, entity *model.Entity) *Sheet {
 		gc.DrawRect(rect, model.PageVoidColor.Paint(gc, rect, unison.Fill))
 	}
 
+	helpButton := unison.NewSVGButton(svg.Help)
+	helpButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Help"))
+	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Character Sheet") }
+
 	sheetSettingsButton := unison.NewSVGButton(svg.Settings)
 	sheetSettingsButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Sheet Settings"))
 	sheetSettingsButton.ClickCallback = func() { ShowSheetSettings(s) }
@@ -218,6 +222,7 @@ func NewSheet(filePath string, entity *model.Entity) *Sheet {
 		HGrab:  true,
 	})
 	s.toolbar.AddChild(NewDefaultInfoPop())
+	s.toolbar.AddChild(helpButton)
 	s.toolbar.AddChild(
 		NewScaleField(
 			model.InitialUIScaleMin,

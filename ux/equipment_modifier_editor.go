@@ -23,7 +23,7 @@ const equipmentCostAndWeightPrototype = "-99.99 CF"
 // EditEquipmentModifier displays the editor for an equipment modifier.
 func EditEquipmentModifier(owner Rebuildable, modifier *model.EquipmentModifier) {
 	displayEditor[*model.EquipmentModifier, *model.EquipmentModifierEditData](owner, modifier,
-		svg.GCSEquipmentModifiers, nil, initEquipmentModifierEditor)
+		svg.GCSEquipmentModifiers, "md:Help/Interface/Equipment Modifiers", nil, initEquipmentModifierEditor)
 }
 
 func initEquipmentModifierEditor(e *editor[*model.EquipmentModifier, *model.EquipmentModifierEditData], content *unison.Panel) func() {

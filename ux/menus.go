@@ -95,6 +95,7 @@ const (
 	LicenseItemID
 	WebSiteItemID
 	MailingListItemID
+	UserGuideItemID
 	ViewMenuID
 	ScaleDefaultItemID
 	ScaleUpItemID
@@ -327,6 +328,8 @@ func (s menuBarScope) createViewMenu(f unison.MenuFactory) unison.Menu {
 func (s menuBarScope) setupHelpMenu(bar unison.Menu) {
 	f := bar.Factory()
 	m := bar.Menu(unison.HelpMenuID)
+	m.InsertItem(-1, userGuideAction.NewMenuItem(f))
+	m.InsertSeparator(-1, false)
 	m.InsertItem(-1, sponsorDevelopmentAction.NewMenuItem(f))
 	m.InsertItem(-1, makeDonationAction.NewMenuItem(f))
 	m.InsertSeparator(-1, false)

@@ -20,7 +20,8 @@ import (
 
 // EditNote displays the editor for a note.
 func EditNote(owner Rebuildable, note *model.Note) {
-	displayEditor[*model.Note, *model.NoteEditData](owner, note, svg.GCSNotes, initNoteToolbar, initNoteEditor)
+	displayEditor[*model.Note, *model.NoteEditData](owner, note, svg.GCSNotes, "md:Help/Interface/Note",
+		initNoteToolbar, initNoteEditor)
 }
 
 func adjustMarkdownThemeForPage(markdown *unison.Markdown) {

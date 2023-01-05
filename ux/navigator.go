@@ -118,6 +118,10 @@ func newNavigator() *Navigator {
 }
 
 func (n *Navigator) setupToolBar() {
+	helpButton := unison.NewSVGButton(svg.Help)
+	helpButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Help"))
+	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Library Tree") }
+
 	n.hierarchyButton = unison.NewSVGButton(svg.Hierarchy)
 	n.hierarchyButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Opens/closes all hierarchical rows"))
 	n.hierarchyButton.ClickCallback = n.toggleHierarchy
@@ -152,6 +156,7 @@ func (n *Navigator) setupToolBar() {
 
 	first := unison.NewPanel()
 	first.AddChild(NewDefaultInfoPop())
+	first.AddChild(helpButton)
 	first.AddChild(
 		NewScaleField(
 			gsettings.InitialUIScaleMin,
@@ -174,9 +179,12 @@ func (n *Navigator) setupToolBar() {
 	first.AddChild(n.newFolderButton)
 	first.AddChild(n.renameButton)
 	first.AddChild(n.deleteButton)
-	first.SetLayout(&unison.FlexLayout{
-		Columns:  len(first.Children()),
+	for _, child := range first.Children() {
+		child.SetLayoutData(unison.MiddleAlignment)
+	}
+	first.SetLayout(&unison.FlowLayout{
 		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
 	})
 	first.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,
@@ -210,10 +218,6 @@ func (n *Navigator) setupToolBar() {
 	n.matchesLabel.Tooltip = unison.NewTooltipWithText(i18n.Text("Number of matches found"))
 
 	second := unison.NewPanel()
-	second.SetLayout(&unison.FlexLayout{
-		Columns:  4,
-		HSpacing: unison.StdHSpacing,
-	})
 	second.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,
 		HGrab:  true,
@@ -222,6 +226,10 @@ func (n *Navigator) setupToolBar() {
 	second.AddChild(n.forwardButton)
 	second.AddChild(n.searchField)
 	second.AddChild(n.matchesLabel)
+	second.SetLayout(&unison.FlexLayout{
+		Columns:  len(second.Children()),
+		HSpacing: unison.StdHSpacing,
+	})
 
 	n.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))

@@ -117,6 +117,12 @@ func (d *attributeSettingsDockable) CloseWithGroup(other unison.Paneler) bool {
 
 func (d *attributeSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 	d.toolbar = toolbar
+
+	helpButton := unison.NewSVGButton(svg.Help)
+	helpButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Help"))
+	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Attributes") }
+	toolbar.AddChild(helpButton)
+
 	d.applyButton = unison.NewSVGButton(svg.Checkmark)
 	d.applyButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Apply Changes"))
 	d.applyButton.SetEnabled(false)
@@ -136,9 +142,7 @@ func (d *attributeSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 	}
 	toolbar.AddChild(d.cancelButton)
 
-	label := unison.NewLabel()
-	label.Text = " "
-	toolbar.AddChild(label)
+	toolbar.AddChild(NewToolbarSeparator())
 
 	addButton := unison.NewSVGButton(svg.CircledAdd)
 	addAttributeText := i18n.Text("Add Attribute")

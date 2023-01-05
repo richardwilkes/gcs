@@ -76,8 +76,15 @@ func ShowSheetSettings(owner EntityPanel) {
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset
-		d.Setup(ws, dc, nil, nil, d.initContent)
+		d.Setup(ws, dc, d.addToStartToolbar, nil, d.initContent)
 	}
+}
+
+func (d *sheetSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
+	helpButton := unison.NewSVGButton(svg.Help)
+	helpButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Help"))
+	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Sheet Settings") }
+	toolbar.AddChild(helpButton)
 }
 
 func (d *sheetSettingsDockable) CloseWithGroup(other unison.Paneler) bool {

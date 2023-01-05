@@ -110,6 +110,12 @@ func (d *bodySettingsDockable) CloseWithGroup(other unison.Paneler) bool {
 
 func (d *bodySettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 	d.toolbar = toolbar
+
+	helpButton := unison.NewSVGButton(svg.Help)
+	helpButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Help"))
+	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Body Type") }
+	toolbar.AddChild(helpButton)
+
 	d.applyButton = unison.NewSVGButton(svg.Checkmark)
 	d.applyButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Apply Changes"))
 	d.applyButton.SetEnabled(false)

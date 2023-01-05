@@ -150,6 +150,10 @@ func NewTemplate(filePath string, template *model.Template) *Template {
 		gc.DrawRect(rect, model.PageVoidColor.Paint(gc, rect, unison.Fill))
 	}
 
+	helpButton := unison.NewSVGButton(svg.Help)
+	helpButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Help"))
+	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Character Template") }
+
 	addUserButton := unison.NewSVGButton(svg.Stamper)
 	addUserButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Apply Template to Character Sheet"))
 	addUserButton.ClickCallback = func() {
@@ -166,6 +170,7 @@ func NewTemplate(filePath string, template *model.Template) *Template {
 		HGrab:  true,
 	})
 	d.toolbar.AddChild(NewDefaultInfoPop())
+	d.toolbar.AddChild(helpButton)
 	d.toolbar.AddChild(
 		NewScaleField(
 			model.InitialUIScaleMin,

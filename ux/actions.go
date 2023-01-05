@@ -128,6 +128,7 @@ var (
 	sponsorDevelopmentAction *unison.Action
 	updateAppStatusAction    *unison.Action
 	webSiteAction            *unison.Action
+	userGuideAction          *unison.Action
 )
 
 func registerActions() {
@@ -871,6 +872,13 @@ func registerActions() {
 		Title: i18n.Text("Web Site"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			showWebPage("https://" + WebSiteDomain)
+		},
+	}
+	userGuideAction = &unison.Action{
+		ID:    UserGuideItemID,
+		Title: i18n.Text("User Guide"),
+		ExecuteCallback: func(_ *unison.Action, _ any) {
+			HandleLink(nil, "md:Help/Interface/Overview")
 		},
 	}
 }

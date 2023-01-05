@@ -134,6 +134,11 @@ func (e *pointsEditor) createToolbar() unison.Paneler {
 	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 
+	helpButton := unison.NewSVGButton(svg.Help)
+	helpButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Help"))
+	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Points Record") }
+	toolbar.AddChild(helpButton)
+
 	e.applyButton = unison.NewSVGButton(svg.Checkmark)
 	e.applyButton.Tooltip = unison.NewTooltipWithSecondaryText(i18n.Text("Apply Changes"),
 		fmt.Sprintf(i18n.Text("%v%v or %v%v"), unison.OSMenuCmdModifier(), unison.KeyReturn, unison.OSMenuCmdModifier(),

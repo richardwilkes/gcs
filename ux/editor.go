@@ -56,7 +56,7 @@ type editor[N model.NodeTypes, D model.EditorData[N]] struct {
 	promptForSave        bool
 }
 
-func displayEditor[N model.NodeTypes, D model.EditorData[N]](owner Rebuildable, target N, svg *unison.SVG, initToolbar func(*editor[N, D], *unison.Panel), initContent func(*editor[N, D], *unison.Panel) func()) {
+func displayEditor[N model.NodeTypes, D model.EditorData[N]](owner Rebuildable, target N, svg *unison.SVG, helpMD string, initToolbar func(*editor[N, D], *unison.Panel), initContent func(*editor[N, D], *unison.Panel) func()) {
 	lookFor := model.AsNode(target).UUID()
 	ws, dc, found := Activate(func(d unison.Dockable) bool {
 		if e, ok := d.(*editor[N, D]); ok {
@@ -125,7 +125,7 @@ func displayEditor[N model.NodeTypes, D model.EditorData[N]](owner Rebuildable, 
 			VGrab:  true,
 		})
 
-		e.AddChild(e.createToolbar(initToolbar))
+		e.AddChild(e.createToolbar(helpMD, initToolbar))
 		e.modificationCallback = initContent(e, content)
 		e.AddChild(e.scroll)
 		e.ClientData()[AssociatedUUIDKey] = model.AsNode(target).UUID()
@@ -145,12 +145,20 @@ func displayEditor[N model.NodeTypes, D model.EditorData[N]](owner Rebuildable, 
 	}
 }
 
-func (e *editor[N, D]) createToolbar(initToolbar func(*editor[N, D], *unison.Panel)) unison.Paneler {
+func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, D], *unison.Panel)) unison.Paneler {
 	toolbar := unison.NewPanel()
 	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 
 	toolbar.AddChild(NewDefaultInfoPop())
+
+	if helpMD != "" {
+		helpButton := unison.NewSVGButton(svg.Help)
+		helpButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Help"))
+		helpButton.ClickCallback = func() { HandleLink(nil, helpMD) }
+		toolbar.AddChild(helpButton)
+	}
+
 	toolbar.AddChild(
 		NewScaleField(
 			model.InitialUIScaleMin,

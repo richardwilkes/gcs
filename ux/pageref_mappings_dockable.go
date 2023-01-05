@@ -214,11 +214,18 @@ func ShowPageRefMappings() {
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset
-		d.Setup(ws, dc, nil, nil, d.initContent)
+		d.Setup(ws, dc, d.addToStartToolbar, nil, d.initContent)
 		if len(d.content.Children()) > 1 {
 			d.content.Children()[1].RequestFocus()
 		}
 	}
+}
+
+func (d *pageRefMappingsDockable) addToStartToolbar(toolbar *unison.Panel) {
+	helpButton := unison.NewSVGButton(svg.Help)
+	helpButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Help"))
+	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Page Reference Mappings") }
+	toolbar.AddChild(helpButton)
 }
 
 func (d *pageRefMappingsDockable) initContent(content *unison.Panel) {

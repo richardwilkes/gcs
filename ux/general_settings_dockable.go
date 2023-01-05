@@ -71,9 +71,16 @@ func ShowGeneralSettings() {
 		d.Saver = d.save
 		d.Resetter = d.reset
 		d.WillCloseCallback = d.willClose
-		d.Setup(ws, dc, nil, nil, d.initContent)
+		d.Setup(ws, dc, d.addToStartToolbar, nil, d.initContent)
 		d.nameField.RequestFocus()
 	}
+}
+
+func (d *generalSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
+	helpButton := unison.NewSVGButton(svg.Help)
+	helpButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Help"))
+	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/General Settings") }
+	toolbar.AddChild(helpButton)
 }
 
 func (d *generalSettingsDockable) initContent(content *unison.Panel) {
