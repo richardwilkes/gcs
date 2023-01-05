@@ -119,6 +119,7 @@ var PageRefKeyNameMappings = map[string]string{
 	"EHHC":    "Encounter: The Harrowed Hearts Club",
 	"F":       "Fantasy",
 	"FED":     "Federation",
+	"FF":      "Fantasy Folk (3E)",
 	"FFE":     "Fantasy Folk: Elves",
 	"FH":      "Future History",
 	"FPR":     "Fantasy: Portal Realms",
