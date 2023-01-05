@@ -193,6 +193,7 @@ var PageRefKeyNameMappings = map[string]string{
 	"MTLOS":   "Magic: The Least of Spells",
 	"MYST":    "Mysteries",
 	"MYTH":    "Myth (3E)",
+	"NF":      "Nordlondr Folk",
 	"P":       "Powers",
 	"PC":      "Psionic Campaigns",
 	"PD":      "Prime Directive",
