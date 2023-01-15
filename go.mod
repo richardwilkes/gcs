@@ -9,13 +9,13 @@ require (
 	github.com/richardwilkes/rpgtools v1.4.2
 	github.com/richardwilkes/toolbox v1.80.3
 	github.com/richardwilkes/unison v0.51.0
-	github.com/rjeczalik/notify v0.9.2
+	github.com/rjeczalik/notify v0.9.3
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef
 	github.com/stretchr/testify v1.8.1
 	github.com/tc-hib/winres v0.1.6
 	github.com/yookoala/realpath v1.0.0
-	golang.org/x/exp v0.0.0-20221230185412-738e83a70c30
+	golang.org/x/exp v0.0.0-20230113213754-f9f960f08ad4
 	golang.org/x/image v0.3.0
 	golang.org/x/sys v0.4.0
 	golang.org/x/text v0.6.0
@@ -26,7 +26,7 @@ require (
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/dustin/go-humanize v1.0.0 // indirect
+	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/go-gl/gl v0.0.0-20211210172815-726fda9656d6 // indirect
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20221017161538-93cebf72946b // indirect
 	github.com/grandcat/zeroconf v1.0.0 // indirect
