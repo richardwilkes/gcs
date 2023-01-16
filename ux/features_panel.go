@@ -144,7 +144,7 @@ func (p *featuresPanel) createAttributeBonusPanel(f *model.AttributeBonus) *unis
 	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
 	panel.AddChild(unison.NewPanel())
 	wrapper := unison.NewPanel()
-	var popup *unison.PopupMenu[model.BonusLimitation]
+	var limitationPopup *unison.PopupMenu[model.BonusLimitation]
 	attrChoicePopup := addAttributeChoicePopup(wrapper, p.entity, i18n.Text("to"), &f.Attribute,
 		model.SizeFlag|model.DodgeFlag|model.ParryFlag|model.BlockFlag)
 	callback := attrChoicePopup.SelectionChangedCallback
@@ -152,11 +152,11 @@ func (p *featuresPanel) createAttributeBonusPanel(f *model.AttributeBonus) *unis
 		if item, ok := popup.Selected(); ok {
 			lastAttributeIDUsed = item.Key
 			callback(popup)
-			adjustPopupBlank(popup, f.Attribute != model.StrengthID)
+			adjustPopupBlank(limitationPopup, f.Attribute != model.StrengthID)
 		}
 	}
-	popup = addPopup(wrapper, model.AllBonusLimitation, &f.Limitation)
-	adjustPopupBlank(popup, f.Attribute != model.StrengthID)
+	limitationPopup = addPopup(wrapper, model.AllBonusLimitation, &f.Limitation)
+	adjustPopupBlank(limitationPopup, f.Attribute != model.StrengthID)
 	wrapper.SetLayout(&unison.FlexLayout{
 		Columns:  len(wrapper.Children()),
 		HSpacing: unison.StdHSpacing,
