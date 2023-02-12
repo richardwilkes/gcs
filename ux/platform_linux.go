@@ -67,7 +67,7 @@ func installDesktopFiles(exePath string) error {
 Type=Application
 Name=%s
 Comment=%s
-Exec=%s %%F
+Exec="%s" %%F
 Icon=%s
 MimeType=%s;
 Categories=Game;Utility;RolePlaying;
