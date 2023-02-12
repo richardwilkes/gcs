@@ -164,8 +164,13 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	d.filterPopup.Tooltip = unison.NewTooltipWithText(i18n.Text("Tag Filter"))
 	d.filterPopup.SelectIndex(0)
 	d.filterPopup.ChoiceMadeCallback = func(popup *unison.PopupMenu[string], index int, item string) {
-		if index == 0 {
-			popup.SelectIndex(0)
+		simple := index == 0
+		if !simple {
+			modifiers := d.Window().CurrentKeyModifiers()
+			simple = !(modifiers.ShiftDown() || modifiers.OSMenuCmdModifierDown())
+		}
+		if simple {
+			popup.SelectIndex(index)
 		} else {
 			m := make(map[int]bool)
 			wasSelected := false

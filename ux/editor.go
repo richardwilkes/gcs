@@ -172,7 +172,7 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 		),
 	)
 
-	e.applyButton = unison.NewSVGButton(svg.Checkmark)
+	e.applyButton = unison.NewSVGButton(unison.CheckmarkSVG)
 	e.applyButton.Tooltip = unison.NewTooltipWithSecondaryText(i18n.Text("Apply Changes"),
 		fmt.Sprintf(i18n.Text("%v%v or %v%v"), unison.OSMenuCmdModifier(), unison.KeyReturn, unison.OSMenuCmdModifier(),
 			unison.KeyNumPadEnter))

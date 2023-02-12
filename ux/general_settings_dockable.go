@@ -330,7 +330,7 @@ func (d *generalSettingsDockable) createLocaleField(content *unison.Panel) {
 }
 
 func (d *generalSettingsDockable) reset() {
-	*model.GlobalSettings().General = *model.NewGeneralSheetSettings()
+	*model.GlobalSettings().General = *model.NewGeneralSettings()
 	languageSetting = ""
 	d.sync()
 }
@@ -358,7 +358,7 @@ func (d *generalSettingsDockable) sync() {
 }
 
 func (d *generalSettingsDockable) load(fileSystem fs.FS, filePath string) error {
-	s, err := model.NewGeneralSheetSettingsFromFile(fileSystem, filePath)
+	s, err := model.NewGeneralSettingsFromFile(fileSystem, filePath)
 	if err != nil {
 		return err
 	}

@@ -123,7 +123,7 @@ func (d *attributeSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Attributes") }
 	toolbar.AddChild(helpButton)
 
-	d.applyButton = unison.NewSVGButton(svg.Checkmark)
+	d.applyButton = unison.NewSVGButton(unison.CheckmarkSVG)
 	d.applyButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Apply Changes"))
 	d.applyButton.SetEnabled(false)
 	d.applyButton.ClickCallback = func() {

@@ -139,7 +139,7 @@ func (e *pointsEditor) createToolbar() unison.Paneler {
 	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Points Record") }
 	toolbar.AddChild(helpButton)
 
-	e.applyButton = unison.NewSVGButton(svg.Checkmark)
+	e.applyButton = unison.NewSVGButton(unison.CheckmarkSVG)
 	e.applyButton.Tooltip = unison.NewTooltipWithSecondaryText(i18n.Text("Apply Changes"),
 		fmt.Sprintf(i18n.Text("%v%v or %v%v"), unison.OSMenuCmdModifier(), unison.KeyReturn, unison.OSMenuCmdModifier(),
 			unison.KeyNumPadEnter))

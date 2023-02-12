@@ -159,8 +159,8 @@ func Convert(paths ...string) error {
 				return err
 			}
 		case GeneralSettingsExt:
-			var data *GeneralSheetSettings
-			if data, err = NewGeneralSheetSettingsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+			var data *GeneralSettings
+			if data, err = NewGeneralSettingsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
 			if err = data.Save(p); err != nil {

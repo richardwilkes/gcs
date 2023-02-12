@@ -75,7 +75,7 @@ func ShowLibrarySettings(lib *model.Library) {
 
 func (d *librarySettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 	d.toolbar = toolbar
-	d.applyButton = unison.NewSVGButton(svg.Checkmark)
+	d.applyButton = unison.NewSVGButton(unison.CheckmarkSVG)
 	d.applyButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Apply Changes"))
 	d.applyButton.SetEnabled(false)
 	d.applyButton.ClickCallback = func() {

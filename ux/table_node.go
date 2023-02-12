@@ -372,7 +372,7 @@ func (n *Node[T]) createToggleCell(c *model.CellData, foreground unison.Ink) uni
 	baseline := font.Baseline()
 	if c.Checked {
 		check.Drawable = &unison.DrawableSVG{
-			SVG:  svg.Checkmark,
+			SVG:  unison.CheckmarkSVG,
 			Size: unison.Size{Width: baseline, Height: baseline},
 		}
 	}
@@ -386,7 +386,7 @@ func (n *Node[T]) createToggleCell(c *model.CellData, foreground unison.Ink) uni
 		handleCheck(n.data, check, c.Checked)
 		if c.Checked {
 			check.Drawable = &unison.DrawableSVG{
-				SVG:  svg.Checkmark,
+				SVG:  unison.CheckmarkSVG,
 				Size: unison.Size{Width: baseline, Height: baseline},
 			}
 		} else {

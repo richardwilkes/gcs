@@ -79,14 +79,14 @@ func NewEditorPageRefHeader[T model.NodeTypes](forPage bool) unison.TableColumnH
 
 // NewEditorEquippedHeader creates a new equipped header.
 func NewEditorEquippedHeader[T model.NodeTypes](forPage bool) unison.TableColumnHeader[*Node[T]] {
-	return NewEditorListSVGHeader[T](svg.Checkmark,
+	return NewEditorListSVGHeader[T](unison.CheckmarkSVG,
 		i18n.Text(`Whether this piece of equipment is equipped or just carried. Items that are not equipped do not apply any features they may normally contribute to the character.`),
 		forPage)
 }
 
 // NewEnabledHeader creates a new enabled header.
 func NewEnabledHeader[T model.NodeTypes](forPage bool) unison.TableColumnHeader[*Node[T]] {
-	return NewEditorListSVGHeader[T](svg.Checkmark,
+	return NewEditorListSVGHeader[T](unison.CheckmarkSVG,
 		i18n.Text(`Whether this item is enabled. Items that are not enabled do not apply any features they may normally contribute to the character.`),
 		forPage)
 }
