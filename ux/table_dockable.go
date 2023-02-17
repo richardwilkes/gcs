@@ -161,7 +161,6 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 		}
 		d.filterPopup.AddItem(tag)
 	}
-	d.filterPopup.Tooltip = unison.NewTooltipWithText(i18n.Text("Tag Filter"))
 	d.filterPopup.SelectIndex(0)
 	d.filterPopup.ChoiceMadeCallback = func(popup *unison.PopupMenu[string], index int, item string) {
 		simple := index == 0
@@ -193,11 +192,15 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 			}
 		}
 	}
+	tagFilterTooltip := i18n.Text("Tag Filter")
+	baseTooltip := fmt.Sprintf(i18n.Text("Shift-Click or %s-Click to select more than one"),
+		unison.OSMenuCmdModifier().String())
+	d.filterPopup.Tooltip = unison.NewTooltipWithSecondaryText(tagFilterTooltip, baseTooltip)
 	d.filterPopup.SelectionChangedCallback = func(popup *unison.PopupMenu[string]) {
 		d.applyFilter(nil, d.filterField.GetFieldState())
 		indexes := popup.SelectedIndexes()
 		if len(indexes) == 1 {
-			d.filterPopup.Tooltip = unison.NewTooltipWithText(i18n.Text("Tag Filter"))
+			d.filterPopup.Tooltip = unison.NewTooltipWithSecondaryText(tagFilterTooltip, baseTooltip)
 		} else {
 			tags := make([]string, 0, len(indexes))
 			for _, i := range indexes {
@@ -205,7 +208,8 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 					tags = append(tags, tag)
 				}
 			}
-			d.filterPopup.Tooltip = unison.NewTooltipWithText(i18n.Text("Tag Filter\n\nRequires these tags:\n● ") + strings.Join(tags, "\n● "))
+			d.filterPopup.Tooltip = unison.NewTooltipWithSecondaryText(tagFilterTooltip,
+				baseTooltip+i18n.Text("\n\nRequires these tags:\n● ")+strings.Join(tags, "\n● "))
 		}
 	}
 	d.filterPopup.SetLayoutData(&unison.FlexLayoutData{
