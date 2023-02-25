@@ -19,10 +19,12 @@ import (
 	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/dbg"
 	"github.com/richardwilkes/gcs/v5/ux"
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/atexit"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jotrotate"
+	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/toolbox/xio/fs/paths"
 	"github.com/richardwilkes/unison"
 )
@@ -34,7 +36,17 @@ func main() {
 	cl := cmdline.New(true)
 	cl.Description = ux.AppDescription()
 	cl.UsageTrailer = fmt.Sprintf(i18n.Text(`Translations dir: "%s"`), i18n.Dir)
-	model.SettingsPath = filepath.Join(paths.AppDataDir(), cmdline.AppCmdName+"_prefs.json")
+
+	settingsName := cmdline.AppCmdName + "_prefs.json"
+	model.SettingsPath = filepath.Join(paths.AppDataDir(), settingsName)
+	// Look for a settings file co-located with the executable and prefer that over the one in the app data dir.
+	if dir, err := toolbox.AppDir(); err == nil {
+		settingsPath := filepath.Join(dir, settingsName)
+		if fs.FileExists(settingsPath) {
+			model.SettingsPath = settingsPath
+		}
+	}
+
 	var textTmplPath string
 	cl.NewGeneralOption(&model.SettingsPath).SetName("settings").SetSingle('s').SetArg("file").
 		SetUsage(i18n.Text("The file to load settings from and store them into"))
