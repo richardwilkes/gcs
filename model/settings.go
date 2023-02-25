@@ -24,7 +24,6 @@ import (
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/xio/fs"
-	"github.com/richardwilkes/toolbox/xio/fs/paths"
 	"github.com/richardwilkes/unison"
 )
 
@@ -36,6 +35,9 @@ const (
 	ImagesLastDirKey   = "images"
 	SettingsLastDirKey = "settings"
 )
+
+// SettingsPath holds the path to our settings file.
+var SettingsPath string
 
 var global *Settings
 
@@ -81,7 +83,7 @@ func GlobalSettings() *Settings {
 	if global == nil {
 		dice.GURPSFormat = true
 		fixupMovedSettingsFileIfNeeded()
-		if err := jio.LoadFromFile(context.Background(), SettingsPath(), &global); err != nil {
+		if err := jio.LoadFromFile(context.Background(), SettingsPath, &global); err != nil {
 			global = DefaultSettings()
 		}
 		global.EnsureValidity()
@@ -98,7 +100,7 @@ func GlobalSettings() *Settings {
 
 // Save to the standard path.
 func (s *Settings) Save() error {
-	return jio.SaveToFile(context.Background(), SettingsPath(), s)
+	return jio.SaveToFile(context.Background(), SettingsPath, s)
 }
 
 // EnsureValidity checks the current settings for validity and if they aren't valid, makes them so.
@@ -204,9 +206,4 @@ func (s *Settings) SheetSettings() *SheetSettings {
 // Libraries implements gurps.SettingsProvider.
 func (s *Settings) Libraries() Libraries {
 	return s.LibrarySet
-}
-
-// SettingsPath returns the path to our settings file.
-func SettingsPath() string {
-	return filepath.Join(paths.AppDataDir(), cmdline.AppCmdName+"_prefs.json")
 }

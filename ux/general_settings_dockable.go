@@ -122,7 +122,7 @@ func (d *generalSettingsDockable) initContent(content *unison.Panel) {
 	d.createTooltipDelayField(content)
 	d.createTooltipDismissalField(content)
 	d.createScrollWheelMultiplierField(content)
-	d.createPathInfoField(content, i18n.Text("Settings Path"), model.SettingsPath())
+	d.createPathInfoField(content, i18n.Text("Settings Path"), model.SettingsPath)
 	d.createPathInfoField(content, i18n.Text("Translations Path"), i18n.Dir)
 	d.createPathInfoField(content, i18n.Text("Log Path"), jotrotate.PathToLog)
 	d.createExternalPDFCmdLineField(content)

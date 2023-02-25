@@ -23,12 +23,11 @@ import (
 
 func fixupMovedSettingsFileIfNeeded() {
 	oldPath := filepath.Join(paths.HomeDir(), ".appdata", "com.trollworks.gcs", "gcs_prefs.json")
-	newPath := SettingsPath()
-	if fs.FileExists(oldPath) && !fs.FileExists(newPath) {
-		if err := os.MkdirAll(filepath.Dir(newPath), 0o755); err != nil {
+	if fs.FileExists(oldPath) && !fs.FileExists(SettingsPath) {
+		if err := os.MkdirAll(filepath.Dir(SettingsPath), 0o755); err != nil {
 			jot.Warn(err)
 		}
-		if err := fs.MoveFile(oldPath, newPath); err != nil {
+		if err := fs.MoveFile(oldPath, SettingsPath); err != nil {
 			jot.Warn(errs.NewWithCause("unable to move settings from old location to new location", err))
 		}
 	}

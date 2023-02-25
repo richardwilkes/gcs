@@ -13,6 +13,7 @@ package main
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/early"
 	"github.com/richardwilkes/gcs/v5/model"
@@ -22,6 +23,7 @@ import (
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jotrotate"
+	"github.com/richardwilkes/toolbox/xio/fs/paths"
 	"github.com/richardwilkes/unison"
 )
 
@@ -31,9 +33,11 @@ func main() {
 	unison.AttachConsole()
 	cl := cmdline.New(true)
 	cl.Description = ux.AppDescription()
-	cl.UsageTrailer = fmt.Sprintf(i18n.Text(`   Settings path: "%s"
-Translations dir: "%s"`), model.SettingsPath(), i18n.Dir)
+	cl.UsageTrailer = fmt.Sprintf(i18n.Text(`Translations dir: "%s"`), i18n.Dir)
+	model.SettingsPath = filepath.Join(paths.AppDataDir(), cmdline.AppCmdName+"_prefs.json")
 	var textTmplPath string
+	cl.NewGeneralOption(&model.SettingsPath).SetName("settings").SetSingle('s').SetArg("file").
+		SetUsage(i18n.Text("The file to load settings from and store them into"))
 	cl.NewGeneralOption(&textTmplPath).SetName("text").SetSingle('x').SetArg("file").
 		SetUsage(i18n.Text("Export sheets using the specified template file"))
 	var convertFiles bool
