@@ -47,6 +47,7 @@ type generalSettingsDockable struct {
 	initialEditorScaleField       *PercentageField
 	initialSheetScaleField        *PercentageField
 	maxAutoColWidthField          *IntegerField
+	monitorResolutionField        *IntegerField
 	exportResolutionField         *IntegerField
 	tooltipDelayField             *DecimalField
 	tooltipDismissalField         *DecimalField
@@ -116,6 +117,7 @@ func (d *generalSettingsDockable) initContent(content *unison.Panel) {
 		model.InitialUIScaleMin, model.InitialUIScaleMax, false, false)
 	content.AddChild(WrapWithSpan(2, d.initialSheetScaleField))
 	d.createCellAutoMaxWidthField(content)
+	d.createMonitorResolutionField(content)
 	d.createImageResolutionField(content)
 	d.createTooltipDelayField(content)
 	d.createTooltipDismissalField(content)
@@ -228,6 +230,18 @@ func (d *generalSettingsDockable) createCellAutoMaxWidthField(content *unison.Pa
 		model.AutoColWidthMin, model.AutoColWidthMax, false, false)
 	d.maxAutoColWidthField.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(d.maxAutoColWidthField)
+}
+
+func (d *generalSettingsDockable) createMonitorResolutionField(content *unison.Panel) {
+	title := i18n.Text("Monitor Resolution")
+	content.AddChild(NewFieldLeadingLabel(title))
+	d.monitorResolutionField = NewNumericFieldWithException[int](nil, "", title,
+		func(min, max int) []int { return []int{min, max} },
+		func() int { return model.GlobalSettings().General.MonitorResolution },
+		func(v int) { model.GlobalSettings().General.MonitorResolution = v },
+		strconv.Itoa, strconv.Atoi, model.MonitorResolutionMin, model.MonitorResolutionMax, 0)
+	content.AddChild(WrapWithSpan(2, d.monitorResolutionField,
+		NewFieldTrailingLabel(i18n.Text("ppi (A value of 0 will cause the ppi reported by your monitor to be used)"))))
 }
 
 func (d *generalSettingsDockable) createImageResolutionField(content *unison.Panel) {
@@ -348,6 +362,7 @@ func (d *generalSettingsDockable) sync() {
 	SetFieldValue(d.initialEditorScaleField.Field, d.initialEditorScaleField.Format(s.InitialEditorUIScale))
 	SetFieldValue(d.initialSheetScaleField.Field, d.initialSheetScaleField.Format(s.InitialSheetUIScale))
 	d.maxAutoColWidthField.SetText(strconv.Itoa(s.MaximumAutoColWidth))
+	d.monitorResolutionField.SetText(strconv.Itoa(s.MonitorResolution))
 	d.exportResolutionField.SetText(strconv.Itoa(s.ImageResolution))
 	d.tooltipDelayField.SetText(s.TooltipDelay.String())
 	d.tooltipDismissalField.SetText(s.TooltipDismissal.String())

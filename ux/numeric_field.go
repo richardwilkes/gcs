@@ -35,12 +35,32 @@ type NumericField[T xmath.Numeric] struct {
 	last          T
 	min           T
 	max           T
+	exception     T
+	hasException  bool
 	useGet        bool
 	marksModified bool
 }
 
 // NewNumericField creates a new field that formats its content.
 func NewNumericField[T xmath.Numeric](targetMgr *TargetMgr, targetKey, undoTitle string, getPrototypes func(min, max T) []T, get func() T, set func(T), format func(T) string, extract func(s string) (T, error), min, max T) *NumericField[T] {
+	f := newBaseNumericField(targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, min, max)
+	f.adjustMinimumTextWidth()
+	f.Sync()
+	return f
+}
+
+// NewNumericFieldWithException creates a new field that formats its content and can hold an exceptional value (one
+// outside of the min/max range.
+func NewNumericFieldWithException[T xmath.Numeric](targetMgr *TargetMgr, targetKey, undoTitle string, getPrototypes func(min, max T) []T, get func() T, set func(T), format func(T) string, extract func(s string) (T, error), min, max, exception T) *NumericField[T] {
+	f := newBaseNumericField(targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, min, max)
+	f.exception = exception
+	f.hasException = true
+	f.adjustMinimumTextWidth()
+	f.Sync()
+	return f
+}
+
+func newBaseNumericField[T xmath.Numeric](targetMgr *TargetMgr, targetKey, undoTitle string, getPrototypes func(min, max T) []T, get func() T, set func(T), format func(T) string, extract func(s string) (T, error), min, max T) *NumericField[T] {
 	f := &NumericField[T]{
 		Field:         unison.NewField(),
 		targetMgr:     targetMgr,
@@ -65,8 +85,6 @@ func NewNumericField[T xmath.Numeric](targetMgr *TargetMgr, targetKey, undoTitle
 	if targetMgr != nil && targetKey != "" {
 		f.RefKey = targetKey
 	}
-	f.adjustMinimumTextWidth()
-	f.Sync()
 	return f
 }
 
@@ -86,6 +104,9 @@ func (f *NumericField[T]) getData() string {
 
 func (f *NumericField[T]) mustExtract(s string) T {
 	v, _ := f.extract(strings.TrimSpace(s)) //nolint:errcheck // Default value in case of error is acceptable
+	if f.hasException && v == f.exception {
+		return v
+	}
 	return xmath.Min(xmath.Max(v, f.min), f.max)
 }
 
@@ -103,6 +124,9 @@ func (f *NumericField[T]) tooltipTextForValidation() string {
 	v, err := f.extract(s)
 	if err != nil || s == "-" || s == "+" {
 		return i18n.Text("Invalid value")
+	}
+	if f.hasException && v == f.exception {
+		return ""
 	}
 	if minimum := f.min; v < minimum {
 		return fmt.Sprintf(i18n.Text("Value must be at least %s"), f.Format(minimum))
@@ -176,6 +200,16 @@ func (f *NumericField[T]) Sync() {
 	state := f.GetFieldState()
 	state.Text = f.getData()
 	f.setWithoutUndo(state, false)
+}
+
+// HasException returns true if an exception value can be used.
+func (f *NumericField[T]) HasException() bool {
+	return f.hasException
+}
+
+// Exception returns the exception value.
+func (f *NumericField[T]) Exception() T {
+	return f.exception
 }
 
 // Min returns the minimum value allowed.

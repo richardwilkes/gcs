@@ -17,6 +17,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/pdf"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/unison"
@@ -80,8 +81,12 @@ func NewPDFRenderer(filePath string, pageLoadedCallback func()) (*PDFRenderer, e
 		return nil, errs.Wrap(err)
 	}
 	display := unison.PrimaryDisplay()
+	ppi := model.GlobalSettings().General.MonitorResolution
+	if ppi == 0 {
+		ppi = display.PPI()
+	}
 	return &PDFRenderer{
-		ppi:                float32(display.PPI()),
+		ppi:                float32(ppi),
 		scaleAdjust:        1 / display.ScaleX,
 		doc:                doc,
 		pageCount:          doc.PageCount(),

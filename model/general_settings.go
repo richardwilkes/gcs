@@ -25,18 +25,24 @@ import (
 
 // Default, min & max values for the general numeric settings
 var (
-	InitialPointsDef           = fxp.From(150)
-	InitialPointsMin           fxp.Int
-	InitialPointsMax           = fxp.From(9999999)
-	TooltipDelayDef            = fxp.FromStringForced("0.75")
-	TooltipDelayMin            fxp.Int
-	TooltipDelayMax            = fxp.Thirty
-	TooltipDismissalDef        = fxp.From(60)
-	TooltipDismissalMin        = fxp.One
-	TooltipDismissalMax        = fxp.From(3600)
-	ScrollWheelMultiplierDef   = fxp.From(unison.MouseWheelMultiplier)
-	ScrollWheelMultiplierMin   = fxp.Int(1)
-	ScrollWheelMultiplierMax   = fxp.From(9999)
+	InitialPointsDef         = fxp.From(150)
+	InitialPointsMin         fxp.Int
+	InitialPointsMax         = fxp.From(9999999)
+	TooltipDelayDef          = fxp.FromStringForced("0.75")
+	TooltipDelayMin          fxp.Int
+	TooltipDelayMax          = fxp.Thirty
+	TooltipDismissalDef      = fxp.From(60)
+	TooltipDismissalMin      = fxp.One
+	TooltipDismissalMax      = fxp.From(3600)
+	ScrollWheelMultiplierDef = fxp.From(unison.MouseWheelMultiplier)
+	ScrollWheelMultiplierMin = fxp.Int(1)
+	ScrollWheelMultiplierMax = fxp.From(9999)
+)
+
+// Default, min & max values for the general numeric settings that can be constants
+const (
+	MonitorResolutionMin       = 72
+	MonitorResolutionMax       = 300
 	ImageResolutionDef         = 200
 	ImageResolutionMin         = 50
 	ImageResolutionMax         = 400
@@ -67,6 +73,7 @@ type GeneralSettings struct {
 	InitialSheetUIScale   int     `json:"initial_sheet_scale"`
 	MaximumAutoColWidth   int     `json:"maximum_auto_col_width"`
 	ImageResolution       int     `json:"image_resolution"`
+	MonitorResolution     int     `json:"monitor_resolution,omitempty"`
 	AutoFillProfile       bool    `json:"auto_fill_profile"`
 	AutoAddNaturalAttacks bool    `json:"add_natural_attacks"`
 	GroupContainersOnSort bool    `json:"group_containers_on_sort"`
@@ -140,6 +147,9 @@ func (s *GeneralSettings) EnsureValidity() {
 	s.TooltipDelay = fxp.ResetIfOutOfRange(s.TooltipDelay, TooltipDelayMin, TooltipDelayMax, TooltipDelayDef)
 	s.TooltipDismissal = fxp.ResetIfOutOfRange(s.TooltipDismissal, TooltipDismissalMin, TooltipDismissalMax, TooltipDismissalDef)
 	s.ScrollWheelMultiplier = fxp.ResetIfOutOfRange(s.ScrollWheelMultiplier, ScrollWheelMultiplierMin, ScrollWheelMultiplierMax, ScrollWheelMultiplierDef)
+	if s.MonitorResolution != 0 {
+		s.MonitorResolution = fxp.ResetIfOutOfRangeInt(s.MonitorResolution, MonitorResolutionMin, MonitorResolutionMax, 0)
+	}
 	s.ImageResolution = fxp.ResetIfOutOfRangeInt(s.ImageResolution, ImageResolutionMin, ImageResolutionMax, ImageResolutionDef)
 	s.NavigatorUIScale = fxp.ResetIfOutOfRangeInt(s.NavigatorUIScale, InitialUIScaleMin, InitialUIScaleMax, InitialNavigatorUIScaleDef)
 	s.InitialListUIScale = fxp.ResetIfOutOfRangeInt(s.InitialListUIScale, InitialUIScaleMin, InitialUIScaleMax, InitialListUIScaleDef)
