@@ -188,16 +188,29 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 		if p.def.Type != model.IntegerRefAttributeType && p.def.Type != model.DecimalRefAttributeType {
 			text = i18n.Text("Cost per Point")
 			content.AddChild(NewFieldLeadingLabel(text))
-			numField := NewIntegerField(p.dockable.targetMgr, p.def.KeyPrefix+"cost", text,
-				func() int { return fxp.As[int](p.def.CostPerPoint) },
-				func(v int) { p.def.CostPerPoint = fxp.From(v) },
-				0, 9999, false, false)
-			numField.Tooltip = unison.NewTooltipWithText(i18n.Text("The cost per point difference from the base"))
-			content.AddChild(numField)
+
+			if p.def.Type == model.DecimalAttributeType {
+				numField := NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+"cost", text,
+					func() string { return p.def.CostPerPoint.String() },
+					func(v string) {
+						value, _ := fxp.FromString(v)
+						p.def.CostPerPoint = value
+					})
+				numField.Tooltip = unison.NewTooltipWithText(i18n.Text("The cost per point difference from the base"))
+				content.AddChild(numField)
+			} else {
+				numField := NewIntegerField(p.dockable.targetMgr, p.def.KeyPrefix+"cost", text,
+					func() int { return fxp.As[int](p.def.CostPerPoint) },
+					func(v int) { p.def.CostPerPoint = fxp.From(v) },
+					0, 9999, false, false)
+				numField.Tooltip = unison.NewTooltipWithText(i18n.Text("The cost per point difference from the base"))
+				content.AddChild(numField)
+			}
+
 
 			text = i18n.Text("SM Reduction")
 			content.AddChild(NewFieldLeadingLabel(text))
-			numField = NewPercentageField(p.dockable.targetMgr, p.def.KeyPrefix+"sm", text,
+			numField := NewPercentageField(p.dockable.targetMgr, p.def.KeyPrefix+"sm", text,
 				func() int { return fxp.As[int](p.def.CostAdjPercentPerSM) },
 				func(v int) { p.def.CostAdjPercentPerSM = fxp.From(v) },
 				0, 80, false, false)
