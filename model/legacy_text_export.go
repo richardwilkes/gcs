@@ -153,16 +153,16 @@ func (ex *legacyExporter) emitKey(key string) error {
 		ex.enhancedKeyParsing = true
 	case "PORTRAIT":
 		if len(ex.entity.Profile.PortraitData) != 0 {
-			filePath := filepath.Join(filepath.Dir(ex.exportPath), fs.TrimExtension(filepath.Base(ex.exportPath))+".png")
-			if err := os.WriteFile(filePath, ex.entity.Profile.PortraitData, 0o640); err != nil {
+			leafName := fs.TrimExtension(filepath.Base(ex.exportPath)) + ".png"
+			if err := os.WriteFile(filepath.Join(filepath.Dir(ex.exportPath), leafName), ex.entity.Profile.PortraitData, 0o640); err != nil {
 				return errs.Wrap(err)
 			}
-			ex.out.WriteString(url.PathEscape(filePath))
+			ex.out.WriteString(url.PathEscape(leafName))
 		}
 	case "PORTRAIT_EMBEDDED":
 		if len(ex.entity.Profile.PortraitData) != 0 {
 			ex.out.WriteString("data:image/png;base64,")
-			ex.out.WriteString(base64.URLEncoding.EncodeToString(ex.entity.Profile.PortraitData))
+			ex.out.WriteString(base64.StdEncoding.EncodeToString(ex.entity.Profile.PortraitData))
 		}
 	case nameExportKey:
 		ex.writeEncodedText(ex.entity.Profile.Name)
