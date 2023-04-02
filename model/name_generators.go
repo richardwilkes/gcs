@@ -14,13 +14,15 @@ package model
 import (
 	"sort"
 
+	"github.com/richardwilkes/rpgtools/names"
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/txt"
 )
 
 // NameGeneratorRef holds a reference to a NameGenerator.
 type NameGeneratorRef struct {
 	FileRef   *NamedFileRef
-	generator *NameGenerator
+	generator names.Namer
 }
 
 // AvailableNameGenerators scans the libraries and returns the available name generators.
@@ -41,8 +43,8 @@ func AvailableNameGenerators(libraries Libraries) []*NameGeneratorRef {
 }
 
 // Generator returns the NameGenerator, loading it if needed.
-func (n *NameGeneratorRef) Generator() (*NameGenerator, error) {
-	if n.generator == nil {
+func (n *NameGeneratorRef) Generator() (names.Namer, error) {
+	if toolbox.IsNil(n.generator) {
 		g, err := NewNameGeneratorFromFS(n.FileRef.FileSystem, n.FileRef.FilePath)
 		if err != nil {
 			return nil, err

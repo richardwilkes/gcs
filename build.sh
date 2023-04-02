@@ -88,16 +88,6 @@ MINGW*)
   ;;
 esac
 
-# Run the tests
-if [ "$TEST"x == "1x" ]; then
-  if [ -n "$RACE" ]; then
-    echo -e "\033[32mTesting with -race enabled...\033[0m"
-  else
-    echo -e "\033[32mTesting...\033[0m"
-  fi
-  go test $RACE ./...
-fi
-
 # Run the linters
 if [ "$LINT"x == "1x" ]; then
   GOLANGCI_LINT_VERSION=1.51.1
@@ -109,6 +99,16 @@ if [ "$LINT"x == "1x" ]; then
   fi
   echo -e "\033[32mLinting...\033[0m"
   $TOOLS_DIR/golangci-lint run
+fi
+
+# Run the tests
+if [ "$TEST"x == "1x" ]; then
+  if [ -n "$RACE" ]; then
+    echo -e "\033[32mTesting with -race enabled...\033[0m"
+  else
+    echo -e "\033[32mTesting...\033[0m"
+  fi
+  go test $RACE ./...
 fi
 
 # Package for distribution
