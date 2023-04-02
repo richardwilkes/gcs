@@ -13,7 +13,6 @@ import (
 	"text/template"
 	"unicode"
 
-	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
 	"golang.org/x/text/cases"
@@ -685,12 +684,12 @@ func main() {
 			{
 				Name: "Melee",
 				Key:  "melee_weapon",
-				Alt:  i18n.Text("Melee Weapons"),
+				Alt:  "Melee Weapons",
 			},
 			{
 				Name: "Ranged",
 				Key:  "ranged_weapon",
-				Alt:  i18n.Text("Ranged Weapons"),
+				Alt:  "Ranged Weapons",
 			},
 		},
 	})
@@ -887,6 +886,31 @@ func main() {
 				Key:    "intensive",
 				String: "Intensive Training",
 			},
+		},
+	})
+	processSourceTemplate(enumTmpl, &enumInfo{
+		Pkg:  "model",
+		Name: "name_generation_type",
+		Desc: "holds a name generation type",
+		Values: []enumValue{
+			{Key: "simple"},
+			{Key: "markov_letter", OldKeys: []string{"markov_chain"}},
+			{Key: "markov_run"},
+			{Key: "compound"},
+		},
+	})
+	processSourceTemplate(enumTmpl, &enumInfo{
+		Pkg:  "model",
+		Name: "name_data",
+		Desc: "holds a built-in name data type",
+		Values: []enumValue{
+			{Key: "none"},
+			{Key: "american_male"},
+			{Key: "american_female"},
+			{Key: "american_last"},
+			{Key: "unweighted_american_male"},
+			{Key: "unweighted_american_female"},
+			{Key: "unweighted_american_last"},
 		},
 	})
 }
