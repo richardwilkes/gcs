@@ -12,142 +12,164 @@
 package model
 
 import (
-	"context"
+	"bufio"
+	"bytes"
 	"io/fs"
+	"net/url"
+	"strconv"
 	"strings"
-	"unicode/utf8"
+	"unicode"
 
-	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/json"
+	"github.com/richardwilkes/rpgtools/names"
+	"github.com/richardwilkes/rpgtools/names/namesets"
+	"github.com/richardwilkes/rpgtools/names/namesets/american"
+	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/toolbox/xmath/rand"
+	"golang.org/x/exp/maps"
 )
 
-type nameGenCharThreshold struct {
-	ch        rune
-	threshold int
-}
-
-// NameGenerator holds the data for name generation.
-type NameGenerator struct {
-	initialized  bool
-	Type         NameGenerationType `json:"type"`
-	TrainingData []string           `json:"training_data"`
-	min          int
-	max          int
-	entries      map[string][]nameGenCharThreshold
-}
+const unweighted = "unweighted"
 
 // NewNameGeneratorFromFS creates a new NameGenerator from a file.
-func NewNameGeneratorFromFS(fileSystem fs.FS, filePath string) (*NameGenerator, error) {
-	var generator NameGenerator
-	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &generator); err != nil {
-		return nil, err
+func NewNameGeneratorFromFS(fileSystem fs.FS, filePath string) (names.Namer, error) {
+	data, err := fs.ReadFile(fileSystem, filePath)
+	if err != nil {
+		return nil, errs.Wrap(err)
 	}
-	return &generator, nil
-}
-
-func (n *NameGenerator) initializeIfNeeded() {
-	if !n.initialized {
-		list := make([]string, 0, len(n.TrainingData))
-		for _, one := range n.TrainingData {
-			one = strings.ToLower(strings.TrimSpace(one))
-			if utf8.RuneCountInString(one) >= 2 {
-				list = append(list, one)
-			}
-		}
-		n.TrainingData = list
-		if n.Type == MarkovChainNameGenerationType {
-			n.min = 20
-			n.max = 2
-			builders := make(map[string]map[rune]int)
-			for _, one := range n.TrainingData {
-				runes := []rune(one)
-				length := len(runes)
-				if n.min > length {
-					n.min = length
-				}
-				if n.max < length {
-					n.max = length
-				}
-				for i := 2; i < length; i++ {
-					charGroup := string(runes[i-2 : i])
-					occurrences, exists := builders[charGroup]
-					if !exists {
-						occurrences = make(map[rune]int)
-						builders[charGroup] = occurrences
-					}
-					occurrences[runes[i]]++
-				}
-			}
-			n.entries = make(map[string][]nameGenCharThreshold)
-			for k, v := range builders {
-				n.entries[k] = n.makeCharThresholdEntry(v)
-			}
-		}
-		n.initialized = true
+	if len(data) == 0 {
+		return nil, errs.New("file is empty")
 	}
-}
 
-// Generate a name.
-func (n *NameGenerator) Generate() string {
-	n.initializeIfNeeded()
-	rnd := rand.NewCryptoRand()
-	switch n.Type {
-	case SimpleNameGenerationType:
-		if len(n.TrainingData) == 0 {
-			return ""
+	if data[0] == '{' {
+		var oldNameGenData struct {
+			Type         string   `json:"type"`
+			TrainingData []string `json:"training_data"`
 		}
-		return txt.FirstToUpper(n.TrainingData[rnd.Intn(len(n.TrainingData))])
-	case MarkovChainNameGenerationType:
-		var buffer strings.Builder
-		var sub []rune
-		for k := range n.entries {
-			buffer.WriteString(txt.FirstToUpper(k))
-			sub = []rune(k)
-			break // Only want one, which is random
+		if err = json.Unmarshal(data, &oldNameGenData); err != nil {
+			return nil, errs.Wrap(err)
 		}
-		targetSize := n.min + rnd.Intn(n.max+1-n.min)
-		for i := 2; i < targetSize; i++ {
-			entry, exists := n.entries[string(sub)]
-			if !exists {
-				break
+		if oldNameGenData.Type == "markov_chain" {
+			return names.NewMarkovLetterUnweightedNamer(3, oldNameGenData.TrainingData), nil
+		}
+		return names.NewSimpleUnweightedNamer(oldNameGenData.TrainingData), nil
+	}
+
+	var line string
+	line, data = nextNonEmptyLine(data)
+	typeParts := strings.Split(line, ":")
+	if len(typeParts) < 2 {
+		return nil, errs.New("missing generator type")
+	}
+	line, data = nextNonEmptyLine(data)
+	dataParts := strings.Split(line, ":")
+	if len(dataParts) < 2 {
+		return nil, errs.New("missing generator data")
+	}
+	var trainingData map[string]int
+	switch typeParts[1] {
+	case "simple":
+		if trainingData, err = loadTrainingData(dataParts[1], data); err != nil {
+			return nil, err
+		}
+		if len(typeParts) > 2 && typeParts[2] == unweighted {
+			return names.NewSimpleUnweightedNamer(maps.Keys(trainingData)), nil
+		}
+		return names.NewSimpleNamer(trainingData), nil
+	case "compound":
+		if dataParts[1] != "inline" {
+			return nil, errs.New("compound data kind must be 'inline'")
+		}
+		sep := " "
+		lowered := false
+		if len(typeParts) > 2 {
+			if sep, err = url.PathUnescape(typeParts[2]); err != nil {
+				return nil, errs.NewWithCause("invalid separator spec", err)
 			}
-			next := n.chooseCharacter(entry)
-			if next == 0 {
-				break
+			if len(typeParts) > 3 {
+				lowered = txt.IsTruthy(typeParts[3])
 			}
-			buffer.WriteRune(next)
-			//goland:noinspection GoNilness
-			sub[0] = sub[1]
-			//goland:noinspection GoNilness
-			sub[1] = next
 		}
-		return buffer.String()
+		var namers []names.Namer
+		scanner := bufio.NewScanner(bytes.NewReader(data))
+		for scanner.Scan() {
+			if line = strings.TrimSpace(scanner.Text()); line != "" {
+				var n names.Namer
+				if n, err = NewNameGeneratorFromFS(fileSystem, line); err != nil {
+					return nil, errs.NewWithCause("unable to load name generator file: "+line, err)
+				}
+				namers = append(namers, n)
+			}
+		}
+		if len(namers) == 0 {
+			return nil, errs.New("must specify at least one name generation file for compound name generator")
+		}
+		return names.NewCompoundNamer(sep, lowered, namers...), nil
+	case "markov_letter":
+		depth := 3
+		if len(typeParts) > 2 {
+			if depth, err = strconv.Atoi(typeParts[2]); err != nil {
+				return nil, errs.New("invalid depth option: " + typeParts[2])
+			}
+		}
+		if trainingData, err = loadTrainingData(dataParts[1], data); err != nil {
+			return nil, err
+		}
+		if len(typeParts) > 3 && typeParts[3] == unweighted {
+			return names.NewMarkovLetterUnweightedNamer(depth, maps.Keys(trainingData)), nil
+		}
+		return names.NewMarkovLetterNamer(depth, trainingData), nil
+	case "markov_run":
+		if trainingData, err = loadTrainingData(dataParts[1], data); err != nil {
+			return nil, err
+		}
+		if len(typeParts) > 2 && typeParts[2] == unweighted {
+			return names.NewMarkovRunUnweightedNamer(maps.Keys(trainingData)), nil
+		}
+		return names.NewMarkovRunNamer(trainingData), nil
 	default:
-		return ""
+		return nil, errs.New("invalid name generator type: " + typeParts[1])
 	}
 }
 
-func (n *NameGenerator) makeCharThresholdEntry(occurrences map[rune]int) []nameGenCharThreshold {
-	ct := make([]nameGenCharThreshold, len(occurrences))
-	i := 0
-	for k, v := range occurrences {
-		ct[i].ch = k
-		if i > 0 {
-			v += ct[i-1].threshold
+func nextNonEmptyLine(in []byte) (line string, data []byte) {
+	var buffer []byte
+	data = in
+	for {
+		if i := bytes.IndexByte(data, '\n'); i == -1 {
+			buffer = data
+			data = nil
+		} else {
+			buffer = data[:i]
+			data = data[i+1:]
 		}
-		ct[i].threshold = v
-		i++
+		buffer = bytes.Map(func(r rune) rune {
+			if unicode.IsSpace(r) {
+				return -1
+			}
+			return r
+		}, buffer)
+		if len(buffer) != 0 || data == nil {
+			return string(buffer), data
+		}
 	}
-	return ct
 }
 
-func (n *NameGenerator) chooseCharacter(ct []nameGenCharThreshold) rune {
-	threshold := rand.NewCryptoRand().Intn(ct[len(ct)-1].threshold + 1)
-	for i := range ct {
-		if ct[i].threshold >= threshold {
-			return ct[i].ch
+func loadTrainingData(kind string, data []byte) (map[string]int, error) {
+	switch kind {
+	case "inline":
+		trainingData, err := namesets.LoadFromReader(bytes.NewReader(data))
+		if err != nil {
+			return nil, errs.NewWithCause("invalid data", err)
 		}
+		return trainingData, nil
+	case "american_male":
+		return american.Male(), nil
+	case "american_female":
+		return american.Female(), nil
+	case "american_last":
+		return american.Last(), nil
+	default:
+		return nil, errs.New("invalid name generator data kind: " + kind)
 	}
-	return 0
 }

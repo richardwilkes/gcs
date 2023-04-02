@@ -889,15 +889,6 @@ func main() {
 			},
 		},
 	})
-	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model",
-		Name: "name_generation_type",
-		Desc: "holds a name generation type",
-		Values: []enumValue{
-			{Key: "simple"},
-			{Key: "markov_chain"},
-		},
-	})
 }
 
 func removeExistingGenFiles() {

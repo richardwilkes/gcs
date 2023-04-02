@@ -131,7 +131,7 @@ func (o *AncestryOptions) RandomName(nameGeneratorRefs []*NameGeneratorRef) stri
 			if generator, err := ref.Generator(); err != nil {
 				jot.Error(err)
 			} else {
-				if name := strings.TrimSpace(generator.Generate()); name != "" {
+				if name := strings.TrimSpace(generator.GenerateName()); name != "" {
 					if buffer.Len() != 0 {
 						buffer.WriteByte(' ')
 					}
