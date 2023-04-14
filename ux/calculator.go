@@ -612,7 +612,7 @@ func (c *Calculator) UndoManager() *unison.UndoManager {
 
 func (c *Calculator) computeJump(broad bool) fxp.Int {
 	entity := c.sheet.Entity()
-	basicMove := entity.Attributes.Current("basic_move")
+	basicMove := entity.Attributes.Current(model.BasicMoveID)
 	basicMoveWithoutRun := basicMove
 
 	// Adjust Basic Move for running
@@ -653,7 +653,7 @@ func (c *Calculator) computeJump(broad bool) fxp.Int {
 	}, true, true, entity.Skills...)
 
 	// Adjust Basic Move for high strength
-	st := entity.Attributes.Current("st")
+	st := entity.LiftingStrength()
 	if c.jumpingExtraEffortPenalty < 0 {
 		st = st.Mul(fxp.From(-5*c.jumpingExtraEffortPenalty).Div(fxp.Hundred) + fxp.One).Trunc()
 	}
@@ -762,7 +762,7 @@ func (c *Calculator) updateThrowingResult() {
 	}, true, true, entity.Skills...)
 
 	// Determine distance modifier based on weight ratio
-	st := entity.Attributes.Current("st")
+	st := entity.LiftingStrength() - entity.LiftingStrengthBonus
 	if c.throwingExtraEffortPenalty < 0 {
 		st = st.Mul(fxp.From(-5*c.throwingExtraEffortPenalty).Div(fxp.Hundred) + fxp.One).Trunc()
 	}

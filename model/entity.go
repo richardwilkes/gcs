@@ -582,14 +582,45 @@ func (e *Entity) WealthNotCarried() fxp.Int {
 	return value
 }
 
-// StrengthOrZero returns the current ST value, or zero if no such attribute exists.
-func (e *Entity) StrengthOrZero() fxp.Int {
-	return e.ResolveAttributeCurrent(StrengthID).Max(0)
+// StrikingStrength returns the adjusted ST for striking purposes.
+func (e *Entity) StrikingStrength() fxp.Int {
+	var st fxp.Int
+	if e.ResolveAttribute(StrikingStrengthID) != nil {
+		st = e.ResolveAttributeCurrent(StrikingStrengthID)
+	} else {
+		st = e.ResolveAttributeCurrent(StrengthID).Max(0)
+	}
+	st += e.StrikingStrengthBonus
+	return st.Trunc()
+}
+
+// LiftingStrength returns the adjusted ST for lifting purposes.
+func (e *Entity) LiftingStrength() fxp.Int {
+	var st fxp.Int
+	if e.ResolveAttribute(LiftingStrengthID) != nil {
+		st = e.ResolveAttributeCurrent(LiftingStrengthID)
+	} else {
+		st = e.ResolveAttributeCurrent(StrengthID).Max(0)
+	}
+	st += e.LiftingStrengthBonus
+	return st.Trunc()
+}
+
+// ThrowingStrength returns the adjusted ST for throwing purposes.
+func (e *Entity) ThrowingStrength() fxp.Int {
+	var st fxp.Int
+	if e.ResolveAttribute(ThrowingStrengthID) != nil {
+		st = e.ResolveAttributeCurrent(ThrowingStrengthID)
+	} else {
+		st = e.ResolveAttributeCurrent(StrengthID).Max(0)
+	}
+	st += e.ThrowingStrengthBonus
+	return st.Trunc()
 }
 
 // Thrust returns the thrust value for the current strength.
 func (e *Entity) Thrust() *dice.Dice {
-	return e.ThrustFor(fxp.As[int](e.StrengthOrZero() + e.StrikingStrengthBonus))
+	return e.ThrustFor(fxp.As[int](e.StrikingStrength()))
 }
 
 // ThrustFor returns the thrust value for the provided strength.
@@ -599,7 +630,7 @@ func (e *Entity) ThrustFor(st int) *dice.Dice {
 
 // Swing returns the swing value for the current strength.
 func (e *Entity) Swing() *dice.Dice {
-	return e.SwingFor(fxp.As[int](e.StrengthOrZero() + e.StrikingStrengthBonus))
+	return e.SwingFor(fxp.As[int](e.StrikingStrength()))
 }
 
 // SwingFor returns the swing value for the provided strength.
@@ -781,7 +812,12 @@ func (e *Entity) NamedWeaponSkillBonusesFor(name, usage string, tags []string, t
 
 // Move returns the current Move value for the given Encumbrance.
 func (e *Entity) Move(enc Encumbrance) int {
-	initialMove := e.ResolveAttributeCurrent("basic_move").Max(0)
+	var initialMove fxp.Int
+	if e.ResolveAttribute(MoveID) != nil {
+		initialMove = e.ResolveAttributeCurrent(MoveID)
+	} else {
+		initialMove = e.ResolveAttributeCurrent(BasicMoveID).Max(0)
+	}
 	divisor := 2 * xmath.Min(CountThresholdOpMet(HalveMoveThresholdOp, e.Attributes), 2)
 	if divisor > 0 {
 		initialMove = initialMove.Div(fxp.From(divisor)).Ceil()
@@ -838,7 +874,13 @@ func (e *Entity) SkillNamed(name, specialization string, requirePoints bool, exc
 
 // Dodge returns the current Dodge value for the given Encumbrance.
 func (e *Entity) Dodge(enc Encumbrance) int {
-	dodge := fxp.Three + e.DodgeBonus + e.ResolveAttributeCurrent("basic_speed").Max(0)
+	var dodge fxp.Int
+	if e.ResolveAttribute(DodgeID) != nil {
+		dodge = e.ResolveAttributeCurrent(DodgeID)
+	} else {
+		dodge = e.ResolveAttributeCurrent(BasicSpeedID).Max(0) + fxp.Three
+	}
+	dodge += e.DodgeBonus
 	divisor := 2 * xmath.Min(CountThresholdOpMet(HalveDodgeThresholdOp, e.Attributes), 2)
 	if divisor > 0 {
 		dodge = dodge.Div(fxp.From(divisor)).Ceil()
@@ -923,13 +965,13 @@ func (e *Entity) BasicLift() Weight {
 	if e.cachedBasicLift != -1 {
 		return e.cachedBasicLift
 	}
-	e.cachedBasicLift = e.BasicLiftForST(e.StrengthOrZero())
+	e.cachedBasicLift = e.BasicLiftForST(e.LiftingStrength())
 	return e.cachedBasicLift
 }
 
 // BasicLiftForST returns the entity's Basic Lift as if their base ST was the given value.
 func (e *Entity) BasicLiftForST(st fxp.Int) Weight {
-	st = (st + e.LiftingStrengthBonus).Trunc()
+	st = st.Trunc()
 	if IsThresholdOpMet(HalveSTThresholdOp, e.Attributes) {
 		st = st.Div(fxp.Two)
 		if st != st.Trunc() {

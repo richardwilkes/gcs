@@ -203,9 +203,9 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "HP_POINTS":
 		ex.writeEncodedText(ex.entity.Attributes.Cost(hpAttrID).String())
 	case "BASIC_SPEED_POINTS":
-		ex.writeEncodedText(ex.entity.Attributes.Cost("basic_speed").String())
+		ex.writeEncodedText(ex.entity.Attributes.Cost(BasicSpeedID).String())
 	case "BASIC_MOVE_POINTS":
-		ex.writeEncodedText(ex.entity.Attributes.Cost("basic_move").String())
+		ex.writeEncodedText(ex.entity.Attributes.Cost(BasicMoveID).String())
 	case "ADVANTAGE_POINTS":
 		ex.writeEncodedText(ex.points.Advantages.String())
 	case "DISADVANTAGE_POINTS":
@@ -263,9 +263,9 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "FRIGHT_CHECK":
 		ex.writeEncodedText(ex.entity.Attributes.Current("fright_check").String())
 	case "BASIC_SPEED":
-		ex.writeEncodedText(ex.entity.Attributes.Current("basic_speed").String())
+		ex.writeEncodedText(ex.entity.Attributes.Current(BasicSpeedID).String())
 	case "BASIC_MOVE":
-		ex.writeEncodedText(ex.entity.Attributes.Current("basic_move").String())
+		ex.writeEncodedText(ex.entity.Attributes.Current(BasicMoveID).String())
 	case "PERCEPTION":
 		ex.writeEncodedText(ex.entity.Attributes.Current("per").String())
 	case "VISION":

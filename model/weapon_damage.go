@@ -164,7 +164,7 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 		return w.String()
 	}
 	maxST := w.Owner.ResolvedMinimumStrength().Mul(fxp.Three)
-	st := pc.StrengthOrZero() + pc.StrikingStrengthBonus
+	st := pc.StrikingStrength()
 	if maxST > 0 && maxST < st {
 		st = maxST
 	}

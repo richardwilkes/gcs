@@ -334,7 +334,7 @@ func (w *Weapon) SkillLevel(tooltip *xio.ByteBuffer) fxp.Int {
 
 func (w *Weapon) skillLevelBaseAdjustment(entity *Entity, tooltip *xio.ByteBuffer) fxp.Int {
 	var adj fxp.Int
-	if minST := w.ResolvedMinimumStrength() - (entity.StrengthOrZero() + entity.StrikingStrengthBonus); minST > 0 {
+	if minST := w.ResolvedMinimumStrength() - entity.StrikingStrength(); minST > 0 {
 		adj -= minST
 	}
 	nameQualifier := w.String()
@@ -410,12 +410,11 @@ func (w *Weapon) ResolvedBlock(tooltip *xio.ByteBuffer) string {
 
 // ResolvedRange returns the range, fully resolved for the user's ST, if possible.
 func (w *Weapon) ResolvedRange() string {
-	//nolint:ifshort // No, pc isn't just used on the next line...
 	pc := w.PC()
 	if pc == nil {
 		return w.Range
 	}
-	st := (pc.StrengthOrZero() + pc.ThrowingStrengthBonus).Trunc()
+	st := pc.ThrowingStrength()
 	var savedRange string
 	calcRange := w.Range
 	for calcRange != savedRange {

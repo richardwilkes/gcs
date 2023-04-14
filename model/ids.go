@@ -21,16 +21,22 @@ import (
 // Various commonly used IDs
 const (
 	AllID              = "all"
+	BasicMoveID        = "basic_move"
+	BasicSpeedID       = "basic_speed"
 	BlockID            = "block"
 	DexterityID        = "dx"
 	DodgeID            = "dodge"
+	LiftingStrengthID  = "lifting_st"
+	MoveID             = "move"
 	ParryID            = "parry"
 	RitualMagicSpellID = "ritual_magic_spell"
 	SizeModifierID     = "sm"
 	SkillID            = "skill"
 	SpellID            = "spell"
 	StrengthID         = "st"
+	StrikingStrengthID = "striking_st"
 	TechniqueID        = "technique"
+	ThrowingStrengthID = "throwing_st"
 )
 
 // SanitizeID ensures the ID is not empty and consists of only lowercase alphanumeric characters. If permitLeadingDigits
