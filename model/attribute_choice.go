@@ -51,13 +51,20 @@ func AttributeChoices(entity *Entity, prefix string, flags AttributeFlags, curre
 	if flags&TenFlag != 0 {
 		choices = append(choices, &AttributeChoice{Key: "10", Title: prefix + "10"})
 	}
+	addedDodge := false
 	for _, def := range list {
+		if def.DefID == DodgeID {
+			if flags&DodgeFlag == 0 {
+				continue
+			}
+			addedDodge = true
+		}
 		choices = append(choices, &AttributeChoice{Key: def.DefID, Title: prefix + def.Name})
 	}
 	if flags&SizeFlag != 0 {
 		choices = append(choices, &AttributeChoice{Key: SizeModifierID, Title: prefix + i18n.Text("Size Modifier")})
 	}
-	if flags&DodgeFlag != 0 {
+	if flags&DodgeFlag != 0 && !addedDodge {
 		choices = append(choices, &AttributeChoice{Key: DodgeID, Title: prefix + i18n.Text("Dodge")})
 	}
 	if flags&ParryFlag != 0 {

@@ -355,7 +355,11 @@ func (e *Entity) processFeatures() {
 		}
 	}
 	e.Profile.Update(e)
-	e.DodgeBonus = e.AttributeBonusFor(DodgeID, NoneBonusLimitation, nil).Trunc()
+	if e.ResolveAttribute(DodgeID) == nil {
+		e.DodgeBonus = e.AttributeBonusFor(DodgeID, NoneBonusLimitation, nil).Trunc()
+	} else {
+		e.DodgeBonus = 0
+	}
 	e.ParryBonus = e.AttributeBonusFor(ParryID, NoneBonusLimitation, nil).Trunc()
 	e.BlockBonus = e.AttributeBonusFor(BlockID, NoneBonusLimitation, nil).Trunc()
 }
