@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
 )
 
@@ -90,33 +91,33 @@ func addUserDescLabelAndField(parent *unison.Panel, fieldData *string) {
 		fieldData)
 }
 
-func addTechLevelRequired(parent *unison.Panel, fieldData **string, includeField bool) {
+func addTechLevelRequired(parent *unison.Panel, fieldData **string, ownerIsSheet bool) {
 	tl := i18n.Text("Tech Level")
 	var field *StringField
-	if includeField {
-		wrapper := addFlowWrapper(parent, tl, 2)
-		field = NewStringField(nil, "", tl, func() string {
-			if *fieldData == nil {
-				return ""
-			}
-			return **fieldData
-		}, func(value string) {
-			if *fieldData == nil {
-				return
-			}
-			**fieldData = value
-			MarkModified(parent)
-		})
-		field.Tooltip = unison.NewTooltipWithText(techLevelInfo())
+	wrapper := addFlowWrapper(parent, tl, 2)
+	field = NewStringField(nil, "", tl, func() string {
 		if *fieldData == nil {
-			field.SetEnabled(false)
+			return ""
 		}
-		field.SetMinimumTextWidthUsing("12^")
-		wrapper.AddChild(field)
-		parent = wrapper
-	} else {
-		parent.AddChild(NewFieldLeadingLabel(tl))
+		return **fieldData
+	}, func(value string) {
+		if *fieldData == nil {
+			return
+		}
+		**fieldData = value
+		MarkModified(parent)
+	})
+	tip := techLevelInfo()
+	if !ownerIsSheet {
+		tip = txt.Wrap("", i18n.Text("Leave field blank to auto-populate with the character's TL when added to a character sheet."), 60) + "\n\n" + tip
 	}
+	field.Tooltip = unison.NewTooltipWithText(tip)
+	if *fieldData == nil {
+		field.SetEnabled(false)
+	}
+	field.SetMinimumTextWidthUsing("12^")
+	wrapper.AddChild(field)
+	parent = wrapper
 	last := *fieldData
 	required := last != nil
 	parent.AddChild(NewCheckBox(nil, "", i18n.Text("Required"),
