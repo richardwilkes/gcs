@@ -12,8 +12,8 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -41,11 +41,11 @@ func (a *adjustQuantityList) Finish() {
 }
 
 type quantityAdjuster struct {
-	Target   *model.Equipment
+	Target   *gurps.Equipment
 	Quantity fxp.Int
 }
 
-func newQuantityAdjuster(target *model.Equipment) *quantityAdjuster {
+func newQuantityAdjuster(target *gurps.Equipment) *quantityAdjuster {
 	return &quantityAdjuster{
 		Target:   target,
 		Quantity: target.Quantity,
@@ -56,7 +56,7 @@ func (a *quantityAdjuster) Apply() {
 	a.Target.Quantity = a.Quantity
 }
 
-func canAdjustQuantity(table *unison.Table[*Node[*model.Equipment]], increment bool) bool {
+func canAdjustQuantity(table *unison.Table[*Node[*gurps.Equipment]], increment bool) bool {
 	for _, row := range table.SelectedRows(false) {
 		if eqp := row.Data(); eqp != nil {
 			if increment || eqp.Quantity > 0 {
@@ -67,7 +67,7 @@ func canAdjustQuantity(table *unison.Table[*Node[*model.Equipment]], increment b
 	return false
 }
 
-func adjustQuantity(owner Rebuildable, table *unison.Table[*Node[*model.Equipment]], increment bool) {
+func adjustQuantity(owner Rebuildable, table *unison.Table[*Node[*gurps.Equipment]], increment bool) {
 	before := &adjustQuantityList{Owner: owner}
 	after := &adjustQuantityList{Owner: owner}
 	for _, row := range table.SelectedRows(false) {

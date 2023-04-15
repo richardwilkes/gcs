@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/unison"
@@ -24,7 +24,7 @@ import (
 // BodyPanel holds the contents of the body block on the sheet.
 type BodyPanel struct {
 	unison.Panel
-	entity        *model.Entity
+	entity        *gurps.Entity
 	titledBorder  *TitledBorder
 	row           []unison.Paneler
 	sepLayoutData []*unison.FlexLayoutData
@@ -32,7 +32,7 @@ type BodyPanel struct {
 }
 
 // NewBodyPanel creates a new body panel.
-func NewBodyPanel(entity *model.Entity) *BodyPanel {
+func NewBodyPanel(entity *gurps.Entity) *BodyPanel {
 	p := &BodyPanel{entity: entity}
 	p.Self = p
 	p.SetLayout(&unison.FlexLayout{
@@ -44,7 +44,7 @@ func NewBodyPanel(entity *model.Entity) *BodyPanel {
 		VAlign: unison.FillAlignment,
 		VSpan:  3,
 	})
-	locations := model.SheetSettingsFor(entity).BodyType
+	locations := gurps.SheetSettingsFor(entity).BodyType
 	p.crc = locations.CRC64()
 	p.titledBorder = &TitledBorder{Title: locations.Name}
 	p.SetBorder(unison.NewCompoundBorder(p.titledBorder, unison.NewEmptyBorder(unison.Insets{
@@ -57,7 +57,7 @@ func NewBodyPanel(entity *model.Entity) *BodyPanel {
 		r := p.Children()[0].FrameRect()
 		r.X = rect.X
 		r.Width = rect.Width
-		gc.DrawRect(r, model.HeaderColor.Paint(gc, r, unison.Fill))
+		gc.DrawRect(r, gurps.HeaderColor.Paint(gc, r, unison.Fill))
 		for i, row := range p.row {
 			var ink unison.Ink
 			if i&1 == 1 {
@@ -75,7 +75,7 @@ func NewBodyPanel(entity *model.Entity) *BodyPanel {
 	return p
 }
 
-func (p *BodyPanel) addContent(locations *model.Body) {
+func (p *BodyPanel) addContent(locations *gurps.Body) {
 	p.RemoveAllChildren()
 	p.AddChild(NewPageHeader(i18n.Text("Roll"), 1))
 	p.AddChild(NewInteriorSeparator())
@@ -90,7 +90,7 @@ func (p *BodyPanel) addContent(locations *model.Body) {
 	}
 }
 
-func (p *BodyPanel) addTable(bodyType *model.Body, depth int) {
+func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 	hasSubTable := false
 	if depth == 0 {
 		for _, location := range bodyType.Locations {
@@ -145,7 +145,7 @@ func (p *BodyPanel) addTable(bodyType *model.Body, depth int) {
 	}
 }
 
-func (p *BodyPanel) createHitPenaltyField(location *model.HitLocation) unison.Paneler {
+func (p *BodyPanel) createHitPenaltyField(location *gurps.HitLocation) unison.Paneler {
 	field := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
 		f.Text = fmt.Sprintf("%+d", location.HitPenalty)
 		MarkForLayoutWithinDockable(f)
@@ -154,7 +154,7 @@ func (p *BodyPanel) createHitPenaltyField(location *model.HitLocation) unison.Pa
 	return field
 }
 
-func (p *BodyPanel) createDRField(location *model.HitLocation) unison.Paneler {
+func (p *BodyPanel) createDRField(location *gurps.HitLocation) unison.Paneler {
 	field := NewNonEditablePageFieldCenter(func(f *NonEditablePageField) {
 		var tooltip xio.ByteBuffer
 		f.Text = location.DisplayDR(p.entity, &tooltip)
@@ -182,7 +182,7 @@ func (p *BodyPanel) addSeparator() {
 
 // Sync the panel to the current data.
 func (p *BodyPanel) Sync() {
-	locations := model.SheetSettingsFor(p.entity).BodyType
+	locations := gurps.SheetSettingsFor(p.entity).BodyType
 	if crc := locations.CRC64(); crc != p.crc {
 		p.crc = crc
 		p.titledBorder.Title = locations.Name

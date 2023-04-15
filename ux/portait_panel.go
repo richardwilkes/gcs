@@ -16,7 +16,7 @@ import (
 	"image"
 	"path/filepath"
 
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -29,11 +29,11 @@ import (
 // PortraitPanel holds the contents of the portrait block on the sheet.
 type PortraitPanel struct {
 	unison.Panel
-	entity *model.Entity
+	entity *gurps.Entity
 }
 
 // NewPortraitPanel creates a new portrait panel.
-func NewPortraitPanel(entity *model.Entity) *PortraitPanel {
+func NewPortraitPanel(entity *gurps.Entity) *PortraitPanel {
 	p := &PortraitPanel{entity: entity}
 	p.Self = p
 	p.SetLayoutData(&unison.FlexLayoutData{VSpan: 2})
@@ -41,7 +41,7 @@ func NewPortraitPanel(entity *model.Entity) *PortraitPanel {
 	p.Tooltip = unison.NewTooltipWithText(fmt.Sprintf(i18n.Text(`Double-click to set a character portrait, or drag an image onto this block.
 
 The dimensions of the chosen picture should be in a ratio of 3 pixels wide
-for every 4 pixels tall to fill the block (recommended %dx%d pixels).`), model.PortraitWidth*2, model.PortraitHeight*2))
+for every 4 pixels tall to fill the block (recommended %dx%d pixels).`), gurps.PortraitWidth*2, gurps.PortraitHeight*2))
 	p.DrawCallback = p.drawSelf
 	p.FileDropCallback = p.fileDrop
 	p.MouseDownCallback = p.mouseDown
@@ -75,11 +75,11 @@ func (p *PortraitPanel) mouseDown(_ unison.Point, button, clickCount int, _ unis
 		d.SetAllowedExtensions(unison.KnownImageFormatExtensions...)
 		d.SetCanChooseDirectories(false)
 		d.SetCanChooseFiles(true)
-		global := model.GlobalSettings()
-		d.SetInitialDirectory(global.LastDir(model.ImagesLastDirKey))
+		global := gurps.GlobalSettings()
+		d.SetInitialDirectory(global.LastDir(gurps.ImagesLastDirKey))
 		if d.RunModal() {
 			file := d.Path()
-			global.SetLastDir(model.ImagesLastDirKey, filepath.Dir(file))
+			global.SetLastDir(gurps.ImagesLastDirKey, filepath.Dir(file))
 			p.fileDrop([]string{file})
 		}
 	}
@@ -99,35 +99,35 @@ func (p *PortraitPanel) fileDrop(files []string) {
 			continue
 		}
 		size := img.Size()
-		if size.Width != model.PortraitWidth*2 || size.Height != model.PortraitHeight*2 {
+		if size.Width != gurps.PortraitWidth*2 || size.Height != gurps.PortraitHeight*2 {
 			var src *image.NRGBA
 			if src, err = img.ToNRGBA(); err != nil {
 				jot.Error(errs.NewWithCause("unable to convert: "+f, err))
 				continue
 			}
-			dst := image.NewNRGBA(image.Rect(0, 0, model.PortraitWidth*2, model.PortraitHeight*2))
-			if size.Width > model.PortraitWidth*2 || size.Height > model.PortraitHeight*2 {
-				if size.Width > model.PortraitWidth*2 {
-					factor := model.PortraitWidth * 2 / size.Width
-					size.Width = model.PortraitWidth * 2
+			dst := image.NewNRGBA(image.Rect(0, 0, gurps.PortraitWidth*2, gurps.PortraitHeight*2))
+			if size.Width > gurps.PortraitWidth*2 || size.Height > gurps.PortraitHeight*2 {
+				if size.Width > gurps.PortraitWidth*2 {
+					factor := gurps.PortraitWidth * 2 / size.Width
+					size.Width = gurps.PortraitWidth * 2
 					size.Height = xmath.Max(xmath.Floor(size.Height*factor), 1)
 				}
-				if size.Height > model.PortraitHeight*2 {
-					factor := model.PortraitHeight * 2 / size.Height
-					size.Height = model.PortraitHeight * 2
+				if size.Height > gurps.PortraitHeight*2 {
+					factor := gurps.PortraitHeight * 2 / size.Height
+					size.Height = gurps.PortraitHeight * 2
 					size.Width = xmath.Max(xmath.Floor(size.Width*factor), 1)
 				}
-				x := int((model.PortraitWidth*2 - size.Width) / 2)
-				y := int((model.PortraitHeight*2 - size.Height) / 2)
+				x := int((gurps.PortraitWidth*2 - size.Width) / 2)
+				y := int((gurps.PortraitHeight*2 - size.Height) / 2)
 				draw.CatmullRom.Scale(dst, image.Rect(x, y, x+int(size.Width), y+int(size.Height)), src, src.Rect,
 					draw.Over, nil)
 				src = dst
 			} else {
-				x := int((model.PortraitWidth*2 - size.Width) / 2)
-				y := int((model.PortraitHeight*2 - size.Height) / 2)
+				x := int((gurps.PortraitWidth*2 - size.Width) / 2)
+				y := int((gurps.PortraitHeight*2 - size.Height) / 2)
 				draw.Draw(dst, image.Rect(x, y, x+int(size.Width), y+int(size.Height)), src, image.Pt(0, 0), draw.Over)
 			}
-			if img, err = unison.NewImageFromPixels(model.PortraitWidth*2, model.PortraitHeight*2, dst.Pix, 0.5); err != nil {
+			if img, err = unison.NewImageFromPixels(gurps.PortraitWidth*2, gurps.PortraitHeight*2, dst.Pix, 0.5); err != nil {
 				jot.Error(errs.NewWithCause("unable to create scaled image from: "+f, err))
 				continue
 			}

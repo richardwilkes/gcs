@@ -15,8 +15,8 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -27,18 +27,18 @@ import (
 )
 
 var (
-	lastFeatureTypeUsed = model.AttributeBonusFeatureType
-	lastAttributeIDUsed = model.StrengthID
+	lastFeatureTypeUsed = gurps.AttributeBonusFeatureType
+	lastAttributeIDUsed = gurps.StrengthID
 )
 
 type featuresPanel struct {
 	unison.Panel
-	entity   *model.Entity
+	entity   *gurps.Entity
 	owner    fmt.Stringer
-	features *model.Features
+	features *gurps.Features
 }
 
-func newFeaturesPanel(entity *model.Entity, owner fmt.Stringer, features *model.Features) *featuresPanel {
+func newFeaturesPanel(entity *gurps.Entity, owner fmt.Stringer, features *gurps.Features) *featuresPanel {
 	p := &featuresPanel{
 		entity:   entity,
 		owner:    owner,
@@ -80,30 +80,30 @@ func newFeaturesPanel(entity *model.Entity, owner fmt.Stringer, features *model.
 	return p
 }
 
-func (p *featuresPanel) insertFeaturePanel(index int, f model.Feature) {
+func (p *featuresPanel) insertFeaturePanel(index int, f gurps.Feature) {
 	var panel *unison.Panel
 	switch one := f.(type) {
-	case *model.AttributeBonus:
+	case *gurps.AttributeBonus:
 		panel = p.createAttributeBonusPanel(one)
-	case *model.ConditionalModifierBonus:
+	case *gurps.ConditionalModifierBonus:
 		panel = p.createConditionalModifierPanel(one)
-	case *model.ContainedWeightReduction:
+	case *gurps.ContainedWeightReduction:
 		panel = p.createContainedWeightReductionPanel(one)
-	case *model.CostReduction:
+	case *gurps.CostReduction:
 		panel = p.createCostReductionPanel(one)
-	case *model.DRBonus:
+	case *gurps.DRBonus:
 		panel = p.createDRBonusPanel(one)
-	case *model.ReactionBonus:
+	case *gurps.ReactionBonus:
 		panel = p.createReactionBonusPanel(one)
-	case *model.SkillBonus:
+	case *gurps.SkillBonus:
 		panel = p.createSkillBonusPanel(one)
-	case *model.SkillPointBonus:
+	case *gurps.SkillPointBonus:
 		panel = p.createSkillPointBonusPanel(one)
-	case *model.SpellBonus:
+	case *gurps.SpellBonus:
 		panel = p.createSpellBonusPanel(one)
-	case *model.SpellPointBonus:
+	case *gurps.SpellPointBonus:
 		panel = p.createSpellPointBonusPanel(one)
-	case *model.WeaponBonus:
+	case *gurps.WeaponBonus:
 		panel = p.createWeaponDamageBonusPanel(one)
 	default:
 		jot.Warn(errs.Newf("unknown feature type: %s", reflect.TypeOf(f).String()))
@@ -118,7 +118,7 @@ func (p *featuresPanel) insertFeaturePanel(index int, f model.Feature) {
 	}
 }
 
-func (p *featuresPanel) createBasePanel(f model.Feature) *unison.Panel {
+func (p *featuresPanel) createBasePanel(f gurps.Feature) *unison.Panel {
 	panel := unison.NewPanel()
 	panel.SetLayout(&unison.FlexLayout{
 		Columns:  2,
@@ -128,7 +128,7 @@ func (p *featuresPanel) createBasePanel(f model.Feature) *unison.Panel {
 	})
 	deleteButton := unison.NewSVGButton(svg.Trash)
 	deleteButton.ClickCallback = func() {
-		if i := slices.IndexFunc(*p.features, func(elem model.Feature) bool { return elem == f }); i != -1 {
+		if i := slices.IndexFunc(*p.features, func(elem gurps.Feature) bool { return elem == f }); i != -1 {
 			*p.features = slices.Delete(*p.features, i, i+1)
 		}
 		panel.RemoveFromParent()
@@ -139,24 +139,24 @@ func (p *featuresPanel) createBasePanel(f model.Feature) *unison.Panel {
 	return panel
 }
 
-func (p *featuresPanel) createAttributeBonusPanel(f *model.AttributeBonus) *unison.Panel {
+func (p *featuresPanel) createAttributeBonusPanel(f *gurps.AttributeBonus) *unison.Panel {
 	panel := p.createBasePanel(f)
 	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
 	panel.AddChild(unison.NewPanel())
 	wrapper := unison.NewPanel()
-	var limitationPopup *unison.PopupMenu[model.BonusLimitation]
+	var limitationPopup *unison.PopupMenu[gurps.BonusLimitation]
 	attrChoicePopup := addAttributeChoicePopup(wrapper, p.entity, i18n.Text("to"), &f.Attribute,
-		model.SizeFlag|model.DodgeFlag|model.ParryFlag|model.BlockFlag)
+		gurps.SizeFlag|gurps.DodgeFlag|gurps.ParryFlag|gurps.BlockFlag)
 	callback := attrChoicePopup.SelectionChangedCallback
-	attrChoicePopup.SelectionChangedCallback = func(popup *unison.PopupMenu[*model.AttributeChoice]) {
+	attrChoicePopup.SelectionChangedCallback = func(popup *unison.PopupMenu[*gurps.AttributeChoice]) {
 		if item, ok := popup.Selected(); ok {
 			lastAttributeIDUsed = item.Key
 			callback(popup)
-			adjustPopupBlank(limitationPopup, f.Attribute != model.StrengthID)
+			adjustPopupBlank(limitationPopup, f.Attribute != gurps.StrengthID)
 		}
 	}
-	limitationPopup = addPopup(wrapper, model.AllBonusLimitation, &f.Limitation)
-	adjustPopupBlank(limitationPopup, f.Attribute != model.StrengthID)
+	limitationPopup = addPopup(wrapper, gurps.AllBonusLimitation, &f.Limitation)
+	adjustPopupBlank(limitationPopup, f.Attribute != gurps.StrengthID)
 	wrapper.SetLayout(&unison.FlexLayout{
 		Columns:  len(wrapper.Children()),
 		HSpacing: unison.StdHSpacing,
@@ -170,7 +170,7 @@ func (p *featuresPanel) createAttributeBonusPanel(f *model.AttributeBonus) *unis
 	return panel
 }
 
-func (p *featuresPanel) createConditionalModifierPanel(f *model.ConditionalModifierBonus) *unison.Panel {
+func (p *featuresPanel) createConditionalModifierPanel(f *gurps.ConditionalModifierBonus) *unison.Panel {
 	panel := p.createBasePanel(f)
 	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
 	panel.AddChild(unison.NewPanel())
@@ -191,7 +191,7 @@ func (p *featuresPanel) createConditionalModifierPanel(f *model.ConditionalModif
 	return panel
 }
 
-func (p *featuresPanel) createDRBonusPanel(f *model.DRBonus) *unison.Panel {
+func (p *featuresPanel) createDRBonusPanel(f *gurps.DRBonus) *unison.Panel {
 	panel := p.createBasePanel(f)
 	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
 
@@ -212,7 +212,7 @@ func (p *featuresPanel) createDRBonusPanel(f *model.DRBonus) *unison.Panel {
 			f.Normalize()
 			MarkModified(wrapper)
 		})
-	field.Watermark = model.AllID
+	field.Watermark = gurps.AllID
 	field.SetMinimumTextWidthUsing("Specialization")
 	wrapper.AddChild(field)
 	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("attacks")))
@@ -220,7 +220,7 @@ func (p *featuresPanel) createDRBonusPanel(f *model.DRBonus) *unison.Panel {
 	return panel
 }
 
-func (p *featuresPanel) createReactionBonusPanel(f *model.ReactionBonus) *unison.Panel {
+func (p *featuresPanel) createReactionBonusPanel(f *gurps.ReactionBonus) *unison.Panel {
 	panel := p.createBasePanel(f)
 	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
 	panel.AddChild(unison.NewPanel())
@@ -241,7 +241,7 @@ func (p *featuresPanel) createReactionBonusPanel(f *model.ReactionBonus) *unison
 	return panel
 }
 
-func (p *featuresPanel) createSkillBonusPanel(f *model.SkillBonus) *unison.Panel {
+func (p *featuresPanel) createSkillBonusPanel(f *gurps.SkillBonus) *unison.Panel {
 	panel := p.createBasePanel(f)
 	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
 
@@ -249,16 +249,16 @@ func (p *featuresPanel) createSkillBonusPanel(f *model.SkillBonus) *unison.Panel
 	wrapper := unison.NewPanel()
 	var criteriaPopup *unison.PopupMenu[string]
 	var criteriaField *StringField
-	popup := addPopup(wrapper, model.AllSkillSelectionType, &f.SelectionType)
-	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[model.SkillSelectionType], index int, item model.SkillSelectionType) {
+	popup := addPopup(wrapper, gurps.AllSkillSelectionType, &f.SelectionType)
+	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[gurps.SkillSelectionType], index int, item gurps.SkillSelectionType) {
 		pop.SelectIndex(index)
 		count := 4
-		if f.SelectionType == model.ThisWeaponSkillSelectionType {
+		if f.SelectionType == gurps.ThisWeaponSkillSelectionType {
 			count = 2
 		}
 		f.SelectionType = item
-		adjustPopupBlank(criteriaPopup, f.SelectionType == model.ThisWeaponSkillSelectionType)
-		adjustFieldBlank(criteriaField, f.SelectionType == model.ThisWeaponSkillSelectionType)
+		adjustPopupBlank(criteriaPopup, f.SelectionType == gurps.ThisWeaponSkillSelectionType)
+		adjustFieldBlank(criteriaField, f.SelectionType == gurps.ThisWeaponSkillSelectionType)
 		i := panel.IndexOfChild(wrapper) + 1
 		for j := count - 1; j >= 0; j-- {
 			panel.RemoveChildAtIndex(i + j)
@@ -277,21 +277,21 @@ func (p *featuresPanel) createSkillBonusPanel(f *model.SkillBonus) *unison.Panel
 		HAlign: unison.FillAlignment,
 	})
 	panel.AddChild(wrapper)
-	adjustPopupBlank(criteriaPopup, f.SelectionType == model.ThisWeaponSkillSelectionType)
-	adjustFieldBlank(criteriaField, f.SelectionType == model.ThisWeaponSkillSelectionType)
+	adjustPopupBlank(criteriaPopup, f.SelectionType == gurps.ThisWeaponSkillSelectionType)
+	adjustFieldBlank(criteriaField, f.SelectionType == gurps.ThisWeaponSkillSelectionType)
 
 	p.createSecondarySkillPanels(panel, len(panel.Children()), f)
 	return panel
 }
 
-func (p *featuresPanel) createSecondarySkillPanels(parent *unison.Panel, index int, f *model.SkillBonus) {
+func (p *featuresPanel) createSecondarySkillPanels(parent *unison.Panel, index int, f *gurps.SkillBonus) {
 	parent.AddChildAtIndex(unison.NewPanel(), index)
 	index++
 	wrapper := unison.NewPanel()
 	switch f.SelectionType {
-	case model.NameSkillSelectionType:
+	case gurps.NameSkillSelectionType:
 		addSpecializationCriteriaPanel(wrapper, &f.SpecializationCriteria, 1, false)
-	case model.ThisWeaponSkillSelectionType, model.WeaponsWithNameSkillSelectionType:
+	case gurps.ThisWeaponSkillSelectionType, gurps.WeaponsWithNameSkillSelectionType:
 		prefix := i18n.Text("and whose usage")
 		addStringCriteriaPanel(wrapper, prefix, prefix, i18n.Text("Usage Qualifier"), &f.SpecializationCriteria, 1, false)
 	default:
@@ -308,7 +308,7 @@ func (p *featuresPanel) createSecondarySkillPanels(parent *unison.Panel, index i
 	parent.AddChildAtIndex(wrapper, index)
 	index++
 
-	if f.SelectionType != model.ThisWeaponSkillSelectionType {
+	if f.SelectionType != gurps.ThisWeaponSkillSelectionType {
 		parent.AddChildAtIndex(unison.NewPanel(), index)
 		index++
 		wrapper = unison.NewPanel()
@@ -325,7 +325,7 @@ func (p *featuresPanel) createSecondarySkillPanels(parent *unison.Panel, index i
 	}
 }
 
-func (p *featuresPanel) createSkillPointBonusPanel(f *model.SkillPointBonus) *unison.Panel {
+func (p *featuresPanel) createSkillPointBonusPanel(f *gurps.SkillPointBonus) *unison.Panel {
 	panel := p.createBasePanel(f)
 	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
 	prefix := i18n.Text("to skills whose name")
@@ -335,19 +335,19 @@ func (p *featuresPanel) createSkillPointBonusPanel(f *model.SkillPointBonus) *un
 	return panel
 }
 
-func (p *featuresPanel) createSpellBonusPanel(f *model.SpellBonus) *unison.Panel {
+func (p *featuresPanel) createSpellBonusPanel(f *gurps.SpellBonus) *unison.Panel {
 	panel := p.createBasePanel(f)
 	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
 	panel.AddChild(unison.NewPanel())
 	wrapper := unison.NewPanel()
 	var criteriaPopup *unison.PopupMenu[string]
 	var criteriaField *StringField
-	popup := addPopup(wrapper, model.AllSpellMatchType, &f.SpellMatchType)
-	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[model.SpellMatchType], index int, item model.SpellMatchType) {
+	popup := addPopup(wrapper, gurps.AllSpellMatchType, &f.SpellMatchType)
+	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[gurps.SpellMatchType], index int, item gurps.SpellMatchType) {
 		pop.SelectIndex(index)
 		f.SpellMatchType = item
-		adjustPopupBlank(criteriaPopup, f.SpellMatchType == model.AllCollegesSpellMatchType)
-		adjustFieldBlank(criteriaField, f.SpellMatchType == model.AllCollegesSpellMatchType)
+		adjustPopupBlank(criteriaPopup, f.SpellMatchType == gurps.AllCollegesSpellMatchType)
+		adjustFieldBlank(criteriaField, f.SpellMatchType == gurps.AllCollegesSpellMatchType)
 		MarkModified(p)
 	}
 	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", "", i18n.Text("Name Qualifier"), &f.NameCriteria, 1, false)
@@ -360,26 +360,26 @@ func (p *featuresPanel) createSpellBonusPanel(f *model.SpellBonus) *unison.Panel
 		HAlign: unison.FillAlignment,
 	})
 	panel.AddChild(wrapper)
-	adjustPopupBlank(criteriaPopup, f.SpellMatchType == model.AllCollegesSpellMatchType)
-	adjustFieldBlank(criteriaField, f.SpellMatchType == model.AllCollegesSpellMatchType)
+	adjustPopupBlank(criteriaPopup, f.SpellMatchType == gurps.AllCollegesSpellMatchType)
+	adjustFieldBlank(criteriaField, f.SpellMatchType == gurps.AllCollegesSpellMatchType)
 
 	addTagCriteriaPanel(panel, &f.TagsCriteria, 1, true)
 	return panel
 }
 
-func (p *featuresPanel) createSpellPointBonusPanel(f *model.SpellPointBonus) *unison.Panel {
+func (p *featuresPanel) createSpellPointBonusPanel(f *gurps.SpellPointBonus) *unison.Panel {
 	panel := p.createBasePanel(f)
 	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
 	panel.AddChild(unison.NewPanel())
 	wrapper := unison.NewPanel()
 	var criteriaPopup *unison.PopupMenu[string]
 	var criteriaField *StringField
-	popup := addPopup(wrapper, model.AllSpellMatchType, &f.SpellMatchType)
-	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[model.SpellMatchType], index int, item model.SpellMatchType) {
+	popup := addPopup(wrapper, gurps.AllSpellMatchType, &f.SpellMatchType)
+	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[gurps.SpellMatchType], index int, item gurps.SpellMatchType) {
 		pop.SelectIndex(index)
 		f.SpellMatchType = item
-		adjustPopupBlank(criteriaPopup, f.SpellMatchType == model.AllCollegesSpellMatchType)
-		adjustFieldBlank(criteriaField, f.SpellMatchType == model.AllCollegesSpellMatchType)
+		adjustPopupBlank(criteriaPopup, f.SpellMatchType == gurps.AllCollegesSpellMatchType)
+		adjustFieldBlank(criteriaField, f.SpellMatchType == gurps.AllCollegesSpellMatchType)
 		MarkModified(p)
 	}
 	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", "", i18n.Text("Name Qualifier"), &f.NameCriteria, 1, false)
@@ -392,14 +392,14 @@ func (p *featuresPanel) createSpellPointBonusPanel(f *model.SpellPointBonus) *un
 		HAlign: unison.FillAlignment,
 	})
 	panel.AddChild(wrapper)
-	adjustPopupBlank(criteriaPopup, f.SpellMatchType == model.AllCollegesSpellMatchType)
-	adjustFieldBlank(criteriaField, f.SpellMatchType == model.AllCollegesSpellMatchType)
+	adjustPopupBlank(criteriaPopup, f.SpellMatchType == gurps.AllCollegesSpellMatchType)
+	adjustFieldBlank(criteriaField, f.SpellMatchType == gurps.AllCollegesSpellMatchType)
 
 	addTagCriteriaPanel(panel, &f.TagsCriteria, 1, true)
 	return panel
 }
 
-func (p *featuresPanel) createWeaponDamageBonusPanel(f *model.WeaponBonus) *unison.Panel {
+func (p *featuresPanel) createWeaponDamageBonusPanel(f *gurps.WeaponBonus) *unison.Panel {
 	panel := p.createBasePanel(f)
 	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
 
@@ -407,21 +407,21 @@ func (p *featuresPanel) createWeaponDamageBonusPanel(f *model.WeaponBonus) *unis
 	wrapper := unison.NewPanel()
 	var criteriaPopup *unison.PopupMenu[string]
 	var criteriaField *StringField
-	popup := addPopup(wrapper, model.AllWeaponSelectionType, &f.SelectionType)
-	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[model.WeaponSelectionType], index int, item model.WeaponSelectionType) {
+	popup := addPopup(wrapper, gurps.AllWeaponSelectionType, &f.SelectionType)
+	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[gurps.WeaponSelectionType], index int, item gurps.WeaponSelectionType) {
 		pop.SelectIndex(index)
 		var count int
 		switch f.SelectionType {
-		case model.WithRequiredSkillWeaponSelectionType:
+		case gurps.WithRequiredSkillWeaponSelectionType:
 			count = 6
-		case model.ThisWeaponWeaponSelectionType:
+		case gurps.ThisWeaponWeaponSelectionType:
 			count = 2
-		case model.WithNameWeaponSelectionType:
+		case gurps.WithNameWeaponSelectionType:
 			count = 4
 		}
 		f.SelectionType = item
-		adjustPopupBlank(criteriaPopup, f.SelectionType == model.ThisWeaponWeaponSelectionType)
-		adjustFieldBlank(criteriaField, f.SelectionType == model.ThisWeaponWeaponSelectionType)
+		adjustPopupBlank(criteriaPopup, f.SelectionType == gurps.ThisWeaponWeaponSelectionType)
+		adjustFieldBlank(criteriaField, f.SelectionType == gurps.ThisWeaponWeaponSelectionType)
 		i := panel.IndexOfChild(wrapper) + 1
 		for j := count - 1; j >= 0; j-- {
 			panel.RemoveChildAtIndex(i + j)
@@ -440,21 +440,21 @@ func (p *featuresPanel) createWeaponDamageBonusPanel(f *model.WeaponBonus) *unis
 		HAlign: unison.FillAlignment,
 	})
 	panel.AddChild(wrapper)
-	adjustPopupBlank(criteriaPopup, f.SelectionType == model.ThisWeaponWeaponSelectionType)
-	adjustFieldBlank(criteriaField, f.SelectionType == model.ThisWeaponWeaponSelectionType)
+	adjustPopupBlank(criteriaPopup, f.SelectionType == gurps.ThisWeaponWeaponSelectionType)
+	adjustFieldBlank(criteriaField, f.SelectionType == gurps.ThisWeaponWeaponSelectionType)
 
 	p.createSecondaryWeaponPanels(panel, len(panel.Children()), f)
 	return panel
 }
 
-func (p *featuresPanel) createSecondaryWeaponPanels(parent *unison.Panel, index int, f *model.WeaponBonus) {
+func (p *featuresPanel) createSecondaryWeaponPanels(parent *unison.Panel, index int, f *gurps.WeaponBonus) {
 	parent.AddChildAtIndex(unison.NewPanel(), index)
 	index++
 	wrapper := unison.NewPanel()
 	switch f.SelectionType {
-	case model.WithRequiredSkillWeaponSelectionType:
+	case gurps.WithRequiredSkillWeaponSelectionType:
 		addSpecializationCriteriaPanel(wrapper, &f.SpecializationCriteria, 1, false)
-	case model.ThisWeaponWeaponSelectionType, model.WithNameWeaponSelectionType:
+	case gurps.ThisWeaponWeaponSelectionType, gurps.WithNameWeaponSelectionType:
 		prefix := i18n.Text("and whose usage")
 		addStringCriteriaPanel(wrapper, prefix, prefix, i18n.Text("Usage Qualifier"), &f.SpecializationCriteria, 1, false)
 	default:
@@ -471,7 +471,7 @@ func (p *featuresPanel) createSecondaryWeaponPanels(parent *unison.Panel, index 
 	parent.AddChildAtIndex(wrapper, index)
 	index++
 
-	if f.SelectionType != model.ThisWeaponWeaponSelectionType {
+	if f.SelectionType != gurps.ThisWeaponWeaponSelectionType {
 		parent.AddChildAtIndex(unison.NewPanel(), index)
 		index++
 		wrapper = unison.NewPanel()
@@ -487,7 +487,7 @@ func (p *featuresPanel) createSecondaryWeaponPanels(parent *unison.Panel, index 
 		parent.AddChildAtIndex(wrapper, index)
 		index++
 
-		if f.SelectionType != model.WithNameWeaponSelectionType {
+		if f.SelectionType != gurps.WithNameWeaponSelectionType {
 			parent.AddChildAtIndex(unison.NewPanel(), index)
 			index++
 			wrapper = unison.NewPanel()
@@ -506,7 +506,7 @@ func (p *featuresPanel) createSecondaryWeaponPanels(parent *unison.Panel, index 
 	}
 }
 
-func (p *featuresPanel) createContainedWeightReductionPanel(f *model.ContainedWeightReduction) *unison.Panel {
+func (p *featuresPanel) createContainedWeightReductionPanel(f *gurps.ContainedWeightReduction) *unison.Panel {
 	panel := p.createBasePanel(f)
 	wrapper := unison.NewPanel()
 	p.addTypeSwitcher(wrapper, f)
@@ -514,13 +514,13 @@ func (p *featuresPanel) createContainedWeightReductionPanel(f *model.ContainedWe
 	field := NewStringField(nil, "", i18n.Text("Contained Weight Reduction"),
 		func() string { return f.Reduction },
 		func(value string) {
-			f.Reduction, _ = model.ExtractContainedWeightReduction(value, model.SheetSettingsFor(p.entity).DefaultWeightUnits) //nolint:errcheck // A valid value is always returned
+			f.Reduction, _ = gurps.ExtractContainedWeightReduction(value, gurps.SheetSettingsFor(p.entity).DefaultWeightUnits) //nolint:errcheck // A valid value is always returned
 			MarkModified(wrapper)
 		})
 	field.SetMinimumTextWidthUsing("1,000 lb")
 	field.Tooltip = unison.NewTooltipWithText(i18n.Text(`Enter a weight or percentage, e.g. "2 lb" or "5%"`))
 	field.ValidateCallback = func() bool {
-		_, err := model.ExtractContainedWeightReduction(field.Text(), model.SheetSettingsFor(p.entity).DefaultWeightUnits)
+		_, err := gurps.ExtractContainedWeightReduction(field.Text(), gurps.SheetSettingsFor(p.entity).DefaultWeightUnits)
 		return err == nil
 	}
 	wrapper.AddChild(field)
@@ -537,11 +537,11 @@ func (p *featuresPanel) createContainedWeightReductionPanel(f *model.ContainedWe
 	return panel
 }
 
-func (p *featuresPanel) createCostReductionPanel(f *model.CostReduction) *unison.Panel {
+func (p *featuresPanel) createCostReductionPanel(f *gurps.CostReduction) *unison.Panel {
 	panel := p.createBasePanel(f)
 	wrapper := unison.NewPanel()
 	p.addTypeSwitcher(wrapper, f)
-	addAttributeChoicePopup(wrapper, p.entity, "", &f.Attribute, model.SizeFlag|model.DodgeFlag|model.ParryFlag|model.BlockFlag)
+	addAttributeChoicePopup(wrapper, p.entity, "", &f.Attribute, gurps.SizeFlag|gurps.DodgeFlag|gurps.ParryFlag|gurps.BlockFlag)
 	choices := make([]string, 0, 16)
 	for i := 5; i <= 80; i += 5 {
 		choices = append(choices, fmt.Sprintf(i18n.Text("by %d%%"), i))
@@ -565,13 +565,13 @@ func (p *featuresPanel) createCostReductionPanel(f *model.CostReduction) *unison
 	return panel
 }
 
-func (p *featuresPanel) addLeveledModifierLine(parent *unison.Panel, f model.Feature, amount *model.LeveledAmount) {
+func (p *featuresPanel) addLeveledModifierLine(parent *unison.Panel, f gurps.Feature, amount *gurps.LeveledAmount) {
 	panel := unison.NewPanel()
 	p.addTypeSwitcher(panel, f)
 	switch ft := f.(type) {
-	case *model.WeaponBonus:
+	case *gurps.WeaponBonus:
 		var title string
-		if ft.Type == model.WeaponBonusFeatureType {
+		if ft.Type == gurps.WeaponBonusFeatureType {
 			title = i18n.Text("per die")
 		} else {
 			title = i18n.Text("per level")
@@ -593,23 +593,23 @@ func (p *featuresPanel) addLeveledModifierLine(parent *unison.Panel, f model.Fea
 	parent.AddChild(panel)
 }
 
-func (p *featuresPanel) featureTypesList() []model.FeatureType {
-	if e, ok := p.owner.(*model.Equipment); ok && e.Container() {
-		return model.AllFeatureType
+func (p *featuresPanel) featureTypesList() []gurps.FeatureType {
+	if e, ok := p.owner.(*gurps.Equipment); ok && e.Container() {
+		return gurps.AllFeatureType
 	}
-	return model.AllFeatureTypesWithoutContainedWeightType
+	return gurps.AllFeatureTypesWithoutContainedWeightType
 }
 
-func (p *featuresPanel) addTypeSwitcher(parent *unison.Panel, f model.Feature) {
+func (p *featuresPanel) addTypeSwitcher(parent *unison.Panel, f gurps.Feature) {
 	currentType := f.FeatureType()
 	popup := addPopup(parent, p.featureTypesList(), &currentType)
-	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[model.FeatureType], index int, item model.FeatureType) {
+	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[gurps.FeatureType], index int, item gurps.FeatureType) {
 		pop.SelectIndex(index)
 		if newFeature := p.createFeatureForType(item); newFeature != nil {
 			lastFeatureTypeUsed = item
 			parent.Parent().RemoveFromParent()
 			list := *p.features
-			i := slices.IndexFunc(list, func(one model.Feature) bool { return one == f })
+			i := slices.IndexFunc(list, func(one gurps.Feature) bool { return one == f })
 			list[i] = newFeature
 			p.insertFeaturePanel(i+1, newFeature)
 			unison.Ancestor[*unison.DockContainer](p).MarkForLayoutRecursively()
@@ -618,33 +618,33 @@ func (p *featuresPanel) addTypeSwitcher(parent *unison.Panel, f model.Feature) {
 	}
 }
 
-func (p *featuresPanel) createFeatureForType(featureType model.FeatureType) model.Feature {
-	var bonus model.Bonus
+func (p *featuresPanel) createFeatureForType(featureType gurps.FeatureType) gurps.Feature {
+	var bonus gurps.Bonus
 	switch featureType {
-	case model.AttributeBonusFeatureType:
-		bonus = model.NewAttributeBonus(lastAttributeIDUsed)
-	case model.ConditionalModifierFeatureType:
-		bonus = model.NewConditionalModifierBonus()
-	case model.ContainedWeightReductionFeatureType:
-		return model.NewContainedWeightReduction()
-	case model.CostReductionFeatureType:
-		return model.NewCostReduction(lastAttributeIDUsed)
-	case model.DRBonusFeatureType:
-		bonus = model.NewDRBonus()
-	case model.ReactionBonusFeatureType:
-		bonus = model.NewReactionBonus()
-	case model.SkillBonusFeatureType:
-		bonus = model.NewSkillBonus()
-	case model.SkillPointBonusFeatureType:
-		bonus = model.NewSkillPointBonus()
-	case model.SpellBonusFeatureType:
-		bonus = model.NewSpellBonus()
-	case model.SpellPointBonusFeatureType:
-		bonus = model.NewSpellPointBonus()
-	case model.WeaponBonusFeatureType:
-		bonus = model.NewWeaponDamageBonus()
-	case model.WeaponDRDivisorBonusFeatureType:
-		bonus = model.NewWeaponDRDivisorBonus()
+	case gurps.AttributeBonusFeatureType:
+		bonus = gurps.NewAttributeBonus(lastAttributeIDUsed)
+	case gurps.ConditionalModifierFeatureType:
+		bonus = gurps.NewConditionalModifierBonus()
+	case gurps.ContainedWeightReductionFeatureType:
+		return gurps.NewContainedWeightReduction()
+	case gurps.CostReductionFeatureType:
+		return gurps.NewCostReduction(lastAttributeIDUsed)
+	case gurps.DRBonusFeatureType:
+		bonus = gurps.NewDRBonus()
+	case gurps.ReactionBonusFeatureType:
+		bonus = gurps.NewReactionBonus()
+	case gurps.SkillBonusFeatureType:
+		bonus = gurps.NewSkillBonus()
+	case gurps.SkillPointBonusFeatureType:
+		bonus = gurps.NewSkillPointBonus()
+	case gurps.SpellBonusFeatureType:
+		bonus = gurps.NewSpellBonus()
+	case gurps.SpellPointBonusFeatureType:
+		bonus = gurps.NewSpellPointBonus()
+	case gurps.WeaponBonusFeatureType:
+		bonus = gurps.NewWeaponDamageBonus()
+	case gurps.WeaponDRDivisorBonusFeatureType:
+		bonus = gurps.NewWeaponDRDivisorBonus()
 	default:
 		jot.Warn(errs.Newf("unknown feature type: %s", featureType.Key()))
 		return nil

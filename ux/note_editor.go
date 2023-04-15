@@ -12,21 +12,21 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
 
 // EditNote displays the editor for a note.
-func EditNote(owner Rebuildable, note *model.Note) {
-	displayEditor[*model.Note, *model.NoteEditData](owner, note, svg.GCSNotes, "md:Help/Interface/Note",
+func EditNote(owner Rebuildable, note *gurps.Note) {
+	displayEditor[*gurps.Note, *gurps.NoteEditData](owner, note, svg.GCSNotes, "md:Help/Interface/Note",
 		initNoteToolbar, initNoteEditor)
 }
 
 func adjustMarkdownThemeForPage(markdown *unison.Markdown) {
-	markdown.Font = model.PageFieldPrimaryFont
-	markdown.Foreground = &unison.IndirectInk{Target: model.OnPageColor}
+	markdown.Font = gurps.PageFieldPrimaryFont
+	markdown.Foreground = &unison.IndirectInk{Target: gurps.OnPageColor}
 	markdown.HeadingFont[0] = &unison.DynamicFont{Resolver: func() unison.FontDescriptor { return unison.DeriveMarkdownHeadingFont(markdown.Font, 1) }}
 	markdown.HeadingFont[1] = &unison.DynamicFont{Resolver: func() unison.FontDescriptor { return unison.DeriveMarkdownHeadingFont(markdown.Font, 2) }}
 	markdown.HeadingFont[2] = &unison.DynamicFont{Resolver: func() unison.FontDescriptor { return unison.DeriveMarkdownHeadingFont(markdown.Font, 3) }}
@@ -40,18 +40,18 @@ func adjustMarkdownThemeForPage(markdown *unison.Markdown) {
 			return fd
 		},
 	}
-	markdown.CodeBackground = model.PageStandoutColor
-	markdown.OnCodeBackground = model.OnPageStandoutColor
+	markdown.CodeBackground = gurps.PageStandoutColor
+	markdown.OnCodeBackground = gurps.OnPageStandoutColor
 }
 
-func initNoteToolbar(_ *editor[*model.Note, *model.NoteEditData], toolbar *unison.Panel) {
+func initNoteToolbar(_ *editor[*gurps.Note, *gurps.NoteEditData], toolbar *unison.Panel) {
 	filler := unison.NewPanel()
 	filler.SetLayoutData(&unison.FlexLayoutData{HGrab: true})
 	toolbar.AddChild(filler)
 	toolbar.AddChild(unison.NewLink(i18n.Text("Markdown Guide"), "", "md:Help/Markdown Guide", unison.DefaultLinkTheme, HandleLink))
 }
 
-func initNoteEditor(e *editor[*model.Note, *model.NoteEditData], content *unison.Panel) func() {
+func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison.Panel) func() {
 	markdown := unison.NewMarkdown(true)
 	markdown.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,

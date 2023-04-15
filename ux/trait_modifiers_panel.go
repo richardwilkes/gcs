@@ -13,19 +13,19 @@ package ux
 
 import (
 	"github.com/google/uuid"
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/unison"
 )
 
 type traitModifiersPanel struct {
 	unison.Panel
-	entity    *model.Entity
-	modifiers *[]*model.TraitModifier
-	provider  TableProvider[*model.TraitModifier]
-	table     *unison.Table[*Node[*model.TraitModifier]]
+	entity    *gurps.Entity
+	modifiers *[]*gurps.TraitModifier
+	provider  TableProvider[*gurps.TraitModifier]
+	table     *unison.Table[*Node[*gurps.TraitModifier]]
 }
 
-func newTraitModifiersPanel(entity *model.Entity, modifiers *[]*model.TraitModifier) *traitModifiersPanel {
+func newTraitModifiersPanel(entity *gurps.Entity, modifiers *[]*gurps.TraitModifier) *traitModifiersPanel {
 	p := &traitModifiersPanel{
 		entity:    entity,
 		modifiers: modifiers,
@@ -37,7 +37,7 @@ func newTraitModifiersPanel(entity *model.Entity, modifiers *[]*model.TraitModif
 		HAlign: unison.FillAlignment,
 		HGrab:  true,
 	})
-	p.SetBorder(unison.NewLineBorder(model.HeaderColor, 0, unison.NewUniformInsets(1), false))
+	p.SetBorder(unison.NewLineBorder(gurps.HeaderColor, 0, unison.NewUniformInsets(1), false))
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
 		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, unison.Fill))
 	}
@@ -47,15 +47,15 @@ func newTraitModifiersPanel(entity *model.Entity, modifiers *[]*model.TraitModif
 	return p
 }
 
-func (p *traitModifiersPanel) Entity() *model.Entity {
+func (p *traitModifiersPanel) Entity() *gurps.Entity {
 	return p.entity
 }
 
-func (p *traitModifiersPanel) TraitModifierList() []*model.TraitModifier {
+func (p *traitModifiersPanel) TraitModifierList() []*gurps.TraitModifier {
 	return *p.modifiers
 }
 
-func (p *traitModifiersPanel) SetTraitModifierList(list []*model.TraitModifier) {
+func (p *traitModifiersPanel) SetTraitModifierList(list []*gurps.TraitModifier) {
 	*p.modifiers = list
 	sel := p.table.CopySelectionMap()
 	p.table.SyncToModel()

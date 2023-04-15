@@ -23,7 +23,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/formats/icon"
@@ -73,7 +73,7 @@ MimeType=%s;
 Categories=Game;Utility;RolePlaying;
 Keywords=gurps;character;sheet;rpg;roleplaying;utility;
 Terminal=false
-`, cmdline.AppName, AppDescription(), exePath, cmdline.AppIdentifier, strings.Join(model.RegisteredMimeTypes(), ";"))
+`, cmdline.AppName, AppDescription(), exePath, cmdline.AppIdentifier, strings.Join(gurps.RegisteredMimeTypes(), ";"))
 	if err := os.WriteFile(filepath.Join(dir, cmdline.AppIdentifier+".desktop"), []byte(data), 0o640); err != nil {
 		return errs.Wrap(err)
 	}
@@ -99,10 +99,10 @@ func installDesktopIcons() error {
 	if err != nil {
 		return errs.Wrap(err)
 	}
-	for i := range model.KnownFileTypes {
-		if fi := &model.KnownFileTypes[i]; fi.IsGCSData {
+	for i := range gurps.KnownFileTypes {
+		if fi := &gurps.KnownFileTypes[i]; fi.IsGCSData {
 			var overlay image.Image
-			overlay, err = model.CreateImageFromSVG(fi, 128)
+			overlay, err = gurps.CreateImageFromSVG(fi, 128)
 			if err != nil {
 				return err
 			}
@@ -150,8 +150,8 @@ func installMimeInfo() error {
 	}
 	var buffer bytes.Buffer
 	buffer.WriteString("<?xml version='1.0' encoding='UTF-8'?>\n<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>\n")
-	for i := range model.KnownFileTypes {
-		if fi := &model.KnownFileTypes[i]; fi.IsGCSData {
+	for i := range gurps.KnownFileTypes {
+		if fi := &gurps.KnownFileTypes[i]; fi.IsGCSData {
 			fmt.Fprintf(&buffer, "  <mime-type type=\"%s\">\n", fi.MimeTypes[0])
 			fmt.Fprintf(&buffer, "    <comment>%s</comment>\n", fi.Name)
 			for _, mimeType := range fi.MimeTypes[1:] {

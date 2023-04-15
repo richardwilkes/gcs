@@ -17,7 +17,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -28,50 +28,50 @@ import (
 
 const invertColorsMarker = "invert"
 
-var _ unison.TableRowData[*Node[*model.Trait]] = &Node[*model.Trait]{}
+var _ unison.TableRowData[*Node[*gurps.Trait]] = &Node[*gurps.Trait]{}
 
 // CellCache holds data for a table row's cell to reduce the need to constantly recreate them.
 type CellCache struct {
 	Panel unison.Paneler
-	Data  model.CellData
+	Data  gurps.CellData
 	Width float32
 }
 
 // Matches returns true if the provided width and data match the current contents.
-func (c *CellCache) Matches(width float32, data *model.CellData) bool {
+func (c *CellCache) Matches(width float32, data *gurps.CellData) bool {
 	return c != nil && c.Panel != nil && c.Width == width && c.Data == *data
 }
 
 // Node represents a row in a table.
-type Node[T model.NodeTypes] struct {
+type Node[T gurps.NodeTypes] struct {
 	table      *unison.Table[*Node[T]]
 	parent     *Node[T]
 	data       T
-	dataAsNode model.Node[T]
+	dataAsNode gurps.Node[T]
 	children   []*Node[T]
 	cellCache  []*CellCache
 	forPage    bool
 }
 
 // NewNode creates a new node for a table.
-func NewNode[T model.NodeTypes](table *unison.Table[*Node[T]], parent *Node[T], data T, forPage bool) *Node[T] {
+func NewNode[T gurps.NodeTypes](table *unison.Table[*Node[T]], parent *Node[T], data T, forPage bool) *Node[T] {
 	return &Node[T]{
 		table:      table,
 		parent:     parent,
 		data:       data,
-		dataAsNode: model.AsNode(data),
+		dataAsNode: gurps.AsNode(data),
 		cellCache:  make([]*CellCache, len(table.Columns)),
 		forPage:    forPage,
 	}
 }
 
 // NewNodeLike creates a new node for a table based on the characteristics of an existing node in that table.
-func NewNodeLike[T model.NodeTypes](like *Node[T], data T) *Node[T] {
+func NewNodeLike[T gurps.NodeTypes](like *Node[T], data T) *Node[T] {
 	return &Node[T]{
 		table:      like.table,
 		parent:     like.parent,
 		data:       data,
-		dataAsNode: model.AsNode(data),
+		dataAsNode: gurps.AsNode(data),
 		cellCache:  make([]*CellCache, len(like.table.Columns)),
 		forPage:    like.forPage,
 	}
@@ -83,7 +83,7 @@ func (n *Node[T]) CloneForTarget(target unison.Paneler, newParent *Node[T]) *Nod
 	if !ok {
 		jot.Fatal(1, "unable to convert to table")
 	}
-	if provider := unison.AncestorOrSelf[model.EntityProvider](target); provider != nil {
+	if provider := unison.AncestorOrSelf[gurps.EntityProvider](target); provider != nil {
 		return NewNode[T](table, newParent, n.dataAsNode.Clone(provider.Entity(), newParent.Data(), false), n.forPage)
 	}
 	jot.Fatal(1, "unable to locate entity provider")
@@ -132,10 +132,10 @@ func (n *Node[T]) SetChildren(children []*Node[T]) {
 
 // CellDataForSort implements unison.TableRowData.
 func (n *Node[T]) CellDataForSort(index int) string {
-	var data model.CellData
+	var data gurps.CellData
 	n.dataAsNode.CellData(n.table.Columns[index].ID, &data)
 	s := data.ForSort()
-	if model.GlobalSettings().General.GroupContainersOnSort && n.dataAsNode.Container() {
+	if gurps.GlobalSettings().General.GroupContainersOnSort && n.dataAsNode.Container() {
 		return containerMarker + s
 	}
 	return s
@@ -143,7 +143,7 @@ func (n *Node[T]) CellDataForSort(index int) string {
 
 // ColumnCell implements unison.TableRowData.
 func (n *Node[T]) ColumnCell(row, col int, foreground, _ unison.Ink, _, _, _ bool) unison.Paneler {
-	var cellData model.CellData
+	var cellData gurps.CellData
 	n.dataAsNode.CellData(n.table.Columns[col].ID, &cellData)
 	width := n.table.CellWidth(row, col)
 	if n.cellCache[col].Matches(width, &cellData) {
@@ -222,9 +222,9 @@ func (n *Node[T]) PartialMatchExceptTag(text string) bool {
 	}
 	text = strings.ToLower(text)
 	for i := range n.table.Columns {
-		var data model.CellData
+		var data gurps.CellData
 		n.dataAsNode.CellData(n.table.Columns[i].ID, &data)
-		if data.Type != model.TagsCellType {
+		if data.Type != gurps.TagsCellType {
 			if strings.Contains(strings.ToLower(data.ForSort()), text) {
 				return true
 			}
@@ -247,22 +247,22 @@ func (n *Node[T]) Match(text string) bool {
 }
 
 // CellFromCellData creates a new panel for the given cell data.
-func (n *Node[T]) CellFromCellData(c *model.CellData, width float32, foreground unison.Ink) unison.Paneler {
+func (n *Node[T]) CellFromCellData(c *gurps.CellData, width float32, foreground unison.Ink) unison.Paneler {
 	switch c.Type {
-	case model.TextCellType, model.TagsCellType:
+	case gurps.TextCellType, gurps.TagsCellType:
 		return n.createLabelCell(c, width, foreground)
-	case model.ToggleCellType:
+	case gurps.ToggleCellType:
 		return n.createToggleCell(c, foreground)
-	case model.PageRefCellType:
+	case gurps.PageRefCellType:
 		return n.createPageRefCell(c, foreground)
-	case model.MarkdownCellType:
+	case gurps.MarkdownCellType:
 		return n.createMarkdownCell(c, width, foreground)
 	default:
 		return unison.NewPanel()
 	}
 }
 
-func (n *Node[T]) createMarkdownCell(c *model.CellData, width float32, foreground unison.Ink) unison.Paneler {
+func (n *Node[T]) createMarkdownCell(c *gurps.CellData, width float32, foreground unison.Ink) unison.Paneler {
 	m := unison.NewMarkdown(false)
 	if n.forPage {
 		adjustMarkdownThemeForPage(m)
@@ -274,7 +274,7 @@ func (n *Node[T]) createMarkdownCell(c *model.CellData, width float32, foregroun
 	return m
 }
 
-func (n *Node[T]) createLabelCell(c *model.CellData, width float32, foreground unison.Ink) unison.Paneler {
+func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground unison.Ink) unison.Paneler {
 	p := unison.NewPanel()
 	p.SetLayout(&unison.FlexLayout{
 		Columns: 1,
@@ -321,13 +321,13 @@ func (n *Node[T]) createLabelCell(c *model.CellData, width float32, foreground u
 		label.HAlign = c.Alignment
 		label.VAlign = unison.MiddleAlignment
 		label.ClientData()[invertColorsMarker] = true
-		label.OnBackgroundInk = model.OnMarkerColor
+		label.OnBackgroundInk = gurps.OnMarkerColor
 		label.SetBorder(unison.NewEmptyBorder(unison.Insets{
 			Left:  4,
 			Right: 4,
 		}))
 		label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-			gc.DrawRect(rect, model.MarkerColor.Paint(gc, rect, unison.Fill))
+			gc.DrawRect(rect, gurps.MarkerColor.Paint(gc, rect, unison.Fill))
 			label.DefaultDraw(gc, rect)
 		}
 		p.AddChild(label)
@@ -338,7 +338,7 @@ func (n *Node[T]) createLabelCell(c *model.CellData, width float32, foreground u
 	return p
 }
 
-func (n *Node[T]) addLabelCell(c *model.CellData, parent *unison.Panel, width float32, text string, f unison.Font, foreground unison.Ink, primary bool) {
+func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width float32, text string, f unison.Font, foreground unison.Ink, primary bool) {
 	decoration := &unison.TextDecoration{
 		Font:          f,
 		StrikeThrough: primary && c.Disabled,
@@ -361,7 +361,7 @@ func (n *Node[T]) addLabelCell(c *model.CellData, parent *unison.Panel, width fl
 	}
 }
 
-func (n *Node[T]) createToggleCell(c *model.CellData, foreground unison.Ink) unison.Paneler {
+func (n *Node[T]) createToggleCell(c *gurps.CellData, foreground unison.Ink) unison.Paneler {
 	check := unison.NewLabel()
 	check.VAlign = unison.StartAlignment
 	font := n.primaryFieldFont()
@@ -401,7 +401,7 @@ func (n *Node[T]) createToggleCell(c *model.CellData, foreground unison.Ink) uni
 
 func handleCheck(data any, check unison.Paneler, checked bool) {
 	switch item := data.(type) {
-	case *model.Equipment:
+	case *gurps.Equipment:
 		item.Equipped = checked
 		if mgr := unison.UndoManagerFor(check); mgr != nil {
 			owner := unison.AncestorOrSelf[Rebuildable](check)
@@ -425,7 +425,7 @@ func handleCheck(data any, check unison.Paneler, checked bool) {
 		if item.Entity != nil {
 			item.Entity.Recalculate()
 		}
-	case *model.TraitModifier:
+	case *gurps.TraitModifier:
 		item.Disabled = !checked
 		if mgr := unison.UndoManagerFor(check); mgr != nil {
 			owner := unison.AncestorOrSelf[Rebuildable](check)
@@ -449,7 +449,7 @@ func handleCheck(data any, check unison.Paneler, checked bool) {
 		if item.Entity != nil {
 			item.Entity.Recalculate()
 		}
-	case *model.EquipmentModifier:
+	case *gurps.EquipmentModifier:
 		item.Disabled = !checked
 		if mgr := unison.UndoManagerFor(check); mgr != nil {
 			owner := unison.AncestorOrSelf[Rebuildable](check)
@@ -478,7 +478,7 @@ func handleCheck(data any, check unison.Paneler, checked bool) {
 
 type equipmentAdjuster struct {
 	Owner    Rebuildable
-	Target   *model.Equipment
+	Target   *gurps.Equipment
 	Equipped bool
 }
 
@@ -492,7 +492,7 @@ func (a *equipmentAdjuster) Apply() {
 
 type equipmentModifierAdjuster struct {
 	Owner    Rebuildable
-	Target   *model.EquipmentModifier
+	Target   *gurps.EquipmentModifier
 	Disabled bool
 }
 
@@ -506,7 +506,7 @@ func (a *equipmentModifierAdjuster) Apply() {
 
 type traitModifierAdjuster struct {
 	Owner    Rebuildable
-	Target   *model.TraitModifier
+	Target   *gurps.TraitModifier
 	Disabled bool
 }
 
@@ -530,7 +530,7 @@ func convertLinksForPageRef(in string) (string, *unison.SVG) {
 	}
 }
 
-func (n *Node[T]) createPageRefCell(c *model.CellData, foreground unison.Ink) unison.Paneler {
+func (n *Node[T]) createPageRefCell(c *gurps.CellData, foreground unison.Ink) unison.Paneler {
 	label := unison.NewLabel()
 	label.VAlign = unison.StartAlignment
 	label.Font = n.primaryFieldFont()
@@ -622,25 +622,25 @@ func (n *Node[T]) createPageRefCell(c *model.CellData, foreground unison.Ink) un
 
 func (n *Node[T]) primaryFieldFont() unison.Font {
 	if n.forPage {
-		return model.PageFieldPrimaryFont
+		return gurps.PageFieldPrimaryFont
 	}
 	return unison.FieldFont
 }
 
 func (n *Node[T]) secondaryFieldFont() unison.Font {
 	if n.forPage {
-		return model.PageFieldSecondaryFont
+		return gurps.PageFieldSecondaryFont
 	}
-	return model.FieldSecondaryFont
+	return gurps.FieldSecondaryFont
 }
 
 // FindRowIndexByID returns the row index of the row with the given ID in the given table.
-func FindRowIndexByID[T model.NodeTypes](table *unison.Table[*Node[T]], id uuid.UUID) int {
+func FindRowIndexByID[T gurps.NodeTypes](table *unison.Table[*Node[T]], id uuid.UUID) int {
 	_, i := rowIndex(id, 0, table.RootRows())
 	return i
 }
 
-func rowIndex[T model.NodeTypes](id uuid.UUID, startIndex int, rows []*Node[T]) (updatedStartIndex, result int) {
+func rowIndex[T gurps.NodeTypes](id uuid.UUID, startIndex int, rows []*Node[T]) (updatedStartIndex, result int) {
 	for _, row := range rows {
 		if id == row.dataAsNode.UUID() {
 			return 0, startIndex
@@ -656,7 +656,7 @@ func rowIndex[T model.NodeTypes](id uuid.UUID, startIndex int, rows []*Node[T]) 
 }
 
 // InsertItems into a table.
-func InsertItems[T model.NodeTypes](owner Rebuildable, table *unison.Table[*Node[T]], topList func() []T, setTopList func([]T), rowData func(table *unison.Table[*Node[T]]) []*Node[T], items ...T) {
+func InsertItems[T gurps.NodeTypes](owner Rebuildable, table *unison.Table[*Node[T]], topList func() []T, setTopList func([]T), rowData func(table *unison.Table[*Node[T]]) []*Node[T], items ...T) {
 	if len(items) == 0 {
 		return
 	}
@@ -665,7 +665,7 @@ func InsertItems[T model.NodeTypes](owner Rebuildable, table *unison.Table[*Node
 	if mgr != nil {
 		undo = &unison.UndoEdit[*TableUndoEditData[T]]{
 			ID:         unison.NextUndoID(),
-			EditName:   fmt.Sprintf(i18n.Text("Insert %s"), model.AsNode(items[0]).Kind()),
+			EditName:   fmt.Sprintf(i18n.Text("Insert %s"), gurps.AsNode(items[0]).Kind()),
 			UndoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.BeforeData.Apply() },
 			RedoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.AfterData.Apply() },
 			AbsorbFunc: func(e *unison.UndoEdit[*TableUndoEditData[T]], other unison.Undoable) bool { return false },
@@ -708,7 +708,7 @@ func InsertItems[T model.NodeTypes](owner Rebuildable, table *unison.Table[*Node
 	table.RequestFocus()
 	selMap := make(map[uuid.UUID]bool)
 	for _, item := range items {
-		selMap[model.AsNode(item).UUID()] = true
+		selMap[gurps.AsNode(item).UUID()] = true
 	}
 	table.SetSelectionMap(selMap)
 	table.ScrollRowCellIntoView(table.LastSelectedRowIndex(), 0)
@@ -721,14 +721,14 @@ func InsertItems[T model.NodeTypes](owner Rebuildable, table *unison.Table[*Node
 }
 
 // SetParents of each item.
-func SetParents[T model.NodeTypes](items []T, parent T) {
+func SetParents[T gurps.NodeTypes](items []T, parent T) {
 	for _, item := range items {
-		model.AsNode(item).SetParent(parent)
+		gurps.AsNode(item).SetParent(parent)
 	}
 }
 
 // ExtractNodeDataFromList returns the underlying node data.
-func ExtractNodeDataFromList[T model.NodeTypes](list []*Node[T]) []T {
+func ExtractNodeDataFromList[T gurps.NodeTypes](list []*Node[T]) []T {
 	dataList := make([]T, 0, len(list))
 	for _, child := range list {
 		dataList = append(dataList, child.data)

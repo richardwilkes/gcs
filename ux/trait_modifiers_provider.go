@@ -12,7 +12,7 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -23,16 +23,16 @@ import (
 
 const traitModifierDragKey = "trait_modifier"
 
-var _ TableProvider[*model.TraitModifier] = &traitModifiersProvider{}
+var _ TableProvider[*gurps.TraitModifier] = &traitModifiersProvider{}
 
 type traitModifiersProvider struct {
-	table     *unison.Table[*Node[*model.TraitModifier]]
-	provider  model.TraitModifierListProvider
+	table     *unison.Table[*Node[*gurps.TraitModifier]]
+	provider  gurps.TraitModifierListProvider
 	forEditor bool
 }
 
 // NewTraitModifiersProvider creates a new table provider for trait modifiers.
-func NewTraitModifiersProvider(provider model.TraitModifierListProvider, forEditor bool) TableProvider[*model.TraitModifier] {
+func NewTraitModifiersProvider(provider gurps.TraitModifierListProvider, forEditor bool) TableProvider[*gurps.TraitModifier] {
 	return &traitModifiersProvider{
 		provider:  provider,
 		forEditor: forEditor,
@@ -45,7 +45,7 @@ func (p *traitModifiersProvider) RefKey() string {
 
 func (p *traitModifiersProvider) AllTags() []string {
 	set := make(map[string]struct{})
-	model.Traverse(func(modifier *model.TraitModifier) bool {
+	gurps.Traverse(func(modifier *gurps.TraitModifier) bool {
 		for _, tag := range modifier.Tags {
 			set[tag] = struct{}{}
 		}
@@ -56,7 +56,7 @@ func (p *traitModifiersProvider) AllTags() []string {
 	return tags
 }
 
-func (p *traitModifiersProvider) SetTable(table *unison.Table[*Node[*model.TraitModifier]]) {
+func (p *traitModifiersProvider) SetTable(table *unison.Table[*Node[*gurps.TraitModifier]]) {
 	p.table = table
 }
 
@@ -64,28 +64,28 @@ func (p *traitModifiersProvider) RootRowCount() int {
 	return len(p.provider.TraitModifierList())
 }
 
-func (p *traitModifiersProvider) RootRows() []*Node[*model.TraitModifier] {
+func (p *traitModifiersProvider) RootRows() []*Node[*gurps.TraitModifier] {
 	data := p.provider.TraitModifierList()
-	rows := make([]*Node[*model.TraitModifier], 0, len(data))
+	rows := make([]*Node[*gurps.TraitModifier], 0, len(data))
 	for _, one := range data {
-		rows = append(rows, NewNode[*model.TraitModifier](p.table, nil, one, false))
+		rows = append(rows, NewNode[*gurps.TraitModifier](p.table, nil, one, false))
 	}
 	return rows
 }
 
-func (p *traitModifiersProvider) SetRootRows(rows []*Node[*model.TraitModifier]) {
+func (p *traitModifiersProvider) SetRootRows(rows []*Node[*gurps.TraitModifier]) {
 	p.provider.SetTraitModifierList(ExtractNodeDataFromList(rows))
 }
 
-func (p *traitModifiersProvider) RootData() []*model.TraitModifier {
+func (p *traitModifiersProvider) RootData() []*gurps.TraitModifier {
 	return p.provider.TraitModifierList()
 }
 
-func (p *traitModifiersProvider) SetRootData(data []*model.TraitModifier) {
+func (p *traitModifiersProvider) SetRootData(data []*gurps.TraitModifier) {
 	p.provider.SetTraitModifierList(data)
 }
 
-func (p *traitModifiersProvider) Entity() *model.Entity {
+func (p *traitModifiersProvider) Entity() *gurps.Entity {
 	return p.provider.Entity()
 }
 
@@ -97,11 +97,11 @@ func (p *traitModifiersProvider) DragSVG() *unison.SVG {
 	return svg.GCSTraitModifiers
 }
 
-func (p *traitModifiersProvider) DropShouldMoveData(from, to *unison.Table[*Node[*model.TraitModifier]]) bool {
+func (p *traitModifiersProvider) DropShouldMoveData(from, to *unison.Table[*Node[*gurps.TraitModifier]]) bool {
 	return from == to
 }
 
-func (p *traitModifiersProvider) ProcessDropData(_, _ *unison.Table[*Node[*model.TraitModifier]]) {
+func (p *traitModifiersProvider) ProcessDropData(_, _ *unison.Table[*Node[*gurps.TraitModifier]]) {
 }
 
 func (p *traitModifiersProvider) AltDropSupport() *AltDropSupport {
@@ -112,60 +112,60 @@ func (p *traitModifiersProvider) ItemNames() (singular, plural string) {
 	return i18n.Text("Trait Modifier"), i18n.Text("Trait Modifiers")
 }
 
-func (p *traitModifiersProvider) Headers() []unison.TableColumnHeader[*Node[*model.TraitModifier]] {
+func (p *traitModifiersProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.TraitModifier]] {
 	ids := p.ColumnIDs()
-	headers := make([]unison.TableColumnHeader[*Node[*model.TraitModifier]], 0, len(ids))
+	headers := make([]unison.TableColumnHeader[*Node[*gurps.TraitModifier]], 0, len(ids))
 	for _, id := range ids {
 		switch id {
-		case model.TraitModifierEnabledColumn:
-			headers = append(headers, NewEnabledHeader[*model.TraitModifier](false))
-		case model.TraitModifierDescriptionColumn:
-			headers = append(headers, NewEditorListHeader[*model.TraitModifier](i18n.Text("Trait Modifier"), "", false))
-		case model.TraitModifierCostColumn:
-			headers = append(headers, NewEditorListHeader[*model.TraitModifier](i18n.Text("Cost Modifier"), "", false))
-		case model.TraitModifierTagsColumn:
-			headers = append(headers, NewEditorListHeader[*model.TraitModifier](i18n.Text("Tags"), "", false))
-		case model.TraitModifierReferenceColumn:
-			headers = append(headers, NewEditorPageRefHeader[*model.TraitModifier](false))
+		case gurps.TraitModifierEnabledColumn:
+			headers = append(headers, NewEnabledHeader[*gurps.TraitModifier](false))
+		case gurps.TraitModifierDescriptionColumn:
+			headers = append(headers, NewEditorListHeader[*gurps.TraitModifier](i18n.Text("Trait Modifier"), "", false))
+		case gurps.TraitModifierCostColumn:
+			headers = append(headers, NewEditorListHeader[*gurps.TraitModifier](i18n.Text("Cost Modifier"), "", false))
+		case gurps.TraitModifierTagsColumn:
+			headers = append(headers, NewEditorListHeader[*gurps.TraitModifier](i18n.Text("Tags"), "", false))
+		case gurps.TraitModifierReferenceColumn:
+			headers = append(headers, NewEditorPageRefHeader[*gurps.TraitModifier](false))
 		}
 	}
 	return headers
 }
 
-func (p *traitModifiersProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*model.TraitModifier]]) {
+func (p *traitModifiersProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*gurps.TraitModifier]]) {
 }
 
 func (p *traitModifiersProvider) ColumnIDs() []int {
 	columnIDs := make([]int, 0, 5)
 	if p.forEditor {
-		columnIDs = append(columnIDs, model.TraitModifierEnabledColumn)
+		columnIDs = append(columnIDs, gurps.TraitModifierEnabledColumn)
 	}
 	return append(columnIDs,
-		model.TraitModifierDescriptionColumn,
-		model.TraitModifierCostColumn,
-		model.TraitModifierTagsColumn,
-		model.TraitModifierReferenceColumn,
+		gurps.TraitModifierDescriptionColumn,
+		gurps.TraitModifierCostColumn,
+		gurps.TraitModifierTagsColumn,
+		gurps.TraitModifierReferenceColumn,
 	)
 }
 
 func (p *traitModifiersProvider) HierarchyColumnID() int {
-	return model.TraitModifierDescriptionColumn
+	return gurps.TraitModifierDescriptionColumn
 }
 
 func (p *traitModifiersProvider) ExcessWidthColumnID() int {
-	return model.TraitModifierDescriptionColumn
+	return gurps.TraitModifierDescriptionColumn
 }
 
-func (p *traitModifiersProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*model.TraitModifier]]) {
-	OpenEditor[*model.TraitModifier](table, func(item *model.TraitModifier) {
+func (p *traitModifiersProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*gurps.TraitModifier]]) {
+	OpenEditor[*gurps.TraitModifier](table, func(item *gurps.TraitModifier) {
 		EditTraitModifier(owner, item)
 	})
 }
 
-func (p *traitModifiersProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*model.TraitModifier]], variant ItemVariant) {
-	item := model.NewTraitModifier(p.Entity(), nil, variant == ContainerItemVariant)
-	InsertItems[*model.TraitModifier](owner, table, p.provider.TraitModifierList, p.provider.SetTraitModifierList,
-		func(_ *unison.Table[*Node[*model.TraitModifier]]) []*Node[*model.TraitModifier] {
+func (p *traitModifiersProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.TraitModifier]], variant ItemVariant) {
+	item := gurps.NewTraitModifier(p.Entity(), nil, variant == ContainerItemVariant)
+	InsertItems[*gurps.TraitModifier](owner, table, p.provider.TraitModifierList, p.provider.SetTraitModifierList,
+		func(_ *unison.Table[*Node[*gurps.TraitModifier]]) []*Node[*gurps.TraitModifier] {
 			return p.RootRows()
 		}, item)
 	EditTraitModifier(owner, item)
@@ -176,7 +176,7 @@ func (p *traitModifiersProvider) Serialize() ([]byte, error) {
 }
 
 func (p *traitModifiersProvider) Deserialize(data []byte) error {
-	var rows []*model.TraitModifier
+	var rows []*gurps.TraitModifier
 	if err := jio.DecompressAndDeserialize(data, &rows); err != nil {
 		return err
 	}

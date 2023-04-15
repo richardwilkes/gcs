@@ -14,7 +14,7 @@ package ux
 import (
 	"io/fs"
 
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -25,13 +25,13 @@ var _ GroupedCloser = &sheetSettingsDockable{}
 // EntityPanel defines methods for a panel that can hold an entity.
 type EntityPanel interface {
 	unison.Paneler
-	Entity() *model.Entity
+	Entity() *gurps.Entity
 }
 
 type sheetSettingsDockable struct {
 	SettingsDockable
 	owner                              EntityPanel
-	damageProgressionPopup             *unison.PopupMenu[model.DamageProgression]
+	damageProgressionPopup             *unison.PopupMenu[gurps.DamageProgression]
 	showTraitModifier                  *unison.CheckBox
 	showEquipmentModifier              *unison.CheckBox
 	showSpellAdjustments               *unison.CheckBox
@@ -40,14 +40,14 @@ type sheetSettingsDockable struct {
 	useModifyDicePlusAdds              *unison.CheckBox
 	excludeUnspentPointsFromTotal      *unison.CheckBox
 	useHalfStatDefaults                *unison.CheckBox
-	lengthUnitsPopup                   *unison.PopupMenu[model.LengthUnits]
-	weightUnitsPopup                   *unison.PopupMenu[model.WeightUnits]
-	userDescDisplayPopup               *unison.PopupMenu[model.DisplayOption]
-	modifiersDisplayPopup              *unison.PopupMenu[model.DisplayOption]
-	notesDisplayPopup                  *unison.PopupMenu[model.DisplayOption]
-	skillLevelAdjDisplayPopup          *unison.PopupMenu[model.DisplayOption]
-	paperSizePopup                     *unison.PopupMenu[model.PaperSize]
-	orientationPopup                   *unison.PopupMenu[model.PaperOrientation]
+	lengthUnitsPopup                   *unison.PopupMenu[gurps.LengthUnits]
+	weightUnitsPopup                   *unison.PopupMenu[gurps.WeightUnits]
+	userDescDisplayPopup               *unison.PopupMenu[gurps.DisplayOption]
+	modifiersDisplayPopup              *unison.PopupMenu[gurps.DisplayOption]
+	notesDisplayPopup                  *unison.PopupMenu[gurps.DisplayOption]
+	skillLevelAdjDisplayPopup          *unison.PopupMenu[gurps.DisplayOption]
+	paperSizePopup                     *unison.PopupMenu[gurps.PaperSize]
+	orientationPopup                   *unison.PopupMenu[gurps.PaperOrientation]
 	topMarginField                     *unison.Field
 	leftMarginField                    *unison.Field
 	bottomMarginField                  *unison.Field
@@ -72,7 +72,7 @@ func ShowSheetSettings(owner EntityPanel) {
 			d.TabTitle = i18n.Text("Default Sheet Settings")
 		}
 		d.TabIcon = svg.Settings
-		d.Extensions = []string{model.SheetSettingsExt}
+		d.Extensions = []string{gurps.SheetSettingsExt}
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset
@@ -91,11 +91,11 @@ func (d *sheetSettingsDockable) CloseWithGroup(other unison.Paneler) bool {
 	return d.owner != nil && d.owner == other
 }
 
-func (d *sheetSettingsDockable) settings() *model.SheetSettings {
+func (d *sheetSettingsDockable) settings() *gurps.SheetSettings {
 	if d.owner != nil {
 		return d.owner.Entity().SheetSettings
 	}
-	return model.GlobalSettings().Sheet
+	return gurps.GlobalSettings().Sheet
 }
 
 func (d *sheetSettingsDockable) initContent(content *unison.Panel) {
@@ -121,8 +121,8 @@ func (d *sheetSettingsDockable) createDamageProgression(content *unison.Panel) {
 		VSpacing: unison.StdVSpacing,
 	})
 	d.damageProgressionPopup = createSettingPopup(d, panel, i18n.Text("Damage Progression"),
-		model.AllDamageProgression, s.DamageProgression,
-		func(item model.DamageProgression) {
+		gurps.AllDamageProgression, s.DamageProgression,
+		func(item gurps.DamageProgression) {
 			d.damageProgressionPopup.Tooltip = unison.NewTooltipWithText(item.Tooltip())
 			d.settings().DamageProgression = item
 		})
@@ -222,10 +222,10 @@ func (d *sheetSettingsDockable) createUnitsOfMeasurement(content *unison.Panel) 
 	})
 	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
 	d.createHeader(panel, i18n.Text("Units of Measurement"), 2)
-	d.lengthUnitsPopup = createSettingPopup(d, panel, i18n.Text("Length Units"), model.AllLengthUnits,
-		s.DefaultLengthUnits, func(item model.LengthUnits) { d.settings().DefaultLengthUnits = item })
-	d.weightUnitsPopup = createSettingPopup(d, panel, i18n.Text("Weight Units"), model.AllWeightUnits,
-		s.DefaultWeightUnits, func(item model.WeightUnits) { d.settings().DefaultWeightUnits = item })
+	d.lengthUnitsPopup = createSettingPopup(d, panel, i18n.Text("Length Units"), gurps.AllLengthUnits,
+		s.DefaultLengthUnits, func(item gurps.LengthUnits) { d.settings().DefaultLengthUnits = item })
+	d.weightUnitsPopup = createSettingPopup(d, panel, i18n.Text("Weight Units"), gurps.AllWeightUnits,
+		s.DefaultWeightUnits, func(item gurps.WeightUnits) { d.settings().DefaultWeightUnits = item })
 	content.AddChild(panel)
 }
 
@@ -239,14 +239,14 @@ func (d *sheetSettingsDockable) createWhereToDisplay(content *unison.Panel) {
 	})
 	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
 	d.createHeader(panel, i18n.Text("Where to display…"), 2)
-	d.userDescDisplayPopup = createSettingPopup(d, panel, i18n.Text("User Description"), model.AllDisplayOption,
-		s.UserDescriptionDisplay, func(option model.DisplayOption) { d.settings().UserDescriptionDisplay = option })
-	d.modifiersDisplayPopup = createSettingPopup(d, panel, i18n.Text("Modifiers"), model.AllDisplayOption,
-		s.ModifiersDisplay, func(option model.DisplayOption) { d.settings().ModifiersDisplay = option })
-	d.notesDisplayPopup = createSettingPopup(d, panel, i18n.Text("Notes"), model.AllDisplayOption, s.NotesDisplay,
-		func(option model.DisplayOption) { d.settings().NotesDisplay = option })
-	d.skillLevelAdjDisplayPopup = createSettingPopup(d, panel, i18n.Text("Skill Level Adjustments"), model.AllDisplayOption,
-		s.SkillLevelAdjDisplay, func(option model.DisplayOption) { d.settings().SkillLevelAdjDisplay = option })
+	d.userDescDisplayPopup = createSettingPopup(d, panel, i18n.Text("User Description"), gurps.AllDisplayOption,
+		s.UserDescriptionDisplay, func(option gurps.DisplayOption) { d.settings().UserDescriptionDisplay = option })
+	d.modifiersDisplayPopup = createSettingPopup(d, panel, i18n.Text("Modifiers"), gurps.AllDisplayOption,
+		s.ModifiersDisplay, func(option gurps.DisplayOption) { d.settings().ModifiersDisplay = option })
+	d.notesDisplayPopup = createSettingPopup(d, panel, i18n.Text("Notes"), gurps.AllDisplayOption, s.NotesDisplay,
+		func(option gurps.DisplayOption) { d.settings().NotesDisplay = option })
+	d.skillLevelAdjDisplayPopup = createSettingPopup(d, panel, i18n.Text("Skill Level Adjustments"), gurps.AllDisplayOption,
+		s.SkillLevelAdjDisplay, func(option gurps.DisplayOption) { d.settings().SkillLevelAdjDisplay = option })
 	content.AddChild(panel)
 }
 
@@ -260,18 +260,18 @@ func (d *sheetSettingsDockable) createPageSettings(content *unison.Panel) {
 	})
 	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
 	d.createHeader(panel, i18n.Text("Page Settings"), 4)
-	d.paperSizePopup = createSettingPopup(d, panel, i18n.Text("Paper Size"), model.AllPaperSize,
-		s.Page.Size, func(option model.PaperSize) { d.settings().Page.Size = option })
-	d.orientationPopup = createSettingPopup(d, panel, i18n.Text("Orientation"), model.AllPaperOrientation,
-		s.Page.Orientation, func(option model.PaperOrientation) { d.settings().Page.Orientation = option })
+	d.paperSizePopup = createSettingPopup(d, panel, i18n.Text("Paper Size"), gurps.AllPaperSize,
+		s.Page.Size, func(option gurps.PaperSize) { d.settings().Page.Size = option })
+	d.orientationPopup = createSettingPopup(d, panel, i18n.Text("Orientation"), gurps.AllPaperOrientation,
+		s.Page.Orientation, func(option gurps.PaperOrientation) { d.settings().Page.Orientation = option })
 	d.topMarginField = d.createPaperMarginField(panel, i18n.Text("Top Margin"), s.Page.TopMargin,
-		func(value model.PaperLength) { d.settings().Page.TopMargin = value })
+		func(value gurps.PaperLength) { d.settings().Page.TopMargin = value })
 	d.bottomMarginField = d.createPaperMarginField(panel, i18n.Text("Bottom Margin"), s.Page.BottomMargin,
-		func(value model.PaperLength) { d.settings().Page.BottomMargin = value })
+		func(value gurps.PaperLength) { d.settings().Page.BottomMargin = value })
 	d.leftMarginField = d.createPaperMarginField(panel, i18n.Text("Left Margin"), s.Page.LeftMargin,
-		func(value model.PaperLength) { d.settings().Page.LeftMargin = value })
+		func(value gurps.PaperLength) { d.settings().Page.LeftMargin = value })
 	d.rightMarginField = d.createPaperMarginField(panel, i18n.Text("Right Margin"), s.Page.RightMargin,
-		func(value model.PaperLength) { d.settings().Page.RightMargin = value })
+		func(value gurps.PaperLength) { d.settings().Page.RightMargin = value })
 	content.AddChild(panel)
 }
 
@@ -294,11 +294,11 @@ func (d *sheetSettingsDockable) createBlockLayout(content *unison.Panel) {
 	lastBlockLayout := s.BlockLayout.String()
 	d.blockLayoutField.SetText(lastBlockLayout)
 	d.blockLayoutField.ValidateCallback = func() bool {
-		_, valid := model.NewBlockLayoutFromString(d.blockLayoutField.Text())
+		_, valid := gurps.NewBlockLayoutFromString(d.blockLayoutField.Text())
 		return valid
 	}
 	d.blockLayoutField.ModifiedCallback = func(_, after *unison.FieldState) {
-		if blockLayout, valid := model.NewBlockLayoutFromString(after.Text); valid {
+		if blockLayout, valid := gurps.NewBlockLayoutFromString(after.Text); valid {
 			localSettings := d.settings()
 			currentBlockLayout := blockLayout.String()
 			if lastBlockLayout != currentBlockLayout {
@@ -316,16 +316,16 @@ func (d *sheetSettingsDockable) createBlockLayout(content *unison.Panel) {
 	content.AddChild(panel)
 }
 
-func (d *sheetSettingsDockable) createPaperMarginField(panel *unison.Panel, title string, current model.PaperLength, set func(value model.PaperLength)) *unison.Field {
+func (d *sheetSettingsDockable) createPaperMarginField(panel *unison.Panel, title string, current gurps.PaperLength, set func(value gurps.PaperLength)) *unison.Field {
 	panel.AddChild(NewFieldLeadingLabel(title))
 	field := unison.NewField()
 	field.SetText(current.String())
 	field.ValidateCallback = func() bool {
-		_, err := model.ParsePaperLengthFromString(field.Text())
+		_, err := gurps.ParsePaperLengthFromString(field.Text())
 		return err == nil
 	}
 	field.ModifiedCallback = func(_, after *unison.FieldState) {
-		if value, err := model.ParsePaperLengthFromString(after.Text); err == nil {
+		if value, err := gurps.ParsePaperLengthFromString(after.Text); err == nil {
 			set(value)
 			d.syncSheet(false)
 		}
@@ -375,9 +375,9 @@ func (d *sheetSettingsDockable) createHeader(panel *unison.Panel, title string, 
 func (d *sheetSettingsDockable) reset() {
 	if d.owner != nil {
 		entity := d.owner.Entity()
-		entity.SheetSettings = model.GlobalSettings().Sheet.Clone(entity)
+		entity.SheetSettings = gurps.GlobalSettings().Sheet.Clone(entity)
 	} else {
-		model.GlobalSettings().Sheet = model.FactorySheetSettings()
+		gurps.GlobalSettings().Sheet = gurps.FactorySheetSettings()
 	}
 	d.sync()
 }
@@ -413,12 +413,12 @@ func (d *sheetSettingsDockable) syncSheet(full bool) {
 	for _, wnd := range unison.Windows() {
 		if ws := WorkspaceFromWindow(wnd); ws != nil {
 			ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
-				var entity *model.Entity
+				var entity *gurps.Entity
 				if d.owner != nil {
 					entity = d.owner.Entity()
 				}
 				for _, one := range dc.Dockables() {
-					if s, ok := one.(model.SheetSettingsResponder); ok {
+					if s, ok := one.(gurps.SheetSettingsResponder); ok {
 						s.SheetSettingsUpdated(entity, full)
 					}
 				}
@@ -429,7 +429,7 @@ func (d *sheetSettingsDockable) syncSheet(full bool) {
 }
 
 func (d *sheetSettingsDockable) load(fileSystem fs.FS, filePath string) error {
-	s, err := model.NewSheetSettingsFromFile(fileSystem, filePath)
+	s, err := gurps.NewSheetSettingsFromFile(fileSystem, filePath)
 	if err != nil {
 		return err
 	}
@@ -438,7 +438,7 @@ func (d *sheetSettingsDockable) load(fileSystem fs.FS, filePath string) error {
 		entity.SheetSettings = s
 		s.SetOwningEntity(entity)
 	} else {
-		model.GlobalSettings().Sheet = s
+		gurps.GlobalSettings().Sheet = s
 	}
 	d.sync()
 	return nil

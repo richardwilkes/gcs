@@ -12,36 +12,36 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 )
 
 // WeightField is field that holds a weight value.
-type WeightField = NumericField[model.Weight]
+type WeightField = NumericField[gurps.Weight]
 
 // NewWeightField creates a new field that holds a fixed-point number.
-func NewWeightField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *model.Entity, get func() model.Weight, set func(model.Weight), min, max model.Weight, noMinWidth bool) *WeightField {
-	var getPrototypes func(min, max model.Weight) []model.Weight
+func NewWeightField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() gurps.Weight, set func(gurps.Weight), min, max gurps.Weight, noMinWidth bool) *WeightField {
+	var getPrototypes func(min, max gurps.Weight) []gurps.Weight
 	if !noMinWidth {
-		getPrototypes = func(min, max model.Weight) []model.Weight {
-			if min == model.Weight(fxp.Min) {
-				min = model.Weight(-fxp.One)
+		getPrototypes = func(min, max gurps.Weight) []gurps.Weight {
+			if min == gurps.Weight(fxp.Min) {
+				min = gurps.Weight(-fxp.One)
 			}
-			min = model.Weight(fxp.Int(min).Trunc() + fxp.One - 1)
-			if max == model.Weight(fxp.Max) {
-				max = model.Weight(fxp.One)
+			min = gurps.Weight(fxp.Int(min).Trunc() + fxp.One - 1)
+			if max == gurps.Weight(fxp.Max) {
+				max = gurps.Weight(fxp.One)
 			}
-			max = model.Weight(fxp.Int(max).Trunc() + fxp.One - 1)
-			return []model.Weight{min, model.Weight(fxp.Two - 1), max}
+			max = gurps.Weight(fxp.Int(max).Trunc() + fxp.One - 1)
+			return []gurps.Weight{min, gurps.Weight(fxp.Two - 1), max}
 		}
 	}
-	format := func(value model.Weight) string {
-		return model.SheetSettingsFor(entity).DefaultWeightUnits.Format(value)
+	format := func(value gurps.Weight) string {
+		return gurps.SheetSettingsFor(entity).DefaultWeightUnits.Format(value)
 	}
-	extract := func(s string) (model.Weight, error) {
-		return model.WeightFromString(s, model.SheetSettingsFor(entity).DefaultWeightUnits)
+	extract := func(s string) (gurps.Weight, error) {
+		return gurps.WeightFromString(s, gurps.SheetSettingsFor(entity).DefaultWeightUnits)
 	}
-	f := NewNumericField[model.Weight](targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, min, max)
+	f := NewNumericField[gurps.Weight](targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, min, max)
 	f.RuneTypedCallback = f.DefaultRuneTyped
 	return f
 }

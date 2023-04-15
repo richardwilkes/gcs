@@ -12,14 +12,14 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
 
-func canAdjustSkillLevel[T model.NodeTypes](table *unison.Table[*Node[T]], increment bool) bool {
+func canAdjustSkillLevel[T gurps.NodeTypes](table *unison.Table[*Node[T]], increment bool) bool {
 	for _, row := range table.SelectedRows(false) {
-		if provider, ok := any(row.Data()).(model.SkillAdjustmentProvider[T]); ok && !provider.Container() {
+		if provider, ok := any(row.Data()).(gurps.SkillAdjustmentProvider[T]); ok && !provider.Container() {
 			if increment || provider.RawPoints() > 0 {
 				return true
 			}
@@ -28,11 +28,11 @@ func canAdjustSkillLevel[T model.NodeTypes](table *unison.Table[*Node[T]], incre
 	return false
 }
 
-func adjustSkillLevel[T model.NodeTypes](owner Rebuildable, table *unison.Table[*Node[T]], increment bool) {
+func adjustSkillLevel[T gurps.NodeTypes](owner Rebuildable, table *unison.Table[*Node[T]], increment bool) {
 	before := &adjustRawPointsList[T]{Owner: owner}
 	after := &adjustRawPointsList[T]{Owner: owner}
 	for _, row := range table.SelectedRows(false) {
-		if provider, ok := any(row.Data()).(model.SkillAdjustmentProvider[T]); ok {
+		if provider, ok := any(row.Data()).(gurps.SkillAdjustmentProvider[T]); ok {
 			if increment || provider.RawPoints() > 0 {
 				before.List = append(before.List, newRawPointsAdjuster[T](provider))
 				if increment {

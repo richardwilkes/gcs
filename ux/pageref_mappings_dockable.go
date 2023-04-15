@@ -19,7 +19,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/desktop"
@@ -69,7 +69,7 @@ func openMarkdownPageReference(wnd *unison.Window, ref string) {
 		if !strings.HasSuffix(strings.ToLower(ref), ".md") {
 			ref += ".md"
 		}
-		for _, lib := range model.GlobalSettings().LibrarySet.List() {
+		for _, lib := range gurps.GlobalSettings().LibrarySet.List() {
 			filePath := filepath.Join(lib.Path(), "Markdown", ref)
 			if xfs.FileIsReadable(filePath) {
 				OpenFile(wnd, filePath)
@@ -100,7 +100,7 @@ func openPDFPageReference(wnd *unison.Window, ref, highlight string, promptConte
 			return false
 		}
 		key := ref[:i]
-		s := model.GlobalSettings()
+		s := gurps.GlobalSettings()
 		pageRef := s.PageRefs.Lookup(key)
 		if pageRef == nil && !promptContext[key] {
 			pdfName := PageRefKeyToName(key)
@@ -158,26 +158,26 @@ Would you like to create one by choosing a PDF to map to this key?`), key), pdfN
 	return false
 }
 
-func askUserForPageRefPath(key string, offset int) *model.PageRef {
+func askUserForPageRefPath(key string, offset int) *gurps.PageRef {
 	dialog := unison.NewOpenDialog()
 	dialog.SetAllowsMultipleSelection(false)
 	dialog.SetResolvesAliases(true)
 	dialog.SetAllowedExtensions("pdf")
 	dialog.SetCanChooseDirectories(false)
 	dialog.SetCanChooseFiles(true)
-	global := model.GlobalSettings()
-	dialog.SetInitialDirectory(global.LastDir(model.DefaultLastDirKey))
+	global := gurps.GlobalSettings()
+	dialog.SetInitialDirectory(global.LastDir(gurps.DefaultLastDirKey))
 	if !dialog.RunModal() {
 		return nil
 	}
 	p := dialog.Path()
-	global.SetLastDir(model.DefaultLastDirKey, filepath.Dir(p))
-	pageRef := &model.PageRef{
+	global.SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(p))
+	pageRef := &gurps.PageRef{
 		ID:     key,
 		Path:   p,
 		Offset: offset,
 	}
-	model.GlobalSettings().PageRefs.Set(pageRef)
+	gurps.GlobalSettings().PageRefs.Set(pageRef)
 	RefreshPageRefMappingsView()
 	return pageRef
 }
@@ -210,7 +210,7 @@ func ShowPageRefMappings() {
 		d.Self = d
 		d.TabTitle = i18n.Text("Page Reference Mappings")
 		d.TabIcon = svg.Settings
-		d.Extensions = []string{model.PageRefSettingsExt}
+		d.Extensions = []string{gurps.PageRefSettingsExt}
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset
@@ -239,13 +239,13 @@ func (d *pageRefMappingsDockable) initContent(content *unison.Panel) {
 }
 
 func (d *pageRefMappingsDockable) reset() {
-	model.GlobalSettings().PageRefs = model.PageRefs{}
+	gurps.GlobalSettings().PageRefs = gurps.PageRefs{}
 	d.sync()
 }
 
 func (d *pageRefMappingsDockable) sync() {
 	d.content.RemoveAllChildren()
-	for _, one := range model.GlobalSettings().PageRefs.List() {
+	for _, one := range gurps.GlobalSettings().PageRefs.List() {
 		d.createTrashField(one)
 		d.createIDField(one)
 		d.createOffsetField(one)
@@ -255,7 +255,7 @@ func (d *pageRefMappingsDockable) sync() {
 	d.MarkForRedraw()
 }
 
-func (d *pageRefMappingsDockable) createIDField(ref *model.PageRef) {
+func (d *pageRefMappingsDockable) createIDField(ref *gurps.PageRef) {
 	p := unison.NewLabel()
 	p.Text = ref.ID
 	p.HAlign = unison.MiddleAlignment
@@ -278,12 +278,12 @@ func (d *pageRefMappingsDockable) createIDField(ref *model.PageRef) {
 	d.content.AddChild(p)
 }
 
-func (d *pageRefMappingsDockable) createOffsetField(ref *model.PageRef) {
+func (d *pageRefMappingsDockable) createOffsetField(ref *gurps.PageRef) {
 	p := NewIntegerField(nil, "", i18n.Text("Page Offset"),
 		func() int { return ref.Offset },
 		func(v int) {
 			ref.Offset = v
-			model.GlobalSettings().PageRefs.Set(ref)
+			gurps.GlobalSettings().PageRefs.Set(ref)
 		}, -9999, 9999, true, false)
 	p.Tooltip = unison.NewTooltipWithText(i18n.Text(`If your PDF is opening up to the wrong page when opening
 page references, enter an offset here to compensate.`))
@@ -294,7 +294,7 @@ page references, enter an offset here to compensate.`))
 	d.content.AddChild(p)
 }
 
-func (d *pageRefMappingsDockable) createNameField(ref *model.PageRef) {
+func (d *pageRefMappingsDockable) createNameField(ref *gurps.PageRef) {
 	p := unison.NewLabel()
 	p.Text = filepath.Base(ref.Path)
 	p.Tooltip = unison.NewTooltipWithText(ref.Path)
@@ -305,7 +305,7 @@ func (d *pageRefMappingsDockable) createNameField(ref *model.PageRef) {
 	d.content.AddChild(p)
 }
 
-func (d *pageRefMappingsDockable) createEditField(ref *model.PageRef) {
+func (d *pageRefMappingsDockable) createEditField(ref *gurps.PageRef) {
 	b := unison.NewSVGButton(svg.Edit)
 	b.ClickCallback = func() {
 		askUserForPageRefPath(ref.ID, ref.Offset)
@@ -317,12 +317,12 @@ func (d *pageRefMappingsDockable) createEditField(ref *model.PageRef) {
 	d.content.AddChild(b)
 }
 
-func (d *pageRefMappingsDockable) createTrashField(ref *model.PageRef) {
+func (d *pageRefMappingsDockable) createTrashField(ref *gurps.PageRef) {
 	b := unison.NewSVGButton(svg.Trash)
 	b.ClickCallback = func() {
 		if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to remove\n%s (%s)?"), ref.ID,
 			filepath.Base(ref.Path)), "") == unison.ModalResponseOK {
-			model.GlobalSettings().PageRefs.Remove(ref.ID)
+			gurps.GlobalSettings().PageRefs.Remove(ref.ID)
 			parent := b.Parent()
 			index := parent.IndexOfChild(b)
 			for i := index; i > index-4; i-- {
@@ -339,15 +339,15 @@ func (d *pageRefMappingsDockable) createTrashField(ref *model.PageRef) {
 }
 
 func (d *pageRefMappingsDockable) load(fileSystem fs.FS, filePath string) error {
-	s, err := model.NewPageRefsFromFS(fileSystem, filePath)
+	s, err := gurps.NewPageRefsFromFS(fileSystem, filePath)
 	if err != nil {
 		return err
 	}
-	model.GlobalSettings().PageRefs = *s
+	gurps.GlobalSettings().PageRefs = *s
 	d.sync()
 	return nil
 }
 
 func (d *pageRefMappingsDockable) save(filePath string) error {
-	return model.GlobalSettings().PageRefs.Save(filePath)
+	return gurps.GlobalSettings().PageRefs.Save(filePath)
 }

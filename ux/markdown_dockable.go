@@ -18,7 +18,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -256,7 +256,7 @@ func (d *MarkdownDockable) TitleIcon(suggestedSize unison.Size) unison.Drawable 
 		}
 	}
 	return &unison.DrawableSVG{
-		SVG:  model.FileInfoFor(d.BackingFilePath()).SVG,
+		SVG:  gurps.FileInfoFor(d.BackingFilePath()).SVG,
 		Size: suggestedSize,
 	}
 }

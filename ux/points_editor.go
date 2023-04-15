@@ -16,8 +16,8 @@ import (
 	"reflect"
 	"sort"
 
-	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox"
@@ -39,19 +39,19 @@ var (
 type pointsEditor struct {
 	unison.Panel
 	owner            Rebuildable
-	entity           *model.Entity
+	entity           *gurps.Entity
 	previousDockable unison.Dockable
 	previousFocusKey string
 	undoMgr          *unison.UndoManager
 	applyButton      *unison.Button
 	cancelButton     *unison.Button
 	content          *unison.Panel
-	before           []*model.PointsRecord
-	current          []*model.PointsRecord
+	before           []*gurps.PointsRecord
+	current          []*gurps.PointsRecord
 	promptForSave    bool
 }
 
-func displayPointsEditor(owner Rebuildable, entity *model.Entity) {
+func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 	ws, dc, found := Activate(func(d unison.Dockable) bool {
 		if e, ok := d.(*pointsEditor); ok {
 			return e.owner == owner && entity == e.entity
@@ -64,8 +64,8 @@ func displayPointsEditor(owner Rebuildable, entity *model.Entity) {
 	e := &pointsEditor{
 		owner:   owner,
 		entity:  entity,
-		before:  model.ClonePointsRecordList(entity.PointsRecord),
-		current: model.ClonePointsRecordList(entity.PointsRecord),
+		before:  gurps.ClonePointsRecordList(entity.PointsRecord),
+		current: gurps.ClonePointsRecordList(entity.PointsRecord),
 	}
 	e.Self = e
 	sort.Slice(e.current, func(i, j int) bool { return e.current[i].When.After(e.current[j].When) })
@@ -180,7 +180,7 @@ func (e *pointsEditor) initContent() {
 	}
 }
 
-func (e *pointsEditor) createRow(rec *model.PointsRecord, index int) {
+func (e *pointsEditor) createRow(rec *gurps.PointsRecord, index int) {
 	deleteButton := unison.NewSVGButton(svg.Trash)
 	deleteButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Remove Entry"))
 	deleteButton.ClickCallback = func() { e.removeEntry(rec) }
@@ -236,7 +236,7 @@ func (e *pointsEditor) createRow(rec *model.PointsRecord, index int) {
 }
 
 func (e *pointsEditor) addEntry() {
-	rec := &model.PointsRecord{When: jio.Now()}
+	rec := &gurps.PointsRecord{When: jio.Now()}
 	e.current = slices.Insert(e.current, 0, rec)
 	e.createRow(rec, 0)
 	e.content.Pack()
@@ -245,7 +245,7 @@ func (e *pointsEditor) addEntry() {
 	e.content.Children()[2].RequestFocus()
 }
 
-func (e *pointsEditor) removeEntry(rec *model.PointsRecord) {
+func (e *pointsEditor) removeEntry(rec *gurps.PointsRecord) {
 	for i, one := range e.current {
 		if one == rec {
 			e.current = slices.Delete(e.current, i, i+1)
@@ -347,14 +347,14 @@ func (e *pointsEditor) apply() {
 	owner := e.owner
 	entity := e.entity
 	if mgr := unison.UndoManagerFor(e.owner); mgr != nil {
-		mgr.Add(&unison.UndoEdit[[]*model.PointsRecord]{
+		mgr.Add(&unison.UndoEdit[[]*gurps.PointsRecord]{
 			ID:       unison.NextUndoID(),
 			EditName: i18n.Text("Point Record Changes"),
-			UndoFunc: func(edit *unison.UndoEdit[[]*model.PointsRecord]) {
+			UndoFunc: func(edit *unison.UndoEdit[[]*gurps.PointsRecord]) {
 				entity.SetPointsRecord(edit.BeforeData)
 				owner.Rebuild(false)
 			},
-			RedoFunc: func(edit *unison.UndoEdit[[]*model.PointsRecord]) {
+			RedoFunc: func(edit *unison.UndoEdit[[]*gurps.PointsRecord]) {
 				entity.SetPointsRecord(edit.AfterData)
 				owner.Rebuild(false)
 			},

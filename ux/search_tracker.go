@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -91,13 +91,13 @@ func (s *searchTracker) searchModified(_, after *unison.FieldState) {
 	s.adjustForMatch()
 }
 
-func searchSheetTable[T model.NodeTypes](refList *[]*searchRef, text string, pageList *PageList[T]) {
+func searchSheetTable[T gurps.NodeTypes](refList *[]*searchRef, text string, pageList *PageList[T]) {
 	for _, row := range pageList.Table.RootRows() {
 		searchSheetTableRows(refList, text, pageList.Table, row)
 	}
 }
 
-func searchSheetTableRows[T model.NodeTypes](refList *[]*searchRef, text string, table *unison.Table[*Node[T]], row *Node[T]) {
+func searchSheetTableRows[T gurps.NodeTypes](refList *[]*searchRef, text string, table *unison.Table[*Node[T]], row *Node[T]) {
 	if row.Match(text) {
 		*refList = append(*refList, &searchRef{
 			table: table,
@@ -140,20 +140,20 @@ func (s *searchTracker) adjustForMatch() {
 
 func showSearchRef(ref *searchRef) {
 	switch table := ref.table.(type) {
-	case *unison.Table[*Node[*model.Trait]]:
-		showSearchResolvedRef(table, ref.row.(*Node[*model.Trait]))
-	case *unison.Table[*Node[*model.Skill]]:
-		showSearchResolvedRef(table, ref.row.(*Node[*model.Skill]))
-	case *unison.Table[*Node[*model.Spell]]:
-		showSearchResolvedRef(table, ref.row.(*Node[*model.Spell]))
-	case *unison.Table[*Node[*model.Equipment]]:
-		showSearchResolvedRef(table, ref.row.(*Node[*model.Equipment]))
-	case *unison.Table[*Node[*model.Note]]:
-		showSearchResolvedRef(table, ref.row.(*Node[*model.Note]))
+	case *unison.Table[*Node[*gurps.Trait]]:
+		showSearchResolvedRef(table, ref.row.(*Node[*gurps.Trait]))
+	case *unison.Table[*Node[*gurps.Skill]]:
+		showSearchResolvedRef(table, ref.row.(*Node[*gurps.Skill]))
+	case *unison.Table[*Node[*gurps.Spell]]:
+		showSearchResolvedRef(table, ref.row.(*Node[*gurps.Spell]))
+	case *unison.Table[*Node[*gurps.Equipment]]:
+		showSearchResolvedRef(table, ref.row.(*Node[*gurps.Equipment]))
+	case *unison.Table[*Node[*gurps.Note]]:
+		showSearchResolvedRef(table, ref.row.(*Node[*gurps.Note]))
 	}
 }
 
-func showSearchResolvedRef[T model.NodeTypes](table *unison.Table[*Node[T]], row *Node[T]) {
+func showSearchResolvedRef[T gurps.NodeTypes](table *unison.Table[*Node[T]], row *Node[T]) {
 	table.DiscloseRow(row, false)
 	table.ClearSelection()
 	rowIndex := table.RowToIndex(row)

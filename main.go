@@ -16,8 +16,8 @@ import (
 	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/early"
-	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/dbg"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/atexit"
@@ -38,17 +38,17 @@ func main() {
 	cl.UsageTrailer = fmt.Sprintf(i18n.Text(`Translations dir: "%s"`), i18n.Dir)
 
 	settingsName := cmdline.AppCmdName + "_prefs.json"
-	model.SettingsPath = filepath.Join(paths.AppDataDir(), settingsName)
+	gurps.SettingsPath = filepath.Join(paths.AppDataDir(), settingsName)
 	// Look for a settings file co-located with the executable and prefer that over the one in the app data dir.
 	if dir, err := toolbox.AppDir(); err == nil {
 		settingsPath := filepath.Join(dir, settingsName)
 		if fs.FileExists(settingsPath) {
-			model.SettingsPath = settingsPath
+			gurps.SettingsPath = settingsPath
 		}
 	}
 
 	var textTmplPath string
-	cl.NewGeneralOption(&model.SettingsPath).SetName("settings").SetSingle('s').SetArg("file").
+	cl.NewGeneralOption(&gurps.SettingsPath).SetName("settings").SetSingle('s').SetArg("file").
 		SetUsage(i18n.Text("The file to load settings from and store them into"))
 	cl.NewGeneralOption(&textTmplPath).SetName("text").SetSingle('x').SetArg("file").
 		SetUsage(i18n.Text("Export sheets using the specified template file"))
@@ -58,10 +58,10 @@ func main() {
 	cl.NewGeneralOption(&dbg.VariableResolver).SetName("debug-variable-resolver")
 	fileList := jotrotate.ParseAndSetup(cl)
 	ux.RegisterKnownFileTypes()
-	model.GlobalSettings() // Here to force early initialization
+	gurps.GlobalSettings() // Here to force early initialization
 	switch {
 	case convertFiles:
-		if err := model.Convert(fileList...); err != nil {
+		if err := gurps.Convert(fileList...); err != nil {
 			cl.FatalMsg(err.Error())
 		}
 	case textTmplPath != "":
@@ -69,11 +69,11 @@ func main() {
 			cl.FatalMsg(i18n.Text("No files to process."))
 		}
 		for _, one := range fileList {
-			if !model.FileInfoFor(one).IsExportable {
+			if !gurps.FileInfoFor(one).IsExportable {
 				cl.FatalMsg(one + i18n.Text(" is not exportable."))
 			}
 		}
-		if err := model.LegacyExportMultiple(textTmplPath, fileList); err != nil {
+		if err := gurps.LegacyExportMultiple(textTmplPath, fileList); err != nil {
 			cl.FatalMsg(err.Error())
 		}
 	default:

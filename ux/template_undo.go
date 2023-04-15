@@ -12,18 +12,18 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/log/jot"
 )
 
 // ApplyTemplateUndoEditData holds the sheet table data for an undo.
 type ApplyTemplateUndoEditData struct {
 	sheet     *Sheet
-	traits    PreservedTableData[*model.Trait]
-	skills    PreservedTableData[*model.Skill]
-	spells    PreservedTableData[*model.Spell]
-	equipment PreservedTableData[*model.Equipment]
-	notes     PreservedTableData[*model.Note]
+	traits    PreservedTableData[*gurps.Trait]
+	skills    PreservedTableData[*gurps.Skill]
+	spells    PreservedTableData[*gurps.Spell]
+	equipment PreservedTableData[*gurps.Equipment]
+	notes     PreservedTableData[*gurps.Note]
 }
 
 // NewApplyTemplateUndoEditData creates a new undo that preserves the current sheet table data.

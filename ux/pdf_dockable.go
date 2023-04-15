@@ -16,7 +16,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/desktop"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -558,7 +558,7 @@ func (d *PDFDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
 			p := unison.NewPaint()
 			p.SetStyle(unison.Fill)
 			p.SetBlendMode(unison.ModulateBlendMode)
-			p.SetColor(model.PDFMarkerHighlightColor.GetColor())
+			p.SetColor(gurps.PDFMarkerHighlightColor.GetColor())
 			for _, match := range d.page.Matches {
 				gc.DrawRect(match, p)
 			}
@@ -567,7 +567,7 @@ func (d *PDFDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
 			p := unison.NewPaint()
 			p.SetStyle(unison.Fill)
 			p.SetBlendMode(unison.ModulateBlendMode)
-			p.SetColor(model.PDFLinkHighlightColor.GetColor())
+			p.SetColor(gurps.PDFLinkHighlightColor.GetColor())
 			gc.DrawRect(d.rolloverRect, p)
 		}
 		gc.Restore()
@@ -643,7 +643,7 @@ func (d *PDFDockable) drawOverlayMsg(gc *unison.Canvas, dirty unison.Rect, msg s
 // TitleIcon implements workspace.FileBackedDockable
 func (d *PDFDockable) TitleIcon(suggestedSize unison.Size) unison.Drawable {
 	return &unison.DrawableSVG{
-		SVG:  model.FileInfoFor(d.path).SVG,
+		SVG:  gurps.FileInfoFor(d.path).SVG,
 		Size: suggestedSize,
 	}
 }

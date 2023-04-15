@@ -19,7 +19,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
@@ -28,7 +28,7 @@ import (
 
 type librarySettingsDockable struct {
 	SettingsDockable
-	library       *model.Library
+	library       *gurps.Library
 	toolbar       *unison.Panel
 	applyButton   *unison.Button
 	cancelButton  *unison.Button
@@ -47,7 +47,7 @@ type librarySettingsDockable struct {
 }
 
 // ShowLibrarySettings the Library Settings view for a specific library.
-func ShowLibrarySettings(lib *model.Library) {
+func ShowLibrarySettings(lib *gurps.Library) {
 	ws, dc, found := Activate(func(d unison.Dockable) bool {
 		if settingsDockable, ok := d.(*librarySettingsDockable); ok && settingsDockable.library == lib {
 			return true
@@ -187,7 +187,7 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 	content.AddChild(wrapper)
 
 	d.addNote(content, fmt.Sprintf(i18n.Text(`Once configured, GitHub repositories will be scanned for release tags in the form "v%d.x.y" through "v%d.x.y", where x and y can be any numeric value`),
-		model.MinimumLibraryVersion, model.CurrentDataVersion))
+		gurps.MinimumLibraryVersion, gurps.CurrentDataVersion))
 }
 
 func (d *librarySettingsDockable) addNote(parent *unison.Panel, note string) {
@@ -207,7 +207,7 @@ func (d *librarySettingsDockable) addNote(parent *unison.Panel, note string) {
 }
 
 func (d *librarySettingsDockable) checkForSpecial() bool {
-	lib := &model.Library{
+	lib := &gurps.Library{
 		GitHubAccountName: d.github,
 		RepoName:          d.repo,
 	}
@@ -224,7 +224,7 @@ func (d *librarySettingsDockable) choosePath() {
 	if xfs.IsDir(d.path) {
 		dlg.SetInitialDirectory(filepath.Dir(d.path))
 	} else {
-		dlg.SetInitialDirectory(model.GlobalSettings().LastDir(model.DefaultLastDirKey))
+		dlg.SetInitialDirectory(gurps.GlobalSettings().LastDir(gurps.DefaultLastDirKey))
 		usedLastDir = true
 	}
 	if dlg.RunModal() {
@@ -233,7 +233,7 @@ func (d *librarySettingsDockable) choosePath() {
 			unison.ErrorDialogWithMessage(i18n.Text("Unable to resolve absolute path"), dlg.Path())
 		} else {
 			if usedLastDir {
-				model.GlobalSettings().SetLastDir(model.DefaultLastDirKey, filepath.Dir(p))
+				gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(p))
 			}
 			d.pathField.SetText(p)
 		}
@@ -257,7 +257,7 @@ func (d *librarySettingsDockable) updateToolbar() {
 func (d *librarySettingsDockable) apply() {
 	wnd := d.Window()
 	wnd.FocusNext() // Intentionally move the focus to ensure any pending edits are flushed
-	libs := model.GlobalSettings().LibrarySet
+	libs := gurps.GlobalSettings().LibrarySet
 	delete(libs, d.library.Key())
 	d.library.Title = d.name
 	d.library.GitHubAccountName = d.github
@@ -271,7 +271,7 @@ func (d *librarySettingsDockable) apply() {
 	go checkForLibraryUpgrade(d.library)
 }
 
-func checkForLibraryUpgrade(lib *model.Library) {
+func checkForLibraryUpgrade(lib *gurps.Library) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()
 	lib.CheckForAvailableUpgrade(ctx, &http.Client{})

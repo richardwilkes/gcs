@@ -13,13 +13,13 @@ package ux
 
 import (
 	"github.com/google/uuid"
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/unison"
 )
 
 // PreservedTableData holds the data and selection state of a table in a serialized form.
-type PreservedTableData[T model.NodeTypes] struct {
+type PreservedTableData[T gurps.NodeTypes] struct {
 	data   []byte
 	selMap map[uuid.UUID]bool
 }

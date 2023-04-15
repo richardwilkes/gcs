@@ -19,7 +19,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -156,7 +156,7 @@ type ContextMenuItem struct {
 // SetupMenuBar the menu bar for the window.
 func SetupMenuBar(wnd *unison.Window) {
 	registerKeyBindingsOnce.Do(func() { registerActions() })
-	model.GlobalSettings().KeyBindings.MakeCurrent()
+	gurps.GlobalSettings().KeyBindings.MakeCurrent()
 	unison.DefaultMenuFactory().BarForWindow(wnd, func(bar unison.Menu) {
 		unison.InsertStdMenus(bar, ShowAbout, nil, nil)
 		std := bar.Item(unison.PreferencesItemID)
@@ -344,7 +344,7 @@ func (s menuBarScope) setupHelpMenu(bar unison.Menu) {
 
 func (s menuBarScope) recentFilesUpdater(menu unison.Menu) {
 	menu.RemoveAll()
-	list := model.GlobalSettings().ListRecentFiles()
+	list := gurps.GlobalSettings().ListRecentFiles()
 	m := make(map[string]int, len(list))
 	for _, f := range list {
 		title := filepath.Base(f)
@@ -380,7 +380,7 @@ func (s menuBarScope) exportToUpdater(menu unison.Menu) {
 	menu.InsertItem(-1, exportAsJPEGAction.NewMenuItem(factory))
 	menu.InsertSeparator(-1, false)
 	index := 0
-	for _, lib := range model.GlobalSettings().Libraries().List() {
+	for _, lib := range gurps.GlobalSettings().Libraries().List() {
 		dir := lib.Path()
 		entries, err := fs.ReadDir(os.DirFS(dir), outputTemplatesDirName)
 		if err != nil {
@@ -420,13 +420,13 @@ func (s menuBarScope) createExportToTextAction(index int, path string) *unison.A
 			if s := ActiveSheet(); s != nil {
 				dialog := unison.NewSaveDialog()
 				ext := filepath.Ext(path)
-				settings := model.GlobalSettings()
-				dialog.SetInitialDirectory(settings.LastDir(model.DefaultLastDirKey))
+				settings := gurps.GlobalSettings()
+				dialog.SetInitialDirectory(settings.LastDir(gurps.DefaultLastDirKey))
 				dialog.SetAllowedExtensions(ext)
 				if dialog.RunModal() {
 					if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), ext, false); ok {
-						settings.SetLastDir(model.DefaultLastDirKey, filepath.Dir(filePath))
-						if err := model.LegacyExport(s.Entity(), path, filePath); err != nil {
+						settings.SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
+						if err := gurps.LegacyExport(s.Entity(), path, filePath); err != nil {
 							unison.ErrorDialogWithError(i18n.Text("Export failed"), err)
 						}
 					}

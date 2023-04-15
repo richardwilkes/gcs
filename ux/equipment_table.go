@@ -15,38 +15,38 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/unison"
 )
 
 type equipmentListProvider struct {
-	carried []*model.Equipment
-	other   []*model.Equipment
+	carried []*gurps.Equipment
+	other   []*gurps.Equipment
 }
 
-func (p *equipmentListProvider) Entity() *model.Entity {
+func (p *equipmentListProvider) Entity() *gurps.Entity {
 	return nil
 }
 
-func (p *equipmentListProvider) CarriedEquipmentList() []*model.Equipment {
+func (p *equipmentListProvider) CarriedEquipmentList() []*gurps.Equipment {
 	return p.carried
 }
 
-func (p *equipmentListProvider) SetCarriedEquipmentList(list []*model.Equipment) {
+func (p *equipmentListProvider) SetCarriedEquipmentList(list []*gurps.Equipment) {
 	p.carried = list
 }
 
-func (p *equipmentListProvider) OtherEquipmentList() []*model.Equipment {
+func (p *equipmentListProvider) OtherEquipmentList() []*gurps.Equipment {
 	return p.other
 }
 
-func (p *equipmentListProvider) SetOtherEquipmentList(list []*model.Equipment) {
+func (p *equipmentListProvider) SetOtherEquipmentList(list []*gurps.Equipment) {
 	p.other = list
 }
 
 // NewEquipmentTableDockableFromFile loads a list of equipment from a file and creates a new unison.Dockable for them.
 func NewEquipmentTableDockableFromFile(filePath string) (unison.Dockable, error) {
-	equipment, err := model.NewEquipmentFromFile(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath))
+	equipment, err := gurps.NewEquipmentFromFile(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath))
 	if err != nil {
 		return nil, err
 	}
@@ -56,10 +56,10 @@ func NewEquipmentTableDockableFromFile(filePath string) (unison.Dockable, error)
 }
 
 // NewEquipmentTableDockable creates a new unison.Dockable for equipment list files.
-func NewEquipmentTableDockable(filePath string, equipment []*model.Equipment) *TableDockable[*model.Equipment] {
+func NewEquipmentTableDockable(filePath string, equipment []*gurps.Equipment) *TableDockable[*gurps.Equipment] {
 	provider := &equipmentListProvider{other: equipment}
-	d := NewTableDockable(filePath, model.EquipmentExt, NewEquipmentProvider(provider, false, false),
-		func(path string) error { return model.SaveEquipment(provider.OtherEquipmentList(), path) },
+	d := NewTableDockable(filePath, gurps.EquipmentExt, NewEquipmentProvider(provider, false, false),
+		func(path string) error { return gurps.SaveEquipment(provider.OtherEquipmentList(), path) },
 		NewOtherEquipmentItemID, NewOtherEquipmentContainerItemID)
 	InstallContainerConversionHandlers(d, d, d.table)
 	return d

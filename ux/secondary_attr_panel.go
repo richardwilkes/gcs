@@ -14,8 +14,8 @@ package ux
 import (
 	"fmt"
 
-	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
@@ -24,14 +24,14 @@ import (
 // SecondaryAttrPanel holds the contents of the secondary attributes block on the sheet.
 type SecondaryAttrPanel struct {
 	unison.Panel
-	entity    *model.Entity
+	entity    *gurps.Entity
 	targetMgr *TargetMgr
 	prefix    string
 	crc       uint64
 }
 
 // NewSecondaryAttrPanel creates a new secondary attributes panel.
-func NewSecondaryAttrPanel(entity *model.Entity, targetMgr *TargetMgr) *SecondaryAttrPanel {
+func NewSecondaryAttrPanel(entity *gurps.Entity, targetMgr *TargetMgr) *SecondaryAttrPanel {
 	p := &SecondaryAttrPanel{
 		entity:    entity,
 		targetMgr: targetMgr,
@@ -57,18 +57,18 @@ func NewSecondaryAttrPanel(entity *model.Entity, targetMgr *TargetMgr) *Secondar
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
 		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, unison.Fill))
 	}
-	attrs := model.SheetSettingsFor(p.entity).Attributes
+	attrs := gurps.SheetSettingsFor(p.entity).Attributes
 	p.crc = attrs.CRC64()
 	p.rebuild(attrs)
 	return p
 }
 
-func (p *SecondaryAttrPanel) rebuild(attrs *model.AttributeDefs) {
+func (p *SecondaryAttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 	focusRefKey := p.targetMgr.CurrentFocusRef()
 	p.RemoveAllChildren()
 	for _, def := range attrs.List(false) {
 		if def.Secondary() {
-			if def.Type == model.SecondarySeparatorAttributeType {
+			if def.Type == gurps.SecondarySeparatorAttributeType {
 				p.AddChild(NewPageInternalHeader(def.Name, 3))
 			} else {
 				attr, ok := p.entity.Attributes.Set[def.ID()]
@@ -76,7 +76,7 @@ func (p *SecondaryAttrPanel) rebuild(attrs *model.AttributeDefs) {
 					jot.Warnf("unable to locate attribute data for '%s'", def.ID())
 					continue
 				}
-				if def.Type == model.IntegerRefAttributeType || def.Type == model.DecimalRefAttributeType {
+				if def.Type == gurps.IntegerRefAttributeType || def.Type == gurps.DecimalRefAttributeType {
 					field := NewNonEditablePageFieldEnd(func(field *NonEditablePageField) {
 						field.Text = attr.Maximum().String()
 					})
@@ -101,7 +101,7 @@ func (p *SecondaryAttrPanel) rebuild(attrs *model.AttributeDefs) {
 	}
 }
 
-func (p *SecondaryAttrPanel) createPointsField(attr *model.Attribute) unison.Paneler {
+func (p *SecondaryAttrPanel) createPointsField(attr *gurps.Attribute) unison.Paneler {
 	field := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
 		if text := "[" + attr.PointCost().String() + "]"; text != f.Text {
 			f.Text = text
@@ -111,11 +111,11 @@ func (p *SecondaryAttrPanel) createPointsField(attr *model.Attribute) unison.Pan
 			f.Tooltip = unison.NewTooltipWithText(fmt.Sprintf(i18n.Text("Points spent on %s"), def.CombinedName()))
 		}
 	})
-	field.Font = model.PageFieldSecondaryFont
+	field.Font = gurps.PageFieldSecondaryFont
 	return field
 }
 
-func (p *SecondaryAttrPanel) createValueField(def *model.AttributeDef, attr *model.Attribute) unison.Paneler {
+func (p *SecondaryAttrPanel) createValueField(def *gurps.AttributeDef, attr *gurps.Attribute) unison.Paneler {
 	if def.AllowsDecimal() {
 		return NewDecimalPageField(p.targetMgr, p.prefix+attr.AttrID, def.CombinedName(),
 			func() fxp.Int { return attr.Maximum() },
@@ -128,7 +128,7 @@ func (p *SecondaryAttrPanel) createValueField(def *model.AttributeDef, attr *mod
 
 // Sync the panel to the current data.
 func (p *SecondaryAttrPanel) Sync() {
-	attrs := model.SheetSettingsFor(p.entity).Attributes
+	attrs := gurps.SheetSettingsFor(p.entity).Attributes
 	if crc := attrs.CRC64(); crc != p.crc {
 		p.crc = crc
 		p.rebuild(attrs)

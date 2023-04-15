@@ -13,18 +13,18 @@ package ux
 
 import (
 	"github.com/google/uuid"
-	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/unison"
 )
 
 var (
-	_ Syncer     = &PageList[*model.Trait]{}
-	_ pageHelper = &PageList[*model.Trait]{}
+	_ Syncer     = &PageList[*gurps.Trait]{}
+	_ pageHelper = &PageList[*gurps.Trait]{}
 )
 
 // PageList holds a list for a sheet page.
-type PageList[T model.NodeTypes] struct {
+type PageList[T gurps.NodeTypes] struct {
 	unison.Panel
 	tableHeader *unison.TableHeader[*Node[T]]
 	Table       *unison.Table[*Node[T]]
@@ -32,7 +32,7 @@ type PageList[T model.NodeTypes] struct {
 }
 
 // NewTraitsPageList creates the traits page list.
-func NewTraitsPageList(owner Rebuildable, provider model.ListProvider) *PageList[*model.Trait] {
+func NewTraitsPageList(owner Rebuildable, provider gurps.ListProvider) *PageList[*gurps.Trait] {
 	p := newPageList(owner, NewTraitsProvider(provider, true))
 	p.installToggleDisabledHandler(owner)
 	p.installIncrementLevelHandler(owner)
@@ -41,7 +41,7 @@ func NewTraitsPageList(owner Rebuildable, provider model.ListProvider) *PageList
 }
 
 // NewCarriedEquipmentPageList creates the carried equipment page list.
-func NewCarriedEquipmentPageList(owner Rebuildable, provider model.ListProvider) *PageList[*model.Equipment] {
+func NewCarriedEquipmentPageList(owner Rebuildable, provider gurps.ListProvider) *PageList[*gurps.Equipment] {
 	p := newPageList(owner, NewEquipmentProvider(provider, true, true))
 	p.installToggleEquippedHandler(owner)
 	p.installIncrementQuantityHandler(owner)
@@ -55,7 +55,7 @@ func NewCarriedEquipmentPageList(owner Rebuildable, provider model.ListProvider)
 }
 
 // NewOtherEquipmentPageList creates the other equipment page list.
-func NewOtherEquipmentPageList(owner Rebuildable, provider model.ListProvider) *PageList[*model.Equipment] {
+func NewOtherEquipmentPageList(owner Rebuildable, provider gurps.ListProvider) *PageList[*gurps.Equipment] {
 	p := newPageList(owner, NewEquipmentProvider(provider, true, false))
 	p.installIncrementQuantityHandler(owner)
 	p.installDecrementQuantityHandler(owner)
@@ -68,7 +68,7 @@ func NewOtherEquipmentPageList(owner Rebuildable, provider model.ListProvider) *
 }
 
 // NewSkillsPageList creates the skills page list.
-func NewSkillsPageList(owner Rebuildable, provider model.ListProvider) *PageList[*model.Skill] {
+func NewSkillsPageList(owner Rebuildable, provider gurps.ListProvider) *PageList[*gurps.Skill] {
 	p := newPageList(owner, NewSkillsProvider(provider, true))
 	p.installIncrementPointsHandler(owner)
 	p.installDecrementPointsHandler(owner)
@@ -80,7 +80,7 @@ func NewSkillsPageList(owner Rebuildable, provider model.ListProvider) *PageList
 }
 
 // NewSpellsPageList creates the spells page list.
-func NewSpellsPageList(owner Rebuildable, provider model.SpellListProvider) *PageList[*model.Spell] {
+func NewSpellsPageList(owner Rebuildable, provider gurps.SpellListProvider) *PageList[*gurps.Spell] {
 	p := newPageList(owner, NewSpellsProvider(provider, true))
 	p.installIncrementPointsHandler(owner)
 	p.installDecrementPointsHandler(owner)
@@ -90,34 +90,34 @@ func NewSpellsPageList(owner Rebuildable, provider model.SpellListProvider) *Pag
 }
 
 // NewNotesPageList creates the notes page list.
-func NewNotesPageList(owner Rebuildable, provider model.ListProvider) *PageList[*model.Note] {
+func NewNotesPageList(owner Rebuildable, provider gurps.ListProvider) *PageList[*gurps.Note] {
 	p := newPageList(owner, NewNotesProvider(provider, true))
 	p.installContainerConversionHandlers(owner)
 	return p
 }
 
 // NewConditionalModifiersPageList creates the conditional modifiers page list.
-func NewConditionalModifiersPageList(entity *model.Entity) *PageList[*model.ConditionalModifier] {
+func NewConditionalModifiersPageList(entity *gurps.Entity) *PageList[*gurps.ConditionalModifier] {
 	return newPageList(nil, NewConditionalModifiersProvider(entity))
 }
 
 // NewReactionsPageList creates the reaction modifiers page list.
-func NewReactionsPageList(entity *model.Entity) *PageList[*model.ConditionalModifier] {
+func NewReactionsPageList(entity *gurps.Entity) *PageList[*gurps.ConditionalModifier] {
 	return newPageList(nil, NewReactionModifiersProvider(entity))
 }
 
 // NewMeleeWeaponsPageList creates the melee weapons page list.
-func NewMeleeWeaponsPageList(entity *model.Entity) *PageList[*model.Weapon] {
-	return newPageList(nil, NewWeaponsProvider(entity, model.MeleeWeaponType, true))
+func NewMeleeWeaponsPageList(entity *gurps.Entity) *PageList[*gurps.Weapon] {
+	return newPageList(nil, NewWeaponsProvider(entity, gurps.MeleeWeaponType, true))
 }
 
 // NewRangedWeaponsPageList creates the ranged weapons page list.
-func NewRangedWeaponsPageList(entity *model.Entity) *PageList[*model.Weapon] {
-	return newPageList(nil, NewWeaponsProvider(entity, model.RangedWeaponType, true))
+func NewRangedWeaponsPageList(entity *gurps.Entity) *PageList[*gurps.Weapon] {
+	return newPageList(nil, NewWeaponsProvider(entity, gurps.RangedWeaponType, true))
 }
 
-func newPageList[T model.NodeTypes](owner Rebuildable, provider TableProvider[T]) *PageList[T] {
-	header, table := NewNodeTable[T](provider, model.PageFieldPrimaryFont)
+func newPageList[T gurps.NodeTypes](owner Rebuildable, provider TableProvider[T]) *PageList[T] {
+	header, table := NewNodeTable[T](provider, gurps.PageFieldPrimaryFont)
 	table.RefKey = provider.RefKey()
 	p := &PageList[T]{
 		tableHeader: header,
@@ -126,7 +126,7 @@ func newPageList[T model.NodeTypes](owner Rebuildable, provider TableProvider[T]
 	}
 	p.Self = p
 	p.SetLayout(&unison.FlexLayout{Columns: 1})
-	p.SetBorder(unison.NewLineBorder(model.HeaderColor, 0, unison.NewUniformInsets(1), false))
+	p.SetBorder(unison.NewLineBorder(gurps.HeaderColor, 0, unison.NewUniformInsets(1), false))
 
 	p.Table.PreventUserColumnResize = true
 	p.tableHeader.DrawCallback = func(gc *unison.Canvas, dirty unison.Rect) {
@@ -142,7 +142,7 @@ func newPageList[T model.NodeTypes](owner Rebuildable, provider TableProvider[T]
 			r := p.tableHeader.ColumnFrame(sortedOn)
 			r.X -= p.Table.Padding.Left
 			r.Width += p.Table.Padding.Left + p.Table.Padding.Right
-			gc.DrawRect(r, model.MarkerColor.Paint(gc, r, unison.Fill))
+			gc.DrawRect(r, gurps.MarkerColor.Paint(gc, r, unison.Fill))
 			save := p.tableHeader.BackgroundInk
 			p.tableHeader.BackgroundInk = unison.Transparent
 			p.tableHeader.DefaultDraw(gc, dirty)
@@ -185,7 +185,7 @@ func (p *PageList[T]) installOpenPageReferenceHandlers() {
 }
 
 func (p *PageList[T]) installToggleDisabledHandler(owner Rebuildable) {
-	if t, ok := (any(p.Table)).(*unison.Table[*Node[*model.Trait]]); ok {
+	if t, ok := (any(p.Table)).(*unison.Table[*Node[*gurps.Trait]]); ok {
 		p.InstallCmdHandlers(ToggleStateItemID,
 			func(_ any) bool { return canToggleDisabled(t) },
 			func(_ any) { toggleDisabled(owner, t) })
@@ -193,7 +193,7 @@ func (p *PageList[T]) installToggleDisabledHandler(owner Rebuildable) {
 }
 
 func (p *PageList[T]) installToggleEquippedHandler(owner Rebuildable) {
-	if t, ok := (any(p.Table)).(*unison.Table[*Node[*model.Equipment]]); ok {
+	if t, ok := (any(p.Table)).(*unison.Table[*Node[*gurps.Equipment]]); ok {
 		p.InstallCmdHandlers(ToggleStateItemID,
 			func(_ any) bool { return canToggleEquipped(t) },
 			func(_ any) { toggleEquipped(owner, t) })
@@ -213,7 +213,7 @@ func (p *PageList[T]) installDecrementPointsHandler(owner Rebuildable) {
 }
 
 func (p *PageList[T]) installIncrementLevelHandler(owner Rebuildable) {
-	if t, ok := (any(p.Table)).(*unison.Table[*Node[*model.Trait]]); ok {
+	if t, ok := (any(p.Table)).(*unison.Table[*Node[*gurps.Trait]]); ok {
 		p.InstallCmdHandlers(IncrementItemID,
 			func(_ any) bool { return canAdjustTraitLevel(t, true) },
 			func(_ any) { adjustTraitLevel(owner, t, true) })
@@ -221,7 +221,7 @@ func (p *PageList[T]) installIncrementLevelHandler(owner Rebuildable) {
 }
 
 func (p *PageList[T]) installDecrementLevelHandler(owner Rebuildable) {
-	if t, ok := (any(p.Table)).(*unison.Table[*Node[*model.Trait]]); ok {
+	if t, ok := (any(p.Table)).(*unison.Table[*Node[*gurps.Trait]]); ok {
 		p.InstallCmdHandlers(DecrementItemID,
 			func(_ any) bool { return canAdjustTraitLevel(t, false) },
 			func(_ any) { adjustTraitLevel(owner, t, false) })
@@ -229,7 +229,7 @@ func (p *PageList[T]) installDecrementLevelHandler(owner Rebuildable) {
 }
 
 func (p *PageList[T]) installIncrementQuantityHandler(owner Rebuildable) {
-	if t, ok := (any(p.Table)).(*unison.Table[*Node[*model.Equipment]]); ok {
+	if t, ok := (any(p.Table)).(*unison.Table[*Node[*gurps.Equipment]]); ok {
 		p.InstallCmdHandlers(IncrementItemID,
 			func(_ any) bool { return canAdjustQuantity(t, true) },
 			func(_ any) { adjustQuantity(owner, t, true) })
@@ -237,7 +237,7 @@ func (p *PageList[T]) installIncrementQuantityHandler(owner Rebuildable) {
 }
 
 func (p *PageList[T]) installDecrementQuantityHandler(owner Rebuildable) {
-	if t, ok := (any(p.Table)).(*unison.Table[*Node[*model.Equipment]]); ok {
+	if t, ok := (any(p.Table)).(*unison.Table[*Node[*gurps.Equipment]]); ok {
 		p.InstallCmdHandlers(DecrementItemID,
 			func(_ any) bool { return canAdjustQuantity(t, false) },
 			func(_ any) { adjustQuantity(owner, t, false) })
@@ -245,7 +245,7 @@ func (p *PageList[T]) installDecrementQuantityHandler(owner Rebuildable) {
 }
 
 func (p *PageList[T]) installIncrementUsesHandler(owner Rebuildable) {
-	if t, ok := (any(p.Table)).(*unison.Table[*Node[*model.Equipment]]); ok {
+	if t, ok := (any(p.Table)).(*unison.Table[*Node[*gurps.Equipment]]); ok {
 		p.InstallCmdHandlers(IncrementUsesItemID,
 			func(_ any) bool { return canAdjustUses(t, 1) },
 			func(_ any) { adjustUses(owner, t, 1) })
@@ -253,7 +253,7 @@ func (p *PageList[T]) installIncrementUsesHandler(owner Rebuildable) {
 }
 
 func (p *PageList[T]) installDecrementUsesHandler(owner Rebuildable) {
-	if t, ok := (any(p.Table)).(*unison.Table[*Node[*model.Equipment]]); ok {
+	if t, ok := (any(p.Table)).(*unison.Table[*Node[*gurps.Equipment]]); ok {
 		p.InstallCmdHandlers(DecrementUsesItemID,
 			func(_ any) bool { return canAdjustUses(t, -1) },
 			func(_ any) { adjustUses(owner, t, -1) })
@@ -285,11 +285,11 @@ func (p *PageList[T]) installDecrementTechLevelHandler(owner Rebuildable) {
 }
 
 func (p *PageList[T]) installContainerConversionHandlers(owner Rebuildable) {
-	if t, ok := (any(p.Table)).(*unison.Table[*Node[*model.Equipment]]); ok {
+	if t, ok := (any(p.Table)).(*unison.Table[*Node[*gurps.Equipment]]); ok {
 		InstallContainerConversionHandlers(p, owner, t)
 		return
 	}
-	if t, ok := (any(p.Table)).(*unison.Table[*Node[*model.Note]]); ok {
+	if t, ok := (any(p.Table)).(*unison.Table[*Node[*gurps.Note]]); ok {
 		InstallContainerConversionHandlers(p, owner, t)
 	}
 }

@@ -48,7 +48,7 @@ func main() {
 	)
 	removeExistingGenFiles()
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model",
+		Pkg:        "model/gurps",
 		Name:       "paper_orientation",
 		Desc:       "holds the orientation of the page",
 		StandAlone: true,
@@ -58,7 +58,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model",
+		Pkg:  "model/gurps",
 		Name: "paper_units",
 		Desc: "holds the real-world length unit type",
 		Values: []enumValue{
@@ -83,7 +83,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model",
+		Pkg:  "model/gurps",
 		Name: "paper_size",
 		Desc: "holds a standard paper dimension",
 		Values: []enumValue{
@@ -100,7 +100,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model",
+		Pkg:  "model/gurps",
 		Name: "display_option",
 		Desc: "holds a display option",
 		Values: []enumValue{
@@ -114,7 +114,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model",
+		Pkg:  "model/gurps",
 		Name: "affects",
 		Desc: "describes how a TraitModifier affects the point cost",
 		Values: []enumValue{
@@ -135,7 +135,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model",
+		Pkg:  "model/gurps",
 		Name: "container_type",
 		Desc: "holds the type of a trait container",
 		Values: []enumValue{
@@ -150,7 +150,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model",
+		Pkg:  "model/gurps",
 		Name: "trait_modifier_cost_type",
 		Desc: "describes how a TraitModifier's point cost is applied",
 		Values: []enumValue{
@@ -169,7 +169,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model",
+		Pkg:  "model/gurps",
 		Name: "bonus_limitation",
 		Desc: "holds a limitation for an AttributeBonus",
 		Values: []enumValue{
@@ -193,7 +193,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model",
+		Pkg:        "model/gurps",
 		Name:       "damage_progression",
 		Desc:       "controls how Thrust and Swing are calculated",
 		StandAlone: true,
@@ -224,7 +224,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model",
+		Pkg:  "model/gurps",
 		Name: "threshold_op",
 		Desc: "holds an operation to apply when a pool threshold is hit",
 		Values: []enumValue{
@@ -249,7 +249,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model",
+		Pkg:  "model/gurps",
 		Name: "attribute_type",
 		Desc: "holds the type of an attribute definition",
 		Values: []enumValue{
@@ -264,7 +264,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model",
+		Pkg:  "model/gurps",
 		Name: "encumbrance",
 		Desc: "holds the encumbrance level",
 		Values: []enumValue{
@@ -282,7 +282,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model",
+		Pkg:        "model/gurps",
 		Name:       "entity_type",
 		Desc:       "holds the type of an Entity",
 		StandAlone: true,
@@ -295,7 +295,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model",
+		Pkg:  "model/gurps",
 		Name: "equipment_modifier_cost_type",
 		Desc: "describes how an Equipment Modifier's cost is applied",
 		Values: []enumValue{
@@ -326,7 +326,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model",
+		Pkg:  "model/gurps",
 		Name: "equipment_modifier_cost_value_type",
 		Desc: "describes how an Equipment Modifier's cost value is applied",
 		Values: []enumValue{
@@ -351,7 +351,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model",
+		Pkg:  "model/gurps",
 		Name: "equipment_modifier_weight_type",
 		Desc: "describes how an Equipment Modifier's weight is applied",
 		Values: []enumValue{
@@ -382,7 +382,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model",
+		Pkg:  "model/gurps",
 		Name: "equipment_modifier_weight_value_type",
 		Desc: "describes how an Equipment Modifier's weight value is applied",
 		Values: []enumValue{
@@ -411,7 +411,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model",
+		Pkg:  "model/gurps",
 		Name: "feature_type",
 		Desc: "holds the type of a Feature",
 		Values: []enumValue{
@@ -468,7 +468,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model",
+		Pkg:  "model/gurps",
 		Name: "prereq_type",
 		Desc: "holds the type of a Prereq",
 		Values: []enumValue{
@@ -516,7 +516,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model",
+		Pkg:        "model/gurps",
 		Name:       "difficulty",
 		Desc:       "holds the difficulty level of a skill",
 		StandAlone: true,
@@ -550,7 +550,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model",
+		Pkg:  "model/gurps",
 		Name: "skill_selection_type",
 		Desc: "holds the type of a selection",
 		Values: []enumValue{
@@ -570,7 +570,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model",
+		Pkg:  "model/gurps",
 		Name: "spell_comparison_type",
 		Desc: "holds the type of a comparison",
 		Values: []enumValue{
@@ -598,7 +598,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model",
+		Pkg:  "model/gurps",
 		Name: "spell_match_type",
 		Desc: "holds the type of a match",
 		Values: []enumValue{
@@ -623,7 +623,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model",
+		Pkg:  "model/gurps",
 		Name: "weapon_selection_type",
 		Desc: "holds the type of a weapon selection",
 		Values: []enumValue{
@@ -644,7 +644,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model",
+		Pkg:  "model/gurps",
 		Name: "strength_damage",
 		Desc: "holds the type of strength dice to add to damage",
 		Values: []enumValue{
@@ -677,7 +677,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model",
+		Pkg:  "model/gurps",
 		Name: "weapon_type",
 		Desc: "holds the type of an weapon definition",
 		Values: []enumValue{
@@ -694,7 +694,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model",
+		Pkg:        "model/gurps",
 		Name:       "self_control_roll_adj",
 		Desc:       "holds an Adjustment for a self-control roll",
 		StandAlone: true,
@@ -737,7 +737,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model",
+		Pkg:        "model/gurps",
 		Name:       "length_units",
 		Desc:       "holds the length unit type. Note that conversions to/from metric are done using the simplified GURPS metric conversion of 1 yd = 1 meter. For consistency, all metric lengths are converted to meters, then to yards, rather than the variations at different lengths that the GURPS rules suggest",
 		StandAlone: true,
@@ -792,7 +792,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model",
+		Pkg:        "model/gurps",
 		Name:       "weight_units",
 		Desc:       "holds the weight unit type. Note that conversions to/from metric are done using the simplified GURPS metric conversion of 1 lb = 0.5kg. For consistency, all metric weights are converted to kilograms, then to pounds, rather than the variations at different weights that the GURPS rules suggest",
 		StandAlone: true,
@@ -842,7 +842,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model",
+		Pkg:  "model/gurps",
 		Name: "cell_type",
 		Desc: "holds the type of table cell",
 		Values: []enumValue{
@@ -854,7 +854,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model",
+		Pkg:        "model/gurps",
 		Name:       "template_picker_type",
 		Desc:       "holds the type of template picker",
 		StandAlone: false,
@@ -865,7 +865,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model",
+		Pkg:        "model/gurps",
 		Name:       "study_type",
 		Desc:       "holds the type of study",
 		StandAlone: false,
@@ -889,7 +889,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model",
+		Pkg:  "model/gurps",
 		Name: "name_generation_type",
 		Desc: "holds a name generation type",
 		Values: []enumValue{
@@ -900,7 +900,7 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model",
+		Pkg:  "model/gurps",
 		Name: "name_data",
 		Desc: "holds a built-in name data type",
 		Values: []enumValue{

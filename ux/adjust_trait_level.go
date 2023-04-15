@@ -12,8 +12,8 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -41,11 +41,11 @@ func (a *adjustTraitLevelList) Finish() {
 }
 
 type traitLevelAdjuster struct {
-	Target *model.Trait
+	Target *gurps.Trait
 	Levels fxp.Int
 }
 
-func newTraitLevelAdjuster(target *model.Trait) *traitLevelAdjuster {
+func newTraitLevelAdjuster(target *gurps.Trait) *traitLevelAdjuster {
 	return &traitLevelAdjuster{
 		Target: target,
 		Levels: target.Levels,
@@ -56,7 +56,7 @@ func (a *traitLevelAdjuster) Apply() {
 	a.Target.Levels = a.Levels
 }
 
-func canAdjustTraitLevel(table *unison.Table[*Node[*model.Trait]], increment bool) bool {
+func canAdjustTraitLevel(table *unison.Table[*Node[*gurps.Trait]], increment bool) bool {
 	for _, row := range table.SelectedRows(false) {
 		if t := row.Data(); t != nil && t.IsLeveled() {
 			if increment || t.Levels > 0 {
@@ -67,7 +67,7 @@ func canAdjustTraitLevel(table *unison.Table[*Node[*model.Trait]], increment boo
 	return false
 }
 
-func adjustTraitLevel(owner Rebuildable, table *unison.Table[*Node[*model.Trait]], increment bool) {
+func adjustTraitLevel(owner Rebuildable, table *unison.Table[*Node[*gurps.Trait]], increment bool) {
 	before := &adjustTraitLevelList{Owner: owner}
 	after := &adjustTraitLevelList{Owner: owner}
 	for _, row := range table.SelectedRows(false) {

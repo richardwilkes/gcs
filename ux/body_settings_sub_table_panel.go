@@ -12,7 +12,7 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -21,12 +21,12 @@ import (
 type bodySettingsSubTablePanel struct {
 	unison.Panel
 	dockable     *bodySettingsDockable
-	body         *model.Body
+	body         *gurps.Body
 	addButton    *unison.Button
 	deleteButton *unison.Button
 }
 
-func newBodySettingsSubTablePanel(d *bodySettingsDockable, body *model.Body) *bodySettingsSubTablePanel {
+func newBodySettingsSubTablePanel(d *bodySettingsDockable, body *gurps.Body) *bodySettingsSubTablePanel {
 	p := &bodySettingsSubTablePanel{
 		dockable: d,
 		body:     body,
@@ -71,7 +71,7 @@ func (p *bodySettingsSubTablePanel) createButtons() *unison.Panel {
 
 func (p *bodySettingsSubTablePanel) addHitLocation() {
 	undo := p.dockable.prepareUndo(i18n.Text("Add Hit Location"))
-	location := model.NewHitLocation(p.dockable.Entity(), p.dockable.targetMgr.NextPrefix())
+	location := gurps.NewHitLocation(p.dockable.Entity(), p.dockable.targetMgr.NextPrefix())
 	p.body.AddLocation(location)
 	p.dockable.finishAndPostUndo(undo)
 	p.dockable.sync()

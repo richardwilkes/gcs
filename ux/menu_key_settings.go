@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"io/fs"
 
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -38,7 +38,7 @@ func ShowMenuKeySettings() {
 		d.Self = d
 		d.TabTitle = i18n.Text("Menu Keys")
 		d.TabIcon = svg.Settings
-		d.Extensions = []string{model.KeySettingsExt}
+		d.Extensions = []string{gurps.KeySettingsExt}
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset
@@ -57,7 +57,7 @@ func (d *menuKeySettingsDockable) initContent(content *unison.Panel) {
 }
 
 func (d *menuKeySettingsDockable) reset() {
-	g := model.GlobalSettings()
+	g := gurps.GlobalSettings()
 	g.KeyBindings.Reset()
 	g.KeyBindings.MakeCurrent()
 	d.sync()
@@ -70,14 +70,14 @@ func (d *menuKeySettingsDockable) sync() {
 }
 
 func (d *menuKeySettingsDockable) fill() {
-	for _, b := range model.CurrentBindings() {
+	for _, b := range gurps.CurrentBindings() {
 		d.content.AddChild(NewFieldLeadingLabel(b.Action.Title))
 		d.createBindingButton(b)
 		d.createResetField(b)
 	}
 }
 
-func (d *menuKeySettingsDockable) createBindingButton(binding *model.Binding) {
+func (d *menuKeySettingsDockable) createBindingButton(binding *gurps.Binding) {
 	b := unison.NewButton()
 	b.Font = unison.KeyboardFont
 	b.Text = binding.Action.KeyBinding.String()
@@ -137,7 +137,7 @@ func (d *menuKeySettingsDockable) createBindingButton(binding *model.Binding) {
 				fallthrough
 			case unison.ModalResponseOK:
 				binding.KeyBinding = localBinding
-				g := model.GlobalSettings()
+				g := gurps.GlobalSettings()
 				g.KeyBindings.Set(binding.ID, localBinding)
 				g.KeyBindings.MakeCurrent()
 				b.Text = localBinding.String()
@@ -149,12 +149,12 @@ func (d *menuKeySettingsDockable) createBindingButton(binding *model.Binding) {
 	d.content.AddChild(b)
 }
 
-func (d *menuKeySettingsDockable) createResetField(binding *model.Binding) {
+func (d *menuKeySettingsDockable) createResetField(binding *gurps.Binding) {
 	b := unison.NewSVGButton(svg.Reset)
 	b.Tooltip = unison.NewTooltipWithText("Reset this key binding")
 	b.ClickCallback = func() {
 		if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to reset '%s'?"), binding.Action.Title), "") == unison.ModalResponseOK {
-			g := model.GlobalSettings()
+			g := gurps.GlobalSettings()
 			g.KeyBindings.ResetOne(binding.ID)
 			g.KeyBindings.MakeCurrent()
 			binding.KeyBinding = g.KeyBindings.Current(binding.ID)
@@ -172,11 +172,11 @@ func (d *menuKeySettingsDockable) createResetField(binding *model.Binding) {
 }
 
 func (d *menuKeySettingsDockable) load(fileSystem fs.FS, filePath string) error {
-	b, err := model.NewKeyBindingsFromFS(fileSystem, filePath)
+	b, err := gurps.NewKeyBindingsFromFS(fileSystem, filePath)
 	if err != nil {
 		return err
 	}
-	g := model.GlobalSettings()
+	g := gurps.GlobalSettings()
 	g.KeyBindings = *b
 	g.KeyBindings.MakeCurrent()
 	d.sync()
@@ -184,5 +184,5 @@ func (d *menuKeySettingsDockable) load(fileSystem fs.FS, filePath string) error 
 }
 
 func (d *menuKeySettingsDockable) save(filePath string) error {
-	return model.GlobalSettings().KeyBindings.Save(filePath)
+	return gurps.GlobalSettings().KeyBindings.Save(filePath)
 }

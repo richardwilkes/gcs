@@ -14,7 +14,7 @@ package ux
 import (
 	"fmt"
 
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -23,7 +23,7 @@ import (
 // PointsPanel holds the contents of the points block on the sheet.
 type PointsPanel struct {
 	unison.Panel
-	entity       *model.Entity
+	entity       *gurps.Entity
 	targetMgr    *TargetMgr
 	prefix       string
 	total        *unison.Label
@@ -33,7 +33,7 @@ type PointsPanel struct {
 }
 
 // NewPointsPanel creates a new points panel.
-func NewPointsPanel(entity *model.Entity, targetMgr *TargetMgr) *PointsPanel {
+func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	p := &PointsPanel{
 		entity:    entity,
 		targetMgr: targetMgr,
@@ -58,7 +58,7 @@ func NewPointsPanel(entity *model.Entity, targetMgr *TargetMgr) *PointsPanel {
 		HGrab:  true,
 	})
 	hdr.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, model.HeaderColor.Paint(gc, rect, unison.Fill))
+		gc.DrawRect(rect, gurps.HeaderColor.Paint(gc, rect, unison.Fill))
 	}
 
 	hdri := unison.NewPanel()
@@ -76,18 +76,18 @@ func NewPointsPanel(entity *model.Entity, targetMgr *TargetMgr) *PointsPanel {
 		overallTotal = p.entity.TotalPoints.String()
 	}
 	p.total = unison.NewLabel()
-	p.total.Font = model.PageLabelPrimaryFont
+	p.total.Font = gurps.PageLabelPrimaryFont
 	p.total.Text = fmt.Sprintf(i18n.Text("%s Points"), overallTotal)
-	p.total.OnBackgroundInk = model.OnHeaderColor
+	p.total.OnBackgroundInk = gurps.OnHeaderColor
 	hdri.AddChild(p.total)
 	height := p.total.Font.Baseline() - 2
 	editButton := unison.NewSVGButton(svg.Edit)
-	editButton.OnBackgroundInk = model.OnHeaderColor
+	editButton.OnBackgroundInk = gurps.OnHeaderColor
 	// These next two really should be different, but since this is on the header background we'd have to make new
 	// colors and I don't want to do that right now just for a single case
-	editButton.RolloverInk = model.OnHeaderColor
-	editButton.OnSelectionInk = model.OnHeaderColor
-	editButton.Font = model.PageLabelPrimaryFont
+	editButton.RolloverInk = gurps.OnHeaderColor
+	editButton.OnSelectionInk = gurps.OnHeaderColor
+	editButton.Font = gurps.PageLabelPrimaryFont
 	editButton.Drawable.(*unison.DrawableSVG).Size = unison.NewSize(height, height)
 	editButton.ClickCallback = func() {
 		displayPointsEditor(unison.AncestorOrSelf[Rebuildable](p), p.entity)
@@ -108,7 +108,7 @@ func NewPointsPanel(entity *model.Entity, targetMgr *TargetMgr) *PointsPanel {
 	})
 	p.AddChild(p.ptsList)
 
-	p.ptsList.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(model.HeaderColor, 0, unison.Insets{
+	p.ptsList.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(gurps.HeaderColor, 0, unison.Insets{
 		Top:    0,
 		Left:   1,
 		Bottom: 1,

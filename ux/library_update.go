@@ -18,12 +18,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
 
-func initiateLibraryUpdate(lib *model.Library, rel model.Release) bool {
+func initiateLibraryUpdate(lib *gurps.Library, rel gurps.Release) bool {
 	if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Update %s to v%s?"), lib.Title, filterVersion(rel.Version)),
 		i18n.Text(`Existing content for this library will be removed and replaced.
 Content in other libraries will not be modified`)) != unison.ModalResponseOK {
@@ -107,7 +107,7 @@ documents from the library are open.`))
 	return true
 }
 
-func performLibraryUpdate(wnd *unison.Window, lib *model.Library, rel model.Release, err *error) {
+func performLibraryUpdate(wnd *unison.Window, lib *gurps.Library, rel gurps.Release, err *error) {
 	defer finishLibraryUpdate(wnd, lib)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
@@ -115,7 +115,7 @@ func performLibraryUpdate(wnd *unison.Window, lib *model.Library, rel model.Rele
 	*err = lib.Download(ctx, &http.Client{}, rel)
 }
 
-func finishLibraryUpdate(wnd *unison.Window, lib *model.Library) {
+func finishLibraryUpdate(wnd *unison.Window, lib *gurps.Library) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	lib.CheckForAvailableUpgrade(ctx, &http.Client{})

@@ -16,8 +16,8 @@ import (
 	"math"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -94,7 +94,7 @@ type Calculator struct {
 	hikingResult               *unison.Label
 	scale                      int
 	jumpingRunningStartYards   fxp.Int
-	throwingObjectWeight       model.Weight
+	throwingObjectWeight       gurps.Weight
 	jumpingExtraEffortPenalty  int
 	throwingExtraEffortPenalty int
 	hikingExtraEffortPenalty   int
@@ -117,8 +117,8 @@ func DisplayCalculator(sheet *Sheet) {
 	if !found && ws != nil {
 		c := &Calculator{
 			sheet:                sheet,
-			scale:                model.GlobalSettings().General.InitialEditorUIScale,
-			throwingObjectWeight: model.Weight(fxp.One),
+			scale:                gurps.GlobalSettings().General.InitialEditorUIScale,
+			throwingObjectWeight: gurps.Weight(fxp.One),
 			terrainIndex:         slices.IndexFunc(terrain, func(t terrainModifier) bool { return t.Default }),
 			weatherIndex:         slices.IndexFunc(weather, func(t terrainModifier) bool { return t.Default }),
 		}
@@ -185,9 +185,9 @@ func (c *Calculator) createToolbar() *unison.Panel {
 	toolbar.AddChild(NewDefaultInfoPop())
 	toolbar.AddChild(
 		NewScaleField(
-			model.InitialUIScaleMin,
-			model.InitialUIScaleMax,
-			func() int { return model.GlobalSettings().General.InitialEditorUIScale },
+			gurps.InitialUIScaleMin,
+			gurps.InitialUIScaleMax,
+			func() int { return gurps.GlobalSettings().General.InitialEditorUIScale },
 			func() int { return c.scale },
 			func(scale int) { c.scale = scale },
 			nil,
@@ -303,12 +303,12 @@ func (c *Calculator) addThrowingSection() {
 	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
 	wrapper.AddChild(NewWeightField(nil, "", i18n.Text("Object Weight"),
 		c.sheet.Entity(),
-		func() model.Weight { return c.throwingObjectWeight },
-		func(v model.Weight) {
+		func() gurps.Weight { return c.throwingObjectWeight },
+		func(v gurps.Weight) {
 			c.throwingObjectWeight = v
 			c.updateThrowingResult()
 		},
-		0, model.Weight(fxp.Max), false))
+		0, gurps.Weight(fxp.Max), false))
 	label := unison.NewLabel()
 	label.Text = i18n.Text("object")
 	wrapper.AddChild(label)
@@ -612,13 +612,13 @@ func (c *Calculator) UndoManager() *unison.UndoManager {
 
 func (c *Calculator) computeJump(broad bool) fxp.Int {
 	entity := c.sheet.Entity()
-	basicMove := entity.Attributes.Current(model.BasicMoveID)
+	basicMove := entity.Attributes.Current(gurps.BasicMoveID)
 	basicMoveWithoutRun := basicMove
 
 	// Adjust Basic Move for running
 	if c.jumpingRunningStartYards > 0 {
 		enhMove := -fxp.One
-		model.Traverse(func(t *model.Trait) bool {
+		gurps.Traverse(func(t *gurps.Trait) bool {
 			if strings.EqualFold(t.Name, "enhanced move (ground)") && t.IsLeveled() {
 				if enhMove == -fxp.One {
 					enhMove = t.Levels
@@ -637,7 +637,7 @@ func (c *Calculator) computeJump(broad bool) fxp.Int {
 	}
 
 	// Adjust Basic Move for Jumping skill
-	model.Traverse(func(s *model.Skill) bool {
+	gurps.Traverse(func(s *gurps.Skill) bool {
 		if strings.EqualFold(s.Name, "jumping") {
 			s.UpdateLevel()
 			level := s.LevelData.Level.Div(fxp.Two).Trunc()
@@ -683,7 +683,7 @@ func (c *Calculator) computeJump(broad bool) fxp.Int {
 
 	// Adjust for Super Jump
 	levels := -fxp.One
-	model.Traverse(func(t *model.Trait) bool {
+	gurps.Traverse(func(t *gurps.Trait) bool {
 		if strings.EqualFold(t.Name, "super jump") && t.IsLeveled() {
 			if levels == -fxp.One {
 				levels = t.Levels
@@ -727,7 +727,7 @@ func (c *Calculator) updateThrowingResult() {
 
 	// Determine bonuses for skills
 	var distanceBonus, damageBonus int
-	model.Traverse(func(s *model.Skill) bool {
+	gurps.Traverse(func(s *gurps.Skill) bool {
 		if strings.EqualFold(s.Name, "throwing art") {
 			s.UpdateLevel()
 			if s.LevelData.RelativeLevel >= fxp.One {
@@ -862,7 +862,7 @@ func (c *Calculator) updateHikingResult() {
 
 	// Adjust for enhanced move (ground), if any
 	enhMove := -fxp.One
-	model.Traverse(func(t *model.Trait) bool {
+	gurps.Traverse(func(t *gurps.Trait) bool {
 		if strings.EqualFold(t.Name, "enhanced move (ground)") && t.IsLeveled() {
 			if enhMove == -fxp.One {
 				enhMove = t.Levels
@@ -946,7 +946,7 @@ func (c *Calculator) updateHikingResult() {
 
 func (c *Calculator) useMeters() bool {
 	units := c.sheet.Entity().SheetSettings.DefaultLengthUnits
-	return units == model.Centimeter || units == model.Meter || units == model.Kilometer
+	return units == gurps.Centimeter || units == gurps.Meter || units == gurps.Kilometer
 }
 
 func (c *Calculator) distanceToText(inches fxp.Int) string {

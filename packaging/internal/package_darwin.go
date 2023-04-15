@@ -20,7 +20,7 @@ import (
 	"path/filepath"
 	"text/template"
 
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/formats/icon"
@@ -71,9 +71,9 @@ func writeICNS(dstPath string, img image.Image) (err error) {
 }
 
 func writeDocICNS(dir string, base image.Image) error {
-	for i := range model.KnownFileTypes {
-		if fi := &model.KnownFileTypes[i]; fi.IsGCSData {
-			overlay, err := model.CreateImageFromSVG(fi, 512)
+	for i := range gurps.KnownFileTypes {
+		if fi := &gurps.KnownFileTypes[i]; fi.IsGCSData {
+			overlay, err := gurps.CreateImageFromSVG(fi, 512)
 			if err != nil {
 				return err
 			}
@@ -111,8 +111,8 @@ func writePlist(targetPath string) (err error) {
 		Extensions []string
 		MimeTypes  []string
 	}
-	fileInfo := make([]*fileData, 0, len(model.KnownFileTypes))
-	for _, fi := range model.KnownFileTypes {
+	fileInfo := make([]*fileData, 0, len(gurps.KnownFileTypes))
+	for _, fi := range gurps.KnownFileTypes {
 		if !fi.IsSpecial {
 			extensions := make([]string, len(fi.Extensions))
 			for i, ext := range fi.Extensions {

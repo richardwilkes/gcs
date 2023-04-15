@@ -14,7 +14,7 @@ package ux
 import (
 	_ "embed"
 
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -28,7 +28,7 @@ var appIconBytes []byte
 func Start(files []string) {
 	pathsChan := make(chan []string, 32)
 	startHandoffService(pathsChan, files)
-	libs := model.GlobalSettings().LibrarySet
+	libs := gurps.GlobalSettings().LibrarySet
 	go libs.PerformUpdateChecks()
 	unison.Start(
 		unison.StartupFinishedCallback(func() {

@@ -12,7 +12,7 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/xmath"
 	"github.com/richardwilkes/unison"
 )
@@ -31,7 +31,7 @@ func (p *portraitLayout) LayoutSizes(_ *unison.Panel, hint unison.Size) (min, pr
 	if height -= insets.Top + insets.Bottom; height > 0 {
 		width = height * 0.75
 	} else {
-		width = model.PortraitWidth
+		width = gurps.PortraitWidth
 	}
 	width += insets.Left + insets.Right
 	pref.Width += width + 1

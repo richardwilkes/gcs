@@ -14,14 +14,14 @@ package ux
 import (
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
 
 // ConvertableNodeTypes defines the types that the container conversion can work on.
 type ConvertableNodeTypes interface {
-	*model.Equipment | *model.Note
+	*gurps.Equipment | *gurps.Note
 	Container() bool
 	GetType() string
 	SetType(string)
@@ -95,7 +95,7 @@ func ConvertToContainer[T ConvertableNodeTypes](owner Rebuildable, table *unison
 	for _, row := range table.SelectedRows(false) {
 		if data := row.Data(); data != nil && !data.Container() {
 			before.List = append(before.List, newContainerConversion(data))
-			data.SetType(data.GetType() + model.ContainerKeyPostfix)
+			data.SetType(data.GetType() + gurps.ContainerKeyPostfix)
 			after.List = append(after.List, newContainerConversion(data))
 		}
 	}
@@ -121,7 +121,7 @@ func ConvertToNonContainer[T ConvertableNodeTypes](owner Rebuildable, table *uni
 	for _, row := range table.SelectedRows(false) {
 		if data := row.Data(); data != nil && data.Container() && !data.HasChildren() {
 			before.List = append(before.List, newContainerConversion(data))
-			data.SetType(strings.TrimSuffix(data.GetType(), model.ContainerKeyPostfix))
+			data.SetType(strings.TrimSuffix(data.GetType(), gurps.ContainerKeyPostfix))
 			after.List = append(after.List, newContainerConversion(data))
 		}
 	}

@@ -15,30 +15,30 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/unison"
 )
 
 type traitModifierListProvider struct {
-	modifiers []*model.TraitModifier
+	modifiers []*gurps.TraitModifier
 }
 
-func (p *traitModifierListProvider) Entity() *model.Entity {
+func (p *traitModifierListProvider) Entity() *gurps.Entity {
 	return nil
 }
 
-func (p *traitModifierListProvider) TraitModifierList() []*model.TraitModifier {
+func (p *traitModifierListProvider) TraitModifierList() []*gurps.TraitModifier {
 	return p.modifiers
 }
 
-func (p *traitModifierListProvider) SetTraitModifierList(list []*model.TraitModifier) {
+func (p *traitModifierListProvider) SetTraitModifierList(list []*gurps.TraitModifier) {
 	p.modifiers = list
 }
 
 // NewTraitModifierTableDockableFromFile loads a list of trait modifiers from a file and creates a new
 // unison.Dockable for them.
 func NewTraitModifierTableDockableFromFile(filePath string) (unison.Dockable, error) {
-	modifiers, err := model.NewTraitModifiersFromFile(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath))
+	modifiers, err := gurps.NewTraitModifiersFromFile(os.DirFS(filepath.Dir(filePath)), filepath.Base(filePath))
 	if err != nil {
 		return nil, err
 	}
@@ -48,10 +48,10 @@ func NewTraitModifierTableDockableFromFile(filePath string) (unison.Dockable, er
 }
 
 // NewTraitModifierTableDockable creates a new unison.Dockable for trait modifier list files.
-func NewTraitModifierTableDockable(filePath string, modifiers []*model.TraitModifier) *TableDockable[*model.TraitModifier] {
+func NewTraitModifierTableDockable(filePath string, modifiers []*gurps.TraitModifier) *TableDockable[*gurps.TraitModifier] {
 	provider := &traitModifierListProvider{modifiers: modifiers}
-	return NewTableDockable(filePath, model.TraitModifiersExt,
+	return NewTableDockable(filePath, gurps.TraitModifiersExt,
 		NewTraitModifiersProvider(provider, false),
-		func(path string) error { return model.SaveTraitModifiers(provider.TraitModifierList(), path) },
+		func(path string) error { return gurps.SaveTraitModifiers(provider.TraitModifierList(), path) },
 		NewTraitModifierItemID, NewTraitContainerModifierItemID)
 }

@@ -14,18 +14,18 @@ package ux
 import (
 	"strconv"
 
-	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
 
 // EditEquipment displays the editor for equipment.
-func EditEquipment(owner Rebuildable, equipment *model.Equipment, carried bool) {
-	displayEditor[*model.Equipment, *model.EquipmentEditData](owner, equipment, svg.GCSEquipment,
+func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) {
+	displayEditor[*gurps.Equipment, *gurps.EquipmentEditData](owner, equipment, svg.GCSEquipment,
 		"md:Help/Interface/Equipment", nil,
-		func(e *editor[*model.Equipment, *model.EquipmentEditData], content *unison.Panel) func() {
+		func(e *editor[*gurps.Equipment, *gurps.EquipmentEditData], content *unison.Panel) func() {
 			addNameLabelAndField(content, &e.editorData.Name)
 			addNotesLabelAndField(content, &e.editorData.LocalNotes)
 			addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
@@ -48,7 +48,7 @@ func EditEquipment(owner Rebuildable, equipment *model.Equipment, carried bool) 
 			wrapper.AddChild(NewNonEditableField(func(field *NonEditableField) {
 				var value fxp.Int
 				if e.editorData.Quantity > 0 {
-					value = model.ValueAdjustedForModifiers(e.editorData.Value, e.editorData.Modifiers)
+					value = gurps.ValueAdjustedForModifiers(e.editorData.Value, e.editorData.Modifiers)
 					if e.target.Container() {
 						for _, one := range e.target.Children {
 							value += one.ExtendedValue()
@@ -64,10 +64,10 @@ func EditEquipment(owner Rebuildable, equipment *model.Equipment, carried bool) 
 			addWeightField(wrapper, nil, "", weightLabel, "", e.target.Entity, &e.editorData.Weight, false)
 			wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Extended")))
 			wrapper.AddChild(NewNonEditableField(func(field *NonEditableField) {
-				var weight model.Weight
-				defUnits := model.SheetSettingsFor(e.target.Entity).DefaultWeightUnits
+				var weight gurps.Weight
+				defUnits := gurps.SheetSettingsFor(e.target.Entity).DefaultWeightUnits
 				if e.editorData.Quantity > 0 {
-					weight = model.ExtendedWeightAdjustedForModifiers(defUnits, e.editorData.Quantity, e.editorData.Weight,
+					weight = gurps.ExtendedWeightAdjustedForModifiers(defUnits, e.editorData.Quantity, e.editorData.Weight,
 						e.editorData.Modifiers, e.editorData.Features, e.target.Children, false, false)
 				}
 				field.Text = defUnits.Format(weight)
@@ -88,7 +88,7 @@ func EditEquipment(owner Rebuildable, equipment *model.Equipment, carried bool) 
 			content.AddChild(newFeaturesPanel(e.target.Entity, e.target, &e.editorData.Features))
 			modifiersPanel := newEquipmentModifiersPanel(e.target.Entity, &e.editorData.Modifiers)
 			content.AddChild(modifiersPanel)
-			for _, wt := range model.AllWeaponType {
+			for _, wt := range gurps.AllWeaponType {
 				content.AddChild(newWeaponsPanel(e, e.target, wt, &e.editorData.Weapons))
 			}
 			e.InstallCmdHandlers(NewEquipmentModifierItemID, unison.AlwaysEnabled,

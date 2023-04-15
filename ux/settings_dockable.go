@@ -17,7 +17,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -186,8 +186,8 @@ func (d *SettingsDockable) showMenu(b *unison.Button) {
 		id++
 	}
 	if d.Loader != nil {
-		libraries := model.GlobalSettings().Libraries()
-		sets := model.ScanForNamedFileSets(nil, "", false, libraries, d.Extensions...)
+		libraries := gurps.GlobalSettings().Libraries()
+		sets := gurps.ScanForNamedFileSets(nil, "", false, libraries, d.Extensions...)
 		if len(sets) != 0 {
 			m.InsertSeparator(-1, false)
 			for _, lib := range sets {
@@ -204,7 +204,7 @@ func (d *SettingsDockable) showMenu(b *unison.Button) {
 	m.Popup(b.RectToRoot(b.ContentRect(true)), 0)
 }
 
-func (d *SettingsDockable) insertFileToLoad(m unison.Menu, id int, ref *model.NamedFileRef) {
+func (d *SettingsDockable) insertFileToLoad(m unison.Menu, id int, ref *gurps.NamedFileRef) {
 	m.InsertItem(-1, m.Factory().NewItem(id, "    "+ref.Name, unison.KeyBinding{}, nil, func(_ unison.MenuItem) {
 		d.doLoad(ref.FileSystem, ref.FilePath)
 	}))
@@ -223,12 +223,12 @@ func (d *SettingsDockable) handleImport(_ unison.MenuItem) {
 	dialog.SetAllowedExtensions(d.Extensions...)
 	dialog.SetCanChooseDirectories(false)
 	dialog.SetCanChooseFiles(true)
-	global := model.GlobalSettings()
-	dialog.SetInitialDirectory(global.LastDir(model.SettingsLastDirKey))
+	global := gurps.GlobalSettings()
+	dialog.SetInitialDirectory(global.LastDir(gurps.SettingsLastDirKey))
 	if dialog.RunModal() {
 		p := dialog.Path()
 		dir := filepath.Dir(p)
-		global.SetLastDir(model.SettingsLastDirKey, dir)
+		global.SetLastDir(gurps.SettingsLastDirKey, dir)
 		d.doLoad(os.DirFS(dir), filepath.Base(p))
 	}
 }
@@ -236,11 +236,11 @@ func (d *SettingsDockable) handleImport(_ unison.MenuItem) {
 func (d *SettingsDockable) handleExport(_ unison.MenuItem) {
 	dialog := unison.NewSaveDialog()
 	dialog.SetAllowedExtensions(d.Extensions[0])
-	global := model.GlobalSettings()
-	dialog.SetInitialDirectory(global.LastDir(model.SettingsLastDirKey))
+	global := gurps.GlobalSettings()
+	dialog.SetInitialDirectory(global.LastDir(gurps.SettingsLastDirKey))
 	if dialog.RunModal() {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), d.Extensions[0], false); ok {
-			global.SetLastDir(model.SettingsLastDirKey, filepath.Dir(filePath))
+			global.SetLastDir(gurps.SettingsLastDirKey, filepath.Dir(filePath))
 			if err := d.Saver(filePath); err != nil {
 				unison.ErrorDialogWithError(i18n.Text("Unable to save ")+d.TabTitle, err)
 			}

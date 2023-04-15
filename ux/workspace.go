@@ -19,7 +19,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
@@ -145,7 +145,7 @@ func NewWorkspace(wnd *unison.Window) *Workspace {
 	wnd.ClientData()[workspaceClientDataKey] = w
 	wnd.AllowCloseCallback = w.allowClose
 	wnd.WillCloseCallback = w.willClose
-	global := model.GlobalSettings()
+	global := gurps.GlobalSettings()
 	if global.WorkspaceFrame != nil {
 		r := *global.WorkspaceFrame
 		if r.Width < 10 {
@@ -194,7 +194,7 @@ func (w *Workspace) allowClose() bool {
 }
 
 func (w *Workspace) willClose() {
-	global := model.GlobalSettings()
+	global := gurps.GlobalSettings()
 	global.LibraryExplorer.OpenRowKeys = w.Navigator.DisclosedPaths()
 	global.LibraryExplorer.DividerPosition = w.TopDock.RootDockLayout().DividerPosition()
 	frame := w.Window.FrameRect()
@@ -411,7 +411,7 @@ func SaveDockableAs(d FileBackedDockable, extension string, saver func(filePath 
 	if !strings.HasPrefix(existingPath, markdownContentOnlyPrefix) && fs.FileExists(existingPath) {
 		dialog.SetInitialDirectory(filepath.Dir(existingPath))
 	} else {
-		dialog.SetInitialDirectory(model.GlobalSettings().LastDir(model.DefaultLastDirKey))
+		dialog.SetInitialDirectory(gurps.GlobalSettings().LastDir(gurps.DefaultLastDirKey))
 	}
 	dialog.SetAllowedExtensions(extension)
 	if dialog.RunModal() {
@@ -419,13 +419,13 @@ func SaveDockableAs(d FileBackedDockable, extension string, saver func(filePath 
 		if !ok {
 			return false
 		}
-		model.GlobalSettings().SetLastDir(model.DefaultLastDirKey, filepath.Dir(filePath))
+		gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
 		if err := saver(filePath); err != nil {
 			unison.ErrorDialogWithError(i18n.Text("Unable to save as ")+fs.BaseName(filePath), err)
 			return false
 		}
 		setUnmodifiedAndNewPath(filePath)
-		model.GlobalSettings().AddRecentFile(filePath)
+		gurps.GlobalSettings().AddRecentFile(filePath)
 		if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
 			dc.UpdateTitle(d)
 		}

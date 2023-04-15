@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"io/fs"
 
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -32,7 +32,7 @@ type attributeSettingsDockable struct {
 	owner           EntityPanel
 	targetMgr       *TargetMgr
 	undoMgr         *unison.UndoManager
-	defs            *model.AttributeDefs
+	defs            *gurps.AttributeDefs
 	originalCRC     uint64
 	toolbar         *unison.Panel
 	content         *unison.Panel
@@ -46,9 +46,9 @@ type attributeSettingsDockable struct {
 }
 
 type attributeSettingsDragData struct {
-	owner     *model.Entity
-	def       *model.AttributeDef
-	threshold *model.PoolThreshold
+	owner     *gurps.Entity
+	def       *gurps.AttributeDef
+	threshold *gurps.PoolThreshold
 }
 
 // ShowAttributeSettings the Attribute Settings. Pass in nil to edit the defaults or a sheet to edit the sheet's.
@@ -70,13 +70,13 @@ func ShowAttributeSettings(owner EntityPanel) {
 			d.defs = d.owner.Entity().SheetSettings.Attributes.Clone()
 			d.TabTitle = i18n.Text("Attributes: " + owner.Entity().Profile.Name)
 		} else {
-			d.defs = model.GlobalSettings().Sheet.Attributes.Clone()
+			d.defs = gurps.GlobalSettings().Sheet.Attributes.Clone()
 			d.TabTitle = i18n.Text("Default Attributes")
 		}
 		d.TabIcon = svg.Attributes
 		d.defs.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
 		d.originalCRC = d.defs.CRC64()
-		d.Extensions = []string{model.AttributesExt, model.AttributesExtAlt1, model.AttributesExtAlt2}
+		d.Extensions = []string{gurps.AttributesExt, gurps.AttributesExtAlt1, gurps.AttributesExtAlt2}
 		d.undoMgr = unison.NewUndoManager(100, func(err error) { jot.Error(err) })
 		d.Loader = d.load
 		d.Saver = d.save
@@ -148,15 +148,15 @@ func (d *attributeSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 	addAttributeText := i18n.Text("Add Attribute")
 	addButton.Tooltip = unison.NewTooltipWithText(addAttributeText)
 	addButton.ClickCallback = func() {
-		undo := &unison.UndoEdit[*model.AttributeDefs]{
+		undo := &unison.UndoEdit[*gurps.AttributeDefs]{
 			ID:         unison.NextUndoID(),
 			EditName:   addAttributeText,
-			UndoFunc:   func(e *unison.UndoEdit[*model.AttributeDefs]) { d.applyAttrDefs(e.BeforeData) },
-			RedoFunc:   func(e *unison.UndoEdit[*model.AttributeDefs]) { d.applyAttrDefs(e.AfterData) },
-			AbsorbFunc: func(e *unison.UndoEdit[*model.AttributeDefs], other unison.Undoable) bool { return false },
+			UndoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.BeforeData) },
+			RedoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.AfterData) },
+			AbsorbFunc: func(e *unison.UndoEdit[*gurps.AttributeDefs], other unison.Undoable) bool { return false },
 		}
 		undo.BeforeData = d.defs.Clone()
-		attrDef := &model.AttributeDef{}
+		attrDef := &gurps.AttributeDef{}
 		base := ""
 		for {
 			for v := 'a'; v <= 'z'; v++ {
@@ -203,31 +203,31 @@ func (d *attributeSettingsDockable) initContent(content *unison.Panel) {
 	}
 }
 
-func (d *attributeSettingsDockable) Entity() *model.Entity {
+func (d *attributeSettingsDockable) Entity() *gurps.Entity {
 	if d.owner != nil {
 		return d.owner.Entity()
 	}
 	return nil
 }
 
-func (d *attributeSettingsDockable) applyAttrDefs(defs *model.AttributeDefs) {
+func (d *attributeSettingsDockable) applyAttrDefs(defs *gurps.AttributeDefs) {
 	d.defs = defs.Clone()
 	d.sync()
 }
 
 func (d *attributeSettingsDockable) reset() {
-	undo := &unison.UndoEdit[*model.AttributeDefs]{
+	undo := &unison.UndoEdit[*gurps.AttributeDefs]{
 		ID:         unison.NextUndoID(),
 		EditName:   i18n.Text("Reset Attributes"),
-		UndoFunc:   func(e *unison.UndoEdit[*model.AttributeDefs]) { d.applyAttrDefs(e.BeforeData) },
-		RedoFunc:   func(e *unison.UndoEdit[*model.AttributeDefs]) { d.applyAttrDefs(e.AfterData) },
-		AbsorbFunc: func(e *unison.UndoEdit[*model.AttributeDefs], other unison.Undoable) bool { return false },
+		UndoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.BeforeData) },
+		RedoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.AfterData) },
+		AbsorbFunc: func(e *unison.UndoEdit[*gurps.AttributeDefs], other unison.Undoable) bool { return false },
 		BeforeData: d.defs.Clone(),
 	}
 	if d.owner != nil {
-		d.defs = model.GlobalSettings().Sheet.Attributes.Clone()
+		d.defs = gurps.GlobalSettings().Sheet.Attributes.Clone()
 	} else {
-		d.defs = model.FactoryAttributeDefs()
+		d.defs = gurps.FactoryAttributeDefs()
 	}
 	d.defs.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
 	undo.AfterData = d.defs.Clone()
@@ -251,17 +251,17 @@ func (d *attributeSettingsDockable) sync() {
 }
 
 func (d *attributeSettingsDockable) load(fileSystem fs.FS, filePath string) error {
-	defs, err := model.NewAttributeDefsFromFile(fileSystem, filePath)
+	defs, err := gurps.NewAttributeDefsFromFile(fileSystem, filePath)
 	if err != nil {
 		return err
 	}
 	defs.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
-	undo := &unison.UndoEdit[*model.AttributeDefs]{
+	undo := &unison.UndoEdit[*gurps.AttributeDefs]{
 		ID:         unison.NextUndoID(),
 		EditName:   i18n.Text("Load Attributes"),
-		UndoFunc:   func(e *unison.UndoEdit[*model.AttributeDefs]) { d.applyAttrDefs(e.BeforeData) },
-		RedoFunc:   func(e *unison.UndoEdit[*model.AttributeDefs]) { d.applyAttrDefs(e.AfterData) },
-		AbsorbFunc: func(e *unison.UndoEdit[*model.AttributeDefs], other unison.Undoable) bool { return false },
+		UndoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.BeforeData) },
+		RedoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.AfterData) },
+		AbsorbFunc: func(e *unison.UndoEdit[*gurps.AttributeDefs], other unison.Undoable) bool { return false },
 		BeforeData: d.defs.Clone(),
 	}
 	d.defs = defs
@@ -278,7 +278,7 @@ func (d *attributeSettingsDockable) save(filePath string) error {
 func (d *attributeSettingsDockable) apply() {
 	d.Window().FocusNext() // Intentionally move the focus to ensure any pending edits are flushed
 	if d.owner == nil {
-		model.GlobalSettings().Sheet.Attributes = d.defs.Clone()
+		gurps.GlobalSettings().Sheet.Attributes = d.defs.Clone()
 		return
 	}
 	entity := d.owner.Entity()
@@ -287,7 +287,7 @@ func (d *attributeSettingsDockable) apply() {
 		if attr, exists := entity.Attributes.Set[attrID]; exists {
 			attr.Order = def.Order
 		} else {
-			entity.Attributes.Set[attrID] = model.NewAttribute(entity, attrID, def.Order)
+			entity.Attributes.Set[attrID] = gurps.NewAttribute(entity, attrID, def.Order)
 		}
 	}
 	for attrID := range entity.Attributes.Set {
@@ -299,7 +299,7 @@ func (d *attributeSettingsDockable) apply() {
 		if ws := WorkspaceFromWindow(wnd); ws != nil {
 			ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
 				for _, one := range dc.Dockables() {
-					if s, ok := one.(model.SheetSettingsResponder); ok {
+					if s, ok := one.(gurps.SheetSettingsResponder); ok {
 						s.SheetSettingsUpdated(entity, true)
 					}
 				}
@@ -338,7 +338,7 @@ func (d *attributeSettingsDockable) dataDragOver(where unison.Point, data map[st
 				}
 			} else {
 				for i, def := range d.defs.List(false) {
-					if def == dd.def && def.Type == model.PoolAttributeType {
+					if def == dd.def && def.Type == gurps.PoolAttributeType {
 						p := children[i].Self.(*attrDefSettingsPanel).poolPanel
 						pt := p.PointFromRoot(rootPt)
 						for j, child := range p.Children() {
@@ -381,11 +381,11 @@ func (d *attributeSettingsDockable) dataDragDrop(_ unison.Point, data map[string
 		if dragData, ok := data[attributeSettingsDragDataKey]; ok {
 			var dd *attributeSettingsDragData
 			if dd, ok = dragData.(*attributeSettingsDragData); ok {
-				undo := &unison.UndoEdit[*model.AttributeDefs]{
+				undo := &unison.UndoEdit[*gurps.AttributeDefs]{
 					ID:         unison.NextUndoID(),
-					UndoFunc:   func(e *unison.UndoEdit[*model.AttributeDefs]) { d.applyAttrDefs(e.BeforeData) },
-					RedoFunc:   func(e *unison.UndoEdit[*model.AttributeDefs]) { d.applyAttrDefs(e.AfterData) },
-					AbsorbFunc: func(e *unison.UndoEdit[*model.AttributeDefs], other unison.Undoable) bool { return false },
+					UndoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.BeforeData) },
+					RedoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.AfterData) },
+					AbsorbFunc: func(e *unison.UndoEdit[*gurps.AttributeDefs], other unison.Undoable) bool { return false },
 				}
 				undo.BeforeData = d.defs.Clone()
 				if d.thresholdInsert != -1 {

@@ -12,7 +12,7 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
@@ -20,11 +20,11 @@ import (
 // LiftingPanel holds the contents of the lifting block on the sheet.
 type LiftingPanel struct {
 	unison.Panel
-	entity *model.Entity
+	entity *gurps.Entity
 }
 
 // NewLiftingPanel creates a new lifting panel.
-func NewLiftingPanel(entity *model.Entity) *LiftingPanel {
+func NewLiftingPanel(entity *gurps.Entity) *LiftingPanel {
 	p := &LiftingPanel{entity: entity}
 	p.Self = p
 	p.SetLayout(&unison.FlexLayout{

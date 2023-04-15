@@ -12,14 +12,14 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
 )
 
 // ProcessNameablesForSelection processes the selected rows and their children for any nameables.
-func ProcessNameablesForSelection[T model.NodeTypes](table *unison.Table[*Node[T]]) {
+func ProcessNameablesForSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 	rows := table.SelectedRows(true)
 	data := make([]T, 0, len(rows))
 	for _, row := range rows {
@@ -29,13 +29,13 @@ func ProcessNameablesForSelection[T model.NodeTypes](table *unison.Table[*Node[T
 }
 
 // ProcessNameables processes the rows and their children for any nameables.
-func ProcessNameables[T model.NodeTypes](owner unison.Paneler, rows []T) {
+func ProcessNameables[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 	var data []T
 	var nameables []map[string]string
 	for _, row := range rows {
-		model.Traverse(func(row T) bool {
+		gurps.Traverse(func(row T) bool {
 			m := make(map[string]string)
-			model.AsNode(row).FillWithNameableKeys(m)
+			gurps.AsNode(row).FillWithNameableKeys(m)
 			if len(m) > 0 {
 				data = append(data, row)
 				nameables = append(nameables, m)
@@ -68,7 +68,7 @@ func ProcessNameables[T model.NodeTypes](owner unison.Paneler, rows []T) {
 				list.AddChild(sep)
 			}
 			header := unison.NewLabel()
-			header.Text = txt.Truncate(model.AsNode(one).String(), 40, true)
+			header.Text = txt.Truncate(gurps.AsNode(one).String(), 40, true)
 			header.Font = unison.SystemFont
 			header.SetLayoutData(&unison.FlexLayoutData{
 				HSpan:  2,
@@ -112,7 +112,7 @@ func ProcessNameables[T model.NodeTypes](owner unison.Paneler, rows []T) {
 		panel.AddChild(scroll)
 		if unison.QuestionDialogWithPanel(panel) == unison.ModalResponseOK {
 			for i, row := range data {
-				model.AsNode(row).ApplyNameableKeys(nameables[i])
+				gurps.AsNode(row).ApplyNameableKeys(nameables[i])
 			}
 			unison.Ancestor[Rebuildable](owner).Rebuild(true)
 		}

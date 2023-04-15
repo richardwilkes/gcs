@@ -12,7 +12,7 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/unison"
 )
 
@@ -36,7 +36,7 @@ func newTemplateContent() *templateContent {
 }
 
 func (p *templateContent) LayoutSizes(_ *unison.Panel, _ unison.Size) (min, pref, max unison.Size) {
-	s := model.GlobalSettings().Sheet
+	s := gurps.GlobalSettings().Sheet
 	w, _ := s.Page.Orientation.Dimensions(s.Page.Size.Dimensions())
 	_, size, _ := p.flex.LayoutSizes(p.AsPanel(), unison.Size{Width: w.Pixels()})
 	pref.Width = w.Pixels()

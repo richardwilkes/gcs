@@ -12,24 +12,24 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
 
-var _ TableProvider[*model.Weapon] = &weaponsProvider{}
+var _ TableProvider[*gurps.Weapon] = &weaponsProvider{}
 
 type weaponsProvider struct {
-	table      *unison.Table[*Node[*model.Weapon]]
-	provider   model.WeaponListProvider
-	weaponType model.WeaponType
+	table      *unison.Table[*Node[*gurps.Weapon]]
+	provider   gurps.WeaponListProvider
+	weaponType gurps.WeaponType
 	forPage    bool
 }
 
 // NewWeaponsProvider creates a new table provider for weapons.
-func NewWeaponsProvider(provider model.WeaponListProvider, weaponType model.WeaponType, forPage bool) TableProvider[*model.Weapon] {
+func NewWeaponsProvider(provider gurps.WeaponListProvider, weaponType gurps.WeaponType, forPage bool) TableProvider[*gurps.Weapon] {
 	return &weaponsProvider{
 		provider:   provider,
 		weaponType: weaponType,
@@ -45,7 +45,7 @@ func (p *weaponsProvider) AllTags() []string {
 	return nil
 }
 
-func (p *weaponsProvider) SetTable(table *unison.Table[*Node[*model.Weapon]]) {
+func (p *weaponsProvider) SetTable(table *unison.Table[*Node[*gurps.Weapon]]) {
 	p.table = table
 }
 
@@ -53,28 +53,28 @@ func (p *weaponsProvider) RootRowCount() int {
 	return len(p.provider.Weapons(p.weaponType))
 }
 
-func (p *weaponsProvider) RootRows() []*Node[*model.Weapon] {
+func (p *weaponsProvider) RootRows() []*Node[*gurps.Weapon] {
 	data := p.provider.Weapons(p.weaponType)
-	rows := make([]*Node[*model.Weapon], 0, len(data))
+	rows := make([]*Node[*gurps.Weapon], 0, len(data))
 	for _, one := range data {
-		rows = append(rows, NewNode[*model.Weapon](p.table, nil, one, p.forPage))
+		rows = append(rows, NewNode[*gurps.Weapon](p.table, nil, one, p.forPage))
 	}
 	return rows
 }
 
-func (p *weaponsProvider) SetRootRows(rows []*Node[*model.Weapon]) {
+func (p *weaponsProvider) SetRootRows(rows []*Node[*gurps.Weapon]) {
 	p.provider.SetWeapons(p.weaponType, ExtractNodeDataFromList(rows))
 }
 
-func (p *weaponsProvider) RootData() []*model.Weapon {
+func (p *weaponsProvider) RootData() []*gurps.Weapon {
 	return p.provider.Weapons(p.weaponType)
 }
 
-func (p *weaponsProvider) SetRootData(data []*model.Weapon) {
+func (p *weaponsProvider) SetRootData(data []*gurps.Weapon) {
 	p.provider.SetWeapons(p.weaponType, data)
 }
 
-func (p *weaponsProvider) Entity() *model.Entity {
+func (p *weaponsProvider) Entity() *gurps.Entity {
 	return p.provider.Entity()
 }
 
@@ -86,11 +86,11 @@ func (p *weaponsProvider) DragSVG() *unison.SVG {
 	return p.weaponType.SVG()
 }
 
-func (p *weaponsProvider) DropShouldMoveData(from, to *unison.Table[*Node[*model.Weapon]]) bool {
+func (p *weaponsProvider) DropShouldMoveData(from, to *unison.Table[*Node[*gurps.Weapon]]) bool {
 	return from == to
 }
 
-func (p *weaponsProvider) ProcessDropData(_, _ *unison.Table[*Node[*model.Weapon]]) {
+func (p *weaponsProvider) ProcessDropData(_, _ *unison.Table[*Node[*gurps.Weapon]]) {
 }
 
 func (p *weaponsProvider) AltDropSupport() *AltDropSupport {
@@ -101,85 +101,85 @@ func (p *weaponsProvider) ItemNames() (singular, plural string) {
 	return p.weaponType.String(), p.weaponType.AltString()
 }
 
-func (p *weaponsProvider) Headers() []unison.TableColumnHeader[*Node[*model.Weapon]] {
+func (p *weaponsProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Weapon]] {
 	ids := p.ColumnIDs()
-	headers := make([]unison.TableColumnHeader[*Node[*model.Weapon]], 0, len(ids))
+	headers := make([]unison.TableColumnHeader[*Node[*gurps.Weapon]], 0, len(ids))
 	for _, id := range ids {
 		switch id {
-		case model.WeaponDescriptionColumn:
-			headers = append(headers, NewEditorListHeader[*model.Weapon](p.weaponType.String(), "", p.forPage))
-		case model.WeaponUsageColumn:
+		case gurps.WeaponDescriptionColumn:
+			headers = append(headers, NewEditorListHeader[*gurps.Weapon](p.weaponType.String(), "", p.forPage))
+		case gurps.WeaponUsageColumn:
 			var title string
 			switch {
 			case p.forPage:
 				title = i18n.Text("Usage")
-			case p.weaponType == model.MeleeWeaponType:
+			case p.weaponType == gurps.MeleeWeaponType:
 				title = i18n.Text("Melee Weapon Usage")
 			default:
 				title = i18n.Text("Ranged Weapon Usage")
 			}
-			headers = append(headers, NewEditorListHeader[*model.Weapon](title, "", p.forPage))
-		case model.WeaponSLColumn:
-			headers = append(headers, NewEditorListHeader[*model.Weapon](i18n.Text("SL"), i18n.Text("Skill Level"), p.forPage))
-		case model.WeaponParryColumn:
-			headers = append(headers, NewEditorListHeader[*model.Weapon](i18n.Text("Parry"), "", p.forPage))
-		case model.WeaponBlockColumn:
-			headers = append(headers, NewEditorListHeader[*model.Weapon](i18n.Text("Block"), "", p.forPage))
-		case model.WeaponDamageColumn:
-			headers = append(headers, NewEditorListHeader[*model.Weapon](i18n.Text("Damage"), "", p.forPage))
-		case model.WeaponReachColumn:
-			headers = append(headers, NewEditorListHeader[*model.Weapon](i18n.Text("Reach"), "", p.forPage))
-		case model.WeaponSTColumn:
-			headers = append(headers, NewEditorListHeader[*model.Weapon](i18n.Text("ST"), i18n.Text("Minimum Strength"), p.forPage))
-		case model.WeaponAccColumn:
-			headers = append(headers, NewEditorListHeader[*model.Weapon](i18n.Text("Acc"), i18n.Text("Accuracy Bonus"), p.forPage))
-		case model.WeaponRangeColumn:
-			headers = append(headers, NewEditorListHeader[*model.Weapon](i18n.Text("Range"), "", p.forPage))
-		case model.WeaponRoFColumn:
-			headers = append(headers, NewEditorListHeader[*model.Weapon](i18n.Text("RoF"), i18n.Text("Rate of Fire"), p.forPage))
-		case model.WeaponShotsColumn:
-			headers = append(headers, NewEditorListHeader[*model.Weapon](i18n.Text("Shots"), "", p.forPage))
-		case model.WeaponBulkColumn:
-			headers = append(headers, NewEditorListHeader[*model.Weapon](i18n.Text("Bulk"), "", p.forPage))
-		case model.WeaponRecoilColumn:
-			headers = append(headers, NewEditorListHeader[*model.Weapon](i18n.Text("Recoil"), "", p.forPage))
+			headers = append(headers, NewEditorListHeader[*gurps.Weapon](title, "", p.forPage))
+		case gurps.WeaponSLColumn:
+			headers = append(headers, NewEditorListHeader[*gurps.Weapon](i18n.Text("SL"), i18n.Text("Skill Level"), p.forPage))
+		case gurps.WeaponParryColumn:
+			headers = append(headers, NewEditorListHeader[*gurps.Weapon](i18n.Text("Parry"), "", p.forPage))
+		case gurps.WeaponBlockColumn:
+			headers = append(headers, NewEditorListHeader[*gurps.Weapon](i18n.Text("Block"), "", p.forPage))
+		case gurps.WeaponDamageColumn:
+			headers = append(headers, NewEditorListHeader[*gurps.Weapon](i18n.Text("Damage"), "", p.forPage))
+		case gurps.WeaponReachColumn:
+			headers = append(headers, NewEditorListHeader[*gurps.Weapon](i18n.Text("Reach"), "", p.forPage))
+		case gurps.WeaponSTColumn:
+			headers = append(headers, NewEditorListHeader[*gurps.Weapon](i18n.Text("ST"), i18n.Text("Minimum Strength"), p.forPage))
+		case gurps.WeaponAccColumn:
+			headers = append(headers, NewEditorListHeader[*gurps.Weapon](i18n.Text("Acc"), i18n.Text("Accuracy Bonus"), p.forPage))
+		case gurps.WeaponRangeColumn:
+			headers = append(headers, NewEditorListHeader[*gurps.Weapon](i18n.Text("Range"), "", p.forPage))
+		case gurps.WeaponRoFColumn:
+			headers = append(headers, NewEditorListHeader[*gurps.Weapon](i18n.Text("RoF"), i18n.Text("Rate of Fire"), p.forPage))
+		case gurps.WeaponShotsColumn:
+			headers = append(headers, NewEditorListHeader[*gurps.Weapon](i18n.Text("Shots"), "", p.forPage))
+		case gurps.WeaponBulkColumn:
+			headers = append(headers, NewEditorListHeader[*gurps.Weapon](i18n.Text("Bulk"), "", p.forPage))
+		case gurps.WeaponRecoilColumn:
+			headers = append(headers, NewEditorListHeader[*gurps.Weapon](i18n.Text("Recoil"), "", p.forPage))
 		}
 	}
 	return DisableSorting(headers)
 }
 
-func (p *weaponsProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*model.Weapon]]) {
+func (p *weaponsProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*gurps.Weapon]]) {
 }
 
 func (p *weaponsProvider) ColumnIDs() []int {
 	columnIDs := make([]int, 0, 11)
 	if p.forPage {
-		columnIDs = append(columnIDs, model.WeaponDescriptionColumn)
+		columnIDs = append(columnIDs, gurps.WeaponDescriptionColumn)
 	}
 	columnIDs = append(columnIDs,
-		model.WeaponUsageColumn,
-		model.WeaponSLColumn,
+		gurps.WeaponUsageColumn,
+		gurps.WeaponSLColumn,
 	)
 	switch p.weaponType {
-	case model.MeleeWeaponType:
+	case gurps.MeleeWeaponType:
 		columnIDs = append(columnIDs,
-			model.WeaponParryColumn,
-			model.WeaponBlockColumn,
-			model.WeaponDamageColumn,
-			model.WeaponReachColumn,
+			gurps.WeaponParryColumn,
+			gurps.WeaponBlockColumn,
+			gurps.WeaponDamageColumn,
+			gurps.WeaponReachColumn,
 		)
-	case model.RangedWeaponType:
+	case gurps.RangedWeaponType:
 		columnIDs = append(columnIDs,
-			model.WeaponAccColumn,
-			model.WeaponDamageColumn,
-			model.WeaponRangeColumn,
-			model.WeaponRoFColumn,
-			model.WeaponShotsColumn,
-			model.WeaponBulkColumn,
-			model.WeaponRecoilColumn,
+			gurps.WeaponAccColumn,
+			gurps.WeaponDamageColumn,
+			gurps.WeaponRangeColumn,
+			gurps.WeaponRoFColumn,
+			gurps.WeaponShotsColumn,
+			gurps.WeaponBulkColumn,
+			gurps.WeaponRecoilColumn,
 		)
 	}
-	return append(columnIDs, model.WeaponSTColumn)
+	return append(columnIDs, gurps.WeaponSTColumn)
 }
 
 func (p *weaponsProvider) HierarchyColumnID() int {
@@ -187,22 +187,22 @@ func (p *weaponsProvider) HierarchyColumnID() int {
 }
 
 func (p *weaponsProvider) ExcessWidthColumnID() int {
-	return model.WeaponDescriptionColumn
+	return gurps.WeaponDescriptionColumn
 }
 
-func (p *weaponsProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*model.Weapon]]) {
+func (p *weaponsProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*gurps.Weapon]]) {
 	if !p.forPage {
-		OpenEditor[*model.Weapon](table, func(item *model.Weapon) { EditWeapon(owner, item) })
+		OpenEditor[*gurps.Weapon](table, func(item *gurps.Weapon) { EditWeapon(owner, item) })
 	}
 }
 
-func (p *weaponsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*model.Weapon]], _ ItemVariant) {
+func (p *weaponsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Weapon]], _ ItemVariant) {
 	if !p.forPage {
-		wpn := model.NewWeapon(p.provider.WeaponOwner(), p.weaponType)
-		InsertItems[*model.Weapon](owner, table,
-			func() []*model.Weapon { return p.provider.Weapons(p.weaponType) },
-			func(list []*model.Weapon) { p.provider.SetWeapons(p.weaponType, list) },
-			func(_ *unison.Table[*Node[*model.Weapon]]) []*Node[*model.Weapon] { return p.RootRows() },
+		wpn := gurps.NewWeapon(p.provider.WeaponOwner(), p.weaponType)
+		InsertItems[*gurps.Weapon](owner, table,
+			func() []*gurps.Weapon { return p.provider.Weapons(p.weaponType) },
+			func(list []*gurps.Weapon) { p.provider.SetWeapons(p.weaponType, list) },
+			func(_ *unison.Table[*Node[*gurps.Weapon]]) []*Node[*gurps.Weapon] { return p.RootRows() },
 			wpn)
 		EditWeapon(owner, wpn)
 	}
@@ -219,7 +219,7 @@ func (p *weaponsProvider) Deserialize(data []byte) error {
 	if p.forPage {
 		return errs.New("not allowed")
 	}
-	var rows []*model.Weapon
+	var rows []*gurps.Weapon
 	if err := jio.DecompressAndDeserialize(data, &rows); err != nil {
 		return err
 	}
@@ -230,9 +230,9 @@ func (p *weaponsProvider) Deserialize(data []byte) error {
 func (p *weaponsProvider) ContextMenuItems() []ContextMenuItem {
 	var list []ContextMenuItem
 	switch p.weaponType {
-	case model.MeleeWeaponType:
+	case gurps.MeleeWeaponType:
 		list = append(list, ContextMenuItem{i18n.Text("New Melee Weapon"), NewMeleeWeaponItemID})
-	case model.RangedWeaponType:
+	case gurps.RangedWeaponType:
 		list = append(list, ContextMenuItem{i18n.Text("New Ranged Weapon"), NewRangedWeaponItemID})
 	}
 	return AppendDefaultContextMenuItems(list)

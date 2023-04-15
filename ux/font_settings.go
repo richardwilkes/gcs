@@ -15,8 +15,8 @@ import (
 	"fmt"
 	"io/fs"
 
-	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -42,7 +42,7 @@ func ShowFontSettings() {
 		d.Self = d
 		d.TabTitle = i18n.Text("Fonts")
 		d.TabIcon = svg.Settings
-		d.Extensions = []string{model.FontSettingsExt}
+		d.Extensions = []string{gurps.FontSettingsExt}
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset
@@ -61,7 +61,7 @@ func (d *fontSettingsDockable) initContent(content *unison.Panel) {
 }
 
 func (d *fontSettingsDockable) reset() {
-	g := model.GlobalSettings()
+	g := gurps.GlobalSettings()
 	g.Fonts.Reset()
 	g.Fonts.MakeCurrent()
 	d.sync()
@@ -74,7 +74,7 @@ func (d *fontSettingsDockable) sync() {
 }
 
 func (d *fontSettingsDockable) fill() {
-	for i, one := range model.CurrentFonts() {
+	for i, one := range gurps.CurrentFonts() {
 		if i%2 == 0 {
 			d.content.AddChild(NewFieldLeadingLabel(one.Title))
 		} else {
@@ -100,7 +100,7 @@ func (d *fontSettingsDockable) fill() {
 func (d *fontSettingsDockable) createFaceField(index int) {
 	p := unison.NewPopupMenu[unison.FontFaceDescriptor]()
 	var list []unison.FontFaceDescriptor
-	if model.CurrentFonts()[index].ID == "monospaced" {
+	if gurps.CurrentFonts()[index].ID == "monospaced" {
 		list = d.monospacedFaces
 	} else {
 		list = d.allFaces
@@ -108,13 +108,13 @@ func (d *fontSettingsDockable) createFaceField(index int) {
 	for _, ffd := range list {
 		p.AddItem(ffd)
 	}
-	p.Select(model.CurrentFonts()[index].Font.Descriptor().FontFaceDescriptor)
+	p.Select(gurps.CurrentFonts()[index].Font.Descriptor().FontFaceDescriptor)
 	p.SelectionChangedCallback = func(popup *unison.PopupMenu[unison.FontFaceDescriptor]) {
 		if d.noUpdate {
 			return
 		}
 		if ffd, ok := popup.Selected(); ok {
-			fd2 := model.CurrentFonts()[index].Font.Descriptor()
+			fd2 := gurps.CurrentFonts()[index].Font.Descriptor()
 			fd2.FontFaceDescriptor = ffd
 			d.applyFont(index, fd2)
 		}
@@ -124,10 +124,10 @@ func (d *fontSettingsDockable) createFaceField(index int) {
 
 func (d *fontSettingsDockable) createSizeField(index int) {
 	field := NewDecimalField(nil, "", i18n.Text("Font Size"),
-		func() fxp.Int { return fxp.From(model.CurrentFonts()[index].Font.Size()) },
+		func() fxp.Int { return fxp.From(gurps.CurrentFonts()[index].Font.Size()) },
 		func(v fxp.Int) {
 			if !d.noUpdate {
-				fd := model.CurrentFonts()[index].Font.Descriptor()
+				fd := gurps.CurrentFonts()[index].Font.Descriptor()
 				fd.Size = fxp.As[float32](v)
 				d.applyFont(index, fd)
 			}
@@ -144,9 +144,9 @@ func (d *fontSettingsDockable) createResetField(index int) {
 	b.Tooltip = unison.NewTooltipWithText("Reset this font")
 	b.ClickCallback = func() {
 		if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to reset %s?"),
-			model.CurrentFonts()[index].Title), "") == unison.ModalResponseOK {
-			for _, v := range model.FactoryFonts() {
-				if v.ID != model.CurrentFonts()[index].ID {
+			gurps.CurrentFonts()[index].Title), "") == unison.ModalResponseOK {
+			for _, v := range gurps.FactoryFonts() {
+				if v.ID != gurps.CurrentFonts()[index].ID {
 					continue
 				}
 				d.applyFont(index, v.Font.Descriptor())
@@ -162,10 +162,10 @@ func (d *fontSettingsDockable) createResetField(index int) {
 }
 
 func (d *fontSettingsDockable) applyFont(index int, fd unison.FontDescriptor) {
-	model.CurrentFonts()[index].Font.Font = fd.Font()
+	gurps.CurrentFonts()[index].Font.Font = fd.Font()
 	children := d.content.Children()
 	i := index * 4
-	fd = model.CurrentFonts()[index].Font.Descriptor()
+	fd = gurps.CurrentFonts()[index].Font.Descriptor()
 	d.noUpdate = true
 	if p, ok := children[i+1].Self.(*unison.PopupMenu[unison.FontFaceDescriptor]); ok {
 		p.Select(fd.FontFaceDescriptor)
@@ -178,11 +178,11 @@ func (d *fontSettingsDockable) applyFont(index int, fd unison.FontDescriptor) {
 }
 
 func (d *fontSettingsDockable) load(fileSystem fs.FS, filePath string) error {
-	s, err := model.NewFontsFromFS(fileSystem, filePath)
+	s, err := gurps.NewFontsFromFS(fileSystem, filePath)
 	if err != nil {
 		return err
 	}
-	g := model.GlobalSettings()
+	g := gurps.GlobalSettings()
 	g.Fonts = *s
 	g.Fonts.MakeCurrent()
 	d.sync()
@@ -190,5 +190,5 @@ func (d *fontSettingsDockable) load(fileSystem fs.FS, filePath string) error {
 }
 
 func (d *fontSettingsDockable) save(filePath string) error {
-	return model.GlobalSettings().Fonts.Save(filePath)
+	return gurps.GlobalSettings().Fonts.Save(filePath)
 }

@@ -12,7 +12,7 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/unison"
 )
 
@@ -47,7 +47,7 @@ func newNonEditablePageField(syncer func(*NonEditablePageField), hAlign unison.A
 	}
 	f.Self = f
 	f.OnBackgroundInk = nonEditableFieldColor
-	f.Font = model.PageFieldPrimaryFont
+	f.Font = gurps.PageFieldPrimaryFont
 	f.HAlign = hAlign
 	f.SetBorder(unison.NewEmptyBorder(unison.Insets{
 		Left:   1,

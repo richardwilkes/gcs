@@ -16,7 +16,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/desktop"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -133,11 +133,11 @@ var (
 
 func registerActions() {
 	// Standard actions that may be assigned a key binding
-	model.RegisterKeyBinding("cut", unison.CutAction())
-	model.RegisterKeyBinding("copy", unison.CopyAction())
-	model.RegisterKeyBinding("paste", unison.PasteAction())
-	model.RegisterKeyBinding("delete", unison.DeleteAction())
-	model.RegisterKeyBinding("select.all", unison.SelectAllAction())
+	gurps.RegisterKeyBinding("cut", unison.CutAction())
+	gurps.RegisterKeyBinding("copy", unison.CopyAction())
+	gurps.RegisterKeyBinding("paste", unison.PasteAction())
+	gurps.RegisterKeyBinding("delete", unison.DeleteAction())
+	gurps.RegisterKeyBinding("select.all", unison.SelectAllAction())
 
 	// Actions that may be assigned a key binding
 	addNaturalAttacksAction = registerKeyBindableAction("add.natural.attacks", &unison.Action{
@@ -362,15 +362,15 @@ func registerActions() {
 		Title:      i18n.Text("New Character Sheet"),
 		KeyBinding: unison.KeyBinding{KeyCode: unison.KeyN, Modifiers: unison.OSMenuCmdModifier()},
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			entity := model.NewEntity(model.PC)
-			DisplayNewDockable(nil, NewSheet(entity.Profile.Name+model.SheetExt, entity))
+			entity := gurps.NewEntity(gurps.PC)
+			DisplayNewDockable(nil, NewSheet(entity.Profile.Name+gurps.SheetExt, entity))
 		},
 	})
 	newCharacterTemplateAction = registerKeyBindableAction("new.char.template", &unison.Action{
 		ID:    NewTemplateItemID,
 		Title: i18n.Text("New Character Template"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			DisplayNewDockable(nil, NewTemplate("untitled"+model.TemplatesExt, model.NewTemplate()))
+			DisplayNewDockable(nil, NewTemplate("untitled"+gurps.TemplatesExt, gurps.NewTemplate()))
 		},
 	})
 	newEquipmentContainerModifierAction = registerKeyBindableAction("new.eqm.container", &unison.Action{
@@ -384,7 +384,7 @@ func registerActions() {
 		ID:    NewEquipmentLibraryItemID,
 		Title: i18n.Text("New Equipment Library"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			DisplayNewDockable(nil, NewEquipmentTableDockable("Equipment"+model.EquipmentExt, nil))
+			DisplayNewDockable(nil, NewEquipmentTableDockable("Equipment"+gurps.EquipmentExt, nil))
 		},
 	})
 	newEquipmentModifierAction = registerKeyBindableAction("new.eqm", &unison.Action{
@@ -399,7 +399,7 @@ func registerActions() {
 		Title: i18n.Text("New Equipment Modifiers Library"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			DisplayNewDockable(nil,
-				NewEquipmentModifierTableDockable("Equipment Modifiers"+model.EquipmentModifiersExt, nil))
+				NewEquipmentModifierTableDockable("Equipment Modifiers"+gurps.EquipmentModifiersExt, nil))
 		},
 	})
 	newMarkdownFileAction = registerKeyBindableAction("new.markdown", &unison.Action{
@@ -439,7 +439,7 @@ func registerActions() {
 		ID:    NewNotesLibraryItemID,
 		Title: i18n.Text("New Notes Library"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			DisplayNewDockable(nil, NewNoteTableDockable("Notes"+model.NotesExt, nil))
+			DisplayNewDockable(nil, NewNoteTableDockable("Notes"+gurps.NotesExt, nil))
 		},
 	})
 	newOtherEquipmentAction = registerKeyBindableAction("new.eqp.other", &unison.Action{
@@ -488,7 +488,7 @@ func registerActions() {
 		ID:    NewSkillsLibraryItemID,
 		Title: i18n.Text("New Skills Library"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			DisplayNewDockable(nil, NewSkillTableDockable("Skills"+model.SkillsExt, nil))
+			DisplayNewDockable(nil, NewSkillTableDockable("Skills"+gurps.SkillsExt, nil))
 		},
 	})
 	newSpellAction = registerKeyBindableAction("new.spl", &unison.Action{
@@ -509,7 +509,7 @@ func registerActions() {
 		ID:    NewSpellsLibraryItemID,
 		Title: i18n.Text("New Spells Library"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			DisplayNewDockable(nil, NewSpellTableDockable("Spells"+model.SpellsExt, nil))
+			DisplayNewDockable(nil, NewSpellTableDockable("Spells"+gurps.SpellsExt, nil))
 		},
 	})
 	newTechniqueAction = registerKeyBindableAction("new.skl.technique", &unison.Action{
@@ -552,14 +552,14 @@ func registerActions() {
 		Title: i18n.Text("New Trait Modifiers Library"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			DisplayNewDockable(nil,
-				NewTraitModifierTableDockable("Trait Modifiers"+model.TraitModifiersExt, nil))
+				NewTraitModifierTableDockable("Trait Modifiers"+gurps.TraitModifiersExt, nil))
 		},
 	})
 	newTraitsLibraryAction = registerKeyBindableAction("new.adq.lib", &unison.Action{
 		ID:    NewTraitsLibraryItemID,
 		Title: i18n.Text("New Traits Library"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			DisplayNewDockable(nil, NewTraitTableDockable("Traits"+model.TraitsExt, nil))
+			DisplayNewDockable(nil, NewTraitTableDockable("Traits"+gurps.TraitsExt, nil))
 		},
 	})
 	openAction = registerKeyBindableAction("open", &unison.Action{
@@ -570,14 +570,14 @@ func registerActions() {
 			dialog := unison.NewOpenDialog()
 			dialog.SetAllowsMultipleSelection(true)
 			dialog.SetResolvesAliases(true)
-			dialog.SetAllowedExtensions(model.AcceptableExtensions()...)
+			dialog.SetAllowedExtensions(gurps.AcceptableExtensions()...)
 			dialog.SetCanChooseDirectories(false)
 			dialog.SetCanChooseFiles(true)
-			global := model.GlobalSettings()
-			dialog.SetInitialDirectory(global.LastDir(model.DefaultLastDirKey))
+			global := gurps.GlobalSettings()
+			dialog.SetInitialDirectory(global.LastDir(gurps.DefaultLastDirKey))
 			if dialog.RunModal() {
 				paths := dialog.Paths()
-				global.SetLastDir(model.DefaultLastDirKey, filepath.Dir(paths[0]))
+				global.SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(paths[0]))
 				OpenFiles(paths)
 			}
 		},
@@ -812,7 +812,7 @@ func registerActions() {
 			return !updating && releases == nil
 		},
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			model.GlobalSettings().LastSeenGCSVersion = ""
+			gurps.GlobalSettings().LastSeenGCSVersion = ""
 			CheckForAppUpdates()
 		},
 	}
@@ -884,7 +884,7 @@ func registerActions() {
 }
 
 func registerKeyBindableAction(key string, action *unison.Action) *unison.Action {
-	model.RegisterKeyBinding(key, action)
+	gurps.RegisterKeyBinding(key, action)
 	return action
 }
 

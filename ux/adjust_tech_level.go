@@ -12,13 +12,13 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
 
-type adjustTechLevelList[T model.NodeTypes] struct {
+type adjustTechLevelList[T gurps.NodeTypes] struct {
 	Owner Rebuildable
 	List  []*techLevelAdjuster[T]
 }
@@ -38,12 +38,12 @@ func (a *adjustTechLevelList[T]) Finish() {
 	MarkModified(a.Owner)
 }
 
-type techLevelAdjuster[T model.NodeTypes] struct {
-	Target    model.TechLevelProvider[T]
+type techLevelAdjuster[T gurps.NodeTypes] struct {
+	Target    gurps.TechLevelProvider[T]
 	TechLevel string
 }
 
-func newTechLevelAdjuster[T model.NodeTypes](target model.TechLevelProvider[T]) *techLevelAdjuster[T] {
+func newTechLevelAdjuster[T gurps.NodeTypes](target gurps.TechLevelProvider[T]) *techLevelAdjuster[T] {
 	return &techLevelAdjuster[T]{
 		Target:    target,
 		TechLevel: target.TL(),
@@ -54,11 +54,11 @@ func (a *techLevelAdjuster[T]) Apply() {
 	a.Target.SetTL(a.TechLevel)
 }
 
-func canAdjustTechLevel[T model.NodeTypes](table *unison.Table[*Node[T]], amount fxp.Int) bool {
+func canAdjustTechLevel[T gurps.NodeTypes](table *unison.Table[*Node[T]], amount fxp.Int) bool {
 	for _, row := range table.SelectedRows(false) {
-		if provider, ok := any(row.Data()).(model.TechLevelProvider[T]); ok {
+		if provider, ok := any(row.Data()).(gurps.TechLevelProvider[T]); ok {
 			if provider.RequiresTL() {
-				if _, changed := model.AdjustTechLevel(provider.TL(), amount); changed {
+				if _, changed := gurps.AdjustTechLevel(provider.TL(), amount); changed {
 					return true
 				}
 			}
@@ -67,13 +67,13 @@ func canAdjustTechLevel[T model.NodeTypes](table *unison.Table[*Node[T]], amount
 	return false
 }
 
-func adjustTechLevel[T model.NodeTypes](owner Rebuildable, table *unison.Table[*Node[T]], amount fxp.Int) {
+func adjustTechLevel[T gurps.NodeTypes](owner Rebuildable, table *unison.Table[*Node[T]], amount fxp.Int) {
 	before := &adjustTechLevelList[T]{Owner: owner}
 	after := &adjustTechLevelList[T]{Owner: owner}
 	for _, row := range table.SelectedRows(false) {
-		if provider, ok := any(row.Data()).(model.TechLevelProvider[T]); ok {
+		if provider, ok := any(row.Data()).(gurps.TechLevelProvider[T]); ok {
 			if provider.RequiresTL() {
-				if tl, changed := model.AdjustTechLevel(provider.TL(), amount); changed {
+				if tl, changed := gurps.AdjustTechLevel(provider.TL(), amount); changed {
 					before.List = append(before.List, newTechLevelAdjuster[T](provider))
 					provider.SetTL(tl)
 					after.List = append(after.List, newTechLevelAdjuster[T](provider))

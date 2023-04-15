@@ -12,7 +12,7 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -21,16 +21,16 @@ import (
 
 const noteDragKey = "note"
 
-var _ TableProvider[*model.Note] = &notesProvider{}
+var _ TableProvider[*gurps.Note] = &notesProvider{}
 
 type notesProvider struct {
-	table    *unison.Table[*Node[*model.Note]]
-	provider model.NoteListProvider
+	table    *unison.Table[*Node[*gurps.Note]]
+	provider gurps.NoteListProvider
 	forPage  bool
 }
 
 // NewNotesProvider creates a new table provider for notes.
-func NewNotesProvider(provider model.NoteListProvider, forPage bool) TableProvider[*model.Note] {
+func NewNotesProvider(provider gurps.NoteListProvider, forPage bool) TableProvider[*gurps.Note] {
 	return &notesProvider{
 		provider: provider,
 		forPage:  forPage,
@@ -38,14 +38,14 @@ func NewNotesProvider(provider model.NoteListProvider, forPage bool) TableProvid
 }
 
 func (p *notesProvider) RefKey() string {
-	return model.BlockLayoutNotesKey
+	return gurps.BlockLayoutNotesKey
 }
 
 func (p *notesProvider) AllTags() []string {
 	return nil
 }
 
-func (p *notesProvider) SetTable(table *unison.Table[*Node[*model.Note]]) {
+func (p *notesProvider) SetTable(table *unison.Table[*Node[*gurps.Note]]) {
 	p.table = table
 }
 
@@ -53,28 +53,28 @@ func (p *notesProvider) RootRowCount() int {
 	return len(p.provider.NoteList())
 }
 
-func (p *notesProvider) RootRows() []*Node[*model.Note] {
+func (p *notesProvider) RootRows() []*Node[*gurps.Note] {
 	data := p.provider.NoteList()
-	rows := make([]*Node[*model.Note], 0, len(data))
+	rows := make([]*Node[*gurps.Note], 0, len(data))
 	for _, one := range data {
-		rows = append(rows, NewNode[*model.Note](p.table, nil, one, p.forPage))
+		rows = append(rows, NewNode[*gurps.Note](p.table, nil, one, p.forPage))
 	}
 	return rows
 }
 
-func (p *notesProvider) SetRootRows(rows []*Node[*model.Note]) {
+func (p *notesProvider) SetRootRows(rows []*Node[*gurps.Note]) {
 	p.provider.SetNoteList(ExtractNodeDataFromList(rows))
 }
 
-func (p *notesProvider) RootData() []*model.Note {
+func (p *notesProvider) RootData() []*gurps.Note {
 	return p.provider.NoteList()
 }
 
-func (p *notesProvider) SetRootData(data []*model.Note) {
+func (p *notesProvider) SetRootData(data []*gurps.Note) {
 	p.provider.SetNoteList(data)
 }
 
-func (p *notesProvider) Entity() *model.Entity {
+func (p *notesProvider) Entity() *gurps.Entity {
 	return p.provider.Entity()
 }
 
@@ -86,11 +86,11 @@ func (p *notesProvider) DragSVG() *unison.SVG {
 	return svg.GCSNotes
 }
 
-func (p *notesProvider) DropShouldMoveData(from, to *unison.Table[*Node[*model.Note]]) bool {
+func (p *notesProvider) DropShouldMoveData(from, to *unison.Table[*Node[*gurps.Note]]) bool {
 	return from == to
 }
 
-func (p *notesProvider) ProcessDropData(_, _ *unison.Table[*Node[*model.Note]]) {
+func (p *notesProvider) ProcessDropData(_, _ *unison.Table[*Node[*gurps.Note]]) {
 }
 
 func (p *notesProvider) AltDropSupport() *AltDropSupport {
@@ -101,39 +101,39 @@ func (p *notesProvider) ItemNames() (singular, plural string) {
 	return i18n.Text("Note"), i18n.Text("Notes")
 }
 
-func (p *notesProvider) Headers() []unison.TableColumnHeader[*Node[*model.Note]] {
-	return []unison.TableColumnHeader[*Node[*model.Note]]{
-		NewEditorListHeader[*model.Note](i18n.Text("Note"), "", p.forPage),
-		NewEditorPageRefHeader[*model.Note](p.forPage),
+func (p *notesProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Note]] {
+	return []unison.TableColumnHeader[*Node[*gurps.Note]]{
+		NewEditorListHeader[*gurps.Note](i18n.Text("Note"), "", p.forPage),
+		NewEditorPageRefHeader[*gurps.Note](p.forPage),
 	}
 }
 
-func (p *notesProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*model.Note]]) {
+func (p *notesProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*gurps.Note]]) {
 }
 
 func (p *notesProvider) ColumnIDs() []int {
 	return []int{
-		model.NoteTextColumn,
-		model.NoteReferenceColumn,
+		gurps.NoteTextColumn,
+		gurps.NoteReferenceColumn,
 	}
 }
 
 func (p *notesProvider) HierarchyColumnID() int {
-	return model.NoteTextColumn
+	return gurps.NoteTextColumn
 }
 
 func (p *notesProvider) ExcessWidthColumnID() int {
-	return model.NoteTextColumn
+	return gurps.NoteTextColumn
 }
 
-func (p *notesProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*model.Note]]) {
-	OpenEditor[*model.Note](table, func(item *model.Note) { EditNote(owner, item) })
+func (p *notesProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*gurps.Note]]) {
+	OpenEditor[*gurps.Note](table, func(item *gurps.Note) { EditNote(owner, item) })
 }
 
-func (p *notesProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*model.Note]], variant ItemVariant) {
-	item := model.NewNote(p.Entity(), nil, variant == ContainerItemVariant)
-	InsertItems[*model.Note](owner, table, p.provider.NoteList, p.provider.SetNoteList,
-		func(_ *unison.Table[*Node[*model.Note]]) []*Node[*model.Note] { return p.RootRows() }, item)
+func (p *notesProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Note]], variant ItemVariant) {
+	item := gurps.NewNote(p.Entity(), nil, variant == ContainerItemVariant)
+	InsertItems[*gurps.Note](owner, table, p.provider.NoteList, p.provider.SetNoteList,
+		func(_ *unison.Table[*Node[*gurps.Note]]) []*Node[*gurps.Note] { return p.RootRows() }, item)
 	EditNote(owner, item)
 }
 
@@ -142,7 +142,7 @@ func (p *notesProvider) Serialize() ([]byte, error) {
 }
 
 func (p *notesProvider) Deserialize(data []byte) error {
-	var rows []*model.Note
+	var rows []*gurps.Note
 	if err := jio.DecompressAndDeserialize(data, &rows); err != nil {
 		return err
 	}

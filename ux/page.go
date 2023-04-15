@@ -14,7 +14,7 @@ package ux
 import (
 	"fmt"
 
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xmath"
@@ -25,13 +25,13 @@ import (
 type Page struct {
 	unison.Panel
 	flex       *unison.FlexLayout
-	entity     *model.Entity
+	entity     *gurps.Entity
 	lastInsets unison.Insets
 	Force      bool
 }
 
 // NewPage creates a new page.
-func NewPage(entity *model.Entity) *Page {
+func NewPage(entity *gurps.Entity) *Page {
 	p := &Page{
 		entity: entity,
 		flex: &unison.FlexLayout{
@@ -50,7 +50,7 @@ func NewPage(entity *model.Entity) *Page {
 
 // LayoutSizes implements unison.Layout
 func (p *Page) LayoutSizes(_ *unison.Panel, _ unison.Size) (min, pref, max unison.Size) {
-	s := model.SheetSettingsFor(p.entity)
+	s := gurps.SheetSettingsFor(p.entity)
 	w, h := s.Page.Orientation.Dimensions(s.Page.Size.Dimensions())
 	if insets := p.insets(); insets != p.lastInsets {
 		p.lastInsets = insets
@@ -81,15 +81,15 @@ func (p *Page) ApplyPreferredSize() {
 }
 
 func (p *Page) insets() unison.Insets {
-	sheetSettings := model.SheetSettingsFor(p.entity)
+	sheetSettings := gurps.SheetSettingsFor(p.entity)
 	insets := unison.Insets{
 		Top:    sheetSettings.Page.TopMargin.Pixels(),
 		Left:   sheetSettings.Page.LeftMargin.Pixels(),
 		Bottom: sheetSettings.Page.BottomMargin.Pixels(),
 		Right:  sheetSettings.Page.RightMargin.Pixels(),
 	}
-	height := model.PageFooterSecondaryFont.LineHeight()
-	insets.Bottom += xmath.Max(model.PageFooterPrimaryFont.LineHeight(), height) + height
+	height := gurps.PageFooterSecondaryFont.LineHeight()
+	insets.Bottom += xmath.Max(gurps.PageFooterPrimaryFont.LineHeight(), height) + height
 	return insets
 }
 
@@ -97,7 +97,7 @@ func (p *Page) drawSelf(gc *unison.Canvas, _ unison.Rect) {
 	insets := p.insets()
 	_, prefSize, _ := p.LayoutSizes(nil, unison.Size{})
 	r := unison.Rect{Size: prefSize}
-	gc.DrawRect(r, model.PageColor.Paint(gc, r, unison.Fill))
+	gc.DrawRect(r, gurps.PageColor.Paint(gc, r, unison.Fill))
 	r.X += insets.Left
 	r.Width -= insets.Left + insets.Right
 	r.Y = r.Bottom() - insets.Bottom
@@ -106,16 +106,16 @@ func (p *Page) drawSelf(gc *unison.Canvas, _ unison.Rect) {
 	pageNumber := parent.IndexOfChild(p) + 1
 
 	primaryDecorations := &unison.TextDecoration{
-		Font:       model.PageFooterPrimaryFont,
-		Foreground: model.OnPageColor,
+		Font:       gurps.PageFooterPrimaryFont,
+		Foreground: gurps.OnPageColor,
 	}
 	secondaryDecorations := &unison.TextDecoration{
-		Font:       model.PageFooterSecondaryFont,
+		Font:       gurps.PageFooterSecondaryFont,
 		Foreground: primaryDecorations.Foreground,
 	}
 
 	var title string
-	if model.SheetSettingsFor(p.entity).UseTitleInFooter {
+	if gurps.SheetSettingsFor(p.entity).UseTitleInFooter {
 		title = p.entity.Profile.Title
 	} else {
 		title = p.entity.Profile.Name

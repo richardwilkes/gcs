@@ -14,8 +14,8 @@ package ux
 import (
 	"fmt"
 
-	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
@@ -24,14 +24,14 @@ import (
 // PrimaryAttrPanel holds the contents of the primary attributes block on the sheet.
 type PrimaryAttrPanel struct {
 	unison.Panel
-	entity    *model.Entity
+	entity    *gurps.Entity
 	targetMgr *TargetMgr
 	prefix    string
 	crc       uint64
 }
 
 // NewPrimaryAttrPanel creates a new primary attributes panel.
-func NewPrimaryAttrPanel(entity *model.Entity, targetMgr *TargetMgr) *PrimaryAttrPanel {
+func NewPrimaryAttrPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PrimaryAttrPanel {
 	p := &PrimaryAttrPanel{
 		entity:    entity,
 		targetMgr: targetMgr,
@@ -55,18 +55,18 @@ func NewPrimaryAttrPanel(entity *model.Entity, targetMgr *TargetMgr) *PrimaryAtt
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
 		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, unison.Fill))
 	}
-	attrs := model.SheetSettingsFor(p.entity).Attributes
+	attrs := gurps.SheetSettingsFor(p.entity).Attributes
 	p.crc = attrs.CRC64()
 	p.rebuild(attrs)
 	return p
 }
 
-func (p *PrimaryAttrPanel) rebuild(attrs *model.AttributeDefs) {
+func (p *PrimaryAttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 	focusRefKey := p.targetMgr.CurrentFocusRef()
 	p.RemoveAllChildren()
 	for _, def := range attrs.List(false) {
 		if def.Primary() {
-			if def.Type == model.PrimarySeparatorAttributeType {
+			if def.Type == gurps.PrimarySeparatorAttributeType {
 				p.AddChild(NewPageInternalHeader(def.Name, 3))
 			} else {
 				attr, ok := p.entity.Attributes.Set[def.ID()]
@@ -74,7 +74,7 @@ func (p *PrimaryAttrPanel) rebuild(attrs *model.AttributeDefs) {
 					jot.Warnf("unable to locate attribute data for '%s'", def.ID())
 					continue
 				}
-				if def.Type == model.IntegerRefAttributeType || def.Type == model.DecimalRefAttributeType {
+				if def.Type == gurps.IntegerRefAttributeType || def.Type == gurps.DecimalRefAttributeType {
 					field := NewNonEditablePageFieldEnd(func(field *NonEditablePageField) {
 						field.Text = attr.Maximum().String()
 					})
@@ -99,7 +99,7 @@ func (p *PrimaryAttrPanel) rebuild(attrs *model.AttributeDefs) {
 	}
 }
 
-func (p *PrimaryAttrPanel) createPointsField(attr *model.Attribute) *NonEditablePageField {
+func (p *PrimaryAttrPanel) createPointsField(attr *gurps.Attribute) *NonEditablePageField {
 	field := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
 		if text := "[" + attr.PointCost().String() + "]"; text != f.Text {
 			f.Text = text
@@ -109,11 +109,11 @@ func (p *PrimaryAttrPanel) createPointsField(attr *model.Attribute) *NonEditable
 			f.Tooltip = unison.NewTooltipWithText(fmt.Sprintf(i18n.Text("Points spent on %s"), def.CombinedName()))
 		}
 	})
-	field.Font = model.PageFieldSecondaryFont
+	field.Font = gurps.PageFieldSecondaryFont
 	return field
 }
 
-func (p *PrimaryAttrPanel) createValueField(def *model.AttributeDef, attr *model.Attribute) *DecimalField {
+func (p *PrimaryAttrPanel) createValueField(def *gurps.AttributeDef, attr *gurps.Attribute) *DecimalField {
 	return NewDecimalPageField(p.targetMgr, p.prefix+attr.AttrID, def.CombinedName(),
 		func() fxp.Int { return attr.Maximum() },
 		func(v fxp.Int) { attr.SetMaximum(v) }, fxp.Min, fxp.Max, true)
@@ -121,7 +121,7 @@ func (p *PrimaryAttrPanel) createValueField(def *model.AttributeDef, attr *model
 
 // Sync the panel to the current data.
 func (p *PrimaryAttrPanel) Sync() {
-	attrs := model.SheetSettingsFor(p.entity).Attributes
+	attrs := gurps.SheetSettingsFor(p.entity).Attributes
 	if crc := attrs.CRC64(); crc != p.crc {
 		p.crc = crc
 		p.rebuild(attrs)

@@ -14,7 +14,7 @@ package ux
 import (
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/unison"
@@ -29,13 +29,13 @@ func RegisterKnownFileTypes() {
 }
 
 func registerNavigatorFileTypes() {
-	registerSpecialFileInfo(model.ClosedFolder, svg.ClosedFolder)
-	registerSpecialFileInfo(model.OpenFolder, svg.OpenFolder)
-	registerSpecialFileInfo(model.GenericFile, svg.GenericFile)
+	registerSpecialFileInfo(gurps.ClosedFolder, svg.ClosedFolder)
+	registerSpecialFileInfo(gurps.OpenFolder, svg.OpenFolder)
+	registerSpecialFileInfo(gurps.GenericFile, svg.GenericFile)
 }
 
 func registerSpecialFileInfo(key string, svg *unison.SVG) {
-	model.FileInfo{
+	gurps.FileInfo{
 		Extensions: []string{key},
 		SVG:        svg,
 		IsSpecial:  true,
@@ -63,7 +63,7 @@ func RegisterExternalFileTypes() {
 }
 
 func registerImageFileInfo(format unison.EncodedImageFormat, groupWith []string) {
-	model.FileInfo{
+	gurps.FileInfo{
 		Name:       strings.ToUpper(format.Extension()[1:]) + " Image",
 		UTI:        format.UTI(),
 		ConformsTo: []string{"public.image"},
@@ -77,7 +77,7 @@ func registerImageFileInfo(format unison.EncodedImageFormat, groupWith []string)
 }
 
 func registerPDFFileInfo() {
-	model.FileInfo{
+	gurps.FileInfo{
 		Name:       "PDF Document",
 		UTI:        "com.adobe.pdf",
 		ConformsTo: []string{"public.data"},
@@ -92,7 +92,7 @@ func registerPDFFileInfo() {
 
 func registerMarkdownFileInfo() {
 	extensions := []string{".md", ".markdown"}
-	model.FileInfo{
+	gurps.FileInfo{
 		Name:       "Markdown Document",
 		UTI:        "net.daringfireball.markdown",
 		ConformsTo: []string{"public.plain-text"},
@@ -106,28 +106,28 @@ func registerMarkdownFileInfo() {
 
 // RegisterGCSFileTypes registers the GCS file types.
 func RegisterGCSFileTypes() {
-	registerExportableGCSFileInfo("GCS Sheet", model.SheetExt, svg.GCSSheet, NewSheetFromFile)
-	registerGCSFileInfo("GCS Template", model.TemplatesExt, []string{model.TemplatesExt}, svg.GCSTemplate, NewTemplateFromFile)
+	registerExportableGCSFileInfo("GCS Sheet", gurps.SheetExt, svg.GCSSheet, NewSheetFromFile)
+	registerGCSFileInfo("GCS Template", gurps.TemplatesExt, []string{gurps.TemplatesExt}, svg.GCSTemplate, NewTemplateFromFile)
 	groupWith := []string{
-		model.TraitsExt,
-		model.TraitModifiersExt,
-		model.EquipmentExt,
-		model.EquipmentModifiersExt,
-		model.SkillsExt,
-		model.SpellsExt,
-		model.NotesExt,
+		gurps.TraitsExt,
+		gurps.TraitModifiersExt,
+		gurps.EquipmentExt,
+		gurps.EquipmentModifiersExt,
+		gurps.SkillsExt,
+		gurps.SpellsExt,
+		gurps.NotesExt,
 	}
-	registerGCSFileInfo("GCS Traits", model.TraitsExt, groupWith, svg.GCSTraits, NewTraitTableDockableFromFile)
-	registerGCSFileInfo("GCS Trait Modifiers", model.TraitModifiersExt, groupWith, svg.GCSTraitModifiers, NewTraitModifierTableDockableFromFile)
-	registerGCSFileInfo("GCS Equipment", model.EquipmentExt, groupWith, svg.GCSEquipment, NewEquipmentTableDockableFromFile)
-	registerGCSFileInfo("GCS Equipment Modifiers", model.EquipmentModifiersExt, groupWith, svg.GCSEquipmentModifiers, NewEquipmentModifierTableDockableFromFile)
-	registerGCSFileInfo("GCS Skills", model.SkillsExt, groupWith, svg.GCSSkills, NewSkillTableDockableFromFile)
-	registerGCSFileInfo("GCS Spells", model.SpellsExt, groupWith, svg.GCSSpells, NewSpellTableDockableFromFile)
-	registerGCSFileInfo("GCS Notes", model.NotesExt, groupWith, svg.GCSNotes, NewNoteTableDockableFromFile)
+	registerGCSFileInfo("GCS Traits", gurps.TraitsExt, groupWith, svg.GCSTraits, NewTraitTableDockableFromFile)
+	registerGCSFileInfo("GCS Trait Modifiers", gurps.TraitModifiersExt, groupWith, svg.GCSTraitModifiers, NewTraitModifierTableDockableFromFile)
+	registerGCSFileInfo("GCS Equipment", gurps.EquipmentExt, groupWith, svg.GCSEquipment, NewEquipmentTableDockableFromFile)
+	registerGCSFileInfo("GCS Equipment Modifiers", gurps.EquipmentModifiersExt, groupWith, svg.GCSEquipmentModifiers, NewEquipmentModifierTableDockableFromFile)
+	registerGCSFileInfo("GCS Skills", gurps.SkillsExt, groupWith, svg.GCSSkills, NewSkillTableDockableFromFile)
+	registerGCSFileInfo("GCS Spells", gurps.SpellsExt, groupWith, svg.GCSSpells, NewSpellTableDockableFromFile)
+	registerGCSFileInfo("GCS Notes", gurps.NotesExt, groupWith, svg.GCSNotes, NewNoteTableDockableFromFile)
 }
 
 func registerGCSFileInfo(name, ext string, groupWith []string, svg *unison.SVG, loader func(filePath string) (unison.Dockable, error)) {
-	model.FileInfo{
+	gurps.FileInfo{
 		Name:       name,
 		UTI:        cmdline.AppIdentifier + ext,
 		ConformsTo: []string{"public.data"},
@@ -141,7 +141,7 @@ func registerGCSFileInfo(name, ext string, groupWith []string, svg *unison.SVG, 
 }
 
 func registerExportableGCSFileInfo(name, ext string, svg *unison.SVG, loader func(filePath string) (unison.Dockable, error)) {
-	model.FileInfo{
+	gurps.FileInfo{
 		Name:         name,
 		UTI:          cmdline.AppIdentifier + ext,
 		ConformsTo:   []string{"public.data"},

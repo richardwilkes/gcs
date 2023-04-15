@@ -12,36 +12,36 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 )
 
 // LengthField is field that holds a length value.
-type LengthField = NumericField[model.Length]
+type LengthField = NumericField[gurps.Length]
 
 // NewLengthField creates a new field that holds a fixed-point number.
-func NewLengthField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *model.Entity, get func() model.Length, set func(model.Length), min, max model.Length, noMinWidth bool) *LengthField {
-	var getPrototypes func(min, max model.Length) []model.Length
+func NewLengthField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() gurps.Length, set func(gurps.Length), min, max gurps.Length, noMinWidth bool) *LengthField {
+	var getPrototypes func(min, max gurps.Length) []gurps.Length
 	if !noMinWidth {
-		getPrototypes = func(min, max model.Length) []model.Length {
-			if min == model.Length(fxp.Min) {
-				min = model.Length(-fxp.One)
+		getPrototypes = func(min, max gurps.Length) []gurps.Length {
+			if min == gurps.Length(fxp.Min) {
+				min = gurps.Length(-fxp.One)
 			}
-			min = model.Length(fxp.Int(min).Trunc() + fxp.One - 1)
-			if max == model.Length(fxp.Max) {
-				max = model.Length(fxp.One)
+			min = gurps.Length(fxp.Int(min).Trunc() + fxp.One - 1)
+			if max == gurps.Length(fxp.Max) {
+				max = gurps.Length(fxp.One)
 			}
-			max = model.Length(fxp.Int(max).Trunc() + fxp.One - 1)
-			return []model.Length{min, model.Length(fxp.Two - 1), max}
+			max = gurps.Length(fxp.Int(max).Trunc() + fxp.One - 1)
+			return []gurps.Length{min, gurps.Length(fxp.Two - 1), max}
 		}
 	}
-	format := func(value model.Length) string {
-		return model.SheetSettingsFor(entity).DefaultLengthUnits.Format(value)
+	format := func(value gurps.Length) string {
+		return gurps.SheetSettingsFor(entity).DefaultLengthUnits.Format(value)
 	}
-	extract := func(s string) (model.Length, error) {
-		return model.LengthFromString(s, model.SheetSettingsFor(entity).DefaultLengthUnits)
+	extract := func(s string) (gurps.Length, error) {
+		return gurps.LengthFromString(s, gurps.SheetSettingsFor(entity).DefaultLengthUnits)
 	}
-	f := NewNumericField[model.Length](targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, min, max)
+	f := NewNumericField[gurps.Length](targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, min, max)
 	f.RuneTypedCallback = f.DefaultRuneTyped
 	return f
 }

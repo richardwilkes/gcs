@@ -14,15 +14,15 @@ package ux
 import (
 	"fmt"
 
-	"github.com/richardwilkes/gcs/v5/model"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/xmath"
 	"github.com/richardwilkes/unison"
 )
 
 type updatableLibraryCell struct {
 	unison.Panel
-	library           *model.Library
-	release           model.Release
+	library           *gurps.Library
+	release           gurps.Release
 	title             *unison.Label
 	button            *unison.Button
 	inButtonMouseDown bool
@@ -30,7 +30,7 @@ type updatableLibraryCell struct {
 	overButton        bool
 }
 
-func newUpdatableLibraryCell(lib *model.Library, title *unison.Label, rel *model.Release) *updatableLibraryCell {
+func newUpdatableLibraryCell(lib *gurps.Library, title *unison.Label, rel *gurps.Release) *updatableLibraryCell {
 	c := &updatableLibraryCell{
 		library: lib,
 		release: *rel,
