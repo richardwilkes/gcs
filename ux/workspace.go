@@ -34,9 +34,6 @@ const (
 	workspaceClientDataKey = "workspace"
 )
 
-// PrintMgr is our PrintManager singleton.
-var PrintMgr printing.PrintManager
-
 // GroupedCloser defines the methods required of a tab that wishes to be closed when another tab is closed.
 type GroupedCloser interface {
 	unison.TabCloser
@@ -49,6 +46,7 @@ type Workspace struct {
 	TopDock      *unison.Dock
 	Navigator    *Navigator
 	DocumentDock *DocumentDock
+	PrintMgr     *printing.PrintManager
 }
 
 // ShowUnableToLocateWorkspaceError displays an error dialog.
@@ -136,6 +134,7 @@ func NewWorkspace(wnd *unison.Window) *Workspace {
 		TopDock:      unison.NewDock(),
 		Navigator:    newNavigator(),
 		DocumentDock: NewDocumentDock(),
+		PrintMgr:     &printing.PrintManager{},
 	}
 	wnd.SetContent(w.TopDock)
 	w.TopDock.DockTo(w.Navigator, nil, unison.LeftSide)

@@ -484,7 +484,7 @@ func (s *Sheet) print() {
 		unison.ErrorDialogWithError(i18n.Text("Unable to create PDF!"), err)
 		return
 	}
-	dialog := PrintMgr.NewJobDialog(printing.PrinterID{}, "application/pdf", nil)
+	dialog := AnyWorkspace().PrintMgr.NewJobDialog(printing.PrinterID{}, "application/pdf", nil)
 	if dialog.RunModal() {
 		go backgroundPrint(s.entity.Profile.Name, dialog.Printer(), dialog.JobAttributes(), data)
 	}
