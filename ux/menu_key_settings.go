@@ -29,11 +29,11 @@ type menuKeySettingsDockable struct {
 
 // ShowMenuKeySettings shows the Menu Key settings.
 func ShowMenuKeySettings() {
-	ws, dc, found := Activate(func(d unison.Dockable) bool {
+	dc, found := Activate(func(d unison.Dockable) bool {
 		_, ok := d.(*menuKeySettingsDockable)
 		return ok
 	})
-	if !found && ws != nil {
+	if !found {
 		d := &menuKeySettingsDockable{}
 		d.Self = d
 		d.TabTitle = i18n.Text("Menu Keys")
@@ -42,7 +42,7 @@ func ShowMenuKeySettings() {
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset
-		d.Setup(ws, dc, nil, nil, d.initContent)
+		d.Setup(dc, nil, nil, d.initContent)
 	}
 }
 

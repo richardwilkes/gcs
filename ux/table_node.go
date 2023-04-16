@@ -608,7 +608,7 @@ func (n *Node[T]) createPageRefCell(c *gurps.CellData, foreground unison.Ink) un
 				list := ExtractPageReferences(c.Primary)
 				if len(list) != 0 {
 					unison.InvokeTaskAfter(
-						func() { OpenPageReference(label.Window(), list[0], c.Secondary, nil) },
+						func() { OpenPageReference(list[0], c.Secondary, nil) },
 						time.Millisecond)
 				}
 			}

@@ -52,13 +52,13 @@ type pointsEditor struct {
 }
 
 func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
-	ws, dc, found := Activate(func(d unison.Dockable) bool {
+	dc, found := Activate(func(d unison.Dockable) bool {
 		if e, ok := d.(*pointsEditor); ok {
 			return e.owner == owner && entity == e.entity
 		}
 		return false
 	})
-	if found || ws == nil {
+	if found {
 		return
 	}
 	e := &pointsEditor{
@@ -119,7 +119,7 @@ func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 	e.ClientData()[AssociatedUUIDKey] = e.entity.ID
 	e.promptForSave = true
 	scroller.Content().AsPanel().ValidateScrollRoot()
-	PlaceInDock(ws, dc, e, EditorGroup)
+	PlaceInDock(dc, e, EditorGroup)
 	if children := e.content.Children(); len(children) != 0 {
 		children[3].RequestFocus()
 	}

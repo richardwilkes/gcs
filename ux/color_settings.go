@@ -28,11 +28,11 @@ type colorSettingsDockable struct {
 
 // ShowColorSettings shows the Color settings.
 func ShowColorSettings() {
-	ws, dc, found := Activate(func(d unison.Dockable) bool {
+	dc, found := Activate(func(d unison.Dockable) bool {
 		_, ok := d.(*colorSettingsDockable)
 		return ok
 	})
-	if !found && ws != nil {
+	if !found {
 		d := &colorSettingsDockable{}
 		d.Self = d
 		d.TabTitle = i18n.Text("Colors")
@@ -41,7 +41,7 @@ func ShowColorSettings() {
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset
-		d.Setup(ws, dc, d.addToStartToolbar, nil, d.initContent)
+		d.Setup(dc, d.addToStartToolbar, nil, d.initContent)
 	}
 }
 

@@ -324,7 +324,6 @@ func (n *Navigator) deleteSelection() {
 }
 
 func (n *Navigator) closeSelection(selection []*NavigatorNode) bool {
-	ws := WorkspaceFromWindowOrAny(n.Window())
 	for _, row := range selection {
 		p := row.Path()
 		if row.nodeType == directoryNode {
@@ -334,7 +333,7 @@ func (n *Navigator) closeSelection(selection []*NavigatorNode) bool {
 				}
 			}
 		} else {
-			if dockable := ws.LocateFileBackedDockable(p); dockable != nil {
+			if dockable := WS.LocateFileBackedDockable(p); dockable != nil {
 				if !dockable.MayAttemptClose() {
 					return false
 				}
@@ -431,13 +430,12 @@ func (n *Navigator) renameSelection() {
 }
 
 func (n *Navigator) adjustBackingFilePath(row *NavigatorNode, oldPath, newPath string) {
-	ws := WorkspaceFromWindowOrAny(n.Window())
 	switch row.nodeType {
 	case directoryNode:
 		if !strings.HasSuffix(oldPath, string(os.PathSeparator)) {
 			oldPath += string(os.PathSeparator)
 		}
-		ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
+		WS.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
 			for _, one := range dc.Dockables() {
 				if fbd, ok := one.(FileBackedDockable); ok {
 					p := fbd.BackingFilePath()
@@ -449,7 +447,7 @@ func (n *Navigator) adjustBackingFilePath(row *NavigatorNode, oldPath, newPath s
 			return false
 		})
 	case fileNode:
-		if dockable := ws.LocateFileBackedDockable(oldPath); dockable != nil {
+		if dockable := WS.LocateFileBackedDockable(oldPath); dockable != nil {
 			dockable.SetBackingFilePath(newPath)
 		}
 	}
@@ -714,7 +712,6 @@ func (n *Navigator) selectionChanged() {
 }
 
 func (n *Navigator) handleSelectionDoubleClick() {
-	window := n.Window()
 	selection := n.table.SelectedRows(false)
 	if len(selection) > 4 {
 		if unison.QuestionDialog(i18n.Text("Are you sure you want to open all of these?"),
@@ -728,7 +725,7 @@ func (n *Navigator) handleSelectionDoubleClick() {
 			altered = true
 			row.SetOpen(!row.IsOpen())
 		} else {
-			row.Open(window)
+			row.Open()
 		}
 	}
 	if altered {
@@ -881,11 +878,6 @@ func HandleLink(src unison.Paneler, target string) {
 			target = revised
 		}
 	}
-	ws := AnyWorkspace()
-	if ws == nil {
-		ShowUnableToLocateWorkspaceError()
-		return
-	}
 	if strings.HasPrefix(target, "./") || strings.HasPrefix(target, "../") {
 		if md, ok := src.AsPanel().Self.(*unison.Markdown); ok && md.WorkingDir != "" {
 			p := target
@@ -893,7 +885,7 @@ func HandleLink(src unison.Paneler, target string) {
 				p = revised
 			}
 			if p = filepath.Join(md.WorkingDir, p); fs.FileIsReadable(p) {
-				OpenFile(ws.Window, p)
+				OpenFile(p)
 				return
 			}
 		}
@@ -901,32 +893,23 @@ func HandleLink(src unison.Paneler, target string) {
 			i18n.Text("Does the file exist and do you have access to read it?"))
 		return
 	}
-	OpenPageReference(ws.Window, target, "", nil)
+	OpenPageReference(target, "", nil)
 }
 
 // OpenFiles attempts to open the given file paths.
 func OpenFiles(filePaths []string) {
-	for _, wnd := range unison.Windows() {
-		if ws := WorkspaceFromWindow(wnd); ws != nil {
-			for _, one := range filePaths {
-				if p, err := filepath.Abs(one); err != nil {
-					unison.ErrorDialogWithError(i18n.Text("Unable to open ")+one, err)
-				} else {
-					wnd.ToFront()
-					OpenFile(wnd, p)
-				}
-			}
+	for _, one := range filePaths {
+		if p, err := filepath.Abs(one); err != nil {
+			unison.ErrorDialogWithError(i18n.Text("Unable to open ")+one, err)
+		} else {
+			WS.Window.ToFront()
+			OpenFile(p)
 		}
 	}
 }
 
 // DisplayNewDockable adds the Dockable to the dock and gives it the focus.
-func DisplayNewDockable(wnd *unison.Window, dockable unison.Dockable) {
-	ws := WorkspaceFromWindowOrAny(wnd)
-	if ws == nil {
-		ShowUnableToLocateWorkspaceError()
-		return
-	}
+func DisplayNewDockable(dockable unison.Dockable) {
 	defer func() {
 		if children := dockable.AsPanel().Children(); len(children) > 1 {
 			FocusFirstContent(children[0], children[1])
@@ -934,31 +917,25 @@ func DisplayNewDockable(wnd *unison.Window, dockable unison.Dockable) {
 	}()
 	if fbd, ok := dockable.(FileBackedDockable); ok {
 		fi := gurps.FileInfoFor(fbd.BackingFilePath())
-		if dc := ws.CurrentlyFocusedDockContainer(); dc != nil && DockContainerHoldsExtension(dc, fi.GroupWith...) {
+		if dc := WS.CurrentlyFocusedDockContainer(); dc != nil && DockContainerHoldsExtension(dc, fi.GroupWith...) {
 			dc.Stack(dockable, -1)
 			return
-		} else if dc = ws.LocateDockContainerForExtension(fi.GroupWith...); dc != nil {
+		} else if dc = WS.LocateDockContainerForExtension(fi.GroupWith...); dc != nil {
 			dc.Stack(dockable, -1)
 			return
 		}
 	}
-	ws.DocumentDock.DockTo(dockable, nil, unison.RightSide)
+	WS.DocumentDock.DockTo(dockable, nil, unison.RightSide)
 }
 
-// OpenFile attempts to open the given file path in the given window, which should contain a workspace. May pass nil for
-// wnd to let it pick the first such window it discovers.
-func OpenFile(wnd *unison.Window, filePath string) (dockable unison.Dockable, wasOpen bool) {
-	ws := WorkspaceFromWindowOrAny(wnd)
-	if ws == nil {
-		ShowUnableToLocateWorkspaceError()
-		return nil, false
-	}
+// OpenFile attempts to open the given file path.
+func OpenFile(filePath string) (dockable unison.Dockable, wasOpen bool) {
 	var err error
 	if filePath, err = filepath.Abs(filePath); err != nil {
 		unison.ErrorDialogWithError(i18n.Text("Unable to resolve path"), err)
 		return nil, false
 	}
-	if d := ws.LocateFileBackedDockable(filePath); d != nil {
+	if d := WS.LocateFileBackedDockable(filePath); d != nil {
 		dc := unison.Ancestor[*unison.DockContainer](d)
 		dc.SetCurrentDockable(d)
 		dc.AcquireFocus()
@@ -974,7 +951,7 @@ func OpenFile(wnd *unison.Window, filePath string) (dockable unison.Dockable, wa
 		return nil, false
 	}
 	gurps.GlobalSettings().AddRecentFile(filePath)
-	DisplayNewDockable(wnd, d)
+	DisplayNewDockable(d)
 	return d, false
 }
 

@@ -58,13 +58,13 @@ type editor[N gurps.NodeTypes, D gurps.EditorData[N]] struct {
 
 func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner Rebuildable, target N, svg *unison.SVG, helpMD string, initToolbar func(*editor[N, D], *unison.Panel), initContent func(*editor[N, D], *unison.Panel) func()) {
 	lookFor := gurps.AsNode(target).UUID()
-	ws, dc, found := Activate(func(d unison.Dockable) bool {
+	dc, found := Activate(func(d unison.Dockable) bool {
 		if e, ok := d.(*editor[N, D]); ok {
 			return e.owner == owner && gurps.AsNode(e.target).UUID() == lookFor
 		}
 		return false
 	})
-	if !found && ws != nil {
+	if !found {
 		e := &editor[N, D]{
 			owner:  owner,
 			target: target,
@@ -140,7 +140,7 @@ func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner Rebuildable, 
 			}
 			p = p.Parent()
 		}
-		PlaceInDock(ws, dc, e, group)
+		PlaceInDock(dc, e, group)
 		content.RequestFocus()
 	}
 }

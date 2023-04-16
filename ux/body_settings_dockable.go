@@ -45,13 +45,13 @@ type bodySettingsDockable struct {
 
 // ShowBodySettings the Body Settings. Pass in nil to edit the defaults or a sheet to edit the sheet's.
 func ShowBodySettings(owner EntityPanel) {
-	ws, dc, found := Activate(func(d unison.Dockable) bool {
+	dc, found := Activate(func(d unison.Dockable) bool {
 		if s, ok := d.(*bodySettingsDockable); ok && owner == s.owner {
 			return true
 		}
 		return false
 	})
-	if !found && ws != nil {
+	if !found {
 		d := &bodySettingsDockable{
 			owner:         owner,
 			promptForSave: true,
@@ -76,7 +76,7 @@ func ShowBodySettings(owner EntityPanel) {
 		d.Resetter = d.reset
 		d.ModifiedCallback = d.modified
 		d.WillCloseCallback = d.willClose
-		d.Setup(ws, dc, d.addToStartToolbar, nil, d.initContent)
+		d.Setup(dc, d.addToStartToolbar, nil, d.initContent)
 	}
 }
 
@@ -226,18 +226,14 @@ func (d *bodySettingsDockable) apply() {
 	}
 	entity := d.owner.Entity()
 	entity.SheetSettings.BodyType = d.body.Clone(entity, nil)
-	for _, wnd := range unison.Windows() {
-		if ws := WorkspaceFromWindow(wnd); ws != nil {
-			ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
-				for _, one := range dc.Dockables() {
-					if s, ok := one.(gurps.SheetSettingsResponder); ok {
-						s.SheetSettingsUpdated(entity, true)
-					}
-				}
-				return false
-			})
+	WS.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
+		for _, one := range dc.Dockables() {
+			if s, ok := one.(gurps.SheetSettingsResponder); ok {
+				s.SheetSettingsUpdated(entity, true)
+			}
 		}
-	}
+		return false
+	})
 }
 
 func (d *bodySettingsDockable) dataDragOver(where unison.Point, data map[string]any) bool {

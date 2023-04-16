@@ -94,8 +94,7 @@ func ActiveSheet() *Sheet {
 // OpenSheets returns the currently open sheets.
 func OpenSheets(exclude *Sheet) []*Sheet {
 	var sheets []*Sheet
-	ws := WorkspaceFromWindowOrAny(unison.ActiveWindow())
-	ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
+	WS.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
 		for _, one := range dc.Dockables() {
 			if sheet, ok := one.(*Sheet); ok && sheet != exclude {
 				sheets = append(sheets, sheet)
@@ -484,7 +483,7 @@ func (s *Sheet) print() {
 		unison.ErrorDialogWithError(i18n.Text("Unable to create PDF!"), err)
 		return
 	}
-	dialog := AnyWorkspace().PrintMgr.NewJobDialog(printing.PrinterID{}, "application/pdf", nil)
+	dialog := WS.PrintMgr.NewJobDialog(printing.PrinterID{}, "application/pdf", nil)
 	if dialog.RunModal() {
 		go backgroundPrint(s.entity.Profile.Name, dialog.Printer(), dialog.JobAttributes(), data)
 	}

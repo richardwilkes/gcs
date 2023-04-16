@@ -58,11 +58,11 @@ type generalSettingsDockable struct {
 
 // ShowGeneralSettings the General Settings window.
 func ShowGeneralSettings() {
-	ws, dc, found := Activate(func(d unison.Dockable) bool {
+	dc, found := Activate(func(d unison.Dockable) bool {
 		_, ok := d.(*generalSettingsDockable)
 		return ok
 	})
-	if !found && ws != nil {
+	if !found {
 		d := &generalSettingsDockable{}
 		d.Self = d
 		d.TabTitle = i18n.Text("General Settings")
@@ -72,7 +72,7 @@ func ShowGeneralSettings() {
 		d.Saver = d.save
 		d.Resetter = d.reset
 		d.WillCloseCallback = d.willClose
-		d.Setup(ws, dc, d.addToStartToolbar, nil, d.initContent)
+		d.Setup(dc, d.addToStartToolbar, nil, d.initContent)
 		d.nameField.RequestFocus()
 	}
 }

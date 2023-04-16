@@ -29,14 +29,8 @@ func initiateLibraryUpdate(lib *gurps.Library, rel gurps.Release) bool {
 Content in other libraries will not be modified`)) != unison.ModalResponseOK {
 		return false
 	}
-
-	ws := AnyWorkspace()
-	if ws == nil {
-		return false
-	}
-
 	var list []unison.TabCloser
-	ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
+	WS.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
 		p := lib.PathOnDisk + "/"
 		for _, one := range dc.Dockables() {
 			if tc, ok := one.(unison.TabCloser); ok {
@@ -119,6 +113,6 @@ func finishLibraryUpdate(wnd *unison.Window, lib *gurps.Library) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	lib.CheckForAvailableUpgrade(ctx, &http.Client{})
-	WorkspaceFromWindowOrAny(wnd).Navigator.EventuallyReload()
+	WS.Navigator.EventuallyReload()
 	wnd.StopModal(unison.ModalResponseOK)
 }

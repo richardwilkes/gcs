@@ -108,13 +108,13 @@ type Calculator struct {
 
 // DisplayCalculator displays the calculator for the given Sheet.
 func DisplayCalculator(sheet *Sheet) {
-	ws, dc, found := Activate(func(d unison.Dockable) bool {
+	dc, found := Activate(func(d unison.Dockable) bool {
 		if c, ok := d.(*Calculator); ok {
 			return c.sheet == sheet
 		}
 		return false
 	})
-	if !found && ws != nil {
+	if !found {
 		c := &Calculator{
 			sheet:                sheet,
 			scale:                gurps.GlobalSettings().General.InitialEditorUIScale,
@@ -151,30 +151,26 @@ func DisplayCalculator(sheet *Sheet) {
 			}
 			p = p.Parent()
 		}
-		PlaceInDock(ws, dc, c, group)
+		PlaceInDock(dc, c, group)
 		c.content.RequestFocus()
 	}
 }
 
 // UpdateCalculator for the given owner.
 func UpdateCalculator(sheet *Sheet) {
-	for _, wnd := range unison.Windows() {
-		if ws := WorkspaceFromWindow(wnd); ws != nil {
-			ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
-				for _, other := range dc.Dockables() {
-					if c, ok := other.(*Calculator); ok && c.sheet == sheet {
-						c.updateJumpingResult()
-						c.updateThrowingResult()
-						c.updateHikingResult()
-						c.content.MarkForLayoutRecursively()
-						c.content.MarkForRedraw()
-						return true
-					}
-				}
-				return false
-			})
+	WS.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
+		for _, other := range dc.Dockables() {
+			if c, ok := other.(*Calculator); ok && c.sheet == sheet {
+				c.updateJumpingResult()
+				c.updateThrowingResult()
+				c.updateHikingResult()
+				c.content.MarkForLayoutRecursively()
+				c.content.MarkForRedraw()
+				return true
+			}
 		}
-	}
+		return false
+	})
 }
 
 func (c *Calculator) createToolbar() *unison.Panel {
@@ -546,7 +542,7 @@ func (c *Calculator) createHeader(text, linkRef, linkHighlight string, topMargin
 		},
 	}
 	link := unison.NewLink(linkRef, "", linkRef, linkTheme, func(_ unison.Paneler, _ string) {
-		OpenPageReference(nil, linkRef, linkHighlight, nil)
+		OpenPageReference(linkRef, linkHighlight, nil)
 	})
 	wrapper.AddChild(link)
 

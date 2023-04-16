@@ -57,13 +57,13 @@ type sheetSettingsDockable struct {
 
 // ShowSheetSettings the Sheet Settings. Pass in nil to edit the defaults or a sheet to edit the sheet's.
 func ShowSheetSettings(owner EntityPanel) {
-	ws, dc, found := Activate(func(d unison.Dockable) bool {
+	dc, found := Activate(func(d unison.Dockable) bool {
 		if s, ok := d.(*sheetSettingsDockable); ok && owner == s.owner {
 			return true
 		}
 		return false
 	})
-	if !found && ws != nil {
+	if !found {
 		d := &sheetSettingsDockable{owner: owner}
 		d.Self = d
 		if owner != nil {
@@ -76,7 +76,7 @@ func ShowSheetSettings(owner EntityPanel) {
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset
-		d.Setup(ws, dc, d.addToStartToolbar, nil, d.initContent)
+		d.Setup(dc, d.addToStartToolbar, nil, d.initContent)
 	}
 }
 
@@ -209,7 +209,7 @@ func (d *sheetSettingsDockable) addCheckBoxWithLink(panel *unison.Panel, title, 
 	label.Text = " ("
 	wrapper.AddChild(label)
 	wrapper.AddChild(unison.NewLink(ref, "", ref, unison.DefaultLinkTheme, func(_ unison.Paneler, _ string) {
-		OpenPageReference(d.Window(), ref, "", nil)
+		OpenPageReference(ref, "", nil)
 	}))
 	label = unison.NewLabel()
 	label.Font = checkbox.Font
@@ -417,22 +417,18 @@ func (d *sheetSettingsDockable) sync() {
 }
 
 func (d *sheetSettingsDockable) syncSheet(full bool) {
-	for _, wnd := range unison.Windows() {
-		if ws := WorkspaceFromWindow(wnd); ws != nil {
-			ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
-				var entity *gurps.Entity
-				if d.owner != nil {
-					entity = d.owner.Entity()
-				}
-				for _, one := range dc.Dockables() {
-					if s, ok := one.(gurps.SheetSettingsResponder); ok {
-						s.SheetSettingsUpdated(entity, full)
-					}
-				}
-				return false
-			})
+	WS.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
+		var entity *gurps.Entity
+		if d.owner != nil {
+			entity = d.owner.Entity()
 		}
-	}
+		for _, one := range dc.Dockables() {
+			if s, ok := one.(gurps.SheetSettingsResponder); ok {
+				s.SheetSettingsUpdated(entity, full)
+			}
+		}
+		return false
+	})
 }
 
 func (d *sheetSettingsDockable) load(fileSystem fs.FS, filePath string) error {

@@ -58,8 +58,7 @@ type MarkdownDockable struct {
 
 // ShowReadOnlyMarkdown attempts to show the given markdown content in a dockable.
 func ShowReadOnlyMarkdown(title, content string) {
-	ws := WorkspaceFromWindowOrAny(nil)
-	if d := ws.LocateFileBackedDockable(markdownContentOnlyPrefix + title); d != nil {
+	if d := WS.LocateFileBackedDockable(markdownContentOnlyPrefix + title); d != nil {
 		dc := unison.Ancestor[*unison.DockContainer](d)
 		dc.SetCurrentDockable(d)
 		dc.AcquireFocus()
@@ -70,7 +69,7 @@ func ShowReadOnlyMarkdown(title, content string) {
 		unison.ErrorDialogWithError(fmt.Sprintf(i18n.Text("Unable to open %s"), title), err)
 		return
 	}
-	DisplayNewDockable(nil, d)
+	DisplayNewDockable(d)
 }
 
 // NewMarkdownDockable creates a new unison.Dockable for markdown files.

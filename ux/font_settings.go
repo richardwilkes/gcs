@@ -32,11 +32,11 @@ type fontSettingsDockable struct {
 
 // ShowFontSettings shows the Font settings.
 func ShowFontSettings() {
-	ws, dc, found := Activate(func(d unison.Dockable) bool {
+	dc, found := Activate(func(d unison.Dockable) bool {
 		_, ok := d.(*fontSettingsDockable)
 		return ok
 	})
-	if !found && ws != nil {
+	if !found {
 		all, monospaced := unison.AllFontFaces()
 		d := &fontSettingsDockable{allFaces: all, monospacedFaces: monospaced}
 		d.Self = d
@@ -46,7 +46,7 @@ func ShowFontSettings() {
 		d.Loader = d.load
 		d.Saver = d.save
 		d.Resetter = d.reset
-		d.Setup(ws, dc, nil, nil, d.initContent)
+		d.Setup(dc, nil, nil, d.initContent)
 	}
 }
 
