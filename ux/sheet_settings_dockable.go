@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -120,12 +120,19 @@ func (d *sheetSettingsDockable) createDamageProgression(content *unison.Panel) {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
+	desc := unison.NewMarkdown(true)
+	desc.SetContent(s.DamageProgression.AltString(), -1)
 	d.damageProgressionPopup = createSettingPopup(d, panel, i18n.Text("Damage Progression"),
 		gurps.AllDamageProgression, s.DamageProgression,
 		func(item gurps.DamageProgression) {
-			d.damageProgressionPopup.Tooltip = unison.NewTooltipWithText(item.Tooltip())
 			d.settings().DamageProgression = item
+			desc.SetContent(item.AltString(), -1)
+			desc.MarkForLayoutRecursivelyUpward()
+			desc.MarkForRedraw()
 		})
+	d.damageProgressionPopup.Tooltip = unison.NewTooltipWithText(i18n.Text("Determines the method used to calculate thrust and swing damage"))
+	panel.AddChild(unison.NewPanel())
+	panel.AddChild(desc)
 	content.AddChild(panel)
 }
 

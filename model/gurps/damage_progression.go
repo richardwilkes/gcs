@@ -13,17 +13,8 @@ package gurps
 
 import (
 	"github.com/richardwilkes/rpgtools/dice"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/xmath"
 )
-
-// Tooltip returns the tooltip for the DamageProgression.
-func (enum DamageProgression) Tooltip() string {
-	tooltip := i18n.Text("Determines the method used to calculate thrust and swing damage")
-	if footnote := enum.AltString(); footnote != "" {
-		return tooltip + ".\n" + footnote
-	}
-	return tooltip
-}
 
 // Thrust returns the thrust damage for the given strength.
 func (enum DamageProgression) Thrust(strength int) *dice.Dice {
@@ -114,6 +105,57 @@ func (enum DamageProgression) Thrust(strength int) *dice.Dice {
 			Modifier:   strength % 2,
 			Multiplier: 1,
 		}
+	case Tbone1:
+		if strength < 10 {
+			return &dice.Dice{
+				Count:    1,
+				Sides:    6,
+				Modifier: -(6 - (strength+2)/2),
+			}
+		}
+		d := &dice.Dice{
+			Count: strength / 10,
+			Sides: 6,
+		}
+		switch strength - (strength/10)*10 {
+		case 0, 1:
+		case 2, 3:
+			d.Modifier = 1
+		case 4:
+			d.Modifier = -2
+			d.Count++
+		case 5, 6:
+			d.Modifier = 2
+		case 7:
+			d.Modifier = -1
+			d.Count++
+		case 8, 9:
+			d.Modifier = 3
+		}
+		return d
+	case Tbone1Clean:
+		if strength < 10 {
+			return Tbone1.Thrust(strength)
+		}
+		d := &dice.Dice{
+			Count: strength / 10,
+			Sides: 6,
+		}
+		switch strength - (strength/10)*10 {
+		case 0, 1:
+		case 2, 3, 4:
+			d.Modifier = 1
+		case 5, 6:
+			d.Modifier = 2
+		case 7, 8, 9:
+			d.Modifier = -1
+			d.Count++
+		}
+		return d
+	case Tbone2:
+		return Tbone2.Swing(int(xmath.Ceil(float64(strength) * 2 / 3)))
+	case Tbone2Clean:
+		return Tbone2Clean.Swing(int(xmath.Ceil(float64(strength) * 2 / 3)))
 	default:
 		return BasicSet.Thrust(strength)
 	}
@@ -179,6 +221,14 @@ func (enum DamageProgression) Swing(strength int) *dice.Dice {
 		return sw
 	case PhoenixFlameD3:
 		return PhoenixFlameD3.Thrust(strength)
+	case Tbone1:
+		return Tbone1.Thrust(int(xmath.Ceil(float64(strength) * 1.5)))
+	case Tbone1Clean:
+		return Tbone1Clean.Thrust(int(xmath.Ceil(float64(strength) * 1.5)))
+	case Tbone2:
+		return Tbone1.Thrust(strength)
+	case Tbone2Clean:
+		return Tbone1Clean.Thrust(strength)
 	default:
 		return BasicSet.Swing(strength)
 	}

@@ -1,3 +1,14 @@
+/*
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, version 2.0. If a copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * This Source Code Form is "Incompatible With Secondary Licenses", as
+ * defined by the Mozilla Public License, version 2.0.
+ */
+
 package main
 
 //go:generate go run enumgen.go
@@ -198,28 +209,51 @@ func main() {
 		Desc:       "controls how Thrust and Swing are calculated",
 		StandAlone: true,
 		Values: []enumValue{
-			{Key: "basic_set"},
+			{
+				Key: "basic_set",
+				Alt: "*The standard damage progression*",
+			},
 			{
 				Key: "knowing_your_own_strength",
-				Alt: "Pyramid 3-83, pages 16-19",
+				Alt: "*From [Pyramid 3-83, pages 16-19](PY83:16)*",
 			},
 			{
 				Key: "no_school_grognard_damage",
-				Alt: "https://noschoolgrognard.blogspot.com/2013/04/adjusting-swing-damage-in-dungeon.html",
+				Alt: "*From [Adjusting Swing Damage in Dungeon Fantasy](https://noschoolgrognard.blogspot.com/2013/04/adjusting-swing-damage-in-dungeon.html)*",
 			},
 			{
 				Key:    "thrust_equals_swing_minus_2",
 				String: "Thrust = Swing-2",
-				Alt:    "https://github.com/richardwilkes/gcs/issues/97",
+				Alt:    "*From [Alternate Damage Scheme (Thr = Sw-2)](https://github.com/richardwilkes/gcs/issues/97)*",
 			},
 			{
 				Key:    "swing_equals_thrust_plus_2",
 				String: "Swing = Thrust+2",
-				Alt:    "Houserule originating with Kevin Smyth. See https://gamingballistic.com/2020/12/04/df-eastmarch-boss-fight-and-house-rules/",
+				Alt:    "*From a [house rule](https://gamingballistic.com/2020/12/04/df-eastmarch-boss-fight-and-house-rules/) originating with Kevin Smyth*",
+			},
+			{
+				Key:    "tbone_1",
+				String: "T Bone's New Damage for ST (option 1)",
+				Alt:    "*From [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*",
+			},
+			{
+				Key:    "tbone_1_clean",
+				String: "T Bone's New Damage for ST (option 1, cleaned)",
+				Alt:    "*From [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*",
+			},
+			{
+				Key:    "tbone_2",
+				String: "T Bone's New Damage for ST (option 2)",
+				Alt:    "*From [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*",
+			},
+			{
+				Key:    "tbone_2_clean",
+				String: "T Bone's New Damage for ST (option 2, cleaned)",
+				Alt:    "*From [T Bone's Games Diner](https://www.gamesdiner.com/rules-nugget-gurps-new-damage-for-st/)*",
 			},
 			{
 				Key: "phoenix_flame_d3",
-				Alt: "Houserule that use d3s instead of d6s for Damage. See: https://github.com/richardwilkes/gcs/pull/393",
+				Alt: "*From a [house rule](https://github.com/richardwilkes/gcs/pull/393) that uses d3s instead of d6s for damage*",
 			},
 		},
 	})
