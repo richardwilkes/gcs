@@ -30,7 +30,7 @@ Content in other libraries will not be modified`)) != unison.ModalResponseOK {
 		return false
 	}
 	var list []unison.TabCloser
-	WS.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
+	Workspace.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
 		p := lib.PathOnDisk + "/"
 		for _, one := range dc.Dockables() {
 			if tc, ok := one.(unison.TabCloser); ok {
@@ -113,6 +113,6 @@ func finishLibraryUpdate(wnd *unison.Window, lib *gurps.Library) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	lib.CheckForAvailableUpgrade(ctx, &http.Client{})
-	WS.Navigator.EventuallyReload()
+	Workspace.Navigator.EventuallyReload()
 	wnd.StopModal(unison.ModalResponseOK)
 }

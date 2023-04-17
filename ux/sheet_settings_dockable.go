@@ -57,27 +57,27 @@ type sheetSettingsDockable struct {
 
 // ShowSheetSettings the Sheet Settings. Pass in nil to edit the defaults or a sheet to edit the sheet's.
 func ShowSheetSettings(owner EntityPanel) {
-	dc, found := Activate(func(d unison.Dockable) bool {
+	if Activate(func(d unison.Dockable) bool {
 		if s, ok := d.(*sheetSettingsDockable); ok && owner == s.owner {
 			return true
 		}
 		return false
-	})
-	if !found {
-		d := &sheetSettingsDockable{owner: owner}
-		d.Self = d
-		if owner != nil {
-			d.TabTitle = i18n.Text("Sheet Settings: " + owner.Entity().Profile.Name)
-		} else {
-			d.TabTitle = i18n.Text("Default Sheet Settings")
-		}
-		d.TabIcon = svg.Settings
-		d.Extensions = []string{gurps.SheetSettingsExt}
-		d.Loader = d.load
-		d.Saver = d.save
-		d.Resetter = d.reset
-		d.Setup(dc, d.addToStartToolbar, nil, d.initContent)
+	}) {
+		return
 	}
+	d := &sheetSettingsDockable{owner: owner}
+	d.Self = d
+	if owner != nil {
+		d.TabTitle = i18n.Text("Sheet Settings: " + owner.Entity().Profile.Name)
+	} else {
+		d.TabTitle = i18n.Text("Default Sheet Settings")
+	}
+	d.TabIcon = svg.Settings
+	d.Extensions = []string{gurps.SheetSettingsExt}
+	d.Loader = d.load
+	d.Saver = d.save
+	d.Resetter = d.reset
+	d.Setup(d.addToStartToolbar, nil, d.initContent)
 }
 
 func (d *sheetSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
@@ -417,7 +417,7 @@ func (d *sheetSettingsDockable) sync() {
 }
 
 func (d *sheetSettingsDockable) syncSheet(full bool) {
-	WS.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
+	Workspace.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
 		var entity *gurps.Entity
 		if d.owner != nil {
 			entity = d.owner.Entity()

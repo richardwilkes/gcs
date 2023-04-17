@@ -58,91 +58,89 @@ type editor[N gurps.NodeTypes, D gurps.EditorData[N]] struct {
 
 func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner Rebuildable, target N, svg *unison.SVG, helpMD string, initToolbar func(*editor[N, D], *unison.Panel), initContent func(*editor[N, D], *unison.Panel) func()) {
 	lookFor := gurps.AsNode(target).UUID()
-	dc, found := Activate(func(d unison.Dockable) bool {
+	if Activate(func(d unison.Dockable) bool {
 		if e, ok := d.(*editor[N, D]); ok {
 			return e.owner == owner && gurps.AsNode(e.target).UUID() == lookFor
 		}
 		return false
-	})
-	if !found {
-		e := &editor[N, D]{
-			owner:  owner,
-			target: target,
-			svg:    svg,
-			scale:  gurps.GlobalSettings().General.InitialEditorUIScale,
-		}
-		e.Self = e
-
-		if dc != nil {
-			if e.previousDockable = dc.CurrentDockable(); !toolbox.IsNil(e.previousDockable) {
-				if focus := e.previousDockable.AsPanel().Window().Focus(); focus != nil {
-					if unison.Ancestor[unison.Dockable](focus) == e.previousDockable {
-						e.previousFocusKey = focus.RefKey
-					}
-				}
-			}
-		}
-
-		reflect.ValueOf(&e.beforeData).Elem().Set(reflect.New(reflect.TypeOf(e.beforeData).Elem()))
-		e.beforeData.CopyFrom(target)
-
-		reflect.ValueOf(&e.editorData).Elem().Set(reflect.New(reflect.TypeOf(e.editorData).Elem()))
-		e.editorData.CopyFrom(target)
-
-		e.undoMgr = unison.NewUndoManager(100, func(err error) { jot.Error(err) })
-		e.SetLayout(&unison.FlexLayout{Columns: 1})
-
-		content := unison.NewPanel()
-		content.SetBorder(unison.NewEmptyBorder(unison.NewUniformInsets(unison.StdHSpacing * 2)))
-		content.SetLayout(&unison.FlexLayout{
-			Columns:  2,
-			HSpacing: unison.StdHSpacing,
-			VSpacing: unison.StdVSpacing,
-		})
-		content.KeyDownCallback = func(keyCode unison.KeyCode, mod unison.Modifiers, repeat bool) bool {
-			switch {
-			case mod.OSMenuCmdModifierDown() && (keyCode == unison.KeyReturn || keyCode == unison.KeyNumPadEnter):
-				if e.applyButton.Enabled() {
-					e.applyButton.Click()
-				}
-				return true
-			case mod == 0 && keyCode == unison.KeyEscape:
-				if e.cancelButton.Enabled() {
-					e.cancelButton.Click()
-				}
-				return true
-			default:
-				return false
-			}
-		}
-
-		e.scroll = unison.NewScrollPanel()
-		e.scroll.SetContent(content, unison.HintedFillBehavior, unison.FillBehavior)
-		e.scroll.SetLayoutData(&unison.FlexLayoutData{
-			HAlign: unison.FillAlignment,
-			VAlign: unison.FillAlignment,
-			HGrab:  true,
-			VGrab:  true,
-		})
-
-		e.AddChild(e.createToolbar(helpMD, initToolbar))
-		e.modificationCallback = initContent(e, content)
-		e.AddChild(e.scroll)
-		e.ClientData()[AssociatedUUIDKey] = gurps.AsNode(target).UUID()
-		e.promptForSave = true
-		e.scroll.Content().AsPanel().ValidateScrollRoot()
-		group := EditorGroup
-		p := owner.AsPanel()
-		for p != nil {
-			if _, exists := p.ClientData()[AssociatedUUIDKey]; exists {
-				group = subEditorGroup
-				break
-			}
-			p = p.Parent()
-		}
-		PlaceInDock(dc, e, group)
-		content.RequestFocus()
+	}) {
+		return
 	}
+	e := &editor[N, D]{
+		owner:  owner,
+		target: target,
+		svg:    svg,
+		scale:  gurps.GlobalSettings().General.InitialEditorUIScale,
+	}
+	e.Self = e
+
+	if e.previousDockable = DefaultDockContainer().CurrentDockable(); !toolbox.IsNil(e.previousDockable) {
+		if focus := e.previousDockable.AsPanel().Window().Focus(); focus != nil {
+			if unison.Ancestor[unison.Dockable](focus) == e.previousDockable {
+				e.previousFocusKey = focus.RefKey
+			}
+		}
+	}
+
+	reflect.ValueOf(&e.beforeData).Elem().Set(reflect.New(reflect.TypeOf(e.beforeData).Elem()))
+	e.beforeData.CopyFrom(target)
+
+	reflect.ValueOf(&e.editorData).Elem().Set(reflect.New(reflect.TypeOf(e.editorData).Elem()))
+	e.editorData.CopyFrom(target)
+
+	e.undoMgr = unison.NewUndoManager(100, func(err error) { jot.Error(err) })
+	e.SetLayout(&unison.FlexLayout{Columns: 1})
+
+	content := unison.NewPanel()
+	content.SetBorder(unison.NewEmptyBorder(unison.NewUniformInsets(unison.StdHSpacing * 2)))
+	content.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	content.KeyDownCallback = func(keyCode unison.KeyCode, mod unison.Modifiers, repeat bool) bool {
+		switch {
+		case mod.OSMenuCmdModifierDown() && (keyCode == unison.KeyReturn || keyCode == unison.KeyNumPadEnter):
+			if e.applyButton.Enabled() {
+				e.applyButton.Click()
+			}
+			return true
+		case mod == 0 && keyCode == unison.KeyEscape:
+			if e.cancelButton.Enabled() {
+				e.cancelButton.Click()
+			}
+			return true
+		default:
+			return false
+		}
+	}
+
+	e.scroll = unison.NewScrollPanel()
+	e.scroll.SetContent(content, unison.HintedFillBehavior, unison.FillBehavior)
+	e.scroll.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		VAlign: unison.FillAlignment,
+		HGrab:  true,
+		VGrab:  true,
+	})
+
+	e.AddChild(e.createToolbar(helpMD, initToolbar))
+	e.modificationCallback = initContent(e, content)
+	e.AddChild(e.scroll)
+	e.ClientData()[AssociatedUUIDKey] = gurps.AsNode(target).UUID()
+	e.promptForSave = true
+	e.scroll.Content().AsPanel().ValidateScrollRoot()
+	group := EditorGroup
+	p := owner.AsPanel()
+	for p != nil {
+		if _, exists := p.ClientData()[AssociatedUUIDKey]; exists {
+			group = subEditorGroup
+			break
+		}
+		p = p.Parent()
+	}
+	PlaceInDock(e, group)
+	content.RequestFocus()
 }
 
 func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, D], *unison.Panel)) unison.Paneler {

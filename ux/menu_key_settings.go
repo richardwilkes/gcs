@@ -29,21 +29,21 @@ type menuKeySettingsDockable struct {
 
 // ShowMenuKeySettings shows the Menu Key settings.
 func ShowMenuKeySettings() {
-	dc, found := Activate(func(d unison.Dockable) bool {
+	if Activate(func(d unison.Dockable) bool {
 		_, ok := d.(*menuKeySettingsDockable)
 		return ok
-	})
-	if !found {
-		d := &menuKeySettingsDockable{}
-		d.Self = d
-		d.TabTitle = i18n.Text("Menu Keys")
-		d.TabIcon = svg.Settings
-		d.Extensions = []string{gurps.KeySettingsExt}
-		d.Loader = d.load
-		d.Saver = d.save
-		d.Resetter = d.reset
-		d.Setup(dc, nil, nil, d.initContent)
+	}) {
+		return
 	}
+	d := &menuKeySettingsDockable{}
+	d.Self = d
+	d.TabTitle = i18n.Text("Menu Keys")
+	d.TabIcon = svg.Settings
+	d.Extensions = []string{gurps.KeySettingsExt}
+	d.Loader = d.load
+	d.Saver = d.save
+	d.Resetter = d.reset
+	d.Setup(nil, nil, d.initContent)
 }
 
 func (d *menuKeySettingsDockable) initContent(content *unison.Panel) {

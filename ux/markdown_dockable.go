@@ -58,7 +58,7 @@ type MarkdownDockable struct {
 
 // ShowReadOnlyMarkdown attempts to show the given markdown content in a dockable.
 func ShowReadOnlyMarkdown(title, content string) {
-	if d := WS.LocateFileBackedDockable(markdownContentOnlyPrefix + title); d != nil {
+	if d := LocateFileBackedDockable(markdownContentOnlyPrefix + title); d != nil {
 		dc := unison.Ancestor[*unison.DockContainer](d)
 		dc.SetCurrentDockable(d)
 		dc.AcquireFocus()

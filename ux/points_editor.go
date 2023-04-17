@@ -52,13 +52,12 @@ type pointsEditor struct {
 }
 
 func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
-	dc, found := Activate(func(d unison.Dockable) bool {
+	if Activate(func(d unison.Dockable) bool {
 		if e, ok := d.(*pointsEditor); ok {
 			return e.owner == owner && entity == e.entity
 		}
 		return false
-	})
-	if found {
+	}) {
 		return
 	}
 	e := &pointsEditor{
@@ -70,12 +69,10 @@ func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 	e.Self = e
 	sort.Slice(e.current, func(i, j int) bool { return e.current[i].When.After(e.current[j].When) })
 
-	if dc != nil {
-		if e.previousDockable = dc.CurrentDockable(); !toolbox.IsNil(e.previousDockable) {
-			if focus := e.previousDockable.AsPanel().Window().Focus(); focus != nil {
-				if unison.Ancestor[unison.Dockable](focus) == e.previousDockable {
-					e.previousFocusKey = focus.RefKey
-				}
+	if e.previousDockable = DefaultDockContainer().CurrentDockable(); !toolbox.IsNil(e.previousDockable) {
+		if focus := e.previousDockable.AsPanel().Window().Focus(); focus != nil {
+			if unison.Ancestor[unison.Dockable](focus) == e.previousDockable {
+				e.previousFocusKey = focus.RefKey
 			}
 		}
 	}
@@ -119,7 +116,7 @@ func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 	e.ClientData()[AssociatedUUIDKey] = e.entity.ID
 	e.promptForSave = true
 	scroller.Content().AsPanel().ValidateScrollRoot()
-	PlaceInDock(dc, e, EditorGroup)
+	PlaceInDock(e, EditorGroup)
 	if children := e.content.Children(); len(children) != 0 {
 		children[3].RequestFocus()
 	}

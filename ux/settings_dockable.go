@@ -51,7 +51,7 @@ type SettingsDockable struct {
 }
 
 // Setup the dockable and display it.
-func (d *SettingsDockable) Setup(dc *unison.DockContainer, addToStartToolbar, addToEndToolbar, initContent func(*unison.Panel)) {
+func (d *SettingsDockable) Setup(addToStartToolbar, addToEndToolbar, initContent func(*unison.Panel)) {
 	d.SetLayout(&unison.FlexLayout{Columns: 1})
 	toolbar := d.createToolbar(addToStartToolbar, addToEndToolbar)
 	d.AddChild(toolbar)
@@ -67,7 +67,7 @@ func (d *SettingsDockable) Setup(dc *unison.DockContainer, addToStartToolbar, ad
 		VGrab:  true,
 	})
 	d.AddChild(scroller)
-	PlaceInDock(dc, d, settingsGroup)
+	PlaceInDock(d, settingsGroup)
 	FocusFirstContent(toolbar, content)
 }
 

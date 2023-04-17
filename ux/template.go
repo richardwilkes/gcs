@@ -59,7 +59,7 @@ type Template struct {
 // OpenTemplates returns the currently open templates.
 func OpenTemplates(exclude *Template) []*Template {
 	var templates []*Template
-	WS.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
+	Workspace.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
 		for _, one := range dc.Dockables() {
 			if template, ok := one.(*Template); ok && template != exclude {
 				templates = append(templates, template)

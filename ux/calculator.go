@@ -108,57 +108,57 @@ type Calculator struct {
 
 // DisplayCalculator displays the calculator for the given Sheet.
 func DisplayCalculator(sheet *Sheet) {
-	dc, found := Activate(func(d unison.Dockable) bool {
+	if Activate(func(d unison.Dockable) bool {
 		if c, ok := d.(*Calculator); ok {
 			return c.sheet == sheet
 		}
 		return false
-	})
-	if !found {
-		c := &Calculator{
-			sheet:                sheet,
-			scale:                gurps.GlobalSettings().General.InitialEditorUIScale,
-			throwingObjectWeight: gurps.Weight(fxp.One),
-			terrainIndex:         slices.IndexFunc(terrain, func(t terrainModifier) bool { return t.Default }),
-			weatherIndex:         slices.IndexFunc(weather, func(t terrainModifier) bool { return t.Default }),
-		}
-		c.Self = c
-
-		c.undoMgr = unison.NewUndoManager(100, func(err error) { jot.Error(err) })
-		c.SetLayout(&unison.FlexLayout{Columns: 1})
-
-		c.createContent()
-
-		c.scroll = unison.NewScrollPanel()
-		c.scroll.SetContent(c.content, unison.HintedFillBehavior, unison.FillBehavior)
-		c.scroll.SetLayoutData(&unison.FlexLayoutData{
-			HAlign: unison.FillAlignment,
-			VAlign: unison.FillAlignment,
-			HGrab:  true,
-			VGrab:  true,
-		})
-
-		c.AddChild(c.createToolbar())
-		c.AddChild(c.scroll)
-		c.ClientData()[AssociatedUUIDKey] = sheet.Entity().ID
-		c.content.ValidateScrollRoot()
-		group := EditorGroup
-		p := sheet.AsPanel()
-		for p != nil {
-			if _, exists := p.ClientData()[AssociatedUUIDKey]; exists {
-				group = subEditorGroup
-				break
-			}
-			p = p.Parent()
-		}
-		PlaceInDock(dc, c, group)
-		c.content.RequestFocus()
+	}) {
+		return
 	}
+	c := &Calculator{
+		sheet:                sheet,
+		scale:                gurps.GlobalSettings().General.InitialEditorUIScale,
+		throwingObjectWeight: gurps.Weight(fxp.One),
+		terrainIndex:         slices.IndexFunc(terrain, func(t terrainModifier) bool { return t.Default }),
+		weatherIndex:         slices.IndexFunc(weather, func(t terrainModifier) bool { return t.Default }),
+	}
+	c.Self = c
+
+	c.undoMgr = unison.NewUndoManager(100, func(err error) { jot.Error(err) })
+	c.SetLayout(&unison.FlexLayout{Columns: 1})
+
+	c.createContent()
+
+	c.scroll = unison.NewScrollPanel()
+	c.scroll.SetContent(c.content, unison.HintedFillBehavior, unison.FillBehavior)
+	c.scroll.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		VAlign: unison.FillAlignment,
+		HGrab:  true,
+		VGrab:  true,
+	})
+
+	c.AddChild(c.createToolbar())
+	c.AddChild(c.scroll)
+	c.ClientData()[AssociatedUUIDKey] = sheet.Entity().ID
+	c.content.ValidateScrollRoot()
+	group := EditorGroup
+	p := sheet.AsPanel()
+	for p != nil {
+		if _, exists := p.ClientData()[AssociatedUUIDKey]; exists {
+			group = subEditorGroup
+			break
+		}
+		p = p.Parent()
+	}
+	PlaceInDock(c, group)
+	c.content.RequestFocus()
 }
 
 // UpdateCalculator for the given owner.
 func UpdateCalculator(sheet *Sheet) {
-	WS.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
+	Workspace.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
 		for _, other := range dc.Dockables() {
 			if c, ok := other.(*Calculator); ok && c.sheet == sheet {
 				c.updateJumpingResult()

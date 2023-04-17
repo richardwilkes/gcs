@@ -182,7 +182,7 @@ func askUserForPageRefPath(key string, offset int) *gurps.PageRef {
 
 // RefreshPageRefMappingsView causes the Page References Mappings view to be refreshed if it is open.
 func RefreshPageRefMappingsView() {
-	WS.DocumentDock.RootDockLayout().ForEachDockContainer(func(container *unison.DockContainer) bool {
+	Workspace.DocumentDock.RootDockLayout().ForEachDockContainer(func(container *unison.DockContainer) bool {
 		for _, one := range container.Dockables() {
 			if d, ok := one.(*pageRefMappingsDockable); ok {
 				d.sync()
@@ -195,23 +195,23 @@ func RefreshPageRefMappingsView() {
 
 // ShowPageRefMappings shows the Page Reference Mappings.
 func ShowPageRefMappings() {
-	dc, found := Activate(func(d unison.Dockable) bool {
+	if Activate(func(d unison.Dockable) bool {
 		_, ok := d.(*pageRefMappingsDockable)
 		return ok
-	})
-	if !found {
-		d := &pageRefMappingsDockable{}
-		d.Self = d
-		d.TabTitle = i18n.Text("Page Reference Mappings")
-		d.TabIcon = svg.Settings
-		d.Extensions = []string{gurps.PageRefSettingsExt}
-		d.Loader = d.load
-		d.Saver = d.save
-		d.Resetter = d.reset
-		d.Setup(dc, d.addToStartToolbar, nil, d.initContent)
-		if len(d.content.Children()) > 1 {
-			d.content.Children()[1].RequestFocus()
-		}
+	}) {
+		return
+	}
+	d := &pageRefMappingsDockable{}
+	d.Self = d
+	d.TabTitle = i18n.Text("Page Reference Mappings")
+	d.TabIcon = svg.Settings
+	d.Extensions = []string{gurps.PageRefSettingsExt}
+	d.Loader = d.load
+	d.Saver = d.save
+	d.Resetter = d.reset
+	d.Setup(d.addToStartToolbar, nil, d.initContent)
+	if len(d.content.Children()) > 1 {
+		d.content.Children()[1].RequestFocus()
 	}
 }
 

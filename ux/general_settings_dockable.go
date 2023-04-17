@@ -58,23 +58,23 @@ type generalSettingsDockable struct {
 
 // ShowGeneralSettings the General Settings window.
 func ShowGeneralSettings() {
-	dc, found := Activate(func(d unison.Dockable) bool {
+	if Activate(func(d unison.Dockable) bool {
 		_, ok := d.(*generalSettingsDockable)
 		return ok
-	})
-	if !found {
-		d := &generalSettingsDockable{}
-		d.Self = d
-		d.TabTitle = i18n.Text("General Settings")
-		d.TabIcon = svg.Settings
-		d.Extensions = []string{gurps.GeneralSettingsExt}
-		d.Loader = d.load
-		d.Saver = d.save
-		d.Resetter = d.reset
-		d.WillCloseCallback = d.willClose
-		d.Setup(dc, d.addToStartToolbar, nil, d.initContent)
-		d.nameField.RequestFocus()
+	}) {
+		return
 	}
+	d := &generalSettingsDockable{}
+	d.Self = d
+	d.TabTitle = i18n.Text("General Settings")
+	d.TabIcon = svg.Settings
+	d.Extensions = []string{gurps.GeneralSettingsExt}
+	d.Loader = d.load
+	d.Saver = d.save
+	d.Resetter = d.reset
+	d.WillCloseCallback = d.willClose
+	d.Setup(d.addToStartToolbar, nil, d.initContent)
+	d.nameField.RequestFocus()
 }
 
 func (d *generalSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {

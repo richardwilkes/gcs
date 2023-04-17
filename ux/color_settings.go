@@ -28,21 +28,21 @@ type colorSettingsDockable struct {
 
 // ShowColorSettings shows the Color settings.
 func ShowColorSettings() {
-	dc, found := Activate(func(d unison.Dockable) bool {
+	if Activate(func(d unison.Dockable) bool {
 		_, ok := d.(*colorSettingsDockable)
 		return ok
-	})
-	if !found {
-		d := &colorSettingsDockable{}
-		d.Self = d
-		d.TabTitle = i18n.Text("Colors")
-		d.TabIcon = svg.Settings
-		d.Extensions = []string{gurps.ColorSettingsExt}
-		d.Loader = d.load
-		d.Saver = d.save
-		d.Resetter = d.reset
-		d.Setup(dc, d.addToStartToolbar, nil, d.initContent)
+	}) {
+		return
 	}
+	d := &colorSettingsDockable{}
+	d.Self = d
+	d.TabTitle = i18n.Text("Colors")
+	d.TabIcon = svg.Settings
+	d.Extensions = []string{gurps.ColorSettingsExt}
+	d.Loader = d.load
+	d.Saver = d.save
+	d.Resetter = d.reset
+	d.Setup(d.addToStartToolbar, nil, d.initContent)
 }
 
 func (d *colorSettingsDockable) initContent(content *unison.Panel) {

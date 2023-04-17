@@ -28,10 +28,19 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-const dockGroupClientDataKey = "dock.group"
+const (
+	dockGroupClientDataKey = "dock.group"
+	dockableClientDataKey  = "dockable"
+)
 
-// WS holds our Workspace singleton.
-var WS *Workspace
+// Workspace holds the data necessary to track the Workspace.
+var Workspace struct {
+	Window       *unison.Window
+	TopDock      *unison.Dock
+	Navigator    *Navigator
+	DocumentDock *DocumentDock
+	PrintMgr     printing.PrintManager
+}
 
 // GroupedCloser defines the methods required of a tab that wishes to be closed when another tab is closed.
 type GroupedCloser interface {
@@ -39,31 +48,19 @@ type GroupedCloser interface {
 	CloseWithGroup(other unison.Paneler) bool
 }
 
-// Workspace holds the data necessary to track the Workspace.
-type Workspace struct {
-	Window       *unison.Window
-	TopDock      *unison.Dock
-	Navigator    *Navigator
-	DocumentDock *DocumentDock
-	PrintMgr     *printing.PrintManager
-}
-
-// InitWorkspace initializes the Workspace singleton, WS.
+// InitWorkspace initializes the Workspace singleton.
 func InitWorkspace(wnd *unison.Window) {
-	WS = &Workspace{
-		Window:       wnd,
-		TopDock:      unison.NewDock(),
-		Navigator:    newNavigator(),
-		DocumentDock: NewDocumentDock(),
-		PrintMgr:     &printing.PrintManager{},
-	}
-	wnd.SetContent(WS.TopDock)
-	WS.TopDock.DockTo(WS.Navigator, nil, unison.LeftSide)
-	dc := unison.Ancestor[*unison.DockContainer](WS.Navigator)
-	WS.TopDock.DockTo(WS.DocumentDock, dc, unison.RightSide)
-	dc.SetCurrentDockable(WS.Navigator)
-	wnd.AllowCloseCallback = WS.allowClose
-	wnd.WillCloseCallback = WS.willClose
+	Workspace.Window = wnd
+	Workspace.TopDock = unison.NewDock()
+	Workspace.Navigator = newNavigator()
+	Workspace.DocumentDock = NewDocumentDock()
+	wnd.SetContent(Workspace.TopDock)
+	Workspace.TopDock.DockTo(Workspace.Navigator, nil, unison.LeftSide)
+	dc := unison.Ancestor[*unison.DockContainer](Workspace.Navigator)
+	Workspace.TopDock.DockTo(Workspace.DocumentDock, dc, unison.RightSide)
+	dc.SetCurrentDockable(Workspace.Navigator)
+	wnd.AllowCloseCallback = isWorkspaceAllowedToClose
+	wnd.WillCloseCallback = workspaceWillClose
 	global := gurps.GlobalSettings()
 	if global.WorkspaceFrame != nil {
 		r := *global.WorkspaceFrame
@@ -81,112 +78,149 @@ func InitWorkspace(wnd *unison.Window) {
 	}
 	// On some platforms, this needs to be done after a delay... but we do it without the delay, too, so that
 	// well-behaved platforms don't flash
-	WS.TopDock.RootDockLayout().SetDividerPosition(global.LibraryExplorer.DividerPosition)
+	Workspace.TopDock.RootDockLayout().SetDividerPosition(global.LibraryExplorer.DividerPosition)
 	unison.InvokeTaskAfter(func() {
-		WS.TopDock.RootDockLayout().SetDividerPosition(global.LibraryExplorer.DividerPosition)
+		Workspace.TopDock.RootDockLayout().SetDividerPosition(global.LibraryExplorer.DividerPosition)
 	}, time.Millisecond)
 	wnd.ToFront()
-	WS.Navigator.InitialFocus()
+	Workspace.Navigator.InitialFocus()
 }
 
 // Activate attempts to locate an existing dockable that 'matcher' returns true for. If found, it will have been
 // activated and focused.
-func Activate(matcher func(d unison.Dockable) bool) (dc *unison.DockContainer, found bool) {
-	dc = WS.CurrentlyFocusedDockContainer()
-	WS.DocumentDock.RootDockLayout().ForEachDockContainer(func(container *unison.DockContainer) bool {
-		for _, one := range container.Dockables() {
-			if matcher(one) {
-				found = true
-				container.SetCurrentDockable(one)
-				container.AcquireFocus()
+func Activate(matcher func(d unison.Dockable) bool) bool {
+	for _, d := range allDockables() {
+		if matcher(d) {
+			if dc := unison.Ancestor[*unison.DockContainer](d.AsPanel()); dc != nil {
+				dc.SetCurrentDockable(d)
+				dc.AcquireFocus()
 				return true
 			}
-			if dc == nil {
-				dc = container
-			}
+			d.AsPanel().Window().Focus()
+			return true
 		}
-		return false
-	})
-	return dc, found
+	}
+	return false
 }
 
 // ActiveDockable returns the currently active dockable in the active window.
 func ActiveDockable() unison.Dockable {
-	if WS.Window != unison.ActiveWindow() {
+	wnd := unison.ActiveWindow()
+	if wnd == nil {
 		return nil
 	}
-	dc := WS.CurrentlyFocusedDockContainer()
-	if dc == nil {
-		return nil
-	}
-	return dc.CurrentDockable()
-}
-
-func (w *Workspace) allowClose() bool {
-	may := true
-	w.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
-		for _, other := range dc.Dockables() {
-			if tc, ok2 := other.(unison.TabCloser); ok2 {
-				if _, ok := other.(GroupedCloser); !ok {
-					if !tc.MayAttemptClose() {
-						may = false
-						return true
-					}
-					if !tc.AttemptClose() {
-						may = false
-						return true
-					}
-				}
-			}
+	if Workspace.Window == wnd {
+		dc := CurrentlyFocusedDockContainer()
+		if dc == nil {
+			return nil
 		}
-		return false
-	})
-	return may
+		return dc.CurrentDockable()
+	}
+	return dockableFromWindow(wnd)
 }
 
-func (w *Workspace) willClose() {
+func isWorkspaceAllowedToClose() bool {
+	for _, d := range allDockables() {
+		if !mayDockableClose(d) {
+			return false
+		}
+	}
+	return true
+}
+
+func workspaceWillClose() {
 	global := gurps.GlobalSettings()
-	global.LibraryExplorer.OpenRowKeys = w.Navigator.DisclosedPaths()
-	global.LibraryExplorer.DividerPosition = w.TopDock.RootDockLayout().DividerPosition()
-	frame := w.Window.FrameRect()
+	global.LibraryExplorer.OpenRowKeys = Workspace.Navigator.DisclosedPaths()
+	global.LibraryExplorer.DividerPosition = Workspace.TopDock.RootDockLayout().DividerPosition()
+	frame := Workspace.Window.FrameRect()
 	global.WorkspaceFrame = &frame
 	if err := global.Save(); err != nil {
 		unison.ErrorDialogWithError(i18n.Text("Unable to save global settings"), err)
 	}
 }
 
+func mayDockableClose(d unison.Dockable) bool {
+	if tc, ok := d.(unison.TabCloser); ok {
+		if _, ok = d.(GroupedCloser); !ok {
+			if !tc.MayAttemptClose() {
+				return false
+			}
+			if !tc.AttemptClose() {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func allDockables() []unison.Dockable {
+	var all []unison.Dockable
+	Workspace.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
+		all = append(all, dc.Dockables()...)
+		return false
+	})
+	for _, wnd := range unison.Windows() {
+		if wnd != Workspace.Window {
+			if d := dockableFromWindow(wnd); d != nil {
+				all = append(all, d)
+			}
+		}
+	}
+	return all
+}
+
+func dockableFromWindow(wnd *unison.Window) unison.Dockable {
+	if clientData, ok := wnd.ClientData()[dockableClientDataKey]; ok {
+		if d, ok2 := clientData.(unison.Dockable); ok2 {
+			return d
+		}
+	}
+	return nil
+}
+
+// IsDockableInWorkspace returns true if the Dockable is inside the Workspace as opposed to an external window.
+func IsDockableInWorkspace(d unison.Dockable) bool {
+	return d.AsPanel().Window() == Workspace.Window
+}
+
 // CurrentlyFocusedDockContainer returns the currently focused DockContainer, if any.
-func (w *Workspace) CurrentlyFocusedDockContainer() *unison.DockContainer {
-	if focus := w.Window.Focus(); focus != nil {
-		if dc := unison.Ancestor[*unison.DockContainer](focus); dc != nil && dc.Dock == w.DocumentDock.Dock {
+func CurrentlyFocusedDockContainer() *unison.DockContainer {
+	if focus := Workspace.Window.Focus(); focus != nil {
+		if dc := unison.Ancestor[*unison.DockContainer](focus); dc != nil && dc.Dock == Workspace.DocumentDock.Dock {
 			return dc
 		}
 	}
 	return nil
 }
 
+// DefaultDockContainer returns the currently focused DockContainer, if possible. If not, returns the first
+// DockContainer that can be found.
+func DefaultDockContainer() *unison.DockContainer {
+	dc := CurrentlyFocusedDockContainer()
+	if dc == nil {
+		Workspace.DocumentDock.RootDockLayout().ForEachDockContainer(func(container *unison.DockContainer) bool {
+			dc = container
+			return true
+		})
+	}
+	return dc
+}
+
 // LocateFileBackedDockable searches for a FileBackedDockable with the given path.
-func (w *Workspace) LocateFileBackedDockable(filePath string) FileBackedDockable {
-	var dockable FileBackedDockable
-	w.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
-		for _, one := range dc.Dockables() {
-			if fbd, ok := one.(FileBackedDockable); ok {
-				if filePath == fbd.BackingFilePath() {
-					dockable = fbd
-					return true
-				}
-			}
+func LocateFileBackedDockable(filePath string) FileBackedDockable {
+	for _, d := range allDockables() {
+		if fbd, ok := d.(FileBackedDockable); ok && filePath == fbd.BackingFilePath() {
+			return fbd
 		}
-		return false
-	})
-	return dockable
+	}
+	return nil
 }
 
 // LocateDockContainerForExtension searches for the first FileBackedDockable with the given extension and returns its
 // DockContainer.
-func (w *Workspace) LocateDockContainerForExtension(ext ...string) *unison.DockContainer {
+func LocateDockContainerForExtension(ext ...string) *unison.DockContainer {
 	var extDC *unison.DockContainer
-	w.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
+	Workspace.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
 		if DockContainerHoldsExtension(dc, ext...) {
 			extDC = dc
 			return true
@@ -197,24 +231,25 @@ func (w *Workspace) LocateDockContainerForExtension(ext ...string) *unison.DockC
 }
 
 // PlaceInDock places the Dockable into the workspace document dock, grouped with the provided group, if that group is
-// present. 'dc' is the preferred DockContainer to place the Dockable within, which is usually the current one.
-func PlaceInDock(dc *unison.DockContainer, dockable unison.Dockable, group string) {
+// present.
+func PlaceInDock(dockable unison.Dockable, group string) {
 	dockable.AsPanel().ClientData()[dockGroupClientDataKey] = group
+	dc := DefaultDockContainer()
 	if DockContainerHasGroup(dc, group) {
 		dc.Stack(dockable, -1)
 		return
 	}
-	if dc = DockContainerForGroup(WS.DocumentDock.Dock, group); dc != nil {
+	if dc = DockContainerForGroup(Workspace.DocumentDock.Dock, group); dc != nil {
 		dc.Stack(dockable, -1)
 		return
 	}
 	side := unison.RightSide
 	if group == subEditorGroup {
-		if dc = DockContainerForGroup(WS.DocumentDock.Dock, EditorGroup); dc != nil {
+		if dc = DockContainerForGroup(Workspace.DocumentDock.Dock, EditorGroup); dc != nil {
 			side = unison.BottomSide
 		}
 	}
-	WS.DocumentDock.DockTo(dockable, dc, side)
+	Workspace.DocumentDock.DockTo(dockable, dc, side)
 }
 
 // DockContainerHasGroup returns true if the DockContainer contains at least one Dockable associated with the given
@@ -266,27 +301,21 @@ const AssociatedUUIDKey = "associated_uuid"
 // CloseUUID attempts to close any Dockables associated with the given UUIDs. Returns false if a dockable refused to
 // close.
 func CloseUUID(ids map[uuid.UUID]bool) bool {
-	allow := true
-	WS.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
-		for _, other := range dc.Dockables() {
-			if tc, ok := other.(unison.TabCloser); ok {
-				if otherValue, ok2 := other.AsPanel().ClientData()[AssociatedUUIDKey]; ok2 {
-					if otherID, ok3 := otherValue.(uuid.UUID); ok3 && ids[otherID] {
-						if !tc.MayAttemptClose() {
-							allow = false
-							return true
-						}
-						if !tc.AttemptClose() {
-							allow = false
-							return true
-						}
+	for _, d := range allDockables() {
+		if tc, ok := d.(unison.TabCloser); ok {
+			if otherValue, ok2 := d.AsPanel().ClientData()[AssociatedUUIDKey]; ok2 {
+				if otherID, ok3 := otherValue.(uuid.UUID); ok3 && ids[otherID] {
+					if !tc.MayAttemptClose() {
+						return false
+					}
+					if !tc.AttemptClose() {
+						return false
 					}
 				}
 			}
 		}
-		return false
-	})
-	return allow
+	}
+	return true
 }
 
 // MayAttemptCloseOfGroup returns true if the grouped Dockables associated with the given dockable may be closed.
@@ -321,16 +350,13 @@ func CloseGroup(d unison.Dockable) bool {
 }
 
 func traverseGroup(d unison.Dockable, f func(target GroupedCloser) bool) {
-	WS.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
-		for _, other := range dc.Dockables() {
-			if fe, ok := other.(GroupedCloser); ok && fe.CloseWithGroup(d) {
-				if f(fe) {
-					return true
-				}
+	for _, other := range allDockables() {
+		if fe, ok := other.(GroupedCloser); ok && fe.CloseWithGroup(d) {
+			if f(fe) {
+				return
 			}
 		}
-		return false
-	})
+	}
 }
 
 // SaveDockable attempts to save the contents of the dockable using its existing path.
