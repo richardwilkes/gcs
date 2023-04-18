@@ -46,7 +46,7 @@ type bodySettingsDockable struct {
 // ShowBodySettings the Body Settings. Pass in nil to edit the defaults or a sheet to edit the sheet's.
 func ShowBodySettings(owner EntityPanel) {
 	if Activate(func(d unison.Dockable) bool {
-		if s, ok := d.(*bodySettingsDockable); ok && owner == s.owner {
+		if s, ok := d.AsPanel().Self.(*bodySettingsDockable); ok && owner == s.owner {
 			return true
 		}
 		return false

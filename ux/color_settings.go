@@ -29,7 +29,7 @@ type colorSettingsDockable struct {
 // ShowColorSettings shows the Color settings.
 func ShowColorSettings() {
 	if Activate(func(d unison.Dockable) bool {
-		_, ok := d.(*colorSettingsDockable)
+		_, ok := d.AsPanel().Self.(*colorSettingsDockable)
 		return ok
 	}) {
 		return

@@ -30,7 +30,7 @@ type menuKeySettingsDockable struct {
 // ShowMenuKeySettings shows the Menu Key settings.
 func ShowMenuKeySettings() {
 	if Activate(func(d unison.Dockable) bool {
-		_, ok := d.(*menuKeySettingsDockable)
+		_, ok := d.AsPanel().Self.(*menuKeySettingsDockable)
 		return ok
 	}) {
 		return

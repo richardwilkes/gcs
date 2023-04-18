@@ -54,7 +54,7 @@ type attributeSettingsDragData struct {
 // ShowAttributeSettings the Attribute Settings. Pass in nil to edit the defaults or a sheet to edit the sheet's.
 func ShowAttributeSettings(owner EntityPanel) {
 	if Activate(func(d unison.Dockable) bool {
-		if s, ok := d.(*attributeSettingsDockable); ok && owner == s.owner {
+		if s, ok := d.AsPanel().Self.(*attributeSettingsDockable); ok && owner == s.owner {
 			return true
 		}
 		return false

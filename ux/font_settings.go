@@ -33,7 +33,7 @@ type fontSettingsDockable struct {
 // ShowFontSettings shows the Font settings.
 func ShowFontSettings() {
 	if Activate(func(d unison.Dockable) bool {
-		_, ok := d.(*fontSettingsDockable)
+		_, ok := d.AsPanel().Self.(*fontSettingsDockable)
 		return ok
 	}) {
 		return

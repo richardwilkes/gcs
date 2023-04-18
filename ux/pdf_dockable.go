@@ -666,9 +666,7 @@ func (d *PDFDockable) BackingFilePath() string {
 // SetBackingFilePath implements workspace.FileBackedDockable
 func (d *PDFDockable) SetBackingFilePath(p string) {
 	d.path = p
-	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
-		dc.UpdateTitle(d)
-	}
+	UpdateTitleForDockable(d)
 }
 
 // Modified implements workspace.FileBackedDockable
@@ -683,10 +681,7 @@ func (d *PDFDockable) MayAttemptClose() bool {
 
 // AttemptClose implements unison.TabCloser
 func (d *PDFDockable) AttemptClose() bool {
-	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
-		dc.Close(d)
-	}
-	return true
+	return AttemptCloseForDockable(d)
 }
 
 func (d *PDFDockable) tocDoubleClick() {

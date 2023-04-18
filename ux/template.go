@@ -572,9 +572,7 @@ func (d *Template) BackingFilePath() string {
 // SetBackingFilePath implements workspace.FileBackedDockable
 func (d *Template) SetBackingFilePath(p string) {
 	d.path = p
-	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
-		dc.UpdateTitle(d)
-	}
+	UpdateTitleForDockable(d)
 }
 
 // Modified implements workspace.FileBackedDockable
@@ -584,9 +582,7 @@ func (d *Template) Modified() bool {
 
 // MarkModified implements widget.ModifiableRoot.
 func (d *Template) MarkModified(_ unison.Paneler) {
-	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
-		dc.UpdateTitle(d)
-	}
+	UpdateTitleForDockable(d)
 }
 
 // MayAttemptClose implements unison.TabCloser
@@ -610,10 +606,7 @@ func (d *Template) AttemptClose() bool {
 			return false
 		}
 	}
-	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
-		dc.Close(d)
-	}
-	return true
+	return AttemptCloseForDockable(d)
 }
 
 func (d *Template) createContent() unison.Paneler {
@@ -766,9 +759,7 @@ func (d *Template) Rebuild(full bool) {
 		d.createLists()
 	}
 	DeepSync(d)
-	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
-		dc.UpdateTitle(d)
-	}
+	UpdateTitleForDockable(d)
 	d.targetMgr.ReacquireFocus(focusRefKey, d.toolbar, d.scroll.Content())
 	d.scroll.SetPosition(h, v)
 }

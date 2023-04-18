@@ -294,9 +294,7 @@ func (d *TableDockable[T]) BackingFilePath() string {
 // SetBackingFilePath implements workspace.FileBackedDockable
 func (d *TableDockable[T]) SetBackingFilePath(p string) {
 	d.path = p
-	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
-		dc.UpdateTitle(d)
-	}
+	UpdateTitleForDockable(d)
 }
 
 // Modified implements workspace.FileBackedDockable
@@ -306,9 +304,7 @@ func (d *TableDockable[T]) Modified() bool {
 
 // MarkModified implements widget.ModifiableRoot.
 func (d *TableDockable[T]) MarkModified(_ unison.Paneler) {
-	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
-		dc.UpdateTitle(d)
-	}
+	UpdateTitleForDockable(d)
 }
 
 // MayAttemptClose implements unison.TabCloser
@@ -332,10 +328,7 @@ func (d *TableDockable[T]) AttemptClose() bool {
 			return false
 		}
 	}
-	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
-		dc.Close(d)
-	}
-	return true
+	return AttemptCloseForDockable(d)
 }
 
 func (d *TableDockable[T]) save(forceSaveAs bool) bool {
@@ -416,9 +409,7 @@ func (d *TableDockable[T]) Rebuild(_ bool) {
 	sel := d.table.CopySelectionMap()
 	d.table.SyncToModel()
 	d.table.SetSelectionMap(sel)
-	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
-		dc.UpdateTitle(d)
-	}
+	UpdateTitleForDockable(d)
 	d.scroll.SetPosition(h, v)
 }
 

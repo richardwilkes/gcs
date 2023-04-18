@@ -196,7 +196,7 @@ func RefreshPageRefMappingsView() {
 // ShowPageRefMappings shows the Page Reference Mappings.
 func ShowPageRefMappings() {
 	if Activate(func(d unison.Dockable) bool {
-		_, ok := d.(*pageRefMappingsDockable)
+		_, ok := d.AsPanel().Self.(*pageRefMappingsDockable)
 		return ok
 	}) {
 		return

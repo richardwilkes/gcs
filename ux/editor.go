@@ -23,12 +23,6 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-const (
-	// EditorGroup is the workspace grouping key to use for editors.
-	EditorGroup    = "editors"
-	subEditorGroup = "sub_editors"
-)
-
 var (
 	_ unison.Dockable            = &editor[*gurps.Note, *gurps.NoteEditData]{}
 	_ unison.TabCloser           = &editor[*gurps.Note, *gurps.NoteEditData]{}
@@ -59,7 +53,7 @@ type editor[N gurps.NodeTypes, D gurps.EditorData[N]] struct {
 func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner Rebuildable, target N, svg *unison.SVG, helpMD string, initToolbar func(*editor[N, D], *unison.Panel), initContent func(*editor[N, D], *unison.Panel) func()) {
 	lookFor := gurps.AsNode(target).UUID()
 	if Activate(func(d unison.Dockable) bool {
-		if e, ok := d.(*editor[N, D]); ok {
+		if e, ok := d.AsPanel().Self.(*editor[N, D]); ok {
 			return e.owner == owner && gurps.AsNode(e.target).UUID() == lookFor
 		}
 		return false
@@ -130,11 +124,11 @@ func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner Rebuildable, 
 	e.ClientData()[AssociatedUUIDKey] = gurps.AsNode(target).UUID()
 	e.promptForSave = true
 	e.scroll.Content().AsPanel().ValidateScrollRoot()
-	group := EditorGroup
+	group := gurps.EditorsDockableGroup
 	p := owner.AsPanel()
 	for p != nil {
 		if _, exists := p.ClientData()[AssociatedUUIDKey]; exists {
-			group = subEditorGroup
+			group = gurps.SubEditorsDockableGroup
 			break
 		}
 		p = p.Parent()
@@ -233,9 +227,7 @@ func (e *editor[N, D]) Modified() bool {
 }
 
 func (e *editor[N, D]) MarkModified(_ unison.Paneler) {
-	if dc := unison.Ancestor[*unison.DockContainer](e); dc != nil {
-		dc.UpdateTitle(e)
-	}
+	UpdateTitleForDockable(e)
 	DeepSync(e)
 	if e.modificationCallback != nil {
 		e.modificationCallback()
@@ -260,29 +252,26 @@ func (e *editor[N, D]) AttemptClose() bool {
 	if !CloseGroup(e) {
 		return false
 	}
-	if dc := unison.Ancestor[*unison.DockContainer](e); dc != nil {
-		if e.promptForSave && !reflect.DeepEqual(e.beforeData, e.editorData) {
-			switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Save changes made to\n%s?"), e.Title()), "") {
-			case unison.ModalResponseDiscard:
-			case unison.ModalResponseOK:
-				e.apply()
-			case unison.ModalResponseCancel:
-				return false
-			}
+	if e.promptForSave && !reflect.DeepEqual(e.beforeData, e.editorData) {
+		switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Save changes made to\n%s?"), e.Title()), "") {
+		case unison.ModalResponseDiscard:
+		case unison.ModalResponseOK:
+			e.apply()
+		case unison.ModalResponseCancel:
+			return false
 		}
-		if !toolbox.IsNil(e.previousDockable) {
-			if pdc := unison.Ancestor[*unison.DockContainer](e.previousDockable); pdc != nil {
-				pdc.SetCurrentDockable(e.previousDockable)
-				if e.previousFocusKey != "" {
-					if p := e.previousDockable.AsPanel().FindRefKey(e.previousFocusKey); p != nil {
-						p.RequestFocus()
-					}
+	}
+	if !toolbox.IsNil(e.previousDockable) {
+		if pdc := unison.Ancestor[*unison.DockContainer](e.previousDockable); pdc != nil {
+			pdc.SetCurrentDockable(e.previousDockable)
+			if e.previousFocusKey != "" {
+				if p := e.previousDockable.AsPanel().FindRefKey(e.previousFocusKey); p != nil {
+					p.RequestFocus()
 				}
 			}
 		}
-		dc.Close(e)
 	}
-	return true
+	return AttemptCloseForDockable(e)
 }
 
 func (e *editor[N, D]) UndoManager() *unison.UndoManager {

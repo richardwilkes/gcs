@@ -58,7 +58,7 @@ type sheetSettingsDockable struct {
 // ShowSheetSettings the Sheet Settings. Pass in nil to edit the defaults or a sheet to edit the sheet's.
 func ShowSheetSettings(owner EntityPanel) {
 	if Activate(func(d unison.Dockable) bool {
-		if s, ok := d.(*sheetSettingsDockable); ok && owner == s.owner {
+		if s, ok := d.AsPanel().Self.(*sheetSettingsDockable); ok && owner == s.owner {
 			return true
 		}
 		return false

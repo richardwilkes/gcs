@@ -947,6 +947,16 @@ func main() {
 			{Key: "unweighted_american_last"},
 		},
 	})
+	processSourceTemplate(enumTmpl, &enumInfo{
+		Pkg:  "model/gurps",
+		Name: "dockable_group",
+		Desc: "holds the set of dockable groupings",
+		Values: []enumValue{
+			{Key: "settings"},
+			{Key: "editors"},
+			{Key: "sub-editors"},
+		},
+	})
 }
 
 func removeExistingGenFiles() {

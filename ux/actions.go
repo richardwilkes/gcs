@@ -168,11 +168,9 @@ func registerActions() {
 				if Workspace.Window != wnd {
 					return true // not the workspace, so allow regular window close
 				}
-				if dc := unison.Ancestor[*unison.DockContainer](wnd.Focus()); dc != nil {
-					if current := dc.CurrentDockable(); current != nil {
-						if _, ok := current.(unison.TabCloser); ok {
-							return true
-						}
+				if d := unison.Ancestor[unison.Dockable](wnd.Focus()); d != nil {
+					if _, ok := d.AsPanel().Self.(unison.TabCloser); ok {
+						return true
 					}
 				}
 			}
@@ -183,11 +181,9 @@ func registerActions() {
 				if Workspace.Window != wnd {
 					// not the workspace, so allow regular window close
 					wnd.AttemptClose()
-				} else if dc := unison.Ancestor[*unison.DockContainer](wnd.Focus()); dc != nil {
-					if current := dc.CurrentDockable(); current != nil {
-						if closer, ok := current.(unison.TabCloser); ok {
-							closer.AttemptClose()
-						}
+				} else if d := unison.Ancestor[unison.Dockable](wnd.Focus()); d != nil {
+					if closer, ok := d.AsPanel().Self.(unison.TabCloser); ok {
+						closer.AttemptClose()
 					}
 				}
 			}

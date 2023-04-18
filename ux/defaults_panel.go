@@ -58,7 +58,7 @@ func newDefaultsPanel(entity *gurps.Entity, defaults *[]*gurps.SkillDefault) *de
 		def := &gurps.SkillDefault{DefaultType: lastDefaultTypeUsed}
 		*defaults = slices.Insert(*defaults, 0, def)
 		p.insertDefaultsPanel(1, def)
-		unison.Ancestor[*unison.DockContainer](p).MarkForLayoutRecursively()
+		MarkRootAncestorForLayoutRecursively(p)
 		MarkModified(p)
 	}
 	p.AddChild(addButton)
@@ -83,7 +83,7 @@ func (p *defaultsPanel) insertDefaultsPanel(index int, def *gurps.SkillDefault) 
 			*p.defaults = slices.Delete(*p.defaults, i, i+1)
 		}
 		panel.RemoveFromParent()
-		unison.Ancestor[*unison.DockContainer](p).MarkForLayoutRecursively()
+		MarkRootAncestorForLayoutRecursively(p)
 		MarkModified(p)
 	}
 	panel.AddChild(deleteButton)

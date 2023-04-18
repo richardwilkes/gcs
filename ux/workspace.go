@@ -21,6 +21,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
@@ -86,21 +87,26 @@ func InitWorkspace(wnd *unison.Window) {
 	Workspace.Navigator.InitialFocus()
 }
 
-// Activate attempts to locate an existing dockable that 'matcher' returns true for. If found, it will have been
-// activated and focused.
+// Activate attempts to locate an existing dockable that 'matcher' returns true for. Will return true if a suitable
+// match was found. If found, it will have been activated and focused.
 func Activate(matcher func(d unison.Dockable) bool) bool {
 	for _, d := range allDockables() {
 		if matcher(d) {
-			if dc := unison.Ancestor[*unison.DockContainer](d.AsPanel()); dc != nil {
-				dc.SetCurrentDockable(d)
-				dc.AcquireFocus()
-				return true
-			}
-			d.AsPanel().Window().Focus()
+			ActivateDockable(d)
 			return true
 		}
 	}
 	return false
+}
+
+// ActivateDockable activates the dockable, giving it focus.
+func ActivateDockable(d unison.Dockable) {
+	if dc := unison.Ancestor[*unison.DockContainer](d.AsPanel()); dc != nil {
+		dc.SetCurrentDockable(d)
+		dc.AcquireFocus()
+		return
+	}
+	d.AsPanel().Window().ToFront()
 }
 
 // ActiveDockable returns the currently active dockable in the active window.
@@ -232,7 +238,13 @@ func LocateDockContainerForExtension(ext ...string) *unison.DockContainer {
 
 // PlaceInDock places the Dockable into the workspace document dock, grouped with the provided group, if that group is
 // present.
-func PlaceInDock(dockable unison.Dockable, group string) {
+func PlaceInDock(dockable unison.Dockable, group gurps.DockableGroup) {
+	if slices.Contains(gurps.GlobalSettings().General.OpenInWindow, group) {
+		if _, err := NewWindowForDockable(dockable); err != nil {
+			jot.Error(err)
+		}
+		return
+	}
 	dockable.AsPanel().ClientData()[dockGroupClientDataKey] = group
 	dc := DefaultDockContainer()
 	if DockContainerHasGroup(dc, group) {
@@ -244,17 +256,54 @@ func PlaceInDock(dockable unison.Dockable, group string) {
 		return
 	}
 	side := unison.RightSide
-	if group == subEditorGroup {
-		if dc = DockContainerForGroup(Workspace.DocumentDock.Dock, EditorGroup); dc != nil {
+	if group == gurps.SubEditorsDockableGroup {
+		if dc = DockContainerForGroup(Workspace.DocumentDock.Dock, gurps.EditorsDockableGroup); dc != nil {
 			side = unison.BottomSide
 		}
 	}
 	Workspace.DocumentDock.DockTo(dockable, dc, side)
 }
 
+// NewWindowForDockable creates a new window and places a Dockable inside it.
+func NewWindowForDockable(dockable unison.Dockable) (*unison.Window, error) {
+	var frame unison.Rect
+	if focused := unison.ActiveWindow(); focused != nil {
+		frame = focused.FrameRect()
+	} else {
+		frame = unison.PrimaryDisplay().Usable
+	}
+	wnd, err := unison.NewWindow(dockable.Title())
+	if err != nil {
+		return nil, err
+	}
+	content := wnd.Content()
+	content.SetLayout(&unison.FlexLayout{Columns: 1})
+	panel := dockable.AsPanel()
+	panel.SetLayoutData(&unison.FlexLayoutData{
+		HSpan:  1,
+		VSpan:  1,
+		HAlign: unison.FillAlignment,
+		VAlign: unison.FillAlignment,
+		HGrab:  true,
+		VGrab:  true,
+	})
+	content.AddChild(panel)
+	wnd.ClientData()[dockableClientDataKey] = dockable
+	wnd.Pack()
+	wndFrame := wnd.FrameRect()
+	frame.Y += (frame.Height - wndFrame.Height) / 3
+	frame.Height = wndFrame.Height
+	frame.X += (frame.Width - wndFrame.Width) / 2
+	frame.Width = wndFrame.Width
+	frame.Align()
+	wnd.SetFrameRect(unison.BestDisplayForRect(frame).FitRectOnto(frame))
+	wnd.ToFront()
+	return wnd, nil
+}
+
 // DockContainerHasGroup returns true if the DockContainer contains at least one Dockable associated with the given
 // group. May pass nil for the dc.
-func DockContainerHasGroup(dc *unison.DockContainer, group string) bool {
+func DockContainerHasGroup(dc *unison.DockContainer, group gurps.DockableGroup) bool {
 	if dc == nil {
 		return false
 	}
@@ -267,7 +316,7 @@ func DockContainerHasGroup(dc *unison.DockContainer, group string) bool {
 }
 
 // DockContainerForGroup returns the first DockContainer which has a Dockable with the given group, if any.
-func DockContainerForGroup(dock *unison.Dock, group string) *unison.DockContainer {
+func DockContainerForGroup(dock *unison.Dock, group gurps.DockableGroup) *unison.DockContainer {
 	var found *unison.DockContainer
 	dock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
 		if DockContainerHasGroup(dc, group) {
@@ -367,9 +416,7 @@ func SaveDockable(d FileBackedDockable, saver func(filePath string) error, setUn
 		return false
 	}
 	setUnmodified()
-	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
-		dc.UpdateTitle(d)
-	}
+	UpdateTitleForDockable(d)
 	return true
 }
 
@@ -395,9 +442,7 @@ func SaveDockableAs(d FileBackedDockable, extension string, saver func(filePath 
 		}
 		setUnmodifiedAndNewPath(filePath)
 		gurps.GlobalSettings().AddRecentFile(filePath)
-		if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
-			dc.UpdateTitle(d)
-		}
+		UpdateTitleForDockable(d)
 		return true
 	}
 	return false
@@ -456,4 +501,33 @@ func PromptForDestination[T FileBackedDockable](choices []T) []T {
 		i = list.Selection.NextSet(i + 1)
 	}
 	return result
+}
+
+// MarkRootAncestorForLayoutRecursively looks for a parent DockContainer (and, failing to find one of those, a parent
+// Dockable) and marks it and all of its descendents as needing to be laid out.
+func MarkRootAncestorForLayoutRecursively(p unison.Paneler) {
+	if dc := unison.Ancestor[*unison.DockContainer](p); dc != nil {
+		dc.MarkForLayoutRecursively()
+	} else if d := unison.Ancestor[unison.Dockable](p); d != nil {
+		d.AsPanel().MarkForLayoutRecursively()
+	}
+}
+
+// UpdateTitleForDockable updates the title for the given Dockable, whether it is within the workspace or a separate
+// window.
+func UpdateTitleForDockable(d unison.Dockable) {
+	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
+		dc.UpdateTitle(d)
+	} else {
+		d.AsPanel().Window().SetTitle(d.Title())
+	}
+}
+
+// AttemptCloseForDockable attempts to close a dockable.
+func AttemptCloseForDockable(d unison.Dockable) bool {
+	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
+		dc.Close(d)
+		return true
+	}
+	return d.AsPanel().Window().AttemptClose()
 }

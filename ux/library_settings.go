@@ -49,7 +49,7 @@ type librarySettingsDockable struct {
 // ShowLibrarySettings the Library Settings view for a specific library.
 func ShowLibrarySettings(lib *gurps.Library) {
 	if Activate(func(d unison.Dockable) bool {
-		if settingsDockable, ok := d.(*librarySettingsDockable); ok && settingsDockable.library == lib {
+		if settingsDockable, ok := d.AsPanel().Self.(*librarySettingsDockable); ok && settingsDockable.library == lib {
 			return true
 		}
 		return false

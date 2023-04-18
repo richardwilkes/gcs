@@ -396,9 +396,7 @@ func (s *Sheet) BackingFilePath() string {
 // SetBackingFilePath implements workspace.FileBackedDockable
 func (s *Sheet) SetBackingFilePath(p string) {
 	s.path = p
-	if dc := unison.Ancestor[*unison.DockContainer](s); dc != nil {
-		dc.UpdateTitle(s)
-	}
+	UpdateTitleForDockable(s)
 }
 
 // Modified implements workspace.FileBackedDockable
@@ -424,9 +422,7 @@ func (s *Sheet) MarkModified(src unison.Paneler) {
 		if !skipDeepSync {
 			DeepSync(s)
 		}
-		if dc := unison.Ancestor[*unison.DockContainer](s); dc != nil {
-			dc.UpdateTitle(s)
-		}
+		UpdateTitleForDockable(s)
 		s.awaitingUpdate = false
 		s.targetMgr.ReacquireFocus(focusRefKey, s.toolbar, s.scroll.Content())
 		s.scroll.SetPosition(h, v)
@@ -455,10 +451,7 @@ func (s *Sheet) AttemptClose() bool {
 			return false
 		}
 	}
-	if dc := unison.Ancestor[*unison.DockContainer](s); dc != nil {
-		dc.Close(s)
-	}
-	return true
+	return AttemptCloseForDockable(s)
 }
 
 func (s *Sheet) save(forceSaveAs bool) bool {
@@ -748,9 +741,7 @@ func (s *Sheet) Rebuild(full bool) {
 		s.createLists()
 	}
 	DeepSync(s)
-	if dc := unison.Ancestor[*unison.DockContainer](s); dc != nil {
-		dc.UpdateTitle(s)
-	}
+	UpdateTitleForDockable(s)
 	s.targetMgr.ReacquireFocus(focusRefKey, s.toolbar, s.scroll.Content())
 	s.scroll.SetPosition(h, v)
 	UpdateCalculator(s)

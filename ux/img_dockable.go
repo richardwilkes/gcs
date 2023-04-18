@@ -181,9 +181,7 @@ func (d *ImageDockable) BackingFilePath() string {
 // SetBackingFilePath implements workspace.FileBackedDockable
 func (d *ImageDockable) SetBackingFilePath(p string) {
 	d.path = p
-	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
-		dc.UpdateTitle(d)
-	}
+	UpdateTitleForDockable(d)
 }
 
 // Modified implements workspace.FileBackedDockable
@@ -198,8 +196,5 @@ func (d *ImageDockable) MayAttemptClose() bool {
 
 // AttemptClose implements unison.TabCloser
 func (d *ImageDockable) AttemptClose() bool {
-	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
-		dc.Close(d)
-	}
-	return true
+	return AttemptCloseForDockable(d)
 }

@@ -936,9 +936,7 @@ func OpenFile(filePath string) (dockable unison.Dockable, wasOpen bool) {
 		return nil, false
 	}
 	if d := LocateFileBackedDockable(filePath); d != nil {
-		dc := unison.Ancestor[*unison.DockContainer](d)
-		dc.SetCurrentDockable(d)
-		dc.AcquireFocus()
+		ActivateDockable(d)
 		return d, true
 	}
 	fi := gurps.FileInfoFor(filePath)

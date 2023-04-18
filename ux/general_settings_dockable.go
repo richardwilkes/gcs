@@ -13,6 +13,7 @@ package ux
 
 import (
 	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -30,6 +31,7 @@ import (
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio/fs/paths"
 	"github.com/richardwilkes/unison"
+	"golang.org/x/exp/slices"
 )
 
 var languageSetting string
@@ -40,6 +42,7 @@ type generalSettingsDockable struct {
 	autoFillProfileCheckbox       *CheckBox
 	autoAddNaturalAttacksCheckbox *CheckBox
 	groupContainersOnSortCheckbox *CheckBox
+	dockableGroupCheckbox         []*CheckBox
 	pointsField                   *DecimalField
 	techLevelField                *StringField
 	calendarPopup                 *unison.PopupMenu[string]
@@ -59,7 +62,7 @@ type generalSettingsDockable struct {
 // ShowGeneralSettings the General Settings window.
 func ShowGeneralSettings() {
 	if Activate(func(d unison.Dockable) bool {
-		_, ok := d.(*generalSettingsDockable)
+		_, ok := d.AsPanel().Self.(*generalSettingsDockable)
 		return ok
 	}) {
 		return
@@ -176,6 +179,31 @@ func (d *generalSettingsDockable) createCheckboxBlock(content *unison.Panel) {
 	d.autoAddNaturalAttacksCheckbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(NewFieldLeadingLabel(""))
 	content.AddChild(d.autoAddNaturalAttacksCheckbox)
+
+	d.dockableGroupCheckbox = make([]*CheckBox, len(gurps.AllDockableGroup))
+	for _, group := range gurps.AllDockableGroup {
+		d.dockableGroupCheckbox[group] = createDockableGroupCheckbox(group)
+		content.AddChild(NewFieldLeadingLabel(""))
+		content.AddChild(d.dockableGroupCheckbox[group])
+	}
+}
+
+func createDockableGroupCheckbox(group gurps.DockableGroup) *CheckBox {
+	checkbox := NewCheckBox(nil, "",
+		fmt.Sprintf(i18n.Text("Open %s in separate windows"), group.String()),
+		func() unison.CheckState {
+			return unison.CheckStateFromBool(slices.Contains(gurps.GlobalSettings().General.OpenInWindow, group))
+		},
+		func(state unison.CheckState) {
+			general := gurps.GlobalSettings().General
+			if state == unison.OnCheckState {
+				general.OpenInWindow = gurps.SanitizeDockableGroups(append(general.OpenInWindow, group))
+			} else if i := slices.Index(general.OpenInWindow, group); i != -1 {
+				general.OpenInWindow = slices.Delete(general.OpenInWindow, i, i+1)
+			}
+		})
+	checkbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
+	return checkbox
 }
 
 func (d *generalSettingsDockable) createInitialPointsFields(content *unison.Panel) {
@@ -355,6 +383,9 @@ func (d *generalSettingsDockable) sync() {
 	SetCheckBoxState(d.autoFillProfileCheckbox, s.AutoFillProfile)
 	SetCheckBoxState(d.groupContainersOnSortCheckbox, s.GroupContainersOnSort)
 	SetCheckBoxState(d.autoAddNaturalAttacksCheckbox, s.AutoAddNaturalAttacks)
+	for _, group := range gurps.AllDockableGroup {
+		SetCheckBoxState(d.dockableGroupCheckbox[group], slices.Contains(s.OpenInWindow, group))
+	}
 	d.pointsField.SetText(s.InitialPoints.String())
 	d.techLevelField.SetText(s.DefaultTechLevel)
 	d.calendarPopup.Select(s.CalendarRef(gurps.GlobalSettings().Libraries()).Name)

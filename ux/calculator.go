@@ -109,7 +109,7 @@ type Calculator struct {
 // DisplayCalculator displays the calculator for the given Sheet.
 func DisplayCalculator(sheet *Sheet) {
 	if Activate(func(d unison.Dockable) bool {
-		if c, ok := d.(*Calculator); ok {
+		if c, ok := d.AsPanel().Self.(*Calculator); ok {
 			return c.sheet == sheet
 		}
 		return false
@@ -143,11 +143,11 @@ func DisplayCalculator(sheet *Sheet) {
 	c.AddChild(c.scroll)
 	c.ClientData()[AssociatedUUIDKey] = sheet.Entity().ID
 	c.content.ValidateScrollRoot()
-	group := EditorGroup
+	group := gurps.EditorsDockableGroup
 	p := sheet.AsPanel()
 	for p != nil {
 		if _, exists := p.ClientData()[AssociatedUUIDKey]; exists {
-			group = subEditorGroup
+			group = gurps.SubEditorsDockableGroup
 			break
 		}
 		p = p.Parent()
@@ -595,10 +595,7 @@ func (c *Calculator) AttemptClose() bool {
 	if !CloseGroup(c) {
 		return false
 	}
-	if dc := unison.Ancestor[*unison.DockContainer](c); dc != nil {
-		dc.Close(c)
-	}
-	return true
+	return AttemptCloseForDockable(c)
 }
 
 // UndoManager implements unison.UndoManagerProvider

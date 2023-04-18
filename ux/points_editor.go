@@ -53,7 +53,7 @@ type pointsEditor struct {
 
 func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 	if Activate(func(d unison.Dockable) bool {
-		if e, ok := d.(*pointsEditor); ok {
+		if e, ok := d.AsPanel().Self.(*pointsEditor); ok {
 			return e.owner == owner && entity == e.entity
 		}
 		return false
@@ -116,7 +116,7 @@ func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 	e.ClientData()[AssociatedUUIDKey] = e.entity.ID
 	e.promptForSave = true
 	scroller.Content().AsPanel().ValidateScrollRoot()
-	PlaceInDock(e, EditorGroup)
+	PlaceInDock(e, gurps.EditorsDockableGroup)
 	if children := e.content.Children(); len(children) != 0 {
 		children[3].RequestFocus()
 	}
@@ -286,9 +286,7 @@ func (e *pointsEditor) Modified() bool {
 }
 
 func (e *pointsEditor) MarkModified(_ unison.Paneler) {
-	if dc := unison.Ancestor[*unison.DockContainer](e); dc != nil {
-		dc.UpdateTitle(e)
-	}
+	UpdateTitleForDockable(e)
 	DeepSync(e)
 }
 
@@ -310,16 +308,16 @@ func (e *pointsEditor) AttemptClose() bool {
 	if !CloseGroup(e) {
 		return false
 	}
-	if dc := unison.Ancestor[*unison.DockContainer](e); dc != nil {
-		if e.promptForSave && !reflect.DeepEqual(e.before, e.current) {
-			switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Save changes made to\n%s?"), e.Title()), "") {
-			case unison.ModalResponseDiscard:
-			case unison.ModalResponseOK:
-				e.apply()
-			case unison.ModalResponseCancel:
-				return false
-			}
+	if e.promptForSave && !reflect.DeepEqual(e.before, e.current) {
+		switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Save changes made to\n%s?"), e.Title()), "") {
+		case unison.ModalResponseDiscard:
+		case unison.ModalResponseOK:
+			e.apply()
+		case unison.ModalResponseCancel:
+			return false
 		}
+	}
+	if dc := unison.Ancestor[*unison.DockContainer](e); dc != nil {
 		dc.Close(e)
 		if !toolbox.IsNil(e.previousDockable) {
 			if dc = unison.Ancestor[*unison.DockContainer](e.previousDockable); dc != nil {
@@ -331,8 +329,9 @@ func (e *pointsEditor) AttemptClose() bool {
 				}
 			}
 		}
+		return true
 	}
-	return true
+	return e.Window().AttemptClose()
 }
 
 func (e *pointsEditor) UndoManager() *unison.UndoManager {
