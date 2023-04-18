@@ -21,16 +21,28 @@ import (
 
 // Possible values.
 const (
-	SettingsDockableGroup DockableGroup = iota
+	CharacterSheetsDockableGroup DockableGroup = iota
+	CharacterTemplatesDockableGroup
 	EditorsDockableGroup
+	ImagesDockableGroup
+	LibrariesDockableGroup
+	MarkdownDockableGroup
+	PDFsDockableGroup
+	SettingsDockableGroup
 	SubEditorsDockableGroup
 	LastDockableGroup = SubEditorsDockableGroup
 )
 
 // AllDockableGroup holds all possible values.
 var AllDockableGroup = []DockableGroup{
-	SettingsDockableGroup,
+	CharacterSheetsDockableGroup,
+	CharacterTemplatesDockableGroup,
 	EditorsDockableGroup,
+	ImagesDockableGroup,
+	LibrariesDockableGroup,
+	MarkdownDockableGroup,
+	PDFsDockableGroup,
+	SettingsDockableGroup,
 	SubEditorsDockableGroup,
 }
 
@@ -48,10 +60,22 @@ func (enum DockableGroup) EnsureValid() DockableGroup {
 // Key returns the key used in serialization.
 func (enum DockableGroup) Key() string {
 	switch enum {
-	case SettingsDockableGroup:
-		return "settings"
+	case CharacterSheetsDockableGroup:
+		return "character_sheets"
+	case CharacterTemplatesDockableGroup:
+		return "character_templates"
 	case EditorsDockableGroup:
 		return "editors"
+	case ImagesDockableGroup:
+		return "images"
+	case LibrariesDockableGroup:
+		return "libraries"
+	case MarkdownDockableGroup:
+		return "markdown"
+	case PDFsDockableGroup:
+		return "pdfs"
+	case SettingsDockableGroup:
+		return "settings"
 	case SubEditorsDockableGroup:
 		return "sub-editors"
 	default:
@@ -62,10 +86,22 @@ func (enum DockableGroup) Key() string {
 // String implements fmt.Stringer.
 func (enum DockableGroup) String() string {
 	switch enum {
-	case SettingsDockableGroup:
-		return i18n.Text("Settings")
+	case CharacterSheetsDockableGroup:
+		return i18n.Text("Character Sheets")
+	case CharacterTemplatesDockableGroup:
+		return i18n.Text("Character Templates")
 	case EditorsDockableGroup:
 		return i18n.Text("Editors")
+	case ImagesDockableGroup:
+		return i18n.Text("Images")
+	case LibrariesDockableGroup:
+		return i18n.Text("Libraries")
+	case MarkdownDockableGroup:
+		return i18n.Text("Markdown")
+	case PDFsDockableGroup:
+		return i18n.Text("PDFs")
+	case SettingsDockableGroup:
+		return i18n.Text("Settings")
 	case SubEditorsDockableGroup:
 		return i18n.Text("Sub-Editors")
 	default:

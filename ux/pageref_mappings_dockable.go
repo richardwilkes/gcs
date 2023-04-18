@@ -64,8 +64,8 @@ func OpenPageReference(ref, highlight string, promptContext map[string]bool) boo
 func openMarkdownPageReference(ref string) {
 	ref = ref[3:]
 	if ref != "" {
-		if !strings.HasSuffix(strings.ToLower(ref), ".md") {
-			ref += ".md"
+		if !strings.HasSuffix(strings.ToLower(ref), gurps.MarkdownExt) {
+			ref += gurps.MarkdownExt
 		}
 		for _, lib := range gurps.GlobalSettings().LibrarySet.List() {
 			filePath := filepath.Join(lib.Path(), "Markdown", ref)

@@ -24,11 +24,13 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/desktop"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/toolbox/xmath/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/rjeczalik/notify"
+	"golang.org/x/exp/slices"
 )
 
 const minTextWidthCandidate = "Abcdefghijklmnopqrstuvwxyz0123456789"
@@ -916,7 +918,40 @@ func DisplayNewDockable(dockable unison.Dockable) {
 		}
 	}()
 	if fbd, ok := dockable.(FileBackedDockable); ok {
+		var group *gurps.DockableGroup
 		fi := gurps.FileInfoFor(fbd.BackingFilePath())
+		switch {
+		case fi.IsImage:
+			g := gurps.ImagesDockableGroup
+			group = &g
+		case fi.IsPDF:
+			g := gurps.PDFsDockableGroup
+			group = &g
+		case fi.Extensions[0] == gurps.SheetExt:
+			g := gurps.CharacterSheetsDockableGroup
+			group = &g
+		case fi.Extensions[0] == gurps.TemplatesExt:
+			g := gurps.CharacterTemplatesDockableGroup
+			group = &g
+		case fi.Extensions[0] == gurps.TraitsExt,
+			fi.Extensions[0] == gurps.TraitModifiersExt,
+			fi.Extensions[0] == gurps.EquipmentExt,
+			fi.Extensions[0] == gurps.EquipmentModifiersExt,
+			fi.Extensions[0] == gurps.SkillsExt,
+			fi.Extensions[0] == gurps.SpellsExt,
+			fi.Extensions[0] == gurps.NotesExt:
+			g := gurps.LibrariesDockableGroup
+			group = &g
+		case fi.Extensions[0] == gurps.MarkdownExt:
+			g := gurps.MarkdownDockableGroup
+			group = &g
+		}
+		if group != nil && slices.Contains(gurps.GlobalSettings().General.OpenInWindow, *group) {
+			if _, err := NewWindowForDockable(dockable); err != nil {
+				jot.Error(err)
+			}
+			return
+		}
 		if dc := CurrentlyFocusedDockContainer(); dc != nil && DockContainerHoldsExtension(dc, fi.GroupWith...) {
 			dc.Stack(dockable, -1)
 			return

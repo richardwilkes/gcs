@@ -952,8 +952,14 @@ func main() {
 		Name: "dockable_group",
 		Desc: "holds the set of dockable groupings",
 		Values: []enumValue{
-			{Key: "settings"},
+			{Key: "character_sheets"},
+			{Key: "character_templates"},
 			{Key: "editors"},
+			{Key: "images"},
+			{Key: "libraries"},
+			{Key: "markdown"},
+			{Key: "pdfs", Name: "PDFs", String: "PDFs"},
+			{Key: "settings"},
 			{Key: "sub-editors"},
 		},
 	})

@@ -91,7 +91,7 @@ func registerPDFFileInfo() {
 }
 
 func registerMarkdownFileInfo() {
-	extensions := []string{".md", ".markdown"}
+	extensions := []string{gurps.MarkdownExt, ".markdown"}
 	gurps.FileInfo{
 		Name:       "Markdown Document",
 		UTI:        "net.daringfireball.markdown",
