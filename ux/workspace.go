@@ -519,7 +519,12 @@ func UpdateTitleForDockable(d unison.Dockable) {
 	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
 		dc.UpdateTitle(d)
 	} else {
-		d.AsPanel().Window().SetTitle(d.Title())
+		var buffer strings.Builder
+		if d.Modified() {
+			buffer.WriteByte('*')
+		}
+		buffer.WriteString(d.Title())
+		d.AsPanel().Window().SetTitle(buffer.String())
 	}
 }
 
