@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -13,7 +13,6 @@ package ux
 
 import (
 	"errors"
-	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -31,7 +30,6 @@ import (
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio/fs/paths"
 	"github.com/richardwilkes/unison"
-	"golang.org/x/exp/slices"
 )
 
 var languageSetting string
@@ -42,7 +40,6 @@ type generalSettingsDockable struct {
 	autoFillProfileCheckbox       *CheckBox
 	autoAddNaturalAttacksCheckbox *CheckBox
 	groupContainersOnSortCheckbox *CheckBox
-	dockableGroupCheckbox         []*CheckBox
 	pointsField                   *DecimalField
 	techLevelField                *StringField
 	calendarPopup                 *unison.PopupMenu[string]
@@ -179,31 +176,6 @@ func (d *generalSettingsDockable) createCheckboxBlock(content *unison.Panel) {
 	d.autoAddNaturalAttacksCheckbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(NewFieldLeadingLabel(""))
 	content.AddChild(d.autoAddNaturalAttacksCheckbox)
-
-	d.dockableGroupCheckbox = make([]*CheckBox, len(gurps.AllDockableGroup))
-	for _, group := range gurps.AllDockableGroup {
-		d.dockableGroupCheckbox[group] = createDockableGroupCheckbox(group)
-		content.AddChild(NewFieldLeadingLabel(""))
-		content.AddChild(d.dockableGroupCheckbox[group])
-	}
-}
-
-func createDockableGroupCheckbox(group gurps.DockableGroup) *CheckBox {
-	checkbox := NewCheckBox(nil, "",
-		fmt.Sprintf(i18n.Text("Open %s in separate windows"), group.String()),
-		func() unison.CheckState {
-			return unison.CheckStateFromBool(slices.Contains(gurps.GlobalSettings().General.OpenInWindow, group))
-		},
-		func(state unison.CheckState) {
-			general := gurps.GlobalSettings().General
-			if state == unison.OnCheckState {
-				general.OpenInWindow = gurps.SanitizeDockableGroups(append(general.OpenInWindow, group))
-			} else if i := slices.Index(general.OpenInWindow, group); i != -1 {
-				general.OpenInWindow = slices.Delete(general.OpenInWindow, i, i+1)
-			}
-		})
-	checkbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
-	return checkbox
 }
 
 func (d *generalSettingsDockable) createInitialPointsFields(content *unison.Panel) {
@@ -378,27 +350,25 @@ func (d *generalSettingsDockable) reset() {
 }
 
 func (d *generalSettingsDockable) sync() {
-	s := gurps.GlobalSettings().General
-	d.nameField.SetText(s.DefaultPlayerName)
-	SetCheckBoxState(d.autoFillProfileCheckbox, s.AutoFillProfile)
-	SetCheckBoxState(d.groupContainersOnSortCheckbox, s.GroupContainersOnSort)
-	SetCheckBoxState(d.autoAddNaturalAttacksCheckbox, s.AutoAddNaturalAttacks)
-	for _, group := range gurps.AllDockableGroup {
-		SetCheckBoxState(d.dockableGroupCheckbox[group], slices.Contains(s.OpenInWindow, group))
-	}
-	d.pointsField.SetText(s.InitialPoints.String())
-	d.techLevelField.SetText(s.DefaultTechLevel)
-	d.calendarPopup.Select(s.CalendarRef(gurps.GlobalSettings().Libraries()).Name)
-	SetFieldValue(d.initialListScaleField.Field, d.initialListScaleField.Format(s.InitialListUIScale))
-	SetFieldValue(d.initialEditorScaleField.Field, d.initialEditorScaleField.Format(s.InitialEditorUIScale))
-	SetFieldValue(d.initialSheetScaleField.Field, d.initialSheetScaleField.Format(s.InitialSheetUIScale))
-	d.maxAutoColWidthField.SetText(strconv.Itoa(s.MaximumAutoColWidth))
-	d.monitorResolutionField.SetText(strconv.Itoa(s.MonitorResolution))
-	d.exportResolutionField.SetText(strconv.Itoa(s.ImageResolution))
-	d.tooltipDelayField.SetText(s.TooltipDelay.String())
-	d.tooltipDismissalField.SetText(s.TooltipDismissal.String())
-	d.scrollWheelMultiplierField.SetText(s.ScrollWheelMultiplier.String())
-	SetFieldValue(d.externalPDFCmdlineField.Field, s.ExternalPDFCmdLine)
+	s := gurps.GlobalSettings()
+	gs := s.General
+	d.nameField.SetText(gs.DefaultPlayerName)
+	SetCheckBoxState(d.autoFillProfileCheckbox, gs.AutoFillProfile)
+	SetCheckBoxState(d.groupContainersOnSortCheckbox, gs.GroupContainersOnSort)
+	SetCheckBoxState(d.autoAddNaturalAttacksCheckbox, gs.AutoAddNaturalAttacks)
+	d.pointsField.SetText(gs.InitialPoints.String())
+	d.techLevelField.SetText(gs.DefaultTechLevel)
+	d.calendarPopup.Select(gs.CalendarRef(s.Libraries()).Name)
+	SetFieldValue(d.initialListScaleField.Field, d.initialListScaleField.Format(gs.InitialListUIScale))
+	SetFieldValue(d.initialEditorScaleField.Field, d.initialEditorScaleField.Format(gs.InitialEditorUIScale))
+	SetFieldValue(d.initialSheetScaleField.Field, d.initialSheetScaleField.Format(gs.InitialSheetUIScale))
+	d.maxAutoColWidthField.SetText(strconv.Itoa(gs.MaximumAutoColWidth))
+	d.monitorResolutionField.SetText(strconv.Itoa(gs.MonitorResolution))
+	d.exportResolutionField.SetText(strconv.Itoa(gs.ImageResolution))
+	d.tooltipDelayField.SetText(gs.TooltipDelay.String())
+	d.tooltipDismissalField.SetText(gs.TooltipDismissal.String())
+	d.scrollWheelMultiplierField.SetText(gs.ScrollWheelMultiplier.String())
+	SetFieldValue(d.externalPDFCmdlineField.Field, gs.ExternalPDFCmdLine)
 	SetFieldValue(d.localeField.Field, languageSetting)
 	d.MarkForRedraw()
 }

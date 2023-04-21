@@ -128,7 +128,7 @@
 				},
 				{
 					"state": "Tired",
-					"expression": "round($fp/3)",
+					"expression": "ceil($fp/3)-1",
 					"explanation": "Move, Dodge and ST are halved (B426)",
 					"ops": [
 						"halve_move",
@@ -210,7 +210,7 @@
 				},
 				{
 					"state": "Reeling",
-					"expression": "round($hp/3)",
+					"expression": "ceil($hp/3)-1",
 					"explanation": "Move and Dodge are halved (B419)",
 					"ops": [
 						"halve_move",

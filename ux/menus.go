@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -26,6 +26,7 @@ import (
 	"github.com/richardwilkes/toolbox/txt"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
+	"golang.org/x/exp/slices"
 )
 
 // Menu, Item & Action IDs
@@ -140,9 +141,11 @@ const (
 	NewMeleeWeaponItemID
 	NewRangedWeaponItemID
 
-	LibraryBaseItemID
-	RecentFieldBaseItemID  = LibraryBaseItemID + 1000
-	ExportToTextBaseItemID = RecentFieldBaseItemID + 1000
+	OpenInWindowMenuID
+
+	LibraryBaseItemID      = OpenInWindowMenuID + int(gurps.LastDockableGroup) + 2
+	RecentFieldBaseItemID  = LibraryBaseItemID + 500
+	ExportToTextBaseItemID = RecentFieldBaseItemID + 500
 )
 
 var registerKeyBindingsOnce sync.Once
@@ -302,12 +305,42 @@ func (s menuBarScope) createSettingsMenu(f unison.MenuFactory) unison.Menu {
 	m.InsertItem(-1, colorSettingsAction.NewMenuItem(f))
 	m.InsertItem(-1, fontSettingsAction.NewMenuItem(f))
 	m.InsertItem(-1, menuKeySettingsAction.NewMenuItem(f))
+	s.insertMenu(m, -1, s.createOpenInWindowMenu(f))
 	return m
+}
+
+func (s menuBarScope) createOpenInWindowMenu(f unison.MenuFactory) unison.Menu {
+	m := f.NewMenu(OpenInWindowMenuID, i18n.Text("Use Separate Windows For…"), nil)
+	settings := gurps.GlobalSettings()
+	for _, group := range gurps.AllDockableGroup {
+		mi := s.createOpenInWindowAction(group).NewMenuItem(f)
+		mi.SetCheckState(unison.CheckStateFromBool(slices.Contains(settings.OpenInWindow, group)))
+		m.InsertItem(-1, mi)
+	}
+	return m
+}
+
+func (s menuBarScope) createOpenInWindowAction(group gurps.DockableGroup) *unison.Action {
+	return &unison.Action{
+		ID:    OpenInWindowMenuID + 1 + int(group),
+		Title: group.String(),
+		ExecuteCallback: func(_ *unison.Action, item any) {
+			if mi, ok := item.(unison.MenuItem); ok {
+				settings := gurps.GlobalSettings()
+				if i := slices.Index(settings.OpenInWindow, group); i != -1 {
+					settings.OpenInWindow = slices.Delete(settings.OpenInWindow, i, i+1)
+					mi.SetCheckState(unison.OffCheckState)
+				} else {
+					settings.OpenInWindow = gurps.SanitizeDockableGroups(append(settings.OpenInWindow, group))
+					mi.SetCheckState(unison.OnCheckState)
+				}
+			}
+		},
+	}
 }
 
 func (s menuBarScope) createViewMenu(f unison.MenuFactory) unison.Menu {
 	m := f.NewMenu(ViewMenuID, i18n.Text("View"), nil)
-
 	m.InsertItem(-1, scaleDefaultAction.NewMenuItem(f))
 	m.InsertItem(-1, scaleUpAction.NewMenuItem(f))
 	m.InsertItem(-1, scaleDownAction.NewMenuItem(f))
@@ -417,7 +450,7 @@ func (s menuBarScope) createExportToTextAction(index int, path string) *unison.A
 		Title:           "    " + xfs.TrimExtension(filepath.Base(path)),
 		EnabledCallback: actionEnabledForSheet,
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			if s := ActiveSheet(); s != nil {
+			if sheet := ActiveSheet(); sheet != nil {
 				dialog := unison.NewSaveDialog()
 				ext := filepath.Ext(path)
 				settings := gurps.GlobalSettings()
@@ -426,7 +459,7 @@ func (s menuBarScope) createExportToTextAction(index int, path string) *unison.A
 				if dialog.RunModal() {
 					if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), ext, false); ok {
 						settings.SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
-						if err := gurps.LegacyExport(s.Entity(), path, filePath); err != nil {
+						if err := gurps.LegacyExport(sheet.Entity(), path, filePath); err != nil {
 							unison.ErrorDialogWithError(i18n.Text("Export failed"), err)
 						}
 					}

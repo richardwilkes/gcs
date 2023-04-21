@@ -21,8 +21,6 @@ import (
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
-	"golang.org/x/exp/maps"
-	"golang.org/x/exp/slices"
 )
 
 // Default, min & max values for the general numeric settings
@@ -61,25 +59,24 @@ const (
 
 // GeneralSettings holds general settings for a sheet.
 type GeneralSettings struct {
-	DefaultPlayerName     string          `json:"default_player_name,omitempty"`
-	DefaultTechLevel      string          `json:"default_tech_level,omitempty"`
-	CalendarName          string          `json:"calendar_ref,omitempty"`
-	ExternalPDFCmdLine    string          `json:"external_pdf_cmd_line,omitempty"`
-	InitialPoints         fxp.Int         `json:"initial_points"`
-	TooltipDelay          fxp.Int         `json:"tooltip_delay"`
-	TooltipDismissal      fxp.Int         `json:"tooltip_dismissal"`
-	ScrollWheelMultiplier fxp.Int         `json:"scroll_wheel_multiplier"`
-	NavigatorUIScale      int             `json:"navigator_scale"`
-	InitialListUIScale    int             `json:"initial_list_scale"`
-	InitialEditorUIScale  int             `json:"initial_editor_scale"`
-	InitialSheetUIScale   int             `json:"initial_sheet_scale"`
-	MaximumAutoColWidth   int             `json:"maximum_auto_col_width"`
-	ImageResolution       int             `json:"image_resolution"`
-	MonitorResolution     int             `json:"monitor_resolution,omitempty"`
-	OpenInWindow          []DockableGroup `json:"open_in_window,omitempty"`
-	AutoFillProfile       bool            `json:"auto_fill_profile"`
-	AutoAddNaturalAttacks bool            `json:"add_natural_attacks"`
-	GroupContainersOnSort bool            `json:"group_containers_on_sort"`
+	DefaultPlayerName     string  `json:"default_player_name,omitempty"`
+	DefaultTechLevel      string  `json:"default_tech_level,omitempty"`
+	CalendarName          string  `json:"calendar_ref,omitempty"`
+	ExternalPDFCmdLine    string  `json:"external_pdf_cmd_line,omitempty"`
+	InitialPoints         fxp.Int `json:"initial_points"`
+	TooltipDelay          fxp.Int `json:"tooltip_delay"`
+	TooltipDismissal      fxp.Int `json:"tooltip_dismissal"`
+	ScrollWheelMultiplier fxp.Int `json:"scroll_wheel_multiplier"`
+	NavigatorUIScale      int     `json:"navigator_scale"`
+	InitialListUIScale    int     `json:"initial_list_scale"`
+	InitialEditorUIScale  int     `json:"initial_editor_scale"`
+	InitialSheetUIScale   int     `json:"initial_sheet_scale"`
+	MaximumAutoColWidth   int     `json:"maximum_auto_col_width"`
+	ImageResolution       int     `json:"image_resolution"`
+	MonitorResolution     int     `json:"monitor_resolution,omitempty"`
+	AutoFillProfile       bool    `json:"auto_fill_profile"`
+	AutoAddNaturalAttacks bool    `json:"add_natural_attacks"`
+	GroupContainersOnSort bool    `json:"group_containers_on_sort"`
 }
 
 // NewGeneralSettings creates settings with factory defaults.
@@ -159,17 +156,5 @@ func (s *GeneralSettings) EnsureValidity() {
 	s.InitialEditorUIScale = fxp.ResetIfOutOfRangeInt(s.InitialEditorUIScale, InitialUIScaleMin, InitialUIScaleMax, InitialEditorUIScaleDef)
 	s.InitialSheetUIScale = fxp.ResetIfOutOfRangeInt(s.InitialSheetUIScale, InitialUIScaleMin, InitialUIScaleMax, InitialSheetUIScaleDef)
 	s.MaximumAutoColWidth = fxp.ResetIfOutOfRangeInt(s.MaximumAutoColWidth, AutoColWidthMin, AutoColWidthMax, MaximumAutoColWidthDef)
-	s.OpenInWindow = SanitizeDockableGroups(s.OpenInWindow)
 	s.UpdateToolTipTiming()
-}
-
-// SanitizeDockableGroups returns the list of valid dockable groups from the passed-in list, in sorted order.
-func SanitizeDockableGroups(groups []DockableGroup) []DockableGroup {
-	m := make(map[DockableGroup]bool)
-	for _, k := range groups {
-		m[k.EnsureValid()] = true
-	}
-	groups = maps.Keys(m)
-	slices.Sort(groups)
-	return groups
 }

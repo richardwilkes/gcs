@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -73,14 +73,16 @@ type PDFDockable struct {
 	inDrag                 bool
 	noUpdate               bool
 	adjustTableSizePending bool
+	needDockableResize     bool
 }
 
 // NewPDFDockable creates a new unison.Dockable for PDFRenderer files.
 func NewPDFDockable(filePath string) (unison.Dockable, error) {
 	d := &PDFDockable{
-		path:     filePath,
-		scale:    100,
-		noUpdate: true,
+		path:               filePath,
+		scale:              100,
+		noUpdate:           true,
+		needDockableResize: true,
 	}
 	d.Self = d
 	var err error
@@ -435,6 +437,13 @@ func (d *PDFDockable) pageLoaded() {
 	d.docPanel.MarkForLayoutAndRedraw()
 	d.docScroll.MarkForLayoutAndRedraw()
 	d.link = nil
+
+	if d.needDockableResize {
+		d.needDockableResize = false
+		if !IsDockableInWorkspace(d) {
+			d.Window().Pack()
+		}
+	}
 }
 
 func (d *PDFDockable) overLink(where unison.Point) (rect unison.Rect, link *PDFLink) {

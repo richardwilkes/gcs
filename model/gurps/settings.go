@@ -25,6 +25,8 @@ import (
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
+	"golang.org/x/exp/maps"
+	"golang.org/x/exp/slices"
 )
 
 const maxRecentFiles = 20
@@ -62,6 +64,7 @@ type Settings struct {
 	Fonts              Fonts             `json:"fonts"`
 	QuickExports       *QuickExports     `json:"quick_exports,omitempty"`
 	Sheet              *SheetSettings    `json:"sheet_settings,omitempty"`
+	OpenInWindow       []DockableGroup   `json:"open_in_window,omitempty"`
 	ColorMode          unison.ColorMode  `json:"color_mode"`
 }
 
@@ -124,6 +127,18 @@ func (s *Settings) EnsureValidity() {
 	} else {
 		s.Sheet.EnsureValidity()
 	}
+	s.OpenInWindow = SanitizeDockableGroups(s.OpenInWindow)
+}
+
+// SanitizeDockableGroups returns the list of valid dockable groups from the passed-in list, in sorted order.
+func SanitizeDockableGroups(groups []DockableGroup) []DockableGroup {
+	m := make(map[DockableGroup]bool)
+	for _, k := range groups {
+		m[k.EnsureValid()] = true
+	}
+	groups = maps.Keys(m)
+	slices.Sort(groups)
+	return groups
 }
 
 // LastDir returns the last directory used for the given key.
