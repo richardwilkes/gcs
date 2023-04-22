@@ -1,38 +1,6 @@
 <component name="InspectionProjectProfileManager">
   <profile version="1.0">
     <option name="myName" value="Project Default" />
-    <inspection_tool class="GoContextTodo" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
-    <inspection_tool class="GoMixedReceiverTypes" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
-    <inspection_tool class="GoNilness" enabled="true" level="WARNING" enabled_by_default="true" />
-    <inspection_tool class="GoUnhandledErrorResult" enabled="true" level="WARNING" enabled_by_default="true">
-      <functions>
-        <function importPath="fmt" name="Printf" />
-        <function importPath="fmt" name="Errorf" />
-        <function importPath="math/rand" name="Read" />
-        <function importPath="fmt" name="Println" />
-        <function importPath="fmt" name="Print" />
-        <function importPath="fmt" name="Fprintf" />
-      </functions>
-      <methods>
-        <method importPath="hash" receiver="Hash" name="Write" />
-        <method importPath="strings" receiver="*Builder" name="Write" />
-        <method importPath="strings" receiver="*Builder" name="WriteByte" />
-        <method importPath="bytes" receiver="*Buffer" name="WriteRune" />
-        <method importPath="bytes" receiver="*Buffer" name="Write" />
-        <method importPath="bytes" receiver="*Buffer" name="WriteString" />
-        <method importPath="strings" receiver="*Builder" name="WriteString" />
-        <method importPath="bytes" receiver="*Buffer" name="WriteByte" />
-        <method importPath="strings" receiver="*Builder" name="WriteRune" />
-        <method importPath="math/rand" receiver="*Rand" name="Read" />
-        <method importPath="github.com/richardwilkes/toolbox/xio" receiver="*ByteBuffer" name="WriteString" />
-        <method importPath="github.com/richardwilkes/toolbox/xio" receiver="*ByteBuffer" name="WriteByte" />
-        <method importPath="bufio" receiver="*Writer" name="WriteByte" />
-        <method importPath="hash" receiver="Hash32" name="Write" />
-        <method importPath="bufio" receiver="*Writer" name="WriteString" />
-        <method importPath="bufio" receiver="*Writer" name="WriteRune" />
-      </methods>
-    </inspection_tool>
-    <inspection_tool class="GoUnusedExportedFunction" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="SpellCheckingInspection" enabled="false" level="TYPO" enabled_by_default="false">
       <option name="processCode" value="true" />
       <option name="processLiterals" value="true" />
