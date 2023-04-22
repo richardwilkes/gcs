@@ -276,6 +276,7 @@ func NewWindowForDockable(dockable unison.Dockable) (*unison.Window, error) {
 	if err != nil {
 		return nil, err
 	}
+	SetupMenuBar(wnd)
 	content := wnd.Content()
 	content.SetLayout(&unison.FlexLayout{Columns: 1})
 	panel := dockable.AsPanel()
