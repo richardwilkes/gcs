@@ -290,6 +290,17 @@ func NewWindowForDockable(dockable unison.Dockable) (*unison.Window, error) {
 	})
 	content.AddChild(panel)
 	wnd.ClientData()[dockableClientDataKey] = dockable
+	if tc, ok := dockable.(unison.TabCloser); ok {
+		wnd.AllowCloseCallback = tc.MayAttemptClose
+		pendingClose := false
+		wnd.WillCloseCallback = func() {
+			if !pendingClose {
+				pendingClose = true
+				tc.AttemptClose()
+				pendingClose = false
+			}
+		}
+	}
 	wnd.Pack()
 	wndFrame := wnd.FrameRect()
 	frame.Y += (frame.Height - wndFrame.Height) / 3
