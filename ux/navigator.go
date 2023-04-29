@@ -437,17 +437,14 @@ func (n *Navigator) adjustBackingFilePath(row *NavigatorNode, oldPath, newPath s
 		if !strings.HasSuffix(oldPath, string(os.PathSeparator)) {
 			oldPath += string(os.PathSeparator)
 		}
-		Workspace.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
-			for _, one := range dc.Dockables() {
-				if fbd, ok := one.(FileBackedDockable); ok {
-					p := fbd.BackingFilePath()
-					if strings.HasPrefix(p, oldPath) {
-						fbd.SetBackingFilePath(filepath.Join(newPath, strings.TrimPrefix(p, oldPath)))
-					}
+		for _, one := range allDockables() {
+			if fbd, ok := one.(FileBackedDockable); ok {
+				p := fbd.BackingFilePath()
+				if strings.HasPrefix(p, oldPath) {
+					fbd.SetBackingFilePath(filepath.Join(newPath, strings.TrimPrefix(p, oldPath)))
 				}
 			}
-			return false
-		})
+		}
 	case fileNode:
 		if dockable := LocateFileBackedDockable(oldPath); dockable != nil {
 			dockable.SetBackingFilePath(newPath)

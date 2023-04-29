@@ -417,18 +417,15 @@ func (d *sheetSettingsDockable) sync() {
 }
 
 func (d *sheetSettingsDockable) syncSheet(full bool) {
-	Workspace.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
-		var entity *gurps.Entity
-		if d.owner != nil {
-			entity = d.owner.Entity()
+	var entity *gurps.Entity
+	if d.owner != nil {
+		entity = d.owner.Entity()
+	}
+	for _, one := range allDockables() {
+		if s, ok := one.(gurps.SheetSettingsResponder); ok {
+			s.SheetSettingsUpdated(entity, full)
 		}
-		for _, one := range dc.Dockables() {
-			if s, ok := one.(gurps.SheetSettingsResponder); ok {
-				s.SheetSettingsUpdated(entity, full)
-			}
-		}
-		return false
-	})
+	}
 }
 
 func (d *sheetSettingsDockable) load(fileSystem fs.FS, filePath string) error {

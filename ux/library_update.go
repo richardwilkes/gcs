@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -30,20 +30,17 @@ Content in other libraries will not be modified`)) != unison.ModalResponseOK {
 		return false
 	}
 	var list []unison.TabCloser
-	Workspace.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
-		p := lib.PathOnDisk + "/"
-		for _, one := range dc.Dockables() {
-			if tc, ok := one.(unison.TabCloser); ok {
-				var fbd FileBackedDockable
-				if fbd, ok = one.(FileBackedDockable); ok {
-					if strings.HasPrefix(fbd.BackingFilePath(), p) {
-						list = append(list, tc)
-					}
+	p := lib.PathOnDisk + "/"
+	for _, one := range allDockables() {
+		if tc, ok := one.(unison.TabCloser); ok {
+			var fbd FileBackedDockable
+			if fbd, ok = one.(FileBackedDockable); ok {
+				if strings.HasPrefix(fbd.BackingFilePath(), p) {
+					list = append(list, tc)
 				}
 			}
 		}
-		return false
-	})
+	}
 	for _, one := range list {
 		if !one.MayAttemptClose() || !one.AttemptClose() {
 			unison.WarningDialogWithMessage(i18n.Text("Update canceled"),

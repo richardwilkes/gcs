@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -59,14 +59,11 @@ type Template struct {
 // OpenTemplates returns the currently open templates.
 func OpenTemplates(exclude *Template) []*Template {
 	var templates []*Template
-	Workspace.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
-		for _, one := range dc.Dockables() {
-			if template, ok := one.(*Template); ok && template != exclude {
-				templates = append(templates, template)
-			}
+	for _, one := range allDockables() {
+		if template, ok := one.(*Template); ok && template != exclude {
+			templates = append(templates, template)
 		}
-		return false
-	})
+	}
 	return templates
 }
 

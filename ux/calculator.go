@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -158,19 +158,16 @@ func DisplayCalculator(sheet *Sheet) {
 
 // UpdateCalculator for the given owner.
 func UpdateCalculator(sheet *Sheet) {
-	Workspace.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
-		for _, other := range dc.Dockables() {
-			if c, ok := other.(*Calculator); ok && c.sheet == sheet {
-				c.updateJumpingResult()
-				c.updateThrowingResult()
-				c.updateHikingResult()
-				c.content.MarkForLayoutRecursively()
-				c.content.MarkForRedraw()
-				return true
-			}
+	for _, other := range allDockables() {
+		if c, ok := other.(*Calculator); ok && c.sheet == sheet {
+			c.updateJumpingResult()
+			c.updateThrowingResult()
+			c.updateHikingResult()
+			c.content.MarkForLayoutRecursively()
+			c.content.MarkForRedraw()
+			break
 		}
-		return false
-	})
+	}
 }
 
 func (c *Calculator) createToolbar() *unison.Panel {

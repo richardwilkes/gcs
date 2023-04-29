@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -182,15 +182,12 @@ func askUserForPageRefPath(key string, offset int) *gurps.PageRef {
 
 // RefreshPageRefMappingsView causes the Page References Mappings view to be refreshed if it is open.
 func RefreshPageRefMappingsView() {
-	Workspace.DocumentDock.RootDockLayout().ForEachDockContainer(func(container *unison.DockContainer) bool {
-		for _, one := range container.Dockables() {
-			if d, ok := one.(*pageRefMappingsDockable); ok {
-				d.sync()
-				return true
-			}
+	for _, one := range allDockables() {
+		if d, ok := one.(*pageRefMappingsDockable); ok {
+			d.sync()
+			break
 		}
-		return false
-	})
+	}
 }
 
 // ShowPageRefMappings shows the Page Reference Mappings.
