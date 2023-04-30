@@ -239,8 +239,9 @@ func LocateDockContainerForExtension(ext ...string) *unison.DockContainer {
 // PlaceInDock places the Dockable into the workspace document dock, grouped with the provided group, if that group is
 // present.
 func PlaceInDock(dockable unison.Dockable, group gurps.DockableGroup) {
+	InstallDockUndockCmd(dockable)
 	if slices.Contains(gurps.GlobalSettings().OpenInWindow, group) {
-		if _, err := NewWindowForDockable(dockable); err != nil {
+		if _, err := NewWindowForDockable(dockable, group); err != nil {
 			jot.Error(err)
 		}
 		return
@@ -266,8 +267,72 @@ func PlaceInDock(dockable unison.Dockable, group gurps.DockableGroup) {
 	Workspace.DocumentDock.DockTo(dockable, dc, side)
 }
 
+// MoveDockableToWorkspace closes the window a dockable is in and places it within the workspace. If already in the
+// workspace, does nothing.
+func MoveDockableToWorkspace(dockable unison.Dockable) {
+	panel := dockable.AsPanel()
+	wnd := panel.Window()
+	if wnd == Workspace.Window {
+		return
+	}
+	if wnd != nil {
+		wnd.WillCloseCallback = nil
+		wnd.Dispose()
+	}
+	panel.RemoveFromParent()
+	group, ok := panel.ClientData()[dockGroupClientDataKey].(gurps.DockableGroup)
+	if !ok {
+		group = gurps.EditorsDockableGroup // Arbitrary
+	}
+	PlaceInDock(dockable, group)
+}
+
+// MoveDockableToWindow closes the tab a dockable is in within the workspace and opens a windows for it instead. If
+// already in its own window, does nothing.
+func MoveDockableToWindow(dockable unison.Dockable) (*unison.Window, error) {
+	panel := dockable.AsPanel()
+	wnd := panel.Window()
+	if wnd != Workspace.Window {
+		return wnd, nil
+	}
+	if dc := unison.Ancestor[*unison.DockContainer](dockable); dc != nil {
+		dc.Close(dockable)
+	} else {
+		panel.RemoveFromParent()
+	}
+	panel.Hidden = false
+	group, ok := panel.ClientData()[dockGroupClientDataKey].(gurps.DockableGroup)
+	if !ok {
+		group = gurps.EditorsDockableGroup // Arbitrary
+	}
+	return NewWindowForDockable(dockable, group)
+}
+
+// InstallDockUndockCmd installs the dock or undock command handler.
+func InstallDockUndockCmd(dockable unison.Dockable) {
+	panel := dockable.AsPanel()
+	panel.InstallCmdHandlers(DockUnDockItemID,
+		func(_ any) bool {
+			if panel.Window() == Workspace.Window {
+				dockUnDockAction.Title = i18n.Text("Undock From Workspace")
+			} else {
+				dockUnDockAction.Title = i18n.Text("Dock Into Workspace")
+			}
+			return true
+		},
+		func(_ any) {
+			if panel.Window() == Workspace.Window {
+				if _, err := MoveDockableToWindow(dockable); err != nil {
+					jot.Error(err)
+				}
+			} else {
+				MoveDockableToWorkspace(dockable)
+			}
+		})
+}
+
 // NewWindowForDockable creates a new window and places a Dockable inside it.
-func NewWindowForDockable(dockable unison.Dockable) (*unison.Window, error) {
+func NewWindowForDockable(dockable unison.Dockable, group gurps.DockableGroup) (*unison.Window, error) {
 	var frame unison.Rect
 	if focused := unison.ActiveWindow(); focused != nil {
 		frame = focused.FrameRect()
@@ -303,6 +368,8 @@ func NewWindowForDockable(dockable unison.Dockable) (*unison.Window, error) {
 			}
 		}
 	}
+	panel.ClientData()[dockGroupClientDataKey] = group
+	InstallDockUndockCmd(dockable)
 	wnd.Pack()
 	wndFrame := wnd.FrameRect()
 	frame.Y += (frame.Height - wndFrame.Height) / 3

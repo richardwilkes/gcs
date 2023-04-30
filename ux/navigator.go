@@ -909,6 +909,7 @@ func OpenFiles(filePaths []string) {
 
 // DisplayNewDockable adds the Dockable to the dock and gives it the focus.
 func DisplayNewDockable(dockable unison.Dockable) {
+	InstallDockUndockCmd(dockable)
 	defer func() {
 		if children := dockable.AsPanel().Children(); len(children) > 1 {
 			FocusFirstContent(children[0], children[1])
@@ -944,11 +945,12 @@ func DisplayNewDockable(dockable unison.Dockable) {
 			group = &g
 		}
 		if group != nil && slices.Contains(gurps.GlobalSettings().OpenInWindow, *group) {
-			if _, err := NewWindowForDockable(dockable); err != nil {
+			if _, err := NewWindowForDockable(dockable, *group); err != nil {
 				jot.Error(err)
 			}
 			return
 		}
+		dockable.AsPanel().ClientData()[dockGroupClientDataKey] = *group
 		if dc := CurrentlyFocusedDockContainer(); dc != nil && DockContainerHoldsExtension(dc, fi.GroupWith...) {
 			dc.Stack(dockable, -1)
 			return

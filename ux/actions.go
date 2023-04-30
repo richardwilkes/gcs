@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -47,6 +47,7 @@ var (
 	defaultAttributeSettingsAction      *unison.Action
 	defaultBodyTypeSettingsAction       *unison.Action
 	defaultSheetSettingsAction          *unison.Action
+	dockUnDockAction                    *unison.Action
 	duplicateAction                     *unison.Action
 	exportAsJPEGAction                  *unison.Action
 	exportAsPDFAction                   *unison.Action
@@ -263,6 +264,13 @@ func registerActions() {
 		Title:           i18n.Text("Default Sheet Settings…"),
 		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyComma, Modifiers: unison.OSMenuCmdModifier()},
 		ExecuteCallback: func(_ *unison.Action, _ any) { ShowSheetSettings(nil) },
+	})
+	dockUnDockAction = registerKeyBindableAction("dock_undock", &unison.Action{
+		ID:              DockUnDockItemID,
+		Title:           i18n.Text("Undock From Workspace"),
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeySlash, Modifiers: unison.OptionModifier | unison.OSMenuCmdModifier()},
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	duplicateAction = registerKeyBindableAction("duplicate", &unison.Action{
 		ID:              DuplicateItemID,

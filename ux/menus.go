@@ -110,6 +110,7 @@ const (
 	Scale400ItemID
 	Scale500ItemID
 	Scale600ItemID
+	DockUnDockItemID
 
 	FirstNonContainerMarker // Keep this block grouped together
 	NewCarriedEquipmentItemID
@@ -173,6 +174,7 @@ func SetupMenuBar(wnd *unison.Window) {
 		i := s.insertMenu(bar, bar.Item(unison.EditMenuID).Index()+1, s.createItemMenu(f))
 		i = s.insertMenu(bar, i, s.createSettingsMenu(f))
 		s.insertMenu(bar, i, s.createViewMenu(f))
+		s.setupWindowMenu(bar)
 		s.setupHelpMenu(bar)
 	})
 }
@@ -356,6 +358,12 @@ func (s menuBarScope) createViewMenu(f unison.MenuFactory) unison.Menu {
 	m.InsertItem(-1, scale600Action.NewMenuItem(f))
 	platformViewMenuAddition(m)
 	return m
+}
+
+func (s menuBarScope) setupWindowMenu(bar unison.Menu) {
+	f := bar.Factory()
+	m := bar.Menu(unison.WindowMenuID)
+	s.insertMenuItem(m, -1, dockUnDockAction.NewMenuItem(f))
 }
 
 func (s menuBarScope) setupHelpMenu(bar unison.Menu) {
