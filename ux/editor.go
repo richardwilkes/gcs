@@ -68,10 +68,12 @@ func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner Rebuildable, 
 	}
 	e.Self = e
 
-	if e.previousDockable = DefaultDockContainer().CurrentDockable(); !toolbox.IsNil(e.previousDockable) {
-		if focus := e.previousDockable.AsPanel().Window().Focus(); focus != nil {
-			if unison.Ancestor[unison.Dockable](focus) == e.previousDockable {
-				e.previousFocusKey = focus.RefKey
+	if defDC := DefaultDockContainer(); defDC != nil {
+		if e.previousDockable = defDC.CurrentDockable(); !toolbox.IsNil(e.previousDockable) {
+			if focus := e.previousDockable.AsPanel().Window().Focus(); focus != nil {
+				if unison.Ancestor[unison.Dockable](focus) == e.previousDockable {
+					e.previousFocusKey = focus.RefKey
+				}
 			}
 		}
 	}

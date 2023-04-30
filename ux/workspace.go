@@ -247,9 +247,11 @@ func PlaceInDock(dockable unison.Dockable, group gurps.DockableGroup) {
 	}
 	dockable.AsPanel().ClientData()[dockGroupClientDataKey] = group
 	dc := DefaultDockContainer()
-	if DockContainerHasGroup(dc, group) {
-		dc.Stack(dockable, -1)
-		return
+	if dc != nil {
+		if DockContainerHasGroup(dc, group) {
+			dc.Stack(dockable, -1)
+			return
+		}
 	}
 	if dc = DockContainerForGroup(Workspace.DocumentDock.Dock, group); dc != nil {
 		dc.Stack(dockable, -1)

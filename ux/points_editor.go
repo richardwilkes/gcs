@@ -69,10 +69,12 @@ func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 	e.Self = e
 	sort.Slice(e.current, func(i, j int) bool { return e.current[i].When.After(e.current[j].When) })
 
-	if e.previousDockable = DefaultDockContainer().CurrentDockable(); !toolbox.IsNil(e.previousDockable) {
-		if focus := e.previousDockable.AsPanel().Window().Focus(); focus != nil {
-			if unison.Ancestor[unison.Dockable](focus) == e.previousDockable {
-				e.previousFocusKey = focus.RefKey
+	if defDC := DefaultDockContainer(); defDC != nil {
+		if e.previousDockable = defDC.CurrentDockable(); !toolbox.IsNil(e.previousDockable) {
+			if focus := e.previousDockable.AsPanel().Window().Focus(); focus != nil {
+				if unison.Ancestor[unison.Dockable](focus) == e.previousDockable {
+					e.previousFocusKey = focus.RefKey
+				}
 			}
 		}
 	}
