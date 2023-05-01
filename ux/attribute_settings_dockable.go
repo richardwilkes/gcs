@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -53,38 +53,38 @@ type attributeSettingsDragData struct {
 
 // ShowAttributeSettings the Attribute Settings. Pass in nil to edit the defaults or a sheet to edit the sheet's.
 func ShowAttributeSettings(owner EntityPanel) {
-	ws, dc, found := Activate(func(d unison.Dockable) bool {
-		if s, ok := d.(*attributeSettingsDockable); ok && owner == s.owner {
+	if Activate(func(d unison.Dockable) bool {
+		if s, ok := d.AsPanel().Self.(*attributeSettingsDockable); ok && owner == s.owner {
 			return true
 		}
 		return false
-	})
-	if !found && ws != nil {
-		d := &attributeSettingsDockable{
-			owner:         owner,
-			promptForSave: true,
-		}
-		d.Self = d
-		d.targetMgr = NewTargetMgr(d)
-		if owner != nil {
-			d.defs = d.owner.Entity().SheetSettings.Attributes.Clone()
-			d.TabTitle = i18n.Text("Attributes: " + owner.Entity().Profile.Name)
-		} else {
-			d.defs = gurps.GlobalSettings().Sheet.Attributes.Clone()
-			d.TabTitle = i18n.Text("Default Attributes")
-		}
-		d.TabIcon = svg.Attributes
-		d.defs.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
-		d.originalCRC = d.defs.CRC64()
-		d.Extensions = []string{gurps.AttributesExt, gurps.AttributesExtAlt1, gurps.AttributesExtAlt2}
-		d.undoMgr = unison.NewUndoManager(100, func(err error) { jot.Error(err) })
-		d.Loader = d.load
-		d.Saver = d.save
-		d.Resetter = d.reset
-		d.ModifiedCallback = d.modified
-		d.WillCloseCallback = d.willClose
-		d.Setup(ws, dc, d.addToStartToolbar, nil, d.initContent)
+	}) {
+		return
 	}
+	d := &attributeSettingsDockable{
+		owner:         owner,
+		promptForSave: true,
+	}
+	d.Self = d
+	d.targetMgr = NewTargetMgr(d)
+	if owner != nil {
+		d.defs = d.owner.Entity().SheetSettings.Attributes.Clone()
+		d.TabTitle = i18n.Text("Attributes: " + owner.Entity().Profile.Name)
+	} else {
+		d.defs = gurps.GlobalSettings().Sheet.Attributes.Clone()
+		d.TabTitle = i18n.Text("Default Attributes")
+	}
+	d.TabIcon = svg.Attributes
+	d.defs.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
+	d.originalCRC = d.defs.CRC64()
+	d.Extensions = []string{gurps.AttributesExt, gurps.AttributesExtAlt1, gurps.AttributesExtAlt2}
+	d.undoMgr = unison.NewUndoManager(100, func(err error) { jot.Error(err) })
+	d.Loader = d.load
+	d.Saver = d.save
+	d.Resetter = d.reset
+	d.ModifiedCallback = d.modified
+	d.WillCloseCallback = d.willClose
+	d.Setup(d.addToStartToolbar, nil, d.initContent)
 }
 
 func (d *attributeSettingsDockable) UndoManager() *unison.UndoManager {
@@ -295,16 +295,9 @@ func (d *attributeSettingsDockable) apply() {
 			delete(entity.Attributes.Set, attrID)
 		}
 	}
-	for _, wnd := range unison.Windows() {
-		if ws := WorkspaceFromWindow(wnd); ws != nil {
-			ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
-				for _, one := range dc.Dockables() {
-					if s, ok := one.(gurps.SheetSettingsResponder); ok {
-						s.SheetSettingsUpdated(entity, true)
-					}
-				}
-				return false
-			})
+	for _, one := range allDockables() {
+		if s, ok := one.(gurps.SheetSettingsResponder); ok {
+			s.SheetSettingsUpdated(entity, true)
 		}
 	}
 }

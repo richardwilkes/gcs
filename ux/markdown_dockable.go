@@ -58,11 +58,8 @@ type MarkdownDockable struct {
 
 // ShowReadOnlyMarkdown attempts to show the given markdown content in a dockable.
 func ShowReadOnlyMarkdown(title, content string) {
-	ws := WorkspaceFromWindowOrAny(nil)
-	if d := ws.LocateFileBackedDockable(markdownContentOnlyPrefix + title); d != nil {
-		dc := unison.Ancestor[*unison.DockContainer](d)
-		dc.SetCurrentDockable(d)
-		dc.AcquireFocus()
+	if d := LocateFileBackedDockable(markdownContentOnlyPrefix + title); d != nil {
+		ActivateDockable(d)
 		return
 	}
 	d, err := NewMarkdownDockableWithContent(title, content, false, false)
@@ -70,7 +67,7 @@ func ShowReadOnlyMarkdown(title, content string) {
 		unison.ErrorDialogWithError(fmt.Sprintf(i18n.Text("Unable to open %s"), title), err)
 		return
 	}
-	DisplayNewDockable(nil, d)
+	DisplayNewDockable(d)
 }
 
 // NewMarkdownDockable creates a new unison.Dockable for markdown files.
@@ -282,9 +279,7 @@ func (d *MarkdownDockable) BackingFilePath() string {
 // SetBackingFilePath implements workspace.FileBackedDockable
 func (d *MarkdownDockable) SetBackingFilePath(p string) {
 	d.path = p
-	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
-		dc.UpdateTitle(d)
-	}
+	UpdateTitleForDockable(d)
 }
 
 // Modified implements workspace.FileBackedDockable
@@ -294,9 +289,7 @@ func (d *MarkdownDockable) Modified() bool {
 
 // MarkModified implements ModifiableRoot.
 func (d *MarkdownDockable) MarkModified(_ unison.Paneler) {
-	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
-		dc.UpdateTitle(d)
-	}
+	UpdateTitleForDockable(d)
 }
 
 // MayAttemptClose implements unison.TabCloser
@@ -317,10 +310,7 @@ func (d *MarkdownDockable) AttemptClose() bool {
 			return false
 		}
 	}
-	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
-		dc.Close(d)
-	}
-	return true
+	return AttemptCloseForDockable(d)
 }
 
 func (d *MarkdownDockable) save(forceSaveAs bool) bool {

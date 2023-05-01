@@ -48,29 +48,29 @@ type librarySettingsDockable struct {
 
 // ShowLibrarySettings the Library Settings view for a specific library.
 func ShowLibrarySettings(lib *gurps.Library) {
-	ws, dc, found := Activate(func(d unison.Dockable) bool {
-		if settingsDockable, ok := d.(*librarySettingsDockable); ok && settingsDockable.library == lib {
+	if Activate(func(d unison.Dockable) bool {
+		if settingsDockable, ok := d.AsPanel().Self.(*librarySettingsDockable); ok && settingsDockable.library == lib {
 			return true
 		}
 		return false
-	})
-	if !found && ws != nil {
-		d := &librarySettingsDockable{
-			library: lib,
-			name:    lib.Title,
-			github:  lib.GitHubAccountName,
-			token:   lib.AccessToken,
-			repo:    lib.RepoName,
-			path:    lib.PathOnDisk,
-			special: lib.IsMaster() || lib.IsUser(),
-		}
-		d.Self = d
-		d.TabTitle = fmt.Sprintf(i18n.Text("Library Settings: %s"), lib.Title)
-		d.TabIcon = svg.Settings
-		d.Setup(ws, dc, d.addToStartToolbar, nil, d.initContent)
-		d.updateToolbar()
-		d.nameField.RequestFocus()
+	}) {
+		return
 	}
+	d := &librarySettingsDockable{
+		library: lib,
+		name:    lib.Title,
+		github:  lib.GitHubAccountName,
+		token:   lib.AccessToken,
+		repo:    lib.RepoName,
+		path:    lib.PathOnDisk,
+		special: lib.IsMaster() || lib.IsUser(),
+	}
+	d.Self = d
+	d.TabTitle = fmt.Sprintf(i18n.Text("Library Settings: %s"), lib.Title)
+	d.TabIcon = svg.Settings
+	d.Setup(d.addToStartToolbar, nil, d.initContent)
+	d.updateToolbar()
+	d.nameField.RequestFocus()
 }
 
 func (d *librarySettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
@@ -267,7 +267,7 @@ func (d *librarySettingsDockable) apply() {
 	if err := d.library.SetPath(d.path); err != nil {
 		unison.ErrorDialogWithError(i18n.Text("Unable to update library location"), err)
 	}
-	WorkspaceFromWindowOrAny(wnd).Navigator.Reload()
+	Workspace.Navigator.Reload()
 	go checkForLibraryUpgrade(d.library)
 }
 

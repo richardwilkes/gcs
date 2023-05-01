@@ -69,7 +69,7 @@ func newFeaturesPanel(entity *gurps.Entity, owner fmt.Stringer, features *gurps.
 		if created := p.createFeatureForType(lastFeatureTypeUsed); created != nil {
 			*features = slices.Insert(*features, 0, created)
 			p.insertFeaturePanel(1, created)
-			unison.Ancestor[*unison.DockContainer](p).MarkForLayoutRecursively()
+			MarkRootAncestorForLayoutRecursively(p)
 			MarkModified(p)
 		}
 	}
@@ -132,7 +132,7 @@ func (p *featuresPanel) createBasePanel(f gurps.Feature) *unison.Panel {
 			*p.features = slices.Delete(*p.features, i, i+1)
 		}
 		panel.RemoveFromParent()
-		unison.Ancestor[*unison.DockContainer](p).MarkForLayoutRecursively()
+		MarkRootAncestorForLayoutRecursively(p)
 		MarkModified(p)
 	}
 	panel.AddChild(deleteButton)
@@ -264,7 +264,7 @@ func (p *featuresPanel) createSkillBonusPanel(f *gurps.SkillBonus) *unison.Panel
 			panel.RemoveChildAtIndex(i + j)
 		}
 		p.createSecondarySkillPanels(panel, i, f)
-		unison.Ancestor[*unison.DockContainer](p).MarkForLayoutRecursively()
+		MarkRootAncestorForLayoutRecursively(p)
 		MarkModified(p)
 	}
 	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", "", i18n.Text("Name Qualifier"), &f.NameCriteria, 1, false)
@@ -427,7 +427,7 @@ func (p *featuresPanel) createWeaponDamageBonusPanel(f *gurps.WeaponBonus) *unis
 			panel.RemoveChildAtIndex(i + j)
 		}
 		p.createSecondaryWeaponPanels(panel, i, f)
-		unison.Ancestor[*unison.DockContainer](p).MarkForLayoutRecursively()
+		MarkRootAncestorForLayoutRecursively(p)
 		MarkModified(p)
 	}
 	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", "", i18n.Text("Name Qualifier"), &f.NameCriteria, 1, false)
@@ -612,7 +612,7 @@ func (p *featuresPanel) addTypeSwitcher(parent *unison.Panel, f gurps.Feature) {
 			i := slices.IndexFunc(list, func(one gurps.Feature) bool { return one == f })
 			list[i] = newFeature
 			p.insertFeaturePanel(i+1, newFeature)
-			unison.Ancestor[*unison.DockContainer](p).MarkForLayoutRecursively()
+			MarkRootAncestorForLayoutRecursively(p)
 			MarkModified(p)
 		}
 	}

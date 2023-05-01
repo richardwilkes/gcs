@@ -246,9 +246,9 @@ func (n *NavigatorNode) Refresh() {
 }
 
 // Open the node.
-func (n *NavigatorNode) Open(wnd *unison.Window) {
+func (n *NavigatorNode) Open() {
 	if n.nodeType == fileNode {
-		OpenFile(wnd, n.Path())
+		OpenFile(n.Path())
 	}
 }
 

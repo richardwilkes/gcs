@@ -69,7 +69,7 @@ func newStudyPanel(entity *gurps.Entity, study *[]*gurps.Study) *studyPanel {
 		def := &gurps.Study{Type: lastStudyTypeUsed}
 		*study = slices.Insert(*study, 0, def)
 		p.insertStudyEntry(1, def, true)
-		unison.Ancestor[*unison.DockContainer](p).MarkForLayoutRecursively()
+		MarkRootAncestorForLayoutRecursively(p)
 		MarkModified(p)
 	}
 	top.AddChild(addButton)
@@ -93,7 +93,7 @@ func (p *studyPanel) insertStudyEntry(index int, entry *gurps.Study, requestFocu
 			*p.study = slices.Delete(*p.study, i, i+1)
 		}
 		panel.RemoveFromParent()
-		unison.Ancestor[*unison.DockContainer](p).MarkForLayoutRecursively()
+		MarkRootAncestorForLayoutRecursively(p)
 		p.updateTotal()
 		MarkModified(p)
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -59,15 +59,11 @@ type Template struct {
 // OpenTemplates returns the currently open templates.
 func OpenTemplates(exclude *Template) []*Template {
 	var templates []*Template
-	ws := WorkspaceFromWindowOrAny(unison.ActiveWindow())
-	ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
-		for _, one := range dc.Dockables() {
-			if template, ok := one.(*Template); ok && template != exclude {
-				templates = append(templates, template)
-			}
+	for _, one := range allDockables() {
+		if template, ok := one.(*Template); ok && template != exclude {
+			templates = append(templates, template)
 		}
-		return false
-	})
+	}
 	return templates
 }
 
@@ -573,9 +569,7 @@ func (d *Template) BackingFilePath() string {
 // SetBackingFilePath implements workspace.FileBackedDockable
 func (d *Template) SetBackingFilePath(p string) {
 	d.path = p
-	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
-		dc.UpdateTitle(d)
-	}
+	UpdateTitleForDockable(d)
 }
 
 // Modified implements workspace.FileBackedDockable
@@ -585,9 +579,7 @@ func (d *Template) Modified() bool {
 
 // MarkModified implements widget.ModifiableRoot.
 func (d *Template) MarkModified(_ unison.Paneler) {
-	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
-		dc.UpdateTitle(d)
-	}
+	UpdateTitleForDockable(d)
 }
 
 // MayAttemptClose implements unison.TabCloser
@@ -611,10 +603,7 @@ func (d *Template) AttemptClose() bool {
 			return false
 		}
 	}
-	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
-		dc.Close(d)
-	}
-	return true
+	return AttemptCloseForDockable(d)
 }
 
 func (d *Template) createContent() unison.Paneler {
@@ -767,9 +756,7 @@ func (d *Template) Rebuild(full bool) {
 		d.createLists()
 	}
 	DeepSync(d)
-	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
-		dc.UpdateTitle(d)
-	}
+	UpdateTitleForDockable(d)
 	d.targetMgr.ReacquireFocus(focusRefKey, d.toolbar, d.scroll.Content())
 	d.scroll.SetPosition(h, v)
 }

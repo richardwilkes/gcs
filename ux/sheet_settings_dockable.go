@@ -57,27 +57,27 @@ type sheetSettingsDockable struct {
 
 // ShowSheetSettings the Sheet Settings. Pass in nil to edit the defaults or a sheet to edit the sheet's.
 func ShowSheetSettings(owner EntityPanel) {
-	ws, dc, found := Activate(func(d unison.Dockable) bool {
-		if s, ok := d.(*sheetSettingsDockable); ok && owner == s.owner {
+	if Activate(func(d unison.Dockable) bool {
+		if s, ok := d.AsPanel().Self.(*sheetSettingsDockable); ok && owner == s.owner {
 			return true
 		}
 		return false
-	})
-	if !found && ws != nil {
-		d := &sheetSettingsDockable{owner: owner}
-		d.Self = d
-		if owner != nil {
-			d.TabTitle = i18n.Text("Sheet Settings: " + owner.Entity().Profile.Name)
-		} else {
-			d.TabTitle = i18n.Text("Default Sheet Settings")
-		}
-		d.TabIcon = svg.Settings
-		d.Extensions = []string{gurps.SheetSettingsExt}
-		d.Loader = d.load
-		d.Saver = d.save
-		d.Resetter = d.reset
-		d.Setup(ws, dc, d.addToStartToolbar, nil, d.initContent)
+	}) {
+		return
 	}
+	d := &sheetSettingsDockable{owner: owner}
+	d.Self = d
+	if owner != nil {
+		d.TabTitle = i18n.Text("Sheet Settings: " + owner.Entity().Profile.Name)
+	} else {
+		d.TabTitle = i18n.Text("Default Sheet Settings")
+	}
+	d.TabIcon = svg.Settings
+	d.Extensions = []string{gurps.SheetSettingsExt}
+	d.Loader = d.load
+	d.Saver = d.save
+	d.Resetter = d.reset
+	d.Setup(d.addToStartToolbar, nil, d.initContent)
 }
 
 func (d *sheetSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
@@ -209,7 +209,7 @@ func (d *sheetSettingsDockable) addCheckBoxWithLink(panel *unison.Panel, title, 
 	label.Text = " ("
 	wrapper.AddChild(label)
 	wrapper.AddChild(unison.NewLink(ref, "", ref, unison.DefaultLinkTheme, func(_ unison.Paneler, _ string) {
-		OpenPageReference(d.Window(), ref, "", nil)
+		OpenPageReference(ref, "", nil)
 	}))
 	label = unison.NewLabel()
 	label.Font = checkbox.Font
@@ -417,20 +417,13 @@ func (d *sheetSettingsDockable) sync() {
 }
 
 func (d *sheetSettingsDockable) syncSheet(full bool) {
-	for _, wnd := range unison.Windows() {
-		if ws := WorkspaceFromWindow(wnd); ws != nil {
-			ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
-				var entity *gurps.Entity
-				if d.owner != nil {
-					entity = d.owner.Entity()
-				}
-				for _, one := range dc.Dockables() {
-					if s, ok := one.(gurps.SheetSettingsResponder); ok {
-						s.SheetSettingsUpdated(entity, full)
-					}
-				}
-				return false
-			})
+	var entity *gurps.Entity
+	if d.owner != nil {
+		entity = d.owner.Entity()
+	}
+	for _, one := range allDockables() {
+		if s, ok := one.(gurps.SheetSettingsResponder); ok {
+			s.SheetSettingsUpdated(entity, full)
 		}
 	}
 }

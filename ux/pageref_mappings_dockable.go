@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -44,10 +44,8 @@ func ExtractPageReferences(s string) []string {
 	return list
 }
 
-// OpenPageReference opens the given page reference in the given window, which should contain a workspace. May pass nil
-// for wnd to let it pick the first such window it discovers. Returns true if the the user asked to cancel further
-// processing.
-func OpenPageReference(wnd *unison.Window, ref, highlight string, promptContext map[string]bool) bool {
+// OpenPageReference opens the given page reference. Returns true if the the user asked to cancel further processing.
+func OpenPageReference(ref, highlight string, promptContext map[string]bool) bool {
 	lowerRef := strings.ToLower(ref)
 	switch {
 	case strings.HasPrefix(lowerRef, "http://") || strings.HasPrefix(lowerRef, "https://"):
@@ -56,23 +54,23 @@ func OpenPageReference(wnd *unison.Window, ref, highlight string, promptContext 
 		}
 		return false
 	case strings.HasPrefix(lowerRef, "md:"):
-		openMarkdownPageReference(wnd, ref)
+		openMarkdownPageReference(ref)
 		return false
 	default:
-		return openPDFPageReference(wnd, ref, highlight, promptContext)
+		return openPDFPageReference(ref, highlight, promptContext)
 	}
 }
 
-func openMarkdownPageReference(wnd *unison.Window, ref string) {
+func openMarkdownPageReference(ref string) {
 	ref = ref[3:]
 	if ref != "" {
-		if !strings.HasSuffix(strings.ToLower(ref), ".md") {
-			ref += ".md"
+		if !strings.HasSuffix(strings.ToLower(ref), gurps.MarkdownExt) {
+			ref += gurps.MarkdownExt
 		}
 		for _, lib := range gurps.GlobalSettings().LibrarySet.List() {
 			filePath := filepath.Join(lib.Path(), "Markdown", ref)
 			if xfs.FileIsReadable(filePath) {
-				OpenFile(wnd, filePath)
+				OpenFile(filePath)
 				return
 			}
 		}
@@ -80,7 +78,7 @@ func openMarkdownPageReference(wnd *unison.Window, ref string) {
 	unison.ErrorDialogWithMessage(i18n.Text("Unable to open markdown"), ref+"\n"+i18n.Text("does not exist in the Markdown directory in any library."))
 }
 
-func openPDFPageReference(wnd *unison.Window, ref, highlight string, promptContext map[string]bool) bool {
+func openPDFPageReference(ref, highlight string, promptContext map[string]bool) bool {
 	if promptContext == nil {
 		promptContext = make(map[string]bool)
 	}
@@ -119,7 +117,7 @@ Would you like to create one by choosing a PDF to map to this key?`), key), pdfN
 		}
 		if pageRef != nil {
 			if strings.TrimSpace(s.General.ExternalPDFCmdLine) == "" {
-				if d, wasOpen := OpenFile(wnd, pageRef.Path); d != nil {
+				if d, wasOpen := OpenFile(pageRef.Path); d != nil {
 					if pdfDockable, ok := d.(*PDFDockable); ok {
 						pdfDockable.SetSearchText(highlight)
 						pdfDockable.LoadPage(page + pageRef.Offset - 1) // The pdf package uses 0 for the first page, not 1
@@ -184,40 +182,33 @@ func askUserForPageRefPath(key string, offset int) *gurps.PageRef {
 
 // RefreshPageRefMappingsView causes the Page References Mappings view to be refreshed if it is open.
 func RefreshPageRefMappingsView() {
-	ws := AnyWorkspace()
-	if ws == nil {
-		return
-	}
-	ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(container *unison.DockContainer) bool {
-		for _, one := range container.Dockables() {
-			if d, ok := one.(*pageRefMappingsDockable); ok {
-				d.sync()
-				return true
-			}
+	for _, one := range allDockables() {
+		if d, ok := one.(*pageRefMappingsDockable); ok {
+			d.sync()
+			break
 		}
-		return false
-	})
+	}
 }
 
 // ShowPageRefMappings shows the Page Reference Mappings.
 func ShowPageRefMappings() {
-	ws, dc, found := Activate(func(d unison.Dockable) bool {
-		_, ok := d.(*pageRefMappingsDockable)
+	if Activate(func(d unison.Dockable) bool {
+		_, ok := d.AsPanel().Self.(*pageRefMappingsDockable)
 		return ok
-	})
-	if !found && ws != nil {
-		d := &pageRefMappingsDockable{}
-		d.Self = d
-		d.TabTitle = i18n.Text("Page Reference Mappings")
-		d.TabIcon = svg.Settings
-		d.Extensions = []string{gurps.PageRefSettingsExt}
-		d.Loader = d.load
-		d.Saver = d.save
-		d.Resetter = d.reset
-		d.Setup(ws, dc, d.addToStartToolbar, nil, d.initContent)
-		if len(d.content.Children()) > 1 {
-			d.content.Children()[1].RequestFocus()
-		}
+	}) {
+		return
+	}
+	d := &pageRefMappingsDockable{}
+	d.Self = d
+	d.TabTitle = i18n.Text("Page Reference Mappings")
+	d.TabIcon = svg.Settings
+	d.Extensions = []string{gurps.PageRefSettingsExt}
+	d.Loader = d.load
+	d.Saver = d.save
+	d.Resetter = d.reset
+	d.Setup(d.addToStartToolbar, nil, d.initContent)
+	if len(d.content.Children()) > 1 {
+		d.content.Children()[1].RequestFocus()
 	}
 }
 

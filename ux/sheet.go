@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -94,15 +94,11 @@ func ActiveSheet() *Sheet {
 // OpenSheets returns the currently open sheets.
 func OpenSheets(exclude *Sheet) []*Sheet {
 	var sheets []*Sheet
-	ws := WorkspaceFromWindowOrAny(unison.ActiveWindow())
-	ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
-		for _, one := range dc.Dockables() {
-			if sheet, ok := one.(*Sheet); ok && sheet != exclude {
-				sheets = append(sheets, sheet)
-			}
+	for _, d := range allDockables() {
+		if sheet, ok := d.(*Sheet); ok && sheet != exclude {
+			sheets = append(sheets, sheet)
 		}
-		return false
-	})
+	}
 	return sheets
 }
 
@@ -397,9 +393,7 @@ func (s *Sheet) BackingFilePath() string {
 // SetBackingFilePath implements workspace.FileBackedDockable
 func (s *Sheet) SetBackingFilePath(p string) {
 	s.path = p
-	if dc := unison.Ancestor[*unison.DockContainer](s); dc != nil {
-		dc.UpdateTitle(s)
-	}
+	UpdateTitleForDockable(s)
 }
 
 // Modified implements workspace.FileBackedDockable
@@ -425,9 +419,7 @@ func (s *Sheet) MarkModified(src unison.Paneler) {
 		if !skipDeepSync {
 			DeepSync(s)
 		}
-		if dc := unison.Ancestor[*unison.DockContainer](s); dc != nil {
-			dc.UpdateTitle(s)
-		}
+		UpdateTitleForDockable(s)
 		s.awaitingUpdate = false
 		s.targetMgr.ReacquireFocus(focusRefKey, s.toolbar, s.scroll.Content())
 		s.scroll.SetPosition(h, v)
@@ -456,10 +448,7 @@ func (s *Sheet) AttemptClose() bool {
 			return false
 		}
 	}
-	if dc := unison.Ancestor[*unison.DockContainer](s); dc != nil {
-		dc.Close(s)
-	}
-	return true
+	return AttemptCloseForDockable(s)
 }
 
 func (s *Sheet) save(forceSaveAs bool) bool {
@@ -484,7 +473,7 @@ func (s *Sheet) print() {
 		unison.ErrorDialogWithError(i18n.Text("Unable to create PDF!"), err)
 		return
 	}
-	dialog := AnyWorkspace().PrintMgr.NewJobDialog(printing.PrinterID{}, "application/pdf", nil)
+	dialog := Workspace.PrintMgr.NewJobDialog(printing.PrinterID{}, "application/pdf", nil)
 	if dialog.RunModal() {
 		go backgroundPrint(s.entity.Profile.Name, dialog.Printer(), dialog.JobAttributes(), data)
 	}
@@ -749,9 +738,7 @@ func (s *Sheet) Rebuild(full bool) {
 		s.createLists()
 	}
 	DeepSync(s)
-	if dc := unison.Ancestor[*unison.DockContainer](s); dc != nil {
-		dc.UpdateTitle(s)
-	}
+	UpdateTitleForDockable(s)
 	s.targetMgr.ReacquireFocus(focusRefKey, s.toolbar, s.scroll.Content())
 	s.scroll.SetPosition(h, v)
 	UpdateCalculator(s)

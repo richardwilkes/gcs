@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -58,23 +58,23 @@ type generalSettingsDockable struct {
 
 // ShowGeneralSettings the General Settings window.
 func ShowGeneralSettings() {
-	ws, dc, found := Activate(func(d unison.Dockable) bool {
-		_, ok := d.(*generalSettingsDockable)
+	if Activate(func(d unison.Dockable) bool {
+		_, ok := d.AsPanel().Self.(*generalSettingsDockable)
 		return ok
-	})
-	if !found && ws != nil {
-		d := &generalSettingsDockable{}
-		d.Self = d
-		d.TabTitle = i18n.Text("General Settings")
-		d.TabIcon = svg.Settings
-		d.Extensions = []string{gurps.GeneralSettingsExt}
-		d.Loader = d.load
-		d.Saver = d.save
-		d.Resetter = d.reset
-		d.WillCloseCallback = d.willClose
-		d.Setup(ws, dc, d.addToStartToolbar, nil, d.initContent)
-		d.nameField.RequestFocus()
+	}) {
+		return
 	}
+	d := &generalSettingsDockable{}
+	d.Self = d
+	d.TabTitle = i18n.Text("General Settings")
+	d.TabIcon = svg.Settings
+	d.Extensions = []string{gurps.GeneralSettingsExt}
+	d.Loader = d.load
+	d.Saver = d.save
+	d.Resetter = d.reset
+	d.WillCloseCallback = d.willClose
+	d.Setup(d.addToStartToolbar, nil, d.initContent)
+	d.nameField.RequestFocus()
 }
 
 func (d *generalSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
@@ -350,24 +350,25 @@ func (d *generalSettingsDockable) reset() {
 }
 
 func (d *generalSettingsDockable) sync() {
-	s := gurps.GlobalSettings().General
-	d.nameField.SetText(s.DefaultPlayerName)
-	SetCheckBoxState(d.autoFillProfileCheckbox, s.AutoFillProfile)
-	SetCheckBoxState(d.groupContainersOnSortCheckbox, s.GroupContainersOnSort)
-	SetCheckBoxState(d.autoAddNaturalAttacksCheckbox, s.AutoAddNaturalAttacks)
-	d.pointsField.SetText(s.InitialPoints.String())
-	d.techLevelField.SetText(s.DefaultTechLevel)
-	d.calendarPopup.Select(s.CalendarRef(gurps.GlobalSettings().Libraries()).Name)
-	SetFieldValue(d.initialListScaleField.Field, d.initialListScaleField.Format(s.InitialListUIScale))
-	SetFieldValue(d.initialEditorScaleField.Field, d.initialEditorScaleField.Format(s.InitialEditorUIScale))
-	SetFieldValue(d.initialSheetScaleField.Field, d.initialSheetScaleField.Format(s.InitialSheetUIScale))
-	d.maxAutoColWidthField.SetText(strconv.Itoa(s.MaximumAutoColWidth))
-	d.monitorResolutionField.SetText(strconv.Itoa(s.MonitorResolution))
-	d.exportResolutionField.SetText(strconv.Itoa(s.ImageResolution))
-	d.tooltipDelayField.SetText(s.TooltipDelay.String())
-	d.tooltipDismissalField.SetText(s.TooltipDismissal.String())
-	d.scrollWheelMultiplierField.SetText(s.ScrollWheelMultiplier.String())
-	SetFieldValue(d.externalPDFCmdlineField.Field, s.ExternalPDFCmdLine)
+	s := gurps.GlobalSettings()
+	gs := s.General
+	d.nameField.SetText(gs.DefaultPlayerName)
+	SetCheckBoxState(d.autoFillProfileCheckbox, gs.AutoFillProfile)
+	SetCheckBoxState(d.groupContainersOnSortCheckbox, gs.GroupContainersOnSort)
+	SetCheckBoxState(d.autoAddNaturalAttacksCheckbox, gs.AutoAddNaturalAttacks)
+	d.pointsField.SetText(gs.InitialPoints.String())
+	d.techLevelField.SetText(gs.DefaultTechLevel)
+	d.calendarPopup.Select(gs.CalendarRef(s.Libraries()).Name)
+	SetFieldValue(d.initialListScaleField.Field, d.initialListScaleField.Format(gs.InitialListUIScale))
+	SetFieldValue(d.initialEditorScaleField.Field, d.initialEditorScaleField.Format(gs.InitialEditorUIScale))
+	SetFieldValue(d.initialSheetScaleField.Field, d.initialSheetScaleField.Format(gs.InitialSheetUIScale))
+	d.maxAutoColWidthField.SetText(strconv.Itoa(gs.MaximumAutoColWidth))
+	d.monitorResolutionField.SetText(strconv.Itoa(gs.MonitorResolution))
+	d.exportResolutionField.SetText(strconv.Itoa(gs.ImageResolution))
+	d.tooltipDelayField.SetText(gs.TooltipDelay.String())
+	d.tooltipDismissalField.SetText(gs.TooltipDismissal.String())
+	d.scrollWheelMultiplierField.SetText(gs.ScrollWheelMultiplier.String())
+	SetFieldValue(d.externalPDFCmdlineField.Field, gs.ExternalPDFCmdLine)
 	SetFieldValue(d.localeField.Field, languageSetting)
 	d.MarkForRedraw()
 }

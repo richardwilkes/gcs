@@ -43,7 +43,7 @@ func Start(files []string) {
 			wnd, err := unison.NewWindow(cmdline.AppName)
 			jot.FatalIfErr(err)
 			SetupMenuBar(wnd)
-			NewWorkspace(wnd)
+			InitWorkspace(wnd)
 			OpenFiles(files)
 			go func() {
 				for paths := range pathsChan {

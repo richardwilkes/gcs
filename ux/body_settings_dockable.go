@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -45,39 +45,39 @@ type bodySettingsDockable struct {
 
 // ShowBodySettings the Body Settings. Pass in nil to edit the defaults or a sheet to edit the sheet's.
 func ShowBodySettings(owner EntityPanel) {
-	ws, dc, found := Activate(func(d unison.Dockable) bool {
-		if s, ok := d.(*bodySettingsDockable); ok && owner == s.owner {
+	if Activate(func(d unison.Dockable) bool {
+		if s, ok := d.AsPanel().Self.(*bodySettingsDockable); ok && owner == s.owner {
 			return true
 		}
 		return false
-	})
-	if !found && ws != nil {
-		d := &bodySettingsDockable{
-			owner:         owner,
-			promptForSave: true,
-		}
-		d.Self = d
-		d.targetMgr = NewTargetMgr(d)
-		if owner != nil {
-			entity := d.owner.Entity()
-			d.body = entity.SheetSettings.BodyType.Clone(entity, nil)
-			d.TabTitle = i18n.Text("Body Type: " + owner.Entity().Profile.Name)
-		} else {
-			d.body = gurps.GlobalSettings().Sheet.BodyType.Clone(nil, nil)
-			d.TabTitle = i18n.Text("Default Body Type")
-		}
-		d.TabIcon = svg.BodyType
-		d.body.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
-		d.originalCRC = d.body.CRC64()
-		d.Extensions = []string{gurps.BodyExt, gurps.BodyExtAlt}
-		d.undoMgr = unison.NewUndoManager(100, func(err error) { jot.Error(err) })
-		d.Loader = d.load
-		d.Saver = d.save
-		d.Resetter = d.reset
-		d.ModifiedCallback = d.modified
-		d.WillCloseCallback = d.willClose
-		d.Setup(ws, dc, d.addToStartToolbar, nil, d.initContent)
+	}) {
+		return
 	}
+	d := &bodySettingsDockable{
+		owner:         owner,
+		promptForSave: true,
+	}
+	d.Self = d
+	d.targetMgr = NewTargetMgr(d)
+	if owner != nil {
+		entity := d.owner.Entity()
+		d.body = entity.SheetSettings.BodyType.Clone(entity, nil)
+		d.TabTitle = i18n.Text("Body Type: " + owner.Entity().Profile.Name)
+	} else {
+		d.body = gurps.GlobalSettings().Sheet.BodyType.Clone(nil, nil)
+		d.TabTitle = i18n.Text("Default Body Type")
+	}
+	d.TabIcon = svg.BodyType
+	d.body.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
+	d.originalCRC = d.body.CRC64()
+	d.Extensions = []string{gurps.BodyExt, gurps.BodyExtAlt}
+	d.undoMgr = unison.NewUndoManager(100, func(err error) { jot.Error(err) })
+	d.Loader = d.load
+	d.Saver = d.save
+	d.Resetter = d.reset
+	d.ModifiedCallback = d.modified
+	d.WillCloseCallback = d.willClose
+	d.Setup(d.addToStartToolbar, nil, d.initContent)
 }
 
 func (d *bodySettingsDockable) UndoManager() *unison.UndoManager {
@@ -226,16 +226,9 @@ func (d *bodySettingsDockable) apply() {
 	}
 	entity := d.owner.Entity()
 	entity.SheetSettings.BodyType = d.body.Clone(entity, nil)
-	for _, wnd := range unison.Windows() {
-		if ws := WorkspaceFromWindow(wnd); ws != nil {
-			ws.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
-				for _, one := range dc.Dockables() {
-					if s, ok := one.(gurps.SheetSettingsResponder); ok {
-						s.SheetSettingsUpdated(entity, true)
-					}
-				}
-				return false
-			})
+	for _, one := range allDockables() {
+		if s, ok := one.(gurps.SheetSettingsResponder); ok {
+			s.SheetSettingsUpdated(entity, true)
 		}
 	}
 }

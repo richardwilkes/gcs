@@ -30,8 +30,6 @@ const (
 	ListDockableKind     = "list"
 )
 
-const settingsGroup = "settings"
-
 var (
 	_ unison.Dockable  = &SettingsDockable{}
 	_ unison.TabCloser = &SettingsDockable{}
@@ -51,7 +49,7 @@ type SettingsDockable struct {
 }
 
 // Setup the dockable and display it.
-func (d *SettingsDockable) Setup(ws *Workspace, dc *unison.DockContainer, addToStartToolbar, addToEndToolbar, initContent func(*unison.Panel)) {
+func (d *SettingsDockable) Setup(addToStartToolbar, addToEndToolbar, initContent func(*unison.Panel)) {
 	d.SetLayout(&unison.FlexLayout{Columns: 1})
 	toolbar := d.createToolbar(addToStartToolbar, addToEndToolbar)
 	d.AddChild(toolbar)
@@ -67,7 +65,7 @@ func (d *SettingsDockable) Setup(ws *Workspace, dc *unison.DockContainer, addToS
 		VGrab:  true,
 	})
 	d.AddChild(scroller)
-	PlaceInDock(ws, dc, d, settingsGroup)
+	PlaceInDock(d, gurps.SettingsDockableGroup)
 	FocusFirstContent(toolbar, content)
 }
 
@@ -100,9 +98,7 @@ func (d *SettingsDockable) Modified() bool {
 // MarkModified implements widget.ModifiableRoot
 func (d *SettingsDockable) MarkModified(_ unison.Paneler) {
 	d.Modified()
-	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
-		dc.UpdateTitle(d)
-	}
+	UpdateTitleForDockable(d)
 	DeepSync(d)
 }
 
@@ -121,10 +117,7 @@ func (d *SettingsDockable) AttemptClose() bool {
 			return false
 		}
 	}
-	if dc := unison.Ancestor[*unison.DockContainer](d); dc != nil {
-		dc.Close(d)
-	}
-	return true
+	return AttemptCloseForDockable(d)
 }
 
 func (d *SettingsDockable) createToolbar(addToStartToolbar, addToEndToolbar func(*unison.Panel)) *unison.Panel {

@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -47,6 +47,7 @@ var (
 	defaultAttributeSettingsAction      *unison.Action
 	defaultBodyTypeSettingsAction       *unison.Action
 	defaultSheetSettingsAction          *unison.Action
+	dockUnDockAction                    *unison.Action
 	duplicateAction                     *unison.Action
 	exportAsJPEGAction                  *unison.Action
 	exportAsPDFAction                   *unison.Action
@@ -165,14 +166,12 @@ func registerActions() {
 		KeyBinding: unison.KeyBinding{KeyCode: unison.KeyW, Modifiers: unison.OSMenuCmdModifier()},
 		EnabledCallback: func(_ *unison.Action, _ any) bool {
 			if wnd := unison.ActiveWindow(); wnd != nil {
-				if WorkspaceFromWindow(wnd) == nil {
+				if Workspace.Window != wnd {
 					return true // not the workspace, so allow regular window close
 				}
-				if dc := unison.Ancestor[*unison.DockContainer](wnd.Focus()); dc != nil {
-					if current := dc.CurrentDockable(); current != nil {
-						if _, ok := current.(unison.TabCloser); ok {
-							return true
-						}
+				if d := unison.Ancestor[unison.Dockable](wnd.Focus()); d != nil {
+					if _, ok := d.AsPanel().Self.(unison.TabCloser); ok {
+						return true
 					}
 				}
 			}
@@ -180,14 +179,12 @@ func registerActions() {
 		},
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			if wnd := unison.ActiveWindow(); wnd != nil {
-				if WorkspaceFromWindow(wnd) == nil {
+				if Workspace.Window != wnd {
 					// not the workspace, so allow regular window close
 					wnd.AttemptClose()
-				} else if dc := unison.Ancestor[*unison.DockContainer](wnd.Focus()); dc != nil {
-					if current := dc.CurrentDockable(); current != nil {
-						if closer, ok := current.(unison.TabCloser); ok {
-							closer.AttemptClose()
-						}
+				} else if d := unison.Ancestor[unison.Dockable](wnd.Focus()); d != nil {
+					if closer, ok := d.AsPanel().Self.(unison.TabCloser); ok {
+						closer.AttemptClose()
 					}
 				}
 			}
@@ -267,6 +264,13 @@ func registerActions() {
 		Title:           i18n.Text("Default Sheet Settings…"),
 		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyComma, Modifiers: unison.OSMenuCmdModifier()},
 		ExecuteCallback: func(_ *unison.Action, _ any) { ShowSheetSettings(nil) },
+	})
+	dockUnDockAction = registerKeyBindableAction("dock_undock", &unison.Action{
+		ID:              DockUnDockItemID,
+		Title:           i18n.Text("Undock From Workspace"),
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeySlash, Modifiers: unison.OptionModifier | unison.OSMenuCmdModifier()},
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	duplicateAction = registerKeyBindableAction("duplicate", &unison.Action{
 		ID:              DuplicateItemID,
@@ -363,14 +367,14 @@ func registerActions() {
 		KeyBinding: unison.KeyBinding{KeyCode: unison.KeyN, Modifiers: unison.OSMenuCmdModifier()},
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			entity := gurps.NewEntity(gurps.PC)
-			DisplayNewDockable(nil, NewSheet(entity.Profile.Name+gurps.SheetExt, entity))
+			DisplayNewDockable(NewSheet(entity.Profile.Name+gurps.SheetExt, entity))
 		},
 	})
 	newCharacterTemplateAction = registerKeyBindableAction("new.char.template", &unison.Action{
 		ID:    NewTemplateItemID,
 		Title: i18n.Text("New Character Template"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			DisplayNewDockable(nil, NewTemplate("untitled"+gurps.TemplatesExt, gurps.NewTemplate()))
+			DisplayNewDockable(NewTemplate("untitled"+gurps.TemplatesExt, gurps.NewTemplate()))
 		},
 	})
 	newEquipmentContainerModifierAction = registerKeyBindableAction("new.eqm.container", &unison.Action{
@@ -384,7 +388,7 @@ func registerActions() {
 		ID:    NewEquipmentLibraryItemID,
 		Title: i18n.Text("New Equipment Library"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			DisplayNewDockable(nil, NewEquipmentTableDockable("Equipment"+gurps.EquipmentExt, nil))
+			DisplayNewDockable(NewEquipmentTableDockable("Equipment"+gurps.EquipmentExt, nil))
 		},
 	})
 	newEquipmentModifierAction = registerKeyBindableAction("new.eqm", &unison.Action{
@@ -398,8 +402,7 @@ func registerActions() {
 		ID:    NewEquipmentModifiersLibraryItemID,
 		Title: i18n.Text("New Equipment Modifiers Library"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			DisplayNewDockable(nil,
-				NewEquipmentModifierTableDockable("Equipment Modifiers"+gurps.EquipmentModifiersExt, nil))
+			DisplayNewDockable(NewEquipmentModifierTableDockable("Equipment Modifiers"+gurps.EquipmentModifiersExt, nil))
 		},
 	})
 	newMarkdownFileAction = registerKeyBindableAction("new.markdown", &unison.Action{
@@ -410,7 +413,7 @@ func registerActions() {
 			if err != nil {
 				unison.ErrorDialogWithError(i18n.Text("Unable to create new markdown file"), err)
 			} else {
-				DisplayNewDockable(nil, d)
+				DisplayNewDockable(d)
 			}
 		},
 	})
@@ -439,7 +442,7 @@ func registerActions() {
 		ID:    NewNotesLibraryItemID,
 		Title: i18n.Text("New Notes Library"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			DisplayNewDockable(nil, NewNoteTableDockable("Notes"+gurps.NotesExt, nil))
+			DisplayNewDockable(NewNoteTableDockable("Notes"+gurps.NotesExt, nil))
 		},
 	})
 	newOtherEquipmentAction = registerKeyBindableAction("new.eqp.other", &unison.Action{
@@ -488,7 +491,7 @@ func registerActions() {
 		ID:    NewSkillsLibraryItemID,
 		Title: i18n.Text("New Skills Library"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			DisplayNewDockable(nil, NewSkillTableDockable("Skills"+gurps.SkillsExt, nil))
+			DisplayNewDockable(NewSkillTableDockable("Skills"+gurps.SkillsExt, nil))
 		},
 	})
 	newSpellAction = registerKeyBindableAction("new.spl", &unison.Action{
@@ -509,7 +512,7 @@ func registerActions() {
 		ID:    NewSpellsLibraryItemID,
 		Title: i18n.Text("New Spells Library"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			DisplayNewDockable(nil, NewSpellTableDockable("Spells"+gurps.SpellsExt, nil))
+			DisplayNewDockable(NewSpellTableDockable("Spells"+gurps.SpellsExt, nil))
 		},
 	})
 	newTechniqueAction = registerKeyBindableAction("new.skl.technique", &unison.Action{
@@ -551,15 +554,14 @@ func registerActions() {
 		ID:    NewTraitModifiersLibraryItemID,
 		Title: i18n.Text("New Trait Modifiers Library"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			DisplayNewDockable(nil,
-				NewTraitModifierTableDockable("Trait Modifiers"+gurps.TraitModifiersExt, nil))
+			DisplayNewDockable(NewTraitModifierTableDockable("Trait Modifiers"+gurps.TraitModifiersExt, nil))
 		},
 	})
 	newTraitsLibraryAction = registerKeyBindableAction("new.adq.lib", &unison.Action{
 		ID:    NewTraitsLibraryItemID,
 		Title: i18n.Text("New Traits Library"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			DisplayNewDockable(nil, NewTraitTableDockable("Traits"+gurps.TraitsExt, nil))
+			DisplayNewDockable(NewTraitTableDockable("Traits"+gurps.TraitsExt, nil))
 		},
 	})
 	openAction = registerKeyBindableAction("open", &unison.Action{
