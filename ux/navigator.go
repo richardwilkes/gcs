@@ -977,6 +977,10 @@ func OpenFile(filePath string) (dockable unison.Dockable, wasOpen bool) {
 	if fi.IsSpecial {
 		return nil, false
 	}
+	if fi.IsPDF && strings.TrimSpace(gurps.GlobalSettings().General.ExternalPDFCmdLine) != "" {
+		openExternalPDF(filePath, 1)
+		return nil, false
+	}
 	var d unison.Dockable
 	if d, err = fi.Load(filePath); err != nil {
 		unison.ErrorDialogWithError(i18n.Text("Unable to open file"), err)
