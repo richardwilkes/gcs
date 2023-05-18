@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -112,7 +112,12 @@ var PageRefKeyNameMappings = map[string]string{
 	"DFT4:":   "Dungeon Fantasy Treasures 4: Mixed Blessings",
 	"DFX":     "Dungeon Fantasy RPG: Exploits",
 	"DH":      "Disasters: Hurricane",
+	"DL":      "Deadlands: Weird West (3E)",
+	"DLH":     "Deadlands: Hexes (3E)",
+	"DLV":     "Deadlands: Varmints (3E)",
 	"DMF":     "Disasters: Meltdown and Fallout",
+	"DN1:":    "Deadlands: Dime Novel 1 - Aces and Eights (3E)",
+	"DN2:":    "Deadlands: Dime Novel 2 - Wanted: Undead or Alive (3E)",
 	"DR":      "Dragons",
 	"DTG":     "Delvers To Grow",
 	"DW":      "Discworld Roleplaying Game",
@@ -214,6 +219,8 @@ var PageRefKeyNameMappings = map[string]string{
 	"PU8:":    "Power-Ups 8: Limitations",
 	"PU9:":    "Power-Ups 9: Alternate Attributes",
 	"PW":      "Powers: The Weird",
+	"PY#:":    "Pyramid 3 issues (replace # with the issue number, but leave out the leading \"3-\")",
+	"PY4-#:":  "Pyramid 4 issues (replace # with the issue number)",
 	"PYDC":    "Pyramid Dungeon Collection",
 	"RM":      "Realm Management",
 	"ROM":     "Romulans",
@@ -244,6 +251,7 @@ var PageRefKeyNameMappings = map[string]string{
 	"TAB":     "Thaumatology: Alchemical Baroque",
 	"TAG":     "Thaumatology: Age of Gold",
 	"TCEP":    "Thaumatology: Chinese Elemental Powers",
+	"THS":     "Transhuman Space",
 	"THSBB":   "Transhuman Space: Bioroid Bazaar",
 	"THSBT":   "Transhuman Space: Bio-Tech 2100",
 	"THSCE":   "Transhuman Space: Cities on the Edge",
@@ -259,6 +267,8 @@ var PageRefKeyNameMappings = map[string]string{
 	"THSTN2:": "Transhuman Space: Teralogos News - 2101, First Quarter",
 	"THSTN3:": "Transhuman Space: Teralogos News - 2101, Second Quarter",
 	"THSTN4:": "Transhuman Space: Teralogos News - 2101, Third Quarter",
+	"THSTX":   "Transhuman Space: Toxic Memes",
+	"THSUP":   "Transhuman Space: Under Pressure",
 	"THSWRS":  "Transhuman Space: Wings of the Rising Sun",
 	"TIW:":    "Traveller: Interstellar Wars",
 	"TMS":     "Thaumatology: Magical Styles",
