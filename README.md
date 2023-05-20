@@ -1,4 +1,3 @@
-[![Go Reference](https://pkg.go.dev/badge/github.com/richardwilkes/gcs.svg)](https://pkg.go.dev/github.com/richardwilkes/gcs)
 ![GitHub all releases](https://img.shields.io/github/downloads/richardwilkes/gcs/total?style=plastic)
 
 # GURPS Character Sheet
