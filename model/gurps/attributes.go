@@ -16,9 +16,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/json"
+	"github.com/richardwilkes/toolbox/xmath/crc"
 )
 
 // Attributes holds a set of Attribute objects.

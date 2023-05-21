@@ -12,9 +12,9 @@
 package gurps
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/json"
+	"github.com/richardwilkes/toolbox/xmath/crc"
 )
 
 // AttributeData holds the Attribute data that is written to disk.

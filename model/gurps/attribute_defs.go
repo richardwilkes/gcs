@@ -17,11 +17,11 @@ import (
 	"io/fs"
 	"sort"
 
-	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/log/jot"
+	"github.com/richardwilkes/toolbox/xmath/crc"
 )
 
 const attributeSettingsListTypeKey = "attribute_settings"

@@ -14,10 +14,10 @@ package gurps
 import (
 	"bytes"
 
-	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/eval"
+	"github.com/richardwilkes/toolbox/xmath/crc"
 	"golang.org/x/exp/slices"
 )
 

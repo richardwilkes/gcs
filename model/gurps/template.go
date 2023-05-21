@@ -17,9 +17,9 @@ import (
 	"io/fs"
 
 	"github.com/google/uuid"
-	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/xmath/crc"
 )
 
 const templateTypeKey = "template"

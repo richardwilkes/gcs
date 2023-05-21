@@ -15,10 +15,10 @@ import (
 	"bytes"
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/crc"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/eval"
+	"github.com/richardwilkes/toolbox/xmath/crc"
 )
 
 // ReservedIDs holds a list of IDs that are reserved for internal use.
