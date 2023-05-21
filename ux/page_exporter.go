@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -234,7 +234,7 @@ func (p *pageExporter) exportAsPDFFile(filePath string) error {
 func (p *pageExporter) exportAsPDF(stream unison.Stream) error {
 	savedColorMode := p.saveTheme()
 	defer p.restoreTheme(savedColorMode)
-	if err := unison.CreatePDF(stream, &unison.PDFMetaData{
+	return unison.CreatePDF(stream, &unison.PDFMetaData{
 		Title:           p.entity.Profile.Name,
 		Author:          toolbox.CurrentUserName(),
 		Subject:         p.entity.Profile.Name,
@@ -242,10 +242,7 @@ func (p *pageExporter) exportAsPDF(stream unison.Stream) error {
 		Creator:         "GCS",
 		RasterDPI:       300,
 		EncodingQuality: 101,
-	}, p); err != nil {
-		return err
-	}
-	return nil
+	}, p)
 }
 
 func (p *pageExporter) exportAsPNGs(filePathBase string) error {
