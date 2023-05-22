@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -190,6 +190,7 @@ func (f *NumericField[T]) setWithoutUndo(state *unison.FieldState, focus bool) {
 	if focus {
 		f.RequestFocus()
 	}
+	f.Validate()
 }
 
 // Sync the field to the current value.
