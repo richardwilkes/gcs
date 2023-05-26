@@ -152,7 +152,7 @@ func DisplayCalculator(sheet *Sheet) {
 		}
 		p = p.Parent()
 	}
-	PlaceInDock(c, group)
+	PlaceInDock(c, group, false)
 	c.content.RequestFocus()
 }
 

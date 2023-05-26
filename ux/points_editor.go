@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -118,7 +118,7 @@ func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 	e.ClientData()[AssociatedUUIDKey] = e.entity.ID
 	e.promptForSave = true
 	scroller.Content().AsPanel().ValidateScrollRoot()
-	PlaceInDock(e, gurps.EditorsDockableGroup)
+	PlaceInDock(e, gurps.EditorsDockableGroup, false)
 	if children := e.content.Children(); len(children) != 0 {
 		children[3].RequestFocus()
 	}

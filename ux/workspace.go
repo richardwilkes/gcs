@@ -238,9 +238,9 @@ func LocateDockContainerForExtension(ext ...string) *unison.DockContainer {
 
 // PlaceInDock places the Dockable into the workspace document dock, grouped with the provided group, if that group is
 // present.
-func PlaceInDock(dockable unison.Dockable, group gurps.DockableGroup) {
+func PlaceInDock(dockable unison.Dockable, group gurps.DockableGroup, forceIntoDock bool) {
 	InstallDockUndockCmd(dockable)
-	if slices.Contains(gurps.GlobalSettings().OpenInWindow, group) {
+	if !forceIntoDock && slices.Contains(gurps.GlobalSettings().OpenInWindow, group) {
 		if _, err := NewWindowForDockable(dockable, group); err != nil {
 			jot.Error(err)
 		}
@@ -284,7 +284,7 @@ func MoveDockableToWorkspace(dockable unison.Dockable) {
 	if !ok {
 		group = gurps.EditorsDockableGroup // Arbitrary
 	}
-	PlaceInDock(dockable, group)
+	PlaceInDock(dockable, group, true)
 }
 
 // MoveDockableToWindow closes the tab a dockable is in within the workspace and opens a windows for it instead. If
