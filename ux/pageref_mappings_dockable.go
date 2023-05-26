@@ -323,7 +323,7 @@ func (d *pageRefMappingsDockable) createTrashField(ref *gurps.PageRef) {
 			gurps.GlobalSettings().PageRefs.Remove(ref.ID)
 			parent := b.Parent()
 			index := parent.IndexOfChild(b)
-			for i := index; i > index-4; i-- {
+			for i := index; i > index-5; i-- {
 				parent.RemoveChildAtIndex(i)
 			}
 			parent.MarkForLayoutAndRedraw()
