@@ -353,6 +353,11 @@ func (s *Skill) TagList() []string {
 	return s.Tags
 }
 
+// RatedStrength always return 0 for skills.
+func (s *Skill) RatedStrength() fxp.Int {
+	return 0
+}
+
 // Description implements WeaponOwner.
 func (s *Skill) Description() string {
 	return s.String()

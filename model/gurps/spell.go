@@ -628,6 +628,11 @@ func (s *Spell) TagList() []string {
 	return s.Tags
 }
 
+// RatedStrength always return 0 for spells.
+func (s *Spell) RatedStrength() fxp.Int {
+	return 0
+}
+
 // Description implements WeaponOwner.
 func (s *Spell) Description() string {
 	return s.String()

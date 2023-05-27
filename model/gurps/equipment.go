@@ -290,6 +290,10 @@ func (e *Equipment) Description() string {
 // SecondaryText returns the "secondary" text: the text display below the description.
 func (e *Equipment) SecondaryText(optionChecker func(DisplayOption) bool) string {
 	var buffer strings.Builder
+	if e.RatedST != 0 {
+		buffer.WriteString(i18n.Text("Rated ST "))
+		buffer.WriteString(e.RatedST.String())
+	}
 	settings := SheetSettingsFor(e.Entity)
 	if optionChecker(settings.ModifiersDisplay) {
 		if notes := e.ModifierNotes(); notes != "" {
@@ -326,6 +330,11 @@ func (e *Equipment) FeatureList() Features {
 // TagList returns the list of tags.
 func (e *Equipment) TagList() []string {
 	return e.Tags
+}
+
+// RatedStrength always return 0 for traits.
+func (e *Equipment) RatedStrength() fxp.Int {
+	return e.RatedST
 }
 
 // AdjustedValue returns the value after adjustments for any modifiers. Does not include the value of children.

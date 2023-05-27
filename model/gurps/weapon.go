@@ -55,6 +55,7 @@ type WeaponOwner interface {
 	Notes() string
 	FeatureList() Features
 	TagList() []string
+	RatedStrength() fxp.Int
 }
 
 // WeaponData holds the Weapon data that is written to disk.
@@ -410,11 +411,18 @@ func (w *Weapon) ResolvedBlock(tooltip *xio.ByteBuffer) string {
 
 // ResolvedRange returns the range, fully resolved for the user's ST, if possible.
 func (w *Weapon) ResolvedRange() string {
-	pc := w.PC()
-	if pc == nil {
+	var st fxp.Int
+	if w.Owner != nil {
+		st = w.Owner.RatedStrength()
+	}
+	if st == 0 {
+		if pc := w.PC(); pc != nil {
+			st = pc.ThrowingStrength()
+		}
+	}
+	if st == 0 {
 		return w.Range
 	}
-	st := pc.ThrowingStrength()
 	var savedRange string
 	calcRange := w.Range
 	for calcRange != savedRange {
@@ -583,6 +591,11 @@ func (w *Weapon) resolveRange(inRange string, st fxp.Int) string {
 
 // ResolvedMinimumStrength returns the resolved minimum strength required to use this weapon, or 0 if there is none.
 func (w *Weapon) ResolvedMinimumStrength() fxp.Int {
+	if w.Owner != nil {
+		if st := w.Owner.RatedStrength(); st != 0 {
+			return st
+		}
+	}
 	started := false
 	value := 0
 	for _, ch := range w.MinimumStrength {
@@ -675,6 +688,18 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 		data.Primary = w.Reach
 	case WeaponSTColumn:
 		data.Primary = w.MinimumStrength
+		if w.Owner != nil {
+			if st := w.Owner.RatedStrength(); st != 0 {
+				var revised strings.Builder
+				revised.WriteString(st.String())
+				for _, ch := range data.Primary {
+					if ch < '0' || ch > '9' {
+						revised.WriteRune(ch)
+					}
+				}
+				data.Primary = revised.String()
+			}
+		}
 	case WeaponAccColumn:
 		data.Primary = w.Accuracy
 	case WeaponRangeColumn:

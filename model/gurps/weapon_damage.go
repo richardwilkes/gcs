@@ -164,7 +164,15 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 		return w.String()
 	}
 	maxST := w.Owner.ResolvedMinimumStrength().Mul(fxp.Three)
-	st := pc.StrikingStrength()
+	var st fxp.Int
+	stFromItem := false
+	if w.Owner.Owner != nil {
+		st = w.Owner.Owner.RatedStrength()
+		stFromItem = st != 0
+	}
+	if st == 0 {
+		st = pc.StrikingStrength()
+	}
 	if maxST > 0 && maxST < st {
 		st = maxST
 	}
@@ -184,21 +192,43 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 	intST := fxp.As[int](st)
 	switch w.StrengthType {
 	case ThrustStrengthDamage:
-		base = addDice(base, pc.ThrustFor(intST))
+		var thrust *dice.Dice
+		if stFromItem {
+			thrust = pc.SheetSettings.DamageProgression.Thrust(intST)
+		} else {
+			thrust = pc.ThrustFor(intST)
+		}
+		base = addDice(base, thrust)
 	case LeveledThrustStrengthDamage:
-		thrust := pc.ThrustFor(intST)
+		var thrust *dice.Dice
+		if stFromItem {
+			thrust = pc.SheetSettings.DamageProgression.Thrust(intST)
+		} else {
+			thrust = pc.ThrustFor(intST)
+		}
 		if tOK && t.IsLeveled() {
 			multiplyDice(fxp.As[int](t.Levels), thrust)
 		}
 		base = addDice(base, thrust)
 	case SwingStrengthDamage:
-		base = addDice(base, pc.SwingFor(intST))
-	case LeveledSwingStrengthDamage:
-		thrust := pc.SwingFor(intST)
-		if tOK && t.IsLeveled() {
-			multiplyDice(fxp.As[int](t.Levels), thrust)
+		var swing *dice.Dice
+		if stFromItem {
+			swing = pc.SheetSettings.DamageProgression.Swing(intST)
+		} else {
+			swing = pc.SwingFor(intST)
 		}
-		base = addDice(base, thrust)
+		base = addDice(base, swing)
+	case LeveledSwingStrengthDamage:
+		var swing *dice.Dice
+		if stFromItem {
+			swing = pc.SheetSettings.DamageProgression.Swing(intST)
+		} else {
+			swing = pc.SwingFor(intST)
+		}
+		if tOK && t.IsLeveled() {
+			multiplyDice(fxp.As[int](t.Levels), swing)
+		}
+		base = addDice(base, swing)
 	}
 	var bestDef *SkillDefault
 	best := fxp.Min

@@ -363,6 +363,11 @@ func (a *Trait) TagList() []string {
 	return a.Tags
 }
 
+// RatedStrength always return 0 for traits.
+func (a *Trait) RatedStrength() fxp.Int {
+	return 0
+}
+
 // FillWithNameableKeys adds any nameable keys found to the provided map.
 func (a *Trait) FillWithNameableKeys(m map[string]string) {
 	Extract(a.Name, m)

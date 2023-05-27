@@ -28,6 +28,7 @@ type EquipmentEditData struct {
 	LegalityClass          string               `json:"legality_class,omitempty"`
 	Tags                   []string             `json:"tags,omitempty"`
 	Modifiers              []*EquipmentModifier `json:"modifiers,omitempty"`
+	RatedST                fxp.Int              `json:"rated_strength,omitempty"`
 	Quantity               fxp.Int              `json:"quantity,omitempty"`
 	Value                  fxp.Int              `json:"value,omitempty"`
 	Weight                 Weight               `json:"weight,omitempty"`
