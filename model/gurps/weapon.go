@@ -690,14 +690,7 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 		data.Primary = w.MinimumStrength
 		if w.Owner != nil {
 			if st := w.Owner.RatedStrength(); st != 0 {
-				var revised strings.Builder
-				revised.WriteString(st.String())
-				for _, ch := range data.Primary {
-					if ch < '0' || ch > '9' {
-						revised.WriteRune(ch)
-					}
-				}
-				data.Primary = revised.String()
+				data.Primary += "[" + st.String() + "]"
 			}
 		}
 	case WeaponAccColumn:
