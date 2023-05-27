@@ -25,7 +25,6 @@ import (
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/toolbox/xmath/crc"
 	"github.com/richardwilkes/unison"
-	"golang.org/x/exp/maps"
 )
 
 var (
@@ -34,6 +33,7 @@ var (
 	_ ModifiableRoot             = &TableDockable[*gurps.Trait]{}
 	_ Rebuildable                = &TableDockable[*gurps.Trait]{}
 	_ unison.TabCloser           = &TableDockable[*gurps.Trait]{}
+	_ TagProvider                = &TableDockable[*gurps.Trait]{}
 )
 
 // TableDockable holds the view for a file that contains a (potentially hierarchical) list of data.
@@ -143,79 +143,19 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	d.sizeToFitButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Sets the width of each column to fit its contents"))
 	d.sizeToFitButton.ClickCallback = d.sizeToFit
 
+	d.filterPopup = NewTagFilterPopup(d)
+
 	d.filterField = unison.NewField()
 	filter := i18n.Text("Content Filter")
 	d.filterField.Watermark = filter
 	d.filterField.Tooltip = unison.NewTooltipWithText(filter)
-	d.filterField.ModifiedCallback = d.applyFilter
+	d.filterField.ModifiedCallback = func(_, _ *unison.FieldState) {
+		d.ApplyFilter(SelectedTags(d.filterPopup))
+	}
 	d.filterField.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,
 		VAlign: unison.MiddleAlignment,
 		HGrab:  true,
-	})
-
-	d.filterPopup = unison.NewPopupMenu[string]()
-	d.filterPopup.AddItem(i18n.Text("Any Tag"))
-	for _, tag := range d.provider.AllTags() {
-		if d.filterPopup.ItemCount() == 1 {
-			d.filterPopup.AddSeparator()
-		}
-		d.filterPopup.AddItem(tag)
-	}
-	d.filterPopup.SelectIndex(0)
-	d.filterPopup.ChoiceMadeCallback = func(popup *unison.PopupMenu[string], index int, item string) {
-		simple := index == 0
-		if !simple {
-			modifiers := d.Window().CurrentKeyModifiers()
-			simple = !(modifiers.ShiftDown() || modifiers.OSMenuCmdModifierDown())
-		}
-		if simple {
-			popup.SelectIndex(index)
-		} else {
-			m := make(map[int]bool)
-			wasSelected := false
-			for _, i := range popup.SelectedIndexes() {
-				if i != 0 {
-					if index == i {
-						wasSelected = true
-					} else {
-						m[i] = true
-					}
-				}
-			}
-			if !wasSelected {
-				m[index] = true
-			}
-			if len(m) == 0 {
-				popup.SelectIndex(0)
-			} else {
-				popup.SelectIndex(maps.Keys(m)...)
-			}
-		}
-	}
-	tagFilterTooltip := i18n.Text("Tag Filter")
-	baseTooltip := fmt.Sprintf(i18n.Text("Shift-Click or %s-Click to select more than one"),
-		unison.OSMenuCmdModifier().String())
-	d.filterPopup.Tooltip = unison.NewTooltipWithSecondaryText(tagFilterTooltip, baseTooltip)
-	d.filterPopup.SelectionChangedCallback = func(popup *unison.PopupMenu[string]) {
-		d.applyFilter(nil, d.filterField.GetFieldState())
-		indexes := popup.SelectedIndexes()
-		if len(indexes) == 1 {
-			d.filterPopup.Tooltip = unison.NewTooltipWithSecondaryText(tagFilterTooltip, baseTooltip)
-		} else {
-			tags := make([]string, 0, len(indexes))
-			for _, i := range indexes {
-				if tag, ok := popup.ItemAt(i); ok {
-					tags = append(tags, tag)
-				}
-			}
-			d.filterPopup.Tooltip = unison.NewTooltipWithSecondaryText(tagFilterTooltip,
-				baseTooltip+i18n.Text("\n\nRequires these tags:\n● ")+strings.Join(tags, "\n● "))
-		}
-	}
-	d.filterPopup.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.MiddleAlignment,
 	})
 
 	toolbar := unison.NewPanel()
@@ -376,33 +316,6 @@ func (d *TableDockable[T]) sizeToFit() {
 	d.table.MarkForRedraw()
 }
 
-func (d *TableDockable[T]) applyFilter(_, after *unison.FieldState) {
-	tags := make(map[string]bool)
-	for _, i := range d.filterPopup.SelectedIndexes() {
-		if i != 0 {
-			if item, ok := d.filterPopup.ItemAt(i); ok {
-				tags[item] = true
-			}
-		}
-	}
-	text := strings.TrimSpace(after.Text)
-	if len(tags) == 0 && text == "" {
-		d.table.ApplyFilter(nil)
-	} else {
-		d.table.ApplyFilter(func(row *Node[T]) bool {
-			if row.PartialMatchExceptTag(text) {
-				for tag := range tags {
-					if !row.HasTag(tag) {
-						return true
-					}
-				}
-				return false
-			}
-			return true
-		})
-	}
-}
-
 // Rebuild implements widget.Rebuildable.
 func (d *TableDockable[T]) Rebuild(_ bool) {
 	h, v := d.scroll.Position()
@@ -424,4 +337,31 @@ func (d *TableDockable[T]) crc64() uint64 {
 		return 0
 	}
 	return crc.Bytes(0, buffer.Bytes())
+}
+
+// AllTags returns all tags currently present in the data.
+func (d *TableDockable[T]) AllTags() []string {
+	return d.provider.AllTags()
+}
+
+// ApplyFilter applies the current filtering, if any.
+func (d *TableDockable[T]) ApplyFilter(tags []string) {
+	if d.filterField != nil {
+		text := strings.TrimSpace(d.filterField.GetFieldState().Text)
+		var f func(row *Node[T]) bool
+		if len(tags) != 0 || text != "" {
+			f = func(row *Node[T]) bool {
+				if row.PartialMatchExceptTag(text) {
+					for _, tag := range tags {
+						if !row.HasTag(tag) {
+							return true
+						}
+					}
+					return false
+				}
+				return true
+			}
+		}
+		d.table.ApplyFilter(f)
+	}
 }
