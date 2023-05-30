@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -33,16 +33,18 @@ var (
 
 type featuresPanel struct {
 	unison.Panel
-	entity   *gurps.Entity
-	owner    fmt.Stringer
-	features *gurps.Features
+	entity               *gurps.Entity
+	owner                fmt.Stringer
+	features             *gurps.Features
+	forEquipmentModifier bool
 }
 
-func newFeaturesPanel(entity *gurps.Entity, owner fmt.Stringer, features *gurps.Features) *featuresPanel {
+func newFeaturesPanel(entity *gurps.Entity, owner fmt.Stringer, features *gurps.Features, forEquipmentModifier bool) *featuresPanel {
 	p := &featuresPanel{
-		entity:   entity,
-		owner:    owner,
-		features: features,
+		entity:               entity,
+		owner:                owner,
+		features:             features,
+		forEquipmentModifier: forEquipmentModifier,
 	}
 	p.Self = p
 	p.SetLayout(&unison.FlexLayout{
@@ -196,7 +198,7 @@ func (p *featuresPanel) createDRBonusPanel(f *gurps.DRBonus) *unison.Panel {
 	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
 
 	panel.AddChild(unison.NewPanel())
-	addHitLocationChoicePopup(panel, p.entity, i18n.Text("to the"), &f.Location)
+	addHitLocationChoicePopup(panel, p.entity, &f.Location, p.forEquipmentModifier)
 
 	panel.AddChild(unison.NewPanel())
 	wrapper := unison.NewPanel()

@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -142,8 +142,8 @@ func addTechLevelRequired(parent *unison.Panel, fieldData **string, ownerIsSheet
 		}))
 }
 
-func addHitLocationChoicePopup(parent *unison.Panel, entity *gurps.Entity, prefix string, fieldData *string) *unison.PopupMenu[*gurps.HitLocationChoice] {
-	choices, current := gurps.HitLocationChoices(entity, prefix, *fieldData)
+func addHitLocationChoicePopup(parent *unison.Panel, entity *gurps.Entity, fieldData *string, forEquipmentModifier bool) *unison.PopupMenu[*gurps.HitLocationChoice] {
+	choices, current := gurps.HitLocationChoices(entity, *fieldData, forEquipmentModifier)
 	popup := addPopup(parent, choices, &current)
 	popup.SelectionChangedCallback = func(p *unison.PopupMenu[*gurps.HitLocationChoice]) {
 		if choice, ok := p.Selected(); ok {

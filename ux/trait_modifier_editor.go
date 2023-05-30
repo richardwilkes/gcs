@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -84,7 +84,7 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 	addTagsLabelAndField(content, &e.editorData.Tags)
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	if !e.target.Container() {
-		content.AddChild(newFeaturesPanel(e.target.Entity, e.target, &e.editorData.Features))
+		content.AddChild(newFeaturesPanel(e.target.Entity, e.target, &e.editorData.Features, false))
 	}
 	return nil
 }

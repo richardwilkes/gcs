@@ -12,8 +12,6 @@
 package gurps
 
 import (
-	"fmt"
-
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
@@ -26,7 +24,7 @@ type ReactionBonus struct {
 	Type      FeatureType `json:"type"`
 	Situation string      `json:"situation,omitempty"`
 	LeveledAmount
-	owner fmt.Stringer
+	BonusOwner
 }
 
 // NewReactionBonus creates a new ReactionBonus.
@@ -59,16 +57,6 @@ func (r *ReactionBonus) ApplyNameableKeys(m map[string]string) {
 	r.Situation = Apply(r.Situation, m)
 }
 
-// Owner implements Bonus.
-func (r *ReactionBonus) Owner() fmt.Stringer {
-	return r.owner
-}
-
-// SetOwner implements Bonus.
-func (r *ReactionBonus) SetOwner(owner fmt.Stringer) {
-	r.owner = owner
-}
-
 // SetLevel implements Bonus.
 func (r *ReactionBonus) SetLevel(level fxp.Int) {
 	r.Level = level
@@ -76,5 +64,5 @@ func (r *ReactionBonus) SetLevel(level fxp.Int) {
 
 // AddToTooltip implements Bonus.
 func (r *ReactionBonus) AddToTooltip(buffer *xio.ByteBuffer) {
-	basicAddToTooltip(r.owner, &r.LeveledAmount, buffer)
+	r.basicAddToTooltip(&r.LeveledAmount, buffer)
 }

@@ -12,8 +12,6 @@
 package gurps
 
 import (
-	"fmt"
-
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
@@ -28,7 +26,7 @@ type SkillPointBonus struct {
 	SpecializationCriteria StringCriteria `json:"specialization,omitempty"`
 	TagsCriteria           StringCriteria `json:"tags,alt=category,omitempty"`
 	LeveledAmount
-	owner fmt.Stringer
+	BonusOwner
 }
 
 // NewSkillPointBonus creates a new SkillPointBonus.
@@ -79,16 +77,6 @@ func (s *SkillPointBonus) ApplyNameableKeys(m map[string]string) {
 	s.TagsCriteria.Qualifier = Apply(s.TagsCriteria.Qualifier, m)
 }
 
-// Owner implements Bonus.
-func (s *SkillPointBonus) Owner() fmt.Stringer {
-	return s.owner
-}
-
-// SetOwner implements Bonus.
-func (s *SkillPointBonus) SetOwner(owner fmt.Stringer) {
-	s.owner = owner
-}
-
 // SetLevel implements Bonus.
 func (s *SkillPointBonus) SetLevel(level fxp.Int) {
 	s.Level = level
@@ -98,7 +86,7 @@ func (s *SkillPointBonus) SetLevel(level fxp.Int) {
 func (s *SkillPointBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 	if buffer != nil {
 		buffer.WriteByte('\n')
-		buffer.WriteString(parentName(s.owner))
+		buffer.WriteString(s.parentName())
 		buffer.WriteString(" [")
 		buffer.WriteString(s.LeveledAmount.FormatWithLevel(false))
 		if s.AdjustedAmount() == fxp.One {

@@ -12,8 +12,6 @@
 package gurps
 
 import (
-	"fmt"
-
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -28,7 +26,7 @@ type SkillBonus struct {
 	SpecializationCriteria StringCriteria     `json:"specialization,omitempty"`
 	TagsCriteria           StringCriteria     `json:"tags,alt=category,omitempty"`
 	LeveledAmount
-	owner fmt.Stringer
+	BonusOwner
 }
 
 // NewSkillBonus creates a new SkillBonus.
@@ -84,16 +82,6 @@ func (s *SkillBonus) ApplyNameableKeys(m map[string]string) {
 	}
 }
 
-// Owner implements Bonus.
-func (s *SkillBonus) Owner() fmt.Stringer {
-	return s.owner
-}
-
-// SetOwner implements Bonus.
-func (s *SkillBonus) SetOwner(owner fmt.Stringer) {
-	s.owner = owner
-}
-
 // SetLevel implements Bonus.
 func (s *SkillBonus) SetLevel(level fxp.Int) {
 	s.Level = level
@@ -101,5 +89,5 @@ func (s *SkillBonus) SetLevel(level fxp.Int) {
 
 // AddToTooltip implements Bonus.
 func (s *SkillBonus) AddToTooltip(buffer *xio.ByteBuffer) {
-	basicAddToTooltip(s.owner, &s.LeveledAmount, buffer)
+	s.basicAddToTooltip(&s.LeveledAmount, buffer)
 }

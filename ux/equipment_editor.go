@@ -86,7 +86,7 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 			addPageRefLabelAndField(content, &e.editorData.PageRef)
 			adjustFieldBlank(usesField, e.editorData.MaxUses <= 0)
 			content.AddChild(newPrereqPanel(e.target.Entity, &e.editorData.Prereq))
-			content.AddChild(newFeaturesPanel(e.target.Entity, e.target, &e.editorData.Features))
+			content.AddChild(newFeaturesPanel(e.target.Entity, e.target, &e.editorData.Features, false))
 			modifiersPanel := newEquipmentModifiersPanel(e.target.Entity, &e.editorData.Modifiers)
 			content.AddChild(modifiersPanel)
 			for _, wt := range gurps.AllWeaponType {

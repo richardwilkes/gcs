@@ -15,7 +15,6 @@ import (
 	"fmt"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
 
@@ -33,27 +32,14 @@ type Bonus interface {
 	Owner() fmt.Stringer
 	// SetOwner sets the owner to use.
 	SetOwner(owner fmt.Stringer)
+	// SubOwner returns the sub-owner that is currently set.
+	SubOwner() fmt.Stringer
+	// SetSubOwner sets the sub-owner to use.
+	SetSubOwner(owner fmt.Stringer)
 	// SetLevel sets the level.
 	SetLevel(level fxp.Int)
 	// AdjustedAmount returns the amount, adjusted for level, if requested.
 	AdjustedAmount() fxp.Int
 	// AddToTooltip adds this Bonus's details to the tooltip. 'buffer' may be nil.
 	AddToTooltip(buffer *xio.ByteBuffer)
-}
-
-func basicAddToTooltip(parent fmt.Stringer, amt *LeveledAmount, buffer *xio.ByteBuffer) {
-	if buffer != nil {
-		buffer.WriteByte('\n')
-		buffer.WriteString(parentName(parent))
-		buffer.WriteString(" [")
-		buffer.WriteString(amt.FormatWithLevel(false))
-		buffer.WriteByte(']')
-	}
-}
-
-func parentName(parent fmt.Stringer) string {
-	if parent == nil {
-		return i18n.Text("Unknown")
-	}
-	return parent.String()
 }

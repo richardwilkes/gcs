@@ -12,8 +12,6 @@
 package gurps
 
 import (
-	"fmt"
-
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -26,7 +24,7 @@ type AttributeBonus struct {
 	Limitation BonusLimitation `json:"limitation,omitempty"`
 	Attribute  string          `json:"attribute"`
 	LeveledAmount
-	owner fmt.Stringer
+	BonusOwner
 }
 
 // NewAttributeBonus creates a new AttributeBonus.
@@ -58,16 +56,6 @@ func (a *AttributeBonus) FillWithNameableKeys(_ map[string]string) {
 func (a *AttributeBonus) ApplyNameableKeys(_ map[string]string) {
 }
 
-// Owner implements Bonus.
-func (a *AttributeBonus) Owner() fmt.Stringer {
-	return a.owner
-}
-
-// SetOwner implements Bonus.
-func (a *AttributeBonus) SetOwner(owner fmt.Stringer) {
-	a.owner = owner
-}
-
 // SetLevel implements Bonus.
 func (a *AttributeBonus) SetLevel(level fxp.Int) {
 	a.Level = level
@@ -75,5 +63,5 @@ func (a *AttributeBonus) SetLevel(level fxp.Int) {
 
 // AddToTooltip implements Bonus.
 func (a *AttributeBonus) AddToTooltip(buffer *xio.ByteBuffer) {
-	basicAddToTooltip(a.owner, &a.LeveledAmount, buffer)
+	a.basicAddToTooltip(&a.LeveledAmount, buffer)
 }

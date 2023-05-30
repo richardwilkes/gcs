@@ -305,15 +305,15 @@ func (e *Entity) processFeatures() {
 		}
 		if !a.Container() {
 			for _, f := range a.Features {
-				e.processFeature(a, f, levels)
+				e.processFeature(a, nil, f, levels)
 			}
 		}
 		for _, f := range a.CRAdj.Features(a.CR) {
-			e.processFeature(a, f, levels)
+			e.processFeature(a, nil, f, levels)
 		}
 		Traverse(func(mod *TraitModifier) bool {
 			for _, f := range mod.Features {
-				e.processFeature(a, f, mod.Levels)
+				e.processFeature(a, nil, f, mod.Levels)
 			}
 			return false
 		}, true, true, a.Modifiers...)
@@ -321,7 +321,7 @@ func (e *Entity) processFeatures() {
 	}, true, false, e.Traits...)
 	Traverse(func(s *Skill) bool {
 		for _, f := range s.Features {
-			e.processFeature(s, f, s.LevelData.Level)
+			e.processFeature(s, nil, f, s.LevelData.Level)
 		}
 		return false
 	}, false, true, e.Skills...)
@@ -330,11 +330,11 @@ func (e *Entity) processFeatures() {
 			return false
 		}
 		for _, f := range eqp.Features {
-			e.processFeature(eqp, f, 0)
+			e.processFeature(eqp, nil, f, 0)
 		}
 		Traverse(func(mod *EquipmentModifier) bool {
 			for _, f := range mod.Features {
-				e.processFeature(eqp, f, 0)
+				e.processFeature(eqp, mod, f, 0)
 			}
 			return false
 		}, true, true, eqp.Modifiers...)
@@ -365,9 +365,10 @@ func (e *Entity) processFeatures() {
 	e.BlockBonus = e.AttributeBonusFor(BlockID, NoneBonusLimitation, nil).Trunc()
 }
 
-func (e *Entity) processFeature(owner fmt.Stringer, f Feature, levels fxp.Int) {
+func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, levels fxp.Int) {
 	if bonus, ok := f.(Bonus); ok {
 		bonus.SetOwner(owner)
+		bonus.SetSubOwner(subOwner)
 		bonus.SetLevel(levels)
 	}
 	switch actual := f.(type) {
@@ -376,7 +377,28 @@ func (e *Entity) processFeature(owner fmt.Stringer, f Feature, levels fxp.Int) {
 	case *CostReduction:
 		e.features.costReductions = append(e.features.costReductions, actual)
 	case *DRBonus:
-		e.features.drBonuses = append(e.features.drBonuses, actual)
+		if actual.Location == "" {
+			if eqp, ok := owner.(*Equipment); ok {
+				for _, f2 := range eqp.FeatureList() {
+					if drBonus, ok2 := f2.(*DRBonus); ok2 && drBonus.Location != "" {
+						additionalDRBonus := DRBonus{
+							DRBonusData: DRBonusData{
+								Type:           DRBonusFeatureType,
+								Location:       drBonus.Location,
+								Specialization: actual.Specialization,
+								LeveledAmount:  actual.LeveledAmount,
+							},
+						}
+						additionalDRBonus.SetOwner(owner)
+						additionalDRBonus.SetSubOwner(subOwner)
+						additionalDRBonus.SetLevel(levels)
+						e.features.drBonuses = append(e.features.drBonuses, &additionalDRBonus)
+					}
+				}
+			}
+		} else {
+			e.features.drBonuses = append(e.features.drBonuses, actual)
+		}
 	case *SkillBonus:
 		e.features.skillBonuses = append(e.features.skillBonuses, actual)
 	case *SkillPointBonus:

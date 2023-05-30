@@ -12,8 +12,6 @@
 package gurps
 
 import (
-	"fmt"
-
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -27,7 +25,7 @@ type SpellPointBonus struct {
 	NameCriteria   StringCriteria `json:"name,omitempty"`
 	TagsCriteria   StringCriteria `json:"tags,alt=category,omitempty"`
 	LeveledAmount
-	owner fmt.Stringer
+	BonusOwner
 }
 
 // NewSpellPointBonus creates a new SpellPointBonus.
@@ -76,16 +74,6 @@ func (s *SpellPointBonus) ApplyNameableKeys(m map[string]string) {
 	s.TagsCriteria.Qualifier = Apply(s.TagsCriteria.Qualifier, m)
 }
 
-// Owner implements Bonus.
-func (s *SpellPointBonus) Owner() fmt.Stringer {
-	return s.owner
-}
-
-// SetOwner implements Bonus.
-func (s *SpellPointBonus) SetOwner(owner fmt.Stringer) {
-	s.owner = owner
-}
-
 // SetLevel implements Bonus.
 func (s *SpellPointBonus) SetLevel(level fxp.Int) {
 	s.Level = level
@@ -93,7 +81,7 @@ func (s *SpellPointBonus) SetLevel(level fxp.Int) {
 
 // AddToTooltip implements Bonus.
 func (s *SpellPointBonus) AddToTooltip(buffer *xio.ByteBuffer) {
-	basicAddToTooltip(s.owner, &s.LeveledAmount, buffer)
+	s.basicAddToTooltip(&s.LeveledAmount, buffer)
 }
 
 // MatchForType returns true if this spell bonus matches the data for its match type.

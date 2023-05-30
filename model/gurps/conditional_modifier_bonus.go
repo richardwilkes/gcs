@@ -12,8 +12,6 @@
 package gurps
 
 import (
-	"fmt"
-
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
@@ -26,7 +24,7 @@ type ConditionalModifierBonus struct {
 	Type      FeatureType `json:"type"`
 	Situation string      `json:"situation,omitempty"`
 	LeveledAmount
-	owner fmt.Stringer
+	BonusOwner
 }
 
 // NewConditionalModifierBonus creates a new ConditionalModifierBonus.
@@ -59,16 +57,6 @@ func (c *ConditionalModifierBonus) ApplyNameableKeys(m map[string]string) {
 	c.Situation = Apply(c.Situation, m)
 }
 
-// Owner implements Bonus.
-func (c *ConditionalModifierBonus) Owner() fmt.Stringer {
-	return c.owner
-}
-
-// SetOwner implements Bonus.
-func (c *ConditionalModifierBonus) SetOwner(owner fmt.Stringer) {
-	c.owner = owner
-}
-
 // SetLevel implements Bonus.
 func (c *ConditionalModifierBonus) SetLevel(level fxp.Int) {
 	c.Level = level
@@ -76,5 +64,5 @@ func (c *ConditionalModifierBonus) SetLevel(level fxp.Int) {
 
 // AddToTooltip implements Bonus.
 func (c *ConditionalModifierBonus) AddToTooltip(buffer *xio.ByteBuffer) {
-	basicAddToTooltip(c.owner, &c.LeveledAmount, buffer)
+	c.basicAddToTooltip(&c.LeveledAmount, buffer)
 }

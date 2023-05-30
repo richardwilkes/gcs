@@ -12,8 +12,6 @@
 package gurps
 
 import (
-	"fmt"
-
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
@@ -31,7 +29,7 @@ type WeaponBonus struct {
 	RelativeLevelCriteria  NumericCriteria     `json:"level,omitempty"`
 	TagsCriteria           StringCriteria      `json:"tags,alt=category,omitempty"`
 	LeveledAmount
-	owner fmt.Stringer
+	BonusOwner
 }
 
 // NewWeaponDamageBonus creates a new weapon damage bonus.
@@ -103,16 +101,6 @@ func (w *WeaponBonus) ApplyNameableKeys(m map[string]string) {
 	}
 }
 
-// Owner implements Bonus.
-func (w *WeaponBonus) Owner() fmt.Stringer {
-	return w.owner
-}
-
-// SetOwner implements Bonus.
-func (w *WeaponBonus) SetOwner(owner fmt.Stringer) {
-	w.owner = owner
-}
-
 // SetLevel implements Bonus.
 func (w *WeaponBonus) SetLevel(level fxp.Int) {
 	w.Level = level
@@ -122,7 +110,7 @@ func (w *WeaponBonus) SetLevel(level fxp.Int) {
 func (w *WeaponBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 	if buffer != nil {
 		buffer.WriteByte('\n')
-		buffer.WriteString(parentName(w.owner))
+		buffer.WriteString(w.parentName())
 		buffer.WriteString(" [")
 		if w.Type == WeaponBonusFeatureType {
 			buffer.WriteString(w.LeveledAmount.Format(w.Percent, i18n.Text("die")))
