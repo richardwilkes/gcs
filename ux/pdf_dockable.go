@@ -213,21 +213,12 @@ func (d *PDFDockable) createToolbar() {
 	d.lastPageButton.ClickCallback = func() { d.LoadPage(d.pdf.PageCount() - 1) }
 	d.toolbar.AddChild(d.lastPageButton)
 
-	d.searchField = NewSearchField()
-	pageSearch := i18n.Text("Page Search")
-	d.searchField.Watermark = pageSearch
-	d.searchField.Tooltip = unison.NewTooltipWithText(pageSearch)
-	d.searchField.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.MiddleAlignment,
-		HGrab:  true,
-	})
-	d.searchField.ModifiedCallback = func(_, _ *unison.FieldState) {
+	d.searchField = NewSearchField(i18n.Text("Page Search"), func(_, _ *unison.FieldState) {
 		if d.noUpdate {
 			return
 		}
 		d.LoadPage(d.pdf.MostRecentPageNumber())
-	}
+	})
 	d.toolbar.AddChild(d.searchField)
 
 	d.matchesLabel = unison.NewLabel()

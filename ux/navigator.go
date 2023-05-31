@@ -203,17 +203,8 @@ func (n *Navigator) setupToolBar() {
 	n.forwardButton.ClickCallback = n.nextMatch
 	n.forwardButton.SetEnabled(false)
 
-	n.searchField = unison.NewField()
-	search := i18n.Text("Search")
-	n.searchField.Watermark = search
-	n.searchField.Tooltip = unison.NewTooltipWithText(search)
-	n.searchField.ModifiedCallback = n.searchModified
+	n.searchField = NewSearchField(i18n.Text("Search"), n.searchModified)
 	n.searchField.KeyDownCallback = n.searchKeydown
-	n.searchField.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.MiddleAlignment,
-		HGrab:  true,
-	})
 
 	n.matchesLabel = unison.NewLabel()
 	n.matchesLabel.Text = "-"

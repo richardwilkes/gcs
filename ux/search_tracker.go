@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -52,11 +52,9 @@ func installSearchTracker(toolbar *unison.Panel, clearTableSelections func(), fi
 	s.forwardButton.ClickCallback = s.nextMatch
 	s.forwardButton.SetEnabled(false)
 
-	s.searchField = unison.NewField()
 	searchText := i18n.Text("Search")
-	s.searchField.Watermark = searchText
+	s.searchField = NewSearchField(searchText, s.searchModified)
 	s.searchField.Tooltip = unison.NewTooltipWithSecondaryText(searchText, i18n.Text("Press RETURN to select the next match\nPress SHIFT-RETURN to select the previous match"))
-	s.searchField.ModifiedCallback = s.searchModified
 	s.searchField.KeyDownCallback = func(keyCode unison.KeyCode, mod unison.Modifiers, repeat bool) bool {
 		if keyCode == unison.KeyReturn || keyCode == unison.KeyNumPadEnter {
 			if mod.ShiftDown() {
@@ -68,11 +66,6 @@ func installSearchTracker(toolbar *unison.Panel, clearTableSelections func(), fi
 		}
 		return s.searchField.DefaultKeyDown(keyCode, mod, repeat)
 	}
-	s.searchField.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.MiddleAlignment,
-		HGrab:  true,
-	})
 
 	s.matchesLabel = unison.NewLabel()
 	s.matchesLabel.Text = i18n.Text("0 of 0")

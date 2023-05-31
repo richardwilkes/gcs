@@ -659,3 +659,20 @@ TL10: Robotic Age (2070+?)
 TL11: Age of Exotic Matter
 TL12: Anything Goes`)
 }
+
+// NewSVGButtonForFont creates a new SVG button with the given font and a size adjustment.
+func NewSVGButtonForFont(svg *unison.SVG, font unison.Font, sizeAdjust float32) *unison.Button {
+	b := unison.NewButton()
+	b.ButtonTheme = unison.DefaultSVGButtonTheme
+	b.ButtonTheme.Font = font
+	b.DrawableOnlyVMargin = 1
+	b.DrawableOnlyHMargin = 1
+	b.HideBase = true
+	baseline := font.Baseline() + sizeAdjust
+	size := unison.NewSize(baseline, baseline)
+	b.Drawable = &unison.DrawableSVG{
+		SVG:  svg,
+		Size: *size.GrowToInteger(),
+	}
+	return b
+}

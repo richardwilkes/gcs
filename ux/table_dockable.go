@@ -145,17 +145,8 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 
 	d.filterPopup = NewTagFilterPopup(d)
 
-	d.filterField = unison.NewField()
-	filter := i18n.Text("Content Filter")
-	d.filterField.Watermark = filter
-	d.filterField.Tooltip = unison.NewTooltipWithText(filter)
-	d.filterField.ModifiedCallback = func(_, _ *unison.FieldState) {
+	d.filterField = NewSearchField(i18n.Text("Content Filter"), func(_, _ *unison.FieldState) {
 		d.ApplyFilter(SelectedTags(d.filterPopup))
-	}
-	d.filterField.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.MiddleAlignment,
-		HGrab:  true,
 	})
 
 	toolbar := unison.NewPanel()

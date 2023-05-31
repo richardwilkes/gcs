@@ -129,19 +129,8 @@ func NewPageLabelWithRandomizer(title, tooltip string, clickCallback func()) *un
 		HAlign: unison.FillAlignment,
 		VAlign: unison.MiddleAlignment,
 	})
-	b := unison.NewButton()
-	b.ButtonTheme = unison.DefaultSVGButtonTheme
-	b.ButtonTheme.Font = gurps.PageLabelPrimaryFont
-	b.DrawableOnlyVMargin = 1
-	b.DrawableOnlyHMargin = 1
-	b.HideBase = true
+	b := NewSVGButtonForFont(svg.Randomize, gurps.PageLabelPrimaryFont, -2)
 	b.SetFocusable(false)
-	baseline := gurps.PageLabelPrimaryFont.Baseline()
-	size := unison.NewSize(baseline, baseline)
-	b.Drawable = &unison.DrawableSVG{
-		SVG:  svg.Randomize,
-		Size: *size.GrowToInteger(),
-	}
 	if tooltip != "" {
 		b.Tooltip = unison.NewTooltipWithText(tooltip)
 	}
