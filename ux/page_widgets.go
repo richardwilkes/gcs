@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -131,6 +131,7 @@ func NewPageLabelWithRandomizer(title, tooltip string, clickCallback func()) *un
 	})
 	b := unison.NewButton()
 	b.ButtonTheme = unison.DefaultSVGButtonTheme
+	b.ButtonTheme.Font = gurps.PageLabelPrimaryFont
 	b.DrawableOnlyVMargin = 1
 	b.DrawableOnlyHMargin = 1
 	b.HideBase = true
