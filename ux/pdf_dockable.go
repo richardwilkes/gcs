@@ -433,8 +433,6 @@ func (d *PDFDockable) pageLoaded() {
 	d.previousPageButton.SetEnabled(pageNumber > 0)
 	d.nextPageButton.SetEnabled(pageNumber < lastPageNumber)
 	d.lastPageButton.SetEnabled(pageNumber != lastPageNumber)
-	d.searchField.SelectAll()
-	d.searchField.SetScrollOffset(unison.Point{})
 
 	d.docPanel.MarkForLayoutAndRedraw()
 	d.docScroll.MarkForLayoutAndRedraw()
@@ -444,6 +442,7 @@ func (d *PDFDockable) pageLoaded() {
 		d.needDockableResize = false
 		if !IsDockableInWorkspace(d) {
 			d.Window().Pack()
+			d.searchField.SetScrollOffset(unison.Point{})
 		}
 	}
 }
