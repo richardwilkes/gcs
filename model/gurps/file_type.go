@@ -67,7 +67,7 @@ type FileInfo struct {
 	GroupWith    []string
 	MimeTypes    []string
 	SVG          *unison.SVG
-	Load         func(filePath string) (unison.Dockable, error)
+	Load         func(filePath string, initialPage int) (unison.Dockable, error)
 	IsSpecial    bool
 	IsGCSData    bool
 	IsImage      bool

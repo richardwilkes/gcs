@@ -70,7 +70,7 @@ func openMarkdownPageReference(ref string) {
 		for _, lib := range gurps.GlobalSettings().LibrarySet.List() {
 			filePath := filepath.Join(lib.Path(), "Markdown", ref)
 			if xfs.FileIsReadable(filePath) {
-				OpenFile(filePath)
+				OpenFile(filePath, 0)
 				return
 			}
 		}
@@ -117,10 +117,11 @@ Would you like to create one by choosing a PDF to map to this key?`), key), pdfN
 		}
 		if pageRef != nil {
 			if strings.TrimSpace(s.General.ExternalPDFCmdLine) == "" {
-				if d, wasOpen := OpenFile(pageRef.Path); d != nil {
+				pageNum := page + pageRef.Offset - 1 // The pdf package uses 0 for the first page, not 1
+				if d, wasOpen := OpenFile(pageRef.Path, pageNum); d != nil {
 					if pdfDockable, ok := d.(*PDFDockable); ok {
 						pdfDockable.SetSearchText(highlight)
-						pdfDockable.LoadPage(page + pageRef.Offset - 1) // The pdf package uses 0 for the first page, not 1
+						pdfDockable.LoadPage(pageNum)
 						if !wasOpen {
 							pdfDockable.ClearHistory()
 						}

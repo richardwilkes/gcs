@@ -884,7 +884,7 @@ func HandleLink(src unison.Paneler, target string) {
 				p = revised
 			}
 			if p = filepath.Join(md.WorkingDir, p); fs.FileIsReadable(p) {
-				OpenFile(p)
+				OpenFile(p, 0)
 				return
 			}
 		}
@@ -902,7 +902,7 @@ func OpenFiles(filePaths []string) {
 			unison.ErrorDialogWithError(i18n.Text("Unable to open ")+one, err)
 		} else {
 			Workspace.Window.ToFront()
-			OpenFile(p)
+			OpenFile(p, 0)
 		}
 	}
 }
@@ -963,7 +963,7 @@ func DisplayNewDockable(dockable unison.Dockable) {
 }
 
 // OpenFile attempts to open the given file path.
-func OpenFile(filePath string) (dockable unison.Dockable, wasOpen bool) {
+func OpenFile(filePath string, initialPage int) (dockable unison.Dockable, wasOpen bool) {
 	var err error
 	if filePath, err = filepath.Abs(filePath); err != nil {
 		unison.ErrorDialogWithError(i18n.Text("Unable to resolve path"), err)
@@ -982,7 +982,7 @@ func OpenFile(filePath string) (dockable unison.Dockable, wasOpen bool) {
 		return nil, false
 	}
 	var d unison.Dockable
-	if d, err = fi.Load(filePath); err != nil {
+	if d, err = fi.Load(filePath, initialPage); err != nil {
 		unison.ErrorDialogWithError(i18n.Text("Unable to open file"), err)
 		return nil, false
 	}

@@ -407,7 +407,7 @@ func (s menuBarScope) createOpenRecentFileAction(index int, path, title string) 
 	return &unison.Action{
 		ID:              RecentFieldBaseItemID + index,
 		Title:           title,
-		ExecuteCallback: func(_ *unison.Action, _ any) { OpenFile(path) },
+		ExecuteCallback: func(_ *unison.Action, _ any) { OpenFile(path, 0) },
 	}
 }
 

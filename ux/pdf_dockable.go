@@ -77,7 +77,7 @@ type PDFDockable struct {
 }
 
 // NewPDFDockable creates a new unison.Dockable for PDFRenderer files.
-func NewPDFDockable(filePath string) (unison.Dockable, error) {
+func NewPDFDockable(filePath string, initialPage int) (unison.Dockable, error) {
 	d := &PDFDockable{
 		path:               filePath,
 		scale:              100,
@@ -106,7 +106,7 @@ func NewPDFDockable(filePath string) (unison.Dockable, error) {
 
 	d.noUpdate = false
 	d.scaleField.SetEnabled(true)
-	d.LoadPage(0)
+	d.LoadPage(initialPage)
 
 	return d, nil
 }
@@ -433,6 +433,8 @@ func (d *PDFDockable) pageLoaded() {
 	d.previousPageButton.SetEnabled(pageNumber > 0)
 	d.nextPageButton.SetEnabled(pageNumber < lastPageNumber)
 	d.lastPageButton.SetEnabled(pageNumber != lastPageNumber)
+	d.searchField.SelectAll()
+	d.searchField.SetScrollOffset(unison.Point{})
 
 	d.docPanel.MarkForLayoutAndRedraw()
 	d.docScroll.MarkForLayoutAndRedraw()

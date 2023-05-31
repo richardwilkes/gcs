@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -71,7 +71,7 @@ func registerImageFileInfo(format unison.EncodedImageFormat, groupWith []string)
 		GroupWith:  groupWith,
 		MimeTypes:  format.MimeTypes(),
 		SVG:        svg.ImageFile,
-		Load:       NewImageDockable,
+		Load:       func(filePath string, _ int) (unison.Dockable, error) { return NewImageDockable(filePath) },
 		IsImage:    true,
 	}.Register()
 }
@@ -100,7 +100,9 @@ func registerMarkdownFileInfo() {
 		GroupWith:  extensions,
 		MimeTypes:  []string{"text/markdown"},
 		SVG:        svg.MarkdownFile,
-		Load:       func(filePath string) (unison.Dockable, error) { return NewMarkdownDockable(filePath, true, false) },
+		Load: func(filePath string, _ int) (unison.Dockable, error) {
+			return NewMarkdownDockable(filePath, true, false)
+		},
 	}.Register()
 }
 
@@ -135,7 +137,7 @@ func registerGCSFileInfo(name, ext string, groupWith []string, svg *unison.SVG, 
 		GroupWith:  groupWith,
 		MimeTypes:  []string{"application/x-gcs-" + ext[1:]},
 		SVG:        svg,
-		Load:       loader,
+		Load:       func(filePath string, _ int) (unison.Dockable, error) { return loader(filePath) },
 		IsGCSData:  true,
 	}.Register()
 }
@@ -149,7 +151,7 @@ func registerExportableGCSFileInfo(name, ext string, svg *unison.SVG, loader fun
 		GroupWith:    []string{ext},
 		MimeTypes:    []string{"application/x-gcs-" + ext[1:]},
 		SVG:          svg,
-		Load:         loader,
+		Load:         func(filePath string, _ int) (unison.Dockable, error) { return loader(filePath) },
 		IsGCSData:    true,
 		IsExportable: true,
 	}.Register()
