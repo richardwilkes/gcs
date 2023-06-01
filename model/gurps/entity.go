@@ -1154,7 +1154,7 @@ func (e *Entity) PreservesUserDesc() bool {
 func (e *Entity) Ancestry() *Ancestry {
 	var anc *Ancestry
 	Traverse(func(t *Trait) bool {
-		if t.Container() && t.ContainerType == RaceContainerType {
+		if t.Container() && t.ContainerType == RaceContainerType && t.Enabled() {
 			if anc = LookupAncestry(t.Ancestry, GlobalSettings().Libraries()); anc != nil {
 				return true
 			}

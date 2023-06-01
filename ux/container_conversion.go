@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -15,7 +15,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
 
@@ -103,7 +102,7 @@ func ConvertToContainer[T ConvertableNodeTypes](owner Rebuildable, table *unison
 		if mgr := unison.UndoManagerFor(table); mgr != nil {
 			mgr.Add(&unison.UndoEdit[*containerConversionList[T]]{
 				ID:         unison.NextUndoID(),
-				EditName:   i18n.Text("Convert to Container"),
+				EditName:   convertToContainerAction.Title,
 				UndoFunc:   func(edit *unison.UndoEdit[*containerConversionList[T]]) { edit.BeforeData.Apply() },
 				RedoFunc:   func(edit *unison.UndoEdit[*containerConversionList[T]]) { edit.AfterData.Apply() },
 				BeforeData: before,
@@ -129,7 +128,7 @@ func ConvertToNonContainer[T ConvertableNodeTypes](owner Rebuildable, table *uni
 		if mgr := unison.UndoManagerFor(table); mgr != nil {
 			mgr.Add(&unison.UndoEdit[*containerConversionList[T]]{
 				ID:         unison.NextUndoID(),
-				EditName:   i18n.Text("Convert to Non-Container"),
+				EditName:   convertToNonContainerAction.Title,
 				UndoFunc:   func(edit *unison.UndoEdit[*containerConversionList[T]]) { edit.BeforeData.Apply() },
 				RedoFunc:   func(edit *unison.UndoEdit[*containerConversionList[T]]) { edit.AfterData.Apply() },
 				BeforeData: before,

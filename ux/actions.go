@@ -77,6 +77,7 @@ var (
 	newOtherEquipmentContainerAction    *unison.Action
 	newRangedWeaponAction               *unison.Action
 	newRitualMagicSpellAction           *unison.Action
+	newSheetFromTemplateAction          *unison.Action
 	newSkillAction                      *unison.Action
 	newSkillContainerAction             *unison.Action
 	newSkillsLibraryAction              *unison.Action
@@ -151,6 +152,13 @@ func registerActions() {
 		ID:              ApplyTemplateItemID,
 		Title:           i18n.Text("Apply Template to Character Sheet"),
 		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyA, Modifiers: unison.ShiftModifier | unison.OSMenuCmdModifier()},
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
+	})
+	newSheetFromTemplateAction = registerKeyBindableAction("new.sheet.from.template", &unison.Action{
+		ID:              NewSheetFromTemplateItemID,
+		Title:           i18n.Text("New Character Sheet from Template"),
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyS, Modifiers: unison.OptionModifier | unison.OSMenuCmdModifier()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})

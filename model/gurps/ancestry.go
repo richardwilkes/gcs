@@ -202,3 +202,34 @@ func (a *Ancestry) RandomName(nameGeneratorRefs []*NameGeneratorRef, gender stri
 	}
 	return ""
 }
+
+// ActiveAncestries returns a list of Ancestry nodes that are enabled in the given Trait nodes and their descendants.
+func ActiveAncestries(list []*Trait) []*Ancestry {
+	var ancestries []*Ancestry
+	libraries := GlobalSettings().Libraries()
+	Traverse(func(t *Trait) bool {
+		if t.Container() && t.ContainerType == RaceContainerType && t.Enabled() {
+			if anc := LookupAncestry(t.Ancestry, libraries); anc != nil {
+				ancestries = append(ancestries, anc)
+			}
+		}
+		return false
+	}, true, false, list...)
+	return ancestries
+}
+
+// ActiveAncestryTraits returns the Traits that have Ancestry data and are enabled within the given traits or their
+// descendants.
+func ActiveAncestryTraits(list []*Trait) []*Trait {
+	var result []*Trait
+	libraries := GlobalSettings().Libraries()
+	Traverse(func(t *Trait) bool {
+		if t.Container() && t.ContainerType == RaceContainerType && t.Enabled() {
+			if ancestry := LookupAncestry(t.Ancestry, libraries); ancestry != nil {
+				result = append(result, t)
+			}
+		}
+		return false
+	}, true, false, list...)
+	return result
+}

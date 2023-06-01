@@ -74,6 +74,7 @@ const (
 	CopyToSheetItemID
 	CopyToTemplateItemID
 	ApplyTemplateItemID
+	NewSheetFromTemplateItemID
 	OpenOnePageReferenceItemID
 	OpenEachPageReferenceItemID
 	SettingsMenuID
@@ -233,6 +234,7 @@ func (s menuBarScope) setupEditMenu(bar unison.Menu) {
 	i = s.insertMenuItem(m, i, copyToSheetAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, copyToTemplateAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, applyTemplateAction.NewMenuItem(f))
+	i = s.insertMenuItem(m, i, newSheetFromTemplateAction.NewMenuItem(f))
 
 	i = s.insertMenuSeparator(m, i)
 	i = s.insertMenuItem(m, i, incrementAction.NewMenuItem(f))
@@ -501,30 +503,31 @@ func (s menuBarScope) appendDisabledMenuItem(menu unison.Menu, title string) {
 func AppendDefaultContextMenuItems(list []ContextMenuItem) []ContextMenuItem {
 	return append(list,
 		ContextMenuItem{"", -1},
-		ContextMenuItem{i18n.Text("Open Detail Editor"), OpenEditorItemID},
+		ContextMenuItem{openEditorAction.Title, OpenEditorItemID},
 		ContextMenuItem{"", -1},
-		ContextMenuItem{i18n.Text("Duplicate"), DuplicateItemID},
-		ContextMenuItem{i18n.Text("Delete"), unison.DeleteItemID},
+		ContextMenuItem{duplicateAction.Title, DuplicateItemID},
+		ContextMenuItem{unison.DeleteAction().Title, unison.DeleteItemID},
 		ContextMenuItem{"", -1},
-		ContextMenuItem{i18n.Text("Apply Template to Character Sheet"), ApplyTemplateItemID},
-		ContextMenuItem{i18n.Text("Copy to Character Sheet"), CopyToSheetItemID},
-		ContextMenuItem{i18n.Text("Copy to Template"), CopyToTemplateItemID},
+		ContextMenuItem{applyTemplateAction.Title, ApplyTemplateItemID},
+		ContextMenuItem{newSheetFromTemplateAction.Title, NewSheetFromTemplateItemID},
+		ContextMenuItem{copyToSheetAction.Title, CopyToSheetItemID},
+		ContextMenuItem{copyToTemplateAction.Title, CopyToTemplateItemID},
 		ContextMenuItem{"", -1},
-		ContextMenuItem{i18n.Text("Increment"), IncrementItemID},
-		ContextMenuItem{i18n.Text("Decrement"), DecrementItemID},
-		ContextMenuItem{i18n.Text("Increase Uses"), IncrementUsesItemID},
-		ContextMenuItem{i18n.Text("Decrease Uses"), DecrementUsesItemID},
-		ContextMenuItem{i18n.Text("Increase Skill Level"), IncrementSkillLevelItemID},
-		ContextMenuItem{i18n.Text("Decrease Skill Level"), DecrementSkillLevelItemID},
-		ContextMenuItem{i18n.Text("Increase Tech Level"), IncrementTechLevelItemID},
-		ContextMenuItem{i18n.Text("Decrease Tech Level"), DecrementTechLevelItemID},
+		ContextMenuItem{incrementAction.Title, IncrementItemID},
+		ContextMenuItem{decrementAction.Title, DecrementItemID},
+		ContextMenuItem{increaseUsesAction.Title, IncrementUsesItemID},
+		ContextMenuItem{decreaseUsesAction.Title, DecrementUsesItemID},
+		ContextMenuItem{increaseSkillLevelAction.Title, IncrementSkillLevelItemID},
+		ContextMenuItem{decreaseSkillLevelAction.Title, DecrementSkillLevelItemID},
+		ContextMenuItem{increaseTechLevelAction.Title, IncrementTechLevelItemID},
+		ContextMenuItem{decreaseTechLevelAction.Title, DecrementTechLevelItemID},
 		ContextMenuItem{"", -1},
-		ContextMenuItem{i18n.Text("Toggle State"), ToggleStateItemID},
-		ContextMenuItem{i18n.Text("Swap Defaults"), SwapDefaultsItemID},
-		ContextMenuItem{i18n.Text("Convert to Container"), ConvertToContainerItemID},
-		ContextMenuItem{i18n.Text("Convert to Non-Container"), ConvertToNonContainerItemID},
+		ContextMenuItem{toggleStateAction.Title, ToggleStateItemID},
+		ContextMenuItem{swapDefaultsAction.Title, SwapDefaultsItemID},
+		ContextMenuItem{convertToContainerAction.Title, ConvertToContainerItemID},
+		ContextMenuItem{convertToNonContainerAction.Title, ConvertToNonContainerItemID},
 		ContextMenuItem{"", -1},
-		ContextMenuItem{i18n.Text("Open Page Reference"), OpenOnePageReferenceItemID},
-		ContextMenuItem{i18n.Text("Open Each Page Reference"), OpenEachPageReferenceItemID},
+		ContextMenuItem{openOnePageReferenceAction.Title, OpenOnePageReferenceItemID},
+		ContextMenuItem{openEachPageReferenceAction.Title, OpenEachPageReferenceItemID},
 	)
 }

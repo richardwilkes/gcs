@@ -511,8 +511,11 @@ func (n *Navigator) mouseDown(where unison.Point, button, clickCount int, mod un
 			id := 1
 			if len(sel) == 1 && sel[0].nodeType == fileNode {
 				p := sel[0].Path()
-				if filepath.Ext(p) == gurps.TemplatesExt && CanApplyTemplate() {
-					cm.InsertItem(-1, newApplyTemplateMenuItem(f, &id, p))
+				if filepath.Ext(p) == gurps.TemplatesExt {
+					cm.InsertItem(-1, newSheetFromTemplateMenuItem(f, &id, p))
+					if CanApplyTemplate() {
+						cm.InsertItem(-1, newApplyTemplateMenuItem(f, &id, p))
+					}
 					cm.InsertSeparator(-1, true)
 				}
 			}
@@ -547,10 +550,19 @@ func (n *Navigator) mouseDown(where unison.Point, button, clickCount int, mod un
 	return stop
 }
 
+func newSheetFromTemplateMenuItem(f unison.MenuFactory, id *int, templatePath string) unison.MenuItem {
+	useID := *id
+	*id++
+	return f.NewItem(unison.PopupMenuTemporaryBaseID+useID, newSheetFromTemplateAction.Title,
+		unison.KeyBinding{}, nil, func(item unison.MenuItem) {
+			NewSheetFromTemplate(templatePath)
+		})
+}
+
 func newApplyTemplateMenuItem(f unison.MenuFactory, id *int, templatePath string) unison.MenuItem {
 	useID := *id
 	*id++
-	return f.NewItem(unison.PopupMenuTemporaryBaseID+useID, i18n.Text("Apply Template to Character Sheet"),
+	return f.NewItem(unison.PopupMenuTemporaryBaseID+useID, applyTemplateAction.Title,
 		unison.KeyBinding{}, nil, func(item unison.MenuItem) {
 			ApplyTemplate(templatePath)
 		})

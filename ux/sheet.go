@@ -674,7 +674,7 @@ func (s *Sheet) canSwapDefaults(_ any) bool {
 func (s *Sheet) swapDefaults(_ any) {
 	undo := &unison.UndoEdit[*TableUndoEditData[*gurps.Skill]]{
 		ID:       unison.NextUndoID(),
-		EditName: i18n.Text("Swap Defaults"),
+		EditName: swapDefaultsAction.Title,
 		UndoFunc: func(e *unison.UndoEdit[*TableUndoEditData[*gurps.Skill]]) { e.BeforeData.Apply() },
 		RedoFunc: func(e *unison.UndoEdit[*TableUndoEditData[*gurps.Skill]]) { e.AfterData.Apply() },
 		AbsorbFunc: func(e *unison.UndoEdit[*TableUndoEditData[*gurps.Skill]], other unison.Undoable) bool {

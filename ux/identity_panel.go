@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -17,6 +17,11 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
+const (
+	identityPanelFieldPrefix     = "identity:"
+	identityPanelNameFieldRefKey = identityPanelFieldPrefix + "name"
+)
+
 // IdentityPanel holds the contents of the identity block on the sheet.
 type IdentityPanel struct {
 	unison.Panel
@@ -30,7 +35,7 @@ func NewIdentityPanel(entity *gurps.Entity, targetMgr *TargetMgr) *IdentityPanel
 	p := &IdentityPanel{
 		entity:    entity,
 		targetMgr: targetMgr,
-		prefix:    targetMgr.NextPrefix(),
+		prefix:    identityPanelFieldPrefix,
 	}
 	p.Self = p
 	p.SetLayout(&unison.FlexLayout{
@@ -53,7 +58,7 @@ func NewIdentityPanel(entity *gurps.Entity, targetMgr *TargetMgr) *IdentityPanel
 	}
 
 	title := i18n.Text("Name")
-	nameField := NewStringPageField(p.targetMgr, p.prefix+"name", title,
+	nameField := NewStringPageField(p.targetMgr, identityPanelNameFieldRefKey, title,
 		func() string { return p.entity.Profile.Name },
 		func(s string) { p.entity.Profile.Name = s })
 	p.AddChild(NewPageLabelWithRandomizer(title,

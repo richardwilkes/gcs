@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -20,6 +20,19 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
+const (
+	descriptionPanelFieldPrefix           = "description:"
+	descriptionPanelAgeFieldRefKey        = descriptionPanelFieldPrefix + "age"
+	descriptionPanelBirthdayFieldRefKey   = descriptionPanelFieldPrefix + "birthday"
+	descriptionPanelEyesFieldRefKey       = descriptionPanelFieldPrefix + "eyes"
+	descriptionPanelHairFieldRefKey       = descriptionPanelFieldPrefix + "hair"
+	descriptionPanelSkinFieldRefKey       = descriptionPanelFieldPrefix + "skin"
+	descriptionPanelHandednessFieldRefKey = descriptionPanelFieldPrefix + "handedness"
+	descriptionPanelGenderFieldRefKey     = descriptionPanelFieldPrefix + "gender"
+	descriptionPanelHeightFieldRefKey     = descriptionPanelFieldPrefix + "height"
+	descriptionPanelWeightFieldRefKey     = descriptionPanelFieldPrefix + "weight"
+)
+
 // DescriptionPanel holds the contents of the description block on the sheet.
 type DescriptionPanel struct {
 	unison.Panel
@@ -33,7 +46,7 @@ func NewDescriptionPanel(entity *gurps.Entity, targetMgr *TargetMgr) *Descriptio
 	d := &DescriptionPanel{
 		entity:    entity,
 		targetMgr: targetMgr,
-		prefix:    targetMgr.NextPrefix(),
+		prefix:    descriptionPanelFieldPrefix,
 	}
 	d.Self = d
 	d.SetLayout(&unison.FlexLayout{
@@ -78,7 +91,7 @@ func (d *DescriptionPanel) createColumn1() *unison.Panel {
 	column := createColumn()
 
 	title := i18n.Text("Gender")
-	genderField := NewStringPageField(d.targetMgr, d.prefix+"gender", title,
+	genderField := NewStringPageField(d.targetMgr, descriptionPanelGenderFieldRefKey, title,
 		func() string { return d.entity.Profile.Gender },
 		func(s string) { d.entity.Profile.Gender = s })
 	column.AddChild(NewPageLabelWithRandomizer(title,
@@ -90,7 +103,7 @@ func (d *DescriptionPanel) createColumn1() *unison.Panel {
 	column.AddChild(genderField)
 
 	title = i18n.Text("Age")
-	ageField := NewStringPageField(d.targetMgr, d.prefix+"age", title,
+	ageField := NewStringPageField(d.targetMgr, descriptionPanelAgeFieldRefKey, title,
 		func() string { return d.entity.Profile.Age },
 		func(s string) { d.entity.Profile.Age = s })
 	column.AddChild(NewPageLabelWithRandomizer(title,
@@ -103,7 +116,7 @@ func (d *DescriptionPanel) createColumn1() *unison.Panel {
 	column.AddChild(ageField)
 
 	title = i18n.Text("Birthday")
-	birthdayField := NewStringPageField(d.targetMgr, d.prefix+"birthday", title,
+	birthdayField := NewStringPageField(d.targetMgr, descriptionPanelBirthdayFieldRefKey, title,
 		func() string { return d.entity.Profile.Birthday },
 		func(s string) { d.entity.Profile.Birthday = s })
 	column.AddChild(NewPageLabelWithRandomizer(title,
@@ -130,7 +143,7 @@ func (d *DescriptionPanel) createColumn2() *unison.Panel {
 	column := createColumn()
 
 	title := i18n.Text("Height")
-	heightField := NewHeightPageField(d.targetMgr, d.prefix+"height", title, d.entity,
+	heightField := NewHeightPageField(d.targetMgr, descriptionPanelHeightFieldRefKey, title, d.entity,
 		func() gurps.Length { return d.entity.Profile.Height },
 		func(v gurps.Length) { d.entity.Profile.Height = v }, 0, gurps.Length(fxp.Max), true)
 	column.AddChild(NewPageLabelWithRandomizer(title,
@@ -142,7 +155,7 @@ func (d *DescriptionPanel) createColumn2() *unison.Panel {
 	column.AddChild(heightField)
 
 	title = i18n.Text("Weight")
-	weightField := NewWeightPageField(d.targetMgr, d.prefix+"weight", title, d.entity,
+	weightField := NewWeightPageField(d.targetMgr, descriptionPanelWeightFieldRefKey, title, d.entity,
 		func() gurps.Weight { return d.entity.Profile.Weight },
 		func(v gurps.Weight) { d.entity.Profile.Weight = v }, 0, gurps.Weight(fxp.Max), true)
 	column.AddChild(NewPageLabelWithRandomizer(title,
@@ -176,7 +189,7 @@ func (d *DescriptionPanel) createColumn3() *unison.Panel {
 	column := createColumn()
 
 	title := i18n.Text("Hair")
-	hairField := NewStringPageField(d.targetMgr, d.prefix+"hair", title,
+	hairField := NewStringPageField(d.targetMgr, descriptionPanelHairFieldRefKey, title,
 		func() string { return d.entity.Profile.Hair },
 		func(s string) { d.entity.Profile.Hair = s })
 	column.AddChild(NewPageLabelWithRandomizer(title,
@@ -188,7 +201,7 @@ func (d *DescriptionPanel) createColumn3() *unison.Panel {
 	column.AddChild(hairField)
 
 	title = i18n.Text("Eyes")
-	eyesField := NewStringPageField(d.targetMgr, d.prefix+"eyes", title,
+	eyesField := NewStringPageField(d.targetMgr, descriptionPanelEyesFieldRefKey, title,
 		func() string { return d.entity.Profile.Eyes },
 		func(s string) { d.entity.Profile.Eyes = s })
 	column.AddChild(NewPageLabelWithRandomizer(title,
@@ -200,7 +213,7 @@ func (d *DescriptionPanel) createColumn3() *unison.Panel {
 	column.AddChild(eyesField)
 
 	title = i18n.Text("Skin")
-	skinField := NewStringPageField(d.targetMgr, d.prefix+"skin", title,
+	skinField := NewStringPageField(d.targetMgr, descriptionPanelSkinFieldRefKey, title,
 		func() string { return d.entity.Profile.Skin },
 		func(s string) { d.entity.Profile.Skin = s })
 	column.AddChild(NewPageLabelWithRandomizer(title,
@@ -212,7 +225,7 @@ func (d *DescriptionPanel) createColumn3() *unison.Panel {
 	column.AddChild(skinField)
 
 	title = i18n.Text("Hand")
-	handField := NewStringPageField(d.targetMgr, d.prefix+"hand", title,
+	handField := NewStringPageField(d.targetMgr, descriptionPanelHandednessFieldRefKey, title,
 		func() string { return d.entity.Profile.Handedness },
 		func(s string) { d.entity.Profile.Handedness = s })
 	column.AddChild(NewPageLabelWithRandomizer(title,

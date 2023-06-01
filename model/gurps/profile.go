@@ -26,25 +26,30 @@ const (
 	PortraitWidth  = 3 * PortraitHeight / 4
 )
 
+// ProfileRandom holds the portion of the profile that is affected by the randomizer.
+type ProfileRandom struct {
+	Name       string `json:"name,omitempty"`
+	Age        string `json:"age,omitempty"`
+	Birthday   string `json:"birthday,omitempty"`
+	Eyes       string `json:"eyes,omitempty"`
+	Hair       string `json:"hair,omitempty"`
+	Skin       string `json:"skin,omitempty"`
+	Handedness string `json:"handedness,omitempty"`
+	Gender     string `json:"gender,omitempty"`
+	Height     Length `json:"height,omitempty"`
+	Weight     Weight `json:"weight,omitempty"`
+}
+
 // Profile holds the profile information for an NPC.
 type Profile struct {
+	ProfileRandom     `json:",inline"`
 	PlayerName        string        `json:"player_name,omitempty"`
-	Name              string        `json:"name,omitempty"`
 	Title             string        `json:"title,omitempty"`
 	Organization      string        `json:"organization,omitempty"`
 	Religion          string        `json:"religion,omitempty"`
-	Age               string        `json:"age,omitempty"`
-	Birthday          string        `json:"birthday,omitempty"`
-	Eyes              string        `json:"eyes,omitempty"`
-	Hair              string        `json:"hair,omitempty"`
-	Skin              string        `json:"skin,omitempty"`
-	Handedness        string        `json:"handedness,omitempty"`
-	Gender            string        `json:"gender,omitempty"`
 	TechLevel         string        `json:"tech_level,omitempty"`
 	PortraitData      []byte        `json:"portrait,omitempty"`
 	PortraitImage     *unison.Image `json:"-"`
-	Height            Length        `json:"height,omitempty"`
-	Weight            Weight        `json:"weight,omitempty"`
 	SizeModifier      int           `json:"SM,omitempty"`
 	SizeModifierBonus fxp.Int       `json:"-"`
 }
@@ -82,10 +87,14 @@ func (p *Profile) SetAdjustedSizeModifier(value int) {
 
 // AutoFill fills in the default profile entries.
 func (p *Profile) AutoFill(entity *Entity) {
-	globalSettings := GlobalSettings()
-	generalSettings := globalSettings.GeneralSettings()
+	generalSettings := GlobalSettings().GeneralSettings()
 	p.TechLevel = generalSettings.DefaultTechLevel
 	p.PlayerName = generalSettings.DefaultPlayerName
+	p.ApplyRandomizers(entity)
+}
+
+// ApplyRandomizers to all randomizable fields, ignoring what may have been there before.
+func (p *Profile) ApplyRandomizers(entity *Entity) {
 	a := entity.Ancestry()
 	p.Gender = a.RandomGender("")
 	p.Age = strconv.Itoa(a.RandomAge(entity, p.Gender, 0))
@@ -95,6 +104,8 @@ func (p *Profile) AutoFill(entity *Entity) {
 	p.Handedness = a.RandomHandedness(p.Gender, "")
 	p.Height = a.RandomHeight(entity, p.Gender, 0)
 	p.Weight = a.RandomWeight(entity, p.Gender, 0)
+	globalSettings := GlobalSettings()
+	generalSettings := globalSettings.GeneralSettings()
 	p.Name = a.RandomName(AvailableNameGenerators(globalSettings.Libraries()), p.Gender)
 	p.Birthday = generalSettings.CalendarRef(globalSettings.Libraries()).RandomBirthday(p.Birthday)
 }

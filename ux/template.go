@@ -151,7 +151,7 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Character Template") }
 
 	addUserButton := unison.NewSVGButton(svg.Stamper)
-	addUserButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Apply Template to Character Sheet"))
+	addUserButton.Tooltip = unison.NewTooltipWithText(applyTemplateAction.Title)
 	addUserButton.ClickCallback = func() {
 		if CanApplyTemplate() {
 			d.applyTemplate(nil)
@@ -218,6 +218,7 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 			}, gurps.NewNaturalAttacks(nil, nil))
 	})
 	d.InstallCmdHandlers(ApplyTemplateItemID, d.canApplyTemplate, d.applyTemplate)
+	d.InstallCmdHandlers(NewSheetFromTemplateItemID, unison.AlwaysEnabled, d.newSheetFromTemplate)
 
 	return d
 }
@@ -250,6 +251,26 @@ func (d *Template) canApplyTemplate(_ any) bool {
 	return CanApplyTemplate()
 }
 
+// NewSheetFromTemplate loads the specified template file and creates a new character sheet from it.
+func NewSheetFromTemplate(filePath string) {
+	d, err := NewTemplateFromFile(filePath)
+	if err != nil {
+		unison.ErrorDialogWithError(i18n.Text("Unable to load template"), err)
+		return
+	}
+	if t, ok := d.(*Template); ok {
+		t.newSheetFromTemplate(nil)
+	}
+}
+
+func (d *Template) newSheetFromTemplate(_ any) {
+	entity := gurps.NewEntity(gurps.PC)
+	sheet := NewSheet(entity.Profile.Name+gurps.SheetExt, entity)
+	DisplayNewDockable(sheet)
+	d.applyTemplateToSheet(sheet, true)
+	sheet.undoMgr.Clear()
+}
+
 // ApplyTemplate loads the specified template file and applies it to a sheet.
 func ApplyTemplate(filePath string) {
 	d, err := NewTemplateFromFile(filePath)
@@ -264,63 +285,142 @@ func ApplyTemplate(filePath string) {
 	}
 }
 
-func (d *Template) applyTemplate(_ any) {
+func (d *Template) applyTemplate(suppressRandomizePromptAsBool any) {
+	suppressRandomizePrompt, _ := suppressRandomizePromptAsBool.(bool) //nolint:errcheck // The default of false on failure is acceptable
 	for _, sheet := range PromptForDestination(OpenSheets(nil)) {
-		var undo *unison.UndoEdit[*ApplyTemplateUndoEditData]
-		mgr := unison.UndoManagerFor(sheet)
-		if mgr != nil {
-			if beforeData, err := NewApplyTemplateUndoEditData(sheet); err != nil {
-				jot.Warn(err)
-				mgr = nil
-			} else {
-				undo = &unison.UndoEdit[*ApplyTemplateUndoEditData]{
-					ID:         unison.NextUndoID(),
-					EditName:   i18n.Text("Apply Template"),
-					UndoFunc:   func(e *unison.UndoEdit[*ApplyTemplateUndoEditData]) { e.BeforeData.Apply() },
-					RedoFunc:   func(e *unison.UndoEdit[*ApplyTemplateUndoEditData]) { e.AfterData.Apply() },
-					AbsorbFunc: func(e *unison.UndoEdit[*ApplyTemplateUndoEditData], other unison.Undoable) bool { return false },
-					BeforeData: beforeData,
+		d.applyTemplateToSheet(sheet, suppressRandomizePrompt)
+	}
+}
+
+func (d *Template) applyTemplateToSheet(sheet *Sheet, suppressRandomizePrompt bool) {
+	var undo *unison.UndoEdit[*ApplyTemplateUndoEditData]
+	mgr := unison.UndoManagerFor(sheet)
+	if mgr != nil {
+		if beforeData, err := NewApplyTemplateUndoEditData(sheet); err != nil {
+			jot.Warn(err)
+			mgr = nil
+		} else {
+			undo = &unison.UndoEdit[*ApplyTemplateUndoEditData]{
+				ID:         unison.NextUndoID(),
+				EditName:   i18n.Text("Apply Template"),
+				UndoFunc:   func(e *unison.UndoEdit[*ApplyTemplateUndoEditData]) { e.BeforeData.Apply() },
+				RedoFunc:   func(e *unison.UndoEdit[*ApplyTemplateUndoEditData]) { e.AfterData.Apply() },
+				AbsorbFunc: func(e *unison.UndoEdit[*ApplyTemplateUndoEditData], other unison.Undoable) bool { return false },
+				BeforeData: beforeData,
+			}
+		}
+	}
+	entity := sheet.Entity()
+	templateAncestries := gurps.ActiveAncestries(ExtractNodeDataFromList(d.Traits.Table.RootRows()))
+	if len(templateAncestries) != 0 {
+		entityAncestries := gurps.ActiveAncestries(entity.Traits)
+		if len(entityAncestries) != 0 {
+			if unison.YesNoDialog(fmt.Sprintf(i18n.Text(`The template contains an Ancestry (%s).
+Disable your character's existing Ancestry (%s)?`),
+				templateAncestries[0].Name, entityAncestries[0].Name), "") == unison.ModalResponseOK {
+				for _, one := range gurps.ActiveAncestryTraits(entity.Traits) {
+					one.Disabled = true
 				}
 			}
 		}
-		traits := cloneRows(sheet.Traits.Table, d.Traits.Table.RootRows())
-		skills := cloneRows(sheet.Skills.Table, d.Skills.Table.RootRows())
-		spells := cloneRows(sheet.Spells.Table, d.Spells.Table.RootRows())
-		equipment := cloneRows(sheet.CarriedEquipment.Table, d.Equipment.Table.RootRows())
-		notes := cloneRows(sheet.Notes.Table, d.Notes.Table.RootRows())
-		var abort bool
-		if traits, abort = processPickerRows(traits); abort {
-			return
+	}
+	traits := cloneRows(sheet.Traits.Table, d.Traits.Table.RootRows())
+	skills := cloneRows(sheet.Skills.Table, d.Skills.Table.RootRows())
+	spells := cloneRows(sheet.Spells.Table, d.Spells.Table.RootRows())
+	equipment := cloneRows(sheet.CarriedEquipment.Table, d.Equipment.Table.RootRows())
+	notes := cloneRows(sheet.Notes.Table, d.Notes.Table.RootRows())
+	var abort bool
+	if traits, abort = processPickerRows(traits); abort {
+		return
+	}
+	if skills, abort = processPickerRows(skills); abort {
+		return
+	}
+	if spells, abort = processPickerRows(spells); abort {
+		return
+	}
+	appendRows(sheet.Traits.Table, traits)
+	appendRows(sheet.Skills.Table, skills)
+	appendRows(sheet.Spells.Table, spells)
+	appendRows(sheet.CarriedEquipment.Table, equipment)
+	appendRows(sheet.Notes.Table, notes)
+	sheet.Rebuild(true)
+	ProcessModifiersForSelection(sheet.Traits.Table)
+	ProcessModifiersForSelection(sheet.Skills.Table)
+	ProcessModifiersForSelection(sheet.Spells.Table)
+	ProcessModifiersForSelection(sheet.CarriedEquipment.Table)
+	ProcessModifiersForSelection(sheet.Notes.Table)
+	ProcessNameablesForSelection(sheet.Traits.Table)
+	ProcessNameablesForSelection(sheet.Skills.Table)
+	ProcessNameablesForSelection(sheet.Spells.Table)
+	ProcessNameablesForSelection(sheet.CarriedEquipment.Table)
+	ProcessNameablesForSelection(sheet.Notes.Table)
+	if len(templateAncestries) != 0 {
+		randomize := true
+		if !suppressRandomizePrompt {
+			randomize = unison.YesNoDialog(i18n.Text("Would you like to apply the initial randomization again?"), "") == unison.ModalResponseOK
 		}
-		if skills, abort = processPickerRows(skills); abort {
-			return
+		if randomize {
+			entity.Profile.ApplyRandomizers(entity)
+			updateRandomizedProfileFieldsWithoutUndo(sheet)
+			sheet.Rebuild(true)
 		}
-		if spells, abort = processPickerRows(spells); abort {
-			return
+	}
+	if mgr != nil && undo != nil {
+		var err error
+		if undo.AfterData, err = NewApplyTemplateUndoEditData(sheet); err != nil {
+			jot.Warn(err)
+		} else {
+			mgr.Add(undo)
 		}
-		appendRows(sheet.Traits.Table, traits)
-		appendRows(sheet.Skills.Table, skills)
-		appendRows(sheet.Spells.Table, spells)
-		appendRows(sheet.CarriedEquipment.Table, equipment)
-		appendRows(sheet.Notes.Table, notes)
-		sheet.Rebuild(true)
-		ProcessModifiersForSelection(sheet.Traits.Table)
-		ProcessModifiersForSelection(sheet.Skills.Table)
-		ProcessModifiersForSelection(sheet.Spells.Table)
-		ProcessModifiersForSelection(sheet.CarriedEquipment.Table)
-		ProcessModifiersForSelection(sheet.Notes.Table)
-		ProcessNameablesForSelection(sheet.Traits.Table)
-		ProcessNameablesForSelection(sheet.Skills.Table)
-		ProcessNameablesForSelection(sheet.Spells.Table)
-		ProcessNameablesForSelection(sheet.CarriedEquipment.Table)
-		ProcessNameablesForSelection(sheet.Notes.Table)
-		if mgr != nil && undo != nil {
-			var err error
-			if undo.AfterData, err = NewApplyTemplateUndoEditData(sheet); err != nil {
-				jot.Warn(err)
-			} else {
-				mgr.Add(undo)
-			}
+	}
+	sheet.Window().ToFront()
+	sheet.RequestFocus()
+}
+
+func updateRandomizedProfileFieldsWithoutUndo(sheet *Sheet) {
+	entity := sheet.Entity()
+	updateStringField(sheet, identityPanelNameFieldRefKey, entity.Profile.Name)
+	updateStringField(sheet, descriptionPanelAgeFieldRefKey, entity.Profile.Age)
+	updateStringField(sheet, descriptionPanelBirthdayFieldRefKey, entity.Profile.Birthday)
+	updateStringField(sheet, descriptionPanelEyesFieldRefKey, entity.Profile.Eyes)
+	updateStringField(sheet, descriptionPanelHairFieldRefKey, entity.Profile.Hair)
+	updateStringField(sheet, descriptionPanelSkinFieldRefKey, entity.Profile.Skin)
+	updateStringField(sheet, descriptionPanelHandednessFieldRefKey, entity.Profile.Handedness)
+	updateStringField(sheet, descriptionPanelGenderFieldRefKey, entity.Profile.Gender)
+	updateLengthField(sheet, descriptionPanelHeightFieldRefKey, entity.Profile.Height)
+	updateWeightField(sheet, descriptionPanelWeightFieldRefKey, entity.Profile.Weight)
+}
+
+func updateStringField(sheet *Sheet, refKey, value string) {
+	if panel := sheet.targetMgr.Find(refKey); panel != nil {
+		if f, ok := panel.Self.(*StringField); ok {
+			saved := sheet.undoMgr
+			sheet.undoMgr = nil
+			f.SetText(value)
+			sheet.undoMgr = saved
+		}
+	}
+}
+
+func updateLengthField(sheet *Sheet, refKey string, value gurps.Length) {
+	if panel := sheet.targetMgr.Find(refKey); panel != nil {
+		if f, ok := panel.Self.(*LengthField); ok {
+			saved := sheet.undoMgr
+			sheet.undoMgr = nil
+			f.SetText(value.String())
+			sheet.undoMgr = saved
+		}
+	}
+}
+
+func updateWeightField(sheet *Sheet, refKey string, value gurps.Weight) {
+	if panel := sheet.targetMgr.Find(refKey); panel != nil {
+		if f, ok := panel.Self.(*WeightField); ok {
+			saved := sheet.undoMgr
+			sheet.undoMgr = nil
+			f.SetText(value.String())
+			sheet.undoMgr = saved
 		}
 	}
 }
