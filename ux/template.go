@@ -267,8 +267,11 @@ func (d *Template) newSheetFromTemplate(_ any) {
 	entity := gurps.NewEntity(gurps.PC)
 	sheet := NewSheet(entity.Profile.Name+gurps.SheetExt, entity)
 	DisplayNewDockable(sheet)
-	d.applyTemplateToSheet(sheet, true)
-	sheet.undoMgr.Clear()
+	if d.applyTemplateToSheet(sheet, true) {
+		sheet.undoMgr.Clear()
+		sheet.crc = 0
+		UpdateTitleForDockable(sheet)
+	}
 }
 
 // ApplyTemplate loads the specified template file and applies it to a sheet.
@@ -292,7 +295,7 @@ func (d *Template) applyTemplate(suppressRandomizePromptAsBool any) {
 	}
 }
 
-func (d *Template) applyTemplateToSheet(sheet *Sheet, suppressRandomizePrompt bool) {
+func (d *Template) applyTemplateToSheet(sheet *Sheet, suppressRandomizePrompt bool) bool {
 	var undo *unison.UndoEdit[*ApplyTemplateUndoEditData]
 	mgr := unison.UndoManagerFor(sheet)
 	if mgr != nil {
@@ -331,13 +334,13 @@ Disable your character's existing Ancestry (%s)?`),
 	notes := cloneRows(sheet.Notes.Table, d.Notes.Table.RootRows())
 	var abort bool
 	if traits, abort = processPickerRows(traits); abort {
-		return
+		return false
 	}
 	if skills, abort = processPickerRows(skills); abort {
-		return
+		return false
 	}
 	if spells, abort = processPickerRows(spells); abort {
-		return
+		return false
 	}
 	appendRows(sheet.Traits.Table, traits)
 	appendRows(sheet.Skills.Table, skills)
@@ -376,6 +379,7 @@ Disable your character's existing Ancestry (%s)?`),
 	}
 	sheet.Window().ToFront()
 	sheet.RequestFocus()
+	return true
 }
 
 func updateRandomizedProfileFieldsWithoutUndo(sheet *Sheet) {
