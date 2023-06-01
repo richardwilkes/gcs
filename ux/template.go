@@ -270,8 +270,8 @@ func (d *Template) newSheetFromTemplate(_ any) {
 	if d.applyTemplateToSheet(sheet, true) {
 		sheet.undoMgr.Clear()
 		sheet.crc = 0
-		UpdateTitleForDockable(sheet)
 	}
+	sheet.SetBackingFilePath(entity.Profile.Name + gurps.SheetExt)
 }
 
 // ApplyTemplate loads the specified template file and applies it to a sheet.
