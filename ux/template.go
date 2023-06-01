@@ -358,7 +358,7 @@ Disable your character's existing Ancestry (%s)?`),
 	ProcessNameablesForSelection(sheet.Spells.Table)
 	ProcessNameablesForSelection(sheet.CarriedEquipment.Table)
 	ProcessNameablesForSelection(sheet.Notes.Table)
-	if len(templateAncestries) != 0 {
+	if len(templateAncestries) != 0 && gurps.GlobalSettings().General.AutoFillProfile {
 		randomize := true
 		if !suppressRandomizePrompt {
 			randomize = unison.YesNoDialog(i18n.Text("Would you like to apply the initial randomization again?"), "") == unison.ModalResponseOK
