@@ -947,13 +947,15 @@ func DisplayNewDockable(dockable unison.Dockable) {
 			g := gurps.MarkdownDockableGroup
 			group = &g
 		}
-		if group != nil && slices.Contains(gurps.GlobalSettings().OpenInWindow, *group) {
-			if _, err := NewWindowForDockable(dockable, *group); err != nil {
-				jot.Error(err)
+		if group != nil {
+			if slices.Contains(gurps.GlobalSettings().OpenInWindow, *group) {
+				if _, err := NewWindowForDockable(dockable, *group); err != nil {
+					jot.Error(err)
+				}
+				return
 			}
-			return
+			dockable.AsPanel().ClientData()[dockGroupClientDataKey] = *group
 		}
-		dockable.AsPanel().ClientData()[dockGroupClientDataKey] = *group
 		if dc := CurrentlyFocusedDockContainer(); dc != nil && DockContainerHoldsExtension(dc, fi.GroupWith...) {
 			dc.Stack(dockable, -1)
 			return
