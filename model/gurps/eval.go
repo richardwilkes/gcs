@@ -20,6 +20,7 @@ import (
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/eval"
 	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/xmath/rand"
 )
 
 // InstallEvaluatorFunctions installs additional functions for the evaluator.
@@ -27,6 +28,9 @@ func InstallEvaluatorFunctions(m map[string]eval.Function) {
 	m["advantage_level"] = evalTraitLevel // For older files
 	m["dice"] = evalDice
 	m["enc"] = evalEncumbrance
+	m["has_trait"] = evalHasTrait
+	m["random_height"] = evalRandomHeight
+	m["random_weight"] = evalRandomWeight
 	m["roll"] = evalRoll
 	m["signed"] = evalSigned
 	m["skill_level"] = evalSkillLevel
@@ -139,6 +143,23 @@ func evalSkillLevel(e *eval.Evaluator, arguments string) (any, error) {
 		return false
 	}, true, true, entity.Skills...)
 	return level, nil
+}
+
+func evalHasTrait(e *eval.Evaluator, arguments string) (any, error) {
+	entity, ok := e.Resolver.(*Entity)
+	if !ok || entity.Type != PC {
+		return false, nil
+	}
+	arguments = strings.Trim(arguments, `"`)
+	found := false
+	Traverse(func(t *Trait) bool {
+		if strings.EqualFold(t.Name, arguments) {
+			found = true
+			return true
+		}
+		return false
+	}, true, false, entity.Traits...)
+	return found, nil
 }
 
 func evalTraitLevel(e *eval.Evaluator, arguments string) (any, error) {
@@ -392,4 +413,280 @@ func valueToYards(value int) fxp.Int {
 		v = fxp.Seventy
 	}
 	return v.Mul(multiplier)
+}
+
+// evalRandomHeight generates a random height in inches based on the chart from B18.
+func evalRandomHeight(e *eval.Evaluator, arguments string) (any, error) {
+	entity, ok := e.Resolver.(*Entity)
+	if !ok || entity.Type != PC {
+		return -fxp.One, nil
+	}
+	stDecimal, err := evalToNumber(e, arguments)
+	if err != nil {
+		return nil, err
+	}
+	var base int
+	st := fxp.As[int](stDecimal)
+	if st < 7 {
+		base = 52
+	} else if st > 13 {
+		base = 74
+	} else {
+		switch st {
+		case 7:
+			base = 55
+		case 8:
+			base = 58
+		case 9:
+			base = 61
+		case 10:
+			base = 63
+		case 11:
+			base = 65
+		case 12:
+			base = 68
+		case 13:
+			base = 71
+		}
+	}
+	return fxp.From(base + rand.NewCryptoRand().Intn(11)), nil
+}
+
+// evalRandomWeight generates a random weight in pounds based on the chart from B18.
+func evalRandomWeight(e *eval.Evaluator, arguments string) (any, error) {
+	entity, ok := e.Resolver.(*Entity)
+	if !ok || entity.Type != PC {
+		return -fxp.One, nil
+	}
+	var arg string
+	arg, arguments = eval.NextArg(arguments)
+	stDecimal, err := evalToNumber(e, arg)
+	if err != nil {
+		return nil, err
+	}
+	var shift fxp.Int
+	if arguments != "" {
+		if shift, err = evalToNumber(e, arguments); err != nil {
+			return nil, err
+		}
+	}
+	st := fxp.As[int](stDecimal)
+	skinny := false
+	overweight := false
+	fat := false
+	veryFat := false
+	Traverse(func(t *Trait) bool {
+		if strings.EqualFold(t.Name, "skinny") {
+			skinny = true
+		} else if strings.EqualFold(t.Name, "overweight") {
+			overweight = true
+		} else if strings.EqualFold(t.Name, "fat") {
+			fat = true
+		} else if strings.EqualFold(t.Name, "very Fat") {
+			veryFat = true
+		}
+		return false
+	}, true, false, entity.Traits...)
+	shiftAmt := fxp.As[int](shift)
+	if shiftAmt != 0 {
+		switch {
+		case skinny:
+			shiftAmt--
+		case overweight:
+			shiftAmt++
+		case fat:
+			shiftAmt += 2
+		case veryFat:
+			shiftAmt += 3
+		}
+		skinny = false
+		overweight = false
+		fat = false
+		veryFat = false
+		switch shiftAmt {
+		case 0:
+		case 1:
+			overweight = true
+		case 2:
+			fat = true
+		case 3:
+			veryFat = true
+		default:
+			if shiftAmt < 0 {
+				skinny = true
+			} else {
+				veryFat = true
+			}
+		}
+	}
+	var lower, upper int
+	switch {
+	case skinny:
+		if st < 7 {
+			lower = 40
+			upper = 80
+		} else if st > 13 {
+			lower = 115
+			upper = 180
+		} else {
+			switch st {
+			case 7:
+				lower = 50
+				upper = 90
+			case 8:
+				lower = 60
+				upper = 100
+			case 9:
+				lower = 70
+				upper = 110
+			case 10:
+				lower = 80
+				upper = 120
+			case 11:
+				lower = 85
+				upper = 130
+			case 12:
+				lower = 95
+				upper = 150
+			case 13:
+				lower = 105
+				upper = 165
+			}
+		}
+	case overweight:
+		if st < 7 {
+			lower = 80
+			upper = 160
+		} else if st > 13 {
+			lower = 225
+			upper = 355
+		} else {
+			switch st {
+			case 7:
+				lower = 100
+				upper = 175
+			case 8:
+				lower = 120
+				upper = 195
+			case 9:
+				lower = 140
+				upper = 215
+			case 10:
+				lower = 150
+				upper = 230
+			case 11:
+				lower = 165
+				upper = 255
+			case 12:
+				lower = 185
+				upper = 290
+			case 13:
+				lower = 205
+				upper = 320
+			}
+		}
+	case fat:
+		if st < 7 {
+			lower = 90
+			upper = 180
+		} else if st > 13 {
+			lower = 255
+			upper = 405
+		} else {
+			switch st {
+			case 7:
+				lower = 115
+				upper = 205
+			case 8:
+				lower = 135
+				upper = 225
+			case 9:
+				lower = 160
+				upper = 250
+			case 10:
+				lower = 175
+				upper = 265
+			case 11:
+				lower = 190
+				upper = 295
+			case 12:
+				lower = 210
+				upper = 330
+			case 13:
+				lower = 235
+				upper = 370
+			}
+		}
+	case veryFat:
+		if st < 7 {
+			lower = 120
+			upper = 240
+		} else if st > 13 {
+			lower = 340
+			upper = 540
+		} else {
+			switch st {
+			case 7:
+				lower = 150
+				upper = 270
+			case 8:
+				lower = 180
+				upper = 300
+			case 9:
+				lower = 210
+				upper = 330
+			case 10:
+				lower = 230
+				upper = 350
+			case 11:
+				lower = 250
+				upper = 390
+			case 12:
+				lower = 280
+				upper = 440
+			case 13:
+				lower = 310
+				upper = 490
+			}
+		}
+		if shiftAmt > 3 {
+			// For the case where it has been shifted above very fat, add 2/3 of the delta to the range
+			delta := (upper - lower) * 2 / 3
+			lower += delta
+			upper += delta
+		}
+	default:
+		if st < 7 {
+			lower = 60
+			upper = 120
+		} else if st > 13 {
+			lower = 170
+			upper = 270
+		} else {
+			switch st {
+			case 7:
+				lower = 75
+				upper = 135
+			case 8:
+				lower = 90
+				upper = 150
+			case 9:
+				lower = 105
+				upper = 165
+			case 10:
+				lower = 115
+				upper = 175
+			case 11:
+				lower = 125
+				upper = 195
+			case 12:
+				lower = 140
+				upper = 220
+			case 13:
+				lower = 155
+				upper = 245
+			}
+		}
+	}
+	return fxp.From(lower + rand.NewCryptoRand().Intn(1+upper-lower)), nil
 }
