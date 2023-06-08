@@ -60,6 +60,7 @@ type Navigator struct {
 	downloadLibraryButton     *unison.Button
 	libraryReleaseNotesButton *unison.Button
 	configLibraryButton       *unison.Button
+	favoriteButton            *unison.Button
 	scroll                    *unison.ScrollPanel
 	table                     *unison.Table[*NavigatorNode]
 	tokens                    []*gurps.MonitorToken
@@ -80,15 +81,10 @@ func newNavigator() *Navigator {
 
 	n.table.Columns = make([]unison.ColumnInfo, 1)
 	globalSettings := gurps.GlobalSettings()
-	libs := globalSettings.LibrarySet.List()
-	rows := make([]*NavigatorNode, 0, len(libs))
 	n.needReload = true
-	for _, lib := range libs {
-		n.tokens = append(n.tokens, lib.Watch(n.watchCallback, true))
-		rows = append(rows, NewLibraryNode(n, lib))
-	}
+	rows := n.populateRows()
 	n.needReload = false
-	n.table.SetScale(float32(gurps.GlobalSettings().General.NavigatorUIScale) / 100)
+	n.table.SetScale(float32(globalSettings.General.NavigatorUIScale) / 100)
 	n.table.SetRootRows(rows)
 	n.ApplyDisclosedPaths(globalSettings.LibraryExplorer.OpenRowKeys)
 	n.table.SizeColumnsToFit(true)
@@ -156,6 +152,10 @@ func (n *Navigator) setupToolBar() {
 	n.configLibraryButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Configure"))
 	n.configLibraryButton.ClickCallback = n.configureSelection
 
+	n.favoriteButton = unison.NewSVGButton(svg.Star)
+	n.favoriteButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Favorite"))
+	n.favoriteButton.ClickCallback = n.favoriteSelection
+
 	first := unison.NewPanel()
 	first.AddChild(NewDefaultInfoPop())
 	first.AddChild(helpButton)
@@ -181,6 +181,7 @@ func (n *Navigator) setupToolBar() {
 	first.AddChild(n.newFolderButton)
 	first.AddChild(n.renameButton)
 	first.AddChild(n.deleteButton)
+	first.AddChild(n.favoriteButton)
 	for _, child := range first.Children() {
 		child.SetLayoutData(unison.MiddleAlignment)
 	}
@@ -245,6 +246,26 @@ func (n *Navigator) InitialFocus() {
 
 func (n *Navigator) addLibrary() {
 	ShowLibrarySettings(&gurps.Library{})
+}
+
+func (n *Navigator) favoriteSelection() {
+	if n.table.HasSelection() {
+		changed := false
+		selection := n.table.SelectedRows(true)
+		for _, row := range selection {
+			if row.nodeType == fileNode {
+				changed = true
+				if i := slices.Index(row.library.Favorites, row.path); i != -1 {
+					row.library.Favorites = slices.Delete(row.library.Favorites, i, i+1)
+				} else {
+					row.library.Favorites = append(row.library.Favorites, row.path)
+				}
+			}
+		}
+		if changed {
+			n.Reload()
+		}
+	}
 }
 
 func (n *Navigator) deleteSelection() {
@@ -413,11 +434,23 @@ func (n *Navigator) renameSelection() {
 			if err = os.Rename(oldPath, newPath); err != nil {
 				unison.ErrorDialogWithError(fmt.Sprintf(i18n.Text("Unable to rename:\n%s"), oldPath), err)
 			} else {
+				n.fixupFavoritePath(row, oldPath, newPath)
+				n.adjustBackingFilePath(row, oldPath, newPath)
 				n.Reload()
 				n.ApplySelectedPaths([]string{newPath})
 				n.MarkForRedraw()
-				n.adjustBackingFilePath(row, oldPath, newPath)
 			}
+		}
+	}
+}
+
+func (n *Navigator) fixupFavoritePath(row *NavigatorNode, oldPath, newPath string) {
+	if row.nodeType == fileNode {
+		prefix := row.library.PathOnDisk + string([]rune{filepath.Separator})
+		oldPath = strings.TrimPrefix(oldPath, prefix)
+		if i := slices.Index(row.library.Favorites, oldPath); i != -1 {
+			row.library.Favorites = slices.Delete(row.library.Favorites, i, i+1)
+			row.library.Favorites = append(row.library.Favorites, strings.TrimPrefix(newPath, prefix))
 		}
 	}
 }
@@ -509,6 +542,13 @@ func (n *Navigator) mouseDown(where unison.Point, button, clickCount int, mod un
 			f := unison.DefaultMenuFactory()
 			cm := f.NewMenu(unison.PopupMenuTemporaryBaseID|unison.ContextMenuIDFlag, "", nil)
 			id := 1
+			for _, one := range sel {
+				if one.nodeType == fileNode {
+					cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.favoriteButton))
+					cm.InsertSeparator(-1, true)
+					break
+				}
+			}
 			if len(sel) == 1 && sel[0].nodeType == fileNode {
 				p := sel[0].Path()
 				if filepath.Ext(p) == gurps.TemplatesExt {
@@ -621,17 +661,22 @@ func (n *Navigator) Reload() {
 	n.tokens = nil
 	disclosed := n.DisclosedPaths()
 	selection := n.SelectedPaths()
-	libs := gurps.GlobalSettings().LibrarySet.List()
-	rows := make([]*NavigatorNode, 0, len(libs))
-	for _, lib := range libs {
-		n.tokens = append(n.tokens, lib.Watch(n.watchCallback, true))
-		rows = append(rows, NewLibraryNode(n, lib))
-	}
-	n.table.SetRootRows(rows)
+	n.table.SetRootRows(n.populateRows())
 	n.ApplyDisclosedPaths(disclosed)
 	n.table.SyncToModel()
 	n.ApplySelectedPaths(selection)
 	n.table.SizeColumnsToFit(true)
+}
+
+func (n *Navigator) populateRows() []*NavigatorNode {
+	libs := gurps.GlobalSettings().LibrarySet.List()
+	rows := make([]*NavigatorNode, 0, 1+len(libs))
+	rows = append(rows, NewFavoritesNode(n))
+	for _, lib := range libs {
+		n.tokens = append(n.tokens, lib.Watch(n.watchCallback, true))
+		rows = append(rows, NewLibraryNode(n, lib))
+	}
+	return rows
 }
 
 func (n *Navigator) adjustTableSizeEventually() {
@@ -676,6 +721,7 @@ func (n *Navigator) selectionChanged() {
 	newFolderEnabled := false
 	downloadEnabled := false
 	configEnabled := false
+	favoriteEnabled := false
 	if n.table.HasSelection() {
 		deleteEnabled = true
 		downloadEnabled = true
@@ -699,12 +745,16 @@ func (n *Navigator) selectionChanged() {
 				hasOther = true
 				configEnabled = false
 				downloadEnabled = false
+				if row.nodeType == fileNode {
+					favoriteEnabled = true
+				}
 			}
 		}
 		if hasLibs && hasOther {
 			deleteEnabled = false
 		}
 	}
+	n.favoriteButton.SetEnabled(favoriteEnabled)
 	n.deleteButton.SetEnabled(deleteEnabled)
 	n.renameButton.SetEnabled(renameEnabled)
 	n.newFolderButton.SetEnabled(newFolderEnabled)
@@ -803,9 +853,9 @@ func (n *Navigator) adjustForMatch() {
 		row := n.searchResult[n.searchIndex]
 		n.table.DiscloseRow(row, false)
 		n.table.ClearSelection()
-		rowIndex := n.table.RowToIndex(row)
-		n.table.SelectByIndex(rowIndex)
-		n.table.ScrollRowIntoView(rowIndex)
+		i := n.table.RowToIndex(row)
+		n.table.SelectByIndex(i)
+		n.table.ScrollRowIntoView(i)
 	} else {
 		n.matchesLabel.Text = "-"
 	}

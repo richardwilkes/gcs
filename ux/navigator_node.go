@@ -24,10 +24,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
+	"golang.org/x/exp/slices"
 )
 
 var _ unison.TableRowData[*NavigatorNode] = &NavigatorNode{}
@@ -35,7 +37,8 @@ var _ unison.TableRowData[*NavigatorNode] = &NavigatorNode{}
 type navigatorNodeType uint8
 
 const (
-	libraryNode navigatorNodeType = iota
+	favoritesNode navigatorNodeType = iota
+	libraryNode
 	directoryNode
 	fileNode
 )
@@ -52,6 +55,17 @@ type NavigatorNode struct {
 	children                 []*NavigatorNode
 	updateCellReleaseVersion string
 	updateCellCache          *updatableLibraryCell
+}
+
+// NewFavoritesNode creates the Favorites node.
+func NewFavoritesNode(nav *Navigator) *NavigatorNode {
+	n := &NavigatorNode{
+		nodeType: favoritesNode,
+		id:       uuid.New(),
+		nav:      nav,
+	}
+	n.Refresh()
+	return n
 }
 
 // NewLibraryNode creates a new library node.
@@ -112,7 +126,7 @@ func (n *NavigatorNode) SetParent(_ *NavigatorNode) {
 
 // CanHaveChildren implements unison.TableRowData.
 func (n *NavigatorNode) CanHaveChildren() bool {
-	if n.nodeType == libraryNode || n.nodeType == directoryNode {
+	if n.nodeType == libraryNode || n.nodeType == directoryNode || n.nodeType == favoritesNode {
 		return true
 	}
 	return false
@@ -133,16 +147,20 @@ func (n *NavigatorNode) CellDataForSort(col int) string {
 		return ""
 	}
 	text := n.primaryColumnText()
-	if n.nodeType == libraryNode {
+	switch n.nodeType {
+	case favoritesNode:
+		return "0/" + text
+	case libraryNode:
 		if n.library.IsUser() {
-			return "0/" + text
+			return "1/" + text
 		}
 		if n.library.IsMaster() {
-			return "2/" + text
+			return "3/" + text
 		}
-		return "1/" + text
+		return "2/" + text
+	default:
+		return text
 	}
-	return text
 }
 
 func filterVersion(version string) string {
@@ -156,13 +174,17 @@ func filterVersion(version string) string {
 }
 
 func (n *NavigatorNode) primaryColumnText() string {
-	if n.nodeType == libraryNode {
+	switch n.nodeType {
+	case favoritesNode:
+		return i18n.Text("Favorites")
+	case libraryNode:
 		if n.library.IsUser() || n.library.CachedVersion == "" || n.library.CachedVersion == "0" {
 			return n.library.Title
 		}
 		return fmt.Sprintf("%s v%s", n.library.Title, filterVersion(n.library.CachedVersion))
+	default:
+		return xfs.TrimExtension(path.Base(n.path))
 	}
-	return xfs.TrimExtension(path.Base(n.path))
 }
 
 // Match looks for the text in the node and return true if it is present. Note that calls to this method should always
@@ -228,15 +250,42 @@ func (n *NavigatorNode) SetOpen(open bool) {
 
 // Path returns the full path on disk for this node.
 func (n *NavigatorNode) Path() string {
-	if n.nodeType == libraryNode {
+	switch n.nodeType {
+	case favoritesNode:
+		return ""
+	case libraryNode:
 		return n.library.Path()
+	default:
+		return filepath.Join(n.library.Path(), n.path)
 	}
-	return filepath.Join(n.library.Path(), n.path)
 }
 
 // Refresh the contents of this node.
 func (n *NavigatorNode) Refresh() {
 	switch n.nodeType {
+	case favoritesNode:
+		type fav struct {
+			path    string
+			library *gurps.Library
+		}
+		var favs []*fav
+		for _, lib := range gurps.GlobalSettings().LibrarySet {
+			lib.CleanupFavorites()
+			if len(lib.Favorites) != 0 {
+				for _, one := range lib.Favorites {
+					favs = append(favs, &fav{
+						path:    one,
+						library: lib,
+					})
+				}
+			}
+		}
+		slices.SortFunc(favs, func(a, b *fav) bool {
+			return txt.NaturalLess(a.path, b.path, true)
+		})
+		for _, one := range favs {
+			n.children = append(n.children, NewFileNode(one.library, one.path, n))
+		}
 	case libraryNode:
 		n.children = n.refreshChildren(".", n)
 	case directoryNode:

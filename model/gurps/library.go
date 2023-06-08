@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -30,6 +31,7 @@ import (
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio"
+	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/rjeczalik/notify"
 )
 
@@ -40,12 +42,13 @@ var NotifyOfLibraryChangeFunc func()
 
 // Library holds information about a library of data files.
 type Library struct {
-	Title             string `json:"title,omitempty"`
-	GitHubAccountName string `json:"-"`
-	AccessToken       string `json:"access_token,omitempty"`
-	RepoName          string `json:"-"`
-	PathOnDisk        string `json:"path,omitempty"`
-	CachedVersion     string `json:"-"`
+	Title             string   `json:"title,omitempty"`
+	GitHubAccountName string   `json:"-"`
+	AccessToken       string   `json:"access_token,omitempty"`
+	RepoName          string   `json:"-"`
+	PathOnDisk        string   `json:"path,omitempty"`
+	CachedVersion     string   `json:"-"`
+	Favorites         []string `json:"favorites,omitempty"`
 	monitor           *monitor
 	lock              sync.RWMutex
 	upgrade           *Release
@@ -111,6 +114,18 @@ func (l *Library) SetPath(newPath string) error {
 		}
 	}
 	return nil
+}
+
+// CleanupFavorites prunes out any favorites that can no longer be read.
+func (l *Library) CleanupFavorites() {
+	var favs []string
+	for _, one := range l.Favorites {
+		if xfs.FileIsReadable(filepath.Join(l.PathOnDisk, one)) {
+			favs = append(favs, one)
+		}
+	}
+	sort.Strings(favs)
+	l.Favorites = favs
 }
 
 // Watch for changes in the directory tree of this library.
