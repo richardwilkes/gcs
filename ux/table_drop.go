@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -107,10 +107,10 @@ func didDropCallback[T gurps.NodeTypes](undo *unison.UndoEdit[*TableDragUndoEdit
 	}
 	entityProvider := unison.Ancestor[gurps.EntityProvider](to)
 	if !toolbox.IsNil(entityProvider) && entityProvider.Entity() != nil {
+		if rebuilder := unison.Ancestor[Rebuildable](to); rebuilder != nil {
+			rebuilder.Rebuild(true)
+		}
 		if entityProvider != unison.Ancestor[gurps.EntityProvider](from) {
-			if rebuilder := unison.Ancestor[Rebuildable](to); rebuilder != nil {
-				rebuilder.Rebuild(true)
-			}
 			ProcessModifiersForSelection(to)
 			ProcessNameablesForSelection(to)
 		}
