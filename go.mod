@@ -6,7 +6,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/richardwilkes/json v0.1.0
 	github.com/richardwilkes/pdf v1.20.5
-	github.com/richardwilkes/rpgtools v1.5.1
+	github.com/richardwilkes/rpgtools v1.5.2
 	github.com/richardwilkes/toolbox v1.85.1
 	github.com/richardwilkes/unison v0.56.0
 	github.com/rjeczalik/notify v0.9.3
