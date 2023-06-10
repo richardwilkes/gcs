@@ -669,7 +669,7 @@ func (e *Entity) SwingFor(st int) *dice.Dice {
 func (e *Entity) AttributeBonusFor(attributeID string, limitation BonusLimitation, tooltip *xio.ByteBuffer) fxp.Int {
 	var total fxp.Int
 	for _, one := range e.features.attributeBonuses {
-		if one.Limitation == limitation && one.Attribute == attributeID {
+		if one.ActualLimitation() == limitation && one.Attribute == attributeID {
 			total += one.AdjustedAmount()
 			one.AddToTooltip(tooltip)
 		}
