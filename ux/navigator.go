@@ -930,7 +930,7 @@ func HandleLink(src unison.Paneler, target string) {
 			target = revised
 		}
 	}
-	if strings.HasPrefix(target, "./") || strings.HasPrefix(target, "../") {
+	if !strings.HasPrefix(target, "/") {
 		if md, ok := src.AsPanel().Self.(*unison.Markdown); ok && md.WorkingDir != "" {
 			p := target
 			if revised, err := url.PathUnescape(p); err == nil {
@@ -941,11 +941,11 @@ func HandleLink(src unison.Paneler, target string) {
 				return
 			}
 		}
+	}
+	if !OpenPageReference(target, "", nil) {
 		unison.ErrorDialogWithMessage(i18n.Text("Unable to open ")+target,
 			i18n.Text("Does the file exist and do you have access to read it?"))
-		return
 	}
-	OpenPageReference(target, "", nil)
 }
 
 // OpenFiles attempts to open the given file paths.
