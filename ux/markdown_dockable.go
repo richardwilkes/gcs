@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -97,6 +97,7 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 	d.SetLayout(&unison.FlexLayout{Columns: 1})
 
 	d.markdown = unison.NewMarkdown(true)
+	d.markdown.ClientData()[WorkingDirKey] = WorkingDirProvider(d)
 	insets := unison.NewUniformInsets(20)
 	d.markdown.SetBorder(unison.NewEmptyBorder(insets))
 	d.markdown.MouseDownCallback = d.mouseDown
@@ -104,9 +105,6 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 	d.markdown.MouseUpCallback = d.mouseUp
 	d.markdown.UpdateCursorCallback = d.updateCursor
 	d.markdown.SetFocusable(true)
-	if !strings.HasPrefix(filePath, markdownContentOnlyPrefix) {
-		d.markdown.WorkingDir = filepath.Dir(filePath)
-	}
 	d.original = content
 	if !strings.HasPrefix(d.path, markdownContentOnlyPrefix) {
 		data, err := os.ReadFile(d.BackingFilePath())
@@ -317,7 +315,6 @@ func (d *MarkdownDockable) save(forceSaveAs bool) bool {
 	success := false
 	if forceSaveAs || d.needsSaveAsPrompt {
 		success = SaveDockableAs(d, "md", d.saveData, func(path string) {
-			d.markdown.WorkingDir = filepath.Dir(path)
 			d.path = path
 			d.original = d.content
 		})

@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -264,6 +264,9 @@ func (n *Node[T]) CellFromCellData(c *gurps.CellData, width float32, foreground 
 
 func (n *Node[T]) createMarkdownCell(c *gurps.CellData, width float32, foreground unison.Ink) unison.Paneler {
 	m := unison.NewMarkdown(false)
+	if wd, ok := n.table.ClientData()[WorkingDirKey]; ok {
+		m.ClientData()[WorkingDirKey] = wd
+	}
 	if n.forPage {
 		adjustMarkdownThemeForPage(m)
 	}
@@ -519,11 +522,10 @@ func (a *traitModifierAdjuster) Apply() {
 }
 
 func convertLinksForPageRef(in string) (string, *unison.SVG) {
-	lower := strings.ToLower(in)
 	switch {
-	case strings.HasPrefix(lower, "http://") || strings.HasPrefix(lower, "https://"):
+	case unison.HasURLPrefix(in):
 		return i18n.Text("link"), svg.Link
-	case strings.HasPrefix(lower, "md:"):
+	case strings.HasPrefix(in, "md:"):
 		return i18n.Text("md"), svg.MarkdownFile
 	default:
 		return in, nil

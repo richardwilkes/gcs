@@ -20,14 +20,14 @@ type ListProvider interface {
 	SpellListProvider
 }
 
-// TraitListProvider defines the method needed to access the trait list data.
+// TraitListProvider defines the methods needed to access the trait list data.
 type TraitListProvider interface {
 	EntityProvider
 	TraitList() []*Trait
 	SetTraitList(list []*Trait)
 }
 
-// EquipmentListProvider defines the method needed to access the equipment list data.
+// EquipmentListProvider defines the methods needed to access the equipment list data.
 type EquipmentListProvider interface {
 	EntityProvider
 	CarriedEquipmentList() []*Equipment
@@ -36,54 +36,54 @@ type EquipmentListProvider interface {
 	SetOtherEquipmentList(list []*Equipment)
 }
 
-// NoteListProvider defines the method needed to access the note list data.
+// NoteListProvider defines the methods needed to access the note list data.
 type NoteListProvider interface {
 	EntityProvider
 	NoteList() []*Note
 	SetNoteList(list []*Note)
 }
 
-// SkillListProvider defines the method needed to access the skill list data.
+// SkillListProvider defines the methods needed to access the skill list data.
 type SkillListProvider interface {
 	EntityProvider
 	SkillList() []*Skill
 	SetSkillList(list []*Skill)
 }
 
-// SpellListProvider defines the method needed to access the spell list data.
+// SpellListProvider defines the methods needed to access the spell list data.
 type SpellListProvider interface {
 	EntityProvider
 	SpellList() []*Spell
 	SetSpellList(list []*Spell)
 }
 
-// TraitModifierListProvider defines the method needed to access the trait modifier list data.
+// TraitModifierListProvider defines the methods needed to access the trait modifier list data.
 type TraitModifierListProvider interface {
 	EntityProvider
 	TraitModifierList() []*TraitModifier
 	SetTraitModifierList(list []*TraitModifier)
 }
 
-// EquipmentModifierListProvider defines the method needed to access the equipment modifier list data.
+// EquipmentModifierListProvider defines the methods needed to access the equipment modifier list data.
 type EquipmentModifierListProvider interface {
 	EntityProvider
 	EquipmentModifierList() []*EquipmentModifier
 	SetEquipmentModifierList(list []*EquipmentModifier)
 }
 
-// ConditionalModifierListProvider defines the method needed to access the conditional modifier list data.
+// ConditionalModifierListProvider defines the methods needed to access the conditional modifier list data.
 type ConditionalModifierListProvider interface {
 	EntityProvider
 	ConditionalModifiers() []*ConditionalModifier
 }
 
-// ReactionModifierListProvider defines the method needed to access the reaction modifier list data.
+// ReactionModifierListProvider defines the methods needed to access the reaction modifier list data.
 type ReactionModifierListProvider interface {
 	EntityProvider
 	Reactions() []*ConditionalModifier
 }
 
-// WeaponListProvider defines the method needed to access the weapon list data.
+// WeaponListProvider defines the methods needed to access the weapon list data.
 type WeaponListProvider interface {
 	EntityProvider
 	WeaponOwner() WeaponOwner

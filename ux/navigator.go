@@ -13,7 +13,6 @@ package ux
 
 import (
 	"fmt"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -26,7 +25,6 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/toolbox/xmath/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/rjeczalik/notify"
@@ -921,31 +919,6 @@ func (n *Navigator) ApplySelectedPaths(paths []string) {
 		}
 	}
 	n.table.SetSelectionMap(selMap)
-}
-
-// HandleLink will try to open http, https, and md links, as well as resolve page references.
-func HandleLink(src unison.Paneler, target string) {
-	if strings.HasPrefix(strings.ToLower(target), "md:") {
-		if revised, err := url.PathUnescape(target); err == nil {
-			target = revised
-		}
-	}
-	if !strings.HasPrefix(target, "/") {
-		if md, ok := src.AsPanel().Self.(*unison.Markdown); ok && md.WorkingDir != "" {
-			p := target
-			if revised, err := url.PathUnescape(p); err == nil {
-				p = revised
-			}
-			if p = filepath.Join(md.WorkingDir, p); fs.FileIsReadable(p) {
-				OpenFile(p, 0)
-				return
-			}
-		}
-	}
-	if !OpenPageReference(target, "", nil) {
-		unison.ErrorDialogWithMessage(i18n.Text("Unable to open ")+target,
-			i18n.Text("Does the file exist and do you have access to read it?"))
-	}
 }
 
 // OpenFiles attempts to open the given file paths.

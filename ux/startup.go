@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -34,6 +34,8 @@ func Start(files []string) {
 		unison.StartupFinishedCallback(func() {
 			performPlatformStartup()
 			unison.DefaultMarkdownTheme.LinkHandler = HandleLink
+			unison.DefaultMarkdownTheme.WorkingDirProvider = WorkingDirProvider
+			unison.DefaultMarkdownTheme.AltLinkPrefixes = []string{"md:"}
 			if appIcon, err := unison.NewImageFromBytes(appIconBytes, 0.5); err != nil {
 				jot.Error(err)
 			} else {

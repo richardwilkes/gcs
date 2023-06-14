@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -53,6 +53,7 @@ func initNoteToolbar(_ *editor[*gurps.Note, *gurps.NoteEditData], toolbar *uniso
 
 func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison.Panel) func() {
 	markdown := unison.NewMarkdown(true)
+	markdown.ClientData()[WorkingDirKey] = WorkingDirProvider(e.owner)
 	markdown.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,
 		HGrab:  true,

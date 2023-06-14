@@ -6,9 +6,9 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/richardwilkes/json v0.1.0
 	github.com/richardwilkes/pdf v1.20.5
-	github.com/richardwilkes/rpgtools v1.5.2
+	github.com/richardwilkes/rpgtools v1.5.3
 	github.com/richardwilkes/toolbox v1.85.1
-	github.com/richardwilkes/unison v0.56.1
+	github.com/richardwilkes/unison v0.57.0
 	github.com/rjeczalik/notify v0.9.3
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef
@@ -16,9 +16,9 @@ require (
 	github.com/tc-hib/winres v0.2.0
 	github.com/yookoala/realpath v1.0.0
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
-	golang.org/x/image v0.7.0
-	golang.org/x/sys v0.8.0
-	golang.org/x/text v0.9.0
+	golang.org/x/image v0.8.0
+	golang.org/x/sys v0.9.0
+	golang.org/x/text v0.10.0
 )
 
 require (
@@ -36,8 +36,8 @@ require (
 	github.com/pkg/term v1.1.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/yuin/goldmark v1.5.4 // indirect
-	golang.org/x/mod v0.10.0 // indirect
-	golang.org/x/net v0.10.0 // indirect
+	golang.org/x/mod v0.11.0 // indirect
+	golang.org/x/net v0.11.0 // indirect
 	golang.org/x/tools v0.9.3 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

@@ -46,14 +46,13 @@ func ExtractPageReferences(s string) []string {
 
 // OpenPageReference opens the given page reference. Returns true if the the user asked to cancel further processing.
 func OpenPageReference(ref, highlight string, promptContext map[string]bool) bool {
-	lowerRef := strings.ToLower(ref)
 	switch {
-	case strings.HasPrefix(lowerRef, "http://") || strings.HasPrefix(lowerRef, "https://"):
+	case unison.HasURLPrefix(ref):
 		if err := desktop.Open(ref); err != nil {
 			unison.ErrorDialogWithError(i18n.Text("Unable to open link"), err)
 		}
 		return false
-	case strings.HasPrefix(lowerRef, "md:"):
+	case strings.HasPrefix(ref, "md:"):
 		openMarkdownPageReference(ref)
 		return false
 	default:

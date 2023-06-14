@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -44,7 +44,7 @@ type ImageDockable struct {
 
 // NewImageDockable creates a new unison.Dockable for image files.
 func NewImageDockable(filePath string) (unison.Dockable, error) {
-	img, err := unison.NewImageFromFilePathOrURL(filePath, 1)
+	img, err := unison.NewImageFromFilePathOrURL(filePath, 1/unison.PrimaryDisplay().ScaleX)
 	if err != nil {
 		return nil, err
 	}
