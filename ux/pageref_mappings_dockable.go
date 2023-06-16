@@ -49,7 +49,7 @@ func OpenPageReference(ref, highlight string, promptContext map[string]bool) boo
 	switch {
 	case unison.HasURLPrefix(ref):
 		if err := desktop.Open(ref); err != nil {
-			unison.ErrorDialogWithError(i18n.Text("Unable to open link"), err)
+			unison.ErrorDialogWithError(i18n.Text("Unable to open ")+ref, err)
 		}
 		return false
 	case strings.HasPrefix(ref, "md:"):
@@ -94,7 +94,7 @@ func openPDFPageReference(ref, highlight string, promptContext map[string]bool) 
 	if i > 0 {
 		page, err := strconv.Atoi(ref[i:])
 		if err != nil {
-			unison.ErrorDialogWithMessage(i18n.Text("Unable to open link"), i18n.Text("Does it exist?"))
+			unison.ErrorDialogWithMessage(i18n.Text("Unable to open ")+ref, i18n.Text("Does it exist?"))
 			return false
 		}
 		key := ref[:i]
