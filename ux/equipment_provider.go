@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -172,8 +172,6 @@ func (p *equipmentProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Eq
 			headers = append(headers, NewEditorListHeader[*gurps.Equipment](p.descriptionText(), "", p.forPage))
 		case gurps.EquipmentUsesColumn:
 			headers = append(headers, NewEditorListHeader[*gurps.Equipment](i18n.Text("Uses"), i18n.Text("The number of uses remaining"), p.forPage))
-		case gurps.EquipmentMaxUsesColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Equipment](i18n.Text("Uses"), i18n.Text("The maximum number of uses"), p.forPage))
 		case gurps.EquipmentTLColumn:
 			headers = append(headers, NewEditorListHeader[*gurps.Equipment](i18n.Text("TL"), i18n.Text("Tech Level"), p.forPage))
 		case gurps.EquipmentLCColumn:
@@ -207,30 +205,21 @@ func (p *equipmentProvider) SyncHeader(headers []unison.TableColumnHeader[*Node[
 
 func (p *equipmentProvider) ColumnIDs() []int {
 	columnIDs := make([]int, 0, 11)
-	if p.forPage {
-		if p.carried {
-			columnIDs = append(columnIDs, gurps.EquipmentEquippedColumn)
-		}
-		columnIDs = append(columnIDs, gurps.EquipmentQuantityColumn)
-	}
-	columnIDs = append(columnIDs, gurps.EquipmentDescriptionColumn)
-	if p.forPage {
-		columnIDs = append(columnIDs, gurps.EquipmentUsesColumn)
-	} else {
-		columnIDs = append(columnIDs, gurps.EquipmentMaxUsesColumn)
+	if p.forPage && p.carried {
+		columnIDs = append(columnIDs, gurps.EquipmentEquippedColumn)
 	}
 	columnIDs = append(columnIDs,
+		gurps.EquipmentQuantityColumn,
+		gurps.EquipmentDescriptionColumn,
+		gurps.EquipmentUsesColumn,
 		gurps.EquipmentTLColumn,
 		gurps.EquipmentLCColumn,
 		gurps.EquipmentCostColumn,
 		gurps.EquipmentWeightColumn,
+		gurps.EquipmentExtendedCostColumn,
+		gurps.EquipmentExtendedWeightColumn,
 	)
-	if p.forPage {
-		columnIDs = append(columnIDs,
-			gurps.EquipmentExtendedCostColumn,
-			gurps.EquipmentExtendedWeightColumn,
-		)
-	} else {
+	if !p.forPage {
 		columnIDs = append(columnIDs, gurps.EquipmentTagsColumn)
 	}
 	return append(columnIDs, gurps.EquipmentReferenceColumn)

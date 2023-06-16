@@ -13,6 +13,7 @@ package gurps
 
 import (
 	"context"
+	"fmt"
 	"io/fs"
 	"strconv"
 	"strings"
@@ -38,7 +39,6 @@ const (
 	EquipmentQuantityColumn
 	EquipmentDescriptionColumn
 	EquipmentUsesColumn
-	EquipmentMaxUsesColumn
 	EquipmentTLColumn
 	EquipmentLCColumn
 	EquipmentCostColumn
@@ -207,12 +207,7 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 			data.Type = TextCellType
 			data.Primary = strconv.Itoa(e.Uses)
 			data.Alignment = unison.EndAlignment
-		}
-	case EquipmentMaxUsesColumn:
-		if e.MaxUses > 0 {
-			data.Type = TextCellType
-			data.Primary = strconv.Itoa(e.MaxUses)
-			data.Alignment = unison.EndAlignment
+			data.Tooltip = fmt.Sprintf(i18n.Text("Maximum Uses: %d"), e.MaxUses)
 		}
 	case EquipmentTLColumn:
 		data.Type = TextCellType
