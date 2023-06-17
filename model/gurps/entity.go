@@ -379,21 +379,44 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, levels 
 	case *DRBonus:
 		if actual.Location == "" {
 			if eqp, ok := owner.(*Equipment); ok {
+				allLocations := make(map[string]bool)
+				locationsMatched := make(map[string]bool)
 				for _, f2 := range eqp.FeatureList() {
 					if drBonus, ok2 := f2.(*DRBonus); ok2 && drBonus.Location != "" {
-						additionalDRBonus := DRBonus{
-							DRBonusData: DRBonusData{
-								Type:           DRBonusFeatureType,
-								Location:       drBonus.Location,
-								Specialization: actual.Specialization,
-								LeveledAmount:  actual.LeveledAmount,
-							},
+						allLocations[drBonus.Location] = true
+						if drBonus.Specialization == actual.Specialization {
+							locationsMatched[drBonus.Location] = true
+							additionalDRBonus := DRBonus{
+								DRBonusData: DRBonusData{
+									Type:           DRBonusFeatureType,
+									Location:       drBonus.Location,
+									Specialization: actual.Specialization,
+									LeveledAmount:  actual.LeveledAmount,
+								},
+							}
+							additionalDRBonus.SetOwner(owner)
+							additionalDRBonus.SetSubOwner(subOwner)
+							additionalDRBonus.SetLevel(levels)
+							e.features.drBonuses = append(e.features.drBonuses, &additionalDRBonus)
 						}
-						additionalDRBonus.SetOwner(owner)
-						additionalDRBonus.SetSubOwner(subOwner)
-						additionalDRBonus.SetLevel(levels)
-						e.features.drBonuses = append(e.features.drBonuses, &additionalDRBonus)
 					}
+				}
+				for k := range locationsMatched {
+					delete(allLocations, k)
+				}
+				for location := range allLocations {
+					additionalDRBonus := DRBonus{
+						DRBonusData: DRBonusData{
+							Type:           DRBonusFeatureType,
+							Location:       location,
+							Specialization: actual.Specialization,
+							LeveledAmount:  actual.LeveledAmount,
+						},
+					}
+					additionalDRBonus.SetOwner(owner)
+					additionalDRBonus.SetSubOwner(subOwner)
+					additionalDRBonus.SetLevel(levels)
+					e.features.drBonuses = append(e.features.drBonuses, &additionalDRBonus)
 				}
 			}
 		} else {
