@@ -120,7 +120,8 @@ func (a *Trait) Clone(entity *Entity, parent *Trait, preserveID bool) *Trait {
 // MarshalJSON implements json.Marshaler.
 func (a *Trait) MarshalJSON() ([]byte, error) {
 	type calc struct {
-		Points fxp.Int `json:"points"`
+		Points            fxp.Int `json:"points"`
+		UnsatisfiedReason string  `json:"unsatisfied_reason,omitempty"`
 	}
 	a.ClearUnusedFieldsForType()
 	data := struct {
@@ -129,7 +130,8 @@ func (a *Trait) MarshalJSON() ([]byte, error) {
 	}{
 		TraitData: a.TraitData,
 		Calc: calc{
-			Points: a.AdjustedPoints(),
+			Points:            a.AdjustedPoints(),
+			UnsatisfiedReason: a.UnsatisfiedReason,
 		},
 	}
 	return json.Marshal(&data)

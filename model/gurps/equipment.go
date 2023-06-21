@@ -132,6 +132,7 @@ func (e *Equipment) MarshalJSON() ([]byte, error) {
 		ExtendedValue           fxp.Int `json:"extended_value"`
 		ExtendedWeight          Weight  `json:"extended_weight"`
 		ExtendedWeightForSkills *Weight `json:"extended_weight_for_skills,omitempty"`
+		UnsatisfiedReason       string  `json:"unsatisfied_reason,omitempty"`
 	}
 	e.ClearUnusedFieldsForType()
 	defUnits := SheetSettingsFor(e.Entity).DefaultWeightUnits
@@ -144,6 +145,7 @@ func (e *Equipment) MarshalJSON() ([]byte, error) {
 			ExtendedValue:           e.ExtendedValue(),
 			ExtendedWeight:          e.ExtendedWeight(false, defUnits),
 			ExtendedWeightForSkills: nil,
+			UnsatisfiedReason:       e.UnsatisfiedReason,
 		},
 	}
 	if e.WeightIgnoredForSkills && e.Equipped {

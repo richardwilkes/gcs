@@ -165,6 +165,7 @@ func (s *Skill) MarshalJSON() ([]byte, error) {
 	type calc struct {
 		Level              fxp.Int `json:"level"`
 		RelativeSkillLevel string  `json:"rsl"`
+		UnsatisfiedReason  string  `json:"unsatisfied_reason,omitempty"`
 	}
 	return json.Marshal(&struct {
 		SkillData
@@ -174,6 +175,7 @@ func (s *Skill) MarshalJSON() ([]byte, error) {
 		Calc: calc{
 			Level:              s.LevelData.Level,
 			RelativeSkillLevel: s.RelativeLevel(),
+			UnsatisfiedReason:  s.UnsatisfiedReason,
 		},
 	})
 }
