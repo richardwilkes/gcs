@@ -44,10 +44,6 @@ func NewTraitsPageList(owner Rebuildable, provider gurps.ListProvider) *PageList
 func NewCarriedEquipmentPageList(owner Rebuildable, provider gurps.ListProvider) *PageList[*gurps.Equipment] {
 	p := newPageList(owner, NewEquipmentProvider(provider, true, true))
 	p.installToggleEquippedHandler(owner)
-	p.installIncrementQuantityHandler(owner)
-	p.installDecrementQuantityHandler(owner)
-	p.installIncrementUsesHandler(owner)
-	p.installDecrementUsesHandler(owner)
 	p.installIncrementTechLevelHandler(owner)
 	p.installDecrementTechLevelHandler(owner)
 	p.installContainerConversionHandlers(owner)
@@ -57,10 +53,6 @@ func NewCarriedEquipmentPageList(owner Rebuildable, provider gurps.ListProvider)
 // NewOtherEquipmentPageList creates the other equipment page list.
 func NewOtherEquipmentPageList(owner Rebuildable, provider gurps.ListProvider) *PageList[*gurps.Equipment] {
 	p := newPageList(owner, NewEquipmentProvider(provider, true, false))
-	p.installIncrementQuantityHandler(owner)
-	p.installDecrementQuantityHandler(owner)
-	p.installIncrementUsesHandler(owner)
-	p.installDecrementUsesHandler(owner)
 	p.installIncrementTechLevelHandler(owner)
 	p.installDecrementTechLevelHandler(owner)
 	p.installContainerConversionHandlers(owner)
@@ -226,38 +218,6 @@ func (p *PageList[T]) installDecrementLevelHandler(owner Rebuildable) {
 		p.InstallCmdHandlers(DecrementItemID,
 			func(_ any) bool { return canAdjustTraitLevel(t, false) },
 			func(_ any) { adjustTraitLevel(owner, t, false) })
-	}
-}
-
-func (p *PageList[T]) installIncrementQuantityHandler(owner Rebuildable) {
-	if t, ok := (any(p.Table)).(*unison.Table[*Node[*gurps.Equipment]]); ok {
-		p.InstallCmdHandlers(IncrementItemID,
-			func(_ any) bool { return canAdjustQuantity(t, true) },
-			func(_ any) { adjustQuantity(owner, t, true) })
-	}
-}
-
-func (p *PageList[T]) installDecrementQuantityHandler(owner Rebuildable) {
-	if t, ok := (any(p.Table)).(*unison.Table[*Node[*gurps.Equipment]]); ok {
-		p.InstallCmdHandlers(DecrementItemID,
-			func(_ any) bool { return canAdjustQuantity(t, false) },
-			func(_ any) { adjustQuantity(owner, t, false) })
-	}
-}
-
-func (p *PageList[T]) installIncrementUsesHandler(owner Rebuildable) {
-	if t, ok := (any(p.Table)).(*unison.Table[*Node[*gurps.Equipment]]); ok {
-		p.InstallCmdHandlers(IncrementUsesItemID,
-			func(_ any) bool { return canAdjustUses(t, 1) },
-			func(_ any) { adjustUses(owner, t, 1) })
-	}
-}
-
-func (p *PageList[T]) installDecrementUsesHandler(owner Rebuildable) {
-	if t, ok := (any(p.Table)).(*unison.Table[*Node[*gurps.Equipment]]); ok {
-		p.InstallCmdHandlers(DecrementUsesItemID,
-			func(_ any) bool { return canAdjustUses(t, -1) },
-			func(_ any) { adjustUses(owner, t, -1) })
 	}
 }
 

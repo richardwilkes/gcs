@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -161,6 +161,20 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 		func(_ any) { copySelectionToSheet(table) })
 	table.InstallCmdHandlers(CopyToTemplateItemID, func(_ any) bool { return canCopySelectionToTemplate(table) },
 		func(_ any) { copySelectionToTemplate(table) })
+	if t, ok := (any(table)).(*unison.Table[*Node[*gurps.Equipment]]); ok {
+		t.InstallCmdHandlers(IncrementItemID,
+			func(_ any) bool { return canAdjustQuantity(t, true) },
+			func(_ any) { adjustQuantity(unison.AncestorOrSelf[Rebuildable](t), t, true) })
+		t.InstallCmdHandlers(DecrementItemID,
+			func(_ any) bool { return canAdjustQuantity(t, false) },
+			func(_ any) { adjustQuantity(unison.AncestorOrSelf[Rebuildable](t), t, false) })
+		t.InstallCmdHandlers(IncrementUsesItemID,
+			func(_ any) bool { return canAdjustUses(t, 1) },
+			func(_ any) { adjustUses(unison.AncestorOrSelf[Rebuildable](t), t, 1) })
+		t.InstallCmdHandlers(DecrementUsesItemID,
+			func(_ any) bool { return canAdjustUses(t, -1) },
+			func(_ any) { adjustUses(unison.AncestorOrSelf[Rebuildable](t), t, -1) })
+	}
 
 	return header, table
 }
