@@ -23,6 +23,7 @@ import (
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
+	"github.com/richardwilkes/toolbox/txt"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/toolbox/xio/fs/safe"
 	"github.com/richardwilkes/unison"
@@ -113,7 +114,7 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 		}
 		d.original = string(data)
 	}
-	d.content = d.original
+	d.content = txt.NormalizeLineEndings(d.original)
 	d.markdown.SetContent(d.content, 0)
 
 	d.editor = NewMultiLineStringField(nil, "", "",

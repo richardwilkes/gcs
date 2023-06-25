@@ -7,7 +7,7 @@ require (
 	github.com/richardwilkes/json v0.1.0
 	github.com/richardwilkes/pdf v1.20.5
 	github.com/richardwilkes/rpgtools v1.5.3
-	github.com/richardwilkes/toolbox v1.85.1
+	github.com/richardwilkes/toolbox v1.86.0
 	github.com/richardwilkes/unison v0.57.1-0.20230621034640-a7258daff033
 	github.com/rjeczalik/notify v0.9.3
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c
