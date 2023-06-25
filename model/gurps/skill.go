@@ -160,7 +160,18 @@ func (s *Skill) Clone(entity *Entity, parent *Skill, preserveID bool) *Skill {
 func (s *Skill) MarshalJSON() ([]byte, error) {
 	s.ClearUnusedFieldsForType()
 	if s.Container() || s.LevelData.Level <= 0 {
-		return json.Marshal(&s.SkillData)
+		type calcNoLevel struct {
+			UnsatisfiedReason string `json:"unsatisfied_reason,omitempty"`
+		}
+		return json.Marshal(&struct {
+			SkillData
+			Calc calcNoLevel `json:"calc"`
+		}{
+			SkillData: s.SkillData,
+			Calc: calcNoLevel{
+				UnsatisfiedReason: s.UnsatisfiedReason,
+			},
+		})
 	}
 	type calc struct {
 		Level              fxp.Int `json:"level"`
