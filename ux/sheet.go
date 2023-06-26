@@ -566,17 +566,6 @@ func (s *Sheet) createLists() {
 	// Add the various blocks, based on the layout preference.
 	for _, col := range s.entity.SheetSettings.BlockLayout.ByRow() {
 		rowPanel := unison.NewPanel()
-		rowPanel.SetLayout(&unison.FlexLayout{
-			Columns:      len(col),
-			HSpacing:     1,
-			HAlign:       unison.FillAlignment,
-			VAlign:       unison.FillAlignment,
-			EqualColumns: true,
-		})
-		rowPanel.SetLayoutData(&unison.FlexLayoutData{
-			HAlign: unison.FillAlignment,
-			HGrab:  true,
-		})
 		for _, c := range col {
 			switch c {
 			case gurps.BlockLayoutReactionsKey:
@@ -585,28 +574,40 @@ func (s *Sheet) createLists() {
 				} else {
 					s.Reactions.Sync()
 				}
-				rowPanel.AddChild(s.Reactions)
+				SetEntityProvider(s.Reactions.Table, s)
+				if s.Reactions.Table.RootRowCount() > 0 {
+					rowPanel.AddChild(s.Reactions)
+				}
 			case gurps.BlockLayoutConditionalModifiersKey:
 				if s.ConditionalModifiers == nil {
 					s.ConditionalModifiers = NewConditionalModifiersPageList(s.entity)
 				} else {
 					s.ConditionalModifiers.Sync()
 				}
-				rowPanel.AddChild(s.ConditionalModifiers)
+				SetEntityProvider(s.ConditionalModifiers.Table, s)
+				if s.ConditionalModifiers.Table.RootRowCount() > 0 {
+					rowPanel.AddChild(s.ConditionalModifiers)
+				}
 			case gurps.BlockLayoutMeleeKey:
 				if s.MeleeWeapons == nil {
 					s.MeleeWeapons = NewMeleeWeaponsPageList(s.entity)
 				} else {
 					s.MeleeWeapons.Sync()
 				}
-				rowPanel.AddChild(s.MeleeWeapons)
+				SetEntityProvider(s.MeleeWeapons.Table, s)
+				if s.MeleeWeapons.Table.RootRowCount() > 0 {
+					rowPanel.AddChild(s.MeleeWeapons)
+				}
 			case gurps.BlockLayoutRangedKey:
 				if s.RangedWeapons == nil {
 					s.RangedWeapons = NewRangedWeaponsPageList(s.entity)
 				} else {
 					s.RangedWeapons.Sync()
 				}
-				rowPanel.AddChild(s.RangedWeapons)
+				SetEntityProvider(s.RangedWeapons.Table, s)
+				if s.RangedWeapons.Table.RootRowCount() > 0 {
+					rowPanel.AddChild(s.RangedWeapons)
+				}
 			case gurps.BlockLayoutTraitsKey:
 				if s.Traits == nil {
 					s.Traits = NewTraitsPageList(s, s.entity)
@@ -651,7 +652,20 @@ func (s *Sheet) createLists() {
 				rowPanel.AddChild(s.Notes)
 			}
 		}
-		page.AddChild(rowPanel)
+		if len(rowPanel.Children()) != 0 {
+			rowPanel.SetLayout(&unison.FlexLayout{
+				Columns:      len(rowPanel.Children()),
+				HSpacing:     1,
+				HAlign:       unison.FillAlignment,
+				VAlign:       unison.FillAlignment,
+				EqualColumns: true,
+			})
+			rowPanel.SetLayoutData(&unison.FlexLayoutData{
+				HAlign: unison.FillAlignment,
+				HGrab:  true,
+			})
+			page.AddChild(rowPanel)
+		}
 	}
 	page.ApplyPreferredSize()
 }

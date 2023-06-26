@@ -11,7 +11,13 @@
 
 package ux
 
-import "github.com/richardwilkes/unison"
+import (
+	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/toolbox"
+	"github.com/richardwilkes/unison"
+)
+
+const entityProviderKey = "entity_provider"
 
 // SetFieldValue sets the value of this field, marking the field and all of its parents as needing to be laid out again
 // if the value is not what is currently in the field.
@@ -74,4 +80,27 @@ func FocusFirstContent(toolbar, content unison.Paneler) {
 		}
 		wnd.FocusNext()
 	}
+}
+
+// SetEntityProvider sets the EntityProvider into the client data of the target.
+func SetEntityProvider(target unison.Paneler, provider gurps.EntityProvider) {
+	data := target.AsPanel().ClientData()
+	if toolbox.IsNil(provider) {
+		delete(data, entityProviderKey)
+	} else {
+		data[entityProviderKey] = provider
+	}
+}
+
+// DetermineEntityProvider returns the EntityProvider for the given target.
+func DetermineEntityProvider(target unison.Paneler) gurps.EntityProvider {
+	if provider := unison.AncestorOrSelf[gurps.EntityProvider](target); provider != nil {
+		return provider
+	}
+	if data, ok := target.AsPanel().ClientData()[entityProviderKey]; ok {
+		if provider, ok2 := data.(gurps.EntityProvider); ok2 {
+			return provider
+		}
+	}
+	return nil
 }

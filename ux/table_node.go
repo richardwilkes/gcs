@@ -83,7 +83,7 @@ func (n *Node[T]) CloneForTarget(target unison.Paneler, newParent *Node[T]) *Nod
 	if !ok {
 		jot.Fatal(1, "unable to convert to table")
 	}
-	if provider := unison.AncestorOrSelf[gurps.EntityProvider](target); provider != nil {
+	if provider := DetermineEntityProvider(target); provider != nil {
 		return NewNode[T](table, newParent, n.dataAsNode.Clone(provider.Entity(), newParent.Data(), false), n.forPage)
 	}
 	jot.Fatal(1, "unable to locate entity provider")

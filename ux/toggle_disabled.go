@@ -37,6 +37,7 @@ func (a *toggleDisabledList) Finish() {
 		entity.Recalculate()
 	}
 	MarkModified(a.Owner)
+	a.Owner.Rebuild(true)
 }
 
 type disabledAdjuster struct {
