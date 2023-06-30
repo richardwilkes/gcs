@@ -465,7 +465,7 @@ func (a *Trait) SecondaryText(optionChecker func(DisplayOption) bool) string {
 			}
 			buffer.WriteString(text)
 		}
-		if study := StudyHoursProgressText(ResolveStudyHours(a.Study)); study != "" {
+		if study := StudyHoursProgressText(ResolveStudyHours(a.Study), a.StudyHoursNeeded, false); study != "" {
 			if buffer.Len() != 0 {
 				buffer.WriteByte('\n')
 			}

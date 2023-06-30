@@ -45,6 +45,7 @@ func (d *SpellData) ClearUnusedFieldsForType() {
 		d.Points = 0
 		d.Prereq = nil
 		d.Weapons = nil
+		d.StudyHoursNeeded = StandardStudyHoursNeeded
 		if d.TemplatePicker == nil {
 			d.TemplatePicker = &TemplatePicker{}
 		}

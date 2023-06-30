@@ -41,9 +41,16 @@ func ResolveStudyHours(study []*Study) fxp.Int {
 }
 
 // StudyHoursProgressText returns the progress text or an empty string.
-func StudyHoursProgressText(hours fxp.Int) string {
+func StudyHoursProgressText(hours fxp.Int, needed StudyHoursNeeded, force bool) string {
 	if hours <= 0 {
-		return ""
+		hours = 0
+		if !force {
+			return ""
+		}
 	}
-	return fmt.Sprintf(i18n.Text("Studied %v/200 hours"), hours)
+	studyNeeded := "200"
+	if needed != StandardStudyHoursNeeded {
+		studyNeeded = needed.Key()
+	}
+	return fmt.Sprintf(i18n.Text("Studied %v of %s hours"), hours, studyNeeded)
 }

@@ -38,6 +38,7 @@ func (d *TraitData) ClearUnusedFieldsForType() {
 		d.Weapons = nil
 		d.Features = nil
 		d.RoundCostDown = false
+		d.StudyHoursNeeded = StandardStudyHoursNeeded
 		if d.TemplatePicker == nil {
 			d.TemplatePicker = &TemplatePicker{}
 		}

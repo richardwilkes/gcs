@@ -393,7 +393,7 @@ func (s *Skill) SecondaryText(optionChecker func(DisplayOption) bool) string {
 			}
 			buffer.WriteString(text)
 		}
-		if study := StudyHoursProgressText(ResolveStudyHours(s.Study)); study != "" {
+		if study := StudyHoursProgressText(ResolveStudyHours(s.Study), s.StudyHoursNeeded, false); study != "" {
 			if buffer.Len() != 0 {
 				buffer.WriteByte('\n')
 			}

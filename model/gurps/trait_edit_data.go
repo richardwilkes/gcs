@@ -20,28 +20,29 @@ var _ EditorData[*Trait] = &TraitEditData{}
 
 // TraitEditData holds the Trait data that can be edited by the UI detail editor.
 type TraitEditData struct {
-	Name           string             `json:"name,omitempty"`
-	PageRef        string             `json:"reference,omitempty"`
-	LocalNotes     string             `json:"notes,omitempty"`
-	VTTNotes       string             `json:"vtt_notes,omitempty"`
-	Ancestry       string             `json:"ancestry,omitempty"` // Container only
-	UserDesc       string             `json:"userdesc,omitempty"`
-	Tags           []string           `json:"tags,omitempty"`
-	Modifiers      []*TraitModifier   `json:"modifiers,omitempty"`
-	BasePoints     fxp.Int            `json:"base_points,omitempty"`      // Non-container only
-	Levels         fxp.Int            `json:"levels,omitempty"`           // Non-container only
-	PointsPerLevel fxp.Int            `json:"points_per_level,omitempty"` // Non-container only
-	Prereq         *PrereqList        `json:"prereqs,omitempty"`          // Non-container only
-	Weapons        []*Weapon          `json:"weapons,omitempty"`          // Non-container only
-	Features       Features           `json:"features,omitempty"`         // Non-container only
-	Study          []*Study           `json:"study,omitempty"`            // Non-container only
-	TemplatePicker *TemplatePicker    `json:"template_picker,omitempty"`  // Container only
-	CR             SelfControlRoll    `json:"cr,omitempty"`
-	CRAdj          SelfControlRollAdj `json:"cr_adj,omitempty"`
-	ContainerType  ContainerType      `json:"container_type,omitempty"` // Container only
-	Disabled       bool               `json:"disabled,omitempty"`
-	RoundCostDown  bool               `json:"round_down,omitempty"` // Non-container only
-	CanLevel       bool               `json:"can_level,omitempty"`  // Non-container only
+	Name             string             `json:"name,omitempty"`
+	PageRef          string             `json:"reference,omitempty"`
+	LocalNotes       string             `json:"notes,omitempty"`
+	VTTNotes         string             `json:"vtt_notes,omitempty"`
+	Ancestry         string             `json:"ancestry,omitempty"` // Container only
+	UserDesc         string             `json:"userdesc,omitempty"`
+	Tags             []string           `json:"tags,omitempty"`
+	Modifiers        []*TraitModifier   `json:"modifiers,omitempty"`
+	BasePoints       fxp.Int            `json:"base_points,omitempty"`      // Non-container only
+	Levels           fxp.Int            `json:"levels,omitempty"`           // Non-container only
+	PointsPerLevel   fxp.Int            `json:"points_per_level,omitempty"` // Non-container only
+	Prereq           *PrereqList        `json:"prereqs,omitempty"`          // Non-container only
+	Weapons          []*Weapon          `json:"weapons,omitempty"`          // Non-container only
+	Features         Features           `json:"features,omitempty"`         // Non-container only
+	Study            []*Study           `json:"study,omitempty"`            // Non-container only
+	TemplatePicker   *TemplatePicker    `json:"template_picker,omitempty"`  // Container only
+	CR               SelfControlRoll    `json:"cr,omitempty"`
+	CRAdj            SelfControlRollAdj `json:"cr_adj,omitempty"`
+	ContainerType    ContainerType      `json:"container_type,omitempty"`     // Container only
+	StudyHoursNeeded StudyHoursNeeded   `json:"study_hours_needed,omitempty"` // Non-container only
+	Disabled         bool               `json:"disabled,omitempty"`
+	RoundCostDown    bool               `json:"round_down,omitempty"` // Non-container only
+	CanLevel         bool               `json:"can_level,omitempty"`  // Non-container only
 }
 
 // CopyFrom implements node.EditorData.

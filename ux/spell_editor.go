@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -98,7 +98,7 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 		for _, wt := range gurps.AllWeaponType {
 			content.AddChild(newWeaponsPanel(e, e.target, wt, &e.editorData.Weapons))
 		}
-		content.AddChild(newStudyPanel(e.target.Entity, &e.editorData.Study))
+		content.AddChild(newStudyPanel(e.target.Entity, &e.editorData.StudyHoursNeeded, &e.editorData.Study))
 	}
 	return nil
 }

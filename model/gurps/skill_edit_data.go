@@ -38,6 +38,7 @@ type SkillEditData struct {
 	Weapons                      []*Weapon           `json:"weapons,omitempty"`                        // Non-container only
 	Features                     Features            `json:"features,omitempty"`                       // Non-container only
 	Study                        []*Study            `json:"study,omitempty"`                          // Non-container only
+	StudyHoursNeeded             StudyHoursNeeded    `json:"study_hours_needed,omitempty"`             // Non-container only
 	TemplatePicker               *TemplatePicker     `json:"template_picker,omitempty"`                // Container only
 }
 

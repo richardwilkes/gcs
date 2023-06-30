@@ -657,7 +657,7 @@ func (s *Spell) SecondaryText(optionChecker func(DisplayOption) bool) string {
 			}
 			buffer.WriteString(rituals)
 		}
-		if study := StudyHoursProgressText(ResolveStudyHours(s.Study)); study != "" {
+		if study := StudyHoursProgressText(ResolveStudyHours(s.Study), s.StudyHoursNeeded, false); study != "" {
 			if buffer.Len() != 0 {
 				buffer.WriteByte('\n')
 			}

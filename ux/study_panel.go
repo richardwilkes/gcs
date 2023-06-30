@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -25,15 +25,17 @@ var lastStudyTypeUsed = gurps.SelfStudyType
 
 type studyPanel struct {
 	unison.Panel
-	entity *gurps.Entity
-	study  *[]*gurps.Study
-	total  *unison.Label
+	entity      *gurps.Entity
+	studyNeeded *gurps.StudyHoursNeeded
+	study       *[]*gurps.Study
+	total       *unison.Label
 }
 
-func newStudyPanel(entity *gurps.Entity, study *[]*gurps.Study) *studyPanel {
+func newStudyPanel(entity *gurps.Entity, studyNeeded *gurps.StudyHoursNeeded, study *[]*gurps.Study) *studyPanel {
 	p := &studyPanel{
-		entity: entity,
-		study:  study,
+		entity:      entity,
+		studyNeeded: studyNeeded,
+		study:       study,
 	}
 	p.Self = p
 	p.SetLayout(&unison.FlexLayout{
@@ -74,9 +76,27 @@ func newStudyPanel(entity *gurps.Entity, study *[]*gurps.Study) *studyPanel {
 	}
 	top.AddChild(addButton)
 
+	topRight := unison.NewPanel()
+	topRight.SetLayout(&unison.FlexLayout{Columns: 3})
+	p.AddChild(topRight)
+	top.AddChild(topRight)
+
 	p.total = unison.NewLabel()
 	p.updateTotal()
-	top.AddChild(p.total)
+	topRight.AddChild(p.total)
+
+	hoursNeededPopup := addPopup(topRight, gurps.AllStudyHoursNeeded, studyNeeded)
+	hoursNeededPopup.SelectionChangedCallback = func(popup *unison.PopupMenu[gurps.StudyHoursNeeded]) {
+		if needed, ok := popup.Selected(); ok {
+			*studyNeeded = needed
+			p.updateTotal()
+			MarkModified(top)
+		}
+	}
+
+	trailer := unison.NewLabel()
+	trailer.Text = i18n.Text(") for 1 point")
+	topRight.AddChild(trailer)
 
 	for i, one := range *study {
 		p.insertStudyEntry(i+1, one, false)
@@ -113,7 +133,6 @@ func (p *studyPanel) insertStudyEntry(index int, entry *gurps.Study, requestFocu
 			MarkModified(panel)
 		}
 	}
-	panel.AddChild(typePopup)
 	panel.AddChild(info)
 
 	hoursField := NewDecimalField(nil, "", i18n.Text("Hours Spent"),
@@ -162,7 +181,8 @@ func updateLimitations(info *unison.Label, studyType gurps.StudyType) {
 }
 
 func (p *studyPanel) updateTotal() {
-	if text := gurps.StudyHoursProgressText(gurps.ResolveStudyHours(*p.study)); text != p.total.Text {
+	text := gurps.StudyHoursProgressText(gurps.ResolveStudyHours(*p.study), *p.studyNeeded, true) + " ("
+	if text != p.total.Text {
 		p.total.Text = text
 		p.total.MarkForLayoutAndRedraw()
 	}

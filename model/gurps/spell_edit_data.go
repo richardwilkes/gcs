@@ -25,23 +25,24 @@ type SpellEditData struct {
 	LocalNotes        string              `json:"notes,omitempty"`
 	VTTNotes          string              `json:"vtt_notes,omitempty"`
 	Tags              []string            `json:"tags,omitempty"`
-	TechLevel         *string             `json:"tech_level,omitempty"`       // Non-container only
-	Difficulty        AttributeDifficulty `json:"difficulty,omitempty"`       // Non-container only
-	College           CollegeList         `json:"college,omitempty"`          // Non-container only
-	PowerSource       string              `json:"power_source,omitempty"`     // Non-container only
-	Class             string              `json:"spell_class,omitempty"`      // Non-container only
-	Resist            string              `json:"resist,omitempty"`           // Non-container only
-	CastingCost       string              `json:"casting_cost,omitempty"`     // Non-container only
-	MaintenanceCost   string              `json:"maintenance_cost,omitempty"` // Non-container only
-	CastingTime       string              `json:"casting_time,omitempty"`     // Non-container only
-	Duration          string              `json:"duration,omitempty"`         // Non-container only
-	RitualSkillName   string              `json:"base_skill,omitempty"`       // Non-container only
-	RitualPrereqCount int                 `json:"prereq_count,omitempty"`     // Non-container only
-	Points            fxp.Int             `json:"points,omitempty"`           // Non-container only
-	Prereq            *PrereqList         `json:"prereqs,omitempty"`          // Non-container only
-	Weapons           []*Weapon           `json:"weapons,omitempty"`          // Non-container only
-	Study             []*Study            `json:"study,omitempty"`            // Non-container only
-	TemplatePicker    *TemplatePicker     `json:"template_picker,omitempty"`  // Container only
+	TechLevel         *string             `json:"tech_level,omitempty"`         // Non-container only
+	Difficulty        AttributeDifficulty `json:"difficulty,omitempty"`         // Non-container only
+	College           CollegeList         `json:"college,omitempty"`            // Non-container only
+	PowerSource       string              `json:"power_source,omitempty"`       // Non-container only
+	Class             string              `json:"spell_class,omitempty"`        // Non-container only
+	Resist            string              `json:"resist,omitempty"`             // Non-container only
+	CastingCost       string              `json:"casting_cost,omitempty"`       // Non-container only
+	MaintenanceCost   string              `json:"maintenance_cost,omitempty"`   // Non-container only
+	CastingTime       string              `json:"casting_time,omitempty"`       // Non-container only
+	Duration          string              `json:"duration,omitempty"`           // Non-container only
+	RitualSkillName   string              `json:"base_skill,omitempty"`         // Non-container only
+	RitualPrereqCount int                 `json:"prereq_count,omitempty"`       // Non-container only
+	Points            fxp.Int             `json:"points,omitempty"`             // Non-container only
+	Prereq            *PrereqList         `json:"prereqs,omitempty"`            // Non-container only
+	Weapons           []*Weapon           `json:"weapons,omitempty"`            // Non-container only
+	Study             []*Study            `json:"study,omitempty"`              // Non-container only
+	StudyHoursNeeded  StudyHoursNeeded    `json:"study_hours_needed,omitempty"` // Non-container only
+	TemplatePicker    *TemplatePicker     `json:"template_picker,omitempty"`    // Container only
 }
 
 // CopyFrom implements node.EditorData.

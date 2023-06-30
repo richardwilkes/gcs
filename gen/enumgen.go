@@ -923,6 +923,39 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
+		Pkg:        "model/gurps",
+		Name:       "study_hours_needed",
+		Desc:       "holds the number of study hours required per point",
+		StandAlone: false,
+		Values: []enumValue{
+			{
+				Name:   "Standard",
+				Key:    "",
+				String: "Standard",
+			},
+			{
+				Name:   "Level1",
+				Key:    "180",
+				String: "Reduction for Talent level 1",
+			},
+			{
+				Name:   "Level2",
+				Key:    "160",
+				String: "Reduction for Talent level 2",
+			},
+			{
+				Name:   "Level3",
+				Key:    "140",
+				String: "Reduction for Talent level 3",
+			},
+			{
+				Name:   "Level4",
+				Key:    "120",
+				String: "Reduction for Talent level 4",
+			},
+		},
+	})
+	processSourceTemplate(enumTmpl, &enumInfo{
 		Pkg:  "model/gurps",
 		Name: "name_generation_type",
 		Desc: "holds a name generation type",
