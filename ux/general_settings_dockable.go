@@ -46,6 +46,9 @@ type generalSettingsDockable struct {
 	initialListScaleField         *PercentageField
 	initialEditorScaleField       *PercentageField
 	initialSheetScaleField        *PercentageField
+	initialPDFScaleField          *PercentageField
+	initialMarkdownScaleField     *PercentageField
+	initialImageScaleField        *PercentageField
 	maxAutoColWidthField          *IntegerField
 	monitorResolutionField        *IntegerField
 	exportResolutionField         *IntegerField
@@ -116,6 +119,27 @@ func (d *generalSettingsDockable) initContent(content *unison.Panel) {
 		func(v int) { gurps.GlobalSettings().General.InitialSheetUIScale = v },
 		gurps.InitialUIScaleMin, gurps.InitialUIScaleMax, false, false)
 	content.AddChild(WrapWithSpan(2, d.initialSheetScaleField))
+	initialPDFScaleTitle := i18n.Text("Initial PDF Scale")
+	content.AddChild(NewFieldLeadingLabel(initialPDFScaleTitle))
+	d.initialPDFScaleField = NewPercentageField(nil, "", initialPDFScaleTitle,
+		func() int { return gurps.GlobalSettings().General.InitialPDFUIScale },
+		func(v int) { gurps.GlobalSettings().General.InitialPDFUIScale = v },
+		gurps.InitialUIScaleMin, gurps.InitialUIScaleMax, false, false)
+	content.AddChild(WrapWithSpan(2, d.initialPDFScaleField))
+	initialMarkdownScaleTitle := i18n.Text("Initial Markdown Scale")
+	content.AddChild(NewFieldLeadingLabel(initialMarkdownScaleTitle))
+	d.initialMarkdownScaleField = NewPercentageField(nil, "", initialMarkdownScaleTitle,
+		func() int { return gurps.GlobalSettings().General.InitialMarkdownUIScale },
+		func(v int) { gurps.GlobalSettings().General.InitialMarkdownUIScale = v },
+		gurps.InitialUIScaleMin, gurps.InitialUIScaleMax, false, false)
+	content.AddChild(WrapWithSpan(2, d.initialMarkdownScaleField))
+	initialImageScaleTitle := i18n.Text("Initial Image Scale")
+	content.AddChild(NewFieldLeadingLabel(initialImageScaleTitle))
+	d.initialImageScaleField = NewPercentageField(nil, "", initialImageScaleTitle,
+		func() int { return gurps.GlobalSettings().General.InitialImageUIScale },
+		func(v int) { gurps.GlobalSettings().General.InitialImageUIScale = v },
+		gurps.InitialUIScaleMin, gurps.InitialUIScaleMax, false, false)
+	content.AddChild(WrapWithSpan(2, d.initialImageScaleField))
 	d.createCellAutoMaxWidthField(content)
 	d.createMonitorResolutionField(content)
 	d.createImageResolutionField(content)
@@ -362,6 +386,9 @@ func (d *generalSettingsDockable) sync() {
 	SetFieldValue(d.initialListScaleField.Field, d.initialListScaleField.Format(gs.InitialListUIScale))
 	SetFieldValue(d.initialEditorScaleField.Field, d.initialEditorScaleField.Format(gs.InitialEditorUIScale))
 	SetFieldValue(d.initialSheetScaleField.Field, d.initialSheetScaleField.Format(gs.InitialSheetUIScale))
+	SetFieldValue(d.initialPDFScaleField.Field, d.initialPDFScaleField.Format(gs.InitialPDFUIScale))
+	SetFieldValue(d.initialMarkdownScaleField.Field, d.initialMarkdownScaleField.Format(gs.InitialMarkdownUIScale))
+	SetFieldValue(d.initialImageScaleField.Field, d.initialImageScaleField.Format(gs.InitialImageUIScale))
 	d.maxAutoColWidthField.SetText(strconv.Itoa(gs.MaximumAutoColWidth))
 	d.monitorResolutionField.SetText(strconv.Itoa(gs.MonitorResolution))
 	d.exportResolutionField.SetText(strconv.Itoa(gs.ImageResolution))

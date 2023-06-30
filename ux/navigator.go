@@ -161,7 +161,7 @@ func (n *Navigator) setupToolBar() {
 		NewScaleField(
 			gurps.InitialUIScaleMin,
 			gurps.InitialUIScaleMax,
-			func() int { return 100 },
+			func() int { return gurps.InitialNavigatorUIScaleDef },
 			func() int { return gurps.GlobalSettings().General.NavigatorUIScale },
 			func(scale int) { gurps.GlobalSettings().General.NavigatorUIScale = scale },
 			nil,

@@ -90,7 +90,7 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 	d := &MarkdownDockable{
 		path:              filePath,
 		undoMgr:           unison.NewUndoManager(200, func(err error) { jot.Error(err) }),
-		scale:             100,
+		scale:             gurps.GlobalSettings().General.InitialMarkdownUIScale,
 		allowEditing:      allowEditing,
 		needsSaveAsPrompt: true,
 	}
@@ -163,7 +163,7 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 		NewScaleField(
 			minPDFDockableScale,
 			maxPDFDockableScale,
-			func() int { return 100 },
+			func() int { return gurps.GlobalSettings().General.InitialMarkdownUIScale },
 			func() int { return d.scale },
 			func(scale int) { d.scale = scale },
 			nil,

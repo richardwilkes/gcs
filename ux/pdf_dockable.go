@@ -80,7 +80,7 @@ type PDFDockable struct {
 func NewPDFDockable(filePath string, initialPage int) (unison.Dockable, error) {
 	d := &PDFDockable{
 		path:               filePath,
-		scale:              100,
+		scale:              gurps.GlobalSettings().General.InitialPDFUIScale,
 		noUpdate:           true,
 		needDockableResize: true,
 	}
@@ -140,7 +140,7 @@ func (d *PDFDockable) createToolbar() {
 	d.scaleField = NewScaleField(
 		minPDFDockableScale,
 		maxPDFDockableScale,
-		func() int { return 100 },
+		func() int { return gurps.GlobalSettings().General.InitialPDFUIScale },
 		func() int { return d.scale },
 		func(scale int) { d.scale = scale },
 		d.MarkForRedraw,

@@ -51,7 +51,7 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 	d := &ImageDockable{
 		path:  filePath,
 		img:   img,
-		scale: 100,
+		scale: gurps.GlobalSettings().General.InitialImageUIScale,
 	}
 	d.Self = d
 	d.SetLayout(&unison.FlexLayout{Columns: 1})
@@ -95,7 +95,7 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 		NewScaleField(
 			minImageDockableScale,
 			maxImageDockableScale,
-			func() int { return 100 },
+			func() int { return gurps.GlobalSettings().General.InitialImageUIScale },
 			func() int { return d.scale },
 			func(scale int) { d.scale = scale },
 			nil,
