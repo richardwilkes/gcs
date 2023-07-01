@@ -56,6 +56,7 @@ type Settings struct {
 	LibrarySet         Libraries         `json:"libraries,omitempty"`
 	LibraryExplorer    NavigatorSettings `json:"library_explorer"`
 	RecentFiles        []string          `json:"recent_files,omitempty"`
+	DeepSearch         []string          `json:"deep_search,omitempty"`
 	LastDirs           map[string]string `json:"last_dirs,omitempty"`
 	PageRefs           PageRefs          `json:"page_refs,omitempty"`
 	KeyBindings        KeyBindings       `json:"key_bindings,omitempty"`

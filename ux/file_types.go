@@ -93,13 +93,14 @@ func registerPDFFileInfo() {
 func registerMarkdownFileInfo() {
 	extensions := []string{gurps.MarkdownExt, ".markdown"}
 	gurps.FileInfo{
-		Name:       "Markdown Document",
-		UTI:        "net.daringfireball.markdown",
-		ConformsTo: []string{"public.plain-text"},
-		Extensions: extensions,
-		GroupWith:  extensions,
-		MimeTypes:  []string{"text/markdown"},
-		SVG:        svg.MarkdownFile,
+		Name:             "Markdown Document",
+		UTI:              "net.daringfireball.markdown",
+		ConformsTo:       []string{"public.plain-text"},
+		Extensions:       extensions,
+		GroupWith:        extensions,
+		MimeTypes:        []string{"text/markdown"},
+		SVG:              svg.MarkdownFile,
+		IsDeepSearchable: true,
 		Load: func(filePath string, _ int) (unison.Dockable, error) {
 			return NewMarkdownDockable(filePath, true, false)
 		},
@@ -130,29 +131,31 @@ func RegisterGCSFileTypes() {
 
 func registerGCSFileInfo(name, ext string, groupWith []string, svg *unison.SVG, loader func(filePath string) (unison.Dockable, error)) {
 	gurps.FileInfo{
-		Name:       name,
-		UTI:        cmdline.AppIdentifier + ext,
-		ConformsTo: []string{"public.data"},
-		Extensions: []string{ext},
-		GroupWith:  groupWith,
-		MimeTypes:  []string{"application/x-gcs-" + ext[1:]},
-		SVG:        svg,
-		Load:       func(filePath string, _ int) (unison.Dockable, error) { return loader(filePath) },
-		IsGCSData:  true,
+		Name:             name,
+		UTI:              cmdline.AppIdentifier + ext,
+		ConformsTo:       []string{"public.data"},
+		Extensions:       []string{ext},
+		GroupWith:        groupWith,
+		MimeTypes:        []string{"application/x-gcs-" + ext[1:]},
+		SVG:              svg,
+		Load:             func(filePath string, _ int) (unison.Dockable, error) { return loader(filePath) },
+		IsGCSData:        true,
+		IsDeepSearchable: true,
 	}.Register()
 }
 
 func registerExportableGCSFileInfo(name, ext string, svg *unison.SVG, loader func(filePath string) (unison.Dockable, error)) {
 	gurps.FileInfo{
-		Name:         name,
-		UTI:          cmdline.AppIdentifier + ext,
-		ConformsTo:   []string{"public.data"},
-		Extensions:   []string{ext},
-		GroupWith:    []string{ext},
-		MimeTypes:    []string{"application/x-gcs-" + ext[1:]},
-		SVG:          svg,
-		Load:         func(filePath string, _ int) (unison.Dockable, error) { return loader(filePath) },
-		IsGCSData:    true,
-		IsExportable: true,
+		Name:             name,
+		UTI:              cmdline.AppIdentifier + ext,
+		ConformsTo:       []string{"public.data"},
+		Extensions:       []string{ext},
+		GroupWith:        []string{ext},
+		MimeTypes:        []string{"application/x-gcs-" + ext[1:]},
+		SVG:              svg,
+		Load:             func(filePath string, _ int) (unison.Dockable, error) { return loader(filePath) },
+		IsGCSData:        true,
+		IsExportable:     true,
+		IsDeepSearchable: true,
 	}.Register()
 }

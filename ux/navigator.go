@@ -12,8 +12,10 @@
 package ux
 
 import (
+	"bytes"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -63,6 +65,8 @@ type Navigator struct {
 	table                     *unison.Table[*NavigatorNode]
 	tokens                    []*gurps.MonitorToken
 	searchResult              []*NavigatorNode
+	deepSearch                map[string]bool
+	contentCache              map[string]string
 	searchIndex               int
 	needReload                bool
 	adjustTableSizePending    bool
@@ -70,15 +74,19 @@ type Navigator struct {
 
 func newNavigator() *Navigator {
 	n := &Navigator{
-		toolbar: unison.NewPanel(),
-		scroll:  unison.NewScrollPanel(),
-		table:   unison.NewTable[*NavigatorNode](&unison.SimpleTableModel[*NavigatorNode]{}),
+		toolbar:    unison.NewPanel(),
+		scroll:     unison.NewScrollPanel(),
+		table:      unison.NewTable[*NavigatorNode](&unison.SimpleTableModel[*NavigatorNode]{}),
+		deepSearch: make(map[string]bool),
 	}
 	n.Self = n
+
+	globalSettings := gurps.GlobalSettings()
+	n.mapDeepSearch()
+
 	n.setupToolBar()
 
 	n.table.Columns = make([]unison.ColumnInfo, 1)
-	globalSettings := gurps.GlobalSettings()
 	n.needReload = true
 	rows := n.populateRows()
 	n.needReload = false
@@ -111,6 +119,15 @@ func newNavigator() *Navigator {
 
 	n.selectionChanged()
 	return n
+}
+
+func (n *Navigator) mapDeepSearch() {
+	n.deepSearch = make(map[string]bool)
+	for _, one := range gurps.GlobalSettings().DeepSearch {
+		for _, ext := range gurps.FileInfoFor(one).Extensions {
+			n.deepSearch[ext] = true
+		}
+	}
 }
 
 func (n *Navigator) setupToolBar() {
@@ -652,6 +669,7 @@ func (n *Navigator) EventuallyReload() {
 
 // Reload the content of the navigator view.
 func (n *Navigator) Reload() {
+	n.contentCache = nil
 	n.needReload = false
 	for _, token := range n.tokens {
 		token.Stop()
@@ -819,14 +837,133 @@ func (n *Navigator) searchModified(_, _ *unison.FieldState) {
 }
 
 func (n *Navigator) search(text string, row *NavigatorNode) {
+	if text == "" {
+		return
+	}
 	if row.Match(text) {
 		n.searchResult = append(n.searchResult, row)
+	} else {
+		if row.nodeType == fileNode {
+			p := row.Path()
+			content, ok := n.contentCache[p]
+			if !ok {
+				fi := gurps.FileInfoFor(p)
+				if n.deepSearch[fi.Extensions[0]] {
+					switch fi.Extensions[0] {
+					case gurps.EquipmentExt:
+						if data, err := gurps.NewEquipmentFromFile(os.DirFS(path.Dir(p)), path.Base(p)); err == nil {
+							content = n.addToContentCache(p, prepareForContentCache(data))
+						}
+					case gurps.EquipmentModifiersExt:
+						if data, err := gurps.NewEquipmentModifiersFromFile(os.DirFS(path.Dir(p)), path.Base(p)); err == nil {
+							content = n.addToContentCache(p, prepareForContentCache(data))
+						}
+					case gurps.NotesExt:
+						if data, err := gurps.NewNotesFromFile(os.DirFS(path.Dir(p)), path.Base(p)); err == nil {
+							content = n.addToContentCache(p, prepareForContentCache(data))
+						}
+					case gurps.SheetExt:
+						if data, err := gurps.NewEntityFromFile(os.DirFS(path.Dir(p)), path.Base(p)); err == nil {
+							for _, one := range data.Skills {
+								one.TechLevel = nil
+							}
+							for _, one := range data.Spells {
+								one.TechLevel = nil
+							}
+							content = n.addToContentCache(p, strings.Join([]string{
+								data.Profile.Name,
+								data.Profile.Age,
+								data.Profile.Birthday,
+								data.Profile.Eyes,
+								data.Profile.Hair,
+								data.Profile.Skin,
+								data.Profile.Handedness,
+								data.Profile.Gender,
+								data.Profile.PlayerName,
+								data.Profile.Title,
+								data.Profile.Organization,
+								data.Profile.Religion,
+								prepareForContentCache(data.Traits),
+								prepareForContentCache(data.Skills),
+								prepareForContentCache(data.Spells),
+								prepareForContentCache(data.CarriedEquipment),
+								prepareForContentCache(data.OtherEquipment),
+								prepareForContentCache(data.Notes),
+							}, "\n"))
+						}
+					case gurps.SkillsExt:
+						if data, err := gurps.NewSkillsFromFile(os.DirFS(path.Dir(p)), path.Base(p)); err == nil {
+							for _, one := range data {
+								one.TechLevel = nil
+							}
+							content = n.addToContentCache(p, prepareForContentCache(data))
+						}
+					case gurps.SpellsExt:
+						if data, err := gurps.NewSpellsFromFile(os.DirFS(path.Dir(p)), path.Base(p)); err == nil {
+							for _, one := range data {
+								one.TechLevel = nil
+							}
+							content = n.addToContentCache(p, prepareForContentCache(data))
+						}
+					case gurps.TemplatesExt:
+						if data, err := gurps.NewTemplateFromFile(os.DirFS(path.Dir(p)), path.Base(p)); err == nil {
+							for _, one := range data.Skills {
+								one.TechLevel = nil
+							}
+							for _, one := range data.Spells {
+								one.TechLevel = nil
+							}
+							content = n.addToContentCache(p, strings.Join([]string{
+								prepareForContentCache(data.Traits),
+								prepareForContentCache(data.Skills),
+								prepareForContentCache(data.Spells),
+								prepareForContentCache(data.Equipment),
+								prepareForContentCache(data.Notes),
+							}, "\n"))
+						}
+					case gurps.TraitModifiersExt:
+						if data, err := gurps.NewTraitModifiersFromFile(os.DirFS(path.Dir(p)), path.Base(p)); err == nil {
+							content = n.addToContentCache(p, prepareForContentCache(data))
+						}
+					case gurps.TraitsExt:
+						if data, err := gurps.NewTraitsFromFile(os.DirFS(path.Dir(p)), path.Base(p)); err == nil {
+							content = n.addToContentCache(p, prepareForContentCache(data))
+						}
+					case gurps.MarkdownExt:
+						if data, err := os.ReadFile(p); err == nil {
+							content = string(bytes.ToLower(data))
+						}
+					}
+				}
+			}
+			content = strings.TrimSpace(content)
+			if content != "" && strings.Contains(content, text) {
+				n.searchResult = append(n.searchResult, row)
+			}
+		}
 	}
 	if row.CanHaveChildren() {
 		for _, child := range row.Children() {
 			n.search(text, child)
 		}
 	}
+}
+
+func prepareForContentCache[T fmt.Stringer](data []T) string {
+	var buffer strings.Builder
+	for _, one := range data {
+		buffer.WriteString(strings.ToLower(one.String()))
+		buffer.WriteByte('\n')
+	}
+	return buffer.String()
+}
+
+func (n *Navigator) addToContentCache(p, content string) string {
+	if n.contentCache == nil {
+		n.contentCache = make(map[string]string)
+	}
+	n.contentCache[p] = content
+	return content
 }
 
 func (n *Navigator) previousMatch() {
@@ -853,6 +990,7 @@ func (n *Navigator) adjustForMatch() {
 		n.table.ClearSelection()
 		i := n.table.RowToIndex(row)
 		n.table.SelectByIndex(i)
+		n.ValidateLayout()
 		n.table.ScrollRowIntoView(i)
 	} else {
 		n.matchesLabel.Text = "-"

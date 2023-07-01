@@ -26,6 +26,7 @@ import (
 	"github.com/richardwilkes/toolbox/txt"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
+	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 )
 
@@ -145,9 +146,11 @@ const (
 
 	OpenInWindowMenuID
 
-	LibraryBaseItemID      = OpenInWindowMenuID + int(gurps.LastDockableGroup) + 2
-	RecentFieldBaseItemID  = LibraryBaseItemID + 500
-	ExportToTextBaseItemID = RecentFieldBaseItemID + 500
+	LibraryBaseItemID        = OpenInWindowMenuID + int(gurps.LastDockableGroup) + 2
+	RecentFieldBaseItemID    = LibraryBaseItemID + 500
+	ExportToTextBaseItemID   = RecentFieldBaseItemID + 500
+	DeepSearchableMenuID     = ExportToTextBaseItemID + 500
+	DeepSearchableBaseItemID = DeepSearchableMenuID + 1
 )
 
 var registerKeyBindingsOnce sync.Once
@@ -310,6 +313,7 @@ func (s menuBarScope) createSettingsMenu(f unison.MenuFactory) unison.Menu {
 	m.InsertItem(-1, fontSettingsAction.NewMenuItem(f))
 	m.InsertItem(-1, menuKeySettingsAction.NewMenuItem(f))
 	s.insertMenu(m, -1, s.createOpenInWindowMenu(f))
+	s.insertMenu(m, -1, s.createDeepSearchableMenu(f))
 	return m
 }
 
@@ -474,6 +478,47 @@ func (s menuBarScope) createExportToTextAction(index int, path string) *unison.A
 						}
 					}
 				}
+			}
+		},
+	}
+}
+
+func (s menuBarScope) createDeepSearchableMenu(f unison.MenuFactory) unison.Menu {
+	m := f.NewMenu(DeepSearchableMenuID, i18n.Text("Library Explorer Deep Search In…"), nil)
+	settings := gurps.GlobalSettings()
+	extensions := gurps.DeepSearchableExtensions()
+	extMap := make(map[string]gurps.FileInfo)
+	for _, ext := range extensions {
+		fi := gurps.FileInfoFor(ext)
+		extMap[fi.Name] = fi
+	}
+	keys := maps.Keys(extMap)
+	slices.Sort(keys)
+	for i, name := range keys {
+		fi := extMap[name]
+		mi := s.createDeepSearchableAction(i, fi).NewMenuItem(f)
+		mi.SetCheckState(unison.CheckStateFromBool(slices.Contains(settings.DeepSearch, fi.Extensions[0])))
+		m.InsertItem(-1, mi)
+	}
+	return m
+}
+
+func (s menuBarScope) createDeepSearchableAction(index int, fi gurps.FileInfo) *unison.Action {
+	return &unison.Action{
+		ID:    DeepSearchableBaseItemID + index,
+		Title: fi.Name,
+		ExecuteCallback: func(_ *unison.Action, item any) {
+			if mi, ok := item.(unison.MenuItem); ok {
+				settings := gurps.GlobalSettings()
+				if i := slices.Index(settings.DeepSearch, fi.Extensions[0]); i != -1 {
+					settings.DeepSearch = slices.Delete(settings.DeepSearch, i, i+1)
+					mi.SetCheckState(unison.OffCheckState)
+				} else {
+					settings.DeepSearch = append(settings.DeepSearch, fi.Extensions[0])
+					slices.Sort(settings.DeepSearch)
+					mi.SetCheckState(unison.OnCheckState)
+				}
+				Workspace.Navigator.mapDeepSearch()
 			}
 		},
 	}

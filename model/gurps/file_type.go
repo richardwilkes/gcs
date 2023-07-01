@@ -60,19 +60,20 @@ const (
 
 // FileInfo contains some static information about a given file type.
 type FileInfo struct {
-	Name         string
-	UTI          string
-	ConformsTo   []string
-	Extensions   []string
-	GroupWith    []string
-	MimeTypes    []string
-	SVG          *unison.SVG
-	Load         func(filePath string, initialPage int) (unison.Dockable, error)
-	IsSpecial    bool
-	IsGCSData    bool
-	IsImage      bool
-	IsPDF        bool
-	IsExportable bool
+	Name             string
+	UTI              string
+	ConformsTo       []string
+	Extensions       []string
+	GroupWith        []string
+	MimeTypes        []string
+	SVG              *unison.SVG
+	Load             func(filePath string, initialPage int) (unison.Dockable, error)
+	IsSpecial        bool
+	IsGCSData        bool
+	IsImage          bool
+	IsPDF            bool
+	IsExportable     bool
+	IsDeepSearchable bool
 }
 
 var (
@@ -102,6 +103,18 @@ func AcceptableExtensions() []string {
 	list := make([]string, 0, len(fileTypeRegistry))
 	for k, v := range fileTypeRegistry {
 		if !v.IsSpecial {
+			list = append(list, k)
+		}
+	}
+	txt.SortStringsNaturalAscending(list)
+	return list
+}
+
+// DeepSearchableExtensions returns the file extensions that are deep searchable by the navigator.
+func DeepSearchableExtensions() []string {
+	list := make([]string, 0, len(fileTypeRegistry))
+	for k, v := range fileTypeRegistry {
+		if v.IsDeepSearchable {
 			list = append(list, k)
 		}
 	}
