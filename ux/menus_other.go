@@ -15,5 +15,5 @@ package ux
 
 import "github.com/richardwilkes/unison"
 
-func platformViewMenuAddition(m unison.Menu) {
+func platformViewMenuAddition(_ unison.Menu) {
 }
