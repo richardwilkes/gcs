@@ -69,6 +69,8 @@ const (
 	IncrementTechLevelItemID
 	DecrementTechLevelItemID
 	SwapDefaultsItemID
+	MoveToOtherEquipmentItemID
+	MoveToCarriedEquipmentItemID
 	ItemMenuID
 	AddNaturalAttacksItemID
 	OpenEditorItemID
@@ -234,6 +236,8 @@ func (s menuBarScope) setupEditMenu(bar unison.Menu) {
 	i = s.insertMenuItem(m, i, openEditorAction.NewMenuItem(f))
 
 	i = s.insertMenuSeparator(m, i)
+	i = s.insertMenuItem(m, i, moveToCarriedEquipmentAction.NewMenuItem(f))
+	i = s.insertMenuItem(m, i, moveToOtherEquipmentAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, copyToSheetAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, copyToTemplateAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, applyTemplateAction.NewMenuItem(f))
@@ -555,6 +559,8 @@ func AppendDefaultContextMenuItems(list []ContextMenuItem) []ContextMenuItem {
 		ContextMenuItem{"", -1},
 		ContextMenuItem{applyTemplateAction.Title, ApplyTemplateItemID},
 		ContextMenuItem{newSheetFromTemplateAction.Title, NewSheetFromTemplateItemID},
+		ContextMenuItem{moveToCarriedEquipmentAction.Title, MoveToCarriedEquipmentItemID},
+		ContextMenuItem{moveToOtherEquipmentAction.Title, MoveToOtherEquipmentItemID},
 		ContextMenuItem{copyToSheetAction.Title, CopyToSheetItemID},
 		ContextMenuItem{copyToTemplateAction.Title, CopyToTemplateItemID},
 		ContextMenuItem{"", -1},

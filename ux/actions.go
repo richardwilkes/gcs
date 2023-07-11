@@ -60,6 +60,8 @@ var (
 	increaseUsesAction                  *unison.Action
 	incrementAction                     *unison.Action
 	menuKeySettingsAction               *unison.Action
+	moveToCarriedEquipmentAction        *unison.Action
+	moveToOtherEquipmentAction          *unison.Action
 	newCarriedEquipmentAction           *unison.Action
 	newCarriedEquipmentContainerAction  *unison.Action
 	newCharacterSheetAction             *unison.Action
@@ -354,6 +356,18 @@ func registerActions() {
 		ID:              MenuKeySettingsItemID,
 		Title:           i18n.Text("Menu Keys…"),
 		ExecuteCallback: func(_ *unison.Action, _ any) { ShowMenuKeySettings() },
+	})
+	moveToCarriedEquipmentAction = registerKeyBindableAction("move.to.carried", &unison.Action{
+		ID:              MoveToCarriedEquipmentItemID,
+		Title:           i18n.Text("Move to Carried Equipment"),
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
+	})
+	moveToOtherEquipmentAction = registerKeyBindableAction("move.to.other", &unison.Action{
+		ID:              MoveToOtherEquipmentItemID,
+		Title:           i18n.Text("Move to Other Equipment"),
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	newCarriedEquipmentAction = registerKeyBindableAction("new.eqp", &unison.Action{
 		ID:              NewCarriedEquipmentItemID,

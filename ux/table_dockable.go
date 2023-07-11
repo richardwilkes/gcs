@@ -111,7 +111,7 @@ func NewTableDockable[T gurps.NodeTypes](filePath, extension string, provider Ta
 	d.InstallCmdHandlers(SaveAsItemID, unison.AlwaysEnabled, func(_ any) { d.save(true) })
 	d.InstallCmdHandlers(unison.DeleteItemID,
 		func(_ any) bool { return !d.table.IsFiltered() && d.table.HasSelection() },
-		func(_ any) { DeleteSelection(d.table) })
+		func(_ any) { DeleteSelection(d.table, true) })
 	d.InstallCmdHandlers(DuplicateItemID,
 		func(_ any) bool { return !d.table.IsFiltered() && d.table.HasSelection() },
 		func(_ any) { DuplicateSelection(d.table) })

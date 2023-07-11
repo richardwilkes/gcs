@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
 
@@ -47,6 +48,7 @@ func NewCarriedEquipmentPageList(owner Rebuildable, provider gurps.ListProvider)
 	p.installIncrementTechLevelHandler(owner)
 	p.installDecrementTechLevelHandler(owner)
 	p.installContainerConversionHandlers(owner)
+	p.installMoveToOtherEquipmentHandler(owner)
 	return p
 }
 
@@ -56,6 +58,7 @@ func NewOtherEquipmentPageList(owner Rebuildable, provider gurps.ListProvider) *
 	p.installIncrementTechLevelHandler(owner)
 	p.installDecrementTechLevelHandler(owner)
 	p.installContainerConversionHandlers(owner)
+	p.installMoveToCarriedEquipmentHandler(owner)
 	return p
 }
 
@@ -154,7 +157,7 @@ func newPageList[T gurps.NodeTypes](owner Rebuildable, provider TableProvider[T]
 			func(_ any) { p.provider.OpenEditor(owner, p.Table) })
 		p.InstallCmdHandlers(unison.DeleteItemID,
 			func(_ any) bool { return p.Table.HasSelection() },
-			func(_ any) { DeleteSelection(p.Table) })
+			func(_ any) { DeleteSelection(p.Table, true) })
 		p.InstallCmdHandlers(DuplicateItemID,
 			func(_ any) bool { return p.Table.HasSelection() },
 			func(_ any) { DuplicateSelection(p.Table) })
@@ -166,6 +169,49 @@ func newPageList[T gurps.NodeTypes](owner Rebuildable, provider TableProvider[T]
 		HGrab:  true,
 	})
 	return p
+}
+
+func (p *PageList[T]) installMoveToCarriedEquipmentHandler(owner Rebuildable) {
+	if sheet, ok := owner.AsPanel().Self.(*Sheet); ok {
+		var t *unison.Table[*Node[*gurps.Equipment]]
+		if t, ok = (any(p.Table)).(*unison.Table[*Node[*gurps.Equipment]]); ok {
+			p.InstallCmdHandlers(MoveToCarriedEquipmentItemID,
+				func(_ any) bool { return t.HasSelection() },
+				func(_ any) { moveSelectedEquipment(t, sheet.CarriedEquipment.Table) })
+		}
+	}
+}
+
+func (p *PageList[T]) installMoveToOtherEquipmentHandler(owner Rebuildable) {
+	if sheet, ok := owner.AsPanel().Self.(*Sheet); ok {
+		var t *unison.Table[*Node[*gurps.Equipment]]
+		if t, ok = (any(p.Table)).(*unison.Table[*Node[*gurps.Equipment]]); ok {
+			p.InstallCmdHandlers(MoveToOtherEquipmentItemID,
+				func(_ any) bool { return t.HasSelection() },
+				func(_ any) { moveSelectedEquipment(t, sheet.OtherEquipment.Table) })
+		}
+	}
+}
+
+func moveSelectedEquipment(from, to *unison.Table[*Node[*gurps.Equipment]]) {
+	mgr := unison.UndoManagerFor(from)
+	if mgr == nil || mgr != unison.UndoManagerFor(to) {
+		return
+	}
+	undo := &unison.UndoEdit[*TableDragUndoEditData[*gurps.Equipment]]{
+		ID:       unison.NextUndoID(),
+		EditName: i18n.Text("Move Equipment"),
+		UndoFunc: func(e *unison.UndoEdit[*TableDragUndoEditData[*gurps.Equipment]]) { e.BeforeData.Apply() },
+		RedoFunc: func(e *unison.UndoEdit[*TableDragUndoEditData[*gurps.Equipment]]) { e.AfterData.Apply() },
+		AbsorbFunc: func(e *unison.UndoEdit[*TableDragUndoEditData[*gurps.Equipment]], other unison.Undoable) bool {
+			return false
+		},
+		BeforeData: NewTableDragUndoEditData(from, to),
+	}
+	CopyRowsTo(to, from.SelectedRows(true), nil, false)
+	DeleteSelection(from, false)
+	undo.AfterData = NewTableDragUndoEditData(from, to)
+	mgr.Add(undo)
 }
 
 func (p *PageList[T]) installOpenPageReferenceHandlers() {

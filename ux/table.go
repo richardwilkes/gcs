@@ -235,7 +235,7 @@ func copySelectionToSheet[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 					continue
 				}
 				if targetTable != nil {
-					CopyRowsTo(targetTable, sel, postProcessor)
+					CopyRowsTo(targetTable, sel, postProcessor, true)
 					ProcessModifiersForSelection(targetTable)
 					ProcessNameablesForSelection(targetTable)
 				}
@@ -251,15 +251,15 @@ func copySelectionToTemplate[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 			for _, t := range templates {
 				switch any(sel[0].Data()).(type) {
 				case *gurps.Trait:
-					CopyRowsTo(convertTable[T](t.Traits.Table), sel, nil)
+					CopyRowsTo(convertTable[T](t.Traits.Table), sel, nil, true)
 				case *gurps.Skill:
-					CopyRowsTo(convertTable[T](t.Skills.Table), sel, nil)
+					CopyRowsTo(convertTable[T](t.Skills.Table), sel, nil, true)
 				case *gurps.Spell:
-					CopyRowsTo(convertTable[T](t.Spells.Table), sel, nil)
+					CopyRowsTo(convertTable[T](t.Spells.Table), sel, nil, true)
 				case *gurps.Equipment:
-					CopyRowsTo(convertTable[T](t.Equipment.Table), sel, nil)
+					CopyRowsTo(convertTable[T](t.Equipment.Table), sel, nil, true)
 				case *gurps.Note:
-					CopyRowsTo(convertTable[T](t.Notes.Table), sel, nil)
+					CopyRowsTo(convertTable[T](t.Notes.Table), sel, nil, true)
 				}
 			}
 		}
@@ -325,7 +325,7 @@ func OpenEditor[T gurps.NodeTypes](table *unison.Table[*Node[T]], edit func(item
 }
 
 // DeleteSelection removes the selected nodes from the table.
-func DeleteSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
+func DeleteSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]], recordUndo bool) {
 	if provider, ok := any(table.Model).(TableProvider[T]); ok && !table.IsFiltered() && table.HasSelection() {
 		sel := table.SelectedRows(true)
 		ids := make(map[uuid.UUID]bool, len(sel))
@@ -341,15 +341,17 @@ func DeleteSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 			return
 		}
 		var undo *unison.UndoEdit[*TableUndoEditData[T]]
-		mgr := unison.UndoManagerFor(table)
-		if mgr != nil {
-			undo = &unison.UndoEdit[*TableUndoEditData[T]]{
-				ID:         unison.NextUndoID(),
-				EditName:   i18n.Text("Delete Selection"),
-				UndoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.BeforeData.Apply() },
-				RedoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.AfterData.Apply() },
-				AbsorbFunc: func(e *unison.UndoEdit[*TableUndoEditData[T]], other unison.Undoable) bool { return false },
-				BeforeData: NewTableUndoEditData(table),
+		var mgr *unison.UndoManager
+		if recordUndo {
+			if mgr = unison.UndoManagerFor(table); mgr != nil {
+				undo = &unison.UndoEdit[*TableUndoEditData[T]]{
+					ID:         unison.NextUndoID(),
+					EditName:   i18n.Text("Delete Selection"),
+					UndoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.BeforeData.Apply() },
+					RedoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.AfterData.Apply() },
+					AbsorbFunc: func(e *unison.UndoEdit[*TableUndoEditData[T]], other unison.Undoable) bool { return false },
+					BeforeData: NewTableUndoEditData(table),
+				}
 			}
 		}
 		needSet := false
@@ -378,7 +380,7 @@ func DeleteSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 		if needSet {
 			provider.SetRootData(topLevelData)
 		}
-		if mgr != nil && undo != nil {
+		if recordUndo && mgr != nil && undo != nil {
 			undo.AfterData = NewTableUndoEditData(table)
 			mgr.Add(undo)
 		}
@@ -450,7 +452,7 @@ func DuplicateSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 }
 
 // CopyRowsTo copies the provided rows to the target table.
-func CopyRowsTo[T gurps.NodeTypes](table *unison.Table[*Node[T]], rows []*Node[T], postProcessor func(rows []*Node[T])) {
+func CopyRowsTo[T gurps.NodeTypes](table *unison.Table[*Node[T]], rows []*Node[T], postProcessor func(rows []*Node[T]), recordUndo bool) {
 	if table == nil || table.IsFiltered() {
 		return
 	}
@@ -459,15 +461,17 @@ func CopyRowsTo[T gurps.NodeTypes](table *unison.Table[*Node[T]], rows []*Node[T
 		rows[j] = row.CloneForTarget(table, nil)
 	}
 	var undo *unison.UndoEdit[*TableUndoEditData[T]]
-	mgr := unison.UndoManagerFor(table)
-	if mgr != nil {
-		undo = &unison.UndoEdit[*TableUndoEditData[T]]{
-			ID:         unison.NextUndoID(),
-			EditName:   fmt.Sprintf(i18n.Text("Insert %s"), gurps.AsNode(rows[0].Data()).Kind()),
-			UndoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.BeforeData.Apply() },
-			RedoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.AfterData.Apply() },
-			AbsorbFunc: func(e *unison.UndoEdit[*TableUndoEditData[T]], other unison.Undoable) bool { return false },
-			BeforeData: NewTableUndoEditData(table),
+	var mgr *unison.UndoManager
+	if recordUndo {
+		if mgr = unison.UndoManagerFor(table); mgr != nil {
+			undo = &unison.UndoEdit[*TableUndoEditData[T]]{
+				ID:         unison.NextUndoID(),
+				EditName:   fmt.Sprintf(i18n.Text("Insert %s"), gurps.AsNode(rows[0].Data()).Kind()),
+				UndoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.BeforeData.Apply() },
+				RedoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.AfterData.Apply() },
+				AbsorbFunc: func(e *unison.UndoEdit[*TableUndoEditData[T]], other unison.Undoable) bool { return false },
+				BeforeData: NewTableUndoEditData(table),
+			}
 		}
 	}
 	table.SetRootRows(append(slices.Clone(table.RootRows()), rows...))
@@ -481,7 +485,7 @@ func CopyRowsTo[T gurps.NodeTypes](table *unison.Table[*Node[T]], rows []*Node[T
 	}
 	table.ScrollRowCellIntoView(table.LastSelectedRowIndex(), 0)
 	table.ScrollRowCellIntoView(table.FirstSelectedRowIndex(), 0)
-	if mgr != nil && undo != nil {
+	if recordUndo && mgr != nil && undo != nil {
 		undo.AfterData = NewTableUndoEditData(table)
 		mgr.Add(undo)
 	}
