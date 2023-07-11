@@ -90,7 +90,7 @@ func InitWorkspace(wnd *unison.Window) {
 // Activate attempts to locate an existing dockable that 'matcher' returns true for. Will return true if a suitable
 // match was found. If found, it will have been activated and focused.
 func Activate(matcher func(d unison.Dockable) bool) bool {
-	for _, d := range allDockables() {
+	for _, d := range AllDockables() {
 		if matcher(d) {
 			ActivateDockable(d)
 			return true
@@ -126,7 +126,7 @@ func ActiveDockable() unison.Dockable {
 }
 
 func isWorkspaceAllowedToClose() bool {
-	for _, d := range allDockables() {
+	for _, d := range AllDockables() {
 		if !mayDockableClose(d) {
 			return false
 		}
@@ -159,7 +159,8 @@ func mayDockableClose(d unison.Dockable) bool {
 	return true
 }
 
-func allDockables() []unison.Dockable {
+// AllDockables returns all Dockables, whether in the workspace or in a separate window.
+func AllDockables() []unison.Dockable {
 	var all []unison.Dockable
 	Workspace.DocumentDock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
 		all = append(all, dc.Dockables()...)
@@ -173,6 +174,17 @@ func allDockables() []unison.Dockable {
 		}
 	}
 	return all
+}
+
+// AllMatchingDockables returns all Dockables that 'matcher' returns true for.
+func AllMatchingDockables(matcher func(d unison.Dockable) bool) []unison.Dockable {
+	var result []unison.Dockable
+	for _, d := range AllDockables() {
+		if matcher(d) {
+			result = append(result, d)
+		}
+	}
+	return result
 }
 
 func dockableFromWindow(wnd *unison.Window) unison.Dockable {
@@ -214,7 +226,7 @@ func DefaultDockContainer() *unison.DockContainer {
 
 // LocateFileBackedDockable searches for a FileBackedDockable with the given path.
 func LocateFileBackedDockable(filePath string) FileBackedDockable {
-	for _, d := range allDockables() {
+	for _, d := range AllDockables() {
 		if fbd, ok := d.(FileBackedDockable); ok && filePath == fbd.BackingFilePath() {
 			return fbd
 		}
@@ -431,7 +443,7 @@ const AssociatedUUIDKey = "associated_uuid"
 // CloseUUID attempts to close any Dockables associated with the given UUIDs. Returns false if a dockable refused to
 // close.
 func CloseUUID(ids map[uuid.UUID]bool) bool {
-	for _, d := range allDockables() {
+	for _, d := range AllDockables() {
 		if tc, ok := d.(unison.TabCloser); ok {
 			if otherValue, ok2 := d.AsPanel().ClientData()[AssociatedUUIDKey]; ok2 {
 				if otherID, ok3 := otherValue.(uuid.UUID); ok3 && ids[otherID] {
@@ -480,7 +492,7 @@ func CloseGroup(d unison.Dockable) bool {
 }
 
 func traverseGroup(d unison.Dockable, f func(target GroupedCloser) bool) {
-	for _, other := range allDockables() {
+	for _, other := range AllDockables() {
 		if fe, ok := other.(GroupedCloser); ok && fe.CloseWithGroup(d) {
 			if f(fe) {
 				return

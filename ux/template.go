@@ -59,7 +59,7 @@ type Template struct {
 // OpenTemplates returns the currently open templates.
 func OpenTemplates(exclude *Template) []*Template {
 	var templates []*Template
-	for _, one := range allDockables() {
+	for _, one := range AllDockables() {
 		if template, ok := one.(*Template); ok && template != exclude {
 			templates = append(templates, template)
 		}

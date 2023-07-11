@@ -94,7 +94,7 @@ func ActiveSheet() *Sheet {
 // OpenSheets returns the currently open sheets.
 func OpenSheets(exclude *Sheet) []*Sheet {
 	var sheets []*Sheet
-	for _, d := range allDockables() {
+	for _, d := range AllDockables() {
 		if sheet, ok := d.(*Sheet); ok && sheet != exclude {
 			sheets = append(sheets, sheet)
 		}

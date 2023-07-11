@@ -421,7 +421,7 @@ func (d *sheetSettingsDockable) syncSheet(full bool) {
 	if d.owner != nil {
 		entity = d.owner.Entity()
 	}
-	for _, one := range allDockables() {
+	for _, one := range AllDockables() {
 		if s, ok := one.(gurps.SheetSettingsResponder); ok {
 			s.SheetSettingsUpdated(entity, full)
 		}

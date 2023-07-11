@@ -85,7 +85,7 @@ func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 	e.content = unison.NewPanel()
 	e.content.SetBorder(unison.NewEmptyBorder(unison.NewUniformInsets(unison.StdHSpacing * 2)))
 	e.content.SetLayout(&unison.FlexLayout{
-		Columns:  4,
+		Columns:  5,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
@@ -232,6 +232,14 @@ func (e *pointsEditor) createRow(rec *gurps.PointsRecord, index int) {
 		})
 	reason.Watermark = reasonText
 	e.content.AddChildAtIndex(reason, index)
+	if index != -1 {
+		index++
+	}
+
+	copyToOtherSheetButton := unison.NewSVGButton(svg.Stamper)
+	copyToOtherSheetButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Copy to Other Character Sheet"))
+	copyToOtherSheetButton.ClickCallback = func() { e.copyToOtherSheet(rec) }
+	e.content.AddChildAtIndex(copyToOtherSheetButton, index)
 }
 
 func (e *pointsEditor) addEntry() {
@@ -258,6 +266,43 @@ func (e *pointsEditor) removeEntry(rec *gurps.PointsRecord) {
 			MarkModified(e.content)
 			break
 		}
+	}
+}
+
+func (e *pointsEditor) copyToOtherSheet(rec *gurps.PointsRecord) {
+	availableSheets := OpenSheets(unison.AncestorOrSelf[*Sheet](e.owner))
+	if len(availableSheets) < 2 {
+		unison.WarningDialogWithMessage(i18n.Text("No other character sheets are open!"), i18n.Text("Open one or more other character sheets first."))
+		return
+	}
+	sheets := PromptForDestination(availableSheets)
+	if len(sheets) == 0 {
+		return
+	}
+	entities := make(map[*gurps.Entity]bool, len(availableSheets))
+	for _, sheet := range sheets {
+		entities[sheet.entity] = true
+	}
+	for _, one := range AllMatchingDockables(func(d unison.Dockable) bool {
+		if pe, ok := d.AsPanel().Self.(*pointsEditor); ok {
+			return entities[pe.entity]
+		}
+		return false
+	}) {
+		if !one.AsPanel().Self.(*pointsEditor).AttemptClose() {
+			return
+		}
+	}
+	for _, sheet := range sheets {
+		pe := &pointsEditor{
+			owner:  sheet,
+			entity: sheet.entity,
+			before: gurps.ClonePointsRecordList(sheet.entity.PointsRecord),
+		}
+		pe.Self = pe
+		pe.current = slices.Insert(gurps.ClonePointsRecordList(sheet.entity.PointsRecord), 0, rec)
+		sort.Slice(e.current, func(i, j int) bool { return e.current[i].When.After(e.current[j].When) })
+		pe.applyWithoutFocusNext()
 	}
 }
 
@@ -342,9 +387,13 @@ func (e *pointsEditor) UndoManager() *unison.UndoManager {
 
 func (e *pointsEditor) apply() {
 	e.Window().FocusNext() // Intentionally move the focus to ensure any pending edits are flushed
+	e.applyWithoutFocusNext()
+}
+
+func (e *pointsEditor) applyWithoutFocusNext() {
 	owner := e.owner
 	entity := e.entity
-	if mgr := unison.UndoManagerFor(e.owner); mgr != nil {
+	if mgr := unison.UndoManagerFor(owner); mgr != nil {
 		mgr.Add(&unison.UndoEdit[[]*gurps.PointsRecord]{
 			ID:       unison.NextUndoID(),
 			EditName: i18n.Text("Point Record Changes"),

@@ -476,7 +476,7 @@ func (n *Navigator) adjustBackingFilePath(row *NavigatorNode, oldPath, newPath s
 		if !strings.HasSuffix(oldPath, string(os.PathSeparator)) {
 			oldPath += string(os.PathSeparator)
 		}
-		for _, one := range allDockables() {
+		for _, one := range AllDockables() {
 			if fbd, ok := one.(FileBackedDockable); ok {
 				p := fbd.BackingFilePath()
 				if strings.HasPrefix(p, oldPath) {

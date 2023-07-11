@@ -31,7 +31,7 @@ Content in other libraries will not be modified`)) != unison.ModalResponseOK {
 	}
 	var list []unison.TabCloser
 	p := lib.PathOnDisk + "/"
-	for _, one := range allDockables() {
+	for _, one := range AllDockables() {
 		if tc, ok := one.(unison.TabCloser); ok {
 			var fbd FileBackedDockable
 			if fbd, ok = one.(FileBackedDockable); ok {

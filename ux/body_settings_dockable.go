@@ -226,7 +226,7 @@ func (d *bodySettingsDockable) apply() {
 	}
 	entity := d.owner.Entity()
 	entity.SheetSettings.BodyType = d.body.Clone(entity, nil)
-	for _, one := range allDockables() {
+	for _, one := range AllDockables() {
 		if s, ok := one.(gurps.SheetSettingsResponder); ok {
 			s.SheetSettingsUpdated(entity, true)
 		}

@@ -190,7 +190,7 @@ func askUserForPageRefPath(key string, offset int) *gurps.PageRef {
 
 // RefreshPageRefMappingsView causes the Page References Mappings view to be refreshed if it is open.
 func RefreshPageRefMappingsView() {
-	for _, one := range allDockables() {
+	for _, one := range AllDockables() {
 		if d, ok := one.(*pageRefMappingsDockable); ok {
 			d.sync()
 			break
