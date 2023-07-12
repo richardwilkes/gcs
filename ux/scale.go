@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -78,7 +78,7 @@ func NewScaleField(min, max int, def, get func() int, set func(int), afterApply 
 	scaleField.SetMarksModified(false)
 	scaleField.Tooltip = unison.NewTooltipWithText(scaleTitle)
 	scroller.ContentView().MouseWheelCallback = func(where, delta unison.Point, mod unison.Modifiers) bool {
-		if !mod.OptionDown() {
+		if !mod.OptionDown() || !scaleField.Enabled() {
 			return false
 		}
 		current := get()

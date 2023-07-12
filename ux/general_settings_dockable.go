@@ -49,6 +49,7 @@ type generalSettingsDockable struct {
 	initialPDFScaleField          *PercentageField
 	initialMarkdownScaleField     *PercentageField
 	initialImageScaleField        *PercentageField
+	autoScalingPopup              *unison.PopupMenu[gurps.AutoScale]
 	maxAutoColWidthField          *IntegerField
 	monitorResolutionField        *IntegerField
 	exportResolutionField         *IntegerField
@@ -119,13 +120,25 @@ func (d *generalSettingsDockable) initContent(content *unison.Panel) {
 		func(v int) { gurps.GlobalSettings().General.InitialSheetUIScale = v },
 		gurps.InitialUIScaleMin, gurps.InitialUIScaleMax, false, false)
 	content.AddChild(WrapWithSpan(2, d.initialSheetScaleField))
+
 	initialPDFScaleTitle := i18n.Text("Initial PDF Scale")
 	content.AddChild(NewFieldLeadingLabel(initialPDFScaleTitle))
 	d.initialPDFScaleField = NewPercentageField(nil, "", initialPDFScaleTitle,
 		func() int { return gurps.GlobalSettings().General.InitialPDFUIScale },
 		func(v int) { gurps.GlobalSettings().General.InitialPDFUIScale = v },
 		gurps.InitialUIScaleMin, gurps.InitialUIScaleMax, false, false)
-	content.AddChild(WrapWithSpan(2, d.initialPDFScaleField))
+	d.autoScalingPopup = unison.NewPopupMenu[gurps.AutoScale]()
+	for _, mode := range gurps.AllAutoScale {
+		d.autoScalingPopup.AddItem(mode)
+	}
+	d.autoScalingPopup.Select(gurps.GlobalSettings().General.PDFAutoScaling)
+	d.autoScalingPopup.SelectionChangedCallback = func(popup *unison.PopupMenu[gurps.AutoScale]) {
+		if mode, ok := popup.Selected(); ok {
+			gurps.GlobalSettings().General.PDFAutoScaling = mode
+		}
+	}
+	content.AddChild(WrapWithSpan(2, d.initialPDFScaleField, d.autoScalingPopup))
+
 	initialMarkdownScaleTitle := i18n.Text("Initial Markdown Scale")
 	content.AddChild(NewFieldLeadingLabel(initialMarkdownScaleTitle))
 	d.initialMarkdownScaleField = NewPercentageField(nil, "", initialMarkdownScaleTitle,
@@ -387,6 +400,7 @@ func (d *generalSettingsDockable) sync() {
 	SetFieldValue(d.initialEditorScaleField.Field, d.initialEditorScaleField.Format(gs.InitialEditorUIScale))
 	SetFieldValue(d.initialSheetScaleField.Field, d.initialSheetScaleField.Format(gs.InitialSheetUIScale))
 	SetFieldValue(d.initialPDFScaleField.Field, d.initialPDFScaleField.Format(gs.InitialPDFUIScale))
+	d.autoScalingPopup.Select(gs.PDFAutoScaling)
 	SetFieldValue(d.initialMarkdownScaleField.Field, d.initialMarkdownScaleField.Format(gs.InitialMarkdownUIScale))
 	SetFieldValue(d.initialImageScaleField.Field, d.initialImageScaleField.Format(gs.InitialImageUIScale))
 	d.maxAutoColWidthField.SetText(strconv.Itoa(gs.MaximumAutoColWidth))

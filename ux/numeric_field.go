@@ -102,6 +102,11 @@ func (f *NumericField[T]) getData() string {
 	return f.Text()
 }
 
+// CurrentValue returns the current committed value, which may not be the same as the value showing.
+func (f *NumericField[T]) CurrentValue() T {
+	return f.get()
+}
+
 func (f *NumericField[T]) mustExtract(s string) T {
 	v, _ := f.extract(strings.TrimSpace(s)) //nolint:errcheck // Default value in case of error is acceptable
 	if f.hasException && v == f.exception {

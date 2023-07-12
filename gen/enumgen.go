@@ -996,6 +996,16 @@ func main() {
 			{Key: "sub-editors"},
 		},
 	})
+	processSourceTemplate(enumTmpl, &enumInfo{
+		Pkg:  "model/gurps",
+		Name: "auto_scale",
+		Desc: "holds the possible auto-scaling options",
+		Values: []enumValue{
+			{Key: "no", String: "No Auto-Scaling"},
+			{Key: "fit_width"},
+			{Key: "fit_page"},
+		},
+	})
 }
 
 func removeExistingGenFiles() {

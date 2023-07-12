@@ -43,7 +43,6 @@ type PDFDockable struct {
 	unison.Panel
 	path                   string
 	pdf                    *PDFRenderer
-	toolbar                *unison.Panel
 	content                *unison.Panel
 	docScroll              *unison.ScrollPanel
 	docPanel               *unison.Panel
@@ -53,6 +52,7 @@ type PDFDockable struct {
 	tocScrollLayoutData    *unison.FlexLayoutData
 	pageNumberField        *unison.Field
 	scaleField             *PercentageField
+	autoScalingPopup       *unison.PopupMenu[gurps.AutoScale]
 	searchField            *unison.Field
 	matchesLabel           *unison.Label
 	sideBarButton          *unison.Button
@@ -70,6 +70,7 @@ type PDFDockable struct {
 	history                []int
 	dragStart              unison.Point
 	dragOrigin             unison.Point
+	autoScaling            gurps.AutoScale
 	inDrag                 bool
 	noUpdate               bool
 	adjustTableSizePending bool
@@ -78,9 +79,11 @@ type PDFDockable struct {
 
 // NewPDFDockable creates a new unison.Dockable for PDFRenderer files.
 func NewPDFDockable(filePath string, initialPage int) (unison.Dockable, error) {
+	generalSettings := gurps.GlobalSettings().General
 	d := &PDFDockable{
 		path:               filePath,
-		scale:              gurps.GlobalSettings().General.InitialPDFUIScale,
+		scale:              generalSettings.InitialPDFUIScale,
+		autoScaling:        generalSettings.PDFAutoScaling,
 		noUpdate:           true,
 		needDockableResize: true,
 	}
@@ -98,33 +101,32 @@ func NewPDFDockable(filePath string, initialPage int) (unison.Dockable, error) {
 
 	d.createTOC()
 	d.createContent()
-	d.createToolbar() // Has to be after content creation
 
-	d.AddChild(d.toolbar)
+	d.AddChild(d.createToolbar()) // Creation of the toolbar has to be after content creation
 	d.AddChild(d.content)
 	d.content.AddChild(d.docScroll)
 
 	d.noUpdate = false
-	d.scaleField.SetEnabled(true)
+	d.scaleField.SetEnabled(d.autoScaling != gurps.NoAutoScale)
 	d.LoadPage(initialPage)
 
 	return d, nil
 }
 
-func (d *PDFDockable) createToolbar() {
-	d.toolbar = unison.NewPanel()
-	d.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
+func (d *PDFDockable) createToolbar() *unison.Panel {
+	outer := unison.NewPanel()
+	outer.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
-	d.toolbar.SetLayoutData(&unison.FlexLayoutData{
+	outer.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,
 		HGrab:  true,
 	})
 
-	d.sideBarButton = unison.NewSVGButton(svg.SideBar)
-	d.sideBarButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Toggle the Sidebar"))
-	d.sideBarButton.ClickCallback = d.toggleSideBar
-	d.sideBarButton.SetEnabled(false)
-	d.toolbar.AddChild(d.sideBarButton)
+	first := unison.NewPanel()
+	first.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		HGrab:  true,
+	})
 
 	info := NewInfoPop()
 	AddHelpToInfoPop(info, i18n.Text("Within this view, these keys have the following effects:\n"))
@@ -135,7 +137,7 @@ func (d *PDFDockable) createToolbar() {
 	AddKeyBindingInfoToInfoPop(info, unison.KeyBinding{KeyCode: unison.KeyRight}, i18n.Text("Go to next page"))
 	AddKeyBindingInfoToInfoPop(info, unison.KeyBinding{KeyCode: unison.KeyDown}, i18n.Text("Go to next page"))
 	AddScalingHelpToInfoPop(info)
-	d.toolbar.AddChild(info)
+	first.AddChild(info)
 
 	d.scaleField = NewScaleField(
 		minPDFDockableScale,
@@ -148,12 +150,26 @@ func (d *PDFDockable) createToolbar() {
 		d.docScroll,
 	)
 	d.scaleField.SetEnabled(false)
-	d.toolbar.AddChild(d.scaleField)
+	first.AddChild(d.scaleField)
+
+	d.autoScalingPopup = unison.NewPopupMenu[gurps.AutoScale]()
+	for _, mode := range gurps.AllAutoScale {
+		d.autoScalingPopup.AddItem(mode)
+	}
+	d.autoScalingPopup.Select(d.autoScaling)
+	d.autoScalingPopup.SelectionChangedCallback = func(popup *unison.PopupMenu[gurps.AutoScale]) {
+		if mode, ok := popup.Selected(); ok {
+			d.autoScaling = mode
+			d.scaleField.SetEnabled(d.autoScaling == gurps.NoAutoScale)
+			d.docScroll.MarkForRedraw()
+		}
+	}
+	first.AddChild(d.autoScalingPopup)
 
 	pageLabel := unison.NewLabel()
 	pageLabel.Font = unison.DefaultFieldTheme.Font
 	pageLabel.Text = i18n.Text("Page")
-	d.toolbar.AddChild(pageLabel)
+	first.AddChild(pageLabel)
 
 	d.pageNumberField = unison.NewField()
 	d.pageNumberField.SetMinimumTextWidthUsing(strconv.Itoa(d.pdf.PageCount() * 10))
@@ -172,46 +188,64 @@ func (d *PDFDockable) createToolbar() {
 		}
 		return true
 	}
-	d.toolbar.AddChild(d.pageNumberField)
+	first.AddChild(d.pageNumberField)
 
 	ofLabel := unison.NewLabel()
 	ofLabel.Font = unison.DefaultFieldTheme.Font
 	ofLabel.Text = fmt.Sprintf(i18n.Text("of %d"), d.pdf.PageCount())
-	d.toolbar.AddChild(ofLabel)
+	first.AddChild(ofLabel)
 
-	d.toolbar.AddChild(NewToolbarSeparator())
+	first.AddChild(NewToolbarSeparator())
 
 	d.backButton = unison.NewSVGButton(svg.Back)
 	d.backButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Back"))
 	d.backButton.ClickCallback = d.Back
-	d.toolbar.AddChild(d.backButton)
+	first.AddChild(d.backButton)
 
 	d.forwardButton = unison.NewSVGButton(svg.Forward)
 	d.forwardButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Forward"))
 	d.forwardButton.ClickCallback = d.Forward
-	d.toolbar.AddChild(d.forwardButton)
+	first.AddChild(d.forwardButton)
 
-	d.toolbar.AddChild(NewToolbarSeparator())
+	first.AddChild(NewToolbarSeparator())
 
 	d.firstPageButton = unison.NewSVGButton(svg.First)
 	d.firstPageButton.Tooltip = unison.NewTooltipWithText(i18n.Text("First Page"))
 	d.firstPageButton.ClickCallback = func() { d.LoadPage(0) }
-	d.toolbar.AddChild(d.firstPageButton)
+	first.AddChild(d.firstPageButton)
 
 	d.previousPageButton = unison.NewSVGButton(svg.Previous)
 	d.previousPageButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Previous Page"))
 	d.previousPageButton.ClickCallback = func() { d.LoadPage(d.pdf.MostRecentPageNumber() - 1) }
-	d.toolbar.AddChild(d.previousPageButton)
+	first.AddChild(d.previousPageButton)
 
 	d.nextPageButton = unison.NewSVGButton(svg.Next)
 	d.nextPageButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Next Page"))
 	d.nextPageButton.ClickCallback = func() { d.LoadPage(d.pdf.MostRecentPageNumber() + 1) }
-	d.toolbar.AddChild(d.nextPageButton)
+	first.AddChild(d.nextPageButton)
 
 	d.lastPageButton = unison.NewSVGButton(svg.Last)
 	d.lastPageButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Last Page"))
 	d.lastPageButton.ClickCallback = func() { d.LoadPage(d.pdf.PageCount() - 1) }
-	d.toolbar.AddChild(d.lastPageButton)
+	first.AddChild(d.lastPageButton)
+
+	first.SetLayout(&unison.FlexLayout{
+		Columns:  len(first.Children()),
+		HSpacing: unison.StdHSpacing,
+	})
+	outer.AddChild(first)
+
+	second := unison.NewPanel()
+	second.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: unison.FillAlignment,
+		HGrab:  true,
+	})
+
+	d.sideBarButton = unison.NewSVGButton(svg.SideBar)
+	d.sideBarButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Toggle the Sidebar"))
+	d.sideBarButton.ClickCallback = d.toggleSideBar
+	d.sideBarButton.SetEnabled(false)
+	second.AddChild(d.sideBarButton)
 
 	d.searchField = NewSearchField(i18n.Text("Page Search"), func(_, _ *unison.FieldState) {
 		if d.noUpdate {
@@ -219,17 +253,25 @@ func (d *PDFDockable) createToolbar() {
 		}
 		d.LoadPage(d.pdf.MostRecentPageNumber())
 	})
-	d.toolbar.AddChild(d.searchField)
+	second.AddChild(d.searchField)
 
 	d.matchesLabel = unison.NewLabel()
 	d.matchesLabel.Text = "-"
 	d.matchesLabel.Tooltip = unison.NewTooltipWithText(i18n.Text("Number of matches found"))
-	d.toolbar.AddChild(d.matchesLabel)
+	second.AddChild(d.matchesLabel)
 
-	d.toolbar.SetLayout(&unison.FlexLayout{
-		Columns:  len(d.toolbar.Children()),
+	second.SetLayout(&unison.FlexLayout{
+		Columns:  len(second.Children()),
 		HSpacing: unison.StdHSpacing,
 	})
+	outer.AddChild(second)
+
+	outer.SetLayout(&unison.FlexLayout{
+		Columns:  1,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	return outer
 }
 
 func (d *PDFDockable) createTOC() {
@@ -370,7 +412,7 @@ func (d *PDFDockable) pageLoaded() {
 	d.scaleField.SetEnabled(false)
 	defer func() {
 		d.noUpdate = false
-		d.scaleField.SetEnabled(true)
+		d.scaleField.SetEnabled(d.autoScaling == gurps.NoAutoScale)
 	}()
 
 	d.page = d.pdf.CurrentPage()
@@ -545,6 +587,29 @@ func (d *PDFDockable) docSizer(_ unison.Size) (min, pref, max unison.Size) {
 func (d *PDFDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
 	gc.DrawRect(dirty, unison.ContentColor.Paint(gc, dirty, unison.Fill))
 	if d.page != nil && d.page.Image != nil {
+		switch d.autoScaling {
+		case gurps.FitWidthAutoScale:
+			size := d.page.Image.LogicalSize()
+			cSize := d.docScroll.ContentView().ContentRect(false).Size
+			desiredScale := xmath.Floor((cSize.Width / size.Width / scaleCompensation) * 100)
+			desiredScaleInt := int(xmath.Min(xmath.Max(desiredScale, minPDFDockableScale), maxPDFDockableScale))
+			if d.scaleField.CurrentValue() != desiredScaleInt {
+				d.scaleField.SetEnabled(true)
+				d.scaleField.SetText(d.scaleField.Format(desiredScaleInt))
+				d.scaleField.SetEnabled(false)
+			}
+		case gurps.FitPageAutoScale:
+			size := d.page.Image.LogicalSize()
+			cSize := d.docScroll.ContentView().ContentRect(false).Size
+			desiredScale := xmath.Floor((xmath.Min(cSize.Width/size.Width, cSize.Height/size.Height) / scaleCompensation) * 100)
+			desiredScaleInt := int(xmath.Min(xmath.Max(desiredScale, minPDFDockableScale), maxPDFDockableScale))
+			if d.scaleField.CurrentValue() != desiredScaleInt {
+				d.scaleField.SetEnabled(true)
+				d.scaleField.SetText(d.scaleField.Format(desiredScaleInt))
+				d.scaleField.SetEnabled(false)
+			}
+		default:
+		}
 		gc.Save()
 		gc.Scale(scaleCompensation, scaleCompensation)
 		r := unison.Rect{Size: d.page.Image.LogicalSize()}

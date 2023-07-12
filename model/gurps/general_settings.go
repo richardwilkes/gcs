@@ -55,6 +55,7 @@ const (
 	InitialPDFUIScaleDef       = 100
 	InitialMarkdownUIScaleDef  = 100
 	InitialImageUIScaleDef     = 100
+	InitialPDFAutoScaling      = NoAutoScale
 	AutoColWidthMin            = 50
 	AutoColWidthMax            = 9999
 	MaximumAutoColWidthDef     = 800
@@ -62,27 +63,28 @@ const (
 
 // GeneralSettings holds general settings for a sheet.
 type GeneralSettings struct {
-	DefaultPlayerName      string  `json:"default_player_name,omitempty"`
-	DefaultTechLevel       string  `json:"default_tech_level,omitempty"`
-	CalendarName           string  `json:"calendar_ref,omitempty"`
-	ExternalPDFCmdLine     string  `json:"external_pdf_cmd_line,omitempty"`
-	InitialPoints          fxp.Int `json:"initial_points"`
-	TooltipDelay           fxp.Int `json:"tooltip_delay"`
-	TooltipDismissal       fxp.Int `json:"tooltip_dismissal"`
-	ScrollWheelMultiplier  fxp.Int `json:"scroll_wheel_multiplier"`
-	NavigatorUIScale       int     `json:"navigator_scale"`
-	InitialListUIScale     int     `json:"initial_list_scale"`
-	InitialEditorUIScale   int     `json:"initial_editor_scale"`
-	InitialSheetUIScale    int     `json:"initial_sheet_scale"`
-	InitialPDFUIScale      int     `json:"initial_pdf_scale"`
-	InitialMarkdownUIScale int     `json:"initial_md_scale"`
-	InitialImageUIScale    int     `json:"initial_img_scale"`
-	MaximumAutoColWidth    int     `json:"maximum_auto_col_width"`
-	ImageResolution        int     `json:"image_resolution"`
-	MonitorResolution      int     `json:"monitor_resolution,omitempty"`
-	AutoFillProfile        bool    `json:"auto_fill_profile"`
-	AutoAddNaturalAttacks  bool    `json:"add_natural_attacks"`
-	GroupContainersOnSort  bool    `json:"group_containers_on_sort"`
+	DefaultPlayerName      string    `json:"default_player_name,omitempty"`
+	DefaultTechLevel       string    `json:"default_tech_level,omitempty"`
+	CalendarName           string    `json:"calendar_ref,omitempty"`
+	ExternalPDFCmdLine     string    `json:"external_pdf_cmd_line,omitempty"`
+	InitialPoints          fxp.Int   `json:"initial_points"`
+	TooltipDelay           fxp.Int   `json:"tooltip_delay"`
+	TooltipDismissal       fxp.Int   `json:"tooltip_dismissal"`
+	ScrollWheelMultiplier  fxp.Int   `json:"scroll_wheel_multiplier"`
+	NavigatorUIScale       int       `json:"navigator_scale"`
+	InitialListUIScale     int       `json:"initial_list_scale"`
+	InitialEditorUIScale   int       `json:"initial_editor_scale"`
+	InitialSheetUIScale    int       `json:"initial_sheet_scale"`
+	InitialPDFUIScale      int       `json:"initial_pdf_scale"`
+	InitialMarkdownUIScale int       `json:"initial_md_scale"`
+	InitialImageUIScale    int       `json:"initial_img_scale"`
+	MaximumAutoColWidth    int       `json:"maximum_auto_col_width"`
+	ImageResolution        int       `json:"image_resolution"`
+	MonitorResolution      int       `json:"monitor_resolution,omitempty"`
+	PDFAutoScaling         AutoScale `json:"pdf_auto_scaling,omitempty"`
+	AutoFillProfile        bool      `json:"auto_fill_profile"`
+	AutoAddNaturalAttacks  bool      `json:"add_natural_attacks"`
+	GroupContainersOnSort  bool      `json:"group_containers_on_sort"`
 }
 
 // NewGeneralSettings creates settings with factory defaults.
@@ -103,6 +105,7 @@ func NewGeneralSettings() *GeneralSettings {
 		InitialImageUIScale:    InitialImageUIScaleDef,
 		MaximumAutoColWidth:    MaximumAutoColWidthDef,
 		ImageResolution:        ImageResolutionDef,
+		PDFAutoScaling:         NoAutoScale,
 		AutoFillProfile:        true,
 		AutoAddNaturalAttacks:  true,
 	}
@@ -168,5 +171,6 @@ func (s *GeneralSettings) EnsureValidity() {
 	s.InitialMarkdownUIScale = fxp.ResetIfOutOfRangeInt(s.InitialMarkdownUIScale, InitialUIScaleMin, InitialUIScaleMax, InitialMarkdownUIScaleDef)
 	s.InitialImageUIScale = fxp.ResetIfOutOfRangeInt(s.InitialImageUIScale, InitialUIScaleMin, InitialUIScaleMax, InitialImageUIScaleDef)
 	s.MaximumAutoColWidth = fxp.ResetIfOutOfRangeInt(s.MaximumAutoColWidth, AutoColWidthMin, AutoColWidthMax, MaximumAutoColWidthDef)
+	s.PDFAutoScaling = s.PDFAutoScaling.EnsureValid()
 	s.UpdateToolTipTiming()
 }
