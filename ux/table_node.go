@@ -283,9 +283,9 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground u
 		Columns: 1,
 		HAlign:  c.Alignment,
 	})
-	n.addLabelCell(c, p, width, c.Primary, n.primaryFieldFont(), foreground, true)
+	n.addLabelCell(c, p, width, c.Image, c.Primary, n.primaryFieldFont(), foreground, true)
 	if c.Secondary != "" {
-		n.addLabelCell(c, p, width, c.Secondary, n.secondaryFieldFont(), foreground, false)
+		n.addLabelCell(c, p, width, nil, c.Secondary, n.secondaryFieldFont(), foreground, false)
 	}
 	tooltip := c.Tooltip
 	if c.UnsatisfiedReason != "" {
@@ -341,13 +341,27 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground u
 	return p
 }
 
-func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width float32, text string, f unison.Font, foreground unison.Ink, primary bool) {
+func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width float32, svg *unison.SVG, text string, f unison.Font, foreground unison.Ink, primary bool) {
 	decoration := &unison.TextDecoration{
 		Font:          f,
 		StrikeThrough: primary && c.Disabled,
 	}
+	var drawable *unison.DrawableSVG
+	if svg != nil {
+		baseline := f.Baseline() - 1
+		size := unison.NewSize(baseline, baseline)
+		drawable = &unison.DrawableSVG{
+			SVG:  svg,
+			Size: *size.GrowToInteger(),
+		}
+	}
 	var lines []*unison.Text
 	if width > 0 {
+		if drawable != nil {
+			// TODO: This should be made to be more sophisticated, using the shorter width only for the first line.
+			//       Unfortunately, the underlying Text.BreakToWidth has no way to have it use different widths.
+			width -= drawable.Size.Width + unison.DefaultLabelTheme.Gap
+		}
 		lines = unison.NewTextWrappedLines(text, decoration, width)
 	} else {
 		lines = unison.NewTextLines(text, decoration)
@@ -359,6 +373,10 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 		label.StrikeThrough = primary && c.Disabled
 		label.HAlign = c.Alignment
 		label.OnBackgroundInk = foreground
+		if drawable != nil {
+			label.Drawable = drawable
+			drawable = nil
+		}
 		label.SetEnabled(!c.Dim)
 		parent.AddChild(label)
 	}

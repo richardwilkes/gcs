@@ -18,6 +18,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -221,6 +222,9 @@ func (a *Trait) CellData(columnID int, data *CellData) {
 		data.UnsatisfiedReason = a.UnsatisfiedReason
 		data.Tooltip = a.SecondaryText(func(option DisplayOption) bool { return option.Tooltip() })
 		data.TemplateInfo = a.TemplatePicker.Description()
+		if a.Container() && a.ContainerType == RaceContainerType {
+			data.Image = svg.BoxedR
+		}
 	case TraitPointsColumn:
 		data.Type = TextCellType
 		data.Primary = a.AdjustedPoints().String()
