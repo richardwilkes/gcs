@@ -151,13 +151,16 @@ func main() {
 		Desc: "holds the type of a trait container",
 		Values: []enumValue{
 			{Key: "group"},
+			{Key: "alternative_abilities"},
+			{
+				Key:     "ancestry",
+				OldKeys: []string{"race"},
+			},
+			{Key: "attributes"},
 			{
 				Key:    "meta_trait",
 				String: "Meta-Trait",
 			},
-			{Key: "race"},
-			{Key: "alternative_abilities"},
-			{Key: "attributes"},
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{

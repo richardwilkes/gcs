@@ -212,8 +212,8 @@ func (ex *legacyExporter) emitKey(key string) error {
 		ex.writeEncodedText(ex.points.Disadvantages.String())
 	case "QUIRK_POINTS":
 		ex.writeEncodedText(ex.points.Quirks.String())
-	case "RACE_POINTS":
-		ex.writeEncodedText(ex.points.Race.String())
+	case "RACE_POINTS", "ANCESTRY_POINTS":
+		ex.writeEncodedText(ex.points.Ancestry.String())
 	case "SKILL_POINTS":
 		ex.writeEncodedText(ex.points.Skills.String())
 	case "SPELL_POINTS":
@@ -345,7 +345,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 			ex.writeEncodedText(n.Text)
 			return false
 		}, false, false, ex.entity.Notes...)
-	case "RACE":
+	case "RACE", "ANCESTRY":
 		ex.writeEncodedText(ex.entity.Ancestry().Name)
 	case "BODY_TYPE":
 		ex.writeEncodedText(ex.entity.SheetSettings.BodyType.Name)

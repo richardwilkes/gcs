@@ -89,7 +89,7 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 			}
 		}
 		ancestryPopup = addLabelAndPopup(content, i18n.Text("Ancestry"), "", choices, &e.editorData.Ancestry)
-		adjustPopupBlank(ancestryPopup, e.editorData.ContainerType != gurps.RaceContainerType)
+		adjustPopupBlank(ancestryPopup, e.editorData.ContainerType != gurps.AncestryContainerType)
 		addTemplateChoices(content, nil, "", &e.editorData.TemplatePicker)
 	}
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
@@ -123,7 +123,7 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 			crAdjPopup.SetEnabled(true)
 		}
 		if ancestryPopup != nil {
-			if e.editorData.ContainerType == gurps.RaceContainerType {
+			if e.editorData.ContainerType == gurps.AncestryContainerType {
 				if !ancestryPopup.Enabled() {
 					adjustPopupBlank(ancestryPopup, false)
 					if ancestryPopup.IndexOfItem(e.editorData.Ancestry) == -1 {

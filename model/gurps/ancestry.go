@@ -208,7 +208,7 @@ func ActiveAncestries(list []*Trait) []*Ancestry {
 	var ancestries []*Ancestry
 	libraries := GlobalSettings().Libraries()
 	Traverse(func(t *Trait) bool {
-		if t.Container() && t.ContainerType == RaceContainerType && t.Enabled() {
+		if t.Container() && t.ContainerType == AncestryContainerType && t.Enabled() {
 			if anc := LookupAncestry(t.Ancestry, libraries); anc != nil {
 				ancestries = append(ancestries, anc)
 			}
@@ -224,7 +224,7 @@ func ActiveAncestryTraits(list []*Trait) []*Trait {
 	var result []*Trait
 	libraries := GlobalSettings().Libraries()
 	Traverse(func(t *Trait) bool {
-		if t.Container() && t.ContainerType == RaceContainerType && t.Enabled() {
+		if t.Container() && t.ContainerType == AncestryContainerType && t.Enabled() {
 			if ancestry := LookupAncestry(t.Ancestry, libraries); ancestry != nil {
 				result = append(result, t)
 			}

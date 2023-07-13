@@ -28,7 +28,7 @@ type CellData struct {
 	Tooltip           string
 	UnsatisfiedReason string
 	TemplateInfo      string
-	Image             *unison.SVG
+	InlineTag         string
 }
 
 // ForSort returns a string that can be used to sort or search against for this data.

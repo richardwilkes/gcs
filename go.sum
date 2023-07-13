@@ -39,8 +39,8 @@ github.com/richardwilkes/rpgtools v1.5.3 h1:qstbAVrBQ80oGn6beM1X6d7S3O1evf47W/NU
 github.com/richardwilkes/rpgtools v1.5.3/go.mod h1:XtobHOGjgVEq5w4Cvb/GW3FxeMp834sv3It6utbRWRM=
 github.com/richardwilkes/toolbox v1.86.0 h1:8GJ17FYF8nIgeOLG6V91iK/qaFHdoQTZMk/WqSdSB+g=
 github.com/richardwilkes/toolbox v1.86.0/go.mod h1:/Oq+okH1mvcF/hiIlzXtAokdxfnSIuQ0WSM7qQhApu4=
-github.com/richardwilkes/unison v0.57.1-0.20230706172315-4f99a33830b2 h1:2d4vpiPT96koAyI+Pwebzk9CfIDbvQ2tUicIZTD9Nrc=
-github.com/richardwilkes/unison v0.57.1-0.20230706172315-4f99a33830b2/go.mod h1:kA3b5/9GblC+s9c7c4S/DatHwRa8bOlkIELtq4JA9DY=
+github.com/richardwilkes/unison v0.58.0 h1:3kb0GxvvG9jraPo3eQ8t+qocKNIfT1GPzS5vvLGV+Gw=
+github.com/richardwilkes/unison v0.58.0/go.mod h1:tlGdHK6vUlrbtwPp2P1MEHKumhLm3sLeQx2OhVGqNRk=
 github.com/rjeczalik/notify v0.9.3 h1:6rJAzHTGKXGj76sbRgDiDcYj/HniypXmSJo1SWakZeY=
 github.com/rjeczalik/notify v0.9.3/go.mod h1:gF3zSOrafR9DQEWSE8TjfI9NkooDxbyT4UgRGKZA0lc=
 github.com/rogpeppe/go-internal v1.8.0 h1:FCbCCtXNOY3UtUuHUYaghJg4y7Fd14rXifAYUAtL9R8=
@@ -60,8 +60,8 @@ github.com/yuin/goldmark v1.5.4/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5ta
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550/go.mod h1:yigFU9vqHzYiE8UmvKecakEJjdnWj3jj499lnFckfCI=
 golang.org/x/crypto v0.0.0-20210921155107-089bfa567519/go.mod h1:GvvjBRRGRdwPK5ydBHafDWAxML/pGHZbMvKqRZ5+Abc=
-golang.org/x/exp v0.0.0-20230711153332-06a737ee72cb h1:xIApU0ow1zwMa2uL1VDNeQlNVFTWMQxZUZCMDy0Q4Us=
-golang.org/x/exp v0.0.0-20230711153332-06a737ee72cb/go.mod h1:FXUEEKJgO7OQYeo8N01OfiKP8RXMtf6e8aTskBGqWdc=
+golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1 h1:MGwJjxBy0HJshjDNfLsYO8xppfqWlA5ZT9OhtUUhTNw=
+golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1/go.mod h1:FXUEEKJgO7OQYeo8N01OfiKP8RXMtf6e8aTskBGqWdc=
 golang.org/x/image v0.1.0/go.mod h1:iyPr49SD/G/TBxYVB/9RRtGUT5eNbo2u4NamWeQcD5c=
 golang.org/x/image v0.9.0 h1:QrzfX26snvCM20hIhBwuHI/ThTg18b/+kcKdXHvnR+g=
 golang.org/x/image v0.9.0/go.mod h1:jtrku+n79PfroUbvDdeUWMAI+heR786BofxrbiSF+J0=

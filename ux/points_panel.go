@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -135,11 +135,11 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 		p.unspentLabel.DefaultDraw(gc, rect)
 	}
 	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.PointsBreakdown().Race.String(); text != f.Text {
+		if text := p.entity.PointsBreakdown().Ancestry.String(); text != f.Text {
 			f.Text = text
 			MarkForLayoutWithinDockable(f)
 		}
-	}), i18n.Text("Race"), i18n.Text("Total points spent on a racial package"))
+	}), i18n.Text("Ancestry"), i18n.Text("Total points spent on an ancestry package"))
 	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
 		if text := p.entity.PointsBreakdown().Attributes.String(); text != f.Text {
 			f.Text = text

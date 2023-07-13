@@ -22,6 +22,7 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/xmath"
 	"github.com/richardwilkes/unison"
 	"golang.org/x/exp/slices"
 )
@@ -142,15 +143,15 @@ func (n *Node[T]) CellDataForSort(index int) string {
 }
 
 // ColumnCell implements unison.TableRowData.
-func (n *Node[T]) ColumnCell(row, col int, foreground, _ unison.Ink, _, _, _ bool) unison.Paneler {
+func (n *Node[T]) ColumnCell(row, col int, foreground, background unison.Ink, _, _, _ bool) unison.Paneler {
 	var cellData gurps.CellData
 	n.dataAsNode.CellData(n.table.Columns[col].ID, &cellData)
 	width := n.table.CellWidth(row, col)
 	if n.cellCache[col].Matches(width, &cellData) {
-		applyForegroundInkRecursively(n.cellCache[col].Panel.AsPanel(), foreground)
+		applyInkRecursively(n.cellCache[col].Panel.AsPanel(), foreground, background)
 		return n.cellCache[col].Panel
 	}
-	cell := n.CellFromCellData(&cellData, width, foreground)
+	cell := n.CellFromCellData(&cellData, width, foreground, background)
 	n.cellCache[col] = &CellCache{
 		Panel: cell,
 		Data:  cellData,
@@ -159,7 +160,7 @@ func (n *Node[T]) ColumnCell(row, col int, foreground, _ unison.Ink, _, _, _ boo
 	return cell
 }
 
-func applyForegroundInkRecursively(panel *unison.Panel, foreground unison.Ink) {
+func applyInkRecursively(panel *unison.Panel, foreground, background unison.Ink) {
 	if markdown, ok := panel.Self.(*unison.Markdown); ok {
 		var ic *unison.IndirectInk
 		if ic, ok = markdown.Foreground.(*unison.IndirectInk); ok {
@@ -167,13 +168,24 @@ func applyForegroundInkRecursively(panel *unison.Panel, foreground unison.Ink) {
 		}
 		return
 	}
-	if label, ok := panel.Self.(*unison.Label); ok {
-		if _, exists := label.ClientData()[invertColorsMarker]; !exists {
-			label.OnBackgroundInk = foreground
+	switch part := panel.Self.(type) {
+	case *unison.Markdown:
+		if ink, ok := part.Foreground.(*unison.IndirectInk); ok {
+			ink.Target = foreground
+		}
+		return
+	case *unison.Label:
+		if _, exists := part.ClientData()[invertColorsMarker]; !exists {
+			part.OnBackgroundInk = foreground
+		}
+	case *unison.Tag:
+		if _, exists := part.ClientData()[invertColorsMarker]; !exists {
+			part.BackgroundInk = foreground
+			part.OnBackgroundInk = background
 		}
 	}
 	for _, child := range panel.Children() {
-		applyForegroundInkRecursively(child, foreground)
+		applyInkRecursively(child, foreground, background)
 	}
 }
 
@@ -247,10 +259,10 @@ func (n *Node[T]) Match(text string) bool {
 }
 
 // CellFromCellData creates a new panel for the given cell data.
-func (n *Node[T]) CellFromCellData(c *gurps.CellData, width float32, foreground unison.Ink) unison.Paneler {
+func (n *Node[T]) CellFromCellData(c *gurps.CellData, width float32, foreground, background unison.Ink) unison.Paneler {
 	switch c.Type {
 	case gurps.TextCellType, gurps.TagsCellType:
-		return n.createLabelCell(c, width, foreground)
+		return n.createLabelCell(c, width, foreground, background)
 	case gurps.ToggleCellType:
 		return n.createToggleCell(c, foreground)
 	case gurps.PageRefCellType:
@@ -277,15 +289,15 @@ func (n *Node[T]) createMarkdownCell(c *gurps.CellData, width float32, foregroun
 	return m
 }
 
-func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground unison.Ink) unison.Paneler {
+func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, background unison.Ink) unison.Paneler {
 	p := unison.NewPanel()
 	p.SetLayout(&unison.FlexLayout{
 		Columns: 1,
 		HAlign:  c.Alignment,
 	})
-	n.addLabelCell(c, p, width, c.Image, c.Primary, n.primaryFieldFont(), foreground, true)
+	n.addLabelCell(c, p, width, c.Primary, c.InlineTag, n.primaryFieldFont(), foreground, background, true)
 	if c.Secondary != "" {
-		n.addLabelCell(c, p, width, nil, c.Secondary, n.secondaryFieldFont(), foreground, false)
+		n.addLabelCell(c, p, width, c.Secondary, "", n.secondaryFieldFont(), foreground, background, false)
 	}
 	tooltip := c.Tooltip
 	if c.UnsatisfiedReason != "" {
@@ -341,28 +353,39 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground u
 	return p
 }
 
-func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width float32, svg *unison.SVG, text string, f unison.Font, foreground unison.Ink, primary bool) {
+func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width float32, text, inlineTag string, f unison.Font, foreground, background unison.Ink, primary bool) {
 	decoration := &unison.TextDecoration{
 		Font:          f,
 		StrikeThrough: primary && c.Disabled,
 	}
-	var drawable *unison.DrawableSVG
-	if svg != nil {
-		baseline := f.Baseline() - 1
-		size := unison.NewSize(baseline, baseline)
-		drawable = &unison.DrawableSVG{
-			SVG:  svg,
-			Size: *size.GrowToInteger(),
+	var tag *unison.Tag
+	if inlineTag != "" {
+		tag = unison.NewTag()
+		tag.BackgroundInk = foreground
+		tag.OnBackgroundInk = background
+		tag.Text = inlineTag
+		tag.Font = &unison.DynamicFont{
+			Resolver: func() unison.FontDescriptor {
+				desc := f.Descriptor()
+				desc.Size = xmath.Max(desc.Size-2, 1)
+				return desc
+			},
 		}
+		tag.SetEnabled(!c.Dim)
 	}
 	var lines []*unison.Text
 	if width > 0 {
-		if drawable != nil {
-			// TODO: This should be made to be more sophisticated, using the shorter width only for the first line.
-			//       Unfortunately, the underlying Text.BreakToWidth has no way to have it use different widths.
-			width -= drawable.Size.Width + unison.DefaultLabelTheme.Gap
+		if tag != nil {
+			_, size, _ := tag.Sizes(unison.Size{})
+			lines = unison.NewTextWrappedLines(text, decoration, width-(size.Width+unison.StdHSpacing))
+			if len(lines) > 1 {
+				lines = lines[:1]
+				lines = append(lines, unison.NewTextWrappedLines(strings.TrimPrefix(text, lines[0].String()),
+					decoration, width)...)
+			}
+		} else {
+			lines = unison.NewTextWrappedLines(text, decoration, width)
 		}
-		lines = unison.NewTextWrappedLines(text, decoration, width)
 	} else {
 		lines = unison.NewTextLines(text, decoration)
 	}
@@ -373,12 +396,22 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 		label.StrikeThrough = primary && c.Disabled
 		label.HAlign = c.Alignment
 		label.OnBackgroundInk = foreground
-		if drawable != nil {
-			label.Drawable = drawable
-			drawable = nil
-		}
 		label.SetEnabled(!c.Dim)
-		parent.AddChild(label)
+		if tag != nil {
+			wrapper := unison.NewPanel()
+			wrapper.SetLayout(&unison.FlexLayout{
+				Columns:  2,
+				HSpacing: unison.StdHSpacing,
+				HAlign:   unison.StartAlignment,
+				VAlign:   unison.MiddleAlignment,
+			})
+			wrapper.AddChild(label)
+			wrapper.AddChild(tag)
+			parent.AddChild(wrapper)
+			tag = nil
+		} else {
+			parent.AddChild(label)
+		}
 	}
 }
 

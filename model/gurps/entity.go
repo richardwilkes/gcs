@@ -48,7 +48,7 @@ type EntityProvider interface {
 
 // PointsBreakdown holds the points spent on a character.
 type PointsBreakdown struct {
-	Race          fxp.Int
+	Ancestry      fxp.Int
 	Attributes    fxp.Int
 	Advantages    fxp.Int
 	Disadvantages fxp.Int
@@ -59,7 +59,7 @@ type PointsBreakdown struct {
 
 // Total returns the total number of points spent on a character.
 func (pb *PointsBreakdown) Total() fxp.Int {
-	return pb.Race + pb.Attributes + pb.Advantages + pb.Disadvantages + pb.Quirks + pb.Skills + pb.Spells
+	return pb.Ancestry + pb.Attributes + pb.Advantages + pb.Disadvantages + pb.Quirks + pb.Skills + pb.Spells
 }
 
 // EntityData holds the Entity data that is written to disk.
@@ -595,8 +595,8 @@ func calculateSingleTraitPoints(t *Trait, pb *PointsBreakdown) {
 				calculateSingleTraitPoints(child, pb)
 			}
 			return
-		case RaceContainerType:
-			pb.Race += t.AdjustedPoints()
+		case AncestryContainerType:
+			pb.Ancestry += t.AdjustedPoints()
 			return
 		case AttributesContainerType:
 			pb.Attributes += t.AdjustedPoints()
@@ -1177,7 +1177,7 @@ func (e *Entity) PreservesUserDesc() bool {
 func (e *Entity) Ancestry() *Ancestry {
 	var anc *Ancestry
 	Traverse(func(t *Trait) bool {
-		if t.Container() && t.ContainerType == RaceContainerType && t.Enabled() {
+		if t.Container() && t.ContainerType == AncestryContainerType && t.Enabled() {
 			if anc = LookupAncestry(t.Ancestry, GlobalSettings().Libraries()); anc != nil {
 				return true
 			}

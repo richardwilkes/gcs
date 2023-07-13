@@ -1,5 +1,3 @@
-// Code generated from "enum.go.tmpl" - DO NOT EDIT.
-
 /*
  * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
@@ -11,31 +9,34 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
+// Code generated from "enum.go.tmpl" - DO NOT EDIT.
+
 package gurps
 
 import (
 	"strings"
 
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/txt"
 )
 
 // Possible values.
 const (
 	GroupContainerType ContainerType = iota
-	MetaTraitContainerType
-	RaceContainerType
 	AlternativeAbilitiesContainerType
+	AncestryContainerType
 	AttributesContainerType
-	LastContainerType = AttributesContainerType
+	MetaTraitContainerType
+	LastContainerType = MetaTraitContainerType
 )
 
 // AllContainerType holds all possible values.
 var AllContainerType = []ContainerType{
 	GroupContainerType,
-	MetaTraitContainerType,
-	RaceContainerType,
 	AlternativeAbilitiesContainerType,
+	AncestryContainerType,
 	AttributesContainerType,
+	MetaTraitContainerType,
 }
 
 // ContainerType holds the type of a trait container.
@@ -54,16 +55,33 @@ func (enum ContainerType) Key() string {
 	switch enum {
 	case GroupContainerType:
 		return "group"
-	case MetaTraitContainerType:
-		return "meta_trait"
-	case RaceContainerType:
-		return "race"
 	case AlternativeAbilitiesContainerType:
 		return "alternative_abilities"
+	case AncestryContainerType:
+		return "ancestry"
 	case AttributesContainerType:
 		return "attributes"
+	case MetaTraitContainerType:
+		return "meta_trait"
 	default:
 		return ContainerType(0).Key()
+	}
+}
+
+func (enum ContainerType) oldKeys() []string {
+	switch enum {
+	case GroupContainerType:
+		return nil
+	case AlternativeAbilitiesContainerType:
+		return nil
+	case AncestryContainerType:
+		return []string{"race"}
+	case AttributesContainerType:
+		return nil
+	case MetaTraitContainerType:
+		return nil
+	default:
+		return ContainerType(0).oldKeys()
 	}
 }
 
@@ -72,14 +90,14 @@ func (enum ContainerType) String() string {
 	switch enum {
 	case GroupContainerType:
 		return i18n.Text("Group")
-	case MetaTraitContainerType:
-		return i18n.Text("Meta-Trait")
-	case RaceContainerType:
-		return i18n.Text("Race")
 	case AlternativeAbilitiesContainerType:
 		return i18n.Text("Alternative Abilities")
+	case AncestryContainerType:
+		return i18n.Text("Ancestry")
 	case AttributesContainerType:
 		return i18n.Text("Attributes")
+	case MetaTraitContainerType:
+		return i18n.Text("Meta-Trait")
 	default:
 		return ContainerType(0).String()
 	}
@@ -99,7 +117,7 @@ func (enum *ContainerType) UnmarshalText(text []byte) error {
 // ExtractContainerType extracts the value from a string.
 func ExtractContainerType(str string) ContainerType {
 	for _, enum := range AllContainerType {
-		if strings.EqualFold(enum.Key(), str) {
+		if strings.EqualFold(enum.Key(), str) || txt.CaselessSliceContains(enum.oldKeys(), str) {
 			return enum
 		}
 	}
