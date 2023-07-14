@@ -1,3 +1,5 @@
+// Code generated from "enum.go.tmpl" - DO NOT EDIT.
+
 /*
  * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
@@ -8,8 +10,6 @@
  * This Source Code Form is "Incompatible With Secondary Licenses", as
  * defined by the Mozilla Public License, version 2.0.
  */
-
-// Code generated from "enum.go.tmpl" - DO NOT EDIT.
 
 package gurps
 
