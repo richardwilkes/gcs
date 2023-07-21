@@ -949,12 +949,13 @@ func (n *Navigator) search(text string, row *NavigatorNode) {
 	}
 }
 
-func prepareForContentCache[T fmt.Stringer](data []T) string {
+func prepareForContentCache[T gurps.NodeTypes](data []T) string {
 	var buffer strings.Builder
-	for _, one := range data {
-		buffer.WriteString(strings.ToLower(one.String()))
+	gurps.Traverse(func(one T) bool {
+		buffer.WriteString(strings.ToLower((any(one).(fmt.Stringer)).String()))
 		buffer.WriteByte('\n')
-	}
+		return false
+	}, false, false, data...)
 	return buffer.String()
 }
 
