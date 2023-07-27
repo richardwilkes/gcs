@@ -20,12 +20,6 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// Standard height and width for the portrait
-const (
-	PortraitHeight = 96
-	PortraitWidth  = 3 * PortraitHeight / 4
-)
-
 // ProfileRandom holds the portion of the profile that is affected by the randomizer.
 type ProfileRandom struct {
 	Name       string `json:"name,omitempty"`
