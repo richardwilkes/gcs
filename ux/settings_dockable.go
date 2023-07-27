@@ -20,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
+	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
 )
 
@@ -231,6 +232,7 @@ func (d *SettingsDockable) handleExport(_ unison.MenuItem) {
 	dialog.SetAllowedExtensions(d.Extensions[0])
 	global := gurps.GlobalSettings()
 	dialog.SetInitialDirectory(global.LastDir(gurps.SettingsLastDirKey))
+	dialog.SetInitialFileName(xfs.SanitizeName(xfs.BaseName(d.Title())))
 	if dialog.RunModal() {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), d.Extensions[0], false); ok {
 			global.SetLastDir(gurps.SettingsLastDirKey, filepath.Dir(filePath))

@@ -523,6 +523,7 @@ func SaveDockableAs(d FileBackedDockable, extension string, saver func(filePath 
 		dialog.SetInitialDirectory(gurps.GlobalSettings().LastDir(gurps.DefaultLastDirKey))
 	}
 	dialog.SetAllowedExtensions(extension)
+	dialog.SetInitialFileName(fs.SanitizeName(fs.BaseName(existingPath)))
 	if dialog.RunModal() {
 		filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), extension, false)
 		if !ok {

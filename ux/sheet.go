@@ -490,8 +490,10 @@ func backgroundPrint(title string, printer *printing.Printer, jobAttributes *pri
 func (s *Sheet) exportToPDF() {
 	s.Window().ShowCursor()
 	dialog := unison.NewSaveDialog()
-	dialog.SetInitialDirectory(filepath.Dir(s.BackingFilePath()))
+	backingFilePath := s.BackingFilePath()
+	dialog.SetInitialDirectory(filepath.Dir(backingFilePath))
 	dialog.SetAllowedExtensions("pdf")
+	dialog.SetInitialFileName(fs.SanitizeName(fs.BaseName(backingFilePath)))
 	if dialog.RunModal() {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "pdf", false); ok {
 			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
@@ -505,8 +507,10 @@ func (s *Sheet) exportToPDF() {
 func (s *Sheet) exportToWEBP() {
 	s.Window().ShowCursor()
 	dialog := unison.NewSaveDialog()
-	dialog.SetInitialDirectory(filepath.Dir(s.BackingFilePath()))
+	backingFilePath := s.BackingFilePath()
+	dialog.SetInitialDirectory(filepath.Dir(backingFilePath))
 	dialog.SetAllowedExtensions("webp")
+	dialog.SetInitialFileName(fs.SanitizeName(fs.BaseName(backingFilePath)))
 	if dialog.RunModal() {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "webp", false); ok {
 			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
@@ -520,8 +524,10 @@ func (s *Sheet) exportToWEBP() {
 func (s *Sheet) exportToPNG() {
 	s.Window().ShowCursor()
 	dialog := unison.NewSaveDialog()
-	dialog.SetInitialDirectory(filepath.Dir(s.BackingFilePath()))
+	backingFilePath := s.BackingFilePath()
+	dialog.SetInitialDirectory(filepath.Dir(backingFilePath))
 	dialog.SetAllowedExtensions("png")
+	dialog.SetInitialFileName(fs.SanitizeName(fs.BaseName(backingFilePath)))
 	if dialog.RunModal() {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "png", false); ok {
 			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
@@ -535,8 +541,10 @@ func (s *Sheet) exportToPNG() {
 func (s *Sheet) exportToJPEG() {
 	s.Window().ShowCursor()
 	dialog := unison.NewSaveDialog()
-	dialog.SetInitialDirectory(filepath.Dir(s.BackingFilePath()))
+	backingFilePath := s.BackingFilePath()
+	dialog.SetInitialDirectory(filepath.Dir(backingFilePath))
 	dialog.SetAllowedExtensions("jpeg")
+	dialog.SetInitialFileName(fs.SanitizeName(fs.BaseName(backingFilePath)))
 	if dialog.RunModal() {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "jpeg", false); ok {
 			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))

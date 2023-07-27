@@ -474,6 +474,7 @@ func (s menuBarScope) createExportToTextAction(index int, path string) *unison.A
 				settings := gurps.GlobalSettings()
 				dialog.SetInitialDirectory(settings.LastDir(gurps.DefaultLastDirKey))
 				dialog.SetAllowedExtensions(ext)
+				dialog.SetInitialFileName(xfs.SanitizeName(xfs.BaseName(sheet.BackingFilePath())))
 				if dialog.RunModal() {
 					if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), ext, false); ok {
 						settings.SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
