@@ -547,13 +547,13 @@ func PromptForDestination[T FileBackedDockable](choices []T) []T {
 	if len(choices) < 2 {
 		return choices
 	}
-	slices.SortFunc(choices, func(a, b T) bool {
+	slices.SortFunc(choices, func(a, b T) int {
 		ta := a.Title()
 		tb := b.Title()
 		if ta == tb {
-			return txt.NaturalLess(a.BackingFilePath(), b.BackingFilePath(), true)
+			return txt.NaturalCmp(a.BackingFilePath(), b.BackingFilePath(), true)
 		}
-		return txt.NaturalLess(ta, tb, true)
+		return txt.NaturalCmp(ta, tb, true)
 	})
 	list := unison.NewList[T]()
 	list.SetAllowMultipleSelection(true)

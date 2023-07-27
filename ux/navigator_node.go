@@ -280,9 +280,7 @@ func (n *NavigatorNode) Refresh() {
 				}
 			}
 		}
-		slices.SortFunc(favs, func(a, b *fav) bool {
-			return txt.NaturalLess(a.path, b.path, true)
-		})
+		slices.SortFunc(favs, func(a, b *fav) int { return txt.NaturalCmp(a.path, b.path, true) })
 		for _, one := range favs {
 			n.children = append(n.children, NewFileNode(one.library, one.path, n))
 		}
