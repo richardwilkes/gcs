@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -65,7 +65,7 @@ func (u *appUpdater) SetResult(str string) {
 
 func (u *appUpdater) SetReleases(releases []gurps.Release) {
 	u.lock.Lock()
-	u.result = fmt.Sprintf(i18n.Text("%s v%s is available!"), cmdline.AppName, releases[0].Version)
+	u.result = fmt.Sprintf(i18n.Text("%s v%s is available!"), cmdline.AppName, filterVersion(releases[0].Version))
 	u.releases = releases
 	u.updating = false
 	u.lock.Unlock()
@@ -110,7 +110,7 @@ func NotifyOfAppUpdate() {
 			if i != 0 {
 				buffer.WriteString("---\n")
 			}
-			fmt.Fprintf(&buffer, "## Release Notes for %s v%s\n", cmdline.AppName, rel.Version)
+			fmt.Fprintf(&buffer, "## Release Notes for %s v%s\n", cmdline.AppName, filterVersion(rel.Version))
 			buffer.WriteString(rel.Notes)
 			buffer.WriteByte('\n')
 		}
