@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -108,7 +108,7 @@ func (p *SecondaryAttrPanel) createPointsField(attr *gurps.Attribute) unison.Pan
 			MarkForLayoutWithinDockable(f)
 		}
 		if def := attr.AttributeDef(); def != nil {
-			f.Tooltip = unison.NewTooltipWithText(fmt.Sprintf(i18n.Text("Points spent on %s"), def.CombinedName()))
+			f.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("Points spent on %s"), def.CombinedName()))
 		}
 	})
 	field.Font = gurps.PageFieldSecondaryFont

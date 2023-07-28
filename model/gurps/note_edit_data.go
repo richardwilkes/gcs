@@ -15,8 +15,9 @@ var _ EditorData[*Note] = &NoteEditData{}
 
 // NoteEditData holds the Note data that can be edited by the UI detail editor.
 type NoteEditData struct {
-	Text    string `json:"text,omitempty"`
-	PageRef string `json:"reference,omitempty"`
+	Text             string `json:"text,omitempty"`
+	PageRef          string `json:"reference,omitempty"`
+	PageRefHighlight string `json:"reference_highlight,omitempty"`
 }
 
 // CopyFrom implements node.EditorData.

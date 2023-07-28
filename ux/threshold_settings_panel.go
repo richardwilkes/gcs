@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -77,7 +77,7 @@ func (p *thresholdSettingsPanel) createButtons() *unison.Panel {
 
 	p.deleteButton = unison.NewSVGButton(svg.Trash)
 	p.deleteButton.ClickCallback = func() { p.pool.deleteThreshold(p) }
-	p.deleteButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Remove pool threshold"))
+	p.deleteButton.Tooltip = newWrappedTooltip(i18n.Text("Remove pool threshold"))
 	p.deleteButton.SetEnabled(len(p.pool.def.Thresholds) > 1)
 	buttons.AddChild(p.deleteButton)
 	return buttons
@@ -101,7 +101,7 @@ func (p *thresholdSettingsPanel) createContent() *unison.Panel {
 		func() string { return p.threshold.State },
 		func(s string) { p.threshold.State = s })
 	field.SetMinimumTextWidthUsing(prototypeMinIDWidth)
-	field.Tooltip = unison.NewTooltipWithText(i18n.Text("A short description of the threshold state"))
+	field.Tooltip = newWrappedTooltip(i18n.Text("A short description of the threshold state"))
 	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
 	content.AddChild(field)
 
@@ -111,7 +111,7 @@ func (p *thresholdSettingsPanel) createContent() *unison.Panel {
 		func() string { return p.threshold.Expression },
 		func(s string) { p.threshold.Expression = s })
 	field.SetMinimumTextWidthUsing("round($self*100/50+20)")
-	field.Tooltip = unison.NewTooltipWithText(i18n.Text("An expression to calculate the threshold value"))
+	field.Tooltip = newWrappedTooltip(i18n.Text("An expression to calculate the threshold value"))
 	content.AddChild(field)
 
 	for _, op := range gurps.AllThresholdOp[1:] {
@@ -125,7 +125,7 @@ func (p *thresholdSettingsPanel) createContent() *unison.Panel {
 		func() string { return p.threshold.Explanation },
 		func(s string) { p.threshold.Explanation = s })
 	field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
-	field.Tooltip = unison.NewTooltipWithText(i18n.Text("A explanation of the effects of the threshold state"))
+	field.Tooltip = newWrappedTooltip(i18n.Text("A explanation of the effects of the threshold state"))
 	content.AddChild(field)
 
 	return content
@@ -141,6 +141,6 @@ func (p *thresholdSettingsPanel) createOpCheckBox(op gurps.ThresholdOp) *CheckBo
 				p.threshold.RemoveOp(op)
 			}
 		})
-	c.Tooltip = unison.NewTooltipWithText(op.AltString())
+	c.Tooltip = newWrappedTooltip(op.AltString())
 	return c
 }

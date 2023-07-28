@@ -136,11 +136,11 @@ func NewTableDockable[T gurps.NodeTypes](filePath, extension string, provider Ta
 
 func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	d.hierarchyButton = unison.NewSVGButton(svg.Hierarchy)
-	d.hierarchyButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Opens/closes all hierarchical rows"))
+	d.hierarchyButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all hierarchical rows"))
 	d.hierarchyButton.ClickCallback = d.toggleHierarchy
 
 	d.sizeToFitButton = unison.NewSVGButton(svg.SizeToFit)
-	d.sizeToFitButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Sets the width of each column to fit its contents"))
+	d.sizeToFitButton.Tooltip = newWrappedTooltip(i18n.Text("Sets the width of each column to fit its contents"))
 	d.sizeToFitButton.ClickCallback = d.sizeToFit
 
 	d.filterPopup = NewTagFilterPopup(d)

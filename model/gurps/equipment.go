@@ -243,7 +243,11 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 	case EquipmentReferenceColumn, PageRefCellAlias:
 		data.Type = PageRefCellType
 		data.Primary = e.PageRef
-		data.Secondary = e.Name
+		if e.PageRefHighlight != "" {
+			data.Secondary = e.PageRefHighlight
+		} else {
+			data.Secondary = e.Name
+		}
 	}
 }
 

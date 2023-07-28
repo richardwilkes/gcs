@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -59,12 +59,12 @@ func (p *bodySettingsSubTablePanel) createButtons() *unison.Panel {
 
 	p.deleteButton = unison.NewSVGButton(svg.Trash)
 	p.deleteButton.ClickCallback = p.removeSubTable
-	p.deleteButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Remove sub-table"))
+	p.deleteButton.Tooltip = newWrappedTooltip(i18n.Text("Remove sub-table"))
 	buttons.AddChild(p.deleteButton)
 
 	p.addButton = unison.NewSVGButton(svg.CircledAdd)
 	p.addButton.ClickCallback = p.addHitLocation
-	p.addButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Add hit location"))
+	p.addButton.Tooltip = newWrappedTooltip(i18n.Text("Add hit location"))
 	buttons.AddChild(p.addButton)
 	return buttons
 }

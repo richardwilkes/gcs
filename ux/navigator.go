@@ -132,43 +132,43 @@ func (n *Navigator) mapDeepSearch() {
 
 func (n *Navigator) setupToolBar() {
 	helpButton := unison.NewSVGButton(svg.Help)
-	helpButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Help"))
+	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
 	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Library Tree") }
 
 	n.hierarchyButton = unison.NewSVGButton(svg.Hierarchy)
-	n.hierarchyButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Opens/closes all hierarchical rows"))
+	n.hierarchyButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all hierarchical rows"))
 	n.hierarchyButton.ClickCallback = n.toggleHierarchy
 
 	n.deleteButton = unison.NewSVGButton(svg.Trash)
-	n.deleteButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Delete"))
+	n.deleteButton.Tooltip = newWrappedTooltip(i18n.Text("Delete"))
 	n.deleteButton.ClickCallback = n.deleteSelection
 
 	n.renameButton = unison.NewSVGButton(svg.SignPost)
-	n.renameButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Rename"))
+	n.renameButton.Tooltip = newWrappedTooltip(i18n.Text("Rename"))
 	n.renameButton.ClickCallback = n.renameSelection
 
 	n.newFolderButton = unison.NewSVGButton(svg.NewFolder)
-	n.newFolderButton.Tooltip = unison.NewTooltipWithText(i18n.Text("New Folder"))
+	n.newFolderButton.Tooltip = newWrappedTooltip(i18n.Text("New Folder"))
 	n.newFolderButton.ClickCallback = n.newFolder
 
 	addLibraryButton := unison.NewSVGButton(svg.CircledAdd)
-	addLibraryButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Add Library"))
+	addLibraryButton.Tooltip = newWrappedTooltip(i18n.Text("Add Library"))
 	addLibraryButton.ClickCallback = n.addLibrary
 
 	n.downloadLibraryButton = unison.NewSVGButton(svg.Download)
-	n.downloadLibraryButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Update"))
+	n.downloadLibraryButton.Tooltip = newWrappedTooltip(i18n.Text("Update"))
 	n.downloadLibraryButton.ClickCallback = n.updateLibrarySelection
 
 	n.libraryReleaseNotesButton = unison.NewSVGButton(svg.ReleaseNotes)
-	n.libraryReleaseNotesButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Release Notes"))
+	n.libraryReleaseNotesButton.Tooltip = newWrappedTooltip(i18n.Text("Release Notes"))
 	n.libraryReleaseNotesButton.ClickCallback = n.showSelectionReleaseNotes
 
 	n.configLibraryButton = unison.NewSVGButton(svg.Gears)
-	n.configLibraryButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Configure"))
+	n.configLibraryButton.Tooltip = newWrappedTooltip(i18n.Text("Configure"))
 	n.configLibraryButton.ClickCallback = n.configureSelection
 
 	n.favoriteButton = unison.NewSVGButton(svg.Star)
-	n.favoriteButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Favorite"))
+	n.favoriteButton.Tooltip = newWrappedTooltip(i18n.Text("Favorite"))
 	n.favoriteButton.ClickCallback = n.favoriteSelection
 
 	first := unison.NewPanel()
@@ -210,12 +210,12 @@ func (n *Navigator) setupToolBar() {
 	})
 
 	n.backButton = unison.NewSVGButton(svg.Back)
-	n.backButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Previous Match"))
+	n.backButton.Tooltip = newWrappedTooltip(i18n.Text("Previous Match"))
 	n.backButton.ClickCallback = n.previousMatch
 	n.backButton.SetEnabled(false)
 
 	n.forwardButton = unison.NewSVGButton(svg.Forward)
-	n.forwardButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Next Match"))
+	n.forwardButton.Tooltip = newWrappedTooltip(i18n.Text("Next Match"))
 	n.forwardButton.ClickCallback = n.nextMatch
 	n.forwardButton.SetEnabled(false)
 
@@ -224,7 +224,7 @@ func (n *Navigator) setupToolBar() {
 
 	n.matchesLabel = unison.NewLabel()
 	n.matchesLabel.Text = "-"
-	n.matchesLabel.Tooltip = unison.NewTooltipWithText(i18n.Text("Number of matches found"))
+	n.matchesLabel.Tooltip = newWrappedTooltip(i18n.Text("Number of matches found"))
 
 	second := unison.NewPanel()
 	second.SetLayoutData(&unison.FlexLayoutData{

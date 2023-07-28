@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -151,7 +151,7 @@ func (d *menuKeySettingsDockable) createBindingButton(binding *gurps.Binding) {
 
 func (d *menuKeySettingsDockable) createResetField(binding *gurps.Binding) {
 	b := unison.NewSVGButton(svg.Reset)
-	b.Tooltip = unison.NewTooltipWithText("Reset this key binding")
+	b.Tooltip = newWrappedTooltip("Reset this key binding")
 	b.ClickCallback = func() {
 		if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to reset '%s'?"), binding.Action.Title), "") == unison.ModalResponseOK {
 			g := gurps.GlobalSettings()

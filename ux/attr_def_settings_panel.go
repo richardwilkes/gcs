@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -79,12 +79,12 @@ func (p *attrDefSettingsPanel) createButtons() *unison.Panel {
 
 	p.deleteButton = unison.NewSVGButton(svg.Trash)
 	p.deleteButton.ClickCallback = p.deleteAttrDef
-	p.deleteButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Remove attribute"))
+	p.deleteButton.Tooltip = newWrappedTooltip(i18n.Text("Remove attribute"))
 	buttons.AddChild(p.deleteButton)
 
 	p.addThresholdButton = unison.NewSVGButton(svg.CircledAdd)
 	p.addThresholdButton.ClickCallback = func() { p.poolPanel.addThreshold() }
-	p.addThresholdButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Add pool threshold"))
+	p.addThresholdButton.Tooltip = newWrappedTooltip(i18n.Text("Add pool threshold"))
 	p.addThresholdButton.SetEnabled(p.def.Type == gurps.PoolAttributeType)
 	buttons.AddChild(p.addThresholdButton)
 	return buttons
@@ -138,7 +138,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 		return func() bool { return p.validateAttrID(field.Text()) }
 	}(field, p.def)
 	field.SetMinimumTextWidthUsing(prototypeMinIDWidth)
-	field.Tooltip = unison.NewTooltipWithText(i18n.Text("A unique ID for the attribute"))
+	field.Tooltip = newWrappedTooltip(i18n.Text("A unique ID for the attribute"))
 	content.AddChild(field)
 
 	text = i18n.Text("Attribute Type")
@@ -155,7 +155,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 			func() string { return p.def.Name },
 			func(s string) { p.def.Name = s })
 		field.SetMinimumTextWidthUsing(prototypeMinIDWidth)
-		field.Tooltip = unison.NewTooltipWithText(i18n.Text("A title to use with the separator"))
+		field.Tooltip = newWrappedTooltip(i18n.Text("A title to use with the separator"))
 		content.AddChild(field)
 	} else {
 		text = i18n.Text("Short Name")
@@ -164,7 +164,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 			func() string { return p.def.Name },
 			func(s string) { p.def.Name = s })
 		field.SetMinimumTextWidthUsing(prototypeMinIDWidth)
-		field.Tooltip = unison.NewTooltipWithText(i18n.Text("The name of this attribute, often an abbreviation"))
+		field.Tooltip = newWrappedTooltip(i18n.Text("The name of this attribute, often an abbreviation"))
 		content.AddChild(field)
 
 		text = i18n.Text("Full Name")
@@ -173,7 +173,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 			func() string { return p.def.FullName },
 			func(s string) { p.def.FullName = s })
 		field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
-		field.Tooltip = unison.NewTooltipWithText(i18n.Text("The full name of this attribute (may be omitted, in which case the Short Name will be used instead)"))
+		field.Tooltip = newWrappedTooltip(i18n.Text("The full name of this attribute (may be omitted, in which case the Short Name will be used instead)"))
 		content.AddChild(field)
 
 		text = i18n.Text("Base Value")
@@ -182,7 +182,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 			func() string { return p.def.AttributeBase },
 			func(s string) { p.def.AttributeBase = s })
 		field.SetMinimumTextWidthUsing("floor($basic_speed)")
-		field.Tooltip = unison.NewTooltipWithText(i18n.Text("The base value, which may be a number or a formula"))
+		field.Tooltip = newWrappedTooltip(i18n.Text("The base value, which may be a number or a formula"))
 		content.AddChild(field)
 
 		if p.def.Type != gurps.IntegerRefAttributeType && p.def.Type != gurps.DecimalRefAttributeType {
@@ -195,7 +195,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 				func() int { return fxp.As[int](p.def.CostAdjPercentPerSM) },
 				func(v int) { p.def.CostAdjPercentPerSM = fxp.From(v) },
 				0, 80, false, false)
-			numField.Tooltip = unison.NewTooltipWithText(i18n.Text("The reduction in cost for each SM greater than 0"))
+			numField.Tooltip = newWrappedTooltip(i18n.Text("The reduction in cost for each SM greater than 0"))
 			content.AddChild(numField)
 		}
 	}

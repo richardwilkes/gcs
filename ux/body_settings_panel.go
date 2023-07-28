@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -61,7 +61,7 @@ func (p *bodySettingsPanel) createButtons() *unison.Panel {
 
 	addButton := unison.NewSVGButton(svg.CircledAdd)
 	addButton.ClickCallback = p.addHitLocation
-	addButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Add hit location"))
+	addButton.Tooltip = newWrappedTooltip(i18n.Text("Add hit location"))
 	buttons.AddChild(addButton)
 	return buttons
 }
@@ -92,7 +92,7 @@ func (p *bodySettingsPanel) createContent() *unison.Panel {
 		func() string { return p.dockable.body.Name },
 		func(s string) { p.dockable.body.Name = s })
 	field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
-	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The name of this body type"))
+	field.Tooltip = newWrappedTooltip(i18n.Text("The name of this body type"))
 	content.AddChild(field)
 
 	text = i18n.Text("Roll")
@@ -101,7 +101,7 @@ func (p *bodySettingsPanel) createContent() *unison.Panel {
 		func() string { return p.dockable.body.Roll.String() },
 		func(s string) { p.dockable.body.Roll = dice.New(s) })
 	field.SetMinimumTextWidthUsing("100d1000")
-	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The dice to roll on the table"))
+	field.Tooltip = newWrappedTooltip(i18n.Text("The dice to roll on the table"))
 	content.AddChild(field)
 
 	wrapper := unison.NewPanel()

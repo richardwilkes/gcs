@@ -198,34 +198,34 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 	first.AddChild(NewToolbarSeparator())
 
 	d.backButton = unison.NewSVGButton(svg.Back)
-	d.backButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Back"))
+	d.backButton.Tooltip = newWrappedTooltip(i18n.Text("Back"))
 	d.backButton.ClickCallback = d.Back
 	first.AddChild(d.backButton)
 
 	d.forwardButton = unison.NewSVGButton(svg.Forward)
-	d.forwardButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Forward"))
+	d.forwardButton.Tooltip = newWrappedTooltip(i18n.Text("Forward"))
 	d.forwardButton.ClickCallback = d.Forward
 	first.AddChild(d.forwardButton)
 
 	first.AddChild(NewToolbarSeparator())
 
 	d.firstPageButton = unison.NewSVGButton(svg.First)
-	d.firstPageButton.Tooltip = unison.NewTooltipWithText(i18n.Text("First Page"))
+	d.firstPageButton.Tooltip = newWrappedTooltip(i18n.Text("First Page"))
 	d.firstPageButton.ClickCallback = func() { d.LoadPage(0) }
 	first.AddChild(d.firstPageButton)
 
 	d.previousPageButton = unison.NewSVGButton(svg.Previous)
-	d.previousPageButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Previous Page"))
+	d.previousPageButton.Tooltip = newWrappedTooltip(i18n.Text("Previous Page"))
 	d.previousPageButton.ClickCallback = func() { d.LoadPage(d.pdf.MostRecentPageNumber() - 1) }
 	first.AddChild(d.previousPageButton)
 
 	d.nextPageButton = unison.NewSVGButton(svg.Next)
-	d.nextPageButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Next Page"))
+	d.nextPageButton.Tooltip = newWrappedTooltip(i18n.Text("Next Page"))
 	d.nextPageButton.ClickCallback = func() { d.LoadPage(d.pdf.MostRecentPageNumber() + 1) }
 	first.AddChild(d.nextPageButton)
 
 	d.lastPageButton = unison.NewSVGButton(svg.Last)
-	d.lastPageButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Last Page"))
+	d.lastPageButton.Tooltip = newWrappedTooltip(i18n.Text("Last Page"))
 	d.lastPageButton.ClickCallback = func() { d.LoadPage(d.pdf.PageCount() - 1) }
 	first.AddChild(d.lastPageButton)
 
@@ -242,7 +242,7 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 	})
 
 	d.sideBarButton = unison.NewSVGButton(svg.SideBar)
-	d.sideBarButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Toggle the Sidebar"))
+	d.sideBarButton.Tooltip = newWrappedTooltip(i18n.Text("Toggle the Sidebar"))
 	d.sideBarButton.ClickCallback = d.toggleSideBar
 	d.sideBarButton.SetEnabled(false)
 	second.AddChild(d.sideBarButton)
@@ -257,7 +257,7 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 
 	d.matchesLabel = unison.NewLabel()
 	d.matchesLabel.Text = "-"
-	d.matchesLabel.Tooltip = unison.NewTooltipWithText(i18n.Text("Number of matches found"))
+	d.matchesLabel.Tooltip = newWrappedTooltip(i18n.Text("Number of matches found"))
 	second.AddChild(d.matchesLabel)
 
 	second.SetLayout(&unison.FlexLayout{

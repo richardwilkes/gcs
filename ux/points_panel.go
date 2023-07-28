@@ -181,10 +181,10 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 }
 
 func (p *PointsPanel) addPointsField(field *NonEditablePageField, title, tooltip string) *unison.Label {
-	field.Tooltip = unison.NewTooltipWithText(tooltip)
+	field.Tooltip = newWrappedTooltip(tooltip)
 	p.ptsList.AddChild(field)
 	label := NewPageLabel(title)
-	label.Tooltip = unison.NewTooltipWithText(tooltip)
+	label.Tooltip = newWrappedTooltip(tooltip)
 	p.ptsList.AddChild(label)
 	return label
 }

@@ -133,7 +133,11 @@ func (n *Note) CellData(columnID int, data *CellData) {
 	case NoteReferenceColumn, PageRefCellAlias:
 		data.Type = PageRefCellType
 		data.Primary = n.PageRef
-		data.Secondary = n.Text
+		if n.PageRefHighlight != "" {
+			data.Secondary = n.PageRefHighlight
+		} else {
+			data.Secondary = n.Text
+		}
 	}
 }
 

@@ -175,7 +175,7 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 	if allowEditing {
 		editToggle := unison.NewSVGButton(svg.Edit)
 		editToggle.Sticky = startInEditMode
-		editToggle.Tooltip = unison.NewTooltipWithText(i18n.Text("Toggle Edit Mode"))
+		editToggle.Tooltip = newWrappedTooltip(i18n.Text("Toggle Edit Mode"))
 		editToggle.ClickCallback = func() {
 			editToggle.Sticky = !editToggle.Sticky
 			editToggle.MarkForRedraw()

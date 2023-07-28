@@ -239,7 +239,11 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 	case SkillReferenceColumn, PageRefCellAlias:
 		data.Type = PageRefCellType
 		data.Primary = s.PageRef
-		data.Secondary = s.Name
+		if s.PageRefHighlight != "" {
+			data.Secondary = s.PageRefHighlight
+		} else {
+			data.Secondary = s.Name
+		}
 	case SkillLevelColumn:
 		if !s.Container() {
 			data.Type = TextCellType

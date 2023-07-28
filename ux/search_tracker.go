@@ -43,18 +43,18 @@ func installSearchTracker(toolbar *unison.Panel, clearTableSelections func(), fi
 		findMatches:          findMatches,
 	}
 	s.backButton = unison.NewSVGButton(svg.Back)
-	s.backButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Previous Match"))
+	s.backButton.Tooltip = newWrappedTooltip(i18n.Text("Previous Match"))
 	s.backButton.ClickCallback = s.previousMatch
 	s.backButton.SetEnabled(false)
 
 	s.forwardButton = unison.NewSVGButton(svg.Forward)
-	s.forwardButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Next Match"))
+	s.forwardButton.Tooltip = newWrappedTooltip(i18n.Text("Next Match"))
 	s.forwardButton.ClickCallback = s.nextMatch
 	s.forwardButton.SetEnabled(false)
 
 	searchText := i18n.Text("Search")
 	s.searchField = NewSearchField(searchText, s.searchModified)
-	s.searchField.Tooltip = unison.NewTooltipWithSecondaryText(searchText, i18n.Text("Press RETURN to select the next match\nPress SHIFT-RETURN to select the previous match"))
+	s.searchField.Tooltip = newWrappedTooltipWithSecondaryText(searchText, i18n.Text("Press RETURN to select the next match\nPress SHIFT-RETURN to select the previous match"))
 	s.searchField.KeyDownCallback = func(keyCode unison.KeyCode, mod unison.Modifiers, repeat bool) bool {
 		if keyCode == unison.KeyReturn || keyCode == unison.KeyNumPadEnter {
 			if mod.ShiftDown() {
@@ -69,7 +69,7 @@ func installSearchTracker(toolbar *unison.Panel, clearTableSelections func(), fi
 
 	s.matchesLabel = unison.NewLabel()
 	s.matchesLabel.Text = i18n.Text("0 of 0")
-	s.matchesLabel.Tooltip = unison.NewTooltipWithText(i18n.Text("Number of matches found"))
+	s.matchesLabel.Tooltip = newWrappedTooltip(i18n.Text("Number of matches found"))
 
 	toolbar.AddChild(s.backButton)
 	toolbar.AddChild(s.forwardButton)

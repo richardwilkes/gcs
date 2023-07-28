@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -104,7 +104,7 @@ func (d *colorSettingsDockable) createColorWellField(c *gurps.ThemedColor, light
 	w.Mask = unison.ColorWellMask
 	if light {
 		w.SetInk(c.Color.Light)
-		w.Tooltip = unison.NewTooltipWithText(i18n.Text("The color to use when light mode is enabled"))
+		w.Tooltip = newWrappedTooltip(i18n.Text("The color to use when light mode is enabled"))
 		w.InkChangedCallback = func() {
 			if clr, ok := w.Ink().(unison.Color); ok {
 				c.Color.Light = clr
@@ -113,7 +113,7 @@ func (d *colorSettingsDockable) createColorWellField(c *gurps.ThemedColor, light
 		}
 	} else {
 		w.SetInk(c.Color.Dark)
-		w.Tooltip = unison.NewTooltipWithText(i18n.Text("The color to use when dark mode is enabled"))
+		w.Tooltip = newWrappedTooltip(i18n.Text("The color to use when dark mode is enabled"))
 		w.InkChangedCallback = func() {
 			if clr, ok := w.Ink().(unison.Color); ok {
 				c.Color.Dark = clr
@@ -126,7 +126,7 @@ func (d *colorSettingsDockable) createColorWellField(c *gurps.ThemedColor, light
 
 func (d *colorSettingsDockable) createResetField(c *gurps.ThemedColor) {
 	b := unison.NewSVGButton(svg.Reset)
-	b.Tooltip = unison.NewTooltipWithText("Reset this color")
+	b.Tooltip = newWrappedTooltip("Reset this color")
 	b.ClickCallback = func() {
 		if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to reset %s?"), c.Title), "") == unison.ModalResponseOK {
 			for _, v := range gurps.FactoryColors() {

@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -151,7 +151,7 @@ func (p *EncumbrancePanel) createMaxCarryField(enc gurps.Encumbrance, rowColor *
 		}
 	})
 	field.OnBackgroundInk = rowColor
-	field.Tooltip = unison.NewTooltipWithText(fmt.Sprintf(i18n.Text("The maximum load that can be carried and still remain within the %s encumbrance level"), enc.String()))
+	field.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("The maximum load that can be carried and still remain within the %s encumbrance level"), enc.String()))
 	return field
 }
 
@@ -163,7 +163,7 @@ func (p *EncumbrancePanel) createMoveField(enc gurps.Encumbrance, rowColor *encR
 		}
 	})
 	field.OnBackgroundInk = rowColor
-	field.Tooltip = unison.NewTooltipWithText(fmt.Sprintf(i18n.Text("The ground movement rate for the %s encumbrance level"), enc.String()))
+	field.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("The ground movement rate for the %s encumbrance level"), enc.String()))
 	return field
 }
 
@@ -175,7 +175,7 @@ func (p *EncumbrancePanel) createDodgeField(enc gurps.Encumbrance, rowColor *enc
 		}
 	})
 	field.OnBackgroundInk = rowColor
-	field.Tooltip = unison.NewTooltipWithText(fmt.Sprintf(i18n.Text("The dodge for the %s encumbrance level"), enc.String()))
+	field.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("The dodge for the %s encumbrance level"), enc.String()))
 	field.SetBorder(unison.NewEmptyBorder(unison.Insets{Right: 4}))
 	return field
 }

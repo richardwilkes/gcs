@@ -134,12 +134,12 @@ func (e *pointsEditor) createToolbar() unison.Paneler {
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 
 	helpButton := unison.NewSVGButton(svg.Help)
-	helpButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Help"))
+	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
 	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Points Record") }
 	toolbar.AddChild(helpButton)
 
 	e.applyButton = unison.NewSVGButton(unison.CheckmarkSVG)
-	e.applyButton.Tooltip = unison.NewTooltipWithSecondaryText(i18n.Text("Apply Changes"),
+	e.applyButton.Tooltip = newWrappedTooltipWithSecondaryText(i18n.Text("Apply Changes"),
 		fmt.Sprintf(i18n.Text("%v%v or %v%v"), unison.OSMenuCmdModifier(), unison.KeyReturn, unison.OSMenuCmdModifier(),
 			unison.KeyNumPadEnter))
 	e.applyButton.SetEnabled(false)
@@ -151,7 +151,7 @@ func (e *pointsEditor) createToolbar() unison.Paneler {
 	toolbar.AddChild(e.applyButton)
 
 	e.cancelButton = unison.NewSVGButton(svg.Not)
-	e.cancelButton.Tooltip = unison.NewTooltipWithSecondaryText(i18n.Text("Discard Changes"), unison.KeyEscape.String())
+	e.cancelButton.Tooltip = newWrappedTooltipWithSecondaryText(i18n.Text("Discard Changes"), unison.KeyEscape.String())
 	e.cancelButton.SetEnabled(false)
 	e.cancelButton.ClickCallback = func() {
 		e.promptForSave = false
@@ -162,7 +162,7 @@ func (e *pointsEditor) createToolbar() unison.Paneler {
 	toolbar.AddChild(NewToolbarSeparator())
 
 	addButton := unison.NewSVGButton(svg.CircledAdd)
-	addButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Add Entry"))
+	addButton.Tooltip = newWrappedTooltip(i18n.Text("Add Entry"))
 	addButton.ClickCallback = e.addEntry
 	toolbar.AddChild(addButton)
 
@@ -181,7 +181,7 @@ func (e *pointsEditor) initContent() {
 
 func (e *pointsEditor) createRow(rec *gurps.PointsRecord, index int) {
 	deleteButton := unison.NewSVGButton(svg.Trash)
-	deleteButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Remove Entry"))
+	deleteButton.Tooltip = newWrappedTooltip(i18n.Text("Remove Entry"))
 	deleteButton.ClickCallback = func() { e.removeEntry(rec) }
 	e.content.AddChildAtIndex(deleteButton, index)
 	if index != -1 {
@@ -237,7 +237,7 @@ func (e *pointsEditor) createRow(rec *gurps.PointsRecord, index int) {
 	}
 
 	copyToOtherSheetButton := unison.NewSVGButton(svg.Stamper)
-	copyToOtherSheetButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Copy to Other Character Sheet"))
+	copyToOtherSheetButton.Tooltip = newWrappedTooltip(i18n.Text("Copy to Other Character Sheet"))
 	copyToOtherSheetButton.ClickCallback = func() { e.copyToOtherSheet(rec) }
 	e.content.AddChildAtIndex(copyToOtherSheetButton, index)
 }

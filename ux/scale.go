@@ -76,7 +76,7 @@ func NewScaleField(min, max int, def, get func() int, set func(int), afterApply 
 			}
 		}, min, max, false, false)
 	scaleField.SetMarksModified(false)
-	scaleField.Tooltip = unison.NewTooltipWithText(scaleTitle)
+	scaleField.Tooltip = newWrappedTooltip(scaleTitle)
 	scroller.ContentView().MouseWheelCallback = func(where, delta unison.Point, mod unison.Modifiers) bool {
 		if !mod.OptionDown() || !scaleField.Enabled() {
 			return false

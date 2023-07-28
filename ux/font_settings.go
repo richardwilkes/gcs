@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -141,7 +141,7 @@ func (d *fontSettingsDockable) createSizeField(index int) {
 
 func (d *fontSettingsDockable) createResetField(index int) {
 	b := unison.NewSVGButton(svg.Reset)
-	b.Tooltip = unison.NewTooltipWithText("Reset this font")
+	b.Tooltip = newWrappedTooltip("Reset this font")
 	b.ClickCallback = func() {
 		if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to reset %s?"),
 			gurps.CurrentFonts()[index].Title), "") == unison.ModalResponseOK {

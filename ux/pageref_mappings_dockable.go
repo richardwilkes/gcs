@@ -222,7 +222,7 @@ func ShowPageRefMappings() {
 
 func (d *pageRefMappingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 	helpButton := unison.NewSVGButton(svg.Help)
-	helpButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Help"))
+	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
 	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Page Reference Mappings") }
 	toolbar.AddChild(helpButton)
 }
@@ -284,8 +284,7 @@ func (d *pageRefMappingsDockable) createOffsetField(ref *gurps.PageRef) {
 			ref.Offset = v
 			gurps.GlobalSettings().PageRefs.Set(ref)
 		}, -9999, 9999, true, false)
-	p.Tooltip = unison.NewTooltipWithText(i18n.Text(`If your PDF is opening up to the wrong page when opening
-page references, enter an offset here to compensate.`))
+	p.Tooltip = newWrappedTooltip(i18n.Text(`If your PDF is opening up to the wrong page when opening page references, enter an offset here to compensate.`))
 	p.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,
 		VAlign: unison.MiddleAlignment,
@@ -296,7 +295,7 @@ page references, enter an offset here to compensate.`))
 func (d *pageRefMappingsDockable) createNameField(ref *gurps.PageRef) {
 	p := unison.NewLabel()
 	p.Text = filepath.Base(ref.Path)
-	p.Tooltip = unison.NewTooltipWithText(ref.Path)
+	p.Tooltip = newWrappedTooltip(ref.Path)
 	p.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.StartAlignment,
 		VAlign: unison.MiddleAlignment,

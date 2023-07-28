@@ -22,6 +22,7 @@ var _ EditorData[*Trait] = &TraitEditData{}
 type TraitEditData struct {
 	Name             string             `json:"name,omitempty"`
 	PageRef          string             `json:"reference,omitempty"`
+	PageRefHighlight string             `json:"reference_highlight,omitempty"`
 	LocalNotes       string             `json:"notes,omitempty"`
 	VTTNotes         string             `json:"vtt_notes,omitempty"`
 	Ancestry         string             `json:"ancestry,omitempty"` // Container only

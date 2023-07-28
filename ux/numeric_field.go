@@ -117,7 +117,7 @@ func (f *NumericField[T]) mustExtract(s string) T {
 
 func (f *NumericField[T]) validate() bool {
 	if text := f.tooltipTextForValidation(); text != "" {
-		f.Tooltip = unison.NewTooltipWithText(text)
+		f.Tooltip = newWrappedTooltip(text)
 		return false
 	}
 	f.Tooltip = nil

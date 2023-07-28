@@ -39,7 +39,7 @@ func NewPortraitPanel(entity *gurps.Entity) *PortraitPanel {
 	p.Self = p
 	p.SetLayoutData(&unison.FlexLayoutData{VSpan: 2})
 	p.SetBorder(&TitledBorder{Title: i18n.Text("Portrait")})
-	p.Tooltip = unison.NewTooltipWithText(i18n.Text(`Double-click to set a character portrait, or drag an image onto this block.`))
+	p.Tooltip = newWrappedTooltip(i18n.Text(`Double-click to set a character portrait, or drag an image onto this block.`))
 	p.DrawCallback = p.drawSelf
 	p.FileDropCallback = p.fileDrop
 	p.MouseDownCallback = p.mouseDown

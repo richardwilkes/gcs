@@ -112,12 +112,12 @@ func (d *bodySettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 	d.toolbar = toolbar
 
 	helpButton := unison.NewSVGButton(svg.Help)
-	helpButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Help"))
+	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
 	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Body Type") }
 	toolbar.AddChild(helpButton)
 
 	d.applyButton = unison.NewSVGButton(unison.CheckmarkSVG)
-	d.applyButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Apply Changes"))
+	d.applyButton.Tooltip = newWrappedTooltip(i18n.Text("Apply Changes"))
 	d.applyButton.SetEnabled(false)
 	d.applyButton.ClickCallback = func() {
 		d.apply()
@@ -127,7 +127,7 @@ func (d *bodySettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 	toolbar.AddChild(d.applyButton)
 
 	d.cancelButton = unison.NewSVGButton(svg.Not)
-	d.cancelButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Discard Changes"))
+	d.cancelButton.Tooltip = newWrappedTooltip(i18n.Text("Discard Changes"))
 	d.cancelButton.SetEnabled(false)
 	d.cancelButton.ClickCallback = func() {
 		d.promptForSave = false

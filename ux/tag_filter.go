@@ -85,14 +85,14 @@ func NewTagFilterPopup(tagProvider TagProvider) *unison.PopupMenu[string] {
 	}
 	tagFilterTooltip := i18n.Text("Tag Filter")
 	baseTooltip := fmt.Sprintf(i18n.Text("Shift-Click or %v-Click to select more than one"), unison.OSMenuCmdModifier())
-	p.Tooltip = unison.NewTooltipWithSecondaryText(tagFilterTooltip, baseTooltip)
+	p.Tooltip = newWrappedTooltipWithSecondaryText(tagFilterTooltip, baseTooltip)
 	p.SelectionChangedCallback = func(popup *unison.PopupMenu[string]) {
 		tags := SelectedTags(p)
 		var extra string
 		if len(tags) != 0 {
 			extra = i18n.Text("\n\nRequires these tags:\n● ") + strings.Join(tags, "\n● ")
 		}
-		p.Tooltip = unison.NewTooltipWithSecondaryText(tagFilterTooltip, baseTooltip+extra)
+		p.Tooltip = newWrappedTooltipWithSecondaryText(tagFilterTooltip, baseTooltip+extra)
 		tagProvider.ApplyFilter(tags)
 	}
 	p.WillShowMenuCallback(p)

@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -93,9 +93,9 @@ func NewLiftingPanel(entity *gurps.Entity) *LiftingPanel {
 }
 
 func (p *LiftingPanel) addFieldAndLabel(field *NonEditablePageField, title, tooltip string) {
-	field.Tooltip = unison.NewTooltipWithText(tooltip)
+	field.Tooltip = newWrappedTooltip(tooltip)
 	p.AddChild(field)
 	label := NewPageLabel(title)
-	label.Tooltip = unison.NewTooltipWithText(tooltip)
+	label.Tooltip = newWrappedTooltip(tooltip)
 	p.AddChild(label)
 }

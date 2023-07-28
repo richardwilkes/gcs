@@ -520,7 +520,7 @@ func (p *featuresPanel) createContainedWeightReductionPanel(f *gurps.ContainedWe
 			MarkModified(wrapper)
 		})
 	field.SetMinimumTextWidthUsing("1,000 lb")
-	field.Tooltip = unison.NewTooltipWithText(i18n.Text(`Enter a weight or percentage, e.g. "2 lb" or "5%"`))
+	field.Tooltip = newWrappedTooltip(i18n.Text(`Enter a weight or percentage, e.g. "2 lb" or "5%"`))
 	field.ValidateCallback = func() bool {
 		_, err := gurps.ExtractContainedWeightReduction(field.Text(), gurps.SheetSettingsFor(p.entity).DefaultWeightUnits)
 		return err == nil

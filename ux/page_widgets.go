@@ -132,7 +132,7 @@ func NewPageLabelWithRandomizer(title, tooltip string, clickCallback func()) *un
 	b := NewSVGButtonForFont(svg.Randomize, gurps.PageLabelPrimaryFont, -2)
 	b.SetFocusable(false)
 	if tooltip != "" {
-		b.Tooltip = unison.NewTooltipWithText(tooltip)
+		b.Tooltip = newWrappedTooltip(tooltip)
 	}
 	b.ClickCallback = clickCallback
 	b.SetLayoutData(&unison.FlexLayoutData{HGrab: true})

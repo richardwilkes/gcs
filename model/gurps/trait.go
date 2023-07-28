@@ -244,7 +244,11 @@ func (a *Trait) CellData(columnID int, data *CellData) {
 	case TraitReferenceColumn, PageRefCellAlias:
 		data.Type = PageRefCellType
 		data.Primary = a.PageRef
-		data.Secondary = a.Name
+		if a.PageRefHighlight != "" {
+			data.Secondary = a.PageRefHighlight
+		} else {
+			data.Secondary = a.Name
+		}
 	}
 }
 

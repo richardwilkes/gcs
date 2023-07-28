@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -76,7 +76,7 @@ func ShowLibrarySettings(lib *gurps.Library) {
 func (d *librarySettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 	d.toolbar = toolbar
 	d.applyButton = unison.NewSVGButton(unison.CheckmarkSVG)
-	d.applyButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Apply Changes"))
+	d.applyButton.Tooltip = newWrappedTooltip(i18n.Text("Apply Changes"))
 	d.applyButton.SetEnabled(false)
 	d.applyButton.ClickCallback = func() {
 		d.apply()
@@ -86,7 +86,7 @@ func (d *librarySettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 	toolbar.AddChild(d.applyButton)
 
 	d.cancelButton = unison.NewSVGButton(svg.Not)
-	d.cancelButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Discard Changes"))
+	d.cancelButton.Tooltip = newWrappedTooltip(i18n.Text("Discard Changes"))
 	d.cancelButton.SetEnabled(false)
 	d.cancelButton.ClickCallback = func() {
 		d.promptForSave = false

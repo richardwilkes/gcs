@@ -93,6 +93,7 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 		addTemplateChoices(content, nil, "", &e.editorData.TemplatePicker)
 	}
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
+	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 	if !e.target.Container() {
 		content.AddChild(newPrereqPanel(e.target.Entity, &e.editorData.Prereq))
 		for _, wt := range gurps.AllWeaponType {

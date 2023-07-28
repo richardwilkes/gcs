@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -78,14 +78,14 @@ func (p *hitLocationSettingsPanel) createButtons() *unison.Panel {
 
 	p.deleteButton = unison.NewSVGButton(svg.Trash)
 	p.deleteButton.ClickCallback = p.removeHitLocation
-	p.deleteButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Remove hit location"))
+	p.deleteButton.Tooltip = newWrappedTooltip(i18n.Text("Remove hit location"))
 	owningTable := p.loc.OwningTable()
 	p.deleteButton.SetEnabled(owningTable != nil && len(owningTable.Locations) > 1)
 	buttons.AddChild(p.deleteButton)
 
 	p.addButton = unison.NewSVGButton(svg.CircledAdd)
 	p.addButton.ClickCallback = p.addSubTable
-	p.addButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Add sub-table"))
+	p.addButton.Tooltip = newWrappedTooltip(i18n.Text("Add sub-table"))
 	p.addButton.SetEnabled(p.loc.SubTable == nil)
 	buttons.AddChild(p.addButton)
 	return buttons
@@ -136,7 +136,7 @@ func (p *hitLocationSettingsPanel) createContent() *unison.Panel {
 		return func() bool { return p.validateLocID(field.Text()) }
 	}(field, p.loc)
 	field.SetMinimumTextWidthUsing(prototypeMinIDWidth)
-	field.Tooltip = unison.NewTooltipWithText(i18n.Text("An ID for the hit location"))
+	field.Tooltip = newWrappedTooltip(i18n.Text("An ID for the hit location"))
 	content.AddChild(field)
 
 	text = i18n.Text("Choice Name")
@@ -145,7 +145,7 @@ func (p *hitLocationSettingsPanel) createContent() *unison.Panel {
 		func() string { return p.loc.ChoiceName },
 		func(s string) { p.loc.ChoiceName = s })
 	field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
-	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The name of this hit location as it should appear in choice lists"))
+	field.Tooltip = newWrappedTooltip(i18n.Text("The name of this hit location as it should appear in choice lists"))
 	content.AddChild(field)
 
 	text = i18n.Text("Table Name")
@@ -154,7 +154,7 @@ func (p *hitLocationSettingsPanel) createContent() *unison.Panel {
 		func() string { return p.loc.TableName },
 		func(s string) { p.loc.TableName = s })
 	field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
-	field.Tooltip = unison.NewTooltipWithText(i18n.Text("The name of this hit location as it should appear in the hit location table"))
+	field.Tooltip = newWrappedTooltip(i18n.Text("The name of this hit location as it should appear in the hit location table"))
 	content.AddChild(field)
 
 	text = i18n.Text("Slots")
@@ -163,7 +163,7 @@ func (p *hitLocationSettingsPanel) createContent() *unison.Panel {
 		func() int { return p.loc.Slots },
 		func(v int) { p.loc.Slots = v },
 		0, 999999, false, false)
-	intField.Tooltip = unison.NewTooltipWithText(i18n.Text("The number of consecutive numbers this hit location fills in the table"))
+	intField.Tooltip = newWrappedTooltip(i18n.Text("The number of consecutive numbers this hit location fills in the table"))
 	content.AddChild(intField)
 
 	text = i18n.Text("Hit Penalty")
@@ -172,7 +172,7 @@ func (p *hitLocationSettingsPanel) createContent() *unison.Panel {
 		func() int { return p.loc.HitPenalty },
 		func(v int) { p.loc.HitPenalty = v },
 		-100, 100, true, false)
-	intField.Tooltip = unison.NewTooltipWithText(i18n.Text("The skill adjustment for this hit location"))
+	intField.Tooltip = newWrappedTooltip(i18n.Text("The skill adjustment for this hit location"))
 	content.AddChild(intField)
 
 	text = i18n.Text("DR Bonus")
@@ -181,7 +181,7 @@ func (p *hitLocationSettingsPanel) createContent() *unison.Panel {
 		func() int { return p.loc.DRBonus },
 		func(v int) { p.loc.DRBonus = v },
 		0, 100, false, false)
-	intField.Tooltip = unison.NewTooltipWithText(i18n.Text("The amount of DR this hit location grants due to natural toughness"))
+	intField.Tooltip = newWrappedTooltip(i18n.Text("The amount of DR this hit location grants due to natural toughness"))
 	content.AddChild(intField)
 
 	text = i18n.Text("Description")
@@ -190,7 +190,7 @@ func (p *hitLocationSettingsPanel) createContent() *unison.Panel {
 		func() string { return p.loc.Description },
 		func(s string) { p.loc.Description = s })
 	field.SetMinimumTextWidthUsing(prototypeMinNameWidth)
-	field.Tooltip = unison.NewTooltipWithText(i18n.Text("A description of any special effects for hits to this location"))
+	field.Tooltip = newWrappedTooltip(i18n.Text("A description of any special effects for hits to this location"))
 	content.AddChild(field)
 
 	if p.loc.SubTable != nil {
@@ -200,7 +200,7 @@ func (p *hitLocationSettingsPanel) createContent() *unison.Panel {
 			func() string { return p.loc.SubTable.Roll.String() },
 			func(s string) { p.loc.SubTable.Roll = dice.New(s) })
 		field.SetMinimumTextWidthUsing("100d1000")
-		field.Tooltip = unison.NewTooltipWithText(i18n.Text("The dice to roll on the sub-table"))
+		field.Tooltip = newWrappedTooltip(i18n.Text("The dice to roll on the sub-table"))
 		content.AddChild(field)
 
 		content.AddChild(newBodySettingsSubTablePanel(p.dockable, p.loc.SubTable))

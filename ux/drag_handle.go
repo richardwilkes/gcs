@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -34,7 +34,7 @@ func NewDragHandle(data map[string]any) *DragHandle {
 	h.MouseExitCallback = h.mouseExit
 	h.MouseDownCallback = h.mouseDown
 	h.MouseDragCallback = h.mouseDrag
-	h.Tooltip = unison.NewTooltipWithText(i18n.Text("Click and drag this handle to rearrange"))
+	h.Tooltip = newWrappedTooltip(i18n.Text("Click and drag this handle to rearrange"))
 	baseline := unison.DefaultButtonTheme.Font.Baseline()
 	size := unison.NewSize(baseline, baseline)
 	h.svg = &unison.DrawableSVG{

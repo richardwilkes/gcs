@@ -21,7 +21,7 @@ func NewSearchField(watermark string, modifiedCallback func(before, after *uniso
 	f := unison.NewField()
 	if watermark != "" {
 		f.Watermark = watermark
-		f.Tooltip = unison.NewTooltipWithText(watermark)
+		f.Tooltip = newWrappedTooltip(watermark)
 	}
 	f.SetLayout(&unison.FlexLayout{
 		Columns: 1,
@@ -38,7 +38,7 @@ func NewSearchField(watermark string, modifiedCallback func(before, after *uniso
 	b.SetFocusable(false)
 	b.SetEnabled(false)
 	b.UpdateCursorCallback = func(_ unison.Point) *unison.Cursor { return unison.ArrowCursor() }
-	b.Tooltip = unison.NewTooltipWithText(i18n.Text("Clear"))
+	b.Tooltip = newWrappedTooltip(i18n.Text("Clear"))
 	b.ClickCallback = func() { f.SetText("") }
 	f.ModifiedCallback = func(before, after *unison.FieldState) {
 		b.SetEnabled(after.Text != "")

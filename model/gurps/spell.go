@@ -261,7 +261,11 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 	case SpellReferenceColumn, PageRefCellAlias:
 		data.Type = PageRefCellType
 		data.Primary = s.PageRef
-		data.Secondary = s.Name
+		if s.PageRefHighlight != "" {
+			data.Secondary = s.PageRefHighlight
+		} else {
+			data.Secondary = s.Name
+		}
 	case SpellLevelColumn:
 		if !s.Container() {
 			data.Type = TextCellType

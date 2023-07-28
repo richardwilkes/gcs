@@ -82,7 +82,7 @@ func ShowSheetSettings(owner EntityPanel) {
 
 func (d *sheetSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 	helpButton := unison.NewSVGButton(svg.Help)
-	helpButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Help"))
+	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
 	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Sheet Settings") }
 	toolbar.AddChild(helpButton)
 }
@@ -130,7 +130,7 @@ func (d *sheetSettingsDockable) createDamageProgression(content *unison.Panel) {
 			desc.MarkForLayoutRecursivelyUpward()
 			desc.MarkForRedraw()
 		})
-	d.damageProgressionPopup.Tooltip = unison.NewTooltipWithText(i18n.Text("Determines the method used to calculate thrust and swing damage"))
+	d.damageProgressionPopup.Tooltip = newWrappedTooltip(i18n.Text("Determines the method used to calculate thrust and swing damage"))
 	panel.AddChild(unison.NewPanel())
 	panel.AddChild(desc)
 	content.AddChild(panel)

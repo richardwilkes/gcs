@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -103,14 +103,14 @@ func (p *PointPoolsPanel) rebuild(attrs *gurps.AttributeDefs) {
 
 				name := NewPageLabel(def.Name)
 				if def.FullName != "" {
-					name.Tooltip = unison.NewTooltipWithText(def.FullName)
+					name.Tooltip = newWrappedTooltip(def.FullName)
 				}
 				p.AddChild(name)
 
 				if threshold := attr.CurrentThreshold(); threshold != nil {
 					state := NewPageLabel("[" + threshold.State + "]")
 					if threshold.Explanation != "" {
-						state.Tooltip = unison.NewTooltipWithText(threshold.Explanation)
+						state.Tooltip = newWrappedTooltip(threshold.Explanation)
 					}
 					p.AddChild(state)
 					p.stateLabels[def.ID()] = state
@@ -134,7 +134,7 @@ func (p *PointPoolsPanel) createPointsField(attr *gurps.Attribute) *NonEditableP
 			MarkForLayoutWithinDockable(f)
 		}
 		if def := attr.AttributeDef(); def != nil {
-			f.Tooltip = unison.NewTooltipWithText(fmt.Sprintf(i18n.Text("Points spent on %s"), def.CombinedName()))
+			f.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("Points spent on %s"), def.CombinedName()))
 		}
 	})
 	field.Font = gurps.PageFieldSecondaryFont
@@ -157,7 +157,7 @@ func (p *PointPoolsPanel) Sync() {
 						if threshold := attr.CurrentThreshold(); threshold != nil {
 							label.Text = "[" + threshold.State + "]"
 							if threshold.Explanation != "" {
-								label.Tooltip = unison.NewTooltipWithText(threshold.Explanation)
+								label.Tooltip = newWrappedTooltip(threshold.Explanation)
 							}
 						} else {
 							label.Text = ""

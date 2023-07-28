@@ -93,6 +93,7 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 		addTemplateChoices(content, nil, "", &e.editorData.TemplatePicker)
 	}
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
+	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 	modifiersPanel := newTraitModifiersPanel(e.target.Entity, &e.editorData.Modifiers)
 	if e.target.Container() {
 		content.AddChild(modifiersPanel)

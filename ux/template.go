@@ -147,11 +147,11 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 	}
 
 	helpButton := unison.NewSVGButton(svg.Help)
-	helpButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Help"))
+	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
 	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Character Template") }
 
 	addUserButton := unison.NewSVGButton(svg.Stamper)
-	addUserButton.Tooltip = unison.NewTooltipWithText(applyTemplateAction.Title)
+	addUserButton.Tooltip = newWrappedTooltip(applyTemplateAction.Title)
 	addUserButton.ClickCallback = func() {
 		if CanApplyTemplate() {
 			d.applyTemplate(nil)

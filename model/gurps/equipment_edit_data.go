@@ -22,6 +22,7 @@ var _ EditorData[*Equipment] = &EquipmentEditData{}
 type EquipmentEditData struct {
 	Name                   string               `json:"description,omitempty"`
 	PageRef                string               `json:"reference,omitempty"`
+	PageRefHighlight       string               `json:"reference_highlight,omitempty"`
 	LocalNotes             string               `json:"notes,omitempty"`
 	VTTNotes               string               `json:"vtt_notes,omitempty"`
 	TechLevel              string               `json:"tech_level,omitempty"`

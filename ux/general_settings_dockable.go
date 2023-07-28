@@ -83,7 +83,7 @@ func ShowGeneralSettings() {
 
 func (d *generalSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 	helpButton := unison.NewSVGButton(svg.Help)
-	helpButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Help"))
+	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
 	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/General Settings") }
 	toolbar.AddChild(helpButton)
 }
@@ -232,7 +232,7 @@ func (d *generalSettingsDockable) createTechLevelField(content *unison.Panel) {
 	d.techLevelField = NewStringField(nil, "", title,
 		func() string { return gurps.GlobalSettings().General.DefaultTechLevel },
 		func(s string) { gurps.GlobalSettings().General.DefaultTechLevel = s })
-	d.techLevelField.Tooltip = unison.NewTooltipWithText(techLevelInfo())
+	d.techLevelField.Tooltip = newWrappedTooltip(techLevelInfo())
 	d.techLevelField.SetMinimumTextWidthUsing("12^")
 	d.techLevelField.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(d.techLevelField)
@@ -334,7 +334,7 @@ func (d *generalSettingsDockable) createPathInfoField(content *unison.Panel, tit
 		field.Text = value
 	}))
 	addButton := unison.NewSVGButton(svg.Copy)
-	addButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Copy to clipboard"))
+	addButton.Tooltip = newWrappedTooltip(i18n.Text("Copy to clipboard"))
 	addButton.ClickCallback = func() {
 		unison.GlobalClipboard.SetText(value)
 	}
@@ -356,7 +356,7 @@ func (d *generalSettingsDockable) createExternalPDFCmdLineField(content *unison.
 		_, err := cmdline.Parse(strings.TrimSpace(d.externalPDFCmdlineField.Text()))
 		return err == nil
 	}
-	d.externalPDFCmdlineField.Tooltip = unison.NewTooltipWithText(i18n.Text(`The internal PDF viewer will be used if the External PDF Viewer field is empty.
+	d.externalPDFCmdlineField.Tooltip = newWrappedTooltip(i18n.Text(`The internal PDF viewer will be used if the External PDF Viewer field is empty.
 Use $FILE where the full path to the PDF should be placed.
 Use $PAGE where the page number should be placed.
 
@@ -375,7 +375,7 @@ func (d *generalSettingsDockable) createLocaleField(content *unison.Panel) {
 		HAlign: unison.FillAlignment,
 		HGrab:  true,
 	})
-	d.localeField.Tooltip = unison.NewTooltipWithText(txt.Wrap("", i18n.Text(`The locale to use when presenting text in the user interface. This does not affect the content of data files. Leave this value blank to use the system default. Note that changes to this generally require quitting and restarting GCS to have the desired effect.`), 100))
+	d.localeField.Tooltip = newWrappedTooltip(txt.Wrap("", i18n.Text(`The locale to use when presenting text in the user interface. This does not affect the content of data files. Leave this value blank to use the system default. Note that changes to this generally require quitting and restarting GCS to have the desired effect.`), 100))
 	d.localeField.Watermark = i18n.Locale()
 	content.AddChild(d.localeField)
 }

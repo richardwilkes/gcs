@@ -13,6 +13,7 @@ package ux
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -75,6 +76,12 @@ func addPageRefLabelAndField(parent *unison.Panel, fieldData *string) {
 	addLabelAndStringField(parent, i18n.Text("Page Reference"), pageRefTooltipText(), fieldData)
 }
 
+func addPageRefHighlightLabelAndField(parent *unison.Panel, fieldData *string) {
+	addLabelAndStringField(parent, i18n.Text("Page Highlight"),
+		i18n.Text(`A snippet of text to highlight on the page when opening the page reference; only needed if the default behavior isn't highlighting the expected area`),
+		fieldData)
+}
+
 func addNotesLabelAndField(parent *unison.Panel, fieldData *string) {
 	addLabelAndMultiLineStringField(parent, i18n.Text("Notes"), "", fieldData)
 }
@@ -111,7 +118,7 @@ func addTechLevelRequired(parent *unison.Panel, fieldData **string, ownerIsSheet
 	if !ownerIsSheet {
 		tip = txt.Wrap("", i18n.Text("Leave field blank to auto-populate with the character's TL when added to a character sheet."), 60) + "\n\n" + tip
 	}
-	field.Tooltip = unison.NewTooltipWithText(tip)
+	field.Tooltip = newWrappedTooltip(tip)
 	if *fieldData == nil {
 		field.SetEnabled(false)
 	}
@@ -181,7 +188,7 @@ func addLabelAndListField(parent *unison.Panel, labelText, pluralForTooltip stri
 	tooltip := fmt.Sprintf(i18n.Text("Separate multiple %s with commas"), pluralForTooltip)
 	label := NewFieldLeadingLabel(labelText)
 	if tooltip != "" {
-		label.Tooltip = unison.NewTooltipWithText(tooltip)
+		label.Tooltip = newWrappedTooltip(tooltip)
 	}
 	parent.AddChild(label)
 	field := NewMultiLineStringField(nil, "", labelText,
@@ -192,7 +199,7 @@ func addLabelAndListField(parent *unison.Panel, labelText, pluralForTooltip stri
 			MarkModified(parent)
 		})
 	if tooltip != "" {
-		field.Tooltip = unison.NewTooltipWithText(tooltip)
+		field.Tooltip = newWrappedTooltip(tooltip)
 	}
 	field.AutoScroll = false
 	parent.AddChild(field)
@@ -201,10 +208,22 @@ func addLabelAndListField(parent *unison.Panel, labelText, pluralForTooltip stri
 func addLabelAndStringField(parent *unison.Panel, labelText, tooltip string, fieldData *string) *StringField {
 	label := NewFieldLeadingLabel(labelText)
 	if tooltip != "" {
-		label.Tooltip = unison.NewTooltipWithText(tooltip)
+		label.Tooltip = newWrappedTooltip(tooltip)
 	}
 	parent.AddChild(label)
 	return addStringField(parent, labelText, tooltip, fieldData)
+}
+
+func newWrappedTooltip(tooltip string) *unison.Panel {
+	return unison.NewTooltipWithText(wrapTextForTooltip(tooltip))
+}
+
+func newWrappedTooltipWithSecondaryText(primary, secondary string) *unison.Panel {
+	return unison.NewTooltipWithSecondaryText(wrapTextForTooltip(primary), wrapTextForTooltip(secondary))
+}
+
+func wrapTextForTooltip(tooltip string) string {
+	return strings.ReplaceAll(txt.Wrap("", strings.ReplaceAll(tooltip, " ", "␣"), 80), "␣", " ")
 }
 
 func addStringField(parent *unison.Panel, labelText, tooltip string, fieldData *string) *StringField {
@@ -215,7 +234,7 @@ func addStringField(parent *unison.Panel, labelText, tooltip string, fieldData *
 			MarkModified(parent)
 		})
 	if tooltip != "" {
-		field.Tooltip = unison.NewTooltipWithText(tooltip)
+		field.Tooltip = newWrappedTooltip(tooltip)
 	}
 	parent.AddChild(field)
 	return field
@@ -224,7 +243,7 @@ func addStringField(parent *unison.Panel, labelText, tooltip string, fieldData *
 func addLabelAndMultiLineStringField(parent *unison.Panel, labelText, tooltip string, fieldData *string) {
 	label := NewFieldLeadingLabel(labelText)
 	if tooltip != "" {
-		label.Tooltip = unison.NewTooltipWithText(tooltip)
+		label.Tooltip = newWrappedTooltip(tooltip)
 	}
 	parent.AddChild(label)
 	field := NewMultiLineStringField(nil, "", labelText,
@@ -235,7 +254,7 @@ func addLabelAndMultiLineStringField(parent *unison.Panel, labelText, tooltip st
 			MarkModified(parent)
 		})
 	if tooltip != "" {
-		field.Tooltip = unison.NewTooltipWithText(tooltip)
+		field.Tooltip = newWrappedTooltip(tooltip)
 	}
 	field.AutoScroll = false
 	parent.AddChild(field)
@@ -249,7 +268,7 @@ func addIntegerField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labe
 			MarkModified(parent)
 		}, min, max, false, false)
 	if tooltip != "" {
-		field.Tooltip = unison.NewTooltipWithText(tooltip)
+		field.Tooltip = newWrappedTooltip(tooltip)
 	}
 	parent.AddChild(field)
 	return field
@@ -258,7 +277,7 @@ func addIntegerField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labe
 func addLabelAndDecimalField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData *fxp.Int, min, max fxp.Int) *DecimalField {
 	label := NewFieldLeadingLabel(labelText)
 	if tooltip != "" {
-		label.Tooltip = unison.NewTooltipWithText(tooltip)
+		label.Tooltip = newWrappedTooltip(tooltip)
 	}
 	parent.AddChild(label)
 	return addDecimalField(parent, targetMgr, targetKey, labelText, tooltip, fieldData, min, max)
@@ -272,7 +291,7 @@ func addDecimalField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labe
 			MarkModified(parent)
 		}, min, max, false, false)
 	if tooltip != "" {
-		field.Tooltip = unison.NewTooltipWithText(tooltip)
+		field.Tooltip = newWrappedTooltip(tooltip)
 	}
 	parent.AddChild(field)
 	return field
@@ -286,7 +305,7 @@ func addWeightField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, label
 			MarkModified(parent)
 		}, 0, gurps.Weight(fxp.Max), noMinWidth)
 	if tooltip != "" {
-		field.Tooltip = unison.NewTooltipWithText(tooltip)
+		field.Tooltip = newWrappedTooltip(tooltip)
 	}
 	parent.AddChild(field)
 	return field
@@ -338,8 +357,8 @@ func addLabelAndNullableDice(parent *unison.Panel, labelText, tooltip string, fi
 			MarkModified(parent)
 		})
 	if tooltip != "" {
-		label.Tooltip = unison.NewTooltipWithText(tooltip)
-		field.Tooltip = unison.NewTooltipWithText(tooltip)
+		label.Tooltip = newWrappedTooltip(tooltip)
+		field.Tooltip = newWrappedTooltip(tooltip)
 	}
 	parent.AddChild(field)
 	return field
@@ -348,7 +367,7 @@ func addLabelAndNullableDice(parent *unison.Panel, labelText, tooltip string, fi
 func addLabelAndPopup[T comparable](parent *unison.Panel, labelText, tooltip string, choices []T, fieldData *T) *unison.PopupMenu[T] {
 	label := NewFieldLeadingLabel(labelText)
 	if tooltip != "" {
-		label.Tooltip = unison.NewTooltipWithText(tooltip)
+		label.Tooltip = newWrappedTooltip(tooltip)
 	}
 	parent.AddChild(label)
 	return addPopup[T](parent, choices, fieldData)

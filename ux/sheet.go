@@ -191,23 +191,23 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	}
 
 	helpButton := unison.NewSVGButton(svg.Help)
-	helpButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Help"))
+	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
 	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Character Sheet") }
 
 	sheetSettingsButton := unison.NewSVGButton(svg.Settings)
-	sheetSettingsButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Sheet Settings"))
+	sheetSettingsButton.Tooltip = newWrappedTooltip(i18n.Text("Sheet Settings"))
 	sheetSettingsButton.ClickCallback = func() { ShowSheetSettings(s) }
 
 	attributesButton := unison.NewSVGButton(svg.Attributes)
-	attributesButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Attributes"))
+	attributesButton.Tooltip = newWrappedTooltip(i18n.Text("Attributes"))
 	attributesButton.ClickCallback = func() { ShowAttributeSettings(s) }
 
 	bodyTypeButton := unison.NewSVGButton(svg.BodyType)
-	bodyTypeButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Body Type"))
+	bodyTypeButton.Tooltip = newWrappedTooltip(i18n.Text("Body Type"))
 	bodyTypeButton.ClickCallback = func() { ShowBodySettings(s) }
 
 	calcButton := unison.NewSVGButton(svg.Calculator)
-	calcButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Calculators (jumping, throwing, hiking, etc.)"))
+	calcButton.Tooltip = newWrappedTooltip(i18n.Text("Calculators (jumping, throwing, hiking, etc.)"))
 	calcButton.ClickCallback = func() { DisplayCalculator(s) }
 
 	s.toolbar = unison.NewPanel()

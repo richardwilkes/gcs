@@ -148,7 +148,7 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 
 	if helpMD != "" {
 		helpButton := unison.NewSVGButton(svg.Help)
-		helpButton.Tooltip = unison.NewTooltipWithText(i18n.Text("Help"))
+		helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
 		helpButton.ClickCallback = func() { HandleLink(nil, helpMD) }
 		toolbar.AddChild(helpButton)
 	}
@@ -167,7 +167,7 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 	)
 
 	e.applyButton = unison.NewSVGButton(unison.CheckmarkSVG)
-	e.applyButton.Tooltip = unison.NewTooltipWithSecondaryText(i18n.Text("Apply Changes"),
+	e.applyButton.Tooltip = newWrappedTooltipWithSecondaryText(i18n.Text("Apply Changes"),
 		fmt.Sprintf(i18n.Text("%v%v or %v%v"), unison.OSMenuCmdModifier(), unison.KeyReturn, unison.OSMenuCmdModifier(),
 			unison.KeyNumPadEnter))
 	e.applyButton.SetEnabled(false)
@@ -179,7 +179,7 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 	toolbar.AddChild(e.applyButton)
 
 	e.cancelButton = unison.NewSVGButton(svg.Not)
-	e.cancelButton.Tooltip = unison.NewTooltipWithSecondaryText(i18n.Text("Discard Changes"), unison.KeyEscape.String())
+	e.cancelButton.Tooltip = newWrappedTooltipWithSecondaryText(i18n.Text("Discard Changes"), unison.KeyEscape.String())
 	e.cancelButton.SetEnabled(false)
 	e.cancelButton.ClickCallback = func() {
 		e.promptForSave = false

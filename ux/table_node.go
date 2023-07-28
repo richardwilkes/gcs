@@ -21,7 +21,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
-	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xmath"
 	"github.com/richardwilkes/unison"
 	"golang.org/x/exp/slices"
@@ -348,7 +347,7 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		p.AddChild(label)
 	}
 	if tooltip != "" {
-		p.Tooltip = unison.NewTooltipWithText(strings.ReplaceAll(txt.Wrap("", strings.ReplaceAll(tooltip, " ", "␣"), 120), "␣", " "))
+		p.Tooltip = newWrappedTooltip(tooltip)
 	}
 	return p
 }
@@ -433,7 +432,7 @@ func (n *Node[T]) createToggleCell(c *gurps.CellData, foreground unison.Ink) uni
 	check.HAlign = c.Alignment
 	check.OnBackgroundInk = foreground
 	if c.Tooltip != "" {
-		check.Tooltip = unison.NewTooltipWithText(c.Tooltip)
+		check.Tooltip = newWrappedTooltip(c.Tooltip)
 	}
 	check.MouseDownCallback = func(where unison.Point, button, clickCount int, mod unison.Modifiers) bool {
 		c.Checked = !c.Checked
@@ -604,12 +603,12 @@ func (n *Node[T]) createPageRefCell(c *gurps.CellData, foreground unison.Ink) un
 				SVG:  img,
 				Size: size,
 			}
-			label.Tooltip = unison.NewTooltipWithText(parts[0])
+			label.Tooltip = newWrappedTooltip(parts[0])
 		}
 	default:
 		label.Text, _ = convertLinksForPageRef(parts[0])
 		label.Text += "+"
-		label.Tooltip = unison.NewTooltipWithText(strings.Join(parts, "\n"))
+		label.Tooltip = newWrappedTooltip(strings.Join(parts, "\n"))
 	}
 	if label.Text != "" || label.Drawable != nil {
 		over := false
