@@ -178,10 +178,14 @@ func (n *NavigatorNode) primaryColumnText() string {
 	case favoritesNode:
 		return i18n.Text("Favorites")
 	case libraryNode:
-		if n.library.IsUser() || n.library.CachedVersion == "" || n.library.CachedVersion == "0" {
+		if n.library.IsUser() {
 			return n.library.Title
 		}
-		return fmt.Sprintf("%s v%s", n.library.Title, filterVersion(n.library.CachedVersion))
+		current, _ := n.library.AvailableReleases()
+		if current == "" || current == "0" {
+			return n.library.Title
+		}
+		return fmt.Sprintf("%s v%s", n.library.Title, filterVersion(current))
 	default:
 		return xfs.TrimExtension(path.Base(n.path))
 	}
@@ -220,11 +224,11 @@ func (n *NavigatorNode) ColumnCell(_, col int, foreground, _ unison.Ink, _, _, _
 		Size: unison.NewSize(size, size),
 	}
 	if n.nodeType == libraryNode && !n.library.IsUser() {
-		if rel := n.library.AvailableUpdate(); rel != nil && rel.HasUpdate() {
-			if relVersion := filterVersion(rel.Version); filterVersion(n.library.CachedVersion) != relVersion {
+		if current, releases := n.library.AvailableReleases(); len(releases) != 0 && releases[0].HasUpdate() {
+			if relVersion := filterVersion(releases[0].Version); filterVersion(current) != relVersion {
 				if n.updateCellReleaseVersion != relVersion || n.updateCellCache == nil {
 					n.updateCellReleaseVersion = relVersion
-					n.updateCellCache = newUpdatableLibraryCell(n.library, label, rel)
+					n.updateCellCache = newUpdatableLibraryCell(n.library, label, releases[0])
 				} else {
 					n.updateCellCache.updateForeground(foreground)
 				}

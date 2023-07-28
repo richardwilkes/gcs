@@ -47,11 +47,11 @@ type Library struct {
 	AccessToken       string   `json:"access_token,omitempty"`
 	RepoName          string   `json:"-"`
 	PathOnDisk        string   `json:"path,omitempty"`
-	CachedVersion     string   `json:"-"`
 	Favorites         []string `json:"favorites,omitempty"`
 	monitor           *monitor
 	lock              sync.RWMutex
-	upgrade           *Release
+	releases          []Release
+	current           string
 }
 
 // NewLibrary creates a new library.
@@ -63,7 +63,7 @@ func NewLibrary(title, githubAccountName, accessToken, repoName, pathOnDisk stri
 		RepoName:          repoName,
 		PathOnDisk:        pathOnDisk,
 	}
-	lib.CachedVersion = lib.VersionOnDisk()
+	lib.current = lib.VersionOnDisk()
 	lib.monitor = newMonitor(lib)
 	return lib
 }
@@ -103,11 +103,15 @@ func (l *Library) SetPath(newPath string) error {
 		if l.monitor == nil {
 			l.PathOnDisk = p
 			l.monitor = newMonitor(l)
-			l.CachedVersion = l.VersionOnDisk()
+			l.lock.Lock()
+			l.current = l.VersionOnDisk()
+			l.lock.Unlock()
 		} else {
 			tokens := l.monitor.stop()
 			l.PathOnDisk = p
-			l.CachedVersion = l.VersionOnDisk()
+			l.lock.Lock()
+			l.current = l.VersionOnDisk()
+			l.lock.Unlock()
 			for _, token := range tokens {
 				l.monitor.startWatch(token, true)
 			}
@@ -150,53 +154,36 @@ func (l *Library) IsUser() bool {
 
 // CheckForAvailableUpgrade returns releases that can be upgraded to.
 func (l *Library) CheckForAvailableUpgrade(ctx context.Context, client *http.Client) {
-	l.lock.Lock()
-	l.upgrade = nil
-	l.lock.Unlock()
 	incompatibleFutureLibraryVersion := strconv.Itoa(CurrentDataVersion + 1)
 	minimumLibraryVersion := strconv.Itoa(MinimumLibraryVersion)
-	available, err := LoadReleases(ctx, client, l.GitHubAccountName, l.AccessToken, l.RepoName, l.VersionOnDisk(),
+	releases, err := LoadReleases(ctx, client, l.GitHubAccountName, l.AccessToken, l.RepoName, "",
 		func(version, notes string) bool {
 			return incompatibleFutureLibraryVersion == version ||
 				txt.NaturalLess(version, minimumLibraryVersion, true) ||
 				txt.NaturalLess(incompatibleFutureLibraryVersion, version, true)
 		})
-	var upgrade *Release
 	if err != nil {
-		jot.Error(err)
-		upgrade = &Release{CheckFailed: true}
-	} else {
-		switch len(available) {
-		case 0:
-			upgrade = &Release{}
-		case 1:
-			upgrade = &available[0]
-		default:
-			for _, one := range available[1:] {
-				available[0].Notes += "\n\n## Version " + one.Version + "\n" + one.Notes
-			}
-			upgrade = &available[0]
-		}
+		jot.Error(errs.NewWithCause("Unable to access releases for library: "+l.Title, err))
+	}
+	current := l.VersionOnDisk()
+	lastRelease := ""
+	if len(releases) != 0 {
+		lastRelease = releases[0].Version
 	}
 	l.lock.Lock()
-	l.CachedVersion = l.VersionOnDisk()
-	updated := l.upgrade == nil || *l.upgrade == *upgrade
-	l.upgrade = upgrade
+	l.releases = releases
+	l.current = current
 	l.lock.Unlock()
-	if updated && NotifyOfLibraryChangeFunc != nil {
+	if current != lastRelease && NotifyOfLibraryChangeFunc != nil {
 		toolbox.Call(NotifyOfLibraryChangeFunc)
 	}
 }
 
-// AvailableUpdate returns the available release that can be updated to.
-func (l *Library) AvailableUpdate() *Release {
+// AvailableReleases returns the available releases.
+func (l *Library) AvailableReleases() (current string, releases []Release) {
 	l.lock.RLock()
 	defer l.lock.RUnlock()
-	if l.upgrade == nil {
-		return nil
-	}
-	r := *l.upgrade
-	return &r
+	return l.current, l.releases
 }
 
 // Less returns true if this Library should be placed before the other Library.
@@ -312,7 +299,10 @@ func (l *Library) Download(ctx context.Context, client *http.Client, release Rel
 	if err = os.WriteFile(f, []byte(release.Version+"\n"), 0o640); err != nil {
 		return errs.NewWithCause("unable to create "+f, err)
 	}
-	l.CachedVersion = l.VersionOnDisk()
+	current := l.VersionOnDisk()
+	l.lock.Lock()
+	l.current = current
+	l.lock.Unlock()
 	success = true
 	return nil
 }

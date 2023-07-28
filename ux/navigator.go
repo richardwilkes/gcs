@@ -494,8 +494,8 @@ func (n *Navigator) adjustBackingFilePath(row *NavigatorNode, oldPath, newPath s
 func (n *Navigator) updateLibrarySelection() {
 	for _, row := range n.table.SelectedRows(true) {
 		if row.nodeType == libraryNode {
-			rel := row.library.AvailableUpdate()
-			if rel == nil || !rel.HasUpdate() || !initiateLibraryUpdate(row.library, *rel) {
+			_, releases := row.library.AvailableReleases()
+			if len(releases) == 0 || !releases[0].HasUpdate() || !initiateLibraryUpdate(row.library, releases[0]) {
 				return
 			}
 		}
@@ -505,12 +505,24 @@ func (n *Navigator) updateLibrarySelection() {
 func (n *Navigator) showSelectionReleaseNotes() {
 	for _, row := range n.table.SelectedRows(true) {
 		if row.nodeType == libraryNode {
-			rel := row.library.AvailableUpdate()
-			if rel == nil || !rel.HasUpdate() {
+			current, releases := row.library.AvailableReleases()
+			if len(releases) == 0 || !releases[0].HasUpdate() {
 				return
 			}
-			ShowReadOnlyMarkdown(fmt.Sprintf("%s v%s Release Notes", row.library.Title,
-				filterVersion(rel.Version)), fmt.Sprintf("## Version %s\n%s", rel.Version, rel.Notes))
+			var content strings.Builder
+			for i, release := range releases {
+				if i != 0 {
+					content.WriteString("\n\n")
+				}
+				content.WriteString("### Version ")
+				content.WriteString(filterVersion(release.Version))
+				content.WriteString("\n\n")
+				if release.Version == current {
+					content.WriteString("> This version is what you currently have on disk.\n\n")
+				}
+				content.WriteString(release.Notes)
+			}
+			ShowReadOnlyMarkdown(fmt.Sprintf("%s Release Notes", row.library.Title), content.String())
 		}
 	}
 }
@@ -754,8 +766,8 @@ func (n *Navigator) selectionChanged() {
 					deleteEnabled = false
 				}
 				if downloadEnabled {
-					rel := row.library.AvailableUpdate()
-					downloadEnabled = rel != nil && rel.HasUpdate()
+					_, releases := row.library.AvailableReleases()
+					downloadEnabled = len(releases) != 0 && releases[0].HasUpdate()
 				}
 			} else {
 				hasOther = true
