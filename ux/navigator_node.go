@@ -297,10 +297,11 @@ func (n *NavigatorNode) Refresh() {
 }
 
 // Open the node.
-func (n *NavigatorNode) Open() {
-	if n.nodeType == fileNode {
-		OpenFile(n.Path(), 0)
+func (n *NavigatorNode) Open() (dockable unison.Dockable, wasOpen bool) {
+	if n.nodeType != fileNode {
+		return nil, false
 	}
+	return OpenFile(n.Path(), 0)
 }
 
 func (n *NavigatorNode) refreshChildren(dirPath string, parent *NavigatorNode) []*NavigatorNode {

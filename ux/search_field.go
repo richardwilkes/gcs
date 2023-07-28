@@ -16,6 +16,8 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
+const searchFieldClientDataKey = "is_search_field"
+
 // NewSearchField creates a new search widget.
 func NewSearchField(watermark string, modifiedCallback func(before, after *unison.FieldState)) *unison.Field {
 	f := unison.NewField()
@@ -45,5 +47,6 @@ func NewSearchField(watermark string, modifiedCallback func(before, after *uniso
 		modifiedCallback(before, after)
 	}
 	f.AddChild(b)
+	f.ClientData()[searchFieldClientDataKey] = true
 	return f
 }

@@ -23,6 +23,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/desktop"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
@@ -805,12 +806,32 @@ func (n *Navigator) handleSelectionDoubleClick() {
 			altered = true
 			row.SetOpen(!row.IsOpen())
 		} else {
-			row.Open()
+			if d, _ := row.Open(); !toolbox.IsNil(d) {
+				if slices.Contains(n.searchResult, row) {
+					if f := findSearchFieldInSelfOrDescendants(d.AsPanel()); f != nil {
+						f.SetText(n.searchField.Text())
+					}
+				}
+			}
 		}
 	}
 	if altered {
 		n.table.SyncToModel()
 	}
+}
+
+func findSearchFieldInSelfOrDescendants(p *unison.Panel) *unison.Field {
+	if f, ok := p.Self.(*unison.Field); ok {
+		if _, ok = f.ClientData()[searchFieldClientDataKey]; ok {
+			return f
+		}
+	}
+	for _, child := range p.Children() {
+		if f := findSearchFieldInSelfOrDescendants(child); f != nil {
+			return f
+		}
+	}
+	return nil
 }
 
 func (n *Navigator) toggleHierarchy() {
