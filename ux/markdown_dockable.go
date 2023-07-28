@@ -283,7 +283,7 @@ func (d *MarkdownDockable) SetBackingFilePath(p string) {
 
 // Modified implements workspace.FileBackedDockable
 func (d *MarkdownDockable) Modified() bool {
-	return d.original != d.content
+	return d.allowEditing && d.original != d.content
 }
 
 // MarkModified implements ModifiableRoot.
