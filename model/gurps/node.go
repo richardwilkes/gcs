@@ -72,12 +72,3 @@ type EditorData[T NodeTypes] interface {
 func AsNode[T NodeTypes](in T) Node[T] {
 	return any(in).(Node[T])
 }
-
-// CloneNodes creates clones of the provided nodes.
-func CloneNodes[T NodeTypes](newEntity *Entity, newParent T, preserveID bool, nodes []Node[T]) []T {
-	clones := make([]T, len(nodes))
-	for i, one := range nodes {
-		clones[i] = one.Clone(newEntity, newParent, preserveID)
-	}
-	return clones
-}

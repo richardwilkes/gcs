@@ -13,14 +13,12 @@ package gurps
 
 import (
 	"context"
-	"io/fs"
 	"net/http"
 	"sort"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/i18n"
 )
@@ -40,17 +38,6 @@ func NewLibraries() Libraries {
 	libs.Master()
 	libs.User()
 	return libs
-}
-
-// NewLibrariesFromFS creates a new set of libraries from a file.
-func NewLibrariesFromFS(fileSystem fs.FS, filePath string) (Libraries, error) {
-	var libs Libraries
-	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &libs); err != nil {
-		return nil, err
-	}
-	libs.Master()
-	libs.User()
-	return libs, nil
 }
 
 // UnmarshalJSON implements json.Unmarshaler.

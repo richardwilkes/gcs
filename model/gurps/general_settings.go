@@ -105,7 +105,7 @@ func NewGeneralSettings() *GeneralSettings {
 		InitialImageUIScale:    InitialImageUIScaleDef,
 		MaximumAutoColWidth:    MaximumAutoColWidthDef,
 		ImageResolution:        ImageResolutionDef,
-		PDFAutoScaling:         NoAutoScale,
+		PDFAutoScaling:         InitialPDFAutoScaling,
 		AutoFillProfile:        true,
 		AutoAddNaturalAttacks:  true,
 	}

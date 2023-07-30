@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -24,17 +24,6 @@ type NonEditableField struct {
 // NewNonEditableField creates a new start-aligned non-editable field that uses the same font and size as the field.
 func NewNonEditableField(syncer func(*NonEditableField)) *NonEditableField {
 	return newNonEditableField(syncer, unison.StartAlignment)
-}
-
-// NewNonEditableFieldEnd creates a new end-aligned non-editable field that uses the same font and size as the field.
-func NewNonEditableFieldEnd(syncer func(*NonEditableField)) *NonEditableField {
-	return newNonEditableField(syncer, unison.EndAlignment)
-}
-
-// NewNonEditableFieldCenter creates a new center-aligned non-editable field that uses the same font and size as the
-// field.
-func NewNonEditableFieldCenter(syncer func(*NonEditableField)) *NonEditableField {
-	return newNonEditableField(syncer, unison.MiddleAlignment)
 }
 
 func newNonEditableField(syncer func(*NonEditableField), hAlign unison.Alignment) *NonEditableField {
