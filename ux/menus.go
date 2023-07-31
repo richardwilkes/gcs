@@ -478,7 +478,7 @@ func (s menuBarScope) createExportToTextAction(index int, path string) *unison.A
 				if dialog.RunModal() {
 					if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), ext, false); ok {
 						settings.SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
-						if err := gurps.LegacyExport(sheet.Entity(), path, filePath); err != nil {
+						if err := gurps.Export(sheet.Entity(), path, filePath); err != nil {
 							unison.ErrorDialogWithError(i18n.Text("Export failed"), err)
 						}
 					}

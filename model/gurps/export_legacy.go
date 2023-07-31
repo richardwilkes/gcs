@@ -16,6 +16,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
+	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -25,7 +26,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/toolbox/xio/fs"
 )
@@ -60,38 +60,16 @@ type legacyExporter struct {
 	enhancedKeyParsing bool
 }
 
-// LegacyExportMultiple exports the files to a text representation.
-func LegacyExportMultiple(tmplPath string, fileList []string) error {
-	for _, one := range fileList {
-		switch strings.ToLower(filepath.Ext(one)) {
-		case SheetExt:
-			entity, err := NewEntityFromFile(os.DirFS(filepath.Dir(one)), filepath.Base(one))
-			if err != nil {
-				return err
-			}
-			if err = LegacyExport(entity, tmplPath, fs.TrimExtension(one)+filepath.Ext(tmplPath)); err != nil {
-				return err
-			}
-		default:
-			jot.Warn("ignoring: " + one)
-		}
-	}
-	return nil
-}
-
-// LegacyExport performs the text template export function that matches the old Java code base.
-func LegacyExport(entity *Entity, templatePath, exportPath string) (err error) {
-	entity.Recalculate()
+// legacyTextExport performs the text template export function that matches the old Java code base.
+func legacyTextExport(entity *Entity, tmpl []byte, exportPath string) (err error) {
 	ex := &legacyExporter{
 		entity:       entity,
 		points:       entity.PointsBreakdown(),
+		template:     tmpl,
 		exportPath:   exportPath,
 		onlyTags:     make(map[string]bool),
 		excludedTags: make(map[string]bool),
 		encodeText:   true,
-	}
-	if ex.template, err = os.ReadFile(templatePath); err != nil {
-		return errs.Wrap(err)
 	}
 	var out *os.File
 	if out, err = os.Create(exportPath); err != nil {
@@ -153,15 +131,32 @@ func (ex *legacyExporter) emitKey(key string) error {
 		ex.enhancedKeyParsing = true
 	case "PORTRAIT":
 		if len(ex.entity.Profile.PortraitData) != 0 {
-			leafName := fs.TrimExtension(filepath.Base(ex.exportPath)) + ".png"
-			if err := os.WriteFile(filepath.Join(filepath.Dir(ex.exportPath), leafName), ex.entity.Profile.PortraitData, 0o640); err != nil {
-				return errs.Wrap(err)
+			var ext string
+			switch http.DetectContentType(ex.entity.Profile.PortraitData) {
+			case "image/webp":
+				ext = ".webp"
+			case "image/png":
+				ext = ".png"
+			case "image/jpeg":
+				ext = ".jpg"
+			case "image/gif":
+				ext = ".gif"
+			case "image/bmp":
+				ext = ".bmp"
 			}
-			ex.out.WriteString(url.PathEscape(leafName))
+			if ext != "" {
+				leafName := fs.TrimExtension(filepath.Base(ex.exportPath)) + ext
+				if err := os.WriteFile(filepath.Join(filepath.Dir(ex.exportPath), leafName), ex.entity.Profile.PortraitData, 0o640); err != nil {
+					return errs.Wrap(err)
+				}
+				ex.out.WriteString(url.PathEscape(leafName))
+			}
 		}
 	case "PORTRAIT_EMBEDDED":
 		if len(ex.entity.Profile.PortraitData) != 0 {
-			ex.out.WriteString("data:image/png;base64,")
+			ex.out.WriteString("data:")
+			ex.out.WriteString(http.DetectContentType(ex.entity.Profile.PortraitData))
+			ex.out.WriteString(";base64,")
 			ex.out.WriteString(base64.StdEncoding.EncodeToString(ex.entity.Profile.PortraitData))
 		}
 	case nameExportKey:
