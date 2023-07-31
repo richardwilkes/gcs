@@ -37,8 +37,8 @@ github.com/richardwilkes/pdf v1.22.2 h1:PNVL52/aDRINPjjqURamoH24zR9TA175iz7PVGso
 github.com/richardwilkes/pdf v1.22.2/go.mod h1:Cku7C0ZyfmGOaL0U3nzlms+5byzyLgsLfbZJ2Ak5ofE=
 github.com/richardwilkes/rpgtools v1.6.0 h1:QEGipN3vq+E6uk+UZrYj9pUDuOQlS/ujhM9beIyOLB4=
 github.com/richardwilkes/rpgtools v1.6.0/go.mod h1:t6ocZFPmbzvIbrupFEAL+N22cQ/Q5CCuHuoEpVZXSzQ=
-github.com/richardwilkes/toolbox v1.87.0 h1:OAAlXPf34J/bUFNg3E2gNwtOBPg5NT4iVKQnBSR1Aw4=
-github.com/richardwilkes/toolbox v1.87.0/go.mod h1:1QxlatO4+ed1AnitLNa2ZobW3PZmu6fUk1+gzxx5+Kc=
+github.com/richardwilkes/toolbox v1.88.0 h1:4JbfenUh46CMbMLK5pUpOgdy05CBOjYX6RqPti87lvQ=
+github.com/richardwilkes/toolbox v1.88.0/go.mod h1:5ntvjz8s9kCCXi3Zy4rVW3H3IwEMF+La7x64bBolaOI=
 github.com/richardwilkes/unison v0.59.0 h1:eeIVFMTAYifi89V3s+fBx7zoR8t9NvAl7XnPvrVYcZ4=
 github.com/richardwilkes/unison v0.59.0/go.mod h1:SCkHAXJTz2C9TVS9BqR1qLG1ZIaaH02f9VoTRIB03+g=
 github.com/rjeczalik/notify v0.9.3 h1:6rJAzHTGKXGj76sbRgDiDcYj/HniypXmSJo1SWakZeY=
@@ -110,8 +110,8 @@ golang.org/x/tools v0.0.0-20191119224855-298f0cb1881e/go.mod h1:b+2E5dAYhXwXZwtn
 golang.org/x/tools v0.0.0-20191216052735-49a3e744a425/go.mod h1:TB2adYChydJhpapKDTa4BR/hXlZSLoq2Wpct/0txZ28=
 golang.org/x/tools v0.1.12/go.mod h1:hNGJHUnrk76NpqgfD5Aqm5Crs+Hm0VOH/i9J2+nxYbc=
 golang.org/x/tools v0.6.0/go.mod h1:Xwgl3UAJ/d3gWutnCtw505GrjyAbvKui8lOU390QaIU=
-golang.org/x/tools v0.11.0 h1:EMCa6U9S2LtZXLAMoWiR/R8dAQFRqbAitmbJ2UKhoi8=
-golang.org/x/tools v0.11.0/go.mod h1:anzJrxPjNtfgiYQYirP2CPGzGLxrH2u2QBhn6Bf3qY8=
+golang.org/x/tools v0.11.1 h1:ojD5zOW8+7dOGzdnNgersm8aPfcDjhMp12UfG93NIMc=
+golang.org/x/tools v0.11.1/go.mod h1:anzJrxPjNtfgiYQYirP2CPGzGLxrH2u2QBhn6Bf3qY8=
 golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=

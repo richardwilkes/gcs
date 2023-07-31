@@ -325,9 +325,23 @@ func Export(entity *Entity, templatePath, exportPath string) error {
 
 func createTemplateFuncs() texttmpl.FuncMap {
 	return texttmpl.FuncMap{
-		"numberToInt":   fxp.As[int],
-		"numberToFloat": fxp.As[float64],
 		"join":          strings.Join,
+		"numberFrom":    numberFrom,
+		"numberToFloat": fxp.As[float64],
+		"numberToInt":   fxp.As[int],
+	}
+}
+
+func numberFrom(value any) (fxp.Int, error) {
+	switch v := value.(type) {
+	case int:
+		return fxp.From(v), nil
+	case float64:
+		return fxp.From(v), nil
+	case string:
+		return fxp.FromString(v)
+	default:
+		return 0, errs.New("incompatible value")
 	}
 }
 
