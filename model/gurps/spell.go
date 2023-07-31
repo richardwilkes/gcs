@@ -306,7 +306,7 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 			var buffer strings.Builder
 			addPartToBuffer(&buffer, i18n.Text("Resistance"), s.Resist)
 			addPartToBuffer(&buffer, i18n.Text("Class"), s.Class)
-			addPartToBuffer(&buffer, i18n.Text("Cost"), s.CastingCost)
+			addPartToBuffer(&buffer, i18n.Text("Cast"), s.CastingCost)
 			addPartToBuffer(&buffer, i18n.Text("Maintain"), s.MaintenanceCost)
 			addPartToBuffer(&buffer, i18n.Text("Time"), s.CastingTime)
 			addPartToBuffer(&buffer, i18n.Text("Duration"), s.Duration)

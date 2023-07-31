@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -141,7 +141,7 @@ func (p *spellsProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Spell
 		case gurps.SpellCollegeColumn:
 			headers = append(headers, NewEditorListHeader[*gurps.Spell](i18n.Text("College"), "", p.forPage))
 		case gurps.SpellCastCostColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Spell](i18n.Text("Cost"), i18n.Text("The mana cost to cast the spell"),
+			headers = append(headers, NewEditorListHeader[*gurps.Spell](i18n.Text("Cast"), i18n.Text("The mana cost to cast the spell"),
 				p.forPage))
 		case gurps.SpellMaintainCostColumn:
 			headers = append(headers, NewEditorListHeader[*gurps.Spell](i18n.Text("Maintain"), i18n.Text("The mana cost to maintain the spell"),
