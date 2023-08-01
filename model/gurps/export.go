@@ -13,7 +13,6 @@ package gurps
 
 import (
 	"bufio"
-	"bytes"
 	"encoding/base64"
 	htmltmpl "html/template"
 	"io"
@@ -232,6 +231,19 @@ type exportedPoints struct {
 	PointsBreakdown
 }
 
+type exportedMargins struct {
+	Top    string
+	Left   string
+	Bottom string
+	Right  string
+}
+
+type exportedPage struct {
+	Width   string
+	Height  string
+	Margins exportedMargins
+}
+
 type exportedEntity struct {
 	Name                    string
 	EmbeddedPortraitDataURL htmltmpl.URL
@@ -269,6 +281,7 @@ type exportedEntity struct {
 	MeleeWeapons            []*exportedMeleeWeapon
 	RangedWeapons           []*exportedRangedWeapon
 	GridTemplate            htmltmpl.CSS
+	Page                    exportedPage
 }
 
 // ExportSheets exports the files to a text representation.
@@ -303,14 +316,14 @@ func Export(entity *Entity, templatePath, exportPath string) error {
 		return errs.Wrap(err)
 	}
 	entity.Recalculate()
-	switch {
-	case bytes.HasPrefix(line, []byte("GCS HTML Template v1")):
+	switch string(line) {
+	case "GCS HTML Template v1":
 		var t *htmltmpl.Template
 		if t, err = htmltmpl.New("").Funcs(createTemplateFuncs()).Parse(string(tmpl[advance:])); err != nil {
 			return errs.Wrap(err)
 		}
 		return export(entity, t, exportPath)
-	case bytes.HasPrefix(line, []byte("GCS Text Template v1")):
+	case "GCS Text Template v1":
 		var t *texttmpl.Template
 		if t, err = texttmpl.New("").Funcs(createTemplateFuncs()).Parse(string(tmpl[advance:])); err != nil {
 			return errs.Wrap(err)
@@ -381,6 +394,8 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 	data := &exportedEntity{
 		Name:         entity.Profile.Name,
 		Player:       entity.Profile.PlayerName,
+		CreatedOn:    entity.CreatedOn.String(),
+		ModifiedOn:   entity.ModifiedOn.String(),
 		Title:        entity.Profile.Title,
 		Organization: entity.Profile.Organization,
 		Religion:     entity.Profile.Religion,
@@ -425,8 +440,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			OtherValue:    entity.WealthNotCarried(),
 		},
 		GridTemplate: htmltmpl.CSS(entity.SheetSettings.BlockLayout.HTMLGridTemplate()),
-		CreatedOn:    entity.CreatedOn.String(),
-		ModifiedOn:   entity.ModifiedOn.String(),
+		Page:         newExportedPage(entity.SheetSettings.Page),
 	}
 	if entity.SheetSettings.ExcludeUnspentPointsFromTotal {
 		data.Points.Total = pb.Total()
@@ -660,6 +674,21 @@ func newExportedEquipment(entity *Entity, list []*Equipment, carried bool) []*ex
 		return false
 	}, true, false, list...)
 	return result
+}
+
+func newExportedPage(settings *PageSettings) exportedPage {
+	width, height := settings.Size.Dimensions()
+	adjustedWidth, adjustedHeight := settings.Orientation.Dimensions(width, height)
+	return exportedPage{
+		Width:  adjustedWidth.CSSString(),
+		Height: adjustedHeight.CSSString(),
+		Margins: exportedMargins{
+			Top:    settings.TopMargin.CSSString(),
+			Left:   settings.LeftMargin.CSSString(),
+			Bottom: settings.BottomMargin.CSSString(),
+			Right:  settings.RightMargin.CSSString(),
+		},
+	}
 }
 
 func groupOrItem(isContainer bool) string {

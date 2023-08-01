@@ -60,6 +60,11 @@ func (l PaperLength) String() string {
 	return strconv.FormatFloat(l.Length, 'f', -1, 64) + " " + l.Units.Key()
 }
 
+// CSSString returns a CSS-compatible version of the value.
+func (l PaperLength) CSSString() string {
+	return strconv.FormatFloat(l.Length, 'f', -1, 64) + l.Units.Key()
+}
+
 // Pixels returns the number of 72-pixels-per-inch pixels this represents.
 func (l PaperLength) Pixels() float32 {
 	return l.Units.ToPixels(l.Length)
