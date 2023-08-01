@@ -23,9 +23,7 @@ import (
 	"strings"
 	texttmpl "text/template"
 
-	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio"
@@ -75,8 +73,8 @@ type exportedBodyType struct {
 }
 
 type exportedNote struct {
-	ID          uuid.UUID
-	ParentID    uuid.UUID
+	ID          string
+	ParentID    string
 	Type        string
 	Description string
 	PageRef     string
@@ -89,8 +87,8 @@ type exportedMana struct {
 }
 
 type exportedSpell struct {
-	ID                uuid.UUID
-	ParentID          uuid.UUID
+	ID                string
+	ParentID          string
 	Type              string
 	Points            fxp.Int
 	Level             string
@@ -112,8 +110,8 @@ type exportedSpell struct {
 }
 
 type exportedEquipment struct {
-	ID                uuid.UUID
-	ParentID          uuid.UUID
+	ID                string
+	ParentID          string
 	Type              string
 	Quantity          fxp.Int
 	Description       string
@@ -129,22 +127,22 @@ type exportedEquipment struct {
 	MaxUses           int
 	Cost              fxp.Int
 	ExtendedCost      fxp.Int
-	Weight            Weight
-	ExtendedWeight    Weight
+	Weight            string
+	ExtendedWeight    string
 	Equipped          bool
 }
 
 type exportedAllEquipment struct {
 	Carried       []*exportedEquipment
 	CarriedValue  fxp.Int
-	CarriedWeight Weight
+	CarriedWeight string
 	Other         []*exportedEquipment
 	OtherValue    fxp.Int
 }
 
 type exportedSkill struct {
-	ID                uuid.UUID
-	ParentID          uuid.UUID
+	ID                string
+	ParentID          string
 	Type              string
 	Points            fxp.Int
 	Level             string
@@ -160,8 +158,8 @@ type exportedSkill struct {
 }
 
 type exportedTrait struct {
-	ID                uuid.UUID
-	ParentID          uuid.UUID
+	ID                string
+	ParentID          string
 	Type              string
 	Points            fxp.Int
 	Description       string
@@ -180,20 +178,20 @@ type exportedSource struct {
 }
 
 type exportedConditionalModifier struct {
-	ID        uuid.UUID
+	ID        string
 	Total     fxp.Int
 	Situation string
 	Sources   []*exportedSource
 }
 
 type exportedLift struct {
-	Basic         Weight
-	OneHanded     Weight
-	TwoHanded     Weight
-	Shove         Weight
-	RunningShove  Weight
-	CarryOnBack   Weight
-	ShiftSlightly Weight
+	Basic         string
+	OneHanded     string
+	TwoHanded     string
+	Shove         string
+	RunningShove  string
+	CarryOnBack   string
+	ShiftSlightly string
 }
 
 type exportedEncumbrance struct {
@@ -202,7 +200,7 @@ type exportedEncumbrance struct {
 	Penalty   int
 	Move      int
 	Dodge     int
-	MaxLoad   Weight
+	MaxLoad   string
 	IsCurrent bool
 }
 
@@ -238,6 +236,8 @@ type exportedEntity struct {
 	Name                    string
 	EmbeddedPortraitDataURL htmltmpl.URL
 	Player                  string
+	CreatedOn               string
+	ModifiedOn              string
 	Title                   string
 	Organization            string
 	Religion                string
@@ -250,10 +250,10 @@ type exportedEntity struct {
 	Skin                    string
 	Handedness              string
 	Gender                  string
-	Height                  Length
-	Weight                  Weight
-	Thrust                  *dice.Dice
-	Swing                   *dice.Dice
+	Height                  string
+	Weight                  string
+	Thrust                  string
+	Swing                   string
 	Encumbrance             []*exportedEncumbrance
 	Lift                    exportedLift
 	Points                  exportedPoints
@@ -269,8 +269,6 @@ type exportedEntity struct {
 	MeleeWeapons            []*exportedMeleeWeapon
 	RangedWeapons           []*exportedRangedWeapon
 	GridTemplate            htmltmpl.CSS
-	CreatedOn               string
-	ModifiedOn              string
 }
 
 // ExportSheets exports the files to a text representation.
@@ -325,10 +323,25 @@ func Export(entity *Entity, templatePath, exportPath string) error {
 
 func createTemplateFuncs() texttmpl.FuncMap {
 	return texttmpl.FuncMap{
+		"caselessEqual": strings.EqualFold,
+		"contains":      strings.Contains,
+		"hasPrefix":     strings.HasPrefix,
+		"hasSuffix":     strings.HasSuffix,
+		"index":         strings.Index,
 		"join":          strings.Join,
+		"lastIndex":     strings.LastIndex,
+		"lower":         strings.ToLower,
 		"numberFrom":    numberFrom,
 		"numberToFloat": fxp.As[float64],
 		"numberToInt":   fxp.As[int],
+		"repeat":        strings.Repeat,
+		"replace":       strings.ReplaceAll,
+		"split":         strings.Split,
+		"splitN":        strings.SplitN,
+		"trim":          strings.TrimSpace,
+		"trimPrefix":    strings.TrimPrefix,
+		"trimSuffix":    strings.TrimSuffix,
+		"upper":         strings.ToUpper,
 	}
 }
 
@@ -380,18 +393,18 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 		Skin:         entity.Profile.Skin,
 		Handedness:   entity.Profile.Handedness,
 		Gender:       entity.Profile.Gender,
-		Height:       entity.Profile.Height,
-		Weight:       entity.Profile.Weight,
-		Thrust:       entity.Thrust(),
-		Swing:        entity.Swing(),
+		Height:       entity.SheetSettings.DefaultLengthUnits.Format(entity.Profile.Height),
+		Weight:       entity.SheetSettings.DefaultWeightUnits.Format(entity.Profile.Weight),
+		Thrust:       entity.Thrust().String(),
+		Swing:        entity.Swing().String(),
 		Lift: exportedLift{
-			Basic:         entity.BasicLift(),
-			OneHanded:     entity.OneHandedLift(),
-			TwoHanded:     entity.TwoHandedLift(),
-			Shove:         entity.ShoveAndKnockOver(),
-			RunningShove:  entity.RunningShoveAndKnockOver(),
-			CarryOnBack:   entity.CarryOnBack(),
-			ShiftSlightly: entity.ShiftSlightly(),
+			Basic:         entity.SheetSettings.DefaultWeightUnits.Format(entity.BasicLift()),
+			OneHanded:     entity.SheetSettings.DefaultWeightUnits.Format(entity.OneHandedLift()),
+			TwoHanded:     entity.SheetSettings.DefaultWeightUnits.Format(entity.TwoHandedLift()),
+			Shove:         entity.SheetSettings.DefaultWeightUnits.Format(entity.ShoveAndKnockOver()),
+			RunningShove:  entity.SheetSettings.DefaultWeightUnits.Format(entity.RunningShoveAndKnockOver()),
+			CarryOnBack:   entity.SheetSettings.DefaultWeightUnits.Format(entity.CarryOnBack()),
+			ShiftSlightly: entity.SheetSettings.DefaultWeightUnits.Format(entity.ShiftSlightly()),
 		},
 		Points: exportedPoints{
 			Total:           entity.TotalPoints,
@@ -407,7 +420,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 		Equipment: exportedAllEquipment{
 			Carried:       newExportedEquipment(entity, entity.CarriedEquipment, true),
 			CarriedValue:  entity.WealthCarried(),
-			CarriedWeight: entity.WeightCarried(false),
+			CarriedWeight: entity.SheetSettings.DefaultWeightUnits.Format(entity.WeightCarried(false)),
 			Other:         newExportedEquipment(entity, entity.OtherEquipment, false),
 			OtherValue:    entity.WealthNotCarried(),
 		},
@@ -449,13 +462,13 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			Penalty:   penalty,
 			Move:      entity.Move(enc),
 			Dodge:     entity.Dodge(enc),
-			MaxLoad:   entity.MaximumCarry(enc),
+			MaxLoad:   entity.SheetSettings.DefaultWeightUnits.Format(entity.MaximumCarry(enc)),
 			IsCurrent: enc == currentEnc,
 		})
 	}
 	Traverse(func(t *Trait) bool {
 		trait := &exportedTrait{
-			ID:                t.ID,
+			ID:                t.ID.String(),
 			Points:            t.AdjustedPoints(),
 			Description:       t.String(),
 			UserDescription:   t.UserDesc,
@@ -467,7 +480,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			Depth:             t.Depth(),
 		}
 		if parent := t.Parent(); parent != nil {
-			trait.ParentID = parent.ID
+			trait.ParentID = parent.ID.String()
 		}
 		if t.Container() {
 			trait.Type = t.ContainerType.Key()
@@ -479,7 +492,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 	}, true, false, entity.Traits...)
 	Traverse(func(s *Skill) bool {
 		skill := &exportedSkill{
-			ID:                s.ID,
+			ID:                s.ID.String(),
 			Type:              groupOrItem(s.Container()),
 			Points:            s.AdjustedPoints(nil),
 			Level:             s.CalculateLevel().LevelAsString(s.Container()),
@@ -493,7 +506,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			Depth:             s.Depth(),
 		}
 		if parent := s.Parent(); parent != nil {
-			skill.ParentID = parent.ID
+			skill.ParentID = parent.ID.String()
 		}
 		if !s.Container() {
 			skill.Difficulty = s.Difficulty.Description(entity)
@@ -503,7 +516,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 	}, true, false, entity.Skills...)
 	Traverse(func(s *Spell) bool {
 		spell := &exportedSpell{
-			ID:            s.ID,
+			ID:            s.ID.String(),
 			Type:          groupOrItem(s.Container()),
 			Points:        s.AdjustedPoints(nil),
 			Level:         s.CalculateLevel().LevelAsString(s.Container()),
@@ -526,7 +539,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			Depth:             s.Depth(),
 		}
 		if parent := s.Parent(); parent != nil {
-			spell.ParentID = parent.ID
+			spell.ParentID = parent.ID.String()
 		}
 		if !s.Container() {
 			spell.Difficulty = s.Difficulty.Description(entity)
@@ -536,14 +549,14 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 	}, true, false, entity.Spells...)
 	Traverse(func(n *Note) bool {
 		note := &exportedNote{
-			ID:          n.ID,
+			ID:          n.ID.String(),
 			Type:        groupOrItem(n.Container()),
 			Description: n.String(),
 			PageRef:     n.PageRef,
 			Depth:       n.Depth(),
 		}
 		if parent := n.Parent(); parent != nil {
-			note.ParentID = parent.ID
+			note.ParentID = parent.ID.String()
 		}
 		data.Notes = append(data.Notes, note)
 		return false
@@ -600,7 +613,7 @@ func newExportedConditionalModifiers(list []*ConditionalModifier) []*exportedCon
 	result := make([]*exportedConditionalModifier, 0, len(list))
 	for _, one := range list {
 		r := &exportedConditionalModifier{
-			ID:        one.ID,
+			ID:        one.ID.String(),
 			Situation: one.From,
 			Total:     one.Total(),
 		}
@@ -620,7 +633,7 @@ func newExportedEquipment(entity *Entity, list []*Equipment, carried bool) []*ex
 	var result []*exportedEquipment
 	Traverse(func(e *Equipment) bool {
 		equipment := &exportedEquipment{
-			ID:                e.ID,
+			ID:                e.ID.String(),
 			Type:              groupOrItem(e.Container()),
 			Quantity:          e.Quantity,
 			Description:       e.String(),
@@ -636,12 +649,12 @@ func newExportedEquipment(entity *Entity, list []*Equipment, carried bool) []*ex
 			MaxUses:           e.MaxUses,
 			Cost:              e.AdjustedValue(),
 			ExtendedCost:      e.ExtendedValue(),
-			Weight:            e.AdjustedWeight(false, entity.SheetSettings.DefaultWeightUnits),
-			ExtendedWeight:    e.ExtendedWeight(false, entity.SheetSettings.DefaultWeightUnits),
+			Weight:            entity.SheetSettings.DefaultWeightUnits.Format(e.AdjustedWeight(false, entity.SheetSettings.DefaultWeightUnits)),
+			ExtendedWeight:    entity.SheetSettings.DefaultWeightUnits.Format(e.ExtendedWeight(false, entity.SheetSettings.DefaultWeightUnits)),
 			Equipped:          carried && e.Equipped,
 		}
 		if parent := e.Parent(); parent != nil {
-			equipment.ParentID = parent.ID
+			equipment.ParentID = parent.ID.String()
 		}
 		result = append(result, equipment)
 		return false
