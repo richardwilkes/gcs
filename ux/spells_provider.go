@@ -16,11 +16,11 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox"
+	"github.com/richardwilkes/toolbox/collection/dict"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
-	"golang.org/x/exp/maps"
 )
 
 var _ TableProvider[*gurps.Spell] = &spellsProvider{}
@@ -51,7 +51,7 @@ func (p *spellsProvider) AllTags() []string {
 		}
 		return false
 	}, false, false, p.RootData()...)
-	tags := maps.Keys(set)
+	tags := dict.Keys(set)
 	txt.SortStringsNaturalAscending(tags)
 	return tags
 }

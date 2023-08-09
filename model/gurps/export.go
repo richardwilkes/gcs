@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	texttmpl "text/template"
 
@@ -27,7 +28,6 @@ import (
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/toolbox/xio/fs"
-	"golang.org/x/exp/slices"
 )
 
 type exportedMeleeWeapon struct {

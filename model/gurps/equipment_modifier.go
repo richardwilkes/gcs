@@ -14,6 +14,7 @@ package gurps
 import (
 	"context"
 	"io/fs"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -21,7 +22,6 @@ import (
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/unison"
-	"golang.org/x/exp/slices"
 )
 
 var (

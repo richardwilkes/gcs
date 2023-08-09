@@ -13,6 +13,7 @@ package ux
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/google/uuid"
@@ -20,10 +21,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/toolbox/xmath"
 	"github.com/richardwilkes/toolbox/xmath/geom"
 	"github.com/richardwilkes/unison"
-	"golang.org/x/exp/slices"
 )
 
 const containerMarker = "\000"
@@ -94,7 +93,7 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 		pref.Width += table.Padding.Left + table.Padding.Right
 		table.Columns[i].ID = ids[i]
 		table.Columns[i].AutoMinimum = pref.Width
-		table.Columns[i].AutoMaximum = xmath.Max(float32(gurps.GlobalSettings().General.MaximumAutoColWidth), pref.Width)
+		table.Columns[i].AutoMaximum = max(float32(gurps.GlobalSettings().General.MaximumAutoColWidth), pref.Width)
 		table.Columns[i].Minimum = pref.Width
 		table.Columns[i].Maximum = 10000
 	}

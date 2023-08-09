@@ -21,7 +21,7 @@ import (
 const ScaleDelta = 10
 
 // NewScaleField creates a new scale field and hooks it into the target.
-func NewScaleField(min, max int, def, get func() int, set func(int), afterApply func(), attemptCenter bool, scroller *unison.ScrollPanel) *PercentageField {
+func NewScaleField(minValue, maxValue int, defValue, get func() int, set func(int), afterApply func(), attemptCenter bool, scroller *unison.ScrollPanel) *PercentageField {
 	applyFunc := func() {
 		scale := float32(get()) / 100
 		if header := scroller.ColumnHeader(); !toolbox.IsNil(header) {
@@ -74,7 +74,7 @@ func NewScaleField(min, max int, def, get func() int, set func(int), afterApply 
 			if afterApply != nil {
 				afterApply()
 			}
-		}, min, max, false, false)
+		}, minValue, maxValue, false, false)
 	scaleField.SetMarksModified(false)
 	scaleField.Tooltip = newWrappedTooltip(scaleTitle)
 	scroller.ContentView().MouseWheelCallback = func(where, delta unison.Point, mod unison.Modifiers) bool {
@@ -83,10 +83,10 @@ func NewScaleField(min, max int, def, get func() int, set func(int), afterApply 
 		}
 		current := get()
 		scale := current + int(delta.Y*ScaleDelta)
-		if scale < min {
-			scale = min
-		} else if scale > max {
-			scale = max
+		if scale < minValue {
+			scale = minValue
+		} else if scale > maxValue {
+			scale = maxValue
 		}
 		if current != scale {
 			overrideCenter = true
@@ -98,7 +98,7 @@ func NewScaleField(min, max int, def, get func() int, set func(int), afterApply 
 	}
 	installFunc := func() {
 		scroller.ParentChangedCallback = nil
-		installViewScaleHandlers(unison.Ancestor[unison.Dockable](scroller), def, min, max, get, func(scale int) {
+		installViewScaleHandlers(unison.Ancestor[unison.Dockable](scroller), defValue, minValue, maxValue, get, func(scale int) {
 			if get() != scale {
 				SetFieldValue(scaleField.Field, scaleField.Format(scale))
 			}
@@ -116,36 +116,36 @@ func NewScaleField(min, max int, def, get func() int, set func(int), afterApply 
 	return scaleField
 }
 
-func installViewScaleHandlers(paneler unison.Paneler, def func() int, min, max int, current func() int, adjuster func(scale int)) {
+func installViewScaleHandlers(paneler unison.Paneler, def func() int, minValue, maxValue int, current func() int, adjuster func(scale int)) {
 	p := paneler.AsPanel()
-	installViewScaleHandler(p, ScaleDefaultItemID, def(), min, max, current, adjuster)
-	installViewDeltaScaleHandler(p, ScaleUpItemID, ScaleDelta, min, max, current, adjuster)
-	installViewDeltaScaleHandler(p, ScaleDownItemID, -ScaleDelta, min, max, current, adjuster)
-	installViewScaleHandler(p, Scale25ItemID, 25, min, max, current, adjuster)
-	installViewScaleHandler(p, Scale50ItemID, 50, min, max, current, adjuster)
-	installViewScaleHandler(p, Scale75ItemID, 75, min, max, current, adjuster)
-	installViewScaleHandler(p, Scale100ItemID, 100, min, max, current, adjuster)
-	installViewScaleHandler(p, Scale200ItemID, 200, min, max, current, adjuster)
-	installViewScaleHandler(p, Scale300ItemID, 300, min, max, current, adjuster)
-	installViewScaleHandler(p, Scale400ItemID, 400, min, max, current, adjuster)
-	installViewScaleHandler(p, Scale500ItemID, 500, min, max, current, adjuster)
-	installViewScaleHandler(p, Scale600ItemID, 600, min, max, current, adjuster)
+	installViewScaleHandler(p, ScaleDefaultItemID, def(), minValue, maxValue, current, adjuster)
+	installViewDeltaScaleHandler(p, ScaleUpItemID, ScaleDelta, minValue, maxValue, current, adjuster)
+	installViewDeltaScaleHandler(p, ScaleDownItemID, -ScaleDelta, minValue, maxValue, current, adjuster)
+	installViewScaleHandler(p, Scale25ItemID, 25, minValue, maxValue, current, adjuster)
+	installViewScaleHandler(p, Scale50ItemID, 50, minValue, maxValue, current, adjuster)
+	installViewScaleHandler(p, Scale75ItemID, 75, minValue, maxValue, current, adjuster)
+	installViewScaleHandler(p, Scale100ItemID, 100, minValue, maxValue, current, adjuster)
+	installViewScaleHandler(p, Scale200ItemID, 200, minValue, maxValue, current, adjuster)
+	installViewScaleHandler(p, Scale300ItemID, 300, minValue, maxValue, current, adjuster)
+	installViewScaleHandler(p, Scale400ItemID, 400, minValue, maxValue, current, adjuster)
+	installViewScaleHandler(p, Scale500ItemID, 500, minValue, maxValue, current, adjuster)
+	installViewScaleHandler(p, Scale600ItemID, 600, minValue, maxValue, current, adjuster)
 }
 
-func installViewScaleHandler(p *unison.Panel, itemID, scale, min, max int, current func() int, adjuster func(int)) {
-	if min <= scale && max >= scale {
+func installViewScaleHandler(p *unison.Panel, itemID, scale, minValue, maxValue int, current func() int, adjuster func(int)) {
+	if minValue <= scale && maxValue >= scale {
 		p.InstallCmdHandlers(itemID, func(_ any) bool { return current() != scale }, func(_ any) { adjuster(scale) })
 	}
 }
 
-func installViewDeltaScaleHandler(p *unison.Panel, itemID, delta, min, max int, current func() int, adjuster func(int)) {
+func installViewDeltaScaleHandler(p *unison.Panel, itemID, delta, minValue, maxValue int, current func() int, adjuster func(int)) {
 	calc := func() int {
 		c := current()
 		adjusted := c + delta
-		if adjusted < min {
-			adjusted = min
-		} else if adjusted > max {
-			adjusted = max
+		if adjusted < minValue {
+			adjusted = minValue
+		} else if adjusted > maxValue {
+			adjusted = maxValue
 		}
 		return adjusted
 	}

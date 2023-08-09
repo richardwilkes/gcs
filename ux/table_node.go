@@ -13,6 +13,7 @@ package ux
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -21,9 +22,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
-	"github.com/richardwilkes/toolbox/xmath"
 	"github.com/richardwilkes/unison"
-	"golang.org/x/exp/slices"
 )
 
 const invertColorsMarker = "invert"
@@ -366,7 +365,7 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 		tag.Font = &unison.DynamicFont{
 			Resolver: func() unison.FontDescriptor {
 				desc := f.Descriptor()
-				desc.Size = xmath.Max(desc.Size-2, 1)
+				desc.Size = max(desc.Size-2, 1)
 				return desc
 			},
 		}

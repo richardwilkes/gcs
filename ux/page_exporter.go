@@ -21,7 +21,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/xmath"
 	"github.com/richardwilkes/unison"
 )
 
@@ -130,7 +129,7 @@ func newPageExporter(entity *gurps.Entity) *pageExporter {
 					allowed -= one.heights[i] + 1
 					if allowed < 0 {
 						// No more fit, mark it
-						one.helper.SetDrawRowRange(start, xmath.Max(i, start+1))
+						one.helper.SetDrawRowRange(start, max(i, start+1))
 						if i == start {
 							// I have to guard against the case where a single row is so large it can't fit on a single
 							// page on its own. In this case, I just let it flow off the end and drop that extra

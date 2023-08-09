@@ -13,12 +13,12 @@ package gurps
 
 import (
 	"bytes"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/eval"
 	"github.com/richardwilkes/toolbox/xmath/crc"
-	"golang.org/x/exp/slices"
 )
 
 // PoolThreshold holds a point within an attribute pool where changes in state occur.

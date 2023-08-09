@@ -14,6 +14,7 @@ package ux
 import (
 	"fmt"
 	"reflect"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -21,9 +22,7 @@ import (
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
-	"github.com/richardwilkes/toolbox/xmath"
 	"github.com/richardwilkes/unison"
-	"golang.org/x/exp/slices"
 )
 
 var (
@@ -548,7 +547,7 @@ func (p *featuresPanel) createCostReductionPanel(f *gurps.CostReduction) *unison
 	for i := 5; i <= 80; i += 5 {
 		choices = append(choices, fmt.Sprintf(i18n.Text("by %d%%"), i))
 	}
-	choice := choices[xmath.Max(xmath.Min((fxp.As[int](f.Percentage)/5)-1, 15), 0)]
+	choice := choices[max(min((fxp.As[int](f.Percentage)/5)-1, 15), 0)]
 	addPopup(wrapper, choices, &choice).ChoiceMadeCallback = func(popup *unison.PopupMenu[string], index int, item string) {
 		popup.SelectIndex(index)
 		f.Percentage = fxp.From[int]((index + 1) * 5)

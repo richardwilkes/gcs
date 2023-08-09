@@ -27,14 +27,14 @@ type NumericField[T xmath.Numeric] struct {
 	targetMgr     *TargetMgr
 	targetKey     string
 	undoTitle     string
-	getPrototypes func(min, max T) []T
+	getPrototypes func(minValue, maxValue T) []T
 	get           func() T
 	set           func(T)
 	Format        func(T) string
 	extract       func(s string) (T, error)
-	last          T
-	min           T
-	max           T
+	lastValue     T
+	minValue      T
+	maxValue      T
 	exception     T
 	hasException  bool
 	useGet        bool
@@ -42,17 +42,17 @@ type NumericField[T xmath.Numeric] struct {
 }
 
 // NewNumericField creates a new field that formats its content.
-func NewNumericField[T xmath.Numeric](targetMgr *TargetMgr, targetKey, undoTitle string, getPrototypes func(min, max T) []T, get func() T, set func(T), format func(T) string, extract func(s string) (T, error), min, max T) *NumericField[T] {
-	f := newBaseNumericField(targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, min, max)
+func NewNumericField[T xmath.Numeric](targetMgr *TargetMgr, targetKey, undoTitle string, getPrototypes func(minValue, maxValue T) []T, get func() T, set func(T), format func(T) string, extract func(s string) (T, error), minValue, maxValue T) *NumericField[T] {
+	f := newBaseNumericField(targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, minValue, maxValue)
 	f.adjustMinimumTextWidth()
 	f.Sync()
 	return f
 }
 
 // NewNumericFieldWithException creates a new field that formats its content and can hold an exceptional value (one
-// outside of the min/max range.
-func NewNumericFieldWithException[T xmath.Numeric](targetMgr *TargetMgr, targetKey, undoTitle string, getPrototypes func(min, max T) []T, get func() T, set func(T), format func(T) string, extract func(s string) (T, error), min, max, exception T) *NumericField[T] {
-	f := newBaseNumericField(targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, min, max)
+// outside of the minimum/maximum range.
+func NewNumericFieldWithException[T xmath.Numeric](targetMgr *TargetMgr, targetKey, undoTitle string, getPrototypes func(minValue, maxValue T) []T, get func() T, set func(T), format func(T) string, extract func(s string) (T, error), minValue, maxValue, exception T) *NumericField[T] {
+	f := newBaseNumericField(targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, minValue, maxValue)
 	f.exception = exception
 	f.hasException = true
 	f.adjustMinimumTextWidth()
@@ -60,7 +60,7 @@ func NewNumericFieldWithException[T xmath.Numeric](targetMgr *TargetMgr, targetK
 	return f
 }
 
-func newBaseNumericField[T xmath.Numeric](targetMgr *TargetMgr, targetKey, undoTitle string, getPrototypes func(min, max T) []T, get func() T, set func(T), format func(T) string, extract func(s string) (T, error), min, max T) *NumericField[T] {
+func newBaseNumericField[T xmath.Numeric](targetMgr *TargetMgr, targetKey, undoTitle string, getPrototypes func(minValue, maxValue T) []T, get func() T, set func(T), format func(T) string, extract func(s string) (T, error), minValue, maxValue T) *NumericField[T] {
 	f := &NumericField[T]{
 		Field:         unison.NewField(),
 		targetMgr:     targetMgr,
@@ -71,9 +71,9 @@ func newBaseNumericField[T xmath.Numeric](targetMgr *TargetMgr, targetKey, undoT
 		set:           set,
 		Format:        format,
 		extract:       extract,
-		last:          get(),
-		min:           min,
-		max:           max,
+		lastValue:     get(),
+		minValue:      minValue,
+		maxValue:      maxValue,
 		useGet:        true,
 		marksModified: true,
 	}
@@ -112,7 +112,7 @@ func (f *NumericField[T]) mustExtract(s string) T {
 	if f.hasException && v == f.exception {
 		return v
 	}
-	return xmath.Min(xmath.Max(v, f.min), f.max)
+	return min(max(v, f.minValue), f.maxValue)
 }
 
 func (f *NumericField[T]) validate() bool {
@@ -133,10 +133,10 @@ func (f *NumericField[T]) tooltipTextForValidation() string {
 	if f.hasException && v == f.exception {
 		return ""
 	}
-	if minimum := f.min; v < minimum {
+	if minimum := f.minValue; v < minimum {
 		return fmt.Sprintf(i18n.Text("Value must be at least %s"), f.Format(minimum))
 	}
-	if maximum := f.max; v > maximum {
+	if maximum := f.maxValue; v > maximum {
 		return fmt.Sprintf(i18n.Text("Value must be no more than %s"), f.Format(maximum))
 	}
 	return ""
@@ -144,7 +144,7 @@ func (f *NumericField[T]) tooltipTextForValidation() string {
 
 func (f *NumericField[T]) runeTyped(ch rune) bool {
 	if !unicode.IsControl(ch) {
-		if f.min >= 0 && ch == '-' {
+		if f.minValue >= 0 && ch == '-' {
 			unison.Beep()
 			return false
 		}
@@ -179,8 +179,8 @@ func (f *NumericField[T]) modified(before, after *unison.FieldState) {
 }
 
 func (f *NumericField[T]) adjustForText() {
-	if v := f.mustExtract(f.Text()); f.last != v {
-		f.last = v
+	if v := f.mustExtract(f.Text()); f.lastValue != v {
+		f.lastValue = v
 		f.set(v)
 		MarkForLayoutWithinDockable(f)
 		if f.marksModified {
@@ -220,27 +220,27 @@ func (f *NumericField[T]) Exception() T {
 
 // Min returns the minimum value allowed.
 func (f *NumericField[T]) Min() T {
-	return f.min
+	return f.minValue
 }
 
 // Max returns the maximum value allowed.
 func (f *NumericField[T]) Max() T {
-	return f.max
+	return f.maxValue
 }
 
 // SetMinMax sets the minimum and maximum values and then adjusts the minimum text width, if a prototype function has
 // been set.
-func (f *NumericField[T]) SetMinMax(min, max T) {
-	if f.min != min || f.max != max {
-		f.min = min
-		f.max = max
+func (f *NumericField[T]) SetMinMax(minValue, maxValue T) {
+	if f.minValue != minValue || f.maxValue != maxValue {
+		f.minValue = minValue
+		f.maxValue = maxValue
 		f.adjustMinimumTextWidth()
 	}
 }
 
 func (f *NumericField[T]) adjustMinimumTextWidth() {
 	if f.getPrototypes != nil {
-		prototypes := f.getPrototypes(f.min, f.max)
+		prototypes := f.getPrototypes(f.minValue, f.maxValue)
 		candidates := make([]string, 0, len(prototypes))
 		for _, v := range prototypes {
 			candidates = append(candidates, f.Format(v))

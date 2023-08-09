@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -117,20 +117,20 @@ func ApplyRounding(value Int, roundDown bool) Int {
 	return value
 }
 
-// ResetIfOutOfRange checks the value and if it is lower than min or greater than max, returns def, otherwise returns
-// value.
-func ResetIfOutOfRange(value, min, max, def Int) Int {
-	if value < min || value > max {
-		return def
+// ResetIfOutOfRange checks the value and if it is lower than minValue or greater than maxValue, returns defValue,
+// otherwise returns value.
+func ResetIfOutOfRange(value, minValue, maxValue, defValue Int) Int {
+	if value < minValue || value > maxValue {
+		return defValue
 	}
 	return value
 }
 
-// ResetIfOutOfRangeInt checks the value and if it is lower than min or greater than max, returns def, otherwise returns
-// value.
-func ResetIfOutOfRangeInt(value, min, max, def int) int {
-	if value < min || value > max {
-		return def
+// ResetIfOutOfRangeInt checks the value and if it is lower than minValue or greater than maxValue, returns defValue,
+// otherwise returns value.
+func ResetIfOutOfRangeInt(value, minValue, maxValue, defValue int) int {
+	if value < minValue || value > maxValue {
+		return defValue
 	}
 	return value
 }
@@ -139,11 +139,11 @@ func ResetIfOutOfRangeInt(value, min, max, def int) int {
 // was unused. If a value is not found, then 0 is returned along with the original string.
 func Extract(in string) (value Int, remainder string) {
 	last := 0
-	max := len(in)
-	if last < max && in[last] == ' ' {
+	maximum := len(in)
+	if last < maximum && in[last] == ' ' {
 		last++
 	}
-	if last >= max {
+	if last >= maximum {
 		return 0, in
 	}
 	ch := in[last]
@@ -158,7 +158,7 @@ func Extract(in string) (value Int, remainder string) {
 			decimal = true
 		}
 		last++
-		if last >= max {
+		if last >= maximum {
 			break
 		}
 		ch = in[last]

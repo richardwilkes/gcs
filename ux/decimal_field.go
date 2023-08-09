@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -17,19 +17,19 @@ import "github.com/richardwilkes/gcs/v5/model/fxp"
 type DecimalField = NumericField[fxp.Int]
 
 // NewDecimalField creates a new field that holds a fixed-point number.
-func NewDecimalField(targetMgr *TargetMgr, targetKey, undoTitle string, get func() fxp.Int, set func(fxp.Int), min, max fxp.Int, forceSign, noMinWidth bool) *DecimalField {
-	var getPrototypes func(min, max fxp.Int) []fxp.Int
+func NewDecimalField(targetMgr *TargetMgr, targetKey, undoTitle string, get func() fxp.Int, set func(fxp.Int), minValue, maxValue fxp.Int, forceSign, noMinWidth bool) *DecimalField {
+	var getPrototypes func(minValue, maxValue fxp.Int) []fxp.Int
 	if !noMinWidth {
-		getPrototypes = func(min, max fxp.Int) []fxp.Int {
-			if min == fxp.Min {
-				min = -fxp.One
+		getPrototypes = func(minValue, maxValue fxp.Int) []fxp.Int {
+			if minValue == fxp.Min {
+				minValue = -fxp.One
 			}
-			min = min.Trunc() + fxp.One - 1
-			if max == fxp.Max {
-				max = fxp.One
+			minValue = minValue.Trunc() + fxp.One - 1
+			if maxValue == fxp.Max {
+				maxValue = fxp.One
 			}
-			max = max.Trunc() + fxp.One - 1
-			return []fxp.Int{min, fxp.Two - 1, max}
+			maxValue = maxValue.Trunc() + fxp.One - 1
+			return []fxp.Int{minValue, fxp.Two - 1, maxValue}
 		}
 	}
 	format := func(value fxp.Int) string {
@@ -38,5 +38,5 @@ func NewDecimalField(targetMgr *TargetMgr, targetKey, undoTitle string, get func
 		}
 		return value.String()
 	}
-	return NewNumericField[fxp.Int](targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, fxp.FromString, min, max)
+	return NewNumericField[fxp.Int](targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, fxp.FromString, minValue, maxValue)
 }

@@ -314,7 +314,7 @@ func (d *PDFDockable) createTOC() {
 	d.divider.MouseDragCallback = func(where unison.Point, _ int, _ unison.Modifiers) bool {
 		pos := eventPosition - d.divider.Parent().PointFromRoot(d.divider.PointToRoot(where)).X
 		old := d.tocScrollLayoutData.SizeHint.Width
-		d.tocScrollLayoutData.SizeHint.Width = xmath.Max(initialPosition-pos, 1)
+		d.tocScrollLayoutData.SizeHint.Width = max(initialPosition-pos, 1)
 		if old != d.tocScrollLayoutData.SizeHint.Width {
 			d.divider.Parent().MarkForLayoutAndRedraw()
 		}
@@ -421,7 +421,7 @@ func (d *PDFDockable) pageLoaded() {
 		if toc := d.pdf.CurrentPage().TOC; len(toc) != 0 {
 			d.tocPanel.SetRootRows(newTOC(d, nil, toc))
 			d.tocPanel.SizeColumnsToFit(true)
-			d.tocScrollLayoutData.SizeHint.Width = xmath.Max(xmath.Min(d.tocPanel.Columns[0].Current, 300), d.tocScrollLayoutData.SizeHint.Width)
+			d.tocScrollLayoutData.SizeHint.Width = max(min(d.tocPanel.Columns[0].Current, 300), d.tocScrollLayoutData.SizeHint.Width)
 			d.sideBarButton.SetEnabled(true)
 		}
 	}
@@ -572,16 +572,16 @@ func (d *PDFDockable) keyDown(keyCode unison.KeyCode, _ unison.Modifiers, _ bool
 	return true
 }
 
-func (d *PDFDockable) docSizer(_ unison.Size) (min, pref, max unison.Size) {
+func (d *PDFDockable) docSizer(_ unison.Size) (minSize, prefSize, maxSize unison.Size) {
 	if d.page == nil || d.page.Error != nil {
-		pref.Width = 400
-		pref.Height = 300
+		prefSize.Width = 400
+		prefSize.Height = 300
 	} else {
-		pref = d.page.Image.LogicalSize()
-		pref.Width *= scaleCompensation
-		pref.Height *= scaleCompensation
+		prefSize = d.page.Image.LogicalSize()
+		prefSize.Width *= scaleCompensation
+		prefSize.Height *= scaleCompensation
 	}
-	return unison.NewSize(50, 50), pref, unison.MaxSize(pref)
+	return unison.NewSize(50, 50), prefSize, unison.MaxSize(prefSize)
 }
 
 func (d *PDFDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
@@ -592,7 +592,7 @@ func (d *PDFDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
 			size := d.page.Image.LogicalSize()
 			cSize := d.docScroll.ContentView().ContentRect(false).Size
 			desiredScale := xmath.Floor((cSize.Width / size.Width / scaleCompensation) * 100)
-			desiredScaleInt := int(xmath.Min(xmath.Max(desiredScale, minPDFDockableScale), maxPDFDockableScale))
+			desiredScaleInt := int(min(max(desiredScale, minPDFDockableScale), maxPDFDockableScale))
 			if d.scaleField.CurrentValue() != desiredScaleInt {
 				d.scaleField.SetEnabled(true)
 				d.scaleField.SetText(d.scaleField.Format(desiredScaleInt))
@@ -601,8 +601,8 @@ func (d *PDFDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
 		case gurps.FitPageAutoScale:
 			size := d.page.Image.LogicalSize()
 			cSize := d.docScroll.ContentView().ContentRect(false).Size
-			desiredScale := xmath.Floor((xmath.Min(cSize.Width/size.Width, cSize.Height/size.Height) / scaleCompensation) * 100)
-			desiredScaleInt := int(xmath.Min(xmath.Max(desiredScale, minPDFDockableScale), maxPDFDockableScale))
+			desiredScale := xmath.Floor((min(cSize.Width/size.Width, cSize.Height/size.Height) / scaleCompensation) * 100)
+			desiredScaleInt := int(min(max(desiredScale, minPDFDockableScale), maxPDFDockableScale))
 			if d.scaleField.CurrentValue() != desiredScaleInt {
 				d.scaleField.SetEnabled(true)
 				d.scaleField.SetText(d.scaleField.Format(desiredScaleInt))

@@ -161,14 +161,14 @@ func NewPageTableColumnHeader[T gurps.NodeTypes](title, tooltip string) *PageTab
 }
 
 // DefaultSizes provides the default sizing.
-func (h *PageTableColumnHeader[T]) DefaultSizes(hint unison.Size) (min, pref, max unison.Size) {
-	_, pref, _ = h.Label.DefaultSizes(hint)
+func (h *PageTableColumnHeader[T]) DefaultSizes(hint unison.Size) (minSize, prefSize, maxSize unison.Size) {
+	_, prefSize, _ = h.Label.DefaultSizes(hint)
 	if b := h.Border(); b != nil {
-		pref.AddInsets(b.Insets())
+		prefSize.AddInsets(b.Insets())
 	}
-	pref.GrowToInteger()
-	pref.ConstrainForHint(hint)
-	return pref, pref, pref
+	prefSize.GrowToInteger()
+	prefSize.ConstrainForHint(hint)
+	return prefSize, prefSize, prefSize
 }
 
 // DefaultDraw provides the default drawing.

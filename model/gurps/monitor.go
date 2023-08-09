@@ -13,6 +13,7 @@ package gurps
 
 import (
 	"path/filepath"
+	"slices"
 	"sync"
 
 	"github.com/richardwilkes/toolbox/errs"
@@ -20,7 +21,6 @@ import (
 	"github.com/richardwilkes/toolbox/taskqueue"
 	"github.com/richardwilkes/unison"
 	"github.com/rjeczalik/notify"
-	"golang.org/x/exp/slices"
 )
 
 // EventRootSync the event code used when the root path being monitored has been changed to a new path. Also occurs as

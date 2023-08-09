@@ -17,8 +17,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/cmdline"
+	"github.com/richardwilkes/toolbox/collection/dict"
 	"github.com/richardwilkes/unison"
-	"golang.org/x/exp/maps"
 )
 
 // RegisterKnownFileTypes registers the known files types.
@@ -54,7 +54,7 @@ func RegisterExternalFileTypes() {
 			}
 		}
 	}
-	groupWith := maps.Keys(all)
+	groupWith := dict.Keys(all)
 	for _, one := range unison.KnownImageFormatFormats {
 		if one.CanRead() {
 			registerImageFileInfo(one, groupWith)

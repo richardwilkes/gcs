@@ -14,6 +14,7 @@ package gurps
 import (
 	"context"
 	"io/fs"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -22,7 +23,6 @@ import (
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
-	"golang.org/x/exp/slices"
 )
 
 var (
@@ -312,10 +312,10 @@ func (a *Trait) AdjustedPoints() fxp.Int {
 				points = values[i]
 			}
 		}
-		max := points
+		maximum := points
 		found := false
 		for _, v := range values {
-			if !found && max == v {
+			if !found && maximum == v {
 				found = true
 			} else {
 				points += fxp.ApplyRounding(calculateModifierPoints(v, fxp.Twenty), a.RoundCostDown)

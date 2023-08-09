@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -15,7 +15,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/toolbox/xmath"
 	"github.com/richardwilkes/unison"
 )
 
@@ -68,7 +67,7 @@ func processModifiers[T *gurps.TraitModifier | *gurps.EquipmentModifier](title s
 			indent := float32(mod.Depth()) * 16
 			lines := unison.NewTextWrappedLines(text, &unison.TextDecoration{
 				Font: unison.DefaultCheckBoxTheme.Font,
-			}, xmath.Max(400, 800-indent))
+			}, max(400, 800-indent))
 			var cb *unison.CheckBox
 			if !mod.Container() {
 				cb = unison.NewCheckBox()

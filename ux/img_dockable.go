@@ -145,9 +145,9 @@ func (d *ImageDockable) mouseUp(_ unison.Point, _ int, _ unison.Modifiers) bool 
 	return true
 }
 
-func (d *ImageDockable) imageSizer(_ unison.Size) (min, pref, max unison.Size) {
-	pref = d.img.Size()
-	return unison.NewSize(50, 50), pref, unison.MaxSize(pref)
+func (d *ImageDockable) imageSizer(_ unison.Size) (minSize, prefSize, maxSize unison.Size) {
+	prefSize = d.img.Size()
+	return unison.NewSize(50, 50), prefSize, unison.MaxSize(prefSize)
 }
 
 func (d *ImageDockable) draw(gc *unison.Canvas, dirty unison.Rect) {

@@ -114,11 +114,11 @@ func (a *Attribute) Maximum() fxp.Int {
 	if def == nil || def.IsSeparator() {
 		return 0
 	}
-	max := def.BaseValue(a.Entity) + a.Adjustment + a.Bonus
+	maximum := def.BaseValue(a.Entity) + a.Adjustment + a.Bonus
 	if !def.AllowsDecimal() {
-		max = max.Trunc()
+		maximum = maximum.Trunc()
 	}
-	return max
+	return maximum
 }
 
 // SetMaximum sets the maximum value.
@@ -137,11 +137,11 @@ func (a *Attribute) Current() fxp.Int {
 	if def == nil || def.IsSeparator() {
 		return 0
 	}
-	max := a.Maximum()
+	maximum := a.Maximum()
 	if def.Type != PoolAttributeType {
-		return max
+		return maximum
 	}
-	return max - a.Damage
+	return maximum - a.Damage
 }
 
 // CurrentThreshold return the current PoolThreshold, if any.

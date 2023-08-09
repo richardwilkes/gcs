@@ -15,7 +15,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/toolbox/xmath"
 )
 
 // CountPrereqsForSpell returns the number of prerequisites for the specified spell.
@@ -33,7 +32,7 @@ func countPrereqsForList(list *PrereqList, availableSpells []*Spell, nonSpellsCo
 			if p.Has {
 				switch p.LevelCriteria.Compare {
 				case EqualsNumber, AtLeastNumber:
-					counts[i] = nonSpellsCountAs * xmath.Max(fxp.As[int](p.LevelCriteria.Qualifier), 1)
+					counts[i] = nonSpellsCountAs * max(fxp.As[int](p.LevelCriteria.Qualifier), 1)
 				default:
 					counts[i] = nonSpellsCountAs
 				}

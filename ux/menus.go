@@ -16,18 +16,18 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/toolbox/collection/dict"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
-	"golang.org/x/exp/maps"
-	"golang.org/x/exp/slices"
 )
 
 // Menu, Item & Action IDs
@@ -497,7 +497,7 @@ func (s menuBarScope) createDeepSearchableMenu(f unison.MenuFactory) unison.Menu
 		fi := gurps.FileInfoFor(ext)
 		extMap[fi.Name] = fi
 	}
-	keys := maps.Keys(extMap)
+	keys := dict.Keys(extMap)
 	slices.Sort(keys)
 	for i, name := range keys {
 		fi := extMap[name]

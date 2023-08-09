@@ -14,13 +14,13 @@ package ux
 import (
 	"fmt"
 	"io/fs"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
-	"golang.org/x/exp/slices"
 )
 
 const attributeSettingsDragDataKey = "drag.attr"

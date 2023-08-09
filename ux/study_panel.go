@@ -12,13 +12,14 @@
 package ux
 
 import (
+	"slices"
+
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
-	"golang.org/x/exp/slices"
 )
 
 var lastStudyTypeUsed = gurps.SelfStudyType

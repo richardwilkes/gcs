@@ -23,7 +23,7 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-// Default, min & max values for the general numeric settings
+// Default, minimum & maximum values for the general numeric settings
 var (
 	InitialPointsDef         = fxp.From(150)
 	InitialPointsMin         fxp.Int
@@ -39,7 +39,7 @@ var (
 	ScrollWheelMultiplierMax = fxp.From(9999)
 )
 
-// Default, min & max values for the general numeric settings that can be constants
+// Default, minimum & maximum values for the general numeric settings that can be constants
 const (
 	MonitorResolutionMin       = 72
 	MonitorResolutionMax       = 300

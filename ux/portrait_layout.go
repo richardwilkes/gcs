@@ -22,11 +22,11 @@ type portraitLayout struct {
 	rest     *unison.Panel
 }
 
-func (p *portraitLayout) LayoutSizes(_ *unison.Panel, _ unison.Size) (min, pref, max unison.Size) {
-	_, pref, _ = p.rest.Sizes(unison.Size{})
+func (p *portraitLayout) LayoutSizes(_ *unison.Panel, _ unison.Size) (minSize, prefSize, maxSize unison.Size) {
+	_, prefSize, _ = p.rest.Sizes(unison.Size{})
 	insets := p.portrait.Border().Insets()
-	pref.Width += 1 + pref.Height + insets.Width() - insets.Height()
-	return pref, pref, pref
+	prefSize.Width += 1 + prefSize.Height + insets.Width() - insets.Height()
+	return prefSize, prefSize, prefSize
 }
 
 func (p *portraitLayout) PerformLayout(target *unison.Panel) {

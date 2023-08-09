@@ -15,6 +15,7 @@ import (
 	"context"
 	"fmt"
 	"io/fs"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -24,7 +25,6 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/unison"
-	"golang.org/x/exp/slices"
 )
 
 var (
@@ -641,9 +641,9 @@ func CalculateTechniqueLevel(entity *Entity, name, specialization string, tags [
 				level += relativeLevel
 			}
 			if limitModifier != nil {
-				if max := baseLevel + *limitModifier; level > max {
-					relativeLevel -= level - max
-					level = max
+				if maximum := baseLevel + *limitModifier; level > maximum {
+					relativeLevel -= level - maximum
+					level = maximum
 				}
 			}
 		}

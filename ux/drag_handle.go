@@ -47,11 +47,11 @@ func NewDragHandle(data map[string]any) *DragHandle {
 	return h
 }
 
-func (h *DragHandle) size(_ unison.Size) (min, pref, max unison.Size) {
-	s := h.svg.LogicalSize()
-	s.AddInsets(h.Border().Insets())
-	s.GrowToInteger()
-	return s, s, s
+func (h *DragHandle) size(_ unison.Size) (minSize, prefSize, maxSize unison.Size) {
+	prefSize = h.svg.LogicalSize()
+	prefSize.AddInsets(h.Border().Insets())
+	prefSize.GrowToInteger()
+	return prefSize, prefSize, prefSize
 }
 
 func (h *DragHandle) draw(gc *unison.Canvas, rect unison.Rect) {

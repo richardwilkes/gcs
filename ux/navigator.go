@@ -17,6 +17,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -31,7 +32,6 @@ import (
 	"github.com/richardwilkes/toolbox/xmath/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/rjeczalik/notify"
-	"golang.org/x/exp/slices"
 )
 
 const minTextWidthCandidate = "Abcdefghijklmnopqrstuvwxyz0123456789"

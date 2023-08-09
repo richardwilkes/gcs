@@ -21,7 +21,6 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath"
 )
 
 // WeaponDamageData holds the WeaponDamage data that is written to disk.
@@ -385,7 +384,7 @@ func multiplyDice(multiplier int, d *dice.Dice) {
 
 func addDice(left, right *dice.Dice) *dice.Dice {
 	if left.Sides > 1 && right.Sides > 1 && left.Sides != right.Sides {
-		sides := xmath.Min(left.Sides, right.Sides)
+		sides := min(left.Sides, right.Sides)
 		average := fxp.From(sides + 1).Div(fxp.Two)
 		averageLeft := fxp.From(left.Count * (left.Sides + 1)).Div(fxp.Two).Mul(fxp.From(left.Multiplier))
 		averageRight := fxp.From(right.Count * (right.Sides + 1)).Div(fxp.Two).Mul(fxp.From(right.Multiplier))
@@ -399,7 +398,7 @@ func addDice(left, right *dice.Dice) *dice.Dice {
 	}
 	return &dice.Dice{
 		Count:      left.Count + right.Count,
-		Sides:      xmath.Max(left.Sides, right.Sides),
+		Sides:      max(left.Sides, right.Sides),
 		Modifier:   left.Modifier + right.Modifier,
 		Multiplier: left.Multiplier + right.Multiplier - 1,
 	}

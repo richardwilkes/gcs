@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -24,7 +25,6 @@ import (
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
-	"golang.org/x/exp/slices"
 )
 
 var (

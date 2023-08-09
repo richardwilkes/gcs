@@ -13,6 +13,7 @@ package gurps
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/google/uuid"
@@ -20,7 +21,6 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
-	"golang.org/x/exp/slices"
 )
 
 var _ Node[*ConditionalModifier] = &ConditionalModifier{}

@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"path"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -26,7 +27,6 @@ import (
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/printing"
-	"golang.org/x/exp/slices"
 )
 
 const (

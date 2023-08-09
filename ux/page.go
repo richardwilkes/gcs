@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -17,7 +17,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xmath"
 	"github.com/richardwilkes/unison"
 )
 
@@ -49,21 +48,21 @@ func NewPage(entity *gurps.Entity) *Page {
 }
 
 // LayoutSizes implements unison.Layout
-func (p *Page) LayoutSizes(_ *unison.Panel, _ unison.Size) (min, pref, max unison.Size) {
+func (p *Page) LayoutSizes(_ *unison.Panel, _ unison.Size) (minSize, prefSize, maxSize unison.Size) {
 	s := gurps.SheetSettingsFor(p.entity)
 	w, h := s.Page.Orientation.Dimensions(s.Page.Size.Dimensions())
 	if insets := p.insets(); insets != p.lastInsets {
 		p.lastInsets = insets
 		p.SetBorder(unison.NewEmptyBorder(insets))
 	}
-	pref.Width = w.Pixels()
+	prefSize.Width = w.Pixels()
 	if p.Force {
-		pref.Height = h.Pixels()
+		prefSize.Height = h.Pixels()
 	} else {
 		_, size, _ := p.flex.LayoutSizes(p.AsPanel(), unison.Size{Width: w.Pixels()})
-		pref.Height = size.Height
+		prefSize.Height = size.Height
 	}
-	return pref, pref, pref
+	return prefSize, prefSize, prefSize
 }
 
 // PerformLayout implements unison.Layout
@@ -89,7 +88,7 @@ func (p *Page) insets() unison.Insets {
 		Right:  sheetSettings.Page.RightMargin.Pixels(),
 	}
 	height := gurps.PageFooterSecondaryFont.LineHeight()
-	insets.Bottom += xmath.Max(gurps.PageFooterPrimaryFont.LineHeight(), height) + height
+	insets.Bottom += max(gurps.PageFooterPrimaryFont.LineHeight(), height) + height
 	return insets
 }
 
@@ -127,11 +126,11 @@ func (p *Page) drawSelf(gc *unison.Canvas, _ unison.Rect) {
 	if pageNumber&1 == 0 {
 		left, right = right, left
 	}
-	y := r.Y + xmath.Max(xmath.Max(left.Baseline(), right.Baseline()), center.Baseline())
+	y := r.Y + max(left.Baseline(), right.Baseline(), center.Baseline())
 	left.Draw(gc, r.X, y)
 	center.Draw(gc, r.X+(r.Width-center.Width())/2, y)
 	right.Draw(gc, r.Right()-right.Width(), y)
-	y = r.Y + xmath.Max(xmath.Max(left.Height(), right.Height()), center.Height())
+	y = r.Y + max(left.Height(), right.Height(), center.Height())
 
 	center = unison.NewText(WebSiteDomain, secondaryDecorations)
 	left = unison.NewText(i18n.Text("All rights reserved"), secondaryDecorations)
@@ -139,7 +138,7 @@ func (p *Page) drawSelf(gc *unison.Canvas, _ unison.Rect) {
 	if pageNumber&1 == 0 {
 		left, right = right, left
 	}
-	y += xmath.Max(xmath.Max(left.Baseline(), right.Baseline()), center.Baseline())
+	y += max(left.Baseline(), right.Baseline(), center.Baseline())
 	left.Draw(gc, r.X, y)
 	center.Draw(gc, r.X+(r.Width-center.Width())/2, y)
 	right.Draw(gc, r.Right()-right.Width(), y)

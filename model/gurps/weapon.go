@@ -446,12 +446,12 @@ func (w *Weapon) resolvedValue(input, baseDefaultType string, tooltip *xio.ByteB
 			buffer.WriteByte('\n')
 		}
 		if line != "" {
-			max := len(line)
+			maximum := len(line)
 			i := 0
-			for i < max && line[i] == ' ' {
+			for i < maximum && line[i] == ' ' {
 				i++
 			}
-			if i < max {
+			if i < maximum {
 				ch := line[i]
 				neg := false
 				modifier := 0
@@ -459,16 +459,16 @@ func (w *Weapon) resolvedValue(input, baseDefaultType string, tooltip *xio.ByteB
 				if ch == '-' || ch == '+' {
 					neg = ch == '-'
 					i++
-					if i < max {
+					if i < maximum {
 						ch = line[i]
 					}
 				}
-				for i < max && ch >= '0' && ch <= '9' {
+				for i < maximum && ch >= '0' && ch <= '9' {
 					found = true
 					modifier *= 10
 					modifier += int(ch - '0')
 					i++
-					if i < max {
+					if i < maximum {
 						ch = line[i]
 					}
 				}
@@ -529,7 +529,7 @@ func (w *Weapon) resolvedValue(input, baseDefaultType string, tooltip *xio.ByteB
 						modifier = -modifier
 					}
 					num := (skillLevel + fxp.From(modifier)).Trunc().String()
-					if i < max {
+					if i < maximum {
 						buffer.WriteString(num)
 						line = line[i:]
 					} else {
@@ -549,11 +549,11 @@ func (w *Weapon) resolveRange(inRange string, st fxp.Int) string {
 		return inRange
 	}
 	last := where + 1
-	max := len(inRange)
-	if last < max && inRange[last] == ' ' {
+	maximum := len(inRange)
+	if last < maximum && inRange[last] == ' ' {
 		last++
 	}
-	if last >= max {
+	if last >= maximum {
 		return inRange
 	}
 	ch := inRange[last]
@@ -566,7 +566,7 @@ func (w *Weapon) resolveRange(inRange string, st fxp.Int) string {
 			decimal = true
 		}
 		last++
-		if last >= max {
+		if last >= maximum {
 			break
 		}
 		ch = inRange[last]
@@ -583,7 +583,7 @@ func (w *Weapon) resolveRange(inRange string, st fxp.Int) string {
 		buffer.WriteString(inRange[:where])
 	}
 	buffer.WriteString(value.Mul(st).Trunc().String())
-	if last < max {
+	if last < maximum {
 		buffer.WriteString(inRange[last:])
 	}
 	return buffer.String()

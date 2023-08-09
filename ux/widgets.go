@@ -260,13 +260,13 @@ func addLabelAndMultiLineStringField(parent *unison.Panel, labelText, tooltip st
 	parent.AddChild(field)
 }
 
-func addIntegerField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData *int, min, max int) *IntegerField {
+func addIntegerField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData *int, minValue, maxValue int) *IntegerField {
 	field := NewIntegerField(targetMgr, targetKey, labelText,
 		func() int { return *fieldData },
 		func(value int) {
 			*fieldData = value
 			MarkModified(parent)
-		}, min, max, false, false)
+		}, minValue, maxValue, false, false)
 	if tooltip != "" {
 		field.Tooltip = newWrappedTooltip(tooltip)
 	}
@@ -274,22 +274,22 @@ func addIntegerField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labe
 	return field
 }
 
-func addLabelAndDecimalField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData *fxp.Int, min, max fxp.Int) *DecimalField {
+func addLabelAndDecimalField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData *fxp.Int, minValue, maxValue fxp.Int) *DecimalField {
 	label := NewFieldLeadingLabel(labelText)
 	if tooltip != "" {
 		label.Tooltip = newWrappedTooltip(tooltip)
 	}
 	parent.AddChild(label)
-	return addDecimalField(parent, targetMgr, targetKey, labelText, tooltip, fieldData, min, max)
+	return addDecimalField(parent, targetMgr, targetKey, labelText, tooltip, fieldData, minValue, maxValue)
 }
 
-func addDecimalField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData *fxp.Int, min, max fxp.Int) *DecimalField {
+func addDecimalField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData *fxp.Int, minValue, maxValue fxp.Int) *DecimalField {
 	field := NewDecimalField(targetMgr, targetKey, labelText,
 		func() fxp.Int { return *fieldData },
 		func(value fxp.Int) {
 			*fieldData = value
 			MarkModified(parent)
-		}, min, max, false, false)
+		}, minValue, maxValue, false, false)
 	if tooltip != "" {
 		field.Tooltip = newWrappedTooltip(tooltip)
 	}
@@ -498,7 +498,7 @@ func addLevelCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey
 		numCriteria, 0, fxp.Thousand, hSpan, false, includeEmptyFiller)
 }
 
-func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey, prefix, undoTitle string, numCriteria *gurps.NumericCriteria, min, max fxp.Int, hSpan int, integerOnly, includeEmptyFiller bool) (popup *unison.PopupMenu[string], field unison.Paneler) {
+func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey, prefix, undoTitle string, numCriteria *gurps.NumericCriteria, minValue, maxValue fxp.Int, hSpan int, integerOnly, includeEmptyFiller bool) (popup *unison.PopupMenu[string], field unison.Paneler) {
 	if includeEmptyFiller {
 		parent.AddChild(unison.NewPanel())
 	}
@@ -531,10 +531,10 @@ func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetK
 			func(value int) {
 				numCriteria.Qualifier = fxp.From(value)
 				MarkModified(panel)
-			}, fxp.As[int](min), fxp.As[int](max), false, false)
+			}, fxp.As[int](minValue), fxp.As[int](maxValue), false, false)
 		panel.AddChild(field)
 	} else {
-		field = addDecimalField(panel, targetMgr, targetKey, undoTitle, "", &numCriteria.Qualifier, min, max)
+		field = addDecimalField(panel, targetMgr, targetKey, undoTitle, "", &numCriteria.Qualifier, minValue, maxValue)
 	}
 	adjustFieldBlank(field, numCriteria.Compare == gurps.AnyNumber)
 	parent.AddChild(panel)

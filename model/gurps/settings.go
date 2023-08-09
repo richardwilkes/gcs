@@ -17,16 +17,16 @@ import (
 	"os/user"
 	"path"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/cmdline"
+	"github.com/richardwilkes/toolbox/collection/dict"
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
-	"golang.org/x/exp/maps"
-	"golang.org/x/exp/slices"
 )
 
 const maxRecentFiles = 20
@@ -137,7 +137,7 @@ func SanitizeDockableGroups(groups []DockableGroup) []DockableGroup {
 	for _, k := range groups {
 		m[k.EnsureValid()] = true
 	}
-	groups = maps.Keys(m)
+	groups = dict.Keys(m)
 	slices.Sort(groups)
 	return groups
 }

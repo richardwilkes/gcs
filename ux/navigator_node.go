@@ -18,6 +18,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 
@@ -29,7 +30,6 @@ import (
 	"github.com/richardwilkes/toolbox/txt"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
-	"golang.org/x/exp/slices"
 )
 
 var _ unison.TableRowData[*NavigatorNode] = &NavigatorNode{}

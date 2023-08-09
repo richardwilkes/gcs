@@ -32,7 +32,6 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath"
 	"github.com/richardwilkes/toolbox/xmath/crc"
 )
 
@@ -868,7 +867,7 @@ func (e *Entity) Move(enc Encumbrance) int {
 	} else {
 		initialMove = e.ResolveAttributeCurrent(BasicMoveID).Max(0)
 	}
-	divisor := 2 * xmath.Min(CountThresholdOpMet(HalveMoveThresholdOp, e.Attributes), 2)
+	divisor := 2 * min(CountThresholdOpMet(HalveMoveThresholdOp, e.Attributes), 2)
 	if divisor > 0 {
 		initialMove = initialMove.Div(fxp.From(divisor)).Ceil()
 	}
@@ -931,7 +930,7 @@ func (e *Entity) Dodge(enc Encumbrance) int {
 		dodge = e.ResolveAttributeCurrent(BasicSpeedID).Max(0) + fxp.Three
 	}
 	dodge += e.DodgeBonus
-	divisor := 2 * xmath.Min(CountThresholdOpMet(HalveDodgeThresholdOp, e.Attributes), 2)
+	divisor := 2 * min(CountThresholdOpMet(HalveDodgeThresholdOp, e.Attributes), 2)
 	if divisor > 0 {
 		dodge = dodge.Div(fxp.From(divisor)).Ceil()
 	}

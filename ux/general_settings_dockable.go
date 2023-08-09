@@ -273,7 +273,7 @@ func (d *generalSettingsDockable) createMonitorResolutionField(content *unison.P
 	title := i18n.Text("Monitor Resolution")
 	content.AddChild(NewFieldLeadingLabel(title))
 	d.monitorResolutionField = NewNumericFieldWithException[int](nil, "", title,
-		func(min, max int) []int { return []int{min, max} },
+		func(minValue, maxValue int) []int { return []int{minValue, maxValue} },
 		func() int { return gurps.GlobalSettings().General.MonitorResolution },
 		func(v int) { gurps.GlobalSettings().General.MonitorResolution = v },
 		strconv.Itoa, strconv.Atoi, gurps.MonitorResolutionMin, gurps.MonitorResolutionMax, 0)

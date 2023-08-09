@@ -171,8 +171,8 @@ func NewStringPageFieldNoGrab(targetMgr *TargetMgr, targetKey, undoTitle string,
 }
 
 // NewHeightPageField creates a new height entry field for a sheet page.
-func NewHeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() gurps.Length, set func(gurps.Length), min, max gurps.Length, noMinWidth bool) *LengthField {
-	field := NewLengthField(targetMgr, targetKey, undoTitle, entity, get, set, min, max, noMinWidth)
+func NewHeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() gurps.Length, set func(gurps.Length), minValue, maxValue gurps.Length, noMinWidth bool) *LengthField {
+	field := NewLengthField(targetMgr, targetKey, undoTitle, entity, get, set, minValue, maxValue, noMinWidth)
 	field.Font = gurps.PageFieldPrimaryFont
 	field.FocusedBorder = unison.NewLineBorder(unison.AccentColor, 0, unison.Insets{Bottom: 1}, false)
 	field.UnfocusedBorder = unison.NewLineBorder(unison.ControlEdgeColor, 0, unison.Insets{Bottom: 1}, false)
@@ -185,8 +185,8 @@ func NewHeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entit
 }
 
 // NewWeightPageField creates a new weight entry field for a sheet page.
-func NewWeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() gurps.Weight, set func(gurps.Weight), min, max gurps.Weight, noMinWidth bool) *WeightField {
-	field := NewWeightField(targetMgr, targetKey, undoTitle, entity, get, set, min, max, noMinWidth)
+func NewWeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() gurps.Weight, set func(gurps.Weight), minValue, maxValue gurps.Weight, noMinWidth bool) *WeightField {
+	field := NewWeightField(targetMgr, targetKey, undoTitle, entity, get, set, minValue, maxValue, noMinWidth)
 	field.Font = gurps.PageFieldPrimaryFont
 	field.FocusedBorder = unison.NewLineBorder(unison.AccentColor, 0, unison.Insets{Bottom: 1}, false)
 	field.UnfocusedBorder = unison.NewLineBorder(unison.ControlEdgeColor, 0, unison.Insets{Bottom: 1}, false)
@@ -199,8 +199,8 @@ func NewWeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entit
 }
 
 // NewIntegerPageField creates a new integer entry field for a sheet page.
-func NewIntegerPageField(targetMgr *TargetMgr, targetKey, undoTitle string, get func() int, set func(int), min, max int, showSign, noMinWidth bool) *IntegerField {
-	field := NewIntegerField(targetMgr, targetKey, undoTitle, get, set, min, max, showSign, noMinWidth)
+func NewIntegerPageField(targetMgr *TargetMgr, targetKey, undoTitle string, get func() int, set func(int), minValue, maxValue int, showSign, noMinWidth bool) *IntegerField {
+	field := NewIntegerField(targetMgr, targetKey, undoTitle, get, set, minValue, maxValue, showSign, noMinWidth)
 	field.HAlign = unison.EndAlignment
 	field.Font = gurps.PageFieldPrimaryFont
 	field.FocusedBorder = unison.NewLineBorder(unison.AccentColor, 0, unison.Insets{Bottom: 1}, false)
@@ -214,16 +214,16 @@ func NewIntegerPageField(targetMgr *TargetMgr, targetKey, undoTitle string, get 
 }
 
 // NewDecimalPageField creates a new numeric text entry field for a sheet page.
-func NewDecimalPageField(targetMgr *TargetMgr, targetKey, undoTitle string, get func() fxp.Int, set func(fxp.Int), min, max fxp.Int, noMinWidth bool) *DecimalField {
-	field := NewDecimalField(targetMgr, targetKey, undoTitle, get, set, min, max, false, noMinWidth)
+func NewDecimalPageField(targetMgr *TargetMgr, targetKey, undoTitle string, get func() fxp.Int, set func(fxp.Int), minValue, maxValue fxp.Int, noMinWidth bool) *DecimalField {
+	field := NewDecimalField(targetMgr, targetKey, undoTitle, get, set, minValue, maxValue, false, noMinWidth)
 	field.HAlign = unison.EndAlignment
 	field.Font = gurps.PageFieldPrimaryFont
 	field.FocusedBorder = unison.NewLineBorder(unison.AccentColor, 0, unison.Insets{Bottom: 1}, false)
 	field.UnfocusedBorder = unison.NewLineBorder(unison.ControlEdgeColor, 0, unison.Insets{Bottom: 1}, false)
 	field.SetBorder(field.UnfocusedBorder)
-	if !noMinWidth && min != fxp.Min && max != fxp.Max {
+	if !noMinWidth && minValue != fxp.Min && maxValue != fxp.Max {
 		// Override to ignore fractional values
-		field.SetMinimumTextWidthUsing(min.Trunc().String(), max.Trunc().String())
+		field.SetMinimumTextWidthUsing(minValue.Trunc().String(), maxValue.Trunc().String())
 	}
 	field.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,

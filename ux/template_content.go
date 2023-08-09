@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -35,13 +35,13 @@ func newTemplateContent() *templateContent {
 	return p
 }
 
-func (p *templateContent) LayoutSizes(_ *unison.Panel, _ unison.Size) (min, pref, max unison.Size) {
+func (p *templateContent) LayoutSizes(_ *unison.Panel, _ unison.Size) (minSize, prefSize, maxSize unison.Size) {
 	s := gurps.GlobalSettings().Sheet
 	w, _ := s.Page.Orientation.Dimensions(s.Page.Size.Dimensions())
 	_, size, _ := p.flex.LayoutSizes(p.AsPanel(), unison.Size{Width: w.Pixels()})
-	pref.Width = w.Pixels()
-	pref.Height = size.Height
-	return pref, pref, pref
+	prefSize.Width = w.Pixels()
+	prefSize.Height = size.Height
+	return prefSize, prefSize, prefSize
 }
 
 func (p *templateContent) PerformLayout(_ *unison.Panel) {

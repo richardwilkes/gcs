@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -29,12 +29,12 @@ func NewToolbarSeparator() *unison.Separator {
 	spacer.Vertical = true
 	spacer.SetBorder(unison.NewEmptyBorder(unison.NewHorizontalInsets(unison.StdHSpacing)))
 	spacer.SetLayoutData(&unison.FlexLayoutData{VAlign: unison.FillAlignment})
-	spacer.SetSizer(func(hint unison.Size) (min, pref, max unison.Size) {
-		min, pref, max = spacer.DefaultSizes(hint)
+	spacer.SetSizer(func(hint unison.Size) (minSize, prefSize, maxSize unison.Size) {
+		minSize, prefSize, maxSize = spacer.DefaultSizes(hint)
 		baseline := unison.DefaultSVGButtonTheme.Font.Baseline()
-		min.Height = baseline
-		pref.Height = baseline
-		max.Height = baseline
+		minSize.Height = baseline
+		prefSize.Height = baseline
+		maxSize.Height = baseline
 		return
 	})
 	spacer.DrawCallback = func(canvas *unison.Canvas, _ unison.Rect) {

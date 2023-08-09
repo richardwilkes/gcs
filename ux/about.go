@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -19,7 +19,6 @@ import (
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
-	"github.com/richardwilkes/toolbox/xmath"
 	"github.com/richardwilkes/unison"
 )
 
@@ -58,9 +57,9 @@ func (w *aboutWindow) prepare() error {
 	}
 	SetupMenuBar(w.Window)
 	content := w.Content()
-	content.SetSizer(func(hint unison.Size) (min, pref, max unison.Size) {
-		pref = w.img.LogicalSize()
-		return pref, pref, pref
+	content.SetSizer(func(hint unison.Size) (minSize, prefSize, maxSize unison.Size) {
+		prefSize = w.img.LogicalSize()
+		return prefSize, prefSize, prefSize
 	})
 	content.SetLayout(nil)
 	content.DrawCallback = w.drawContentBackground
@@ -141,7 +140,7 @@ func (w *aboutWindow) drawContentBackground(gc *unison.Canvas, _ unison.Rect) {
 		vMargin = 4
 	)
 	var backing unison.Rect
-	backing.Width = xmath.Max(versionText.Width(), buildText.Width()) + hMargin*2
+	backing.Width = max(versionText.Width(), buildText.Width()) + hMargin*2
 	backing.Height = versionText.Height() + buildText.Height() + vMargin*2
 	backing.X = (r.Width - backing.Width) / 2
 	backing.Y = 65

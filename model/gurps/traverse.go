@@ -11,7 +11,7 @@
 
 package gurps
 
-import "golang.org/x/exp/slices"
+import "slices"
 
 type traversalData[T NodeTypes] struct {
 	list  []T

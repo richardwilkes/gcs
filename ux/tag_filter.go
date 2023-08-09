@@ -15,9 +15,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/richardwilkes/toolbox/collection/dict"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
-	"golang.org/x/exp/maps"
 )
 
 // TagProvider defines the methods required for the tag filter popup.
@@ -79,7 +79,7 @@ func NewTagFilterPopup(tagProvider TagProvider) *unison.PopupMenu[string] {
 			if len(m) == 0 {
 				popup.SelectIndex(0)
 			} else {
-				popup.SelectIndex(maps.Keys(m)...)
+				popup.SelectIndex(dict.Keys(m)...)
 			}
 		}
 	}

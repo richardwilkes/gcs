@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -16,11 +16,11 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox"
+	"github.com/richardwilkes/toolbox/collection/dict"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
-	"golang.org/x/exp/maps"
 )
 
 var _ TableProvider[*gurps.Skill] = &skillsProvider{}
@@ -51,7 +51,7 @@ func (p *skillsProvider) AllTags() []string {
 		}
 		return false
 	}, false, false, p.RootData()...)
-	tags := maps.Keys(set)
+	tags := dict.Keys(set)
 	txt.SortStringsNaturalAscending(tags)
 	return tags
 }
