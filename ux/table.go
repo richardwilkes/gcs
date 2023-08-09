@@ -21,7 +21,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/toolbox/xmath/geom"
 	"github.com/richardwilkes/unison"
 )
 
@@ -143,9 +142,9 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 					cm.RemoveItem(count)
 				}
 				table.FlushDrawing()
-				cm.Popup(geom.Rect[float32]{
+				cm.Popup(unison.Rect{
 					Point: table.PointToRoot(where),
-					Size: geom.Size[float32]{
+					Size: unison.Size{
 						Width:  1,
 						Height: 1,
 					},

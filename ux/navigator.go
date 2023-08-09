@@ -29,7 +29,6 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/toolbox/xmath/geom"
 	"github.com/richardwilkes/unison"
 	"github.com/rjeczalik/notify"
 )
@@ -603,9 +602,9 @@ func (n *Navigator) mouseDown(where unison.Point, button, clickCount int, mod un
 					cm.RemoveItem(count)
 				}
 				n.FlushDrawing()
-				cm.Popup(geom.Rect[float32]{
+				cm.Popup(unison.Rect{
 					Point: n.table.PointToRoot(where),
-					Size: geom.Size[float32]{
+					Size: unison.Size{
 						Width:  1,
 						Height: 1,
 					},
