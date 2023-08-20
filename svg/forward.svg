@@ -1,0 +1,14 @@
+<!--
+  - Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
+  -
+  - This Source Code Form is subject to the terms of the Mozilla Public
+  - License, version 2.0. If a copy of the MPL was not distributed with
+  - this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+  -
+  - This Source Code Form is "Incompatible With Secondary Licenses", as
+  - defined by the Mozilla Public License, version 2.0.
+  -->
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 512">
+    <path d="m118.6 105.4 128 127.1c6.3 7.1 9.4 15.3 9.4 22.6s-3.125 16.38-9.375 22.63l-128 127.1c-9.156 9.156-22.91 11.9-34.88 6.943S64 396.9 64 383.1V128c0-12.94 7.781-24.62 19.75-29.58s25.75-2.19 34.85 6.98z"/>
+</svg>
