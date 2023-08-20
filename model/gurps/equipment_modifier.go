@@ -101,6 +101,7 @@ func (m *EquipmentModifier) Clone(entity *Entity, parent *EquipmentModifier, pre
 		other.ID = m.ID
 	}
 	other.IsOpen = m.IsOpen
+	other.ThirdParty = m.ThirdParty
 	other.EquipmentModifierEditData.CopyFrom(m)
 	if m.HasChildren() {
 		other.Children = make([]*EquipmentModifier, 0, len(m.Children))

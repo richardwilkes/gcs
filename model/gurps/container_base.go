@@ -24,11 +24,12 @@ const ContainerKeyPostfix = "_container"
 
 // ContainerBase holds the type and ID of the data.
 type ContainerBase[T NodeTypes] struct {
-	ID       uuid.UUID `json:"id"`
-	Type     string    `json:"type"`
-	IsOpen   bool      `json:"open,omitempty"`     // Container only
-	Children []T       `json:"children,omitempty"` // Container only
-	parent   T
+	ID         uuid.UUID      `json:"id"`
+	Type       string         `json:"type"`
+	IsOpen     bool           `json:"open,omitempty"`     // Container only
+	Children   []T            `json:"children,omitempty"` // Container only
+	ThirdParty map[string]any `json:"third_party,omitempty"`
+	parent     T
 }
 
 func newContainerBase[T NodeTypes](typeKey string, isContainer bool) ContainerBase[T] {

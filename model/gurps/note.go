@@ -89,6 +89,7 @@ func (n *Note) Clone(entity *Entity, parent *Note, preserveID bool) *Note {
 		other.ID = n.ID
 	}
 	other.IsOpen = n.IsOpen
+	other.ThirdParty = n.ThirdParty
 	other.NoteEditData.CopyFrom(n)
 	if n.HasChildren() {
 		other.Children = make([]*Note, 0, len(n.Children))

@@ -110,6 +110,7 @@ func (m *TraitModifier) Clone(entity *Entity, parent *TraitModifier, preserveID 
 		other.ID = m.ID
 	}
 	other.IsOpen = m.IsOpen
+	other.ThirdParty = m.ThirdParty
 	other.TraitModifierEditData.CopyFrom(m)
 	if m.HasChildren() {
 		other.Children = make([]*TraitModifier, 0, len(m.Children))

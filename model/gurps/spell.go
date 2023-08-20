@@ -144,6 +144,7 @@ func (s *Spell) Clone(entity *Entity, parent *Spell, preserveID bool) *Spell {
 	if preserveID {
 		other.ID = s.ID
 	}
+	other.ThirdParty = s.ThirdParty
 	other.SpellEditData.CopyFrom(s)
 	if s.HasChildren() {
 		other.Children = make([]*Spell, 0, len(s.Children))

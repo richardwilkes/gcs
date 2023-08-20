@@ -116,6 +116,7 @@ func (e *Equipment) Clone(entity *Entity, parent *Equipment, preserveID bool) *E
 		other.ID = e.ID
 	}
 	other.IsOpen = e.IsOpen
+	other.ThirdParty = e.ThirdParty
 	other.EquipmentEditData.CopyFrom(e)
 	if e.HasChildren() {
 		other.Children = make([]*Equipment, 0, len(e.Children))

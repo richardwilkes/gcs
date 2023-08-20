@@ -146,6 +146,7 @@ func (s *Skill) Clone(entity *Entity, parent *Skill, preserveID bool) *Skill {
 	if preserveID {
 		other.ID = s.ID
 	}
+	other.ThirdParty = s.ThirdParty
 	other.SkillEditData.CopyFrom(s)
 	if s.HasChildren() {
 		other.Children = make([]*Skill, 0, len(s.Children))
