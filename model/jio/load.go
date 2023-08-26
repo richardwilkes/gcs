@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -12,7 +12,6 @@
 package jio
 
 import (
-	"bufio"
 	"bytes"
 	"compress/gzip"
 	"context"
@@ -32,7 +31,7 @@ func LoadFromFile(ctx context.Context, path string, data any) error {
 		return errs.NewWithCause(path, err)
 	}
 	defer xio.CloseIgnoringErrors(f)
-	return Load(ctx, bufio.NewReader(f), data)
+	return Load(ctx, f, data)
 }
 
 // LoadFromFS loads JSON data from the specified filesystem path.
@@ -42,15 +41,19 @@ func LoadFromFS(ctx context.Context, fileSystem fs.FS, path string, data any) er
 		return errs.NewWithCause(path, err)
 	}
 	defer xio.CloseIgnoringErrors(f)
-	return Load(ctx, bufio.NewReader(f), data)
+	return Load(ctx, f, data)
 }
 
 // Load JSON data.
 func Load(ctx context.Context, r io.Reader, data any) error {
-	decoder := json.NewDecoder(bufio.NewReader(r))
+	buffer, err := xio.NewBOMStripper(r)
+	if err != nil {
+		return err
+	}
+	decoder := json.NewDecoder(buffer)
 	decoder.SetContext(ctx)
 	decoder.UseNumber()
-	if err := decoder.Decode(data); err != nil {
+	if err = decoder.Decode(data); err != nil {
 		return errs.Wrap(err)
 	}
 	return nil

@@ -15,18 +15,18 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/stretchr/testify/assert"
+	"github.com/richardwilkes/toolbox/check"
 )
 
 func TestRealLengthConversion(t *testing.T) {
-	assert.Equal(t, `0.25 in`, gurps.PaperLength{Length: 0.25, Units: gurps.InchPaperUnits}.String())
-	assert.Equal(t, float32(18), gurps.PaperLength{Length: 0.25, Units: gurps.InchPaperUnits}.Pixels())
-	assert.Equal(t, `1 in`, gurps.PaperLength{Length: 1, Units: gurps.InchPaperUnits}.String())
-	assert.Equal(t, float32(72), gurps.PaperLength{Length: 1, Units: gurps.InchPaperUnits}.Pixels())
-	assert.Equal(t, `15 in`, gurps.PaperLength{Length: 15, Units: gurps.InchPaperUnits}.String())
-	assert.Equal(t, float32(1080), gurps.PaperLength{Length: 15, Units: gurps.InchPaperUnits}.Pixels())
-	assert.Equal(t, "1 cm", gurps.PaperLength{Length: 1, Units: gurps.CentimeterPaperUnits}.String())
-	assert.Equal(t, float32(28.3464566929), gurps.PaperLength{Length: 1, Units: gurps.CentimeterPaperUnits}.Pixels())
-	assert.Equal(t, "1 mm", gurps.PaperLength{Length: 1, Units: gurps.MillimeterPaperUnits}.String())
-	assert.Equal(t, float32(2.8346456693), gurps.PaperLength{Length: 1, Units: gurps.MillimeterPaperUnits}.Pixels())
+	check.Equal(t, `0.25 in`, gurps.PaperLength{Length: 0.25, Units: gurps.InchPaperUnits}.String())
+	check.Equal(t, float32(18), gurps.PaperLength{Length: 0.25, Units: gurps.InchPaperUnits}.Pixels())
+	check.Equal(t, `1 in`, gurps.PaperLength{Length: 1, Units: gurps.InchPaperUnits}.String())
+	check.Equal(t, float32(72), gurps.PaperLength{Length: 1, Units: gurps.InchPaperUnits}.Pixels())
+	check.Equal(t, `15 in`, gurps.PaperLength{Length: 15, Units: gurps.InchPaperUnits}.String())
+	check.Equal(t, float32(1080), gurps.PaperLength{Length: 15, Units: gurps.InchPaperUnits}.Pixels())
+	check.Equal(t, "1 cm", gurps.PaperLength{Length: 1, Units: gurps.CentimeterPaperUnits}.String())
+	check.Equal(t, float32(28.3464566929), gurps.PaperLength{Length: 1, Units: gurps.CentimeterPaperUnits}.Pixels())
+	check.Equal(t, "1 mm", gurps.PaperLength{Length: 1, Units: gurps.MillimeterPaperUnits}.String())
+	check.Equal(t, float32(2.8346456693), gurps.PaperLength{Length: 1, Units: gurps.MillimeterPaperUnits}.Pixels())
 }

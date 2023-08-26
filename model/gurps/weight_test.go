@@ -15,31 +15,31 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/stretchr/testify/assert"
+	"github.com/richardwilkes/toolbox/check"
 )
 
 func TestWeightConversion(t *testing.T) {
-	assert.Equal(t, "1 lb", gurps.Pound.Format(gurps.WeightFromInteger(1, gurps.Pound)))
-	assert.Equal(t, "15 lb", gurps.Pound.Format(gurps.WeightFromInteger(15, gurps.Pound)))
-	assert.Equal(t, "0.5 kg", gurps.Kilogram.Format(gurps.WeightFromInteger(1, gurps.Pound)))
-	assert.Equal(t, "7.5 kg", gurps.Kilogram.Format(gurps.WeightFromInteger(15, gurps.Pound)))
+	check.Equal(t, "1 lb", gurps.Pound.Format(gurps.WeightFromInteger(1, gurps.Pound)))
+	check.Equal(t, "15 lb", gurps.Pound.Format(gurps.WeightFromInteger(15, gurps.Pound)))
+	check.Equal(t, "0.5 kg", gurps.Kilogram.Format(gurps.WeightFromInteger(1, gurps.Pound)))
+	check.Equal(t, "7.5 kg", gurps.Kilogram.Format(gurps.WeightFromInteger(15, gurps.Pound)))
 
 	w, err := gurps.WeightFromString("1", gurps.Pound)
-	assert.NoError(t, err)
-	assert.Equal(t, "1 lb", w.String())
+	check.NoError(t, err)
+	check.Equal(t, "1 lb", w.String())
 	w, err = gurps.WeightFromString("1", gurps.Kilogram)
-	assert.NoError(t, err)
-	assert.Equal(t, "2 lb", w.String())
+	check.NoError(t, err)
+	check.Equal(t, "2 lb", w.String())
 	w, err = gurps.WeightFromString("22.34 lb", gurps.Pound)
-	assert.NoError(t, err)
-	assert.Equal(t, "22.34 lb", w.String())
+	check.NoError(t, err)
+	check.Equal(t, "22.34 lb", w.String())
 	w, err = gurps.WeightFromString(" +22.34   lb  ", gurps.Pound)
-	assert.NoError(t, err)
-	assert.Equal(t, "22.34 lb", w.String())
+	check.NoError(t, err)
+	check.Equal(t, "22.34 lb", w.String())
 	w, err = gurps.WeightFromString("0.5kg", gurps.Pound)
-	assert.NoError(t, err)
-	assert.Equal(t, "0.5 kg", gurps.Kilogram.Format(w))
+	check.NoError(t, err)
+	check.Equal(t, "0.5 kg", gurps.Kilogram.Format(w))
 	w, err = gurps.WeightFromString(" 15.25 kg ", gurps.Pound)
-	assert.NoError(t, err)
-	assert.Equal(t, "15.25 kg", gurps.Kilogram.Format(w))
+	check.NoError(t, err)
+	check.Equal(t, "15.25 kg", gurps.Kilogram.Format(w))
 }

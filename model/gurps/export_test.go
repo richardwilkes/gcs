@@ -17,7 +17,7 @@ import (
 	"text/template"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/stretchr/testify/require"
+	"github.com/richardwilkes/toolbox/check"
 )
 
 func TestTemplateFuncs(t *testing.T) {
@@ -35,7 +35,7 @@ func TestTemplateFuncs(t *testing.T) {
 {{.One.Sub .OnePointOne}}
 {{(numberFrom 22).Add (numberFrom 44.4)}}
 `)
-	require.NoError(t, err)
+	check.NoError(t, err)
 	var buffer strings.Builder
 	input := struct {
 		One         fxp.Int
@@ -44,8 +44,8 @@ func TestTemplateFuncs(t *testing.T) {
 		One:         fxp.One,
 		OnePointOne: fxp.OnePointOne,
 	}
-	require.NoError(t, tmpl.Execute(&buffer, input))
-	require.Equal(t, `
+	check.NoError(t, tmpl.Execute(&buffer, input))
+	check.Equal(t, `
 22
 23.45
 1
@@ -61,6 +61,6 @@ func TestTemplateFuncs(t *testing.T) {
 
 	buffer.Reset()
 	tmpl, err = tmplBase.Parse(`{{numberFrom "x"}}`)
-	require.NoError(t, err)
-	require.Error(t, tmpl.Execute(&buffer, nil))
+	check.NoError(t, err)
+	check.Error(t, tmpl.Execute(&buffer, nil))
 }
