@@ -25,6 +25,7 @@ for arg in "$@"; do
     ;;
   --dist|-d)
     EXTRA_BUILD_FLAGS="-a -trimpath"
+    EXTRA_LD_FLAGS="-s -w"
     RELEASE="5.15.0"
     DIST=1
     case $(uname -s) in
@@ -61,7 +62,7 @@ for arg in "$@"; do
   esac
 done
 
-LDFLAGS_ALL="-X github.com/richardwilkes/toolbox/cmdline.AppVersion=$RELEASE"
+LDFLAGS_ALL="-X github.com/richardwilkes/toolbox/cmdline.AppVersion=$RELEASE $EXTRA_LD_FLAGS"
 STD_FLAGS="-v -buildvcs=true $EXTRA_BUILD_FLAGS"
 
 # Generate the source
