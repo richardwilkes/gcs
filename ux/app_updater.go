@@ -23,8 +23,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/desktop"
+	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
 )
@@ -88,7 +88,7 @@ func CheckForAppUpdates() {
 				})
 			if err != nil {
 				appUpdate.SetResult(fmt.Sprintf(i18n.Text("Unable to access the %s update site"), cmdline.AppName))
-				jot.Error(err)
+				errs.Log(err)
 				return
 			}
 			if len(releases) == 0 || releases[0].Version == cmdline.AppVersion {
@@ -133,7 +133,7 @@ func NotifyOfAppUpdate() {
 				unison.NewOKButtonInfoWithTitle(i18n.Text("Download")),
 			})
 		if err != nil {
-			jot.Error(err)
+			errs.Log(err)
 			return
 		}
 		gurps.GlobalSettings().LastSeenGCSVersion = releases[0].Version

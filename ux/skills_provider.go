@@ -16,9 +16,10 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox"
+	"github.com/richardwilkes/toolbox/atexit"
 	"github.com/richardwilkes/toolbox/collection/dict"
+	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
 )
@@ -196,7 +197,8 @@ func (p *skillsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node
 	case AlternateItemVariant:
 		item = gurps.NewTechnique(p.Entity(), nil, "")
 	default:
-		jot.Fatal(1, "unhandled variant")
+		errs.Log(errs.New("unhandled variant"), "variant", int(variant))
+		atexit.Exit(1)
 	}
 	InsertItems[*gurps.Skill](owner, table, p.provider.SkillList, p.provider.SetSkillList,
 		func(_ *unison.Table[*Node[*gurps.Skill]]) []*Node[*gurps.Skill] { return p.RootRows() }, item)

@@ -22,8 +22,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox"
+	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
 )
 
@@ -79,7 +79,7 @@ func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 		}
 	}
 
-	e.undoMgr = unison.NewUndoManager(100, func(err error) { jot.Error(err) })
+	e.undoMgr = unison.NewUndoManager(100, func(err error) { errs.Log(err) })
 	e.SetLayout(&unison.FlexLayout{Columns: 1})
 	e.AddChild(e.createToolbar())
 	e.content = unison.NewPanel()

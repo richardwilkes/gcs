@@ -24,7 +24,6 @@ import (
 	"github.com/richardwilkes/toolbox/collection/dict"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
@@ -436,7 +435,7 @@ func (s menuBarScope) exportToUpdater(menu unison.Menu) {
 		entries, err := fs.ReadDir(os.DirFS(dir), outputTemplatesDirName)
 		if err != nil {
 			if !errors.Is(err, fs.ErrNotExist) {
-				jot.Error(errs.Wrap(err))
+				errs.Log(err, "dir", dir)
 			}
 			continue
 		}

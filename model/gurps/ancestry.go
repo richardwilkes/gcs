@@ -19,7 +19,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/eval"
-	"github.com/richardwilkes/toolbox/log/jot"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 )
 
@@ -53,7 +52,7 @@ func LookupAncestry(name string, libraries Libraries) *Ancestry {
 		for _, one := range lib.List {
 			if one.Name == name {
 				if a, err := NewAncestryFromFile(one.FileSystem, one.FilePath); err != nil {
-					jot.Warn(err)
+					errs.Log(err, "path", one.FilePath)
 				} else {
 					return a
 				}

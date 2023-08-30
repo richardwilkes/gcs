@@ -19,7 +19,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/unison"
 	"golang.org/x/image/draw"
@@ -103,12 +102,12 @@ func (p *PortraitPanel) fileDrop(files []string) {
 	for _, f := range files {
 		data, err := xio.RetrieveData(f)
 		if err != nil {
-			jot.Error(errs.NewWithCause("unable to load: "+f, err))
+			errs.Log(errs.NewWithCause("unable to load", err), "file", f)
 			continue
 		}
 		var img *unison.Image
 		if img, err = unison.NewImageFromBytes(data, 0.5); err != nil {
-			jot.Error(errs.NewWithCause("does not appear to be a valid image: "+f, err))
+			errs.Log(errs.NewWithCause("does not appear to be a valid image", err), "file", f)
 			continue
 		}
 		scale := float32(1)
@@ -133,7 +132,7 @@ func (p *PortraitPanel) fileDrop(files []string) {
 		if size != imgSize || !strings.HasSuffix(strings.ToLower(f), ".webp") {
 			var src *image.NRGBA
 			if src, err = img.ToNRGBA(); err != nil {
-				jot.Error(errs.NewWithCause("unable to convert: "+f, err))
+				errs.Log(errs.NewWithCause("unable to convert", err), "file", f)
 				continue
 			}
 			dst := image.NewNRGBA(image.Rect(0, 0, int(size.Width), int(size.Height)))
@@ -141,11 +140,11 @@ func (p *PortraitPanel) fileDrop(files []string) {
 			y := int((size.Height - imgSize.Height*scale) / 2)
 			draw.CatmullRom.Scale(dst, image.Rect(x, y, x+int(size.Width), y+int(size.Height)), src, src.Rect, draw.Over, nil)
 			if img, err = unison.NewImageFromPixels(int(size.Width), int(size.Height), dst.Pix, 0.5); err != nil {
-				jot.Error(errs.NewWithCause("unable to create scaled image from: "+f, err))
+				errs.Log(errs.NewWithCause("unable to create scaled image", err), "file", f, "size", size)
 				continue
 			}
 			if data, err = img.ToWebp(80); err != nil {
-				jot.Error(errs.NewWithCause("unable to create webp image from: "+f, err))
+				errs.Log(errs.NewWithCause("unable to create webp image", err), "file", f)
 				continue
 			}
 		}

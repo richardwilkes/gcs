@@ -18,8 +18,8 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
 )
 
@@ -78,7 +78,7 @@ func ShowAttributeSettings(owner EntityPanel) {
 	d.defs.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
 	d.originalCRC = d.defs.CRC64()
 	d.Extensions = []string{gurps.AttributesExt, gurps.AttributesExtAlt1, gurps.AttributesExtAlt2}
-	d.undoMgr = unison.NewUndoManager(100, func(err error) { jot.Error(err) })
+	d.undoMgr = unison.NewUndoManager(100, func(err error) { errs.Log(err) })
 	d.Loader = d.load
 	d.Saver = d.save
 	d.Resetter = d.reset

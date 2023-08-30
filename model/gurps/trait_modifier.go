@@ -21,7 +21,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
 )
 
@@ -290,7 +289,7 @@ func (m *TraitModifier) CostDescription() string {
 	case MultiplierTraitModifierCostType:
 		return m.CostType.String() + m.Cost.String()
 	default:
-		jot.Errorf("unhandled cost type: %d", m.CostType)
+		errs.Log(errs.New("unknown cost type"), "type", int(m.CostType))
 		base = m.Cost.StringWithSign() + PercentageTraitModifierCostType.String()
 	}
 	if desc := m.Affects.AltString(); desc != "" {

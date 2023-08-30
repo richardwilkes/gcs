@@ -15,7 +15,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/richardwilkes/toolbox/log/jot"
+	"github.com/richardwilkes/toolbox/errs"
 )
 
 // Various commonly used IDs
@@ -75,7 +75,7 @@ func SanitizeID(id string, permitLeadingDigits bool, reserved ...string) string 
 func NewUUID() uuid.UUID {
 	id, err := uuid.NewRandom()
 	if err != nil {
-		jot.Error(err)
+		errs.Log(err)
 		// continue on... the id will be garbage, but we can live with that... and this should not be possible anyway
 	}
 	return id

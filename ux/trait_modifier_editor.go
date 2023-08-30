@@ -15,8 +15,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
 )
 
@@ -54,7 +54,7 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 				affectsPopup.Select(gurps.TotalAffects)
 				enabled = false
 			default:
-				jot.Errorf("unhandled cost type popup index: %d", costTypePopup.SelectedIndex())
+				errs.Log(errs.New("unhandled cost type"), "index", costTypePopup.SelectedIndex())
 				field.Text = e.editorData.Cost.StringWithSign() + gurps.PercentageTraitModifierCostType.String()
 			}
 			affectsPopup.SetEnabled(enabled)

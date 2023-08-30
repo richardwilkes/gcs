@@ -28,7 +28,6 @@ import (
 
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
@@ -88,7 +87,7 @@ func (l *Library) Key() string {
 // Path returns the path on disk to this Library, creating any necessary directories.
 func (l *Library) Path() string {
 	if err := os.MkdirAll(l.PathOnDisk, 0o750); err != nil {
-		jot.Error(errs.Wrap(err))
+		errs.Log(err, "path", l.PathOnDisk)
 	}
 	return l.PathOnDisk
 }
@@ -163,7 +162,7 @@ func (l *Library) CheckForAvailableUpgrade(ctx context.Context, client *http.Cli
 				txt.NaturalLess(incompatibleFutureLibraryVersion, version, true)
 		})
 	if err != nil {
-		jot.Error(errs.NewWithCause("Unable to access releases for library: "+l.Title, err))
+		errs.Log(errs.NewWithCause("unable to access releases for library", err), "title", l.Title, "repo", l.RepoName, "account", l.GitHubAccountName)
 	}
 	current := l.VersionOnDisk()
 	lastRelease := ""
@@ -214,10 +213,11 @@ func (l *Library) VersionOnDisk() string {
 	if l.IsUser() {
 		return ""
 	}
-	data, err := os.ReadFile(filepath.Join(l.PathOnDisk, releaseFile))
+	filePath := filepath.Join(l.PathOnDisk, releaseFile)
+	data, err := os.ReadFile(filePath)
 	if err != nil {
 		if !os.IsNotExist(err) {
-			jot.Warn(errs.NewWithCause("unable to load "+releaseFile+" from library: "+l.Title, err))
+			errs.Log(errs.NewWithCause("unable to load release info from library", err), "path", filePath)
 		}
 		return "0"
 	}
@@ -242,14 +242,14 @@ func (l *Library) Download(ctx context.Context, client *http.Client, release Rel
 	defer func() {
 		if success {
 			if err = os.RemoveAll(tmpDir); err != nil {
-				jot.Error(errs.NewWithCause("unable to remove the old data:\n"+tmpDir, err))
+				errs.Log(errs.NewWithCause("unable to remove the old data", err), "dir", tmpDir)
 			}
 		} else {
 			if err = os.RemoveAll(p); err != nil && !errors.Is(err, fs.ErrNotExist) {
-				jot.Error(errs.NewWithCause("unable to remove the failed download data:\n"+p, err))
+				errs.Log(errs.NewWithCause("unable to remove the failed download data", err), "dir", p)
 			}
 			if err = os.Rename(tmpDir, p); err != nil {
-				jot.Error(errs.NewWithCause("unable to move the old directory back into place:\n"+tmpDir+"\n"+p, err))
+				errs.Log(errs.NewWithCause("unable to move the old directory back into place", err), "old", tmpDir, "new", p)
 			}
 		}
 	}()

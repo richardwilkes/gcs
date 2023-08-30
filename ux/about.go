@@ -18,7 +18,6 @@ import (
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
 )
 
@@ -37,7 +36,7 @@ type aboutWindow struct {
 func ShowAbout(_ unison.MenuItem) {
 	if aboutWnd.Window == nil {
 		if err := aboutWnd.prepare(); err != nil {
-			jot.Error(err)
+			errs.Log(err)
 			return
 		}
 	}

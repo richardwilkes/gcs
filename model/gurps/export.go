@@ -25,7 +25,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/toolbox/xio/fs"
 )
@@ -298,7 +297,7 @@ func ExportSheets(templatePath string, fileList []string) error {
 				return err
 			}
 		} else {
-			jot.Warn("not exportable, skipping: " + one)
+			errs.Log(errs.New("not exportable, skipping"), "file", one)
 		}
 	}
 	return nil

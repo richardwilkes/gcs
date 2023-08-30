@@ -21,8 +21,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
 )
@@ -82,7 +82,7 @@ func NewTemplateFromFile(filePath string) (unison.Dockable, error) {
 func NewTemplate(filePath string, template *gurps.Template) *Template {
 	d := &Template{
 		path:              filePath,
-		undoMgr:           unison.NewUndoManager(200, func(err error) { jot.Error(err) }),
+		undoMgr:           unison.NewUndoManager(200, func(err error) { errs.Log(err) }),
 		scroll:            unison.NewScrollPanel(),
 		template:          template,
 		scale:             gurps.GlobalSettings().General.InitialSheetUIScale,
@@ -300,7 +300,7 @@ func (d *Template) applyTemplateToSheet(sheet *Sheet, suppressRandomizePrompt bo
 	mgr := unison.UndoManagerFor(sheet)
 	if mgr != nil {
 		if beforeData, err := NewApplyTemplateUndoEditData(sheet); err != nil {
-			jot.Warn(err)
+			errs.Log(err)
 			mgr = nil
 		} else {
 			undo = &unison.UndoEdit[*ApplyTemplateUndoEditData]{
@@ -372,7 +372,7 @@ Disable your character's existing Ancestry (%s)?`),
 	if mgr != nil && undo != nil {
 		var err error
 		if undo.AfterData, err = NewApplyTemplateUndoEditData(sheet); err != nil {
-			jot.Warn(err)
+			errs.Log(err)
 		} else {
 			mgr.Add(undo)
 		}
@@ -569,7 +569,7 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 		unison.DefaultDialogTheme.QuestionIconInk, panel,
 		[]*unison.DialogButtonInfo{unison.NewCancelButtonInfo(), unison.NewOKButtonInfo()})
 	if err != nil {
-		jot.Error(err)
+		errs.Log(err)
 		return nil, true
 	}
 	callback()

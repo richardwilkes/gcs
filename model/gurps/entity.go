@@ -29,8 +29,8 @@ import (
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/eval"
+	"github.com/richardwilkes/toolbox/fatal"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/toolbox/xmath/crc"
 )
@@ -434,7 +434,7 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, levels 
 	case *ConditionalModifierBonus, *ContainedWeightReduction, *ReactionBonus:
 		// Not collected at this stage
 	default:
-		jot.Warnf("unhandled feature type: %s", f.FeatureType())
+		errs.Log(errs.New("unhandled feature"), "type", f.FeatureType())
 	}
 }
 
@@ -1059,7 +1059,7 @@ func (e *Entity) isSkillLevelResolutionExcluded(name, specialization string) boo
 			if specialization != "" {
 				name += " (" + specialization + ")"
 			}
-			jot.Warnf("attempt to resolve skill level via itself: %s", name)
+			errs.Log(errs.New("attempt to resolve skill level via itself"), "name", name)
 		}
 		return true
 	}
@@ -1085,7 +1085,7 @@ func (e *Entity) skillLevelResolutionKey(name, specialization string) string {
 func (e *Entity) ResolveVariable(variableName string) string {
 	if e.variableResolverExclusions[variableName] {
 		if dbg.VariableResolver {
-			jot.Warnf("attempt to resolve variable via itself: $%s", variableName)
+			errs.Log(errs.New("attempt to resolve variable via itself"), "name", "$"+variableName)
 		}
 		return ""
 	}
@@ -1109,14 +1109,14 @@ func (e *Entity) ResolveVariable(variableName string) string {
 	attr := e.Attributes.Set[parts[0]]
 	if attr == nil {
 		if dbg.VariableResolver {
-			jot.Warnf("no such variable: $%s", variableName)
+			errs.Log(errs.New("no such variable"), "name", "$"+variableName)
 		}
 		return ""
 	}
 	def := attr.AttributeDef()
 	if def == nil {
 		if dbg.VariableResolver {
-			jot.Warnf("no such variable definition: $%s", variableName)
+			errs.Log(errs.New("no such variable definition"), "name", "$"+variableName)
 		}
 		return ""
 	}
@@ -1185,7 +1185,7 @@ func (e *Entity) Ancestry() *Ancestry {
 	}, true, false, e.Traits...)
 	if anc == nil {
 		if anc = LookupAncestry(DefaultAncestry, GlobalSettings().Libraries()); anc == nil {
-			jot.Fatal(1, "unable to load default ancestry (Human)")
+			fatal.IfErr(errs.New("unable to load default ancestry (Human)"))
 		}
 	}
 	return anc

@@ -20,8 +20,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
 )
 
@@ -125,7 +125,7 @@ func DisplayCalculator(sheet *Sheet) {
 	}
 	c.Self = c
 
-	c.undoMgr = unison.NewUndoManager(100, func(err error) { jot.Error(err) })
+	c.undoMgr = unison.NewUndoManager(100, func(err error) { errs.Log(err) })
 	c.SetLayout(&unison.FlexLayout{Columns: 1})
 
 	c.createContent()

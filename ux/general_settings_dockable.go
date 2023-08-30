@@ -25,8 +25,7 @@ import (
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
-	"github.com/richardwilkes/toolbox/log/jotrotate"
+	"github.com/richardwilkes/toolbox/log/rotation"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio/fs/paths"
 	"github.com/richardwilkes/unison"
@@ -161,7 +160,7 @@ func (d *generalSettingsDockable) initContent(content *unison.Panel) {
 	d.createScrollWheelMultiplierField(content)
 	d.createPathInfoField(content, i18n.Text("Settings Path"), gurps.SettingsPath)
 	d.createPathInfoField(content, i18n.Text("Translations Path"), i18n.Dir)
-	d.createPathInfoField(content, i18n.Text("Log Path"), jotrotate.PathToLog)
+	d.createPathInfoField(content, i18n.Text("Log Path"), rotation.PathToLog)
 	d.createExternalPDFCmdLineField(content)
 	d.createLocaleField(content)
 }
@@ -429,15 +428,16 @@ func (d *generalSettingsDockable) save(filePath string) error {
 }
 
 func (d *generalSettingsDockable) willClose() bool {
+	filePath := languageSettingPath()
 	if languageSetting == "" {
 		i18n.Language = i18n.Locale()
-		if err := os.Remove(languageSettingPath()); err != nil && !errors.Is(err, os.ErrNotExist) {
-			jot.Error(errs.Wrap(err))
+		if err := os.Remove(filePath); err != nil && !errors.Is(err, os.ErrNotExist) {
+			errs.Log(err, "path", filePath)
 		}
 	} else {
 		i18n.Language = languageSetting
-		if err := os.WriteFile(languageSettingPath(), []byte(languageSetting), 0o640); err != nil {
-			jot.Error(errs.Wrap(err))
+		if err := os.WriteFile(filePath, []byte(languageSetting), 0o640); err != nil {
+			errs.Log(err, "path", filePath)
 		}
 	}
 	return true

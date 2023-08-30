@@ -20,8 +20,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/toolbox/xmath/crc"
 	"github.com/richardwilkes/unison"
@@ -63,7 +63,7 @@ func NewTableDockable[T gurps.NodeTypes](filePath, extension string, provider Ta
 	d := &TableDockable[T]{
 		path:              filePath,
 		extension:         extension,
-		undoMgr:           unison.NewUndoManager(200, func(err error) { jot.Error(err) }),
+		undoMgr:           unison.NewUndoManager(200, func(err error) { errs.Log(err) }),
 		provider:          provider,
 		saver:             saver,
 		canCreateIDs:      make(map[int]bool),

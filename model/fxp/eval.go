@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -15,7 +15,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/dbg"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/eval"
-	"github.com/richardwilkes/toolbox/log/jot"
 )
 
 // The evaluator operators and functions that will be used when calling NewEvaluator().
@@ -38,7 +37,7 @@ func EvaluateToNumber(expression string, resolver eval.VariableResolver) Int {
 	result, err := NewEvaluator(resolver).Evaluate(expression)
 	if err != nil {
 		if dbg.VariableResolver {
-			jot.Warn(errs.NewWithCausef(err, "unable to resolve '%s'", expression))
+			errs.Log(errs.NewWithCause("unable to resolve expression", err), "expression", expression)
 		}
 		return 0
 	}
@@ -52,7 +51,7 @@ func EvaluateToNumber(expression string, resolver eval.VariableResolver) Int {
 		}
 	}
 	if dbg.VariableResolver {
-		jot.Warn(errs.NewWithCausef(err, "unable to resolve '%s' to a number", expression))
+		errs.Log(errs.NewWithCause("unable to resolve expression to a number", err), "expression", expression)
 	}
 	return 0
 }

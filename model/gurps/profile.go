@@ -16,7 +16,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
 )
 
@@ -58,7 +57,7 @@ func (p *Profile) Portrait() *unison.Image {
 	if p.PortraitImage == nil && len(p.PortraitData) != 0 {
 		var err error
 		if p.PortraitImage, err = unison.NewImageFromBytes(p.PortraitData, 0.5); err != nil {
-			jot.Error(errs.NewWithCause("unable to load portrait data", err))
+			errs.Log(errs.NewWithCause("unable to load portrait data", err))
 			p.PortraitImage = nil
 			p.PortraitData = nil
 			return nil

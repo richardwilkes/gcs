@@ -13,8 +13,8 @@ package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 )
 
 // Multiplier returns the amount to multiply hours spent by for effective study hours.
@@ -29,8 +29,8 @@ func (enum StudyType) Multiplier() fxp.Int {
 	case IntensiveStudyType:
 		return fxp.Two
 	default:
-		jot.Fatal(1, "need handler for unknown study type")
-		return 0
+		errs.Log(errs.New("unknown study type"), "type", int(enum))
+		return fxp.One
 	}
 }
 
@@ -61,7 +61,7 @@ func (enum StudyType) Limitations() []string {
 			i18n.Text("The teacher must have the skill/spell/trait being taught at a higher level than you and have more points spent in it than you do"),
 		}
 	default:
-		jot.Fatal(1, "need handler for unknown study type")
+		errs.Log(errs.New("unknown study type"), "type", int(enum))
 		return nil
 	}
 }

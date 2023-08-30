@@ -26,8 +26,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/desktop"
+	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
 	"github.com/rjeczalik/notify"
@@ -1144,7 +1144,7 @@ func DisplayNewDockable(dockable unison.Dockable) {
 		if group != nil {
 			if slices.Contains(gurps.GlobalSettings().OpenInWindow, *group) {
 				if _, err := NewWindowForDockable(dockable, *group); err != nil {
-					jot.Error(err)
+					errs.Log(err)
 				}
 				return
 			}

@@ -21,7 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/log/jot"
+	"github.com/richardwilkes/toolbox/fatal"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xmath/crc"
 )
@@ -58,7 +58,7 @@ func BodyFor(entity *Entity) *Body {
 // FactoryBody returns a new copy of the default factory Body.
 func FactoryBody() *Body {
 	bodyType, err := NewBodyFromFile(embeddedFS, "embedded_data/Humanoid.body")
-	jot.FatalIfErr(err)
+	fatal.IfErr(err)
 	return bodyType
 }
 

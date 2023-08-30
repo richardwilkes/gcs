@@ -16,9 +16,10 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox"
+	"github.com/richardwilkes/toolbox/atexit"
 	"github.com/richardwilkes/toolbox/collection/dict"
+	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
 )
@@ -230,7 +231,8 @@ func (p *spellsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node
 	case AlternateItemVariant:
 		item = gurps.NewRitualMagicSpell(p.Entity(), nil, false)
 	default:
-		jot.Fatal(1, "unhandled variant")
+		errs.Log(errs.New("unhandled variant"), "variant", int(variant))
+		atexit.Exit(1)
 	}
 	InsertItems[*gurps.Spell](owner, table, p.provider.SpellList, p.provider.SetSpellList,
 		func(_ *unison.Table[*Node[*gurps.Spell]]) []*Node[*gurps.Spell] { return p.RootRows() }, item)

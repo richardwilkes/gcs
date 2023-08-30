@@ -16,7 +16,6 @@ import (
 	"path/filepath"
 
 	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/toolbox/xio/fs/paths"
 )
@@ -25,10 +24,10 @@ func fixupMovedSettingsFileIfNeeded() {
 	oldPath := filepath.Join(paths.HomeDir(), "AppData", "com.trollworks.gcs", "gcs_prefs.json")
 	if fs.FileExists(oldPath) && !fs.FileExists(SettingsPath) {
 		if err := os.MkdirAll(filepath.Dir(SettingsPath), 0o755); err != nil {
-			jot.Warn(err)
+			errs.Log(err)
 		}
 		if err := fs.MoveFile(oldPath, SettingsPath); err != nil {
-			jot.Warn(errs.NewWithCause("unable to move settings from old location to new location", err))
+			errs.Log(errs.NewWithCause("unable to move settings from old location to new location", err), "old", oldPath, "new", SettingsPath)
 		}
 	}
 }

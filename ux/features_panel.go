@@ -21,7 +21,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
 )
 
@@ -107,7 +106,7 @@ func (p *featuresPanel) insertFeaturePanel(index int, f gurps.Feature) {
 	case *gurps.WeaponBonus:
 		panel = p.createWeaponDamageBonusPanel(one)
 	default:
-		jot.Warn(errs.Newf("unknown feature type: %s", reflect.TypeOf(f).String()))
+		errs.Log(errs.New("unknown feature type"), "type", reflect.TypeOf(f).String())
 		return
 	}
 	if panel != nil {
@@ -296,7 +295,7 @@ func (p *featuresPanel) createSecondarySkillPanels(parent *unison.Panel, index i
 		prefix := i18n.Text("and whose usage")
 		addStringCriteriaPanel(wrapper, prefix, prefix, i18n.Text("Usage Qualifier"), &f.SpecializationCriteria, 1, false)
 	default:
-		jot.Errorf("unknown selection type: %v", f.SelectionType)
+		errs.Log(errs.New("unknown selection type"), "type", int(f.SelectionType))
 	}
 	wrapper.SetLayout(&unison.FlexLayout{
 		Columns:  len(wrapper.Children()),
@@ -459,7 +458,7 @@ func (p *featuresPanel) createSecondaryWeaponPanels(parent *unison.Panel, index 
 		prefix := i18n.Text("and whose usage")
 		addStringCriteriaPanel(wrapper, prefix, prefix, i18n.Text("Usage Qualifier"), &f.SpecializationCriteria, 1, false)
 	default:
-		jot.Errorf("unknown selection type: %v", f.SelectionType)
+		errs.Log(errs.New("unknown selection type"), "type", int(f.SelectionType))
 	}
 	wrapper.SetLayout(&unison.FlexLayout{
 		Columns:  len(wrapper.Children()),
@@ -647,7 +646,7 @@ func (p *featuresPanel) createFeatureForType(featureType gurps.FeatureType) gurp
 	case gurps.WeaponDRDivisorBonusFeatureType:
 		bonus = gurps.NewWeaponDRDivisorBonus()
 	default:
-		jot.Warn(errs.Newf("unknown feature type: %s", featureType.Key()))
+		errs.Log(errs.New("unknown feature type"), "type", featureType.Key())
 		return nil
 	}
 	bonus.SetOwner(p.owner)

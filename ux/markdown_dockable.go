@@ -22,7 +22,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/toolbox/xio/fs/safe"
@@ -89,7 +88,7 @@ func NewMarkdownDockableWithContent(title, content string, allowEditing, startIn
 func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode bool) (*MarkdownDockable, error) {
 	d := &MarkdownDockable{
 		path:              filePath,
-		undoMgr:           unison.NewUndoManager(200, func(err error) { jot.Error(err) }),
+		undoMgr:           unison.NewUndoManager(200, func(err error) { errs.Log(err) }),
 		scale:             gurps.GlobalSettings().General.InitialMarkdownUIScale,
 		allowEditing:      allowEditing,
 		needsSaveAsPrompt: true,

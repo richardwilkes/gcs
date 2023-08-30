@@ -20,8 +20,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/fatal"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
 )
 
@@ -80,12 +81,12 @@ func NewNodeLike[T gurps.NodeTypes](like *Node[T], data T) *Node[T] {
 func (n *Node[T]) CloneForTarget(target unison.Paneler, newParent *Node[T]) *Node[T] {
 	table, ok := target.(*unison.Table[*Node[T]])
 	if !ok {
-		jot.Fatal(1, "unable to convert to table")
+		fatal.IfErr(errs.New("unable to convert to table"))
 	}
 	if provider := DetermineEntityProvider(target); provider != nil {
 		return NewNode[T](table, newParent, n.dataAsNode.Clone(provider.Entity(), newParent.Data(), false), n.forPage)
 	}
-	jot.Fatal(1, "unable to locate entity provider")
+	fatal.IfErr(errs.New("unable to locate entity provider"))
 	return nil // Never reaches here
 }
 

@@ -19,7 +19,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox"
-	"github.com/richardwilkes/toolbox/log/jot"
+	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/fatal"
 	"github.com/richardwilkes/unison"
 )
 
@@ -147,7 +148,7 @@ func (s *GeneralSettings) CalendarRef(libraries Libraries) *CalendarRef {
 	ref := LookupCalendarRef(s.CalendarName, libraries)
 	if ref == nil {
 		if ref = LookupCalendarRef("Gregorian", libraries); ref == nil {
-			jot.Fatal(1, "unable to load default calendar (Gregorian)")
+			fatal.IfErr(errs.New("unable to load default calendar (Gregorian)"))
 		}
 	}
 	return ref

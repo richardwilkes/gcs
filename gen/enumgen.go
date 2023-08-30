@@ -24,7 +24,7 @@ import (
 	"text/template"
 	"unicode"
 
-	"github.com/richardwilkes/toolbox/log/jot"
+	"github.com/richardwilkes/toolbox/fatal"
 	"github.com/richardwilkes/toolbox/txt"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -1013,8 +1013,8 @@ func main() {
 
 func removeExistingGenFiles() {
 	root, err := filepath.Abs(rootDir)
-	jot.FatalIfErr(err)
-	jot.FatalIfErr(filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+	fatal.IfErr(err)
+	fatal.IfErr(filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		name := info.Name()
 		if info.IsDir() {
 			if name == ".git" {
@@ -1022,7 +1022,7 @@ func removeExistingGenFiles() {
 			}
 		} else {
 			if strings.HasSuffix(name, genSuffix) {
-				jot.FatalIfErr(os.Remove(path))
+				fatal.IfErr(os.Remove(path))
 			}
 		}
 		return nil
@@ -1041,23 +1041,23 @@ func processSourceTemplate(tmplName string, info *enumInfo) {
 		"toIdentifier": toIdentifier,
 		"wrapComment":  wrapComment,
 	}).ParseFiles(tmplName)
-	jot.FatalIfErr(err)
+	fatal.IfErr(err)
 	var buffer bytes.Buffer
 	writeGeneratedFromComment(&buffer, tmplName)
-	jot.FatalIfErr(tmpl.Execute(&buffer, info))
+	fatal.IfErr(tmpl.Execute(&buffer, info))
 	var data []byte
 	if data, err = format.Source(buffer.Bytes()); err != nil {
 		fmt.Println("unable to format source file: " + filepath.Join(info.Pkg, info.Name+genSuffix))
 		data = buffer.Bytes()
 	}
 	dir := filepath.Join(rootDir, info.Pkg)
-	jot.FatalIfErr(os.MkdirAll(dir, 0o750))
-	jot.FatalIfErr(os.WriteFile(filepath.Join(dir, info.Name+genSuffix), data, 0o640))
+	fatal.IfErr(os.MkdirAll(dir, 0o750))
+	fatal.IfErr(os.WriteFile(filepath.Join(dir, info.Name+genSuffix), data, 0o640))
 }
 
 func writeGeneratedFromComment(w io.Writer, tmplName string) {
 	_, err := fmt.Fprintf(w, "// Code generated from \"%s\" - DO NOT EDIT.\n\n", tmplName)
-	jot.FatalIfErr(err)
+	fatal.IfErr(err)
 }
 
 func add(a, b int) int {

@@ -12,7 +12,7 @@
 package gurps
 
 import (
-	"github.com/richardwilkes/toolbox/log/jot"
+	"github.com/richardwilkes/toolbox/errs"
 )
 
 // MatchForType applies the matcher and returns the result.
@@ -27,7 +27,7 @@ func (enum SpellMatchType) MatchForType(matcher StringCriteria, name, powerSourc
 	case NameSpellMatchType:
 		return matcher.Matches(name)
 	default:
-		jot.Warnf("unhandled spell match type: %d", enum)
+		errs.Log(errs.New("unhandled spell match type"), "type", int(enum))
 		return false
 	}
 }

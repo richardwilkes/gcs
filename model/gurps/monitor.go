@@ -17,7 +17,6 @@ import (
 	"sync"
 
 	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/taskqueue"
 	"github.com/richardwilkes/unison"
 	"github.com/rjeczalik/notify"
@@ -64,7 +63,7 @@ func (m *monitor) startWatch(token *MonitorToken, sendSync bool) {
 		m.done = make(chan bool)
 		m.events = make(chan notify.EventInfo, 16)
 		if err := notify.Watch(token.root+"/...", m.events, notify.Create|notify.Remove|notify.Rename); err != nil {
-			jot.Error(errs.NewWithCausef(err, "unable to watch filesystem path: %s", token.root))
+			errs.Log(errs.NewWithCause("unable to watch filesystem path", err), "path", token.root)
 			m.events = nil
 			m.done = nil
 			m.queue.Shutdown()
@@ -145,10 +144,10 @@ func (m *MonitorToken) AddSubPath(relativePath string) {
 	defer m.monitor.lock.Unlock()
 	if m.monitor.events != nil {
 		if fullPath, err := filepath.Abs(filepath.Join(m.root, relativePath)); err != nil {
-			jot.Error(errs.Wrap(err))
+			errs.Log(err)
 		} else if !m.subPaths[fullPath] {
 			if err = notify.Watch(fullPath+"/...", m.monitor.events, notify.Create|notify.Remove|notify.Rename); err != nil {
-				jot.Error(errs.NewWithCausef(err, "unable to watch filesystem path: %s", fullPath))
+				errs.Log(errs.NewWithCause("unable to watch filesystem path", err), "path", fullPath)
 			} else {
 				m.subPaths[fullPath] = true
 			}

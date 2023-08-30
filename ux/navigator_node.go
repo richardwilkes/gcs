@@ -26,7 +26,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
@@ -310,7 +309,7 @@ func (n *NavigatorNode) refreshChildren(dirPath string, parent *NavigatorNode) [
 	if err != nil {
 		if !errors.Is(err, fs.ErrNotExist) {
 			// Only log the error if it wasn't due to a missing dir, since that happens during filesystem updates
-			jot.Error(errs.NewWithCausef(err, "unable to read the directory: %s", dirPath))
+			errs.Log(errs.NewWithCause("unable to read the directory", err), "dir", dirPath)
 		}
 		return nil
 	}

@@ -19,9 +19,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
+	"github.com/richardwilkes/toolbox/atexit"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
 )
 
@@ -97,7 +97,8 @@ func initFonts() {
 	factoryFonts = make([]*ThemedFont, len(currentFonts))
 	for i, c := range currentFonts {
 		if c.Font.Font == nil {
-			jot.Fatal(1, i, c)
+			errs.Log(errs.New("nil font"), "id", c.ID)
+			atexit.Exit(1)
 		}
 		factoryFonts[i] = &ThemedFont{
 			ID:    c.ID,

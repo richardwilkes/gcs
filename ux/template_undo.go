@@ -13,7 +13,7 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/toolbox/log/jot"
+	"github.com/richardwilkes/toolbox/errs"
 )
 
 // ApplyTemplateUndoEditData holds the sheet table data for an undo.
@@ -55,19 +55,19 @@ func (a *ApplyTemplateUndoEditData) Apply() {
 	a.sheet.Entity().Profile.ProfileRandom = a.profile
 	updateRandomizedProfileFieldsWithoutUndo(a.sheet)
 	if err := a.traits.Apply(a.sheet.Traits.Table); err != nil {
-		jot.Warn(err)
+		errs.Log(err)
 	}
 	if err := a.skills.Apply(a.sheet.Skills.Table); err != nil {
-		jot.Warn(err)
+		errs.Log(err)
 	}
 	if err := a.spells.Apply(a.sheet.Spells.Table); err != nil {
-		jot.Warn(err)
+		errs.Log(err)
 	}
 	if err := a.equipment.Apply(a.sheet.CarriedEquipment.Table); err != nil {
-		jot.Warn(err)
+		errs.Log(err)
 	}
 	if err := a.notes.Apply(a.sheet.Notes.Table); err != nil {
-		jot.Warn(err)
+		errs.Log(err)
 	}
 	a.sheet.Rebuild(true)
 }

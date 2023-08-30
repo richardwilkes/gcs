@@ -15,8 +15,8 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/eval"
-	"github.com/richardwilkes/toolbox/log/jot"
 )
 
 const (
@@ -129,7 +129,7 @@ func (o *AncestryOptions) RandomName(nameGeneratorRefs []*NameGeneratorRef) stri
 	for _, one := range o.NameGenerators {
 		if ref, ok := m[one]; ok {
 			if generator, err := ref.Generator(); err != nil {
-				jot.Error(err)
+				errs.Log(err)
 			} else {
 				if name := strings.TrimSpace(generator.GenerateName()); name != "" {
 					if buffer.Len() != 0 {

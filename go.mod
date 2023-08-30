@@ -7,8 +7,8 @@ require (
 	github.com/richardwilkes/json v0.1.0
 	github.com/richardwilkes/pdf v1.22.2
 	github.com/richardwilkes/rpgtools v1.6.1
-	github.com/richardwilkes/toolbox v1.94.0
-	github.com/richardwilkes/unison v0.62.1
+	github.com/richardwilkes/toolbox v1.96.0
+	github.com/richardwilkes/unison v0.62.2
 	github.com/rjeczalik/notify v0.9.3
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef
@@ -34,6 +34,6 @@ require (
 	github.com/yuin/goldmark v1.5.6 // indirect
 	golang.org/x/mod v0.12.0 // indirect
 	golang.org/x/net v0.14.0 // indirect
-	golang.org/x/tools v0.12.1-0.20230825192346-2191a27a6dc5 // indirect
+	golang.org/x/tools v0.12.1-0.20230829195024-9658d2e94ba2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

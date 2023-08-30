@@ -17,7 +17,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/rpgtools/calendar"
-	"github.com/richardwilkes/toolbox/log/jot"
+	"github.com/richardwilkes/toolbox/errs"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/toolbox/xmath/rand"
 )
@@ -39,7 +39,7 @@ func LookupCalendarRef(name string, libraries Libraries) *CalendarRef {
 		for _, one := range lib.List {
 			if one.Name == name {
 				if a, err := NewCalendarRefFromFS(one.FileSystem, one.FilePath); err != nil {
-					jot.Warn(err)
+					errs.Log(err, "path", one.FilePath)
 				} else {
 					return a
 				}

@@ -16,8 +16,8 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
 )
 
@@ -74,7 +74,7 @@ func (p *PointPoolsPanel) rebuild(attrs *gurps.AttributeDefs) {
 			} else {
 				attr, ok := p.entity.Attributes.Set[def.ID()]
 				if !ok {
-					jot.Warnf("unable to locate attribute data for '%s'", def.ID())
+					errs.Log(errs.New("unable to locate attribute data"), "id", def.ID())
 					continue
 				}
 				p.AddChild(p.createPointsField(attr))

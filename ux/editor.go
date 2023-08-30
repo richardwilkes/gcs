@@ -18,8 +18,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox"
+	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
 )
 
@@ -84,7 +84,7 @@ func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner Rebuildable, 
 	reflect.ValueOf(&e.editorData).Elem().Set(reflect.New(reflect.TypeOf(e.editorData).Elem()))
 	e.editorData.CopyFrom(target)
 
-	e.undoMgr = unison.NewUndoManager(100, func(err error) { jot.Error(err) })
+	e.undoMgr = unison.NewUndoManager(100, func(err error) { errs.Log(err) })
 	e.SetLayout(&unison.FlexLayout{Columns: 1})
 
 	content := unison.NewPanel()

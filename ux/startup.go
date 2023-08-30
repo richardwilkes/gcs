@@ -16,8 +16,9 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/cmdline"
+	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/fatal"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
 )
 
@@ -37,13 +38,13 @@ func Start(files []string) {
 			unison.DefaultMarkdownTheme.WorkingDirProvider = WorkingDirProvider
 			unison.DefaultMarkdownTheme.AltLinkPrefixes = []string{"md:"}
 			if appIcon, err := unison.NewImageFromBytes(appIconBytes, 0.5); err != nil {
-				jot.Error(err)
+				errs.Log(err)
 			} else {
 				unison.DefaultTitleIcons = []*unison.Image{appIcon}
 			}
 			CheckForAppUpdates()
 			wnd, err := unison.NewWindow(cmdline.AppName)
-			jot.FatalIfErr(err)
+			fatal.IfErr(err)
 			SetupMenuBar(wnd)
 			InitWorkspace(wnd)
 			OpenFiles(files)

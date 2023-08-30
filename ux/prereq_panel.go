@@ -20,7 +20,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
 )
 
@@ -116,7 +115,7 @@ func (p *prereqPanel) addToList(parent *unison.Panel, depth, index int, child gu
 	case *gurps.SpellPrereq:
 		panel = p.createSpellPrereqPanel(depth, one)
 	default:
-		jot.Warn(errs.Newf("unknown prerequisite type: %s", reflect.TypeOf(child).String()))
+		errs.Log(errs.New("unknown prerequisite type"), "type", reflect.TypeOf(child).String())
 	}
 	if panel != nil {
 		columns := parent.Layout().(*unison.FlexLayout).Columns
@@ -277,7 +276,7 @@ func (p *prereqPanel) createPrereqForType(prereqType gurps.PrereqType, parentLis
 		one.Parent = parentList
 		return one
 	default:
-		jot.Warn(errs.Newf("unknown prerequisite type: %s", prereqType.Key()))
+		errs.Log(errs.New("unknown prerequisite type"), "type", prereqType.Key())
 		return nil
 	}
 }

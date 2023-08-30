@@ -20,16 +20,16 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/rpgtools/dice"
-	"github.com/richardwilkes/toolbox/log/jot"
+	"github.com/richardwilkes/toolbox/fatal"
 )
 
 const dirToUpdate = "/Users/rich/code/gurps_campaign/Library"
 
 func main() {
 	dice.GURPSFormat = true
-	jot.FatalIfErr(updateSCR(dirToUpdate, "Spells, Arcane.spl", 0))
-	jot.FatalIfErr(updateSCR(dirToUpdate, "Spells, Divine.spl", 1))
-	jot.FatalIfErr(updateSCR(dirToUpdate, "Spells, Druidic.spl", 1))
+	fatal.IfErr(updateSCR(dirToUpdate, "Spells, Arcane.spl", 0))
+	fatal.IfErr(updateSCR(dirToUpdate, "Spells, Divine.spl", 1))
+	fatal.IfErr(updateSCR(dirToUpdate, "Spells, Druidic.spl", 1))
 }
 
 func updateSCR(dir, fileName string, extraSCR int) error {

@@ -17,8 +17,8 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/unison"
 )
 
@@ -127,7 +127,7 @@ func (d *menuKeySettingsDockable) createBindingButton(binding *gurps.Binding) {
 				unison.NewCancelButtonInfo(),
 				unison.NewOKButtonInfoWithTitle(i18n.Text("Set")),
 			}); err != nil {
-			jot.Error(err)
+			errs.Log(err)
 		} else {
 			unison.DisableMenus = true
 			defer func() { unison.DisableMenus = false }()

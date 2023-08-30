@@ -20,7 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/log/jot"
+	"github.com/richardwilkes/toolbox/fatal"
 	"github.com/richardwilkes/toolbox/xmath/crc"
 )
 
@@ -68,7 +68,7 @@ func AttributeIDFor(entity *Entity, preferred string) string {
 // FactoryAttributeDefs returns the factory AttributeDef set.
 func FactoryAttributeDefs() *AttributeDefs {
 	defs, err := NewAttributeDefsFromFile(embeddedFS, "embedded_data/Standard.attr")
-	jot.FatalIfErr(err)
+	fatal.IfErr(err)
 	return defs
 }
 

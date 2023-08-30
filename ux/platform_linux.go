@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -27,7 +27,6 @@ import (
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/formats/icon"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio/fs/paths"
 )
 
@@ -39,22 +38,21 @@ var docIconBytes []byte
 func performPlatformStartup() {
 	exePath, err := os.Executable()
 	if err != nil {
-		jot.Error(errs.Wrap(err))
+		errs.Log(err)
 		return
 	}
 	if filepath.Base(exePath) != cmdline.AppCmdName {
-		jot.Warnf("skipping desktop integration since executable name '%s' is not '%s'", filepath.Base(exePath),
-			cmdline.AppCmdName)
+		errs.Log(errs.Log("skipping desktop integration"), "name", filepath.Base(exePath), "expected", cmdline.AppCmdName)
 		return
 	}
 	if err = installDesktopIcons(); err != nil {
-		jot.Error(err)
+		errs.Log(err)
 	}
 	if err = installDesktopFiles(exePath); err != nil {
-		jot.Error(err)
+		errs.Log(err)
 	}
 	if err = installMimeInfo(); err != nil {
-		jot.Error(err)
+		errs.Log(err)
 	}
 }
 
@@ -115,7 +113,7 @@ func installDesktopIcons() error {
 	var cmdPath string
 	if cmdPath, err = exec.LookPath("gtk-update-icon-cache"); err != nil {
 		if errors.Is(err, exec.ErrNotFound) {
-			jot.Warn(errs.NewWithCause("skipping icon cache update", err))
+			errs.Log(errs.NewWithCause("skipping icon cache update", err))
 			return nil
 		}
 		return errs.Wrap(err)
@@ -170,7 +168,7 @@ func installMimeInfo() error {
 	cmdPath, err := exec.LookPath("update-mime-database")
 	if err != nil {
 		if errors.Is(err, exec.ErrNotFound) {
-			jot.Warn(errs.NewWithCause("skipping mime database update", err))
+			errs.Log(errs.NewWithCause("skipping mime database update", err))
 			return nil
 		}
 		return errs.Wrap(err)

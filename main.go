@@ -13,6 +13,8 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"log/slog"
 	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/early"
@@ -23,7 +25,8 @@ import (
 	"github.com/richardwilkes/toolbox/atexit"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jotrotate"
+	"github.com/richardwilkes/toolbox/log/rotation"
+	"github.com/richardwilkes/toolbox/log/tracelog"
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/toolbox/xio/fs/paths"
 	"github.com/richardwilkes/unison"
@@ -56,7 +59,8 @@ func main() {
 	cl.NewGeneralOption(&convertFiles).SetName("convert").SetSingle('c').
 		SetUsage(i18n.Text("Converts all files specified on the command line to the current data format. If a directory is specified, it will be traversed recursively and all files found will be converted. This operation is intended to easily bring files up to the current version's data format. After all files have been processed, GCS will exit"))
 	cl.NewGeneralOption(&dbg.VariableResolver).SetName("debug-variable-resolver")
-	fileList := jotrotate.ParseAndSetup(cl)
+	fileList := rotation.ParseAndSetupLogging(cl, false)
+	slog.SetDefault(slog.New(tracelog.New(log.Default().Writer(), slog.LevelInfo)))
 	ux.RegisterKnownFileTypes()
 	gurps.GlobalSettings() // Here to force early initialization
 	switch {

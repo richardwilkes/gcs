@@ -18,7 +18,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/log/jot"
+	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/txt"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 )
@@ -99,7 +99,7 @@ func (p *PageRefs) Lookup(id string) *PageRef {
 // Set the PageRef.
 func (p *PageRefs) Set(pageRef *PageRef) {
 	if pageRef.ID == "" || pageRef.ID == oldPageRefsKey {
-		jot.Warn("invalid page reference ID")
+		errs.Log(errs.New("invalid page reference ID"), "id", pageRef.ID)
 		return
 	}
 	if p.data == nil {

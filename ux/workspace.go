@@ -21,8 +21,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
@@ -254,7 +254,7 @@ func PlaceInDock(dockable unison.Dockable, group gurps.DockableGroup, forceIntoD
 	InstallDockUndockCmd(dockable)
 	if !forceIntoDock && slices.Contains(gurps.GlobalSettings().OpenInWindow, group) {
 		if _, err := NewWindowForDockable(dockable, group); err != nil {
-			jot.Error(err)
+			errs.Log(err)
 		}
 		return
 	}
@@ -335,7 +335,7 @@ func InstallDockUndockCmd(dockable unison.Dockable) {
 		func(_ any) {
 			if panel.Window() == Workspace.Window {
 				if _, err := MoveDockableToWindow(dockable); err != nil {
-					jot.Error(err)
+					errs.Log(err)
 				}
 			} else {
 				MoveDockableToWorkspace(dockable)

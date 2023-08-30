@@ -12,14 +12,13 @@
 package gurps
 
 import (
-	"strconv"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
+	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/log/jot"
 	"github.com/richardwilkes/toolbox/xio"
 )
 
@@ -368,7 +367,7 @@ func (w *WeaponDamage) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, 
 				}
 			}
 		default:
-			jot.Fatal(1, "unknown selection type: "+strconv.Itoa(int(bonus.SelectionType)))
+			errs.Log(errs.New("unknown selection type"), "type", int(bonus.SelectionType))
 		}
 		bonus.LeveledAmount.Level = level
 	}
