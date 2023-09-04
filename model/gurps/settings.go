@@ -51,22 +51,23 @@ type NavigatorSettings struct {
 
 // Settings holds the application settings.
 type Settings struct {
-	LastSeenGCSVersion string            `json:"last_seen_gcs_version,omitempty"`
-	General            *GeneralSettings  `json:"general,omitempty"`
-	LibrarySet         Libraries         `json:"libraries,omitempty"`
-	LibraryExplorer    NavigatorSettings `json:"library_explorer"`
-	RecentFiles        []string          `json:"recent_files,omitempty"`
-	DeepSearch         []string          `json:"deep_search,omitempty"`
-	LastDirs           map[string]string `json:"last_dirs,omitempty"`
-	PageRefs           PageRefs          `json:"page_refs,omitempty"`
-	KeyBindings        KeyBindings       `json:"key_bindings,omitempty"`
-	WorkspaceFrame     *unison.Rect      `json:"workspace_frame,omitempty"`
-	Colors             Colors            `json:"colors"`
-	Fonts              Fonts             `json:"fonts"`
-	QuickExports       *QuickExports     `json:"quick_exports,omitempty"`
-	Sheet              *SheetSettings    `json:"sheet_settings,omitempty"`
-	OpenInWindow       []DockableGroup   `json:"open_in_window,omitempty"`
-	ColorMode          unison.ColorMode  `json:"color_mode"`
+	LastSeenGCSVersion string                     `json:"last_seen_gcs_version,omitempty"`
+	General            *GeneralSettings           `json:"general,omitempty"`
+	LibrarySet         Libraries                  `json:"libraries,omitempty"`
+	LibraryExplorer    NavigatorSettings          `json:"library_explorer"`
+	RecentFiles        []string                   `json:"recent_files,omitempty"`
+	DeepSearch         []string                   `json:"deep_search,omitempty"`
+	LastDirs           map[string]string          `json:"last_dirs,omitempty"`
+	ColumnSizing       map[string]map[int]float32 `json:"column_sizing,omitempty"`
+	PageRefs           PageRefs                   `json:"page_refs,omitempty"`
+	KeyBindings        KeyBindings                `json:"key_bindings,omitempty"`
+	WorkspaceFrame     *unison.Rect               `json:"workspace_frame,omitempty"`
+	Colors             Colors                     `json:"colors"`
+	Fonts              Fonts                      `json:"fonts"`
+	QuickExports       *QuickExports              `json:"quick_exports,omitempty"`
+	Sheet              *SheetSettings             `json:"sheet_settings,omitempty"`
+	OpenInWindow       []DockableGroup            `json:"open_in_window,omitempty"`
+	ColorMode          unison.ColorMode           `json:"color_mode"`
 }
 
 // DefaultSettings returns new default settings.

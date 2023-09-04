@@ -82,6 +82,21 @@ func NewTableDockable[T gurps.NodeTypes](filePath, extension string, provider Ta
 
 	d.table.SyncToModel()
 	d.table.SizeColumnsToFit(true)
+	if columnSizing, ok := gurps.GlobalSettings().ColumnSizing[filePath]; ok {
+		needSync := false
+		for id, width := range columnSizing {
+			if i := d.table.ColumnIndexForID(id); i != -1 {
+				if d.table.Columns[i].Current != width {
+					d.table.Columns[i].Current = width
+					needSync = true
+				}
+			}
+		}
+		if needSync {
+			d.table.SyncToModel()
+		}
+	}
+
 	InstallTableDropSupport(d.table, d.provider)
 
 	d.scroll.SetColumnHeader(d.tableHeader)
@@ -259,7 +274,19 @@ func (d *TableDockable[T]) AttemptClose() bool {
 			return false
 		}
 	}
+	d.preserveColumns()
 	return AttemptCloseForDockable(d)
+}
+
+func (d *TableDockable[T]) preserveColumns() {
+	m := make(map[int]float32, len(d.table.Columns))
+	for _, col := range d.table.Columns {
+		m[col.ID] = col.Current
+	}
+	if gurps.GlobalSettings().ColumnSizing == nil {
+		gurps.GlobalSettings().ColumnSizing = make(map[string]map[int]float32)
+	}
+	gurps.GlobalSettings().ColumnSizing[d.BackingFilePath()] = m
 }
 
 func (d *TableDockable[T]) save(forceSaveAs bool) bool {
