@@ -27,10 +27,11 @@ type HitLocationChoice struct {
 func HitLocationChoices(entity *Entity, currentKey string, forEquipmentModifier bool) (choices []*HitLocationChoice, current *HitLocationChoice) {
 	bodyType := BodyFor(entity)
 	list := bodyType.UniqueHitLocations(entity)
-	choices = make([]*HitLocationChoice, 0, len(list)+2)
+	choices = make([]*HitLocationChoice, 0, len(list)+3)
 	if forEquipmentModifier {
 		choices = append(choices, &HitLocationChoice{Title: i18n.Text("to this armor")})
 	}
+	choices = append(choices, &HitLocationChoice{Key: AllID, Title: i18n.Text("to all locations")})
 	prefix := i18n.Text("to the")
 	for _, one := range list {
 		choices = append(choices, &HitLocationChoice{Key: one.LocID, Title: prefix + " " + one.ChoiceName})

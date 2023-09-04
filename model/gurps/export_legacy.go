@@ -775,7 +775,7 @@ func (ex *legacyExporter) hitLocationEquipment(location *HitLocation) []string {
 		if eqp.Equipped {
 			for _, f := range eqp.Features {
 				if bonus, ok := f.(*DRBonus); ok {
-					if strings.EqualFold(location.LocID, bonus.Location) {
+					if bonus.Location == AllID || strings.EqualFold(location.LocID, bonus.Location) {
 						list = append(list, eqp.Name)
 					}
 				}

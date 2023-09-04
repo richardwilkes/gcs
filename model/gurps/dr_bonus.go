@@ -61,7 +61,12 @@ func (d *DRBonus) Clone() Feature {
 
 // Normalize adjusts the data to it preferred representation.
 func (d *DRBonus) Normalize() {
-	s := strings.TrimSpace(d.Specialization)
+	s := strings.TrimSpace(d.Location)
+	if strings.EqualFold(s, AllID) {
+		s = AllID
+	}
+	d.Location = s
+	s = strings.TrimSpace(d.Specialization)
 	if s == "" || strings.EqualFold(s, AllID) {
 		s = AllID
 	}

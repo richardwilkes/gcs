@@ -720,7 +720,7 @@ func (e *Entity) AddDRBonusesFor(locationID string, tooltip *xio.ByteBuffer, drM
 		drMap = make(map[string]int)
 	}
 	for _, one := range e.features.drBonuses {
-		if strings.EqualFold(one.Location, locationID) {
+		if one.Location == AllID || strings.EqualFold(one.Location, locationID) {
 			drMap[strings.ToLower(one.Specialization)] += fxp.As[int](one.AdjustedAmount())
 			one.AddToTooltip(tooltip)
 		}
