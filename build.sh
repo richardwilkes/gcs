@@ -26,7 +26,7 @@ for arg in "$@"; do
   --dist|-d)
     EXTRA_BUILD_FLAGS="-a -trimpath"
     EXTRA_LD_FLAGS="-s -w"
-    RELEASE="5.15.0"
+    RELEASE="5.16.0"
     DIST=1
     case $(uname -s) in
     Darwin*)
