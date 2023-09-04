@@ -288,7 +288,7 @@ func (a *Trait) SetOwningEntity(entity *Entity) {
 
 // Notes returns the local notes.
 func (a *Trait) Notes() string {
-	return a.LocalNotes
+	return a.resolveLocalNotes()
 }
 
 // IsLeveled returns true if the Trait is capable of having levels.
@@ -371,6 +371,10 @@ func (a *Trait) String() string {
 		buffer.WriteString(a.Levels.String())
 	}
 	return buffer.String()
+}
+
+func (a *Trait) resolveLocalNotes() string {
+	return EvalEmbeddedRegex.ReplaceAllStringFunc(a.LocalNotes, a.Entity.EmbeddedEval)
 }
 
 // FeatureList returns the list of Features.

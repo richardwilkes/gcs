@@ -305,11 +305,11 @@ func (e *Equipment) SecondaryText(optionChecker func(DisplayOption) bool) string
 			buffer.WriteString(notes)
 		}
 	}
-	if e.LocalNotes != "" && optionChecker(settings.NotesDisplay) {
+	if localNotes := e.resolveLocalNotes(); localNotes != "" && optionChecker(settings.NotesDisplay) {
 		if buffer.Len() != 0 {
 			buffer.WriteByte('\n')
 		}
-		buffer.WriteString(e.LocalNotes)
+		buffer.WriteString(localNotes)
 	}
 	return buffer.String()
 }
@@ -317,6 +317,10 @@ func (e *Equipment) SecondaryText(optionChecker func(DisplayOption) bool) string
 // String implements fmt.Stringer.
 func (e *Equipment) String() string {
 	return e.Name
+}
+
+func (e *Equipment) resolveLocalNotes() string {
+	return EvalEmbeddedRegex.ReplaceAllStringFunc(e.LocalNotes, e.Entity.EmbeddedEval)
 }
 
 // Notes returns the local notes.

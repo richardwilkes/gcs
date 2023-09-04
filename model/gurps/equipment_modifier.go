@@ -218,15 +218,19 @@ func (m *EquipmentModifier) String() string {
 	return m.Name
 }
 
+func (m *EquipmentModifier) resolveLocalNotes() string {
+	return EvalEmbeddedRegex.ReplaceAllStringFunc(m.LocalNotes, m.Entity.EmbeddedEval)
+}
+
 // SecondaryText returns the "secondary" text: the text display below an Trait.
 func (m *EquipmentModifier) SecondaryText(optionChecker func(DisplayOption) bool) string {
 	var buffer strings.Builder
 	settings := SheetSettingsFor(m.Entity)
-	if m.LocalNotes != "" && optionChecker(settings.NotesDisplay) {
+	if localNotes := m.resolveLocalNotes(); localNotes != "" && optionChecker(settings.NotesDisplay) {
 		if buffer.Len() != 0 {
 			buffer.WriteByte('\n')
 		}
-		buffer.WriteString(m.LocalNotes)
+		buffer.WriteString(localNotes)
 	}
 	return buffer.String()
 }
@@ -235,7 +239,7 @@ func (m *EquipmentModifier) SecondaryText(optionChecker func(DisplayOption) bool
 func (m *EquipmentModifier) FullDescription() string {
 	var buffer strings.Builder
 	buffer.WriteString(m.String())
-	if m.LocalNotes != "" {
+	if localNotes := m.resolveLocalNotes(); localNotes != "" {
 		buffer.WriteString(" (")
 		buffer.WriteString(m.LocalNotes)
 		buffer.WriteByte(')')

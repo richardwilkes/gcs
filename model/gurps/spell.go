@@ -590,7 +590,7 @@ func (s *Spell) SetOwningEntity(entity *Entity) {
 
 // Notes implements WeaponOwner.
 func (s *Spell) Notes() string {
-	return s.LocalNotes
+	return s.resolveLocalNotes()
 }
 
 // Rituals returns the rituals required to cast the spell.
@@ -695,6 +695,10 @@ func (s *Spell) String() string {
 		}
 	}
 	return buffer.String()
+}
+
+func (s *Spell) resolveLocalNotes() string {
+	return EvalEmbeddedRegex.ReplaceAllStringFunc(s.LocalNotes, s.Entity.EmbeddedEval)
 }
 
 // RawPoints returns the unadjusted points.

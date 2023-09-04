@@ -337,7 +337,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 			} else {
 				needBlanks = true
 			}
-			ex.writeEncodedText(n.Text)
+			ex.writeEncodedText(n.String())
 			return false
 		}, false, false, ex.entity.Notes...)
 	case "RACE", "ANCESTRY":
@@ -1129,10 +1129,11 @@ func (ex *legacyExporter) processNotesLoop(buffer []byte) {
 			case refExportKey:
 				ex.writeEncodedText(n.PageRef)
 			case "NOTE":
-				ex.writeEncodedText(n.Text)
+				ex.writeEncodedText(n.String())
 			case "NOTE_FORMATTED":
-				if strings.TrimSpace(n.Text) != "" {
-					for _, one := range strings.Split(n.Text, "\n") {
+				s := n.String()
+				if strings.TrimSpace(s) != "" {
+					for _, one := range strings.Split(s, "\n") {
 						ex.out.WriteString("<p>")
 						ex.writeEncodedText(one)
 						ex.out.WriteString("</p>\n")

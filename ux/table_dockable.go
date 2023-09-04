@@ -283,10 +283,11 @@ func (d *TableDockable[T]) preserveColumns() {
 	for _, col := range d.table.Columns {
 		m[col.ID] = col.Current
 	}
-	if gurps.GlobalSettings().ColumnSizing == nil {
-		gurps.GlobalSettings().ColumnSizing = make(map[string]map[int]float32)
+	settings := gurps.GlobalSettings()
+	if settings.ColumnSizing == nil {
+		settings.ColumnSizing = make(map[string]map[int]float32)
 	}
-	gurps.GlobalSettings().ColumnSizing[d.BackingFilePath()] = m
+	settings.ColumnSizing[d.BackingFilePath()] = m
 }
 
 func (d *TableDockable[T]) save(forceSaveAs bool) bool {

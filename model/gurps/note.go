@@ -122,7 +122,11 @@ func (n *Note) UnmarshalJSON(data []byte) error {
 }
 
 func (n *Note) String() string {
-	return n.Text
+	return n.resolveText()
+}
+
+func (n *Note) resolveText() string {
+	return EvalEmbeddedRegex.ReplaceAllStringFunc(n.Text, n.Entity.EmbeddedEval)
 }
 
 // CellData returns the cell data information for the given column.
@@ -130,14 +134,14 @@ func (n *Note) CellData(columnID int, data *CellData) {
 	switch columnID {
 	case NoteTextColumn:
 		data.Type = MarkdownCellType
-		data.Primary = n.Text
+		data.Primary = n.resolveText()
 	case NoteReferenceColumn, PageRefCellAlias:
 		data.Type = PageRefCellType
 		data.Primary = n.PageRef
 		if n.PageRefHighlight != "" {
 			data.Secondary = n.PageRefHighlight
 		} else {
-			data.Secondary = n.Text
+			data.Secondary = n.resolveText()
 		}
 	}
 }

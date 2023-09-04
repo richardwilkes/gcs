@@ -344,7 +344,7 @@ func (s *Skill) HasDefaultTo(other *Skill) bool {
 
 // Notes implements WeaponOwner.
 func (s *Skill) Notes() string {
-	return s.LocalNotes
+	return s.resolveLocalNotes()
 }
 
 // ModifierNotes returns the notes due to modifiers.
@@ -436,6 +436,10 @@ func (s *Skill) String() string {
 		}
 	}
 	return buffer.String()
+}
+
+func (s *Skill) resolveLocalNotes() string {
+	return EvalEmbeddedRegex.ReplaceAllStringFunc(s.LocalNotes, s.Entity.EmbeddedEval)
 }
 
 // RelativeLevel returns the adjusted relative level as a string.

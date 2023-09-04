@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"io/fs"
 	"math"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -1460,4 +1461,21 @@ func (e *Entity) SetPointsRecord(record []*PointsRecord) {
 	for _, rec := range record {
 		e.TotalPoints += rec.Points
 	}
+}
+
+// EvalEmbeddedRegex is aa regex for extracting embedded expressions.
+var EvalEmbeddedRegex = regexp.MustCompile(`\|\|[^|]+\|\|`)
+
+// EmbeddedEval resolves an embedded expression.
+func (e *Entity) EmbeddedEval(s string) string {
+	if e == nil {
+		return s
+	}
+	ev := fxp.NewEvaluator(e)
+	exp := s[2 : len(s)-2]
+	result, err := ev.Evaluate(exp)
+	if err != nil {
+		errs.Log(err, "expression", exp)
+	}
+	return fmt.Sprintf("%v", result)
 }
