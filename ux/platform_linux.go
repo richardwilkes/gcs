@@ -42,7 +42,7 @@ func performPlatformStartup() {
 		return
 	}
 	if filepath.Base(exePath) != cmdline.AppCmdName {
-		errs.Log(errs.Log("skipping desktop integration"), "name", filepath.Base(exePath), "expected", cmdline.AppCmdName)
+		errs.Log(errs.New("skipping desktop integration"), "name", filepath.Base(exePath), "expected", cmdline.AppCmdName)
 		return
 	}
 	if err = installDesktopIcons(); err != nil {
