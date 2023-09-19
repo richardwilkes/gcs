@@ -688,10 +688,9 @@ func NewSVGButtonForFont(svg *unison.SVG, font unison.Font, sizeAdjust float32) 
 	b.DrawableOnlyHMargin = 1
 	b.HideBase = true
 	baseline := font.Baseline() + sizeAdjust
-	size := unison.NewSize(baseline, baseline)
 	b.Drawable = &unison.DrawableSVG{
 		SVG:  svg,
-		Size: *size.GrowToInteger(),
+		Size: unison.NewSize(baseline, baseline).Ceil(),
 	}
 	return b
 }

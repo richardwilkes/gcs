@@ -36,10 +36,9 @@ func NewDragHandle(data map[string]any) *DragHandle {
 	h.MouseDragCallback = h.mouseDrag
 	h.Tooltip = newWrappedTooltip(i18n.Text("Click and drag this handle to rearrange"))
 	baseline := unison.DefaultButtonTheme.Font.Baseline()
-	size := unison.NewSize(baseline, baseline)
 	h.svg = &unison.DrawableSVG{
 		SVG:  svg.Grip,
-		Size: *size.GrowToInteger(),
+		Size: unison.NewSize(baseline, baseline).Ceil(),
 	}
 	h.SetSizer(h.size)
 	h.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.MiddleAlignment})
@@ -48,9 +47,7 @@ func NewDragHandle(data map[string]any) *DragHandle {
 }
 
 func (h *DragHandle) size(_ unison.Size) (minSize, prefSize, maxSize unison.Size) {
-	prefSize = h.svg.LogicalSize()
-	prefSize.AddInsets(h.Border().Insets())
-	prefSize.GrowToInteger()
+	prefSize = h.svg.LogicalSize().Add(h.Border().Insets().Size()).Ceil()
 	return prefSize, prefSize, prefSize
 }
 

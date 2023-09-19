@@ -319,7 +319,7 @@ func (d *attributeSettingsDockable) dataDragOver(where unison.Point, data map[st
 				pt := d.content.PointFromRoot(rootPt)
 				for i, child := range children {
 					rect := child.FrameRect()
-					if rect.ContainsPoint(pt) {
+					if pt.In(rect) {
 						if rect.CenterY() <= pt.Y {
 							d.defInsert = i + 1
 						} else {
@@ -335,7 +335,7 @@ func (d *attributeSettingsDockable) dataDragOver(where unison.Point, data map[st
 						p := children[i].Self.(*attrDefSettingsPanel).poolPanel
 						pt := p.PointFromRoot(rootPt)
 						for j, child := range p.Children() {
-							if rect := child.FrameRect(); rect.ContainsPoint(pt) {
+							if rect := child.FrameRect(); pt.In(rect) {
 								d.dragTargetPool = p
 								d.defInsert = i
 								if rect.CenterY() <= pt.Y {

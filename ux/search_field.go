@@ -25,10 +25,13 @@ func NewSearchField(watermark string, modifiedCallback func(before, after *uniso
 		f.Watermark = watermark
 		f.Tooltip = newWrappedTooltip(watermark)
 	}
-	f.SetLayout(&unison.FlexLayout{
-		Columns: 1,
-		HAlign:  unison.EndAlignment,
-		VAlign:  unison.MiddleAlignment,
+	f.SetLayout(&searchLayout{
+		field: f,
+		flex: unison.FlexLayout{
+			Columns: 1,
+			HAlign:  unison.EndAlignment,
+			VAlign:  unison.MiddleAlignment,
+		},
 	})
 	f.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: unison.FillAlignment,
@@ -49,4 +52,17 @@ func NewSearchField(watermark string, modifiedCallback func(before, after *uniso
 	f.AddChild(b)
 	f.ClientData()[searchFieldClientDataKey] = true
 	return f
+}
+
+type searchLayout struct {
+	field *unison.Field
+	flex  unison.FlexLayout
+}
+
+func (s *searchLayout) LayoutSizes(_ *unison.Panel, hint unison.Size) (minSize, prefSize, maxSize unison.Size) {
+	return s.field.DefaultSizes(hint)
+}
+
+func (s *searchLayout) PerformLayout(target *unison.Panel) {
+	s.flex.PerformLayout(target)
 }

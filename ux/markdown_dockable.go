@@ -225,9 +225,8 @@ func (d *MarkdownDockable) mouseDown(where unison.Point, _, _ int, _ unison.Modi
 }
 
 func (d *MarkdownDockable) mouseDrag(where unison.Point, _ int, _ unison.Modifiers) bool {
-	pt := d.dragStart
-	pt.Subtract(d.markdown.PointToRoot(where))
-	d.scroller.SetPosition(d.dragOrigin.X+pt.X, d.dragOrigin.Y+pt.Y)
+	pt := d.dragStart.Sub(d.markdown.PointToRoot(where)).Add(d.dragOrigin)
+	d.scroller.SetPosition(pt.X, pt.Y)
 	return true
 }
 

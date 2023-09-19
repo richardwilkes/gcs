@@ -485,7 +485,7 @@ func (d *PDFDockable) overLink(where unison.Point) (rect unison.Rect, link *PDFL
 		where.X /= scaleCompensation
 		where.Y /= scaleCompensation
 		for _, link = range d.page.Links {
-			if link.Bounds.ContainsPoint(where) {
+			if where.In(link.Bounds) {
 				return link.Bounds, link
 			}
 		}
@@ -521,9 +521,8 @@ func (d *PDFDockable) mouseDown(where unison.Point, _, _ int, _ unison.Modifiers
 
 func (d *PDFDockable) mouseDrag(where unison.Point, _ int, _ unison.Modifiers) bool {
 	if d.inDrag {
-		pt := d.dragStart
-		pt.Subtract(d.docPanel.PointToRoot(where))
-		d.docScroll.SetPosition(d.dragOrigin.X+pt.X, d.dragOrigin.Y+pt.Y)
+		pt := d.dragStart.Sub(d.docPanel.PointToRoot(where)).Add(d.dragOrigin)
+		d.docScroll.SetPosition(pt.X, pt.Y)
 	} else {
 		d.checkForLinkAt(where)
 	}

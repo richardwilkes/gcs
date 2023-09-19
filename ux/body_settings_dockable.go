@@ -248,7 +248,7 @@ func (d *bodySettingsDockable) dataDragOver(where unison.Point, data map[string]
 			where = parent.PointFromRoot(d.content.PointToRoot(where))
 			for i, child := range parent.Children() {
 				rect := child.FrameRect()
-				if rect.ContainsPoint(where) {
+				if where.In(rect) {
 					d.dragTarget = parent
 					if rect.CenterY() <= where.Y {
 						d.dragInsert = i + 1

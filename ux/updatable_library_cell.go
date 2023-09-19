@@ -66,7 +66,7 @@ func (c *updatableLibraryCell) updateForeground(fg unison.Ink) {
 }
 
 func (c *updatableLibraryCell) mouseDown(where unison.Point, btn, clickCount int, mod unison.Modifiers) bool {
-	if !c.button.FrameRect().ContainsPoint(where) {
+	if !where.In(c.button.FrameRect()) {
 		return false
 	}
 	c.inButtonMouseDown = true
@@ -90,7 +90,7 @@ func (c *updatableLibraryCell) mouseUp(where unison.Point, btn int, mod unison.M
 
 func (c *updatableLibraryCell) mouseEnter(where unison.Point, mod unison.Modifiers) bool {
 	c.inPanel = true
-	if !c.button.FrameRect().ContainsPoint(where) {
+	if !where.In(c.button.FrameRect()) {
 		return false
 	}
 	c.overButton = true
@@ -99,7 +99,7 @@ func (c *updatableLibraryCell) mouseEnter(where unison.Point, mod unison.Modifie
 
 func (c *updatableLibraryCell) mouseMove(where unison.Point, mod unison.Modifiers) bool {
 	if c.inPanel {
-		over := c.button.FrameRect().ContainsPoint(where)
+		over := where.In(c.button.FrameRect())
 		if over != c.overButton {
 			if over {
 				c.overButton = true

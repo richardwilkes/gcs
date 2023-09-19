@@ -102,8 +102,7 @@ func processModifiers[T *gurps.TraitModifier | *gurps.EquipmentModifier](title s
 						return true
 					}
 					label.MouseUpCallback = func(where unison.Point, _ int, _ unison.Modifiers) bool {
-						rect := label.ContentRect(false)
-						if rect.ContainsPoint(where) {
+						if where.In(label.ContentRect(false)) {
 							cb.Click()
 						}
 						return true

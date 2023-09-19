@@ -119,15 +119,7 @@ func (p *PortraitPanel) fileDrop(files []string) {
 			} else {
 				scale = maxPortraitDimension / size.Height
 			}
-			size.Width *= scale
-			size.Height *= scale
-			if size.Width < 1 {
-				size.Width = 1
-			}
-			if size.Height < 1 {
-				size.Height = 1
-			}
-			size.GrowToInteger()
+			size = size.Mul(scale).Ceil().Max(unison.NewSize(1, 1))
 		}
 		if size != imgSize || !strings.HasSuffix(strings.ToLower(f), ".webp") {
 			var src *image.NRGBA

@@ -164,10 +164,9 @@ func NewPageTableColumnHeader[T gurps.NodeTypes](title, tooltip string) *PageTab
 func (h *PageTableColumnHeader[T]) DefaultSizes(hint unison.Size) (minSize, prefSize, maxSize unison.Size) {
 	_, prefSize, _ = h.Label.DefaultSizes(hint)
 	if b := h.Border(); b != nil {
-		prefSize.AddInsets(b.Insets())
+		prefSize = prefSize.Add(b.Insets().Size())
 	}
-	prefSize.GrowToInteger()
-	prefSize.ConstrainForHint(hint)
+	prefSize = prefSize.Ceil().ConstrainForHint(hint)
 	return prefSize, prefSize, prefSize
 }
 
@@ -199,7 +198,7 @@ func (h *PageTableColumnHeader[T]) SetSortState(state unison.SortState) {
 
 // DefaultMouseUp provides the default mouse up handling.
 func (h *PageTableColumnHeader[T]) DefaultMouseUp(where unison.Point, _ int, _ unison.Modifiers) bool {
-	if h.sortState.Sortable && h.ContentRect(false).ContainsPoint(where) {
+	if h.sortState.Sortable && where.In(h.ContentRect(false)) {
 		if header, ok := h.Parent().Self.(*unison.TableHeader[*Node[T]]); ok {
 			header.SortOn(h)
 			header.ApplySort()

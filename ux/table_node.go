@@ -597,11 +597,9 @@ func (n *Node[T]) createPageRefCell(c *gurps.CellData, foreground unison.Ink) un
 		if img != nil {
 			label.Text = ""
 			height := label.Font.Baseline()
-			size := unison.NewSize(height, height)
-			size.GrowToInteger()
 			label.Drawable = &unison.DrawableSVG{
 				SVG:  img,
-				Size: size,
+				Size: unison.NewSize(height, height).Ceil(),
 			}
 			label.Tooltip = newWrappedTooltip(parts[0])
 		}
@@ -631,7 +629,7 @@ func (n *Node[T]) createPageRefCell(c *gurps.CellData, foreground unison.Ink) un
 			return true
 		}
 		label.MouseMoveCallback = func(where unison.Point, mod unison.Modifiers) bool {
-			if over != label.ContentRect(true).ContainsPoint(where) {
+			if over != where.In(label.ContentRect(true)) {
 				over = !over
 				label.MarkForRedraw()
 			}
@@ -643,12 +641,12 @@ func (n *Node[T]) createPageRefCell(c *gurps.CellData, foreground unison.Ink) un
 			return true
 		}
 		label.MouseDownCallback = func(where unison.Point, button, clickCount int, mod unison.Modifiers) bool {
-			pressed = label.ContentRect(true).ContainsPoint(where)
+			pressed = where.In(label.ContentRect(true))
 			label.MarkForRedraw()
 			return true
 		}
 		label.MouseDragCallback = func(where unison.Point, button int, mod unison.Modifiers) bool {
-			in := label.ContentRect(true).ContainsPoint(where)
+			in := where.In(label.ContentRect(true))
 			if pressed != in {
 				pressed = in
 				label.MarkForRedraw()
@@ -656,7 +654,7 @@ func (n *Node[T]) createPageRefCell(c *gurps.CellData, foreground unison.Ink) un
 			return true
 		}
 		label.MouseUpCallback = func(where unison.Point, button int, mod unison.Modifiers) bool {
-			if over = label.ContentRect(true).ContainsPoint(where); over {
+			if over = where.In(label.ContentRect(true)); over {
 				list := ExtractPageReferences(c.Primary)
 				if len(list) != 0 {
 					unison.InvokeTaskAfter(

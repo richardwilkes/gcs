@@ -86,8 +86,7 @@ documents from the library are open.`))
 	frame.Height = wndFrame.Height
 	frame.X += (frame.Width - wndFrame.Width) / 2
 	frame.Width = wndFrame.Width
-	frame.Align()
-	wnd.SetFrameRect(frame)
+	wnd.SetFrameRect(frame.Align())
 	wnd.ToFront()
 	go performLibraryUpdate(wnd, lib, rel, &err)
 	wnd.RunModal()

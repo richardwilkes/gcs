@@ -133,9 +133,8 @@ func (d *ImageDockable) mouseDown(where unison.Point, _, _ int, _ unison.Modifie
 }
 
 func (d *ImageDockable) mouseDrag(where unison.Point, _ int, _ unison.Modifiers) bool {
-	pt := d.dragStart
-	pt.Subtract(d.imgPanel.PointToRoot(where))
-	d.scroll.SetPosition(d.dragOrigin.X+pt.X, d.dragOrigin.Y+pt.Y)
+	pt := d.dragStart.Sub(d.imgPanel.PointToRoot(where)).Add(d.dragOrigin)
+	d.scroll.SetPosition(pt.X, pt.Y)
 	return true
 }
 

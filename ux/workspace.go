@@ -388,7 +388,7 @@ func NewWindowForDockable(dockable unison.Dockable, group gurps.DockableGroup) (
 	frame.Height = wndFrame.Height
 	frame.X += (frame.Width - wndFrame.Width) / 2
 	frame.Width = wndFrame.Width
-	frame.Align()
+	frame = frame.Align()
 	wnd.SetFrameRect(unison.BestDisplayForRect(frame).FitRectOnto(frame))
 	wnd.ToFront()
 	return wnd, nil
