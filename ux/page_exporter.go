@@ -246,13 +246,13 @@ func (p *pageExporter) exportAsPDF(stream unison.Stream) error {
 
 func (p *pageExporter) exportAsPNGs(filePathBase string) error {
 	return p.exportAsImages(filePathBase, ".png", func(img *unison.Image) ([]byte, error) {
-		return img.ToPNG()
+		return img.ToPNG(6)
 	})
 }
 
 func (p *pageExporter) exportAsWEBPs(filePathBase string) error {
 	return p.exportAsImages(filePathBase, ".webp", func(img *unison.Image) ([]byte, error) {
-		return img.ToWebp(75)
+		return img.ToWebp(80, true)
 	})
 }
 

@@ -135,7 +135,7 @@ func (p *PortraitPanel) fileDrop(files []string) {
 				errs.Log(errs.NewWithCause("unable to create scaled image", err), "file", f, "size", size)
 				continue
 			}
-			if data, err = img.ToWebp(80); err != nil {
+			if data, err = img.ToWebp(80, true); err != nil {
 				errs.Log(errs.NewWithCause("unable to create webp image", err), "file", f)
 				continue
 			}
