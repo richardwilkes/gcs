@@ -720,8 +720,15 @@ func (e *Entity) AddDRBonusesFor(locationID string, tooltip *xio.ByteBuffer, drM
 	if drMap == nil {
 		drMap = make(map[string]int)
 	}
+	isTopLevel := false
+	for _, one := range e.SheetSettings.BodyType.Locations {
+		if one.LocID == locationID {
+			isTopLevel = true
+			break
+		}
+	}
 	for _, one := range e.features.drBonuses {
-		if one.Location == AllID || strings.EqualFold(one.Location, locationID) {
+		if (one.Location == AllID && isTopLevel) || strings.EqualFold(one.Location, locationID) {
 			drMap[strings.ToLower(one.Specialization)] += fxp.As[int](one.AdjustedAmount())
 			one.AddToTooltip(tooltip)
 		}
