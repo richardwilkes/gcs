@@ -292,10 +292,6 @@ func (e *Equipment) Description() string {
 // SecondaryText returns the "secondary" text: the text display below the description.
 func (e *Equipment) SecondaryText(optionChecker func(DisplayOption) bool) string {
 	var buffer strings.Builder
-	if e.RatedST != 0 {
-		buffer.WriteString(i18n.Text("Rated ST "))
-		buffer.WriteString(e.RatedST.String())
-	}
 	settings := SheetSettingsFor(e.Entity)
 	if optionChecker(settings.ModifiersDisplay) {
 		if notes := e.ModifierNotes(); notes != "" {
@@ -305,11 +301,24 @@ func (e *Equipment) SecondaryText(optionChecker func(DisplayOption) bool) string
 			buffer.WriteString(notes)
 		}
 	}
-	if localNotes := e.resolveLocalNotes(); localNotes != "" && optionChecker(settings.NotesDisplay) {
-		if buffer.Len() != 0 {
-			buffer.WriteByte('\n')
+	if optionChecker(settings.NotesDisplay) {
+		var localBuffer strings.Builder
+		if e.RatedST != 0 {
+			localBuffer.WriteString(i18n.Text("Rated ST "))
+			localBuffer.WriteString(e.RatedST.String())
 		}
-		buffer.WriteString(localNotes)
+		if localNotes := e.resolveLocalNotes(); localNotes != "" {
+			if localBuffer.Len() != 0 {
+				localBuffer.WriteString("; ")
+			}
+			localBuffer.WriteString(localNotes)
+		}
+		if localBuffer.Len() != 0 {
+			if buffer.Len() != 0 {
+				buffer.WriteByte('\n')
+			}
+			buffer.WriteString(localBuffer.String())
+		}
 	}
 	return buffer.String()
 }
