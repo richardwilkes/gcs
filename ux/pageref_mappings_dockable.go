@@ -14,6 +14,7 @@ package ux
 import (
 	"fmt"
 	"io/fs"
+	"log/slog"
 	"os/exec"
 	"path/filepath"
 	"strconv"
@@ -157,9 +158,9 @@ func openExternalPDF(filePath string, pageNum int) {
 	}
 	go func() {
 		if err = cmd.Wait(); err != nil {
-			unison.InvokeTask(func() {
-				unison.ErrorDialogWithError(i18n.Text("Unexpected response from command"), err)
-			})
+			// Intentionally not putting up a dialog, since -- at least on Windows -- many of the viewers incorrectly
+			// return a non-zero exit code.
+			slog.Error("unexpected response from external PDF viewer", "error", err)
 		}
 	}()
 }
