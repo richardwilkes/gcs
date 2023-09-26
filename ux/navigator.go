@@ -15,7 +15,6 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -883,19 +882,19 @@ func (n *Navigator) search(text string, row *NavigatorNode) {
 				if n.deepSearch[fi.Extensions[0]] {
 					switch fi.Extensions[0] {
 					case gurps.EquipmentExt:
-						if data, err := gurps.NewEquipmentFromFile(os.DirFS(path.Dir(p)), path.Base(p)); err == nil {
+						if data, err := gurps.NewEquipmentFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err == nil {
 							content = n.addToContentCache(p, prepareForContentCache(data))
 						}
 					case gurps.EquipmentModifiersExt:
-						if data, err := gurps.NewEquipmentModifiersFromFile(os.DirFS(path.Dir(p)), path.Base(p)); err == nil {
+						if data, err := gurps.NewEquipmentModifiersFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err == nil {
 							content = n.addToContentCache(p, prepareForContentCache(data))
 						}
 					case gurps.NotesExt:
-						if data, err := gurps.NewNotesFromFile(os.DirFS(path.Dir(p)), path.Base(p)); err == nil {
+						if data, err := gurps.NewNotesFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err == nil {
 							content = n.addToContentCache(p, prepareForContentCache(data))
 						}
 					case gurps.SheetExt:
-						if data, err := gurps.NewEntityFromFile(os.DirFS(path.Dir(p)), path.Base(p)); err == nil {
+						if data, err := gurps.NewEntityFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err == nil {
 							for _, one := range data.Skills {
 								one.TechLevel = nil
 							}
@@ -924,21 +923,21 @@ func (n *Navigator) search(text string, row *NavigatorNode) {
 							}, "\n"))
 						}
 					case gurps.SkillsExt:
-						if data, err := gurps.NewSkillsFromFile(os.DirFS(path.Dir(p)), path.Base(p)); err == nil {
+						if data, err := gurps.NewSkillsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err == nil {
 							for _, one := range data {
 								one.TechLevel = nil
 							}
 							content = n.addToContentCache(p, prepareForContentCache(data))
 						}
 					case gurps.SpellsExt:
-						if data, err := gurps.NewSpellsFromFile(os.DirFS(path.Dir(p)), path.Base(p)); err == nil {
+						if data, err := gurps.NewSpellsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err == nil {
 							for _, one := range data {
 								one.TechLevel = nil
 							}
 							content = n.addToContentCache(p, prepareForContentCache(data))
 						}
 					case gurps.TemplatesExt:
-						if data, err := gurps.NewTemplateFromFile(os.DirFS(path.Dir(p)), path.Base(p)); err == nil {
+						if data, err := gurps.NewTemplateFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err == nil {
 							for _, one := range data.Skills {
 								one.TechLevel = nil
 							}
@@ -954,11 +953,11 @@ func (n *Navigator) search(text string, row *NavigatorNode) {
 							}, "\n"))
 						}
 					case gurps.TraitModifiersExt:
-						if data, err := gurps.NewTraitModifiersFromFile(os.DirFS(path.Dir(p)), path.Base(p)); err == nil {
+						if data, err := gurps.NewTraitModifiersFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err == nil {
 							content = n.addToContentCache(p, prepareForContentCache(data))
 						}
 					case gurps.TraitsExt:
-						if data, err := gurps.NewTraitsFromFile(os.DirFS(path.Dir(p)), path.Base(p)); err == nil {
+						if data, err := gurps.NewTraitsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err == nil {
 							content = n.addToContentCache(p, prepareForContentCache(data))
 						}
 					case gurps.MarkdownExt:
