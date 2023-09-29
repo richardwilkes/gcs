@@ -17,31 +17,31 @@ import (
 )
 
 // LengthField is field that holds a length value.
-type LengthField = NumericField[gurps.Length]
+type LengthField = NumericField[fxp.Length]
 
 // NewLengthField creates a new field that holds a fixed-point number.
-func NewLengthField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() gurps.Length, set func(gurps.Length), minValue, maxValue gurps.Length, noMinWidth bool) *LengthField {
-	var getPrototypes func(minValue, maxValue gurps.Length) []gurps.Length
+func NewLengthField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() fxp.Length, set func(fxp.Length), minValue, maxValue fxp.Length, noMinWidth bool) *LengthField {
+	var getPrototypes func(minValue, maxValue fxp.Length) []fxp.Length
 	if !noMinWidth {
-		getPrototypes = func(minValue, maxValue gurps.Length) []gurps.Length {
-			if minValue == gurps.Length(fxp.Min) {
-				minValue = gurps.Length(-fxp.One)
+		getPrototypes = func(minValue, maxValue fxp.Length) []fxp.Length {
+			if minValue == fxp.Length(fxp.Min) {
+				minValue = fxp.Length(-fxp.One)
 			}
-			minValue = gurps.Length(fxp.Int(minValue).Trunc() + fxp.One - 1)
-			if maxValue == gurps.Length(fxp.Max) {
-				maxValue = gurps.Length(fxp.One)
+			minValue = fxp.Length(fxp.Int(minValue).Trunc() + fxp.One - 1)
+			if maxValue == fxp.Length(fxp.Max) {
+				maxValue = fxp.Length(fxp.One)
 			}
-			maxValue = gurps.Length(fxp.Int(maxValue).Trunc() + fxp.One - 1)
-			return []gurps.Length{minValue, gurps.Length(fxp.Two - 1), maxValue}
+			maxValue = fxp.Length(fxp.Int(maxValue).Trunc() + fxp.One - 1)
+			return []fxp.Length{minValue, fxp.Length(fxp.Two - 1), maxValue}
 		}
 	}
-	format := func(value gurps.Length) string {
+	format := func(value fxp.Length) string {
 		return gurps.SheetSettingsFor(entity).DefaultLengthUnits.Format(value)
 	}
-	extract := func(s string) (gurps.Length, error) {
-		return gurps.LengthFromString(s, gurps.SheetSettingsFor(entity).DefaultLengthUnits)
+	extract := func(s string) (fxp.Length, error) {
+		return fxp.LengthFromString(s, gurps.SheetSettingsFor(entity).DefaultLengthUnits)
 	}
-	f := NewNumericField[gurps.Length](targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, minValue, maxValue)
+	f := NewNumericField[fxp.Length](targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, minValue, maxValue)
 	f.RuneTypedCallback = f.DefaultRuneTyped
 	return f
 }

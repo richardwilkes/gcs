@@ -171,7 +171,7 @@ func NewStringPageFieldNoGrab(targetMgr *TargetMgr, targetKey, undoTitle string,
 }
 
 // NewHeightPageField creates a new height entry field for a sheet page.
-func NewHeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() gurps.Length, set func(gurps.Length), minValue, maxValue gurps.Length, noMinWidth bool) *LengthField {
+func NewHeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() fxp.Length, set func(fxp.Length), minValue, maxValue fxp.Length, noMinWidth bool) *LengthField {
 	field := NewLengthField(targetMgr, targetKey, undoTitle, entity, get, set, minValue, maxValue, noMinWidth)
 	field.Font = gurps.PageFieldPrimaryFont
 	field.FocusedBorder = unison.NewLineBorder(unison.AccentColor, 0, unison.Insets{Bottom: 1}, false)
@@ -185,7 +185,7 @@ func NewHeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entit
 }
 
 // NewWeightPageField creates a new weight entry field for a sheet page.
-func NewWeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() gurps.Weight, set func(gurps.Weight), minValue, maxValue gurps.Weight, noMinWidth bool) *WeightField {
+func NewWeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() fxp.Weight, set func(fxp.Weight), minValue, maxValue fxp.Weight, noMinWidth bool) *WeightField {
 	field := NewWeightField(targetMgr, targetKey, undoTitle, entity, get, set, minValue, maxValue, noMinWidth)
 	field.Font = gurps.PageFieldPrimaryFont
 	field.FocusedBorder = unison.NewLineBorder(unison.AccentColor, 0, unison.Insets{Bottom: 1}, false)

@@ -9,22 +9,21 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package gurps
+package fxp
 
 import (
 	"strings"
 
-	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/json"
 	"golang.org/x/exp/constraints"
 )
 
 // Weight contains a fixed-point value in pounds.
-type Weight fxp.Int
+type Weight Int
 
 // WeightFromInteger creates a new Weight.
 func WeightFromInteger[T constraints.Integer](value T, unit WeightUnits) Weight {
-	return Weight(unit.ToPounds(fxp.From(value)))
+	return Weight(unit.ToPounds(From(value)))
 }
 
 // WeightFromStringForced creates a new Weight. May have any of the known Weight suffixes or no notation at all, in which
@@ -43,7 +42,7 @@ func WeightFromString(text string, defaultUnits WeightUnits) (Weight, error) {
 	text = strings.TrimLeft(strings.TrimSpace(text), "+")
 	for _, unit := range AllWeightUnits {
 		if strings.HasSuffix(text, unit.Key()) {
-			value, err := fxp.FromString(strings.TrimSpace(strings.TrimSuffix(text, unit.Key())))
+			value, err := FromString(strings.TrimSpace(strings.TrimSuffix(text, unit.Key())))
 			if err != nil {
 				return 0, err
 			}
@@ -51,7 +50,7 @@ func WeightFromString(text string, defaultUnits WeightUnits) (Weight, error) {
 		}
 	}
 	// No matches, so let's use our passed-in default units
-	value, err := fxp.FromString(strings.TrimSpace(text))
+	value, err := FromString(strings.TrimSpace(text))
 	if err != nil {
 		return 0, err
 	}

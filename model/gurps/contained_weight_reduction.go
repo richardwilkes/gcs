@@ -67,23 +67,23 @@ func (c *ContainedWeightReduction) PercentageReduction() fxp.Int {
 }
 
 // FixedReduction returns the fixed amount the weight should be reduced by. Will return 0 if this is a percentage.
-func (c *ContainedWeightReduction) FixedReduction(defUnits WeightUnits) Weight {
+func (c *ContainedWeightReduction) FixedReduction(defUnits fxp.WeightUnits) fxp.Weight {
 	if c.IsPercentageReduction() {
 		return 0
 	}
-	return WeightFromStringForced(c.Reduction, defUnits)
+	return fxp.WeightFromStringForced(c.Reduction, defUnits)
 }
 
 // ExtractContainedWeightReduction extracts the weight reduction (which may be a weight or a percentage) and returns
 // a sanitized result. If 'err' is not nil, then the input was bad. Even in that case, however, a valid string is
 // returned.
-func ExtractContainedWeightReduction(s string, defUnits WeightUnits) (string, error) {
+func ExtractContainedWeightReduction(s string, defUnits fxp.WeightUnits) (string, error) {
 	s = strings.TrimSpace(s)
 	if strings.HasSuffix(s, "%") {
 		v, err := fxp.FromString(strings.TrimSpace(s[:len(s)-1]))
 		//goland:noinspection GoNilness
 		return v.String() + "%", err
 	}
-	w, err := WeightFromString(s, defUnits)
+	w, err := fxp.WeightFromString(s, defUnits)
 	return defUnits.Format(w), err
 }

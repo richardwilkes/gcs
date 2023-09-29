@@ -94,7 +94,7 @@ type Calculator struct {
 	hikingResult               *unison.Label
 	scale                      int
 	jumpingRunningStartYards   fxp.Int
-	throwingObjectWeight       gurps.Weight
+	throwingObjectWeight       fxp.Weight
 	jumpingExtraEffortPenalty  int
 	throwingExtraEffortPenalty int
 	hikingExtraEffortPenalty   int
@@ -119,7 +119,7 @@ func DisplayCalculator(sheet *Sheet) {
 	c := &Calculator{
 		sheet:                sheet,
 		scale:                gurps.GlobalSettings().General.InitialEditorUIScale,
-		throwingObjectWeight: gurps.Weight(fxp.One),
+		throwingObjectWeight: fxp.Weight(fxp.One),
 		terrainIndex:         slices.IndexFunc(terrain, func(t terrainModifier) bool { return t.Default }),
 		weatherIndex:         slices.IndexFunc(weather, func(t terrainModifier) bool { return t.Default }),
 	}
@@ -296,12 +296,12 @@ func (c *Calculator) addThrowingSection() {
 	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
 	wrapper.AddChild(NewWeightField(nil, "", i18n.Text("Object Weight"),
 		c.sheet.Entity(),
-		func() gurps.Weight { return c.throwingObjectWeight },
-		func(v gurps.Weight) {
+		func() fxp.Weight { return c.throwingObjectWeight },
+		func(v fxp.Weight) {
 			c.throwingObjectWeight = v
 			c.updateThrowingResult()
 		},
-		0, gurps.Weight(fxp.Max), false))
+		0, fxp.Weight(fxp.Max), false))
 	label := unison.NewLabel()
 	label.Text = i18n.Text("object")
 	wrapper.AddChild(label)
@@ -936,7 +936,7 @@ func (c *Calculator) updateHikingResult() {
 
 func (c *Calculator) useMeters() bool {
 	units := c.sheet.Entity().SheetSettings.DefaultLengthUnits
-	return units == gurps.Centimeter || units == gurps.Meter || units == gurps.Kilometer
+	return units == fxp.Centimeter || units == fxp.Meter || units == fxp.Kilometer
 }
 
 func (c *Calculator) distanceToText(inches fxp.Int) string {

@@ -32,7 +32,7 @@ type EquipmentEditData struct {
 	RatedST                fxp.Int              `json:"rated_strength,omitempty"`
 	Quantity               fxp.Int              `json:"quantity,omitempty"`
 	Value                  fxp.Int              `json:"value,omitempty"`
-	Weight                 Weight               `json:"weight,omitempty"`
+	Weight                 fxp.Weight           `json:"weight,omitempty"`
 	MaxUses                int                  `json:"max_uses,omitempty"`
 	Uses                   int                  `json:"uses,omitempty"`
 	Prereq                 *PrereqList          `json:"prereqs,omitempty"`

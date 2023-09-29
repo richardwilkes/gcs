@@ -144,8 +144,8 @@ func (d *DescriptionPanel) createColumn2() *unison.Panel {
 
 	title := i18n.Text("Height")
 	heightField := NewHeightPageField(d.targetMgr, descriptionPanelHeightFieldRefKey, title, d.entity,
-		func() gurps.Length { return d.entity.Profile.Height },
-		func(v gurps.Length) { d.entity.Profile.Height = v }, 0, gurps.Length(fxp.Max), true)
+		func() fxp.Length { return d.entity.Profile.Height },
+		func(v fxp.Length) { d.entity.Profile.Height = v }, 0, fxp.Length(fxp.Max), true)
 	column.AddChild(NewPageLabelWithRandomizer(title,
 		i18n.Text("Randomize the height using the current ancestry"), func() {
 			d.entity.Profile.Height = d.entity.Ancestry().RandomHeight(d.entity, d.entity.Profile.Gender, d.entity.Profile.Height)
@@ -156,8 +156,8 @@ func (d *DescriptionPanel) createColumn2() *unison.Panel {
 
 	title = i18n.Text("Weight")
 	weightField := NewWeightPageField(d.targetMgr, descriptionPanelWeightFieldRefKey, title, d.entity,
-		func() gurps.Weight { return d.entity.Profile.Weight },
-		func(v gurps.Weight) { d.entity.Profile.Weight = v }, 0, gurps.Weight(fxp.Max), true)
+		func() fxp.Weight { return d.entity.Profile.Weight },
+		func(v fxp.Weight) { d.entity.Profile.Weight = v }, 0, fxp.Weight(fxp.Max), true)
 	column.AddChild(NewPageLabelWithRandomizer(title,
 		i18n.Text("Randomize the weight using the current ancestry"), func() {
 			d.entity.Profile.Weight = d.entity.Ancestry().RandomWeight(d.entity, d.entity.Profile.Gender, d.entity.Profile.Weight)

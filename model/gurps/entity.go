@@ -106,7 +106,7 @@ type Entity struct {
 	features                        features
 	variableResolverExclusions      map[string]bool
 	skillResolverExclusions         map[string]bool
-	cachedBasicLift                 Weight
+	cachedBasicLift                 fxp.Weight
 	cachedEncumbranceLevel          Encumbrance
 	cachedEncumbranceLevelForSkills Encumbrance
 	cachedVariables                 map[string]string
@@ -172,7 +172,7 @@ func (e *Entity) MarshalJSON() ([]byte, error) {
 	type calc struct {
 		Swing                 *dice.Dice `json:"swing"`
 		Thrust                *dice.Dice `json:"thrust"`
-		BasicLift             Weight     `json:"basic_lift"`
+		BasicLift             fxp.Weight `json:"basic_lift"`
 		LiftingStrengthBonus  fxp.Int    `json:"lifting_st_bonus,omitempty"`
 		StrikingStrengthBonus fxp.Int    `json:"striking_st_bonus,omitempty"`
 		ThrowingStrengthBonus fxp.Int    `json:"throwing_st_bonus,omitempty"`
@@ -974,8 +974,8 @@ func (e *Entity) EncumbranceLevel(forSkills bool) Encumbrance {
 }
 
 // WeightCarried returns the carried weight.
-func (e *Entity) WeightCarried(forSkills bool) Weight {
-	var total Weight
+func (e *Entity) WeightCarried(forSkills bool) fxp.Weight {
+	var total fxp.Weight
 	for _, one := range e.CarriedEquipment {
 		total += one.ExtendedWeight(forSkills, e.SheetSettings.DefaultWeightUnits)
 	}
@@ -983,42 +983,42 @@ func (e *Entity) WeightCarried(forSkills bool) Weight {
 }
 
 // MaximumCarry returns the maximum amount the Entity can carry for the specified encumbrance level.
-func (e *Entity) MaximumCarry(encumbrance Encumbrance) Weight {
-	return Weight(fxp.Int(e.BasicLift()).Mul(encumbrance.WeightMultiplier()))
+func (e *Entity) MaximumCarry(encumbrance Encumbrance) fxp.Weight {
+	return fxp.Weight(fxp.Int(e.BasicLift()).Mul(encumbrance.WeightMultiplier()))
 }
 
 // OneHandedLift returns the one-handed lift value.
-func (e *Entity) OneHandedLift() Weight {
-	return Weight(fxp.Int(e.BasicLift()).Mul(fxp.Two))
+func (e *Entity) OneHandedLift() fxp.Weight {
+	return fxp.Weight(fxp.Int(e.BasicLift()).Mul(fxp.Two))
 }
 
 // TwoHandedLift returns the two-handed lift value.
-func (e *Entity) TwoHandedLift() Weight {
-	return Weight(fxp.Int(e.BasicLift()).Mul(fxp.Eight))
+func (e *Entity) TwoHandedLift() fxp.Weight {
+	return fxp.Weight(fxp.Int(e.BasicLift()).Mul(fxp.Eight))
 }
 
 // ShoveAndKnockOver returns the shove & knock over value.
-func (e *Entity) ShoveAndKnockOver() Weight {
-	return Weight(fxp.Int(e.BasicLift()).Mul(fxp.Twelve))
+func (e *Entity) ShoveAndKnockOver() fxp.Weight {
+	return fxp.Weight(fxp.Int(e.BasicLift()).Mul(fxp.Twelve))
 }
 
 // RunningShoveAndKnockOver returns the running shove & knock over value.
-func (e *Entity) RunningShoveAndKnockOver() Weight {
-	return Weight(fxp.Int(e.BasicLift()).Mul(fxp.TwentyFour))
+func (e *Entity) RunningShoveAndKnockOver() fxp.Weight {
+	return fxp.Weight(fxp.Int(e.BasicLift()).Mul(fxp.TwentyFour))
 }
 
 // CarryOnBack returns the carry on back value.
-func (e *Entity) CarryOnBack() Weight {
-	return Weight(fxp.Int(e.BasicLift()).Mul(fxp.Fifteen))
+func (e *Entity) CarryOnBack() fxp.Weight {
+	return fxp.Weight(fxp.Int(e.BasicLift()).Mul(fxp.Fifteen))
 }
 
 // ShiftSlightly returns the shift slightly value.
-func (e *Entity) ShiftSlightly() Weight {
-	return Weight(fxp.Int(e.BasicLift()).Mul(fxp.Fifty))
+func (e *Entity) ShiftSlightly() fxp.Weight {
+	return fxp.Weight(fxp.Int(e.BasicLift()).Mul(fxp.Fifty))
 }
 
 // BasicLift returns the entity's Basic Lift.
-func (e *Entity) BasicLift() Weight {
+func (e *Entity) BasicLift() fxp.Weight {
 	if e.cachedBasicLift != -1 {
 		return e.cachedBasicLift
 	}
@@ -1027,7 +1027,7 @@ func (e *Entity) BasicLift() Weight {
 }
 
 // BasicLiftForST returns the entity's Basic Lift as if their base ST was the given value.
-func (e *Entity) BasicLiftForST(st fxp.Int) Weight {
+func (e *Entity) BasicLiftForST(st fxp.Int) fxp.Weight {
 	st = st.Trunc()
 	if IsThresholdOpMet(HalveSTThresholdOp, e.Attributes) {
 		st = st.Div(fxp.Two)
@@ -1058,7 +1058,7 @@ func (e *Entity) BasicLiftForST(st fxp.Int) Weight {
 	if v >= fxp.Ten {
 		v = v.Round()
 	}
-	return Weight(v.Mul(fxp.Ten).Trunc().Div(fxp.Ten))
+	return fxp.Weight(v.Mul(fxp.Ten).Trunc().Div(fxp.Ten))
 }
 
 func (e *Entity) isSkillLevelResolutionExcluded(name, specialization string) bool {

@@ -407,7 +407,7 @@ func updateStringField(sheet *Sheet, refKey, value string) {
 	}
 }
 
-func updateLengthField(sheet *Sheet, refKey string, value gurps.Length) {
+func updateLengthField(sheet *Sheet, refKey string, value fxp.Length) {
 	if panel := sheet.targetMgr.Find(refKey); panel != nil {
 		if f, ok := panel.Self.(*LengthField); ok {
 			saved := sheet.undoMgr
@@ -418,7 +418,7 @@ func updateLengthField(sheet *Sheet, refKey string, value gurps.Length) {
 	}
 }
 
-func updateWeightField(sheet *Sheet, refKey string, value gurps.Weight) {
+func updateWeightField(sheet *Sheet, refKey string, value fxp.Weight) {
 	if panel := sheet.targetMgr.Find(refKey); panel != nil {
 		if f, ok := panel.Self.(*WeightField); ok {
 			saved := sheet.undoMgr

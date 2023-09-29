@@ -22,7 +22,7 @@ func TestEntityAttributeBonus(t *testing.T) {
 	entity := NewEntity(PC)
 	check.Equal(t, fxp.Ten, entity.Attributes.Current("st"), "ST default")
 	check.Equal(t, entity.SwingFor(10), entity.Swing(), "Swing default")
-	check.Equal(t, WeightFromInteger(20, Pound), entity.BasicLift(), "Basic Lift default")
+	check.Equal(t, fxp.WeightFromInteger(20, fxp.Pound), entity.BasicLift(), "Basic Lift default")
 	check.Equal(t, fxp.From(0), entity.ThrowingStrengthBonus, "Throwing ST Bonus default")
 
 	bonus := NewAttributeBonus("st")
@@ -49,7 +49,7 @@ func TestEntityAttributeBonus(t *testing.T) {
 	bonus.Limitation = LiftingOnlyBonusLimitation
 	entity.Recalculate()
 	check.Equal(t, fxp.Ten, entity.Attributes.Current("st"), "ST; leveled +1 bonus, with 3 levels, for lifting only")
-	check.Equal(t, WeightFromInteger(34, Pound), entity.BasicLift(), "Basic Lift; leveled +1 bonus, with 3 levels, for lifting only")
+	check.Equal(t, fxp.WeightFromInteger(34, fxp.Pound), entity.BasicLift(), "Basic Lift; leveled +1 bonus, with 3 levels, for lifting only")
 
 	bonus.Limitation = ThrowingOnlyBonusLimitation
 	entity.Recalculate()

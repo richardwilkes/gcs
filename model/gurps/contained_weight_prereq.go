@@ -12,6 +12,7 @@
 package gurps
 
 import (
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -33,7 +34,7 @@ func NewContainedWeightPrereq(entity *Entity) *ContainedWeightPrereq {
 		WeightCriteria: WeightCriteria{
 			WeightCriteriaData: WeightCriteriaData{
 				Compare:   AtMostNumber,
-				Qualifier: WeightFromInteger(5, SheetSettingsFor(entity).DefaultWeightUnits),
+				Qualifier: fxp.WeightFromInteger(5, SheetSettingsFor(entity).DefaultWeightUnits),
 			},
 		},
 		Has: true,

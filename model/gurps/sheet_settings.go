@@ -15,6 +15,7 @@ import (
 	"context"
 	"io/fs"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 )
@@ -34,8 +35,8 @@ type SheetSettingsData struct {
 	Attributes                    *AttributeDefs    `json:"attributes,omitempty"`
 	BodyType                      *Body             `json:"body_type,alt=hit_locations,omitempty"`
 	DamageProgression             DamageProgression `json:"damage_progression"`
-	DefaultLengthUnits            LengthUnits       `json:"default_length_units"`
-	DefaultWeightUnits            WeightUnits       `json:"default_weight_units"`
+	DefaultLengthUnits            fxp.LengthUnits   `json:"default_length_units"`
+	DefaultWeightUnits            fxp.WeightUnits   `json:"default_weight_units"`
 	UserDescriptionDisplay        DisplayOption     `json:"user_description_display"`
 	ModifiersDisplay              DisplayOption     `json:"modifiers_display"`
 	NotesDisplay                  DisplayOption     `json:"notes_display"`
@@ -73,8 +74,8 @@ func FactorySheetSettings() *SheetSettings {
 			Attributes:             FactoryAttributeDefs(),
 			BodyType:               FactoryBody(),
 			DamageProgression:      BasicSet,
-			DefaultLengthUnits:     FeetAndInches,
-			DefaultWeightUnits:     Pound,
+			DefaultLengthUnits:     fxp.FeetAndInches,
+			DefaultWeightUnits:     fxp.Pound,
 			UserDescriptionDisplay: TooltipDisplayOption,
 			ModifiersDisplay:       InlineDisplayOption,
 			NotesDisplay:           InlineDisplayOption,

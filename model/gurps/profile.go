@@ -21,16 +21,16 @@ import (
 
 // ProfileRandom holds the portion of the profile that is affected by the randomizer.
 type ProfileRandom struct {
-	Name       string `json:"name,omitempty"`
-	Age        string `json:"age,omitempty"`
-	Birthday   string `json:"birthday,omitempty"`
-	Eyes       string `json:"eyes,omitempty"`
-	Hair       string `json:"hair,omitempty"`
-	Skin       string `json:"skin,omitempty"`
-	Handedness string `json:"handedness,omitempty"`
-	Gender     string `json:"gender,omitempty"`
-	Height     Length `json:"height,omitempty"`
-	Weight     Weight `json:"weight,omitempty"`
+	Name       string     `json:"name,omitempty"`
+	Age        string     `json:"age,omitempty"`
+	Birthday   string     `json:"birthday,omitempty"`
+	Eyes       string     `json:"eyes,omitempty"`
+	Hair       string     `json:"hair,omitempty"`
+	Skin       string     `json:"skin,omitempty"`
+	Handedness string     `json:"handedness,omitempty"`
+	Gender     string     `json:"gender,omitempty"`
+	Height     fxp.Length `json:"height,omitempty"`
+	Weight     fxp.Weight `json:"weight,omitempty"`
 }
 
 // Profile holds the profile information for an NPC.

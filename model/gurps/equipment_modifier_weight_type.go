@@ -49,11 +49,11 @@ func (enum EquipmentModifierWeightType) ExtractFraction(s string) fxp.Fraction {
 }
 
 // Format returns a formatted version of the value.
-func (enum EquipmentModifierWeightType) Format(s string, defUnits WeightUnits) string {
+func (enum EquipmentModifierWeightType) Format(s string, defUnits fxp.WeightUnits) string {
 	t := enum.DetermineModifierWeightValueTypeFromString(s)
 	result := t.Format(t.ExtractFraction(s))
 	if t == AdditionEquipmentModifierWeightValueType {
-		result += " " + TrailingWeightUnitsFromString(s, defUnits).String()
+		result += " " + fxp.TrailingWeightUnitsFromString(s, defUnits).String()
 	}
 	return result
 }

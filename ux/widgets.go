@@ -297,13 +297,13 @@ func addDecimalField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labe
 	return field
 }
 
-func addWeightField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, entity *gurps.Entity, fieldData *gurps.Weight, noMinWidth bool) *WeightField {
+func addWeightField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, entity *gurps.Entity, fieldData *fxp.Weight, noMinWidth bool) *WeightField {
 	field := NewWeightField(targetMgr, targetKey, labelText, entity,
-		func() gurps.Weight { return *fieldData },
-		func(value gurps.Weight) {
+		func() fxp.Weight { return *fieldData },
+		func(value fxp.Weight) {
 			*fieldData = value
 			MarkModified(parent)
-		}, 0, gurps.Weight(fxp.Max), noMinWidth)
+		}, 0, fxp.Weight(fxp.Max), noMinWidth)
 	if tooltip != "" {
 		field.Tooltip = newWrappedTooltip(tooltip)
 	}

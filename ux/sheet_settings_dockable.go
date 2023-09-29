@@ -14,6 +14,7 @@ package ux
 import (
 	"io/fs"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/paper"
 	"github.com/richardwilkes/gcs/v5/svg"
@@ -41,8 +42,8 @@ type sheetSettingsDockable struct {
 	useModifyDicePlusAdds              *unison.CheckBox
 	excludeUnspentPointsFromTotal      *unison.CheckBox
 	useHalfStatDefaults                *unison.CheckBox
-	lengthUnitsPopup                   *unison.PopupMenu[gurps.LengthUnits]
-	weightUnitsPopup                   *unison.PopupMenu[gurps.WeightUnits]
+	lengthUnitsPopup                   *unison.PopupMenu[fxp.LengthUnits]
+	weightUnitsPopup                   *unison.PopupMenu[fxp.WeightUnits]
 	userDescDisplayPopup               *unison.PopupMenu[gurps.DisplayOption]
 	modifiersDisplayPopup              *unison.PopupMenu[gurps.DisplayOption]
 	notesDisplayPopup                  *unison.PopupMenu[gurps.DisplayOption]
@@ -230,10 +231,10 @@ func (d *sheetSettingsDockable) createUnitsOfMeasurement(content *unison.Panel) 
 	})
 	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
 	d.createHeader(panel, i18n.Text("Units of Measurement"), 2)
-	d.lengthUnitsPopup = createSettingPopup(d, panel, i18n.Text("Length Units"), gurps.AllLengthUnits,
-		s.DefaultLengthUnits, func(item gurps.LengthUnits) { d.settings().DefaultLengthUnits = item })
-	d.weightUnitsPopup = createSettingPopup(d, panel, i18n.Text("Weight Units"), gurps.AllWeightUnits,
-		s.DefaultWeightUnits, func(item gurps.WeightUnits) { d.settings().DefaultWeightUnits = item })
+	d.lengthUnitsPopup = createSettingPopup(d, panel, i18n.Text("Length Units"), fxp.AllLengthUnits,
+		s.DefaultLengthUnits, func(item fxp.LengthUnits) { d.settings().DefaultLengthUnits = item })
+	d.weightUnitsPopup = createSettingPopup(d, panel, i18n.Text("Weight Units"), fxp.AllWeightUnits,
+		s.DefaultWeightUnits, func(item fxp.WeightUnits) { d.settings().DefaultWeightUnits = item })
 	content.AddChild(panel)
 }
 

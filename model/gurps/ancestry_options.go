@@ -44,10 +44,10 @@ type AncestryOptions struct {
 }
 
 // RandomHeight returns a randomized height.
-func (o *AncestryOptions) RandomHeight(resolver eval.VariableResolver, not Length) Length {
-	def := LengthFromInteger(defaultHeight, Inch)
+func (o *AncestryOptions) RandomHeight(resolver eval.VariableResolver, not fxp.Length) fxp.Length {
+	def := fxp.LengthFromInteger(defaultHeight, fxp.Inch)
 	for i := 0; i < maximumRandomTries; i++ {
-		value := Length(fxp.EvaluateToNumber(o.HeightFormula, resolver))
+		value := fxp.Length(fxp.EvaluateToNumber(o.HeightFormula, resolver))
 		if value <= 0 {
 			value = def
 		}
@@ -59,10 +59,10 @@ func (o *AncestryOptions) RandomHeight(resolver eval.VariableResolver, not Lengt
 }
 
 // RandomWeight returns a randomized weight.
-func (o *AncestryOptions) RandomWeight(resolver eval.VariableResolver, not Weight) Weight {
-	def := WeightFromInteger(defaultWeight, Pound)
+func (o *AncestryOptions) RandomWeight(resolver eval.VariableResolver, not fxp.Weight) fxp.Weight {
+	def := fxp.WeightFromInteger(defaultWeight, fxp.Pound)
 	for i := 0; i < maximumRandomTries; i++ {
-		value := Weight(fxp.EvaluateToNumber(o.WeightFormula, resolver))
+		value := fxp.Weight(fxp.EvaluateToNumber(o.WeightFormula, resolver))
 		if value <= 0 {
 			value = def
 		}

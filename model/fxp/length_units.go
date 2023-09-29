@@ -9,20 +9,18 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package gurps
+package fxp
 
 import (
 	"strings"
-
-	"github.com/richardwilkes/gcs/v5/model/fxp"
 )
 
 // Format the length for this LengthUnits.
 func (enum LengthUnits) Format(length Length) string {
-	inches := fxp.Int(length)
+	inches := Int(length)
 	switch enum {
 	case FeetAndInches:
-		oneFoot := fxp.From(12)
+		oneFoot := From(12)
 		feet := inches.Div(oneFoot).Trunc()
 		inches -= feet.Mul(oneFoot)
 		if feet == 0 && inches == 0 {
@@ -41,37 +39,37 @@ func (enum LengthUnits) Format(length Length) string {
 	case Inch:
 		return inches.String() + " " + enum.Key()
 	case Feet:
-		return inches.Div(fxp.From(12)).String() + " " + enum.Key()
+		return inches.Div(From(12)).String() + " " + enum.Key()
 	case Yard, Meter:
-		return inches.Div(fxp.From(36)).String() + " " + enum.Key()
+		return inches.Div(From(36)).String() + " " + enum.Key()
 	case Mile:
-		return inches.Div(fxp.From(63360)).String() + " " + enum.Key()
+		return inches.Div(From(63360)).String() + " " + enum.Key()
 	case Centimeter:
-		return inches.Div(fxp.From(36)).Mul(fxp.From(100)).String() + " " + enum.Key()
+		return inches.Div(From(36)).Mul(From(100)).String() + " " + enum.Key()
 	case Kilometer:
-		return inches.Div(fxp.From(36000)).String() + " " + enum.Key()
+		return inches.Div(From(36000)).String() + " " + enum.Key()
 	default:
 		return FeetAndInches.Format(length)
 	}
 }
 
 // ToInches converts the length in this LengthUnits to inches.
-func (enum LengthUnits) ToInches(length fxp.Int) fxp.Int {
+func (enum LengthUnits) ToInches(length Int) Int {
 	switch enum {
 	case FeetAndInches, Inch:
 		return length
 	case Feet:
-		return length.Mul(fxp.From(12))
+		return length.Mul(From(12))
 	case Yard:
-		return length.Mul(fxp.From(36))
+		return length.Mul(From(36))
 	case Mile:
-		return length.Mul(fxp.From(63360))
+		return length.Mul(From(63360))
 	case Centimeter:
-		return length.Mul(fxp.From(36)).Div(fxp.From(100))
+		return length.Mul(From(36)).Div(From(100))
 	case Kilometer:
-		return length.Mul(fxp.From(36000))
+		return length.Mul(From(36000))
 	case Meter:
-		return length.Mul(fxp.From(36))
+		return length.Mul(From(36))
 	default:
 		return FeetAndInches.ToInches(length)
 	}

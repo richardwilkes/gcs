@@ -1,5 +1,3 @@
-// Code generated from "enum.go.tmpl" - DO NOT EDIT.
-
 /*
  * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
@@ -11,7 +9,9 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package gurps
+// Code generated from "enum.go.tmpl" - DO NOT EDIT.
+
+package fxp
 
 import (
 	"strings"

@@ -24,7 +24,7 @@ type WeightCriteria struct {
 // WeightCriteriaData holds the criteria for matching a number that should be written to disk.
 type WeightCriteriaData struct {
 	Compare   NumericCompareType `json:"compare,omitempty"`
-	Qualifier Weight             `json:"qualifier,omitempty"`
+	Qualifier fxp.Weight         `json:"qualifier,omitempty"`
 }
 
 // ShouldOmit implements json.Omitter.
@@ -40,7 +40,7 @@ func (w *WeightCriteria) UnmarshalJSON(data []byte) error {
 }
 
 // Matches performs a comparison and returns true if the data matches.
-func (w WeightCriteria) Matches(value Weight) bool {
+func (w WeightCriteria) Matches(value fxp.Weight) bool {
 	return w.Compare.Matches(fxp.Int(w.Qualifier), fxp.Int(value))
 }
 

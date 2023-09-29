@@ -64,7 +64,7 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 			addWeightField(wrapper, nil, "", weightLabel, "", e.target.Entity, &e.editorData.Weight, false)
 			wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Extended")))
 			wrapper.AddChild(NewNonEditableField(func(field *NonEditableField) {
-				var weight gurps.Weight
+				var weight fxp.Weight
 				defUnits := gurps.SheetSettingsFor(e.target.Entity).DefaultWeightUnits
 				if e.editorData.Quantity > 0 {
 					weight = gurps.ExtendedWeightAdjustedForModifiers(defUnits, e.editorData.Quantity, e.editorData.Weight,

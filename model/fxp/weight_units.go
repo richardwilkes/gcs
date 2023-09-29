@@ -9,12 +9,10 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package gurps
+package fxp
 
 import (
 	"strings"
-
-	"github.com/richardwilkes/gcs/v5/model/fxp"
 )
 
 // TrailingWeightUnitsFromString extracts a trailing WeightUnits from a string.
@@ -32,33 +30,33 @@ func TrailingWeightUnitsFromString(s string, defUnits WeightUnits) WeightUnits {
 func (enum WeightUnits) Format(weight Weight) string {
 	switch enum {
 	case Pound, PoundAlt:
-		return fxp.Int(weight).String() + " " + enum.Key()
+		return Int(weight).String() + " " + enum.Key()
 	case Ounce:
-		return fxp.Int(weight).Mul(fxp.From(16)).String() + " " + enum.Key()
+		return Int(weight).Mul(From(16)).String() + " " + enum.Key()
 	case Ton, TonAlt:
-		return fxp.Int(weight).Div(fxp.From(2000)).String() + " " + enum.Key()
+		return Int(weight).Div(From(2000)).String() + " " + enum.Key()
 	case Kilogram:
-		return fxp.Int(weight).Div(fxp.From(2)).String() + " " + enum.Key()
+		return Int(weight).Div(From(2)).String() + " " + enum.Key()
 	case Gram:
-		return fxp.Int(weight).Mul(fxp.From(500)).String() + " " + enum.Key()
+		return Int(weight).Mul(From(500)).String() + " " + enum.Key()
 	default:
 		return Pound.Format(weight)
 	}
 }
 
 // ToPounds the weight for this WeightUnits.
-func (enum WeightUnits) ToPounds(weight fxp.Int) fxp.Int {
+func (enum WeightUnits) ToPounds(weight Int) Int {
 	switch enum {
 	case Pound, PoundAlt:
 		return weight
 	case Ounce:
-		return weight.Div(fxp.From(16))
+		return weight.Div(From(16))
 	case Ton, TonAlt:
-		return weight.Mul(fxp.From(2000))
+		return weight.Mul(From(2000))
 	case Kilogram:
-		return weight.Mul(fxp.From(2))
+		return weight.Mul(From(2))
 	case Gram:
-		return weight.Div(fxp.From(500))
+		return weight.Div(From(500))
 	default:
 		return Pound.ToPounds(weight)
 	}

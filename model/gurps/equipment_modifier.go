@@ -385,7 +385,7 @@ func processNonCFStep(costType EquipmentModifierCostType, value fxp.Int, modifie
 }
 
 // WeightAdjustedForModifiers returns the weight after adjusting it for a set of modifiers.
-func WeightAdjustedForModifiers(weight Weight, modifiers []*EquipmentModifier, defUnits WeightUnits) Weight {
+func WeightAdjustedForModifiers(weight fxp.Weight, modifiers []*EquipmentModifier, defUnits fxp.WeightUnits) fxp.Weight {
 	var percentages fxp.Int
 	w := fxp.Int(weight)
 
@@ -395,7 +395,7 @@ func WeightAdjustedForModifiers(weight Weight, modifiers []*EquipmentModifier, d
 			t := OriginalEquipmentModifierWeightType.DetermineModifierWeightValueTypeFromString(mod.WeightAmount)
 			amt := t.ExtractFraction(mod.WeightAmount).Value()
 			if t == AdditionEquipmentModifierWeightValueType {
-				w += TrailingWeightUnitsFromString(mod.WeightAmount, defUnits).ToPounds(amt)
+				w += fxp.TrailingWeightUnitsFromString(mod.WeightAmount, defUnits).ToPounds(amt)
 			} else {
 				percentages += amt
 			}
@@ -415,10 +415,10 @@ func WeightAdjustedForModifiers(weight Weight, modifiers []*EquipmentModifier, d
 	// Apply all equipment.FinalWeight
 	w = processMultiplyAddWeightStep(FinalEquipmentModifierWeightType, w, defUnits, modifiers)
 
-	return Weight(w.Max(0))
+	return fxp.Weight(w.Max(0))
 }
 
-func processMultiplyAddWeightStep(weightType EquipmentModifierWeightType, weight fxp.Int, defUnits WeightUnits, modifiers []*EquipmentModifier) fxp.Int {
+func processMultiplyAddWeightStep(weightType EquipmentModifierWeightType, weight fxp.Int, defUnits fxp.WeightUnits, modifiers []*EquipmentModifier) fxp.Int {
 	var sum fxp.Int
 	Traverse(func(mod *EquipmentModifier) bool {
 		if mod.WeightType == weightType {
@@ -426,7 +426,7 @@ func processMultiplyAddWeightStep(weightType EquipmentModifierWeightType, weight
 			f := t.ExtractFraction(mod.WeightAmount)
 			switch t {
 			case AdditionEquipmentModifierWeightValueType:
-				sum += TrailingWeightUnitsFromString(mod.WeightAmount, defUnits).ToPounds(f.Value())
+				sum += fxp.TrailingWeightUnitsFromString(mod.WeightAmount, defUnits).ToPounds(f.Value())
 			case PercentageMultiplierEquipmentModifierWeightValueType:
 				weight = weight.Mul(f.Numerator).Div(f.Denominator.Mul(fxp.Hundred))
 			case MultiplierEquipmentModifierWeightValueType:

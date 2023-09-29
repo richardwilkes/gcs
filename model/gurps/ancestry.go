@@ -16,6 +16,7 @@ import (
 	"io/fs"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/eval"
@@ -115,25 +116,25 @@ func (a *Ancestry) GenderedOptions(gender string) *AncestryOptions {
 }
 
 // RandomHeight returns a randomized height.
-func (a *Ancestry) RandomHeight(resolver eval.VariableResolver, gender string, not Length) Length {
+func (a *Ancestry) RandomHeight(resolver eval.VariableResolver, gender string, not fxp.Length) fxp.Length {
 	if options := a.GenderedOptions(gender); options != nil && options.HeightFormula != "" {
 		return options.RandomHeight(resolver, not)
 	}
 	if a.CommonOptions != nil && a.CommonOptions.HeightFormula != "" {
 		return a.CommonOptions.RandomHeight(resolver, not)
 	}
-	return LengthFromInteger(defaultHeight, Inch)
+	return fxp.LengthFromInteger(defaultHeight, fxp.Inch)
 }
 
 // RandomWeight returns a randomized weight.
-func (a *Ancestry) RandomWeight(resolver eval.VariableResolver, gender string, not Weight) Weight {
+func (a *Ancestry) RandomWeight(resolver eval.VariableResolver, gender string, not fxp.Weight) fxp.Weight {
 	if options := a.GenderedOptions(gender); options != nil && options.WeightFormula != "" {
 		return options.RandomWeight(resolver, not)
 	}
 	if a.CommonOptions != nil && a.CommonOptions.WeightFormula != "" {
 		return a.CommonOptions.RandomWeight(resolver, not)
 	}
-	return WeightFromInteger(defaultWeight, Pound)
+	return fxp.WeightFromInteger(defaultWeight, fxp.Pound)
 }
 
 // RandomAge returns a randomized age.

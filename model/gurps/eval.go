@@ -265,8 +265,8 @@ func evalSSRT(e *eval.Evaluator, arguments string) (any, error) {
 	if wantSize, err = evalToBool(e, arg); err != nil {
 		return nil, err
 	}
-	var length Length
-	if length, err = LengthFromString(n+" "+units, Yard); err != nil {
+	var length fxp.Length
+	if length, err = fxp.LengthFromString(n+" "+units, fxp.Yard); err != nil {
 		return nil, err
 	}
 	result := yardsToValue(length, wantSize)
@@ -284,7 +284,7 @@ func evalSSRTYards(e *eval.Evaluator, arguments string) (any, error) {
 	return valueToYards(fxp.As[int](v)), nil
 }
 
-func yardsToValue(length Length, allowNegative bool) int {
+func yardsToValue(length fxp.Length, allowNegative bool) int {
 	inches := fxp.Int(length)
 	yards := inches.Div(fxp.ThirtySix)
 	if allowNegative {
