@@ -81,7 +81,6 @@ func ExtractContainedWeightReduction(s string, defUnits fxp.WeightUnits) (string
 	s = strings.TrimSpace(s)
 	if strings.HasSuffix(s, "%") {
 		v, err := fxp.FromString(strings.TrimSpace(s[:len(s)-1]))
-		//goland:noinspection GoNilness
 		return v.String() + "%", err
 	}
 	w, err := fxp.WeightFromString(s, defUnits)

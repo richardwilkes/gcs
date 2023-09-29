@@ -30,7 +30,6 @@ type Length struct {
 func LengthFromString(text string) Length {
 	length, err := ParseLengthFromString(text)
 	if err != nil {
-		//goland:noinspection GoNilness
 		length.Length = 0
 	}
 	return length
