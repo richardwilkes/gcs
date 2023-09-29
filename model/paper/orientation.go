@@ -9,18 +9,16 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package gurps
+package paper
 
-// ToPixels converts the given length in this PaperUnits to the number of 72-pixels-per-inch pixels it represents.
-func (enum PaperUnits) ToPixels(length float64) float32 {
+// Dimensions returns the paper dimensions after orienting the paper.
+func (enum Orientation) Dimensions(width, height Length) (adjustedWidth, adjustedHeight Length) {
 	switch enum {
-	case InchPaperUnits:
-		return float32(length * 72)
-	case CentimeterPaperUnits:
-		return float32((length * 72) / 2.54)
-	case MillimeterPaperUnits:
-		return float32((length * 72) / 25.4)
+	case Portrait:
+		return width, height
+	case Landscape:
+		return height, width
 	default:
-		return InchPaperUnits.ToPixels(length)
+		return Portrait.Dimensions(width, height)
 	}
 }

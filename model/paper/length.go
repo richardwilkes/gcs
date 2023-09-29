@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-package gurps
+package paper
 
 import (
 	"strconv"
@@ -19,16 +19,16 @@ import (
 	"github.com/richardwilkes/toolbox/errs"
 )
 
-// PaperLength contains a real-world length value with an attached units.
-type PaperLength struct {
+// Length contains a real-world length value with an attached units.
+type Length struct {
 	Length float64
-	Units  PaperUnits
+	Units  Units
 }
 
-// PaperLengthFromString creates a new PaperLength. May have any of the known unit suffixes or no notation at all, in
-// which case inch is used.
-func PaperLengthFromString(text string) PaperLength {
-	length, err := ParsePaperLengthFromString(text)
+// LengthFromString creates a new Length. May have any of the known unit suffixes or no notation at all, in which case
+// inch is used.
+func LengthFromString(text string) Length {
+	length, err := ParseLengthFromString(text)
 	if err != nil {
 		//goland:noinspection GoNilness
 		length.Length = 0
@@ -36,11 +36,11 @@ func PaperLengthFromString(text string) PaperLength {
 	return length
 }
 
-// ParsePaperLengthFromString parses a PaperLength from the text. May have any of the known unit suffixes or no notation
-// at all, in which case inch is used.
-func ParsePaperLengthFromString(text string) (length PaperLength, err error) {
+// ParseLengthFromString parses a Length from the text. May have any of the known unit suffixes or no notation at all,
+// in which case inch is used.
+func ParseLengthFromString(text string) (length Length, err error) {
 	text = strings.TrimLeft(strings.TrimSpace(text), "+")
-	for _, unit := range AllPaperUnits {
+	for _, unit := range AllUnits {
 		if strings.HasSuffix(text, unit.Key()) {
 			length.Units = unit
 			text = strings.TrimSpace(strings.TrimSuffix(text, unit.Key()))
@@ -56,40 +56,40 @@ func ParsePaperLengthFromString(text string) (length PaperLength, err error) {
 	return length, nil
 }
 
-func (l PaperLength) String() string {
+func (l Length) String() string {
 	return strconv.FormatFloat(l.Length, 'f', -1, 64) + " " + l.Units.Key()
 }
 
 // CSSString returns a CSS-compatible version of the value.
-func (l PaperLength) CSSString() string {
+func (l Length) CSSString() string {
 	return strconv.FormatFloat(l.Length, 'f', -1, 64) + l.Units.Key()
 }
 
 // Pixels returns the number of 72-pixels-per-inch pixels this represents.
-func (l PaperLength) Pixels() float32 {
+func (l Length) Pixels() float32 {
 	return l.Units.ToPixels(l.Length)
 }
 
 // MarshalJSON implements json.Marshaler.
-func (l PaperLength) MarshalJSON() ([]byte, error) {
+func (l Length) MarshalJSON() ([]byte, error) {
 	return json.Marshal(l.String())
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (l *PaperLength) UnmarshalJSON(in []byte) error {
+func (l *Length) UnmarshalJSON(in []byte) error {
 	var s string
 	if err := json.Unmarshal(in, &s); err != nil {
 		return err
 	}
 	var err error
-	if *l, err = ParsePaperLengthFromString(s); err != nil {
+	if *l, err = ParseLengthFromString(s); err != nil {
 		return err
 	}
 	return nil
 }
 
 // EnsureValidity checks the current settings for validity and if they aren't valid, makes them so.
-func (l *PaperLength) EnsureValidity() {
+func (l *Length) EnsureValidity() {
 	l.Units = l.Units.EnsureValid()
 	if l.Length < 0 {
 		l.Length = 0

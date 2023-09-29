@@ -59,8 +59,8 @@ func main() {
 	)
 	removeExistingGenFiles()
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:        "model/gurps",
-		Name:       "paper_orientation",
+		Pkg:        "model/paper",
+		Name:       "orientation",
 		Desc:       "holds the orientation of the page",
 		StandAlone: true,
 		Values: []enumValue{
@@ -69,9 +69,10 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model/gurps",
-		Name: "paper_units",
-		Desc: "holds the real-world length unit type",
+		Pkg:        "model/paper",
+		Name:       "units",
+		Desc:       "holds the real-world length unit type",
+		StandAlone: true,
 		Values: []enumValue{
 			{
 				Name:       "Inch",
@@ -94,9 +95,10 @@ func main() {
 		},
 	})
 	processSourceTemplate(enumTmpl, &enumInfo{
-		Pkg:  "model/gurps",
-		Name: "paper_size",
-		Desc: "holds a standard paper dimension",
+		Pkg:        "model/paper",
+		Name:       "size",
+		Desc:       "holds a standard paper dimension",
+		StandAlone: true,
 		Values: []enumValue{
 			{Key: "letter"},
 			{Key: "legal"},
