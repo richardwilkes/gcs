@@ -110,7 +110,10 @@ func registerMarkdownFileInfo() {
 // RegisterGCSFileTypes registers the GCS file types.
 func RegisterGCSFileTypes() {
 	registerExportableGCSFileInfo("GCS Sheet", gurps.SheetExt, svg.GCSSheet, NewSheetFromFile)
-	registerGCSFileInfo("GCS Template", gurps.TemplatesExt, []string{gurps.TemplatesExt}, svg.GCSTemplate, NewTemplateFromFile)
+	registerGCSFileInfo("GCS Template", gurps.TemplatesExt, []string{gurps.TemplatesExt}, svg.GCSTemplate,
+		NewTemplateFromFile)
+	registerGCSFileInfo("GCS Campaign", gurps.CampaignExt, []string{gurps.CampaignExt}, svg.GCSCampaign,
+		NewCampaignFromFile)
 	groupWith := []string{
 		gurps.TraitsExt,
 		gurps.TraitModifiersExt,
@@ -121,9 +124,12 @@ func RegisterGCSFileTypes() {
 		gurps.NotesExt,
 	}
 	registerGCSFileInfo("GCS Traits", gurps.TraitsExt, groupWith, svg.GCSTraits, NewTraitTableDockableFromFile)
-	registerGCSFileInfo("GCS Trait Modifiers", gurps.TraitModifiersExt, groupWith, svg.GCSTraitModifiers, NewTraitModifierTableDockableFromFile)
-	registerGCSFileInfo("GCS Equipment", gurps.EquipmentExt, groupWith, svg.GCSEquipment, NewEquipmentTableDockableFromFile)
-	registerGCSFileInfo("GCS Equipment Modifiers", gurps.EquipmentModifiersExt, groupWith, svg.GCSEquipmentModifiers, NewEquipmentModifierTableDockableFromFile)
+	registerGCSFileInfo("GCS Trait Modifiers", gurps.TraitModifiersExt, groupWith, svg.GCSTraitModifiers,
+		NewTraitModifierTableDockableFromFile)
+	registerGCSFileInfo("GCS Equipment", gurps.EquipmentExt, groupWith, svg.GCSEquipment,
+		NewEquipmentTableDockableFromFile)
+	registerGCSFileInfo("GCS Equipment Modifiers", gurps.EquipmentModifiersExt, groupWith, svg.GCSEquipmentModifiers,
+		NewEquipmentModifierTableDockableFromFile)
 	registerGCSFileInfo("GCS Skills", gurps.SkillsExt, groupWith, svg.GCSSkills, NewSkillTableDockableFromFile)
 	registerGCSFileInfo("GCS Spells", gurps.SpellsExt, groupWith, svg.GCSSpells, NewSpellTableDockableFromFile)
 	registerGCSFileInfo("GCS Notes", gurps.NotesExt, groupWith, svg.GCSNotes, NewNoteTableDockableFromFile)

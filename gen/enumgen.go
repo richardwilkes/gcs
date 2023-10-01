@@ -992,6 +992,7 @@ func main() {
 		Values: []enumValue{
 			{Key: "character_sheets"},
 			{Key: "character_templates"},
+			{Key: "campaigns"},
 			{Key: "editors"},
 			{Key: "images"},
 			{Key: "libraries"},

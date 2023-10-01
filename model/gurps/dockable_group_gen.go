@@ -1,5 +1,3 @@
-// Code generated from "enum.go.tmpl" - DO NOT EDIT.
-
 /*
  * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
  *
@@ -10,6 +8,8 @@
  * This Source Code Form is "Incompatible With Secondary Licenses", as
  * defined by the Mozilla Public License, version 2.0.
  */
+
+// Code generated from "enum.go.tmpl" - DO NOT EDIT.
 
 package gurps
 
@@ -23,6 +23,7 @@ import (
 const (
 	CharacterSheetsDockableGroup DockableGroup = iota
 	CharacterTemplatesDockableGroup
+	CampaignsDockableGroup
 	EditorsDockableGroup
 	ImagesDockableGroup
 	LibrariesDockableGroup
@@ -37,6 +38,7 @@ const (
 var AllDockableGroup = []DockableGroup{
 	CharacterSheetsDockableGroup,
 	CharacterTemplatesDockableGroup,
+	CampaignsDockableGroup,
 	EditorsDockableGroup,
 	ImagesDockableGroup,
 	LibrariesDockableGroup,
@@ -64,6 +66,8 @@ func (enum DockableGroup) Key() string {
 		return "character_sheets"
 	case CharacterTemplatesDockableGroup:
 		return "character_templates"
+	case CampaignsDockableGroup:
+		return "campaigns"
 	case EditorsDockableGroup:
 		return "editors"
 	case ImagesDockableGroup:
@@ -90,6 +94,8 @@ func (enum DockableGroup) String() string {
 		return i18n.Text("Character Sheets")
 	case CharacterTemplatesDockableGroup:
 		return i18n.Text("Character Templates")
+	case CampaignsDockableGroup:
+		return i18n.Text("Campaigns")
 	case EditorsDockableGroup:
 		return i18n.Text("Editors")
 	case ImagesDockableGroup:

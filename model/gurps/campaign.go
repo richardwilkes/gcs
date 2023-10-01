@@ -12,18 +12,26 @@
 package gurps
 
 import (
+	"bytes"
 	"context"
 	"io/fs"
 
+	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/xmath/crc"
 )
 
 // Campaign holds the data set to be used for a campaign.
 type Campaign struct {
+	CampaignData
+}
+
+// CampaignData holds the campaign file data.
+type CampaignData struct {
 	Version       int            `json:"version"`
-	Name          string         `json:"name"`
+	ID            uuid.UUID      `json:"id"`
 	SheetSettings *SheetSettings `json:"settings,omitempty"`
 	Traits        []*Trait       `json:"traits,omitempty"`
 	Skills        []*Skill       `json:"skills,omitempty"`
@@ -50,7 +58,10 @@ func NewCampaignFromFile(fileSystem fs.FS, filePath string) (*Campaign, error) {
 // NewCampaign creates a new Campaign.
 func NewCampaign() *Campaign {
 	return &Campaign{
-		SheetSettings: GlobalSettings().SheetSettings().Clone(nil),
+		CampaignData: CampaignData{
+			ID:            uuid.New(),
+			SheetSettings: GlobalSettings().SheetSettings().Clone(nil),
+		},
 	}
 }
 
@@ -62,5 +73,14 @@ func (c *Campaign) Save(filePath string) error {
 // MarshalJSON implements json.Marshaler.
 func (c *Campaign) MarshalJSON() ([]byte, error) {
 	c.Version = CurrentDataVersion
-	return json.Marshal(c)
+	return json.Marshal(&c.CampaignData)
+}
+
+// CRC64 computes a CRC-64 value for the canonical disk format of the data.
+func (c *Campaign) CRC64() uint64 {
+	var buffer bytes.Buffer
+	if err := jio.Save(context.Background(), &buffer, c); err != nil {
+		return 0
+	}
+	return crc.Bytes(0, buffer.Bytes())
 }

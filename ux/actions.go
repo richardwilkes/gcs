@@ -66,6 +66,7 @@ var (
 	newCarriedEquipmentContainerAction  *unison.Action
 	newCharacterSheetAction             *unison.Action
 	newCharacterTemplateAction          *unison.Action
+	newCampaignAction                   *unison.Action
 	newEquipmentContainerModifierAction *unison.Action
 	newEquipmentLibraryAction           *unison.Action
 	newEquipmentModifierAction          *unison.Action
@@ -397,6 +398,13 @@ func registerActions() {
 		Title: i18n.Text("New Character Template"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			DisplayNewDockable(NewTemplate("untitled"+gurps.TemplatesExt, gurps.NewTemplate()))
+		},
+	})
+	newCampaignAction = registerKeyBindableAction("new.campaign", &unison.Action{
+		ID:    NewCampaignItemID,
+		Title: i18n.Text("New Campaign"),
+		ExecuteCallback: func(_ *unison.Action, _ any) {
+			DisplayNewDockable(NewCampaign("untitled"+gurps.CampaignExt, gurps.NewCampaign()))
 		},
 	})
 	newEquipmentContainerModifierAction = registerKeyBindableAction("new.eqm.container", &unison.Action{
