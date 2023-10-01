@@ -1,3 +1,7 @@
 <component name="CopyrightManager">
-  <settings default="GCS" />
+  <settings default="GCS">
+    <LanguageOptions name="SVG">
+      <option name="fileTypeOverride" value="1" />
+    </LanguageOptions>
+  </settings>
 </component>

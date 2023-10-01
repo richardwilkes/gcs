@@ -84,13 +84,9 @@ var (
 	forwardData string
 	Forward     = unison.MustSVGFromContentString(forwardData)
 
-	//go:embed gcs_traits.svg
-	gcsTraitsData string
-	GCSTraits     = unison.MustSVGFromContentString(gcsTraitsData)
-
-	//go:embed gcs_trait_modifiers.svg
-	gcsTraitModifiersData string
-	GCSTraitModifiers     = unison.MustSVGFromContentString(gcsTraitModifiersData)
+	//go:embed gcs_campaign.svg
+	gcsCampaignData string
+	GCSCampaign     = unison.MustSVGFromContentString(gcsCampaignData)
 
 	//go:embed gcs_equipment.svg
 	gcsEquipmentData string
@@ -119,6 +115,14 @@ var (
 	//go:embed gcs_template.svg
 	gcsTemplateData string
 	GCSTemplate     = unison.MustSVGFromContentString(gcsTemplateData)
+
+	//go:embed gcs_trait_modifiers.svg
+	gcsTraitModifiersData string
+	GCSTraitModifiers     = unison.MustSVGFromContentString(gcsTraitModifiersData)
+
+	//go:embed gcs_traits.svg
+	gcsTraitsData string
+	GCSTraits     = unison.MustSVGFromContentString(gcsTraitsData)
 
 	//go:embed gears.svg
 	gearsData string
