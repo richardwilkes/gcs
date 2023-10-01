@@ -35,28 +35,29 @@ var languageSetting string
 
 type generalSettingsDockable struct {
 	SettingsDockable
-	nameField                     *StringField
-	autoFillProfileCheckbox       *CheckBox
-	autoAddNaturalAttacksCheckbox *CheckBox
-	groupContainersOnSortCheckbox *CheckBox
-	pointsField                   *DecimalField
-	techLevelField                *StringField
-	calendarPopup                 *unison.PopupMenu[string]
-	initialListScaleField         *PercentageField
-	initialEditorScaleField       *PercentageField
-	initialSheetScaleField        *PercentageField
-	initialPDFScaleField          *PercentageField
-	initialMarkdownScaleField     *PercentageField
-	initialImageScaleField        *PercentageField
-	autoScalingPopup              *unison.PopupMenu[gurps.AutoScale]
-	maxAutoColWidthField          *IntegerField
-	monitorResolutionField        *IntegerField
-	exportResolutionField         *IntegerField
-	tooltipDelayField             *DecimalField
-	tooltipDismissalField         *DecimalField
-	scrollWheelMultiplierField    *DecimalField
-	externalPDFCmdlineField       *StringField
-	localeField                   *StringField
+	nameField                      *StringField
+	autoFillProfileCheckbox        *CheckBox
+	autoAddNaturalAttacksCheckbox  *CheckBox
+	groupContainersOnSortCheckbox  *CheckBox
+	initialClickSelectsAllCheckbox *CheckBox
+	pointsField                    *DecimalField
+	techLevelField                 *StringField
+	calendarPopup                  *unison.PopupMenu[string]
+	initialListScaleField          *PercentageField
+	initialEditorScaleField        *PercentageField
+	initialSheetScaleField         *PercentageField
+	initialPDFScaleField           *PercentageField
+	initialMarkdownScaleField      *PercentageField
+	initialImageScaleField         *PercentageField
+	autoScalingPopup               *unison.PopupMenu[gurps.AutoScale]
+	maxAutoColWidthField           *IntegerField
+	monitorResolutionField         *IntegerField
+	exportResolutionField          *IntegerField
+	tooltipDelayField              *DecimalField
+	tooltipDismissalField          *DecimalField
+	scrollWheelMultiplierField     *DecimalField
+	externalPDFCmdlineField        *StringField
+	localeField                    *StringField
 }
 
 // ShowGeneralSettings the General Settings window.
@@ -212,6 +213,17 @@ func (d *generalSettingsDockable) createCheckboxBlock(content *unison.Panel) {
 	d.autoAddNaturalAttacksCheckbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(NewFieldLeadingLabel(""))
 	content.AddChild(d.autoAddNaturalAttacksCheckbox)
+
+	d.initialClickSelectsAllCheckbox = NewCheckBox(nil, "", i18n.Text("Initial click on text field selects all"),
+		func() unison.CheckState {
+			return unison.CheckStateFromBool(gurps.GlobalSettings().General.InitialFieldClickSelectsAll)
+		},
+		func(state unison.CheckState) {
+			gurps.GlobalSettings().General.InitialFieldClickSelectsAll = state == unison.OnCheckState
+		})
+	d.initialClickSelectsAllCheckbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
+	content.AddChild(NewFieldLeadingLabel(""))
+	content.AddChild(d.initialClickSelectsAllCheckbox)
 }
 
 func (d *generalSettingsDockable) createInitialPointsFields(content *unison.Panel) {
@@ -392,6 +404,7 @@ func (d *generalSettingsDockable) sync() {
 	SetCheckBoxState(d.autoFillProfileCheckbox, gs.AutoFillProfile)
 	SetCheckBoxState(d.groupContainersOnSortCheckbox, gs.GroupContainersOnSort)
 	SetCheckBoxState(d.autoAddNaturalAttacksCheckbox, gs.AutoAddNaturalAttacks)
+	SetCheckBoxState(d.initialClickSelectsAllCheckbox, gs.InitialFieldClickSelectsAll)
 	d.pointsField.SetText(gs.InitialPoints.String())
 	d.techLevelField.SetText(gs.DefaultTechLevel)
 	d.calendarPopup.Select(gs.CalendarRef(s.Libraries()).Name)
