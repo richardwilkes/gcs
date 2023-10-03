@@ -108,6 +108,15 @@ func Convert(paths ...string) error {
 			if err = tmpl.Save(p); err != nil {
 				return err
 			}
+		// TODO: Re-enable Campaign files
+		// case CampaignExt:
+		// 	var campaign *Campaign
+		// 	if campaign, err = NewCampaignFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+		// 		return err
+		// 	}
+		// 	if err = campaign.Save(p); err != nil {
+		// 		return err
+		// 	}
 		case SheetExt:
 			var entity *Entity
 			if entity, err = NewEntityFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {

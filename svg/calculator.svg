@@ -1,14 +1,3 @@
-<!--
-  - Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
-  -
-  - This Source Code Form is subject to the terms of the Mozilla Public
-  - License, version 2.0. If a copy of the MPL was not distributed with
-  - this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-  -
-  - This Source Code Form is "Incompatible With Secondary Licenses", as
-  - defined by the Mozilla Public License, version 2.0.
-  -->
-
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
     <path d="M64 0C28.7 0 0 28.7 0 64v384c0 35.3 28.7 64 64 64h256c35.3 0 64-28.7 64-64V64c0-35.3-28.7-64-64-64H64zm32 64h192c17.7 0 32 14.3 32 32v32c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V96c0-17.7 14.3-32 32-32zM64 224c0-17.7 14.3-32 32-32s32 14.3 32 32-14.3 32-32 32-32-14.3-32-32zm32 64c17.7 0 32 14.3 32 32s-14.3 32-32 32-32-14.3-32-32 14.3-32 32-32zM64 416c0-17.7 14.3-32 32-32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H96c-17.7 0-32-14.3-32-32zm128-224c17.7 0 32 14.3 32 32s-14.3 32-32 32-32-14.3-32-32 14.3-32 32-32zm-32 128c0-17.7 14.3-32 32-32s32 14.3 32 32-14.3 32-32 32-32-14.3-32-32zm128-128c17.7 0 32 14.3 32 32s-14.3 32-32 32-32-14.3-32-32 14.3-32 32-32zm-32 128c0-17.7 14.3-32 32-32s32 14.3 32 32-14.3 32-32 32-32-14.3-32-32zm32 64c17.7 0 32 14.3 32 32s-14.3 32-32 32-32-14.3-32-32 14.3-32 32-32z"/>
 </svg>

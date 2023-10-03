@@ -33,6 +33,7 @@ import (
 const (
 	NewSheetItemID = unison.UserBaseID + iota
 	NewTemplateItemID
+	NewCampaignItemID
 	NewTraitsLibraryItemID
 	NewTraitModifiersLibraryItemID
 	NewEquipmentLibraryItemID
@@ -191,6 +192,8 @@ func (s menuBarScope) setupFileMenu(bar unison.Menu) {
 	m := bar.Menu(unison.FileMenuID)
 	i := s.insertMenuItem(m, 0, newCharacterSheetAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, newCharacterTemplateAction.NewMenuItem(f))
+	// TODO: Re-enable Campaign files
+	// i = s.insertMenuItem(m, i, newCampaignAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, newMarkdownFileAction.NewMenuItem(f))
 
 	i = s.insertMenuSeparator(m, i)

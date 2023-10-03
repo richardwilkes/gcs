@@ -28,6 +28,7 @@ const (
 
 // Primary GCS file extensions.
 const (
+	CampaignExt           = ".campaign"
 	EquipmentExt          = ".eqp"
 	EquipmentModifiersExt = ".eqm"
 	NotesExt              = ".not"
