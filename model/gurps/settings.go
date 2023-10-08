@@ -27,6 +27,7 @@ import (
 	"github.com/richardwilkes/toolbox/collection/dict"
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/thememode"
 )
 
 const maxRecentFiles = 20
@@ -67,7 +68,7 @@ type Settings struct {
 	QuickExports       *QuickExports              `json:"quick_exports,omitempty"`
 	Sheet              *SheetSettings             `json:"sheet_settings,omitempty"`
 	OpenInWindow       []DockableGroup            `json:"open_in_window,omitempty"`
-	ColorMode          unison.ColorMode           `json:"color_mode"`
+	ThemeMode          thememode.Enum             `json:"theme_mode,alt=color_mode"`
 }
 
 // DefaultSettings returns new default settings.
@@ -93,7 +94,7 @@ func GlobalSettings() *Settings {
 		}
 		global.EnsureValidity()
 		InstallEvaluatorFunctions(fxp.EvalFuncs)
-		unison.SetColorMode(global.ColorMode)
+		unison.SetThemeMode(global.ThemeMode)
 		global.Colors.MakeCurrent()
 		global.Fonts.MakeCurrent()
 		unison.DefaultScrollPanelTheme.MouseWheelMultiplier = func() float32 {

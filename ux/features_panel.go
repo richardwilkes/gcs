@@ -22,6 +22,8 @@ import (
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 var (
@@ -52,7 +54,7 @@ func newFeaturesPanel(entity *gurps.Entity, owner fmt.Stringer, features *gurps.
 	})
 	p.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	p.SetBorder(unison.NewCompoundBorder(
@@ -62,7 +64,7 @@ func newFeaturesPanel(entity *gurps.Entity, owner fmt.Stringer, features *gurps.
 		},
 		unison.NewEmptyBorder(unison.NewUniformInsets(2))))
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, unison.Fill))
+		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, paintstyle.Fill))
 	}
 	addButton := unison.NewSVGButton(svg.CircledAdd)
 	addButton.ClickCallback = func() {
@@ -111,7 +113,7 @@ func (p *featuresPanel) insertFeaturePanel(index int, f gurps.Feature) {
 	}
 	if panel != nil {
 		panel.SetLayoutData(&unison.FlexLayoutData{
-			HAlign: unison.FillAlignment,
+			HAlign: align.Fill,
 			HGrab:  true,
 		})
 		p.AddChildAtIndex(panel, index)
@@ -122,7 +124,7 @@ func (p *featuresPanel) createBasePanel(f gurps.Feature) *unison.Panel {
 	panel := unison.NewPanel()
 	panel.SetLayout(&unison.FlexLayout{
 		Columns:  2,
-		HAlign:   unison.FillAlignment,
+		HAlign:   align.Fill,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
@@ -163,7 +165,7 @@ func (p *featuresPanel) createAttributeBonusPanel(f *gurps.AttributeBonus) *unis
 		VSpacing: unison.StdVSpacing,
 	})
 	wrapper.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	panel.AddChild(wrapper)
@@ -184,7 +186,7 @@ func (p *featuresPanel) createConditionalModifierPanel(f *gurps.ConditionalModif
 	field.Watermark = watermark
 	field.AutoScroll = false
 	field.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	panel.AddChild(field)
@@ -234,7 +236,7 @@ func (p *featuresPanel) createReactionBonusPanel(f *gurps.ReactionBonus) *unison
 	field.Watermark = watermark
 	field.AutoScroll = false
 	field.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	panel.AddChild(field)
@@ -274,7 +276,7 @@ func (p *featuresPanel) createSkillBonusPanel(f *gurps.SkillBonus) *unison.Panel
 		VSpacing: unison.StdVSpacing,
 	})
 	wrapper.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 	})
 	panel.AddChild(wrapper)
 	adjustPopupBlank(criteriaPopup, f.SelectionType == gurps.ThisWeaponSkillSelectionType)
@@ -303,7 +305,7 @@ func (p *featuresPanel) createSecondarySkillPanels(parent *unison.Panel, index i
 		VSpacing: unison.StdVSpacing,
 	})
 	wrapper.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 	})
 	parent.AddChildAtIndex(wrapper, index)
 	index++
@@ -319,7 +321,7 @@ func (p *featuresPanel) createSecondarySkillPanels(parent *unison.Panel, index i
 			VSpacing: unison.StdVSpacing,
 		})
 		wrapper.SetLayoutData(&unison.FlexLayoutData{
-			HAlign: unison.FillAlignment,
+			HAlign: align.Fill,
 		})
 		parent.AddChildAtIndex(wrapper, index)
 	}
@@ -357,7 +359,7 @@ func (p *featuresPanel) createSpellBonusPanel(f *gurps.SpellBonus) *unison.Panel
 		VSpacing: unison.StdVSpacing,
 	})
 	wrapper.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 	})
 	panel.AddChild(wrapper)
 	adjustPopupBlank(criteriaPopup, f.SpellMatchType == gurps.AllCollegesSpellMatchType)
@@ -389,7 +391,7 @@ func (p *featuresPanel) createSpellPointBonusPanel(f *gurps.SpellPointBonus) *un
 		VSpacing: unison.StdVSpacing,
 	})
 	wrapper.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 	})
 	panel.AddChild(wrapper)
 	adjustPopupBlank(criteriaPopup, f.SpellMatchType == gurps.AllCollegesSpellMatchType)
@@ -437,7 +439,7 @@ func (p *featuresPanel) createWeaponDamageBonusPanel(f *gurps.WeaponBonus) *unis
 		VSpacing: unison.StdVSpacing,
 	})
 	wrapper.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 	})
 	panel.AddChild(wrapper)
 	adjustPopupBlank(criteriaPopup, f.SelectionType == gurps.ThisWeaponWeaponSelectionType)
@@ -466,7 +468,7 @@ func (p *featuresPanel) createSecondaryWeaponPanels(parent *unison.Panel, index 
 		VSpacing: unison.StdVSpacing,
 	})
 	wrapper.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 	})
 	parent.AddChildAtIndex(wrapper, index)
 	index++
@@ -482,7 +484,7 @@ func (p *featuresPanel) createSecondaryWeaponPanels(parent *unison.Panel, index 
 			VSpacing: unison.StdVSpacing,
 		})
 		wrapper.SetLayoutData(&unison.FlexLayoutData{
-			HAlign: unison.FillAlignment,
+			HAlign: align.Fill,
 		})
 		parent.AddChildAtIndex(wrapper, index)
 		index++
@@ -499,7 +501,7 @@ func (p *featuresPanel) createSecondaryWeaponPanels(parent *unison.Panel, index 
 				VSpacing: unison.StdVSpacing,
 			})
 			wrapper.SetLayoutData(&unison.FlexLayoutData{
-				HAlign: unison.FillAlignment,
+				HAlign: align.Fill,
 			})
 			parent.AddChildAtIndex(wrapper, index)
 		}
@@ -531,7 +533,7 @@ func (p *featuresPanel) createContainedWeightReductionPanel(f *gurps.ContainedWe
 		VSpacing: unison.StdVSpacing,
 	})
 	wrapper.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 	})
 	panel.AddChild(wrapper)
 	return panel
@@ -558,7 +560,7 @@ func (p *featuresPanel) createCostReductionPanel(f *gurps.CostReduction) *unison
 		VSpacing: unison.StdVSpacing,
 	})
 	wrapper.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	panel.AddChild(wrapper)
@@ -587,7 +589,7 @@ func (p *featuresPanel) addLeveledModifierLine(parent *unison.Panel, f gurps.Fea
 		VSpacing: unison.StdVSpacing,
 	})
 	panel.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	parent.AddChild(panel)

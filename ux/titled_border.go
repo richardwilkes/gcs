@@ -14,6 +14,8 @@ package ux
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/filltype"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 var _ unison.Border = &TitledBorder{}
@@ -45,10 +47,10 @@ func (t *TitledBorder) Insets() unison.Insets {
 func (t *TitledBorder) Draw(gc *unison.Canvas, rect unison.Rect) {
 	clip := rect.Inset(t.Insets())
 	path := unison.NewPath()
-	path.SetFillType(unison.EvenOdd)
+	path.SetFillType(filltype.EvenOdd)
 	path.Rect(rect)
 	path.Rect(clip)
-	gc.DrawPath(path, gurps.HeaderColor.Paint(gc, rect, unison.Fill))
+	gc.DrawPath(path, gurps.HeaderColor.Paint(gc, rect, paintstyle.Fill))
 	text := unison.NewText(t.Title, &unison.TextDecoration{
 		Font:       t.font(),
 		Foreground: gurps.OnHeaderColor,

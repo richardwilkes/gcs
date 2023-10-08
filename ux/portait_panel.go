@@ -21,6 +21,10 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/filtermode"
+	"github.com/richardwilkes/unison/enums/imgfmt"
+	"github.com/richardwilkes/unison/enums/mipmapmode"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 	"golang.org/x/image/draw"
 )
 
@@ -47,7 +51,7 @@ func NewPortraitPanel(entity *gurps.Entity) *PortraitPanel {
 
 func (p *PortraitPanel) drawSelf(gc *unison.Canvas, _ unison.Rect) {
 	r := p.ContentRect(false)
-	paint := unison.ContentColor.Paint(gc, r, unison.Fill)
+	paint := unison.ContentColor.Paint(gc, r, paintstyle.Fill)
 	gc.DrawRect(r, paint)
 	if img := p.entity.Profile.Portrait(); img != nil {
 		size := img.LogicalSize()
@@ -68,8 +72,8 @@ func (p *PortraitPanel) drawSelf(gc *unison.Canvas, _ unison.Rect) {
 		img.DrawInRect(gc, r, &unison.SamplingOptions{
 			UseCubic:       true,
 			CubicResampler: unison.MitchellResampler(),
-			FilterMode:     unison.FilterModeLinear,
-			MipMapMode:     unison.MipMapModeLinear,
+			FilterMode:     filtermode.Linear,
+			MipMapMode:     mipmapmode.Linear,
 		}, paint)
 	}
 }
@@ -84,7 +88,7 @@ func (p *PortraitPanel) mouseDown(_ unison.Point, button, clickCount int, _ unis
 		d := unison.NewOpenDialog()
 		d.SetAllowsMultipleSelection(false)
 		d.SetResolvesAliases(true)
-		d.SetAllowedExtensions(unison.KnownImageFormatExtensions...)
+		d.SetAllowedExtensions(imgfmt.AllReadableExtensions()...)
 		d.SetCanChooseDirectories(false)
 		d.SetCanChooseFiles(true)
 		global := gurps.GlobalSettings()

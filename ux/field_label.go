@@ -13,6 +13,7 @@ package ux
 
 import (
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 // NewFieldLeadingLabel creates a new label appropriate for the first label in a row before a field.
@@ -20,8 +21,8 @@ func NewFieldLeadingLabel(text string) *unison.Label {
 	label := unison.NewLabel()
 	label.Text = text
 	label.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.EndAlignment,
-		VAlign: unison.MiddleAlignment,
+		HAlign: align.End,
+		VAlign: align.Middle,
 	})
 	return label
 }
@@ -31,8 +32,8 @@ func NewFieldInteriorLeadingLabel(text string) *unison.Label {
 	label := unison.NewLabel()
 	label.Text = text
 	label.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.EndAlignment,
-		VAlign: unison.MiddleAlignment,
+		HAlign: align.End,
+		VAlign: align.Middle,
 	})
 	label.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing}))
 	return label
@@ -43,7 +44,7 @@ func NewFieldTrailingLabel(text string) *unison.Label {
 	label := unison.NewLabel()
 	label.Text = text
 	label.SetLayoutData(&unison.FlexLayoutData{
-		VAlign: unison.MiddleAlignment,
+		VAlign: align.Middle,
 	})
 	return label
 }

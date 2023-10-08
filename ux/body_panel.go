@@ -19,6 +19,8 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 // BodyPanel holds the contents of the body block on the sheet.
@@ -40,8 +42,8 @@ func NewBodyPanel(entity *gurps.Entity) *BodyPanel {
 		HSpacing: 4,
 	})
 	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 		VSpan:  3,
 	})
 	locations := gurps.SheetSettingsFor(entity).BodyType
@@ -53,11 +55,11 @@ func NewBodyPanel(entity *gurps.Entity) *BodyPanel {
 		Right:  2,
 	})))
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, unison.Fill))
+		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, paintstyle.Fill))
 		r := p.Children()[0].FrameRect()
 		r.X = rect.X
 		r.Width = rect.Width
-		gc.DrawRect(r, gurps.HeaderColor.Paint(gc, r, unison.Fill))
+		gc.DrawRect(r, gurps.HeaderColor.Paint(gc, r, paintstyle.Fill))
 		for i, row := range p.row {
 			var ink unison.Ink
 			if i&1 == 1 {
@@ -68,7 +70,7 @@ func NewBodyPanel(entity *gurps.Entity) *BodyPanel {
 			r = row.AsPanel().FrameRect()
 			r.X = rect.X
 			r.Width = rect.Width
-			gc.DrawRect(r, ink.Paint(gc, r, unison.Fill))
+			gc.DrawRect(r, ink.Paint(gc, r, paintstyle.Fill))
 		}
 	}
 	p.addContent(locations)
@@ -111,7 +113,7 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 		} else {
 			label = NewPageLabelCenter(rollRange)
 		}
-		label.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
+		label.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 		if depth > 0 {
 			label.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: float32(10 * depth)}))
 		}
@@ -128,7 +130,7 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 		if strings.TrimSpace(location.Description) != "" {
 			name.Tooltip = newWrappedTooltip(location.Description)
 		}
-		name.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
+		name.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 		p.row = append(p.row, name)
 		p.AddChild(name)
 		p.AddChild(p.createHitPenaltyField(location))
@@ -150,7 +152,7 @@ func (p *BodyPanel) createHitPenaltyField(location *gurps.HitLocation) unison.Pa
 		f.Text = fmt.Sprintf("%+d", location.HitPenalty)
 		MarkForLayoutWithinDockable(f)
 	})
-	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
+	field.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 	return field
 }
 
@@ -162,7 +164,7 @@ func (p *BodyPanel) createDRField(location *gurps.HitLocation) unison.Paneler {
 			location.TableName, tooltip.String()))
 		MarkForLayoutWithinDockable(f)
 	})
-	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
+	field.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 	return field
 }
 
@@ -171,8 +173,8 @@ func (p *BodyPanel) addSeparator() {
 	sep.Vertical = true
 	sep.LineInk = unison.InteriorDividerColor
 	layoutData := &unison.FlexLayoutData{
-		HAlign: unison.MiddleAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Middle,
+		VAlign: align.Fill,
 		VGrab:  true,
 	}
 	sep.SetLayoutData(layoutData)

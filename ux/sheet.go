@@ -26,6 +26,9 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/behavior"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 	"github.com/richardwilkes/unison/printing"
 )
 
@@ -129,8 +132,8 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	s.targetMgr = NewTargetMgr(s)
 	s.SetLayout(&unison.FlexLayout{
 		Columns: 1,
-		HAlign:  unison.FillAlignment,
-		VAlign:  unison.FillAlignment,
+		HAlign:  align.Fill,
+		VAlign:  align.Fill,
 	})
 
 	s.MouseDownCallback = func(_ unison.Point, _, _ int, _ unison.Modifiers) bool {
@@ -165,7 +168,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	s.DrawOverCallback = func(gc *unison.Canvas, rect unison.Rect) {
 		if s.dragReroutePanel != nil {
 			r := s.RectFromRoot(s.dragReroutePanel.RectToRoot(s.dragReroutePanel.ContentRect(true)))
-			paint := unison.DropAreaColor.Paint(gc, r, unison.Fill)
+			paint := unison.DropAreaColor.Paint(gc, r, paintstyle.Fill)
 			paint.SetColorFilter(unison.Alpha30Filter())
 			gc.DrawRect(r, paint)
 		}
@@ -179,15 +182,15 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	top, s.modifiedFunc = createPageTopBlock(s.entity, s.targetMgr)
 	s.content.AddChild(top)
 	s.createLists()
-	s.scroll.SetContent(s.content, unison.UnmodifiedBehavior, unison.UnmodifiedBehavior)
+	s.scroll.SetContent(s.content, behavior.Unmodified, behavior.Unmodified)
 	s.scroll.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 		HGrab:  true,
 		VGrab:  true,
 	})
 	s.scroll.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, gurps.PageVoidColor.Paint(gc, rect, unison.Fill))
+		gc.DrawRect(rect, gurps.PageVoidColor.Paint(gc, rect, paintstyle.Fill))
 	}
 
 	helpButton := unison.NewSVGButton(svg.Help)
@@ -214,7 +217,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	s.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	s.toolbar.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	s.toolbar.AddChild(NewDefaultInfoPop())
@@ -664,12 +667,12 @@ func (s *Sheet) createLists() {
 			rowPanel.SetLayout(&unison.FlexLayout{
 				Columns:      len(rowPanel.Children()),
 				HSpacing:     1,
-				HAlign:       unison.FillAlignment,
-				VAlign:       unison.FillAlignment,
+				HAlign:       align.Fill,
+				VAlign:       align.Fill,
 				EqualColumns: true,
 			})
 			rowPanel.SetLayoutData(&unison.FlexLayoutData{
-				HAlign: unison.FillAlignment,
+				HAlign: align.Fill,
 				HGrab:  true,
 			})
 			page.AddChild(rowPanel)
@@ -767,7 +770,7 @@ func (s *Sheet) Rebuild(full bool) {
 }
 
 func drawBandedBackground(p unison.Paneler, gc *unison.Canvas, rect unison.Rect, start, step int) {
-	gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, unison.Fill))
+	gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, paintstyle.Fill))
 	children := p.AsPanel().Children()
 	for i := start; i < len(children); i += step {
 		var ink unison.Ink
@@ -779,6 +782,6 @@ func drawBandedBackground(p unison.Paneler, gc *unison.Canvas, rect unison.Rect,
 		r := children[i].FrameRect()
 		r.X = rect.X
 		r.Width = rect.Width
-		gc.DrawRect(r, ink.Paint(gc, r, unison.Fill))
+		gc.DrawRect(r, ink.Paint(gc, r, paintstyle.Fill))
 	}
 }

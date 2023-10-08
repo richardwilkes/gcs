@@ -15,6 +15,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 // DamagePanel holds the contents of the damage block on the sheet.
@@ -30,11 +31,11 @@ func NewDamagePanel(entity *gurps.Entity) *DamagePanel {
 	p.SetLayout(&unison.FlexLayout{
 		Columns:  2,
 		HSpacing: 4,
-		HAlign:   unison.MiddleAlignment,
+		HAlign:   align.Middle,
 	})
 	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 	})
 	p.SetBorder(unison.NewCompoundBorder(&TitledBorder{Title: i18n.Text("Basic Damage")}, unison.NewEmptyBorder(unison.Insets{
 		Top:    1,

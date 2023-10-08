@@ -17,6 +17,10 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/behavior"
+	"github.com/richardwilkes/unison/enums/imgfmt"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 const (
@@ -67,15 +71,15 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 
 	d.scroll = unison.NewScrollPanel()
 	d.scroll.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 		HGrab:  true,
 		VGrab:  true,
 	})
-	d.scroll.SetContent(d.imgPanel, unison.FillBehavior, unison.FillBehavior)
+	d.scroll.SetContent(d.imgPanel, behavior.Fill, behavior.Fill)
 
 	typeLabel := unison.NewLabel()
-	typeLabel.Text = unison.EncodedImageFormatForPath(filePath).String()
+	typeLabel.Text = imgfmt.ForPath(filePath).String()
 	typeLabel.Font = unison.DefaultFieldTheme.Font
 
 	sizeLabel := unison.NewLabel()
@@ -87,7 +91,7 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	toolbar.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	toolbar.AddChild(NewDefaultInfoPop())
@@ -150,7 +154,7 @@ func (d *ImageDockable) imageSizer(_ unison.Size) (minSize, prefSize, maxSize un
 }
 
 func (d *ImageDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
-	gc.DrawRect(dirty, unison.ContentColor.Paint(gc, dirty, unison.Fill))
+	gc.DrawRect(dirty, unison.ContentColor.Paint(gc, dirty, paintstyle.Fill))
 	gc.DrawImage(d.img, 0, 0, nil, nil)
 }
 

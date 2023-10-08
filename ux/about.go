@@ -19,6 +19,10 @@ import (
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/paintstyle"
+	"github.com/richardwilkes/unison/enums/slant"
+	"github.com/richardwilkes/unison/enums/spacing"
+	"github.com/richardwilkes/unison/enums/weight"
 )
 
 var (
@@ -79,12 +83,10 @@ func (w *aboutWindow) drawContentBackground(gc *unison.Canvas, _ unison.Rect) {
 	r := w.Content().ContentRect(true)
 	gc.DrawImageInRect(w.img, r, nil, nil)
 	gc.DrawRect(r, unison.NewEvenlySpacedGradient(unison.Point{Y: 0.25}, unison.Point{Y: 1}, 0, 0,
-		unison.Transparent, unison.Black).Paint(gc, r, unison.Fill))
+		unison.Transparent, unison.Black).Paint(gc, r, paintstyle.Fill))
 
-	face := unison.MatchFontFace(unison.DefaultSystemFamilyName, unison.NormalFontWeight, unison.StandardSpacing,
-		unison.NoSlant)
-	boldFace := unison.MatchFontFace(unison.DefaultSystemFamilyName, unison.BlackFontWeight, unison.StandardSpacing,
-		unison.NoSlant)
+	face := unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Regular, spacing.Standard, slant.Upright)
+	boldFace := unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Black, spacing.Standard, slant.Upright)
 	dec := &unison.TextDecoration{
 		Font:       face.Font(7),
 		Foreground: unison.Gray,
@@ -131,8 +133,7 @@ func (w *aboutWindow) drawContentBackground(gc *unison.Canvas, _ unison.Rect) {
 		t = i18n.Text("Development")
 	}
 	versionText := unison.NewText(t, &unison.TextDecoration{
-		Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, unison.BlackFontWeight, unison.StandardSpacing,
-			unison.NoSlant).Font(10),
+		Font:       unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Black, spacing.Standard, slant.Upright).Font(10),
 		Foreground: unison.White,
 	})
 
@@ -142,8 +143,8 @@ func (w *aboutWindow) drawContentBackground(gc *unison.Canvas, _ unison.Rect) {
 	)
 	width := max(versionText.Width(), buildText.Width()) + hMargin*2
 	backing := unison.NewRect((r.Width-width)/2, 65, width, versionText.Height()+buildText.Height()+vMargin*2)
-	gc.DrawRoundedRect(backing, 8, 8, unison.Black.SetAlphaIntensity(0.7).Paint(gc, backing, unison.Fill))
-	p := unison.Black.Paint(gc, backing, unison.Stroke)
+	gc.DrawRoundedRect(backing, 8, 8, unison.Black.SetAlphaIntensity(0.7).Paint(gc, backing, paintstyle.Fill))
+	p := unison.Black.Paint(gc, backing, paintstyle.Stroke)
 	p.SetStrokeWidth(2)
 	gc.DrawRoundedRect(backing, 8, 8, p)
 

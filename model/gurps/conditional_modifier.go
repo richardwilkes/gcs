@@ -20,7 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 var _ Node[*ConditionalModifier] = &ConditionalModifier{}
@@ -155,7 +155,7 @@ func (m *ConditionalModifier) CellData(columnID int, data *CellData) {
 	case ConditionalModifierValueColumn:
 		data.Type = TextCellType
 		data.Primary = m.Total().StringWithSign()
-		data.Alignment = unison.EndAlignment
+		data.Alignment = align.End
 		var buffer strings.Builder
 		for i, amt := range m.Amounts {
 			if i != 0 {

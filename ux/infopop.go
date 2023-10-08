@@ -18,6 +18,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 // NewDefaultInfoPop creates a new InfoPop with the message about mouse wheel scaling.
@@ -75,10 +77,10 @@ func AddKeyBindingInfoToInfoPop(target unison.Paneler, keyBinding unison.KeyBind
 	keyLabel.OnBackgroundInk = unison.DefaultTooltipTheme.BackgroundInk
 	keyLabel.Font = unison.DefaultMenuItemTheme.KeyFont
 	keyLabel.Text = keyBinding.String()
-	keyLabel.HAlign = unison.MiddleAlignment
-	keyLabel.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
+	keyLabel.HAlign = align.Middle
+	keyLabel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 	keyLabel.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.DefaultTooltipTheme.Label.OnBackgroundInk.Paint(gc, rect, unison.Fill))
+		gc.DrawRect(rect, unison.DefaultTooltipTheme.Label.OnBackgroundInk.Paint(gc, rect, paintstyle.Fill))
 		keyLabel.DefaultDraw(gc, rect)
 	}
 	keyLabel.SetBorder(unison.NewEmptyBorder(unison.NewHorizontalInsets(4)))

@@ -14,6 +14,7 @@ package ux
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 // NonEditablePageField holds the data for a non-editable page field.
@@ -25,22 +26,22 @@ type NonEditablePageField struct {
 // NewNonEditablePageField creates a new start-aligned non-editable field that uses the same font and size as the page
 // field.
 func NewNonEditablePageField(syncer func(*NonEditablePageField)) *NonEditablePageField {
-	return newNonEditablePageField(syncer, unison.StartAlignment)
+	return newNonEditablePageField(syncer, align.Start)
 }
 
 // NewNonEditablePageFieldEnd creates a new end-aligned non-editable field that uses the same font and size as the page
 // field.
 func NewNonEditablePageFieldEnd(syncer func(*NonEditablePageField)) *NonEditablePageField {
-	return newNonEditablePageField(syncer, unison.EndAlignment)
+	return newNonEditablePageField(syncer, align.End)
 }
 
 // NewNonEditablePageFieldCenter creates a new center-aligned non-editable field that uses the same font and size as the
 // page field.
 func NewNonEditablePageFieldCenter(syncer func(*NonEditablePageField)) *NonEditablePageField {
-	return newNonEditablePageField(syncer, unison.MiddleAlignment)
+	return newNonEditablePageField(syncer, align.Middle)
 }
 
-func newNonEditablePageField(syncer func(*NonEditablePageField), hAlign unison.Alignment) *NonEditablePageField {
+func newNonEditablePageField(syncer func(*NonEditablePageField), hAlign align.Enum) *NonEditablePageField {
 	f := &NonEditablePageField{
 		Label:  unison.NewLabel(),
 		syncer: syncer,
@@ -55,8 +56,8 @@ func newNonEditablePageField(syncer func(*NonEditablePageField), hAlign unison.A
 		Right:  1,
 	})) // Match normal fields
 	f.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.MiddleAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Middle,
 	})
 	f.Sync()
 	return f

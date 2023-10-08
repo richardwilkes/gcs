@@ -27,6 +27,7 @@ import (
 	"github.com/richardwilkes/toolbox/txt"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/check"
 )
 
 // Menu, Item & Action IDs
@@ -328,7 +329,7 @@ func (s menuBarScope) createOpenInWindowMenu(f unison.MenuFactory) unison.Menu {
 	settings := gurps.GlobalSettings()
 	for _, group := range gurps.AllDockableGroup {
 		mi := s.createOpenInWindowAction(group).NewMenuItem(f)
-		mi.SetCheckState(unison.CheckStateFromBool(slices.Contains(settings.OpenInWindow, group)))
+		mi.SetCheckState(check.FromBool(slices.Contains(settings.OpenInWindow, group)))
 		m.InsertItem(-1, mi)
 	}
 	return m
@@ -343,10 +344,10 @@ func (s menuBarScope) createOpenInWindowAction(group gurps.DockableGroup) *uniso
 				settings := gurps.GlobalSettings()
 				if i := slices.Index(settings.OpenInWindow, group); i != -1 {
 					settings.OpenInWindow = slices.Delete(settings.OpenInWindow, i, i+1)
-					mi.SetCheckState(unison.OffCheckState)
+					mi.SetCheckState(check.Off)
 				} else {
 					settings.OpenInWindow = gurps.SanitizeDockableGroups(append(settings.OpenInWindow, group))
-					mi.SetCheckState(unison.OnCheckState)
+					mi.SetCheckState(check.On)
 				}
 			}
 		},
@@ -504,7 +505,7 @@ func (s menuBarScope) createDeepSearchableMenu(f unison.MenuFactory) unison.Menu
 	for i, name := range keys {
 		fi := extMap[name]
 		mi := s.createDeepSearchableAction(i, fi).NewMenuItem(f)
-		mi.SetCheckState(unison.CheckStateFromBool(slices.Contains(settings.DeepSearch, fi.Extensions[0])))
+		mi.SetCheckState(check.FromBool(slices.Contains(settings.DeepSearch, fi.Extensions[0])))
 		m.InsertItem(-1, mi)
 	}
 	return m
@@ -519,11 +520,11 @@ func (s menuBarScope) createDeepSearchableAction(index int, fi gurps.FileInfo) *
 				settings := gurps.GlobalSettings()
 				if i := slices.Index(settings.DeepSearch, fi.Extensions[0]); i != -1 {
 					settings.DeepSearch = slices.Delete(settings.DeepSearch, i, i+1)
-					mi.SetCheckState(unison.OffCheckState)
+					mi.SetCheckState(check.Off)
 				} else {
 					settings.DeepSearch = append(settings.DeepSearch, fi.Extensions[0])
 					slices.Sort(settings.DeepSearch)
-					mi.SetCheckState(unison.OnCheckState)
+					mi.SetCheckState(check.On)
 				}
 				Workspace.Navigator.mapDeepSearch()
 			}

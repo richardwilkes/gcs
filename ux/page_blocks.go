@@ -14,6 +14,7 @@ package ux
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 func createPageTopBlock(entity *gurps.Entity, targetMgr *TargetMgr) (page *Page, modifiedFunc func()) {
@@ -31,8 +32,8 @@ func createPageFirstRow(entity *gurps.Entity, targetMgr *TargetMgr) (top *unison
 		Columns:  3,
 		HSpacing: 1,
 		VSpacing: 1,
-		HAlign:   unison.FillAlignment,
-		VAlign:   unison.FillAlignment,
+		HAlign:   align.Fill,
+		VAlign:   align.Fill,
 	})
 	right.AddChild(NewIdentityPanel(entity, targetMgr))
 	miscPanel := NewMiscPanel(entity, targetMgr)
@@ -47,8 +48,8 @@ func createPageFirstRow(entity *gurps.Entity, targetMgr *TargetMgr) (top *unison
 		rest:     right,
 	})
 	top.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 		HGrab:  true,
 	})
 	top.AddChild(portraitPanel)
@@ -63,12 +64,12 @@ func createPageSecondRow(entity *gurps.Entity, targetMgr *TargetMgr) *unison.Pan
 		Columns:  4,
 		HSpacing: 1,
 		VSpacing: 1,
-		HAlign:   unison.FillAlignment,
-		VAlign:   unison.FillAlignment,
+		HAlign:   align.Fill,
+		VAlign:   align.Fill,
 	})
 	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 		HGrab:  true,
 	})
 
@@ -79,8 +80,8 @@ func createPageSecondRow(entity *gurps.Entity, targetMgr *TargetMgr) *unison.Pan
 	})
 	endWrapper.SetLayoutData(&unison.FlexLayoutData{
 		VSpan:  3,
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 		HGrab:  true,
 		VGrab:  true,
 	})

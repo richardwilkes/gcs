@@ -14,6 +14,7 @@ package ux
 import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 const searchFieldClientDataKey = "is_search_field"
@@ -29,13 +30,13 @@ func NewSearchField(watermark string, modifiedCallback func(before, after *uniso
 		field: f,
 		flex: unison.FlexLayout{
 			Columns: 1,
-			HAlign:  unison.EndAlignment,
-			VAlign:  unison.MiddleAlignment,
+			HAlign:  align.End,
+			VAlign:  align.Middle,
 		},
 	})
 	f.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.MiddleAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Middle,
 		HGrab:  true,
 	})
 	b := NewSVGButtonForFont(unison.CircledXSVG, unison.DefaultSVGButtonTheme.Font, -2)

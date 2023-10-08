@@ -19,6 +19,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/thememode"
 )
 
 type colorSettingsDockable struct {
@@ -59,15 +61,15 @@ func (d *colorSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 	label := unison.NewLabel()
 	label.Text = i18n.Text("Color Mode")
 	toolbar.AddChild(label)
-	p := unison.NewPopupMenu[unison.ColorMode]()
-	for _, mode := range unison.AllColorModes {
+	p := unison.NewPopupMenu[thememode.Enum]()
+	for _, mode := range thememode.All {
 		p.AddItem(mode)
 	}
-	p.Select(gurps.GlobalSettings().ColorMode)
-	p.SelectionChangedCallback = func(popup *unison.PopupMenu[unison.ColorMode]) {
+	p.Select(gurps.GlobalSettings().ThemeMode)
+	p.SelectionChangedCallback = func(popup *unison.PopupMenu[thememode.Enum]) {
 		if mode, ok := popup.Selected(); ok {
-			gurps.GlobalSettings().ColorMode = mode
-			unison.SetColorMode(mode)
+			gurps.GlobalSettings().ThemeMode = mode
+			unison.SetThemeMode(mode)
 		}
 	}
 	toolbar.AddChild(p)
@@ -148,8 +150,8 @@ func (d *colorSettingsDockable) createResetField(c *gurps.ThemedColor) {
 		}
 	}
 	b.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.MiddleAlignment,
-		VAlign: unison.MiddleAlignment,
+		HAlign: align.Middle,
+		VAlign: align.Middle,
 	})
 	d.content.AddChild(b)
 }

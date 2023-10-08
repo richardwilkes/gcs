@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 type poolSettingsPanel struct {
@@ -38,7 +39,7 @@ func newPoolSettingsPanel(dockable *attributeSettingsDockable, def *gurps.Attrib
 	})
 	p.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	for _, threshold := range def.Thresholds {

@@ -17,6 +17,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 var (
@@ -134,11 +136,11 @@ func newPageList[T gurps.NodeTypes](owner Rebuildable, provider TableProvider[T]
 			}
 		}
 		if sortedOn != -1 {
-			gc.DrawRect(dirty, p.tableHeader.BackgroundInk.Paint(gc, dirty, unison.Fill))
+			gc.DrawRect(dirty, p.tableHeader.BackgroundInk.Paint(gc, dirty, paintstyle.Fill))
 			r := p.tableHeader.ColumnFrame(sortedOn)
 			r.X -= p.Table.Padding.Left
 			r.Width += p.Table.Padding.Left + p.Table.Padding.Right
-			gc.DrawRect(r, gurps.MarkerColor.Paint(gc, r, unison.Fill))
+			gc.DrawRect(r, gurps.MarkerColor.Paint(gc, r, paintstyle.Fill))
 			save := p.tableHeader.BackgroundInk
 			p.tableHeader.BackgroundInk = unison.Transparent
 			p.tableHeader.DefaultDraw(gc, dirty)
@@ -164,8 +166,8 @@ func newPageList[T gurps.NodeTypes](owner Rebuildable, provider TableProvider[T]
 	}
 	p.installOpenPageReferenceHandlers()
 	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 		HGrab:  true,
 	})
 	return p

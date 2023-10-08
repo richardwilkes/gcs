@@ -16,6 +16,8 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/behavior"
 )
 
 // ProcessNameablesForSelection processes the selected rows and their children for any nameables.
@@ -61,8 +63,8 @@ func ProcessNameables[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 				sep := unison.NewSeparator()
 				sep.SetLayoutData(&unison.FlexLayoutData{
 					HSpan:  2,
-					HAlign: unison.FillAlignment,
-					VAlign: unison.MiddleAlignment,
+					HAlign: align.Fill,
+					VAlign: align.Middle,
 					HGrab:  true,
 				})
 				list.AddChild(sep)
@@ -72,8 +74,8 @@ func ProcessNameables[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 			header.Font = unison.SystemFont
 			header.SetLayoutData(&unison.FlexLayoutData{
 				HSpan:  2,
-				HAlign: unison.FillAlignment,
-				VAlign: unison.MiddleAlignment,
+				HAlign: align.Fill,
+				VAlign: align.Middle,
 				HGrab:  true,
 			})
 			list.AddChild(header)
@@ -81,8 +83,8 @@ func ProcessNameables[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 				label := unison.NewLabel()
 				label.Text = k
 				label.SetLayoutData(&unison.FlexLayoutData{
-					HAlign: unison.EndAlignment,
-					VAlign: unison.MiddleAlignment,
+					HAlign: align.End,
+					VAlign: align.Middle,
 				})
 				list.AddChild(label)
 				list.AddChild(createNameableField(k, nameables[i]))
@@ -90,11 +92,11 @@ func ProcessNameables[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 		}
 		scroll := unison.NewScrollPanel()
 		scroll.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
-		scroll.SetContent(list, unison.FillBehavior, unison.FillBehavior)
+		scroll.SetContent(list, behavior.Fill, behavior.Fill)
 		scroll.BackgroundInk = unison.ContentColor
 		scroll.SetLayoutData(&unison.FlexLayoutData{
-			HAlign: unison.FillAlignment,
-			VAlign: unison.FillAlignment,
+			HAlign: align.Fill,
+			VAlign: align.Fill,
 			HGrab:  true,
 			VGrab:  true,
 		})
@@ -103,8 +105,8 @@ func ProcessNameables[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 			Columns:  1,
 			HSpacing: unison.StdHSpacing,
 			VSpacing: unison.StdVSpacing,
-			HAlign:   unison.FillAlignment,
-			VAlign:   unison.FillAlignment,
+			HAlign:   align.Fill,
+			VAlign:   align.Fill,
 		})
 		label := unison.NewLabel()
 		label.Text = i18n.Text("Provide substitutions:")
@@ -123,8 +125,8 @@ func createNameableField(key string, m map[string]string) *unison.Field {
 	field := unison.NewField()
 	field.SetMinimumTextWidthUsing("Something reasonable")
 	field.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.MiddleAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Middle,
 		HGrab:  true,
 	})
 	m[key] = ""

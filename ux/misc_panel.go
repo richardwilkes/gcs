@@ -16,6 +16,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 // MiscPanel holds the contents of the miscellaneous block on the sheet.
@@ -39,8 +41,8 @@ func NewMiscPanel(entity *gurps.Entity, targetMgr *TargetMgr) *MiscPanel {
 		HSpacing: 4,
 	})
 	m.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 	})
 	m.SetBorder(unison.NewCompoundBorder(&TitledBorder{Title: i18n.Text("Miscellaneous")},
 		unison.NewEmptyBorder(unison.Insets{
@@ -50,7 +52,7 @@ func NewMiscPanel(entity *gurps.Entity, targetMgr *TargetMgr) *MiscPanel {
 			Right:  2,
 		})))
 	m.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, unison.Fill))
+		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, paintstyle.Fill))
 	}
 
 	m.AddChild(NewPageLabelEnd(i18n.Text("Created")))

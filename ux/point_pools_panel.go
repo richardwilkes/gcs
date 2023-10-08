@@ -19,6 +19,8 @@ import (
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 // PointPoolsPanel holds the contents of the point pools block on the sheet.
@@ -44,8 +46,8 @@ func NewPointPoolsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointPoolsP
 		HSpacing: 4,
 	})
 	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 		HSpan:  2,
 	})
 	p.SetBorder(unison.NewCompoundBorder(&TitledBorder{Title: i18n.Text("Point Pools")}, unison.NewEmptyBorder(unison.Insets{
@@ -55,7 +57,7 @@ func NewPointPoolsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointPoolsP
 		Right:  2,
 	})))
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, unison.Fill))
+		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, paintstyle.Fill))
 	}
 	attrs := gurps.SheetSettingsFor(p.entity).Attributes
 	p.crc = attrs.CRC64()

@@ -26,6 +26,9 @@ import (
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/behavior"
+	"github.com/richardwilkes/unison/enums/side"
 	"github.com/richardwilkes/unison/printing"
 )
 
@@ -56,9 +59,9 @@ func InitWorkspace(wnd *unison.Window) {
 	Workspace.Navigator = newNavigator()
 	Workspace.DocumentDock = NewDocumentDock()
 	wnd.SetContent(Workspace.TopDock)
-	Workspace.TopDock.DockTo(Workspace.Navigator, nil, unison.LeftSide)
+	Workspace.TopDock.DockTo(Workspace.Navigator, nil, side.Left)
 	dc := unison.Ancestor[*unison.DockContainer](Workspace.Navigator)
-	Workspace.TopDock.DockTo(Workspace.DocumentDock, dc, unison.RightSide)
+	Workspace.TopDock.DockTo(Workspace.DocumentDock, dc, side.Right)
 	dc.SetCurrentDockable(Workspace.Navigator)
 	wnd.AllowCloseCallback = isWorkspaceAllowedToClose
 	wnd.WillCloseCallback = workspaceWillClose
@@ -270,13 +273,13 @@ func PlaceInDock(dockable unison.Dockable, group gurps.DockableGroup, forceIntoD
 		dc.Stack(dockable, -1)
 		return
 	}
-	side := unison.RightSide
+	s := side.Right
 	if group == gurps.SubEditorsDockableGroup {
 		if dc = DockContainerForGroup(Workspace.DocumentDock.Dock, gurps.EditorsDockableGroup); dc != nil {
-			side = unison.BottomSide
+			s = side.Bottom
 		}
 	}
-	Workspace.DocumentDock.DockTo(dockable, dc, side)
+	Workspace.DocumentDock.DockTo(dockable, dc, s)
 }
 
 // MoveDockableToWorkspace closes the window a dockable is in and places it within the workspace. If already in the
@@ -362,8 +365,8 @@ func NewWindowForDockable(dockable unison.Dockable, group gurps.DockableGroup) (
 	panel.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  1,
 		VSpan:  1,
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 		HGrab:  true,
 		VGrab:  true,
 	})
@@ -566,10 +569,10 @@ func PromptForDestination[T FileBackedDockable](choices []T) []T {
 	list.Append(choices...)
 	scroll := unison.NewScrollPanel()
 	scroll.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
-	scroll.SetContent(list, unison.FillBehavior, unison.FillBehavior)
+	scroll.SetContent(list, behavior.Fill, behavior.Fill)
 	scroll.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 		HGrab:  true,
 		VGrab:  true,
 	})
@@ -578,8 +581,8 @@ func PromptForDestination[T FileBackedDockable](choices []T) []T {
 		Columns:  1,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
-		HAlign:   unison.FillAlignment,
-		VAlign:   unison.FillAlignment,
+		HAlign:   align.Fill,
+		VAlign:   align.Fill,
 	})
 	label := unison.NewLabel()
 	label.Text = i18n.Text("Choose one or more destinations:")

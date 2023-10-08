@@ -20,6 +20,8 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 var lastStudyTypeUsed = gurps.SelfStudyType
@@ -46,7 +48,7 @@ func newStudyPanel(entity *gurps.Entity, studyNeeded *gurps.StudyHoursNeeded, st
 	})
 	p.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	p.SetBorder(unison.NewCompoundBorder(
@@ -56,7 +58,7 @@ func newStudyPanel(entity *gurps.Entity, studyNeeded *gurps.StudyHoursNeeded, st
 		},
 		unison.NewEmptyBorder(unison.NewUniformInsets(2))))
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, unison.Fill))
+		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, paintstyle.Fill))
 	}
 
 	top := unison.NewPanel()
@@ -160,12 +162,12 @@ func (p *studyPanel) insertStudyEntry(index int, entry *gurps.Study, requestFocu
 
 	panel.SetLayout(&unison.FlexLayout{
 		Columns:  len(panel.Children()),
-		HAlign:   unison.FillAlignment,
+		HAlign:   align.Fill,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
 	panel.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	p.AddChildAtIndex(panel, index)

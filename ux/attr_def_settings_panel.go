@@ -19,6 +19,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 type attrDefSettingsPanel struct {
@@ -47,7 +49,7 @@ func newAttrDefSettingsPanel(dockable *attributeSettingsDockable, def *gurps.Att
 		if p.Parent().IndexOfChild(p)%2 == 1 {
 			color = unison.BandingColor
 		}
-		gc.DrawRect(rect, color.Paint(gc, rect, unison.Fill))
+		gc.DrawRect(rect, color.Paint(gc, rect, paintstyle.Fill))
 	}
 	p.SetLayout(&unison.FlexLayout{
 		Columns:  3,
@@ -55,7 +57,7 @@ func newAttrDefSettingsPanel(dockable *attributeSettingsDockable, def *gurps.Att
 		VSpacing: unison.StdVSpacing,
 	})
 	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 
@@ -75,7 +77,7 @@ func (p *attrDefSettingsPanel) createButtons() *unison.Panel {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.MiddleAlignment})
+	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Middle})
 
 	p.deleteButton = unison.NewSVGButton(svg.Trash)
 	p.deleteButton.ClickCallback = p.deleteAttrDef
@@ -119,7 +121,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 		VSpacing: unison.StdVSpacing,
 	})
 	content.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 

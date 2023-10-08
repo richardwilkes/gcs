@@ -16,6 +16,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/check"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 type thresholdSettingsPanel struct {
@@ -42,7 +45,7 @@ func newThresholdSettingsPanel(pool *poolSettingsPanel, threshold *gurps.PoolThr
 		if p.Parent().IndexOfChild(p)%2 == 1 {
 			color = unison.BandingColor
 		}
-		gc.DrawRect(rect, color.Paint(gc, rect, unison.Fill))
+		gc.DrawRect(rect, color.Paint(gc, rect, paintstyle.Fill))
 	}
 	p.SetLayout(&unison.FlexLayout{
 		Columns:  3,
@@ -50,7 +53,7 @@ func newThresholdSettingsPanel(pool *poolSettingsPanel, threshold *gurps.PoolThr
 		VSpacing: unison.StdVSpacing,
 	})
 	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 
@@ -73,7 +76,7 @@ func (p *thresholdSettingsPanel) createButtons() *unison.Panel {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.MiddleAlignment})
+	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Middle})
 
 	p.deleteButton = unison.NewSVGButton(svg.Trash)
 	p.deleteButton.ClickCallback = func() { p.pool.deleteThreshold(p) }
@@ -91,7 +94,7 @@ func (p *thresholdSettingsPanel) createContent() *unison.Panel {
 		VSpacing: unison.StdVSpacing,
 	})
 	content.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 
@@ -102,7 +105,7 @@ func (p *thresholdSettingsPanel) createContent() *unison.Panel {
 		func(s string) { p.threshold.State = s })
 	field.SetMinimumTextWidthUsing(prototypeMinIDWidth)
 	field.Tooltip = newWrappedTooltip(i18n.Text("A short description of the threshold state"))
-	field.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
+	field.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 	content.AddChild(field)
 
 	text = i18n.Text("Threshold")
@@ -133,9 +136,9 @@ func (p *thresholdSettingsPanel) createContent() *unison.Panel {
 
 func (p *thresholdSettingsPanel) createOpCheckBox(op gurps.ThresholdOp) *CheckBox {
 	c := NewCheckBox(p.pool.dockable.targetMgr, p.threshold.KeyPrefix+op.Key(), op.String(),
-		func() unison.CheckState { return unison.CheckStateFromBool(p.threshold.ContainsOp(op)) },
-		func(state unison.CheckState) {
-			if state == unison.OnCheckState {
+		func() check.Enum { return check.FromBool(p.threshold.ContainsOp(op)) },
+		func(state check.Enum) {
+			if state == check.On {
 				p.threshold.AddOp(op)
 			} else {
 				p.threshold.RemoveOp(op)

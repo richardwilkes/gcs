@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 // EditTrait displays the editor for a trait.
@@ -54,15 +55,15 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 
 		hasLevelsCheckBox := addCheckBox(content, i18n.Text("Levels"), &e.editorData.CanLevel)
 		hasLevelsCheckBox.SetLayoutData(&unison.FlexLayoutData{
-			HAlign: unison.EndAlignment,
-			VAlign: unison.MiddleAlignment,
+			HAlign: align.End,
+			VAlign: align.Middle,
 		})
 		wrapper = unison.NewPanel()
 		wrapper.SetLayout(&unison.FlexLayout{
 			Columns:  3,
 			HSpacing: unison.StdHSpacing,
 			VSpacing: unison.StdVSpacing,
-			VAlign:   unison.MiddleAlignment,
+			VAlign:   align.Middle,
 		})
 		content.AddChild(wrapper)
 		levelField = addDecimalField(wrapper, nil, "", i18n.Text("Level"), "", &e.editorData.Levels, 0,

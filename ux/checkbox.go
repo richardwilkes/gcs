@@ -13,6 +13,7 @@ package ux
 
 import (
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/check"
 )
 
 // CheckBox provides a checkbox that works with undo.
@@ -21,13 +22,13 @@ type CheckBox struct {
 	undoID    int64
 	targetMgr *TargetMgr
 	targetKey string
-	get       func() unison.CheckState
-	set       func(state unison.CheckState)
-	last      unison.CheckState
+	get       func() check.Enum
+	set       func(state check.Enum)
+	last      check.Enum
 }
 
 // NewCheckBox creates a new check box.
-func NewCheckBox(targetMgr *TargetMgr, targetKey, title string, get func() unison.CheckState, set func(unison.CheckState)) *CheckBox {
+func NewCheckBox(targetMgr *TargetMgr, targetKey, title string, get func() check.Enum, set func(check.Enum)) *CheckBox {
 	c := &CheckBox{
 		CheckBox:  unison.NewCheckBox(),
 		undoID:    unison.NextUndoID(),
@@ -43,7 +44,7 @@ func NewCheckBox(targetMgr *TargetMgr, targetKey, title string, get func() uniso
 		if c.last != c.State {
 			c.last = c.State
 			if mgr := unison.UndoManagerFor(c); mgr != nil {
-				undo := NewTargetUndo(c.targetMgr, c.targetKey, c.Text, c.undoID, func(target *unison.Panel, data unison.CheckState) {
+				undo := NewTargetUndo(c.targetMgr, c.targetKey, c.Text, c.undoID, func(target *unison.Panel, data check.Enum) {
 					self := c
 					if target != nil {
 						if field, ok := target.Self.(*CheckBox); ok {

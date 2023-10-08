@@ -16,6 +16,9 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/behavior"
+	"github.com/richardwilkes/unison/enums/check"
 )
 
 // ProcessModifiersForSelection processes the selected rows for modifiers that can be toggled on or off.
@@ -72,7 +75,7 @@ func processModifiers[T *gurps.TraitModifier | *gurps.EquipmentModifier](title s
 			if !mod.Container() {
 				cb = unison.NewCheckBox()
 				cb.Text = lines[0].String()
-				cb.State = unison.CheckStateFromBool(mod.Enabled())
+				cb.State = check.FromBool(mod.Enabled())
 				_, cbPref, _ := cb.Sizes(unison.Size{})
 				label := unison.NewLabel()
 				label.Font = unison.DefaultCheckBoxTheme.Font
@@ -124,11 +127,11 @@ func processModifiers[T *gurps.TraitModifier | *gurps.EquipmentModifier](title s
 	}
 	scroll := unison.NewScrollPanel()
 	scroll.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
-	scroll.SetContent(list, unison.FillBehavior, unison.FillBehavior)
+	scroll.SetContent(list, behavior.Fill, behavior.Fill)
 	scroll.BackgroundInk = unison.ContentColor
 	scroll.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 		HGrab:  true,
 		VGrab:  true,
 	})
@@ -137,8 +140,8 @@ func processModifiers[T *gurps.TraitModifier | *gurps.EquipmentModifier](title s
 		Columns:  1,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
-		HAlign:   unison.FillAlignment,
-		VAlign:   unison.FillAlignment,
+		HAlign:   align.Fill,
+		VAlign:   align.Fill,
 	})
 	label := unison.NewLabel()
 	label.Text = i18n.Text("Select Modifiers for")
@@ -154,7 +157,7 @@ func processModifiers[T *gurps.TraitModifier | *gurps.EquipmentModifier](title s
 			if cb, ok := row.Self.(*unison.CheckBox); ok {
 				var mod gurps.GeneralModifier
 				if mod, ok = tracker[cb]; ok {
-					if on := cb.State == unison.OnCheckState; mod.Enabled() != on {
+					if on := cb.State == check.On; mod.Enabled() != on {
 						mod.SetEnabled(on)
 						changed = true
 					}

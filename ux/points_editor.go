@@ -25,6 +25,8 @@ import (
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/behavior"
 )
 
 var (
@@ -107,10 +109,10 @@ func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 	}
 	e.initContent()
 	scroller := unison.NewScrollPanel()
-	scroller.SetContent(e.content, unison.HintedFillBehavior, unison.FillBehavior)
+	scroller.SetContent(e.content, behavior.HintedFill, behavior.Fill)
 	scroller.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 		HGrab:  true,
 		VGrab:  true,
 	})
@@ -127,7 +129,7 @@ func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 func (e *pointsEditor) createToolbar() unison.Paneler {
 	toolbar := unison.NewPanel()
 	toolbar.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
@@ -206,7 +208,7 @@ func (e *pointsEditor) createRow(rec *gurps.PointsRecord, index int) {
 	}
 	when.Watermark = whenText
 	when.SetMinimumTextWidthUsing(jio.Now().String() + "abcdefg")
-	when.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
+	when.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 	e.content.AddChildAtIndex(when, index)
 	if index != -1 {
 		index++

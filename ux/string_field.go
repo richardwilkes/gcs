@@ -13,6 +13,7 @@ package ux
 
 import (
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 // StringField holds the value for a string field.
@@ -55,7 +56,7 @@ func newStringField(field *unison.Field, targetMgr *TargetMgr, targetKey, undoTi
 	f.ModifiedCallback = f.modified
 	f.Sync()
 	f.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	if targetMgr != nil && targetKey != "" {

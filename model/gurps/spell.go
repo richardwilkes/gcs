@@ -24,7 +24,7 @@ import (
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 var (
@@ -275,7 +275,7 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 			if level.Tooltip != "" {
 				data.Tooltip = includesModifiersFrom() + ":" + level.Tooltip
 			}
-			data.Alignment = unison.EndAlignment
+			data.Alignment = align.End
 		}
 	case SpellRelativeLevelColumn:
 		if !s.Container() {
@@ -297,7 +297,7 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 		data.Type = TextCellType
 		var tooltip xio.ByteBuffer
 		data.Primary = s.AdjustedPoints(&tooltip).String()
-		data.Alignment = unison.EndAlignment
+		data.Alignment = align.End
 		if tooltip.Len() != 0 {
 			data.Tooltip = includesModifiersFrom() + ":" + tooltip.String()
 		}

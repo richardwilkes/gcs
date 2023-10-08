@@ -27,6 +27,7 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/behavior"
 )
 
 type appUpdater struct {
@@ -120,7 +121,7 @@ func NotifyOfAppUpdate() {
 		md.SetContent(buffer.String(), 0)
 
 		scroll := unison.NewScrollPanel()
-		scroll.SetContent(md, unison.UnmodifiedBehavior, unison.UnmodifiedBehavior)
+		scroll.SetContent(md, behavior.Unmodified, behavior.Unmodified)
 
 		dialog, err := unison.NewDialog(
 			&unison.DrawableSVG{

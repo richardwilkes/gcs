@@ -27,6 +27,8 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 type pageRefMappingsDockable struct {
@@ -258,7 +260,7 @@ func (d *pageRefMappingsDockable) sync() {
 func (d *pageRefMappingsDockable) createIDField(ref *gurps.PageRef) {
 	p := unison.NewLabel()
 	p.Text = ref.ID
-	p.HAlign = unison.MiddleAlignment
+	p.HAlign = align.Middle
 	p.OnBackgroundInk = unison.DefaultTooltipTheme.Label.OnBackgroundInk
 	p.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false),
 		unison.NewEmptyBorder(unison.Insets{
@@ -268,12 +270,12 @@ func (d *pageRefMappingsDockable) createIDField(ref *gurps.PageRef) {
 			Right:  unison.StdHSpacing,
 		})))
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.DefaultTooltipTheme.BackgroundInk.Paint(gc, rect, unison.Fill))
+		gc.DrawRect(rect, unison.DefaultTooltipTheme.BackgroundInk.Paint(gc, rect, paintstyle.Fill))
 		p.DefaultDraw(gc, rect)
 	}
 	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.MiddleAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Middle,
 	})
 	d.content.AddChild(p)
 }
@@ -287,8 +289,8 @@ func (d *pageRefMappingsDockable) createOffsetField(ref *gurps.PageRef) {
 		}, -9999, 9999, true, false)
 	p.Tooltip = newWrappedTooltip(i18n.Text(`If your PDF is opening up to the wrong page when opening page references, enter an offset here to compensate.`))
 	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.MiddleAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Middle,
 	})
 	d.content.AddChild(p)
 }
@@ -298,8 +300,8 @@ func (d *pageRefMappingsDockable) createNameField(ref *gurps.PageRef) {
 	p.Text = filepath.Base(ref.Path)
 	p.Tooltip = newWrappedTooltip(ref.Path)
 	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.StartAlignment,
-		VAlign: unison.MiddleAlignment,
+		HAlign: align.Start,
+		VAlign: align.Middle,
 	})
 	d.content.AddChild(p)
 }
@@ -310,8 +312,8 @@ func (d *pageRefMappingsDockable) createEditField(ref *gurps.PageRef) {
 		askUserForPageRefPath(ref.ID, ref.Offset)
 	}
 	b.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.MiddleAlignment,
-		VAlign: unison.MiddleAlignment,
+		HAlign: align.Middle,
+		VAlign: align.Middle,
 	})
 	d.content.AddChild(b)
 }
@@ -331,8 +333,8 @@ func (d *pageRefMappingsDockable) createTrashField(ref *gurps.PageRef) {
 		}
 	}
 	b.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.MiddleAlignment,
-		VAlign: unison.MiddleAlignment,
+		HAlign: align.Middle,
+		VAlign: align.Middle,
 	})
 	d.content.AddChild(b)
 }

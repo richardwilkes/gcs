@@ -11,14 +11,18 @@
 
 package ux
 
-import "github.com/richardwilkes/unison"
+import (
+	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/paintstyle"
+)
 
 // NewInteriorSeparator creates a new interior vertical separator.
 func NewInteriorSeparator() *unison.Separator {
 	spacer := unison.NewSeparator()
 	spacer.LineInk = unison.InteriorDividerColor
 	spacer.Vertical = true
-	spacer.SetLayoutData(&unison.FlexLayoutData{VAlign: unison.FillAlignment})
+	spacer.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Fill})
 	return spacer
 }
 
@@ -28,7 +32,7 @@ func NewToolbarSeparator() *unison.Separator {
 	spacer.LineInk = unison.ControlEdgeColor
 	spacer.Vertical = true
 	spacer.SetBorder(unison.NewEmptyBorder(unison.NewHorizontalInsets(unison.StdHSpacing)))
-	spacer.SetLayoutData(&unison.FlexLayoutData{VAlign: unison.FillAlignment})
+	spacer.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Fill})
 	spacer.SetSizer(func(hint unison.Size) (minSize, prefSize, maxSize unison.Size) {
 		minSize, prefSize, maxSize = spacer.DefaultSizes(hint)
 		baseline := unison.DefaultSVGButtonTheme.Font.Baseline()
@@ -39,7 +43,7 @@ func NewToolbarSeparator() *unison.Separator {
 	})
 	spacer.DrawCallback = func(canvas *unison.Canvas, _ unison.Rect) {
 		rect := spacer.ContentRect(false)
-		paint := spacer.LineInk.Paint(canvas, rect, unison.Stroke)
+		paint := spacer.LineInk.Paint(canvas, rect, paintstyle.Stroke)
 		paint.SetPathEffect(unison.NewDashPathEffect([]float32{2, 2}, 0))
 		canvas.DrawLine(rect.X, rect.Y, rect.X, rect.Bottom(), paint)
 	}

@@ -21,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 func initiateLibraryUpdate(lib *gurps.Library, rel gurps.Release) bool {
@@ -75,7 +76,7 @@ documents from the library are open.`))
 	progress := unison.NewProgressBar(0)
 	progress.SetLayoutData(&unison.FlexLayoutData{
 		MinSize: unison.Size{Width: 500},
-		HAlign:  unison.FillAlignment,
+		HAlign:  align.Fill,
 		HGrab:   true,
 	})
 	content.AddChild(progress)

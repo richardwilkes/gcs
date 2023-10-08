@@ -24,6 +24,8 @@ import (
 	"github.com/richardwilkes/toolbox/fatal"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 const invertColorsMarker = "invert"
@@ -309,7 +311,7 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		}
 		label.Text = i18n.Text("Unsatisfied prerequisite(s)")
 		label.HAlign = c.Alignment
-		label.VAlign = unison.MiddleAlignment
+		label.VAlign = align.Middle
 		label.ClientData()[invertColorsMarker] = true
 		label.OnBackgroundInk = unison.OnErrorColor
 		label.SetBorder(unison.NewEmptyBorder(unison.Insets{
@@ -317,7 +319,7 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 			Right: 4,
 		}))
 		label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-			gc.DrawRect(rect, unison.ErrorColor.Paint(gc, rect, unison.Fill))
+			gc.DrawRect(rect, unison.ErrorColor.Paint(gc, rect, paintstyle.Fill))
 			label.DefaultDraw(gc, rect)
 		}
 		p.AddChild(label)
@@ -333,7 +335,7 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		}
 		label.Text = c.TemplateInfo
 		label.HAlign = c.Alignment
-		label.VAlign = unison.MiddleAlignment
+		label.VAlign = align.Middle
 		label.ClientData()[invertColorsMarker] = true
 		label.OnBackgroundInk = gurps.OnMarkerColor
 		label.SetBorder(unison.NewEmptyBorder(unison.Insets{
@@ -341,7 +343,7 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 			Right: 4,
 		}))
 		label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-			gc.DrawRect(rect, gurps.MarkerColor.Paint(gc, rect, unison.Fill))
+			gc.DrawRect(rect, gurps.MarkerColor.Paint(gc, rect, paintstyle.Fill))
 			label.DefaultDraw(gc, rect)
 		}
 		p.AddChild(label)
@@ -401,8 +403,8 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 			wrapper.SetLayout(&unison.FlexLayout{
 				Columns:  2,
 				HSpacing: unison.StdHSpacing,
-				HAlign:   unison.StartAlignment,
-				VAlign:   unison.MiddleAlignment,
+				HAlign:   align.Start,
+				VAlign:   align.Middle,
 			})
 			wrapper.AddChild(label)
 			wrapper.AddChild(tag)
@@ -416,7 +418,7 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 
 func (n *Node[T]) createToggleCell(c *gurps.CellData, foreground unison.Ink) unison.Paneler {
 	check := unison.NewLabel()
-	check.VAlign = unison.StartAlignment
+	check.VAlign = align.Start
 	font := n.primaryFieldFont()
 	fd := font.Descriptor()
 	fd.Size -= 2
@@ -584,7 +586,7 @@ func convertLinksForPageRef(in string) (string, *unison.SVG) {
 
 func (n *Node[T]) createPageRefCell(c *gurps.CellData, foreground unison.Ink) unison.Paneler {
 	label := unison.NewLabel()
-	label.VAlign = unison.StartAlignment
+	label.VAlign = align.Start
 	label.Font = n.primaryFieldFont()
 	label.OnBackgroundInk = foreground
 	label.SetEnabled(!c.Dim)

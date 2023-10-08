@@ -23,6 +23,12 @@ import (
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/toolbox/xmath"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/behavior"
+	"github.com/richardwilkes/unison/enums/blendmode"
+	"github.com/richardwilkes/unison/enums/filtermode"
+	"github.com/richardwilkes/unison/enums/mipmapmode"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 const (
@@ -118,13 +124,13 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 	outer.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	outer.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 
 	first := unison.NewPanel()
 	first.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 
@@ -237,7 +243,7 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 
 	second := unison.NewPanel()
 	second.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 
@@ -283,18 +289,18 @@ func (d *PDFDockable) createTOC() {
 	d.tocScroll = unison.NewScrollPanel()
 	d.tocScrollLayoutData = &unison.FlexLayoutData{
 		SizeHint: unison.Size{Width: 200},
-		HAlign:   unison.FillAlignment,
-		VAlign:   unison.FillAlignment,
+		HAlign:   align.Fill,
+		VAlign:   align.Fill,
 		VGrab:    true,
 	}
 	d.tocScroll.SetLayoutData(d.tocScrollLayoutData)
-	d.tocScroll.SetContent(d.tocPanel, unison.FillBehavior, unison.FillBehavior)
+	d.tocScroll.SetContent(d.tocPanel, behavior.Fill, behavior.Fill)
 
 	d.divider = unison.NewPanel()
 	d.divider.SetLayoutData(&unison.FlexLayoutData{
 		SizeHint: unison.Size{Width: unison.DefaultDockTheme.DockDividerSize()},
-		HAlign:   unison.FillAlignment,
-		VAlign:   unison.FillAlignment,
+		HAlign:   align.Fill,
+		VAlign:   align.Fill,
 		VGrab:    true,
 	})
 	d.divider.UpdateCursorCallback = func(_ unison.Point) *unison.Cursor {
@@ -335,23 +341,23 @@ func (d *PDFDockable) createContent() {
 
 	d.docScroll = unison.NewScrollPanel()
 	d.docScroll.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 		HGrab:  true,
 		VGrab:  true,
 	})
-	d.docScroll.SetContent(d.docPanel, unison.FillBehavior, unison.FillBehavior)
+	d.docScroll.SetContent(d.docPanel, behavior.Fill, behavior.Fill)
 	d.docScroll.ContentView().DrawOverCallback = d.drawOverlay
 
 	d.content = unison.NewPanel()
 	d.content.SetLayout(&unison.FlexLayout{
 		Columns: 1,
-		HAlign:  unison.FillAlignment,
-		VAlign:  unison.FillAlignment,
+		HAlign:  align.Fill,
+		VAlign:  align.Fill,
 	})
 	d.content.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 		HGrab:  true,
 		VGrab:  true,
 	})
@@ -584,7 +590,7 @@ func (d *PDFDockable) docSizer(_ unison.Size) (minSize, prefSize, maxSize unison
 }
 
 func (d *PDFDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
-	gc.DrawRect(dirty, unison.ContentColor.Paint(gc, dirty, unison.Fill))
+	gc.DrawRect(dirty, unison.ContentColor.Paint(gc, dirty, paintstyle.Fill))
 	if d.page != nil && d.page.Image != nil {
 		switch d.autoScaling {
 		case gurps.FitWidthAutoScale:
@@ -612,17 +618,17 @@ func (d *PDFDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
 		gc.Save()
 		gc.Scale(scaleCompensation, scaleCompensation)
 		r := unison.Rect{Size: d.page.Image.LogicalSize()}
-		gc.DrawRect(r, unison.White.Paint(gc, r, unison.Fill))
+		gc.DrawRect(r, unison.White.Paint(gc, r, paintstyle.Fill))
 		gc.DrawImageInRect(d.page.Image, r, &unison.SamplingOptions{
 			UseCubic:       true,
 			CubicResampler: unison.MitchellResampler(),
-			FilterMode:     unison.FilterModeLinear,
-			MipMapMode:     unison.MipMapModeLinear,
+			FilterMode:     filtermode.Linear,
+			MipMapMode:     mipmapmode.Linear,
 		}, nil)
 		if len(d.page.Matches) != 0 {
 			p := unison.NewPaint()
-			p.SetStyle(unison.Fill)
-			p.SetBlendMode(unison.ModulateBlendMode)
+			p.SetStyle(paintstyle.Fill)
+			p.SetBlendMode(blendmode.Modulate)
 			p.SetColor(gurps.PDFMarkerHighlightColor.GetColor())
 			for _, match := range d.page.Matches {
 				gc.DrawRect(match, p)
@@ -630,8 +636,8 @@ func (d *PDFDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
 		}
 		if d.link != nil {
 			p := unison.NewPaint()
-			p.SetStyle(unison.Fill)
-			p.SetBlendMode(unison.ModulateBlendMode)
+			p.SetStyle(paintstyle.Fill)
+			p.SetBlendMode(blendmode.Modulate)
 			p.SetColor(gurps.PDFLinkHighlightColor.GetColor())
 			gc.DrawRect(d.rolloverRect, p)
 		}
@@ -695,11 +701,11 @@ func (d *PDFDockable) drawOverlayMsg(gc *unison.Canvas, dirty unison.Rect, msg s
 	}
 	r.Width = backWidth
 	r.Height = backHeight
-	gc.DrawRoundedRect(r, 10, 10, bgInk.Paint(gc, dirty, unison.Fill))
+	gc.DrawRoundedRect(r, 10, 10, bgInk.Paint(gc, dirty, paintstyle.Fill))
 	x := r.X + (r.Width-width)/2
 	if icon != nil {
 		icon.DrawInRect(gc, unison.NewRect(x, r.Y+(r.Height-iconSize.Height)/2, iconSize.Width, iconSize.Height), nil,
-			decoration.Foreground.Paint(gc, r, unison.Fill))
+			decoration.Foreground.Paint(gc, r, paintstyle.Fill))
 		x += iconSize.Width + unison.StdHSpacing
 	}
 	text.Draw(gc, x, r.Y+(r.Height-height)/2+baseline)

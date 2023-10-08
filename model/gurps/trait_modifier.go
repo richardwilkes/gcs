@@ -21,7 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 var (
@@ -160,7 +160,7 @@ func (m *TraitModifier) CellData(columnID int, data *CellData) {
 		if !m.Container() {
 			data.Type = ToggleCellType
 			data.Checked = m.Enabled()
-			data.Alignment = unison.MiddleAlignment
+			data.Alignment = align.Middle
 		}
 	case TraitModifierDescriptionColumn:
 		data.Type = TextCellType

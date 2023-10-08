@@ -21,6 +21,8 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/behavior"
 )
 
 var (
@@ -65,17 +67,17 @@ func NewCampaign(filePath string, campaign *gurps.Campaign) *Campaign {
 	c.Self = c
 	c.SetLayout(&unison.FlexLayout{
 		Columns: 1,
-		HAlign:  unison.FillAlignment,
-		VAlign:  unison.FillAlignment,
+		HAlign:  align.Fill,
+		VAlign:  align.Fill,
 	})
 	c.MouseDownCallback = func(_ unison.Point, _, _ int, _ unison.Modifiers) bool {
 		c.RequestFocus()
 		return false
 	}
-	c.scroll.SetContent(c.createContent(), unison.UnmodifiedBehavior, unison.UnmodifiedBehavior)
+	c.scroll.SetContent(c.createContent(), behavior.Unmodified, behavior.Unmodified)
 	c.scroll.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 		HGrab:  true,
 		VGrab:  true,
 	})
@@ -88,7 +90,7 @@ func NewCampaign(filePath string, campaign *gurps.Campaign) *Campaign {
 	c.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	c.toolbar.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	c.toolbar.AddChild(NewDefaultInfoPop())

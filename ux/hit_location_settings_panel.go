@@ -19,6 +19,8 @@ import (
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 const (
@@ -45,7 +47,7 @@ func newHitLocationSettingsPanel(dockable *bodySettingsDockable, loc *gurps.HitL
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	p.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
+	p.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 	p.SetBorder(unison.NewEmptyBorder(unison.Insets{
 		Top:    unison.StdVSpacing,
 		Left:   unison.StdHSpacing,
@@ -57,7 +59,7 @@ func newHitLocationSettingsPanel(dockable *bodySettingsDockable, loc *gurps.HitL
 		if p.Parent().IndexOfChild(p)%2 == 1 {
 			color = unison.BandingColor
 		}
-		gc.DrawRect(rect, color.Paint(gc, rect, unison.Fill))
+		gc.DrawRect(rect, color.Paint(gc, rect, paintstyle.Fill))
 	}
 
 	p.AddChild(NewDragHandle(map[string]any{hitLocationDragDataKey: p}))
@@ -74,7 +76,7 @@ func (p *hitLocationSettingsPanel) createButtons() *unison.Panel {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.MiddleAlignment})
+	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Middle})
 
 	p.deleteButton = unison.NewSVGButton(svg.Trash)
 	p.deleteButton.ClickCallback = p.removeHitLocation
@@ -121,7 +123,7 @@ func (p *hitLocationSettingsPanel) createContent() *unison.Panel {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	content.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
+	content.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 
 	text := i18n.Text("ID")
 	content.AddChild(NewFieldLeadingLabel(text))

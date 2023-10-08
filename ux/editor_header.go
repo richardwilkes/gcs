@@ -16,6 +16,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/paintstyle"
+	"github.com/richardwilkes/unison/enums/side"
 )
 
 // NewEditorListHeader creates a new list header for an editor.
@@ -123,9 +126,9 @@ var PageTableColumnHeaderTheme = unison.LabelTheme{
 	Font:            gurps.PageLabelPrimaryFont,
 	OnBackgroundInk: gurps.OnHeaderColor,
 	Gap:             3,
-	HAlign:          unison.MiddleAlignment,
-	VAlign:          unison.MiddleAlignment,
-	Side:            unison.LeftSide,
+	HAlign:          align.Middle,
+	VAlign:          align.Middle,
+	Side:            side.Left,
 }
 
 var _ unison.TableColumnHeader[*Node[*gurps.Trait]] = &PageTableColumnHeader[*gurps.Trait]{}
@@ -173,7 +176,7 @@ func (h *PageTableColumnHeader[T]) DefaultSizes(hint unison.Size) (minSize, pref
 // DefaultDraw provides the default drawing.
 func (h *PageTableColumnHeader[T]) DefaultDraw(canvas *unison.Canvas, dirty unison.Rect) {
 	if h.sortState.Order == 0 {
-		canvas.DrawRect(dirty, gurps.MarkerColor.Paint(canvas, dirty, unison.Fill))
+		canvas.DrawRect(dirty, gurps.MarkerColor.Paint(canvas, dirty, paintstyle.Fill))
 		save := h.OnBackgroundInk
 		h.OnBackgroundInk = gurps.OnMarkerColor
 		h.Label.DefaultDraw(canvas, dirty)

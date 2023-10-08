@@ -22,6 +22,8 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/behavior"
 )
 
 // Known dockable kinds
@@ -58,10 +60,10 @@ func (d *SettingsDockable) Setup(addToStartToolbar, addToEndToolbar, initContent
 	content.SetBorder(unison.NewEmptyBorder(unison.NewUniformInsets(unison.StdHSpacing * 2)))
 	initContent(content)
 	scroller := unison.NewScrollPanel()
-	scroller.SetContent(content, unison.FillBehavior, unison.FillBehavior)
+	scroller.SetContent(content, behavior.Fill, behavior.Fill)
 	scroller.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 		HGrab:  true,
 		VGrab:  true,
 	})
@@ -124,7 +126,7 @@ func (d *SettingsDockable) AttemptClose() bool {
 func (d *SettingsDockable) createToolbar(addToStartToolbar, addToEndToolbar func(*unison.Panel)) *unison.Panel {
 	toolbar := unison.NewPanel()
 	toolbar.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},

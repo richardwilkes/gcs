@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/toolbox/collection/dict"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 // TagProvider defines the methods required for the tag filter popup.
@@ -97,8 +98,8 @@ func NewTagFilterPopup(tagProvider TagProvider) *unison.PopupMenu[string] {
 	}
 	p.WillShowMenuCallback(p)
 	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.MiddleAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Middle,
 	})
 	return p
 }

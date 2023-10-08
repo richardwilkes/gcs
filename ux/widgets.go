@@ -21,6 +21,9 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/check"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 // Rebuildable defines the methods a rebuildable panel should provide.
@@ -128,9 +131,9 @@ func addTechLevelRequired(parent *unison.Panel, fieldData **string, ownerIsSheet
 	last := *fieldData
 	required := last != nil
 	parent.AddChild(NewCheckBox(nil, "", i18n.Text("Required"),
-		func() unison.CheckState { return unison.CheckStateFromBool(required) },
-		func(state unison.CheckState) {
-			if required = state == unison.OnCheckState; required {
+		func() check.Enum { return check.FromBool(required) },
+		func(state check.Enum) {
+			if required = state == check.On; required {
 				if last == nil {
 					var data string
 					last = &data
@@ -313,16 +316,16 @@ func addWeightField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, label
 
 func addCheckBox(parent *unison.Panel, labelText string, fieldData *bool) *CheckBox {
 	checkBox := NewCheckBox(nil, "", labelText,
-		func() unison.CheckState { return unison.CheckStateFromBool(*fieldData) },
-		func(state unison.CheckState) { *fieldData = state == unison.OnCheckState })
+		func() check.Enum { return check.FromBool(*fieldData) },
+		func(state check.Enum) { *fieldData = state == check.On })
 	parent.AddChild(checkBox)
 	return checkBox
 }
 
 func addInvertedCheckBox(parent *unison.Panel, labelText string, fieldData *bool) {
 	parent.AddChild(NewCheckBox(nil, "", labelText,
-		func() unison.CheckState { return unison.CheckStateFromBool(!*fieldData) },
-		func(state unison.CheckState) { *fieldData = state == unison.OffCheckState }))
+		func() check.Enum { return check.FromBool(!*fieldData) },
+		func(state check.Enum) { *fieldData = state == check.Off }))
 }
 
 func addFlowWrapper(parent *unison.Panel, labelText string, count int) *unison.Panel {
@@ -332,7 +335,7 @@ func addFlowWrapper(parent *unison.Panel, labelText string, count int) *unison.P
 		Columns:  count,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
-		VAlign:   unison.MiddleAlignment,
+		VAlign:   align.Middle,
 	})
 	parent.AddChild(wrapper)
 	return wrapper
@@ -422,7 +425,7 @@ func adjustFieldBlank(field unison.Paneler, blank bool) {
 				ink = unison.DefaultFieldTheme.BackgroundInk
 			}
 			r := panel.ContentRect(false)
-			gc.DrawRect(r, ink.Paint(gc, r, unison.Fill))
+			gc.DrawRect(r, ink.Paint(gc, r, paintstyle.Fill))
 		}
 	} else {
 		panel.DrawOverCallback = nil
@@ -468,11 +471,11 @@ func addStringCriteriaPanel(parent *unison.Panel, prefix, notPrefix, undoTitle s
 		Columns:  2,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
-		VAlign:   unison.MiddleAlignment,
+		VAlign:   align.Middle,
 	})
 	panel.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  hSpan,
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	var criteriaField *StringField
@@ -507,11 +510,11 @@ func addNumericCriteriaPanel(parent *unison.Panel, targetMgr *TargetMgr, targetK
 		Columns:  2,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
-		VAlign:   unison.MiddleAlignment,
+		VAlign:   align.Middle,
 	})
 	panel.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  hSpan,
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	popup = unison.NewPopupMenu[string]()
@@ -649,8 +652,8 @@ func WrapWithSpan(span int, children ...unison.Paneler) *unison.Panel {
 	})
 	wrapper.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  span,
-		HAlign: unison.FillAlignment,
-		VAlign: unison.MiddleAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Middle,
 		HGrab:  true,
 	})
 	for _, child := range children {

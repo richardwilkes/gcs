@@ -15,6 +15,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 // DragHandle provides a simple draggable handle.
@@ -41,7 +43,7 @@ func NewDragHandle(data map[string]any) *DragHandle {
 		Size: unison.NewSize(baseline, baseline).Ceil(),
 	}
 	h.SetSizer(h.size)
-	h.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.MiddleAlignment})
+	h.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Middle})
 	h.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: 3}))
 	return h
 }
@@ -58,7 +60,7 @@ func (h *DragHandle) draw(gc *unison.Canvas, rect unison.Rect) {
 	} else {
 		ink = unison.IconButtonColor
 	}
-	h.svg.DrawInRect(gc, h.ContentRect(false), nil, ink.Paint(gc, rect, unison.Fill))
+	h.svg.DrawInRect(gc, h.ContentRect(false), nil, ink.Paint(gc, rect, paintstyle.Fill))
 }
 
 func (h *DragHandle) mouseEnter(_ unison.Point, _ unison.Modifiers) bool {

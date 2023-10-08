@@ -13,6 +13,7 @@ package ux
 
 import (
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 // NonEditableField holds the data for a non-editable field.
@@ -23,10 +24,10 @@ type NonEditableField struct {
 
 // NewNonEditableField creates a new start-aligned non-editable field that uses the same font and size as the field.
 func NewNonEditableField(syncer func(*NonEditableField)) *NonEditableField {
-	return newNonEditableField(syncer, unison.StartAlignment)
+	return newNonEditableField(syncer, align.Start)
 }
 
-func newNonEditableField(syncer func(*NonEditableField), hAlign unison.Alignment) *NonEditableField {
+func newNonEditableField(syncer func(*NonEditableField), hAlign align.Enum) *NonEditableField {
 	f := &NonEditableField{
 		Label:  unison.NewLabel(),
 		syncer: syncer,
@@ -37,8 +38,8 @@ func newNonEditableField(syncer func(*NonEditableField), hAlign unison.Alignment
 	f.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ControlEdgeColor, 0, unison.NewUniformInsets(1),
 		false), unison.NewEmptyBorder(unison.Insets{Top: 3, Left: 3, Bottom: 2, Right: 3})))
 	f.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.MiddleAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Middle,
 	})
 	f.Sync()
 	return f

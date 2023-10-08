@@ -25,6 +25,8 @@ import (
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/toolbox/xmath/crc"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/behavior"
 )
 
 var (
@@ -100,10 +102,10 @@ func NewTableDockable[T gurps.NodeTypes](filePath, extension string, provider Ta
 	InstallTableDropSupport(d.table, d.provider)
 
 	d.scroll.SetColumnHeader(d.tableHeader)
-	d.scroll.SetContent(d.table, unison.FillBehavior, unison.FillBehavior)
+	d.scroll.SetContent(d.table, behavior.Fill, behavior.Fill)
 	d.scroll.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 		HGrab:  true,
 		VGrab:  true,
 	})
@@ -185,7 +187,7 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	toolbar.AddChild(d.filterField)
 	toolbar.AddChild(d.filterPopup)
 	toolbar.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	toolbar.SetLayout(&unison.FlexLayout{

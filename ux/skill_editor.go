@@ -19,6 +19,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/check"
 )
 
 // EditSkill displays the editor for an skill.
@@ -46,7 +48,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 		if isTechnique {
 			wrapper := addFlowWrapper(content, i18n.Text("Defaults To"), 4)
 			wrapper.SetLayoutData(&unison.FlexLayoutData{
-				HAlign: unison.FillAlignment,
+				HAlign: align.Fill,
 				HGrab:  true,
 			})
 			flags := gurps.TenFlag
@@ -59,14 +61,14 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 				i18n.Text("Skill Name"), &e.editorData.TechniqueDefault.Name)
 			skillDefNameField.Watermark = i18n.Text("Skill")
 			skillDefNameField.SetLayoutData(&unison.FlexLayoutData{
-				HAlign: unison.FillAlignment,
+				HAlign: align.Fill,
 				HGrab:  true,
 			})
 			skillDefSpecialtyField := addStringField(wrapper, i18n.Text("Technique Default Skill Specialization"),
 				i18n.Text("Skill Specialization"), &e.editorData.TechniqueDefault.Specialization)
 			skillDefSpecialtyField.Watermark = i18n.Text("Specialization")
 			skillDefSpecialtyField.SetLayoutData(&unison.FlexLayoutData{
-				HAlign: unison.FillAlignment,
+				HAlign: align.Fill,
 				HGrab:  true,
 			})
 			lastWasSkillBased := gurps.DefaultTypeIsSkillBased(e.editorData.TechniqueDefault.DefaultType)
@@ -107,11 +109,11 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 					MarkModified(wrapper2)
 				}, -fxp.NinetyNine, fxp.NinetyNine, false, false)
 			wrapper2.AddChild(NewCheckBox(nil, "", i18n.Text("Cannot exceed default skill level by more than"),
-				func() unison.CheckState {
-					return unison.CheckStateFromBool(e.editorData.TechniqueLimitModifier != nil)
+				func() check.Enum {
+					return check.FromBool(e.editorData.TechniqueLimitModifier != nil)
 				},
-				func(state unison.CheckState) {
-					if state == unison.OnCheckState {
+				func(state check.Enum) {
+					if state == check.On {
 						if e.editorData.TechniqueLimitModifier == nil {
 							var limit fxp.Int
 							e.editorData.TechniqueLimitModifier = &limit

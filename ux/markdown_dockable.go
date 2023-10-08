@@ -26,6 +26,8 @@ import (
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/toolbox/xio/fs/safe"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/behavior"
 )
 
 const markdownContentOnlyPrefix = "//////////"
@@ -139,22 +141,22 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 
 	d.scroller = unison.NewScrollPanel()
 	d.scroller.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 		HGrab:  true,
 		VGrab:  true,
 	})
 	if allowEditing && startInEditMode {
-		d.scroller.SetContent(d.editor, unison.FollowBehavior, unison.FillBehavior)
+		d.scroller.SetContent(d.editor, behavior.Follow, behavior.Fill)
 	} else {
-		d.scroller.SetContent(d.markdown, unison.FillBehavior, unison.FillBehavior)
+		d.scroller.SetContent(d.markdown, behavior.Fill, behavior.Fill)
 	}
 
 	toolbar := unison.NewPanel()
 	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	toolbar.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	toolbar.AddChild(NewDefaultInfoPop())
@@ -181,11 +183,11 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 			x, y := d.scroller.Position()
 			if editToggle.Sticky {
 				d.editor.SetScale(d.markdown.Scale())
-				d.scroller.SetContent(d.editor, unison.FollowBehavior, unison.FillBehavior)
+				d.scroller.SetContent(d.editor, behavior.Follow, behavior.Fill)
 				d.editor.RequestFocus()
 			} else {
 				d.markdown.SetScale(d.editor.Scale())
-				d.scroller.SetContent(d.markdown, unison.FillBehavior, unison.FillBehavior)
+				d.scroller.SetContent(d.markdown, behavior.Fill, behavior.Fill)
 				d.markdown.RequestFocus()
 			}
 			d.scroller.SetPosition(d.savedScrollX, d.savedScrollY)

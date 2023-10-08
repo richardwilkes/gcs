@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/collection/dict"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/imgfmt"
 )
 
 // RegisterKnownFileTypes registers the known files types.
@@ -47,22 +48,18 @@ func RegisterExternalFileTypes() {
 	registerPDFFileInfo()
 	registerMarkdownFileInfo()
 	all := make(map[string]bool)
-	for _, one := range unison.KnownImageFormatFormats {
-		if one.CanRead() {
-			for _, ext := range one.Extensions() {
-				all[ext] = true
-			}
-		}
+	for _, ext := range imgfmt.AllReadableExtensions() {
+		all[ext] = true
 	}
 	groupWith := dict.Keys(all)
-	for _, one := range unison.KnownImageFormatFormats {
+	for _, one := range imgfmt.All {
 		if one.CanRead() {
 			registerImageFileInfo(one, groupWith)
 		}
 	}
 }
 
-func registerImageFileInfo(format unison.EncodedImageFormat, groupWith []string) {
+func registerImageFileInfo(format imgfmt.Enum, groupWith []string) {
 	gurps.FileInfo{
 		Name:       strings.ToUpper(format.Extension()[1:]) + " Image",
 		UTI:        format.UTI(),

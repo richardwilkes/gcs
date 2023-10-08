@@ -22,6 +22,8 @@ import (
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/thememode"
 )
 
 var _ Rebuildable = &pageExporter{}
@@ -49,7 +51,7 @@ func newPageExporter(entity *gurps.Entity) *pageExporter {
 		for {
 			rowPanel := unison.NewPanel()
 			rowPanel.SetLayoutData(&unison.FlexLayoutData{
-				HAlign: unison.FillAlignment,
+				HAlign: align.Fill,
 				HGrab:  true,
 			})
 			for _, c := range col {
@@ -83,7 +85,7 @@ func newPageExporter(entity *gurps.Entity) *pageExporter {
 			rowPanel.SetLayout(&unison.FlexLayout{
 				Columns:      len(children),
 				HSpacing:     1,
-				HAlign:       unison.FillAlignment,
+				HAlign:       align.Fill,
 				EqualColumns: true,
 			})
 			page.AddChild(rowPanel)
@@ -292,16 +294,16 @@ func (p *pageExporter) exportAsImages(filePathBase, extension string, f func(img
 	return nil
 }
 
-func (p *pageExporter) saveTheme() unison.ColorMode {
-	savedColorMode := unison.CurrentColorMode()
-	unison.SetColorMode(unison.LightColorMode)
+func (p *pageExporter) saveTheme() thememode.Enum {
+	savedColorMode := unison.CurrentThemeMode()
+	unison.SetThemeMode(thememode.Light)
 	unison.ThemeChanged()
 	unison.RebuildDynamicColors()
 	return savedColorMode
 }
 
-func (p *pageExporter) restoreTheme(colorMode unison.ColorMode) {
-	unison.SetColorMode(colorMode)
+func (p *pageExporter) restoreTheme(colorMode thememode.Enum) {
+	unison.SetThemeMode(colorMode)
 	unison.ThemeChanged()
 	unison.RebuildDynamicColors()
 }

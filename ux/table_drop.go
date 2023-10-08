@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 // TableProviderClientKey is the key used to store the table provider with the table.
@@ -72,7 +73,7 @@ func InstallTableDropSupport[T gurps.NodeTypes](table *unison.Table[*Node[T]], p
 			originalDrawOverCallback(gc, rect)
 			if altDropRowIndex > -1 && altDropRowIndex <= table.LastRowIndex() {
 				frame := table.RowFrame(altDropRowIndex)
-				paint := unison.DropAreaColor.Paint(gc, frame, unison.Fill)
+				paint := unison.DropAreaColor.Paint(gc, frame, paintstyle.Fill)
 				paint.SetColorFilter(unison.Alpha30Filter())
 				gc.DrawRect(frame, paint)
 			}

@@ -15,6 +15,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/check"
 )
 
 const entityProviderKey = "entity_provider"
@@ -44,9 +45,9 @@ func MarkForLayoutWithinDockable(panel unison.Paneler) {
 // SetCheckBoxState sets the checkbox state based on the value of checked.
 func SetCheckBoxState(checkbox *CheckBox, checked bool) {
 	if checked {
-		checkbox.State = unison.OnCheckState
+		checkbox.State = check.On
 	} else {
-		checkbox.State = unison.OffCheckState
+		checkbox.State = check.Off
 	}
 }
 

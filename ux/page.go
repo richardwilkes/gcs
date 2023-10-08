@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 // Page holds a logical page worth of content.
@@ -96,7 +97,7 @@ func (p *Page) drawSelf(gc *unison.Canvas, _ unison.Rect) {
 	insets := p.insets()
 	_, prefSize, _ := p.LayoutSizes(nil, unison.Size{})
 	r := unison.Rect{Size: prefSize}
-	gc.DrawRect(r, gurps.PageColor.Paint(gc, r, unison.Fill))
+	gc.DrawRect(r, gurps.PageColor.Paint(gc, r, paintstyle.Fill))
 	r.X += insets.Left
 	r.Width -= insets.Left + insets.Right
 	r.Y = r.Bottom() - insets.Bottom

@@ -29,6 +29,8 @@ import (
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio/fs/paths"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/check"
 )
 
 var languageSetting string
@@ -174,7 +176,7 @@ func (d *generalSettingsDockable) createPlayerAndDescFields(content *unison.Pane
 		func(s string) { gurps.GlobalSettings().General.DefaultPlayerName = s })
 	d.nameField.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	content.AddChild(d.nameField)
@@ -182,44 +184,44 @@ func (d *generalSettingsDockable) createPlayerAndDescFields(content *unison.Pane
 
 func (d *generalSettingsDockable) createCheckboxBlock(content *unison.Panel) {
 	d.autoFillProfileCheckbox = NewCheckBox(nil, "", i18n.Text("Fill in initial description"),
-		func() unison.CheckState {
-			return unison.CheckStateFromBool(gurps.GlobalSettings().General.AutoFillProfile)
+		func() check.Enum {
+			return check.FromBool(gurps.GlobalSettings().General.AutoFillProfile)
 		},
-		func(state unison.CheckState) {
-			gurps.GlobalSettings().General.AutoFillProfile = state == unison.OnCheckState
+		func(state check.Enum) {
+			gurps.GlobalSettings().General.AutoFillProfile = state == check.On
 		})
 	d.autoFillProfileCheckbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(NewFieldLeadingLabel(""))
 	content.AddChild(d.autoFillProfileCheckbox)
 
 	d.groupContainersOnSortCheckbox = NewCheckBox(nil, "", i18n.Text("Group containers when sorting"),
-		func() unison.CheckState {
-			return unison.CheckStateFromBool(gurps.GlobalSettings().General.GroupContainersOnSort)
+		func() check.Enum {
+			return check.FromBool(gurps.GlobalSettings().General.GroupContainersOnSort)
 		},
-		func(state unison.CheckState) {
-			gurps.GlobalSettings().General.GroupContainersOnSort = state == unison.OnCheckState
+		func(state check.Enum) {
+			gurps.GlobalSettings().General.GroupContainersOnSort = state == check.On
 		})
 	d.groupContainersOnSortCheckbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(NewFieldLeadingLabel(""))
 	content.AddChild(d.groupContainersOnSortCheckbox)
 
 	d.autoAddNaturalAttacksCheckbox = NewCheckBox(nil, "", i18n.Text("Add natural attacks to new sheets"),
-		func() unison.CheckState {
-			return unison.CheckStateFromBool(gurps.GlobalSettings().General.AutoAddNaturalAttacks)
+		func() check.Enum {
+			return check.FromBool(gurps.GlobalSettings().General.AutoAddNaturalAttacks)
 		},
-		func(state unison.CheckState) {
-			gurps.GlobalSettings().General.AutoAddNaturalAttacks = state == unison.OnCheckState
+		func(state check.Enum) {
+			gurps.GlobalSettings().General.AutoAddNaturalAttacks = state == check.On
 		})
 	d.autoAddNaturalAttacksCheckbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(NewFieldLeadingLabel(""))
 	content.AddChild(d.autoAddNaturalAttacksCheckbox)
 
 	d.initialClickSelectsAllCheckbox = NewCheckBox(nil, "", i18n.Text("Initial click on text field selects all"),
-		func() unison.CheckState {
-			return unison.CheckStateFromBool(gurps.GlobalSettings().General.InitialFieldClickSelectsAll)
+		func() check.Enum {
+			return check.FromBool(gurps.GlobalSettings().General.InitialFieldClickSelectsAll)
 		},
-		func(state unison.CheckState) {
-			gurps.GlobalSettings().General.InitialFieldClickSelectsAll = state == unison.OnCheckState
+		func(state check.Enum) {
+			gurps.GlobalSettings().General.InitialFieldClickSelectsAll = state == check.On
 		})
 	d.initialClickSelectsAllCheckbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(NewFieldLeadingLabel(""))
@@ -360,7 +362,7 @@ func (d *generalSettingsDockable) createExternalPDFCmdLineField(content *unison.
 		func(s string) { gurps.GlobalSettings().General.ExternalPDFCmdLine = strings.TrimSpace(s) })
 	d.externalPDFCmdlineField.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	d.externalPDFCmdlineField.ValidateCallback = func() bool {
@@ -383,7 +385,7 @@ func (d *generalSettingsDockable) createLocaleField(content *unison.Panel) {
 		func(s string) { languageSetting = strings.TrimSpace(s) })
 	d.localeField.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	d.localeField.Tooltip = newWrappedTooltip(txt.Wrap("", i18n.Text(`The locale to use when presenting text in the user interface. This does not affect the content of data files. Leave this value blank to use the system default. Note that changes to this generally require quitting and restarting GCS to have the desired effect.`), 100))

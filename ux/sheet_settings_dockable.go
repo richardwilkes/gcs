@@ -20,6 +20,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/check"
+	"github.com/richardwilkes/unison/enums/weight"
 )
 
 var _ GroupedCloser = &sheetSettingsDockable{}
@@ -148,42 +151,42 @@ func (d *sheetSettingsDockable) createOptions(content *unison.Panel) {
 	})
 	d.showTraitModifier = d.addCheckBox(panel, i18n.Text("Show trait modifier cost adjustments"),
 		s.ShowTraitModifierAdj, func() {
-			d.settings().ShowTraitModifierAdj = d.showTraitModifier.State == unison.OnCheckState
+			d.settings().ShowTraitModifierAdj = d.showTraitModifier.State == check.On
 			d.syncSheet(false)
 		})
 	d.showEquipmentModifier = d.addCheckBox(panel, i18n.Text("Show equipment modifier cost & weight adjustments"),
 		s.ShowEquipmentModifierAdj, func() {
-			d.settings().ShowEquipmentModifierAdj = d.showEquipmentModifier.State == unison.OnCheckState
+			d.settings().ShowEquipmentModifierAdj = d.showEquipmentModifier.State == check.On
 			d.syncSheet(false)
 		})
 	d.showSpellAdjustments = d.addCheckBox(panel, i18n.Text("Show spell ritual, cost & time adjustments"),
 		s.ShowSpellAdj, func() {
-			d.settings().ShowSpellAdj = d.showSpellAdjustments.State == unison.OnCheckState
+			d.settings().ShowSpellAdj = d.showSpellAdjustments.State == check.On
 			d.syncSheet(false)
 		})
 	d.showTitleInsteadOfNameInPageFooter = d.addCheckBox(panel,
 		i18n.Text("Show the title instead of the name in the footer"), s.UseTitleInFooter, func() {
-			d.settings().UseTitleInFooter = d.showTitleInsteadOfNameInPageFooter.State == unison.OnCheckState
+			d.settings().UseTitleInFooter = d.showTitleInsteadOfNameInPageFooter.State == check.On
 			d.syncSheet(false)
 		})
 	d.useMultiplicativeModifiers = d.addCheckBoxWithLink(panel,
 		i18n.Text("Use Multiplicative Modifiers"), "P102", s.UseMultiplicativeModifiers, func() {
-			d.settings().UseMultiplicativeModifiers = d.useMultiplicativeModifiers.State == unison.OnCheckState
+			d.settings().UseMultiplicativeModifiers = d.useMultiplicativeModifiers.State == check.On
 			d.syncSheet(false)
 		})
 	d.useHalfStatDefaults = d.addCheckBoxWithLink(panel, i18n.Text("Use Half-Stat Defaults"), "PY65:30",
 		s.UseHalfStatDefaults, func() {
-			d.settings().UseHalfStatDefaults = d.useHalfStatDefaults.State == unison.OnCheckState
+			d.settings().UseHalfStatDefaults = d.useHalfStatDefaults.State == check.On
 			d.syncSheet(false)
 		})
 	d.useModifyDicePlusAdds = d.addCheckBoxWithLink(panel, i18n.Text("Use Modifying Dice + Adds"), "B269",
 		s.UseModifyingDicePlusAdds, func() {
-			d.settings().UseModifyingDicePlusAdds = d.useModifyDicePlusAdds.State == unison.OnCheckState
+			d.settings().UseModifyingDicePlusAdds = d.useModifyDicePlusAdds.State == check.On
 			d.syncSheet(false)
 		})
 	d.excludeUnspentPointsFromTotal = d.addCheckBox(panel, i18n.Text("Exclude unspent points from total"),
 		s.ExcludeUnspentPointsFromTotal, func() {
-			d.settings().ExcludeUnspentPointsFromTotal = d.excludeUnspentPointsFromTotal.State == unison.OnCheckState
+			d.settings().ExcludeUnspentPointsFromTotal = d.excludeUnspentPointsFromTotal.State == check.On
 			d.syncSheet(false)
 		})
 	content.AddChild(panel)
@@ -192,7 +195,7 @@ func (d *sheetSettingsDockable) createOptions(content *unison.Panel) {
 func (d *sheetSettingsDockable) addCheckBox(panel *unison.Panel, title string, checked bool, onClick func()) *unison.CheckBox {
 	checkbox := unison.NewCheckBox()
 	checkbox.Text = title
-	checkbox.State = unison.CheckStateFromBool(checked)
+	checkbox.State = check.FromBool(checked)
 	checkbox.ClickCallback = onClick
 	panel.AddChild(checkbox)
 	return checkbox
@@ -203,7 +206,7 @@ func (d *sheetSettingsDockable) addCheckBoxWithLink(panel *unison.Panel, title, 
 	wrapper.SetLayout(&unison.FlexLayout{Columns: 4})
 	checkbox := unison.NewCheckBox()
 	checkbox.Text = title
-	checkbox.State = unison.CheckStateFromBool(checked)
+	checkbox.State = check.FromBool(checked)
 	checkbox.ClickCallback = onClick
 	wrapper.AddChild(checkbox)
 	label := unison.NewLabel()
@@ -229,7 +232,7 @@ func (d *sheetSettingsDockable) createUnitsOfMeasurement(content *unison.Panel) 
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
+	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 	d.createHeader(panel, i18n.Text("Units of Measurement"), 2)
 	d.lengthUnitsPopup = createSettingPopup(d, panel, i18n.Text("Length Units"), fxp.AllLengthUnits,
 		s.DefaultLengthUnits, func(item fxp.LengthUnits) { d.settings().DefaultLengthUnits = item })
@@ -246,7 +249,7 @@ func (d *sheetSettingsDockable) createWhereToDisplay(content *unison.Panel) {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
+	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 	d.createHeader(panel, i18n.Text("Where to display…"), 2)
 	d.userDescDisplayPopup = createSettingPopup(d, panel, i18n.Text("User Description"), gurps.AllDisplayOption,
 		s.UserDescriptionDisplay, func(option gurps.DisplayOption) { d.settings().UserDescriptionDisplay = option })
@@ -267,7 +270,7 @@ func (d *sheetSettingsDockable) createPageSettings(content *unison.Panel) {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
+	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 	d.createHeader(panel, i18n.Text("Page Settings"), 4)
 	d.paperSizePopup = createSettingPopup(d, panel, i18n.Text("Paper Size"), paper.AllSize,
 		s.Page.Size, func(option paper.Size) { d.settings().Page.Size = option })
@@ -292,11 +295,11 @@ func (d *sheetSettingsDockable) createBlockLayout(content *unison.Panel) {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
+	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 	label := unison.NewLabel()
 	label.Text = i18n.Text("Block Layout")
 	desc := label.Font.Descriptor()
-	desc.Weight = unison.BoldFontWeight
+	desc.Weight = weight.Bold
 	label.Font = desc.Font()
 	panel.AddChild(label)
 	d.blockLayoutField = unison.NewMultiLineField()
@@ -318,7 +321,7 @@ func (d *sheetSettingsDockable) createBlockLayout(content *unison.Panel) {
 		}
 	}
 	d.blockLayoutField.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	panel.AddChild(d.blockLayoutField)
@@ -340,7 +343,7 @@ func (d *sheetSettingsDockable) createPaperMarginField(panel *unison.Panel, titl
 		}
 	}
 	field.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	panel.AddChild(field)
@@ -368,14 +371,14 @@ func (d *sheetSettingsDockable) createHeader(panel *unison.Panel, title string, 
 	label := unison.NewLabel()
 	label.Text = title
 	desc := label.Font.Descriptor()
-	desc.Weight = unison.BoldFontWeight
+	desc.Weight = weight.Bold
 	label.Font = desc.Font()
 	label.SetLayoutData(&unison.FlexLayoutData{HSpan: hspan})
 	panel.AddChild(label)
 	sep := unison.NewSeparator()
 	sep.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  hspan,
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	panel.AddChild(sep)
@@ -394,14 +397,14 @@ func (d *sheetSettingsDockable) reset() {
 func (d *sheetSettingsDockable) sync() {
 	s := d.settings()
 	d.damageProgressionPopup.Select(s.DamageProgression)
-	d.showTraitModifier.State = unison.CheckStateFromBool(s.ShowTraitModifierAdj)
-	d.showEquipmentModifier.State = unison.CheckStateFromBool(s.ShowEquipmentModifierAdj)
-	d.showSpellAdjustments.State = unison.CheckStateFromBool(s.ShowSpellAdj)
-	d.showTitleInsteadOfNameInPageFooter.State = unison.CheckStateFromBool(s.UseTitleInFooter)
-	d.useMultiplicativeModifiers.State = unison.CheckStateFromBool(s.UseMultiplicativeModifiers)
-	d.useHalfStatDefaults.State = unison.CheckStateFromBool(s.UseHalfStatDefaults)
-	d.useModifyDicePlusAdds.State = unison.CheckStateFromBool(s.UseModifyingDicePlusAdds)
-	d.excludeUnspentPointsFromTotal.State = unison.CheckStateFromBool(s.ExcludeUnspentPointsFromTotal)
+	d.showTraitModifier.State = check.FromBool(s.ShowTraitModifierAdj)
+	d.showEquipmentModifier.State = check.FromBool(s.ShowEquipmentModifierAdj)
+	d.showSpellAdjustments.State = check.FromBool(s.ShowSpellAdj)
+	d.showTitleInsteadOfNameInPageFooter.State = check.FromBool(s.UseTitleInFooter)
+	d.useMultiplicativeModifiers.State = check.FromBool(s.UseMultiplicativeModifiers)
+	d.useHalfStatDefaults.State = check.FromBool(s.UseHalfStatDefaults)
+	d.useModifyDicePlusAdds.State = check.FromBool(s.UseModifyingDicePlusAdds)
+	d.excludeUnspentPointsFromTotal.State = check.FromBool(s.ExcludeUnspentPointsFromTotal)
 	d.lengthUnitsPopup.Select(s.DefaultLengthUnits)
 	d.weightUnitsPopup.Select(s.DefaultWeightUnits)
 	d.userDescDisplayPopup.Select(s.UserDescriptionDisplay)

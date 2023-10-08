@@ -25,6 +25,10 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/behavior"
+	"github.com/richardwilkes/unison/enums/check"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 var (
@@ -93,8 +97,8 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 	d.targetMgr = NewTargetMgr(d)
 	d.SetLayout(&unison.FlexLayout{
 		Columns: 1,
-		HAlign:  unison.FillAlignment,
-		VAlign:  unison.FillAlignment,
+		HAlign:  align.Fill,
+		VAlign:  align.Fill,
 	})
 
 	d.MouseDownCallback = func(_ unison.Point, _, _ int, _ unison.Modifiers) bool {
@@ -129,21 +133,21 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 	d.DrawOverCallback = func(gc *unison.Canvas, rect unison.Rect) {
 		if d.dragReroutePanel != nil {
 			r := d.RectFromRoot(d.dragReroutePanel.RectToRoot(d.dragReroutePanel.ContentRect(true)))
-			paint := unison.DropAreaColor.Paint(gc, r, unison.Fill)
+			paint := unison.DropAreaColor.Paint(gc, r, paintstyle.Fill)
 			paint.SetColorFilter(unison.Alpha30Filter())
 			gc.DrawRect(r, paint)
 		}
 	}
 
-	d.scroll.SetContent(d.createContent(), unison.UnmodifiedBehavior, unison.UnmodifiedBehavior)
+	d.scroll.SetContent(d.createContent(), behavior.Unmodified, behavior.Unmodified)
 	d.scroll.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 		HGrab:  true,
 		VGrab:  true,
 	})
 	d.scroll.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, gurps.PageVoidColor.Paint(gc, rect, unison.Fill))
+		gc.DrawRect(rect, gurps.PageVoidColor.Paint(gc, rect, paintstyle.Fill))
 	}
 
 	helpButton := unison.NewSVGButton(svg.Help)
@@ -162,7 +166,7 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 	d.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	d.toolbar.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	d.toolbar.AddChild(NewDefaultInfoPop())
@@ -501,7 +505,7 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 	callback := func() {
 		var total fxp.Int
 		for i, box := range boxes {
-			if box.State == unison.OnCheckState {
+			if box.State == check.On {
 				switch tp.Type {
 				case gurps.CountTemplatePickerType:
 					total += fxp.One
@@ -530,11 +534,11 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 
 	scroll := unison.NewScrollPanel()
 	scroll.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
-	scroll.SetContent(list, unison.FillBehavior, unison.FillBehavior)
+	scroll.SetContent(list, behavior.Fill, behavior.Fill)
 	scroll.BackgroundInk = unison.ContentColor
 	scroll.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 		HGrab:  true,
 		VGrab:  true,
 	})
@@ -544,8 +548,8 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 		Columns:  1,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
-		HAlign:   unison.FillAlignment,
-		VAlign:   unison.FillAlignment,
+		HAlign:   align.Fill,
+		VAlign:   align.Fill,
 	})
 	label := unison.NewLabel()
 	label.Text = fmt.Sprintf("%v", row)
@@ -579,7 +583,7 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 
 	rowChildren := make([]T, 0, len(children))
 	for i, box := range boxes {
-		if box.State == unison.OnCheckState {
+		if box.State == check.On {
 			var result []T
 			result, abort = processPickerRow(children[i])
 			if abort {
@@ -816,11 +820,11 @@ func (d *Template) createLists() {
 			rowPanel.SetLayout(&unison.FlexLayout{
 				Columns:      len(rowPanel.Children()),
 				HSpacing:     1,
-				HAlign:       unison.FillAlignment,
+				HAlign:       align.Fill,
 				EqualColumns: true,
 			})
 			rowPanel.SetLayoutData(&unison.FlexLayoutData{
-				HAlign: unison.FillAlignment,
+				HAlign: align.Fill,
 				HGrab:  true,
 			})
 			d.content.AddChild(rowPanel)

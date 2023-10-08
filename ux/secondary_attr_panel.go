@@ -19,6 +19,8 @@ import (
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 // SecondaryAttrPanel holds the contents of the secondary attributes block on the sheet.
@@ -44,8 +46,8 @@ func NewSecondaryAttrPanel(entity *gurps.Entity, targetMgr *TargetMgr) *Secondar
 	})
 	p.SetLayoutData(&unison.FlexLayoutData{
 		VSpan:  2,
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 	})
 	p.SetBorder(unison.NewCompoundBorder(&TitledBorder{Title: i18n.Text("Secondary Attributes")},
 		unison.NewEmptyBorder(unison.Insets{
@@ -55,7 +57,7 @@ func NewSecondaryAttrPanel(entity *gurps.Entity, targetMgr *TargetMgr) *Secondar
 			Right:  2,
 		})))
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, unison.Fill))
+		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, paintstyle.Fill))
 	}
 	attrs := gurps.SheetSettingsFor(p.entity).Attributes
 	p.crc = attrs.CRC64()
@@ -82,8 +84,8 @@ func (p *SecondaryAttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 					})
 					field.SetLayoutData(&unison.FlexLayoutData{
 						HSpan:  2,
-						HAlign: unison.FillAlignment,
-						VAlign: unison.MiddleAlignment,
+						HAlign: align.Fill,
+						VAlign: align.Middle,
 					})
 					p.AddChild(field)
 				} else {

@@ -24,7 +24,7 @@ import (
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 var (
@@ -194,11 +194,11 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 	case EquipmentEquippedColumn:
 		data.Type = ToggleCellType
 		data.Checked = e.Equipped
-		data.Alignment = unison.MiddleAlignment
+		data.Alignment = align.Middle
 	case EquipmentQuantityColumn:
 		data.Type = TextCellType
 		data.Primary = e.Quantity.String()
-		data.Alignment = unison.EndAlignment
+		data.Alignment = align.End
 	case EquipmentDescriptionColumn:
 		data.Type = TextCellType
 		data.Primary = e.Description()
@@ -209,35 +209,35 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 		if e.MaxUses > 0 {
 			data.Type = TextCellType
 			data.Primary = strconv.Itoa(e.Uses)
-			data.Alignment = unison.EndAlignment
+			data.Alignment = align.End
 			data.Tooltip = fmt.Sprintf(i18n.Text("Maximum Uses: %d"), e.MaxUses)
 		}
 	case EquipmentTLColumn:
 		data.Type = TextCellType
 		data.Primary = e.TechLevel
-		data.Alignment = unison.EndAlignment
+		data.Alignment = align.End
 	case EquipmentLCColumn:
 		data.Type = TextCellType
 		data.Primary = e.LegalityClass
-		data.Alignment = unison.EndAlignment
+		data.Alignment = align.End
 	case EquipmentCostColumn:
 		data.Type = TextCellType
 		data.Primary = e.AdjustedValue().String()
-		data.Alignment = unison.EndAlignment
+		data.Alignment = align.End
 	case EquipmentExtendedCostColumn:
 		data.Type = TextCellType
 		data.Primary = e.ExtendedValue().String()
-		data.Alignment = unison.EndAlignment
+		data.Alignment = align.End
 	case EquipmentWeightColumn:
 		data.Type = TextCellType
 		units := SheetSettingsFor(e.Entity).DefaultWeightUnits
 		data.Primary = units.Format(e.AdjustedWeight(false, units))
-		data.Alignment = unison.EndAlignment
+		data.Alignment = align.End
 	case EquipmentExtendedWeightColumn:
 		data.Type = TextCellType
 		units := SheetSettingsFor(e.Entity).DefaultWeightUnits
 		data.Primary = units.Format(e.ExtendedWeight(false, units))
-		data.Alignment = unison.EndAlignment
+		data.Alignment = align.End
 	case EquipmentTagsColumn:
 		data.Type = TagsCellType
 		data.Primary = CombineTags(e.Tags)

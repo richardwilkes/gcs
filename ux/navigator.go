@@ -29,6 +29,9 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/behavior"
+	"github.com/richardwilkes/unison/enums/side"
 	"github.com/rjeczalik/notify"
 )
 
@@ -94,18 +97,18 @@ func newNavigator() *Navigator {
 	n.ApplyDisclosedPaths(globalSettings.LibraryExplorer.OpenRowKeys)
 	n.table.SizeColumnsToFit(true)
 
-	n.scroll.SetContent(n.table, unison.FillBehavior, unison.FillBehavior)
+	n.scroll.SetContent(n.table, behavior.Fill, behavior.Fill)
 	n.scroll.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 		HGrab:  true,
 		VGrab:  true,
 	})
 
 	n.SetLayout(&unison.FlexLayout{
 		Columns: 1,
-		HAlign:  unison.FillAlignment,
-		VAlign:  unison.FillAlignment,
+		HAlign:  align.Fill,
+		VAlign:  align.Fill,
 	})
 	n.AddChild(n.toolbar)
 	n.AddChild(n.scroll)
@@ -197,14 +200,14 @@ func (n *Navigator) setupToolBar() {
 	first.AddChild(n.deleteButton)
 	first.AddChild(n.favoriteButton)
 	for _, child := range first.Children() {
-		child.SetLayoutData(unison.MiddleAlignment)
+		child.SetLayoutData(align.Middle)
 	}
 	first.SetLayout(&unison.FlowLayout{
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
 	first.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 
@@ -227,7 +230,7 @@ func (n *Navigator) setupToolBar() {
 
 	second := unison.NewPanel()
 	second.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	second.AddChild(n.backButton)
@@ -246,7 +249,7 @@ func (n *Navigator) setupToolBar() {
 		VSpacing: unison.StdVSpacing,
 	})
 	n.toolbar.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	n.toolbar.AddChild(first)
@@ -1164,7 +1167,7 @@ func DisplayNewDockable(dockable unison.Dockable) {
 			return
 		}
 	}
-	Workspace.DocumentDock.DockTo(dockable, nil, unison.RightSide)
+	Workspace.DocumentDock.DockTo(dockable, nil, side.Right)
 }
 
 // OpenFile attempts to open the given file path.

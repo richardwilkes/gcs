@@ -20,6 +20,8 @@ import (
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 type menuKeySettingsDockable struct {
@@ -82,18 +84,18 @@ func (d *menuKeySettingsDockable) createBindingButton(binding *gurps.Binding) {
 	b.Font = unison.KeyboardFont
 	b.Text = binding.Action.KeyBinding.String()
 	b.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.MiddleAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Middle,
 	})
 	b.ClickCallback = func() {
 		localBinding := binding.KeyBinding
 		capturePanel := unison.NewLabel()
 		capturePanel.Font = unison.KeyboardFont
 		capturePanel.Text = binding.KeyBinding.String()
-		capturePanel.HAlign = unison.MiddleAlignment
+		capturePanel.HAlign = align.Middle
 		capturePanel.SetBorder(unison.DefaultFieldTheme.FocusedBorder)
 		capturePanel.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-			gc.DrawRect(rect, unison.DefaultFieldTheme.BackgroundInk.Paint(gc, rect, unison.Fill))
+			gc.DrawRect(rect, unison.DefaultFieldTheme.BackgroundInk.Paint(gc, rect, paintstyle.Fill))
 			capturePanel.DefaultDraw(gc, rect)
 		}
 		capturePanel.KeyDownCallback = func(keyCode unison.KeyCode, mod unison.Modifiers, repeat bool) bool {
@@ -107,13 +109,13 @@ func (d *menuKeySettingsDockable) createBindingButton(binding *gurps.Binding) {
 		wrapper := unison.NewPanel()
 		wrapper.SetLayout(&unison.FlexLayout{
 			Columns: 1,
-			HAlign:  unison.MiddleAlignment,
-			VAlign:  unison.MiddleAlignment,
+			HAlign:  align.Middle,
+			VAlign:  align.Middle,
 		})
 		capturePanel.SetLayoutData(&unison.FlexLayoutData{
 			MinSize: unison.Size{Width: 100, Height: 50},
-			HAlign:  unison.FillAlignment,
-			VAlign:  unison.FillAlignment,
+			HAlign:  align.Fill,
+			VAlign:  align.Fill,
 			HGrab:   true,
 			VGrab:   true,
 		})
@@ -165,8 +167,8 @@ func (d *menuKeySettingsDockable) createResetField(binding *gurps.Binding) {
 		}
 	}
 	b.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.MiddleAlignment,
-		VAlign: unison.MiddleAlignment,
+		HAlign: align.Middle,
+		VAlign: align.Middle,
 	})
 	d.content.AddChild(b)
 }

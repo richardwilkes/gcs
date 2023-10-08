@@ -20,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 type fontSettingsDockable struct {
@@ -91,8 +92,8 @@ func (d *fontSettingsDockable) fill() {
 	notice.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  4,
 		VSpan:  1,
-		HAlign: unison.MiddleAlignment,
-		VAlign: unison.MiddleAlignment,
+		HAlign: align.Middle,
+		VAlign: align.Middle,
 	})
 	d.content.AddChild(notice)
 }
@@ -133,8 +134,8 @@ func (d *fontSettingsDockable) createSizeField(index int) {
 			}
 		}, fxp.One, fxp.From(999), false, false)
 	field.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.MiddleAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Middle,
 	})
 	d.content.AddChild(field)
 }
@@ -155,8 +156,8 @@ func (d *fontSettingsDockable) createResetField(index int) {
 		}
 	}
 	b.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.MiddleAlignment,
-		VAlign: unison.MiddleAlignment,
+		HAlign: align.Middle,
+		VAlign: align.Middle,
 	})
 	d.content.AddChild(b)
 }

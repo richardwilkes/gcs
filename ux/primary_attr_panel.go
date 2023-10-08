@@ -19,6 +19,8 @@ import (
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 // PrimaryAttrPanel holds the contents of the primary attributes block on the sheet.
@@ -43,8 +45,8 @@ func NewPrimaryAttrPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PrimaryAtt
 		HSpacing: 4,
 	})
 	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 	})
 	p.SetBorder(unison.NewCompoundBorder(&TitledBorder{Title: i18n.Text("Primary Attributes")}, unison.NewEmptyBorder(unison.Insets{
 		Top:    1,
@@ -53,7 +55,7 @@ func NewPrimaryAttrPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PrimaryAtt
 		Right:  2,
 	})))
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, unison.Fill))
+		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, paintstyle.Fill))
 	}
 	attrs := gurps.SheetSettingsFor(p.entity).Attributes
 	p.crc = attrs.CRC64()
@@ -80,8 +82,8 @@ func (p *PrimaryAttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 					})
 					field.SetLayoutData(&unison.FlexLayoutData{
 						HSpan:  2,
-						HAlign: unison.FillAlignment,
-						VAlign: unison.MiddleAlignment,
+						HAlign: align.Fill,
+						VAlign: align.Middle,
 					})
 					p.AddChild(field)
 				} else {

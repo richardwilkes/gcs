@@ -22,7 +22,7 @@ import (
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 var (
@@ -238,7 +238,7 @@ func (a *Trait) CellData(columnID int, data *CellData) {
 	case TraitPointsColumn:
 		data.Type = TextCellType
 		data.Primary = a.AdjustedPoints().String()
-		data.Alignment = unison.EndAlignment
+		data.Alignment = align.End
 	case TraitTagsColumn:
 		data.Type = TagsCellType
 		data.Primary = CombineTags(a.Tags)

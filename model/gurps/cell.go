@@ -11,7 +11,9 @@
 
 package gurps
 
-import "github.com/richardwilkes/unison"
+import (
+	"github.com/richardwilkes/unison/enums/align"
+)
 
 // PageRefCellAlias is used an alias to request the page reference cell, if any.
 const PageRefCellAlias = -10
@@ -22,7 +24,7 @@ type CellData struct {
 	Disabled          bool
 	Dim               bool
 	Checked           bool
-	Alignment         unison.Alignment
+	Alignment         align.Enum
 	Primary           string
 	Secondary         string
 	Tooltip           string

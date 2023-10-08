@@ -23,6 +23,10 @@ import (
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/behavior"
+	"github.com/richardwilkes/unison/enums/check"
+	"github.com/richardwilkes/unison/enums/weight"
 )
 
 var (
@@ -131,10 +135,10 @@ func DisplayCalculator(sheet *Sheet) {
 	c.createContent()
 
 	c.scroll = unison.NewScrollPanel()
-	c.scroll.SetContent(c.content, unison.HintedFillBehavior, unison.FillBehavior)
+	c.scroll.SetContent(c.content, behavior.HintedFill, behavior.Fill)
 	c.scroll.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 		HGrab:  true,
 		VGrab:  true,
 	})
@@ -190,7 +194,7 @@ func (c *Calculator) createToolbar() *unison.Panel {
 	)
 
 	toolbar.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	toolbar.SetLayout(&unison.FlexLayout{
@@ -266,7 +270,7 @@ func (c *Calculator) addJumpingSection() {
 	divider.SetBorder(unison.NewEmptyBorder(unison.NewVerticalInsets(unison.StdVSpacing * 2)))
 	divider.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	wrapper.AddChild(divider)
@@ -337,7 +341,7 @@ func (c *Calculator) addThrowingSection() {
 	divider.SetBorder(unison.NewEmptyBorder(unison.NewVerticalInsets(unison.StdVSpacing * 2)))
 	divider.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	wrapper.AddChild(divider)
@@ -431,7 +435,7 @@ func (c *Calculator) addHikingSection() {
 	roadsAreClearedCheckbox.Text = i18n.Text("Roads are cleared")
 	roadsAreClearedCheckbox.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
 	roadsAreClearedCheckbox.ClickCallback = func() {
-		c.roadsAreCleared = roadsAreClearedCheckbox.State == unison.OnCheckState
+		c.roadsAreCleared = roadsAreClearedCheckbox.State == check.On
 		c.updateHikingResult()
 	}
 	c.content.AddChild(roadsAreClearedCheckbox)
@@ -439,7 +443,7 @@ func (c *Calculator) addHikingSection() {
 	usingSkisCheckbox.Text = i18n.Text("Using skis")
 	usingSkisCheckbox.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
 	usingSkisCheckbox.ClickCallback = func() {
-		c.usingSkis = usingSkisCheckbox.State == unison.OnCheckState
+		c.usingSkis = usingSkisCheckbox.State == check.On
 		hikingAdjuster()
 		c.updateHikingResult()
 	}
@@ -448,7 +452,7 @@ func (c *Calculator) addHikingSection() {
 	usingSkatesCheckbox.Text = i18n.Text("Using skates")
 	usingSkatesCheckbox.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
 	usingSkatesCheckbox.ClickCallback = func() {
-		c.usingSkates = usingSkatesCheckbox.State == unison.OnCheckState
+		c.usingSkates = usingSkatesCheckbox.State == check.On
 		hikingAdjuster()
 		c.updateHikingResult()
 	}
@@ -457,7 +461,7 @@ func (c *Calculator) addHikingSection() {
 	hikingAdjuster()
 	successfulHikingRollCheckbox.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
 	successfulHikingRollCheckbox.ClickCallback = func() {
-		c.successfulHikingRoll = successfulHikingRollCheckbox.State == unison.OnCheckState
+		c.successfulHikingRoll = successfulHikingRollCheckbox.State == check.On
 		hikingAdjuster()
 		c.updateHikingResult()
 	}
@@ -486,7 +490,7 @@ func (c *Calculator) addHikingSection() {
 	divider.SetBorder(unison.NewEmptyBorder(unison.NewVerticalInsets(unison.StdVSpacing * 2)))
 	divider.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	wrapper.AddChild(divider)
@@ -504,7 +508,7 @@ func (c *Calculator) createResultLabel() *unison.Label {
 	label.Font = &unison.DynamicFont{
 		Resolver: func() unison.FontDescriptor {
 			desc := unison.DefaultLabelTheme.Font.Descriptor()
-			desc.Weight = unison.BoldFontWeight
+			desc.Weight = weight.Bold
 			return desc
 		},
 	}
@@ -524,7 +528,7 @@ func (c *Calculator) createHeader(text, linkRef, linkHighlight string, topMargin
 		Resolver: func() unison.FontDescriptor {
 			desc := unison.LabelFont.Descriptor()
 			desc.Size += 2
-			desc.Weight = unison.BoldFontWeight
+			desc.Weight = weight.Bold
 			return desc
 		},
 	}
@@ -534,7 +538,7 @@ func (c *Calculator) createHeader(text, linkRef, linkHighlight string, topMargin
 	linkTheme.Font = &unison.DynamicFont{
 		Resolver: func() unison.FontDescriptor {
 			desc := unison.LabelFont.Descriptor()
-			desc.Weight = unison.BoldFontWeight
+			desc.Weight = weight.Bold
 			return desc
 		},
 	}

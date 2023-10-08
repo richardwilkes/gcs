@@ -24,6 +24,8 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/slant"
 )
 
 type librarySettingsDockable struct {
@@ -178,7 +180,7 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 		HSpacing: unison.StdHSpacing,
 	})
 	wrapper.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	wrapper.AddChild(d.pathField)
@@ -192,7 +194,7 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 
 func (d *librarySettingsDockable) addNote(parent *unison.Panel, note string) {
 	fd := unison.DefaultLabelTheme.Font.Descriptor()
-	fd.Slant = unison.ItalicSlant
+	fd.Slant = slant.Italic
 	fd.Size--
 	font := fd.Font()
 	for _, line := range unison.NewTextWrappedLines(note, &unison.TextDecoration{

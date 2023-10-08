@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 // EditNote displays the editor for a note.
@@ -55,7 +56,7 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 	markdown := unison.NewMarkdown(true)
 	markdown.ClientData()[WorkingDirKey] = WorkingDirProvider(e.owner)
 	markdown.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	adjustMarkdownThemeForPage(markdown)
@@ -63,8 +64,8 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 	labelText := i18n.Text("Notes")
 	label := NewFieldLeadingLabel(labelText)
 	label.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.EndAlignment,
-		VAlign: unison.StartAlignment,
+		HAlign: align.End,
+		VAlign: align.Start,
 	})
 	label.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: 3}))
 	content.AddChild(label)
@@ -91,10 +92,10 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 
 	label = unison.NewLabel()
 	label.Text = i18n.Text("Markdown Preview")
-	label.HAlign = unison.MiddleAlignment
+	label.HAlign = align.Middle
 	label.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	label.SetBorder(
@@ -112,7 +113,7 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 	markdownWrapper.SetLayout(&unison.FlexLayout{Columns: 1})
 	markdownWrapper.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	content.AddChild(markdownWrapper)

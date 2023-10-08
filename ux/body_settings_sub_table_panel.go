@@ -16,6 +16,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 type bodySettingsSubTablePanel struct {
@@ -39,7 +40,7 @@ func newBodySettingsSubTablePanel(d *bodySettingsDockable, body *gurps.Body) *bo
 	})
 	p.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 	})
 
 	p.AddChild(p.createButtons())
@@ -55,7 +56,7 @@ func (p *bodySettingsSubTablePanel) createButtons() *unison.Panel {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.MiddleAlignment})
+	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Middle})
 
 	p.deleteButton = unison.NewSVGButton(svg.Trash)
 	p.deleteButton.ClickCallback = p.removeSubTable
@@ -94,7 +95,7 @@ func (p *bodySettingsSubTablePanel) createContent() *unison.Panel {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	content.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
+	content.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 	content.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
 
 	for _, loc := range p.body.Locations {

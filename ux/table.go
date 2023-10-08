@@ -22,6 +22,7 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 const containerMarker = "\000"
@@ -70,8 +71,8 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 	provider.SetTable(table)
 	table.HierarchyColumnID = provider.HierarchyColumnID()
 	layoutData := &unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 		HGrab:  true,
 		VGrab:  true,
 	}
@@ -101,8 +102,8 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 	header.BackgroundInk = gurps.HeaderColor
 	header.SetBorder(header.HeaderBorder)
 	header.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 		HGrab:  true,
 	})
 

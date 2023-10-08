@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 const hitLocationDragDataKey = "drag.body"
@@ -42,7 +43,7 @@ func newBodySettingsPanel(d *bodySettingsDockable) *bodySettingsPanel {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	p.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
+	p.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 
 	p.AddChild(p.createButtons())
 	p.AddChild(p.createContent())
@@ -57,7 +58,7 @@ func (p *bodySettingsPanel) createButtons() *unison.Panel {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.MiddleAlignment})
+	buttons.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Middle})
 
 	addButton := unison.NewSVGButton(svg.CircledAdd)
 	addButton.ClickCallback = p.addHitLocation
@@ -84,7 +85,7 @@ func (p *bodySettingsPanel) createContent() *unison.Panel {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	content.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.FillAlignment})
+	content.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 
 	text := i18n.Text("Name")
 	content.AddChild(NewFieldLeadingLabel(text))
@@ -108,7 +109,7 @@ func (p *bodySettingsPanel) createContent() *unison.Panel {
 	wrapper.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
 	wrapper.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 	})
 	wrapper.SetLayout(&unison.FlexLayout{Columns: 1})
 	content.AddChild(wrapper)

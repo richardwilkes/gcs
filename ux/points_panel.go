@@ -18,6 +18,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 // PointsPanel holds the contents of the points block on the sheet.
@@ -42,8 +44,8 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	p.Self = p
 	p.SetLayout(&unison.FlexLayout{Columns: 1})
 	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.EndAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.End,
+		VAlign: align.Fill,
 		VSpan:  2,
 		VGrab:  true,
 	})
@@ -51,14 +53,14 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	hdr := unison.NewPanel()
 	hdr.SetLayout(&unison.FlexLayout{
 		Columns: 1,
-		HAlign:  unison.MiddleAlignment,
+		HAlign:  align.Middle,
 	})
 	hdr.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
+		HAlign: align.Fill,
 		HGrab:  true,
 	})
 	hdr.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, gurps.HeaderColor.Paint(gc, rect, unison.Fill))
+		gc.DrawRect(rect, gurps.HeaderColor.Paint(gc, rect, paintstyle.Fill))
 	}
 
 	hdri := unison.NewPanel()
@@ -66,7 +68,7 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 		Columns:  2,
 		HSpacing: 4,
 	})
-	hdri.SetLayoutData(&unison.FlexLayoutData{HAlign: unison.MiddleAlignment})
+	hdri.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Middle})
 	hdr.AddChild(hdri)
 
 	var overallTotal string
@@ -101,8 +103,8 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 		HSpacing: 4,
 	})
 	p.ptsList.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.EndAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.End,
+		VAlign: align.Fill,
 		VSpan:  2,
 		VGrab:  true,
 	})
@@ -130,7 +132,7 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	}), i18n.Text("Unspent"), i18n.Text("Points earned but not yet spent"))
 	p.unspentLabel.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
 		if p.overSpent == -1 {
-			gc.DrawRect(rect, unison.ErrorColor.Paint(gc, rect, unison.Fill))
+			gc.DrawRect(rect, unison.ErrorColor.Paint(gc, rect, paintstyle.Fill))
 		}
 		p.unspentLabel.DefaultDraw(gc, rect)
 	}

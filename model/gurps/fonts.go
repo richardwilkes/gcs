@@ -23,6 +23,9 @@ import (
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/slant"
+	"github.com/richardwilkes/unison/enums/spacing"
+	"github.com/richardwilkes/unison/enums/weight"
 )
 
 const fontsTypeKey = "theme_fonts"
@@ -30,12 +33,12 @@ const fontsTypeKey = "theme_fonts"
 // Additional fonts over and above what unison provides by default.
 var (
 	FieldSecondaryFont      = &unison.IndirectFont{Font: unison.FieldFont.Face().Font(unison.FieldFont.Size() - 1)}
-	PageFieldPrimaryFont    = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, unison.MediumFontWeight, unison.StandardSpacing, unison.NoSlant).Font(7)}
-	PageFieldSecondaryFont  = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, unison.NormalFontWeight, unison.StandardSpacing, unison.NoSlant).Font(6)}
-	PageLabelPrimaryFont    = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, unison.NormalFontWeight, unison.StandardSpacing, unison.NoSlant).Font(7)}
-	PageLabelSecondaryFont  = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, unison.NormalFontWeight, unison.StandardSpacing, unison.NoSlant).Font(6)}
-	PageFooterPrimaryFont   = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, unison.MediumFontWeight, unison.StandardSpacing, unison.NoSlant).Font(6)}
-	PageFooterSecondaryFont = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, unison.NormalFontWeight, unison.StandardSpacing, unison.NoSlant).Font(5)}
+	PageFieldPrimaryFont    = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Medium, spacing.Standard, slant.Upright).Font(7)}
+	PageFieldSecondaryFont  = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Regular, spacing.Standard, slant.Upright).Font(6)}
+	PageLabelPrimaryFont    = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Regular, spacing.Standard, slant.Upright).Font(7)}
+	PageLabelSecondaryFont  = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Regular, spacing.Standard, slant.Upright).Font(6)}
+	PageFooterPrimaryFont   = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Medium, spacing.Standard, slant.Upright).Font(6)}
+	PageFooterSecondaryFont = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Regular, spacing.Standard, slant.Upright).Font(5)}
 	BaseMarkdownFont        = &unison.IndirectFont{Font: unison.LabelFont.Face().Font(unison.LabelFont.Size())}
 )
 
@@ -181,9 +184,9 @@ func (f *Fonts) UnmarshalJSON(data []byte) error {
 				f.data[ff.ID] = unison.FontDescriptor{
 					FontFaceDescriptor: unison.FontFaceDescriptor{
 						Family:  of.Name,
-						Weight:  unison.WeightFromString(of.Style),
-						Spacing: unison.SpacingFromString(of.Style),
-						Slant:   unison.SlantFromString(of.Style),
+						Weight:  weight.Extract(of.Style),
+						Spacing: spacing.Extract(of.Style),
+						Slant:   slant.Extract(of.Style),
 					},
 					Size: float32(of.Size),
 				}

@@ -19,6 +19,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 var _ unison.ColorProvider = &encRowColor{}
@@ -41,8 +43,8 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 		HSpacing: 4,
 	})
 	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 		HGrab:  true,
 	})
 	p.SetBorder(&TitledBorder{Title: i18n.Text("Encumbrance, Move & Dodge")})
@@ -50,7 +52,7 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 		r := p.Children()[0].FrameRect()
 		r.X = rect.X
 		r.Width = rect.Width
-		gc.DrawRect(r, gurps.HeaderColor.Paint(gc, r, unison.Fill))
+		gc.DrawRect(r, gurps.HeaderColor.Paint(gc, r, paintstyle.Fill))
 		p.current = int(entity.EncumbranceLevel(false))
 		p.overloaded = entity.WeightCarried(false) > entity.MaximumCarry(gurps.ExtraHeavyEncumbrance)
 		for i, row := range p.row {
@@ -70,7 +72,7 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 			r = row.AsPanel().FrameRect()
 			r.X = rect.X
 			r.Width = rect.Width
-			gc.DrawRect(r, ink.Paint(gc, r, unison.Fill))
+			gc.DrawRect(r, ink.Paint(gc, r, paintstyle.Fill))
 		}
 	}
 
@@ -92,8 +94,8 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 		name := NewPageLabel(enc.String())
 		name.OnBackgroundInk = rowColor
 		name.SetLayoutData(&unison.FlexLayoutData{
-			HAlign: unison.FillAlignment,
-			VAlign: unison.MiddleAlignment,
+			HAlign: align.Fill,
+			VAlign: align.Middle,
 			HGrab:  true,
 		})
 		p.AddChild(name)
@@ -137,8 +139,8 @@ func (p *EncumbrancePanel) createLevelField(enc gurps.Encumbrance, rowColor *enc
 	field.OnBackgroundInk = rowColor
 	field.Text = strconv.Itoa(int(enc))
 	field.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.MiddleAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Middle,
 	})
 	return field
 }
@@ -186,8 +188,8 @@ func (p *EncumbrancePanel) addSeparator() {
 	sep.LineInk = unison.InteriorDividerColor
 	sep.SetLayoutData(&unison.FlexLayoutData{
 		VSpan:  len(gurps.AllEncumbrance),
-		HAlign: unison.MiddleAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Middle,
+		VAlign: align.Fill,
 		VGrab:  true,
 	})
 	p.AddChild(sep)
@@ -212,6 +214,6 @@ func (c *encRowColor) GetColor() unison.Color {
 	}
 }
 
-func (c *encRowColor) Paint(canvas *unison.Canvas, rect unison.Rect, style unison.PaintStyle) *unison.Paint {
+func (c *encRowColor) Paint(canvas *unison.Canvas, rect unison.Rect, style paintstyle.Enum) *unison.Paint {
 	return c.GetColor().Paint(canvas, rect, style)
 }

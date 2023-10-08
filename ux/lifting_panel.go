@@ -15,6 +15,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 // LiftingPanel holds the contents of the lifting block on the sheet.
@@ -30,11 +31,11 @@ func NewLiftingPanel(entity *gurps.Entity) *LiftingPanel {
 	p.SetLayout(&unison.FlexLayout{
 		Columns:  2,
 		HSpacing: 4,
-		HAlign:   unison.MiddleAlignment,
+		HAlign:   align.Middle,
 	})
 	p.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: unison.FillAlignment,
-		VAlign: unison.FillAlignment,
+		HAlign: align.Fill,
+		VAlign: align.Fill,
 		HGrab:  true,
 		VGrab:  true,
 	})
