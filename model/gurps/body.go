@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/fatal"
@@ -34,17 +35,22 @@ const (
 //go:embed embedded_data
 var embeddedFS embed.FS
 
+// BodyData holds the Body data that gets written to disk.
+type BodyData struct {
+	Name      string         `json:"name,omitempty"`
+	Roll      *dice.Dice     `json:"roll"`
+	Locations []*HitLocation `json:"locations,omitempty"`
+	KeyPrefix string         `json:"-"`
+}
+
 // Body holds a set of hit locations.
 type Body struct {
-	Name           string         `json:"name,omitempty"`
-	Roll           *dice.Dice     `json:"roll"`
-	Locations      []*HitLocation `json:"locations,omitempty"`
-	KeyPrefix      string         `json:"-"`
+	BodyData
 	owningLocation *HitLocation
 	locationLookup map[string]*HitLocation
 }
 
-type bodyData struct {
+type standaloneBodyData struct {
 	Type    string `json:"type"`
 	Version int    `json:"version"`
 	*Body
@@ -65,7 +71,7 @@ func FactoryBody() *Body {
 // NewBodyFromFile loads a Body from a file.
 func NewBodyFromFile(fileSystem fs.FS, filePath string) (*Body, error) {
 	var data struct {
-		bodyData
+		standaloneBodyData
 		OldHitLocations *Body `json:"hit_locations"`
 	}
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
@@ -84,8 +90,22 @@ func NewBodyFromFile(fileSystem fs.FS, filePath string) (*Body, error) {
 	if data.Version < noNeedForRewrapVersion {
 		data.Body.Rewrap()
 	}
-	data.Body.Update(nil)
 	return data.Body, nil
+}
+
+// MarshalJSON implements json.Marshaler.
+func (b *Body) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&b.BodyData)
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (b *Body) UnmarshalJSON(data []byte) error {
+	b.BodyData = BodyData{}
+	if err := json.Unmarshal(data, &b.BodyData); err != nil {
+		return err
+	}
+	b.Update(nil)
+	return nil
 }
 
 // Rewrap the description field. Should only be called for older data (prior to noNeedForRewrapVersion)
@@ -98,9 +118,11 @@ func (b *Body) Rewrap() {
 // Clone a copy of this.
 func (b *Body) Clone(entity *Entity, owningLocation *HitLocation) *Body {
 	clone := &Body{
-		Name:           b.Name,
-		Roll:           dice.New(b.Roll.String()),
-		Locations:      make([]*HitLocation, len(b.Locations)),
+		BodyData: BodyData{
+			Name:      b.Name,
+			Roll:      dice.New(b.Roll.String()),
+			Locations: make([]*HitLocation, len(b.Locations)),
+		},
 		owningLocation: owningLocation,
 	}
 	for i, one := range b.Locations {
@@ -112,7 +134,7 @@ func (b *Body) Clone(entity *Entity, owningLocation *HitLocation) *Body {
 
 // Save writes the Body to the file as JSON.
 func (b *Body) Save(filePath string) error {
-	return jio.SaveToFile(context.Background(), filePath, &bodyData{
+	return jio.SaveToFile(context.Background(), filePath, &standaloneBodyData{
 		Type:    bodyTypeListTypeKey,
 		Version: CurrentDataVersion,
 		Body:    b,
