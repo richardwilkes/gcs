@@ -31,43 +31,42 @@ var licenseMarkdownContent string
 
 // These actions are registered for key bindings.
 var (
-	addNaturalAttacksAction            *unison.Action
-	applyTemplateAction                *unison.Action
-	clearPortraitAction                *unison.Action
-	closeTabAction                     *unison.Action
-	colorSettingsAction                *unison.Action
-	convertToContainerAction           *unison.Action
-	convertToNonContainerAction        *unison.Action
-	copyToSheetAction                  *unison.Action
-	copyToTemplateAction               *unison.Action
-	decreaseSkillLevelAction           *unison.Action
-	decreaseTechLevelAction            *unison.Action
-	decreaseUsesAction                 *unison.Action
-	decrementAction                    *unison.Action
-	defaultAttributeSettingsAction     *unison.Action
-	defaultBodyTypeSettingsAction      *unison.Action
-	defaultSheetSettingsAction         *unison.Action
-	dockUnDockAction                   *unison.Action
-	duplicateAction                    *unison.Action
-	exportAsJPEGAction                 *unison.Action
-	exportAsPDFAction                  *unison.Action
-	exportAsPNGAction                  *unison.Action
-	exportAsWEBPAction                 *unison.Action
-	fontSettingsAction                 *unison.Action
-	generalSettingsAction              *unison.Action
-	increaseSkillLevelAction           *unison.Action
-	increaseTechLevelAction            *unison.Action
-	increaseUsesAction                 *unison.Action
-	incrementAction                    *unison.Action
-	menuKeySettingsAction              *unison.Action
-	moveToCarriedEquipmentAction       *unison.Action
-	moveToOtherEquipmentAction         *unison.Action
-	newCarriedEquipmentAction          *unison.Action
-	newCarriedEquipmentContainerAction *unison.Action
-	newCharacterSheetAction            *unison.Action
-	newCharacterTemplateAction         *unison.Action
-	// TODO: Re-enable Campaign files
-	// newCampaignAction                   *unison.Action
+	addNaturalAttacksAction             *unison.Action
+	applyTemplateAction                 *unison.Action
+	clearPortraitAction                 *unison.Action
+	closeTabAction                      *unison.Action
+	colorSettingsAction                 *unison.Action
+	convertToContainerAction            *unison.Action
+	convertToNonContainerAction         *unison.Action
+	copyToSheetAction                   *unison.Action
+	copyToTemplateAction                *unison.Action
+	decreaseSkillLevelAction            *unison.Action
+	decreaseTechLevelAction             *unison.Action
+	decreaseUsesAction                  *unison.Action
+	decrementAction                     *unison.Action
+	defaultAttributeSettingsAction      *unison.Action
+	defaultBodyTypeSettingsAction       *unison.Action
+	defaultSheetSettingsAction          *unison.Action
+	dockUnDockAction                    *unison.Action
+	duplicateAction                     *unison.Action
+	exportAsJPEGAction                  *unison.Action
+	exportAsPDFAction                   *unison.Action
+	exportAsPNGAction                   *unison.Action
+	exportAsWEBPAction                  *unison.Action
+	fontSettingsAction                  *unison.Action
+	generalSettingsAction               *unison.Action
+	increaseSkillLevelAction            *unison.Action
+	increaseTechLevelAction             *unison.Action
+	increaseUsesAction                  *unison.Action
+	incrementAction                     *unison.Action
+	menuKeySettingsAction               *unison.Action
+	moveToCarriedEquipmentAction        *unison.Action
+	moveToOtherEquipmentAction          *unison.Action
+	newCarriedEquipmentAction           *unison.Action
+	newCarriedEquipmentContainerAction  *unison.Action
+	newCharacterSheetAction             *unison.Action
+	newCharacterTemplateAction          *unison.Action
+	newCampaignAction                   *unison.Action
 	newEquipmentContainerModifierAction *unison.Action
 	newEquipmentLibraryAction           *unison.Action
 	newEquipmentModifierAction          *unison.Action
@@ -401,14 +400,13 @@ func registerActions() {
 			DisplayNewDockable(NewTemplate("untitled"+gurps.TemplatesExt, gurps.NewTemplate()))
 		},
 	})
-	// TODO: Re-enable Campaign files
-	// newCampaignAction = registerKeyBindableAction("new.campaign", &unison.Action{
-	// 	ID:    NewCampaignItemID,
-	// 	Title: i18n.Text("New Campaign"),
-	// 	ExecuteCallback: func(_ *unison.Action, _ any) {
-	// 		DisplayNewDockable(NewCampaign("untitled"+gurps.CampaignExt, gurps.NewCampaign()))
-	// 	},
-	// })
+	newCampaignAction = registerKeyBindableAction("new.campaign", &unison.Action{
+		ID:    NewCampaignItemID,
+		Title: i18n.Text("New Campaign"),
+		ExecuteCallback: func(_ *unison.Action, _ any) {
+			DisplayNewDockable(NewCampaign("untitled"+gurps.CampaignExt, gurps.NewCampaign()))
+		},
+	})
 	newEquipmentContainerModifierAction = registerKeyBindableAction("new.eqm.container", &unison.Action{
 		ID:              NewEquipmentContainerModifierItemID,
 		Title:           i18n.Text("New Equipment Modifier Container"),

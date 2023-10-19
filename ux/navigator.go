@@ -955,9 +955,8 @@ func (n *Navigator) search(text string, row *NavigatorNode) {
 								prepareForContentCache(data.Notes),
 							}, "\n"))
 						}
-					// TODO: Re-enable Campaign files
-					// case gurps.CampaignExt:
-					// TODO: Implement
+					case gurps.CampaignExt:
+						// TODO: Implement
 					case gurps.TraitModifiersExt:
 						if data, err := gurps.NewTraitModifiersFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err == nil {
 							content = n.addToContentCache(p, prepareForContentCache(data))
@@ -1133,10 +1132,9 @@ func DisplayNewDockable(dockable unison.Dockable) {
 		case fi.Extensions[0] == gurps.TemplatesExt:
 			g := gurps.CharacterTemplatesDockableGroup
 			group = &g
-		// TODO: Re-enable Campaign files
-		// case fi.Extensions[0] == gurps.CampaignExt:
-		// 	g := gurps.CampaignsDockableGroup
-		// 	group = &g
+		case fi.Extensions[0] == gurps.CampaignExt:
+			g := gurps.CampaignsDockableGroup
+			group = &g
 		case fi.Extensions[0] == gurps.TraitsExt,
 			fi.Extensions[0] == gurps.TraitModifiersExt,
 			fi.Extensions[0] == gurps.EquipmentExt,

@@ -33,18 +33,15 @@ func NewDocument(name, ext string, content []byte, compress bool) *Document {
 	if compress {
 		var buffer bytes.Buffer
 		gz := gzip.NewWriter(&buffer)
-		_, err := gz.Write(content)
-		if err != nil {
-			err = errs.NewWithCause("unable to compress data", err)
-		} else {
-			if err = gz.Close(); err != nil {
-				err = errs.NewWithCause("unable to compress data", err)
+		if _, err := gz.Write(content); err == nil && gz.Close() == nil {
+			compressedContent := buffer.Bytes()
+			if len(compressedContent) > len(content) {
+				compress = false
+			} else {
+				content = compressedContent
 			}
-		}
-		if err != nil {
-			compress = false
 		} else {
-			content = buffer.Bytes()
+			compress = false
 		}
 	}
 	return &Document{
