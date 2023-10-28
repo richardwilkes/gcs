@@ -96,10 +96,8 @@ func (p *hitLocationSettingsPanel) createButtons() *unison.Panel {
 func (p *hitLocationSettingsPanel) addSubTable() {
 	undo := p.dockable.prepareUndo(i18n.Text("Add Sub-Table"))
 	p.loc.SubTable = &gurps.Body{
-		BodyData: gurps.BodyData{
-			Roll:      dice.New("1d"),
-			KeyPrefix: p.dockable.targetMgr.NextPrefix(),
-		},
+		BodyData:  gurps.BodyData{Roll: dice.New("1d")},
+		KeyPrefix: p.dockable.targetMgr.NextPrefix(),
 	}
 	p.loc.SubTable.SetOwningLocation(p.loc)
 	p.loc.SubTable.Update(p.dockable.Entity())

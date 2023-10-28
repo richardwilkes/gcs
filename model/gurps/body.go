@@ -40,12 +40,12 @@ type BodyData struct {
 	Name      string         `json:"name,omitempty"`
 	Roll      *dice.Dice     `json:"roll"`
 	Locations []*HitLocation `json:"locations,omitempty"`
-	KeyPrefix string         `json:"-"`
 }
 
 // Body holds a set of hit locations.
 type Body struct {
 	BodyData
+	KeyPrefix      string
 	owningLocation *HitLocation
 	locationLookup map[string]*HitLocation
 }
@@ -53,7 +53,8 @@ type Body struct {
 type standaloneBodyData struct {
 	Type    string `json:"type"`
 	Version int    `json:"version"`
-	*Body
+	BodyData
+	OldHitLocations *Body `json:"hit_locations,omitempty"`
 }
 
 // BodyFor returns the Body for the given Entity, or the global settings if the Entity is nil.
@@ -70,27 +71,27 @@ func FactoryBody() *Body {
 
 // NewBodyFromFile loads a Body from a file.
 func NewBodyFromFile(fileSystem fs.FS, filePath string) (*Body, error) {
-	var data struct {
-		standaloneBodyData
-		OldHitLocations *Body `json:"hit_locations"`
-	}
+	var data standaloneBodyData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
 		return nil, errs.NewWithCause(invalidFileDataMsg(), err)
 	}
+	var body Body
+	body.BodyData = data.BodyData
 	if data.Type != bodyTypeListTypeKey {
-		if data.OldHitLocations != nil {
-			data.Body = data.OldHitLocations
-		} else {
+		if data.OldHitLocations == nil {
 			return nil, errs.New(unexpectedFileDataMsg())
 		}
+		body = *data.OldHitLocations
+	} else {
+		body.Update(nil)
 	}
 	if err := CheckVersion(data.Version); err != nil {
 		return nil, err
 	}
 	if data.Version < noNeedForRewrapVersion {
-		data.Body.Rewrap()
+		body.Rewrap()
 	}
-	return data.Body, nil
+	return &body, nil
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -135,9 +136,9 @@ func (b *Body) Clone(entity *Entity, owningLocation *HitLocation) *Body {
 // Save writes the Body to the file as JSON.
 func (b *Body) Save(filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &standaloneBodyData{
-		Type:    bodyTypeListTypeKey,
-		Version: CurrentDataVersion,
-		Body:    b,
+		Type:     bodyTypeListTypeKey,
+		Version:  CurrentDataVersion,
+		BodyData: b.BodyData,
 	})
 }
 
