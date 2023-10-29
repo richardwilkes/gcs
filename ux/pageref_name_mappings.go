@@ -104,6 +104,7 @@ var PageRefKeyNameMappings = map[string]string{
 	"DFM5:":   "Dungeon Fantasy Monsters 5: Demons",
 	"DFMI1:":  "Dungeon Fantasy RPG: Magic Items 1",
 	"DFMI2:":  "Dungeon Fantasy RPG: Magic Items 2",
+	"DFRC2:":  "Dungeon Fantasy RPG: Companion 2",
 	"DFRM2:":  "Dungeon Fantasy RPG: Monsters 2",
 	"DFS":     "Dungeon Fantasy RPG: Spells",
 	"DFSC":    "Dungeon Fantasy Setting: Caverntown",
