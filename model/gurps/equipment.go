@@ -190,6 +190,12 @@ func (e *Equipment) UnmarshalJSON(data []byte) error {
 
 // CellData returns the cell data information for the given column.
 func (e *Equipment) CellData(columnID int, data *CellData) {
+	data.Dim = e.Quantity == 0
+	e1 := e
+	for !data.Dim && e1.Parent() != nil {
+		e1 = e1.Parent()
+		data.Dim = e1.Quantity == 0
+	}
 	switch columnID {
 	case EquipmentEquippedColumn:
 		data.Type = ToggleCellType
