@@ -150,10 +150,11 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 		func(typ gurps.AttributeType) { p.applyAttributeType(typ) },
 		gurps.AllAttributeType...))
 
+	const nameKey = "name"
 	if p.def.IsSeparator() {
 		text = i18n.Text("Name")
 		content.AddChild(NewFieldLeadingLabel(text))
-		field = NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+"name", text,
+		field = NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+nameKey, text,
 			func() string { return p.def.Name },
 			func(s string) { p.def.Name = s })
 		field.SetMinimumTextWidthUsing(prototypeMinIDWidth)
@@ -162,7 +163,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 	} else {
 		text = i18n.Text("Short Name")
 		content.AddChild(NewFieldLeadingLabel(text))
-		field = NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+"name", text,
+		field = NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+nameKey, text,
 			func() string { return p.def.Name },
 			func(s string) { p.def.Name = s })
 		field.SetMinimumTextWidthUsing(prototypeMinIDWidth)

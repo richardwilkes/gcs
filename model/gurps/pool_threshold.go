@@ -64,27 +64,29 @@ func (p *PoolThreshold) UnmarshalJSON(data []byte) error {
 }
 
 func convertToExpression(multiplier, divisor, addition fxp.Int) string {
+	const self = "$self"
+	const minusSelf = "-$self"
 	if multiplier == 0 {
 		return addition.String()
 	}
 	if multiplier == -fxp.One && (divisor == fxp.One || divisor == 0) {
 		if addition != 0 {
-			return "-$self" + addition.StringWithSign()
+			return minusSelf + addition.StringWithSign()
 		}
-		return "-$self"
+		return minusSelf
 	}
 	if multiplier == fxp.One && (divisor == fxp.One || divisor == 0) {
 		if addition != 0 {
-			return "$self" + addition.StringWithSign()
+			return self + addition.StringWithSign()
 		}
-		return "$self"
+		return self
 	}
 	ex := "round("
 	switch multiplier {
 	case fxp.One:
-		ex += "$self"
+		ex += self
 	case -fxp.One:
-		ex += "-$self"
+		ex += minusSelf
 	default:
 		if multiplier < 0 {
 			ex += "-$self*" + (-multiplier).String()

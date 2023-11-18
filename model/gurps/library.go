@@ -254,8 +254,9 @@ func (l *Library) Download(ctx context.Context, client *http.Client, release Rel
 		}
 	}()
 
+	const unableToCreatePrefix = "unable to create "
 	if err = os.MkdirAll(p, 0o750); err != nil {
-		return errs.NewWithCause("unable to create "+p, err)
+		return errs.NewWithCause(unableToCreatePrefix+p, err)
 	}
 	var data []byte
 	data, err = l.downloadRelease(ctx, client, release)
@@ -288,16 +289,16 @@ func (l *Library) Download(ctx context.Context, client *http.Client, release Rel
 			}
 			parent := filepath.Dir(fullPath)
 			if err = os.MkdirAll(parent, 0o750); err != nil {
-				return errs.NewWithCause("unable to create "+parent, err)
+				return errs.NewWithCause(unableToCreatePrefix+parent, err)
 			}
 			if err = l.extractFile(f, fullPath); err != nil {
-				return errs.NewWithCause("unable to create "+fullPath, err)
+				return errs.NewWithCause(unableToCreatePrefix+fullPath, err)
 			}
 		}
 	}
 	f := filepath.Join(root, releaseFile)
 	if err = os.WriteFile(f, []byte(release.Version+"\n"), 0o640); err != nil {
-		return errs.NewWithCause("unable to create "+f, err)
+		return errs.NewWithCause(unableToCreatePrefix+f, err)
 	}
 	current := l.VersionOnDisk()
 	l.lock.Lock()

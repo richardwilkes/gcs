@@ -76,11 +76,12 @@ func toUnweighted(data map[string]int) map[string]int {
 
 // NameGenerator holds the data necessary to create a Namer.
 type NameGenerator struct {
-	Type      NameGenerationType `json:"type"`
-	Lower     bool               `json:"lower,omitempty"`     // Only valid for CompoundNameGenerationType
-	Separator string             `json:"separator,omitempty"` // Only valid for CompoundNameGenerationType
-	Depth     int                `json:"depth,omitempty"`     // Only valid for MarkovLetterNameGenerationType
-	Compound  []*NameGenerator   `json:"compound,omitempty"`  // Only valid for CompoundNameGenerationType
+	Type           NameGenerationType `json:"type"`
+	NoLowered      bool               `json:"no_lowered,omitempty"`
+	NoFirstToUpper bool               `json:"no_first_to_upper,omitempty"`
+	Separator      string             `json:"separator,omitempty"` // Only valid for CompoundNameGenerationType
+	Depth          int                `json:"depth,omitempty"`     // Only valid for MarkovLetterNameGenerationType
+	Compound       []*NameGenerator   `json:"compound,omitempty"`  // Only valid for CompoundNameGenerationType
 	TrainingData
 	namer names.Namer
 }
@@ -148,7 +149,7 @@ func (n *NameGenerator) createNamer() error {
 			}
 			namers = append(namers, one.namer)
 		}
-		n.namer = names.NewCompoundNamer(n.Separator, n.Lower, namers...)
+		n.namer = names.NewCompoundNamer(n.Separator, !n.NoLowered, !n.NoFirstToUpper, namers...)
 		return nil
 	}
 	data := n.data()
@@ -157,7 +158,7 @@ func (n *NameGenerator) createNamer() error {
 	}
 	switch n.Type {
 	case SimpleNameGenerationType:
-		n.namer = names.NewSimpleNamer(data)
+		n.namer = names.NewSimpleNamer(data, !n.NoLowered, !n.NoFirstToUpper)
 		return nil
 	case MarkovLetterNameGenerationType:
 		depth := n.Depth
@@ -166,10 +167,10 @@ func (n *NameGenerator) createNamer() error {
 		} else if depth > 5 {
 			depth = 5
 		}
-		n.namer = names.NewMarkovLetterNamer(depth, data)
+		n.namer = names.NewMarkovLetterNamer(depth, data, !n.NoLowered, !n.NoFirstToUpper)
 		return nil
 	case MarkovRunNameGenerationType:
-		n.namer = names.NewMarkovRunNamer(data)
+		n.namer = names.NewMarkovRunNamer(data, !n.NoLowered, !n.NoFirstToUpper)
 		return nil
 	default:
 		return errs.New("invalid name generator type")
