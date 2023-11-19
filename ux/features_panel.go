@@ -253,11 +253,11 @@ func (p *featuresPanel) createSkillBonusPanel(f *gurps.SkillBonus) *unison.Panel
 	var criteriaField *StringField
 	popup := addPopup(wrapper, gurps.AllSkillSelectionType, &f.SelectionType)
 	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[gurps.SkillSelectionType], index int, item gurps.SkillSelectionType) {
-		pop.SelectIndex(index)
 		count := 4
 		if f.SelectionType == gurps.ThisWeaponSkillSelectionType {
 			count = 2
 		}
+		pop.SelectIndex(index)
 		f.SelectionType = item
 		adjustPopupBlank(criteriaPopup, f.SelectionType == gurps.ThisWeaponSkillSelectionType)
 		adjustFieldBlank(criteriaField, f.SelectionType == gurps.ThisWeaponSkillSelectionType)
@@ -411,7 +411,6 @@ func (p *featuresPanel) createWeaponDamageBonusPanel(f *gurps.WeaponBonus) *unis
 	var criteriaField *StringField
 	popup := addPopup(wrapper, gurps.AllWeaponSelectionType, &f.SelectionType)
 	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[gurps.WeaponSelectionType], index int, item gurps.WeaponSelectionType) {
-		pop.SelectIndex(index)
 		var count int
 		switch f.SelectionType {
 		case gurps.WithRequiredSkillWeaponSelectionType:
@@ -421,6 +420,7 @@ func (p *featuresPanel) createWeaponDamageBonusPanel(f *gurps.WeaponBonus) *unis
 		case gurps.WithNameWeaponSelectionType:
 			count = 4
 		}
+		pop.SelectIndex(index)
 		f.SelectionType = item
 		adjustPopupBlank(criteriaPopup, f.SelectionType == gurps.ThisWeaponWeaponSelectionType)
 		adjustFieldBlank(criteriaField, f.SelectionType == gurps.ThisWeaponWeaponSelectionType)
