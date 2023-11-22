@@ -351,7 +351,7 @@ func addLabelAndNullableDice(parent *unison.Panel, labelText, tooltip string, fi
 	field := NewStringField(nil, "", labelText,
 		func() string { return data },
 		func(value string) {
-			data = value
+			data = strings.TrimPrefix(strings.TrimSpace(value), "+")
 			if value == "" {
 				*fieldData = nil
 			} else {
