@@ -27,6 +27,7 @@ import (
 var (
 	_ Node[*TraitModifier] = &TraitModifier{}
 	_ GeneralModifier      = &TraitModifier{}
+	_ LeveledOwner         = &TraitModifier{}
 )
 
 // Columns that can be used with the trait modifier method .CellData()
@@ -220,15 +221,23 @@ func (m *TraitModifier) CostModifier() fxp.Int {
 	return m.Cost
 }
 
-// HasLevels returns true if this TraitModifier has levels.
-func (m *TraitModifier) HasLevels() bool {
+// IsLeveled returns true if this TraitModifier is leveled.
+func (m *TraitModifier) IsLeveled() bool {
 	return !m.Container() && m.CostType == PercentageTraitModifierCostType && m.Levels > 0
+}
+
+// CurrentLevel returns the current level of the modifier or zero if it is not leveled.
+func (m *TraitModifier) CurrentLevel() fxp.Int {
+	if m.Enabled() && m.IsLeveled() {
+		return m.Levels
+	}
+	return 0
 }
 
 func (m *TraitModifier) String() string {
 	var buffer strings.Builder
 	buffer.WriteString(m.Name)
-	if m.HasLevels() {
+	if m.IsLeveled() {
 		buffer.WriteByte(' ')
 		buffer.WriteString(m.Levels.String())
 	}
@@ -278,7 +287,7 @@ func (m *TraitModifier) CostDescription() string {
 	var base string
 	switch m.CostType {
 	case PercentageTraitModifierCostType:
-		if m.HasLevels() {
+		if m.IsLeveled() {
 			base = m.Cost.Mul(m.Levels).StringWithSign()
 		} else {
 			base = m.Cost.StringWithSign()

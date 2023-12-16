@@ -39,7 +39,7 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 		costTypePopup := addCostTypePopup(wrapper, e)
 		affectsPopup := addPopup(wrapper, gurps.AllAffects, &e.editorData.Affects)
 		levels := addLabelAndDecimalField(content, nil, "", i18n.Text("Level"), "", &e.editorData.Levels, 0, fxp.Thousand)
-		adjustFieldBlank(levels, !e.target.HasLevels())
+		adjustFieldBlank(levels, !e.target.IsLeveled())
 		total := NewNonEditableField(func(field *NonEditableField) {
 			enabled := true
 			switch costTypePopup.SelectedIndex() - 1 {
@@ -96,7 +96,7 @@ func addCostTypePopup(parent *unison.Panel, e *editor[*gurps.TraitModifier, *gur
 	for _, one := range gurps.AllTraitModifierCostType {
 		popup.AddItem(one.String())
 	}
-	if e.target.HasLevels() {
+	if e.target.IsLeveled() {
 		popup.SelectIndex(0)
 	} else {
 		popup.Select(e.editorData.CostType.String())

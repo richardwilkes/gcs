@@ -14,6 +14,7 @@ package gurps
 import (
 	"fmt"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
@@ -23,6 +24,12 @@ import (
 type BonusOwner struct {
 	owner    fmt.Stringer
 	subOwner fmt.Stringer
+}
+
+// LeveledOwner is an owner that has a level.
+type LeveledOwner interface {
+	IsLeveled() bool
+	CurrentLevel() fxp.Int
 }
 
 // Owner returns the owner that is currently set.
@@ -64,4 +71,18 @@ func (b *BonusOwner) parentName() string {
 		return owner
 	}
 	return fmt.Sprintf("%s (%v)", owner, b.subOwner)
+}
+
+// DerivedLevel returns the level of the sub-owner or owner, if they are LeveledOwners.
+func (b *BonusOwner) DerivedLevel() fxp.Int {
+	if !toolbox.IsNil(b.subOwner) {
+		if lo, ok := b.subOwner.(LeveledOwner); ok && lo.IsLeveled() {
+			return lo.CurrentLevel()
+		}
+	} else if !toolbox.IsNil(b.owner) {
+		if lo, ok := b.owner.(LeveledOwner); ok && lo.IsLeveled() {
+			return lo.CurrentLevel()
+		}
+	}
+	return 0
 }

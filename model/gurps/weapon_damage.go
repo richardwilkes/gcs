@@ -179,10 +179,8 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 	if w.Base != nil {
 		*base = *w.Base
 	}
-	var levels fxp.Int
 	t, tOK := w.Owner.Owner.(*Trait)
 	if tOK && t.IsLeveled() {
-		levels = t.Levels
 		multiplyDice(fxp.As[int](t.Levels), base)
 	}
 	intST := fxp.As[int](st)
@@ -203,6 +201,7 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 			multiplyDice(fxp.As[int](t.Levels), swing)
 		}
 		base = addDice(base, swing)
+	default:
 	}
 	var bestDef *SkillDefault
 	best := fxp.Min
@@ -217,17 +216,20 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 	bonusSet := make(map[*WeaponBonus]bool)
 	tags := w.Owner.Owner.TagList()
 	if bestDef != nil {
-		pc.AddWeaponWithSkillBonusesFor(bestDef.Name, bestDef.Specialization, tags, base.Count, levels, tooltip, bonusSet)
+		pc.AddWeaponWithSkillBonusesFor(bestDef.Name, bestDef.Specialization, tags, base.Count, tooltip, bonusSet)
 	}
 	nameQualifier := w.Owner.String()
-	pc.AddNamedWeaponBonusesFor(nameQualifier, w.Owner.Usage, tags, base.Count, levels, tooltip, bonusSet)
+	pc.AddNamedWeaponBonusesFor(nameQualifier, w.Owner.Usage, tags, base.Count, tooltip, bonusSet)
 	for _, f := range w.Owner.Owner.FeatureList() {
-		w.extractWeaponBonus(f, bonusSet, fxp.From(base.Count), levels, tooltip)
+		w.extractWeaponBonus(f, bonusSet, fxp.From(base.Count), tooltip)
 	}
 	if tOK {
 		Traverse(func(mod *TraitModifier) bool {
 			for _, f := range mod.Features {
-				w.extractWeaponBonus(f, bonusSet, fxp.From(base.Count), levels, tooltip)
+				if bonus, ok := f.(Bonus); ok {
+					bonus.SetSubOwner(mod)
+				}
+				w.extractWeaponBonus(f, bonusSet, fxp.From(base.Count), tooltip)
 			}
 			return false
 		}, true, true, t.Modifiers...)
@@ -235,7 +237,10 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 	if eqp, ok := w.Owner.Owner.(*Equipment); ok {
 		Traverse(func(mod *EquipmentModifier) bool {
 			for _, f := range mod.Features {
-				w.extractWeaponBonus(f, bonusSet, fxp.From(base.Count), levels, tooltip)
+				if bonus, ok := f.(Bonus); ok {
+					bonus.SetSubOwner(mod)
+				}
+				w.extractWeaponBonus(f, bonusSet, fxp.From(base.Count), tooltip)
 			}
 			return false
 		}, true, true, eqp.Modifiers...)
@@ -244,7 +249,8 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 	var percentDamageBonus, percentDRDivisorBonus fxp.Int
 	armorDivisor := w.ArmorDivisor
 	for bonus := range bonusSet {
-		if bonus.Type == WeaponBonusFeatureType {
+		switch bonus.Type {
+		case WeaponBonusFeatureType:
 			if bonus.Percent {
 				percentDamageBonus += bonus.Amount
 			} else {
@@ -257,16 +263,17 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 				}
 				base.Modifier += fxp.As[int](amt)
 			}
-		} else {
+		case WeaponDRDivisorBonusFeatureType:
 			if bonus.Percent {
 				percentDRDivisorBonus += bonus.Amount
 			} else {
 				amt := bonus.Amount
 				if bonus.PerLevel {
-					amt = amt.Mul(levels)
+					amt = amt.Mul(bonus.DerivedLevel())
 				}
 				armorDivisor += amt
 			}
+		default:
 		}
 	}
 	if w.ModifierPerDie != 0 {
@@ -317,13 +324,13 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 	return buffer.String()
 }
 
-func (w *WeaponDamage) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, dieCount, levels fxp.Int, tooltip *xio.ByteBuffer) {
+func (w *WeaponDamage) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, dieCount fxp.Int, tooltip *xio.ByteBuffer) {
 	if bonus, ok := f.(*WeaponBonus); ok {
 		level := bonus.LeveledAmount.Level
 		if bonus.Type == WeaponBonusFeatureType {
 			bonus.LeveledAmount.Level = dieCount
 		} else {
-			bonus.LeveledAmount.Level = levels
+			bonus.LeveledAmount.Level = bonus.DerivedLevel()
 		}
 		switch bonus.SelectionType {
 		case WithRequiredSkillWeaponSelectionType:

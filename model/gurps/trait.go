@@ -29,6 +29,7 @@ var (
 	_ WeaponOwner            = &Trait{}
 	_ Node[*Trait]           = &Trait{}
 	_ TemplatePickerProvider = &Trait{}
+	_ LeveledOwner           = &Trait{}
 )
 
 // Columns that can be used with the trait method .CellData()
@@ -299,6 +300,14 @@ func (a *Trait) Notes() string {
 // IsLeveled returns true if the Trait is capable of having levels.
 func (a *Trait) IsLeveled() bool {
 	return a.CanLevel && !a.Container()
+}
+
+// CurrentLevel returns the current level of the trait or zero if it is not leveled.
+func (a *Trait) CurrentLevel() fxp.Int {
+	if a.Enabled() && a.IsLeveled() {
+		return a.Levels
+	}
+	return 0
 }
 
 // AdjustedPoints returns the total points, taking levels and modifiers into account.

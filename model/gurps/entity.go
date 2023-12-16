@@ -795,7 +795,7 @@ func (e *Entity) SpellPointBonusFor(name, powerSource string, colleges, tags []s
 
 // AddWeaponWithSkillBonusesFor adds the bonuses for matching weapons that match to the map. If 'm' is nil, it will be
 // created. The provided map (or the newly created one) will be returned.
-func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization string, tags []string, dieCount int, levels fxp.Int, tooltip *xio.ByteBuffer, m map[*WeaponBonus]bool) map[*WeaponBonus]bool {
+func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization string, tags []string, dieCount int, tooltip *xio.ByteBuffer, m map[*WeaponBonus]bool) map[*WeaponBonus]bool {
 	if m == nil {
 		m = make(map[*WeaponBonus]bool)
 	}
@@ -816,7 +816,7 @@ func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization string, tags 
 				if bonus.Type == WeaponBonusFeatureType {
 					bonus.LeveledAmount.Level = fxp.From(dieCount)
 				} else {
-					bonus.LeveledAmount.Level = levels
+					bonus.LeveledAmount.Level = bonus.DerivedLevel()
 				}
 				bonus.AddToTooltip(tooltip)
 				bonus.LeveledAmount.Level = level
@@ -829,7 +829,7 @@ func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization string, tags 
 
 // AddNamedWeaponBonusesFor adds the bonuses for matching weapons that match to the map. If 'm' is nil, it will
 // be created. The provided map (or the newly created one) will be returned.
-func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, tagsQualifier []string, dieCount int, levels fxp.Int, tooltip *xio.ByteBuffer, m map[*WeaponBonus]bool) map[*WeaponBonus]bool {
+func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, tagsQualifier []string, dieCount int, tooltip *xio.ByteBuffer, m map[*WeaponBonus]bool) map[*WeaponBonus]bool {
 	if m == nil {
 		m = make(map[*WeaponBonus]bool)
 	}
@@ -842,7 +842,7 @@ func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, 
 			if bonus.Type == WeaponBonusFeatureType {
 				bonus.LeveledAmount.Level = fxp.From(dieCount)
 			} else {
-				bonus.LeveledAmount.Level = levels
+				bonus.LeveledAmount.Level = bonus.DerivedLevel()
 			}
 			bonus.AddToTooltip(tooltip)
 			bonus.LeveledAmount.Level = level

@@ -84,6 +84,7 @@ func (p *weaponsPanel) SetWeapons(weaponType gurps.WeaponType, list []*gurps.Wea
 		melee = list
 	case gurps.RangedWeaponType:
 		ranged = list
+	default:
 	}
 	*p.allWeapons = append(append(make([]*gurps.Weapon, 0, len(melee)+len(ranged)), melee...), ranged...)
 	sel := p.table.CopySelectionMap()
