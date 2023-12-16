@@ -158,15 +158,30 @@ func (s *Spell) Clone(entity *Entity, parent *Spell, preserveID bool) *Spell {
 // MarshalJSON implements json.Marshaler.
 func (s *Spell) MarshalJSON() ([]byte, error) {
 	s.ClearUnusedFieldsForType()
+	type calcLeast struct {
+		ResolvedNotes string `json:"resolved_notes,omitempty"`
+	}
+	var cl calcLeast
+	notes := s.resolveLocalNotes()
+	if notes != s.LocalNotes {
+		cl.ResolvedNotes = notes
+	}
 	if s.Container() || s.LevelData.Level <= 0 {
-		return json.Marshal(&s.SpellData)
+		return json.Marshal(&struct {
+			SpellData
+			Calc calcLeast `json:"calc"`
+		}{
+			SpellData: s.SpellData,
+			Calc:      cl,
+		})
 	}
 	type calc struct {
 		Level              fxp.Int `json:"level"`
 		RelativeSkillLevel string  `json:"rsl"`
 		UnsatisfiedReason  string  `json:"unsatisfied_reason,omitempty"`
+		calcLeast
 	}
-	return json.Marshal(&struct {
+	data := struct {
 		SpellData
 		Calc calc `json:"calc"`
 	}{
@@ -175,8 +190,10 @@ func (s *Spell) MarshalJSON() ([]byte, error) {
 			Level:              s.LevelData.Level,
 			RelativeSkillLevel: s.RelativeLevel(),
 			UnsatisfiedReason:  s.UnsatisfiedReason,
+			calcLeast:          cl,
 		},
-	})
+	}
+	return json.Marshal(&data)
 }
 
 // UnmarshalJSON implements json.Unmarshaler.

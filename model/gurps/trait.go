@@ -123,6 +123,7 @@ func (a *Trait) MarshalJSON() ([]byte, error) {
 	type calc struct {
 		Points            fxp.Int `json:"points"`
 		UnsatisfiedReason string  `json:"unsatisfied_reason,omitempty"`
+		ResolvedNotes     string  `json:"resolved_notes,omitempty"`
 	}
 	a.ClearUnusedFieldsForType()
 	data := struct {
@@ -134,6 +135,10 @@ func (a *Trait) MarshalJSON() ([]byte, error) {
 			Points:            a.AdjustedPoints(),
 			UnsatisfiedReason: a.UnsatisfiedReason,
 		},
+	}
+	notes := a.resolveLocalNotes()
+	if notes != a.LocalNotes {
+		data.Calc.ResolvedNotes = notes
 	}
 	return json.Marshal(&data)
 }

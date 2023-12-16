@@ -160,24 +160,28 @@ func (s *Skill) Clone(entity *Entity, parent *Skill, preserveID bool) *Skill {
 // MarshalJSON implements json.Marshaler.
 func (s *Skill) MarshalJSON() ([]byte, error) {
 	s.ClearUnusedFieldsForType()
+	type calcNoLevel struct {
+		ResolvedNotes     string `json:"resolved_notes,omitempty"`
+		UnsatisfiedReason string `json:"unsatisfied_reason,omitempty"`
+	}
+	cnl := calcNoLevel{UnsatisfiedReason: s.UnsatisfiedReason}
+	notes := s.resolveLocalNotes()
+	if notes != s.LocalNotes {
+		cnl.ResolvedNotes = notes
+	}
 	if s.Container() || s.LevelData.Level <= 0 {
-		type calcNoLevel struct {
-			UnsatisfiedReason string `json:"unsatisfied_reason,omitempty"`
-		}
 		return json.Marshal(&struct {
 			SkillData
 			Calc calcNoLevel `json:"calc"`
 		}{
 			SkillData: s.SkillData,
-			Calc: calcNoLevel{
-				UnsatisfiedReason: s.UnsatisfiedReason,
-			},
+			Calc:      cnl,
 		})
 	}
 	type calc struct {
 		Level              fxp.Int `json:"level"`
 		RelativeSkillLevel string  `json:"rsl"`
-		UnsatisfiedReason  string  `json:"unsatisfied_reason,omitempty"`
+		calcNoLevel
 	}
 	return json.Marshal(&struct {
 		SkillData
@@ -187,7 +191,7 @@ func (s *Skill) MarshalJSON() ([]byte, error) {
 		Calc: calc{
 			Level:              s.LevelData.Level,
 			RelativeSkillLevel: s.RelativeLevel(),
-			UnsatisfiedReason:  s.UnsatisfiedReason,
+			calcNoLevel:        cnl,
 		},
 	})
 }

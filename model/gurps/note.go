@@ -102,8 +102,21 @@ func (n *Note) Clone(entity *Entity, parent *Note, preserveID bool) *Note {
 
 // MarshalJSON implements json.Marshaler.
 func (n *Note) MarshalJSON() ([]byte, error) {
+	type calc struct {
+		ResolvedNotes string `json:"resolved_text,omitempty"`
+	}
 	n.ClearUnusedFieldsForType()
-	return json.Marshal(&n.NoteData)
+	data := struct {
+		NoteData
+		Calc calc `json:"calc"`
+	}{
+		NoteData: n.NoteData,
+	}
+	notes := n.resolveText()
+	if notes != n.Text {
+		data.Calc.ResolvedNotes = notes
+	}
+	return json.Marshal(&data)
 }
 
 // UnmarshalJSON implements json.Unmarshaler.

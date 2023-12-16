@@ -133,6 +133,7 @@ func (e *Equipment) MarshalJSON() ([]byte, error) {
 		ExtendedValue           fxp.Int     `json:"extended_value"`
 		ExtendedWeight          fxp.Weight  `json:"extended_weight"`
 		ExtendedWeightForSkills *fxp.Weight `json:"extended_weight_for_skills,omitempty"`
+		ResolvedNotes           string      `json:"resolved_notes,omitempty"`
 		UnsatisfiedReason       string      `json:"unsatisfied_reason,omitempty"`
 	}
 	e.ClearUnusedFieldsForType()
@@ -148,6 +149,10 @@ func (e *Equipment) MarshalJSON() ([]byte, error) {
 			ExtendedWeightForSkills: nil,
 			UnsatisfiedReason:       e.UnsatisfiedReason,
 		},
+	}
+	notes := e.resolveLocalNotes()
+	if notes != e.LocalNotes {
+		data.Calc.ResolvedNotes = notes
 	}
 	if e.WeightIgnoredForSkills && e.Equipped {
 		w := e.ExtendedWeight(true, defUnits)

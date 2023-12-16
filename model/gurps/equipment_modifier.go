@@ -114,8 +114,21 @@ func (m *EquipmentModifier) Clone(entity *Entity, parent *EquipmentModifier, pre
 
 // MarshalJSON implements json.Marshaler.
 func (m *EquipmentModifier) MarshalJSON() ([]byte, error) {
+	type calc struct {
+		ResolvedNotes string `json:"resolved_notes,omitempty"`
+	}
 	m.ClearUnusedFieldsForType()
-	return json.Marshal(&m.EquipmentModifierData)
+	data := struct {
+		EquipmentModifierData
+		Calc calc `json:"calc"`
+	}{
+		EquipmentModifierData: m.EquipmentModifierData,
+	}
+	notes := m.resolveLocalNotes()
+	if notes != m.LocalNotes {
+		data.Calc.ResolvedNotes = notes
+	}
+	return json.Marshal(&data)
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
