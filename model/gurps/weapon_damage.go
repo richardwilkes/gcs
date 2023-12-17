@@ -17,7 +17,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
-	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -161,7 +160,7 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 	if pc == nil {
 		return w.String()
 	}
-	maxST := w.Owner.ResolvedMinimumStrength().Mul(fxp.Three)
+	maxST := w.Owner.ResolvedMinimumStrength(nil).Mul(fxp.Three)
 	var st fxp.Int
 	if w.Owner.Owner != nil {
 		st = w.Owner.Owner.RatedStrength()
@@ -203,52 +202,10 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 		base = addDice(base, swing)
 	default:
 	}
-	var bestDef *SkillDefault
-	best := fxp.Min
-	for _, one := range w.Owner.Defaults {
-		if one.SkillBased() {
-			if level := one.SkillLevelFast(pc, false, nil, true); best < level {
-				best = level
-				bestDef = one
-			}
-		}
-	}
-	bonusSet := make(map[*WeaponBonus]bool)
-	tags := w.Owner.Owner.TagList()
-	if bestDef != nil {
-		pc.AddWeaponWithSkillBonusesFor(bestDef.Name, bestDef.Specialization, tags, base.Count, tooltip, bonusSet)
-	}
-	nameQualifier := w.Owner.String()
-	pc.AddNamedWeaponBonusesFor(nameQualifier, w.Owner.Usage, tags, base.Count, tooltip, bonusSet)
-	for _, f := range w.Owner.Owner.FeatureList() {
-		w.extractWeaponBonus(f, bonusSet, fxp.From(base.Count), tooltip)
-	}
-	if tOK {
-		Traverse(func(mod *TraitModifier) bool {
-			for _, f := range mod.Features {
-				if bonus, ok := f.(Bonus); ok {
-					bonus.SetSubOwner(mod)
-				}
-				w.extractWeaponBonus(f, bonusSet, fxp.From(base.Count), tooltip)
-			}
-			return false
-		}, true, true, t.Modifiers...)
-	}
-	if eqp, ok := w.Owner.Owner.(*Equipment); ok {
-		Traverse(func(mod *EquipmentModifier) bool {
-			for _, f := range mod.Features {
-				if bonus, ok := f.(Bonus); ok {
-					bonus.SetSubOwner(mod)
-				}
-				w.extractWeaponBonus(f, bonusSet, fxp.From(base.Count), tooltip)
-			}
-			return false
-		}, true, true, eqp.Modifiers...)
-	}
 	adjustForPhoenixFlame := pc.SheetSettings.DamageProgression == PhoenixFlameD3 && base.Sides == 3
 	var percentDamageBonus, percentDRDivisorBonus fxp.Int
 	armorDivisor := w.ArmorDivisor
-	for bonus := range bonusSet {
+	for _, bonus := range w.Owner.collectWeaponBonuses(base.Count, tooltip, WeaponBonusFeatureType, WeaponDRDivisorBonusFeatureType) {
 		switch bonus.Type {
 		case WeaponBonusFeatureType:
 			if bonus.Percent {
@@ -322,38 +279,6 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 		}
 	}
 	return buffer.String()
-}
-
-func (w *WeaponDamage) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, dieCount fxp.Int, tooltip *xio.ByteBuffer) {
-	if bonus, ok := f.(*WeaponBonus); ok {
-		level := bonus.LeveledAmount.Level
-		if bonus.Type == WeaponBonusFeatureType {
-			bonus.LeveledAmount.Level = dieCount
-		} else {
-			bonus.LeveledAmount.Level = bonus.DerivedLevel()
-		}
-		switch bonus.SelectionType {
-		case WithRequiredSkillWeaponSelectionType:
-		case ThisWeaponWeaponSelectionType:
-			if bonus.SpecializationCriteria.Matches(w.Owner.Usage) {
-				if _, exists := set[bonus]; !exists {
-					set[bonus] = true
-					bonus.AddToTooltip(tooltip)
-				}
-			}
-		case WithNameWeaponSelectionType:
-			if bonus.NameCriteria.Matches(w.Owner.String()) && bonus.SpecializationCriteria.Matches(w.Owner.Usage) &&
-				bonus.TagsCriteria.MatchesList(w.Owner.Owner.TagList()...) {
-				if _, exists := set[bonus]; !exists {
-					set[bonus] = true
-					bonus.AddToTooltip(tooltip)
-				}
-			}
-		default:
-			errs.Log(errs.New("unknown selection type"), "type", int(bonus.SelectionType))
-		}
-		bonus.LeveledAmount.Level = level
-	}
 }
 
 func multiplyDice(multiplier int, d *dice.Dice) {

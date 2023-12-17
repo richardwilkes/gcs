@@ -31,6 +31,7 @@ const (
 	SpellPointBonusFeatureType
 	WeaponBonusFeatureType
 	WeaponDRDivisorBonusFeatureType
+	WeaponMinSTBonusFeatureType
 	CostReductionFeatureType
 	ContainedWeightReductionFeatureType
 	LastFeatureType = ContainedWeightReductionFeatureType
@@ -48,6 +49,7 @@ var AllFeatureType = []FeatureType{
 	SpellPointBonusFeatureType,
 	WeaponBonusFeatureType,
 	WeaponDRDivisorBonusFeatureType,
+	WeaponMinSTBonusFeatureType,
 	CostReductionFeatureType,
 	ContainedWeightReductionFeatureType,
 }
@@ -86,6 +88,8 @@ func (enum FeatureType) Key() string {
 		return "weapon_bonus"
 	case WeaponDRDivisorBonusFeatureType:
 		return "weapon_dr_divisor_bonus"
+	case WeaponMinSTBonusFeatureType:
+		return "weapon_min_st_bonus"
 	case CostReductionFeatureType:
 		return "cost_reduction"
 	case ContainedWeightReductionFeatureType:
@@ -118,6 +122,8 @@ func (enum FeatureType) String() string {
 		return i18n.Text("Gives a weapon damage modifier of")
 	case WeaponDRDivisorBonusFeatureType:
 		return i18n.Text("Gives a weapon DR divisor modifier of")
+	case WeaponMinSTBonusFeatureType:
+		return i18n.Text("Gives a weapon minimum ST modifier of")
 	case CostReductionFeatureType:
 		return i18n.Text("Reduces the attribute cost of")
 	case ContainedWeightReductionFeatureType:

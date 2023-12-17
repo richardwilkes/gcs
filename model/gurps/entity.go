@@ -795,7 +795,7 @@ func (e *Entity) SpellPointBonusFor(name, powerSource string, colleges, tags []s
 
 // AddWeaponWithSkillBonusesFor adds the bonuses for matching weapons that match to the map. If 'm' is nil, it will be
 // created. The provided map (or the newly created one) will be returned.
-func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization string, tags []string, dieCount int, tooltip *xio.ByteBuffer, m map[*WeaponBonus]bool) map[*WeaponBonus]bool {
+func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization string, tags []string, dieCount int, tooltip *xio.ByteBuffer, m map[*WeaponBonus]bool, allowedFeatureTypes map[FeatureType]bool) map[*WeaponBonus]bool {
 	if m == nil {
 		m = make(map[*WeaponBonus]bool)
 	}
@@ -807,7 +807,8 @@ func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization string, tags 
 	}
 	if rsl != fxp.Min {
 		for _, bonus := range e.features.weaponBonuses {
-			if bonus.SelectionType == WithRequiredSkillWeaponSelectionType &&
+			if allowedFeatureTypes[bonus.Type] &&
+				bonus.SelectionType == WithRequiredSkillWeaponSelectionType &&
 				bonus.NameCriteria.Matches(name) &&
 				bonus.SpecializationCriteria.Matches(specialization) &&
 				bonus.RelativeLevelCriteria.Matches(rsl) &&
@@ -829,12 +830,13 @@ func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization string, tags 
 
 // AddNamedWeaponBonusesFor adds the bonuses for matching weapons that match to the map. If 'm' is nil, it will
 // be created. The provided map (or the newly created one) will be returned.
-func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, tagsQualifier []string, dieCount int, tooltip *xio.ByteBuffer, m map[*WeaponBonus]bool) map[*WeaponBonus]bool {
+func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, tagsQualifier []string, dieCount int, tooltip *xio.ByteBuffer, m map[*WeaponBonus]bool, allowedFeatureTypes map[FeatureType]bool) map[*WeaponBonus]bool {
 	if m == nil {
 		m = make(map[*WeaponBonus]bool)
 	}
 	for _, bonus := range e.features.weaponBonuses {
-		if bonus.SelectionType == WithNameWeaponSelectionType &&
+		if allowedFeatureTypes[bonus.Type] &&
+			bonus.SelectionType == WithNameWeaponSelectionType &&
 			bonus.NameCriteria.Matches(nameQualifier) &&
 			bonus.SpecializationCriteria.Matches(usageQualifier) &&
 			bonus.TagsCriteria.MatchesList(tagsQualifier...) {
@@ -875,8 +877,7 @@ func (e *Entity) Move(enc Encumbrance) int {
 	} else {
 		initialMove = e.ResolveAttributeCurrent(BasicMoveID).Max(0)
 	}
-	divisor := 2 * min(CountThresholdOpMet(HalveMoveThresholdOp, e.Attributes), 2)
-	if divisor > 0 {
+	if divisor := 2 * min(CountThresholdOpMet(HalveMoveThresholdOp, e.Attributes), 2); divisor > 0 {
 		initialMove = initialMove.Div(fxp.From(divisor)).Ceil()
 	}
 	move := initialMove.Mul(fxp.Ten + fxp.Two.Mul(enc.Penalty())).Div(fxp.Ten).Trunc()

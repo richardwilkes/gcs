@@ -497,6 +497,11 @@ func main() {
 				String: "Gives a weapon DR divisor modifier of",
 			},
 			{
+				Name:   "WeaponMinSTBonus",
+				Key:    "weapon_min_st_bonus",
+				String: "Gives a weapon minimum ST modifier of",
+			},
+			{
 				Key:    "cost_reduction",
 				String: "Reduces the attribute cost of",
 			},

@@ -12,6 +12,8 @@
 package gurps
 
 import (
+	"strings"
+
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
@@ -40,6 +42,11 @@ func NewWeaponDamageBonus() *WeaponBonus {
 // NewWeaponDRDivisorBonus creates a new weapon DR divisor bonus.
 func NewWeaponDRDivisorBonus() *WeaponBonus {
 	return newWeaponDamageBonus(WeaponDRDivisorBonusFeatureType)
+}
+
+// NewWeaponMinSTBonus creates a new weapon minimum ST bonus.
+func NewWeaponMinSTBonus() *WeaponBonus {
+	return newWeaponDamageBonus(WeaponMinSTBonusFeatureType)
 }
 
 func newWeaponDamageBonus(t FeatureType) *WeaponBonus {
@@ -109,16 +116,24 @@ func (w *WeaponBonus) SetLevel(level fxp.Int) {
 // AddToTooltip implements Bonus.
 func (w *WeaponBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 	if buffer != nil {
-		buffer.WriteByte('\n')
-		buffer.WriteString(w.parentName())
-		buffer.WriteString(" [")
-		if w.Type == WeaponBonusFeatureType {
-			buffer.WriteString(w.LeveledAmount.Format(w.Percent, i18n.Text("die")))
-			buffer.WriteString(i18n.Text(" to damage"))
-		} else {
-			buffer.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
-			buffer.WriteString(i18n.Text(" to DR divisor"))
+		var buf strings.Builder
+		buf.WriteByte('\n')
+		buf.WriteString(w.parentName())
+		buf.WriteString(" [")
+		switch w.Type {
+		case WeaponBonusFeatureType:
+			buf.WriteString(w.LeveledAmount.Format(w.Percent, i18n.Text("die")))
+			buf.WriteString(i18n.Text(" to damage"))
+		case WeaponDRDivisorBonusFeatureType:
+			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
+			buf.WriteString(i18n.Text(" to DR divisor"))
+		case WeaponMinSTBonusFeatureType:
+			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
+			buf.WriteString(i18n.Text(" to minimum ST"))
+		default:
+			return
 		}
-		buffer.WriteByte(']')
+		buf.WriteByte(']')
+		buffer.WriteString(buf.String())
 	}
 }

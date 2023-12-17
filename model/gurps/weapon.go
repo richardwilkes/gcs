@@ -23,6 +23,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
+	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio"
@@ -232,7 +233,7 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 		Calc: calc{
 			Level:         w.SkillLevel(nil).Max(0),
 			Damage:        w.Damage.ResolvedDamage(nil),
-			ResolvedMinST: w.ResolvedMinimumStrength(),
+			ResolvedMinST: w.ResolvedMinimumStrength(nil),
 		},
 	}
 	switch w.Type {
@@ -381,8 +382,16 @@ func (w *Weapon) SkillLevel(tooltip *xio.ByteBuffer) fxp.Int {
 
 func (w *Weapon) skillLevelBaseAdjustment(entity *Entity, tooltip *xio.ByteBuffer) fxp.Int {
 	var adj fxp.Int
-	if minST := w.ResolvedMinimumStrength() - entity.StrikingStrength(); minST > 0 {
+	if minST := w.ResolvedMinimumStrength(nil) - entity.StrikingStrength(); minST > 0 {
 		adj -= minST
+		if tooltip != nil {
+			tooltip.WriteByte('\n')
+			tooltip.WriteString(w.String())
+			tooltip.WriteString(" [")
+			tooltip.WriteString((-minST).String())
+			tooltip.WriteString(i18n.Text(" to skill level due to minimum ST requirement"))
+			tooltip.WriteByte(']')
+		}
 	}
 	nameQualifier := w.String()
 	for _, bonus := range entity.NamedWeaponSkillBonusesFor(nameQualifier, w.Usage, w.Owner.TagList(), tooltip) {
@@ -636,13 +645,114 @@ func (w *Weapon) resolveRange(inRange string, st fxp.Int) string {
 }
 
 // ResolvedMinimumStrength returns the resolved minimum strength required to use this weapon, or 0 if there is none.
-func (w *Weapon) ResolvedMinimumStrength() fxp.Int {
+func (w *Weapon) ResolvedMinimumStrength(tooltip *xio.ByteBuffer) fxp.Int {
 	if w.Owner != nil {
-		if st := w.Owner.RatedStrength(); st != 0 {
+		if st := w.Owner.RatedStrength().Max(0); st != 0 {
 			return st
 		}
 	}
-	return w.MinST
+	minST := w.MinST
+	for _, bonus := range w.collectWeaponBonuses(1, tooltip, WeaponMinSTBonusFeatureType) {
+		minST += bonus.AdjustedAmount()
+	}
+	return minST.Max(0)
+}
+
+func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xio.ByteBuffer, allowedFeatureTypes ...FeatureType) []*WeaponBonus {
+	pc := w.PC()
+	if pc == nil {
+		return nil
+	}
+	allowed := make(map[FeatureType]bool, len(allowedFeatureTypes))
+	for _, one := range allowedFeatureTypes {
+		allowed[one] = true
+	}
+	var bestDef *SkillDefault
+	best := fxp.Min
+	for _, one := range w.Defaults {
+		if one.SkillBased() {
+			if level := one.SkillLevelFast(pc, false, nil, true); best < level {
+				best = level
+				bestDef = one
+			}
+		}
+	}
+	bonusSet := make(map[*WeaponBonus]bool)
+	tags := w.Owner.TagList()
+	if bestDef != nil {
+		pc.AddWeaponWithSkillBonusesFor(bestDef.Name, bestDef.Specialization, tags, dieCount, tooltip, bonusSet, allowed)
+	}
+	nameQualifier := w.String()
+	pc.AddNamedWeaponBonusesFor(nameQualifier, w.Usage, tags, dieCount, tooltip, bonusSet, allowed)
+	for _, f := range w.Owner.FeatureList() {
+		w.extractWeaponBonus(f, bonusSet, allowed, fxp.From(dieCount), tooltip)
+	}
+	if t, ok := w.Owner.(*Trait); ok {
+		Traverse(func(mod *TraitModifier) bool {
+			var bonus Bonus
+			for _, f := range mod.Features {
+				if bonus, ok = f.(Bonus); ok {
+					bonus.SetSubOwner(mod)
+				}
+				w.extractWeaponBonus(f, bonusSet, allowed, fxp.From(dieCount), tooltip)
+			}
+			return false
+		}, true, true, t.Modifiers...)
+	}
+	if eqp, ok := w.Owner.(*Equipment); ok {
+		Traverse(func(mod *EquipmentModifier) bool {
+			var bonus Bonus
+			for _, f := range mod.Features {
+				if bonus, ok = f.(Bonus); ok {
+					bonus.SetSubOwner(mod)
+				}
+				w.extractWeaponBonus(f, bonusSet, allowed, fxp.From(dieCount), tooltip)
+			}
+			return false
+		}, true, true, eqp.Modifiers...)
+	}
+	if len(bonusSet) == 0 {
+		return nil
+	}
+	result := make([]*WeaponBonus, 0, len(bonusSet))
+	for bonus := range bonusSet {
+		result = append(result, bonus)
+	}
+	return result
+}
+
+func (w *Weapon) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, allowedFeatureTypes map[FeatureType]bool, dieCount fxp.Int, tooltip *xio.ByteBuffer) {
+	if allowedFeatureTypes[f.FeatureType()] {
+		if bonus, ok := f.(*WeaponBonus); ok {
+			level := bonus.LeveledAmount.Level
+			if bonus.Type == WeaponBonusFeatureType {
+				bonus.LeveledAmount.Level = dieCount
+			} else {
+				bonus.LeveledAmount.Level = bonus.DerivedLevel()
+			}
+			switch bonus.SelectionType {
+			case WithRequiredSkillWeaponSelectionType:
+			case ThisWeaponWeaponSelectionType:
+				if bonus.SpecializationCriteria.Matches(w.Usage) {
+					if _, exists := set[bonus]; !exists {
+						set[bonus] = true
+						bonus.AddToTooltip(tooltip)
+					}
+				}
+			case WithNameWeaponSelectionType:
+				if bonus.NameCriteria.Matches(w.String()) && bonus.SpecializationCriteria.Matches(w.Usage) &&
+					bonus.TagsCriteria.MatchesList(w.Owner.TagList()...) {
+					if _, exists := set[bonus]; !exists {
+						set[bonus] = true
+						bonus.AddToTooltip(tooltip)
+					}
+				}
+			default:
+				errs.Log(errs.New("unknown selection type"), "type", int(bonus.SelectionType))
+			}
+			bonus.LeveledAmount.Level = level
+		}
+	}
 }
 
 // FillWithNameableKeys adds any nameable keys found in this Weapon to the provided map.
@@ -727,7 +837,7 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 		if st := w.Owner.RatedStrength(); st > 0 {
 			fmt.Fprintf(&tooltip, i18n.Text("The weapon has a rated ST of %v, which is used instead of the user's ST for calculations."), st)
 		}
-		minST := w.ResolvedMinimumStrength()
+		minST := w.ResolvedMinimumStrength(&buffer)
 		if minST > 0 {
 			if tooltip.Len() != 0 {
 				tooltip.WriteString("\n\n")
@@ -794,7 +904,7 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 // CombinedMinST returns the combined string used in the GURPS weapon tables for minimum ST.
 func (w *Weapon) CombinedMinST() string {
 	var buffer strings.Builder
-	if minST := w.ResolvedMinimumStrength(); minST > 0 {
+	if minST := w.ResolvedMinimumStrength(nil); minST > 0 {
 		buffer.WriteString(minST.String())
 	}
 	if w.Bipod {
