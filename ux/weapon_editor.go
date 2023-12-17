@@ -26,6 +26,7 @@ func EditWeapon(owner Rebuildable, w *gurps.Weapon) {
 		help = "md:Help/Interface/Melee Weapon Usage"
 	case gurps.RangedWeaponType:
 		help = "md:Help/Interface/Ranged Weapon Usage"
+	default:
 	}
 	displayEditor[*gurps.Weapon, *gurps.Weapon](owner, w, w.Type.SVG(), help, nil, initWeaponEditor)
 }
@@ -62,7 +63,10 @@ func initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.P
 		addLabelAndStringField(content, i18n.Text("Parry Modifier"), "", &e.editorData.Parry)
 		addLabelAndStringField(content, i18n.Text("Block Modifier"), "", &e.editorData.Block)
 	case gurps.RangedWeaponType:
-		addLabelAndStringField(content, i18n.Text("Accuracy"), "", &e.editorData.Accuracy)
+		addLabelAndDecimalField(content, nil, "", i18n.Text("Weapon Accuracy"), "", &e.editorData.WeaponAcc, 0, fxp.Max)
+		addLabelAndDecimalField(content, nil, "", i18n.Text("Scope Accuracy"), "", &e.editorData.ScopeAcc, 0, fxp.Max)
+		content.AddChild(unison.NewPanel())
+		addCheckBox(content, i18n.Text("Jet"), &e.editorData.Jet)
 		addLabelAndStringField(content, i18n.Text("Rate of Fire"), "", &e.editorData.RateOfFire)
 		addLabelAndStringField(content, i18n.Text("Range"), "", &e.editorData.Range)
 		addLabelAndStringField(content, i18n.Text("Recoil"), "", &e.editorData.Recoil)

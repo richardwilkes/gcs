@@ -57,12 +57,15 @@ type exportedRangedWeapon struct {
 	Bulk               string
 	Recoil             string
 	Strength           string
+	WeaponAcc          fxp.Int
+	ScopeAcc           fxp.Int
 	MinST              fxp.Int
 	Bipod              bool
 	Mounted            bool
 	MusketRest         bool
 	TwoHanded          bool
 	UnreadyAfterAttack bool
+	Jet                bool
 }
 
 type exportedHitLocation struct {
@@ -605,7 +608,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			Notes:              w.Notes(),
 			Usage:              w.Usage,
 			Level:              w.SkillLevel(nil),
-			Accuracy:           w.Accuracy,
+			Accuracy:           w.CombinedAcc(nil),
 			Range:              w.ResolvedRange(),
 			Damage:             w.Damage.ResolvedDamage(nil),
 			RateOfFire:         w.RateOfFire,
@@ -613,6 +616,8 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			Bulk:               w.Bulk,
 			Recoil:             w.Recoil,
 			Strength:           w.CombinedMinST(),
+			WeaponAcc:          w.WeaponAcc,
+			ScopeAcc:           w.ScopeAcc,
 			MinST:              w.MinST,
 			Bipod:              w.Bipod,
 			Mounted:            w.Mounted,

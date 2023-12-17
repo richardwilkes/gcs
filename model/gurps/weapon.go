@@ -69,18 +69,20 @@ type WeaponData struct {
 	MusketRest         bool            `json:"musket_rest,omitempty"`
 	TwoHanded          bool            `json:"two_handed,omitempty"`
 	UnreadyAfterAttack bool            `json:"unready_after_attack,omitempty"`
+	Jet                bool            `json:"jet,omitempty"`
 	Damage             WeaponDamage    `json:"damage"`
 	Usage              string          `json:"usage,omitempty"`
 	UsageNotes         string          `json:"usage_notes,omitempty"`
 	Reach              string          `json:"reach,omitempty"`
 	Parry              string          `json:"parry,omitempty"`
 	Block              string          `json:"block,omitempty"`
-	Accuracy           string          `json:"accuracy,omitempty"`
 	Range              string          `json:"range,omitempty"`
 	RateOfFire         string          `json:"rate_of_fire,omitempty"`
 	Shots              string          `json:"shots,omitempty"`
 	Bulk               string          `json:"bulk,omitempty"`
 	Recoil             string          `json:"recoil,omitempty"`
+	WeaponAcc          fxp.Int         `json:"weapon_acc,omitempty"`
+	ScopeAcc           fxp.Int         `json:"scope_acc,omitempty"`
 	MinST              fxp.Int         `json:"min_st,omitempty"`
 	Defaults           []*SkillDefault `json:"defaults,omitempty"`
 }
@@ -196,7 +198,6 @@ func (w *Weapon) HashCode() uint32 {
 	_, _ = h.Write([]byte(w.UsageNotes))
 	_, _ = h.Write([]byte(w.Usage))
 	_ = binary.Write(h, binary.LittleEndian, w.SkillLevel(nil))
-	_, _ = h.Write([]byte(w.Accuracy))
 	_, _ = h.Write([]byte(w.Parry))
 	_, _ = h.Write([]byte(w.Block))
 	_, _ = h.Write([]byte(w.Damage.ResolvedDamage(nil)))
@@ -206,6 +207,9 @@ func (w *Weapon) HashCode() uint32 {
 	_, _ = h.Write([]byte(w.Shots))
 	_, _ = h.Write([]byte(w.Bulk))
 	_, _ = h.Write([]byte(w.Recoil))
+	_ = binary.Write(h, binary.LittleEndian, w.Jet)
+	_ = binary.Write(h, binary.LittleEndian, w.WeaponAcc)
+	_ = binary.Write(h, binary.LittleEndian, w.ScopeAcc)
 	_ = binary.Write(h, binary.LittleEndian, w.MinST)
 	_ = binary.Write(h, binary.LittleEndian, w.Bipod)
 	_ = binary.Write(h, binary.LittleEndian, w.Mounted)
@@ -251,6 +255,7 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 func (w *Weapon) UnmarshalJSON(data []byte) error {
 	type oldWeaponData struct {
 		WeaponData
+		OldAccuracy        string `json:"accuracy,omitempty"`
 		OldMinimumStrength string `json:"strength"`
 	}
 	var wdata oldWeaponData
@@ -258,6 +263,20 @@ func (w *Weapon) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	w.WeaponData = wdata.WeaponData
+	if wdata.OldAccuracy != "" {
+		if w.Jet = strings.ToLower(strings.TrimSpace(wdata.OldAccuracy)) == "jet"; !w.Jet {
+			parts := strings.Split(strings.TrimPrefix(strings.ReplaceAll(wdata.OldAccuracy, " ", ""), "+"), "+")
+			var err error
+			if w.WeaponAcc, err = fxp.FromString(parts[0]); err != nil {
+				return err
+			}
+			if len(parts) > 1 {
+				if w.ScopeAcc, err = fxp.FromString(parts[1]); err != nil {
+					return err
+				}
+			}
+		}
+	}
 	if wdata.OldMinimumStrength != "" {
 		w.Bipod = strings.Contains(wdata.OldMinimumStrength, "B")
 		w.Mounted = strings.Contains(wdata.OldMinimumStrength, "M")
@@ -644,6 +663,29 @@ func (w *Weapon) resolveRange(inRange string, st fxp.Int) string {
 	return buffer.String()
 }
 
+// ResolvedAccuracy returns the resolved weapon and scope accuracies for this weapon.
+func (w *Weapon) ResolvedAccuracy(tooltip *xio.ByteBuffer) (weapon, scope fxp.Int) {
+	if w.Jet {
+		return 0, 0
+	}
+	pc := w.PC()
+	if pc == nil {
+		return w.WeaponAcc, w.ScopeAcc
+	}
+	weaponAcc := w.WeaponAcc
+	scopeAcc := w.ScopeAcc
+	for _, bonus := range w.collectWeaponBonuses(1, tooltip, WeaponAccBonusFeatureType, WeaponScopeAccBonusFeatureType) {
+		switch bonus.Type {
+		case WeaponAccBonusFeatureType:
+			weaponAcc += bonus.AdjustedAmount()
+		case WeaponScopeAccBonusFeatureType:
+			scopeAcc += bonus.AdjustedAmount()
+		default:
+		}
+	}
+	return weaponAcc.Max(0), scopeAcc.Max(0)
+}
+
 // ResolvedMinimumStrength returns the resolved minimum strength required to use this weapon, or 0 if there is none.
 func (w *Weapon) ResolvedMinimumStrength(tooltip *xio.ByteBuffer) fxp.Int {
 	if w.Owner != nil {
@@ -879,7 +921,7 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 		}
 		data.Tooltip = tooltip.String()
 	case WeaponAccColumn:
-		data.Primary = w.Accuracy
+		data.Primary = w.CombinedAcc(&buffer)
 	case WeaponRangeColumn:
 		data.Primary = w.ResolvedRange()
 	case WeaponRoFColumn:
@@ -899,6 +941,21 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 		}
 		data.Tooltip = i18n.Text("Includes modifiers from:") + buffer.String()
 	}
+}
+
+// CombinedAcc returns the combined string used in the GURPS weapon tables for accuracy.
+func (w *Weapon) CombinedAcc(tooltip *xio.ByteBuffer) string {
+	if w.Type != RangedWeaponType {
+		return ""
+	}
+	if w.Jet {
+		return i18n.Text("Jet")
+	}
+	weaponAcc, scopeAcc := w.ResolvedAccuracy(tooltip)
+	if scopeAcc != 0 {
+		return weaponAcc.String() + scopeAcc.StringWithSign()
+	}
+	return weaponAcc.String()
 }
 
 // CombinedMinST returns the combined string used in the GURPS weapon tables for minimum ST.

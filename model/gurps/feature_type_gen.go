@@ -30,6 +30,8 @@ const (
 	SpellBonusFeatureType
 	SpellPointBonusFeatureType
 	WeaponBonusFeatureType
+	WeaponAccBonusFeatureType
+	WeaponScopeAccBonusFeatureType
 	WeaponDRDivisorBonusFeatureType
 	WeaponMinSTBonusFeatureType
 	CostReductionFeatureType
@@ -48,6 +50,8 @@ var AllFeatureType = []FeatureType{
 	SpellBonusFeatureType,
 	SpellPointBonusFeatureType,
 	WeaponBonusFeatureType,
+	WeaponAccBonusFeatureType,
+	WeaponScopeAccBonusFeatureType,
 	WeaponDRDivisorBonusFeatureType,
 	WeaponMinSTBonusFeatureType,
 	CostReductionFeatureType,
@@ -86,6 +90,10 @@ func (enum FeatureType) Key() string {
 		return "spell_point_bonus"
 	case WeaponBonusFeatureType:
 		return "weapon_bonus"
+	case WeaponAccBonusFeatureType:
+		return "weapon_acc_bonus"
+	case WeaponScopeAccBonusFeatureType:
+		return "weapon_scope_acc_bonus"
 	case WeaponDRDivisorBonusFeatureType:
 		return "weapon_dr_divisor_bonus"
 	case WeaponMinSTBonusFeatureType:
@@ -120,6 +128,10 @@ func (enum FeatureType) String() string {
 		return i18n.Text("Gives a spell point modifier of")
 	case WeaponBonusFeatureType:
 		return i18n.Text("Gives a weapon damage modifier of")
+	case WeaponAccBonusFeatureType:
+		return i18n.Text("Gives a weapon accuracy modifier of")
+	case WeaponScopeAccBonusFeatureType:
+		return i18n.Text("Gives a weapon scope accuracy modifier of")
 	case WeaponDRDivisorBonusFeatureType:
 		return i18n.Text("Gives a weapon DR divisor modifier of")
 	case WeaponMinSTBonusFeatureType:

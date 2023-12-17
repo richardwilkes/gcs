@@ -36,20 +36,30 @@ type WeaponBonus struct {
 
 // NewWeaponDamageBonus creates a new weapon damage bonus.
 func NewWeaponDamageBonus() *WeaponBonus {
-	return newWeaponDamageBonus(WeaponBonusFeatureType)
+	return newWeaponBonus(WeaponBonusFeatureType)
 }
 
 // NewWeaponDRDivisorBonus creates a new weapon DR divisor bonus.
 func NewWeaponDRDivisorBonus() *WeaponBonus {
-	return newWeaponDamageBonus(WeaponDRDivisorBonusFeatureType)
+	return newWeaponBonus(WeaponDRDivisorBonusFeatureType)
 }
 
 // NewWeaponMinSTBonus creates a new weapon minimum ST bonus.
 func NewWeaponMinSTBonus() *WeaponBonus {
-	return newWeaponDamageBonus(WeaponMinSTBonusFeatureType)
+	return newWeaponBonus(WeaponMinSTBonusFeatureType)
 }
 
-func newWeaponDamageBonus(t FeatureType) *WeaponBonus {
+// NewWeaponAccBonus creates a new weapon accuracy bonus.
+func NewWeaponAccBonus() *WeaponBonus {
+	return newWeaponBonus(WeaponAccBonusFeatureType)
+}
+
+// NewWeaponScopeAccBonus creates a new weapon scope accuracy bonus.
+func NewWeaponScopeAccBonus() *WeaponBonus {
+	return newWeaponBonus(WeaponScopeAccBonusFeatureType)
+}
+
+func newWeaponBonus(t FeatureType) *WeaponBonus {
 	return &WeaponBonus{
 		Type:          t,
 		SelectionType: WithRequiredSkillWeaponSelectionType,
@@ -124,6 +134,12 @@ func (w *WeaponBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 		case WeaponBonusFeatureType:
 			buf.WriteString(w.LeveledAmount.Format(w.Percent, i18n.Text("die")))
 			buf.WriteString(i18n.Text(" to damage"))
+		case WeaponAccBonusFeatureType:
+			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
+			buf.WriteString(i18n.Text(" to weapon accuracy"))
+		case WeaponScopeAccBonusFeatureType:
+			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
+			buf.WriteString(i18n.Text(" to scope accuracy"))
 		case WeaponDRDivisorBonusFeatureType:
 			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
 			buf.WriteString(i18n.Text(" to DR divisor"))

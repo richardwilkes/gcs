@@ -492,6 +492,14 @@ func main() {
 				String: "Gives a weapon damage modifier of",
 			},
 			{
+				Key:    "weapon_acc_bonus",
+				String: "Gives a weapon accuracy modifier of",
+			},
+			{
+				Key:    "weapon_scope_acc_bonus",
+				String: "Gives a weapon scope accuracy modifier of",
+			},
+			{
 				Name:   "WeaponDRDivisorBonus",
 				Key:    "weapon_dr_divisor_bonus",
 				String: "Gives a weapon DR divisor modifier of",
