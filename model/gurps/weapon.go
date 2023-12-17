@@ -13,6 +13,7 @@ package gurps
 
 import (
 	"bufio"
+	"encoding/binary"
 	"fmt"
 	"hash/fnv"
 	"strings"
@@ -60,22 +61,27 @@ type WeaponOwner interface {
 
 // WeaponData holds the Weapon data that is written to disk.
 type WeaponData struct {
-	ID              uuid.UUID       `json:"id"`
-	Type            WeaponType      `json:"type"`
-	Damage          WeaponDamage    `json:"damage"`
-	MinimumStrength string          `json:"strength,omitempty"`
-	Usage           string          `json:"usage,omitempty"`
-	UsageNotes      string          `json:"usage_notes,omitempty"`
-	Reach           string          `json:"reach,omitempty"`
-	Parry           string          `json:"parry,omitempty"`
-	Block           string          `json:"block,omitempty"`
-	Accuracy        string          `json:"accuracy,omitempty"`
-	Range           string          `json:"range,omitempty"`
-	RateOfFire      string          `json:"rate_of_fire,omitempty"`
-	Shots           string          `json:"shots,omitempty"`
-	Bulk            string          `json:"bulk,omitempty"`
-	Recoil          string          `json:"recoil,omitempty"`
-	Defaults        []*SkillDefault `json:"defaults,omitempty"`
+	ID                 uuid.UUID       `json:"id"`
+	Type               WeaponType      `json:"type"`
+	Bipod              bool            `json:"bipod,omitempty"`
+	Mounted            bool            `json:"mounted,omitempty"`
+	MusketRest         bool            `json:"musket_rest,omitempty"`
+	TwoHanded          bool            `json:"two_handed,omitempty"`
+	UnreadyAfterAttack bool            `json:"unready_after_attack,omitempty"`
+	Damage             WeaponDamage    `json:"damage"`
+	Usage              string          `json:"usage,omitempty"`
+	UsageNotes         string          `json:"usage_notes,omitempty"`
+	Reach              string          `json:"reach,omitempty"`
+	Parry              string          `json:"parry,omitempty"`
+	Block              string          `json:"block,omitempty"`
+	Accuracy           string          `json:"accuracy,omitempty"`
+	Range              string          `json:"range,omitempty"`
+	RateOfFire         string          `json:"rate_of_fire,omitempty"`
+	Shots              string          `json:"shots,omitempty"`
+	Bulk               string          `json:"bulk,omitempty"`
+	Recoil             string          `json:"recoil,omitempty"`
+	MinST              fxp.Int         `json:"min_st,omitempty"`
+	Defaults           []*SkillDefault `json:"defaults,omitempty"`
 }
 
 // Weapon holds the stats for a weapon.
@@ -103,6 +109,7 @@ func SeparateWeapons(list []*Weapon) (melee, ranged []*Weapon) {
 			melee = append(melee, w)
 		case RangedWeaponType:
 			ranged = append(ranged, w)
+		default:
 		}
 	}
 	return melee, ranged
@@ -131,6 +138,7 @@ func NewWeapon(owner WeaponOwner, weaponType WeaponType) *Weapon {
 	case RangedWeaponType:
 		w.RateOfFire = "1"
 		w.Damage.Base = dice.New("1d")
+	default:
 	}
 	return w
 }
@@ -178,25 +186,31 @@ func (w *Weapon) Less(other *Weapon) bool {
 }
 
 // HashCode returns a hash value for this weapon's resolved state.
+// nolint:errcheck // Not checking errors on writes to a bytes.Buffer
 func (w *Weapon) HashCode() uint32 {
 	h := fnv.New32()
-	h.Write([]byte(w.ID.String()))
-	h.Write([]byte{byte(w.Type)})
-	h.Write([]byte(w.String()))
-	h.Write([]byte(w.UsageNotes))
-	h.Write([]byte(w.Usage))
-	h.Write([]byte(w.SkillLevel(nil).String()))
-	h.Write([]byte(w.Accuracy))
-	h.Write([]byte(w.Parry))
-	h.Write([]byte(w.Block))
-	h.Write([]byte(w.Damage.ResolvedDamage(nil)))
-	h.Write([]byte(w.Reach))
-	h.Write([]byte(w.Range))
-	h.Write([]byte(w.RateOfFire))
-	h.Write([]byte(w.Shots))
-	h.Write([]byte(w.Bulk))
-	h.Write([]byte(w.Recoil))
-	h.Write([]byte(w.MinimumStrength))
+	_, _ = h.Write([]byte(w.ID.String()))
+	_, _ = h.Write([]byte{byte(w.Type)})
+	_, _ = h.Write([]byte(w.String()))
+	_, _ = h.Write([]byte(w.UsageNotes))
+	_, _ = h.Write([]byte(w.Usage))
+	_ = binary.Write(h, binary.LittleEndian, w.SkillLevel(nil))
+	_, _ = h.Write([]byte(w.Accuracy))
+	_, _ = h.Write([]byte(w.Parry))
+	_, _ = h.Write([]byte(w.Block))
+	_, _ = h.Write([]byte(w.Damage.ResolvedDamage(nil)))
+	_, _ = h.Write([]byte(w.Reach))
+	_, _ = h.Write([]byte(w.Range))
+	_, _ = h.Write([]byte(w.RateOfFire))
+	_, _ = h.Write([]byte(w.Shots))
+	_, _ = h.Write([]byte(w.Bulk))
+	_, _ = h.Write([]byte(w.Recoil))
+	_ = binary.Write(h, binary.LittleEndian, w.MinST)
+	_ = binary.Write(h, binary.LittleEndian, w.Bipod)
+	_ = binary.Write(h, binary.LittleEndian, w.Mounted)
+	_ = binary.Write(h, binary.LittleEndian, w.MusketRest)
+	_ = binary.Write(h, binary.LittleEndian, w.TwoHanded)
+	_ = binary.Write(h, binary.LittleEndian, w.UnreadyAfterAttack)
 	return h.Sum32()
 }
 
@@ -219,19 +233,49 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 			Damage: w.Damage.ResolvedDamage(nil),
 		},
 	}
-	if w.Type == MeleeWeaponType {
+	switch w.Type {
+	case MeleeWeaponType:
 		data.Calc.Parry = w.ResolvedParry(nil)
 		data.Calc.Block = w.ResolvedBlock(nil)
-	} else {
+	case RangedWeaponType:
 		data.Calc.Range = w.ResolvedRange()
+	default:
 	}
 	return json.Marshal(&data)
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (w *Weapon) UnmarshalJSON(data []byte) error {
-	if err := json.Unmarshal(data, &w.WeaponData); err != nil {
+	type oldWeaponData struct {
+		WeaponData
+		OldMinimumStrength string `json:"strength"`
+	}
+	var wdata oldWeaponData
+	if err := json.Unmarshal(data, &wdata); err != nil {
 		return err
+	}
+	w.WeaponData = wdata.WeaponData
+	if wdata.OldMinimumStrength != "" {
+		w.Bipod = strings.Contains(wdata.OldMinimumStrength, "B")
+		w.Mounted = strings.Contains(wdata.OldMinimumStrength, "M")
+		w.MusketRest = strings.Contains(wdata.OldMinimumStrength, "R")
+		w.TwoHanded = strings.Contains(wdata.OldMinimumStrength, "†")
+		w.UnreadyAfterAttack = strings.Contains(wdata.OldMinimumStrength, "‡")
+		if w.UnreadyAfterAttack {
+			w.TwoHanded = true
+		}
+		started := false
+		value := 0
+		for _, ch := range wdata.OldMinimumStrength {
+			if ch >= '0' && ch <= '9' {
+				value *= 10
+				value += int(ch - '0')
+				started = true
+			} else if started {
+				break
+			}
+		}
+		w.MinST = fxp.From(value)
 	}
 	var zero uuid.UUID
 	if w.WeaponData.ID == zero {
@@ -596,18 +640,7 @@ func (w *Weapon) ResolvedMinimumStrength() fxp.Int {
 			return st
 		}
 	}
-	started := false
-	value := 0
-	for _, ch := range w.MinimumStrength {
-		if ch >= '0' && ch <= '9' {
-			value *= 10
-			value += int(ch - '0')
-			started = true
-		} else if started {
-			break
-		}
-	}
-	return fxp.From(value)
+	return w.MinST
 }
 
 // FillWithNameableKeys adds any nameable keys found in this Weapon to the provided map.
@@ -687,12 +720,40 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 	case WeaponReachColumn:
 		data.Primary = w.Reach
 	case WeaponSTColumn:
-		data.Primary = w.MinimumStrength
-		if w.Owner != nil {
-			if st := w.Owner.RatedStrength(); st != 0 {
-				data.Primary += "[" + st.String() + "]"
+		data.Primary = w.CombinedMinST()
+		var tooltip strings.Builder
+		if st := w.Owner.RatedStrength(); st > 0 && st != w.MinST {
+			fmt.Fprintf(&tooltip, i18n.Text("The weapon uses a fixed ST of %s for damage calculations, regardless of the user's ST."), st.String())
+		}
+		if w.Bipod {
+			if tooltip.Len() != 0 {
+				tooltip.WriteString("\n\n")
+			}
+			tooltip.WriteString(i18n.Text("Has an attached bipod. When used from a prone position, reduces ST requirement to 2/3 of normal (rounded up) and treates as braced (B364)."))
+		}
+		if w.Mounted {
+			if tooltip.Len() != 0 {
+				tooltip.WriteString("\n\n")
+			}
+			tooltip.WriteString(i18n.Text("Mounted. Ignore listed ST and Bulk when firing from its mount. Takes at least 3 Ready maneuvers to unmount or remount the weapon."))
+		}
+		if w.MusketRest {
+			if tooltip.Len() != 0 {
+				tooltip.WriteString("\n\n")
+			}
+			tooltip.WriteString(i18n.Text("Uses a Musket Rest. Any aimed shot fired while stationary and standing up is automatically braced (B364)."))
+		}
+		if w.TwoHanded || w.UnreadyAfterAttack {
+			if tooltip.Len() != 0 {
+				tooltip.WriteString("\n\n")
+			}
+			if w.UnreadyAfterAttack {
+				tooltip.WriteString(i18n.Text("Requires two hands and becomes unready after you attack with it. If you have at least 1.5x the listed ST (round up), you can used it two-handed without it becoming unready. If you have at least 3x the listed ST, you can use it one-handed with no readiness penalty."))
+			} else {
+				tooltip.WriteString(i18n.Text("Requires two hands. If you have at least 1.5x the listed ST (round up), you can use it one-handed, but it becomes unready after you attack with it. If you have at least 2x the listed ST, you can use it one-handed with no readiness penalty."))
 			}
 		}
+		data.Tooltip = tooltip.String()
 	case WeaponAccColumn:
 		data.Primary = w.Accuracy
 	case WeaponRangeColumn:
@@ -709,8 +770,46 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 		data.Type = PageRefCellType
 	}
 	if buffer.Len() > 0 {
+		if data.Tooltip != "" {
+			data.Tooltip += "\n\n"
+		}
 		data.Tooltip = i18n.Text("Includes modifiers from:") + buffer.String()
 	}
+}
+
+// CombinedMinST returns the combined string used in the GURPS weapon tables for minimum ST.
+func (w *Weapon) CombinedMinST() string {
+	var buffer strings.Builder
+	if w.MinST > 0 {
+		buffer.WriteString(w.MinST.String())
+	}
+	if w.Owner != nil {
+		if st := w.Owner.RatedStrength(); st > 0 && st != w.MinST {
+			if buffer.Len() != 0 {
+				buffer.WriteByte(' ')
+			}
+			buffer.WriteByte('[')
+			buffer.WriteString(st.String())
+			buffer.WriteByte(']')
+		}
+	}
+	if w.Bipod {
+		buffer.WriteByte('B')
+	}
+	if w.Mounted {
+		buffer.WriteByte('M')
+	}
+	if w.MusketRest {
+		buffer.WriteByte('R')
+	}
+	if w.TwoHanded || w.UnreadyAfterAttack {
+		if w.UnreadyAfterAttack {
+			buffer.WriteRune('‡')
+		} else {
+			buffer.WriteRune('†')
+		}
+	}
+	return buffer.String()
 }
 
 // OwningEntity returns the owning Entity.

@@ -33,7 +33,19 @@ func EditWeapon(owner Rebuildable, w *gurps.Weapon) {
 func initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.Panel) func() {
 	addLabelAndStringField(content, i18n.Text("Usage"), "", &e.editorData.Usage)
 	addNotesLabelAndField(content, &e.editorData.UsageNotes)
-	addLabelAndStringField(content, i18n.Text("Minimum ST"), "", &e.editorData.MinimumStrength)
+	addLabelAndDecimalField(content, nil, "", i18n.Text("Minimum ST"), "", &e.editorData.MinST, 0, fxp.Max)
+	if e.editorData.Type == gurps.RangedWeaponType {
+		content.AddChild(unison.NewPanel())
+		addCheckBox(content, i18n.Text("Has bipod"), &e.editorData.Bipod)
+		content.AddChild(unison.NewPanel())
+		addCheckBox(content, i18n.Text("Mounted"), &e.editorData.Mounted)
+		content.AddChild(unison.NewPanel())
+		addCheckBox(content, i18n.Text("Uses a musket rest"), &e.editorData.MusketRest)
+	}
+	content.AddChild(unison.NewPanel())
+	addCheckBox(content, i18n.Text("Two-handed"), &e.editorData.TwoHanded)
+	content.AddChild(unison.NewPanel())
+	addCheckBox(content, i18n.Text("Unready after attack"), &e.editorData.UnreadyAfterAttack)
 	addLabelAndPopup(content, i18n.Text("Base Damage"), "", gurps.AllStrengthDamage, &e.editorData.Damage.StrengthType)
 	addLabelAndNullableDice(content, i18n.Text("Damage Modifier"), "", &e.editorData.Damage.Base)
 	addLabelAndDecimalField(content, nil, "", i18n.Text("Damage Modifier Per Die"), "", &e.editorData.Damage.ModifierPerDie,
@@ -56,6 +68,7 @@ func initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.P
 		addLabelAndStringField(content, i18n.Text("Recoil"), "", &e.editorData.Recoil)
 		addLabelAndStringField(content, i18n.Text("Shots"), "", &e.editorData.Shots)
 		addLabelAndStringField(content, i18n.Text("Bulk"), "", &e.editorData.Bulk)
+	default:
 	}
 	content.AddChild(newDefaultsPanel(e.editorData.Entity(), &e.editorData.Defaults))
 	return nil

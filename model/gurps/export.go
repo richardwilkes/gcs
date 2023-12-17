@@ -30,30 +30,39 @@ import (
 )
 
 type exportedMeleeWeapon struct {
-	Description string
-	Notes       string
-	Usage       string
-	Level       fxp.Int
-	Parry       string
-	Block       string
-	Damage      string
-	Reach       string
-	Strength    string
+	Description        string
+	Notes              string
+	Usage              string
+	Level              fxp.Int
+	Parry              string
+	Block              string
+	Damage             string
+	Reach              string
+	Strength           string
+	MinST              fxp.Int
+	TwoHanded          bool
+	UnreadyAfterAttack bool
 }
 
 type exportedRangedWeapon struct {
-	Description string
-	Notes       string
-	Usage       string
-	Level       fxp.Int
-	Accuracy    string
-	Range       string
-	Damage      string
-	RateOfFire  string
-	Shots       string
-	Bulk        string
-	Recoil      string
-	Strength    string
+	Description        string
+	Notes              string
+	Usage              string
+	Level              fxp.Int
+	Accuracy           string
+	Range              string
+	Damage             string
+	RateOfFire         string
+	Shots              string
+	Bulk               string
+	Recoil             string
+	Strength           string
+	MinST              fxp.Int
+	Bipod              bool
+	Mounted            bool
+	MusketRest         bool
+	TwoHanded          bool
+	UnreadyAfterAttack bool
 }
 
 type exportedHitLocation struct {
@@ -576,31 +585,40 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 	}, true, false, entity.Notes...)
 	for _, w := range entity.EquippedWeapons(MeleeWeaponType) {
 		data.MeleeWeapons = append(data.MeleeWeapons, &exportedMeleeWeapon{
-			Description: w.String(),
-			Notes:       w.Notes(),
-			Usage:       w.Usage,
-			Level:       w.SkillLevel(nil),
-			Parry:       w.ResolvedParry(nil),
-			Block:       w.ResolvedBlock(nil),
-			Damage:      w.Damage.ResolvedDamage(nil),
-			Reach:       w.Reach,
-			Strength:    w.MinimumStrength,
+			Description:        w.String(),
+			Notes:              w.Notes(),
+			Usage:              w.Usage,
+			Level:              w.SkillLevel(nil),
+			Parry:              w.ResolvedParry(nil),
+			Block:              w.ResolvedBlock(nil),
+			Damage:             w.Damage.ResolvedDamage(nil),
+			Reach:              w.Reach,
+			Strength:           w.CombinedMinST(),
+			MinST:              w.MinST,
+			TwoHanded:          w.TwoHanded,
+			UnreadyAfterAttack: w.UnreadyAfterAttack,
 		})
 	}
 	for _, w := range entity.EquippedWeapons(RangedWeaponType) {
 		data.RangedWeapons = append(data.RangedWeapons, &exportedRangedWeapon{
-			Description: w.String(),
-			Notes:       w.Notes(),
-			Usage:       w.Usage,
-			Level:       w.SkillLevel(nil),
-			Accuracy:    w.Accuracy,
-			Range:       w.ResolvedRange(),
-			Damage:      w.Damage.ResolvedDamage(nil),
-			RateOfFire:  w.RateOfFire,
-			Shots:       w.Shots,
-			Bulk:        w.Bulk,
-			Recoil:      w.Recoil,
-			Strength:    w.MinimumStrength,
+			Description:        w.String(),
+			Notes:              w.Notes(),
+			Usage:              w.Usage,
+			Level:              w.SkillLevel(nil),
+			Accuracy:           w.Accuracy,
+			Range:              w.ResolvedRange(),
+			Damage:             w.Damage.ResolvedDamage(nil),
+			RateOfFire:         w.RateOfFire,
+			Shots:              w.Shots,
+			Bulk:               w.Bulk,
+			Recoil:             w.Recoil,
+			Strength:           w.CombinedMinST(),
+			MinST:              w.MinST,
+			Bipod:              w.Bipod,
+			Mounted:            w.Mounted,
+			MusketRest:         w.MusketRest,
+			TwoHanded:          w.TwoHanded,
+			UnreadyAfterAttack: w.UnreadyAfterAttack,
 		})
 	}
 	if err = tmpl.Execute(buffer, data); err != nil {
