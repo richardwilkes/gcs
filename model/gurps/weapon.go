@@ -722,14 +722,25 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 	case WeaponSTColumn:
 		data.Primary = w.CombinedMinST()
 		var tooltip strings.Builder
-		if st := w.Owner.RatedStrength(); st > 0 && st != w.MinST {
-			fmt.Fprintf(&tooltip, i18n.Text("The weapon uses a fixed ST of %s for damage calculations, regardless of the user's ST."), st.String())
+		if w.MinST > 0 {
+			fmt.Fprintf(&tooltip, i18n.Text("The weapon has a minimum ST of %v. If your ST is less than this, you will suffer a -1 to weapon skill per point of ST you lack and lose one extra FP at the end of any fight that lasts long enough to cost FP."), w.MinST)
+		}
+		if st := w.Owner.RatedStrength(); st > 0 {
+			if tooltip.Len() != 0 {
+				tooltip.WriteString("\n\n")
+			}
+			fmt.Fprintf(&tooltip, i18n.Text("The weapon has a rated ST of %v, which is used instead of the user's ST for calculations."), st)
 		}
 		if w.Bipod {
 			if tooltip.Len() != 0 {
 				tooltip.WriteString("\n\n")
 			}
-			tooltip.WriteString(i18n.Text("Has an attached bipod. When used from a prone position, reduces ST requirement to 2/3 of normal (rounded up) and treates as braced (B364)."))
+			tooltip.WriteString(i18n.Text("Has an attached bipod. When used from a prone position, "))
+			minST := w.ResolvedMinimumStrength().Mul(fxp.Two).Div(fxp.Three).Ceil()
+			if minST > 0 {
+				fmt.Fprintf(&tooltip, i18n.Text("reduces the ST requirement to %v and"), minST)
+			}
+			tooltip.WriteString(i18n.Text("treats the attack as braced (add +1 to Accuracy)."))
 		}
 		if w.Mounted {
 			if tooltip.Len() != 0 {
@@ -741,16 +752,17 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 			if tooltip.Len() != 0 {
 				tooltip.WriteString("\n\n")
 			}
-			tooltip.WriteString(i18n.Text("Uses a Musket Rest. Any aimed shot fired while stationary and standing up is automatically braced (B364)."))
+			tooltip.WriteString(i18n.Text("Uses a Musket Rest. Any aimed shot fired while stationary and standing up is automatically braced (add +1 to Accuracy)."))
 		}
 		if w.TwoHanded || w.UnreadyAfterAttack {
 			if tooltip.Len() != 0 {
 				tooltip.WriteString("\n\n")
 			}
+			minST := w.ResolvedMinimumStrength()
 			if w.UnreadyAfterAttack {
-				tooltip.WriteString(i18n.Text("Requires two hands and becomes unready after you attack with it. If you have at least 1.5x the listed ST (round up), you can used it two-handed without it becoming unready. If you have at least 3x the listed ST, you can use it one-handed with no readiness penalty."))
+				fmt.Fprintf(&tooltip, i18n.Text("Requires two hands and becomes unready after you attack with it. If you have at least ST %v, you can used it two-handed without it becoming unready. If you have at least ST %v, you can use it one-handed with no readiness penalty."), minST.Mul(fxp.OneAndAHalf).Ceil(), minST.Mul(fxp.Three).Ceil())
 			} else {
-				tooltip.WriteString(i18n.Text("Requires two hands. If you have at least 1.5x the listed ST (round up), you can use it one-handed, but it becomes unready after you attack with it. If you have at least 2x the listed ST, you can use it one-handed with no readiness penalty."))
+				fmt.Fprintf(&tooltip, i18n.Text("Requires two hands. If you have at least ST %v, you can use it one-handed, but it becomes unready after you attack with it. If you have at least ST %v, you can use it one-handed with no readiness penalty."), minST.Mul(fxp.OneAndAHalf).Ceil(), minST.Mul(fxp.Two).Ceil())
 			}
 		}
 		data.Tooltip = tooltip.String()
@@ -784,7 +796,7 @@ func (w *Weapon) CombinedMinST() string {
 		buffer.WriteString(w.MinST.String())
 	}
 	if w.Owner != nil {
-		if st := w.Owner.RatedStrength(); st > 0 && st != w.MinST {
+		if st := w.Owner.RatedStrength(); st > 0 {
 			if buffer.Len() != 0 {
 				buffer.WriteByte(' ')
 			}
