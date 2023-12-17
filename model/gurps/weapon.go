@@ -217,11 +217,12 @@ func (w *Weapon) HashCode() uint32 {
 // MarshalJSON implements json.Marshaler.
 func (w *Weapon) MarshalJSON() ([]byte, error) {
 	type calc struct {
-		Level  fxp.Int `json:"level,omitempty"`
-		Parry  string  `json:"parry,omitempty"`
-		Block  string  `json:"block,omitempty"`
-		Range  string  `json:"range,omitempty"`
-		Damage string  `json:"damage,omitempty"`
+		Level         fxp.Int `json:"level,omitempty"`
+		Parry         string  `json:"parry,omitempty"`
+		Block         string  `json:"block,omitempty"`
+		Range         string  `json:"range,omitempty"`
+		Damage        string  `json:"damage,omitempty"`
+		ResolvedMinST fxp.Int `json:"resolved_min_st,omitempty"`
 	}
 	data := struct {
 		WeaponData
@@ -229,8 +230,9 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 	}{
 		WeaponData: w.WeaponData,
 		Calc: calc{
-			Level:  w.SkillLevel(nil).Max(0),
-			Damage: w.Damage.ResolvedDamage(nil),
+			Level:         w.SkillLevel(nil).Max(0),
+			Damage:        w.Damage.ResolvedDamage(nil),
+			ResolvedMinST: w.ResolvedMinimumStrength(),
 		},
 	}
 	switch w.Type {
@@ -722,23 +724,24 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 	case WeaponSTColumn:
 		data.Primary = w.CombinedMinST()
 		var tooltip strings.Builder
-		if w.MinST > 0 {
-			fmt.Fprintf(&tooltip, i18n.Text("The weapon has a minimum ST of %v. If your ST is less than this, you will suffer a -1 to weapon skill per point of ST you lack and lose one extra FP at the end of any fight that lasts long enough to cost FP."), w.MinST)
-		}
 		if st := w.Owner.RatedStrength(); st > 0 {
+			fmt.Fprintf(&tooltip, i18n.Text("The weapon has a rated ST of %v, which is used instead of the user's ST for calculations."), st)
+		}
+		minST := w.ResolvedMinimumStrength()
+		if minST > 0 {
 			if tooltip.Len() != 0 {
 				tooltip.WriteString("\n\n")
 			}
-			fmt.Fprintf(&tooltip, i18n.Text("The weapon has a rated ST of %v, which is used instead of the user's ST for calculations."), st)
+			fmt.Fprintf(&tooltip, i18n.Text("The weapon has a minimum ST of %v. If your ST is less than this, you will suffer a -1 to weapon skill per point of ST you lack and lose one extra FP at the end of any fight that lasts long enough to cost FP."), minST)
 		}
 		if w.Bipod {
 			if tooltip.Len() != 0 {
 				tooltip.WriteString("\n\n")
 			}
 			tooltip.WriteString(i18n.Text("Has an attached bipod. When used from a prone position, "))
-			minST := w.ResolvedMinimumStrength().Mul(fxp.Two).Div(fxp.Three).Ceil()
-			if minST > 0 {
-				fmt.Fprintf(&tooltip, i18n.Text("reduces the ST requirement to %v and"), minST)
+			reducedST := minST.Mul(fxp.Two).Div(fxp.Three).Ceil()
+			if reducedST > 0 && reducedST != minST {
+				fmt.Fprintf(&tooltip, i18n.Text("reduces the ST requirement to %v and"), reducedST)
 			}
 			tooltip.WriteString(i18n.Text("treats the attack as braced (add +1 to Accuracy)."))
 		}
@@ -758,7 +761,6 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 			if tooltip.Len() != 0 {
 				tooltip.WriteString("\n\n")
 			}
-			minST := w.ResolvedMinimumStrength()
 			if w.UnreadyAfterAttack {
 				fmt.Fprintf(&tooltip, i18n.Text("Requires two hands and becomes unready after you attack with it. If you have at least ST %v, you can used it two-handed without it becoming unready. If you have at least ST %v, you can use it one-handed with no readiness penalty."), minST.Mul(fxp.OneAndAHalf).Ceil(), minST.Mul(fxp.Three).Ceil())
 			} else {
@@ -792,18 +794,8 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 // CombinedMinST returns the combined string used in the GURPS weapon tables for minimum ST.
 func (w *Weapon) CombinedMinST() string {
 	var buffer strings.Builder
-	if w.MinST > 0 {
-		buffer.WriteString(w.MinST.String())
-	}
-	if w.Owner != nil {
-		if st := w.Owner.RatedStrength(); st > 0 {
-			if buffer.Len() != 0 {
-				buffer.WriteByte(' ')
-			}
-			buffer.WriteByte('[')
-			buffer.WriteString(st.String())
-			buffer.WriteByte(']')
-		}
+	if minST := w.ResolvedMinimumStrength(); minST > 0 {
+		buffer.WriteString(minST.String())
 	}
 	if w.Bipod {
 		buffer.WriteByte('B')
