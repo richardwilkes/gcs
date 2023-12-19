@@ -60,6 +60,7 @@ var (
 	Nineteen       = From(19)
 	Twenty         = From(20)
 	TwentyFour     = From(24)
+	TwentyFive     = From(25)
 	ThirtySix      = From(36)
 	Thirty         = From(30)
 	Forty          = From(40)
@@ -119,16 +120,7 @@ func ApplyRounding(value Int, roundDown bool) Int {
 
 // ResetIfOutOfRange checks the value and if it is lower than minValue or greater than maxValue, returns defValue,
 // otherwise returns value.
-func ResetIfOutOfRange(value, minValue, maxValue, defValue Int) Int {
-	if value < minValue || value > maxValue {
-		return defValue
-	}
-	return value
-}
-
-// ResetIfOutOfRangeInt checks the value and if it is lower than minValue or greater than maxValue, returns defValue,
-// otherwise returns value.
-func ResetIfOutOfRangeInt(value, minValue, maxValue, defValue int) int {
+func ResetIfOutOfRange[T xmath.Numeric | Int](value, minValue, maxValue, defValue T) T {
 	if value < minValue || value > maxValue {
 		return defValue
 	}
