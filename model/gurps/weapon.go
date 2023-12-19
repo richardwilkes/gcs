@@ -80,12 +80,13 @@ type WeaponData struct {
 	Range              string          `json:"range,omitempty"`
 	RateOfFire         string          `json:"rate_of_fire,omitempty"`
 	Shots              string          `json:"shots,omitempty"`
-	Recoil             string          `json:"recoil,omitempty"`
 	WeaponAcc          fxp.Int         `json:"weapon_acc,omitempty"`
 	ScopeAcc           fxp.Int         `json:"scope_acc,omitempty"`
 	MinST              fxp.Int         `json:"min_st,omitempty"`
 	NormalBulk         fxp.Int         `json:"normal_bulk,omitempty"`
 	GiantBulk          fxp.Int         `json:"giant_bulk,omitempty"`
+	ShotRecoil         fxp.Int         `json:"shot_recoil,omitempty"`
+	SlugRecoil         fxp.Int         `json:"slug_recoil,omitempty"`
 	Defaults           []*SkillDefault `json:"defaults,omitempty"`
 }
 
@@ -207,7 +208,6 @@ func (w *Weapon) HashCode() uint32 {
 	_, _ = h.Write([]byte(w.Range))
 	_, _ = h.Write([]byte(w.RateOfFire))
 	_, _ = h.Write([]byte(w.Shots))
-	_, _ = h.Write([]byte(w.Recoil))
 	_ = binary.Write(h, binary.LittleEndian, w.Jet)
 	_ = binary.Write(h, binary.LittleEndian, w.WeaponAcc)
 	_ = binary.Write(h, binary.LittleEndian, w.ScopeAcc)
@@ -220,6 +220,8 @@ func (w *Weapon) HashCode() uint32 {
 	_ = binary.Write(h, binary.LittleEndian, w.NormalBulk)
 	_ = binary.Write(h, binary.LittleEndian, w.GiantBulk)
 	_ = binary.Write(h, binary.LittleEndian, w.RetractingStock)
+	_ = binary.Write(h, binary.LittleEndian, w.ShotRecoil)
+	_ = binary.Write(h, binary.LittleEndian, w.SlugRecoil)
 	return h.Sum32()
 }
 
@@ -268,6 +270,7 @@ func (w *Weapon) UnmarshalJSON(data []byte) error {
 		OldAccuracy        string `json:"accuracy"`
 		OldMinimumStrength string `json:"strength"`
 		OldBulk            string `json:"bulk"`
+		OldRecoil          string `json:"recoil"`
 	}
 	var wdata oldWeaponData
 	if err := json.Unmarshal(data, &wdata); err != nil {
@@ -320,6 +323,18 @@ func (w *Weapon) UnmarshalJSON(data []byte) error {
 		if len(parts) > 1 {
 			if w.GiantBulk, err = fxp.FromString(strings.TrimSpace(parts[1])); err != nil {
 				return err
+			}
+		}
+	}
+	if wdata.OldRecoil != "" {
+		parts := strings.Split(strings.ReplaceAll(wdata.OldRecoil, " ", ""), "/")
+		var err error
+		if w.ShotRecoil, err = fxp.FromString(strings.TrimSpace(parts[0])); err != nil {
+			w.ShotRecoil = 0
+		}
+		if len(parts) > 1 {
+			if w.SlugRecoil, err = fxp.FromString(strings.TrimSpace(parts[1])); err != nil {
+				w.SlugRecoil = 0
 			}
 		}
 	}
@@ -721,6 +736,30 @@ func (w *Weapon) ResolvedBulk(tooltip *xio.ByteBuffer) (normal, giant fxp.Int) {
 	return normal.Min(0), giant.Min(0)
 }
 
+// ResolvedRecoil returns the resolved recoil for this weapon.
+func (w *Weapon) ResolvedRecoil(tooltip *xio.ByteBuffer) (shot, slug fxp.Int) {
+	shot = w.ShotRecoil
+	slug = w.SlugRecoil
+	if shot <= fxp.One && slug <= fxp.One {
+		return shot, slug
+	}
+	for _, bonus := range w.collectWeaponBonuses(1, tooltip, WeaponRecoilBonusFeatureType) {
+		shot += bonus.AdjustedAmount()
+		slug += bonus.AdjustedAmount()
+	}
+	if w.ShotRecoil <= fxp.One {
+		shot = w.ShotRecoil
+	} else {
+		shot = shot.Max(fxp.One)
+	}
+	if w.SlugRecoil <= fxp.One {
+		slug = w.SlugRecoil
+	} else {
+		slug = slug.Max(fxp.One)
+	}
+	return shot, slug
+}
+
 // ResolvedMinimumStrength returns the resolved minimum strength required to use this weapon, or 0 if there is none.
 func (w *Weapon) ResolvedMinimumStrength(tooltip *xio.ByteBuffer) fxp.Int {
 	if w.Owner != nil {
@@ -974,13 +1013,21 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 				wd.GiantBulk += fxp.One
 			}
 			wd.WeaponAcc -= fxp.One
-			// TODO: Add 1 to recoil, unless recoil is 1
+			if wd.ShotRecoil > fxp.One {
+				wd.ShotRecoil += fxp.One
+			}
+			if wd.SlugRecoil > fxp.One {
+				wd.SlugRecoil += fxp.One
+			}
 			data.Tooltip = fmt.Sprintf(i18n.Text("Has a retracting stock. With the stock folded, the weapon's stats change to Bulk %s, Accuracy %s, Recoil %s, and minimum ST %v. Folding or unfolding the stock takes one Ready maneuver."),
-				wd.CombinedBulk(nil), wd.CombinedAcc(nil), wd.Recoil,
+				wd.CombinedBulk(nil), wd.CombinedAcc(nil), wd.CombinedRecoil(nil),
 				w.ResolvedMinimumStrength(nil).Mul(fxp.OnePointTwo).Ceil())
 		}
 	case WeaponRecoilColumn:
-		data.Primary = w.Recoil
+		data.Primary = w.CombinedRecoil(&buffer)
+		if strings.Contains(data.Primary, "/") {
+			data.Tooltip = i18n.Text("First Recoil value is for shot, second is for slugs")
+		}
 	case PageRefCellAlias:
 		data.Type = PageRefCellType
 	}
@@ -1024,6 +1071,24 @@ func (w *Weapon) CombinedBulk(tooltip *xio.ByteBuffer) string {
 	}
 	if w.RetractingStock {
 		buffer.WriteByte('*')
+	}
+	return buffer.String()
+}
+
+// CombinedRecoil returns the combined string used in the GURPS weapon tables for recoil.
+func (w *Weapon) CombinedRecoil(tooltip *xio.ByteBuffer) string {
+	if w.Type != RangedWeaponType {
+		return ""
+	}
+	shot, slug := w.ResolvedRecoil(tooltip)
+	if shot == 0 && slug == 0 {
+		return ""
+	}
+	var buffer strings.Builder
+	buffer.WriteString(shot.String())
+	if slug != 0 && shot != slug {
+		buffer.WriteByte('/')
+		buffer.WriteString(slug.String())
 	}
 	return buffer.String()
 }

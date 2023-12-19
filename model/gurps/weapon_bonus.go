@@ -64,6 +64,11 @@ func NewWeaponBulkBonus() *WeaponBonus {
 	return newWeaponBonus(WeaponBulkBonusFeatureType)
 }
 
+// NewWeaponRecoilBonus creates a new weapon recoil bonus.
+func NewWeaponRecoilBonus() *WeaponBonus {
+	return newWeaponBonus(WeaponRecoilBonusFeatureType)
+}
+
 func newWeaponBonus(t FeatureType) *WeaponBonus {
 	return &WeaponBonus{
 		Type:          t,
@@ -154,6 +159,9 @@ func (w *WeaponBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 		case WeaponBulkBonusFeatureType:
 			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
 			buf.WriteString(i18n.Text(" to bulk"))
+		case WeaponRecoilBonusFeatureType:
+			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
+			buf.WriteString(i18n.Text(" to recoil"))
 		default:
 			return
 		}

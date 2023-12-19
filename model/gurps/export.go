@@ -62,6 +62,8 @@ type exportedRangedWeapon struct {
 	MinST              fxp.Int
 	NormalBulk         fxp.Int
 	GiantBulk          fxp.Int
+	ShotRecoil         fxp.Int
+	SlugRecoil         fxp.Int
 	Bipod              bool
 	Mounted            bool
 	MusketRest         bool
@@ -608,6 +610,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 	for _, w := range entity.EquippedWeapons(RangedWeaponType) {
 		normalBulk, giantBulk := w.ResolvedBulk(nil)
 		weaponAcc, scopeAcc := w.ResolvedAccuracy(nil)
+		shot, slug := w.ResolvedRecoil(nil)
 		data.RangedWeapons = append(data.RangedWeapons, &exportedRangedWeapon{
 			Description:        w.String(),
 			Notes:              w.Notes(),
@@ -619,13 +622,15 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			RateOfFire:         w.RateOfFire,
 			Shots:              w.Shots,
 			Bulk:               w.CombinedBulk(nil),
-			Recoil:             w.Recoil,
+			Recoil:             w.CombinedRecoil(nil),
 			Strength:           w.CombinedMinST(),
 			WeaponAcc:          weaponAcc,
 			ScopeAcc:           scopeAcc,
 			MinST:              w.ResolvedMinimumStrength(nil),
 			NormalBulk:         normalBulk,
 			GiantBulk:          giantBulk,
+			ShotRecoil:         shot,
+			SlugRecoil:         slug,
 			Bipod:              w.Bipod,
 			Mounted:            w.Mounted,
 			MusketRest:         w.MusketRest,

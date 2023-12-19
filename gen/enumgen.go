@@ -510,6 +510,10 @@ func main() {
 				String: "Gives a weapon minimum ST modifier of",
 			},
 			{
+				Key:    "weapon_recoil_bonus",
+				String: "Gives a weapon recoil modifier of",
+			},
+			{
 				Key:    "weapon_bulk_bonus",
 				String: "Gives a weapon bulk modifier of",
 			},
