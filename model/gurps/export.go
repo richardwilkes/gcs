@@ -60,12 +60,15 @@ type exportedRangedWeapon struct {
 	WeaponAcc          fxp.Int
 	ScopeAcc           fxp.Int
 	MinST              fxp.Int
+	NormalBulk         fxp.Int
+	GiantBulk          fxp.Int
 	Bipod              bool
 	Mounted            bool
 	MusketRest         bool
 	TwoHanded          bool
 	UnreadyAfterAttack bool
 	Jet                bool
+	RetractingStock    bool
 }
 
 type exportedHitLocation struct {
@@ -603,6 +606,8 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 		})
 	}
 	for _, w := range entity.EquippedWeapons(RangedWeaponType) {
+		normalBulk, giantBulk := w.ResolvedBulk(nil)
+		weaponAcc, scopeAcc := w.ResolvedAccuracy(nil)
 		data.RangedWeapons = append(data.RangedWeapons, &exportedRangedWeapon{
 			Description:        w.String(),
 			Notes:              w.Notes(),
@@ -613,17 +618,21 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			Damage:             w.Damage.ResolvedDamage(nil),
 			RateOfFire:         w.RateOfFire,
 			Shots:              w.Shots,
-			Bulk:               w.Bulk,
+			Bulk:               w.CombinedBulk(nil),
 			Recoil:             w.Recoil,
 			Strength:           w.CombinedMinST(),
-			WeaponAcc:          w.WeaponAcc,
-			ScopeAcc:           w.ScopeAcc,
-			MinST:              w.MinST,
+			WeaponAcc:          weaponAcc,
+			ScopeAcc:           scopeAcc,
+			MinST:              w.ResolvedMinimumStrength(nil),
+			NormalBulk:         normalBulk,
+			GiantBulk:          giantBulk,
 			Bipod:              w.Bipod,
 			Mounted:            w.Mounted,
 			MusketRest:         w.MusketRest,
 			TwoHanded:          w.TwoHanded,
 			UnreadyAfterAttack: w.UnreadyAfterAttack,
+			Jet:                w.Jet,
+			RetractingStock:    w.RetractingStock,
 		})
 	}
 	if err = tmpl.Execute(buffer, data); err != nil {

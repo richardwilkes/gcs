@@ -71,7 +71,17 @@ func initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.P
 		addLabelAndStringField(content, i18n.Text("Range"), "", &e.editorData.Range)
 		addLabelAndStringField(content, i18n.Text("Recoil"), "", &e.editorData.Recoil)
 		addLabelAndStringField(content, i18n.Text("Shots"), "", &e.editorData.Shots)
-		addLabelAndStringField(content, i18n.Text("Bulk"), "", &e.editorData.Bulk)
+		addLabelAndDecimalField(content, nil, "", i18n.Text("Normal Bulk"), "", &e.editorData.NormalBulk, -fxp.Max, 0)
+		giant := i18n.Text("Giant Bulk")
+		wrapper := addFlowWrapper(content, giant, 2)
+		addDecimalField(wrapper, nil, "", giant, "", &e.editorData.GiantBulk, -fxp.Max, 0)
+		label := NewFieldTrailingLabel(i18n.Text("(only needed if different from normal bulk)"))
+		fd := unison.DefaultLabelTheme.Font.Descriptor()
+		fd.Size *= 0.8
+		label.Font = fd.Font()
+		wrapper.AddChild(label)
+		content.AddChild(unison.NewPanel())
+		addCheckBox(content, i18n.Text("Retracting Stock"), &e.editorData.RetractingStock)
 	default:
 	}
 	content.AddChild(newDefaultsPanel(e.editorData.Entity(), &e.editorData.Defaults))

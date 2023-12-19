@@ -653,6 +653,8 @@ func (p *featuresPanel) createFeatureForType(featureType gurps.FeatureType) gurp
 		bonus = gurps.NewWeaponDRDivisorBonus()
 	case gurps.WeaponMinSTBonusFeatureType:
 		bonus = gurps.NewWeaponMinSTBonus()
+	case gurps.WeaponBulkBonusFeatureType:
+		bonus = gurps.NewWeaponBulkBonus()
 	default:
 		errs.Log(errs.New("unknown feature type"), "type", featureType.Key())
 		return nil

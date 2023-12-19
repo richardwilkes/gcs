@@ -34,6 +34,7 @@ const (
 	WeaponScopeAccBonusFeatureType
 	WeaponDRDivisorBonusFeatureType
 	WeaponMinSTBonusFeatureType
+	WeaponBulkBonusFeatureType
 	CostReductionFeatureType
 	ContainedWeightReductionFeatureType
 	LastFeatureType = ContainedWeightReductionFeatureType
@@ -54,6 +55,7 @@ var AllFeatureType = []FeatureType{
 	WeaponScopeAccBonusFeatureType,
 	WeaponDRDivisorBonusFeatureType,
 	WeaponMinSTBonusFeatureType,
+	WeaponBulkBonusFeatureType,
 	CostReductionFeatureType,
 	ContainedWeightReductionFeatureType,
 }
@@ -98,6 +100,8 @@ func (enum FeatureType) Key() string {
 		return "weapon_dr_divisor_bonus"
 	case WeaponMinSTBonusFeatureType:
 		return "weapon_min_st_bonus"
+	case WeaponBulkBonusFeatureType:
+		return "weapon_bulk_bonus"
 	case CostReductionFeatureType:
 		return "cost_reduction"
 	case ContainedWeightReductionFeatureType:
@@ -136,6 +140,8 @@ func (enum FeatureType) String() string {
 		return i18n.Text("Gives a weapon DR divisor modifier of")
 	case WeaponMinSTBonusFeatureType:
 		return i18n.Text("Gives a weapon minimum ST modifier of")
+	case WeaponBulkBonusFeatureType:
+		return i18n.Text("Gives a weapon bulk modifier of")
 	case CostReductionFeatureType:
 		return i18n.Text("Reduces the attribute cost of")
 	case ContainedWeightReductionFeatureType:

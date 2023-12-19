@@ -70,6 +70,7 @@ type WeaponData struct {
 	TwoHanded          bool            `json:"two_handed,omitempty"`
 	UnreadyAfterAttack bool            `json:"unready_after_attack,omitempty"`
 	Jet                bool            `json:"jet,omitempty"`
+	RetractingStock    bool            `json:"retracting_stock,omitempty"`
 	Damage             WeaponDamage    `json:"damage"`
 	Usage              string          `json:"usage,omitempty"`
 	UsageNotes         string          `json:"usage_notes,omitempty"`
@@ -79,11 +80,12 @@ type WeaponData struct {
 	Range              string          `json:"range,omitempty"`
 	RateOfFire         string          `json:"rate_of_fire,omitempty"`
 	Shots              string          `json:"shots,omitempty"`
-	Bulk               string          `json:"bulk,omitempty"`
 	Recoil             string          `json:"recoil,omitempty"`
 	WeaponAcc          fxp.Int         `json:"weapon_acc,omitempty"`
 	ScopeAcc           fxp.Int         `json:"scope_acc,omitempty"`
 	MinST              fxp.Int         `json:"min_st,omitempty"`
+	NormalBulk         fxp.Int         `json:"normal_bulk,omitempty"`
+	GiantBulk          fxp.Int         `json:"giant_bulk,omitempty"`
 	Defaults           []*SkillDefault `json:"defaults,omitempty"`
 }
 
@@ -192,7 +194,7 @@ func (w *Weapon) Less(other *Weapon) bool {
 // nolint:errcheck // Not checking errors on writes to a bytes.Buffer
 func (w *Weapon) HashCode() uint32 {
 	h := fnv.New32()
-	_, _ = h.Write([]byte(w.ID.String()))
+	_, _ = h.Write(w.ID[:])
 	_, _ = h.Write([]byte{byte(w.Type)})
 	_, _ = h.Write([]byte(w.String()))
 	_, _ = h.Write([]byte(w.UsageNotes))
@@ -205,7 +207,6 @@ func (w *Weapon) HashCode() uint32 {
 	_, _ = h.Write([]byte(w.Range))
 	_, _ = h.Write([]byte(w.RateOfFire))
 	_, _ = h.Write([]byte(w.Shots))
-	_, _ = h.Write([]byte(w.Bulk))
 	_, _ = h.Write([]byte(w.Recoil))
 	_ = binary.Write(h, binary.LittleEndian, w.Jet)
 	_ = binary.Write(h, binary.LittleEndian, w.WeaponAcc)
@@ -216,18 +217,25 @@ func (w *Weapon) HashCode() uint32 {
 	_ = binary.Write(h, binary.LittleEndian, w.MusketRest)
 	_ = binary.Write(h, binary.LittleEndian, w.TwoHanded)
 	_ = binary.Write(h, binary.LittleEndian, w.UnreadyAfterAttack)
+	_ = binary.Write(h, binary.LittleEndian, w.NormalBulk)
+	_ = binary.Write(h, binary.LittleEndian, w.GiantBulk)
+	_ = binary.Write(h, binary.LittleEndian, w.RetractingStock)
 	return h.Sum32()
 }
 
 // MarshalJSON implements json.Marshaler.
 func (w *Weapon) MarshalJSON() ([]byte, error) {
 	type calc struct {
-		Level         fxp.Int `json:"level,omitempty"`
-		Parry         string  `json:"parry,omitempty"`
-		Block         string  `json:"block,omitempty"`
-		Range         string  `json:"range,omitempty"`
-		Damage        string  `json:"damage,omitempty"`
-		ResolvedMinST fxp.Int `json:"resolved_min_st,omitempty"`
+		Level              fxp.Int `json:"level,omitempty"`
+		Parry              string  `json:"parry,omitempty"`
+		Block              string  `json:"block,omitempty"`
+		Range              string  `json:"range,omitempty"`
+		Damage             string  `json:"damage,omitempty"`
+		ResolvedMinST      fxp.Int `json:"resolved_min_st,omitempty"`
+		ResolvedWeaponAcc  fxp.Int `json:"resolved_weapon_acc,omitempty"`
+		ResolvedScopeAcc   fxp.Int `json:"resolved_scope_acc,omitempty"`
+		ResolvedNormalBulk fxp.Int `json:"resolved_normal_bulk,omitempty"`
+		ResolvedGiantBulk  fxp.Int `json:"resolved_giant_bulk,omitempty"`
 	}
 	data := struct {
 		WeaponData
@@ -246,6 +254,8 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 		data.Calc.Block = w.ResolvedBlock(nil)
 	case RangedWeaponType:
 		data.Calc.Range = w.ResolvedRange()
+		data.Calc.ResolvedWeaponAcc, data.Calc.ResolvedScopeAcc = w.ResolvedAccuracy(nil)
+		data.Calc.ResolvedNormalBulk, data.Calc.ResolvedGiantBulk = w.ResolvedBulk(nil)
 	default:
 	}
 	return json.Marshal(&data)
@@ -255,8 +265,9 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 func (w *Weapon) UnmarshalJSON(data []byte) error {
 	type oldWeaponData struct {
 		WeaponData
-		OldAccuracy        string `json:"accuracy,omitempty"`
+		OldAccuracy        string `json:"accuracy"`
 		OldMinimumStrength string `json:"strength"`
+		OldBulk            string `json:"bulk"`
 	}
 	var wdata oldWeaponData
 	if err := json.Unmarshal(data, &wdata); err != nil {
@@ -267,11 +278,11 @@ func (w *Weapon) UnmarshalJSON(data []byte) error {
 		if w.Jet = strings.ToLower(strings.TrimSpace(wdata.OldAccuracy)) == "jet"; !w.Jet {
 			parts := strings.Split(strings.TrimPrefix(strings.ReplaceAll(wdata.OldAccuracy, " ", ""), "+"), "+")
 			var err error
-			if w.WeaponAcc, err = fxp.FromString(parts[0]); err != nil {
+			if w.WeaponAcc, err = fxp.FromString(strings.TrimSpace(parts[0])); err != nil {
 				return err
 			}
 			if len(parts) > 1 {
-				if w.ScopeAcc, err = fxp.FromString(parts[1]); err != nil {
+				if w.ScopeAcc, err = fxp.FromString(strings.TrimSpace(parts[1])); err != nil {
 					return err
 				}
 			}
@@ -298,6 +309,19 @@ func (w *Weapon) UnmarshalJSON(data []byte) error {
 			}
 		}
 		w.MinST = fxp.From(value)
+	}
+	if wdata.OldBulk != "" {
+		w.RetractingStock = strings.Contains(wdata.OldBulk, "*")
+		parts := strings.Split(strings.ReplaceAll(strings.ReplaceAll(wdata.OldBulk, " ", ""), "*", ""), "/")
+		var err error
+		if w.NormalBulk, err = fxp.FromString(strings.TrimSpace(parts[0])); err != nil {
+			return err
+		}
+		if len(parts) > 1 {
+			if w.GiantBulk, err = fxp.FromString(strings.TrimSpace(parts[1])); err != nil {
+				return err
+			}
+		}
 	}
 	var zero uuid.UUID
 	if w.WeaponData.ID == zero {
@@ -686,6 +710,17 @@ func (w *Weapon) ResolvedAccuracy(tooltip *xio.ByteBuffer) (weapon, scope fxp.In
 	return weaponAcc.Max(0), scopeAcc.Max(0)
 }
 
+// ResolvedBulk returns the resolved bulk for this weapon.
+func (w *Weapon) ResolvedBulk(tooltip *xio.ByteBuffer) (normal, giant fxp.Int) {
+	normal = w.NormalBulk
+	giant = w.GiantBulk
+	for _, bonus := range w.collectWeaponBonuses(1, tooltip, WeaponBulkBonusFeatureType) {
+		normal += bonus.AdjustedAmount()
+		giant += bonus.AdjustedAmount()
+	}
+	return normal.Min(0), giant.Min(0)
+}
+
 // ResolvedMinimumStrength returns the resolved minimum strength required to use this weapon, or 0 if there is none.
 func (w *Weapon) ResolvedMinimumStrength(tooltip *xio.ByteBuffer) fxp.Int {
 	if w.Owner != nil {
@@ -929,7 +964,21 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 	case WeaponShotsColumn:
 		data.Primary = w.Shots
 	case WeaponBulkColumn:
-		data.Primary = w.Bulk
+		data.Primary = w.CombinedBulk(&buffer)
+		if w.RetractingStock {
+			wd := *w
+			if wd.NormalBulk < 0 {
+				wd.NormalBulk += fxp.One
+			}
+			if wd.GiantBulk < 0 {
+				wd.GiantBulk += fxp.One
+			}
+			wd.WeaponAcc -= fxp.One
+			// TODO: Add 1 to recoil, unless recoil is 1
+			data.Tooltip = fmt.Sprintf(i18n.Text("Has a retracting stock. With the stock folded, the weapon's stats change to Bulk %s, Accuracy %s, Recoil %s, and minimum ST %v. Folding or unfolding the stock takes one Ready maneuver."),
+				wd.CombinedBulk(nil), wd.CombinedAcc(nil), wd.Recoil,
+				w.ResolvedMinimumStrength(nil).Mul(fxp.OnePointTwo).Ceil())
+		}
 	case WeaponRecoilColumn:
 		data.Primary = w.Recoil
 	case PageRefCellAlias:
@@ -956,6 +1005,27 @@ func (w *Weapon) CombinedAcc(tooltip *xio.ByteBuffer) string {
 		return weaponAcc.String() + scopeAcc.StringWithSign()
 	}
 	return weaponAcc.String()
+}
+
+// CombinedBulk returns the combined string used in the GURPS weapon tables for bulk.
+func (w *Weapon) CombinedBulk(tooltip *xio.ByteBuffer) string {
+	if w.Type != RangedWeaponType {
+		return ""
+	}
+	normalBulk, giantBulk := w.ResolvedBulk(tooltip)
+	if normalBulk >= 0 && giantBulk >= 0 {
+		return ""
+	}
+	var buffer strings.Builder
+	buffer.WriteString(normalBulk.String())
+	if giantBulk != 0 && giantBulk != normalBulk {
+		buffer.WriteByte('/')
+		buffer.WriteString(giantBulk.String())
+	}
+	if w.RetractingStock {
+		buffer.WriteByte('*')
+	}
+	return buffer.String()
 }
 
 // CombinedMinST returns the combined string used in the GURPS weapon tables for minimum ST.

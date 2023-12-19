@@ -1313,7 +1313,7 @@ func (ex *legacyExporter) processMeleeKeys(key string, currentID int, w *Weapon,
 func (ex *legacyExporter) processRangedKeys(key string, currentID int, w *Weapon, attackModes []*Weapon, buf []byte, index int) int {
 	switch key {
 	case "BULK":
-		ex.writeEncodedText(w.Bulk)
+		ex.writeEncodedText(w.CombinedBulk(nil))
 	case "ACCURACY":
 		ex.writeEncodedText(w.CombinedAcc(nil))
 	case "RANGE":

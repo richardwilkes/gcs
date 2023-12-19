@@ -59,6 +59,11 @@ func NewWeaponScopeAccBonus() *WeaponBonus {
 	return newWeaponBonus(WeaponScopeAccBonusFeatureType)
 }
 
+// NewWeaponBulkBonus creates a new weapon bulk bonus.
+func NewWeaponBulkBonus() *WeaponBonus {
+	return newWeaponBonus(WeaponBulkBonusFeatureType)
+}
+
 func newWeaponBonus(t FeatureType) *WeaponBonus {
 	return &WeaponBonus{
 		Type:          t,
@@ -146,6 +151,9 @@ func (w *WeaponBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 		case WeaponMinSTBonusFeatureType:
 			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
 			buf.WriteString(i18n.Text(" to minimum ST"))
+		case WeaponBulkBonusFeatureType:
+			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
+			buf.WriteString(i18n.Text(" to bulk"))
 		default:
 			return
 		}
