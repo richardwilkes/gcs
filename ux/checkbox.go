@@ -24,6 +24,7 @@ type CheckBox struct {
 	targetKey string
 	get       func() check.Enum
 	set       func(state check.Enum)
+	OnSet     func()
 	last      check.Enum
 }
 
@@ -54,12 +55,18 @@ func NewCheckBox(targetMgr *TargetMgr, targetKey, title string, get func() check
 					self.State = data
 					self.set(data)
 					self.MarkForRedraw()
+					if self.OnSet != nil {
+						self.OnSet()
+					}
 					MarkModified(self)
 				}, c.get())
 				undo.AfterData = c.State
 				mgr.Add(undo)
 			}
 			c.set(c.State)
+			if c.OnSet != nil {
+				c.OnSet()
+			}
 			MarkModified(c)
 		}
 	}
@@ -71,7 +78,13 @@ func NewCheckBox(targetMgr *TargetMgr, targetKey, title string, get func() check
 
 // Sync the checkbox to the current value.
 func (c *CheckBox) Sync() {
+	prevState := c.State
 	c.State = c.get()
 	c.last = c.State
 	c.MarkForRedraw()
+	if prevState != c.State {
+		if c.OnSet != nil {
+			c.OnSet()
+		}
+	}
 }

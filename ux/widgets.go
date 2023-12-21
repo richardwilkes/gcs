@@ -300,6 +300,20 @@ func addDecimalField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labe
 	return field
 }
 
+func addDecimalFieldWithSign(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData *fxp.Int, minValue, maxValue fxp.Int) *DecimalField {
+	field := NewDecimalField(targetMgr, targetKey, labelText,
+		func() fxp.Int { return *fieldData },
+		func(value fxp.Int) {
+			*fieldData = value
+			MarkModified(parent)
+		}, minValue, maxValue, true, false)
+	if tooltip != "" {
+		field.Tooltip = newWrappedTooltip(tooltip)
+	}
+	parent.AddChild(field)
+	return field
+}
+
 func addWeightField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, entity *gurps.Entity, fieldData *fxp.Weight, noMinWidth bool) *WeightField {
 	field := NewWeightField(targetMgr, targetKey, labelText, entity,
 		func() fxp.Weight { return *fieldData },

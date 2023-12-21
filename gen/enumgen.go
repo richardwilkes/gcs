@@ -518,6 +518,10 @@ func main() {
 				String: "Gives a weapon bulk modifier of",
 			},
 			{
+				Key:    "weapon_block_bonus",
+				String: "Gives a weapon block modifier of",
+			},
+			{
 				Key:    "cost_reduction",
 				String: "Reduces the attribute cost of",
 			},

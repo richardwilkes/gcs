@@ -16,6 +16,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/check"
 )
 
 // EditWeapon displays the editor for a weapon.
@@ -46,7 +48,7 @@ func initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.P
 	content.AddChild(unison.NewPanel())
 	addCheckBox(content, i18n.Text("Two-handed"), &e.editorData.TwoHanded)
 	content.AddChild(unison.NewPanel())
-	addCheckBox(content, i18n.Text("Unready after attack"), &e.editorData.UnreadyAfterAttack)
+	addCheckBox(content, i18n.Text("Two-handed and unready after attack"), &e.editorData.UnreadyAfterAttack)
 	addLabelAndPopup(content, i18n.Text("Base Damage"), "", gurps.AllStrengthDamage, &e.editorData.Damage.StrengthType)
 	addLabelAndNullableDice(content, i18n.Text("Damage Modifier"), "", &e.editorData.Damage.Base)
 	addLabelAndDecimalField(content, nil, "", i18n.Text("Damage Modifier Per Die"), "", &e.editorData.Damage.ModifierPerDie,
@@ -61,7 +63,16 @@ func initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.P
 	case gurps.MeleeWeaponType:
 		addLabelAndStringField(content, i18n.Text("Reach"), "", &e.editorData.Reach)
 		addLabelAndStringField(content, i18n.Text("Parry Modifier"), "", &e.editorData.Parry)
-		addLabelAndStringField(content, i18n.Text("Block Modifier"), "", &e.editorData.Block)
+		blockCheckBox := addCheckBox(content, i18n.Text("Block Modifier"), &e.editorData.CanBlock)
+		blockCheckBox.SetLayoutData(&unison.FlexLayoutData{
+			HAlign: align.End,
+			VAlign: align.Middle,
+		})
+		blockField := addDecimalFieldWithSign(content, nil, "", i18n.Text("Block Modifier"), "", &e.editorData.BlockModifier, -fxp.Max, fxp.Max)
+		blockCheckBox.OnSet = func() {
+			blockField.SetEnabled(blockCheckBox.State == check.On)
+		}
+		blockCheckBox.OnSet()
 	case gurps.RangedWeaponType:
 		addLabelAndDecimalField(content, nil, "", i18n.Text("Weapon Accuracy"), "", &e.editorData.WeaponAcc, 0, fxp.Max)
 		addLabelAndDecimalField(content, nil, "", i18n.Text("Scope Accuracy"), "", &e.editorData.ScopeAcc, 0, fxp.Max)

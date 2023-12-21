@@ -40,6 +40,8 @@ type exportedMeleeWeapon struct {
 	Reach              string
 	Strength           string
 	MinST              fxp.Int
+	BlockValue         fxp.Int
+	CanBlock           bool
 	TwoHanded          bool
 	UnreadyAfterAttack bool
 }
@@ -598,11 +600,13 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			Usage:              w.Usage,
 			Level:              w.SkillLevel(nil),
 			Parry:              w.ResolvedParry(nil),
-			Block:              w.ResolvedBlock(nil),
+			Block:              w.CombinedBlock(nil),
 			Damage:             w.Damage.ResolvedDamage(nil),
 			Reach:              w.Reach,
 			Strength:           w.CombinedMinST(),
 			MinST:              w.MinST,
+			BlockValue:         w.ResolvedBlock(nil),
+			CanBlock:           w.CanBlock,
 			TwoHanded:          w.TwoHanded,
 			UnreadyAfterAttack: w.UnreadyAfterAttack,
 		})

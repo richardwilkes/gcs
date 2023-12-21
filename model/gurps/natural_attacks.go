@@ -32,7 +32,6 @@ func newBite(owner WeaponOwner) *Weapon {
 	bite.Usage = i18n.Text("Bite")
 	bite.Reach = "C"
 	bite.Parry = no
-	bite.Block = no
 	bite.Defaults = []*SkillDefault{
 		{
 			DefaultType: DexterityID,
