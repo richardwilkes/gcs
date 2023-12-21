@@ -69,6 +69,11 @@ func NewWeaponRecoilBonus() *WeaponBonus {
 	return newWeaponBonus(WeaponRecoilBonusFeatureType)
 }
 
+// NewWeaponParryBonus creates a new weapon parry bonus.
+func NewWeaponParryBonus() *WeaponBonus {
+	return newWeaponBonus(WeaponParryBonusFeatureType)
+}
+
 // NewWeaponBlockBonus creates a new weapon block bonus.
 func NewWeaponBlockBonus() *WeaponBonus {
 	return newWeaponBonus(WeaponBlockBonusFeatureType)
@@ -167,6 +172,9 @@ func (w *WeaponBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 		case WeaponRecoilBonusFeatureType:
 			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
 			buf.WriteString(i18n.Text(" to recoil"))
+		case WeaponParryBonusFeatureType:
+			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
+			buf.WriteString(i18n.Text(" to parry"))
 		case WeaponBlockBonusFeatureType:
 			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
 			buf.WriteString(i18n.Text(" to block"))

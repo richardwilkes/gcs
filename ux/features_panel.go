@@ -657,6 +657,8 @@ func (p *featuresPanel) createFeatureForType(featureType gurps.FeatureType) gurp
 		bonus = gurps.NewWeaponBulkBonus()
 	case gurps.WeaponRecoilBonusFeatureType:
 		bonus = gurps.NewWeaponRecoilBonus()
+	case gurps.WeaponParryBonusFeatureType:
+		bonus = gurps.NewWeaponParryBonus()
 	case gurps.WeaponBlockBonusFeatureType:
 		bonus = gurps.NewWeaponBlockBonus()
 	default:

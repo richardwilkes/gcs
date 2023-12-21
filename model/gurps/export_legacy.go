@@ -286,7 +286,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "CURRENT_MOVE":
 		ex.writeEncodedText(strconv.Itoa(ex.entity.Move(ex.entity.EncumbranceLevel(false))))
 	case "BEST_CURRENT_PARRY":
-		ex.writeEncodedText(ex.bestWeaponDefense(func(w *Weapon) string { return w.ResolvedParry(nil) }))
+		ex.writeEncodedText(ex.bestWeaponDefense(func(w *Weapon) string { return w.CombinedParry(nil) }))
 	case "BEST_CURRENT_BLOCK":
 		ex.writeEncodedText(ex.bestWeaponDefense(func(w *Weapon) string { return w.CombinedBlock(nil) }))
 	case "TIRED":
@@ -1286,7 +1286,7 @@ func (ex *legacyExporter) processHierarchicalRangedLoop(buffer []byte) {
 func (ex *legacyExporter) processMeleeKeys(key string, currentID int, w *Weapon, attackModes []*Weapon, buf []byte, index int) int {
 	switch key {
 	case "PARRY":
-		ex.writeEncodedText(w.ResolvedParry(nil))
+		ex.writeEncodedText(w.CombinedParry(nil))
 	case "BLOCK":
 		ex.writeEncodedText(w.CombinedBlock(nil))
 	case "REACH":

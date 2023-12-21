@@ -518,6 +518,10 @@ func main() {
 				String: "Gives a weapon bulk modifier of",
 			},
 			{
+				Key:    "weapon_parry_bonus",
+				String: "Gives a weapon parry modifier of",
+			},
+			{
 				Key:    "weapon_block_bonus",
 				String: "Gives a weapon block modifier of",
 			},

@@ -62,7 +62,20 @@ func initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.P
 	switch e.editorData.Type {
 	case gurps.MeleeWeaponType:
 		addLabelAndStringField(content, i18n.Text("Reach"), "", &e.editorData.Reach)
-		addLabelAndStringField(content, i18n.Text("Parry Modifier"), "", &e.editorData.Parry)
+		parryCheckBox := addCheckBox(content, i18n.Text("Parry Modifier"), &e.editorData.CanParry)
+		parryCheckBox.SetLayoutData(&unison.FlexLayoutData{
+			HAlign: align.End,
+			VAlign: align.Middle,
+		})
+		parryField := addDecimalFieldWithSign(content, nil, "", i18n.Text("Parry Modifier"), "", &e.editorData.ParryModifier, -fxp.Max, fxp.Max)
+		parryCheckBox.OnSet = func() {
+			parryField.SetEnabled(parryCheckBox.State == check.On)
+		}
+		parryCheckBox.OnSet()
+		content.AddChild(unison.NewPanel())
+		addCheckBox(content, i18n.Text("Fencing"), &e.editorData.Fencing)
+		content.AddChild(unison.NewPanel())
+		addCheckBox(content, i18n.Text("Unbalanced"), &e.editorData.Unbalanced)
 		blockCheckBox := addCheckBox(content, i18n.Text("Block Modifier"), &e.editorData.CanBlock)
 		blockCheckBox.SetLayoutData(&unison.FlexLayoutData{
 			HAlign: align.End,

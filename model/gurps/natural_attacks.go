@@ -27,11 +27,9 @@ func NewNaturalAttacks(entity *Entity, parent *Trait) *Trait {
 }
 
 func newBite(owner WeaponOwner) *Weapon {
-	no := i18n.Text("No")
 	bite := NewWeapon(owner, MeleeWeaponType)
 	bite.Usage = i18n.Text("Bite")
 	bite.Reach = "C"
-	bite.Parry = no
 	bite.Defaults = []*SkillDefault{
 		{
 			DefaultType: DexterityID,
@@ -58,7 +56,7 @@ func newPunch(owner WeaponOwner) *Weapon {
 	punch := NewWeapon(owner, MeleeWeaponType)
 	punch.Usage = i18n.Text("Punch")
 	punch.Reach = "C"
-	punch.Parry = "0"
+	punch.CanParry = true
 	punch.Defaults = []*SkillDefault{
 		{
 			DefaultType: DexterityID,
@@ -93,7 +91,6 @@ func newKick(owner WeaponOwner) *Weapon {
 	kick := NewWeapon(owner, MeleeWeaponType)
 	kick.Usage = i18n.Text("Kick")
 	kick.Reach = "C,1"
-	kick.Parry = i18n.Text("No")
 	kick.Defaults = []*SkillDefault{
 		{
 			DefaultType: DexterityID,

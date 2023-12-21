@@ -158,8 +158,8 @@ func Extract(in string) (value Int, remainder string) {
 	if !found {
 		return 0, in
 	}
-	value, err := FromString(in[start:last])
-	if err != nil {
+	var err error
+	if value, err = FromString(in[start:last]); err != nil {
 		return 0, in
 	}
 	return value, in[last:]

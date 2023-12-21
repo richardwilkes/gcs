@@ -52,6 +52,7 @@ func TestExtract(t *testing.T) {
 		{"0.125abc", fxp.Eighth, "abc"},
 		{"-0.125abc", -fxp.Eighth, "abc"},
 		{"-24abc", -fxp.TwentyFour, "abc"},
+		{"+24abc", fxp.TwentyFour, "abc"},
 		{"abc", fxp.Int(0), "abc"},
 		{"", fxp.Int(0), ""},
 	} {

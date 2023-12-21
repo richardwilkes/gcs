@@ -75,6 +75,7 @@ func (f *Features) UnmarshalJSON(data []byte) error {
 			WeaponMinSTBonusFeatureType,
 			WeaponBulkBonusFeatureType,
 			WeaponRecoilBonusFeatureType,
+			WeaponParryBonusFeatureType,
 			WeaponBlockBonusFeatureType:
 			feature = &WeaponBonus{}
 		default:
