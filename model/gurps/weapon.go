@@ -379,12 +379,7 @@ func (w *Weapon) Notes() string {
 	if w.Owner != nil {
 		buffer.WriteString(w.Owner.Notes())
 	}
-	if strings.TrimSpace(w.UsageNotes) != "" {
-		if buffer.Len() != 0 {
-			buffer.WriteByte('\n')
-		}
-		buffer.WriteString(w.UsageNotes)
-	}
+	AppendStringOntoNewLine(&buffer, strings.TrimSpace(w.UsageNotes))
 	return buffer.String()
 }
 
@@ -437,12 +432,7 @@ func (w *Weapon) SkillLevel(tooltip *xio.ByteBuffer) fxp.Int {
 	if best == fxp.Min {
 		return 0
 	}
-	if tooltip != nil && primaryTooltip != nil && primaryTooltip.Len() != 0 {
-		if tooltip.Len() != 0 {
-			tooltip.WriteByte('\n')
-		}
-		tooltip.WriteString(primaryTooltip.String())
-	}
+	AppendBufferOntoNewLine(tooltip, primaryTooltip)
 	if best < 0 {
 		best = 0
 	}
@@ -556,30 +546,14 @@ func (w *Weapon) ResolvedBlock(tooltip *xio.ByteBuffer) fxp.Int {
 		}
 		level += postAdj
 		var possibleTooltip *xio.ByteBuffer
-		if def.Type() == SkillID && def.Name == "Karate" {
-			if tooltip != nil {
-				possibleTooltip = &xio.ByteBuffer{}
-			}
-			level += w.EncumbrancePenalty(pc, possibleTooltip)
-		}
 		if best < level {
 			best = level
 			secondaryTooltip = possibleTooltip
 		}
 	}
 	if best != fxp.Min && tooltip != nil {
-		if primaryTooltip != nil && primaryTooltip.Len() != 0 {
-			if tooltip.Len() != 0 {
-				tooltip.WriteByte('\n')
-			}
-			tooltip.WriteString(primaryTooltip.String())
-		}
-		if secondaryTooltip != nil && secondaryTooltip.Len() != 0 {
-			if tooltip.Len() != 0 {
-				tooltip.WriteByte('\n')
-			}
-			tooltip.WriteString(secondaryTooltip.String())
-		}
+		AppendBufferOntoNewLine(tooltip, primaryTooltip)
+		AppendBufferOntoNewLine(tooltip, secondaryTooltip)
 	}
 	modifier := w.BlockModifier
 	for _, bonus := range w.collectWeaponBonuses(1, tooltip, WeaponBlockBonusFeatureType) {
@@ -689,18 +663,8 @@ func (w *Weapon) resolvedValue(input, baseDefaultType string, tooltip *xio.ByteB
 							}
 						}
 						if best != fxp.Min && tooltip != nil {
-							if primaryTooltip != nil && primaryTooltip.Len() != 0 {
-								if tooltip.Len() != 0 {
-									tooltip.WriteByte('\n')
-								}
-								tooltip.WriteString(primaryTooltip.String())
-							}
-							if secondaryTooltip != nil && secondaryTooltip.Len() != 0 {
-								if tooltip.Len() != 0 {
-									tooltip.WriteByte('\n')
-								}
-								tooltip.WriteString(secondaryTooltip.String())
-							}
+							AppendBufferOntoNewLine(tooltip, primaryTooltip)
+							AppendBufferOntoNewLine(tooltip, secondaryTooltip)
 						}
 						skillLevel = best.Max(0)
 					}

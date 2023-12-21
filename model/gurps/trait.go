@@ -487,26 +487,11 @@ func (a *Trait) SecondaryText(optionChecker func(DisplayOption) bool) string {
 		buffer.WriteString(a.UserDesc)
 	}
 	if optionChecker(settings.ModifiersDisplay) {
-		if notes := a.ModifierNotes(); notes != "" {
-			if buffer.Len() != 0 {
-				buffer.WriteByte('\n')
-			}
-			buffer.WriteString(notes)
-		}
+		AppendStringOntoNewLine(&buffer, a.ModifierNotes())
 	}
 	if optionChecker(settings.NotesDisplay) {
-		if text := strings.TrimSpace(a.Notes()); text != "" {
-			if buffer.Len() != 0 {
-				buffer.WriteByte('\n')
-			}
-			buffer.WriteString(text)
-		}
-		if study := StudyHoursProgressText(ResolveStudyHours(a.Study), a.StudyHoursNeeded, false); study != "" {
-			if buffer.Len() != 0 {
-				buffer.WriteByte('\n')
-			}
-			buffer.WriteString(study)
-		}
+		AppendStringOntoNewLine(&buffer, strings.TrimSpace(a.Notes()))
+		AppendStringOntoNewLine(&buffer, StudyHoursProgressText(ResolveStudyHours(a.Study), a.StudyHoursNeeded, false))
 	}
 	return buffer.String()
 }

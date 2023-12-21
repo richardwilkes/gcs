@@ -396,30 +396,17 @@ func (s *Skill) SecondaryText(optionChecker func(DisplayOption) bool) string {
 		}
 	}
 	if optionChecker(prefs.NotesDisplay) {
-		if text := strings.TrimSpace(s.Notes()); text != "" {
-			if buffer.Len() != 0 {
-				buffer.WriteByte('\n')
-			}
-			buffer.WriteString(text)
-		}
-		if study := StudyHoursProgressText(ResolveStudyHours(s.Study), s.StudyHoursNeeded, false); study != "" {
-			if buffer.Len() != 0 {
-				buffer.WriteByte('\n')
-			}
-			buffer.WriteString(study)
-		}
+		AppendStringOntoNewLine(&buffer, strings.TrimSpace(s.Notes()))
+		AppendStringOntoNewLine(&buffer, StudyHoursProgressText(ResolveStudyHours(s.Study), s.StudyHoursNeeded, false))
 	}
 	if optionChecker(prefs.SkillLevelAdjDisplay) {
 		if s.LevelData.Tooltip != "" && s.LevelData.Tooltip != noAdditionalModifiers() {
-			if buffer.Len() != 0 {
-				buffer.WriteByte('\n')
-			}
 			levelTooltip := strings.ReplaceAll(strings.TrimSpace(s.LevelData.Tooltip), "\n", ", ")
 			msg := includesModifiersFrom()
 			if strings.HasPrefix(levelTooltip, msg+",") {
 				levelTooltip = msg + ":" + levelTooltip[len(msg)+1:]
 			}
-			buffer.WriteString(levelTooltip)
+			AppendStringOntoNewLine(&buffer, levelTooltip)
 		}
 	}
 	return buffer.String()

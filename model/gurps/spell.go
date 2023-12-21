@@ -667,36 +667,18 @@ func (s *Spell) SecondaryText(optionChecker func(DisplayOption) bool) string {
 	var buffer strings.Builder
 	prefs := SheetSettingsFor(s.Entity)
 	if optionChecker(prefs.NotesDisplay) {
-		if text := strings.TrimSpace(s.Notes()); text != "" {
-			if buffer.Len() != 0 {
-				buffer.WriteByte('\n')
-			}
-			buffer.WriteString(text)
-		}
-		if rituals := s.Rituals(); rituals != "" {
-			if buffer.Len() != 0 {
-				buffer.WriteByte('\n')
-			}
-			buffer.WriteString(rituals)
-		}
-		if study := StudyHoursProgressText(ResolveStudyHours(s.Study), s.StudyHoursNeeded, false); study != "" {
-			if buffer.Len() != 0 {
-				buffer.WriteByte('\n')
-			}
-			buffer.WriteString(study)
-		}
+		AppendStringOntoNewLine(&buffer, strings.TrimSpace(s.Notes()))
+		AppendStringOntoNewLine(&buffer, s.Rituals())
+		AppendStringOntoNewLine(&buffer, StudyHoursProgressText(ResolveStudyHours(s.Study), s.StudyHoursNeeded, false))
 	}
 	if optionChecker(prefs.SkillLevelAdjDisplay) {
 		if s.LevelData.Tooltip != "" && s.LevelData.Tooltip != noAdditionalModifiers() {
-			if buffer.Len() != 0 {
-				buffer.WriteByte('\n')
-			}
 			levelTooltip := strings.ReplaceAll(strings.TrimSpace(s.LevelData.Tooltip), "\n", ", ")
 			msg := includesModifiersFrom()
 			if strings.HasPrefix(levelTooltip, msg+",") {
 				levelTooltip = msg + ":" + levelTooltip[len(msg)+1:]
 			}
-			buffer.WriteString(levelTooltip)
+			AppendStringOntoNewLine(&buffer, levelTooltip)
 		}
 	}
 	return buffer.String()

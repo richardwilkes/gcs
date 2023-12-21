@@ -305,12 +305,7 @@ func (e *Equipment) SecondaryText(optionChecker func(DisplayOption) bool) string
 	var buffer strings.Builder
 	settings := SheetSettingsFor(e.Entity)
 	if optionChecker(settings.ModifiersDisplay) {
-		if notes := e.ModifierNotes(); notes != "" {
-			if buffer.Len() != 0 {
-				buffer.WriteByte('\n')
-			}
-			buffer.WriteString(notes)
-		}
+		AppendStringOntoNewLine(&buffer, e.ModifierNotes())
 	}
 	if optionChecker(settings.NotesDisplay) {
 		var localBuffer strings.Builder
@@ -324,12 +319,7 @@ func (e *Equipment) SecondaryText(optionChecker func(DisplayOption) bool) string
 			}
 			localBuffer.WriteString(localNotes)
 		}
-		if localBuffer.Len() != 0 {
-			if buffer.Len() != 0 {
-				buffer.WriteByte('\n')
-			}
-			buffer.WriteString(localBuffer.String())
-		}
+		AppendBufferOntoNewLine(&buffer, &localBuffer)
 	}
 	return buffer.String()
 }

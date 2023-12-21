@@ -246,15 +246,10 @@ func (m *TraitModifier) String() string {
 
 // SecondaryText returns the "secondary" text: the text display below an Trait.
 func (m *TraitModifier) SecondaryText(optionChecker func(DisplayOption) bool) string {
-	var buffer strings.Builder
-	settings := SheetSettingsFor(m.Entity)
-	if m.LocalNotes != "" && optionChecker(settings.NotesDisplay) {
-		if buffer.Len() != 0 {
-			buffer.WriteByte('\n')
-		}
-		buffer.WriteString(m.LocalNotes)
+	if optionChecker(SheetSettingsFor(m.Entity).NotesDisplay) {
+		return m.LocalNotes
 	}
-	return buffer.String()
+	return ""
 }
 
 // FullDescription returns a full description.
