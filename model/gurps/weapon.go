@@ -117,6 +117,7 @@ func (r RateOfFire) hash(h hash.Hash32) {
 }
 
 func (r *RateOfFire) parseOldRateOfFire(s string) {
+	s = strings.ToLower(s)
 	s = strings.ReplaceAll(s, ".", "x") // Fix some faulty input that exists in the old files
 	r.FullAutoOnly = strings.Contains(s, "!")
 	s = strings.ReplaceAll(s, "!", "")
@@ -390,15 +391,16 @@ func (w *Weapon) UnmarshalJSON(data []byte) error {
 		}
 	}
 	if wdata.OldMinimumStrength != "" {
-		w.Bipod = strings.Contains(wdata.OldMinimumStrength, "B")
-		w.Mounted = strings.Contains(wdata.OldMinimumStrength, "M")
-		w.MusketRest = strings.Contains(wdata.OldMinimumStrength, "R")
-		w.TwoHanded = strings.Contains(wdata.OldMinimumStrength, "†")
-		w.UnreadyAfterAttack = strings.Contains(wdata.OldMinimumStrength, "‡")
+		lowered := strings.ToLower(wdata.OldMinimumStrength)
+		w.Bipod = strings.Contains(lowered, "b")
+		w.Mounted = strings.Contains(lowered, "m")
+		w.MusketRest = strings.Contains(lowered, "r")
+		w.TwoHanded = strings.Contains(lowered, "†")
+		w.UnreadyAfterAttack = strings.Contains(lowered, "‡")
 		if w.UnreadyAfterAttack {
 			w.TwoHanded = true
 		}
-		w.MinST, _ = fxp.Extract(wdata.OldMinimumStrength)
+		w.MinST, _ = fxp.Extract(lowered)
 	}
 	if wdata.OldBulk != "" {
 		w.RetractingStock = strings.Contains(wdata.OldBulk, "*")
@@ -416,15 +418,17 @@ func (w *Weapon) UnmarshalJSON(data []byte) error {
 		}
 	}
 	if wdata.OldBlock != "" {
-		if w.CanBlock = !strings.EqualFold(strings.TrimSpace(wdata.OldBlock), "no"); w.CanBlock {
-			w.BlockModifier, _ = fxp.Extract(wdata.OldBlock)
+		lowered := strings.ToLower(wdata.OldBlock)
+		if w.CanBlock = !strings.Contains(lowered, "no"); w.CanBlock {
+			w.BlockModifier, _ = fxp.Extract(lowered)
 		}
 	}
 	if wdata.OldParry != "" {
-		if w.CanParry = !strings.EqualFold(strings.TrimSpace(wdata.OldParry), "no"); w.CanParry {
-			w.Fencing = strings.Contains(wdata.OldParry, "F")
-			w.Unbalanced = strings.Contains(wdata.OldParry, "U")
-			w.ParryModifier, _ = fxp.Extract(wdata.OldParry)
+		lowered := strings.ToLower(wdata.OldParry)
+		if w.CanParry = !strings.Contains(lowered, "no"); w.CanParry {
+			w.Fencing = strings.Contains(lowered, "f")
+			w.Unbalanced = strings.Contains(lowered, "u")
+			w.ParryModifier, _ = fxp.Extract(lowered)
 		}
 	}
 	var zero uuid.UUID
