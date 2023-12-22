@@ -12,6 +12,8 @@
 package ux
 
 import (
+	"fmt"
+
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -91,7 +93,8 @@ func initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.P
 		addLabelAndDecimalField(content, nil, "", i18n.Text("Scope Accuracy"), "", &e.editorData.ScopeAcc, 0, fxp.Max)
 		content.AddChild(unison.NewPanel())
 		addCheckBox(content, i18n.Text("Jet"), &e.editorData.Jet)
-		addLabelAndStringField(content, i18n.Text("Rate of Fire"), "", &e.editorData.RateOfFire)
+		addRateOfFireBlock(content, &e.editorData.RateOfFireMode1, 1)
+		addRateOfFireBlock(content, &e.editorData.RateOfFireMode2, 2)
 		addLabelAndStringField(content, i18n.Text("Range"), "", &e.editorData.Range)
 		addLabelAndDecimalField(content, nil, "", i18n.Text("Shot Recoil"), "", &e.editorData.ShotRecoil, 0, fxp.Max)
 		addLabelAndDecimalField(content, nil, "", i18n.Text("Slug Recoil"), "", &e.editorData.SlugRecoil, 0, fxp.Max)
@@ -100,15 +103,33 @@ func initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.P
 		giant := i18n.Text("Giant Bulk")
 		wrapper := addFlowWrapper(content, giant, 2)
 		addDecimalField(wrapper, nil, "", giant, "", &e.editorData.GiantBulk, -fxp.Max, 0)
-		label := NewFieldTrailingLabel(i18n.Text("(only needed if different from normal bulk)"))
-		fd := unison.DefaultLabelTheme.Font.Descriptor()
-		fd.Size *= 0.8
-		label.Font = fd.Font()
-		wrapper.AddChild(label)
+		wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("(only needed if different from normal bulk)"), true))
 		content.AddChild(unison.NewPanel())
 		addCheckBox(content, i18n.Text("Retracting Stock"), &e.editorData.RetractingStock)
 	default:
 	}
 	content.AddChild(newDefaultsPanel(e.editorData.Entity(), &e.editorData.Defaults))
 	return nil
+}
+
+func addRateOfFireBlock(content *unison.Panel, rof *gurps.RateOfFire, modeNum int) {
+	wrapper := addFlowWrapper(content, fmt.Sprintf(i18n.Text("Rate of Fire Mode %d"), modeNum), 3)
+	text := i18n.Text("Shots Per Attack")
+	addDecimalField(wrapper, nil, "", text, "", &rof.ShotsPerAttack, 0, fxp.Max)
+	label1 := NewFieldTrailingLabel(text, false)
+	wrapper.AddChild(label1)
+	addCheckBox(wrapper, i18n.Text("Fully Automatic Only"), &rof.FullAutoOnly)
+
+	wrapper = addFlowWrapper(content, "", 3)
+	text = i18n.Text("Secondary Projectiles")
+	addDecimalField(wrapper, nil, "", text, "", &rof.SecondaryProjectiles, 0, fxp.Max)
+	label2 := NewFieldTrailingLabel(text, false)
+	wrapper.AddChild(label2)
+	addCheckBox(wrapper, i18n.Text("High-cyclic Controlled Bursts"), &rof.HighCyclicControlledBursts)
+
+	_, pref1, _ := label1.Sizes(unison.Size{})
+	_, pref2, _ := label2.Sizes(unison.Size{})
+	pref1 = pref1.Max(pref2)
+	label1.LayoutData().(*unison.FlexLayoutData).SizeHint = pref1
+	label2.LayoutData().(*unison.FlexLayoutData).SizeHint = pref1
 }

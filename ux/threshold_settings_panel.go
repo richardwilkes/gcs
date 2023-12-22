@@ -99,7 +99,7 @@ func (p *thresholdSettingsPanel) createContent() *unison.Panel {
 	})
 
 	text := i18n.Text("State")
-	content.AddChild(NewFieldLeadingLabel(text))
+	content.AddChild(NewFieldLeadingLabel(text, false))
 	field := NewStringField(p.pool.dockable.targetMgr, p.threshold.KeyPrefix+"state", text,
 		func() string { return p.threshold.State },
 		func(s string) { p.threshold.State = s })
@@ -109,7 +109,7 @@ func (p *thresholdSettingsPanel) createContent() *unison.Panel {
 	content.AddChild(field)
 
 	text = i18n.Text("Threshold")
-	content.AddChild(NewFieldLeadingLabel(text))
+	content.AddChild(NewFieldLeadingLabel(text, false))
 	field = NewStringField(p.pool.dockable.targetMgr, p.threshold.KeyPrefix+"threshold", text,
 		func() string { return p.threshold.Expression },
 		func(s string) { p.threshold.Expression = s })
@@ -123,7 +123,7 @@ func (p *thresholdSettingsPanel) createContent() *unison.Panel {
 	}
 
 	text = i18n.Text("Explanation")
-	content.AddChild(NewFieldLeadingLabel(text))
+	content.AddChild(NewFieldLeadingLabel(text, false))
 	field = NewMultiLineStringField(p.pool.dockable.targetMgr, p.threshold.KeyPrefix+"explanation", text,
 		func() string { return p.threshold.Explanation },
 		func(s string) { p.threshold.Explanation = s })

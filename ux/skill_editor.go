@@ -146,14 +146,14 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 			encLabel := i18n.Text("Encumbrance Penalty")
 			wrapper := addFlowWrapper(content, encLabel, 2)
 			addDecimalField(wrapper, nil, "", encLabel, "", &e.editorData.EncumbrancePenaltyMultiplier, 0, fxp.Nine)
-			wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("times the current encumbrance level")))
+			wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("times the current encumbrance level"), false))
 		}
 
 		if ownerIsSheet || ownerIsTemplate {
 			pointsLabel := i18n.Text("Points")
 			wrapper := addFlowWrapper(content, pointsLabel, 3)
 			addDecimalField(wrapper, nil, "", pointsLabel, "", &e.editorData.Points, 0, fxp.MaxBasePoints)
-			wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Level")))
+			wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Level"), false))
 			levelField := NewNonEditableField(func(field *NonEditableField) {
 				points := gurps.AdjustedPointsForNonContainerSkillOrTechnique(e.target.Entity, e.editorData.Points,
 					e.editorData.Name, e.editorData.Specialization, e.editorData.Tags, nil)

@@ -91,9 +91,9 @@ func (d *colorSettingsDockable) sync() {
 func (d *colorSettingsDockable) fill() {
 	for i, one := range gurps.CurrentColors() {
 		if i%2 == 0 {
-			d.content.AddChild(NewFieldLeadingLabel(one.Title))
+			d.content.AddChild(NewFieldLeadingLabel(one.Title, false))
 		} else {
-			d.content.AddChild(NewFieldInteriorLeadingLabel(one.Title))
+			d.content.AddChild(NewFieldInteriorLeadingLabel(one.Title, false))
 		}
 		d.createColorWellField(one, true)
 		d.createColorWellField(one, false)

@@ -426,9 +426,9 @@ func (n *Navigator) renameSelection() {
 			HSpacing: unison.StdHSpacing,
 			VSpacing: unison.StdVSpacing,
 		})
-		panel.AddChild(NewFieldLeadingLabel(i18n.Text("Current Name")))
+		panel.AddChild(NewFieldLeadingLabel(i18n.Text("Current Name"), false))
 		panel.AddChild(oldField)
-		panel.AddChild(NewFieldLeadingLabel(i18n.Text("New Name")))
+		panel.AddChild(NewFieldLeadingLabel(i18n.Text("New Name"), false))
 		panel.AddChild(newField)
 
 		dialog, err := unison.NewDialog(unison.DefaultDialogTheme.QuestionIcon,
@@ -1216,7 +1216,7 @@ func (n *Navigator) newFolder() {
 			HSpacing: unison.StdHSpacing,
 			VSpacing: unison.StdVSpacing,
 		})
-		panel.AddChild(NewFieldLeadingLabel(i18n.Text("Folder Name")))
+		panel.AddChild(NewFieldLeadingLabel(i18n.Text("Folder Name"), false))
 		panel.AddChild(field)
 
 		dialog, err := unison.NewDialog(unison.DefaultDialogTheme.QuestionIcon,

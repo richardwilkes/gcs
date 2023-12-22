@@ -105,7 +105,7 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 	})
 
 	title := i18n.Text("Name")
-	content.AddChild(NewFieldLeadingLabel(title))
+	content.AddChild(NewFieldLeadingLabel(title, false))
 	d.nameField = NewStringField(nil, "", title,
 		func() string { return d.name },
 		func(s string) {
@@ -119,7 +119,7 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 	content.AddChild(d.nameField)
 
 	title = i18n.Text("GitHub Account")
-	content.AddChild(NewFieldLeadingLabel(title))
+	content.AddChild(NewFieldLeadingLabel(title, false))
 	d.githubField = NewStringField(nil, "", title,
 		func() string { return d.github },
 		func(s string) {
@@ -135,7 +135,7 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 	d.addNote(content, i18n.Text("Leave the GitHub Account blank for local directories not on GitHub"))
 
 	title = i18n.Text("GitHub Access Token")
-	content.AddChild(NewFieldLeadingLabel(title))
+	content.AddChild(NewFieldLeadingLabel(title, false))
 	d.tokenField = NewStringField(nil, "", title,
 		func() string { return d.token },
 		func(s string) {
@@ -148,7 +148,7 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 	d.addNote(content, i18n.Text(`The GitHub Access Token is only needed for private repositories and only needs the read-only "Content" permission for access to this repo`))
 
 	title = i18n.Text("Repository")
-	content.AddChild(NewFieldLeadingLabel(title))
+	content.AddChild(NewFieldLeadingLabel(title, false))
 	d.repoField = NewStringField(nil, "", title,
 		func() string { return d.repo },
 		func(s string) {
@@ -162,7 +162,7 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 	content.AddChild(d.repoField)
 
 	title = i18n.Text("Path")
-	content.AddChild(NewFieldLeadingLabel(title))
+	content.AddChild(NewFieldLeadingLabel(title, false))
 	d.pathField = NewStringField(nil, "", title,
 		func() string { return d.path },
 		func(s string) {

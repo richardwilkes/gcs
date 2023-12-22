@@ -38,6 +38,10 @@ const (
 	WeaponBulkBonusFeatureType
 	WeaponParryBonusFeatureType
 	WeaponBlockBonusFeatureType
+	WeaponRofMode1ShotsBonusFeatureType
+	WeaponRofMode1SecondaryBonusFeatureType
+	WeaponRofMode2ShotsBonusFeatureType
+	WeaponRofMode2SecondaryBonusFeatureType
 	CostReductionFeatureType
 	ContainedWeightReductionFeatureType
 	LastFeatureType = ContainedWeightReductionFeatureType
@@ -62,6 +66,10 @@ var AllFeatureType = []FeatureType{
 	WeaponBulkBonusFeatureType,
 	WeaponParryBonusFeatureType,
 	WeaponBlockBonusFeatureType,
+	WeaponRofMode1ShotsBonusFeatureType,
+	WeaponRofMode1SecondaryBonusFeatureType,
+	WeaponRofMode2ShotsBonusFeatureType,
+	WeaponRofMode2SecondaryBonusFeatureType,
 	CostReductionFeatureType,
 	ContainedWeightReductionFeatureType,
 }
@@ -114,6 +122,14 @@ func (enum FeatureType) Key() string {
 		return "weapon_parry_bonus"
 	case WeaponBlockBonusFeatureType:
 		return "weapon_block_bonus"
+	case WeaponRofMode1ShotsBonusFeatureType:
+		return "weapon_rof_mode_1_shots_bonus"
+	case WeaponRofMode1SecondaryBonusFeatureType:
+		return "weapon_rof_mode_1_secondary_bonus"
+	case WeaponRofMode2ShotsBonusFeatureType:
+		return "weapon_rof_mode_2_shots_bonus"
+	case WeaponRofMode2SecondaryBonusFeatureType:
+		return "weapon_rof_mode_2_secondary_bonus"
 	case CostReductionFeatureType:
 		return "cost_reduction"
 	case ContainedWeightReductionFeatureType:
@@ -160,6 +176,14 @@ func (enum FeatureType) String() string {
 		return i18n.Text("Gives a weapon parry modifier of")
 	case WeaponBlockBonusFeatureType:
 		return i18n.Text("Gives a weapon block modifier of")
+	case WeaponRofMode1ShotsBonusFeatureType:
+		return i18n.Text("Gives a weapon rate of fire (mode 1) shots per attack modifier of")
+	case WeaponRofMode1SecondaryBonusFeatureType:
+		return i18n.Text("Gives a weapon rate of fire (mode 1) secondary projectiles modifier of")
+	case WeaponRofMode2ShotsBonusFeatureType:
+		return i18n.Text("Gives a weapon rate of fire (mode 2) shots per attack modifier of")
+	case WeaponRofMode2SecondaryBonusFeatureType:
+		return i18n.Text("Gives a weapon rate of fire (mode 2) secondary projectiles modifier of")
 	case CostReductionFeatureType:
 		return i18n.Text("Reduces the attribute cost of")
 	case ContainedWeightReductionFeatureType:

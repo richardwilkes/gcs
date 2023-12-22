@@ -126,7 +126,7 @@ func (p *hitLocationSettingsPanel) createContent() *unison.Panel {
 	content.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 
 	text := i18n.Text("ID")
-	content.AddChild(NewFieldLeadingLabel(text))
+	content.AddChild(NewFieldLeadingLabel(text, false))
 	field := NewStringField(p.dockable.targetMgr, p.loc.KeyPrefix+"id", text,
 		func() string { return p.loc.LocID },
 		func(s string) {
@@ -142,7 +142,7 @@ func (p *hitLocationSettingsPanel) createContent() *unison.Panel {
 	content.AddChild(field)
 
 	text = i18n.Text("Choice Name")
-	content.AddChild(NewFieldLeadingLabel(text))
+	content.AddChild(NewFieldLeadingLabel(text, false))
 	field = NewStringField(p.dockable.targetMgr, p.loc.KeyPrefix+"choice_name", text,
 		func() string { return p.loc.ChoiceName },
 		func(s string) { p.loc.ChoiceName = s })
@@ -151,7 +151,7 @@ func (p *hitLocationSettingsPanel) createContent() *unison.Panel {
 	content.AddChild(field)
 
 	text = i18n.Text("Table Name")
-	content.AddChild(NewFieldLeadingLabel(text))
+	content.AddChild(NewFieldLeadingLabel(text, false))
 	field = NewStringField(p.dockable.targetMgr, p.loc.KeyPrefix+"table_name", text,
 		func() string { return p.loc.TableName },
 		func(s string) { p.loc.TableName = s })
@@ -160,7 +160,7 @@ func (p *hitLocationSettingsPanel) createContent() *unison.Panel {
 	content.AddChild(field)
 
 	text = i18n.Text("Slots")
-	content.AddChild(NewFieldLeadingLabel(text))
+	content.AddChild(NewFieldLeadingLabel(text, false))
 	intField := NewIntegerField(p.dockable.targetMgr, p.loc.KeyPrefix+"slots", text,
 		func() int { return p.loc.Slots },
 		func(v int) { p.loc.Slots = v },
@@ -169,7 +169,7 @@ func (p *hitLocationSettingsPanel) createContent() *unison.Panel {
 	content.AddChild(intField)
 
 	text = i18n.Text("Hit Penalty")
-	content.AddChild(NewFieldLeadingLabel(text))
+	content.AddChild(NewFieldLeadingLabel(text, false))
 	intField = NewIntegerField(p.dockable.targetMgr, p.loc.KeyPrefix+"hit_penalty", text,
 		func() int { return p.loc.HitPenalty },
 		func(v int) { p.loc.HitPenalty = v },
@@ -178,7 +178,7 @@ func (p *hitLocationSettingsPanel) createContent() *unison.Panel {
 	content.AddChild(intField)
 
 	text = i18n.Text("DR Bonus")
-	content.AddChild(NewFieldLeadingLabel(text))
+	content.AddChild(NewFieldLeadingLabel(text, false))
 	intField = NewIntegerField(p.dockable.targetMgr, p.loc.KeyPrefix+"dr_bonus", text,
 		func() int { return p.loc.DRBonus },
 		func(v int) { p.loc.DRBonus = v },
@@ -187,7 +187,7 @@ func (p *hitLocationSettingsPanel) createContent() *unison.Panel {
 	content.AddChild(intField)
 
 	text = i18n.Text("Description")
-	content.AddChild(NewFieldLeadingLabel(text))
+	content.AddChild(NewFieldLeadingLabel(text, false))
 	field = NewMultiLineStringField(p.dockable.targetMgr, p.loc.KeyPrefix+"desc", text,
 		func() string { return p.loc.Description },
 		func(s string) { p.loc.Description = s })
@@ -197,7 +197,7 @@ func (p *hitLocationSettingsPanel) createContent() *unison.Panel {
 
 	if p.loc.SubTable != nil {
 		text = i18n.Text("Sub-Roll")
-		content.AddChild(NewFieldLeadingLabel(text))
+		content.AddChild(NewFieldLeadingLabel(text, false))
 		field = NewStringField(p.dockable.targetMgr, p.loc.SubTable.KeyPrefix+"subroll", text,
 			func() string { return p.loc.SubTable.Roll.String() },
 			func(s string) { p.loc.SubTable.Roll = dice.New(s) })

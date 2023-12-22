@@ -184,7 +184,7 @@ func (p *prereqPanel) createButtonsPanel(parent *unison.Panel, depth int, data g
 }
 
 func (p *prereqPanel) addAndOr(parent *unison.Panel, data gurps.Prereq) {
-	label := NewFieldLeadingLabel(andOrText(data))
+	label := NewFieldLeadingLabel(andOrText(data), false)
 	parent.AddChild(label)
 	p.andOrMap[data] = label
 }

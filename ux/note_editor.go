@@ -62,7 +62,7 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 	adjustMarkdownThemeForPage(markdown)
 
 	labelText := i18n.Text("Notes")
-	label := NewFieldLeadingLabel(labelText)
+	label := NewFieldLeadingLabel(labelText, false)
 	label.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.End,
 		VAlign: align.Start,

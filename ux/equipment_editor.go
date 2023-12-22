@@ -44,7 +44,7 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 			valueLabel := i18n.Text("Value")
 			wrapper := addFlowWrapper(content, valueLabel, 3)
 			addDecimalField(wrapper, nil, "", valueLabel, "", &e.editorData.Value, 0, fxp.Max-1)
-			wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Extended")))
+			wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Extended"), false))
 			wrapper.AddChild(NewNonEditableField(func(field *NonEditableField) {
 				var value fxp.Int
 				if e.editorData.Quantity > 0 {
@@ -62,7 +62,7 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 			weightLabel := i18n.Text("Weight")
 			wrapper = addFlowWrapper(content, weightLabel, 3)
 			addWeightField(wrapper, nil, "", weightLabel, "", e.target.Entity, &e.editorData.Weight, false)
-			wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Extended")))
+			wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Extended"), false))
 			wrapper.AddChild(NewNonEditableField(func(field *NonEditableField) {
 				var weight fxp.Weight
 				defUnits := gurps.SheetSettingsFor(e.target.Entity).DefaultWeightUnits
@@ -79,7 +79,7 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 			wrapper = addFlowWrapper(content, usesLabel, 3)
 			usesField := addIntegerField(wrapper, nil, "", usesLabel, "", &e.editorData.Uses, 0, 9999999)
 			maxUsesLabel := i18n.Text("Maximum Uses")
-			wrapper.AddChild(NewFieldInteriorLeadingLabel(maxUsesLabel))
+			wrapper.AddChild(NewFieldInteriorLeadingLabel(maxUsesLabel, false))
 			addIntegerField(wrapper, nil, "", maxUsesLabel, "", &e.editorData.MaxUses, 0, 9999999)
 			addLabelAndDecimalField(content, nil, "", i18n.Text("Rated ST"), i18n.Text("Equipment with a rated ST use this value instead of the user's ST"), &e.editorData.RatedST, 0, fxp.Max)
 			addTagsLabelAndField(content, &e.editorData.Tags)

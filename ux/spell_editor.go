@@ -43,7 +43,7 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 			wrapper := addFlowWrapper(content, i18n.Text("Difficulty"), 3)
 			addPopup(wrapper, gurps.AllTechniqueDifficulty, &e.editorData.Difficulty.Difficulty)
 			prereqCount := i18n.Text("Prerequisite Count")
-			wrapper.AddChild(NewFieldInteriorLeadingLabel(prereqCount))
+			wrapper.AddChild(NewFieldInteriorLeadingLabel(prereqCount, false))
 			addIntegerField(wrapper, nil, "", prereqCount, "", &e.editorData.RitualPrereqCount, 0, 99)
 		} else {
 			addDifficultyLabelAndFields(content, e.target.Entity, &e.editorData.Difficulty)
@@ -52,7 +52,7 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 			pointsLabel := i18n.Text("Points")
 			wrapper := addFlowWrapper(content, pointsLabel, 3)
 			addDecimalField(wrapper, nil, "", pointsLabel, "", &e.editorData.Points, 0, fxp.MaxBasePoints)
-			wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Level")))
+			wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Level"), false))
 			levelField := NewNonEditableField(func(field *NonEditableField) {
 				points := gurps.AdjustedPointsForNonContainerSpell(e.target.Entity, e.editorData.Points,
 					e.editorData.Name, e.editorData.PowerSource, e.editorData.College, e.editorData.Tags, nil)

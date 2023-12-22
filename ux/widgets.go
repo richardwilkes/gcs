@@ -179,7 +179,7 @@ func addAttributeChoicePopup(parent *unison.Panel, entity *gurps.Entity, prefix 
 func addDifficultyLabelAndFields(parent *unison.Panel, entity *gurps.Entity, difficulty *gurps.AttributeDifficulty) {
 	wrapper := addFlowWrapper(parent, i18n.Text("Difficulty"), 3)
 	addAttributeChoicePopup(wrapper, entity, "", &difficulty.Attribute, gurps.TenFlag)
-	wrapper.AddChild(NewFieldTrailingLabel("/"))
+	wrapper.AddChild(NewFieldTrailingLabel("/", false))
 	addPopup(wrapper, gurps.AllDifficulty, &difficulty.Difficulty)
 }
 
@@ -189,7 +189,7 @@ func addTagsLabelAndField(parent *unison.Panel, fieldData *[]string) {
 
 func addLabelAndListField(parent *unison.Panel, labelText, pluralForTooltip string, fieldData *[]string) {
 	tooltip := fmt.Sprintf(i18n.Text("Separate multiple %s with commas"), pluralForTooltip)
-	label := NewFieldLeadingLabel(labelText)
+	label := NewFieldLeadingLabel(labelText, false)
 	if tooltip != "" {
 		label.Tooltip = newWrappedTooltip(tooltip)
 	}
@@ -209,7 +209,7 @@ func addLabelAndListField(parent *unison.Panel, labelText, pluralForTooltip stri
 }
 
 func addLabelAndStringField(parent *unison.Panel, labelText, tooltip string, fieldData *string) *StringField {
-	label := NewFieldLeadingLabel(labelText)
+	label := NewFieldLeadingLabel(labelText, false)
 	if tooltip != "" {
 		label.Tooltip = newWrappedTooltip(tooltip)
 	}
@@ -244,7 +244,7 @@ func addStringField(parent *unison.Panel, labelText, tooltip string, fieldData *
 }
 
 func addLabelAndMultiLineStringField(parent *unison.Panel, labelText, tooltip string, fieldData *string) {
-	label := NewFieldLeadingLabel(labelText)
+	label := NewFieldLeadingLabel(labelText, false)
 	if tooltip != "" {
 		label.Tooltip = newWrappedTooltip(tooltip)
 	}
@@ -278,7 +278,7 @@ func addIntegerField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labe
 }
 
 func addLabelAndDecimalField(parent *unison.Panel, targetMgr *TargetMgr, targetKey, labelText, tooltip string, fieldData *fxp.Int, minValue, maxValue fxp.Int) *DecimalField {
-	label := NewFieldLeadingLabel(labelText)
+	label := NewFieldLeadingLabel(labelText, false)
 	if tooltip != "" {
 		label.Tooltip = newWrappedTooltip(tooltip)
 	}
@@ -343,7 +343,7 @@ func addInvertedCheckBox(parent *unison.Panel, labelText string, fieldData *bool
 }
 
 func addFlowWrapper(parent *unison.Panel, labelText string, count int) *unison.Panel {
-	parent.AddChild(NewFieldLeadingLabel(labelText))
+	parent.AddChild(NewFieldLeadingLabel(labelText, false))
 	wrapper := unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{
 		Columns:  count,
@@ -360,7 +360,7 @@ func addLabelAndNullableDice(parent *unison.Panel, labelText, tooltip string, fi
 	if *fieldData != nil {
 		data = (*fieldData).String()
 	}
-	label := NewFieldLeadingLabel(labelText)
+	label := NewFieldLeadingLabel(labelText, false)
 	parent.AddChild(label)
 	field := NewStringField(nil, "", labelText,
 		func() string { return data },
@@ -382,7 +382,7 @@ func addLabelAndNullableDice(parent *unison.Panel, labelText, tooltip string, fi
 }
 
 func addLabelAndPopup[T comparable](parent *unison.Panel, labelText, tooltip string, choices []T, fieldData *T) *unison.PopupMenu[T] {
-	label := NewFieldLeadingLabel(labelText)
+	label := NewFieldLeadingLabel(labelText, false)
 	if tooltip != "" {
 		label.Tooltip = newWrappedTooltip(tooltip)
 	}

@@ -70,6 +70,8 @@ type exportedRangedWeapon struct {
 	GiantBulk          fxp.Int
 	ShotRecoil         fxp.Int
 	SlugRecoil         fxp.Int
+	RateOfFireMode1    RateOfFire
+	RateOfFireMode2    RateOfFire
 	Bipod              bool
 	Mounted            bool
 	MusketRest         bool
@@ -631,7 +633,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			Accuracy:           w.CombinedAcc(nil),
 			Range:              w.ResolvedRange(),
 			Damage:             w.Damage.ResolvedDamage(nil),
-			RateOfFire:         w.RateOfFire,
+			RateOfFire:         w.CombinedRateOfFire(nil),
 			Shots:              w.Shots,
 			Bulk:               w.CombinedBulk(nil),
 			Recoil:             w.CombinedRecoil(nil),
@@ -643,6 +645,8 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			GiantBulk:          giantBulk,
 			ShotRecoil:         shot,
 			SlugRecoil:         slug,
+			RateOfFireMode1:    w.RateOfFireMode1,
+			RateOfFireMode2:    w.RateOfFireMode2,
 			Bipod:              w.Bipod,
 			Mounted:            w.Mounted,
 			MusketRest:         w.MusketRest,

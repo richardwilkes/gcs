@@ -126,7 +126,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 	})
 
 	text := i18n.Text("ID")
-	content.AddChild(NewFieldLeadingLabel(text))
+	content.AddChild(NewFieldLeadingLabel(text, false))
 	field := NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+"id", text,
 		func() string { return p.def.DefID },
 		func(s string) {
@@ -144,7 +144,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 	content.AddChild(field)
 
 	text = i18n.Text("Attribute Type")
-	content.AddChild(NewFieldLeadingLabel(text))
+	content.AddChild(NewFieldLeadingLabel(text, false))
 	content.AddChild(NewPopup[gurps.AttributeType](p.dockable.targetMgr, p.def.KeyPrefix+"type", text,
 		func() gurps.AttributeType { return p.def.Type },
 		func(typ gurps.AttributeType) { p.applyAttributeType(typ) },
@@ -153,7 +153,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 	const nameKey = "name"
 	if p.def.IsSeparator() {
 		text = i18n.Text("Name")
-		content.AddChild(NewFieldLeadingLabel(text))
+		content.AddChild(NewFieldLeadingLabel(text, false))
 		field = NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+nameKey, text,
 			func() string { return p.def.Name },
 			func(s string) { p.def.Name = s })
@@ -162,7 +162,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 		content.AddChild(field)
 	} else {
 		text = i18n.Text("Short Name")
-		content.AddChild(NewFieldLeadingLabel(text))
+		content.AddChild(NewFieldLeadingLabel(text, false))
 		field = NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+nameKey, text,
 			func() string { return p.def.Name },
 			func(s string) { p.def.Name = s })
@@ -171,7 +171,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 		content.AddChild(field)
 
 		text = i18n.Text("Full Name")
-		content.AddChild(NewFieldLeadingLabel(text))
+		content.AddChild(NewFieldLeadingLabel(text, false))
 		field = NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+"fullname", text,
 			func() string { return p.def.FullName },
 			func(s string) { p.def.FullName = s })
@@ -180,7 +180,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 		content.AddChild(field)
 
 		text = i18n.Text("Base Value")
-		content.AddChild(NewFieldLeadingLabel(text))
+		content.AddChild(NewFieldLeadingLabel(text, false))
 		field = NewStringField(p.dockable.targetMgr, p.def.KeyPrefix+"base", text,
 			func() string { return p.def.AttributeBase },
 			func(s string) { p.def.AttributeBase = s })
@@ -193,7 +193,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 				i18n.Text("The cost per point difference from the base"), &p.def.CostPerPoint, 0, fxp.MaxBasePoints)
 
 			text = i18n.Text("SM Reduction")
-			content.AddChild(NewFieldLeadingLabel(text))
+			content.AddChild(NewFieldLeadingLabel(text, false))
 			numField := NewPercentageField(p.dockable.targetMgr, p.def.KeyPrefix+"sm", text,
 				func() int { return fxp.As[int](p.def.CostAdjPercentPerSM) },
 				func(v int) { p.def.CostAdjPercentPerSM = fxp.From(v) },

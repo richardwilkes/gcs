@@ -329,7 +329,7 @@ func (d *sheetSettingsDockable) createBlockLayout(content *unison.Panel) {
 }
 
 func (d *sheetSettingsDockable) createPaperMarginField(panel *unison.Panel, title string, current paper.Length, set func(value paper.Length)) *unison.Field {
-	panel.AddChild(NewFieldLeadingLabel(title))
+	panel.AddChild(NewFieldLeadingLabel(title, false))
 	field := unison.NewField()
 	field.SetText(current.String())
 	field.ValidateCallback = func() bool {
@@ -351,7 +351,7 @@ func (d *sheetSettingsDockable) createPaperMarginField(panel *unison.Panel, titl
 }
 
 func createSettingPopup[T comparable](d *sheetSettingsDockable, panel *unison.Panel, title string, choices []T, current T, set func(option T)) *unison.PopupMenu[T] {
-	panel.AddChild(NewFieldLeadingLabel(title))
+	panel.AddChild(NewFieldLeadingLabel(title, false))
 	popup := unison.NewPopupMenu[T]()
 	for _, one := range choices {
 		popup.AddItem(one)

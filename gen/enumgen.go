@@ -526,6 +526,22 @@ func main() {
 				String: "Gives a weapon block modifier of",
 			},
 			{
+				Key:    "weapon_rof_mode_1_shots_bonus",
+				String: "Gives a weapon rate of fire (mode 1) shots per attack modifier of",
+			},
+			{
+				Key:    "weapon_rof_mode_1_secondary_bonus",
+				String: "Gives a weapon rate of fire (mode 1) secondary projectiles modifier of",
+			},
+			{
+				Key:    "weapon_rof_mode_2_shots_bonus",
+				String: "Gives a weapon rate of fire (mode 2) shots per attack modifier of",
+			},
+			{
+				Key:    "weapon_rof_mode_2_secondary_bonus",
+				String: "Gives a weapon rate of fire (mode 2) secondary projectiles modifier of",
+			},
+			{
 				Key:    "cost_reduction",
 				String: "Reduces the attribute cost of",
 			},

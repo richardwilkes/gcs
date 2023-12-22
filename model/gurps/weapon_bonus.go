@@ -79,6 +79,26 @@ func NewWeaponBlockBonus() *WeaponBonus {
 	return newWeaponBonus(WeaponBlockBonusFeatureType)
 }
 
+// NewWeaponRofMode1ShotsBonus creates a new weapon rate of fire mode 1 shots per attack bonus.
+func NewWeaponRofMode1ShotsBonus() *WeaponBonus {
+	return newWeaponBonus(WeaponRofMode1ShotsBonusFeatureType)
+}
+
+// NewWeaponRofMode1SecondaryBonus creates a new weapon rate of fire mode 1 secondary projectile bonus.
+func NewWeaponRofMode1SecondaryBonus() *WeaponBonus {
+	return newWeaponBonus(WeaponRofMode1SecondaryBonusFeatureType)
+}
+
+// NewWeaponRofMode2ShotsBonus creates a new weapon rate of fire mode 2 shots per attack bonus.
+func NewWeaponRofMode2ShotsBonus() *WeaponBonus {
+	return newWeaponBonus(WeaponRofMode2ShotsBonusFeatureType)
+}
+
+// NewWeaponRofMode2SecondaryBonus creates a new weapon rate of fire mode 2 secondary projectile bonus.
+func NewWeaponRofMode2SecondaryBonus() *WeaponBonus {
+	return newWeaponBonus(WeaponRofMode2SecondaryBonusFeatureType)
+}
+
 func newWeaponBonus(t FeatureType) *WeaponBonus {
 	return &WeaponBonus{
 		Type:          t,
@@ -178,6 +198,18 @@ func (w *WeaponBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 		case WeaponBlockBonusFeatureType:
 			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
 			buf.WriteString(i18n.Text(" to block"))
+		case WeaponRofMode1ShotsBonusFeatureType:
+			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
+			buf.WriteString(i18n.Text(" to shots per attack"))
+		case WeaponRofMode1SecondaryBonusFeatureType:
+			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
+			buf.WriteString(i18n.Text(" to secondary projectiles"))
+		case WeaponRofMode2ShotsBonusFeatureType:
+			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
+			buf.WriteString(i18n.Text(" to shots per attack"))
+		case WeaponRofMode2SecondaryBonusFeatureType:
+			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
+			buf.WriteString(i18n.Text(" to secondary projectiles"))
 		default:
 			return
 		}

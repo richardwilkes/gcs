@@ -102,21 +102,21 @@ func (d *generalSettingsDockable) initContent(content *unison.Panel) {
 	d.createTechLevelField(content)
 	d.createCalendarPopup(content)
 	initialListScaleTitle := i18n.Text("Initial List Scale")
-	content.AddChild(NewFieldLeadingLabel(initialListScaleTitle))
+	content.AddChild(NewFieldLeadingLabel(initialListScaleTitle, false))
 	d.initialListScaleField = NewPercentageField(nil, "", initialListScaleTitle,
 		func() int { return gurps.GlobalSettings().General.InitialListUIScale },
 		func(v int) { gurps.GlobalSettings().General.InitialListUIScale = v },
 		gurps.InitialUIScaleMin, gurps.InitialUIScaleMax, false, false)
 	content.AddChild(WrapWithSpan(2, d.initialListScaleField))
 	initialEditorScaleTitle := i18n.Text("Initial Editor Scale")
-	content.AddChild(NewFieldLeadingLabel(initialEditorScaleTitle))
+	content.AddChild(NewFieldLeadingLabel(initialEditorScaleTitle, false))
 	d.initialEditorScaleField = NewPercentageField(nil, "", initialEditorScaleTitle,
 		func() int { return gurps.GlobalSettings().General.InitialEditorUIScale },
 		func(v int) { gurps.GlobalSettings().General.InitialEditorUIScale = v },
 		gurps.InitialUIScaleMin, gurps.InitialUIScaleMax, false, false)
 	content.AddChild(WrapWithSpan(2, d.initialEditorScaleField))
 	initialSheetScaleTitle := i18n.Text("Initial Sheet Scale")
-	content.AddChild(NewFieldLeadingLabel(initialSheetScaleTitle))
+	content.AddChild(NewFieldLeadingLabel(initialSheetScaleTitle, false))
 	d.initialSheetScaleField = NewPercentageField(nil, "", initialSheetScaleTitle,
 		func() int { return gurps.GlobalSettings().General.InitialSheetUIScale },
 		func(v int) { gurps.GlobalSettings().General.InitialSheetUIScale = v },
@@ -124,7 +124,7 @@ func (d *generalSettingsDockable) initContent(content *unison.Panel) {
 	content.AddChild(WrapWithSpan(2, d.initialSheetScaleField))
 
 	initialPDFScaleTitle := i18n.Text("Initial PDF Scale")
-	content.AddChild(NewFieldLeadingLabel(initialPDFScaleTitle))
+	content.AddChild(NewFieldLeadingLabel(initialPDFScaleTitle, false))
 	d.initialPDFScaleField = NewPercentageField(nil, "", initialPDFScaleTitle,
 		func() int { return gurps.GlobalSettings().General.InitialPDFUIScale },
 		func(v int) { gurps.GlobalSettings().General.InitialPDFUIScale = v },
@@ -142,14 +142,14 @@ func (d *generalSettingsDockable) initContent(content *unison.Panel) {
 	content.AddChild(WrapWithSpan(2, d.initialPDFScaleField, d.autoScalingPopup))
 
 	initialMarkdownScaleTitle := i18n.Text("Initial Markdown Scale")
-	content.AddChild(NewFieldLeadingLabel(initialMarkdownScaleTitle))
+	content.AddChild(NewFieldLeadingLabel(initialMarkdownScaleTitle, false))
 	d.initialMarkdownScaleField = NewPercentageField(nil, "", initialMarkdownScaleTitle,
 		func() int { return gurps.GlobalSettings().General.InitialMarkdownUIScale },
 		func(v int) { gurps.GlobalSettings().General.InitialMarkdownUIScale = v },
 		gurps.InitialUIScaleMin, gurps.InitialUIScaleMax, false, false)
 	content.AddChild(WrapWithSpan(2, d.initialMarkdownScaleField))
 	initialImageScaleTitle := i18n.Text("Initial Image Scale")
-	content.AddChild(NewFieldLeadingLabel(initialImageScaleTitle))
+	content.AddChild(NewFieldLeadingLabel(initialImageScaleTitle, false))
 	d.initialImageScaleField = NewPercentageField(nil, "", initialImageScaleTitle,
 		func() int { return gurps.GlobalSettings().General.InitialImageUIScale },
 		func(v int) { gurps.GlobalSettings().General.InitialImageUIScale = v },
@@ -170,7 +170,7 @@ func (d *generalSettingsDockable) initContent(content *unison.Panel) {
 
 func (d *generalSettingsDockable) createPlayerAndDescFields(content *unison.Panel) {
 	title := i18n.Text("Default Player Name")
-	content.AddChild(NewFieldLeadingLabel(title))
+	content.AddChild(NewFieldLeadingLabel(title, false))
 	d.nameField = NewStringField(nil, "", title,
 		func() string { return gurps.GlobalSettings().General.DefaultPlayerName },
 		func(s string) { gurps.GlobalSettings().General.DefaultPlayerName = s })
@@ -191,7 +191,7 @@ func (d *generalSettingsDockable) createCheckboxBlock(content *unison.Panel) {
 			gurps.GlobalSettings().General.AutoFillProfile = state == check.On
 		})
 	d.autoFillProfileCheckbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
-	content.AddChild(NewFieldLeadingLabel(""))
+	content.AddChild(NewFieldLeadingLabel("", false))
 	content.AddChild(d.autoFillProfileCheckbox)
 
 	d.groupContainersOnSortCheckbox = NewCheckBox(nil, "", i18n.Text("Group containers when sorting"),
@@ -202,7 +202,7 @@ func (d *generalSettingsDockable) createCheckboxBlock(content *unison.Panel) {
 			gurps.GlobalSettings().General.GroupContainersOnSort = state == check.On
 		})
 	d.groupContainersOnSortCheckbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
-	content.AddChild(NewFieldLeadingLabel(""))
+	content.AddChild(NewFieldLeadingLabel("", false))
 	content.AddChild(d.groupContainersOnSortCheckbox)
 
 	d.autoAddNaturalAttacksCheckbox = NewCheckBox(nil, "", i18n.Text("Add natural attacks to new sheets"),
@@ -213,7 +213,7 @@ func (d *generalSettingsDockable) createCheckboxBlock(content *unison.Panel) {
 			gurps.GlobalSettings().General.AutoAddNaturalAttacks = state == check.On
 		})
 	d.autoAddNaturalAttacksCheckbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
-	content.AddChild(NewFieldLeadingLabel(""))
+	content.AddChild(NewFieldLeadingLabel("", false))
 	content.AddChild(d.autoAddNaturalAttacksCheckbox)
 
 	d.initialClickSelectsAllCheckbox = NewCheckBox(nil, "", i18n.Text("Initial click on text field selects all"),
@@ -224,13 +224,13 @@ func (d *generalSettingsDockable) createCheckboxBlock(content *unison.Panel) {
 			gurps.GlobalSettings().General.InitialFieldClickSelectsAll = state == check.On
 		})
 	d.initialClickSelectsAllCheckbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
-	content.AddChild(NewFieldLeadingLabel(""))
+	content.AddChild(NewFieldLeadingLabel("", false))
 	content.AddChild(d.initialClickSelectsAllCheckbox)
 }
 
 func (d *generalSettingsDockable) createInitialPointsFields(content *unison.Panel) {
 	title := i18n.Text("Initial Points")
-	content.AddChild(NewFieldLeadingLabel(title))
+	content.AddChild(NewFieldLeadingLabel(title, false))
 	d.pointsField = NewDecimalField(nil, "", title,
 		func() fxp.Int { return gurps.GlobalSettings().General.InitialPoints },
 		func(v fxp.Int) { gurps.GlobalSettings().General.InitialPoints = v }, gurps.InitialPointsMin,
@@ -241,7 +241,7 @@ func (d *generalSettingsDockable) createInitialPointsFields(content *unison.Pane
 
 func (d *generalSettingsDockable) createTechLevelField(content *unison.Panel) {
 	title := i18n.Text("Default Tech Level")
-	content.AddChild(NewFieldLeadingLabel(title))
+	content.AddChild(NewFieldLeadingLabel(title, false))
 	d.techLevelField = NewStringField(nil, "", title,
 		func() string { return gurps.GlobalSettings().General.DefaultTechLevel },
 		func(s string) { gurps.GlobalSettings().General.DefaultTechLevel = s })
@@ -252,7 +252,7 @@ func (d *generalSettingsDockable) createTechLevelField(content *unison.Panel) {
 }
 
 func (d *generalSettingsDockable) createCalendarPopup(content *unison.Panel) {
-	content.AddChild(NewFieldLeadingLabel(i18n.Text("Calendar")))
+	content.AddChild(NewFieldLeadingLabel(i18n.Text("Calendar"), false))
 	d.calendarPopup = unison.NewPopupMenu[string]()
 	libraries := gurps.GlobalSettings().Libraries()
 	for _, lib := range gurps.AvailableCalendarRefs(libraries) {
@@ -273,7 +273,7 @@ func (d *generalSettingsDockable) createCalendarPopup(content *unison.Panel) {
 
 func (d *generalSettingsDockable) createCellAutoMaxWidthField(content *unison.Panel) {
 	title := i18n.Text("Max Auto Column Width")
-	content.AddChild(NewFieldLeadingLabel(title))
+	content.AddChild(NewFieldLeadingLabel(title, false))
 	d.maxAutoColWidthField = NewIntegerField(nil, "", title,
 		func() int { return gurps.GlobalSettings().General.MaximumAutoColWidth },
 		func(v int) { gurps.GlobalSettings().General.MaximumAutoColWidth = v },
@@ -284,29 +284,29 @@ func (d *generalSettingsDockable) createCellAutoMaxWidthField(content *unison.Pa
 
 func (d *generalSettingsDockable) createMonitorResolutionField(content *unison.Panel) {
 	title := i18n.Text("Monitor Resolution")
-	content.AddChild(NewFieldLeadingLabel(title))
+	content.AddChild(NewFieldLeadingLabel(title, false))
 	d.monitorResolutionField = NewNumericFieldWithException[int](nil, "", title,
 		func(minValue, maxValue int) []int { return []int{minValue, maxValue} },
 		func() int { return gurps.GlobalSettings().General.MonitorResolution },
 		func(v int) { gurps.GlobalSettings().General.MonitorResolution = v },
 		strconv.Itoa, strconv.Atoi, gurps.MonitorResolutionMin, gurps.MonitorResolutionMax, 0)
 	content.AddChild(WrapWithSpan(2, d.monitorResolutionField,
-		NewFieldTrailingLabel(i18n.Text("ppi (A value of 0 will cause the ppi reported by your monitor to be used)"))))
+		NewFieldTrailingLabel(i18n.Text("ppi (A value of 0 will cause the ppi reported by your monitor to be used)"), false)))
 }
 
 func (d *generalSettingsDockable) createImageResolutionField(content *unison.Panel) {
 	title := i18n.Text("Image Export Resolution")
-	content.AddChild(NewFieldLeadingLabel(title))
+	content.AddChild(NewFieldLeadingLabel(title, false))
 	d.exportResolutionField = NewIntegerField(nil, "", title,
 		func() int { return gurps.GlobalSettings().General.ImageResolution },
 		func(v int) { gurps.GlobalSettings().General.ImageResolution = v },
 		gurps.ImageResolutionMin, gurps.ImageResolutionMax, false, false)
-	content.AddChild(WrapWithSpan(2, d.exportResolutionField, NewFieldTrailingLabel(i18n.Text("ppi"))))
+	content.AddChild(WrapWithSpan(2, d.exportResolutionField, NewFieldTrailingLabel(i18n.Text("ppi"), false)))
 }
 
 func (d *generalSettingsDockable) createTooltipDelayField(content *unison.Panel) {
 	title := i18n.Text("Tooltip Delay")
-	content.AddChild(NewFieldLeadingLabel(title))
+	content.AddChild(NewFieldLeadingLabel(title, false))
 	d.tooltipDelayField = NewDecimalField(nil, "", title,
 		func() fxp.Int { return gurps.GlobalSettings().General.TooltipDelay },
 		func(v fxp.Int) {
@@ -314,12 +314,12 @@ func (d *generalSettingsDockable) createTooltipDelayField(content *unison.Panel)
 			general.TooltipDelay = v
 			general.UpdateToolTipTiming()
 		}, gurps.TooltipDelayMin, gurps.TooltipDelayMax, false, false)
-	content.AddChild(WrapWithSpan(2, d.tooltipDelayField, NewFieldTrailingLabel(i18n.Text("seconds"))))
+	content.AddChild(WrapWithSpan(2, d.tooltipDelayField, NewFieldTrailingLabel(i18n.Text("seconds"), false)))
 }
 
 func (d *generalSettingsDockable) createTooltipDismissalField(content *unison.Panel) {
 	title := i18n.Text("Tooltip Dismissal")
-	content.AddChild(NewFieldLeadingLabel(title))
+	content.AddChild(NewFieldLeadingLabel(title, false))
 	d.tooltipDismissalField = NewDecimalField(nil, "", title,
 		func() fxp.Int { return gurps.GlobalSettings().General.TooltipDismissal },
 		func(v fxp.Int) {
@@ -327,12 +327,12 @@ func (d *generalSettingsDockable) createTooltipDismissalField(content *unison.Pa
 			general.TooltipDismissal = v
 			general.UpdateToolTipTiming()
 		}, gurps.TooltipDismissalMin, gurps.TooltipDismissalMax, false, false)
-	content.AddChild(WrapWithSpan(2, d.tooltipDismissalField, NewFieldTrailingLabel(i18n.Text("seconds"))))
+	content.AddChild(WrapWithSpan(2, d.tooltipDismissalField, NewFieldTrailingLabel(i18n.Text("seconds"), false)))
 }
 
 func (d *generalSettingsDockable) createScrollWheelMultiplierField(content *unison.Panel) {
 	title := i18n.Text("Scroll Wheel Multiplier")
-	content.AddChild(NewFieldLeadingLabel(title))
+	content.AddChild(NewFieldLeadingLabel(title, false))
 	d.scrollWheelMultiplierField = NewDecimalField(nil, "", title,
 		func() fxp.Int { return gurps.GlobalSettings().General.ScrollWheelMultiplier },
 		func(v fxp.Int) { gurps.GlobalSettings().General.ScrollWheelMultiplier = v },
@@ -342,7 +342,7 @@ func (d *generalSettingsDockable) createScrollWheelMultiplierField(content *unis
 }
 
 func (d *generalSettingsDockable) createPathInfoField(content *unison.Panel, title, value string) {
-	content.AddChild(NewFieldLeadingLabel(title))
+	content.AddChild(NewFieldLeadingLabel(title, false))
 	content.AddChild(NewNonEditableField(func(field *NonEditableField) {
 		field.Text = value
 	}))
@@ -356,7 +356,7 @@ func (d *generalSettingsDockable) createPathInfoField(content *unison.Panel, tit
 
 func (d *generalSettingsDockable) createExternalPDFCmdLineField(content *unison.Panel) {
 	title := i18n.Text("External PDF Viewer")
-	content.AddChild(NewFieldLeadingLabel(title))
+	content.AddChild(NewFieldLeadingLabel(title, false))
 	d.externalPDFCmdlineField = NewStringField(nil, "", title,
 		func() string { return gurps.GlobalSettings().General.ExternalPDFCmdLine },
 		func(s string) { gurps.GlobalSettings().General.ExternalPDFCmdLine = strings.TrimSpace(s) })
@@ -379,7 +379,7 @@ In most cases, you'll want to surround the $FILE variable with quotes.`))
 
 func (d *generalSettingsDockable) createLocaleField(content *unison.Panel) {
 	title := i18n.Text("Interface Locale")
-	content.AddChild(NewFieldLeadingLabel(title))
+	content.AddChild(NewFieldLeadingLabel(title, false))
 	d.localeField = NewStringField(nil, "", title,
 		func() string { return languageSetting },
 		func(s string) { languageSetting = strings.TrimSpace(s) })

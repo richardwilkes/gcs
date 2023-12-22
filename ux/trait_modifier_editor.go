@@ -64,7 +64,7 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 		total.SetLayoutData(&unison.FlexLayoutData{
 			MinSize: unison.NewSize(total.Font.SimpleWidth((-fxp.MaxBasePoints*2).String())+insets.Left+insets.Right, 0),
 		})
-		content.AddChild(NewFieldLeadingLabel(i18n.Text("Total")))
+		content.AddChild(NewFieldLeadingLabel(i18n.Text("Total"), false))
 		content.AddChild(total)
 		costTypePopup.SelectionChangedCallback = func(popup *unison.PopupMenu[string]) {
 			index := popup.SelectedIndex()

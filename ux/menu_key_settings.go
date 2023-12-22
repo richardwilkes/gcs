@@ -73,7 +73,7 @@ func (d *menuKeySettingsDockable) sync() {
 
 func (d *menuKeySettingsDockable) fill() {
 	for _, b := range gurps.CurrentBindings() {
-		d.content.AddChild(NewFieldLeadingLabel(b.Action.Title))
+		d.content.AddChild(NewFieldLeadingLabel(b.Action.Title, false))
 		d.createBindingButton(b)
 		d.createResetField(b)
 	}

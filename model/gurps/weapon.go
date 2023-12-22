@@ -14,6 +14,7 @@ package gurps
 import (
 	"encoding/binary"
 	"fmt"
+	"hash"
 	"hash/fnv"
 	"strings"
 	"unsafe"
@@ -79,7 +80,6 @@ type WeaponData struct {
 	UsageNotes         string          `json:"usage_notes,omitempty"`
 	Reach              string          `json:"reach,omitempty"`
 	Range              string          `json:"range,omitempty"`
-	RateOfFire         string          `json:"rate_of_fire,omitempty"`
 	Shots              string          `json:"shots,omitempty"`
 	WeaponAcc          fxp.Int         `json:"weapon_acc,omitempty"`
 	ScopeAcc           fxp.Int         `json:"scope_acc,omitempty"`
@@ -90,7 +90,80 @@ type WeaponData struct {
 	SlugRecoil         fxp.Int         `json:"slug_recoil,omitempty"`
 	BlockModifier      fxp.Int         `json:"block_mod,omitempty"`
 	ParryModifier      fxp.Int         `json:"parry_mod,omitempty"`
+	RateOfFireMode1    RateOfFire      `json:"rate_of_fire_mode_1,omitempty"`
+	RateOfFireMode2    RateOfFire      `json:"rate_of_fire_mode_2,omitempty"`
 	Defaults           []*SkillDefault `json:"defaults,omitempty"`
+}
+
+// RateOfFire holds the rate of fire data for one firing mode of a weapon.
+type RateOfFire struct {
+	ShotsPerAttack             fxp.Int `json:"shots_per_attack,omitempty"`
+	SecondaryProjectiles       fxp.Int `json:"secondary_projectiles,omitempty"`
+	FullAutoOnly               bool    `json:"full_auto_only,omitempty"`
+	HighCyclicControlledBursts bool    `json:"high_cyclic_controlled_bursts,omitempty"`
+}
+
+// ShouldOmit returns true if this RoF should be omitted from the JSON.
+func (r RateOfFire) ShouldOmit() bool {
+	return r == (RateOfFire{})
+}
+
+// nolint:errcheck // Not checking errors on writes to a bytes.Buffer
+func (r RateOfFire) hash(h hash.Hash32) {
+	_ = binary.Write(h, binary.LittleEndian, r.ShotsPerAttack)
+	_ = binary.Write(h, binary.LittleEndian, r.SecondaryProjectiles)
+	_ = binary.Write(h, binary.LittleEndian, r.FullAutoOnly)
+	_ = binary.Write(h, binary.LittleEndian, r.HighCyclicControlledBursts)
+}
+
+func (r *RateOfFire) parseOldRateOfFire(s string) {
+	s = strings.ReplaceAll(s, ".", "x") // Fix some faulty input that exists in the old files
+	r.FullAutoOnly = strings.Contains(s, "!")
+	s = strings.ReplaceAll(s, "!", "")
+	r.HighCyclicControlledBursts = strings.Contains(s, "#")
+	s = strings.ReplaceAll(s, "#", "")
+	s = strings.ReplaceAll(s, "×", "x") // Fix some more faulty input that exists in the old files
+	if strings.HasPrefix(s, "x") {
+		s = "1" + s // Fix some more faulty input that exists in the old files
+	}
+	parts := strings.Split(s, "x")
+	r.ShotsPerAttack, _ = fxp.Extract(s)
+	if len(parts) > 1 {
+		r.SecondaryProjectiles, _ = fxp.Extract(parts[1])
+	}
+}
+
+// Combined returns a string combining the RoF data.
+func (r RateOfFire) Combined(tooltip *xio.ByteBuffer) string {
+	spa := r.ShotsPerAttack.Ceil()
+	if spa <= 0 {
+		return ""
+	}
+	var buffer strings.Builder
+	buffer.WriteString(spa.String())
+	sp := r.SecondaryProjectiles.Ceil()
+	if sp > 0 {
+		buffer.WriteByte('x')
+		buffer.WriteString(sp.String())
+		shotsText := i18n.Text("shots")
+		if spa == fxp.One {
+			shotsText = i18n.Text("shot")
+		}
+		projectilesText := i18n.Text("projectiles")
+		if sp == fxp.One {
+			projectilesText = i18n.Text("projectile")
+		}
+		AppendStringOntoNewLine(tooltip, fmt.Sprintf(i18n.Text("This weapon fires %v %s per attack and each shot releases %v smaller %s."), spa, shotsText, sp, projectilesText))
+	}
+	if r.FullAutoOnly {
+		buffer.WriteByte('!')
+		AppendStringOntoNewLine(tooltip, fmt.Sprintf(i18n.Text("This weapon can only fire on full automatic. Minimum RoF is %v."), r.ShotsPerAttack.Div(fxp.Four).Ceil()))
+	}
+	if r.HighCyclicControlledBursts {
+		buffer.WriteByte('#')
+		AppendStringOntoNewLine(tooltip, i18n.Text("This weapon can fire in high cyclic controlled bursts, reducing Recoil to 1."))
+	}
+	return buffer.String()
 }
 
 // Weapon holds the stats for a weapon.
@@ -145,7 +218,7 @@ func NewWeapon(owner WeaponOwner, weaponType WeaponType) *Weapon {
 		w.Reach = "1"
 		w.Damage.StrengthType = ThrustStrengthDamage
 	case RangedWeaponType:
-		w.RateOfFire = "1"
+		w.RateOfFireMode1.ShotsPerAttack = fxp.One
 		w.Damage.Base = dice.New("1d")
 	default:
 	}
@@ -207,7 +280,6 @@ func (w *Weapon) HashCode() uint32 {
 	_, _ = h.Write([]byte(w.Damage.ResolvedDamage(nil)))
 	_, _ = h.Write([]byte(w.Reach))
 	_, _ = h.Write([]byte(w.Range))
-	_, _ = h.Write([]byte(w.RateOfFire))
 	_, _ = h.Write([]byte(w.Shots))
 	_ = binary.Write(h, binary.LittleEndian, w.Jet)
 	_ = binary.Write(h, binary.LittleEndian, w.WeaponAcc)
@@ -229,6 +301,8 @@ func (w *Weapon) HashCode() uint32 {
 	_ = binary.Write(h, binary.LittleEndian, w.Fencing)
 	_ = binary.Write(h, binary.LittleEndian, w.Unbalanced)
 	_ = binary.Write(h, binary.LittleEndian, w.ParryModifier)
+	w.RateOfFireMode1.hash(h)
+	w.RateOfFireMode2.hash(h)
 	return h.Sum32()
 }
 
@@ -239,6 +313,7 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 		Parry              string  `json:"parry,omitempty"`
 		Block              string  `json:"block,omitempty"`
 		Range              string  `json:"range,omitempty"`
+		RateOfFire         string  `json:"rate_of_fire,omitempty"`
 		Damage             string  `json:"damage,omitempty"`
 		ResolvedMinST      fxp.Int `json:"resolved_min_st,omitempty"`
 		ResolvedWeaponAcc  fxp.Int `json:"resolved_weapon_acc,omitempty"`
@@ -271,6 +346,7 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 		data.Calc.Range = w.ResolvedRange()
 		data.Calc.ResolvedWeaponAcc, data.Calc.ResolvedScopeAcc = w.ResolvedAccuracy(nil)
 		data.Calc.ResolvedNormalBulk, data.Calc.ResolvedGiantBulk = w.ResolvedBulk(nil)
+		data.Calc.RateOfFire = w.CombinedRateOfFire(nil)
 	default:
 	}
 	return json.Marshal(&data)
@@ -286,18 +362,30 @@ func (w *Weapon) UnmarshalJSON(data []byte) error {
 		OldRecoil          string `json:"recoil"`
 		OldBlock           string `json:"block"`
 		OldParry           string `json:"parry"`
+		OldRateOfFire      string `json:"rate_of_fire"`
 	}
 	var wdata oldWeaponData
 	if err := json.Unmarshal(data, &wdata); err != nil {
 		return err
 	}
 	w.WeaponData = wdata.WeaponData
-	if wdata.OldAccuracy != "" {
-		if w.Jet = strings.ToLower(strings.TrimSpace(wdata.OldAccuracy)) == "jet"; !w.Jet {
+	if strings.Contains(strings.ToLower(wdata.OldAccuracy), "jet") ||
+		strings.Contains(strings.ToLower(wdata.OldRateOfFire), "jet") {
+		w.Jet = true
+	}
+	if !w.Jet {
+		if wdata.OldAccuracy != "" {
 			parts := strings.Split(wdata.OldAccuracy, "+")
 			w.WeaponAcc, _ = fxp.Extract(parts[0])
 			if len(parts) > 1 {
 				w.ScopeAcc, _ = fxp.Extract(parts[1])
+			}
+		}
+		if wdata.OldRateOfFire != "" {
+			parts := strings.Split(wdata.OldRateOfFire, "/")
+			w.RateOfFireMode1.parseOldRateOfFire(parts[0])
+			if len(parts) > 1 {
+				w.RateOfFireMode2.parseOldRateOfFire(parts[1])
 			}
 		}
 	}
@@ -677,6 +765,53 @@ func (w *Weapon) ResolvedAccuracy(tooltip *xio.ByteBuffer) (weapon, scope fxp.In
 	return weaponAcc.Max(0), scopeAcc.Max(0)
 }
 
+// ResolvedRateOfFire returns the resolved weapon and scope accuracies for this weapon.
+func (w *Weapon) ResolvedRateOfFire(tooltip *xio.ByteBuffer) (shots1, secondary1, shots2, secondary2 fxp.Int) {
+	if w.Jet {
+		return 0, 0, 0, 0
+	}
+	pc := w.PC()
+	if pc == nil {
+		return w.RateOfFireMode1.ShotsPerAttack, w.RateOfFireMode1.SecondaryProjectiles,
+			w.RateOfFireMode2.ShotsPerAttack, w.RateOfFireMode2.SecondaryProjectiles
+	}
+	var mode1, mode2 xio.ByteBuffer
+	shots1, secondary1 = w.collectRateOfFireBonuses(&mode1, &w.RateOfFireMode1, WeaponRofMode1ShotsBonusFeatureType, WeaponRofMode1SecondaryBonusFeatureType)
+	shots2, secondary2 = w.collectRateOfFireBonuses(&mode2, &w.RateOfFireMode2, WeaponRofMode2ShotsBonusFeatureType, WeaponRofMode2SecondaryBonusFeatureType)
+	switch {
+	case mode1.Len() == 0:
+		AppendBufferOntoNewLine(tooltip, &mode2)
+	case mode2.Len() != 0:
+		if mode1.Len() != 0 {
+			_ = mode1.InsertString(0, i18n.Text("First mode:\n"))
+		}
+		if mode2.Len() != 0 {
+			_ = mode2.InsertString(0, i18n.Text("Second mode:\n"))
+			if mode1.Len() != 0 {
+				mode1.WriteString("\n\n")
+			}
+			mode1.WriteString(mode2.String())
+		}
+		AppendBufferOntoNewLine(tooltip, &mode1)
+	default:
+		AppendBufferOntoNewLine(tooltip, &mode1)
+	}
+	return shots1, secondary1, shots2, secondary2
+}
+
+func (w *Weapon) collectRateOfFireBonuses(tooltip *xio.ByteBuffer, rof *RateOfFire, shotsFeature, secondaryFeature FeatureType) (shots, secondary fxp.Int) {
+	shots = rof.ShotsPerAttack
+	secondary = rof.SecondaryProjectiles
+	for _, bonus := range w.collectWeaponBonuses(1, tooltip, shotsFeature, secondaryFeature) {
+		if bonus.Type == shotsFeature {
+			shots += bonus.AdjustedAmount()
+		} else if bonus.Type == secondaryFeature {
+			secondary += bonus.AdjustedAmount()
+		}
+	}
+	return shots.Ceil().Max(0), secondary.Ceil().Max(0)
+}
+
 // ResolvedBulk returns the resolved bulk for this weapon.
 func (w *Weapon) ResolvedBulk(tooltip *xio.ByteBuffer) (normal, giant fxp.Int) {
 	normal = w.NormalBulk
@@ -967,7 +1102,30 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 	case WeaponRangeColumn:
 		data.Primary = w.ResolvedRange()
 	case WeaponRoFColumn:
-		data.Primary = w.RateOfFire
+		data.Primary = w.CombinedRateOfFire(&buffer)
+		if w.Type == RangedWeaponType && !w.Jet {
+			var mode1, mode2 xio.ByteBuffer
+			rof1 := w.RateOfFireMode1.Combined(&mode1)
+			rof2 := w.RateOfFireMode2.Combined(&mode2)
+			switch {
+			case rof1 == "":
+				data.Tooltip = mode2.String()
+			case rof2 != "":
+				if mode1.Len() != 0 {
+					_ = mode1.InsertString(0, i18n.Text("First mode:\n"))
+				}
+				if mode2.Len() != 0 {
+					_ = mode2.InsertString(0, i18n.Text("Second mode:\n"))
+					if mode1.Len() != 0 {
+						mode1.WriteString("\n\n")
+					}
+					mode1.WriteString(mode2.String())
+				}
+				data.Tooltip = mode1.String()
+			default:
+				data.Tooltip = mode1.String()
+			}
+		}
 	case WeaponShotsColumn:
 		data.Primary = w.Shots
 	case WeaponBulkColumn:
@@ -1124,6 +1282,28 @@ func (w *Weapon) CombinedBlock(tooltip *xio.ByteBuffer) string {
 		}
 	}
 	return ""
+}
+
+// CombinedRateOfFire returns the combined string used in the GURPS weapon tables for rate of fire.
+func (w *Weapon) CombinedRateOfFire(tooltip *xio.ByteBuffer) string {
+	if w.Type != RangedWeaponType {
+		return ""
+	}
+	if w.Jet {
+		return i18n.Text("Jet")
+	}
+	rofCopy1 := w.RateOfFireMode1
+	rofCopy2 := w.RateOfFireMode2
+	rofCopy1.ShotsPerAttack, rofCopy1.SecondaryProjectiles, rofCopy2.ShotsPerAttack, rofCopy2.SecondaryProjectiles = w.ResolvedRateOfFire(tooltip)
+	rof1 := rofCopy1.Combined(nil)
+	rof2 := rofCopy2.Combined(nil)
+	if rof1 == "" {
+		return rof2
+	}
+	if rof2 != "" {
+		return rof1 + "/" + rof2
+	}
+	return rof1
 }
 
 // OwningEntity returns the owning Entity.

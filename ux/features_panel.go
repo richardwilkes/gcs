@@ -207,7 +207,7 @@ func (p *featuresPanel) createDRBonusPanel(f *gurps.DRBonus) *unison.Panel {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	wrapper.AddChild(NewFieldLeadingLabel(i18n.Text("against")))
+	wrapper.AddChild(NewFieldLeadingLabel(i18n.Text("against"), false))
 	field := NewStringField(nil, "", i18n.Text("Specialization"), func() string { return f.Specialization },
 		func(value string) {
 			f.Specialization = value
@@ -217,7 +217,7 @@ func (p *featuresPanel) createDRBonusPanel(f *gurps.DRBonus) *unison.Panel {
 	field.Watermark = gurps.AllID
 	field.SetMinimumTextWidthUsing("Specialization")
 	wrapper.AddChild(field)
-	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("attacks")))
+	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("attacks"), false))
 	panel.AddChild(wrapper)
 	return panel
 }
@@ -661,6 +661,14 @@ func (p *featuresPanel) createFeatureForType(featureType gurps.FeatureType) gurp
 		bonus = gurps.NewWeaponParryBonus()
 	case gurps.WeaponBlockBonusFeatureType:
 		bonus = gurps.NewWeaponBlockBonus()
+	case gurps.WeaponRofMode1ShotsBonusFeatureType:
+		bonus = gurps.NewWeaponRofMode1ShotsBonus()
+	case gurps.WeaponRofMode1SecondaryBonusFeatureType:
+		bonus = gurps.NewWeaponRofMode1SecondaryBonus()
+	case gurps.WeaponRofMode2ShotsBonusFeatureType:
+		bonus = gurps.NewWeaponRofMode2ShotsBonus()
+	case gurps.WeaponRofMode2SecondaryBonusFeatureType:
+		bonus = gurps.NewWeaponRofMode2SecondaryBonus()
 	default:
 		errs.Log(errs.New("unknown feature type"), "type", featureType.Key())
 		return nil

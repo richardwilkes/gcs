@@ -88,7 +88,7 @@ func (p *bodySettingsPanel) createContent() *unison.Panel {
 	content.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 
 	text := i18n.Text("Name")
-	content.AddChild(NewFieldLeadingLabel(text))
+	content.AddChild(NewFieldLeadingLabel(text, false))
 	field := NewStringField(p.dockable.targetMgr, p.dockable.body.KeyPrefix+"name", text,
 		func() string { return p.dockable.body.Name },
 		func(s string) { p.dockable.body.Name = s })
@@ -97,7 +97,7 @@ func (p *bodySettingsPanel) createContent() *unison.Panel {
 	content.AddChild(field)
 
 	text = i18n.Text("Roll")
-	content.AddChild(NewFieldLeadingLabel(text))
+	content.AddChild(NewFieldLeadingLabel(text, false))
 	field = NewStringField(p.dockable.targetMgr, p.dockable.body.KeyPrefix+"roll", text,
 		func() string { return p.dockable.body.Roll.String() },
 		func(s string) { p.dockable.body.Roll = dice.New(s) })

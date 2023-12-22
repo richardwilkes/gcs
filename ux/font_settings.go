@@ -77,9 +77,9 @@ func (d *fontSettingsDockable) sync() {
 func (d *fontSettingsDockable) fill() {
 	for i, one := range gurps.CurrentFonts() {
 		if i%2 == 0 {
-			d.content.AddChild(NewFieldLeadingLabel(one.Title))
+			d.content.AddChild(NewFieldLeadingLabel(one.Title, false))
 		} else {
-			d.content.AddChild(NewFieldInteriorLeadingLabel(one.Title))
+			d.content.AddChild(NewFieldInteriorLeadingLabel(one.Title, false))
 		}
 		d.createFaceField(i)
 		d.createSizeField(i)

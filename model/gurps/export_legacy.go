@@ -1319,7 +1319,7 @@ func (ex *legacyExporter) processRangedKeys(key string, currentID int, w *Weapon
 	case "RANGE":
 		ex.writeEncodedText(w.ResolvedRange())
 	case "ROF":
-		ex.writeEncodedText(w.RateOfFire)
+		ex.writeEncodedText(w.CombinedRateOfFire(nil))
 	case "SHOTS":
 		ex.writeEncodedText(w.Shots)
 	case "RECOIL":
