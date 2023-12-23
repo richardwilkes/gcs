@@ -23,7 +23,6 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/richardwilkes/gcs/v5/model/dbg"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
@@ -1064,7 +1063,7 @@ func (e *Entity) BasicLiftForST(st fxp.Int) fxp.Weight {
 
 func (e *Entity) isSkillLevelResolutionExcluded(name, specialization string) bool {
 	if e.skillResolverExclusions[e.skillLevelResolutionKey(name, specialization)] {
-		if dbg.VariableResolver {
+		if fxp.DebugVariableResolver {
 			if specialization != "" {
 				name += " (" + specialization + ")"
 			}
@@ -1093,7 +1092,7 @@ func (e *Entity) skillLevelResolutionKey(name, specialization string) string {
 // ResolveVariable implements eval.VariableResolver.
 func (e *Entity) ResolveVariable(variableName string) string {
 	if e.variableResolverExclusions[variableName] {
-		if dbg.VariableResolver {
+		if fxp.DebugVariableResolver {
 			errs.Log(errs.New("attempt to resolve variable via itself"), "name", "$"+variableName)
 		}
 		return ""
@@ -1117,14 +1116,14 @@ func (e *Entity) ResolveVariable(variableName string) string {
 	parts := strings.SplitN(variableName, ".", 2)
 	attr := e.Attributes.Set[parts[0]]
 	if attr == nil {
-		if dbg.VariableResolver {
+		if fxp.DebugVariableResolver {
 			errs.Log(errs.New("no such variable"), "name", "$"+variableName)
 		}
 		return ""
 	}
 	def := attr.AttributeDef()
 	if def == nil {
-		if dbg.VariableResolver {
+		if fxp.DebugVariableResolver {
 			errs.Log(errs.New("no such variable definition"), "name", "$"+variableName)
 		}
 		return ""

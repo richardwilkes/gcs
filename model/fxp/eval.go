@@ -12,7 +12,6 @@
 package fxp
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/dbg"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/eval"
 )
@@ -22,6 +21,9 @@ var (
 	EvalOperators = eval.FixedOperators[DP](true)
 	EvalFuncs     = eval.FixedFunctions[DP]()
 )
+
+// DebugVariableResolver produces debug output for the variable resolver when enabled.
+var DebugVariableResolver = false
 
 // NewEvaluator creates a new evaluator whose number type is an Int.
 func NewEvaluator(resolver eval.VariableResolver) *eval.Evaluator {
@@ -36,7 +38,7 @@ func NewEvaluator(resolver eval.VariableResolver) *eval.Evaluator {
 func EvaluateToNumber(expression string, resolver eval.VariableResolver) Int {
 	result, err := NewEvaluator(resolver).Evaluate(expression)
 	if err != nil {
-		if dbg.VariableResolver {
+		if DebugVariableResolver {
 			errs.Log(errs.NewWithCause("unable to resolve expression", err), "expression", expression)
 		}
 		return 0
@@ -50,7 +52,7 @@ func EvaluateToNumber(expression string, resolver eval.VariableResolver) Int {
 			return value
 		}
 	}
-	if dbg.VariableResolver {
+	if DebugVariableResolver {
 		errs.Log(errs.NewWithCause("unable to resolve expression to a number", err), "expression", expression)
 	}
 	return 0

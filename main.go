@@ -18,7 +18,7 @@ import (
 	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/early"
-	"github.com/richardwilkes/gcs/v5/model/dbg"
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox"
@@ -58,7 +58,7 @@ func main() {
 	var convertFiles bool
 	cl.NewGeneralOption(&convertFiles).SetName("convert").SetSingle('c').
 		SetUsage(i18n.Text("Converts all files specified on the command line to the current data format. If a directory is specified, it will be traversed recursively and all files found will be converted. This operation is intended to easily bring files up to the current version's data format. After all files have been processed, GCS will exit"))
-	cl.NewGeneralOption(&dbg.VariableResolver).SetName("debug-variable-resolver")
+	cl.NewGeneralOption(&fxp.DebugVariableResolver).SetName("debug-variable-resolver")
 	fileList := rotation.ParseAndSetupLogging(cl, false)
 	slog.SetDefault(slog.New(tracelog.New(log.Default().Writer(), slog.LevelInfo)))
 	ux.RegisterKnownFileTypes()
