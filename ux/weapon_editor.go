@@ -50,7 +50,7 @@ func initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.P
 	content.AddChild(unison.NewPanel())
 	addCheckBox(content, i18n.Text("Two-handed"), &e.editorData.TwoHanded)
 	content.AddChild(unison.NewPanel())
-	addCheckBox(content, i18n.Text("Two-handed and unready after attack"), &e.editorData.UnreadyAfterAttack)
+	addCheckBox(content, i18n.Text("Two-handed and unready after attack"), &e.editorData.TwoHandedUnreadyAfterAttack)
 	addLabelAndPopup(content, i18n.Text("Base Damage"), "", gurps.AllStrengthDamage, &e.editorData.Damage.StrengthType)
 	addLabelAndNullableDice(content, i18n.Text("Damage Modifier"), "", &e.editorData.Damage.Base)
 	addLabelAndDecimalField(content, nil, "", i18n.Text("Damage Modifier Per Die"), "", &e.editorData.Damage.ModifierPerDie,

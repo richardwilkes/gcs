@@ -613,12 +613,12 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			MinST:              w.MinST,
 			ParryValue:         w.ResolvedParry(nil),
 			BlockValue:         w.ResolvedBlock(nil),
-			CanParry:           w.CanParry,
-			Fencing:            w.Fencing,
-			Unbalanced:         w.Unbalanced,
-			CanBlock:           w.CanBlock,
-			TwoHanded:          w.TwoHanded,
-			UnreadyAfterAttack: w.UnreadyAfterAttack,
+			CanParry:           w.ResolveBoolFlag(CanParryWeaponSwitchType, w.CanParry),
+			Fencing:            w.ResolveBoolFlag(FencingWeaponSwitchType, w.Fencing),
+			Unbalanced:         w.ResolveBoolFlag(UnbalancedWeaponSwitchType, w.Unbalanced),
+			CanBlock:           w.ResolveBoolFlag(CanBlockWeaponSwitchType, w.CanBlock),
+			TwoHanded:          w.ResolveBoolFlag(TwoHandedWeaponSwitchType, w.TwoHanded),
+			UnreadyAfterAttack: w.ResolveBoolFlag(TwoHandedAndUnreadyAfterAttackWeaponSwitchType, w.TwoHandedUnreadyAfterAttack),
 		})
 	}
 	for _, w := range entity.EquippedWeapons(RangedWeaponType) {
@@ -647,13 +647,13 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			SlugRecoil:         slug,
 			RateOfFireMode1:    w.RateOfFireMode1,
 			RateOfFireMode2:    w.RateOfFireMode2,
-			Bipod:              w.Bipod,
-			Mounted:            w.Mounted,
-			MusketRest:         w.MusketRest,
-			TwoHanded:          w.TwoHanded,
-			UnreadyAfterAttack: w.UnreadyAfterAttack,
-			Jet:                w.Jet,
-			RetractingStock:    w.RetractingStock,
+			Bipod:              w.ResolveBoolFlag(BipodWeaponSwitchType, w.Bipod),
+			Mounted:            w.ResolveBoolFlag(MountedWeaponSwitchType, w.Mounted),
+			MusketRest:         w.ResolveBoolFlag(MusketRestWeaponSwitchType, w.MusketRest),
+			TwoHanded:          w.ResolveBoolFlag(TwoHandedWeaponSwitchType, w.TwoHanded),
+			UnreadyAfterAttack: w.ResolveBoolFlag(TwoHandedAndUnreadyAfterAttackWeaponSwitchType, w.TwoHandedUnreadyAfterAttack),
+			Jet:                w.ResolveBoolFlag(JetWeaponSwitchType, w.Jet),
+			RetractingStock:    w.ResolveBoolFlag(RetractingStockWeaponSwitchType, w.RetractingStock),
 		})
 	}
 	if err = tmpl.Execute(buffer, data); err != nil {

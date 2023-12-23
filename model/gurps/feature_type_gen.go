@@ -42,6 +42,7 @@ const (
 	WeaponRofMode1SecondaryBonusFeatureType
 	WeaponRofMode2ShotsBonusFeatureType
 	WeaponRofMode2SecondaryBonusFeatureType
+	WeaponSwitchFeatureType
 	CostReductionFeatureType
 	ContainedWeightReductionFeatureType
 	LastFeatureType = ContainedWeightReductionFeatureType
@@ -70,6 +71,7 @@ var AllFeatureType = []FeatureType{
 	WeaponRofMode1SecondaryBonusFeatureType,
 	WeaponRofMode2ShotsBonusFeatureType,
 	WeaponRofMode2SecondaryBonusFeatureType,
+	WeaponSwitchFeatureType,
 	CostReductionFeatureType,
 	ContainedWeightReductionFeatureType,
 }
@@ -130,6 +132,8 @@ func (enum FeatureType) Key() string {
 		return "weapon_rof_mode_2_shots_bonus"
 	case WeaponRofMode2SecondaryBonusFeatureType:
 		return "weapon_rof_mode_2_secondary_bonus"
+	case WeaponSwitchFeatureType:
+		return "weapon_switch"
 	case CostReductionFeatureType:
 		return "cost_reduction"
 	case ContainedWeightReductionFeatureType:
@@ -177,13 +181,15 @@ func (enum FeatureType) String() string {
 	case WeaponBlockBonusFeatureType:
 		return i18n.Text("Gives a weapon block modifier of")
 	case WeaponRofMode1ShotsBonusFeatureType:
-		return i18n.Text("Gives a weapon rate of fire (mode 1) shots per attack modifier of")
+		return i18n.Text("Gives a weapon shots per attack (mode 1) modifier of")
 	case WeaponRofMode1SecondaryBonusFeatureType:
-		return i18n.Text("Gives a weapon rate of fire (mode 1) secondary projectiles modifier of")
+		return i18n.Text("Gives a weapon secondary projectiles (mode 1) modifier of")
 	case WeaponRofMode2ShotsBonusFeatureType:
-		return i18n.Text("Gives a weapon rate of fire (mode 2) shots per attack modifier of")
+		return i18n.Text("Gives a weapon shots per attack (mode 2) modifier of")
 	case WeaponRofMode2SecondaryBonusFeatureType:
-		return i18n.Text("Gives a weapon rate of fire (mode 2) secondary projectiles modifier of")
+		return i18n.Text("Gives a weapon secondary projectiles (mode 2) modifier of")
+	case WeaponSwitchFeatureType:
+		return i18n.Text("Set the weapon flag")
 	case CostReductionFeatureType:
 		return i18n.Text("Reduces the attribute cost of")
 	case ContainedWeightReductionFeatureType:

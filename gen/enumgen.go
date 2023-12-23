@@ -527,19 +527,23 @@ func main() {
 			},
 			{
 				Key:    "weapon_rof_mode_1_shots_bonus",
-				String: "Gives a weapon rate of fire (mode 1) shots per attack modifier of",
+				String: "Gives a weapon shots per attack (mode 1) modifier of",
 			},
 			{
 				Key:    "weapon_rof_mode_1_secondary_bonus",
-				String: "Gives a weapon rate of fire (mode 1) secondary projectiles modifier of",
+				String: "Gives a weapon secondary projectiles (mode 1) modifier of",
 			},
 			{
 				Key:    "weapon_rof_mode_2_shots_bonus",
-				String: "Gives a weapon rate of fire (mode 2) shots per attack modifier of",
+				String: "Gives a weapon shots per attack (mode 2) modifier of",
 			},
 			{
 				Key:    "weapon_rof_mode_2_secondary_bonus",
-				String: "Gives a weapon rate of fire (mode 2) secondary projectiles modifier of",
+				String: "Gives a weapon secondary projectiles (mode 2) modifier of",
+			},
+			{
+				Key:    "weapon_switch",
+				String: "Set the weapon flag",
 			},
 			{
 				Key:    "cost_reduction",
@@ -548,6 +552,57 @@ func main() {
 			{
 				Key:    "contained_weight_reduction",
 				String: "Reduces the contained weight by",
+			},
+		},
+	})
+	processSourceTemplate(enumTmpl, &enumInfo{
+		Pkg:  "model/gurps",
+		Name: "weapon_switch_type",
+		Desc: "holds the type of a weapon switch",
+		Values: []enumValue{
+			{
+				Key:           "not_switched",
+				EmptyStringOK: true,
+				NoLocalize:    true,
+			},
+			{Key: "can_block"},
+			{Key: "can_parry"},
+			{Key: "fencing"},
+			{
+				Key:    "full_auto_1",
+				String: "Fully Automatic (Mode 1)",
+			},
+			{
+				Key:    "full_auto_2",
+				String: "Fully Automatic (Mode 2)",
+			},
+			{
+				Key:    "bipod",
+				String: "Has Bipod",
+			},
+			{
+				Key:    "controlled_bursts_1",
+				String: "High-cyclic Controlled Bursts (Mode 1)",
+			},
+			{
+				Key:    "controlled_bursts_2",
+				String: "High-cyclic Controlled Bursts (Mode 2)",
+			},
+			{Key: "jet"},
+			{Key: "mounted"},
+			{Key: "retracting_stock"},
+			{
+				Key:    "two-handed",
+				String: "Two-handed",
+			},
+			{Key: "unbalanced"},
+			{
+				Key:    "two-handed_and_unready_after_attack",
+				String: "Two-handed and Unready After Attack",
+			},
+			{
+				Key:    "musket_rest",
+				String: "Uses a Musket Rest",
 			},
 		},
 	})

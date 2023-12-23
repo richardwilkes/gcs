@@ -12,6 +12,7 @@
 package gurps
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -25,7 +26,9 @@ var _ Bonus = &WeaponBonus{}
 type WeaponBonus struct {
 	Type                   FeatureType         `json:"type"`
 	Percent                bool                `json:"percent,omitempty"`
+	SwitchTypeValue        bool                `json:"switch_type_value,omitempty"`
 	SelectionType          WeaponSelectionType `json:"selection_type"`
+	SwitchType             WeaponSwitchType    `json:"switch_type,omitempty"`
 	NameCriteria           StringCriteria      `json:"name,omitempty"`
 	SpecializationCriteria StringCriteria      `json:"specialization,omitempty"`
 	RelativeLevelCriteria  NumericCriteria     `json:"level,omitempty"`
@@ -97,6 +100,11 @@ func NewWeaponRofMode2ShotsBonus() *WeaponBonus {
 // NewWeaponRofMode2SecondaryBonus creates a new weapon rate of fire mode 2 secondary projectile bonus.
 func NewWeaponRofMode2SecondaryBonus() *WeaponBonus {
 	return newWeaponBonus(WeaponRofMode2SecondaryBonusFeatureType)
+}
+
+// NewWeaponSwitchBonus creates a new weapon switch bonus.
+func NewWeaponSwitchBonus() *WeaponBonus {
+	return newWeaponBonus(WeaponSwitchFeatureType)
 }
 
 func newWeaponBonus(t FeatureType) *WeaponBonus {
@@ -210,6 +218,8 @@ func (w *WeaponBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 		case WeaponRofMode2SecondaryBonusFeatureType:
 			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
 			buf.WriteString(i18n.Text(" to secondary projectiles"))
+		case WeaponSwitchFeatureType:
+			fmt.Fprintf(&buf, "%v set to %v", w.SwitchType, w.SwitchTypeValue)
 		default:
 			return
 		}

@@ -569,17 +569,41 @@ func (p *featuresPanel) createCostReductionPanel(f *gurps.CostReduction) *unison
 
 func (p *featuresPanel) addLeveledModifierLine(parent *unison.Panel, f gurps.Feature, amount *gurps.LeveledAmount) {
 	panel := unison.NewPanel()
-	p.addTypeSwitcher(panel, f)
+	switcher := p.addTypeSwitcher(panel, f)
 	switch ft := f.(type) {
 	case *gurps.WeaponBonus:
-		var title string
-		if ft.Type == gurps.WeaponBonusFeatureType {
-			title = i18n.Text("per die")
+		if ft.Type == gurps.WeaponSwitchFeatureType {
+			wrapper := unison.NewPanel()
+			wrapper.AddChild(switcher)
+			switcher.SetLayoutData(&unison.FlexLayoutData{HSpan: 3})
+			if ft.SwitchType == gurps.NotSwitchedWeaponSwitchType {
+				ft.SwitchType = gurps.AllWeaponSwitchType[1]
+			}
+			spacer := unison.NewPanel()
+			spacer.SetLayoutData(&unison.FlexLayoutData{SizeHint: unison.Size{Width: 16}})
+			wrapper.AddChild(spacer)
+			addPopup(wrapper, gurps.AllWeaponSwitchType[1:], &ft.SwitchType)
+			addBoolPopup(wrapper, i18n.Text("to true"), i18n.Text("to false"), &ft.SwitchTypeValue)
+			wrapper.SetLayout(&unison.FlexLayout{
+				Columns:  3,
+				HSpacing: unison.StdHSpacing,
+				VSpacing: unison.StdVSpacing,
+			})
+			wrapper.SetLayoutData(&unison.FlexLayoutData{
+				HAlign: align.Fill,
+				HGrab:  true,
+			})
+			panel.AddChild(wrapper)
 		} else {
-			title = i18n.Text("per level")
+			var title string
+			if ft.Type == gurps.WeaponBonusFeatureType {
+				title = i18n.Text("per die")
+			} else {
+				title = i18n.Text("per level")
+			}
+			addLeveledAmountPanel(panel, nil, "", title, amount)
+			addCheckBox(panel, i18n.Text("as a percentage"), &ft.Percent)
 		}
-		addLeveledAmountPanel(panel, nil, "", title, amount)
-		addCheckBox(panel, i18n.Text("as a percentage"), &ft.Percent)
 	default:
 		addLeveledAmountPanel(panel, nil, "", i18n.Text("per level"), amount)
 	}
@@ -602,7 +626,7 @@ func (p *featuresPanel) featureTypesList() []gurps.FeatureType {
 	return gurps.AllFeatureTypesWithoutContainedWeightType
 }
 
-func (p *featuresPanel) addTypeSwitcher(parent *unison.Panel, f gurps.Feature) {
+func (p *featuresPanel) addTypeSwitcher(parent *unison.Panel, f gurps.Feature) *unison.PopupMenu[gurps.FeatureType] {
 	currentType := f.FeatureType()
 	popup := addPopup(parent, p.featureTypesList(), &currentType)
 	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[gurps.FeatureType], index int, item gurps.FeatureType) {
@@ -618,6 +642,7 @@ func (p *featuresPanel) addTypeSwitcher(parent *unison.Panel, f gurps.Feature) {
 			MarkModified(p)
 		}
 	}
+	return popup
 }
 
 func (p *featuresPanel) createFeatureForType(featureType gurps.FeatureType) gurps.Feature {
@@ -669,6 +694,8 @@ func (p *featuresPanel) createFeatureForType(featureType gurps.FeatureType) gurp
 		bonus = gurps.NewWeaponRofMode2ShotsBonus()
 	case gurps.WeaponRofMode2SecondaryBonusFeatureType:
 		bonus = gurps.NewWeaponRofMode2SecondaryBonus()
+	case gurps.WeaponSwitchFeatureType:
+		bonus = gurps.NewWeaponSwitchBonus()
 	default:
 		errs.Log(errs.New("unknown feature type"), "type", featureType.Key())
 		return nil
