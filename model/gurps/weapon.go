@@ -75,10 +75,11 @@ type WeaponData struct {
 	CanParry                    bool            `json:"can_parry,omitempty"`
 	Fencing                     bool            `json:"fencing,omitempty"`
 	Unbalanced                  bool            `json:"unbalanced,omitempty"`
+	CloseCombat                 bool            `json:"close_combat,omitempty"`
+	ReachChangeRequiresReady    bool            `json:"reach_change_requires_ready,omitempty"`
 	Damage                      WeaponDamage    `json:"damage"`
 	Usage                       string          `json:"usage,omitempty"`
 	UsageNotes                  string          `json:"usage_notes,omitempty"`
-	Reach                       string          `json:"reach,omitempty"`
 	Range                       string          `json:"range,omitempty"`
 	Shots                       string          `json:"shots,omitempty"`
 	WeaponAcc                   fxp.Int         `json:"weapon_acc,omitempty"`
@@ -90,6 +91,8 @@ type WeaponData struct {
 	SlugRecoil                  fxp.Int         `json:"slug_recoil,omitempty"`
 	BlockModifier               fxp.Int         `json:"block_mod,omitempty"`
 	ParryModifier               fxp.Int         `json:"parry_mod,omitempty"`
+	MinReach                    fxp.Int         `json:"min_reach,omitempty"`
+	MaxReach                    fxp.Int         `json:"max_reach,omitempty"`
 	RateOfFireMode1             RateOfFire      `json:"rate_of_fire_mode_1,omitempty"`
 	RateOfFireMode2             RateOfFire      `json:"rate_of_fire_mode_2,omitempty"`
 	Defaults                    []*SkillDefault `json:"defaults,omitempty"`
@@ -144,7 +147,8 @@ func NewWeapon(owner WeaponOwner, weaponType WeaponType) *Weapon {
 	}
 	switch weaponType {
 	case MeleeWeaponType:
-		w.Reach = "1"
+		w.MinReach = fxp.One
+		w.MaxReach = fxp.One
 		w.Damage.StrengthType = ThrustStrengthDamage
 	case RangedWeaponType:
 		w.RateOfFireMode1.ShotsPerAttack = fxp.One
@@ -195,7 +199,6 @@ func (w *Weapon) HashCode() uint32 {
 	_, _ = h.Write([]byte(w.Usage))
 	_ = binary.Write(h, binary.LittleEndian, w.SkillLevel(nil))
 	_, _ = h.Write([]byte(w.Damage.ResolvedDamage(nil)))
-	_, _ = h.Write([]byte(w.Reach))
 	_, _ = h.Write([]byte(w.Range))
 	_, _ = h.Write([]byte(w.Shots))
 	_ = binary.Write(h, binary.LittleEndian, w.Jet)
@@ -218,6 +221,10 @@ func (w *Weapon) HashCode() uint32 {
 	_ = binary.Write(h, binary.LittleEndian, w.Fencing)
 	_ = binary.Write(h, binary.LittleEndian, w.Unbalanced)
 	_ = binary.Write(h, binary.LittleEndian, w.ParryModifier)
+	_ = binary.Write(h, binary.LittleEndian, w.MinReach)
+	_ = binary.Write(h, binary.LittleEndian, w.MaxReach)
+	_ = binary.Write(h, binary.LittleEndian, w.CloseCombat)
+	_ = binary.Write(h, binary.LittleEndian, w.ReachChangeRequiresReady)
 	w.RateOfFireMode1.hash(h)
 	w.RateOfFireMode2.hash(h)
 	return h.Sum32()
@@ -280,6 +287,7 @@ func (w *Weapon) UnmarshalJSON(data []byte) error {
 		OldBlock           string `json:"block"`
 		OldParry           string `json:"parry"`
 		OldRateOfFire      string `json:"rate_of_fire"`
+		OldReach           string `json:"reach"`
 	}
 	var wdata oldWeaponData
 	if err := json.Unmarshal(data, &wdata); err != nil {
@@ -346,6 +354,26 @@ func (w *Weapon) UnmarshalJSON(data []byte) error {
 			w.Unbalanced = strings.Contains(lowered, "u")
 			w.ParryModifier, _ = fxp.Extract(lowered)
 		}
+	}
+	if wdata.OldReach != "" {
+		lowered := strings.ToLower(strings.ReplaceAll(strings.ReplaceAll(wdata.OldReach, "-", ","), " ", ""))
+		w.CloseCombat = strings.Contains(lowered, "c")
+		w.ReachChangeRequiresReady = strings.Contains(lowered, "*")
+		lowered = strings.ReplaceAll(lowered, "*", "")
+		parts := strings.Split(lowered, ",")
+		w.MinReach, _ = fxp.Extract(parts[0])
+		if len(parts) > 1 {
+			for _, one := range parts[1:] {
+				reach, _ := fxp.Extract(one)
+				if reach > w.MaxReach {
+					w.MaxReach = reach
+				}
+			}
+		}
+		if w.CloseCombat && w.MinReach == 0 && w.MaxReach != 0 {
+			w.MinReach = fxp.One
+		}
+		w.MaxReach = max(w.MaxReach, w.MinReach)
 	}
 	var zero uuid.UUID
 	if w.WeaponData.ID == zero {
@@ -687,6 +715,28 @@ func (w *Weapon) ResolvedAccuracy(tooltip *xio.ByteBuffer) (weapon, scope fxp.In
 	return weaponAcc.Max(0), scopeAcc.Max(0)
 }
 
+// ResolvedReach returns the resolved reach for this weapon.
+func (w *Weapon) ResolvedReach(tooltip *xio.ByteBuffer) (minReach, maxReach fxp.Int) {
+	minReach = w.MinReach
+	maxReach = w.MaxReach
+	if minReach == 0 && maxReach == 0 {
+		return 0, 0
+	}
+	for _, bonus := range w.collectWeaponBonuses(1, tooltip, WeaponMinReachBonusFeatureType, WeaponMaxReachBonusFeatureType) {
+		if bonus.Type == WeaponMinReachBonusFeatureType {
+			minReach += bonus.AdjustedAmount()
+		} else if bonus.Type == WeaponMaxReachBonusFeatureType {
+			maxReach += bonus.AdjustedAmount()
+		}
+	}
+	minReach = minReach.Max(0)
+	maxReach = maxReach.Max(0)
+	if maxReach < minReach {
+		minReach = maxReach
+	}
+	return minReach, maxReach
+}
+
 // ResolvedRateOfFire returns the resolved weapon and scope accuracies for this weapon.
 func (w *Weapon) ResolvedRateOfFire(tooltip *xio.ByteBuffer) (shots1, secondary1, shots2, secondary2 fxp.Int) {
 	if w.ResolveBoolFlag(JetWeaponSwitchType, w.Jet) {
@@ -997,7 +1047,10 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 	case WeaponDamageColumn:
 		data.Primary = w.Damage.ResolvedDamage(&buffer)
 	case WeaponReachColumn:
-		data.Primary = w.Reach
+		data.Primary = w.CombinedReach(&buffer)
+		if w.ResolveBoolFlag(ReachChangeRequiresReadyWeaponSwitchType, w.ReachChangeRequiresReady) {
+			data.Tooltip = i18n.Text("Changing reach requires a Ready maneuver.")
+		}
 	case WeaponSTColumn:
 		data.Primary = w.CombinedMinST()
 		var tooltip strings.Builder
@@ -1234,6 +1287,34 @@ func (w *Weapon) CombinedBlock(tooltip *xio.ByteBuffer) string {
 		}
 	}
 	return ""
+}
+
+// CombinedReach returns the combined string used in the GURPS weapon tables for reach.
+func (w *Weapon) CombinedReach(tooltip *xio.ByteBuffer) string {
+	if w.Type != MeleeWeaponType {
+		return ""
+	}
+	var buffer strings.Builder
+	if w.ResolveBoolFlag(CloseCombatWeaponSwitchType, w.CloseCombat) {
+		buffer.WriteByte('C')
+	}
+	minReach, maxReach := w.ResolvedReach(tooltip)
+	if minReach != 0 || maxReach != 0 {
+		if buffer.Len() != 0 {
+			buffer.WriteByte(',')
+		}
+		if minReach == maxReach {
+			buffer.WriteString(minReach.String())
+		} else {
+			buffer.WriteString(minReach.String())
+			buffer.WriteByte('-')
+			buffer.WriteString(maxReach.String())
+		}
+	}
+	if w.ResolveBoolFlag(ReachChangeRequiresReadyWeaponSwitchType, w.ReachChangeRequiresReady) {
+		buffer.WriteByte('*')
+	}
+	return buffer.String()
 }
 
 // CombinedRateOfFire returns the combined string used in the GURPS weapon tables for rate of fire.

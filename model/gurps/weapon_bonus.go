@@ -52,6 +52,16 @@ func NewWeaponMinSTBonus() *WeaponBonus {
 	return newWeaponBonus(WeaponMinSTBonusFeatureType)
 }
 
+// NewWeaponMinReachBonus creates a new weapon minimum reach bonus.
+func NewWeaponMinReachBonus() *WeaponBonus {
+	return newWeaponBonus(WeaponMinReachBonusFeatureType)
+}
+
+// NewWeaponMaxReachBonus creates a new weapon maximum reach bonus.
+func NewWeaponMaxReachBonus() *WeaponBonus {
+	return newWeaponBonus(WeaponMaxReachBonusFeatureType)
+}
+
 // NewWeaponAccBonus creates a new weapon accuracy bonus.
 func NewWeaponAccBonus() *WeaponBonus {
 	return newWeaponBonus(WeaponAccBonusFeatureType)
@@ -194,6 +204,12 @@ func (w *WeaponBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 		case WeaponMinSTBonusFeatureType:
 			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
 			buf.WriteString(i18n.Text(" to minimum ST"))
+		case WeaponMinReachBonusFeatureType:
+			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
+			buf.WriteString(i18n.Text(" to minimum reach"))
+		case WeaponMaxReachBonusFeatureType:
+			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
+			buf.WriteString(i18n.Text(" to maximum reach"))
 		case WeaponBulkBonusFeatureType:
 			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
 			buf.WriteString(i18n.Text(" to bulk"))

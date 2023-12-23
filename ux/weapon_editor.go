@@ -63,7 +63,12 @@ func initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.P
 	addLabelAndStringField(content, i18n.Text("Fragmentation Type"), "", &e.editorData.Damage.FragmentationType)
 	switch e.editorData.Type {
 	case gurps.MeleeWeaponType:
-		addLabelAndStringField(content, i18n.Text("Reach"), "", &e.editorData.Reach)
+		addLabelAndDecimalField(content, nil, "", i18n.Text("Minimum Reach"), "", &e.editorData.MinReach, 0, fxp.Max)
+		addLabelAndDecimalField(content, nil, "", i18n.Text("Maximum Reach"), "", &e.editorData.MaxReach, 0, fxp.Max)
+		content.AddChild(unison.NewPanel())
+		addCheckBox(content, i18n.Text("Close Combat"), &e.editorData.CloseCombat)
+		content.AddChild(unison.NewPanel())
+		addCheckBox(content, i18n.Text("Reach Change Requires Ready"), &e.editorData.ReachChangeRequiresReady)
 		parryCheckBox := addCheckBox(content, i18n.Text("Parry Modifier"), &e.editorData.CanParry)
 		parryCheckBox.SetLayoutData(&unison.FlexLayoutData{
 			HAlign: align.End,

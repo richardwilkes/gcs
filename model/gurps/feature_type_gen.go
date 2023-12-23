@@ -34,6 +34,8 @@ const (
 	WeaponScopeAccBonusFeatureType
 	WeaponDRDivisorBonusFeatureType
 	WeaponMinSTBonusFeatureType
+	WeaponMinReachBonusFeatureType
+	WeaponMaxReachBonusFeatureType
 	WeaponRecoilBonusFeatureType
 	WeaponBulkBonusFeatureType
 	WeaponParryBonusFeatureType
@@ -63,6 +65,8 @@ var AllFeatureType = []FeatureType{
 	WeaponScopeAccBonusFeatureType,
 	WeaponDRDivisorBonusFeatureType,
 	WeaponMinSTBonusFeatureType,
+	WeaponMinReachBonusFeatureType,
+	WeaponMaxReachBonusFeatureType,
 	WeaponRecoilBonusFeatureType,
 	WeaponBulkBonusFeatureType,
 	WeaponParryBonusFeatureType,
@@ -116,6 +120,10 @@ func (enum FeatureType) Key() string {
 		return "weapon_dr_divisor_bonus"
 	case WeaponMinSTBonusFeatureType:
 		return "weapon_min_st_bonus"
+	case WeaponMinReachBonusFeatureType:
+		return "weapon_min_reach_bonus"
+	case WeaponMaxReachBonusFeatureType:
+		return "weapon_max_reach_bonus"
 	case WeaponRecoilBonusFeatureType:
 		return "weapon_recoil_bonus"
 	case WeaponBulkBonusFeatureType:
@@ -172,6 +180,10 @@ func (enum FeatureType) String() string {
 		return i18n.Text("Gives a weapon DR divisor modifier of")
 	case WeaponMinSTBonusFeatureType:
 		return i18n.Text("Gives a weapon minimum ST modifier of")
+	case WeaponMinReachBonusFeatureType:
+		return i18n.Text("Gives a weapon minimum reach modifier of")
+	case WeaponMaxReachBonusFeatureType:
+		return i18n.Text("Gives a weapon maximum reach modifier of")
 	case WeaponRecoilBonusFeatureType:
 		return i18n.Text("Gives a weapon recoil modifier of")
 	case WeaponBulkBonusFeatureType:

@@ -510,6 +510,14 @@ func main() {
 				String: "Gives a weapon minimum ST modifier of",
 			},
 			{
+				Key:    "weapon_min_reach_bonus",
+				String: "Gives a weapon minimum reach modifier of",
+			},
+			{
+				Key:    "weapon_max_reach_bonus",
+				String: "Gives a weapon maximum reach modifier of",
+			},
+			{
 				Key:    "weapon_recoil_bonus",
 				String: "Gives a weapon recoil modifier of",
 			},
@@ -567,6 +575,7 @@ func main() {
 			},
 			{Key: "can_block"},
 			{Key: "can_parry"},
+			{Key: "close_combat"},
 			{Key: "fencing"},
 			{
 				Key:    "full_auto_1",
@@ -590,6 +599,7 @@ func main() {
 			},
 			{Key: "jet"},
 			{Key: "mounted"},
+			{Key: "reach_change_requires_ready"},
 			{Key: "retracting_stock"},
 			{
 				Key:    "two-handed",

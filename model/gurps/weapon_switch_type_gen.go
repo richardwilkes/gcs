@@ -24,6 +24,7 @@ const (
 	NotSwitchedWeaponSwitchType WeaponSwitchType = iota
 	CanBlockWeaponSwitchType
 	CanParryWeaponSwitchType
+	CloseCombatWeaponSwitchType
 	FencingWeaponSwitchType
 	FullAuto1WeaponSwitchType
 	FullAuto2WeaponSwitchType
@@ -32,6 +33,7 @@ const (
 	ControlledBursts2WeaponSwitchType
 	JetWeaponSwitchType
 	MountedWeaponSwitchType
+	ReachChangeRequiresReadyWeaponSwitchType
 	RetractingStockWeaponSwitchType
 	TwoHandedWeaponSwitchType
 	UnbalancedWeaponSwitchType
@@ -45,6 +47,7 @@ var AllWeaponSwitchType = []WeaponSwitchType{
 	NotSwitchedWeaponSwitchType,
 	CanBlockWeaponSwitchType,
 	CanParryWeaponSwitchType,
+	CloseCombatWeaponSwitchType,
 	FencingWeaponSwitchType,
 	FullAuto1WeaponSwitchType,
 	FullAuto2WeaponSwitchType,
@@ -53,6 +56,7 @@ var AllWeaponSwitchType = []WeaponSwitchType{
 	ControlledBursts2WeaponSwitchType,
 	JetWeaponSwitchType,
 	MountedWeaponSwitchType,
+	ReachChangeRequiresReadyWeaponSwitchType,
 	RetractingStockWeaponSwitchType,
 	TwoHandedWeaponSwitchType,
 	UnbalancedWeaponSwitchType,
@@ -80,6 +84,8 @@ func (enum WeaponSwitchType) Key() string {
 		return "can_block"
 	case CanParryWeaponSwitchType:
 		return "can_parry"
+	case CloseCombatWeaponSwitchType:
+		return "close_combat"
 	case FencingWeaponSwitchType:
 		return "fencing"
 	case FullAuto1WeaponSwitchType:
@@ -96,6 +102,8 @@ func (enum WeaponSwitchType) Key() string {
 		return "jet"
 	case MountedWeaponSwitchType:
 		return "mounted"
+	case ReachChangeRequiresReadyWeaponSwitchType:
+		return "reach_change_requires_ready"
 	case RetractingStockWeaponSwitchType:
 		return "retracting_stock"
 	case TwoHandedWeaponSwitchType:
@@ -120,6 +128,8 @@ func (enum WeaponSwitchType) String() string {
 		return i18n.Text("Can Block")
 	case CanParryWeaponSwitchType:
 		return i18n.Text("Can Parry")
+	case CloseCombatWeaponSwitchType:
+		return i18n.Text("Close Combat")
 	case FencingWeaponSwitchType:
 		return i18n.Text("Fencing")
 	case FullAuto1WeaponSwitchType:
@@ -136,6 +146,8 @@ func (enum WeaponSwitchType) String() string {
 		return i18n.Text("Jet")
 	case MountedWeaponSwitchType:
 		return i18n.Text("Mounted")
+	case ReachChangeRequiresReadyWeaponSwitchType:
+		return i18n.Text("Reach Change Requires Ready")
 	case RetractingStockWeaponSwitchType:
 		return i18n.Text("Retracting Stock")
 	case TwoHandedWeaponSwitchType:

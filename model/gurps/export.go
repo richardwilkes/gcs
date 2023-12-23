@@ -30,24 +30,28 @@ import (
 )
 
 type exportedMeleeWeapon struct {
-	Description        string
-	Notes              string
-	Usage              string
-	Level              fxp.Int
-	Parry              string
-	Block              string
-	Damage             string
-	Reach              string
-	Strength           string
-	MinST              fxp.Int
-	ParryValue         fxp.Int
-	BlockValue         fxp.Int
-	CanParry           bool
-	Fencing            bool
-	Unbalanced         bool
-	CanBlock           bool
-	TwoHanded          bool
-	UnreadyAfterAttack bool
+	Description              string
+	Notes                    string
+	Usage                    string
+	Level                    fxp.Int
+	Parry                    string
+	Block                    string
+	Damage                   string
+	Reach                    string
+	Strength                 string
+	MinST                    fxp.Int
+	MinReach                 fxp.Int
+	MaxReach                 fxp.Int
+	ParryValue               fxp.Int
+	BlockValue               fxp.Int
+	CanParry                 bool
+	Fencing                  bool
+	Unbalanced               bool
+	CanBlock                 bool
+	TwoHanded                bool
+	UnreadyAfterAttack       bool
+	CloseCombat              bool
+	ReachChangeRequiresReady bool
 }
 
 type exportedRangedWeapon struct {
@@ -600,25 +604,30 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 		return false
 	}, true, false, entity.Notes...)
 	for _, w := range entity.EquippedWeapons(MeleeWeaponType) {
+		minReach, maxReach := w.ResolvedReach(nil)
 		data.MeleeWeapons = append(data.MeleeWeapons, &exportedMeleeWeapon{
-			Description:        w.String(),
-			Notes:              w.Notes(),
-			Usage:              w.Usage,
-			Level:              w.SkillLevel(nil),
-			Parry:              w.CombinedParry(nil),
-			Block:              w.CombinedBlock(nil),
-			Damage:             w.Damage.ResolvedDamage(nil),
-			Reach:              w.Reach,
-			Strength:           w.CombinedMinST(),
-			MinST:              w.MinST,
-			ParryValue:         w.ResolvedParry(nil),
-			BlockValue:         w.ResolvedBlock(nil),
-			CanParry:           w.ResolveBoolFlag(CanParryWeaponSwitchType, w.CanParry),
-			Fencing:            w.ResolveBoolFlag(FencingWeaponSwitchType, w.Fencing),
-			Unbalanced:         w.ResolveBoolFlag(UnbalancedWeaponSwitchType, w.Unbalanced),
-			CanBlock:           w.ResolveBoolFlag(CanBlockWeaponSwitchType, w.CanBlock),
-			TwoHanded:          w.ResolveBoolFlag(TwoHandedWeaponSwitchType, w.TwoHanded),
-			UnreadyAfterAttack: w.ResolveBoolFlag(TwoHandedAndUnreadyAfterAttackWeaponSwitchType, w.TwoHandedUnreadyAfterAttack),
+			Description:              w.String(),
+			Notes:                    w.Notes(),
+			Usage:                    w.Usage,
+			Level:                    w.SkillLevel(nil),
+			Parry:                    w.CombinedParry(nil),
+			Block:                    w.CombinedBlock(nil),
+			Damage:                   w.Damage.ResolvedDamage(nil),
+			Reach:                    w.CombinedReach(nil),
+			Strength:                 w.CombinedMinST(),
+			MinST:                    w.MinST,
+			MinReach:                 minReach,
+			MaxReach:                 maxReach,
+			ParryValue:               w.ResolvedParry(nil),
+			BlockValue:               w.ResolvedBlock(nil),
+			CanParry:                 w.ResolveBoolFlag(CanParryWeaponSwitchType, w.CanParry),
+			Fencing:                  w.ResolveBoolFlag(FencingWeaponSwitchType, w.Fencing),
+			Unbalanced:               w.ResolveBoolFlag(UnbalancedWeaponSwitchType, w.Unbalanced),
+			CanBlock:                 w.ResolveBoolFlag(CanBlockWeaponSwitchType, w.CanBlock),
+			TwoHanded:                w.ResolveBoolFlag(TwoHandedWeaponSwitchType, w.TwoHanded),
+			UnreadyAfterAttack:       w.ResolveBoolFlag(TwoHandedAndUnreadyAfterAttackWeaponSwitchType, w.TwoHandedUnreadyAfterAttack),
+			CloseCombat:              w.ResolveBoolFlag(CloseCombatWeaponSwitchType, w.CloseCombat),
+			ReachChangeRequiresReady: w.ResolveBoolFlag(ReachChangeRequiresReadyWeaponSwitchType, w.ReachChangeRequiresReady),
 		})
 	}
 	for _, w := range entity.EquippedWeapons(RangedWeaponType) {
