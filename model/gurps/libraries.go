@@ -14,7 +14,7 @@ package gurps
 import (
 	"context"
 	"net/http"
-	"sort"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -87,7 +87,7 @@ func (l Libraries) List() []*Library {
 	for _, lib := range l {
 		libs = append(libs, lib)
 	}
-	sort.Slice(libs, func(i, j int) bool { return libs[i].Less(libs[j]) })
+	slices.SortFunc(libs, func(a, b *Library) int { return a.Compare(b) })
 	return libs
 }
 

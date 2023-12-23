@@ -14,7 +14,7 @@ package gurps
 import (
 	"context"
 	"net/http"
-	"sort"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/json"
@@ -85,7 +85,9 @@ func LoadReleases(ctx context.Context, client *http.Client, githubAccountName, a
 			}
 		}
 	}
-	sort.Slice(versions, func(i, j int) bool { return txt.NaturalLess(versions[j].Version, versions[i].Version, true) })
+	slices.SortFunc(versions, func(a, b Release) int {
+		return txt.NaturalCmp(b.Version, a.Version, true)
+	})
 	if len(versions) > 1 && versions[len(versions)-1].Version == currentVersion {
 		versions = versions[:len(versions)-1]
 	}

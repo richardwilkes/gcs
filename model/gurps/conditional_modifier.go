@@ -12,6 +12,7 @@
 package gurps
 
 import (
+	"cmp"
 	"fmt"
 	"slices"
 	"strings"
@@ -64,18 +65,13 @@ func (m *ConditionalModifier) Total() fxp.Int {
 	return total
 }
 
-// Less returns true if this should be sorted above the other.
-func (m *ConditionalModifier) Less(other *ConditionalModifier) bool {
-	if txt.NaturalLess(m.From, other.From, true) {
-		return true
+// Compare returns -1, 0, 1 if this is less than, equal to, or greater than the other.
+func (m *ConditionalModifier) Compare(other *ConditionalModifier) int {
+	result := txt.NaturalCmp(m.From, other.From, true)
+	if result == 0 {
+		result = cmp.Compare(m.Total(), other.Total())
 	}
-	if m.From != other.From {
-		return false
-	}
-	if m.Total() < other.Total() {
-		return true
-	}
-	return false
+	return result
 }
 
 // UUID returns the UUID of this data.

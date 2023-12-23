@@ -15,7 +15,6 @@ import (
 	"fmt"
 	"reflect"
 	"slices"
-	"sort"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -69,7 +68,7 @@ func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 		current: gurps.ClonePointsRecordList(entity.PointsRecord),
 	}
 	e.Self = e
-	sort.Slice(e.current, func(i, j int) bool { return e.current[i].When.After(e.current[j].When) })
+	slices.SortFunc(e.current, func(a, b *gurps.PointsRecord) int { return a.When.Compare(b.When) })
 
 	if defDC := DefaultDockContainer(); defDC != nil {
 		if e.previousDockable = defDC.CurrentDockable(); !toolbox.IsNil(e.previousDockable) {
@@ -273,8 +272,9 @@ func (e *pointsEditor) removeEntry(rec *gurps.PointsRecord) {
 
 func (e *pointsEditor) copyToOtherSheet(rec *gurps.PointsRecord) {
 	availableSheets := OpenSheets(unison.AncestorOrSelf[*Sheet](e.owner))
-	if len(availableSheets) < 2 {
-		unison.WarningDialogWithMessage(i18n.Text("No other character sheets are open!"), i18n.Text("Open one or more other character sheets first."))
+	if len(availableSheets) == 0 {
+		unison.WarningDialogWithMessage(i18n.Text("No other character sheets are open!"),
+			i18n.Text("Open one or more other character sheets first."))
 		return
 	}
 	sheets := PromptForDestination(availableSheets)
@@ -303,7 +303,7 @@ func (e *pointsEditor) copyToOtherSheet(rec *gurps.PointsRecord) {
 		}
 		pe.Self = pe
 		pe.current = slices.Insert(gurps.ClonePointsRecordList(sheet.entity.PointsRecord), 0, rec)
-		sort.Slice(e.current, func(i, j int) bool { return e.current[i].When.After(e.current[j].When) })
+		slices.SortFunc(pe.current, func(a, b *gurps.PointsRecord) int { return a.When.Compare(b.When) })
 		pe.applyWithoutFocusNext()
 	}
 }
@@ -362,7 +362,7 @@ func (e *pointsEditor) AttemptClose() bool {
 		case unison.ModalResponseDiscard:
 		case unison.ModalResponseOK:
 			e.apply()
-		case unison.ModalResponseCancel:
+		default:
 			return false
 		}
 	}

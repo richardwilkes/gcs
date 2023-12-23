@@ -41,9 +41,9 @@ func NewTimeFrom(s string) (Time, error) {
 	return Time(t), nil
 }
 
-// After reports whether this time is after the other time.
-func (e Time) After(other Time) bool {
-	return time.Time(e).After(time.Time(other))
+// Compare returns an integer comparing this time to the other time.
+func (e Time) Compare(other Time) int {
+	return time.Time(e).Compare(time.Time(other))
 }
 
 func (e Time) String() string {

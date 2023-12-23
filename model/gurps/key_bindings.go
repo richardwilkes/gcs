@@ -12,9 +12,10 @@
 package gurps
 
 import (
+	"cmp"
 	"context"
 	"io/fs"
-	"sort"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
@@ -62,14 +63,12 @@ func CurrentBindings() []*Binding {
 			Action:     v.Action,
 		})
 	}
-	sort.Slice(list, func(i, j int) bool {
-		if txt.NaturalLess(list[i].Action.Title, list[j].Action.Title, true) {
-			return true
+	slices.SortFunc(list, func(a, b *Binding) int {
+		result := txt.NaturalCmp(a.Action.Title, b.Action.Title, true)
+		if result == 0 {
+			result = cmp.Compare(a.ID, b.ID)
 		}
-		if list[i].Action.Title != list[j].Action.Title {
-			return false
-		}
-		return list[i].ID < list[j].ID
+		return result
 	})
 	return list
 }

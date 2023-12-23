@@ -15,8 +15,7 @@ import (
 	"context"
 	"embed"
 	"io/fs"
-	"sort"
-	"strings"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
@@ -205,14 +204,12 @@ func (b *Body) UniqueHitLocations(entity *Entity) []*HitLocation {
 	for _, v := range b.locationLookup {
 		locations = append(locations, v)
 	}
-	sort.Slice(locations, func(i, j int) bool {
-		if txt.NaturalLess(locations[i].ChoiceName, locations[j].ChoiceName, false) {
-			return true
+	slices.SortFunc(locations, func(a, b *HitLocation) int {
+		result := txt.NaturalCmp(a.ChoiceName, b.ChoiceName, true)
+		if result == 0 {
+			result = txt.NaturalCmp(a.ID(), b.ID(), true)
 		}
-		if strings.EqualFold(locations[i].ChoiceName, locations[j].ChoiceName) {
-			return txt.NaturalLess(locations[i].ID(), locations[j].ID(), false)
-		}
-		return false
+		return result
 	})
 	return locations
 }

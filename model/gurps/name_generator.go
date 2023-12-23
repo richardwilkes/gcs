@@ -14,7 +14,7 @@ package gurps
 import (
 	"context"
 	"io/fs"
-	"sort"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/rpgtools/names"
@@ -99,7 +99,9 @@ func AvailableNameGenerators(libraries Libraries) []*NameGeneratorRef {
 			list = append(list, &NameGeneratorRef{FileRef: one})
 		}
 	}
-	sort.Slice(list, func(i, j int) bool { return txt.NaturalLess(list[i].FileRef.Name, list[j].FileRef.Name, true) })
+	slices.SortFunc(list, func(a, b *NameGeneratorRef) int {
+		return txt.NaturalCmp(a.FileRef.Name, b.FileRef.Name, true)
+	})
 	return list
 }
 

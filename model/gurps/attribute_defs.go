@@ -13,9 +13,10 @@ package gurps
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"io/fs"
-	"sort"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
@@ -159,7 +160,9 @@ func (a *AttributeDefs) List(omitSeparators bool) []*AttributeDef {
 		}
 		list = append(list, v)
 	}
-	sort.Slice(list, func(i, j int) bool { return list[i].Order < list[j].Order })
+	slices.SortFunc(list, func(a, b *AttributeDef) int {
+		return cmp.Compare(a.Order, b.Order)
+	})
 	return list
 }
 

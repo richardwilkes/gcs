@@ -14,7 +14,7 @@ package gurps
 import (
 	"context"
 	"io/fs"
-	"sort"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
@@ -123,6 +123,8 @@ func (p *PageRefs) List() []*PageRef {
 		r := *v
 		list = append(list, &r)
 	}
-	sort.Slice(list, func(i, j int) bool { return txt.NaturalLess(list[i].ID, list[j].ID, true) })
+	slices.SortFunc(list, func(a, b *PageRef) int {
+		return txt.NaturalCmp(a.ID, b.ID, true)
+	})
 	return list
 }

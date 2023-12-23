@@ -13,7 +13,8 @@ package gurps
 
 import (
 	"bytes"
-	"sort"
+	"cmp"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -73,8 +74,8 @@ func (a *Attributes) List() []*Attribute {
 	for _, v := range a.Set {
 		list = append(list, v)
 	}
-	sort.Slice(list, func(i, j int) bool {
-		return list[i].Order < list[j].Order
+	slices.SortFunc(list, func(a, b *Attribute) int {
+		return cmp.Compare(a.Order, b.Order)
 	})
 	return list
 }

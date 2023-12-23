@@ -15,7 +15,7 @@ import (
 	"io/fs"
 	"os"
 	"path"
-	"sort"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/toolbox/i18n"
@@ -93,11 +93,11 @@ func scanForNamedFileSets(fileSystem fs.FS, dirPath string, extensions []string,
 		}
 		return nil
 	})
-	sort.Slice(list, func(i, j int) bool {
-		if list[i].Name == list[j].Name {
-			return txt.NaturalLess(list[i].FilePath, list[j].FilePath, true)
+	slices.SortFunc(list, func(a, b *NamedFileRef) int {
+		if a.Name == b.Name {
+			return txt.NaturalCmp(a.FilePath, b.FilePath, true)
 		}
-		return txt.NaturalLess(list[i].Name, list[j].Name, true)
+		return txt.NaturalCmp(a.Name, b.Name, true)
 	})
 	return list
 }

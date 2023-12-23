@@ -19,7 +19,6 @@ import (
 	"path"
 	"path/filepath"
 	"slices"
-	"sort"
 	"strings"
 
 	"github.com/google/uuid"
@@ -313,8 +312,8 @@ func (n *NavigatorNode) refreshChildren(dirPath string, parent *NavigatorNode) [
 		}
 		return nil
 	}
-	sort.Slice(entries, func(i, j int) bool {
-		return txt.NaturalLess(entries[i].Name(), entries[j].Name(), true)
+	slices.SortFunc(entries, func(a, b fs.DirEntry) int {
+		return txt.NaturalCmp(a.Name(), b.Name(), true)
 	})
 	children := make([]*NavigatorNode, 0, len(entries))
 	for _, entry := range entries {

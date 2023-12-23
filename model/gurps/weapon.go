@@ -12,6 +12,7 @@
 package gurps
 
 import (
+	"cmp"
 	"encoding/binary"
 	"fmt"
 	"hash"
@@ -243,29 +244,17 @@ func (w *Weapon) Clone(_ *Entity, _ *Weapon, preserveID bool) *Weapon {
 	return &other
 }
 
-// Less returns true if this weapon should be sorted above the other weapon.
-func (w *Weapon) Less(other *Weapon) bool {
-	s1 := w.String()
-	s2 := other.String()
-	if txt.NaturalLess(s1, s2, true) {
-		return true
+// Compare returns an integer indicating the sort order of this weapon compared to the other weapon.
+func (w *Weapon) Compare(other *Weapon) int {
+	result := txt.NaturalCmp(w.String(), other.String(), true)
+	if result == 0 {
+		if result = txt.NaturalCmp(w.Usage, other.Usage, true); result == 0 {
+			if result = txt.NaturalCmp(w.UsageNotes, other.UsageNotes, true); result == 0 {
+				result = cmp.Compare(uintptr(unsafe.Pointer(w)), uintptr(unsafe.Pointer(other))) //nolint:gosec // Just need a tie-breaker
+			}
+		}
 	}
-	if s1 != s2 {
-		return false
-	}
-	if txt.NaturalLess(w.Usage, other.Usage, true) {
-		return true
-	}
-	if w.Usage != other.Usage {
-		return false
-	}
-	if txt.NaturalLess(w.UsageNotes, other.UsageNotes, true) {
-		return true
-	}
-	if w.UsageNotes != other.UsageNotes {
-		return false
-	}
-	return uintptr(unsafe.Pointer(w)) < uintptr(unsafe.Pointer(other)) //nolint:gosec // Just need a tie-breaker
+	return result
 }
 
 // HashCode returns a hash value for this weapon's resolved state.

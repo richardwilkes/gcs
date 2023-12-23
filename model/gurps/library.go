@@ -21,7 +21,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -127,7 +127,7 @@ func (l *Library) CleanupFavorites() {
 			favs = append(favs, one)
 		}
 	}
-	sort.Strings(favs)
+	slices.Sort(favs)
 	l.Favorites = favs
 }
 
@@ -185,27 +185,33 @@ func (l *Library) AvailableReleases() (current string, releases []Release) {
 	return l.current, l.releases
 }
 
-// Less returns true if this Library should be placed before the other Library.
-func (l *Library) Less(other *Library) bool {
+// Compare the two libraries for sorting purposes.
+func (l *Library) Compare(other *Library) int {
 	if l.IsUser() {
-		return true
+		if other.IsUser() {
+			return 0
+		}
+		return -1
 	}
 	if other.IsUser() {
-		return false
+		return 1
 	}
 	if l.IsMaster() {
-		return false
+		if other.IsMaster() {
+			return 0
+		}
+		return -1
 	}
 	if other.IsMaster() {
-		return true
+		return 1
 	}
-	if l.Title != other.Title {
-		return txt.NaturalLess(l.Title, other.Title, true)
+	result := txt.NaturalCmp(l.Title, other.Title, true)
+	if result == 0 {
+		if result = txt.NaturalCmp(l.GitHubAccountName, other.GitHubAccountName, true); result == 0 {
+			result = txt.NaturalCmp(l.RepoName, other.RepoName, true)
+		}
 	}
-	if l.GitHubAccountName != other.GitHubAccountName {
-		return txt.NaturalLess(l.GitHubAccountName, other.GitHubAccountName, true)
-	}
-	return txt.NaturalLess(l.RepoName, other.RepoName, true)
+	return result
 }
 
 // VersionOnDisk returns the version of the data on disk, if it can be determined.

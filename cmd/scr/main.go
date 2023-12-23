@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -45,7 +45,7 @@ func updateSCR(dir, fileName string, extraSCR int) error {
 			}
 		}
 		tags = append(tags, fmt.Sprintf("SCR %d", extraSCR+gurps.CountPrereqsForSpell(spell, spells, 1, false)))
-		sort.Strings(tags)
+		slices.Sort(tags)
 		spell.Tags = tags
 		return false
 	}, false, true, spells...)

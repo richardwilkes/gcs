@@ -12,7 +12,7 @@
 package gurps
 
 import (
-	"sort"
+	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
@@ -44,7 +44,9 @@ func NewQuickExports() *QuickExports {
 
 // MarshalJSON implements json.Marshaler.
 func (q *QuickExports) MarshalJSON() ([]byte, error) {
-	sort.Slice(q.Exports, func(i, j int) bool { return q.Exports[i].LastUsed.After(q.Exports[j].LastUsed) })
+	slices.SortFunc(q.Exports, func(a, b *ExportInfo) int {
+		return a.LastUsed.Compare(b.LastUsed)
+	})
 	if q.Max < 0 {
 		q.Max = 0
 	}

@@ -18,7 +18,7 @@ import (
 	"io/fs"
 	"math"
 	"regexp"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -236,7 +236,9 @@ func (e *Entity) UnmarshalJSON(data []byte) error {
 			When:   jio.Now(),
 			Reason: i18n.Text("Reconciliation"),
 		})
-		sort.Slice(e.PointsRecord, func(i, j int) bool { return e.PointsRecord[i].When.After(e.PointsRecord[j].When) })
+		slices.SortFunc(e.PointsRecord, func(a, b *PointsRecord) int {
+			return a.When.Compare(b.When)
+		})
 	}
 	e.Recalculate()
 	return nil
@@ -600,6 +602,7 @@ func calculateSingleTraitPoints(t *Trait, pb *PointsBreakdown) {
 		case AttributesContainerType:
 			pb.Attributes += t.AdjustedPoints()
 			return
+		default:
 		}
 	}
 	pts := t.AdjustedPoints()
@@ -1256,7 +1259,9 @@ func (e *Entity) EquippedWeapons(weaponType WeaponType) []*Weapon {
 	for _, v := range m {
 		list = append(list, v)
 	}
-	sort.Slice(list, func(i, j int) bool { return list[i].Less(list[j]) })
+	slices.SortFunc(list, func(a, b *Weapon) int {
+		return a.Compare(b)
+	})
 	return list
 }
 
@@ -1302,7 +1307,9 @@ func (e *Entity) Reactions() []*ConditionalModifier {
 	for _, v := range m {
 		list = append(list, v)
 	}
-	sort.Slice(list, func(i, j int) bool { return list[i].Less(list[j]) })
+	slices.SortFunc(list, func(a, b *ConditionalModifier) int {
+		return a.Compare(b)
+	})
 	return list
 }
 
@@ -1352,7 +1359,9 @@ func (e *Entity) ConditionalModifiers() []*ConditionalModifier {
 	for _, v := range m {
 		list = append(list, v)
 	}
-	sort.Slice(list, func(i, j int) bool { return list[i].Less(list[j]) })
+	slices.SortFunc(list, func(a, b *ConditionalModifier) int {
+		return a.Compare(b)
+	})
 	return list
 }
 
@@ -1463,7 +1472,9 @@ func (e *Entity) CRC64() uint64 {
 // SetPointsRecord sets a new points record list, adjusting the total points.
 func (e *Entity) SetPointsRecord(record []*PointsRecord) {
 	e.PointsRecord = ClonePointsRecordList(record)
-	sort.Slice(e.PointsRecord, func(i, j int) bool { return e.PointsRecord[i].When.After(e.PointsRecord[j].When) })
+	slices.SortFunc(e.PointsRecord, func(a, b *PointsRecord) int {
+		return a.When.Compare(b.When)
+	})
 	e.TotalPoints = 0
 	for _, rec := range record {
 		e.TotalPoints += rec.Points
