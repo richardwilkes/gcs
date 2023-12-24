@@ -47,6 +47,10 @@ const (
 	WeaponRofMode1SecondaryBonusFeatureType
 	WeaponRofMode2ShotsBonusFeatureType
 	WeaponRofMode2SecondaryBonusFeatureType
+	WeaponNonChamberShotsBonusFeatureType
+	WeaponChamberShotsBonusFeatureType
+	WeaponShotDurationBonusFeatureType
+	WeaponReloadTimeBonusFeatureType
 	WeaponSwitchFeatureType
 	CostReductionFeatureType
 	ContainedWeightReductionFeatureType
@@ -81,6 +85,10 @@ var AllFeatureType = []FeatureType{
 	WeaponRofMode1SecondaryBonusFeatureType,
 	WeaponRofMode2ShotsBonusFeatureType,
 	WeaponRofMode2SecondaryBonusFeatureType,
+	WeaponNonChamberShotsBonusFeatureType,
+	WeaponChamberShotsBonusFeatureType,
+	WeaponShotDurationBonusFeatureType,
+	WeaponReloadTimeBonusFeatureType,
 	WeaponSwitchFeatureType,
 	CostReductionFeatureType,
 	ContainedWeightReductionFeatureType,
@@ -152,6 +160,14 @@ func (enum FeatureType) Key() string {
 		return "weapon_rof_mode_2_shots_bonus"
 	case WeaponRofMode2SecondaryBonusFeatureType:
 		return "weapon_rof_mode_2_secondary_bonus"
+	case WeaponNonChamberShotsBonusFeatureType:
+		return "weapon_non_chamber_shots_bonus"
+	case WeaponChamberShotsBonusFeatureType:
+		return "weapon_chamber_shots_bonus"
+	case WeaponShotDurationBonusFeatureType:
+		return "weapon_shot_duration_bonus"
+	case WeaponReloadTimeBonusFeatureType:
+		return "weapon_reload_time_bonus"
 	case WeaponSwitchFeatureType:
 		return "weapon_switch"
 	case CostReductionFeatureType:
@@ -218,6 +234,14 @@ func (enum FeatureType) String() string {
 		return i18n.Text("Gives a weapon shots per attack (mode 2) modifier of")
 	case WeaponRofMode2SecondaryBonusFeatureType:
 		return i18n.Text("Gives a weapon secondary projectiles (mode 2) modifier of")
+	case WeaponNonChamberShotsBonusFeatureType:
+		return i18n.Text("Gives a weapon non-chamber shots modifier of")
+	case WeaponChamberShotsBonusFeatureType:
+		return i18n.Text("Gives a weapon chamber shots modifier of")
+	case WeaponShotDurationBonusFeatureType:
+		return i18n.Text("Gives a weapon shot duration modifier of")
+	case WeaponReloadTimeBonusFeatureType:
+		return i18n.Text("Gives a weapon reload time modifier of")
 	case WeaponSwitchFeatureType:
 		return i18n.Text("Set the weapon flag")
 	case CostReductionFeatureType:

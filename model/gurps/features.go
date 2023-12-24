@@ -86,7 +86,11 @@ func (f *Features) UnmarshalJSON(data []byte) error {
 			WeaponRofMode1SecondaryBonusFeatureType,
 			WeaponRofMode2ShotsBonusFeatureType,
 			WeaponRofMode2SecondaryBonusFeatureType,
-			WeaponSwitchFeatureType:
+			WeaponSwitchFeatureType,
+			WeaponNonChamberShotsBonusFeatureType,
+			WeaponChamberShotsBonusFeatureType,
+			WeaponShotDurationBonusFeatureType,
+			WeaponReloadTimeBonusFeatureType:
 			feature = &WeaponBonus{}
 		default:
 			return errs.Newf(i18n.Text("Unknown feature type: %s"), justTypeData.Type)

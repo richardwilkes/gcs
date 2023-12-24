@@ -36,8 +36,10 @@ const (
 	MusclePoweredWeaponSwitchType
 	RangeInMilesWeaponSwitchType
 	ReachChangeRequiresReadyWeaponSwitchType
+	ReloadTimeIsPerShotWeaponSwitchType
 	RetractingStockWeaponSwitchType
 	TwoHandedWeaponSwitchType
+	ThrownWeaponSwitchType
 	UnbalancedWeaponSwitchType
 	TwoHandedAndUnreadyAfterAttackWeaponSwitchType
 	MusketRestWeaponSwitchType
@@ -61,8 +63,10 @@ var AllWeaponSwitchType = []WeaponSwitchType{
 	MusclePoweredWeaponSwitchType,
 	RangeInMilesWeaponSwitchType,
 	ReachChangeRequiresReadyWeaponSwitchType,
+	ReloadTimeIsPerShotWeaponSwitchType,
 	RetractingStockWeaponSwitchType,
 	TwoHandedWeaponSwitchType,
+	ThrownWeaponSwitchType,
 	UnbalancedWeaponSwitchType,
 	TwoHandedAndUnreadyAfterAttackWeaponSwitchType,
 	MusketRestWeaponSwitchType,
@@ -112,10 +116,14 @@ func (enum WeaponSwitchType) Key() string {
 		return "range_in_miles"
 	case ReachChangeRequiresReadyWeaponSwitchType:
 		return "reach_change_requires_ready"
+	case ReloadTimeIsPerShotWeaponSwitchType:
+		return "reload_time_is_per_shot"
 	case RetractingStockWeaponSwitchType:
 		return "retracting_stock"
 	case TwoHandedWeaponSwitchType:
 		return "two-handed"
+	case ThrownWeaponSwitchType:
+		return "thrown"
 	case UnbalancedWeaponSwitchType:
 		return "unbalanced"
 	case TwoHandedAndUnreadyAfterAttackWeaponSwitchType:
@@ -160,10 +168,14 @@ func (enum WeaponSwitchType) String() string {
 		return i18n.Text("Range In Miles")
 	case ReachChangeRequiresReadyWeaponSwitchType:
 		return i18n.Text("Reach Change Requires Ready")
+	case ReloadTimeIsPerShotWeaponSwitchType:
+		return i18n.Text("Reload Time Is Per Shot")
 	case RetractingStockWeaponSwitchType:
 		return i18n.Text("Retracting Stock")
 	case TwoHandedWeaponSwitchType:
 		return i18n.Text("Two-handed")
+	case ThrownWeaponSwitchType:
+		return i18n.Text("Thrown")
 	case UnbalancedWeaponSwitchType:
 		return i18n.Text("Unbalanced")
 	case TwoHandedAndUnreadyAfterAttackWeaponSwitchType:

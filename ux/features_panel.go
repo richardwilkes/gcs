@@ -704,6 +704,14 @@ func (p *featuresPanel) createFeatureForType(featureType gurps.FeatureType) gurp
 		bonus = gurps.NewWeaponRofMode2ShotsBonus()
 	case gurps.WeaponRofMode2SecondaryBonusFeatureType:
 		bonus = gurps.NewWeaponRofMode2SecondaryBonus()
+	case gurps.WeaponNonChamberShotsBonusFeatureType:
+		bonus = gurps.NewWeaponNonChamberShotsBonus()
+	case gurps.WeaponChamberShotsBonusFeatureType:
+		bonus = gurps.NewWeaponChamberShotsBonus()
+	case gurps.WeaponShotDurationBonusFeatureType:
+		bonus = gurps.NewWeaponShotDurationBonus()
+	case gurps.WeaponReloadTimeBonusFeatureType:
+		bonus = gurps.NewWeaponReloadTimeBonus()
 	case gurps.WeaponSwitchFeatureType:
 		bonus = gurps.NewWeaponSwitchBonus()
 	default:

@@ -649,7 +649,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			Range:              w.CombinedRange(nil),
 			Damage:             w.Damage.ResolvedDamage(nil),
 			RateOfFire:         w.CombinedRateOfFire(nil),
-			Shots:              w.Shots,
+			Shots:              w.CombinedShots(nil),
 			Bulk:               w.CombinedBulk(nil),
 			Recoil:             w.CombinedRecoil(nil),
 			Strength:           w.CombinedMinST(),

@@ -562,6 +562,22 @@ func main() {
 				String: "Gives a weapon secondary projectiles (mode 2) modifier of",
 			},
 			{
+				Key:    "weapon_non_chamber_shots_bonus",
+				String: "Gives a weapon non-chamber shots modifier of",
+			},
+			{
+				Key:    "weapon_chamber_shots_bonus",
+				String: "Gives a weapon chamber shots modifier of",
+			},
+			{
+				Key:    "weapon_shot_duration_bonus",
+				String: "Gives a weapon shot duration modifier of",
+			},
+			{
+				Key:    "weapon_reload_time_bonus",
+				String: "Gives a weapon reload time modifier of",
+			},
+			{
 				Key:    "weapon_switch",
 				String: "Set the weapon flag",
 			},
@@ -614,11 +630,13 @@ func main() {
 			{Key: "muscle_powered"},
 			{Key: "range_in_miles"},
 			{Key: "reach_change_requires_ready"},
+			{Key: "reload_time_is_per_shot"},
 			{Key: "retracting_stock"},
 			{
 				Key:    "two-handed",
 				String: "Two-handed",
 			},
+			{Key: "thrown"},
 			{Key: "unbalanced"},
 			{
 				Key:    "two-handed_and_unready_after_attack",

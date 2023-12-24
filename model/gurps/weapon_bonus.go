@@ -127,6 +127,26 @@ func NewWeaponRofMode2SecondaryBonus() *WeaponBonus {
 	return newWeaponBonus(WeaponRofMode2SecondaryBonusFeatureType)
 }
 
+// NewWeaponNonChamberShotsBonus creates a new weapon non-chamber shots bonus.
+func NewWeaponNonChamberShotsBonus() *WeaponBonus {
+	return newWeaponBonus(WeaponNonChamberShotsBonusFeatureType)
+}
+
+// NewWeaponChamberShotsBonus creates a new weapon chamber shots bonus.
+func NewWeaponChamberShotsBonus() *WeaponBonus {
+	return newWeaponBonus(WeaponChamberShotsBonusFeatureType)
+}
+
+// NewWeaponShotDurationBonus creates a new weapon shot duration bonus.
+func NewWeaponShotDurationBonus() *WeaponBonus {
+	return newWeaponBonus(WeaponShotDurationBonusFeatureType)
+}
+
+// NewWeaponReloadTimeBonus creates a new weapon reload time bonus.
+func NewWeaponReloadTimeBonus() *WeaponBonus {
+	return newWeaponBonus(WeaponReloadTimeBonusFeatureType)
+}
+
 // NewWeaponSwitchBonus creates a new weapon switch bonus.
 func NewWeaponSwitchBonus() *WeaponBonus {
 	return newWeaponBonus(WeaponSwitchFeatureType)
@@ -258,6 +278,18 @@ func (w *WeaponBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 		case WeaponRofMode2SecondaryBonusFeatureType:
 			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
 			buf.WriteString(i18n.Text(" to secondary projectiles"))
+		case WeaponNonChamberShotsBonusFeatureType:
+			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
+			buf.WriteString(i18n.Text(" to non-chamber shots"))
+		case WeaponChamberShotsBonusFeatureType:
+			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
+			buf.WriteString(i18n.Text(" to chamber shots"))
+		case WeaponShotDurationBonusFeatureType:
+			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
+			buf.WriteString(i18n.Text(" to shot duration"))
+		case WeaponReloadTimeBonusFeatureType:
+			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
+			buf.WriteString(i18n.Text(" to reload time"))
 		case WeaponSwitchFeatureType:
 			fmt.Fprintf(&buf, "%v set to %v", w.SwitchType, w.SwitchTypeValue)
 		default:
