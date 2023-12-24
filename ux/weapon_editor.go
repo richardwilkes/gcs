@@ -38,19 +38,19 @@ func EditWeapon(owner Rebuildable, w *gurps.Weapon) {
 func initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.Panel) func() {
 	addLabelAndStringField(content, i18n.Text("Usage"), "", &e.editorData.Usage)
 	addNotesLabelAndField(content, &e.editorData.UsageNotes)
-	addLabelAndDecimalField(content, nil, "", i18n.Text("Minimum ST"), "", &e.editorData.MinST, 0, fxp.Max)
+	addLabelAndDecimalField(content, nil, "", i18n.Text("Minimum ST"), "", &e.editorData.StrengthParts.Minimum, 0, fxp.Max)
 	if e.editorData.Type == gurps.RangedWeaponType {
 		content.AddChild(unison.NewPanel())
-		addCheckBox(content, i18n.Text("Has bipod"), &e.editorData.Bipod)
+		addCheckBox(content, i18n.Text("Has bipod"), &e.editorData.StrengthParts.Bipod)
 		content.AddChild(unison.NewPanel())
-		addCheckBox(content, i18n.Text("Mounted"), &e.editorData.Mounted)
+		addCheckBox(content, i18n.Text("Mounted"), &e.editorData.StrengthParts.Mounted)
 		content.AddChild(unison.NewPanel())
-		addCheckBox(content, i18n.Text("Uses a musket rest"), &e.editorData.MusketRest)
+		addCheckBox(content, i18n.Text("Uses a musket rest"), &e.editorData.StrengthParts.MusketRest)
 	}
 	content.AddChild(unison.NewPanel())
-	addCheckBox(content, i18n.Text("Two-handed"), &e.editorData.TwoHanded)
+	addCheckBox(content, i18n.Text("Two-handed"), &e.editorData.StrengthParts.TwoHanded)
 	content.AddChild(unison.NewPanel())
-	addCheckBox(content, i18n.Text("Two-handed and unready after attack"), &e.editorData.TwoHandedUnreadyAfterAttack)
+	addCheckBox(content, i18n.Text("Two-handed and unready after attack"), &e.editorData.StrengthParts.TwoHandedUnready)
 	addLabelAndPopup(content, i18n.Text("Base Damage"), "", gurps.AllStrengthDamage, &e.editorData.Damage.StrengthType)
 	addLabelAndNullableDice(content, i18n.Text("Damage Modifier"), "", &e.editorData.Damage.Base)
 	addLabelAndDecimalField(content, nil, "", i18n.Text("Damage Modifier Per Die"), "", &e.editorData.Damage.ModifierPerDie,

@@ -62,50 +62,70 @@ type WeaponOwner interface {
 
 // WeaponData holds the Weapon data that is written to disk.
 type WeaponData struct {
-	ID                          uuid.UUID       `json:"id"`
-	Type                        WeaponType      `json:"type"`
-	Bipod                       bool            `json:"bipod,omitempty"`
-	Mounted                     bool            `json:"mounted,omitempty"`
-	MusketRest                  bool            `json:"musket_rest,omitempty"`
-	TwoHanded                   bool            `json:"two_handed,omitempty"`
-	TwoHandedUnreadyAfterAttack bool            `json:"two_handed_unready_after_attack,omitempty"`
-	Jet                         bool            `json:"jet,omitempty"`
-	RetractingStock             bool            `json:"retracting_stock,omitempty"`
-	CanBlock                    bool            `json:"can_block,omitempty"`
-	CanParry                    bool            `json:"can_parry,omitempty"`
-	Fencing                     bool            `json:"fencing,omitempty"`
-	Unbalanced                  bool            `json:"unbalanced,omitempty"`
-	CloseCombat                 bool            `json:"close_combat,omitempty"`
-	ReachChangeRequiresReady    bool            `json:"reach_change_requires_ready,omitempty"`
-	MusclePowered               bool            `json:"muscle_powered,omitempty"`
-	RangeInMiles                bool            `json:"range_in_miles,omitempty"`
-	Thrown                      bool            `json:"thrown,omitempty"`
-	ReloadTimeIsPerShot         bool            `json:"reload_time_is_per_shot,omitempty"`
-	Damage                      WeaponDamage    `json:"damage"`
-	Usage                       string          `json:"usage,omitempty"`
-	UsageNotes                  string          `json:"usage_notes,omitempty"`
-	WeaponAcc                   fxp.Int         `json:"weapon_acc,omitempty"`
-	ScopeAcc                    fxp.Int         `json:"scope_acc,omitempty"`
-	MinST                       fxp.Int         `json:"min_st,omitempty"`
-	NormalBulk                  fxp.Int         `json:"normal_bulk,omitempty"`
-	GiantBulk                   fxp.Int         `json:"giant_bulk,omitempty"`
-	ShotRecoil                  fxp.Int         `json:"shot_recoil,omitempty"`
-	SlugRecoil                  fxp.Int         `json:"slug_recoil,omitempty"`
-	BlockModifier               fxp.Int         `json:"block_mod,omitempty"`
-	ParryModifier               fxp.Int         `json:"parry_mod,omitempty"`
-	MinReach                    fxp.Int         `json:"min_reach,omitempty"`
-	MaxReach                    fxp.Int         `json:"max_reach,omitempty"`
-	HalfDamageRange             fxp.Int         `json:"half_damage_range,omitempty"`
-	MinRange                    fxp.Int         `json:"min_range,omitempty"`
-	MaxRange                    fxp.Int         `json:"max_range,omitempty"`
-	NonChamberShots             fxp.Int         `json:"non_chamber_shots,omitempty"`
-	ChamberShots                fxp.Int         `json:"chamber_shots,omitempty"`
-	ShotDuration                fxp.Int         `json:"shot_duration,omitempty"`
-	ReloadTime                  fxp.Int         `json:"reload_time,omitempty"`
-	RateOfFireMode1             RateOfFire      `json:"rate_of_fire_mode_1,omitempty"`
-	RateOfFireMode2             RateOfFire      `json:"rate_of_fire_mode_2,omitempty"`
-	Defaults                    []*SkillDefault `json:"defaults,omitempty"`
+	ID                       uuid.UUID       `json:"id"`
+	Type                     WeaponType      `json:"type"`
+	Jet                      bool            `json:"jet,omitempty"`
+	RetractingStock          bool            `json:"retracting_stock,omitempty"`
+	CanBlock                 bool            `json:"can_block,omitempty"`
+	CanParry                 bool            `json:"can_parry,omitempty"`
+	Fencing                  bool            `json:"fencing,omitempty"`
+	Unbalanced               bool            `json:"unbalanced,omitempty"`
+	CloseCombat              bool            `json:"close_combat,omitempty"`
+	ReachChangeRequiresReady bool            `json:"reach_change_requires_ready,omitempty"`
+	MusclePowered            bool            `json:"muscle_powered,omitempty"`
+	RangeInMiles             bool            `json:"range_in_miles,omitempty"`
+	Thrown                   bool            `json:"thrown,omitempty"`
+	ReloadTimeIsPerShot      bool            `json:"reload_time_is_per_shot,omitempty"`
+	Damage                   WeaponDamage    `json:"damage"`
+	Strength                 string          `json:"strength,omitempty"`
+	StrengthParts            WeaponStrength  `json:"-"`
+	Usage                    string          `json:"usage,omitempty"`
+	UsageNotes               string          `json:"usage_notes,omitempty"`
+	WeaponAcc                fxp.Int         `json:"weapon_acc,omitempty"`
+	ScopeAcc                 fxp.Int         `json:"scope_acc,omitempty"`
+	NormalBulk               fxp.Int         `json:"normal_bulk,omitempty"`
+	GiantBulk                fxp.Int         `json:"giant_bulk,omitempty"`
+	ShotRecoil               fxp.Int         `json:"shot_recoil,omitempty"`
+	SlugRecoil               fxp.Int         `json:"slug_recoil,omitempty"`
+	BlockModifier            fxp.Int         `json:"block_mod,omitempty"`
+	ParryModifier            fxp.Int         `json:"parry_mod,omitempty"`
+	MinReach                 fxp.Int         `json:"min_reach,omitempty"`
+	MaxReach                 fxp.Int         `json:"max_reach,omitempty"`
+	HalfDamageRange          fxp.Int         `json:"half_damage_range,omitempty"`
+	MinRange                 fxp.Int         `json:"min_range,omitempty"`
+	MaxRange                 fxp.Int         `json:"max_range,omitempty"`
+	NonChamberShots          fxp.Int         `json:"non_chamber_shots,omitempty"`
+	ChamberShots             fxp.Int         `json:"chamber_shots,omitempty"`
+	ShotDuration             fxp.Int         `json:"shot_duration,omitempty"`
+	ReloadTime               fxp.Int         `json:"reload_time,omitempty"`
+	RateOfFireMode1          RateOfFire      `json:"rate_of_fire_mode_1,omitempty"`
+	RateOfFireMode2          RateOfFire      `json:"rate_of_fire_mode_2,omitempty"`
+	Defaults                 []*SkillDefault `json:"defaults,omitempty"`
 }
+
+/*
+v5.18 format:
+
+type WeaponData struct {
+	ID              uuid.UUID       `json:"id"`
+	Type            WeaponType      `json:"type"`
+	Damage          WeaponDamage    `json:"damage"`
+	MinimumStrength string          `json:"strength,omitempty"`
+	Usage           string          `json:"usage,omitempty"`
+	UsageNotes      string          `json:"usage_notes,omitempty"`
+	Reach           string          `json:"reach,omitempty"`
+	Parry           string          `json:"parry,omitempty"`
+	Block           string          `json:"block,omitempty"`
+	Accuracy        string          `json:"accuracy,omitempty"`
+	Range           string          `json:"range,omitempty"`
+	RateOfFire      string          `json:"rate_of_fire,omitempty"`
+	Shots           string          `json:"shots,omitempty"`
+	Bulk            string          `json:"bulk,omitempty"`
+	Recoil          string          `json:"recoil,omitempty"`
+	Defaults        []*SkillDefault `json:"defaults,omitempty"`
+}
+
+*/
 
 // Weapon holds the stats for a weapon.
 type Weapon struct {
@@ -211,12 +231,6 @@ func (w *Weapon) HashCode() uint32 {
 	_ = binary.Write(h, binary.LittleEndian, w.Jet)
 	_ = binary.Write(h, binary.LittleEndian, w.WeaponAcc)
 	_ = binary.Write(h, binary.LittleEndian, w.ScopeAcc)
-	_ = binary.Write(h, binary.LittleEndian, w.MinST)
-	_ = binary.Write(h, binary.LittleEndian, w.Bipod)
-	_ = binary.Write(h, binary.LittleEndian, w.Mounted)
-	_ = binary.Write(h, binary.LittleEndian, w.MusketRest)
-	_ = binary.Write(h, binary.LittleEndian, w.TwoHanded)
-	_ = binary.Write(h, binary.LittleEndian, w.TwoHandedUnreadyAfterAttack)
 	_ = binary.Write(h, binary.LittleEndian, w.NormalBulk)
 	_ = binary.Write(h, binary.LittleEndian, w.GiantBulk)
 	_ = binary.Write(h, binary.LittleEndian, w.RetractingStock)
@@ -243,6 +257,7 @@ func (w *Weapon) HashCode() uint32 {
 	_ = binary.Write(h, binary.LittleEndian, w.ReloadTime)
 	_ = binary.Write(h, binary.LittleEndian, w.Thrown)
 	_ = binary.Write(h, binary.LittleEndian, w.ReloadTimeIsPerShot)
+	w.StrengthParts.hash(h)
 	w.RateOfFireMode1.hash(h)
 	w.RateOfFireMode2.hash(h)
 	return h.Sum32()
@@ -250,6 +265,7 @@ func (w *Weapon) HashCode() uint32 {
 
 // MarshalJSON implements json.Marshaler.
 func (w *Weapon) MarshalJSON() ([]byte, error) {
+	w.WeaponData.Strength = w.StrengthParts.String()
 	type calc struct {
 		Level      fxp.Int `json:"level,omitempty"`
 		Parry      string  `json:"parry,omitempty"`
@@ -258,9 +274,10 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 		Range      string  `json:"range,omitempty"`
 		RateOfFire string  `json:"rate_of_fire,omitempty"`
 		Damage     string  `json:"damage,omitempty"`
-		MinimumST  string  `json:"minimum_st,omitempty"`
 		Bulk       string  `json:"bulk,omitempty"`
 		Shots      string  `json:"shots,omitempty"`
+		// From here down are the new fields
+		Strength string `json:"strength,omitempty"`
 	}
 	data := struct {
 		WeaponData
@@ -268,10 +285,13 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 	}{
 		WeaponData: w.WeaponData,
 		Calc: calc{
-			Level:     w.SkillLevel(nil).Max(0),
-			Damage:    w.Damage.ResolvedDamage(nil),
-			MinimumST: w.CombinedMinST(),
+			Level:  w.SkillLevel(nil).Max(0),
+			Damage: w.Damage.ResolvedDamage(nil),
 		},
+	}
+	weaponST := w.StrengthParts.Resolve(w, nil).String()
+	if w.WeaponData.Strength != weaponST {
+		data.Calc.Strength = weaponST
 	}
 	switch w.Type {
 	case MeleeWeaponType:
@@ -298,22 +318,22 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 func (w *Weapon) UnmarshalJSON(data []byte) error {
 	type oldWeaponData struct {
 		WeaponData
-		OldAccuracy        string `json:"accuracy"`
-		OldMinimumStrength string `json:"strength"`
-		OldBulk            string `json:"bulk"`
-		OldRecoil          string `json:"recoil"`
-		OldBlock           string `json:"block"`
-		OldParry           string `json:"parry"`
-		OldRateOfFire      string `json:"rate_of_fire"`
-		OldReach           string `json:"reach"`
-		OldRange           string `json:"range"`
-		OldShots           string `json:"shots"`
+		OldAccuracy   string `json:"accuracy"`
+		OldBulk       string `json:"bulk"`
+		OldRecoil     string `json:"recoil"`
+		OldBlock      string `json:"block"`
+		OldParry      string `json:"parry"`
+		OldRateOfFire string `json:"rate_of_fire"`
+		OldReach      string `json:"reach"`
+		OldRange      string `json:"range"`
+		OldShots      string `json:"shots"`
 	}
 	var wdata oldWeaponData
 	if err := json.Unmarshal(data, &wdata); err != nil {
 		return err
 	}
 	w.WeaponData = wdata.WeaponData
+	w.StrengthParts = ParseWeaponStrength(wdata.Strength)
 	if strings.Contains(strings.ToLower(wdata.OldAccuracy), "jet") ||
 		strings.Contains(strings.ToLower(wdata.OldRateOfFire), "jet") {
 		w.Jet = true
@@ -333,18 +353,6 @@ func (w *Weapon) UnmarshalJSON(data []byte) error {
 				w.RateOfFireMode2.parseOldRateOfFire(parts[1])
 			}
 		}
-	}
-	if wdata.OldMinimumStrength != "" {
-		lowered := strings.ToLower(wdata.OldMinimumStrength)
-		w.Bipod = strings.Contains(lowered, "b")
-		w.Mounted = strings.Contains(lowered, "m")
-		w.MusketRest = strings.Contains(lowered, "r")
-		w.TwoHanded = strings.Contains(lowered, "†")
-		w.TwoHandedUnreadyAfterAttack = strings.Contains(lowered, "‡")
-		if w.TwoHandedUnreadyAfterAttack {
-			w.TwoHanded = true
-		}
-		w.MinST, _ = fxp.Extract(lowered)
 	}
 	if wdata.OldBulk != "" {
 		w.RetractingStock = strings.Contains(wdata.OldBulk, "*")
@@ -555,7 +563,7 @@ func (w *Weapon) SkillLevel(tooltip *xio.ByteBuffer) fxp.Int {
 
 func (w *Weapon) skillLevelBaseAdjustment(entity *Entity, tooltip *xio.ByteBuffer) fxp.Int {
 	var adj fxp.Int
-	if minST := w.ResolvedMinimumStrength(nil) - entity.StrikingStrength(); minST > 0 {
+	if minST := w.StrengthParts.Resolve(w, nil).Minimum - entity.StrikingStrength(); minST > 0 {
 		adj -= minST
 		if tooltip != nil {
 			tooltip.WriteByte('\n')
@@ -921,20 +929,6 @@ func (w *Weapon) ResolveBoolFlag(switchType WeaponSwitchType, initial bool) bool
 	return initial
 }
 
-// ResolvedMinimumStrength returns the resolved minimum strength required to use this weapon, or 0 if there is none.
-func (w *Weapon) ResolvedMinimumStrength(tooltip *xio.ByteBuffer) fxp.Int {
-	if w.Owner != nil {
-		if st := w.Owner.RatedStrength().Max(0); st != 0 {
-			return st
-		}
-	}
-	minST := w.MinST
-	for _, bonus := range w.collectWeaponBonuses(1, tooltip, WeaponMinSTBonusFeatureType) {
-		minST += bonus.AdjustedAmount()
-	}
-	return minST.Max(0)
-}
-
 func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xio.ByteBuffer, allowedFeatureTypes ...FeatureType) []*WeaponBonus {
 	pc := w.PC()
 	if pc == nil {
@@ -1114,7 +1108,7 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 				if tooltip.Len() != 0 {
 					tooltip.WriteString("\n\n")
 				}
-				fmt.Fprintf(&tooltip, i18n.Text("Unbalanced weapon. You cannot use it to parry if you have already used it to attack this turn (or vice-versa) unless your current ST is %v or greater."), w.ResolvedMinimumStrength(nil).Mul(fxp.OneAndAHalf).Ceil())
+				fmt.Fprintf(&tooltip, i18n.Text("Unbalanced weapon. You cannot use it to parry if you have already used it to attack this turn (or vice-versa) unless your current ST is %v or greater."), w.StrengthParts.Resolve(w, nil).Minimum.Mul(fxp.OneAndAHalf).Ceil())
 			}
 			data.Tooltip = tooltip.String()
 		}
@@ -1128,55 +1122,9 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 			data.Tooltip = i18n.Text("Changing reach requires a Ready maneuver.")
 		}
 	case WeaponSTColumn:
-		data.Primary = w.CombinedMinST()
-		var tooltip strings.Builder
-		if w.Owner != nil {
-			if st := w.Owner.RatedStrength(); st > 0 {
-				fmt.Fprintf(&tooltip, i18n.Text("The weapon has a rated ST of %v, which is used instead of the user's ST for calculations."), st)
-			}
-		}
-		minST := w.ResolvedMinimumStrength(&buffer)
-		if minST > 0 {
-			if tooltip.Len() != 0 {
-				tooltip.WriteString("\n\n")
-			}
-			fmt.Fprintf(&tooltip, i18n.Text("The weapon has a minimum ST of %v. If your ST is less than this, you will suffer a -1 to weapon skill per point of ST you lack and lose one extra FP at the end of any fight that lasts long enough to cost FP."), minST)
-		}
-		if w.ResolveBoolFlag(BipodWeaponSwitchType, w.Bipod) {
-			if tooltip.Len() != 0 {
-				tooltip.WriteString("\n\n")
-			}
-			tooltip.WriteString(i18n.Text("Has an attached bipod. When used from a prone position, "))
-			reducedST := minST.Mul(fxp.Two).Div(fxp.Three).Ceil()
-			if reducedST > 0 && reducedST != minST {
-				fmt.Fprintf(&tooltip, i18n.Text("reduces the ST requirement to %v and"), reducedST)
-			}
-			tooltip.WriteString(i18n.Text("treats the attack as braced (add +1 to Accuracy)."))
-		}
-		if w.ResolveBoolFlag(MountedWeaponSwitchType, w.Mounted) {
-			if tooltip.Len() != 0 {
-				tooltip.WriteString("\n\n")
-			}
-			tooltip.WriteString(i18n.Text("Mounted. Ignore listed ST and Bulk when firing from its mount. Takes at least 3 Ready maneuvers to unmount or remount the weapon."))
-		}
-		if w.ResolveBoolFlag(MusketRestWeaponSwitchType, w.MusketRest) {
-			if tooltip.Len() != 0 {
-				tooltip.WriteString("\n\n")
-			}
-			tooltip.WriteString(i18n.Text("Uses a Musket Rest. Any aimed shot fired while stationary and standing up is automatically braced (add +1 to Accuracy)."))
-		}
-		twoHandedAndUnready := w.ResolveBoolFlag(TwoHandedAndUnreadyAfterAttackWeaponSwitchType, w.TwoHandedUnreadyAfterAttack)
-		if w.ResolveBoolFlag(TwoHandedWeaponSwitchType, w.TwoHanded) || twoHandedAndUnready {
-			if tooltip.Len() != 0 {
-				tooltip.WriteString("\n\n")
-			}
-			if twoHandedAndUnready {
-				fmt.Fprintf(&tooltip, i18n.Text("Requires two hands and becomes unready after you attack with it. If you have at least ST %v, you can used it two-handed without it becoming unready. If you have at least ST %v, you can use it one-handed with no readiness penalty."), minST.Mul(fxp.OneAndAHalf).Ceil(), minST.Mul(fxp.Three).Ceil())
-			} else {
-				fmt.Fprintf(&tooltip, i18n.Text("Requires two hands. If you have at least ST %v, you can use it one-handed, but it becomes unready after you attack with it. If you have at least ST %v, you can use it one-handed with no readiness penalty."), minST.Mul(fxp.OneAndAHalf).Ceil(), minST.Mul(fxp.Two).Ceil())
-			}
-		}
-		data.Tooltip = tooltip.String()
+		weaponST := w.StrengthParts.Resolve(w, &buffer)
+		data.Primary = weaponST.String()
+		data.Tooltip = weaponST.Tooltip(w)
 	case WeaponAccColumn:
 		data.Primary = w.CombinedAcc(&buffer)
 	case WeaponRangeColumn:
@@ -1230,7 +1178,7 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 			}
 			data.Tooltip = fmt.Sprintf(i18n.Text("Has a retracting stock. With the stock folded, the weapon's stats change to Bulk %s, Accuracy %s, Recoil %s, and minimum ST %v. Folding or unfolding the stock takes one Ready maneuver."),
 				wd.CombinedBulk(nil), wd.CombinedAcc(nil), wd.CombinedRecoil(nil),
-				w.ResolvedMinimumStrength(nil).Mul(fxp.OnePointTwo).Ceil())
+				w.StrengthParts.Resolve(w, nil).Minimum.Mul(fxp.OnePointTwo).Ceil())
 		}
 	case WeaponRecoilColumn:
 		data.Primary = w.CombinedRecoil(&buffer)
@@ -1298,32 +1246,6 @@ func (w *Weapon) CombinedRecoil(tooltip *xio.ByteBuffer) string {
 	if slug != 0 && shot != slug {
 		buffer.WriteByte('/')
 		buffer.WriteString(slug.String())
-	}
-	return buffer.String()
-}
-
-// CombinedMinST returns the combined string used in the GURPS weapon tables for minimum ST.
-func (w *Weapon) CombinedMinST() string {
-	var buffer strings.Builder
-	if minST := w.ResolvedMinimumStrength(nil); minST > 0 {
-		buffer.WriteString(minST.String())
-	}
-	if w.ResolveBoolFlag(BipodWeaponSwitchType, w.Bipod) {
-		buffer.WriteByte('B')
-	}
-	if w.ResolveBoolFlag(MountedWeaponSwitchType, w.Mounted) {
-		buffer.WriteByte('M')
-	}
-	if w.ResolveBoolFlag(MusketRestWeaponSwitchType, w.MusketRest) {
-		buffer.WriteByte('R')
-	}
-	twoHandedAndUnready := w.ResolveBoolFlag(TwoHandedAndUnreadyAfterAttackWeaponSwitchType, w.TwoHandedUnreadyAfterAttack)
-	if w.ResolveBoolFlag(TwoHandedWeaponSwitchType, w.TwoHanded) || twoHandedAndUnready {
-		if twoHandedAndUnready {
-			buffer.WriteRune('‡')
-		} else {
-			buffer.WriteRune('†')
-		}
 	}
 	return buffer.String()
 }

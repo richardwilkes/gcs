@@ -39,7 +39,7 @@ type exportedMeleeWeapon struct {
 	Damage                   string
 	Reach                    string
 	Strength                 string
-	MinST                    fxp.Int
+	StrengthParts            WeaponStrength
 	MinReach                 fxp.Int
 	MaxReach                 fxp.Int
 	ParryValue               fxp.Int
@@ -48,46 +48,39 @@ type exportedMeleeWeapon struct {
 	Fencing                  bool
 	Unbalanced               bool
 	CanBlock                 bool
-	TwoHanded                bool
-	UnreadyAfterAttack       bool
 	CloseCombat              bool
 	ReachChangeRequiresReady bool
 }
 
 type exportedRangedWeapon struct {
-	Description        string
-	Notes              string
-	Usage              string
-	Level              fxp.Int
-	Accuracy           string
-	Range              string
-	Damage             string
-	RateOfFire         string
-	Shots              string
-	Bulk               string
-	Recoil             string
-	Strength           string
-	WeaponAcc          fxp.Int
-	ScopeAcc           fxp.Int
-	MinST              fxp.Int
-	NormalBulk         fxp.Int
-	GiantBulk          fxp.Int
-	ShotRecoil         fxp.Int
-	SlugRecoil         fxp.Int
-	HalfDamageRange    fxp.Int
-	MinRange           fxp.Int
-	MaxRange           fxp.Int
-	RateOfFireMode1    RateOfFire
-	RateOfFireMode2    RateOfFire
-	Bipod              bool
-	Mounted            bool
-	MusketRest         bool
-	TwoHanded          bool
-	UnreadyAfterAttack bool
-	Jet                bool
-	RetractingStock    bool
-	MusclePowered      bool
-	RangeInMiles       bool
+	Description     string
+	Notes           string
+	Usage           string
+	Level           fxp.Int
+	Accuracy        string
+	Range           string
+	Damage          string
+	RateOfFire      string
+	Shots           string
+	Bulk            string
+	Recoil          string
+	Strength        string
+	StrengthParts   WeaponStrength
+	WeaponAcc       fxp.Int
+	ScopeAcc        fxp.Int
+	NormalBulk      fxp.Int
+	GiantBulk       fxp.Int
+	ShotRecoil      fxp.Int
+	SlugRecoil      fxp.Int
+	HalfDamageRange fxp.Int
+	MinRange        fxp.Int
+	MaxRange        fxp.Int
+	RateOfFireMode1 RateOfFire
+	RateOfFireMode2 RateOfFire
+	Jet             bool
+	RetractingStock bool
+	MusclePowered   bool
+	RangeInMiles    bool
 }
 
 type exportedHitLocation struct {
@@ -610,6 +603,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 	}, true, false, entity.Notes...)
 	for _, w := range entity.EquippedWeapons(MeleeWeaponType) {
 		minReach, maxReach := w.ResolvedReach(nil)
+		weaponST := w.StrengthParts.Resolve(w, nil)
 		data.MeleeWeapons = append(data.MeleeWeapons, &exportedMeleeWeapon{
 			Description:              w.String(),
 			Notes:                    w.Notes(),
@@ -619,8 +613,8 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			Block:                    w.CombinedBlock(nil),
 			Damage:                   w.Damage.ResolvedDamage(nil),
 			Reach:                    w.CombinedReach(nil),
-			Strength:                 w.CombinedMinST(),
-			MinST:                    w.MinST,
+			Strength:                 weaponST.String(),
+			StrengthParts:            weaponST,
 			MinReach:                 minReach,
 			MaxReach:                 maxReach,
 			ParryValue:               w.ResolvedParry(nil),
@@ -629,8 +623,6 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			Fencing:                  w.ResolveBoolFlag(FencingWeaponSwitchType, w.Fencing),
 			Unbalanced:               w.ResolveBoolFlag(UnbalancedWeaponSwitchType, w.Unbalanced),
 			CanBlock:                 w.ResolveBoolFlag(CanBlockWeaponSwitchType, w.CanBlock),
-			TwoHanded:                w.ResolveBoolFlag(TwoHandedWeaponSwitchType, w.TwoHanded),
-			UnreadyAfterAttack:       w.ResolveBoolFlag(TwoHandedAndUnreadyAfterAttackWeaponSwitchType, w.TwoHandedUnreadyAfterAttack),
 			CloseCombat:              w.ResolveBoolFlag(CloseCombatWeaponSwitchType, w.CloseCombat),
 			ReachChangeRequiresReady: w.ResolveBoolFlag(ReachChangeRequiresReadyWeaponSwitchType, w.ReachChangeRequiresReady),
 		})
@@ -640,40 +632,36 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 		weaponAcc, scopeAcc := w.ResolvedAccuracy(nil)
 		shot, slug := w.ResolvedRecoil(nil)
 		halfDamageRange, minRange, maxRange := w.ResolvedRange(nil)
+		weaponST := w.StrengthParts.Resolve(w, nil)
 		data.RangedWeapons = append(data.RangedWeapons, &exportedRangedWeapon{
-			Description:        w.String(),
-			Notes:              w.Notes(),
-			Usage:              w.Usage,
-			Level:              w.SkillLevel(nil),
-			Accuracy:           w.CombinedAcc(nil),
-			Range:              w.CombinedRange(nil),
-			Damage:             w.Damage.ResolvedDamage(nil),
-			RateOfFire:         w.CombinedRateOfFire(nil),
-			Shots:              w.CombinedShots(nil),
-			Bulk:               w.CombinedBulk(nil),
-			Recoil:             w.CombinedRecoil(nil),
-			Strength:           w.CombinedMinST(),
-			WeaponAcc:          weaponAcc,
-			ScopeAcc:           scopeAcc,
-			MinST:              w.ResolvedMinimumStrength(nil),
-			NormalBulk:         normalBulk,
-			GiantBulk:          giantBulk,
-			ShotRecoil:         shot,
-			SlugRecoil:         slug,
-			RateOfFireMode1:    w.RateOfFireMode1,
-			RateOfFireMode2:    w.RateOfFireMode2,
-			HalfDamageRange:    halfDamageRange,
-			MinRange:           minRange,
-			MaxRange:           maxRange,
-			Bipod:              w.ResolveBoolFlag(BipodWeaponSwitchType, w.Bipod),
-			Mounted:            w.ResolveBoolFlag(MountedWeaponSwitchType, w.Mounted),
-			MusketRest:         w.ResolveBoolFlag(MusketRestWeaponSwitchType, w.MusketRest),
-			TwoHanded:          w.ResolveBoolFlag(TwoHandedWeaponSwitchType, w.TwoHanded),
-			UnreadyAfterAttack: w.ResolveBoolFlag(TwoHandedAndUnreadyAfterAttackWeaponSwitchType, w.TwoHandedUnreadyAfterAttack),
-			Jet:                w.ResolveBoolFlag(JetWeaponSwitchType, w.Jet),
-			RetractingStock:    w.ResolveBoolFlag(RetractingStockWeaponSwitchType, w.RetractingStock),
-			MusclePowered:      w.ResolveBoolFlag(MusclePoweredWeaponSwitchType, w.MusclePowered),
-			RangeInMiles:       w.ResolveBoolFlag(RangeInMilesWeaponSwitchType, w.RangeInMiles),
+			Description:     w.String(),
+			Notes:           w.Notes(),
+			Usage:           w.Usage,
+			Level:           w.SkillLevel(nil),
+			Accuracy:        w.CombinedAcc(nil),
+			Range:           w.CombinedRange(nil),
+			Damage:          w.Damage.ResolvedDamage(nil),
+			RateOfFire:      w.CombinedRateOfFire(nil),
+			Shots:           w.CombinedShots(nil),
+			Bulk:            w.CombinedBulk(nil),
+			Recoil:          w.CombinedRecoil(nil),
+			Strength:        weaponST.String(),
+			StrengthParts:   weaponST,
+			WeaponAcc:       weaponAcc,
+			ScopeAcc:        scopeAcc,
+			NormalBulk:      normalBulk,
+			GiantBulk:       giantBulk,
+			ShotRecoil:      shot,
+			SlugRecoil:      slug,
+			RateOfFireMode1: w.RateOfFireMode1,
+			RateOfFireMode2: w.RateOfFireMode2,
+			HalfDamageRange: halfDamageRange,
+			MinRange:        minRange,
+			MaxRange:        maxRange,
+			Jet:             w.ResolveBoolFlag(JetWeaponSwitchType, w.Jet),
+			RetractingStock: w.ResolveBoolFlag(RetractingStockWeaponSwitchType, w.RetractingStock),
+			MusclePowered:   w.ResolveBoolFlag(MusclePoweredWeaponSwitchType, w.MusclePowered),
+			RangeInMiles:    w.ResolveBoolFlag(RangeInMilesWeaponSwitchType, w.RangeInMiles),
 		})
 	}
 	if err = tmpl.Execute(buffer, data); err != nil {
