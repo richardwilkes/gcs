@@ -32,7 +32,7 @@ func EditWeapon(owner Rebuildable, w *gurps.Weapon) {
 		help = "md:Help/Interface/Ranged Weapon Usage"
 	default:
 	}
-	displayEditor[*gurps.Weapon, *gurps.Weapon](owner, w, w.Type.SVG(), help, nil, initWeaponEditor)
+	displayEditor[*gurps.Weapon, *gurps.Weapon](owner, w, w.Type.SVG(), help, nil, initWeaponEditor, preApply)
 }
 
 func initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.Panel) func() {
@@ -100,7 +100,13 @@ func initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.P
 		addCheckBox(content, i18n.Text("Jet"), &e.editorData.Jet)
 		addRateOfFireBlock(content, &e.editorData.RateOfFireMode1, 1)
 		addRateOfFireBlock(content, &e.editorData.RateOfFireMode2, 2)
-		addLabelAndStringField(content, i18n.Text("Range"), "", &e.editorData.Range)
+		addLabelAndDecimalField(content, nil, "", i18n.Text("Half-Damage Range"), "", &e.editorData.HalfDamageRange, 0, fxp.Max)
+		addLabelAndDecimalField(content, nil, "", i18n.Text("Minimum Range"), "", &e.editorData.MinRange, 0, fxp.Max)
+		addLabelAndDecimalField(content, nil, "", i18n.Text("Maximum Range"), "", &e.editorData.MaxRange, 0, fxp.Max)
+		content.AddChild(unison.NewPanel())
+		addCheckBox(content, i18n.Text("Muscle Powered"), &e.editorData.MusclePowered)
+		content.AddChild(unison.NewPanel())
+		addCheckBox(content, i18n.Text("Range in Miles"), &e.editorData.RangeInMiles)
 		addLabelAndDecimalField(content, nil, "", i18n.Text("Shot Recoil"), "", &e.editorData.ShotRecoil, 0, fxp.Max)
 		addLabelAndDecimalField(content, nil, "", i18n.Text("Slug Recoil"), "", &e.editorData.SlugRecoil, 0, fxp.Max)
 		addLabelAndStringField(content, i18n.Text("Shots"), "", &e.editorData.Shots)
@@ -137,4 +143,8 @@ func addRateOfFireBlock(content *unison.Panel, rof *gurps.RateOfFire, modeNum in
 	pref1 = pref1.Max(pref2)
 	label1.LayoutData().(*unison.FlexLayoutData).SizeHint = pref1
 	label2.LayoutData().(*unison.FlexLayoutData).SizeHint = pref1
+}
+
+func preApply(w *gurps.Weapon) {
+	w.Reconcile()
 }

@@ -48,11 +48,12 @@ type editor[N gurps.NodeTypes, D gurps.EditorData[N]] struct {
 	beforeData           D
 	editorData           D
 	modificationCallback func()
+	preApplyCallback     func(D)
 	scale                int
 	promptForSave        bool
 }
 
-func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner Rebuildable, target N, svg *unison.SVG, helpMD string, initToolbar func(*editor[N, D], *unison.Panel), initContent func(*editor[N, D], *unison.Panel) func()) {
+func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner Rebuildable, target N, svg *unison.SVG, helpMD string, initToolbar func(*editor[N, D], *unison.Panel), initContent func(*editor[N, D], *unison.Panel) func(), preApplyCallback func(D)) {
 	lookFor := gurps.AsNode(target).UUID()
 	if Activate(func(d unison.Dockable) bool {
 		if e, ok := d.AsPanel().Self.(*editor[N, D]); ok {
@@ -63,10 +64,11 @@ func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner Rebuildable, 
 		return
 	}
 	e := &editor[N, D]{
-		owner:  owner,
-		target: target,
-		svg:    svg,
-		scale:  gurps.GlobalSettings().General.InitialEditorUIScale,
+		owner:            owner,
+		target:           target,
+		svg:              svg,
+		scale:            gurps.GlobalSettings().General.InitialEditorUIScale,
+		preApplyCallback: preApplyCallback,
 	}
 	e.Self = e
 
@@ -261,7 +263,7 @@ func (e *editor[N, D]) AttemptClose() bool {
 		case unison.ModalResponseDiscard:
 		case unison.ModalResponseOK:
 			e.apply()
-		case unison.ModalResponseCancel:
+		default:
 			return false
 		}
 	}
@@ -284,6 +286,9 @@ func (e *editor[N, D]) UndoManager() *unison.UndoManager {
 
 func (e *editor[N, D]) apply() {
 	e.Window().FocusNext() // Intentionally move the focus to ensure any pending edits are flushed
+	if e.preApplyCallback != nil {
+		e.preApplyCallback(e.editorData)
+	}
 	if mgr := unison.UndoManagerFor(e.owner); mgr != nil {
 		owner := e.owner
 		target := e.target

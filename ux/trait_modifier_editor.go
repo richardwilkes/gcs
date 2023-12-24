@@ -23,7 +23,7 @@ import (
 // EditTraitModifier displays the editor for a trait modifier.
 func EditTraitModifier(owner Rebuildable, modifier *gurps.TraitModifier) {
 	displayEditor[*gurps.TraitModifier, *gurps.TraitModifierEditData](owner, modifier, svg.GCSTraitModifiers,
-		"md:Help/Interface/Trait Modifiers", nil, initTraitModifierEditor)
+		"md:Help/Interface/Trait Modifiers", nil, initTraitModifierEditor, nil)
 }
 
 func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifierEditData], content *unison.Panel) func() {

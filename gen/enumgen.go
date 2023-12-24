@@ -518,6 +518,18 @@ func main() {
 				String: "Gives a weapon maximum reach modifier of",
 			},
 			{
+				Key:    "weapon_half_damage_range_bonus",
+				String: "Gives a weapon half-damage range modifier of",
+			},
+			{
+				Key:    "weapon_min_range_bonus",
+				String: "Gives a weapon minimum range modifier of",
+			},
+			{
+				Key:    "weapon_max_range_bonus",
+				String: "Gives a weapon maximum range modifier of",
+			},
+			{
 				Key:    "weapon_recoil_bonus",
 				String: "Gives a weapon recoil modifier of",
 			},
@@ -599,6 +611,8 @@ func main() {
 			},
 			{Key: "jet"},
 			{Key: "mounted"},
+			{Key: "muscle_powered"},
+			{Key: "range_in_miles"},
 			{Key: "reach_change_requires_ready"},
 			{Key: "retracting_stock"},
 			{

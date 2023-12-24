@@ -682,6 +682,12 @@ func (p *featuresPanel) createFeatureForType(featureType gurps.FeatureType) gurp
 		bonus = gurps.NewWeaponMinReachBonus()
 	case gurps.WeaponMaxReachBonusFeatureType:
 		bonus = gurps.NewWeaponMaxReachBonus()
+	case gurps.WeaponHalfDamageRangeBonusFeatureType:
+		bonus = gurps.NewWeaponHalfDamageRangeBonus()
+	case gurps.WeaponMinRangeBonusFeatureType:
+		bonus = gurps.NewWeaponMinRangeBonus()
+	case gurps.WeaponMaxRangeBonusFeatureType:
+		bonus = gurps.NewWeaponMaxRangeBonus()
 	case gurps.WeaponBulkBonusFeatureType:
 		bonus = gurps.NewWeaponBulkBonus()
 	case gurps.WeaponRecoilBonusFeatureType:

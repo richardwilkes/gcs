@@ -62,6 +62,21 @@ func NewWeaponMaxReachBonus() *WeaponBonus {
 	return newWeaponBonus(WeaponMaxReachBonusFeatureType)
 }
 
+// NewWeaponHalfDamageRangeBonus creates a new weapon half-damage range bonus.
+func NewWeaponHalfDamageRangeBonus() *WeaponBonus {
+	return newWeaponBonus(WeaponHalfDamageRangeBonusFeatureType)
+}
+
+// NewWeaponMinRangeBonus creates a new weapon minimum range bonus.
+func NewWeaponMinRangeBonus() *WeaponBonus {
+	return newWeaponBonus(WeaponMinRangeBonusFeatureType)
+}
+
+// NewWeaponMaxRangeBonus creates a new weapon maximum range bonus.
+func NewWeaponMaxRangeBonus() *WeaponBonus {
+	return newWeaponBonus(WeaponMaxRangeBonusFeatureType)
+}
+
 // NewWeaponAccBonus creates a new weapon accuracy bonus.
 func NewWeaponAccBonus() *WeaponBonus {
 	return newWeaponBonus(WeaponAccBonusFeatureType)
@@ -210,6 +225,15 @@ func (w *WeaponBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 		case WeaponMaxReachBonusFeatureType:
 			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
 			buf.WriteString(i18n.Text(" to maximum reach"))
+		case WeaponHalfDamageRangeBonusFeatureType:
+			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
+			buf.WriteString(i18n.Text(" to half-damage range"))
+		case WeaponMinRangeBonusFeatureType:
+			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
+			buf.WriteString(i18n.Text(" to minimum range"))
+		case WeaponMaxRangeBonusFeatureType:
+			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
+			buf.WriteString(i18n.Text(" to maximum range"))
 		case WeaponBulkBonusFeatureType:
 			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
 			buf.WriteString(i18n.Text(" to bulk"))

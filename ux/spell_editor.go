@@ -24,7 +24,7 @@ import (
 // EditSpell displays the editor for an spell.
 func EditSpell(owner Rebuildable, spell *gurps.Spell) {
 	displayEditor[*gurps.Spell, *gurps.SpellEditData](owner, spell, svg.GCSSpells, "md:Help/Interface/Spell", nil,
-		initSpellEditor)
+		initSpellEditor, nil)
 }
 
 func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *unison.Panel) func() {

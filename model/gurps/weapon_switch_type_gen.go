@@ -33,6 +33,8 @@ const (
 	ControlledBursts2WeaponSwitchType
 	JetWeaponSwitchType
 	MountedWeaponSwitchType
+	MusclePoweredWeaponSwitchType
+	RangeInMilesWeaponSwitchType
 	ReachChangeRequiresReadyWeaponSwitchType
 	RetractingStockWeaponSwitchType
 	TwoHandedWeaponSwitchType
@@ -56,6 +58,8 @@ var AllWeaponSwitchType = []WeaponSwitchType{
 	ControlledBursts2WeaponSwitchType,
 	JetWeaponSwitchType,
 	MountedWeaponSwitchType,
+	MusclePoweredWeaponSwitchType,
+	RangeInMilesWeaponSwitchType,
 	ReachChangeRequiresReadyWeaponSwitchType,
 	RetractingStockWeaponSwitchType,
 	TwoHandedWeaponSwitchType,
@@ -102,6 +106,10 @@ func (enum WeaponSwitchType) Key() string {
 		return "jet"
 	case MountedWeaponSwitchType:
 		return "mounted"
+	case MusclePoweredWeaponSwitchType:
+		return "muscle_powered"
+	case RangeInMilesWeaponSwitchType:
+		return "range_in_miles"
 	case ReachChangeRequiresReadyWeaponSwitchType:
 		return "reach_change_requires_ready"
 	case RetractingStockWeaponSwitchType:
@@ -146,6 +154,10 @@ func (enum WeaponSwitchType) String() string {
 		return i18n.Text("Jet")
 	case MountedWeaponSwitchType:
 		return i18n.Text("Mounted")
+	case MusclePoweredWeaponSwitchType:
+		return i18n.Text("Muscle Powered")
+	case RangeInMilesWeaponSwitchType:
+		return i18n.Text("Range In Miles")
 	case ReachChangeRequiresReadyWeaponSwitchType:
 		return i18n.Text("Reach Change Requires Ready")
 	case RetractingStockWeaponSwitchType:

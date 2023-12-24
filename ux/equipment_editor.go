@@ -103,5 +103,5 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 				}
 				adjustFieldBlank(usesField, e.editorData.MaxUses <= 0)
 			}
-		})
+		}, nil)
 }
