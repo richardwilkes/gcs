@@ -79,13 +79,13 @@ type WeaponData struct {
 	ParryParts    WeaponParry    `json:"-"`
 	Block         string         `json:"block,omitempty"`
 	BlockParts    WeaponBlock    `json:"-"`
+	Accuracy      string         `json:"accuracy,omitempty"`
+	AccuracyParts WeaponAccuracy `json:"-"`
 	Reach         string         `json:"reach,omitempty"`
 	ReachParts    WeaponReach    `json:"-"`
 	Strength      string         `json:"strength,omitempty"`
 	StrengthParts WeaponStrength `json:"-"`
 
-	WeaponAcc       fxp.Int    `json:"weapon_acc,omitempty"`
-	ScopeAcc        fxp.Int    `json:"scope_acc,omitempty"`
 	NormalBulk      fxp.Int    `json:"normal_bulk,omitempty"`
 	GiantBulk       fxp.Int    `json:"giant_bulk,omitempty"`
 	ShotRecoil      fxp.Int    `json:"shot_recoil,omitempty"`
@@ -232,8 +232,6 @@ func (w *Weapon) HashCode() uint32 {
 	_ = binary.Write(h, binary.LittleEndian, w.SkillLevel(nil))
 	_, _ = h.Write([]byte(w.Damage.ResolvedDamage(nil)))
 	_ = binary.Write(h, binary.LittleEndian, w.Jet)
-	_ = binary.Write(h, binary.LittleEndian, w.WeaponAcc)
-	_ = binary.Write(h, binary.LittleEndian, w.ScopeAcc)
 	_ = binary.Write(h, binary.LittleEndian, w.NormalBulk)
 	_ = binary.Write(h, binary.LittleEndian, w.GiantBulk)
 	_ = binary.Write(h, binary.LittleEndian, w.RetractingStock)
@@ -252,6 +250,7 @@ func (w *Weapon) HashCode() uint32 {
 	_ = binary.Write(h, binary.LittleEndian, w.ReloadTimeIsPerShot)
 	w.ParryParts.hash(h)
 	w.BlockParts.hash(h)
+	w.AccuracyParts.hash(h)
 	w.ReachParts.hash(h)
 	w.StrengthParts.hash(h)
 	w.RateOfFireMode1.hash(h)
@@ -266,11 +265,11 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 	case MeleeWeaponType:
 		w.WeaponData.Reach = w.ReachParts.String()
 	case RangedWeaponType:
+		w.WeaponData.Accuracy = w.AccuracyParts.String(w)
 	default:
 	}
 	type calc struct {
 		Level      fxp.Int `json:"level,omitempty"`
-		Accuracy   string  `json:"accuracy,omitempty"`
 		Range      string  `json:"range,omitempty"`
 		RateOfFire string  `json:"rate_of_fire,omitempty"`
 		Damage     string  `json:"damage,omitempty"`
@@ -279,6 +278,7 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 		// From here down are the new fields
 		Parry    string `json:"parry,omitempty"`
 		Block    string `json:"block,omitempty"`
+		Accuracy string `json:"accuracy,omitempty"`
 		Reach    string `json:"reach,omitempty"`
 		Strength string `json:"strength,omitempty"`
 	}
@@ -298,21 +298,24 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 	}
 	switch w.Type {
 	case MeleeWeaponType:
-		block := w.BlockParts.Resolve(w, nil).String()
-		if w.WeaponData.Block != block {
-			data.Calc.Block = block
-		}
 		parry := w.ParryParts.Resolve(w, nil).String()
 		if w.WeaponData.Parry != parry {
 			data.Calc.Parry = parry
+		}
+		block := w.BlockParts.Resolve(w, nil).String()
+		if w.WeaponData.Block != block {
+			data.Calc.Block = block
 		}
 		reach := w.ReachParts.Resolve(w, nil).String()
 		if w.WeaponData.Reach != reach {
 			data.Calc.Reach = reach
 		}
 	case RangedWeaponType:
+		accuracy := w.AccuracyParts.Resolve(w, nil).String(w)
+		if w.WeaponData.Accuracy != accuracy {
+			data.Calc.Accuracy = accuracy
+		}
 		data.Calc.Range = w.CombinedRange(nil)
-		data.Calc.Accuracy = w.CombinedAcc(nil)
 		data.Calc.Bulk = w.CombinedBulk(nil)
 		data.Calc.RateOfFire = w.CombinedRateOfFire(nil)
 		data.Calc.Shots = w.CombinedShots(nil)
@@ -337,110 +340,109 @@ func (w *Weapon) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	w.WeaponData = wdata.WeaponData
-	w.StrengthParts = ParseWeaponStrength(wdata.Strength)
-	w.ParryParts = ParseWeaponParry(wdata.Parry)
-	w.BlockParts = ParseWeaponBlock(wdata.Block)
-	w.ReachParts = ParseWeaponReach(wdata.Reach)
-	if strings.Contains(strings.ToLower(wdata.OldAccuracy), "jet") ||
+	if strings.Contains(strings.ToLower(wdata.Accuracy), "jet") ||
 		strings.Contains(strings.ToLower(wdata.OldRateOfFire), "jet") {
 		w.Jet = true
 	}
-	if !w.Jet {
-		if wdata.OldAccuracy != "" {
-			parts := strings.Split(wdata.OldAccuracy, "+")
-			w.WeaponAcc, _ = fxp.Extract(parts[0])
-			if len(parts) > 1 {
-				w.ScopeAcc, _ = fxp.Extract(parts[1])
-			}
-		}
-		if wdata.OldRateOfFire != "" {
-			parts := strings.Split(wdata.OldRateOfFire, "/")
-			w.RateOfFireMode1.parseOldRateOfFire(parts[0])
-			if len(parts) > 1 {
-				w.RateOfFireMode2.parseOldRateOfFire(parts[1])
-			}
-		}
-	}
-	if wdata.OldBulk != "" {
-		w.RetractingStock = strings.Contains(wdata.OldBulk, "*")
-		parts := strings.Split(wdata.OldBulk, "/")
-		w.NormalBulk, _ = fxp.Extract(parts[0])
-		if len(parts) > 1 {
-			w.GiantBulk, _ = fxp.Extract(parts[1])
-		}
-	}
-	if wdata.OldRecoil != "" {
-		parts := strings.Split(wdata.OldRecoil, "/")
-		w.ShotRecoil, _ = fxp.Extract(parts[0])
-		if len(parts) > 1 {
-			w.SlugRecoil, _ = fxp.Extract(parts[1])
-		}
-	}
-	if wdata.OldRange != "" {
-		lowered := strings.ToLower(wdata.OldRange)
-		lowered = strings.ReplaceAll(lowered, " ", "")
-		lowered = strings.ReplaceAll(lowered, "×", "x")
-		if !strings.Contains(lowered, "sight") &&
-			!strings.Contains(lowered, "spec") &&
-			!strings.Contains(lowered, "skill") &&
-			!strings.Contains(lowered, "point") &&
-			!strings.Contains(lowered, "pbaoe") &&
-			!strings.HasPrefix(lowered, "b") {
-			lowered = strings.ReplaceAll(lowered, ",max", "/")
-			lowered = strings.ReplaceAll(lowered, "max", "")
-			lowered = strings.ReplaceAll(lowered, "1/2d", "")
-			w.MusclePowered = strings.Contains(lowered, "x")
-			lowered = strings.ReplaceAll(lowered, "x", "")
-			lowered = strings.ReplaceAll(lowered, "st", "")
-			lowered = strings.ReplaceAll(lowered, "c/", "")
-			w.RangeInMiles = strings.Contains(lowered, "mi")
-			lowered = strings.ReplaceAll(lowered, "mi.", "")
-			lowered = strings.ReplaceAll(lowered, "mi", "")
-			lowered = strings.ReplaceAll(lowered, ",", "")
-			parts := strings.Split(lowered, "/")
-			if len(parts) > 1 {
-				w.HalfDamageRange, _ = fxp.Extract(parts[0])
-				parts[0] = parts[1]
-			}
-			parts = strings.Split(parts[0], "-")
-			if len(parts) > 1 {
-				w.MinRange, _ = fxp.Extract(parts[0])
-				w.MaxRange, _ = fxp.Extract(parts[1])
-			} else {
-				w.MaxRange, _ = fxp.Extract(parts[0])
-			}
-			w.HalfDamageRange = w.HalfDamageRange.Max(0)
-			w.MinRange = w.MinRange.Max(0)
-			w.MaxRange = w.MaxRange.Max(0)
-			if w.MinRange > w.MaxRange {
-				w.MinRange = 0
-			}
-			if w.HalfDamageRange >= w.MaxRange {
-				w.HalfDamageRange = 0
-			}
-		}
-	}
-	if wdata.OldShots != "" {
-		lowered := strings.ToLower(wdata.OldShots)
-		lowered = strings.ReplaceAll(lowered, " ", "")
-		if !strings.Contains(lowered, "fp") &&
-			!strings.Contains(lowered, "hrs") &&
-			!strings.Contains(lowered, "day") {
-			w.Thrown = strings.Contains(lowered, "t")
-			if !strings.Contains(lowered, "spec") {
-				w.NonChamberShots, lowered = fxp.Extract(lowered)
-				if strings.HasPrefix(lowered, "+") {
-					w.ChamberShots, lowered = fxp.Extract(lowered)
-				}
-				if strings.HasPrefix(lowered, "x") {
-					w.ShotDuration, lowered = fxp.Extract(lowered[1:])
-				}
-				if strings.HasPrefix(lowered, "(") {
-					w.ReloadTime, _ = fxp.Extract(lowered[1:])
-					w.ReloadTimeIsPerShot = strings.Contains(lowered, "i")
+	w.StrengthParts = ParseWeaponStrength(wdata.Strength)
+	switch w.WeaponData.Type {
+	case MeleeWeaponType:
+		w.ParryParts = ParseWeaponParry(wdata.Parry)
+		w.BlockParts = ParseWeaponBlock(wdata.Block)
+		w.ReachParts = ParseWeaponReach(wdata.Reach)
+	case RangedWeaponType:
+		if !w.Jet {
+			w.AccuracyParts = ParseWeaponAccuracy(wdata.Accuracy)
+			if wdata.OldRateOfFire != "" {
+				parts := strings.Split(wdata.OldRateOfFire, "/")
+				w.RateOfFireMode1.parseOldRateOfFire(parts[0])
+				if len(parts) > 1 {
+					w.RateOfFireMode2.parseOldRateOfFire(parts[1])
 				}
 			}
 		}
+		if wdata.OldBulk != "" {
+			w.RetractingStock = strings.Contains(wdata.OldBulk, "*")
+			parts := strings.Split(wdata.OldBulk, "/")
+			w.NormalBulk, _ = fxp.Extract(parts[0])
+			if len(parts) > 1 {
+				w.GiantBulk, _ = fxp.Extract(parts[1])
+			}
+		}
+		if wdata.OldRecoil != "" {
+			parts := strings.Split(wdata.OldRecoil, "/")
+			w.ShotRecoil, _ = fxp.Extract(parts[0])
+			if len(parts) > 1 {
+				w.SlugRecoil, _ = fxp.Extract(parts[1])
+			}
+		}
+		if wdata.OldRange != "" {
+			lowered := strings.ToLower(wdata.OldRange)
+			lowered = strings.ReplaceAll(lowered, " ", "")
+			lowered = strings.ReplaceAll(lowered, "×", "x")
+			if !strings.Contains(lowered, "sight") &&
+				!strings.Contains(lowered, "spec") &&
+				!strings.Contains(lowered, "skill") &&
+				!strings.Contains(lowered, "point") &&
+				!strings.Contains(lowered, "pbaoe") &&
+				!strings.HasPrefix(lowered, "b") {
+				lowered = strings.ReplaceAll(lowered, ",max", "/")
+				lowered = strings.ReplaceAll(lowered, "max", "")
+				lowered = strings.ReplaceAll(lowered, "1/2d", "")
+				w.MusclePowered = strings.Contains(lowered, "x")
+				lowered = strings.ReplaceAll(lowered, "x", "")
+				lowered = strings.ReplaceAll(lowered, "st", "")
+				lowered = strings.ReplaceAll(lowered, "c/", "")
+				w.RangeInMiles = strings.Contains(lowered, "mi")
+				lowered = strings.ReplaceAll(lowered, "mi.", "")
+				lowered = strings.ReplaceAll(lowered, "mi", "")
+				lowered = strings.ReplaceAll(lowered, ",", "")
+				parts := strings.Split(lowered, "/")
+				if len(parts) > 1 {
+					w.HalfDamageRange, _ = fxp.Extract(parts[0])
+					parts[0] = parts[1]
+				}
+				parts = strings.Split(parts[0], "-")
+				if len(parts) > 1 {
+					w.MinRange, _ = fxp.Extract(parts[0])
+					w.MaxRange, _ = fxp.Extract(parts[1])
+				} else {
+					w.MaxRange, _ = fxp.Extract(parts[0])
+				}
+				w.HalfDamageRange = w.HalfDamageRange.Max(0)
+				w.MinRange = w.MinRange.Max(0)
+				w.MaxRange = w.MaxRange.Max(0)
+				if w.MinRange > w.MaxRange {
+					w.MinRange = 0
+				}
+				if w.HalfDamageRange >= w.MaxRange {
+					w.HalfDamageRange = 0
+				}
+			}
+		}
+		if wdata.OldShots != "" {
+			lowered := strings.ToLower(wdata.OldShots)
+			lowered = strings.ReplaceAll(lowered, " ", "")
+			if !strings.Contains(lowered, "fp") &&
+				!strings.Contains(lowered, "hrs") &&
+				!strings.Contains(lowered, "day") {
+				w.Thrown = strings.Contains(lowered, "t")
+				if !strings.Contains(lowered, "spec") {
+					w.NonChamberShots, lowered = fxp.Extract(lowered)
+					if strings.HasPrefix(lowered, "+") {
+						w.ChamberShots, lowered = fxp.Extract(lowered)
+					}
+					if strings.HasPrefix(lowered, "x") {
+						w.ShotDuration, lowered = fxp.Extract(lowered[1:])
+					}
+					if strings.HasPrefix(lowered, "(") {
+						w.ReloadTime, _ = fxp.Extract(lowered[1:])
+						w.ReloadTimeIsPerShot = strings.Contains(lowered, "i")
+					}
+				}
+			}
+		}
+	default:
 	}
 	var zero uuid.UUID
 	if w.WeaponData.ID == zero {
@@ -642,29 +644,6 @@ func (w *Weapon) ResolvedRange(tooltip *xio.ByteBuffer) (halfDamageRange, minRan
 		}
 	}
 	return halfDamageRange, minRange, maxRange
-}
-
-// ResolvedAccuracy returns the resolved weapon and scope accuracies for this weapon.
-func (w *Weapon) ResolvedAccuracy(tooltip *xio.ByteBuffer) (weapon, scope fxp.Int) {
-	if w.ResolveBoolFlag(JetWeaponSwitchType, w.Jet) {
-		return 0, 0
-	}
-	pc := w.PC()
-	if pc == nil {
-		return w.WeaponAcc, w.ScopeAcc
-	}
-	weaponAcc := w.WeaponAcc
-	scopeAcc := w.ScopeAcc
-	for _, bonus := range w.collectWeaponBonuses(1, tooltip, WeaponAccBonusFeatureType, WeaponScopeAccBonusFeatureType) {
-		switch bonus.Type {
-		case WeaponAccBonusFeatureType:
-			weaponAcc += bonus.AdjustedAmount()
-		case WeaponScopeAccBonusFeatureType:
-			scopeAcc += bonus.AdjustedAmount()
-		default:
-		}
-	}
-	return weaponAcc.Max(0), scopeAcc.Max(0)
 }
 
 // ResolvedRateOfFire returns the resolved weapon and scope accuracies for this weapon.
@@ -979,7 +958,7 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 		data.Primary = weaponST.String()
 		data.Tooltip = weaponST.Tooltip(w)
 	case WeaponAccColumn:
-		data.Primary = w.CombinedAcc(&buffer)
+		data.Primary = w.AccuracyParts.Resolve(w, &buffer).String(w)
 	case WeaponRangeColumn:
 		data.Primary = w.CombinedRange(&buffer)
 	case WeaponRoFColumn:
@@ -1022,7 +1001,8 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 			if wd.GiantBulk < 0 {
 				wd.GiantBulk += fxp.One
 			}
-			wd.WeaponAcc -= fxp.One
+			accuracy := w.AccuracyParts.Resolve(w, nil)
+			accuracy.Base -= fxp.One
 			if wd.ShotRecoil > fxp.One {
 				wd.ShotRecoil += fxp.One
 			}
@@ -1030,7 +1010,7 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 				wd.SlugRecoil += fxp.One
 			}
 			data.Tooltip = fmt.Sprintf(i18n.Text("Has a retracting stock. With the stock folded, the weapon's stats change to Bulk %s, Accuracy %s, Recoil %s, and minimum ST %v. Folding or unfolding the stock takes one Ready maneuver."),
-				wd.CombinedBulk(nil), wd.CombinedAcc(nil), wd.CombinedRecoil(nil),
+				wd.CombinedBulk(nil), accuracy.String(w), wd.CombinedRecoil(nil),
 				w.StrengthParts.Resolve(w, nil).Minimum.Mul(fxp.OnePointTwo).Ceil())
 		}
 	case WeaponRecoilColumn:
@@ -1047,21 +1027,6 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 		}
 		data.Tooltip += i18n.Text("Includes modifiers from:") + buffer.String()
 	}
-}
-
-// CombinedAcc returns the combined string used in the GURPS weapon tables for accuracy.
-func (w *Weapon) CombinedAcc(tooltip *xio.ByteBuffer) string {
-	if w.Type != RangedWeaponType {
-		return ""
-	}
-	if w.ResolveBoolFlag(JetWeaponSwitchType, w.Jet) {
-		return i18n.Text("Jet")
-	}
-	weaponAcc, scopeAcc := w.ResolvedAccuracy(tooltip)
-	if scopeAcc != 0 {
-		return weaponAcc.String() + scopeAcc.StringWithSign()
-	}
-	return weaponAcc.String()
 }
 
 // CombinedBulk returns the combined string used in the GURPS weapon tables for bulk.

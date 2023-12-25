@@ -56,6 +56,7 @@ type exportedRangedWeapon struct {
 	Usage           string
 	Level           fxp.Int
 	Accuracy        string
+	AccuracyParts   WeaponAccuracy
 	Range           string
 	Damage          string
 	RateOfFire      string
@@ -64,8 +65,6 @@ type exportedRangedWeapon struct {
 	Recoil          string
 	Strength        string
 	StrengthParts   WeaponStrength
-	WeaponAcc       fxp.Int
-	ScopeAcc        fxp.Int
 	NormalBulk      fxp.Int
 	GiantBulk       fxp.Int
 	ShotRecoil      fxp.Int
@@ -622,7 +621,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 	}
 	for _, w := range entity.EquippedWeapons(RangedWeaponType) {
 		normalBulk, giantBulk := w.ResolvedBulk(nil)
-		weaponAcc, scopeAcc := w.ResolvedAccuracy(nil)
+		accuracy := w.AccuracyParts.Resolve(w, nil)
 		shot, slug := w.ResolvedRecoil(nil)
 		halfDamageRange, minRange, maxRange := w.ResolvedRange(nil)
 		weaponST := w.StrengthParts.Resolve(w, nil)
@@ -631,7 +630,8 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			Notes:           w.Notes(),
 			Usage:           w.Usage,
 			Level:           w.SkillLevel(nil),
-			Accuracy:        w.CombinedAcc(nil),
+			Accuracy:        accuracy.String(w),
+			AccuracyParts:   accuracy,
 			Range:           w.CombinedRange(nil),
 			Damage:          w.Damage.ResolvedDamage(nil),
 			RateOfFire:      w.CombinedRateOfFire(nil),
@@ -640,8 +640,6 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			Recoil:          w.CombinedRecoil(nil),
 			Strength:        weaponST.String(),
 			StrengthParts:   weaponST,
-			WeaponAcc:       weaponAcc,
-			ScopeAcc:        scopeAcc,
 			NormalBulk:      normalBulk,
 			GiantBulk:       giantBulk,
 			ShotRecoil:      shot,

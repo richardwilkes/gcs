@@ -94,8 +94,8 @@ func initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.P
 		}
 		blockCheckBox.OnSet()
 	case gurps.RangedWeaponType:
-		addLabelAndDecimalField(content, nil, "", i18n.Text("Weapon Accuracy"), "", &e.editorData.WeaponAcc, 0, fxp.Max)
-		addLabelAndDecimalField(content, nil, "", i18n.Text("Scope Accuracy"), "", &e.editorData.ScopeAcc, 0, fxp.Max)
+		addLabelAndDecimalField(content, nil, "", i18n.Text("Weapon Accuracy"), "", &e.editorData.AccuracyParts.Base, 0, fxp.Max)
+		addLabelAndDecimalField(content, nil, "", i18n.Text("Scope Accuracy"), "", &e.editorData.AccuracyParts.Scope, 0, fxp.Max)
 		content.AddChild(unison.NewPanel())
 		addCheckBox(content, i18n.Text("Jet"), &e.editorData.Jet)
 		addRateOfFireBlock(content, &e.editorData.RateOfFireMode1, 1)
