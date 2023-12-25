@@ -44,6 +44,7 @@ func ParseWeaponStrength(s string) WeaponStrength {
 		ws.TwoHanded = strings.Contains(s, "†") || strings.Contains(s, "*") // bad input in some files had * instead of †
 		ws.TwoHandedUnready = strings.Contains(s, "‡")
 		ws.Minimum, _ = fxp.Extract(s)
+		ws.Validate()
 	}
 	return ws
 }
@@ -74,7 +75,7 @@ func (ws WeaponStrength) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) We
 	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, WeaponMinSTBonusFeatureType) {
 		result.Minimum += bonus.AdjustedAmount()
 	}
-	result.Minimum = result.Minimum.Max(0)
+	result.Validate()
 	return result
 }
 
@@ -154,4 +155,12 @@ func (ws WeaponStrength) Tooltip(w *Weapon) string {
 		}
 	}
 	return tooltip.String()
+}
+
+// Validate ensures that the data is valid.
+func (ws *WeaponStrength) Validate() {
+	ws.Minimum = ws.Minimum.Max(0)
+	if ws.TwoHanded && ws.TwoHandedUnready {
+		ws.TwoHanded = false
+	}
 }

@@ -1294,7 +1294,7 @@ func (ex *legacyExporter) processMeleeKeys(key string, currentID int, w *Weapon,
 	case "BLOCK":
 		ex.writeEncodedText(w.CombinedBlock(nil))
 	case "REACH":
-		ex.writeEncodedText(w.CombinedReach(nil))
+		ex.writeEncodedText(w.ReachParts.Resolve(w, nil).String())
 	case "ATTACK_MODES_LOOP_COUNT":
 		ex.writeEncodedText(strconv.Itoa(len(attackModes)))
 	case "ATTACK_MODES_LOOP_START":

@@ -18,27 +18,19 @@ import (
 	"github.com/richardwilkes/toolbox/check"
 )
 
-func TestWeaponStrength(t *testing.T) {
+func TestWeaponReach(t *testing.T) {
 	for i, s := range []string{
 		"",
-		"10",
-		"125M",
-		"100M†",
-		"12B",
-		"10B†",
-		"13R",
-		"10R†",
-		"10†",
-		"10‡",
-		"M",
-		"B",
-		"R",
-		"†",
-		"‡",
-		"12BMR†",
-		"12BMR‡",
+		"1",
+		"1*",
+		"1-2",
+		"3-4",
+		"1-2*",
+		"C",
+		"C,1",
+		"C,1-2",
 	} {
-		check.Equal(t, s, gurps.ParseWeaponStrength(s).String(), "test %d", i)
+		check.Equal(t, s, gurps.ParseWeaponReach(s).String(), "test %d", i)
 	}
 
 	cases := []struct {
@@ -46,16 +38,18 @@ func TestWeaponStrength(t *testing.T) {
 		expected string
 	}{
 		{"-", ""},
-		{"–", ""},
-		{"?", ""},
-		{"0", ""},
-		{"5*", "5†"},
-		{"7†[10]", "7†"},
-		{"12BMR†‡", "12BMR‡"},
-		{"   2 m b R † ", "2BMR†"},
-		{"spec", ""},
+		{"1,2", "1-2"},
+		{"1,2*", "1-2*"},
+		{"1, 2", "1-2"},
+		{"1, 2*", "1-2*"},
+		{"1/point", "1"},
+		{"5/10", "5"},
+		{"C, 1", "C,1"},
+		{"C,1,2", "C,1-2"},
+		{"C-5", "C,1-5"},
+		{"Special", ""},
 	}
 	for i, c := range cases {
-		check.Equal(t, c.expected, gurps.ParseWeaponStrength(c.input).String(), "test %d", i)
+		check.Equal(t, c.expected, gurps.ParseWeaponReach(c.input).String(), "test %d", i)
 	}
 }
