@@ -67,9 +67,6 @@ type WeaponData struct {
 
 	Jet                 bool `json:"jet,omitempty"`
 	RetractingStock     bool `json:"retracting_stock,omitempty"`
-	CanParry            bool `json:"can_parry,omitempty"`
-	Fencing             bool `json:"fencing,omitempty"`
-	Unbalanced          bool `json:"unbalanced,omitempty"`
 	MusclePowered       bool `json:"muscle_powered,omitempty"`
 	RangeInMiles        bool `json:"range_in_miles,omitempty"`
 	Thrown              bool `json:"thrown,omitempty"`
@@ -78,6 +75,8 @@ type WeaponData struct {
 	Usage         string         `json:"usage,omitempty"`
 	UsageNotes    string         `json:"usage_notes,omitempty"`
 	Damage        WeaponDamage   `json:"damage"`
+	Parry         string         `json:"parry,omitempty"`
+	ParryParts    WeaponParry    `json:"-"`
 	Block         string         `json:"block,omitempty"`
 	BlockParts    WeaponBlock    `json:"-"`
 	Reach         string         `json:"reach,omitempty"`
@@ -91,7 +90,6 @@ type WeaponData struct {
 	GiantBulk       fxp.Int    `json:"giant_bulk,omitempty"`
 	ShotRecoil      fxp.Int    `json:"shot_recoil,omitempty"`
 	SlugRecoil      fxp.Int    `json:"slug_recoil,omitempty"`
-	ParryModifier   fxp.Int    `json:"parry_mod,omitempty"`
 	HalfDamageRange fxp.Int    `json:"half_damage_range,omitempty"`
 	MinRange        fxp.Int    `json:"min_range,omitempty"`
 	MaxRange        fxp.Int    `json:"max_range,omitempty"`
@@ -241,10 +239,6 @@ func (w *Weapon) HashCode() uint32 {
 	_ = binary.Write(h, binary.LittleEndian, w.RetractingStock)
 	_ = binary.Write(h, binary.LittleEndian, w.ShotRecoil)
 	_ = binary.Write(h, binary.LittleEndian, w.SlugRecoil)
-	_ = binary.Write(h, binary.LittleEndian, w.CanParry)
-	_ = binary.Write(h, binary.LittleEndian, w.Fencing)
-	_ = binary.Write(h, binary.LittleEndian, w.Unbalanced)
-	_ = binary.Write(h, binary.LittleEndian, w.ParryModifier)
 	_ = binary.Write(h, binary.LittleEndian, w.HalfDamageRange)
 	_ = binary.Write(h, binary.LittleEndian, w.MinRange)
 	_ = binary.Write(h, binary.LittleEndian, w.MaxRange)
@@ -256,6 +250,7 @@ func (w *Weapon) HashCode() uint32 {
 	_ = binary.Write(h, binary.LittleEndian, w.ReloadTime)
 	_ = binary.Write(h, binary.LittleEndian, w.Thrown)
 	_ = binary.Write(h, binary.LittleEndian, w.ReloadTimeIsPerShot)
+	w.ParryParts.hash(h)
 	w.BlockParts.hash(h)
 	w.ReachParts.hash(h)
 	w.StrengthParts.hash(h)
@@ -275,7 +270,6 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 	}
 	type calc struct {
 		Level      fxp.Int `json:"level,omitempty"`
-		Parry      string  `json:"parry,omitempty"`
 		Accuracy   string  `json:"accuracy,omitempty"`
 		Range      string  `json:"range,omitempty"`
 		RateOfFire string  `json:"rate_of_fire,omitempty"`
@@ -283,6 +277,7 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 		Bulk       string  `json:"bulk,omitempty"`
 		Shots      string  `json:"shots,omitempty"`
 		// From here down are the new fields
+		Parry    string `json:"parry,omitempty"`
 		Block    string `json:"block,omitempty"`
 		Reach    string `json:"reach,omitempty"`
 		Strength string `json:"strength,omitempty"`
@@ -303,17 +298,17 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 	}
 	switch w.Type {
 	case MeleeWeaponType:
-		reach := w.ReachParts.Resolve(w, nil).String()
-		if w.WeaponData.Reach != reach {
-			data.Calc.Reach = reach
-		}
 		block := w.BlockParts.Resolve(w, nil).String()
 		if w.WeaponData.Block != block {
 			data.Calc.Block = block
 		}
-		data.Calc.Parry = w.CombinedParry(nil)
-		if !w.ResolveBoolFlag(CanParryWeaponSwitchType, w.CanParry) {
-			w.ParryModifier = 0
+		parry := w.ParryParts.Resolve(w, nil).String()
+		if w.WeaponData.Parry != parry {
+			data.Calc.Parry = parry
+		}
+		reach := w.ReachParts.Resolve(w, nil).String()
+		if w.WeaponData.Reach != reach {
+			data.Calc.Reach = reach
 		}
 	case RangedWeaponType:
 		data.Calc.Range = w.CombinedRange(nil)
@@ -333,7 +328,6 @@ func (w *Weapon) UnmarshalJSON(data []byte) error {
 		OldAccuracy   string `json:"accuracy"`
 		OldBulk       string `json:"bulk"`
 		OldRecoil     string `json:"recoil"`
-		OldParry      string `json:"parry"`
 		OldRateOfFire string `json:"rate_of_fire"`
 		OldRange      string `json:"range"`
 		OldShots      string `json:"shots"`
@@ -344,6 +338,7 @@ func (w *Weapon) UnmarshalJSON(data []byte) error {
 	}
 	w.WeaponData = wdata.WeaponData
 	w.StrengthParts = ParseWeaponStrength(wdata.Strength)
+	w.ParryParts = ParseWeaponParry(wdata.Parry)
 	w.BlockParts = ParseWeaponBlock(wdata.Block)
 	w.ReachParts = ParseWeaponReach(wdata.Reach)
 	if strings.Contains(strings.ToLower(wdata.OldAccuracy), "jet") ||
@@ -379,14 +374,6 @@ func (w *Weapon) UnmarshalJSON(data []byte) error {
 		w.ShotRecoil, _ = fxp.Extract(parts[0])
 		if len(parts) > 1 {
 			w.SlugRecoil, _ = fxp.Extract(parts[1])
-		}
-	}
-	if wdata.OldParry != "" {
-		lowered := strings.ToLower(wdata.OldParry)
-		if w.CanParry = !strings.Contains(lowered, "no"); w.CanParry {
-			w.Fencing = strings.Contains(lowered, "f")
-			w.Unbalanced = strings.Contains(lowered, "u")
-			w.ParryModifier, _ = fxp.Extract(lowered)
 		}
 	}
 	if wdata.OldRange != "" {
@@ -586,8 +573,9 @@ func (w *Weapon) skillLevelBaseAdjustment(entity *Entity, tooltip *xio.ByteBuffe
 
 func (w *Weapon) skillLevelPostAdjustment(entity *Entity, tooltip *xio.ByteBuffer) fxp.Int {
 	if w.Type.EnsureValid() == MeleeWeaponType &&
-		w.ResolveBoolFlag(CanParryWeaponSwitchType, w.CanParry) &&
-		w.ResolveBoolFlag(FencingWeaponSwitchType, w.Fencing) {
+		// Cannot use w.ParryParts.Resolve() here, because that calls this
+		w.ResolveBoolFlag(CanParryWeaponSwitchType, w.ParryParts.Permitted) &&
+		w.ResolveBoolFlag(FencingWeaponSwitchType, w.ParryParts.Fencing) {
 		return w.EncumbrancePenalty(entity, tooltip)
 	}
 	return 0
@@ -619,47 +607,6 @@ func (w *Weapon) extractSkillBonusForThisWeapon(f Feature, tooltip *xio.ByteBuff
 		}
 	}
 	return 0
-}
-
-// ResolvedParry returns the resolved parry level.
-func (w *Weapon) ResolvedParry(tooltip *xio.ByteBuffer) fxp.Int {
-	if !w.ResolveBoolFlag(CanParryWeaponSwitchType, w.CanParry) {
-		return 0
-	}
-	pc := w.PC()
-	if pc == nil {
-		return 0
-	}
-	var primaryTooltip *xio.ByteBuffer
-	if tooltip != nil {
-		primaryTooltip = &xio.ByteBuffer{}
-	}
-	preAdj := w.skillLevelBaseAdjustment(pc, primaryTooltip)
-	postAdj := w.skillLevelPostAdjustment(pc, primaryTooltip)
-	adj := fxp.Three + pc.ParryBonus
-	best := fxp.Min
-	for _, def := range w.Defaults {
-		level := def.SkillLevelFast(pc, false, nil, true)
-		if level == fxp.Min {
-			continue
-		}
-		level += preAdj
-		if def.Type() != ParryID {
-			level = (level.Div(fxp.Two) + adj).Trunc()
-		}
-		level += postAdj
-		if best < level {
-			best = level
-		}
-	}
-	if best != fxp.Min {
-		AppendBufferOntoNewLine(tooltip, primaryTooltip)
-	}
-	modifier := w.ParryModifier
-	for _, bonus := range w.collectWeaponBonuses(1, tooltip, WeaponParryBonusFeatureType) {
-		modifier += bonus.AdjustedAmount()
-	}
-	return (best + modifier).Max(0).Trunc()
 }
 
 // ResolvedRange returns the range, fully resolved for the user's ST, if possible.
@@ -1016,23 +963,9 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 	case WeaponSLColumn:
 		data.Primary = w.SkillLevel(&buffer).String()
 	case WeaponParryColumn:
-		data.Primary = w.CombinedParry(&buffer)
-		fencing := w.ResolveBoolFlag(FencingWeaponSwitchType, w.Fencing)
-		unbalanced := w.ResolveBoolFlag(UnbalancedWeaponSwitchType, w.Unbalanced)
-		if w.ResolveBoolFlag(CanParryWeaponSwitchType, w.CanParry) && (fencing || unbalanced) {
-			var tooltip strings.Builder
-			if fencing {
-				parry := w.ResolvedParry(nil)
-				fmt.Fprintf(&tooltip, i18n.Text("Fencing weapon. When retreating, your Parry is %v (instead of %v). You suffer a -2 cumulative penalty for multiple parries after the first on the same turn instead of the usual -4. Flails cannot be parried by this weapon."), parry+fxp.Three, parry+fxp.One)
-			}
-			if unbalanced {
-				if tooltip.Len() != 0 {
-					tooltip.WriteString("\n\n")
-				}
-				fmt.Fprintf(&tooltip, i18n.Text("Unbalanced weapon. You cannot use it to parry if you have already used it to attack this turn (or vice-versa) unless your current ST is %v or greater."), w.StrengthParts.Resolve(w, nil).Minimum.Mul(fxp.OneAndAHalf).Ceil())
-			}
-			data.Tooltip = tooltip.String()
-		}
+		parry := w.ParryParts.Resolve(w, &buffer)
+		data.Primary = parry.String()
+		data.Tooltip = parry.Tooltip(w)
 	case WeaponBlockColumn:
 		data.Primary = w.BlockParts.Resolve(w, &buffer).String()
 	case WeaponDamageColumn:
@@ -1166,32 +1099,6 @@ func (w *Weapon) CombinedRecoil(tooltip *xio.ByteBuffer) string {
 	if slug != 0 && shot != slug {
 		buffer.WriteByte('/')
 		buffer.WriteString(slug.String())
-	}
-	return buffer.String()
-}
-
-// CombinedParry returns the combined string used in the GURPS weapon tables for parry.
-func (w *Weapon) CombinedParry(tooltip *xio.ByteBuffer) string {
-	if !w.ResolveBoolFlag(CanParryWeaponSwitchType, w.CanParry) {
-		return ""
-	}
-	var buffer strings.Builder
-	pc := w.PC()
-	if pc == nil {
-		buffer.WriteString(w.ParryModifier.StringWithSign())
-	} else {
-		parry := w.ResolvedParry(tooltip)
-		if parry == 0 {
-			buffer.WriteByte('-')
-		} else {
-			buffer.WriteString(parry.String())
-		}
-	}
-	if w.ResolveBoolFlag(FencingWeaponSwitchType, w.Fencing) {
-		buffer.WriteByte('F')
-	}
-	if w.ResolveBoolFlag(UnbalancedWeaponSwitchType, w.Unbalanced) {
-		buffer.WriteByte('U')
 	}
 	return buffer.String()
 }

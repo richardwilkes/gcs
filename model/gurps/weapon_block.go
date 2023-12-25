@@ -91,13 +91,13 @@ func (wb WeaponBlock) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 // String returns a string suitable for presentation, matching the standard GURPS weapon table entry format for this
 // data. Call .Resolve() prior to calling this method if you want the resolved values.
 func (wb WeaponBlock) String() string {
-	if wb.Permitted {
-		if wb.Modifier == 0 {
-			return ""
-		}
-		return wb.Modifier.String()
+	if !wb.Permitted {
+		return i18n.Text("No")
 	}
-	return i18n.Text("No")
+	if wb.Modifier == 0 {
+		return ""
+	}
+	return wb.Modifier.String()
 }
 
 // Validate ensures that the data is valid.

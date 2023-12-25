@@ -34,8 +34,9 @@ type exportedMeleeWeapon struct {
 	Notes         string
 	Usage         string
 	Level         fxp.Int
-	Parry         string
 	Damage        string
+	Parry         string
+	ParryParts    WeaponParry
 	Block         string
 	BlockParts    WeaponBlock
 	Reach         string
@@ -600,6 +601,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 	}, true, false, entity.Notes...)
 	for _, w := range entity.EquippedWeapons(MeleeWeaponType) {
 		weaponST := w.StrengthParts.Resolve(w, nil)
+		parry := w.ParryParts.Resolve(w, nil)
 		block := w.BlockParts.Resolve(w, nil)
 		reach := w.ReachParts.Resolve(w, nil)
 		data.MeleeWeapons = append(data.MeleeWeapons, &exportedMeleeWeapon{
@@ -607,7 +609,8 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			Notes:         w.Notes(),
 			Usage:         w.Usage,
 			Level:         w.SkillLevel(nil),
-			Parry:         w.CombinedParry(nil),
+			Parry:         parry.String(),
+			ParryParts:    parry,
 			Block:         block.String(),
 			BlockParts:    block,
 			Damage:        w.Damage.ResolvedDamage(nil),
@@ -615,10 +618,6 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			ReachParts:    reach,
 			Strength:      weaponST.String(),
 			StrengthParts: weaponST,
-			ParryValue:    w.ResolvedParry(nil),
-			CanParry:      w.ResolveBoolFlag(CanParryWeaponSwitchType, w.CanParry),
-			Fencing:       w.ResolveBoolFlag(FencingWeaponSwitchType, w.Fencing),
-			Unbalanced:    w.ResolveBoolFlag(UnbalancedWeaponSwitchType, w.Unbalanced),
 		})
 	}
 	for _, w := range entity.EquippedWeapons(RangedWeaponType) {

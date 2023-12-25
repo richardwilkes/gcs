@@ -69,20 +69,20 @@ func initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.P
 		addCheckBox(content, i18n.Text("Close Combat"), &e.editorData.ReachParts.CloseCombat)
 		content.AddChild(unison.NewPanel())
 		addCheckBox(content, i18n.Text("Reach Change Requires Ready"), &e.editorData.ReachParts.ChangeRequiresReady)
-		parryCheckBox := addCheckBox(content, i18n.Text("Parry Modifier"), &e.editorData.CanParry)
+		parryCheckBox := addCheckBox(content, i18n.Text("Parry Modifier"), &e.editorData.ParryParts.Permitted)
 		parryCheckBox.SetLayoutData(&unison.FlexLayoutData{
 			HAlign: align.End,
 			VAlign: align.Middle,
 		})
-		parryField := addDecimalFieldWithSign(content, nil, "", i18n.Text("Parry Modifier"), "", &e.editorData.ParryModifier, -fxp.Max, fxp.Max)
+		parryField := addDecimalFieldWithSign(content, nil, "", i18n.Text("Parry Modifier"), "", &e.editorData.ParryParts.Modifier, -fxp.Max, fxp.Max)
 		parryCheckBox.OnSet = func() {
 			parryField.SetEnabled(parryCheckBox.State == check.On)
 		}
 		parryCheckBox.OnSet()
 		content.AddChild(unison.NewPanel())
-		addCheckBox(content, i18n.Text("Fencing"), &e.editorData.Fencing)
+		addCheckBox(content, i18n.Text("Fencing"), &e.editorData.ParryParts.Fencing)
 		content.AddChild(unison.NewPanel())
-		addCheckBox(content, i18n.Text("Unbalanced"), &e.editorData.Unbalanced)
+		addCheckBox(content, i18n.Text("Unbalanced"), &e.editorData.ParryParts.Unbalanced)
 		blockCheckBox := addCheckBox(content, i18n.Text("Block Modifier"), &e.editorData.BlockParts.Permitted)
 		blockCheckBox.SetLayoutData(&unison.FlexLayoutData{
 			HAlign: align.End,

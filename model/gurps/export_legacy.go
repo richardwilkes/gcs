@@ -286,7 +286,15 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "CURRENT_MOVE":
 		ex.writeEncodedText(strconv.Itoa(ex.entity.Move(ex.entity.EncumbranceLevel(false))))
 	case "BEST_CURRENT_PARRY":
-		ex.writeEncodedText(ex.bestWeaponDefense(func(w *Weapon) string { return w.CombinedParry(nil) }))
+		best := "-"
+		bestValue := fxp.Min
+		for _, w := range ex.entity.EquippedWeapons(MeleeWeaponType) {
+			if parry := w.ParryParts.Resolve(w, nil); parry.Permitted && parry.Modifier > bestValue {
+				best = parry.String()
+				bestValue = parry.Modifier
+			}
+		}
+		ex.writeEncodedText(best)
 	case "BEST_CURRENT_BLOCK":
 		best := "-"
 		bestValue := fxp.Min
@@ -622,22 +630,6 @@ func (ex *legacyExporter) writeEncodedText(text string) {
 	} else {
 		ex.out.WriteString(text)
 	}
-}
-
-func (ex *legacyExporter) bestWeaponDefense(f func(weapon *Weapon) string) string {
-	best := "-"
-	bestValue := fxp.Min
-	for _, w := range ex.entity.EquippedWeapons(MeleeWeaponType) {
-		if s := f(w); s != "" && !strings.EqualFold(s, "no") {
-			if v, rem := fxp.Extract(s); v != 0 || rem != s {
-				if bestValue < v {
-					bestValue = v
-					best = s
-				}
-			}
-		}
-	}
-	return best
 }
 
 func (ex *legacyExporter) writeTraitLoopCount(f func(*Trait) bool) {
@@ -1298,7 +1290,7 @@ func (ex *legacyExporter) processHierarchicalRangedLoop(buffer []byte) {
 func (ex *legacyExporter) processMeleeKeys(key string, currentID int, w *Weapon, attackModes []*Weapon, buf []byte, index int) int {
 	switch key {
 	case "PARRY":
-		ex.writeEncodedText(w.CombinedParry(nil))
+		ex.writeEncodedText(w.ParryParts.Resolve(w, nil).String())
 	case "BLOCK":
 		ex.writeEncodedText(w.BlockParts.Resolve(w, nil).String())
 	case "REACH":

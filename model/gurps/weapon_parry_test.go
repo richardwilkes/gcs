@@ -18,13 +18,22 @@ import (
 	"github.com/richardwilkes/toolbox/check"
 )
 
-func TestWeaponBlock(t *testing.T) {
+func TestWeaponParry(t *testing.T) {
 	for i, s := range []string{
 		"-1",
 		"10",
+		"0U",
+		"-1U",
+		"9U",
+		"0F",
+		"-2F",
+		"8F",
+		"0FU",
+		"-2FU",
+		"8FU",
 		"No",
 	} {
-		check.Equal(t, s, gurps.ParseWeaponBlock(s).String(), "test %d", i)
+		check.Equal(t, s, gurps.ParseWeaponParry(s).String(), "test %d", i)
 	}
 
 	cases := []struct {
@@ -36,8 +45,12 @@ func TestWeaponBlock(t *testing.T) {
 		{"0", ""},
 		{"+0", ""},
 		{"+1", "1"},
+		{"0 (x5)", ""},
+		{"0U / 0", "0U"},
+		{"0U/ 0", "0U"},
+		{"13 (x5)", "13"},
 	}
 	for i, c := range cases {
-		check.Equal(t, c.expected, gurps.ParseWeaponBlock(c.input).String(), "test %d", i)
+		check.Equal(t, c.expected, gurps.ParseWeaponParry(c.input).String(), "test %d", i)
 	}
 }
