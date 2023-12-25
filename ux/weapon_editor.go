@@ -83,12 +83,12 @@ func initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.P
 		addCheckBox(content, i18n.Text("Fencing"), &e.editorData.Fencing)
 		content.AddChild(unison.NewPanel())
 		addCheckBox(content, i18n.Text("Unbalanced"), &e.editorData.Unbalanced)
-		blockCheckBox := addCheckBox(content, i18n.Text("Block Modifier"), &e.editorData.CanBlock)
+		blockCheckBox := addCheckBox(content, i18n.Text("Block Modifier"), &e.editorData.BlockParts.Permitted)
 		blockCheckBox.SetLayoutData(&unison.FlexLayoutData{
 			HAlign: align.End,
 			VAlign: align.Middle,
 		})
-		blockField := addDecimalFieldWithSign(content, nil, "", i18n.Text("Block Modifier"), "", &e.editorData.BlockModifier, -fxp.Max, fxp.Max)
+		blockField := addDecimalFieldWithSign(content, nil, "", i18n.Text("Block Modifier"), "", &e.editorData.BlockParts.Modifier, -fxp.Max, fxp.Max)
 		blockCheckBox.OnSet = func() {
 			blockField.SetEnabled(blockCheckBox.State == check.On)
 		}

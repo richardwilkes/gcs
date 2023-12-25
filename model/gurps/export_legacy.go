@@ -288,7 +288,15 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "BEST_CURRENT_PARRY":
 		ex.writeEncodedText(ex.bestWeaponDefense(func(w *Weapon) string { return w.CombinedParry(nil) }))
 	case "BEST_CURRENT_BLOCK":
-		ex.writeEncodedText(ex.bestWeaponDefense(func(w *Weapon) string { return w.CombinedBlock(nil) }))
+		best := "-"
+		bestValue := fxp.Min
+		for _, w := range ex.entity.EquippedWeapons(MeleeWeaponType) {
+			if block := w.BlockParts.Resolve(w, nil); block.Permitted && block.Modifier > bestValue {
+				best = block.String()
+				bestValue = block.Modifier
+			}
+		}
+		ex.writeEncodedText(best)
 	case "TIRED":
 		ex.writeEncodedText(ex.entity.Attributes.PoolThreshold(fpAttrID, "tired").String())
 	case "FP_COLLAPSE":
@@ -1292,7 +1300,7 @@ func (ex *legacyExporter) processMeleeKeys(key string, currentID int, w *Weapon,
 	case "PARRY":
 		ex.writeEncodedText(w.CombinedParry(nil))
 	case "BLOCK":
-		ex.writeEncodedText(w.CombinedBlock(nil))
+		ex.writeEncodedText(w.BlockParts.Resolve(w, nil).String())
 	case "REACH":
 		ex.writeEncodedText(w.ReachParts.Resolve(w, nil).String())
 	case "ATTACK_MODES_LOOP_COUNT":

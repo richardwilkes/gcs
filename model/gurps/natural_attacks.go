@@ -57,6 +57,7 @@ func newPunch(owner WeaponOwner) *Weapon {
 	punch.Usage = i18n.Text("Punch")
 	punch.ReachParts.CloseCombat = true
 	punch.CanParry = true
+	punch.BlockParts.Permitted = true
 	punch.Defaults = []*SkillDefault{
 		{
 			DefaultType: DexterityID,
