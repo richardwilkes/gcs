@@ -62,6 +62,7 @@ type exportedRangedWeapon struct {
 	Damage          string
 	RateOfFire      string
 	Shots           string
+	ShotsParts      WeaponShots
 	Bulk            string
 	Recoil          string
 	Strength        string
@@ -619,6 +620,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 		normalBulk, giantBulk := w.ResolvedBulk(nil)
 		accuracy := w.AccuracyParts.Resolve(w, nil)
 		weaponRange := w.RangeParts.Resolve(w, nil)
+		shots := w.ShotsParts.Resolve(w, nil)
 		shot, slug := w.ResolvedRecoil(nil)
 		weaponST := w.StrengthParts.Resolve(w, nil)
 		data.RangedWeapons = append(data.RangedWeapons, &exportedRangedWeapon{
@@ -632,7 +634,8 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			RangeParts:      weaponRange,
 			Damage:          w.Damage.ResolvedDamage(nil),
 			RateOfFire:      w.CombinedRateOfFire(nil),
-			Shots:           w.CombinedShots(nil),
+			Shots:           shots.String(),
+			ShotsParts:      shots,
 			Bulk:            w.CombinedBulk(nil),
 			Recoil:          w.CombinedRecoil(nil),
 			Strength:        weaponST.String(),

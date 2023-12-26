@@ -33,6 +33,7 @@ func TestWeaponAccuracy(t *testing.T) {
 		input    string
 		expected string
 	}{
+		{"", "0"},
 		{"-", "0"},
 		{"+0", "0"},
 		{"+1", "1"},

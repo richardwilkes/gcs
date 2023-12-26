@@ -65,10 +65,8 @@ type WeaponData struct {
 	ID   uuid.UUID  `json:"id"`
 	Type WeaponType `json:"type"`
 
-	Jet                 bool `json:"jet,omitempty"`
-	RetractingStock     bool `json:"retracting_stock,omitempty"`
-	Thrown              bool `json:"thrown,omitempty"`
-	ReloadTimeIsPerShot bool `json:"reload_time_is_per_shot,omitempty"`
+	Jet             bool `json:"jet,omitempty"`
+	RetractingStock bool `json:"retracting_stock,omitempty"`
 
 	Usage         string         `json:"usage,omitempty"`
 	UsageNotes    string         `json:"usage_notes,omitempty"`
@@ -83,6 +81,8 @@ type WeaponData struct {
 	ReachParts    WeaponReach    `json:"-"`
 	Range         string         `json:"range,omitempty"`
 	RangeParts    WeaponRange    `json:"-"`
+	Shots         string         `json:"shots,omitempty"`
+	ShotsParts    WeaponShots    `json:"-"`
 	Strength      string         `json:"strength,omitempty"`
 	StrengthParts WeaponStrength `json:"-"`
 
@@ -90,10 +90,6 @@ type WeaponData struct {
 	GiantBulk       fxp.Int    `json:"giant_bulk,omitempty"`
 	ShotRecoil      fxp.Int    `json:"shot_recoil,omitempty"`
 	SlugRecoil      fxp.Int    `json:"slug_recoil,omitempty"`
-	NonChamberShots fxp.Int    `json:"non_chamber_shots,omitempty"`
-	ChamberShots    fxp.Int    `json:"chamber_shots,omitempty"`
-	ShotDuration    fxp.Int    `json:"shot_duration,omitempty"`
-	ReloadTime      fxp.Int    `json:"reload_time,omitempty"`
 	RateOfFireMode1 RateOfFire `json:"rate_of_fire_mode_1,omitempty"`
 	RateOfFireMode2 RateOfFire `json:"rate_of_fire_mode_2,omitempty"`
 
@@ -234,18 +230,14 @@ func (w *Weapon) HashCode() uint32 {
 	_ = binary.Write(h, binary.LittleEndian, w.RetractingStock)
 	_ = binary.Write(h, binary.LittleEndian, w.ShotRecoil)
 	_ = binary.Write(h, binary.LittleEndian, w.SlugRecoil)
-	_ = binary.Write(h, binary.LittleEndian, w.NonChamberShots)
-	_ = binary.Write(h, binary.LittleEndian, w.ChamberShots)
-	_ = binary.Write(h, binary.LittleEndian, w.ShotDuration)
-	_ = binary.Write(h, binary.LittleEndian, w.ReloadTime)
-	_ = binary.Write(h, binary.LittleEndian, w.Thrown)
-	_ = binary.Write(h, binary.LittleEndian, w.ReloadTimeIsPerShot)
 	w.ParryParts.hash(h)
 	w.BlockParts.hash(h)
 	w.AccuracyParts.hash(h)
 	w.ReachParts.hash(h)
 	w.RangeParts.hash(h)
+	w.ShotsParts.hash(h)
 	w.StrengthParts.hash(h)
+
 	w.RateOfFireMode1.hash(h)
 	w.RateOfFireMode2.hash(h)
 	return h.Sum32()
@@ -263,6 +255,7 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 	case RangedWeaponType:
 		w.WeaponData.Accuracy = w.AccuracyParts.String(w)
 		w.WeaponData.Range = w.RangeParts.String(musclePowerIsResolved)
+		w.WeaponData.Shots = w.ShotsParts.String()
 	default:
 	}
 	type calc struct {
@@ -310,9 +303,11 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 		if data.Calc.Range = w.RangeParts.Resolve(w, nil).String(musclePowerIsResolved); data.Calc.Range == w.WeaponData.Range {
 			data.Calc.Range = ""
 		}
+		if data.Calc.Shots = w.ShotsParts.Resolve(w, nil).String(); data.Calc.Shots == w.WeaponData.Shots {
+			data.Calc.Shots = ""
+		}
 		data.Calc.Bulk = w.CombinedBulk(nil)
 		data.Calc.RateOfFire = w.CombinedRateOfFire(nil)
-		data.Calc.Shots = w.CombinedShots(nil)
 	default:
 	}
 	return json.Marshal(&data)
@@ -354,6 +349,7 @@ func (w *Weapon) UnmarshalJSON(data []byte) error {
 			}
 		}
 		w.RangeParts = ParseWeaponRange(wdata.Range)
+		w.ShotsParts = ParseWeaponShots(wdata.Shots)
 		if wdata.OldBulk != "" {
 			w.RetractingStock = strings.Contains(wdata.OldBulk, "*")
 			parts := strings.Split(wdata.OldBulk, "/")
@@ -367,28 +363,6 @@ func (w *Weapon) UnmarshalJSON(data []byte) error {
 			w.ShotRecoil, _ = fxp.Extract(parts[0])
 			if len(parts) > 1 {
 				w.SlugRecoil, _ = fxp.Extract(parts[1])
-			}
-		}
-		if wdata.OldShots != "" {
-			lowered := strings.ToLower(wdata.OldShots)
-			lowered = strings.ReplaceAll(lowered, " ", "")
-			if !strings.Contains(lowered, "fp") &&
-				!strings.Contains(lowered, "hrs") &&
-				!strings.Contains(lowered, "day") {
-				w.Thrown = strings.Contains(lowered, "t")
-				if !strings.Contains(lowered, "spec") {
-					w.NonChamberShots, lowered = fxp.Extract(lowered)
-					if strings.HasPrefix(lowered, "+") {
-						w.ChamberShots, lowered = fxp.Extract(lowered)
-					}
-					if strings.HasPrefix(lowered, "x") {
-						w.ShotDuration, lowered = fxp.Extract(lowered[1:])
-					}
-					if strings.HasPrefix(lowered, "(") {
-						w.ReloadTime, _ = fxp.Extract(lowered[1:])
-						w.ReloadTimeIsPerShot = strings.Contains(lowered, "i")
-					}
-				}
 			}
 		}
 	default:
@@ -642,28 +616,6 @@ func (w *Weapon) ResolvedRecoil(tooltip *xio.ByteBuffer) (shot, slug fxp.Int) {
 	return shot, slug
 }
 
-// ResolvedShot returns the resolved shots for this weapon.
-func (w *Weapon) ResolvedShot(tooltip *xio.ByteBuffer) (nonChamberShots, chamberShots, shotDuration, reloadTime fxp.Int) {
-	nonChamberShots = w.NonChamberShots
-	chamberShots = w.ChamberShots
-	shotDuration = w.ShotDuration
-	reloadTime = w.ReloadTime
-	for _, bonus := range w.collectWeaponBonuses(1, tooltip, WeaponNonChamberShotsBonusFeatureType, WeaponChamberShotsBonusFeatureType, WeaponShotDurationBonusFeatureType, WeaponReloadTimeBonusFeatureType) {
-		switch bonus.Type {
-		case WeaponNonChamberShotsBonusFeatureType:
-			nonChamberShots += bonus.AdjustedAmount()
-		case WeaponChamberShotsBonusFeatureType:
-			chamberShots += bonus.AdjustedAmount()
-		case WeaponShotDurationBonusFeatureType:
-			shotDuration += bonus.AdjustedAmount()
-		case WeaponReloadTimeBonusFeatureType:
-			reloadTime += bonus.AdjustedAmount()
-		default:
-		}
-	}
-	return nonChamberShots.Max(0), chamberShots.Max(0), shotDuration.Max(0), reloadTime.Max(0)
-}
-
 // ResolveBoolFlag returns the resolved value of the given bool flag.
 func (w *Weapon) ResolveBoolFlag(switchType WeaponSwitchType, initial bool) bool {
 	pc := w.PC()
@@ -901,10 +853,9 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 			}
 		}
 	case WeaponShotsColumn:
-		data.Primary = w.CombinedShots(&buffer)
-		if w.ResolveBoolFlag(ReloadTimeIsPerShotWeaponSwitchType, w.ReloadTimeIsPerShot) {
-			data.Tooltip = i18n.Text("Reload time is per shot")
-		}
+		shots := w.ShotsParts.Resolve(w, &buffer)
+		data.Primary = shots.String()
+		data.Tooltip = shots.Tooltip()
 	case WeaponBulkColumn:
 		data.Primary = w.CombinedBulk(&buffer)
 		if w.ResolveBoolFlag(RetractingStockWeaponSwitchType, w.RetractingStock) {
@@ -1004,40 +955,6 @@ func (w *Weapon) CombinedRateOfFire(tooltip *xio.ByteBuffer) string {
 	return rof1
 }
 
-// CombinedShots returns the combined string used in the GURPS weapon tables for shots.
-func (w *Weapon) CombinedShots(tooltip *xio.ByteBuffer) string {
-	if w.Type != RangedWeaponType {
-		return ""
-	}
-	var buffer strings.Builder
-	nonChamberShots, chamberShots, shotDuration, reloadTime := w.ResolvedShot(tooltip)
-	if w.ResolveBoolFlag(ThrownWeaponSwitchType, w.Thrown) {
-		buffer.WriteByte('T')
-	} else {
-		if nonChamberShots > 0 {
-			buffer.WriteString(nonChamberShots.String())
-			if chamberShots > 0 {
-				buffer.WriteByte('+')
-				buffer.WriteString(chamberShots.String())
-			}
-		}
-	}
-	if reloadTime > 0 {
-		buffer.WriteByte('(')
-		buffer.WriteString(reloadTime.String())
-		if w.ResolveBoolFlag(ReloadTimeIsPerShotWeaponSwitchType, w.ReloadTimeIsPerShot) {
-			buffer.WriteByte('i')
-		}
-		buffer.WriteByte(')')
-	}
-	if shotDuration > 0 {
-		buffer.WriteByte('x')
-		buffer.WriteString(shotDuration.String())
-		buffer.WriteByte('s')
-	}
-	return buffer.String()
-}
-
 // OwningEntity returns the owning Entity.
 func (w *Weapon) OwningEntity() *Entity {
 	return w.Entity()
@@ -1068,6 +985,7 @@ func (w *Weapon) Validate() {
 	case RangedWeaponType:
 		w.AccuracyParts.Validate()
 		w.RangeParts.Validate()
+		w.ShotsParts.Validate()
 	default:
 	}
 }
