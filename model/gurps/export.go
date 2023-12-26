@@ -64,17 +64,15 @@ type exportedRangedWeapon struct {
 	Shots           string
 	ShotsParts      WeaponShots
 	Bulk            string
+	BulkParts       WeaponBulk
 	Recoil          string
 	Strength        string
 	StrengthParts   WeaponStrength
-	NormalBulk      fxp.Int
-	GiantBulk       fxp.Int
 	ShotRecoil      fxp.Int
 	SlugRecoil      fxp.Int
 	RateOfFireMode1 RateOfFire
 	RateOfFireMode2 RateOfFire
 	Jet             bool
-	RetractingStock bool
 }
 
 type exportedHitLocation struct {
@@ -617,10 +615,10 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 		})
 	}
 	for _, w := range entity.EquippedWeapons(RangedWeaponType) {
-		normalBulk, giantBulk := w.ResolvedBulk(nil)
 		accuracy := w.AccuracyParts.Resolve(w, nil)
 		weaponRange := w.RangeParts.Resolve(w, nil)
 		shots := w.ShotsParts.Resolve(w, nil)
+		bulk := w.BulkParts.Resolve(w, nil)
 		shot, slug := w.ResolvedRecoil(nil)
 		weaponST := w.StrengthParts.Resolve(w, nil)
 		data.RangedWeapons = append(data.RangedWeapons, &exportedRangedWeapon{
@@ -636,18 +634,16 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			RateOfFire:      w.CombinedRateOfFire(nil),
 			Shots:           shots.String(),
 			ShotsParts:      shots,
-			Bulk:            w.CombinedBulk(nil),
+			Bulk:            bulk.String(),
+			BulkParts:       bulk,
 			Recoil:          w.CombinedRecoil(nil),
 			Strength:        weaponST.String(),
 			StrengthParts:   weaponST,
-			NormalBulk:      normalBulk,
-			GiantBulk:       giantBulk,
 			ShotRecoil:      shot,
 			SlugRecoil:      slug,
 			RateOfFireMode1: w.RateOfFireMode1,
 			RateOfFireMode2: w.RateOfFireMode2,
 			Jet:             w.ResolveBoolFlag(JetWeaponSwitchType, w.Jet),
-			RetractingStock: w.ResolveBoolFlag(RetractingStockWeaponSwitchType, w.RetractingStock),
 		})
 	}
 	if err = tmpl.Execute(buffer, data); err != nil {

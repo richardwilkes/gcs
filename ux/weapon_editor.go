@@ -117,13 +117,13 @@ func initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.P
 		addCheckBox(content, i18n.Text("Reload Time is Per Shot"), &e.editorData.ShotsParts.ReloadTimeIsPerShot)
 		content.AddChild(unison.NewPanel())
 		addCheckBox(content, i18n.Text("Thrown Weapon"), &e.editorData.ShotsParts.Thrown)
-		addLabelAndDecimalField(content, nil, "", i18n.Text("Normal Bulk"), "", &e.editorData.NormalBulk, -fxp.Max, 0)
+		addLabelAndDecimalField(content, nil, "", i18n.Text("Normal Bulk"), "", &e.editorData.BulkParts.NormalBulk, -fxp.Max, 0)
 		giant := i18n.Text("Giant Bulk")
 		wrapper := addFlowWrapper(content, giant, 2)
-		addDecimalField(wrapper, nil, "", giant, "", &e.editorData.GiantBulk, -fxp.Max, 0)
+		addDecimalField(wrapper, nil, "", giant, "", &e.editorData.BulkParts.GiantBulk, -fxp.Max, 0)
 		wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("(only needed if different from normal bulk)"), true))
 		content.AddChild(unison.NewPanel())
-		addCheckBox(content, i18n.Text("Retracting Stock"), &e.editorData.RetractingStock)
+		addCheckBox(content, i18n.Text("Retracting Stock"), &e.editorData.BulkParts.RetractingStock)
 	default:
 	}
 	content.AddChild(newDefaultsPanel(e.editorData.Entity(), &e.editorData.Defaults))
