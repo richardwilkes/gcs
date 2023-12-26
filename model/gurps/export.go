@@ -58,6 +58,7 @@ type exportedRangedWeapon struct {
 	Accuracy        string
 	AccuracyParts   WeaponAccuracy
 	Range           string
+	RangeParts      WeaponRange
 	Damage          string
 	RateOfFire      string
 	Shots           string
@@ -69,15 +70,10 @@ type exportedRangedWeapon struct {
 	GiantBulk       fxp.Int
 	ShotRecoil      fxp.Int
 	SlugRecoil      fxp.Int
-	HalfDamageRange fxp.Int
-	MinRange        fxp.Int
-	MaxRange        fxp.Int
 	RateOfFireMode1 RateOfFire
 	RateOfFireMode2 RateOfFire
 	Jet             bool
 	RetractingStock bool
-	MusclePowered   bool
-	RangeInMiles    bool
 }
 
 type exportedHitLocation struct {
@@ -622,8 +618,8 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 	for _, w := range entity.EquippedWeapons(RangedWeaponType) {
 		normalBulk, giantBulk := w.ResolvedBulk(nil)
 		accuracy := w.AccuracyParts.Resolve(w, nil)
+		weaponRange := w.RangeParts.Resolve(w, nil)
 		shot, slug := w.ResolvedRecoil(nil)
-		halfDamageRange, minRange, maxRange := w.ResolvedRange(nil)
 		weaponST := w.StrengthParts.Resolve(w, nil)
 		data.RangedWeapons = append(data.RangedWeapons, &exportedRangedWeapon{
 			Description:     w.String(),
@@ -632,7 +628,8 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			Level:           w.SkillLevel(nil),
 			Accuracy:        accuracy.String(w),
 			AccuracyParts:   accuracy,
-			Range:           w.CombinedRange(nil),
+			Range:           weaponRange.String(true),
+			RangeParts:      weaponRange,
 			Damage:          w.Damage.ResolvedDamage(nil),
 			RateOfFire:      w.CombinedRateOfFire(nil),
 			Shots:           w.CombinedShots(nil),
@@ -646,13 +643,8 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			SlugRecoil:      slug,
 			RateOfFireMode1: w.RateOfFireMode1,
 			RateOfFireMode2: w.RateOfFireMode2,
-			HalfDamageRange: halfDamageRange,
-			MinRange:        minRange,
-			MaxRange:        maxRange,
 			Jet:             w.ResolveBoolFlag(JetWeaponSwitchType, w.Jet),
 			RetractingStock: w.ResolveBoolFlag(RetractingStockWeaponSwitchType, w.RetractingStock),
-			MusclePowered:   w.ResolveBoolFlag(MusclePoweredWeaponSwitchType, w.MusclePowered),
-			RangeInMiles:    w.ResolveBoolFlag(RangeInMilesWeaponSwitchType, w.RangeInMiles),
 		})
 	}
 	if err = tmpl.Execute(buffer, data); err != nil {
