@@ -1327,7 +1327,7 @@ func (ex *legacyExporter) processRangedKeys(key string, currentID int, w *Weapon
 	case "SHOTS":
 		ex.writeEncodedText(w.ShotsParts.Resolve(w, nil).String())
 	case "RECOIL":
-		ex.writeEncodedText(w.CombinedRecoil(nil))
+		ex.writeEncodedText(w.RecoilParts.Resolve(w, nil).String())
 	case "ATTACK_MODES_LOOP_COUNT":
 		ex.writeEncodedText(strconv.Itoa(len(attackModes)))
 	case "ATTACK_MODES_LOOP_START":

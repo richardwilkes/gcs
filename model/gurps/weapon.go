@@ -84,11 +84,11 @@ type WeaponData struct {
 	ShotsParts    WeaponShots    `json:"-"`
 	Bulk          string         `json:"bulk,omitempty"`
 	BulkParts     WeaponBulk     `json:"-"`
+	Recoil        string         `json:"recoil,omitempty"`
+	RecoilParts   WeaponRecoil   `json:"-"`
 	Strength      string         `json:"strength,omitempty"`
 	StrengthParts WeaponStrength `json:"-"`
 
-	ShotRecoil      fxp.Int    `json:"shot_recoil,omitempty"`
-	SlugRecoil      fxp.Int    `json:"slug_recoil,omitempty"`
 	RateOfFireMode1 RateOfFire `json:"rate_of_fire_mode_1,omitempty"`
 	RateOfFireMode2 RateOfFire `json:"rate_of_fire_mode_2,omitempty"`
 
@@ -224,8 +224,6 @@ func (w *Weapon) HashCode() uint32 {
 	_ = binary.Write(h, binary.LittleEndian, w.SkillLevel(nil))
 	_, _ = h.Write([]byte(w.Damage.ResolvedDamage(nil)))
 	_ = binary.Write(h, binary.LittleEndian, w.Jet)
-	_ = binary.Write(h, binary.LittleEndian, w.ShotRecoil)
-	_ = binary.Write(h, binary.LittleEndian, w.SlugRecoil)
 	w.ParryParts.hash(h)
 	w.BlockParts.hash(h)
 	w.AccuracyParts.hash(h)
@@ -233,6 +231,7 @@ func (w *Weapon) HashCode() uint32 {
 	w.RangeParts.hash(h)
 	w.ShotsParts.hash(h)
 	w.BulkParts.hash(h)
+	w.RecoilParts.hash(h)
 	w.StrengthParts.hash(h)
 
 	w.RateOfFireMode1.hash(h)
@@ -254,20 +253,22 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 		w.WeaponData.Range = w.RangeParts.String(musclePowerIsResolved)
 		w.WeaponData.Shots = w.ShotsParts.String()
 		w.WeaponData.Bulk = w.BulkParts.String()
+		w.WeaponData.Recoil = w.RecoilParts.String()
 	default:
 	}
 	type calc struct {
 		Level      fxp.Int `json:"level,omitempty"`
 		RateOfFire string  `json:"rate_of_fire,omitempty"`
 		Damage     string  `json:"damage,omitempty"`
-		Shots      string  `json:"shots,omitempty"`
 		// From here down are the new fields
 		Parry    string `json:"parry,omitempty"`
 		Block    string `json:"block,omitempty"`
 		Accuracy string `json:"accuracy,omitempty"`
 		Reach    string `json:"reach,omitempty"`
 		Range    string `json:"range,omitempty"`
+		Shots    string `json:"shots,omitempty"`
 		Bulk     string `json:"bulk,omitempty"`
+		Recoil   string `json:"recoil,omitempty"`
 		Strength string `json:"strength,omitempty"`
 	}
 	data := struct {
@@ -307,6 +308,9 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 		if data.Calc.Bulk = w.BulkParts.Resolve(w, nil).String(); data.Calc.Bulk == w.WeaponData.Bulk {
 			data.Calc.Bulk = ""
 		}
+		if data.Calc.Recoil = w.RecoilParts.Resolve(w, nil).String(); data.Calc.Recoil == w.WeaponData.Recoil {
+			data.Calc.Recoil = ""
+		}
 		data.Calc.RateOfFire = w.CombinedRateOfFire(nil)
 	default:
 	}
@@ -317,9 +321,7 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 func (w *Weapon) UnmarshalJSON(data []byte) error {
 	type oldWeaponData struct {
 		WeaponData
-		OldRecoil     string `json:"recoil"`
 		OldRateOfFire string `json:"rate_of_fire"`
-		OldShots      string `json:"shots"`
 	}
 	var wdata oldWeaponData
 	if err := json.Unmarshal(data, &wdata); err != nil {
@@ -350,13 +352,7 @@ func (w *Weapon) UnmarshalJSON(data []byte) error {
 		w.RangeParts = ParseWeaponRange(wdata.Range)
 		w.ShotsParts = ParseWeaponShots(wdata.Shots)
 		w.BulkParts = ParseWeaponBulk(wdata.Bulk)
-		if wdata.OldRecoil != "" {
-			parts := strings.Split(wdata.OldRecoil, "/")
-			w.ShotRecoil, _ = fxp.Extract(parts[0])
-			if len(parts) > 1 {
-				w.SlugRecoil, _ = fxp.Extract(parts[1])
-			}
-		}
+		w.RecoilParts = ParseWeaponRecoil(wdata.Recoil)
 	default:
 	}
 	var zero uuid.UUID
@@ -571,30 +567,6 @@ func (w *Weapon) collectRateOfFireBonuses(tooltip *xio.ByteBuffer, rof *RateOfFi
 		}
 	}
 	return shots.Ceil().Max(0), secondary.Ceil().Max(0)
-}
-
-// ResolvedRecoil returns the resolved recoil for this weapon.
-func (w *Weapon) ResolvedRecoil(tooltip *xio.ByteBuffer) (shot, slug fxp.Int) {
-	shot = w.ShotRecoil
-	slug = w.SlugRecoil
-	if shot <= fxp.One && slug <= fxp.One {
-		return shot, slug
-	}
-	for _, bonus := range w.collectWeaponBonuses(1, tooltip, WeaponRecoilBonusFeatureType) {
-		shot += bonus.AdjustedAmount()
-		slug += bonus.AdjustedAmount()
-	}
-	if w.ShotRecoil <= fxp.One {
-		shot = w.ShotRecoil
-	} else {
-		shot = shot.Max(fxp.One)
-	}
-	if w.SlugRecoil <= fxp.One {
-		slug = w.SlugRecoil
-	} else {
-		slug = slug.Max(fxp.One)
-	}
-	return shot, slug
 }
 
 // ResolveBoolFlag returns the resolved value of the given bool flag.
@@ -842,10 +814,9 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 		data.Primary = bulk.String()
 		data.Tooltip = bulk.Tooltip(w)
 	case WeaponRecoilColumn:
-		data.Primary = w.CombinedRecoil(&buffer)
-		if strings.Contains(data.Primary, "/") {
-			data.Tooltip = i18n.Text("First Recoil value is for shot, second is for slugs")
-		}
+		recoil := w.RecoilParts.Resolve(w, &buffer)
+		data.Primary = recoil.String()
+		data.Tooltip = recoil.Tooltip()
 	case PageRefCellAlias:
 		data.Type = PageRefCellType
 	}
@@ -855,24 +826,6 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 		}
 		data.Tooltip += i18n.Text("Includes modifiers from:") + buffer.String()
 	}
-}
-
-// CombinedRecoil returns the combined string used in the GURPS weapon tables for recoil.
-func (w *Weapon) CombinedRecoil(tooltip *xio.ByteBuffer) string {
-	if w.Type != RangedWeaponType {
-		return ""
-	}
-	shot, slug := w.ResolvedRecoil(tooltip)
-	if shot == 0 && slug == 0 {
-		return ""
-	}
-	var buffer strings.Builder
-	buffer.WriteString(shot.String())
-	if slug != 0 && shot != slug {
-		buffer.WriteByte('/')
-		buffer.WriteString(slug.String())
-	}
-	return buffer.String()
 }
 
 // CombinedRateOfFire returns the combined string used in the GURPS weapon tables for rate of fire.

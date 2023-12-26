@@ -95,16 +95,20 @@ func (wb WeaponBulk) Tooltip(w *Weapon) string {
 	wb.Validate()
 	accuracy := w.AccuracyParts.Resolve(w, nil)
 	accuracy.Base -= fxp.One
-	wd := *w
-	if wd.ShotRecoil > fxp.One {
-		wd.ShotRecoil += fxp.One
+	accuracy.Validate()
+	recoil := w.RecoilParts.Resolve(w, nil)
+	if recoil.ShotRecoil > fxp.One {
+		recoil.ShotRecoil += fxp.One
 	}
-	if wd.SlugRecoil > fxp.One {
-		wd.SlugRecoil += fxp.One
+	if recoil.SlugRecoil > fxp.One {
+		recoil.SlugRecoil += fxp.One
 	}
-	return fmt.Sprintf(i18n.Text("Has a retracting stock. With the stock folded, the weapon's stats change to Bulk %s, Accuracy %s, Recoil %s, and minimum ST %v. Folding or unfolding the stock takes one Ready maneuver."),
-		wb.String(), accuracy.String(w), wd.CombinedRecoil(nil),
-		w.StrengthParts.Resolve(w, nil).Minimum.Mul(fxp.OnePointTwo).Ceil())
+	recoil.Validate()
+	minST := w.StrengthParts.Resolve(w, nil)
+	minST.Minimum = minST.Minimum.Mul(fxp.OnePointTwo).Ceil()
+	minST.Validate()
+	return fmt.Sprintf(i18n.Text("Has a retracting stock. With the stock folded, the weapon's stats change to Bulk %s, Accuracy %s, Recoil %s, and minimum ST %s. Folding or unfolding the stock takes one Ready maneuver."),
+		wb.String(), accuracy.String(w), recoil.String(), minST.String())
 }
 
 // Validate ensures that the data is valid.
