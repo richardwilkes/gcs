@@ -43,11 +43,6 @@ type exportedMeleeWeapon struct {
 	ReachParts    WeaponReach
 	Strength      string
 	StrengthParts WeaponStrength
-	ParryValue    fxp.Int
-	CanParry      bool
-	Fencing       bool
-	Unbalanced    bool
-	CanBlock      bool
 }
 
 type exportedRangedWeapon struct {
@@ -61,6 +56,7 @@ type exportedRangedWeapon struct {
 	RangeParts      WeaponRange
 	Damage          string
 	RateOfFire      string
+	RateOfFireParts WeaponRoF
 	Shots           string
 	ShotsParts      WeaponShots
 	Bulk            string
@@ -69,10 +65,6 @@ type exportedRangedWeapon struct {
 	RecoilParts     WeaponRecoil
 	Strength        string
 	StrengthParts   WeaponStrength
-	ShotRecoil      fxp.Int
-	SlugRecoil      fxp.Int
-	RateOfFireMode1 RateOfFire
-	RateOfFireMode2 RateOfFire
 	Jet             bool
 }
 
@@ -618,6 +610,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 	for _, w := range entity.EquippedWeapons(RangedWeaponType) {
 		accuracy := w.AccuracyParts.Resolve(w, nil)
 		weaponRange := w.RangeParts.Resolve(w, nil)
+		rof := w.RateOfFireParts.Resolve(w, nil)
 		shots := w.ShotsParts.Resolve(w, nil)
 		bulk := w.BulkParts.Resolve(w, nil)
 		recoil := w.RecoilParts.Resolve(w, nil)
@@ -632,7 +625,8 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			Range:           weaponRange.String(true),
 			RangeParts:      weaponRange,
 			Damage:          w.Damage.ResolvedDamage(nil),
-			RateOfFire:      w.CombinedRateOfFire(nil),
+			RateOfFire:      rof.String(w),
+			RateOfFireParts: rof,
 			Shots:           shots.String(),
 			ShotsParts:      shots,
 			Bulk:            bulk.String(),
@@ -641,8 +635,6 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			RecoilParts:     recoil,
 			Strength:        weaponST.String(),
 			StrengthParts:   weaponST,
-			RateOfFireMode1: w.RateOfFireMode1,
-			RateOfFireMode2: w.RateOfFireMode2,
 			Jet:             w.ResolveBoolFlag(JetWeaponSwitchType, w.Jet),
 		})
 	}

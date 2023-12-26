@@ -98,8 +98,8 @@ func initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.P
 		addLabelAndDecimalField(content, nil, "", i18n.Text("Scope Accuracy"), "", &e.editorData.AccuracyParts.Scope, 0, fxp.Max)
 		content.AddChild(unison.NewPanel())
 		addCheckBox(content, i18n.Text("Jet"), &e.editorData.Jet)
-		addRateOfFireBlock(content, &e.editorData.RateOfFireMode1, 1)
-		addRateOfFireBlock(content, &e.editorData.RateOfFireMode2, 2)
+		addRateOfFireBlock(content, &e.editorData.RateOfFireParts.Mode1, 1)
+		addRateOfFireBlock(content, &e.editorData.RateOfFireParts.Mode2, 2)
 		addLabelAndDecimalField(content, nil, "", i18n.Text("Half-Damage Range"), "", &e.editorData.RangeParts.HalfDamageRange, 0, fxp.Max)
 		addLabelAndDecimalField(content, nil, "", i18n.Text("Minimum Range"), "", &e.editorData.RangeParts.MinRange, 0, fxp.Max)
 		addLabelAndDecimalField(content, nil, "", i18n.Text("Maximum Range"), "", &e.editorData.RangeParts.MaxRange, 0, fxp.Max)
@@ -130,7 +130,7 @@ func initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.P
 	return nil
 }
 
-func addRateOfFireBlock(content *unison.Panel, rof *gurps.RateOfFire, modeNum int) {
+func addRateOfFireBlock(content *unison.Panel, rof *gurps.WeaponRoFMode, modeNum int) {
 	wrapper := addFlowWrapper(content, fmt.Sprintf(i18n.Text("Rate of Fire Mode %d"), modeNum), 3)
 	text := i18n.Text("Shots Per Attack")
 	addDecimalField(wrapper, nil, "", text, "", &rof.ShotsPerAttack, 0, fxp.Max)
