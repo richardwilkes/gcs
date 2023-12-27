@@ -17,6 +17,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
@@ -78,7 +79,7 @@ func (wr WeaponRecoil) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weap
 	result := wr
 	// 0 means recoil isn't used; 1+ means it is.
 	if wr.ShotRecoil > 0 || wr.SlugRecoil > 0 {
-		for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, WeaponRecoilBonusFeatureType) {
+		for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponRecoilBonus) {
 			result.ShotRecoil += bonus.AdjustedAmount()
 			result.SlugRecoil += bonus.AdjustedAmount()
 		}

@@ -21,6 +21,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/autoscale"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/errs"
@@ -51,7 +52,7 @@ type generalSettingsDockable struct {
 	initialPDFScaleField           *PercentageField
 	initialMarkdownScaleField      *PercentageField
 	initialImageScaleField         *PercentageField
-	autoScalingPopup               *unison.PopupMenu[gurps.AutoScale]
+	autoScalingPopup               *unison.PopupMenu[autoscale.Option]
 	maxAutoColWidthField           *IntegerField
 	monitorResolutionField         *IntegerField
 	exportResolutionField          *IntegerField
@@ -129,12 +130,12 @@ func (d *generalSettingsDockable) initContent(content *unison.Panel) {
 		func() int { return gurps.GlobalSettings().General.InitialPDFUIScale },
 		func(v int) { gurps.GlobalSettings().General.InitialPDFUIScale = v },
 		gurps.InitialUIScaleMin, gurps.InitialUIScaleMax, false, false)
-	d.autoScalingPopup = unison.NewPopupMenu[gurps.AutoScale]()
-	for _, mode := range gurps.AllAutoScale {
+	d.autoScalingPopup = unison.NewPopupMenu[autoscale.Option]()
+	for _, mode := range autoscale.Options {
 		d.autoScalingPopup.AddItem(mode)
 	}
 	d.autoScalingPopup.Select(gurps.GlobalSettings().General.PDFAutoScaling)
-	d.autoScalingPopup.SelectionChangedCallback = func(popup *unison.PopupMenu[gurps.AutoScale]) {
+	d.autoScalingPopup.SelectionChangedCallback = func(popup *unison.PopupMenu[autoscale.Option]) {
 		if mode, ok := popup.Selected(); ok {
 			gurps.GlobalSettings().General.PDFAutoScaling = mode
 		}

@@ -15,26 +15,27 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 )
 
 var _ Feature = &ContainedWeightReduction{}
 
 // ContainedWeightReduction holds the data for a weight reduction that can be applied to a container's contents.
 type ContainedWeightReduction struct {
-	Type      FeatureType `json:"type"`
-	Reduction string      `json:"reduction"`
+	Type      feature.Type `json:"type"`
+	Reduction string       `json:"reduction"`
 }
 
 // NewContainedWeightReduction creates a new ContainedWeightReduction.
 func NewContainedWeightReduction() *ContainedWeightReduction {
 	return &ContainedWeightReduction{
-		Type:      ContainedWeightReductionFeatureType,
+		Type:      feature.ContainedWeightReduction,
 		Reduction: "0%",
 	}
 }
 
 // FeatureType implements Feature.
-func (c *ContainedWeightReduction) FeatureType() FeatureType {
+func (c *ContainedWeightReduction) FeatureType() feature.Type {
 	return c.Type
 }
 
@@ -67,7 +68,7 @@ func (c *ContainedWeightReduction) PercentageReduction() fxp.Int {
 }
 
 // FixedReduction returns the fixed amount the weight should be reduced by. Will return 0 if this is a percentage.
-func (c *ContainedWeightReduction) FixedReduction(defUnits fxp.WeightUnits) fxp.Weight {
+func (c *ContainedWeightReduction) FixedReduction(defUnits fxp.WeightUnit) fxp.Weight {
 	if c.IsPercentageReduction() {
 		return 0
 	}
@@ -77,7 +78,7 @@ func (c *ContainedWeightReduction) FixedReduction(defUnits fxp.WeightUnits) fxp.
 // ExtractContainedWeightReduction extracts the weight reduction (which may be a weight or a percentage) and returns
 // a sanitized result. If 'err' is not nil, then the input was bad. Even in that case, however, a valid string is
 // returned.
-func ExtractContainedWeightReduction(s string, defUnits fxp.WeightUnits) (string, error) {
+func ExtractContainedWeightReduction(s string, defUnits fxp.WeightUnit) (string, error) {
 	s = strings.TrimSpace(s)
 	if strings.HasSuffix(s, "%") {
 		v, err := fxp.FromString(strings.TrimSpace(s[:len(s)-1]))

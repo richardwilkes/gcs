@@ -12,6 +12,7 @@
 package gurps
 
 import (
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -41,64 +42,64 @@ func (f *Features) UnmarshalJSON(data []byte) error {
 	*f = make([]Feature, len(s))
 	for i, one := range s {
 		var justTypeData struct {
-			Type FeatureType `json:"type"`
+			Type feature.Type `json:"type"`
 		}
 		if err := json.Unmarshal(*one, &justTypeData); err != nil {
 			return errs.Wrap(err)
 		}
-		var feature Feature
+		var feat Feature
 		switch justTypeData.Type {
-		case AttributeBonusFeatureType:
-			feature = &AttributeBonus{}
-		case ConditionalModifierFeatureType:
-			feature = &ConditionalModifierBonus{}
-		case ContainedWeightReductionFeatureType:
-			feature = &ContainedWeightReduction{}
-		case CostReductionFeatureType:
-			feature = &CostReduction{}
-		case DRBonusFeatureType:
-			feature = &DRBonus{}
-		case ReactionBonusFeatureType:
-			feature = &ReactionBonus{}
-		case SkillBonusFeatureType:
-			feature = &SkillBonus{}
-		case SkillPointBonusFeatureType:
-			feature = &SkillPointBonus{}
-		case SpellBonusFeatureType:
-			feature = &SpellBonus{}
-		case SpellPointBonusFeatureType:
-			feature = &SpellPointBonus{}
-		case WeaponBonusFeatureType,
-			WeaponAccBonusFeatureType,
-			WeaponScopeAccBonusFeatureType,
-			WeaponDRDivisorBonusFeatureType,
-			WeaponMinSTBonusFeatureType,
-			WeaponMinReachBonusFeatureType,
-			WeaponMaxReachBonusFeatureType,
-			WeaponHalfDamageRangeBonusFeatureType,
-			WeaponMinRangeBonusFeatureType,
-			WeaponMaxRangeBonusFeatureType,
-			WeaponBulkBonusFeatureType,
-			WeaponRecoilBonusFeatureType,
-			WeaponParryBonusFeatureType,
-			WeaponBlockBonusFeatureType,
-			WeaponRofMode1ShotsBonusFeatureType,
-			WeaponRofMode1SecondaryBonusFeatureType,
-			WeaponRofMode2ShotsBonusFeatureType,
-			WeaponRofMode2SecondaryBonusFeatureType,
-			WeaponSwitchFeatureType,
-			WeaponNonChamberShotsBonusFeatureType,
-			WeaponChamberShotsBonusFeatureType,
-			WeaponShotDurationBonusFeatureType,
-			WeaponReloadTimeBonusFeatureType:
-			feature = &WeaponBonus{}
+		case feature.AttributeBonus:
+			feat = &AttributeBonus{}
+		case feature.ConditionalModifier:
+			feat = &ConditionalModifierBonus{}
+		case feature.ContainedWeightReduction:
+			feat = &ContainedWeightReduction{}
+		case feature.CostReduction:
+			feat = &CostReduction{}
+		case feature.DRBonus:
+			feat = &DRBonus{}
+		case feature.ReactionBonus:
+			feat = &ReactionBonus{}
+		case feature.SkillBonus:
+			feat = &SkillBonus{}
+		case feature.SkillPointBonus:
+			feat = &SkillPointBonus{}
+		case feature.SpellBonus:
+			feat = &SpellBonus{}
+		case feature.SpellPointBonus:
+			feat = &SpellPointBonus{}
+		case feature.WeaponBonus,
+			feature.WeaponAccBonus,
+			feature.WeaponScopeAccBonus,
+			feature.WeaponDRDivisorBonus,
+			feature.WeaponMinSTBonus,
+			feature.WeaponMinReachBonus,
+			feature.WeaponMaxReachBonus,
+			feature.WeaponHalfDamageRangeBonus,
+			feature.WeaponMinRangeBonus,
+			feature.WeaponMaxRangeBonus,
+			feature.WeaponBulkBonus,
+			feature.WeaponRecoilBonus,
+			feature.WeaponParryBonus,
+			feature.WeaponBlockBonus,
+			feature.WeaponRofMode1ShotsBonus,
+			feature.WeaponRofMode1SecondaryBonus,
+			feature.WeaponRofMode2ShotsBonus,
+			feature.WeaponRofMode2SecondaryBonus,
+			feature.WeaponSwitch,
+			feature.WeaponNonChamberShotsBonus,
+			feature.WeaponChamberShotsBonus,
+			feature.WeaponShotDurationBonus,
+			feature.WeaponReloadTimeBonus:
+			feat = &WeaponBonus{}
 		default:
 			return errs.Newf(i18n.Text("Unknown feature type: %s"), justTypeData.Type)
 		}
-		if err := json.Unmarshal(*one, &feature); err != nil {
+		if err := json.Unmarshal(*one, &feat); err != nil {
 			return errs.Wrap(err)
 		}
-		(*f)[i] = feature
+		(*f)[i] = feat
 	}
 	return nil
 }

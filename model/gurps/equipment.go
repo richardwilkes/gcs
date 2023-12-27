@@ -20,6 +20,8 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
@@ -203,57 +205,57 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 	}
 	switch columnID {
 	case EquipmentEquippedColumn:
-		data.Type = ToggleCellType
+		data.Type = cell.Toggle
 		data.Checked = e.Equipped
 		data.Alignment = align.Middle
 	case EquipmentQuantityColumn:
-		data.Type = TextCellType
+		data.Type = cell.Text
 		data.Primary = e.Quantity.String()
 		data.Alignment = align.End
 	case EquipmentDescriptionColumn:
-		data.Type = TextCellType
+		data.Type = cell.Text
 		data.Primary = e.Description()
-		data.Secondary = e.SecondaryText(func(option DisplayOption) bool { return option.Inline() })
+		data.Secondary = e.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.UnsatisfiedReason = e.UnsatisfiedReason
-		data.Tooltip = e.SecondaryText(func(option DisplayOption) bool { return option.Tooltip() })
+		data.Tooltip = e.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 	case EquipmentUsesColumn:
 		if e.MaxUses > 0 {
-			data.Type = TextCellType
+			data.Type = cell.Text
 			data.Primary = strconv.Itoa(e.Uses)
 			data.Alignment = align.End
 			data.Tooltip = fmt.Sprintf(i18n.Text("Maximum Uses: %d"), e.MaxUses)
 		}
 	case EquipmentTLColumn:
-		data.Type = TextCellType
+		data.Type = cell.Text
 		data.Primary = e.TechLevel
 		data.Alignment = align.End
 	case EquipmentLCColumn:
-		data.Type = TextCellType
+		data.Type = cell.Text
 		data.Primary = e.LegalityClass
 		data.Alignment = align.End
 	case EquipmentCostColumn:
-		data.Type = TextCellType
+		data.Type = cell.Text
 		data.Primary = e.AdjustedValue().String()
 		data.Alignment = align.End
 	case EquipmentExtendedCostColumn:
-		data.Type = TextCellType
+		data.Type = cell.Text
 		data.Primary = e.ExtendedValue().String()
 		data.Alignment = align.End
 	case EquipmentWeightColumn:
-		data.Type = TextCellType
+		data.Type = cell.Text
 		units := SheetSettingsFor(e.Entity).DefaultWeightUnits
 		data.Primary = units.Format(e.AdjustedWeight(false, units))
 		data.Alignment = align.End
 	case EquipmentExtendedWeightColumn:
-		data.Type = TextCellType
+		data.Type = cell.Text
 		units := SheetSettingsFor(e.Entity).DefaultWeightUnits
 		data.Primary = units.Format(e.ExtendedWeight(false, units))
 		data.Alignment = align.End
 	case EquipmentTagsColumn:
-		data.Type = TagsCellType
+		data.Type = cell.Tags
 		data.Primary = CombineTags(e.Tags)
 	case EquipmentReferenceColumn, PageRefCellAlias:
-		data.Type = PageRefCellType
+		data.Type = cell.PageRef
 		data.Primary = e.PageRef
 		if e.PageRefHighlight != "" {
 			data.Secondary = e.PageRefHighlight
@@ -301,7 +303,7 @@ func (e *Equipment) Description() string {
 }
 
 // SecondaryText returns the "secondary" text: the text display below the description.
-func (e *Equipment) SecondaryText(optionChecker func(DisplayOption) bool) string {
+func (e *Equipment) SecondaryText(optionChecker func(display.Option) bool) string {
 	var buffer strings.Builder
 	settings := SheetSettingsFor(e.Entity)
 	if optionChecker(settings.ModifiersDisplay) {
@@ -373,7 +375,7 @@ func (e *Equipment) ExtendedValue() fxp.Int {
 }
 
 // AdjustedWeight returns the weight after adjustments for any modifiers. Does not include the weight of children.
-func (e *Equipment) AdjustedWeight(forSkills bool, defUnits fxp.WeightUnits) fxp.Weight {
+func (e *Equipment) AdjustedWeight(forSkills bool, defUnits fxp.WeightUnit) fxp.Weight {
 	if forSkills && e.WeightIgnoredForSkills && e.Equipped {
 		return 0
 	}
@@ -381,12 +383,12 @@ func (e *Equipment) AdjustedWeight(forSkills bool, defUnits fxp.WeightUnits) fxp
 }
 
 // ExtendedWeight returns the extended weight.
-func (e *Equipment) ExtendedWeight(forSkills bool, defUnits fxp.WeightUnits) fxp.Weight {
+func (e *Equipment) ExtendedWeight(forSkills bool, defUnits fxp.WeightUnit) fxp.Weight {
 	return ExtendedWeightAdjustedForModifiers(defUnits, e.Quantity, e.Weight, e.Modifiers, e.Features, e.Children, forSkills, e.WeightIgnoredForSkills && e.Equipped)
 }
 
 // ExtendedWeightAdjustedForModifiers calculates the extended weight.
-func ExtendedWeightAdjustedForModifiers(defUnits fxp.WeightUnits, qty fxp.Int, baseWeight fxp.Weight, modifiers []*EquipmentModifier, features Features, children []*Equipment, forSkills, weightIgnoredForSkills bool) fxp.Weight {
+func ExtendedWeightAdjustedForModifiers(defUnits fxp.WeightUnit, qty fxp.Int, baseWeight fxp.Weight, modifiers []*EquipmentModifier, features Features, children []*Equipment, forSkills, weightIgnoredForSkills bool) fxp.Weight {
 	if qty <= 0 {
 		return 0
 	}

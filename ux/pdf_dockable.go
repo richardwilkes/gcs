@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/autoscale"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/desktop"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -58,7 +59,7 @@ type PDFDockable struct {
 	tocScrollLayoutData    *unison.FlexLayoutData
 	pageNumberField        *unison.Field
 	scaleField             *PercentageField
-	autoScalingPopup       *unison.PopupMenu[gurps.AutoScale]
+	autoScalingPopup       *unison.PopupMenu[autoscale.Option]
 	searchField            *unison.Field
 	matchesLabel           *unison.Label
 	sideBarButton          *unison.Button
@@ -76,7 +77,7 @@ type PDFDockable struct {
 	history                []int
 	dragStart              unison.Point
 	dragOrigin             unison.Point
-	autoScaling            gurps.AutoScale
+	autoScaling            autoscale.Option
 	inDrag                 bool
 	noUpdate               bool
 	adjustTableSizePending bool
@@ -113,7 +114,7 @@ func NewPDFDockable(filePath string, initialPage int) (unison.Dockable, error) {
 	d.content.AddChild(d.docScroll)
 
 	d.noUpdate = false
-	d.scaleField.SetEnabled(d.autoScaling != gurps.NoAutoScale)
+	d.scaleField.SetEnabled(d.autoScaling != autoscale.No)
 	d.LoadPage(initialPage)
 
 	return d, nil
@@ -158,15 +159,15 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 	d.scaleField.SetEnabled(false)
 	first.AddChild(d.scaleField)
 
-	d.autoScalingPopup = unison.NewPopupMenu[gurps.AutoScale]()
-	for _, mode := range gurps.AllAutoScale {
+	d.autoScalingPopup = unison.NewPopupMenu[autoscale.Option]()
+	for _, mode := range autoscale.Options {
 		d.autoScalingPopup.AddItem(mode)
 	}
 	d.autoScalingPopup.Select(d.autoScaling)
-	d.autoScalingPopup.SelectionChangedCallback = func(popup *unison.PopupMenu[gurps.AutoScale]) {
+	d.autoScalingPopup.SelectionChangedCallback = func(popup *unison.PopupMenu[autoscale.Option]) {
 		if mode, ok := popup.Selected(); ok {
 			d.autoScaling = mode
-			d.scaleField.SetEnabled(d.autoScaling == gurps.NoAutoScale)
+			d.scaleField.SetEnabled(d.autoScaling == autoscale.No)
 			d.docScroll.MarkForRedraw()
 		}
 	}
@@ -418,7 +419,7 @@ func (d *PDFDockable) pageLoaded() {
 	d.scaleField.SetEnabled(false)
 	defer func() {
 		d.noUpdate = false
-		d.scaleField.SetEnabled(d.autoScaling == gurps.NoAutoScale)
+		d.scaleField.SetEnabled(d.autoScaling == autoscale.No)
 	}()
 
 	d.page = d.pdf.CurrentPage()
@@ -593,7 +594,7 @@ func (d *PDFDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
 	gc.DrawRect(dirty, unison.ContentColor.Paint(gc, dirty, paintstyle.Fill))
 	if d.page != nil && d.page.Image != nil {
 		switch d.autoScaling {
-		case gurps.FitWidthAutoScale:
+		case autoscale.FitWidth:
 			size := d.page.Image.LogicalSize()
 			cSize := d.docScroll.ContentView().ContentRect(false).Size
 			desiredScale := xmath.Floor((cSize.Width / size.Width / scaleCompensation) * 100)
@@ -603,7 +604,7 @@ func (d *PDFDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
 				d.scaleField.SetText(d.scaleField.Format(desiredScaleInt))
 				d.scaleField.SetEnabled(false)
 			}
-		case gurps.FitPageAutoScale:
+		case autoscale.FitPage:
 			size := d.page.Image.LogicalSize()
 			cSize := d.docScroll.ContentView().ContentRect(false).Size
 			desiredScale := xmath.Floor((min(cSize.Width/size.Width, cSize.Height/size.Height) / scaleCompensation) * 100)

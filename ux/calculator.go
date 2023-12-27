@@ -19,6 +19,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -147,11 +148,11 @@ func DisplayCalculator(sheet *Sheet) {
 	c.AddChild(c.scroll)
 	c.ClientData()[AssociatedUUIDKey] = sheet.Entity().ID
 	c.content.ValidateScrollRoot()
-	group := gurps.EditorsDockableGroup
+	group := dgroup.Editors
 	p := sheet.AsPanel()
 	for p != nil {
 		if _, exists := p.ClientData()[AssociatedUUIDKey]; exists {
-			group = gurps.SubEditorsDockableGroup
+			group = dgroup.SubEditors
 			break
 		}
 		p = p.Parent()

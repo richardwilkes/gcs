@@ -13,6 +13,8 @@ package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/toolbox/xio"
 )
 
@@ -20,9 +22,9 @@ var _ Bonus = &AttributeBonus{}
 
 // AttributeBonus holds the data for a bonus to an attribute.
 type AttributeBonus struct {
-	Type       FeatureType     `json:"type"`
-	Limitation BonusLimitation `json:"limitation,omitempty"`
-	Attribute  string          `json:"attribute"`
+	Type       feature.Type   `json:"type"`
+	Limitation stlimit.Option `json:"limitation,omitempty"`
+	Attribute  string         `json:"attribute"`
 	LeveledAmount
 	BonusOwner
 }
@@ -30,24 +32,24 @@ type AttributeBonus struct {
 // NewAttributeBonus creates a new AttributeBonus.
 func NewAttributeBonus(attrID string) *AttributeBonus {
 	return &AttributeBonus{
-		Type:          AttributeBonusFeatureType,
+		Type:          feature.AttributeBonus,
 		Attribute:     attrID,
-		Limitation:    NoneBonusLimitation,
+		Limitation:    stlimit.None,
 		LeveledAmount: LeveledAmount{Amount: fxp.One},
 	}
 }
 
 // ActualLimitation returns the actual limitation, if any. This is needed in case the limitation is set to something
 // other than none when the attribute is not ST.
-func (a *AttributeBonus) ActualLimitation() BonusLimitation {
+func (a *AttributeBonus) ActualLimitation() stlimit.Option {
 	if a.Attribute == StrengthID {
 		return a.Limitation
 	}
-	return NoneBonusLimitation
+	return stlimit.None
 }
 
 // FeatureType implements Feature.
-func (a *AttributeBonus) FeatureType() FeatureType {
+func (a *AttributeBonus) FeatureType() feature.Type {
 	return a.Type
 }
 

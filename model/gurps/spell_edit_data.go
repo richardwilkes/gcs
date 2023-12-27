@@ -13,6 +13,7 @@ package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/toolbox/txt"
 )
 
@@ -42,7 +43,7 @@ type SpellEditData struct {
 	Prereq            *PrereqList         `json:"prereqs,omitempty"`            // Non-container only
 	Weapons           []*Weapon           `json:"weapons,omitempty"`            // Non-container only
 	Study             []*Study            `json:"study,omitempty"`              // Non-container only
-	StudyHoursNeeded  StudyHoursNeeded    `json:"study_hours_needed,omitempty"` // Non-container only
+	StudyHoursNeeded  study.Level         `json:"study_hours_needed,omitempty"` // Non-container only
 	TemplatePicker    *TemplatePicker     `json:"template_picker,omitempty"`    // Container only
 }
 

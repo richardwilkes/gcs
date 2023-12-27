@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/autoscale"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
@@ -56,7 +57,7 @@ const (
 	InitialPDFUIScaleDef       = 100
 	InitialMarkdownUIScaleDef  = 100
 	InitialImageUIScaleDef     = 100
-	InitialPDFAutoScaling      = NoAutoScale
+	InitialPDFAutoScaling      = autoscale.No
 	AutoColWidthMin            = 50
 	AutoColWidthMax            = 9999
 	MaximumAutoColWidthDef     = 800
@@ -64,29 +65,29 @@ const (
 
 // GeneralSettings holds general settings for a sheet.
 type GeneralSettings struct {
-	DefaultPlayerName           string    `json:"default_player_name,omitempty"`
-	DefaultTechLevel            string    `json:"default_tech_level,omitempty"`
-	CalendarName                string    `json:"calendar_ref,omitempty"`
-	ExternalPDFCmdLine          string    `json:"external_pdf_cmd_line,omitempty"`
-	InitialPoints               fxp.Int   `json:"initial_points"`
-	TooltipDelay                fxp.Int   `json:"tooltip_delay"`
-	TooltipDismissal            fxp.Int   `json:"tooltip_dismissal"`
-	ScrollWheelMultiplier       fxp.Int   `json:"scroll_wheel_multiplier"`
-	NavigatorUIScale            int       `json:"navigator_scale"`
-	InitialListUIScale          int       `json:"initial_list_scale"`
-	InitialEditorUIScale        int       `json:"initial_editor_scale"`
-	InitialSheetUIScale         int       `json:"initial_sheet_scale"`
-	InitialPDFUIScale           int       `json:"initial_pdf_scale"`
-	InitialMarkdownUIScale      int       `json:"initial_md_scale"`
-	InitialImageUIScale         int       `json:"initial_img_scale"`
-	MaximumAutoColWidth         int       `json:"maximum_auto_col_width"`
-	ImageResolution             int       `json:"image_resolution"`
-	MonitorResolution           int       `json:"monitor_resolution,omitempty"`
-	PDFAutoScaling              AutoScale `json:"pdf_auto_scaling,omitempty"`
-	AutoFillProfile             bool      `json:"auto_fill_profile"`
-	AutoAddNaturalAttacks       bool      `json:"add_natural_attacks"`
-	GroupContainersOnSort       bool      `json:"group_containers_on_sort"`
-	InitialFieldClickSelectsAll bool      `json:"initial_field_click_selects_all"`
+	DefaultPlayerName           string           `json:"default_player_name,omitempty"`
+	DefaultTechLevel            string           `json:"default_tech_level,omitempty"`
+	CalendarName                string           `json:"calendar_ref,omitempty"`
+	ExternalPDFCmdLine          string           `json:"external_pdf_cmd_line,omitempty"`
+	InitialPoints               fxp.Int          `json:"initial_points"`
+	TooltipDelay                fxp.Int          `json:"tooltip_delay"`
+	TooltipDismissal            fxp.Int          `json:"tooltip_dismissal"`
+	ScrollWheelMultiplier       fxp.Int          `json:"scroll_wheel_multiplier"`
+	NavigatorUIScale            int              `json:"navigator_scale"`
+	InitialListUIScale          int              `json:"initial_list_scale"`
+	InitialEditorUIScale        int              `json:"initial_editor_scale"`
+	InitialSheetUIScale         int              `json:"initial_sheet_scale"`
+	InitialPDFUIScale           int              `json:"initial_pdf_scale"`
+	InitialMarkdownUIScale      int              `json:"initial_md_scale"`
+	InitialImageUIScale         int              `json:"initial_img_scale"`
+	MaximumAutoColWidth         int              `json:"maximum_auto_col_width"`
+	ImageResolution             int              `json:"image_resolution"`
+	MonitorResolution           int              `json:"monitor_resolution,omitempty"`
+	PDFAutoScaling              autoscale.Option `json:"pdf_auto_scaling,omitempty"`
+	AutoFillProfile             bool             `json:"auto_fill_profile"`
+	AutoAddNaturalAttacks       bool             `json:"add_natural_attacks"`
+	GroupContainersOnSort       bool             `json:"group_containers_on_sort"`
+	InitialFieldClickSelectsAll bool             `json:"initial_field_click_selects_all"`
 }
 
 // NewGeneralSettings creates settings with factory defaults.

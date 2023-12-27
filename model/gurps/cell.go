@@ -12,6 +12,7 @@
 package gurps
 
 import (
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -20,7 +21,7 @@ const PageRefCellAlias = -10
 
 // CellData holds data for creating a cell's visual representation.
 type CellData struct {
-	Type              CellType
+	Type              cell.Type
 	Disabled          bool
 	Dim               bool
 	Checked           bool
@@ -36,16 +37,16 @@ type CellData struct {
 // ForSort returns a string that can be used to sort or search against for this data.
 func (c *CellData) ForSort() string {
 	switch c.Type {
-	case TextCellType:
+	case cell.Text:
 		if c.Secondary != "" {
 			return c.Primary + "\n" + c.Secondary
 		}
 		return c.Primary
-	case ToggleCellType:
+	case cell.Toggle:
 		if c.Checked {
 			return "√"
 		}
-	case PageRefCellType, TagsCellType, MarkdownCellType:
+	case cell.PageRef, cell.Tags, cell.Markdown:
 		return c.Primary
 	}
 	return ""

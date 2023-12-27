@@ -13,6 +13,7 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wpn"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -24,12 +25,12 @@ var _ TableProvider[*gurps.Weapon] = &weaponsProvider{}
 type weaponsProvider struct {
 	table      *unison.Table[*Node[*gurps.Weapon]]
 	provider   gurps.WeaponListProvider
-	weaponType gurps.WeaponType
+	weaponType wpn.Type
 	forPage    bool
 }
 
 // NewWeaponsProvider creates a new table provider for weapons.
-func NewWeaponsProvider(provider gurps.WeaponListProvider, weaponType gurps.WeaponType, forPage bool) TableProvider[*gurps.Weapon] {
+func NewWeaponsProvider(provider gurps.WeaponListProvider, weaponType wpn.Type, forPage bool) TableProvider[*gurps.Weapon] {
 	return &weaponsProvider{
 		provider:   provider,
 		weaponType: weaponType,
@@ -113,7 +114,7 @@ func (p *weaponsProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Weap
 			switch {
 			case p.forPage:
 				title = i18n.Text("Usage")
-			case p.weaponType == gurps.MeleeWeaponType:
+			case p.weaponType == wpn.Melee:
 				title = i18n.Text("Melee Weapon Usage")
 			default:
 				title = i18n.Text("Ranged Weapon Usage")
@@ -161,14 +162,14 @@ func (p *weaponsProvider) ColumnIDs() []int {
 		gurps.WeaponSLColumn,
 	)
 	switch p.weaponType {
-	case gurps.MeleeWeaponType:
+	case wpn.Melee:
 		columnIDs = append(columnIDs,
 			gurps.WeaponParryColumn,
 			gurps.WeaponBlockColumn,
 			gurps.WeaponDamageColumn,
 			gurps.WeaponReachColumn,
 		)
-	case gurps.RangedWeaponType:
+	case wpn.Ranged:
 		columnIDs = append(columnIDs,
 			gurps.WeaponAccColumn,
 			gurps.WeaponDamageColumn,
@@ -198,13 +199,12 @@ func (p *weaponsProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Nod
 
 func (p *weaponsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Weapon]], _ ItemVariant) {
 	if !p.forPage {
-		wpn := gurps.NewWeapon(p.provider.WeaponOwner(), p.weaponType)
+		w := gurps.NewWeapon(p.provider.WeaponOwner(), p.weaponType)
 		InsertItems[*gurps.Weapon](owner, table,
 			func() []*gurps.Weapon { return p.provider.Weapons(p.weaponType) },
 			func(list []*gurps.Weapon) { p.provider.SetWeapons(p.weaponType, list) },
-			func(_ *unison.Table[*Node[*gurps.Weapon]]) []*Node[*gurps.Weapon] { return p.RootRows() },
-			wpn)
-		EditWeapon(owner, wpn)
+			func(_ *unison.Table[*Node[*gurps.Weapon]]) []*Node[*gurps.Weapon] { return p.RootRows() }, w)
+		EditWeapon(owner, w)
 	}
 }
 
@@ -230,9 +230,9 @@ func (p *weaponsProvider) Deserialize(data []byte) error {
 func (p *weaponsProvider) ContextMenuItems() []ContextMenuItem {
 	var list []ContextMenuItem
 	switch p.weaponType {
-	case gurps.MeleeWeaponType:
+	case wpn.Melee:
 		list = append(list, ContextMenuItem{i18n.Text("New Melee Weapon"), NewMeleeWeaponItemID})
-	case gurps.RangedWeaponType:
+	case wpn.Ranged:
 		list = append(list, ContextMenuItem{i18n.Text("New Ranged Weapon"), NewRangedWeaponItemID})
 	}
 	return AppendDefaultContextMenuItems(list)

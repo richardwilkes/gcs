@@ -15,14 +15,15 @@ import (
 	"fmt"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/toolbox/i18n"
 )
 
 // Study holds data about a single study session.
 type Study struct {
-	Type  StudyType `json:"type"`
-	Hours fxp.Int   `json:"hours"`
-	Note  string    `json:"note,omitempty"`
+	Type  study.Type `json:"type"`
+	Hours fxp.Int    `json:"hours"`
+	Note  string     `json:"note,omitempty"`
 }
 
 // Clone creates a copy of the TemplatePicker.
@@ -32,16 +33,16 @@ func (s *Study) Clone() *Study {
 }
 
 // ResolveStudyHours returns the resolved total study hours.
-func ResolveStudyHours(study []*Study) fxp.Int {
+func ResolveStudyHours(s []*Study) fxp.Int {
 	var total fxp.Int
-	for _, one := range study {
+	for _, one := range s {
 		total += one.Hours.Mul(one.Type.Multiplier())
 	}
 	return total
 }
 
 // StudyHoursProgressText returns the progress text or an empty string.
-func StudyHoursProgressText(hours fxp.Int, needed StudyHoursNeeded, force bool) string {
+func StudyHoursProgressText(hours fxp.Int, needed study.Level, force bool) string {
 	if hours <= 0 {
 		hours = 0
 		if !force {
@@ -49,7 +50,7 @@ func StudyHoursProgressText(hours fxp.Int, needed StudyHoursNeeded, force bool) 
 		}
 	}
 	studyNeeded := "200"
-	if needed != StandardStudyHoursNeeded {
+	if needed != study.Standard {
 		studyNeeded = needed.Key()
 	}
 	return fmt.Sprintf(i18n.Text("Studied %v of %s hours"), hours, studyNeeded)

@@ -19,6 +19,10 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/entity"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
@@ -77,7 +81,9 @@ func NewSkillsFromFile(fileSystem fs.FS, filePath string) ([]*Skill, error) {
 	// Fix up some bad data in standalone skill lists where Hard techniques incorrectly had 1 point assigned to them
 	// instead of 2.
 	Traverse(func(skill *Skill) bool {
-		if strings.HasPrefix(skill.Type, TechniqueID) && skill.Difficulty.Difficulty == Hard && skill.Points == fxp.One {
+		if strings.HasPrefix(skill.Type, TechniqueID) &&
+			skill.Difficulty.Difficulty == difficulty.Hard &&
+			skill.Points == fxp.One {
 			skill.Points = fxp.Two
 		}
 		return false
@@ -96,16 +102,16 @@ func SaveSkills(skills []*Skill, filePath string) error {
 }
 
 // NewSkill creates a new Skill.
-func NewSkill(entity *Entity, parent *Skill, container bool) *Skill {
-	return newSkill(entity, parent, SkillID, container)
+func NewSkill(e *Entity, parent *Skill, container bool) *Skill {
+	return newSkill(e, parent, SkillID, container)
 }
 
 // NewTechnique creates a new technique (i.e. a specialized use of a Skill). All parameters may be nil or empty.
-func NewTechnique(entity *Entity, parent *Skill, skillName string) *Skill {
+func NewTechnique(e *Entity, parent *Skill, skillName string) *Skill {
 	if skillName == "" {
 		skillName = i18n.Text("Skill")
 	}
-	s := newSkill(entity, parent, TechniqueID, false)
+	s := newSkill(e, parent, TechniqueID, false)
 	s.TechniqueDefault = &SkillDefault{
 		DefaultType: SkillID,
 		Name:        skillName,
@@ -113,21 +119,21 @@ func NewTechnique(entity *Entity, parent *Skill, skillName string) *Skill {
 	return s
 }
 
-func newSkill(entity *Entity, parent *Skill, typeKey string, container bool) *Skill {
+func newSkill(e *Entity, parent *Skill, typeKey string, container bool) *Skill {
 	s := Skill{
 		SkillData: SkillData{
 			ContainerBase: newContainerBase[*Skill](typeKey, container),
 		},
-		Entity: entity,
+		Entity: e,
 	}
 	s.parent = parent
 	if container {
 		s.TemplatePicker = &TemplatePicker{}
 	} else {
 		if typeKey != TechniqueID {
-			s.Difficulty.Attribute = AttributeIDFor(entity, DexterityID)
+			s.Difficulty.Attribute = AttributeIDFor(e, DexterityID)
 		}
-		s.Difficulty.Difficulty = Average
+		s.Difficulty.Difficulty = difficulty.Average
 		s.Points = fxp.One
 	}
 	s.Name = s.Kind()
@@ -135,12 +141,12 @@ func newSkill(entity *Entity, parent *Skill, typeKey string, container bool) *Sk
 }
 
 // Clone implements Node.
-func (s *Skill) Clone(entity *Entity, parent *Skill, preserveID bool) *Skill {
+func (s *Skill) Clone(e *Entity, parent *Skill, preserveID bool) *Skill {
 	var other *Skill
 	if s.Type == TechniqueID {
-		other = NewTechnique(entity, parent, s.TechniqueDefault.Name)
+		other = NewTechnique(e, parent, s.TechniqueDefault.Name)
 	} else {
-		other = NewSkill(entity, parent, s.Container())
+		other = NewSkill(e, parent, s.Container())
 		other.IsOpen = s.IsOpen
 	}
 	if preserveID {
@@ -151,7 +157,7 @@ func (s *Skill) Clone(entity *Entity, parent *Skill, preserveID bool) *Skill {
 	if s.HasChildren() {
 		other.Children = make([]*Skill, 0, len(s.Children))
 		for _, child := range s.Children {
-			other.Children = append(other.Children, child.Clone(entity, other, preserveID))
+			other.Children = append(other.Children, child.Clone(e, other, preserveID))
 		}
 	}
 	return other
@@ -230,22 +236,22 @@ func (s *Skill) TemplatePickerData() *TemplatePicker {
 func (s *Skill) CellData(columnID int, data *CellData) {
 	switch columnID {
 	case SkillDescriptionColumn:
-		data.Type = TextCellType
+		data.Type = cell.Text
 		data.Primary = s.Description()
-		data.Secondary = s.SecondaryText(func(option DisplayOption) bool { return option.Inline() })
+		data.Secondary = s.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.UnsatisfiedReason = s.UnsatisfiedReason
-		data.Tooltip = s.SecondaryText(func(option DisplayOption) bool { return option.Tooltip() })
+		data.Tooltip = s.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 		data.TemplateInfo = s.TemplatePicker.Description()
 	case SkillDifficultyColumn:
 		if !s.Container() {
-			data.Type = TextCellType
+			data.Type = cell.Text
 			data.Primary = s.Difficulty.Description(s.Entity)
 		}
 	case SkillTagsColumn:
-		data.Type = TagsCellType
+		data.Type = cell.Tags
 		data.Primary = CombineTags(s.Tags)
 	case SkillReferenceColumn, PageRefCellAlias:
-		data.Type = PageRefCellType
+		data.Type = cell.PageRef
 		data.Primary = s.PageRef
 		if s.PageRefHighlight != "" {
 			data.Secondary = s.PageRefHighlight
@@ -254,7 +260,7 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 		}
 	case SkillLevelColumn:
 		if !s.Container() {
-			data.Type = TextCellType
+			data.Type = cell.Text
 			level := s.CalculateLevel()
 			data.Primary = level.LevelAsString(s.Container())
 			if level.Tooltip != "" {
@@ -264,14 +270,14 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 		}
 	case SkillRelativeLevelColumn:
 		if !s.Container() {
-			data.Type = TextCellType
+			data.Type = cell.Text
 			data.Primary = FormatRelativeSkill(s.Entity, s.Type, s.Difficulty, s.AdjustedRelativeLevel())
 			if tooltip := s.CalculateLevel().Tooltip; tooltip != "" {
 				data.Tooltip = includesModifiersFrom() + ":" + tooltip
 			}
 		}
 	case SkillPointsColumn:
-		data.Type = TextCellType
+		data.Type = cell.Text
 		var tooltip xio.ByteBuffer
 		data.Primary = s.AdjustedPoints(&tooltip).String()
 		data.Alignment = align.End
@@ -282,12 +288,12 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 }
 
 // FormatRelativeSkill formats the relative skill for display.
-func FormatRelativeSkill(entity *Entity, typ string, difficulty AttributeDifficulty, rsl fxp.Int) string {
+func FormatRelativeSkill(e *Entity, typ string, difficulty AttributeDifficulty, rsl fxp.Int) string {
 	switch {
 	case rsl == fxp.Min:
 		return "-"
 	case strings.HasPrefix(typ, SkillID) || strings.HasPrefix(typ, SpellID):
-		s := ResolveAttributeName(entity, difficulty.Attribute)
+		s := ResolveAttributeName(e, difficulty.Attribute)
 		rsl = rsl.Trunc()
 		if rsl != 0 {
 			s += rsl.StringWithSign()
@@ -315,11 +321,11 @@ func (s *Skill) OwningEntity() *Entity {
 }
 
 // SetOwningEntity sets the owning entity and configures any sub-components as needed.
-func (s *Skill) SetOwningEntity(entity *Entity) {
-	s.Entity = entity
+func (s *Skill) SetOwningEntity(e *Entity) {
+	s.Entity = e
 	if s.Container() {
 		for _, child := range s.Children {
-			child.SetOwningEntity(entity)
+			child.SetOwningEntity(e)
 		}
 	} else {
 		for _, w := range s.Weapons {
@@ -359,7 +365,7 @@ func (s *Skill) ModifierNotes() string {
 	if strings.HasPrefix(s.Type, TechniqueID) {
 		return i18n.Text("Default: ") + s.TechniqueDefault.FullName(s.Entity) + s.TechniqueDefault.ModifierAsString()
 	}
-	if s.Difficulty.Difficulty != Wildcard {
+	if s.Difficulty.Difficulty != difficulty.Wildcard {
 		defSkill := s.DefaultSkill()
 		if defSkill != nil && s.DefaultedFrom != nil {
 			return i18n.Text("Default: ") + defSkill.String() + s.DefaultedFrom.ModifierAsString()
@@ -389,7 +395,7 @@ func (s *Skill) Description() string {
 }
 
 // SecondaryText returns the less important information that should be displayed with the description.
-func (s *Skill) SecondaryText(optionChecker func(DisplayOption) bool) string {
+func (s *Skill) SecondaryText(optionChecker func(display.Option) bool) string {
 	var buffer strings.Builder
 	prefs := SheetSettingsFor(s.Entity)
 	if optionChecker(prefs.ModifiersDisplay) {
@@ -490,9 +496,9 @@ func (s *Skill) AdjustedPoints(tooltip *xio.ByteBuffer) fxp.Int {
 }
 
 // AdjustedPointsForNonContainerSkillOrTechnique returns the points, adjusted for any bonuses.
-func AdjustedPointsForNonContainerSkillOrTechnique(entity *Entity, points fxp.Int, name, specialization string, tags []string, tooltip *xio.ByteBuffer) fxp.Int {
-	if entity != nil && entity.Type == PC {
-		points += entity.SkillPointBonusFor(name, specialization, tags, tooltip)
+func AdjustedPointsForNonContainerSkillOrTechnique(e *Entity, points fxp.Int, name, specialization string, tags []string, tooltip *xio.ByteBuffer) fxp.Int {
+	if e != nil && e.Type == entity.PC {
+		points += e.SkillPointBonusFor(name, specialization, tags, tooltip)
 		points = points.Max(0)
 	}
 	return points
@@ -503,7 +509,7 @@ func (s *Skill) IncrementSkillLevel() {
 	if !s.Container() {
 		basePoints := s.Points.Trunc() + fxp.One
 		maxPoints := basePoints
-		if s.Difficulty.Difficulty == Wildcard {
+		if s.Difficulty.Difficulty == difficulty.Wildcard {
 			maxPoints += fxp.Twelve
 		} else {
 			maxPoints += fxp.Four
@@ -523,7 +529,7 @@ func (s *Skill) DecrementSkillLevel() {
 	if !s.Container() && s.Points > 0 {
 		basePoints := s.Points.Trunc()
 		minPoints := basePoints
-		if s.Difficulty.Difficulty == Wildcard {
+		if s.Difficulty.Difficulty == difficulty.Wildcard {
 			minPoints -= fxp.Twelve
 		} else {
 			minPoints -= fxp.Four
@@ -561,15 +567,15 @@ func (s *Skill) CalculateLevel() Level {
 }
 
 // CalculateSkillLevel returns the calculated level for a skill.
-func CalculateSkillLevel(entity *Entity, name, specialization string, tags []string, def *SkillDefault, difficulty AttributeDifficulty, points, encumbrancePenaltyMultiplier fxp.Int) Level {
+func CalculateSkillLevel(e *Entity, name, specialization string, tags []string, def *SkillDefault, attrDiff AttributeDifficulty, points, encumbrancePenaltyMultiplier fxp.Int) Level {
 	var tooltip xio.ByteBuffer
-	relativeLevel := difficulty.Difficulty.BaseRelativeLevel()
-	level := entity.ResolveAttributeCurrent(difficulty.Attribute)
+	relativeLevel := attrDiff.Difficulty.BaseRelativeLevel()
+	level := e.ResolveAttributeCurrent(attrDiff.Attribute)
 	if level != fxp.Min {
-		if entity.SheetSettings.UseHalfStatDefaults {
+		if e.SheetSettings.UseHalfStatDefaults {
 			level = level.Div(fxp.Two).Trunc() + fxp.Five
 		}
-		if difficulty.Difficulty == Wildcard {
+		if attrDiff.Difficulty == difficulty.Wildcard {
 			points = points.Div(fxp.Three)
 		} else if def != nil && def.Points > 0 {
 			points += def.Points
@@ -582,7 +588,7 @@ func CalculateSkillLevel(entity *Entity, name, specialization string, tags []str
 			relativeLevel += fxp.One
 		case points >= fxp.Four:
 			relativeLevel += fxp.One + points.Div(fxp.Four).Trunc()
-		case difficulty.Difficulty != Wildcard && def != nil && def.Points < 0:
+		case attrDiff.Difficulty != difficulty.Wildcard && def != nil && def.Points < 0:
 			relativeLevel = def.AdjLevel - level
 		default:
 			level = fxp.Min
@@ -590,14 +596,14 @@ func CalculateSkillLevel(entity *Entity, name, specialization string, tags []str
 		}
 		if level != fxp.Min {
 			level += relativeLevel
-			if difficulty.Difficulty != Wildcard && def != nil && level < def.AdjLevel {
+			if attrDiff.Difficulty != difficulty.Wildcard && def != nil && level < def.AdjLevel {
 				level = def.AdjLevel
 			}
-			if entity != nil {
-				bonus := entity.SkillBonusFor(name, specialization, tags, &tooltip)
+			if e != nil {
+				bonus := e.SkillBonusFor(name, specialization, tags, &tooltip)
 				level += bonus
 				relativeLevel += bonus
-				bonus = entity.EncumbranceLevel(true).Penalty().Mul(encumbrancePenaltyMultiplier)
+				bonus = e.EncumbranceLevel(true).Penalty().Mul(encumbrancePenaltyMultiplier)
 				level += bonus
 				if bonus != 0 {
 					fmt.Fprintf(&tooltip, i18n.Text("\nEncumbrance [%s]"), bonus.StringWithSign())
@@ -613,30 +619,30 @@ func CalculateSkillLevel(entity *Entity, name, specialization string, tags []str
 }
 
 // CalculateTechniqueLevel returns the calculated level for a technique.
-func CalculateTechniqueLevel(entity *Entity, name, specialization string, tags []string, def *SkillDefault, difficulty Difficulty, points fxp.Int, requirePoints bool, limitModifier *fxp.Int) Level {
+func CalculateTechniqueLevel(e *Entity, name, specialization string, tags []string, def *SkillDefault, diffLevel difficulty.Level, points fxp.Int, requirePoints bool, limitModifier *fxp.Int) Level {
 	var tooltip xio.ByteBuffer
 	var relativeLevel fxp.Int
 	level := fxp.Min
-	if entity != nil {
+	if e != nil {
 		if def.DefaultType == SkillID {
-			if sk := entity.BaseSkill(def, requirePoints); sk != nil {
+			if sk := e.BaseSkill(def, requirePoints); sk != nil {
 				level = sk.CalculateLevel().Level
 			}
 		} else {
 			// Take the modifier back out, as we wanted the base, not the final value.
-			level = def.SkillLevelFast(entity, true, nil, false) - def.Modifier
+			level = def.SkillLevelFast(e, true, nil, false) - def.Modifier
 		}
 		if level != fxp.Min {
 			baseLevel := level
 			level += def.Modifier
-			if difficulty == Hard {
+			if diffLevel == difficulty.Hard {
 				points -= fxp.One
 			}
 			if points > 0 {
 				relativeLevel = points
 			}
 			if level != fxp.Min {
-				relativeLevel += entity.SkillBonusFor(name, specialization, tags, &tooltip)
+				relativeLevel += e.SkillBonusFor(name, specialization, tags, &tooltip)
 				level += relativeLevel
 			}
 			if limitModifier != nil {

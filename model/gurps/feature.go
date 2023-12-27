@@ -15,13 +15,15 @@ import (
 	"fmt"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/toolbox/xio"
 )
 
 // Feature holds data that affects another object.
 type Feature interface {
 	Nameables
-	FeatureType() FeatureType
+	FeatureType() feature.Type
 	Clone() Feature
 }
 
@@ -42,4 +44,15 @@ type Bonus interface {
 	AdjustedAmount() fxp.Int
 	// AddToTooltip adds this Bonus's details to the tooltip. 'buffer' may be nil.
 	AddToTooltip(buffer *xio.ByteBuffer)
+}
+
+// FeaturesForSelfControlRoll returns the set of features to apply for the given self control roll.
+func FeaturesForSelfControlRoll(cr selfctrl.Roll, adj selfctrl.Adjustment) Features {
+	if adj.EnsureValid() != selfctrl.MajorCostOfLivingIncrease {
+		return nil
+	}
+	f := NewSkillBonus()
+	f.NameCriteria.Qualifier = "Merchant"
+	f.Amount = fxp.From(cr.Index() - len(selfctrl.Rolls))
+	return Features{f}
 }

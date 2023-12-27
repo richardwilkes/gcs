@@ -17,6 +17,8 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -108,8 +110,8 @@ func (wr WeaponRange) hash(h hash.Hash32) {
 // Resolve any bonuses that apply.
 func (wr WeaponRange) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) WeaponRange {
 	result := wr
-	result.MusclePowered = w.ResolveBoolFlag(MusclePoweredWeaponSwitchType, result.MusclePowered)
-	result.RangeInMiles = w.ResolveBoolFlag(RangeInMilesWeaponSwitchType, result.RangeInMiles)
+	result.MusclePowered = w.ResolveBoolFlag(wswitch.MusclePowered, result.MusclePowered)
+	result.RangeInMiles = w.ResolveBoolFlag(wswitch.RangeInMiles, result.RangeInMiles)
 	if result.MusclePowered {
 		var st fxp.Int
 		if w.Owner != nil {
@@ -126,13 +128,13 @@ func (wr WeaponRange) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 			result.MaxRange = result.MaxRange.Mul(st).Trunc().Max(0)
 		}
 	}
-	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, WeaponHalfDamageRangeBonusFeatureType, WeaponMinRangeBonusFeatureType, WeaponMaxRangeBonusFeatureType) {
+	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponHalfDamageRangeBonus, feature.WeaponMinRangeBonus, feature.WeaponMaxRangeBonus) {
 		switch bonus.Type {
-		case WeaponHalfDamageRangeBonusFeatureType:
+		case feature.WeaponHalfDamageRangeBonus:
 			result.HalfDamageRange += bonus.AdjustedAmount()
-		case WeaponMinRangeBonusFeatureType:
+		case feature.WeaponMinRangeBonus:
 			result.MinRange += bonus.AdjustedAmount()
-		case WeaponMaxRangeBonusFeatureType:
+		case feature.WeaponMaxRangeBonus:
 			result.MaxRange += bonus.AdjustedAmount()
 		default:
 		}

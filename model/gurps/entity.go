@@ -24,6 +24,18 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/entity"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/threshold"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wpn"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
@@ -63,7 +75,7 @@ func (pb *PointsBreakdown) Total() fxp.Int {
 
 // EntityData holds the Entity data that is written to disk.
 type EntityData struct {
-	Type             EntityType      `json:"type"`
+	Type             entity.Type     `json:"type"`
 	Version          int             `json:"version"`
 	ID               uuid.UUID       `json:"id"`
 	TotalPoints      fxp.Int         `json:"total_points"`
@@ -106,27 +118,27 @@ type Entity struct {
 	variableResolverExclusions      map[string]bool
 	skillResolverExclusions         map[string]bool
 	cachedBasicLift                 fxp.Weight
-	cachedEncumbranceLevel          Encumbrance
-	cachedEncumbranceLevelForSkills Encumbrance
+	cachedEncumbranceLevel          encumbrance.Level
+	cachedEncumbranceLevelForSkills encumbrance.Level
 	cachedVariables                 map[string]string
 }
 
 // NewEntityFromFile loads an Entity from a file.
 func NewEntityFromFile(fileSystem fs.FS, filePath string) (*Entity, error) {
-	var entity Entity
-	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &entity); err != nil {
+	var e Entity
+	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &e); err != nil {
 		return nil, errs.NewWithCause(invalidFileDataMsg(), err)
 	}
-	if err := CheckVersion(entity.Version); err != nil {
+	if err := CheckVersion(e.Version); err != nil {
 		return nil, err
 	}
-	return &entity, nil
+	return &e, nil
 }
 
 // NewEntity creates a new Entity.
-func NewEntity(entityType EntityType) *Entity {
+func NewEntity(entityType entity.Type) *Entity {
 	settings := GlobalSettings().GeneralSettings()
-	entity := &Entity{
+	e := &Entity{
 		EntityData: EntityData{
 			Type:        entityType,
 			ID:          NewUUID(),
@@ -142,17 +154,17 @@ func NewEntity(entityType EntityType) *Entity {
 			CreatedOn: jio.Now(),
 		},
 	}
-	entity.SheetSettings = GlobalSettings().SheetSettings().Clone(entity)
-	entity.Attributes = NewAttributes(entity)
+	e.SheetSettings = GlobalSettings().SheetSettings().Clone(e)
+	e.Attributes = NewAttributes(e)
 	if settings.AutoFillProfile {
-		entity.Profile.AutoFill(entity)
+		e.Profile.AutoFill(e)
 	}
 	if settings.AutoAddNaturalAttacks {
-		entity.Traits = append(entity.Traits, NewNaturalAttacks(entity, nil))
+		e.Traits = append(e.Traits, NewNaturalAttacks(e, nil))
 	}
-	entity.ModifiedOn = entity.CreatedOn
-	entity.Recalculate()
-	return entity
+	e.ModifiedOn = e.CreatedOn
+	e.Recalculate()
+	return e
 }
 
 // Entity implements EntityProvider.
@@ -196,12 +208,12 @@ func (e *Entity) MarshalJSON() ([]byte, error) {
 			DodgeBonus:            e.DodgeBonus,
 			ParryBonus:            e.ParryBonus,
 			BlockBonus:            e.BlockBonus,
-			Move:                  make([]int, len(AllEncumbrance)),
-			Dodge:                 make([]int, len(AllEncumbrance)),
+			Move:                  make([]int, len(encumbrance.Levels)),
+			Dodge:                 make([]int, len(encumbrance.Levels)),
 		},
 	}
 	data.Version = CurrentDataVersion
-	for i, one := range AllEncumbrance {
+	for i, one := range encumbrance.Levels {
 		data.Calc.Move[i] = e.Move(one)
 		data.Calc.Dodge[i] = e.Dodge(one)
 	}
@@ -247,8 +259,8 @@ func (e *Entity) UnmarshalJSON(data []byte) error {
 // DiscardCaches discards the internal caches.
 func (e *Entity) DiscardCaches() {
 	e.cachedBasicLift = -1
-	e.cachedEncumbranceLevel = LastEncumbrance + 1
-	e.cachedEncumbranceLevelForSkills = LastEncumbrance + 1
+	e.cachedEncumbranceLevel = encumbrance.LastLevel + 1
+	e.cachedEncumbranceLevelForSkills = encumbrance.LastLevel + 1
 	e.cachedVariables = nil
 }
 
@@ -309,7 +321,7 @@ func (e *Entity) processFeatures() {
 				e.processFeature(a, nil, f, levels)
 			}
 		}
-		for _, f := range a.CRAdj.Features(a.CR) {
+		for _, f := range FeaturesForSelfControlRoll(a.CR, a.CRAdj) {
 			e.processFeature(a, nil, f, levels)
 		}
 		Traverse(func(mod *TraitModifier) bool {
@@ -341,12 +353,12 @@ func (e *Entity) processFeatures() {
 		}, true, true, eqp.Modifiers...)
 		return false
 	}, false, false, e.CarriedEquipment...)
-	e.LiftingStrengthBonus = e.AttributeBonusFor(StrengthID, LiftingOnlyBonusLimitation, nil).Trunc()
-	e.StrikingStrengthBonus = e.AttributeBonusFor(StrengthID, StrikingOnlyBonusLimitation, nil).Trunc()
-	e.ThrowingStrengthBonus = e.AttributeBonusFor(StrengthID, ThrowingOnlyBonusLimitation, nil).Trunc()
+	e.LiftingStrengthBonus = e.AttributeBonusFor(StrengthID, stlimit.LiftingOnly, nil).Trunc()
+	e.StrikingStrengthBonus = e.AttributeBonusFor(StrengthID, stlimit.StrikingOnly, nil).Trunc()
+	e.ThrowingStrengthBonus = e.AttributeBonusFor(StrengthID, stlimit.ThrowingOnly, nil).Trunc()
 	for _, attr := range e.Attributes.Set {
 		if def := attr.AttributeDef(); def != nil {
-			attr.Bonus = e.AttributeBonusFor(attr.AttrID, NoneBonusLimitation, nil)
+			attr.Bonus = e.AttributeBonusFor(attr.AttrID, stlimit.None, nil)
 			if !def.AllowsDecimal() {
 				attr.Bonus = attr.Bonus.Trunc()
 			}
@@ -358,12 +370,12 @@ func (e *Entity) processFeatures() {
 	}
 	e.Profile.Update(e)
 	if e.ResolveAttribute(DodgeID) == nil {
-		e.DodgeBonus = e.AttributeBonusFor(DodgeID, NoneBonusLimitation, nil).Trunc()
+		e.DodgeBonus = e.AttributeBonusFor(DodgeID, stlimit.None, nil).Trunc()
 	} else {
 		e.DodgeBonus = 0
 	}
-	e.ParryBonus = e.AttributeBonusFor(ParryID, NoneBonusLimitation, nil).Trunc()
-	e.BlockBonus = e.AttributeBonusFor(BlockID, NoneBonusLimitation, nil).Trunc()
+	e.ParryBonus = e.AttributeBonusFor(ParryID, stlimit.None, nil).Trunc()
+	e.BlockBonus = e.AttributeBonusFor(BlockID, stlimit.None, nil).Trunc()
 }
 
 func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, levels fxp.Int) {
@@ -389,7 +401,7 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, levels 
 							locationsMatched[drBonus.Location] = true
 							additionalDRBonus := DRBonus{
 								DRBonusData: DRBonusData{
-									Type:           DRBonusFeatureType,
+									Type:           feature.DRBonus,
 									Location:       drBonus.Location,
 									Specialization: actual.Specialization,
 									LeveledAmount:  actual.LeveledAmount,
@@ -408,7 +420,7 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, levels 
 				for location := range allLocations {
 					additionalDRBonus := DRBonus{
 						DRBonusData: DRBonusData{
-							Type:           DRBonusFeatureType,
+							Type:           feature.DRBonus,
 							Location:       location,
 							Specialization: actual.Specialization,
 							LeveledAmount:  actual.LeveledAmount,
@@ -591,15 +603,15 @@ func calculateSingleTraitPoints(t *Trait, pb *PointsBreakdown) {
 	}
 	if t.Container() {
 		switch t.ContainerType {
-		case GroupContainerType:
+		case container.Group:
 			for _, child := range t.Children {
 				calculateSingleTraitPoints(child, pb)
 			}
 			return
-		case AncestryContainerType:
+		case container.Ancestry:
 			pb.Ancestry += t.AdjustedPoints()
 			return
-		case AttributesContainerType:
+		case container.Attributes:
 			pb.Attributes += t.AdjustedPoints()
 			return
 		default:
@@ -691,7 +703,7 @@ func (e *Entity) SwingFor(st int) *dice.Dice {
 }
 
 // AttributeBonusFor returns the bonus for the given attribute.
-func (e *Entity) AttributeBonusFor(attributeID string, limitation BonusLimitation, tooltip *xio.ByteBuffer) fxp.Int {
+func (e *Entity) AttributeBonusFor(attributeID string, limitation stlimit.Option, tooltip *xio.ByteBuffer) fxp.Int {
 	var total fxp.Int
 	for _, one := range e.features.attributeBonuses {
 		if one.ActualLimitation() == limitation && one.Attribute == attributeID {
@@ -742,7 +754,7 @@ func (e *Entity) AddDRBonusesFor(locationID string, tooltip *xio.ByteBuffer, drM
 func (e *Entity) SkillBonusFor(name, specialization string, tags []string, tooltip *xio.ByteBuffer) fxp.Int {
 	var total fxp.Int
 	for _, bonus := range e.features.skillBonuses {
-		if bonus.SelectionType == NameSkillSelectionType &&
+		if bonus.SelectionType == skillsel.Name &&
 			bonus.NameCriteria.Matches(name) &&
 			bonus.SpecializationCriteria.Matches(specialization) &&
 			bonus.TagsCriteria.MatchesList(tags...) {
@@ -797,7 +809,7 @@ func (e *Entity) SpellPointBonusFor(name, powerSource string, colleges, tags []s
 
 // AddWeaponWithSkillBonusesFor adds the bonuses for matching weapons that match to the map. If 'm' is nil, it will be
 // created. The provided map (or the newly created one) will be returned.
-func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization string, tags []string, dieCount int, tooltip *xio.ByteBuffer, m map[*WeaponBonus]bool, allowedFeatureTypes map[FeatureType]bool) map[*WeaponBonus]bool {
+func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization string, tags []string, dieCount int, tooltip *xio.ByteBuffer, m map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool) map[*WeaponBonus]bool {
 	if m == nil {
 		m = make(map[*WeaponBonus]bool)
 	}
@@ -810,13 +822,13 @@ func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization string, tags 
 	if rsl != fxp.Min {
 		for _, bonus := range e.features.weaponBonuses {
 			if allowedFeatureTypes[bonus.Type] &&
-				bonus.SelectionType == WithRequiredSkillWeaponSelectionType &&
+				bonus.SelectionType == wsel.WithRequiredSkill &&
 				bonus.NameCriteria.Matches(name) &&
 				bonus.SpecializationCriteria.Matches(specialization) &&
 				bonus.RelativeLevelCriteria.Matches(rsl) &&
 				bonus.TagsCriteria.MatchesList(tags...) {
 				level := bonus.LeveledAmount.Level
-				if bonus.Type == WeaponBonusFeatureType {
+				if bonus.Type == feature.WeaponBonus {
 					bonus.LeveledAmount.Level = fxp.From(dieCount)
 				} else {
 					bonus.LeveledAmount.Level = bonus.DerivedLevel()
@@ -832,18 +844,18 @@ func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization string, tags 
 
 // AddNamedWeaponBonusesFor adds the bonuses for matching weapons that match to the map. If 'm' is nil, it will
 // be created. The provided map (or the newly created one) will be returned.
-func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, tagsQualifier []string, dieCount int, tooltip *xio.ByteBuffer, m map[*WeaponBonus]bool, allowedFeatureTypes map[FeatureType]bool) map[*WeaponBonus]bool {
+func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, tagsQualifier []string, dieCount int, tooltip *xio.ByteBuffer, m map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool) map[*WeaponBonus]bool {
 	if m == nil {
 		m = make(map[*WeaponBonus]bool)
 	}
 	for _, bonus := range e.features.weaponBonuses {
 		if allowedFeatureTypes[bonus.Type] &&
-			bonus.SelectionType == WithNameWeaponSelectionType &&
+			bonus.SelectionType == wsel.WithName &&
 			bonus.NameCriteria.Matches(nameQualifier) &&
 			bonus.SpecializationCriteria.Matches(usageQualifier) &&
 			bonus.TagsCriteria.MatchesList(tagsQualifier...) {
 			level := bonus.LeveledAmount.Level
-			if bonus.Type == WeaponBonusFeatureType {
+			if bonus.Type == feature.WeaponBonus {
 				bonus.LeveledAmount.Level = fxp.From(dieCount)
 			} else {
 				bonus.LeveledAmount.Level = bonus.DerivedLevel()
@@ -860,7 +872,7 @@ func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, 
 func (e *Entity) NamedWeaponSkillBonusesFor(name, usage string, tags []string, tooltip *xio.ByteBuffer) []*SkillBonus {
 	var bonuses []*SkillBonus
 	for _, bonus := range e.features.skillBonuses {
-		if bonus.SelectionType == WeaponsWithNameSkillSelectionType &&
+		if bonus.SelectionType == skillsel.WeaponsWithName &&
 			bonus.NameCriteria.Matches(name) &&
 			bonus.SpecializationCriteria.Matches(usage) &&
 			bonus.TagsCriteria.MatchesList(tags...) {
@@ -872,14 +884,14 @@ func (e *Entity) NamedWeaponSkillBonusesFor(name, usage string, tags []string, t
 }
 
 // Move returns the current Move value for the given Encumbrance.
-func (e *Entity) Move(enc Encumbrance) int {
+func (e *Entity) Move(enc encumbrance.Level) int {
 	var initialMove fxp.Int
 	if e.ResolveAttribute(MoveID) != nil {
 		initialMove = e.ResolveAttributeCurrent(MoveID)
 	} else {
 		initialMove = e.ResolveAttributeCurrent(BasicMoveID).Max(0)
 	}
-	if divisor := 2 * min(CountThresholdOpMet(HalveMoveThresholdOp, e.Attributes), 2); divisor > 0 {
+	if divisor := 2 * min(CountThresholdOpMet(threshold.HalveMove, e.Attributes), 2); divisor > 0 {
 		initialMove = initialMove.Div(fxp.From(divisor)).Ceil()
 	}
 	move := initialMove.Mul(fxp.Ten + fxp.Two.Mul(enc.Penalty())).Div(fxp.Ten).Trunc()
@@ -933,7 +945,7 @@ func (e *Entity) SkillNamed(name, specialization string, requirePoints bool, exc
 }
 
 // Dodge returns the current Dodge value for the given Encumbrance.
-func (e *Entity) Dodge(enc Encumbrance) int {
+func (e *Entity) Dodge(enc encumbrance.Level) int {
 	var dodge fxp.Int
 	if e.ResolveAttribute(DodgeID) != nil {
 		dodge = e.ResolveAttributeCurrent(DodgeID)
@@ -941,7 +953,7 @@ func (e *Entity) Dodge(enc Encumbrance) int {
 		dodge = e.ResolveAttributeCurrent(BasicSpeedID).Max(0) + fxp.Three
 	}
 	dodge += e.DodgeBonus
-	divisor := 2 * min(CountThresholdOpMet(HalveDodgeThresholdOp, e.Attributes), 2)
+	divisor := 2 * min(CountThresholdOpMet(threshold.HalveDodge, e.Attributes), 2)
 	if divisor > 0 {
 		dodge = dodge.Div(fxp.From(divisor)).Ceil()
 	}
@@ -949,16 +961,16 @@ func (e *Entity) Dodge(enc Encumbrance) int {
 }
 
 // EncumbranceLevel returns the current Encumbrance level.
-func (e *Entity) EncumbranceLevel(forSkills bool) Encumbrance {
+func (e *Entity) EncumbranceLevel(forSkills bool) encumbrance.Level {
 	if forSkills {
-		if e.cachedEncumbranceLevelForSkills != LastEncumbrance+1 {
+		if e.cachedEncumbranceLevelForSkills != encumbrance.LastLevel+1 {
 			return e.cachedEncumbranceLevelForSkills
 		}
-	} else if e.cachedEncumbranceLevel != LastEncumbrance+1 {
+	} else if e.cachedEncumbranceLevel != encumbrance.LastLevel+1 {
 		return e.cachedEncumbranceLevel
 	}
 	carried := e.WeightCarried(forSkills)
-	for _, one := range AllEncumbrance {
+	for _, one := range encumbrance.Levels {
 		if carried <= e.MaximumCarry(one) {
 			if forSkills {
 				e.cachedEncumbranceLevelForSkills = one
@@ -969,11 +981,11 @@ func (e *Entity) EncumbranceLevel(forSkills bool) Encumbrance {
 		}
 	}
 	if forSkills {
-		e.cachedEncumbranceLevelForSkills = ExtraHeavyEncumbrance
+		e.cachedEncumbranceLevelForSkills = encumbrance.ExtraHeavy
 	} else {
-		e.cachedEncumbranceLevel = ExtraHeavyEncumbrance
+		e.cachedEncumbranceLevel = encumbrance.ExtraHeavy
 	}
-	return ExtraHeavyEncumbrance
+	return encumbrance.ExtraHeavy
 }
 
 // WeightCarried returns the carried weight.
@@ -986,7 +998,7 @@ func (e *Entity) WeightCarried(forSkills bool) fxp.Weight {
 }
 
 // MaximumCarry returns the maximum amount the Entity can carry for the specified encumbrance level.
-func (e *Entity) MaximumCarry(encumbrance Encumbrance) fxp.Weight {
+func (e *Entity) MaximumCarry(encumbrance encumbrance.Level) fxp.Weight {
 	return fxp.Weight(fxp.Int(e.BasicLift()).Mul(encumbrance.WeightMultiplier()))
 }
 
@@ -1032,7 +1044,7 @@ func (e *Entity) BasicLift() fxp.Weight {
 // BasicLiftForST returns the entity's Basic Lift as if their base ST was the given value.
 func (e *Entity) BasicLiftForST(st fxp.Int) fxp.Weight {
 	st = st.Trunc()
-	if IsThresholdOpMet(HalveSTThresholdOp, e.Attributes) {
+	if IsThresholdOpMet(threshold.HalveST, e.Attributes) {
 		st = st.Div(fxp.Two)
 		if st != st.Trunc() {
 			st = st.Trunc() + fxp.One
@@ -1042,7 +1054,7 @@ func (e *Entity) BasicLiftForST(st fxp.Int) fxp.Weight {
 		return 0
 	}
 	var v fxp.Int
-	if e.SheetSettings.DamageProgression == KnowingYourOwnStrength {
+	if e.SheetSettings.DamageProgression == progression.KnowingYourOwnStrength {
 		var diff fxp.Int
 		if st > fxp.Nineteen {
 			diff = st.Div(fxp.Ten).Trunc() - fxp.One
@@ -1131,7 +1143,7 @@ func (e *Entity) ResolveVariable(variableName string) string {
 		}
 		return ""
 	}
-	if def.Type == PoolAttributeType && len(parts) > 1 && parts[1] == "current" {
+	if def.Type == attribute.Pool && len(parts) > 1 && parts[1] == "current" {
 		result := attr.Current().String()
 		e.cachedVariables[variableName] = result
 		return result
@@ -1143,7 +1155,7 @@ func (e *Entity) ResolveVariable(variableName string) string {
 
 // ResolveAttributeDef resolves the given attribute ID to its AttributeDef, or nil.
 func (e *Entity) ResolveAttributeDef(attrID string) *AttributeDef {
-	if e != nil && e.Type == PC {
+	if e != nil && e.Type == entity.PC {
 		if a, ok := e.Attributes.Set[attrID]; ok {
 			return a.AttributeDef()
 		}
@@ -1161,7 +1173,7 @@ func (e *Entity) ResolveAttributeName(attrID string) string {
 
 // ResolveAttribute resolves the given attribute ID to its Attribute, or nil.
 func (e *Entity) ResolveAttribute(attrID string) *Attribute {
-	if e != nil && e.Type == PC {
+	if e != nil && e.Type == entity.PC {
 		if a, ok := e.Attributes.Set[attrID]; ok {
 			return a
 		}
@@ -1171,7 +1183,7 @@ func (e *Entity) ResolveAttribute(attrID string) *Attribute {
 
 // ResolveAttributeCurrent resolves the given attribute ID to its current value, or fxp.Min.
 func (e *Entity) ResolveAttributeCurrent(attrID string) fxp.Int {
-	if e != nil && e.Type == PC {
+	if e != nil && e.Type == entity.PC {
 		return e.Attributes.Current(attrID)
 	}
 	return fxp.Min
@@ -1180,14 +1192,14 @@ func (e *Entity) ResolveAttributeCurrent(attrID string) fxp.Int {
 // PreservesUserDesc returns true if the user description widget should be preserved when written to disk. Normally, only
 // character sheets should return true for this.
 func (e *Entity) PreservesUserDesc() bool {
-	return e.Type == PC
+	return e.Type == entity.PC
 }
 
 // Ancestry returns the current Ancestry.
 func (e *Entity) Ancestry() *Ancestry {
 	var anc *Ancestry
 	Traverse(func(t *Trait) bool {
-		if t.Container() && t.ContainerType == AncestryContainerType && t.Enabled() {
+		if t.Container() && t.ContainerType == container.Ancestry && t.Enabled() {
 			if anc = LookupAncestry(t.Ancestry, GlobalSettings().Libraries()); anc != nil {
 				return true
 			}
@@ -1209,17 +1221,17 @@ func (e *Entity) WeaponOwner() WeaponOwner {
 }
 
 // Weapons implements WeaponListProvider.
-func (e *Entity) Weapons(weaponType WeaponType) []*Weapon {
+func (e *Entity) Weapons(weaponType wpn.Type) []*Weapon {
 	return e.EquippedWeapons(weaponType)
 }
 
 // SetWeapons implements WeaponListProvider.
-func (e *Entity) SetWeapons(_ WeaponType, _ []*Weapon) {
+func (e *Entity) SetWeapons(_ wpn.Type, _ []*Weapon) {
 	// Not permitted
 }
 
 // EquippedWeapons returns a sorted list of equipped weapons.
-func (e *Entity) EquippedWeapons(weaponType WeaponType) []*Weapon {
+func (e *Entity) EquippedWeapons(weaponType wpn.Type) []*Weapon {
 	m := make(map[uint32]*Weapon)
 	Traverse(func(a *Trait) bool {
 		for _, w := range a.Weapons {
@@ -1277,8 +1289,8 @@ func (e *Entity) Reactions() []*ConditionalModifier {
 			e.reactionsFromFeatureList(source, mod.Features, m)
 			return false
 		}, true, true, a.Modifiers...)
-		if a.CR != NoCR && a.CRAdj == ReactionPenalty {
-			amt := fxp.From(ReactionPenalty.Adjustment(a.CR))
+		if a.CR != selfctrl.NoCR && a.CRAdj == selfctrl.ReactionPenalty {
+			amt := fxp.From(selfctrl.ReactionPenalty.Adjustment(a.CR))
 			situation := fmt.Sprintf(i18n.Text("from others when %s is triggered"), a.String())
 			if r, exists := m[situation]; exists {
 				r.Add(source, amt)

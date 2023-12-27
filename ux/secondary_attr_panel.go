@@ -16,6 +16,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -70,7 +71,7 @@ func (p *SecondaryAttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 	p.RemoveAllChildren()
 	for _, def := range attrs.List(false) {
 		if def.Secondary() {
-			if def.Type == gurps.SecondarySeparatorAttributeType {
+			if def.Type == attribute.SecondarySeparator {
 				p.AddChild(NewPageInternalHeader(def.Name, 3))
 			} else {
 				attr, ok := p.entity.Attributes.Set[def.ID()]
@@ -78,7 +79,7 @@ func (p *SecondaryAttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 					errs.Log(errs.New("unable to locate attribute data"), "id", def.ID())
 					continue
 				}
-				if def.Type == gurps.IntegerRefAttributeType || def.Type == gurps.DecimalRefAttributeType {
+				if def.Type == attribute.IntegerRef || def.Type == attribute.DecimalRef {
 					field := NewNonEditablePageFieldEnd(func(field *NonEditablePageField) {
 						field.Text = attr.Maximum().String()
 					})

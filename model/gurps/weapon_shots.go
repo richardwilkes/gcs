@@ -17,6 +17,8 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
@@ -99,17 +101,17 @@ func (ws WeaponShots) hash(h hash.Hash32) {
 // Resolve any bonuses that apply.
 func (ws WeaponShots) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) WeaponShots {
 	result := ws
-	result.ReloadTimeIsPerShot = w.ResolveBoolFlag(ReloadTimeIsPerShotWeaponSwitchType, result.ReloadTimeIsPerShot)
-	result.Thrown = w.ResolveBoolFlag(ThrownWeaponSwitchType, result.Thrown)
-	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, WeaponNonChamberShotsBonusFeatureType, WeaponChamberShotsBonusFeatureType, WeaponShotDurationBonusFeatureType, WeaponReloadTimeBonusFeatureType) {
+	result.ReloadTimeIsPerShot = w.ResolveBoolFlag(wswitch.ReloadTimeIsPerShot, result.ReloadTimeIsPerShot)
+	result.Thrown = w.ResolveBoolFlag(wswitch.Thrown, result.Thrown)
+	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponNonChamberShotsBonus, feature.WeaponChamberShotsBonus, feature.WeaponShotDurationBonus, feature.WeaponReloadTimeBonus) {
 		switch bonus.Type {
-		case WeaponNonChamberShotsBonusFeatureType:
+		case feature.WeaponNonChamberShotsBonus:
 			result.NonChamberShots += bonus.AdjustedAmount()
-		case WeaponChamberShotsBonusFeatureType:
+		case feature.WeaponChamberShotsBonus:
 			result.ChamberShots += bonus.AdjustedAmount()
-		case WeaponShotDurationBonusFeatureType:
+		case feature.WeaponShotDurationBonus:
 			result.ShotDuration += bonus.AdjustedAmount()
-		case WeaponReloadTimeBonusFeatureType:
+		case feature.WeaponReloadTimeBonus:
 			result.ReloadTime += bonus.AdjustedAmount()
 		default:
 		}

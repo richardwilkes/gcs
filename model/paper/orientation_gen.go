@@ -23,11 +23,13 @@ import (
 const (
 	Portrait Orientation = iota
 	Landscape
-	LastOrientation = Landscape
 )
 
-// AllOrientation holds all possible values.
-var AllOrientation = []Orientation{
+// LastOrientation is the last valid value.
+const LastOrientation Orientation = Landscape
+
+// Orientations holds all possible values.
+var Orientations = []Orientation{
 	Portrait,
 	Landscape,
 }
@@ -37,7 +39,7 @@ type Orientation byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Orientation) EnsureValid() Orientation {
-	if enum <= LastOrientation {
+	if enum <= Landscape {
 		return enum
 	}
 	return 0
@@ -80,7 +82,7 @@ func (enum *Orientation) UnmarshalText(text []byte) error {
 
 // ExtractOrientation extracts the value from a string.
 func ExtractOrientation(str string) Orientation {
-	for _, enum := range AllOrientation {
+	for _, enum := range Orientations {
 		if strings.EqualFold(enum.Key(), str) {
 			return enum
 		}

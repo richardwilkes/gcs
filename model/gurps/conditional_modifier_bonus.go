@@ -13,6 +13,7 @@ package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -21,8 +22,8 @@ var _ Bonus = &ConditionalModifierBonus{}
 
 // ConditionalModifierBonus holds the data for a conditional modifier bonus.
 type ConditionalModifierBonus struct {
-	Type      FeatureType `json:"type"`
-	Situation string      `json:"situation,omitempty"`
+	Type      feature.Type `json:"type"`
+	Situation string       `json:"situation,omitempty"`
 	LeveledAmount
 	BonusOwner
 }
@@ -30,14 +31,14 @@ type ConditionalModifierBonus struct {
 // NewConditionalModifierBonus creates a new ConditionalModifierBonus.
 func NewConditionalModifierBonus() *ConditionalModifierBonus {
 	return &ConditionalModifierBonus{
-		Type:          ConditionalModifierFeatureType,
+		Type:          feature.ConditionalModifier,
 		Situation:     i18n.Text("triggering condition"),
 		LeveledAmount: LeveledAmount{Amount: fxp.One},
 	}
 }
 
 // FeatureType implements Feature.
-func (c *ConditionalModifierBonus) FeatureType() FeatureType {
+func (c *ConditionalModifierBonus) FeatureType() feature.Type {
 	return c.Type
 }
 

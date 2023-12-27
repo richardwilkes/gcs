@@ -18,6 +18,12 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/affects"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/tmcost"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
@@ -221,35 +227,35 @@ func (a *Trait) CellData(columnID int, data *CellData) {
 	data.Dim = !a.Enabled()
 	switch columnID {
 	case TraitDescriptionColumn:
-		data.Type = TextCellType
+		data.Type = cell.Text
 		data.Primary = a.String()
-		data.Secondary = a.SecondaryText(func(option DisplayOption) bool { return option.Inline() })
+		data.Secondary = a.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.Disabled = a.EffectivelyDisabled()
 		data.UnsatisfiedReason = a.UnsatisfiedReason
-		data.Tooltip = a.SecondaryText(func(option DisplayOption) bool { return option.Tooltip() })
+		data.Tooltip = a.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 		data.TemplateInfo = a.TemplatePicker.Description()
 		if a.Container() {
 			switch a.ContainerType {
-			case AlternativeAbilitiesContainerType:
+			case container.AlternativeAbilities:
 				data.InlineTag = i18n.Text("Alternate")
-			case AncestryContainerType:
+			case container.Ancestry:
 				data.InlineTag = i18n.Text("Ancestry")
-			case AttributesContainerType:
+			case container.Attributes:
 				data.InlineTag = i18n.Text("Attribute")
-			case MetaTraitContainerType:
+			case container.MetaTrait:
 				data.InlineTag = i18n.Text("Meta")
 			default:
 			}
 		}
 	case TraitPointsColumn:
-		data.Type = TextCellType
+		data.Type = cell.Text
 		data.Primary = a.AdjustedPoints().String()
 		data.Alignment = align.End
 	case TraitTagsColumn:
-		data.Type = TagsCellType
+		data.Type = cell.Tags
 		data.Primary = CombineTags(a.Tags)
 	case TraitReferenceColumn, PageRefCellAlias:
-		data.Type = PageRefCellType
+		data.Type = cell.PageRef
 		data.Primary = a.PageRef
 		if a.PageRefHighlight != "" {
 			data.Secondary = a.PageRefHighlight
@@ -319,7 +325,7 @@ func (a *Trait) AdjustedPoints() fxp.Int {
 		return AdjustedPoints(a.Entity, a.CanLevel, a.BasePoints, a.Levels, a.PointsPerLevel, a.CR, a.AllModifiers(), a.RoundCostDown)
 	}
 	var points fxp.Int
-	if a.ContainerType == AlternativeAbilitiesContainerType {
+	if a.ContainerType == container.AlternativeAbilities {
 		values := make([]fxp.Int, len(a.Children))
 		for i, one := range a.Children {
 			values[i] = one.AdjustedPoints()
@@ -462,9 +468,9 @@ func (a *Trait) ActiveModifierFor(name string) *TraitModifier {
 // ModifierNotes returns the notes due to modifiers.
 func (a *Trait) ModifierNotes() string {
 	var buffer strings.Builder
-	if a.CR != NoCR {
+	if a.CR != selfctrl.NoCR {
 		buffer.WriteString(a.CR.String())
-		if a.CRAdj != NoCRAdj {
+		if a.CRAdj != selfctrl.NoCRAdj {
 			buffer.WriteString(", ")
 			buffer.WriteString(a.CRAdj.Description(a.CR))
 		}
@@ -480,7 +486,7 @@ func (a *Trait) ModifierNotes() string {
 }
 
 // SecondaryText returns the "secondary" text: the text display below an Trait.
-func (a *Trait) SecondaryText(optionChecker func(DisplayOption) bool) string {
+func (a *Trait) SecondaryText(optionChecker func(display.Option) bool) string {
 	var buffer strings.Builder
 	settings := SheetSettingsFor(a.Entity)
 	if a.UserDesc != "" && optionChecker(settings.UserDescriptionDisplay) {
@@ -527,7 +533,7 @@ func ExtractTags(tags string) []string {
 }
 
 // AdjustedPoints returns the total points, taking levels and modifiers into account. 'entity' may be nil.
-func AdjustedPoints(entity *Entity, canLevel bool, basePoints, levels, pointsPerLevel fxp.Int, cr SelfControlRoll, modifiers []*TraitModifier, roundCostDown bool) fxp.Int {
+func AdjustedPoints(entity *Entity, canLevel bool, basePoints, levels, pointsPerLevel fxp.Int, cr selfctrl.Roll, modifiers []*TraitModifier, roundCostDown bool) fxp.Int {
 	if !canLevel {
 		levels = 0
 		pointsPerLevel = 0
@@ -537,9 +543,9 @@ func AdjustedPoints(entity *Entity, canLevel bool, basePoints, levels, pointsPer
 	Traverse(func(mod *TraitModifier) bool {
 		modifier := mod.CostModifier()
 		switch mod.CostType {
-		case PercentageTraitModifierCostType:
+		case tmcost.Percentage:
 			switch mod.Affects {
-			case TotalAffects:
+			case affects.Total:
 				if modifier < 0 {
 					baseLim += modifier
 					levelLim += modifier
@@ -547,28 +553,28 @@ func AdjustedPoints(entity *Entity, canLevel bool, basePoints, levels, pointsPer
 					baseEnh += modifier
 					levelEnh += modifier
 				}
-			case BaseOnlyAffects:
+			case affects.BaseOnly:
 				if modifier < 0 {
 					baseLim += modifier
 				} else {
 					baseEnh += modifier
 				}
-			case LevelsOnlyAffects:
+			case affects.LevelsOnly:
 				if modifier < 0 {
 					levelLim += modifier
 				} else {
 					levelEnh += modifier
 				}
 			}
-		case PointsTraitModifierCostType:
-			if mod.Affects == LevelsOnlyAffects {
+		case tmcost.Points:
+			if mod.Affects == affects.LevelsOnly {
 				if canLevel {
 					pointsPerLevel += modifier
 				}
 			} else {
 				basePoints += modifier
 			}
-		case MultiplierTraitModifierCostType:
+		case tmcost.Multiplier:
 			multiplier = multiplier.Mul(modifier)
 		}
 		return false

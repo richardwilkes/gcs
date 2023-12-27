@@ -18,6 +18,7 @@ import (
 	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
@@ -68,7 +69,7 @@ func (d *SettingsDockable) Setup(addToStartToolbar, addToEndToolbar, initContent
 		VGrab:  true,
 	})
 	d.AddChild(scroller)
-	PlaceInDock(d, gurps.SettingsDockableGroup, false)
+	PlaceInDock(d, dgroup.Settings, false)
 	FocusFirstContent(toolbar, content)
 }
 

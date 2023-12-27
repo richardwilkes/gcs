@@ -12,6 +12,7 @@
 package gurps
 
 import (
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/toolbox/i18n"
 )
 
@@ -45,7 +46,7 @@ func (d *SpellData) ClearUnusedFieldsForType() {
 		d.Points = 0
 		d.Prereq = nil
 		d.Weapons = nil
-		d.StudyHoursNeeded = StandardStudyHoursNeeded
+		d.StudyHoursNeeded = study.Standard
 		if d.TemplatePicker == nil {
 			d.TemplatePicker = &TemplatePicker{}
 		}

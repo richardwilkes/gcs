@@ -13,28 +13,29 @@ package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 )
 
 var _ Feature = &CostReduction{}
 
 // CostReduction holds the data for a cost reduction.
 type CostReduction struct {
-	Type       FeatureType `json:"type"`
-	Attribute  string      `json:"attribute,omitempty"`
-	Percentage fxp.Int     `json:"percentage,omitempty"`
+	Type       feature.Type `json:"type"`
+	Attribute  string       `json:"attribute,omitempty"`
+	Percentage fxp.Int      `json:"percentage,omitempty"`
 }
 
 // NewCostReduction creates a new CostReduction.
 func NewCostReduction(attrID string) *CostReduction {
 	return &CostReduction{
-		Type:       CostReductionFeatureType,
+		Type:       feature.CostReduction,
 		Attribute:  attrID,
 		Percentage: fxp.Forty,
 	}
 }
 
 // FeatureType implements Feature.
-func (c *CostReduction) FeatureType() FeatureType {
+func (c *CostReduction) FeatureType() feature.Type {
 	return c.Type
 }
 

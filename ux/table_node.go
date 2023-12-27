@@ -19,6 +19,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/fatal"
@@ -237,7 +238,7 @@ func (n *Node[T]) PartialMatchExceptTag(text string) bool {
 	for i := range n.table.Columns {
 		var data gurps.CellData
 		n.dataAsNode.CellData(n.table.Columns[i].ID, &data)
-		if data.Type != gurps.TagsCellType {
+		if data.Type != cell.Tags {
 			if strings.Contains(strings.ToLower(data.ForSort()), text) {
 				return true
 			}
@@ -262,13 +263,13 @@ func (n *Node[T]) Match(text string) bool {
 // CellFromCellData creates a new panel for the given cell data.
 func (n *Node[T]) CellFromCellData(c *gurps.CellData, width float32, foreground, background unison.Ink) unison.Paneler {
 	switch c.Type {
-	case gurps.TextCellType, gurps.TagsCellType:
+	case cell.Text, cell.Tags:
 		return n.createLabelCell(c, width, foreground, background)
-	case gurps.ToggleCellType:
+	case cell.Toggle:
 		return n.createToggleCell(c, foreground)
-	case gurps.PageRefCellType:
+	case cell.PageRef:
 		return n.createPageRefCell(c, foreground)
-	case gurps.MarkdownCellType:
+	case cell.Markdown:
 		return n.createMarkdownCell(c, width, foreground)
 	default:
 		return unison.NewPanel()

@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/cmdline"
@@ -67,7 +68,7 @@ type Settings struct {
 	Fonts              Fonts                      `json:"fonts"`
 	QuickExports       *QuickExports              `json:"quick_exports,omitempty"`
 	Sheet              *SheetSettings             `json:"sheet_settings,omitempty"`
-	OpenInWindow       []DockableGroup            `json:"open_in_window,omitempty"`
+	OpenInWindow       []dgroup.Group             `json:"open_in_window,omitempty"`
 	ThemeMode          thememode.Enum             `json:"theme_mode,alt=color_mode"`
 }
 
@@ -137,8 +138,8 @@ func (s *Settings) EnsureValidity() {
 }
 
 // SanitizeDockableGroups returns the list of valid dockable groups from the passed-in list, in sorted order.
-func SanitizeDockableGroups(groups []DockableGroup) []DockableGroup {
-	m := make(map[DockableGroup]bool)
+func SanitizeDockableGroups(groups []dgroup.Group) []dgroup.Group {
+	m := make(map[dgroup.Group]bool)
 	for _, k := range groups {
 		m[k.EnsureValid()] = true
 	}

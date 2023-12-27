@@ -24,6 +24,8 @@ import (
 	texttmpl "text/template"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wpn"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/toolbox/xio/fs"
@@ -478,7 +480,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 	slices.SortFunc(data.Attributes.Secondary, func(a, b *exportedAttribute) int { return a.order - b.order })
 	slices.SortFunc(data.Attributes.Pools, func(a, b *exportedPool) int { return a.order - b.order })
 	currentEnc := entity.EncumbranceLevel(false)
-	for _, enc := range AllEncumbrance {
+	for _, enc := range encumbrance.Levels {
 		penalty := fxp.As[int](enc.Penalty())
 		data.Encumbrance = append(data.Encumbrance, &exportedEncumbrance{
 			Name:      enc.String(),
@@ -585,7 +587,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 		data.Notes = append(data.Notes, note)
 		return false
 	}, true, false, entity.Notes...)
-	for _, w := range entity.EquippedWeapons(MeleeWeaponType) {
+	for _, w := range entity.EquippedWeapons(wpn.Melee) {
 		weaponST := w.Strength.Resolve(w, nil)
 		parry := w.Parry.Resolve(w, nil)
 		block := w.Block.Resolve(w, nil)
@@ -606,7 +608,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			StrengthParts: weaponST,
 		})
 	}
-	for _, w := range entity.EquippedWeapons(RangedWeaponType) {
+	for _, w := range entity.EquippedWeapons(wpn.Ranged) {
 		accuracy := w.Accuracy.Resolve(w, nil)
 		weaponRange := w.Range.Resolve(w, nil)
 		rof := w.RateOfFire.Resolve(w, nil)

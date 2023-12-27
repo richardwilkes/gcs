@@ -44,6 +44,7 @@ for arg in "$@"; do
     RACE=-race
     ;;
   --test | -t) TEST=1 ;;
+  --gen | -g) GEN_ONLY=1 ;;
   --help | -h)
     echo "$0 [options]"
     echo "  -a, --all  Equivalent to --lint --race"
@@ -68,6 +69,9 @@ STD_FLAGS="-v -buildvcs=true $EXTRA_BUILD_FLAGS"
 # Generate the source
 echo -e "\033[32mGenerating...\033[0m"
 go generate ./gen/enumgen.go
+if [ "$GEN_ONLY"x == "1x" ]; then
+  exit 0
+fi
 
 # Generate the translation file
 if [ "$I18N"x == "1x" ]; then

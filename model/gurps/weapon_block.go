@@ -17,6 +17,8 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -75,7 +77,7 @@ func (wb WeaponBlock) hash(h hash.Hash32) {
 // Resolve any bonuses that apply.
 func (wb WeaponBlock) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) WeaponBlock {
 	result := wb
-	result.No = !w.ResolveBoolFlag(CanBlockWeaponSwitchType, !result.No)
+	result.No = !w.ResolveBoolFlag(wswitch.CanBlock, !result.No)
 	if !result.No {
 		if pc := w.PC(); pc != nil {
 			var primaryTooltip *xio.ByteBuffer
@@ -102,7 +104,7 @@ func (wb WeaponBlock) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 			if best != fxp.Min {
 				AppendBufferOntoNewLine(modifiersTooltip, primaryTooltip)
 				result.Modifier += fxp.Three + best + pc.BlockBonus
-				for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, WeaponBlockBonusFeatureType) {
+				for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponBlockBonus) {
 					result.Modifier += bonus.AdjustedAmount()
 				}
 				result.Modifier = result.Modifier.Max(0).Trunc()

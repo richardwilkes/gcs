@@ -16,6 +16,8 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wpn"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -126,13 +128,13 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 				}))
 			adjustFieldBlank(limitField, e.editorData.TechniqueLimitModifier == nil)
 			wrapper2.AddChild(limitField)
-			difficultyPopup := addLabelAndPopup(content, i18n.Text("Difficulty"), "", gurps.AllTechniqueDifficulty,
+			difficultyPopup := addLabelAndPopup(content, i18n.Text("Difficulty"), "", difficulty.TechniqueLevels,
 				&e.editorData.Difficulty.Difficulty)
-			difficultyPopup.SelectionChangedCallback = func(popup *unison.PopupMenu[gurps.Difficulty]) {
+			difficultyPopup.SelectionChangedCallback = func(popup *unison.PopupMenu[difficulty.Level]) {
 				if item, ok := popup.Selected(); ok {
 					e.editorData.Difficulty.Difficulty = item
 					if !ownerIsSheet && !ownerIsTemplate {
-						if item == gurps.Hard {
+						if item == difficulty.Hard {
 							e.editorData.Points = fxp.Two
 						} else {
 							e.editorData.Points = fxp.One
@@ -193,7 +195,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 		content.AddChild(newPrereqPanel(e.target.Entity, &e.editorData.Prereq))
 		content.AddChild(newDefaultsPanel(e.target.Entity, &e.editorData.Defaults))
 		content.AddChild(newFeaturesPanel(e.target.Entity, e.target, &e.editorData.Features, false))
-		for _, wt := range gurps.AllWeaponType {
+		for _, wt := range wpn.Types {
 			content.AddChild(newWeaponsPanel(e, e.target, wt, &e.editorData.Weapons))
 		}
 		content.AddChild(newStudyPanel(e.target.Entity, &e.editorData.StudyHoursNeeded, &e.editorData.Study))

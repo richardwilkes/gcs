@@ -14,6 +14,7 @@ package gurps
 import (
 	"fmt"
 
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -23,14 +24,14 @@ var _ Prereq = &EquippedEquipmentPrereq{}
 // EquippedEquipmentPrereq holds a prerequisite for an equipped piece of equipment.
 type EquippedEquipmentPrereq struct {
 	Parent       *PrereqList    `json:"-"`
-	Type         PrereqType     `json:"type"`
+	Type         prereq.Type    `json:"type"`
 	NameCriteria StringCriteria `json:"name,omitempty"`
 }
 
 // NewEquippedEquipmentPrereq creates a new EquippedEquipmentPrereq.
 func NewEquippedEquipmentPrereq() *EquippedEquipmentPrereq {
 	return &EquippedEquipmentPrereq{
-		Type: EquippedEquipmentPrereqType,
+		Type: prereq.EquippedEquipment,
 		NameCriteria: StringCriteria{
 			StringCriteriaData: StringCriteriaData{
 				Compare: IsString,
@@ -40,7 +41,7 @@ func NewEquippedEquipmentPrereq() *EquippedEquipmentPrereq {
 }
 
 // PrereqType implements Prereq.
-func (e *EquippedEquipmentPrereq) PrereqType() PrereqType {
+func (e *EquippedEquipmentPrereq) PrereqType() prereq.Type {
 	return e.Type
 }
 

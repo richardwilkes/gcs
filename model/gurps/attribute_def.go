@@ -16,6 +16,8 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/eval"
 	"github.com/richardwilkes/toolbox/xmath/crc"
@@ -34,7 +36,7 @@ type AttributeDef struct {
 // AttributeDefData holds the data that will be serialized for the AttributeDef.
 type AttributeDefData struct {
 	DefID               string           `json:"id"`
-	Type                AttributeType    `json:"type"`
+	Type                attribute.Type   `json:"type"`
 	Name                string           `json:"name"`
 	FullName            string           `json:"full_name,omitempty"`
 	AttributeBase       string           `json:"attribute_base,omitempty"`
@@ -66,7 +68,7 @@ func (a *AttributeDef) UnmarshalJSON(data []byte) error {
 // Clone a copy of this.
 func (a *AttributeDef) Clone() *AttributeDef {
 	clone := *a
-	if a.Type == PoolAttributeType {
+	if a.Type == attribute.Pool {
 		if a.Thresholds != nil {
 			clone.Thresholds = make([]*PoolThreshold, len(a.Thresholds))
 			for i, one := range a.Thresholds {
@@ -111,15 +113,15 @@ func (a *AttributeDef) CombinedName() string {
 
 // IsSeparator returns true if this is actually just a separator.
 func (a *AttributeDef) IsSeparator() bool {
-	return a.Type == PrimarySeparatorAttributeType || a.Type == SecondarySeparatorAttributeType || a.Type == PoolSeparatorAttributeType
+	return a.Type == attribute.PrimarySeparator || a.Type == attribute.SecondarySeparator || a.Type == attribute.PoolSeparator
 }
 
 // Primary returns true if the base value is a non-derived value.
 func (a *AttributeDef) Primary() bool {
-	if a.Type == PrimarySeparatorAttributeType {
+	if a.Type == attribute.PrimarySeparator {
 		return true
 	}
-	if a.Type == PoolAttributeType || a.IsSeparator() {
+	if a.Type == attribute.Pool || a.IsSeparator() {
 		return false
 	}
 	_, err := fxp.FromString(strings.TrimSpace(a.AttributeBase))
@@ -128,10 +130,10 @@ func (a *AttributeDef) Primary() bool {
 
 // Secondary returns true if the base value is a derived value.
 func (a *AttributeDef) Secondary() bool {
-	if a.Type == SecondarySeparatorAttributeType {
+	if a.Type == attribute.SecondarySeparator {
 		return true
 	}
-	if a.Type == PoolAttributeType || a.IsSeparator() {
+	if a.Type == attribute.Pool || a.IsSeparator() {
 		return false
 	}
 	_, err := fxp.FromString(strings.TrimSpace(a.AttributeBase))
@@ -140,12 +142,12 @@ func (a *AttributeDef) Secondary() bool {
 
 // Pool returns true if the base value is a pool value.
 func (a *AttributeDef) Pool() bool {
-	return a.Type == PoolSeparatorAttributeType || a.Type == PoolAttributeType
+	return a.Type == attribute.PoolSeparator || a.Type == attribute.Pool
 }
 
 // AllowsDecimal returns true if the value can have a decimal point in it.
 func (a *AttributeDef) AllowsDecimal() bool {
-	return a.Type == DecimalAttributeType || a.Type == DecimalRefAttributeType
+	return a.Type == attribute.Decimal || a.Type == attribute.DecimalRef
 }
 
 // BaseValue returns the resolved base value.
@@ -162,7 +164,8 @@ func (a *AttributeDef) ComputeCost(entity *Entity, value, costReduction fxp.Int,
 		return 0
 	}
 	cost := value.Mul(a.CostPerPoint)
-	if sizeModifier > 0 && a.CostAdjPercentPerSM > 0 && !(a.DefID == "hp" && entity.SheetSettings.DamageProgression == KnowingYourOwnStrength) {
+	if sizeModifier > 0 && a.CostAdjPercentPerSM > 0 &&
+		!(a.DefID == "hp" && entity.SheetSettings.DamageProgression == progression.KnowingYourOwnStrength) {
 		costReduction += fxp.From(sizeModifier).Mul(a.CostAdjPercentPerSM)
 	}
 	if costReduction > 0 {

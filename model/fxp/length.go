@@ -26,13 +26,13 @@ import (
 type Length Int
 
 // LengthFromInteger creates a new Length.
-func LengthFromInteger[T constraints.Integer](value T, unit LengthUnits) Length {
+func LengthFromInteger[T constraints.Integer](value T, unit LengthUnit) Length {
 	return Length(unit.ToInches(From(value)))
 }
 
 // LengthFromStringForced creates a new Length. May have any of the known Units suffixes, a feet and inches format (e.g.
 // 6'2"), or no notation at all, in which case defaultUnits is used.
-func LengthFromStringForced(text string, defaultUnits LengthUnits) Length {
+func LengthFromStringForced(text string, defaultUnits LengthUnit) Length {
 	length, err := LengthFromString(text, defaultUnits)
 	if err != nil {
 		return 0
@@ -42,9 +42,9 @@ func LengthFromStringForced(text string, defaultUnits LengthUnits) Length {
 
 // LengthFromString creates a new Length. May have any of the known Units suffixes, a feet and inches format (e.g. 6'2"),
 // or no notation at all, in which case defaultUnits is used.
-func LengthFromString(text string, defaultUnits LengthUnits) (Length, error) {
+func LengthFromString(text string, defaultUnits LengthUnit) (Length, error) {
 	text = strings.TrimLeft(strings.TrimSpace(text), "+")
-	for _, unit := range AllLengthUnits[1:] {
+	for _, unit := range LengthUnits[1:] {
 		if strings.HasSuffix(text, unit.Key()) {
 			value, err := FromString(strings.TrimSpace(strings.TrimSuffix(text, unit.Key())))
 			if err != nil {

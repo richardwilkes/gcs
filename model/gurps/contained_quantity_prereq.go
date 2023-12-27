@@ -13,6 +13,7 @@ package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -22,7 +23,7 @@ var _ Prereq = &ContainedQuantityPrereq{}
 // ContainedQuantityPrereq holds a prerequisite for an equipment contained quantity.
 type ContainedQuantityPrereq struct {
 	Parent            *PrereqList     `json:"-"`
-	Type              PrereqType      `json:"type"`
+	Type              prereq.Type     `json:"type"`
 	Has               bool            `json:"has"`
 	QualifierCriteria NumericCriteria `json:"qualifier,omitempty"`
 }
@@ -30,7 +31,7 @@ type ContainedQuantityPrereq struct {
 // NewContainedQuantityPrereq creates a new ContainedQuantityPrereq.
 func NewContainedQuantityPrereq() *ContainedQuantityPrereq {
 	return &ContainedQuantityPrereq{
-		Type: ContainedQuantityPrereqType,
+		Type: prereq.ContainedQuantity,
 		QualifierCriteria: NumericCriteria{
 			NumericCriteriaData: NumericCriteriaData{
 				Compare:   AtMostNumber,
@@ -42,7 +43,7 @@ func NewContainedQuantityPrereq() *ContainedQuantityPrereq {
 }
 
 // PrereqType implements Prereq.
-func (c *ContainedQuantityPrereq) PrereqType() PrereqType {
+func (c *ContainedQuantityPrereq) PrereqType() prereq.Type {
 	return c.Type
 }
 

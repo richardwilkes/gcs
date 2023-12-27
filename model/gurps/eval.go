@@ -16,6 +16,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/entity"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/eval"
@@ -39,8 +40,8 @@ func InstallEvaluatorFunctions(m map[string]eval.Function) {
 	m["trait_level"] = evalTraitLevel
 }
 
-func evalToBool(e *eval.Evaluator, arguments string) (bool, error) {
-	evaluated, err := e.EvaluateNew(arguments)
+func evalToBool(ev *eval.Evaluator, arguments string) (bool, error) {
+	evaluated, err := ev.EvaluateNew(arguments)
 	if err != nil {
 		return false, err
 	}
@@ -56,16 +57,16 @@ func evalToBool(e *eval.Evaluator, arguments string) (bool, error) {
 	}
 }
 
-func evalToNumber(e *eval.Evaluator, arguments string) (fxp.Int, error) {
-	evaluated, err := e.EvaluateNew(arguments)
+func evalToNumber(ev *eval.Evaluator, arguments string) (fxp.Int, error) {
+	evaluated, err := ev.EvaluateNew(arguments)
 	if err != nil {
 		return 0, err
 	}
 	return eval.FixedFrom[fxp.DP](evaluated)
 }
 
-func evalToString(e *eval.Evaluator, arguments string) (string, error) {
-	v, err := e.EvaluateNew(arguments)
+func evalToString(ev *eval.Evaluator, arguments string) (string, error) {
+	v, err := ev.EvaluateNew(arguments)
 	if err != nil {
 		return "", err
 	}
@@ -73,24 +74,24 @@ func evalToString(e *eval.Evaluator, arguments string) (string, error) {
 }
 
 // evalEncumbrance takes up to 2 arguments: forSkills (bool, required) and returnFactor (bool, optional)
-func evalEncumbrance(e *eval.Evaluator, arguments string) (any, error) {
+func evalEncumbrance(ev *eval.Evaluator, arguments string) (any, error) {
 	arg, remaining := eval.NextArg(arguments)
-	forSkills, err := evalToBool(e, arg)
+	forSkills, err := evalToBool(ev, arg)
 	if err != nil {
 		return nil, err
 	}
 	var returnFactor bool
 	arg, _ = eval.NextArg(remaining)
 	if arg = strings.TrimSpace(arg); arg != "" {
-		if returnFactor, err = evalToBool(e, remaining); err != nil {
+		if returnFactor, err = evalToBool(ev, remaining); err != nil {
 			return nil, err
 		}
 	}
-	entity, ok := e.Resolver.(*Entity)
-	if !ok || entity.Type != PC {
+	e, ok := ev.Resolver.(*Entity)
+	if !ok || e.Type != entity.PC {
 		return fxp.Int(0), nil
 	}
-	level := fxp.From(int(entity.EncumbranceLevel(forSkills)))
+	level := fxp.From(int(e.EncumbranceLevel(forSkills)))
 	if returnFactor {
 		return fxp.One - level.Mul(fxp.Two).Div(fxp.Ten), nil
 	}
@@ -98,21 +99,21 @@ func evalEncumbrance(e *eval.Evaluator, arguments string) (any, error) {
 }
 
 // evalSkillLevel takes up to 3 arguments: name (string, required), specialization (string, optional), relative (bool, optional)
-func evalSkillLevel(e *eval.Evaluator, arguments string) (any, error) {
-	entity, ok := e.Resolver.(*Entity)
-	if !ok || entity.Type != PC {
+func evalSkillLevel(ev *eval.Evaluator, arguments string) (any, error) {
+	e, ok := ev.Resolver.(*Entity)
+	if !ok || e.Type != entity.PC {
 		return fxp.Int(0), nil
 	}
 	name, remaining := eval.NextArg(arguments)
 	var err error
-	if name, err = evalToString(e, name); err != nil {
+	if name, err = evalToString(ev, name); err != nil {
 		return fxp.Int(0), err
 	}
 	name = strings.Trim(name, `"`)
 	var specialization string
 	specialization, remaining = eval.NextArg(remaining)
 	if specialization = strings.TrimSpace(specialization); specialization != "" {
-		if specialization, err = evalToString(e, specialization); err != nil {
+		if specialization, err = evalToString(ev, specialization); err != nil {
 			return fxp.Int(0), err
 		}
 		specialization = strings.Trim(specialization, `"`)
@@ -120,15 +121,15 @@ func evalSkillLevel(e *eval.Evaluator, arguments string) (any, error) {
 	var relative bool
 	arg, _ := eval.NextArg(remaining)
 	if arg = strings.TrimSpace(arg); arg != "" {
-		if relative, err = evalToBool(e, arg); err != nil {
+		if relative, err = evalToBool(ev, arg); err != nil {
 			return fxp.Int(0), err
 		}
 	}
-	if entity.isSkillLevelResolutionExcluded(name, specialization) {
+	if e.isSkillLevelResolutionExcluded(name, specialization) {
 		return fxp.Int(0), nil
 	}
-	entity.registerSkillLevelResolutionExclusion(name, specialization)
-	defer entity.unregisterSkillLevelResolutionExclusion(name, specialization)
+	e.registerSkillLevelResolutionExclusion(name, specialization)
+	defer e.unregisterSkillLevelResolutionExclusion(name, specialization)
 	var level fxp.Int
 	Traverse(func(s *Skill) bool {
 		if strings.EqualFold(s.Name, name) && strings.EqualFold(s.Specialization, specialization) {
@@ -141,13 +142,13 @@ func evalSkillLevel(e *eval.Evaluator, arguments string) (any, error) {
 			return true
 		}
 		return false
-	}, true, true, entity.Skills...)
+	}, true, true, e.Skills...)
 	return level, nil
 }
 
-func evalHasTrait(e *eval.Evaluator, arguments string) (any, error) {
-	entity, ok := e.Resolver.(*Entity)
-	if !ok || entity.Type != PC {
+func evalHasTrait(ev *eval.Evaluator, arguments string) (any, error) {
+	e, ok := ev.Resolver.(*Entity)
+	if !ok || e.Type != entity.PC {
 		return false, nil
 	}
 	arguments = strings.Trim(arguments, `"`)
@@ -158,13 +159,13 @@ func evalHasTrait(e *eval.Evaluator, arguments string) (any, error) {
 			return true
 		}
 		return false
-	}, true, false, entity.Traits...)
+	}, true, false, e.Traits...)
 	return found, nil
 }
 
-func evalTraitLevel(e *eval.Evaluator, arguments string) (any, error) {
-	entity, ok := e.Resolver.(*Entity)
-	if !ok || entity.Type != PC {
+func evalTraitLevel(ev *eval.Evaluator, arguments string) (any, error) {
+	e, ok := ev.Resolver.(*Entity)
+	if !ok || e.Type != entity.PC {
 		return -fxp.One, nil
 	}
 	arguments = strings.Trim(arguments, `"`)
@@ -180,16 +181,16 @@ func evalTraitLevel(e *eval.Evaluator, arguments string) (any, error) {
 			}
 		}
 		return false
-	}, true, false, entity.Traits...)
+	}, true, false, e.Traits...)
 	return levels, nil
 }
 
-func evalDice(e *eval.Evaluator, arguments string) (any, error) {
+func evalDice(ev *eval.Evaluator, arguments string) (any, error) {
 	var argList []int
 	for arguments != "" {
 		var arg string
 		arg, arguments = eval.NextArg(arguments)
-		n, err := evalToNumber(e, arg)
+		n, err := evalToNumber(ev, arg)
 		if err != nil {
 			return nil, err
 		}
@@ -229,40 +230,40 @@ func evalDice(e *eval.Evaluator, arguments string) (any, error) {
 	return d.String(), nil
 }
 
-func evalRoll(e *eval.Evaluator, arguments string) (any, error) {
+func evalRoll(ev *eval.Evaluator, arguments string) (any, error) {
 	if strings.IndexByte(arguments, '(') != -1 {
 		var err error
-		if arguments, err = evalToString(e, arguments); err != nil {
+		if arguments, err = evalToString(ev, arguments); err != nil {
 			return nil, err
 		}
 	}
 	return fxp.From(dice.New(arguments).Roll(false)), nil
 }
 
-func evalSigned(e *eval.Evaluator, arguments string) (any, error) {
-	n, err := evalToNumber(e, arguments)
+func evalSigned(ev *eval.Evaluator, arguments string) (any, error) {
+	n, err := evalToNumber(ev, arguments)
 	if err != nil {
 		return nil, err
 	}
 	return n.StringWithSign(), nil
 }
 
-func evalSSRT(e *eval.Evaluator, arguments string) (any, error) {
+func evalSSRT(ev *eval.Evaluator, arguments string) (any, error) {
 	// Takes 3 args: length (number), units (string), flag (bool) indicating for size (true) or speed/range (false)
 	var arg string
 	arg, arguments = eval.NextArg(arguments)
-	n, err := evalToString(e, arg)
+	n, err := evalToString(ev, arg)
 	if err != nil {
 		return nil, err
 	}
 	arg, arguments = eval.NextArg(arguments)
 	var units string
-	if units, err = evalToString(e, arg); err != nil {
+	if units, err = evalToString(ev, arg); err != nil {
 		return nil, err
 	}
 	arg, _ = eval.NextArg(arguments)
 	var wantSize bool
-	if wantSize, err = evalToBool(e, arg); err != nil {
+	if wantSize, err = evalToBool(ev, arg); err != nil {
 		return nil, err
 	}
 	var length fxp.Length
@@ -276,8 +277,8 @@ func evalSSRT(e *eval.Evaluator, arguments string) (any, error) {
 	return fxp.From(result), nil
 }
 
-func evalSSRTYards(e *eval.Evaluator, arguments string) (any, error) {
-	v, err := evalToNumber(e, arguments)
+func evalSSRTYards(ev *eval.Evaluator, arguments string) (any, error) {
+	v, err := evalToNumber(ev, arguments)
 	if err != nil {
 		return nil, err
 	}
@@ -416,12 +417,12 @@ func valueToYards(value int) fxp.Int {
 }
 
 // evalRandomHeight generates a random height in inches based on the chart from B18.
-func evalRandomHeight(e *eval.Evaluator, arguments string) (any, error) {
-	entity, ok := e.Resolver.(*Entity)
-	if !ok || entity.Type != PC {
+func evalRandomHeight(ev *eval.Evaluator, arguments string) (any, error) {
+	e, ok := ev.Resolver.(*Entity)
+	if !ok || e.Type != entity.PC {
 		return -fxp.One, nil
 	}
-	stDecimal, err := evalToNumber(e, arguments)
+	stDecimal, err := evalToNumber(ev, arguments)
 	if err != nil {
 		return nil, err
 	}
@@ -453,20 +454,20 @@ func evalRandomHeight(e *eval.Evaluator, arguments string) (any, error) {
 }
 
 // evalRandomWeight generates a random weight in pounds based on the chart from B18.
-func evalRandomWeight(e *eval.Evaluator, arguments string) (any, error) {
-	entity, ok := e.Resolver.(*Entity)
-	if !ok || entity.Type != PC {
+func evalRandomWeight(ev *eval.Evaluator, arguments string) (any, error) {
+	e, ok := ev.Resolver.(*Entity)
+	if !ok || e.Type != entity.PC {
 		return -fxp.One, nil
 	}
 	var arg string
 	arg, arguments = eval.NextArg(arguments)
-	stDecimal, err := evalToNumber(e, arg)
+	stDecimal, err := evalToNumber(ev, arg)
 	if err != nil {
 		return nil, err
 	}
 	var shift fxp.Int
 	if arguments != "" {
-		if shift, err = evalToNumber(e, arguments); err != nil {
+		if shift, err = evalToNumber(ev, arguments); err != nil {
 			return nil, err
 		}
 	}
@@ -486,7 +487,7 @@ func evalRandomWeight(e *eval.Evaluator, arguments string) (any, error) {
 			veryFat = true
 		}
 		return false
-	}, true, false, entity.Traits...)
+	}, true, false, e.Traits...)
 	shiftAmt := fxp.As[int](shift)
 	if shiftAmt != 0 {
 		switch {

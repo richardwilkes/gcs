@@ -19,6 +19,10 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/entity"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
@@ -94,33 +98,33 @@ func SaveSpells(spells []*Spell, filePath string) error {
 }
 
 // NewSpell creates a new Spell.
-func NewSpell(entity *Entity, parent *Spell, container bool) *Spell {
-	s := newSpell(entity, parent, SpellID, container)
+func NewSpell(e *Entity, parent *Spell, container bool) *Spell {
+	s := newSpell(e, parent, SpellID, container)
 	s.UpdateLevel()
 	return s
 }
 
 // NewRitualMagicSpell creates a new Ritual Magic Spell.
-func NewRitualMagicSpell(entity *Entity, parent *Spell, _ bool) *Spell {
-	s := newSpell(entity, parent, RitualMagicSpellID, false)
+func NewRitualMagicSpell(e *Entity, parent *Spell, _ bool) *Spell {
+	s := newSpell(e, parent, RitualMagicSpellID, false)
 	s.RitualSkillName = "Ritual Magic"
 	s.SetRawPoints(0)
 	return s
 }
 
-func newSpell(entity *Entity, parent *Spell, typeKey string, container bool) *Spell {
+func newSpell(e *Entity, parent *Spell, typeKey string, container bool) *Spell {
 	s := Spell{
 		SpellData: SpellData{
 			ContainerBase: newContainerBase[*Spell](typeKey, container),
 		},
-		Entity: entity,
+		Entity: e,
 	}
 	s.parent = parent
 	if container {
 		s.TemplatePicker = &TemplatePicker{}
 	} else {
-		s.Difficulty.Attribute = AttributeIDFor(entity, "iq")
-		s.Difficulty.Difficulty = Hard
+		s.Difficulty.Attribute = AttributeIDFor(e, "iq")
+		s.Difficulty.Difficulty = difficulty.Hard
 		s.PowerSource = i18n.Text("Arcane")
 		s.Class = i18n.Text("Regular")
 		s.CastingCost = "1"
@@ -133,12 +137,12 @@ func newSpell(entity *Entity, parent *Spell, typeKey string, container bool) *Sp
 }
 
 // Clone implements Node.
-func (s *Spell) Clone(entity *Entity, parent *Spell, preserveID bool) *Spell {
+func (s *Spell) Clone(e *Entity, parent *Spell, preserveID bool) *Spell {
 	var other *Spell
 	if s.Type == RitualMagicSpellID {
-		other = NewRitualMagicSpell(entity, parent, false)
+		other = NewRitualMagicSpell(e, parent, false)
 	} else {
-		other = NewSpell(entity, parent, s.Container())
+		other = NewSpell(e, parent, s.Container())
 		other.IsOpen = s.IsOpen
 	}
 	if preserveID {
@@ -149,7 +153,7 @@ func (s *Spell) Clone(entity *Entity, parent *Spell, preserveID bool) *Spell {
 	if s.HasChildren() {
 		other.Children = make([]*Spell, 0, len(s.Children))
 		for _, child := range s.Children {
-			other.Children = append(other.Children, child.Clone(entity, other, preserveID))
+			other.Children = append(other.Children, child.Clone(e, other, preserveID))
 		}
 	}
 	return other
@@ -230,57 +234,57 @@ func (s *Spell) TemplatePickerData() *TemplatePicker {
 func (s *Spell) CellData(columnID int, data *CellData) {
 	switch columnID {
 	case SpellDescriptionColumn:
-		data.Type = TextCellType
+		data.Type = cell.Text
 		data.Primary = s.Description()
-		data.Secondary = s.SecondaryText(func(option DisplayOption) bool { return option.Inline() })
+		data.Secondary = s.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.UnsatisfiedReason = s.UnsatisfiedReason
-		data.Tooltip = s.SecondaryText(func(option DisplayOption) bool { return option.Tooltip() })
+		data.Tooltip = s.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 		data.TemplateInfo = s.TemplatePicker.Description()
 	case SpellResistColumn:
 		if !s.Container() {
-			data.Type = TextCellType
+			data.Type = cell.Text
 			data.Primary = s.Resist
 		}
 	case SpellClassColumn:
 		if !s.Container() {
-			data.Type = TextCellType
+			data.Type = cell.Text
 			data.Primary = s.Class
 		}
 	case SpellCollegeColumn:
 		if !s.Container() {
-			data.Type = TextCellType
+			data.Type = cell.Text
 			data.Primary = strings.Join(s.College, ", ")
 		}
 	case SpellCastCostColumn:
 		if !s.Container() {
-			data.Type = TextCellType
+			data.Type = cell.Text
 			data.Primary = s.CastingCost
 		}
 	case SpellMaintainCostColumn:
 		if !s.Container() {
-			data.Type = TextCellType
+			data.Type = cell.Text
 			data.Primary = s.MaintenanceCost
 		}
 	case SpellCastTimeColumn:
 		if !s.Container() {
-			data.Type = TextCellType
+			data.Type = cell.Text
 			data.Primary = s.CastingTime
 		}
 	case SpellDurationColumn:
 		if !s.Container() {
-			data.Type = TextCellType
+			data.Type = cell.Text
 			data.Primary = s.Duration
 		}
 	case SpellDifficultyColumn:
 		if !s.Container() {
-			data.Type = TextCellType
+			data.Type = cell.Text
 			data.Primary = s.Difficulty.Description(s.Entity)
 		}
 	case SpellTagsColumn:
-		data.Type = TagsCellType
+		data.Type = cell.Tags
 		data.Primary = CombineTags(s.Tags)
 	case SpellReferenceColumn, PageRefCellAlias:
-		data.Type = PageRefCellType
+		data.Type = cell.PageRef
 		data.Primary = s.PageRef
 		if s.PageRefHighlight != "" {
 			data.Secondary = s.PageRefHighlight
@@ -289,7 +293,7 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 		}
 	case SpellLevelColumn:
 		if !s.Container() {
-			data.Type = TextCellType
+			data.Type = cell.Text
 			level := s.CalculateLevel()
 			data.Primary = level.LevelAsString(s.Container())
 			if level.Tooltip != "" {
@@ -299,7 +303,7 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 		}
 	case SpellRelativeLevelColumn:
 		if !s.Container() {
-			data.Type = TextCellType
+			data.Type = cell.Text
 			rsl := s.AdjustedRelativeLevel()
 			if rsl == fxp.Min {
 				data.Primary = "-"
@@ -314,7 +318,7 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 			}
 		}
 	case SpellPointsColumn:
-		data.Type = TextCellType
+		data.Type = cell.Text
 		var tooltip xio.ByteBuffer
 		data.Primary = s.AdjustedPoints(&tooltip).String()
 		data.Alignment = align.End
@@ -420,7 +424,7 @@ func (s *Spell) IncrementSkillLevel() {
 	if !s.Container() {
 		basePoints := s.Points.Trunc() + fxp.One
 		maxPoints := basePoints
-		if s.Difficulty.Difficulty == Wildcard {
+		if s.Difficulty.Difficulty == difficulty.Wildcard {
 			maxPoints += fxp.Twelve
 		} else {
 			maxPoints += fxp.Four
@@ -440,7 +444,7 @@ func (s *Spell) DecrementSkillLevel() {
 	if !s.Container() && s.Points > 0 {
 		basePoints := s.Points.Trunc()
 		minPoints := basePoints
-		if s.Difficulty.Difficulty == Wildcard {
+		if s.Difficulty.Difficulty == difficulty.Wildcard {
 			minPoints -= fxp.Twelve
 		} else {
 			minPoints -= fxp.Four
@@ -467,14 +471,14 @@ func (s *Spell) DecrementSkillLevel() {
 }
 
 // CalculateSpellLevel returns the calculated spell level.
-func CalculateSpellLevel(entity *Entity, name, powerSource string, colleges, tags []string, difficulty AttributeDifficulty, pts fxp.Int) Level {
+func CalculateSpellLevel(e *Entity, name, powerSource string, colleges, tags []string, attrDiff AttributeDifficulty, pts fxp.Int) Level {
 	var tooltip xio.ByteBuffer
-	relativeLevel := difficulty.Difficulty.BaseRelativeLevel()
+	relativeLevel := attrDiff.Difficulty.BaseRelativeLevel()
 	level := fxp.Min
-	if entity != nil {
+	if e != nil {
 		pts = pts.Trunc()
-		level = entity.ResolveAttributeCurrent(difficulty.Attribute)
-		if difficulty.Difficulty == Wildcard {
+		level = e.ResolveAttributeCurrent(attrDiff.Attribute)
+		if attrDiff.Difficulty == difficulty.Wildcard {
 			pts = pts.Div(fxp.Three).Trunc()
 		}
 		switch {
@@ -489,7 +493,7 @@ func CalculateSpellLevel(entity *Entity, name, powerSource string, colleges, tag
 			relativeLevel += fxp.One + pts.Div(fxp.Four).Trunc()
 		}
 		if level != fxp.Min {
-			relativeLevel += entity.SpellBonusFor(name, powerSource, colleges, tags, &tooltip)
+			relativeLevel += e.SpellBonusFor(name, powerSource, colleges, tags, &tooltip)
 			relativeLevel = relativeLevel.Trunc()
 			level += relativeLevel
 		}
@@ -502,24 +506,24 @@ func CalculateSpellLevel(entity *Entity, name, powerSource string, colleges, tag
 }
 
 // CalculateRitualMagicSpellLevel returns the calculated spell level.
-func CalculateRitualMagicSpellLevel(entity *Entity, name, powerSource, ritualSkillName string, ritualPrereqCount int, colleges, tags []string, difficulty AttributeDifficulty, points fxp.Int) Level {
+func CalculateRitualMagicSpellLevel(e *Entity, name, powerSource, ritualSkillName string, ritualPrereqCount int, colleges, tags []string, difficulty AttributeDifficulty, points fxp.Int) Level {
 	var skillLevel Level
 	if len(colleges) == 0 {
-		skillLevel = determineRitualMagicSkillLevelForCollege(entity, name, "", ritualSkillName, ritualPrereqCount,
+		skillLevel = determineRitualMagicSkillLevelForCollege(e, name, "", ritualSkillName, ritualPrereqCount,
 			tags, difficulty, points)
 	} else {
 		for _, college := range colleges {
-			possible := determineRitualMagicSkillLevelForCollege(entity, name, college, ritualSkillName,
+			possible := determineRitualMagicSkillLevelForCollege(e, name, college, ritualSkillName,
 				ritualPrereqCount, tags, difficulty, points)
 			if skillLevel.Level < possible.Level {
 				skillLevel = possible
 			}
 		}
 	}
-	if entity != nil {
+	if e != nil {
 		tooltip := &xio.ByteBuffer{}
 		tooltip.WriteString(skillLevel.Tooltip)
-		levels := entity.SpellBonusFor(name, powerSource, colleges, tags, tooltip).Trunc()
+		levels := e.SpellBonusFor(name, powerSource, colleges, tags, tooltip).Trunc()
 		skillLevel.Level += levels
 		skillLevel.RelativeLevel += levels
 		skillLevel.Tooltip = tooltip.String()
@@ -527,7 +531,7 @@ func CalculateRitualMagicSpellLevel(entity *Entity, name, powerSource, ritualSki
 	return skillLevel
 }
 
-func determineRitualMagicSkillLevelForCollege(entity *Entity, name, college, ritualSkillName string, ritualPrereqCount int, tags []string, difficulty AttributeDifficulty, points fxp.Int) Level {
+func determineRitualMagicSkillLevelForCollege(e *Entity, name, college, ritualSkillName string, ritualPrereqCount int, tags []string, difficulty AttributeDifficulty, points fxp.Int) Level {
 	def := &SkillDefault{
 		DefaultType:    SkillID,
 		Name:           ritualSkillName,
@@ -538,12 +542,12 @@ func determineRitualMagicSkillLevelForCollege(entity *Entity, name, college, rit
 		def.Name = ""
 	}
 	var limit fxp.Int
-	skillLevel := CalculateTechniqueLevel(entity, name, college, tags, def, difficulty.Difficulty, points, false, &limit)
+	skillLevel := CalculateTechniqueLevel(e, name, college, tags, def, difficulty.Difficulty, points, false, &limit)
 	// CalculateTechniqueLevel() does not add the default skill modifier to the relative level, only to the final level
 	skillLevel.RelativeLevel += def.Modifier
 	def.Specialization = ""
 	def.Modifier -= fxp.Six
-	fallback := CalculateTechniqueLevel(entity, name, college, tags, def, difficulty.Difficulty, points, false, &limit)
+	fallback := CalculateTechniqueLevel(e, name, college, tags, def, difficulty.Difficulty, points, false, &limit)
 	fallback.RelativeLevel += def.Modifier
 	if skillLevel.Level >= fallback.Level {
 		return skillLevel
@@ -595,11 +599,11 @@ func (s *Spell) OwningEntity() *Entity {
 }
 
 // SetOwningEntity sets the owning entity and configures any sub-components as needed.
-func (s *Spell) SetOwningEntity(entity *Entity) {
-	s.Entity = entity
+func (s *Spell) SetOwningEntity(e *Entity) {
+	s.Entity = e
 	if s.Container() {
 		for _, child := range s.Children {
-			child.SetOwningEntity(entity)
+			child.SetOwningEntity(e)
 		}
 	} else {
 		for _, w := range s.Weapons {
@@ -615,7 +619,7 @@ func (s *Spell) Notes() string {
 
 // Rituals returns the rituals required to cast the spell.
 func (s *Spell) Rituals() string {
-	if s.Container() || !(s.Entity != nil && s.Entity.Type == PC && s.Entity.SheetSettings.ShowSpellAdj) {
+	if s.Container() || !(s.Entity != nil && s.Entity.Type == entity.PC && s.Entity.SheetSettings.ShowSpellAdj) {
 		return ""
 	}
 	level := s.CalculateLevel().Level
@@ -666,7 +670,7 @@ func (s *Spell) Description() string {
 }
 
 // SecondaryText returns the less important information that should be displayed with the description.
-func (s *Spell) SecondaryText(optionChecker func(DisplayOption) bool) string {
+func (s *Spell) SecondaryText(optionChecker func(display.Option) bool) string {
 	var buffer strings.Builder
 	prefs := SheetSettingsFor(s.Entity)
 	if optionChecker(prefs.NotesDisplay) {
@@ -727,9 +731,9 @@ func (s *Spell) AdjustedPoints(tooltip *xio.ByteBuffer) fxp.Int {
 }
 
 // AdjustedPointsForNonContainerSpell returns the points, adjusted for any bonuses.
-func AdjustedPointsForNonContainerSpell(entity *Entity, points fxp.Int, name, powerSource string, colleges, tags []string, tooltip *xio.ByteBuffer) fxp.Int {
-	if entity != nil && entity.Type == PC {
-		points += entity.SpellPointBonusFor(name, powerSource, colleges, tags, tooltip)
+func AdjustedPointsForNonContainerSpell(e *Entity, points fxp.Int, name, powerSource string, colleges, tags []string, tooltip *xio.ByteBuffer) fxp.Int {
+	if e != nil && e.Type == entity.PC {
+		points += e.SpellPointBonusFor(name, powerSource, colleges, tags, tooltip)
 		points = points.Max(0)
 	}
 	return points

@@ -22,7 +22,7 @@ import (
 // Length contains a real-world length value with an attached units.
 type Length struct {
 	Length float64
-	Units  Units
+	Units  Unit
 }
 
 // LengthFromString creates a new Length. May have any of the known unit suffixes or no notation at all, in which case
@@ -39,7 +39,7 @@ func LengthFromString(text string) Length {
 // in which case inch is used.
 func ParseLengthFromString(text string) (length Length, err error) {
 	text = strings.TrimLeft(strings.TrimSpace(text), "+")
-	for _, unit := range AllUnits {
+	for _, unit := range Units {
 		if strings.HasSuffix(text, unit.Key()) {
 			length.Units = unit
 			text = strings.TrimSpace(strings.TrimSuffix(text, unit.Key()))

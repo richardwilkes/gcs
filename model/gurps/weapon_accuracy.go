@@ -17,6 +17,8 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -83,14 +85,14 @@ func (wa WeaponAccuracy) hash(h hash.Hash32) {
 // Resolve any bonuses that apply.
 func (wa WeaponAccuracy) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) WeaponAccuracy {
 	result := wa
-	result.Jet = w.ResolveBoolFlag(JetWeaponSwitchType, result.Jet)
+	result.Jet = w.ResolveBoolFlag(wswitch.Jet, result.Jet)
 	if !result.Jet {
 		if pc := w.PC(); pc != nil {
-			for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, WeaponAccBonusFeatureType, WeaponScopeAccBonusFeatureType) {
+			for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponAccBonus, feature.WeaponScopeAccBonus) {
 				switch bonus.Type {
-				case WeaponAccBonusFeatureType:
+				case feature.WeaponAccBonus:
 					result.Base += bonus.AdjustedAmount()
-				case WeaponScopeAccBonusFeatureType:
+				case feature.WeaponScopeAccBonus:
 					result.Scope += bonus.AdjustedAmount()
 				default:
 				}

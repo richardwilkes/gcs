@@ -16,6 +16,7 @@ import (
 	"hash"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
@@ -82,20 +83,21 @@ func (wr WeaponRoF) hash(h hash.Hash32) {
 // Resolve any bonuses that apply.
 func (wr WeaponRoF) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) WeaponRoF {
 	result := wr
-	result.Jet = w.ResolveBoolFlag(JetWeaponSwitchType, result.Jet)
+	result.Jet = w.ResolveBoolFlag(wswitch.Jet, result.Jet)
 	if !result.Jet {
 		var buf1, buf2 xio.ByteBuffer
 		result.Mode1 = result.Mode1.Resolve(w, &buf1, true)
 		result.Mode2 = result.Mode2.Resolve(w, &buf2, false)
 		if buf1.Len() != 0 {
-			modifiersTooltip.WriteString(i18n.Text("First mode:\n"))
+			if buf2.Len() != 0 {
+				modifiersTooltip.WriteString(i18n.Text("First mode:\n"))
+			}
 			modifiersTooltip.WriteString(buf1.String())
 		}
 		if buf2.Len() != 0 {
 			if buf1.Len() != 0 {
-				modifiersTooltip.WriteString("\n\n")
+				modifiersTooltip.WriteString(i18n.Text("\n\nSecond mode:\n"))
 			}
-			modifiersTooltip.WriteString(i18n.Text("Second mode:\n"))
 			modifiersTooltip.WriteString(buf2.String())
 		}
 	}
@@ -130,14 +132,15 @@ func (wr WeaponRoF) Tooltip() string {
 	t1 := wr.Mode1.Tooltip()
 	t2 := wr.Mode2.Tooltip()
 	if t1 != "" {
-		buffer.WriteString(i18n.Text("First mode:\n"))
+		if t2 != "" {
+			buffer.WriteString(i18n.Text("First mode:\n"))
+		}
 		buffer.WriteString(t1)
 	}
 	if t2 != "" {
 		if t1 != "" {
-			buffer.WriteString("\n\n")
+			buffer.WriteString(i18n.Text("\n\nSecond mode:\n"))
 		}
-		buffer.WriteString(i18n.Text("Second mode:\n"))
 		buffer.WriteString(t2)
 	}
 	return buffer.String()

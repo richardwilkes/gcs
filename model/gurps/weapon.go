@@ -22,6 +22,14 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/entity"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wpn"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/errs"
@@ -70,7 +78,7 @@ type WeaponOwner interface {
 // WeaponData holds the Weapon data that is written to disk.
 type WeaponData struct {
 	ID         uuid.UUID       `json:"id"`
-	Type       WeaponType      `json:"type"`
+	Type       wpn.Type        `json:"type"`
 	Damage     WeaponDamage    `json:"damage"`
 	Strength   WeaponStrength  `json:"strength,omitempty"`
 	Usage      string          `json:"usage,omitempty"`
@@ -94,7 +102,7 @@ type Weapon struct {
 }
 
 // ExtractWeaponsOfType filters the input list down to only those weapons of the given type.
-func ExtractWeaponsOfType(desiredType WeaponType, list []*Weapon) []*Weapon {
+func ExtractWeaponsOfType(desiredType wpn.Type, list []*Weapon) []*Weapon {
 	var result []*Weapon
 	for _, w := range list {
 		if w.Type == desiredType {
@@ -108,9 +116,9 @@ func ExtractWeaponsOfType(desiredType WeaponType, list []*Weapon) []*Weapon {
 func SeparateWeapons(list []*Weapon) (melee, ranged []*Weapon) {
 	for _, w := range list {
 		switch w.Type {
-		case MeleeWeaponType:
+		case wpn.Melee:
 			melee = append(melee, w)
-		case RangedWeaponType:
+		case wpn.Ranged:
 			ranged = append(ranged, w)
 		default:
 		}
@@ -119,7 +127,7 @@ func SeparateWeapons(list []*Weapon) (melee, ranged []*Weapon) {
 }
 
 // NewWeapon creates a new weapon of the given type.
-func NewWeapon(owner WeaponOwner, weaponType WeaponType) *Weapon {
+func NewWeapon(owner WeaponOwner, weaponType wpn.Type) *Weapon {
 	w := &Weapon{
 		WeaponData: WeaponData{
 			ID:   NewUUID(),
@@ -135,11 +143,11 @@ func NewWeapon(owner WeaponOwner, weaponType WeaponType) *Weapon {
 		Owner: owner,
 	}
 	switch weaponType {
-	case MeleeWeaponType:
+	case wpn.Melee:
 		w.Reach.Min = fxp.One
 		w.Reach.Max = fxp.One
-		w.Damage.StrengthType = ThrustStrengthDamage
-	case RangedWeaponType:
+		w.Damage.StrengthType = stdmg.Thrust
+	case wpn.Ranged:
 		w.RateOfFire.Mode1.ShotsPerAttack = fxp.One
 		w.Damage.Base = dice.New("1d")
 	default:
@@ -232,7 +240,7 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 	}
 	musclePowerIsResolved := w.PC() != nil
 	switch w.Type {
-	case MeleeWeaponType:
+	case wpn.Melee:
 		if data.Calc.Parry = w.Parry.Resolve(w, nil).String(); data.Calc.Parry == w.Parry.String() {
 			data.Calc.Parry = ""
 		}
@@ -242,7 +250,7 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 		if data.Calc.Reach = w.Reach.Resolve(w, nil).String(); data.Calc.Reach == w.Reach.String() {
 			data.Calc.Reach = ""
 		}
-	case RangedWeaponType:
+	case wpn.Ranged:
 		if data.Calc.Accuracy = w.Accuracy.Resolve(w, nil).String(); data.Calc.Accuracy == w.Accuracy.String() {
 			data.Calc.Accuracy = ""
 		}
@@ -317,17 +325,17 @@ func (w *Weapon) Entity() *Entity {
 	if w.Owner == nil {
 		return nil
 	}
-	entity := w.Owner.OwningEntity()
-	if entity == nil {
+	e := w.Owner.OwningEntity()
+	if e == nil {
 		return nil
 	}
-	return entity
+	return e
 }
 
 // PC returns the owning PC, if any.
 func (w *Weapon) PC() *Entity {
-	if entity := w.Entity(); entity != nil && entity.Type == PC {
-		return entity
+	if e := w.Entity(); e != nil && e.Type == entity.PC {
+		return e
 	}
 	return nil
 }
@@ -362,9 +370,9 @@ func (w *Weapon) SkillLevel(tooltip *xio.ByteBuffer) fxp.Int {
 	return best
 }
 
-func (w *Weapon) skillLevelBaseAdjustment(entity *Entity, tooltip *xio.ByteBuffer) fxp.Int {
+func (w *Weapon) skillLevelBaseAdjustment(e *Entity, tooltip *xio.ByteBuffer) fxp.Int {
 	var adj fxp.Int
-	if minST := w.Strength.Resolve(w, nil).Minimum - entity.StrikingStrength(); minST > 0 {
+	if minST := w.Strength.Resolve(w, nil).Minimum - e.StrikingStrength(); minST > 0 {
 		adj -= minST
 		if tooltip != nil {
 			tooltip.WriteByte('\n')
@@ -376,7 +384,7 @@ func (w *Weapon) skillLevelBaseAdjustment(entity *Entity, tooltip *xio.ByteBuffe
 		}
 	}
 	nameQualifier := w.String()
-	for _, bonus := range entity.NamedWeaponSkillBonusesFor(nameQualifier, w.Usage, w.Owner.TagList(), tooltip) {
+	for _, bonus := range e.NamedWeaponSkillBonusesFor(nameQualifier, w.Usage, w.Owner.TagList(), tooltip) {
 		adj += bonus.AdjustedAmount()
 	}
 	for _, f := range w.Owner.FeatureList() {
@@ -401,22 +409,22 @@ func (w *Weapon) skillLevelBaseAdjustment(entity *Entity, tooltip *xio.ByteBuffe
 	return adj
 }
 
-func (w *Weapon) skillLevelPostAdjustment(entity *Entity, tooltip *xio.ByteBuffer) fxp.Int {
-	if w.Type.EnsureValid() == MeleeWeaponType &&
+func (w *Weapon) skillLevelPostAdjustment(e *Entity, tooltip *xio.ByteBuffer) fxp.Int {
+	if w.Type.EnsureValid() == wpn.Melee &&
 		// Cannot use w.ParryParts.Resolve() here, because that calls this
-		w.ResolveBoolFlag(CanParryWeaponSwitchType, !w.Parry.No) &&
-		w.ResolveBoolFlag(FencingWeaponSwitchType, w.Parry.Fencing) {
-		return w.EncumbrancePenalty(entity, tooltip)
+		w.ResolveBoolFlag(wswitch.CanParry, !w.Parry.No) &&
+		w.ResolveBoolFlag(wswitch.Fencing, w.Parry.Fencing) {
+		return w.EncumbrancePenalty(e, tooltip)
 	}
 	return 0
 }
 
 // EncumbrancePenalty returns the current encumbrance penalty.
-func (w *Weapon) EncumbrancePenalty(entity *Entity, tooltip *xio.ByteBuffer) fxp.Int {
-	if entity == nil {
+func (w *Weapon) EncumbrancePenalty(e *Entity, tooltip *xio.ByteBuffer) fxp.Int {
+	if e == nil {
 		return 0
 	}
-	penalty := entity.EncumbranceLevel(true).Penalty()
+	penalty := e.EncumbranceLevel(true).Penalty()
 	if penalty != 0 && tooltip != nil {
 		tooltip.WriteByte('\n')
 		tooltip.WriteString(i18n.Text("Encumbrance"))
@@ -429,7 +437,7 @@ func (w *Weapon) EncumbrancePenalty(entity *Entity, tooltip *xio.ByteBuffer) fxp
 
 func (w *Weapon) extractSkillBonusForThisWeapon(f Feature, tooltip *xio.ByteBuffer) fxp.Int {
 	if sb, ok := f.(*SkillBonus); ok {
-		if sb.SelectionType.EnsureValid() == ThisWeaponSkillSelectionType {
+		if sb.SelectionType.EnsureValid() == skillsel.ThisWeapon {
 			if sb.SpecializationCriteria.Matches(w.Usage) {
 				sb.AddToTooltip(tooltip)
 				return sb.AdjustedAmount()
@@ -440,14 +448,14 @@ func (w *Weapon) extractSkillBonusForThisWeapon(f Feature, tooltip *xio.ByteBuff
 }
 
 // ResolveBoolFlag returns the resolved value of the given bool flag.
-func (w *Weapon) ResolveBoolFlag(switchType WeaponSwitchType, initial bool) bool {
+func (w *Weapon) ResolveBoolFlag(switchType wswitch.Type, initial bool) bool {
 	pc := w.PC()
 	if pc == nil {
 		return initial
 	}
 	t := 0
 	f := 0
-	for _, bonus := range w.collectWeaponBonuses(1, nil, WeaponSwitchFeatureType) {
+	for _, bonus := range w.collectWeaponBonuses(1, nil, feature.WeaponSwitch) {
 		if bonus.SwitchType == switchType {
 			if bonus.SwitchTypeValue {
 				t++
@@ -465,12 +473,12 @@ func (w *Weapon) ResolveBoolFlag(switchType WeaponSwitchType, initial bool) bool
 	return initial
 }
 
-func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xio.ByteBuffer, allowedFeatureTypes ...FeatureType) []*WeaponBonus {
+func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xio.ByteBuffer, allowedFeatureTypes ...feature.Type) []*WeaponBonus {
 	pc := w.PC()
 	if pc == nil {
 		return nil
 	}
-	allowed := make(map[FeatureType]bool, len(allowedFeatureTypes))
+	allowed := make(map[feature.Type]bool, len(allowedFeatureTypes))
 	for _, one := range allowedFeatureTypes {
 		allowed[one] = true
 	}
@@ -528,25 +536,25 @@ func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xio.ByteBuffer, all
 	return result
 }
 
-func (w *Weapon) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, allowedFeatureTypes map[FeatureType]bool, dieCount fxp.Int, tooltip *xio.ByteBuffer) {
+func (w *Weapon) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool, dieCount fxp.Int, tooltip *xio.ByteBuffer) {
 	if allowedFeatureTypes[f.FeatureType()] {
 		if bonus, ok := f.(*WeaponBonus); ok {
 			level := bonus.LeveledAmount.Level
-			if bonus.Type == WeaponBonusFeatureType {
+			if bonus.Type == feature.WeaponBonus {
 				bonus.LeveledAmount.Level = dieCount
 			} else {
 				bonus.LeveledAmount.Level = bonus.DerivedLevel()
 			}
 			switch bonus.SelectionType {
-			case WithRequiredSkillWeaponSelectionType:
-			case ThisWeaponWeaponSelectionType:
+			case wsel.WithRequiredSkill:
+			case wsel.ThisWeapon:
 				if bonus.SpecializationCriteria.Matches(w.Usage) {
 					if _, exists := set[bonus]; !exists {
 						set[bonus] = true
 						bonus.AddToTooltip(tooltip)
 					}
 				}
-			case WithNameWeaponSelectionType:
+			case wsel.WithName:
 				if bonus.NameCriteria.Matches(w.String()) && bonus.SpecializationCriteria.Matches(w.Usage) &&
 					bonus.TagsCriteria.MatchesList(w.Owner.TagList()...) {
 					if _, exists := set[bonus]; !exists {
@@ -621,7 +629,7 @@ func (w *Weapon) SetChildren(_ []*Weapon) {
 // CellData returns the cell data information for the given column.
 func (w *Weapon) CellData(columnID int, data *CellData) {
 	var buffer xio.ByteBuffer
-	data.Type = TextCellType
+	data.Type = cell.Text
 	switch columnID {
 	case WeaponDescriptionColumn:
 		data.Primary = w.String()
@@ -667,7 +675,7 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 		data.Primary = recoil.String()
 		data.Tooltip = recoil.Tooltip()
 	case PageRefCellAlias:
-		data.Type = PageRefCellType
+		data.Type = cell.PageRef
 	}
 	if buffer.Len() > 0 {
 		if data.Tooltip != "" {
@@ -704,7 +712,7 @@ func (w *Weapon) Validate() {
 	}
 	w.Strength.Validate()
 	switch w.Type {
-	case MeleeWeaponType:
+	case wpn.Melee:
 		w.Parry.Validate()
 		w.Block.Validate()
 		w.Reach.Validate()
@@ -714,7 +722,7 @@ func (w *Weapon) Validate() {
 		w.Shots = WeaponShots{}
 		w.Bulk = WeaponBulk{}
 		w.Recoil = WeaponRecoil{}
-	case RangedWeaponType:
+	case wpn.Ranged:
 		if w.Accuracy.Jet || w.RateOfFire.Jet {
 			w.Accuracy.Jet = true
 			w.RateOfFire.Jet = true

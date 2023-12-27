@@ -17,6 +17,8 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
@@ -176,11 +178,11 @@ func addAttributeChoicePopup(parent *unison.Panel, entity *gurps.Entity, prefix 
 	return popup
 }
 
-func addDifficultyLabelAndFields(parent *unison.Panel, entity *gurps.Entity, difficulty *gurps.AttributeDifficulty) {
+func addDifficultyLabelAndFields(parent *unison.Panel, entity *gurps.Entity, attrDiff *gurps.AttributeDifficulty) {
 	wrapper := addFlowWrapper(parent, i18n.Text("Difficulty"), 3)
-	addAttributeChoicePopup(wrapper, entity, "", &difficulty.Attribute, gurps.TenFlag)
+	addAttributeChoicePopup(wrapper, entity, "", &attrDiff.Attribute, gurps.TenFlag)
 	wrapper.AddChild(NewFieldTrailingLabel("/", false))
-	addPopup(wrapper, gurps.AllDifficulty, &difficulty.Difficulty)
+	addPopup(wrapper, difficulty.Levels, &attrDiff.Difficulty)
 }
 
 func addTagsLabelAndField(parent *unison.Panel, fieldData *[]string) {
@@ -632,30 +634,30 @@ func addLeveledAmountPanel(parent *unison.Panel, targetMgr *TargetMgr, targetKey
 	addCheckBox(parent, title, &amount.PerLevel)
 }
 
-func addTemplateChoices(parent *unison.Panel, targetmgr *TargetMgr, targetKey string, picker **gurps.TemplatePicker) {
-	if *picker == nil {
-		*picker = &gurps.TemplatePicker{}
+func addTemplateChoices(parent *unison.Panel, targetmgr *TargetMgr, targetKey string, tp **gurps.TemplatePicker) {
+	if *tp == nil {
+		*tp = &gurps.TemplatePicker{}
 	}
-	last := (*picker).Type
+	last := (*tp).Type
 	wrapper := addFlowWrapper(parent, i18n.Text("Template Choices"), 3)
-	templatePickerTypePopup := addPopup(wrapper, gurps.AllTemplatePickerType, &(*picker).Type)
+	templatePickerTypePopup := addPopup(wrapper, picker.Types, &(*tp).Type)
 	text := i18n.Text("Template Choice Quantifier")
-	popup, field := addNumericCriteriaPanel(wrapper, targetmgr, targetKey, "", text, &(*picker).Qualifier, fxp.Min,
+	popup, field := addNumericCriteriaPanel(wrapper, targetmgr, targetKey, "", text, &(*tp).Qualifier, fxp.Min,
 		fxp.Max, 1, false, false)
-	templatePickerTypePopup.SelectionChangedCallback = func(p *unison.PopupMenu[gurps.TemplatePickerType]) {
+	templatePickerTypePopup.SelectionChangedCallback = func(p *unison.PopupMenu[picker.Type]) {
 		if item, ok := p.Selected(); ok {
-			(*picker).Type = item
-			if last == gurps.NotApplicableTemplatePickerType && item != gurps.NotApplicableTemplatePickerType {
-				(*picker).Qualifier.Qualifier = fxp.One
+			(*tp).Type = item
+			if last == picker.NotApplicable && item != picker.NotApplicable {
+				(*tp).Qualifier.Qualifier = fxp.One
 				field.(Syncer).Sync()
 			}
 			last = item
-			adjustFieldBlank(field, item == gurps.NotApplicableTemplatePickerType || (*picker).Qualifier.Compare == gurps.AnyNumber)
-			adjustPopupBlank(popup, item == gurps.NotApplicableTemplatePickerType)
+			adjustFieldBlank(field, item == picker.NotApplicable || (*tp).Qualifier.Compare == gurps.AnyNumber)
+			adjustPopupBlank(popup, item == picker.NotApplicable)
 			MarkModified(parent)
 		}
 	}
-	adjustFieldBlank(field, (*picker).Type == gurps.NotApplicableTemplatePickerType)
+	adjustFieldBlank(field, (*tp).Type == picker.NotApplicable)
 }
 
 // WrapWithSpan wraps a number of children with a single panel that request to fill in span number of columns.

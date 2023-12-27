@@ -16,6 +16,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
@@ -24,21 +25,21 @@ import (
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
-var lastStudyTypeUsed = gurps.SelfStudyType
+var lastStudyTypeUsed = study.Self
 
 type studyPanel struct {
 	unison.Panel
 	entity      *gurps.Entity
-	studyNeeded *gurps.StudyHoursNeeded
+	studyNeeded *study.Level
 	study       *[]*gurps.Study
 	total       *unison.Label
 }
 
-func newStudyPanel(entity *gurps.Entity, studyNeeded *gurps.StudyHoursNeeded, study *[]*gurps.Study) *studyPanel {
+func newStudyPanel(entity *gurps.Entity, studyNeeded *study.Level, s *[]*gurps.Study) *studyPanel {
 	p := &studyPanel{
 		entity:      entity,
 		studyNeeded: studyNeeded,
-		study:       study,
+		study:       s,
 	}
 	p.Self = p
 	p.SetLayout(&unison.FlexLayout{
@@ -72,7 +73,7 @@ func newStudyPanel(entity *gurps.Entity, studyNeeded *gurps.StudyHoursNeeded, st
 	addButton := unison.NewSVGButton(svg.CircledAdd)
 	addButton.ClickCallback = func() {
 		def := &gurps.Study{Type: lastStudyTypeUsed}
-		*study = slices.Insert(*study, 0, def)
+		*s = slices.Insert(*s, 0, def)
 		p.insertStudyEntry(1, def, true)
 		MarkRootAncestorForLayoutRecursively(p)
 		MarkModified(p)
@@ -88,8 +89,8 @@ func newStudyPanel(entity *gurps.Entity, studyNeeded *gurps.StudyHoursNeeded, st
 	p.updateTotal()
 	topRight.AddChild(p.total)
 
-	hoursNeededPopup := addPopup(topRight, gurps.AllStudyHoursNeeded, studyNeeded)
-	hoursNeededPopup.SelectionChangedCallback = func(popup *unison.PopupMenu[gurps.StudyHoursNeeded]) {
+	hoursNeededPopup := addPopup(topRight, study.Levels, studyNeeded)
+	hoursNeededPopup.SelectionChangedCallback = func(popup *unison.PopupMenu[study.Level]) {
 		if needed, ok := popup.Selected(); ok {
 			*studyNeeded = needed
 			p.updateTotal()
@@ -101,7 +102,7 @@ func newStudyPanel(entity *gurps.Entity, studyNeeded *gurps.StudyHoursNeeded, st
 	trailer.Text = i18n.Text(") for 1 point")
 	topRight.AddChild(trailer)
 
-	for i, one := range *study {
+	for i, one := range *s {
 		p.insertStudyEntry(i+1, one, false)
 	}
 	return p
@@ -126,8 +127,8 @@ func (p *studyPanel) insertStudyEntry(index int, entry *gurps.Study, requestFocu
 
 	info := NewInfoPop()
 	updateLimitations(info, entry.Type)
-	typePopup := addPopup(panel, gurps.AllStudyType, &entry.Type)
-	typePopup.SelectionChangedCallback = func(popup *unison.PopupMenu[gurps.StudyType]) {
+	typePopup := addPopup(panel, study.Types, &entry.Type)
+	typePopup.SelectionChangedCallback = func(popup *unison.PopupMenu[study.Type]) {
 		if studyType, ok := popup.Selected(); ok {
 			entry.Type = studyType
 			lastStudyTypeUsed = studyType
@@ -176,7 +177,7 @@ func (p *studyPanel) insertStudyEntry(index int, entry *gurps.Study, requestFocu
 	}
 }
 
-func updateLimitations(info *unison.Label, studyType gurps.StudyType) {
+func updateLimitations(info *unison.Label, studyType study.Type) {
 	ClearInfoPop(info)
 	for _, one := range studyType.Limitations() {
 		AddHelpToInfoPop(info, txt.Wrap("", "● "+one, 60))

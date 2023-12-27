@@ -16,6 +16,7 @@ import (
 	"reflect"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
@@ -130,11 +131,11 @@ func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner Rebuildable, 
 	e.ClientData()[AssociatedUUIDKey] = gurps.AsNode(target).UUID()
 	e.promptForSave = true
 	e.scroll.Content().AsPanel().ValidateScrollRoot()
-	group := gurps.EditorsDockableGroup
+	group := dgroup.Editors
 	p := owner.AsPanel()
 	for p != nil {
 		if _, exists := p.ClientData()[AssociatedUUIDKey]; exists {
-			group = gurps.SubEditorsDockableGroup
+			group = dgroup.SubEditors
 			break
 		}
 		p = p.Parent()

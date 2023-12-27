@@ -16,6 +16,8 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wpn"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -26,9 +28,9 @@ import (
 func EditWeapon(owner Rebuildable, w *gurps.Weapon) {
 	var help string
 	switch w.Type {
-	case gurps.MeleeWeaponType:
+	case wpn.Melee:
 		help = "md:Help/Interface/Melee Weapon Usage"
-	case gurps.RangedWeaponType:
+	case wpn.Ranged:
 		help = "md:Help/Interface/Ranged Weapon Usage"
 	default:
 	}
@@ -39,7 +41,7 @@ func initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.P
 	addLabelAndStringField(content, i18n.Text("Usage"), "", &e.editorData.Usage)
 	addNotesLabelAndField(content, &e.editorData.UsageNotes)
 	addLabelAndDecimalField(content, nil, "", i18n.Text("Minimum ST"), "", &e.editorData.Strength.Minimum, 0, fxp.Max)
-	if e.editorData.Type == gurps.RangedWeaponType {
+	if e.editorData.Type == wpn.Ranged {
 		content.AddChild(unison.NewPanel())
 		addCheckBox(content, i18n.Text("Has bipod"), &e.editorData.Strength.Bipod)
 		content.AddChild(unison.NewPanel())
@@ -51,7 +53,7 @@ func initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.P
 	addCheckBox(content, i18n.Text("Two-handed"), &e.editorData.Strength.TwoHanded)
 	content.AddChild(unison.NewPanel())
 	addCheckBox(content, i18n.Text("Two-handed and unready after attack"), &e.editorData.Strength.TwoHandedUnready)
-	addLabelAndPopup(content, i18n.Text("Base Damage"), "", gurps.AllStrengthDamage, &e.editorData.Damage.StrengthType)
+	addLabelAndPopup(content, i18n.Text("Base Damage"), "", stdmg.Options, &e.editorData.Damage.StrengthType)
 	addLabelAndNullableDice(content, i18n.Text("Damage Modifier"), "", &e.editorData.Damage.Base)
 	addLabelAndDecimalField(content, nil, "", i18n.Text("Damage Modifier Per Die"), "", &e.editorData.Damage.ModifierPerDie,
 		fxp.Min, fxp.Max)
@@ -62,7 +64,7 @@ func initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.P
 		&e.editorData.Damage.FragmentationArmorDivisor, 0, fxp.Max)
 	addLabelAndStringField(content, i18n.Text("Fragmentation Type"), "", &e.editorData.Damage.FragmentationType)
 	switch e.editorData.Type {
-	case gurps.MeleeWeaponType:
+	case wpn.Melee:
 		addLabelAndDecimalField(content, nil, "", i18n.Text("Minimum Reach"), "", &e.editorData.Reach.Min, 0, fxp.Max)
 		addLabelAndDecimalField(content, nil, "", i18n.Text("Maximum Reach"), "", &e.editorData.Reach.Max, 0, fxp.Max)
 		content.AddChild(unison.NewPanel())
@@ -93,7 +95,7 @@ func initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.P
 			blockField.SetEnabled(blockCheckBox.State == check.On)
 		}
 		blockCheckBox.OnSet()
-	case gurps.RangedWeaponType:
+	case wpn.Ranged:
 		addLabelAndDecimalField(content, nil, "", i18n.Text("Weapon Accuracy"), "", &e.editorData.Accuracy.Base, 0, fxp.Max)
 		addLabelAndDecimalField(content, nil, "", i18n.Text("Scope Accuracy"), "", &e.editorData.Accuracy.Scope, 0, fxp.Max)
 		content.AddChild(unison.NewPanel())

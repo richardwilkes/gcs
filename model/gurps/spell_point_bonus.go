@@ -13,6 +13,8 @@ package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellmatch"
 	"github.com/richardwilkes/toolbox/xio"
 )
 
@@ -20,10 +22,10 @@ var _ Bonus = &SpellPointBonus{}
 
 // SpellPointBonus holds an adjustment to a spell's points.
 type SpellPointBonus struct {
-	Type           FeatureType    `json:"type"`
-	SpellMatchType SpellMatchType `json:"match"`
-	NameCriteria   StringCriteria `json:"name,omitempty"`
-	TagsCriteria   StringCriteria `json:"tags,alt=category,omitempty"`
+	Type           feature.Type    `json:"type"`
+	SpellMatchType spellmatch.Type `json:"match"`
+	NameCriteria   StringCriteria  `json:"name,omitempty"`
+	TagsCriteria   StringCriteria  `json:"tags,alt=category,omitempty"`
 	LeveledAmount
 	BonusOwner
 }
@@ -31,8 +33,8 @@ type SpellPointBonus struct {
 // NewSpellPointBonus creates a new SpellPointBonus.
 func NewSpellPointBonus() *SpellPointBonus {
 	return &SpellPointBonus{
-		Type:           SpellPointBonusFeatureType,
-		SpellMatchType: AllCollegesSpellMatchType,
+		Type:           feature.SpellPointBonus,
+		SpellMatchType: spellmatch.AllColleges,
 		NameCriteria: StringCriteria{
 			StringCriteriaData: StringCriteriaData{
 				Compare: IsString,
@@ -48,7 +50,7 @@ func NewSpellPointBonus() *SpellPointBonus {
 }
 
 // FeatureType implements Feature.
-func (s *SpellPointBonus) FeatureType() FeatureType {
+func (s *SpellPointBonus) FeatureType() feature.Type {
 	return s.Type
 }
 
@@ -60,7 +62,7 @@ func (s *SpellPointBonus) Clone() Feature {
 
 // FillWithNameableKeys implements Feature.
 func (s *SpellPointBonus) FillWithNameableKeys(m map[string]string) {
-	if s.SpellMatchType != AllCollegesSpellMatchType {
+	if s.SpellMatchType != spellmatch.AllColleges {
 		Extract(s.NameCriteria.Qualifier, m)
 	}
 	Extract(s.TagsCriteria.Qualifier, m)
@@ -68,7 +70,7 @@ func (s *SpellPointBonus) FillWithNameableKeys(m map[string]string) {
 
 // ApplyNameableKeys implements Feature.
 func (s *SpellPointBonus) ApplyNameableKeys(m map[string]string) {
-	if s.SpellMatchType != AllCollegesSpellMatchType {
+	if s.SpellMatchType != spellmatch.AllColleges {
 		s.NameCriteria.Qualifier = Apply(s.NameCriteria.Qualifier, m)
 	}
 	s.TagsCriteria.Qualifier = Apply(s.TagsCriteria.Qualifier, m)

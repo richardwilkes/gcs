@@ -15,6 +15,7 @@ import (
 	"strconv"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/unison"
 )
@@ -49,7 +50,7 @@ type Profile struct {
 
 // Update any derived values.
 func (p *Profile) Update(entity *Entity) {
-	p.SizeModifierBonus = entity.AttributeBonusFor(SizeModifierID, NoneBonusLimitation, nil)
+	p.SizeModifierBonus = entity.AttributeBonusFor(SizeModifierID, stlimit.None, nil)
 }
 
 // Portrait returns the portrait image, if there is one.

@@ -15,6 +15,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellcmp"
 )
 
 // CountPrereqsForSpell returns the number of prerequisites for the specified spell.
@@ -61,7 +62,7 @@ func countPrereqsForList(list *PrereqList, availableSpells []*Spell, nonSpellsCo
 				default:
 					counts[i] = 1
 				}
-				if counts[i] == 1 && p.SubType == NameSpellComparisonType && p.QualifierCriteria.Compare == IsString {
+				if counts[i] == 1 && p.SubType == spellcmp.Name && p.QualifierCriteria.Compare == IsString {
 					Traverse(func(s *Spell) bool {
 						if strings.EqualFold(s.Name, p.QualifierCriteria.Qualifier) {
 							counts[i] = 1 + countPrereqsForList(s.Prereq, availableSpells, nonSpellsCountAs, useHighestInOr)

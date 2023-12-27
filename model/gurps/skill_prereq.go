@@ -12,6 +12,7 @@
 package gurps
 
 import (
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -21,7 +22,7 @@ var _ Prereq = &SkillPrereq{}
 // SkillPrereq holds a prerequisite for a skill.
 type SkillPrereq struct {
 	Parent                 *PrereqList     `json:"-"`
-	Type                   PrereqType      `json:"type"`
+	Type                   prereq.Type     `json:"type"`
 	Has                    bool            `json:"has"`
 	NameCriteria           StringCriteria  `json:"name,omitempty"`
 	LevelCriteria          NumericCriteria `json:"level,omitempty"`
@@ -31,7 +32,7 @@ type SkillPrereq struct {
 // NewSkillPrereq creates a new SkillPrereq.
 func NewSkillPrereq() *SkillPrereq {
 	return &SkillPrereq{
-		Type: SkillPrereqType,
+		Type: prereq.Skill,
 		NameCriteria: StringCriteria{
 			StringCriteriaData: StringCriteriaData{
 				Compare: IsString,
@@ -52,7 +53,7 @@ func NewSkillPrereq() *SkillPrereq {
 }
 
 // PrereqType implements Prereq.
-func (s *SkillPrereq) PrereqType() PrereqType {
+func (s *SkillPrereq) PrereqType() prereq.Type {
 	return s.Type
 }
 

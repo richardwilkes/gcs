@@ -13,6 +13,8 @@ package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
 	"github.com/richardwilkes/toolbox/xio"
 )
 
@@ -20,11 +22,11 @@ var _ Bonus = &SkillBonus{}
 
 // SkillBonus holds an adjustment to a skill.
 type SkillBonus struct {
-	Type                   FeatureType        `json:"type"`
-	SelectionType          SkillSelectionType `json:"selection_type"`
-	NameCriteria           StringCriteria     `json:"name,omitempty"`
-	SpecializationCriteria StringCriteria     `json:"specialization,omitempty"`
-	TagsCriteria           StringCriteria     `json:"tags,alt=category,omitempty"`
+	Type                   feature.Type   `json:"type"`
+	SelectionType          skillsel.Type  `json:"selection_type"`
+	NameCriteria           StringCriteria `json:"name,omitempty"`
+	SpecializationCriteria StringCriteria `json:"specialization,omitempty"`
+	TagsCriteria           StringCriteria `json:"tags,alt=category,omitempty"`
 	LeveledAmount
 	BonusOwner
 }
@@ -32,8 +34,8 @@ type SkillBonus struct {
 // NewSkillBonus creates a new SkillBonus.
 func NewSkillBonus() *SkillBonus {
 	return &SkillBonus{
-		Type:          SkillBonusFeatureType,
-		SelectionType: NameSkillSelectionType,
+		Type:          feature.SkillBonus,
+		SelectionType: skillsel.Name,
 		NameCriteria: StringCriteria{
 			StringCriteriaData: StringCriteriaData{
 				Compare: IsString,
@@ -54,7 +56,7 @@ func NewSkillBonus() *SkillBonus {
 }
 
 // FeatureType implements Feature.
-func (s *SkillBonus) FeatureType() FeatureType {
+func (s *SkillBonus) FeatureType() feature.Type {
 	return s.Type
 }
 
@@ -67,7 +69,7 @@ func (s *SkillBonus) Clone() Feature {
 // FillWithNameableKeys implements Feature.
 func (s *SkillBonus) FillWithNameableKeys(m map[string]string) {
 	Extract(s.SpecializationCriteria.Qualifier, m)
-	if s.SelectionType != ThisWeaponSkillSelectionType {
+	if s.SelectionType != skillsel.ThisWeapon {
 		Extract(s.NameCriteria.Qualifier, m)
 		Extract(s.TagsCriteria.Qualifier, m)
 	}
@@ -76,7 +78,7 @@ func (s *SkillBonus) FillWithNameableKeys(m map[string]string) {
 // ApplyNameableKeys implements Feature.
 func (s *SkillBonus) ApplyNameableKeys(m map[string]string) {
 	s.SpecializationCriteria.Qualifier = Apply(s.SpecializationCriteria.Qualifier, m)
-	if s.SelectionType != ThisWeaponSkillSelectionType {
+	if s.SelectionType != skillsel.ThisWeapon {
 		s.NameCriteria.Qualifier = Apply(s.NameCriteria.Qualifier, m)
 		s.TagsCriteria.Qualifier = Apply(s.TagsCriteria.Qualifier, m)
 	}

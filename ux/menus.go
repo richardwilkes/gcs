@@ -21,6 +21,7 @@ import (
 	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/toolbox/collection/dict"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -149,7 +150,7 @@ const (
 
 	OpenInWindowMenuID
 
-	LibraryBaseItemID        = OpenInWindowMenuID + int(gurps.LastDockableGroup) + 2
+	LibraryBaseItemID        = OpenInWindowMenuID + int(dgroup.LastGroup) + 2
 	RecentFieldBaseItemID    = LibraryBaseItemID + 500
 	ExportToTextBaseItemID   = RecentFieldBaseItemID + 500
 	DeepSearchableMenuID     = ExportToTextBaseItemID + 500
@@ -327,7 +328,7 @@ func (s menuBarScope) createSettingsMenu(f unison.MenuFactory) unison.Menu {
 func (s menuBarScope) createOpenInWindowMenu(f unison.MenuFactory) unison.Menu {
 	m := f.NewMenu(OpenInWindowMenuID, i18n.Text("Use Separate Windows For…"), nil)
 	settings := gurps.GlobalSettings()
-	for _, group := range gurps.AllDockableGroup {
+	for _, group := range dgroup.Groups {
 		mi := s.createOpenInWindowAction(group).NewMenuItem(f)
 		mi.SetCheckState(check.FromBool(slices.Contains(settings.OpenInWindow, group)))
 		m.InsertItem(-1, mi)
@@ -335,7 +336,7 @@ func (s menuBarScope) createOpenInWindowMenu(f unison.MenuFactory) unison.Menu {
 	return m
 }
 
-func (s menuBarScope) createOpenInWindowAction(group gurps.DockableGroup) *unison.Action {
+func (s menuBarScope) createOpenInWindowAction(group dgroup.Group) *unison.Action {
 	return &unison.Action{
 		ID:    OpenInWindowMenuID + 1 + int(group),
 		Title: group.String(),

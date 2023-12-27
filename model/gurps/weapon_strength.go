@@ -18,6 +18,8 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
@@ -94,12 +96,12 @@ func (ws WeaponStrength) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) We
 			result.Minimum = st
 		}
 	}
-	result.Bipod = w.ResolveBoolFlag(BipodWeaponSwitchType, result.Bipod)
-	result.Mounted = w.ResolveBoolFlag(MountedWeaponSwitchType, result.Mounted)
-	result.MusketRest = w.ResolveBoolFlag(MusketRestWeaponSwitchType, result.MusketRest)
-	result.TwoHanded = w.ResolveBoolFlag(TwoHandedWeaponSwitchType, result.TwoHanded)
-	result.TwoHandedUnready = w.ResolveBoolFlag(TwoHandedAndUnreadyAfterAttackWeaponSwitchType, result.TwoHandedUnready)
-	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, WeaponMinSTBonusFeatureType) {
+	result.Bipod = w.ResolveBoolFlag(wswitch.Bipod, result.Bipod)
+	result.Mounted = w.ResolveBoolFlag(wswitch.Mounted, result.Mounted)
+	result.MusketRest = w.ResolveBoolFlag(wswitch.MusketRest, result.MusketRest)
+	result.TwoHanded = w.ResolveBoolFlag(wswitch.TwoHanded, result.TwoHanded)
+	result.TwoHandedUnready = w.ResolveBoolFlag(wswitch.TwoHandedAndUnreadyAfterAttack, result.TwoHandedUnready)
+	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponMinSTBonus) {
 		result.Minimum += bonus.AdjustedAmount()
 	}
 	result.Validate()
@@ -154,7 +156,7 @@ func (ws WeaponStrength) Tooltip(w *Weapon) string {
 		tooltip.WriteString(i18n.Text("Has an attached bipod. When used from a prone position, "))
 		reducedST := ws.Minimum.Mul(fxp.Two).Div(fxp.Three).Ceil()
 		if reducedST > 0 && reducedST != ws.Minimum {
-			fmt.Fprintf(&tooltip, i18n.Text("reduces the ST requirement to %v and"), reducedST)
+			fmt.Fprintf(&tooltip, i18n.Text("reduces the ST requirement to %v and "), reducedST)
 		}
 		tooltip.WriteString(i18n.Text("treats the attack as braced (add +1 to Accuracy)."))
 	}

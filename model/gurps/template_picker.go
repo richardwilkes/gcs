@@ -15,6 +15,7 @@ import (
 	"fmt"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/i18n"
 )
@@ -28,8 +29,8 @@ type TemplatePickerProvider interface {
 
 // TemplatePicker holds the data necessary to allow a template choice to be made.
 type TemplatePicker struct {
-	Type      TemplatePickerType `json:"type"`
-	Qualifier NumericCriteria    `json:"qualifier"`
+	Type      picker.Type     `json:"type"`
+	Qualifier NumericCriteria `json:"qualifier"`
 }
 
 // Clone creates a copy of the TemplatePicker.
@@ -37,13 +38,13 @@ func (t *TemplatePicker) Clone() *TemplatePicker {
 	if t.ShouldOmit() {
 		return &TemplatePicker{}
 	}
-	picker := *t
-	return &picker
+	p := *t
+	return &p
 }
 
 // ShouldOmit implements json.Omitter.
 func (t *TemplatePicker) ShouldOmit() bool {
-	return t == nil || t.Type == NotApplicableTemplatePickerType
+	return t == nil || t.Type == picker.NotApplicable
 }
 
 // Description returns a description of the picker action.
@@ -52,9 +53,9 @@ func (t *TemplatePicker) Description() string {
 		return ""
 	}
 	switch t.Type {
-	case CountTemplatePickerType:
+	case picker.Count:
 		return fmt.Sprintf(i18n.Text("Pick %s"), t.Qualifier.AltString())
-	case PointsTemplatePickerType:
+	case picker.Points:
 		points := i18n.Text("points")
 		if t.Qualifier.Qualifier == fxp.One {
 			points = i18n.Text("point")

@@ -17,6 +17,8 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellcmp"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -27,7 +29,7 @@ import (
 
 const noAndOr = ""
 
-var lastPrereqTypeUsed = gurps.TraitPrereqType
+var lastPrereqTypeUsed = prereq.Trait
 
 type prereqPanel struct {
 	unison.Panel
@@ -224,8 +226,8 @@ func andOrText(pr gurps.Prereq) string {
 
 func (p *prereqPanel) addPrereqTypeSwitcher(parent *unison.Panel, depth int, pr gurps.Prereq) {
 	prereqType := pr.PrereqType()
-	popup := addPopup(parent, gurps.AllPrereqType[1:], &prereqType)
-	popup.SelectionChangedCallback = func(pop *unison.PopupMenu[gurps.PrereqType]) {
+	popup := addPopup(parent, prereq.Types[1:], &prereqType)
+	popup.SelectionChangedCallback = func(pop *unison.PopupMenu[prereq.Type]) {
 		if item, ok := pop.Selected(); ok {
 			parentList := pr.ParentList()
 			if newPrereq := p.createPrereqForType(item, parentList); newPrereq != nil {
@@ -243,37 +245,37 @@ func (p *prereqPanel) addPrereqTypeSwitcher(parent *unison.Panel, depth int, pr 
 	}
 }
 
-func (p *prereqPanel) createPrereqForType(prereqType gurps.PrereqType, parentList *gurps.PrereqList) gurps.Prereq {
+func (p *prereqPanel) createPrereqForType(prereqType prereq.Type, parentList *gurps.PrereqList) gurps.Prereq {
 	switch prereqType {
-	case gurps.ListPrereqType:
+	case prereq.List:
 		one := gurps.NewPrereqList()
 		one.Parent = parentList
 		return one
-	case gurps.TraitPrereqType:
+	case prereq.Trait:
 		one := gurps.NewTraitPrereq()
 		one.Parent = parentList
 		return one
-	case gurps.AttributePrereqType:
+	case prereq.Attribute:
 		one := gurps.NewAttributePrereq(p.entity)
 		one.Parent = parentList
 		return one
-	case gurps.ContainedQuantityPrereqType:
+	case prereq.ContainedQuantity:
 		one := gurps.NewContainedQuantityPrereq()
 		one.Parent = parentList
 		return one
-	case gurps.ContainedWeightPrereqType:
+	case prereq.ContainedWeight:
 		one := gurps.NewContainedWeightPrereq(p.entity)
 		one.Parent = parentList
 		return one
-	case gurps.EquippedEquipmentPrereqType:
+	case prereq.EquippedEquipment:
 		one := gurps.NewEquippedEquipmentPrereq()
 		one.Parent = parentList
 		return one
-	case gurps.SkillPrereqType:
+	case prereq.Skill:
 		one := gurps.NewSkillPrereq()
 		one.Parent = parentList
 		return one
-	case gurps.SpellPrereqType:
+	case prereq.Spell:
 		one := gurps.NewSpellPrereq()
 		one.Parent = parentList
 		return one
@@ -462,17 +464,17 @@ func (p *prereqPanel) createSpellPrereqPanel(depth int, pr *gurps.SpellPrereq) *
 	})
 	second := unison.NewPanel()
 	second.SetLayoutData(&unison.FlexLayoutData{HSpan: columns - 1})
-	subTypePopup := addPopup[gurps.SpellComparisonType](second, gurps.AllSpellComparisonType, &pr.SubType)
+	subTypePopup := addPopup[spellcmp.Type](second, spellcmp.Types, &pr.SubType)
 	popup, field := addStringCriteriaPanel(second, "", "", i18n.Text("Spell Qualifier"), &pr.QualifierCriteria, 1, false)
 	savedCallback := subTypePopup.SelectionChangedCallback
-	subTypePopup.SelectionChangedCallback = func(pop *unison.PopupMenu[gurps.SpellComparisonType]) {
+	subTypePopup.SelectionChangedCallback = func(pop *unison.PopupMenu[spellcmp.Type]) {
 		savedCallback(pop)
-		blank := pr.SubType == gurps.AnySpellComparisonType || pr.SubType == gurps.CollegeCountSpellComparisonType
+		blank := pr.SubType == spellcmp.Any || pr.SubType == spellcmp.CollegeCount
 		adjustPopupBlank(popup, blank)
 		adjustFieldBlank(field, blank)
 	}
-	adjustPopupBlank(popup, pr.SubType == gurps.AnySpellComparisonType || pr.SubType == gurps.CollegeCountSpellComparisonType)
-	adjustFieldBlank(field, pr.SubType == gurps.AnySpellComparisonType || pr.SubType == gurps.CollegeCountSpellComparisonType)
+	adjustPopupBlank(popup, pr.SubType == spellcmp.Any || pr.SubType == spellcmp.CollegeCount)
+	adjustFieldBlank(field, pr.SubType == spellcmp.Any || pr.SubType == spellcmp.CollegeCount)
 	second.SetLayout(&unison.FlexLayout{
 		Columns:  len(second.Children()),
 		HSpacing: unison.StdHSpacing,

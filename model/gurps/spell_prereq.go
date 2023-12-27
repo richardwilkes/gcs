@@ -13,6 +13,8 @@ package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellcmp"
 	"github.com/richardwilkes/toolbox/xio"
 )
 
@@ -20,19 +22,19 @@ var _ Prereq = &SpellPrereq{}
 
 // SpellPrereq holds a prerequisite for a spell.
 type SpellPrereq struct {
-	Parent            *PrereqList         `json:"-"`
-	Type              PrereqType          `json:"type"`
-	SubType           SpellComparisonType `json:"sub_type"`
-	Has               bool                `json:"has"`
-	QualifierCriteria StringCriteria      `json:"qualifier,omitempty"`
-	QuantityCriteria  NumericCriteria     `json:"quantity,omitempty"`
+	Parent            *PrereqList     `json:"-"`
+	Type              prereq.Type     `json:"type"`
+	SubType           spellcmp.Type   `json:"sub_type"`
+	Has               bool            `json:"has"`
+	QualifierCriteria StringCriteria  `json:"qualifier,omitempty"`
+	QuantityCriteria  NumericCriteria `json:"quantity,omitempty"`
 }
 
 // NewSpellPrereq creates a new SpellPrereq.
 func NewSpellPrereq() *SpellPrereq {
 	return &SpellPrereq{
-		Type:    SpellPrereqType,
-		SubType: NameSpellComparisonType,
+		Type:    prereq.Spell,
+		SubType: spellcmp.Name,
 		QualifierCriteria: StringCriteria{
 			StringCriteriaData: StringCriteriaData{
 				Compare: IsString,
@@ -49,7 +51,7 @@ func NewSpellPrereq() *SpellPrereq {
 }
 
 // PrereqType implements Prereq.
-func (s *SpellPrereq) PrereqType() PrereqType {
+func (s *SpellPrereq) PrereqType() prereq.Type {
 	return s.Type
 }
 
@@ -95,34 +97,34 @@ func (s *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 			return false
 		}
 		switch s.SubType {
-		case NameSpellComparisonType:
+		case spellcmp.Name:
 			if s.QualifierCriteria.Matches(sp.Name) {
 				count++
 			}
-		case TagSpellComparisonType:
+		case spellcmp.Tag:
 			for _, one := range sp.Tags {
 				if s.QualifierCriteria.Matches(one) {
 					count++
 					break
 				}
 			}
-		case CollegeSpellComparisonType:
+		case spellcmp.College:
 			for _, one := range sp.College {
 				if s.QualifierCriteria.Matches(one) {
 					count++
 					break
 				}
 			}
-		case CollegeCountSpellComparisonType:
+		case spellcmp.CollegeCount:
 			for _, one := range sp.College {
 				colleges[one] = true
 			}
-		case AnySpellComparisonType:
+		case spellcmp.Any:
 			count++
 		}
 		return false
 	}, false, true, entity.Spells...)
-	if s.SubType == CollegeCountSpellComparisonType {
+	if s.SubType == spellcmp.CollegeCount {
 		count = len(colleges)
 	}
 	satisfied := s.QuantityCriteria.Matches(fxp.From(count))
@@ -133,7 +135,7 @@ func (s *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 		tooltip.WriteString(prefix)
 		tooltip.WriteString(HasText(s.Has))
 		tooltip.WriteByte(' ')
-		if s.SubType == CollegeCountSpellComparisonType {
+		if s.SubType == spellcmp.CollegeCount {
 			tooltip.WriteString("college count which ")
 			tooltip.WriteString(s.QuantityCriteria.String())
 		} else {
@@ -143,15 +145,15 @@ func (s *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 			} else {
 				tooltip.WriteString(" spells ")
 			}
-			if s.SubType == AnySpellComparisonType {
+			if s.SubType == spellcmp.Any {
 				tooltip.WriteString("of any kind")
 			} else {
 				switch s.SubType {
-				case NameSpellComparisonType:
+				case spellcmp.Name:
 					tooltip.WriteString("whose name ")
-				case TagSpellComparisonType:
+				case spellcmp.Tag:
 					tooltip.WriteString("whose tag ")
-				case CollegeSpellComparisonType:
+				case spellcmp.College:
 					tooltip.WriteString("whose college ")
 				}
 				tooltip.WriteString(s.QualifierCriteria.String())

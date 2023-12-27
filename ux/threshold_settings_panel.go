@@ -13,6 +13,7 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/threshold"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -117,7 +118,7 @@ func (p *thresholdSettingsPanel) createContent() *unison.Panel {
 	field.Tooltip = newWrappedTooltip(i18n.Text("An expression to calculate the threshold value"))
 	content.AddChild(field)
 
-	for _, op := range gurps.AllThresholdOp[1:] {
+	for _, op := range threshold.Ops[1:] {
 		content.AddChild(unison.NewPanel())
 		content.AddChild(p.createOpCheckBox(op))
 	}
@@ -134,7 +135,7 @@ func (p *thresholdSettingsPanel) createContent() *unison.Panel {
 	return content
 }
 
-func (p *thresholdSettingsPanel) createOpCheckBox(op gurps.ThresholdOp) *CheckBox {
+func (p *thresholdSettingsPanel) createOpCheckBox(op threshold.Op) *CheckBox {
 	c := NewCheckBox(p.pool.dockable.targetMgr, p.threshold.KeyPrefix+op.Key(), op.String(),
 		func() check.Enum { return check.FromBool(p.threshold.ContainsOp(op)) },
 		func(state check.Enum) {

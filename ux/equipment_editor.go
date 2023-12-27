@@ -16,6 +16,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wpn"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -90,7 +91,7 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 			content.AddChild(newFeaturesPanel(e.target.Entity, e.target, &e.editorData.Features, false))
 			modifiersPanel := newEquipmentModifiersPanel(e.target.Entity, &e.editorData.Modifiers)
 			content.AddChild(modifiersPanel)
-			for _, wt := range gurps.AllWeaponType {
+			for _, wt := range wpn.Types {
 				content.AddChild(newWeaponsPanel(e, e.target, wt, &e.editorData.Weapons))
 			}
 			e.InstallCmdHandlers(NewEquipmentModifierItemID, unison.AlwaysEnabled,

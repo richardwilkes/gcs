@@ -16,6 +16,8 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/gcs/v5/model/paper"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -36,7 +38,7 @@ type EntityPanel interface {
 type sheetSettingsDockable struct {
 	SettingsDockable
 	owner                              EntityPanel
-	damageProgressionPopup             *unison.PopupMenu[gurps.DamageProgression]
+	damageProgressionPopup             *unison.PopupMenu[progression.Option]
 	showTraitModifier                  *unison.CheckBox
 	showEquipmentModifier              *unison.CheckBox
 	showSpellAdjustments               *unison.CheckBox
@@ -45,12 +47,12 @@ type sheetSettingsDockable struct {
 	useModifyDicePlusAdds              *unison.CheckBox
 	excludeUnspentPointsFromTotal      *unison.CheckBox
 	useHalfStatDefaults                *unison.CheckBox
-	lengthUnitsPopup                   *unison.PopupMenu[fxp.LengthUnits]
-	weightUnitsPopup                   *unison.PopupMenu[fxp.WeightUnits]
-	userDescDisplayPopup               *unison.PopupMenu[gurps.DisplayOption]
-	modifiersDisplayPopup              *unison.PopupMenu[gurps.DisplayOption]
-	notesDisplayPopup                  *unison.PopupMenu[gurps.DisplayOption]
-	skillLevelAdjDisplayPopup          *unison.PopupMenu[gurps.DisplayOption]
+	lengthUnitsPopup                   *unison.PopupMenu[fxp.LengthUnit]
+	weightUnitsPopup                   *unison.PopupMenu[fxp.WeightUnit]
+	userDescDisplayPopup               *unison.PopupMenu[display.Option]
+	modifiersDisplayPopup              *unison.PopupMenu[display.Option]
+	notesDisplayPopup                  *unison.PopupMenu[display.Option]
+	skillLevelAdjDisplayPopup          *unison.PopupMenu[display.Option]
 	paperSizePopup                     *unison.PopupMenu[paper.Size]
 	orientationPopup                   *unison.PopupMenu[paper.Orientation]
 	topMarginField                     *unison.Field
@@ -128,8 +130,8 @@ func (d *sheetSettingsDockable) createDamageProgression(content *unison.Panel) {
 	desc := unison.NewMarkdown(true)
 	desc.SetContent(s.DamageProgression.AltString(), -1)
 	d.damageProgressionPopup = createSettingPopup(d, panel, i18n.Text("Damage Progression"),
-		gurps.AllDamageProgression, s.DamageProgression,
-		func(item gurps.DamageProgression) {
+		progression.Options, s.DamageProgression,
+		func(item progression.Option) {
 			d.settings().DamageProgression = item
 			desc.SetContent(item.AltString(), -1)
 			desc.MarkForLayoutRecursivelyUpward()
@@ -234,10 +236,10 @@ func (d *sheetSettingsDockable) createUnitsOfMeasurement(content *unison.Panel) 
 	})
 	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 	d.createHeader(panel, i18n.Text("Units of Measurement"), 2)
-	d.lengthUnitsPopup = createSettingPopup(d, panel, i18n.Text("Length Units"), fxp.AllLengthUnits,
-		s.DefaultLengthUnits, func(item fxp.LengthUnits) { d.settings().DefaultLengthUnits = item })
-	d.weightUnitsPopup = createSettingPopup(d, panel, i18n.Text("Weight Units"), fxp.AllWeightUnits,
-		s.DefaultWeightUnits, func(item fxp.WeightUnits) { d.settings().DefaultWeightUnits = item })
+	d.lengthUnitsPopup = createSettingPopup(d, panel, i18n.Text("Length Units"), fxp.LengthUnits,
+		s.DefaultLengthUnits, func(item fxp.LengthUnit) { d.settings().DefaultLengthUnits = item })
+	d.weightUnitsPopup = createSettingPopup(d, panel, i18n.Text("Weight Units"), fxp.WeightUnits,
+		s.DefaultWeightUnits, func(item fxp.WeightUnit) { d.settings().DefaultWeightUnits = item })
 	content.AddChild(panel)
 }
 
@@ -251,14 +253,14 @@ func (d *sheetSettingsDockable) createWhereToDisplay(content *unison.Panel) {
 	})
 	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 	d.createHeader(panel, i18n.Text("Where to display…"), 2)
-	d.userDescDisplayPopup = createSettingPopup(d, panel, i18n.Text("User Description"), gurps.AllDisplayOption,
-		s.UserDescriptionDisplay, func(option gurps.DisplayOption) { d.settings().UserDescriptionDisplay = option })
-	d.modifiersDisplayPopup = createSettingPopup(d, panel, i18n.Text("Modifiers"), gurps.AllDisplayOption,
-		s.ModifiersDisplay, func(option gurps.DisplayOption) { d.settings().ModifiersDisplay = option })
-	d.notesDisplayPopup = createSettingPopup(d, panel, i18n.Text("Notes"), gurps.AllDisplayOption, s.NotesDisplay,
-		func(option gurps.DisplayOption) { d.settings().NotesDisplay = option })
-	d.skillLevelAdjDisplayPopup = createSettingPopup(d, panel, i18n.Text("Skill Level Adjustments"), gurps.AllDisplayOption,
-		s.SkillLevelAdjDisplay, func(option gurps.DisplayOption) { d.settings().SkillLevelAdjDisplay = option })
+	d.userDescDisplayPopup = createSettingPopup(d, panel, i18n.Text("User Description"), display.Options,
+		s.UserDescriptionDisplay, func(option display.Option) { d.settings().UserDescriptionDisplay = option })
+	d.modifiersDisplayPopup = createSettingPopup(d, panel, i18n.Text("Modifiers"), display.Options,
+		s.ModifiersDisplay, func(option display.Option) { d.settings().ModifiersDisplay = option })
+	d.notesDisplayPopup = createSettingPopup(d, panel, i18n.Text("Notes"), display.Options, s.NotesDisplay,
+		func(option display.Option) { d.settings().NotesDisplay = option })
+	d.skillLevelAdjDisplayPopup = createSettingPopup(d, panel, i18n.Text("Skill Level Adjustments"), display.Options,
+		s.SkillLevelAdjDisplay, func(option display.Option) { d.settings().SkillLevelAdjDisplay = option })
 	content.AddChild(panel)
 }
 
@@ -272,9 +274,9 @@ func (d *sheetSettingsDockable) createPageSettings(content *unison.Panel) {
 	})
 	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 	d.createHeader(panel, i18n.Text("Page Settings"), 4)
-	d.paperSizePopup = createSettingPopup(d, panel, i18n.Text("Paper Size"), paper.AllSize,
+	d.paperSizePopup = createSettingPopup(d, panel, i18n.Text("Paper Size"), paper.Sizes,
 		s.Page.Size, func(option paper.Size) { d.settings().Page.Size = option })
-	d.orientationPopup = createSettingPopup(d, panel, i18n.Text("Orientation"), paper.AllOrientation,
+	d.orientationPopup = createSettingPopup(d, panel, i18n.Text("Orientation"), paper.Orientations,
 		s.Page.Orientation, func(option paper.Orientation) { d.settings().Page.Orientation = option })
 	d.topMarginField = d.createPaperMarginField(panel, i18n.Text("Top Margin"), s.Page.TopMargin,
 		func(value paper.Length) { d.settings().Page.TopMargin = value })

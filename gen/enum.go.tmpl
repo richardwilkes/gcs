@@ -26,11 +26,13 @@ const (
 	{{- range $i, $one := .Values}}
 	{{$info.IDFor $one}}{{if eq $i 0}} {{$name}} = iota{{end}}
 	{{- end}}
-	Last{{$name}} = {{$info.IDFor (last .Values)}}
 )
 
-{{wrapComment (printf "All%s holds all possible values." $name) 116}}
-var All{{$name}} = []{{$name}}{
+// Last{{$name}} is the last valid value.
+const Last{{$name}} {{$name}} = {{$info.IDFor (last .Values)}}
+
+{{wrapComment (printf "%ss holds all possible values." $name) 116}}
+var {{$name}}s = []{{$name}}{
     {{- range .Values}}
     {{$info.IDFor .}},
     {{- end}}
@@ -41,7 +43,7 @@ type {{$name}} byte
 
 // EnsureValid ensures this is of a known value.
 func (enum {{$name}}) EnsureValid() {{$name}} {
-	if enum <= Last{{$name}} {
+	if enum <= {{.IDFor (last .Values)}} {
 		return enum
 	}
 	return 0
@@ -114,7 +116,7 @@ func Extract{{$name}}(str string) {{$name}} {
 {{- if and (eq .Name "size") (eq .Pkg "model/paper")}}
 	str = strings.TrimPrefix(strings.TrimPrefix(str, "na-"), "iso-") // For older files that had the Java prefixes
 {{- end}}
-    for _, enum := range All{{$name}} {
+    for _, enum := range {{$name}}s {
         if strings.EqualFold(enum.Key(), str){{if .HasOldKeys}} || txt.CaselessSliceContains(enum.oldKeys(), str){{end}} {
             return enum
         }

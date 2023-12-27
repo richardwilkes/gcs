@@ -13,6 +13,7 @@ package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -22,7 +23,7 @@ var _ Prereq = &AttributePrereq{}
 // AttributePrereq holds a prerequisite for an attribute.
 type AttributePrereq struct {
 	Parent            *PrereqList     `json:"-"`
-	Type              PrereqType      `json:"type"`
+	Type              prereq.Type     `json:"type"`
 	Has               bool            `json:"has"`
 	CombinedWith      string          `json:"combined_with,omitempty"`
 	QualifierCriteria NumericCriteria `json:"qualifier,omitempty"`
@@ -32,7 +33,7 @@ type AttributePrereq struct {
 // NewAttributePrereq creates a new AttributePrereq. 'entity' may be nil.
 func NewAttributePrereq(entity *Entity) *AttributePrereq {
 	return &AttributePrereq{
-		Type: AttributePrereqType,
+		Type: prereq.Attribute,
 		QualifierCriteria: NumericCriteria{
 			NumericCriteriaData: NumericCriteriaData{
 				Compare:   AtLeastNumber,
@@ -45,7 +46,7 @@ func NewAttributePrereq(entity *Entity) *AttributePrereq {
 }
 
 // PrereqType implements Prereq.
-func (a *AttributePrereq) PrereqType() PrereqType {
+func (a *AttributePrereq) PrereqType() prereq.Type {
 	return a.Type
 }
 

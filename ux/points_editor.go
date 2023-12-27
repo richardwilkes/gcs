@@ -18,6 +18,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox"
@@ -119,7 +120,7 @@ func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 	e.ClientData()[AssociatedUUIDKey] = e.entity.ID
 	e.promptForSave = true
 	scroller.Content().AsPanel().ValidateScrollRoot()
-	PlaceInDock(e, gurps.EditorsDockableGroup, false)
+	PlaceInDock(e, dgroup.Editors, false)
 	if children := e.content.Children(); len(children) != 0 {
 		children[3].RequestFocus()
 	}

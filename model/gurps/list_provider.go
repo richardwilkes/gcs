@@ -11,6 +11,8 @@
 
 package gurps
 
+import "github.com/richardwilkes/gcs/v5/model/gurps/enums/wpn"
+
 // ListProvider defines the methods needed to access list data.
 type ListProvider interface {
 	TraitListProvider
@@ -87,6 +89,6 @@ type ReactionModifierListProvider interface {
 type WeaponListProvider interface {
 	EntityProvider
 	WeaponOwner() WeaponOwner
-	Weapons(weaponType WeaponType) []*Weapon
-	SetWeapons(weaponType WeaponType, list []*Weapon)
+	Weapons(weaponType wpn.Type) []*Weapon
+	SetWeapons(weaponType wpn.Type, list []*Weapon)
 }

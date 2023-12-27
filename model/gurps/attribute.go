@@ -13,6 +13,8 @@ package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/threshold"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/xmath/crc"
 )
@@ -66,7 +68,7 @@ func (a *Attribute) MarshalJSON() ([]byte, error) {
 					Points: a.PointCost(),
 				},
 			}
-			if def.Type == PoolAttributeType {
+			if def.Type == attribute.Pool {
 				current := a.Current()
 				data.Calc.Current = &current
 			}
@@ -138,7 +140,7 @@ func (a *Attribute) Current() fxp.Int {
 		return 0
 	}
 	maximum := a.Maximum()
-	if def.Type != PoolAttributeType {
+	if def.Type != attribute.Pool {
 		return maximum
 	}
 	return maximum - a.Damage
@@ -152,9 +154,9 @@ func (a *Attribute) CurrentThreshold() *PoolThreshold {
 	}
 	if len(def.Thresholds) != 0 {
 		cur := a.Current()
-		for _, threshold := range def.Thresholds {
-			if cur <= threshold.Threshold(a.Entity) {
-				return threshold
+		for _, t := range def.Thresholds {
+			if cur <= t.Threshold(a.Entity) {
+				return t
 			}
 		}
 	}
@@ -175,9 +177,9 @@ func (a *Attribute) PointCost() fxp.Int {
 }
 
 // IsThresholdOpMet if the given ThresholdOp is met.
-func IsThresholdOpMet(op ThresholdOp, attributes *Attributes) bool {
+func IsThresholdOpMet(op threshold.Op, attributes *Attributes) bool {
 	for _, one := range attributes.Set {
-		if threshold := one.CurrentThreshold(); threshold != nil && threshold.ContainsOp(op) {
+		if t := one.CurrentThreshold(); t != nil && t.ContainsOp(op) {
 			return true
 		}
 	}
@@ -185,10 +187,10 @@ func IsThresholdOpMet(op ThresholdOp, attributes *Attributes) bool {
 }
 
 // CountThresholdOpMet counts the number of times the given ThresholdOp is met.
-func CountThresholdOpMet(op ThresholdOp, attributes *Attributes) int {
+func CountThresholdOpMet(op threshold.Op, attributes *Attributes) int {
 	total := 0
 	for _, one := range attributes.Set {
-		if threshold := one.CurrentThreshold(); threshold != nil && threshold.ContainsOp(op) {
+		if t := one.CurrentThreshold(); t != nil && t.ContainsOp(op) {
 			total++
 		}
 	}

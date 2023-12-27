@@ -15,6 +15,7 @@ import (
 	"context"
 	"io/fs"
 
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
@@ -146,10 +147,10 @@ func (n *Note) resolveText() string {
 func (n *Note) CellData(columnID int, data *CellData) {
 	switch columnID {
 	case NoteTextColumn:
-		data.Type = MarkdownCellType
+		data.Type = cell.Markdown
 		data.Primary = n.resolveText()
 	case NoteReferenceColumn, PageRefCellAlias:
-		data.Type = PageRefCellType
+		data.Type = cell.PageRef
 		data.Primary = n.PageRef
 		if n.PageRefHighlight != "" {
 			data.Secondary = n.PageRefHighlight

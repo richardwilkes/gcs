@@ -20,6 +20,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/entity"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -268,14 +270,14 @@ func NewSheetFromTemplate(filePath string) {
 }
 
 func (d *Template) newSheetFromTemplate(_ any) {
-	entity := gurps.NewEntity(gurps.PC)
-	sheet := NewSheet(entity.Profile.Name+gurps.SheetExt, entity)
+	e := gurps.NewEntity(entity.PC)
+	sheet := NewSheet(e.Profile.Name+gurps.SheetExt, e)
 	DisplayNewDockable(sheet)
 	if d.applyTemplateToSheet(sheet, true) {
 		sheet.undoMgr.Clear()
 		sheet.crc = 0
 	}
-	sheet.SetBackingFilePath(entity.Profile.Name + gurps.SheetExt)
+	sheet.SetBackingFilePath(e.Profile.Name + gurps.SheetExt)
 }
 
 // ApplyTemplate loads the specified template file and applies it to a sheet.
@@ -317,15 +319,15 @@ func (d *Template) applyTemplateToSheet(sheet *Sheet, suppressRandomizePrompt bo
 			}
 		}
 	}
-	entity := sheet.Entity()
+	e := sheet.Entity()
 	templateAncestries := gurps.ActiveAncestries(ExtractNodeDataFromList(d.Traits.Table.RootRows()))
 	if len(templateAncestries) != 0 {
-		entityAncestries := gurps.ActiveAncestries(entity.Traits)
+		entityAncestries := gurps.ActiveAncestries(e.Traits)
 		if len(entityAncestries) != 0 {
 			if unison.YesNoDialog(fmt.Sprintf(i18n.Text(`The template contains an Ancestry (%s).
 Disable your character's existing Ancestry (%s)?`),
 				templateAncestries[0].Name, entityAncestries[0].Name), "") == unison.ModalResponseOK {
-				for _, one := range gurps.ActiveAncestryTraits(entity.Traits) {
+				for _, one := range gurps.ActiveAncestryTraits(e.Traits) {
 					one.Disabled = true
 				}
 			}
@@ -368,7 +370,7 @@ Disable your character's existing Ancestry (%s)?`),
 			randomize = unison.YesNoDialog(i18n.Text("Would you like to apply the initial randomization again?"), "") == unison.ModalResponseOK
 		}
 		if randomize {
-			entity.Profile.ApplyRandomizers(entity)
+			e.Profile.ApplyRandomizers(e)
 			updateRandomizedProfileFieldsWithoutUndo(sheet)
 			sheet.Rebuild(true)
 		}
@@ -387,17 +389,17 @@ Disable your character's existing Ancestry (%s)?`),
 }
 
 func updateRandomizedProfileFieldsWithoutUndo(sheet *Sheet) {
-	entity := sheet.Entity()
-	updateStringField(sheet, identityPanelNameFieldRefKey, entity.Profile.Name)
-	updateStringField(sheet, descriptionPanelAgeFieldRefKey, entity.Profile.Age)
-	updateStringField(sheet, descriptionPanelBirthdayFieldRefKey, entity.Profile.Birthday)
-	updateStringField(sheet, descriptionPanelEyesFieldRefKey, entity.Profile.Eyes)
-	updateStringField(sheet, descriptionPanelHairFieldRefKey, entity.Profile.Hair)
-	updateStringField(sheet, descriptionPanelSkinFieldRefKey, entity.Profile.Skin)
-	updateStringField(sheet, descriptionPanelHandednessFieldRefKey, entity.Profile.Handedness)
-	updateStringField(sheet, descriptionPanelGenderFieldRefKey, entity.Profile.Gender)
-	updateLengthField(sheet, descriptionPanelHeightFieldRefKey, entity.Profile.Height)
-	updateWeightField(sheet, descriptionPanelWeightFieldRefKey, entity.Profile.Weight)
+	e := sheet.Entity()
+	updateStringField(sheet, identityPanelNameFieldRefKey, e.Profile.Name)
+	updateStringField(sheet, descriptionPanelAgeFieldRefKey, e.Profile.Age)
+	updateStringField(sheet, descriptionPanelBirthdayFieldRefKey, e.Profile.Birthday)
+	updateStringField(sheet, descriptionPanelEyesFieldRefKey, e.Profile.Eyes)
+	updateStringField(sheet, descriptionPanelHairFieldRefKey, e.Profile.Hair)
+	updateStringField(sheet, descriptionPanelSkinFieldRefKey, e.Profile.Skin)
+	updateStringField(sheet, descriptionPanelHandednessFieldRefKey, e.Profile.Handedness)
+	updateStringField(sheet, descriptionPanelGenderFieldRefKey, e.Profile.Gender)
+	updateLengthField(sheet, descriptionPanelHeightFieldRefKey, e.Profile.Height)
+	updateWeightField(sheet, descriptionPanelWeightFieldRefKey, e.Profile.Weight)
 }
 
 func updateStringField(sheet *Sheet, refKey, value string) {
@@ -507,9 +509,10 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 		for i, box := range boxes {
 			if box.State == check.On {
 				switch tp.Type {
-				case gurps.CountTemplatePickerType:
+				case picker.NotApplicable:
+				case picker.Count:
 					total += fxp.One
-				case gurps.PointsTemplatePickerType:
+				case picker.Points:
 					total += rawPoints(children[i])
 				}
 			}
@@ -519,7 +522,7 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 	for _, child := range children {
 		checkBox := unison.NewCheckBox()
 		checkBox.Text = fmt.Sprintf("%v", child)
-		if tp.Type == gurps.PointsTemplatePickerType {
+		if tp.Type == picker.Points {
 			points := rawPoints(child)
 			pointsLabel := i18n.Text("points")
 			if points == fxp.One {
@@ -599,19 +602,19 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 func rawPoints(child any) fxp.Int {
 	switch nc := child.(type) {
 	case *gurps.Skill:
-		if nc.Container() && nc.TemplatePicker != nil && nc.TemplatePicker.Type == gurps.PointsTemplatePickerType &&
+		if nc.Container() && nc.TemplatePicker != nil && nc.TemplatePicker.Type == picker.Points &&
 			nc.TemplatePicker.Qualifier.Compare == gurps.EqualsNumber {
 			return nc.TemplatePicker.Qualifier.Qualifier
 		}
 		return nc.RawPoints()
 	case *gurps.Spell:
-		if nc.Container() && nc.TemplatePicker != nil && nc.TemplatePicker.Type == gurps.PointsTemplatePickerType &&
+		if nc.Container() && nc.TemplatePicker != nil && nc.TemplatePicker.Type == picker.Points &&
 			nc.TemplatePicker.Qualifier.Compare == gurps.EqualsNumber {
 			return nc.TemplatePicker.Qualifier.Qualifier
 		}
 		return nc.RawPoints()
 	case *gurps.Trait:
-		if nc.Container() && nc.TemplatePicker != nil && nc.TemplatePicker.Type == gurps.PointsTemplatePickerType &&
+		if nc.Container() && nc.TemplatePicker != nil && nc.TemplatePicker.Type == picker.Points &&
 			nc.TemplatePicker.Qualifier.Compare == gurps.EqualsNumber {
 			return nc.TemplatePicker.Qualifier.Qualifier
 		}
@@ -838,8 +841,8 @@ func (d *Template) createLists() {
 }
 
 // SheetSettingsUpdated implements gurps.SheetSettingsResponder.
-func (d *Template) SheetSettingsUpdated(entity *gurps.Entity, blockLayout bool) {
-	if entity == nil {
+func (d *Template) SheetSettingsUpdated(e *gurps.Entity, blockLayout bool) {
+	if e == nil {
 		d.Rebuild(blockLayout)
 	}
 }

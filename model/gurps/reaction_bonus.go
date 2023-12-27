@@ -13,6 +13,7 @@ package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -21,8 +22,8 @@ var _ Bonus = &ReactionBonus{}
 
 // ReactionBonus holds a modifier due to a reaction.
 type ReactionBonus struct {
-	Type      FeatureType `json:"type"`
-	Situation string      `json:"situation,omitempty"`
+	Type      feature.Type `json:"type"`
+	Situation string       `json:"situation,omitempty"`
 	LeveledAmount
 	BonusOwner
 }
@@ -30,14 +31,14 @@ type ReactionBonus struct {
 // NewReactionBonus creates a new ReactionBonus.
 func NewReactionBonus() *ReactionBonus {
 	return &ReactionBonus{
-		Type:          ReactionBonusFeatureType,
+		Type:          feature.ReactionBonus,
 		Situation:     i18n.Text("from others"),
 		LeveledAmount: LeveledAmount{Amount: fxp.One},
 	}
 }
 
 // FeatureType implements Feature.
-func (r *ReactionBonus) FeatureType() FeatureType {
+func (r *ReactionBonus) FeatureType() feature.Type {
 	return r.Type
 }
 

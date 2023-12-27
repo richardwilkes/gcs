@@ -15,6 +15,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
@@ -24,9 +25,9 @@ var _ Bonus = &DRBonus{}
 
 // DRBonusData is split out so that it can be adjusted before and after being serialized.
 type DRBonusData struct {
-	Type           FeatureType `json:"type"`
-	Location       string      `json:"location"`
-	Specialization string      `json:"specialization,omitempty"`
+	Type           feature.Type `json:"type"`
+	Location       string       `json:"location"`
+	Specialization string       `json:"specialization,omitempty"`
 	LeveledAmount
 }
 
@@ -40,7 +41,7 @@ type DRBonus struct {
 func NewDRBonus() *DRBonus {
 	return &DRBonus{
 		DRBonusData: DRBonusData{
-			Type:           DRBonusFeatureType,
+			Type:           feature.DRBonus,
 			Location:       "torso",
 			Specialization: AllID,
 			LeveledAmount:  LeveledAmount{Amount: fxp.One},
@@ -49,7 +50,7 @@ func NewDRBonus() *DRBonus {
 }
 
 // FeatureType implements Feature.
-func (d *DRBonus) FeatureType() FeatureType {
+func (d *DRBonus) FeatureType() feature.Type {
 	return d.Type
 }
 

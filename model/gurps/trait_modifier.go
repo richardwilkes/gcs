@@ -18,6 +18,9 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/tmcost"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
@@ -159,25 +162,25 @@ func (m *TraitModifier) CellData(columnID int, data *CellData) {
 	switch columnID {
 	case TraitModifierEnabledColumn:
 		if !m.Container() {
-			data.Type = ToggleCellType
+			data.Type = cell.Toggle
 			data.Checked = m.Enabled()
 			data.Alignment = align.Middle
 		}
 	case TraitModifierDescriptionColumn:
-		data.Type = TextCellType
+		data.Type = cell.Text
 		data.Primary = m.Name
-		data.Secondary = m.SecondaryText(func(option DisplayOption) bool { return option.Inline() })
-		data.Tooltip = m.SecondaryText(func(option DisplayOption) bool { return option.Tooltip() })
+		data.Secondary = m.SecondaryText(func(option display.Option) bool { return option.Inline() })
+		data.Tooltip = m.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 	case TraitModifierCostColumn:
 		if !m.Container() {
-			data.Type = TextCellType
+			data.Type = cell.Text
 			data.Primary = m.CostDescription()
 		}
 	case TraitModifierTagsColumn:
-		data.Type = TagsCellType
+		data.Type = cell.Tags
 		data.Primary = CombineTags(m.Tags)
 	case TraitModifierReferenceColumn, PageRefCellAlias:
-		data.Type = PageRefCellType
+		data.Type = cell.PageRef
 		data.Primary = m.PageRef
 		if m.PageRefHighlight != "" {
 			data.Secondary = m.PageRefHighlight
@@ -223,7 +226,7 @@ func (m *TraitModifier) CostModifier() fxp.Int {
 
 // IsLeveled returns true if this TraitModifier is leveled.
 func (m *TraitModifier) IsLeveled() bool {
-	return !m.Container() && m.CostType == PercentageTraitModifierCostType && m.Levels > 0
+	return !m.Container() && m.CostType == tmcost.Percentage && m.Levels > 0
 }
 
 // CurrentLevel returns the current level of the modifier or zero if it is not leveled.
@@ -245,7 +248,7 @@ func (m *TraitModifier) String() string {
 }
 
 // SecondaryText returns the "secondary" text: the text display below an Trait.
-func (m *TraitModifier) SecondaryText(optionChecker func(DisplayOption) bool) string {
+func (m *TraitModifier) SecondaryText(optionChecker func(display.Option) bool) string {
 	if optionChecker(SheetSettingsFor(m.Entity).NotesDisplay) {
 		return m.LocalNotes
 	}
@@ -281,20 +284,20 @@ func (m *TraitModifier) CostDescription() string {
 	}
 	var base string
 	switch m.CostType {
-	case PercentageTraitModifierCostType:
+	case tmcost.Percentage:
 		if m.IsLeveled() {
 			base = m.Cost.Mul(m.Levels).StringWithSign()
 		} else {
 			base = m.Cost.StringWithSign()
 		}
-		base += PercentageTraitModifierCostType.String()
-	case PointsTraitModifierCostType:
+		base += tmcost.Percentage.String()
+	case tmcost.Points:
 		base = m.Cost.StringWithSign()
-	case MultiplierTraitModifierCostType:
+	case tmcost.Multiplier:
 		return m.CostType.String() + m.Cost.String()
 	default:
 		errs.Log(errs.New("unknown cost type"), "type", int(m.CostType))
-		base = m.Cost.StringWithSign() + PercentageTraitModifierCostType.String()
+		base = m.Cost.StringWithSign() + tmcost.Percentage.String()
 	}
 	if desc := m.Affects.AltString(); desc != "" {
 		base += " " + desc

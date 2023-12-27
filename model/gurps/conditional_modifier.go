@@ -19,6 +19,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison/enums/align"
@@ -149,7 +150,7 @@ func (m *ConditionalModifier) String() string {
 func (m *ConditionalModifier) CellData(columnID int, data *CellData) {
 	switch columnID {
 	case ConditionalModifierValueColumn:
-		data.Type = TextCellType
+		data.Type = cell.Text
 		data.Primary = m.Total().StringWithSign()
 		data.Alignment = align.End
 		var buffer strings.Builder
@@ -161,10 +162,10 @@ func (m *ConditionalModifier) CellData(columnID int, data *CellData) {
 		}
 		data.Tooltip = buffer.String()
 	case ConditionalModifierDescriptionColumn:
-		data.Type = TextCellType
+		data.Type = cell.Text
 		data.Primary = m.From
 	case PageRefCellAlias:
-		data.Type = PageRefCellType
+		data.Type = cell.PageRef
 	}
 }
 

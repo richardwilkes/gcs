@@ -16,6 +16,7 @@ import (
 	"io/fs"
 	"slices"
 
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/namegen"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/rpgtools/names"
 	"github.com/richardwilkes/rpgtools/names/namesets/american"
@@ -32,27 +33,27 @@ type NameGeneratorRef struct {
 	generator *NameGenerator
 }
 
-// TrainingData is only valid when Type is not CompoundNameGenerationType. Only one will be used, and they are checked
+// TrainingData is only valid when Type is not namegen.Compound. Only one will be used, and they are checked
 // in the order listed here.
 type TrainingData struct {
-	BuiltIn    NameData       `json:"built_in_training_data,omitempty"`
-	Weighted   map[string]int `json:"weighted_training_data,omitempty"`
-	Unweighted []string       `json:"training_data,omitempty"`
+	BuiltIn    namegen.Builtin `json:"built_in_training_data,omitempty"`
+	Weighted   map[string]int  `json:"weighted_training_data,omitempty"`
+	Unweighted []string        `json:"training_data,omitempty"`
 }
 
 func (t *TrainingData) data() map[string]int {
 	switch t.BuiltIn {
-	case AmericanMaleNameData:
+	case namegen.AmericanMale:
 		return american.Male()
-	case AmericanFemaleNameData:
+	case namegen.AmericanFemale:
 		return american.Female()
-	case AmericanLastNameData:
+	case namegen.AmericanLast:
 		return american.Last()
-	case UnweightedAmericanMaleNameData:
+	case namegen.UnweightedAmericanMale:
 		return toUnweighted(american.Male())
-	case UnweightedAmericanFemaleNameData:
+	case namegen.UnweightedAmericanFemale:
 		return toUnweighted(american.Female())
-	case UnweightedAmericanLastNameData:
+	case namegen.UnweightedAmericanLast:
 		return toUnweighted(american.Last())
 	default:
 		if len(t.Weighted) != 0 {
@@ -76,12 +77,12 @@ func toUnweighted(data map[string]int) map[string]int {
 
 // NameGenerator holds the data necessary to create a Namer.
 type NameGenerator struct {
-	Type           NameGenerationType `json:"type"`
-	NoLowered      bool               `json:"no_lowered,omitempty"`
-	NoFirstToUpper bool               `json:"no_first_to_upper,omitempty"`
-	Separator      string             `json:"separator,omitempty"` // Only valid for CompoundNameGenerationType
-	Depth          int                `json:"depth,omitempty"`     // Only valid for MarkovLetterNameGenerationType
-	Compound       []*NameGenerator   `json:"compound,omitempty"`  // Only valid for CompoundNameGenerationType
+	Type           namegen.Type     `json:"type"`
+	NoLowered      bool             `json:"no_lowered,omitempty"`
+	NoFirstToUpper bool             `json:"no_first_to_upper,omitempty"`
+	Separator      string           `json:"separator,omitempty"` // Only valid for namegen.Compound
+	Depth          int              `json:"depth,omitempty"`     // Only valid for namegen.MarkovLetter
+	Compound       []*NameGenerator `json:"compound,omitempty"`  // Only valid for namegen.Compound
 	TrainingData
 	namer names.Namer
 }
@@ -140,7 +141,7 @@ func (n *NameGenerator) GenerateNameWithRandomizer(rnd rand.Randomizer) string {
 
 func (n *NameGenerator) createNamer() error {
 	n.namer = nil
-	if n.Type == CompoundNameGenerationType {
+	if n.Type == namegen.Compound {
 		if len(n.Compound) == 0 {
 			return errs.New("no name generators specified for " + n.Type.String() + " generation type")
 		}
@@ -159,10 +160,10 @@ func (n *NameGenerator) createNamer() error {
 		return errs.New("invalid training data")
 	}
 	switch n.Type {
-	case SimpleNameGenerationType:
+	case namegen.Simple:
 		n.namer = names.NewSimpleNamer(data, !n.NoLowered, !n.NoFirstToUpper)
 		return nil
-	case MarkovLetterNameGenerationType:
+	case namegen.MarkovLetter:
 		depth := n.Depth
 		if depth < 1 {
 			depth = 3
@@ -171,7 +172,7 @@ func (n *NameGenerator) createNamer() error {
 		}
 		n.namer = names.NewMarkovLetterNamer(depth, data, !n.NoLowered, !n.NoFirstToUpper)
 		return nil
-	case MarkovRunNameGenerationType:
+	case namegen.MarkovRun:
 		n.namer = names.NewMarkovRunNamer(data, !n.NoLowered, !n.NoFirstToUpper)
 		return nil
 	default:

@@ -15,6 +15,9 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -23,14 +26,14 @@ import (
 
 // WeaponDamageData holds the WeaponDamage data that is written to disk.
 type WeaponDamageData struct {
-	Type                      string         `json:"type"`
-	StrengthType              StrengthDamage `json:"st,omitempty"`
-	Base                      *dice.Dice     `json:"base,omitempty"`
-	ArmorDivisor              fxp.Int        `json:"armor_divisor,omitempty"`
-	Fragmentation             *dice.Dice     `json:"fragmentation,omitempty"`
-	FragmentationArmorDivisor fxp.Int        `json:"fragmentation_armor_divisor,omitempty"`
-	FragmentationType         string         `json:"fragmentation_type,omitempty"`
-	ModifierPerDie            fxp.Int        `json:"modifier_per_die,omitempty"`
+	Type                      string       `json:"type"`
+	StrengthType              stdmg.Option `json:"st,omitempty"`
+	Base                      *dice.Dice   `json:"base,omitempty"`
+	ArmorDivisor              fxp.Int      `json:"armor_divisor,omitempty"`
+	Fragmentation             *dice.Dice   `json:"fragmentation,omitempty"`
+	FragmentationArmorDivisor fxp.Int      `json:"fragmentation_armor_divisor,omitempty"`
+	FragmentationType         string       `json:"fragmentation_type,omitempty"`
+	ModifierPerDie            fxp.Int      `json:"modifier_per_die,omitempty"`
 }
 
 // WeaponDamage holds the damage information for a weapon.
@@ -92,7 +95,7 @@ func (w *WeaponDamage) MarshalJSON() ([]byte, error) {
 
 func (w *WeaponDamage) String() string {
 	var buffer strings.Builder
-	if w.StrengthType != NoneStrengthDamage {
+	if w.StrengthType != stdmg.None {
 		buffer.WriteString(w.StrengthType.String())
 	}
 	convertMods := false
@@ -184,17 +187,17 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 	}
 	intST := fxp.As[int](st)
 	switch w.StrengthType {
-	case ThrustStrengthDamage:
+	case stdmg.Thrust:
 		base = addDice(base, pc.ThrustFor(intST))
-	case LeveledThrustStrengthDamage:
+	case stdmg.LeveledThrust:
 		thrust := pc.ThrustFor(intST)
 		if tOK && t.IsLeveled() {
 			multiplyDice(fxp.As[int](t.Levels), thrust)
 		}
 		base = addDice(base, thrust)
-	case SwingStrengthDamage:
+	case stdmg.Swing:
 		base = addDice(base, pc.SwingFor(intST))
-	case LeveledSwingStrengthDamage:
+	case stdmg.LeveledSwing:
 		swing := pc.SwingFor(intST)
 		if tOK && t.IsLeveled() {
 			multiplyDice(fxp.As[int](t.Levels), swing)
@@ -202,12 +205,12 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 		base = addDice(base, swing)
 	default:
 	}
-	adjustForPhoenixFlame := pc.SheetSettings.DamageProgression == PhoenixFlameD3 && base.Sides == 3
+	adjustForPhoenixFlame := pc.SheetSettings.DamageProgression == progression.PhoenixFlameD3 && base.Sides == 3
 	var percentDamageBonus, percentDRDivisorBonus fxp.Int
 	armorDivisor := w.ArmorDivisor
-	for _, bonus := range w.Owner.collectWeaponBonuses(base.Count, tooltip, WeaponBonusFeatureType, WeaponDRDivisorBonusFeatureType) {
+	for _, bonus := range w.Owner.collectWeaponBonuses(base.Count, tooltip, feature.WeaponBonus, feature.WeaponDRDivisorBonus) {
 		switch bonus.Type {
-		case WeaponBonusFeatureType:
+		case feature.WeaponBonus:
 			if bonus.Percent {
 				percentDamageBonus += bonus.Amount
 			} else {
@@ -220,7 +223,7 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 				}
 				base.Modifier += fxp.As[int](amt)
 			}
-		case WeaponDRDivisorBonusFeatureType:
+		case feature.WeaponDRDivisorBonus:
 			if bonus.Percent {
 				percentDRDivisorBonus += bonus.Amount
 			} else {

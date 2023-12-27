@@ -31,11 +31,13 @@ const (
 	A4
 	A5
 	A6
-	LastSize = A6
 )
 
-// AllSize holds all possible values.
-var AllSize = []Size{
+// LastSize is the last valid value.
+const LastSize Size = A6
+
+// Sizes holds all possible values.
+var Sizes = []Size{
 	Letter,
 	Legal,
 	Tabloid,
@@ -53,7 +55,7 @@ type Size byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Size) EnsureValid() Size {
-	if enum <= LastSize {
+	if enum <= A6 {
 		return enum
 	}
 	return 0
@@ -129,7 +131,7 @@ func (enum *Size) UnmarshalText(text []byte) error {
 // ExtractSize extracts the value from a string.
 func ExtractSize(str string) Size {
 	str = strings.TrimPrefix(strings.TrimPrefix(str, "na-"), "iso-") // For older files that had the Java prefixes
-	for _, enum := range AllSize {
+	for _, enum := range Sizes {
 		if strings.EqualFold(enum.Key(), str) {
 			return enum
 		}

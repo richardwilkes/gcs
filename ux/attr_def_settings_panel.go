@@ -16,6 +16,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -87,7 +88,7 @@ func (p *attrDefSettingsPanel) createButtons() *unison.Panel {
 	p.addThresholdButton = unison.NewSVGButton(svg.CircledAdd)
 	p.addThresholdButton.ClickCallback = func() { p.poolPanel.addThreshold() }
 	p.addThresholdButton.Tooltip = newWrappedTooltip(i18n.Text("Add pool threshold"))
-	p.addThresholdButton.SetEnabled(p.def.Type == gurps.PoolAttributeType)
+	p.addThresholdButton.SetEnabled(p.def.Type == attribute.Pool)
 	buttons.AddChild(p.addThresholdButton)
 	return buttons
 }
@@ -145,10 +146,10 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 
 	text = i18n.Text("Attribute Type")
 	content.AddChild(NewFieldLeadingLabel(text, false))
-	content.AddChild(NewPopup[gurps.AttributeType](p.dockable.targetMgr, p.def.KeyPrefix+"type", text,
-		func() gurps.AttributeType { return p.def.Type },
-		func(typ gurps.AttributeType) { p.applyAttributeType(typ) },
-		gurps.AllAttributeType...))
+	content.AddChild(NewPopup[attribute.Type](p.dockable.targetMgr, p.def.KeyPrefix+"type", text,
+		func() attribute.Type { return p.def.Type },
+		func(typ attribute.Type) { p.applyAttributeType(typ) },
+		attribute.Types...))
 
 	const nameKey = "name"
 	if p.def.IsSeparator() {
@@ -188,7 +189,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 		field.Tooltip = newWrappedTooltip(i18n.Text("The base value, which may be a number or a formula"))
 		content.AddChild(field)
 
-		if p.def.Type != gurps.IntegerRefAttributeType && p.def.Type != gurps.DecimalRefAttributeType {
+		if p.def.Type != attribute.IntegerRef && p.def.Type != attribute.DecimalRef {
 			addLabelAndDecimalField(content, p.dockable.targetMgr, p.def.KeyPrefix+"cost", i18n.Text("Cost per Point"),
 				i18n.Text("The cost per point difference from the base"), &p.def.CostPerPoint, 0, fxp.MaxBasePoints)
 
@@ -203,7 +204,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 		}
 	}
 
-	if p.def.Type == gurps.PoolAttributeType {
+	if p.def.Type == attribute.Pool {
 		p.poolPanel = newPoolSettingsPanel(p.dockable, p.def)
 		content.AddChild(p.poolPanel)
 	} else {
@@ -226,9 +227,9 @@ func (p *attrDefSettingsPanel) validateAttrID(attrID string) bool {
 	return false
 }
 
-func (p *attrDefSettingsPanel) applyAttributeType(attrType gurps.AttributeType) {
+func (p *attrDefSettingsPanel) applyAttributeType(attrType attribute.Type) {
 	p.def.Type = attrType
-	if p.def.Type == gurps.PoolAttributeType && len(p.def.Thresholds) == 0 {
+	if p.def.Type == attribute.Pool && len(p.def.Thresholds) == 0 {
 		p.def.Thresholds = append(p.def.Thresholds, &gurps.PoolThreshold{KeyPrefix: p.dockable.targetMgr.NextPrefix()})
 	} else if p.def.IsSeparator() {
 		p.def.FullName = ""

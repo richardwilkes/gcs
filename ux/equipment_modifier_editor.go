@@ -13,6 +13,8 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/emcost"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/emweight"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -60,13 +62,13 @@ func addEquipmentCostFields(parent *unison.Panel, e *editor[*gurps.EquipmentModi
 	field.SetMinimumTextWidthUsing(equipmentCostAndWeightPrototype)
 	wrapper.AddChild(field)
 	popup := unison.NewPopupMenu[string]()
-	for _, one := range gurps.AllEquipmentModifierCostType {
+	for _, one := range emcost.Types {
 		popup.AddItem(one.StringWithExample())
 	}
 	popup.SelectIndex(int(e.editorData.CostType))
 	wrapper.AddChild(popup)
 	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
-		e.editorData.CostType = gurps.AllEquipmentModifierCostType[p.SelectedIndex()]
+		e.editorData.CostType = emcost.Types[p.SelectedIndex()]
 		field.SetText(e.editorData.CostType.Format(field.Text()))
 		MarkModified(wrapper)
 	}
@@ -85,13 +87,13 @@ func addEquipmentWeightFields(parent *unison.Panel, e *editor[*gurps.EquipmentMo
 	field.SetMinimumTextWidthUsing(equipmentCostAndWeightPrototype)
 	wrapper.AddChild(field)
 	popup := unison.NewPopupMenu[string]()
-	for _, one := range gurps.AllEquipmentModifierWeightType {
+	for _, one := range emweight.Types {
 		popup.AddItem(one.StringWithExample())
 	}
 	popup.SelectIndex(int(e.editorData.WeightType))
 	wrapper.AddChild(popup)
 	popup.SelectionChangedCallback = func(p *unison.PopupMenu[string]) {
-		e.editorData.WeightType = gurps.AllEquipmentModifierWeightType[p.SelectedIndex()]
+		e.editorData.WeightType = emweight.Types[p.SelectedIndex()]
 		field.SetText(e.editorData.WeightType.Format(field.Text(), units))
 		MarkModified(wrapper)
 	}

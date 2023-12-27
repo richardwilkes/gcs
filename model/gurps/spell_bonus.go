@@ -13,6 +13,8 @@ package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellmatch"
 	"github.com/richardwilkes/toolbox/xio"
 )
 
@@ -20,10 +22,10 @@ var _ Bonus = &SpellBonus{}
 
 // SpellBonus holds the data for a bonus to a spell.
 type SpellBonus struct {
-	Type           FeatureType    `json:"type"`
-	SpellMatchType SpellMatchType `json:"match"`
-	NameCriteria   StringCriteria `json:"name,omitempty"`
-	TagsCriteria   StringCriteria `json:"tags,alt=category,omitempty"`
+	Type           feature.Type    `json:"type"`
+	SpellMatchType spellmatch.Type `json:"match"`
+	NameCriteria   StringCriteria  `json:"name,omitempty"`
+	TagsCriteria   StringCriteria  `json:"tags,alt=category,omitempty"`
 	LeveledAmount
 	BonusOwner
 }
@@ -31,8 +33,8 @@ type SpellBonus struct {
 // NewSpellBonus creates a new SpellBonus.
 func NewSpellBonus() *SpellBonus {
 	return &SpellBonus{
-		Type:           SpellBonusFeatureType,
-		SpellMatchType: AllCollegesSpellMatchType,
+		Type:           feature.SpellBonus,
+		SpellMatchType: spellmatch.AllColleges,
 		NameCriteria: StringCriteria{
 			StringCriteriaData: StringCriteriaData{
 				Compare: IsString,
@@ -48,7 +50,7 @@ func NewSpellBonus() *SpellBonus {
 }
 
 // FeatureType implements Feature.
-func (s *SpellBonus) FeatureType() FeatureType {
+func (s *SpellBonus) FeatureType() feature.Type {
 	return s.Type
 }
 
@@ -60,7 +62,7 @@ func (s *SpellBonus) Clone() Feature {
 
 // FillWithNameableKeys implements Feature.
 func (s *SpellBonus) FillWithNameableKeys(m map[string]string) {
-	if s.SpellMatchType != AllCollegesSpellMatchType {
+	if s.SpellMatchType != spellmatch.AllColleges {
 		Extract(s.NameCriteria.Qualifier, m)
 	}
 	Extract(s.TagsCriteria.Qualifier, m)
@@ -68,7 +70,7 @@ func (s *SpellBonus) FillWithNameableKeys(m map[string]string) {
 
 // ApplyNameableKeys implements Feature.
 func (s *SpellBonus) ApplyNameableKeys(m map[string]string) {
-	if s.SpellMatchType != AllCollegesSpellMatchType {
+	if s.SpellMatchType != spellmatch.AllColleges {
 		s.NameCriteria.Qualifier = Apply(s.NameCriteria.Qualifier, m)
 	}
 	s.TagsCriteria.Qualifier = Apply(s.TagsCriteria.Qualifier, m)

@@ -21,6 +21,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
@@ -253,7 +254,7 @@ func LocateDockContainerForExtension(ext ...string) *unison.DockContainer {
 
 // PlaceInDock places the Dockable into the workspace document dock, grouped with the provided group, if that group is
 // present.
-func PlaceInDock(dockable unison.Dockable, group gurps.DockableGroup, forceIntoDock bool) {
+func PlaceInDock(dockable unison.Dockable, group dgroup.Group, forceIntoDock bool) {
 	InstallDockUndockCmd(dockable)
 	if !forceIntoDock && slices.Contains(gurps.GlobalSettings().OpenInWindow, group) {
 		if _, err := NewWindowForDockable(dockable, group); err != nil {
@@ -274,8 +275,8 @@ func PlaceInDock(dockable unison.Dockable, group gurps.DockableGroup, forceIntoD
 		return
 	}
 	s := side.Right
-	if group == gurps.SubEditorsDockableGroup {
-		if dc = DockContainerForGroup(Workspace.DocumentDock.Dock, gurps.EditorsDockableGroup); dc != nil {
+	if group == dgroup.SubEditors {
+		if dc = DockContainerForGroup(Workspace.DocumentDock.Dock, dgroup.Editors); dc != nil {
 			s = side.Bottom
 		}
 	}
@@ -295,9 +296,9 @@ func MoveDockableToWorkspace(dockable unison.Dockable) {
 		wnd.Dispose()
 	}
 	panel.RemoveFromParent()
-	group, ok := panel.ClientData()[dockGroupClientDataKey].(gurps.DockableGroup)
+	group, ok := panel.ClientData()[dockGroupClientDataKey].(dgroup.Group)
 	if !ok {
-		group = gurps.EditorsDockableGroup // Arbitrary
+		group = dgroup.Editors // Arbitrary
 	}
 	PlaceInDock(dockable, group, true)
 }
@@ -316,9 +317,9 @@ func MoveDockableToWindow(dockable unison.Dockable) (*unison.Window, error) {
 		panel.RemoveFromParent()
 	}
 	panel.Hidden = false
-	group, ok := panel.ClientData()[dockGroupClientDataKey].(gurps.DockableGroup)
+	group, ok := panel.ClientData()[dockGroupClientDataKey].(dgroup.Group)
 	if !ok {
-		group = gurps.EditorsDockableGroup // Arbitrary
+		group = dgroup.Editors // Arbitrary
 	}
 	return NewWindowForDockable(dockable, group)
 }
@@ -347,7 +348,7 @@ func InstallDockUndockCmd(dockable unison.Dockable) {
 }
 
 // NewWindowForDockable creates a new window and places a Dockable inside it.
-func NewWindowForDockable(dockable unison.Dockable, group gurps.DockableGroup) (*unison.Window, error) {
+func NewWindowForDockable(dockable unison.Dockable, group dgroup.Group) (*unison.Window, error) {
 	var frame unison.Rect
 	if focused := unison.ActiveWindow(); focused != nil {
 		frame = focused.FrameRect()
@@ -399,7 +400,7 @@ func NewWindowForDockable(dockable unison.Dockable, group gurps.DockableGroup) (
 
 // DockContainerHasGroup returns true if the DockContainer contains at least one Dockable associated with the given
 // group. May pass nil for the dc.
-func DockContainerHasGroup(dc *unison.DockContainer, group gurps.DockableGroup) bool {
+func DockContainerHasGroup(dc *unison.DockContainer, group dgroup.Group) bool {
 	if dc == nil {
 		return false
 	}
@@ -412,7 +413,7 @@ func DockContainerHasGroup(dc *unison.DockContainer, group gurps.DockableGroup) 
 }
 
 // DockContainerForGroup returns the first DockContainer which has a Dockable with the given group, if any.
-func DockContainerForGroup(dock *unison.Dock, group gurps.DockableGroup) *unison.DockContainer {
+func DockContainerForGroup(dock *unison.Dock, group dgroup.Group) *unison.DockContainer {
 	var found *unison.DockContainer
 	dock.RootDockLayout().ForEachDockContainer(func(dc *unison.DockContainer) bool {
 		if DockContainerHasGroup(dc, group) {

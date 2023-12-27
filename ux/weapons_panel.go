@@ -14,6 +14,7 @@ package ux
 import (
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wpn"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -23,14 +24,14 @@ type weaponsPanel struct {
 	unison.Panel
 	entity      *gurps.Entity
 	weaponOwner gurps.WeaponOwner
-	weaponType  gurps.WeaponType
+	weaponType  wpn.Type
 	allWeapons  *[]*gurps.Weapon
 	weapons     []*gurps.Weapon
 	provider    TableProvider[*gurps.Weapon]
 	table       *unison.Table[*Node[*gurps.Weapon]]
 }
 
-func newWeaponsPanel(cmdRoot Rebuildable, weaponOwner gurps.WeaponOwner, weaponType gurps.WeaponType, weapons *[]*gurps.Weapon) *weaponsPanel {
+func newWeaponsPanel(cmdRoot Rebuildable, weaponOwner gurps.WeaponOwner, weaponType wpn.Type, weapons *[]*gurps.Weapon) *weaponsPanel {
 	p := &weaponsPanel{
 		weaponOwner: weaponOwner,
 		weaponType:  weaponType,
@@ -53,9 +54,9 @@ func newWeaponsPanel(cmdRoot Rebuildable, weaponOwner gurps.WeaponOwner, weaponT
 	p.table.RefKey = weaponType.Key() + "-" + uuid.New().String()
 	var id int
 	switch weaponType {
-	case gurps.MeleeWeaponType:
+	case wpn.Melee:
 		id = NewMeleeWeaponItemID
-	case gurps.RangedWeaponType:
+	case wpn.Ranged:
 		id = NewRangedWeaponItemID
 	default:
 		return p
@@ -73,16 +74,16 @@ func (p *weaponsPanel) WeaponOwner() gurps.WeaponOwner {
 	return p.weaponOwner
 }
 
-func (p *weaponsPanel) Weapons(weaponType gurps.WeaponType) []*gurps.Weapon {
+func (p *weaponsPanel) Weapons(weaponType wpn.Type) []*gurps.Weapon {
 	return gurps.ExtractWeaponsOfType(weaponType, *p.allWeapons)
 }
 
-func (p *weaponsPanel) SetWeapons(weaponType gurps.WeaponType, list []*gurps.Weapon) {
+func (p *weaponsPanel) SetWeapons(weaponType wpn.Type, list []*gurps.Weapon) {
 	melee, ranged := gurps.SeparateWeapons(*p.allWeapons)
 	switch weaponType {
-	case gurps.MeleeWeaponType:
+	case wpn.Melee:
 		melee = list
-	case gurps.RangedWeaponType:
+	case wpn.Ranged:
 		ranged = list
 	default:
 	}

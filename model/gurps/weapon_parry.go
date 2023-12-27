@@ -18,6 +18,8 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
@@ -83,9 +85,9 @@ func (wp WeaponParry) hash(h hash.Hash32) {
 // Resolve any bonuses that apply.
 func (wp WeaponParry) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) WeaponParry {
 	result := wp
-	result.No = !w.ResolveBoolFlag(CanParryWeaponSwitchType, !result.No)
-	result.Fencing = w.ResolveBoolFlag(FencingWeaponSwitchType, result.Fencing)
-	result.Unbalanced = w.ResolveBoolFlag(UnbalancedWeaponSwitchType, result.Unbalanced)
+	result.No = !w.ResolveBoolFlag(wswitch.CanParry, !result.No)
+	result.Fencing = w.ResolveBoolFlag(wswitch.Fencing, result.Fencing)
+	result.Unbalanced = w.ResolveBoolFlag(wswitch.Unbalanced, result.Unbalanced)
 	if !result.No {
 		if pc := w.PC(); pc != nil {
 			var primaryTooltip *xio.ByteBuffer
@@ -112,7 +114,7 @@ func (wp WeaponParry) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 			if best != fxp.Min {
 				AppendBufferOntoNewLine(modifiersTooltip, primaryTooltip)
 				result.Modifier += fxp.Three + best + pc.ParryBonus
-				for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, WeaponParryBonusFeatureType) {
+				for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponParryBonus) {
 					result.Modifier += bonus.AdjustedAmount()
 				}
 				result.Modifier = result.Modifier.Max(0).Trunc()

@@ -16,6 +16,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -71,7 +72,7 @@ func (p *PointPoolsPanel) rebuild(attrs *gurps.AttributeDefs) {
 	p.stateLabels = make(map[string]*unison.Label)
 	for _, def := range attrs.List(false) {
 		if def.Pool() {
-			if def.Type == gurps.PoolSeparatorAttributeType {
+			if def.Type == attribute.PoolSeparator {
 				p.AddChild(NewPageInternalHeader(def.Name, 6))
 			} else {
 				attr, ok := p.entity.Attributes.Set[def.ID()]
@@ -152,7 +153,7 @@ func (p *PointPoolsPanel) Sync() {
 		MarkForLayoutWithinDockable(p)
 	} else {
 		for _, def := range attrs.List(false) {
-			if def.Pool() && def.Type != gurps.PoolSeparatorAttributeType {
+			if def.Pool() && def.Type != attribute.PoolSeparator {
 				id := def.ID()
 				if label, exists := p.stateLabels[id]; exists {
 					if attr, ok := p.entity.Attributes.Set[id]; ok {

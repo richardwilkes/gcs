@@ -13,6 +13,7 @@ package gurps
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -21,7 +22,7 @@ var _ Bonus = &SkillPointBonus{}
 
 // SkillPointBonus holds an adjustment to a skill's points.
 type SkillPointBonus struct {
-	Type                   FeatureType    `json:"type"`
+	Type                   feature.Type   `json:"type"`
 	NameCriteria           StringCriteria `json:"name,omitempty"`
 	SpecializationCriteria StringCriteria `json:"specialization,omitempty"`
 	TagsCriteria           StringCriteria `json:"tags,alt=category,omitempty"`
@@ -32,7 +33,7 @@ type SkillPointBonus struct {
 // NewSkillPointBonus creates a new SkillPointBonus.
 func NewSkillPointBonus() *SkillPointBonus {
 	return &SkillPointBonus{
-		Type: SkillPointBonusFeatureType,
+		Type: feature.SkillPointBonus,
 		NameCriteria: StringCriteria{
 			StringCriteriaData: StringCriteriaData{
 				Compare: IsString,
@@ -53,7 +54,7 @@ func NewSkillPointBonus() *SkillPointBonus {
 }
 
 // FeatureType implements Feature.
-func (s *SkillPointBonus) FeatureType() FeatureType {
+func (s *SkillPointBonus) FeatureType() feature.Type {
 	return s.Type
 }
 

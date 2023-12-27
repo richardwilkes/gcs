@@ -17,6 +17,8 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
@@ -95,12 +97,12 @@ func (wr WeaponReach) hash(h hash.Hash32) {
 // Resolve any bonuses that apply.
 func (wr WeaponReach) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) WeaponReach {
 	result := wr
-	result.CloseCombat = w.ResolveBoolFlag(CloseCombatWeaponSwitchType, result.CloseCombat)
-	result.ChangeRequiresReady = w.ResolveBoolFlag(ReachChangeRequiresReadyWeaponSwitchType, result.ChangeRequiresReady)
-	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, WeaponMinReachBonusFeatureType, WeaponMaxReachBonusFeatureType) {
-		if bonus.Type == WeaponMinReachBonusFeatureType {
+	result.CloseCombat = w.ResolveBoolFlag(wswitch.CloseCombat, result.CloseCombat)
+	result.ChangeRequiresReady = w.ResolveBoolFlag(wswitch.ReachChangeRequiresReady, result.ChangeRequiresReady)
+	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponMinReachBonus, feature.WeaponMaxReachBonus) {
+		if bonus.Type == feature.WeaponMinReachBonus {
 			result.Min += bonus.AdjustedAmount()
-		} else if bonus.Type == WeaponMaxReachBonusFeatureType {
+		} else if bonus.Type == feature.WeaponMaxReachBonus {
 			result.Max += bonus.AdjustedAmount()
 		}
 	}

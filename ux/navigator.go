@@ -22,6 +22,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/desktop"
@@ -1118,24 +1119,24 @@ func DisplayNewDockable(dockable unison.Dockable) {
 		}
 	}()
 	if fbd, ok := dockable.(FileBackedDockable); ok {
-		var group *gurps.DockableGroup
+		var group *dgroup.Group
 		fi := gurps.FileInfoFor(fbd.BackingFilePath())
 		switch {
 		case fi.IsImage:
-			g := gurps.ImagesDockableGroup
+			g := dgroup.Images
 			group = &g
 		case fi.IsPDF:
-			g := gurps.PDFsDockableGroup
+			g := dgroup.PDFs
 			group = &g
 		case fi.Extensions[0] == gurps.SheetExt:
-			g := gurps.CharacterSheetsDockableGroup
+			g := dgroup.CharacterSheets
 			group = &g
 		case fi.Extensions[0] == gurps.TemplatesExt:
-			g := gurps.CharacterTemplatesDockableGroup
+			g := dgroup.CharacterTemplates
 			group = &g
 		// TODO: Re-enable Campaign files
 		// case fi.Extensions[0] == gurps.CampaignExt:
-		// 	g := gurps.CampaignsDockableGroup
+		// 	g := dgroup.Campaigns
 		// 	group = &g
 		case fi.Extensions[0] == gurps.TraitsExt,
 			fi.Extensions[0] == gurps.TraitModifiersExt,
@@ -1144,10 +1145,10 @@ func DisplayNewDockable(dockable unison.Dockable) {
 			fi.Extensions[0] == gurps.SkillsExt,
 			fi.Extensions[0] == gurps.SpellsExt,
 			fi.Extensions[0] == gurps.NotesExt:
-			g := gurps.LibrariesDockableGroup
+			g := dgroup.Libraries
 			group = &g
 		case fi.Extensions[0] == gurps.MarkdownExt:
-			g := gurps.MarkdownDockableGroup
+			g := dgroup.Markdown
 			group = &g
 		}
 		if group != nil {

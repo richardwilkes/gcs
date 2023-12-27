@@ -18,6 +18,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
@@ -82,7 +83,7 @@ func (wb WeaponBulk) hash(h hash.Hash32) {
 // Resolve any bonuses that apply.
 func (wb WeaponBulk) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) WeaponBulk {
 	result := wb
-	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, WeaponBulkBonusFeatureType) {
+	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponBulkBonus) {
 		result.NormalBulk += bonus.AdjustedAmount()
 		result.GiantBulk += bonus.AdjustedAmount()
 	}

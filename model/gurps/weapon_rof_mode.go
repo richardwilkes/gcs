@@ -18,6 +18,8 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -64,17 +66,17 @@ func (wr WeaponRoFMode) hash(h hash.Hash32) {
 // Resolve any bonuses that apply.
 func (wr WeaponRoFMode) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer, firstMode bool) WeaponRoFMode {
 	result := wr
-	var shotsFeature, secondaryFeature FeatureType
+	var shotsFeature, secondaryFeature feature.Type
 	if firstMode {
-		shotsFeature = WeaponRofMode1ShotsBonusFeatureType
-		secondaryFeature = WeaponRofMode1SecondaryBonusFeatureType
-		result.FullAutoOnly = w.ResolveBoolFlag(FullAuto1WeaponSwitchType, wr.FullAutoOnly)
-		result.HighCyclicControlledBursts = w.ResolveBoolFlag(ControlledBursts1WeaponSwitchType, wr.HighCyclicControlledBursts)
+		shotsFeature = feature.WeaponRofMode1ShotsBonus
+		secondaryFeature = feature.WeaponRofMode1SecondaryBonus
+		result.FullAutoOnly = w.ResolveBoolFlag(wswitch.FullAuto1, wr.FullAutoOnly)
+		result.HighCyclicControlledBursts = w.ResolveBoolFlag(wswitch.ControlledBursts1, wr.HighCyclicControlledBursts)
 	} else {
-		shotsFeature = WeaponRofMode2ShotsBonusFeatureType
-		secondaryFeature = WeaponRofMode2SecondaryBonusFeatureType
-		result.FullAutoOnly = w.ResolveBoolFlag(FullAuto2WeaponSwitchType, wr.FullAutoOnly)
-		result.HighCyclicControlledBursts = w.ResolveBoolFlag(ControlledBursts2WeaponSwitchType, wr.HighCyclicControlledBursts)
+		shotsFeature = feature.WeaponRofMode2ShotsBonus
+		secondaryFeature = feature.WeaponRofMode2SecondaryBonus
+		result.FullAutoOnly = w.ResolveBoolFlag(wswitch.FullAuto2, wr.FullAutoOnly)
+		result.HighCyclicControlledBursts = w.ResolveBoolFlag(wswitch.ControlledBursts2, wr.HighCyclicControlledBursts)
 	}
 	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, shotsFeature, secondaryFeature) {
 		if bonus.Type == shotsFeature {

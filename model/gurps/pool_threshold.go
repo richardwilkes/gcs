@@ -16,6 +16,7 @@ import (
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/threshold"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/eval"
 	"github.com/richardwilkes/toolbox/xmath/crc"
@@ -29,10 +30,10 @@ type PoolThreshold struct {
 
 // PoolThresholdData holds the data that will be serialized for the PoolThreshold.
 type PoolThresholdData struct {
-	State       string        `json:"state"`
-	Expression  string        `json:"expression"`
-	Explanation string        `json:"explanation,omitempty"`
-	Ops         []ThresholdOp `json:"ops,omitempty"`
+	State       string         `json:"state"`
+	Expression  string         `json:"expression"`
+	Explanation string         `json:"explanation,omitempty"`
+	Ops         []threshold.Op `json:"ops,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -107,7 +108,7 @@ func convertToExpression(multiplier, divisor, addition fxp.Int) string {
 func (p *PoolThreshold) Clone() *PoolThreshold {
 	clone := *p
 	if p.Ops != nil {
-		clone.Ops = make([]ThresholdOp, len(p.Ops))
+		clone.Ops = make([]threshold.Op, len(p.Ops))
 		copy(clone.Ops, p.Ops)
 	}
 	return &clone
@@ -119,12 +120,12 @@ func (p *PoolThreshold) Threshold(resolver eval.VariableResolver) fxp.Int {
 }
 
 // ContainsOp returns true if this PoolThreshold contains the specified ThresholdOp.
-func (p *PoolThreshold) ContainsOp(op ThresholdOp) bool {
+func (p *PoolThreshold) ContainsOp(op threshold.Op) bool {
 	return slices.Contains(p.Ops, op)
 }
 
 // AddOp adds the specified ThresholdOp.
-func (p *PoolThreshold) AddOp(op ThresholdOp) {
+func (p *PoolThreshold) AddOp(op threshold.Op) {
 	if !slices.Contains(p.Ops, op) {
 		p.Ops = append(p.Ops, op)
 		slices.Sort(p.Ops)
@@ -132,7 +133,7 @@ func (p *PoolThreshold) AddOp(op ThresholdOp) {
 }
 
 // RemoveOp removes the specified ThresholdOp.
-func (p *PoolThreshold) RemoveOp(op ThresholdOp) {
+func (p *PoolThreshold) RemoveOp(op threshold.Op) {
 	if i := slices.Index(p.Ops, op); i != -1 {
 		p.Ops = slices.Delete(p.Ops, i, i+1)
 	}
