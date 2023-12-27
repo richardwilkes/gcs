@@ -32,8 +32,8 @@ var (
 
 // WeaponBulk holds the bulk data for a weapon.
 type WeaponBulk struct {
-	NormalBulk      fxp.Int
-	GiantBulk       fxp.Int
+	Normal          fxp.Int
+	Giant           fxp.Int
 	RetractingStock bool
 }
 
@@ -44,9 +44,9 @@ func ParseWeaponBulk(s string) WeaponBulk {
 	s = strings.ReplaceAll(s, ",", "")
 	wb.RetractingStock = strings.Contains(s, "*")
 	parts := strings.Split(s, "/")
-	wb.NormalBulk, _ = fxp.Extract(parts[0])
+	wb.Normal, _ = fxp.Extract(parts[0])
 	if len(parts) > 1 {
-		wb.GiantBulk, _ = fxp.Extract(parts[1])
+		wb.Giant, _ = fxp.Extract(parts[1])
 	}
 	wb.Validate()
 	return wb
@@ -75,8 +75,8 @@ func (wb *WeaponBulk) UnmarshalJSON(data []byte) error {
 
 // nolint:errcheck // Not checking errors on writes to a bytes.Buffer
 func (wb WeaponBulk) hash(h hash.Hash32) {
-	_ = binary.Write(h, binary.LittleEndian, wb.NormalBulk)
-	_ = binary.Write(h, binary.LittleEndian, wb.GiantBulk)
+	_ = binary.Write(h, binary.LittleEndian, wb.Normal)
+	_ = binary.Write(h, binary.LittleEndian, wb.Giant)
 	_ = binary.Write(h, binary.LittleEndian, wb.RetractingStock)
 }
 
@@ -84,8 +84,8 @@ func (wb WeaponBulk) hash(h hash.Hash32) {
 func (wb WeaponBulk) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) WeaponBulk {
 	result := wb
 	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponBulkBonus) {
-		result.NormalBulk += bonus.AdjustedAmount()
-		result.GiantBulk += bonus.AdjustedAmount()
+		result.Normal += bonus.AdjustedAmount()
+		result.Giant += bonus.AdjustedAmount()
 	}
 	result.Validate()
 	return result
@@ -94,14 +94,14 @@ func (wb WeaponBulk) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapon
 // String returns a string suitable for presentation, matching the standard GURPS weapon table entry format for this
 // data. Call .Resolve() prior to calling this method if you want the resolved values.
 func (wb WeaponBulk) String() string {
-	if wb.NormalBulk >= 0 && wb.GiantBulk >= 0 {
+	if wb.Normal >= 0 && wb.Giant >= 0 {
 		return ""
 	}
 	var buffer strings.Builder
-	buffer.WriteString(wb.NormalBulk.String())
-	if wb.GiantBulk != 0 && wb.GiantBulk != wb.NormalBulk {
+	buffer.WriteString(wb.Normal.String())
+	if wb.Giant != 0 && wb.Giant != wb.Normal {
 		buffer.WriteByte('/')
-		buffer.WriteString(wb.GiantBulk.String())
+		buffer.WriteString(wb.Giant.String())
 	}
 	if wb.RetractingStock {
 		buffer.WriteByte('*')
@@ -115,26 +115,26 @@ func (wb WeaponBulk) Tooltip(w *Weapon) string {
 	if !wb.RetractingStock {
 		return ""
 	}
-	if wb.NormalBulk < 0 {
-		wb.NormalBulk += fxp.One
+	if wb.Normal < 0 {
+		wb.Normal += fxp.One
 	}
-	if wb.GiantBulk < 0 {
-		wb.GiantBulk += fxp.One
+	if wb.Giant < 0 {
+		wb.Giant += fxp.One
 	}
 	wb.Validate()
 	accuracy := w.Accuracy.Resolve(w, nil)
 	accuracy.Base -= fxp.One
 	accuracy.Validate()
 	recoil := w.Recoil.Resolve(w, nil)
-	if recoil.ShotRecoil > fxp.One {
-		recoil.ShotRecoil += fxp.One
+	if recoil.Shot > fxp.One {
+		recoil.Shot += fxp.One
 	}
-	if recoil.SlugRecoil > fxp.One {
-		recoil.SlugRecoil += fxp.One
+	if recoil.Slug > fxp.One {
+		recoil.Slug += fxp.One
 	}
 	recoil.Validate()
 	minST := w.Strength.Resolve(w, nil)
-	minST.Minimum = minST.Minimum.Mul(fxp.OnePointTwo).Ceil()
+	minST.Min = minST.Min.Mul(fxp.OnePointTwo).Ceil()
 	minST.Validate()
 	return fmt.Sprintf(i18n.Text("Has a retracting stock. With the stock folded, the weapon's stats change to Bulk %s, Accuracy %s, Recoil %s, and minimum ST %s. Folding or unfolding the stock takes one Ready maneuver."),
 		wb.String(), accuracy.String(), recoil.String(), minST.String())
@@ -142,6 +142,6 @@ func (wb WeaponBulk) Tooltip(w *Weapon) string {
 
 // Validate ensures that the data is valid.
 func (wb *WeaponBulk) Validate() {
-	wb.NormalBulk = wb.NormalBulk.Min(0)
-	wb.GiantBulk = wb.GiantBulk.Min(0)
+	wb.Normal = wb.Normal.Min(0)
+	wb.Giant = wb.Giant.Min(0)
 }

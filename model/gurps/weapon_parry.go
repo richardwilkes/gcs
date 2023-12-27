@@ -161,7 +161,7 @@ func (wp WeaponParry) Tooltip(w *Weapon) string {
 		if buffer.Len() != 0 {
 			buffer.WriteString("\n\n")
 		}
-		fmt.Fprintf(&buffer, i18n.Text("Unbalanced weapon. You cannot use it to parry if you have already used it to attack this turn (or vice-versa) unless your current ST is %v or greater."), w.Strength.Resolve(w, nil).Minimum.Mul(fxp.OneAndAHalf).Ceil())
+		fmt.Fprintf(&buffer, i18n.Text("Unbalanced weapon. You cannot use it to parry if you have already used it to attack this turn (or vice-versa) unless your current ST is %v or greater."), w.Strength.Resolve(w, nil).Min.Mul(fxp.OneAndAHalf).Ceil())
 	}
 	return buffer.String()
 }

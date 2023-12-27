@@ -32,9 +32,9 @@ var (
 
 // WeaponShots holds the shots data for a weapon.
 type WeaponShots struct {
-	NonChamberShots     fxp.Int
-	ChamberShots        fxp.Int
-	ShotDuration        fxp.Int
+	Count               fxp.Int
+	InChamber           fxp.Int
+	Duration            fxp.Int
 	ReloadTime          fxp.Int
 	ReloadTimeIsPerShot bool
 	Thrown              bool
@@ -51,12 +51,12 @@ func ParseWeaponShots(s string) WeaponShots {
 		!strings.Contains(s, "day") {
 		ws.Thrown = strings.Contains(s, "t")
 		if !strings.Contains(s, "spec") {
-			ws.NonChamberShots, s = fxp.Extract(s)
+			ws.Count, s = fxp.Extract(s)
 			if strings.HasPrefix(s, "+") {
-				ws.ChamberShots, s = fxp.Extract(s)
+				ws.InChamber, s = fxp.Extract(s)
 			}
 			if strings.HasPrefix(s, "x") {
-				ws.ShotDuration, s = fxp.Extract(s[1:])
+				ws.Duration, s = fxp.Extract(s[1:])
 			}
 			if strings.HasPrefix(s, "(") {
 				ws.ReloadTime, _ = fxp.Extract(s[1:])
@@ -90,9 +90,9 @@ func (ws *WeaponShots) UnmarshalJSON(data []byte) error {
 
 // nolint:errcheck // Not checking errors on writes to a bytes.Buffer
 func (ws WeaponShots) hash(h hash.Hash32) {
-	_ = binary.Write(h, binary.LittleEndian, ws.NonChamberShots)
-	_ = binary.Write(h, binary.LittleEndian, ws.ChamberShots)
-	_ = binary.Write(h, binary.LittleEndian, ws.ShotDuration)
+	_ = binary.Write(h, binary.LittleEndian, ws.Count)
+	_ = binary.Write(h, binary.LittleEndian, ws.InChamber)
+	_ = binary.Write(h, binary.LittleEndian, ws.Duration)
 	_ = binary.Write(h, binary.LittleEndian, ws.ReloadTime)
 	_ = binary.Write(h, binary.LittleEndian, ws.ReloadTimeIsPerShot)
 	_ = binary.Write(h, binary.LittleEndian, ws.Thrown)
@@ -106,11 +106,11 @@ func (ws WeaponShots) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponNonChamberShotsBonus, feature.WeaponChamberShotsBonus, feature.WeaponShotDurationBonus, feature.WeaponReloadTimeBonus) {
 		switch bonus.Type {
 		case feature.WeaponNonChamberShotsBonus:
-			result.NonChamberShots += bonus.AdjustedAmount()
+			result.Count += bonus.AdjustedAmount()
 		case feature.WeaponChamberShotsBonus:
-			result.ChamberShots += bonus.AdjustedAmount()
+			result.InChamber += bonus.AdjustedAmount()
 		case feature.WeaponShotDurationBonus:
-			result.ShotDuration += bonus.AdjustedAmount()
+			result.Duration += bonus.AdjustedAmount()
 		case feature.WeaponReloadTimeBonus:
 			result.ReloadTime += bonus.AdjustedAmount()
 		default:
@@ -127,17 +127,17 @@ func (ws WeaponShots) String() string {
 	if ws.Thrown {
 		buffer.WriteByte('T')
 	} else {
-		if ws.NonChamberShots <= 0 {
+		if ws.Count <= 0 {
 			return ""
 		}
-		buffer.WriteString(ws.NonChamberShots.String())
-		if ws.ChamberShots > 0 {
+		buffer.WriteString(ws.Count.String())
+		if ws.InChamber > 0 {
 			buffer.WriteByte('+')
-			buffer.WriteString(ws.ChamberShots.String())
+			buffer.WriteString(ws.InChamber.String())
 		}
-		if ws.ShotDuration > 0 {
+		if ws.Duration > 0 {
 			buffer.WriteByte('x')
-			buffer.WriteString(ws.ShotDuration.String())
+			buffer.WriteString(ws.Duration.String())
 			buffer.WriteByte('s')
 		}
 	}
@@ -165,18 +165,18 @@ func (ws WeaponShots) Tooltip() string {
 func (ws *WeaponShots) Validate() {
 	ws.ReloadTime = ws.ReloadTime.Max(0)
 	if ws.Thrown {
-		ws.NonChamberShots = 0
-		ws.ChamberShots = 0
-		ws.ShotDuration = 0
+		ws.Count = 0
+		ws.InChamber = 0
+		ws.Duration = 0
 		return
 	}
-	ws.NonChamberShots = ws.NonChamberShots.Max(0)
-	if ws.NonChamberShots == 0 {
-		ws.ChamberShots = 0
-		ws.ShotDuration = 0
+	ws.Count = ws.Count.Max(0)
+	if ws.Count == 0 {
+		ws.InChamber = 0
+		ws.Duration = 0
 		ws.ReloadTime = 0
 		return
 	}
-	ws.ChamberShots = ws.ChamberShots.Max(0)
-	ws.ShotDuration = ws.ShotDuration.Max(0)
+	ws.InChamber = ws.InChamber.Max(0)
+	ws.Duration = ws.Duration.Max(0)
 }

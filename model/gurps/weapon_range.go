@@ -31,11 +31,11 @@ var (
 
 // WeaponRange holds the range data for a weapon.
 type WeaponRange struct {
-	HalfDamageRange fxp.Int
-	MinRange        fxp.Int
-	MaxRange        fxp.Int
-	MusclePowered   bool
-	RangeInMiles    bool
+	HalfDamage    fxp.Int
+	Min           fxp.Int
+	Max           fxp.Int
+	MusclePowered bool
+	InMiles       bool
 }
 
 // ParseWeaponRange parses a string into a WeaponRange.
@@ -57,21 +57,21 @@ func ParseWeaponRange(s string) WeaponRange {
 		s = strings.ReplaceAll(s, "x", "")
 		s = strings.ReplaceAll(s, "st", "")
 		s = strings.ReplaceAll(s, "c/", "")
-		wr.RangeInMiles = strings.Contains(s, "mi")
+		wr.InMiles = strings.Contains(s, "mi")
 		s = strings.ReplaceAll(s, "mi.", "")
 		s = strings.ReplaceAll(s, "mi", "")
 		s = strings.ReplaceAll(s, ",", "")
 		parts := strings.Split(s, "/")
 		if len(parts) > 1 {
-			wr.HalfDamageRange, _ = fxp.Extract(parts[0])
+			wr.HalfDamage, _ = fxp.Extract(parts[0])
 			parts[0] = parts[1]
 		}
 		parts = strings.Split(parts[0], "-")
 		if len(parts) > 1 {
-			wr.MinRange, _ = fxp.Extract(parts[0])
-			wr.MaxRange, _ = fxp.Extract(parts[1])
+			wr.Min, _ = fxp.Extract(parts[0])
+			wr.Max, _ = fxp.Extract(parts[1])
 		} else {
-			wr.MaxRange, _ = fxp.Extract(parts[0])
+			wr.Max, _ = fxp.Extract(parts[0])
 		}
 		wr.Validate()
 	}
@@ -100,18 +100,18 @@ func (wr *WeaponRange) UnmarshalJSON(data []byte) error {
 
 // nolint:errcheck // Not checking errors on writes to a bytes.Buffer
 func (wr WeaponRange) hash(h hash.Hash32) {
-	_ = binary.Write(h, binary.LittleEndian, wr.HalfDamageRange)
-	_ = binary.Write(h, binary.LittleEndian, wr.MinRange)
-	_ = binary.Write(h, binary.LittleEndian, wr.MaxRange)
+	_ = binary.Write(h, binary.LittleEndian, wr.HalfDamage)
+	_ = binary.Write(h, binary.LittleEndian, wr.Min)
+	_ = binary.Write(h, binary.LittleEndian, wr.Max)
 	_ = binary.Write(h, binary.LittleEndian, wr.MusclePowered)
-	_ = binary.Write(h, binary.LittleEndian, wr.RangeInMiles)
+	_ = binary.Write(h, binary.LittleEndian, wr.InMiles)
 }
 
 // Resolve any bonuses that apply.
 func (wr WeaponRange) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) WeaponRange {
 	result := wr
 	result.MusclePowered = w.ResolveBoolFlag(wswitch.MusclePowered, result.MusclePowered)
-	result.RangeInMiles = w.ResolveBoolFlag(wswitch.RangeInMiles, result.RangeInMiles)
+	result.InMiles = w.ResolveBoolFlag(wswitch.RangeInMiles, result.InMiles)
 	if result.MusclePowered {
 		var st fxp.Int
 		if w.Owner != nil {
@@ -123,19 +123,19 @@ func (wr WeaponRange) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 			}
 		}
 		if st > 0 {
-			result.HalfDamageRange = result.HalfDamageRange.Mul(st).Trunc().Max(0)
-			result.MinRange = result.MinRange.Mul(st).Trunc().Max(0)
-			result.MaxRange = result.MaxRange.Mul(st).Trunc().Max(0)
+			result.HalfDamage = result.HalfDamage.Mul(st).Trunc().Max(0)
+			result.Min = result.Min.Mul(st).Trunc().Max(0)
+			result.Max = result.Max.Mul(st).Trunc().Max(0)
 		}
 	}
 	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponHalfDamageRangeBonus, feature.WeaponMinRangeBonus, feature.WeaponMaxRangeBonus) {
 		switch bonus.Type {
 		case feature.WeaponHalfDamageRangeBonus:
-			result.HalfDamageRange += bonus.AdjustedAmount()
+			result.HalfDamage += bonus.AdjustedAmount()
 		case feature.WeaponMinRangeBonus:
-			result.MinRange += bonus.AdjustedAmount()
+			result.Min += bonus.AdjustedAmount()
 		case feature.WeaponMaxRangeBonus:
-			result.MaxRange += bonus.AdjustedAmount()
+			result.Max += bonus.AdjustedAmount()
 		default:
 		}
 	}
@@ -147,27 +147,27 @@ func (wr WeaponRange) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 // data. Call .Resolve() prior to calling this method if you want the resolved values.
 func (wr WeaponRange) String(musclePowerIsResolved bool) string {
 	var buffer strings.Builder
-	if wr.HalfDamageRange != 0 {
+	if wr.HalfDamage != 0 {
 		if wr.MusclePowered && !musclePowerIsResolved {
 			buffer.WriteByte('x')
 		}
-		buffer.WriteString(wr.HalfDamageRange.String())
+		buffer.WriteString(wr.HalfDamage.String())
 		buffer.WriteByte('/')
 	}
-	if wr.MinRange != 0 || wr.MaxRange != 0 {
-		if wr.MinRange != 0 && wr.MinRange != wr.MaxRange {
+	if wr.Min != 0 || wr.Max != 0 {
+		if wr.Min != 0 && wr.Min != wr.Max {
 			if wr.MusclePowered && !musclePowerIsResolved {
 				buffer.WriteByte('x')
 			}
-			buffer.WriteString(wr.MinRange.String())
+			buffer.WriteString(wr.Min.String())
 			buffer.WriteByte('-')
 		}
 		if wr.MusclePowered && !musclePowerIsResolved {
 			buffer.WriteByte('x')
 		}
-		buffer.WriteString(wr.MaxRange.String())
+		buffer.WriteString(wr.Max.String())
 	}
-	if wr.RangeInMiles && buffer.Len() != 0 {
+	if wr.InMiles && buffer.Len() != 0 {
 		buffer.WriteByte(' ')
 		buffer.WriteString(fxp.Mile.String())
 	}
@@ -176,13 +176,13 @@ func (wr WeaponRange) String(musclePowerIsResolved bool) string {
 
 // Validate ensures that the data is valid.
 func (wr *WeaponRange) Validate() {
-	wr.HalfDamageRange = wr.HalfDamageRange.Max(0)
-	wr.MinRange = wr.MinRange.Max(0)
-	wr.MaxRange = wr.MaxRange.Max(0)
-	if wr.MinRange > wr.MaxRange {
-		wr.MinRange, wr.MaxRange = wr.MaxRange, wr.MinRange
+	wr.HalfDamage = wr.HalfDamage.Max(0)
+	wr.Min = wr.Min.Max(0)
+	wr.Max = wr.Max.Max(0)
+	if wr.Min > wr.Max {
+		wr.Min, wr.Max = wr.Max, wr.Min
 	}
-	if wr.HalfDamageRange < wr.MinRange || wr.HalfDamageRange >= wr.MaxRange {
-		wr.HalfDamageRange = 0
+	if wr.HalfDamage < wr.Min || wr.HalfDamage >= wr.Max {
+		wr.HalfDamage = 0
 	}
 }

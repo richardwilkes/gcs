@@ -372,7 +372,7 @@ func (w *Weapon) SkillLevel(tooltip *xio.ByteBuffer) fxp.Int {
 
 func (w *Weapon) skillLevelBaseAdjustment(e *Entity, tooltip *xio.ByteBuffer) fxp.Int {
 	var adj fxp.Int
-	if minST := w.Strength.Resolve(w, nil).Minimum - e.StrikingStrength(); minST > 0 {
+	if minST := w.Strength.Resolve(w, nil).Min - e.StrikingStrength(); minST > 0 {
 		adj -= minST
 		if tooltip != nil {
 			tooltip.WriteByte('\n')

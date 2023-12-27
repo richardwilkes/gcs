@@ -1370,7 +1370,7 @@ func (ex *legacyExporter) processWeaponKeys(key string, currentID int, w *Weapon
 	case "STRENGTH":
 		ex.writeEncodedText(w.Strength.Resolve(w, nil).String())
 	case "WEAPON_STRENGTH":
-		st := w.Strength.Resolve(w, nil).Minimum
+		st := w.Strength.Resolve(w, nil).Min
 		if st > 0 {
 			ex.writeEncodedText(st.String())
 		}

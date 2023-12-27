@@ -26,10 +26,10 @@ import (
 
 // WeaponRoFMode holds the rate of fire data for one firing mode of a weapon.
 type WeaponRoFMode struct {
-	ShotsPerAttack             fxp.Int `json:"shots_per_attack,omitempty"`
-	SecondaryProjectiles       fxp.Int `json:"secondary_projectiles,omitempty"`
-	FullAutoOnly               bool    `json:"full_auto_only,omitempty"`
-	HighCyclicControlledBursts bool    `json:"high_cyclic_controlled_bursts,omitempty"`
+	ShotsPerAttack             fxp.Int
+	SecondaryProjectiles       fxp.Int
+	FullAutoOnly               bool
+	HighCyclicControlledBursts bool
 }
 
 // ParseWeaponRoFMode parses a string into a WeaponRoFMode.

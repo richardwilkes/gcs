@@ -33,7 +33,7 @@ var (
 
 // WeaponStrength holds the minimum strength data for a weapon.
 type WeaponStrength struct {
-	Minimum          fxp.Int
+	Min              fxp.Int
 	Bipod            bool
 	Mounted          bool
 	MusketRest       bool
@@ -52,7 +52,7 @@ func ParseWeaponStrength(s string) WeaponStrength {
 		ws.MusketRest = strings.Contains(s, "r")
 		ws.TwoHanded = strings.Contains(s, "†") || strings.Contains(s, "*") // bad input in some files had * instead of †
 		ws.TwoHandedUnready = strings.Contains(s, "‡")
-		ws.Minimum, _ = fxp.Extract(s)
+		ws.Min, _ = fxp.Extract(s)
 		ws.Validate()
 	}
 	return ws
@@ -80,7 +80,7 @@ func (ws *WeaponStrength) UnmarshalJSON(data []byte) error {
 
 // nolint:errcheck // Not checking errors on writes to a bytes.Buffer
 func (ws WeaponStrength) hash(h hash.Hash32) {
-	_ = binary.Write(h, binary.LittleEndian, ws.Minimum)
+	_ = binary.Write(h, binary.LittleEndian, ws.Min)
 	_ = binary.Write(h, binary.LittleEndian, ws.Bipod)
 	_ = binary.Write(h, binary.LittleEndian, ws.Mounted)
 	_ = binary.Write(h, binary.LittleEndian, ws.MusketRest)
@@ -93,7 +93,7 @@ func (ws WeaponStrength) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) We
 	result := ws
 	if w.Owner != nil {
 		if st := w.Owner.RatedStrength().Max(0); st != 0 {
-			result.Minimum = st
+			result.Min = st
 		}
 	}
 	result.Bipod = w.ResolveBoolFlag(wswitch.Bipod, result.Bipod)
@@ -102,7 +102,7 @@ func (ws WeaponStrength) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) We
 	result.TwoHanded = w.ResolveBoolFlag(wswitch.TwoHanded, result.TwoHanded)
 	result.TwoHandedUnready = w.ResolveBoolFlag(wswitch.TwoHandedAndUnreadyAfterAttack, result.TwoHandedUnready)
 	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponMinSTBonus) {
-		result.Minimum += bonus.AdjustedAmount()
+		result.Min += bonus.AdjustedAmount()
 	}
 	result.Validate()
 	return result
@@ -112,8 +112,8 @@ func (ws WeaponStrength) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) We
 // data. Call .Resolve() prior to calling this method if you want the resolved values.
 func (ws WeaponStrength) String() string {
 	var buffer strings.Builder
-	if ws.Minimum > 0 {
-		buffer.WriteString(ws.Minimum.String())
+	if ws.Min > 0 {
+		buffer.WriteString(ws.Min.String())
 	}
 	if ws.Bipod {
 		buffer.WriteByte('B')
@@ -143,19 +143,19 @@ func (ws WeaponStrength) Tooltip(w *Weapon) string {
 			fmt.Fprintf(&tooltip, i18n.Text("The weapon has a rated ST of %v, which is used instead of the user's ST for calculations."), st)
 		}
 	}
-	if ws.Minimum > 0 {
+	if ws.Min > 0 {
 		if tooltip.Len() != 0 {
 			tooltip.WriteString("\n\n")
 		}
-		fmt.Fprintf(&tooltip, i18n.Text("The weapon has a minimum ST of %v. If your ST is less than this, you will suffer a -1 to weapon skill per point of ST you lack and lose one extra FP at the end of any fight that lasts long enough to cost FP."), ws.Minimum)
+		fmt.Fprintf(&tooltip, i18n.Text("The weapon has a minimum ST of %v. If your ST is less than this, you will suffer a -1 to weapon skill per point of ST you lack and lose one extra FP at the end of any fight that lasts long enough to cost FP."), ws.Min)
 	}
 	if ws.Bipod {
 		if tooltip.Len() != 0 {
 			tooltip.WriteString("\n\n")
 		}
 		tooltip.WriteString(i18n.Text("Has an attached bipod. When used from a prone position, "))
-		reducedST := ws.Minimum.Mul(fxp.Two).Div(fxp.Three).Ceil()
-		if reducedST > 0 && reducedST != ws.Minimum {
+		reducedST := ws.Min.Mul(fxp.Two).Div(fxp.Three).Ceil()
+		if reducedST > 0 && reducedST != ws.Min {
 			fmt.Fprintf(&tooltip, i18n.Text("reduces the ST requirement to %v and "), reducedST)
 		}
 		tooltip.WriteString(i18n.Text("treats the attack as braced (add +1 to Accuracy)."))
@@ -178,9 +178,9 @@ func (ws WeaponStrength) Tooltip(w *Weapon) string {
 		}
 		tooltip.WriteString(i18n.Text("Requires two hands"))
 		if ws.TwoHandedUnready {
-			fmt.Fprintf(&tooltip, i18n.Text(" and becomes unready after you attack with it. If you have at least ST %v, you can used it two-handed without it becoming unready. If you have at least ST %v, you can use it one-handed with no readiness penalty."), ws.Minimum.Mul(fxp.OneAndAHalf).Ceil(), ws.Minimum.Mul(fxp.Three).Ceil())
+			fmt.Fprintf(&tooltip, i18n.Text(" and becomes unready after you attack with it. If you have at least ST %v, you can used it two-handed without it becoming unready. If you have at least ST %v, you can use it one-handed with no readiness penalty."), ws.Min.Mul(fxp.OneAndAHalf).Ceil(), ws.Min.Mul(fxp.Three).Ceil())
 		} else {
-			fmt.Fprintf(&tooltip, i18n.Text(". If you have at least ST %v, you can use it one-handed, but it becomes unready after you attack with it. If you have at least ST %v, you can use it one-handed with no readiness penalty."), ws.Minimum.Mul(fxp.OneAndAHalf).Ceil(), ws.Minimum.Mul(fxp.Two).Ceil())
+			fmt.Fprintf(&tooltip, i18n.Text(". If you have at least ST %v, you can use it one-handed, but it becomes unready after you attack with it. If you have at least ST %v, you can use it one-handed with no readiness penalty."), ws.Min.Mul(fxp.OneAndAHalf).Ceil(), ws.Min.Mul(fxp.Two).Ceil())
 		}
 	}
 	return tooltip.String()
@@ -188,7 +188,7 @@ func (ws WeaponStrength) Tooltip(w *Weapon) string {
 
 // Validate ensures that the data is valid.
 func (ws *WeaponStrength) Validate() {
-	ws.Minimum = ws.Minimum.Max(0)
+	ws.Min = ws.Min.Max(0)
 	if ws.TwoHanded && ws.TwoHandedUnready {
 		ws.TwoHanded = false
 	}
