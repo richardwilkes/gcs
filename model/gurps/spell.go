@@ -167,13 +167,16 @@ func (s *Spell) MarshalJSON() ([]byte, error) {
 		cl.ResolvedNotes = notes
 	}
 	if s.Container() || s.LevelData.Level <= 0 {
-		return json.Marshal(&struct {
+		value := &struct {
 			SpellData
-			Calc calcLeast `json:"calc"`
+			Calc *calcLeast `json:"calc,omitempty"`
 		}{
 			SpellData: s.SpellData,
-			Calc:      cl,
-		})
+		}
+		if cl != (calcLeast{}) {
+			value.Calc = &cl
+		}
+		return json.Marshal(value)
 	}
 	type calc struct {
 		Level              fxp.Int `json:"level"`

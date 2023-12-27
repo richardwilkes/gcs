@@ -13,6 +13,7 @@ package gurps
 
 import (
 	"cmp"
+	"context"
 	"encoding/binary"
 	"fmt"
 	"hash/fnv"
@@ -29,7 +30,11 @@ import (
 	"github.com/richardwilkes/toolbox/xio"
 )
 
-var _ Node[*Weapon] = &Weapon{}
+var (
+	_ Node[*Weapon] = &Weapon{}
+	// WeaponCtxKey is the context key used to store the weapon in the context.
+	WeaponCtxKey = weaponCtxKey(1)
+)
 
 // Columns that can be used with the weapon method .CellData()
 const (
@@ -49,6 +54,8 @@ const (
 	WeaponRecoilColumn
 )
 
+type weaponCtxKey int
+
 // WeaponOwner defines the methods required of a Weapon owner.
 type WeaponOwner interface {
 	fmt.Stringer
@@ -62,33 +69,22 @@ type WeaponOwner interface {
 
 // WeaponData holds the Weapon data that is written to disk.
 type WeaponData struct {
-	ID              uuid.UUID       `json:"id"`
-	Type            WeaponType      `json:"type"`
-	Jet             bool            `json:"-"`
-	Usage           string          `json:"usage,omitempty"`
-	UsageNotes      string          `json:"usage_notes,omitempty"`
-	Damage          WeaponDamage    `json:"damage"`
-	Parry           string          `json:"parry,omitempty"`
-	ParryParts      WeaponParry     `json:"-"`
-	Block           string          `json:"block,omitempty"`
-	BlockParts      WeaponBlock     `json:"-"`
-	Accuracy        string          `json:"accuracy,omitempty"`
-	AccuracyParts   WeaponAccuracy  `json:"-"`
-	Reach           string          `json:"reach,omitempty"`
-	ReachParts      WeaponReach     `json:"-"`
-	Range           string          `json:"range,omitempty"`
-	RangeParts      WeaponRange     `json:"-"`
-	RateOfFire      string          `json:"rate_of_fire,omitempty"`
-	RateOfFireParts WeaponRoF       `json:"-"`
-	Shots           string          `json:"shots,omitempty"`
-	ShotsParts      WeaponShots     `json:"-"`
-	Bulk            string          `json:"bulk,omitempty"`
-	BulkParts       WeaponBulk      `json:"-"`
-	Recoil          string          `json:"recoil,omitempty"`
-	RecoilParts     WeaponRecoil    `json:"-"`
-	Strength        string          `json:"strength,omitempty"`
-	StrengthParts   WeaponStrength  `json:"-"`
-	Defaults        []*SkillDefault `json:"defaults,omitempty"`
+	ID         uuid.UUID       `json:"id"`
+	Type       WeaponType      `json:"type"`
+	Damage     WeaponDamage    `json:"damage"`
+	Strength   WeaponStrength  `json:"strength,omitempty"`
+	Usage      string          `json:"usage,omitempty"`
+	UsageNotes string          `json:"usage_notes,omitempty"`
+	Reach      WeaponReach     `json:"reach,omitempty"`
+	Parry      WeaponParry     `json:"parry,omitempty"`
+	Block      WeaponBlock     `json:"block,omitempty"`
+	Accuracy   WeaponAccuracy  `json:"accuracy,omitempty"`
+	Range      WeaponRange     `json:"range,omitempty"`
+	RateOfFire WeaponRoF       `json:"rate_of_fire,omitempty"`
+	Shots      WeaponShots     `json:"shots,omitempty"`
+	Bulk       WeaponBulk      `json:"bulk,omitempty"`
+	Recoil     WeaponRecoil    `json:"recoil,omitempty"`
+	Defaults   []*SkillDefault `json:"defaults,omitempty"`
 }
 
 // Weapon holds the stats for a weapon.
@@ -140,11 +136,11 @@ func NewWeapon(owner WeaponOwner, weaponType WeaponType) *Weapon {
 	}
 	switch weaponType {
 	case MeleeWeaponType:
-		w.ReachParts.Min = fxp.One
-		w.ReachParts.Max = fxp.One
+		w.Reach.Min = fxp.One
+		w.Reach.Max = fxp.One
 		w.Damage.StrengthType = ThrustStrengthDamage
 	case RangedWeaponType:
-		w.RateOfFireParts.Mode1.ShotsPerAttack = fxp.One
+		w.RateOfFire.Mode1.ShotsPerAttack = fxp.One
 		w.Damage.Base = dice.New("1d")
 	default:
 	}
@@ -192,38 +188,21 @@ func (w *Weapon) HashCode() uint32 {
 	_, _ = h.Write([]byte(w.Usage))
 	_ = binary.Write(h, binary.LittleEndian, w.SkillLevel(nil))
 	_, _ = h.Write([]byte(w.Damage.ResolvedDamage(nil)))
-	_ = binary.Write(h, binary.LittleEndian, w.Jet)
-	w.ParryParts.hash(h)
-	w.BlockParts.hash(h)
-	w.AccuracyParts.hash(h)
-	w.ReachParts.hash(h)
-	w.RangeParts.hash(h)
-	w.RateOfFireParts.hash(h)
-	w.ShotsParts.hash(h)
-	w.BulkParts.hash(h)
-	w.RecoilParts.hash(h)
-	w.StrengthParts.hash(h)
+	w.Parry.hash(h)
+	w.Block.hash(h)
+	w.Accuracy.hash(h)
+	w.Reach.hash(h)
+	w.Range.hash(h)
+	w.RateOfFire.hash(h)
+	w.Shots.hash(h)
+	w.Bulk.hash(h)
+	w.Recoil.hash(h)
+	w.Strength.hash(h)
 	return h.Sum32()
 }
 
 // MarshalJSON implements json.Marshaler.
 func (w *Weapon) MarshalJSON() ([]byte, error) {
-	w.Strength = w.StrengthParts.String()
-	musclePowerIsResolved := w.PC() != nil
-	switch w.Type {
-	case MeleeWeaponType:
-		w.Parry = w.ParryParts.String()
-		w.Block = w.BlockParts.String()
-		w.Reach = w.ReachParts.String()
-	case RangedWeaponType:
-		w.Accuracy = w.AccuracyParts.String(w)
-		w.Range = w.RangeParts.String(musclePowerIsResolved)
-		w.RateOfFire = w.RateOfFireParts.String(w)
-		w.Shots = w.ShotsParts.String()
-		w.Bulk = w.BulkParts.String()
-		w.Recoil = w.RecoilParts.String()
-	default:
-	}
 	type calc struct {
 		Level      fxp.Int `json:"level,omitempty"`
 		Damage     string  `json:"damage,omitempty"`
@@ -240,82 +219,63 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 	}
 	data := struct {
 		WeaponData
-		Calc calc `json:"calc"`
+		Calc *calc `json:"calc,omitempty"`
 	}{
 		WeaponData: w.WeaponData,
-		Calc: calc{
+		Calc: &calc{
 			Level:  w.SkillLevel(nil).Max(0),
 			Damage: w.Damage.ResolvedDamage(nil),
 		},
 	}
-	if data.Calc.Strength = w.StrengthParts.Resolve(w, nil).String(); data.Calc.Strength == w.Strength {
+	if data.Calc.Strength = w.Strength.Resolve(w, nil).String(); data.Calc.Strength == w.Strength.String() {
 		data.Calc.Strength = ""
 	}
+	musclePowerIsResolved := w.PC() != nil
 	switch w.Type {
 	case MeleeWeaponType:
-		if data.Calc.Parry = w.ParryParts.Resolve(w, nil).String(); data.Calc.Parry == w.Parry {
+		if data.Calc.Parry = w.Parry.Resolve(w, nil).String(); data.Calc.Parry == w.Parry.String() {
 			data.Calc.Parry = ""
 		}
-		if data.Calc.Block = w.BlockParts.Resolve(w, nil).String(); data.Calc.Block == w.Block {
+		if data.Calc.Block = w.Block.Resolve(w, nil).String(); data.Calc.Block == w.Block.String() {
 			data.Calc.Block = ""
 		}
-		if data.Calc.Reach = w.ReachParts.Resolve(w, nil).String(); data.Calc.Reach == w.Reach {
+		if data.Calc.Reach = w.Reach.Resolve(w, nil).String(); data.Calc.Reach == w.Reach.String() {
 			data.Calc.Reach = ""
 		}
 	case RangedWeaponType:
-		if data.Calc.Accuracy = w.AccuracyParts.Resolve(w, nil).String(w); data.Calc.Accuracy == w.Accuracy {
+		if data.Calc.Accuracy = w.Accuracy.Resolve(w, nil).String(); data.Calc.Accuracy == w.Accuracy.String() {
 			data.Calc.Accuracy = ""
 		}
-		if data.Calc.Range = w.RangeParts.Resolve(w, nil).String(musclePowerIsResolved); data.Calc.Range == w.Range {
+		if data.Calc.Range = w.Range.Resolve(w, nil).String(musclePowerIsResolved); data.Calc.Range == w.Range.String(false) {
 			data.Calc.Range = ""
 		}
-		if data.Calc.RateOfFire = w.RateOfFireParts.Resolve(w, nil).String(w); data.Calc.RateOfFire == w.RateOfFire {
+		if data.Calc.RateOfFire = w.RateOfFire.Resolve(w, nil).String(); data.Calc.RateOfFire == w.RateOfFire.String() {
 			data.Calc.RateOfFire = ""
 		}
-		if data.Calc.Shots = w.ShotsParts.Resolve(w, nil).String(); data.Calc.Shots == w.Shots {
+		if data.Calc.Shots = w.Shots.Resolve(w, nil).String(); data.Calc.Shots == w.Shots.String() {
 			data.Calc.Shots = ""
 		}
-		if data.Calc.Bulk = w.BulkParts.Resolve(w, nil).String(); data.Calc.Bulk == w.Bulk {
+		if data.Calc.Bulk = w.Bulk.Resolve(w, nil).String(); data.Calc.Bulk == w.Bulk.String() {
 			data.Calc.Bulk = ""
 		}
-		if data.Calc.Recoil = w.RecoilParts.Resolve(w, nil).String(); data.Calc.Recoil == w.Recoil {
+		if data.Calc.Recoil = w.Recoil.Resolve(w, nil).String(); data.Calc.Recoil == w.Recoil.String() {
 			data.Calc.Recoil = ""
 		}
 	default:
 	}
-	return json.Marshal(&data)
+	if *data.Calc == (calc{}) {
+		data.Calc = nil
+	}
+	return json.MarshalWithContext(context.WithValue(context.Background(), WeaponCtxKey, w), &data)
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (w *Weapon) UnmarshalJSON(data []byte) error {
+	w.WeaponData = WeaponData{}
 	if err := json.Unmarshal(data, &w.WeaponData); err != nil {
 		return err
 	}
-	if strings.Contains(strings.ToLower(w.Accuracy), "jet") ||
-		strings.Contains(strings.ToLower(w.RateOfFire), "jet") {
-		w.Jet = true
-	}
-	w.StrengthParts = ParseWeaponStrength(w.Strength)
-	switch w.WeaponData.Type {
-	case MeleeWeaponType:
-		w.ParryParts = ParseWeaponParry(w.Parry)
-		w.BlockParts = ParseWeaponBlock(w.Block)
-		w.ReachParts = ParseWeaponReach(w.Reach)
-	case RangedWeaponType:
-		if !w.Jet {
-			w.AccuracyParts = ParseWeaponAccuracy(w.Accuracy)
-			w.RateOfFireParts = ParseWeaponRoF(w.RateOfFire)
-		}
-		w.RangeParts = ParseWeaponRange(w.Range)
-		w.ShotsParts = ParseWeaponShots(w.Shots)
-		w.BulkParts = ParseWeaponBulk(w.Bulk)
-		w.RecoilParts = ParseWeaponRecoil(w.Recoil)
-	default:
-	}
-	var zero uuid.UUID
-	if w.WeaponData.ID == zero {
-		w.WeaponData.ID = NewUUID()
-	}
+	w.Validate()
 	return nil
 }
 
@@ -404,7 +364,7 @@ func (w *Weapon) SkillLevel(tooltip *xio.ByteBuffer) fxp.Int {
 
 func (w *Weapon) skillLevelBaseAdjustment(entity *Entity, tooltip *xio.ByteBuffer) fxp.Int {
 	var adj fxp.Int
-	if minST := w.StrengthParts.Resolve(w, nil).Minimum - entity.StrikingStrength(); minST > 0 {
+	if minST := w.Strength.Resolve(w, nil).Minimum - entity.StrikingStrength(); minST > 0 {
 		adj -= minST
 		if tooltip != nil {
 			tooltip.WriteByte('\n')
@@ -444,8 +404,8 @@ func (w *Weapon) skillLevelBaseAdjustment(entity *Entity, tooltip *xio.ByteBuffe
 func (w *Weapon) skillLevelPostAdjustment(entity *Entity, tooltip *xio.ByteBuffer) fxp.Int {
 	if w.Type.EnsureValid() == MeleeWeaponType &&
 		// Cannot use w.ParryParts.Resolve() here, because that calls this
-		w.ResolveBoolFlag(CanParryWeaponSwitchType, w.ParryParts.Permitted) &&
-		w.ResolveBoolFlag(FencingWeaponSwitchType, w.ParryParts.Fencing) {
+		w.ResolveBoolFlag(CanParryWeaponSwitchType, !w.Parry.No) &&
+		w.ResolveBoolFlag(FencingWeaponSwitchType, w.Parry.Fencing) {
 		return w.EncumbrancePenalty(entity, tooltip)
 	}
 	return 0
@@ -671,39 +631,39 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 	case WeaponSLColumn:
 		data.Primary = w.SkillLevel(&buffer).String()
 	case WeaponParryColumn:
-		parry := w.ParryParts.Resolve(w, &buffer)
+		parry := w.Parry.Resolve(w, &buffer)
 		data.Primary = parry.String()
 		data.Tooltip = parry.Tooltip(w)
 	case WeaponBlockColumn:
-		data.Primary = w.BlockParts.Resolve(w, &buffer).String()
+		data.Primary = w.Block.Resolve(w, &buffer).String()
 	case WeaponDamageColumn:
 		data.Primary = w.Damage.ResolvedDamage(&buffer)
 	case WeaponReachColumn:
-		reach := w.ReachParts.Resolve(w, &buffer)
+		reach := w.Reach.Resolve(w, &buffer)
 		data.Primary = reach.String()
 		data.Tooltip = reach.Tooltip()
 	case WeaponSTColumn:
-		weaponST := w.StrengthParts.Resolve(w, &buffer)
+		weaponST := w.Strength.Resolve(w, &buffer)
 		data.Primary = weaponST.String()
 		data.Tooltip = weaponST.Tooltip(w)
 	case WeaponAccColumn:
-		data.Primary = w.AccuracyParts.Resolve(w, &buffer).String(w)
+		data.Primary = w.Accuracy.Resolve(w, &buffer).String()
 	case WeaponRangeColumn:
-		data.Primary = w.RangeParts.Resolve(w, &buffer).String(w.PC() != nil)
+		data.Primary = w.Range.Resolve(w, &buffer).String(w.PC() != nil)
 	case WeaponRoFColumn:
-		rof := w.RateOfFireParts.Resolve(w, &buffer)
-		data.Primary = rof.String(w)
-		data.Tooltip = rof.Tooltip(w)
+		rof := w.RateOfFire.Resolve(w, &buffer)
+		data.Primary = rof.String()
+		data.Tooltip = rof.Tooltip()
 	case WeaponShotsColumn:
-		shots := w.ShotsParts.Resolve(w, &buffer)
+		shots := w.Shots.Resolve(w, &buffer)
 		data.Primary = shots.String()
 		data.Tooltip = shots.Tooltip()
 	case WeaponBulkColumn:
-		bulk := w.BulkParts.Resolve(w, &buffer)
+		bulk := w.Bulk.Resolve(w, &buffer)
 		data.Primary = bulk.String()
 		data.Tooltip = bulk.Tooltip(w)
 	case WeaponRecoilColumn:
-		recoil := w.RecoilParts.Resolve(w, &buffer)
+		recoil := w.Recoil.Resolve(w, &buffer)
 		data.Primary = recoil.String()
 		data.Tooltip = recoil.Tooltip()
 	case PageRefCellAlias:
@@ -738,19 +698,36 @@ func (w *Weapon) ApplyTo(t *Weapon) {
 
 // Validate ensures the weapon data is valid.
 func (w *Weapon) Validate() {
-	w.StrengthParts.Validate()
+	var zero uuid.UUID
+	if w.WeaponData.ID == zero {
+		w.WeaponData.ID = NewUUID()
+	}
+	w.Strength.Validate()
 	switch w.Type {
 	case MeleeWeaponType:
-		w.ParryParts.Validate()
-		w.BlockParts.Validate()
-		w.ReachParts.Validate()
+		w.Parry.Validate()
+		w.Block.Validate()
+		w.Reach.Validate()
+		w.Accuracy = WeaponAccuracy{}
+		w.Range = WeaponRange{}
+		w.RateOfFire = WeaponRoF{}
+		w.Shots = WeaponShots{}
+		w.Bulk = WeaponBulk{}
+		w.Recoil = WeaponRecoil{}
 	case RangedWeaponType:
-		w.AccuracyParts.Validate()
-		w.RangeParts.Validate()
-		w.RateOfFireParts.Validate()
-		w.ShotsParts.Validate()
-		w.BulkParts.Validate()
-		w.RecoilParts.Validate()
+		if w.Accuracy.Jet || w.RateOfFire.Jet {
+			w.Accuracy.Jet = true
+			w.RateOfFire.Jet = true
+		}
+		w.Accuracy.Validate()
+		w.Range.Validate()
+		w.RateOfFire.Validate()
+		w.Shots.Validate()
+		w.Bulk.Validate()
+		w.Recoil.Validate()
+		w.Parry = WeaponParry{}
+		w.Block = WeaponBlock{}
+		w.Reach = WeaponReach{}
 	default:
 	}
 }

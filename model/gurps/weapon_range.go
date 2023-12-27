@@ -17,7 +17,14 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/xio"
+)
+
+var (
+	_ json.Omitter     = WeaponRange{}
+	_ json.Marshaler   = WeaponRange{}
+	_ json.Unmarshaler = &(WeaponRange{})
 )
 
 // WeaponRange holds the range data for a weapon.
@@ -67,6 +74,26 @@ func ParseWeaponRange(s string) WeaponRange {
 		wr.Validate()
 	}
 	return wr
+}
+
+// ShouldOmit returns true if the data should be omitted from JSON output.
+func (wr WeaponRange) ShouldOmit() bool {
+	return wr == WeaponRange{}
+}
+
+// MarshalJSON marshals the data to JSON.
+func (wr WeaponRange) MarshalJSON() ([]byte, error) {
+	return json.Marshal(wr.String(false))
+}
+
+// UnmarshalJSON unmarshals the data from JSON.
+func (wr *WeaponRange) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+	*wr = ParseWeaponRange(s)
+	return nil
 }
 
 // nolint:errcheck // Not checking errors on writes to a bytes.Buffer

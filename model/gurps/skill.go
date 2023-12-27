@@ -170,13 +170,16 @@ func (s *Skill) MarshalJSON() ([]byte, error) {
 		cnl.ResolvedNotes = notes
 	}
 	if s.Container() || s.LevelData.Level <= 0 {
-		return json.Marshal(&struct {
+		value := &struct {
 			SkillData
-			Calc calcNoLevel `json:"calc"`
+			Calc *calcNoLevel `json:"calc,omitempty"`
 		}{
 			SkillData: s.SkillData,
-			Calc:      cnl,
-		})
+		}
+		if cnl != (calcNoLevel{}) {
+			value.Calc = &cnl
+		}
+		return json.Marshal(value)
 	}
 	type calc struct {
 		Level              fxp.Int `json:"level"`

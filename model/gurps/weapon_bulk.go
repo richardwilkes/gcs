@@ -18,8 +18,15 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
+)
+
+var (
+	_ json.Omitter     = WeaponBulk{}
+	_ json.Marshaler   = WeaponBulk{}
+	_ json.Unmarshaler = &(WeaponBulk{})
 )
 
 // WeaponBulk holds the bulk data for a weapon.
@@ -42,6 +49,27 @@ func ParseWeaponBulk(s string) WeaponBulk {
 	}
 	wb.Validate()
 	return wb
+}
+
+// ShouldOmit returns true if the data should be omitted from JSON output.
+func (wb WeaponBulk) ShouldOmit() bool {
+	return wb == WeaponBulk{}
+}
+
+// MarshalJSON marshals the data to JSON.
+func (wb WeaponBulk) MarshalJSON() ([]byte, error) {
+	return json.Marshal(wb.String())
+}
+
+// UnmarshalJSON unmarshals the data from JSON.
+func (wb *WeaponBulk) UnmarshalJSON(data []byte) error {
+	var s string
+	err := json.Unmarshal(data, &s)
+	if err != nil {
+		return err
+	}
+	*wb = ParseWeaponBulk(s)
+	return nil
 }
 
 // nolint:errcheck // Not checking errors on writes to a bytes.Buffer
@@ -93,10 +121,10 @@ func (wb WeaponBulk) Tooltip(w *Weapon) string {
 		wb.GiantBulk += fxp.One
 	}
 	wb.Validate()
-	accuracy := w.AccuracyParts.Resolve(w, nil)
+	accuracy := w.Accuracy.Resolve(w, nil)
 	accuracy.Base -= fxp.One
 	accuracy.Validate()
-	recoil := w.RecoilParts.Resolve(w, nil)
+	recoil := w.Recoil.Resolve(w, nil)
 	if recoil.ShotRecoil > fxp.One {
 		recoil.ShotRecoil += fxp.One
 	}
@@ -104,11 +132,11 @@ func (wb WeaponBulk) Tooltip(w *Weapon) string {
 		recoil.SlugRecoil += fxp.One
 	}
 	recoil.Validate()
-	minST := w.StrengthParts.Resolve(w, nil)
+	minST := w.Strength.Resolve(w, nil)
 	minST.Minimum = minST.Minimum.Mul(fxp.OnePointTwo).Ceil()
 	minST.Validate()
 	return fmt.Sprintf(i18n.Text("Has a retracting stock. With the stock folded, the weapon's stats change to Bulk %s, Accuracy %s, Recoil %s, and minimum ST %s. Folding or unfolding the stock takes one Ready maneuver."),
-		wb.String(), accuracy.String(w), recoil.String(), minST.String())
+		wb.String(), accuracy.String(), recoil.String(), minST.String())
 }
 
 // Validate ensures that the data is valid.

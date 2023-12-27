@@ -289,7 +289,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 		best := "-"
 		bestValue := fxp.Min
 		for _, w := range ex.entity.EquippedWeapons(MeleeWeaponType) {
-			if parry := w.ParryParts.Resolve(w, nil); parry.Permitted && parry.Modifier > bestValue {
+			if parry := w.Parry.Resolve(w, nil); !parry.No && parry.Modifier > bestValue {
 				best = parry.String()
 				bestValue = parry.Modifier
 			}
@@ -299,7 +299,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 		best := "-"
 		bestValue := fxp.Min
 		for _, w := range ex.entity.EquippedWeapons(MeleeWeaponType) {
-			if block := w.BlockParts.Resolve(w, nil); block.Permitted && block.Modifier > bestValue {
+			if block := w.Block.Resolve(w, nil); !block.No && block.Modifier > bestValue {
 				best = block.String()
 				bestValue = block.Modifier
 			}
@@ -1290,11 +1290,11 @@ func (ex *legacyExporter) processHierarchicalRangedLoop(buffer []byte) {
 func (ex *legacyExporter) processMeleeKeys(key string, currentID int, w *Weapon, attackModes []*Weapon, buf []byte, index int) int {
 	switch key {
 	case "PARRY":
-		ex.writeEncodedText(w.ParryParts.Resolve(w, nil).String())
+		ex.writeEncodedText(w.Parry.Resolve(w, nil).String())
 	case "BLOCK":
-		ex.writeEncodedText(w.BlockParts.Resolve(w, nil).String())
+		ex.writeEncodedText(w.Block.Resolve(w, nil).String())
 	case "REACH":
-		ex.writeEncodedText(w.ReachParts.Resolve(w, nil).String())
+		ex.writeEncodedText(w.Reach.Resolve(w, nil).String())
 	case "ATTACK_MODES_LOOP_COUNT":
 		ex.writeEncodedText(strconv.Itoa(len(attackModes)))
 	case "ATTACK_MODES_LOOP_START":
@@ -1317,17 +1317,17 @@ func (ex *legacyExporter) processMeleeKeys(key string, currentID int, w *Weapon,
 func (ex *legacyExporter) processRangedKeys(key string, currentID int, w *Weapon, attackModes []*Weapon, buf []byte, index int) int {
 	switch key {
 	case "BULK":
-		ex.writeEncodedText(w.BulkParts.Resolve(w, nil).String())
+		ex.writeEncodedText(w.Bulk.Resolve(w, nil).String())
 	case "ACCURACY":
-		ex.writeEncodedText(w.AccuracyParts.Resolve(w, nil).String(w))
+		ex.writeEncodedText(w.Accuracy.Resolve(w, nil).String())
 	case "RANGE":
-		ex.writeEncodedText(w.RangeParts.Resolve(w, nil).String(true))
+		ex.writeEncodedText(w.Range.Resolve(w, nil).String(true))
 	case "ROF":
-		ex.writeEncodedText(w.RateOfFireParts.Resolve(w, nil).String(w))
+		ex.writeEncodedText(w.RateOfFire.Resolve(w, nil).String())
 	case "SHOTS":
-		ex.writeEncodedText(w.ShotsParts.Resolve(w, nil).String())
+		ex.writeEncodedText(w.Shots.Resolve(w, nil).String())
 	case "RECOIL":
-		ex.writeEncodedText(w.RecoilParts.Resolve(w, nil).String())
+		ex.writeEncodedText(w.Recoil.Resolve(w, nil).String())
 	case "ATTACK_MODES_LOOP_COUNT":
 		ex.writeEncodedText(strconv.Itoa(len(attackModes)))
 	case "ATTACK_MODES_LOOP_START":
@@ -1365,9 +1365,9 @@ func (ex *legacyExporter) processWeaponKeys(key string, currentID int, w *Weapon
 	case "UNMODIFIED_DAMAGE":
 		ex.writeEncodedText(w.Damage.String())
 	case "STRENGTH":
-		ex.writeEncodedText(w.StrengthParts.Resolve(w, nil).String())
+		ex.writeEncodedText(w.Strength.Resolve(w, nil).String())
 	case "WEAPON_STRENGTH":
-		st := w.StrengthParts.Resolve(w, nil).Minimum
+		st := w.Strength.Resolve(w, nil).Minimum
 		if st > 0 {
 			ex.writeEncodedText(st.String())
 		}

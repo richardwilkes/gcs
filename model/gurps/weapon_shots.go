@@ -17,8 +17,15 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
+)
+
+var (
+	_ json.Omitter     = WeaponShots{}
+	_ json.Marshaler   = WeaponShots{}
+	_ json.Unmarshaler = &(WeaponShots{})
 )
 
 // WeaponShots holds the shots data for a weapon.
@@ -57,6 +64,26 @@ func ParseWeaponShots(s string) WeaponShots {
 	}
 	ws.Validate()
 	return ws
+}
+
+// ShouldOmit returns true if the data should be omitted from JSON output.
+func (ws WeaponShots) ShouldOmit() bool {
+	return ws == WeaponShots{}
+}
+
+// MarshalJSON marshals the data to JSON.
+func (ws WeaponShots) MarshalJSON() ([]byte, error) {
+	return json.Marshal(ws.String())
+}
+
+// UnmarshalJSON unmarshals the data from JSON.
+func (ws *WeaponShots) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+	*ws = ParseWeaponShots(s)
+	return nil
 }
 
 // nolint:errcheck // Not checking errors on writes to a bytes.Buffer

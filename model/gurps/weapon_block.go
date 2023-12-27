@@ -17,39 +17,66 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/xio"
+)
+
+var (
+	_ json.Omitter     = WeaponBlock{}
+	_ json.Marshaler   = WeaponBlock{}
+	_ json.Unmarshaler = &(WeaponBlock{})
 )
 
 // WeaponBlock holds the block data for a weapon.
 type WeaponBlock struct {
-	Permitted bool
-	Modifier  fxp.Int
+	No       bool
+	Modifier fxp.Int
 }
 
 // ParseWeaponBlock parses a string into a WeaponBlock.
 func ParseWeaponBlock(s string) WeaponBlock {
 	var wb WeaponBlock
 	s = strings.ToLower(s)
-	wb.Permitted = !strings.Contains(s, "no")
-	if wb.Permitted {
+	wb.No = strings.Contains(s, "no")
+	if !wb.No {
 		wb.Modifier, _ = fxp.Extract(s)
 	}
 	wb.Validate()
 	return wb
 }
 
+// ShouldOmit returns true if the data should be omitted from JSON output.
+func (wb WeaponBlock) ShouldOmit() bool {
+	return wb == WeaponBlock{}
+}
+
+// MarshalJSON marshals the data to JSON.
+func (wb WeaponBlock) MarshalJSON() ([]byte, error) {
+	return json.Marshal(wb.String())
+}
+
+// UnmarshalJSON unmarshals the data from JSON.
+func (wb *WeaponBlock) UnmarshalJSON(data []byte) error {
+	var s string
+	err := json.Unmarshal(data, &s)
+	if err != nil {
+		return err
+	}
+	*wb = ParseWeaponBlock(s)
+	return nil
+}
+
 // nolint:errcheck // Not checking errors on writes to a bytes.Buffer
 func (wb WeaponBlock) hash(h hash.Hash32) {
 	_ = binary.Write(h, binary.LittleEndian, wb.Modifier)
-	_ = binary.Write(h, binary.LittleEndian, wb.Permitted)
+	_ = binary.Write(h, binary.LittleEndian, wb.No)
 }
 
 // Resolve any bonuses that apply.
 func (wb WeaponBlock) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) WeaponBlock {
 	result := wb
-	result.Permitted = w.ResolveBoolFlag(CanBlockWeaponSwitchType, result.Permitted)
-	if result.Permitted {
+	result.No = !w.ResolveBoolFlag(CanBlockWeaponSwitchType, !result.No)
+	if !result.No {
 		if pc := w.PC(); pc != nil {
 			var primaryTooltip *xio.ByteBuffer
 			if modifiersTooltip != nil {
@@ -91,8 +118,8 @@ func (wb WeaponBlock) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 // String returns a string suitable for presentation, matching the standard GURPS weapon table entry format for this
 // data. Call .Resolve() prior to calling this method if you want the resolved values.
 func (wb WeaponBlock) String() string {
-	if !wb.Permitted {
-		return i18n.Text("No")
+	if wb.No {
+		return "No" // Not localized, since it is part of the data
 	}
 	if wb.Modifier == 0 {
 		return ""
@@ -102,7 +129,7 @@ func (wb WeaponBlock) String() string {
 
 // Validate ensures that the data is valid.
 func (wb *WeaponBlock) Validate() {
-	if !wb.Permitted {
+	if wb.No {
 		wb.Modifier = 0
 	}
 }

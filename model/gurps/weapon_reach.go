@@ -17,8 +17,15 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
+)
+
+var (
+	_ json.Omitter     = WeaponReach{}
+	_ json.Marshaler   = WeaponReach{}
+	_ json.Unmarshaler = &(WeaponReach{})
 )
 
 // WeaponReach holds the reach data for a weapon.
@@ -54,6 +61,27 @@ func ParseWeaponReach(s string) WeaponReach {
 		}
 	}
 	return wr
+}
+
+// ShouldOmit returns true if the data should be omitted from JSON output.
+func (wr WeaponReach) ShouldOmit() bool {
+	return wr == WeaponReach{}
+}
+
+// MarshalJSON marshals the data to JSON.
+func (wr WeaponReach) MarshalJSON() ([]byte, error) {
+	return json.Marshal(wr.String())
+}
+
+// UnmarshalJSON unmarshals the data from JSON.
+func (wr *WeaponReach) UnmarshalJSON(data []byte) error {
+	var s string
+	err := json.Unmarshal(data, &s)
+	if err != nil {
+		return err
+	}
+	*wr = ParseWeaponReach(s)
+	return nil
 }
 
 // nolint:errcheck // Not checking errors on writes to a bytes.Buffer

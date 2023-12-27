@@ -18,8 +18,15 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
+)
+
+var (
+	_ json.Omitter     = WeaponStrength{}
+	_ json.Marshaler   = WeaponStrength{}
+	_ json.Unmarshaler = &(WeaponStrength{})
 )
 
 // WeaponStrength holds the minimum strength data for a weapon.
@@ -47,6 +54,26 @@ func ParseWeaponStrength(s string) WeaponStrength {
 		ws.Validate()
 	}
 	return ws
+}
+
+// ShouldOmit returns true if the data should be omitted from JSON output.
+func (ws WeaponStrength) ShouldOmit() bool {
+	return ws == WeaponStrength{}
+}
+
+// MarshalJSON marshals the data to JSON.
+func (ws WeaponStrength) MarshalJSON() ([]byte, error) {
+	return json.Marshal(ws.String())
+}
+
+// UnmarshalJSON unmarshals the data from JSON.
+func (ws *WeaponStrength) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+	*ws = ParseWeaponStrength(s)
+	return nil
 }
 
 // nolint:errcheck // Not checking errors on writes to a bytes.Buffer

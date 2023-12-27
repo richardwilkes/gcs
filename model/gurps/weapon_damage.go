@@ -160,7 +160,7 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 	if pc == nil {
 		return w.String()
 	}
-	maxST := w.Owner.StrengthParts.Resolve(w.Owner, nil).Minimum.Mul(fxp.Three)
+	maxST := w.Owner.Strength.Resolve(w.Owner, nil).Minimum.Mul(fxp.Three)
 	var st fxp.Int
 	if w.Owner.Owner != nil {
 		st = w.Owner.Owner.RatedStrength()

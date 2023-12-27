@@ -108,13 +108,13 @@ func (n *Note) MarshalJSON() ([]byte, error) {
 	n.ClearUnusedFieldsForType()
 	data := struct {
 		NoteData
-		Calc calc `json:"calc"`
+		Calc *calc `json:"calc,omitempty"`
 	}{
 		NoteData: n.NoteData,
 	}
 	notes := n.resolveText()
 	if notes != n.Text {
-		data.Calc.ResolvedNotes = notes
+		data.Calc = &calc{ResolvedNotes: notes}
 	}
 	return json.Marshal(&data)
 }

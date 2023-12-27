@@ -17,8 +17,15 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
+)
+
+var (
+	_ json.Omitter     = WeaponRecoil{}
+	_ json.Marshaler   = WeaponRecoil{}
+	_ json.Unmarshaler = &(WeaponRecoil{})
 )
 
 // WeaponRecoil holds the recoil data for a weapon.
@@ -38,6 +45,26 @@ func ParseWeaponRecoil(s string) WeaponRecoil {
 		wr.SlugRecoil, _ = fxp.Extract(parts[1])
 	}
 	return wr
+}
+
+// ShouldOmit returns true if the data should be omitted from JSON output.
+func (wr WeaponRecoil) ShouldOmit() bool {
+	return wr == WeaponRecoil{}
+}
+
+// MarshalJSON marshals the data to JSON.
+func (wr WeaponRecoil) MarshalJSON() ([]byte, error) {
+	return json.Marshal(wr.String())
+}
+
+// UnmarshalJSON unmarshals the data from JSON.
+func (wr *WeaponRecoil) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+	*wr = ParseWeaponRecoil(s)
+	return nil
 }
 
 // nolint:errcheck // Not checking errors on writes to a bytes.Buffer

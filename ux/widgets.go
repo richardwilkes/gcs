@@ -336,10 +336,12 @@ func addCheckBox(parent *unison.Panel, labelText string, fieldData *bool) *Check
 	return checkBox
 }
 
-func addInvertedCheckBox(parent *unison.Panel, labelText string, fieldData *bool) {
-	parent.AddChild(NewCheckBox(nil, "", labelText,
+func addInvertedCheckBox(parent *unison.Panel, labelText string, fieldData *bool) *CheckBox {
+	checkBox := NewCheckBox(nil, "", labelText,
 		func() check.Enum { return check.FromBool(!*fieldData) },
-		func(state check.Enum) { *fieldData = state == check.Off }))
+		func(state check.Enum) { *fieldData = state == check.Off })
+	parent.AddChild(checkBox)
+	return checkBox
 }
 
 func addFlowWrapper(parent *unison.Panel, labelText string, count int) *unison.Panel {

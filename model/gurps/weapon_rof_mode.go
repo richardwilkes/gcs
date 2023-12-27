@@ -63,9 +63,6 @@ func (wr WeaponRoFMode) hash(h hash.Hash32) {
 
 // Resolve any bonuses that apply.
 func (wr WeaponRoFMode) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer, firstMode bool) WeaponRoFMode {
-	if w.ResolveBoolFlag(JetWeaponSwitchType, w.Jet) {
-		return WeaponRoFMode{}
-	}
 	result := wr
 	var shotsFeature, secondaryFeature FeatureType
 	if firstMode {

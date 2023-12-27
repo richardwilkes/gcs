@@ -19,14 +19,14 @@ import (
 )
 
 func TestWeaponAccuracy(t *testing.T) {
-	var w gurps.Weapon
 	for i, s := range []string{
 		"0",
 		"1",
 		"0+3",
 		"1+3",
+		"Jet",
 	} {
-		check.Equal(t, s, gurps.ParseWeaponAccuracy(s).String(&w), "test %d", i)
+		check.Equal(t, s, gurps.ParseWeaponAccuracy(s).String(), "test %d", i)
 	}
 
 	cases := []struct {
@@ -42,6 +42,6 @@ func TestWeaponAccuracy(t *testing.T) {
 		{"?", "0"},
 	}
 	for i, c := range cases {
-		check.Equal(t, c.expected, gurps.ParseWeaponAccuracy(c.input).String(&w), "test %d", i)
+		check.Equal(t, c.expected, gurps.ParseWeaponAccuracy(c.input).String(), "test %d", i)
 	}
 }

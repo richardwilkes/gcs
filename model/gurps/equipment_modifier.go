@@ -120,13 +120,13 @@ func (m *EquipmentModifier) MarshalJSON() ([]byte, error) {
 	m.ClearUnusedFieldsForType()
 	data := struct {
 		EquipmentModifierData
-		Calc calc `json:"calc"`
+		Calc *calc `json:"calc,omitempty"`
 	}{
 		EquipmentModifierData: m.EquipmentModifierData,
 	}
 	notes := m.resolveLocalNotes()
 	if notes != m.LocalNotes {
-		data.Calc.ResolvedNotes = notes
+		data.Calc = &calc{ResolvedNotes: notes}
 	}
 	return json.Marshal(&data)
 }

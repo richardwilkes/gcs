@@ -29,7 +29,9 @@ func NewNaturalAttacks(entity *Entity, parent *Trait) *Trait {
 func newBite(owner WeaponOwner) *Weapon {
 	bite := NewWeapon(owner, MeleeWeaponType)
 	bite.Usage = i18n.Text("Bite")
-	bite.ReachParts.CloseCombat = true
+	bite.Block.No = true
+	bite.Parry.No = true
+	bite.Reach.CloseCombat = true
 	bite.Defaults = []*SkillDefault{
 		{
 			DefaultType: DexterityID,
@@ -55,9 +57,7 @@ func newBite(owner WeaponOwner) *Weapon {
 func newPunch(owner WeaponOwner) *Weapon {
 	punch := NewWeapon(owner, MeleeWeaponType)
 	punch.Usage = i18n.Text("Punch")
-	punch.ReachParts.CloseCombat = true
-	punch.ParryParts.Permitted = true
-	punch.BlockParts.Permitted = true
+	punch.Reach.CloseCombat = true
 	punch.Defaults = []*SkillDefault{
 		{
 			DefaultType: DexterityID,
@@ -91,9 +91,11 @@ func newPunch(owner WeaponOwner) *Weapon {
 func newKick(owner WeaponOwner) *Weapon {
 	kick := NewWeapon(owner, MeleeWeaponType)
 	kick.Usage = i18n.Text("Kick")
-	kick.ReachParts.CloseCombat = true
-	kick.ReachParts.Min = fxp.One
-	kick.ReachParts.Max = fxp.One
+	kick.Parry.No = true
+	kick.Block.No = true
+	kick.Reach.CloseCombat = true
+	kick.Reach.Min = fxp.One
+	kick.Reach.Max = fxp.One
 	kick.Defaults = []*SkillDefault{
 		{
 			DefaultType: DexterityID,

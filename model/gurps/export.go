@@ -65,7 +65,6 @@ type exportedRangedWeapon struct {
 	RecoilParts     WeaponRecoil
 	Strength        string
 	StrengthParts   WeaponStrength
-	Jet             bool
 }
 
 type exportedHitLocation struct {
@@ -587,10 +586,10 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 		return false
 	}, true, false, entity.Notes...)
 	for _, w := range entity.EquippedWeapons(MeleeWeaponType) {
-		weaponST := w.StrengthParts.Resolve(w, nil)
-		parry := w.ParryParts.Resolve(w, nil)
-		block := w.BlockParts.Resolve(w, nil)
-		reach := w.ReachParts.Resolve(w, nil)
+		weaponST := w.Strength.Resolve(w, nil)
+		parry := w.Parry.Resolve(w, nil)
+		block := w.Block.Resolve(w, nil)
+		reach := w.Reach.Resolve(w, nil)
 		data.MeleeWeapons = append(data.MeleeWeapons, &exportedMeleeWeapon{
 			Description:   w.String(),
 			Notes:         w.Notes(),
@@ -608,24 +607,24 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 		})
 	}
 	for _, w := range entity.EquippedWeapons(RangedWeaponType) {
-		accuracy := w.AccuracyParts.Resolve(w, nil)
-		weaponRange := w.RangeParts.Resolve(w, nil)
-		rof := w.RateOfFireParts.Resolve(w, nil)
-		shots := w.ShotsParts.Resolve(w, nil)
-		bulk := w.BulkParts.Resolve(w, nil)
-		recoil := w.RecoilParts.Resolve(w, nil)
-		weaponST := w.StrengthParts.Resolve(w, nil)
+		accuracy := w.Accuracy.Resolve(w, nil)
+		weaponRange := w.Range.Resolve(w, nil)
+		rof := w.RateOfFire.Resolve(w, nil)
+		shots := w.Shots.Resolve(w, nil)
+		bulk := w.Bulk.Resolve(w, nil)
+		recoil := w.Recoil.Resolve(w, nil)
+		weaponST := w.Strength.Resolve(w, nil)
 		data.RangedWeapons = append(data.RangedWeapons, &exportedRangedWeapon{
 			Description:     w.String(),
 			Notes:           w.Notes(),
 			Usage:           w.Usage,
 			Level:           w.SkillLevel(nil),
-			Accuracy:        accuracy.String(w),
+			Accuracy:        accuracy.String(),
 			AccuracyParts:   accuracy,
 			Range:           weaponRange.String(true),
 			RangeParts:      weaponRange,
 			Damage:          w.Damage.ResolvedDamage(nil),
-			RateOfFire:      rof.String(w),
+			RateOfFire:      rof.String(),
 			RateOfFireParts: rof,
 			Shots:           shots.String(),
 			ShotsParts:      shots,
@@ -635,7 +634,6 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			RecoilParts:     recoil,
 			Strength:        weaponST.String(),
 			StrengthParts:   weaponST,
-			Jet:             w.ResolveBoolFlag(JetWeaponSwitchType, w.Jet),
 		})
 	}
 	if err = tmpl.Execute(buffer, data); err != nil {
