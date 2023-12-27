@@ -359,15 +359,28 @@ func addFlowWrapper(parent *unison.Panel, labelText string, count int) *unison.P
 	return wrapper
 }
 
-func addLabelAndNullableDice(parent *unison.Panel, labelText, tooltip string, fieldData **dice.Dice) *StringField {
+func addFillWrapper(parent *unison.Panel, labelText string, count int) *unison.Panel {
+	wrapper := addFlowWrapper(parent, labelText, count)
+	wrapper.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Fill,
+		VAlign: align.Middle,
+		HGrab:  true,
+	})
+	return wrapper
+}
+
+func addNullableDice(parent *unison.Panel, labelText, tooltip string, fieldData **dice.Dice, useSign bool) *StringField {
 	var data string
 	if *fieldData != nil {
 		data = (*fieldData).String()
 	}
-	label := NewFieldLeadingLabel(labelText, false)
-	parent.AddChild(label)
 	field := NewStringField(nil, "", labelText,
-		func() string { return data },
+		func() string {
+			if useSign && data != "" && !strings.HasPrefix(data, "+") && !strings.HasPrefix(data, "-") {
+				return "+" + data
+			}
+			return data
+		},
 		func(value string) {
 			data = strings.TrimPrefix(strings.TrimSpace(value), "+")
 			if value == "" {
@@ -378,7 +391,6 @@ func addLabelAndNullableDice(parent *unison.Panel, labelText, tooltip string, fi
 			MarkModified(parent)
 		})
 	if tooltip != "" {
-		label.Tooltip = newWrappedTooltip(tooltip)
 		field.Tooltip = newWrappedTooltip(tooltip)
 	}
 	parent.AddChild(field)

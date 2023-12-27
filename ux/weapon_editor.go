@@ -26,189 +26,249 @@ import (
 	"github.com/richardwilkes/unison/enums/check"
 )
 
-// EditWeapon displays the editor for a weapon.
-func EditWeapon(owner Rebuildable, w *gurps.Weapon) {
-	displayEditor[*gurps.Weapon, *gurps.Weapon](owner, w, w.Type.SVG(),
-		"md:Help/Interface/"+txt.FirstToUpper(strings.Split(w.Type.Key(), "_")[0])+" Weapon Usage", nil,
-		initWeaponEditor, preApply)
+type weaponEditor struct {
+	jetCheckBox           *CheckBox
+	panelsControlledByJet []unison.Paneler
 }
 
-func initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.Panel) func() {
+// EditWeapon displays the editor for a weapon.
+func EditWeapon(owner Rebuildable, w *gurps.Weapon) {
+	var we weaponEditor
+	displayEditor[*gurps.Weapon, *gurps.Weapon](owner, w, w.Type.SVG(),
+		"md:Help/Interface/"+txt.FirstToUpper(strings.Split(w.Type.Key(), "_")[0])+" Weapon Usage", nil,
+		we.initWeaponEditor, we.preApply)
+}
+
+func (we *weaponEditor) initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.Panel) func() {
 	w := e.editorData
-	addUsageBlock(w, content)
-	addStrengthBlock(w, content)
-	addDamageBlock(w, content)
+	we.addUsageBlock(w, content)
 	switch w.Type {
 	case wpn.Melee:
-		addReachBlock(w, content)
-		addParryBlock(w, content)
-		addBlockBlock(w, content)
+		we.addParryBlock(w, content)
+		we.addBlockBlock(w, content)
+		we.addDamageBlock(w, content)
+		we.addReachBlock(w, content)
 	case wpn.Ranged:
-		addAccuracyBlock(w, content)
-		addRateOfFireBlock(w, content)
-		addRangeBlock(w, content)
-		addRecoilBlock(w, content)
-		addShotsBlock(w, content)
-		addBulkBlock(w, content)
+		we.addAccuracyBlock(w, content)
+		we.addDamageBlock(w, content)
+		we.addRangeBlock(w, content)
+		we.addRateOfFireBlock(w, content)
+		we.addShotsBlock(w, content)
+		we.addBulkBlock(w, content)
+		we.addRecoilBlock(w, content)
 	}
+	we.addStrengthBlock(w, content)
 	content.AddChild(newDefaultsPanel(w.Entity(), &w.Defaults))
+	if w.Type == wpn.Ranged {
+		we.jetCheckBox.OnSet = func() {
+			state := we.jetCheckBox.State == check.Off
+			for _, p := range we.panelsControlledByJet {
+				p.AsPanel().SetEnabled(state)
+			}
+		}
+		we.jetCheckBox.OnSet()
+	}
 	return nil
 }
 
-func addUsageBlock(w *gurps.Weapon, content *unison.Panel) {
+func (we *weaponEditor) addUsageBlock(w *gurps.Weapon, content *unison.Panel) {
 	addLabelAndStringField(content, i18n.Text("Usage"), "", &w.Usage)
 	addNotesLabelAndField(content, &w.UsageNotes)
 }
 
-func addStrengthBlock(w *gurps.Weapon, content *unison.Panel) {
-	strength := &w.Strength
-	addLabelAndDecimalField(content, nil, "", i18n.Text("Minimum ST"), "", &strength.Min, 0, fxp.Max)
-	if w.Type == wpn.Ranged {
-		content.AddChild(unison.NewPanel())
-		addCheckBox(content, i18n.Text("Has bipod"), &strength.Bipod)
-		content.AddChild(unison.NewPanel())
-		addCheckBox(content, i18n.Text("Mounted"), &strength.Mounted)
-		content.AddChild(unison.NewPanel())
-		addCheckBox(content, i18n.Text("Uses a musket rest"), &strength.MusketRest)
-	}
-	content.AddChild(unison.NewPanel())
-	addCheckBox(content, i18n.Text("Two-handed"), &strength.TwoHanded)
-	content.AddChild(unison.NewPanel())
-	addCheckBox(content, i18n.Text("Two-handed and unready after attack"), &strength.TwoHandedUnready)
-}
-
-func addDamageBlock(w *gurps.Weapon, content *unison.Panel) {
-	damage := &w.Damage
-	addLabelAndPopup(content, i18n.Text("Base Damage"), "", stdmg.Options, &damage.StrengthType)
-	addLabelAndNullableDice(content, i18n.Text("Damage Modifier"), "", &damage.Base)
-	addLabelAndDecimalField(content, nil, "", i18n.Text("Damage Modifier Per Die"), "", &damage.ModifierPerDie,
-		fxp.Min, fxp.Max)
-	addLabelAndDecimalField(content, nil, "", i18n.Text("Armor Divisor"), "", &damage.ArmorDivisor, 0, fxp.Max)
-	addLabelAndStringField(content, i18n.Text("Damage Type"), "", &damage.Type)
-	addLabelAndNullableDice(content, i18n.Text("Fragmentation Base Damage"), "", &damage.Fragmentation)
-	addLabelAndDecimalField(content, nil, "", i18n.Text("Fragmentation Armor Divisor"), "",
-		&damage.FragmentationArmorDivisor, 0, fxp.Max)
-	addLabelAndStringField(content, i18n.Text("Fragmentation Type"), "", &damage.FragmentationType)
-}
-
-func addReachBlock(w *gurps.Weapon, content *unison.Panel) {
-	reach := &w.Reach
-	addLabelAndDecimalField(content, nil, "", i18n.Text("Minimum Reach"), "", &reach.Min, 0, fxp.Max)
-	addLabelAndDecimalField(content, nil, "", i18n.Text("Maximum Reach"), "", &reach.Max, 0, fxp.Max)
-	content.AddChild(unison.NewPanel())
-	addCheckBox(content, i18n.Text("Close Combat"), &reach.CloseCombat)
-	content.AddChild(unison.NewPanel())
-	addCheckBox(content, i18n.Text("Reach Change Requires Ready"), &reach.ChangeRequiresReady)
-}
-
-func addParryBlock(w *gurps.Weapon, content *unison.Panel) {
+func (we *weaponEditor) addParryBlock(w *gurps.Weapon, content *unison.Panel) {
 	parry := &w.Parry
-	parryCheckBox := addInvertedCheckBox(content, i18n.Text("Parry Modifier"), &parry.No)
-	parryCheckBox.SetLayoutData(&unison.FlexLayoutData{
+	on := addInvertedCheckBox(content, i18n.Text("Parry"), &parry.No)
+	on.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.End,
 		VAlign: align.Middle,
 	})
-	parryField := addDecimalFieldWithSign(content, nil, "", i18n.Text("Parry Modifier"), "", &parry.Modifier, -fxp.Max, fxp.Max)
-	parryCheckBox.OnSet = func() {
-		parryField.SetEnabled(parryCheckBox.State == check.On)
+	wrapper := unison.NewPanel()
+	wrapper.SetLayout(&unison.FlexLayout{
+		Columns:  3,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+		VAlign:   align.Middle,
+	})
+	content.AddChild(wrapper)
+	text := i18n.Text("Parry Modifier")
+	field := addDecimalFieldWithSign(wrapper, nil, "", text, text, &parry.Modifier, -fxp.Thousand, fxp.Thousand)
+	fencing := addCheckBox(wrapper, i18n.Text("Fencing"), &parry.Fencing)
+	unbalanced := addCheckBox(wrapper, i18n.Text("Unbalanced"), &parry.Unbalanced)
+	on.OnSet = func() {
+		field.SetEnabled(on.State == check.On)
+		fencing.SetEnabled(on.State == check.On)
+		unbalanced.SetEnabled(on.State == check.On)
 	}
-	parryCheckBox.OnSet()
-	content.AddChild(unison.NewPanel())
-	addCheckBox(content, i18n.Text("Fencing"), &parry.Fencing)
-	content.AddChild(unison.NewPanel())
-	addCheckBox(content, i18n.Text("Unbalanced"), &parry.Unbalanced)
+	on.OnSet()
 }
 
-func addBlockBlock(w *gurps.Weapon, content *unison.Panel) {
+func (we *weaponEditor) addBlockBlock(w *gurps.Weapon, content *unison.Panel) {
 	block := &w.Block
-	blockCheckBox := addInvertedCheckBox(content, i18n.Text("Block Modifier"), &block.No)
-	blockCheckBox.SetLayoutData(&unison.FlexLayoutData{
+	on := addInvertedCheckBox(content, i18n.Text("Block"), &block.No)
+	on.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.End,
 		VAlign: align.Middle,
 	})
-	blockField := addDecimalFieldWithSign(content, nil, "", i18n.Text("Block Modifier"), "", &block.Modifier, -fxp.Max, fxp.Max)
-	blockCheckBox.OnSet = func() {
-		blockField.SetEnabled(blockCheckBox.State == check.On)
+	text := i18n.Text("Block Modifier")
+	blockField := addDecimalFieldWithSign(content, nil, "", text, text, &block.Modifier, -fxp.Thousand, fxp.Thousand)
+	on.OnSet = func() {
+		blockField.SetEnabled(on.State == check.On)
 	}
-	blockCheckBox.OnSet()
+	on.OnSet()
 }
 
-func addAccuracyBlock(w *gurps.Weapon, content *unison.Panel) {
+func (we *weaponEditor) addDamageBlock(w *gurps.Weapon, content *unison.Panel) {
+	damage := &w.Damage
+	wrapper := addFillWrapper(content, i18n.Text("Damage"), 4)
+	addPopup(wrapper, stdmg.Options, &damage.StrengthType)
+	text := i18n.Text("Damage Modifier")
+	addNullableDice(wrapper, text, text, &damage.Base, true)
+	text = i18n.Text("Damage Modifier Per Die")
+	addDecimalFieldWithSign(wrapper, nil, "", text, text, &damage.ModifierPerDie, -fxp.BillionMinusOne, fxp.BillionMinusOne)
+	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("per die"), false))
+
+	wrapper = addFillWrapper(content, "", 4)
+	armorDivisor := i18n.Text("Armor Divisor")
+	addLabelAndDecimalField(wrapper, nil, "", armorDivisor, armorDivisor, &damage.ArmorDivisor, 0, fxp.MillionMinusOne)
+	typeText := i18n.Text("Type")
+	text = i18n.Text("Damage Type")
+	wrapper.AddChild(NewFieldTrailingLabel(typeText, false))
+	addStringField(wrapper, text, text, &damage.Type)
+
+	wrapper = addFillWrapper(content, i18n.Text("Fragmentation"), 5)
+	text = i18n.Text("Fragmentation Base Damage")
+	addNullableDice(wrapper, text, text, &damage.Fragmentation, false)
+	wrapper.AddChild(NewFieldTrailingLabel(armorDivisor, false))
+	text = i18n.Text("Fragmentation Armor Divisor")
+	addDecimalField(wrapper, nil, "", text, text, &damage.FragmentationArmorDivisor, 0, fxp.MillionMinusOne)
+	wrapper.AddChild(NewFieldTrailingLabel(typeText, false))
+	text = i18n.Text("Fragmentation Type")
+	addStringField(wrapper, text, text, &damage.FragmentationType)
+}
+
+func (we *weaponEditor) addReachBlock(w *gurps.Weapon, content *unison.Panel) {
+	reach := &w.Reach
+	wrapper := addFlowWrapper(content, i18n.Text("Reach"), 3)
+	text := i18n.Text("Maximum Reach")
+	addDecimalField(wrapper, nil, "", text, text, &reach.Max, 0, fxp.Thousand)
+	wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Minimum"), false))
+	text = i18n.Text("Minimum Reach")
+	addDecimalField(wrapper, nil, "", text, text, &reach.Min, 0, fxp.Thousand)
+	wrapper = addFlowWrapper(content, "", 2)
+	addCheckBox(wrapper, i18n.Text("Close Combat"), &reach.CloseCombat)
+	addCheckBox(wrapper, i18n.Text("Reach Change Requires Ready"), &reach.ChangeRequiresReady)
+}
+
+func (we *weaponEditor) addAccuracyBlock(w *gurps.Weapon, content *unison.Panel) {
 	accuracy := &w.Accuracy
-	addLabelAndDecimalField(content, nil, "", i18n.Text("Weapon Accuracy"), "", &accuracy.Base, 0, fxp.Max)
-	addLabelAndDecimalField(content, nil, "", i18n.Text("Scope Accuracy"), "", &accuracy.Scope, 0, fxp.Max)
+	wrapper := addFlowWrapper(content, i18n.Text("Accuracy"), 4)
+	text := i18n.Text("Weapon Accuracy")
+	base := addDecimalFieldWithSign(wrapper, nil, "", text, text, &accuracy.Base, 0, fxp.MillionMinusOne)
+	wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Scope"), false))
+	text = i18n.Text("Scope Accuracy")
+	scope := addDecimalFieldWithSign(wrapper, nil, "", text, text, &accuracy.Scope, 0, fxp.MillionMinusOne)
+	we.jetCheckBox = addCheckBox(wrapper, i18n.Text("Jet"), &accuracy.Jet)
+	we.panelsControlledByJet = append(we.panelsControlledByJet, base, scope)
 }
 
-func addRateOfFireBlock(w *gurps.Weapon, content *unison.Panel) {
-	rof := &w.RateOfFire
-	content.AddChild(unison.NewPanel())
-	addCheckBox(content, i18n.Text("Jet"), &rof.Jet)
-	addRateOfFireModeBlock(content, &rof.Mode1, 1)
-	addRateOfFireModeBlock(content, &rof.Mode2, 2)
-}
-
-func addRateOfFireModeBlock(content *unison.Panel, mode *gurps.WeaponRoFMode, modeNum int) {
-	wrapper := addFlowWrapper(content, fmt.Sprintf(i18n.Text("Rate of Fire Mode %d"), modeNum), 3)
-	text := i18n.Text("Shots Per Attack")
-	addDecimalField(wrapper, nil, "", text, "", &mode.ShotsPerAttack, 0, fxp.Max)
-	label1 := NewFieldTrailingLabel(text, false)
-	wrapper.AddChild(label1)
-	addCheckBox(wrapper, i18n.Text("Fully Automatic Only"), &mode.FullAutoOnly)
-
-	wrapper = addFlowWrapper(content, "", 3)
-	text = i18n.Text("Secondary Projectiles")
-	addDecimalField(wrapper, nil, "", text, "", &mode.SecondaryProjectiles, 0, fxp.Max)
-	label2 := NewFieldTrailingLabel(text, false)
-	wrapper.AddChild(label2)
-	addCheckBox(wrapper, i18n.Text("High-cyclic Controlled Bursts"), &mode.HighCyclicControlledBursts)
-
-	_, pref1, _ := label1.Sizes(unison.Size{})
-	_, pref2, _ := label2.Sizes(unison.Size{})
-	pref1 = pref1.Max(pref2)
-	label1.LayoutData().(*unison.FlexLayoutData).SizeHint = pref1
-	label2.LayoutData().(*unison.FlexLayoutData).SizeHint = pref1
-}
-
-func addRangeBlock(w *gurps.Weapon, content *unison.Panel) {
+func (we *weaponEditor) addRangeBlock(w *gurps.Weapon, content *unison.Panel) {
 	weaponRange := &w.Range
-	addLabelAndDecimalField(content, nil, "", i18n.Text("Half-Damage Range"), "", &weaponRange.HalfDamage, 0, fxp.Max)
-	addLabelAndDecimalField(content, nil, "", i18n.Text("Minimum Range"), "", &weaponRange.Min, 0, fxp.Max)
-	addLabelAndDecimalField(content, nil, "", i18n.Text("Maximum Range"), "", &weaponRange.Max, 0, fxp.Max)
-	content.AddChild(unison.NewPanel())
-	addCheckBox(content, i18n.Text("Muscle Powered"), &weaponRange.MusclePowered)
-	content.AddChild(unison.NewPanel())
-	addCheckBox(content, i18n.Text("Range in Miles"), &weaponRange.InMiles)
+	wrapper := addFlowWrapper(content, i18n.Text("Range"), 5)
+	text := i18n.Text("Maximum Range")
+	addDecimalField(wrapper, nil, "", text, text, &weaponRange.Max, 0, fxp.BillionMinusOne)
+	wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("½ Damage"), false))
+	text = i18n.Text("½ Damage Range")
+	addDecimalField(wrapper, nil, "", text, text, &weaponRange.HalfDamage, 0, fxp.BillionMinusOne)
+	text = i18n.Text("Minimum Range")
+	wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Minimum"), false))
+	addDecimalField(wrapper, nil, "", text, text, &weaponRange.Min, 0, fxp.BillionMinusOne)
+	wrapper = addFlowWrapper(content, "", 2)
+	addCheckBox(wrapper, i18n.Text("Muscle-powered"), &weaponRange.MusclePowered)
+	addCheckBox(wrapper, i18n.Text("Ranges are in miles"), &weaponRange.InMiles)
 }
 
-func addRecoilBlock(w *gurps.Weapon, content *unison.Panel) {
-	recoil := &w.Recoil
-	addLabelAndDecimalField(content, nil, "", i18n.Text("Shot Recoil"), "", &recoil.Shot, 0, fxp.Max)
-	addLabelAndDecimalField(content, nil, "", i18n.Text("Slug Recoil"), "", &recoil.Slug, 0, fxp.Max)
+func (we *weaponEditor) addRateOfFireBlock(w *gurps.Weapon, content *unison.Panel) {
+	rof := &w.RateOfFire
+	we.addRateOfFireModeBlock(content, &rof.Mode1, 1)
+	we.addRateOfFireModeBlock(content, &rof.Mode2, 2)
 }
 
-func addShotsBlock(w *gurps.Weapon, content *unison.Panel) {
+func (we *weaponEditor) addRateOfFireModeBlock(content *unison.Panel, mode *gurps.WeaponRoFMode, modeNum int) {
+	var wrapper *unison.Panel
+	if modeNum == 1 {
+		wrapper = addFlowWrapper(content, i18n.Text("Rate of Fire"), 5)
+	} else {
+		wrapper = addFlowWrapper(content, "", 5)
+	}
+	wrapper.AddChild(NewFieldLeadingLabel(fmt.Sprintf(i18n.Text("Mode %d"), modeNum), false))
+	text := i18n.Text("Shots Per Attack")
+	spa := addDecimalField(wrapper, nil, "", text, text, &mode.ShotsPerAttack, 0, fxp.MillionMinusOne)
+	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("per attack with"), false))
+	text = i18n.Text("Secondary Projectiles")
+	sp := addDecimalField(wrapper, nil, "", text, text, &mode.SecondaryProjectiles, 0, fxp.MillionMinusOne)
+	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("secondary projectiles"), false))
+	wrapper = addFlowWrapper(content, "", 2)
+	auto := addCheckBox(wrapper, i18n.Text("Fully Automatic Only"), &mode.FullAutoOnly)
+	hccb := addCheckBox(wrapper, i18n.Text("High-cyclic Controlled Bursts"), &mode.HighCyclicControlledBursts)
+	we.panelsControlledByJet = append(we.panelsControlledByJet, spa, auto, sp, hccb)
+}
+
+func (we *weaponEditor) addShotsBlock(w *gurps.Weapon, content *unison.Panel) {
 	shots := &w.Shots
-	addLabelAndDecimalField(content, nil, "", i18n.Text("Shots"), "", &shots.Count, 0, fxp.Max)
-	addLabelAndDecimalField(content, nil, "", i18n.Text("Chamber Shots"), "", &shots.InChamber, 0, fxp.Max)
-	addLabelAndDecimalField(content, nil, "", i18n.Text("Shot Duration"), "", &shots.Duration, 0, fxp.Max)
-	addLabelAndDecimalField(content, nil, "", i18n.Text("Reload Time"), "", &shots.InChamber, 0, fxp.Max)
-	content.AddChild(unison.NewPanel())
-	addCheckBox(content, i18n.Text("Reload Time is Per Shot"), &shots.ReloadTimeIsPerShot)
-	content.AddChild(unison.NewPanel())
-	addCheckBox(content, i18n.Text("Thrown Weapon"), &shots.Thrown)
+	text := i18n.Text("Shots")
+	wrapper := addFlowWrapper(content, text, 5)
+	addDecimalField(wrapper, nil, "", text, text, &shots.Count, 0, fxp.MillionMinusOne)
+	text = i18n.Text("In Chamber")
+	wrapper.AddChild(NewFieldInteriorLeadingLabel(text, false))
+	addDecimalField(wrapper, nil, "", text, text, &shots.InChamber, 0, fxp.Thousand)
+	wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Duration"), false))
+	text = i18n.Text("Shot Duration")
+	addDecimalField(wrapper, nil, "", text, text, &shots.Duration, 0, fxp.Thousand)
+	wrapper = addFlowWrapper(content, "", 4)
+	text = i18n.Text("Reload Time")
+	addLabelAndDecimalField(wrapper, nil, "", text, text, &shots.ReloadTime, 0, fxp.Thousand)
+	addCheckBox(wrapper, i18n.Text("Per Shot"), &shots.ReloadTimeIsPerShot)
+	addCheckBox(wrapper, i18n.Text("Thrown Weapon"), &shots.Thrown)
 }
 
-func addBulkBlock(w *gurps.Weapon, content *unison.Panel) {
+func (we *weaponEditor) addBulkBlock(w *gurps.Weapon, content *unison.Panel) {
 	bulk := &w.Bulk
-	addLabelAndDecimalField(content, nil, "", i18n.Text("Normal Bulk"), "", &bulk.Normal, -fxp.Max, 0)
-	giant := i18n.Text("Giant Bulk")
-	wrapper := addFlowWrapper(content, giant, 2)
-	addDecimalField(wrapper, nil, "", giant, "", &bulk.Giant, -fxp.Max, 0)
-	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("(only needed if different from normal bulk)"), true))
-	content.AddChild(unison.NewPanel())
-	addCheckBox(content, i18n.Text("Retracting Stock"), &bulk.RetractingStock)
+	wrapper := addFlowWrapper(content, i18n.Text("Bulk"), 4)
+	text := i18n.Text("Normal Bulk")
+	addDecimalField(wrapper, nil, "", text, text, &bulk.Normal, -fxp.Thousand, 0)
+	wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("For Giants"), false))
+	text = i18n.Text("Giant Bulk")
+	addDecimalField(wrapper, nil, "", text, text, &bulk.Giant, -fxp.Thousand, 0)
+	addCheckBox(wrapper, i18n.Text("Retracting Stock"), &bulk.RetractingStock)
 }
 
-func preApply(w *gurps.Weapon) {
+func (we *weaponEditor) addRecoilBlock(w *gurps.Weapon, content *unison.Panel) {
+	recoil := &w.Recoil
+	wrapper := addFlowWrapper(content, i18n.Text("Recoil"), 3)
+	text := i18n.Text("Shot Recoil")
+	addDecimalField(wrapper, nil, "", text, text, &recoil.Shot, 0, fxp.Thousand)
+	wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("For Slugs"), false))
+	text = i18n.Text("Slug Recoil")
+	addDecimalField(wrapper, nil, "", text, text, &recoil.Slug, 0, fxp.Thousand)
+}
+
+func (we *weaponEditor) addStrengthBlock(w *gurps.Weapon, content *unison.Panel) {
+	strength := &w.Strength
+	text := i18n.Text("Minimum ST")
+	wrapper := addFlowWrapper(content, text, 3)
+	addDecimalField(wrapper, nil, "", text, text, &strength.Min, 0, fxp.MillionMinusOne)
+	addCheckBox(wrapper, i18n.Text("Two-handed"), &strength.TwoHanded)
+	addCheckBox(wrapper, i18n.Text("Two-handed & unready"), &strength.TwoHandedUnready)
+	if w.Type == wpn.Ranged {
+		wrapper = addFlowWrapper(content, "", 3)
+		addCheckBox(wrapper, i18n.Text("Has bipod"), &strength.Bipod)
+		addCheckBox(wrapper, i18n.Text("Mounted"), &strength.Mounted)
+		addCheckBox(wrapper, i18n.Text("Uses a musket rest"), &strength.MusketRest)
+	}
+}
+
+func (we *weaponEditor) preApply(w *gurps.Weapon) {
+	w.RateOfFire.Jet = w.Accuracy.Jet
 	w.Validate()
 }
