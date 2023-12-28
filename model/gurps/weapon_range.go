@@ -131,11 +131,11 @@ func (wr WeaponRange) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponHalfDamageRangeBonus, feature.WeaponMinRangeBonus, feature.WeaponMaxRangeBonus) {
 		switch bonus.Type {
 		case feature.WeaponHalfDamageRangeBonus:
-			result.HalfDamage += bonus.AdjustedAmount()
+			result.HalfDamage += bonus.AdjustedAmountForWeapon(w)
 		case feature.WeaponMinRangeBonus:
-			result.Min += bonus.AdjustedAmount()
+			result.Min += bonus.AdjustedAmountForWeapon(w)
 		case feature.WeaponMaxRangeBonus:
-			result.Max += bonus.AdjustedAmount()
+			result.Max += bonus.AdjustedAmountForWeapon(w)
 		default:
 		}
 	}

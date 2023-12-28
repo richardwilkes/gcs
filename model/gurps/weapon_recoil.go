@@ -80,8 +80,9 @@ func (wr WeaponRecoil) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weap
 	// 0 means recoil isn't used; 1+ means it is.
 	if wr.Shot > 0 || wr.Slug > 0 {
 		for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponRecoilBonus) {
-			result.Shot += bonus.AdjustedAmount()
-			result.Slug += bonus.AdjustedAmount()
+			amt := bonus.AdjustedAmountForWeapon(w)
+			result.Shot += amt
+			result.Slug += amt
 		}
 		if wr.Shot > 0 {
 			result.Shot = result.Shot.Max(fxp.One)

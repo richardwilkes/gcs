@@ -101,9 +101,9 @@ func (wr WeaponReach) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 	result.ChangeRequiresReady = w.ResolveBoolFlag(wswitch.ReachChangeRequiresReady, result.ChangeRequiresReady)
 	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponMinReachBonus, feature.WeaponMaxReachBonus) {
 		if bonus.Type == feature.WeaponMinReachBonus {
-			result.Min += bonus.AdjustedAmount()
+			result.Min += bonus.AdjustedAmountForWeapon(w)
 		} else if bonus.Type == feature.WeaponMaxReachBonus {
-			result.Max += bonus.AdjustedAmount()
+			result.Max += bonus.AdjustedAmountForWeapon(w)
 		}
 	}
 	result.Validate()

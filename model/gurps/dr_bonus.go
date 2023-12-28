@@ -94,7 +94,7 @@ func (d *DRBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 		buffer.WriteByte('\n')
 		buffer.WriteString(d.parentName())
 		buffer.WriteString(" [")
-		buffer.WriteString(d.LeveledAmount.FormatWithLevel(false))
+		buffer.WriteString(d.LeveledAmount.Format(false))
 		buffer.WriteString(i18n.Text(" against "))
 		buffer.WriteString(d.Specialization)
 		buffer.WriteString(i18n.Text(" attacks]"))

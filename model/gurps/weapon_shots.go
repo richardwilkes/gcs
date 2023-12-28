@@ -106,13 +106,13 @@ func (ws WeaponShots) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponNonChamberShotsBonus, feature.WeaponChamberShotsBonus, feature.WeaponShotDurationBonus, feature.WeaponReloadTimeBonus) {
 		switch bonus.Type {
 		case feature.WeaponNonChamberShotsBonus:
-			result.Count += bonus.AdjustedAmount()
+			result.Count += bonus.AdjustedAmountForWeapon(w)
 		case feature.WeaponChamberShotsBonus:
-			result.InChamber += bonus.AdjustedAmount()
+			result.InChamber += bonus.AdjustedAmountForWeapon(w)
 		case feature.WeaponShotDurationBonus:
-			result.Duration += bonus.AdjustedAmount()
+			result.Duration += bonus.AdjustedAmountForWeapon(w)
 		case feature.WeaponReloadTimeBonus:
-			result.ReloadTime += bonus.AdjustedAmount()
+			result.ReloadTime += bonus.AdjustedAmountForWeapon(w)
 		default:
 		}
 	}

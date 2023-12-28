@@ -84,8 +84,9 @@ func (wb WeaponBulk) hash(h hash.Hash32) {
 func (wb WeaponBulk) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) WeaponBulk {
 	result := wb
 	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponBulkBonus) {
-		result.Normal += bonus.AdjustedAmount()
-		result.Giant += bonus.AdjustedAmount()
+		amt := bonus.AdjustedAmountForWeapon(w)
+		result.Normal += amt
+		result.Giant += amt
 	}
 	result.Validate()
 	return result

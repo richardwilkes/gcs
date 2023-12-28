@@ -542,12 +542,10 @@ func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xio.ByteBuffer, all
 func (w *Weapon) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool, dieCount fxp.Int, tooltip *xio.ByteBuffer) {
 	if allowedFeatureTypes[f.FeatureType()] {
 		if bonus, ok := f.(*WeaponBonus); ok {
-			level := bonus.LeveledAmount.Level
-			if bonus.Type == feature.WeaponBonus {
-				bonus.LeveledAmount.Level = dieCount
-			} else {
-				bonus.LeveledAmount.Level = bonus.DerivedLevel()
-			}
+			savedLevel := bonus.LeveledAmount.Level
+			savedDieCount := bonus.LeveledAmount.DieCount
+			bonus.LeveledAmount.Level = bonus.DerivedLevel()
+			bonus.LeveledAmount.DieCount = dieCount
 			switch bonus.SelectionType {
 			case wsel.WithRequiredSkill:
 			case wsel.ThisWeapon:
@@ -568,7 +566,8 @@ func (w *Weapon) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, allowe
 			default:
 				errs.Log(errs.New("unknown selection type"), "type", int(bonus.SelectionType))
 			}
-			bonus.LeveledAmount.Level = level
+			bonus.LeveledAmount.Level = savedLevel
+			bonus.LeveledAmount.DieCount = savedDieCount
 		}
 	}
 }

@@ -115,7 +115,7 @@ func (wp WeaponParry) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 				AppendBufferOntoNewLine(modifiersTooltip, primaryTooltip)
 				result.Modifier += fxp.Three + best + pc.ParryBonus
 				for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponParryBonus) {
-					result.Modifier += bonus.AdjustedAmount()
+					result.Modifier += bonus.AdjustedAmountForWeapon(w)
 				}
 				result.Modifier = result.Modifier.Max(0).Trunc()
 			} else {

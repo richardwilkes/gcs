@@ -154,14 +154,14 @@ func (w *WeaponDamage) DamageTooltip() string {
 	return includesModifiersFrom() + tooltip.String()
 }
 
-// ResolvedDamage returns the damage, fully resolved for the user's sw or thr, if possible.
-func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
+// BaseDamageDice returns the base damage dice for this weapon (i.e. the dice before any bonuses are applied).
+func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 	if w.Owner == nil {
-		return w.String()
+		return &dice.Dice{Sides: 6, Multiplier: 1}
 	}
 	pc := w.Owner.PC()
 	if pc == nil {
-		return w.String()
+		return &dice.Dice{Sides: 6, Multiplier: 1}
 	}
 	maxST := w.Owner.Strength.Resolve(w.Owner, nil).Min.Mul(fxp.Three)
 	var st fxp.Int
@@ -205,32 +205,42 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 		base = addDice(base, swing)
 	default:
 	}
+	return base
+}
+
+// ResolvedDamage returns the damage, fully resolved for the user's sw or thr, if possible.
+func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
+	base := w.BaseDamageDice()
+	if base.Count == 0 && base.Modifier == 0 {
+		return w.String()
+	}
+	pc := w.Owner.PC()
 	adjustForPhoenixFlame := pc.SheetSettings.DamageProgression == progression.PhoenixFlameD3 && base.Sides == 3
 	var percentDamageBonus, percentDRDivisorBonus fxp.Int
 	armorDivisor := w.ArmorDivisor
 	for _, bonus := range w.Owner.collectWeaponBonuses(base.Count, tooltip, feature.WeaponBonus, feature.WeaponDRDivisorBonus) {
 		switch bonus.Type {
 		case feature.WeaponBonus:
+			bonus.LeveledAmount.DieCount = fxp.From(base.Count)
+			amt := bonus.AdjustedAmountForWeapon(w.Owner)
 			if bonus.Percent {
-				percentDamageBonus += bonus.Amount
+				percentDamageBonus += amt
 			} else {
-				amt := bonus.Amount
-				if bonus.PerLevel {
-					amt = amt.Mul(fxp.From(base.Count))
-					if adjustForPhoenixFlame {
+				if adjustForPhoenixFlame {
+					if bonus.LeveledAmount.PerLevel {
+						amt = amt.Div(fxp.Two)
+					}
+					if bonus.LeveledAmount.PerDie {
 						amt = amt.Div(fxp.Two)
 					}
 				}
 				base.Modifier += fxp.As[int](amt)
 			}
 		case feature.WeaponDRDivisorBonus:
+			amt := bonus.AdjustedAmountForWeapon(w.Owner)
 			if bonus.Percent {
-				percentDRDivisorBonus += bonus.Amount
+				percentDRDivisorBonus += amt
 			} else {
-				amt := bonus.Amount
-				if bonus.PerLevel {
-					amt = amt.Mul(bonus.DerivedLevel())
-				}
 				armorDivisor += amt
 			}
 		default:

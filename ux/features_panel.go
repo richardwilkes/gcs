@@ -112,7 +112,7 @@ func (p *featuresPanel) insertFeaturePanel(index int, f gurps.Feature) {
 	case *gurps.SpellPointBonus:
 		panel = p.createSpellPointBonusPanel(one)
 	case *gurps.WeaponBonus:
-		panel = p.createWeaponDamageBonusPanel(one)
+		panel = p.createWeaponBonusPanel(one)
 	default:
 		errs.Log(errs.New("unknown feature type"), "type", reflect.TypeOf(f).String())
 		return
@@ -247,17 +247,13 @@ func (p *featuresPanel) createSkillBonusPanel(f *gurps.SkillBonus) *unison.Panel
 	var criteriaField *StringField
 	popup := addPopup(wrapper, skillsel.Types, &f.SelectionType)
 	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[skillsel.Type], index int, item skillsel.Type) {
-		count := 4
-		if f.SelectionType == skillsel.ThisWeapon {
-			count = 2
-		}
 		pop.SelectIndex(index)
 		f.SelectionType = item
 		adjustPopupBlank(criteriaPopup, f.SelectionType == skillsel.ThisWeapon)
 		adjustFieldBlank(criteriaField, f.SelectionType == skillsel.ThisWeapon)
 		i := panel.IndexOfChild(wrapper) + 1
-		for j := count - 1; j >= 0; j-- {
-			panel.RemoveChildAtIndex(i + j)
+		for j := len(panel.Children()) - 1; j >= i; j-- {
+			panel.RemoveChildAtIndex(j)
 		}
 		p.createSecondarySkillPanels(panel, i, f)
 		MarkRootAncestorForLayoutRecursively(p)
@@ -346,30 +342,21 @@ func (p *featuresPanel) createSpellPointBonusPanel(f *gurps.SpellPointBonus) *un
 	return panel
 }
 
-func (p *featuresPanel) createWeaponDamageBonusPanel(f *gurps.WeaponBonus) *unison.Panel {
+func (p *featuresPanel) createWeaponBonusPanel(f *gurps.WeaponBonus) *unison.Panel {
 	panel := p.createBasePanel(f)
-	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
+	p.addWeaponLeveledModifierLine(panel, f, &f.LeveledAmount)
 	panel.AddChild(unison.NewPanel())
 	wrapper := unison.NewPanel()
 	var criteriaPopup *unison.PopupMenu[string]
 	var criteriaField *StringField
 	popup := addPopup(wrapper, wsel.Types, &f.SelectionType)
 	popup.ChoiceMadeCallback = func(pop *unison.PopupMenu[wsel.Type], index int, item wsel.Type) {
-		var count int
-		switch f.SelectionType {
-		case wsel.WithRequiredSkill:
-			count = 6
-		case wsel.ThisWeapon:
-			count = 2
-		case wsel.WithName:
-			count = 4
-		}
 		pop.SelectIndex(index)
 		f.SelectionType = item
 		p.adjustCriteriaPopupAndField(f, criteriaPopup, criteriaField)
 		i := panel.IndexOfChild(wrapper) + 1
-		for j := count - 1; j >= 0; j-- {
-			panel.RemoveChildAtIndex(i + j)
+		for j := len(panel.Children()) - 1; j >= i; j-- {
+			panel.RemoveChildAtIndex(j)
 		}
 		p.createSecondaryWeaponPanels(panel, i, f)
 		MarkRootAncestorForLayoutRecursively(p)
@@ -483,9 +470,24 @@ func (p *featuresPanel) createCostReductionPanel(f *gurps.CostReduction) *unison
 
 func (p *featuresPanel) addLeveledModifierLine(parent *unison.Panel, f gurps.Feature, amount *gurps.LeveledAmount) {
 	panel := unison.NewPanel()
+	p.addTypeSwitcher(panel, f)
+	addLeveledAmountPanel(panel, nil, "", i18n.Text("per level"), amount)
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  len(panel.Children()),
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	panel.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Fill,
+		HGrab:  true,
+	})
+	parent.AddChild(panel)
+}
+
+func (p *featuresPanel) addWeaponLeveledModifierLine(parent *unison.Panel, f gurps.Feature, amount *gurps.WeaponLeveledAmount) {
+	panel := unison.NewPanel()
 	switcher := p.addTypeSwitcher(panel, f)
-	switch ft := f.(type) {
-	case *gurps.WeaponBonus:
+	if ft, ok := f.(*gurps.WeaponBonus); ok {
 		if ft.Type == feature.WeaponSwitch {
 			wrapper := unison.NewPanel()
 			wrapper.AddChild(switcher)
@@ -509,17 +511,16 @@ func (p *featuresPanel) addLeveledModifierLine(parent *unison.Panel, f gurps.Fea
 			})
 			panel.AddChild(wrapper)
 		} else {
-			var title string
-			if ft.Type == feature.WeaponBonus {
-				title = i18n.Text("per die")
-			} else {
-				title = i18n.Text("per level")
-			}
-			addLeveledAmountPanel(panel, nil, "", title, amount)
-			addCheckBox(panel, i18n.Text("as a percentage"), &ft.Percent)
+			panel.AddChild(NewDecimalField(nil, "", i18n.Text("Amount"),
+				func() fxp.Int { return amount.Amount },
+				func(value fxp.Int) {
+					amount.Amount = value
+					MarkModified(panel)
+				}, fxp.Min, fxp.Max, true, false))
+			addCheckBox(panel, i18n.Text("per level"), &amount.PerLevel)
+			addCheckBox(panel, i18n.Text("per die"), &amount.PerDie)
+			addCheckBox(panel, i18n.Text("as a %"), &ft.Percent)
 		}
-	default:
-		addLeveledAmountPanel(panel, nil, "", i18n.Text("per level"), amount)
 	}
 	panel.SetLayout(&unison.FlexLayout{
 		Columns:  len(panel.Children()),

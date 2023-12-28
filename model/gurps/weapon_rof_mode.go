@@ -80,9 +80,9 @@ func (wr WeaponRoFMode) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer, fir
 	}
 	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, shotsFeature, secondaryFeature) {
 		if bonus.Type == shotsFeature {
-			result.ShotsPerAttack += bonus.AdjustedAmount()
+			result.ShotsPerAttack += bonus.AdjustedAmountForWeapon(w)
 		} else if bonus.Type == secondaryFeature {
-			result.SecondaryProjectiles += bonus.AdjustedAmount()
+			result.SecondaryProjectiles += bonus.AdjustedAmountForWeapon(w)
 		}
 	}
 	result.Validate()

@@ -57,7 +57,7 @@ func (b *BonusOwner) basicAddToTooltip(amt *LeveledAmount, buffer *xio.ByteBuffe
 		buffer.WriteByte('\n')
 		buffer.WriteString(b.parentName())
 		buffer.WriteString(" [")
-		buffer.WriteString(amt.FormatWithLevel(false))
+		buffer.WriteString(amt.Format(false))
 		buffer.WriteByte(']')
 	}
 }

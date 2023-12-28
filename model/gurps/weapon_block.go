@@ -105,7 +105,7 @@ func (wb WeaponBlock) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 				AppendBufferOntoNewLine(modifiersTooltip, primaryTooltip)
 				result.Modifier += fxp.Three + best + pc.BlockBonus
 				for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponBlockBonus) {
-					result.Modifier += bonus.AdjustedAmount()
+					result.Modifier += bonus.AdjustedAmountForWeapon(w)
 				}
 				result.Modifier = result.Modifier.Max(0).Trunc()
 			} else {

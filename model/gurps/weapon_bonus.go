@@ -27,17 +27,17 @@ var _ Bonus = &WeaponBonus{}
 
 // WeaponBonus holds the data for an adjustment to weapon damage.
 type WeaponBonus struct {
-	Type                   feature.Type    `json:"type"`
-	Percent                bool            `json:"percent,omitempty"`
-	SwitchTypeValue        bool            `json:"switch_type_value,omitempty"`
-	SelectionType          wsel.Type       `json:"selection_type"`
-	SwitchType             wswitch.Type    `json:"switch_type,omitempty"`
-	NameCriteria           StringCriteria  `json:"name,omitempty"`
-	SpecializationCriteria StringCriteria  `json:"specialization,omitempty"`
-	RelativeLevelCriteria  NumericCriteria `json:"level,omitempty"`
-	UsageCriteria          StringCriteria  `json:"usage,omitempty"`
-	TagsCriteria           StringCriteria  `json:"tags,alt=category,omitempty"`
-	LeveledAmount
+	Type                   feature.Type        `json:"type"`
+	Percent                bool                `json:"percent,omitempty"`
+	SwitchTypeValue        bool                `json:"switch_type_value,omitempty"`
+	SelectionType          wsel.Type           `json:"selection_type"`
+	SwitchType             wswitch.Type        `json:"switch_type,omitempty"`
+	NameCriteria           StringCriteria      `json:"name,omitempty"`
+	SpecializationCriteria StringCriteria      `json:"specialization,omitempty"`
+	RelativeLevelCriteria  NumericCriteria     `json:"level,omitempty"`
+	UsageCriteria          StringCriteria      `json:"usage,omitempty"`
+	TagsCriteria           StringCriteria      `json:"tags,alt=category,omitempty"`
+	LeveledAmount          WeaponLeveledAmount `json:",inline"`
 	BonusOwner
 }
 
@@ -185,7 +185,7 @@ func newWeaponBonus(t feature.Type) *WeaponBonus {
 				Compare: AnyString,
 			},
 		},
-		LeveledAmount: LeveledAmount{Amount: fxp.One},
+		LeveledAmount: WeaponLeveledAmount{Amount: fxp.One},
 	}
 }
 
@@ -198,6 +198,17 @@ func (w *WeaponBonus) FeatureType() feature.Type {
 func (w *WeaponBonus) Clone() Feature {
 	other := *w
 	return &other
+}
+
+// AdjustedAmount implements Bonus.
+func (w *WeaponBonus) AdjustedAmount() fxp.Int {
+	return w.LeveledAmount.AdjustedAmount()
+}
+
+// AdjustedAmountForWeapon returns the adjusted amount for the given weapon.
+func (w *WeaponBonus) AdjustedAmountForWeapon(wpn *Weapon) fxp.Int {
+	w.LeveledAmount.DieCount = fxp.From(wpn.Damage.BaseDamageDice().Count)
+	return w.LeveledAmount.AdjustedAmount()
 }
 
 // FillWithNameableKeys implements Feature.
@@ -224,7 +235,7 @@ func (w *WeaponBonus) ApplyNameableKeys(m map[string]string) {
 
 // SetLevel implements Bonus.
 func (w *WeaponBonus) SetLevel(level fxp.Int) {
-	w.Level = level
+	w.LeveledAmount.Level = level
 }
 
 // AddToTooltip implements Bonus.
@@ -234,77 +245,54 @@ func (w *WeaponBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 		buf.WriteByte('\n')
 		buf.WriteString(w.parentName())
 		buf.WriteString(" [")
-		switch w.Type {
-		case feature.WeaponBonus:
-			buf.WriteString(w.LeveledAmount.Format(w.Percent, i18n.Text("die")))
-			buf.WriteString(i18n.Text(" to damage"))
-		case feature.WeaponAccBonus:
-			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
-			buf.WriteString(i18n.Text(" to weapon accuracy"))
-		case feature.WeaponScopeAccBonus:
-			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
-			buf.WriteString(i18n.Text(" to scope accuracy"))
-		case feature.WeaponDRDivisorBonus:
-			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
-			buf.WriteString(i18n.Text(" to DR divisor"))
-		case feature.WeaponMinSTBonus:
-			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
-			buf.WriteString(i18n.Text(" to minimum ST"))
-		case feature.WeaponMinReachBonus:
-			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
-			buf.WriteString(i18n.Text(" to minimum reach"))
-		case feature.WeaponMaxReachBonus:
-			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
-			buf.WriteString(i18n.Text(" to maximum reach"))
-		case feature.WeaponHalfDamageRangeBonus:
-			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
-			buf.WriteString(i18n.Text(" to half-damage range"))
-		case feature.WeaponMinRangeBonus:
-			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
-			buf.WriteString(i18n.Text(" to minimum range"))
-		case feature.WeaponMaxRangeBonus:
-			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
-			buf.WriteString(i18n.Text(" to maximum range"))
-		case feature.WeaponBulkBonus:
-			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
-			buf.WriteString(i18n.Text(" to bulk"))
-		case feature.WeaponRecoilBonus:
-			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
-			buf.WriteString(i18n.Text(" to recoil"))
-		case feature.WeaponParryBonus:
-			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
-			buf.WriteString(i18n.Text(" to parry"))
-		case feature.WeaponBlockBonus:
-			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
-			buf.WriteString(i18n.Text(" to block"))
-		case feature.WeaponRofMode1ShotsBonus:
-			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
-			buf.WriteString(i18n.Text(" to shots per attack"))
-		case feature.WeaponRofMode1SecondaryBonus:
-			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
-			buf.WriteString(i18n.Text(" to secondary projectiles"))
-		case feature.WeaponRofMode2ShotsBonus:
-			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
-			buf.WriteString(i18n.Text(" to shots per attack"))
-		case feature.WeaponRofMode2SecondaryBonus:
-			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
-			buf.WriteString(i18n.Text(" to secondary projectiles"))
-		case feature.WeaponNonChamberShotsBonus:
-			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
-			buf.WriteString(i18n.Text(" to non-chamber shots"))
-		case feature.WeaponChamberShotsBonus:
-			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
-			buf.WriteString(i18n.Text(" to chamber shots"))
-		case feature.WeaponShotDurationBonus:
-			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
-			buf.WriteString(i18n.Text(" to shot duration"))
-		case feature.WeaponReloadTimeBonus:
-			buf.WriteString(w.LeveledAmount.FormatWithLevel(w.Percent))
-			buf.WriteString(i18n.Text(" to reload time"))
-		case feature.WeaponSwitch:
+		if w.Type == feature.WeaponSwitch {
 			fmt.Fprintf(&buf, "%v set to %v", w.SwitchType, w.SwitchTypeValue)
-		default:
-			return
+		} else {
+			buf.WriteString(w.LeveledAmount.Format(w.Percent))
+			buf.WriteString(i18n.Text(" to "))
+			switch w.Type {
+			case feature.WeaponBonus:
+				buf.WriteString(i18n.Text("damage"))
+			case feature.WeaponAccBonus:
+				buf.WriteString(i18n.Text("weapon accuracy"))
+			case feature.WeaponScopeAccBonus:
+				buf.WriteString(i18n.Text("scope accuracy"))
+			case feature.WeaponDRDivisorBonus:
+				buf.WriteString(i18n.Text("DR divisor"))
+			case feature.WeaponMinSTBonus:
+				buf.WriteString(i18n.Text("minimum ST"))
+			case feature.WeaponMinReachBonus:
+				buf.WriteString(i18n.Text("minimum reach"))
+			case feature.WeaponMaxReachBonus:
+				buf.WriteString(i18n.Text("maximum reach"))
+			case feature.WeaponHalfDamageRangeBonus:
+				buf.WriteString(i18n.Text("half-damage range"))
+			case feature.WeaponMinRangeBonus:
+				buf.WriteString(i18n.Text("minimum range"))
+			case feature.WeaponMaxRangeBonus:
+				buf.WriteString(i18n.Text("maximum range"))
+			case feature.WeaponBulkBonus:
+				buf.WriteString(i18n.Text("bulk"))
+			case feature.WeaponRecoilBonus:
+				buf.WriteString(i18n.Text("recoil"))
+			case feature.WeaponParryBonus:
+				buf.WriteString(i18n.Text("parry"))
+			case feature.WeaponBlockBonus:
+				buf.WriteString(i18n.Text("block"))
+			case feature.WeaponRofMode1ShotsBonus, feature.WeaponRofMode2ShotsBonus:
+				buf.WriteString(i18n.Text("shots per attack"))
+			case feature.WeaponRofMode1SecondaryBonus, feature.WeaponRofMode2SecondaryBonus:
+				buf.WriteString(i18n.Text("secondary projectiles"))
+			case feature.WeaponNonChamberShotsBonus:
+				buf.WriteString(i18n.Text("non-chamber shots"))
+			case feature.WeaponChamberShotsBonus:
+				buf.WriteString(i18n.Text("chamber shots"))
+			case feature.WeaponShotDurationBonus:
+				buf.WriteString(i18n.Text("shot duration"))
+			case feature.WeaponReloadTimeBonus:
+				buf.WriteString(i18n.Text("reload time"))
+			default:
+			}
 		}
 		buf.WriteByte(']')
 		buffer.WriteString(buf.String())

@@ -91,9 +91,9 @@ func (wa WeaponAccuracy) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) We
 			for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponAccBonus, feature.WeaponScopeAccBonus) {
 				switch bonus.Type {
 				case feature.WeaponAccBonus:
-					result.Base += bonus.AdjustedAmount()
+					result.Base += bonus.AdjustedAmountForWeapon(w)
 				case feature.WeaponScopeAccBonus:
-					result.Scope += bonus.AdjustedAmount()
+					result.Scope += bonus.AdjustedAmountForWeapon(w)
 				default:
 				}
 			}

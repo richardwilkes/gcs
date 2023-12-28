@@ -102,7 +102,7 @@ func (ws WeaponStrength) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) We
 	result.TwoHanded = w.ResolveBoolFlag(wswitch.TwoHanded, result.TwoHanded)
 	result.TwoHandedUnready = w.ResolveBoolFlag(wswitch.TwoHandedAndUnreadyAfterAttack, result.TwoHandedUnready)
 	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponMinSTBonus) {
-		result.Min += bonus.AdjustedAmount()
+		result.Min += bonus.AdjustedAmountForWeapon(w)
 	}
 	result.Validate()
 	return result

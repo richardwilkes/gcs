@@ -827,15 +827,7 @@ func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization, usage string
 			bonus.RelativeLevelCriteria.Matches(rsl) &&
 			bonus.UsageCriteria.Matches(usage) &&
 			bonus.TagsCriteria.MatchesList(tags...) {
-			level := bonus.LeveledAmount.Level
-			if bonus.Type == feature.WeaponBonus {
-				bonus.LeveledAmount.Level = fxp.From(dieCount)
-			} else {
-				bonus.LeveledAmount.Level = bonus.DerivedLevel()
-			}
-			bonus.AddToTooltip(tooltip)
-			bonus.LeveledAmount.Level = level
-			m[bonus] = true
+			addWeaponBonusToMap(bonus, dieCount, tooltip, m)
 		}
 	}
 	return m
@@ -853,18 +845,21 @@ func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, 
 			bonus.NameCriteria.Matches(nameQualifier) &&
 			bonus.SpecializationCriteria.Matches(usageQualifier) &&
 			bonus.TagsCriteria.MatchesList(tagsQualifier...) {
-			level := bonus.LeveledAmount.Level
-			if bonus.Type == feature.WeaponBonus {
-				bonus.LeveledAmount.Level = fxp.From(dieCount)
-			} else {
-				bonus.LeveledAmount.Level = bonus.DerivedLevel()
-			}
-			bonus.AddToTooltip(tooltip)
-			bonus.LeveledAmount.Level = level
-			m[bonus] = true
+			addWeaponBonusToMap(bonus, dieCount, tooltip, m)
 		}
 	}
 	return m
+}
+
+func addWeaponBonusToMap(bonus *WeaponBonus, dieCount int, tooltip *xio.ByteBuffer, m map[*WeaponBonus]bool) {
+	savedLevel := bonus.LeveledAmount.Level
+	savedDieCount := bonus.LeveledAmount.DieCount
+	bonus.LeveledAmount.DieCount = fxp.From(dieCount)
+	bonus.LeveledAmount.Level = bonus.DerivedLevel()
+	bonus.AddToTooltip(tooltip)
+	bonus.LeveledAmount.Level = savedLevel
+	bonus.LeveledAmount.DieCount = savedDieCount
+	m[bonus] = true
 }
 
 // NamedWeaponSkillBonusesFor returns the bonuses for matching weapons.
