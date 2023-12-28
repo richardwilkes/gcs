@@ -17,6 +17,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/entity"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wpn"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/eval"
@@ -27,13 +28,12 @@ import (
 // InstallEvaluatorFunctions installs additional functions for the evaluator.
 func InstallEvaluatorFunctions(m map[string]eval.Function) {
 	m["add_dice"] = evalAddDice
-	m["subtract_dice"] = evalSubtractDice
 	m["advantage_level"] = evalTraitLevel // For older files
 	m["dice"] = evalDice
 	m["dice_count"] = evalDiceCount
-	m["dice_sides"] = evalDiceSides
 	m["dice_modifier"] = evalDiceModifier
 	m["dice_multiplier"] = evalDiceMultiplier
+	m["dice_sides"] = evalDiceSides
 	m["enc"] = evalEncumbrance
 	m["has_trait"] = evalHasTrait
 	m["random_height"] = evalRandomHeight
@@ -43,7 +43,9 @@ func InstallEvaluatorFunctions(m map[string]eval.Function) {
 	m["skill_level"] = evalSkillLevel
 	m["ssrt"] = evalSSRT
 	m["ssrt_to_yards"] = evalSSRTYards
+	m["subtract_dice"] = evalSubtractDice
 	m["trait_level"] = evalTraitLevel
+	m["weapon_damage"] = evalWeaponDamage
 }
 
 func evalToBool(ev *eval.Evaluator, arguments string) (bool, error) {
@@ -191,6 +193,35 @@ func evalTraitLevel(ev *eval.Evaluator, arguments string) (any, error) {
 	return levels, nil
 }
 
+func evalWeaponDamage(ev *eval.Evaluator, arguments string) (any, error) {
+	e, ok := ev.Resolver.(*Entity)
+	if !ok || e.Type != entity.PC {
+		return "", nil
+	}
+	var arg string
+	arg, arguments = eval.NextArg(arguments)
+	name, err := evalToString(ev, strings.Trim(arg, `"`))
+	if err != nil {
+		return nil, err
+	}
+	arg, _ = eval.NextArg(arguments)
+	var usage string
+	if usage, err = evalToString(ev, strings.Trim(arg, `"`)); err != nil {
+		return nil, err
+	}
+	for _, w := range e.Weapons(wpn.Melee) {
+		if strings.EqualFold(w.String(), name) && strings.EqualFold(w.Usage, usage) {
+			return w.Damage.ResolvedDamage(nil), nil
+		}
+	}
+	for _, w := range e.Weapons(wpn.Ranged) {
+		if strings.EqualFold(w.String(), name) && strings.EqualFold(w.Usage, usage) {
+			return w.Damage.ResolvedDamage(nil), nil
+		}
+	}
+	return "", nil
+}
+
 func evalDice(ev *eval.Evaluator, arguments string) (any, error) {
 	var argList []int
 	for arguments != "" {
@@ -246,7 +277,7 @@ func evalAddDice(ev *eval.Evaluator, arguments string) (any, error) {
 		}
 	}
 	var second string
-	second, arguments = eval.NextArg(arguments)
+	second, _ = eval.NextArg(arguments)
 	if strings.IndexByte(second, '(') != -1 {
 		var err error
 		if second, err = evalToString(ev, second); err != nil {
@@ -283,7 +314,7 @@ func evalSubtractDice(ev *eval.Evaluator, arguments string) (any, error) {
 		}
 	}
 	var second string
-	second, arguments = eval.NextArg(arguments)
+	second, _ = eval.NextArg(arguments)
 	if strings.IndexByte(second, '(') != -1 {
 		var err error
 		if second, err = evalToString(ev, second); err != nil {
