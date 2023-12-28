@@ -99,9 +99,9 @@ func (l Libraries) PerformUpdateChecks() {
 	var wg sync.WaitGroup
 	wg.Add(len(l))
 	for _, lib := range l {
-		go func(l *Library) {
+		go func(one *Library) {
 			defer wg.Done()
-			l.CheckForAvailableUpgrade(ctx, client)
+			one.CheckForAvailableUpgrade(ctx, client)
 		}(lib)
 	}
 	wg.Wait()
