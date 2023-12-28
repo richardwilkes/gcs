@@ -26,8 +26,14 @@ import (
 
 // InstallEvaluatorFunctions installs additional functions for the evaluator.
 func InstallEvaluatorFunctions(m map[string]eval.Function) {
+	m["add_dice"] = evalAddDice
+	m["subtract_dice"] = evalSubtractDice
 	m["advantage_level"] = evalTraitLevel // For older files
 	m["dice"] = evalDice
+	m["dice_count"] = evalDiceCount
+	m["dice_sides"] = evalDiceSides
+	m["dice_modifier"] = evalDiceModifier
+	m["dice_multiplier"] = evalDiceMultiplier
 	m["enc"] = evalEncumbrance
 	m["has_trait"] = evalHasTrait
 	m["random_height"] = evalRandomHeight
@@ -230,14 +236,129 @@ func evalDice(ev *eval.Evaluator, arguments string) (any, error) {
 	return d.String(), nil
 }
 
+func evalAddDice(ev *eval.Evaluator, arguments string) (any, error) {
+	var first string
+	first, arguments = eval.NextArg(arguments)
+	if strings.IndexByte(first, '(') != -1 {
+		var err error
+		if first, err = evalToString(ev, first); err != nil {
+			return nil, err
+		}
+	}
+	var second string
+	second, arguments = eval.NextArg(arguments)
+	if strings.IndexByte(second, '(') != -1 {
+		var err error
+		if second, err = evalToString(ev, second); err != nil {
+			return nil, err
+		}
+	}
+	d1 := dice.New(first)
+	d2 := dice.New(second)
+	if d1.Sides != d2.Sides {
+		return nil, errs.New("dice sides must match")
+	}
+	if d1.Multiplier > 0 {
+		d1.Count *= d1.Multiplier
+		d1.Modifier *= d1.Multiplier
+		d1.Multiplier = 1
+	}
+	if d2.Multiplier > 0 {
+		d2.Count *= d2.Multiplier
+		d2.Modifier *= d2.Multiplier
+		d2.Multiplier = 1
+	}
+	d1.Count += d2.Count
+	d1.Modifier += d2.Modifier
+	return d1.String(), nil
+}
+
+func evalSubtractDice(ev *eval.Evaluator, arguments string) (any, error) {
+	var first string
+	first, arguments = eval.NextArg(arguments)
+	if strings.IndexByte(first, '(') != -1 {
+		var err error
+		if first, err = evalToString(ev, first); err != nil {
+			return nil, err
+		}
+	}
+	var second string
+	second, arguments = eval.NextArg(arguments)
+	if strings.IndexByte(second, '(') != -1 {
+		var err error
+		if second, err = evalToString(ev, second); err != nil {
+			return nil, err
+		}
+	}
+	d1 := dice.New(first)
+	d2 := dice.New(second)
+	if d1.Sides != d2.Sides {
+		return nil, errs.New("dice sides must match")
+	}
+	if d1.Multiplier > 0 {
+		d1.Count *= d1.Multiplier
+		d1.Modifier *= d1.Multiplier
+		d1.Multiplier = 1
+	}
+	if d2.Multiplier > 0 {
+		d2.Count *= d2.Multiplier
+		d2.Modifier *= d2.Multiplier
+		d2.Multiplier = 1
+	}
+	d1.Count -= d2.Count
+	d1.Count = max(d1.Count, 0)
+	d1.Modifier -= d2.Modifier
+	return d1.String(), nil
+}
+
+func evalDiceCount(ev *eval.Evaluator, arguments string) (any, error) {
+	d, err := convertToDice(ev, arguments)
+	if err != nil {
+		return nil, err
+	}
+	return d.Count, nil
+}
+
+func evalDiceSides(ev *eval.Evaluator, arguments string) (any, error) {
+	d, err := convertToDice(ev, arguments)
+	if err != nil {
+		return nil, err
+	}
+	return d.Sides, nil
+}
+
+func evalDiceModifier(ev *eval.Evaluator, arguments string) (any, error) {
+	d, err := convertToDice(ev, arguments)
+	if err != nil {
+		return nil, err
+	}
+	return d.Modifier, nil
+}
+
+func evalDiceMultiplier(ev *eval.Evaluator, arguments string) (any, error) {
+	d, err := convertToDice(ev, arguments)
+	if err != nil {
+		return nil, err
+	}
+	return d.Multiplier, nil
+}
+
 func evalRoll(ev *eval.Evaluator, arguments string) (any, error) {
+	d, err := convertToDice(ev, arguments)
+	if err != nil {
+		return nil, err
+	}
+	return fxp.From(d.Roll(false)), nil
+}
+
+func convertToDice(ev *eval.Evaluator, arguments string) (*dice.Dice, error) {
 	if strings.IndexByte(arguments, '(') != -1 {
 		var err error
 		if arguments, err = evalToString(ev, arguments); err != nil {
 			return nil, err
 		}
 	}
-	return fxp.From(dice.New(arguments).Roll(false)), nil
+	return dice.New(arguments), nil
 }
 
 func evalSigned(ev *eval.Evaluator, arguments string) (any, error) {
