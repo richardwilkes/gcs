@@ -483,6 +483,11 @@ func addSpecializationCriteriaPanel(parent *unison.Panel, strCriteria *gurps.Str
 	addStringCriteriaPanel(parent, prefix, prefix, i18n.Text("Specialization Qualifier"), strCriteria, hSpan, includeEmptyFiller)
 }
 
+func addUsageCriteriaPanel(parent *unison.Panel, strCriteria *gurps.StringCriteria, hSpan int, includeEmptyFiller bool) {
+	prefix := i18n.Text("and whose usage")
+	addStringCriteriaPanel(parent, prefix, prefix, i18n.Text("Usage Qualifier"), strCriteria, hSpan, includeEmptyFiller)
+}
+
 func addTagCriteriaPanel(parent *unison.Panel, strCriteria *gurps.StringCriteria, hSpan int, includeEmptyFiller bool) {
 	addStringCriteriaPanel(parent, i18n.Text("and at least one tag"), i18n.Text("and all tags"), i18n.Text("Tag Qualifier"), strCriteria, hSpan, includeEmptyFiller)
 }

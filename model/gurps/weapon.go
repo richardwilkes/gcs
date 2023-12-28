@@ -494,9 +494,12 @@ func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xio.ByteBuffer, all
 	}
 	bonusSet := make(map[*WeaponBonus]bool)
 	tags := w.Owner.TagList()
+	var name, specialization string
 	if bestDef != nil {
-		pc.AddWeaponWithSkillBonusesFor(bestDef.Name, bestDef.Specialization, tags, dieCount, tooltip, bonusSet, allowed)
+		name = bestDef.Name
+		specialization = bestDef.Specialization
 	}
+	pc.AddWeaponWithSkillBonusesFor(name, specialization, w.Usage, tags, dieCount, tooltip, bonusSet, allowed)
 	nameQualifier := w.String()
 	pc.AddNamedWeaponBonusesFor(nameQualifier, w.Usage, tags, dieCount, tooltip, bonusSet, allowed)
 	for _, f := range w.Owner.FeatureList() {

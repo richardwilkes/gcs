@@ -809,7 +809,7 @@ func (e *Entity) SpellPointBonusFor(name, powerSource string, colleges, tags []s
 
 // AddWeaponWithSkillBonusesFor adds the bonuses for matching weapons that match to the map. If 'm' is nil, it will be
 // created. The provided map (or the newly created one) will be returned.
-func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization string, tags []string, dieCount int, tooltip *xio.ByteBuffer, m map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool) map[*WeaponBonus]bool {
+func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization, usage string, tags []string, dieCount int, tooltip *xio.ByteBuffer, m map[*WeaponBonus]bool, allowedFeatureTypes map[feature.Type]bool) map[*WeaponBonus]bool {
 	if m == nil {
 		m = make(map[*WeaponBonus]bool)
 	}
@@ -819,24 +819,23 @@ func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization string, tags 
 			rsl = sk.LevelData.RelativeLevel
 		}
 	}
-	if rsl != fxp.Min {
-		for _, bonus := range e.features.weaponBonuses {
-			if allowedFeatureTypes[bonus.Type] &&
-				bonus.SelectionType == wsel.WithRequiredSkill &&
-				bonus.NameCriteria.Matches(name) &&
-				bonus.SpecializationCriteria.Matches(specialization) &&
-				bonus.RelativeLevelCriteria.Matches(rsl) &&
-				bonus.TagsCriteria.MatchesList(tags...) {
-				level := bonus.LeveledAmount.Level
-				if bonus.Type == feature.WeaponBonus {
-					bonus.LeveledAmount.Level = fxp.From(dieCount)
-				} else {
-					bonus.LeveledAmount.Level = bonus.DerivedLevel()
-				}
-				bonus.AddToTooltip(tooltip)
-				bonus.LeveledAmount.Level = level
-				m[bonus] = true
+	for _, bonus := range e.features.weaponBonuses {
+		if allowedFeatureTypes[bonus.Type] &&
+			bonus.SelectionType == wsel.WithRequiredSkill &&
+			bonus.NameCriteria.Matches(name) &&
+			bonus.SpecializationCriteria.Matches(specialization) &&
+			bonus.RelativeLevelCriteria.Matches(rsl) &&
+			bonus.UsageCriteria.Matches(usage) &&
+			bonus.TagsCriteria.MatchesList(tags...) {
+			level := bonus.LeveledAmount.Level
+			if bonus.Type == feature.WeaponBonus {
+				bonus.LeveledAmount.Level = fxp.From(dieCount)
+			} else {
+				bonus.LeveledAmount.Level = bonus.DerivedLevel()
 			}
+			bonus.AddToTooltip(tooltip)
+			bonus.LeveledAmount.Level = level
+			m[bonus] = true
 		}
 	}
 	return m

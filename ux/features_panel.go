@@ -165,16 +165,7 @@ func (p *featuresPanel) createAttributeBonusPanel(f *gurps.AttributeBonus) *unis
 	}
 	limitationPopup = addPopup(wrapper, stlimit.Options, &f.Limitation)
 	adjustPopupBlank(limitationPopup, f.Attribute != gurps.StrengthID)
-	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  len(wrapper.Children()),
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	wrapper.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	panel.AddChild(wrapper)
+	p.addWrapperAtIndex(panel, wrapper, -1, true)
 	return panel
 }
 
@@ -202,10 +193,8 @@ func (p *featuresPanel) createConditionalModifierPanel(f *gurps.ConditionalModif
 func (p *featuresPanel) createDRBonusPanel(f *gurps.DRBonus) *unison.Panel {
 	panel := p.createBasePanel(f)
 	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
-
 	panel.AddChild(unison.NewPanel())
 	addHitLocationChoicePopup(panel, p.entity, &f.Location, p.forEquipmentModifier)
-
 	panel.AddChild(unison.NewPanel())
 	wrapper := unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{
@@ -252,7 +241,6 @@ func (p *featuresPanel) createReactionBonusPanel(f *gurps.ReactionBonus) *unison
 func (p *featuresPanel) createSkillBonusPanel(f *gurps.SkillBonus) *unison.Panel {
 	panel := p.createBasePanel(f)
 	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
-
 	panel.AddChild(unison.NewPanel())
 	wrapper := unison.NewPanel()
 	var criteriaPopup *unison.PopupMenu[string]
@@ -276,26 +264,16 @@ func (p *featuresPanel) createSkillBonusPanel(f *gurps.SkillBonus) *unison.Panel
 		MarkModified(p)
 	}
 	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", "", i18n.Text("Name Qualifier"), &f.NameCriteria, 1, false)
-	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  len(wrapper.Children()),
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	wrapper.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-	})
-	panel.AddChild(wrapper)
+	p.addWrapperAtIndex(panel, wrapper, -1, false)
 	adjustPopupBlank(criteriaPopup, f.SelectionType == skillsel.ThisWeapon)
 	adjustFieldBlank(criteriaField, f.SelectionType == skillsel.ThisWeapon)
-
 	p.createSecondarySkillPanels(panel, len(panel.Children()), f)
 	return panel
 }
 
 func (p *featuresPanel) createSecondarySkillPanels(parent *unison.Panel, index int, f *gurps.SkillBonus) {
-	parent.AddChildAtIndex(unison.NewPanel(), index)
-	index++
-	wrapper := unison.NewPanel()
+	var wrapper *unison.Panel
+	wrapper, index = p.prepareNewWrapper(parent, index)
 	switch f.SelectionType {
 	case skillsel.Name:
 		addSpecializationCriteriaPanel(wrapper, &f.SpecializationCriteria, 1, false)
@@ -305,31 +283,11 @@ func (p *featuresPanel) createSecondarySkillPanels(parent *unison.Panel, index i
 	default:
 		errs.Log(errs.New("unknown selection type"), "type", int(f.SelectionType))
 	}
-	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  len(wrapper.Children()),
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	wrapper.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-	})
-	parent.AddChildAtIndex(wrapper, index)
-	index++
-
+	index = p.addWrapperAtIndex(parent, wrapper, index, false)
 	if f.SelectionType != skillsel.ThisWeapon {
-		parent.AddChildAtIndex(unison.NewPanel(), index)
-		index++
-		wrapper = unison.NewPanel()
+		wrapper, index = p.prepareNewWrapper(parent, index)
 		addTagCriteriaPanel(wrapper, &f.TagsCriteria, 1, false)
-		wrapper.SetLayout(&unison.FlexLayout{
-			Columns:  len(wrapper.Children()),
-			HSpacing: unison.StdHSpacing,
-			VSpacing: unison.StdVSpacing,
-		})
-		wrapper.SetLayoutData(&unison.FlexLayoutData{
-			HAlign: align.Fill,
-		})
-		parent.AddChildAtIndex(wrapper, index)
+		p.addWrapperAtIndex(parent, wrapper, index, false)
 	}
 }
 
@@ -359,18 +317,9 @@ func (p *featuresPanel) createSpellBonusPanel(f *gurps.SpellBonus) *unison.Panel
 		MarkModified(p)
 	}
 	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", "", i18n.Text("Name Qualifier"), &f.NameCriteria, 1, false)
-	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  len(wrapper.Children()),
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	wrapper.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-	})
-	panel.AddChild(wrapper)
+	p.addWrapperAtIndex(panel, wrapper, -1, false)
 	adjustPopupBlank(criteriaPopup, f.SpellMatchType == spellmatch.AllColleges)
 	adjustFieldBlank(criteriaField, f.SpellMatchType == spellmatch.AllColleges)
-
 	addTagCriteriaPanel(panel, &f.TagsCriteria, 1, true)
 	return panel
 }
@@ -378,8 +327,7 @@ func (p *featuresPanel) createSpellBonusPanel(f *gurps.SpellBonus) *unison.Panel
 func (p *featuresPanel) createSpellPointBonusPanel(f *gurps.SpellPointBonus) *unison.Panel {
 	panel := p.createBasePanel(f)
 	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
-	panel.AddChild(unison.NewPanel())
-	wrapper := unison.NewPanel()
+	wrapper, _ := p.prepareNewWrapper(panel, -1)
 	var criteriaPopup *unison.PopupMenu[string]
 	var criteriaField *StringField
 	popup := addPopup(wrapper, spellmatch.Types, &f.SpellMatchType)
@@ -391,18 +339,9 @@ func (p *featuresPanel) createSpellPointBonusPanel(f *gurps.SpellPointBonus) *un
 		MarkModified(p)
 	}
 	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", "", i18n.Text("Name Qualifier"), &f.NameCriteria, 1, false)
-	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  len(wrapper.Children()),
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	wrapper.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-	})
-	panel.AddChild(wrapper)
+	p.addWrapperAtIndex(panel, wrapper, -1, false)
 	adjustPopupBlank(criteriaPopup, f.SpellMatchType == spellmatch.AllColleges)
 	adjustFieldBlank(criteriaField, f.SpellMatchType == spellmatch.AllColleges)
-
 	addTagCriteriaPanel(panel, &f.TagsCriteria, 1, true)
 	return panel
 }
@@ -410,7 +349,6 @@ func (p *featuresPanel) createSpellPointBonusPanel(f *gurps.SpellPointBonus) *un
 func (p *featuresPanel) createWeaponDamageBonusPanel(f *gurps.WeaponBonus) *unison.Panel {
 	panel := p.createBasePanel(f)
 	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
-
 	panel.AddChild(unison.NewPanel())
 	wrapper := unison.NewPanel()
 	var criteriaPopup *unison.PopupMenu[string]
@@ -428,8 +366,7 @@ func (p *featuresPanel) createWeaponDamageBonusPanel(f *gurps.WeaponBonus) *unis
 		}
 		pop.SelectIndex(index)
 		f.SelectionType = item
-		adjustPopupBlank(criteriaPopup, f.SelectionType == wsel.ThisWeapon)
-		adjustFieldBlank(criteriaField, f.SelectionType == wsel.ThisWeapon)
+		p.adjustCriteriaPopupAndField(f, criteriaPopup, criteriaField)
 		i := panel.IndexOfChild(wrapper) + 1
 		for j := count - 1; j >= 0; j-- {
 			panel.RemoveChildAtIndex(i + j)
@@ -439,35 +376,56 @@ func (p *featuresPanel) createWeaponDamageBonusPanel(f *gurps.WeaponBonus) *unis
 		MarkModified(p)
 	}
 	criteriaPopup, criteriaField = addStringCriteriaPanel(wrapper, "", "", i18n.Text("Name Qualifier"), &f.NameCriteria, 1, false)
-	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  len(wrapper.Children()),
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	wrapper.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-	})
-	panel.AddChild(wrapper)
-	adjustPopupBlank(criteriaPopup, f.SelectionType == wsel.ThisWeapon)
-	adjustFieldBlank(criteriaField, f.SelectionType == wsel.ThisWeapon)
-
+	p.addWrapperAtIndex(panel, wrapper, -1, false)
+	p.adjustCriteriaPopupAndField(f, criteriaPopup, criteriaField)
 	p.createSecondaryWeaponPanels(panel, len(panel.Children()), f)
 	return panel
 }
 
+func (p *featuresPanel) adjustCriteriaPopupAndField(f *gurps.WeaponBonus, criteriaPopup *unison.PopupMenu[string], criteriaField *StringField) {
+	blank := f.SelectionType == wsel.ThisWeapon
+	if !blank {
+		blank = gurps.AllStringCompareTypes[criteriaPopup.SelectedIndex()] == gurps.AnyString
+	}
+	adjustPopupBlank(criteriaPopup, f.SelectionType == wsel.ThisWeapon)
+	adjustFieldBlank(criteriaField, blank)
+}
+
 func (p *featuresPanel) createSecondaryWeaponPanels(parent *unison.Panel, index int, f *gurps.WeaponBonus) {
-	parent.AddChildAtIndex(unison.NewPanel(), index)
-	index++
-	wrapper := unison.NewPanel()
+	var wrapper *unison.Panel
+	wrapper, index = p.prepareNewWrapper(parent, index)
 	switch f.SelectionType {
 	case wsel.WithRequiredSkill:
 		addSpecializationCriteriaPanel(wrapper, &f.SpecializationCriteria, 1, false)
+		wrapper, index = p.prepareNewWrapper(parent, p.addWrapperAtIndex(parent, wrapper, index, false))
+		addUsageCriteriaPanel(wrapper, &f.UsageCriteria, 1, false)
 	case wsel.ThisWeapon, wsel.WithName:
-		prefix := i18n.Text("and whose usage")
-		addStringCriteriaPanel(wrapper, prefix, prefix, i18n.Text("Usage Qualifier"), &f.SpecializationCriteria, 1, false)
+		addUsageCriteriaPanel(wrapper, &f.SpecializationCriteria, 1, false)
 	default:
 		errs.Log(errs.New("unknown selection type"), "type", int(f.SelectionType))
 	}
+	index = p.addWrapperAtIndex(parent, wrapper, index, false)
+
+	if f.SelectionType != wsel.ThisWeapon {
+		wrapper, index = p.prepareNewWrapper(parent, index)
+		addTagCriteriaPanel(wrapper, &f.TagsCriteria, 1, false)
+		index = p.addWrapperAtIndex(parent, wrapper, index, false)
+		if f.SelectionType != wsel.WithName {
+			wrapper, index = p.prepareNewWrapper(parent, index)
+			addNumericCriteriaPanel(wrapper, nil, "", i18n.Text("and whose relative skill level"),
+				i18n.Text("Level Qualifier"), &f.RelativeLevelCriteria, -fxp.Thousand, fxp.Thousand, 1, true, false)
+			p.addWrapperAtIndex(parent, wrapper, index, false)
+		}
+	}
+}
+
+func (p *featuresPanel) prepareNewWrapper(parent *unison.Panel, index int) (*unison.Panel, int) {
+	parent.AddChildAtIndex(unison.NewPanel(), index)
+	index++
+	return unison.NewPanel(), index
+}
+
+func (p *featuresPanel) addWrapperAtIndex(parent, wrapper *unison.Panel, index int, hgrab bool) int {
 	wrapper.SetLayout(&unison.FlexLayout{
 		Columns:  len(wrapper.Children()),
 		HSpacing: unison.StdHSpacing,
@@ -475,43 +433,11 @@ func (p *featuresPanel) createSecondaryWeaponPanels(parent *unison.Panel, index 
 	})
 	wrapper.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
+		HGrab:  hgrab,
 	})
 	parent.AddChildAtIndex(wrapper, index)
 	index++
-
-	if f.SelectionType != wsel.ThisWeapon {
-		parent.AddChildAtIndex(unison.NewPanel(), index)
-		index++
-		wrapper = unison.NewPanel()
-		addTagCriteriaPanel(wrapper, &f.TagsCriteria, 1, false)
-		wrapper.SetLayout(&unison.FlexLayout{
-			Columns:  len(wrapper.Children()),
-			HSpacing: unison.StdHSpacing,
-			VSpacing: unison.StdVSpacing,
-		})
-		wrapper.SetLayoutData(&unison.FlexLayoutData{
-			HAlign: align.Fill,
-		})
-		parent.AddChildAtIndex(wrapper, index)
-		index++
-
-		if f.SelectionType != wsel.WithName {
-			parent.AddChildAtIndex(unison.NewPanel(), index)
-			index++
-			wrapper = unison.NewPanel()
-			addNumericCriteriaPanel(wrapper, nil, "", i18n.Text("and whose relative skill level"),
-				i18n.Text("Level Qualifier"), &f.RelativeLevelCriteria, -fxp.Thousand, fxp.Thousand, 1, true, false)
-			wrapper.SetLayout(&unison.FlexLayout{
-				Columns:  len(wrapper.Children()),
-				HSpacing: unison.StdHSpacing,
-				VSpacing: unison.StdVSpacing,
-			})
-			wrapper.SetLayoutData(&unison.FlexLayoutData{
-				HAlign: align.Fill,
-			})
-			parent.AddChildAtIndex(wrapper, index)
-		}
-	}
+	return index
 }
 
 func (p *featuresPanel) createContainedWeightReductionPanel(f *gurps.ContainedWeightReduction) *unison.Panel {
@@ -532,16 +458,7 @@ func (p *featuresPanel) createContainedWeightReductionPanel(f *gurps.ContainedWe
 		return err == nil
 	}
 	wrapper.AddChild(field)
-
-	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  len(wrapper.Children()),
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	wrapper.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-	})
-	panel.AddChild(wrapper)
+	p.addWrapperAtIndex(panel, wrapper, -1, false)
 	return panel
 }
 
@@ -560,16 +477,7 @@ func (p *featuresPanel) createCostReductionPanel(f *gurps.CostReduction) *unison
 		f.Percentage = fxp.From[int]((index + 1) * 5)
 		MarkModified(wrapper)
 	}
-	wrapper.SetLayout(&unison.FlexLayout{
-		Columns:  len(wrapper.Children()),
-		HSpacing: unison.StdHSpacing,
-		VSpacing: unison.StdVSpacing,
-	})
-	wrapper.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	panel.AddChild(wrapper)
+	p.addWrapperAtIndex(panel, wrapper, -1, true)
 	return panel
 }
 

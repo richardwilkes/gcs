@@ -35,6 +35,7 @@ type WeaponBonus struct {
 	NameCriteria           StringCriteria  `json:"name,omitempty"`
 	SpecializationCriteria StringCriteria  `json:"specialization,omitempty"`
 	RelativeLevelCriteria  NumericCriteria `json:"level,omitempty"`
+	UsageCriteria          StringCriteria  `json:"usage,omitempty"`
 	TagsCriteria           StringCriteria  `json:"tags,alt=category,omitempty"`
 	LeveledAmount
 	BonusOwner
@@ -174,6 +175,11 @@ func newWeaponBonus(t feature.Type) *WeaponBonus {
 				Compare: AtLeastNumber,
 			},
 		},
+		UsageCriteria: StringCriteria{
+			StringCriteriaData: StringCriteriaData{
+				Compare: AnyString,
+			},
+		},
 		TagsCriteria: StringCriteria{
 			StringCriteriaData: StringCriteriaData{
 				Compare: AnyString,
@@ -200,6 +206,7 @@ func (w *WeaponBonus) FillWithNameableKeys(m map[string]string) {
 	if w.SelectionType != wsel.ThisWeapon {
 		Extract(w.NameCriteria.Qualifier, m)
 		Extract(w.SpecializationCriteria.Qualifier, m)
+		Extract(w.UsageCriteria.Qualifier, m)
 		Extract(w.TagsCriteria.Qualifier, m)
 	}
 }
@@ -210,6 +217,7 @@ func (w *WeaponBonus) ApplyNameableKeys(m map[string]string) {
 	if w.SelectionType != wsel.ThisWeapon {
 		w.NameCriteria.Qualifier = Apply(w.NameCriteria.Qualifier, m)
 		w.SpecializationCriteria.Qualifier = Apply(w.SpecializationCriteria.Qualifier, m)
+		w.UsageCriteria.Qualifier = Apply(w.UsageCriteria.Qualifier, m)
 		w.TagsCriteria.Qualifier = Apply(w.TagsCriteria.Qualifier, m)
 	}
 }
