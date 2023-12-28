@@ -164,10 +164,10 @@ func (we *weaponEditor) addAccuracyBlock(w *gurps.Weapon, content *unison.Panel)
 	accuracy := &w.Accuracy
 	wrapper := addFlowWrapper(content, i18n.Text("Accuracy"), 4)
 	text := i18n.Text("Weapon Accuracy")
-	base := addDecimalFieldWithSign(wrapper, nil, "", text, text, &accuracy.Base, 0, fxp.MillionMinusOne)
+	base := addDecimalField(wrapper, nil, "", text, text, &accuracy.Base, 0, fxp.MillionMinusOne)
 	wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Scope"), false))
 	text = i18n.Text("Scope Accuracy")
-	scope := addDecimalFieldWithSign(wrapper, nil, "", text, text, &accuracy.Scope, 0, fxp.MillionMinusOne)
+	scope := addDecimalField(wrapper, nil, "", text, text, &accuracy.Scope, 0, fxp.MillionMinusOne)
 	we.jetCheckBox = addCheckBox(wrapper, i18n.Text("Jet"), &accuracy.Jet)
 	we.panelsControlledByJet = append(we.panelsControlledByJet, base, scope)
 }

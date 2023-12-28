@@ -20,10 +20,10 @@ import (
 
 func TestWeaponAccuracy(t *testing.T) {
 	for i, s := range []string{
-		"+0",
-		"+1",
-		"+1+3",
-		"+0+3",
+		"0",
+		"1",
+		"1+3",
+		"0+3",
 		"Jet",
 	} {
 		check.Equal(t, s, gurps.ParseWeaponAccuracy(s).String(), "test %d", i)
@@ -33,15 +33,16 @@ func TestWeaponAccuracy(t *testing.T) {
 		input    string
 		expected string
 	}{
-		{"", "+0"},
-		{"-", "+0"},
-		{"0", "+0"},
-		{"1", "+1"},
-		{"0+3", "+0+3"},
-		{"1+3", "+1+3"},
-		{"1+0", "+1"},
-		{"51,", "+51"},
-		{"?", "+0"},
+		{"", "0"},
+		{"-", "0"},
+		{"?", "0"},
+		{"+0", "0"},
+		{"+1", "1"},
+		{"+0+3", "0+3"},
+		{"+1+3", "1+3"},
+		{"+1+0", "1"},
+		{"1+0", "1"},
+		{"51,", "51"},
 	}
 	for i, c := range cases {
 		check.Equal(t, c.expected, gurps.ParseWeaponAccuracy(c.input).String(), "test %d", i)

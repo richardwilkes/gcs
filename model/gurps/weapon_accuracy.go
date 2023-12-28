@@ -110,9 +110,9 @@ func (wa WeaponAccuracy) String() string {
 		return "Jet" // Not localized, since it is part of the data
 	}
 	if wa.Scope != 0 {
-		return wa.Base.StringWithSign() + wa.Scope.StringWithSign()
+		return wa.Base.String() + wa.Scope.StringWithSign()
 	}
-	return wa.Base.StringWithSign()
+	return wa.Base.String()
 }
 
 // Validate ensures that the data is valid.
