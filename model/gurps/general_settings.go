@@ -117,8 +117,8 @@ func NewGeneralSettings() *GeneralSettings {
 // NewGeneralSettingsFromFile loads new settings from a file.
 func NewGeneralSettingsFromFile(fileSystem fs.FS, filePath string) (*GeneralSettings, error) {
 	var data struct {
-		GeneralSettings `json:",inline"`
-		OldLocation     *GeneralSettings `json:"general"`
+		GeneralSettings
+		OldLocation *GeneralSettings `json:"general"`
 	}
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
 		return nil, err

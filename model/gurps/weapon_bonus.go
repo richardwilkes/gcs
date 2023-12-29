@@ -27,17 +27,17 @@ var _ Bonus = &WeaponBonus{}
 
 // WeaponBonus holds the data for an adjustment to weapon damage.
 type WeaponBonus struct {
-	Type                   feature.Type        `json:"type"`
-	Percent                bool                `json:"percent,omitempty"`
-	SwitchTypeValue        bool                `json:"switch_type_value,omitempty"`
-	SelectionType          wsel.Type           `json:"selection_type"`
-	SwitchType             wswitch.Type        `json:"switch_type,omitempty"`
-	NameCriteria           StringCriteria      `json:"name,omitempty"`
-	SpecializationCriteria StringCriteria      `json:"specialization,omitempty"`
-	RelativeLevelCriteria  NumericCriteria     `json:"level,omitempty"`
-	UsageCriteria          StringCriteria      `json:"usage,omitempty"`
-	TagsCriteria           StringCriteria      `json:"tags,alt=category,omitempty"`
-	LeveledAmount          WeaponLeveledAmount `json:",inline"`
+	Type                   feature.Type    `json:"type"`
+	Percent                bool            `json:"percent,omitempty"`
+	SwitchTypeValue        bool            `json:"switch_type_value,omitempty"`
+	SelectionType          wsel.Type       `json:"selection_type"`
+	SwitchType             wswitch.Type    `json:"switch_type,omitempty"`
+	NameCriteria           StringCriteria  `json:"name,omitempty"`
+	SpecializationCriteria StringCriteria  `json:"specialization,omitempty"`
+	RelativeLevelCriteria  NumericCriteria `json:"level,omitempty"`
+	UsageCriteria          StringCriteria  `json:"usage,omitempty"`
+	TagsCriteria           StringCriteria  `json:"tags,alt=category,omitempty"`
+	WeaponLeveledAmount
 	BonusOwner
 }
 
@@ -185,7 +185,7 @@ func newWeaponBonus(t feature.Type) *WeaponBonus {
 				Compare: AnyString,
 			},
 		},
-		LeveledAmount: WeaponLeveledAmount{Amount: fxp.One},
+		WeaponLeveledAmount: WeaponLeveledAmount{Amount: fxp.One},
 	}
 }
 
@@ -202,13 +202,13 @@ func (w *WeaponBonus) Clone() Feature {
 
 // AdjustedAmount implements Bonus.
 func (w *WeaponBonus) AdjustedAmount() fxp.Int {
-	return w.LeveledAmount.AdjustedAmount()
+	return w.WeaponLeveledAmount.AdjustedAmount()
 }
 
 // AdjustedAmountForWeapon returns the adjusted amount for the given weapon.
 func (w *WeaponBonus) AdjustedAmountForWeapon(wpn *Weapon) fxp.Int {
-	w.LeveledAmount.DieCount = fxp.From(wpn.Damage.BaseDamageDice().Count)
-	return w.LeveledAmount.AdjustedAmount()
+	w.WeaponLeveledAmount.DieCount = fxp.From(wpn.Damage.BaseDamageDice().Count)
+	return w.WeaponLeveledAmount.AdjustedAmount()
 }
 
 // FillWithNameableKeys implements Feature.
@@ -235,7 +235,7 @@ func (w *WeaponBonus) ApplyNameableKeys(m map[string]string) {
 
 // SetLevel implements Bonus.
 func (w *WeaponBonus) SetLevel(level fxp.Int) {
-	w.LeveledAmount.Level = level
+	w.WeaponLeveledAmount.Level = level
 }
 
 // AddToTooltip implements Bonus.
@@ -248,7 +248,7 @@ func (w *WeaponBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 		if w.Type == feature.WeaponSwitch {
 			fmt.Fprintf(&buf, "%v set to %v", w.SwitchType, w.SwitchTypeValue)
 		} else {
-			buf.WriteString(w.LeveledAmount.Format(w.Percent))
+			buf.WriteString(w.WeaponLeveledAmount.Format(w.Percent))
 			buf.WriteString(i18n.Text(" to "))
 			switch w.Type {
 			case feature.WeaponBonus:

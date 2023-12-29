@@ -15,47 +15,16 @@ import (
 	"fmt"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/i18n"
 )
 
 // WeaponLeveledAmount holds an amount that can be either a fixed amount, or an amount per level and/or per die.
 type WeaponLeveledAmount struct {
-	Level    fxp.Int
-	DieCount fxp.Int
-	Amount   fxp.Int
-	PerLevel bool
-	PerDie   bool
-}
-
-// MarshalJSON marshals to JSON.
-func (l *WeaponLeveledAmount) MarshalJSON() ([]byte, error) {
-	return json.Marshal(&struct {
-		Amount   fxp.Int `json:"amount"`
-		PerLevel bool    `json:"leveled,omitempty"`
-		PerDie   bool    `json:"per_die,omitempty"`
-	}{
-		Amount:   l.Amount,
-		PerLevel: l.PerLevel,
-		PerDie:   l.PerDie,
-	})
-}
-
-// UnmarshalJSON unmarshals from JSON.
-func (l *WeaponLeveledAmount) UnmarshalJSON(data []byte) error {
-	var input struct {
-		Amount    fxp.Int `json:"amount"`
-		PerLevel  bool    `json:"leveled"`
-		PerDie    bool    `json:"per_die"`
-		OldPerDie bool    `json:"per_level"`
-	}
-	if err := json.Unmarshal(data, &input); err != nil {
-		return err
-	}
-	l.Amount = input.Amount
-	l.PerLevel = input.PerLevel
-	l.PerDie = input.PerDie || input.OldPerDie
-	return nil
+	Level    fxp.Int `json:"-"`
+	DieCount fxp.Int `json:"-"`
+	Amount   fxp.Int `json:"amount"`
+	PerLevel bool    `json:"leveled,omitempty"`
+	PerDie   bool    `json:"per_die,alt=per_level,omitempty"`
 }
 
 // AdjustedAmount returns the amount, adjusted for level, if requested.

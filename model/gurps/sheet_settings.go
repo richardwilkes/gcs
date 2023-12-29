@@ -90,8 +90,8 @@ func FactorySheetSettings() *SheetSettings {
 // NewSheetSettingsFromFile loads new settings from a file.
 func NewSheetSettingsFromFile(fileSystem fs.FS, filePath string) (*SheetSettings, error) {
 	var data struct {
-		SheetSettings `json:",inline"`
-		OldLocation   *SheetSettings `json:"sheet_settings"`
+		SheetSettings
+		OldLocation *SheetSettings `json:"sheet_settings"`
 	}
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
 		return nil, err

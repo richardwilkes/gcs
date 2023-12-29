@@ -344,7 +344,7 @@ func (p *featuresPanel) createSpellPointBonusPanel(f *gurps.SpellPointBonus) *un
 
 func (p *featuresPanel) createWeaponBonusPanel(f *gurps.WeaponBonus) *unison.Panel {
 	panel := p.createBasePanel(f)
-	p.addWeaponLeveledModifierLine(panel, f, &f.LeveledAmount)
+	p.addWeaponLeveledModifierLine(panel, f, &f.WeaponLeveledAmount)
 	panel.AddChild(unison.NewPanel())
 	wrapper := unison.NewPanel()
 	var criteriaPopup *unison.PopupMenu[string]

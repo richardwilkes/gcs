@@ -36,7 +36,7 @@ type ProfileRandom struct {
 
 // Profile holds the profile information for an NPC.
 type Profile struct {
-	ProfileRandom     `json:",inline"`
+	ProfileRandom
 	PlayerName        string        `json:"player_name,omitempty"`
 	Title             string        `json:"title,omitempty"`
 	Organization      string        `json:"organization,omitempty"`

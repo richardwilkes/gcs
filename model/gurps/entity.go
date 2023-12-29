@@ -852,13 +852,13 @@ func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, 
 }
 
 func addWeaponBonusToMap(bonus *WeaponBonus, dieCount int, tooltip *xio.ByteBuffer, m map[*WeaponBonus]bool) {
-	savedLevel := bonus.LeveledAmount.Level
-	savedDieCount := bonus.LeveledAmount.DieCount
-	bonus.LeveledAmount.DieCount = fxp.From(dieCount)
-	bonus.LeveledAmount.Level = bonus.DerivedLevel()
+	savedLevel := bonus.WeaponLeveledAmount.Level
+	savedDieCount := bonus.WeaponLeveledAmount.DieCount
+	bonus.WeaponLeveledAmount.DieCount = fxp.From(dieCount)
+	bonus.WeaponLeveledAmount.Level = bonus.DerivedLevel()
 	bonus.AddToTooltip(tooltip)
-	bonus.LeveledAmount.Level = savedLevel
-	bonus.LeveledAmount.DieCount = savedDieCount
+	bonus.WeaponLeveledAmount.Level = savedLevel
+	bonus.WeaponLeveledAmount.DieCount = savedDieCount
 	m[bonus] = true
 }
 
