@@ -374,14 +374,17 @@ func NewWindowForDockable(dockable unison.Dockable, group dgroup.Group) (*unison
 	content.AddChild(panel)
 	wnd.ClientData()[dockableClientDataKey] = dockable
 	if tc, ok := dockable.(unison.TabCloser); ok {
-		wnd.AllowCloseCallback = tc.MayAttemptClose
 		pendingClose := false
-		wnd.WillCloseCallback = func() {
+		wnd.AllowCloseCallback = func() bool {
+			if !tc.MayAttemptClose() {
+				return false
+			}
 			if !pendingClose {
 				pendingClose = true
-				tc.AttemptClose()
-				pendingClose = false
+				defer func() { pendingClose = false }()
+				return tc.AttemptClose()
 			}
+			return true
 		}
 	}
 	panel.ClientData()[dockGroupClientDataKey] = group
