@@ -66,7 +66,6 @@ type Settings struct {
 	WorkspaceFrame     *unison.Rect               `json:"workspace_frame,omitempty"`
 	Colors             Colors                     `json:"colors"`
 	Fonts              Fonts                      `json:"fonts"`
-	QuickExports       *QuickExports              `json:"quick_exports,omitempty"`
 	Sheet              *SheetSettings             `json:"sheet_settings,omitempty"`
 	OpenInWindow       []dgroup.Group             `json:"open_in_window,omitempty"`
 	ThemeMode          thememode.Enum             `json:"theme_mode,alt=color_mode"`
@@ -80,7 +79,6 @@ func DefaultSettings() *Settings {
 		LibrarySet:         NewLibraries(),
 		LibraryExplorer:    NavigatorSettings{DividerPosition: 330},
 		LastDirs:           make(map[string]string),
-		QuickExports:       NewQuickExports(),
 		Sheet:              FactorySheetSettings(),
 	}
 }
@@ -125,9 +123,6 @@ func (s *Settings) EnsureValidity() {
 	}
 	if s.LastDirs == nil {
 		s.LastDirs = make(map[string]string)
-	}
-	if s.QuickExports == nil {
-		s.QuickExports = NewQuickExports()
 	}
 	if s.Sheet == nil {
 		s.Sheet = FactorySheetSettings()
