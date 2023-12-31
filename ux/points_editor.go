@@ -69,7 +69,7 @@ func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 		current: gurps.ClonePointsRecordList(entity.PointsRecord),
 	}
 	e.Self = e
-	slices.SortFunc(e.current, func(a, b *gurps.PointsRecord) int { return a.When.Compare(b.When) })
+	slices.SortFunc(e.current, func(a, b *gurps.PointsRecord) int { return b.When.Compare(a.When) })
 
 	if defDC := DefaultDockContainer(); defDC != nil {
 		if e.previousDockable = defDC.CurrentDockable(); !toolbox.IsNil(e.previousDockable) {
@@ -304,7 +304,7 @@ func (e *pointsEditor) copyToOtherSheet(rec *gurps.PointsRecord) {
 		}
 		pe.Self = pe
 		pe.current = slices.Insert(gurps.ClonePointsRecordList(sheet.entity.PointsRecord), 0, rec)
-		slices.SortFunc(pe.current, func(a, b *gurps.PointsRecord) int { return a.When.Compare(b.When) })
+		slices.SortFunc(pe.current, func(a, b *gurps.PointsRecord) int { return b.When.Compare(a.When) })
 		pe.applyWithoutFocusNext()
 	}
 }

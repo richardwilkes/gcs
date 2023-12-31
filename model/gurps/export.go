@@ -13,6 +13,7 @@ package gurps
 
 import (
 	"bufio"
+	"cmp"
 	"encoding/base64"
 	htmltmpl "html/template"
 	"io"
@@ -476,9 +477,9 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			}
 		}
 	}
-	slices.SortFunc(data.Attributes.Primary, func(a, b *exportedAttribute) int { return a.order - b.order })
-	slices.SortFunc(data.Attributes.Secondary, func(a, b *exportedAttribute) int { return a.order - b.order })
-	slices.SortFunc(data.Attributes.Pools, func(a, b *exportedPool) int { return a.order - b.order })
+	slices.SortFunc(data.Attributes.Primary, func(a, b *exportedAttribute) int { return cmp.Compare(a.order, b.order) })
+	slices.SortFunc(data.Attributes.Secondary, func(a, b *exportedAttribute) int { return cmp.Compare(a.order, b.order) })
+	slices.SortFunc(data.Attributes.Pools, func(a, b *exportedPool) int { return cmp.Compare(a.order, b.order) })
 	currentEnc := entity.EncumbranceLevel(false)
 	for _, enc := range encumbrance.Levels {
 		penalty := fxp.As[int](enc.Penalty())

@@ -74,9 +74,7 @@ func (a *Attributes) List() []*Attribute {
 	for _, v := range a.Set {
 		list = append(list, v)
 	}
-	slices.SortFunc(list, func(a, b *Attribute) int {
-		return cmp.Compare(a.Order, b.Order)
-	})
+	slices.SortFunc(list, func(a, b *Attribute) int { return cmp.Compare(a.Order, b.Order) })
 	return list
 }
 

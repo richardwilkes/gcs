@@ -1252,9 +1252,7 @@ func (ex *legacyExporter) processHierarchicalMeleeLoop(buffer []byte) {
 	for _, v := range m {
 		list = append(list, v[0])
 	}
-	slices.SortFunc(list, func(a, b *Weapon) int {
-		return a.Compare(b)
-	})
+	slices.SortFunc(list, func(a, b *Weapon) int { return a.Compare(b) })
 	for i, w := range list {
 		ex.processBuffer(buffer, func(key string, buf []byte, index int) int {
 			return ex.processMeleeKeys(key, i, w, m[w.String()], buf, index)
@@ -1280,9 +1278,7 @@ func (ex *legacyExporter) processHierarchicalRangedLoop(buffer []byte) {
 	for _, v := range m {
 		list = append(list, v[0])
 	}
-	slices.SortFunc(list, func(a, b *Weapon) int {
-		return a.Compare(b)
-	})
+	slices.SortFunc(list, func(a, b *Weapon) int { return a.Compare(b) })
 	for i, w := range list {
 		ex.processBuffer(buffer, func(key string, buf []byte, index int) int {
 			return ex.processRangedKeys(key, i, w, m[w.String()], buf, index)

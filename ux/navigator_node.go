@@ -312,9 +312,7 @@ func (n *NavigatorNode) refreshChildren(dirPath string, parent *NavigatorNode) [
 		}
 		return nil
 	}
-	slices.SortFunc(entries, func(a, b fs.DirEntry) int {
-		return txt.NaturalCmp(a.Name(), b.Name(), true)
-	})
+	slices.SortFunc(entries, func(a, b fs.DirEntry) int { return txt.NaturalCmp(a.Name(), b.Name(), true) })
 	children := make([]*NavigatorNode, 0, len(entries))
 	for _, entry := range entries {
 		name := entry.Name()

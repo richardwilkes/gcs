@@ -123,8 +123,6 @@ func (p *PageRefs) List() []*PageRef {
 		r := *v
 		list = append(list, &r)
 	}
-	slices.SortFunc(list, func(a, b *PageRef) int {
-		return txt.NaturalCmp(a.ID, b.ID, true)
-	})
+	slices.SortFunc(list, func(a, b *PageRef) int { return txt.NaturalCmp(a.ID, b.ID, true) })
 	return list
 }

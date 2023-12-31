@@ -160,9 +160,7 @@ func (a *AttributeDefs) List(omitSeparators bool) []*AttributeDef {
 		}
 		list = append(list, v)
 	}
-	slices.SortFunc(list, func(a, b *AttributeDef) int {
-		return cmp.Compare(a.Order, b.Order)
-	})
+	slices.SortFunc(list, func(a, b *AttributeDef) int { return cmp.Compare(a.Order, b.Order) })
 	return list
 }
 

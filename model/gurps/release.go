@@ -85,9 +85,7 @@ func LoadReleases(ctx context.Context, client *http.Client, githubAccountName, a
 			}
 		}
 	}
-	slices.SortFunc(versions, func(a, b Release) int {
-		return txt.NaturalCmp(b.Version, a.Version, true)
-	})
+	slices.SortFunc(versions, func(a, b Release) int { return txt.NaturalCmp(b.Version, a.Version, true) })
 	if len(versions) > 1 && versions[len(versions)-1].Version == currentVersion {
 		versions = versions[:len(versions)-1]
 	}

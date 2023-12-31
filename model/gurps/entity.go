@@ -248,9 +248,7 @@ func (e *Entity) UnmarshalJSON(data []byte) error {
 			When:   jio.Now(),
 			Reason: i18n.Text("Reconciliation"),
 		})
-		slices.SortFunc(e.PointsRecord, func(a, b *PointsRecord) int {
-			return a.When.Compare(b.When)
-		})
+		slices.SortFunc(e.PointsRecord, func(a, b *PointsRecord) int { return b.When.Compare(a.When) })
 	}
 	e.Recalculate()
 	return nil
@@ -1265,9 +1263,7 @@ func (e *Entity) EquippedWeapons(weaponType wpn.Type) []*Weapon {
 	for _, v := range m {
 		list = append(list, v)
 	}
-	slices.SortFunc(list, func(a, b *Weapon) int {
-		return a.Compare(b)
-	})
+	slices.SortFunc(list, func(a, b *Weapon) int { return a.Compare(b) })
 	return list
 }
 
@@ -1313,9 +1309,7 @@ func (e *Entity) Reactions() []*ConditionalModifier {
 	for _, v := range m {
 		list = append(list, v)
 	}
-	slices.SortFunc(list, func(a, b *ConditionalModifier) int {
-		return a.Compare(b)
-	})
+	slices.SortFunc(list, func(a, b *ConditionalModifier) int { return a.Compare(b) })
 	return list
 }
 
@@ -1365,9 +1359,7 @@ func (e *Entity) ConditionalModifiers() []*ConditionalModifier {
 	for _, v := range m {
 		list = append(list, v)
 	}
-	slices.SortFunc(list, func(a, b *ConditionalModifier) int {
-		return a.Compare(b)
-	})
+	slices.SortFunc(list, func(a, b *ConditionalModifier) int { return a.Compare(b) })
 	return list
 }
 
@@ -1478,9 +1470,7 @@ func (e *Entity) CRC64() uint64 {
 // SetPointsRecord sets a new points record list, adjusting the total points.
 func (e *Entity) SetPointsRecord(record []*PointsRecord) {
 	e.PointsRecord = ClonePointsRecordList(record)
-	slices.SortFunc(e.PointsRecord, func(a, b *PointsRecord) int {
-		return a.When.Compare(b.When)
-	})
+	slices.SortFunc(e.PointsRecord, func(a, b *PointsRecord) int { return b.When.Compare(a.When) })
 	e.TotalPoints = 0
 	for _, rec := range record {
 		e.TotalPoints += rec.Points
