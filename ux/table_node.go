@@ -153,13 +153,13 @@ func (n *Node[T]) ColumnCell(row, col int, foreground, background unison.Ink, _,
 		applyInkRecursively(n.cellCache[col].Panel.AsPanel(), foreground, background)
 		return n.cellCache[col].Panel
 	}
-	cell := n.CellFromCellData(&cellData, width, foreground, background)
+	c := n.CellFromCellData(&cellData, width, foreground, background)
 	n.cellCache[col] = &CellCache{
-		Panel: cell,
+		Panel: c,
 		Data:  cellData,
 		Width: width,
 	}
-	return cell
+	return c
 }
 
 func applyInkRecursively(panel *unison.Panel, foreground, background unison.Ink) {
