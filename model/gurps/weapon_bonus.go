@@ -207,7 +207,13 @@ func (w *WeaponBonus) AdjustedAmount() fxp.Int {
 
 // AdjustedAmountForWeapon returns the adjusted amount for the given weapon.
 func (w *WeaponBonus) AdjustedAmountForWeapon(wpn *Weapon) fxp.Int {
-	w.WeaponLeveledAmount.DieCount = fxp.From(wpn.Damage.BaseDamageDice().Count)
+	if w.Type == feature.WeaponMinSTBonus {
+		// Can't call BaseDamageDice() here because that would cause an infinite loop, so we just don't permit use of
+		// the per-die feature for this bonus.
+		w.WeaponLeveledAmount.DieCount = fxp.One
+	} else {
+		w.WeaponLeveledAmount.DieCount = fxp.From(wpn.Damage.BaseDamageDice().Count)
+	}
 	return w.WeaponLeveledAmount.AdjustedAmount()
 }
 

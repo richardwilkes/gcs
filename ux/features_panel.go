@@ -518,7 +518,11 @@ func (p *featuresPanel) addWeaponLeveledModifierLine(parent *unison.Panel, f gur
 					MarkModified(panel)
 				}, fxp.Min, fxp.Max, true, false))
 			addCheckBox(panel, i18n.Text("per level"), &amount.PerLevel)
-			addCheckBox(panel, i18n.Text("per die"), &amount.PerDie)
+			if ft.Type != feature.WeaponMinSTBonus {
+				// Can't allow the per-die option for MinST bonuses, since that would cause an infinite loop on
+				// resolution.
+				addCheckBox(panel, i18n.Text("per die"), &amount.PerDie)
+			}
 			addCheckBox(panel, i18n.Text("as a %"), &ft.Percent)
 		}
 	}
