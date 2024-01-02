@@ -522,7 +522,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			ID:                s.ID.String(),
 			Type:              groupOrItem(s.Container()),
 			Points:            s.AdjustedPoints(nil),
-			Level:             s.CalculateLevel().LevelAsString(s.Container()),
+			Level:             s.CalculateLevel(nil).LevelAsString(s.Container()),
 			RelativeLevel:     s.RelativeLevel(),
 			Description:       s.String(),
 			ModifierNotes:     s.ModifierNotes(),

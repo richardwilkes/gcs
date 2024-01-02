@@ -901,7 +901,7 @@ func (e *Entity) BestSkillNamed(name, specialization string, requirePoints bool,
 	var best *Skill
 	level := fxp.Min
 	for _, sk := range e.SkillNamed(name, specialization, requirePoints, excludes) {
-		skillLevel := sk.CalculateLevel().Level
+		skillLevel := sk.CalculateLevel(excludes).Level
 		if best == nil || level < skillLevel {
 			best = sk
 			level = skillLevel

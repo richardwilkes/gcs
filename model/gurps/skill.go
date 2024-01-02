@@ -261,7 +261,7 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 	case SkillLevelColumn:
 		if !s.Container() {
 			data.Type = cell.Text
-			level := s.CalculateLevel()
+			level := s.CalculateLevel(nil)
 			data.Primary = level.LevelAsString(s.Container())
 			if level.Tooltip != "" {
 				data.Tooltip = includesModifiersFrom() + ":" + level.Tooltip
@@ -272,7 +272,7 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 		if !s.Container() {
 			data.Type = cell.Text
 			data.Primary = FormatRelativeSkill(s.Entity, s.Type, s.Difficulty, s.AdjustedRelativeLevel())
-			if tooltip := s.CalculateLevel().Tooltip; tooltip != "" {
+			if tooltip := s.CalculateLevel(nil).Tooltip; tooltip != "" {
 				data.Tooltip = includesModifiersFrom() + ":" + tooltip
 			}
 		}
@@ -514,10 +514,10 @@ func (s *Skill) IncrementSkillLevel() {
 		} else {
 			maxPoints += fxp.Four
 		}
-		oldLevel := s.CalculateLevel().Level
+		oldLevel := s.CalculateLevel(nil).Level
 		for points := basePoints; points < maxPoints; points += fxp.One {
 			s.SetRawPoints(points)
-			if s.CalculateLevel().Level > oldLevel {
+			if s.CalculateLevel(nil).Level > oldLevel {
 				break
 			}
 		}
@@ -535,18 +535,18 @@ func (s *Skill) DecrementSkillLevel() {
 			minPoints -= fxp.Four
 		}
 		minPoints = minPoints.Max(0)
-		oldLevel := s.CalculateLevel().Level
+		oldLevel := s.CalculateLevel(nil).Level
 		for points := basePoints; points >= minPoints; points -= fxp.One {
 			s.SetRawPoints(points)
-			if s.CalculateLevel().Level < oldLevel {
+			if s.CalculateLevel(nil).Level < oldLevel {
 				break
 			}
 		}
 		if s.Points > 0 {
-			oldLevel = s.CalculateLevel().Level
+			oldLevel = s.CalculateLevel(nil).Level
 			for s.Points > 0 {
 				s.SetRawPoints((s.Points - fxp.One).Max(0))
-				if s.CalculateLevel().Level != oldLevel {
+				if s.CalculateLevel(nil).Level != oldLevel {
 					s.Points += fxp.One
 					break
 				}
@@ -556,14 +556,14 @@ func (s *Skill) DecrementSkillLevel() {
 }
 
 // CalculateLevel returns the computed level without updating it.
-func (s *Skill) CalculateLevel() Level {
+func (s *Skill) CalculateLevel(excludes map[string]bool) Level {
 	points := s.AdjustedPoints(nil)
 	if strings.HasPrefix(s.Type, SkillID) {
 		return CalculateSkillLevel(s.Entity, s.Name, s.Specialization, s.Tags, s.DefaultedFrom, s.Difficulty, points,
 			s.EncumbrancePenaltyMultiplier)
 	}
 	return CalculateTechniqueLevel(s.Entity, s.Name, s.Specialization, s.Tags, s.TechniqueDefault,
-		s.Difficulty.Difficulty, points, true, s.TechniqueLimitModifier)
+		s.Difficulty.Difficulty, points, true, s.TechniqueLimitModifier, excludes)
 }
 
 // CalculateSkillLevel returns the calculated level for a skill.
@@ -619,14 +619,38 @@ func CalculateSkillLevel(e *Entity, name, specialization string, tags []string, 
 }
 
 // CalculateTechniqueLevel returns the calculated level for a technique.
-func CalculateTechniqueLevel(e *Entity, name, specialization string, tags []string, def *SkillDefault, diffLevel difficulty.Level, points fxp.Int, requirePoints bool, limitModifier *fxp.Int) Level {
+func CalculateTechniqueLevel(e *Entity, name, specialization string, tags []string, def *SkillDefault, diffLevel difficulty.Level, points fxp.Int, requirePoints bool, limitModifier *fxp.Int, excludes map[string]bool) Level {
 	var tooltip xio.ByteBuffer
 	var relativeLevel fxp.Int
 	level := fxp.Min
 	if e != nil {
 		if def.DefaultType == SkillID {
-			if sk := e.BaseSkill(def, requirePoints); sk != nil {
-				level = sk.CalculateLevel().Level
+			if list := e.SkillNamed(def.Name, def.Specialization, requirePoints, excludes); len(list) > 0 {
+				sk := list[0]
+				var buf strings.Builder
+				buf.WriteString(def.Name)
+				if def.Specialization != "" {
+					buf.WriteString(" (")
+					buf.WriteString(def.Specialization)
+					buf.WriteByte(')')
+				}
+				if excludes == nil {
+					excludes = make(map[string]bool)
+				}
+				excludes[buf.String()] = true
+				switch sk.Type {
+				case SkillID:
+					if sk.DefaultedFrom == nil ||
+						(sk.DefaultedFrom.Name != name || sk.DefaultedFrom.Specialization != specialization) {
+						level = sk.CalculateLevel(excludes).Level
+					}
+				case TechniqueID:
+					if sk.TechniqueDefault != nil &&
+						(sk.TechniqueDefault.Name != name || sk.TechniqueDefault.Specialization != specialization) {
+						level = sk.CalculateLevel(excludes).Level
+					}
+				default:
+				}
 			}
 		} else {
 			// Take the modifier back out, as we wanted the base, not the final value.
@@ -664,7 +688,7 @@ func CalculateTechniqueLevel(e *Entity, name, specialization string, tags []stri
 func (s *Skill) UpdateLevel() bool {
 	saved := s.LevelData
 	s.DefaultedFrom = s.bestDefaultWithPoints(nil)
-	s.LevelData = s.CalculateLevel()
+	s.LevelData = s.CalculateLevel(nil)
 	return saved != s.LevelData
 }
 
@@ -864,7 +888,7 @@ func (s *Skill) BestSwappableSkill() *Skill {
 	var best *Skill
 	Traverse(func(other *Skill) bool {
 		if s == other.DefaultSkill() && other.CanSwapDefaultsWith(s) {
-			if best == nil || best.CalculateLevel().Level < other.CalculateLevel().Level {
+			if best == nil || best.CalculateLevel(nil).Level < other.CalculateLevel(nil).Level {
 				best = other
 			}
 		}

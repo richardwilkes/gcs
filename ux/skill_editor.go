@@ -163,7 +163,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 				if isTechnique {
 					level = gurps.CalculateTechniqueLevel(e.target.Entity, e.editorData.Name,
 						e.editorData.Specialization, e.editorData.Tags, e.editorData.TechniqueDefault,
-						e.editorData.Difficulty.Difficulty, points, true, e.editorData.TechniqueLimitModifier)
+						e.editorData.Difficulty.Difficulty, points, true, e.editorData.TechniqueLimitModifier, nil)
 				} else {
 					level = gurps.CalculateSkillLevel(e.target.Entity, e.editorData.Name, e.editorData.Specialization,
 						e.editorData.Tags, e.editorData.DefaultedFrom, e.editorData.Difficulty, points,

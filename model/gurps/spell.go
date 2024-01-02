@@ -542,12 +542,12 @@ func determineRitualMagicSkillLevelForCollege(e *Entity, name, college, ritualSk
 		def.Name = ""
 	}
 	var limit fxp.Int
-	skillLevel := CalculateTechniqueLevel(e, name, college, tags, def, difficulty.Difficulty, points, false, &limit)
+	skillLevel := CalculateTechniqueLevel(e, name, college, tags, def, difficulty.Difficulty, points, false, &limit, nil)
 	// CalculateTechniqueLevel() does not add the default skill modifier to the relative level, only to the final level
 	skillLevel.RelativeLevel += def.Modifier
 	def.Specialization = ""
 	def.Modifier -= fxp.Six
-	fallback := CalculateTechniqueLevel(e, name, college, tags, def, difficulty.Difficulty, points, false, &limit)
+	fallback := CalculateTechniqueLevel(e, name, college, tags, def, difficulty.Difficulty, points, false, &limit, nil)
 	fallback.RelativeLevel += def.Modifier
 	if skillLevel.Level >= fallback.Level {
 		return skillLevel

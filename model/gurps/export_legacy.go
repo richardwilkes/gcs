@@ -882,7 +882,7 @@ func (ex *legacyExporter) processSkillsLoop(buffer []byte) {
 			case descriptionPrimaryExportKey:
 				ex.writeEncodedText(s.String())
 			case "SL":
-				ex.writeEncodedText(s.CalculateLevel().LevelAsString(s.Container()))
+				ex.writeEncodedText(s.CalculateLevel(nil).LevelAsString(s.Container()))
 			case "RSL":
 				ex.writeEncodedText(s.RelativeLevel())
 			case "DIFFICULTY":
