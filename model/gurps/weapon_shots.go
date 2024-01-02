@@ -156,7 +156,7 @@ func (ws WeaponShots) String() string {
 // to be based on the resolved values.
 func (ws WeaponShots) Tooltip() string {
 	if ws.ReloadTimeIsPerShot {
-		return i18n.Text("Reload time is per shot")
+		return i18n.Text("i: Reload time is per shot")
 	}
 	return ""
 }

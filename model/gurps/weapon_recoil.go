@@ -117,10 +117,10 @@ func (wr WeaponRecoil) String() string {
 // Tooltip returns a tooltip for the data, if any. Call .Resolve() prior to calling this method if you want the tooltip
 // to be based on the resolved values.
 func (wr WeaponRecoil) Tooltip() string {
-	if wr.Shot == wr.Slug || (wr.Shot == 0 && wr.Slug == 0) {
-		return ""
+	if wr.Shot != 0 && wr.Slug != 0 && wr.Shot != wr.Slug {
+		return i18n.Text("First Recoil value is for shot, second is for slugs")
 	}
-	return i18n.Text("First Recoil value is for shot, second is for slugs")
+	return ""
 }
 
 // Validate ensures that the data is valid.

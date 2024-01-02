@@ -137,7 +137,7 @@ func (wr WeaponReach) String() string {
 // to be based on the resolved values.
 func (wr WeaponReach) Tooltip() string {
 	if wr.ChangeRequiresReady {
-		return i18n.Text("Changing reach requires a Ready maneuver.")
+		return i18n.Text("*: Changing reach requires a Ready maneuver.")
 	}
 	return ""
 }

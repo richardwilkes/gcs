@@ -137,7 +137,7 @@ func (wb WeaponBulk) Tooltip(w *Weapon) string {
 	minST := w.Strength.Resolve(w, nil)
 	minST.Min = minST.Min.Mul(fxp.OnePointTwo).Ceil()
 	minST.Validate()
-	return fmt.Sprintf(i18n.Text("Has a retracting stock. With the stock folded, the weapon's stats change to Bulk %s, Accuracy %s, Recoil %s, and minimum ST %s. Folding or unfolding the stock takes one Ready maneuver."),
+	return fmt.Sprintf(i18n.Text("*: Has a retracting stock. With the stock folded, the weapon's stats change to Bulk %s, Accuracy %s, Recoil %s, and minimum ST %s. Folding or unfolding the stock takes one Ready maneuver."),
 		wb.String(), accuracy.String(), recoil.String(), minST.String())
 }
 

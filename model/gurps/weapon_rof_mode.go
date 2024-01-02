@@ -129,10 +129,10 @@ func (wr WeaponRoFMode) Tooltip() string {
 		fmt.Fprintf(&buffer, i18n.Text("This weapon fires %v %s per attack and each shot releases %v smaller %s."), wr.ShotsPerAttack, shotsText, wr.SecondaryProjectiles, projectilesText)
 	}
 	if wr.FullAutoOnly {
-		AppendStringOntoNewLine(&buffer, fmt.Sprintf(i18n.Text("This weapon can only fire on full automatic. Minimum RoF is %v."), wr.ShotsPerAttack.Div(fxp.Four).Ceil()))
+		AppendStringOntoNewLine(&buffer, fmt.Sprintf(i18n.Text("!: This weapon can only fire on full automatic. Minimum RoF is %v."), wr.ShotsPerAttack.Div(fxp.Four).Ceil()))
 	}
 	if wr.HighCyclicControlledBursts {
-		AppendStringOntoNewLine(&buffer, i18n.Text("This weapon can fire in high cyclic controlled bursts, reducing Recoil to 1."))
+		AppendStringOntoNewLine(&buffer, i18n.Text("#: This weapon can fire in high cyclic controlled bursts, reducing Recoil to 1."))
 	}
 	return buffer.String()
 }

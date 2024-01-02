@@ -155,13 +155,13 @@ func (wp WeaponParry) Tooltip(w *Weapon) string {
 	}
 	var buffer strings.Builder
 	if wp.Fencing {
-		fmt.Fprintf(&buffer, i18n.Text("Fencing weapon. When retreating, your Parry is %v (instead of %v). You suffer a -2 cumulative penalty for multiple parries after the first on the same turn instead of the usual -4. Flails cannot be parried by this weapon."), wp.Modifier+fxp.Three, wp.Modifier+fxp.One)
+		fmt.Fprintf(&buffer, i18n.Text("F: Fencing weapon. When retreating, your Parry is %v (instead of %v). You suffer a -2 cumulative penalty for multiple parries after the first on the same turn instead of the usual -4. Flails cannot be parried by this weapon."), wp.Modifier+fxp.Three, wp.Modifier+fxp.One)
 	}
 	if wp.Unbalanced {
 		if buffer.Len() != 0 {
 			buffer.WriteString("\n\n")
 		}
-		fmt.Fprintf(&buffer, i18n.Text("Unbalanced weapon. You cannot use it to parry if you have already used it to attack this turn (or vice-versa) unless your current ST is %v or greater."), w.Strength.Resolve(w, nil).Min.Mul(fxp.OneAndAHalf).Ceil())
+		fmt.Fprintf(&buffer, i18n.Text("U: Unbalanced weapon. You cannot use it to parry if you have already used it to attack this turn (or vice-versa) unless your current ST is %v or greater."), w.Strength.Resolve(w, nil).Min.Mul(fxp.OneAndAHalf).Ceil())
 	}
 	return buffer.String()
 }

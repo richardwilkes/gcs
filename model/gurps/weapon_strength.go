@@ -153,7 +153,7 @@ func (ws WeaponStrength) Tooltip(w *Weapon) string {
 		if tooltip.Len() != 0 {
 			tooltip.WriteString("\n\n")
 		}
-		tooltip.WriteString(i18n.Text("Has an attached bipod. When used from a prone position, "))
+		tooltip.WriteString(i18n.Text("B: Has an attached bipod. When used from a prone position, "))
 		reducedST := ws.Min.Mul(fxp.Two).Div(fxp.Three).Ceil()
 		if reducedST > 0 && reducedST != ws.Min {
 			fmt.Fprintf(&tooltip, i18n.Text("reduces the ST requirement to %v and "), reducedST)
@@ -164,23 +164,22 @@ func (ws WeaponStrength) Tooltip(w *Weapon) string {
 		if tooltip.Len() != 0 {
 			tooltip.WriteString("\n\n")
 		}
-		tooltip.WriteString(i18n.Text("Mounted. Ignore listed ST and Bulk when firing from its mount. Takes at least 3 Ready maneuvers to unmount or remount the weapon."))
+		tooltip.WriteString(i18n.Text("M: Mounted. Ignore listed ST and Bulk when firing from its mount. Takes at least 3 Ready maneuvers to unmount or remount the weapon."))
 	}
 	if ws.MusketRest {
 		if tooltip.Len() != 0 {
 			tooltip.WriteString("\n\n")
 		}
-		tooltip.WriteString(i18n.Text("Uses a Musket Rest. Any aimed shot fired while stationary and standing up is automatically braced (add +1 to Accuracy)."))
+		tooltip.WriteString(i18n.Text("R: Uses a Musket Rest. Any aimed shot fired while stationary and standing up is automatically braced (add +1 to Accuracy)."))
 	}
 	if ws.TwoHanded || ws.TwoHandedUnready {
 		if tooltip.Len() != 0 {
 			tooltip.WriteString("\n\n")
 		}
-		tooltip.WriteString(i18n.Text("Requires two hands"))
 		if ws.TwoHandedUnready {
-			fmt.Fprintf(&tooltip, i18n.Text(" and becomes unready after you attack with it. If you have at least ST %v, you can used it two-handed without it becoming unready. If you have at least ST %v, you can use it one-handed with no readiness penalty."), ws.Min.Mul(fxp.OneAndAHalf).Ceil(), ws.Min.Mul(fxp.Three).Ceil())
+			fmt.Fprintf(&tooltip, i18n.Text("‡: Requires two hands and becomes unready after you attack with it. If you have at least ST %v, you can used it two-handed without it becoming unready. If you have at least ST %v, you can use it one-handed with no readiness penalty."), ws.Min.Mul(fxp.OneAndAHalf).Ceil(), ws.Min.Mul(fxp.Three).Ceil())
 		} else {
-			fmt.Fprintf(&tooltip, i18n.Text(". If you have at least ST %v, you can use it one-handed, but it becomes unready after you attack with it. If you have at least ST %v, you can use it one-handed with no readiness penalty."), ws.Min.Mul(fxp.OneAndAHalf).Ceil(), ws.Min.Mul(fxp.Two).Ceil())
+			fmt.Fprintf(&tooltip, i18n.Text("†: Requires two hands. If you have at least ST %v, you can use it one-handed, but it becomes unready after you attack with it. If you have at least ST %v, you can use it one-handed with no readiness penalty."), ws.Min.Mul(fxp.OneAndAHalf).Ceil(), ws.Min.Mul(fxp.Two).Ceil())
 		}
 	}
 	return tooltip.String()
