@@ -129,6 +129,11 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 		}
 		if strings.TrimSpace(location.Description) != "" {
 			name.Tooltip = newWrappedTooltip(location.Description)
+			name.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+				gc.DrawLine(rect.X, rect.Bottom()-0.5, rect.Right(), rect.Bottom()-0.5,
+					gurps.TooltipMarkerColor.Paint(gc, rect, paintstyle.Stroke))
+				name.DefaultDraw(gc, rect)
+			}
 		}
 		name.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 		p.row = append(p.row, name)
@@ -165,6 +170,11 @@ func (p *BodyPanel) createDRField(location *gurps.HitLocation) unison.Paneler {
 		MarkForLayoutWithinDockable(f)
 	})
 	field.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
+	field.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+		gc.DrawLine(rect.X, rect.Bottom()-0.5, rect.Right(), rect.Bottom()-0.5,
+			gurps.TooltipMarkerColor.Paint(gc, rect, paintstyle.Stroke))
+		field.DefaultDraw(gc, rect)
+	}
 	return field
 }
 

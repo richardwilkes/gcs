@@ -114,6 +114,11 @@ func (p *PointPoolsPanel) rebuild(attrs *gurps.AttributeDefs) {
 					state := NewPageLabel("[" + threshold.State + "]")
 					if threshold.Explanation != "" {
 						state.Tooltip = newWrappedTooltip(threshold.Explanation)
+						state.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+							gc.DrawLine(rect.X, rect.Bottom()-0.5, rect.Right(), rect.Bottom()-0.5,
+								gurps.TooltipMarkerColor.Paint(gc, rect, paintstyle.Stroke))
+							state.DefaultDraw(gc, rect)
+						}
 					}
 					p.AddChild(state)
 					p.stateLabels[def.ID()] = state
@@ -157,10 +162,16 @@ func (p *PointPoolsPanel) Sync() {
 				id := def.ID()
 				if label, exists := p.stateLabels[id]; exists {
 					if attr, ok := p.entity.Attributes.Set[id]; ok {
+						label.DrawCallback = label.DefaultDraw
 						if threshold := attr.CurrentThreshold(); threshold != nil {
 							label.Text = "[" + threshold.State + "]"
 							if threshold.Explanation != "" {
 								label.Tooltip = newWrappedTooltip(threshold.Explanation)
+								label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+									gc.DrawLine(rect.X, rect.Bottom()-0.5, rect.Right(), rect.Bottom()-0.5,
+										gurps.TooltipMarkerColor.Paint(gc, rect, paintstyle.Stroke))
+									label.DefaultDraw(gc, rect)
+								}
 							}
 						} else {
 							label.Text = ""

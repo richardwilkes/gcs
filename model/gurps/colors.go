@@ -47,6 +47,7 @@ var (
 	PageStandoutColor       = &unison.ThemeColor{Light: unison.RGB(221, 221, 221), Dark: unison.RGB(64, 64, 64)}
 	PageVoidColor           = &unison.ThemeColor{Light: unison.Grey, Dark: unison.Black}
 	SearchListColor         = &unison.ThemeColor{Light: unison.LightCyan, Dark: unison.RGB(0, 43, 43)}
+	TooltipMarkerColor      = &unison.ThemeColor{Light: unison.RGB(128, 64, 128), Dark: unison.RGB(153, 100, 153)}
 )
 
 var (
@@ -145,6 +146,7 @@ func initColors() {
 		{ID: "pdf_link", Title: i18n.Text("PDF Link Highlight"), Color: PDFLinkHighlightColor},
 		{ID: "pdf_marker", Title: i18n.Text("PDF Marker Highlight"), Color: PDFMarkerHighlightColor},
 		{ID: "accent", Title: i18n.Text("Accent"), Color: unison.AccentColor},
+		{ID: "tooltip_marker", Title: i18n.Text("Tooltip Marker"), Color: TooltipMarkerColor},
 	}
 	factoryColors = make([]*ThemedColor, len(currentColors))
 	for i, c := range currentColors {

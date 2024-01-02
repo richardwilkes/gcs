@@ -351,6 +351,10 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 	}
 	if tooltip != "" {
 		p.Tooltip = newWrappedTooltip(tooltip)
+		p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+			gc.DrawLine(rect.X, rect.Bottom()-0.5, rect.Right(), rect.Bottom()-0.5,
+				gurps.TooltipMarkerColor.Paint(gc, rect, paintstyle.Stroke))
+		}
 	}
 	return p
 }
