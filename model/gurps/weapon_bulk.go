@@ -83,10 +83,19 @@ func (wb WeaponBulk) hash(h hash.Hash32) {
 // Resolve any bonuses that apply.
 func (wb WeaponBulk) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) WeaponBulk {
 	result := wb
+	var percent fxp.Int
 	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponBulkBonus) {
 		amt := bonus.AdjustedAmountForWeapon(w)
-		result.Normal += amt
-		result.Giant += amt
+		if bonus.Percent {
+			percent += amt
+		} else {
+			result.Normal += amt
+			result.Giant += amt
+		}
+	}
+	if percent != 0 {
+		result.Normal += result.Normal.Mul(percent).Div(fxp.Hundred).Trunc()
+		result.Giant += result.Giant.Mul(percent).Div(fxp.Hundred).Trunc()
 	}
 	result.Validate()
 	return result

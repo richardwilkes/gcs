@@ -128,16 +128,39 @@ func (wr WeaponRange) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 			result.Max = result.Max.Mul(st).Trunc().Max(0)
 		}
 	}
+	var percentHalfDamage, percentMin, percentMax fxp.Int
 	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponHalfDamageRangeBonus, feature.WeaponMinRangeBonus, feature.WeaponMaxRangeBonus) {
+		amt := bonus.AdjustedAmountForWeapon(w)
 		switch bonus.Type {
 		case feature.WeaponHalfDamageRangeBonus:
-			result.HalfDamage += bonus.AdjustedAmountForWeapon(w)
+			if bonus.Percent {
+				percentHalfDamage += amt
+			} else {
+				result.HalfDamage += amt
+			}
 		case feature.WeaponMinRangeBonus:
-			result.Min += bonus.AdjustedAmountForWeapon(w)
+			if bonus.Percent {
+				percentMin += amt
+			} else {
+				result.Min += amt
+			}
 		case feature.WeaponMaxRangeBonus:
-			result.Max += bonus.AdjustedAmountForWeapon(w)
+			if bonus.Percent {
+				percentMax += amt
+			} else {
+				result.Max += amt
+			}
 		default:
 		}
+	}
+	if percentHalfDamage != 0 {
+		result.HalfDamage += result.HalfDamage.Mul(percentHalfDamage).Div(fxp.Hundred).Trunc()
+	}
+	if percentMin != 0 {
+		result.Min += result.Min.Mul(percentMin).Div(fxp.Hundred).Trunc()
+	}
+	if percentMax != 0 {
+		result.Max += result.Max.Mul(percentMax).Div(fxp.Hundred).Trunc()
 	}
 	result.Validate()
 	return result

@@ -88,14 +88,30 @@ func (wa WeaponAccuracy) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) We
 	result.Jet = w.ResolveBoolFlag(wswitch.Jet, result.Jet)
 	if !result.Jet {
 		if pc := w.PC(); pc != nil {
+			var percentBase, percentScope fxp.Int
 			for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponAccBonus, feature.WeaponScopeAccBonus) {
+				amt := bonus.AdjustedAmountForWeapon(w)
 				switch bonus.Type {
 				case feature.WeaponAccBonus:
-					result.Base += bonus.AdjustedAmountForWeapon(w)
+					if bonus.Percent {
+						percentBase += amt
+					} else {
+						result.Base += amt
+					}
 				case feature.WeaponScopeAccBonus:
-					result.Scope += bonus.AdjustedAmountForWeapon(w)
+					if bonus.Percent {
+						percentScope += amt
+					} else {
+						result.Scope += amt
+					}
 				default:
 				}
+			}
+			if percentBase != 0 {
+				result.Base += result.Base.Mul(percentBase).Div(fxp.Hundred).Trunc()
+			}
+			if percentScope != 0 {
+				result.Scope += result.Scope.Mul(percentScope).Div(fxp.Hundred).Trunc()
 			}
 		}
 	}

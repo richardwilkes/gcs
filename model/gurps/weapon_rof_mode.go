@@ -78,12 +78,28 @@ func (wr WeaponRoFMode) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer, fir
 		result.FullAutoOnly = w.ResolveBoolFlag(wswitch.FullAuto2, wr.FullAutoOnly)
 		result.HighCyclicControlledBursts = w.ResolveBoolFlag(wswitch.ControlledBursts2, wr.HighCyclicControlledBursts)
 	}
+	var percentSPA, percentSP fxp.Int
 	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, shotsFeature, secondaryFeature) {
+		amt := bonus.AdjustedAmountForWeapon(w)
 		if bonus.Type == shotsFeature {
-			result.ShotsPerAttack += bonus.AdjustedAmountForWeapon(w)
+			if bonus.Percent {
+				percentSPA += amt
+			} else {
+				result.ShotsPerAttack += amt
+			}
 		} else if bonus.Type == secondaryFeature {
-			result.SecondaryProjectiles += bonus.AdjustedAmountForWeapon(w)
+			if bonus.Percent {
+				percentSP += amt
+			} else {
+				result.SecondaryProjectiles += amt
+			}
 		}
+	}
+	if percentSPA != 0 {
+		result.ShotsPerAttack += result.ShotsPerAttack.Mul(percentSPA).Div(fxp.Hundred).Trunc()
+	}
+	if percentSP != 0 {
+		result.SecondaryProjectiles += result.SecondaryProjectiles.Mul(percentSP).Div(fxp.Hundred).Trunc()
 	}
 	result.Validate()
 	return result

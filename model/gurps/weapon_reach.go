@@ -99,12 +99,28 @@ func (wr WeaponReach) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 	result := wr
 	result.CloseCombat = w.ResolveBoolFlag(wswitch.CloseCombat, result.CloseCombat)
 	result.ChangeRequiresReady = w.ResolveBoolFlag(wswitch.ReachChangeRequiresReady, result.ChangeRequiresReady)
+	var percentMin, percentMax fxp.Int
 	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponMinReachBonus, feature.WeaponMaxReachBonus) {
+		amt := bonus.AdjustedAmountForWeapon(w)
 		if bonus.Type == feature.WeaponMinReachBonus {
-			result.Min += bonus.AdjustedAmountForWeapon(w)
+			if bonus.Percent {
+				percentMin += amt
+			} else {
+				result.Min += amt
+			}
 		} else if bonus.Type == feature.WeaponMaxReachBonus {
-			result.Max += bonus.AdjustedAmountForWeapon(w)
+			if bonus.Percent {
+				percentMax += amt
+			} else {
+				result.Max += amt
+			}
 		}
+	}
+	if percentMin != 0 {
+		result.Min += result.Min.Mul(percentMin).Div(fxp.Hundred).Trunc()
+	}
+	if percentMax != 0 {
+		result.Max += result.Max.Mul(percentMax).Div(fxp.Hundred).Trunc()
 	}
 	result.Validate()
 	return result

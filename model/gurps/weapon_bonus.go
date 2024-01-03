@@ -200,11 +200,6 @@ func (w *WeaponBonus) Clone() Feature {
 	return &other
 }
 
-// AdjustedAmount implements Bonus.
-func (w *WeaponBonus) AdjustedAmount() fxp.Int {
-	return w.WeaponLeveledAmount.AdjustedAmount()
-}
-
 // AdjustedAmountForWeapon returns the adjusted amount for the given weapon.
 func (w *WeaponBonus) AdjustedAmountForWeapon(wpn *Weapon) fxp.Int {
 	if w.Type == feature.WeaponMinSTBonus {

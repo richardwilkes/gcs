@@ -103,18 +103,48 @@ func (ws WeaponShots) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 	result := ws
 	result.ReloadTimeIsPerShot = w.ResolveBoolFlag(wswitch.ReloadTimeIsPerShot, result.ReloadTimeIsPerShot)
 	result.Thrown = w.ResolveBoolFlag(wswitch.Thrown, result.Thrown)
+	var percentCount, percentInChamber, percentDuration, percentReloadTime fxp.Int
 	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponNonChamberShotsBonus, feature.WeaponChamberShotsBonus, feature.WeaponShotDurationBonus, feature.WeaponReloadTimeBonus) {
+		amt := bonus.AdjustedAmountForWeapon(w)
 		switch bonus.Type {
 		case feature.WeaponNonChamberShotsBonus:
-			result.Count += bonus.AdjustedAmountForWeapon(w)
+			if bonus.Percent {
+				percentCount += amt
+			} else {
+				result.Count += amt
+			}
 		case feature.WeaponChamberShotsBonus:
-			result.InChamber += bonus.AdjustedAmountForWeapon(w)
+			if bonus.Percent {
+				percentInChamber += amt
+			} else {
+				result.InChamber += amt
+			}
 		case feature.WeaponShotDurationBonus:
-			result.Duration += bonus.AdjustedAmountForWeapon(w)
+			if bonus.Percent {
+				percentDuration += amt
+			} else {
+				result.Duration += amt
+			}
 		case feature.WeaponReloadTimeBonus:
-			result.ReloadTime += bonus.AdjustedAmountForWeapon(w)
+			if bonus.Percent {
+				percentReloadTime += amt
+			} else {
+				result.ReloadTime += amt
+			}
 		default:
 		}
+	}
+	if percentCount != 0 {
+		result.Count += result.Count.Mul(percentCount).Div(fxp.Hundred).Trunc()
+	}
+	if percentInChamber != 0 {
+		result.InChamber += result.InChamber.Mul(percentInChamber).Div(fxp.Hundred).Trunc()
+	}
+	if percentDuration != 0 {
+		result.Duration += result.Duration.Mul(percentDuration).Div(fxp.Hundred).Trunc()
+	}
+	if percentReloadTime != 0 {
+		result.ReloadTime += result.ReloadTime.Mul(percentReloadTime).Div(fxp.Hundred).Trunc()
 	}
 	result.Validate()
 	return result
