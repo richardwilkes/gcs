@@ -20,7 +20,7 @@ import (
 
 func TestWeaponParry(t *testing.T) {
 	for i, s := range []string{
-		"",
+		"0",
 		"-1",
 		"10",
 		"0U",
@@ -41,11 +41,11 @@ func TestWeaponParry(t *testing.T) {
 		input    string
 		expected string
 	}{
-		{"-", ""},
-		{"0", ""},
-		{"+0", ""},
+		{"", "No"},
+		{"-", "No"},
+		{"+0", "0"},
 		{"+1", "1"},
-		{"0 (x5)", ""},
+		{"0 (x5)", "0"},
 		{"0U / 0", "0U"},
 		{"0U/ 0", "0U"},
 		{"13 (x5)", "13"},

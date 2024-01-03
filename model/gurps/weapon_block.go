@@ -24,7 +24,6 @@ import (
 )
 
 var (
-	_ json.Omitter     = WeaponBlock{}
 	_ json.Marshaler   = WeaponBlock{}
 	_ json.Unmarshaler = &(WeaponBlock{})
 )
@@ -38,18 +37,15 @@ type WeaponBlock struct {
 // ParseWeaponBlock parses a string into a WeaponBlock.
 func ParseWeaponBlock(s string) WeaponBlock {
 	var wb WeaponBlock
+	s = strings.TrimSpace(s)
 	s = strings.ToLower(s)
-	wb.No = strings.Contains(s, "no")
+	// Legacy state had several representations for "no block". Current data is consistent and never omits it.
+	wb.No = s == "" || s == "-" || s == "–" || strings.Contains(s, "no")
 	if !wb.No {
 		wb.Modifier, _ = fxp.Extract(s)
 	}
 	wb.Validate()
 	return wb
-}
-
-// ShouldOmit returns true if the data should be omitted from JSON output.
-func (wb WeaponBlock) ShouldOmit() bool {
-	return wb == WeaponBlock{}
 }
 
 // MarshalJSON marshals the data to JSON.
@@ -122,9 +118,6 @@ func (wb WeaponBlock) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 func (wb WeaponBlock) String() string {
 	if wb.No {
 		return "No" // Not localized, since it is part of the data
-	}
-	if wb.Modifier == 0 {
-		return ""
 	}
 	return wb.Modifier.String()
 }

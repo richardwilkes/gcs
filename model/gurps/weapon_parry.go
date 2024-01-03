@@ -26,7 +26,6 @@ import (
 )
 
 var (
-	_ json.Omitter     = WeaponParry{}
 	_ json.Marshaler   = WeaponParry{}
 	_ json.Unmarshaler = &(WeaponParry{})
 )
@@ -42,8 +41,10 @@ type WeaponParry struct {
 // ParseWeaponParry parses a string into a WeaponParry.
 func ParseWeaponParry(s string) WeaponParry {
 	var wp WeaponParry
+	s = strings.TrimSpace(s)
 	s = strings.ToLower(s)
-	wp.No = strings.Contains(s, "no")
+	// Legacy state had several representations for "no parry". Current data is consistent and never omits it.
+	wp.No = s == "" || s == "-" || s == "–" || strings.Contains(s, "no")
 	if !wp.No {
 		wp.Fencing = strings.Contains(s, "f")
 		wp.Unbalanced = strings.Contains(s, "u")
@@ -51,11 +52,6 @@ func ParseWeaponParry(s string) WeaponParry {
 	}
 	wp.Validate()
 	return wp
-}
-
-// ShouldOmit returns true if the data should be omitted from JSON output.
-func (wp WeaponParry) ShouldOmit() bool {
-	return wp == WeaponParry{}
 }
 
 // MarshalJSON marshals the data to JSON.
@@ -132,9 +128,6 @@ func (wp WeaponParry) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 func (wp WeaponParry) String() string {
 	if wp.No {
 		return "No" // Not localized, since it is part of the data
-	}
-	if wp.Modifier == 0 && !wp.Fencing && !wp.Unbalanced {
-		return ""
 	}
 	var buffer strings.Builder
 	buffer.WriteString(wp.Modifier.String())

@@ -20,7 +20,7 @@ import (
 
 func TestWeaponBlock(t *testing.T) {
 	for i, s := range []string{
-		"",
+		"0",
 		"-1",
 		"10",
 		"No",
@@ -32,9 +32,9 @@ func TestWeaponBlock(t *testing.T) {
 		input    string
 		expected string
 	}{
-		{"-", ""},
-		{"0", ""},
-		{"+0", ""},
+		{"", "No"},
+		{"-", "No"},
+		{"+0", "0"},
 		{"+1", "1"},
 	}
 	for i, c := range cases {
