@@ -26,13 +26,14 @@ import (
 )
 
 var (
+	_ json.Omitter     = WeaponParry{}
 	_ json.Marshaler   = WeaponParry{}
 	_ json.Unmarshaler = &(WeaponParry{})
 )
 
 // WeaponParry holds the parry data for a weapon.
 type WeaponParry struct {
-	No         bool
+	CanParry   bool
 	Fencing    bool
 	Unbalanced bool
 	Modifier   fxp.Int
@@ -43,15 +44,19 @@ func ParseWeaponParry(s string) WeaponParry {
 	var wp WeaponParry
 	s = strings.TrimSpace(s)
 	s = strings.ToLower(s)
-	// Legacy state had several representations for "no parry". Current data is consistent and never omits it.
-	wp.No = s == "" || s == "-" || s == "–" || strings.Contains(s, "no")
-	if !wp.No {
+	if s != "" && s != "-" && s != "–" && !strings.Contains(s, "no") {
+		wp.CanParry = true
 		wp.Fencing = strings.Contains(s, "f")
 		wp.Unbalanced = strings.Contains(s, "u")
 		wp.Modifier, _ = fxp.Extract(s)
 	}
 	wp.Validate()
 	return wp
+}
+
+// ShouldOmit returns true if the data should be omitted from JSON output.
+func (wp WeaponParry) ShouldOmit() bool {
+	return !wp.CanParry
 }
 
 // MarshalJSON marshals the data to JSON.
@@ -72,19 +77,19 @@ func (wp *WeaponParry) UnmarshalJSON(data []byte) error {
 
 // nolint:errcheck // Not checking errors on writes to a bytes.Buffer
 func (wp WeaponParry) hash(h hash.Hash32) {
-	_ = binary.Write(h, binary.LittleEndian, wp.Modifier)
-	_ = binary.Write(h, binary.LittleEndian, wp.No)
+	_ = binary.Write(h, binary.LittleEndian, wp.CanParry)
 	_ = binary.Write(h, binary.LittleEndian, wp.Fencing)
 	_ = binary.Write(h, binary.LittleEndian, wp.Unbalanced)
+	_ = binary.Write(h, binary.LittleEndian, wp.Modifier)
 }
 
 // Resolve any bonuses that apply.
 func (wp WeaponParry) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) WeaponParry {
 	result := wp
-	result.No = !w.ResolveBoolFlag(wswitch.CanParry, !result.No)
-	result.Fencing = w.ResolveBoolFlag(wswitch.Fencing, result.Fencing)
-	result.Unbalanced = w.ResolveBoolFlag(wswitch.Unbalanced, result.Unbalanced)
-	if !result.No {
+	result.CanParry = w.ResolveBoolFlag(wswitch.CanParry, result.CanParry)
+	if result.CanParry {
+		result.Fencing = w.ResolveBoolFlag(wswitch.Fencing, result.Fencing)
+		result.Unbalanced = w.ResolveBoolFlag(wswitch.Unbalanced, result.Unbalanced)
 		if pc := w.PC(); pc != nil {
 			var primaryTooltip *xio.ByteBuffer
 			if modifiersTooltip != nil {
@@ -135,8 +140,8 @@ func (wp WeaponParry) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 // String returns a string suitable for presentation, matching the standard GURPS weapon table entry format for this
 // data. Call .Resolve() prior to calling this method if you want the resolved values.
 func (wp WeaponParry) String() string {
-	if wp.No {
-		return "No" // Not localized, since it is part of the data
+	if !wp.CanParry {
+		return "No"
 	}
 	var buffer strings.Builder
 	buffer.WriteString(wp.Modifier.String())
@@ -152,7 +157,7 @@ func (wp WeaponParry) String() string {
 // Tooltip returns a tooltip for the data, if any. Call .Resolve() prior to calling this method if you want the tooltip
 // to be based on the resolved values.
 func (wp WeaponParry) Tooltip(w *Weapon) string {
-	if wp.No || (!wp.Fencing && !wp.Unbalanced) {
+	if !wp.CanParry || (!wp.Fencing && !wp.Unbalanced) {
 		return ""
 	}
 	var buffer strings.Builder
@@ -170,7 +175,7 @@ func (wp WeaponParry) Tooltip(w *Weapon) string {
 
 // Validate ensures that the data is valid.
 func (wp *WeaponParry) Validate() {
-	if wp.No {
+	if !wp.CanParry {
 		wp.Modifier = 0
 		wp.Fencing = false
 		wp.Unbalanced = false

@@ -24,13 +24,14 @@ import (
 )
 
 var (
+	_ json.Omitter     = WeaponBlock{}
 	_ json.Marshaler   = WeaponBlock{}
 	_ json.Unmarshaler = &(WeaponBlock{})
 )
 
 // WeaponBlock holds the block data for a weapon.
 type WeaponBlock struct {
-	No       bool
+	CanBlock bool
 	Modifier fxp.Int
 }
 
@@ -39,13 +40,17 @@ func ParseWeaponBlock(s string) WeaponBlock {
 	var wb WeaponBlock
 	s = strings.TrimSpace(s)
 	s = strings.ToLower(s)
-	// Legacy state had several representations for "no block". Current data is consistent and never omits it.
-	wb.No = s == "" || s == "-" || s == "–" || strings.Contains(s, "no")
-	if !wb.No {
+	if s != "" && s != "-" && s != "–" && !strings.Contains(s, "no") {
+		wb.CanBlock = true
 		wb.Modifier, _ = fxp.Extract(s)
 	}
 	wb.Validate()
 	return wb
+}
+
+// ShouldOmit returns true if the data should be omitted from JSON output.
+func (wb WeaponBlock) ShouldOmit() bool {
+	return !wb.CanBlock
 }
 
 // MarshalJSON marshals the data to JSON.
@@ -66,15 +71,15 @@ func (wb *WeaponBlock) UnmarshalJSON(data []byte) error {
 
 // nolint:errcheck // Not checking errors on writes to a bytes.Buffer
 func (wb WeaponBlock) hash(h hash.Hash32) {
+	_ = binary.Write(h, binary.LittleEndian, wb.CanBlock)
 	_ = binary.Write(h, binary.LittleEndian, wb.Modifier)
-	_ = binary.Write(h, binary.LittleEndian, wb.No)
 }
 
 // Resolve any bonuses that apply.
 func (wb WeaponBlock) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) WeaponBlock {
 	result := wb
-	result.No = !w.ResolveBoolFlag(wswitch.CanBlock, !result.No)
-	if !result.No {
+	result.CanBlock = w.ResolveBoolFlag(wswitch.CanBlock, result.CanBlock)
+	if result.CanBlock {
 		if pc := w.PC(); pc != nil {
 			var primaryTooltip *xio.ByteBuffer
 			if modifiersTooltip != nil {
@@ -125,15 +130,15 @@ func (wb WeaponBlock) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 // String returns a string suitable for presentation, matching the standard GURPS weapon table entry format for this
 // data. Call .Resolve() prior to calling this method if you want the resolved values.
 func (wb WeaponBlock) String() string {
-	if wb.No {
-		return "No" // Not localized, since it is part of the data
+	if !wb.CanBlock {
+		return "No"
 	}
 	return wb.Modifier.String()
 }
 
 // Validate ensures that the data is valid.
 func (wb *WeaponBlock) Validate() {
-	if wb.No {
+	if !wb.CanBlock {
 		wb.Modifier = 0
 	}
 }

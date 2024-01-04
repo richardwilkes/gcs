@@ -78,7 +78,7 @@ func (we *weaponEditor) addUsageBlock(w *gurps.Weapon, content *unison.Panel) {
 
 func (we *weaponEditor) addParryBlock(w *gurps.Weapon, content *unison.Panel) {
 	parry := &w.Parry
-	on := addInvertedCheckBox(content, i18n.Text("Parry"), &parry.No)
+	on := addCheckBox(content, i18n.Text("Parry"), &parry.CanParry)
 	on.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.End,
 		VAlign: align.Middle,
@@ -105,7 +105,7 @@ func (we *weaponEditor) addParryBlock(w *gurps.Weapon, content *unison.Panel) {
 
 func (we *weaponEditor) addBlockBlock(w *gurps.Weapon, content *unison.Panel) {
 	block := &w.Block
-	on := addInvertedCheckBox(content, i18n.Text("Block"), &block.No)
+	on := addCheckBox(content, i18n.Text("Block"), &block.CanBlock)
 	on.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.End,
 		VAlign: align.Middle,

@@ -292,7 +292,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 		best := "-"
 		bestValue := fxp.Min
 		for _, w := range ex.entity.EquippedWeapons(wpn.Melee) {
-			if parry := w.Parry.Resolve(w, nil); !parry.No && parry.Modifier > bestValue {
+			if parry := w.Parry.Resolve(w, nil); parry.CanParry && parry.Modifier > bestValue {
 				best = parry.String()
 				bestValue = parry.Modifier
 			}
@@ -302,7 +302,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 		best := "-"
 		bestValue := fxp.Min
 		for _, w := range ex.entity.EquippedWeapons(wpn.Melee) {
-			if block := w.Block.Resolve(w, nil); !block.No && block.Modifier > bestValue {
+			if block := w.Block.Resolve(w, nil); block.CanBlock && block.Modifier > bestValue {
 				best = block.String()
 				bestValue = block.Modifier
 			}

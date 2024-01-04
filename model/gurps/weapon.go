@@ -13,7 +13,6 @@ package gurps
 
 import (
 	"cmp"
-	"context"
 	"encoding/binary"
 	"fmt"
 	"hash/fnv"
@@ -38,11 +37,7 @@ import (
 	"github.com/richardwilkes/toolbox/xio"
 )
 
-var (
-	_ Node[*Weapon] = &Weapon{}
-	// WeaponCtxKey is the context key used to store the weapon in the context.
-	WeaponCtxKey = weaponCtxKey(1)
-)
+var _ Node[*Weapon] = &Weapon{}
 
 // Columns that can be used with the weapon method .CellData()
 const (
@@ -61,8 +56,6 @@ const (
 	WeaponBulkColumn
 	WeaponRecoilColumn
 )
-
-type weaponCtxKey int
 
 // WeaponOwner defines the methods required of a Weapon owner.
 type WeaponOwner interface {
@@ -241,6 +234,12 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 	musclePowerIsResolved := w.PC() != nil
 	switch w.Type {
 	case wpn.Melee:
+		data.Accuracy = WeaponAccuracy{}
+		data.Range = WeaponRange{}
+		data.RateOfFire = WeaponRoF{}
+		data.Shots = WeaponShots{}
+		data.Bulk = WeaponBulk{}
+		data.Recoil = WeaponRecoil{}
 		if data.Calc.Parry = w.Parry.Resolve(w, nil).String(); data.Calc.Parry == w.Parry.String() {
 			data.Calc.Parry = ""
 		}
@@ -251,6 +250,9 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 			data.Calc.Reach = ""
 		}
 	case wpn.Ranged:
+		data.Parry = WeaponParry{}
+		data.Block = WeaponBlock{}
+		data.Reach = WeaponReach{}
 		if data.Calc.Accuracy = w.Accuracy.Resolve(w, nil).String(); data.Calc.Accuracy == w.Accuracy.String() {
 			data.Calc.Accuracy = ""
 		}
@@ -274,7 +276,7 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 	if *data.Calc == (calc{}) {
 		data.Calc = nil
 	}
-	return json.MarshalWithContext(context.WithValue(context.Background(), WeaponCtxKey, w), &data)
+	return json.Marshal(&data)
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
@@ -412,7 +414,7 @@ func (w *Weapon) skillLevelBaseAdjustment(e *Entity, tooltip *xio.ByteBuffer) fx
 func (w *Weapon) skillLevelPostAdjustment(e *Entity, tooltip *xio.ByteBuffer) fxp.Int {
 	if w.Type.EnsureValid() == wpn.Melee &&
 		// Cannot use w.ParryParts.Resolve() here, because that calls this
-		w.ResolveBoolFlag(wswitch.CanParry, !w.Parry.No) &&
+		w.ResolveBoolFlag(wswitch.CanParry, w.Parry.CanParry) &&
 		w.ResolveBoolFlag(wswitch.Fencing, w.Parry.Fencing) {
 		return w.EncumbrancePenalty(e, tooltip)
 	}
