@@ -32,6 +32,8 @@ func newBite(owner WeaponOwner) *Weapon {
 	bite := NewWeapon(owner, wpn.Melee)
 	bite.Usage = i18n.Text("Bite")
 	bite.Reach.CloseCombat = true
+	bite.Reach.Min = 0
+	bite.Reach.Max = 0
 	bite.Defaults = []*SkillDefault{
 		{
 			DefaultType: DexterityID,
@@ -60,6 +62,8 @@ func newPunch(owner WeaponOwner) *Weapon {
 	punch.Parry.CanParry = true
 	punch.Block.CanBlock = true
 	punch.Reach.CloseCombat = true
+	punch.Reach.Min = 0
+	punch.Reach.Max = 0
 	punch.Defaults = []*SkillDefault{
 		{
 			DefaultType: DexterityID,
