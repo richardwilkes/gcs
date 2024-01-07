@@ -19,6 +19,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
@@ -56,7 +57,7 @@ func StartServerInBackground(monitor Monitor) *Server {
 		Server: web.Server{
 			CertFile:            settings.CertFile,
 			KeyFile:             settings.KeyFile,
-			ShutdownGracePeriod: settings.ShutdownGracePeriod,
+			ShutdownGracePeriod: fxp.SecondsToDuration(settings.ShutdownGracePeriod),
 			Ports:               []int{port},
 			WebServer: &http.Server{
 				Addr:         host,

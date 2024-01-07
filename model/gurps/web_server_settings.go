@@ -11,13 +11,13 @@
 
 package gurps
 
-import "time"
+import "github.com/richardwilkes/gcs/v5/model/fxp"
 
 // WebServerSettings holds the settings for the embedded web server.
 type WebServerSettings struct {
-	Enabled             bool          `json:"enabled"`
-	Address             string        `json:"address,omitempty"`
-	CertFile            string        `json:"cert_file,omitempty"`
-	KeyFile             string        `json:"key_file,omitempty"`
-	ShutdownGracePeriod time.Duration `json:"shutdown_grace_period,omitempty"`
+	Enabled             bool    `json:"enabled"`
+	Address             string  `json:"address,omitempty"`
+	CertFile            string  `json:"cert_file,omitempty"`
+	KeyFile             string  `json:"key_file,omitempty"`
+	ShutdownGracePeriod fxp.Int `json:"shutdown_grace_period,omitempty"`
 }

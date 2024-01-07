@@ -12,6 +12,8 @@
 package fxp
 
 import (
+	"time"
+
 	"github.com/richardwilkes/toolbox/xmath"
 	"github.com/richardwilkes/toolbox/xmath/fixed"
 	"github.com/richardwilkes/toolbox/xmath/fixed/f64"
@@ -178,4 +180,9 @@ func Extract(in string) (value Int, remainder string) {
 		return 0, in
 	}
 	return value, in[last:]
+}
+
+// SecondsToDuration converts a fixed-point value in seconds to a time.Duration.
+func SecondsToDuration(value Int) time.Duration {
+	return time.Duration(As[int64](value.Mul(Thousand))) * time.Millisecond
 }

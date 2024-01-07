@@ -14,7 +14,6 @@ package gurps
 import (
 	"context"
 	"io/fs"
-	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/autoscale"
@@ -141,8 +140,8 @@ func (s *GeneralSettings) Save(filePath string) error {
 
 // UpdateToolTipTiming updates the default tooltip theme to use the timing values from this object.
 func (s *GeneralSettings) UpdateToolTipTiming() {
-	unison.DefaultTooltipTheme.Delay = time.Duration(fxp.As[int64](s.TooltipDelay.Mul(fxp.Thousand))) * time.Millisecond
-	unison.DefaultTooltipTheme.Dismissal = time.Duration(fxp.As[int64](s.TooltipDismissal.Mul(fxp.Thousand))) * time.Millisecond
+	unison.DefaultTooltipTheme.Delay = fxp.SecondsToDuration(s.TooltipDelay)
+	unison.DefaultTooltipTheme.Dismissal = fxp.SecondsToDuration(s.TooltipDismissal)
 }
 
 // CalendarRef returns the CalendarRef these settings refer to.
