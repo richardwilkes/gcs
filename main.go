@@ -20,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/early"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/server"
 	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/atexit"
@@ -59,10 +60,12 @@ func main() {
 	cl.NewGeneralOption(&convertFiles).SetName("convert").SetSingle('c').
 		SetUsage(i18n.Text("Converts all files specified on the command line to the current data format. If a directory is specified, it will be traversed recursively and all files found will be converted. This operation is intended to easily bring files up to the current version's data format. After all files have been processed, GCS will exit"))
 	cl.NewGeneralOption(&fxp.DebugVariableResolver).SetName("debug-variable-resolver")
+	var backgroundOnly bool
+	cl.NewGeneralOption(&backgroundOnly).SetName("web-server-only").SetSingle('w').SetUsage(i18n.Text("Starts the web server and does not bring up the user interface. If the server has not been configured, just exits"))
 	fileList := rotation.ParseAndSetupLogging(cl, false)
 	slog.SetDefault(slog.New(tracelog.New(log.Default().Writer(), slog.LevelInfo)))
 	ux.RegisterKnownFileTypes()
-	gurps.GlobalSettings() // Here to force early initialization
+	settings := gurps.GlobalSettings() // Here to force early initialization
 	switch {
 	case convertFiles:
 		if err := gurps.Convert(fileList...); err != nil {
@@ -75,7 +78,16 @@ func main() {
 		if err := gurps.ExportSheets(textTmplPath, fileList); err != nil {
 			cl.FatalMsg(err.Error())
 		}
+	case backgroundOnly:
+		if !settings.WebServer.Enabled {
+			cl.FatalMsg(i18n.Text("Web server is not enabled."))
+		}
+		server.StartServerInBackground(nil)
+		select {}
 	default:
+		if settings.WebServer.Enabled {
+			server.StartServerInBackground(nil) // TODO: Add monitor for UI
+		}
 		ux.Start(fileList) // Never returns
 	}
 	atexit.Exit(0)

@@ -68,6 +68,7 @@ type Settings struct {
 	Fonts              Fonts                      `json:"fonts"`
 	Sheet              *SheetSettings             `json:"sheet_settings,omitempty"`
 	OpenInWindow       []dgroup.Group             `json:"open_in_window,omitempty"`
+	WebServer          WebServerSettings          `json:"web_server"`
 	ThemeMode          thememode.Enum             `json:"theme_mode,alt=color_mode"`
 }
 
