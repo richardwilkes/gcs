@@ -60,7 +60,6 @@ func newPunch(owner WeaponOwner) *Weapon {
 	punch := NewWeapon(owner, wpn.Melee)
 	punch.Usage = i18n.Text("Punch")
 	punch.Parry.CanParry = true
-	punch.Block.CanBlock = true
 	punch.Reach.CloseCombat = true
 	punch.Reach.Min = 0
 	punch.Reach.Max = 0
