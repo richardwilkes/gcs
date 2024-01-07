@@ -13,18 +13,16 @@ package server
 
 import (
 	"fmt"
-	"net"
+	"log/slog"
 	"net/http"
-	"strconv"
 	"sync"
-	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/xio/network/xhttp/web"
+	"github.com/richardwilkes/toolbox/xio/network/xhttp"
 )
 
 var _ http.Handler = &Server{}
@@ -37,50 +35,46 @@ type Monitor interface {
 
 // Server holds the embedded web server.
 type Server struct {
-	web.Server
+	server *xhttp.Server
 }
 
 // StartServerInBackground starts the server in the background. Both parameters may be nil.
 func StartServerInBackground(monitor Monitor) *Server {
 	settings := &gurps.GlobalSettings().WebServer
-	host, portStr, err := net.SplitHostPort(settings.Address)
-	if err != nil {
-		errs.Log(errs.NewWithCause("invalid address; using defaults instead", err))
-		host = "localhost"
-		portStr = "0"
-	}
-	var port int
-	if port, err = strconv.Atoi(portStr); err != nil {
-		errs.Log(errs.NewWithCause("invalid port; selecting a random port instead", err))
-	}
+	settings.Validate()
 	s := &Server{
-		Server: web.Server{
+		server: &xhttp.Server{
 			CertFile:            settings.CertFile,
 			KeyFile:             settings.KeyFile,
 			ShutdownGracePeriod: fxp.SecondsToDuration(settings.ShutdownGracePeriod),
-			Ports:               []int{port},
 			WebServer: &http.Server{
-				Addr:         host,
-				ReadTimeout:  time.Minute,
-				WriteTimeout: time.Minute,
+				Addr:         settings.Address,
+				ReadTimeout:  fxp.SecondsToDuration(settings.ReadTimeout),
+				WriteTimeout: fxp.SecondsToDuration(settings.ReadTimeout),
+				IdleTimeout:  fxp.SecondsToDuration(settings.ReadTimeout),
 			},
 		},
 	}
-	s.WebServer.Handler = s
+	basicAuth := xhttp.BasicAuth{
+		Realm:  "GCS",
+		Lookup: settings.HashedPasswordLookup,
+		Hasher: settings.Hasher,
+	}
+	s.server.WebServer.Handler = basicAuth.Wrap(s)
 	if !toolbox.IsNil(monitor) {
-		s.StartedChan = make(chan any, 1)
+		s.server.StartedChan = make(chan any, 1)
 		go func() {
-			<-s.StartedChan
+			<-s.server.StartedChan
 			monitor.WebServerStarted(s)
 		}()
 		var once sync.Once
-		s.ShutdownCallback = func() { once.Do(func() { monitor.WebServerStopped(s) }) }
+		s.server.ShutdownCallback = func(_ *slog.Logger) { once.Do(func() { monitor.WebServerStopped(s) }) }
 	}
 	go func() {
-		if err := s.Run(); err != nil {
+		if err := s.server.Run(); err != nil {
 			errs.Log(err)
-			if s.ShutdownCallback != nil {
-				s.ShutdownCallback() // In case we errored out before the server finished starting up
+			if s.server.ShutdownCallback != nil {
+				s.server.ShutdownCallback(s.server.Logger) // In case we errored out before the server finished starting up
 			}
 		}
 	}()
@@ -88,10 +82,10 @@ func StartServerInBackground(monitor Monitor) *Server {
 }
 
 // ServeHTTP implements the http.Handler interface.
-func (s *Server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	switch req.Method {
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
 	case http.MethodGet:
-		switch req.URL.Path {
+		switch r.URL.Path {
 		case "/":
 			fmt.Fprintln(w, "Hello, world!")
 		default:
@@ -100,4 +94,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	default:
 		http.Error(w, i18n.Text("Method Not Allowed"), http.StatusMethodNotAllowed)
 	}
+}
+
+// DisableCaching disables caching for the given response writer.
+func DisableCaching(w http.ResponseWriter) {
+	header := w.Header()
+	header.Set("Cache-Control", "no-store")
+	header.Set("Pragma", "no-cache")
 }
