@@ -33,23 +33,35 @@ var (
 
 // WebServerSettings holds the settings for the embedded web server.
 type WebServerSettings struct {
-	Enabled             bool              `json:"enabled"`
-	Address             string            `json:"address,omitempty"`
-	CertFile            string            `json:"cert_file,omitempty"`
-	KeyFile             string            `json:"key_file,omitempty"`
-	ShutdownGracePeriod fxp.Int           `json:"shutdown_grace_period,omitempty"`
-	ReadTimeout         fxp.Int           `json:"read_timeout,omitempty"`
-	WriteTimeout        fxp.Int           `json:"write_timeout,omitempty"`
-	IdleTimeout         fxp.Int           `json:"idle_timeout,omitempty"`
-	Lock                sync.RWMutex      `json:"-"`
-	Users               map[string][]byte `json:"users,omitempty"`
+	Enabled             bool                  `json:"enabled"`
+	Address             string                `json:"address,omitempty"`
+	CertFile            string                `json:"cert_file,omitempty"`
+	KeyFile             string                `json:"key_file,omitempty"`
+	ShutdownGracePeriod fxp.Int               `json:"shutdown_grace_period,omitempty"`
+	ReadTimeout         fxp.Int               `json:"read_timeout,omitempty"`
+	WriteTimeout        fxp.Int               `json:"write_timeout,omitempty"`
+	IdleTimeout         fxp.Int               `json:"idle_timeout,omitempty"`
+	Lock                sync.RWMutex          `json:"-"`
+	Users               map[string]UserConfig `json:"users,omitempty"`
+}
+
+// UserConfig holds the configuration for a user.
+type UserConfig struct {
+	HashedPassword []byte            `json:"hash"`
+	AccessList     map[string]Access `json:"access_list"` // Key is the name the user sees and uses for the directory.
+}
+
+// Access holds the configuration for a user's access to a directory (and all of its sub-paths) on the server.
+type Access struct {
+	Dir      string `json:"dir"`
+	ReadOnly bool   `json:"read_only"`
 }
 
 // Validate the settings.
 func (s *WebServerSettings) Validate() {
 	s.Address = strings.TrimSpace(s.Address)
 	if s.Address == "" {
-		s.Address = "localhost:0"
+		s.Address = "localhost:8422"
 	}
 	if s.ShutdownGracePeriod < MinimumShutdownGracePeriod {
 		s.ShutdownGracePeriod = DefaultShutdownGracePeriod
@@ -69,12 +81,14 @@ func (s *WebServerSettings) Validate() {
 func (s *WebServerSettings) HashedPasswordLookup(user, _ string) ([]byte, bool) {
 	s.Lock.RLock()
 	defer s.Lock.RUnlock()
-	pw, ok := s.Users[user]
-	return pw, ok
+	if cfg, ok := s.Users[user]; ok {
+		return cfg.HashedPassword, true
+	}
+	return nil, false
 }
 
 // Hasher hashes passwords.
 func (s *WebServerSettings) Hasher(in string) []byte {
-	h := sha256.Sum256([]byte(in + "!gcs"))
+	h := sha256.Sum256([]byte(in + "@gcs"))
 	return h[:]
 }

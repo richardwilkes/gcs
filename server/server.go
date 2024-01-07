@@ -73,8 +73,9 @@ func StartServerInBackground(monitor Monitor) *Server {
 	go func() {
 		if err := s.server.Run(); err != nil {
 			errs.Log(err)
+			// In case we errored out before the server finished starting up, call the shutdown callback.
 			if s.server.ShutdownCallback != nil {
-				s.server.ShutdownCallback(s.server.Logger) // In case we errored out before the server finished starting up
+				s.server.ShutdownCallback(s.server.Logger)
 			}
 		}
 	}()
@@ -96,9 +97,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// DisableCaching disables caching for the given response writer.
-func DisableCaching(w http.ResponseWriter) {
-	header := w.Header()
-	header.Set("Cache-Control", "no-store")
-	header.Set("Pragma", "no-cache")
+// Shutdown shuts down the server.
+func (s *Server) Shutdown() {
+	s.server.Shutdown()
 }
