@@ -25,14 +25,14 @@ func TestEntityAttributeBonus(t *testing.T) {
 	check.Equal(t, fxp.Ten, e.Attributes.Current("st"), "ST default")
 	check.Equal(t, e.SwingFor(10), e.Swing(), "Swing default")
 	check.Equal(t, fxp.WeightFromInteger(20, fxp.Pound), e.BasicLift(), "Basic Lift default")
-	check.Equal(t, fxp.From(0), e.ThrowingStrengthBonus, "Throwing ST Bonus default")
+	check.Equal(t, fxp.Int(0), e.ThrowingStrengthBonus, "Throwing ST Bonus default")
 
 	bonus := NewAttributeBonus("st")
 	trait := NewTrait(e, nil, false)
 	trait.Features = append(trait.Features, bonus)
 	e.Traits = append(e.Traits, trait)
 	e.Recalculate()
-	check.Equal(t, fxp.From(11), e.Attributes.Current("st"), "ST; simple +1 bonus")
+	check.Equal(t, fxp.Eleven, e.Attributes.Current("st"), "ST; simple +1 bonus")
 
 	bonus.PerLevel = true
 	e.Recalculate()
@@ -41,7 +41,7 @@ func TestEntityAttributeBonus(t *testing.T) {
 	trait.CanLevel = true
 	trait.Levels = fxp.Three
 	e.Recalculate()
-	check.Equal(t, fxp.From(13), e.Attributes.Current("st"), "ST; leveled +1 bonus, with 3 levels")
+	check.Equal(t, fxp.Thirteen, e.Attributes.Current("st"), "ST; leveled +1 bonus, with 3 levels")
 
 	bonus.Limitation = stlimit.StrikingOnly
 	e.Recalculate()
@@ -56,5 +56,5 @@ func TestEntityAttributeBonus(t *testing.T) {
 	bonus.Limitation = stlimit.ThrowingOnly
 	e.Recalculate()
 	check.Equal(t, fxp.Ten, e.Attributes.Current("st"), "ST; leveled +1 bonus, with 3 levels, for throwing only")
-	check.Equal(t, fxp.From(3), e.ThrowingStrengthBonus, "Throwing ST Bonus; leveled +1 bonus, with 3 levels, for throwing only")
+	check.Equal(t, fxp.Three, e.ThrowingStrengthBonus, "Throwing ST Bonus; leveled +1 bonus, with 3 levels, for throwing only")
 }

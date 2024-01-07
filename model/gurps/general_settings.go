@@ -27,18 +27,18 @@ import (
 
 // Default, minimum & maximum values for the general numeric settings
 var (
-	InitialPointsDef         = fxp.From(150)
+	InitialPointsDef         = fxp.OneHundredFifty
 	InitialPointsMin         fxp.Int
-	InitialPointsMax         = fxp.From(9999999)
-	TooltipDelayDef          = fxp.FromStringForced("0.75")
+	InitialPointsMax         = fxp.TenMillionMinusOne
+	TooltipDelayDef          = fxp.ThreeQuarters
 	TooltipDelayMin          fxp.Int
 	TooltipDelayMax          = fxp.Thirty
-	TooltipDismissalDef      = fxp.From(60)
+	TooltipDismissalDef      = fxp.Sixty
 	TooltipDismissalMin      = fxp.One
-	TooltipDismissalMax      = fxp.From(3600)
+	TooltipDismissalMax      = fxp.ThirtySixHundred
 	ScrollWheelMultiplierDef = fxp.From(unison.MouseWheelMultiplier)
-	ScrollWheelMultiplierMin = fxp.Int(1)
-	ScrollWheelMultiplierMax = fxp.From(9999)
+	ScrollWheelMultiplierMin = fxp.One
+	ScrollWheelMultiplierMax = fxp.TenThousandMinusOne
 )
 
 // Default, minimum & maximum values for the general numeric settings that can be constants

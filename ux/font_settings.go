@@ -132,7 +132,7 @@ func (d *fontSettingsDockable) createSizeField(index int) {
 				fd.Size = fxp.As[float32](v)
 				d.applyFont(index, fd)
 			}
-		}, fxp.One, fxp.From(999), false, false)
+		}, fxp.One, fxp.ThousandMinusOne, false, false)
 	field.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Middle,

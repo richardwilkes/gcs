@@ -210,7 +210,7 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 		data.Alignment = align.Middle
 	case EquipmentQuantityColumn:
 		data.Type = cell.Text
-		data.Primary = e.Quantity.String()
+		data.Primary = e.Quantity.Comma()
 		data.Alignment = align.End
 	case EquipmentDescriptionColumn:
 		data.Type = cell.Text
@@ -235,11 +235,11 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 		data.Alignment = align.End
 	case EquipmentCostColumn:
 		data.Type = cell.Text
-		data.Primary = e.AdjustedValue().String()
+		data.Primary = e.AdjustedValue().Comma()
 		data.Alignment = align.End
 	case EquipmentExtendedCostColumn:
 		data.Type = cell.Text
-		data.Primary = e.ExtendedValue().String()
+		data.Primary = e.ExtendedValue().Comma()
 		data.Alignment = align.End
 	case EquipmentWeightColumn:
 		data.Type = cell.Text

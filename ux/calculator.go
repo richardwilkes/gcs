@@ -922,7 +922,7 @@ func (c *Calculator) updateHikingResult() {
 	var units string
 	if c.useMeters() {
 		// miles -> inches -> GURPS kilometers
-		distance = distance.Mul(fxp.From(63360)).Div(fxp.From(36000))
+		distance = distance.Mul(fxp.MileInInches).Div(fxp.ThirtySixThousand)
 		if distance == fxp.One {
 			units = i18n.Text("kilometer")
 		} else {

@@ -20,15 +20,14 @@ func (enum LengthUnit) Format(length Length) string {
 	inches := Int(length)
 	switch enum {
 	case FeetAndInches:
-		oneFoot := From(12)
-		feet := inches.Div(oneFoot).Trunc()
-		inches -= feet.Mul(oneFoot)
+		feet := inches.Div(Twelve).Trunc()
+		inches -= feet.Mul(Twelve)
 		if feet == 0 && inches == 0 {
 			return "0'"
 		}
 		var buffer strings.Builder
 		if feet > 0 {
-			buffer.WriteString(feet.String())
+			buffer.WriteString(feet.Comma())
 			buffer.WriteByte('\'')
 		}
 		if inches > 0 {
@@ -39,15 +38,15 @@ func (enum LengthUnit) Format(length Length) string {
 	case Inch:
 		return inches.String() + " " + enum.Key()
 	case Feet:
-		return inches.Div(From(12)).String() + " " + enum.Key()
+		return inches.Div(Twelve).Comma() + " " + enum.Key()
 	case Yard, Meter:
-		return inches.Div(From(36)).String() + " " + enum.Key()
+		return inches.Div(ThirtySix).Comma() + " " + enum.Key()
 	case Mile:
-		return inches.Div(From(63360)).String() + " " + enum.Key()
+		return inches.Div(MileInInches).Comma() + " " + enum.Key()
 	case Centimeter:
-		return inches.Div(From(36)).Mul(From(100)).String() + " " + enum.Key()
+		return inches.Div(ThirtySix).Mul(Hundred).Comma() + " " + enum.Key()
 	case Kilometer:
-		return inches.Div(From(36000)).String() + " " + enum.Key()
+		return inches.Div(ThirtySixThousand).Comma() + " " + enum.Key()
 	default:
 		return FeetAndInches.Format(length)
 	}
@@ -59,17 +58,17 @@ func (enum LengthUnit) ToInches(length Int) Int {
 	case FeetAndInches, Inch:
 		return length
 	case Feet:
-		return length.Mul(From(12))
+		return length.Mul(Twelve)
 	case Yard:
-		return length.Mul(From(36))
+		return length.Mul(ThirtySix)
 	case Mile:
-		return length.Mul(From(63360))
+		return length.Mul(MileInInches)
 	case Centimeter:
-		return length.Mul(From(36)).Div(From(100))
+		return length.Mul(ThirtySix).Div(Hundred)
 	case Kilometer:
-		return length.Mul(From(36000))
+		return length.Mul(ThirtySixThousand)
 	case Meter:
-		return length.Mul(From(36))
+		return length.Mul(ThirtySix)
 	default:
 		return FeetAndInches.ToInches(length)
 	}

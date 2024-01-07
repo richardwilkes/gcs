@@ -30,15 +30,15 @@ func TrailingWeightUnitFromString(s string, defUnits WeightUnit) WeightUnit {
 func (enum WeightUnit) Format(weight Weight) string {
 	switch enum {
 	case Pound, PoundAlt:
-		return Int(weight).String() + " " + enum.Key()
+		return Int(weight).Comma() + " " + enum.Key()
 	case Ounce:
-		return Int(weight).Mul(From(16)).String() + " " + enum.Key()
+		return Int(weight).Mul(Sixteen).Comma() + " " + enum.Key()
 	case Ton, TonAlt:
-		return Int(weight).Div(From(2000)).String() + " " + enum.Key()
+		return Int(weight).Div(TwoThousand).Comma() + " " + enum.Key()
 	case Kilogram:
-		return Int(weight).Div(From(2)).String() + " " + enum.Key()
+		return Int(weight).Div(Two).Comma() + " " + enum.Key()
 	case Gram:
-		return Int(weight).Mul(From(500)).String() + " " + enum.Key()
+		return Int(weight).Mul(FiveHundred).Comma() + " " + enum.Key()
 	default:
 		return Pound.Format(weight)
 	}
@@ -50,13 +50,13 @@ func (enum WeightUnit) ToPounds(weight Int) Int {
 	case Pound, PoundAlt:
 		return weight
 	case Ounce:
-		return weight.Div(From(16))
+		return weight.Div(Sixteen)
 	case Ton, TonAlt:
-		return weight.Mul(From(2000))
+		return weight.Mul(TwoThousand)
 	case Kilogram:
-		return weight.Mul(From(2))
+		return weight.Mul(Two)
 	case Gram:
-		return weight.Div(From(500))
+		return weight.Div(FiveHundred)
 	default:
 		return Pound.ToPounds(weight)
 	}

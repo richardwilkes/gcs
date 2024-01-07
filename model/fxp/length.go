@@ -83,7 +83,7 @@ func LengthFromString(text string, defaultUnits LengthUnit) (Length, error) {
 			return 0, err
 		}
 	}
-	return Length(feet.Mul(From(12)) + inches), nil
+	return Length(feet.Mul(Twelve) + inches), nil
 }
 
 func (l Length) String() string {

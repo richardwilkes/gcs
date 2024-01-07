@@ -174,7 +174,7 @@ func (wr WeaponRange) String(musclePowerIsResolved bool) string {
 		if wr.MusclePowered && !musclePowerIsResolved {
 			buffer.WriteByte('x')
 		}
-		buffer.WriteString(wr.HalfDamage.String())
+		buffer.WriteString(wr.HalfDamage.Comma())
 		buffer.WriteByte('/')
 	}
 	if wr.Min != 0 || wr.Max != 0 {
@@ -182,13 +182,13 @@ func (wr WeaponRange) String(musclePowerIsResolved bool) string {
 			if wr.MusclePowered && !musclePowerIsResolved {
 				buffer.WriteByte('x')
 			}
-			buffer.WriteString(wr.Min.String())
+			buffer.WriteString(wr.Min.Comma())
 			buffer.WriteByte('-')
 		}
 		if wr.MusclePowered && !musclePowerIsResolved {
 			buffer.WriteByte('x')
 		}
-		buffer.WriteString(wr.Max.String())
+		buffer.WriteString(wr.Max.Comma())
 	}
 	if wr.InMiles && buffer.Len() != 0 {
 		buffer.WriteByte(' ')

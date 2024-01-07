@@ -240,9 +240,9 @@ func (p *equipmentProvider) descriptionText() string {
 			if p.carried {
 				title = fmt.Sprintf(i18n.Text("Carried Equipment (%s; $%s)"),
 					entity.SheetSettings.DefaultWeightUnits.Format(entity.WeightCarried(false)),
-					entity.WealthCarried().String())
+					entity.WealthCarried().Comma())
 			} else {
-				title = fmt.Sprintf(i18n.Text("Other Equipment ($%s)"), entity.WealthNotCarried().String())
+				title = fmt.Sprintf(i18n.Text("Other Equipment ($%s)"), entity.WealthNotCarried().Comma())
 			}
 		}
 	}
