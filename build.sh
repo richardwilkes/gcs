@@ -66,6 +66,16 @@ done
 LDFLAGS_ALL="-X github.com/richardwilkes/toolbox/cmdline.AppVersion=$RELEASE $EXTRA_LD_FLAGS"
 STD_FLAGS="-v -buildvcs=true $EXTRA_BUILD_FLAGS"
 
+# Build our Svelte code
+echo -e "\033[32mBuilding the Svelte code...\033[0m"
+cd server/frontend
+npm install
+npm run build
+if [ "$LINT"x == "1x" ]; then
+  npm run lint
+fi
+cd ../..
+
 # Generate the source
 echo -e "\033[32mGenerating...\033[0m"
 go generate ./gen/enumgen.go
@@ -83,8 +93,8 @@ if [ "$I18N"x == "1x" ]; then
     .
 fi
 
-# Build our code
-echo -e "\033[32mBuilding...\033[0m"
+# Build our Go code
+echo -e "\033[32mBuilding the Go code...\033[0m"
 case $(uname -s) in
 Darwin*)
   go run $STD_FLAGS -ldflags all="$LDFLAGS_ALL" packaging/main.go
