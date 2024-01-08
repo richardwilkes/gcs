@@ -62,6 +62,8 @@ func main() {
 	cl.NewGeneralOption(&fxp.DebugVariableResolver).SetName("debug-variable-resolver")
 	var backgroundOnly bool
 	cl.NewGeneralOption(&backgroundOnly).SetName("web-server-only").SetSingle('w').SetUsage(i18n.Text("Starts the web server and does not bring up the user interface. If the server has not been configured, just exits"))
+	var useDevMode bool
+	cl.NewGeneralOption(&useDevMode).SetName("web-dev-mode").SetSingle('d').SetUsage(i18n.Text("Starts the web server in development mode"))
 	fileList := rotation.ParseAndSetupLogging(cl, false)
 	slog.SetDefault(slog.New(tracelog.New(log.Default().Writer(), slog.LevelInfo)))
 	ux.RegisterKnownFileTypes()
@@ -87,11 +89,11 @@ func main() {
 		if !settings.WebServer.Enabled {
 			cl.FatalMsg(i18n.Text("Web server is not enabled."))
 		}
-		server.StartServerInBackground(nil)
+		server.StartServerInBackground(useDevMode, nil)
 		select {}
 	default:
 		if settings.WebServer.Enabled {
-			server.StartServerInBackground(nil) // TODO: Add monitor for UI
+			server.StartServerInBackground(useDevMode, nil) // TODO: Add monitor for UI
 		}
 		ux.Start(fileList) // Never returns
 	}

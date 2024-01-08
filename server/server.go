@@ -12,7 +12,9 @@
 package server
 
 import (
+	"embed"
 	"fmt"
+	"io/fs"
 	"log/slog"
 	"net/http"
 	"sync"
@@ -21,11 +23,15 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/fatal"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio/network/xhttp"
 )
 
 var _ http.Handler = &Server{}
+
+//go:embed frontend/build
+var siteFS embed.FS
 
 // Monitor is an interface that can be implemented to be notified when the server starts and stops.
 type Monitor interface {
@@ -35,13 +41,17 @@ type Monitor interface {
 
 // Server holds the embedded web server.
 type Server struct {
-	server *xhttp.Server
+	server      *xhttp.Server
+	siteHandler http.Handler
+	useDevMode  bool
 }
 
 // StartServerInBackground starts the server in the background. Both parameters may be nil.
-func StartServerInBackground(monitor Monitor) *Server {
+func StartServerInBackground(useDevMode bool, monitor Monitor) *Server {
 	settings := &gurps.GlobalSettings().WebServer
 	settings.Validate()
+	siteContentFS, err := fs.Sub(siteFS, "frontend/build")
+	fatal.IfErr(err)
 	s := &Server{
 		server: &xhttp.Server{
 			CertFile:            settings.CertFile,
@@ -54,13 +64,10 @@ func StartServerInBackground(monitor Monitor) *Server {
 				IdleTimeout:  fxp.SecondsToDuration(settings.ReadTimeout),
 			},
 		},
+		siteHandler: http.FileServer(http.FS(siteContentFS)),
+		useDevMode:  useDevMode,
 	}
-	basicAuth := xhttp.BasicAuth{
-		Realm:  "GCS",
-		Lookup: settings.HashedPasswordLookup,
-		Hasher: settings.Hasher,
-	}
-	s.server.WebServer.Handler = basicAuth.Wrap(s)
+	s.server.WebServer.Handler = s
 	if !toolbox.IsNil(monitor) {
 		s.server.StartedChan = make(chan any, 1)
 		go func() {
@@ -71,7 +78,7 @@ func StartServerInBackground(monitor Monitor) *Server {
 		s.server.ShutdownCallback = func(_ *slog.Logger) { once.Do(func() { monitor.WebServerStopped(s) }) }
 	}
 	go func() {
-		if err := s.server.Run(); err != nil {
+		if err = s.server.Run(); err != nil {
 			errs.Log(err)
 			// In case we errored out before the server finished starting up, call the shutdown callback.
 			if s.server.ShutdownCallback != nil {
@@ -86,12 +93,11 @@ func StartServerInBackground(monitor Monitor) *Server {
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		switch r.URL.Path {
-		case "/":
-			fmt.Fprintln(w, "Hello, world!")
-		default:
-			http.Error(w, i18n.Text("Not Found"), http.StatusNotFound)
+		if s.useDevMode {
+			http.Redirect(w, r, fmt.Sprintf("http://localhost:5173%s", r.URL.Path), http.StatusFound)
+			return
 		}
+		s.siteHandler.ServeHTTP(w, r)
 	default:
 		http.Error(w, i18n.Text("Method Not Allowed"), http.StatusMethodNotAllowed)
 	}
