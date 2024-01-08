@@ -30,7 +30,7 @@ import (
 
 var _ http.Handler = &Server{}
 
-//go:embed frontend/build
+//go:embed frontend/build frontend/build/_app
 var siteFS embed.FS
 
 // Monitor is an interface that can be implemented to be notified when the server starts and stops.
