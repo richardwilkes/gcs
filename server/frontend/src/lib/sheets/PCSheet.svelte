@@ -1,35 +1,34 @@
+<!--
+  - Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
+  -
+  - This Source Code Form is subject to the terms of the Mozilla Public
+  - License, version 2.0. If a copy of the MPL was not distributed with
+  - this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+  -
+  - This Source Code Form is "Incompatible With Secondary Licenses", as
+  - defined by the Mozilla Public License, version 2.0.
+  -->
 <script lang="ts">
+	import Shell from '$lib/shell/Shell.svelte';
 	import Personal from '$lib/sheets/personal/Personal.svelte';
 	import Attributes from '$lib/sheets/attributes/Attributes.svelte';
 	import Lists from '$lib/sheets/lists/Lists.svelte';
-	import Toolbar from '$lib/sheets/widget/Toolbar.svelte';
 	import { pc } from '$lib/entity.ts';
+	import PCLoaderButton from '$lib/sheets/widget/PCLoaderButton.svelte';
 </script>
 
-<div class="shell">
-	<Toolbar />
-	<div class="content">
-		{#if $pc}
-			<Personal />
-			<Attributes />
-			<Lists />
-		{/if}
+<Shell>
+	<PCLoaderButton slot='toolbar'/>
+	<div slot='content' class='content'>
+	{#if $pc}
+		<Personal />
+		<Attributes />
+		<Lists />
+	{/if}
 	</div>
-</div>
+</Shell>
 
 <style>
-	.shell {
-		position: absolute;
-		top: 0;
-		left: 0;
-		bottom: 0;
-		right: 0;
-		display: flex;
-		flex-flow: column nowrap;
-		justify-content: flex-start;
-		gap: 0;
-	}
-
 	.content {
 		background-color: var(--color-page);
 		color: var(--color-on-page);

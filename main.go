@@ -81,6 +81,7 @@ func main() {
 			cl.FatalMsg(err.Error())
 		}
 	case backgroundOnly:
+		settings.WebServer.Enabled = true
 		if !settings.WebServer.Enabled {
 			cl.FatalMsg(i18n.Text("Web server is not enabled."))
 		}
