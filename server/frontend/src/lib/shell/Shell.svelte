@@ -1,3 +1,7 @@
+<script lang='ts'>
+	import Toolbar from '$lib/sheets/widget/Toolbar.svelte';
+</script>
+
 <!--
   - Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
   -
@@ -8,28 +12,23 @@
   - This Source Code Form is "Incompatible With Secondary Licenses", as
   - defined by the Mozilla Public License, version 2.0.
   -->
-<script lang="ts">
-	import { pc, loadPC } from '$lib/entity.ts';
-
-	let files: FileList;
-
-	$: {
-		if (files && files.length) {
-			loadPC(files[0])
-				.then((newPC) => ($pc = newPC))
-				.catch((err) => {
-					console.error(err);
-					alert(`Error loading ${files[0].name}`);
-				});
-		}
-	}
-</script>
-
-<input bind:files type="file" accept=".gcs" />
+<div class='shell'>
+	<Toolbar><slot name='toolbar'></slot></Toolbar>
+	<slot name='content'></slot>
+</div>
 
 <style>
-	input {
-		flex-grow: 1;
-		font: var(--font-page-primary-fields);
+	.shell {
+		position: absolute;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		right: 0;
+		display: flex;
+		flex-flow: column nowrap;
+		justify-content: flex-start;
+		gap: 0;
+		background-color: var(--color-background);
+		color: var(--color-on-background);
 	}
 </style>
