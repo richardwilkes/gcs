@@ -88,17 +88,19 @@ func (wr WeaponRoF) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) WeaponR
 		var buf1, buf2 xio.ByteBuffer
 		result.Mode1 = result.Mode1.Resolve(w, &buf1, true)
 		result.Mode2 = result.Mode2.Resolve(w, &buf2, false)
-		if buf1.Len() != 0 {
-			if buf2.Len() != 0 {
-				modifiersTooltip.WriteString(i18n.Text("First mode:\n"))
-			}
-			modifiersTooltip.WriteString(buf1.String())
-		}
-		if buf2.Len() != 0 {
+		if modifiersTooltip != nil {
 			if buf1.Len() != 0 {
-				modifiersTooltip.WriteString(i18n.Text("\n\nSecond mode:\n"))
+				if buf2.Len() != 0 {
+					modifiersTooltip.WriteString(i18n.Text("First mode:\n"))
+				}
+				modifiersTooltip.WriteString(buf1.String())
 			}
-			modifiersTooltip.WriteString(buf2.String())
+			if buf2.Len() != 0 {
+				if buf1.Len() != 0 {
+					modifiersTooltip.WriteString(i18n.Text("\n\nSecond mode:\n"))
+				}
+				modifiersTooltip.WriteString(buf2.String())
+			}
 		}
 	}
 	result.Validate()
