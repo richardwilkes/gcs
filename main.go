@@ -69,10 +69,6 @@ func main() {
 	ux.RegisterKnownFileTypes()
 	settings := gurps.GlobalSettings() // Here to force early initialization
 
-	// TODO: Remove these two lines once the web branch is merged
-	backgroundOnly = false
-	settings.WebServer.Enabled = false
-
 	switch {
 	case convertFiles:
 		if err := gurps.Convert(fileList...); err != nil {
