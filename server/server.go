@@ -13,7 +13,6 @@ package server
 
 import (
 	"embed"
-	"fmt"
 	"io/fs"
 	"log/slog"
 	"net/http"
@@ -43,7 +42,7 @@ type Monitor interface {
 type Server struct {
 	server      *xhttp.Server
 	siteHandler http.Handler
-	useDevMode  bool
+	prefix      string
 }
 
 // StartServerInBackground starts the server in the background. Both parameters may be nil.
@@ -65,7 +64,9 @@ func StartServerInBackground(useDevMode bool, monitor Monitor) *Server {
 			},
 		},
 		siteHandler: http.FileServer(http.FS(siteContentFS)),
-		useDevMode:  useDevMode,
+	}
+	if useDevMode {
+		s.prefix = "http://localhost:5173"
 	}
 	s.server.WebServer.Handler = s
 	if !toolbox.IsNil(monitor) {
@@ -93,11 +94,16 @@ func StartServerInBackground(useDevMode bool, monitor Monitor) *Server {
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		if s.useDevMode {
-			http.Redirect(w, r, fmt.Sprintf("http://localhost:5173%s", r.URL.Path), http.StatusFound)
-			return
-		}
 		s.siteHandler.ServeHTTP(w, r)
+	case http.MethodPost:
+		switch r.URL.Path {
+		case "/api/login":
+			s.loginHandler(w, r)
+		case "/api/logout":
+			s.logoutHandler(w, r)
+		default:
+			http.Error(w, i18n.Text("Not Found"), http.StatusNotFound)
+		}
 	default:
 		http.Error(w, i18n.Text("Method Not Allowed"), http.StatusMethodNotAllowed)
 	}
