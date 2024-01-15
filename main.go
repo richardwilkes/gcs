@@ -80,7 +80,9 @@ func main() {
 			cl.FatalMsg(err.Error())
 		}
 	case backgroundOnly:
+		// TODO: Remove the next two lines when the UI is ready
 		settings.WebServer.Enabled = true
+		settings.WebServer.CreateUser("Test", "test")
 		if !settings.WebServer.Enabled {
 			cl.FatalMsg(i18n.Text("Web server is not enabled."))
 		}

@@ -23,6 +23,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/server/websettings"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/collection/dict"
@@ -68,7 +69,7 @@ type Settings struct {
 	Fonts              Fonts                      `json:"fonts"`
 	Sheet              *SheetSettings             `json:"sheet_settings,omitempty"`
 	OpenInWindow       []dgroup.Group             `json:"open_in_window,omitempty"`
-	WebServer          WebServerSettings          `json:"web_server"`
+	WebServer          *websettings.Settings      `json:"web_server"`
 	ThemeMode          thememode.Enum             `json:"theme_mode,alt=color_mode"`
 }
 
@@ -81,6 +82,7 @@ func DefaultSettings() *Settings {
 		LibraryExplorer:    NavigatorSettings{DividerPosition: 330},
 		LastDirs:           make(map[string]string),
 		Sheet:              FactorySheetSettings(),
+		WebServer:          websettings.Default(),
 	}
 }
 
@@ -131,6 +133,11 @@ func (s *Settings) EnsureValidity() {
 		s.Sheet.EnsureValidity()
 	}
 	s.OpenInWindow = SanitizeDockableGroups(s.OpenInWindow)
+	if s.WebServer == nil {
+		s.WebServer = websettings.Default()
+	} else {
+		s.WebServer.Validate()
+	}
 }
 
 // SanitizeDockableGroups returns the list of valid dockable groups from the passed-in list, in sorted order.

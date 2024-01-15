@@ -49,7 +49,7 @@ type Server struct {
 
 // StartServerInBackground starts the server in the background. Both parameters may be nil.
 func StartServerInBackground(monitor Monitor) *Server {
-	settings := &gurps.GlobalSettings().WebServer
+	settings := gurps.GlobalSettings().WebServer
 	settings.Validate()
 	siteContentFS, err := fs.Sub(siteFS, "frontend/build")
 	fatal.IfErr(err)

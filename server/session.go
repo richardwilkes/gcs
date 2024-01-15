@@ -13,129 +13,58 @@ package server
 
 import (
 	"net/http"
-	"strings"
-	"sync"
-	"time"
 
 	"github.com/google/uuid"
-	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/server/websettings"
 	"github.com/richardwilkes/toolbox/xio/network/xhttp"
 )
 
-const (
-	maxSessionDuration = time.Hour * 24 * 30
-	sessionGracePeriod = time.Minute * 10
-	sessionIDHeader    = "X-Session"
-	userHeader         = "X-User"
-)
-
-var (
-	sessionLock sync.Mutex
-	sessions    = make(map[uuid.UUID]Session)
-	userLock    sync.RWMutex
-	users       = make(map[string]User)
-)
-
-// User holds a user's information.
-type User struct {
-	Name     string
-	Password string
-}
-
-// Session holds a session's information.
-type Session struct {
-	ID       uuid.UUID
-	User     string
-	Issued   time.Time
-	LastUsed time.Time
-}
-
-func init() { // TODO: Remove
-	userLock.Lock()
-	users["richard wilkes"] = User{
-		Name:     "Richard Wilkes",
-		Password: "test",
-	}
-	userLock.Unlock()
-}
+const sessionIDHeader = "X-Session"
 
 func (s *Server) sessionHandler(w http.ResponseWriter, r *http.Request) {
-	session, err := sessionFromRequest(r)
-	if err != nil {
+	if id, userName, ok := sessionFromRequest(r); !ok {
 		xhttp.ErrorStatus(w, http.StatusUnauthorized)
-		return
+	} else {
+		setSessionHeaders(w, id, userName)
 	}
-	setSessionHeaders(w, session)
-}
-
-func sessionFromRequest(r *http.Request) (*Session, error) {
-	rawID := r.Header.Get(sessionIDHeader)
-	if rawID == "" {
-		return nil, errs.New("Session ID not found")
-	}
-	id, err := uuid.Parse(rawID)
-	if err != nil {
-		return nil, errs.NewWithCause("Invalid session ID", err)
-	}
-
-	sessionLock.Lock()
-	session, ok := sessions[id]
-	if !ok {
-		sessionLock.Unlock()
-		return nil, errs.New("Session not found")
-	}
-	if time.Since(session.Issued) > maxSessionDuration && time.Since(session.LastUsed) > sessionGracePeriod {
-		delete(sessions, id)
-		sessionLock.Unlock()
-		return nil, errs.New("Session expired")
-	}
-	session.LastUsed = time.Now()
-	sessions[id] = session
-	sessionLock.Unlock()
-
-	return &session, nil
-}
-
-func setSessionHeaders(w http.ResponseWriter, session *Session) {
-	h := w.Header()
-	h.Set(sessionIDHeader, session.ID.String())
-	h.Set(userHeader, session.User)
 }
 
 func (s *Server) loginHandler(w http.ResponseWriter, r *http.Request) {
-	name := strings.ToLower(strings.TrimSpace(r.FormValue("name")))
+	name := r.FormValue("name")
 	password := r.FormValue("password")
-
-	userLock.RLock()
-	user, ok := users[name]
-	userLock.RUnlock()
-
-	if !ok || user.Password != password {
+	settings := gurps.GlobalSettings().WebServer
+	actualName, hashedPassword, ok := settings.LookupUserNameAndPassword(name)
+	if !ok || hashedPassword != websettings.HashPassword(password) {
 		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
 		return
 	}
-
-	session := Session{
-		ID:       uuid.New(),
-		User:     user.Name,
-		Issued:   time.Now(),
-		LastUsed: time.Now(),
-	}
-	sessionLock.Lock()
-	sessions[session.ID] = session
-	sessionLock.Unlock()
-
-	setSessionHeaders(w, &session)
+	setSessionHeaders(w, settings.CreateSession(actualName), actualName)
 }
 
 func (s *Server) logoutHandler(w http.ResponseWriter, r *http.Request) {
-	session, err := sessionFromRequest(r)
-	if err != nil {
+	if id, _, ok := sessionFromRequest(r); !ok {
 		xhttp.ErrorStatus(w, http.StatusUnauthorized)
-		return
+	} else {
+		gurps.GlobalSettings().WebServer.RemoveSession(id)
 	}
+}
 
-	sessionLock.Lock()
-	delete(sessions, session.ID)
-	sessionLock.Unlock()
+func sessionFromRequest(r *http.Request) (uuid.UUID, string, bool) {
+	rawID := r.Header.Get(sessionIDHeader)
+	if rawID == "" {
+		return uuid.Nil, "", false
+	}
+	id, err := uuid.Parse(rawID)
+	if err != nil {
+		return uuid.Nil, "", false
+	}
+	userName, ok := gurps.GlobalSettings().WebServer.LookupSession(id)
+	return id, userName, ok
+}
+
+func setSessionHeaders(w http.ResponseWriter, id uuid.UUID, userName string) {
+	h := w.Header()
+	h.Set(sessionIDHeader, id.String())
+	h.Set("X-User", userName)
 }
