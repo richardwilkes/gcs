@@ -20,10 +20,13 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/fatal"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/toolbox/xio/network/xhttp"
 )
 
@@ -42,11 +45,10 @@ type Monitor interface {
 type Server struct {
 	server      *xhttp.Server
 	siteHandler http.Handler
-	prefix      string
 }
 
 // StartServerInBackground starts the server in the background. Both parameters may be nil.
-func StartServerInBackground(useDevMode bool, monitor Monitor) *Server {
+func StartServerInBackground(monitor Monitor) *Server {
 	settings := &gurps.GlobalSettings().WebServer
 	settings.Validate()
 	siteContentFS, err := fs.Sub(siteFS, "frontend/build")
@@ -64,9 +66,6 @@ func StartServerInBackground(useDevMode bool, monitor Monitor) *Server {
 			},
 		},
 		siteHandler: http.FileServer(http.FS(siteContentFS)),
-	}
-	if useDevMode {
-		s.prefix = "http://localhost:5173"
 	}
 	s.server.WebServer.Handler = s
 	if !toolbox.IsNil(monitor) {
@@ -92,9 +91,26 @@ func StartServerInBackground(useDevMode bool, monitor Monitor) *Server {
 
 // ServeHTTP implements the http.Handler interface.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// Deal with CORS first
+	origin := r.Header.Get("Origin")
+	header := w.Header()
+	header.Set("Access-Control-Allow-Origin", origin)
+	header.Set("Access-Control-Expose-Headers", "*")
+	header.Set("Access-Control-Allow-Methods", "*")
+	header.Set("Access-Control-Allow-Headers", "*")
+	header.Set("Access-Control-Allow-Credentials", "true")
+	header.Add("Vary", "Origin")
+
 	switch r.Method {
+	case http.MethodOptions:
+		return
 	case http.MethodGet:
-		s.siteHandler.ServeHTTP(w, r)
+		switch r.URL.Path {
+		case "/api/session":
+			s.sessionHandler(w, r)
+		default:
+			s.siteHandler.ServeHTTP(w, r)
+		}
 	case http.MethodPost:
 		switch r.URL.Path {
 		case "/api/login":
@@ -112,4 +128,19 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // Shutdown shuts down the server.
 func (s *Server) Shutdown() {
 	s.server.Shutdown()
+}
+
+// JSONFromRequest extracts JSON content from the body of the request.
+func JSONFromRequest(r *http.Request, data any) error {
+	defer xio.DiscardAndCloseIgnoringErrors(r.Body)
+	return jio.Load(r.Context(), r.Body, data)
+}
+
+// JSONResponse writes a JSON response with a status code.
+func JSONResponse(w http.ResponseWriter, statusCode int, data any) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(statusCode)
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		errs.Log(errs.Wrap(err))
+	}
 }

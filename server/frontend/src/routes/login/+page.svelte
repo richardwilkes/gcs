@@ -10,12 +10,19 @@
   -->
 
 <script lang='ts'>
-	import {apiPrefix} from '$lib/dev.ts';
+	import { goto } from '$app/navigation';
+	import { apiPrefix } from '$lib/dev.ts';
 	import Shell from '$lib/shell/Shell.svelte';
+	import { onMount } from 'svelte';
+	import { session, updateSessionFromResponse } from '$lib/session.ts';
 
+	let form: HTMLFormElement;
+	let nameInput: HTMLInputElement;
+	let passwordInput: HTMLInputElement;
 	let disabled = true;
 	let nameEmpty = true;
 	let passwordEmpty = true;
+	let errorMsg = '';
 
 	function updateNameEmpty(event: Event) {
 		nameEmpty = (event.target as HTMLInputElement).value === '';
@@ -25,7 +32,45 @@
 		passwordEmpty = (event.target as HTMLInputElement).value === '';
 	}
 
+	function submit(event: Event) {
+		event.preventDefault();
+		fetch(apiPrefix('/login'), {
+			method: 'POST',
+			body: new FormData(form),
+			cache: 'no-store'
+		}).then(rsp => {
+			if (!rsp.ok) {
+				console.log(rsp.status + " " + rsp.statusText);
+				handleFailure();
+			} else {
+					updateSessionFromResponse(rsp);
+					if ($session) {
+						// goto(new URLSearchParams(window.location.search).get('next') || '/');
+						goto('/');
+					} else {
+						handleFailure();
+					}
+			}
+		}).catch(error => {
+			console.log(error);
+			handleFailure();
+		});
+	}
+
+	function handleFailure() {
+		errorMsg = 'Login failed';
+		passwordInput.select();
+		passwordInput.focus();
+	}
+
+	session.set(null);
+
 	$: disabled = nameEmpty || passwordEmpty;
+
+	onMount(() => {
+		nameInput.select();
+		nameInput.focus();
+	});
 </script>
 
 <svelte:head>
@@ -34,15 +79,17 @@
 
 <Shell>
 	<div slot='content' class='content'>
-		<form action={apiPrefix('/login')} method='POST' class='panel'>
-			<img class='logo' src='/app.png' alt='GURPS Character Sheet'/>
+		<form class='panel' bind:this={form} on:submit={submit}>
+			<img class='logo' src='/app.png' alt='GURPS Character Sheet' />
 			<div class='title'>GURPS Character Sheet</div>
 			<div class='subtitle'>by Richard A. Wilkes</div>
+			{#if errorMsg}
+				<div class='error'>{errorMsg}</div>
+			{/if}
 			<label for='name'>Name</label>
-			<!-- svelte-ignore a11y-autofocus -->
-			<input type='text' id='name' name='name' autofocus on:input={updateNameEmpty} required/>
+			<input type='text' id='name' name='name' bind:this={nameInput} on:input={updateNameEmpty} required />
 			<label for='password'>Password</label>
-			<input type='password' id='password' name='password' on:input={updatePasswordEmpty} required />
+			<input type='password' id='password' name='password' bind:this={passwordInput} on:input={updatePasswordEmpty} required />
 			<button type='submit' {disabled}>Login</button>
 		</form>
 	</div>
@@ -107,5 +154,15 @@
 		align-self: stretch;
 		margin-top: 20px;
 		padding: 0.5em;
+	}
+
+	.error {
+		font: var(--font-login);
+		color: var(--color-on-error);
+		background-color: var(--color-error);
+		margin-bottom: 10px;
+		padding: 0.5em;
+		text-align: center;
+		align-self: stretch;
 	}
 </style>

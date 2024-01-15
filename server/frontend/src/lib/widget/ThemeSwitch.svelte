@@ -8,19 +8,26 @@
   - This Source Code Form is "Incompatible With Secondary Licenses", as
   - defined by the Mozilla Public License, version 2.0.
   -->
-<script lang="ts">
+<script lang='ts'>
 	import { currentTheme } from '$lib/theme.ts';
 	import Label from '$lib/sheets/widget/Label.svelte';
 </script>
 
-<Label title="Theme" />
-<select bind:value={$currentTheme.kind}>
-	<option value="system">System</option>
-	<option value="light">Light</option>
-	<option value="dark">Dark</option>
-</select>
+<div class='content'>
+	<Label title='Theme' />
+	<select bind:value={$currentTheme.kind}>
+		<option value='system'>System</option>
+		<option value='light'>Light</option>
+		<option value='dark'>Dark</option>
+	</select>
+</div>
 
 <style>
+	.content {
+		display: flex;
+		align-items: center;
+	}
+
 	select {
 		font: var(--font-page-primary-labels);
 	}
