@@ -24,6 +24,19 @@ type User struct {
 	AccessList     map[string]Access `json:"access_list"` // Key is the name the user sees and uses for the directory.
 }
 
+// Clone creates a copy of this user.
+func (u *User) Clone() *User {
+	accessList := make(map[string]Access, len(u.AccessList))
+	for k, v := range u.AccessList {
+		accessList[k] = v
+	}
+	return &User{
+		Name:           u.Name,
+		HashedPassword: u.HashedPassword,
+		AccessList:     accessList,
+	}
+}
+
 func userNameToKey(name string) string {
 	return strings.ToLower(strings.TrimSpace(name))
 }

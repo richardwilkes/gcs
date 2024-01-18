@@ -31,6 +31,12 @@ type Session struct {
 	LastUsed time.Time `json:"last_used"`
 }
 
+// Clone creates a copy of this session.
+func (s *Session) Clone() *Session {
+	other := *s
+	return &other
+}
+
 // Expired returns true if this session has expired.
 func (s *Session) Expired() bool {
 	return time.Since(s.Issued) > MaxSessionDuration && time.Since(s.LastUsed) > SessionGracePeriod

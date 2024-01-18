@@ -7,8 +7,8 @@ github.com/cespare/xxhash/v2 v2.2.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XL
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/go-gl/gl v0.0.0-20231021071112-07e5d0ea2e71 h1:5BVwOaUSBTlVZowGO6VZGw2H/zl9nrd3eCZfYV+NfQA=
 github.com/go-gl/gl v0.0.0-20231021071112-07e5d0ea2e71/go.mod h1:9YTyiznxEY1fVinfM7RvRcjRHbw2xLBJ3AAGIT0I4Nw=
-github.com/go-gl/glfw/v3.3/glfw v0.0.0-20240108052320-294b0144ba39 h1:Fyfrfr+TP8w6ZQ2UXX2Slz8zMCPV/2d4WF78C39zGU0=
-github.com/go-gl/glfw/v3.3/glfw v0.0.0-20240108052320-294b0144ba39/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
+github.com/go-gl/glfw/v3.3/glfw v0.0.0-20240118000515-a250818d05e3 h1:nanQfMsOs3gnuKRm0E5jXWomedE/9YIFXdmHJNZYeqc=
+github.com/go-gl/glfw/v3.3/glfw v0.0.0-20240118000515-a250818d05e3/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
 github.com/google/uuid v1.5.0 h1:1p67kYwdtXjb0gL0BPiP1Av9wiZPo5A8z2cWkTZ+eyU=
 github.com/google/uuid v1.5.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/grandcat/zeroconf v1.0.0 h1:uHhahLBKqwWBV6WZUDAT71044vwOTL+McW0mBJvo6kE=
@@ -34,6 +34,8 @@ github.com/richardwilkes/rpgtools v1.7.0 h1:va1XtTR4AgjGBziw3NO9v4a3C/X25Mphucjz
 github.com/richardwilkes/rpgtools v1.7.0/go.mod h1:810tKgj2hEnk83FejePYptGtYwexzM+aTFSIJ/KtEaI=
 github.com/richardwilkes/toolbox v1.103.0 h1:URQtUbFlPG9eTCPVvnrHvGLxWFUOqOo8uBn5rpNPdSw=
 github.com/richardwilkes/toolbox v1.103.0/go.mod h1:YzANjkEliWryinjkymEc5K1VO22/4L9sthmgC0eXCgw=
+github.com/richardwilkes/toolbox v1.104.0 h1:v439AwRhoX76fpvydiPr83IKw523Uxz316Fk8JhTj0g=
+github.com/richardwilkes/toolbox v1.104.0/go.mod h1:uNFwhQ1G3zlBN9eFMjR8GcM1xQFbiR3mxqsPWpcha5A=
 github.com/richardwilkes/unison v0.66.4 h1:WW/S0bknrsdZo5zVv8F456E7Mt99T0v8ZdooEdXLh90=
 github.com/richardwilkes/unison v0.66.4/go.mod h1:Uf47AKzDn1gsOtnww4vM7g7f2Gj+FZv2QbILxTanzCw=
 github.com/rjeczalik/notify v0.9.3 h1:6rJAzHTGKXGj76sbRgDiDcYj/HniypXmSJo1SWakZeY=

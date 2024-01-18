@@ -12,25 +12,27 @@
 package websettings
 
 import (
+	"context"
+	"io/fs"
+	"net"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 )
 
 // Minimums and defaults for web server settings.
 var (
-	MinimumShutdownGracePeriod fxp.Int
 	DefaultShutdownGracePeriod = fxp.Ten
-	MinimumReadTimeout         = fxp.One
 	DefaultReadTimeout         = fxp.Ten
-	MinimumWriteTimeout        = fxp.One
 	DefaultWriteTimeout        = fxp.Thirty
-	MinimumIdleTimeout         = fxp.One
 	DefaultIdleTimeout         = fxp.Sixty
+	MinimumTimeout             = fxp.One
+	MaximumTimeout             = fxp.SixHundred
 	DefaultAddress             = "localhost:8422"
 )
 
@@ -68,11 +70,48 @@ func Default() *Settings {
 			ShutdownGracePeriod: DefaultShutdownGracePeriod,
 			ReadTimeout:         DefaultReadTimeout,
 			WriteTimeout:        DefaultWriteTimeout,
-			IdleTimeout:         DefaultWriteTimeout,
+			IdleTimeout:         DefaultIdleTimeout,
 		},
 		users:    make(map[string]*User),
 		sessions: make(map[uuid.UUID]*Session),
 	}
+}
+
+// NewSettingsFromFile loads new settings from a file.
+func NewSettingsFromFile(fileSystem fs.FS, filePath string) (*Settings, error) {
+	var settings Settings
+	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &settings); err != nil {
+		return nil, err
+	}
+	return &settings, nil
+}
+
+// Save writes the settings to the file as JSON.
+func (s *Settings) Save(filePath string) error {
+	return jio.SaveToFile(context.Background(), filePath, s)
+}
+
+// Valid returns true if the settings are valid.
+func (s *Settings) Valid() bool {
+	if s.Address == "" {
+		return false
+	}
+	if _, _, err := net.SplitHostPort(s.Address); err != nil {
+		return false
+	}
+	if s.ShutdownGracePeriod < MinimumTimeout || s.ShutdownGracePeriod > MaximumTimeout {
+		return false
+	}
+	if s.ReadTimeout < MinimumTimeout || s.ReadTimeout > MaximumTimeout {
+		return false
+	}
+	if s.WriteTimeout < MinimumTimeout || s.WriteTimeout > MaximumTimeout {
+		return false
+	}
+	if s.IdleTimeout < MinimumTimeout || s.IdleTimeout > MaximumTimeout {
+		return false
+	}
+	return true
 }
 
 // Validate the settings.
@@ -81,18 +120,10 @@ func (s *Settings) Validate() {
 	if s.Address == "" {
 		s.Address = DefaultAddress
 	}
-	if s.ShutdownGracePeriod < MinimumShutdownGracePeriod {
-		s.ShutdownGracePeriod = DefaultShutdownGracePeriod
-	}
-	if s.ReadTimeout < MinimumReadTimeout {
-		s.ReadTimeout = DefaultReadTimeout
-	}
-	if s.WriteTimeout < MinimumWriteTimeout {
-		s.WriteTimeout = DefaultWriteTimeout
-	}
-	if s.IdleTimeout < MinimumIdleTimeout {
-		s.IdleTimeout = DefaultIdleTimeout
-	}
+	s.ShutdownGracePeriod = min(max(s.ShutdownGracePeriod, MinimumTimeout), MaximumTimeout)
+	s.ReadTimeout = min(max(s.ReadTimeout, MinimumTimeout), MaximumTimeout)
+	s.WriteTimeout = min(max(s.WriteTimeout, MinimumTimeout), MaximumTimeout)
+	s.IdleTimeout = min(max(s.IdleTimeout, MinimumTimeout), MaximumTimeout)
 	s.lock.Lock()
 	if s.users == nil {
 		s.users = make(map[string]*User)
@@ -100,6 +131,29 @@ func (s *Settings) Validate() {
 	if s.sessions == nil {
 		s.sessions = make(map[uuid.UUID]*Session)
 	}
+	s.lock.Unlock()
+}
+
+// CopyFrom copies the settings from the other Settings to this Settings object. If 'other' is nil, the default settings
+// are used.
+func (s *Settings) CopyFrom(other *Settings) {
+	if other == nil {
+		other = Default()
+	}
+	s.Server = other.Server
+	other.lock.RLock()
+	users := make(map[string]*User, len(other.users))
+	for key, user := range other.users {
+		users[key] = user.Clone()
+	}
+	sessions := make(map[uuid.UUID]*Session, len(other.sessions))
+	for id, session := range other.sessions {
+		sessions[id] = session.Clone()
+	}
+	other.lock.RUnlock()
+	s.lock.Lock()
+	s.users = users
+	s.sessions = other.sessions
 	s.lock.Unlock()
 }
 

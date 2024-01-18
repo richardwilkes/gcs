@@ -18,6 +18,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/server/websettings"
 	"github.com/richardwilkes/toolbox/collection"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
@@ -196,6 +197,14 @@ func Convert(paths ...string) error {
 		case SheetSettingsExt:
 			var data *SheetSettings
 			if data, err = NewSheetSettingsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+				return err
+			}
+			if err = data.Save(p); err != nil {
+				return err
+			}
+		case WebSettingsExt:
+			var data *websettings.Settings
+			if data, err = websettings.NewSettingsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
 				return err
 			}
 			if err = data.Save(p); err != nil {

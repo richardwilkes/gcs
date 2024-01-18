@@ -86,11 +86,11 @@ func main() {
 		if !settings.WebServer.Enabled {
 			cl.FatalMsg(i18n.Text("Web server is not enabled."))
 		}
-		server.StartServerInBackground(nil)
+		server.Start()
 		select {}
 	default:
 		if settings.WebServer.Enabled {
-			server.StartServerInBackground(nil) // TODO: Add monitor for UI
+			server.Start()
 		}
 		ux.Start(fileList) // Never returns
 	}
