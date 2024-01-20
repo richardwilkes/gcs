@@ -374,7 +374,16 @@ func (w *Weapon) SkillLevel(tooltip *xio.ByteBuffer) fxp.Int {
 
 func (w *Weapon) skillLevelBaseAdjustment(e *Entity, tooltip *xio.ByteBuffer) fxp.Int {
 	var adj fxp.Int
-	if minST := w.Strength.Resolve(w, nil).Min - e.StrikingStrength(); minST > 0 {
+	var minST fxp.Int
+	// If the weapon is ranged and does not use thrust/swing, we can infer that it is not muscle powered
+	// such as firearms. Melee weapons and bows use striking ST, while non-muscle-powered weapons use
+	// lifting ST.
+	if w.Type == wpn.Ranged && (w.Damage.StrengthType == stdmg.None) {
+		minST = w.Strength.Resolve(w, nil).Min - e.LiftingStrength()
+	} else {
+		minST = w.Strength.Resolve(w, nil).Min - e.StrikingStrength()
+	}
+	if minST > 0 {
 		adj -= minST
 		if tooltip != nil {
 			tooltip.WriteByte('\n')
