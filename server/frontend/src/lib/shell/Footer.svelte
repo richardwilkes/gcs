@@ -39,23 +39,30 @@
 	});
 </script>
 
-{#if version}
-	<div class='footer'>
-		<div>
+<div class='footer'>
+	<div>
+		{#if version}
 			{version.Name}
 			{#if version.Modified || version.Version === '0.0'}
 				Development Version
 			{:else}
 				Version {version.Version}
 			{/if}
-		</div>
-		<div class='secondary'>{version.Copyright}
+		{:else}
+			&nbsp;
+		{/if}
+	</div>
+	<div class='secondary'>
+		{#if version}
+			{version.Copyright}
 			{#if !version.Modified && version.Version !== '0.0'}
 				Build {version.Build}. Git {version.Git.slice(0, 7)}.
 			{/if}
-		</div>
+		{:else}
+			&nbsp;
+		{/if}
 	</div>
-{/if}
+</div>
 
 <style>
 	.footer {

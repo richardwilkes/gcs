@@ -10,20 +10,50 @@
  */
 
 import { writable } from 'svelte/store';
+import { apiPrefix } from '$lib/dev.ts';
+
+/** Holds the colors for a theme. */
+export type Colors = {
+	[key: string]: {
+		light: string;
+		dark: string;
+	};
+}
+
+/** The kind of theme. */
+export enum ThemeKind {
+	System = 'system',
+	Light = 'light',
+	Dark = 'dark'
+}
 
 /** Holds the data for a theme. */
 export type Theme = {
-	kind: 'system' | 'light' | 'dark';
-	colors: {
-		[key: string]: {
-			light: string;
-			dark: string;
-		};
-	};
+	current: ThemeKind;
+	colors: Colors;
 };
 
 /** The current theme. */
-export const currentTheme = writable(defaultTheme());
+export const currentTheme = writable({
+	current: ThemeKind.System,
+	colors: defaultColors()
+});
+
+(async function fetchColors() {
+	const rsp = await fetch(apiPrefix('/colors'), {
+		method: 'GET',
+		cache: 'no-store'
+	})
+	if (rsp.ok) {
+		const colors = await rsp.json();
+		currentTheme.update((value) => {
+			value.colors = colors;
+			return value;
+		});
+	} else {
+		console.log(rsp.status + ' ' + rsp.statusText);
+	}
+})();
 
 const systemIsDark = window.matchMedia('(prefers-color-scheme: dark)');
 systemIsDark.addEventListener('change', () => currentTheme.update((value) => value));
@@ -43,21 +73,18 @@ currentTheme.subscribe((current) => {
 	}
 });
 
-/** Returns the resolved theme kind, either 'light' or 'dark'. */
+/** Returns the resolved ThemeKind, either ThemeKind.Light or ThemeKind.Dark. */
 export function resolvedThemeKind(theme: Theme) {
-	return theme.kind === 'system' ? (systemIsDark.matches ? 'dark' : 'light') : theme.kind;
+	return theme.current === ThemeKind.System ? (systemIsDark.matches ? ThemeKind.Dark : ThemeKind.Light) : theme.current;
 }
 
 /** Returns true if the theme is dark. */
 export function themeIsDark(theme: Theme) {
-	return theme.kind === 'system' ? systemIsDark.matches : theme.kind === 'dark';
+	return theme.current === ThemeKind.System ? systemIsDark.matches : theme.current === ThemeKind.Dark;
 }
 
-/** Creates and returns the default theme. */
-export function defaultTheme(): Theme {
+function defaultColors() : Colors {
 	return {
-		kind: 'system',
-		colors: {
 			accent: {
 				light: 'Teal',
 				dark: '#649999'
@@ -294,6 +321,5 @@ export function defaultTheme(): Theme {
 				light: '#E08000',
 				dark: '#C06000'
 			}
-		}
 	};
 }

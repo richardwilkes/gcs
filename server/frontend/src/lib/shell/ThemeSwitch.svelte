@@ -15,7 +15,7 @@
 
 <div class='content'>
 	<Label title='Theme' />
-	<select bind:value={$currentTheme.kind}>
+	<select bind:value={$currentTheme.current}>
 		<option value='system'>System</option>
 		<option value='light'>Light</option>
 		<option value='dark'>Dark</option>
