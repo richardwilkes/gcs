@@ -164,6 +164,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/api/session":
 			s.sessionHandler(w, r)
+		case "/api/version":
+			s.versionHandler(w, r)
 		default:
 			s.siteHandler.ServeHTTP(w, r)
 		}

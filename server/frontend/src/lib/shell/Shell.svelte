@@ -1,7 +1,3 @@
-<script lang='ts'>
-	import Toolbar from '$lib/sheets/widget/Toolbar.svelte';
-</script>
-
 <!--
   - Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
   -
@@ -12,9 +8,18 @@
   - This Source Code Form is "Incompatible With Secondary Licenses", as
   - defined by the Mozilla Public License, version 2.0.
   -->
+
+<script lang='ts'>
+	import Toolbar from '$lib/shell/Toolbar.svelte';
+	import Footer from '$lib/shell/Footer.svelte';
+</script>
+
 <div class='shell'>
-	<Toolbar><slot name='toolbar'></slot></Toolbar>
+	<Toolbar>
+		<slot name='toolbar'></slot>
+	</Toolbar>
 	<slot name='content'></slot>
+	<Footer />
 </div>
 
 <style>
