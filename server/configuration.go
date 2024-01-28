@@ -13,8 +13,11 @@ package server
 
 import (
 	"net/http"
+	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/cmdline"
+	"github.com/richardwilkes/unison"
 )
 
 func (s *Server) versionHandler(w http.ResponseWriter, _ *http.Request) {
@@ -34,4 +37,12 @@ func (s *Server) versionHandler(w http.ResponseWriter, _ *http.Request) {
 		Git:       cmdline.GitVersion,
 		Modified:  cmdline.VCSModified,
 	})
+}
+
+func (s *Server) colorsHandler(w http.ResponseWriter, _ *http.Request) {
+	m := make(map[string]unison.ThemeColor)
+	for _, c := range gurps.CurrentColors() {
+		m[strings.ReplaceAll(c.ID, "_", "-")] = *c.Color
+	}
+	JSONResponse(w, http.StatusOK, m)
 }
