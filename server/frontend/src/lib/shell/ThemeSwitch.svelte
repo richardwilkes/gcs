@@ -29,6 +29,6 @@
 	}
 
 	select {
-		font: var(--font-page-primary-labels);
+		font-weight: bold;
 	}
 </style>

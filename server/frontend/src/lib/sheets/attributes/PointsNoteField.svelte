@@ -16,7 +16,7 @@
 
 <style>
 	.field {
-		font: var(--font-page-secondary-fields);
+		font-size: 85%;
 		padding: var(--padding-standard);
 		border: none;
 		border-bottom: 1px solid rgba(0, 0, 0, 0);

@@ -21,7 +21,7 @@
 
 <style>
 	.content {
-		font: var(--font-page-secondary-fields);
+		font-size: 85%;
 		padding: var(--padding-standard);
 		white-space: nowrap;
 		background-color: var(--color-error);

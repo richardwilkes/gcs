@@ -15,7 +15,7 @@
 
 <style>
 	svg {
-		height: calc(var(--font-size-page-secondary-fields) * 0.75);
+		height: 0.75em;
 		fill: currentColor;
 	}
 </style>

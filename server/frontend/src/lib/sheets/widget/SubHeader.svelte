@@ -20,7 +20,6 @@
 		background-color: var(--color-header);
 		color: var(--color-on-header);
 		text-align: center;
-		font: var(--font-page-primary-labels);
 		padding: var(--padding-standard);
 	}
 </style>

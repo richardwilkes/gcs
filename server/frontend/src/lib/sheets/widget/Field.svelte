@@ -32,7 +32,7 @@
 
 <style>
 	.field {
-		font: var(--font-page-primary-fields);
+		font-weight: 500;
 		padding: var(--padding-standard);
 		border: none;
 		border-bottom: 1px solid rgba(0, 0, 0, 0);
@@ -62,7 +62,7 @@
 	}
 
 	.smaller {
-		font: var(--font-page-secondary-fields);
+		font-size: 85%;
 	}
 
 	.wrap {

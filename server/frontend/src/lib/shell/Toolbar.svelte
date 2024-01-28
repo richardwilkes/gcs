@@ -49,8 +49,8 @@
 	}
 
 	.button {
-		width: 20px;
-		height: 20px;
+		width: 1.25em;
+		height: 1.25em;
 		fill: var(--color-on-background);
 		padding-top: 3px;
 	}

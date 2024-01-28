@@ -70,11 +70,12 @@
 		padding: 4px 8px;
 		text-align: center;
 		color: var(--color-on-background);
-		font: var(--font-page-primary-footer);
+		font-weight: bold;
+		font-size: 75%;
 	}
 
 	.secondary {
-		font: var(--font-page-secondary-footer);
+		font-size: 85%;
 		opacity: 50%;
 	}
 </style>

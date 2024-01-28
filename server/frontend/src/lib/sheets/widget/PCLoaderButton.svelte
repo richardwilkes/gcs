@@ -30,6 +30,6 @@
 <style>
 	input {
 		flex-grow: 1;
-		font: var(--font-page-primary-fields);
+		font-weight: bold;
 	}
 </style>

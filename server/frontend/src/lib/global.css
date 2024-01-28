@@ -9,19 +9,16 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-:root {
-	--font-size-page-primary-footer: 12px;
-	--font-size-page-secondary-footer: 10px;
-	--font-size-page-primary-labels: 14px;
-	--font-size-page-primary-fields: 14px;
-	--font-size-page-secondary-fields: 12px;
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;1,400;1,500&display=swap');
 
-	--font-login: normal normal 500 14px / 1.2 'Roboto', sans-serif;
-	--font-page-primary-footer: normal normal 500 var(--font-size-page-primary-footer) / 1.2 'Roboto', sans-serif;
-	--font-page-secondary-footer: normal normal 400 var(--font-size-page-secondary-footer) / 1.2 'Roboto', sans-serif;
-	--font-page-primary-labels: normal normal 400 var(--font-size-page-primary-labels) / 1.2 'Roboto', sans-serif;
-	--font-page-primary-fields: normal normal 500 var(--font-size-page-primary-fields) / 1.2 'Roboto', sans-serif;
-	--font-page-secondary-fields: normal normal 400 var(--font-size-page-secondary-fields) / 1.2 'Roboto', sans-serif;
+:root {
+	font-family: Roboto, sans-serif;
+	font-size: 14px;
+	font-style: normal;
+	font-weight: normal;
+	font-stretch: normal;
+	font-variant: normal;
+	line-height: 1.2;
 
 	--section-gap: 1px;
 	--padding-header: 1px 8px;

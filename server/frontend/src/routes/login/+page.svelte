@@ -116,17 +116,16 @@
 	}
 
 	.title {
-		font: var(--font-login);
+		font-weight: bold;
 		font-size: 200%;
 		color: var(--color-accent);
 	}
 
 	.subtitle {
-		font: var(--font-login);
+		font-style: italic;
 		margin-bottom: 20px;
 		color: var(--color-on-background);
 		opacity: 60%;
-		font-style: italic;
 	}
 
 	.logo {
@@ -135,7 +134,7 @@
 	}
 
 	label {
-		font: var(--font-login);
+		font-weight: bold;
 		font-variant: small-caps;
 		color: var(--color-on-background);
 		opacity: 60%;
@@ -144,20 +143,20 @@
 	}
 
 	input {
-		font: var(--font-login);
+		font-weight: bold;
 		align-self: stretch;
 		padding: 0.5em;
 	}
 
 	button {
-		font: var(--font-login);
+		font-weight: bold;
 		align-self: stretch;
 		margin-top: 20px;
 		padding: 0.5em;
 	}
 
 	.error {
-		font: var(--font-login);
+		font-weight: bold;
 		color: var(--color-on-error);
 		background-color: var(--color-error);
 		margin-bottom: 10px;

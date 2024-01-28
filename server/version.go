@@ -17,16 +17,15 @@ import (
 	"github.com/richardwilkes/toolbox/cmdline"
 )
 
-type versionResponse struct {
-	Name      string
-	Copyright string
-	Version   string
-	Build     string
-	Git       string
-	Modified  bool
-}
-
 func (s *Server) versionHandler(w http.ResponseWriter, _ *http.Request) {
+	type versionResponse struct {
+		Name      string
+		Copyright string
+		Version   string
+		Build     string
+		Git       string
+		Modified  bool
+	}
 	JSONResponse(w, http.StatusOK, versionResponse{
 		Name:      cmdline.AppName,
 		Copyright: cmdline.Copyright(),

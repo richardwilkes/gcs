@@ -23,6 +23,5 @@
 		fill: var(--color-on-header);
 		text-align: center;
 		padding: var(--padding-standard);
-		font: var(--font-page-primary-labels);
 	}
 </style>

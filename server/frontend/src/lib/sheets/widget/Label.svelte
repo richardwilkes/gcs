@@ -20,7 +20,6 @@
 
 <style>
 	.label {
-		font: var(--font-page-primary-labels);
 		padding: var(--padding-standard);
 		text-align: right;
 		white-space: nowrap;
