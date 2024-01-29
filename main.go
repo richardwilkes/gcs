@@ -21,6 +21,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/server"
+	"github.com/richardwilkes/gcs/v5/server/websettings"
 	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/atexit"
@@ -83,6 +84,16 @@ func main() {
 		// TODO: Remove the next two lines when the UI is ready
 		settings.WebServer.Enabled = true
 		settings.WebServer.CreateUser("Test", "test")
+		settings.WebServer.SetAccessList("test", map[string]websettings.Access{
+			"user": {
+				Dir:      gurps.GlobalSettings().LibrarySet.User().Path(),
+				ReadOnly: true,
+			},
+			"master": {
+				Dir:      gurps.GlobalSettings().LibrarySet.Master().Path(),
+				ReadOnly: true,
+			},
+		})
 		if !settings.WebServer.Enabled {
 			cl.FatalMsg(i18n.Text("Web server is not enabled."))
 		}

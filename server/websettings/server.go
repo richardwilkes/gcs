@@ -14,6 +14,7 @@ package websettings
 import (
 	"context"
 	"io/fs"
+	"maps"
 	"net"
 	"strings"
 	"sync"
@@ -269,6 +270,28 @@ func (s *Settings) RenameUser(oldName, newName string) bool {
 		}
 	}
 	return true
+}
+
+// AccessList returns the access list for a user.
+func (s *Settings) AccessList(name string) map[string]Access {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+	user, exists := s.users[userNameToKey(name)]
+	if !exists {
+		return nil
+	}
+	return maps.Clone(user.AccessList)
+}
+
+// SetAccessList sets the access list for a user.
+func (s *Settings) SetAccessList(name string, accessList map[string]Access) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+	user, exists := s.users[userNameToKey(name)]
+	if !exists {
+		return
+	}
+	user.AccessList = maps.Clone(accessList)
 }
 
 // LookupSession looks up a session, updating its last used time and returning the user's name if found.

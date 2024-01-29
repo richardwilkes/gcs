@@ -16,6 +16,7 @@ import (
 	"io/fs"
 	"log/slog"
 	"net/http"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -26,7 +27,6 @@ import (
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/fatal"
-	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/toolbox/xio/network/xhttp"
 )
@@ -161,15 +161,25 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case http.MethodOptions:
 		return
 	case http.MethodGet:
-		switch r.URL.Path {
-		case "/api/session":
-			s.sessionHandler(w, r)
-		case "/api/version":
-			s.versionHandler(w, r)
-		case "/api/colors":
-			s.colorsHandler(w, r)
-		default:
+		if !strings.HasPrefix(r.URL.Path, "/api/") {
 			s.siteHandler.ServeHTTP(w, r)
+		} else {
+			switch r.URL.Path {
+			case "/api/session":
+				s.sessionHandler(w, r)
+			case "/api/version":
+				s.versionHandler(w, r)
+			case "/api/colors":
+				s.colorsHandler(w, r)
+			case "/api/sheets":
+				s.sheetsHandler(w, r)
+			default:
+				if !strings.HasPrefix(r.URL.Path, "/api/sheet/") {
+					xhttp.ErrorStatus(w, http.StatusNotFound)
+					return
+				}
+				s.sheetHandler(w, r)
+			}
 		}
 	case http.MethodPost:
 		switch r.URL.Path {
@@ -178,10 +188,10 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		case "/api/logout":
 			s.logoutHandler(w, r)
 		default:
-			http.Error(w, i18n.Text("Not Found"), http.StatusNotFound)
+			xhttp.ErrorStatus(w, http.StatusNotFound)
 		}
 	default:
-		http.Error(w, i18n.Text("Method Not Allowed"), http.StatusMethodNotAllowed)
+		xhttp.ErrorStatus(w, http.StatusMethodNotAllowed)
 	}
 }
 

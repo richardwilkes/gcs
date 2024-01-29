@@ -50,17 +50,17 @@ func (s *Server) logoutHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func sessionFromRequest(r *http.Request) (uuid.UUID, string, bool) {
+func sessionFromRequest(r *http.Request) (sessionID uuid.UUID, userName string, ok bool) {
 	rawID := r.Header.Get(sessionIDHeader)
 	if rawID == "" {
 		return uuid.Nil, "", false
 	}
-	id, err := uuid.Parse(rawID)
-	if err != nil {
+	var err error
+	if sessionID, err = uuid.Parse(rawID); err != nil {
 		return uuid.Nil, "", false
 	}
-	userName, ok := gurps.GlobalSettings().WebServer.LookupSession(id)
-	return id, userName, ok
+	userName, ok = gurps.GlobalSettings().WebServer.LookupSession(sessionID)
+	return sessionID, userName, ok
 }
 
 func setSessionHeaders(w http.ResponseWriter, id uuid.UUID, userName string) {
