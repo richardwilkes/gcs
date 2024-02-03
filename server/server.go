@@ -157,9 +157,19 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	header.Set("Access-Control-Allow-Credentials", "true")
 	header.Add("Vary", "Origin")
 
-	switch r.Method {
-	case http.MethodOptions:
+	// Handle preflight requests
+	if r.Method == http.MethodOptions {
 		return
+	}
+
+	// Add the current session and user to the logger
+	if id, userName, ok := sessionFromRequest(r); ok {
+		if md := xhttp.MetadataFromRequest(r); md != nil {
+			md.Logger = md.Logger.With("session", id, "user", userName)
+		}
+	}
+
+	switch r.Method {
 	case http.MethodGet:
 		if !strings.HasPrefix(r.URL.Path, "/api/") {
 			s.siteHandler.ServeHTTP(w, r)
