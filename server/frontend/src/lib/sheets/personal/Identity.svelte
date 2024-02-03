@@ -19,11 +19,11 @@
 	<Header>Identity</Header>
 	<div class="fields">
 		<Label title="Name" />
-		<EditableStringField name="profile.name" value={$pc.profile?.name ?? ''} />
+		<EditableStringField name="profile.name" value={$pc?.profile?.name ?? ''} />
 		<Label title="Title" />
-		<EditableStringField name="profile.title" value={$pc.profile?.title ?? ''} />
+		<EditableStringField name="profile.title" value={$pc?.profile?.title ?? ''} />
 		<Label title="Organization" />
-		<EditableStringField name="profile.org" value={$pc.profile?.organization ?? ''} />
+		<EditableStringField name="profile.org" value={$pc?.profile?.organization ?? ''} />
 	</div>
 </div>
 

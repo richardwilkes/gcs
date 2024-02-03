@@ -36,17 +36,17 @@
 
 	$: {
 		for (let i = 0; i < encList.length; i++) {
-			encList[i].move = new Fixed($pc.calc.move[i]);
-			encList[i].dodge = new Fixed($pc.calc.dodge[i]);
+			encList[i].move = new Fixed($pc?.calc.move[i]);
+			encList[i].dodge = new Fixed($pc?.calc.dodge[i]);
 		}
-		let basicLift = Fixed.extract($pc.calc.basic_lift).value;
+		let basicLift = Fixed.extract($pc?.calc.basic_lift ?? "").value;
 		encList[0].maxLoad = basicLift;
 		encList[1].maxLoad = basicLift.mul(Fixed.Two);
 		encList[2].maxLoad = basicLift.mul(Fixed.Three);
 		encList[3].maxLoad = basicLift.mul(Fixed.Six);
 		encList[4].maxLoad = basicLift.mul(Fixed.Ten);
 		let total = new Fixed(0);
-		for (let equipment of $pc.equipment ?? []) {
+		for (let equipment of $pc?.equipment ?? []) {
 			total = total.add(Fixed.extract(equipment.calc.extended_weight).value);
 		}
 		let found = false;

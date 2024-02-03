@@ -13,6 +13,9 @@
 	import { goto } from '$app/navigation';
 	import { apiPrefix } from '$lib/dev.ts';
 	import { session } from '$lib/session.ts';
+	import { pc } from '$lib/entity.ts';
+
+	$pc = undefined;
 
 	fetch(apiPrefix('/logout'), {
 		method: 'POST',

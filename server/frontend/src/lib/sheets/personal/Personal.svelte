@@ -16,7 +16,7 @@
 	import Description from '$lib/sheets/personal/Description.svelte';
 	import { pc } from '$lib/entity.ts';
 
-	$: imageURL = $pc.profile?.portrait ? 'data:;base64,' + $pc.profile?.portrait : undefined;
+	$: imageURL = $pc?.profile?.portrait ? 'data:;base64,' + $pc.profile.portrait : undefined;
 </script>
 
 <div class="content">

@@ -40,7 +40,7 @@
 	}
 
 	$: {
-		const list = carried ? $pc.equipment : $pc.other_equipment;
+		const list = carried ? $pc?.equipment : $pc?.other_equipment;
 		totalWeight = new Fixed(0);
 		totalValue = new Fixed(0);
 		for (const item of list ?? []) {

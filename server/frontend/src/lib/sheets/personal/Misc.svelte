@@ -21,11 +21,11 @@
 	<Header>Miscellaneous</Header>
 	<div class="fields">
 		<Label title="Created" />
-		<Field>{formatDateStamp($pc.created_date)}</Field>
+		<Field>{formatDateStamp($pc?.created_date)}</Field>
 		<Label title="Modified" />
-		<Field>{formatDateStamp($pc.modified_date)}</Field>
+		<Field>{formatDateStamp($pc?.modified_date)}</Field>
 		<Label title="Player" />
-		<EditableStringField name="profile.player" value={$pc.profile?.player_name ?? ''} />
+		<EditableStringField name="profile.player" value={$pc?.profile?.player_name ?? ''} />
 	</div>
 </div>
 

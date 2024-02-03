@@ -18,7 +18,7 @@
 	let basicLift = new Fixed(0);
 
 	$: {
-		basicLift = basicLift.add(Fixed.extract($pc.calc.basic_lift).value);
+		basicLift = basicLift.add(Fixed.extract($pc?.calc.basic_lift ?? "").value);
 	}
 </script>
 

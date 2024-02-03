@@ -15,7 +15,7 @@ const MULTIPLIER = 10000;
 export class Fixed {
 	private value = 0;
 
-	constructor(input?: number | string | Fixed) {
+	constructor(input?: number | string | Fixed | undefined) {
 		switch (typeof input) {
 			case 'object':
 				this.value = input.value;

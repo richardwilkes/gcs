@@ -40,12 +40,12 @@
 </script>
 
 <div class="content">
-	<Header>{$pc.settings?.body_type?.name ?? 'Unknown'}</Header>
+	<Header>{$pc?.settings?.body_type?.name ?? 'Unknown'}</Header>
 	<div class="fields">
 		<SubHeader title="Roll" />
 		<SubHeader title="Location" />
 		<SubHeader title="DR" />
-		{#each $pc.settings?.body_type?.locations ?? [] as location, i}
+		{#each $pc?.settings?.body_type?.locations ?? [] as location, i}
 			{@const banding = i % 2 === 1}
 			<div class:banding><Label title={location.calc.roll_range} center={true} /></div>
 			<div class="name" class:banding>

@@ -58,7 +58,7 @@
 			<Attributes />
 			<Lists />
 		{:else}
-			<FileSelectionModal bind:showModal path='/sheets' callback={gotoSheet} />
+			<FileSelectionModal bind:showModal path='/sheets' title='Select a Sheet' callback={gotoSheet} />
 		{/if}
 	</div>
 </Shell>

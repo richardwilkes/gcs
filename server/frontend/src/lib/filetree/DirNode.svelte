@@ -11,27 +11,38 @@
 
 <script lang='ts'>
 	import type { Directory } from '$lib/files.ts';
+	import { tweened } from 'svelte/motion';
+	import { slide } from 'svelte/transition';
 	import FileNode from '$lib/filetree/FileNode.svelte';
+	import OpenFolder from '$lib/svg/OpenFolder.svelte';
+	import ClosedFolder from '$lib/svg/ClosedFolder.svelte';
+	import CircledChevronRight from '$lib/svg/CircledChevronRight.svelte';
 
 	export let dir: Directory;
-	export let callback : (file: string) => void;
+	export let selectedFile: string | undefined;
+	export let callback: (file: string) => void;
 
+	const rotation = tweened(0, { duration: 200 });
 	let opened = false;
 </script>
 
 <div class='dir'>
-	<button on:click={() => opened = !opened }>
-		<span class='caret'>{opened ? '▼' : '►'}</span>
-		<span class='folder'>📁</span>
+	<button on:click={() => { opened = !opened; rotation.set(opened ? 90 : 0); } }>
+		<CircledChevronRight rotation={$rotation}/>
+		{#if opened}
+			<OpenFolder />
+		{:else}
+			<ClosedFolder />
+		{/if}
 		{dir.name}
 	</button>
 	{#if opened}
-		<div class='children'>
+		<div class='children' transition:slide={{delay: 0, duration: 200, axis: 'y'}}>
 			{#each dir.dirs || [] as subDir}
-				<svelte:self dir={subDir} {callback} />
+				<svelte:self dir={subDir} {selectedFile} {callback} />
 			{/each}
 			{#each dir.files || [] as file}
-				<FileNode name={file} path={dir.path + '/' + file} {callback} />
+				<FileNode name={file} path={dir.path + '/' + file} {selectedFile} {callback} />
 			{/each}
 		</div>
 	{/if}
@@ -45,28 +56,22 @@
 	}
 
 	.children {
-		margin-left: 1em;
+		margin-left: 1.5em;
 	}
 
 	button {
 		background-color: var(--color-background);
 		color: var(--color-on-background);
 		border: none;
+		font-size: 1.2em;
 		text-align: left;
+		display: flex;
+		column-gap: 0.5em;
+		align-items: center;
 	}
 
-	button:hover {
-		background-color: var(--color-selection);
-		color: var(--color-on-selection);
-	}
-
-	.caret {
-		width: 0.6em;
-		padding-right: 0;
-	}
-
-	.folder {
-		width: 1.2em;
-		height: 1em;
-	}
+	/*button:hover {*/
+	/*	background-color: var(--color-link-rollover);*/
+	/*	color: var(--color-on-link-rollover);*/
+	/*}*/
 </style>

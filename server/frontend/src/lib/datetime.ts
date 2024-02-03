@@ -18,9 +18,14 @@ const stdDateTimeFmt = new Intl.DateTimeFormat('default', {
 	hour12: true
 });
 
-export function formatDateStamp(date: Date | string) {
-	if (typeof date === 'string') {
-		date = new Date(date);
+export function formatDateStamp(date: Date | string | undefined) {
+	switch (typeof date) {
+		case 'string':
+			date = new Date(date);
+			break;
+		case 'undefined':
+			date = new Date();
+			break;
 	}
 	return stdDateTimeFmt.format(date);
 }

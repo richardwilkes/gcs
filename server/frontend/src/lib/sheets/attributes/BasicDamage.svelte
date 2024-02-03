@@ -18,9 +18,9 @@
 <div class="content">
 	<Header>Basic Damage</Header>
 	<div class="fields">
-		<Field right={true}>{$pc.calc.thrust}</Field>
+		<Field right={true}>{$pc?.calc.thrust ?? ""}</Field>
 		<Label title="Basic Thrust" left={true} />
-		<Field right={true}>{$pc.calc.swing}</Field>
+		<Field right={true}>{$pc?.calc.swing ?? ""}</Field>
 		<Label title="Basic Swing" left={true} />
 	</div>
 </div>

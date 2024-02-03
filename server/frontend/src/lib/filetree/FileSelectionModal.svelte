@@ -17,7 +17,7 @@
 	import DirNode from '$lib/filetree/DirNode.svelte';
 
 	export let showModal = false;
-	export let title = 'Select a file:';
+	export let title = 'Select a File';
 	export let path: string;
 	export let callback: (file: string) => void;
 
@@ -54,12 +54,12 @@
 </script>
 
 <Modal bind:this={modal} bind:showModal callback={(ok) => done(ok)}>
-	<h2 slot='title'>{title}</h2>
+	<div slot='title'>{title}</div>
 	<div class='tree'>
 		{#if dirs}
 			{#each dirs as dir}
 				<div>
-					<DirNode {dir} callback={(file) => selectedFile = file}/>
+					<DirNode {dir} {selectedFile} callback={(file) => selectedFile = file}/>
 				</div>
 			{/each}
 		{:else}

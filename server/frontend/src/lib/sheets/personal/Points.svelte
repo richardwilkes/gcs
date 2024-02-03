@@ -32,7 +32,7 @@
 		quirks = 0;
 		skills = 0;
 		spells = 0;
-		total = $pc.total_points;
+		total = $pc?.total_points ?? 0;
 		unspent = 0;
 		// TODO: Calculate points for each category
 		// TODO: Need to account for pc.settings?.exclude_unspent_points_from_total

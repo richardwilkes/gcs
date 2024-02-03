@@ -20,7 +20,7 @@
 
 	$: {
 		attrList = [];
-		if ($pc.attributes) {
+		if ($pc?.attributes) {
 			let attrDefMap = new Map();
 			let orderedAttrDefs: AttributeDef[] = [];
 			$pc.settings?.attributes?.forEach((attrDef) => {

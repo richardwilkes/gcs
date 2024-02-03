@@ -32,7 +32,9 @@
 
 {#if showModal}
 	<dialog bind:this={dialog}>
-		<slot name='title' />
+		<div class='title'>
+			<slot name='title' />
+		</div>
 		<div class='content'>
 			<slot />
 		</div>
@@ -94,6 +96,12 @@
 		to {
 			opacity: 1;
 		}
+	}
+
+	.title {
+		font-size: 1.5em;
+		font-weight: bold;
+		text-align: center;
 	}
 
 	.content {

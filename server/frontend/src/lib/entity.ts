@@ -11,7 +11,7 @@
 
 import { writable } from 'svelte/store';
 
-export const pc = writable<Entity>();
+export const pc = writable<Entity | undefined>();
 
 export async function loadPC(file: File) {
 	return new Promise<Entity>((resolve, reject) => {
