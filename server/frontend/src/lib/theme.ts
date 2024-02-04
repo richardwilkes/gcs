@@ -12,6 +12,8 @@
 import { writable } from 'svelte/store';
 import { apiPrefix } from '$lib/dev.ts';
 
+const themeKey = 'theme';
+
 /** Holds the colors for a theme. */
 export type Colors = {
 	[key: string]: {
@@ -34,8 +36,8 @@ export type Theme = {
 };
 
 /** The current theme. */
-export const currentTheme = writable({
-	current: ThemeKind.System,
+export const currentTheme = writable<Theme>({
+	current: (localStorage.getItem(themeKey) || ThemeKind.System) as ThemeKind,
 	colors: defaultColors()
 });
 
@@ -59,6 +61,7 @@ const systemIsDark = window.matchMedia('(prefers-color-scheme: dark)');
 systemIsDark.addEventListener('change', () => currentTheme.update((value) => value));
 
 currentTheme.subscribe((current) => {
+	localStorage.setItem(themeKey, current.current);
 	const kind = resolvedThemeKind(current);
 	let buffer = ':root {\n';
 	buffer += `--color-scheme: ${kind};\n`;
