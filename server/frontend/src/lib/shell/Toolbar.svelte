@@ -47,7 +47,7 @@
 <style>
 	.toolbar {
 		border-bottom: 1px solid var(--color-divider);
-		padding: 8px;
+		padding: 6px 8px;
 		display: flex;
 		justify-content: flex-start;
 		align-items: center;
