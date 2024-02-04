@@ -6,6 +6,9 @@ module.exports = {
 		'plugin:@typescript-eslint/recommended',
 		'plugin:svelte/recommended'
 	],
+	rules: {
+		"no-mixed-spaces-and-tabs": "off",
+	},
 	parser: '@typescript-eslint/parser',
 	plugins: ['@typescript-eslint'],
 	parserOptions: {
