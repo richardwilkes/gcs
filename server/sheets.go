@@ -18,13 +18,23 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/server/websettings"
+	"github.com/richardwilkes/toolbox/collection/dict"
+	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/toolbox/xio/network/xhttp"
 )
+
+// Dir is a directory listing.
+type Dir struct {
+	Name  string   `json:"name"`
+	Files []string `json:"files,omitempty"`
+	Dirs  []*Dir   `json:"dirs,omitempty"`
+}
 
 func (s *Server) sheetsHandler(w http.ResponseWriter, r *http.Request) {
 	_, userName, ok := sessionFromRequest(r)
@@ -32,16 +42,15 @@ func (s *Server) sheetsHandler(w http.ResponseWriter, r *http.Request) {
 		xhttp.ErrorStatus(w, http.StatusUnauthorized)
 		return
 	}
-	type Dir struct {
-		Name  string   `json:"name"`
-		Files []string `json:"files,omitempty"`
-		Dirs  []*Dir   `json:"dirs,omitempty"`
-	}
 	rsp := make([]*Dir, 0)
-	for k, v := range gurps.GlobalSettings().WebServer.AccessList(userName) {
+	list := gurps.GlobalSettings().WebServer.AccessList(userName)
+	keys := dict.Keys(list)
+	slices.SortFunc(keys, func(a, b string) int { return txt.NaturalCmp(a, b, true) })
+	for _, k := range keys {
+		one := list[k]
 		m := make(map[string]*Dir)
 		m[k] = &Dir{Name: k}
-		if err := fs.WalkDir(os.DirFS(v.Dir), ".", func(p string, d fs.DirEntry, err error) error {
+		if err := fs.WalkDir(os.DirFS(one.Dir), ".", func(p string, d fs.DirEntry, err error) error {
 			if err != nil {
 				return nil
 			}
@@ -65,11 +74,22 @@ func (s *Server) sheetsHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			return nil
 		}); err != nil {
-			slog.Warn("error walking directory tree", "dir", v.Dir, "user", userName, "error", err)
+			slog.Warn("error walking directory tree", "dir", one.Dir, "user", userName, "error", err)
 		}
 		rsp = append(rsp, m[k])
 	}
-	JSONResponse(w, http.StatusOK, rsp)
+	JSONResponse(w, http.StatusOK, prune(rsp))
+}
+
+func prune(dirs []*Dir) []*Dir {
+	for i := len(dirs) - 1; i >= 0; i-- {
+		d := dirs[i]
+		d.Dirs = prune(d.Dirs)
+		if len(d.Dirs) == 0 && len(d.Files) == 0 {
+			dirs = append(dirs[:i], dirs[i+1:]...)
+		}
+	}
+	return dirs
 }
 
 func (s *Server) sheetHandler(w http.ResponseWriter, r *http.Request) {
