@@ -9,13 +9,13 @@
   - defined by the Mozilla Public License, version 2.0.
   -->
 <script lang="ts">
-	import { pc, loadPC } from '$lib/entity.ts';
+	import { pc, loadEntity } from '$lib/entity.ts';
 
 	let files: FileList;
 
 	$: {
 		if (files && files.length) {
-			loadPC(files[0])
+			loadEntity(files[0])
 				.then((newPC) => ($pc = newPC))
 				.catch((err) => {
 					console.error(err);

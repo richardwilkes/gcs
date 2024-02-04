@@ -42,5 +42,6 @@
 	.content {
 		display: flex;
 		flex-grow: 1;
+		overflow: auto;
 	}
 </style>

@@ -9,11 +9,13 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
+import { apiPrefix } from '$lib/dev.ts';
+import { session } from '$lib/session.ts';
 
 export const pc = writable<Entity | undefined>();
 
-export async function loadPC(file: File) {
+export async function loadEntity(file: File) {
 	return new Promise<Entity>((resolve, reject) => {
 		const reader = new FileReader();
 		reader.onload = () => resolve(parsePC(reader.result as string));
@@ -22,16 +24,32 @@ export async function loadPC(file: File) {
 	});
 }
 
+export async function fetchSheet(path :string) {
+	const rsp = await fetch(new URL(apiPrefix(`/sheet/${path}`)), {
+		method: 'GET',
+		headers: { 'X-Session': get(session)?.ID ?? '' },
+		cache: 'no-store'
+	});
+	if (!rsp.ok) {
+		return undefined;
+	}
+	return validateSheet(await rsp.json());
+}
+
 function parsePC(data: string) {
 	const json = JSON.parse(data);
 	const newPC = json as Entity;
+	validateSheet(newPC);
+	return newPC;
+}
 
+export function validateSheet(entity: Entity) {
 	// Convert old format to new format
-	if (!newPC.traits && newPC.advantages) {
-		newPC.traits = newPC.advantages;
-		delete newPC.advantages;
+	if (!entity.traits && entity.advantages) {
+		entity.traits = entity.advantages;
+		delete entity.advantages;
 	}
-	for (const equipment of newPC.equipment ?? []) {
+	for (const equipment of entity.equipment ?? []) {
 		if (!equipment.tags && equipment.categories) {
 			equipment.tags = equipment.categories;
 			delete equipment.categories;
@@ -45,17 +63,17 @@ function parsePC(data: string) {
 			}
 		}
 	}
-	if (newPC.settings) {
-		if (!newPC.settings.body_type && newPC.settings.hit_locations) {
-			newPC.settings.body_type = newPC.settings.hit_locations;
-			delete newPC.settings.hit_locations;
+	if (entity.settings) {
+		if (!entity.settings.body_type && entity.settings.hit_locations) {
+			entity.settings.body_type = entity.settings.hit_locations;
+			delete entity.settings.hit_locations;
 		}
-		if (!newPC.settings.show_trait_modifier_adj && newPC.settings.show_advantage_modifier_adj) {
-			newPC.settings.show_trait_modifier_adj = newPC.settings.show_advantage_modifier_adj;
-			delete newPC.settings.show_advantage_modifier_adj;
+		if (!entity.settings.show_trait_modifier_adj && entity.settings.show_advantage_modifier_adj) {
+			entity.settings.show_trait_modifier_adj = entity.settings.show_advantage_modifier_adj;
+			delete entity.settings.show_advantage_modifier_adj;
 		}
 	}
-	return newPC;
+	return entity;
 }
 
 export interface Entity {

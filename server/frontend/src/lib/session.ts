@@ -9,7 +9,9 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
+import { apiPrefix } from '$lib/dev.ts';
+import { page } from '$lib/page.ts';
 
 const sessionKey = 'session';
 
@@ -28,14 +30,33 @@ window.onstorage = (event) => {
 	if (event.key === sessionKey) {
 		session.set(event.newValue ? JSON.parse(event.newValue) as Session : null);
 	}
-}
+};
 
 export function updateSessionFromResponse(rsp: Response) {
-	const id = rsp.headers.get('X-Session')
-	const user = rsp.headers.get('X-User')
+	const id = rsp.headers.get('X-Session');
+	const user = rsp.headers.get('X-User');
 	if (id && user) {
 		session.set({ ID: id, User: user });
 	} else {
 		session.set(null);
 	}
+}
+
+export async function checkSession() {
+	const sess = get(session);
+	if (sess) {
+		const rsp = await fetch(apiPrefix('/session'), {
+			method: 'GET',
+			headers: { 'X-Session': sess.ID },
+			cache: 'no-store'
+		});
+		if (rsp.ok) {
+			updateSessionFromResponse(rsp);
+			if (get(session)) {
+				return;
+			}
+		}
+	}
+	session.set(null);
+	page.set({ID:'login', NextID: get(page).NextID});
 }

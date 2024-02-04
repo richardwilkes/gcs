@@ -9,6 +9,9 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-export const prerender = true;
-export const ssr = false;
-export const trailingSlash = 'ignore';
+import './app.css';
+import App from './App.svelte';
+
+const app = new App({ target: document.getElementById('app') as Element });
+
+export default app;

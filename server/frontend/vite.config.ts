@@ -1,12 +1,15 @@
-import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
+import { resolve } from 'path';
 
+// https://vitejs.dev/config/
 export default defineConfig({
-	build: {
-		emptyOutDir: true,
-		chunkSizeWarningLimit: 1024
-	},
-	plugins: [
-		sveltekit()
-	]
+	plugins: [svelte()],
+	resolve: {
+		alias: {
+			'$src': resolve('./src'),
+			'$lib': resolve('./src/lib'),
+			'$page': resolve('./src/page')
+		}
+	}
 });

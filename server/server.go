@@ -45,7 +45,7 @@ const (
 )
 
 var (
-	//go:embed frontend/build frontend/build/_app
+	//go:embed frontend/dist
 	siteFS embed.FS
 
 	state    atomic.Int32
@@ -87,7 +87,7 @@ func Start() {
 	state.Store(int32(Starting))
 	settings := gurps.GlobalSettings().WebServer
 	settings.Validate()
-	siteContentFS, err := fs.Sub(siteFS, "frontend/build")
+	siteContentFS, err := fs.Sub(siteFS, "frontend/dist")
 	fatal.IfErr(err)
 	s := &Server{
 		server: &xhttp.Server{

@@ -10,11 +10,10 @@
   -->
 
 <script lang='ts'>
-	import { goto } from '$app/navigation';
 	import { apiPrefix } from '$lib/dev.ts';
-	import Shell from '$lib/shell/Shell.svelte';
-	import { onMount } from 'svelte';
 	import { session, updateSessionFromResponse } from '$lib/session.ts';
+	import { page } from '$lib/page.ts';
+	import { onMount } from 'svelte';
 
 	let form: HTMLFormElement;
 	let nameInput: HTMLInputElement;
@@ -24,14 +23,6 @@
 	let passwordEmpty = true;
 	let errorMsg = '';
 
-	function updateNameEmpty(event: Event) {
-		nameEmpty = (event.target as HTMLInputElement).value === '';
-	}
-
-	function updatePasswordEmpty(event: Event) {
-		passwordEmpty = (event.target as HTMLInputElement).value === '';
-	}
-
 	function submit(event: Event) {
 		event.preventDefault();
 		fetch(apiPrefix('/login'), {
@@ -40,16 +31,17 @@
 			cache: 'no-store'
 		}).then(rsp => {
 			if (!rsp.ok) {
-				console.log(rsp.status + " " + rsp.statusText);
+				console.log(rsp.status + ' ' + rsp.statusText);
 				handleFailure();
 			} else {
-					updateSessionFromResponse(rsp);
-					if ($session) {
-						// goto(new URLSearchParams(window.location.search).get('next') || '/');
-						goto('/');
-					} else {
-						handleFailure();
-					}
+				updateSessionFromResponse(rsp);
+				if ($session) {
+					const prev = $page;
+					prev.ID = prev.NextID;
+					$page = prev;
+				} else {
+					handleFailure();
+				}
 			}
 		}).catch(error => {
 			console.log(error);
@@ -63,37 +55,37 @@
 		passwordInput.focus();
 	}
 
-	session.set(null);
+	function updateNameEmpty(event: Event) {
+		nameEmpty = (event.target as HTMLInputElement).value === '';
+	}
 
-	$: disabled = nameEmpty || passwordEmpty;
+	function updatePasswordEmpty(event: Event) {
+		passwordEmpty = (event.target as HTMLInputElement).value === '';
+	}
 
 	onMount(() => {
 		nameInput.select();
 		nameInput.focus();
 	});
+
+	$: disabled = nameEmpty || passwordEmpty;
 </script>
 
-<svelte:head>
-	<title>GURPS Character Sheet</title>
-</svelte:head>
-
-<Shell>
-	<div slot='content' class='content'>
-		<form class='panel' bind:this={form} on:submit={submit}>
-			<img class='logo' src='/app.png' alt='GURPS Character Sheet' />
-			<div class='title'>GURPS Character Sheet</div>
-			<div class='subtitle'>by Richard A. Wilkes</div>
-			{#if errorMsg}
-				<div class='error'>{errorMsg}</div>
-			{/if}
-			<label for='name'>Name</label>
-			<input type='text' id='name' name='name' bind:this={nameInput} on:input={updateNameEmpty} required />
-			<label for='password'>Password</label>
-			<input type='password' id='password' name='password' bind:this={passwordInput} on:input={updatePasswordEmpty} required />
-			<button type='submit' {disabled}>Login</button>
-		</form>
-	</div>
-</Shell>
+<div class='content'>
+	<form class='panel' bind:this={form} on:submit={submit}>
+		<img class='logo' src='/app.png' alt='GURPS Character Sheet' />
+		<div class='title'>GURPS Character Sheet</div>
+		<div class='subtitle'>by Richard A. Wilkes</div>
+		{#if errorMsg}
+			<div class='error'>{errorMsg}</div>
+		{/if}
+		<label for='name'>Name</label>
+		<input type='text' id='name' name='name' bind:this={nameInput} on:input={updateNameEmpty} required />
+		<label for='password'>Password</label>
+		<input type='password' id='password' name='password' bind:this={passwordInput} on:input={updatePasswordEmpty} required />
+		<button type='submit' {disabled}>Login</button>
+	</form>
+</div>
 
 <style>
 	.content {

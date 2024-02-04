@@ -10,57 +10,39 @@
   -->
 
 <script lang='ts'>
-	import { page } from '$app/stores';
-	import { apiPrefix } from '$lib/dev.ts';
-	import { session } from '$lib/session.ts';
-	import { pc } from '$lib/entity.ts';
+	import { fetchSheet, pc } from '$lib/entity.ts';
 	import Lists from '$lib/sheets/lists/Lists.svelte';
-	import PCLoaderButton from '$lib/sheets/widget/PCLoaderButton.svelte';
 	import Personal from '$lib/sheets/personal/Personal.svelte';
 	import Attributes from '$lib/sheets/attributes/Attributes.svelte';
-	import Shell from '$lib/shell/Shell.svelte';
+	import { page } from '$lib/page.ts';
 
 	let failed = false;
 
-	fetch(new URL(apiPrefix(`/sheet/${$page.params.path}`)), {
-		method: 'GET',
-		headers: { 'X-Session': $session?.ID ?? '' },
-		cache: 'no-store'
-	}).then(async (rsp) => {
-		if (rsp.ok) {
-			$pc = await rsp.json();
+	(async () => {
+		if ($page.Sheet) {
+			$pc = await fetchSheet($page.Sheet);
+			if (!$pc) {
+				failed = true;
+			}
 		} else {
-			failed = true;
-			$pc = undefined;
-			console.log(rsp.status + ' ' + rsp.statusText);
+			$page = { ID: 'home', NextID: 'home' };
 		}
-	}).catch((err) => {
-		failed = true;
-		$pc = undefined;
-		console.log(err);
-	});
+	})();
 </script>
 
-<svelte:head>
-	<title>{$pc?.profile?.name ?? 'GURPS Character Sheet'}</title>
-</svelte:head>
-
-<Shell>
-	<PCLoaderButton slot='toolbar' />
-	<div slot='content' class='content'>
-		{#if $pc}
-			<Personal />
-			<Attributes />
-			<Lists />
+<div class='content'>
+	{#if $pc}
+		<Personal />
+		<Attributes />
+		<Lists />
+	{:else}
+		{#if failed}
+			<div class='failed'>Failed to load sheet</div>
 		{:else}
-			{#if failed}
-				<div class='failed'>Failed to load sheet</div>
-			{:else}
-				<div class='loading'>Loading...</div>
-			{/if}
+			<div class='loading'>Loading...</div>
 		{/if}
-	</div>
-</Shell>
+	{/if}
+</div>
 
 <style>
 	.content {
@@ -73,7 +55,6 @@
 		align-content: stretch;
 		gap: var(--section-gap);
 		padding: 5px;
-		overflow: auto;
 		flex-grow: 1;
 	}
 

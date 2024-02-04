@@ -9,6 +9,4 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-import { dev } from '$app/environment';
-
-export const apiPrefix = (path: string) => (dev ? 'http://localhost:8422' : '') + '/api' + path;
+export const apiPrefix = (path: string) => (import.meta.env.DEV ? 'http://localhost:8422' : '') + '/api' + path;

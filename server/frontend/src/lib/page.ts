@@ -9,14 +9,12 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-// See https://kit.svelte.dev/docs/types#app
-// for information about these interfaces
-declare global {
-	namespace App {
-		// interface Error {}
-		// interface Locals {}
-		// interface PageData {}
-		// interface PageState {}
-		// interface Platform {}
-	}
-}
+import {writable} from 'svelte/store';
+
+type Page = {
+	ID: string;
+	NextID: string;
+	Sheet?: string;
+};
+
+export const page = writable<Page>({ID: 'home', NextID: 'home'});
