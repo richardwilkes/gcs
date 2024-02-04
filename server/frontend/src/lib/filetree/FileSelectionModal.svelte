@@ -19,15 +19,17 @@
 	export let showModal = false;
 	export let title = 'Select a File';
 	export let path: string;
-	export let callback: (file: string) => void;
+	export let callback: (file: string, finish?: boolean) => void;
 
 	let modal: Modal;
-	let awaitingLoad = false;
+	let pending = false;
+	let error = false;
 	let dirs: Directory[] | undefined;
 	let selectedFile: string | undefined;
 
-	$: if (showModal && modal && !dirs && !awaitingLoad) {
-		awaitingLoad = true;
+	$: if (showModal && modal && !dirs && !pending) {
+		error = true;
+		pending = true;
 		(async function loadFiles() {
 			const rsp = await fetch(apiPrefix(path), {
 				method: 'GET',
@@ -37,10 +39,12 @@
 			if (rsp.ok) {
 				let data = await rsp.json();
 				for (const dir of data) {
-					fillPathsForDir(dir, "");
+					fillPathsForDir(dir, '');
 				}
 				dirs = data;
+				pending = false;
 			} else {
+				error = true;
 				console.log(rsp.status + ' ' + rsp.statusText);
 			}
 		})();
@@ -48,29 +52,71 @@
 
 	function done(ok: boolean) {
 		dirs = undefined;
-		awaitingLoad = false;
+		pending = false;
 		if (ok && selectedFile) callback(selectedFile);
 	}
 </script>
 
 <Modal bind:this={modal} bind:showModal callback={(ok) => done(ok)}>
 	<div slot='title'>{title}</div>
-	<div class='tree'>
-		{#if dirs}
-			{#each dirs as dir}
-				<div>
-					<DirNode {dir} {selectedFile} callback={(file) => selectedFile = file}/>
-				</div>
-			{/each}
+	<div class='content'>
+		{#if pending}
+			<div class='pending' class:error>
+				{#if error}
+					Error loading file list
+				{:else}
+					Loading...
+				{/if}
+			</div>
 		{:else}
-			Loading...
+			<div class='tree'>
+				<div class='inner'>
+					{#each dirs || [] as dir}
+						<DirNode {dir} {selectedFile} callback={(file, finish) => {
+							selectedFile = file;
+							if (finish) {
+								modal.close(true);
+							}
+						}} />
+					{/each}
+				</div>
+			</div>
 		{/if}
 	</div>
 </Modal>
 
 <style>
-	.tree {
+	.content {
 		min-width: 50vw;
 		min-height: 50vh;
+		display: flex;
+	}
+
+	.tree {
+		background-color: var(--color-content);
+		flex-grow: 1;
+		border: 1px solid var(--color-divider);
+	}
+
+	.inner {
+		padding: 0.5em;
+		display: flex;
+		flex-direction: column;
+		overflow: auto;
+		max-height: 50vh;
+		max-width: 50vw;
+	}
+
+	.pending {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		flex-grow: 1;
+		font-size: 2em;
+	}
+
+	.error {
+		color: red;
 	}
 </style>

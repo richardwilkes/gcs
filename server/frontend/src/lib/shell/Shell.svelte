@@ -18,7 +18,9 @@
 	<Toolbar>
 		<slot name='toolbar'></slot>
 	</Toolbar>
-	<slot name='content'></slot>
+	<div class='content'>
+		<slot name='content'></slot>
+	</div>
 	<Footer />
 </div>
 
@@ -35,5 +37,10 @@
 		gap: 0;
 		background-color: var(--color-background);
 		color: var(--color-on-background);
+	}
+
+	.content {
+		display: flex;
+		flex-grow: 1;
 	}
 </style>

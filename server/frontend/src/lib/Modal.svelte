@@ -16,17 +16,16 @@
 	export let okButton = 'OK';
 	export let okAutoFocus = true;
 	export let callback: (ok: boolean) => void;
+	export const close = (ok: boolean) => {
+		showModal = false;
+		dialog.close();
+		callback(ok);
+	};
 
 	let dialog: HTMLDialogElement;
 
 	$: if (showModal && dialog) {
 		dialog.showModal();
-	}
-
-	function close(ok: boolean) {
-		showModal = false;
-		dialog.close();
-		callback(ok);
 	}
 </script>
 
@@ -69,7 +68,7 @@
 	}
 
 	dialog::backdrop {
-		background-color: rgba(0, 0, 0, 0.75);
+		background-color: rgba(0, 0, 0, 0.6);
 	}
 
 	dialog[open] {

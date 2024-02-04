@@ -20,22 +20,26 @@
 
 	export let dir: Directory;
 	export let selectedFile: string | undefined;
-	export let callback: (file: string) => void;
+	export let callback: (file: string, finish?: boolean) => void;
 
 	const rotation = tweened(0, { duration: 200 });
 	let opened = false;
 </script>
 
 <div class='dir'>
-	<button on:click={() => { opened = !opened; rotation.set(opened ? 90 : 0); } }>
-		<CircledChevronRight rotation={$rotation}/>
-		{#if opened}
-			<OpenFolder />
-		{:else}
-			<ClosedFolder />
-		{/if}
-		{dir.name}
-	</button>
+	<div class='node'>
+		<button on:click={() => { opened = !opened; rotation.set(opened ? 90 : 0); } }>
+			<CircledChevronRight rotation={$rotation} />
+		</button>
+		<button on:click={()=>{}} on:dblclick={() => { opened = !opened; rotation.set(opened ? 90 : 0); } }>
+			{#if opened}
+				<OpenFolder />
+			{:else}
+				<ClosedFolder />
+			{/if}
+			{dir.name}
+		</button>
+	</div>
 	{#if opened}
 		<div class='children' transition:slide={{delay: 0, duration: 200, axis: 'y'}}>
 			{#each dir.dirs || [] as subDir}
@@ -55,23 +59,27 @@
 		align-items: flex-start;
 	}
 
-	.children {
-		margin-left: 1.5em;
+	.node {
+		display: flex;
+		column-gap: 0.4em;
+		align-items: center;
+		text-align: left;
+		background-color: var(--color-content);
+		color: var(--color-on-content);
+		padding: 0.2em;
 	}
 
 	button {
-		background-color: var(--color-background);
-		color: var(--color-on-background);
+		padding: 0;
 		border: none;
-		font-size: 1.2em;
-		text-align: left;
-		display: flex;
-		column-gap: 0.5em;
+		background-color: var(--color-content);
+		color: var(--color-on-content);
+		user-select: none;
+		font-size: 1.1em;
 		align-items: center;
 	}
 
-	/*button:hover {*/
-	/*	background-color: var(--color-link-rollover);*/
-	/*	color: var(--color-on-link-rollover);*/
-	/*}*/
+	.children {
+		margin-left: 1.2em;
+	}
 </style>

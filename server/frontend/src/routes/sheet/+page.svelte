@@ -9,8 +9,22 @@
   - defined by the Mozilla Public License, version 2.0.
   -->
 
-<script>
+<script lang='ts'>
 	import { goto } from '$app/navigation';
-
-	goto('/sheet');
+	import FileSelectionModal from '$lib/filetree/FileSelectionModal.svelte';
+	import Shell from '$lib/shell/Shell.svelte';
 </script>
+
+<Shell>
+	<div slot='content' class='content'>
+		<FileSelectionModal showModal={true} path='/sheets' title='Select a Sheet'
+												callback={(path) => goto('/sheet/' + path)} />
+	</div>
+</Shell>
+
+<style>
+	.content {
+		background-color: var(--color-page);
+		flex-grow: 1;
+	}
+</style>

@@ -16,11 +16,11 @@
 	export let name: string;
 	export let path: string;
 	export let selectedFile: string | undefined;
-	export let callback: (path: string) => void;
+	export let callback: (path: string, finish?: boolean) => void;
 </script>
 
-<div>
-	<button class:selected={path === selectedFile} on:click={() => callback(path)}>
+<div class='file' class:selected={path === selectedFile}>
+	<button class:selected={path === selectedFile} on:click={() => callback(path)} on:dblclick={() => callback(path, true)}>
 		{#if path.toLowerCase().endsWith('.gcs')}
 			<SheetFile />
 		{:else}
@@ -31,18 +31,18 @@
 </div>
 
 <style>
-	div {
-		padding-left: 1.5em;
+	.file {
+		margin-left: 0.8em;
+		padding: 0.2em;
 	}
 
 	button {
-		background-color: var(--color-background);
-		color: var(--color-on-background);
+		padding: 0;
 		border: none;
-		font-size: 1.2em;
-		text-align: left;
-		display: flex;
-		column-gap: 0.5em;
+		background-color: var(--color-content);
+		color: var(--color-on-content);
+		user-select: none;
+		font-size: 1.1em;
 		align-items: center;
 	}
 

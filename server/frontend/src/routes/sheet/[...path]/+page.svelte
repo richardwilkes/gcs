@@ -8,47 +8,42 @@
   - This Source Code Form is "Incompatible With Secondary Licenses", as
   - defined by the Mozilla Public License, version 2.0.
   -->
+
 <script lang='ts'>
 	import { page } from '$app/stores';
-	import { replaceState } from '$app/navigation';
-	import Shell from '$lib/shell/Shell.svelte';
-	import Personal from '$lib/sheets/personal/Personal.svelte';
-	import Attributes from '$lib/sheets/attributes/Attributes.svelte';
-	import Lists from '$lib/sheets/lists/Lists.svelte';
-	import { pc } from '$lib/entity.ts';
-	import PCLoaderButton from '$lib/sheets/widget/PCLoaderButton.svelte';
-	import FileSelectionModal from '$lib/filetree/FileSelectionModal.svelte';
 	import { apiPrefix } from '$lib/dev.ts';
 	import { session } from '$lib/session.ts';
+	import { pc } from '$lib/entity.ts';
+	import Lists from '$lib/sheets/lists/Lists.svelte';
+	import PCLoaderButton from '$lib/sheets/widget/PCLoaderButton.svelte';
+	import Personal from '$lib/sheets/personal/Personal.svelte';
+	import Attributes from '$lib/sheets/attributes/Attributes.svelte';
+	import Shell from '$lib/shell/Shell.svelte';
 
-	let showModal = false;
+	let failed = false;
 
-	if ($page.url.searchParams.get('path')) {
-		loadSheet();
-	} else if (!$pc) {
-		showModal = true;
-	}
-
-	function gotoSheet(path: string) {
-		const url = $page.url;
-		url.searchParams.set('path', path);
-		replaceState(url, {});
-		loadSheet();
-	}
-
-	async function loadSheet() {
-		const rsp = await fetch(new URL(apiPrefix(`/sheet/${$page.url.searchParams.get('path')}`)), {
-			method: 'GET',
-			headers: { 'X-Session': $session?.ID ?? '' },
-			cache: 'no-store'
-		});
+	fetch(new URL(apiPrefix(`/sheet/${$page.params.path}`)), {
+		method: 'GET',
+		headers: { 'X-Session': $session?.ID ?? '' },
+		cache: 'no-store'
+	}).then(async (rsp) => {
 		if (rsp.ok) {
 			$pc = await rsp.json();
 		} else {
+			failed = true;
+			$pc = undefined;
 			console.log(rsp.status + ' ' + rsp.statusText);
 		}
-	}
+	}).catch((err) => {
+		failed = true;
+		$pc = undefined;
+		console.log(err);
+	});
 </script>
+
+<svelte:head>
+	<title>{$pc?.profile?.name ?? 'GURPS Character Sheet'}</title>
+</svelte:head>
 
 <Shell>
 	<PCLoaderButton slot='toolbar' />
@@ -58,7 +53,11 @@
 			<Attributes />
 			<Lists />
 		{:else}
-			<FileSelectionModal bind:showModal path='/sheets' title='Select a Sheet' callback={gotoSheet} />
+			{#if failed}
+				<div class='failed'>Failed to load sheet</div>
+			{:else}
+				<div class='loading'>Loading...</div>
+			{/if}
 		{/if}
 	</div>
 </Shell>
@@ -76,5 +75,22 @@
 		padding: 5px;
 		overflow: auto;
 		flex-grow: 1;
+	}
+
+	.loading {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 100%;
+		font-size: 3em;
+	}
+
+	.failed {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 100%;
+		font-size: 3em;
+		color: var(--color-error);
 	}
 </style>
