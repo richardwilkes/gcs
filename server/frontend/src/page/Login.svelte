@@ -73,7 +73,7 @@
 
 <div class='content'>
 	<form class='panel' bind:this={form} on:submit={submit}>
-		<img class='logo' src='/app.png' alt='GURPS Character Sheet' />
+		<img class='logo' src='/app.webp' alt='GURPS Character Sheet' />
 		<div class='title'>GURPS Character Sheet</div>
 		<div class='subtitle'>by Richard A. Wilkes</div>
 		{#if errorMsg}
@@ -138,6 +138,10 @@
 		font-weight: bold;
 		align-self: stretch;
 		padding: 0.5em;
+		background-color: var(--color-editable);
+		color: var(--color-on-editable);
+		border: 1px solid var(--color-divider);
+		border-radius: 8px;
 	}
 
 	button {
@@ -145,6 +149,20 @@
 		align-self: stretch;
 		margin-top: 20px;
 		padding: 0.5em;
+		color: var(--color-on-control);
+		background-color: var(--color-control);
+		border: 1px solid var(--color-control-edge);
+		border-radius: 8px;
+	}
+
+	button:active {
+		background-color: var(--color-control-pressed);
+		color: var(--color-on-control-pressed);
+	}
+
+	button:disabled {
+		background-color: var(--color-control-disabled); /* TODO: Fix. Doesn't currently exist */
+		color: var(--color-on-control-disabled); /* TODO: Fix. Doesn't currently exist */
 	}
 
 	.error {
