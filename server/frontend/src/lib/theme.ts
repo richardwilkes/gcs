@@ -63,10 +63,14 @@ systemIsDark.addEventListener('change', () => currentTheme.update((value) => val
 currentTheme.subscribe((current) => {
 	localStorage.setItem(themeKey, current.current);
 	const kind = resolvedThemeKind(current);
-	let buffer = ':root {\n';
-	buffer += `--color-scheme: ${kind};\n`;
+	const millis = 100;
+	const animateStyle = document.createElement('style');
+	animateStyle.textContent = `*, svg, img { transition: all ${millis}ms linear; }`;
+	document.head.appendChild(animateStyle);
+	setTimeout(() => animateStyle.remove(), millis);
+	let buffer = `:root { --color-scheme: ${kind}; `;
 	for (const [key, value] of Object.entries(current.colors)) {
-		buffer += `--color-${key}: ${value[kind]};\n`;
+		buffer += `--color-${key}: ${value[kind]}; `;
 	}
 	buffer += '}';
 	document.getElementById('color-scheme')?.setAttribute('content', kind);
