@@ -9,4 +9,6 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-export const apiPrefix = (path: string) => (import.meta.env.DEV ? 'http://localhost:8422' : '') + '/api' + path;
+export function apiPrefix(path: string) {
+	return encodeURI((import.meta.env.DEV ? 'http://localhost:8422' : '') + '/api' + path);
+}

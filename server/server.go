@@ -13,7 +13,6 @@ package server
 
 import (
 	"embed"
-	"io/fs"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -26,9 +25,9 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/fatal"
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/toolbox/xio/network/xhttp"
+	"github.com/vearutop/statigz"
 )
 
 var _ http.Handler = &Server{}
@@ -87,8 +86,6 @@ func Start() {
 	state.Store(int32(Starting))
 	settings := gurps.GlobalSettings().WebServer
 	settings.Validate()
-	siteContentFS, err := fs.Sub(siteFS, "frontend/dist")
-	fatal.IfErr(err)
 	s := &Server{
 		server: &xhttp.Server{
 			CertFile:            settings.CertFile,
@@ -101,7 +98,7 @@ func Start() {
 				IdleTimeout:  fxp.SecondsToDuration(settings.ReadTimeout),
 			},
 		},
-		siteHandler: http.FileServer(http.FS(siteContentFS)),
+		siteHandler: statigz.FileServer(siteFS, statigz.FSPrefix("frontend/dist"), statigz.EncodeOnInit),
 	}
 	site = s
 	s.server.WebServer.Handler = s
@@ -125,7 +122,7 @@ func Start() {
 		})
 	}
 	go func() {
-		if err = s.server.Run(); err != nil {
+		if err := s.server.Run(); err != nil {
 			errs.Log(err)
 			// In case we errored out before the server finished starting up, call the shutdown callback.
 			if s.server.ShutdownCallback != nil {

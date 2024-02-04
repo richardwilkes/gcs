@@ -25,7 +25,7 @@ export async function loadEntity(file: File) {
 }
 
 export async function fetchSheet(path :string) {
-	const rsp = await fetch(new URL(apiPrefix(`/sheet/${path}`)), {
+	const rsp = await fetch(apiPrefix(`/sheet/${path}`), {
 		method: 'GET',
 		headers: { 'X-Session': get(session)?.ID ?? '' },
 		cache: 'no-store'
