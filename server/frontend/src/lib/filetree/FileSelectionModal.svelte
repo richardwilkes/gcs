@@ -15,6 +15,7 @@
 	import { session } from '$lib/session.ts';
 	import { type Directory, fillPathsForDir } from '$lib/files.ts';
 	import DirNode from '$lib/filetree/DirNode.svelte';
+	import Waiting from '$lib/Waiting.svelte';
 
 	export let showModal = false;
 	export let title = 'Select a File';
@@ -28,7 +29,7 @@
 	let selectedFile: string | undefined;
 
 	$: if (showModal && modal && !dirs && !pending) {
-		error = true;
+		error = false;
 		pending = true;
 		(async function loadFiles() {
 			const rsp = await fetch(apiPrefix(path), {
@@ -45,7 +46,6 @@
 				pending = false;
 			} else {
 				error = true;
-				console.log(rsp.status + ' ' + rsp.statusText);
 			}
 		})();
 	}
@@ -65,7 +65,7 @@
 				{#if error}
 					Error loading file list
 				{:else}
-					Loading...
+					<Waiting />
 				{/if}
 			</div>
 		{:else}
