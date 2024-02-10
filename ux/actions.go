@@ -848,7 +848,7 @@ func registerActions() {
 	checkForAppUpdatesAction = &unison.Action{
 		ID:    CheckForAppUpdatesItemID,
 		Title: fmt.Sprintf(i18n.Text("Check for %s updates"), cmdline.AppName),
-		EnabledCallback: func(action *unison.Action, mi any) bool {
+		EnabledCallback: func(_ *unison.Action, _ any) bool {
 			_, releases, updating := AppUpdateResult()
 			return !updating && releases == nil
 		},

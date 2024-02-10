@@ -136,7 +136,7 @@ func (p *EncumbrancePanel) createMarker(entity *gurps.Entity, enc encumbrance.Le
 }
 
 func (p *EncumbrancePanel) createLevelField(enc encumbrance.Level, rowColor *encRowColor) *NonEditablePageField {
-	field := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {})
+	field := NewNonEditablePageFieldEnd(func(_ *NonEditablePageField) {})
 	field.OnBackgroundInk = rowColor
 	field.Text = strconv.Itoa(int(enc))
 	field.SetLayoutData(&unison.FlexLayoutData{

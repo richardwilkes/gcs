@@ -94,7 +94,7 @@ func willDropCallback[T gurps.NodeTypes](from, to *unison.Table[*Node[T]], move 
 		EditName:   i18n.Text("Drag"),
 		UndoFunc:   func(e *unison.UndoEdit[*TableDragUndoEditData[T]]) { e.BeforeData.Apply() },
 		RedoFunc:   func(e *unison.UndoEdit[*TableDragUndoEditData[T]]) { e.AfterData.Apply() },
-		AbsorbFunc: func(e *unison.UndoEdit[*TableDragUndoEditData[T]], other unison.Undoable) bool { return false },
+		AbsorbFunc: func(_ *unison.UndoEdit[*TableDragUndoEditData[T]], _ unison.Undoable) bool { return false },
 		BeforeData: NewTableDragUndoEditData(from, to),
 	}
 }

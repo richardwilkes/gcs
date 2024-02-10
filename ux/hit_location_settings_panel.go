@@ -134,7 +134,7 @@ func (p *hitLocationSettingsPanel) createContent() *unison.Panel {
 				p.loc.SetID(strings.TrimSpace(strings.ToLower(s)))
 			}
 		})
-	field.ValidateCallback = func(field *StringField, loc *gurps.HitLocation) func() bool {
+	field.ValidateCallback = func(field *StringField, _ *gurps.HitLocation) func() bool {
 		return func() bool { return p.validateLocID(field.Text()) }
 	}(field, p.loc)
 	field.SetMinimumTextWidthUsing(prototypeMinIDWidth)

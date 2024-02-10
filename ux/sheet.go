@@ -165,7 +165,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 			s.dragReroutePanel = nil
 		}
 	}
-	s.DrawOverCallback = func(gc *unison.Canvas, rect unison.Rect) {
+	s.DrawOverCallback = func(gc *unison.Canvas, _ unison.Rect) {
 		if s.dragReroutePanel != nil {
 			r := s.RectFromRoot(s.dragReroutePanel.RectToRoot(s.dragReroutePanel.ContentRect(true)))
 			paint := unison.DropAreaColor.Paint(gc, r, paintstyle.Fill)
@@ -702,7 +702,7 @@ func (s *Sheet) swapDefaults(_ any) {
 		EditName: swapDefaultsAction.Title,
 		UndoFunc: func(e *unison.UndoEdit[*TableUndoEditData[*gurps.Skill]]) { e.BeforeData.Apply() },
 		RedoFunc: func(e *unison.UndoEdit[*TableUndoEditData[*gurps.Skill]]) { e.AfterData.Apply() },
-		AbsorbFunc: func(e *unison.UndoEdit[*TableUndoEditData[*gurps.Skill]], other unison.Undoable) bool {
+		AbsorbFunc: func(_ *unison.UndoEdit[*TableUndoEditData[*gurps.Skill]], _ unison.Undoable) bool {
 			return false
 		},
 		BeforeData: NewTableUndoEditData(s.Skills.Table),
