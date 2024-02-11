@@ -31,5 +31,7 @@
 			'equipment equipment'
 			'other_equipment other_equipment'
 			'notes notes';
+		background-color: var(--color-surface);
+		color: var(--color-on-surface);
 	}
 </style>

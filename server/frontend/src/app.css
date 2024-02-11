@@ -9,10 +9,8 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;1,400;1,500&display=swap');
-
 :root {
-	font-family: Roboto, sans-serif;
+	font-family: sans-serif;
 	font-size: 14px;
 	font-style: normal;
 	font-weight: normal;
@@ -24,7 +22,55 @@
 	--padding-header: 1px 8px;
 	--padding-standard: 0px 4px;
 
-	--standard-border: 1px solid var(--color-header);
+	--standard-border: 1px solid var(--color-outline-variant);
+}
+
+:root[theme='light'] {
+	color-scheme: light;
+	--color-background: rgb(249 250 239);
+	--color-on-background: rgb(26 28 22);
+	--color-surface: rgb(238 239 227);
+	--color-on-surface: rgb(26 28 22);
+	--color-surface-variant: rgb(249 250 239);
+	--color-on-surface-variant: rgb(68 72 61);
+	--color-header: rgb(66, 67, 57);
+	--color-on-header: rgb(222, 223, 211);
+	--color-shadow: black;
+	--color-primary: rgb(76 102 43);
+	--color-secondary: rgb(88 98 73);
+	--color-on-secondary: rgb(255 255 255);
+	--color-tertiary: rgb(56 102 99);
+	--color-on-tertiary: rgb(255 255 255);
+	--color-tertiary-fixed: rgb(188 236 231);
+	--color-on-tertiary-fixed: rgb(0 32 30);
+	--color-outline: rgb(117 121 108);
+	--color-outline-variant: rgb(197 200 186);
+	--color-error: rgb(186 26 26);
+	--color-on-error: rgb(255 255 255);
+}
+
+:root[theme='dark'] {
+	color-scheme: dark;
+	--color-background: rgb(26 28 22);
+	--color-on-background: rgb(226 227 216);
+	--color-surface: rgb(30 32 26);
+	--color-on-surface: rgb(226 227 216);
+	--color-surface-variant: rgb(18 20 14);
+	--color-on-surface-variant: rgb(197 200 186);
+	--color-header: rgb(49, 52, 45);
+	--color-on-header: rgb(128, 129, 119);
+	--color-shadow: black;
+	--color-primary: rgb(177 209 138);
+	--color-secondary: rgb(191 203 173);
+	--color-on-secondary: rgb(42 51 30);
+	--color-tertiary: rgb(160 208 203);
+	--color-on-tertiary: rgb(0 55 53);
+	--color-tertiary-fixed: rgb(188 236 231);
+	--color-on-tertiary-fixed: rgb(0 32 30);
+	--color-outline: rgb(143 146 133);
+	--color-outline-variant: rgb(68 72 61);
+	--color-error: rgb(255 180 171);
+	--color-on-error: rgb(105 0 5);
 }
 
 html,
@@ -33,4 +79,24 @@ body {
 	padding: 0;
 	height: 100%;
 	overflow: hidden;
+}
+
+button {
+	font-weight: bold;
+	padding: 0.5em;
+	color: var(--color-on-tertiary);
+	background-color: var(--color-tertiary);
+	border: 1px solid var(--color-outline);
+	border-radius: 8px;
+}
+
+button:active {
+	background-color: var(--color-tertiary-fixed);
+	color: var(--color-on-tertiary-fixed);
+}
+
+button:disabled {
+	background-color: transparent;
+	color: var(--color-outline-variant);
+	border-color: var(--color-outline-variant);
 }

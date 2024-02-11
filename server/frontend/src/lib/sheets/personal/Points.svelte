@@ -83,12 +83,12 @@
 		align-content: space-between;
 		align-items: baseline;
 		white-space: nowrap;
-		background-color: var(--color-content);
-		color: var(--color-on-content);
+		background-color: var(--color-surface);
+		color: var(--color-on-surface);
 	}
 
 	.banding {
-		background-color: var(--color-banding);
-		color: var(--color-on-banding);
+		background-color: var(--color-surface-variant);
+		color: var(--color-on-surface-variant);
 	}
 </style>

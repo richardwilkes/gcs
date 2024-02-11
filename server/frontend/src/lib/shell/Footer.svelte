@@ -66,10 +66,11 @@
 
 <style>
 	.footer {
-		border-top: 1px solid var(--color-divider);
+		background-color: var(--color-surface);
+		color: var(--color-on-background);
+		border-top: 1px solid var(--color-outline-variant);
 		padding: 4px 8px;
 		text-align: center;
-		color: var(--color-on-background);
 		font-weight: bold;
 		font-size: 75%;
 	}

@@ -46,7 +46,8 @@
 
 <style>
 	.toolbar {
-		border-bottom: 1px solid var(--color-divider);
+		background-color: var(--color-surface);
+		border-bottom: 1px solid var(--color-outline-variant);
 		padding: 6px 8px;
 		display: flex;
 		justify-content: flex-start;
@@ -74,6 +75,6 @@
 	.svg {
 		width: 1.2em;
 		height: 1.2em;
-		fill: var(--color-on-background);
+		fill: var(--color-on-surface);
 	}
 </style>

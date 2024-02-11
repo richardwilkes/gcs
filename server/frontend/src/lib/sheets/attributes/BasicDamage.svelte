@@ -40,7 +40,7 @@
 		grid-template-columns: 0fr 1fr;
 		align-items: baseline;
 		white-space: nowrap;
-		background-color: var(--color-content);
-		color: var(--color-on-content);
+		background-color: var(--color-surface);
+		color: var(--color-on-surface);
 	}
 </style>

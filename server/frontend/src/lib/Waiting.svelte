@@ -27,8 +27,8 @@
 		height: 64px;
 		margin: 8px;
 		border-radius: 50%;
-		border: 6px solid var(--color-selection);
-		border-color: var(--color-selection) transparent var(--color-selection) transparent;
+		border: 6px solid var(--color-tertiary);
+		border-color: var(--color-tertiary) transparent var(--color-tertiary) transparent;
 		animation: waiting 1.2s linear infinite;
 	}
 

@@ -104,19 +104,20 @@
 		border-radius: 20px;
 		margin: 20px;
 		padding: 20px;
-		box-shadow: 0 0 128px 4px var(--color-divider);
+		background-color: var(--color-surface);
+		box-shadow: 0 0 64px 0 var(--color-shadow);
 	}
 
 	.title {
 		font-weight: bold;
 		font-size: 200%;
-		color: var(--color-accent);
+		color: var(--color-primary);
 	}
 
 	.subtitle {
 		font-style: italic;
 		margin-bottom: 20px;
-		color: var(--color-on-background);
+		color: var(--color-secondary);
 		opacity: 60%;
 	}
 
@@ -128,7 +129,7 @@
 	label {
 		font-weight: bold;
 		font-variant: small-caps;
-		color: var(--color-on-background);
+		color: var(--color-on-surface);
 		opacity: 60%;
 		margin-top: 8px;
 		align-self: flex-start;
@@ -138,9 +139,9 @@
 		font-weight: bold;
 		align-self: stretch;
 		padding: 0.5em;
-		background-color: var(--color-editable);
-		color: var(--color-on-editable);
-		border: 1px solid var(--color-divider);
+		background-color: var(--color-surface-variant);
+		color: var(--color-on-surface-variant);
+		border: 1px solid var(--color-outline);
 		border-radius: 8px;
 	}
 
@@ -149,20 +150,21 @@
 		align-self: stretch;
 		margin-top: 20px;
 		padding: 0.5em;
-		color: var(--color-on-control);
-		background-color: var(--color-control);
-		border: 1px solid var(--color-control-edge);
+		color: var(--color-on-tertiary);
+		background-color: var(--color-tertiary);
+		border: 1px solid var(--color-outline);
 		border-radius: 8px;
 	}
 
 	button:active {
-		background-color: var(--color-control-pressed);
-		color: var(--color-on-control-pressed);
+		background-color: var(--color-tertiary-fixed);
+		color: var(--color-on-tertiary-fixed);
 	}
 
 	button:disabled {
-		background-color: var(--color-control-disabled); /* TODO: Fix. Doesn't currently exist */
-		color: var(--color-on-control-disabled); /* TODO: Fix. Doesn't currently exist */
+		background-color: transparent;
+		color: var(--color-outline-variant);
+		border-color: var(--color-outline-variant);
 	}
 
 	.error {

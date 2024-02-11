@@ -26,7 +26,7 @@
 	class:borderRight
 	class:noBottomBorder
 	class:smaller
-	class:wrap>
+	class:wrap >
 	<slot>&nbsp;</slot>
 </div>
 
@@ -35,8 +35,7 @@
 		font-weight: 500;
 		padding: var(--padding-standard);
 		border: none;
-		border-bottom: 1px solid rgba(0, 0, 0, 0);
-		color: var(--color-on-editable);
+		border-bottom: 1px solid transparent;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}

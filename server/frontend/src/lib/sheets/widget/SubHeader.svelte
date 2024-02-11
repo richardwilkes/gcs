@@ -20,6 +20,7 @@
 		background-color: var(--color-header);
 		color: var(--color-on-header);
 		text-align: center;
+		font-variant: small-caps;
 		padding: var(--padding-standard);
 	}
 </style>

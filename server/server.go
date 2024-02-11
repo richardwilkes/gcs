@@ -176,8 +176,6 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				s.sessionHandler(w, r)
 			case "/api/version":
 				s.versionHandler(w, r)
-			case "/api/colors":
-				s.colorsHandler(w, r)
 			case "/api/sheets":
 				s.sheetsHandler(w, r)
 			default:

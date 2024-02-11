@@ -161,7 +161,7 @@
 	}
 
 	.banding {
-		background-color: var(--color-banding);
-		color: var(--color-on-banding);
+		background-color: var(--color-surface-variant);
+		color: var(--color-on-surface-variant);
 	}
 </style>

@@ -103,8 +103,8 @@
 		align-items: stretch;
 		align-content: stretch;
 		white-space: nowrap;
-		background-color: var(--color-content);
-		color: var(--color-on-content);
+		background-color: var(--color-surface);
+		color: var(--color-on-surface);
 	}
 
 	.marker {
@@ -114,13 +114,13 @@
 	}
 
 	.banding {
-		background-color: var(--color-banding);
-		color: var(--color-on-banding);
+		background-color: var(--color-surface-variant);
+		color: var(--color-on-surface-variant);
 	}
 
 	.current {
-		background-color: var(--color-marker);
-		color: var(--color-on-marker);
-		fill: var(--color-on-marker);
+		background-color: var(--color-secondary);
+		color: var(--color-on-secondary);
+		fill: var(--color-on-secondary);
 	}
 </style>

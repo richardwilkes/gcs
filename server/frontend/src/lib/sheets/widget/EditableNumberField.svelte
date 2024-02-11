@@ -21,9 +21,9 @@
 		font-weight: bold;
 		padding: var(--padding-standard);
 		border: none;
-		border-bottom: 1px solid var(--color-control-edge);
-		color: var(--color-on-editable);
-		background-color: var(--color-editable);
+		border-bottom: 1px solid var(--color-outline-variant);
+		color: var(--color-on-surface-variant);
+		background-color: var(--color-surface-variant);
 		min-width: 20px;
 		outline-style: none;
 		text-overflow: ellipsis;

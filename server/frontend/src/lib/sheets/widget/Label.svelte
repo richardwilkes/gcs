@@ -23,6 +23,7 @@
 		padding: var(--padding-standard);
 		text-align: right;
 		white-space: nowrap;
+		font-variant: small-caps;
 	}
 
 	.left {

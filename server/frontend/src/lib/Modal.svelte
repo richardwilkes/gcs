@@ -59,8 +59,8 @@
 		max-height: 80vh;
 		border-radius: 1em;
 		padding: 1.5em;
-		border: 1px solid var(--color-divider);
-		box-shadow: 0 0 128px 4px var(--color-divider);
+		border: 1px solid var(--color-outline);
+		box-shadow: 0 0 64px 0 var(--color-shadow);
 		background-color: var(--color-background);
 		overflow: clip;
 		display: flex;
@@ -68,7 +68,7 @@
 	}
 
 	dialog::backdrop {
-		background-color: rgba(0, 0, 0, 0.6);
+		background-color: rgba(0, 0, 0, 0.5);
 	}
 
 	dialog[open] {

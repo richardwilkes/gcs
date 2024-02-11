@@ -64,16 +64,16 @@
 		column-gap: 0.4em;
 		align-items: center;
 		text-align: left;
-		background-color: var(--color-content);
-		color: var(--color-on-content);
+		background-color: var(--color-surface);
+		color: var(--color-on-surface);
 		padding: 0.2em;
 	}
 
 	button {
 		padding: 0;
 		border: none;
-		background-color: var(--color-content);
-		color: var(--color-on-content);
+		background-color: var(--color-surface);
+		color: var(--color-on-surface);
 		user-select: none;
 		font-size: 1.1em;
 		align-items: center;

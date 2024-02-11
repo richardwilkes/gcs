@@ -5,7 +5,6 @@
 	import Shell from '$lib/shell/Shell.svelte';
 	import { pc } from '$lib/entity.ts';
 	import LoadSheet from '$page/LoadSheet.svelte';
-	import PCLoaderButton from '$lib/sheets/widget/PCLoaderButton.svelte';
 	import Sheet from '$page/Sheet.svelte';
 
 	checkSession();
@@ -16,7 +15,6 @@
 </svelte:head>
 
 <Shell>
-	<PCLoaderButton slot='toolbar' />
 	<svelte:fragment slot='content'>
 		{#if $page.ID === 'login'}
 			<Login />

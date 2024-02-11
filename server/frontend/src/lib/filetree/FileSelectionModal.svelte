@@ -93,9 +93,9 @@
 	}
 
 	.tree {
-		background-color: var(--color-content);
+		background-color: var(--color-surface);
 		flex-grow: 1;
-		border: 1px solid var(--color-divider);
+		border: 1px solid var(--color-outline-variant);
 	}
 
 	.inner {
@@ -117,6 +117,6 @@
 	}
 
 	.error {
-		color: red;
+		color: var(--color-error);
 	}
 </style>

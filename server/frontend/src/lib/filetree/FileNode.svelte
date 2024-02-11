@@ -39,15 +39,15 @@
 	button {
 		padding: 0;
 		border: none;
-		background-color: var(--color-content);
-		color: var(--color-on-content);
+		background-color: var(--color-surface);
+		color: var(--color-on-surface);
 		user-select: none;
 		font-size: 1.1em;
 		align-items: center;
 	}
 
 	.selected {
-		background-color: var(--color-selection);
-		color: var(--color-on-selection);
+		background-color: var(--color-tertiary);
+		color: var(--color-on-tertiary);
 	}
 </style>
