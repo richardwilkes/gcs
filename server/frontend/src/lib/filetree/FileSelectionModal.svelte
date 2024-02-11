@@ -113,7 +113,7 @@
 		justify-content: center;
 		align-items: center;
 		flex-grow: 1;
-		font-size: 2em;
+		font-size: 200%;
 	}
 
 	.error {

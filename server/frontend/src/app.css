@@ -10,78 +10,72 @@
  */
 
 :root {
-	font-family: sans-serif;
-	font-size: 14px;
-	font-style: normal;
-	font-weight: normal;
-	font-stretch: normal;
-	font-variant: normal;
-	line-height: 1.2;
-
+	--font: 14px/1.2 sans-serif;
 	--section-gap: 1px;
 	--padding-header: 1px 8px;
 	--padding-standard: 0px 4px;
-
 	--standard-border: 1px solid var(--color-outline-variant);
 }
 
 :root[theme='light'] {
 	color-scheme: light;
-	--color-background: rgb(249 250 239);
-	--color-on-background: rgb(26 28 22);
-	--color-surface: rgb(238 239 227);
-	--color-on-surface: rgb(26 28 22);
-	--color-surface-variant: rgb(249 250 239);
-	--color-on-surface-variant: rgb(68 72 61);
-	--color-header: rgb(66, 67, 57);
-	--color-on-header: rgb(222, 223, 211);
+	--color-on-background: #1A1C16;
+	--color-background: #F9FAEF;
+	--color-on-error: white;
+	--color-error: #BA1A1A;
+	--color-on-header: #DEDFD3;
+	--color-header: #424339;
+	--color-outline-variant: #C5C8BA;
+	--color-outline: #75796C;
+	--color-primary: #4C662B;
+	--color-on-secondary: white;
+	--color-secondary: #586249;
 	--color-shadow: black;
-	--color-primary: rgb(76 102 43);
-	--color-secondary: rgb(88 98 73);
-	--color-on-secondary: rgb(255 255 255);
-	--color-tertiary: rgb(56 102 99);
-	--color-on-tertiary: rgb(255 255 255);
-	--color-tertiary-fixed: rgb(188 236 231);
-	--color-on-tertiary-fixed: rgb(0 32 30);
-	--color-outline: rgb(117 121 108);
-	--color-outline-variant: rgb(197 200 186);
-	--color-error: rgb(186 26 26);
-	--color-on-error: rgb(255 255 255);
+	--color-on-surface-variant: #44483D;
+	--color-surface-variant: #F9FAEF;
+	--color-on-surface: #1A1C16;
+	--color-surface: #EEEFE3;
+	--color-on-tertiary-fixed: #00201E;
+	--color-tertiary-fixed: #BCECE7;
+	--color-on-tertiary: white;
+	--color-tertiary: #386663;
 }
 
 :root[theme='dark'] {
 	color-scheme: dark;
-	--color-background: rgb(26 28 22);
-	--color-on-background: rgb(226 227 216);
-	--color-surface: rgb(30 32 26);
-	--color-on-surface: rgb(226 227 216);
-	--color-surface-variant: rgb(18 20 14);
-	--color-on-surface-variant: rgb(197 200 186);
-	--color-header: rgb(49, 52, 45);
-	--color-on-header: rgb(128, 129, 119);
+	--color-on-background: #E2E3D8;
+	--color-background: #1A1C16;
+	--color-on-error: #690005;
+	--color-error: #FFB4AB;
+	--color-on-header: #808177;
+	--color-header: #31342D;
+	--color-outline-variant: #44483D;
+	--color-outline: #8F9285;
+	--color-primary: #B1D18A;
+	--color-on-secondary: #2A331E;
+	--color-secondary: #BFCBAD;
 	--color-shadow: black;
-	--color-primary: rgb(177 209 138);
-	--color-secondary: rgb(191 203 173);
-	--color-on-secondary: rgb(42 51 30);
-	--color-tertiary: rgb(160 208 203);
-	--color-on-tertiary: rgb(0 55 53);
-	--color-tertiary-fixed: rgb(188 236 231);
-	--color-on-tertiary-fixed: rgb(0 32 30);
-	--color-outline: rgb(143 146 133);
-	--color-outline-variant: rgb(68 72 61);
-	--color-error: rgb(255 180 171);
-	--color-on-error: rgb(105 0 5);
+	--color-on-surface-variant: #C5C8BA;
+	--color-surface-variant: #12140E;
+	--color-on-surface: #E2E3D8;
+	--color-surface: #1E201A;
+	--color-on-tertiary-fixed: #00201E;
+	--color-tertiary-fixed: #BCECE7;
+	--color-on-tertiary: #003735;
+	--color-tertiary: #A0D0CB;
 }
 
 html,
 body {
 	margin: 0;
 	padding: 0;
+	font: var(--font);
 	height: 100%;
 	overflow: hidden;
 }
 
 button {
+	font: var(--font);
 	font-weight: bold;
 	padding: 0.5em;
 	color: var(--color-on-tertiary);
@@ -91,12 +85,27 @@ button {
 }
 
 button:active {
-	background-color: var(--color-tertiary-fixed);
 	color: var(--color-on-tertiary-fixed);
+	background-color: var(--color-tertiary-fixed);
 }
 
 button:disabled {
-	background-color: transparent;
-	color: var(--color-outline-variant);
 	border-color: var(--color-outline-variant);
+	color: var(--color-outline-variant);
+	background-color: transparent;
+}
+
+input {
+	font: var(--font);
+	font-weight: bold;
+	padding: 0.5em;
+	color: var(--color-on-surface-variant);
+	background-color: var(--color-surface-variant);
+	border: 1px solid var(--color-outline);
+	border-radius: 8px;
+}
+
+.banding {
+	background-color: var(--color-surface-variant);
+	color: var(--color-on-surface-variant);
 }

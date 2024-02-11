@@ -98,7 +98,7 @@
 	}
 
 	.title {
-		font-size: 1.5em;
+		font-size: 150%;
 		font-weight: bold;
 		text-align: center;
 	}

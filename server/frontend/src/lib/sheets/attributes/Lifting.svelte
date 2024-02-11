@@ -74,9 +74,4 @@
 		background-color: var(--color-surface);
 		color: var(--color-on-surface);
 	}
-
-	.banding {
-		background-color: var(--color-surface-variant);
-		color: var(--color-on-surface-variant);
-	}
 </style>

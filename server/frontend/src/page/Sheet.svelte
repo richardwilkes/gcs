@@ -63,7 +63,7 @@
 		justify-content: center;
 		align-items: center;
 		height: 100%;
-		font-size: 3em;
+		font-size: 300%;
 	}
 
 	.failed {
@@ -71,7 +71,7 @@
 		justify-content: center;
 		align-items: center;
 		height: 100%;
-		font-size: 3em;
+		font-size: 300%;
 		color: var(--color-error);
 	}
 </style>

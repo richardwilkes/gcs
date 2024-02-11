@@ -42,7 +42,6 @@
 		background-color: var(--color-surface);
 		color: var(--color-on-surface);
 		user-select: none;
-		font-size: 1.1em;
 		align-items: center;
 	}
 

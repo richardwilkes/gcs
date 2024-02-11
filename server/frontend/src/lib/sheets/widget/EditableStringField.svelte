@@ -18,7 +18,6 @@
 
 <style>
 	.field {
-		font-weight: bold;
 		padding: var(--padding-standard);
 		border: none;
 		border-bottom: 1px solid var(--color-outline-variant);

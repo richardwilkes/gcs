@@ -77,6 +77,6 @@
 
 	.secondary {
 		font-size: 85%;
-		opacity: 50%;
+		color: var(--color-outline);
 	}
 </style>

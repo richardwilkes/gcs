@@ -113,11 +113,6 @@
 		align-items: center;
 	}
 
-	.banding {
-		background-color: var(--color-surface-variant);
-		color: var(--color-on-surface-variant);
-	}
-
 	.current {
 		background-color: var(--color-secondary);
 		color: var(--color-on-secondary);

@@ -68,7 +68,6 @@
 		border: none;
 		margin: var(--button-margin);
 		color: var(--color-on-surface-variant);
-		font-weight: bold;
 		cursor: pointer;
 		z-index: 1;
 	}

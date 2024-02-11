@@ -32,7 +32,7 @@
 
 <style>
 	.field {
-		font-weight: 500;
+		font-weight: bold;
 		padding: var(--padding-standard);
 		border: none;
 		border-bottom: 1px solid transparent;

@@ -118,7 +118,6 @@
 		font-style: italic;
 		margin-bottom: 20px;
 		color: var(--color-secondary);
-		opacity: 60%;
 	}
 
 	.logo {
@@ -129,42 +128,18 @@
 	label {
 		font-weight: bold;
 		font-variant: small-caps;
-		color: var(--color-on-surface);
-		opacity: 60%;
+		color: var(--color-outline);
 		margin-top: 8px;
 		align-self: flex-start;
 	}
 
 	input {
-		font-weight: bold;
 		align-self: stretch;
-		padding: 0.5em;
-		background-color: var(--color-surface-variant);
-		color: var(--color-on-surface-variant);
-		border: 1px solid var(--color-outline);
-		border-radius: 8px;
 	}
 
 	button {
-		font-weight: bold;
 		align-self: stretch;
 		margin-top: 20px;
-		padding: 0.5em;
-		color: var(--color-on-tertiary);
-		background-color: var(--color-tertiary);
-		border: 1px solid var(--color-outline);
-		border-radius: 8px;
-	}
-
-	button:active {
-		background-color: var(--color-tertiary-fixed);
-		color: var(--color-on-tertiary-fixed);
-	}
-
-	button:disabled {
-		background-color: transparent;
-		color: var(--color-outline-variant);
-		border-color: var(--color-outline-variant);
 	}
 
 	.error {

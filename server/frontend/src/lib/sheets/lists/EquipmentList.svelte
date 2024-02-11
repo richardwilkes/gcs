@@ -159,9 +159,4 @@
 		display: flex;
 		flex-direction: column;
 	}
-
-	.banding {
-		background-color: var(--color-surface-variant);
-		color: var(--color-on-surface-variant);
-	}
 </style>

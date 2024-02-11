@@ -85,9 +85,4 @@
 		border-left: 1px solid var(--color-header);
 		border-right: 1px solid var(--color-header);
 	}
-
-	.banding {
-		background-color: var(--color-surface-variant);
-		color: var(--color-on-surface-variant);
-	}
 </style>
