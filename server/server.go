@@ -15,7 +15,6 @@ import (
 	"embed"
 	"log/slog"
 	"net/http"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -54,8 +53,8 @@ var (
 
 // Server holds the embedded web server.
 type Server struct {
-	server      *xhttp.Server
-	siteHandler http.Handler
+	server *xhttp.Server
+	mux    *http.ServeMux
 }
 
 // CurrentState returns the current state of the server.
@@ -98,8 +97,15 @@ func Start() {
 				IdleTimeout:  fxp.SecondsToDuration(settings.ReadTimeout),
 			},
 		},
-		siteHandler: statigz.FileServer(siteFS, statigz.FSPrefix("frontend/dist"), statigz.EncodeOnInit),
+		mux: http.NewServeMux(),
 	}
+	s.mux.HandleFunc("GET /api/session", s.sessionHandler)
+	s.mux.HandleFunc("GET /api/version", s.versionHandler)
+	s.mux.HandleFunc("GET /api/sheets", s.sheetsHandler)
+	s.mux.HandleFunc("GET /api/sheet/{path...}", s.sheetHandler)
+	s.mux.HandleFunc("POST /api/login", s.loginHandler)
+	s.mux.HandleFunc("POST /api/logout", s.logoutHandler)
+	s.mux.Handle("GET /", statigz.FileServer(siteFS, statigz.FSPrefix("frontend/dist"), statigz.EncodeOnInit))
 	site = s
 	s.server.WebServer.Handler = s
 	s.server.StartedChan = make(chan any, 1)
@@ -166,38 +172,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	switch r.Method {
-	case http.MethodGet:
-		if !strings.HasPrefix(r.URL.Path, "/api/") {
-			s.siteHandler.ServeHTTP(w, r)
-		} else {
-			switch r.URL.Path {
-			case "/api/session":
-				s.sessionHandler(w, r)
-			case "/api/version":
-				s.versionHandler(w, r)
-			case "/api/sheets":
-				s.sheetsHandler(w, r)
-			default:
-				if !strings.HasPrefix(r.URL.Path, "/api/sheet/") {
-					xhttp.ErrorStatus(w, http.StatusNotFound)
-					return
-				}
-				s.sheetHandler(w, r)
-			}
-		}
-	case http.MethodPost:
-		switch r.URL.Path {
-		case "/api/login":
-			s.loginHandler(w, r)
-		case "/api/logout":
-			s.logoutHandler(w, r)
-		default:
-			xhttp.ErrorStatus(w, http.StatusNotFound)
-		}
-	default:
-		xhttp.ErrorStatus(w, http.StatusMethodNotAllowed)
-	}
+	s.mux.ServeHTTP(w, r)
 }
 
 // Shutdown shuts down the server.
