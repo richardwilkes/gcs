@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 
 const themeKey = 'theme';
 
@@ -24,7 +24,8 @@ export enum Theme {
 export const currentTheme = writable<Theme>((localStorage.getItem(themeKey) as Theme) || Theme.System);
 
 const systemIsDark = window.matchMedia('(prefers-color-scheme: dark)');
-systemIsDark.addEventListener('change', () => currentTheme.update((value) => value));
+systemIsDark.addEventListener('change',
+	() => document.documentElement.setAttribute(themeKey, resolvedThemeKind(get(currentTheme))));
 
 currentTheme.subscribe((current) => {
 	localStorage.setItem(themeKey, current);
