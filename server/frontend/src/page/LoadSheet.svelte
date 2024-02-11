@@ -10,18 +10,21 @@
   -->
 
 <script lang='ts'>
-	import FileSelectionModal from '$lib/filetree/FileSelectionModal.svelte';
+	import FileTree from '$lib/filetree/FileTree.svelte';
+	import { ShowAs } from '$lib/Dialog.svelte';
 	import { page } from '$lib/page.ts';
 </script>
 
 <div class='content'>
-	<FileSelectionModal showModal={true} path='/sheets' title='Select a Sheet'
+	<FileTree showAs={ShowAs.Dialog} path='/sheets' title='Select a Sheet'
 											callback={(path) => $page = {ID:'sheet', NextID: 'sheet', Sheet: path}} />
 </div>
 
 <style>
 	.content {
-		background-color: var(--color-page);
+		background-color: var(--color-background);
 		flex-grow: 1;
+		display: flex;
+		align-items: center;
 	}
 </style>

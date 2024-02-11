@@ -67,7 +67,7 @@
 <style>
 	.footer {
 		background-color: var(--color-surface);
-		color: var(--color-on-background);
+		color: var(--color-on-surface);
 		border-top: 1px solid var(--color-outline-variant);
 		padding: 4px 8px;
 		text-align: center;

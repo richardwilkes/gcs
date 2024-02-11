@@ -10,25 +10,25 @@
   -->
 
 <script lang='ts'>
-	import Modal from '$lib/Modal.svelte';
+	import Dialog, { ShowAs } from '$lib/Dialog.svelte';
 	import { apiPrefix } from '$lib/dev.ts';
 	import { session } from '$lib/session.ts';
 	import { type Directory, fillPathsForDir } from '$lib/files.ts';
 	import DirNode from '$lib/filetree/DirNode.svelte';
 	import Waiting from '$lib/Waiting.svelte';
 
-	export let showModal = false;
+	export let showAs : ShowAs = ShowAs.None;
 	export let title = 'Select a File';
 	export let path: string;
 	export let callback: (file: string, finish?: boolean) => void;
 
-	let modal: Modal;
+	let dialog: Dialog;
 	let pending = false;
 	let error = false;
 	let dirs: Directory[] | undefined;
 	let selectedFile: string | undefined;
 
-	$: if (showModal && modal && !dirs && !pending) {
+	$: if (showAs !== ShowAs.None && dialog && !dirs && !pending) {
 		error = false;
 		pending = true;
 		(async function loadFiles() {
@@ -57,7 +57,7 @@
 	}
 </script>
 
-<Modal bind:this={modal} bind:showModal callback={(ok) => done(ok)}>
+<Dialog bind:this={dialog} bind:showAs callback={(ok) => done(ok)}>
 	<div slot='title'>{title}</div>
 	<div class='content'>
 		{#if pending}
@@ -75,7 +75,7 @@
 						<DirNode {dir} {selectedFile} callback={(file, finish) => {
 							selectedFile = file;
 							if (finish) {
-								modal.close(true);
+								dialog.close(true);
 							}
 						}} />
 					{/each}
@@ -83,7 +83,7 @@
 			</div>
 		{/if}
 	</div>
-</Modal>
+</Dialog>
 
 <style>
 	.content {

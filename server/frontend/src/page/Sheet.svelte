@@ -46,8 +46,7 @@
 
 <style>
 	.content {
-		background-color: var(--color-page);
-		color: var(--color-on-page);
+		background-color: var(--color-surface);
 		display: flex;
 		flex-flow: column nowrap;
 		justify-content: flex-start;

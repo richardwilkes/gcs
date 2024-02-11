@@ -9,27 +9,45 @@
   - defined by the Mozilla Public License, version 2.0.
   -->
 
+<script context='module' lang='ts'>
+	export enum ShowAs {
+		None = '',
+		Modal = 'modal',
+		Dialog = 'dialog'
+	}
+</script>
+
 <script lang='ts'>
-	export let showModal = false;
+	export let showAs : ShowAs = ShowAs.None;
 	export let cancelButton = 'Cancel';
 	export let cancelAutoFocus = false;
 	export let okButton = 'OK';
 	export let okAutoFocus = true;
 	export let callback: (ok: boolean) => void;
 	export const close = (ok: boolean) => {
-		showModal = false;
+		showAs = ShowAs.None;
 		dialog.close();
 		callback(ok);
 	};
 
 	let dialog: HTMLDialogElement;
 
-	$: if (showModal && dialog) {
-		dialog.showModal();
+	$: if (dialog) {
+		switch (showAs) {
+			case ShowAs.Modal:
+				dialog.showModal();
+				break;
+			case ShowAs.Dialog:
+				dialog.show();
+				break;
+			default:
+				dialog.close();
+				break;
+		}
 	}
 </script>
 
-{#if showModal}
+{#if showAs !== ShowAs.None}
 	<dialog bind:this={dialog}>
 		<div class='title'>
 			<slot name='title' />
@@ -59,7 +77,7 @@
 		max-height: 80vh;
 		border-radius: 1em;
 		padding: 1.5em;
-		border: 1px solid var(--color-outline);
+		border: 1px solid var(--color-outline-variant);
 		box-shadow: 0 0 64px 0 var(--color-shadow);
 		background-color: var(--color-background);
 		overflow: clip;
@@ -98,7 +116,7 @@
 	}
 
 	.title {
-		font-size: 150%;
+		font-size: 125%;
 		font-weight: bold;
 		text-align: center;
 	}

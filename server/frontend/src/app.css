@@ -19,7 +19,6 @@
 
 :root[theme='light'] {
 	color-scheme: light;
-	--color-on-background: #1A1C16;
 	--color-background: #F9FAEF;
 	--color-on-error: white;
 	--color-error: #BA1A1A;
@@ -43,7 +42,6 @@
 
 :root[theme='dark'] {
 	color-scheme: dark;
-	--color-on-background: #E2E3D8;
 	--color-background: #1A1C16;
 	--color-on-error: #690005;
 	--color-error: #FFB4AB;

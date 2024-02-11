@@ -36,7 +36,6 @@
 		justify-content: flex-start;
 		gap: 0;
 		background-color: var(--color-background);
-		color: var(--color-on-background);
 	}
 
 	.content {
