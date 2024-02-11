@@ -28,6 +28,7 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 		overflow: hidden;
+		border-radius: 0;
 	}
 
 	.right {
