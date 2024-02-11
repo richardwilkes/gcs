@@ -25,6 +25,3 @@
 		{/if}
 	</svelte:fragment>
 </Shell>
-
-<style>
-</style>
