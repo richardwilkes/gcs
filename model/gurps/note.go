@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/i18n"
 )
 
 var _ Node[*Note] = &Note{}
@@ -141,6 +142,21 @@ func (n *Note) String() string {
 
 func (n *Note) resolveText() string {
 	return EvalEmbeddedRegex.ReplaceAllStringFunc(n.Text, n.Entity.EmbeddedEval)
+}
+
+// NoteHeaderData returns the header data information for the given note column.
+func NoteHeaderData(columnID int) HeaderData {
+	var data HeaderData
+	switch columnID {
+	case NoteTextColumn:
+		data.Title = i18n.Text("Note")
+		data.Primary = true
+	case NoteReferenceColumn:
+		data.Title = HeaderBookmark
+		data.TitleIsImageKey = true
+		data.Detail = PageRefTooltipText()
+	}
+	return data
 }
 
 // CellData returns the cell data information for the given column.

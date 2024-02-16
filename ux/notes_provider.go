@@ -102,10 +102,12 @@ func (p *notesProvider) ItemNames() (singular, plural string) {
 }
 
 func (p *notesProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Note]] {
-	return []unison.TableColumnHeader[*Node[*gurps.Note]]{
-		NewEditorListHeader[*gurps.Note](i18n.Text("Note"), "", p.forPage),
-		NewEditorPageRefHeader[*gurps.Note](p.forPage),
+	ids := p.ColumnIDs()
+	headers := make([]unison.TableColumnHeader[*Node[*gurps.Note]], 0, len(ids))
+	for _, id := range ids {
+		headers = append(headers, headerFromData[*gurps.Note](gurps.NoteHeaderData(id), p.forPage))
 	}
+	return headers
 }
 
 func (p *notesProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*gurps.Note]]) {

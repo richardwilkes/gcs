@@ -10,7 +10,7 @@
   -->
 
 <script lang='ts'>
-	import { fetchSheet, pc } from '$lib/entity.ts';
+	import { fetchSheet, sheet } from '$lib/sheet.ts';
 	import Lists from '$lib/sheets/lists/Lists.svelte';
 	import Personal from '$lib/sheets/personal/Personal.svelte';
 	import Attributes from '$lib/sheets/attributes/Attributes.svelte';
@@ -20,8 +20,8 @@
 
 	(async () => {
 		if ($page.Sheet) {
-			$pc = await fetchSheet($page.Sheet);
-			if (!$pc) {
+			$sheet = await fetchSheet($page.Sheet);
+			if (!$sheet) {
 				failed = true;
 			}
 		} else {
@@ -31,7 +31,7 @@
 </script>
 
 <div class='content'>
-	{#if $pc}
+	{#if $sheet}
 		<Personal />
 		<Attributes />
 		<Lists />

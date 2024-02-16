@@ -9,6 +9,7 @@
   - defined by the Mozilla Public License, version 2.0.
   -->
 <script lang="ts">
+	export let tip = '';
 	export let right = false;
 	export let center = false;
 	export let borderLeft = false;
@@ -26,7 +27,8 @@
 	class:borderRight
 	class:noBottomBorder
 	class:smaller
-	class:wrap >
+	class:wrap
+  title={tip}>
 	<slot>&nbsp;</slot>
 </div>
 

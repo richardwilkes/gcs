@@ -12,58 +12,34 @@
 	import Header from '$lib/sheets/widget/Header.svelte';
 	import Label from '$lib/sheets/widget/Label.svelte';
 	import Field from '$lib/sheets/widget/Field.svelte';
-	import { pc } from '$lib/entity.ts';
-
-	let total: number;
-	let unspent: number;
-	let race: number;
-	let attributes: number;
-	let advantages: number;
-	let disadvantages: number;
-	let quirks: number;
-	let skills: number;
-	let spells: number;
-
-	$: {
-		race = 0;
-		attributes = 0;
-		advantages = 0;
-		disadvantages = 0;
-		quirks = 0;
-		skills = 0;
-		spells = 0;
-		total = $pc?.total_points ?? 0;
-		unspent = 0;
-		// TODO: Calculate points for each category
-		// TODO: Need to account for pc.settings?.exclude_unspent_points_from_total
-	}
+	import { sheet } from '$lib/sheet.ts';
 </script>
 
 <div class="content">
-	<Header>{total} Points</Header>
+	<Header>{$sheet?.Points.Total ?? 0} Points</Header>
 	<div class="fields">
-		<Field right={true}>{unspent}</Field>
+		<Field right={true}>{$sheet?.Points.Unspent ?? 0}</Field>
 		<Label title="Unspent" left={true} />
 		<div class="banding">
-			<Field right={true}>{race}</Field>
+			<Field right={true}>{$sheet?.Points.Ancestry ?? 0}</Field>
 		</div>
 		<div class="banding"><Label title="Race" left={true} /></div>
-		<Field right={true}>{attributes}</Field>
+		<Field right={true}>{$sheet?.Points.Attributes ?? 0}</Field>
 		<Label title="Attributes" left={true} />
 		<div class="banding">
-			<Field right={true}>{advantages}</Field>
+			<Field right={true}>{$sheet?.Points.Advantages ?? 0}</Field>
 		</div>
 		<div class="banding"><Label title="Advantages" left={true} /></div>
-		<Field right={true}>{disadvantages}</Field>
+		<Field right={true}>{$sheet?.Points.Disadvantages ?? 0}</Field>
 		<Label title="Disadvantages" left={true} />
 		<div class="banding">
-			<Field right={true}>{quirks}</Field>
+			<Field right={true}>{$sheet?.Points.Quirks ?? 0}</Field>
 		</div>
 		<div class="banding"><Label title="Quirks" left={true} /></div>
-		<Field right={true}>{skills}</Field>
+		<Field right={true}>{$sheet?.Points.Skills ?? 0}</Field>
 		<Label title="Skills" left={true} />
 		<div class="banding">
-			<Field right={true}>{spells}</Field>
+			<Field right={true}>{$sheet?.Points.Spells ?? 0}</Field>
 		</div>
 		<div class="banding"><Label title="Spells" left={true} /></div>
 	</div>

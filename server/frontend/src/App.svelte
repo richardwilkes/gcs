@@ -3,7 +3,7 @@
 	import { checkSession } from '$lib/session.ts';
 	import Login from '$page/Login.svelte';
 	import Shell from '$lib/shell/Shell.svelte';
-	import { pc } from '$lib/entity.ts';
+	import { sheet } from '$lib/sheet.ts';
 	import LoadSheet from '$page/LoadSheet.svelte';
 	import Sheet from '$page/Sheet.svelte';
 
@@ -11,7 +11,7 @@
 </script>
 
 <svelte:head>
-	<title>{$pc?.profile?.name ?? 'GURPS Character Sheet'}</title>
+	<title>{$sheet?.Identity.Name ?? 'GURPS Character Sheet'}</title>
 </svelte:head>
 
 <Shell>

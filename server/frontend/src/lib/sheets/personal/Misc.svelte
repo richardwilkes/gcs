@@ -14,18 +14,18 @@
 	import Label from '$lib/sheets/widget/Label.svelte';
 	import Field from '$lib/sheets/widget/Field.svelte';
 	import EditableStringField from '$lib/sheets/widget/EditableStringField.svelte';
-	import { pc } from '$lib/entity.ts';
+	import { sheet } from '$lib/sheet.ts';
 </script>
 
 <div class="content">
 	<Header>Miscellaneous</Header>
 	<div class="fields">
 		<Label title="Created" />
-		<Field>{formatDateStamp($pc?.created_date)}</Field>
+		<Field>{formatDateStamp($sheet?.Misc.Created)}</Field>
 		<Label title="Modified" />
-		<Field>{formatDateStamp($pc?.modified_date)}</Field>
+		<Field>{formatDateStamp($sheet?.Misc.Modified)}</Field>
 		<Label title="Player" />
-		<EditableStringField name="profile.player" value={$pc?.profile?.player_name ?? ''} />
+		<EditableStringField name="profile.player" value={$sheet?.Misc.Player ?? ''} />
 	</div>
 </div>
 

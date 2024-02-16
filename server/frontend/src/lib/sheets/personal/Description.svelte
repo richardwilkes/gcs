@@ -13,7 +13,7 @@
 	import Label from '$lib/sheets/widget/Label.svelte';
 	import EditableNumberField from '$lib/sheets/widget/EditableNumberField.svelte';
 	import EditableStringField from '$lib/sheets/widget/EditableStringField.svelte';
-	import { pc } from '$lib/entity.ts';
+	import { sheet } from '$lib/sheet.ts';
 </script>
 
 <div class="content">
@@ -22,33 +22,33 @@
 	</div>
 	<div class="fields" style="grid-area:block1;">
 		<Label title="Gender" />
-		<EditableStringField name="profile.gender" value={$pc?.profile?.gender ?? ''} />
+		<EditableStringField name="profile.gender" value={$sheet?.Description.Gender ?? ''} />
 		<Label title="Age" />
-		<EditableStringField name="profile.age" value={$pc?.profile?.age ?? ''} />
+		<EditableStringField name="profile.age" value={$sheet?.Description.Age ?? ''} />
 		<Label title="Birthday" />
-		<EditableStringField name="profile.birthday" value={$pc?.profile?.birthday ?? ''} />
+		<EditableStringField name="profile.birthday" value={$sheet?.Description.Birthday ?? ''} />
 		<Label title="Religion" />
-		<EditableStringField name="profile.religion" value={$pc?.profile?.religion ?? ''} />
+		<EditableStringField name="profile.religion" value={$sheet?.Description.Religion ?? ''} />
 	</div>
 	<div class="fields" style="grid-area:block2;">
 		<Label title="Height" />
-		<EditableStringField name="profile.height" value={$pc?.profile?.height ?? ''} />
+		<EditableStringField name="profile.height" value={$sheet?.Description.Height ?? ''} />
 		<Label title="Weight" />
-		<EditableStringField name="profile.weight" value={$pc?.profile?.weight ?? ''} />
+		<EditableStringField name="profile.weight" value={$sheet?.Description.Weight ?? ''} />
 		<Label title="Size" />
-		<EditableNumberField name="SM" value={$pc?.profile?.SM ?? 0} />
+		<EditableNumberField name="SM" value={$sheet?.Description.SizeModifier ?? 0} />
 		<Label title="TL" />
-		<EditableStringField name="profile.tl" value={$pc?.profile?.tech_level ?? ''} />
+		<EditableStringField name="profile.tl" value={$sheet?.Description.TechLevel ?? ''} />
 	</div>
 	<div class="fields" style="grid-area:block3;">
 		<Label title="Hair" />
-		<EditableStringField name="profile.hair" value={$pc?.profile?.hair ?? ''} />
+		<EditableStringField name="profile.hair" value={$sheet?.Description.Hair ?? ''} />
 		<Label title="Eyes" />
-		<EditableStringField name="profile.eyes" value={$pc?.profile?.eyes ?? ''} />
+		<EditableStringField name="profile.eyes" value={$sheet?.Description.Eyes ?? ''} />
 		<Label title="Skin" />
-		<EditableStringField name="profile.skin" value={$pc?.profile?.skin ?? ''} />
+		<EditableStringField name="profile.skin" value={$sheet?.Description.Skin ?? ''} />
 		<Label title="Hand" />
-		<EditableStringField name="profile.handedness" value={$pc?.profile?.handedness ?? ''} />
+		<EditableStringField name="profile.handedness" value={$sheet?.Description.Hand ?? ''} />
 	</div>
 </div>
 

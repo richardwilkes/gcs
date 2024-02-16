@@ -14,9 +14,9 @@
 	import Misc from '$lib/sheets/personal/Misc.svelte';
 	import Points from '$lib/sheets/personal/Points.svelte';
 	import Description from '$lib/sheets/personal/Description.svelte';
-	import { pc } from '$lib/entity.ts';
+	import { sheet } from '$lib/sheet.ts';
 
-	$: imageURL = $pc?.profile?.portrait ? 'data:;base64,' + $pc.profile.portrait : undefined;
+	$: imageURL = $sheet?.Portrait ? 'data:;base64,' + $sheet.Portrait : undefined;
 </script>
 
 <div class="content">

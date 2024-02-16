@@ -12,15 +12,15 @@
 	import Header from '$lib/sheets/widget/Header.svelte';
 	import Field from '$lib/sheets/widget/Field.svelte';
 	import Label from '$lib/sheets/widget/Label.svelte';
-	import { pc } from '$lib/entity.ts';
+	import { sheet } from '$lib/sheet.ts';
 </script>
 
 <div class="content">
 	<Header>Basic Damage</Header>
 	<div class="fields">
-		<Field right={true}>{$pc?.calc.thrust ?? ""}</Field>
+		<Field right={true}>{$sheet?.BasicDamage.Thrust ?? ""}</Field>
 		<Label title="Basic Thrust" left={true} />
-		<Field right={true}>{$pc?.calc.swing ?? ""}</Field>
+		<Field right={true}>{$sheet?.BasicDamage.Swing ?? ""}</Field>
 		<Label title="Basic Swing" left={true} />
 	</div>
 </div>

@@ -22,10 +22,10 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/server/sheet"
 	"github.com/richardwilkes/gcs/v5/server/websettings"
 	"github.com/richardwilkes/toolbox/collection/dict"
 	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/toolbox/xio/network/xhttp"
 )
 
@@ -115,16 +115,23 @@ func (s *Server) sheetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	p := filepath.Join(access.Dir, parts[1])
-	f, err := os.Open(p)
-	if err != nil {
-		xhttp.ErrorStatus(w, http.StatusNotFound)
-		return
+	s.sheetsLock.RLock()
+	var entity *gurps.Entity
+	entity, ok = s.sheets[p]
+	s.sheetsLock.RUnlock()
+	if !ok {
+		loadedEntity, err := gurps.NewEntityFromFile(os.DirFS(access.Dir), parts[1])
+		if err != nil {
+			slog.Error("error loading sheet", "path", p, "error", err)
+			xhttp.ErrorStatus(w, http.StatusNotFound)
+			return
+		}
+		s.sheetsLock.Lock()
+		if entity, ok = s.sheets[p]; !ok {
+			entity = loadedEntity
+			s.sheets[p] = entity
+		}
+		s.sheetsLock.Unlock()
 	}
-	defer xio.CloseIgnoringErrors(f)
-	var fi os.FileInfo
-	if fi, err = f.Stat(); err != nil {
-		xhttp.ErrorStatus(w, http.StatusNotFound)
-		return
-	}
-	http.ServeContent(w, r, p, fi.ModTime(), f)
+	JSONResponse(w, http.StatusOK, sheet.NewSheetFromEntity(entity))
 }

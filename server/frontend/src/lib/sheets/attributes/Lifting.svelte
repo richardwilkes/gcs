@@ -12,45 +12,38 @@
 	import Header from '$lib/sheets/widget/Header.svelte';
 	import Label from '$lib/sheets/widget/Label.svelte';
 	import Field from '$lib/sheets/widget/Field.svelte';
-	import { pc } from '$lib/entity.ts';
-	import { Fixed } from '$lib/fixed.ts';
-
-	let basicLift = new Fixed(0);
-
-	$: {
-		basicLift = basicLift.add(Fixed.extract($pc?.calc.basic_lift ?? "").value);
-	}
+	import { sheet } from '$lib/sheet.ts';
 </script>
 
 <div class="content">
 	<Header>Encumbrance, Move & Dodge</Header>
 	<div class="fields">
 		<div>
-			<Field right={true}>{basicLift.comma() + ' lb'}</Field>
+			<Field right={true}>{$sheet?.LiftingAndMovingThings.BasicLift}</Field>
 		</div>
 		<div><Label title="Basic Lift" left={true} /></div>
 		<div class="banding">
-			<Field right={true}>{basicLift.mul(Fixed.Two).comma() + ' lb'}</Field>
+			<Field right={true}>{$sheet?.LiftingAndMovingThings.OneHandedLift}</Field>
 		</div>
 		<div class="banding"><Label title="One-Handed Lift" left={true} /></div>
 		<div>
-			<Field right={true}>{basicLift.mul(Fixed.Eight).comma() + ' lb'}</Field>
+			<Field right={true}>{$sheet?.LiftingAndMovingThings.TwoHandedLift}</Field>
 		</div>
 		<div><Label title="Two-Handed Lift" left={true} /></div>
 		<div class="banding">
-			<Field right={true}>{basicLift.mul(Fixed.Twelve).comma() + ' lb'}</Field>
+			<Field right={true}>{$sheet?.LiftingAndMovingThings.ShoveAndKnockOver}</Field>
 		</div>
 		<div class="banding"><Label title="Shove & Knock Over" left={true} /></div>
 		<div>
-			<Field right={true}>{basicLift.mul(Fixed.TwentyFour).comma() + ' lb'}</Field>
+			<Field right={true}>{$sheet?.LiftingAndMovingThings.RunningShoveAndKnockOver}</Field>
 		</div>
 		<div><Label title="Running Shove & Knock Over" left={true} /></div>
 		<div class="banding">
-			<Field right={true}>{basicLift.mul(Fixed.Fifteen).comma() + ' lb'}</Field>
+			<Field right={true}>{$sheet?.LiftingAndMovingThings.CarryOnBack}</Field>
 		</div>
 		<div class="banding"><Label title="Carry On Back" left={true} /></div>
 		<div>
-			<Field right={true}>{basicLift.mul(Fixed.Fifty).comma() + ' lb'}</Field>
+			<Field right={true}>{$sheet?.LiftingAndMovingThings.ShiftSlightly}</Field>
 		</div>
 		<div><Label title="Shift Slightly" left={true} /></div>
 	</div>

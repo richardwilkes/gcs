@@ -10,13 +10,14 @@
   -->
 <script lang="ts">
 	export let title: string | number = '';
+	export let tip = '';
 	export let left = false;
 	export let center = false;
 	export let borderLeft = false;
 	export let borderRight = false;
 </script>
 
-<div class="label" class:left class:center class:borderLeft class:borderRight>{title}</div>
+<div class="label" class:left class:center class:borderLeft class:borderRight title={tip}>{title}</div>
 
 <style>
 	.label {

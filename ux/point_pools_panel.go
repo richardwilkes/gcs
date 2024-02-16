@@ -73,7 +73,7 @@ func (p *PointPoolsPanel) rebuild(attrs *gurps.AttributeDefs) {
 	for _, def := range attrs.List(false) {
 		if def.Pool() {
 			if def.Type == attribute.PoolSeparator {
-				p.AddChild(NewPageInternalHeader(def.Name, 6))
+				p.AddChild(NewPageInternalHeader(def.CombinedName(), 6))
 			} else {
 				attr, ok := p.entity.Attributes.Set[def.ID()]
 				if !ok {

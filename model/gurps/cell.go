@@ -19,6 +19,24 @@ import (
 // PageRefCellAlias is used an alias to request the page reference cell, if any.
 const PageRefCellAlias = -10
 
+// These constants are used to specify images to use in column headers.
+const (
+	HeaderCheckmark     = "checkmark"
+	HeaderCoins         = "coins"
+	HeaderWeight        = "weight"
+	HeaderBookmark      = "bookmark"
+	HeaderStackedCoins  = "stacked-coins"
+	HeaderStackedWeight = "stacked-weight"
+)
+
+// HeaderData holds data for creating a column header's visual representation.
+type HeaderData struct {
+	Title           string
+	Detail          string
+	TitleIsImageKey bool
+	Primary         bool
+}
+
 // CellData holds data for creating a cell's visual representation.
 type CellData struct {
 	Type              cell.Type

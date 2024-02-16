@@ -132,22 +132,7 @@ func (p *skillsProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Skill
 	ids := p.ColumnIDs()
 	headers := make([]unison.TableColumnHeader[*Node[*gurps.Skill]], 0, len(ids))
 	for _, id := range ids {
-		switch id {
-		case gurps.SkillDescriptionColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Skill](i18n.Text("Skill / Technique"), "", p.forPage))
-		case gurps.SkillDifficultyColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Skill](i18n.Text("Diff"), i18n.Text("Difficulty"), p.forPage))
-		case gurps.SkillTagsColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Skill](i18n.Text("Tags"), "", p.forPage))
-		case gurps.SkillReferenceColumn:
-			headers = append(headers, NewEditorPageRefHeader[*gurps.Skill](p.forPage))
-		case gurps.SkillLevelColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Skill](i18n.Text("SL"), i18n.Text("Skill Level"), p.forPage))
-		case gurps.SkillRelativeLevelColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Skill](i18n.Text("RSL"), i18n.Text("Relative Skill Level"), p.forPage))
-		case gurps.SkillPointsColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Skill](i18n.Text("Pts"), i18n.Text("Points"), p.forPage))
-		}
+		headers = append(headers, headerFromData[*gurps.Skill](gurps.SkillHeaderData(id), p.forPage))
 	}
 	return headers
 }

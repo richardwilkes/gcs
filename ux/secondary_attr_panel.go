@@ -72,7 +72,7 @@ func (p *SecondaryAttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 	for _, def := range attrs.List(false) {
 		if def.Secondary() {
 			if def.Type == attribute.SecondarySeparator {
-				p.AddChild(NewPageInternalHeader(def.Name, 3))
+				p.AddChild(NewPageInternalHeader(def.CombinedName(), 3))
 			} else {
 				attr, ok := p.entity.Attributes.Set[def.ID()]
 				if !ok {

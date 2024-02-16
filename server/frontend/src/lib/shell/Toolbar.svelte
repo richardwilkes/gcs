@@ -12,7 +12,7 @@
 	import ThemeSwitch from '$lib/shell/ThemeSwitch.svelte';
 	import { session } from '$lib/session.ts';
 	import { page } from '$lib/page.ts';
-	import { pc } from '$lib/entity.ts';
+	import { sheet } from '$lib/sheet.ts';
 	import { apiPrefix } from '$lib/dev.ts';
 
 	async function logout() {
@@ -23,7 +23,7 @@
 				cache: 'no-store'
 			});
 		}
-		$pc = undefined;
+		$sheet = undefined;
 		session.set(null);
 		page.set({ID: 'login', NextID: 'home'});
 	}

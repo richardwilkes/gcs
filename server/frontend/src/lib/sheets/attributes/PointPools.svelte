@@ -9,60 +9,24 @@
   - defined by the Mozilla Public License, version 2.0.
   -->
 <script lang="ts">
-	import { type AttributeDef, AttributeType } from '$lib/entity.ts';
 	import Header from '$lib/sheets/widget/Header.svelte';
 	import EditableNumberField from '$lib/sheets/widget/EditableNumberField.svelte';
 	import Label from '$lib/sheets/widget/Label.svelte';
 	import PointsNoteField from '$lib/sheets/attributes/PointsNoteField.svelte';
-	import { pc } from '$lib/entity.ts';
+	import { sheet } from '$lib/sheet.ts';
 
-	let attrList: { name: string; current: number; max: number; points: number }[] = [];
-
-	$: {
-		attrList = [];
-		if ($pc?.attributes) {
-			let attrDefMap = new Map();
-			let orderedAttrDefs: AttributeDef[] = [];
-			$pc.settings?.attributes?.forEach((attrDef) => {
-				if (attrDef.type === AttributeType.Pool) {
-					attrDefMap.set(attrDef.id, attrDef);
-					orderedAttrDefs.push(attrDef);
-				}
-			});
-			let attrMap = new Map();
-			$pc.attributes?.forEach((attr) => {
-				if (attrDefMap.has(attr.attr_id)) {
-					attrMap.set(attr.attr_id, attr);
-				}
-			});
-			orderedAttrDefs.forEach((attrDef) => {
-				let attr = attrMap.get(attrDef.id);
-				if (attr === undefined) {
-					attr = {
-						attr_id: attrDef.id,
-						adj: 0
-					};
-				}
-				attrList.push({
-					name: attrDef.full_name ? `${attrDef.full_name} (${attrDef.name})` : attrDef.name,
-					current: attr.calc?.current ?? 0,
-					max: attr.calc?.value ?? 0,
-					points: attr.calc?.points ?? 0
-				});
-			});
-		}
-	}
+	// TODO: Use remaining fields in PointPool
 </script>
 
 <div class="content">
 	<Header>Point Pools</Header>
 	<div class="fields">
-		{#each attrList as attr}
-			<PointsNoteField value={attr.points} />
-			<EditableNumberField name={attr.name + '.current'} value={attr.current} right={true} />
+		{#each $sheet?.PointPools || [] as pool}
+			<PointsNoteField value={pool.Points} />
+			<EditableNumberField name={pool.Key + '.current'} value={pool.Value} right={true} />
 			<Label title="of" left={true} />
-			<EditableNumberField name={attr.name + '.max'} value={attr.max} right={true} />
-			<Label title={attr.name} left={true} />
+			<EditableNumberField name={pool.Key + '.max'} value={pool.Max} right={true} />
+			<Label title={pool.Name} left={true} />
 		{/each}
 	</div>
 </div>

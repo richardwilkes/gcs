@@ -137,16 +137,7 @@ func (p *traitsProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Trait
 	ids := p.ColumnIDs()
 	headers := make([]unison.TableColumnHeader[*Node[*gurps.Trait]], 0, len(ids))
 	for _, id := range ids {
-		switch id {
-		case gurps.TraitDescriptionColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Trait](i18n.Text("Trait"), "", p.forPage))
-		case gurps.TraitPointsColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Trait](i18n.Text("Pts"), i18n.Text("Points"), p.forPage))
-		case gurps.TraitTagsColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Trait](i18n.Text("Tags"), "", p.forPage))
-		case gurps.TraitReferenceColumn:
-			headers = append(headers, NewEditorPageRefHeader[*gurps.Trait](p.forPage))
-		}
+		headers = append(headers, headerFromData[*gurps.Trait](gurps.TraitHeaderData(id), p.forPage))
 	}
 	return headers
 }

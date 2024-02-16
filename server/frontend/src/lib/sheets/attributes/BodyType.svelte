@@ -13,47 +13,24 @@
 	import SubHeader from '$lib/sheets/widget/SubHeader.svelte';
 	import Field from '$lib/sheets/widget/Field.svelte';
 	import Label from '$lib/sheets/widget/Label.svelte';
-	import { pc } from '$lib/entity.ts';
-
-	function calcDRString(drMap?: { [key: string]: number }) {
-		if (!drMap) {
-			return '';
-		}
-		const all = drMap['all'] || 0;
-		let keys = Array.from(Object.keys(drMap))
-			.filter((key) => key !== 'all')
-			.sort();
-		keys.unshift('all');
-		let s = '';
-		for (let key of keys) {
-			let dr = drMap[key] || 0;
-			if (key != 'all') {
-				dr += all;
-			}
-			if (s.length !== 0) {
-				s += '/';
-			}
-			s += dr;
-		}
-		return s;
-	}
+	import { sheet } from '$lib/sheet.ts';
 </script>
 
 <div class="content">
-	<Header>{$pc?.settings?.body_type?.name ?? 'Unknown'}</Header>
+	<Header>{$sheet?.Body.Name ?? ''}</Header>
 	<div class="fields">
 		<SubHeader title="Roll" />
 		<SubHeader title="Location" />
 		<SubHeader title="DR" />
-		{#each $pc?.settings?.body_type?.locations ?? [] as location, i}
+		{#each $sheet?.Body.Locations ?? [] as loc, i}
 			{@const banding = i % 2 === 1}
-			<div class:banding><Label title={location.calc.roll_range} center={true} /></div>
+			<div class:banding><Label title={loc.Roll} center={true} /></div>
 			<div class="name" class:banding>
-				<Label title={location.choice_name} left={true} />
-				<Label title={location.hit_penalty ?? 0} />
+				<Label title={loc.Location} left={true} tip={loc.LocationDetail} />
+				<Label title={loc.HitPenalty ?? 0}/>
 			</div>
 			<div class:banding>
-				<Field center={true}>{calcDRString(location.calc.dr)}</Field>
+				<Field center={true} tip={loc.DRDetail}>{loc.DR}</Field>
 			</div>
 		{/each}
 	</div>

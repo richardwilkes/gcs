@@ -53,8 +53,10 @@ var (
 
 // Server holds the embedded web server.
 type Server struct {
-	server *xhttp.Server
-	mux    *http.ServeMux
+	server     *xhttp.Server
+	mux        *http.ServeMux
+	sheetsLock sync.RWMutex
+	sheets     map[string]*gurps.Entity
 }
 
 // CurrentState returns the current state of the server.
@@ -97,7 +99,8 @@ func Start() {
 				IdleTimeout:  fxp.SecondsToDuration(settings.ReadTimeout),
 			},
 		},
-		mux: http.NewServeMux(),
+		mux:    http.NewServeMux(),
+		sheets: make(map[string]*gurps.Entity),
 	}
 	s.mux.HandleFunc("GET /api/session", s.sessionHandler)
 	s.mux.HandleFunc("GET /api/version", s.versionHandler)

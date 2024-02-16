@@ -12,18 +12,18 @@
 	import Header from '$lib/sheets/widget/Header.svelte';
 	import Label from '$lib/sheets/widget/Label.svelte';
 	import EditableStringField from '$lib/sheets/widget/EditableStringField.svelte';
-	import { pc } from '$lib/entity.ts';
+	import { sheet } from '$lib/sheet.ts';
 </script>
 
 <div class="content">
 	<Header>Identity</Header>
 	<div class="fields">
 		<Label title="Name" />
-		<EditableStringField name="profile.name" value={$pc?.profile?.name ?? ''} />
+		<EditableStringField name="profile.name" value={$sheet?.Identity.Name ?? ''} />
 		<Label title="Title" />
-		<EditableStringField name="profile.title" value={$pc?.profile?.title ?? ''} />
+		<EditableStringField name="profile.title" value={$sheet?.Identity.Title ?? ''} />
 		<Label title="Organization" />
-		<EditableStringField name="profile.org" value={$pc?.profile?.organization ?? ''} />
+		<EditableStringField name="profile.org" value={$sheet?.Identity.Organization ?? ''} />
 	</div>
 </div>
 

@@ -132,39 +132,7 @@ func (p *spellsProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Spell
 	ids := p.ColumnIDs()
 	headers := make([]unison.TableColumnHeader[*Node[*gurps.Spell]], 0, len(ids))
 	for _, id := range ids {
-		switch id {
-		case gurps.SpellDescriptionColumn, gurps.SpellDescriptionForPageColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Spell](i18n.Text("Spell"), "", p.forPage))
-		case gurps.SpellResistColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Spell](i18n.Text("Resist"), i18n.Text("Resistance"), p.forPage))
-		case gurps.SpellClassColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Spell](i18n.Text("Class"), "", p.forPage))
-		case gurps.SpellCollegeColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Spell](i18n.Text("College"), "", p.forPage))
-		case gurps.SpellCastCostColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Spell](i18n.Text("Cast"), i18n.Text("The mana cost to cast the spell"),
-				p.forPage))
-		case gurps.SpellMaintainCostColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Spell](i18n.Text("Maintain"), i18n.Text("The mana cost to maintain the spell"),
-				p.forPage))
-		case gurps.SpellCastTimeColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Spell](i18n.Text("Time"), i18n.Text("The time required to cast the spell"),
-				p.forPage))
-		case gurps.SpellDurationColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Spell](i18n.Text("Duration"), "", p.forPage))
-		case gurps.SpellDifficultyColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Spell](i18n.Text("Diff"), i18n.Text("Difficulty"), p.forPage))
-		case gurps.SpellTagsColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Spell](i18n.Text("Tags"), "", p.forPage))
-		case gurps.SpellReferenceColumn:
-			headers = append(headers, NewEditorPageRefHeader[*gurps.Spell](p.forPage))
-		case gurps.SpellLevelColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Spell](i18n.Text("SL"), i18n.Text("Skill Level"), p.forPage))
-		case gurps.SpellRelativeLevelColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Spell](i18n.Text("RSL"), i18n.Text("Relative Skill Level"), p.forPage))
-		case gurps.SpellPointsColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Spell](i18n.Text("Pts"), i18n.Text("Points"), p.forPage))
-		}
+		headers = append(headers, headerFromData[*gurps.Spell](gurps.SpellHeaderData(id), p.forPage))
 	}
 	return headers
 }

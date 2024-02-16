@@ -12,52 +12,9 @@
 	import Header from '$lib/sheets/widget/Header.svelte';
 	import SubHeader from '$lib/sheets/widget/SubHeader.svelte';
 	import Label from '$lib/sheets/widget/Label.svelte';
-	import { pc } from '$lib/entity.ts';
-	import { Fixed } from '$lib/fixed.ts';
+	import { sheet } from '$lib/sheet.ts';
 	import Field from '$lib/sheets/widget/Field.svelte';
 	import Weight from '$lib/svg/Weight.svelte';
-
-	type EncData = {
-		current: boolean;
-		mod: number;
-		level: string;
-		maxLoad: Fixed;
-		move: Fixed;
-		dodge: Fixed;
-	};
-
-	let encList: EncData[] = [
-		{ current: false, mod: 0, level: 'None', maxLoad: Fixed.Zero, move: Fixed.Zero, dodge: Fixed.Zero },
-		{ current: false, mod: 1, level: 'Light', maxLoad: Fixed.Zero, move: Fixed.Zero, dodge: Fixed.Zero },
-		{ current: false, mod: 2, level: 'Medium', maxLoad: Fixed.Zero, move: Fixed.Zero, dodge: Fixed.Zero },
-		{ current: false, mod: 3, level: 'Heavy', maxLoad: Fixed.Zero, move: Fixed.Zero, dodge: Fixed.Zero },
-		{ current: false, mod: 4, level: 'X-Heavy', maxLoad: Fixed.Zero, move: Fixed.Zero, dodge: Fixed.Zero }
-	];
-
-	$: {
-		for (let i = 0; i < encList.length; i++) {
-			encList[i].move = new Fixed($pc?.calc.move[i]);
-			encList[i].dodge = new Fixed($pc?.calc.dodge[i]);
-		}
-		let basicLift = Fixed.extract($pc?.calc.basic_lift ?? "").value;
-		encList[0].maxLoad = basicLift;
-		encList[1].maxLoad = basicLift.mul(Fixed.Two);
-		encList[2].maxLoad = basicLift.mul(Fixed.Three);
-		encList[3].maxLoad = basicLift.mul(Fixed.Six);
-		encList[4].maxLoad = basicLift.mul(Fixed.Ten);
-		let total = new Fixed(0);
-		for (let equipment of $pc?.equipment ?? []) {
-			total = total.add(Fixed.extract(equipment.calc.extended_weight).value);
-		}
-		let found = false;
-		for (let one of encList) {
-			one.current = false;
-			if (!found && one.maxLoad.gte(total)) {
-				one.current = true;
-				found = true;
-			}
-		}
-	}
 </script>
 
 <div class="content">
@@ -67,24 +24,25 @@
 		<SubHeader title="Max Load" />
 		<SubHeader title="Move" />
 		<SubHeader title="Dodge" />
-		{#each encList as one, i}
+		{#each ['None', 'Light', 'Medium', 'Heavy', 'X-Heavy'] as label, i}
 			{@const banding = i % 2 === 1}
-			{@const current = one.current}
-			<div class="marker" class:current class:banding>
-				{#if one.current}
+			{@const current = $sheet?.Encumbrance.Current === i}
+			{@const overloaded = current && $sheet?.Encumbrance.Overloaded}
+			<div class="marker" class:current class:overloaded class:banding>
+				{#if current}
 					<Weight />
 				{/if}
 			</div>
-			<div class:current class:banding><Label title={one.mod} /></div>
-			<div class:current class:banding><Label title={one.level} left={true} borderRight={true} /></div>
-			<div class:current class:banding>
-				<Field right={true} borderRight={true} noBottomBorder={true}>{one.maxLoad.comma() + ' lb'}</Field>
+			<div class:current class:overloaded class:banding><Label title={i} /></div>
+			<div class:current class:overloaded class:banding><Label title={label} left={true} borderRight={true} /></div>
+			<div class:current class:overloaded class:banding>
+				<Field right={true} borderRight={true} noBottomBorder={true}>{$sheet?.Encumbrance.MaxLoad[i]}</Field>
 			</div>
-			<div class:current class:banding>
-				<Field right={true} borderRight={true} noBottomBorder={true}>{one.move.toString()}</Field>
+			<div class:current class:overloaded class:banding>
+				<Field right={true} borderRight={true} noBottomBorder={true}>{$sheet?.Encumbrance.Move[i]}</Field>
 			</div>
-			<div class:current class:banding>
-				<Field right={true} noBottomBorder={true}>{one.dodge.toString()}</Field>
+			<div class:current class:overloaded class:banding>
+				<Field right={true} noBottomBorder={true}>{$sheet?.Encumbrance.Dodge[i]}</Field>
 			</div>
 		{/each}
 	</div>
@@ -117,5 +75,11 @@
 		background-color: var(--color-secondary);
 		color: var(--color-on-secondary);
 		fill: var(--color-on-secondary);
+	}
+
+	.overloaded {
+		background-color: var(--color-error);
+		color: var(--color-on-error);
+		fill: var(--color-on-error);
 	}
 </style>
