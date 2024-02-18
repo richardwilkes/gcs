@@ -137,7 +137,7 @@ func (p *traitsProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Trait
 	ids := p.ColumnIDs()
 	headers := make([]unison.TableColumnHeader[*Node[*gurps.Trait]], 0, len(ids))
 	for _, id := range ids {
-		headers = append(headers, headerFromData[*gurps.Trait](gurps.TraitHeaderData(id), p.forPage))
+		headers = append(headers, headerFromData[*gurps.Trait](gurps.TraitsHeaderData(id), p.forPage))
 	}
 	return headers
 }

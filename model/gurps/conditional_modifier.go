@@ -146,8 +146,8 @@ func (m *ConditionalModifier) String() string {
 	return fmt.Sprintf("%s %s", m.Total().StringWithSign(), m.From)
 }
 
-// ConditionalModifierHeaderData returns the header data information for the given conditional modifier column.
-func ConditionalModifierHeaderData(columnID int) HeaderData {
+// ConditionalModifiersHeaderData returns the header data information for the given conditional modifier column.
+func ConditionalModifiersHeaderData(columnID int) HeaderData {
 	var data HeaderData
 	switch columnID {
 	case ConditionalModifierValueColumn:

@@ -100,6 +100,8 @@ func main() {
 		server.Start()
 		select {}
 	default:
+		ux.StartServer = server.Start
+		ux.StopServer = server.Stop
 		if settings.WebServer.Enabled {
 			server.Start()
 		}

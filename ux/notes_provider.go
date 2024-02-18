@@ -105,7 +105,7 @@ func (p *notesProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Note]]
 	ids := p.ColumnIDs()
 	headers := make([]unison.TableColumnHeader[*Node[*gurps.Note]], 0, len(ids))
 	for _, id := range ids {
-		headers = append(headers, headerFromData[*gurps.Note](gurps.NoteHeaderData(id), p.forPage))
+		headers = append(headers, headerFromData[*gurps.Note](gurps.NotesHeaderData(id), p.forPage))
 	}
 	return headers
 }

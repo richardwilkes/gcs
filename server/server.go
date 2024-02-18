@@ -12,16 +12,16 @@
 package server
 
 import (
+	"compress/flate"
 	"embed"
 	"log/slog"
 	"net/http"
 	"sync"
-	"sync/atomic"
-	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/server/state"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/xio"
@@ -31,22 +31,10 @@ import (
 
 var _ http.Handler = &Server{}
 
-// State is the state of the server.
-type State int
-
-// Possible states for the server.
-const (
-	Stopped State = iota
-	Starting
-	Running
-	Stopping
-)
-
 var (
 	//go:embed frontend/dist
 	siteFS embed.FS
 
-	state    atomic.Int32
 	siteLock sync.Mutex
 	site     *Server
 )
@@ -59,24 +47,6 @@ type Server struct {
 	sheets     map[string]*gurps.Entity
 }
 
-// CurrentState returns the current state of the server.
-func CurrentState() State {
-	return State(state.Load())
-}
-
-// WaitUntilState waits until the server is in one of the specified states.
-func WaitUntilState(state ...State) {
-	for {
-		current := CurrentState()
-		for _, s := range state {
-			if current == s {
-				return
-			}
-		}
-		time.Sleep(time.Millisecond * 100)
-	}
-}
-
 // Start the server in the background. If the server is already running, nothing happens.
 func Start() {
 	siteLock.Lock()
@@ -84,7 +54,7 @@ func Start() {
 	if site != nil {
 		return
 	}
-	state.Store(int32(Starting))
+	state.Set(state.Starting)
 	settings := gurps.GlobalSettings().WebServer
 	settings.Validate()
 	s := &Server{
@@ -114,12 +84,12 @@ func Start() {
 	s.server.StartedChan = make(chan any, 1)
 	go func() {
 		<-s.server.StartedChan
-		state.Store(int32(Running))
+		state.Set(state.Running)
 	}()
 	var once sync.Once
 	s.server.ShutdownCallback = func(_ *slog.Logger) {
 		once.Do(func() {
-			state.Store(int32(Stopped))
+			state.Set(state.Stopped)
 			go func() {
 				// Has to be done in a goroutine to avoid a deadlock
 				siteLock.Lock()
@@ -180,7 +150,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // Shutdown shuts down the server.
 func (s *Server) Shutdown() {
-	state.Store(int32(Stopping))
+	state.Set(state.Stopping)
 	s.server.Shutdown()
 }
 
@@ -196,5 +166,24 @@ func JSONResponse(w http.ResponseWriter, statusCode int, data any) {
 	w.WriteHeader(statusCode)
 	if err := json.NewEncoder(w).Encode(data); err != nil {
 		errs.Log(errs.Wrap(err))
+	}
+}
+
+// CompressedJSONResponse writes a compressed JSON response with a status code.
+func CompressedJSONResponse(w http.ResponseWriter, statusCode int, data any) {
+	f, err := flate.NewWriter(w, flate.BestCompression)
+	if err != nil {
+		errs.Log(errs.NewWithCause("unable to create compressor", err))
+		JSONResponse(w, statusCode, data)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Content-Encoding", "deflate")
+	w.WriteHeader(statusCode)
+	if err = json.NewEncoder(f).Encode(data); err != nil {
+		errs.Log(errs.Wrap(err))
+	}
+	if err = f.Close(); err != nil {
+		errs.Log(errs.NewWithCause("unable to close compressor", err))
 	}
 }

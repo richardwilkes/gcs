@@ -133,5 +133,5 @@ func (s *Server) sheetHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		s.sheetsLock.Unlock()
 	}
-	JSONResponse(w, http.StatusOK, sheet.NewSheetFromEntity(entity))
+	CompressedJSONResponse(w, http.StatusOK, sheet.NewSheetFromEntity(entity))
 }

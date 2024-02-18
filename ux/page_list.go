@@ -57,7 +57,7 @@ func NewCarriedEquipmentPageList(owner Rebuildable, provider gurps.ListProvider)
 
 // NewOtherEquipmentPageList creates the other equipment page list.
 func NewOtherEquipmentPageList(owner Rebuildable, provider gurps.ListProvider) *PageList[*gurps.Equipment] {
-	p := newPageList(owner, NewEquipmentProvider(provider, true, false))
+	p := newPageList(owner, NewEquipmentProvider(provider, false, true))
 	p.installIncrementTechLevelHandler(owner)
 	p.installDecrementTechLevelHandler(owner)
 	p.installContainerConversionHandlers(owner)

@@ -132,7 +132,7 @@ func (p *skillsProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Skill
 	ids := p.ColumnIDs()
 	headers := make([]unison.TableColumnHeader[*Node[*gurps.Skill]], 0, len(ids))
 	for _, id := range ids {
-		headers = append(headers, headerFromData[*gurps.Skill](gurps.SkillHeaderData(id), p.forPage))
+		headers = append(headers, headerFromData[*gurps.Skill](gurps.SkillsHeaderData(id), p.forPage))
 	}
 	return headers
 }

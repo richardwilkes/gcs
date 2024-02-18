@@ -132,7 +132,7 @@ func (p *spellsProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Spell
 	ids := p.ColumnIDs()
 	headers := make([]unison.TableColumnHeader[*Node[*gurps.Spell]], 0, len(ids))
 	for _, id := range ids {
-		headers = append(headers, headerFromData[*gurps.Spell](gurps.SpellHeaderData(id), p.forPage))
+		headers = append(headers, headerFromData[*gurps.Spell](gurps.SpellsHeaderData(id), p.forPage))
 	}
 	return headers
 }

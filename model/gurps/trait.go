@@ -222,8 +222,8 @@ func (a *Trait) TemplatePickerData() *TemplatePicker {
 	return a.TemplatePicker
 }
 
-// TraitHeaderData returns the header data information for the given trait column.
-func TraitHeaderData(columnID int) HeaderData {
+// TraitsHeaderData returns the header data information for the given trait column.
+func TraitsHeaderData(columnID int) HeaderData {
 	var data HeaderData
 	switch columnID {
 	case TraitDescriptionColumn:

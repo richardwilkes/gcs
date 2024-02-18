@@ -33,7 +33,7 @@ type equipmentProvider struct {
 }
 
 // NewEquipmentProvider creates a new table provider for equipment. 'carried' is only relevant if 'forPage' is true.
-func NewEquipmentProvider(provider gurps.EquipmentListProvider, forPage, carried bool) TableProvider[*gurps.Equipment] {
+func NewEquipmentProvider(provider gurps.EquipmentListProvider, carried, forPage bool) TableProvider[*gurps.Equipment] {
 	return &equipmentProvider{
 		provider: provider,
 		forPage:  forPage,

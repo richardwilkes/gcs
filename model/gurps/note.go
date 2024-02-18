@@ -144,8 +144,8 @@ func (n *Note) resolveText() string {
 	return EvalEmbeddedRegex.ReplaceAllStringFunc(n.Text, n.Entity.EmbeddedEval)
 }
 
-// NoteHeaderData returns the header data information for the given note column.
-func NoteHeaderData(columnID int) HeaderData {
+// NotesHeaderData returns the header data information for the given note column.
+func NotesHeaderData(columnID int) HeaderData {
 	var data HeaderData
 	switch columnID {
 	case NoteTextColumn:

@@ -18,7 +18,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/server"
+	"github.com/richardwilkes/gcs/v5/server/state"
 	"github.com/richardwilkes/gcs/v5/server/websettings"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -26,6 +26,13 @@ import (
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/check"
+)
+
+// These need to be initialized by whatever instantiates the ux package, typically main.go. They are here to break the
+// circular reference that would otherwise occur.
+var (
+	StartServer func()
+	StopServer  func()
 )
 
 type webSettingsDockable struct {
@@ -92,15 +99,15 @@ func (d *webSettingsDockable) syncEnablementToServer(callback func()) {
 }
 
 func (d *webSettingsDockable) finishSync(callback func()) {
-	server.WaitUntilState(server.Running, server.Stopped)
+	state.WaitUntil(state.Running, state.Stopped)
 	unison.InvokeTask(func() {
 		settings := gurps.GlobalSettings().WebServer
-		switch server.CurrentState() {
-		case server.Stopped:
+		switch state.Current() {
+		case state.Stopped:
 			settings.Enabled = false
 			d.enabledCheckbox.State = check.Off
 			d.setWebServerControlEnablement(true)
-		case server.Running:
+		case state.Running:
 			settings.Enabled = true
 			d.enabledCheckbox.State = check.On
 			d.enabledCheckbox.SetEnabled(true)
@@ -146,9 +153,9 @@ func (d *webSettingsDockable) applyServerEnabled(on bool) {
 	if settings.Enabled != on {
 		settings.Enabled = on
 		if on {
-			server.Start()
+			StartServer()
 		} else {
-			server.Stop()
+			StopServer()
 		}
 		d.syncEnablementToServer(nil)
 	}
@@ -273,9 +280,9 @@ func createSecondsField(content *unison.Panel, title string, get func() fxp.Int,
 }
 
 func (d *webSettingsDockable) reset() {
-	if server.CurrentState() != server.Stopped {
+	if state.Current() != state.Stopped {
 		if unison.YesNoDialog(i18n.Text("Stop the server?"), i18n.Text("The web server must be stopped before the settings can be reset.")) == unison.ModalResponseOK {
-			server.Stop()
+			StopServer()
 			d.syncEnablementToServer(d.reset)
 		}
 		return
@@ -301,9 +308,9 @@ func (d *webSettingsDockable) sync(other *websettings.Settings) {
 }
 
 func (d *webSettingsDockable) load(fileSystem fs.FS, filePath string) error {
-	if server.CurrentState() != server.Stopped {
+	if state.Current() != state.Stopped {
 		if unison.YesNoDialog(i18n.Text("Stop the server?"), i18n.Text("The web server must be stopped before new settings can be loaded.")) == unison.ModalResponseOK {
-			server.Stop()
+			StopServer()
 			d.syncEnablementToServer(func() {
 				if err := d.load(fileSystem, filePath); err != nil {
 					unison.ErrorDialogWithError(i18n.Text("Unable to load ")+d.TabTitle, err)

@@ -14,15 +14,19 @@ package sheet
 import (
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wpn"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
 
+// Identity holds the data needed by the frontend to display the identity block.
 type Identity struct {
 	Name         string
 	Title        string
@@ -37,6 +41,7 @@ func createIdentity(entity *gurps.Entity) Identity {
 	}
 }
 
+// Misc holds the data needed by the frontend to display the misc block.
 type Misc struct {
 	Created  jio.Time
 	Modified jio.Time
@@ -51,6 +56,7 @@ func createMisc(entity *gurps.Entity) Misc {
 	}
 }
 
+// Description holds the data needed by the frontend to display the description block.
 type Description struct {
 	Gender       string
 	Age          string
@@ -83,6 +89,7 @@ func createDescription(entity *gurps.Entity) Description {
 	}
 }
 
+// Points holds the data needed by the frontend to display the points block.
 type Points struct {
 	Total         fxp.Int
 	Unspent       fxp.Int
@@ -116,6 +123,7 @@ func createPoints(entity *gurps.Entity) Points {
 	}
 }
 
+// Attribute holds the data needed by the frontend to display an attribute.
 type Attribute struct {
 	Type   attribute.Type
 	Key    string
@@ -174,6 +182,7 @@ func createSecondaryAttributes(entity *gurps.Entity) []Attribute {
 	return list
 }
 
+// PointPool holds the data needed by the frontend to display a point pool.
 type PointPool struct {
 	Type   attribute.Type
 	Key    string
@@ -219,6 +228,7 @@ func createPointPools(entity *gurps.Entity) []PointPool {
 	return list
 }
 
+// BasicDamage holds the data needed by the frontend to display the basic damage.
 type BasicDamage struct {
 	Thrust string
 	Swing  string
@@ -231,6 +241,7 @@ func createBasicDamage(entity *gurps.Entity) BasicDamage {
 	}
 }
 
+// HitLocation holds the data needed by the frontend to display the hit locations.
 type HitLocation struct {
 	Roll           string
 	Location       string
@@ -245,7 +256,7 @@ func createHitLocations(entity *gurps.Entity, locations *gurps.Body) []HitLocati
 	if locations == nil {
 		return nil
 	}
-	var list []HitLocation
+	list := make([]HitLocation, 0, len(locations.Locations))
 	for _, loc := range locations.Locations {
 		rollRange := loc.RollRange
 		if rollRange == "-" {
@@ -266,6 +277,7 @@ func createHitLocations(entity *gurps.Entity, locations *gurps.Body) []HitLocati
 	return list
 }
 
+// Body holds the data needed by the frontend to display the Body section of a sheet.
 type Body struct {
 	Name      string
 	Locations []HitLocation
@@ -279,6 +291,7 @@ func createBody(entity *gurps.Entity) Body {
 	}
 }
 
+// Encumbrance holds the data needed by the frontend to display the Encumbrance section of a sheet.
 type Encumbrance struct {
 	Current    int
 	MaxLoad    [encumbrance.LastLevel + 1]fxp.Weight
@@ -300,6 +313,8 @@ func createEncumbrance(entity *gurps.Entity) Encumbrance {
 	return e
 }
 
+// LiftingAndMovingThings holds the data needed by the frontend to display the Lifting and Moving Things section of a
+// sheet.
 type LiftingAndMovingThings struct {
 	BasicLift                fxp.Weight
 	OneHandedLift            fxp.Weight
@@ -322,73 +337,197 @@ func createLiftingAndMovingThings(entity *gurps.Entity) LiftingAndMovingThings {
 	}
 }
 
-type Column struct {
-	Title            string
-	TitleIsImageKey  bool
-	RightAlignedData bool
-	IsLink           bool
-	Indentable       bool
-}
-
+// Cell holds the data needed by the frontend to display a table cell.
 type Cell struct {
 	Primary   string
 	Secondary string
 	Detail    string
 }
 
+// Row holds the data needed by the frontend to display a table row.
 type Row struct {
-	ID    string
+	ID    uuid.UUID
 	Depth int
-	Cells []Cell
+	Cells []gurps.CellData
 }
 
+// Table holds the data needed by the frontend to display a table.
 type Table struct {
-	Columns []Column
+	Columns []gurps.HeaderData
 	Rows    []Row
 }
 
 func createReactions(entity *gurps.Entity) *Table {
-	// TODO: Build methods on the primary data types for retrieving header information. Cell info can be obtained with
-	//		 calls to .CellData()
-	return nil
+	provider := ux.NewReactionModifiersProvider(entity)
+	ids := provider.ColumnIDs()
+	root := provider.RootData()
+	table := &Table{
+		Columns: make([]gurps.HeaderData, len(ids)),
+		Rows:    make([]Row, 0, len(root)),
+	}
+	for i, id := range ids {
+		table.Columns[i] = gurps.ReactionModifiersHeaderData(id)
+	}
+	for _, one := range root {
+		collectRowData(one, 0, table, provider, ids)
+	}
+	return table
 }
 
 func createConditionalModifiers(entity *gurps.Entity) *Table {
-	return nil
+	provider := ux.NewConditionalModifiersProvider(entity)
+	ids := provider.ColumnIDs()
+	root := provider.RootData()
+	table := &Table{
+		Columns: make([]gurps.HeaderData, len(ids)),
+		Rows:    make([]Row, 0, len(root)),
+	}
+	for i, id := range ids {
+		table.Columns[i] = gurps.ConditionalModifiersHeaderData(id)
+	}
+	for _, one := range root {
+		collectRowData(one, 0, table, provider, ids)
+	}
+	return table
 }
 
 func createMeleeWeapons(entity *gurps.Entity) *Table {
-	return nil
+	return createWeapons(entity, wpn.Melee)
 }
 
 func createRangedWeapons(entity *gurps.Entity) *Table {
-	return nil
+	return createWeapons(entity, wpn.Ranged)
+}
+
+func createWeapons(entity *gurps.Entity, weaponType wpn.Type) *Table {
+	provider := ux.NewWeaponsProvider(entity, weaponType, true)
+	ids := provider.ColumnIDs()
+	root := provider.RootData()
+	table := &Table{
+		Columns: make([]gurps.HeaderData, len(ids)),
+		Rows:    make([]Row, 0, len(root)),
+	}
+	for i, id := range ids {
+		table.Columns[i] = gurps.WeaponHeaderData(id, weaponType, true)
+	}
+	for _, one := range root {
+		collectRowData(one, 0, table, provider, ids)
+	}
+	return table
 }
 
 func createTraits(entity *gurps.Entity) *Table {
-	return nil
+	provider := ux.NewTraitsProvider(entity, true)
+	ids := provider.ColumnIDs()
+	root := provider.RootData()
+	table := &Table{
+		Columns: make([]gurps.HeaderData, len(ids)),
+		Rows:    make([]Row, 0, len(root)),
+	}
+	for i, id := range ids {
+		table.Columns[i] = gurps.TraitsHeaderData(id)
+	}
+	for _, one := range root {
+		collectRowData(one, 0, table, provider, ids)
+	}
+	return table
 }
 
 func createSkills(entity *gurps.Entity) *Table {
-	return nil
+	provider := ux.NewSkillsProvider(entity, true)
+	ids := provider.ColumnIDs()
+	root := provider.RootData()
+	table := &Table{
+		Columns: make([]gurps.HeaderData, len(ids)),
+		Rows:    make([]Row, 0, len(root)),
+	}
+	for i, id := range ids {
+		table.Columns[i] = gurps.SkillsHeaderData(id)
+	}
+	for _, one := range root {
+		collectRowData(one, 0, table, provider, ids)
+	}
+	return table
 }
 
 func createSpells(entity *gurps.Entity) *Table {
-	return nil
+	provider := ux.NewSpellsProvider(entity, true)
+	ids := provider.ColumnIDs()
+	root := provider.RootData()
+	table := &Table{
+		Columns: make([]gurps.HeaderData, len(ids)),
+		Rows:    make([]Row, 0, len(root)),
+	}
+	for i, id := range ids {
+		table.Columns[i] = gurps.SpellsHeaderData(id)
+	}
+	for _, one := range root {
+		collectRowData(one, 0, table, provider, ids)
+	}
+	return table
 }
 
 func createCarriedEquipment(entity *gurps.Entity) *Table {
-	return nil
+	return createEquipment(entity, true)
 }
 
 func createOtherEquipment(entity *gurps.Entity) *Table {
-	return nil
+	return createEquipment(entity, false)
+}
+
+func createEquipment(entity *gurps.Entity, carried bool) *Table {
+	provider := ux.NewEquipmentProvider(entity, carried, true)
+	ids := provider.ColumnIDs()
+	root := provider.RootData()
+	table := &Table{
+		Columns: make([]gurps.HeaderData, len(ids)),
+		Rows:    make([]Row, 0, len(root)),
+	}
+	for i, id := range ids {
+		table.Columns[i] = gurps.EquipmentHeaderData(id, entity, carried, true)
+	}
+	for _, one := range root {
+		collectRowData(one, 0, table, provider, ids)
+	}
+	return table
 }
 
 func createNotes(entity *gurps.Entity) *Table {
-	return nil
+	provider := ux.NewNotesProvider(entity, true)
+	ids := provider.ColumnIDs()
+	root := provider.RootData()
+	table := &Table{
+		Columns: make([]gurps.HeaderData, len(ids)),
+		Rows:    make([]Row, 0, len(root)),
+	}
+	for i, id := range ids {
+		table.Columns[i] = gurps.NotesHeaderData(id)
+	}
+	for _, one := range root {
+		collectRowData(one, 0, table, provider, ids)
+	}
+	return table
 }
 
+func collectRowData[T gurps.NodeTypes](node gurps.Node[T], depth int, table *Table, provider ux.TableProvider[T], ids []int) {
+	row := Row{
+		ID:    node.UUID(),
+		Depth: depth,
+		Cells: make([]gurps.CellData, len(ids)),
+	}
+	for i, id := range ids {
+		node.CellData(id, &row.Cells[i])
+	}
+	table.Rows = append(table.Rows, row)
+	if node.HasChildren() {
+		depth++
+		for _, child := range node.NodeChildren() {
+			collectRowData[T](gurps.AsNode(child), depth, table, provider, ids)
+		}
+	}
+}
+
+// Sheet holds the data needed by the frontend to display a GURPS character sheet.
 type Sheet struct {
 	Identity               Identity
 	Misc                   Misc
@@ -414,6 +553,7 @@ type Sheet struct {
 	Portrait               []byte
 }
 
+// NewSheetFromEntity creates a new Sheet from the given entity.
 func NewSheetFromEntity(entity *gurps.Entity) *Sheet {
 	return &Sheet{
 		Identity:               createIdentity(entity),

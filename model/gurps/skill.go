@@ -232,8 +232,8 @@ func (s *Skill) TemplatePickerData() *TemplatePicker {
 	return s.TemplatePicker
 }
 
-// SkillHeaderData returns the header data information for the given skill column.
-func SkillHeaderData(columnID int) HeaderData {
+// SkillsHeaderData returns the header data information for the given skill column.
+func SkillsHeaderData(columnID int) HeaderData {
 	var data HeaderData
 	switch columnID {
 	case SkillDescriptionColumn:

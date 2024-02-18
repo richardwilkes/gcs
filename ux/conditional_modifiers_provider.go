@@ -97,7 +97,7 @@ func (p *condModProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Cond
 	ids := p.ColumnIDs()
 	headers := make([]unison.TableColumnHeader[*Node[*gurps.ConditionalModifier]], 0, len(ids))
 	for _, id := range ids {
-		headers = append(headers, headerFromData[*gurps.Equipment](gurps.ConditionalModifierHeaderData(id), true))
+		headers = append(headers, headerFromData[*gurps.Equipment](gurps.ConditionalModifiersHeaderData(id), true))
 	}
 	return DisableSorting(headers)
 }

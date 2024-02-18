@@ -230,8 +230,8 @@ func (s *Spell) TemplatePickerData() *TemplatePicker {
 	return s.TemplatePicker
 }
 
-// SpellHeaderData returns the header data information for the given spell column.
-func SpellHeaderData(columnID int) HeaderData {
+// SpellsHeaderData returns the header data information for the given spell column.
+func SpellsHeaderData(columnID int) HeaderData {
 	var data HeaderData
 	switch columnID {
 	case SpellDescriptionColumn, SpellDescriptionForPageColumn:
