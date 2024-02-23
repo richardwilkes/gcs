@@ -10,7 +10,7 @@
  */
 
 :root {
-	--font: 14px/1.2 sans-serif;
+	--font: 14px/1.2 Arial, sans-serif;
 	--section-gap: 1px;
 	--padding-header: 1px 8px;
 	--padding-standard: 0px 4px;
