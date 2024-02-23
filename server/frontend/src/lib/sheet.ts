@@ -125,16 +125,23 @@ export interface LiftingAndMovingThings {
 
 export interface Column {
 	Title: string;
+	Detail: string;
 	TitleIsImageKey: boolean;
-	RightAligned: boolean;
-	IsLink: boolean;
-	Indentable: boolean;
+	Primary: boolean;
 }
 
 export interface Cell {
+	Type: string;
+	Disabled: boolean;
+	Dim: boolean;
+	Checked: boolean;
+	Alignment: string;
 	Primary: string;
 	Secondary: string;
-	Detail: string;
+	Tooltip: string;
+	UnsatisfiedReason: string;
+	TemplateInfo: string;
+	InlineTag: string;
 }
 
 export interface Row {

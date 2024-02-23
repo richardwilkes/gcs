@@ -31,6 +31,7 @@
 </script>
 
 <div class='content'>
+	<div class='sheet'>
 	{#if $sheet}
 		<Personal />
 		<Attributes />
@@ -42,6 +43,7 @@
 			<div class='loading'>Loading...</div>
 		{/if}
 	{/if}
+	</div>
 </div>
 
 <style>
@@ -53,8 +55,11 @@
 		align-items: stretch;
 		align-content: stretch;
 		gap: var(--section-gap);
-		padding: 5px;
 		flex-grow: 1;
+	}
+
+	.sheet {
+		padding: 5px;
 	}
 
 	.loading {
