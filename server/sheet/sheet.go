@@ -197,7 +197,7 @@ type PointPool struct {
 func createPointPools(entity *gurps.Entity) []PointPool {
 	var list []PointPool
 	for _, def := range gurps.SheetSettingsFor(entity).Attributes.List(false) {
-		if def.Secondary() {
+		if def.Pool() {
 			var value, maximum, points fxp.Int
 			var state, detail string
 			if def.Type != attribute.PoolSeparator {
