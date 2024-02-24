@@ -54,12 +54,17 @@
 		justify-content: flex-start;
 		align-items: stretch;
 		align-content: stretch;
-		gap: var(--section-gap);
 		flex-grow: 1;
 	}
 
 	.sheet {
+		display: flex;
+		flex-flow: column nowrap;
+		justify-content: flex-start;
+		align-items: stretch;
+		align-content: stretch;
 		padding: 5px;
+		gap: var(--section-gap);
 	}
 
 	.loading {
