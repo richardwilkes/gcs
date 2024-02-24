@@ -19,12 +19,16 @@
 	export let area: string;
 
 	let style = '';
-	if (table && table.Rows.length !== 0) {
-		style = `grid-area: ${area};grid-template-columns:`;
-		for (let i = 0; i < table.Columns.length; i++) {
-			style += table.Columns[i].Primary ? ' 1fr' : ' auto';
+
+	$: {
+		style = '';
+		if (table && table.Rows.length !== 0) {
+			style = `grid-area: ${area};grid-template-columns:`;
+			for (let i = 0; i < table.Columns.length; i++) {
+				style += table.Columns[i].Primary ? ' 1fr' : ' auto';
+			}
+			style += `;grid-template-rows: repeat(${table.Rows.length},0fr) 1fr;`;
 		}
-		style += `;grid-template-rows: repeat(${table.Rows.length},0fr) 1fr;`;
 	}
 </script>
 
