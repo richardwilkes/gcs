@@ -11,9 +11,9 @@
 
 :root {
 	--font: 14px/1.2 Arial, sans-serif;
-	--section-gap: 1px;
+	--section-gap: 2px;
 	--padding-header: 1px 8px;
-	--padding-standard: 0px 4px;
+	--padding-standard: 2px 4px;
 	--standard-border: 1px solid var(--color-outline-variant);
 }
 
