@@ -11,9 +11,48 @@
 <script lang='ts'>
 	import List from '$lib/sheets/lists/List.svelte';
 	import { sheet } from '$lib/sheet.ts';
+
+	let layout: string;
+
+	$: {
+		layout = 'grid-template:';
+		if ($sheet?.Reactions?.Rows.length && $sheet?.ConditionalModifiers?.Rows.length) {
+			layout += '"reactions conditional_modifiers"';
+		} else if ($sheet?.Reactions?.Rows.length) {
+			layout += '"reactions reactions"';
+		} else if ($sheet?.ConditionalModifiers?.Rows.length) {
+			layout += '"conditional_modifiers conditional_modifiers"';
+		}
+		if ($sheet?.MeleeWeapons?.Rows.length) {
+			layout += '"melee melee"';
+		}
+		if ($sheet?.RangedWeapons?.Rows.length) {
+			layout += '"ranged ranged"';
+		}
+		if ($sheet?.Traits?.Rows.length && $sheet?.Skills?.Rows.length) {
+			layout += '"traits skills"';
+		} else if ($sheet?.Traits?.Rows.length) {
+			layout += '"traits traits"';
+		} else if ($sheet?.Skills?.Rows.length) {
+			layout += '"skills skills"';
+		}
+		if ($sheet?.Spells?.Rows.length) {
+			layout += '"spells spells"';
+		}
+		if ($sheet?.CarriedEquipment?.Rows.length) {
+			layout += '"equipment equipment"';
+		}
+		if ($sheet?.OtherEquipment?.Rows.length) {
+			layout += '"other_equipment other_equipment"';
+		}
+		if ($sheet?.Notes?.Rows.length) {
+			layout += '"notes notes"';
+		}
+		layout += ';'
+	}
 </script>
 
-<div class='content'>
+<div class='lists' style={layout}>
 	<List table={$sheet?.Reactions} area='reactions' />
 	<List table={$sheet?.ConditionalModifiers} area='conditional_modifiers' />
 	<List table={$sheet?.MeleeWeapons} area='melee' />
@@ -27,19 +66,10 @@
 </div>
 
 <style>
-	.content {
+	.lists {
 		display: grid;
 		gap: var(--section-gap);
 		grid-template-columns: 1fr 1fr;
-		grid-template:
-			'reactions conditional_modifiers'
-			'melee melee'
-			'ranged ranged'
-			'traits skills'
-			'spells spells'
-			'equipment equipment'
-			'other_equipment other_equipment'
-			'notes notes';
 		background-color: var(--color-surface);
 		color: var(--color-on-surface);
 	}

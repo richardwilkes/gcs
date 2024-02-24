@@ -42,7 +42,7 @@
 		{#each table.Rows as row, rowIndex}
 			{@const banding = rowIndex % 2 === 1}
 			{#each row.Cells as cell, cellIndex}
-				<div class:cell={cellIndex !== 0} class:banding>
+				<div class:divider={cellIndex !== 0} class:banding>
 					<!-- TODO: Add support for the other fields in the Cell data -->
 					<Field tip={cell.Tooltip} right={cell.Alignment === 'end'} center={cell.Alignment === 'middle'}
 								 noBottomBorder={true} wrap={table.Columns[cellIndex].Primary}>
@@ -80,11 +80,12 @@
 <style>
 	.content {
 		display: grid;
+		justify-content: stretch;
 		align-content: stretch;
 		border: var(--standard-border);
 	}
 
-	.cell {
+	.divider {
 		border-left: var(--standard-border);
 	}
 
