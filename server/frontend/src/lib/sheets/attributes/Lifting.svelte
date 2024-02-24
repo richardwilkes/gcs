@@ -19,33 +19,33 @@
 	<Header>Encumbrance, Move & Dodge</Header>
 	<div class="fields">
 		<div>
-			<Field right={true}>{$sheet?.LiftingAndMovingThings.BasicLift}</Field>
+			<Field noBottomBorder={true}>{$sheet?.LiftingAndMovingThings.BasicLift}</Field>
 		</div>
-		<div><Label title="Basic Lift" left={true} /></div>
+		<div><Label title="Basic Lift" /></div>
 		<div class="banding">
-			<Field right={true}>{$sheet?.LiftingAndMovingThings.OneHandedLift}</Field>
+			<Field noBottomBorder={true}>{$sheet?.LiftingAndMovingThings.OneHandedLift}</Field>
 		</div>
-		<div class="banding"><Label title="One-Handed Lift" left={true} /></div>
+		<div class="banding"><Label title="One-Handed Lift" /></div>
 		<div>
-			<Field right={true}>{$sheet?.LiftingAndMovingThings.TwoHandedLift}</Field>
+			<Field noBottomBorder={true}>{$sheet?.LiftingAndMovingThings.TwoHandedLift}</Field>
 		</div>
-		<div><Label title="Two-Handed Lift" left={true} /></div>
+		<div><Label title="Two-Handed Lift" /></div>
 		<div class="banding">
-			<Field right={true}>{$sheet?.LiftingAndMovingThings.ShoveAndKnockOver}</Field>
+			<Field noBottomBorder={true}>{$sheet?.LiftingAndMovingThings.ShoveAndKnockOver}</Field>
 		</div>
-		<div class="banding"><Label title="Shove & Knock Over" left={true} /></div>
+		<div class="banding"><Label title="Shove & Knock Over" /></div>
 		<div>
-			<Field right={true}>{$sheet?.LiftingAndMovingThings.RunningShoveAndKnockOver}</Field>
+			<Field noBottomBorder={true}>{$sheet?.LiftingAndMovingThings.RunningShoveAndKnockOver}</Field>
 		</div>
-		<div><Label title="Running Shove & Knock Over" left={true} /></div>
+		<div><Label title="Running Shove & Knock Over" /></div>
 		<div class="banding">
-			<Field right={true}>{$sheet?.LiftingAndMovingThings.CarryOnBack}</Field>
+			<Field noBottomBorder={true}>{$sheet?.LiftingAndMovingThings.CarryOnBack}</Field>
 		</div>
-		<div class="banding"><Label title="Carry On Back" left={true} /></div>
+		<div class="banding"><Label title="Carry On Back" /></div>
 		<div>
-			<Field right={true}>{$sheet?.LiftingAndMovingThings.ShiftSlightly}</Field>
+			<Field noBottomBorder={true}>{$sheet?.LiftingAndMovingThings.ShiftSlightly}</Field>
 		</div>
-		<div><Label title="Shift Slightly" left={true} /></div>
+		<div><Label title="Shift Slightly" /></div>
 	</div>
 </div>
 
@@ -66,5 +66,14 @@
 		white-space: nowrap;
 		background-color: var(--color-surface);
 		color: var(--color-on-surface);
+	}
+
+	.fields > div {
+		display: flex;
+		align-items: center;
+	}
+
+	.fields > div:nth-child(odd) {
+		justify-content: end;
 	}
 </style>

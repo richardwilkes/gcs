@@ -29,20 +29,18 @@
 			{@const current = $sheet?.Encumbrance.Current === i}
 			{@const overloaded = current && $sheet?.Encumbrance.Overloaded}
 			<div class="marker" class:current class:overloaded class:banding>
-				{#if current}
-					<Weight />
-				{/if}
+				{#if current}<Weight />{/if}
 			</div>
-			<div class:current class:overloaded class:banding><Label title={i} /></div>
-			<div class:current class:overloaded class:banding><Label title={label} left={true} borderRight={true} /></div>
-			<div class:current class:overloaded class:banding>
-				<Field right={true} borderRight={true} noBottomBorder={true}>{$sheet?.Encumbrance.MaxLoad[i]}</Field>
+			<div class='right' class:current class:overloaded class:banding><Label title={i} /></div>
+			<div class='border' class:current class:overloaded class:banding><Label title={label} left={true} /></div>
+			<div class='right border' class:current class:overloaded class:banding>
+				<Field noBottomBorder={true}>{$sheet?.Encumbrance.MaxLoad[i]}</Field>
 			</div>
-			<div class:current class:overloaded class:banding>
-				<Field right={true} borderRight={true} noBottomBorder={true}>{$sheet?.Encumbrance.Move[i]}</Field>
+			<div class='right border' class:current class:overloaded class:banding>
+				<Field noBottomBorder={true}>{$sheet?.Encumbrance.Move[i]}</Field>
 			</div>
-			<div class:current class:overloaded class:banding>
-				<Field right={true} noBottomBorder={true}>{$sheet?.Encumbrance.Dodge[i]}</Field>
+			<div class='right' class:current class:overloaded class:banding>
+				<Field noBottomBorder={true}>{$sheet?.Encumbrance.Dodge[i]}</Field>
 			</div>
 		{/each}
 	</div>
@@ -50,6 +48,7 @@
 
 <style>
 	.content {
+		flex-grow: 1;
 		display: flex;
 		flex-direction: column;
 		border: var(--standard-border);
@@ -57,12 +56,28 @@
 
 	.fields {
 		display: grid;
+		flex-grow: 1;
 		grid-template-columns: 0fr 0fr 1fr 0fr 0fr 0fr;
+		grid-template-rows: 0fr;
+		grid-auto-rows: 1fr;
 		align-items: stretch;
 		align-content: stretch;
 		white-space: nowrap;
 		background-color: var(--color-surface);
 		color: var(--color-on-surface);
+	}
+
+	.fields > div {
+		display: flex;
+		align-items: center;
+	}
+
+	.right {
+		justify-content: end;
+	}
+
+	.border {
+		border-right: var(--standard-border);
 	}
 
 	.marker {

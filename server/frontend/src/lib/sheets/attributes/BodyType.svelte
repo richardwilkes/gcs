@@ -24,13 +24,13 @@
 		<SubHeader title="DR" />
 		{#each $sheet?.Body.Locations ?? [] as loc, i}
 			{@const banding = i % 2 === 1}
-			<div class:banding><Label title={loc.Roll} center={true} /></div>
+			<div class:banding><Label title={loc.Roll} /></div>
 			<div class="name" class:banding>
-				<Label title={loc.Location} left={true} tip={loc.LocationDetail} />
+				<Label title={loc.Location} tip={loc.LocationDetail} />
 				<Label title={loc.HitPenalty ?? 0}/>
 			</div>
 			<div class:banding>
-				<Field center={true} tip={loc.DRDetail}>{loc.DR}</Field>
+				<Field noBottomBorder={true} tip={loc.DRDetail}>{loc.DR}</Field>
 			</div>
 		{/each}
 	</div>
@@ -49,6 +49,8 @@
 		display: grid;
 		flex-grow: 1;
 		grid-template-columns: 0fr 1fr 0fr;
+		grid-template-rows: 0fr;
+		grid-auto-rows: 1fr;
 		align-items: stretch;
 		align-content: stretch;
 		white-space: nowrap;
@@ -56,8 +58,13 @@
 		color: var(--color-on-surface);
 	}
 
-	.name {
+	.fields > div {
 		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.fields > .name {
 		justify-content: space-between;
 		border-left: 1px solid var(--color-header);
 		border-right: 1px solid var(--color-header);
