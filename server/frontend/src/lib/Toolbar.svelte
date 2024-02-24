@@ -9,7 +9,7 @@
   - defined by the Mozilla Public License, version 2.0.
   -->
 <script lang='ts'>
-	import ThemeSwitch from '$lib/shell/ThemeSwitch.svelte';
+	import ThemeSwitch from '$lib/ThemeSwitch.svelte';
 	import { session } from '$lib/session.ts';
 	import { page } from '$lib/page.ts';
 	import { sheet } from '$lib/sheet.ts';

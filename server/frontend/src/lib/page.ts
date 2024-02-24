@@ -18,3 +18,4 @@ type Page = {
 };
 
 export const page = writable<Page>({ID: 'home', NextID: 'home'});
+export const previousPage = writable<Page>({ID: 'home', NextID: 'home'});

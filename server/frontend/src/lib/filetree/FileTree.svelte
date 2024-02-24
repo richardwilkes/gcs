@@ -20,7 +20,8 @@
 	export let showAs : ShowAs = ShowAs.None;
 	export let title = 'Select a File';
 	export let path: string;
-	export let callback: (file: string, finish?: boolean) => void;
+	export let onSuccess: (file: string, finish?: boolean) => void;
+	export let onCancel: () => void;
 
 	let dialog: Dialog;
 	let pending = false;
@@ -53,7 +54,11 @@
 	function done(ok: boolean) {
 		dirs = undefined;
 		pending = false;
-		if (ok && selectedFile) callback(selectedFile);
+		if (ok && selectedFile) {
+			onSuccess(selectedFile)
+		} else {
+			onCancel();
+		}
 	}
 </script>
 

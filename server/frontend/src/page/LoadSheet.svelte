@@ -12,12 +12,13 @@
 <script lang='ts'>
 	import FileTree from '$lib/filetree/FileTree.svelte';
 	import { ShowAs } from '$lib/Dialog.svelte';
-	import { page } from '$lib/page.ts';
+	import { page, previousPage } from '$lib/page.ts';
 </script>
 
 <div class='content'>
 	<FileTree showAs={ShowAs.Dialog} path='/sheets' title='Select a Sheet'
-											callback={(path) => $page = {ID:'sheet', NextID: 'sheet', Sheet: path}} />
+						onSuccess={(path) => $page = {ID:'sheet', NextID: 'sheet', Sheet: path}}
+						onCancel={() => $page = $previousPage} />
 </div>
 
 <style>
