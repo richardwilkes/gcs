@@ -8,35 +8,53 @@
   - This Source Code Form is "Incompatible With Secondary Licenses", as
   - defined by the Mozilla Public License, version 2.0.
   -->
-<script lang="ts">
+<script lang='ts'>
 	import Header from '$lib/sheets/widget/Header.svelte';
 	import Silhouette from '$lib/svg/Silhouette.svelte';
 
 	export let imageURL: string | undefined;
 
+	let clientHeight: number;
+	let pictureHeight: number;
 	let naturalWidth: number;
 	let naturalHeight: number;
 	let width: string;
 	let height: string;
 
 	$: {
-		if (naturalWidth > naturalHeight) {
-			width = '150px';
-			height = naturalHeight * (150 / naturalWidth) + 'px';
-		} else {
-			width = naturalWidth * (150 / naturalHeight) + 'px';
-			height = '150px';
+		if (clientHeight) {
+			if (!pictureHeight) {
+				// The picture height is only set the first time the clientHeight is set to avoid it growing to fit the image
+				// height rather than the outer container height.
+				pictureHeight = clientHeight;
+			}
+			if (imageURL) {
+				if (naturalWidth && naturalHeight) {
+					if (naturalWidth > naturalHeight) {
+						width = pictureHeight + 'px';
+						height = naturalHeight * (pictureHeight / naturalWidth) + 'px';
+					} else {
+						width = naturalWidth * (pictureHeight / naturalHeight) + 'px';
+						height = pictureHeight + 'px';
+					}
+				}
+			} else {
+				width = pictureHeight + 'px';
+				height = pictureHeight + 'px';
+			}
 		}
 	}
 </script>
 
-<div class="block">
+<div class='block'>
 	<Header>Portrait</Header>
-	<div class="portrait">
-		{#if imageURL}
-			<img src={imageURL} bind:naturalWidth bind:naturalHeight {width} {height} alt="Portrait" />
-		{:else}
-			<Silhouette />
+	<div class='portrait' bind:clientHeight style='width:{pictureHeight}px;'>
+		{#if clientHeight}
+			{#if imageURL}
+				<img src={imageURL} bind:naturalWidth bind:naturalHeight {width} {height} alt='Portrait' />
+			{:else}
+				<Silhouette style='width: {width}; height: {height};' />
+			{/if}
 		{/if}
 	</div>
 </div>
@@ -46,19 +64,14 @@
 		border: var(--standard-border);
 		display: flex;
 		flex-direction: column;
-		justify-content: flex-start;
 	}
 
 	.portrait {
-		background-position: center;
-		background-repeat: no-repeat;
-		background-size: contain;
 		background-color: var(--color-background);
-		width: 150px;
-		height: 150px;
 		display: flex;
 		justify-content: center;
 		align-items: center;
 		overflow: clip;
+		height: 100%;
 	}
 </style>
