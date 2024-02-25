@@ -19,31 +19,31 @@
 	<Header>Encumbrance, Move & Dodge</Header>
 	<div class="fields">
 		<div>
-			<Field noBottomBorder={true}>{$sheet?.LiftingAndMovingThings.BasicLift}</Field>
+			<Field noBottomBorder>{$sheet?.LiftingAndMovingThings.BasicLift}</Field>
 		</div>
 		<div><Label title="Basic Lift" /></div>
 		<div class="banding">
-			<Field noBottomBorder={true}>{$sheet?.LiftingAndMovingThings.OneHandedLift}</Field>
+			<Field noBottomBorder>{$sheet?.LiftingAndMovingThings.OneHandedLift}</Field>
 		</div>
 		<div class="banding"><Label title="One-Handed Lift" /></div>
 		<div>
-			<Field noBottomBorder={true}>{$sheet?.LiftingAndMovingThings.TwoHandedLift}</Field>
+			<Field noBottomBorder>{$sheet?.LiftingAndMovingThings.TwoHandedLift}</Field>
 		</div>
 		<div><Label title="Two-Handed Lift" /></div>
 		<div class="banding">
-			<Field noBottomBorder={true}>{$sheet?.LiftingAndMovingThings.ShoveAndKnockOver}</Field>
+			<Field noBottomBorder>{$sheet?.LiftingAndMovingThings.ShoveAndKnockOver}</Field>
 		</div>
 		<div class="banding"><Label title="Shove & Knock Over" /></div>
 		<div>
-			<Field noBottomBorder={true}>{$sheet?.LiftingAndMovingThings.RunningShoveAndKnockOver}</Field>
+			<Field noBottomBorder>{$sheet?.LiftingAndMovingThings.RunningShoveAndKnockOver}</Field>
 		</div>
 		<div><Label title="Running Shove & Knock Over" /></div>
 		<div class="banding">
-			<Field noBottomBorder={true}>{$sheet?.LiftingAndMovingThings.CarryOnBack}</Field>
+			<Field noBottomBorder>{$sheet?.LiftingAndMovingThings.CarryOnBack}</Field>
 		</div>
 		<div class="banding"><Label title="Carry On Back" /></div>
 		<div>
-			<Field noBottomBorder={true}>{$sheet?.LiftingAndMovingThings.ShiftSlightly}</Field>
+			<Field noBottomBorder>{$sheet?.LiftingAndMovingThings.ShiftSlightly}</Field>
 		</div>
 		<div><Label title="Shift Slightly" /></div>
 	</div>
@@ -60,7 +60,7 @@
 	.fields {
 		display: grid;
 		flex-grow: 1;
-		grid-template-columns: 0.3fr 0.7fr;
+		grid-template-columns: 0fr 1fr;
 		align-items: stretch;
 		align-content: stretch;
 		white-space: nowrap;

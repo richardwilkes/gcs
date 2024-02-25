@@ -18,28 +18,28 @@
 <div class="content">
 	<Header>{$sheet?.Points.Total ?? 0} Points</Header>
 	<div class="fields">
-		<Field right={true}>{$sheet?.Points.Unspent ?? 0}</Field>
+		<Field right>{$sheet?.Points.Unspent ?? 0}</Field>
 		<Label title="Unspent" left={true} />
 		<div class="banding">
-			<Field right={true}>{$sheet?.Points.Ancestry ?? 0}</Field>
+			<Field right>{$sheet?.Points.Ancestry ?? 0}</Field>
 		</div>
 		<div class="banding"><Label title="Race" left={true} /></div>
-		<Field right={true}>{$sheet?.Points.Attributes ?? 0}</Field>
+		<Field right>{$sheet?.Points.Attributes ?? 0}</Field>
 		<Label title="Attributes" left={true} />
 		<div class="banding">
-			<Field right={true}>{$sheet?.Points.Advantages ?? 0}</Field>
+			<Field right>{$sheet?.Points.Advantages ?? 0}</Field>
 		</div>
 		<div class="banding"><Label title="Advantages" left={true} /></div>
-		<Field right={true}>{$sheet?.Points.Disadvantages ?? 0}</Field>
+		<Field right>{$sheet?.Points.Disadvantages ?? 0}</Field>
 		<Label title="Disadvantages" left={true} />
 		<div class="banding">
-			<Field right={true}>{$sheet?.Points.Quirks ?? 0}</Field>
+			<Field right>{$sheet?.Points.Quirks ?? 0}</Field>
 		</div>
 		<div class="banding"><Label title="Quirks" left={true} /></div>
-		<Field right={true}>{$sheet?.Points.Skills ?? 0}</Field>
+		<Field right>{$sheet?.Points.Skills ?? 0}</Field>
 		<Label title="Skills" left={true} />
 		<div class="banding">
-			<Field right={true}>{$sheet?.Points.Spells ?? 0}</Field>
+			<Field right>{$sheet?.Points.Spells ?? 0}</Field>
 		</div>
 		<div class="banding"><Label title="Spells" left={true} /></div>
 	</div>
@@ -55,7 +55,7 @@
 	.fields {
 		flex-grow: 1;
 		display: grid;
-		grid-template-columns: 0fr 1fr;
+		grid-template-columns: auto 1fr;
 		align-content: space-between;
 		align-items: baseline;
 		white-space: nowrap;

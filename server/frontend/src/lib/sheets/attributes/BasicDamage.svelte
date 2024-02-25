@@ -18,10 +18,10 @@
 <div class="content">
 	<Header>Basic Damage</Header>
 	<div class="fields">
-		<Field right={true}>{$sheet?.BasicDamage.Thrust ?? ""}</Field>
-		<Label title="Basic Thrust" left={true} />
-		<Field right={true}>{$sheet?.BasicDamage.Swing ?? ""}</Field>
-		<Label title="Basic Swing" left={true} />
+		<div class='right'><Field noBottomBorder>{$sheet?.BasicDamage.Thrust ?? ""}</Field></div>
+		<div class='left'><Label title="Basic Thrust" /></div>
+		<div class='right banding'><Field noBottomBorder>{$sheet?.BasicDamage.Swing ?? ""}</Field></div>
+		<div class='left banding'><Label title="Basic Swing" /></div>
 	</div>
 </div>
 
@@ -38,9 +38,19 @@
 		display: grid;
 		flex-grow: 1;
 		grid-template-columns: 0fr 1fr;
-		align-items: baseline;
+		align-items: stretch;
+		align-content: stretch;
 		white-space: nowrap;
 		background-color: var(--color-surface);
 		color: var(--color-on-surface);
+	}
+
+	.left, .right {
+		display: flex;
+		align-items: center;
+	}
+
+	.right {
+		justify-content: end;
 	}
 </style>

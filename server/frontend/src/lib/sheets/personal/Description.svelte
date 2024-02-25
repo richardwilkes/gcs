@@ -8,47 +8,70 @@
   - This Source Code Form is "Incompatible With Secondary Licenses", as
   - defined by the Mozilla Public License, version 2.0.
   -->
-<script lang="ts">
+<script lang='ts'>
 	import Header from '$lib/sheets/widget/Header.svelte';
 	import Label from '$lib/sheets/widget/Label.svelte';
-	import EditableNumberField from '$lib/sheets/widget/EditableNumberField.svelte';
-	import EditableStringField from '$lib/sheets/widget/EditableStringField.svelte';
+	import Field from '$lib/sheets/widget/Field.svelte';
 	import { sheet } from '$lib/sheet.ts';
 </script>
 
-<div class="content">
-	<div style="grid-area: header;">
+<div class='content'>
+	<div style='grid-area: header;'>
 		<Header>Description</Header>
 	</div>
-	<div class="fields" style="grid-area:block1;">
-		<Label title="Gender" />
-		<EditableStringField name="profile.gender" value={$sheet?.Description.Gender ?? ''} />
-		<Label title="Age" />
-		<EditableStringField name="profile.age" value={$sheet?.Description.Age ?? ''} />
-		<Label title="Birthday" />
-		<EditableStringField name="profile.birthday" value={$sheet?.Description.Birthday ?? ''} />
-		<Label title="Religion" />
-		<EditableStringField name="profile.religion" value={$sheet?.Description.Religion ?? ''} />
+	<div class='fields' style='grid-area:block1;'>
+		<div class='banding'><Label title='Gender' /></div>
+		<div class='banding'>
+			<Field editable style='width:100%;'>{$sheet?.Description.Gender ?? ''}</Field>
+		</div>
+		<div><Label title='Age' /></div>
+		<div>
+			<Field editable style='width:100%;'>{$sheet?.Description.Age ?? ''}</Field>
+		</div>
+		<div class='banding'><Label title='Birthday' /></div>
+		<div class='banding'>
+			<Field editable style='width:100%;'>{$sheet?.Description.Birthday ?? ''}</Field>
+		</div>
+		<div><Label title='Religion' /></div>
+		<div>
+			<Field editable style='width:100%;'>{$sheet?.Description.Religion ?? ''}</Field>
+		</div>
 	</div>
-	<div class="fields" style="grid-area:block2;">
-		<Label title="Height" />
-		<EditableStringField name="profile.height" value={$sheet?.Description.Height ?? ''} />
-		<Label title="Weight" />
-		<EditableStringField name="profile.weight" value={$sheet?.Description.Weight ?? ''} />
-		<Label title="Size" />
-		<EditableNumberField name="SM" value={$sheet?.Description.SizeModifier ?? 0} />
-		<Label title="TL" />
-		<EditableStringField name="profile.tl" value={$sheet?.Description.TechLevel ?? ''} />
+	<div class='fields divider' style='grid-area:block2;'>
+		<div class='banding'><Label title='Height' /></div>
+		<div class='banding'>
+			<Field editable style='width:100%;'>{$sheet?.Description.Height ?? ''}</Field>
+		</div>
+		<div><Label title='Weight' /></div>
+		<div>
+			<Field editable style='width:100%;'>{$sheet?.Description.Weight ?? ''}</Field>
+		</div>
+		<div class='banding'><Label title='Size' /></div>
+		<div class='banding'>
+			<Field editable style='width:100%;'>{$sheet?.Description.SizeModifier ?? 0}</Field>
+		</div>
+		<div><Label title='TL' /></div>
+		<div>
+			<Field editable style='width:100%;'>{$sheet?.Description.TechLevel ?? ''}</Field>
+		</div>
 	</div>
-	<div class="fields" style="grid-area:block3;">
-		<Label title="Hair" />
-		<EditableStringField name="profile.hair" value={$sheet?.Description.Hair ?? ''} />
-		<Label title="Eyes" />
-		<EditableStringField name="profile.eyes" value={$sheet?.Description.Eyes ?? ''} />
-		<Label title="Skin" />
-		<EditableStringField name="profile.skin" value={$sheet?.Description.Skin ?? ''} />
-		<Label title="Hand" />
-		<EditableStringField name="profile.handedness" value={$sheet?.Description.Hand ?? ''} />
+	<div class='fields divider' style='grid-area:block3;'>
+		<div class='banding'><Label title='Hair' /></div>
+		<div class='banding'>
+			<Field editable style='width:100%;'>{$sheet?.Description.Hair ?? ''}</Field>
+		</div>
+		<div><Label title='Eyes' /></div>
+		<div>
+			<Field editable style='width:100%;'>{$sheet?.Description.Eyes ?? ''}</Field>
+		</div>
+		<div class='banding'><Label title='Skin' /></div>
+		<div class='banding'>
+			<Field editable style='width:100%;'>{$sheet?.Description.Skin ?? ''}</Field>
+		</div>
+		<div><Label title='Hand' /></div>
+		<div>
+			<Field editable style='width:100%;'>{$sheet?.Description.Hand ?? ''}</Field>
+		</div>
 	</div>
 </div>
 
@@ -60,18 +83,29 @@
 		grid-template:
 			'header header header'
 			'block1 block2 block3';
-		grid-template-columns: 1fr 1fr 1fr;
+		grid-template-columns: auto auto auto;
 		border: var(--standard-border);
 	}
 
 	.fields {
 		display: grid;
-		grid-template-columns: 0fr 1fr;
-		align-items: baseline;
+		flex-grow: 1;
+		grid-template-columns: 0fr auto;
+		align-items: stretch;
+		align-content: stretch;
 		white-space: nowrap;
 		background-color: var(--color-surface);
 		color: var(--color-on-surface);
-		padding-right: 4px;
-		padding-bottom: 2px;
+	}
+
+	.fields > div {
+		display: flex;
+		align-items: center;
+		justify-content: end;
+		padding: var(--padding-standard);
+	}
+
+	.divider {
+		border-left: var(--standard-border);
 	}
 </style>

@@ -49,7 +49,7 @@
 				<div class:divider={cellIndex !== 0} class:banding>
 					<!-- TODO: Add support for the other fields in the Cell data -->
 					<Field tip={cell.Tooltip} right={cell.Alignment === 'end'} center={cell.Alignment === 'middle'}
-								 noBottomBorder={true} wrap={table.Columns[cellIndex].Primary}>
+												 noBottomBorder wrap={table.Columns[cellIndex].Primary}>
 						{#if cell.Type === 'toggle'}
 							{#if cell.Checked}
 								<div class='icon'>

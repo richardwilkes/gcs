@@ -38,6 +38,8 @@
 	--color-tertiary-fixed: #BCECE7;
 	--color-on-tertiary: white;
 	--color-tertiary: #386663;
+	--color-editable: white;
+	--color-on-editable: black;
 }
 
 :root[theme='dark'] {
@@ -61,6 +63,8 @@
 	--color-tertiary-fixed: #BCECE7;
 	--color-on-tertiary: #003735;
 	--color-tertiary: #A0D0CB;
+	--color-editable: black;
+	--color-on-editable: white;
 }
 
 html,

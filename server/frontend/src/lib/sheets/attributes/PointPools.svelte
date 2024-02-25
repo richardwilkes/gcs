@@ -10,7 +10,7 @@
   -->
 <script lang="ts">
 	import Header from '$lib/sheets/widget/Header.svelte';
-	import EditableNumberField from '$lib/sheets/widget/EditableNumberField.svelte';
+	import Field from '$lib/sheets/widget/Field.svelte';
 	import Label from '$lib/sheets/widget/Label.svelte';
 	import PointsNoteField from '$lib/sheets/attributes/PointsNoteField.svelte';
 	import { sheet } from '$lib/sheet.ts';
@@ -21,12 +21,13 @@
 <div class="content">
 	<Header>Point Pools</Header>
 	<div class="fields">
-		{#each $sheet?.PointPools || [] as pool}
-			<PointsNoteField value={pool.Points} />
-			<EditableNumberField name={pool.Key + '.current'} value={pool.Value} right={true} />
-			<Label title="of" left={true} />
-			<EditableNumberField name={pool.Key + '.max'} value={pool.Max} right={true} />
-			<Label title={pool.Name} left={true} />
+		{#each $sheet?.PointPools || [] as pool, i}
+			{@const banding = i % 2 === 1}
+			<div class:banding><PointsNoteField value={pool.Points} /></div>
+			<div class:banding><Field editable right style='width: 100%;'>{pool.Value}</Field></div>
+			<div class:banding><Label title='of' left /></div>
+			<div class:banding><Field editable right style='width: 100%;'>{pool.Max}</Field></div>
+			<div class:banding><Label title={pool.Name} left /></div>
 		{/each}
 	</div>
 </div>
@@ -44,12 +45,16 @@
 		display: grid;
 		flex-grow: 1;
 		grid-template-columns: 0fr 0fr 0fr 0fr 1fr;
-		align-content: space-between;
-		align-items: baseline;
+		align-items: stretch;
+		align-content: stretch;
 		white-space: nowrap;
 		background-color: var(--color-surface);
 		color: var(--color-on-surface);
-		column-gap: 2px;
 		padding-bottom: 2px;
+	}
+
+	.fields > div {
+		display: flex;
+		align-items: center;
 	}
 </style>

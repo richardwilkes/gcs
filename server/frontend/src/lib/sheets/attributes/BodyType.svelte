@@ -30,7 +30,7 @@
 				<Label title={loc.HitPenalty ?? 0}/>
 			</div>
 			<div class:banding>
-				<Field noBottomBorder={true} tip={loc.DRDetail}>{loc.DR}</Field>
+				<Field noBottomBorder center tip={loc.DRDetail}>{loc.DR}</Field>
 			</div>
 		{/each}
 	</div>

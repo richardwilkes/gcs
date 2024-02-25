@@ -13,19 +13,18 @@
 	import Header from '$lib/sheets/widget/Header.svelte';
 	import Label from '$lib/sheets/widget/Label.svelte';
 	import Field from '$lib/sheets/widget/Field.svelte';
-	import EditableStringField from '$lib/sheets/widget/EditableStringField.svelte';
 	import { sheet } from '$lib/sheet.ts';
 </script>
 
 <div class="content">
 	<Header>Miscellaneous</Header>
 	<div class="fields">
-		<Label title="Created" />
-		<Field>{formatDateStamp($sheet?.Misc.Created)}</Field>
-		<Label title="Modified" />
-		<Field>{formatDateStamp($sheet?.Misc.Modified)}</Field>
-		<Label title="Player" />
-		<EditableStringField name="profile.player" value={$sheet?.Misc.Player ?? ''} />
+		<div class='banding'><Label title="Created" /></div>
+		<div class='banding'><Field style='width:100%;'>{formatDateStamp($sheet?.Misc.Created)}</Field></div>
+		<div><Label title="Modified" /></div>
+		<div><Field style='width:100%;'>{formatDateStamp($sheet?.Misc.Modified)}</Field></div>
+		<div class='banding'><Label title="Player" /></div>
+		<div class='banding'><Field editable style='width:100%;'>{$sheet?.Misc.Player ?? ''}</Field></div>
 	</div>
 </div>
 
@@ -39,12 +38,19 @@
 
 	.fields {
 		display: grid;
+		flex-grow: 1;
 		grid-template-columns: 0fr 1fr;
-		align-items: baseline;
+		align-items: stretch;
+		align-content: stretch;
 		white-space: nowrap;
 		background-color: var(--color-surface);
 		color: var(--color-on-surface);
-		padding-right: 4px;
 		padding-bottom: 2px;
+	}
+
+	.fields > div {
+		display: flex;
+		align-items: center;
+		justify-content: end;
 	}
 </style>

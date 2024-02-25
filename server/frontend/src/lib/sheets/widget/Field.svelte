@@ -8,38 +8,40 @@
   - This Source Code Form is "Incompatible With Secondary Licenses", as
   - defined by the Mozilla Public License, version 2.0.
   -->
-<script lang="ts">
+<script lang='ts'>
+	export let style = '';
 	export let tip = '';
 	export let right = false;
 	export let center = false;
-	export let borderLeft = false;
-	export let borderRight = false;
-	export let noBottomBorder = false;
-	export let smaller = false;
 	export let wrap = false;
+	export let noBottomBorder = false;
+	export let editable = false;
 </script>
 
-<div
-	class="field"
-	class:right
-	class:center
-	class:borderLeft
-	class:borderRight
-	class:noBottomBorder
-	class:smaller
-	class:wrap
-  title={tip}>
+<div class='field' class:right class:center class:editable class:noBottomBorder class:wrap {style} role='textbox'
+		 contenteditable={editable} title={tip}>
 	<slot>&nbsp;</slot>
 </div>
 
 <style>
 	.field {
-		font-weight: bold;
 		padding: var(--padding-standard);
 		border: none;
 		border-bottom: 1px solid transparent;
+		border-radius: 0;
 		text-overflow: ellipsis;
+		overflow: hidden;
 		white-space: nowrap;
+		min-width: 20px;
+		outline-style: none;
+		margin-left: 2px;
+		margin-right: 2px;
+	}
+
+	.editable {
+		border-bottom: 1px solid var(--color-outline-variant);
+		color: var(--color-on-editable);
+		background-color: var(--color-editable);
 	}
 
 	.right {
@@ -50,20 +52,8 @@
 		text-align: center;
 	}
 
-	.borderLeft {
-		border-left: 1px solid var(--color-header);
-	}
-
-	.borderRight {
-		border-right: 1px solid var(--color-header);
-	}
-
 	.noBottomBorder {
 		border-bottom: none;
-	}
-
-	.smaller {
-		font-size: 85%;
 	}
 
 	.wrap {

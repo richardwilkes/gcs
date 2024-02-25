@@ -8,22 +8,28 @@
   - This Source Code Form is "Incompatible With Secondary Licenses", as
   - defined by the Mozilla Public License, version 2.0.
   -->
-<script lang="ts">
+<script lang='ts'>
 	import Header from '$lib/sheets/widget/Header.svelte';
 	import Label from '$lib/sheets/widget/Label.svelte';
-	import EditableStringField from '$lib/sheets/widget/EditableStringField.svelte';
+	import Field from '$lib/sheets/widget/Field.svelte';
 	import { sheet } from '$lib/sheet.ts';
 </script>
 
-<div class="content">
+<div class='content'>
 	<Header>Identity</Header>
-	<div class="fields">
-		<Label title="Name" />
-		<EditableStringField name="profile.name" value={$sheet?.Identity.Name ?? ''} />
-		<Label title="Title" />
-		<EditableStringField name="profile.title" value={$sheet?.Identity.Title ?? ''} />
-		<Label title="Organization" />
-		<EditableStringField name="profile.org" value={$sheet?.Identity.Organization ?? ''} />
+	<div class='fields'>
+		<div class='banding'><Label title='Name' /></div>
+		<div class='banding'>
+			<Field editable style='width:100%;'>{$sheet?.Identity.Name ?? ''}</Field>
+		</div>
+		<div><Label title='Title' /></div>
+		<div>
+			<Field editable style='width:100%;'>{$sheet?.Identity.Title ?? ''}</Field>
+		</div>
+		<div class='banding'><Label title='Organization' /></div>
+		<div class='banding'>
+			<Field editable style='width:100%;'>{$sheet?.Identity.Organization ?? ''}</Field>
+		</div>
 	</div>
 </div>
 
@@ -40,11 +46,17 @@
 		display: grid;
 		flex-grow: 1;
 		grid-template-columns: 0fr 1fr;
-		align-items: baseline;
+		align-items: stretch;
+		align-content: stretch;
 		white-space: nowrap;
 		background-color: var(--color-surface);
 		color: var(--color-on-surface);
-		padding-right: 4px;
 		padding-bottom: 2px;
+	}
+
+	.fields > div {
+		display: flex;
+		align-items: center;
+		justify-content: end;
 	}
 </style>

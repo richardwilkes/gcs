@@ -34,13 +34,13 @@
 			<div class='right' class:current class:overloaded class:banding><Label title={i} /></div>
 			<div class='border' class:current class:overloaded class:banding><Label title={label} left={true} /></div>
 			<div class='right border' class:current class:overloaded class:banding>
-				<Field noBottomBorder={true}>{$sheet?.Encumbrance.MaxLoad[i]}</Field>
+				<Field noBottomBorder>{$sheet?.Encumbrance.MaxLoad[i]}</Field>
 			</div>
 			<div class='right border' class:current class:overloaded class:banding>
-				<Field noBottomBorder={true}>{$sheet?.Encumbrance.Move[i]}</Field>
+				<Field noBottomBorder right>{$sheet?.Encumbrance.Move[i]}</Field>
 			</div>
 			<div class='right' class:current class:overloaded class:banding>
-				<Field noBottomBorder={true}>{$sheet?.Encumbrance.Dodge[i]}</Field>
+				<Field noBottomBorder right>{$sheet?.Encumbrance.Dodge[i]}</Field>
 			</div>
 		{/each}
 	</div>
