@@ -31,11 +31,11 @@
 			if (imageURL) {
 				if (naturalWidth && naturalHeight) {
 					if (naturalWidth > naturalHeight) {
-						width = pictureHeight + 'px';
+						width = "100%";
 						height = naturalHeight * (pictureHeight / naturalWidth) + 'px';
 					} else {
 						width = naturalWidth * (pictureHeight / naturalHeight) + 'px';
-						height = pictureHeight + 'px';
+						height = "100%";
 					}
 				}
 			} else {
