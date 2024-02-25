@@ -13,7 +13,7 @@
 	import type { Table } from '$lib/sheet.ts';
 	import Header from '$lib/sheets/widget/Header.svelte';
 	import Icon from '$lib/svg/Icon.svelte';
-	import Field from '$lib/sheets/widget/Field.svelte';
+	import Cell from '$lib/sheets/lists/Cell.svelte';
 
 	export let table: Table | null | undefined;
 	export let area: string;
@@ -46,35 +46,9 @@
 		{#each table.Rows as row, rowIndex}
 			{@const banding = rowIndex % 2 === 1}
 			{#each row.Cells as cell, cellIndex}
-				<div class:divider={cellIndex !== 0} class:banding>
-					<!-- TODO: Add support for the other fields in the Cell data -->
-					<Field tip={cell.Tooltip} right={cell.Alignment === 'end'} center={cell.Alignment === 'middle'}
-												 noBottomBorder wrap={table.Columns[cellIndex].Primary}>
-						{#if cell.Type === 'toggle'}
-							{#if cell.Checked}
-								<div class='icon'>
-									<Icon key='checkmark' />
-								</div>
-							{:else}
-								&nbsp;
-							{/if}
-						{:else if cell.Type === 'page_ref'}
-							{cell.Primary}
-						{:else if cell.Type === 'markdown'}
-							<!-- TODO: Render markdown -->
-							{cell.Primary}
-							{#if cell.Secondary}
-								<br />
-								<span class='secondary'>{cell.Secondary}</span>
-							{/if}
-						{:else}
-							{cell.Primary}
-							{#if cell.Secondary}
-								<br />
-								<span class='secondary'>{cell.Secondary}</span>
-							{/if}
-						{/if}
-					</Field>
+				<div class:divider={cellIndex !== 0} class:banding
+						 style={(row.Depth && table.Columns[cellIndex].Primary) ? `padding-left: ${row.Depth}em` : ''}>
+					<Cell {cell} column={table.Columns[cellIndex]} />
 				</div>
 			{/each}
 		{/each}
@@ -91,13 +65,5 @@
 
 	.divider {
 		border-left: var(--standard-border);
-	}
-
-	.secondary {
-		font-size: 85%;
-	}
-
-	.icon {
-		padding-top: 4px;
 	}
 </style>

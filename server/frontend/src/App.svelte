@@ -70,5 +70,6 @@
 		gap: 2px;
 		cursor: pointer;
 		color: var(--color-on-surface-variant);
+		font-weight: normal;
 	}
 </style>
