@@ -18,15 +18,15 @@
 <div class='content'>
 	<Header>Identity</Header>
 	<div class='fields'>
-		<div class='banding'><Label title='Name' /></div>
+		<div class='banding'><Label>Name</Label></div>
 		<div class='banding'>
 			<Field editable style='width:100%;'>{$sheet?.Identity.Name ?? ''}</Field>
 		</div>
-		<div><Label title='Title' /></div>
+		<div><Label>Title</Label></div>
 		<div>
 			<Field editable style='width:100%;'>{$sheet?.Identity.Title ?? ''}</Field>
 		</div>
-		<div class='banding'><Label title='Organization' /></div>
+		<div class='banding'><Label>Organization</Label></div>
 		<div class='banding'>
 			<Field editable style='width:100%;'>{$sheet?.Identity.Organization ?? ''}</Field>
 		</div>

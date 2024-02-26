@@ -8,27 +8,38 @@
   - This Source Code Form is "Incompatible With Secondary Licenses", as
   - defined by the Mozilla Public License, version 2.0.
   -->
-<script lang="ts">
+
+<script lang='ts'>
 	import Warning from '$lib/svg/Warning.svelte';
 
-	export let reason = '';
+	export let warning = false;
+	export let tip = '';
 </script>
 
-<div class="content" title={reason}>
-	<Warning />
-	Unsatisfied prerequisite(s)!
+<div class='tag' class:warning title={tip}>
+	{#if warning}
+		<Warning />
+	{/if}
+	<slot />
 </div>
 
 <style>
-	.content {
+	.tag {
+		margin: 0 0.25em;
+		display: inline-flex;
+		align-items: center;
+		padding: 0 0.5em;
+		gap: 0.25em;
+		width: fit-content;
+		border-radius: 0.5em;
+		color: var(--color-on-tertiary);
+		background-color: var(--color-tertiary);
 		font-size: 85%;
-		padding: var(--padding-standard);
-		white-space: nowrap;
-		background-color: var(--color-error);
+	}
+
+	.warning {
 		color: var(--color-on-error);
 		fill: var(--color-on-error);
-		align-self: flex-start;
-		border-radius: 4px;
-		margin-left: 4px;
+		background-color: var(--color-error);
 	}
 </style>

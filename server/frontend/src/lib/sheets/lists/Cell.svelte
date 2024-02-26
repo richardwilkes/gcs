@@ -13,6 +13,7 @@
 	import Field from '$lib/sheets/widget/Field.svelte';
 	import type { Cell, Column } from '$lib/sheet.ts';
 	import Icon from '$lib/svg/Icon.svelte';
+	import Tag from '$lib/sheets/lists/Tag.svelte';
 
 	export let cell: Cell;
 	export let column: Column;
@@ -35,16 +36,25 @@
 	{:else if cell.Type === 'markdown'}
 		<!-- TODO: Render markdown -->
 		{cell.Primary}
+		{#if cell.InlineTag}
+			<Tag>{cell.InlineTag}</Tag>
+		{/if}
 		{#if cell.Secondary}
 			<br />
 			<span class='secondary'>{cell.Secondary}</span>
 		{/if}
 	{:else}
 		{cell.Primary}
+		{#if cell.InlineTag}
+			<Tag>{cell.InlineTag}</Tag>
+		{/if}
 		{#if cell.Secondary}
 			<br />
 			<span class='secondary'>{cell.Secondary}</span>
 		{/if}
+	{/if}
+	{#if cell.UnsatisfiedReason}
+		<Tag warning tip={cell.UnsatisfiedReason}>Unsatisfied prerequisite(s)</Tag>
 	{/if}
 </Field>
 

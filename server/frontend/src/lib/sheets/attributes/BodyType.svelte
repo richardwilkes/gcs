@@ -19,15 +19,15 @@
 <div class="content">
 	<Header>{$sheet?.Body.Name ?? ''}</Header>
 	<div class="fields">
-		<SubHeader title="Roll" />
-		<SubHeader title="Location" />
-		<SubHeader title="DR" />
+		<SubHeader>Roll</SubHeader>
+		<SubHeader>Location</SubHeader>
+		<SubHeader tip='Damage Resistance'>DR</SubHeader>
 		{#each $sheet?.Body.Locations ?? [] as loc, i}
 			{@const banding = i % 2 === 1}
-			<div class:banding><Label title={loc.Roll} /></div>
+			<div class:banding><Label>{loc.Roll}</Label></div>
 			<div class="name" class:banding>
-				<Label title={loc.Location} tip={loc.LocationDetail} />
-				<Label title={loc.HitPenalty ?? 0}/>
+				<Label tip={loc.LocationDetail}>{loc.Location}</Label>
+				<Label>{loc.HitPenalty ?? 0}</Label>
 			</div>
 			<div class:banding>
 				<Field noBottomBorder center tip={loc.DRDetail}>{loc.DR}</Field>

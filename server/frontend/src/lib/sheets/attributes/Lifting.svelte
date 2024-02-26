@@ -21,15 +21,15 @@
 		<div>
 			<Field noBottomBorder>{$sheet?.LiftingAndMovingThings.BasicLift}</Field>
 		</div>
-		<div><Label title="Basic Lift" /></div>
+		<div><Label>Basic Lift</Label></div>
 		<div class="banding">
 			<Field noBottomBorder>{$sheet?.LiftingAndMovingThings.OneHandedLift}</Field>
 		</div>
-		<div class="banding"><Label title="One-Handed Lift" /></div>
+		<div class="banding"><Label>One-Handed Lift</Label></div>
 		<div>
 			<Field noBottomBorder>{$sheet?.LiftingAndMovingThings.TwoHandedLift}</Field>
 		</div>
-		<div><Label title="Two-Handed Lift" /></div>
+		<div><Label>Two-Handed Lift</Label></div>
 		<div class="banding">
 			<Field noBottomBorder>{$sheet?.LiftingAndMovingThings.ShoveAndKnockOver}</Field>
 		</div>
@@ -37,15 +37,15 @@
 		<div>
 			<Field noBottomBorder>{$sheet?.LiftingAndMovingThings.RunningShoveAndKnockOver}</Field>
 		</div>
-		<div><Label title="Running Shove & Knock Over" /></div>
+		<div><Label>Running Shove & Knock Over</Label></div>
 		<div class="banding">
 			<Field noBottomBorder>{$sheet?.LiftingAndMovingThings.CarryOnBack}</Field>
 		</div>
-		<div class="banding"><Label title="Carry On Back" /></div>
+		<div class="banding"><Label>Carry On Back</Label></div>
 		<div>
 			<Field noBottomBorder>{$sheet?.LiftingAndMovingThings.ShiftSlightly}</Field>
 		</div>
-		<div><Label title="Shift Slightly" /></div>
+		<div><Label>Shift Slightly</Label></div>
 	</div>
 </div>
 

@@ -13,7 +13,7 @@
 </script>
 
 <div class="header" title={tip}>
-	<slot />
+	<slot>&nbsp;</slot>
 </div>
 
 <style>

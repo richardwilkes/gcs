@@ -19,9 +19,9 @@
 	<Header>Basic Damage</Header>
 	<div class="fields">
 		<div class='right'><Field noBottomBorder>{$sheet?.BasicDamage.Thrust ?? ""}</Field></div>
-		<div class='left'><Label title="Basic Thrust" /></div>
+		<div class='left'><Label>Basic Thrust</Label></div>
 		<div class='right banding'><Field noBottomBorder>{$sheet?.BasicDamage.Swing ?? ""}</Field></div>
-		<div class='left banding'><Label title="Basic Swing" /></div>
+		<div class='left banding'><Label>Basic Swing</Label></div>
 	</div>
 </div>
 

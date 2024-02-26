@@ -9,11 +9,13 @@
   - defined by the Mozilla Public License, version 2.0.
   -->
 <script lang="ts">
-	export let title = '';
 	export let span = 1;
+	export let tip = '';
 </script>
 
-<div class="header" style="grid-column-end: span {span}">{title}</div>
+<div class="header" title={tip} style="grid-column-end: span {span}">
+	<slot>&nbsp;</slot>
+</div>
 
 <style>
 	.header {

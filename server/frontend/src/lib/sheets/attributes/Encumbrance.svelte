@@ -20,10 +20,10 @@
 <div class="content">
 	<Header>Encumbrance, Move & Dodge</Header>
 	<div class="fields">
-		<SubHeader title="Level" span={3} />
-		<SubHeader title="Max Load" />
-		<SubHeader title="Move" />
-		<SubHeader title="Dodge" />
+		<SubHeader span={3}>Level</SubHeader>
+		<SubHeader>Max Load</SubHeader>
+		<SubHeader>Move</SubHeader>
+		<SubHeader>Dodge</SubHeader>
 		{#each ['None', 'Light', 'Medium', 'Heavy', 'X-Heavy'] as label, i}
 			{@const banding = i % 2 === 1}
 			{@const current = $sheet?.Encumbrance.Current === i}
@@ -31,8 +31,8 @@
 			<div class="marker" class:current class:overloaded class:banding>
 				{#if current}<Weight />{/if}
 			</div>
-			<div class='right' class:current class:overloaded class:banding><Label title={i} /></div>
-			<div class='border' class:current class:overloaded class:banding><Label title={label} left={true} /></div>
+			<div class='right' class:current class:overloaded class:banding><Label>{i}</Label></div>
+			<div class='border' class:current class:overloaded class:banding><Label left>{label}</Label></div>
 			<div class='right border' class:current class:overloaded class:banding>
 				<Field noBottomBorder>{$sheet?.Encumbrance.MaxLoad[i]}</Field>
 			</div>

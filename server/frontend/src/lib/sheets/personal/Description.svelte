@@ -20,55 +20,55 @@
 		<Header>Description</Header>
 	</div>
 	<div class='fields' style='grid-area:block1;'>
-		<div class='banding'><Label title='Gender' /></div>
+		<div class='banding'><Label>Gender</Label></div>
 		<div class='banding'>
 			<Field editable style='width:100%;'>{$sheet?.Description.Gender ?? ''}</Field>
 		</div>
-		<div><Label title='Age' /></div>
+		<div><Label>Age</Label></div>
 		<div>
 			<Field editable style='width:100%;'>{$sheet?.Description.Age ?? ''}</Field>
 		</div>
-		<div class='banding'><Label title='Birthday' /></div>
+		<div class='banding'><Label>Birthday</Label></div>
 		<div class='banding'>
 			<Field editable style='width:100%;'>{$sheet?.Description.Birthday ?? ''}</Field>
 		</div>
-		<div><Label title='Religion' /></div>
+		<div><Label>Religion</Label></div>
 		<div>
 			<Field editable style='width:100%;'>{$sheet?.Description.Religion ?? ''}</Field>
 		</div>
 	</div>
 	<div class='fields divider' style='grid-area:block2;'>
-		<div class='banding'><Label title='Height' /></div>
+		<div class='banding'><Label>Height</Label></div>
 		<div class='banding'>
 			<Field editable style='width:100%;'>{$sheet?.Description.Height ?? ''}</Field>
 		</div>
-		<div><Label title='Weight' /></div>
+		<div><Label>Weight</Label></div>
 		<div>
 			<Field editable style='width:100%;'>{$sheet?.Description.Weight ?? ''}</Field>
 		</div>
-		<div class='banding'><Label title='Size' /></div>
+		<div class='banding'><Label>Size</Label></div>
 		<div class='banding'>
 			<Field editable style='width:100%;'>{$sheet?.Description.SizeModifier ?? 0}</Field>
 		</div>
-		<div><Label title='TL' /></div>
+		<div><Label>TL</Label></div>
 		<div>
 			<Field editable style='width:100%;'>{$sheet?.Description.TechLevel ?? ''}</Field>
 		</div>
 	</div>
 	<div class='fields divider' style='grid-area:block3;'>
-		<div class='banding'><Label title='Hair' /></div>
+		<div class='banding'><Label>Hair</Label></div>
 		<div class='banding'>
 			<Field editable style='width:100%;'>{$sheet?.Description.Hair ?? ''}</Field>
 		</div>
-		<div><Label title='Eyes' /></div>
+		<div><Label>Eyes</Label></div>
 		<div>
 			<Field editable style='width:100%;'>{$sheet?.Description.Eyes ?? ''}</Field>
 		</div>
-		<div class='banding'><Label title='Skin' /></div>
+		<div class='banding'><Label>Skin</Label></div>
 		<div class='banding'>
 			<Field editable style='width:100%;'>{$sheet?.Description.Skin ?? ''}</Field>
 		</div>
-		<div><Label title='Hand' /></div>
+		<div><Label>Hand</Label></div>
 		<div>
 			<Field editable style='width:100%;'>{$sheet?.Description.Hand ?? ''}</Field>
 		</div>

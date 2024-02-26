@@ -9,7 +9,6 @@
   - defined by the Mozilla Public License, version 2.0.
   -->
 <script lang="ts">
-	export let title: string | number = '';
 	export let tip = '';
 	export let left = false;
 	export let center = false;
@@ -17,7 +16,9 @@
 	export let borderRight = false;
 </script>
 
-<div class="label" class:left class:center class:borderLeft class:borderRight title={tip}>{title}</div>
+<div class="label" class:left class:center class:borderLeft class:borderRight title={tip}>
+	<slot>&nbsp;</slot>
+</div>
 
 <style>
 	.label {

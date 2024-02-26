@@ -19,29 +19,29 @@
 	<Header>{$sheet?.Points.Total ?? 0} Points</Header>
 	<div class="fields">
 		<Field right>{$sheet?.Points.Unspent ?? 0}</Field>
-		<Label title="Unspent" left={true} />
+		<Label left>Unspent</Label>
 		<div class="banding">
 			<Field right>{$sheet?.Points.Ancestry ?? 0}</Field>
 		</div>
-		<div class="banding"><Label title="Race" left={true} /></div>
+		<div class="banding"><Label left>Race</Label></div>
 		<Field right>{$sheet?.Points.Attributes ?? 0}</Field>
-		<Label title="Attributes" left={true} />
+		<Label left>Attributes</Label>
 		<div class="banding">
 			<Field right>{$sheet?.Points.Advantages ?? 0}</Field>
 		</div>
-		<div class="banding"><Label title="Advantages" left={true} /></div>
+		<div class="banding"><Label left>Advantages</Label></div>
 		<Field right>{$sheet?.Points.Disadvantages ?? 0}</Field>
-		<Label title="Disadvantages" left={true} />
+		<Label left>Disadvantages</Label>
 		<div class="banding">
 			<Field right>{$sheet?.Points.Quirks ?? 0}</Field>
 		</div>
-		<div class="banding"><Label title="Quirks" left={true} /></div>
+		<div class="banding"><Label left>Quirks</Label></div>
 		<Field right>{$sheet?.Points.Skills ?? 0}</Field>
-		<Label title="Skills" left={true} />
+		<Label left>Skills</Label>
 		<div class="banding">
 			<Field right>{$sheet?.Points.Spells ?? 0}</Field>
 		</div>
-		<div class="banding"><Label title="Spells" left={true} /></div>
+		<div class="banding"><Label left>Spells</Label></div>
 	</div>
 </div>
 

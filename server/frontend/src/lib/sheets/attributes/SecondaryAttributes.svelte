@@ -25,7 +25,7 @@
 			{@const banding = i % 2 === 1}
 			<div class:banding><PointsNoteField value={attr.Points} /></div>
 			<div class:banding><Field editable right style='width: 100%;'>{attr.Value}</Field></div>
-			<div class:banding><Label title={attr.Name} left /></div>
+			<div class:banding><Label left>{attr.Name}</Label></div>
 		{/each}
 	</div>
 </div>

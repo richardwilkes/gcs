@@ -25,9 +25,9 @@
 			{@const banding = i % 2 === 1}
 			<div class:banding><PointsNoteField value={pool.Points} /></div>
 			<div class:banding><Field editable right style='width: 100%;'>{pool.Value}</Field></div>
-			<div class:banding><Label title='of' left /></div>
+			<div class:banding><Label left>of</Label></div>
 			<div class:banding><Field editable right style='width: 100%;'>{pool.Max}</Field></div>
-			<div class:banding><Label title={pool.Name} left /></div>
+			<div class:banding><Label left>{pool.Name}</Label></div>
 		{/each}
 	</div>
 </div>

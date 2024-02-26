@@ -19,11 +19,11 @@
 <div class="content">
 	<Header>Miscellaneous</Header>
 	<div class="fields">
-		<div class='banding'><Label title="Created" /></div>
+		<div class='banding'><Label>Created</Label></div>
 		<div class='banding'><Field style='width:100%;'>{formatDateStamp($sheet?.Misc.Created)}</Field></div>
-		<div><Label title="Modified" /></div>
+		<div><Label>Modified</Label></div>
 		<div><Field style='width:100%;'>{formatDateStamp($sheet?.Misc.Modified)}</Field></div>
-		<div class='banding'><Label title="Player" /></div>
+		<div class='banding'><Label>Player</Label></div>
 		<div class='banding'><Field editable style='width:100%;'>{$sheet?.Misc.Player ?? ''}</Field></div>
 	</div>
 </div>
