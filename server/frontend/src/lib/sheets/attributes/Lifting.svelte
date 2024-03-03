@@ -33,7 +33,7 @@
 		<div class="banding">
 			<Field noBottomBorder>{$sheet?.LiftingAndMovingThings.ShoveAndKnockOver}</Field>
 		</div>
-		<div class="banding"><Label title="Shove & Knock Over" /></div>
+		<div class="banding"><Label>Shove & Knock Over</Label></div>
 		<div>
 			<Field noBottomBorder>{$sheet?.LiftingAndMovingThings.RunningShoveAndKnockOver}</Field>
 		</div>
