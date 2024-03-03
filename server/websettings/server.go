@@ -16,6 +16,7 @@ import (
 	"io/fs"
 	"maps"
 	"net"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -24,6 +25,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
+	"github.com/richardwilkes/toolbox/txt"
 )
 
 // Minimums and defaults for web server settings.
@@ -210,17 +212,31 @@ func (s *Settings) LookupUserNameAndPassword(name string) (actualName, hashedPas
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	var user *User
-	if user, ok = s.users[userNameToKey(name)]; !ok {
+	if user, ok = s.users[UserNameToKey(name)]; !ok {
 		return "", "", false
 	}
 	return user.Name, user.HashedPassword, true
+}
+
+// Users returns a sorted list of users.
+func (s *Settings) Users() []*User {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+	users := make([]*User, 0, len(s.users))
+	for _, user := range s.users {
+		users = append(users, user.Clone())
+	}
+	slices.SortStableFunc(users, func(a, b *User) int {
+		return txt.NaturalCmp(a.Name, b.Name, true)
+	})
+	return users
 }
 
 // CreateUser creates a user. Returns true on success, false if a user by that name already exists.
 func (s *Settings) CreateUser(name, password string) bool {
 	s.lock.Lock()
 	defer s.lock.Unlock()
-	key := userNameToKey(name)
+	key := UserNameToKey(name)
 	if _, exists := s.users[key]; exists {
 		return false
 	}
@@ -236,7 +252,7 @@ func (s *Settings) CreateUser(name, password string) bool {
 func (s *Settings) RemoveUser(name string) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
-	key := userNameToKey(name)
+	key := UserNameToKey(name)
 	delete(s.users, key)
 	var keysToDelete []uuid.UUID
 	for id, session := range s.sessions {
@@ -253,13 +269,13 @@ func (s *Settings) RemoveUser(name string) {
 func (s *Settings) RenameUser(oldName, newName string) bool {
 	s.lock.Lock()
 	defer s.lock.Unlock()
-	oldKey := userNameToKey(oldName)
+	oldKey := UserNameToKey(oldName)
 	user, exists := s.users[oldKey]
 	if !exists {
 		return false
 	}
 	user.Name = newName
-	newKey := userNameToKey(newName)
+	newKey := UserNameToKey(newName)
 	if newKey != oldKey {
 		delete(s.users, oldKey)
 		s.users[newKey] = user
@@ -272,11 +288,23 @@ func (s *Settings) RenameUser(oldName, newName string) bool {
 	return true
 }
 
+// SetUserPassword sets the user's password. Returns true on success, false if the user can't be found.
+func (s *Settings) SetUserPassword(name, password string) bool {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+	user, exists := s.users[UserNameToKey(name)]
+	if !exists {
+		return false
+	}
+	user.HashedPassword = HashPassword(password)
+	return true
+}
+
 // AccessList returns the access list for a user.
 func (s *Settings) AccessList(name string) map[string]Access {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
-	user, exists := s.users[userNameToKey(name)]
+	user, exists := s.users[UserNameToKey(name)]
 	if !exists {
 		return nil
 	}
@@ -287,7 +315,7 @@ func (s *Settings) AccessList(name string) map[string]Access {
 func (s *Settings) SetAccessList(name string, accessList map[string]Access) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
-	user, exists := s.users[userNameToKey(name)]
+	user, exists := s.users[UserNameToKey(name)]
 	if !exists {
 		return
 	}
@@ -317,7 +345,7 @@ func (s *Settings) CreateSession(userName string) uuid.UUID {
 	defer s.lock.Unlock()
 	session := &Session{
 		ID:       uuid.New(),
-		UserKey:  userNameToKey(userName),
+		UserKey:  UserNameToKey(userName),
 		Issued:   time.Now(),
 		LastUsed: time.Now(),
 	}

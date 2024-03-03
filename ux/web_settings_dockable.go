@@ -15,16 +15,20 @@ import (
 	"io/fs"
 	"net"
 	"path/filepath"
+	"slices"
+	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/server/state"
 	"github.com/richardwilkes/gcs/v5/server/websettings"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/check"
 )
 
@@ -47,6 +51,17 @@ type webSettingsDockable struct {
 	readTimeoutField         *DecimalField
 	writeTimeoutField        *DecimalField
 	idleTimeoutField         *DecimalField
+	userList                 *unison.List[*websettings.User]
+	userAddButton            *unison.Button
+	userNameField            *StringField
+	originalName             string
+	accessList               *unison.List[*websettings.AccessWithKey]
+	accessListUser           *websettings.User
+	accessOriginal           websettings.AccessWithKey
+	accessKeyField           *StringField
+	accessDirField           *StringField
+	accessDialog             *unison.Dialog
+	userDialog               *unison.Dialog
 }
 
 // ShowWebSettings the Web Settings window.
@@ -90,6 +105,7 @@ func (d *webSettingsDockable) initContent(content *unison.Panel) {
 	d.createReadTimeoutField(content)
 	d.createWriteTimeoutField(content)
 	d.createIdleTimeoutField(content)
+	d.createUsersBlock(content)
 	d.syncEnablementToServer(nil)
 }
 
@@ -131,6 +147,8 @@ func (d *webSettingsDockable) setWebServerControlEnablement(enabled bool) {
 	d.readTimeoutField.SetEnabled(enabled)
 	d.writeTimeoutField.SetEnabled(enabled)
 	d.idleTimeoutField.SetEnabled(enabled)
+	d.userList.SetEnabled(enabled)
+	d.userAddButton.SetEnabled(enabled)
 }
 
 func (d *webSettingsDockable) createEnabledCheckbox(content *unison.Panel) {
@@ -190,16 +208,16 @@ func isAddressValid(address string) bool {
 func (d *webSettingsDockable) createCertFileField(content *unison.Panel) {
 	d.certFileField, d.certFileButton = createFilePathField(content, i18n.Text("Certificate File"),
 		func() string { return gurps.GlobalSettings().WebServer.CertFile },
-		func(s string) { gurps.GlobalSettings().WebServer.CertFile = s })
+		func(s string) { gurps.GlobalSettings().WebServer.CertFile = s }, false)
 }
 
 func (d *webSettingsDockable) createKeyFileField(content *unison.Panel) {
 	d.keyFileField, d.keyFileButton = createFilePathField(content, i18n.Text("Key File"),
 		func() string { return gurps.GlobalSettings().WebServer.KeyFile },
-		func(s string) { gurps.GlobalSettings().WebServer.KeyFile = s })
+		func(s string) { gurps.GlobalSettings().WebServer.KeyFile = s }, false)
 }
 
-func createFilePathField(content *unison.Panel, title string, get func() string, set func(string)) (*StringField, *unison.Button) {
+func createFilePathField(content *unison.Panel, title string, get func() string, set func(string), forDirs bool) (*StringField, *unison.Button) {
 	content.AddChild(NewFieldLeadingLabel(title, false))
 	fileField := NewStringField(nil, "", title, get, set)
 	fileField.ValidateCallback = func() bool {
@@ -209,18 +227,24 @@ func createFilePathField(content *unison.Panel, title string, get func() string,
 		}
 		return filepath.IsAbs(p) && xfs.FileIsReadable(p)
 	}
-	locateButton := unison.NewSVGButton(svg.GenericFile)
-	locateButton.ClickCallback = func() { chooseFilePath(fileField) }
+	var icon *unison.SVG
+	if forDirs {
+		icon = svg.ClosedFolder
+	} else {
+		icon = svg.GenericFile
+	}
+	locateButton := unison.NewSVGButton(icon)
+	locateButton.ClickCallback = func() { chooseFilePath(fileField, forDirs) }
 	content.AddChild(WrapWithSpan(1, fileField, locateButton))
 	return fileField, locateButton
 }
 
-func chooseFilePath(field *StringField) {
+func chooseFilePath(field *StringField, forDirs bool) {
 	dlg := unison.NewOpenDialog()
 	dlg.SetAllowsMultipleSelection(false)
 	dlg.SetResolvesAliases(true)
-	dlg.SetCanChooseDirectories(false)
-	dlg.SetCanChooseFiles(true)
+	dlg.SetCanChooseDirectories(forDirs)
+	dlg.SetCanChooseFiles(!forDirs)
 	usedLastDir := false
 	currentPath := field.Text()
 	if xfs.FileExists(currentPath) {
@@ -277,6 +301,454 @@ func createSecondsField(content *unison.Panel, title string, get func() fxp.Int,
 	field := NewDecimalField(nil, "", title, get, set, miniumum, maximum, false, false)
 	content.AddChild(WrapWithSpan(1, field, NewFieldTrailingLabel(i18n.Text("seconds"), false)))
 	return field
+}
+
+func (d *webSettingsDockable) createUsersBlock(content *unison.Panel) {
+	header := unison.NewPanel()
+	header.SetLayoutData(&unison.FlexLayoutData{
+		HSpan:  2,
+		HAlign: align.Fill,
+		HGrab:  true,
+	})
+	header.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing / 2,
+	})
+	content.AddChild(header)
+	d.userAddButton = unison.NewSVGButton(svg.CircledAdd)
+	d.userAddButton.Tooltip = newWrappedTooltip(i18n.Text("Add User"))
+	d.userAddButton.ClickCallback = d.addUser
+	header.AddChild(d.userAddButton)
+	title := unison.NewLabel()
+	title.Text = i18n.Text("Users")
+	header.AddChild(title)
+	d.userList = unison.NewList[*websettings.User]()
+	d.userList.BackgroundInk = unison.ContentColor
+	d.userList.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
+	d.userList.SetLayoutData(&unison.FlexLayoutData{
+		MinSize: unison.NewSize(300, 64),
+		HSpan:   2,
+		HAlign:  align.Fill,
+		VAlign:  align.Fill,
+		HGrab:   true,
+		VGrab:   true,
+	})
+	d.userList.Append(gurps.GlobalSettings().WebServer.Users()...)
+	d.userList.DoubleClickCallback = d.editUser
+	d.userList.KeyDownCallback = d.handleUserListKey
+	content.AddChild(d.userList)
+}
+
+func (d *webSettingsDockable) handleUserListKey(keyCode unison.KeyCode, mod unison.Modifiers, repeat bool) bool {
+	if gurps.GlobalSettings().WebServer.Enabled {
+		return false
+	}
+	switch keyCode {
+	case unison.KeyDelete, unison.KeyBackspace:
+		d.deleteUser()
+		return true
+	case unison.KeyReturn, unison.KeyNumPadEnter:
+		d.editUser()
+		return true
+	}
+	return d.userList.DefaultKeyDown(keyCode, mod, repeat)
+}
+
+func (d *webSettingsDockable) deleteUser() {
+	settings := gurps.GlobalSettings().WebServer
+	if settings.Enabled || d.userList.Selection.FirstSet() == -1 {
+		return
+	}
+	for {
+		i := d.userList.Selection.LastSet()
+		if i == -1 {
+			d.userList.Pack()
+			d.userList.MarkForLayoutRecursivelyUpward()
+			d.ValidateLayout()
+			break
+		}
+		settings.RemoveUser(d.userList.DataAtIndex(i).Name)
+		d.userList.Remove(i)
+	}
+}
+
+func (d *webSettingsDockable) editUser() {
+	settings := gurps.GlobalSettings().WebServer
+	if settings.Enabled || d.userList.Selection.Count() != 1 {
+		return
+	}
+	u := d.userList.DataAtIndex(d.userList.Selection.FirstSet())
+	name := u.Name
+	var err error
+	panel := d.createUserPanel(u)
+	d.userDialog, err = unison.NewDialog(nil, nil, panel, []*unison.DialogButtonInfo{
+		unison.NewCancelButtonInfo(),
+		unison.NewOKButtonInfoWithTitle(i18n.Text("Update")),
+	})
+	if err != nil {
+		errs.Log(err)
+		return
+	}
+	if flex, ok := panel.LayoutData().(*unison.FlexLayoutData); ok {
+		flex.MinSize = unison.NewSize(500, 0)
+	}
+	d.userNameField.Validate()
+	defer func() { d.userDialog = nil }()
+	if d.userDialog.RunModal() == unison.ModalResponseOK {
+		if name != u.Name {
+			if !settings.RenameUser(name, u.Name) {
+				unison.ErrorDialogWithMessage(i18n.Text("Unable to rename user"),
+					i18n.Text("A user with that name already exists."))
+				return
+			}
+		}
+		if u.HashedPassword != "" {
+			if !settings.SetUserPassword(u.Name, u.HashedPassword) {
+				unison.ErrorDialogWithMessage(i18n.Text("Unable to set user's password"),
+					i18n.Text("A user with that name cannot be found."))
+				return
+			}
+		}
+		settings.SetAccessList(u.Name, u.AccessList)
+		all := settings.Users()
+		i := slices.IndexFunc(all, func(one *websettings.User) bool { return one.Key() == u.Key() })
+		d.userList.Select(false, i)
+		d.userList.Pack()
+		d.userList.MarkForLayoutRecursivelyUpward()
+		d.ValidateLayout()
+		d.userList.ScrollRectIntoView(d.userList.RowRect(i).Inset(unison.NewUniformInsets(-2)))
+		d.userList.MarkForRedraw()
+	}
+}
+
+func (d *webSettingsDockable) addUser() {
+	settings := gurps.GlobalSettings()
+	webSettings := settings.WebServer
+	if webSettings.Enabled {
+		return
+	}
+	libraries := settings.LibrarySet
+	u := &websettings.User{
+		AccessList: map[string]websettings.Access{
+			"master": {Dir: libraries.Master().Path(), ReadOnly: true},
+			"user":   {Dir: libraries.User().Path(), ReadOnly: false},
+		},
+	}
+	var err error
+	panel := d.createUserPanel(u)
+	d.userDialog, err = unison.NewDialog(nil, nil, panel, []*unison.DialogButtonInfo{
+		unison.NewCancelButtonInfo(),
+		unison.NewOKButtonInfoWithTitle(i18n.Text("Create")),
+	})
+	if err != nil {
+		errs.Log(err)
+		return
+	}
+	if flex, ok := panel.LayoutData().(*unison.FlexLayoutData); ok {
+		flex.MinSize = unison.NewSize(500, 0)
+	}
+	d.userNameField.Validate()
+	if d.userDialog.RunModal() == unison.ModalResponseOK {
+		if webSettings.CreateUser(u.Name, u.HashedPassword) {
+			webSettings.SetAccessList(u.Name, u.AccessList)
+			all := webSettings.Users()
+			i := slices.IndexFunc(all, func(one *websettings.User) bool { return one.Key() == u.Key() })
+			d.userList.Insert(i, all[i])
+			d.userList.Select(false, i)
+			d.userList.Pack()
+			d.userList.MarkForLayoutRecursivelyUpward()
+			d.ValidateLayout()
+			d.userList.ScrollRectIntoView(d.userList.RowRect(i).Inset(unison.NewUniformInsets(-2)))
+			d.userList.MarkForRedraw()
+		} else {
+			unison.ErrorDialogWithMessage(i18n.Text("Unable to create user"),
+				i18n.Text("A user with that name already exists."))
+		}
+	}
+	d.userDialog = nil
+}
+
+func (d *webSettingsDockable) createUserPanel(u *websettings.User) *unison.ScrollPanel {
+	d.accessListUser = u
+	panel := unison.NewPanel()
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	d.createUserNameField(panel, u)
+	d.createPasswordField(panel, u)
+	d.createAccessBlock(panel, u)
+	scroller := unison.NewScrollPanel()
+	scroller.SetContent(panel, behavior.Follow, behavior.Fill)
+	return scroller
+}
+
+func (d *webSettingsDockable) createUserNameField(content *unison.Panel, u *websettings.User) {
+	title := i18n.Text("Name")
+	content.AddChild(NewFieldLeadingLabel(title, false))
+	d.userNameField = NewStringField(nil, "", title, func() string { return u.Name }, func(s string) { u.Name = s })
+	d.originalName = u.Key()
+	d.userNameField.ValidateCallback = func() bool {
+		valid := d.isNameFieldValid()
+		d.userDialog.Button(unison.ModalResponseOK).SetEnabled(valid)
+		return valid
+	}
+	content.AddChild(d.userNameField)
+}
+
+func (d *webSettingsDockable) createPasswordField(content *unison.Panel, u *websettings.User) {
+	title := i18n.Text("New Password")
+	content.AddChild(NewFieldLeadingLabel(title, false))
+	u.HashedPassword = ""
+	field := NewStringField(nil, "", title, func() string { return u.HashedPassword },
+		func(s string) { u.HashedPassword = s })
+	field.ObscurementRune = '•'
+	field.Watermark = i18n.Text("Leave blank to keep the current password")
+	content.AddChild(field)
+}
+
+func (d *webSettingsDockable) createAccessBlock(content *unison.Panel, u *websettings.User) {
+	header := unison.NewPanel()
+	header.SetLayoutData(&unison.FlexLayoutData{
+		HSpan:  2,
+		HAlign: align.Fill,
+		HGrab:  true,
+	})
+	header.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing / 2,
+	})
+	content.AddChild(header)
+	addButton := unison.NewSVGButton(svg.CircledAdd)
+	addButton.Tooltip = newWrappedTooltip(i18n.Text("Add Access"))
+	addButton.ClickCallback = d.addAccess
+	header.AddChild(addButton)
+	title := unison.NewLabel()
+	title.Text = i18n.Text("Access")
+	header.AddChild(title)
+	d.accessList = unison.NewList[*websettings.AccessWithKey]()
+	d.accessList.BackgroundInk = unison.ContentColor
+	d.accessList.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
+	d.accessList.SetLayoutData(&unison.FlexLayoutData{
+		MinSize: unison.NewSize(300, 64),
+		HSpan:   2,
+		HAlign:  align.Fill,
+		VAlign:  align.Fill,
+		HGrab:   true,
+		VGrab:   true,
+	})
+	d.accessList.Append(u.AccessListWithKeys()...)
+	d.accessList.DoubleClickCallback = d.editAccess
+	d.accessList.KeyDownCallback = d.handleAccessListKey
+	content.AddChild(d.accessList)
+}
+
+func (d *webSettingsDockable) handleAccessListKey(keyCode unison.KeyCode, mod unison.Modifiers, repeat bool) bool {
+	if gurps.GlobalSettings().WebServer.Enabled {
+		return false
+	}
+	switch keyCode {
+	case unison.KeyDelete, unison.KeyBackspace:
+		d.deleteAccess()
+		return true
+	case unison.KeyReturn, unison.KeyNumPadEnter:
+		d.editAccess()
+		return true
+	}
+	return d.accessList.DefaultKeyDown(keyCode, mod, repeat)
+}
+
+func (d *webSettingsDockable) deleteAccess() {
+	settings := gurps.GlobalSettings().WebServer
+	if settings.Enabled || d.accessList.Selection.FirstSet() == -1 {
+		return
+	}
+	for {
+		i := d.accessList.Selection.LastSet()
+		if i == -1 {
+			d.accessList.Pack()
+			d.accessList.MarkForLayoutRecursivelyUpward()
+			d.ValidateLayout()
+			break
+		}
+		delete(d.accessListUser.AccessList, d.accessList.DataAtIndex(i).Key)
+		d.accessList.Remove(i)
+	}
+}
+
+func (d *webSettingsDockable) editAccess() {
+	if d.accessList.Selection.Count() != 1 {
+		return
+	}
+	access := d.accessList.DataAtIndex(d.accessList.Selection.FirstSet())
+	var err error
+	panel := d.createAccessPanel(access)
+	d.accessDialog, err = unison.NewDialog(nil, nil, panel, []*unison.DialogButtonInfo{
+		unison.NewCancelButtonInfo(),
+		unison.NewOKButtonInfoWithTitle(i18n.Text("Update")),
+	})
+	if err != nil {
+		errs.Log(err)
+		return
+	}
+	if flex, ok := panel.LayoutData().(*unison.FlexLayoutData); ok {
+		flex.MinSize = unison.NewSize(500, 0)
+	}
+	d.accessKeyField.Validate()
+	d.accessDirField.Validate()
+	defer func() { d.accessDialog = nil }()
+	if d.accessDialog.RunModal() == unison.ModalResponseOK {
+		d.accessListUser.AccessList[access.Key] = access.Access
+		all := d.accessListUser.AccessListWithKeys()
+		i := slices.IndexFunc(all, func(one *websettings.AccessWithKey) bool { return one.Key == access.Key })
+		d.accessList.Select(false, i)
+		d.accessList.Pack()
+		d.accessList.MarkForLayoutRecursivelyUpward()
+		d.ValidateLayout()
+		d.accessList.ScrollRectIntoView(d.accessList.RowRect(i).Inset(unison.NewUniformInsets(-2)))
+		d.accessList.MarkForRedraw()
+	}
+}
+
+func (d *webSettingsDockable) addAccess() {
+	access := &websettings.AccessWithKey{}
+	var err error
+	panel := d.createAccessPanel(access)
+	d.accessDialog, err = unison.NewDialog(nil, nil, panel, []*unison.DialogButtonInfo{
+		unison.NewCancelButtonInfo(),
+		unison.NewOKButtonInfoWithTitle(i18n.Text("Create")),
+	})
+	if err != nil {
+		errs.Log(err)
+		return
+	}
+	if flex, ok := panel.LayoutData().(*unison.FlexLayoutData); ok {
+		flex.MinSize = unison.NewSize(500, 0)
+	}
+	d.accessKeyField.Validate()
+	d.accessDirField.Validate()
+	if d.accessDialog.RunModal() == unison.ModalResponseOK {
+		if d.accessListUser.AccessList == nil {
+			d.accessListUser.AccessList = make(map[string]websettings.Access)
+		}
+		d.accessListUser.AccessList[access.Key] = access.Access
+		all := d.accessListUser.AccessListWithKeys()
+		i := slices.IndexFunc(all, func(one *websettings.AccessWithKey) bool { return one.Key == access.Key })
+		d.accessList.Insert(i, all[i])
+		d.accessList.Select(false, i)
+		d.accessList.Pack()
+		d.accessList.MarkForLayoutRecursivelyUpward()
+		d.ValidateLayout()
+		d.accessList.ScrollRectIntoView(d.accessList.RowRect(i).Inset(unison.NewUniformInsets(-2)))
+		d.accessList.MarkForRedraw()
+	}
+	d.accessDialog = nil
+}
+
+func (d *webSettingsDockable) createAccessPanel(access *websettings.AccessWithKey) *unison.Panel {
+	panel := unison.NewPanel()
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	panel.SetLayoutData(&unison.FlexLayoutData{MinSize: unison.NewSize(300, 0)})
+	d.accessOriginal = *access
+	d.createAccessKeyField(panel, access)
+	d.createAccessDirField(panel, access)
+	d.createAccessReadOnlyCheckbox(panel, access)
+	return panel
+}
+
+func (d *webSettingsDockable) createAccessKeyField(content *unison.Panel, access *websettings.AccessWithKey) {
+	title := i18n.Text("Key")
+	content.AddChild(NewFieldLeadingLabel(title, false))
+	d.accessKeyField = NewStringField(nil, "", title, func() string { return access.Key },
+		func(s string) { access.Key = s })
+	d.accessKeyField.ValidateCallback = func() bool {
+		valid := d.isAccessKeyFieldValid()
+		d.adjustAccessDialogOKButton(valid, d.isAccessDirFieldValid())
+		return valid
+	}
+	content.AddChild(d.accessKeyField)
+}
+
+func (d *webSettingsDockable) createAccessDirField(content *unison.Panel, access *websettings.AccessWithKey) {
+	d.accessDirField, _ = createFilePathField(content, i18n.Text("Directory"), func() string { return access.Dir },
+		func(s string) { access.Dir = s }, true)
+	d.accessDirField.ValidateCallback = func() bool {
+		valid := d.isAccessDirFieldValid()
+		d.adjustAccessDialogOKButton(d.isAccessKeyFieldValid(), valid)
+		return valid
+	}
+}
+
+func (d *webSettingsDockable) createAccessReadOnlyCheckbox(content *unison.Panel, access *websettings.AccessWithKey) {
+	checkbox := NewCheckBox(nil, "", i18n.Text("Read Only"),
+		func() check.Enum { return check.FromBool(access.ReadOnly) },
+		func(state check.Enum) { access.ReadOnly = state == check.On })
+	checkbox.SetLayoutData(&unison.FlexLayoutData{
+		HSpan:  2,
+		HAlign: align.Middle,
+	})
+	content.AddChild(checkbox)
+}
+
+func (d *webSettingsDockable) isNameFieldValid() bool {
+	s := websettings.UserNameToKey(d.userNameField.Text())
+	if s == "" {
+		return false
+	}
+	if d.originalName == s {
+		return true
+	}
+	for _, one := range gurps.GlobalSettings().WebServer.Users() {
+		if s == one.Key() {
+			return false
+		}
+	}
+	return true
+}
+
+func (d *webSettingsDockable) isAccessKeyFieldValid() bool {
+	s := strings.TrimSpace(d.accessKeyField.Text())
+	if s == "" {
+		return false
+	}
+	if d.accessOriginal.Key == s {
+		return true
+	}
+	for _, one := range d.accessListUser.AccessListWithKeys() {
+		if s == one.Key {
+			return false
+		}
+	}
+	return true
+}
+
+func (d *webSettingsDockable) isAccessDirFieldValid() bool {
+	s := strings.TrimSpace(d.accessDirField.Text())
+	if s == "" {
+		return false
+	}
+	s = filepath.Clean(s)
+	if !filepath.IsAbs(s) {
+		return false
+	}
+	if d.accessOriginal.Dir == s {
+		return true
+	}
+	for _, one := range d.accessListUser.AccessListWithKeys() {
+		if s == one.Dir {
+			return false
+		}
+	}
+	return true
+}
+
+func (d *webSettingsDockable) adjustAccessDialogOKButton(accessKeyValid, accessDirValid bool) {
+	d.accessDialog.Button(unison.ModalResponseOK).SetEnabled(accessKeyValid && accessDirValid)
 }
 
 func (d *webSettingsDockable) reset() {

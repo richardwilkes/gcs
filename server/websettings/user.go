@@ -14,7 +14,12 @@ package websettings
 import (
 	"crypto/sha256"
 	"encoding/base64"
+	"fmt"
+	"slices"
 	"strings"
+
+	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/txt"
 )
 
 // User holds information for a web user.
@@ -37,7 +42,32 @@ func (u *User) Clone() *User {
 	}
 }
 
-func userNameToKey(name string) string {
+// Key returns the key for this user.
+func (u *User) Key() string {
+	return UserNameToKey(u.Name)
+}
+
+// AccessListWithKeys returns the access list with keys.
+func (u *User) AccessListWithKeys() []*AccessWithKey {
+	list := make([]*AccessWithKey, 0, len(u.AccessList))
+	for k, v := range u.AccessList {
+		list = append(list, &AccessWithKey{Key: k, Access: v})
+	}
+	slices.SortStableFunc(list, func(a, b *AccessWithKey) int {
+		return txt.NaturalCmp(a.Key, b.Key, true)
+	})
+	return list
+}
+
+func (u *User) String() string {
+	if len(u.AccessList) == 1 {
+		return fmt.Sprintf(i18n.Text("%s [1 access point]"), u.Name)
+	}
+	return fmt.Sprintf(i18n.Text("%s [%d access points]"), u.Name, len(u.AccessList))
+}
+
+// UserNameToKey converts a user name to a key.
+func UserNameToKey(name string) string {
 	return strings.ToLower(strings.TrimSpace(name))
 }
 

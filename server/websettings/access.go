@@ -11,8 +11,25 @@
 
 package websettings
 
+import "fmt"
+
 // Access holds the configuration for a user's access to a directory (and all of its sub-paths) on the server.
 type Access struct {
 	Dir      string `json:"dir"`
 	ReadOnly bool   `json:"read_only"`
+}
+
+// AccessWithKey holds the configuration for a user's access to a directory (and all of its sub-paths) on the server and
+// also includes the key by which it is referenced.
+type AccessWithKey struct {
+	Key string `json:"key"`
+	Access
+}
+
+func (a *AccessWithKey) String() string {
+	ro := ""
+	if a.ReadOnly {
+		ro = "(read-only) "
+	}
+	return fmt.Sprintf("%s: %s%s", a.Key, ro, a.Dir)
 }
