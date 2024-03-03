@@ -8,6 +8,7 @@ module.exports = {
 	],
 	rules: {
 		"no-mixed-spaces-and-tabs": "off",
+		"@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
 	},
 	parser: '@typescript-eslint/parser',
 	plugins: ['@typescript-eslint'],

@@ -16,10 +16,76 @@
 	export let wrap = false;
 	export let noBottomBorder = false;
 	export let editable = false;
+	export let multiLine = false;
+
+	let field: HTMLDivElement;
+	let inDrop: boolean;
+	let contentPriorToDrop: string;
+
+	function filterKey(event: KeyboardEvent) {
+		if (editable && !multiLine) {
+			if (event.key === 'Enter') {
+				event.preventDefault();
+			}
+		}
+	}
+
+	function filterPaste(event: ClipboardEvent) {
+		if (editable && !multiLine) {
+			event.preventDefault();
+			const text = event.clipboardData?.getData('text/plain').replaceAll('\n', '');
+			if (text) {
+				const selection = window.getSelection();
+				if (selection?.rangeCount) {
+					selection.deleteFromDocument();
+					selection.getRangeAt(0).insertNode(document.createTextNode(text));
+					selection.collapseToEnd();
+				}
+			}
+		}
+	}
+
+	function filterDrag(_: DragEvent) {
+		if (editable && !multiLine) {
+			inDrop = true;
+			contentPriorToDrop = field.innerText;
+		}
+	}
+
+	function filterInput(_: Event) {
+		if (inDrop) {
+			inDrop = false;
+			if (editable && !multiLine) {
+				let text = field.innerText;
+				if (text.includes('\n')) {
+					text = text.replaceAll('\n', '');
+					field.innerText = text;
+					let pos = text.length - Math.min(text.length, contentPriorToDrop.length);
+					if (text !== contentPriorToDrop) {
+						for (let i = 0; i < text.length && i < contentPriorToDrop.length; i++) {
+							if (text[text.length - (i + 1)] != contentPriorToDrop[contentPriorToDrop.length - (i + 1)]) {
+								pos = text.length - i;
+								break;
+							}
+						}
+					}
+					let sel = window.getSelection();
+					if (sel) {
+						sel.removeAllRanges();
+						const range = document.createRange();
+						range.setStart(field.childNodes[0], pos);
+						range.setEnd(field.childNodes[0], pos);
+						sel.addRange(range);
+					}
+				}
+			}
+		}
+	}
 </script>
 
-<div class='field' class:right class:center class:editable class:noBottomBorder class:wrap {style} role='textbox'
-		 contenteditable={editable} title={tip}>
+<!-- svelte-ignore a11y-interactive-supports-focus -->
+<div class='field' bind:this={field} class:right class:center class:editable class:noBottomBorder class:wrap {style} role='textbox'
+		 contenteditable={editable ? 'plaintext-only' : 'false'} title={tip} on:keydown={filterKey} on:paste={filterPaste} on:drop={filterDrag} on:input={filterInput}>
 	<slot>&nbsp;</slot>
 </div>
 
