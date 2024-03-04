@@ -551,10 +551,12 @@ type Sheet struct {
 	OtherEquipment         *Table
 	Notes                  *Table
 	Portrait               []byte
+	Modified               bool
+	ReadOnly               bool
 }
 
 // NewSheetFromEntity creates a new Sheet from the given entity.
-func NewSheetFromEntity(entity *gurps.Entity) *Sheet {
+func NewSheetFromEntity(entity *gurps.Entity, modified, readOnly bool) *Sheet {
 	return &Sheet{
 		Identity:               createIdentity(entity),
 		Misc:                   createMisc(entity),
@@ -578,5 +580,7 @@ func NewSheetFromEntity(entity *gurps.Entity) *Sheet {
 		OtherEquipment:         createOtherEquipment(entity),
 		Notes:                  createNotes(entity),
 		Portrait:               entity.Profile.PortraitData,
+		Modified:               modified,
+		ReadOnly:               readOnly,
 	}
 }

@@ -1,7 +1,7 @@
 <script lang='ts'>
 	import { page, previousPage } from '$lib/page.ts';
 	import { checkSession } from '$lib/session.ts';
-	import { sheet } from '$lib/sheet.ts';
+	import { saveSheet, sheet } from '$lib/sheet.ts';
 	import Toolbar from '$lib/Toolbar.svelte';
 	import Login from '$page/Login.svelte';
 	import LoadSheet from '$page/LoadSheet.svelte';
@@ -14,6 +14,13 @@
 		$page = { ID: 'home', NextID: 'home' };
 	}
 
+	async function save() {
+		if ($page.Sheet && $sheet && $sheet.Modified) {
+			const updatedSheet = await saveSheet($page.Sheet);
+			sheet.update((_) => updatedSheet);
+		}
+	}
+
 	checkSession();
 </script>
 
@@ -24,6 +31,9 @@
 <div class='shell'>
 	<Toolbar>
 		{#if $page.ID === 'sheet'}
+			{#if $sheet && !$sheet.ReadOnly}
+				<button class='save' disabled={!$sheet.Modified} on:click={save}>Save</button>
+			{/if}
 			<button class='open' title='Open…' on:click={open}>
 				<SheetFile style='width: 1.2em; height: 1.2em; fill: var(--color-on-surface);' />
 				{$page.Sheet}
@@ -71,5 +81,9 @@
 		cursor: pointer;
 		color: var(--color-on-surface-variant);
 		font-weight: normal;
+	}
+
+	.save {
+		padding: var(--padding-standard);
 	}
 </style>

@@ -27,6 +27,35 @@ export async function fetchSheet(path: string): Promise<Sheet | undefined> {
 	return await rsp.json();
 }
 
+export async function updateSheetField(path: string, fieldKey: string, fieldText: string): Promise<Sheet | undefined> {
+	const rsp = await fetch(apiPrefix(`/sheet/${path}`), {
+		method: 'POST',
+		headers: { 'X-Session': get(session)?.ID ?? '' },
+		cache: 'no-store',
+		body: JSON.stringify({
+			Kind: "field.text",
+			FieldKey: fieldKey,
+			FieldText: fieldText
+		})
+	});
+	if (!rsp.ok) {
+		throw undefined;
+	}
+	return await rsp.json();
+}
+
+export async function saveSheet(path: string): Promise<Sheet | undefined> {
+	const rsp = await fetch(apiPrefix(`/sheet/${path}`), {
+		method: 'PUT',
+		headers: { 'X-Session': get(session)?.ID ?? '' },
+		cache: 'no-store'
+	});
+	if (!rsp.ok) {
+		throw undefined;
+	}
+	return await rsp.json();
+}
+
 export interface Identity {
 	Name: string;
 	Title: string;
@@ -178,4 +207,6 @@ export interface Sheet {
 	OtherEquipment: Table | null;
 	Notes: Table | null;
 	Portrait: Table | null;
+	Modified: boolean;
+	ReadOnly: boolean;
 }

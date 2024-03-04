@@ -12,7 +12,20 @@
 	import Header from '$lib/sheets/widget/Header.svelte';
 	import Label from '$lib/sheets/widget/Label.svelte';
 	import Field from '$lib/sheets/widget/Field.svelte';
-	import { sheet } from '$lib/sheet.ts';
+	import { sheet, updateSheetField } from '$lib/sheet.ts';
+	import { page } from '$lib/page.ts';
+
+	async function updateName(event: FocusEvent) {
+		if ($page.Sheet) {
+			let target = event.target as HTMLElement;
+			const text = target.innerText;
+			const updatedSheet = await updateSheetField($page.Sheet, "Identity.Name", text);
+			sheet.update((_) => updatedSheet);
+			if (updatedSheet && updatedSheet.Identity.Name != text) {
+				target.innerText = updatedSheet.Identity.Name;
+			}
+		}
+	}
 </script>
 
 <div class='content'>
@@ -20,7 +33,7 @@
 	<div class='fields'>
 		<div class='banding'><Label>Name</Label></div>
 		<div class='banding'>
-			<Field editable style='width:100%;'>{$sheet?.Identity.Name ?? ''}</Field>
+			<Field editable style='width:100%;' on:blur={updateName}>{$sheet?.Identity.Name ?? ''}</Field>
 		</div>
 		<div><Label>Title</Label></div>
 		<div>

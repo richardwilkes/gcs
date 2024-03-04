@@ -84,8 +84,10 @@
 </script>
 
 <!-- svelte-ignore a11y-interactive-supports-focus -->
-<div class='field' bind:this={field} class:right class:center class:editable class:noBottomBorder class:wrap {style} role='textbox'
-		 contenteditable={editable ? 'plaintext-only' : 'false'} title={tip} on:keydown={filterKey} on:paste={filterPaste} on:drop={filterDrag} on:input={filterInput}>
+<div class='field' bind:this={field} class:right class:center class:editable class:noBottomBorder class:wrap {style}
+		 role='textbox'
+		 contenteditable={editable ? 'plaintext-only' : 'false'} title={tip} on:keydown={filterKey} on:paste={filterPaste}
+		 on:drop={filterDrag} on:input={filterInput} on:blur>
 	<slot>&nbsp;</slot>
 </div>
 

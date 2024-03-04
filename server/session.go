@@ -22,6 +22,12 @@ import (
 
 const sessionIDHeader = "X-Session"
 
+func (s *Server) installSessionHandlers() {
+	s.mux.HandleFunc("GET /api/session", s.sessionHandler)
+	s.mux.HandleFunc("POST /api/login", s.loginHandler)
+	s.mux.HandleFunc("POST /api/logout", s.logoutHandler)
+}
+
 func (s *Server) sessionHandler(w http.ResponseWriter, r *http.Request) {
 	if id, userName, ok := sessionFromRequest(r); !ok {
 		xhttp.ErrorStatus(w, http.StatusUnauthorized)

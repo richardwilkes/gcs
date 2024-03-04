@@ -41,10 +41,10 @@ var (
 
 // Server holds the embedded web server.
 type Server struct {
-	server     *xhttp.Server
-	mux        *http.ServeMux
-	sheetsLock sync.RWMutex
-	sheets     map[string]*gurps.Entity
+	server         *xhttp.Server
+	mux            *http.ServeMux
+	sheetsLock     sync.RWMutex
+	entitiesByPath map[string]webEntity
 }
 
 // Start the server in the background. If the server is already running, nothing happens.
@@ -69,15 +69,12 @@ func Start() {
 				IdleTimeout:  fxp.SecondsToDuration(settings.ReadTimeout),
 			},
 		},
-		mux:    http.NewServeMux(),
-		sheets: make(map[string]*gurps.Entity),
+		mux:            http.NewServeMux(),
+		entitiesByPath: make(map[string]webEntity),
 	}
-	s.mux.HandleFunc("GET /api/session", s.sessionHandler)
-	s.mux.HandleFunc("GET /api/version", s.versionHandler)
-	s.mux.HandleFunc("GET /api/sheets", s.sheetsHandler)
-	s.mux.HandleFunc("GET /api/sheet/{path...}", s.sheetHandler)
-	s.mux.HandleFunc("POST /api/login", s.loginHandler)
-	s.mux.HandleFunc("POST /api/logout", s.logoutHandler)
+	s.installConfigurationHandlers()
+	s.installSessionHandlers()
+	s.installSheetHandlers()
 	s.mux.Handle("GET /", statigz.FileServer(siteFS, statigz.FSPrefix("frontend/dist"), statigz.EncodeOnInit))
 	site = s
 	s.server.WebServer.Handler = s

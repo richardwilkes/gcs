@@ -17,6 +17,10 @@ import (
 	"github.com/richardwilkes/toolbox/cmdline"
 )
 
+func (s *Server) installConfigurationHandlers() {
+	s.mux.HandleFunc("GET /api/version", s.versionHandler)
+}
+
 func (s *Server) versionHandler(w http.ResponseWriter, _ *http.Request) {
 	type versionResponse struct {
 		Name      string
