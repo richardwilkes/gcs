@@ -13,6 +13,7 @@ package sheet
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -20,7 +21,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wpn"
-	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
@@ -43,15 +43,15 @@ func createIdentity(entity *gurps.Entity) Identity {
 
 // Misc holds the data needed by the frontend to display the misc block.
 type Misc struct {
-	Created  jio.Time
-	Modified jio.Time
+	Created  string
+	Modified string
 	Player   string
 }
 
 func createMisc(entity *gurps.Entity) Misc {
 	return Misc{
-		Created:  entity.CreatedOn,
-		Modified: entity.ModifiedOn,
+		Created:  entity.CreatedOn.String(),
+		Modified: entity.ModifiedOn.String(),
 		Player:   entity.Profile.PlayerName,
 	}
 }
@@ -62,9 +62,9 @@ type Description struct {
 	Age          string
 	Birthday     string
 	Religion     string
-	Height       fxp.Length
-	Weight       fxp.Weight
-	SizeModifier int
+	Height       string
+	Weight       string
+	SizeModifier string
 	TechLevel    string
 	Hair         string
 	Eyes         string
@@ -78,9 +78,9 @@ func createDescription(entity *gurps.Entity) Description {
 		Age:          entity.Profile.Age,
 		Birthday:     entity.Profile.Birthday,
 		Religion:     entity.Profile.Religion,
-		Height:       entity.Profile.Height,
-		Weight:       entity.Profile.Weight,
-		SizeModifier: entity.Profile.SizeModifier,
+		Height:       entity.SheetSettings.DefaultLengthUnits.Format(entity.Profile.Height),
+		Weight:       entity.SheetSettings.DefaultWeightUnits.Format(entity.Profile.Weight),
+		SizeModifier: fmt.Sprintf("%+d", entity.Profile.AdjustedSizeModifier()),
 		TechLevel:    entity.Profile.TechLevel,
 		Hair:         entity.Profile.Hair,
 		Eyes:         entity.Profile.Eyes,
@@ -91,15 +91,15 @@ func createDescription(entity *gurps.Entity) Description {
 
 // Points holds the data needed by the frontend to display the points block.
 type Points struct {
-	Total         fxp.Int
-	Unspent       fxp.Int
-	Ancestry      fxp.Int
-	Attributes    fxp.Int
-	Advantages    fxp.Int
-	Disadvantages fxp.Int
-	Quirks        fxp.Int
-	Skills        fxp.Int
-	Spells        fxp.Int
+	Total         string
+	Unspent       string
+	Ancestry      string
+	Attributes    string
+	Advantages    string
+	Disadvantages string
+	Quirks        string
+	Skills        string
+	Spells        string
 }
 
 func createPoints(entity *gurps.Entity) Points {
@@ -111,25 +111,25 @@ func createPoints(entity *gurps.Entity) Points {
 		totalPoints = entity.TotalPoints
 	}
 	return Points{
-		Total:         totalPoints,
-		Unspent:       entity.UnspentPoints(),
-		Ancestry:      pointsBreakdown.Ancestry,
-		Attributes:    pointsBreakdown.Attributes,
-		Advantages:    pointsBreakdown.Advantages,
-		Disadvantages: pointsBreakdown.Disadvantages,
-		Quirks:        pointsBreakdown.Quirks,
-		Skills:        pointsBreakdown.Skills,
-		Spells:        pointsBreakdown.Spells,
+		Total:         totalPoints.Comma(),
+		Unspent:       entity.UnspentPoints().Comma(),
+		Ancestry:      pointsBreakdown.Ancestry.Comma(),
+		Attributes:    pointsBreakdown.Attributes.Comma(),
+		Advantages:    pointsBreakdown.Advantages.Comma(),
+		Disadvantages: pointsBreakdown.Disadvantages.Comma(),
+		Quirks:        pointsBreakdown.Quirks.Comma(),
+		Skills:        pointsBreakdown.Skills.Comma(),
+		Spells:        pointsBreakdown.Spells.Comma(),
 	}
 }
 
 // Attribute holds the data needed by the frontend to display an attribute.
 type Attribute struct {
-	Type   attribute.Type
+	Type   string
 	Key    string
 	Name   string
-	Value  fxp.Int
-	Points fxp.Int
+	Value  string
+	Points string
 }
 
 func createPrimaryAttributes(entity *gurps.Entity) []Attribute {
@@ -146,11 +146,11 @@ func createPrimaryAttributes(entity *gurps.Entity) []Attribute {
 				points = attr.PointCost()
 			}
 			list = append(list, Attribute{
-				Type:   def.Type,
+				Type:   def.Type.Key(),
 				Key:    def.ID(),
 				Name:   def.CombinedName(),
-				Value:  value,
-				Points: points,
+				Value:  value.Comma(),
+				Points: points.Comma(),
 			})
 		}
 	}
@@ -171,11 +171,11 @@ func createSecondaryAttributes(entity *gurps.Entity) []Attribute {
 				points = attr.PointCost()
 			}
 			list = append(list, Attribute{
-				Type:   def.Type,
+				Type:   def.Type.Key(),
 				Key:    def.ID(),
 				Name:   def.CombinedName(),
-				Value:  value,
-				Points: points,
+				Value:  value.Comma(),
+				Points: points.Comma(),
 			})
 		}
 	}
@@ -184,12 +184,12 @@ func createSecondaryAttributes(entity *gurps.Entity) []Attribute {
 
 // PointPool holds the data needed by the frontend to display a point pool.
 type PointPool struct {
-	Type   attribute.Type
+	Type   string
 	Key    string
 	Name   string
-	Value  fxp.Int
-	Max    fxp.Int
-	Points fxp.Int
+	Value  string
+	Max    string
+	Points string
 	State  string
 	Detail string
 }
@@ -214,12 +214,12 @@ func createPointPools(entity *gurps.Entity) []PointPool {
 				}
 			}
 			list = append(list, PointPool{
-				Type:   def.Type,
+				Type:   def.Type.Key(),
 				Key:    def.ID(),
 				Name:   def.CombinedName(),
-				Value:  value,
-				Max:    maximum,
-				Points: points,
+				Value:  value.Comma(),
+				Max:    maximum.Comma(),
+				Points: points.Comma(),
 				State:  state,
 				Detail: detail,
 			})
@@ -246,7 +246,7 @@ type HitLocation struct {
 	Roll           string
 	Location       string
 	LocationDetail string
-	HitPenalty     int
+	HitPenalty     string
 	DR             string
 	DRDetail       string
 	SubLocations   []HitLocation
@@ -268,7 +268,7 @@ func createHitLocations(entity *gurps.Entity, locations *gurps.Body) []HitLocati
 			Roll:           rollRange,
 			Location:       loc.TableName,
 			LocationDetail: loc.Description,
-			HitPenalty:     loc.HitPenalty,
+			HitPenalty:     strconv.Itoa(loc.HitPenalty),
 			DR:             dr,
 			DRDetail:       fmt.Sprintf(i18n.Text("The DR covering the %s hit location%s"), loc.TableName, detail.String()),
 			SubLocations:   createHitLocations(entity, loc.SubTable),
@@ -294,9 +294,9 @@ func createBody(entity *gurps.Entity) Body {
 // Encumbrance holds the data needed by the frontend to display the Encumbrance section of a sheet.
 type Encumbrance struct {
 	Current    int
-	MaxLoad    [encumbrance.LastLevel + 1]fxp.Weight
-	Move       [encumbrance.LastLevel + 1]int
-	Dodge      [encumbrance.LastLevel + 1]int
+	MaxLoad    [encumbrance.LastLevel + 1]string
+	Move       [encumbrance.LastLevel + 1]string
+	Dodge      [encumbrance.LastLevel + 1]string
 	Overloaded bool
 }
 
@@ -306,9 +306,9 @@ func createEncumbrance(entity *gurps.Entity) Encumbrance {
 		Overloaded: entity.WeightCarried(false) > entity.MaximumCarry(encumbrance.ExtraHeavy),
 	}
 	for i, enc := range encumbrance.Levels {
-		e.MaxLoad[i] = entity.MaximumCarry(enc)
-		e.Move[i] = entity.Move(enc)
-		e.Dodge[i] = entity.Dodge(enc)
+		e.MaxLoad[i] = entity.MaximumCarry(enc).String()
+		e.Move[i] = strconv.Itoa(entity.Move(enc))
+		e.Dodge[i] = strconv.Itoa(entity.Dodge(enc))
 	}
 	return e
 }
@@ -316,24 +316,24 @@ func createEncumbrance(entity *gurps.Entity) Encumbrance {
 // LiftingAndMovingThings holds the data needed by the frontend to display the Lifting and Moving Things section of a
 // sheet.
 type LiftingAndMovingThings struct {
-	BasicLift                fxp.Weight
-	OneHandedLift            fxp.Weight
-	TwoHandedLift            fxp.Weight
-	ShoveAndKnockOver        fxp.Weight
-	RunningShoveAndKnockOver fxp.Weight
-	CarryOnBack              fxp.Weight
-	ShiftSlightly            fxp.Weight
+	BasicLift                string
+	OneHandedLift            string
+	TwoHandedLift            string
+	ShoveAndKnockOver        string
+	RunningShoveAndKnockOver string
+	CarryOnBack              string
+	ShiftSlightly            string
 }
 
 func createLiftingAndMovingThings(entity *gurps.Entity) LiftingAndMovingThings {
 	return LiftingAndMovingThings{
-		BasicLift:                entity.BasicLift(),
-		OneHandedLift:            entity.OneHandedLift(),
-		TwoHandedLift:            entity.TwoHandedLift(),
-		ShoveAndKnockOver:        entity.ShoveAndKnockOver(),
-		RunningShoveAndKnockOver: entity.RunningShoveAndKnockOver(),
-		CarryOnBack:              entity.CarryOnBack(),
-		ShiftSlightly:            entity.ShiftSlightly(),
+		BasicLift:                entity.SheetSettings.DefaultWeightUnits.Format(entity.BasicLift()),
+		OneHandedLift:            entity.SheetSettings.DefaultWeightUnits.Format(entity.OneHandedLift()),
+		TwoHandedLift:            entity.SheetSettings.DefaultWeightUnits.Format(entity.TwoHandedLift()),
+		ShoveAndKnockOver:        entity.SheetSettings.DefaultWeightUnits.Format(entity.ShoveAndKnockOver()),
+		RunningShoveAndKnockOver: entity.SheetSettings.DefaultWeightUnits.Format(entity.RunningShoveAndKnockOver()),
+		CarryOnBack:              entity.SheetSettings.DefaultWeightUnits.Format(entity.CarryOnBack()),
+		ShiftSlightly:            entity.SheetSettings.DefaultWeightUnits.Format(entity.ShiftSlightly()),
 	}
 }
 

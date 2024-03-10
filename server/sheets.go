@@ -12,6 +12,7 @@
 package server
 
 import (
+	"errors"
 	"io/fs"
 	"log/slog"
 	"net/http"
@@ -19,8 +20,10 @@ import (
 	"path"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/server/sheet"
@@ -130,7 +133,7 @@ func (s *Server) updateSheetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var update sheetUpdate
-	if err := jio.Load(r.Context(), r.Body, &update); err != nil {
+	if err := JSONFromRequest(r, &update); err != nil {
 		xhttp.ErrorStatus(w, http.StatusBadRequest)
 		return
 	}
@@ -166,22 +169,95 @@ func (s *Server) saveSheetHandler(w http.ResponseWriter, r *http.Request) {
 	CompressedJSONResponse(w, http.StatusOK, response)
 }
 
+var errInvalid = errors.New("invalid input")
+
 func (s *Server) updateFieldText(entity *webEntity, update *sheetUpdate) error {
+	var stringFieldPtr *string
+	var lengthFieldPtr *fxp.Length
+	var weightFieldPtr *fxp.Weight
+	var intSetter func(int) error
 	switch update.FieldKey {
 	case "Identity.Name":
-		update.FieldText = txt.CollapseSpaces(strings.TrimSpace(update.FieldText))
-		if update.FieldText == entity.Entity.Profile.Name {
+		stringFieldPtr = &entity.Entity.Profile.Name
+	case "Identity.Title":
+		stringFieldPtr = &entity.Entity.Profile.Title
+	case "Identity.Organization":
+		stringFieldPtr = &entity.Entity.Profile.Organization
+	case "Misc.Player":
+		stringFieldPtr = &entity.Entity.Profile.PlayerName
+	case "Description.Gender":
+		stringFieldPtr = &entity.Entity.Profile.Gender
+	case "Description.Age":
+		stringFieldPtr = &entity.Entity.Profile.Age
+	case "Description.Birthday":
+		stringFieldPtr = &entity.Entity.Profile.Birthday
+	case "Description.Religion":
+		stringFieldPtr = &entity.Entity.Profile.Religion
+	case "Description.Height":
+		lengthFieldPtr = &entity.Entity.Profile.Height
+	case "Description.Weight":
+		weightFieldPtr = &entity.Entity.Profile.Weight
+	case "Description.SizeModifier":
+		intSetter = func(v int) error {
+			if v < -99 || v > 99 {
+				return errInvalid
+			}
+			entity.Entity.Profile.SetAdjustedSizeModifier(v)
 			return nil
 		}
-		entity.Entity.Profile.Name = update.FieldText
-		entity.Entity.ModifiedOn = jio.Now()
+	case "Description.TechLevel":
+		stringFieldPtr = &entity.Entity.Profile.TechLevel
+	case "Description.Hair":
+		stringFieldPtr = &entity.Entity.Profile.Hair
+	case "Description.Eyes":
+		stringFieldPtr = &entity.Entity.Profile.Eyes
+	case "Description.Skin":
+		stringFieldPtr = &entity.Entity.Profile.Skin
+	case "Description.Hand":
+		stringFieldPtr = &entity.Entity.Profile.Handedness
 	default:
-		return errs.Newf("unknown field key: %s", update.FieldKey)
+		return errs.Newf("unknown field key: %q", update.FieldKey)
 	}
+	update.FieldText = txt.CollapseSpaces(strings.TrimSpace(update.FieldText))
+	switch {
+	case stringFieldPtr != nil:
+		if update.FieldText == *stringFieldPtr {
+			return nil
+		}
+		*stringFieldPtr = update.FieldText
+	case lengthFieldPtr != nil:
+		length, err := fxp.LengthFromString(update.FieldText, entity.Entity.SheetSettings.DefaultLengthUnits)
+		if err != nil || length < 0 || length > fxp.Length(fxp.Max) {
+			return errs.Newf("invalid input: %q", update.FieldText)
+		}
+		if update.FieldText == entity.Entity.SheetSettings.DefaultLengthUnits.Format(*lengthFieldPtr) {
+			return nil
+		}
+		*lengthFieldPtr = length
+	case weightFieldPtr != nil:
+		weight, err := fxp.WeightFromString(update.FieldText, entity.Entity.SheetSettings.DefaultWeightUnits)
+		if err != nil || weight < 0 || weight > fxp.Weight(fxp.Max) {
+			return errs.Newf("invalid input: %q", update.FieldText)
+		}
+		if update.FieldText == entity.Entity.SheetSettings.DefaultWeightUnits.Format(*weightFieldPtr) {
+			return nil
+		}
+		*weightFieldPtr = weight
+	case intSetter != nil:
+		v, err := strconv.ParseInt(update.FieldText, 10, 64)
+		if err == nil {
+			err = intSetter(int(v))
+		}
+		if err != nil {
+			return errs.Newf("invalid input: %q", update.FieldText)
+		}
+	}
+	entity.Entity.ModifiedOn = jio.Now()
 	entity.CurrentCRC64 = entity.Entity.CRC64()
 	s.sheetsLock.Lock()
 	s.entitiesByPath[entity.ClientPath] = *entity
 	s.sheetsLock.Unlock()
+	slog.Info("updated sheet", "path", entity.ClientPath, "field", update.FieldKey, "text", update.FieldText)
 	return nil
 }
 

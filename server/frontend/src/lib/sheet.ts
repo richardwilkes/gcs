@@ -75,7 +75,7 @@ export interface Description {
 	Religion: string;
 	Height: string;
 	Weight: string;
-	SizeModifier: number;
+	SizeModifier: string;
 	TechLevel: string;
 	Hair: string;
 	Eyes: string;
@@ -84,32 +84,32 @@ export interface Description {
 }
 
 export interface Points {
-	Total: number;
-	Unspent: number;
-	Ancestry: number;
-	Attributes: number;
-	Advantages: number;
-	Disadvantages: number;
-	Quirks: number;
-	Skills: number;
-	Spells: number;
+	Total: string;
+	Unspent: string;
+	Ancestry: string;
+	Attributes: string;
+	Advantages: string;
+	Disadvantages: string;
+	Quirks: string;
+	Skills: string;
+	Spells: string;
 }
 
 export interface Attribute {
 	Type: string;
 	Key: string;
 	Name: string;
-	Value: number;
-	Points: number;
+	Value: string;
+	Points: string;
 }
 
 export interface PointPool {
 	Type: string;
 	Key: string;
 	Name: string;
-	Value: number;
-	Max: number;
-	Points: number;
+	Value: string;
+	Max: string;
+	Points: string;
 	State: string;
 	Detail: string;
 }
@@ -123,7 +123,7 @@ export interface HitLocation {
 	Roll: string;
 	Location: string;
 	LocationDetail: string;
-	HitPenalty: number;
+	HitPenalty: string;
 	DR: string;
 	DRDetail: string;
 	SubLocations: HitLocation[];
@@ -137,8 +137,8 @@ export interface Body {
 export interface Encumbrance {
 	Current: number;
 	MaxLoad: string[];
-	Move: number[];
-	Dodge: number[];
+	Move: string[];
+	Dodge: string[];
 	Overloaded: boolean;
 }
 

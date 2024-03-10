@@ -11,8 +11,7 @@
 <script lang='ts'>
 	import Header from '$lib/sheets/widget/Header.svelte';
 	import Label from '$lib/sheets/widget/Label.svelte';
-	import Field from '$lib/sheets/widget/Field.svelte';
-	import { sheet } from '$lib/sheet.ts';
+	import EditableTextField from '$lib/sheets/widget/EditableTextField.svelte';
 </script>
 
 <div class='content'>
@@ -22,55 +21,55 @@
 	<div class='fields' style='grid-area:block1;'>
 		<div class='banding'><Label>Gender</Label></div>
 		<div class='banding'>
-			<Field editable style='width:100%;'>{$sheet?.Description.Gender ?? ''}</Field>
+			<EditableTextField key='Description.Gender' />
 		</div>
 		<div><Label>Age</Label></div>
 		<div>
-			<Field editable style='width:100%;'>{$sheet?.Description.Age ?? ''}</Field>
+			<EditableTextField key='Description.Age' />
 		</div>
 		<div class='banding'><Label>Birthday</Label></div>
 		<div class='banding'>
-			<Field editable style='width:100%;'>{$sheet?.Description.Birthday ?? ''}</Field>
+			<EditableTextField key='Description.Birthday' />
 		</div>
 		<div><Label>Religion</Label></div>
 		<div>
-			<Field editable style='width:100%;'>{$sheet?.Description.Religion ?? ''}</Field>
+			<EditableTextField key='Description.Religion' />
 		</div>
 	</div>
 	<div class='fields divider' style='grid-area:block2;'>
 		<div class='banding'><Label>Height</Label></div>
 		<div class='banding'>
-			<Field editable style='width:100%;'>{$sheet?.Description.Height ?? ''}</Field>
+			<EditableTextField key='Description.Height' />
 		</div>
 		<div><Label>Weight</Label></div>
 		<div>
-			<Field editable style='width:100%;'>{$sheet?.Description.Weight ?? ''}</Field>
+			<EditableTextField key='Description.Weight' />
 		</div>
 		<div class='banding'><Label>Size</Label></div>
 		<div class='banding'>
-			<Field editable style='width:100%;'>{$sheet?.Description.SizeModifier ?? 0}</Field>
+			<EditableTextField key='Description.SizeModifier' />
 		</div>
 		<div><Label>TL</Label></div>
 		<div>
-			<Field editable style='width:100%;'>{$sheet?.Description.TechLevel ?? ''}</Field>
+			<EditableTextField key='Description.TechLevel' />
 		</div>
 	</div>
 	<div class='fields divider' style='grid-area:block3;'>
 		<div class='banding'><Label>Hair</Label></div>
 		<div class='banding'>
-			<Field editable style='width:100%;'>{$sheet?.Description.Hair ?? ''}</Field>
+			<EditableTextField key='Description.Hair'/>
 		</div>
 		<div><Label>Eyes</Label></div>
 		<div>
-			<Field editable style='width:100%;'>{$sheet?.Description.Eyes ?? ''}</Field>
+			<EditableTextField key='Description.Eyes' />
 		</div>
 		<div class='banding'><Label>Skin</Label></div>
 		<div class='banding'>
-			<Field editable style='width:100%;'>{$sheet?.Description.Skin ?? ''}</Field>
+			<EditableTextField key='Description.Skin' />
 		</div>
 		<div><Label>Hand</Label></div>
 		<div>
-			<Field editable style='width:100%;'>{$sheet?.Description.Hand ?? ''}</Field>
+			<EditableTextField key='Description.Hand' />
 		</div>
 	</div>
 </div>

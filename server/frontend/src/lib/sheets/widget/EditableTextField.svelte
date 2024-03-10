@@ -1,0 +1,50 @@
+<!--
+  - Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
+  -
+  - This Source Code Form is subject to the terms of the Mozilla Public
+  - License, version 2.0. If a copy of the MPL was not distributed with
+  - this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+  -
+  - This Source Code Form is "Incompatible With Secondary Licenses", as
+  - defined by the Mozilla Public License, version 2.0.
+  -->
+
+<script lang='ts'>
+	import { sheet, updateSheetField } from '$lib/sheet.js';
+	import Field from '$lib/sheets/widget/Field.svelte';
+	import { page } from '$lib/page.ts';
+
+	export let key: string;
+
+	async function updateField(event: FocusEvent) {
+		const pageSheet = $page.Sheet;
+		if (pageSheet) {
+			const target = event.target as HTMLElement;
+			try {
+				let updatedSheet = await updateSheetField(pageSheet, key, target.innerText);
+				target.innerText = extractField(updatedSheet, key);
+				sheet.update((_) => updatedSheet);
+			} catch {
+				target.innerText = extractField($sheet, key);
+			}
+		}
+	}
+
+	function extractField(obj: unknown, prop: string): string {
+		if (typeof obj !== 'object') {
+			return '';
+		}
+		const o = obj as { [key: string]: unknown };
+		const i = prop.indexOf('.');
+		if (i > -1) {
+			return extractField(o[prop.substring(0, i)], prop.substring(i + 1));
+		}
+		const value = o[prop];
+		if (typeof value === 'string') {
+			return value as string;
+		}
+		return '';
+	}
+</script>
+
+<Field editable style='width:100%;' on:blur={(target) => updateField(target)}>{extractField($sheet, key)}</Field>

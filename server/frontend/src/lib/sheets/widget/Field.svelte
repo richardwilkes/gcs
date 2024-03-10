@@ -18,7 +18,11 @@
 	export let editable = false;
 	export let multiLine = false;
 
-	let field: HTMLDivElement;
+	interface FieldElement extends HTMLDivElement {
+		suppressSelectAll?: boolean;
+	}
+
+	let field: FieldElement;
 	let inDrop: boolean;
 	let contentPriorToDrop: string;
 
@@ -81,14 +85,41 @@
 			}
 		}
 	}
+
+	function mouseDown(_: MouseEvent) {
+		field.suppressSelectAll = true;
+	}
+
+	function focusIn(_: FocusEvent) {
+		if (field.suppressSelectAll) {
+			field.suppressSelectAll = false;
+		} else {
+			let sel = window.getSelection();
+			if (sel) {
+				sel.removeAllRanges();
+				const range = document.createRange();
+				range.setStart(field.childNodes[0], 0);
+				range.setEnd(field.childNodes[0], field.innerText.length);
+				sel.addRange(range);
+			}
+		}
+	}
+
+	function focusOut(_ : FocusEvent) {
+		field.suppressSelectAll = false;
+	}
+
+	function keyDown(_: KeyboardEvent) {
+		field.suppressSelectAll = false;
+	}
 </script>
 
 <!-- svelte-ignore a11y-interactive-supports-focus -->
 <div class='field' bind:this={field} class:right class:center class:editable class:noBottomBorder class:wrap {style}
 		 role='textbox'
 		 contenteditable={editable ? 'plaintext-only' : 'false'} title={tip} on:keydown={filterKey} on:paste={filterPaste}
-		 on:drop={filterDrag} on:input={filterInput} on:blur>
-	<slot>&nbsp;</slot>
+		 on:drop={filterDrag} on:input={filterInput} on:blur on:keydown={keyDown} on:mousedown={mouseDown} on:focusin={focusIn} on:focusout={focusOut}>
+	<slot />
 </div>
 
 <style>

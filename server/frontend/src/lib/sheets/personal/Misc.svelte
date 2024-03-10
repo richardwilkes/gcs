@@ -13,6 +13,7 @@
 	import Header from '$lib/sheets/widget/Header.svelte';
 	import Label from '$lib/sheets/widget/Label.svelte';
 	import Field from '$lib/sheets/widget/Field.svelte';
+	import EditableTextField from '$lib/sheets/widget/EditableTextField.svelte';
 	import { sheet } from '$lib/sheet.ts';
 </script>
 
@@ -24,7 +25,7 @@
 		<div><Label>Modified</Label></div>
 		<div><Field style='width:100%;'>{formatDateStamp($sheet?.Misc.Modified)}</Field></div>
 		<div class='banding'><Label>Player</Label></div>
-		<div class='banding'><Field editable style='width:100%;'>{$sheet?.Misc.Player ?? ''}</Field></div>
+		<div class='banding'><EditableTextField key='Misc.Player'/></div>
 	</div>
 </div>
 

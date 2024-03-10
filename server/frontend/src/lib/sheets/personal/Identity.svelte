@@ -11,21 +11,7 @@
 <script lang='ts'>
 	import Header from '$lib/sheets/widget/Header.svelte';
 	import Label from '$lib/sheets/widget/Label.svelte';
-	import Field from '$lib/sheets/widget/Field.svelte';
-	import { sheet, updateSheetField } from '$lib/sheet.ts';
-	import { page } from '$lib/page.ts';
-
-	async function updateName(event: FocusEvent) {
-		if ($page.Sheet) {
-			let target = event.target as HTMLElement;
-			const text = target.innerText;
-			const updatedSheet = await updateSheetField($page.Sheet, "Identity.Name", text);
-			sheet.update((_) => updatedSheet);
-			if (updatedSheet && updatedSheet.Identity.Name != text) {
-				target.innerText = updatedSheet.Identity.Name;
-			}
-		}
-	}
+	import EditableTextField from '$lib/sheets/widget/EditableTextField.svelte';
 </script>
 
 <div class='content'>
@@ -33,15 +19,15 @@
 	<div class='fields'>
 		<div class='banding'><Label>Name</Label></div>
 		<div class='banding'>
-			<Field editable style='width:100%;' on:blur={updateName}>{$sheet?.Identity.Name ?? ''}</Field>
+			<EditableTextField key='Identity.Name'/>
 		</div>
 		<div><Label>Title</Label></div>
 		<div>
-			<Field editable style='width:100%;'>{$sheet?.Identity.Title ?? ''}</Field>
+			<EditableTextField key='Identity.Title'/>
 		</div>
 		<div class='banding'><Label>Organization</Label></div>
 		<div class='banding'>
-			<Field editable style='width:100%;'>{$sheet?.Identity.Organization ?? ''}</Field>
+			<EditableTextField key='Identity.Organization'/>
 		</div>
 	</div>
 </div>
