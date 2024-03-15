@@ -183,6 +183,7 @@ func (s *Server) updateFieldText(entity *webEntity, update *sheetUpdate) error {
 	var stringFieldPtr *string
 	var lengthFieldPtr *fxp.Length
 	var weightFieldPtr *fxp.Weight
+	var fxpIntSetter func(fxp.Int) error
 	var intSetter func(int) error
 	switch update.FieldKey {
 	case "Identity.Name":
@@ -224,6 +225,20 @@ func (s *Server) updateFieldText(entity *webEntity, update *sheetUpdate) error {
 	case "Description.Hand":
 		stringFieldPtr = &entity.Entity.Profile.Handedness
 	default:
+		if strings.HasPrefix(update.FieldKey, "PrimaryAttributes.") {
+			if attr, ok := entity.Entity.Attributes.Set[strings.TrimPrefix(update.FieldKey, "PrimaryAttributes.")]; ok {
+				if attr.AttributeDef().Primary() {
+					fxpIntSetter = func(v fxp.Int) error {
+						if v < fxp.Min || v > fxp.Max {
+							return errInvalid
+						}
+						attr.SetMaximum(v)
+						return nil
+					}
+					break
+				}
+			}
+		}
 		return errs.Newf("unknown field key: %q", update.FieldKey)
 	}
 	update.FieldText = txt.CollapseSpaces(strings.TrimSpace(update.FieldText))
@@ -255,6 +270,14 @@ func (s *Server) updateFieldText(entity *webEntity, update *sheetUpdate) error {
 		v, err := strconv.ParseInt(update.FieldText, 10, 64)
 		if err == nil {
 			err = intSetter(int(v))
+		}
+		if err != nil {
+			return errs.Newf("invalid input: %q", update.FieldText)
+		}
+	case fxpIntSetter != nil:
+		v, err := fxp.FromString(update.FieldText)
+		if err == nil {
+			err = fxpIntSetter(v)
 		}
 		if err != nil {
 			return errs.Newf("invalid input: %q", update.FieldText)

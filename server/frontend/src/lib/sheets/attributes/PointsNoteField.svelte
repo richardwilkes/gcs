@@ -9,7 +9,7 @@
   - defined by the Mozilla Public License, version 2.0.
   -->
 <script lang="ts">
-	export let value = 0;
+	export let value = "0";
 </script>
 
 <div class="field">[{value}]</div>

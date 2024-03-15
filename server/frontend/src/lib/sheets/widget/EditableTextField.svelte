@@ -15,6 +15,7 @@
 	import { page } from '$lib/page.ts';
 
 	export let key: string;
+	export let right = false;
 
 	async function updateField(event: FocusEvent) {
 		const pageSheet = $page.Sheet;
@@ -34,6 +35,19 @@
 		if (typeof obj !== 'object') {
 			return '';
 		}
+		if (Array.isArray(obj)) {
+			for (const item of obj as unknown[]) {
+				if (typeof item !== 'object') {
+					continue;
+				}
+				const o = item as { [key: string]: unknown };
+				if (o['Key'] !== prop) {
+					continue;
+				}
+				return extractField(o, 'Value');
+			}
+			return '';
+		}
 		const o = obj as { [key: string]: unknown };
 		const i = prop.indexOf('.');
 		if (i > -1) {
@@ -47,4 +61,4 @@
 	}
 </script>
 
-<Field editable style='width:100%;' on:blur={(target) => updateField(target)}>{extractField($sheet, key)}</Field>
+<Field editable {right} style='width:100%;' on:blur={(target) => updateField(target)}>{extractField($sheet, key)}</Field>

@@ -10,7 +10,7 @@
   -->
 <script lang="ts">
 	import Header from '$lib/sheets/widget/Header.svelte';
-	import Field from '$lib/sheets/widget/Field.svelte';
+	import EditableTextField from '$lib/sheets/widget/EditableTextField.svelte';
 	import Label from '$lib/sheets/widget/Label.svelte';
 	import PointsNoteField from '$lib/sheets/attributes/PointsNoteField.svelte';
 	import { sheet } from '$lib/sheet.ts';
@@ -24,7 +24,7 @@
 		{#each $sheet?.PrimaryAttributes || [] as attr, i}
 			{@const banding = i % 2 === 1}
 			<div class:banding><PointsNoteField value={attr.Points} /></div>
-			<div class:banding><Field editable right style='width: 100%;'>{attr.Value}</Field></div>
+			<div class:banding><EditableTextField right key='PrimaryAttributes.{attr.Key}'/></div>
 			<div class:banding><Label left>{attr.Name}</Label></div>
 		{/each}
 	</div>
