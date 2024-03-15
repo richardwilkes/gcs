@@ -132,6 +132,10 @@ func (s *Server) updateSheetHandler(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
+	if access.ReadOnly {
+		xhttp.ErrorStatus(w, http.StatusForbidden)
+		return
+	}
 	var update sheetUpdate
 	if err := JSONFromRequest(r, &update); err != nil {
 		xhttp.ErrorStatus(w, http.StatusBadRequest)
@@ -152,6 +156,10 @@ func (s *Server) updateSheetHandler(w http.ResponseWriter, r *http.Request) {
 func (s *Server) saveSheetHandler(w http.ResponseWriter, r *http.Request) {
 	entity, access, ok := s.loadSheet(w, r)
 	if !ok {
+		return
+	}
+	if access.ReadOnly {
+		xhttp.ErrorStatus(w, http.StatusForbidden)
 		return
 	}
 	if entity.OriginalCRC64 != entity.CurrentCRC64 {
@@ -275,10 +283,6 @@ func (s *Server) loadSheet(w http.ResponseWriter, r *http.Request) (entity webEn
 	}
 	if access, ok = accessList[parts[0]]; !ok {
 		xhttp.ErrorStatus(w, http.StatusNotFound)
-		return entity, access, false
-	}
-	if access.ReadOnly {
-		xhttp.ErrorStatus(w, http.StatusForbidden)
 		return entity, access, false
 	}
 	parts[1] = filepath.Clean(parts[1])

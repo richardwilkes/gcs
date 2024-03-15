@@ -37,6 +37,9 @@
 			<button class='open' title='Open…' on:click={open}>
 				<SheetFile style='width: 1.2em; height: 1.2em; fill: var(--color-on-surface);' />
 				{$page.Sheet}
+				{#if $sheet && $sheet.ReadOnly}
+					<span class='ro'>(read only)</span>
+				{/if}
 			</button>
 		{/if}
 	</Toolbar>
@@ -85,5 +88,10 @@
 
 	.save {
 		padding: var(--padding-standard);
+	}
+
+	.ro {
+		padding-left: 1em;
+		font-size: 0.7em;
 	}
 </style>
