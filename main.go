@@ -83,13 +83,13 @@ func main() {
 		if !settings.WebServer.Enabled {
 			cl.FatalMsg(i18n.Text("Web server is not enabled."))
 		}
-		server.Start()
+		server.Start(nil)
 		select {}
 	default:
 		ux.StartServer = server.Start
 		ux.StopServer = server.Stop
 		if settings.WebServer.Enabled {
-			server.Start()
+			server.Start(nil)
 		}
 		ux.Start(fileList) // Never returns
 	}

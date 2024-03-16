@@ -48,7 +48,7 @@ type Server struct {
 }
 
 // Start the server in the background. If the server is already running, nothing happens.
-func Start() {
+func Start(errorCallback func(error)) {
 	siteLock.Lock()
 	defer siteLock.Unlock()
 	if site != nil {
@@ -100,6 +100,9 @@ func Start() {
 	go func() {
 		if err := s.server.Run(); err != nil {
 			errs.Log(err)
+			if errorCallback != nil {
+				errorCallback(err)
+			}
 			// In case we errored out before the server finished starting up, call the shutdown callback.
 			if s.server.ShutdownCallback != nil {
 				s.server.ShutdownCallback(s.server.Logger)

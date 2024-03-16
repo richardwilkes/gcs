@@ -119,14 +119,13 @@ func (s *Settings) Valid() bool {
 
 // Validate the settings.
 func (s *Settings) Validate() {
-	s.Address = strings.TrimSpace(s.Address)
-	if s.Address == "" {
+	if s.Address = strings.TrimSpace(s.Address); s.Address == "" {
 		s.Address = DefaultAddress
 	}
-	s.ShutdownGracePeriod = min(max(s.ShutdownGracePeriod, MinimumTimeout), MaximumTimeout)
-	s.ReadTimeout = min(max(s.ReadTimeout, MinimumTimeout), MaximumTimeout)
-	s.WriteTimeout = min(max(s.WriteTimeout, MinimumTimeout), MaximumTimeout)
-	s.IdleTimeout = min(max(s.IdleTimeout, MinimumTimeout), MaximumTimeout)
+	s.ShutdownGracePeriod = validateWebTimeout(s.ShutdownGracePeriod, DefaultShutdownGracePeriod)
+	s.ReadTimeout = validateWebTimeout(s.ReadTimeout, DefaultReadTimeout)
+	s.WriteTimeout = validateWebTimeout(s.WriteTimeout, DefaultWriteTimeout)
+	s.IdleTimeout = validateWebTimeout(s.IdleTimeout, DefaultIdleTimeout)
 	s.lock.Lock()
 	if s.users == nil {
 		s.users = make(map[string]*User)
@@ -135,6 +134,13 @@ func (s *Settings) Validate() {
 		s.sessions = make(map[uuid.UUID]*Session)
 	}
 	s.lock.Unlock()
+}
+
+func validateWebTimeout(value, def fxp.Int) fxp.Int {
+	if value == 0 {
+		return def
+	}
+	return min(max(value, MinimumTimeout), MaximumTimeout)
 }
 
 // CopyFrom copies the settings from the other Settings to this Settings object. If 'other' is nil, the default settings

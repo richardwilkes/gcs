@@ -17,6 +17,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync/atomic"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -30,17 +31,19 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/check"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 // These need to be initialized by whatever instantiates the ux package, typically main.go. They are here to break the
 // circular reference that would otherwise occur.
 var (
-	StartServer func()
+	StartServer func(func(error))
 	StopServer  func()
 )
 
 type webSettingsDockable struct {
 	SettingsDockable
+	errorMsg                 *unison.Label
 	enabledCheckbox          *CheckBox
 	addressField             *StringField
 	certFileField            *StringField
@@ -54,6 +57,7 @@ type webSettingsDockable struct {
 	userList                 *unison.List[*websettings.User]
 	userAddButton            *unison.Button
 	userNameField            *StringField
+	passwordField            *StringField
 	originalName             string
 	accessList               *unison.List[*websettings.AccessWithKey]
 	accessListUser           *websettings.User
@@ -62,6 +66,7 @@ type webSettingsDockable struct {
 	accessDirField           *StringField
 	accessDialog             *unison.Dialog
 	userDialog               *unison.Dialog
+	waitingForSync           atomic.Bool
 }
 
 // ShowWebSettings the Web Settings window.
@@ -110,8 +115,10 @@ func (d *webSettingsDockable) initContent(content *unison.Panel) {
 }
 
 func (d *webSettingsDockable) syncEnablementToServer(callback func()) {
-	d.setWebServerControlEnablement(false)
-	go d.finishSync(callback)
+	if !d.waitingForSync.Swap(true) {
+		d.setWebServerControlEnablement(false)
+		go d.finishSync(callback)
+	}
 }
 
 func (d *webSettingsDockable) finishSync(callback func()) {
@@ -121,15 +128,17 @@ func (d *webSettingsDockable) finishSync(callback func()) {
 		switch state.Current() {
 		case state.Stopped:
 			settings.Enabled = false
-			d.enabledCheckbox.State = check.Off
+			SetCheckBoxState(d.enabledCheckbox, false)
 			d.setWebServerControlEnablement(true)
 		case state.Running:
 			settings.Enabled = true
-			d.enabledCheckbox.State = check.On
 			d.enabledCheckbox.SetEnabled(true)
+			SetCheckBoxState(d.enabledCheckbox, true)
 		default:
 			go d.finishSync(callback)
+			return
 		}
+		d.waitingForSync.Store(false)
 		if callback != nil {
 			callback()
 		}
@@ -151,6 +160,42 @@ func (d *webSettingsDockable) setWebServerControlEnablement(enabled bool) {
 	d.userAddButton.SetEnabled(enabled)
 }
 
+func (d *webSettingsDockable) updateErrorMsg(err error) {
+	parent := d.enabledCheckbox.Parent()
+	if parent == nil {
+		return
+	}
+	if err == nil {
+		if d.errorMsg != nil {
+			d.errorMsg.RemoveFromParent()
+			d.errorMsg = nil
+		}
+	} else {
+		if d.errorMsg == nil {
+			d.errorMsg = unison.NewLabel()
+			d.errorMsg.SetBorder(unison.NewEmptyBorder(unison.NewUniformInsets(2)))
+			d.errorMsg.HAlign = align.Middle
+			d.errorMsg.OnBackgroundInk = unison.OnErrorColor
+			d.errorMsg.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+				gc.DrawRect(rect, unison.ErrorColor.Paint(gc, rect, paintstyle.Fill))
+				d.errorMsg.DefaultDraw(gc, rect)
+			}
+			d.errorMsg.SetLayoutData(&unison.FlexLayoutData{
+				HSpan:  2,
+				HAlign: align.Fill,
+				HGrab:  true,
+			})
+			parent.AddChildAtIndex(d.errorMsg, 1+parent.IndexOfChild(d.enabledCheckbox))
+		}
+		d.errorMsg.Text = strings.SplitN(err.Error(), "\n", 2)[0]
+	}
+	parent.MarkForLayoutRecursivelyUpward()
+	parent.MarkForRedraw()
+	if err != nil {
+		unison.Beep()
+	}
+}
+
 func (d *webSettingsDockable) createEnabledCheckbox(content *unison.Panel) {
 	d.enabledCheckbox = NewCheckBox(nil, "", i18n.Text("Enable Web Server"),
 		func() check.Enum { return check.FromBool(gurps.GlobalSettings().WebServer.Enabled) },
@@ -165,18 +210,20 @@ func (d *webSettingsDockable) createEnabledCheckbox(content *unison.Panel) {
 
 func (d *webSettingsDockable) applyServerEnabled(on bool) {
 	settings := gurps.GlobalSettings().WebServer
-	if on && !settings.Valid() {
+	if on && !settings.Valid() || (settings.CertFile == "") != (settings.KeyFile == "") {
 		on = false
+		d.updateErrorMsg(errs.New("Invalid web settings"))
 	}
 	if settings.Enabled != on {
 		settings.Enabled = on
 		if on {
-			StartServer()
+			d.updateErrorMsg(nil)
+			StartServer(d.updateErrorMsg)
 		} else {
 			StopServer()
 		}
-		d.syncEnablementToServer(nil)
 	}
+	d.syncEnablementToServer(nil)
 }
 
 func (d *webSettingsDockable) createAddressField(content *unison.Panel) {
@@ -184,25 +231,24 @@ func (d *webSettingsDockable) createAddressField(content *unison.Panel) {
 	content.AddChild(NewFieldLeadingLabel(title, false))
 	d.addressField = NewStringField(nil, "", title,
 		func() string { return gurps.GlobalSettings().WebServer.Address },
-		func(s string) {
-			if isAddressValid(s) {
-				gurps.GlobalSettings().WebServer.Address = s
-			}
-		})
+		func(s string) { gurps.GlobalSettings().WebServer.Address = s })
 	d.addressField.ValidateCallback = func() bool {
 		return isAddressValid(d.addressField.Text())
 	}
+	d.addressField.Validate()
 	content.AddChild(d.addressField)
+	content.AddChild(unison.NewPanel())
+	note := unison.NewLabel()
+	note.Text = i18n.Text(`Provide just a colon followed by a port number (e.g. ":8422") to listen on all available addresses.`)
+	desc := note.Font.Descriptor()
+	desc.Size -= 2
+	note.Font = desc.Font()
+	content.AddChild(note)
 }
 
 func isAddressValid(address string) bool {
-	if address == "" {
-		return true
-	}
-	if _, _, err := net.SplitHostPort(address); err != nil {
-		return false
-	}
-	return true
+	_, _, err := net.SplitHostPort(address)
+	return err == nil
 }
 
 func (d *webSettingsDockable) createCertFileField(content *unison.Panel) {
@@ -236,6 +282,7 @@ func createFilePathField(content *unison.Panel, title string, get func() string,
 	locateButton := unison.NewSVGButton(icon)
 	locateButton.ClickCallback = func() { chooseFilePath(fileField, forDirs) }
 	content.AddChild(WrapWithSpan(1, fileField, locateButton))
+	fileField.Validate()
 	return fileField, locateButton
 }
 
@@ -380,7 +427,7 @@ func (d *webSettingsDockable) editUser() {
 	u := d.userList.DataAtIndex(d.userList.Selection.FirstSet())
 	name := u.Name
 	var err error
-	panel := d.createUserPanel(u)
+	panel := d.createUserPanel(u, false)
 	d.userDialog, err = unison.NewDialog(nil, nil, panel, []*unison.DialogButtonInfo{
 		unison.NewCancelButtonInfo(),
 		unison.NewOKButtonInfoWithTitle(i18n.Text("Update")),
@@ -435,7 +482,7 @@ func (d *webSettingsDockable) addUser() {
 		},
 	}
 	var err error
-	panel := d.createUserPanel(u)
+	panel := d.createUserPanel(u, true)
 	d.userDialog, err = unison.NewDialog(nil, nil, panel, []*unison.DialogButtonInfo{
 		unison.NewCancelButtonInfo(),
 		unison.NewOKButtonInfoWithTitle(i18n.Text("Create")),
@@ -448,6 +495,7 @@ func (d *webSettingsDockable) addUser() {
 		flex.MinSize = unison.NewSize(500, 0)
 	}
 	d.userNameField.Validate()
+	d.passwordField.Validate()
 	if d.userDialog.RunModal() == unison.ModalResponseOK {
 		if webSettings.CreateUser(u.Name, u.HashedPassword) {
 			webSettings.SetAccessList(u.Name, u.AccessList)
@@ -468,7 +516,7 @@ func (d *webSettingsDockable) addUser() {
 	d.userDialog = nil
 }
 
-func (d *webSettingsDockable) createUserPanel(u *websettings.User) *unison.ScrollPanel {
+func (d *webSettingsDockable) createUserPanel(u *websettings.User, newUser bool) *unison.ScrollPanel {
 	d.accessListUser = u
 	panel := unison.NewPanel()
 	panel.SetLayout(&unison.FlexLayout{
@@ -476,36 +524,49 @@ func (d *webSettingsDockable) createUserPanel(u *websettings.User) *unison.Scrol
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	d.createUserNameField(panel, u)
-	d.createPasswordField(panel, u)
+	d.createUserNameField(panel, u, newUser)
+	d.createPasswordField(panel, u, newUser)
 	d.createAccessBlock(panel, u)
 	scroller := unison.NewScrollPanel()
 	scroller.SetContent(panel, behavior.Follow, behavior.Fill)
 	return scroller
 }
 
-func (d *webSettingsDockable) createUserNameField(content *unison.Panel, u *websettings.User) {
+func (d *webSettingsDockable) createUserNameField(content *unison.Panel, u *websettings.User, newUser bool) {
 	title := i18n.Text("Name")
 	content.AddChild(NewFieldLeadingLabel(title, false))
 	d.userNameField = NewStringField(nil, "", title, func() string { return u.Name }, func(s string) { u.Name = s })
 	d.originalName = u.Key()
 	d.userNameField.ValidateCallback = func() bool {
 		valid := d.isNameFieldValid()
-		d.userDialog.Button(unison.ModalResponseOK).SetEnabled(valid)
+		d.adjustUserDialogOKButton(valid, !newUser || d.isPasswordFieldValid())
 		return valid
 	}
 	content.AddChild(d.userNameField)
 }
 
-func (d *webSettingsDockable) createPasswordField(content *unison.Panel, u *websettings.User) {
-	title := i18n.Text("New Password")
+func (d *webSettingsDockable) createPasswordField(content *unison.Panel, u *websettings.User, newUser bool) {
+	var title string
+	if newUser {
+		title = i18n.Text("Password")
+	} else {
+		title = i18n.Text("New Password")
+	}
 	content.AddChild(NewFieldLeadingLabel(title, false))
 	u.HashedPassword = ""
-	field := NewStringField(nil, "", title, func() string { return u.HashedPassword },
+	d.passwordField = NewStringField(nil, "", title, func() string { return u.HashedPassword },
 		func(s string) { u.HashedPassword = s })
-	field.ObscurementRune = '•'
-	field.Watermark = i18n.Text("Leave blank to keep the current password")
-	content.AddChild(field)
+	d.passwordField.ObscurementRune = '•'
+	if newUser {
+		d.passwordField.ValidateCallback = func() bool {
+			valid := d.isPasswordFieldValid()
+			d.adjustUserDialogOKButton(d.isNameFieldValid(), valid)
+			return valid
+		}
+	} else {
+		d.passwordField.Watermark = i18n.Text("Leave blank to keep the current password")
+	}
+	content.AddChild(d.passwordField)
 }
 
 func (d *webSettingsDockable) createAccessBlock(content *unison.Panel, u *websettings.User) {
@@ -711,6 +772,10 @@ func (d *webSettingsDockable) isNameFieldValid() bool {
 	return true
 }
 
+func (d *webSettingsDockable) isPasswordFieldValid() bool {
+	return d.passwordField.Text() != ""
+}
+
 func (d *webSettingsDockable) isAccessKeyFieldValid() bool {
 	s := strings.TrimSpace(d.accessKeyField.Text())
 	if s == "" {
@@ -747,6 +812,10 @@ func (d *webSettingsDockable) isAccessDirFieldValid() bool {
 	return true
 }
 
+func (d *webSettingsDockable) adjustUserDialogOKButton(nameFieldValid, passwordFieldValid bool) {
+	d.userDialog.Button(unison.ModalResponseOK).SetEnabled(nameFieldValid && passwordFieldValid)
+}
+
 func (d *webSettingsDockable) adjustAccessDialogOKButton(accessKeyValid, accessDirValid bool) {
 	d.accessDialog.Button(unison.ModalResponseOK).SetEnabled(accessKeyValid && accessDirValid)
 }
@@ -775,6 +844,9 @@ func (d *webSettingsDockable) sync(other *websettings.Settings) {
 	SetFieldValue(d.readTimeoutField.Field, settings.ReadTimeout.String())
 	SetFieldValue(d.writeTimeoutField.Field, settings.WriteTimeout.String())
 	SetFieldValue(d.idleTimeoutField.Field, settings.IdleTimeout.String())
+	d.userList.Clear()
+	d.userList.Append(settings.Users()...)
+	d.updateErrorMsg(nil)
 	d.MarkForRedraw()
 	d.applyServerEnabled(on)
 }
