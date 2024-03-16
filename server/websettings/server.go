@@ -42,13 +42,13 @@ var (
 // Server holds the settings for the embedded web server.
 type Server struct {
 	Enabled             bool    `json:"enabled"`
-	Address             string  `json:"address,omitempty"`
+	Address             string  `json:"address"`
 	CertFile            string  `json:"cert_file,omitempty"`
 	KeyFile             string  `json:"key_file,omitempty"`
-	ShutdownGracePeriod fxp.Int `json:"shutdown_grace_period,omitempty"`
-	ReadTimeout         fxp.Int `json:"read_timeout,omitempty"`
-	WriteTimeout        fxp.Int `json:"write_timeout,omitempty"`
-	IdleTimeout         fxp.Int `json:"idle_timeout,omitempty"`
+	ShutdownGracePeriod fxp.Int `json:"shutdown_grace_period"`
+	ReadTimeout         fxp.Int `json:"read_timeout"`
+	WriteTimeout        fxp.Int `json:"write_timeout"`
+	IdleTimeout         fxp.Int `json:"idle_timeout"`
 }
 
 type wrapper struct {
