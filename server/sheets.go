@@ -318,7 +318,7 @@ func (s *Server) loadSheet(w http.ResponseWriter, r *http.Request) (entity webEn
 	entity, ok = s.entitiesByPath[entityPath]
 	s.sheetsLock.Unlock()
 	if !ok {
-		loadedEntity, err := gurps.NewEntityFromFile(os.DirFS(access.Dir), filepath.ToSlash(parts[1]))
+		loadedEntity, err := gurps.NewEntityFromFile(os.DirFS(filepath.Dir(entityPath)), filepath.Base(entityPath))
 		if err != nil {
 			slog.Error("error loading sheet", "path", entityPath, "error", err)
 			xhttp.ErrorStatus(w, http.StatusNotFound)
