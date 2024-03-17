@@ -10,10 +10,11 @@
   -->
 <script lang="ts">
 	import Header from '$lib/sheets/widget/Header.svelte';
-	import Field from '$lib/sheets/widget/Field.svelte';
+	import EditableTextField from '$lib/sheets/widget/EditableTextField.svelte';
 	import Label from '$lib/sheets/widget/Label.svelte';
 	import PointsNoteField from '$lib/sheets/attributes/PointsNoteField.svelte';
 	import { sheet } from '$lib/sheet.ts';
+	import Field from '$lib/sheets/widget/Field.svelte';
 
 	// TODO: Use remaining fields in PointPool
 </script>
@@ -24,10 +25,11 @@
 		{#each $sheet?.PointPools || [] as pool, i}
 			{@const banding = i % 2 === 1}
 			<div class:banding><PointsNoteField value={pool.Points} /></div>
-			<div class:banding><Field editable right style='width: 100%;'>{pool.Value}</Field></div>
+			<div class:banding><EditableTextField right key='PointPools.{pool.Key}.Current' /></div>
 			<div class:banding><Label left>of</Label></div>
-			<div class:banding><Field editable right style='width: 100%;'>{pool.Max}</Field></div>
+			<div class:banding><EditableTextField right key='PointPools.{pool.Key}' /></div>
 			<div class:banding><Label left>{pool.Name}</Label></div>
+			<div class:banding><Field tip={pool.Detail}>{#if pool.State}[{pool.State}]{/if}</Field></div>
 		{/each}
 	</div>
 </div>
@@ -44,7 +46,7 @@
 	.fields {
 		display: grid;
 		flex-grow: 1;
-		grid-template-columns: 0fr 0fr 0fr 0fr 1fr;
+		grid-template-columns: 0fr 0fr 0fr 0fr 0fr 1fr;
 		align-items: stretch;
 		align-content: stretch;
 		white-space: nowrap;

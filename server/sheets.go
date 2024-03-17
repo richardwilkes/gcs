@@ -239,6 +239,47 @@ func (s *Server) updateFieldText(entity *webEntity, update *sheetUpdate) error {
 				}
 			}
 		}
+		if strings.HasPrefix(update.FieldKey, "SecondaryAttributes.") {
+			if attr, ok := entity.Entity.Attributes.Set[strings.TrimPrefix(update.FieldKey, "SecondaryAttributes.")]; ok {
+				if attr.AttributeDef().Secondary() {
+					fxpIntSetter = func(v fxp.Int) error {
+						if v < fxp.Min || v > fxp.Max {
+							return errInvalid
+						}
+						attr.SetMaximum(v)
+						return nil
+					}
+					break
+				}
+			}
+		}
+		if strings.HasPrefix(update.FieldKey, "PointPools.") {
+			current := false
+			key := strings.TrimPrefix(update.FieldKey, "PointPools.")
+			if strings.HasSuffix(key, ".Current") {
+				key = strings.TrimSuffix(key, ".Current")
+				current = true
+			}
+			if attr, ok := entity.Entity.Attributes.Set[key]; ok {
+				if attr.AttributeDef().Pool() {
+					fxpIntSetter = func(v fxp.Int) error {
+						if current {
+							if v < fxp.Min || v > attr.Maximum() {
+								return errInvalid
+							}
+							attr.Damage = (attr.Maximum() - v).Max(0)
+						} else {
+							if v < fxp.Min || v > fxp.Max {
+								return errInvalid
+							}
+							attr.SetMaximum(v)
+						}
+						return nil
+					}
+					break
+				}
+			}
+		}
 		return errs.Newf("unknown field key: %q", update.FieldKey)
 	}
 	update.FieldText = txt.CollapseSpaces(strings.TrimSpace(update.FieldText))
