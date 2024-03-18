@@ -22,7 +22,6 @@
 	let naturalHeight: number;
 	let width: string;
 	let height: string;
-	let blockElement: HTMLDivElement | undefined;
 	let inputElement: HTMLInputElement | undefined;
 	let inDrag = false;
 
@@ -51,9 +50,11 @@
 				event.preventDefault();
 				event.dataTransfer.dropEffect = 'copy';
 				inDrag = true;
-				blockElement?.classList.add('focused');
 			}
 		}
+	}
+
+	function ignoreDragEnterCallback(_: DragEvent) {
 	}
 
 	function onDragOverCallback(event: DragEvent) {
@@ -67,14 +68,12 @@
 		if (inDrag) {
 			inDrag = false;
 			event.preventDefault();
-			blockElement?.classList.remove('focused');
 		}
 	}
 
 	function onDropCallback(event: DragEvent) {
 		if (inDrag) {
 			inDrag = false;
-			blockElement?.classList.remove('focused');
 			if (event.dataTransfer && event.dataTransfer.items) {
 				for (const item of event.dataTransfer.items) {
 					if (item.kind === 'file' && item.type.startsWith('image/')) {
@@ -146,7 +145,7 @@
 	}
 </script>
 
-<div bind:this={blockElement} class='block' class:focused={inDrag}>
+<div class='block'>
 	<Header>Portrait</Header>
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
 	<div class='portrait' bind:clientHeight style='width:{pictureHeight}px;' tabindex='0' role='button'
@@ -160,13 +159,14 @@
 					 on:change={onChangeCallback} on:click={onInputElementClick} />
 		{#if clientHeight}
 				{#if imageURL}
-					<img src={imageURL} bind:naturalWidth bind:naturalHeight {width} {height} alt='Portrait' />
+					<img class='noDrag' src={imageURL} bind:naturalWidth bind:naturalHeight {width} {height} alt='Portrait' />
 				{:else}
-					<Silhouette style='width: {width}; height: {height};' />
+					<Silhouette style='width: {width}; height: {height}; pointer-events: none;' />
 				{/if}
 		{/if}
-		<div class='tip-container'>
-			<div class='tip'>Drop an image here or double-click to change the portrait</div>
+		<!-- svelte-ignore a11y-no-static-element-interactions -->
+		<div class='tip-container' class:inDrag on:dragenter={ignoreDragEnterCallback}>
+			<div class='tip noDrag' class:hide={inDrag}>Drop an image here or double-click to change the portrait</div>
 		</div>
 	</div>
 </div>
@@ -213,7 +213,16 @@
 		user-select: none;
 	}
 
-	.focused{
-		border: 1px dashed var(--color-tertiary);
+	.inDrag {
+		border: 2px dashed var(--color-tertiary);
+		opacity: 100%;
+	}
+
+	.noDrag {
+		pointer-events: none;
+	}
+
+	.hide {
+		display: none;
 	}
 </style>
