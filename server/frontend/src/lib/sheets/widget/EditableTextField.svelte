@@ -22,7 +22,7 @@
 		if (pageSheet) {
 			const target = event.target as HTMLElement;
 			try {
-				let updatedSheet = await updateSheetField(pageSheet, key, target.innerText);
+				let updatedSheet = await updateSheetField(pageSheet, 'field.text', key, target.innerText);
 				target.innerText = extractField(updatedSheet, key, key);
 				sheet.update((_) => updatedSheet);
 			} catch {
@@ -73,4 +73,5 @@
 	}
 </script>
 
-<Field editable {right} style='width:100%;' on:blur={(target) => updateField(target)}>{extractField($sheet, key, key)}</Field>
+<Field editable {right} style='width:100%;'
+			 on:blur={(target) => updateField(target)}>{extractField($sheet, key, key)}</Field>

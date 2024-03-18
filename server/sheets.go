@@ -12,6 +12,7 @@
 package server
 
 import (
+	"encoding/base64"
 	"errors"
 	"io/fs"
 	"log/slog"
@@ -23,6 +24,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/imgutil"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -50,9 +52,9 @@ type Dir struct {
 }
 
 type sheetUpdate struct {
-	Kind      string
-	FieldKey  string
-	FieldText string
+	Kind string
+	Key  string
+	Data string
 }
 
 func (s *Server) installSheetHandlers() {
@@ -148,6 +150,12 @@ func (s *Server) updateSheetHandler(w http.ResponseWriter, r *http.Request) {
 			xhttp.ErrorStatus(w, http.StatusBadRequest)
 			return
 		}
+	case "field.binary":
+		if err := s.updateFieldBinary(&entity, &update); err != nil {
+			slog.Error("error updating sheet", "path", entity.ClientPath, "error", err)
+			xhttp.ErrorStatus(w, http.StatusBadRequest)
+			return
+		}
 	}
 	response := sheet.NewSheetFromEntity(entity.Entity, entity.OriginalCRC64 != entity.CurrentCRC64, access.ReadOnly)
 	CompressedJSONResponse(w, http.StatusOK, response)
@@ -185,7 +193,7 @@ func (s *Server) updateFieldText(entity *webEntity, update *sheetUpdate) error {
 	var weightFieldPtr *fxp.Weight
 	var fxpIntSetter func(fxp.Int) error
 	var intSetter func(int) error
-	switch update.FieldKey {
+	switch update.Key {
 	case "Identity.Name":
 		stringFieldPtr = &entity.Entity.Profile.Name
 	case "Identity.Title":
@@ -225,8 +233,8 @@ func (s *Server) updateFieldText(entity *webEntity, update *sheetUpdate) error {
 	case "Description.Hand":
 		stringFieldPtr = &entity.Entity.Profile.Handedness
 	default:
-		if strings.HasPrefix(update.FieldKey, "PrimaryAttributes.") {
-			if attr, ok := entity.Entity.Attributes.Set[strings.TrimPrefix(update.FieldKey, "PrimaryAttributes.")]; ok {
+		if strings.HasPrefix(update.Key, "PrimaryAttributes.") {
+			if attr, ok := entity.Entity.Attributes.Set[strings.TrimPrefix(update.Key, "PrimaryAttributes.")]; ok {
 				if attr.AttributeDef().Primary() {
 					fxpIntSetter = func(v fxp.Int) error {
 						if v < fxp.Min || v > fxp.Max {
@@ -239,8 +247,8 @@ func (s *Server) updateFieldText(entity *webEntity, update *sheetUpdate) error {
 				}
 			}
 		}
-		if strings.HasPrefix(update.FieldKey, "SecondaryAttributes.") {
-			if attr, ok := entity.Entity.Attributes.Set[strings.TrimPrefix(update.FieldKey, "SecondaryAttributes.")]; ok {
+		if strings.HasPrefix(update.Key, "SecondaryAttributes.") {
+			if attr, ok := entity.Entity.Attributes.Set[strings.TrimPrefix(update.Key, "SecondaryAttributes.")]; ok {
 				if attr.AttributeDef().Secondary() {
 					fxpIntSetter = func(v fxp.Int) error {
 						if v < fxp.Min || v > fxp.Max {
@@ -253,9 +261,9 @@ func (s *Server) updateFieldText(entity *webEntity, update *sheetUpdate) error {
 				}
 			}
 		}
-		if strings.HasPrefix(update.FieldKey, "PointPools.") {
+		if strings.HasPrefix(update.Key, "PointPools.") {
 			current := false
-			key := strings.TrimPrefix(update.FieldKey, "PointPools.")
+			key := strings.TrimPrefix(update.Key, "PointPools.")
 			if strings.HasSuffix(key, ".Current") {
 				key = strings.TrimSuffix(key, ".Current")
 				current = true
@@ -280,48 +288,48 @@ func (s *Server) updateFieldText(entity *webEntity, update *sheetUpdate) error {
 				}
 			}
 		}
-		return errs.Newf("unknown field key: %q", update.FieldKey)
+		return errs.Newf("unknown field key: %q", update.Key)
 	}
-	update.FieldText = txt.CollapseSpaces(strings.TrimSpace(update.FieldText))
+	update.Data = txt.CollapseSpaces(strings.TrimSpace(update.Data))
 	switch {
 	case stringFieldPtr != nil:
-		if update.FieldText == *stringFieldPtr {
+		if update.Data == *stringFieldPtr {
 			return nil
 		}
-		*stringFieldPtr = update.FieldText
+		*stringFieldPtr = update.Data
 	case lengthFieldPtr != nil:
-		length, err := fxp.LengthFromString(update.FieldText, entity.Entity.SheetSettings.DefaultLengthUnits)
+		length, err := fxp.LengthFromString(update.Data, entity.Entity.SheetSettings.DefaultLengthUnits)
 		if err != nil || length < 0 || length > fxp.Length(fxp.Max) {
-			return errs.Newf("invalid input: %q", update.FieldText)
+			return errs.Newf("invalid input: %q", update.Data)
 		}
-		if update.FieldText == entity.Entity.SheetSettings.DefaultLengthUnits.Format(*lengthFieldPtr) {
+		if update.Data == entity.Entity.SheetSettings.DefaultLengthUnits.Format(*lengthFieldPtr) {
 			return nil
 		}
 		*lengthFieldPtr = length
 	case weightFieldPtr != nil:
-		weight, err := fxp.WeightFromString(update.FieldText, entity.Entity.SheetSettings.DefaultWeightUnits)
+		weight, err := fxp.WeightFromString(update.Data, entity.Entity.SheetSettings.DefaultWeightUnits)
 		if err != nil || weight < 0 || weight > fxp.Weight(fxp.Max) {
-			return errs.Newf("invalid input: %q", update.FieldText)
+			return errs.Newf("invalid input: %q", update.Data)
 		}
-		if update.FieldText == entity.Entity.SheetSettings.DefaultWeightUnits.Format(*weightFieldPtr) {
+		if update.Data == entity.Entity.SheetSettings.DefaultWeightUnits.Format(*weightFieldPtr) {
 			return nil
 		}
 		*weightFieldPtr = weight
 	case intSetter != nil:
-		v, err := strconv.ParseInt(update.FieldText, 10, 64)
+		v, err := strconv.ParseInt(update.Data, 10, 64)
 		if err == nil {
 			err = intSetter(int(v))
 		}
 		if err != nil {
-			return errs.Newf("invalid input: %q", update.FieldText)
+			return errs.Newf("invalid input: %q", update.Data)
 		}
 	case fxpIntSetter != nil:
-		v, err := fxp.FromString(update.FieldText)
+		v, err := fxp.FromString(update.Data)
 		if err == nil {
 			err = fxpIntSetter(v)
 		}
 		if err != nil {
-			return errs.Newf("invalid input: %q", update.FieldText)
+			return errs.Newf("invalid input: %q", update.Data)
 		}
 	}
 	entity.Entity.ModifiedOn = jio.Now()
@@ -329,7 +337,35 @@ func (s *Server) updateFieldText(entity *webEntity, update *sheetUpdate) error {
 	s.sheetsLock.Lock()
 	s.entitiesByPath[entity.ClientPath] = *entity
 	s.sheetsLock.Unlock()
-	slog.Info("updated sheet", "path", entity.ClientPath, "field", update.FieldKey, "text", update.FieldText)
+	slog.Info("updated sheet", "path", entity.ClientPath, "field", update.Key, "text", update.Data)
+	return nil
+}
+
+func (s *Server) updateFieldBinary(entity *webEntity, update *sheetUpdate) error {
+	switch update.Key {
+	case "Portrait":
+		if len(update.Data) == 0 {
+			return errs.New("no data")
+		}
+		data, err := base64.StdEncoding.DecodeString(update.Data)
+		if err != nil {
+			return errs.Wrap(err)
+		}
+		data, err = imgutil.ConvertForPortraitUse(data)
+		if err != nil {
+			return err
+		}
+		entity.Entity.Profile.PortraitData = data
+		entity.Entity.Profile.PortraitImage = nil
+	default:
+		return errs.Newf("unknown field key: %q", update.Key)
+	}
+	entity.Entity.ModifiedOn = jio.Now()
+	entity.CurrentCRC64 = entity.Entity.CRC64()
+	s.sheetsLock.Lock()
+	s.entitiesByPath[entity.ClientPath] = *entity
+	s.sheetsLock.Unlock()
+	slog.Info("updated sheet", "path", entity.ClientPath, "field", update.Key)
 	return nil
 }
 

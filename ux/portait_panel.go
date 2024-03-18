@@ -12,10 +12,9 @@
 package ux
 
 import (
-	"image"
 	"path/filepath"
-	"strings"
 
+	"github.com/richardwilkes/gcs/v5/imgutil"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -25,10 +24,7 @@ import (
 	"github.com/richardwilkes/unison/enums/imgfmt"
 	"github.com/richardwilkes/unison/enums/mipmapmode"
 	"github.com/richardwilkes/unison/enums/paintstyle"
-	"golang.org/x/image/draw"
 )
-
-const maxPortraitDimension = 400
 
 // PortraitPanel holds the contents of the portrait block on the sheet.
 type PortraitPanel struct {
@@ -109,40 +105,9 @@ func (p *PortraitPanel) fileDrop(files []string) {
 			errs.Log(errs.NewWithCause("unable to load", err), "file", f)
 			continue
 		}
-		var img *unison.Image
-		if img, err = unison.NewImageFromBytes(data, 0.5); err != nil {
-			errs.Log(errs.NewWithCause("does not appear to be a valid image", err), "file", f)
+		if data, err = imgutil.ConvertForPortraitUse(data); err != nil {
+			errs.Log(err, "file", f)
 			continue
-		}
-		scale := float32(1)
-		imgSize := img.Size()
-		size := imgSize
-		if size.Width > maxPortraitDimension || size.Height > maxPortraitDimension {
-			if size.Width > size.Height {
-				scale = maxPortraitDimension / size.Width
-			} else {
-				scale = maxPortraitDimension / size.Height
-			}
-			size = size.Mul(scale).Ceil().Max(unison.NewSize(1, 1))
-		}
-		if size != imgSize || !strings.HasSuffix(strings.ToLower(f), ".webp") {
-			var src *image.NRGBA
-			if src, err = img.ToNRGBA(); err != nil {
-				errs.Log(errs.NewWithCause("unable to convert", err), "file", f)
-				continue
-			}
-			dst := image.NewNRGBA(image.Rect(0, 0, int(size.Width), int(size.Height)))
-			x := int((size.Width - imgSize.Width*scale) / 2)
-			y := int((size.Height - imgSize.Height*scale) / 2)
-			draw.CatmullRom.Scale(dst, image.Rect(x, y, x+int(size.Width), y+int(size.Height)), src, src.Rect, draw.Over, nil)
-			if img, err = unison.NewImageFromPixels(int(size.Width), int(size.Height), dst.Pix, 0.5); err != nil {
-				errs.Log(errs.NewWithCause("unable to create scaled image", err), "file", f, "size", size)
-				continue
-			}
-			if data, err = img.ToWebp(80, true); err != nil {
-				errs.Log(errs.NewWithCause("unable to create webp image", err), "file", f)
-				continue
-			}
 		}
 		sheet := unison.Ancestor[*Sheet](p)
 		sheet.undoMgr.Add(&unison.UndoEdit[[]byte]{

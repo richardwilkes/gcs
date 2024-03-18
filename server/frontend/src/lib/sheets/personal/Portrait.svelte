@@ -11,6 +11,8 @@
 <script lang='ts'>
 	import Header from '$lib/sheets/widget/Header.svelte';
 	import Silhouette from '$lib/svg/Silhouette.svelte';
+	import { sheet, updateSheetField } from '$lib/sheet.ts';
+	import { page } from '$lib/page.ts';
 
 	export let imageURL: string | undefined;
 
@@ -20,6 +22,104 @@
 	let naturalHeight: number;
 	let width: string;
 	let height: string;
+	let blockElement: HTMLDivElement | undefined;
+	let inputElement: HTMLInputElement | undefined;
+	let inDrag = false;
+
+	function onInputElementClick(event: MouseEvent) {
+		event.stopPropagation();
+	}
+
+	function onClickCallback(event: MouseEvent) {
+		if (event.button === 0 && event.detail === 2) { // Double-click
+			openFileDialog();
+		}
+	}
+
+	function onDragEnterCallback(event: DragEvent) {
+		if (event.dataTransfer && event.dataTransfer.items) {
+			let count = 0;
+			for (const item of event.dataTransfer.items) {
+				if (item.kind === 'file' && item.type.startsWith('image/')) {
+					count++;
+					if (count > 1) {
+						return;
+					}
+				}
+			}
+			if (count === 1) {
+				event.preventDefault();
+				event.dataTransfer.dropEffect = 'copy';
+				inDrag = true;
+				blockElement?.classList.add('focused');
+			}
+		}
+	}
+
+	function onDragOverCallback(event: DragEvent) {
+		if (inDrag && event.dataTransfer) {
+			event.preventDefault();
+			event.dataTransfer.dropEffect = 'copy';
+		}
+	}
+
+	function onDragLeaveCallback(event: DragEvent) {
+		if (inDrag) {
+			inDrag = false;
+			event.preventDefault();
+			blockElement?.classList.remove('focused');
+		}
+	}
+
+	function onDropCallback(event: DragEvent) {
+		if (inDrag) {
+			inDrag = false;
+			blockElement?.classList.remove('focused');
+			if (event.dataTransfer && event.dataTransfer.items) {
+				for (const item of event.dataTransfer.items) {
+					if (item.kind === 'file' && item.type.startsWith('image/')) {
+						const file = item.getAsFile();
+						if (file) {
+							event.preventDefault();
+							updatePortrait(file);
+							return;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	function onChangeCallback(_: Event) {
+		if (inputElement && inputElement.files) {
+			updatePortrait(inputElement.files[0]);
+			inputElement.files = null;
+		}
+	}
+
+	function openFileDialog() {
+		if (inputElement) {
+			inputElement.click();
+		}
+	}
+
+	function updatePortrait(file: File) {
+		const pageSheet = $page.Sheet;
+		if (pageSheet) {
+			const reader = new FileReader();
+			reader.onload = () => {
+				let s = reader.result as string;
+				const i = s.indexOf(',')
+				if (i > 0) {
+					s = s.substring(i + 1);
+				}
+				updateSheetField(pageSheet, 'field.binary', 'Portrait', s).then((updatedSheet) => {
+					sheet.update((_) => updatedSheet);
+				})
+			}
+			reader.readAsDataURL(file);
+		}
+	}
 
 	$: {
 		if (clientHeight) {
@@ -31,11 +131,11 @@
 			if (imageURL) {
 				if (naturalWidth && naturalHeight) {
 					if (naturalWidth > naturalHeight) {
-						width = "100%";
+						width = '100%';
 						height = naturalHeight * (pictureHeight / naturalWidth) + 'px';
 					} else {
 						width = naturalWidth * (pictureHeight / naturalHeight) + 'px';
-						height = "100%";
+						height = '100%';
 					}
 				}
 			} else {
@@ -46,16 +146,28 @@
 	}
 </script>
 
-<div class='block'>
+<div bind:this={blockElement} class='block' class:focused={inDrag}>
 	<Header>Portrait</Header>
-	<div class='portrait' bind:clientHeight style='width:{pictureHeight}px;'>
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<div class='portrait' bind:clientHeight style='width:{pictureHeight}px;' tabindex='0' role='button'
+			 on:click={onClickCallback}
+			 on:dragenter={onDragEnterCallback}
+			 on:dragover={onDragOverCallback}
+			 on:dragleave={onDragLeaveCallback}
+			 on:drop={onDropCallback}
+	>
+		<input bind:this={inputElement} type='file' autocomplete='off' tabindex='-1' style='display:none' accept='image/*'
+					 on:change={onChangeCallback} on:click={onInputElementClick} />
 		{#if clientHeight}
-			{#if imageURL}
-				<img src={imageURL} bind:naturalWidth bind:naturalHeight {width} {height} alt='Portrait' />
-			{:else}
-				<Silhouette style='width: {width}; height: {height};' />
-			{/if}
+				{#if imageURL}
+					<img src={imageURL} bind:naturalWidth bind:naturalHeight {width} {height} alt='Portrait' />
+				{:else}
+					<Silhouette style='width: {width}; height: {height};' />
+				{/if}
 		{/if}
+		<div class='tip-container'>
+			<div class='tip'>Drop an image here or double-click to change the portrait</div>
+		</div>
 	</div>
 </div>
 
@@ -73,5 +185,35 @@
 		align-items: center;
 		overflow: clip;
 		height: 100%;
+		outline: none;
+	}
+
+	.tip-container {
+		position: absolute;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		right: 0;
+		display: flex;
+		justify-items: center;
+		align-items: center;
+		opacity: 0;
+	}
+
+	.tip-container:hover {
+		background-color: rgba(0 0 0 / 30%);
+		opacity: 100%;
+	}
+
+	.tip {
+		color: white;
+		font-weight: bold;
+		padding: 1em;
+		text-align: center;
+		user-select: none;
+	}
+
+	.focused{
+		border: 1px dashed var(--color-tertiary);
 	}
 </style>
