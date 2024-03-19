@@ -1,15 +1,4 @@
 #! /usr/bin/env bash
-#
-# Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
-#
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, version 2.0. If a copy of the MPL was not distributed with
-# this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-#
-# This Source Code Form is "Incompatible With Secondary Licenses", as
-# defined by the Mozilla Public License, version 2.0.
-#
-
 set -eo pipefail
 
 trap 'echo -e "\033[33;5mBuild failed on build.sh:$LINENO\033[0m"' ERR
@@ -67,7 +56,7 @@ LDFLAGS_ALL="-X github.com/richardwilkes/toolbox/cmdline.AppVersion=$RELEASE $EX
 STD_FLAGS="-v -buildvcs=true $EXTRA_BUILD_FLAGS"
 
 # Build our Svelte code
-echo -e "\033[32mBuilding the Svelte code...\033[0m"
+echo -e "\033[33mBuilding the Svelte code...\033[0m"
 cd server/frontend
 npm install
 npm run build
@@ -77,7 +66,7 @@ fi
 cd ../..
 
 # Generate the source
-echo -e "\033[32mGenerating...\033[0m"
+echo -e "\033[33mGenerating...\033[0m"
 go generate ./gen/enumgen.go
 if [ "$GEN_ONLY"x == "1x" ]; then
   exit 0
@@ -94,7 +83,7 @@ if [ "$I18N"x == "1x" ]; then
 fi
 
 # Build our Go code
-echo -e "\033[32mBuilding the Go code...\033[0m"
+echo -e "\033[33mBuilding the Go code...\033[0m"
 case $(uname -s) in
 Darwin*)
   go run $STD_FLAGS -ldflags all="$LDFLAGS_ALL" packaging/main.go
@@ -116,30 +105,30 @@ esac
 
 # Run the linters
 if [ "$LINT"x == "1x" ]; then
-  GOLANGCI_LINT_VERSION=1.56.2
-  TOOLS_DIR=$PWD/tools
-  mkdir -p "$TOOLS_DIR"
+  GOLANGCI_LINT_VERSION=$(curl --head -s https://github.com/golangci/golangci-lint/releases/latest | grep location: | sed 's/^.*v//' | tr -d '\r\n' )
+  TOOLS_DIR=$(go env GOPATH)/bin
   if [ ! -e "$TOOLS_DIR/golangci-lint" ] || [ "$("$TOOLS_DIR/golangci-lint" version 2>&1 | awk '{ print $4 }' || true)x" != "${GOLANGCI_LINT_VERSION}x" ]; then
-    echo -e "\033[32mInstalling version $GOLANGCI_LINT_VERSION of golangci-lint into $TOOLS_DIR...\033[0m"
+    echo -e "\033[33mInstalling version $GOLANGCI_LINT_VERSION of golangci-lint into $TOOLS_DIR...\033[0m"
+    mkdir -p "$TOOLS_DIR"
     curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$TOOLS_DIR" v$GOLANGCI_LINT_VERSION
   fi
-  echo -e "\033[32mLinting...\033[0m"
-  $TOOLS_DIR/golangci-lint run
+  echo -e "\033[33mLinting...\033[0m"
+  "$TOOLS_DIR/golangci-lint" run
 fi
 
 # Run the tests
 if [ "$TEST"x == "1x" ]; then
   if [ -n "$RACE" ]; then
-    echo -e "\033[32mTesting with -race enabled...\033[0m"
+    echo -e "\033[33mTesting with -race enabled...\033[0m"
   else
-    echo -e "\033[32mTesting...\033[0m"
+    echo -e "\033[33mTesting...\033[0m"
   fi
   go test $RACE ./... | grep -v "no test files"
 fi
 
 # Package for distribution
 if [ "$DIST"x == "1x" ]; then
-  echo -e "\033[32mPackaging...\033[0m"
+  echo -e "\033[33mPackaging...\033[0m"
   case $(uname -s) in
   Darwin*)
     if [ "$(uname -p)" == "arm" ]; then

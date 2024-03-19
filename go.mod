@@ -12,10 +12,10 @@ require (
 	github.com/rjeczalik/notify v0.9.3
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef
-	github.com/tc-hib/winres v0.3.0
+	github.com/tc-hib/winres v0.3.1
 	github.com/vearutop/statigz v1.4.0
 	github.com/yookoala/realpath v1.0.0
-	golang.org/x/exp v0.0.0-20240314144324-c7f7c6466f7f
+	golang.org/x/exp v0.0.0-20240318143956-a85f2c67cd81
 	golang.org/x/image v0.15.0
 	golang.org/x/sys v0.18.0
 	golang.org/x/text v0.14.0
