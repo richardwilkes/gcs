@@ -72,7 +72,7 @@ type Settings struct {
 	Fonts              Fonts                      `json:"fonts"`
 	Sheet              *SheetSettings             `json:"sheet_settings,omitempty"`
 	OpenInWindow       []dgroup.Group             `json:"open_in_window,omitempty"`
-	WebServer          *websettings.Settings      `json:"web_server,omitempty"`
+	WebServer          *websettings.Settings      `json:"web,omitempty"` // Do not use "web_server" as the key, as an earlier release used that name and it will cause a failure to load the settings file.
 	ThemeMode          thememode.Enum             `json:"theme_mode,alt=color_mode"`
 }
 
