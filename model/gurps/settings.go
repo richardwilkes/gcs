@@ -19,6 +19,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
@@ -41,10 +42,12 @@ const (
 	SettingsLastDirKey = "settings"
 )
 
-// SettingsPath holds the path to our settings file.
-var SettingsPath string
-
-var global *Settings
+var (
+	// SettingsPath holds the path to our settings file.
+	SettingsPath   string
+	globalOnce     sync.Once
+	globalSettings Settings
+)
 
 // NavigatorSettings holds settings for the navigator view.
 type NavigatorSettings struct {
@@ -73,40 +76,35 @@ type Settings struct {
 	ThemeMode          thememode.Enum             `json:"theme_mode,alt=color_mode"`
 }
 
-// DefaultSettings returns new default settings.
-func DefaultSettings() *Settings {
-	return &Settings{
-		LastSeenGCSVersion: cmdline.AppVersion,
-		General:            NewGeneralSettings(),
-		LibrarySet:         NewLibraries(),
-		LibraryExplorer:    NavigatorSettings{DividerPosition: 330},
-		LastDirs:           make(map[string]string),
-		Sheet:              FactorySheetSettings(),
-		WebServer:          websettings.Default(),
-	}
-}
-
 // GlobalSettings returns the global settings.
 func GlobalSettings() *Settings {
-	if global == nil {
+	globalOnce.Do(func() {
 		dice.GURPSFormat = true
 		fixupMovedSettingsFileIfNeeded()
-		if err := jio.LoadFromFile(context.Background(), SettingsPath, &global); err != nil {
-			global = DefaultSettings()
+		if err := jio.LoadFromFile(context.Background(), SettingsPath, &globalSettings); err != nil {
+			globalSettings = Settings{
+				LastSeenGCSVersion: cmdline.AppVersion,
+				General:            NewGeneralSettings(),
+				LibrarySet:         NewLibraries(),
+				LibraryExplorer:    NavigatorSettings{DividerPosition: 330},
+				LastDirs:           make(map[string]string),
+				Sheet:              FactorySheetSettings(),
+				WebServer:          websettings.Default(),
+			}
 		}
-		global.EnsureValidity()
+		globalSettings.EnsureValidity()
 		InstallEvaluatorFunctions(fxp.EvalFuncs)
-		unison.SetThemeMode(global.ThemeMode)
-		global.Colors.MakeCurrent()
-		global.Fonts.MakeCurrent()
+		unison.SetThemeMode(globalSettings.ThemeMode)
+		globalSettings.Colors.MakeCurrent()
+		globalSettings.Fonts.MakeCurrent()
 		unison.DefaultScrollPanelTheme.MouseWheelMultiplier = func() float32 {
-			return fxp.As[float32](global.General.ScrollWheelMultiplier)
+			return fxp.As[float32](globalSettings.General.ScrollWheelMultiplier)
 		}
 		unison.DefaultFieldTheme.InitialClickSelectsAll = func(_ *unison.Field) bool {
-			return global.General.InitialFieldClickSelectsAll
+			return globalSettings.General.InitialFieldClickSelectsAll
 		}
-	}
-	return global
+	})
+	return &globalSettings
 }
 
 // Save to the standard path.
