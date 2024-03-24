@@ -44,8 +44,9 @@
 			<Tag>{cell.InlineTag}</Tag>
 		{/if}
 		{#if cell.Secondary}
-			<br />
-			<span class="secondary">{cell.Secondary}</span>
+			{#each cell.Secondary.split('\n') as line}
+				<br /><span class="secondary">{line}</span>
+			{/each}
 		{/if}
 	{:else}
 		{cell.Primary}
@@ -53,8 +54,9 @@
 			<Tag>{cell.InlineTag}</Tag>
 		{/if}
 		{#if cell.Secondary}
-			<br />
-			<span class="secondary">{cell.Secondary}</span>
+			{#each cell.Secondary.split('\n') as line}
+				<br /><span class="secondary">{line}</span>
+			{/each}
 		{/if}
 	{/if}
 	{#if cell.UnsatisfiedReason}
