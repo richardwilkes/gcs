@@ -94,10 +94,12 @@ func (p *reactionModProvider) ItemNames() (singular, plural string) {
 }
 
 func (p *reactionModProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.ConditionalModifier]] {
-	return DisableSorting([]unison.TableColumnHeader[*Node[*gurps.ConditionalModifier]]{
-		NewEditorListHeader[*gurps.ConditionalModifier]("±", i18n.Text("Modifier"), true),
-		NewEditorListHeader[*gurps.ConditionalModifier](i18n.Text("Reaction"), "", true),
-	})
+	ids := p.ColumnIDs()
+	headers := make([]unison.TableColumnHeader[*Node[*gurps.ConditionalModifier]], 0, len(ids))
+	for _, id := range ids {
+		headers = append(headers, headerFromData[*gurps.Equipment](gurps.ReactionModifiersHeaderData(id), true))
+	}
+	return DisableSorting(headers)
 }
 
 func (p *reactionModProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*gurps.ConditionalModifier]]) {

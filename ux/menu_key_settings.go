@@ -98,7 +98,7 @@ func (d *menuKeySettingsDockable) createBindingButton(binding *gurps.Binding) {
 			gc.DrawRect(rect, unison.DefaultFieldTheme.BackgroundInk.Paint(gc, rect, paintstyle.Fill))
 			capturePanel.DefaultDraw(gc, rect)
 		}
-		capturePanel.KeyDownCallback = func(keyCode unison.KeyCode, mod unison.Modifiers, repeat bool) bool {
+		capturePanel.KeyDownCallback = func(keyCode unison.KeyCode, mod unison.Modifiers, _ bool) bool {
 			localBinding.KeyCode = keyCode
 			localBinding.Modifiers = mod
 			capturePanel.Text = localBinding.String()

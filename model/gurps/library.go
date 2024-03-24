@@ -156,7 +156,7 @@ func (l *Library) CheckForAvailableUpgrade(ctx context.Context, client *http.Cli
 	incompatibleFutureLibraryVersion := strconv.Itoa(CurrentDataVersion + 1)
 	minimumLibraryVersion := strconv.Itoa(MinimumLibraryVersion)
 	releases, err := LoadReleases(ctx, client, l.GitHubAccountName, l.AccessToken, l.RepoName, "",
-		func(version, notes string) bool {
+		func(version, _ string) bool {
 			return incompatibleFutureLibraryVersion == version ||
 				txt.NaturalLess(version, minimumLibraryVersion, true) ||
 				txt.NaturalLess(incompatibleFutureLibraryVersion, version, true)

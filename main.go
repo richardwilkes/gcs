@@ -67,10 +67,6 @@ func main() {
 	ux.RegisterKnownFileTypes()
 	settings := gurps.GlobalSettings() // Here to force early initialization
 
-	// TODO: Remove these two lines once the web branch is merged
-	backgroundOnly = false
-	settings.WebServer.Enabled = false
-
 	switch {
 	case convertFiles:
 		if err := gurps.Convert(fileList...); err != nil {
@@ -87,11 +83,13 @@ func main() {
 		if !settings.WebServer.Enabled {
 			cl.FatalMsg(i18n.Text("Web server is not enabled."))
 		}
-		server.StartServerInBackground(nil)
+		server.Start(nil)
 		select {}
 	default:
+		ux.StartServer = server.Start
+		ux.StopServer = server.Stop
 		if settings.WebServer.Enabled {
-			server.StartServerInBackground(nil) // TODO: Add monitor for UI
+			server.Start(nil)
 		}
 		ux.Start(fileList) // Never returns
 	}

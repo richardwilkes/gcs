@@ -415,7 +415,7 @@ func (n *Navigator) renameSelection() {
 		oldName := row.primaryColumnText()
 		newName := oldName
 
-		oldField := NewStringField(nil, "", "", func() string { return oldName }, func(s string) {})
+		oldField := NewStringField(nil, "", "", func() string { return oldName }, func(_ string) {})
 		oldField.SetEnabled(false)
 
 		newField := NewStringField(nil, "", "", func() string { return newName }, func(s string) { newName = s })
@@ -624,7 +624,7 @@ func newSheetFromTemplateMenuItem(f unison.MenuFactory, id *int, templatePath st
 	useID := *id
 	*id++
 	return f.NewItem(unison.PopupMenuTemporaryBaseID+useID, newSheetFromTemplateAction.Title,
-		unison.KeyBinding{}, nil, func(item unison.MenuItem) {
+		unison.KeyBinding{}, nil, func(_ unison.MenuItem) {
 			NewSheetFromTemplate(templatePath)
 		})
 }
@@ -633,7 +633,7 @@ func newApplyTemplateMenuItem(f unison.MenuFactory, id *int, templatePath string
 	useID := *id
 	*id++
 	return f.NewItem(unison.PopupMenuTemporaryBaseID+useID, applyTemplateAction.Title,
-		unison.KeyBinding{}, nil, func(item unison.MenuItem) {
+		unison.KeyBinding{}, nil, func(_ unison.MenuItem) {
 			ApplyTemplate(templatePath)
 		})
 }
@@ -644,7 +644,7 @@ func newContextMenuItemFromButton(f unison.MenuFactory, id *int, button *unison.
 		*id++
 		return f.NewItem(unison.PopupMenuTemporaryBaseID+useID,
 			button.Tooltip.Children()[0].Self.(*unison.Label).Text, unison.KeyBinding{}, nil,
-			func(item unison.MenuItem) { button.ClickCallback() })
+			func(_ unison.MenuItem) { button.ClickCallback() })
 	}
 	return nil
 }
@@ -653,7 +653,7 @@ func newShowNodeOnDiskMenuItem(f unison.MenuFactory, id *int, sel []*NavigatorNo
 	useID := *id
 	*id++
 	return f.NewItem(unison.PopupMenuTemporaryBaseID+useID, i18n.Text("Show on Disk"), unison.KeyBinding{}, nil,
-		func(item unison.MenuItem) {
+		func(_ unison.MenuItem) {
 			m := make(map[string]struct{})
 			for _, node := range sel {
 				p := node.Path()

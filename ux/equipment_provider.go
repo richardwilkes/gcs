@@ -12,8 +12,6 @@
 package ux
 
 import (
-	"fmt"
-
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
@@ -35,7 +33,7 @@ type equipmentProvider struct {
 }
 
 // NewEquipmentProvider creates a new table provider for equipment. 'carried' is only relevant if 'forPage' is true.
-func NewEquipmentProvider(provider gurps.EquipmentListProvider, forPage, carried bool) TableProvider[*gurps.Equipment] {
+func NewEquipmentProvider(provider gurps.EquipmentListProvider, carried, forPage bool) TableProvider[*gurps.Equipment] {
 	return &equipmentProvider{
 		provider: provider,
 		forPage:  forPage,
@@ -162,33 +160,9 @@ func (p *equipmentProvider) ItemNames() (singular, plural string) {
 func (p *equipmentProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Equipment]] {
 	ids := p.ColumnIDs()
 	headers := make([]unison.TableColumnHeader[*Node[*gurps.Equipment]], 0, len(ids))
+	entity, _ := p.provider.(*gurps.Entity) //nolint:errcheck // It's ok for the entity to be nil
 	for _, id := range ids {
-		switch id {
-		case gurps.EquipmentEquippedColumn:
-			headers = append(headers, NewEditorEquippedHeader[*gurps.Equipment](p.forPage))
-		case gurps.EquipmentQuantityColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Equipment](i18n.Text("#"), i18n.Text("Quantity"), p.forPage))
-		case gurps.EquipmentDescriptionColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Equipment](p.descriptionText(), "", p.forPage))
-		case gurps.EquipmentUsesColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Equipment](i18n.Text("Uses"), i18n.Text("The number of uses remaining"), p.forPage))
-		case gurps.EquipmentTLColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Equipment](i18n.Text("TL"), i18n.Text("Tech Level"), p.forPage))
-		case gurps.EquipmentLCColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Equipment](i18n.Text("LC"), i18n.Text("Legality Class"), p.forPage))
-		case gurps.EquipmentCostColumn:
-			headers = append(headers, NewMoneyHeader[*gurps.Equipment](p.forPage))
-		case gurps.EquipmentExtendedCostColumn:
-			headers = append(headers, NewExtendedMoneyHeader[*gurps.Equipment](p.forPage))
-		case gurps.EquipmentWeightColumn:
-			headers = append(headers, NewWeightHeader[*gurps.Equipment](p.forPage))
-		case gurps.EquipmentExtendedWeightColumn:
-			headers = append(headers, NewEditorExtendedWeightHeader[*gurps.Equipment](p.forPage))
-		case gurps.EquipmentTagsColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Equipment](i18n.Text("Tags"), "", p.forPage))
-		case gurps.EquipmentReferenceColumn:
-			headers = append(headers, NewEditorPageRefHeader[*gurps.Equipment](p.forPage))
-		}
+		headers = append(headers, headerFromData[*gurps.Equipment](gurps.EquipmentHeaderData(id, entity, p.carried, p.forPage), p.forPage))
 	}
 	return headers
 }
@@ -197,7 +171,9 @@ func (p *equipmentProvider) SyncHeader(headers []unison.TableColumnHeader[*Node[
 	if p.forPage {
 		if i := p.table.ColumnIndexForID(gurps.EquipmentDescriptionColumn); i != -1 {
 			if header, ok := headers[i].(*PageTableColumnHeader[*gurps.Equipment]); ok {
-				header.Label.Text = p.descriptionText()
+				entity, _ := p.provider.(*gurps.Entity) //nolint:errcheck // It's ok for the entity to be nil
+				header.Label.Text = gurps.EquipmentHeaderData(gurps.EquipmentDescriptionColumn,
+					entity, p.carried, p.forPage).Title
 			}
 		}
 	}
@@ -231,22 +207,6 @@ func (p *equipmentProvider) HierarchyColumnID() int {
 
 func (p *equipmentProvider) ExcessWidthColumnID() int {
 	return gurps.EquipmentDescriptionColumn
-}
-
-func (p *equipmentProvider) descriptionText() string {
-	title := i18n.Text("Equipment")
-	if p.forPage {
-		if entity, ok := p.provider.(*gurps.Entity); ok {
-			if p.carried {
-				title = fmt.Sprintf(i18n.Text("Carried Equipment (%s; $%s)"),
-					entity.SheetSettings.DefaultWeightUnits.Format(entity.WeightCarried(false)),
-					entity.WealthCarried().Comma())
-			} else {
-				title = fmt.Sprintf(i18n.Text("Other Equipment ($%s)"), entity.WealthNotCarried().Comma())
-			}
-		}
-	}
-	return title
 }
 
 func (p *equipmentProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*gurps.Equipment]]) {

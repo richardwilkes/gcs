@@ -77,6 +77,7 @@ var (
 	Hundred             = From(100)
 	OneHundredFifty     = From(150)
 	FiveHundred         = From(500)
+	SixHundred          = From(600)
 	ThousandMinusOne    = From(999)
 	Thousand            = From(1000)
 	TwoThousand         = From(2000)

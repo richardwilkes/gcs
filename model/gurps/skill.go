@@ -232,6 +232,35 @@ func (s *Skill) TemplatePickerData() *TemplatePicker {
 	return s.TemplatePicker
 }
 
+// SkillsHeaderData returns the header data information for the given skill column.
+func SkillsHeaderData(columnID int) HeaderData {
+	var data HeaderData
+	switch columnID {
+	case SkillDescriptionColumn:
+		data.Title = i18n.Text("Skill / Technique")
+		data.Primary = true
+	case SkillDifficultyColumn:
+		data.Title = i18n.Text("Diff")
+		data.Detail = i18n.Text("Difficulty")
+	case SkillTagsColumn:
+		data.Title = i18n.Text("Tags")
+	case SkillReferenceColumn:
+		data.Title = HeaderBookmark
+		data.TitleIsImageKey = true
+		data.Detail = PageRefTooltipText()
+	case SkillLevelColumn:
+		data.Title = i18n.Text("SL")
+		data.Detail = i18n.Text("Skill Level")
+	case SkillRelativeLevelColumn:
+		data.Title = i18n.Text("RSL")
+		data.Detail = i18n.Text("Relative Skill Level")
+	case SkillPointsColumn:
+		data.Title = i18n.Text("Pts")
+		data.Detail = i18n.Text("Points")
+	}
+	return data
+}
+
 // CellData returns the cell data information for the given column.
 func (s *Skill) CellData(columnID int, data *CellData) {
 	switch columnID {

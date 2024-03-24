@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 )
@@ -37,6 +38,11 @@ type PageRef struct {
 	ID     string `json:"-"`
 	Path   string `json:"path,omitempty"`
 	Offset int    `json:"offset,omitempty"`
+}
+
+// PageRefTooltipText returns the standard tooltip text for a page reference.
+func PageRefTooltipText() string {
+	return i18n.Text(`A reference to the book and page the item appears on e.g. B22 would refer to "Basic Set", page 22`)
 }
 
 // NewPageRefsFromFS creates a new set of page references from a file.

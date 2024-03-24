@@ -155,7 +155,7 @@ func (d *attributeSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 			EditName:   addAttributeText,
 			UndoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.BeforeData) },
 			RedoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.AfterData) },
-			AbsorbFunc: func(e *unison.UndoEdit[*gurps.AttributeDefs], other unison.Undoable) bool { return false },
+			AbsorbFunc: func(_ *unison.UndoEdit[*gurps.AttributeDefs], _ unison.Undoable) bool { return false },
 		}
 		undo.BeforeData = d.defs.Clone()
 		attrDef := &gurps.AttributeDef{}
@@ -223,7 +223,7 @@ func (d *attributeSettingsDockable) reset() {
 		EditName:   i18n.Text("Reset Attributes"),
 		UndoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.BeforeData) },
 		RedoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.AfterData) },
-		AbsorbFunc: func(e *unison.UndoEdit[*gurps.AttributeDefs], other unison.Undoable) bool { return false },
+		AbsorbFunc: func(_ *unison.UndoEdit[*gurps.AttributeDefs], _ unison.Undoable) bool { return false },
 		BeforeData: d.defs.Clone(),
 	}
 	if d.owner != nil {
@@ -263,7 +263,7 @@ func (d *attributeSettingsDockable) load(fileSystem fs.FS, filePath string) erro
 		EditName:   i18n.Text("Load Attributes"),
 		UndoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.BeforeData) },
 		RedoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.AfterData) },
-		AbsorbFunc: func(e *unison.UndoEdit[*gurps.AttributeDefs], other unison.Undoable) bool { return false },
+		AbsorbFunc: func(_ *unison.UndoEdit[*gurps.AttributeDefs], _ unison.Undoable) bool { return false },
 		BeforeData: d.defs.Clone(),
 	}
 	d.defs = defs
@@ -380,7 +380,7 @@ func (d *attributeSettingsDockable) dataDragDrop(_ unison.Point, data map[string
 					ID:         unison.NextUndoID(),
 					UndoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.BeforeData) },
 					RedoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { d.applyAttrDefs(e.AfterData) },
-					AbsorbFunc: func(e *unison.UndoEdit[*gurps.AttributeDefs], other unison.Undoable) bool { return false },
+					AbsorbFunc: func(_ *unison.UndoEdit[*gurps.AttributeDefs], _ unison.Undoable) bool { return false },
 				}
 				undo.BeforeData = d.defs.Clone()
 				if d.thresholdInsert != -1 {

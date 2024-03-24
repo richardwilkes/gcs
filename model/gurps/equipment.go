@@ -195,6 +195,64 @@ func (e *Equipment) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// EquipmentHeaderData returns the header data information for the given equipment column.
+func EquipmentHeaderData(columnID int, entity *Entity, carried, forPage bool) HeaderData {
+	var data HeaderData
+	switch columnID {
+	case EquipmentEquippedColumn:
+		data.Title = HeaderCheckmark
+		data.TitleIsImageKey = true
+		data.Detail = i18n.Text("Whether this piece of equipment is equipped or just carried. Items that are not equipped do not apply any features they may normally contribute to the character.")
+	case EquipmentQuantityColumn:
+		data.Title = i18n.Text("#")
+		data.Detail = i18n.Text("Quantity")
+	case EquipmentDescriptionColumn:
+		data.Title = i18n.Text("Equipment")
+		if forPage && entity != nil {
+			if carried {
+				data.Title = fmt.Sprintf(i18n.Text("Carried Equipment (%s; $%s)"),
+					entity.SheetSettings.DefaultWeightUnits.Format(entity.WeightCarried(false)),
+					entity.WealthCarried().Comma())
+			} else {
+				data.Title = fmt.Sprintf(i18n.Text("Other Equipment ($%s)"), entity.WealthNotCarried().Comma())
+			}
+		}
+		data.Primary = true
+	case EquipmentUsesColumn:
+		data.Title = i18n.Text("Uses")
+		data.Detail = i18n.Text("The number of uses remaining")
+	case EquipmentTLColumn:
+		data.Title = i18n.Text("TL")
+		data.Detail = i18n.Text("Tech Level")
+	case EquipmentLCColumn:
+		data.Title = i18n.Text("LC")
+		data.Detail = i18n.Text("Legality Class")
+	case EquipmentCostColumn:
+		data.Title = HeaderCoins
+		data.TitleIsImageKey = true
+		data.Detail = i18n.Text("The value of one of these pieces of equipment")
+	case EquipmentExtendedCostColumn:
+		data.Title = HeaderStackedCoins
+		data.TitleIsImageKey = true
+		data.Detail = i18n.Text("The value of all of these pieces of equipment, plus the value of any contained equipment")
+	case EquipmentWeightColumn:
+		data.Title = HeaderWeight
+		data.TitleIsImageKey = true
+		data.Detail = i18n.Text("The weight of one of these pieces of equipment")
+	case EquipmentExtendedWeightColumn:
+		data.Title = HeaderStackedWeight
+		data.TitleIsImageKey = true
+		data.Detail = i18n.Text("The weight of all of these pieces of equipment, plus the weight of any contained equipment")
+	case EquipmentTagsColumn:
+		data.Title = i18n.Text("Tags")
+	case EquipmentReferenceColumn:
+		data.Title = HeaderBookmark
+		data.TitleIsImageKey = true
+		data.Detail = PageRefTooltipText()
+	}
+	return data
+}
+
 // CellData returns the cell data information for the given column.
 func (e *Equipment) CellData(columnID int, data *CellData) {
 	data.Dim = e.Quantity == 0

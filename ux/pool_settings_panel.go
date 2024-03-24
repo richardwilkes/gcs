@@ -58,7 +58,7 @@ func (p *poolSettingsPanel) addThreshold() {
 		RedoFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold]) {
 			p.applyThresholds(e.AfterData)
 		},
-		AbsorbFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold], other unison.Undoable) bool { return false },
+		AbsorbFunc: func(_ *unison.UndoEdit[[]*gurps.PoolThreshold], _ unison.Undoable) bool { return false },
 	}
 	undo.BeforeData = clonePoolThresholds(p.def.Thresholds)
 	threshold := &gurps.PoolThreshold{KeyPrefix: p.dockable.targetMgr.NextPrefix()}
@@ -93,7 +93,7 @@ func (p *poolSettingsPanel) deleteThreshold(target *thresholdSettingsPanel) {
 		RedoFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold]) {
 			p.applyThresholds(e.AfterData)
 		},
-		AbsorbFunc: func(e *unison.UndoEdit[[]*gurps.PoolThreshold], other unison.Undoable) bool { return false },
+		AbsorbFunc: func(_ *unison.UndoEdit[[]*gurps.PoolThreshold], _ unison.Undoable) bool { return false },
 	}
 	undo.BeforeData = clonePoolThresholds(p.def.Thresholds)
 	p.def.Thresholds = slices.Delete(p.def.Thresholds, i, i+1)

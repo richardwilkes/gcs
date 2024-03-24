@@ -207,27 +207,27 @@ func copySelectionToSheet[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 				switch any(sel[0].Data()).(type) {
 				case *gurps.Trait:
 					targetTable = convertTable[T](s.Traits.Table)
-					postProcessor = func(rows []*Node[T]) {
+					postProcessor = func(_ []*Node[T]) {
 						s.Traits.provider.ProcessDropData(nil, s.Traits.Table)
 					}
 				case *gurps.Skill:
 					targetTable = convertTable[T](s.Skills.Table)
-					postProcessor = func(rows []*Node[T]) {
+					postProcessor = func(_ []*Node[T]) {
 						s.Skills.provider.ProcessDropData(nil, s.Skills.Table)
 					}
 				case *gurps.Spell:
 					targetTable = convertTable[T](s.Spells.Table)
-					postProcessor = func(rows []*Node[T]) {
+					postProcessor = func(_ []*Node[T]) {
 						s.Spells.provider.ProcessDropData(nil, s.Spells.Table)
 					}
 				case *gurps.Equipment:
 					targetTable = convertTable[T](s.CarriedEquipment.Table)
-					postProcessor = func(rows []*Node[T]) {
+					postProcessor = func(_ []*Node[T]) {
 						s.CarriedEquipment.provider.ProcessDropData(nil, s.CarriedEquipment.Table)
 					}
 				case *gurps.Note:
 					targetTable = convertTable[T](s.Notes.Table)
-					postProcessor = func(rows []*Node[T]) {
+					postProcessor = func(_ []*Node[T]) {
 						s.Notes.provider.ProcessDropData(nil, s.Notes.Table)
 					}
 				default:
@@ -279,7 +279,7 @@ func InsertCmdContextMenuItem[T gurps.NodeTypes](table *unison.Table[*Node[T]], 
 		useID := *id
 		*id++
 		cm.InsertItem(-1, cm.Factory().NewItem(unison.PopupMenuTemporaryBaseID+useID, title, unison.KeyBinding{}, nil,
-			func(item unison.MenuItem) {
+			func(_ unison.MenuItem) {
 				table.PerformCmd(table, cmdID)
 			}))
 	}
@@ -348,7 +348,7 @@ func DeleteSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]], recordUnd
 					EditName:   i18n.Text("Delete Selection"),
 					UndoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.BeforeData.Apply() },
 					RedoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.AfterData.Apply() },
-					AbsorbFunc: func(e *unison.UndoEdit[*TableUndoEditData[T]], other unison.Undoable) bool { return false },
+					AbsorbFunc: func(_ *unison.UndoEdit[*TableUndoEditData[T]], _ unison.Undoable) bool { return false },
 					BeforeData: NewTableUndoEditData(table),
 				}
 			}
@@ -400,7 +400,7 @@ func DuplicateSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 				EditName:   i18n.Text("Duplicate Selection"),
 				UndoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.BeforeData.Apply() },
 				RedoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.AfterData.Apply() },
-				AbsorbFunc: func(e *unison.UndoEdit[*TableUndoEditData[T]], other unison.Undoable) bool { return false },
+				AbsorbFunc: func(_ *unison.UndoEdit[*TableUndoEditData[T]], _ unison.Undoable) bool { return false },
 				BeforeData: NewTableUndoEditData(table),
 			}
 		}
@@ -468,7 +468,7 @@ func CopyRowsTo[T gurps.NodeTypes](table *unison.Table[*Node[T]], rows []*Node[T
 				EditName:   fmt.Sprintf(i18n.Text("Insert %s"), gurps.AsNode(rows[0].Data()).Kind()),
 				UndoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.BeforeData.Apply() },
 				RedoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.AfterData.Apply() },
-				AbsorbFunc: func(e *unison.UndoEdit[*TableUndoEditData[T]], other unison.Undoable) bool { return false },
+				AbsorbFunc: func(_ *unison.UndoEdit[*TableUndoEditData[T]], _ unison.Undoable) bool { return false },
 				BeforeData: NewTableUndoEditData(table),
 			}
 		}

@@ -222,6 +222,26 @@ func (a *Trait) TemplatePickerData() *TemplatePicker {
 	return a.TemplatePicker
 }
 
+// TraitsHeaderData returns the header data information for the given trait column.
+func TraitsHeaderData(columnID int) HeaderData {
+	var data HeaderData
+	switch columnID {
+	case TraitDescriptionColumn:
+		data.Title = i18n.Text("Trait")
+		data.Primary = true
+	case TraitPointsColumn:
+		data.Title = i18n.Text("Pts")
+		data.Detail = i18n.Text("Points")
+	case TraitTagsColumn:
+		data.Title = i18n.Text("Tags")
+	case TraitReferenceColumn:
+		data.Title = HeaderBookmark
+		data.TitleIsImageKey = true
+		data.Detail = PageRefTooltipText()
+	}
+	return data
+}
+
 // CellData returns the cell data information for the given column.
 func (a *Trait) CellData(columnID int, data *CellData) {
 	data.Dim = !a.Enabled()

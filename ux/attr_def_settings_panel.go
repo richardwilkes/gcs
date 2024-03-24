@@ -105,7 +105,7 @@ func (p *attrDefSettingsPanel) deleteAttrDef() {
 		EditName:   i18n.Text("Delete Attribute"),
 		UndoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { p.dockable.applyAttrDefs(e.BeforeData) },
 		RedoFunc:   func(e *unison.UndoEdit[*gurps.AttributeDefs]) { p.dockable.applyAttrDefs(e.AfterData) },
-		AbsorbFunc: func(e *unison.UndoEdit[*gurps.AttributeDefs], other unison.Undoable) bool { return false },
+		AbsorbFunc: func(_ *unison.UndoEdit[*gurps.AttributeDefs], _ unison.Undoable) bool { return false },
 	}
 	undo.BeforeData = p.dockable.defs.Clone()
 	delete(p.dockable.defs.Set, p.def.DefID)
@@ -137,7 +137,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 				p.dockable.defs.Set[p.def.DefID] = p.def
 			}
 		})
-	field.ValidateCallback = func(field *StringField, def *gurps.AttributeDef) func() bool {
+	field.ValidateCallback = func(field *StringField, _ *gurps.AttributeDef) func() bool {
 		return func() bool { return p.validateAttrID(field.Text()) }
 	}(field, p.def)
 	field.SetMinimumTextWidthUsing(prototypeMinIDWidth)

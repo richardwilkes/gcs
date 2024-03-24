@@ -246,7 +246,7 @@ func (d *generalSettingsDockable) createTechLevelField(content *unison.Panel) {
 	d.techLevelField = NewStringField(nil, "", title,
 		func() string { return gurps.GlobalSettings().General.DefaultTechLevel },
 		func(s string) { gurps.GlobalSettings().General.DefaultTechLevel = s })
-	d.techLevelField.Tooltip = newWrappedTooltip(techLevelInfo())
+	d.techLevelField.Tooltip = newWrappedTooltip(gurps.TechLevelInfo())
 	d.techLevelField.SetMinimumTextWidthUsing("12^")
 	d.techLevelField.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	content.AddChild(d.techLevelField)

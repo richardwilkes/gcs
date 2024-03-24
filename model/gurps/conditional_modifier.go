@@ -146,6 +146,34 @@ func (m *ConditionalModifier) String() string {
 	return fmt.Sprintf("%s %s", m.Total().StringWithSign(), m.From)
 }
 
+// ConditionalModifiersHeaderData returns the header data information for the given conditional modifier column.
+func ConditionalModifiersHeaderData(columnID int) HeaderData {
+	var data HeaderData
+	switch columnID {
+	case ConditionalModifierValueColumn:
+		data.Title = i18n.Text("±")
+		data.Detail = i18n.Text("Modifier")
+	case ConditionalModifierDescriptionColumn:
+		data.Title = i18n.Text("Condition")
+		data.Primary = true
+	}
+	return data
+}
+
+// ReactionModifiersHeaderData returns the header data information for the given reaction modifier column.
+func ReactionModifiersHeaderData(columnID int) HeaderData {
+	var data HeaderData
+	switch columnID {
+	case ConditionalModifierValueColumn:
+		data.Title = i18n.Text("±")
+		data.Detail = i18n.Text("Modifier")
+	case ConditionalModifierDescriptionColumn:
+		data.Title = i18n.Text("Reaction")
+		data.Primary = true
+	}
+	return data
+}
+
 // CellData returns the cell data information for the given column.
 func (m *ConditionalModifier) CellData(columnID int, data *CellData) {
 	switch columnID {

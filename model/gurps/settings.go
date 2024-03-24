@@ -19,10 +19,12 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/server/websettings"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/collection/dict"
@@ -40,10 +42,12 @@ const (
 	SettingsLastDirKey = "settings"
 )
 
-// SettingsPath holds the path to our settings file.
-var SettingsPath string
-
-var global *Settings
+var (
+	// SettingsPath holds the path to our settings file.
+	SettingsPath   string
+	globalOnce     sync.Once
+	globalSettings Settings
+)
 
 // NavigatorSettings holds settings for the navigator view.
 type NavigatorSettings struct {
@@ -68,43 +72,39 @@ type Settings struct {
 	Fonts              Fonts                      `json:"fonts"`
 	Sheet              *SheetSettings             `json:"sheet_settings,omitempty"`
 	OpenInWindow       []dgroup.Group             `json:"open_in_window,omitempty"`
-	WebServer          WebServerSettings          `json:"web_server"`
+	WebServer          *websettings.Settings      `json:"web,omitempty"` // Do not use "web_server" as the key, as an earlier release used that name and it will cause a failure to load the settings file.
 	ThemeMode          thememode.Enum             `json:"theme_mode,alt=color_mode"`
-}
-
-// DefaultSettings returns new default settings.
-func DefaultSettings() *Settings {
-	return &Settings{
-		LastSeenGCSVersion: cmdline.AppVersion,
-		General:            NewGeneralSettings(),
-		LibrarySet:         NewLibraries(),
-		LibraryExplorer:    NavigatorSettings{DividerPosition: 330},
-		LastDirs:           make(map[string]string),
-		Sheet:              FactorySheetSettings(),
-	}
 }
 
 // GlobalSettings returns the global settings.
 func GlobalSettings() *Settings {
-	if global == nil {
+	globalOnce.Do(func() {
 		dice.GURPSFormat = true
 		fixupMovedSettingsFileIfNeeded()
-		if err := jio.LoadFromFile(context.Background(), SettingsPath, &global); err != nil {
-			global = DefaultSettings()
+		if err := jio.LoadFromFile(context.Background(), SettingsPath, &globalSettings); err != nil {
+			globalSettings = Settings{
+				LastSeenGCSVersion: cmdline.AppVersion,
+				General:            NewGeneralSettings(),
+				LibrarySet:         NewLibraries(),
+				LibraryExplorer:    NavigatorSettings{DividerPosition: 330},
+				LastDirs:           make(map[string]string),
+				Sheet:              FactorySheetSettings(),
+				WebServer:          websettings.Default(),
+			}
 		}
-		global.EnsureValidity()
+		globalSettings.EnsureValidity()
 		InstallEvaluatorFunctions(fxp.EvalFuncs)
-		unison.SetThemeMode(global.ThemeMode)
-		global.Colors.MakeCurrent()
-		global.Fonts.MakeCurrent()
+		unison.SetThemeMode(globalSettings.ThemeMode)
+		globalSettings.Colors.MakeCurrent()
+		globalSettings.Fonts.MakeCurrent()
 		unison.DefaultScrollPanelTheme.MouseWheelMultiplier = func() float32 {
-			return fxp.As[float32](global.General.ScrollWheelMultiplier)
+			return fxp.As[float32](globalSettings.General.ScrollWheelMultiplier)
 		}
 		unison.DefaultFieldTheme.InitialClickSelectsAll = func(_ *unison.Field) bool {
-			return global.General.InitialFieldClickSelectsAll
+			return globalSettings.General.InitialFieldClickSelectsAll
 		}
-	}
-	return global
+	})
+	return &globalSettings
 }
 
 // Save to the standard path.
@@ -131,6 +131,11 @@ func (s *Settings) EnsureValidity() {
 		s.Sheet.EnsureValidity()
 	}
 	s.OpenInWindow = SanitizeDockableGroups(s.OpenInWindow)
+	if s.WebServer == nil {
+		s.WebServer = websettings.Default()
+	} else {
+		s.WebServer.Validate()
+	}
 }
 
 // SanitizeDockableGroups returns the list of valid dockable groups from the passed-in list, in sorted order.

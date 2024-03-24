@@ -132,7 +132,7 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 			d.dragReroutePanel = nil
 		}
 	}
-	d.DrawOverCallback = func(gc *unison.Canvas, rect unison.Rect) {
+	d.DrawOverCallback = func(gc *unison.Canvas, _ unison.Rect) {
 		if d.dragReroutePanel != nil {
 			r := d.RectFromRoot(d.dragReroutePanel.RectToRoot(d.dragReroutePanel.ContentRect(true)))
 			paint := unison.DropAreaColor.Paint(gc, r, paintstyle.Fill)
@@ -314,7 +314,7 @@ func (d *Template) applyTemplateToSheet(sheet *Sheet, suppressRandomizePrompt bo
 				EditName:   i18n.Text("Apply Template"),
 				UndoFunc:   func(e *unison.UndoEdit[*ApplyTemplateUndoEditData]) { e.BeforeData.Apply() },
 				RedoFunc:   func(e *unison.UndoEdit[*ApplyTemplateUndoEditData]) { e.AfterData.Apply() },
-				AbsorbFunc: func(e *unison.UndoEdit[*ApplyTemplateUndoEditData], other unison.Undoable) bool { return false },
+				AbsorbFunc: func(_ *unison.UndoEdit[*ApplyTemplateUndoEditData], _ unison.Undoable) bool { return false },
 				BeforeData: beforeData,
 			}
 		}

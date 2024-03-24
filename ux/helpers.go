@@ -44,11 +44,8 @@ func MarkForLayoutWithinDockable(panel unison.Paneler) {
 
 // SetCheckBoxState sets the checkbox state based on the value of checked.
 func SetCheckBoxState(checkbox *CheckBox, checked bool) {
-	if checked {
-		checkbox.State = check.On
-	} else {
-		checkbox.State = check.Off
-	}
+	checkbox.State = check.FromBool(checked)
+	checkbox.Sync()
 }
 
 // FocusFirstContent attempts to focus the first non-button widget in the content. Failing that, tries to focus the

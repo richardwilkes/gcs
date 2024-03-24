@@ -630,6 +630,54 @@ func (w *Weapon) NodeChildren() []*Weapon {
 func (w *Weapon) SetChildren(_ []*Weapon) {
 }
 
+// WeaponHeaderData returns the header data information for the given weapon column.
+func WeaponHeaderData(columnID int, weaponType wpn.Type, forPage bool) HeaderData {
+	var data HeaderData
+	switch columnID {
+	case WeaponDescriptionColumn:
+		data.Title = weaponType.String()
+		data.Primary = true
+	case WeaponUsageColumn:
+		switch {
+		case forPage:
+			data.Title = i18n.Text("Usage")
+		case weaponType == wpn.Melee:
+			data.Title = i18n.Text("Melee Weapon Usage")
+		default:
+			data.Title = i18n.Text("Ranged Weapon Usage")
+		}
+	case WeaponSLColumn:
+		data.Title = i18n.Text("SL")
+		data.Detail = i18n.Text("Skill Level")
+	case WeaponParryColumn:
+		data.Title = i18n.Text("Parry")
+	case WeaponBlockColumn:
+		data.Title = i18n.Text("Block")
+	case WeaponDamageColumn:
+		data.Title = i18n.Text("Damage")
+	case WeaponReachColumn:
+		data.Title = i18n.Text("Reach")
+	case WeaponSTColumn:
+		data.Title = i18n.Text("ST")
+		data.Detail = i18n.Text("Minimum Strength")
+	case WeaponAccColumn:
+		data.Title = i18n.Text("Acc")
+		data.Detail = i18n.Text("Accuracy Bonus")
+	case WeaponRangeColumn:
+		data.Title = i18n.Text("Range")
+	case WeaponRoFColumn:
+		data.Title = i18n.Text("RoF")
+		data.Detail = i18n.Text("Rate of Fire")
+	case WeaponShotsColumn:
+		data.Title = i18n.Text("Shots")
+	case WeaponBulkColumn:
+		data.Title = i18n.Text("Bulk")
+	case WeaponRecoilColumn:
+		data.Title = i18n.Text("Recoil")
+	}
+	return data
+}
+
 // CellData returns the cell data information for the given column.
 func (w *Weapon) CellData(columnID int, data *CellData) {
 	var buffer xio.ByteBuffer

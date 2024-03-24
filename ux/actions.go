@@ -56,6 +56,7 @@ var (
 	exportAsWEBPAction                 *unison.Action
 	fontSettingsAction                 *unison.Action
 	generalSettingsAction              *unison.Action
+	webSettingsAction                  *unison.Action
 	increaseSkillLevelAction           *unison.Action
 	increaseTechLevelAction            *unison.Action
 	increaseUsesAction                 *unison.Action
@@ -326,6 +327,11 @@ func registerActions() {
 		ID:              GeneralSettingsItemID,
 		Title:           i18n.Text("General Settings…"),
 		ExecuteCallback: func(_ *unison.Action, _ any) { ShowGeneralSettings() },
+	})
+	webSettingsAction = registerKeyBindableAction("settings.web", &unison.Action{
+		ID:              WebSettingsItemID,
+		Title:           i18n.Text("Web Server Settings…"),
+		ExecuteCallback: func(_ *unison.Action, _ any) { ShowWebSettings() },
 	})
 	increaseSkillLevelAction = registerKeyBindableAction("inc.sl", &unison.Action{
 		ID:              IncrementSkillLevelItemID,
@@ -842,7 +848,7 @@ func registerActions() {
 	checkForAppUpdatesAction = &unison.Action{
 		ID:    CheckForAppUpdatesItemID,
 		Title: fmt.Sprintf(i18n.Text("Check for %s updates"), cmdline.AppName),
-		EnabledCallback: func(action *unison.Action, mi any) bool {
+		EnabledCallback: func(_ *unison.Action, _ any) bool {
 			_, releases, updating := AppUpdateResult()
 			return !updating && releases == nil
 		},
