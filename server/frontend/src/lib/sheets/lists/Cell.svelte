@@ -9,7 +9,7 @@
   - defined by the Mozilla Public License, version 2.0.
   -->
 
-<script lang='ts'>
+<script lang="ts">
 	import Field from '$lib/sheets/widget/Field.svelte';
 	import type { Cell, Column } from '$lib/sheet.ts';
 	import Icon from '$lib/svg/Icon.svelte';
@@ -21,12 +21,16 @@
 	// TODO: Add support for the other fields in the Cell data
 </script>
 
-<Field tip={cell.Tooltip} right={cell.Alignment === 'end'} center={cell.Alignment === 'middle'}
-			 noBottomBorder wrap={column.Primary}>
+<Field
+	tip={cell.Tooltip}
+	right={cell.Alignment === 'end'}
+	center={cell.Alignment === 'middle'}
+	noBottomBorder
+	wrap={column.Primary}>
 	{#if cell.Type === 'toggle'}
 		{#if cell.Checked}
-			<div class='icon'>
-				<Icon key='checkmark' />
+			<div class="icon">
+				<Icon key="checkmark" />
 			</div>
 		{:else}
 			&nbsp;
@@ -41,7 +45,7 @@
 		{/if}
 		{#if cell.Secondary}
 			<br />
-			<span class='secondary'>{cell.Secondary}</span>
+			<span class="secondary">{cell.Secondary}</span>
 		{/if}
 	{:else}
 		{cell.Primary}
@@ -50,7 +54,7 @@
 		{/if}
 		{#if cell.Secondary}
 			<br />
-			<span class='secondary'>{cell.Secondary}</span>
+			<span class="secondary">{cell.Secondary}</span>
 		{/if}
 	{/if}
 	{#if cell.UnsatisfiedReason}
@@ -65,5 +69,7 @@
 
 	.icon {
 		padding-top: 4px;
+		display: flex;
+		justify-content: center;
 	}
 </style>
