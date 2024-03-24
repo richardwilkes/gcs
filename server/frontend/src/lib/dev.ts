@@ -12,3 +12,7 @@
 export function apiPrefix(path: string) {
 	return encodeURI((import.meta.env.DEV ? 'http://localhost:8422' : '') + '/api' + path);
 }
+
+export function refPrefix(prefix: string) {
+	return encodeURI((import.meta.env.DEV ? 'http://localhost:8422' : '') + '/ref/' + encodeURI(prefix));
+}

@@ -73,6 +73,7 @@ func Start(errorCallback func(error)) {
 		entitiesByPath: make(map[string]webEntity),
 	}
 	s.installConfigurationHandlers()
+	s.installPageRefHandlers()
 	s.installSessionHandlers()
 	s.installSheetHandlers()
 	s.mux.Handle("GET /", statigz.FileServer(siteFS, statigz.FSPrefix("frontend/dist"), statigz.EncodeOnInit))

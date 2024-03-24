@@ -14,6 +14,7 @@
 	import type { Cell, Column } from '$lib/sheet.ts';
 	import Icon from '$lib/svg/Icon.svelte';
 	import Tag from '$lib/sheets/lists/Tag.svelte';
+	import PageRef from '$lib/sheets/widget/PageRef.svelte';
 
 	export let cell: Cell;
 	export let column: Column;
@@ -21,48 +22,50 @@
 	// TODO: Add support for the other fields in the Cell data
 </script>
 
-<Field
-	tip={cell.Tooltip}
-	right={cell.Alignment === 'end'}
-	center={cell.Alignment === 'middle'}
-	noBottomBorder
-	wrap={column.Primary}>
-	{#if cell.Type === 'toggle'}
-		{#if cell.Checked}
-			<div class="icon">
-				<Icon key="checkmark" />
-			</div>
+{#if cell.Type === 'page_ref'}
+	<PageRef pageRef={cell.Primary} />
+{:else}
+	<Field
+		tip={cell.Tooltip}
+		right={cell.Alignment === 'end'}
+		center={cell.Alignment === 'middle'}
+		noBottomBorder
+		wrap={column.Primary}>
+		{#if cell.Type === 'toggle'}
+			{#if cell.Checked}
+				<div class="icon">
+					<Icon key="checkmark" />
+				</div>
+			{:else}
+				&nbsp;
+			{/if}
+		{:else if cell.Type === 'markdown'}
+			<!-- TODO: Render markdown -->
+			{cell.Primary}
+			{#if cell.InlineTag}
+				<Tag>{cell.InlineTag}</Tag>
+			{/if}
+			{#if cell.Secondary}
+				{#each cell.Secondary.split('\n') as line}
+					<br /><span class="secondary">{line}</span>
+				{/each}
+			{/if}
 		{:else}
-			&nbsp;
+			{cell.Primary}
+			{#if cell.InlineTag}
+				<Tag>{cell.InlineTag}</Tag>
+			{/if}
+			{#if cell.Secondary}
+				{#each cell.Secondary.split('\n') as line}
+					<br /><span class="secondary">{line}</span>
+				{/each}
+			{/if}
 		{/if}
-	{:else if cell.Type === 'page_ref'}
-		{cell.Primary}
-	{:else if cell.Type === 'markdown'}
-		<!-- TODO: Render markdown -->
-		{cell.Primary}
-		{#if cell.InlineTag}
-			<Tag>{cell.InlineTag}</Tag>
+		{#if cell.UnsatisfiedReason}
+			<Tag warning tip={cell.UnsatisfiedReason}>Unsatisfied prerequisite(s)</Tag>
 		{/if}
-		{#if cell.Secondary}
-			{#each cell.Secondary.split('\n') as line}
-				<br /><span class="secondary">{line}</span>
-			{/each}
-		{/if}
-	{:else}
-		{cell.Primary}
-		{#if cell.InlineTag}
-			<Tag>{cell.InlineTag}</Tag>
-		{/if}
-		{#if cell.Secondary}
-			{#each cell.Secondary.split('\n') as line}
-				<br /><span class="secondary">{line}</span>
-			{/each}
-		{/if}
-	{/if}
-	{#if cell.UnsatisfiedReason}
-		<Tag warning tip={cell.UnsatisfiedReason}>Unsatisfied prerequisite(s)</Tag>
-	{/if}
-</Field>
+	</Field>
+{/if}
 
 <style>
 	.secondary {
