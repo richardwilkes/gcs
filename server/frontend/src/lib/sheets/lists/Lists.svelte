@@ -8,14 +8,14 @@
   - This Source Code Form is "Incompatible With Secondary Licenses", as
   - defined by the Mozilla Public License, version 2.0.
   -->
-<script lang='ts'>
+<script lang="ts">
 	import List from '$lib/sheets/lists/List.svelte';
 	import { sheet } from '$lib/sheet.ts';
 
 	let layout: string;
 
 	$: {
-		layout = 'grid-template:';
+		layout = 'grid-template-areas:';
 		if ($sheet?.Reactions?.Rows.length && $sheet?.ConditionalModifiers?.Rows.length) {
 			layout += '"reactions conditional_modifiers"';
 		} else if ($sheet?.Reactions?.Rows.length) {
@@ -48,21 +48,21 @@
 		if ($sheet?.Notes?.Rows.length) {
 			layout += '"notes notes"';
 		}
-		layout += ';'
+		layout += ';';
 	}
 </script>
 
-<div class='lists' style={layout}>
-	<List table={$sheet?.Reactions} area='reactions' />
-	<List table={$sheet?.ConditionalModifiers} area='conditional_modifiers' />
-	<List table={$sheet?.MeleeWeapons} area='melee' />
-	<List table={$sheet?.RangedWeapons} area='ranged' />
-	<List table={$sheet?.Traits} area='traits' />
-	<List table={$sheet?.Skills} area='skills' />
-	<List table={$sheet?.Spells} area='spells' />
-	<List table={$sheet?.CarriedEquipment} area='equipment' />
-	<List table={$sheet?.OtherEquipment} area='other_equipment' />
-	<List table={$sheet?.Notes} area='notes' />
+<div class="lists" style={layout}>
+	<List table={$sheet?.Reactions} area="reactions" />
+	<List table={$sheet?.ConditionalModifiers} area="conditional_modifiers" />
+	<List table={$sheet?.MeleeWeapons} area="melee" />
+	<List table={$sheet?.RangedWeapons} area="ranged" />
+	<List table={$sheet?.Traits} area="traits" />
+	<List table={$sheet?.Skills} area="skills" />
+	<List table={$sheet?.Spells} area="spells" />
+	<List table={$sheet?.CarriedEquipment} area="equipment" />
+	<List table={$sheet?.OtherEquipment} area="other_equipment" />
+	<List table={$sheet?.Notes} area="notes" />
 </div>
 
 <style>
