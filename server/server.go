@@ -35,6 +35,9 @@ var (
 	//go:embed frontend/dist
 	siteFS embed.FS
 
+	//go:embed pdf/build pdf/web
+	pdfFS embed.FS
+
 	siteLock sync.Mutex
 	site     *Server
 )
@@ -77,6 +80,8 @@ func Start(errorCallback func(error)) {
 	s.installSessionHandlers()
 	s.installSheetHandlers()
 	s.mux.Handle("GET /", statigz.FileServer(siteFS, statigz.FSPrefix("frontend/dist"), statigz.EncodeOnInit))
+	s.mux.Handle("GET /pdf/", statigz.FileServer(pdfFS, statigz.EncodeOnInit))
+
 	site = s
 	s.server.WebServer.Handler = s
 	s.server.StartedChan = make(chan any, 1)

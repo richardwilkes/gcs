@@ -14,5 +14,5 @@ export function apiPrefix(path: string) {
 }
 
 export function refPrefix(prefix: string) {
-	return encodeURI((import.meta.env.DEV ? 'http://localhost:8422' : '') + '/ref/' + encodeURI(prefix));
+	return encodeURI((import.meta.env.DEV ? 'http://localhost:8422' : '') + '/pdf/web/viewer.html?file=/ref/' + encodeURI(prefix));
 }
