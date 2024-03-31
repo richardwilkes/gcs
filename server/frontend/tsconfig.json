@@ -2,9 +2,6 @@
   "extends": "@tsconfig/svelte/tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "target": "ESNext",
-    "module": "ESNext",
-	"verbatimModuleSyntax": true,
     "isolatedModules": true,
     /**
      * Typecheck JS in `.svelte` and `.js` files by default.
@@ -14,19 +11,13 @@
      */
     "allowJs": true,
     "checkJs": true,
-    "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "sourceMap": true,
-    "moduleResolution": "bundler",
     "composite": true,
     "allowImportingTsExtensions": true,
+	"emitDeclarationOnly": true,
     "useDefineForClassFields": true,
     "paths": {
-      "$src/*": [
-        "./src/*"
-      ],
       "$lib/*": [
         "./src/lib/*"
       ],
