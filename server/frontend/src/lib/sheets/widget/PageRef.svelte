@@ -38,12 +38,15 @@
 			const page = prefix.substring(i, prefix.length);
 			prefix = prefix.substring(0, i);
 			uri = refPrefix(prefix);
+			const ref = $sheet?.PageRefs[prefix];
+			if (ref?.Name) {
+				uri += '/' + encodeURIComponent(ref.Name);
+			}
 			if (page) {
 				let pageNum = parseInt(page, 10);
 				if (pageNum) {
-					const offset = $sheet?.PageRefOffsets[prefix];
-					if (offset) {
-						pageNum += offset;
+					if (ref?.Offset) {
+						pageNum += ref?.Offset;
 					}
 					uri += `#page=${pageNum}`;
 				}
@@ -59,7 +62,7 @@
 
 <div class="ref" title={tip}>
 	{#if single}
-		<a href={uri} target={'pageref_' + prefix}>{single}</a>
+		<a href={uri} target={'gcs_ref_' + prefix}>{single}</a>
 	{/if}
 </div>
 

@@ -8,7 +8,7 @@ import (
 )
 
 func (s *Server) installPageRefHandlers() {
-	s.mux.HandleFunc("GET /ref/{key}", s.pageRefHandler)
+	s.mux.HandleFunc("GET /ref/{key}/{name}", s.pageRefHandler)
 }
 
 func (s *Server) pageRefHandler(w http.ResponseWriter, r *http.Request) {

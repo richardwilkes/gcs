@@ -184,6 +184,11 @@ export interface Table {
 	Rows: Row[];
 }
 
+export interface PageRef {
+	Name: string;
+	Offset: number;
+}
+
 export interface Sheet {
 	Identity: Identity;
 	Misc: Misc;
@@ -207,7 +212,7 @@ export interface Sheet {
 	OtherEquipment: Table | null;
 	Notes: Table | null;
 	Portrait: Table | null;
-	PageRefOffsets: { [k: string]: number };
+	PageRefs: { [k: string]: PageRef };
 	Modified: boolean;
 	ReadOnly: boolean;
 }

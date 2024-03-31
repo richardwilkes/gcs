@@ -13,6 +13,7 @@ package sheet
 
 import (
 	"fmt"
+	"path"
 	"strconv"
 
 	"github.com/google/uuid"
@@ -520,6 +521,12 @@ func collectRowData[T gurps.NodeTypes](node gurps.Node[T], depth int, table *Tab
 	}
 }
 
+// PageRef holds the data needed by the frontend to display and use a page reference.
+type PageRef struct {
+	Name   string
+	Offset int
+}
+
 // Sheet holds the data needed by the frontend to display a GURPS character sheet.
 type Sheet struct {
 	Identity               Identity
@@ -544,16 +551,19 @@ type Sheet struct {
 	OtherEquipment         *Table
 	Notes                  *Table
 	Portrait               []byte
-	PageRefOffsets         map[string]int
+	PageRefs               map[string]PageRef
 	Modified               bool
 	ReadOnly               bool
 }
 
 // NewSheetFromEntity creates a new Sheet from the given entity.
 func NewSheetFromEntity(entity *gurps.Entity, modified, readOnly bool) *Sheet {
-	offsets := make(map[string]int)
+	refs := make(map[string]PageRef)
 	for _, one := range gurps.GlobalSettings().PageRefs.List() {
-		offsets[one.ID] = one.Offset
+		refs[one.ID] = PageRef{
+			Name:   path.Base(one.Path),
+			Offset: one.Offset,
+		}
 	}
 	return &Sheet{
 		Identity:               createIdentity(entity),
@@ -578,7 +588,7 @@ func NewSheetFromEntity(entity *gurps.Entity, modified, readOnly bool) *Sheet {
 		OtherEquipment:         createOtherEquipment(entity),
 		Notes:                  createNotes(entity),
 		Portrait:               entity.Profile.PortraitData,
-		PageRefOffsets:         offsets,
+		PageRefs:               refs,
 		Modified:               modified,
 		ReadOnly:               readOnly,
 	}
