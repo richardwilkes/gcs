@@ -337,13 +337,6 @@ func createLiftingAndMovingThings(entity *gurps.Entity) LiftingAndMovingThings {
 	}
 }
 
-// Cell holds the data needed by the frontend to display a table cell.
-type Cell struct {
-	Primary   string
-	Secondary string
-	Detail    string
-}
-
 // Row holds the data needed by the frontend to display a table row.
 type Row struct {
 	ID    uuid.UUID
@@ -551,12 +544,17 @@ type Sheet struct {
 	OtherEquipment         *Table
 	Notes                  *Table
 	Portrait               []byte
+	PageRefOffsets         map[string]int
 	Modified               bool
 	ReadOnly               bool
 }
 
 // NewSheetFromEntity creates a new Sheet from the given entity.
 func NewSheetFromEntity(entity *gurps.Entity, modified, readOnly bool) *Sheet {
+	offsets := make(map[string]int)
+	for _, one := range gurps.GlobalSettings().PageRefs.List() {
+		offsets[one.ID] = one.Offset
+	}
 	return &Sheet{
 		Identity:               createIdentity(entity),
 		Misc:                   createMisc(entity),
@@ -580,6 +578,7 @@ func NewSheetFromEntity(entity *gurps.Entity, modified, readOnly bool) *Sheet {
 		OtherEquipment:         createOtherEquipment(entity),
 		Notes:                  createNotes(entity),
 		Portrait:               entity.Profile.PortraitData,
+		PageRefOffsets:         offsets,
 		Modified:               modified,
 		ReadOnly:               readOnly,
 	}

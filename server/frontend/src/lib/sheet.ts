@@ -19,7 +19,7 @@ export async function fetchSheet(path: string): Promise<Sheet | undefined> {
 	const rsp = await fetch(apiPrefix(`/sheet/${path}`), {
 		method: 'GET',
 		headers: { 'X-Session': get(session)?.ID ?? '' },
-		cache: 'no-store'
+		cache: 'no-store',
 	});
 	if (!rsp.ok) {
 		return undefined;
@@ -35,8 +35,8 @@ export async function updateSheetField(path: string, kind: string, key: string, 
 		body: JSON.stringify({
 			Kind: kind,
 			Key: key,
-			Data: data
-		})
+			Data: data,
+		}),
 	});
 	if (!rsp.ok) {
 		throw undefined;
@@ -48,7 +48,7 @@ export async function saveSheet(path: string): Promise<Sheet | undefined> {
 	const rsp = await fetch(apiPrefix(`/sheet/${path}`), {
 		method: 'PUT',
 		headers: { 'X-Session': get(session)?.ID ?? '' },
-		cache: 'no-store'
+		cache: 'no-store',
 	});
 	if (!rsp.ok) {
 		throw undefined;
@@ -207,6 +207,7 @@ export interface Sheet {
 	OtherEquipment: Table | null;
 	Notes: Table | null;
 	Portrait: Table | null;
+	PageRefOffsets: { [k: string]: number };
 	Modified: boolean;
 	ReadOnly: boolean;
 }

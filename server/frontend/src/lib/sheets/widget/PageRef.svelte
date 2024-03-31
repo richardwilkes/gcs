@@ -10,6 +10,7 @@
   -->
 <script lang="ts">
 	import { refPrefix } from '$lib/dev';
+	import { sheet } from '$lib/sheet.ts';
 
 	export let pageRef = '';
 
@@ -38,8 +39,12 @@
 			prefix = prefix.substring(0, i);
 			uri = refPrefix(prefix);
 			if (page) {
-				const pageNum = parseInt(page, 10);
+				let pageNum = parseInt(page, 10);
 				if (pageNum) {
+					const offset = $sheet?.PageRefOffsets[prefix];
+					if (offset) {
+						pageNum += offset;
+					}
 					uri += `#page=${pageNum}`;
 				}
 			}

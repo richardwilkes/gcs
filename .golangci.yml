@@ -54,9 +54,7 @@ linters-settings:
   misspell:
     locale: US
   staticcheck:
-    checks: [ "all", "-SA3000" ]
-  unused:
-    check-exported: false
+    checks: ["all", "-SA3000"]
 linters:
   disable-all: true
   enable:
