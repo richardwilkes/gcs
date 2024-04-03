@@ -1,5 +1,5 @@
-<script lang='ts'>
-	import { page, previousPage } from '$lib/page.ts';
+<script lang="ts">
+	import { page } from '$lib/page.ts';
 	import { checkSession } from '$lib/session.ts';
 	import { saveSheet, sheet } from '$lib/sheet.ts';
 	import Toolbar from '$lib/Toolbar.svelte';
@@ -10,8 +10,7 @@
 	import SheetFile from '$lib/svg/SheetFile.svelte';
 
 	function open() {
-		$previousPage = $page;
-		$page = { ID: 'home', NextID: 'home' };
+		$page = { ID: 'home', NextID: 'home', Previous: $page };
 	}
 
 	async function save() {
@@ -28,22 +27,22 @@
 	<title>{$sheet?.Identity.Name ?? 'GURPS Character Sheet'}</title>
 </svelte:head>
 
-<div class='shell'>
+<div class="shell">
 	<Toolbar>
 		{#if $page.ID === 'sheet'}
 			{#if $sheet && !$sheet.ReadOnly}
-				<button class='save' disabled={!$sheet.Modified} on:click={save}>Save</button>
+				<button class="save" disabled={!$sheet.Modified} on:click={save}>Save</button>
 			{/if}
-			<button class='open' title='Open…' on:click={open}>
-				<SheetFile style='width: 1.2em; height: 1.2em; fill: var(--color-on-surface);' />
+			<button class="open" title="Open…" on:click={open}>
+				<SheetFile style="width: 1.2em; height: 1.2em; fill: var(--color-on-surface);" />
 				{$page.Sheet}
 				{#if $sheet && $sheet.ReadOnly}
-					<span class='ro'>(read only)</span>
+					<span class="ro">(read only)</span>
 				{/if}
 			</button>
 		{/if}
 	</Toolbar>
-	<div class='content'>
+	<div class="content">
 		{#if $page.ID === 'login'}
 			<Login />
 		{:else if $page.ID === 'sheet'}

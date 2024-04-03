@@ -9,16 +9,19 @@
   - defined by the Mozilla Public License, version 2.0.
   -->
 
-<script lang='ts'>
+<script lang="ts">
 	import FileTree from '$lib/filetree/FileTree.svelte';
 	import { ShowAs } from '$lib/Dialog.svelte';
-	import { page, previousPage } from '$lib/page.ts';
+	import { page } from '$lib/page.ts';
 </script>
 
-<div class='content'>
-	<FileTree showAs={ShowAs.Dialog} path='/sheets' title='Select a Sheet'
-						onSuccess={(path) => $page = {ID:'sheet', NextID: 'sheet', Sheet: path}}
-						onCancel={() => $page = $previousPage} />
+<div class="content">
+	<FileTree
+		showAs={ShowAs.Dialog}
+		path="/sheets"
+		title="Select a Sheet"
+		onSuccess={(path) => ($page = { ID: 'sheet', NextID: 'sheet', Sheet: path, Previous: $page })}
+		onCancel={() => ($page = $page.Previous || { ID: 'home', NextID: 'home' })} />
 </div>
 
 <style>

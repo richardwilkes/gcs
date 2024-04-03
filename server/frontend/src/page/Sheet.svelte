@@ -9,7 +9,7 @@
   - defined by the Mozilla Public License, version 2.0.
   -->
 
-<script lang='ts'>
+<script lang="ts">
 	import { fetchSheet, sheet } from '$lib/sheet.ts';
 	import Lists from '$lib/sheets/lists/Lists.svelte';
 	import Personal from '$lib/sheets/personal/Personal.svelte';
@@ -30,19 +30,17 @@
 	})();
 </script>
 
-<div class='content'>
-	<div class='sheet'>
-	{#if $sheet}
-		<Personal />
-		<Attributes />
-		<Lists />
-	{:else}
-		{#if failed}
-			<div class='failed'>Failed to load sheet</div>
+<div class="content">
+	<div class="sheet">
+		{#if $sheet}
+			<Personal />
+			<Attributes />
+			<Lists />
+		{:else if failed}
+			<div class="failed">Failed to load sheet</div>
 		{:else}
-			<div class='loading'>Loading...</div>
+			<div class="loading">Loading...</div>
 		{/if}
-	{/if}
 	</div>
 </div>
 

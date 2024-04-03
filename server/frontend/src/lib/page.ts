@@ -9,13 +9,13 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-import {writable} from 'svelte/store';
+import { writable } from 'svelte/store';
 
-type Page = {
+export interface Page {
 	ID: string;
 	NextID: string;
 	Sheet?: string;
-};
+	Previous?: Page;
+}
 
-export const page = writable<Page>({ID: 'home', NextID: 'home'});
-export const previousPage = writable<Page>({ID: 'home', NextID: 'home'});
+export const page = writable<Page>({ ID: 'home', NextID: 'home' });
