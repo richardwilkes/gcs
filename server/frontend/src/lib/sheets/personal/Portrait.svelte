@@ -10,7 +10,7 @@
   -->
 <script lang="ts">
 	import Header from '$lib/sheets/widget/Header.svelte';
-	import Silhouette from '$lib/svg/Silhouette.svelte';
+	import SilhouetteSVG from '$svg/Silhouette.svg?raw';
 	import { sheet, updateSheetField } from '$lib/sheet.ts';
 	import { sheetPath } from '$lib/url.ts';
 
@@ -178,7 +178,7 @@
 					{height}
 					alt="Portrait" />
 			{:else}
-				<Silhouette style="width: {width}; height: {height}; pointer-events: none;" />
+				<div style="width: {width}; height: {height}; pointer-events: none;">{@html SilhouetteSVG}</div>
 			{/if}
 		{/if}
 		<!-- svelte-ignore a11y-no-static-element-interactions -->

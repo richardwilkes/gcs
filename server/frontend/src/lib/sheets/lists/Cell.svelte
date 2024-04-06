@@ -12,7 +12,7 @@
 <script lang="ts">
 	import Field from '$lib/sheets/widget/Field.svelte';
 	import type { Cell, Column } from '$lib/sheet.ts';
-	import Icon from '$lib/svg/Icon.svelte';
+	import Icon from '$lib/sheets/lists/Icon.svelte';
 	import Tag from '$lib/sheets/lists/Tag.svelte';
 	import PageRef from '$lib/sheets/widget/PageRef.svelte';
 

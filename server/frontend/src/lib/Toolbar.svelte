@@ -13,7 +13,8 @@
 	import { session } from '$lib/session.ts';
 	import { sheet } from '$lib/sheet.ts';
 	import { apiPrefix } from '$lib/dev.ts';
-	import { navTo } from './nav';
+	import { navTo } from '$lib/nav';
+	import LogoutSVG from '$svg/Logout.svg?raw';
 
 	async function logout() {
 		if ($session) {
@@ -35,11 +36,8 @@
 	</div>
 	<ThemeSwitch />
 	{#if $session?.User}
-		<button class="logout" title="Logout" on:click={logout}>
-			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="svg">
-				<path
-					d="m377.9 105.9 122.8 122.8c7.2 7.2 11.3 17.1 11.3 27.3s-4.1 20.1-11.3 27.3L377.9 406.1c-6.4 6.4-15 9.9-24 9.9-18.7 0-33.9-15.2-33.9-33.9V320H192c-17.7 0-32-14.3-32-32v-64c0-17.7 14.3-32 32-32h128v-62.1c0-18.7 15.2-33.9 33.9-33.9 9 0 17.6 3.6 24 9.9zM160 96H96c-17.7 0-32 14.3-32 32v256c0 17.7 14.3 32 32 32h64c17.7 0 32 14.3 32 32s-14.3 32-32 32H96c-53 0-96-43-96-96V128c0-53 43-96 96-96h64c17.7 0 32 14.3 32 32s-14.3 32-32 32z" />
-			</svg>
+		<button class="logout svg" title="Logout" on:click={logout}>
+			{@html LogoutSVG}
 		</button>
 	{/if}
 </div>
@@ -72,9 +70,9 @@
 		cursor: pointer;
 	}
 
-	.svg {
+	.logout > :global(svg) {
 		width: 1.2em;
 		height: 1.2em;
-		fill: var(--color-on-surface);
+		color: var(--color-on-surface);
 	}
 </style>

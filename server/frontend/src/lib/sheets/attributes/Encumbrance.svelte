@@ -14,7 +14,7 @@
 	import Label from '$lib/sheets/widget/Label.svelte';
 	import { sheet } from '$lib/sheet.ts';
 	import Field from '$lib/sheets/widget/Field.svelte';
-	import Weight from '$lib/svg/Weight.svelte';
+	import WeightSVG from '$svg/Weight.svg?raw';
 </script>
 
 <div class="content">
@@ -29,17 +29,17 @@
 			{@const current = $sheet?.Encumbrance.Current === i}
 			{@const overloaded = current && $sheet?.Encumbrance.Overloaded}
 			<div class="marker" class:current class:overloaded class:banding>
-				{#if current}<Weight />{/if}
+				{#if current}{@html WeightSVG}{/if}
 			</div>
-			<div class='right' class:current class:overloaded class:banding><Label>{i}</Label></div>
-			<div class='border' class:current class:overloaded class:banding><Label left>{label}</Label></div>
-			<div class='right border' class:current class:overloaded class:banding>
+			<div class="right" class:current class:overloaded class:banding><Label>{i}</Label></div>
+			<div class="border" class:current class:overloaded class:banding><Label left>{label}</Label></div>
+			<div class="right border" class:current class:overloaded class:banding>
 				<Field noBottomBorder>{$sheet?.Encumbrance.MaxLoad[i]}</Field>
 			</div>
-			<div class='right border' class:current class:overloaded class:banding>
+			<div class="right border" class:current class:overloaded class:banding>
 				<Field noBottomBorder right>{$sheet?.Encumbrance.Move[i]}</Field>
 			</div>
-			<div class='right' class:current class:overloaded class:banding>
+			<div class="right" class:current class:overloaded class:banding>
 				<Field noBottomBorder right>{$sheet?.Encumbrance.Dodge[i]}</Field>
 			</div>
 		{/each}
@@ -84,6 +84,7 @@
 		padding-left: 4px;
 		display: flex;
 		align-items: center;
+		width: 0.75em;
 	}
 
 	.current {

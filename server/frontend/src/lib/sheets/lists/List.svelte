@@ -9,10 +9,10 @@
   - defined by the Mozilla Public License, version 2.0.
   -->
 
-<script lang='ts'>
+<script lang="ts">
 	import type { Table } from '$lib/sheet.ts';
 	import Header from '$lib/sheets/widget/Header.svelte';
-	import Icon from '$lib/svg/Icon.svelte';
+	import Icon from '$lib/sheets/lists/Icon.svelte';
 	import Cell from '$lib/sheets/lists/Cell.svelte';
 
 	export let table: Table | null | undefined;
@@ -33,7 +33,7 @@
 </script>
 
 {#if table && table.Rows.length !== 0}
-	<div class='content' {style}>
+	<div class="content" {style}>
 		{#each table.Columns as column}
 			<Header tip={column.Detail}>
 				{#if column.TitleIsImageKey}
@@ -46,8 +46,10 @@
 		{#each table.Rows as row, rowIndex}
 			{@const banding = rowIndex % 2 === 1}
 			{#each row.Cells as cell, cellIndex}
-				<div class:divider={cellIndex !== 0} class:banding
-						 style={(row.Depth && table.Columns[cellIndex].Primary) ? `padding-left: ${row.Depth}em` : ''}>
+				<div
+					class:divider={cellIndex !== 0}
+					class:banding
+					style={row.Depth && table.Columns[cellIndex].Primary ? `padding-left: ${row.Depth}em` : ''}>
 					<Cell {cell} column={table.Columns[cellIndex]} />
 				</div>
 			{/each}

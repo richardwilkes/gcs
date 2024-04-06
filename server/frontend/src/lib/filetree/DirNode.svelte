@@ -9,14 +9,14 @@
   - defined by the Mozilla Public License, version 2.0.
   -->
 
-<script lang='ts'>
+<script lang="ts">
 	import type { Directory } from '$lib/files.ts';
 	import { tweened } from 'svelte/motion';
 	import { slide } from 'svelte/transition';
 	import FileNode from '$lib/filetree/FileNode.svelte';
-	import OpenFolder from '$lib/svg/OpenFolder.svelte';
-	import ClosedFolder from '$lib/svg/ClosedFolder.svelte';
-	import CircledChevronRight from '$lib/svg/CircledChevronRight.svelte';
+	import OpenFolderSVG from '$svg/OpenFolder.svg?raw';
+	import ClosedFolderSVG from '$svg/ClosedFolder.svg?raw';
+	import CircledChevronRightSVG from '$svg/CircledChevronRight.svg?raw';
 
 	export let dir: Directory;
 	export let selectedFile: string | undefined;
@@ -26,22 +26,34 @@
 	let opened = false;
 </script>
 
-<div class='dir'>
-	<div class='node'>
-		<button on:click={() => { opened = !opened; rotation.set(opened ? 90 : 0); } }>
-			<CircledChevronRight rotation={$rotation} />
+<div class="dir">
+	<div class="node">
+		<button
+			class="chevron"
+			style="transform: rotate({$rotation}deg)"
+			on:click={() => {
+				opened = !opened;
+				rotation.set(opened ? 90 : 0);
+			}}>
+			{@html CircledChevronRightSVG}
 		</button>
-		<button on:click={()=>{}} on:dblclick={() => { opened = !opened; rotation.set(opened ? 90 : 0); } }>
+		<button
+			class="item"
+			on:click={() => {}}
+			on:dblclick={() => {
+				opened = !opened;
+				rotation.set(opened ? 90 : 0);
+			}}>
 			{#if opened}
-				<OpenFolder />
+				{@html OpenFolderSVG}
 			{:else}
-				<ClosedFolder />
+				{@html ClosedFolderSVG}
 			{/if}
 			{dir.name}
 		</button>
 	</div>
 	{#if opened}
-		<div class='children' transition:slide={{delay: 0, duration: 200, axis: 'y'}}>
+		<div class="children" transition:slide={{ delay: 0, duration: 200, axis: 'y' }}>
 			{#each dir.dirs || [] as subDir}
 				<svelte:self dir={subDir} {selectedFile} {callback} />
 			{/each}
@@ -69,13 +81,27 @@
 		padding: 0.2em;
 	}
 
-	button {
+	.chevron,
+	.item {
 		padding: 0;
 		border: none;
 		background-color: var(--color-surface);
 		color: var(--color-on-surface);
 		user-select: none;
+	}
+
+	.chevron {
+		display: flex;
+		justify-content: center;
 		align-items: center;
+	}
+
+	.chevron > :global(svg) {
+		height: 0.75em;
+	}
+
+	.item > :global(svg) {
+		height: 0.75em;
 	}
 
 	.children {

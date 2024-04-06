@@ -21,6 +21,9 @@
       "$lib/*": [
         "./src/lib/*"
       ],
+	  "$svg/*": [
+		"./src/svg/*"
+	  ],
       "$page/*": [
         "./src/page/*"
       ],

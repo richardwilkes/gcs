@@ -9,16 +9,16 @@
   - defined by the Mozilla Public License, version 2.0.
   -->
 
-<script lang='ts'>
-	import Warning from '$lib/svg/Warning.svelte';
+<script lang="ts">
+	import WarningSVG from '$svg/Warning.svg?raw';
 
 	export let warning = false;
 	export let tip = '';
 </script>
 
-<div class='tag' class:warning title={tip}>
+<div class="tag" class:warning title={tip}>
 	{#if warning}
-		<Warning />
+		<div class="icon">{@html WarningSVG}</div>
 	{/if}
 	<slot />
 </div>
@@ -39,7 +39,10 @@
 
 	.warning {
 		color: var(--color-on-error);
-		fill: var(--color-on-error);
 		background-color: var(--color-error);
+	}
+
+	.icon {
+		width: 0.85em;
 	}
 </style>

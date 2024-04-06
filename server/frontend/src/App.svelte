@@ -6,7 +6,7 @@
 	import LoadSheet from '$page/LoadSheet.svelte';
 	import Sheet from '$page/Sheet.svelte';
 	import Footer from '$lib/Footer.svelte';
-	import SheetFile from '$lib/svg/SheetFile.svelte';
+	import SheetFileSVG from '$svg/SheetFile.svg?raw';
 	import { url, sheetPath } from '$lib/url.ts';
 	import { navTo } from '$lib/nav.ts';
 
@@ -35,7 +35,7 @@
 				<button class="save" disabled={!$sheet.Modified} on:click={save}>Save</button>
 			{/if}
 			<button class="open" title="Open…" on:click={open}>
-				<SheetFile style="width: 1.2em; height: 1.2em; fill: var(--color-on-surface);" />
+				<div class="icon">{@html SheetFileSVG}</div>
 				{$sheetPath}
 				{#if $sheet && $sheet.ReadOnly}
 					<span class="ro">(read only)</span>
@@ -84,6 +84,12 @@
 		cursor: pointer;
 		color: var(--color-on-surface-variant);
 		font-weight: normal;
+	}
+
+	.icon {
+		width: 1.2em;
+		height: 1.2em;
+		color: var(--color-on-surface);
 	}
 
 	.save {

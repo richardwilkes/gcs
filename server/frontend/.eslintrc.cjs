@@ -8,7 +8,8 @@ module.exports = {
 	],
 	rules: {
 		"no-mixed-spaces-and-tabs": "off",
-		"@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
+		"@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+		"svelte/no-at-html-tags": "off"
 	},
 	parser: '@typescript-eslint/parser',
 	plugins: ['@typescript-eslint'],

@@ -9,9 +9,9 @@
   - defined by the Mozilla Public License, version 2.0.
   -->
 
-<script lang='ts'>
-	import File from '$lib/svg/File.svelte';
-	import SheetFile from '$lib/svg/SheetFile.svelte';
+<script lang="ts">
+	import FileSVG from '$svg/File.svg?raw';
+	import SheetFileSVG from '$svg/SheetFile.svg?raw';
 
 	export let name: string;
 	export let path: string;
@@ -19,12 +19,16 @@
 	export let callback: (path: string, finish?: boolean) => void;
 </script>
 
-<div class='file' class:selected={path === selectedFile}>
-	<button class:selected={path === selectedFile} on:click={() => callback(path)} on:dblclick={() => callback(path, true)}>
+<div class="file" class:selected={path === selectedFile}>
+	<button
+		class="item"
+		class:selected={path === selectedFile}
+		on:click={() => callback(path)}
+		on:dblclick={() => callback(path, true)}>
 		{#if path.toLowerCase().endsWith('.gcs')}
-			<SheetFile />
+			{@html SheetFileSVG}
 		{:else}
-			<File />
+			{@html FileSVG}
 		{/if}
 		{name}
 	</button>
@@ -36,13 +40,17 @@
 		padding: 0.2em;
 	}
 
-	button {
+	.item {
 		padding: 0;
 		border: none;
 		background-color: var(--color-surface);
 		color: var(--color-on-surface);
 		user-select: none;
 		align-items: center;
+	}
+
+	.item > :global(svg) {
+		height: 0.75em;
 	}
 
 	.selected {

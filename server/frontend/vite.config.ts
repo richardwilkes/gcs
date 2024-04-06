@@ -7,8 +7,9 @@ export default defineConfig({
 	plugins: [svelte()],
 	resolve: {
 		alias: {
-			'$lib': resolve('./src/lib'),
-			'$page': resolve('./src/page')
-		}
-	}
+			$lib: resolve('./src/lib'),
+			$svg: resolve('./src/svg'),
+			$page: resolve('./src/page'),
+		},
+	},
 });
