@@ -11,23 +11,31 @@
 
 <script lang="ts">
 	import { fetchSheet, sheet } from '$lib/sheet.ts';
+	import { navTo } from '$lib/nav';
 	import Lists from '$lib/sheets/lists/Lists.svelte';
 	import Personal from '$lib/sheets/personal/Personal.svelte';
 	import Attributes from '$lib/sheets/attributes/Attributes.svelte';
-	import { page } from '$lib/page.ts';
+
+	export let path = '';
 
 	let failed = false;
 
-	(async () => {
-		if ($page.Sheet) {
-			$sheet = await fetchSheet($page.Sheet);
+	async function load() {
+		if (path) {
+			const s = await fetchSheet(path);
+			$sheet = s;
 			if (!$sheet) {
 				failed = true;
 			}
 		} else {
-			$page = { ID: 'home', NextID: 'home' };
+			navTo('#');
 		}
-	})();
+	}
+
+	$: {
+		path; // For reactivity...
+		load();
+	}
 </script>
 
 <div class="content">

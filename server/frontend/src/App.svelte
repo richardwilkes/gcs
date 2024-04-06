@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { page } from '$lib/page.ts';
 	import { checkSession } from '$lib/session.ts';
 	import { saveSheet, sheet } from '$lib/sheet.ts';
 	import Toolbar from '$lib/Toolbar.svelte';
@@ -8,14 +7,16 @@
 	import Sheet from '$page/Sheet.svelte';
 	import Footer from '$lib/Footer.svelte';
 	import SheetFile from '$lib/svg/SheetFile.svelte';
+	import { url, sheetPath } from '$lib/url.ts';
+	import { navTo } from '$lib/nav.ts';
 
 	function open() {
-		$page = { ID: 'home', NextID: 'home', Previous: $page };
+		navTo('#');
 	}
 
 	async function save() {
-		if ($page.Sheet && $sheet && $sheet.Modified) {
-			const updatedSheet = await saveSheet($page.Sheet);
+		if ($sheetPath && $sheet && $sheet.Modified) {
+			const updatedSheet = await saveSheet($sheetPath);
 			sheet.update((_) => updatedSheet);
 		}
 	}
@@ -29,13 +30,13 @@
 
 <div class="shell">
 	<Toolbar>
-		{#if $page.ID === 'sheet'}
+		{#if $sheetPath}
 			{#if $sheet && !$sheet.ReadOnly}
 				<button class="save" disabled={!$sheet.Modified} on:click={save}>Save</button>
 			{/if}
 			<button class="open" title="Open…" on:click={open}>
 				<SheetFile style="width: 1.2em; height: 1.2em; fill: var(--color-on-surface);" />
-				{$page.Sheet}
+				{$sheetPath}
 				{#if $sheet && $sheet.ReadOnly}
 					<span class="ro">(read only)</span>
 				{/if}
@@ -43,10 +44,10 @@
 		{/if}
 	</Toolbar>
 	<div class="content">
-		{#if $page.ID === 'login'}
+		{#if $url.hash === '#login'}
 			<Login />
-		{:else if $page.ID === 'sheet'}
-			<Sheet />
+		{:else if $sheetPath}
+			<Sheet path={$sheetPath} />
 		{:else}
 			<LoadSheet />
 		{/if}

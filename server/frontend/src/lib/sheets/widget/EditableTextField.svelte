@@ -9,20 +9,19 @@
   - defined by the Mozilla Public License, version 2.0.
   -->
 
-<script lang='ts'>
+<script lang="ts">
 	import { sheet, updateSheetField } from '$lib/sheet.js';
+	import { sheetPath } from '$lib/url.js';
 	import Field from '$lib/sheets/widget/Field.svelte';
-	import { page } from '$lib/page.ts';
 
 	export let key: string;
 	export let right = false;
 
 	async function updateField(event: FocusEvent) {
-		const pageSheet = $page.Sheet;
-		if (pageSheet) {
+		if ($sheetPath) {
 			const target = event.target as HTMLElement;
 			try {
-				let updatedSheet = await updateSheetField(pageSheet, 'field.text', key, target.innerText);
+				let updatedSheet = await updateSheetField($sheetPath, 'field.text', key, target.innerText);
 				target.innerText = extractField(updatedSheet, key, key);
 				sheet.update((_) => updatedSheet);
 			} catch {
@@ -73,5 +72,5 @@
 	}
 </script>
 
-<Field editable {right} style='width:100%;'
-			 on:blur={(target) => updateField(target)}>{extractField($sheet, key, key)}</Field>
+<Field editable {right} style="width:100%;" on:blur={(target) => updateField(target)}
+	>{extractField($sheet, key, key)}</Field>

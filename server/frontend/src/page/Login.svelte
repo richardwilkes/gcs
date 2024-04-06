@@ -9,11 +9,12 @@
   - defined by the Mozilla Public License, version 2.0.
   -->
 
-<script lang='ts'>
+<script lang="ts">
 	import { apiPrefix } from '$lib/dev.ts';
 	import { session, updateSessionFromResponse } from '$lib/session.ts';
-	import { page } from '$lib/page.ts';
 	import { onMount } from 'svelte';
+	import { url } from '$lib/url.ts';
+	import { navTo } from '$lib/nav';
 
 	let form: HTMLFormElement;
 	let nameInput: HTMLInputElement;
@@ -28,25 +29,25 @@
 		fetch(apiPrefix('/login'), {
 			method: 'POST',
 			body: new FormData(form),
-			cache: 'no-store'
-		}).then(rsp => {
-			if (!rsp.ok) {
-				console.log(rsp.status + ' ' + rsp.statusText);
-				handleFailure();
-			} else {
-				updateSessionFromResponse(rsp);
-				if ($session) {
-					const prev = $page;
-					prev.ID = prev.NextID;
-					$page = prev;
-				} else {
+			cache: 'no-store',
+		})
+			.then((rsp) => {
+				if (!rsp.ok) {
+					console.log(rsp.status + ' ' + rsp.statusText);
 					handleFailure();
+				} else {
+					updateSessionFromResponse(rsp);
+					if ($session) {
+						navTo($url.searchParams.get('next') || '#', undefined, undefined, true);
+					} else {
+						handleFailure();
+					}
 				}
-			}
-		}).catch(error => {
-			console.log(error);
-			handleFailure();
-		});
+			})
+			.catch((error) => {
+				console.log(error);
+				handleFailure();
+			});
 	}
 
 	function handleFailure() {
@@ -71,19 +72,25 @@
 	$: disabled = nameEmpty || passwordEmpty;
 </script>
 
-<div class='content'>
-	<form class='panel' bind:this={form} on:submit={submit}>
-		<img class='logo' src='/app.webp' alt='GURPS Character Sheet' />
-		<div class='title'>GURPS Character Sheet</div>
-		<div class='subtitle'>by Richard A. Wilkes</div>
+<div class="content">
+	<form class="panel" bind:this={form} on:submit={submit}>
+		<img class="logo" src="/app.webp" alt="GURPS Character Sheet" />
+		<div class="title">GURPS Character Sheet</div>
+		<div class="subtitle">by Richard A. Wilkes</div>
 		{#if errorMsg}
-			<div class='error'>{errorMsg}</div>
+			<div class="error">{errorMsg}</div>
 		{/if}
-		<label for='name'>Name</label>
-		<input type='text' id='name' name='name' bind:this={nameInput} on:input={updateNameEmpty} required />
-		<label for='password'>Password</label>
-		<input type='password' id='password' name='password' bind:this={passwordInput} on:input={updatePasswordEmpty} required />
-		<button type='submit' {disabled}>Login</button>
+		<label for="name">Name</label>
+		<input type="text" id="name" name="name" bind:this={nameInput} on:input={updateNameEmpty} required />
+		<label for="password">Password</label>
+		<input
+			type="password"
+			id="password"
+			name="password"
+			bind:this={passwordInput}
+			on:input={updatePasswordEmpty}
+			required />
+		<button type="submit" {disabled}>Login</button>
 	</form>
 </div>
 

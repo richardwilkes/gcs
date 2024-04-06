@@ -9,13 +9,15 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-import { writable } from 'svelte/store';
-
-export interface Page {
-	ID: string;
-	NextID: string;
-	Sheet?: string;
-	Previous?: Page;
+export function navTo(target: string, queryKey?: string, queryValue?: string, replace: boolean = false) {
+	const url = new URL(window.location.origin);
+	url.hash = target;
+	if (queryKey && queryValue !== undefined) {
+		url.searchParams.set(queryKey, queryValue);
+	}
+	if (replace) {
+		window.history.replaceState(null, '', url);
+	} else {
+		window.history.pushState(null, '', url);
+	}
 }
-
-export const page = writable<Page>({ ID: 'home', NextID: 'home' });

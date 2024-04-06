@@ -11,7 +11,7 @@
 
 import { get, writable } from 'svelte/store';
 import { apiPrefix } from '$lib/dev.ts';
-import { page } from '$lib/page.ts';
+import { navTo } from '$lib/nav';
 
 const sessionKey = 'session';
 
@@ -22,13 +22,13 @@ type Session = {
 
 const currentValue = localStorage.getItem(sessionKey);
 
-export const session = writable<Session | null>(currentValue ? JSON.parse(currentValue) as Session : null);
+export const session = writable<Session | null>(currentValue ? (JSON.parse(currentValue) as Session) : null);
 
 session.subscribe((value) => localStorage.setItem(sessionKey, JSON.stringify(value)));
 
 window.onstorage = (event) => {
 	if (event.key === sessionKey) {
-		session.set(event.newValue ? JSON.parse(event.newValue) as Session : null);
+		session.set(event.newValue ? (JSON.parse(event.newValue) as Session) : null);
 	}
 };
 
@@ -48,7 +48,7 @@ export async function checkSession() {
 		const rsp = await fetch(apiPrefix('/session'), {
 			method: 'GET',
 			headers: { 'X-Session': sess.ID },
-			cache: 'no-store'
+			cache: 'no-store',
 		});
 		if (rsp.ok) {
 			updateSessionFromResponse(rsp);
@@ -58,5 +58,5 @@ export async function checkSession() {
 		}
 	}
 	session.set(null);
-	page.set({ID:'login', NextID: get(page).NextID});
+	navTo('login', 'next', window.location.hash);
 }

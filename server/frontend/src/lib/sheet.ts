@@ -27,7 +27,12 @@ export async function fetchSheet(path: string): Promise<Sheet | undefined> {
 	return await rsp.json();
 }
 
-export async function updateSheetField(path: string, kind: string, key: string, data: string): Promise<Sheet | undefined> {
+export async function updateSheetField(
+	path: string,
+	kind: string,
+	key: string,
+	data: string
+): Promise<Sheet | undefined> {
 	const rsp = await fetch(apiPrefix(`/sheet/${path}`), {
 		method: 'POST',
 		headers: { 'X-Session': get(session)?.ID ?? '' },

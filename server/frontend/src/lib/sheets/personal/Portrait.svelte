@@ -8,11 +8,11 @@
   - This Source Code Form is "Incompatible With Secondary Licenses", as
   - defined by the Mozilla Public License, version 2.0.
   -->
-<script lang='ts'>
+<script lang="ts">
 	import Header from '$lib/sheets/widget/Header.svelte';
 	import Silhouette from '$lib/svg/Silhouette.svelte';
 	import { sheet, updateSheetField } from '$lib/sheet.ts';
-	import { page } from '$lib/page.ts';
+	import { sheetPath } from '$lib/url.ts';
 
 	export let imageURL: string | undefined;
 
@@ -30,7 +30,8 @@
 	}
 
 	function onClickCallback(event: MouseEvent) {
-		if (event.button === 0 && event.detail === 2) { // Double-click
+		if (event.button === 0 && event.detail === 2) {
+			// Double-click
 			openFileDialog();
 		}
 	}
@@ -54,8 +55,7 @@
 		}
 	}
 
-	function ignoreDragEnterCallback(_: DragEvent) {
-	}
+	function ignoreDragEnterCallback(_: DragEvent) {}
 
 	function onDragOverCallback(event: DragEvent) {
 		if (inDrag && event.dataTransfer) {
@@ -103,19 +103,18 @@
 	}
 
 	function updatePortrait(file: File) {
-		const pageSheet = $page.Sheet;
-		if (pageSheet) {
+		if ($sheetPath) {
 			const reader = new FileReader();
 			reader.onload = () => {
 				let s = reader.result as string;
-				const i = s.indexOf(',')
+				const i = s.indexOf(',');
 				if (i > 0) {
 					s = s.substring(i + 1);
 				}
-				updateSheetField(pageSheet, 'field.binary', 'Portrait', s).then((updatedSheet) => {
+				updateSheetField($sheetPath, 'field.binary', 'Portrait', s).then((updatedSheet) => {
 					sheet.update((_) => updatedSheet);
-				})
-			}
+				});
+			};
 			reader.readAsDataURL(file);
 		}
 	}
@@ -145,28 +144,46 @@
 	}
 </script>
 
-<div class='block'>
+<div class="block">
 	<Header>Portrait</Header>
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<div class='portrait' bind:clientHeight style='width:{pictureHeight}px;' tabindex='0' role='button'
-			 on:click={onClickCallback}
-			 on:dragenter={onDragEnterCallback}
-			 on:dragover={onDragOverCallback}
-			 on:dragleave={onDragLeaveCallback}
-			 on:drop={onDropCallback}
-	>
-		<input bind:this={inputElement} type='file' autocomplete='off' tabindex='-1' style='display:none' accept='image/*'
-					 on:change={onChangeCallback} on:click={onInputElementClick} />
+	<div
+		class="portrait"
+		bind:clientHeight
+		style="width:{pictureHeight}px;"
+		tabindex="0"
+		role="button"
+		on:click={onClickCallback}
+		on:dragenter={onDragEnterCallback}
+		on:dragover={onDragOverCallback}
+		on:dragleave={onDragLeaveCallback}
+		on:drop={onDropCallback}>
+		<input
+			bind:this={inputElement}
+			type="file"
+			autocomplete="off"
+			tabindex="-1"
+			style="display:none"
+			accept="image/*"
+			on:change={onChangeCallback}
+			on:click={onInputElementClick} />
 		{#if clientHeight}
-				{#if imageURL}
-					<img class='noDrag' src={imageURL} bind:naturalWidth bind:naturalHeight {width} {height} alt='Portrait' />
-				{:else}
-					<Silhouette style='width: {width}; height: {height}; pointer-events: none;' />
-				{/if}
+			{#if imageURL}
+				<img
+					class="noDrag"
+					src={imageURL}
+					bind:naturalWidth
+					bind:naturalHeight
+					{width}
+					{height}
+					alt="Portrait" />
+			{:else}
+				<Silhouette style="width: {width}; height: {height}; pointer-events: none;" />
+			{/if}
 		{/if}
 		<!-- svelte-ignore a11y-no-static-element-interactions -->
-		<div class='tip-container' class:inDrag on:dragenter={ignoreDragEnterCallback}>
-			<div class='tip noDrag' class:hide={inDrag}>Drop an image here or double-click to change the portrait</div>
+		<div class="tip-container" class:inDrag on:dragenter={ignoreDragEnterCallback}>
+			<div class="tip noDrag" class:hide={inDrag}>Drop an image here or double-click to change the portrait</div>
 		</div>
 	</div>
 </div>

@@ -12,7 +12,7 @@
 <script lang="ts">
 	import FileTree from '$lib/filetree/FileTree.svelte';
 	import { ShowAs } from '$lib/Dialog.svelte';
-	import { page } from '$lib/page.ts';
+	import { navTo } from '$lib/nav';
 </script>
 
 <div class="content">
@@ -20,8 +20,8 @@
 		showAs={ShowAs.Dialog}
 		path="/sheets"
 		title="Select a Sheet"
-		onSuccess={(path) => ($page = { ID: 'sheet', NextID: 'sheet', Sheet: path, Previous: $page })}
-		onCancel={() => ($page = $page.Previous || { ID: 'home', NextID: 'home' })} />
+		onSuccess={(path) => navTo('sheet/' + path, undefined, undefined, true)}
+		onCancel={() => window.history.back()} />
 </div>
 
 <style>
