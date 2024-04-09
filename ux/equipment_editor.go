@@ -30,7 +30,7 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 			addNameLabelAndField(content, &e.editorData.Name)
 			addNotesLabelAndField(content, &e.editorData.LocalNotes)
 			addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
-			addLabelAndStringField(content, i18n.Text("Tech Level"), techLevelInfo(), &e.editorData.TechLevel)
+			addLabelAndStringField(content, i18n.Text("Tech Level"), gurps.TechLevelInfo(), &e.editorData.TechLevel)
 			addLabelAndStringField(content, i18n.Text("Legality Class"),
 				i18n.Text("LC0: Banned\nLC1: Military\nLC2: Restricted\nLC3: Licensed\nLC4: Open"),
 				&e.editorData.LegalityClass)

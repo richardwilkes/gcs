@@ -230,6 +230,53 @@ func (s *Spell) TemplatePickerData() *TemplatePicker {
 	return s.TemplatePicker
 }
 
+// SpellsHeaderData returns the header data information for the given spell column.
+func SpellsHeaderData(columnID int) HeaderData {
+	var data HeaderData
+	switch columnID {
+	case SpellDescriptionColumn, SpellDescriptionForPageColumn:
+		data.Title = i18n.Text("Spell")
+		data.Primary = true
+	case SpellResistColumn:
+		data.Title = i18n.Text("Resist")
+		data.Detail = i18n.Text("Resistance")
+	case SpellClassColumn:
+		data.Title = i18n.Text("Class")
+	case SpellCollegeColumn:
+		data.Title = i18n.Text("College")
+	case SpellCastCostColumn:
+		data.Title = i18n.Text("Cast")
+		data.Detail = i18n.Text("The mana cost to cast the spell")
+	case SpellMaintainCostColumn:
+		data.Title = i18n.Text("Maintain")
+		data.Detail = i18n.Text("The mana cost to maintain the spell")
+	case SpellCastTimeColumn:
+		data.Title = i18n.Text("Time")
+		data.Detail = i18n.Text("The time required to cast the spell")
+	case SpellDurationColumn:
+		data.Title = i18n.Text("Duration")
+	case SpellDifficultyColumn:
+		data.Title = i18n.Text("Diff")
+		data.Detail = i18n.Text("Difficulty")
+	case SpellTagsColumn:
+		data.Title = i18n.Text("Tags")
+	case SpellReferenceColumn:
+		data.Title = HeaderBookmark
+		data.TitleIsImageKey = true
+		data.Detail = PageRefTooltipText()
+	case SpellLevelColumn:
+		data.Title = i18n.Text("SL")
+		data.Detail = i18n.Text("Skill Level")
+	case SpellRelativeLevelColumn:
+		data.Title = i18n.Text("RSL")
+		data.Detail = i18n.Text("Relative Skill Level")
+	case SpellPointsColumn:
+		data.Title = i18n.Text("Pts")
+		data.Detail = i18n.Text("Points")
+	}
+	return data
+}
+
 // CellData returns the cell data information for the given column.
 func (s *Spell) CellData(columnID int, data *CellData) {
 	switch columnID {

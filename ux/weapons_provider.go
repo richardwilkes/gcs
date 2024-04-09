@@ -106,45 +106,7 @@ func (p *weaponsProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Weap
 	ids := p.ColumnIDs()
 	headers := make([]unison.TableColumnHeader[*Node[*gurps.Weapon]], 0, len(ids))
 	for _, id := range ids {
-		switch id {
-		case gurps.WeaponDescriptionColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Weapon](p.weaponType.String(), "", p.forPage))
-		case gurps.WeaponUsageColumn:
-			var title string
-			switch {
-			case p.forPage:
-				title = i18n.Text("Usage")
-			case p.weaponType == wpn.Melee:
-				title = i18n.Text("Melee Weapon Usage")
-			default:
-				title = i18n.Text("Ranged Weapon Usage")
-			}
-			headers = append(headers, NewEditorListHeader[*gurps.Weapon](title, "", p.forPage))
-		case gurps.WeaponSLColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Weapon](i18n.Text("SL"), i18n.Text("Skill Level"), p.forPage))
-		case gurps.WeaponParryColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Weapon](i18n.Text("Parry"), "", p.forPage))
-		case gurps.WeaponBlockColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Weapon](i18n.Text("Block"), "", p.forPage))
-		case gurps.WeaponDamageColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Weapon](i18n.Text("Damage"), "", p.forPage))
-		case gurps.WeaponReachColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Weapon](i18n.Text("Reach"), "", p.forPage))
-		case gurps.WeaponSTColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Weapon](i18n.Text("ST"), i18n.Text("Minimum Strength"), p.forPage))
-		case gurps.WeaponAccColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Weapon](i18n.Text("Acc"), i18n.Text("Accuracy Bonus"), p.forPage))
-		case gurps.WeaponRangeColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Weapon](i18n.Text("Range"), "", p.forPage))
-		case gurps.WeaponRoFColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Weapon](i18n.Text("RoF"), i18n.Text("Rate of Fire"), p.forPage))
-		case gurps.WeaponShotsColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Weapon](i18n.Text("Shots"), "", p.forPage))
-		case gurps.WeaponBulkColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Weapon](i18n.Text("Bulk"), "", p.forPage))
-		case gurps.WeaponRecoilColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.Weapon](i18n.Text("Recoil"), "", p.forPage))
-		}
+		headers = append(headers, headerFromData[*gurps.Weapon](gurps.WeaponHeaderData(id, p.weaponType, p.forPage), p.forPage))
 	}
 	return DisableSorting(headers)
 }

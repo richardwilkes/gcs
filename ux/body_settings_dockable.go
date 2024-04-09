@@ -161,7 +161,7 @@ func (d *bodySettingsDockable) prepareUndo(title string) *unison.UndoEdit[*gurps
 		EditName:   title,
 		UndoFunc:   func(e *unison.UndoEdit[*gurps.Body]) { d.applyBodyType(e.BeforeData) },
 		RedoFunc:   func(e *unison.UndoEdit[*gurps.Body]) { d.applyBodyType(e.AfterData) },
-		AbsorbFunc: func(e *unison.UndoEdit[*gurps.Body], other unison.Undoable) bool { return false },
+		AbsorbFunc: func(_ *unison.UndoEdit[*gurps.Body], _ unison.Undoable) bool { return false },
 		BeforeData: d.body.Clone(d.Entity(), nil),
 	}
 }

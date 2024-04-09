@@ -60,7 +60,7 @@ func (w *aboutWindow) prepare() error {
 	}
 	SetupMenuBar(w.Window)
 	content := w.Content()
-	content.SetSizer(func(hint unison.Size) (minSize, prefSize, maxSize unison.Size) {
+	content.SetSizer(func(_ unison.Size) (minSize, prefSize, maxSize unison.Size) {
 		prefSize = w.img.LogicalSize()
 		return prefSize, prefSize, prefSize
 	})

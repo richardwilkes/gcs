@@ -30,7 +30,7 @@ type TagProvider interface {
 // NewTagFilterPopup creates a new tag filter popup.
 func NewTagFilterPopup(tagProvider TagProvider) *unison.PopupMenu[string] {
 	p := unison.NewPopupMenu[string]()
-	p.WillShowMenuCallback = func(popup *unison.PopupMenu[string]) {
+	p.WillShowMenuCallback = func(_ *unison.PopupMenu[string]) {
 		var selection []string
 		for _, i := range p.SelectedIndexes() {
 			if i != 0 {
@@ -54,7 +54,7 @@ func NewTagFilterPopup(tagProvider TagProvider) *unison.PopupMenu[string] {
 			p.SelectIndex(0)
 		}
 	}
-	p.ChoiceMadeCallback = func(popup *unison.PopupMenu[string], index int, item string) {
+	p.ChoiceMadeCallback = func(popup *unison.PopupMenu[string], index int, _ string) {
 		simple := index == 0
 		if !simple {
 			modifiers := popup.Window().CurrentKeyModifiers()
@@ -87,7 +87,7 @@ func NewTagFilterPopup(tagProvider TagProvider) *unison.PopupMenu[string] {
 	tagFilterTooltip := i18n.Text("Tag Filter")
 	baseTooltip := fmt.Sprintf(i18n.Text("Shift-Click or %v-Click to select more than one"), unison.OSMenuCmdModifier())
 	p.Tooltip = newWrappedTooltipWithSecondaryText(tagFilterTooltip, baseTooltip)
-	p.SelectionChangedCallback = func(popup *unison.PopupMenu[string]) {
+	p.SelectionChangedCallback = func(_ *unison.PopupMenu[string]) {
 		tags := SelectedTags(p)
 		var extra string
 		if len(tags) != 0 {

@@ -57,7 +57,7 @@ func NewCarriedEquipmentPageList(owner Rebuildable, provider gurps.ListProvider)
 
 // NewOtherEquipmentPageList creates the other equipment page list.
 func NewOtherEquipmentPageList(owner Rebuildable, provider gurps.ListProvider) *PageList[*gurps.Equipment] {
-	p := newPageList(owner, NewEquipmentProvider(provider, true, false))
+	p := newPageList(owner, NewEquipmentProvider(provider, false, true))
 	p.installIncrementTechLevelHandler(owner)
 	p.installDecrementTechLevelHandler(owner)
 	p.installContainerConversionHandlers(owner)
@@ -206,7 +206,7 @@ func moveSelectedEquipment(from, to *unison.Table[*Node[*gurps.Equipment]]) {
 		EditName: i18n.Text("Move Equipment"),
 		UndoFunc: func(e *unison.UndoEdit[*TableDragUndoEditData[*gurps.Equipment]]) { e.BeforeData.Apply() },
 		RedoFunc: func(e *unison.UndoEdit[*TableDragUndoEditData[*gurps.Equipment]]) { e.AfterData.Apply() },
-		AbsorbFunc: func(e *unison.UndoEdit[*TableDragUndoEditData[*gurps.Equipment]], other unison.Undoable) bool {
+		AbsorbFunc: func(_ *unison.UndoEdit[*TableDragUndoEditData[*gurps.Equipment]], _ unison.Undoable) bool {
 			return false
 		},
 		BeforeData: NewTableDragUndoEditData(from, to),

@@ -31,7 +31,7 @@ func EditEquipmentModifier(owner Rebuildable, modifier *gurps.EquipmentModifier)
 func initEquipmentModifierEditor(e *editor[*gurps.EquipmentModifier, *gurps.EquipmentModifierEditData], content *unison.Panel) func() {
 	addNameLabelAndField(content, &e.editorData.Name)
 	if !e.target.Container() {
-		addLabelAndStringField(content, i18n.Text("Tech Level"), techLevelInfo(), &e.editorData.TechLevel)
+		addLabelAndStringField(content, i18n.Text("Tech Level"), gurps.TechLevelInfo(), &e.editorData.TechLevel)
 	}
 	addNotesLabelAndField(content, &e.editorData.LocalNotes)
 	addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)

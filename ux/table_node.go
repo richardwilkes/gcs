@@ -441,7 +441,7 @@ func (n *Node[T]) createToggleCell(c *gurps.CellData, foreground unison.Ink) uni
 	if c.Tooltip != "" {
 		check.Tooltip = newWrappedTooltip(c.Tooltip)
 	}
-	check.MouseDownCallback = func(where unison.Point, button, clickCount int, mod unison.Modifiers) bool {
+	check.MouseDownCallback = func(_ unison.Point, _, _ int, _ unison.Modifiers) bool {
 		c.Checked = !c.Checked
 		handleCheck(n.data, check, c.Checked)
 		if c.Checked {
@@ -630,12 +630,12 @@ func (n *Node[T]) createPageRefCell(c *gurps.CellData, foreground unison.Ink) un
 			}
 			label.DefaultDraw(gc, rect)
 		}
-		label.MouseEnterCallback = func(where unison.Point, mod unison.Modifiers) bool {
+		label.MouseEnterCallback = func(_ unison.Point, _ unison.Modifiers) bool {
 			over = true
 			label.MarkForRedraw()
 			return true
 		}
-		label.MouseMoveCallback = func(where unison.Point, mod unison.Modifiers) bool {
+		label.MouseMoveCallback = func(where unison.Point, _ unison.Modifiers) bool {
 			if over != where.In(label.ContentRect(true)) {
 				over = !over
 				label.MarkForRedraw()
@@ -647,12 +647,12 @@ func (n *Node[T]) createPageRefCell(c *gurps.CellData, foreground unison.Ink) un
 			label.MarkForRedraw()
 			return true
 		}
-		label.MouseDownCallback = func(where unison.Point, button, clickCount int, mod unison.Modifiers) bool {
+		label.MouseDownCallback = func(where unison.Point, _, _ int, _ unison.Modifiers) bool {
 			pressed = where.In(label.ContentRect(true))
 			label.MarkForRedraw()
 			return true
 		}
-		label.MouseDragCallback = func(where unison.Point, button int, mod unison.Modifiers) bool {
+		label.MouseDragCallback = func(where unison.Point, _ int, _ unison.Modifiers) bool {
 			in := where.In(label.ContentRect(true))
 			if pressed != in {
 				pressed = in
@@ -660,7 +660,7 @@ func (n *Node[T]) createPageRefCell(c *gurps.CellData, foreground unison.Ink) un
 			}
 			return true
 		}
-		label.MouseUpCallback = func(where unison.Point, button int, mod unison.Modifiers) bool {
+		label.MouseUpCallback = func(where unison.Point, _ int, _ unison.Modifiers) bool {
 			if over = where.In(label.ContentRect(true)); over {
 				list := ExtractPageReferences(c.Primary)
 				if len(list) != 0 {
@@ -725,7 +725,7 @@ func InsertItems[T gurps.NodeTypes](owner Rebuildable, table *unison.Table[*Node
 			EditName:   fmt.Sprintf(i18n.Text("Insert %s"), gurps.AsNode(items[0]).Kind()),
 			UndoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.BeforeData.Apply() },
 			RedoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.AfterData.Apply() },
-			AbsorbFunc: func(e *unison.UndoEdit[*TableUndoEditData[T]], other unison.Undoable) bool { return false },
+			AbsorbFunc: func(_ *unison.UndoEdit[*TableUndoEditData[T]], _ unison.Undoable) bool { return false },
 			BeforeData: NewTableUndoEditData(table),
 		}
 	}

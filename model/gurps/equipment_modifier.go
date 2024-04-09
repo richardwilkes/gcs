@@ -25,6 +25,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -160,6 +161,34 @@ func (m *EquipmentModifier) UnmarshalJSON(data []byte) error {
 // TagList returns the list of tags.
 func (m *EquipmentModifier) TagList() []string {
 	return m.Tags
+}
+
+// EquipmentModifierHeaderData returns the header data information for the given equipment modifier column.
+func EquipmentModifierHeaderData(columnID int) HeaderData {
+	var data HeaderData
+	switch columnID {
+	case EquipmentModifierEnabledColumn:
+		data.Title = HeaderCheckmark
+		data.TitleIsImageKey = true
+		data.Detail = i18n.Text("Whether this item is enabled. Items that are not enabled do not apply any features they may normally contribute to the character.")
+	case EquipmentModifierDescriptionColumn:
+		data.Title = i18n.Text("Equipment Modifier")
+		data.Primary = true
+	case EquipmentModifierTechLevelColumn:
+		data.Title = i18n.Text("TL")
+		data.Detail = i18n.Text("Tech Level")
+	case EquipmentModifierCostColumn:
+		data.Title = i18n.Text("Cost Adjustment")
+	case EquipmentModifierWeightColumn:
+		data.Title = i18n.Text("Weight Adjustment")
+	case EquipmentModifierTagsColumn:
+		data.Title = i18n.Text("Tags")
+	case EquipmentModifierReferenceColumn:
+		data.Title = HeaderBookmark
+		data.TitleIsImageKey = true
+		data.Detail = PageRefTooltipText()
+	}
+	return data
 }
 
 // CellData returns the cell data information for the given column.

@@ -37,7 +37,6 @@ linters-settings:
   gofumpt:
     extra-rules: true
   govet:
-    check-shadowing: true
     enable-all: true
     settings:
       printf:
@@ -55,10 +54,7 @@ linters-settings:
   misspell:
     locale: US
   staticcheck:
-    go: "1.19"
-    checks: [ "all", "-SA3000" ]
-  unused:
-    check-exported: false
+    checks: ["all", "-SA3000"]
 linters:
   disable-all: true
   enable:

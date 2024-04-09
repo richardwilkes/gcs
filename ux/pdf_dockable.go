@@ -307,13 +307,12 @@ func (d *PDFDockable) createTOC() {
 	d.divider.UpdateCursorCallback = func(_ unison.Point) *unison.Cursor {
 		return unison.ResizeHorizontalCursor()
 	}
-	d.divider.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		r := d.divider.ContentRect(true)
-		unison.DefaultDockTheme.DrawHorizontalGripper(gc, r)
+	d.divider.DrawCallback = func(gc *unison.Canvas, _ unison.Rect) {
+		unison.DefaultDockTheme.DrawHorizontalGripper(gc, d.divider.ContentRect(true))
 	}
 	var initialPosition float32
 	var eventPosition float32
-	d.divider.MouseDownCallback = func(where unison.Point, button, _ int, _ unison.Modifiers) bool {
+	d.divider.MouseDownCallback = func(where unison.Point, _, _ int, _ unison.Modifiers) bool {
 		initialPosition = d.tocScrollLayoutData.SizeHint.Width
 		eventPosition = d.divider.Parent().PointFromRoot(d.divider.PointToRoot(where)).X
 		return true

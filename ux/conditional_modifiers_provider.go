@@ -94,10 +94,12 @@ func (p *condModProvider) ItemNames() (singular, plural string) {
 }
 
 func (p *condModProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.ConditionalModifier]] {
-	return DisableSorting([]unison.TableColumnHeader[*Node[*gurps.ConditionalModifier]]{
-		NewEditorListHeader[*gurps.ConditionalModifier]("±", i18n.Text("Modifier"), true),
-		NewEditorListHeader[*gurps.ConditionalModifier](i18n.Text("Condition"), "", true),
-	})
+	ids := p.ColumnIDs()
+	headers := make([]unison.TableColumnHeader[*Node[*gurps.ConditionalModifier]], 0, len(ids))
+	for _, id := range ids {
+		headers = append(headers, headerFromData[*gurps.Equipment](gurps.ConditionalModifiersHeaderData(id), true))
+	}
+	return DisableSorting(headers)
 }
 
 func (p *condModProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*gurps.ConditionalModifier]]) {

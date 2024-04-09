@@ -113,18 +113,12 @@ func (p *eqpModProvider) ItemNames() (singular, plural string) {
 }
 
 func (p *eqpModProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.EquipmentModifier]] {
-	headers := make([]unison.TableColumnHeader[*Node[*gurps.EquipmentModifier]], 0, 7)
-	if p.forEditor {
-		headers = append(headers, NewEnabledHeader[*gurps.EquipmentModifier](false))
+	ids := p.ColumnIDs()
+	headers := make([]unison.TableColumnHeader[*Node[*gurps.EquipmentModifier]], 0, len(ids))
+	for _, id := range ids {
+		headers = append(headers, headerFromData[*gurps.Equipment](gurps.EquipmentModifierHeaderData(id), false))
 	}
-	return append(headers,
-		NewEditorListHeader[*gurps.EquipmentModifier](i18n.Text("Equipment Modifier"), "", false),
-		NewEditorListHeader[*gurps.EquipmentModifier](i18n.Text("TL"), i18n.Text("Tech Level"), false),
-		NewEditorListHeader[*gurps.EquipmentModifier](i18n.Text("Cost Adjustment"), "", false),
-		NewEditorListHeader[*gurps.EquipmentModifier](i18n.Text("Weight Adjustment"), "", false),
-		NewEditorListHeader[*gurps.EquipmentModifier](i18n.Text("Tags"), "", false),
-		NewEditorPageRefHeader[*gurps.EquipmentModifier](false),
-	)
+	return headers
 }
 
 func (p *eqpModProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*gurps.EquipmentModifier]]) {
