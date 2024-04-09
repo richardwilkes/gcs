@@ -32,6 +32,7 @@ import (
 	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/check"
 	"github.com/richardwilkes/unison/enums/paintstyle"
+	"github.com/richardwilkes/unison/enums/weight"
 )
 
 // These need to be initialized by whatever instantiates the ux package, typically main.go. They are here to break the
@@ -102,6 +103,7 @@ func (d *webSettingsDockable) initContent(content *unison.Panel) {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
+	d.createBanner(content)
 	d.createEnabledCheckbox(content)
 	d.createAddressField(content)
 	d.createCertFileField(content)
@@ -112,6 +114,27 @@ func (d *webSettingsDockable) initContent(content *unison.Panel) {
 	d.createIdleTimeoutField(content)
 	d.createUsersBlock(content)
 	d.syncEnablementToServer(nil)
+}
+
+func (d *webSettingsDockable) createBanner(content *unison.Panel) {
+	banner := unison.NewLabel()
+	banner.HAlign = align.Middle
+	banner.Text = i18n.Text("NOTE: This is an experimental and currently incomplete feature and may be removed in the future.")
+	fd := banner.Font.Descriptor()
+	fd.Weight = weight.Bold
+	banner.Font = fd.Font()
+	banner.OnBackgroundInk = unison.OnWarningColor
+	banner.SetLayoutData(&unison.FlexLayoutData{
+		HSpan:  2,
+		HAlign: align.Fill,
+		HGrab:  true,
+	})
+	banner.SetBorder(unison.NewEmptyBorder(unison.NewUniformInsets(unison.StdVSpacing * 4)))
+	banner.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+		gc.DrawRect(rect, unison.WarningColor.Paint(gc, rect, paintstyle.Fill))
+		banner.DefaultDraw(gc, rect)
+	}
+	content.AddChild(banner)
 }
 
 func (d *webSettingsDockable) syncEnablementToServer(callback func()) {
@@ -204,7 +227,10 @@ func (d *webSettingsDockable) createEnabledCheckbox(content *unison.Panel) {
 		HSpan:  2,
 		HAlign: align.Middle,
 	})
-	d.enabledCheckbox.SetBorder(unison.NewEmptyBorder(unison.Insets{Bottom: unison.StdVSpacing * 2}))
+	d.enabledCheckbox.SetBorder(unison.NewEmptyBorder(unison.Insets{
+		Top:    unison.StdVSpacing * 2,
+		Bottom: unison.StdVSpacing * 2,
+	}))
 	content.AddChild(d.enabledCheckbox)
 }
 
