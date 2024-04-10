@@ -268,11 +268,12 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 		buffer.WriteString(armorDivisor.String())
 		buffer.WriteByte(')')
 	}
-	if strings.TrimSpace(w.Type) != "" {
+	t := strings.TrimSpace(w.Type)
+	if t != "" {
 		if buffer.Len() != 0 {
 			buffer.WriteByte(' ')
 		}
-		buffer.WriteString(w.Type)
+		buffer.WriteString(t)
 	}
 	if w.Fragmentation != nil {
 		if frag := w.Fragmentation.StringExtra(pc.SheetSettings.UseModifyingDicePlusAdds); frag != "0" {
@@ -281,13 +282,16 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 			}
 			buffer.WriteByte('[')
 			buffer.WriteString(frag)
-			if w.FragmentationArmorDivisor != 1 {
+			if w.FragmentationArmorDivisor != fxp.One {
 				buffer.WriteByte('(')
 				buffer.WriteString(w.FragmentationArmorDivisor.String())
 				buffer.WriteByte(')')
 			}
-			buffer.WriteByte(' ')
-			buffer.WriteString(w.FragmentationType)
+			t = strings.TrimSpace(w.FragmentationType)
+			if t != "" {
+				buffer.WriteByte(' ')
+				buffer.WriteString(t)
+			}
 			buffer.WriteByte(']')
 		}
 	}
