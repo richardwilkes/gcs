@@ -258,8 +258,8 @@ func (e *pointsEditor) removeEntry(rec *gurps.PointsRecord) {
 	for i, one := range e.current {
 		if one == rec {
 			e.current = slices.Delete(e.current, i, i+1)
-			i *= 4
-			for j := 3; j >= 0; j-- {
+			i *= 5
+			for j := 4; j >= 0; j-- {
 				e.content.RemoveChildAtIndex(i + j)
 			}
 			e.content.Pack()

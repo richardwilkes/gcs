@@ -15,7 +15,7 @@ require (
 	github.com/tc-hib/winres v0.3.1
 	github.com/vearutop/statigz v1.4.0
 	github.com/yookoala/realpath v1.0.0
-	golang.org/x/exp v0.0.0-20240404231335-c0f41cb1a7a0
+	golang.org/x/exp v0.0.0-20240409090435-93d18d7e34b8
 	golang.org/x/image v0.15.0
 	golang.org/x/sys v0.19.0
 	golang.org/x/text v0.14.0
