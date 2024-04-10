@@ -105,6 +105,7 @@ func (wb WeaponBlock) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 			if best != fxp.Min {
 				AppendBufferOntoNewLine(modifiersTooltip, primaryTooltip)
 				result.Modifier += fxp.Three + best + pc.BlockBonus
+				AppendStringOntoNewLine(modifiersTooltip, pc.BlockBonusTooltip)
 				var percentModifier fxp.Int
 				for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponBlockBonus) {
 					amt := bonus.AdjustedAmountForWeapon(w)

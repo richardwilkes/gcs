@@ -115,6 +115,7 @@ func (wp WeaponParry) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 			if best != fxp.Min {
 				AppendBufferOntoNewLine(modifiersTooltip, primaryTooltip)
 				result.Modifier += fxp.Three + best + pc.ParryBonus
+				AppendStringOntoNewLine(modifiersTooltip, pc.ParryBonusTooltip)
 				var percentModifier fxp.Int
 				for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponParryBonus) {
 					amt := bonus.AdjustedAmountForWeapon(w)

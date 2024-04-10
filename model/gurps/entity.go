@@ -113,7 +113,9 @@ type Entity struct {
 	ThrowingStrengthBonus           fxp.Int
 	DodgeBonus                      fxp.Int
 	ParryBonus                      fxp.Int
+	ParryBonusTooltip               string
 	BlockBonus                      fxp.Int
+	BlockBonusTooltip               string
 	features                        features
 	variableResolverExclusions      map[string]bool
 	skillResolverExclusions         map[string]bool
@@ -372,8 +374,12 @@ func (e *Entity) processFeatures() {
 	} else {
 		e.DodgeBonus = 0
 	}
-	e.ParryBonus = e.AttributeBonusFor(ParryID, stlimit.None, nil).Trunc()
-	e.BlockBonus = e.AttributeBonusFor(BlockID, stlimit.None, nil).Trunc()
+	var tooltip xio.ByteBuffer
+	e.ParryBonus = e.AttributeBonusFor(ParryID, stlimit.None, &tooltip).Trunc()
+	e.ParryBonusTooltip = tooltip.String()
+	tooltip.Reset()
+	e.BlockBonus = e.AttributeBonusFor(BlockID, stlimit.None, &tooltip).Trunc()
+	e.BlockBonusTooltip = tooltip.String()
 }
 
 func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, levels fxp.Int) {
