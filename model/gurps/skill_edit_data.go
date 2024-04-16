@@ -21,27 +21,37 @@ var _ EditorData[*Skill] = &SkillEditData{}
 
 // SkillEditData holds the Skill data that can be edited by the UI detail editor.
 type SkillEditData struct {
-	Name                         string              `json:"name,omitempty"`
-	PageRef                      string              `json:"reference,omitempty"`
-	PageRefHighlight             string              `json:"reference_highlight,omitempty"`
-	LocalNotes                   string              `json:"notes,omitempty"`
-	VTTNotes                     string              `json:"vtt_notes,omitempty"`
-	Tags                         []string            `json:"tags,omitempty"`
-	Specialization               string              `json:"specialization,omitempty"`                 // Non-container only
-	TechLevel                    *string             `json:"tech_level,omitempty"`                     // Non-container only
-	Difficulty                   AttributeDifficulty `json:"difficulty,omitempty"`                     // Non-container only
-	Points                       fxp.Int             `json:"points,omitempty"`                         // Non-container only
-	EncumbrancePenaltyMultiplier fxp.Int             `json:"encumbrance_penalty_multiplier,omitempty"` // Non-container only
-	DefaultedFrom                *SkillDefault       `json:"defaulted_from,omitempty"`                 // Non-container only
-	Defaults                     []*SkillDefault     `json:"defaults,omitempty"`                       // Non-container only
-	TechniqueDefault             *SkillDefault       `json:"default,omitempty"`                        // Non-container only
-	TechniqueLimitModifier       *fxp.Int            `json:"limit,omitempty"`                          // Non-container only
-	Prereq                       *PrereqList         `json:"prereqs,omitempty"`                        // Non-container only
-	Weapons                      []*Weapon           `json:"weapons,omitempty"`                        // Non-container only
-	Features                     Features            `json:"features,omitempty"`                       // Non-container only
-	Study                        []*Study            `json:"study,omitempty"`                          // Non-container only
-	StudyHoursNeeded             study.Level         `json:"study_hours_needed,omitempty"`             // Non-container only
-	TemplatePicker               *TemplatePicker     `json:"template_picker,omitempty"`                // Container only
+	Name             string   `json:"name,omitempty"`
+	PageRef          string   `json:"reference,omitempty"`
+	PageRefHighlight string   `json:"reference_highlight,omitempty"`
+	LocalNotes       string   `json:"notes,omitempty"`
+	VTTNotes         string   `json:"vtt_notes,omitempty"`
+	Tags             []string `json:"tags,omitempty"`
+	SkillNonContainerOnlyEditData
+	SkillContainerOnlyEditData
+}
+
+// SkillNonContainerOnlyEditData holds the Skill data that is only applicable to skills that aren't containers.
+type SkillNonContainerOnlyEditData struct {
+	Specialization               string              `json:"specialization,omitempty"`
+	TechLevel                    *string             `json:"tech_level,omitempty"`
+	Difficulty                   AttributeDifficulty `json:"difficulty,omitempty"`
+	Points                       fxp.Int             `json:"points,omitempty"`
+	EncumbrancePenaltyMultiplier fxp.Int             `json:"encumbrance_penalty_multiplier,omitempty"`
+	DefaultedFrom                *SkillDefault       `json:"defaulted_from,omitempty"`
+	Defaults                     []*SkillDefault     `json:"defaults,omitempty"`
+	TechniqueDefault             *SkillDefault       `json:"default,omitempty"`
+	TechniqueLimitModifier       *fxp.Int            `json:"limit,omitempty"`
+	Prereq                       *PrereqList         `json:"prereqs,omitempty"`
+	Weapons                      []*Weapon           `json:"weapons,omitempty"`
+	Features                     Features            `json:"features,omitempty"`
+	Study                        []*Study            `json:"study,omitempty"`
+	StudyHoursNeeded             study.Level         `json:"study_hours_needed,omitempty"`
+}
+
+// SkillContainerOnlyEditData holds the Skill data that is only applicable to skills that are containers.
+type SkillContainerOnlyEditData struct {
+	TemplatePicker *TemplatePicker `json:"template_picker,omitempty"`
 }
 
 // CopyFrom implements node.EditorData.

@@ -26,10 +26,15 @@ const ContainerKeyPostfix = "_container"
 type ContainerBase[T NodeTypes] struct {
 	ID         uuid.UUID      `json:"id"`
 	Type       string         `json:"type"`
-	IsOpen     bool           `json:"open,omitempty"`     // Container only
-	Children   []T            `json:"children,omitempty"` // Container only
 	ThirdParty map[string]any `json:"third_party,omitempty"`
 	parent     T
+	ContainerBaseContainerOnly[T]
+}
+
+// ContainerBaseContainerOnly holds the ContainerBase data that is only applicable to containers.
+type ContainerBaseContainerOnly[T NodeTypes] struct {
+	Children []T  `json:"children,omitempty"`
+	IsOpen   bool `json:"open,omitempty"`
 }
 
 func newContainerBase[T NodeTypes](typeKey string, isContainer bool) ContainerBase[T] {
@@ -37,9 +42,11 @@ func newContainerBase[T NodeTypes](typeKey string, isContainer bool) ContainerBa
 		typeKey += ContainerKeyPostfix
 	}
 	return ContainerBase[T]{
-		ID:     NewUUID(),
-		Type:   typeKey,
-		IsOpen: isContainer,
+		ID:   NewUUID(),
+		Type: typeKey,
+		ContainerBaseContainerOnly: ContainerBaseContainerOnly[T]{
+			IsOpen: isContainer,
+		},
 	}
 }
 

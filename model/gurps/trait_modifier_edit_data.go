@@ -22,18 +22,24 @@ var _ EditorData[*TraitModifier] = &TraitModifierEditData{}
 
 // TraitModifierEditData holds the TraitModifier data that can be edited by the UI detail editor.
 type TraitModifierEditData struct {
-	Name             string         `json:"name,omitempty"`
-	PageRef          string         `json:"reference,omitempty"`
-	PageRefHighlight string         `json:"reference_highlight,omitempty"`
-	LocalNotes       string         `json:"notes,omitempty"`
-	VTTNotes         string         `json:"vtt_notes,omitempty"`
-	Tags             []string       `json:"tags,omitempty"`
-	Cost             fxp.Int        `json:"cost,omitempty"`      // Non-container only
-	Levels           fxp.Int        `json:"levels,omitempty"`    // Non-container only
-	Affects          affects.Option `json:"affects,omitempty"`   // Non-container only
-	CostType         tmcost.Type    `json:"cost_type,omitempty"` // Non-container only
-	Disabled         bool           `json:"disabled,omitempty"`  // Non-container only
-	Features         Features       `json:"features,omitempty"`  // Non-container only
+	Name             string   `json:"name,omitempty"`
+	PageRef          string   `json:"reference,omitempty"`
+	PageRefHighlight string   `json:"reference_highlight,omitempty"`
+	LocalNotes       string   `json:"notes,omitempty"`
+	VTTNotes         string   `json:"vtt_notes,omitempty"`
+	Tags             []string `json:"tags,omitempty"`
+	TraitModifierEditDataNonContainerOnly
+}
+
+// TraitModifierEditDataNonContainerOnly holds the TraitModifier data that is only applicable to
+// TraitModifiers that aren't containers.
+type TraitModifierEditDataNonContainerOnly struct {
+	Cost     fxp.Int        `json:"cost,omitempty"`
+	Levels   fxp.Int        `json:"levels,omitempty"`
+	Affects  affects.Option `json:"affects,omitempty"`
+	CostType tmcost.Type    `json:"cost_type,omitempty"`
+	Disabled bool           `json:"disabled,omitempty"`
+	Features Features       `json:"features,omitempty"`
 }
 
 // CopyFrom implements node.EditorData.

@@ -21,30 +21,35 @@ var _ EditorData[*Spell] = &SpellEditData{}
 
 // SpellEditData holds the Spell data that can be edited by the UI detail editor.
 type SpellEditData struct {
-	Name              string              `json:"name,omitempty"`
-	PageRef           string              `json:"reference,omitempty"`
-	PageRefHighlight  string              `json:"reference_highlight,omitempty"`
-	LocalNotes        string              `json:"notes,omitempty"`
-	VTTNotes          string              `json:"vtt_notes,omitempty"`
-	Tags              []string            `json:"tags,omitempty"`
-	TechLevel         *string             `json:"tech_level,omitempty"`         // Non-container only
-	Difficulty        AttributeDifficulty `json:"difficulty,omitempty"`         // Non-container only
-	College           CollegeList         `json:"college,omitempty"`            // Non-container only
-	PowerSource       string              `json:"power_source,omitempty"`       // Non-container only
-	Class             string              `json:"spell_class,omitempty"`        // Non-container only
-	Resist            string              `json:"resist,omitempty"`             // Non-container only
-	CastingCost       string              `json:"casting_cost,omitempty"`       // Non-container only
-	MaintenanceCost   string              `json:"maintenance_cost,omitempty"`   // Non-container only
-	CastingTime       string              `json:"casting_time,omitempty"`       // Non-container only
-	Duration          string              `json:"duration,omitempty"`           // Non-container only
-	RitualSkillName   string              `json:"base_skill,omitempty"`         // Non-container only
-	RitualPrereqCount int                 `json:"prereq_count,omitempty"`       // Non-container only
-	Points            fxp.Int             `json:"points,omitempty"`             // Non-container only
-	Prereq            *PrereqList         `json:"prereqs,omitempty"`            // Non-container only
-	Weapons           []*Weapon           `json:"weapons,omitempty"`            // Non-container only
-	Study             []*Study            `json:"study,omitempty"`              // Non-container only
-	StudyHoursNeeded  study.Level         `json:"study_hours_needed,omitempty"` // Non-container only
-	TemplatePicker    *TemplatePicker     `json:"template_picker,omitempty"`    // Container only
+	Name             string   `json:"name,omitempty"`
+	PageRef          string   `json:"reference,omitempty"`
+	PageRefHighlight string   `json:"reference_highlight,omitempty"`
+	LocalNotes       string   `json:"notes,omitempty"`
+	VTTNotes         string   `json:"vtt_notes,omitempty"`
+	Tags             []string `json:"tags,omitempty"`
+	SpellNonContainerOnlyEditData
+	SkillContainerOnlyEditData
+}
+
+// SpellNonContainerOnlyEditData holds the Spell data that is only applicable to spells that aren't containers.
+type SpellNonContainerOnlyEditData struct {
+	TechLevel         *string             `json:"tech_level,omitempty"`
+	Difficulty        AttributeDifficulty `json:"difficulty,omitempty"`
+	College           CollegeList         `json:"college,omitempty"`
+	PowerSource       string              `json:"power_source,omitempty"`
+	Class             string              `json:"spell_class,omitempty"`
+	Resist            string              `json:"resist,omitempty"`
+	CastingCost       string              `json:"casting_cost,omitempty"`
+	MaintenanceCost   string              `json:"maintenance_cost,omitempty"`
+	CastingTime       string              `json:"casting_time,omitempty"`
+	Duration          string              `json:"duration,omitempty"`
+	RitualSkillName   string              `json:"base_skill,omitempty"`
+	RitualPrereqCount int                 `json:"prereq_count,omitempty"`
+	Points            fxp.Int             `json:"points,omitempty"`
+	Prereq            *PrereqList         `json:"prereqs,omitempty"`
+	Weapons           []*Weapon           `json:"weapons,omitempty"`
+	Study             []*Study            `json:"study,omitempty"`
+	StudyHoursNeeded  study.Level         `json:"study_hours_needed,omitempty"`
 }
 
 // CopyFrom implements node.EditorData.

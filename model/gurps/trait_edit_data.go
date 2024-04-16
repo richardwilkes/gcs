@@ -28,25 +28,35 @@ type TraitEditData struct {
 	PageRefHighlight string              `json:"reference_highlight,omitempty"`
 	LocalNotes       string              `json:"notes,omitempty"`
 	VTTNotes         string              `json:"vtt_notes,omitempty"`
-	Ancestry         string              `json:"ancestry,omitempty"` // Container only
 	UserDesc         string              `json:"userdesc,omitempty"`
 	Tags             []string            `json:"tags,omitempty"`
 	Modifiers        []*TraitModifier    `json:"modifiers,omitempty"`
-	BasePoints       fxp.Int             `json:"base_points,omitempty"`      // Non-container only
-	Levels           fxp.Int             `json:"levels,omitempty"`           // Non-container only
-	PointsPerLevel   fxp.Int             `json:"points_per_level,omitempty"` // Non-container only
-	Prereq           *PrereqList         `json:"prereqs,omitempty"`          // Non-container only
-	Weapons          []*Weapon           `json:"weapons,omitempty"`          // Non-container only
-	Features         Features            `json:"features,omitempty"`         // Non-container only
-	Study            []*Study            `json:"study,omitempty"`            // Non-container only
-	TemplatePicker   *TemplatePicker     `json:"template_picker,omitempty"`  // Container only
 	CR               selfctrl.Roll       `json:"cr,omitempty"`
 	CRAdj            selfctrl.Adjustment `json:"cr_adj,omitempty"`
-	ContainerType    container.Type      `json:"container_type,omitempty"`     // Container only
-	StudyHoursNeeded study.Level         `json:"study_hours_needed,omitempty"` // Non-container only
 	Disabled         bool                `json:"disabled,omitempty"`
-	RoundCostDown    bool                `json:"round_down,omitempty"` // Non-container only
-	CanLevel         bool                `json:"can_level,omitempty"`  // Non-container only
+	TraitNonContainerOnlyEditData
+	TraitContainerOnlyEditData
+}
+
+// TraitNonContainerOnlyEditData holds the Trait data that is only applicable to traits that aren't containers.
+type TraitNonContainerOnlyEditData struct {
+	BasePoints       fxp.Int     `json:"base_points,omitempty"`
+	Levels           fxp.Int     `json:"levels,omitempty"`
+	PointsPerLevel   fxp.Int     `json:"points_per_level,omitempty"`
+	Prereq           *PrereqList `json:"prereqs,omitempty"`
+	Weapons          []*Weapon   `json:"weapons,omitempty"`
+	Features         Features    `json:"features,omitempty"`
+	Study            []*Study    `json:"study,omitempty"`
+	StudyHoursNeeded study.Level `json:"study_hours_needed,omitempty"`
+	RoundCostDown    bool        `json:"round_down,omitempty"`
+	CanLevel         bool        `json:"can_level,omitempty"`
+}
+
+// TraitContainerOnlyEditData holds the Trait data that is only applicable to traits that are containers.
+type TraitContainerOnlyEditData struct {
+	Ancestry       string          `json:"ancestry,omitempty"`
+	TemplatePicker *TemplatePicker `json:"template_picker,omitempty"`
+	ContainerType  container.Type  `json:"container_type,omitempty"`
 }
 
 // CopyFrom implements node.EditorData.

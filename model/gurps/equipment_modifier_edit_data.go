@@ -21,19 +21,25 @@ var _ EditorData[*EquipmentModifier] = &EquipmentModifierEditData{}
 
 // EquipmentModifierEditData holds the EquipmentModifier data that can be edited by the UI detail editor.
 type EquipmentModifierEditData struct {
-	Name             string        `json:"name,omitempty"`
-	PageRef          string        `json:"reference,omitempty"`
-	PageRefHighlight string        `json:"reference_highlight,omitempty"`
-	LocalNotes       string        `json:"notes,omitempty"`
-	VTTNotes         string        `json:"vtt_notes,omitempty"`
-	Tags             []string      `json:"tags,omitempty"`
-	CostType         emcost.Type   `json:"cost_type,omitempty"`   // Non-container only
-	WeightType       emweight.Type `json:"weight_type,omitempty"` // Non-container only
-	Disabled         bool          `json:"disabled,omitempty"`    // Non-container only
-	TechLevel        string        `json:"tech_level,omitempty"`  // Non-container only
-	CostAmount       string        `json:"cost,omitempty"`        // Non-container only
-	WeightAmount     string        `json:"weight,omitempty"`      // Non-container only
-	Features         Features      `json:"features,omitempty"`    // Non-container only
+	Name             string   `json:"name,omitempty"`
+	PageRef          string   `json:"reference,omitempty"`
+	PageRefHighlight string   `json:"reference_highlight,omitempty"`
+	LocalNotes       string   `json:"notes,omitempty"`
+	VTTNotes         string   `json:"vtt_notes,omitempty"`
+	Tags             []string `json:"tags,omitempty"`
+	EquipmentModifierEditDataNonContainerOnly
+}
+
+// EquipmentModifierEditDataNonContainerOnly holds the EquipmentModifier data that is only applicable to
+// EquipmentModifiers that aren't containers.
+type EquipmentModifierEditDataNonContainerOnly struct {
+	CostType     emcost.Type   `json:"cost_type,omitempty"`
+	WeightType   emweight.Type `json:"weight_type,omitempty"`
+	Disabled     bool          `json:"disabled,omitempty"`
+	TechLevel    string        `json:"tech_level,omitempty"`
+	CostAmount   string        `json:"cost,omitempty"`
+	WeightAmount string        `json:"weight,omitempty"`
+	Features     Features      `json:"features,omitempty"`
 }
 
 // CopyFrom implements node.EditorData.
