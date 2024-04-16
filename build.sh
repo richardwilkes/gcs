@@ -8,15 +8,49 @@ RELEASE="0.0"
 for arg in "$@"; do
   case "$arg" in
   --all | -a)
+	BUILD_JS=1
+    BUILD_GO=1
+	BUILD_GEN=1
     LINT=1
     TEST=1
     RACE=-race
+	SOMETHING=1
     ;;
-  --dist|-d)
+  --go | -g)
+    BUILD_GO=1
+	SOMETHING=1
+	;;
+  --js | -j)
+    BUILD_JS=1
+	SOMETHING=1
+    ;;
+  --gen | -G)
+    BUILD_GEN=1
+	SOMETHING=1
+	;;
+  --lint | -l)
+    LINT=1
+	SOMETHING=1
+	;;
+  --test | -t)
+    TEST=1
+	SOMETHING=1
+	;;
+  --race | -r)
+    TEST=1
+    RACE=-race
+	SOMETHING=1
+    ;;
+  --i18n | -i)
+    I18N=1
+	SOMETHING=1
+	;;
+  --dist | -d)
     EXTRA_BUILD_FLAGS="-a -trimpath"
     EXTRA_LD_FLAGS="-s -w"
     RELEASE="5.20.4"
     DIST=1
+	SOMETHING=1
     case $(uname -s) in
     Darwin*)
       if [ "$(uname -p)" == "arm" ]; then
@@ -26,19 +60,14 @@ for arg in "$@"; do
       fi
     esac
     ;;
-  --i18n|-i) I18N=1 ;;
-  --lint | -l) LINT=1 ;;
-  --race | -r)
-    TEST=1
-    RACE=-race
-    ;;
-  --test | -t) TEST=1 ;;
-  --gen | -g) GEN_ONLY=1 ;;
   --help | -h)
     echo "$0 [options]"
-    echo "  -a, --all  Equivalent to --lint --race"
-    echo "  -d, --dist Build for distribution"
+    echo "  -a, --all  Equivalent to --gen --js --go --lint --race"
+    echo "  -d, --dist Create distribution"
+	echo "  -g, --go   Build the Go code"
+	echo "  -G, --gen  Generate the source"
     echo "  -i, --i18n Extract the localization template"
+	echo "  -j, --js   Build the JavaScript code"
     echo "  -l, --lint Run the linters"
     echo "  -r, --race Run the tests with race-checking enabled"
     echo "  -t, --test Run the tests"
@@ -52,24 +81,31 @@ for arg in "$@"; do
   esac
 done
 
+if [ "$SOMETHING"x != "1x" ]; then
+  echo -e "\033[33;5mNo options specified!\033[0m"
+  exit 1
+fi
+
 LDFLAGS_ALL="-X github.com/richardwilkes/toolbox/cmdline.AppVersion=$RELEASE $EXTRA_LD_FLAGS"
 STD_FLAGS="-v -buildvcs=true $EXTRA_BUILD_FLAGS"
 
-# Build our Svelte code
-echo -e "\033[33mBuilding the Svelte code...\033[0m"
-cd server/frontend
-npm install
-npm run build
-if [ "$LINT"x == "1x" ]; then
-  npm run lint
+# Build our JavaScript code
+if [ "$BUILD_JS"x == "1x" ]; then
+  echo -e "\033[33mBuilding the JavaScript code...\033[0m"
+  cd server/frontend
+  npm install
+  npm run build
+  if [ "$LINT"x == "1x" ]; then
+    echo -e "\033[33mLinting the JavaScript code...\033[0m"
+    npm run lint
+  fi
+  cd ../..
 fi
-cd ../..
 
 # Generate the source
-echo -e "\033[33mGenerating...\033[0m"
-go generate ./gen/enumgen.go
-if [ "$GEN_ONLY"x == "1x" ]; then
-  exit 0
+if [ "$BUILD_GEN"x == "1x" ]; then
+  echo -e "\033[33mGenerating...\033[0m"
+  go generate ./gen/enumgen.go
 fi
 
 # Generate the translation file
@@ -83,37 +119,37 @@ if [ "$I18N"x == "1x" ]; then
 fi
 
 # Build our Go code
-echo -e "\033[33mBuilding the Go code...\033[0m"
-case $(uname -s) in
-Darwin*)
-  go run $STD_FLAGS -ldflags all="$LDFLAGS_ALL" packaging/main.go
-  go build $STD_FLAGS -ldflags all="$LDFLAGS_ALL" -o "GCS.app/Contents/MacOS/" .
-  touch GCS.app
-  ;;
-Linux*)
-  go build $STD_FLAGS -ldflags all="$LDFLAGS_ALL" .
-  ;;
-MINGW*)
-  go run $STD_FLAGS -ldflags all="$LDFLAGS_ALL" packaging/main.go
-  go build $STD_FLAGS -ldflags all="$LDFLAGS_ALL -H windowsgui" .
-  ;;
-*)
-  echo "Unsupported OS"
-  false
-  ;;
-esac
-
-# Run the linters
-if [ "$LINT"x == "1x" ]; then
-  GOLANGCI_LINT_VERSION=$(curl --head -s https://github.com/golangci/golangci-lint/releases/latest | grep location: | sed 's/^.*v//' | tr -d '\r\n' )
-  TOOLS_DIR=$(go env GOPATH)/bin
-  if [ ! -e "$TOOLS_DIR/golangci-lint" ] || [ "$("$TOOLS_DIR/golangci-lint" version 2>&1 | awk '{ print $4 }' || true)x" != "${GOLANGCI_LINT_VERSION}x" ]; then
-    echo -e "\033[33mInstalling version $GOLANGCI_LINT_VERSION of golangci-lint into $TOOLS_DIR...\033[0m"
-    mkdir -p "$TOOLS_DIR"
-    curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$TOOLS_DIR" v$GOLANGCI_LINT_VERSION
+if [ "$BUILD_GO"x == "1x" ]; then
+  echo -e "\033[33mBuilding the Go code...\033[0m"
+  case $(uname -s) in
+  Darwin*)
+    go run $STD_FLAGS -ldflags all="$LDFLAGS_ALL" packaging/main.go
+    go build $STD_FLAGS -ldflags all="$LDFLAGS_ALL" -o "GCS.app/Contents/MacOS/" .
+    touch GCS.app
+    ;;
+  Linux*)
+    go build $STD_FLAGS -ldflags all="$LDFLAGS_ALL" .
+    ;;
+  MINGW*)
+    go run $STD_FLAGS -ldflags all="$LDFLAGS_ALL" packaging/main.go
+    go build $STD_FLAGS -ldflags all="$LDFLAGS_ALL -H windowsgui" .
+    ;;
+  *)
+    echo "Unsupported OS"
+    false
+    ;;
+  esac
+  if [ "$LINT"x == "1x" ]; then
+    GOLANGCI_LINT_VERSION=$(curl --head -s https://github.com/golangci/golangci-lint/releases/latest | grep location: | sed 's/^.*v//' | tr -d '\r\n' )
+    TOOLS_DIR=$(go env GOPATH)/bin
+    if [ ! -e "$TOOLS_DIR/golangci-lint" ] || [ "$("$TOOLS_DIR/golangci-lint" version 2>&1 | awk '{ print $4 }' || true)x" != "${GOLANGCI_LINT_VERSION}x" ]; then
+      echo -e "\033[33mInstalling version $GOLANGCI_LINT_VERSION of golangci-lint into $TOOLS_DIR...\033[0m"
+      mkdir -p "$TOOLS_DIR"
+      curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$TOOLS_DIR" v$GOLANGCI_LINT_VERSION
+    fi
+    echo -e "\033[33mLinting the Go code...\033[0m"
+    "$TOOLS_DIR/golangci-lint" run
   fi
-  echo -e "\033[33mLinting...\033[0m"
-  "$TOOLS_DIR/golangci-lint" run
 fi
 
 # Run the tests
