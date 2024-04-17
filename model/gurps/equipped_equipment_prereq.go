@@ -26,6 +26,7 @@ type EquippedEquipmentPrereq struct {
 	Parent       *PrereqList    `json:"-"`
 	Type         prereq.Type    `json:"type"`
 	NameCriteria StringCriteria `json:"name,omitempty"`
+	TagsCriteria StringCriteria `json:"tags,omitempty"`
 }
 
 // NewEquippedEquipmentPrereq creates a new EquippedEquipmentPrereq.
@@ -35,6 +36,11 @@ func NewEquippedEquipmentPrereq() *EquippedEquipmentPrereq {
 		NameCriteria: StringCriteria{
 			StringCriteriaData: StringCriteriaData{
 				Compare: IsString,
+			},
+		},
+		TagsCriteria: StringCriteria{
+			StringCriteriaData: StringCriteriaData{
+				Compare: AnyString,
 			},
 		},
 	}
@@ -60,24 +66,29 @@ func (e *EquippedEquipmentPrereq) Clone(parent *PrereqList) Prereq {
 // FillWithNameableKeys implements Prereq.
 func (e *EquippedEquipmentPrereq) FillWithNameableKeys(m map[string]string) {
 	Extract(e.NameCriteria.Qualifier, m)
+	Extract(e.TagsCriteria.Qualifier, m)
 }
 
 // ApplyNameableKeys implements Prereq.
 func (e *EquippedEquipmentPrereq) ApplyNameableKeys(m map[string]string) {
 	e.NameCriteria.Qualifier = Apply(e.NameCriteria.Qualifier, m)
+	e.TagsCriteria.Qualifier = Apply(e.TagsCriteria.Qualifier, m)
 }
 
 // Satisfied implements Prereq.
 func (e *EquippedEquipmentPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string, hasEquipmentPenalty *bool) bool {
 	satisfied := false
 	Traverse(func(eqp *Equipment) bool {
-		satisfied = exclude != eqp && eqp.Equipped && eqp.Quantity > 0 && e.NameCriteria.Matches(eqp.Name)
+		satisfied = exclude != eqp && eqp.Equipped && eqp.Quantity > 0 && e.NameCriteria.Matches(eqp.Name) &&
+			e.TagsCriteria.MatchesList(eqp.Tags...)
 		return satisfied
 	}, false, false, entity.CarriedEquipment...)
 	if !satisfied {
 		*hasEquipmentPenalty = true
 		if tooltip != nil {
-			fmt.Fprintf(tooltip, i18n.Text("%sHas equipment which is equipped and whose name %s"), prefix, e.NameCriteria.String())
+			fmt.Fprintf(tooltip, i18n.Text("%sHas equipment which is equipped and whose name %s %s"),
+				prefix, e.NameCriteria.String(),
+				e.TagsCriteria.StringWithPrefix(i18n.Text("and at least one tag"), i18n.Text("and all tags")))
 		}
 	}
 	return satisfied

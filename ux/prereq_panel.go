@@ -404,7 +404,6 @@ func (p *prereqPanel) createEquippedEquipmentPrereqPanel(depth int, pr *gurps.Eq
 	if inFront {
 		p.addAndOr(panel, pr)
 	}
-	// addHasPopup(panel, &pr.Has)
 	p.addPrereqTypeSwitcher(panel, depth, pr)
 	if !inFront {
 		p.addAndOr(panel, pr)
@@ -416,6 +415,7 @@ func (p *prereqPanel) createEquippedEquipmentPrereqPanel(depth int, pr *gurps.Eq
 		VSpacing: unison.StdVSpacing,
 	})
 	addNameCriteriaPanel(panel, &pr.NameCriteria, columns-1, true)
+	addTagCriteriaPanel(panel, &pr.TagsCriteria, columns-1, true)
 	return panel
 }
 

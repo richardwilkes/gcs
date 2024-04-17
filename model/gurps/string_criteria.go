@@ -67,3 +67,8 @@ func (s StringCriteria) MatchesList(value ...string) bool {
 func (s StringCriteria) String() string {
 	return s.Compare.Describe(s.Qualifier)
 }
+
+// StringWithPrefix returns a string representation of this criteria with a prefix.
+func (s StringCriteria) StringWithPrefix(prefix, notPrefix string) string {
+	return s.Compare.DescribeWithPrefix(prefix, notPrefix, s.Qualifier)
+}

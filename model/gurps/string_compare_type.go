@@ -107,6 +107,21 @@ func (s StringCompareType) Describe(qualifier string) string {
 	return v.String() + ` "` + qualifier + `"`
 }
 
+// DescribeWithPrefix returns a description of this StringCompareType using a qualifier and prefix.
+func (s StringCompareType) DescribeWithPrefix(prefix, notPrefix, qualifier string) string {
+	v := s.EnsureValid()
+	var info string
+	if prefix == notPrefix || !s.IsNotType() {
+		info = prefix + " " + v.String()
+	} else {
+		info = notPrefix + " " + v.AltString()
+	}
+	if v == AnyString {
+		return info
+	}
+	return info + ` "` + qualifier + `"`
+}
+
 // Matches performs a comparison and returns true if the data matches.
 func (s StringCompareType) Matches(qualifier, data string) bool {
 	switch s {
@@ -133,6 +148,11 @@ func (s StringCompareType) Matches(qualifier, data string) bool {
 	}
 }
 
+// IsNotType returns true if this is a "not" type.
+func (s StringCompareType) IsNotType() bool {
+	return s == IsNotString || s == DoesNotContainString || s == DoesNotStartWithString || s == DoesNotEndWithString
+}
+
 // ExtractStringCompareTypeIndex extracts the index from a string.
 func ExtractStringCompareTypeIndex(str string) int {
 	for i, one := range AllStringCompareTypes {
@@ -147,7 +167,7 @@ func ExtractStringCompareTypeIndex(str string) int {
 func PrefixedStringCompareTypeChoices(prefix, notPrefix string) []string {
 	choices := make([]string, len(AllStringCompareTypes))
 	for i, choice := range AllStringCompareTypes {
-		if prefix == notPrefix || choice == AnyString || choice == IsString || choice == ContainsString || choice == StartsWithString || choice == EndsWithString {
+		if prefix == notPrefix || !choice.IsNotType() {
 			choices[i] = prefix + " " + choice.String()
 		} else {
 			choices[i] = notPrefix + " " + choice.AltString()
