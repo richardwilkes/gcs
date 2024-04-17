@@ -12,6 +12,8 @@
 package selfctrl
 
 import (
+	"fmt"
+
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/i18n"
 )
@@ -20,8 +22,14 @@ import (
 const (
 	NoCR = Roll(0)
 	CR6  = Roll(6)
+	CR7  = Roll(7)
+	CR8  = Roll(8)
 	CR9  = Roll(9)
+	CR10 = Roll(10)
+	CR11 = Roll(11)
 	CR12 = Roll(12)
+	CR13 = Roll(13)
+	CR14 = Roll(14)
 	CR15 = Roll(15)
 )
 
@@ -29,8 +37,14 @@ const (
 var Rolls = []Roll{
 	NoCR,
 	CR6,
+	CR7,
+	CR8,
 	CR9,
+	CR10,
+	CR11,
 	CR12,
+	CR13,
+	CR14,
 	CR15,
 }
 
@@ -70,6 +84,8 @@ func (s Roll) String() string {
 		return i18n.Text("CR: 12 (Resist quite often)")
 	case CR15:
 		return i18n.Text("CR: 15 (Resist almost all the time)")
+	case CR7, CR8, CR10, CR11, CR13, CR14:
+		return fmt.Sprintf(i18n.Text("CR: %d (non-standard)"), s)
 	default:
 		return NoCR.String()
 	}
@@ -91,10 +107,22 @@ func (s Roll) Multiplier() fxp.Int {
 		return fxp.One
 	case CR6:
 		return fxp.Two
+	case CR7:
+		return fxp.FromStringForced("1.83")
+	case CR8:
+		return fxp.FromStringForced("1.67")
 	case CR9:
 		return fxp.OneAndAHalf
+	case CR10:
+		return fxp.FromStringForced("1.33")
+	case CR11:
+		return fxp.FromStringForced("1.17")
 	case CR12:
 		return fxp.One
+	case CR13:
+		return fxp.FromStringForced("0.83")
+	case CR14:
+		return fxp.FromStringForced("0.67")
 	case CR15:
 		return fxp.Half
 	default:
@@ -105,4 +133,40 @@ func (s Roll) Multiplier() fxp.Int {
 // MinimumRoll returns the minimum roll to retain control.
 func (s Roll) MinimumRoll() int {
 	return int(s.EnsureValid())
+}
+
+// TreatAs returns the standard CR equivalent value for this roll.
+func (s Roll) TreatAs() Roll {
+	switch s {
+	case NoCR, CR6, CR9, CR12, CR15:
+		return s
+	case CR7:
+		return CR6
+	case CR8, CR10:
+		return CR9
+	case CR11, CR13:
+		return CR12
+	case CR14:
+		return CR15
+	default:
+		return NoCR
+	}
+}
+
+// Penalty returns the general penalty for this roll.
+func (s Roll) Penalty() int {
+	switch s.TreatAs() {
+	case NoCR:
+		return 0
+	case CR6:
+		return -4
+	case CR9:
+		return -3
+	case CR12:
+		return -2
+	case CR15:
+		return -1
+	default:
+		return 0
+	}
 }

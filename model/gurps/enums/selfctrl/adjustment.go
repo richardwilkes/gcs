@@ -22,17 +22,17 @@ func (enum Adjustment) Adjustment(cr Roll) int {
 	case NoCRAdj:
 		return 0
 	case ActionPenalty:
-		return cr.Index() - len(Rolls)
+		return cr.Penalty()
 	case ReactionPenalty:
-		return cr.Index() - len(Rolls)
+		return cr.Penalty()
 	case FrightCheckPenalty:
-		return cr.Index() - len(Rolls)
+		return cr.Penalty()
 	case FrightCheckBonus:
-		return len(Rolls) - cr.Index()
+		return -cr.Penalty()
 	case MinorCostOfLivingIncrease:
-		return 5 * (len(Rolls) - cr.Index())
+		return -cr.Penalty() * 5
 	case MajorCostOfLivingIncrease:
-		return 10 * (1 << (len(Rolls) - (cr.Index() + 1)))
+		return 10 * (1 << (-(cr.Penalty() + 1)))
 	default:
 		return NoCRAdj.Adjustment(cr)
 	}

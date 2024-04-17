@@ -53,6 +53,6 @@ func FeaturesForSelfControlRoll(cr selfctrl.Roll, adj selfctrl.Adjustment) Featu
 	}
 	f := NewSkillBonus()
 	f.NameCriteria.Qualifier = "Merchant"
-	f.Amount = fxp.From(cr.Index() - len(selfctrl.Rolls))
+	f.Amount = fxp.From(cr.Penalty())
 	return Features{f}
 }
