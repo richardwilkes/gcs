@@ -693,7 +693,7 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 	case WeaponParryColumn:
 		parry := w.Parry.Resolve(w, &buffer)
 		data.Primary = parry.String()
-		data.Tooltip = parry.Tooltip(w)
+		data.Tooltip = parry.Tooltip()
 	case WeaponBlockColumn:
 		data.Primary = w.Block.Resolve(w, &buffer).String()
 	case WeaponDamageColumn:

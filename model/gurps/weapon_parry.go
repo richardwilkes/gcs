@@ -157,7 +157,7 @@ func (wp WeaponParry) String() string {
 
 // Tooltip returns a tooltip for the data, if any. Call .Resolve() prior to calling this method if you want the tooltip
 // to be based on the resolved values.
-func (wp WeaponParry) Tooltip(w *Weapon) string {
+func (wp WeaponParry) Tooltip() string {
 	if !wp.CanParry || (!wp.Fencing && !wp.Unbalanced) {
 		return ""
 	}
@@ -169,7 +169,7 @@ func (wp WeaponParry) Tooltip(w *Weapon) string {
 		if buffer.Len() != 0 {
 			buffer.WriteString("\n\n")
 		}
-		fmt.Fprintf(&buffer, i18n.Text("U: Unbalanced weapon. You cannot use it to parry if you have already used it to attack this turn (or vice-versa) unless your current ST is %v or greater."), w.Strength.Resolve(w, nil).Min.Mul(fxp.OneAndAHalf).Ceil())
+		buffer.WriteString("U: Unbalanced weapon. You cannot use it to parry if you have already used it to attack this turn (or vice-versa).")
 	}
 	return buffer.String()
 }
