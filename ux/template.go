@@ -165,6 +165,7 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 	}
 
 	d.toolbar = unison.NewPanel()
+	d.AddChild(d.toolbar)
 	d.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	d.toolbar.SetLayoutData(&unison.FlexLayoutData{
@@ -204,7 +205,6 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 		HSpacing: unison.StdHSpacing,
 	})
 
-	d.AddChild(d.toolbar)
 	d.AddChild(d.scroll)
 
 	d.InstallCmdHandlers(SaveItemID, func(_ any) bool { return d.Modified() }, func(_ any) { d.save(false) })

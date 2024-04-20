@@ -75,6 +75,10 @@ func installSearchTracker(toolbar *unison.Panel, clearTableSelections func(), fi
 	toolbar.AddChild(s.forwardButton)
 	toolbar.AddChild(s.searchField)
 	toolbar.AddChild(s.matchesLabel)
+
+	toolbar.Parent().InstallCmdHandlers(JumpToSearchFilterItemID,
+		func(any) bool { return !s.searchField.Focused() },
+		func(any) { s.searchField.RequestFocus() })
 }
 
 func (s *searchTracker) searchModified(_, after *unison.FieldState) {

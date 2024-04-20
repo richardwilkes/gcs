@@ -120,6 +120,10 @@ func newNavigator() *Navigator {
 	n.table.SelectionChangedCallback = n.selectionChanged
 	n.table.KeyDownCallback = n.tableKeyDown
 
+	n.InstallCmdHandlers(JumpToSearchFilterItemID,
+		func(any) bool { return !n.searchField.Focused() },
+		func(any) { n.searchField.RequestFocus() })
+
 	n.selectionChanged()
 	return n
 }

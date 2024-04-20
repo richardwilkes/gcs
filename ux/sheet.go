@@ -214,6 +214,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	calcButton.ClickCallback = func() { DisplayCalculator(s) }
 
 	s.toolbar = unison.NewPanel()
+	s.AddChild(s.toolbar)
 	s.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	s.toolbar.SetLayoutData(&unison.FlexLayoutData{
@@ -264,7 +265,6 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 		HSpacing: unison.StdHSpacing,
 	})
 
-	s.AddChild(s.toolbar)
 	s.AddChild(s.scroll)
 
 	s.InstallCmdHandlers(SaveItemID, func(_ any) bool { return s.Modified() }, func(_ any) { s.save(false) })
@@ -292,7 +292,6 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	s.InstallCmdHandlers(ExportAsJPEGItemID, unison.AlwaysEnabled, func(_ any) { s.exportToJPEG() })
 	s.InstallCmdHandlers(PrintItemID, unison.AlwaysEnabled, func(_ any) { s.print() })
 	s.InstallCmdHandlers(ClearPortraitItemID, s.canClearPortrait, s.clearPortrait)
-
 	return s
 }
 

@@ -54,6 +54,7 @@ var (
 	exportAsPDFAction                  *unison.Action
 	exportAsPNGAction                  *unison.Action
 	exportAsWEBPAction                 *unison.Action
+	jumpToSearchFilterAction           *unison.Action
 	fontSettingsAction                 *unison.Action
 	generalSettingsAction              *unison.Action
 	webSettingsAction                  *unison.Action
@@ -315,6 +316,13 @@ func registerActions() {
 	exportAsWEBPAction = registerKeyBindableAction("export.webp", &unison.Action{
 		ID:              ExportAsWEBPItemID,
 		Title:           i18n.Text("WEBP"),
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
+	})
+	jumpToSearchFilterAction = registerKeyBindableAction("jump-to-search", &unison.Action{
+		ID:              JumpToSearchFilterItemID,
+		Title:           i18n.Text("Jump to Search/Filter Field"),
+		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyJ, Modifiers: unison.OSMenuCmdModifier()},
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})

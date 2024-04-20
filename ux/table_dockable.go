@@ -132,6 +132,9 @@ func NewTableDockable[T gurps.NodeTypes](filePath, extension string, provider Ta
 	d.InstallCmdHandlers(DuplicateItemID,
 		func(_ any) bool { return !d.table.IsFiltered() && d.table.HasSelection() },
 		func(_ any) { DuplicateSelection(d.table) })
+	d.InstallCmdHandlers(JumpToSearchFilterItemID,
+		func(any) bool { return !d.filterField.Focused() },
+		func(any) { d.filterField.RequestFocus() })
 	for _, id := range canCreateIDs {
 		variant := ItemVariant(-1)
 		switch {
