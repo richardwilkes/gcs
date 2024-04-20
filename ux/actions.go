@@ -32,45 +32,44 @@ var licenseMarkdownContent string
 
 // These actions are registered for key bindings.
 var (
-	addNaturalAttacksAction            *unison.Action
-	applyTemplateAction                *unison.Action
-	clearPortraitAction                *unison.Action
-	closeTabAction                     *unison.Action
-	colorSettingsAction                *unison.Action
-	convertToContainerAction           *unison.Action
-	convertToNonContainerAction        *unison.Action
-	copyToSheetAction                  *unison.Action
-	copyToTemplateAction               *unison.Action
-	decreaseSkillLevelAction           *unison.Action
-	decreaseTechLevelAction            *unison.Action
-	decreaseUsesAction                 *unison.Action
-	decrementAction                    *unison.Action
-	defaultAttributeSettingsAction     *unison.Action
-	defaultBodyTypeSettingsAction      *unison.Action
-	defaultSheetSettingsAction         *unison.Action
-	dockUnDockAction                   *unison.Action
-	duplicateAction                    *unison.Action
-	exportAsJPEGAction                 *unison.Action
-	exportAsPDFAction                  *unison.Action
-	exportAsPNGAction                  *unison.Action
-	exportAsWEBPAction                 *unison.Action
-	jumpToSearchFilterAction           *unison.Action
-	fontSettingsAction                 *unison.Action
-	generalSettingsAction              *unison.Action
-	webSettingsAction                  *unison.Action
-	increaseSkillLevelAction           *unison.Action
-	increaseTechLevelAction            *unison.Action
-	increaseUsesAction                 *unison.Action
-	incrementAction                    *unison.Action
-	menuKeySettingsAction              *unison.Action
-	moveToCarriedEquipmentAction       *unison.Action
-	moveToOtherEquipmentAction         *unison.Action
-	newCarriedEquipmentAction          *unison.Action
-	newCarriedEquipmentContainerAction *unison.Action
-	newCharacterSheetAction            *unison.Action
-	newCharacterTemplateAction         *unison.Action
+	addNaturalAttacksAction        *unison.Action
+	applyTemplateAction            *unison.Action
+	clearPortraitAction            *unison.Action
+	closeTabAction                 *unison.Action
+	colorSettingsAction            *unison.Action
+	convertToContainerAction       *unison.Action
+	convertToNonContainerAction    *unison.Action
+	copyToSheetAction              *unison.Action
+	copyToTemplateAction           *unison.Action
+	decreaseSkillLevelAction       *unison.Action
+	decreaseTechLevelAction        *unison.Action
+	decreaseUsesAction             *unison.Action
+	decrementAction                *unison.Action
+	defaultAttributeSettingsAction *unison.Action
+	defaultBodyTypeSettingsAction  *unison.Action
+	defaultSheetSettingsAction     *unison.Action
+	dockUnDockAction               *unison.Action
+	duplicateAction                *unison.Action
+	exportAsJPEGAction             *unison.Action
+	exportAsPDFAction              *unison.Action
+	exportAsPNGAction              *unison.Action
+	exportAsWEBPAction             *unison.Action
+	fontSettingsAction             *unison.Action
+	generalSettingsAction          *unison.Action
+	increaseSkillLevelAction       *unison.Action
+	increaseTechLevelAction        *unison.Action
+	increaseUsesAction             *unison.Action
+	incrementAction                *unison.Action
+	jumpToSearchFilterAction       *unison.Action
+	menuKeySettingsAction          *unison.Action
+	moveToCarriedEquipmentAction   *unison.Action
+	moveToOtherEquipmentAction     *unison.Action
 	// TODO: Re-enable Campaign files
 	// newCampaignAction                   *unison.Action
+	newCarriedEquipmentAction           *unison.Action
+	newCarriedEquipmentContainerAction  *unison.Action
+	newCharacterSheetAction             *unison.Action
+	newCharacterTemplateAction          *unison.Action
 	newEquipmentContainerModifierAction *unison.Action
 	newEquipmentLibraryAction           *unison.Action
 	newEquipmentModifierAction          *unison.Action
@@ -110,21 +109,22 @@ var (
 	redoAction                          *unison.Action
 	saveAction                          *unison.Action
 	saveAsAction                        *unison.Action
-	scale25Action                       *unison.Action
-	scale50Action                       *unison.Action
-	scale75Action                       *unison.Action
 	scale100Action                      *unison.Action
 	scale200Action                      *unison.Action
+	scale25Action                       *unison.Action
 	scale300Action                      *unison.Action
 	scale400Action                      *unison.Action
 	scale500Action                      *unison.Action
+	scale50Action                       *unison.Action
 	scale600Action                      *unison.Action
+	scale75Action                       *unison.Action
 	scaleDefaultAction                  *unison.Action
 	scaleDownAction                     *unison.Action
 	scaleUpAction                       *unison.Action
 	swapDefaultsAction                  *unison.Action
 	toggleStateAction                   *unison.Action
 	undoAction                          *unison.Action
+	webSettingsAction                   *unison.Action
 )
 
 // These actions aren't registered for key bindings.
