@@ -59,6 +59,9 @@ func startHandoffService(pathsChan chan<- []string, paths []string) {
 func handoff(conn net.Conn, pathsBuffer []byte) bool {
 	defer xio.CloseIgnoringErrors(conn)
 	buffer := make([]byte, len(cmdline.AppIdentifier))
+	if err := conn.SetDeadline(time.Now().Add(time.Second)); err != nil {
+		return false
+	}
 	if n, err := conn.Read(buffer); err != nil || n != len(buffer) || !bytes.Equal(buffer, []byte(cmdline.AppIdentifier)) {
 		return false
 	}
@@ -86,6 +89,9 @@ func acceptHandoff(listener net.Listener, pathsChan chan<- []string) {
 
 func processHandoff(conn net.Conn, pathsChan chan<- []string) {
 	defer xio.CloseIgnoringErrors(conn)
+	if err := conn.SetDeadline(time.Now().Add(time.Second)); err != nil {
+		return
+	}
 	if _, err := conn.Write([]byte(cmdline.AppIdentifier)); err != nil {
 		return
 	}
