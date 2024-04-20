@@ -27,6 +27,7 @@ import (
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
+	"github.com/richardwilkes/unison/enums/check"
 )
 
 var (
@@ -51,6 +52,7 @@ type TableDockable[T gurps.NodeTypes] struct {
 	sizeToFitButton   *unison.Button
 	filterPopup       *unison.PopupMenu[string]
 	filterField       *unison.Field
+	namesOnlyCheckBox *unison.CheckBox
 	scroll            *unison.ScrollPanel
 	tableHeader       *unison.TableHeader[*Node[T]]
 	table             *unison.Table[*Node[T]]
@@ -169,6 +171,10 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 		d.ApplyFilter(SelectedTags(d.filterPopup))
 	})
 
+	d.namesOnlyCheckBox = unison.NewCheckBox()
+	d.namesOnlyCheckBox.Text = i18n.Text("Names Only")
+	d.namesOnlyCheckBox.ClickCallback = func() { d.ApplyFilter(SelectedTags(d.filterPopup)) }
+
 	toolbar := unison.NewPanel()
 	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
@@ -188,6 +194,7 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	toolbar.AddChild(d.hierarchyButton)
 	toolbar.AddChild(d.sizeToFitButton)
 	toolbar.AddChild(d.filterField)
+	toolbar.AddChild(d.namesOnlyCheckBox)
 	toolbar.AddChild(d.filterPopup)
 	toolbar.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
@@ -371,11 +378,17 @@ func (d *TableDockable[T]) AllTags() []string {
 // ApplyFilter applies the current filtering, if any.
 func (d *TableDockable[T]) ApplyFilter(tags []string) {
 	if d.filterField != nil {
-		text := strings.TrimSpace(d.filterField.GetFieldState().Text)
+		text := strings.ToLower(strings.TrimSpace(d.filterField.GetFieldState().Text))
 		var f func(row *Node[T]) bool
 		if len(tags) != 0 || text != "" {
 			f = func(row *Node[T]) bool {
-				if row.PartialMatchExceptTag(text) {
+				match := false
+				if d.namesOnlyCheckBox.State == check.On {
+					match = strings.Contains(strings.ToLower(row.dataAsNode.String()), text)
+				} else {
+					match = row.PartialMatchExceptTag(text)
+				}
+				if match {
 					for _, tag := range tags {
 						if !row.HasTag(tag) {
 							return true

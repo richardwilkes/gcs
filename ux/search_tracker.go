@@ -19,6 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/check"
 )
 
 type searchRef struct {
@@ -28,16 +29,17 @@ type searchRef struct {
 
 type searchTracker struct {
 	clearTableSelections func()
-	findMatches          func(refList *[]*searchRef, text string)
+	findMatches          func(refList *[]*searchRef, text string, namesOnly bool)
 	backButton           *unison.Button
 	forwardButton        *unison.Button
 	matchesLabel         *unison.Label
 	searchField          *unison.Field
+	namesOnlyCheckBox    *unison.CheckBox
 	searchResult         []*searchRef
 	searchIndex          int
 }
 
-func installSearchTracker(toolbar *unison.Panel, clearTableSelections func(), findMatches func(refList *[]*searchRef, text string)) {
+func installSearchTracker(toolbar *unison.Panel, clearTableSelections func(), findMatches func(refList *[]*searchRef, text string, namesOnly bool)) {
 	s := &searchTracker{
 		clearTableSelections: clearTableSelections,
 		findMatches:          findMatches,
@@ -67,6 +69,10 @@ func installSearchTracker(toolbar *unison.Panel, clearTableSelections func(), fi
 		return s.searchField.DefaultKeyDown(keyCode, mod, repeat)
 	}
 
+	s.namesOnlyCheckBox = unison.NewCheckBox()
+	s.namesOnlyCheckBox.Text = i18n.Text("Names Only")
+	s.namesOnlyCheckBox.ClickCallback = func() { s.doSearch(s.searchField.Text()) }
+
 	s.matchesLabel = unison.NewLabel()
 	s.matchesLabel.Text = i18n.Text("0 of 0")
 	s.matchesLabel.Tooltip = newWrappedTooltip(i18n.Text("Number of matches found"))
@@ -75,6 +81,7 @@ func installSearchTracker(toolbar *unison.Panel, clearTableSelections func(), fi
 	toolbar.AddChild(s.forwardButton)
 	toolbar.AddChild(s.searchField)
 	toolbar.AddChild(s.matchesLabel)
+	toolbar.AddChild(s.namesOnlyCheckBox)
 
 	toolbar.Parent().InstallCmdHandlers(JumpToSearchFilterItemID,
 		func(any) bool { return !s.searchField.Focused() },
@@ -82,28 +89,43 @@ func installSearchTracker(toolbar *unison.Panel, clearTableSelections func(), fi
 }
 
 func (s *searchTracker) searchModified(_, after *unison.FieldState) {
+	s.doSearch(after.Text)
+}
+
+func (s *searchTracker) doSearch(text string) {
 	s.searchIndex = 0
 	s.searchResult = nil
-	s.findMatches(&s.searchResult, strings.ToLower(after.Text))
+	s.findMatches(&s.searchResult, strings.ToLower(text), s.namesOnlyCheckBox.State == check.On)
 	s.adjustForMatch()
 }
 
-func searchSheetTable[T gurps.NodeTypes](refList *[]*searchRef, text string, pageList *PageList[T]) {
+func searchSheetTable[T gurps.NodeTypes](refList *[]*searchRef, text string, namesOnly bool, pageList *PageList[T]) {
 	for _, row := range pageList.Table.RootRows() {
-		searchSheetTableRows(refList, text, pageList.Table, row)
+		searchSheetTableRows(refList, text, namesOnly, pageList.Table, row)
 	}
 }
 
-func searchSheetTableRows[T gurps.NodeTypes](refList *[]*searchRef, text string, table *unison.Table[*Node[T]], row *Node[T]) {
-	if row.Match(text) {
-		*refList = append(*refList, &searchRef{
-			table: table,
-			row:   row,
-		})
+func searchSheetTableRows[T gurps.NodeTypes](refList *[]*searchRef, text string, namesOnly bool, table *unison.Table[*Node[T]], row *Node[T]) {
+	if text != "" {
+		if namesOnly {
+			if strings.Contains(strings.ToLower(row.dataAsNode.String()), text) {
+				*refList = append(*refList, &searchRef{
+					table: table,
+					row:   row,
+				})
+			}
+		} else {
+			if row.Match(text) {
+				*refList = append(*refList, &searchRef{
+					table: table,
+					row:   row,
+				})
+			}
+		}
 	}
 	if row.CanHaveChildren() {
 		for _, child := range row.Children() {
-			searchSheetTableRows(refList, text, table, child)
+			searchSheetTableRows(refList, text, namesOnly, table, child)
 		}
 	}
 }

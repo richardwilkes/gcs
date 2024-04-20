@@ -252,13 +252,13 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 		s.CarriedEquipment.Table.ClearSelection()
 		s.OtherEquipment.Table.ClearSelection()
 		s.Notes.Table.ClearSelection()
-	}, func(refList *[]*searchRef, text string) {
-		searchSheetTable(refList, text, s.Traits)
-		searchSheetTable(refList, text, s.Skills)
-		searchSheetTable(refList, text, s.Spells)
-		searchSheetTable(refList, text, s.CarriedEquipment)
-		searchSheetTable(refList, text, s.OtherEquipment)
-		searchSheetTable(refList, text, s.Notes)
+	}, func(refList *[]*searchRef, text string, namesOnly bool) {
+		searchSheetTable(refList, text, namesOnly, s.Traits)
+		searchSheetTable(refList, text, namesOnly, s.Skills)
+		searchSheetTable(refList, text, namesOnly, s.Spells)
+		searchSheetTable(refList, text, namesOnly, s.CarriedEquipment)
+		searchSheetTable(refList, text, namesOnly, s.OtherEquipment)
+		searchSheetTable(refList, text, namesOnly, s.Notes)
 	})
 	s.toolbar.SetLayout(&unison.FlexLayout{
 		Columns:  len(s.toolbar.Children()),

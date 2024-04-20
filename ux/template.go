@@ -193,12 +193,12 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 		d.Spells.Table.ClearSelection()
 		d.Equipment.Table.ClearSelection()
 		d.Notes.Table.ClearSelection()
-	}, func(refList *[]*searchRef, text string) {
-		searchSheetTable(refList, text, d.Traits)
-		searchSheetTable(refList, text, d.Skills)
-		searchSheetTable(refList, text, d.Spells)
-		searchSheetTable(refList, text, d.Equipment)
-		searchSheetTable(refList, text, d.Notes)
+	}, func(refList *[]*searchRef, text string, namesOnly bool) {
+		searchSheetTable(refList, text, namesOnly, d.Traits)
+		searchSheetTable(refList, text, namesOnly, d.Skills)
+		searchSheetTable(refList, text, namesOnly, d.Spells)
+		searchSheetTable(refList, text, namesOnly, d.Equipment)
+		searchSheetTable(refList, text, namesOnly, d.Notes)
 	})
 	d.toolbar.SetLayout(&unison.FlexLayout{
 		Columns:  len(d.toolbar.Children()),
