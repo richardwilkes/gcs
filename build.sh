@@ -48,7 +48,7 @@ for arg in "$@"; do
   --dist | -d)
     EXTRA_BUILD_FLAGS="-a -trimpath"
     EXTRA_LD_FLAGS="-s -w"
-    RELEASE="5.20.4"
+    RELEASE="5.21.0"
     DIST=1
 	SOMETHING=1
     case $(uname -s) in
