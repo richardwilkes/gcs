@@ -50,6 +50,9 @@ for arg in "$@"; do
     EXTRA_LD_FLAGS="-s -w"
     RELEASE="5.21.0"
     DIST=1
+	BUILD_JS=1
+    BUILD_GO=1
+	BUILD_GEN=1
 	SOMETHING=1
     case $(uname -s) in
     Darwin*)
