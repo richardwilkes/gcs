@@ -8,7 +8,7 @@
   - This Source Code Form is "Incompatible With Secondary Licenses", as
   - defined by the Mozilla Public License, version 2.0.
   -->
-<script lang='ts'>
+<script lang="ts">
 	export let style = '';
 	export let tip = '';
 	export let right = false;
@@ -17,6 +17,7 @@
 	export let noBottomBorder = false;
 	export let editable = false;
 	export let multiLine = false;
+	export let strikeout = false;
 
 	interface FieldElement extends HTMLDivElement {
 		suppressSelectAll?: boolean;
@@ -67,7 +68,9 @@
 					let pos = text.length - Math.min(text.length, contentPriorToDrop.length);
 					if (text !== contentPriorToDrop) {
 						for (let i = 0; i < text.length && i < contentPriorToDrop.length; i++) {
-							if (text[text.length - (i + 1)] != contentPriorToDrop[contentPriorToDrop.length - (i + 1)]) {
+							if (
+								text[text.length - (i + 1)] != contentPriorToDrop[contentPriorToDrop.length - (i + 1)]
+							) {
 								pos = text.length - i;
 								break;
 							}
@@ -105,7 +108,7 @@
 		}
 	}
 
-	function focusOut(_ : FocusEvent) {
+	function focusOut(_: FocusEvent) {
 		field.suppressSelectAll = false;
 	}
 
@@ -115,10 +118,28 @@
 </script>
 
 <!-- svelte-ignore a11y-interactive-supports-focus -->
-<div class='field' bind:this={field} class:right class:center class:editable class:noBottomBorder class:wrap {style}
-		 role='textbox'
-		 contenteditable={editable ? 'plaintext-only' : 'false'} title={tip} on:keydown={filterKey} on:paste={filterPaste}
-		 on:drop={filterDrag} on:input={filterInput} on:blur on:keydown={keyDown} on:mousedown={mouseDown} on:focusin={focusIn} on:focusout={focusOut}>
+<div
+	class="field"
+	bind:this={field}
+	class:right
+	class:center
+	class:editable
+	class:noBottomBorder
+	class:wrap
+	class:strikeout
+	{style}
+	role="textbox"
+	contenteditable={editable ? 'plaintext-only' : 'false'}
+	title={tip}
+	on:keydown={filterKey}
+	on:paste={filterPaste}
+	on:drop={filterDrag}
+	on:input={filterInput}
+	on:blur
+	on:keydown={keyDown}
+	on:mousedown={mouseDown}
+	on:focusin={focusIn}
+	on:focusout={focusOut}>
 	<slot />
 </div>
 
@@ -157,5 +178,10 @@
 
 	.wrap {
 		white-space: normal;
+	}
+
+	.strikeout {
+		text-decoration: line-through;
+		opacity: 33%;
 	}
 </style>

@@ -30,7 +30,8 @@
 		right={cell.Alignment === 'end'}
 		center={cell.Alignment === 'middle'}
 		noBottomBorder
-		wrap={column.Primary}>
+		wrap={column.Primary}
+		strikeout={cell.Disabled}>
 		{#if cell.Type === 'toggle'}
 			{#if cell.Checked}
 				<div class="icon">
