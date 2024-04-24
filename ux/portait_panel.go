@@ -29,7 +29,8 @@ import (
 // PortraitPanel holds the contents of the portrait block on the sheet.
 type PortraitPanel struct {
 	unison.Panel
-	entity *gurps.Entity
+	entity      *gurps.Entity
+	mouseIsOver bool
 }
 
 // NewPortraitPanel creates a new portrait panel.
@@ -38,10 +39,19 @@ func NewPortraitPanel(entity *gurps.Entity) *PortraitPanel {
 	p.Self = p
 	p.SetLayoutData(&unison.FlexLayoutData{VSpan: 2})
 	p.SetBorder(&TitledBorder{Title: i18n.Text("Portrait")})
-	p.Tooltip = newWrappedTooltip(i18n.Text(`Double-click to set a character portrait, or drag an image onto this block.`))
 	p.DrawCallback = p.drawSelf
 	p.FileDropCallback = p.fileDrop
 	p.MouseDownCallback = p.mouseDown
+	p.MouseEnterCallback = func(_ unison.Point, _ unison.Modifiers) bool {
+		p.mouseIsOver = true
+		p.MarkForRedraw()
+		return false
+	}
+	p.MouseExitCallback = func() bool {
+		p.mouseIsOver = false
+		p.MarkForRedraw()
+		return false
+	}
 	return p
 }
 
@@ -51,26 +61,45 @@ func (p *PortraitPanel) drawSelf(gc *unison.Canvas, _ unison.Rect) {
 	gc.DrawRect(r, paint)
 	if img := p.entity.Profile.Portrait(); img != nil {
 		size := img.LogicalSize()
-		if size != r.Size {
+		pr := r
+		if size != pr.Size {
 			var scale float32
 			if size.Width > size.Height {
-				scale = r.Width / size.Width
+				scale = pr.Width / size.Width
 			} else {
-				scale = r.Height / size.Height
+				scale = pr.Height / size.Height
 			}
 			width := size.Width * scale
-			r.X += (r.Width - width) / 2
-			r.Width = width
+			pr.X += (pr.Width - width) / 2
+			pr.Width = width
 			height := size.Height * scale
-			r.Y += (r.Height - height) / 2
-			r.Height = height
+			pr.Y += (pr.Height - height) / 2
+			pr.Height = height
 		}
-		img.DrawInRect(gc, r, &unison.SamplingOptions{
+		img.DrawInRect(gc, pr, &unison.SamplingOptions{
 			UseCubic:       true,
 			CubicResampler: unison.MitchellResampler(),
 			FilterMode:     filtermode.Linear,
 			MipMapMode:     mipmapmode.Linear,
 		}, paint)
+	}
+	if p.mouseIsOver {
+		gc.DrawRect(r, unison.Black.SetAlphaIntensity(0.3).Paint(gc, r, paintstyle.Fill))
+		text := unison.NewTextWrappedLines(i18n.Text("Drop an image here or double-click to change the portrait"),
+			&unison.TextDecoration{
+				Font:       gurps.PageFieldPrimaryFont,
+				Foreground: unison.White,
+			}, r.Width-unison.StdHSpacing*2)
+		var height float32
+		for _, line := range text {
+			height += line.Height()
+		}
+		y := r.Y + (r.Height-height)/2 + text[0].Baseline()
+		for _, line := range text {
+			size := line.Extents()
+			line.Draw(gc, r.X+(r.Width-size.Width)/2, y)
+			y += size.Height
+		}
 	}
 }
 
