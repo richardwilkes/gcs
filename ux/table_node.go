@@ -15,7 +15,6 @@ import (
 	"fmt"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -268,7 +267,7 @@ func (n *Node[T]) CellFromCellData(c *gurps.CellData, width float32, foreground,
 	case cell.Toggle:
 		return n.createToggleCell(c, foreground)
 	case cell.PageRef:
-		return n.createPageRefCell(c, foreground)
+		return n.createPageRefCell(c)
 	case cell.Markdown:
 		return n.createMarkdownCell(c, width, foreground)
 	default:
@@ -314,13 +313,13 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		label.HAlign = c.Alignment
 		label.VAlign = align.Middle
 		label.ClientData()[invertColorsMarker] = true
-		label.OnBackgroundInk = unison.OnErrorColor
+		label.OnBackgroundInk = &unison.PrimaryTheme.OnError
 		label.SetBorder(unison.NewEmptyBorder(unison.Insets{
 			Left:  4,
 			Right: 4,
 		}))
 		label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-			gc.DrawRect(rect, unison.ErrorColor.Paint(gc, rect, paintstyle.Fill))
+			gc.DrawRect(rect, unison.PrimaryTheme.Error.Paint(gc, rect, paintstyle.Fill))
 			label.DefaultDraw(gc, rect)
 		}
 		p.AddChild(label)
@@ -353,7 +352,7 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		p.Tooltip = newWrappedTooltip(tooltip)
 		p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
 			gc.DrawLine(rect.X, rect.Bottom()-0.5, rect.Right(), rect.Bottom()-0.5,
-				gurps.TooltipMarkerColor.Paint(gc, rect, paintstyle.Stroke))
+				unison.PrimaryTheme.Tertiary.Paint(gc, rect, paintstyle.Stroke))
 		}
 	}
 	return p
@@ -589,92 +588,47 @@ func convertLinksForPageRef(in string) (string, *unison.SVG) {
 	}
 }
 
-func (n *Node[T]) createPageRefCell(c *gurps.CellData, foreground unison.Ink) unison.Paneler {
-	label := unison.NewLabel()
-	label.VAlign = align.Start
-	label.Font = n.primaryFieldFont()
-	label.OnBackgroundInk = foreground
-	label.SetEnabled(!c.Dim)
+func (n *Node[T]) createPageRefCell(c *gurps.CellData) unison.Paneler {
+	var title, tooltip string
+	var icon *unison.DrawableSVG
+	font := n.primaryFieldFont()
 	parts := strings.FieldsFunc(c.Primary, func(ch rune) bool { return ch == ',' || ch == ';' })
 	switch len(parts) {
 	case 0:
 	case 1:
 		var img *unison.SVG
-		label.Text, img = convertLinksForPageRef(parts[0])
+		title, img = convertLinksForPageRef(parts[0])
 		if img != nil {
-			label.Text = ""
-			height := label.Font.Baseline()
-			label.Drawable = &unison.DrawableSVG{
+			title = ""
+			height := font.Baseline()
+			icon = &unison.DrawableSVG{
 				SVG:  img,
 				Size: unison.NewSize(height, height).Ceil(),
 			}
-			label.Tooltip = newWrappedTooltip(parts[0])
+			tooltip = parts[0]
 		}
 	default:
-		label.Text, _ = convertLinksForPageRef(parts[0])
-		label.Text += "+"
-		label.Tooltip = newWrappedTooltip(strings.Join(parts, "\n"))
+		title, _ = convertLinksForPageRef(parts[0])
+		title += "+"
+		tooltip = strings.Join(parts, "\n")
 	}
-	if label.Text != "" || label.Drawable != nil {
-		over := false
-		pressed := false
-		label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-			if over {
-				if pressed {
-					label.OnBackgroundInk = unison.LinkPressedColor
-				} else {
-					label.OnBackgroundInk = unison.LinkRolloverColor
-				}
-			} else {
-				label.OnBackgroundInk = unison.LinkColor
-			}
-			label.DefaultDraw(gc, rect)
+	theme := unison.DefaultLinkTheme
+	theme.Font = font
+	link := unison.NewLink(title, tooltip, "", theme, func(_ unison.Paneler, _ string) {
+		list := ExtractPageReferences(c.Primary)
+		if len(list) != 0 {
+			OpenPageReference(list[0], c.Secondary, nil)
 		}
-		label.MouseEnterCallback = func(_ unison.Point, _ unison.Modifiers) bool {
-			over = true
-			label.MarkForRedraw()
-			return true
-		}
-		label.MouseMoveCallback = func(where unison.Point, _ unison.Modifiers) bool {
-			if over != where.In(label.ContentRect(true)) {
-				over = !over
-				label.MarkForRedraw()
-			}
-			return true
-		}
-		label.MouseExitCallback = func() bool {
-			over = false
-			label.MarkForRedraw()
-			return true
-		}
-		label.MouseDownCallback = func(where unison.Point, _, _ int, _ unison.Modifiers) bool {
-			pressed = where.In(label.ContentRect(true))
-			label.MarkForRedraw()
-			return true
-		}
-		label.MouseDragCallback = func(where unison.Point, _ int, _ unison.Modifiers) bool {
-			in := where.In(label.ContentRect(true))
-			if pressed != in {
-				pressed = in
-				label.MarkForRedraw()
-			}
-			return true
-		}
-		label.MouseUpCallback = func(where unison.Point, _ int, _ unison.Modifiers) bool {
-			if over = where.In(label.ContentRect(true)); over {
-				list := ExtractPageReferences(c.Primary)
-				if len(list) != 0 {
-					unison.InvokeTaskAfter(
-						func() { OpenPageReference(list[0], c.Secondary, nil) },
-						time.Millisecond)
-				}
-			}
-			pressed = false
-			label.MarkForRedraw()
-			return true
-		}
+	})
+	link.VAlign = align.Start
+	if icon != nil {
+		link.Drawable = icon
 	}
-	return label
+	if tooltip != "" {
+		link.Tooltip = newWrappedTooltip(tooltip)
+	}
+	link.SetEnabled(!c.Dim && (title != "" || icon != nil))
+	return link
 }
 
 func (n *Node[T]) primaryFieldFont() unison.Font {

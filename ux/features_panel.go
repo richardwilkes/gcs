@@ -70,7 +70,7 @@ func newFeaturesPanel(entity *gurps.Entity, owner fmt.Stringer, features *gurps.
 		},
 		unison.NewEmptyBorder(unison.NewUniformInsets(2))))
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, paintstyle.Fill))
+		gc.DrawRect(rect, unison.PrimaryTheme.Surface.Paint(gc, rect, paintstyle.Fill))
 	}
 	addButton := unison.NewSVGButton(svg.CircledAdd)
 	addButton.ClickCallback = func() {

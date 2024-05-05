@@ -135,7 +135,7 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 	d.DrawOverCallback = func(gc *unison.Canvas, _ unison.Rect) {
 		if d.dragReroutePanel != nil {
 			r := d.RectFromRoot(d.dragReroutePanel.RectToRoot(d.dragReroutePanel.ContentRect(true)))
-			paint := unison.DropAreaColor.Paint(gc, r, paintstyle.Fill)
+			paint := unison.PrimaryTheme.Warning.Paint(gc, r, paintstyle.Fill)
 			paint.SetColorFilter(unison.Alpha30Filter())
 			gc.DrawRect(r, paint)
 		}
@@ -148,9 +148,6 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 		HGrab:  true,
 		VGrab:  true,
 	})
-	d.scroll.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, gurps.PageVoidColor.Paint(gc, rect, paintstyle.Fill))
-	}
 
 	helpButton := unison.NewSVGButton(svg.Help)
 	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
@@ -166,7 +163,7 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 
 	d.toolbar = unison.NewPanel()
 	d.AddChild(d.toolbar)
-	d.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
+	d.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(&unison.PrimaryTheme.Outline, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	d.toolbar.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
@@ -536,9 +533,9 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 	}
 
 	scroll := unison.NewScrollPanel()
-	scroll.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
+	scroll.SetBorder(unison.NewLineBorder(&unison.PrimaryTheme.Outline, 0, unison.NewUniformInsets(1), false))
 	scroll.SetContent(list, behavior.Fill, behavior.Fill)
-	scroll.BackgroundInk = unison.ContentColor
+	scroll.BackgroundInk = &unison.PrimaryTheme.Surface
 	scroll.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Fill,

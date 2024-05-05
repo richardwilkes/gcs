@@ -20,7 +20,7 @@ import (
 // NewInteriorSeparator creates a new interior vertical separator.
 func NewInteriorSeparator() *unison.Separator {
 	spacer := unison.NewSeparator()
-	spacer.LineInk = unison.InteriorDividerColor
+	spacer.LineInk = &unison.PrimaryTheme.OutlineVariant
 	spacer.Vertical = true
 	spacer.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Fill})
 	return spacer
@@ -29,13 +29,13 @@ func NewInteriorSeparator() *unison.Separator {
 // NewToolbarSeparator creates a new vertical separator for the toolbar.
 func NewToolbarSeparator() *unison.Separator {
 	spacer := unison.NewSeparator()
-	spacer.LineInk = unison.ControlEdgeColor
+	spacer.LineInk = &unison.PrimaryTheme.Outline
 	spacer.Vertical = true
 	spacer.SetBorder(unison.NewEmptyBorder(unison.NewHorizontalInsets(unison.StdHSpacing)))
 	spacer.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Fill})
 	spacer.SetSizer(func(hint unison.Size) (minSize, prefSize, maxSize unison.Size) {
 		minSize, prefSize, maxSize = spacer.DefaultSizes(hint)
-		baseline := unison.DefaultSVGButtonTheme.Font.Baseline()
+		baseline := unison.DefaultButtonTheme.Font.Baseline()
 		minSize.Height = baseline
 		prefSize.Height = baseline
 		maxSize.Height = baseline

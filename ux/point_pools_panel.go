@@ -58,7 +58,7 @@ func NewPointPoolsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointPoolsP
 		Right:  2,
 	})))
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, paintstyle.Fill))
+		gc.DrawRect(rect, unison.PrimaryTheme.Surface.Paint(gc, rect, paintstyle.Fill))
 	}
 	attrs := gurps.SheetSettingsFor(p.entity).Attributes
 	p.crc = attrs.CRC64()
@@ -116,7 +116,7 @@ func (p *PointPoolsPanel) rebuild(attrs *gurps.AttributeDefs) {
 						state.Tooltip = newWrappedTooltip(threshold.Explanation)
 						state.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
 							gc.DrawLine(rect.X, rect.Bottom()-0.5, rect.Right(), rect.Bottom()-0.5,
-								gurps.TooltipMarkerColor.Paint(gc, rect, paintstyle.Stroke))
+								unison.PrimaryTheme.Tertiary.Paint(gc, rect, paintstyle.Stroke))
 							state.DefaultDraw(gc, rect)
 						}
 					}
@@ -169,7 +169,7 @@ func (p *PointPoolsPanel) Sync() {
 								label.Tooltip = newWrappedTooltip(threshold.Explanation)
 								label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
 									gc.DrawLine(rect.X, rect.Bottom()-0.5, rect.Right(), rect.Bottom()-0.5,
-										gurps.TooltipMarkerColor.Paint(gc, rect, paintstyle.Stroke))
+										unison.PrimaryTheme.Tertiary.Paint(gc, rect, paintstyle.Stroke))
 									label.DefaultDraw(gc, rect)
 								}
 							}

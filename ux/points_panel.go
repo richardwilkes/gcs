@@ -85,9 +85,6 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	height := p.total.Font.Baseline() - 2
 	editButton := unison.NewSVGButton(svg.Edit)
 	editButton.OnBackgroundInk = gurps.OnHeaderColor
-	// These next two really should be different, but since this is on the header background we'd have to make new
-	// colors and I don't want to do that right now just for a single case
-	editButton.RolloverInk = gurps.OnHeaderColor
 	editButton.OnSelectionInk = gurps.OnHeaderColor
 	editButton.Font = gurps.PageLabelPrimaryFont
 	editButton.Drawable.(*unison.DrawableSVG).Size = unison.NewSize(height, height)
@@ -132,7 +129,7 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	}), i18n.Text("Unspent"), i18n.Text("Points earned but not yet spent"))
 	p.unspentLabel.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
 		if p.overSpent == -1 {
-			gc.DrawRect(rect, unison.ErrorColor.Paint(gc, rect, paintstyle.Fill))
+			gc.DrawRect(rect, unison.PrimaryTheme.Error.Paint(gc, rect, paintstyle.Fill))
 		}
 		p.unspentLabel.DefaultDraw(gc, rect)
 	}
@@ -197,13 +194,13 @@ func (p *PointsPanel) adjustUnspent() {
 		if p.entity.UnspentPoints() < 0 {
 			if p.overSpent != -1 {
 				p.overSpent = -1
-				p.unspentLabel.OnBackgroundInk = unison.OnErrorColor
+				p.unspentLabel.OnBackgroundInk = &unison.PrimaryTheme.OnError
 				p.unspentLabel.Text = i18n.Text("Overspent")
 			}
 		} else {
 			if p.overSpent != 1 {
 				p.overSpent = 1
-				p.unspentLabel.OnBackgroundInk = unison.OnContentColor
+				p.unspentLabel.OnBackgroundInk = &unison.PrimaryTheme.OnSurface
 				p.unspentLabel.Text = i18n.Text("Unspent")
 			}
 		}

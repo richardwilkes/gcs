@@ -93,7 +93,7 @@ func (d *menuKeySettingsDockable) createBindingButton(binding *gurps.Binding) {
 		capturePanel.Font = unison.KeyboardFont
 		capturePanel.Text = binding.KeyBinding.String()
 		capturePanel.HAlign = align.Middle
-		capturePanel.SetBorder(unison.DefaultFieldTheme.FocusedBorder)
+		unison.InstallDefaultFieldBorder(capturePanel, capturePanel)
 		capturePanel.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
 			gc.DrawRect(rect, unison.DefaultFieldTheme.BackgroundInk.Paint(gc, rect, paintstyle.Fill))
 			capturePanel.DefaultDraw(gc, rect)

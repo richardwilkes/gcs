@@ -64,7 +64,7 @@ documents from the library are open.`))
 		return false
 	}
 	content := unison.NewPanel()
-	content.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ControlEdgeColor, 0,
+	content.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(&unison.PrimaryTheme.Outline, 0,
 		unison.NewUniformInsets(1), false), unison.NewEmptyBorder(unison.NewUniformInsets(2*unison.StdHSpacing))))
 	content.SetLayout(&unison.FlexLayout{
 		Columns:  1,

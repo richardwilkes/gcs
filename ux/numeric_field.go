@@ -78,7 +78,9 @@ func newBaseNumericField[T xmath.Numeric](targetMgr *TargetMgr, targetKey, undoT
 		marksModified: true,
 	}
 	f.Self = f
+	unison.UninstallFocusBorders(f, f)
 	f.LostFocusCallback = f.lostFocus
+	unison.InstallDefaultFieldBorder(f, f)
 	f.RuneTypedCallback = f.runeTyped
 	f.ModifiedCallback = f.modified
 	f.ValidateCallback = f.validate

@@ -88,7 +88,7 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 	sizeLabel.Font = unison.DefaultFieldTheme.Font
 
 	toolbar := unison.NewPanel()
-	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
+	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(&unison.PrimaryTheme.Outline, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	toolbar.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
@@ -154,7 +154,7 @@ func (d *ImageDockable) imageSizer(_ unison.Size) (minSize, prefSize, maxSize un
 }
 
 func (d *ImageDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
-	gc.DrawRect(dirty, unison.ContentColor.Paint(gc, dirty, paintstyle.Fill))
+	gc.DrawRect(dirty, unison.PrimaryTheme.Surface.Paint(gc, dirty, paintstyle.Fill))
 	gc.DrawImage(d.img, 0, 0, nil, nil)
 }
 

@@ -56,9 +56,9 @@ func (h *DragHandle) size(_ unison.Size) (minSize, prefSize, maxSize unison.Size
 func (h *DragHandle) draw(gc *unison.Canvas, rect unison.Rect) {
 	var ink unison.Ink
 	if h.rollover {
-		ink = unison.IconButtonRolloverColor
+		ink = &unison.PrimaryTheme.Primary
 	} else {
-		ink = unison.IconButtonColor
+		ink = &unison.PrimaryTheme.OnSurface
 	}
 	h.svg.DrawInRect(gc, h.ContentRect(false), nil, ink.Paint(gc, rect, paintstyle.Fill))
 }
@@ -85,7 +85,7 @@ func (h *DragHandle) mouseDrag(where unison.Point, _ int, _ unison.Modifiers) bo
 		h.StartDataDrag(&unison.DragData{
 			Data:     h.data,
 			Drawable: h.svg,
-			Ink:      unison.IconButtonColor,
+			Ink:      &unison.PrimaryTheme.Primary,
 			Offset:   unison.Point{X: -size.Width / 2, Y: -size.Height / 2},
 		})
 	}

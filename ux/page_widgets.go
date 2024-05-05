@@ -21,7 +21,7 @@ import (
 )
 
 var nonEditableFieldColor = unison.NewDynamicColor(func() unison.Color {
-	return unison.OnEditableColor.GetColor().SetAlphaIntensity(0.6)
+	return unison.PrimaryTheme.OnSurface.GetColor().SetAlphaIntensity(0.6)
 })
 
 // NewPageHeader creates a new center-aligned header for a sheet page.
@@ -60,12 +60,12 @@ func NewPageInternalHeader(title string, span int) unison.Paneler {
 	label.Text = title
 	label.Font = gurps.PageLabelSecondaryFont
 	label.HAlign = align.Middle
-	label.OnBackgroundInk = unison.OnContentColor
+	label.OnBackgroundInk = &unison.PrimaryTheme.OnSurface
 	label.SetLayoutData(layoutData)
 	label.SetBorder(border)
 	label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
 		_, pref, _ := label.Sizes(unison.Size{})
-		paint := unison.DividerColor.Paint(gc, rect, paintstyle.Stroke)
+		paint := unison.PrimaryTheme.Outline.Paint(gc, rect, paintstyle.Stroke)
 		paint.SetStrokeWidth(1)
 		half := (rect.Width - pref.Width) / 2
 		gc.DrawLine(rect.X, rect.CenterY(), rect.X+half-2, rect.CenterY(), paint)
@@ -78,7 +78,7 @@ func NewPageInternalHeader(title string, span int) unison.Paneler {
 // NewPageLabel creates a new start-aligned field label for a sheet page.
 func NewPageLabel(title string) *unison.Label {
 	label := unison.NewLabel()
-	label.OnBackgroundInk = unison.OnContentColor
+	label.OnBackgroundInk = &unison.PrimaryTheme.OnSurface
 	label.Text = title
 	label.Font = gurps.PageLabelPrimaryFont
 	label.SetLayoutData(&unison.FlexLayoutData{
@@ -92,7 +92,7 @@ func NewPageLabel(title string) *unison.Label {
 // NewPageLabelEnd creates a new end-aligned field label for a sheet page.
 func NewPageLabelEnd(title string) *unison.Label {
 	label := unison.NewLabel()
-	label.OnBackgroundInk = unison.OnContentColor
+	label.OnBackgroundInk = &unison.PrimaryTheme.OnSurface
 	label.Text = title
 	label.Font = gurps.PageLabelPrimaryFont
 	label.HAlign = align.End
@@ -107,7 +107,7 @@ func NewPageLabelEnd(title string) *unison.Label {
 // NewPageLabelCenter creates a new center-aligned field label for a sheet page.
 func NewPageLabelCenter(title string) *unison.Label {
 	label := unison.NewLabel()
-	label.OnBackgroundInk = unison.OnContentColor
+	label.OnBackgroundInk = &unison.PrimaryTheme.OnSurface
 	label.Text = title
 	label.Font = gurps.PageLabelPrimaryFont
 	label.HAlign = align.Middle
@@ -146,10 +146,7 @@ func NewPageLabelWithRandomizer(title, tooltip string, clickCallback func()) *un
 // NewStringPageField creates a new text entry field for a sheet page.
 func NewStringPageField(targetMgr *TargetMgr, targetKey, undoTitle string, get func() string, set func(string)) *StringField {
 	field := NewStringField(targetMgr, targetKey, undoTitle, get, set)
-	field.Font = gurps.PageFieldPrimaryFont
-	field.FocusedBorder = unison.NewLineBorder(unison.AccentColor, 0, unison.Insets{Bottom: 1}, false)
-	field.UnfocusedBorder = unison.NewLineBorder(unison.ControlEdgeColor, 0, unison.Insets{Bottom: 1}, false)
-	field.SetBorder(field.UnfocusedBorder)
+	installPageFieldFontAndFocusBorders(field.Field)
 	field.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Middle,
@@ -158,13 +155,18 @@ func NewStringPageField(targetMgr *TargetMgr, targetKey, undoTitle string, get f
 	return field
 }
 
+func installPageFieldFontAndFocusBorders(field *unison.Field) {
+	field.Font = gurps.PageFieldPrimaryFont
+	unison.InstallFocusBorders(field, field,
+		unison.NewLineBorder(&unison.PrimaryTheme.Primary, 0, unison.Insets{Bottom: 1}, false),
+		unison.NewLineBorder(&unison.PrimaryTheme.Outline, 0, unison.Insets{Bottom: 1}, false),
+	)
+}
+
 // NewStringPageFieldNoGrab creates a new text entry field for a sheet page, but with HGrab set to false.
 func NewStringPageFieldNoGrab(targetMgr *TargetMgr, targetKey, undoTitle string, get func() string, set func(string)) *StringField {
 	field := NewStringField(targetMgr, targetKey, undoTitle, get, set)
-	field.Font = gurps.PageFieldPrimaryFont
-	field.FocusedBorder = unison.NewLineBorder(unison.AccentColor, 0, unison.Insets{Bottom: 1}, false)
-	field.UnfocusedBorder = unison.NewLineBorder(unison.ControlEdgeColor, 0, unison.Insets{Bottom: 1}, false)
-	field.SetBorder(field.UnfocusedBorder)
+	installPageFieldFontAndFocusBorders(field.Field)
 	field.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Middle,
@@ -175,10 +177,7 @@ func NewStringPageFieldNoGrab(targetMgr *TargetMgr, targetKey, undoTitle string,
 // NewHeightPageField creates a new height entry field for a sheet page.
 func NewHeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() fxp.Length, set func(fxp.Length), minValue, maxValue fxp.Length, noMinWidth bool) *LengthField {
 	field := NewLengthField(targetMgr, targetKey, undoTitle, entity, get, set, minValue, maxValue, noMinWidth)
-	field.Font = gurps.PageFieldPrimaryFont
-	field.FocusedBorder = unison.NewLineBorder(unison.AccentColor, 0, unison.Insets{Bottom: 1}, false)
-	field.UnfocusedBorder = unison.NewLineBorder(unison.ControlEdgeColor, 0, unison.Insets{Bottom: 1}, false)
-	field.SetBorder(field.UnfocusedBorder)
+	installPageFieldFontAndFocusBorders(field.Field)
 	field.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Middle,
@@ -189,10 +188,7 @@ func NewHeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entit
 // NewWeightPageField creates a new weight entry field for a sheet page.
 func NewWeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *gurps.Entity, get func() fxp.Weight, set func(fxp.Weight), minValue, maxValue fxp.Weight, noMinWidth bool) *WeightField {
 	field := NewWeightField(targetMgr, targetKey, undoTitle, entity, get, set, minValue, maxValue, noMinWidth)
-	field.Font = gurps.PageFieldPrimaryFont
-	field.FocusedBorder = unison.NewLineBorder(unison.AccentColor, 0, unison.Insets{Bottom: 1}, false)
-	field.UnfocusedBorder = unison.NewLineBorder(unison.ControlEdgeColor, 0, unison.Insets{Bottom: 1}, false)
-	field.SetBorder(field.UnfocusedBorder)
+	installPageFieldFontAndFocusBorders(field.Field)
 	field.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Middle,
@@ -204,10 +200,7 @@ func NewWeightPageField(targetMgr *TargetMgr, targetKey, undoTitle string, entit
 func NewIntegerPageField(targetMgr *TargetMgr, targetKey, undoTitle string, get func() int, set func(int), minValue, maxValue int, showSign, noMinWidth bool) *IntegerField {
 	field := NewIntegerField(targetMgr, targetKey, undoTitle, get, set, minValue, maxValue, showSign, noMinWidth)
 	field.HAlign = align.End
-	field.Font = gurps.PageFieldPrimaryFont
-	field.FocusedBorder = unison.NewLineBorder(unison.AccentColor, 0, unison.Insets{Bottom: 1}, false)
-	field.UnfocusedBorder = unison.NewLineBorder(unison.ControlEdgeColor, 0, unison.Insets{Bottom: 1}, false)
-	field.SetBorder(field.UnfocusedBorder)
+	installPageFieldFontAndFocusBorders(field.Field)
 	field.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Middle,
@@ -219,10 +212,7 @@ func NewIntegerPageField(targetMgr *TargetMgr, targetKey, undoTitle string, get 
 func NewDecimalPageField(targetMgr *TargetMgr, targetKey, undoTitle string, get func() fxp.Int, set func(fxp.Int), minValue, maxValue fxp.Int, noMinWidth bool) *DecimalField {
 	field := NewDecimalField(targetMgr, targetKey, undoTitle, get, set, minValue, maxValue, false, noMinWidth)
 	field.HAlign = align.End
-	field.Font = gurps.PageFieldPrimaryFont
-	field.FocusedBorder = unison.NewLineBorder(unison.AccentColor, 0, unison.Insets{Bottom: 1}, false)
-	field.UnfocusedBorder = unison.NewLineBorder(unison.ControlEdgeColor, 0, unison.Insets{Bottom: 1}, false)
-	field.SetBorder(field.UnfocusedBorder)
+	installPageFieldFontAndFocusBorders(field.Field)
 	if !noMinWidth && minValue != fxp.Min && maxValue != fxp.Max {
 		// Override to ignore fractional values
 		field.SetMinimumTextWidthUsing(minValue.Trunc().String(), maxValue.Trunc().String())

@@ -47,7 +47,7 @@ func newWeaponsPanel(cmdRoot Rebuildable, weaponOwner gurps.WeaponOwner, weaponT
 	})
 	p.SetBorder(unison.NewLineBorder(gurps.HeaderColor, 0, unison.NewUniformInsets(1), false))
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, paintstyle.Fill))
+		gc.DrawRect(rect, unison.PrimaryTheme.Surface.Paint(gc, rect, paintstyle.Fill))
 	}
 	p.provider = NewWeaponsProvider(p, p.weaponType, false)
 	p.table = newEditorTable(p.AsPanel(), p.provider)

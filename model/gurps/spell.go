@@ -725,16 +725,7 @@ func (s *Spell) SecondaryText(optionChecker func(display.Option) bool) string {
 		AppendStringOntoNewLine(&buffer, s.Rituals())
 		AppendStringOntoNewLine(&buffer, StudyHoursProgressText(ResolveStudyHours(s.Study), s.StudyHoursNeeded, false))
 	}
-	if optionChecker(prefs.SkillLevelAdjDisplay) {
-		if s.LevelData.Tooltip != "" && s.LevelData.Tooltip != noAdditionalModifiers() {
-			levelTooltip := strings.ReplaceAll(strings.TrimSpace(s.LevelData.Tooltip), "\n", ", ")
-			msg := includesModifiersFrom()
-			if strings.HasPrefix(levelTooltip, msg+",") {
-				levelTooltip = msg + ":" + levelTooltip[len(msg)+1:]
-			}
-			AppendStringOntoNewLine(&buffer, levelTooltip)
-		}
-	}
+	addTooltipForSkillLevelAdj(optionChecker, prefs, s.LevelData, &buffer)
 	return buffer.String()
 }
 

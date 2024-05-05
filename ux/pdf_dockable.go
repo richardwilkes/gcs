@@ -122,7 +122,7 @@ func NewPDFDockable(filePath string, initialPage int) (unison.Dockable, error) {
 
 func (d *PDFDockable) createToolbar() *unison.Panel {
 	outer := unison.NewPanel()
-	outer.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
+	outer.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(&unison.PrimaryTheme.Outline, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	outer.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
@@ -284,6 +284,7 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 func (d *PDFDockable) createTOC() {
 	d.tocPanel = unison.NewTable[*tocNode](&unison.SimpleTableModel[*tocNode]{})
 	d.tocPanel.Columns = make([]unison.ColumnInfo, 1)
+	d.tocPanel.ShowRowDivider = false
 	d.tocPanel.DoubleClickCallback = d.tocDoubleClick
 	d.tocPanel.SelectionChangedCallback = d.tocSelectionChanged
 
@@ -590,7 +591,7 @@ func (d *PDFDockable) docSizer(_ unison.Size) (minSize, prefSize, maxSize unison
 }
 
 func (d *PDFDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
-	gc.DrawRect(dirty, unison.ContentColor.Paint(gc, dirty, paintstyle.Fill))
+	gc.DrawRect(dirty, unison.PrimaryTheme.Surface.Paint(gc, dirty, paintstyle.Fill))
 	if d.page != nil && d.page.Image != nil {
 		switch d.autoScaling {
 		case autoscale.FitWidth:
@@ -664,15 +665,15 @@ func (d *PDFDockable) drawOverlayMsg(gc *unison.Canvas, dirty unison.Rect, msg s
 	font := unison.SystemFont.Face().Font(24)
 	baseline := font.Baseline()
 	if forError {
-		fgInk = unison.OnErrorColor
-		bgInk = unison.ErrorColor.GetColor().SetAlphaIntensity(0.7)
+		fgInk = &unison.PrimaryTheme.OnError
+		bgInk = unison.PrimaryTheme.Error.GetColor().SetAlphaIntensity(0.7)
 		icon = &unison.DrawableSVG{
 			SVG:  unison.CircledExclamationSVG,
 			Size: unison.NewSize(baseline, baseline),
 		}
 	} else {
-		fgInk = unison.OnContentColor
-		bgInk = unison.ContentColor.GetColor().SetAlphaIntensity(0.7)
+		fgInk = &unison.PrimaryTheme.OnSurface
+		bgInk = unison.PrimaryTheme.Surface.GetColor().SetAlphaIntensity(0.7)
 	}
 	decoration := &unison.TextDecoration{
 		Font:       font,

@@ -55,9 +55,9 @@ func newHitLocationSettingsPanel(dockable *bodySettingsDockable, loc *gurps.HitL
 		Right:  unison.StdHSpacing,
 	}))
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		color := unison.ContentColor
+		color := unison.PrimaryTheme.SurfaceBelow
 		if p.Parent().IndexOfChild(p)%2 == 1 {
-			color = unison.BandingColor
+			color = unison.PrimaryTheme.Surface
 		}
 		gc.DrawRect(rect, color.Paint(gc, rect, paintstyle.Fill))
 	}

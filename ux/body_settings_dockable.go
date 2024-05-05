@@ -308,7 +308,7 @@ func (d *bodySettingsDockable) drawOver(gc *unison.Canvas, rect unison.Rect) {
 			y = children[len(children)-1].FrameRect().Bottom()
 		}
 		pt := d.content.PointFromRoot(d.dragTarget.PointToRoot(unison.Point{Y: y}))
-		paint := unison.DropAreaColor.Paint(gc, rect, paintstyle.Stroke)
+		paint := unison.PrimaryTheme.Warning.Paint(gc, rect, paintstyle.Stroke)
 		paint.SetStrokeWidth(2)
 		r := d.content.RectFromRoot(d.dragTarget.RectToRoot(d.dragTarget.ContentRect(false)))
 		gc.DrawLine(r.X, pt.Y, r.Right(), pt.Y, paint)

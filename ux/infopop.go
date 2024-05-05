@@ -32,8 +32,8 @@ func NewDefaultInfoPop() *unison.Label {
 // NewInfoPop creates a new InfoPop.
 func NewInfoPop() *unison.Label {
 	infoPop := unison.NewLabel()
-	infoPop.OnBackgroundInk = unison.DefaultSVGButtonTheme.OnBackgroundInk
-	baseline := unison.DefaultSVGButtonTheme.Font.Baseline()
+	infoPop.OnBackgroundInk = unison.DefaultButtonTheme.OnBackgroundInk
+	baseline := unison.DefaultButtonTheme.Font.Baseline()
 	infoPop.Drawable = &unison.DrawableSVG{
 		SVG:  svg.Info,
 		Size: unison.NewSize(baseline, baseline).Ceil(),

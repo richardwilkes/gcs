@@ -67,7 +67,7 @@ func NewDescriptionPanel(entity *gurps.Entity, targetMgr *TargetMgr) *Descriptio
 		Right:  2,
 	})))
 	d.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, paintstyle.Fill))
+		gc.DrawRect(rect, unison.PrimaryTheme.Surface.Paint(gc, rect, paintstyle.Fill))
 	}
 	d.AddChild(d.createColumn1())
 	d.AddChild(d.createColumn2())

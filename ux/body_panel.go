@@ -55,7 +55,7 @@ func NewBodyPanel(entity *gurps.Entity) *BodyPanel {
 		Right:  2,
 	})))
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, paintstyle.Fill))
+		gc.DrawRect(rect, unison.PrimaryTheme.SurfaceBelow.Paint(gc, rect, paintstyle.Fill))
 		r := p.Children()[0].FrameRect()
 		r.X = rect.X
 		r.Width = rect.Width
@@ -63,9 +63,9 @@ func NewBodyPanel(entity *gurps.Entity) *BodyPanel {
 		for i, row := range p.row {
 			var ink unison.Ink
 			if i&1 == 1 {
-				ink = unison.BandingColor
+				ink = &unison.PrimaryTheme.Surface
 			} else {
-				ink = unison.ContentColor
+				ink = &unison.PrimaryTheme.SurfaceBelow
 			}
 			r = row.AsPanel().FrameRect()
 			r.X = rect.X
@@ -131,7 +131,7 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 			name.Tooltip = newWrappedTooltip(location.Description)
 			name.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
 				gc.DrawLine(rect.X, rect.Bottom()-0.5, rect.Right(), rect.Bottom()-0.5,
-					gurps.TooltipMarkerColor.Paint(gc, rect, paintstyle.Stroke))
+					unison.PrimaryTheme.Tertiary.Paint(gc, rect, paintstyle.Stroke))
 				name.DefaultDraw(gc, rect)
 			}
 		}
@@ -172,7 +172,7 @@ func (p *BodyPanel) createDRField(location *gurps.HitLocation) unison.Paneler {
 	field.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 	field.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
 		gc.DrawLine(rect.X, rect.Bottom()-0.5, rect.Right(), rect.Bottom()-0.5,
-			gurps.TooltipMarkerColor.Paint(gc, rect, paintstyle.Stroke))
+			unison.PrimaryTheme.Tertiary.Paint(gc, rect, paintstyle.Stroke))
 		field.DefaultDraw(gc, rect)
 	}
 	return field
@@ -181,7 +181,7 @@ func (p *BodyPanel) createDRField(location *gurps.HitLocation) unison.Paneler {
 func (p *BodyPanel) addSeparator() {
 	sep := unison.NewSeparator()
 	sep.Vertical = true
-	sep.LineInk = unison.InteriorDividerColor
+	sep.LineInk = &unison.PrimaryTheme.OutlineVariant
 	layoutData := &unison.FlexLayoutData{
 		HAlign: align.Middle,
 		VAlign: align.Fill,

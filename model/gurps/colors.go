@@ -45,9 +45,7 @@ var (
 	PDFMarkerHighlightColor = &unison.ThemeColor{Light: unison.Yellow, Dark: unison.Yellow}
 	PageColor               = &unison.ThemeColor{Light: unison.White, Dark: unison.RGB(16, 16, 16)}
 	PageStandoutColor       = &unison.ThemeColor{Light: unison.RGB(221, 221, 221), Dark: unison.RGB(64, 64, 64)}
-	PageVoidColor           = &unison.ThemeColor{Light: unison.Grey, Dark: unison.Black}
 	SearchListColor         = &unison.ThemeColor{Light: unison.LightCyan, Dark: unison.RGB(0, 43, 43)}
-	TooltipMarkerColor      = &unison.ThemeColor{Light: unison.RGB(128, 64, 128), Dark: unison.RGB(153, 100, 153)}
 )
 
 var (
@@ -88,65 +86,42 @@ func FactoryColors() []*ThemedColor {
 
 func initColors() {
 	currentColors = []*ThemedColor{
-		{ID: "background", Title: i18n.Text("Background"), Color: unison.BackgroundColor},
-		{ID: "on_background", Title: i18n.Text("On Background"), Color: unison.OnBackgroundColor},
-		{ID: "content", Title: i18n.Text("Content"), Color: unison.ContentColor},
-		{ID: "on_content", Title: i18n.Text("On Content"), Color: unison.OnContentColor},
-		{ID: "banding", Title: i18n.Text("Banding"), Color: unison.BandingColor},
-		{ID: "on_banding", Title: i18n.Text("On Banding"), Color: unison.OnBandingColor},
+		{ID: "primary", Title: i18n.Text("Primary"), Color: &unison.PrimaryTheme.Primary},
+		{ID: "on_primary", Title: i18n.Text("On Primary"), Color: &unison.PrimaryTheme.OnPrimary},
+		{ID: "secondary", Title: i18n.Text("Secondary"), Color: &unison.PrimaryTheme.Secondary},
+		{ID: "on_secondary", Title: i18n.Text("On Secondary"), Color: &unison.PrimaryTheme.OnSecondary},
+		{ID: "tertiary", Title: i18n.Text("Tertiary"), Color: &unison.PrimaryTheme.Tertiary},
+		{ID: "on_tertiary", Title: i18n.Text("On Tertiary"), Color: &unison.PrimaryTheme.OnTertiary},
+		{ID: "surface", Title: i18n.Text("Surface"), Color: &unison.PrimaryTheme.Surface},
+		{ID: "on_surface", Title: i18n.Text("On Surface"), Color: &unison.PrimaryTheme.OnSurface},
+		{ID: "surface_above", Title: i18n.Text("Surface Above"), Color: &unison.PrimaryTheme.SurfaceAbove},
+		// {ID: "on_surface_above", Title: i18n.Text("On Surface Above"), Color: &unison.PrimaryTheme.OnSurfaceAbove},
+		{ID: "surface_below", Title: i18n.Text("Surface Below"), Color: &unison.PrimaryTheme.SurfaceBelow},
+		// {ID: "on_surface_below", Title: i18n.Text("On Surface Below"), Color: &unison.PrimaryTheme.OnSurfaceBelow},
+		{ID: "error", Title: i18n.Text("Error"), Color: &unison.PrimaryTheme.Error},
+		{ID: "on_error", Title: i18n.Text("On Error"), Color: &unison.PrimaryTheme.OnError},
+		{ID: "warning", Title: i18n.Text("Warning"), Color: &unison.PrimaryTheme.Warning},
+		{ID: "on_warning", Title: i18n.Text("On Warning"), Color: &unison.PrimaryTheme.OnWarning},
+		{ID: "outline", Title: i18n.Text("Outline"), Color: &unison.PrimaryTheme.Outline},
+		{ID: "outline_variant", Title: i18n.Text("Outline Variant"), Color: &unison.PrimaryTheme.OutlineVariant},
+
 		{ID: "header", Title: i18n.Text("Header"), Color: HeaderColor},
 		{ID: "on_header", Title: i18n.Text("On Header"), Color: OnHeaderColor},
-		{ID: "tab_focused", Title: i18n.Text("Focused Tab"), Color: unison.TabFocusedColor},
-		{ID: "on_tab_focused", Title: i18n.Text("On Focused Tab"), Color: unison.OnTabFocusedColor},
-		{ID: "tab_current", Title: i18n.Text("Current Tab"), Color: unison.TabCurrentColor},
-		{ID: "on_tab_current", Title: i18n.Text("On Current Tab"), Color: unison.OnTabCurrentColor},
-		{ID: "editable", Title: i18n.Text("Editable"), Color: unison.EditableColor},
-		{ID: "on_editable", Title: i18n.Text("On Editable"), Color: unison.OnEditableColor},
-		{ID: "selection", Title: i18n.Text("Selection"), Color: unison.SelectionColor},
-		{ID: "on_selection", Title: i18n.Text("On Selection"), Color: unison.OnSelectionColor},
-		{ID: "inactive_selection", Title: i18n.Text("Inactive Selection"), Color: unison.InactiveSelectionColor},
-		{ID: "on_inactive_selection", Title: i18n.Text("On Inactive Selection"), Color: unison.OnInactiveSelectionColor},
-		{ID: "indirect_selection", Title: i18n.Text("Indirect Selection"), Color: unison.IndirectSelectionColor},
-		{ID: "on_indirect_selection", Title: i18n.Text("On Indirect Selection"), Color: unison.OnIndirectSelectionColor},
-		{ID: "scroll", Title: i18n.Text("Scroll"), Color: unison.ScrollColor},
-		{ID: "scroll_rollover", Title: i18n.Text("Scroll Rollover"), Color: unison.ScrollRolloverColor},
-		{ID: "scroll_edge", Title: i18n.Text("Scroll Edge"), Color: unison.ScrollEdgeColor},
-		{ID: "control_edge", Title: i18n.Text("Control Edge"), Color: unison.ControlEdgeColor},
-		{ID: "control", Title: i18n.Text("Control"), Color: unison.ControlColor},
-		{ID: "on_control", Title: i18n.Text("On Control"), Color: unison.OnControlColor},
-		{ID: "control_pressed", Title: i18n.Text("Pressed Control"), Color: unison.ControlPressedColor},
-		{ID: "on_control_pressed", Title: i18n.Text("On Pressed Control"), Color: unison.OnControlPressedColor},
-		{ID: "divider", Title: i18n.Text("Divider"), Color: unison.DividerColor},
-		{ID: "interior_divider", Title: i18n.Text("Interior Divider"), Color: unison.InteriorDividerColor},
-		{ID: "icon_button", Title: i18n.Text("Icon Button"), Color: unison.IconButtonColor},
-		{ID: "icon_button_rollover", Title: i18n.Text("Icon Button Rollover"), Color: unison.IconButtonRolloverColor},
-		{ID: "icon_button_pressed", Title: i18n.Text("Pressed Icon Button"), Color: unison.IconButtonPressedColor},
 		{ID: "hint", Title: i18n.Text("Hint"), Color: HintColor},
-		{ID: "tooltip", Title: i18n.Text("Tooltip"), Color: unison.TooltipColor},
-		{ID: "on_tooltip", Title: i18n.Text("On Tooltip"), Color: unison.OnTooltipColor},
 		{ID: "search_list", Title: i18n.Text("Search List"), Color: SearchListColor},
 		{ID: "on_search_list", Title: i18n.Text("On Search List"), Color: OnSearchListColor},
 		{ID: "marker", Title: i18n.Text("Marker"), Color: MarkerColor},
 		{ID: "on_marker", Title: i18n.Text("On Marker"), Color: OnMarkerColor},
-		{ID: "error", Title: i18n.Text("Error"), Color: unison.ErrorColor},
-		{ID: "on_error", Title: i18n.Text("On Error"), Color: unison.OnErrorColor},
-		{ID: "warning", Title: i18n.Text("Warning"), Color: unison.WarningColor},
-		{ID: "on_warning", Title: i18n.Text("On Warning"), Color: unison.OnWarningColor},
 		{ID: "overloaded", Title: i18n.Text("Overloaded"), Color: OverloadedColor},
 		{ID: "on_overloaded", Title: i18n.Text("On Overloaded"), Color: OnOverloadedColor},
 		{ID: "page", Title: i18n.Text("Page"), Color: PageColor},
 		{ID: "on_page", Title: i18n.Text("On Page"), Color: OnPageColor},
 		{ID: "page_standout", Title: i18n.Text("Page Standout"), Color: PageStandoutColor},
 		{ID: "on_page_standout", Title: i18n.Text("On Page Standout"), Color: OnPageStandoutColor},
-		{ID: "page_void", Title: i18n.Text("Page Void"), Color: PageVoidColor},
-		{ID: "drop_area", Title: i18n.Text("Drop Area"), Color: unison.DropAreaColor},
-		{ID: "link", Title: i18n.Text("Link"), Color: unison.LinkColor},
-		{ID: "link_pressed", Title: i18n.Text("Pressed Link"), Color: unison.LinkPressedColor},
-		{ID: "link_rollover", Title: i18n.Text("Rollover Link"), Color: unison.LinkRolloverColor},
 		{ID: "pdf_link", Title: i18n.Text("PDF Link Highlight"), Color: PDFLinkHighlightColor},
 		{ID: "pdf_marker", Title: i18n.Text("PDF Marker Highlight"), Color: PDFMarkerHighlightColor},
-		{ID: "accent", Title: i18n.Text("Accent"), Color: unison.AccentColor},
-		{ID: "tooltip_marker", Title: i18n.Text("Tooltip Marker"), Color: TooltipMarkerColor},
+
+		{ID: "shadow", Title: i18n.Text("Shadow"), Color: &unison.PrimaryTheme.Shadow},
 	}
 	factoryColors = make([]*ThemedColor, len(currentColors))
 	for i, c := range currentColors {

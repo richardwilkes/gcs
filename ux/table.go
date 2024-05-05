@@ -68,6 +68,7 @@ type TableProvider[T gurps.NodeTypes] interface {
 // this should be a standalone top-level table for a dockable. Otherwise, pass in the typical font used for a cell.
 func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font) (header *unison.TableHeader[*Node[T]], table *unison.Table[*Node[T]]) {
 	table = unison.NewTable[*Node[T]](provider)
+	table.ShowRowDivider = false
 	provider.SetTable(table)
 	table.HierarchyColumnID = provider.HierarchyColumnID()
 	layoutData := &unison.FlexLayoutData{

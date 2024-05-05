@@ -91,9 +91,9 @@ func ProcessNameables[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 			}
 		}
 		scroll := unison.NewScrollPanel()
-		scroll.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
+		scroll.SetBorder(unison.NewLineBorder(&unison.PrimaryTheme.Outline, 0, unison.NewUniformInsets(1), false))
 		scroll.SetContent(list, behavior.Fill, behavior.Fill)
-		scroll.BackgroundInk = unison.ContentColor
+		scroll.BackgroundInk = &unison.PrimaryTheme.Surface
 		scroll.SetLayoutData(&unison.FlexLayoutData{
 			HAlign: align.Fill,
 			VAlign: align.Fill,

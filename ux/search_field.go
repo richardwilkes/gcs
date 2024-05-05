@@ -39,7 +39,7 @@ func NewSearchField(watermark string, modifiedCallback func(before, after *uniso
 		VAlign: align.Middle,
 		HGrab:  true,
 	})
-	b := NewSVGButtonForFont(unison.CircledXSVG, unison.DefaultSVGButtonTheme.Font, -2)
+	b := NewSVGButtonForFont(unison.CircledXSVG, unison.DefaultButtonTheme.Font, -2)
 	b.OnSelectionInk = f.OnEditableInk
 	b.SetFocusable(false)
 	b.SetEnabled(false)

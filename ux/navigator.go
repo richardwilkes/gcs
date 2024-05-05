@@ -90,6 +90,7 @@ func newNavigator() *Navigator {
 	n.setupToolBar()
 
 	n.table.Columns = make([]unison.ColumnInfo, 1)
+	n.table.ShowRowDivider = false
 	n.needReload = true
 	rows := n.populateRows()
 	n.needReload = false
@@ -247,7 +248,7 @@ func (n *Navigator) setupToolBar() {
 		HSpacing: unison.StdHSpacing,
 	})
 
-	n.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
+	n.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(&unison.PrimaryTheme.Outline, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	n.toolbar.SetLayout(&unison.FlexLayout{
 		Columns:  1,

@@ -52,7 +52,9 @@ func newStringField(field *unison.Field, targetMgr *TargetMgr, targetKey, undoTi
 		useGet:    true,
 	}
 	f.Self = f
+	unison.UninstallFocusBorders(f, f)
 	f.LostFocusCallback = f.lostFocus
+	unison.InstallDefaultFieldBorder(f, f)
 	f.ModifiedCallback = f.modified
 	f.Sync()
 	f.SetLayoutData(&unison.FlexLayoutData{

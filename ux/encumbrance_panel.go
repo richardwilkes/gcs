@@ -66,9 +66,9 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 					ink = gurps.MarkerColor
 				}
 			case i&1 == 1:
-				ink = unison.BandingColor
+				ink = &unison.PrimaryTheme.Surface
 			default:
-				ink = unison.ContentColor
+				ink = &unison.PrimaryTheme.SurfaceBelow
 			}
 			r = row.AsPanel().FrameRect()
 			r.X = rect.X
@@ -186,7 +186,7 @@ func (p *EncumbrancePanel) createDodgeField(enc encumbrance.Level, rowColor *enc
 func (p *EncumbrancePanel) addSeparator() {
 	sep := unison.NewSeparator()
 	sep.Vertical = true
-	sep.LineInk = unison.InteriorDividerColor
+	sep.LineInk = &unison.PrimaryTheme.OutlineVariant
 	sep.SetLayoutData(&unison.FlexLayoutData{
 		VSpan:  len(encumbrance.Levels),
 		HAlign: align.Middle,
@@ -208,10 +208,8 @@ func (c *encRowColor) GetColor() unison.Color {
 			return gurps.OnOverloadedColor.GetColor()
 		}
 		return gurps.OnMarkerColor.GetColor()
-	case c.index&1 == 1:
-		return unison.OnBandingColor.GetColor()
 	default:
-		return unison.OnContentColor.GetColor()
+		return unison.PrimaryTheme.OnSurface.GetColor()
 	}
 }
 

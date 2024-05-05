@@ -24,8 +24,8 @@ github.com/kr/pretty v0.3.0/go.mod h1:640gp4NfQd8pI5XOwp5fnNeVWj67G7CFk/SaSQn7NB
 github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=
 github.com/kr/text v0.2.0/go.mod h1:eLer722TekiGuMkidMxC/pM04lWEeraHUUmBw8l2grE=
 github.com/miekg/dns v1.1.27/go.mod h1:KNUDUusw/aVsxyTYZM1oqvCicbwhgbNgztCETuNZ7xM=
-github.com/miekg/dns v1.1.58 h1:ca2Hdkz+cDg/7eNF6V56jjzuZ4aCAE+DbVkILdQWG/4=
-github.com/miekg/dns v1.1.58/go.mod h1:Ypv+3b/KadlvW9vJfXOTf300O4UqaHFzFCuHz+rPkBY=
+github.com/miekg/dns v1.1.59 h1:C9EXc/UToRwKLhK5wKU/I4QVsBUc8kE6MkHBkeypWZs=
+github.com/miekg/dns v1.1.59/go.mod h1:nZpewl5p6IvctfgrckopVx2OlSEHPRO/U4SYkRklrEk=
 github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 h1:zYyBkD/k9seD2A7fsi6Oo2LfFZAehjjQMERAvZLEDnQ=
 github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646/go.mod h1:jpp1/29i3P1S/RLdc7JQKbRpFeM1dOBd8T9ki5s+AY8=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
@@ -40,10 +40,8 @@ github.com/richardwilkes/pdf v1.23.10 h1:tf2daEyHDJjASuipqEvirL8sU9w0xvrPeWyVb7L
 github.com/richardwilkes/pdf v1.23.10/go.mod h1:qZYnhHRx9sKhuhzotjLYXe8csi6bwwU/9VDWACozEWs=
 github.com/richardwilkes/rpgtools v1.9.0 h1:1p1FT644geYKANLj1PyffZfWziHjjNmquFYNw73SbG8=
 github.com/richardwilkes/rpgtools v1.9.0/go.mod h1:Ejn6u6QMZ4ifUECSGiORY4YukPezIA+3Jcm+//GtLQw=
-github.com/richardwilkes/toolbox v1.110.0 h1:FHVi5z1fCX4EnWRKTbD2Ht9xtMqRWVuRZ/UYfIjMjdU=
-github.com/richardwilkes/toolbox v1.110.0/go.mod h1:NkBik7tpAvCuxCipWW19yyURNcrBdddqGRCS+FkFoO0=
-github.com/richardwilkes/unison v0.68.1 h1:mTsQCkRCHoa04JrAiIwzx1BTf3+RFctVvgbqIq1YrfE=
-github.com/richardwilkes/unison v0.68.1/go.mod h1:gN16QhGKfGo4UDVX74KHyWrEHDSr7ptvbDUpf19mqHg=
+github.com/richardwilkes/toolbox v1.113.0 h1:t5ACgEYbmCl1qtiP9V5vje9QRGjMsNvIpN8Nv/UZ3Ko=
+github.com/richardwilkes/toolbox v1.113.0/go.mod h1:NkBik7tpAvCuxCipWW19yyURNcrBdddqGRCS+FkFoO0=
 github.com/rjeczalik/notify v0.9.3 h1:6rJAzHTGKXGj76sbRgDiDcYj/HniypXmSJo1SWakZeY=
 github.com/rjeczalik/notify v0.9.3/go.mod h1:gF3zSOrafR9DQEWSE8TjfI9NkooDxbyT4UgRGKZA0lc=
 github.com/rogpeppe/go-internal v1.8.0 h1:FCbCCtXNOY3UtUuHUYaghJg4y7Fd14rXifAYUAtL9R8=

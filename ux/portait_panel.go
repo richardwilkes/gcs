@@ -57,7 +57,7 @@ func NewPortraitPanel(entity *gurps.Entity) *PortraitPanel {
 
 func (p *PortraitPanel) drawSelf(gc *unison.Canvas, _ unison.Rect) {
 	r := p.ContentRect(false)
-	paint := unison.ContentColor.Paint(gc, r, paintstyle.Fill)
+	paint := unison.PrimaryTheme.Surface.Paint(gc, r, paintstyle.Fill)
 	gc.DrawRect(r, paint)
 	if img := p.entity.Profile.Portrait(); img != nil {
 		size := img.LogicalSize()

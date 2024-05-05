@@ -58,7 +58,7 @@ func newPrereqPanel(entity *gurps.Entity, root **gurps.PrereqList) *prereqPanel 
 		},
 		unison.NewEmptyBorder(unison.NewUniformInsets(2))))
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, paintstyle.Fill))
+		gc.DrawRect(rect, unison.PrimaryTheme.Surface.Paint(gc, rect, paintstyle.Fill))
 	}
 	p.AddChild(p.createPrereqListPanel(0, *root))
 	return p

@@ -123,7 +123,7 @@ func (d *webSettingsDockable) createBanner(content *unison.Panel) {
 	fd := banner.Font.Descriptor()
 	fd.Weight = weight.Bold
 	banner.Font = fd.Font()
-	banner.OnBackgroundInk = unison.OnWarningColor
+	banner.OnBackgroundInk = &unison.PrimaryTheme.OnWarning
 	banner.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,
 		HAlign: align.Fill,
@@ -131,7 +131,7 @@ func (d *webSettingsDockable) createBanner(content *unison.Panel) {
 	})
 	banner.SetBorder(unison.NewEmptyBorder(unison.NewUniformInsets(unison.StdVSpacing * 4)))
 	banner.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.WarningColor.Paint(gc, rect, paintstyle.Fill))
+		gc.DrawRect(rect, unison.PrimaryTheme.Warning.Paint(gc, rect, paintstyle.Fill))
 		banner.DefaultDraw(gc, rect)
 	}
 	content.AddChild(banner)
@@ -198,9 +198,9 @@ func (d *webSettingsDockable) updateErrorMsg(err error) {
 			d.errorMsg = unison.NewLabel()
 			d.errorMsg.SetBorder(unison.NewEmptyBorder(unison.NewUniformInsets(2)))
 			d.errorMsg.HAlign = align.Middle
-			d.errorMsg.OnBackgroundInk = unison.OnErrorColor
+			d.errorMsg.OnBackgroundInk = &unison.PrimaryTheme.OnError
 			d.errorMsg.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-				gc.DrawRect(rect, unison.ErrorColor.Paint(gc, rect, paintstyle.Fill))
+				gc.DrawRect(rect, unison.PrimaryTheme.Error.Paint(gc, rect, paintstyle.Fill))
 				d.errorMsg.DefaultDraw(gc, rect)
 			}
 			d.errorMsg.SetLayoutData(&unison.FlexLayoutData{
@@ -396,8 +396,8 @@ func (d *webSettingsDockable) createUsersBlock(content *unison.Panel) {
 	title.Text = i18n.Text("Users")
 	header.AddChild(title)
 	d.userList = unison.NewList[*websettings.User]()
-	d.userList.BackgroundInk = unison.ContentColor
-	d.userList.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
+	d.userList.BackgroundInk = &unison.PrimaryTheme.Surface
+	d.userList.SetBorder(unison.NewLineBorder(&unison.PrimaryTheme.Outline, 0, unison.NewUniformInsets(1), false))
 	d.userList.SetLayoutData(&unison.FlexLayoutData{
 		MinSize: unison.NewSize(300, 64),
 		HSpan:   2,
@@ -615,8 +615,8 @@ func (d *webSettingsDockable) createAccessBlock(content *unison.Panel, u *webset
 	title.Text = i18n.Text("Access")
 	header.AddChild(title)
 	d.accessList = unison.NewList[*websettings.AccessWithKey]()
-	d.accessList.BackgroundInk = unison.ContentColor
-	d.accessList.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
+	d.accessList.BackgroundInk = &unison.PrimaryTheme.Surface
+	d.accessList.SetBorder(unison.NewLineBorder(&unison.PrimaryTheme.Outline, 0, unison.NewUniformInsets(1), false))
 	d.accessList.SetLayoutData(&unison.FlexLayoutData{
 		MinSize: unison.NewSize(300, 64),
 		HSpan:   2,

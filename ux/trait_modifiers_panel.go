@@ -41,7 +41,7 @@ func newTraitModifiersPanel(entity *gurps.Entity, modifiers *[]*gurps.TraitModif
 	})
 	p.SetBorder(unison.NewLineBorder(gurps.HeaderColor, 0, unison.NewUniformInsets(1), false))
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, paintstyle.Fill))
+		gc.DrawRect(rect, unison.PrimaryTheme.Surface.Paint(gc, rect, paintstyle.Fill))
 	}
 	p.provider = NewTraitModifiersProvider(p, true)
 	p.table = newEditorTable(p.AsPanel(), p.provider)
