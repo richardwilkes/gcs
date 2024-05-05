@@ -13,10 +13,8 @@ package gurps
 
 import (
 	"context"
-	"fmt"
 	"io/fs"
-	"strconv"
-	"strings"
+	"log/slog"
 	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -27,7 +25,11 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-const colorsTypeKey = "theme_colors"
+const (
+	minimumColorsVersion = 5
+	currentColorsVersion = 5
+	colorsTypeKey        = "theme_colors"
+)
 
 // Additional colors over and above what unison provides by default.
 var (
@@ -88,16 +90,17 @@ func initColors() {
 	currentColors = []*ThemedColor{
 		{ID: "primary", Title: i18n.Text("Primary"), Color: &unison.PrimaryTheme.Primary},
 		{ID: "on_primary", Title: i18n.Text("On Primary"), Color: &unison.PrimaryTheme.OnPrimary},
+		{ID: "primary_variant", Title: i18n.Text("Primary Variant"), Color: &unison.PrimaryTheme.PrimaryVariant},
 		{ID: "secondary", Title: i18n.Text("Secondary"), Color: &unison.PrimaryTheme.Secondary},
 		{ID: "on_secondary", Title: i18n.Text("On Secondary"), Color: &unison.PrimaryTheme.OnSecondary},
+		{ID: "secondary_variant", Title: i18n.Text("Secondary Variant"), Color: &unison.PrimaryTheme.SecondaryVariant},
 		{ID: "tertiary", Title: i18n.Text("Tertiary"), Color: &unison.PrimaryTheme.Tertiary},
 		{ID: "on_tertiary", Title: i18n.Text("On Tertiary"), Color: &unison.PrimaryTheme.OnTertiary},
+		{ID: "tertiary_variant", Title: i18n.Text("Tertiary Variant"), Color: &unison.PrimaryTheme.TertiaryVariant},
 		{ID: "surface", Title: i18n.Text("Surface"), Color: &unison.PrimaryTheme.Surface},
 		{ID: "on_surface", Title: i18n.Text("On Surface"), Color: &unison.PrimaryTheme.OnSurface},
 		{ID: "surface_above", Title: i18n.Text("Surface Above"), Color: &unison.PrimaryTheme.SurfaceAbove},
-		// {ID: "on_surface_above", Title: i18n.Text("On Surface Above"), Color: &unison.PrimaryTheme.OnSurfaceAbove},
 		{ID: "surface_below", Title: i18n.Text("Surface Below"), Color: &unison.PrimaryTheme.SurfaceBelow},
-		// {ID: "on_surface_below", Title: i18n.Text("On Surface Below"), Color: &unison.PrimaryTheme.OnSurfaceBelow},
 		{ID: "error", Title: i18n.Text("Error"), Color: &unison.PrimaryTheme.Error},
 		{ID: "on_error", Title: i18n.Text("On Error"), Color: &unison.PrimaryTheme.OnError},
 		{ID: "warning", Title: i18n.Text("Warning"), Color: &unison.PrimaryTheme.Warning},
@@ -142,23 +145,14 @@ func NewColorsFromFS(fileSystem fs.FS, filePath string) (*Colors, error) {
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &current); err != nil {
 		return nil, errs.Wrap(err)
 	}
-	switch current.Version {
-	case 0:
-		// During development of v5, forgot to add the type & version initially, so try and fix that up
-		if current.Type == "" {
-			current.Type = colorsTypeKey
-			current.Version = CurrentDataVersion
-		}
-	case 1:
-		current.Type = colorsTypeKey
-		current.Version = CurrentDataVersion
-	default:
-	}
 	if current.Type != colorsTypeKey {
 		return nil, errs.New(unexpectedFileDataMsg())
 	}
-	if err := CheckVersion(current.Version); err != nil {
-		return nil, err
+	if current.Version < minimumColorsVersion {
+		return nil, errs.New("The theme color data is too old to be used")
+	}
+	if current.Version > currentColorsVersion {
+		return nil, errs.New("The theme color data is too new to be used")
 	}
 	return &current.Colors, nil
 }
@@ -167,7 +161,7 @@ func NewColorsFromFS(fileSystem fs.FS, filePath string) (*Colors, error) {
 func (c *Colors) Save(filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &colorsData{
 		Type:    colorsTypeKey,
-		Version: CurrentDataVersion,
+		Version: currentColorsVersion,
 		Colors:  *c,
 	})
 }
@@ -183,7 +177,7 @@ func (c *Colors) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (c *Colors) UnmarshalJSON(data []byte) error {
-	c.data = make(map[string]*unison.ThemeColor, len(CurrentColors()))
+	c.data = nil
 	var err error
 	toolbox.CallWithHandler(func() {
 		err = json.Unmarshal(data, &c.data)
@@ -191,35 +185,9 @@ func (c *Colors) UnmarshalJSON(data []byte) error {
 		err = e
 	})
 	if err != nil {
-		var old map[string]string
-		if err = json.Unmarshal(data, &old); err != nil {
-			return errs.New("invalid color data")
-		}
-		c.data = make(map[string]*unison.ThemeColor, len(CurrentColors()))
-		for _, fc := range CurrentColors() {
-			local := *fc.Color
-			c.data[fc.ID] = &local
-			if cc, ok := old[fc.ID]; ok {
-				var clr unison.Color
-				if clr, err = unison.ColorDecode(cc); err != nil {
-					if clr, err = unison.ColorDecode("rgb(" + cc + ")"); err != nil {
-						lastComma := strings.LastIndexByte(cc, ',')
-						if lastComma == -1 {
-							continue
-						}
-						var v int
-						if v, err = strconv.Atoi(cc[lastComma+1:]); err != nil {
-							continue
-						}
-						if clr, err = unison.ColorDecode(fmt.Sprintf("rgba(%s,%f)", cc[:lastComma], float32(v)/255)); err != nil {
-							continue
-						}
-					}
-				}
-				local.Light = clr
-				local.Dark = clr
-			}
-		}
+		c.data = nil
+		errs.LogWithLevel(context.Background(), slog.LevelWarn, slog.Default(),
+			errs.NewWithCause("Unable to load theme color data", err))
 	}
 	if c.data == nil {
 		c.data = make(map[string]*unison.ThemeColor, len(CurrentColors()))
