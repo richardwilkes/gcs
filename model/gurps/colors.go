@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -29,21 +29,6 @@ const (
 	minimumColorsVersion = 5
 	currentColorsVersion = 5
 	colorsTypeKey        = "theme_colors"
-)
-
-// Additional colors over and above what unison provides by default.
-var (
-	HeaderColor         = &unison.ThemeColor{Light: unison.RGB(43, 43, 43), Dark: unison.RGB(64, 64, 64)}
-	HintColor           = &unison.ThemeColor{Light: unison.Grey, Dark: unison.RGB(64, 64, 64)}
-	MarkerColor         = &unison.ThemeColor{Light: unison.RGB(252, 242, 196), Dark: unison.RGB(0, 51, 0)}
-	OnHeaderColor       = &unison.ThemeColor{Light: unison.White, Dark: unison.Silver}
-	OnMarkerColor       = &unison.ThemeColor{Light: unison.Black, Dark: unison.RGB(221, 221, 221)}
-	OnPageColor         = &unison.ThemeColor{Light: unison.Black, Dark: unison.RGB(160, 160, 160)}
-	OnPageStandoutColor = &unison.ThemeColor{Light: unison.Black, Dark: unison.RGB(160, 160, 160)}
-	OnSearchListColor   = &unison.ThemeColor{Light: unison.Black, Dark: unison.RGB(204, 204, 204)}
-	PageColor           = &unison.ThemeColor{Light: unison.White, Dark: unison.RGB(16, 16, 16)}
-	PageStandoutColor   = &unison.ThemeColor{Light: unison.RGB(221, 221, 221), Dark: unison.RGB(64, 64, 64)}
-	SearchListColor     = &unison.ThemeColor{Light: unison.LightCyan, Dark: unison.RGB(0, 43, 43)}
 )
 
 var (
@@ -103,19 +88,6 @@ func initColors() {
 		{ID: "on_warning", Title: i18n.Text("On Warning"), Color: &unison.PrimaryTheme.OnWarning},
 		{ID: "outline", Title: i18n.Text("Outline"), Color: &unison.PrimaryTheme.Outline},
 		{ID: "outline_variant", Title: i18n.Text("Outline Variant"), Color: &unison.PrimaryTheme.OutlineVariant},
-
-		{ID: "header", Title: i18n.Text("Header"), Color: HeaderColor},
-		{ID: "on_header", Title: i18n.Text("On Header"), Color: OnHeaderColor},
-		{ID: "hint", Title: i18n.Text("Hint"), Color: HintColor},
-		{ID: "search_list", Title: i18n.Text("Search List"), Color: SearchListColor},
-		{ID: "on_search_list", Title: i18n.Text("On Search List"), Color: OnSearchListColor},
-		{ID: "marker", Title: i18n.Text("Marker"), Color: MarkerColor},
-		{ID: "on_marker", Title: i18n.Text("On Marker"), Color: OnMarkerColor},
-		{ID: "page", Title: i18n.Text("Page"), Color: PageColor},
-		{ID: "on_page", Title: i18n.Text("On Page"), Color: OnPageColor},
-		{ID: "page_standout", Title: i18n.Text("Page Standout"), Color: PageStandoutColor},
-		{ID: "on_page_standout", Title: i18n.Text("On Page Standout"), Color: OnPageStandoutColor},
-
 		{ID: "shadow", Title: i18n.Text("Shadow"), Color: &unison.PrimaryTheme.Shadow},
 	}
 	factoryColors = make([]*ThemedColor, len(currentColors))

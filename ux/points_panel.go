@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -60,7 +60,7 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 		HGrab:  true,
 	})
 	hdr.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, gurps.HeaderColor.Paint(gc, rect, paintstyle.Fill))
+		gc.DrawRect(rect, unison.PrimaryTheme.SurfaceAbove.Paint(gc, rect, paintstyle.Fill))
 	}
 
 	hdri := unison.NewPanel()
@@ -80,12 +80,12 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	p.total = unison.NewLabel()
 	p.total.Font = gurps.PageLabelPrimaryFont
 	p.total.Text = fmt.Sprintf(i18n.Text("%s Points"), overallTotal)
-	p.total.OnBackgroundInk = gurps.OnHeaderColor
+	p.total.OnBackgroundInk = &unison.PrimaryTheme.OnSurface
 	hdri.AddChild(p.total)
 	height := p.total.Font.Baseline() - 2
 	editButton := unison.NewSVGButton(svg.Edit)
-	editButton.OnBackgroundInk = gurps.OnHeaderColor
-	editButton.OnSelectionInk = gurps.OnHeaderColor
+	editButton.OnBackgroundInk = &unison.PrimaryTheme.OnSurface
+	editButton.OnSelectionInk = &unison.PrimaryTheme.OnSurface
 	editButton.Font = gurps.PageLabelPrimaryFont
 	editButton.Drawable.(*unison.DrawableSVG).Size = unison.NewSize(height, height)
 	editButton.ClickCallback = func() {
@@ -107,7 +107,7 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	})
 	p.AddChild(p.ptsList)
 
-	p.ptsList.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(gurps.HeaderColor, 0, unison.Insets{
+	p.ptsList.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(&unison.PrimaryTheme.SurfaceAbove, 0, unison.Insets{
 		Top:    0,
 		Left:   1,
 		Bottom: 1,

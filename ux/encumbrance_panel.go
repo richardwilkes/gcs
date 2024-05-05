@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -53,7 +53,7 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 		r := p.Children()[0].FrameRect()
 		r.X = rect.X
 		r.Width = rect.Width
-		gc.DrawRect(r, gurps.HeaderColor.Paint(gc, r, paintstyle.Fill))
+		gc.DrawRect(r, unison.PrimaryTheme.SurfaceAbove.Paint(gc, r, paintstyle.Fill))
 		p.current = int(entity.EncumbranceLevel(false))
 		p.overloaded = entity.WeightCarried(false) > entity.MaximumCarry(encumbrance.ExtraHeavy)
 		for i, row := range p.row {

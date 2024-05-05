@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -26,9 +26,7 @@ func NewEditorListHeader[T gurps.NodeTypes](title, tooltip string, forPage bool)
 	if forPage {
 		return NewPageTableColumnHeader[T](title, tooltip)
 	}
-	header := unison.NewTableColumnHeader[*Node[T]](title, tooltip)
-	header.OnBackgroundInk = gurps.OnHeaderColor
-	return header
+	return unison.NewTableColumnHeader[*Node[T]](title, tooltip)
 }
 
 // NewEditorListSVGHeader creates a new list header with an SVG image as its content rather than text.
@@ -48,7 +46,6 @@ func NewEditorListSVGHeader[T gurps.NodeTypes](svg *unison.SVG, tooltip string, 
 		SVG:  svg,
 		Size: unison.NewSize(baseline, baseline),
 	}
-	header.OnBackgroundInk = gurps.OnHeaderColor
 	return header
 }
 
@@ -71,7 +68,6 @@ func NewEditorListSVGPairHeader[T gurps.NodeTypes](leftSVG, rightSVG *unison.SVG
 		Right: rightSVG,
 		Size:  unison.NewSize(baseline*2+4, baseline),
 	}
-	header.OnBackgroundInk = gurps.OnHeaderColor
 	return header
 }
 
@@ -124,7 +120,7 @@ func NewEditorExtendedWeightHeader[T gurps.NodeTypes](forPage bool) unison.Table
 // existing PageTableColumnHeaders, but will alter any PageTableColumnHeaders created in the future.
 var PageTableColumnHeaderTheme = unison.LabelTheme{
 	Font:            gurps.PageLabelPrimaryFont,
-	OnBackgroundInk: gurps.OnHeaderColor,
+	OnBackgroundInk: &unison.PrimaryTheme.OnSurface,
 	Gap:             3,
 	HAlign:          align.Middle,
 	VAlign:          align.Middle,
@@ -174,15 +170,20 @@ func (h *PageTableColumnHeader[T]) DefaultSizes(hint unison.Size) (minSize, pref
 }
 
 // DefaultDraw provides the default drawing.
-func (h *PageTableColumnHeader[T]) DefaultDraw(canvas *unison.Canvas, dirty unison.Rect) {
+func (h *PageTableColumnHeader[T]) DefaultDraw(gc *unison.Canvas, dirty unison.Rect) {
 	if h.sortState.Order == 0 {
-		canvas.DrawRect(dirty, gurps.MarkerColor.Paint(canvas, dirty, paintstyle.Fill))
+		r := h.ContentRect(false)
+		y := r.Y
+		if h.sortState.Ascending {
+			y = r.Bottom() - 1
+		}
+		gc.DrawLine(r.X, y, r.Right(), y, unison.PrimaryTheme.Tertiary.Paint(gc, r, paintstyle.Stroke))
 		save := h.OnBackgroundInk
-		h.OnBackgroundInk = gurps.OnMarkerColor
-		h.Label.DefaultDraw(canvas, dirty)
+		h.OnBackgroundInk = &unison.PrimaryTheme.Tertiary
+		h.Label.DefaultDraw(gc, dirty)
 		h.OnBackgroundInk = save
 	} else {
-		h.Label.DefaultDraw(canvas, dirty)
+		h.Label.DefaultDraw(gc, dirty)
 	}
 }
 

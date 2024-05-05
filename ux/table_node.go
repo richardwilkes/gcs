@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -337,23 +337,15 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		label.HAlign = c.Alignment
 		label.VAlign = align.Middle
 		label.ClientData()[invertColorsMarker] = true
-		label.OnBackgroundInk = gurps.OnMarkerColor
+		label.OnBackgroundInk = &unison.PrimaryTheme.OnTertiary
 		label.SetBorder(unison.NewEmptyBorder(unison.Insets{
 			Left:  4,
 			Right: 4,
 		}))
-		label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-			gc.DrawRect(rect, gurps.MarkerColor.Paint(gc, rect, paintstyle.Fill))
-			label.DefaultDraw(gc, rect)
-		}
 		p.AddChild(label)
 	}
 	if tooltip != "" {
 		p.Tooltip = newWrappedTooltip(tooltip)
-		p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-			gc.DrawLine(rect.X, rect.Bottom()-0.5, rect.Right(), rect.Bottom()-0.5,
-				unison.PrimaryTheme.Tertiary.Paint(gc, rect, paintstyle.Stroke))
-		}
 	}
 	return p
 }

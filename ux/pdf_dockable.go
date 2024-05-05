@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -284,7 +284,6 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 func (d *PDFDockable) createTOC() {
 	d.tocPanel = unison.NewTable[*tocNode](&unison.SimpleTableModel[*tocNode]{})
 	d.tocPanel.Columns = make([]unison.ColumnInfo, 1)
-	d.tocPanel.ShowRowDivider = false
 	d.tocPanel.DoubleClickCallback = d.tocDoubleClick
 	d.tocPanel.SelectionChangedCallback = d.tocSelectionChanged
 

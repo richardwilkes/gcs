@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -59,7 +59,7 @@ func NewBodyPanel(entity *gurps.Entity) *BodyPanel {
 		r := p.Children()[0].FrameRect()
 		r.X = rect.X
 		r.Width = rect.Width
-		gc.DrawRect(r, gurps.HeaderColor.Paint(gc, r, paintstyle.Fill))
+		gc.DrawRect(r, unison.PrimaryTheme.SurfaceAbove.Paint(gc, r, paintstyle.Fill))
 		for i, row := range p.row {
 			var ink unison.Ink
 			if i&1 == 1 {
@@ -129,11 +129,6 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 		}
 		if strings.TrimSpace(location.Description) != "" {
 			name.Tooltip = newWrappedTooltip(location.Description)
-			name.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-				gc.DrawLine(rect.X, rect.Bottom()-0.5, rect.Right(), rect.Bottom()-0.5,
-					unison.PrimaryTheme.Tertiary.Paint(gc, rect, paintstyle.Stroke))
-				name.DefaultDraw(gc, rect)
-			}
 		}
 		name.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 		p.row = append(p.row, name)
@@ -170,11 +165,6 @@ func (p *BodyPanel) createDRField(location *gurps.HitLocation) unison.Paneler {
 		MarkForLayoutWithinDockable(f)
 	})
 	field.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
-	field.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawLine(rect.X, rect.Bottom()-0.5, rect.Right(), rect.Bottom()-0.5,
-			unison.PrimaryTheme.Tertiary.Paint(gc, rect, paintstyle.Stroke))
-		field.DefaultDraw(gc, rect)
-	}
 	return field
 }
 

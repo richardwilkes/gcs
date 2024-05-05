@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -116,7 +116,7 @@ func (p *eqpModProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Equip
 	ids := p.ColumnIDs()
 	headers := make([]unison.TableColumnHeader[*Node[*gurps.EquipmentModifier]], 0, len(ids))
 	for _, id := range ids {
-		headers = append(headers, headerFromData[*gurps.Equipment](gurps.EquipmentModifierHeaderData(id), false))
+		headers = append(headers, headerFromData[*gurps.EquipmentModifier](gurps.EquipmentModifierHeaderData(id), false))
 	}
 	return headers
 }

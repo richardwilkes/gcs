@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -68,7 +68,6 @@ type TableProvider[T gurps.NodeTypes] interface {
 // this should be a standalone top-level table for a dockable. Otherwise, pass in the typical font used for a cell.
 func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font) (header *unison.TableHeader[*Node[T]], table *unison.Table[*Node[T]]) {
 	table = unison.NewTable[*Node[T]](provider)
-	table.ShowRowDivider = false
 	provider.SetTable(table)
 	table.HierarchyColumnID = provider.HierarchyColumnID()
 	layoutData := &unison.FlexLayoutData{
@@ -100,7 +99,8 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 	}
 	header = unison.NewTableHeader(table, headers...)
 	header.Less = flexibleLess
-	header.BackgroundInk = gurps.HeaderColor
+	header.BackgroundInk = &unison.PrimaryTheme.SurfaceAbove
+	header.InteriorDividerColor = &unison.PrimaryTheme.SurfaceAbove
 	header.SetBorder(header.HeaderBorder)
 	header.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,

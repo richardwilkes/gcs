@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -50,10 +50,10 @@ func (t *TitledBorder) Draw(gc *unison.Canvas, rect unison.Rect) {
 	path.SetFillType(filltype.EvenOdd)
 	path.Rect(rect)
 	path.Rect(clip)
-	gc.DrawPath(path, gurps.HeaderColor.Paint(gc, rect, paintstyle.Fill))
+	gc.DrawPath(path, unison.PrimaryTheme.SurfaceAbove.Paint(gc, rect, paintstyle.Fill))
 	text := unison.NewText(t.Title, &unison.TextDecoration{
 		Font:       t.font(),
-		Foreground: gurps.OnHeaderColor,
+		Foreground: &unison.PrimaryTheme.OnSurface,
 	})
 	text.Draw(gc, rect.X+(rect.Width-text.Width())/2, rect.Y+1+text.Baseline())
 }

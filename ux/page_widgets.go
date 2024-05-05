@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -27,7 +27,7 @@ var nonEditableFieldColor = unison.NewDynamicColor(func() unison.Color {
 // NewPageHeader creates a new center-aligned header for a sheet page.
 func NewPageHeader(title string, hSpan int) *unison.Label {
 	label := unison.NewLabel()
-	label.OnBackgroundInk = gurps.OnHeaderColor
+	label.OnBackgroundInk = &unison.PrimaryTheme.OnSurface
 	label.Text = title
 	label.Font = gurps.PageLabelPrimaryFont
 	label.HAlign = align.Middle
@@ -37,7 +37,7 @@ func NewPageHeader(title string, hSpan int) *unison.Label {
 		VAlign: align.Middle,
 	})
 	label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, gurps.HeaderColor.Paint(gc, rect, paintstyle.Fill))
+		gc.DrawRect(rect, unison.PrimaryTheme.SurfaceAbove.Paint(gc, rect, paintstyle.Fill))
 		label.DefaultDraw(gc, rect)
 	}
 	return label
@@ -65,7 +65,7 @@ func NewPageInternalHeader(title string, span int) unison.Paneler {
 	label.SetBorder(border)
 	label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
 		_, pref, _ := label.Sizes(unison.Size{})
-		paint := unison.PrimaryTheme.Outline.Paint(gc, rect, paintstyle.Stroke)
+		paint := label.OnBackgroundInk.Paint(gc, rect, paintstyle.Stroke)
 		paint.SetStrokeWidth(1)
 		half := (rect.Width - pref.Width) / 2
 		gc.DrawLine(rect.X, rect.CenterY(), rect.X+half-2, rect.CenterY(), paint)

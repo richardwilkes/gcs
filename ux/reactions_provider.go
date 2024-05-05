@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2022 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -97,7 +97,7 @@ func (p *reactionModProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.
 	ids := p.ColumnIDs()
 	headers := make([]unison.TableColumnHeader[*Node[*gurps.ConditionalModifier]], 0, len(ids))
 	for _, id := range ids {
-		headers = append(headers, headerFromData[*gurps.Equipment](gurps.ReactionModifiersHeaderData(id), true))
+		headers = append(headers, headerFromData[*gurps.ConditionalModifier](gurps.ReactionModifiersHeaderData(id), true))
 	}
 	return DisableSorting(headers)
 }
