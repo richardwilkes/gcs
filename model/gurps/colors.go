@@ -33,21 +33,17 @@ const (
 
 // Additional colors over and above what unison provides by default.
 var (
-	HeaderColor             = &unison.ThemeColor{Light: unison.RGB(43, 43, 43), Dark: unison.RGB(64, 64, 64)}
-	HintColor               = &unison.ThemeColor{Light: unison.Grey, Dark: unison.RGB(64, 64, 64)}
-	MarkerColor             = &unison.ThemeColor{Light: unison.RGB(252, 242, 196), Dark: unison.RGB(0, 51, 0)}
-	OnHeaderColor           = &unison.ThemeColor{Light: unison.White, Dark: unison.Silver}
-	OnMarkerColor           = &unison.ThemeColor{Light: unison.Black, Dark: unison.RGB(221, 221, 221)}
-	OnOverloadedColor       = &unison.ThemeColor{Light: unison.White, Dark: unison.RGB(221, 221, 221)}
-	OnPageColor             = &unison.ThemeColor{Light: unison.Black, Dark: unison.RGB(160, 160, 160)}
-	OnPageStandoutColor     = &unison.ThemeColor{Light: unison.Black, Dark: unison.RGB(160, 160, 160)}
-	OnSearchListColor       = &unison.ThemeColor{Light: unison.Black, Dark: unison.RGB(204, 204, 204)}
-	OverloadedColor         = &unison.ThemeColor{Light: unison.RGB(192, 64, 64), Dark: unison.RGB(115, 37, 37)}
-	PDFLinkHighlightColor   = &unison.ThemeColor{Light: unison.SpringGreen, Dark: unison.SpringGreen}
-	PDFMarkerHighlightColor = &unison.ThemeColor{Light: unison.Yellow, Dark: unison.Yellow}
-	PageColor               = &unison.ThemeColor{Light: unison.White, Dark: unison.RGB(16, 16, 16)}
-	PageStandoutColor       = &unison.ThemeColor{Light: unison.RGB(221, 221, 221), Dark: unison.RGB(64, 64, 64)}
-	SearchListColor         = &unison.ThemeColor{Light: unison.LightCyan, Dark: unison.RGB(0, 43, 43)}
+	HeaderColor         = &unison.ThemeColor{Light: unison.RGB(43, 43, 43), Dark: unison.RGB(64, 64, 64)}
+	HintColor           = &unison.ThemeColor{Light: unison.Grey, Dark: unison.RGB(64, 64, 64)}
+	MarkerColor         = &unison.ThemeColor{Light: unison.RGB(252, 242, 196), Dark: unison.RGB(0, 51, 0)}
+	OnHeaderColor       = &unison.ThemeColor{Light: unison.White, Dark: unison.Silver}
+	OnMarkerColor       = &unison.ThemeColor{Light: unison.Black, Dark: unison.RGB(221, 221, 221)}
+	OnPageColor         = &unison.ThemeColor{Light: unison.Black, Dark: unison.RGB(160, 160, 160)}
+	OnPageStandoutColor = &unison.ThemeColor{Light: unison.Black, Dark: unison.RGB(160, 160, 160)}
+	OnSearchListColor   = &unison.ThemeColor{Light: unison.Black, Dark: unison.RGB(204, 204, 204)}
+	PageColor           = &unison.ThemeColor{Light: unison.White, Dark: unison.RGB(16, 16, 16)}
+	PageStandoutColor   = &unison.ThemeColor{Light: unison.RGB(221, 221, 221), Dark: unison.RGB(64, 64, 64)}
+	SearchListColor     = &unison.ThemeColor{Light: unison.LightCyan, Dark: unison.RGB(0, 43, 43)}
 )
 
 var (
@@ -115,14 +111,10 @@ func initColors() {
 		{ID: "on_search_list", Title: i18n.Text("On Search List"), Color: OnSearchListColor},
 		{ID: "marker", Title: i18n.Text("Marker"), Color: MarkerColor},
 		{ID: "on_marker", Title: i18n.Text("On Marker"), Color: OnMarkerColor},
-		{ID: "overloaded", Title: i18n.Text("Overloaded"), Color: OverloadedColor},
-		{ID: "on_overloaded", Title: i18n.Text("On Overloaded"), Color: OnOverloadedColor},
 		{ID: "page", Title: i18n.Text("Page"), Color: PageColor},
 		{ID: "on_page", Title: i18n.Text("On Page"), Color: OnPageColor},
 		{ID: "page_standout", Title: i18n.Text("Page Standout"), Color: PageStandoutColor},
 		{ID: "on_page_standout", Title: i18n.Text("On Page Standout"), Color: OnPageStandoutColor},
-		{ID: "pdf_link", Title: i18n.Text("PDF Link Highlight"), Color: PDFLinkHighlightColor},
-		{ID: "pdf_marker", Title: i18n.Text("PDF Marker Highlight"), Color: PDFMarkerHighlightColor},
 
 		{ID: "shadow", Title: i18n.Text("Shadow"), Color: &unison.PrimaryTheme.Shadow},
 	}

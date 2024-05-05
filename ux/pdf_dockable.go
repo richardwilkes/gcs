@@ -510,9 +510,12 @@ func (d *PDFDockable) checkForLinkAt(where unison.Point) bool {
 	return link != nil
 }
 
-func (d *PDFDockable) updateCursor(_ unison.Point) *unison.Cursor {
+func (d *PDFDockable) updateCursor(pt unison.Point) *unison.Cursor {
 	if d.inDrag {
 		return unison.MoveCursor()
+	}
+	if _, link := d.overLink(pt); link != nil {
+		return unison.PointingCursor()
 	}
 	return unison.ArrowCursor()
 }
@@ -630,7 +633,7 @@ func (d *PDFDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
 			p := unison.NewPaint()
 			p.SetStyle(paintstyle.Fill)
 			p.SetBlendMode(blendmode.Modulate)
-			p.SetColor(gurps.PDFMarkerHighlightColor.GetColor())
+			p.SetColor(adjustForModulate(unison.PrimaryTheme.Tertiary.GetColor()))
 			for _, match := range d.page.Matches {
 				gc.DrawRect(match, p)
 			}
@@ -639,11 +642,23 @@ func (d *PDFDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
 			p := unison.NewPaint()
 			p.SetStyle(paintstyle.Fill)
 			p.SetBlendMode(blendmode.Modulate)
-			p.SetColor(gurps.PDFLinkHighlightColor.GetColor())
+			p.SetColor(adjustForModulate(unison.PrimaryTheme.Primary.GetColor()))
 			gc.DrawRect(d.rolloverRect, p)
 		}
 		gc.Restore()
 	}
+}
+
+func adjustForModulate(c unison.Color) unison.Color {
+	saturation := c.Saturation()
+	if saturation > 0.5 {
+		c = c.AdjustSaturation(-(saturation - 0.5))
+	}
+	luminance := c.Luminance()
+	if luminance < 0.6 {
+		c = c.AdjustBrightness(max(0.6-luminance, 0.2))
+	}
+	return c
 }
 
 func (d *PDFDockable) drawOverlay(gc *unison.Canvas, dirty unison.Rect) {

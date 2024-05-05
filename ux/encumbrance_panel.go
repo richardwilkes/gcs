@@ -61,9 +61,9 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 			switch {
 			case p.current == i:
 				if p.overloaded {
-					ink = gurps.OverloadedColor
+					ink = &unison.PrimaryTheme.Warning
 				} else {
-					ink = gurps.MarkerColor
+					ink = &unison.PrimaryTheme.Secondary
 				}
 			case i&1 == 1:
 				ink = &unison.PrimaryTheme.Surface
@@ -205,9 +205,9 @@ func (c *encRowColor) GetColor() unison.Color {
 	switch {
 	case c.owner.current == c.index:
 		if c.owner.overloaded {
-			return gurps.OnOverloadedColor.GetColor()
+			return unison.PrimaryTheme.OnWarning.GetColor()
 		}
-		return gurps.OnMarkerColor.GetColor()
+		return unison.PrimaryTheme.OnSecondary.GetColor()
 	default:
 		return unison.PrimaryTheme.OnSurface.GetColor()
 	}
