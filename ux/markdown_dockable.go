@@ -153,7 +153,7 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 	}
 
 	toolbar := unison.NewPanel()
-	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(&unison.PrimaryTheme.Outline, 0, unison.Insets{Bottom: 1},
+	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	toolbar.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,

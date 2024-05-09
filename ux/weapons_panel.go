@@ -44,7 +44,7 @@ func newWeaponsPanel(cmdRoot Rebuildable, weaponOwner gurps.WeaponOwner, weaponT
 		HAlign: align.Fill,
 		HGrab:  true,
 	})
-	p.SetBorder(unison.NewLineBorder(&unison.PrimaryTheme.SurfaceAbove, 0, unison.NewUniformInsets(1), false))
+	p.SetBorder(unison.NewLineBorder(unison.ThemeAboveSurface, 0, unison.NewUniformInsets(1), false))
 	p.provider = NewWeaponsProvider(p, p.weaponType, false)
 	p.table = newEditorTable(p.AsPanel(), p.provider)
 	p.table.RefKey = weaponType.Key() + "-" + uuid.New().String()

@@ -21,7 +21,6 @@ import (
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 )
 
@@ -69,26 +68,11 @@ func FactoryColors() []*ThemedColor {
 
 func initColors() {
 	currentColors = []*ThemedColor{
-		{ID: "primary", Title: i18n.Text("Primary"), Color: &unison.PrimaryTheme.Primary},
-		{ID: "on_primary", Title: i18n.Text("On Primary"), Color: &unison.PrimaryTheme.OnPrimary},
-		{ID: "primary_variant", Title: i18n.Text("Primary Variant"), Color: &unison.PrimaryTheme.PrimaryVariant},
-		{ID: "secondary", Title: i18n.Text("Secondary"), Color: &unison.PrimaryTheme.Secondary},
-		{ID: "on_secondary", Title: i18n.Text("On Secondary"), Color: &unison.PrimaryTheme.OnSecondary},
-		{ID: "secondary_variant", Title: i18n.Text("Secondary Variant"), Color: &unison.PrimaryTheme.SecondaryVariant},
-		{ID: "tertiary", Title: i18n.Text("Tertiary"), Color: &unison.PrimaryTheme.Tertiary},
-		{ID: "on_tertiary", Title: i18n.Text("On Tertiary"), Color: &unison.PrimaryTheme.OnTertiary},
-		{ID: "tertiary_variant", Title: i18n.Text("Tertiary Variant"), Color: &unison.PrimaryTheme.TertiaryVariant},
-		{ID: "surface", Title: i18n.Text("Surface"), Color: &unison.PrimaryTheme.Surface},
-		{ID: "on_surface", Title: i18n.Text("On Surface"), Color: &unison.PrimaryTheme.OnSurface},
-		{ID: "surface_above", Title: i18n.Text("Surface Above"), Color: &unison.PrimaryTheme.SurfaceAbove},
-		{ID: "surface_below", Title: i18n.Text("Surface Below"), Color: &unison.PrimaryTheme.SurfaceBelow},
-		{ID: "error", Title: i18n.Text("Error"), Color: &unison.PrimaryTheme.Error},
-		{ID: "on_error", Title: i18n.Text("On Error"), Color: &unison.PrimaryTheme.OnError},
-		{ID: "warning", Title: i18n.Text("Warning"), Color: &unison.PrimaryTheme.Warning},
-		{ID: "on_warning", Title: i18n.Text("On Warning"), Color: &unison.PrimaryTheme.OnWarning},
-		{ID: "outline", Title: i18n.Text("Outline"), Color: &unison.PrimaryTheme.Outline},
-		{ID: "outline_variant", Title: i18n.Text("Outline Variant"), Color: &unison.PrimaryTheme.OutlineVariant},
-		{ID: "shadow", Title: i18n.Text("Shadow"), Color: &unison.PrimaryTheme.Shadow},
+		{ID: "surface", Title: "Surface", Color: unison.ThemeSurface},
+		{ID: "focus", Title: "Focus", Color: unison.ThemeFocus},
+		{ID: "tooltip", Title: "Tooltip", Color: unison.ThemeTooltip},
+		{ID: "error", Title: "Error", Color: unison.ThemeError},
+		{ID: "warning", Title: "Warning", Color: unison.ThemeWarning},
 	}
 	factoryColors = make([]*ThemedColor, len(currentColors))
 	for i, c := range currentColors {

@@ -122,7 +122,7 @@ func NewPDFDockable(filePath string, initialPage int) (unison.Dockable, error) {
 
 func (d *PDFDockable) createToolbar() *unison.Panel {
 	outer := unison.NewPanel()
-	outer.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(&unison.PrimaryTheme.Outline, 0, unison.Insets{Bottom: 1},
+	outer.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	outer.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
@@ -593,7 +593,7 @@ func (d *PDFDockable) docSizer(_ unison.Size) (minSize, prefSize, maxSize unison
 }
 
 func (d *PDFDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
-	gc.DrawRect(dirty, unison.PrimaryTheme.Surface.Paint(gc, dirty, paintstyle.Fill))
+	gc.DrawRect(dirty, unison.ThemeSurface.Paint(gc, dirty, paintstyle.Fill))
 	if d.page != nil && d.page.Image != nil {
 		switch d.autoScaling {
 		case autoscale.FitWidth:
@@ -632,7 +632,7 @@ func (d *PDFDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
 			p := unison.NewPaint()
 			p.SetStyle(paintstyle.Fill)
 			p.SetBlendMode(blendmode.Modulate)
-			p.SetColor(adjustForModulate(unison.PrimaryTheme.Tertiary.GetColor()))
+			p.SetColor(adjustForModulate(unison.ThemeFocus.GetColor()))
 			for _, match := range d.page.Matches {
 				gc.DrawRect(match, p)
 			}
@@ -641,7 +641,7 @@ func (d *PDFDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
 			p := unison.NewPaint()
 			p.SetStyle(paintstyle.Fill)
 			p.SetBlendMode(blendmode.Modulate)
-			p.SetColor(adjustForModulate(unison.PrimaryTheme.Primary.GetColor()))
+			p.SetColor(adjustForModulate(unison.ThemeFocus.GetColor()))
 			gc.DrawRect(d.rolloverRect, p)
 		}
 		gc.Restore()
@@ -653,9 +653,9 @@ func adjustForModulate(c unison.Color) unison.Color {
 	if saturation > 0.5 {
 		c = c.AdjustSaturation(-(saturation - 0.5))
 	}
-	luminance := c.Luminance()
-	if luminance < 0.6 {
-		c = c.AdjustBrightness(max(0.6-luminance, 0.2))
+	lightness := c.PerceivedLightness()
+	if lightness < 0.6 {
+		c = c.AdjustPerceivedLightness(max(0.6-lightness, 0.2))
 	}
 	return c
 }
@@ -679,15 +679,15 @@ func (d *PDFDockable) drawOverlayMsg(gc *unison.Canvas, dirty unison.Rect, msg s
 	font := unison.SystemFont.Face().Font(24)
 	baseline := font.Baseline()
 	if forError {
-		fgInk = &unison.PrimaryTheme.OnError
-		bgInk = unison.PrimaryTheme.Error.GetColor().SetAlphaIntensity(0.7)
+		fgInk = unison.ThemeOnError
+		bgInk = unison.ThemeError.GetColor().SetAlphaIntensity(0.7)
 		icon = &unison.DrawableSVG{
 			SVG:  unison.CircledExclamationSVG,
 			Size: unison.NewSize(baseline, baseline),
 		}
 	} else {
-		fgInk = &unison.PrimaryTheme.OnSurface
-		bgInk = unison.PrimaryTheme.Surface.GetColor().SetAlphaIntensity(0.7)
+		fgInk = unison.ThemeOnSurface
+		bgInk = unison.ThemeSurface.GetColor().SetAlphaIntensity(0.7)
 	}
 	decoration := &unison.TextDecoration{
 		Font:       font,

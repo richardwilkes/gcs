@@ -73,7 +73,7 @@ func InstallTableDropSupport[T gurps.NodeTypes](table *unison.Table[*Node[T]], p
 			originalDrawOverCallback(gc, rect)
 			if altDropRowIndex > -1 && altDropRowIndex <= table.LastRowIndex() {
 				frame := table.RowFrame(altDropRowIndex)
-				paint := unison.PrimaryTheme.Warning.Paint(gc, frame, paintstyle.Fill)
+				paint := unison.ThemeWarning.Paint(gc, frame, paintstyle.Fill)
 				paint.SetColorFilter(unison.Alpha30Filter())
 				gc.DrawRect(frame, paint)
 			}

@@ -53,7 +53,7 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 		r := p.Children()[0].FrameRect()
 		r.X = rect.X
 		r.Width = rect.Width
-		gc.DrawRect(r, unison.PrimaryTheme.SurfaceAbove.Paint(gc, r, paintstyle.Fill))
+		gc.DrawRect(r, unison.ThemeAboveSurface.Paint(gc, r, paintstyle.Fill))
 		p.current = int(entity.EncumbranceLevel(false))
 		p.overloaded = entity.WeightCarried(false) > entity.MaximumCarry(encumbrance.ExtraHeavy)
 		for i, row := range p.row {
@@ -61,14 +61,14 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 			switch {
 			case p.current == i:
 				if p.overloaded {
-					ink = &unison.PrimaryTheme.Warning
+					ink = unison.ThemeWarning
 				} else {
-					ink = &unison.PrimaryTheme.Secondary
+					ink = unison.ThemeFocus
 				}
 			case i&1 == 1:
-				ink = &unison.PrimaryTheme.Surface
+				ink = unison.ThemeSurface
 			default:
-				ink = &unison.PrimaryTheme.SurfaceBelow
+				ink = unison.ThemeBelowSurface
 			}
 			r = row.AsPanel().FrameRect()
 			r.X = rect.X
@@ -186,7 +186,7 @@ func (p *EncumbrancePanel) createDodgeField(enc encumbrance.Level, rowColor *enc
 func (p *EncumbrancePanel) addSeparator() {
 	sep := unison.NewSeparator()
 	sep.Vertical = true
-	sep.LineInk = &unison.PrimaryTheme.OutlineVariant
+	sep.LineInk = unison.ThemeSurfaceEdge
 	sep.SetLayoutData(&unison.FlexLayoutData{
 		VSpan:  len(encumbrance.Levels),
 		HAlign: align.Middle,
@@ -205,11 +205,11 @@ func (c *encRowColor) GetColor() unison.Color {
 	switch {
 	case c.owner.current == c.index:
 		if c.owner.overloaded {
-			return unison.PrimaryTheme.OnWarning.GetColor()
+			return unison.ThemeOnWarning.GetColor()
 		}
-		return unison.PrimaryTheme.OnSecondary.GetColor()
+		return unison.ThemeOnFocus.GetColor()
 	default:
-		return unison.PrimaryTheme.OnSurface.GetColor()
+		return unison.ThemeOnSurface.GetColor()
 	}
 }
 

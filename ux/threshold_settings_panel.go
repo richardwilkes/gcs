@@ -42,11 +42,13 @@ func newThresholdSettingsPanel(pool *poolSettingsPanel, threshold *gurps.PoolThr
 		Right:  unison.StdHSpacing,
 	}))
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		color := unison.PrimaryTheme.SurfaceBelow
+		var ink unison.Ink
 		if p.Parent().IndexOfChild(p)%2 == 1 {
-			color = unison.PrimaryTheme.Surface
+			ink = unison.ThemeSurface
+		} else {
+			ink = unison.ThemeBelowSurface
 		}
-		gc.DrawRect(rect, color.Paint(gc, rect, paintstyle.Fill))
+		gc.DrawRect(rect, ink.Paint(gc, rect, paintstyle.Fill))
 	}
 	p.SetLayout(&unison.FlexLayout{
 		Columns:  3,

@@ -126,9 +126,9 @@ func processModifiers[T *gurps.TraitModifier | *gurps.EquipmentModifier](title s
 		children[len(children)-1].SetBorder(unison.NewEmptyBorder(insets))
 	}
 	scroll := unison.NewScrollPanel()
-	scroll.SetBorder(unison.NewLineBorder(&unison.PrimaryTheme.Outline, 0, unison.NewUniformInsets(1), false))
+	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.NewUniformInsets(1), false))
 	scroll.SetContent(list, behavior.Fill, behavior.Fill)
-	scroll.BackgroundInk = &unison.PrimaryTheme.Surface
+	scroll.BackgroundInk = unison.ThemeSurface
 	scroll.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Fill,

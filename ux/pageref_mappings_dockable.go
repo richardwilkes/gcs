@@ -262,7 +262,7 @@ func (d *pageRefMappingsDockable) createIDField(ref *gurps.PageRef) {
 	p.Text = ref.ID
 	p.HAlign = align.Middle
 	p.OnBackgroundInk = unison.DefaultTooltipTheme.Label.OnBackgroundInk
-	p.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(&unison.PrimaryTheme.Outline, 0, unison.NewUniformInsets(1), false),
+	p.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.NewUniformInsets(1), false),
 		unison.NewEmptyBorder(unison.Insets{
 			Top:    1,
 			Left:   unison.StdHSpacing,

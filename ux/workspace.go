@@ -572,7 +572,7 @@ func PromptForDestination[T FileBackedDockable](choices []T) []T {
 	}
 	list.Append(choices...)
 	scroll := unison.NewScrollPanel()
-	scroll.SetBorder(unison.NewLineBorder(&unison.PrimaryTheme.Outline, 0, unison.NewUniformInsets(1), false))
+	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.NewUniformInsets(1), false))
 	scroll.SetContent(list, behavior.Fill, behavior.Fill)
 	scroll.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,

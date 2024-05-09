@@ -55,17 +55,17 @@ func NewBodyPanel(entity *gurps.Entity) *BodyPanel {
 		Right:  2,
 	})))
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.PrimaryTheme.SurfaceBelow.Paint(gc, rect, paintstyle.Fill))
+		gc.DrawRect(rect, unison.ThemeBelowSurface.Paint(gc, rect, paintstyle.Fill))
 		r := p.Children()[0].FrameRect()
 		r.X = rect.X
 		r.Width = rect.Width
-		gc.DrawRect(r, unison.PrimaryTheme.SurfaceAbove.Paint(gc, r, paintstyle.Fill))
+		gc.DrawRect(r, unison.ThemeAboveSurface.Paint(gc, r, paintstyle.Fill))
 		for i, row := range p.row {
 			var ink unison.Ink
 			if i&1 == 1 {
-				ink = &unison.PrimaryTheme.Surface
+				ink = unison.ThemeSurface
 			} else {
-				ink = &unison.PrimaryTheme.SurfaceBelow
+				ink = unison.ThemeBelowSurface
 			}
 			r = row.AsPanel().FrameRect()
 			r.X = rect.X
@@ -171,7 +171,7 @@ func (p *BodyPanel) createDRField(location *gurps.HitLocation) unison.Paneler {
 func (p *BodyPanel) addSeparator() {
 	sep := unison.NewSeparator()
 	sep.Vertical = true
-	sep.LineInk = &unison.PrimaryTheme.OutlineVariant
+	sep.LineInk = unison.ThemeSurfaceEdge
 	layoutData := &unison.FlexLayoutData{
 		HAlign: align.Middle,
 		VAlign: align.Fill,

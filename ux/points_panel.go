@@ -60,7 +60,7 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 		HGrab:  true,
 	})
 	hdr.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.PrimaryTheme.SurfaceAbove.Paint(gc, rect, paintstyle.Fill))
+		gc.DrawRect(rect, unison.ThemeAboveSurface.Paint(gc, rect, paintstyle.Fill))
 	}
 
 	hdri := unison.NewPanel()
@@ -80,12 +80,12 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	p.total = unison.NewLabel()
 	p.total.Font = gurps.PageLabelPrimaryFont
 	p.total.Text = fmt.Sprintf(i18n.Text("%s Points"), overallTotal)
-	p.total.OnBackgroundInk = &unison.PrimaryTheme.OnSurface
+	p.total.OnBackgroundInk = unison.ThemeOnSurface
 	hdri.AddChild(p.total)
 	height := p.total.Font.Baseline() - 2
 	editButton := unison.NewSVGButton(svg.Edit)
-	editButton.OnBackgroundInk = &unison.PrimaryTheme.OnSurface
-	editButton.OnSelectionInk = &unison.PrimaryTheme.OnSurface
+	editButton.OnBackgroundInk = unison.ThemeOnSurface
+	editButton.OnSelectionInk = unison.ThemeOnSurface
 	editButton.Font = gurps.PageLabelPrimaryFont
 	editButton.Drawable.(*unison.DrawableSVG).Size = unison.NewSize(height, height)
 	editButton.ClickCallback = func() {
@@ -107,7 +107,7 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	})
 	p.AddChild(p.ptsList)
 
-	p.ptsList.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(&unison.PrimaryTheme.SurfaceAbove, 0, unison.Insets{
+	p.ptsList.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeAboveSurface, 0, unison.Insets{
 		Top:    0,
 		Left:   1,
 		Bottom: 1,
@@ -129,7 +129,7 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	}), i18n.Text("Unspent"), i18n.Text("Points earned but not yet spent"))
 	p.unspentLabel.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
 		if p.overSpent == -1 {
-			gc.DrawRect(rect, unison.PrimaryTheme.Error.Paint(gc, rect, paintstyle.Fill))
+			gc.DrawRect(rect, unison.ThemeError.Paint(gc, rect, paintstyle.Fill))
 		}
 		p.unspentLabel.DefaultDraw(gc, rect)
 	}
@@ -194,13 +194,13 @@ func (p *PointsPanel) adjustUnspent() {
 		if p.entity.UnspentPoints() < 0 {
 			if p.overSpent != -1 {
 				p.overSpent = -1
-				p.unspentLabel.OnBackgroundInk = &unison.PrimaryTheme.OnError
+				p.unspentLabel.OnBackgroundInk = unison.ThemeOnError
 				p.unspentLabel.Text = i18n.Text("Overspent")
 			}
 		} else {
 			if p.overSpent != 1 {
 				p.overSpent = 1
-				p.unspentLabel.OnBackgroundInk = &unison.PrimaryTheme.OnSurface
+				p.unspentLabel.OnBackgroundInk = unison.ThemeOnSurface
 				p.unspentLabel.Text = i18n.Text("Unspent")
 			}
 		}

@@ -52,7 +52,7 @@ func NewMiscPanel(entity *gurps.Entity, targetMgr *TargetMgr) *MiscPanel {
 			Right:  2,
 		})))
 	m.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.PrimaryTheme.Surface.Paint(gc, rect, paintstyle.Fill))
+		gc.DrawRect(rect, unison.ThemeSurface.Paint(gc, rect, paintstyle.Fill))
 	}
 
 	m.AddChild(NewPageLabelEnd(i18n.Text("Created")))

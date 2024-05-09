@@ -99,8 +99,8 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 	}
 	header = unison.NewTableHeader(table, headers...)
 	header.Less = flexibleLess
-	header.BackgroundInk = &unison.PrimaryTheme.SurfaceAbove
-	header.InteriorDividerColor = &unison.PrimaryTheme.SurfaceAbove
+	header.BackgroundInk = unison.ThemeAboveSurface
+	header.InteriorDividerColor = unison.ThemeAboveSurface
 	header.SetBorder(header.HeaderBorder)
 	header.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,

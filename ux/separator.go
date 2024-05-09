@@ -20,7 +20,7 @@ import (
 // NewInteriorSeparator creates a new interior vertical separator.
 func NewInteriorSeparator() *unison.Separator {
 	spacer := unison.NewSeparator()
-	spacer.LineInk = &unison.PrimaryTheme.OutlineVariant
+	spacer.LineInk = unison.ThemeSurfaceEdge
 	spacer.Vertical = true
 	spacer.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Fill})
 	return spacer
@@ -29,7 +29,7 @@ func NewInteriorSeparator() *unison.Separator {
 // NewToolbarSeparator creates a new vertical separator for the toolbar.
 func NewToolbarSeparator() *unison.Separator {
 	spacer := unison.NewSeparator()
-	spacer.LineInk = &unison.PrimaryTheme.Outline
+	spacer.LineInk = unison.ThemeSurfaceEdge
 	spacer.Vertical = true
 	spacer.SetBorder(unison.NewEmptyBorder(unison.NewHorizontalInsets(unison.StdHSpacing)))
 	spacer.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Fill})

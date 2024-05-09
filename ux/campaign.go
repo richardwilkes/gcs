@@ -87,7 +87,7 @@ func NewCampaign(filePath string, campaign *gurps.Campaign) *Campaign {
 	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Campaign") }
 
 	c.toolbar = unison.NewPanel()
-	c.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(&unison.PrimaryTheme.Outline, 0, unison.Insets{Bottom: 1},
+	c.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	c.toolbar.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,

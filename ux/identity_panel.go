@@ -56,7 +56,7 @@ func NewIdentityPanel(entity *gurps.Entity, targetMgr *TargetMgr) *IdentityPanel
 		Right:  2,
 	})))
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.PrimaryTheme.Surface.Paint(gc, rect, paintstyle.Fill))
+		gc.DrawRect(rect, unison.ThemeSurface.Paint(gc, rect, paintstyle.Fill))
 	}
 
 	title := i18n.Text("Name")

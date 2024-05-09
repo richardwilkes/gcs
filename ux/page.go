@@ -98,7 +98,7 @@ func (p *Page) drawSelf(gc *unison.Canvas, _ unison.Rect) {
 	insets := p.insets()
 	_, prefSize, _ := p.LayoutSizes(nil, unison.Size{})
 	r := unison.Rect{Size: prefSize}
-	gc.DrawRect(r, unison.PrimaryTheme.SurfaceBelow.Paint(gc, r, paintstyle.Fill))
+	gc.DrawRect(r, unison.ThemeBelowSurface.Paint(gc, r, paintstyle.Fill))
 	r.X += insets.Left
 	r.Width -= insets.Left + insets.Right
 	r.Y = r.Bottom() - insets.Bottom
@@ -108,11 +108,11 @@ func (p *Page) drawSelf(gc *unison.Canvas, _ unison.Rect) {
 
 	primaryDecorations := &unison.TextDecoration{
 		Font:       gurps.PageFooterPrimaryFont,
-		Foreground: &unison.PrimaryTheme.OnSurface,
+		Foreground: unison.ThemeOnSurface,
 	}
 	secondaryDecorations := &unison.TextDecoration{
 		Font:       gurps.PageFooterSecondaryFont,
-		Foreground: &unison.PrimaryTheme.OnSurface,
+		Foreground: unison.ThemeOnSurface,
 	}
 
 	var title string

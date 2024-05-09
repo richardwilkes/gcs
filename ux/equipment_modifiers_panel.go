@@ -38,7 +38,7 @@ func newEquipmentModifiersPanel(entity *gurps.Entity, modifiers *[]*gurps.Equipm
 		HAlign: align.Fill,
 		HGrab:  true,
 	})
-	p.SetBorder(unison.NewLineBorder(&unison.PrimaryTheme.SurfaceAbove, 0, unison.NewUniformInsets(1), false))
+	p.SetBorder(unison.NewLineBorder(unison.ThemeAboveSurface, 0, unison.NewUniformInsets(1), false))
 	p.provider = NewEquipmentModifiersProvider(p, true)
 	p.table = newEditorTable(p.AsPanel(), p.provider)
 	p.table.RefKey = "equipment-modifiers-" + uuid.New().String()

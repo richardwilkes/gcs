@@ -97,7 +97,7 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 	})
 	label.SetBorder(
 		unison.NewCompoundBorder(
-			unison.NewLineBorder(&unison.PrimaryTheme.Outline, 0, unison.Insets{Bottom: 1}, false),
+			unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1}, false),
 			unison.NewEmptyBorder(unison.Insets{Top: unison.StdVSpacing * 3}),
 		),
 	)

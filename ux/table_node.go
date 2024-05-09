@@ -313,13 +313,13 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		label.HAlign = c.Alignment
 		label.VAlign = align.Middle
 		label.ClientData()[invertColorsMarker] = true
-		label.OnBackgroundInk = &unison.PrimaryTheme.OnError
+		label.OnBackgroundInk = unison.ThemeOnError
 		label.SetBorder(unison.NewEmptyBorder(unison.Insets{
 			Left:  4,
 			Right: 4,
 		}))
 		label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-			gc.DrawRect(rect, unison.PrimaryTheme.Error.Paint(gc, rect, paintstyle.Fill))
+			gc.DrawRect(rect, unison.ThemeError.Paint(gc, rect, paintstyle.Fill))
 			label.DefaultDraw(gc, rect)
 		}
 		p.AddChild(label)
@@ -337,7 +337,7 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		label.HAlign = c.Alignment
 		label.VAlign = align.Middle
 		label.ClientData()[invertColorsMarker] = true
-		label.OnBackgroundInk = &unison.PrimaryTheme.OnTertiary
+		label.OnBackgroundInk = unison.ThemeOnFocus
 		label.SetBorder(unison.NewEmptyBorder(unison.Insets{
 			Left:  4,
 			Right: 4,

@@ -21,13 +21,13 @@ import (
 )
 
 var nonEditableFieldColor = unison.NewDynamicColor(func() unison.Color {
-	return unison.PrimaryTheme.OnSurface.GetColor().SetAlphaIntensity(0.6)
+	return unison.ThemeOnSurface.GetColor().SetAlphaIntensity(0.6)
 })
 
 // NewPageHeader creates a new center-aligned header for a sheet page.
 func NewPageHeader(title string, hSpan int) *unison.Label {
 	label := unison.NewLabel()
-	label.OnBackgroundInk = &unison.PrimaryTheme.OnSurface
+	label.OnBackgroundInk = unison.ThemeOnSurface
 	label.Text = title
 	label.Font = gurps.PageLabelPrimaryFont
 	label.HAlign = align.Middle
@@ -37,7 +37,7 @@ func NewPageHeader(title string, hSpan int) *unison.Label {
 		VAlign: align.Middle,
 	})
 	label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.PrimaryTheme.SurfaceAbove.Paint(gc, rect, paintstyle.Fill))
+		gc.DrawRect(rect, unison.ThemeAboveSurface.Paint(gc, rect, paintstyle.Fill))
 		label.DefaultDraw(gc, rect)
 	}
 	return label
@@ -60,7 +60,7 @@ func NewPageInternalHeader(title string, span int) unison.Paneler {
 	label.Text = title
 	label.Font = gurps.PageLabelSecondaryFont
 	label.HAlign = align.Middle
-	label.OnBackgroundInk = &unison.PrimaryTheme.OnSurface
+	label.OnBackgroundInk = unison.ThemeOnSurface
 	label.SetLayoutData(layoutData)
 	label.SetBorder(border)
 	label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
@@ -78,7 +78,7 @@ func NewPageInternalHeader(title string, span int) unison.Paneler {
 // NewPageLabel creates a new start-aligned field label for a sheet page.
 func NewPageLabel(title string) *unison.Label {
 	label := unison.NewLabel()
-	label.OnBackgroundInk = &unison.PrimaryTheme.OnSurface
+	label.OnBackgroundInk = unison.ThemeOnSurface
 	label.Text = title
 	label.Font = gurps.PageLabelPrimaryFont
 	label.SetLayoutData(&unison.FlexLayoutData{
@@ -92,7 +92,7 @@ func NewPageLabel(title string) *unison.Label {
 // NewPageLabelEnd creates a new end-aligned field label for a sheet page.
 func NewPageLabelEnd(title string) *unison.Label {
 	label := unison.NewLabel()
-	label.OnBackgroundInk = &unison.PrimaryTheme.OnSurface
+	label.OnBackgroundInk = unison.ThemeOnSurface
 	label.Text = title
 	label.Font = gurps.PageLabelPrimaryFont
 	label.HAlign = align.End
@@ -107,7 +107,7 @@ func NewPageLabelEnd(title string) *unison.Label {
 // NewPageLabelCenter creates a new center-aligned field label for a sheet page.
 func NewPageLabelCenter(title string) *unison.Label {
 	label := unison.NewLabel()
-	label.OnBackgroundInk = &unison.PrimaryTheme.OnSurface
+	label.OnBackgroundInk = unison.ThemeOnSurface
 	label.Text = title
 	label.Font = gurps.PageLabelPrimaryFont
 	label.HAlign = align.Middle
@@ -158,8 +158,8 @@ func NewStringPageField(targetMgr *TargetMgr, targetKey, undoTitle string, get f
 func installPageFieldFontAndFocusBorders(field *unison.Field) {
 	field.Font = gurps.PageFieldPrimaryFont
 	unison.InstallFocusBorders(field, field,
-		unison.NewLineBorder(&unison.PrimaryTheme.Primary, 0, unison.Insets{Bottom: 1}, false),
-		unison.NewLineBorder(&unison.PrimaryTheme.Outline, 0, unison.Insets{Bottom: 1}, false),
+		unison.NewLineBorder(unison.ThemeFocus, 0, unison.Insets{Bottom: 1}, false),
+		unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1}, false),
 	)
 }
 

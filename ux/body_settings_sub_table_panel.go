@@ -96,7 +96,7 @@ func (p *bodySettingsSubTablePanel) createContent() *unison.Panel {
 		VSpacing: unison.StdVSpacing,
 	})
 	content.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
-	content.SetBorder(unison.NewLineBorder(&unison.PrimaryTheme.Outline, 0, unison.NewUniformInsets(1), false))
+	content.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.NewUniformInsets(1), false))
 
 	for _, loc := range p.body.Locations {
 		content.AddChild(newHitLocationSettingsPanel(p.dockable, loc))

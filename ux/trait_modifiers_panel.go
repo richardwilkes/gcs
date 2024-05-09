@@ -38,7 +38,7 @@ func newTraitModifiersPanel(entity *gurps.Entity, modifiers *[]*gurps.TraitModif
 		HAlign: align.Fill,
 		HGrab:  true,
 	})
-	p.SetBorder(unison.NewLineBorder(&unison.PrimaryTheme.SurfaceAbove, 0, unison.NewUniformInsets(1), false))
+	p.SetBorder(unison.NewLineBorder(unison.ThemeAboveSurface, 0, unison.NewUniformInsets(1), false))
 	p.provider = NewTraitModifiersProvider(p, true)
 	p.table = newEditorTable(p.AsPanel(), p.provider)
 	p.table.RefKey = "trait-modifiers-" + uuid.New().String()

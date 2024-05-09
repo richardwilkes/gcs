@@ -50,10 +50,10 @@ func (t *TitledBorder) Draw(gc *unison.Canvas, rect unison.Rect) {
 	path.SetFillType(filltype.EvenOdd)
 	path.Rect(rect)
 	path.Rect(clip)
-	gc.DrawPath(path, unison.PrimaryTheme.SurfaceAbove.Paint(gc, rect, paintstyle.Fill))
+	gc.DrawPath(path, unison.ThemeAboveSurface.Paint(gc, rect, paintstyle.Fill))
 	text := unison.NewText(t.Title, &unison.TextDecoration{
 		Font:       t.font(),
-		Foreground: &unison.PrimaryTheme.OnSurface,
+		Foreground: unison.ThemeOnSurface,
 	})
 	text.Draw(gc, rect.X+(rect.Width-text.Width())/2, rect.Y+1+text.Baseline())
 }
