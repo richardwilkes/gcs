@@ -93,7 +93,7 @@ func addNotesLabelAndField(parent *unison.Panel, fieldData *string) {
 
 func addVTTNotesLabelAndField(parent *unison.Panel, fieldData *string) {
 	addLabelAndMultiLineStringField(parent, i18n.Text("VTT Notes"),
-		i18n.Text("Any notes for VTT use; see the instructions for your VVT to determine if/how these can be used"),
+		i18n.Text("Any notes for VTT use; see the instructions for your VTT to determine if/how these can be used"),
 		fieldData)
 }
 
