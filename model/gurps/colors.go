@@ -116,8 +116,9 @@ func (c *Colors) Save(filePath string) error {
 
 // MarshalJSON implements json.Marshaler.
 func (c *Colors) MarshalJSON() ([]byte, error) {
-	c.data = make(map[string]*unison.ThemeColor, len(CurrentColors()))
-	for _, one := range CurrentColors() {
+	current := CurrentColors()
+	c.data = make(map[string]*unison.ThemeColor, len(current))
+	for _, one := range current {
 		c.data[one.ID] = one.Color
 	}
 	return json.Marshal(&c.data)
@@ -137,10 +138,11 @@ func (c *Colors) UnmarshalJSON(data []byte) error {
 		errs.LogWithLevel(context.Background(), slog.LevelWarn, slog.Default(),
 			errs.NewWithCause("Unable to load theme color data", err))
 	}
+	factory := FactoryColors()
 	if c.data == nil {
-		c.data = make(map[string]*unison.ThemeColor, len(CurrentColors()))
+		c.data = make(map[string]*unison.ThemeColor, len(factory))
 	}
-	for _, one := range FactoryColors() {
+	for _, one := range factory {
 		if _, ok := c.data[one.ID]; !ok {
 			clr := *one.Color
 			c.data[one.ID] = &clr
@@ -161,16 +163,34 @@ func (c *Colors) MakeCurrent() {
 
 // Reset to factory defaults.
 func (c *Colors) Reset() {
-	for _, one := range FactoryColors() {
-		*c.data[one.ID] = *one.Color
+	factory := FactoryColors()
+	if c.data == nil {
+		c.data = make(map[string]*unison.ThemeColor, len(factory))
+	}
+	for _, one := range factory {
+		if v, ok := c.data[one.ID]; ok {
+			*v = *one.Color
+		} else {
+			clr := *one.Color
+			c.data[one.ID] = &clr
+		}
 	}
 }
 
 // ResetOne resets one color by ID to factory defaults.
 func (c *Colors) ResetOne(id string) {
-	for _, v := range FactoryColors() {
-		if v.ID == id {
-			*c.data[id] = *v.Color
+	factory := FactoryColors()
+	if c.data == nil {
+		c.data = make(map[string]*unison.ThemeColor, len(factory))
+	}
+	for _, one := range factory {
+		if one.ID == id {
+			if v, ok := c.data[id]; ok {
+				*v = *one.Color
+			} else {
+				clr := *one.Color
+				c.data[id] = &clr
+			}
 			break
 		}
 	}
