@@ -32,6 +32,7 @@ type PointPoolsPanel struct {
 	stateLabels map[string]*unison.Label
 	prefix      string
 	crc         uint64
+	rowStarts   []int
 }
 
 // NewPointPoolsPanel creates a new point pools panel.
@@ -58,7 +59,30 @@ func NewPointPoolsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointPoolsP
 		Right:  2,
 	})))
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.ThemeSurface.Paint(gc, rect, paintstyle.Fill))
+		gc.DrawRect(rect, unison.ThemeBelowSurface.Paint(gc, rect, paintstyle.Fill))
+		children := p.AsPanel().Children()
+		for i, rowIndex := range p.rowStarts {
+			if rowIndex > len(children) {
+				break
+			}
+			var ink unison.Ink
+			if i&1 == 1 {
+				ink = unison.ThemeSurface
+			} else {
+				ink = unison.ThemeBelowSurface
+			}
+			r := children[rowIndex].FrameRect()
+			upTo := len(children)
+			if i < len(p.rowStarts)-1 {
+				upTo = p.rowStarts[i+1]
+			}
+			for j := rowIndex + 1; j < upTo; j++ {
+				r = r.Union(children[j].FrameRect())
+			}
+			r.X = rect.X
+			r.Width = rect.Width
+			gc.DrawRect(r, ink.Paint(gc, r, paintstyle.Fill))
+		}
 	}
 	attrs := gurps.SheetSettingsFor(p.entity).Attributes
 	p.crc = attrs.CRC64()
@@ -69,9 +93,11 @@ func NewPointPoolsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointPoolsP
 func (p *PointPoolsPanel) rebuild(attrs *gurps.AttributeDefs) {
 	focusRefKey := p.targetMgr.CurrentFocusRef()
 	p.RemoveAllChildren()
+	p.rowStarts = nil
 	p.stateLabels = make(map[string]*unison.Label)
 	for _, def := range attrs.List(false) {
 		if def.Pool() {
+			p.rowStarts = append(p.rowStarts, len(p.Children()))
 			if def.Type == attribute.PoolSeparator {
 				p.AddChild(NewPageInternalHeader(def.CombinedName(), 6))
 			} else {

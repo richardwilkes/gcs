@@ -45,7 +45,7 @@ func NewLiftingPanel(entity *gurps.Entity) *LiftingPanel {
 		Bottom: 1,
 		Right:  2,
 	})))
-	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) { drawBandedBackground(p, gc, rect, 0, 2) }
+	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) { drawBandedBackground(p, gc, rect, 0, 2, nil) }
 	p.addFieldAndLabel(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
 		if text := p.entity.SheetSettings.DefaultWeightUnits.Format(p.entity.BasicLift()); text != f.Text {
 			f.Text = text

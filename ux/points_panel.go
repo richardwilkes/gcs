@@ -30,6 +30,7 @@ type PointsPanel struct {
 	prefix       string
 	total        *unison.Label
 	ptsList      *unison.Panel
+	unspentField *NonEditablePageField
 	unspentLabel *unison.Label
 	overSpent    int8
 }
@@ -118,21 +119,23 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 		Bottom: 1,
 		Right:  2,
 	})))
-	p.ptsList.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) { drawBandedBackground(p.ptsList, gc, rect, 0, 2) }
+	p.ptsList.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+		drawBandedBackground(p.ptsList, gc, rect, 0, 2, func(rowIndex int, ink unison.Ink) unison.Ink {
+			if rowIndex == 0 && p.overSpent == -1 {
+				return unison.ThemeError
+			}
+			return ink
+		})
+	}
 
-	p.unspentLabel = p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
+	p.unspentField = NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
 		if text := p.entity.UnspentPoints().String(); text != f.Text {
 			f.Text = text
 			p.adjustUnspent()
 			MarkForLayoutWithinDockable(f)
 		}
-	}), i18n.Text("Unspent"), i18n.Text("Points earned but not yet spent"))
-	p.unspentLabel.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		if p.overSpent == -1 {
-			gc.DrawRect(rect, unison.ThemeError.Paint(gc, rect, paintstyle.Fill))
-		}
-		p.unspentLabel.DefaultDraw(gc, rect)
-	}
+	})
+	p.unspentLabel = p.addPointsField(p.unspentField, i18n.Text("Unspent"), i18n.Text("Points earned but not yet spent"))
 	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
 		if text := p.entity.PointsBreakdown().Ancestry.String(); text != f.Text {
 			f.Text = text
@@ -194,13 +197,15 @@ func (p *PointsPanel) adjustUnspent() {
 		if p.entity.UnspentPoints() < 0 {
 			if p.overSpent != -1 {
 				p.overSpent = -1
+				p.unspentField.OnBackgroundInk = unison.ThemeOnError
 				p.unspentLabel.OnBackgroundInk = unison.ThemeOnError
 				p.unspentLabel.Text = i18n.Text("Overspent")
 			}
 		} else {
 			if p.overSpent != 1 {
 				p.overSpent = 1
-				p.unspentLabel.OnBackgroundInk = gurps.OnThemeHeader
+				p.unspentField.OnBackgroundInk = unison.DefaultLabelTheme.OnBackgroundInk
+				p.unspentLabel.OnBackgroundInk = unison.DefaultLabelTheme.OnBackgroundInk
 				p.unspentLabel.Text = i18n.Text("Unspent")
 			}
 		}

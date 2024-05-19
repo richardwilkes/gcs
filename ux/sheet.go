@@ -765,9 +765,10 @@ func (s *Sheet) Rebuild(full bool) {
 	UpdateCalculator(s)
 }
 
-func drawBandedBackground(p unison.Paneler, gc *unison.Canvas, rect unison.Rect, start, step int) {
+func drawBandedBackground(p unison.Paneler, gc *unison.Canvas, rect unison.Rect, start, step int, overrideFunc func(rowIndex int, ink unison.Ink) unison.Ink) {
 	gc.DrawRect(rect, unison.ThemeBelowSurface.Paint(gc, rect, paintstyle.Fill))
 	children := p.AsPanel().Children()
+	row := 0
 	for i := start; i < len(children); i += step {
 		var ink unison.Ink
 		if ((i-start)/step)&1 == 1 {
@@ -775,7 +776,14 @@ func drawBandedBackground(p unison.Paneler, gc *unison.Canvas, rect unison.Rect,
 		} else {
 			ink = unison.ThemeBelowSurface
 		}
+		if overrideFunc != nil {
+			ink = overrideFunc(row, ink)
+			row++
+		}
 		r := children[i].FrameRect()
+		for j := i + 1; j < i+step; j++ {
+			r = r.Union(children[j].FrameRect())
+		}
 		r.X = rect.X
 		r.Width = rect.Width
 		gc.DrawRect(r, ink.Paint(gc, r, paintstyle.Fill))

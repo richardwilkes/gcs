@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -16,15 +16,6 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
-
-// NewInteriorSeparator creates a new interior vertical separator.
-func NewInteriorSeparator() *unison.Separator {
-	spacer := unison.NewSeparator()
-	spacer.LineInk = unison.ThemeSurfaceEdge
-	spacer.Vertical = true
-	spacer.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Fill})
-	return spacer
-}
 
 // NewToolbarSeparator creates a new vertical separator for the toolbar.
 func NewToolbarSeparator() *unison.Separator {

@@ -20,10 +20,6 @@ import (
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
-var nonEditableFieldColor = unison.NewDynamicColor(func() unison.Color {
-	return unison.ThemeOnSurface.GetColor().SetAlphaIntensity(0.6)
-})
-
 // NewPageHeader creates a new center-aligned header for a sheet page.
 func NewPageHeader(title string, hSpan int) *unison.Label {
 	label := unison.NewLabel()
@@ -60,7 +56,7 @@ func NewPageInternalHeader(title string, span int) unison.Paneler {
 	label.Text = title
 	label.Font = gurps.PageLabelSecondaryFont
 	label.HAlign = align.Middle
-	label.OnBackgroundInk = gurps.OnThemeHeader
+	label.OnBackgroundInk = unison.ThemeOnSurface
 	label.SetLayoutData(layoutData)
 	label.SetBorder(border)
 	label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
