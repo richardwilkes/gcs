@@ -120,7 +120,7 @@ func NewEditorExtendedWeightHeader[T gurps.NodeTypes](forPage bool) unison.Table
 // existing PageTableColumnHeaders, but will alter any PageTableColumnHeaders created in the future.
 var PageTableColumnHeaderTheme = unison.LabelTheme{
 	Font:            gurps.PageLabelPrimaryFont,
-	OnBackgroundInk: unison.ThemeOnSurface,
+	OnBackgroundInk: gurps.OnThemeHeader,
 	Gap:             3,
 	HAlign:          align.Middle,
 	VAlign:          align.Middle,

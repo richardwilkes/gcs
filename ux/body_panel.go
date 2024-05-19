@@ -59,7 +59,7 @@ func NewBodyPanel(entity *gurps.Entity) *BodyPanel {
 		r := p.Children()[0].FrameRect()
 		r.X = rect.X
 		r.Width = rect.Width
-		gc.DrawRect(r, unison.ThemeAboveSurface.Paint(gc, r, paintstyle.Fill))
+		gc.DrawRect(r, gurps.ThemeHeader.Paint(gc, r, paintstyle.Fill))
 		for i, row := range p.row {
 			var ink unison.Ink
 			if i&1 == 1 {
@@ -80,9 +80,9 @@ func NewBodyPanel(entity *gurps.Entity) *BodyPanel {
 func (p *BodyPanel) addContent(locations *gurps.Body) {
 	p.RemoveAllChildren()
 	p.AddChild(NewPageHeader(i18n.Text("Roll"), 1))
-	p.AddChild(NewInteriorSeparator())
+	p.AddChild(unison.NewPanel())
 	p.AddChild(NewPageHeader(i18n.Text("Location"), 2))
-	p.AddChild(NewInteriorSeparator())
+	p.AddChild(unison.NewPanel())
 	p.AddChild(NewPageHeader(i18n.Text("DR"), 1))
 	p.row = nil
 	p.sepLayoutData = nil

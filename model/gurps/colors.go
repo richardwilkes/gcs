@@ -36,6 +36,12 @@ var (
 	factoryColors []*ThemedColor
 )
 
+// Additional theme colors
+var (
+	ThemeHeader   = &unison.ThemeColor{Light: unison.RGB(43, 43, 43), Dark: unison.RGB(64, 64, 64)}
+	OnThemeHeader = ThemeHeader.DeriveOn()
+)
+
 // ThemedColor holds a themed color.
 type ThemedColor struct {
 	ID    string
@@ -69,6 +75,7 @@ func FactoryColors() []*ThemedColor {
 func initColors() {
 	currentColors = []*ThemedColor{
 		{ID: "surface", Title: "Surface", Color: unison.ThemeSurface},
+		{ID: "header", Title: "Header", Color: ThemeHeader},
 		{ID: "focus", Title: "Focus", Color: unison.ThemeFocus},
 		{ID: "tooltip", Title: "Tooltip", Color: unison.ThemeTooltip},
 		{ID: "error", Title: "Error", Color: unison.ThemeError},

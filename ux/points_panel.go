@@ -60,7 +60,7 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 		HGrab:  true,
 	})
 	hdr.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.ThemeAboveSurface.Paint(gc, rect, paintstyle.Fill))
+		gc.DrawRect(rect, gurps.ThemeHeader.Paint(gc, rect, paintstyle.Fill))
 	}
 
 	hdri := unison.NewPanel()
@@ -80,12 +80,12 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	p.total = unison.NewLabel()
 	p.total.Font = gurps.PageLabelPrimaryFont
 	p.total.Text = fmt.Sprintf(i18n.Text("%s Points"), overallTotal)
-	p.total.OnBackgroundInk = unison.ThemeOnSurface
+	p.total.OnBackgroundInk = gurps.OnThemeHeader
 	hdri.AddChild(p.total)
 	height := p.total.Font.Baseline() - 2
 	editButton := unison.NewSVGButton(svg.Edit)
-	editButton.OnBackgroundInk = unison.ThemeOnSurface
-	editButton.OnSelectionInk = unison.ThemeOnSurface
+	editButton.OnBackgroundInk = gurps.OnThemeHeader
+	editButton.OnSelectionInk = gurps.OnThemeHeader
 	editButton.Font = gurps.PageLabelPrimaryFont
 	editButton.Drawable.(*unison.DrawableSVG).Size = unison.NewSize(height, height)
 	editButton.ClickCallback = func() {
@@ -107,7 +107,7 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	})
 	p.AddChild(p.ptsList)
 
-	p.ptsList.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeAboveSurface, 0, unison.Insets{
+	p.ptsList.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(gurps.ThemeHeader, 0, unison.Insets{
 		Top:    0,
 		Left:   1,
 		Bottom: 1,
@@ -200,7 +200,7 @@ func (p *PointsPanel) adjustUnspent() {
 		} else {
 			if p.overSpent != 1 {
 				p.overSpent = 1
-				p.unspentLabel.OnBackgroundInk = unison.ThemeOnSurface
+				p.unspentLabel.OnBackgroundInk = gurps.OnThemeHeader
 				p.unspentLabel.Text = i18n.Text("Unspent")
 			}
 		}

@@ -53,7 +53,7 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 		r := p.Children()[0].FrameRect()
 		r.X = rect.X
 		r.Width = rect.Width
-		gc.DrawRect(r, unison.ThemeAboveSurface.Paint(gc, r, paintstyle.Fill))
+		gc.DrawRect(r, gurps.ThemeHeader.Paint(gc, r, paintstyle.Fill))
 		p.current = int(entity.EncumbranceLevel(false))
 		p.overloaded = entity.WeightCarried(false) > entity.MaximumCarry(encumbrance.ExtraHeavy)
 		for i, row := range p.row {
@@ -78,11 +78,11 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 	}
 
 	p.AddChild(NewPageHeader(i18n.Text("Level"), 3))
-	p.AddChild(NewInteriorSeparator())
+	p.AddChild(unison.NewPanel())
 	p.AddChild(NewPageHeader(i18n.Text("Max Load"), 1))
-	p.AddChild(NewInteriorSeparator())
+	p.AddChild(unison.NewPanel())
 	p.AddChild(NewPageHeader(i18n.Text("Move"), 1))
-	p.AddChild(NewInteriorSeparator())
+	p.AddChild(unison.NewPanel())
 	p.AddChild(NewPageHeader(i18n.Text("Dodge"), 1))
 
 	for i, enc := range encumbrance.Levels {
