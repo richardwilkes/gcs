@@ -36,12 +36,15 @@ import (
 const SkipDeepSync = "!deepsync"
 
 var (
-	_        FileBackedDockable         = &Sheet{}
-	_        unison.UndoManagerProvider = &Sheet{}
-	_        ModifiableRoot             = &Sheet{}
-	_        Rebuildable                = &Sheet{}
-	_        unison.TabCloser           = &Sheet{}
-	dropKeys                            = []string{
+	_ FileBackedDockable         = &Sheet{}
+	_ unison.UndoManagerProvider = &Sheet{}
+	_ ModifiableRoot             = &Sheet{}
+	_ Rebuildable                = &Sheet{}
+	_ unison.TabCloser           = &Sheet{}
+
+	printMgr    printing.PrintManager
+	lastPrinter printing.PrinterID
+	dropKeys    = []string{
 		equipmentDragKey,
 		gurps.SkillID,
 		gurps.SpellID,
@@ -472,9 +475,12 @@ func (s *Sheet) print() {
 		unison.ErrorDialogWithError(i18n.Text("Unable to create PDF!"), err)
 		return
 	}
-	dialog := Workspace.PrintMgr.NewJobDialog(printing.PrinterID{}, "application/pdf", nil)
+	dialog := printMgr.NewJobDialog(lastPrinter, "application/pdf", nil)
 	if dialog.RunModal() {
 		go backgroundPrint(s.entity.Profile.Name, dialog.Printer(), dialog.JobAttributes(), data)
+	}
+	if p := dialog.Printer(); p != nil {
+		lastPrinter = p.PrinterID
 	}
 }
 

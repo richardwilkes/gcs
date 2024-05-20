@@ -30,7 +30,6 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/side"
-	"github.com/richardwilkes/unison/printing"
 )
 
 const (
@@ -44,7 +43,6 @@ var Workspace struct {
 	TopDock      *unison.Dock
 	Navigator    *Navigator
 	DocumentDock *DocumentDock
-	PrintMgr     printing.PrintManager
 }
 
 // GroupedCloser defines the methods required of a tab that wishes to be closed when another tab is closed.
