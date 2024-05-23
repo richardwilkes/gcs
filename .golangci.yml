@@ -13,7 +13,12 @@ linters-settings:
   errcheck:
     check-type-assertions: true
     check-blank: true
+    ignore: ""
     exclude-functions:
+      - fmt.Fprint
+      - fmt.Fprintf
+      - fmt.Fprintln
+      - (fmt.State).Write
       - (*bufio.Writer).WriteByte
       - (*bufio.Writer).WriteRune
       - (*bufio.Writer).WriteString
@@ -54,7 +59,16 @@ linters-settings:
   misspell:
     locale: US
   staticcheck:
-    checks: ["all", "-SA3000"]
+    checks: ["all", "-SA3000", "-SA5008"]
+  gosec:
+    excludes:
+      - G104
+      - G110
+      - G204
+      - G301
+      - G304
+      - G306
+      - G601
 linters:
   disable-all: true
   enable:
@@ -85,10 +99,3 @@ issues:
     - "package-comments: should have a package comment"
     - "stdmethods: method MarshalJSON"
     - "stdmethods: method UnmarshalJSON"
-    - "G104:"
-    - "G110:"
-    - "G204:"
-    - "G301:"
-    - "G304:"
-    - "G306:"
-    - "SA5008:"
