@@ -31,7 +31,7 @@ type PointsPanel struct {
 	total        *unison.RichLabel
 	ptsList      *unison.Panel
 	unspentField *NonEditablePageField
-	unspentLabel *unison.Label
+	unspentLabel *unison.RichLabel
 	overSpent    int8
 }
 
@@ -183,7 +183,7 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	return p
 }
 
-func (p *PointsPanel) addPointsField(field *NonEditablePageField, title, tooltip string) *unison.Label {
+func (p *PointsPanel) addPointsField(field *NonEditablePageField, title, tooltip string) *unison.RichLabel {
 	field.Tooltip = newWrappedTooltip(tooltip)
 	p.ptsList.AddChild(field)
 	label := NewPageLabel(title)
@@ -199,15 +199,19 @@ func (p *PointsPanel) adjustUnspent() {
 			if p.overSpent != -1 {
 				p.overSpent = -1
 				p.unspentField.OnBackgroundInk = unison.ThemeOnError
-				p.unspentLabel.OnBackgroundInk = unison.ThemeOnError
-				p.unspentLabel.Text = i18n.Text("Overspent")
+				p.unspentLabel.Text = unison.NewSmallCapsText(i18n.Text("Overspent"), &unison.TextDecoration{
+					Font:       gurps.PageLabelPrimaryFont,
+					Foreground: unison.ThemeOnError,
+				})
 			}
 		} else {
 			if p.overSpent != 1 {
 				p.overSpent = 1
 				p.unspentField.OnBackgroundInk = unison.DefaultLabelTheme.OnBackgroundInk
-				p.unspentLabel.OnBackgroundInk = unison.DefaultLabelTheme.OnBackgroundInk
-				p.unspentLabel.Text = i18n.Text("Unspent")
+				p.unspentLabel.Text = unison.NewSmallCapsText(i18n.Text("Unspent"), &unison.TextDecoration{
+					Font:       gurps.PageLabelPrimaryFont,
+					Foreground: unison.DefaultLabelTheme.OnBackgroundInk,
+				})
 			}
 		}
 		if last != p.overSpent {

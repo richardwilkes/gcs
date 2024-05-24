@@ -47,7 +47,7 @@ type AttrPanel struct {
 	crc         uint64
 	rowStarts   []int
 	kind        int
-	stateLabels map[string]*unison.Label
+	stateLabels map[string]*unison.RichLabel
 }
 
 // NewPrimaryAttrPanel creates a new primary attributes panel.
@@ -176,7 +176,7 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 	a.RemoveAllChildren()
 	a.rowStarts = nil
 	if a.kind == poolAttrKind {
-		a.stateLabels = make(map[string]*unison.Label)
+		a.stateLabels = make(map[string]*unison.RichLabel)
 	}
 	for _, def := range attrs.List(false) {
 		if a.isRelevant(def) {
@@ -301,12 +301,18 @@ func (a *AttrPanel) Sync() {
 					if attr, ok := a.entity.Attributes.Set[id]; ok {
 						label.DrawCallback = label.DefaultDraw
 						if threshold := attr.CurrentThreshold(); threshold != nil {
-							label.Text = "[" + threshold.State + "]"
+							label.Text = unison.NewSmallCapsText("["+threshold.State+"]", &unison.TextDecoration{
+								Font:       gurps.PageLabelPrimaryFont,
+								Foreground: unison.ThemeOnSurface,
+							})
 							if threshold.Explanation != "" {
 								label.Tooltip = newWrappedTooltip(threshold.Explanation)
 							}
 						} else {
-							label.Text = ""
+							label.Text = unison.NewSmallCapsText("", &unison.TextDecoration{
+								Font:       gurps.PageLabelPrimaryFont,
+								Foreground: unison.ThemeOnSurface,
+							})
 							label.Tooltip = nil
 						}
 					}

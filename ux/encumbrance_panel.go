@@ -92,8 +92,7 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 		}
 		p.AddChild(p.createMarker(entity, enc, rowColor))
 		p.AddChild(p.createLevelField(enc, rowColor))
-		name := NewPageLabel(enc.String())
-		name.OnBackgroundInk = rowColor
+		name := NewPageLabelWithInk(enc.String(), rowColor)
 		name.SetLayoutData(&unison.FlexLayoutData{
 			HAlign: align.Fill,
 			VAlign: align.Middle,
@@ -119,8 +118,13 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 }
 
 func (p *EncumbrancePanel) createMarker(entity *gurps.Entity, enc encumbrance.Level, rowColor *encRowColor) *unison.Label {
-	marker := NewPageLabel("")
+	marker := unison.NewLabel()
+	marker.Font = gurps.PageLabelPrimaryFont
 	marker.OnBackgroundInk = rowColor
+	marker.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Fill,
+		VAlign: align.Middle,
+	})
 	marker.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: 4}))
 	baseline := marker.Font.Baseline()
 	marker.Drawable = &unison.DrawableSVG{

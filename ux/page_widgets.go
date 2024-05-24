@@ -74,25 +74,33 @@ func NewPageInternalHeader(title string, span int) unison.Paneler {
 }
 
 // NewPageLabel creates a new start-aligned field label for a sheet page.
-func NewPageLabel(title string) *unison.Label {
-	label := unison.NewLabel()
-	label.OnBackgroundInk = unison.ThemeOnSurface
-	label.Text = title
-	label.Font = gurps.PageLabelPrimaryFont
+func NewPageLabel(title string) *unison.RichLabel {
+	return NewPageLabelWithInk(title, unison.ThemeOnSurface)
+}
+
+// NewPageLabel creates a new start-aligned field label for a sheet page.
+func NewPageLabelWithInk(title string, ink unison.Ink) *unison.RichLabel {
+	label := unison.NewRichLabel()
+	label.Text = unison.NewSmallCapsText(title, &unison.TextDecoration{
+		Font:       gurps.PageLabelPrimaryFont,
+		Foreground: ink,
+	})
 	label.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Middle,
 	})
+
 	label.SetBorder(unison.NewEmptyBorder(unison.Insets{Bottom: 1})) // To match field underline spacing
 	return label
 }
 
 // NewPageLabelEnd creates a new end-aligned field label for a sheet page.
-func NewPageLabelEnd(title string) *unison.Label {
-	label := unison.NewLabel()
-	label.OnBackgroundInk = unison.ThemeOnSurface
-	label.Text = title
-	label.Font = gurps.PageLabelPrimaryFont
+func NewPageLabelEnd(title string) *unison.RichLabel {
+	label := unison.NewRichLabel()
+	label.Text = unison.NewSmallCapsText(title, &unison.TextDecoration{
+		Font:       gurps.PageLabelPrimaryFont,
+		Foreground: unison.ThemeOnSurface,
+	})
 	label.HAlign = align.End
 	label.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
@@ -103,11 +111,12 @@ func NewPageLabelEnd(title string) *unison.Label {
 }
 
 // NewPageLabelCenter creates a new center-aligned field label for a sheet page.
-func NewPageLabelCenter(title string) *unison.Label {
-	label := unison.NewLabel()
-	label.OnBackgroundInk = unison.ThemeOnSurface
-	label.Text = title
-	label.Font = gurps.PageLabelPrimaryFont
+func NewPageLabelCenter(title string) *unison.RichLabel {
+	label := unison.NewRichLabel()
+	label.Text = unison.NewSmallCapsText(title, &unison.TextDecoration{
+		Font:       gurps.PageLabelPrimaryFont,
+		Foreground: unison.ThemeOnSurface,
+	})
 	label.HAlign = align.Middle
 	label.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,

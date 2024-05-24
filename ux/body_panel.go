@@ -107,7 +107,7 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 		if rollRange == "-" {
 			rollRange = ""
 		}
-		var label *unison.Label
+		var label *unison.RichLabel
 		if hasSubTable || depth != 0 {
 			label = NewPageLabel(rollRange)
 		} else {
