@@ -21,11 +21,13 @@ import (
 )
 
 // NewPageHeader creates a new center-aligned header for a sheet page.
-func NewPageHeader(title string, hSpan int) *unison.Label {
-	label := unison.NewLabel()
+func NewPageHeader(title string, hSpan int) *unison.RichLabel {
+	label := unison.NewRichLabel()
 	label.OnBackgroundInk = gurps.OnThemeHeader
-	label.Text = title
-	label.Font = gurps.PageLabelPrimaryFont
+	label.Text = unison.NewSmallCapsText(title, &unison.TextDecoration{
+		Font:       gurps.PageLabelPrimaryFont,
+		Foreground: gurps.OnThemeHeader,
+	})
 	label.HAlign = align.Middle
 	label.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  hSpan,

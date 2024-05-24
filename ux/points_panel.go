@@ -28,7 +28,7 @@ type PointsPanel struct {
 	entity       *gurps.Entity
 	targetMgr    *TargetMgr
 	prefix       string
-	total        *unison.Label
+	total        *unison.RichLabel
 	ptsList      *unison.Panel
 	unspentField *NonEditablePageField
 	unspentLabel *unison.Label
@@ -78,12 +78,13 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	} else {
 		overallTotal = p.entity.TotalPoints.String()
 	}
-	p.total = unison.NewLabel()
-	p.total.Font = gurps.PageLabelPrimaryFont
-	p.total.Text = fmt.Sprintf(i18n.Text("%s Points"), overallTotal)
-	p.total.OnBackgroundInk = gurps.OnThemeHeader
+	p.total = unison.NewRichLabel()
+	p.total.Text = unison.NewSmallCapsText(fmt.Sprintf(i18n.Text("%s Points"), overallTotal), &unison.TextDecoration{
+		Font:       gurps.PageLabelPrimaryFont,
+		Foreground: gurps.OnThemeHeader,
+	})
 	hdri.AddChild(p.total)
-	height := p.total.Font.Baseline() - 2
+	height := gurps.PageLabelPrimaryFont.Baseline() - 2
 	editButton := unison.NewSVGButton(svg.Edit)
 	editButton.OnBackgroundInk = gurps.OnThemeHeader
 	editButton.OnSelectionInk = gurps.OnThemeHeader
@@ -223,6 +224,9 @@ func (p *PointsPanel) Sync() {
 	} else {
 		overallTotal = p.entity.TotalPoints.String()
 	}
-	p.total.Text = fmt.Sprintf(i18n.Text("%s Points"), overallTotal)
+	p.total.Text = unison.NewSmallCapsText(fmt.Sprintf(i18n.Text("%s Points"), overallTotal), &unison.TextDecoration{
+		Font:       gurps.PageLabelPrimaryFont,
+		Foreground: gurps.OnThemeHeader,
+	})
 	p.MarkForLayoutAndRedraw()
 }
