@@ -259,9 +259,9 @@ func (d *pageRefMappingsDockable) sync() {
 
 func (d *pageRefMappingsDockable) createIDField(ref *gurps.PageRef) {
 	p := unison.NewLabel()
-	p.Text = ref.ID
 	p.HAlign = align.Middle
 	p.OnBackgroundInk = unison.DefaultTooltipTheme.Label.OnBackgroundInk
+	p.SetTitle(ref.ID)
 	p.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.NewUniformInsets(1), false),
 		unison.NewEmptyBorder(unison.Insets{
 			Top:    1,
@@ -297,7 +297,7 @@ func (d *pageRefMappingsDockable) createOffsetField(ref *gurps.PageRef) {
 
 func (d *pageRefMappingsDockable) createNameField(ref *gurps.PageRef) {
 	p := unison.NewLabel()
-	p.Text = filepath.Base(ref.Path)
+	p.SetTitle(filepath.Base(ref.Path))
 	p.Tooltip = newWrappedTooltip(ref.Path)
 	p.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Start,

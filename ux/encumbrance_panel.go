@@ -142,7 +142,7 @@ func (p *EncumbrancePanel) createMarker(entity *gurps.Entity, enc encumbrance.Le
 func (p *EncumbrancePanel) createLevelField(enc encumbrance.Level, rowColor *encRowColor) *NonEditablePageField {
 	field := NewNonEditablePageFieldEnd(func(_ *NonEditablePageField) {})
 	field.OnBackgroundInk = rowColor
-	field.Text = strconv.Itoa(int(enc))
+	field.SetTitle(strconv.Itoa(int(enc)))
 	field.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Middle,
@@ -152,8 +152,8 @@ func (p *EncumbrancePanel) createLevelField(enc encumbrance.Level, rowColor *enc
 
 func (p *EncumbrancePanel) createMaxCarryField(enc encumbrance.Level, rowColor *encRowColor) *NonEditablePageField {
 	field := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.SheetSettings.DefaultWeightUnits.Format(p.entity.MaximumCarry(enc)); text != f.Text {
-			f.Text = text
+		if text := p.entity.SheetSettings.DefaultWeightUnits.Format(p.entity.MaximumCarry(enc)); text != f.Text.String() {
+			f.SetTitle(text)
 			MarkForLayoutWithinDockable(f)
 		}
 	})
@@ -164,8 +164,8 @@ func (p *EncumbrancePanel) createMaxCarryField(enc encumbrance.Level, rowColor *
 
 func (p *EncumbrancePanel) createMoveField(enc encumbrance.Level, rowColor *encRowColor) *NonEditablePageField {
 	field := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := strconv.Itoa(p.entity.Move(enc)); text != f.Text {
-			f.Text = text
+		if text := strconv.Itoa(p.entity.Move(enc)); text != f.Text.String() {
+			f.SetTitle(text)
 			MarkForLayoutWithinDockable(f)
 		}
 	})
@@ -176,8 +176,8 @@ func (p *EncumbrancePanel) createMoveField(enc encumbrance.Level, rowColor *encR
 
 func (p *EncumbrancePanel) createDodgeField(enc encumbrance.Level, rowColor *encRowColor) *NonEditablePageField {
 	field := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := strconv.Itoa(p.entity.Dodge(enc)); text != f.Text {
-			f.Text = text
+		if text := strconv.Itoa(p.entity.Dodge(enc)); text != f.Text.String() {
+			f.SetTitle(text)
 			MarkForLayoutWithinDockable(f)
 		}
 	})

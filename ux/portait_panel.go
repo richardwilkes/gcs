@@ -87,8 +87,8 @@ func (p *PortraitPanel) drawSelf(gc *unison.Canvas, _ unison.Rect) {
 		gc.DrawRect(r, unison.Black.SetAlphaIntensity(0.3).Paint(gc, r, paintstyle.Fill))
 		text := unison.NewTextWrappedLines(i18n.Text("Drop an image here or double-click to change the portrait"),
 			&unison.TextDecoration{
-				Font:       gurps.PageFieldPrimaryFont,
-				Foreground: unison.White,
+				Font:            gurps.PageFieldPrimaryFont,
+				OnBackgroundInk: unison.White,
 			}, r.Width-unison.StdHSpacing*2)
 		var height float32
 		for _, line := range text {

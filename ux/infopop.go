@@ -57,7 +57,7 @@ func AddHelpToInfoPop(target unison.Paneler, text string) {
 		}
 		label := unison.NewLabel()
 		label.LabelTheme = unison.DefaultTooltipTheme.Label
-		label.Text = str
+		label.SetTitle(str)
 		label.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 		tip.AddChild(label)
 	}
@@ -76,7 +76,7 @@ func AddKeyBindingInfoToInfoPop(target unison.Paneler, keyBinding unison.KeyBind
 	keyLabel.LabelTheme = unison.DefaultTooltipTheme.Label
 	keyLabel.OnBackgroundInk = unison.DefaultTooltipTheme.BackgroundInk
 	keyLabel.Font = unison.DefaultMenuItemTheme.KeyFont
-	keyLabel.Text = keyBinding.String()
+	keyLabel.SetTitle(keyBinding.String())
 	keyLabel.HAlign = align.Middle
 	keyLabel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 	keyLabel.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
@@ -89,7 +89,7 @@ func AddKeyBindingInfoToInfoPop(target unison.Paneler, keyBinding unison.KeyBind
 
 	descLabel := unison.NewLabel()
 	descLabel.LabelTheme = unison.DefaultTooltipTheme.Label
-	descLabel.Text = text
+	descLabel.SetTitle(text)
 	tip.AddChild(descLabel)
 }
 

@@ -587,7 +587,7 @@ func PromptForDestination[T FileBackedDockable](choices []T) []T {
 		VAlign:   align.Fill,
 	})
 	label := unison.NewLabel()
-	label.Text = i18n.Text("Choose one or more destinations:")
+	label.SetTitle(i18n.Text("Choose one or more destinations:"))
 	panel.AddChild(label)
 	panel.AddChild(scroll)
 	if unison.QuestionDialogWithPanel(panel) != unison.ModalResponseOK || list.Selection.Count() == 0 {

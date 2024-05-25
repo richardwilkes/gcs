@@ -200,10 +200,10 @@ func (p *prereqPanel) adjustAndOrForList(list *gurps.PrereqList) {
 
 func (p *prereqPanel) adjustAndOr(data gurps.Prereq) {
 	if label, ok := p.andOrMap[data]; ok {
-		if text := andOrText(data); text != label.Text {
+		if text := andOrText(data); text != label.Text.String() {
 			parent := label.Parent()
 			label.RemoveFromParent()
-			label.Text = text
+			label.SetTitle(text)
 			i := 1
 			if text == noAndOr {
 				i = parent.Layout().(*unison.FlexLayout).Columns - 1

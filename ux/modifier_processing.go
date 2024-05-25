@@ -74,7 +74,7 @@ func processModifiers[T *gurps.TraitModifier | *gurps.EquipmentModifier](title s
 			var cb *unison.CheckBox
 			if !mod.Container() {
 				cb = unison.NewCheckBox()
-				cb.Text = lines[0].String()
+				cb.SetTitle(lines[0].String())
 				cb.State = check.FromBool(mod.Enabled())
 				_, cbPref, _ := cb.Sizes(unison.Size{})
 				label := unison.NewLabel()
@@ -94,7 +94,7 @@ func processModifiers[T *gurps.TraitModifier | *gurps.EquipmentModifier](title s
 			for i, line := range lines {
 				label := unison.NewLabel()
 				label.Font = unison.DefaultCheckBoxTheme.Font
-				label.Text = line.String()
+				label.SetTitle(line.String())
 				vspacing := float32(unison.StdVSpacing)
 				if len(lines)-1 == i {
 					vspacing *= 2
@@ -144,11 +144,11 @@ func processModifiers[T *gurps.TraitModifier | *gurps.EquipmentModifier](title s
 		VAlign:   align.Fill,
 	})
 	label := unison.NewLabel()
-	label.Text = i18n.Text("Select Modifiers for")
+	label.SetTitle(i18n.Text("Select Modifiers for"))
 	panel.AddChild(label)
 	label = unison.NewLabel()
-	label.Text = title
 	label.Font = unison.SystemFont
+	label.SetTitle(title)
 	panel.AddChild(label)
 	panel.AddChild(scroll)
 	if unison.QuestionDialogWithPanel(panel) == unison.ModalResponseOK {

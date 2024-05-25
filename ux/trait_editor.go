@@ -41,9 +41,9 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	if !e.target.Container() {
 		wrapper := addFlowWrapper(content, i18n.Text("Point Cost"), 2)
 		costField := NewNonEditableField(func(field *NonEditableField) {
-			field.Text = gurps.AdjustedPoints(e.target.Entity, e.editorData.CanLevel, e.editorData.BasePoints,
+			field.SetTitle(gurps.AdjustedPoints(e.target.Entity, e.editorData.CanLevel, e.editorData.BasePoints,
 				e.editorData.Levels, e.editorData.PointsPerLevel, e.editorData.CR, e.editorData.Modifiers,
-				e.editorData.RoundCostDown).String()
+				e.editorData.RoundCostDown).String())
 			field.MarkForLayoutAndRedraw()
 		})
 		insets := costField.Border().Insets()

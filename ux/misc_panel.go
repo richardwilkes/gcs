@@ -57,16 +57,16 @@ func NewMiscPanel(entity *gurps.Entity, targetMgr *TargetMgr) *MiscPanel {
 
 	m.AddChild(NewPageLabelEnd(i18n.Text("Created")))
 	m.AddChild(NewNonEditablePageField(func(f *NonEditablePageField) {
-		if text := m.entity.CreatedOn.String(); text != f.Text {
-			f.Text = text
+		if text := m.entity.CreatedOn.String(); text != f.Text.String() {
+			f.SetTitle(text)
 			MarkForLayoutWithinDockable(f)
 		}
 	}))
 
 	m.AddChild(NewPageLabelEnd(i18n.Text("Modified")))
 	m.AddChild(NewNonEditablePageField(func(f *NonEditablePageField) {
-		if text := m.entity.ModifiedOn.String(); text != f.Text {
-			f.Text = text
+		if text := m.entity.ModifiedOn.String(); text != f.Text.String() {
+			f.SetTitle(text)
 			MarkForLayoutWithinDockable(f)
 		}
 	}))

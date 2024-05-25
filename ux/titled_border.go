@@ -55,8 +55,8 @@ func (t *TitledBorder) Draw(gc *unison.Canvas, rect unison.Rect) {
 	path.Rect(clip)
 	gc.DrawPath(path, gurps.ThemeHeader.Paint(gc, rect, paintstyle.Fill))
 	text := unison.NewSmallCapsText(t.Title, &unison.TextDecoration{
-		Font:       t.font(),
-		Foreground: gurps.OnThemeHeader,
+		Font:            t.font(),
+		OnBackgroundInk: gurps.OnThemeHeader,
 	})
 	text.Draw(gc, rect.X+(rect.Width-text.Width())/2, rect.Y+1+text.Baseline())
 }

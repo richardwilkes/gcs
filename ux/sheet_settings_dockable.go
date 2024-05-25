@@ -196,7 +196,7 @@ func (d *sheetSettingsDockable) createOptions(content *unison.Panel) {
 
 func (d *sheetSettingsDockable) addCheckBox(panel *unison.Panel, title string, checked bool, onClick func()) *unison.CheckBox {
 	checkbox := unison.NewCheckBox()
-	checkbox.Text = title
+	checkbox.SetTitle(title)
 	checkbox.State = check.FromBool(checked)
 	checkbox.ClickCallback = onClick
 	panel.AddChild(checkbox)
@@ -207,20 +207,20 @@ func (d *sheetSettingsDockable) addCheckBoxWithLink(panel *unison.Panel, title, 
 	wrapper := unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{Columns: 4})
 	checkbox := unison.NewCheckBox()
-	checkbox.Text = title
+	checkbox.SetTitle(title)
 	checkbox.State = check.FromBool(checked)
 	checkbox.ClickCallback = onClick
 	wrapper.AddChild(checkbox)
 	label := unison.NewLabel()
 	label.Font = checkbox.Font
-	label.Text = " ("
+	label.SetTitle(" (")
 	wrapper.AddChild(label)
 	wrapper.AddChild(unison.NewLink(ref, "", ref, unison.DefaultLinkTheme, func(_ unison.Paneler, _ string) {
 		OpenPageReference(ref, "", nil)
 	}))
 	label = unison.NewLabel()
 	label.Font = checkbox.Font
-	label.Text = ")"
+	label.SetTitle(")")
 	wrapper.AddChild(label)
 	panel.AddChild(wrapper)
 	return checkbox
@@ -299,10 +299,10 @@ func (d *sheetSettingsDockable) createBlockLayout(content *unison.Panel) {
 	})
 	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 	label := unison.NewLabel()
-	label.Text = i18n.Text("Block Layout")
 	desc := label.Font.Descriptor()
 	desc.Weight = weight.Bold
 	label.Font = desc.Font()
+	label.SetTitle(i18n.Text("Block Layout"))
 	panel.AddChild(label)
 	d.blockLayoutField = unison.NewMultiLineField()
 	lastBlockLayout := s.BlockLayout.String()
@@ -371,10 +371,10 @@ func createSettingPopup[T comparable](d *sheetSettingsDockable, panel *unison.Pa
 
 func (d *sheetSettingsDockable) createHeader(panel *unison.Panel, title string, hspan int) {
 	label := unison.NewLabel()
-	label.Text = title
 	desc := label.Font.Descriptor()
 	desc.Weight = weight.Bold
 	label.Font = desc.Font()
+	label.SetTitle(title)
 	label.SetLayoutData(&unison.FlexLayoutData{HSpan: hspan})
 	panel.AddChild(label)
 	sep := unison.NewSeparator()

@@ -71,7 +71,7 @@ documents from the library are open.`))
 		VSpacing: unison.StdVSpacing,
 	})
 	label := unison.NewLabel()
-	label.Text = fmt.Sprintf(i18n.Text("Updating %s to v%s…"), lib.Title, filterVersion(rel.Version))
+	label.SetTitle(fmt.Sprintf(i18n.Text("Updating %s to v%s…"), lib.Title, filterVersion(rel.Version)))
 	content.AddChild(label)
 	progress := unison.NewProgressBar(0)
 	progress.SetLayoutData(&unison.FlexLayoutData{

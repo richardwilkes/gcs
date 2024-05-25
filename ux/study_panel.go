@@ -99,7 +99,7 @@ func newStudyPanel(entity *gurps.Entity, studyNeeded *study.Level, s *[]*gurps.S
 	}
 
 	trailer := unison.NewLabel()
-	trailer.Text = i18n.Text(") for 1 point")
+	trailer.SetTitle(i18n.Text(") for 1 point"))
 	topRight.AddChild(trailer)
 
 	for i, one := range *s {
@@ -186,8 +186,8 @@ func updateLimitations(info *unison.Label, studyType study.Type) {
 
 func (p *studyPanel) updateTotal() {
 	text := gurps.StudyHoursProgressText(gurps.ResolveStudyHours(*p.study), *p.studyNeeded, true) + " ("
-	if text != p.total.Text {
-		p.total.Text = text
+	if text != p.total.Text.String() {
+		p.total.SetTitle(text)
 		p.total.MarkForLayoutAndRedraw()
 	}
 }

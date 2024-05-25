@@ -60,7 +60,7 @@ func (d *colorSettingsDockable) initContent(content *unison.Panel) {
 
 func (d *colorSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 	label := unison.NewLabel()
-	label.Text = i18n.Text("Color Mode")
+	label.SetTitle(i18n.Text("Color Mode"))
 	toolbar.AddChild(label)
 	p := unison.NewPopupMenu[thememode.Enum]()
 	for _, mode := range thememode.All {

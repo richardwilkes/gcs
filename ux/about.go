@@ -88,13 +88,13 @@ func (w *aboutWindow) drawContentBackground(gc *unison.Canvas, _ unison.Rect) {
 	face := unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Regular, spacing.Standard, slant.Upright)
 	boldFace := unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Black, spacing.Standard, slant.Upright)
 	dec := &unison.TextDecoration{
-		Font:       face.Font(7),
-		Foreground: unison.Gray,
+		Font:            face.Font(7),
+		OnBackgroundInk: unison.Gray,
 	}
 	text := unison.NewText(i18n.Text("This product includes copyrighted material from the "), dec)
 	text.AddString("GURPS", &unison.TextDecoration{
-		Font:       boldFace.Font(7),
-		Foreground: unison.Gray,
+		Font:            boldFace.Font(7),
+		OnBackgroundInk: unison.Gray,
 	})
 	text.AddString(i18n.Text(" game, which is used by permission of Steve Jackson Games."), dec)
 	y := r.Height - 10
@@ -103,12 +103,12 @@ func (w *aboutWindow) drawContentBackground(gc *unison.Canvas, _ unison.Rect) {
 
 	font := face.Font(8)
 	dec = &unison.TextDecoration{
-		Font:       font,
-		Foreground: unison.Gray,
+		Font:            font,
+		OnBackgroundInk: unison.Gray,
 	}
 	text = unison.NewText("GURPS", &unison.TextDecoration{
-		Font:       boldFace.Font(8),
-		Foreground: unison.Gray,
+		Font:            boldFace.Font(8),
+		OnBackgroundInk: unison.Gray,
 	})
 	text.AddString(i18n.Text(" is a trademark of Steve Jackson Games, used by permission. All rights reserved."), dec)
 	text.Draw(gc, (r.Width-text.Width())/2, y)
@@ -117,14 +117,14 @@ func (w *aboutWindow) drawContentBackground(gc *unison.Canvas, _ unison.Rect) {
 
 	fg := unison.RGB(204, 204, 204)
 	text = unison.NewText(cmdline.Copyright(), &unison.TextDecoration{
-		Font:       font,
-		Foreground: fg,
+		Font:            font,
+		OnBackgroundInk: fg,
 	})
 	text.Draw(gc, (r.Width-text.Width())/2, y)
 
 	buildText := unison.NewText(i18n.Text("Build ")+cmdline.BuildNumber, &unison.TextDecoration{
-		Font:       font,
-		Foreground: fg,
+		Font:            font,
+		OnBackgroundInk: fg,
 	})
 	var t string
 	if cmdline.AppVersion != "" && cmdline.AppVersion != "0.0" {
@@ -133,8 +133,8 @@ func (w *aboutWindow) drawContentBackground(gc *unison.Canvas, _ unison.Rect) {
 		t = i18n.Text("Development")
 	}
 	versionText := unison.NewText(t, &unison.TextDecoration{
-		Font:       unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Black, spacing.Standard, slant.Upright).Font(10),
-		Foreground: unison.White,
+		Font:            unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Black, spacing.Standard, slant.Upright).Font(10),
+		OnBackgroundInk: unison.White,
 	})
 
 	const (

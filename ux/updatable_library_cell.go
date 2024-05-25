@@ -43,10 +43,10 @@ func newUpdatableLibraryCell(lib *gurps.Library, title *unison.Label, rel gurps.
 	c.AddChild(title)
 
 	c.button = unison.NewButton()
-	c.button.Text = fmt.Sprintf("Update to v%s", filterVersion(rel.Version))
 	fd := c.button.Font.Descriptor()
 	fd.Size = xmath.Round(fd.Size * 0.8)
 	c.button.Font = fd.Font()
+	c.button.SetTitle(fmt.Sprintf("Update to v%s", filterVersion(rel.Version)))
 	c.button.ClickCallback = func() { initiateLibraryUpdate(c.library, c.release) }
 	c.AddChild(c.button)
 

@@ -518,15 +518,16 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 	}
 	for _, child := range children {
 		checkBox := unison.NewCheckBox()
-		checkBox.Text = fmt.Sprintf("%v", child)
+		title := fmt.Sprintf("%v", child)
 		if tp.Type == picker.Points {
 			points := rawPoints(child)
 			pointsLabel := i18n.Text("points")
 			if points == fxp.One {
 				pointsLabel = i18n.Text("point")
 			}
-			checkBox.Text += fmt.Sprintf(" [%s %s]", points.Comma(), pointsLabel)
+			title += fmt.Sprintf(" [%s %s]", points.Comma(), pointsLabel)
 		}
+		checkBox.SetTitle(title)
 		checkBox.ClickCallback = callback
 		boxes = append(boxes, checkBox)
 		list.AddChild(checkBox)
@@ -552,18 +553,18 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 		VAlign:   align.Fill,
 	})
 	label := unison.NewLabel()
-	label.Text = fmt.Sprintf("%v", row)
+	label.SetTitle(fmt.Sprintf("%v", row))
 	panel.AddChild(label)
 	if notesCapable, hasNotes := any(row).(interface{ Notes() string }); hasNotes {
 		if notes := notesCapable.Notes(); notes != "" {
 			label = unison.NewLabel()
-			label.Text = notes
 			label.Font = gurps.FieldSecondaryFont
+			label.SetTitle(notes)
 			panel.AddChild(label)
 		}
 	}
 	label = unison.NewLabel()
-	label.Text = tp.Description()
+	label.SetTitle(tp.Description())
 	label.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: unison.StdVSpacing * 2}))
 	panel.AddChild(label)
 	panel.AddChild(scroll)

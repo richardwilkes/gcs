@@ -216,7 +216,7 @@ func (n *NavigatorNode) ColumnCell(_, col int, foreground, _ unison.Ink, _, _, _
 	fi := gurps.FileInfoFor(ext)
 	label := unison.NewLabel()
 	label.OnBackgroundInk = foreground
-	label.Text = title
+	label.SetTitle(title)
 	label.Drawable = &unison.DrawableSVG{
 		SVG:  fi.SVG,
 		Size: unison.NewSize(size, size),

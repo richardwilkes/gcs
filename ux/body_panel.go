@@ -107,7 +107,7 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 		if rollRange == "-" {
 			rollRange = ""
 		}
-		var label *unison.RichLabel
+		var label *unison.Label
 		if hasSubTable || depth != 0 {
 			label = NewPageLabel(rollRange)
 		} else {
@@ -149,7 +149,7 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 
 func (p *BodyPanel) createHitPenaltyField(location *gurps.HitLocation) unison.Paneler {
 	field := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		f.Text = fmt.Sprintf("%+d", location.HitPenalty)
+		f.SetTitle(fmt.Sprintf("%+d", location.HitPenalty))
 		MarkForLayoutWithinDockable(f)
 	})
 	field.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
@@ -159,7 +159,7 @@ func (p *BodyPanel) createHitPenaltyField(location *gurps.HitLocation) unison.Pa
 func (p *BodyPanel) createDRField(location *gurps.HitLocation) unison.Paneler {
 	field := NewNonEditablePageFieldCenter(func(f *NonEditablePageField) {
 		var tooltip xio.ByteBuffer
-		f.Text = location.DisplayDR(p.entity, &tooltip)
+		f.SetTitle(location.DisplayDR(p.entity, &tooltip))
 		f.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("The DR covering the %s hit location%s"),
 			location.TableName, tooltip.String()))
 		MarkForLayoutWithinDockable(f)

@@ -88,7 +88,7 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 
 	label = unison.NewLabel()
-	label.Text = i18n.Text("Markdown Preview")
+	label.SetTitle(i18n.Text("Markdown Preview"))
 	label.HAlign = align.Middle
 	label.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,

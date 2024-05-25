@@ -82,7 +82,7 @@ func (d *menuKeySettingsDockable) fill() {
 func (d *menuKeySettingsDockable) createBindingButton(binding *gurps.Binding) {
 	b := unison.NewButton()
 	b.Font = unison.KeyboardFont
-	b.Text = binding.Action.KeyBinding.String()
+	b.SetTitle(binding.Action.KeyBinding.String())
 	b.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Middle,
@@ -91,7 +91,7 @@ func (d *menuKeySettingsDockable) createBindingButton(binding *gurps.Binding) {
 		localBinding := binding.KeyBinding
 		capturePanel := unison.NewLabel()
 		capturePanel.Font = unison.KeyboardFont
-		capturePanel.Text = binding.KeyBinding.String()
+		capturePanel.SetTitle(binding.KeyBinding.String())
 		capturePanel.HAlign = align.Middle
 		unison.InstallDefaultFieldBorder(capturePanel, capturePanel)
 		capturePanel.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
@@ -101,7 +101,7 @@ func (d *menuKeySettingsDockable) createBindingButton(binding *gurps.Binding) {
 		capturePanel.KeyDownCallback = func(keyCode unison.KeyCode, mod unison.Modifiers, _ bool) bool {
 			localBinding.KeyCode = keyCode
 			localBinding.Modifiers = mod
-			capturePanel.Text = localBinding.String()
+			capturePanel.SetTitle(localBinding.String())
 			capturePanel.MarkForRedraw()
 			return true
 		}
@@ -142,7 +142,7 @@ func (d *menuKeySettingsDockable) createBindingButton(binding *gurps.Binding) {
 				g := gurps.GlobalSettings()
 				g.KeyBindings.Set(binding.ID, localBinding)
 				g.KeyBindings.MakeCurrent()
-				b.Text = localBinding.String()
+				b.SetTitle(localBinding.String())
 				b.MarkForRedraw()
 			default:
 			}
@@ -162,7 +162,7 @@ func (d *menuKeySettingsDockable) createResetField(binding *gurps.Binding) {
 			binding.KeyBinding = g.KeyBindings.Current(binding.ID)
 			parent := b.Parent()
 			if other, ok := parent.Children()[parent.IndexOfChild(b)-1].Self.(*unison.Button); ok {
-				other.Text = binding.KeyBinding.String()
+				other.SetTitle(binding.KeyBinding.String())
 			}
 		}
 	}

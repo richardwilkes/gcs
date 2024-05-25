@@ -164,14 +164,14 @@ func (n *Node[T]) ColumnCell(row, col int, foreground, background unison.Ink, _,
 func applyInkRecursively(panel *unison.Panel, foreground, background unison.Ink) {
 	if markdown, ok := panel.Self.(*unison.Markdown); ok {
 		var ic *unison.IndirectInk
-		if ic, ok = markdown.Foreground.(*unison.IndirectInk); ok {
+		if ic, ok = markdown.OnBackgroundInk.(*unison.IndirectInk); ok {
 			ic.Target = foreground
 		}
 		return
 	}
 	switch part := panel.Self.(type) {
 	case *unison.Markdown:
-		if ink, ok := part.Foreground.(*unison.IndirectInk); ok {
+		if ink, ok := part.OnBackgroundInk.(*unison.IndirectInk); ok {
 			ink.Target = foreground
 		}
 		return
@@ -283,7 +283,7 @@ func (n *Node[T]) createMarkdownCell(c *gurps.CellData, width float32, foregroun
 	if n.forPage {
 		adjustMarkdownThemeForPage(m)
 	}
-	if i, ok := m.Foreground.(*unison.IndirectInk); ok {
+	if i, ok := m.OnBackgroundInk.(*unison.IndirectInk); ok {
 		i.Target = foreground
 	}
 	m.SetContent(c.Primary, width)
@@ -309,11 +309,11 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 			SVG:  unison.TriangleExclamationSVG,
 			Size: unison.NewSize(height, height),
 		}
-		label.Text = i18n.Text("Unsatisfied prerequisite(s)")
 		label.HAlign = c.Alignment
 		label.VAlign = align.Middle
 		label.ClientData()[invertColorsMarker] = true
 		label.OnBackgroundInk = unison.ThemeOnError
+		label.SetTitle(i18n.Text("Unsatisfied prerequisite(s)"))
 		label.SetBorder(unison.NewEmptyBorder(unison.Insets{
 			Left:  4,
 			Right: 4,
@@ -333,11 +333,11 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 			SVG:  svg.GCSTemplate,
 			Size: unison.NewSize(height, height),
 		}
-		label.Text = c.TemplateInfo
 		label.HAlign = c.Alignment
 		label.VAlign = align.Middle
 		label.ClientData()[invertColorsMarker] = true
 		label.OnBackgroundInk = unison.ThemeOnFocus
+		label.SetTitle(c.TemplateInfo)
 		label.SetBorder(unison.NewEmptyBorder(unison.Insets{
 			Left:  4,
 			Right: 4,
@@ -360,7 +360,6 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 		tag = unison.NewTag()
 		tag.BackgroundInk = foreground
 		tag.OnBackgroundInk = background
-		tag.Text = inlineTag
 		tag.Font = &unison.DynamicFont{
 			Resolver: func() unison.FontDescriptor {
 				desc := f.Descriptor()
@@ -368,6 +367,7 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 				return desc
 			},
 		}
+		tag.SetTitle(inlineTag)
 		tag.SetEnabled(!c.Dim)
 	}
 	var lines []*unison.Text
@@ -388,11 +388,11 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 	}
 	for _, line := range lines {
 		label := unison.NewLabel()
-		label.Text = line.String()
 		label.Font = f
 		label.StrikeThrough = primary && c.Disabled
 		label.HAlign = c.Alignment
 		label.OnBackgroundInk = foreground
+		label.SetTitle(line.String())
 		label.SetEnabled(!c.Dim)
 		if tag != nil {
 			wrapper := unison.NewPanel()

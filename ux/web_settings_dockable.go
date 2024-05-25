@@ -119,11 +119,11 @@ func (d *webSettingsDockable) initContent(content *unison.Panel) {
 func (d *webSettingsDockable) createBanner(content *unison.Panel) {
 	banner := unison.NewLabel()
 	banner.HAlign = align.Middle
-	banner.Text = i18n.Text("NOTE: This is an experimental and currently incomplete feature and may be removed in the future.")
 	fd := banner.Font.Descriptor()
 	fd.Weight = weight.Bold
 	banner.Font = fd.Font()
 	banner.OnBackgroundInk = unison.ThemeOnWarning
+	banner.SetTitle(i18n.Text("NOTE: This is an experimental and currently incomplete feature and may be removed in the future."))
 	banner.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,
 		HAlign: align.Fill,
@@ -210,7 +210,7 @@ func (d *webSettingsDockable) updateErrorMsg(err error) {
 			})
 			parent.AddChildAtIndex(d.errorMsg, 1+parent.IndexOfChild(d.enabledCheckbox))
 		}
-		d.errorMsg.Text = strings.SplitN(err.Error(), "\n", 2)[0]
+		d.errorMsg.SetTitle(strings.SplitN(err.Error(), "\n", 2)[0])
 	}
 	parent.MarkForLayoutRecursivelyUpward()
 	parent.MarkForRedraw()
@@ -265,10 +265,10 @@ func (d *webSettingsDockable) createAddressField(content *unison.Panel) {
 	content.AddChild(d.addressField)
 	content.AddChild(unison.NewPanel())
 	note := unison.NewLabel()
-	note.Text = i18n.Text(`Provide just a colon followed by a port number (e.g. ":8422") to listen on all available addresses.`)
 	desc := note.Font.Descriptor()
 	desc.Size -= 2
 	note.Font = desc.Font()
+	note.SetTitle(i18n.Text(`Provide just a colon followed by a port number (e.g. ":8422") to listen on all available addresses.`))
 	content.AddChild(note)
 }
 
@@ -393,7 +393,7 @@ func (d *webSettingsDockable) createUsersBlock(content *unison.Panel) {
 	d.userAddButton.ClickCallback = d.addUser
 	header.AddChild(d.userAddButton)
 	title := unison.NewLabel()
-	title.Text = i18n.Text("Users")
+	title.SetTitle(i18n.Text("Users"))
 	header.AddChild(title)
 	d.userList = unison.NewList[*websettings.User]()
 	d.userList.BackgroundInk = unison.ThemeSurface
@@ -612,7 +612,7 @@ func (d *webSettingsDockable) createAccessBlock(content *unison.Panel, u *webset
 	addButton.ClickCallback = d.addAccess
 	header.AddChild(addButton)
 	title := unison.NewLabel()
-	title.Text = i18n.Text("Access")
+	title.SetTitle(i18n.Text("Access"))
 	header.AddChild(title)
 	d.accessList = unison.NewList[*websettings.AccessWithKey]()
 	d.accessList.BackgroundInk = unison.ThemeSurface

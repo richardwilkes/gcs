@@ -173,7 +173,7 @@ func (p *equipmentProvider) SyncHeader(headers []unison.TableColumnHeader[*Node[
 			if header, ok := headers[i].(*PageTableColumnHeader[*gurps.Equipment]); ok {
 				entity, _ := p.provider.(*gurps.Entity) //nolint:errcheck // It's ok for the entity to be nil
 				header.Text = unison.NewSmallCapsText(gurps.EquipmentHeaderData(gurps.EquipmentDescriptionColumn,
-					entity, p.carried, p.forPage).Title, header.DefaultTextDecoration())
+					entity, p.carried, p.forPage).Title, &header.TextDecoration)
 			}
 		}
 	}

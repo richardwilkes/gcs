@@ -175,7 +175,7 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 
 	pageLabel := unison.NewLabel()
 	pageLabel.Font = unison.DefaultFieldTheme.Font
-	pageLabel.Text = i18n.Text("Page")
+	pageLabel.SetTitle(i18n.Text("Page"))
 	first.AddChild(pageLabel)
 
 	d.pageNumberField = unison.NewField()
@@ -199,7 +199,7 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 
 	ofLabel := unison.NewLabel()
 	ofLabel.Font = unison.DefaultFieldTheme.Font
-	ofLabel.Text = fmt.Sprintf(i18n.Text("of %d"), d.pdf.PageCount())
+	ofLabel.SetTitle(fmt.Sprintf(i18n.Text("of %d"), d.pdf.PageCount()))
 	first.AddChild(ofLabel)
 
 	first.AddChild(NewToolbarSeparator())
@@ -263,7 +263,7 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 	second.AddChild(d.searchField)
 
 	d.matchesLabel = unison.NewLabel()
-	d.matchesLabel.Text = "-"
+	d.matchesLabel.SetTitle("-")
 	d.matchesLabel.Tooltip = newWrappedTooltip(i18n.Text("Number of matches found"))
 	second.AddChild(d.matchesLabel)
 
@@ -445,8 +445,8 @@ func (d *PDFDockable) pageLoaded() {
 	if d.searchField.Text() != "" {
 		matchText = strconv.Itoa(len(d.page.Matches))
 	}
-	if matchText != d.matchesLabel.Text {
-		d.matchesLabel.Text = matchText
+	if matchText != d.matchesLabel.Text.String() {
+		d.matchesLabel.SetTitle(matchText)
 		d.matchesLabel.Parent().MarkForLayoutAndRedraw()
 	}
 
@@ -690,8 +690,8 @@ func (d *PDFDockable) drawOverlayMsg(gc *unison.Canvas, dirty unison.Rect, msg s
 		bgInk = unison.ThemeSurface.GetColor().SetAlphaIntensity(0.7)
 	}
 	decoration := &unison.TextDecoration{
-		Font:       font,
-		Foreground: fgInk,
+		Font:            font,
+		OnBackgroundInk: fgInk,
 	}
 	text := unison.NewText(msg, decoration)
 	r := d.docScroll.ContentView().ContentRect(false)
@@ -720,7 +720,7 @@ func (d *PDFDockable) drawOverlayMsg(gc *unison.Canvas, dirty unison.Rect, msg s
 	x := r.X + (r.Width-width)/2
 	if icon != nil {
 		icon.DrawInRect(gc, unison.NewRect(x, r.Y+(r.Height-iconSize.Height)/2, iconSize.Width, iconSize.Height), nil,
-			decoration.Foreground.Paint(gc, r, paintstyle.Fill))
+			decoration.OnBackgroundInk.Paint(gc, r, paintstyle.Fill))
 		x += iconSize.Width + unison.StdHSpacing
 	}
 	text.Draw(gc, x, r.Y+(r.Height-height)/2+baseline)

@@ -21,12 +21,12 @@ import (
 )
 
 // NewPageHeader creates a new center-aligned header for a sheet page.
-func NewPageHeader(title string, hSpan int) *unison.RichLabel {
-	label := unison.NewRichLabel()
+func NewPageHeader(title string, hSpan int) *unison.Label {
+	label := unison.NewLabel()
 	label.OnBackgroundInk = gurps.OnThemeHeader
 	label.Text = unison.NewSmallCapsText(title, &unison.TextDecoration{
-		Font:       gurps.PageLabelPrimaryFont,
-		Foreground: gurps.OnThemeHeader,
+		Font:            gurps.PageLabelPrimaryFont,
+		OnBackgroundInk: gurps.OnThemeHeader,
 	})
 	label.HAlign = align.Middle
 	label.SetLayoutData(&unison.FlexLayoutData{
@@ -55,10 +55,10 @@ func NewPageInternalHeader(title string, span int) unison.Paneler {
 		return sep
 	}
 	label := unison.NewLabel()
-	label.Text = title
 	label.Font = gurps.PageLabelSecondaryFont
 	label.HAlign = align.Middle
 	label.OnBackgroundInk = unison.ThemeOnSurface
+	label.SetTitle(title)
 	label.SetLayoutData(layoutData)
 	label.SetBorder(border)
 	label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
@@ -74,16 +74,16 @@ func NewPageInternalHeader(title string, span int) unison.Paneler {
 }
 
 // NewPageLabel creates a new start-aligned field label for a sheet page.
-func NewPageLabel(title string) *unison.RichLabel {
+func NewPageLabel(title string) *unison.Label {
 	return NewPageLabelWithInk(title, unison.ThemeOnSurface)
 }
 
-// NewPageLabel creates a new start-aligned field label for a sheet page.
-func NewPageLabelWithInk(title string, ink unison.Ink) *unison.RichLabel {
-	label := unison.NewRichLabel()
+// NewPageLabelWithInk creates a new start-aligned field label for a sheet page with the given Ink.
+func NewPageLabelWithInk(title string, ink unison.Ink) *unison.Label {
+	label := unison.NewLabel()
 	label.Text = unison.NewSmallCapsText(title, &unison.TextDecoration{
-		Font:       gurps.PageLabelPrimaryFont,
-		Foreground: ink,
+		Font:            gurps.PageLabelPrimaryFont,
+		OnBackgroundInk: ink,
 	})
 	label.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
@@ -95,11 +95,11 @@ func NewPageLabelWithInk(title string, ink unison.Ink) *unison.RichLabel {
 }
 
 // NewPageLabelEnd creates a new end-aligned field label for a sheet page.
-func NewPageLabelEnd(title string) *unison.RichLabel {
-	label := unison.NewRichLabel()
+func NewPageLabelEnd(title string) *unison.Label {
+	label := unison.NewLabel()
 	label.Text = unison.NewSmallCapsText(title, &unison.TextDecoration{
-		Font:       gurps.PageLabelPrimaryFont,
-		Foreground: unison.ThemeOnSurface,
+		Font:            gurps.PageLabelPrimaryFont,
+		OnBackgroundInk: unison.ThemeOnSurface,
 	})
 	label.HAlign = align.End
 	label.SetLayoutData(&unison.FlexLayoutData{
@@ -111,11 +111,11 @@ func NewPageLabelEnd(title string) *unison.RichLabel {
 }
 
 // NewPageLabelCenter creates a new center-aligned field label for a sheet page.
-func NewPageLabelCenter(title string) *unison.RichLabel {
-	label := unison.NewRichLabel()
+func NewPageLabelCenter(title string) *unison.Label {
+	label := unison.NewLabel()
 	label.Text = unison.NewSmallCapsText(title, &unison.TextDecoration{
-		Font:       gurps.PageLabelPrimaryFont,
-		Foreground: unison.ThemeOnSurface,
+		Font:            gurps.PageLabelPrimaryFont,
+		OnBackgroundInk: unison.ThemeOnSurface,
 	})
 	label.HAlign = align.Middle
 	label.SetLayoutData(&unison.FlexLayoutData{

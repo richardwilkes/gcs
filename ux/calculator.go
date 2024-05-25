@@ -256,7 +256,7 @@ func (c *Calculator) addJumpingSection() {
 		},
 		-100, 0, false, false))
 	label := unison.NewLabel()
-	label.Text = i18n.Text("penalty for extra effort")
+	label.SetTitle(i18n.Text("penalty for extra effort"))
 	wrapper.AddChild(label)
 	c.content.AddChild(wrapper)
 
@@ -276,12 +276,12 @@ func (c *Calculator) addJumpingSection() {
 	})
 	wrapper.AddChild(divider)
 	label = unison.NewLabel()
-	label.Text = i18n.Text("High Jump:")
+	label.SetTitle(i18n.Text("High Jump:"))
 	wrapper.AddChild(label)
 	c.highJumpResult = c.createResultLabel()
 	wrapper.AddChild(c.highJumpResult)
 	label = unison.NewLabel()
-	label.Text = i18n.Text("Broad Jump:")
+	label.SetTitle(i18n.Text("Broad Jump:"))
 	wrapper.AddChild(label)
 	c.broadJumpResult = c.createResultLabel()
 	c.updateJumpingResult()
@@ -308,7 +308,7 @@ func (c *Calculator) addThrowingSection() {
 		},
 		0, fxp.Weight(fxp.Max), false))
 	label := unison.NewLabel()
-	label.Text = i18n.Text("object")
+	label.SetTitle(i18n.Text("object"))
 	wrapper.AddChild(label)
 	c.content.AddChild(wrapper)
 
@@ -327,7 +327,7 @@ func (c *Calculator) addThrowingSection() {
 		},
 		-100, 0, false, false))
 	label = unison.NewLabel()
-	label.Text = i18n.Text("penalty for extra effort")
+	label.SetTitle(i18n.Text("penalty for extra effort"))
 	wrapper.AddChild(label)
 	c.content.AddChild(wrapper)
 
@@ -347,12 +347,12 @@ func (c *Calculator) addThrowingSection() {
 	})
 	wrapper.AddChild(divider)
 	label = unison.NewLabel()
-	label.Text = i18n.Text("Distance:")
+	label.SetTitle(i18n.Text("Distance:"))
 	wrapper.AddChild(label)
 	c.throwingDistanceResult = c.createResultLabel()
 	wrapper.AddChild(c.throwingDistanceResult)
 	label = unison.NewLabel()
-	label.Text = i18n.Text("Damage:")
+	label.SetTitle(i18n.Text("Damage:"))
 	wrapper.AddChild(label)
 	c.throwingDamageResult = c.createResultLabel()
 	wrapper.AddChild(c.throwingDamageResult)
@@ -386,13 +386,13 @@ func (c *Calculator) addHikingSection() {
 	hikingAdjuster := func() {
 		switch {
 		case c.usingSkis:
-			successfulHikingRollCheckbox.Text = i18n.Text("Made a successful Skiing (B221) roll")
+			successfulHikingRollCheckbox.SetTitle(i18n.Text("Made a successful Skiing (B221) roll"))
 			usingSkatesCheckbox.SetEnabled(false)
 		case c.usingSkates:
-			successfulHikingRollCheckbox.Text = i18n.Text("Made a successful Skating (B220) roll")
+			successfulHikingRollCheckbox.SetTitle(i18n.Text("Made a successful Skating (B220) roll"))
 			usingSkisCheckbox.SetEnabled(false)
 		default:
-			successfulHikingRollCheckbox.Text = i18n.Text("Made a successful Hiking (B200) roll")
+			successfulHikingRollCheckbox.SetTitle(i18n.Text("Made a successful Hiking (B200) roll"))
 			usingSkatesCheckbox.SetEnabled(true)
 			usingSkisCheckbox.SetEnabled(true)
 		}
@@ -405,7 +405,7 @@ func (c *Calculator) addHikingSection() {
 	}
 
 	label := unison.NewLabel()
-	label.Text = i18n.Text("Terrain:")
+	label.SetTitle(i18n.Text("Terrain:"))
 	wrapper.AddChild(label)
 
 	terrainPopup.AddItem(terrain...)
@@ -418,7 +418,7 @@ func (c *Calculator) addHikingSection() {
 	wrapper.AddChild(terrainPopup)
 
 	label = unison.NewLabel()
-	label.Text = i18n.Text("Weather:")
+	label.SetTitle(i18n.Text("Weather:"))
 	wrapper.AddChild(label)
 
 	weatherPopup := unison.NewPopupMenu[terrainModifier]()
@@ -433,7 +433,7 @@ func (c *Calculator) addHikingSection() {
 
 	c.content.AddChild(wrapper)
 
-	roadsAreClearedCheckbox.Text = i18n.Text("Roads are cleared")
+	roadsAreClearedCheckbox.SetTitle(i18n.Text("Roads are cleared"))
 	roadsAreClearedCheckbox.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
 	roadsAreClearedCheckbox.ClickCallback = func() {
 		c.roadsAreCleared = roadsAreClearedCheckbox.State == check.On
@@ -441,7 +441,7 @@ func (c *Calculator) addHikingSection() {
 	}
 	c.content.AddChild(roadsAreClearedCheckbox)
 
-	usingSkisCheckbox.Text = i18n.Text("Using skis")
+	usingSkisCheckbox.SetTitle(i18n.Text("Using skis"))
 	usingSkisCheckbox.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
 	usingSkisCheckbox.ClickCallback = func() {
 		c.usingSkis = usingSkisCheckbox.State == check.On
@@ -450,7 +450,7 @@ func (c *Calculator) addHikingSection() {
 	}
 	c.content.AddChild(usingSkisCheckbox)
 
-	usingSkatesCheckbox.Text = i18n.Text("Using skates")
+	usingSkatesCheckbox.SetTitle(i18n.Text("Using skates"))
 	usingSkatesCheckbox.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
 	usingSkatesCheckbox.ClickCallback = func() {
 		c.usingSkates = usingSkatesCheckbox.State == check.On
@@ -477,7 +477,7 @@ func (c *Calculator) addHikingSection() {
 	wrapper.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
 	wrapper.AddChild(extraEffortPenaltyField)
 	label = unison.NewLabel()
-	label.Text = i18n.Text("penalty for extra effort.")
+	label.SetTitle(i18n.Text("penalty for extra effort."))
 	wrapper.AddChild(label)
 	c.content.AddChild(wrapper)
 
@@ -499,7 +499,7 @@ func (c *Calculator) addHikingSection() {
 	c.updateHikingResult()
 	wrapper.AddChild(c.hikingResult)
 	label = unison.NewLabel()
-	label.Text = i18n.Text(" per full day")
+	label.SetTitle(i18n.Text(" per full day"))
 	wrapper.AddChild(label)
 	c.content.AddChild(wrapper)
 }
@@ -524,7 +524,6 @@ func (c *Calculator) createHeader(text, linkRef, linkHighlight string, topMargin
 	}
 
 	first := unison.NewLabel()
-	first.Text = text + " ("
 	first.Font = &unison.DynamicFont{
 		Resolver: func() unison.FontDescriptor {
 			desc := unison.LabelFont.Descriptor()
@@ -533,6 +532,7 @@ func (c *Calculator) createHeader(text, linkRef, linkHighlight string, topMargin
 			return desc
 		},
 	}
+	first.SetTitle(text + " (")
 	wrapper.AddChild(first)
 
 	linkTheme := unison.DefaultLinkTheme
@@ -549,8 +549,8 @@ func (c *Calculator) createHeader(text, linkRef, linkHighlight string, topMargin
 	wrapper.AddChild(link)
 
 	last := unison.NewLabel()
-	last.Text = ")"
 	last.Font = first.Font
+	last.SetTitle(")")
 	wrapper.AddChild(last)
 	return wrapper
 }
@@ -698,9 +698,9 @@ func (c *Calculator) computeJump(broad bool) fxp.Int {
 }
 
 func (c *Calculator) updateJumpingResult() {
-	c.highJumpResult.Text = c.distanceToText(c.computeJump(false))
+	c.highJumpResult.SetTitle(c.distanceToText(c.computeJump(false)))
 	c.highJumpResult.MarkForLayoutRecursivelyUpward()
-	c.broadJumpResult.Text = c.distanceToText(c.computeJump(true))
+	c.broadJumpResult.SetTitle(c.distanceToText(c.computeJump(true)))
 	c.broadJumpResult.MarkForLayoutRecursivelyUpward()
 	var units string
 	if c.useMeters() {
@@ -708,14 +708,14 @@ func (c *Calculator) updateJumpingResult() {
 	} else {
 		units = i18n.Text("yard")
 	}
-	c.jumpingLabel.Text = fmt.Sprintf(i18n.Text("%s running start"), units)
+	c.jumpingLabel.SetTitle(fmt.Sprintf(i18n.Text("%s running start"), units))
 	c.jumpingLabel.MarkForLayoutRecursivelyUpward()
 }
 
 func (c *Calculator) updateThrowingResult() {
 	if c.throwingObjectWeight <= 0 {
-		c.throwingDistanceResult.Text = i18n.Text("None")
-		c.throwingDamageResult.Text = i18n.Text("None")
+		c.throwingDistanceResult.SetTitle(i18n.Text("None"))
+		c.throwingDamageResult.SetTitle(i18n.Text("None"))
 		return
 	}
 	entity := c.sheet.Entity()
@@ -816,8 +816,8 @@ func (c *Calculator) updateThrowingResult() {
 	}
 	inches := st.Mul(modifier).Mul(fxp.ThirtySix).Trunc()
 	if inches <= fxp.One {
-		c.throwingDistanceResult.Text = i18n.Text("The object is too heavy for you to throw")
-		c.throwingDamageResult.Text = i18n.Text("None")
+		c.throwingDistanceResult.SetTitle(i18n.Text("The object is too heavy for you to throw"))
+		c.throwingDamageResult.SetTitle(i18n.Text("None"))
 		return
 	}
 
@@ -845,8 +845,8 @@ func (c *Calculator) updateThrowingResult() {
 		thrust.Modifier -= thrust.Count
 	}
 
-	c.throwingDistanceResult.Text = c.distanceToText(inches)
-	c.throwingDamageResult.Text = thrust.StringExtra(entity.SheetSettings.UseModifyingDicePlusAdds)
+	c.throwingDistanceResult.SetTitle(c.distanceToText(inches))
+	c.throwingDamageResult.SetTitle(thrust.StringExtra(entity.SheetSettings.UseModifyingDicePlusAdds))
 	c.throwingDistanceResult.MarkForLayoutRecursivelyUpward()
 	c.throwingDamageResult.MarkForLayoutRecursivelyUpward()
 }
@@ -935,7 +935,7 @@ func (c *Calculator) updateHikingResult() {
 			units = i18n.Text("miles")
 		}
 	}
-	c.hikingResult.Text = fmt.Sprintf("%s %s", distance.Comma(), units)
+	c.hikingResult.SetTitle(fmt.Sprintf("%s %s", distance.Comma(), units))
 	c.hikingResult.MarkForLayoutRecursivelyUpward()
 }
 

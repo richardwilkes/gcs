@@ -93,7 +93,7 @@ func (n *tocNode) ColumnCell(_, _ int, foreground, _ unison.Ink, _, _, _ bool) u
 	size := unison.LabelFont.Size() + 5
 	label := unison.NewLabel()
 	label.OnBackgroundInk = foreground
-	label.Text = n.title
+	label.SetTitle(n.title)
 	label.Drawable = &unison.DrawableSVG{
 		SVG:  img,
 		Size: unison.NewSize(size, size),

@@ -28,10 +28,10 @@ type PointsPanel struct {
 	entity       *gurps.Entity
 	targetMgr    *TargetMgr
 	prefix       string
-	total        *unison.RichLabel
+	total        *unison.Label
 	ptsList      *unison.Panel
 	unspentField *NonEditablePageField
-	unspentLabel *unison.RichLabel
+	unspentLabel *unison.Label
 	overSpent    int8
 }
 
@@ -78,10 +78,10 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	} else {
 		overallTotal = p.entity.TotalPoints.String()
 	}
-	p.total = unison.NewRichLabel()
+	p.total = unison.NewLabel()
 	p.total.Text = unison.NewSmallCapsText(fmt.Sprintf(i18n.Text("%s Points"), overallTotal), &unison.TextDecoration{
-		Font:       gurps.PageLabelPrimaryFont,
-		Foreground: gurps.OnThemeHeader,
+		Font:            gurps.PageLabelPrimaryFont,
+		OnBackgroundInk: gurps.OnThemeHeader,
 	})
 	hdri.AddChild(p.total)
 	height := gurps.PageLabelPrimaryFont.Baseline() - 2
@@ -130,52 +130,52 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	}
 
 	p.unspentField = NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.UnspentPoints().String(); text != f.Text {
-			f.Text = text
+		if text := p.entity.UnspentPoints().String(); text != f.Text.String() {
+			f.SetTitle(text)
 			p.adjustUnspent()
 			MarkForLayoutWithinDockable(f)
 		}
 	})
 	p.unspentLabel = p.addPointsField(p.unspentField, i18n.Text("Unspent"), i18n.Text("Points earned but not yet spent"))
 	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.PointsBreakdown().Ancestry.String(); text != f.Text {
-			f.Text = text
+		if text := p.entity.PointsBreakdown().Ancestry.String(); text != f.Text.String() {
+			f.SetTitle(text)
 			MarkForLayoutWithinDockable(f)
 		}
 	}), i18n.Text("Ancestry"), i18n.Text("Total points spent on an ancestry package"))
 	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.PointsBreakdown().Attributes.String(); text != f.Text {
-			f.Text = text
+		if text := p.entity.PointsBreakdown().Attributes.String(); text != f.Text.String() {
+			f.SetTitle(text)
 			MarkForLayoutWithinDockable(f)
 		}
 	}), i18n.Text("Attributes"), i18n.Text("Total points spent on attributes"))
 	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.PointsBreakdown().Advantages.String(); text != f.Text {
-			f.Text = text
+		if text := p.entity.PointsBreakdown().Advantages.String(); text != f.Text.String() {
+			f.SetTitle(text)
 			MarkForLayoutWithinDockable(f)
 		}
 	}), i18n.Text("Advantages"), i18n.Text("Total points spent on advantages"))
 	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.PointsBreakdown().Disadvantages.String(); text != f.Text {
-			f.Text = text
+		if text := p.entity.PointsBreakdown().Disadvantages.String(); text != f.Text.String() {
+			f.SetTitle(text)
 			MarkForLayoutWithinDockable(f)
 		}
 	}), i18n.Text("Disadvantages"), i18n.Text("Total points spent on disadvantages"))
 	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.PointsBreakdown().Quirks.String(); text != f.Text {
-			f.Text = text
+		if text := p.entity.PointsBreakdown().Quirks.String(); text != f.Text.String() {
+			f.SetTitle(text)
 			MarkForLayoutWithinDockable(f)
 		}
 	}), i18n.Text("Quirks"), i18n.Text("Total points spent on quirks"))
 	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.PointsBreakdown().Skills.String(); text != f.Text {
-			f.Text = text
+		if text := p.entity.PointsBreakdown().Skills.String(); text != f.Text.String() {
+			f.SetTitle(text)
 			MarkForLayoutWithinDockable(f)
 		}
 	}), i18n.Text("Skills"), i18n.Text("Total points spent on skills"))
 	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.PointsBreakdown().Spells.String(); text != f.Text {
-			f.Text = text
+		if text := p.entity.PointsBreakdown().Spells.String(); text != f.Text.String() {
+			f.SetTitle(text)
 			MarkForLayoutWithinDockable(f)
 		}
 	}), i18n.Text("Spells"), i18n.Text("Total points spent on spells"))
@@ -183,7 +183,7 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	return p
 }
 
-func (p *PointsPanel) addPointsField(field *NonEditablePageField, title, tooltip string) *unison.RichLabel {
+func (p *PointsPanel) addPointsField(field *NonEditablePageField, title, tooltip string) *unison.Label {
 	field.Tooltip = newWrappedTooltip(tooltip)
 	p.ptsList.AddChild(field)
 	label := NewPageLabel(title)
@@ -200,8 +200,8 @@ func (p *PointsPanel) adjustUnspent() {
 				p.overSpent = -1
 				p.unspentField.OnBackgroundInk = unison.ThemeOnError
 				p.unspentLabel.Text = unison.NewSmallCapsText(i18n.Text("Overspent"), &unison.TextDecoration{
-					Font:       gurps.PageLabelPrimaryFont,
-					Foreground: unison.ThemeOnError,
+					Font:            gurps.PageLabelPrimaryFont,
+					OnBackgroundInk: unison.ThemeOnError,
 				})
 			}
 		} else {
@@ -209,8 +209,8 @@ func (p *PointsPanel) adjustUnspent() {
 				p.overSpent = 1
 				p.unspentField.OnBackgroundInk = unison.DefaultLabelTheme.OnBackgroundInk
 				p.unspentLabel.Text = unison.NewSmallCapsText(i18n.Text("Unspent"), &unison.TextDecoration{
-					Font:       gurps.PageLabelPrimaryFont,
-					Foreground: unison.DefaultLabelTheme.OnBackgroundInk,
+					Font:            gurps.PageLabelPrimaryFont,
+					OnBackgroundInk: unison.DefaultLabelTheme.OnBackgroundInk,
 				})
 			}
 		}
@@ -229,8 +229,8 @@ func (p *PointsPanel) Sync() {
 		overallTotal = p.entity.TotalPoints.String()
 	}
 	p.total.Text = unison.NewSmallCapsText(fmt.Sprintf(i18n.Text("%s Points"), overallTotal), &unison.TextDecoration{
-		Font:       gurps.PageLabelPrimaryFont,
-		Foreground: gurps.OnThemeHeader,
+		Font:            gurps.PageLabelPrimaryFont,
+		OnBackgroundInk: gurps.OnThemeHeader,
 	})
 	p.MarkForLayoutAndRedraw()
 }

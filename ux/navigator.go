@@ -230,7 +230,7 @@ func (n *Navigator) setupToolBar() {
 	n.searchField.KeyDownCallback = n.searchKeydown
 
 	n.matchesLabel = unison.NewLabel()
-	n.matchesLabel.Text = "-"
+	n.matchesLabel.SetTitle("-")
 	n.matchesLabel.Tooltip = newWrappedTooltip(i18n.Text("Number of matches found"))
 
 	second := unison.NewPanel()
@@ -647,7 +647,7 @@ func newContextMenuItemFromButton(f unison.MenuFactory, id *int, button *unison.
 		useID := *id
 		*id++
 		return f.NewItem(unison.PopupMenuTemporaryBaseID+useID,
-			button.Tooltip.Children()[0].Self.(*unison.Label).Text, unison.KeyBinding{}, nil,
+			button.Tooltip.Children()[0].Self.(*unison.Label).String(), unison.KeyBinding{}, nil,
 			func(_ unison.MenuItem) { button.ClickCallback() })
 	}
 	return nil
@@ -1027,7 +1027,7 @@ func (n *Navigator) adjustForMatch() {
 	n.backButton.SetEnabled(n.searchIndex != 0)
 	n.forwardButton.SetEnabled(len(n.searchResult) != 0 && n.searchIndex != len(n.searchResult)-1)
 	if len(n.searchResult) != 0 {
-		n.matchesLabel.Text = fmt.Sprintf(i18n.Text("%d of %d"), n.searchIndex+1, len(n.searchResult))
+		n.matchesLabel.SetTitle(fmt.Sprintf(i18n.Text("%d of %d"), n.searchIndex+1, len(n.searchResult)))
 		row := n.searchResult[n.searchIndex]
 		n.table.DiscloseRow(row, false)
 		n.table.ClearSelection()
@@ -1036,7 +1036,7 @@ func (n *Navigator) adjustForMatch() {
 		n.ValidateLayout()
 		n.table.ScrollRowIntoView(i)
 	} else {
-		n.matchesLabel.Text = "-"
+		n.matchesLabel.SetTitle("-")
 	}
 	n.matchesLabel.Parent().MarkForLayoutAndRedraw()
 }

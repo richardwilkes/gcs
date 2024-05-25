@@ -47,7 +47,7 @@ type AttrPanel struct {
 	crc         uint64
 	rowStarts   []int
 	kind        int
-	stateLabels map[string]*unison.RichLabel
+	stateLabels map[string]*unison.Label
 }
 
 // NewPrimaryAttrPanel creates a new primary attributes panel.
@@ -176,7 +176,7 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 	a.RemoveAllChildren()
 	a.rowStarts = nil
 	if a.kind == poolAttrKind {
-		a.stateLabels = make(map[string]*unison.RichLabel)
+		a.stateLabels = make(map[string]*unison.Label)
 	}
 	for _, def := range attrs.List(false) {
 		if a.isRelevant(def) {
@@ -233,7 +233,7 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 				} else {
 					if def.Type == attribute.IntegerRef || def.Type == attribute.DecimalRef {
 						field := NewNonEditablePageFieldEnd(func(field *NonEditablePageField) {
-							field.Text = attr.Maximum().String()
+							field.SetTitle(attr.Maximum().String())
 						})
 						field.SetLayoutData(&unison.FlexLayoutData{
 							HSpan:  2,
@@ -274,8 +274,8 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 
 func (a *AttrPanel) createPointsField(attr *gurps.Attribute) unison.Paneler {
 	field := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := "[" + attr.PointCost().String() + "]"; text != f.Text {
-			f.Text = text
+		if text := "[" + attr.PointCost().String() + "]"; text != f.Text.String() {
+			f.SetTitle(text)
 			MarkForLayoutWithinDockable(f)
 		}
 		if def := attr.AttributeDef(); def != nil {
@@ -302,16 +302,16 @@ func (a *AttrPanel) Sync() {
 						label.DrawCallback = label.DefaultDraw
 						if threshold := attr.CurrentThreshold(); threshold != nil {
 							label.Text = unison.NewSmallCapsText("["+threshold.State+"]", &unison.TextDecoration{
-								Font:       gurps.PageLabelPrimaryFont,
-								Foreground: unison.ThemeOnSurface,
+								Font:            gurps.PageLabelPrimaryFont,
+								OnBackgroundInk: unison.ThemeOnSurface,
 							})
 							if threshold.Explanation != "" {
 								label.Tooltip = newWrappedTooltip(threshold.Explanation)
 							}
 						} else {
 							label.Text = unison.NewSmallCapsText("", &unison.TextDecoration{
-								Font:       gurps.PageLabelPrimaryFont,
-								Foreground: unison.ThemeOnSurface,
+								Font:            gurps.PageLabelPrimaryFont,
+								OnBackgroundInk: unison.ThemeOnSurface,
 							})
 							label.Tooltip = nil
 						}

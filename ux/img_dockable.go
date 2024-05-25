@@ -79,13 +79,13 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 	d.scroll.SetContent(d.imgPanel, behavior.Fill, behavior.Fill)
 
 	typeLabel := unison.NewLabel()
-	typeLabel.Text = imgfmt.ForPath(filePath).String()
 	typeLabel.Font = unison.DefaultFieldTheme.Font
+	typeLabel.SetTitle(imgfmt.ForPath(filePath).String())
 
 	sizeLabel := unison.NewLabel()
 	size := img.Size()
-	sizeLabel.Text = fmt.Sprintf("%d x %d pixels", int(size.Width), int(size.Height))
 	sizeLabel.Font = unison.DefaultFieldTheme.Font
+	sizeLabel.SetTitle(fmt.Sprintf("%d x %d pixels", int(size.Width), int(size.Height)))
 
 	toolbar := unison.NewPanel()
 	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1},

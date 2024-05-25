@@ -118,36 +118,37 @@ func NewEditorExtendedWeightHeader[T gurps.NodeTypes](forPage bool) unison.Table
 
 // PageTableColumnHeaderTheme holds the theme values for PageTableColumnHeaders. Modifying this data will not alter
 // existing PageTableColumnHeaders, but will alter any PageTableColumnHeaders created in the future.
-var PageTableColumnHeaderTheme = unison.RichLabelTheme{
-	OnBackgroundInk: gurps.OnThemeHeader,
-	Gap:             3,
-	HAlign:          align.Middle,
-	VAlign:          align.Middle,
-	Side:            side.Left,
+var PageTableColumnHeaderTheme = unison.LabelTheme{
+	TextDecoration: unison.TextDecoration{
+		Font:            gurps.PageLabelPrimaryFont,
+		OnBackgroundInk: gurps.OnThemeHeader,
+	},
+	Gap:    3,
+	HAlign: align.Middle,
+	VAlign: align.Middle,
+	Side:   side.Left,
 }
 
 var _ unison.TableColumnHeader[*Node[*gurps.Trait]] = &PageTableColumnHeader[*gurps.Trait]{}
 
 // PageTableColumnHeader provides a default page table column header panel.
 type PageTableColumnHeader[T gurps.NodeTypes] struct {
-	*unison.RichLabel
-	Font      unison.Font
+	*unison.Label
 	sortState unison.SortState
 }
 
 // NewPageTableColumnHeader creates a new page table column header panel with the given title.
 func NewPageTableColumnHeader[T gurps.NodeTypes](title, tooltip string) *PageTableColumnHeader[T] {
 	h := &PageTableColumnHeader[T]{
-		RichLabel: unison.NewRichLabel(),
-		Font:      gurps.PageLabelPrimaryFont,
+		Label: unison.NewLabel(),
 		sortState: unison.SortState{
 			Order:     -1,
 			Ascending: true,
 			Sortable:  true,
 		},
 	}
-	h.RichLabelTheme = PageTableColumnHeaderTheme
-	h.Text = unison.NewSmallCapsText(title, h.DefaultTextDecoration())
+	h.LabelTheme = PageTableColumnHeaderTheme
+	h.Text = unison.NewSmallCapsText(title, &h.TextDecoration)
 	h.Self = h
 	h.SetSizer(h.DefaultSizes)
 	h.DrawCallback = h.DefaultDraw
@@ -158,17 +159,9 @@ func NewPageTableColumnHeader[T gurps.NodeTypes](title, tooltip string) *PageTab
 	return h
 }
 
-// DefaultTextDecoration provides the default text decoration.
-func (h *PageTableColumnHeader[T]) DefaultTextDecoration() *unison.TextDecoration {
-	return &unison.TextDecoration{
-		Font:       h.Font,
-		Foreground: h.OnBackgroundInk,
-	}
-}
-
 // DefaultSizes provides the default sizing.
 func (h *PageTableColumnHeader[T]) DefaultSizes(hint unison.Size) (minSize, prefSize, maxSize unison.Size) {
-	_, prefSize, _ = h.RichLabel.DefaultSizes(hint)
+	_, prefSize, _ = h.Label.DefaultSizes(hint)
 	if b := h.Border(); b != nil {
 		prefSize = prefSize.Add(b.Insets().Size())
 	}
@@ -187,10 +180,10 @@ func (h *PageTableColumnHeader[T]) DefaultDraw(gc *unison.Canvas, dirty unison.R
 		gc.DrawLine(r.X, y, r.Right(), y, unison.ThemeFocus.Paint(gc, r, paintstyle.Stroke))
 		save := h.OnBackgroundInk
 		h.OnBackgroundInk = unison.ThemeFocus
-		h.RichLabel.DefaultDraw(gc, dirty)
+		h.Label.DefaultDraw(gc, dirty)
 		h.OnBackgroundInk = save
 	} else {
-		h.RichLabel.DefaultDraw(gc, dirty)
+		h.Label.DefaultDraw(gc, dirty)
 	}
 }
 

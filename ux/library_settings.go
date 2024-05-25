@@ -198,10 +198,10 @@ func (d *librarySettingsDockable) addNote(parent *unison.Panel, note string) {
 	fd.Size--
 	font := fd.Font()
 	for _, line := range unison.NewTextWrappedLines(note, &unison.TextDecoration{
-		Font:       font,
-		Foreground: unison.DefaultLabelTheme.OnBackgroundInk,
+		Font:            font,
+		OnBackgroundInk: unison.DefaultLabelTheme.OnBackgroundInk,
 	}, 400) {
-		label := unison.NewRichLabel()
+		label := unison.NewLabel()
 		label.Text = line
 		parent.AddChild(unison.NewPanel())
 		parent.AddChild(label)

@@ -345,7 +345,7 @@ func (d *generalSettingsDockable) createScrollWheelMultiplierField(content *unis
 func (d *generalSettingsDockable) createPathInfoField(content *unison.Panel, title, value string) {
 	content.AddChild(NewFieldLeadingLabel(title, false))
 	content.AddChild(NewNonEditableField(func(field *NonEditableField) {
-		field.Text = value
+		field.SetTitle(value)
 	}))
 	addButton := unison.NewSVGButton(svg.Copy)
 	addButton.Tooltip = newWrappedTooltip(i18n.Text("Copy to clipboard"))
