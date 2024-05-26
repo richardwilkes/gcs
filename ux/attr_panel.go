@@ -95,12 +95,7 @@ func newAttrPanel(entity *gurps.Entity, targetMgr *TargetMgr, kind int) *AttrPan
 		a.fatalKind()
 	}
 	a.SetBorder(unison.NewCompoundBorder(&TitledBorder{Title: title},
-		unison.NewEmptyBorder(unison.Insets{
-			Top:    1,
-			Left:   2,
-			Bottom: 1,
-			Right:  2,
-		})))
+		unison.NewEmptyBorder(unison.NewSymmetricInsets(2, 1))))
 	a.DrawCallback = a.drawSelf
 	attrs := gurps.SheetSettingsFor(a.entity).Attributes
 	a.crc = attrs.CRC64()
@@ -284,6 +279,10 @@ func (a *AttrPanel) createPointsField(attr *gurps.Attribute) unison.Paneler {
 	})
 	field.Font = gurps.PageFieldSecondaryFont
 	field.OnBackgroundInk = dimmedPointsColor
+	field.Text.AdjustDecorations(func(d *unison.TextDecoration) {
+		d.Font = field.Font
+		d.OnBackgroundInk = field.OnBackgroundInk
+	})
 	return field
 }
 

@@ -159,6 +159,7 @@ func (p *EncumbrancePanel) createMaxCarryField(enc encumbrance.Level, rowColor *
 	})
 	field.OnBackgroundInk = rowColor
 	field.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("The maximum load that can be carried and still remain within the %s encumbrance level"), enc.String()))
+	field.Text.AdjustDecorations(func(d *unison.TextDecoration) { d.OnBackgroundInk = field.OnBackgroundInk })
 	return field
 }
 
@@ -171,6 +172,7 @@ func (p *EncumbrancePanel) createMoveField(enc encumbrance.Level, rowColor *encR
 	})
 	field.OnBackgroundInk = rowColor
 	field.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("The ground movement rate for the %s encumbrance level"), enc.String()))
+	field.Text.AdjustDecorations(func(d *unison.TextDecoration) { d.OnBackgroundInk = field.OnBackgroundInk })
 	return field
 }
 
@@ -184,6 +186,7 @@ func (p *EncumbrancePanel) createDodgeField(enc encumbrance.Level, rowColor *enc
 	field.OnBackgroundInk = rowColor
 	field.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("The dodge for the %s encumbrance level"), enc.String()))
 	field.SetBorder(unison.NewEmptyBorder(unison.Insets{Right: 4}))
+	field.Text.AdjustDecorations(func(d *unison.TextDecoration) { d.OnBackgroundInk = field.OnBackgroundInk })
 	return field
 }
 
