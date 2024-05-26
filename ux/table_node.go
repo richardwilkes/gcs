@@ -162,13 +162,6 @@ func (n *Node[T]) ColumnCell(row, col int, foreground, background unison.Ink, _,
 }
 
 func applyInkRecursively(panel *unison.Panel, foreground, background unison.Ink) {
-	if markdown, ok := panel.Self.(*unison.Markdown); ok {
-		var ic *unison.IndirectInk
-		if ic, ok = markdown.OnBackgroundInk.(*unison.IndirectInk); ok {
-			ic.Target = foreground
-		}
-		return
-	}
 	switch part := panel.Self.(type) {
 	case *unison.Markdown:
 		if ink, ok := part.OnBackgroundInk.(*unison.IndirectInk); ok {
@@ -267,7 +260,7 @@ func (n *Node[T]) CellFromCellData(c *gurps.CellData, width float32, foreground,
 	case cell.Toggle:
 		return n.createToggleCell(c, foreground)
 	case cell.PageRef:
-		return n.createPageRefCell(c)
+		return n.createPageRefCell(c, foreground)
 	case cell.Markdown:
 		return n.createMarkdownCell(c, width, foreground)
 	default:
@@ -580,7 +573,7 @@ func convertLinksForPageRef(in string) (string, *unison.SVG) {
 	}
 }
 
-func (n *Node[T]) createPageRefCell(c *gurps.CellData) unison.Paneler {
+func (n *Node[T]) createPageRefCell(c *gurps.CellData, foreground unison.Ink) unison.Paneler {
 	var title, tooltip string
 	var icon *unison.DrawableSVG
 	font := n.primaryFieldFont()
@@ -605,6 +598,7 @@ func (n *Node[T]) createPageRefCell(c *gurps.CellData) unison.Paneler {
 		tooltip = strings.Join(parts, "\n")
 	}
 	theme := unison.DefaultLinkTheme
+	theme.OnBackgroundInk = foreground
 	theme.Font = font
 	link := unison.NewLink(title, tooltip, "", theme, func(_ unison.Paneler, _ string) {
 		list := ExtractPageReferences(c.Primary)
