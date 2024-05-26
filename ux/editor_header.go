@@ -26,7 +26,7 @@ func NewEditorListHeader[T gurps.NodeTypes](title, tooltip string, forPage bool)
 	if forPage {
 		return NewPageTableColumnHeader[T](title, tooltip)
 	}
-	return unison.NewTableColumnHeader[*Node[T]](title, tooltip)
+	return NewTableColumnHeader[T](title, tooltip)
 }
 
 // NewEditorListSVGHeader creates a new list header with an SVG image as its content rather than text.
@@ -40,7 +40,7 @@ func NewEditorListSVGHeader[T gurps.NodeTypes](svg *unison.SVG, tooltip string, 
 		}
 		return header
 	}
-	header := unison.NewTableColumnHeader[*Node[T]]("", tooltip)
+	header := NewTableColumnHeader[T]("", tooltip)
 	baseline := header.Font.Baseline()
 	header.Drawable = &unison.DrawableSVG{
 		SVG:  svg,
@@ -61,7 +61,7 @@ func NewEditorListSVGPairHeader[T gurps.NodeTypes](leftSVG, rightSVG *unison.SVG
 		}
 		return header
 	}
-	header := unison.NewTableColumnHeader[*Node[T]]("", tooltip)
+	header := NewTableColumnHeader[T]("", tooltip)
 	baseline := header.Font.Baseline()
 	header.Drawable = &DrawableSVGPair{
 		Left:  leftSVG,
@@ -114,6 +114,42 @@ func NewWeightHeader[T gurps.NodeTypes](forPage bool) unison.TableColumnHeader[*
 func NewEditorExtendedWeightHeader[T gurps.NodeTypes](forPage bool) unison.TableColumnHeader[*Node[T]] {
 	return NewEditorListSVGPairHeader[T](svg.Stack, svg.Weight,
 		i18n.Text(`The weight of all of these pieces of equipment, plus the weight of any contained equipment`), forPage)
+}
+
+func headerFromData[T gurps.NodeTypes](data gurps.HeaderData, forPage bool) unison.TableColumnHeader[*Node[T]] {
+	if data.TitleIsImageKey {
+		var img1, img2 *unison.SVG
+		switch data.Title {
+		case gurps.HeaderCheckmark:
+			img1 = unison.CheckmarkSVG
+		case gurps.HeaderCoins:
+			img1 = svg.Coins
+		case gurps.HeaderWeight:
+			img1 = svg.Weight
+		case gurps.HeaderBookmark:
+			img1 = svg.Bookmark
+		case gurps.HeaderStackedCoins:
+			img1 = svg.Stack
+			img2 = svg.Coins
+		case gurps.HeaderStackedWeight:
+			img1 = svg.Stack
+			img2 = svg.Weight
+		}
+		if img2 != nil {
+			return NewEditorListSVGPairHeader[T](img1, img2, data.Detail, forPage)
+		}
+		if img1 != nil {
+			return NewEditorListSVGHeader[T](img1, data.Detail, forPage)
+		}
+	}
+	return NewEditorListHeader[T](data.Title, data.Detail, forPage)
+}
+
+// NewTableColumnHeader creates a new table column header panel with the given title in small caps.
+func NewTableColumnHeader[T gurps.NodeTypes](title, tooltip string) *unison.DefaultTableColumnHeader[*Node[T]] {
+	header := unison.NewTableColumnHeader[*Node[T]](title, tooltip)
+	header.Text = unison.NewSmallCapsText(title, &header.TextDecoration)
+	return header
 }
 
 // PageTableColumnHeaderTheme holds the theme values for PageTableColumnHeaders. Modifying this data will not alter
