@@ -118,7 +118,7 @@ func (d *colorSettingsDockable) createColorWellField(c *gurps.ThemedColor, light
 	w.Mask = unison.ColorWellMask
 	if light {
 		w.SetInk(c.Color.Light)
-		w.Tooltip = newWrappedTooltip(i18n.Text("The color to use when light mode is enabled"))
+		w.Tooltip = newWrappedTooltip(i18n.Text("Light Mode Color"))
 		w.InkChangedCallback = func() {
 			if clr, ok := w.Ink().(unison.Color); ok {
 				c.Color.Light = clr
@@ -127,7 +127,7 @@ func (d *colorSettingsDockable) createColorWellField(c *gurps.ThemedColor, light
 		}
 	} else {
 		w.SetInk(c.Color.Dark)
-		w.Tooltip = newWrappedTooltip(i18n.Text("The color to use when dark mode is enabled"))
+		w.Tooltip = newWrappedTooltip(i18n.Text("Dark Mode Color"))
 		w.InkChangedCallback = func() {
 			if clr, ok := w.Ink().(unison.Color); ok {
 				c.Color.Dark = clr
