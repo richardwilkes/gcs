@@ -82,8 +82,6 @@ func initFonts() {
 	currentFonts = []*ThemedFont{
 		{ID: "system", Title: i18n.Text("System"), Font: unison.SystemFont},
 		{ID: "system.emphasized", Title: i18n.Text("System (Emphasized)"), Font: unison.EmphasizedSystemFont},
-		{ID: "system.small", Title: i18n.Text("System (Small)"), Font: unison.SmallSystemFont},
-		{ID: "system.small.emphasized", Title: i18n.Text("System (Small, Emphasized)"), Font: unison.EmphasizedSmallSystemFont},
 		{ID: "label", Title: i18n.Text("Label"), Font: unison.LabelFont},
 		{ID: "field", Title: i18n.Text("Field"), Font: unison.FieldFont},
 		{ID: "field.secondary", Title: i18n.Text("Secondary Fields"), Font: FieldSecondaryFont},
