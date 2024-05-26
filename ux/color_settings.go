@@ -14,6 +14,7 @@ package ux
 import (
 	"fmt"
 	"io/fs"
+	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
@@ -59,7 +60,7 @@ func (d *colorSettingsDockable) initContent(content *unison.Panel) {
 
 func (d *colorSettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
 	label := unison.NewLabel()
-	label.Text = i18n.Text("Color Mode")
+	label.SetTitle(i18n.Text("Color Mode"))
 	toolbar.AddChild(label)
 	p := unison.NewPopupMenu[thememode.Enum]()
 	for _, mode := range thememode.All {
@@ -89,15 +90,26 @@ func (d *colorSettingsDockable) sync() {
 }
 
 func (d *colorSettingsDockable) fill() {
-	for i, one := range gurps.CurrentColors() {
-		if i%2 == 0 {
-			d.content.AddChild(NewFieldLeadingLabel(one.Title, false))
-		} else {
-			d.content.AddChild(NewFieldInteriorLeadingLabel(one.Title, false))
+	onColumn := false
+	for _, one := range gurps.CurrentColors() {
+		on := strings.HasPrefix(one.ID, "on_")
+		if on != onColumn {
+			p := unison.NewPanel()
+			p.SetLayoutData(&unison.FlexLayoutData{HSpan: 4})
+			d.content.AddChild(p)
+			onColumn = !onColumn
 		}
+		var label *unison.Label
+		if on {
+			label = NewFieldInteriorLeadingLabel(one.Title, false)
+		} else {
+			label = NewFieldLeadingLabel(one.Title, false)
+		}
+		d.content.AddChild(label)
 		d.createColorWellField(one, true)
 		d.createColorWellField(one, false)
 		d.createResetField(one)
+		onColumn = !onColumn
 	}
 }
 
@@ -106,7 +118,7 @@ func (d *colorSettingsDockable) createColorWellField(c *gurps.ThemedColor, light
 	w.Mask = unison.ColorWellMask
 	if light {
 		w.SetInk(c.Color.Light)
-		w.Tooltip = newWrappedTooltip(i18n.Text("The color to use when light mode is enabled"))
+		w.Tooltip = newWrappedTooltip(i18n.Text("Light Mode Color"))
 		w.InkChangedCallback = func() {
 			if clr, ok := w.Ink().(unison.Color); ok {
 				c.Color.Light = clr
@@ -115,7 +127,7 @@ func (d *colorSettingsDockable) createColorWellField(c *gurps.ThemedColor, light
 		}
 	} else {
 		w.SetInk(c.Color.Dark)
-		w.Tooltip = newWrappedTooltip(i18n.Text("The color to use when dark mode is enabled"))
+		w.Tooltip = newWrappedTooltip(i18n.Text("Dark Mode Color"))
 		w.InkChangedCallback = func() {
 			if clr, ok := w.Ink().(unison.Color); ok {
 				c.Color.Dark = clr

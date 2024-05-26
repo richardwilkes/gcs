@@ -19,36 +19,36 @@ import (
 // NewFieldLeadingLabel creates a new label appropriate for the first label in a row before a field.
 func NewFieldLeadingLabel(text string, small bool) *unison.Label {
 	label := unison.NewLabel()
-	label.Text = text
+	adjustForSmall(label, small)
+	label.SetTitle(text)
 	label.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.End,
 		VAlign: align.Middle,
 	})
-	adjustForSmall(label, small)
 	return label
 }
 
 // NewFieldInteriorLeadingLabel creates a new label appropriate for the label in the interior of a row before a field.
 func NewFieldInteriorLeadingLabel(text string, small bool) *unison.Label {
 	label := unison.NewLabel()
-	label.Text = text
+	adjustForSmall(label, small)
+	label.SetTitle(text)
 	label.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.End,
 		VAlign: align.Middle,
 	})
 	label.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing}))
-	adjustForSmall(label, small)
 	return label
 }
 
 // NewFieldTrailingLabel creates a new label appropriate for after a field.
 func NewFieldTrailingLabel(text string, small bool) *unison.Label {
 	label := unison.NewLabel()
-	label.Text = text
+	adjustForSmall(label, small)
+	label.SetTitle(text)
 	label.SetLayoutData(&unison.FlexLayoutData{
 		VAlign: align.Middle,
 	})
-	adjustForSmall(label, small)
 	return label
 }
 

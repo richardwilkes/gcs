@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -30,6 +30,7 @@ type PointsPanel struct {
 	prefix       string
 	total        *unison.Label
 	ptsList      *unison.Panel
+	unspentField *NonEditablePageField
 	unspentLabel *unison.Label
 	overSpent    int8
 }
@@ -60,7 +61,7 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 		HGrab:  true,
 	})
 	hdr.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, gurps.HeaderColor.Paint(gc, rect, paintstyle.Fill))
+		gc.DrawRect(rect, gurps.ThemeHeader.Paint(gc, rect, paintstyle.Fill))
 	}
 
 	hdri := unison.NewPanel()
@@ -78,17 +79,15 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 		overallTotal = p.entity.TotalPoints.String()
 	}
 	p.total = unison.NewLabel()
-	p.total.Font = gurps.PageLabelPrimaryFont
-	p.total.Text = fmt.Sprintf(i18n.Text("%s Points"), overallTotal)
-	p.total.OnBackgroundInk = gurps.OnHeaderColor
+	p.total.Text = unison.NewSmallCapsText(fmt.Sprintf(i18n.Text("%s Points"), overallTotal), &unison.TextDecoration{
+		Font:            gurps.PageLabelPrimaryFont,
+		OnBackgroundInk: gurps.OnThemeHeader,
+	})
 	hdri.AddChild(p.total)
-	height := p.total.Font.Baseline() - 2
+	height := gurps.PageLabelPrimaryFont.Baseline() - 2
 	editButton := unison.NewSVGButton(svg.Edit)
-	editButton.OnBackgroundInk = gurps.OnHeaderColor
-	// These next two really should be different, but since this is on the header background we'd have to make new
-	// colors and I don't want to do that right now just for a single case
-	editButton.RolloverInk = gurps.OnHeaderColor
-	editButton.OnSelectionInk = gurps.OnHeaderColor
+	editButton.OnBackgroundInk = gurps.OnThemeHeader
+	editButton.OnSelectionInk = gurps.OnThemeHeader
 	editButton.Font = gurps.PageLabelPrimaryFont
 	editButton.Drawable.(*unison.DrawableSVG).Size = unison.NewSize(height, height)
 	editButton.ClickCallback = func() {
@@ -110,7 +109,7 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	})
 	p.AddChild(p.ptsList)
 
-	p.ptsList.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(gurps.HeaderColor, 0, unison.Insets{
+	p.ptsList.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(gurps.ThemeHeader, 0, unison.Insets{
 		Top:    0,
 		Left:   1,
 		Bottom: 1,
@@ -121,60 +120,62 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 		Bottom: 1,
 		Right:  2,
 	})))
-	p.ptsList.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) { drawBandedBackground(p.ptsList, gc, rect, 0, 2) }
+	p.ptsList.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+		drawBandedBackground(p.ptsList, gc, rect, 0, 2, func(rowIndex int, ink unison.Ink) unison.Ink {
+			if rowIndex == 0 && p.overSpent == -1 {
+				return unison.ThemeError
+			}
+			return ink
+		})
+	}
 
-	p.unspentLabel = p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.UnspentPoints().String(); text != f.Text {
-			f.Text = text
+	p.unspentField = NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
+		if text := p.entity.UnspentPoints().String(); text != f.Text.String() {
+			f.SetTitle(text)
 			p.adjustUnspent()
 			MarkForLayoutWithinDockable(f)
 		}
-	}), i18n.Text("Unspent"), i18n.Text("Points earned but not yet spent"))
-	p.unspentLabel.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		if p.overSpent == -1 {
-			gc.DrawRect(rect, unison.ErrorColor.Paint(gc, rect, paintstyle.Fill))
-		}
-		p.unspentLabel.DefaultDraw(gc, rect)
-	}
+	})
+	p.unspentLabel = p.addPointsField(p.unspentField, i18n.Text("Unspent"), i18n.Text("Points earned but not yet spent"))
 	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.PointsBreakdown().Ancestry.String(); text != f.Text {
-			f.Text = text
+		if text := p.entity.PointsBreakdown().Ancestry.String(); text != f.Text.String() {
+			f.SetTitle(text)
 			MarkForLayoutWithinDockable(f)
 		}
 	}), i18n.Text("Ancestry"), i18n.Text("Total points spent on an ancestry package"))
 	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.PointsBreakdown().Attributes.String(); text != f.Text {
-			f.Text = text
+		if text := p.entity.PointsBreakdown().Attributes.String(); text != f.Text.String() {
+			f.SetTitle(text)
 			MarkForLayoutWithinDockable(f)
 		}
 	}), i18n.Text("Attributes"), i18n.Text("Total points spent on attributes"))
 	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.PointsBreakdown().Advantages.String(); text != f.Text {
-			f.Text = text
+		if text := p.entity.PointsBreakdown().Advantages.String(); text != f.Text.String() {
+			f.SetTitle(text)
 			MarkForLayoutWithinDockable(f)
 		}
 	}), i18n.Text("Advantages"), i18n.Text("Total points spent on advantages"))
 	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.PointsBreakdown().Disadvantages.String(); text != f.Text {
-			f.Text = text
+		if text := p.entity.PointsBreakdown().Disadvantages.String(); text != f.Text.String() {
+			f.SetTitle(text)
 			MarkForLayoutWithinDockable(f)
 		}
 	}), i18n.Text("Disadvantages"), i18n.Text("Total points spent on disadvantages"))
 	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.PointsBreakdown().Quirks.String(); text != f.Text {
-			f.Text = text
+		if text := p.entity.PointsBreakdown().Quirks.String(); text != f.Text.String() {
+			f.SetTitle(text)
 			MarkForLayoutWithinDockable(f)
 		}
 	}), i18n.Text("Quirks"), i18n.Text("Total points spent on quirks"))
 	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.PointsBreakdown().Skills.String(); text != f.Text {
-			f.Text = text
+		if text := p.entity.PointsBreakdown().Skills.String(); text != f.Text.String() {
+			f.SetTitle(text)
 			MarkForLayoutWithinDockable(f)
 		}
 	}), i18n.Text("Skills"), i18n.Text("Total points spent on skills"))
 	p.addPointsField(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.PointsBreakdown().Spells.String(); text != f.Text {
-			f.Text = text
+		if text := p.entity.PointsBreakdown().Spells.String(); text != f.Text.String() {
+			f.SetTitle(text)
 			MarkForLayoutWithinDockable(f)
 		}
 	}), i18n.Text("Spells"), i18n.Text("Total points spent on spells"))
@@ -197,14 +198,20 @@ func (p *PointsPanel) adjustUnspent() {
 		if p.entity.UnspentPoints() < 0 {
 			if p.overSpent != -1 {
 				p.overSpent = -1
-				p.unspentLabel.OnBackgroundInk = unison.OnErrorColor
-				p.unspentLabel.Text = i18n.Text("Overspent")
+				p.unspentField.OnBackgroundInk = unison.ThemeOnError
+				p.unspentLabel.Text = unison.NewSmallCapsText(i18n.Text("Overspent"), &unison.TextDecoration{
+					Font:            gurps.PageLabelPrimaryFont,
+					OnBackgroundInk: unison.ThemeOnError,
+				})
 			}
 		} else {
 			if p.overSpent != 1 {
 				p.overSpent = 1
-				p.unspentLabel.OnBackgroundInk = unison.OnContentColor
-				p.unspentLabel.Text = i18n.Text("Unspent")
+				p.unspentField.OnBackgroundInk = unison.DefaultLabelTheme.OnBackgroundInk
+				p.unspentLabel.Text = unison.NewSmallCapsText(i18n.Text("Unspent"), &unison.TextDecoration{
+					Font:            gurps.PageLabelPrimaryFont,
+					OnBackgroundInk: unison.DefaultLabelTheme.OnBackgroundInk,
+				})
 			}
 		}
 		if last != p.overSpent {
@@ -221,6 +228,9 @@ func (p *PointsPanel) Sync() {
 	} else {
 		overallTotal = p.entity.TotalPoints.String()
 	}
-	p.total.Text = fmt.Sprintf(i18n.Text("%s Points"), overallTotal)
+	p.total.Text = unison.NewSmallCapsText(fmt.Sprintf(i18n.Text("%s Points"), overallTotal), &unison.TextDecoration{
+		Font:            gurps.PageLabelPrimaryFont,
+		OnBackgroundInk: gurps.OnThemeHeader,
+	})
 	p.MarkForLayoutAndRedraw()
 }

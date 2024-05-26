@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/xmath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
@@ -89,7 +90,7 @@ func (p *Page) insets() unison.Insets {
 		Right:  sheetSettings.Page.RightMargin.Pixels(),
 	}
 	height := gurps.PageFooterSecondaryFont.LineHeight()
-	insets.Bottom += max(gurps.PageFooterPrimaryFont.LineHeight(), height) + height
+	insets.Bottom += xmath.Ceil(max(gurps.PageFooterPrimaryFont.LineHeight(), height) + height)
 	return insets
 }
 
@@ -97,7 +98,7 @@ func (p *Page) drawSelf(gc *unison.Canvas, _ unison.Rect) {
 	insets := p.insets()
 	_, prefSize, _ := p.LayoutSizes(nil, unison.Size{})
 	r := unison.Rect{Size: prefSize}
-	gc.DrawRect(r, gurps.PageColor.Paint(gc, r, paintstyle.Fill))
+	gc.DrawRect(r, unison.ThemeBelowSurface.Paint(gc, r, paintstyle.Fill))
 	r.X += insets.Left
 	r.Width -= insets.Left + insets.Right
 	r.Y = r.Bottom() - insets.Bottom
@@ -106,12 +107,12 @@ func (p *Page) drawSelf(gc *unison.Canvas, _ unison.Rect) {
 	pageNumber := parent.IndexOfChild(p) + 1
 
 	primaryDecorations := &unison.TextDecoration{
-		Font:       gurps.PageFooterPrimaryFont,
-		Foreground: gurps.OnPageColor,
+		Font:            gurps.PageFooterPrimaryFont,
+		OnBackgroundInk: unison.ThemeOnSurface,
 	}
 	secondaryDecorations := &unison.TextDecoration{
-		Font:       gurps.PageFooterSecondaryFont,
-		Foreground: primaryDecorations.Foreground,
+		Font:            gurps.PageFooterSecondaryFont,
+		OnBackgroundInk: unison.ThemeOnSurface,
 	}
 
 	var title string

@@ -119,11 +119,11 @@ func (d *webSettingsDockable) initContent(content *unison.Panel) {
 func (d *webSettingsDockable) createBanner(content *unison.Panel) {
 	banner := unison.NewLabel()
 	banner.HAlign = align.Middle
-	banner.Text = i18n.Text("NOTE: This is an experimental and currently incomplete feature and may be removed in the future.")
 	fd := banner.Font.Descriptor()
 	fd.Weight = weight.Bold
 	banner.Font = fd.Font()
-	banner.OnBackgroundInk = unison.OnWarningColor
+	banner.OnBackgroundInk = unison.ThemeOnWarning
+	banner.SetTitle(i18n.Text("NOTE: This is an experimental and currently incomplete feature and may be removed in the future."))
 	banner.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,
 		HAlign: align.Fill,
@@ -131,7 +131,7 @@ func (d *webSettingsDockable) createBanner(content *unison.Panel) {
 	})
 	banner.SetBorder(unison.NewEmptyBorder(unison.NewUniformInsets(unison.StdVSpacing * 4)))
 	banner.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.WarningColor.Paint(gc, rect, paintstyle.Fill))
+		gc.DrawRect(rect, unison.ThemeWarning.Paint(gc, rect, paintstyle.Fill))
 		banner.DefaultDraw(gc, rect)
 	}
 	content.AddChild(banner)
@@ -198,9 +198,9 @@ func (d *webSettingsDockable) updateErrorMsg(err error) {
 			d.errorMsg = unison.NewLabel()
 			d.errorMsg.SetBorder(unison.NewEmptyBorder(unison.NewUniformInsets(2)))
 			d.errorMsg.HAlign = align.Middle
-			d.errorMsg.OnBackgroundInk = unison.OnErrorColor
+			d.errorMsg.OnBackgroundInk = unison.ThemeOnError
 			d.errorMsg.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-				gc.DrawRect(rect, unison.ErrorColor.Paint(gc, rect, paintstyle.Fill))
+				gc.DrawRect(rect, unison.ThemeError.Paint(gc, rect, paintstyle.Fill))
 				d.errorMsg.DefaultDraw(gc, rect)
 			}
 			d.errorMsg.SetLayoutData(&unison.FlexLayoutData{
@@ -210,7 +210,7 @@ func (d *webSettingsDockable) updateErrorMsg(err error) {
 			})
 			parent.AddChildAtIndex(d.errorMsg, 1+parent.IndexOfChild(d.enabledCheckbox))
 		}
-		d.errorMsg.Text = strings.SplitN(err.Error(), "\n", 2)[0]
+		d.errorMsg.SetTitle(strings.SplitN(err.Error(), "\n", 2)[0])
 	}
 	parent.MarkForLayoutRecursivelyUpward()
 	parent.MarkForRedraw()
@@ -265,10 +265,10 @@ func (d *webSettingsDockable) createAddressField(content *unison.Panel) {
 	content.AddChild(d.addressField)
 	content.AddChild(unison.NewPanel())
 	note := unison.NewLabel()
-	note.Text = i18n.Text(`Provide just a colon followed by a port number (e.g. ":8422") to listen on all available addresses.`)
 	desc := note.Font.Descriptor()
 	desc.Size -= 2
 	note.Font = desc.Font()
+	note.SetTitle(i18n.Text(`Provide just a colon followed by a port number (e.g. ":8422") to listen on all available addresses.`))
 	content.AddChild(note)
 }
 
@@ -393,11 +393,11 @@ func (d *webSettingsDockable) createUsersBlock(content *unison.Panel) {
 	d.userAddButton.ClickCallback = d.addUser
 	header.AddChild(d.userAddButton)
 	title := unison.NewLabel()
-	title.Text = i18n.Text("Users")
+	title.SetTitle(i18n.Text("Users"))
 	header.AddChild(title)
 	d.userList = unison.NewList[*websettings.User]()
-	d.userList.BackgroundInk = unison.ContentColor
-	d.userList.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
+	d.userList.BackgroundInk = unison.ThemeSurface
+	d.userList.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.NewUniformInsets(1), false))
 	d.userList.SetLayoutData(&unison.FlexLayoutData{
 		MinSize: unison.NewSize(300, 64),
 		HSpan:   2,
@@ -612,11 +612,11 @@ func (d *webSettingsDockable) createAccessBlock(content *unison.Panel, u *webset
 	addButton.ClickCallback = d.addAccess
 	header.AddChild(addButton)
 	title := unison.NewLabel()
-	title.Text = i18n.Text("Access")
+	title.SetTitle(i18n.Text("Access"))
 	header.AddChild(title)
 	d.accessList = unison.NewList[*websettings.AccessWithKey]()
-	d.accessList.BackgroundInk = unison.ContentColor
-	d.accessList.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
+	d.accessList.BackgroundInk = unison.ThemeSurface
+	d.accessList.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.NewUniformInsets(1), false))
 	d.accessList.SetLayoutData(&unison.FlexLayoutData{
 		MinSize: unison.NewSize(300, 64),
 		HSpan:   2,

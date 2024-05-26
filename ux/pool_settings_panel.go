@@ -32,7 +32,7 @@ func newPoolSettingsPanel(dockable *attributeSettingsDockable, def *gurps.Attrib
 		def:      def,
 	}
 	p.Self = p
-	p.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
+	p.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.NewUniformInsets(1), false))
 	p.SetLayout(&unison.FlexLayout{
 		Columns:  1,
 		HSpacing: unison.StdHSpacing,

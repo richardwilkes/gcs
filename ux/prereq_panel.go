@@ -58,7 +58,7 @@ func newPrereqPanel(entity *gurps.Entity, root **gurps.PrereqList) *prereqPanel 
 		},
 		unison.NewEmptyBorder(unison.NewUniformInsets(2))))
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, paintstyle.Fill))
+		gc.DrawRect(rect, unison.ThemeSurface.Paint(gc, rect, paintstyle.Fill))
 	}
 	p.AddChild(p.createPrereqListPanel(0, *root))
 	return p
@@ -200,10 +200,10 @@ func (p *prereqPanel) adjustAndOrForList(list *gurps.PrereqList) {
 
 func (p *prereqPanel) adjustAndOr(data gurps.Prereq) {
 	if label, ok := p.andOrMap[data]; ok {
-		if text := andOrText(data); text != label.Text {
+		if text := andOrText(data); text != label.Text.String() {
 			parent := label.Parent()
 			label.RemoveFromParent()
-			label.Text = text
+			label.SetTitle(text)
 			i := 1
 			if text == noAndOr {
 				i = parent.Layout().(*unison.FlexLayout).Columns - 1

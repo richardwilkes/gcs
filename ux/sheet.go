@@ -36,12 +36,15 @@ import (
 const SkipDeepSync = "!deepsync"
 
 var (
-	_        FileBackedDockable         = &Sheet{}
-	_        unison.UndoManagerProvider = &Sheet{}
-	_        ModifiableRoot             = &Sheet{}
-	_        Rebuildable                = &Sheet{}
-	_        unison.TabCloser           = &Sheet{}
-	dropKeys                            = []string{
+	_ FileBackedDockable         = &Sheet{}
+	_ unison.UndoManagerProvider = &Sheet{}
+	_ ModifiableRoot             = &Sheet{}
+	_ Rebuildable                = &Sheet{}
+	_ unison.TabCloser           = &Sheet{}
+
+	printMgr    printing.PrintManager
+	lastPrinter printing.PrinterID
+	dropKeys    = []string{
 		equipmentDragKey,
 		gurps.SkillID,
 		gurps.SpellID,
@@ -168,7 +171,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	s.DrawOverCallback = func(gc *unison.Canvas, _ unison.Rect) {
 		if s.dragReroutePanel != nil {
 			r := s.RectFromRoot(s.dragReroutePanel.RectToRoot(s.dragReroutePanel.ContentRect(true)))
-			paint := unison.DropAreaColor.Paint(gc, r, paintstyle.Fill)
+			paint := unison.ThemeWarning.Paint(gc, r, paintstyle.Fill)
 			paint.SetColorFilter(unison.Alpha30Filter())
 			gc.DrawRect(r, paint)
 		}
@@ -189,9 +192,6 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 		HGrab:  true,
 		VGrab:  true,
 	})
-	s.scroll.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, gurps.PageVoidColor.Paint(gc, rect, paintstyle.Fill))
-	}
 
 	helpButton := unison.NewSVGButton(svg.Help)
 	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
@@ -215,7 +215,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 
 	s.toolbar = unison.NewPanel()
 	s.AddChild(s.toolbar)
-	s.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
+	s.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	s.toolbar.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
@@ -475,9 +475,12 @@ func (s *Sheet) print() {
 		unison.ErrorDialogWithError(i18n.Text("Unable to create PDF!"), err)
 		return
 	}
-	dialog := Workspace.PrintMgr.NewJobDialog(printing.PrinterID{}, "application/pdf", nil)
+	dialog := printMgr.NewJobDialog(lastPrinter, "application/pdf", nil)
 	if dialog.RunModal() {
 		go backgroundPrint(s.entity.Profile.Name, dialog.Printer(), dialog.JobAttributes(), data)
+	}
+	if p := dialog.Printer(); p != nil {
+		lastPrinter = p.PrinterID
 	}
 }
 
@@ -768,17 +771,25 @@ func (s *Sheet) Rebuild(full bool) {
 	UpdateCalculator(s)
 }
 
-func drawBandedBackground(p unison.Paneler, gc *unison.Canvas, rect unison.Rect, start, step int) {
-	gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, paintstyle.Fill))
+func drawBandedBackground(p unison.Paneler, gc *unison.Canvas, rect unison.Rect, start, step int, overrideFunc func(rowIndex int, ink unison.Ink) unison.Ink) {
+	gc.DrawRect(rect, unison.ThemeBelowSurface.Paint(gc, rect, paintstyle.Fill))
 	children := p.AsPanel().Children()
+	row := 0
 	for i := start; i < len(children); i += step {
 		var ink unison.Ink
 		if ((i-start)/step)&1 == 1 {
-			ink = unison.BandingColor
+			ink = unison.ThemeSurface
 		} else {
-			ink = unison.ContentColor
+			ink = unison.ThemeBelowSurface
+		}
+		if overrideFunc != nil {
+			ink = overrideFunc(row, ink)
+			row++
 		}
 		r := children[i].FrameRect()
+		for j := i + 1; j < i+step; j++ {
+			r = r.Union(children[j].FrameRect())
+		}
 		r.X = rect.X
 		r.Width = rect.Width
 		gc.DrawRect(r, ink.Paint(gc, r, paintstyle.Fill))

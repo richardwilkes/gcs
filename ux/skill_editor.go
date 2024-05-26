@@ -171,14 +171,14 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 				}
 				lvl := level.Level.Trunc()
 				if lvl <= 0 {
-					field.Text = "-"
+					field.SetTitle("-")
 				} else {
 					rsl := level.RelativeLevel
 					if isTechnique {
 						rsl += e.editorData.TechniqueDefault.Modifier
 					}
-					field.Text = lvl.String() + "/" + gurps.FormatRelativeSkill(e.target.Entity, e.target.Type,
-						e.editorData.Difficulty, rsl)
+					field.SetTitle(lvl.String() + "/" + gurps.FormatRelativeSkill(e.target.Entity, e.target.Type,
+						e.editorData.Difficulty, rsl))
 				}
 				field.MarkForLayoutAndRedraw()
 			})

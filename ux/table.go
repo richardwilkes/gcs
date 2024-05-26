@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -99,7 +99,8 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 	}
 	header = unison.NewTableHeader(table, headers...)
 	header.Less = flexibleLess
-	header.BackgroundInk = gurps.HeaderColor
+	header.BackgroundInk = gurps.ThemeHeader
+	header.InteriorDividerColor = gurps.ThemeHeader
 	header.SetBorder(header.HeaderBorder)
 	header.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,

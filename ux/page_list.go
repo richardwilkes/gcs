@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -19,7 +19,6 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
-	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 var (
@@ -125,31 +124,9 @@ func newPageList[T gurps.NodeTypes](owner Rebuildable, provider TableProvider[T]
 	}
 	p.Self = p
 	p.SetLayout(&unison.FlexLayout{Columns: 1})
-	p.SetBorder(unison.NewLineBorder(gurps.HeaderColor, 0, unison.NewUniformInsets(1), false))
+	p.SetBorder(unison.NewLineBorder(header.BackgroundInk, 0, unison.NewUniformInsets(1), false))
 
 	p.Table.PreventUserColumnResize = true
-	p.tableHeader.DrawCallback = func(gc *unison.Canvas, dirty unison.Rect) {
-		sortedOn := -1
-		for i, hdr := range p.tableHeader.ColumnHeaders {
-			if hdr.SortState().Order == 0 {
-				sortedOn = i
-				break
-			}
-		}
-		if sortedOn != -1 {
-			gc.DrawRect(dirty, p.tableHeader.BackgroundInk.Paint(gc, dirty, paintstyle.Fill))
-			r := p.tableHeader.ColumnFrame(sortedOn)
-			r.X -= p.Table.Padding.Left
-			r.Width += p.Table.Padding.Left + p.Table.Padding.Right
-			gc.DrawRect(r, gurps.MarkerColor.Paint(gc, r, paintstyle.Fill))
-			save := p.tableHeader.BackgroundInk
-			p.tableHeader.BackgroundInk = unison.Transparent
-			p.tableHeader.DefaultDraw(gc, dirty)
-			p.tableHeader.BackgroundInk = save
-		} else {
-			p.tableHeader.DefaultDraw(gc, dirty)
-		}
-	}
 	p.Table.SyncToModel()
 	p.AddChild(p.tableHeader)
 	p.AddChild(p.Table)

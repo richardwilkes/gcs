@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -53,7 +53,7 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 		r := p.Children()[0].FrameRect()
 		r.X = rect.X
 		r.Width = rect.Width
-		gc.DrawRect(r, gurps.HeaderColor.Paint(gc, r, paintstyle.Fill))
+		gc.DrawRect(r, gurps.ThemeHeader.Paint(gc, r, paintstyle.Fill))
 		p.current = int(entity.EncumbranceLevel(false))
 		p.overloaded = entity.WeightCarried(false) > entity.MaximumCarry(encumbrance.ExtraHeavy)
 		for i, row := range p.row {
@@ -61,14 +61,14 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 			switch {
 			case p.current == i:
 				if p.overloaded {
-					ink = gurps.OverloadedColor
+					ink = unison.ThemeWarning
 				} else {
-					ink = gurps.MarkerColor
+					ink = unison.ThemeFocus
 				}
 			case i&1 == 1:
-				ink = unison.BandingColor
+				ink = unison.ThemeSurface
 			default:
-				ink = unison.ContentColor
+				ink = unison.ThemeBelowSurface
 			}
 			r = row.AsPanel().FrameRect()
 			r.X = rect.X
@@ -78,11 +78,11 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 	}
 
 	p.AddChild(NewPageHeader(i18n.Text("Level"), 3))
-	p.AddChild(NewInteriorSeparator())
+	p.AddChild(unison.NewPanel())
 	p.AddChild(NewPageHeader(i18n.Text("Max Load"), 1))
-	p.AddChild(NewInteriorSeparator())
+	p.AddChild(unison.NewPanel())
 	p.AddChild(NewPageHeader(i18n.Text("Move"), 1))
-	p.AddChild(NewInteriorSeparator())
+	p.AddChild(unison.NewPanel())
 	p.AddChild(NewPageHeader(i18n.Text("Dodge"), 1))
 
 	for i, enc := range encumbrance.Levels {
@@ -92,8 +92,7 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 		}
 		p.AddChild(p.createMarker(entity, enc, rowColor))
 		p.AddChild(p.createLevelField(enc, rowColor))
-		name := NewPageLabel(enc.String())
-		name.OnBackgroundInk = rowColor
+		name := NewPageLabelWithInk(enc.String(), rowColor)
 		name.SetLayoutData(&unison.FlexLayoutData{
 			HAlign: align.Fill,
 			VAlign: align.Middle,
@@ -119,8 +118,13 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 }
 
 func (p *EncumbrancePanel) createMarker(entity *gurps.Entity, enc encumbrance.Level, rowColor *encRowColor) *unison.Label {
-	marker := NewPageLabel("")
+	marker := unison.NewLabel()
+	marker.Font = gurps.PageLabelPrimaryFont
 	marker.OnBackgroundInk = rowColor
+	marker.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Fill,
+		VAlign: align.Middle,
+	})
 	marker.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: 4}))
 	baseline := marker.Font.Baseline()
 	marker.Drawable = &unison.DrawableSVG{
@@ -138,7 +142,7 @@ func (p *EncumbrancePanel) createMarker(entity *gurps.Entity, enc encumbrance.Le
 func (p *EncumbrancePanel) createLevelField(enc encumbrance.Level, rowColor *encRowColor) *NonEditablePageField {
 	field := NewNonEditablePageFieldEnd(func(_ *NonEditablePageField) {})
 	field.OnBackgroundInk = rowColor
-	field.Text = strconv.Itoa(int(enc))
+	field.SetTitle(strconv.Itoa(int(enc)))
 	field.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Middle,
@@ -148,45 +152,48 @@ func (p *EncumbrancePanel) createLevelField(enc encumbrance.Level, rowColor *enc
 
 func (p *EncumbrancePanel) createMaxCarryField(enc encumbrance.Level, rowColor *encRowColor) *NonEditablePageField {
 	field := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := p.entity.SheetSettings.DefaultWeightUnits.Format(p.entity.MaximumCarry(enc)); text != f.Text {
-			f.Text = text
+		if text := p.entity.SheetSettings.DefaultWeightUnits.Format(p.entity.MaximumCarry(enc)); text != f.Text.String() {
+			f.SetTitle(text)
 			MarkForLayoutWithinDockable(f)
 		}
 	})
 	field.OnBackgroundInk = rowColor
 	field.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("The maximum load that can be carried and still remain within the %s encumbrance level"), enc.String()))
+	field.Text.AdjustDecorations(func(d *unison.TextDecoration) { d.OnBackgroundInk = field.OnBackgroundInk })
 	return field
 }
 
 func (p *EncumbrancePanel) createMoveField(enc encumbrance.Level, rowColor *encRowColor) *NonEditablePageField {
 	field := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := strconv.Itoa(p.entity.Move(enc)); text != f.Text {
-			f.Text = text
+		if text := strconv.Itoa(p.entity.Move(enc)); text != f.Text.String() {
+			f.SetTitle(text)
 			MarkForLayoutWithinDockable(f)
 		}
 	})
 	field.OnBackgroundInk = rowColor
 	field.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("The ground movement rate for the %s encumbrance level"), enc.String()))
+	field.Text.AdjustDecorations(func(d *unison.TextDecoration) { d.OnBackgroundInk = field.OnBackgroundInk })
 	return field
 }
 
 func (p *EncumbrancePanel) createDodgeField(enc encumbrance.Level, rowColor *encRowColor) *NonEditablePageField {
 	field := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		if text := strconv.Itoa(p.entity.Dodge(enc)); text != f.Text {
-			f.Text = text
+		if text := strconv.Itoa(p.entity.Dodge(enc)); text != f.Text.String() {
+			f.SetTitle(text)
 			MarkForLayoutWithinDockable(f)
 		}
 	})
 	field.OnBackgroundInk = rowColor
 	field.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("The dodge for the %s encumbrance level"), enc.String()))
 	field.SetBorder(unison.NewEmptyBorder(unison.Insets{Right: 4}))
+	field.Text.AdjustDecorations(func(d *unison.TextDecoration) { d.OnBackgroundInk = field.OnBackgroundInk })
 	return field
 }
 
 func (p *EncumbrancePanel) addSeparator() {
 	sep := unison.NewSeparator()
 	sep.Vertical = true
-	sep.LineInk = unison.InteriorDividerColor
+	sep.LineInk = unison.ThemeSurfaceEdge
 	sep.SetLayoutData(&unison.FlexLayoutData{
 		VSpan:  len(encumbrance.Levels),
 		HAlign: align.Middle,
@@ -205,13 +212,11 @@ func (c *encRowColor) GetColor() unison.Color {
 	switch {
 	case c.owner.current == c.index:
 		if c.owner.overloaded {
-			return gurps.OnOverloadedColor.GetColor()
+			return unison.ThemeOnWarning.GetColor()
 		}
-		return gurps.OnMarkerColor.GetColor()
-	case c.index&1 == 1:
-		return unison.OnBandingColor.GetColor()
+		return unison.ThemeOnFocus.GetColor()
 	default:
-		return unison.OnContentColor.GetColor()
+		return unison.ThemeOnSurface.GetColor()
 	}
 }
 

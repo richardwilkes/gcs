@@ -132,7 +132,7 @@ func (e *pointsEditor) createToolbar() unison.Paneler {
 		HAlign: align.Fill,
 		HGrab:  true,
 	})
-	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
+	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 
 	helpButton := unison.NewSVGButton(svg.Help)

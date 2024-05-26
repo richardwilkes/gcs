@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -27,7 +27,6 @@ func EditNote(owner Rebuildable, note *gurps.Note) {
 
 func adjustMarkdownThemeForPage(markdown *unison.Markdown) {
 	markdown.Font = gurps.PageFieldPrimaryFont
-	markdown.Foreground = &unison.IndirectInk{Target: gurps.OnPageColor}
 	markdown.HeadingFont[0] = &unison.DynamicFont{Resolver: func() unison.FontDescriptor { return unison.DeriveMarkdownHeadingFont(markdown.Font, 1) }}
 	markdown.HeadingFont[1] = &unison.DynamicFont{Resolver: func() unison.FontDescriptor { return unison.DeriveMarkdownHeadingFont(markdown.Font, 2) }}
 	markdown.HeadingFont[2] = &unison.DynamicFont{Resolver: func() unison.FontDescriptor { return unison.DeriveMarkdownHeadingFont(markdown.Font, 3) }}
@@ -41,8 +40,6 @@ func adjustMarkdownThemeForPage(markdown *unison.Markdown) {
 			return fd
 		},
 	}
-	markdown.CodeBackground = gurps.PageStandoutColor
-	markdown.OnCodeBackground = gurps.OnPageStandoutColor
 }
 
 func initNoteToolbar(_ *editor[*gurps.Note, *gurps.NoteEditData], toolbar *unison.Panel) {
@@ -91,7 +88,7 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 
 	label = unison.NewLabel()
-	label.Text = i18n.Text("Markdown Preview")
+	label.SetTitle(i18n.Text("Markdown Preview"))
 	label.HAlign = align.Middle
 	label.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,
@@ -100,7 +97,7 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 	})
 	label.SetBorder(
 		unison.NewCompoundBorder(
-			unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1}, false),
+			unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1}, false),
 			unison.NewEmptyBorder(unison.Insets{Top: unison.StdVSpacing * 3}),
 		),
 	)

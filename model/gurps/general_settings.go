@@ -52,7 +52,7 @@ const (
 	InitialNavigatorUIScaleDef = 100
 	InitialListUIScaleDef      = 100
 	InitialEditorUIScaleDef    = 100
-	InitialSheetUIScaleDef     = 133
+	InitialSheetUIScaleDef     = 150
 	InitialPDFUIScaleDef       = 100
 	InitialMarkdownUIScaleDef  = 100
 	InitialImageUIScaleDef     = 100

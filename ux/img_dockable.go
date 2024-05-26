@@ -79,16 +79,16 @@ func NewImageDockable(filePath string) (unison.Dockable, error) {
 	d.scroll.SetContent(d.imgPanel, behavior.Fill, behavior.Fill)
 
 	typeLabel := unison.NewLabel()
-	typeLabel.Text = imgfmt.ForPath(filePath).String()
 	typeLabel.Font = unison.DefaultFieldTheme.Font
+	typeLabel.SetTitle(imgfmt.ForPath(filePath).String())
 
 	sizeLabel := unison.NewLabel()
 	size := img.Size()
-	sizeLabel.Text = fmt.Sprintf("%d x %d pixels", int(size.Width), int(size.Height))
 	sizeLabel.Font = unison.DefaultFieldTheme.Font
+	sizeLabel.SetTitle(fmt.Sprintf("%d x %d pixels", int(size.Width), int(size.Height)))
 
 	toolbar := unison.NewPanel()
-	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
+	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	toolbar.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
@@ -154,7 +154,7 @@ func (d *ImageDockable) imageSizer(_ unison.Size) (minSize, prefSize, maxSize un
 }
 
 func (d *ImageDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
-	gc.DrawRect(dirty, unison.ContentColor.Paint(gc, dirty, paintstyle.Fill))
+	gc.DrawRect(dirty, unison.ThemeSurface.Paint(gc, dirty, paintstyle.Fill))
 	gc.DrawImage(d.img, 0, 0, nil, nil)
 }
 

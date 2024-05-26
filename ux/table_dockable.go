@@ -172,11 +172,11 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	})
 
 	d.namesOnlyCheckBox = unison.NewCheckBox()
-	d.namesOnlyCheckBox.Text = i18n.Text("Names Only")
+	d.namesOnlyCheckBox.SetTitle(i18n.Text("Names Only"))
 	d.namesOnlyCheckBox.ClickCallback = func() { d.ApplyFilter(SelectedTags(d.filterPopup)) }
 
 	toolbar := unison.NewPanel()
-	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
+	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	toolbar.AddChild(NewDefaultInfoPop())
 	toolbar.AddChild(

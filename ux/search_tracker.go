@@ -70,11 +70,11 @@ func installSearchTracker(toolbar *unison.Panel, clearTableSelections func(), fi
 	}
 
 	s.namesOnlyCheckBox = unison.NewCheckBox()
-	s.namesOnlyCheckBox.Text = i18n.Text("Names Only")
+	s.namesOnlyCheckBox.SetTitle(i18n.Text("Names Only"))
 	s.namesOnlyCheckBox.ClickCallback = func() { s.doSearch(s.searchField.Text()) }
 
 	s.matchesLabel = unison.NewLabel()
-	s.matchesLabel.Text = i18n.Text("0 of 0")
+	s.matchesLabel.SetTitle(i18n.Text("0 of 0"))
 	s.matchesLabel.Tooltip = newWrappedTooltip(i18n.Text("Number of matches found"))
 
 	toolbar.AddChild(s.backButton)
@@ -149,10 +149,10 @@ func (s *searchTracker) adjustForMatch() {
 	s.backButton.SetEnabled(s.searchIndex != 0)
 	s.forwardButton.SetEnabled(len(s.searchResult) != 0 && s.searchIndex != len(s.searchResult)-1)
 	if len(s.searchResult) != 0 {
-		s.matchesLabel.Text = fmt.Sprintf(i18n.Text("%d of %d"), s.searchIndex+1, len(s.searchResult))
+		s.matchesLabel.SetTitle(fmt.Sprintf(i18n.Text("%d of %d"), s.searchIndex+1, len(s.searchResult)))
 		showSearchRef(s.searchResult[s.searchIndex])
 	} else {
-		s.matchesLabel.Text = i18n.Text("0 of 0")
+		s.matchesLabel.SetTitle(i18n.Text("0 of 0"))
 	}
 	s.matchesLabel.Parent().MarkForLayoutAndRedraw()
 }

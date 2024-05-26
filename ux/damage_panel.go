@@ -43,16 +43,16 @@ func NewDamagePanel(entity *gurps.Entity) *DamagePanel {
 		Bottom: 1,
 		Right:  2,
 	})))
-	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) { drawBandedBackground(p, gc, rect, 0, 2) }
+	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) { drawBandedBackground(p, gc, rect, 0, 2, nil) }
 
 	p.AddChild(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		f.Text = p.entity.Thrust().String()
+		f.SetTitle(p.entity.Thrust().String())
 		MarkForLayoutWithinDockable(f)
 	}))
 	p.AddChild(NewPageLabel(i18n.Text("Basic Thrust")))
 
 	p.AddChild(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		f.Text = p.entity.Swing().String()
+		f.SetTitle(p.entity.Swing().String())
 		MarkForLayoutWithinDockable(f)
 	}))
 	p.AddChild(NewPageLabel(i18n.Text("Basic Swing")))

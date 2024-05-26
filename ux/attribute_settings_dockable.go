@@ -426,7 +426,7 @@ func (d *attributeSettingsDockable) drawOver(gc *unison.Canvas, rect unison.Rect
 				y = children[len(children)-1].FrameRect().Bottom()
 			}
 			pt := d.content.PointFromRoot(d.dragTargetPool.PointToRoot(unison.Point{Y: y}))
-			paint := unison.DropAreaColor.Paint(gc, rect, paintstyle.Stroke)
+			paint := unison.ThemeWarning.Paint(gc, rect, paintstyle.Stroke)
 			paint.SetStrokeWidth(2)
 			r := d.content.RectFromRoot(d.dragTargetPool.RectToRoot(d.dragTargetPool.ContentRect(false)))
 			gc.DrawLine(r.X, pt.Y, r.Right(), pt.Y, paint)
@@ -438,7 +438,7 @@ func (d *attributeSettingsDockable) drawOver(gc *unison.Canvas, rect unison.Rect
 			} else {
 				y = children[len(children)-1].FrameRect().Bottom()
 			}
-			paint := unison.DropAreaColor.Paint(gc, rect, paintstyle.Stroke)
+			paint := unison.ThemeWarning.Paint(gc, rect, paintstyle.Stroke)
 			paint.SetStrokeWidth(2)
 			gc.DrawLine(rect.X, y, rect.Right(), y, paint)
 		}

@@ -26,8 +26,6 @@ type updatableLibraryCell struct {
 	title             *unison.Label
 	button            *unison.Button
 	inButtonMouseDown bool
-	inPanel           bool
-	overButton        bool
 }
 
 func newUpdatableLibraryCell(lib *gurps.Library, title *unison.Label, rel gurps.Release) *updatableLibraryCell {
@@ -45,19 +43,16 @@ func newUpdatableLibraryCell(lib *gurps.Library, title *unison.Label, rel gurps.
 	c.AddChild(title)
 
 	c.button = unison.NewButton()
-	c.button.Text = fmt.Sprintf("Update to v%s", filterVersion(rel.Version))
 	fd := c.button.Font.Descriptor()
 	fd.Size = xmath.Round(fd.Size * 0.8)
 	c.button.Font = fd.Font()
+	c.button.SetTitle(fmt.Sprintf("Update to v%s", filterVersion(rel.Version)))
 	c.button.ClickCallback = func() { initiateLibraryUpdate(c.library, c.release) }
 	c.AddChild(c.button)
 
 	c.MouseDownCallback = c.mouseDown
 	c.MouseDragCallback = c.mouseDrag
 	c.MouseUpCallback = c.mouseUp
-	c.MouseEnterCallback = c.mouseEnter
-	c.MouseMoveCallback = c.mouseMove
-	c.MouseExitCallback = c.mouseExit
 	return c
 }
 
@@ -86,37 +81,4 @@ func (c *updatableLibraryCell) mouseUp(where unison.Point, btn int, mod unison.M
 	}
 	c.inButtonMouseDown = false
 	return c.button.DefaultMouseUp(c.button.PointFromRoot(c.PointToRoot(where)), btn, mod)
-}
-
-func (c *updatableLibraryCell) mouseEnter(where unison.Point, mod unison.Modifiers) bool {
-	c.inPanel = true
-	if !where.In(c.button.FrameRect()) {
-		return false
-	}
-	c.overButton = true
-	return c.button.DefaultMouseEnter(c.button.PointFromRoot(c.PointToRoot(where)), mod)
-}
-
-func (c *updatableLibraryCell) mouseMove(where unison.Point, mod unison.Modifiers) bool {
-	if c.inPanel {
-		over := where.In(c.button.FrameRect())
-		if over != c.overButton {
-			if over {
-				c.overButton = true
-				return c.button.DefaultMouseEnter(c.button.PointFromRoot(c.PointToRoot(where)), mod)
-			}
-			c.overButton = false
-			return c.button.DefaultMouseExit()
-		}
-	}
-	return false
-}
-
-func (c *updatableLibraryCell) mouseExit() bool {
-	c.inPanel = false
-	if !c.overButton {
-		return false
-	}
-	c.overButton = false
-	return c.button.DefaultMouseExit()
 }

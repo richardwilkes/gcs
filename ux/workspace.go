@@ -30,7 +30,6 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/side"
-	"github.com/richardwilkes/unison/printing"
 )
 
 const (
@@ -44,7 +43,6 @@ var Workspace struct {
 	TopDock      *unison.Dock
 	Navigator    *Navigator
 	DocumentDock *DocumentDock
-	PrintMgr     printing.PrintManager
 }
 
 // GroupedCloser defines the methods required of a tab that wishes to be closed when another tab is closed.
@@ -572,7 +570,7 @@ func PromptForDestination[T FileBackedDockable](choices []T) []T {
 	}
 	list.Append(choices...)
 	scroll := unison.NewScrollPanel()
-	scroll.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
+	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.NewUniformInsets(1), false))
 	scroll.SetContent(list, behavior.Fill, behavior.Fill)
 	scroll.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
@@ -589,7 +587,7 @@ func PromptForDestination[T FileBackedDockable](choices []T) []T {
 		VAlign:   align.Fill,
 	})
 	label := unison.NewLabel()
-	label.Text = i18n.Text("Choose one or more destinations:")
+	label.SetTitle(i18n.Text("Choose one or more destinations:"))
 	panel.AddChild(label)
 	panel.AddChild(scroll)
 	if unison.QuestionDialogWithPanel(panel) != unison.ModalResponseOK || list.Selection.Count() == 0 {

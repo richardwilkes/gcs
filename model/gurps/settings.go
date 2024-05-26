@@ -68,7 +68,7 @@ type Settings struct {
 	PageRefs           PageRefs                   `json:"page_refs,omitempty"`
 	KeyBindings        KeyBindings                `json:"key_bindings,omitempty"`
 	WorkspaceFrame     *unison.Rect               `json:"workspace_frame,omitempty"`
-	Colors             Colors                     `json:"colors"`
+	Colors             Colors                     `json:"theme_colors"`
 	Fonts              Fonts                      `json:"fonts"`
 	Sheet              *SheetSettings             `json:"sheet_settings,omitempty"`
 	OpenInWindow       []dgroup.Group             `json:"open_in_window,omitempty"`

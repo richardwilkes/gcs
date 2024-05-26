@@ -46,18 +46,18 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 			enabled := true
 			switch costTypePopup.SelectedIndex() - 1 {
 			case -1:
-				field.Text = e.editorData.Cost.Mul(e.editorData.Levels).StringWithSign() + tmcost.Percentage.String()
+				field.SetTitle(e.editorData.Cost.Mul(e.editorData.Levels).StringWithSign() + tmcost.Percentage.String())
 			case int(tmcost.Percentage):
-				field.Text = e.editorData.Cost.StringWithSign() + tmcost.Percentage.String()
+				field.SetTitle(e.editorData.Cost.StringWithSign() + tmcost.Percentage.String())
 			case int(tmcost.Points):
-				field.Text = e.editorData.Cost.StringWithSign()
+				field.SetTitle(e.editorData.Cost.StringWithSign())
 			case int(tmcost.Multiplier):
-				field.Text = tmcost.Multiplier.String() + e.editorData.Cost.String()
+				field.SetTitle(tmcost.Multiplier.String() + e.editorData.Cost.String())
 				affectsPopup.Select(affects.Total)
 				enabled = false
 			default:
 				errs.Log(errs.New("unhandled cost type"), "index", costTypePopup.SelectedIndex())
-				field.Text = e.editorData.Cost.StringWithSign() + tmcost.Percentage.String()
+				field.SetTitle(e.editorData.Cost.StringWithSign() + tmcost.Percentage.String())
 			}
 			affectsPopup.SetEnabled(enabled)
 			field.MarkForLayoutAndRedraw()

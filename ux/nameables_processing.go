@@ -70,8 +70,8 @@ func ProcessNameables[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 				list.AddChild(sep)
 			}
 			header := unison.NewLabel()
-			header.Text = txt.Truncate(gurps.AsNode(one).String(), 40, true)
 			header.Font = unison.SystemFont
+			header.SetTitle(txt.Truncate(gurps.AsNode(one).String(), 40, true))
 			header.SetLayoutData(&unison.FlexLayoutData{
 				HSpan:  2,
 				HAlign: align.Fill,
@@ -81,7 +81,7 @@ func ProcessNameables[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 			list.AddChild(header)
 			for _, k := range keys {
 				label := unison.NewLabel()
-				label.Text = k
+				label.SetTitle(k)
 				label.SetLayoutData(&unison.FlexLayoutData{
 					HAlign: align.End,
 					VAlign: align.Middle,
@@ -91,9 +91,9 @@ func ProcessNameables[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 			}
 		}
 		scroll := unison.NewScrollPanel()
-		scroll.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
+		scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.NewUniformInsets(1), false))
 		scroll.SetContent(list, behavior.Fill, behavior.Fill)
-		scroll.BackgroundInk = unison.ContentColor
+		scroll.BackgroundInk = unison.ThemeSurface
 		scroll.SetLayoutData(&unison.FlexLayoutData{
 			HAlign: align.Fill,
 			VAlign: align.Fill,
@@ -109,7 +109,7 @@ func ProcessNameables[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 			VAlign:   align.Fill,
 		})
 		label := unison.NewLabel()
-		label.Text = i18n.Text("Provide substitutions:")
+		label.SetTitle(i18n.Text("Provide substitutions:"))
 		panel.AddChild(label)
 		panel.AddChild(scroll)
 		if unison.QuestionDialogWithPanel(panel) == unison.ModalResponseOK {

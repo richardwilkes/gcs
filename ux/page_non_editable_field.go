@@ -47,7 +47,6 @@ func newNonEditablePageField(syncer func(*NonEditablePageField), hAlign align.En
 		syncer: syncer,
 	}
 	f.Self = f
-	f.OnBackgroundInk = nonEditableFieldColor
 	f.Font = gurps.PageFieldPrimaryFont
 	f.HAlign = hAlign
 	f.SetBorder(unison.NewEmptyBorder(unison.Insets{

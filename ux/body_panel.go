@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -55,17 +55,17 @@ func NewBodyPanel(entity *gurps.Entity) *BodyPanel {
 		Right:  2,
 	})))
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, paintstyle.Fill))
+		gc.DrawRect(rect, unison.ThemeBelowSurface.Paint(gc, rect, paintstyle.Fill))
 		r := p.Children()[0].FrameRect()
 		r.X = rect.X
 		r.Width = rect.Width
-		gc.DrawRect(r, gurps.HeaderColor.Paint(gc, r, paintstyle.Fill))
+		gc.DrawRect(r, gurps.ThemeHeader.Paint(gc, r, paintstyle.Fill))
 		for i, row := range p.row {
 			var ink unison.Ink
 			if i&1 == 1 {
-				ink = unison.BandingColor
+				ink = unison.ThemeSurface
 			} else {
-				ink = unison.ContentColor
+				ink = unison.ThemeBelowSurface
 			}
 			r = row.AsPanel().FrameRect()
 			r.X = rect.X
@@ -80,9 +80,9 @@ func NewBodyPanel(entity *gurps.Entity) *BodyPanel {
 func (p *BodyPanel) addContent(locations *gurps.Body) {
 	p.RemoveAllChildren()
 	p.AddChild(NewPageHeader(i18n.Text("Roll"), 1))
-	p.AddChild(NewInteriorSeparator())
+	p.AddChild(unison.NewPanel())
 	p.AddChild(NewPageHeader(i18n.Text("Location"), 2))
-	p.AddChild(NewInteriorSeparator())
+	p.AddChild(unison.NewPanel())
 	p.AddChild(NewPageHeader(i18n.Text("DR"), 1))
 	p.row = nil
 	p.sepLayoutData = nil
@@ -129,11 +129,6 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 		}
 		if strings.TrimSpace(location.Description) != "" {
 			name.Tooltip = newWrappedTooltip(location.Description)
-			name.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-				gc.DrawLine(rect.X, rect.Bottom()-0.5, rect.Right(), rect.Bottom()-0.5,
-					gurps.TooltipMarkerColor.Paint(gc, rect, paintstyle.Stroke))
-				name.DefaultDraw(gc, rect)
-			}
 		}
 		name.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 		p.row = append(p.row, name)
@@ -154,7 +149,7 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 
 func (p *BodyPanel) createHitPenaltyField(location *gurps.HitLocation) unison.Paneler {
 	field := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		f.Text = fmt.Sprintf("%+d", location.HitPenalty)
+		f.SetTitle(fmt.Sprintf("%+d", location.HitPenalty))
 		MarkForLayoutWithinDockable(f)
 	})
 	field.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
@@ -164,24 +159,19 @@ func (p *BodyPanel) createHitPenaltyField(location *gurps.HitLocation) unison.Pa
 func (p *BodyPanel) createDRField(location *gurps.HitLocation) unison.Paneler {
 	field := NewNonEditablePageFieldCenter(func(f *NonEditablePageField) {
 		var tooltip xio.ByteBuffer
-		f.Text = location.DisplayDR(p.entity, &tooltip)
+		f.SetTitle(location.DisplayDR(p.entity, &tooltip))
 		f.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("The DR covering the %s hit location%s"),
 			location.TableName, tooltip.String()))
 		MarkForLayoutWithinDockable(f)
 	})
 	field.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
-	field.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawLine(rect.X, rect.Bottom()-0.5, rect.Right(), rect.Bottom()-0.5,
-			gurps.TooltipMarkerColor.Paint(gc, rect, paintstyle.Stroke))
-		field.DefaultDraw(gc, rect)
-	}
 	return field
 }
 
 func (p *BodyPanel) addSeparator() {
 	sep := unison.NewSeparator()
 	sep.Vertical = true
-	sep.LineInk = unison.InteriorDividerColor
+	sep.LineInk = unison.ThemeSurfaceEdge
 	layoutData := &unison.FlexLayoutData{
 		HAlign: align.Middle,
 		VAlign: align.Fill,

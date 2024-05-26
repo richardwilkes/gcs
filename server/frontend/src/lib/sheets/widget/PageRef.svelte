@@ -79,4 +79,8 @@
 		margin-left: 2px;
 		margin-right: 2px;
 	}
+
+	.ref a {
+		color: inherit;
+	}
 </style>

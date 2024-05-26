@@ -126,8 +126,8 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 			d.editor.MarkForLayoutAndRedraw()
 			MarkModified(d.editor)
 		})
-	d.editor.FocusedBorder = unison.NewEmptyBorder(insets)
-	d.editor.UnfocusedBorder = unison.NewEmptyBorder(insets)
+	d.editor.GainedFocusCallback = d.editor.DefaultFocusGained
+	d.editor.LostFocusCallback = d.editor.DefaultFocusLost
 	d.editor.SetBorder(unison.NewEmptyBorder(insets))
 	d.editor.NoSelectAllOnFocus = true
 	d.editor.AutoScroll = false
@@ -153,7 +153,7 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 	}
 
 	toolbar := unison.NewPanel()
-	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
+	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	toolbar.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,

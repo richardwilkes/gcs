@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -15,7 +15,6 @@ import (
 	"fmt"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -163,16 +162,9 @@ func (n *Node[T]) ColumnCell(row, col int, foreground, background unison.Ink, _,
 }
 
 func applyInkRecursively(panel *unison.Panel, foreground, background unison.Ink) {
-	if markdown, ok := panel.Self.(*unison.Markdown); ok {
-		var ic *unison.IndirectInk
-		if ic, ok = markdown.Foreground.(*unison.IndirectInk); ok {
-			ic.Target = foreground
-		}
-		return
-	}
 	switch part := panel.Self.(type) {
 	case *unison.Markdown:
-		if ink, ok := part.Foreground.(*unison.IndirectInk); ok {
+		if ink, ok := part.OnBackgroundInk.(*unison.IndirectInk); ok {
 			ink.Target = foreground
 		}
 		return
@@ -284,7 +276,7 @@ func (n *Node[T]) createMarkdownCell(c *gurps.CellData, width float32, foregroun
 	if n.forPage {
 		adjustMarkdownThemeForPage(m)
 	}
-	if i, ok := m.Foreground.(*unison.IndirectInk); ok {
+	if i, ok := m.OnBackgroundInk.(*unison.IndirectInk); ok {
 		i.Target = foreground
 	}
 	m.SetContent(c.Primary, width)
@@ -310,17 +302,17 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 			SVG:  unison.TriangleExclamationSVG,
 			Size: unison.NewSize(height, height),
 		}
-		label.Text = i18n.Text("Unsatisfied prerequisite(s)")
 		label.HAlign = c.Alignment
 		label.VAlign = align.Middle
 		label.ClientData()[invertColorsMarker] = true
-		label.OnBackgroundInk = unison.OnErrorColor
+		label.OnBackgroundInk = unison.ThemeOnError
+		label.SetTitle(i18n.Text("Unsatisfied prerequisite(s)"))
 		label.SetBorder(unison.NewEmptyBorder(unison.Insets{
 			Left:  4,
 			Right: 4,
 		}))
 		label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-			gc.DrawRect(rect, unison.ErrorColor.Paint(gc, rect, paintstyle.Fill))
+			gc.DrawRect(rect, unison.ThemeError.Paint(gc, rect, paintstyle.Fill))
 			label.DefaultDraw(gc, rect)
 		}
 		p.AddChild(label)
@@ -334,27 +326,19 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 			SVG:  svg.GCSTemplate,
 			Size: unison.NewSize(height, height),
 		}
-		label.Text = c.TemplateInfo
 		label.HAlign = c.Alignment
 		label.VAlign = align.Middle
 		label.ClientData()[invertColorsMarker] = true
-		label.OnBackgroundInk = gurps.OnMarkerColor
+		label.OnBackgroundInk = unison.ThemeOnFocus
+		label.SetTitle(c.TemplateInfo)
 		label.SetBorder(unison.NewEmptyBorder(unison.Insets{
 			Left:  4,
 			Right: 4,
 		}))
-		label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-			gc.DrawRect(rect, gurps.MarkerColor.Paint(gc, rect, paintstyle.Fill))
-			label.DefaultDraw(gc, rect)
-		}
 		p.AddChild(label)
 	}
 	if tooltip != "" {
 		p.Tooltip = newWrappedTooltip(tooltip)
-		p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-			gc.DrawLine(rect.X, rect.Bottom()-0.5, rect.Right(), rect.Bottom()-0.5,
-				gurps.TooltipMarkerColor.Paint(gc, rect, paintstyle.Stroke))
-		}
 	}
 	return p
 }
@@ -369,7 +353,6 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 		tag = unison.NewTag()
 		tag.BackgroundInk = foreground
 		tag.OnBackgroundInk = background
-		tag.Text = inlineTag
 		tag.Font = &unison.DynamicFont{
 			Resolver: func() unison.FontDescriptor {
 				desc := f.Descriptor()
@@ -377,6 +360,7 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 				return desc
 			},
 		}
+		tag.SetTitle(inlineTag)
 		tag.SetEnabled(!c.Dim)
 	}
 	var lines []*unison.Text
@@ -397,11 +381,11 @@ func (n *Node[T]) addLabelCell(c *gurps.CellData, parent *unison.Panel, width fl
 	}
 	for _, line := range lines {
 		label := unison.NewLabel()
-		label.Text = line.String()
 		label.Font = f
 		label.StrikeThrough = primary && c.Disabled
 		label.HAlign = c.Alignment
 		label.OnBackgroundInk = foreground
+		label.SetTitle(line.String())
 		label.SetEnabled(!c.Dim)
 		if tag != nil {
 			wrapper := unison.NewPanel()
@@ -590,91 +574,47 @@ func convertLinksForPageRef(in string) (string, *unison.SVG) {
 }
 
 func (n *Node[T]) createPageRefCell(c *gurps.CellData, foreground unison.Ink) unison.Paneler {
-	label := unison.NewLabel()
-	label.VAlign = align.Start
-	label.Font = n.primaryFieldFont()
-	label.OnBackgroundInk = foreground
-	label.SetEnabled(!c.Dim)
+	var title, tooltip string
+	var icon *unison.DrawableSVG
+	font := n.primaryFieldFont()
 	parts := strings.FieldsFunc(c.Primary, func(ch rune) bool { return ch == ',' || ch == ';' })
 	switch len(parts) {
 	case 0:
 	case 1:
 		var img *unison.SVG
-		label.Text, img = convertLinksForPageRef(parts[0])
+		title, img = convertLinksForPageRef(parts[0])
 		if img != nil {
-			label.Text = ""
-			height := label.Font.Baseline()
-			label.Drawable = &unison.DrawableSVG{
+			title = ""
+			height := font.Baseline()
+			icon = &unison.DrawableSVG{
 				SVG:  img,
 				Size: unison.NewSize(height, height).Ceil(),
 			}
-			label.Tooltip = newWrappedTooltip(parts[0])
+			tooltip = parts[0]
 		}
 	default:
-		label.Text, _ = convertLinksForPageRef(parts[0])
-		label.Text += "+"
-		label.Tooltip = newWrappedTooltip(strings.Join(parts, "\n"))
+		title, _ = convertLinksForPageRef(parts[0])
+		title += "+"
+		tooltip = strings.Join(parts, "\n")
 	}
-	if label.Text != "" || label.Drawable != nil {
-		over := false
-		pressed := false
-		label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-			if over {
-				if pressed {
-					label.OnBackgroundInk = unison.LinkPressedColor
-				} else {
-					label.OnBackgroundInk = unison.LinkRolloverColor
-				}
-			} else {
-				label.OnBackgroundInk = unison.LinkColor
-			}
-			label.DefaultDraw(gc, rect)
+	theme := unison.DefaultLinkTheme
+	theme.OnBackgroundInk = foreground
+	theme.Font = font
+	link := unison.NewLink(title, tooltip, "", theme, func(_ unison.Paneler, _ string) {
+		list := ExtractPageReferences(c.Primary)
+		if len(list) != 0 {
+			OpenPageReference(list[0], c.Secondary, nil)
 		}
-		label.MouseEnterCallback = func(_ unison.Point, _ unison.Modifiers) bool {
-			over = true
-			label.MarkForRedraw()
-			return true
-		}
-		label.MouseMoveCallback = func(where unison.Point, _ unison.Modifiers) bool {
-			if over != where.In(label.ContentRect(true)) {
-				over = !over
-				label.MarkForRedraw()
-			}
-			return true
-		}
-		label.MouseExitCallback = func() bool {
-			over = false
-			label.MarkForRedraw()
-			return true
-		}
-		label.MouseDownCallback = func(where unison.Point, _, _ int, _ unison.Modifiers) bool {
-			pressed = where.In(label.ContentRect(true))
-			label.MarkForRedraw()
-			return true
-		}
-		label.MouseDragCallback = func(where unison.Point, _ int, _ unison.Modifiers) bool {
-			in := where.In(label.ContentRect(true))
-			if pressed != in {
-				pressed = in
-				label.MarkForRedraw()
-			}
-			return true
-		}
-		label.MouseUpCallback = func(where unison.Point, _ int, _ unison.Modifiers) bool {
-			if over = where.In(label.ContentRect(true)); over {
-				list := ExtractPageReferences(c.Primary)
-				if len(list) != 0 {
-					unison.InvokeTaskAfter(
-						func() { OpenPageReference(list[0], c.Secondary, nil) },
-						time.Millisecond)
-				}
-			}
-			pressed = false
-			label.MarkForRedraw()
-			return true
-		}
+	})
+	link.VAlign = align.Start
+	if icon != nil {
+		link.Drawable = icon
 	}
-	return label
+	if tooltip != "" {
+		link.Tooltip = newWrappedTooltip(tooltip)
+	}
+	link.SetEnabled(!c.Dim && (title != "" || icon != nil))
+	return link
 }
 
 func (n *Node[T]) primaryFieldFont() unison.Font {

@@ -64,14 +64,14 @@ documents from the library are open.`))
 		return false
 	}
 	content := unison.NewPanel()
-	content.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ControlEdgeColor, 0,
+	content.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0,
 		unison.NewUniformInsets(1), false), unison.NewEmptyBorder(unison.NewUniformInsets(2*unison.StdHSpacing))))
 	content.SetLayout(&unison.FlexLayout{
 		Columns:  1,
 		VSpacing: unison.StdVSpacing,
 	})
 	label := unison.NewLabel()
-	label.Text = fmt.Sprintf(i18n.Text("Updating %s to v%s…"), lib.Title, filterVersion(rel.Version))
+	label.SetTitle(fmt.Sprintf(i18n.Text("Updating %s to v%s…"), lib.Title, filterVersion(rel.Version)))
 	content.AddChild(label)
 	progress := unison.NewProgressBar(0)
 	progress.SetLayoutData(&unison.FlexLayoutData{

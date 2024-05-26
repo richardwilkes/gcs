@@ -52,21 +52,21 @@ func NewMiscPanel(entity *gurps.Entity, targetMgr *TargetMgr) *MiscPanel {
 			Right:  2,
 		})))
 	m.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.ContentColor.Paint(gc, rect, paintstyle.Fill))
+		gc.DrawRect(rect, unison.ThemeSurface.Paint(gc, rect, paintstyle.Fill))
 	}
 
 	m.AddChild(NewPageLabelEnd(i18n.Text("Created")))
 	m.AddChild(NewNonEditablePageField(func(f *NonEditablePageField) {
-		if text := m.entity.CreatedOn.String(); text != f.Text {
-			f.Text = text
+		if text := m.entity.CreatedOn.String(); text != f.Text.String() {
+			f.SetTitle(text)
 			MarkForLayoutWithinDockable(f)
 		}
 	}))
 
 	m.AddChild(NewPageLabelEnd(i18n.Text("Modified")))
 	m.AddChild(NewNonEditablePageField(func(f *NonEditablePageField) {
-		if text := m.entity.ModifiedOn.String(); text != f.Text {
-			f.Text = text
+		if text := m.entity.ModifiedOn.String(); text != f.Text.String() {
+			f.SetTitle(text)
 			MarkForLayoutWithinDockable(f)
 		}
 	}))

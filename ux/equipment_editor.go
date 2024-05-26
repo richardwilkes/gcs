@@ -57,7 +57,7 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 					}
 					value = value.Mul(e.editorData.Quantity)
 				}
-				field.Text = value.Comma()
+				field.SetTitle(value.Comma())
 				field.MarkForLayoutAndRedraw()
 			}))
 			weightLabel := i18n.Text("Weight")
@@ -71,7 +71,7 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 					weight = gurps.ExtendedWeightAdjustedForModifiers(defUnits, e.editorData.Quantity, e.editorData.Weight,
 						e.editorData.Modifiers, e.editorData.Features, e.target.Children, false, false)
 				}
-				field.Text = defUnits.Format(weight)
+				field.SetTitle(defUnits.Format(weight))
 				field.MarkForLayoutAndRedraw()
 			}))
 			content.AddChild(unison.NewPanel())

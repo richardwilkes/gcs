@@ -85,8 +85,7 @@ for arg in "$@"; do
 done
 
 if [ "$SOMETHING"x != "1x" ]; then
-  echo -e "\033[33;5mNo options specified!\033[0m"
-  exit 1
+  BUILD_GO=1
 fi
 
 LDFLAGS_ALL="-X github.com/richardwilkes/toolbox/cmdline.AppVersion=$RELEASE $EXTRA_LD_FLAGS"

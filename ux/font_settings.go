@@ -86,8 +86,8 @@ func (d *fontSettingsDockable) fill() {
 		d.createResetField(i)
 	}
 	notice := unison.NewLabel()
-	notice.Text = "Changing fonts usually requires restarting the app to see content laid out correctly."
 	notice.Font = unison.SystemFont
+	notice.SetTitle(i18n.Text("Changing fonts usually requires restarting the app to see content laid out correctly."))
 	notice.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: unison.StdVSpacing * 2}))
 	notice.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  4,

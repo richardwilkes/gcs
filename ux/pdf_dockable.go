@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -122,7 +122,7 @@ func NewPDFDockable(filePath string, initialPage int) (unison.Dockable, error) {
 
 func (d *PDFDockable) createToolbar() *unison.Panel {
 	outer := unison.NewPanel()
-	outer.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.Insets{Bottom: 1},
+	outer.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1},
 		false), unison.NewEmptyBorder(unison.StdInsets())))
 	outer.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
@@ -175,7 +175,7 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 
 	pageLabel := unison.NewLabel()
 	pageLabel.Font = unison.DefaultFieldTheme.Font
-	pageLabel.Text = i18n.Text("Page")
+	pageLabel.SetTitle(i18n.Text("Page"))
 	first.AddChild(pageLabel)
 
 	d.pageNumberField = unison.NewField()
@@ -199,7 +199,7 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 
 	ofLabel := unison.NewLabel()
 	ofLabel.Font = unison.DefaultFieldTheme.Font
-	ofLabel.Text = fmt.Sprintf(i18n.Text("of %d"), d.pdf.PageCount())
+	ofLabel.SetTitle(fmt.Sprintf(i18n.Text("of %d"), d.pdf.PageCount()))
 	first.AddChild(ofLabel)
 
 	first.AddChild(NewToolbarSeparator())
@@ -263,7 +263,7 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 	second.AddChild(d.searchField)
 
 	d.matchesLabel = unison.NewLabel()
-	d.matchesLabel.Text = "-"
+	d.matchesLabel.SetTitle("-")
 	d.matchesLabel.Tooltip = newWrappedTooltip(i18n.Text("Number of matches found"))
 	second.AddChild(d.matchesLabel)
 
@@ -445,8 +445,8 @@ func (d *PDFDockable) pageLoaded() {
 	if d.searchField.Text() != "" {
 		matchText = strconv.Itoa(len(d.page.Matches))
 	}
-	if matchText != d.matchesLabel.Text {
-		d.matchesLabel.Text = matchText
+	if matchText != d.matchesLabel.Text.String() {
+		d.matchesLabel.SetTitle(matchText)
 		d.matchesLabel.Parent().MarkForLayoutAndRedraw()
 	}
 
@@ -509,9 +509,12 @@ func (d *PDFDockable) checkForLinkAt(where unison.Point) bool {
 	return link != nil
 }
 
-func (d *PDFDockable) updateCursor(_ unison.Point) *unison.Cursor {
+func (d *PDFDockable) updateCursor(pt unison.Point) *unison.Cursor {
 	if d.inDrag {
 		return unison.MoveCursor()
+	}
+	if _, link := d.overLink(pt); link != nil {
+		return unison.PointingCursor()
 	}
 	return unison.ArrowCursor()
 }
@@ -590,7 +593,7 @@ func (d *PDFDockable) docSizer(_ unison.Size) (minSize, prefSize, maxSize unison
 }
 
 func (d *PDFDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
-	gc.DrawRect(dirty, unison.ContentColor.Paint(gc, dirty, paintstyle.Fill))
+	gc.DrawRect(dirty, unison.ThemeSurface.Paint(gc, dirty, paintstyle.Fill))
 	if d.page != nil && d.page.Image != nil {
 		switch d.autoScaling {
 		case autoscale.FitWidth:
@@ -629,7 +632,7 @@ func (d *PDFDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
 			p := unison.NewPaint()
 			p.SetStyle(paintstyle.Fill)
 			p.SetBlendMode(blendmode.Modulate)
-			p.SetColor(gurps.PDFMarkerHighlightColor.GetColor())
+			p.SetColor(adjustForModulate(unison.ThemeFocus.GetColor()))
 			for _, match := range d.page.Matches {
 				gc.DrawRect(match, p)
 			}
@@ -638,11 +641,23 @@ func (d *PDFDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
 			p := unison.NewPaint()
 			p.SetStyle(paintstyle.Fill)
 			p.SetBlendMode(blendmode.Modulate)
-			p.SetColor(gurps.PDFLinkHighlightColor.GetColor())
+			p.SetColor(adjustForModulate(unison.ThemeFocus.GetColor()))
 			gc.DrawRect(d.rolloverRect, p)
 		}
 		gc.Restore()
 	}
+}
+
+func adjustForModulate(c unison.Color) unison.Color {
+	saturation := c.Saturation()
+	if saturation > 0.5 {
+		c = c.AdjustSaturation(-(saturation - 0.5))
+	}
+	lightness := c.PerceivedLightness()
+	if lightness < 0.6 {
+		c = c.AdjustPerceivedLightness(max(0.6-lightness, 0.2))
+	}
+	return c
 }
 
 func (d *PDFDockable) drawOverlay(gc *unison.Canvas, dirty unison.Rect) {
@@ -664,19 +679,19 @@ func (d *PDFDockable) drawOverlayMsg(gc *unison.Canvas, dirty unison.Rect, msg s
 	font := unison.SystemFont.Face().Font(24)
 	baseline := font.Baseline()
 	if forError {
-		fgInk = unison.OnErrorColor
-		bgInk = unison.ErrorColor.GetColor().SetAlphaIntensity(0.7)
+		fgInk = unison.ThemeOnError
+		bgInk = unison.ThemeError.GetColor().SetAlphaIntensity(0.7)
 		icon = &unison.DrawableSVG{
 			SVG:  unison.CircledExclamationSVG,
 			Size: unison.NewSize(baseline, baseline),
 		}
 	} else {
-		fgInk = unison.OnContentColor
-		bgInk = unison.ContentColor.GetColor().SetAlphaIntensity(0.7)
+		fgInk = unison.ThemeOnSurface
+		bgInk = unison.ThemeSurface.GetColor().SetAlphaIntensity(0.7)
 	}
 	decoration := &unison.TextDecoration{
-		Font:       font,
-		Foreground: fgInk,
+		Font:            font,
+		OnBackgroundInk: fgInk,
 	}
 	text := unison.NewText(msg, decoration)
 	r := d.docScroll.ContentView().ContentRect(false)
@@ -705,7 +720,7 @@ func (d *PDFDockable) drawOverlayMsg(gc *unison.Canvas, dirty unison.Rect, msg s
 	x := r.X + (r.Width-width)/2
 	if icon != nil {
 		icon.DrawInRect(gc, unison.NewRect(x, r.Y+(r.Height-iconSize.Height)/2, iconSize.Width, iconSize.Height), nil,
-			decoration.Foreground.Paint(gc, r, paintstyle.Fill))
+			decoration.OnBackgroundInk.Paint(gc, r, paintstyle.Fill))
 		x += iconSize.Width + unison.StdHSpacing
 	}
 	text.Draw(gc, x, r.Y+(r.Height-height)/2+baseline)

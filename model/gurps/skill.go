@@ -437,17 +437,24 @@ func (s *Skill) SecondaryText(optionChecker func(display.Option) bool) string {
 		AppendStringOntoNewLine(&buffer, strings.TrimSpace(s.Notes()))
 		AppendStringOntoNewLine(&buffer, StudyHoursProgressText(ResolveStudyHours(s.Study), s.StudyHoursNeeded, false))
 	}
+	addTooltipForSkillLevelAdj(optionChecker, prefs, s.LevelData, &buffer)
+	return buffer.String()
+}
+
+func addTooltipForSkillLevelAdj(optionChecker func(display.Option) bool, prefs *SheetSettings, level Level, to LineBuilder) {
 	if optionChecker(prefs.SkillLevelAdjDisplay) {
-		if s.LevelData.Tooltip != "" && s.LevelData.Tooltip != noAdditionalModifiers() {
-			levelTooltip := strings.ReplaceAll(strings.TrimSpace(s.LevelData.Tooltip), "\n", ", ")
+		if level.Tooltip != "" && level.Tooltip != noAdditionalModifiers() {
+			levelTooltip := level.Tooltip
 			msg := includesModifiersFrom()
-			if strings.HasPrefix(levelTooltip, msg+",") {
-				levelTooltip = msg + ":" + levelTooltip[len(msg)+1:]
+			if !strings.HasPrefix(levelTooltip, msg) {
+				levelTooltip = msg + ":" + levelTooltip
 			}
-			AppendStringOntoNewLine(&buffer, levelTooltip)
+			if optionChecker(display.Inline) {
+				levelTooltip = strings.ReplaceAll(strings.ReplaceAll(levelTooltip, ":\n", ": "), "\n", ", ")
+			}
+			AppendStringOntoNewLine(to, levelTooltip)
 		}
 	}
-	return buffer.String()
 }
 
 func (s *Skill) String() string {

@@ -106,7 +106,7 @@ func (p *bodySettingsPanel) createContent() *unison.Panel {
 	content.AddChild(field)
 
 	wrapper := unison.NewPanel()
-	wrapper.SetBorder(unison.NewLineBorder(unison.DividerColor, 0, unison.NewUniformInsets(1), false))
+	wrapper.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.NewUniformInsets(1), false))
 	wrapper.SetLayoutData(&unison.FlexLayoutData{
 		HSpan:  2,
 		HAlign: align.Fill,

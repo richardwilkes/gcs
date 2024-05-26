@@ -10,3 +10,4 @@
 /go.work
 /go.work.sum
 release_notes.md
+__debug_bin*

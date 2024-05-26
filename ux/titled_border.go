@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -13,6 +13,7 @@ package ux
 
 import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/toolbox/xmath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/filltype"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -36,7 +37,7 @@ func (t *TitledBorder) font() unison.Font {
 // Insets implements unison.Border
 func (t *TitledBorder) Insets() unison.Insets {
 	return unison.Insets{
-		Top:    t.font().LineHeight() + 2,
+		Top:    xmath.Ceil(t.font().LineHeight()) + 2,
 		Left:   1,
 		Bottom: 1,
 		Right:  1,
@@ -46,14 +47,16 @@ func (t *TitledBorder) Insets() unison.Insets {
 // Draw implements unison.Border
 func (t *TitledBorder) Draw(gc *unison.Canvas, rect unison.Rect) {
 	clip := rect.Inset(t.Insets())
+	clip.Y += 0.5
+	clip.Height -= 0.5
 	path := unison.NewPath()
 	path.SetFillType(filltype.EvenOdd)
 	path.Rect(rect)
 	path.Rect(clip)
-	gc.DrawPath(path, gurps.HeaderColor.Paint(gc, rect, paintstyle.Fill))
-	text := unison.NewText(t.Title, &unison.TextDecoration{
-		Font:       t.font(),
-		Foreground: gurps.OnHeaderColor,
+	gc.DrawPath(path, gurps.ThemeHeader.Paint(gc, rect, paintstyle.Fill))
+	text := unison.NewSmallCapsText(t.Title, &unison.TextDecoration{
+		Font:            t.font(),
+		OnBackgroundInk: gurps.OnThemeHeader,
 	})
 	text.Draw(gc, rect.X+(rect.Width-text.Width())/2, rect.Y+1+text.Baseline())
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -17,25 +17,16 @@ import (
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
-// NewInteriorSeparator creates a new interior vertical separator.
-func NewInteriorSeparator() *unison.Separator {
-	spacer := unison.NewSeparator()
-	spacer.LineInk = unison.InteriorDividerColor
-	spacer.Vertical = true
-	spacer.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Fill})
-	return spacer
-}
-
 // NewToolbarSeparator creates a new vertical separator for the toolbar.
 func NewToolbarSeparator() *unison.Separator {
 	spacer := unison.NewSeparator()
-	spacer.LineInk = unison.ControlEdgeColor
+	spacer.LineInk = unison.ThemeSurfaceEdge
 	spacer.Vertical = true
 	spacer.SetBorder(unison.NewEmptyBorder(unison.NewHorizontalInsets(unison.StdHSpacing)))
 	spacer.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Fill})
 	spacer.SetSizer(func(hint unison.Size) (minSize, prefSize, maxSize unison.Size) {
 		minSize, prefSize, maxSize = spacer.DefaultSizes(hint)
-		baseline := unison.DefaultSVGButtonTheme.Font.Baseline()
+		baseline := unison.DefaultButtonTheme.Font.Baseline()
 		minSize.Height = baseline
 		prefSize.Height = baseline
 		maxSize.Height = baseline
