@@ -80,6 +80,10 @@ var (
 	firstData string
 	First     = unison.MustSVGFromContentString(firstData)
 
+	//go:embed first_aid_kit.svg
+	firstAidKitData string
+	FirstAidKit     = unison.MustSVGFromContentString(firstAidKitData)
+
 	//go:embed forward.svg
 	forwardData string
 	Forward     = unison.MustSVGFromContentString(forwardData)

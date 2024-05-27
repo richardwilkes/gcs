@@ -1,5 +1,5 @@
 /*
- * Copyright ©1998-2023 by Richard A. Wilkes. All rights reserved.
+ * Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, version 2.0. If a copy of the MPL was not distributed with
@@ -33,6 +33,7 @@ type HitLocationData struct {
 	HitPenalty  int    `json:"hit_penalty,omitempty"`
 	DRBonus     int    `json:"dr_bonus,omitempty"`
 	Description string `json:"description,omitempty"`
+	Notes       string `json:"notes,omityempty"`
 	SubTable    *Body  `json:"sub_table,omitempty"`
 }
 
@@ -229,6 +230,7 @@ func (h *HitLocation) crc64(c uint64) uint64 {
 	c = crc.Number(c, h.HitPenalty)
 	c = crc.Number(c, h.DRBonus)
 	c = crc.String(c, h.Description)
+	c = crc.String(c, h.Notes)
 	if h.SubTable != nil {
 		c = h.SubTable.crc64(c)
 	}

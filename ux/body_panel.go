@@ -16,6 +16,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/unison"
@@ -27,6 +28,7 @@ import (
 type BodyPanel struct {
 	unison.Panel
 	entity        *gurps.Entity
+	targetMgr     *TargetMgr
 	titledBorder  *TitledBorder
 	row           []unison.Paneler
 	sepLayoutData []*unison.FlexLayoutData
@@ -34,11 +36,14 @@ type BodyPanel struct {
 }
 
 // NewBodyPanel creates a new body panel.
-func NewBodyPanel(entity *gurps.Entity) *BodyPanel {
-	p := &BodyPanel{entity: entity}
+func NewBodyPanel(entity *gurps.Entity, targetMgr *TargetMgr) *BodyPanel {
+	p := &BodyPanel{
+		entity:    entity,
+		targetMgr: targetMgr,
+	}
 	p.Self = p
 	p.SetLayout(&unison.FlexLayout{
-		Columns:  6,
+		Columns:  8,
 		HSpacing: 4,
 	})
 	p.SetLayoutData(&unison.FlexLayoutData{
@@ -83,7 +88,18 @@ func (p *BodyPanel) addContent(locations *gurps.Body) {
 	p.AddChild(unison.NewPanel())
 	p.AddChild(NewPageHeader(i18n.Text("Location"), 2))
 	p.AddChild(unison.NewPanel())
-	p.AddChild(NewPageHeader(i18n.Text("DR"), 1))
+	header := NewPageHeader(i18n.Text("DR"), 1)
+	header.Tooltip = newWrappedTooltip(i18n.Text("Damage Resistance for the hit location"))
+	p.AddChild(header)
+	p.AddChild(unison.NewPanel())
+	header = NewPageHeader("", 1)
+	header.Tooltip = newWrappedTooltip(i18n.Text("Notes for the hit location"))
+	baseline := header.Font.Baseline() * 0.8
+	header.Drawable = &unison.DrawableSVG{
+		SVG:  svg.FirstAidKit,
+		Size: unison.NewSize(baseline, baseline),
+	}
+	p.AddChild(header)
 	p.row = nil
 	p.sepLayoutData = nil
 	p.addTable(locations, 0)
@@ -140,6 +156,16 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 		}
 
 		p.AddChild(p.createDRField(location))
+
+		if i == 0 && depth == 0 {
+			p.addSeparator()
+		}
+
+		title := fmt.Sprintf(i18n.Text("Notes for %s"), location.TableName)
+		notesField := NewStringPageField(p.targetMgr, "body:"+location.ID(), title,
+			func() string { return location.Notes }, func(value string) { location.Notes = value })
+		notesField.Tooltip = newWrappedTooltip(title)
+		p.AddChild(notesField)
 
 		if location.SubTable != nil {
 			p.addTable(location.SubTable, depth+1)
