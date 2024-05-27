@@ -43,6 +43,7 @@ type AttributeDefData struct {
 	CostPerPoint        fxp.Int          `json:"cost_per_point,omitempty"`
 	CostAdjPercentPerSM fxp.Int          `json:"cost_adj_percent_per_sm,omitempty"`
 	Thresholds          []*PoolThreshold `json:"thresholds,omitempty"`
+	Hidden              bool             `json:"hidden,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -186,6 +187,7 @@ func (a *AttributeDef) crc64(c uint64) uint64 {
 	c = crc.Number(c, a.CostPerPoint)
 	c = crc.Number(c, a.CostAdjPercentPerSM)
 	c = crc.Number(c, len(a.Thresholds))
+	c = crc.Bool(c, a.Hidden)
 	for _, one := range a.Thresholds {
 		c = one.crc64(c)
 	}

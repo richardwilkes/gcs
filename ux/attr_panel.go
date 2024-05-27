@@ -153,6 +153,9 @@ func (a *AttrPanel) vspan() int {
 }
 
 func (a *AttrPanel) isRelevant(def *gurps.AttributeDef) bool {
+	if def.Hidden {
+		return false
+	}
 	switch a.kind {
 	case primaryAttrKind:
 		return def.Primary()
@@ -251,13 +254,6 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 					a.AddChild(NewPageLabel(def.CombinedName()))
 				}
 			}
-		}
-		switch a.kind {
-		case primaryAttrKind:
-		case secondaryAttrKind:
-		case poolAttrKind:
-		default:
-			a.fatalKind()
 		}
 	}
 	if a.targetMgr != nil {

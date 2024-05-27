@@ -21,6 +21,7 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/check"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
@@ -148,10 +149,18 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 
 	text = i18n.Text("Attribute Type")
 	content.AddChild(NewFieldLeadingLabel(text, false))
-	content.AddChild(NewPopup[attribute.Type](p.dockable.targetMgr, p.def.KeyPrefix+"type", text,
+	wrapper := unison.NewPanel()
+	wrapper.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+	})
+	wrapper.AddChild(NewPopup[attribute.Type](p.dockable.targetMgr, p.def.KeyPrefix+"type", text,
 		func() attribute.Type { return p.def.Type },
 		func(typ attribute.Type) { p.applyAttributeType(typ) },
 		attribute.Types...))
+	wrapper.AddChild(NewCheckBox(p.dockable.targetMgr, p.def.KeyPrefix+"", i18n.Text("Hidden"),
+		func() check.Enum { return check.FromBool(p.def.Hidden) }, func(e check.Enum) { p.def.Hidden = e == check.On }))
+	content.AddChild(wrapper)
 
 	const nameKey = "name"
 	if p.def.IsSeparator() {
