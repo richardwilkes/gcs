@@ -124,8 +124,7 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 			d.editor.MarkForLayoutAndRedraw()
 			MarkModified(d.editor)
 		})
-	d.editor.GainedFocusCallback = d.editor.DefaultFocusGained
-	d.editor.LostFocusCallback = d.editor.DefaultFocusLost
+	unison.UninstallFocusBorders(d.editor, d.editor)
 	d.editor.SetBorder(unison.NewEmptyBorder(insets))
 	d.editor.NoSelectAllOnFocus = true
 	d.editor.AutoScroll = false
