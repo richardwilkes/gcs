@@ -107,7 +107,7 @@ fi
 # Generate the source
 if [ "$BUILD_GEN"x == "1x" ]; then
   echo -e "\033[33mGenerating...\033[0m"
-  go generate ./gen/enumgen.go
+  go generate ./gen/srcgen.go
 fi
 
 # Generate the translation file

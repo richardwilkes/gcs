@@ -24,7 +24,7 @@
 		{#each $sheet?.SecondaryAttributes || [] as attr, i}
 			{@const banding = i % 2 === 1}
 			<div class:banding><PointsNoteField value={attr.Points} /></div>
-			<div class:banding><EditableTextField right key='SecondaryAttributes.{attr.Key}' /></div>
+			<div class:banding><EditableTextField right key="SecondaryAttributes.{attr.Key}" /></div>
 			<div class:banding><Label left>{attr.Name}</Label></div>
 		{/each}
 	</div>
@@ -46,8 +46,8 @@
 		align-items: stretch;
 		align-content: stretch;
 		white-space: nowrap;
-		background-color: var(--color-surface);
-		color: var(--color-on-surface);
+		background-color: var(--color-below-surface);
+		color: var(--color-on-below-surface);
 		padding-bottom: 2px;
 	}
 

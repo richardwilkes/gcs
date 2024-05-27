@@ -196,7 +196,7 @@
 	}
 
 	.portrait {
-		background-color: var(--color-background);
+		background-color: var(--color-below-surface);
 		display: flex;
 		justify-content: center;
 		align-items: center;
@@ -231,7 +231,7 @@
 	}
 
 	.inDrag {
-		border: 2px dashed var(--color-tertiary);
+		border: 2px dashed var(--color-focus);
 		opacity: 100%;
 	}
 

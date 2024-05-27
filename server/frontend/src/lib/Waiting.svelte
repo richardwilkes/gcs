@@ -11,7 +11,7 @@
 
 <script lang="ts"></script>
 
-<div class='waiting'></div>
+<div class="waiting"></div>
 
 <style>
 	.waiting {
@@ -21,14 +21,14 @@
 	}
 
 	.waiting:after {
-		content: " ";
+		content: ' ';
 		display: block;
 		width: 64px;
 		height: 64px;
 		margin: 8px;
 		border-radius: 50%;
-		border: 6px solid var(--color-tertiary);
-		border-color: var(--color-tertiary) transparent var(--color-tertiary) transparent;
+		border: 6px solid var(--color-focus);
+		border-color: var(--color-focus) transparent var(--color-focus) transparent;
 		animation: waiting 1.2s linear infinite;
 	}
 

@@ -32,8 +32,8 @@
 		gap: 0.25em;
 		width: fit-content;
 		border-radius: 0.5em;
-		color: var(--color-on-tertiary);
-		background-color: var(--color-tertiary);
+		color: var(--color-on-focus);
+		background-color: var(--color-focus);
 		font-size: 85%;
 	}
 

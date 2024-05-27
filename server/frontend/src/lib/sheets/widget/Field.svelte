@@ -159,9 +159,9 @@
 	}
 
 	.editable {
-		border-bottom: 1px solid var(--color-outline-variant);
-		color: var(--color-on-editable);
-		background-color: var(--color-editable);
+		border-bottom: 1px solid var(--color-surface-edge);
+		color: var(--color-on-deep-below-surface);
+		background-color: var(--color-deep-below-surface);
 	}
 
 	.right {

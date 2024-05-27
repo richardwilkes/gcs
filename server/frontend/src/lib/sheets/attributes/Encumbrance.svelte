@@ -63,8 +63,8 @@
 		align-items: stretch;
 		align-content: stretch;
 		white-space: nowrap;
-		background-color: var(--color-surface);
-		color: var(--color-on-surface);
+		background-color: var(--color-below-surface);
+		color: var(--color-on-below-surface);
 	}
 
 	.fields > div {
@@ -88,9 +88,9 @@
 	}
 
 	.current {
-		background-color: var(--color-secondary);
-		color: var(--color-on-secondary);
-		fill: var(--color-on-secondary);
+		background-color: var(--color-focus);
+		color: var(--color-on-focus);
+		fill: var(--color-on-focus);
 	}
 
 	.overloaded {

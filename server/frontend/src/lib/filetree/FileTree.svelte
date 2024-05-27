@@ -9,7 +9,7 @@
   - defined by the Mozilla Public License, version 2.0.
   -->
 
-<script lang='ts'>
+<script lang="ts">
 	import Dialog, { ShowAs } from '$lib/Dialog.svelte';
 	import { apiPrefix } from '$lib/dev.ts';
 	import { session } from '$lib/session.ts';
@@ -17,7 +17,7 @@
 	import DirNode from '$lib/filetree/DirNode.svelte';
 	import Waiting from '$lib/Waiting.svelte';
 
-	export let showAs : ShowAs = ShowAs.None;
+	export let showAs: ShowAs = ShowAs.None;
 	export let title = 'Select a File';
 	export let path: string;
 	export let onSuccess: (file: string, finish?: boolean) => void;
@@ -36,7 +36,7 @@
 			const rsp = await fetch(apiPrefix(path), {
 				method: 'GET',
 				headers: { 'X-Session': $session?.ID ?? '' },
-				cache: 'no-store'
+				cache: 'no-store',
 			});
 			if (rsp.ok) {
 				let data = await rsp.json();
@@ -55,7 +55,7 @@
 		dirs = undefined;
 		pending = false;
 		if (ok && selectedFile) {
-			onSuccess(selectedFile)
+			onSuccess(selectedFile);
 		} else {
 			onCancel();
 		}
@@ -63,10 +63,10 @@
 </script>
 
 <Dialog bind:this={dialog} bind:showAs callback={(ok) => done(ok)}>
-	<div slot='title'>{title}</div>
-	<div class='content'>
+	<div slot="title">{title}</div>
+	<div class="content">
 		{#if pending}
-			<div class='pending' class:error>
+			<div class="pending" class:error>
 				{#if error}
 					Error loading file list
 				{:else}
@@ -74,15 +74,18 @@
 				{/if}
 			</div>
 		{:else}
-			<div class='tree'>
-				<div class='inner'>
+			<div class="tree">
+				<div class="inner">
 					{#each dirs || [] as dir}
-						<DirNode {dir} {selectedFile} callback={(file, finish) => {
-							selectedFile = file;
-							if (finish) {
-								dialog.close(true);
-							}
-						}} />
+						<DirNode
+							{dir}
+							{selectedFile}
+							callback={(file, finish) => {
+								selectedFile = file;
+								if (finish) {
+									dialog.close(true);
+								}
+							}} />
 					{/each}
 				</div>
 			</div>
@@ -100,7 +103,7 @@
 	.tree {
 		background-color: var(--color-surface);
 		flex-grow: 1;
-		border: 1px solid var(--color-outline-variant);
+		border: 1px solid var(--color-surface-edge);
 	}
 
 	.inner {

@@ -9,7 +9,7 @@
   - defined by the Mozilla Public License, version 2.0.
   -->
 <script lang="ts">
-	export let value = "0";
+	export let value = '0';
 </script>
 
 <div class="field">[{value}]</div>
@@ -20,7 +20,7 @@
 		padding: var(--padding-standard);
 		border: none;
 		border-bottom: 1px solid rgba(0, 0, 0, 0);
-		color: var(--color-outline-variant);
+		color: var(--color-surface-edge);
 		text-align: right;
 	}
 </style>

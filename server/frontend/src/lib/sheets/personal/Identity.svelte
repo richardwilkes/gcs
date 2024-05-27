@@ -8,26 +8,26 @@
   - This Source Code Form is "Incompatible With Secondary Licenses", as
   - defined by the Mozilla Public License, version 2.0.
   -->
-<script lang='ts'>
+<script lang="ts">
 	import Header from '$lib/sheets/widget/Header.svelte';
 	import Label from '$lib/sheets/widget/Label.svelte';
 	import EditableTextField from '$lib/sheets/widget/EditableTextField.svelte';
 </script>
 
-<div class='content'>
+<div class="content">
 	<Header>Identity</Header>
-	<div class='fields'>
-		<div class='banding'><Label>Name</Label></div>
-		<div class='banding'>
-			<EditableTextField key='Identity.Name'/>
+	<div class="fields">
+		<div class="banding"><Label>Name</Label></div>
+		<div class="banding">
+			<EditableTextField key="Identity.Name" />
 		</div>
 		<div><Label>Title</Label></div>
 		<div>
-			<EditableTextField key='Identity.Title'/>
+			<EditableTextField key="Identity.Title" />
 		</div>
-		<div class='banding'><Label>Organization</Label></div>
-		<div class='banding'>
-			<EditableTextField key='Identity.Organization'/>
+		<div class="banding"><Label>Organization</Label></div>
+		<div class="banding">
+			<EditableTextField key="Identity.Organization" />
 		</div>
 	</div>
 </div>
@@ -48,8 +48,8 @@
 		align-items: stretch;
 		align-content: stretch;
 		white-space: nowrap;
-		background-color: var(--color-surface);
-		color: var(--color-on-surface);
+		background-color: var(--color-below-surface);
+		color: var(--color-on-below-surface);
 		padding-bottom: 2px;
 	}
 

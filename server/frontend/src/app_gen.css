@@ -1,0 +1,125 @@
+/*
+ * Copyright ©1998-2024 by Richard A. Wilkes. All rights reserved.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, version 2.0. If a copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * This Source Code Form is "Incompatible With Secondary Licenses", as
+ * defined by the Mozilla Public License, version 2.0.
+ */
+
+:root {
+	--font: 14px/1.2 Arial, sans-serif;
+	--section-gap: 2px;
+	--padding-header: 1px 8px;
+	--padding-standard: 2px 4px;
+	--standard-border: 1px solid var(--color-surface-edge);
+}
+
+:root[theme='light'] {
+	color-scheme: light;
+	--color-surface: #E8E8E8;
+	--color-above-surface: #D8D8D8;
+	--color-below-surface: #F9F9F9;
+	--color-deep-below-surface: White;
+	--color-surface-edge: #C7C7C7;
+	--color-on-surface: #101010;
+	--color-on-above-surface: #101010;
+	--color-on-below-surface: #101010;
+	--color-on-deep-below-surface: #101010;
+	--color-header: #2B2B2B;
+	--color-on-header: #F0F0F0;
+	--color-focus: #006199;
+	--color-deep-focus: #005289;
+	--color-deeper-focus: #00447A;
+	--color-deepest-focus: #00366B;
+	--color-on-focus: #F0F0F0;
+	--color-on-deep-focus: #F0F0F0;
+	--color-on-deeper-focus: #F0F0F0;
+	--color-on-deepest-focus: #F0F0F0;
+	--color-tooltip: #FFF4C6;
+	--color-tooltip-edge: #BEB387;
+	--color-on-tooltip: #101010;
+	--color-warning: #D94C00;
+	--color-on-warning: #101010;
+	--color-error: #851414;
+	--color-on-error: #F0F0F0;
+	--color-shadow: black;
+}
+
+:root[theme='dark'] {
+	color-scheme: dark;
+	--color-surface: #282828;
+	--color-above-surface: #343434;
+	--color-below-surface: #1C1C1C;
+	--color-deep-below-surface: #111111;
+	--color-surface-edge: #4F4F4F;
+	--color-on-surface: #F0F0F0;
+	--color-on-above-surface: #F0F0F0;
+	--color-on-below-surface: #F0F0F0;
+	--color-on-deep-below-surface: #F0F0F0;
+	--color-header: #404040;
+	--color-on-header: #F0F0F0;
+	--color-focus: #0080CC;
+	--color-deep-focus: #0071BB;
+	--color-deeper-focus: #0061AB;
+	--color-deepest-focus: #00529B;
+	--color-on-focus: #F0F0F0;
+	--color-on-deep-focus: #F0F0F0;
+	--color-on-deeper-focus: #F0F0F0;
+	--color-on-deepest-focus: #F0F0F0;
+	--color-tooltip: #FFF299;
+	--color-tooltip-edge: #BEB159;
+	--color-on-tooltip: #101010;
+	--color-warning: #BF4300;
+	--color-on-warning: #F0F0F0;
+	--color-error: #851414;
+	--color-on-error: #F0F0F0;
+	--color-shadow: black;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+	font: var(--font);
+	height: 100%;
+	overflow: hidden;
+}
+
+button {
+	font: var(--font);
+	font-weight: bold;
+	padding: 0.5em;
+	color: var(--color-on-above-surface);
+	background-color: var(--color-above-surface);
+	border: 1px solid var(--color-surface-edge);
+	border-radius: 8px;
+}
+
+button:active {
+	color: var(--color-on-focus);
+	background-color: var(--color-focus);
+}
+
+button:disabled {
+	border-color: var(--color-surface-edge);
+	color: var(--color-surface-edge);
+	background-color: transparent;
+}
+
+input {
+	font: var(--font);
+	font-weight: bold;
+	padding: 0.5em;
+	color: var(--color-on-surface);
+	background-color: var(--color-surface);
+	border: 1px solid var(--color-surface-edge);
+	border-radius: 8px;
+}
+
+.banding {
+	background-color: var(--color-surface);
+	color: var(--color-on-surface);
+}

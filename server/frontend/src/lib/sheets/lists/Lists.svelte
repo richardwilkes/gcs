@@ -69,7 +69,7 @@
 	.lists {
 		display: grid;
 		gap: var(--section-gap);
-		background-color: var(--color-surface);
-		color: var(--color-on-surface);
+		background-color: var(--color-below-surface);
+		color: var(--color-on-below-surface);
 	}
 </style>

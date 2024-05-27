@@ -55,8 +55,8 @@
 		--button-margin: 2px;
 		--button-icon-size: 1em;
 		--button-height: calc(var(--button-icon-size) + var(--button-margin) * 2);
-		background: var(--color-surface-variant);
-		border: 1px solid var(--color-outline);
+		background-color: var(--color-above-surface);
+		border: 1px solid var(--color-surface-edge);
 		border-radius: var(--button-height);
 	}
 
@@ -70,19 +70,19 @@
 		background: none;
 		border: none;
 		margin: var(--button-margin);
-		color: var(--color-on-surface-variant);
+		color: var(--color-on-below-surface);
 		cursor: pointer;
 		z-index: 1;
 	}
 
 	.button > :global(svg) {
-		color: var(--color-on-surface-variant);
+		color: var(--color-on-above-surface);
 		width: var(--button-icon-size);
 		height: var(--button-icon-size);
 	}
 
 	.active > :global(svg) {
-		color: var(--color-on-tertiary);
+		color: var(--color-on-focus);
 	}
 
 	.highlight {
@@ -93,7 +93,7 @@
 		height: var(--button-height);
 		border-radius: var(--button-height);
 		margin: var(--button-margin);
-		background-color: var(--color-tertiary);
+		background-color: var(--color-focus);
 		transition: left 200ms ease-out;
 	}
 

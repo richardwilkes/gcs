@@ -26,7 +26,7 @@
 
 <style>
 	.content {
-		background-color: var(--color-background);
+		background-color: var(--color-below-surface);
 		flex-grow: 1;
 		display: flex;
 		align-items: center;

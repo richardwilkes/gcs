@@ -9,7 +9,7 @@
   - defined by the Mozilla Public License, version 2.0.
   -->
 
-<script lang='ts'>
+<script lang="ts">
 	import { apiPrefix } from '$lib/dev.ts';
 
 	type VersionResponse = {
@@ -25,21 +25,25 @@
 
 	fetch(apiPrefix('/version'), {
 		method: 'GET',
-		cache: 'no-store'
-	}).then(rsp => {
-		if (!rsp.ok) {
-			console.log(rsp.status + ' ' + rsp.statusText);
-		} else {
-			rsp.json().then(json => {
-				version = json as VersionResponse;
-			}).catch(error => console.log(error));
-		}
-	}).catch(error => {
-		console.log(error);
-	});
+		cache: 'no-store',
+	})
+		.then((rsp) => {
+			if (!rsp.ok) {
+				console.log(rsp.status + ' ' + rsp.statusText);
+			} else {
+				rsp.json()
+					.then((json) => {
+						version = json as VersionResponse;
+					})
+					.catch((error) => console.log(error));
+			}
+		})
+		.catch((error) => {
+			console.log(error);
+		});
 </script>
 
-<div class='footer'>
+<div class="footer">
 	<div>
 		{#if version}
 			{version.Name}
@@ -52,7 +56,7 @@
 			&nbsp;
 		{/if}
 	</div>
-	<div class='secondary'>
+	<div class="secondary">
 		{#if version}
 			{version.Copyright}
 			{#if !version.Modified && version.Version !== '0.0'}
@@ -68,7 +72,7 @@
 	.footer {
 		background-color: var(--color-surface);
 		color: var(--color-on-surface);
-		border-top: 1px solid var(--color-outline-variant);
+		border-top: 1px solid var(--color-surface-edge);
 		padding: 4px 8px;
 		text-align: center;
 		font-weight: bold;
@@ -77,6 +81,6 @@
 
 	.secondary {
 		font-size: 85%;
-		color: var(--color-outline);
+		color: var(--color-on-surface);
 	}
 </style>

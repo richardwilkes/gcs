@@ -118,13 +118,13 @@
 	.title {
 		font-weight: bold;
 		font-size: 200%;
-		color: var(--color-primary);
+		color: green;
 	}
 
 	.subtitle {
 		font-style: italic;
 		margin-bottom: 20px;
-		color: var(--color-secondary);
+		color: darkgreen;
 	}
 
 	.logo {
@@ -135,13 +135,15 @@
 	label {
 		font-weight: bold;
 		font-variant: small-caps;
-		color: var(--color-outline);
+		color: var(--color-on-surface);
 		margin-top: 8px;
 		align-self: flex-start;
 	}
 
 	input {
 		align-self: stretch;
+		background-color: var(--color-deep-below-surface);
+		color: var(--color-on-deep-below-surface);
 	}
 
 	button {

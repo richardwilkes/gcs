@@ -9,16 +9,16 @@
   - defined by the Mozilla Public License, version 2.0.
   -->
 
-<script context='module' lang='ts'>
+<script context="module" lang="ts">
 	export enum ShowAs {
 		None = '',
 		Modal = 'modal',
-		Dialog = 'dialog'
+		Dialog = 'dialog',
 	}
 </script>
 
-<script lang='ts'>
-	export let showAs : ShowAs = ShowAs.None;
+<script lang="ts">
+	export let showAs: ShowAs = ShowAs.None;
 	export let cancelButton = 'Cancel';
 	export let cancelAutoFocus = false;
 	export let okButton = 'OK';
@@ -49,15 +49,15 @@
 
 {#if showAs !== ShowAs.None}
 	<dialog bind:this={dialog}>
-		<div class='title'>
-			<slot name='title' />
+		<div class="title">
+			<slot name="title" />
 		</div>
-		<div class='content'>
+		<div class="content">
 			<slot />
 		</div>
-		<div class='buttons'>
-			<slot name='buttons' class='std-buttons' />
-			<div class='std-buttons'>
+		<div class="buttons">
+			<slot name="buttons" class="std-buttons" />
+			<div class="std-buttons">
 				{#if cancelButton}
 					<!-- svelte-ignore a11y-autofocus -->
 					<button autofocus={cancelAutoFocus} on:click={() => close(false)}>{cancelButton}</button>
@@ -77,9 +77,9 @@
 		max-height: 80vh;
 		border-radius: 1em;
 		padding: 1.5em;
-		border: 1px solid var(--color-outline-variant);
+		border: 1px solid var(--color-surface-edge);
 		box-shadow: 0 0 64px 0 var(--color-shadow);
-		background-color: var(--color-background);
+		background-color: var(--color-below-surface);
 		overflow: clip;
 		display: flex;
 		flex-direction: column;

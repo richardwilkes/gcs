@@ -9,7 +9,7 @@
  * defined by the Mozilla Public License, version 2.0.
  */
 
-import './app.css';
+import './app_gen.css';
 import App from './App.svelte';
 
 const app = new App({ target: document.getElementById('app') as Element });

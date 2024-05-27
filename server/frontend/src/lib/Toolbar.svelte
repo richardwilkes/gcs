@@ -45,7 +45,7 @@
 <style>
 	.toolbar {
 		background-color: var(--color-surface);
-		border-bottom: 1px solid var(--color-outline-variant);
+		border-bottom: 1px solid var(--color-surface-edge);
 		padding: 6px 8px;
 		display: flex;
 		justify-content: flex-start;

@@ -66,7 +66,7 @@
 		flex-flow: column nowrap;
 		justify-content: flex-start;
 		gap: 0;
-		background-color: var(--color-background);
+		background-color: var(--color-below-surface);
 	}
 
 	.content {
@@ -82,14 +82,14 @@
 		align-items: center;
 		gap: 2px;
 		cursor: pointer;
-		color: var(--color-on-surface-variant);
+		color: var(--color-on-below-surface);
 		font-weight: normal;
 	}
 
 	.icon {
 		width: 1.2em;
 		height: 1.2em;
-		color: var(--color-on-surface);
+		color: var(--color-on-below-surface);
 	}
 
 	.save {

@@ -21,7 +21,7 @@
 	<div class="fields">
 		<SubHeader>Roll</SubHeader>
 		<SubHeader>Location</SubHeader>
-		<SubHeader tip='Damage Resistance'>DR</SubHeader>
+		<SubHeader tip="Damage Resistance">DR</SubHeader>
 		{#each $sheet?.Body.Locations ?? [] as loc, i}
 			{@const banding = i % 2 === 1}
 			<div class:banding><Label>{loc.Roll}</Label></div>
@@ -54,8 +54,8 @@
 		align-items: stretch;
 		align-content: stretch;
 		white-space: nowrap;
-		background-color: var(--color-surface);
-		color: var(--color-on-surface);
+		background-color: var(--color-below-surface);
+		color: var(--color-on-below-surface);
 	}
 
 	.fields > div {

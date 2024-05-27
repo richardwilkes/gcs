@@ -54,7 +54,7 @@
 	}
 
 	.selected {
-		background-color: var(--color-tertiary);
-		color: var(--color-on-tertiary);
+		background-color: var(--color-focus);
+		color: var(--color-on-focus);
 	}
 </style>
