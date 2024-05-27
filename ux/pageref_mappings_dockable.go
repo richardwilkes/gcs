@@ -324,12 +324,7 @@ func (d *pageRefMappingsDockable) createTrashField(ref *gurps.PageRef) {
 		if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to remove\n%s (%s)?"), ref.ID,
 			filepath.Base(ref.Path)), "") == unison.ModalResponseOK {
 			gurps.GlobalSettings().PageRefs.Remove(ref.ID)
-			parent := b.Parent()
-			index := parent.IndexOfChild(b)
-			for i := index; i > index-5; i-- {
-				parent.RemoveChildAtIndex(i)
-			}
-			parent.MarkForLayoutAndRedraw()
+			d.sync()
 		}
 	}
 	b.SetLayoutData(&unison.FlexLayoutData{
