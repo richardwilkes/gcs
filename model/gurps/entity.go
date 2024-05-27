@@ -276,6 +276,7 @@ func (e *Entity) Recalculate() {
 		// iterations.
 		e.processFeatures()
 		e.processPrereqs()
+		e.DiscardCaches()
 		skillsChanged := e.UpdateSkills()
 		spellsChanged := e.UpdateSpells()
 		if !skillsChanged && !spellsChanged {
