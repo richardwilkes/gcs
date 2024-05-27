@@ -37,13 +37,13 @@ type AttributeDef struct {
 type AttributeDefData struct {
 	DefID               string           `json:"id"`
 	Type                attribute.Type   `json:"type"`
+	Hidden              bool             `json:"hidden,omitempty"`
 	Name                string           `json:"name"`
 	FullName            string           `json:"full_name,omitempty"`
 	AttributeBase       string           `json:"attribute_base,omitempty"`
 	CostPerPoint        fxp.Int          `json:"cost_per_point,omitempty"`
 	CostAdjPercentPerSM fxp.Int          `json:"cost_adj_percent_per_sm,omitempty"`
 	Thresholds          []*PoolThreshold `json:"thresholds,omitempty"`
-	Hidden              bool             `json:"hidden,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
