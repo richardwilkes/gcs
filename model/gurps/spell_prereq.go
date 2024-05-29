@@ -13,6 +13,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellcmp"
+	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
 
@@ -133,29 +134,27 @@ func (s *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 		tooltip.WriteString(prefix)
 		tooltip.WriteString(HasText(s.Has))
 		tooltip.WriteByte(' ')
-		if s.SubType == spellcmp.CollegeCount {
-			tooltip.WriteString("college count which ")
-			tooltip.WriteString(s.QuantityCriteria.String())
+		tooltip.WriteString(s.QuantityCriteria.AltString())
+		if s.QuantityCriteria.Qualifier == fxp.One {
+			tooltip.WriteString(i18n.Text(" spell "))
 		} else {
-			tooltip.WriteString(s.QuantityCriteria.String())
-			if s.QuantityCriteria.Qualifier == fxp.One {
-				tooltip.WriteString(" spell ")
-			} else {
-				tooltip.WriteString(" spells ")
+			tooltip.WriteString(i18n.Text(" spells "))
+		}
+		switch s.SubType {
+		case spellcmp.Any:
+			tooltip.WriteString(i18n.Text("of any kind"))
+		case spellcmp.CollegeCount:
+			tooltip.WriteString(i18n.Text("from different colleges"))
+		default:
+			switch s.SubType {
+			case spellcmp.Name:
+				tooltip.WriteString(i18n.Text("whose name "))
+			case spellcmp.Tag:
+				tooltip.WriteString(i18n.Text("whose tag "))
+			case spellcmp.College:
+				tooltip.WriteString(i18n.Text("whose college "))
 			}
-			if s.SubType == spellcmp.Any {
-				tooltip.WriteString("of any kind")
-			} else {
-				switch s.SubType {
-				case spellcmp.Name:
-					tooltip.WriteString("whose name ")
-				case spellcmp.Tag:
-					tooltip.WriteString("whose tag ")
-				case spellcmp.College:
-					tooltip.WriteString("whose college ")
-				}
-				tooltip.WriteString(s.QualifierCriteria.String())
-			}
+			tooltip.WriteString(s.QualifierCriteria.String())
 		}
 	}
 	return satisfied

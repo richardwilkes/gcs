@@ -167,7 +167,7 @@ func (wp WeaponParry) Tooltip() string {
 		if buffer.Len() != 0 {
 			buffer.WriteString("\n\n")
 		}
-		buffer.WriteString("U: Unbalanced weapon. You cannot use it to parry if you have already used it to attack this turn (or vice-versa).")
+		buffer.WriteString(i18n.Text("U: Unbalanced weapon. You cannot use it to parry if you have already used it to attack this turn (or vice-versa)."))
 	}
 	return buffer.String()
 }

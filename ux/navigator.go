@@ -519,15 +519,16 @@ func (n *Navigator) showSelectionReleaseNotes() {
 				if i != 0 {
 					content.WriteString("\n\n")
 				}
-				content.WriteString("### Version ")
+				content.WriteString(i18n.Text("### Version "))
 				content.WriteString(filterVersion(release.Version))
 				content.WriteString("\n\n")
 				if release.Version == current {
-					content.WriteString("> This version is what you currently have on disk.\n\n")
+					content.WriteString(i18n.Text("> This version is what you currently have on disk."))
+					content.WriteString("\n\n")
 				}
 				content.WriteString(release.Notes)
 			}
-			ShowReadOnlyMarkdown(fmt.Sprintf("%s Release Notes", row.library.Title), content.String())
+			ShowReadOnlyMarkdown(fmt.Sprintf(i18n.Text("%s Release Notes"), row.library.Title), content.String())
 		}
 	}
 }
