@@ -8,14 +8,14 @@ require (
 	github.com/richardwilkes/pdf v1.23.10
 	github.com/richardwilkes/rpgtools v1.9.0
 	github.com/richardwilkes/toolbox v1.114.1
-	github.com/richardwilkes/unison v0.69.0
+	github.com/richardwilkes/unison v0.69.1
 	github.com/rjeczalik/notify v0.9.3
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef
 	github.com/tc-hib/winres v0.3.1
 	github.com/vearutop/statigz v1.4.0
 	github.com/yookoala/realpath v1.0.0
-	golang.org/x/exp v0.0.0-20240525044651-4c93da0ed11d
+	golang.org/x/exp v0.0.0-20240529005216-23cca8864a10
 	golang.org/x/image v0.16.0
 	golang.org/x/sys v0.20.0
 	golang.org/x/text v0.15.0
