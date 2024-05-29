@@ -94,7 +94,9 @@ STD_FLAGS="-v -buildvcs=true $EXTRA_BUILD_FLAGS"
 # Build our JavaScript code
 if [ "$BUILD_JS"x == "1x" ]; then
   echo -e "\033[33mBuilding the JavaScript code...\033[0m"
-  cd server/frontend
+  cd server/pdf
+  ./refresh-pdf.js.sh
+  cd ../frontend
   npm install
   npm run build
   if [ "$LINT"x == "1x" ]; then

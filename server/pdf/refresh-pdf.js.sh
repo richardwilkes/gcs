@@ -3,7 +3,7 @@ set -eo pipefail
 
 trap 'echo -e "\033[33;5mBuild failed on build.sh:$LINENO\033[0m"' ERR
 
-VERSION="4.0.379"
+VERSION="4.3.136"
 
 /bin/rm -rf build web LICENSE pdf.js-version-*
 
