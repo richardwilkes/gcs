@@ -49,9 +49,7 @@ func NewMiscPanel(entity *gurps.Entity, targetMgr *TargetMgr) *MiscPanel {
 			Bottom: 1,
 			Right:  2,
 		})))
-	m.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, unison.ThemeSurface.Paint(gc, rect, paintstyle.Fill))
-	}
+	m.DrawCallback = m.drawSelf
 
 	m.AddChild(NewPageLabelEnd(i18n.Text("Created")))
 	m.AddChild(NewNonEditablePageField(func(f *NonEditablePageField) {
@@ -76,6 +74,17 @@ func NewMiscPanel(entity *gurps.Entity, targetMgr *TargetMgr) *MiscPanel {
 		func(s string) { m.entity.Profile.PlayerName = s }))
 
 	return m
+}
+
+func (m *MiscPanel) drawSelf(gc *unison.Canvas, rect unison.Rect) {
+	gc.DrawRect(rect, unison.ThemeSurface.Paint(gc, rect, paintstyle.Fill))
+	children := m.Children()
+	for i := 0; i < len(children); i += 4 {
+		r := children[i].FrameRect()
+		r.X = rect.X
+		r.Width = rect.Width
+		gc.DrawRect(r, unison.ThemeBelowSurface.Paint(gc, r, paintstyle.Fill))
+	}
 }
 
 // UpdateModified updates the current modification timestamp.
