@@ -12,19 +12,19 @@
 		"lint": "eslint ."
 	},
 	"devDependencies": {
-		"@sveltejs/vite-plugin-svelte": "^3.0.2",
+		"@sveltejs/vite-plugin-svelte": "^3.1.1",
 		"@tsconfig/svelte": "^5.0.4",
 		"@types/eslint": "8.56.0",
-		"@types/node": "^20.12.5",
-		"@typescript-eslint/eslint-plugin": "^7.5.0",
-		"@typescript-eslint/parser": "^7.5.0",
+		"@types/node": "^20.12.13",
+		"@typescript-eslint/eslint-plugin": "^7.11.0",
+		"@typescript-eslint/parser": "^7.11.0",
 		"eslint": "^8.57.0",
-		"eslint-plugin-svelte": "^2.35.1",
-		"svelte": "^4.2.12",
-		"svelte-check": "^3.6.9",
+		"eslint-plugin-svelte": "^2.39.0",
+		"svelte": "^4.2.17",
+		"svelte-check": "^3.8.0",
 		"tslib": "^2.6.2",
-		"typescript": "^5.4.4",
-		"vite": "^5.2.8"
+		"typescript": "^5.4.5",
+		"vite": "^5.2.12"
 	},
 	"dependencies": {
 		"svelte-markdown": "^0.4.1"
