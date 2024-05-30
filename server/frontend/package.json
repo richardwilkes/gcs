@@ -25,5 +25,8 @@
 		"tslib": "^2.6.2",
 		"typescript": "^5.4.4",
 		"vite": "^5.2.8"
+	},
+	"dependencies": {
+		"svelte-markdown": "^0.4.1"
 	}
 }

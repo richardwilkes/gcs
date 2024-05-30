@@ -18,16 +18,16 @@
 <div class="content">
 	<Header>Identity</Header>
 	<div class="fields">
-		<div class="banding"><Label>Name</Label></div>
-		<div class="banding">
+		<div><Label>Name</Label></div>
+		<div>
 			<EditableTextField key="Identity.Name" />
 		</div>
-		<div><Label>Title</Label></div>
-		<div>
+		<div class="banding"><Label>Title</Label></div>
+		<div class="banding">
 			<EditableTextField key="Identity.Title" />
 		</div>
-		<div class="banding"><Label>Organization</Label></div>
-		<div class="banding">
+		<div><Label>Organization</Label></div>
+		<div>
 			<EditableTextField key="Identity.Organization" />
 		</div>
 	</div>

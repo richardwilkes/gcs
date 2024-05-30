@@ -15,6 +15,7 @@
 	import Icon from '$lib/sheets/lists/Icon.svelte';
 	import Tag from '$lib/sheets/lists/Tag.svelte';
 	import PageRef from '$lib/sheets/widget/PageRef.svelte';
+	import SvelteMarkdown from 'svelte-markdown';
 
 	export let cell: Cell;
 	export let column: Column;
@@ -42,15 +43,17 @@
 			{/if}
 		{:else if cell.Type === 'markdown'}
 			<!-- TODO: Render markdown -->
-			{cell.Primary}
-			{#if cell.InlineTag}
-				<Tag>{cell.InlineTag}</Tag>
-			{/if}
-			{#if cell.Secondary}
-				{#each cell.Secondary.split('\n') as line}
-					<br /><span class="secondary">{line}</span>
-				{/each}
-			{/if}
+			<div class="markdown">
+				<SvelteMarkdown source={cell.Primary} />
+				{#if cell.InlineTag}
+					<Tag>{cell.InlineTag}</Tag>
+				{/if}
+				{#if cell.Secondary}
+					{#each cell.Secondary.split('\n') as line}
+						<br /><span class="secondary"><SvelteMarkdown source={line} /></span>
+					{/each}
+				{/if}
+			</div>
 		{:else}
 			{cell.Primary}
 			{#if cell.InlineTag}
@@ -77,5 +80,18 @@
 		padding-top: 4px;
 		display: flex;
 		justify-content: center;
+	}
+
+	.markdown > :global(pre) {
+		background-color: var(--color-above-surface);
+		color: var(--color-on-above-surface);
+	}
+
+	.markdown :global(table),
+	.markdown :global(th),
+	.markdown :global(td) {
+		border: 2px solid var(--color-surface-edge);
+		border-collapse: collapse;
+		padding: 1px 6px;
 	}
 </style>

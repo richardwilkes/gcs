@@ -21,12 +21,12 @@
 <div class="content">
 	<Header>Miscellaneous</Header>
 	<div class="fields">
-		<div class="banding"><Label>Created</Label></div>
-		<div class="banding"><Field style="width:100%;">{formatDateStamp($sheet?.Misc.Created)}</Field></div>
-		<div><Label>Modified</Label></div>
-		<div><Field style="width:100%;">{formatDateStamp($sheet?.Misc.Modified)}</Field></div>
-		<div class="banding"><Label>Player</Label></div>
-		<div class="banding"><EditableTextField key="Misc.Player" /></div>
+		<div><Label>Created</Label></div>
+		<div><Field style="width:100%;">{formatDateStamp($sheet?.Misc.Created)}</Field></div>
+		<div class="banding"><Label>Modified</Label></div>
+		<div class="banding"><Field style="width:100%;">{formatDateStamp($sheet?.Misc.Modified)}</Field></div>
+		<div><Label>Player</Label></div>
+		<div><EditableTextField key="Misc.Player" /></div>
 	</div>
 </div>
 

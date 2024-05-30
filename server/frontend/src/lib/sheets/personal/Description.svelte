@@ -20,56 +20,56 @@
 		<Header>Description</Header>
 	</div>
 	<div class="fields" style="grid-area:block1;">
-		<div class="banding"><Label>Gender</Label></div>
-		<div class="banding">
+		<div><Label>Gender</Label></div>
+		<div>
 			<EditableTextField key="Description.Gender" />
 		</div>
-		<div><Label>Age</Label></div>
-		<div>
+		<div class="banding"><Label>Age</Label></div>
+		<div class="banding">
 			<EditableTextField key="Description.Age" />
 		</div>
-		<div class="banding"><Label>Birthday</Label></div>
-		<div class="banding">
+		<div><Label>Birthday</Label></div>
+		<div>
 			<EditableTextField key="Description.Birthday" />
 		</div>
-		<div><Label>Religion</Label></div>
-		<div>
+		<div class="banding"><Label>Religion</Label></div>
+		<div class="banding">
 			<EditableTextField key="Description.Religion" />
 		</div>
 	</div>
 	<div class="fields divider" style="grid-area:block2;">
-		<div class="banding"><Label>Height</Label></div>
-		<div class="banding">
+		<div><Label>Height</Label></div>
+		<div>
 			<EditableTextField key="Description.Height" />
 		</div>
-		<div><Label>Weight</Label></div>
-		<div>
+		<div class="banding"><Label>Weight</Label></div>
+		<div class="banding">
 			<EditableTextField key="Description.Weight" />
 		</div>
-		<div class="banding"><Label>Size</Label></div>
-		<div class="banding">
+		<div><Label>Size</Label></div>
+		<div>
 			<EditableTextField key="Description.SizeModifier" />
 		</div>
-		<div><Label>TL</Label></div>
-		<div>
+		<div class="banding"><Label>TL</Label></div>
+		<div class="banding">
 			<EditableTextField key="Description.TechLevel" />
 		</div>
 	</div>
 	<div class="fields divider" style="grid-area:block3;">
-		<div class="banding"><Label>Hair</Label></div>
-		<div class="banding">
+		<div><Label>Hair</Label></div>
+		<div>
 			<EditableTextField key="Description.Hair" />
 		</div>
-		<div><Label>Eyes</Label></div>
-		<div>
+		<div class="banding"><Label>Eyes</Label></div>
+		<div class="banding">
 			<EditableTextField key="Description.Eyes" />
 		</div>
-		<div class="banding"><Label>Skin</Label></div>
-		<div class="banding">
+		<div><Label>Skin</Label></div>
+		<div>
 			<EditableTextField key="Description.Skin" />
 		</div>
-		<div><Label>Hand</Label></div>
-		<div>
+		<div class="banding"><Label>Hand</Label></div>
+		<div class="banding">
 			<EditableTextField key="Description.Hand" />
 		</div>
 	</div>
