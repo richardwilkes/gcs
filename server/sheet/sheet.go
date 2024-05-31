@@ -248,6 +248,7 @@ type HitLocation struct {
 	HitPenalty     string
 	DR             string
 	DRDetail       string
+	Notes          string
 	SubLocations   []HitLocation
 }
 
@@ -270,6 +271,7 @@ func createHitLocations(entity *gurps.Entity, locations *gurps.Body) []HitLocati
 			HitPenalty:     strconv.Itoa(loc.HitPenalty),
 			DR:             dr,
 			DRDetail:       fmt.Sprintf(i18n.Text("The DR covering the %s hit location%s"), loc.TableName, detail.String()),
+			Notes:          loc.Notes,
 			SubLocations:   createHitLocations(entity, loc.SubTable),
 		})
 	}

@@ -12,9 +12,10 @@
 <script lang="ts">
 	export let span = 1;
 	export let tip = '';
+	export let extra_style = '';
 </script>
 
-<div class="header" title={tip} style="grid-column-end: span {span}">
+<div class="header" title={tip} style="grid-column-end: span {span};{extra_style}">
 	<slot>&nbsp;</slot>
 </div>
 
@@ -22,8 +23,11 @@
 	.header {
 		background-color: var(--color-header);
 		color: var(--color-on-header);
-		text-align: center;
+		fill: var(--color-on-header);
 		font-variant: small-caps;
 		padding: var(--padding-standard);
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 </style>

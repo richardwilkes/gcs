@@ -13,6 +13,7 @@
 	import BookmarkSVG from '$svg/Bookmark.svg?raw';
 	import CheckmarkSVG from '$svg/Checkmark.svg?raw';
 	import CoinsSVG from '$svg/Coins.svg?raw';
+	import FirstAidKitSVG from '$svg/FirstAidKit.svg?raw';
 	import StackSVG from '$svg/Stack.svg?raw';
 	import WeightSVG from '$svg/Weight.svg?raw';
 
@@ -30,6 +31,8 @@
 		{@html CheckmarkSVG}
 	{:else if key === 'coins'}
 		{@html CoinsSVG}
+	{:else if key === 'first-aid-kit'}
+		{@html FirstAidKitSVG}
 	{:else if key === 'weight'}
 		{@html WeightSVG}
 	{:else}
@@ -42,5 +45,6 @@
 		display: flex;
 		gap: 3px;
 		height: 0.75em;
+		font-variant: normal;
 	}
 </style>

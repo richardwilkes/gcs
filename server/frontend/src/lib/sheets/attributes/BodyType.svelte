@@ -15,6 +15,7 @@
 	import Field from '$lib/sheets/widget/Field.svelte';
 	import Label from '$lib/sheets/widget/Label.svelte';
 	import { sheet } from '$lib/sheet.ts';
+	import Icon from '../lists/Icon.svelte';
 </script>
 
 <div class="content">
@@ -23,6 +24,7 @@
 		<SubHeader>Roll</SubHeader>
 		<SubHeader>Location</SubHeader>
 		<SubHeader tip="Damage Resistance">DR</SubHeader>
+		<SubHeader extra_style="font-size:20px;"><Icon key="first-aid-kit" tip="Notes" /></SubHeader>
 		{#each $sheet?.Body.Locations ?? [] as loc, i}
 			{@const banding = i % 2 === 1}
 			<div class:banding><Label>{loc.Roll}</Label></div>
@@ -32,6 +34,9 @@
 			</div>
 			<div class:banding>
 				<Field noBottomBorder center tip={loc.DRDetail}>{loc.DR}</Field>
+			</div>
+			<div class="notes" class:banding>
+				<Field noBottomBorder>{loc.Notes}</Field>
 			</div>
 		{/each}
 	</div>
@@ -49,7 +54,7 @@
 	.fields {
 		display: grid;
 		flex-grow: 1;
-		grid-template-columns: 0fr 1fr 0fr;
+		grid-template-columns: 0fr 1fr 0fr 0fr;
 		grid-template-rows: 0fr;
 		grid-auto-rows: 1fr;
 		align-items: stretch;
@@ -69,5 +74,9 @@
 		justify-content: space-between;
 		border-left: 1px solid var(--color-header);
 		border-right: 1px solid var(--color-header);
+	}
+
+	.fields > .notes {
+		border-left: 1px solid var(--color-header);
 	}
 </style>

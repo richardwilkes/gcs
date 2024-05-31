@@ -129,6 +129,7 @@ export interface HitLocation {
 	HitPenalty: string;
 	DR: string;
 	DRDetail: string;
+	Notes: string;
 	SubLocations: HitLocation[];
 }
 
