@@ -36,7 +36,7 @@
 				<Field noBottomBorder center tip={loc.DRDetail}>{loc.DR}</Field>
 			</div>
 			<div class="notes" class:banding>
-				<Field noBottomBorder>{loc.Notes}</Field>
+				<Field editable={true} style="flex-grow: 1">{loc.Notes}</Field>
 			</div>
 		{/each}
 	</div>
