@@ -33,15 +33,15 @@ type AttributeDef struct {
 
 // AttributeDefData holds the data that will be serialized for the AttributeDef.
 type AttributeDefData struct {
-	DefID               string           `json:"id"`
-	Type                attribute.Type   `json:"type"`
-	Hidden              bool             `json:"hidden,omitempty"`
-	Name                string           `json:"name"`
-	FullName            string           `json:"full_name,omitempty"`
-	AttributeBase       string           `json:"attribute_base,omitempty"`
-	CostPerPoint        fxp.Int          `json:"cost_per_point,omitempty"`
-	CostAdjPercentPerSM fxp.Int          `json:"cost_adj_percent_per_sm,omitempty"`
-	Thresholds          []*PoolThreshold `json:"thresholds,omitempty"`
+	DefID               string              `json:"id"`
+	Type                attribute.Type      `json:"type"`
+	Placement           attribute.Placement `json:"placement,omitempty"`
+	Name                string              `json:"name"`
+	FullName            string              `json:"full_name,omitempty"`
+	AttributeBase       string              `json:"attribute_base,omitempty"`
+	CostPerPoint        fxp.Int             `json:"cost_per_point,omitempty"`
+	CostAdjPercentPerSM fxp.Int             `json:"cost_adj_percent_per_sm,omitempty"`
+	Thresholds          []*PoolThreshold    `json:"thresholds,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -120,8 +120,11 @@ func (a *AttributeDef) Primary() bool {
 	if a.Type == attribute.PrimarySeparator {
 		return true
 	}
-	if a.Type == attribute.Pool || a.IsSeparator() {
+	if a.Type == attribute.Pool || a.Placement == attribute.Secondary || a.IsSeparator() {
 		return false
+	}
+	if a.Placement == attribute.Primary {
+		return true
 	}
 	_, err := fxp.FromString(strings.TrimSpace(a.AttributeBase))
 	return err == nil
@@ -132,8 +135,11 @@ func (a *AttributeDef) Secondary() bool {
 	if a.Type == attribute.SecondarySeparator {
 		return true
 	}
-	if a.Type == attribute.Pool || a.IsSeparator() {
+	if a.Type == attribute.Pool || a.Placement == attribute.Primary || a.IsSeparator() {
 		return false
+	}
+	if a.Placement == attribute.Secondary {
+		return true
 	}
 	_, err := fxp.FromString(strings.TrimSpace(a.AttributeBase))
 	return err != nil
@@ -179,13 +185,13 @@ func (a *AttributeDef) ComputeCost(entity *Entity, value, costReduction fxp.Int,
 func (a *AttributeDef) crc64(c uint64) uint64 {
 	c = crc.String(c, a.DefID)
 	c = crc.Byte(c, byte(a.Type))
+	c = crc.Byte(c, byte(a.Placement))
 	c = crc.String(c, a.Name)
 	c = crc.String(c, a.FullName)
 	c = crc.String(c, a.AttributeBase)
 	c = crc.Number(c, a.CostPerPoint)
 	c = crc.Number(c, a.CostAdjPercentPerSM)
 	c = crc.Number(c, len(a.Thresholds))
-	c = crc.Bool(c, a.Hidden)
 	for _, one := range a.Thresholds {
 		c = one.crc64(c)
 	}

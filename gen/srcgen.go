@@ -363,6 +363,17 @@ var allEnums = []*enumInfo{
 	},
 	{
 		Pkg:  "model/gurps/enums/attribute",
+		Name: "placement",
+		Desc: "determines the placement of the attribute on the sheet",
+		Values: []enumValue{
+			{Key: "automatic"},
+			{Key: "primary"},
+			{Key: "secondary"},
+			{Key: "hidden"},
+		},
+	},
+	{
+		Pkg:  "model/gurps/enums/attribute",
 		Name: "type",
 		Desc: "holds the type of an attribute definition",
 		Values: []enumValue{

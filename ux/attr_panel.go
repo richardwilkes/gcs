@@ -151,7 +151,7 @@ func (a *AttrPanel) vspan() int {
 }
 
 func (a *AttrPanel) isRelevant(def *gurps.AttributeDef) bool {
-	if def.Hidden {
+	if def.Placement == attribute.Hidden {
 		return false
 	}
 	switch a.kind {
