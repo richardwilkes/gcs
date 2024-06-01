@@ -1047,9 +1047,14 @@ var allEnums = []*enumInfo{
 				NoLocalize: true,
 			},
 			{
-				Name:   "LeveledThrust",
-				Key:    "thr_leveled",
-				String: "thr (leveled)",
+				Name:   "LiftingThrust",
+				Key:    "lift_thr",
+				String: "lifting thr",
+			},
+			{
+				Name:   "TelekineticThrust",
+				Key:    "tk_thr",
+				String: "telekinetic thr",
 			},
 			{
 				Name:       "Swing",
@@ -1058,7 +1063,23 @@ var allEnums = []*enumInfo{
 				NoLocalize: true,
 			},
 			{
-				Name:   "LeveledSwing",
+				Name:   "LiftingSwing",
+				Key:    "lift_sw",
+				String: "lifting sw",
+			},
+			{
+				Name:   "TelekineticSwing",
+				Key:    "tk_sw",
+				String: "telekinetic sw",
+			},
+			// The following entries are only here to allow loading of old data and will be converted at load
+			{
+				Name:   "OldLeveledThrust",
+				Key:    "thr_leveled",
+				String: "thr (leveled)",
+			},
+			{
+				Name:   "OldLeveledSwing",
 				Key:    "sw_leveled",
 				String: "sw (leveled)",
 			},

@@ -685,9 +685,28 @@ func (e *Entity) ThrowingStrength() fxp.Int {
 	return st.Trunc()
 }
 
+// TelekineticStrength returns the total telekinetic strength.
+func (e *Entity) TelekineticStrength() fxp.Int {
+	var levels fxp.Int
+	Traverse(func(a *Trait) bool {
+		if !a.Container() && a.IsLeveled() {
+			if strings.EqualFold(a.Name, "telekinesis") {
+				levels += a.Levels.Max(0)
+			}
+		}
+		return false
+	}, true, false, e.Traits...)
+	return levels.Trunc()
+}
+
 // Thrust returns the thrust value for the current strength.
 func (e *Entity) Thrust() *dice.Dice {
 	return e.ThrustFor(fxp.As[int](e.StrikingStrength()))
+}
+
+// LiftingThrust returns the lifting thrust value for the current strength.
+func (e *Entity) LiftingThrust() *dice.Dice {
+	return e.ThrustFor(fxp.As[int](e.LiftingStrength()))
 }
 
 // ThrustFor returns the thrust value for the provided strength.
@@ -698,6 +717,11 @@ func (e *Entity) ThrustFor(st int) *dice.Dice {
 // Swing returns the swing value for the current strength.
 func (e *Entity) Swing() *dice.Dice {
 	return e.SwingFor(fxp.As[int](e.StrikingStrength()))
+}
+
+// LiftingSwing returns the lifting swing value for the current strength.
+func (e *Entity) LiftingSwing() *dice.Dice {
+	return e.SwingFor(fxp.As[int](e.LiftingStrength()))
 }
 
 // SwingFor returns the swing value for the provided strength.

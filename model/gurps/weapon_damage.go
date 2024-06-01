@@ -26,6 +26,7 @@ import (
 type WeaponDamageData struct {
 	Type                      string       `json:"type"`
 	StrengthType              stdmg.Option `json:"st,omitempty"`
+	Leveled                   bool         `json:"leveled,omitempty"`
 	StrengthMultiplier        fxp.Int      `json:"st_mul,omitempty"`
 	Base                      *dice.Dice   `json:"base,omitempty"`
 	ArmorDivisor              fxp.Int      `json:"armor_divisor,omitempty"`
@@ -60,6 +61,14 @@ func (w *WeaponDamage) Clone(owner *Weapon) *WeaponDamage {
 func (w *WeaponDamage) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &w.WeaponDamageData); err != nil {
 		return err
+	}
+	switch w.StrengthType {
+	case stdmg.OldLeveledThrust:
+		w.StrengthType = stdmg.Thrust
+		w.Leveled = true
+	case stdmg.OldLeveledSwing:
+		w.StrengthType = stdmg.Swing
+		w.Leveled = true
 	}
 	if w.StrengthMultiplier == 0 {
 		w.StrengthMultiplier = fxp.One
@@ -105,6 +114,9 @@ func (w *WeaponDamage) String() string {
 	var buffer strings.Builder
 	if w.StrengthType != stdmg.None {
 		buffer.WriteString(w.StrengthType.String())
+		if w.Leveled {
+			buffer.WriteString(i18n.Text(" (Leveled)"))
+		}
 	}
 	convertMods := false
 	if w.Owner != nil {
@@ -177,7 +189,16 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 		st = w.Owner.Owner.RatedStrength()
 	}
 	if st == 0 {
-		st = pc.StrikingStrength()
+		switch w.StrengthType {
+		case stdmg.Thrust, stdmg.Swing:
+			st = pc.StrikingStrength()
+		case stdmg.LiftingThrust, stdmg.LiftingSwing:
+			st = pc.LiftingStrength()
+		case stdmg.TelekineticThrust, stdmg.TelekineticSwing:
+			st = pc.TelekineticStrength()
+		default:
+			st = pc.ResolveAttributeCurrent(StrengthID).Max(0).Trunc()
+		}
 	}
 	if maxST > 0 && maxST < st {
 		st = maxST
@@ -197,25 +218,19 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 		multiplyDice(fxp.As[int](t.Levels), base)
 	}
 	intST := fxp.As[int](st)
+	var stDamage *dice.Dice
 	switch w.StrengthType {
-	case stdmg.Thrust:
-		base = addDice(base, pc.ThrustFor(intST))
-	case stdmg.LeveledThrust:
-		thrust := pc.ThrustFor(intST)
-		if tOK && t.IsLeveled() {
-			multiplyDice(fxp.As[int](t.Levels), thrust)
-		}
-		base = addDice(base, thrust)
-	case stdmg.Swing:
-		base = addDice(base, pc.SwingFor(intST))
-	case stdmg.LeveledSwing:
-		swing := pc.SwingFor(intST)
-		if tOK && t.IsLeveled() {
-			multiplyDice(fxp.As[int](t.Levels), swing)
-		}
-		base = addDice(base, swing)
+	case stdmg.Thrust, stdmg.LiftingThrust, stdmg.TelekineticThrust:
+		stDamage = pc.ThrustFor(intST)
+	case stdmg.Swing, stdmg.LiftingSwing, stdmg.TelekineticSwing:
+		stDamage = pc.SwingFor(intST)
 	default:
+		return base
 	}
+	if w.Leveled && t.IsLeveled() {
+		multiplyDice(fxp.As[int](t.Levels), stDamage)
+	}
+	base = addDice(base, stDamage)
 	return base
 }
 

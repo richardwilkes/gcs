@@ -118,8 +118,9 @@ func (we *weaponEditor) addBlockBlock(w *gurps.Weapon, content *unison.Panel) {
 
 func (we *weaponEditor) addDamageBlock(w *gurps.Weapon, content *unison.Panel) {
 	damage := &w.Damage
-	wrapper := addFillWrapper(content, i18n.Text("Damage"), 4)
-	addPopup(wrapper, stdmg.Options, &damage.StrengthType)
+	wrapper := addFillWrapper(content, i18n.Text("Damage"), 5)
+	addPopup(wrapper, filteredDamageOptions(), &damage.StrengthType)
+	addCheckBox(wrapper, i18n.Text("(leveled)"), &damage.Leveled)
 	text := i18n.Text("Damage Modifier")
 	addNullableDice(wrapper, text, text, &damage.Base, true)
 	text = i18n.Text("Damage Modifier Per Die")
@@ -147,6 +148,17 @@ func (we *weaponEditor) addDamageBlock(w *gurps.Weapon, content *unison.Panel) {
 	wrapper.AddChild(NewFieldTrailingLabel(typeText, false))
 	text = i18n.Text("Fragmentation Type")
 	addStringField(wrapper, text, text, &damage.FragmentationType)
+}
+
+func filteredDamageOptions() []stdmg.Option {
+	options := stdmg.Options
+	filtered := make([]stdmg.Option, 0, len(options))
+	for _, opt := range options {
+		if opt != stdmg.OldLeveledThrust && opt != stdmg.OldLeveledSwing {
+			filtered = append(filtered, opt)
+		}
+	}
+	return filtered
 }
 
 func (we *weaponEditor) addReachBlock(w *gurps.Weapon, content *unison.Panel) {

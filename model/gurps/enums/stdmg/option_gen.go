@@ -21,21 +21,29 @@ import (
 const (
 	None Option = iota
 	Thrust
-	LeveledThrust
+	LiftingThrust
+	TelekineticThrust
 	Swing
-	LeveledSwing
+	LiftingSwing
+	TelekineticSwing
+	OldLeveledThrust
+	OldLeveledSwing
 )
 
 // LastOption is the last valid value.
-const LastOption Option = LeveledSwing
+const LastOption Option = OldLeveledSwing
 
 // Options holds all possible values.
 var Options = []Option{
 	None,
 	Thrust,
-	LeveledThrust,
+	LiftingThrust,
+	TelekineticThrust,
 	Swing,
-	LeveledSwing,
+	LiftingSwing,
+	TelekineticSwing,
+	OldLeveledThrust,
+	OldLeveledSwing,
 }
 
 // Option holds the type of strength dice to add to damage.
@@ -43,7 +51,7 @@ type Option byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Option) EnsureValid() Option {
-	if enum <= LeveledSwing {
+	if enum <= OldLeveledSwing {
 		return enum
 	}
 	return 0
@@ -56,11 +64,19 @@ func (enum Option) Key() string {
 		return "none"
 	case Thrust:
 		return "thr"
-	case LeveledThrust:
-		return "thr_leveled"
+	case LiftingThrust:
+		return "lift_thr"
+	case TelekineticThrust:
+		return "tk_thr"
 	case Swing:
 		return "sw"
-	case LeveledSwing:
+	case LiftingSwing:
+		return "lift_sw"
+	case TelekineticSwing:
+		return "tk_sw"
+	case OldLeveledThrust:
+		return "thr_leveled"
+	case OldLeveledSwing:
 		return "sw_leveled"
 	default:
 		return Option(0).Key()
@@ -74,11 +90,19 @@ func (enum Option) String() string {
 		return i18n.Text("None")
 	case Thrust:
 		return "thr"
-	case LeveledThrust:
-		return i18n.Text("thr (leveled)")
+	case LiftingThrust:
+		return i18n.Text("lifting thr")
+	case TelekineticThrust:
+		return i18n.Text("telekinetic thr")
 	case Swing:
 		return "sw"
-	case LeveledSwing:
+	case LiftingSwing:
+		return i18n.Text("lifting sw")
+	case TelekineticSwing:
+		return i18n.Text("telekinetic sw")
+	case OldLeveledThrust:
+		return i18n.Text("thr (leveled)")
+	case OldLeveledSwing:
 		return i18n.Text("sw (leveled)")
 	default:
 		return Option(0).String()
