@@ -67,7 +67,7 @@ func (a *AttributeDef) UnmarshalJSON(data []byte) error {
 // Clone a copy of this.
 func (a *AttributeDef) Clone() *AttributeDef {
 	clone := *a
-	if a.Type == attribute.Pool {
+	if a.Type == attribute.Pool || a.Type == attribute.PoolRef {
 		if a.Thresholds != nil {
 			clone.Thresholds = make([]*PoolThreshold, len(a.Thresholds))
 			for i, one := range a.Thresholds {
@@ -120,7 +120,7 @@ func (a *AttributeDef) Primary() bool {
 	if a.Type == attribute.PrimarySeparator {
 		return true
 	}
-	if a.Type == attribute.Pool || a.Placement == attribute.Secondary || a.IsSeparator() {
+	if a.Type == attribute.Pool || a.Type == attribute.PoolRef || a.Placement == attribute.Secondary || a.IsSeparator() {
 		return false
 	}
 	if a.Placement == attribute.Primary {
@@ -135,7 +135,7 @@ func (a *AttributeDef) Secondary() bool {
 	if a.Type == attribute.SecondarySeparator {
 		return true
 	}
-	if a.Type == attribute.Pool || a.Placement == attribute.Primary || a.IsSeparator() {
+	if a.Type == attribute.Pool || a.Type == attribute.PoolRef || a.Placement == attribute.Primary || a.IsSeparator() {
 		return false
 	}
 	if a.Placement == attribute.Secondary {
@@ -147,7 +147,7 @@ func (a *AttributeDef) Secondary() bool {
 
 // Pool returns true if the base value is a pool value.
 func (a *AttributeDef) Pool() bool {
-	return a.Type == attribute.PoolSeparator || a.Type == attribute.Pool
+	return a.Type == attribute.PoolSeparator || a.Type == attribute.Pool || a.Type == attribute.PoolRef
 }
 
 // AllowsDecimal returns true if the value can have a decimal point in it.

@@ -88,7 +88,7 @@ func (p *attrDefSettingsPanel) createButtons() *unison.Panel {
 	p.addThresholdButton = unison.NewSVGButton(svg.CircledAdd)
 	p.addThresholdButton.ClickCallback = func() { p.poolPanel.addThreshold() }
 	p.addThresholdButton.Tooltip = newWrappedTooltip(i18n.Text("Add pool threshold"))
-	p.addThresholdButton.SetEnabled(p.def.Type == attribute.Pool)
+	p.addThresholdButton.SetEnabled(p.def.Type == attribute.Pool || p.def.Type == attribute.PoolRef)
 	buttons.AddChild(p.addThresholdButton)
 	return buttons
 }
@@ -151,7 +151,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 		func(typ attribute.Type) { p.applyAttributeType(typ) },
 		attribute.Types...))
 
-	if p.def.Type != attribute.Pool && !p.def.IsSeparator() {
+	if (p.def.Type != attribute.Pool && p.def.Type != attribute.PoolRef) && !p.def.IsSeparator() {
 		text = i18n.Text("Placement")
 		content.AddChild(NewFieldLeadingLabel(text, false))
 		content.AddChild(NewPopup[attribute.Placement](p.dockable.targetMgr, p.def.KeyPrefix+"placement", text,
@@ -213,7 +213,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 		}
 	}
 
-	if p.def.Type == attribute.Pool {
+	if p.def.Type == attribute.Pool || p.def.Type == attribute.PoolRef {
 		p.poolPanel = newPoolSettingsPanel(p.dockable, p.def)
 		content.AddChild(p.poolPanel)
 	} else {
@@ -238,7 +238,7 @@ func (p *attrDefSettingsPanel) validateAttrID(attrID string) bool {
 
 func (p *attrDefSettingsPanel) applyAttributeType(attrType attribute.Type) {
 	p.def.Type = attrType
-	if p.def.Type == attribute.Pool && len(p.def.Thresholds) == 0 {
+	if (p.def.Type == attribute.Pool || p.def.Type == attribute.PoolRef) && len(p.def.Thresholds) == 0 {
 		p.def.Thresholds = append(p.def.Thresholds, &gurps.PoolThreshold{KeyPrefix: p.dockable.targetMgr.NextPrefix()})
 	} else if p.def.IsSeparator() {
 		p.def.FullName = ""

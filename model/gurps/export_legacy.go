@@ -477,7 +477,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "PRIMARY_ATTRIBUTE_LOOP_COUNT":
 		count := 0
 		for _, def := range ex.entity.SheetSettings.Attributes.List(true) {
-			if def.Type != attribute.Pool && def.Primary() {
+			if (def.Type != attribute.Pool && def.Type != attribute.PoolRef) && def.Primary() {
 				if _, exists := ex.entity.Attributes.Set[def.DefID]; exists {
 					count++
 				}
@@ -489,7 +489,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "SECONDARY_ATTRIBUTE_LOOP_COUNT":
 		count := 0
 		for _, def := range ex.entity.SheetSettings.Attributes.List(true) {
-			if def.Type != attribute.Pool && !def.Primary() {
+			if (def.Type != attribute.Pool && def.Type != attribute.PoolRef) && !def.Primary() {
 				if _, exists := ex.entity.Attributes.Set[def.DefID]; exists {
 					count++
 				}
@@ -501,7 +501,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "POINT_POOL_LOOP_COUNT":
 		count := 0
 		for _, def := range ex.entity.SheetSettings.Attributes.List(true) {
-			if def.Type == attribute.Pool {
+			if def.Type == attribute.Pool || def.Type == attribute.PoolRef {
 				if _, exists := ex.entity.Attributes.Set[def.DefID]; exists {
 					count++
 				}
@@ -1176,7 +1176,7 @@ func (ex *legacyExporter) processConditionalModifiersLoop(list []*ConditionalMod
 
 func (ex *legacyExporter) processAttributesLoop(buffer []byte, primary bool) {
 	for _, def := range ex.entity.SheetSettings.Attributes.List(true) {
-		if def.Type != attribute.Pool && def.Primary() == primary {
+		if (def.Type != attribute.Pool && def.Type != attribute.PoolRef) && def.Primary() == primary {
 			if attr, ok := ex.entity.Attributes.Set[def.DefID]; ok {
 				ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 					switch key {
@@ -1204,7 +1204,7 @@ func (ex *legacyExporter) processAttributesLoop(buffer []byte, primary bool) {
 
 func (ex *legacyExporter) processPointPoolLoop(buffer []byte) {
 	for _, def := range ex.entity.SheetSettings.Attributes.List(true) {
-		if def.Type == attribute.Pool {
+		if def.Type == attribute.Pool || def.Type == attribute.PoolRef {
 			if attr, ok := ex.entity.Attributes.Set[def.DefID]; ok {
 				ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 					switch key {

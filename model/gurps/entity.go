@@ -1140,7 +1140,7 @@ func (e *Entity) ResolveVariable(variableName string) string {
 		}
 		return ""
 	}
-	if def.Type == attribute.Pool && len(parts) > 1 && parts[1] == "current" {
+	if (def.Type == attribute.Pool || def.Type == attribute.PoolRef) && len(parts) > 1 && parts[1] == "current" {
 		result := attr.Current().String()
 		e.cachedVariables[variableName] = result
 		return result

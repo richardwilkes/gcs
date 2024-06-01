@@ -382,6 +382,7 @@ var allEnums = []*enumInfo{
 			{Key: "decimal"},
 			{Key: "decimal_ref", String: "Decimal (Display Only)"},
 			{Key: "pool"},
+			{Key: "pool_ref", String: "Pool (Display Only for Maximum)"},
 			{Key: "primary_separator"},
 			{Key: "secondary_separator"},
 			{Key: "pool_separator"},

@@ -331,7 +331,7 @@ func (d *attributeSettingsDockable) dataDragOver(where unison.Point, data map[st
 				}
 			} else {
 				for i, def := range d.defs.List(false) {
-					if def == dd.def && def.Type == attribute.Pool {
+					if def == dd.def && (def.Type == attribute.Pool || def.Type == attribute.PoolRef) {
 						p := children[i].Self.(*attrDefSettingsPanel).poolPanel
 						pt := p.PointFromRoot(rootPt)
 						for j, child := range p.Children() {

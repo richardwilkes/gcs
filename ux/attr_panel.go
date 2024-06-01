@@ -201,14 +201,19 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 
 					a.AddChild(NewPageLabel(i18n.Text("of")))
 
-					maximumField := NewDecimalPageField(a.targetMgr, a.prefix+attr.AttrID+":max",
-						i18n.Text("Point Pool Maximum"), func() fxp.Int { return attr.Maximum() },
-						func(v fxp.Int) {
-							attr.SetMaximum(v)
-							currentField.SetMinMax(currentField.Min(), v)
-							currentField.Sync()
-						}, fxp.Min, fxp.Max, true)
-					a.AddChild(maximumField)
+					if def.Type == attribute.Pool {
+						a.AddChild(NewDecimalPageField(a.targetMgr, a.prefix+attr.AttrID+":max",
+							i18n.Text("Point Pool Maximum"), func() fxp.Int { return attr.Maximum() },
+							func(v fxp.Int) {
+								attr.SetMaximum(v)
+								currentField.SetMinMax(currentField.Min(), v)
+								currentField.Sync()
+							}, fxp.Min, fxp.Max, true))
+					} else {
+						a.AddChild(NewNonEditablePageFieldEnd(func(field *NonEditablePageField) {
+							field.SetTitle(attr.Maximum().String())
+						}))
+					}
 
 					name := NewPageLabel(def.Name)
 					if def.FullName != "" {

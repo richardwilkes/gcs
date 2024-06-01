@@ -66,7 +66,7 @@ func (a *Attribute) MarshalJSON() ([]byte, error) {
 					Points: a.PointCost(),
 				},
 			}
-			if def.Type == attribute.Pool {
+			if def.Type == attribute.Pool || def.Type == attribute.PoolRef {
 				current := a.Current()
 				data.Calc.Current = &current
 			}
@@ -138,7 +138,7 @@ func (a *Attribute) Current() fxp.Int {
 		return 0
 	}
 	maximum := a.Maximum()
-	if def.Type != attribute.Pool {
+	if def.Type != attribute.Pool && def.Type != attribute.PoolRef {
 		return maximum
 	}
 	return maximum - a.Damage

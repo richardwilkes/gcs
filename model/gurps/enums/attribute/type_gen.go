@@ -24,6 +24,7 @@ const (
 	Decimal
 	DecimalRef
 	Pool
+	PoolRef
 	PrimarySeparator
 	SecondarySeparator
 	PoolSeparator
@@ -39,6 +40,7 @@ var Types = []Type{
 	Decimal,
 	DecimalRef,
 	Pool,
+	PoolRef,
 	PrimarySeparator,
 	SecondarySeparator,
 	PoolSeparator,
@@ -68,6 +70,8 @@ func (enum Type) Key() string {
 		return "decimal_ref"
 	case Pool:
 		return "pool"
+	case PoolRef:
+		return "pool_ref"
 	case PrimarySeparator:
 		return "primary_separator"
 	case SecondarySeparator:
@@ -92,6 +96,8 @@ func (enum Type) String() string {
 		return i18n.Text("Decimal (Display Only)")
 	case Pool:
 		return i18n.Text("Pool")
+	case PoolRef:
+		return i18n.Text("Pool (Display Only for Maximum)")
 	case PrimarySeparator:
 		return i18n.Text("Primary Separator")
 	case SecondarySeparator:
