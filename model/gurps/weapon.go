@@ -126,6 +126,7 @@ func NewWeapon(owner WeaponOwner, weaponType wpn.Type) *Weapon {
 			Damage: WeaponDamage{
 				WeaponDamageData: WeaponDamageData{
 					Type:                      "cr",
+					StrengthMultiplier:        fxp.One,
 					ArmorDivisor:              fxp.One,
 					FragmentationArmorDivisor: fxp.One,
 				},

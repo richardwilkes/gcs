@@ -26,6 +26,7 @@ import (
 type WeaponDamageData struct {
 	Type                      string       `json:"type"`
 	StrengthType              stdmg.Option `json:"st,omitempty"`
+	StrengthMultiplier        fxp.Int      `json:"st_mul,omitempty"`
 	Base                      *dice.Dice   `json:"base,omitempty"`
 	ArmorDivisor              fxp.Int      `json:"armor_divisor,omitempty"`
 	Fragmentation             *dice.Dice   `json:"fragmentation,omitempty"`
@@ -60,6 +61,9 @@ func (w *WeaponDamage) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &w.WeaponDamageData); err != nil {
 		return err
 	}
+	if w.StrengthMultiplier == 0 {
+		w.StrengthMultiplier = fxp.One
+	}
 	if w.ArmorDivisor == 0 {
 		w.ArmorDivisor = fxp.One
 	}
@@ -71,6 +75,11 @@ func (w *WeaponDamage) UnmarshalJSON(data []byte) error {
 
 // MarshalJSON implements json.Marshaler.
 func (w *WeaponDamage) MarshalJSON() ([]byte, error) {
+	// A ST multiplier of 0 is not valid and 1 is very common, so suppress its output when 1.
+	strengthMultiplier := w.StrengthMultiplier
+	if strengthMultiplier == fxp.One {
+		w.StrengthMultiplier = 0
+	}
 	// An armor divisor of 0 is not valid and 1 is very common, so suppress its output when 1.
 	armorDivisor := w.ArmorDivisor
 	if armorDivisor == fxp.One {
@@ -84,6 +93,7 @@ func (w *WeaponDamage) MarshalJSON() ([]byte, error) {
 		w.FragmentationArmorDivisor = 0
 	}
 	data, err := json.Marshal(&w.WeaponDamageData)
+	w.StrengthMultiplier = strengthMultiplier
 	w.ArmorDivisor = armorDivisor
 	if w.Fragmentation != nil {
 		w.FragmentationArmorDivisor = fragArmorDivisor
@@ -171,6 +181,9 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 	}
 	if maxST > 0 && maxST < st {
 		st = maxST
+	}
+	if w.StrengthMultiplier > 0 { // Just in case it somehow got set to 0
+		st = st.Mul(w.StrengthMultiplier)
 	}
 	base := &dice.Dice{
 		Sides:      6,

@@ -134,6 +134,10 @@ func (we *weaponEditor) addDamageBlock(w *gurps.Weapon, content *unison.Panel) {
 	wrapper.AddChild(NewFieldTrailingLabel(typeText, false))
 	addStringField(wrapper, text, text, &damage.Type)
 
+	wrapper = addFillWrapper(content, "", 2)
+	addLabelAndDecimalField(wrapper, nil, "", i18n.Text("Multiply ST used for sw or thr damage calculation by"), "",
+		&damage.StrengthMultiplier, fxp.Tenth, fxp.BillionMinusOne)
+
 	wrapper = addFillWrapper(content, i18n.Text("Fragmentation"), 5)
 	text = i18n.Text("Fragmentation Base Damage")
 	addNullableDice(wrapper, text, text, &damage.Fragmentation, false)
