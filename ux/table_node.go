@@ -162,18 +162,25 @@ func (n *Node[T]) ColumnCell(row, col int, foreground, background unison.Ink, _,
 func applyInkRecursively(panel *unison.Panel, foreground, background unison.Ink) {
 	switch part := panel.Self.(type) {
 	case *unison.Markdown:
-		if ink, ok := part.OnBackgroundInk.(*unison.IndirectInk); ok {
-			ink.Target = foreground
+		if part.OnBackgroundInk != foreground {
+			part.OnBackgroundInk = foreground
+			part.Rebuild()
 		}
 		return
 	case *unison.Label:
-		if _, exists := part.ClientData()[invertColorsMarker]; !exists {
-			part.OnBackgroundInk = foreground
+		if part.OnBackgroundInk != foreground {
+			if _, exists := part.ClientData()[invertColorsMarker]; !exists {
+				part.OnBackgroundInk = foreground
+				part.SetTitle(part.String())
+			}
 		}
 	case *unison.Tag:
-		if _, exists := part.ClientData()[invertColorsMarker]; !exists {
-			part.BackgroundInk = foreground
-			part.OnBackgroundInk = background
+		if part.OnBackgroundInk != background || part.BackgroundInk != foreground {
+			if _, exists := part.ClientData()[invertColorsMarker]; !exists {
+				part.BackgroundInk = foreground
+				part.OnBackgroundInk = background
+				part.SetTitle(part.Text.String())
+			}
 		}
 	}
 	for _, child := range panel.Children() {
