@@ -14,8 +14,24 @@
 	import SubHeader from '$lib/sheets/widget/SubHeader.svelte';
 	import Field from '$lib/sheets/widget/Field.svelte';
 	import Label from '$lib/sheets/widget/Label.svelte';
-	import { sheet } from '$lib/sheet.ts';
+	import { sheet, updateSheetField, type HitLocation } from '$lib/sheet.ts';
+	import { sheetPath } from '$lib/url.js';
 	import Icon from '../lists/Icon.svelte';
+
+	async function updateField(event: FocusEvent, loc: HitLocation) {
+		if ($sheetPath) {
+			const target = event.target as HTMLElement;
+			let updatedSheet = await updateSheetField(
+				$sheetPath,
+				'field.text',
+				'HitLocation.' + loc.ID,
+				target.innerText
+			);
+			loc.Notes = target.innerText || '';
+			target.innerText = loc.Notes || '';
+			sheet.update((_) => updatedSheet);
+		}
+	}
 </script>
 
 <div class="content">
@@ -36,7 +52,8 @@
 				<Field noBottomBorder center tip={loc.DRDetail}>{loc.DR}</Field>
 			</div>
 			<div class="notes" class:banding>
-				<Field editable={true} style="flex-grow: 1">{loc.Notes}</Field>
+				<Field editable style="flex-grow:1;width:100%;" on:blur={(target) => updateField(target, loc)}
+					>{loc.Notes || ''}</Field>
 			</div>
 		{/each}
 	</div>

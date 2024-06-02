@@ -77,15 +77,25 @@
 							}
 						}
 					}
-					let sel = window.getSelection();
-					if (sel) {
-						sel.removeAllRanges();
-						const range = document.createRange();
-						range.setStart(field.childNodes[0], pos);
-						range.setEnd(field.childNodes[0], pos);
-						sel.addRange(range);
-					}
+					selectRange(pos, pos);
 				}
+			}
+		}
+	}
+
+	function selectRange(from: number, to: number) {
+		let sel = window.getSelection();
+		if (sel) {
+			sel.removeAllRanges();
+			let first = field.childNodes[0];
+			if (!first) {
+				first = field;
+			}
+			if (first) {
+				const range = document.createRange();
+				range.setStart(first, from);
+				range.setEnd(first, to);
+				sel.addRange(range);
 			}
 		}
 	}
@@ -98,14 +108,7 @@
 		if (field.suppressSelectAll) {
 			field.suppressSelectAll = false;
 		} else {
-			let sel = window.getSelection();
-			if (sel) {
-				sel.removeAllRanges();
-				const range = document.createRange();
-				range.setStart(field.childNodes[0], 0);
-				range.setEnd(field.childNodes[0], field.innerText.length);
-				sel.addRange(range);
-			}
+			selectRange(0, field.innerText.length);
 		}
 	}
 

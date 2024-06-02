@@ -123,6 +123,7 @@ export interface BasicDamage {
 }
 
 export interface HitLocation {
+	ID: number;
 	Roll: string;
 	Location: string;
 	LocationDetail: string;

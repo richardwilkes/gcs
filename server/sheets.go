@@ -286,11 +286,22 @@ func (s *Server) updateFieldText(entity *webEntity, update *sheetUpdate) error {
 				}
 			}
 		}
+		if strings.HasPrefix(update.Key, "HitLocation.") {
+			id, err := strconv.Atoi(strings.TrimPrefix(update.Key, "HitLocation."))
+			if err != nil {
+				return errs.NewWithCause("invalid number", err)
+			}
+			if loc := sheet.FindHitLocationByID(entity.Entity, gurps.SheetSettingsFor(entity.Entity).BodyType, id); loc != nil {
+				stringFieldPtr = &loc.Notes
+				break
+			}
+		}
 		return errs.Newf("unknown field key: %q", update.Key)
 	}
 	update.Data = txt.CollapseSpaces(strings.TrimSpace(update.Data))
 	switch {
 	case stringFieldPtr != nil:
+		slog.Info("string update", "update.Data", update.Data, "*stringFieldPtr", *stringFieldPtr)
 		if update.Data == *stringFieldPtr {
 			return nil
 		}

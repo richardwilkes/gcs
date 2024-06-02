@@ -242,6 +242,7 @@ func createBasicDamage(entity *gurps.Entity) BasicDamage {
 
 // HitLocation holds the data needed by the frontend to display the hit locations.
 type HitLocation struct {
+	ID             int
 	Roll           string
 	Location       string
 	LocationDetail string
@@ -252,11 +253,11 @@ type HitLocation struct {
 	SubLocations   []HitLocation
 }
 
-func createHitLocations(entity *gurps.Entity, locations *gurps.Body) []HitLocation {
+func createHitLocations(entity *gurps.Entity, locations *gurps.Body, startID int) (list []HitLocation, endID int) {
 	if locations == nil {
-		return nil
+		return nil, startID
 	}
-	list := make([]HitLocation, 0, len(locations.Locations))
+	list = make([]HitLocation, 0, len(locations.Locations))
 	for _, loc := range locations.Locations {
 		rollRange := loc.RollRange
 		if rollRange == "-" {
@@ -264,7 +265,8 @@ func createHitLocations(entity *gurps.Entity, locations *gurps.Body) []HitLocati
 		}
 		var detail xio.ByteBuffer
 		dr := loc.DisplayDR(entity, &detail)
-		list = append(list, HitLocation{
+		one := HitLocation{
+			ID:             startID,
 			Roll:           rollRange,
 			Location:       loc.TableName,
 			LocationDetail: loc.Description,
@@ -272,10 +274,34 @@ func createHitLocations(entity *gurps.Entity, locations *gurps.Body) []HitLocati
 			DR:             dr,
 			DRDetail:       fmt.Sprintf(i18n.Text("The DR covering the %s hit location%s"), loc.TableName, detail.String()),
 			Notes:          loc.Notes,
-			SubLocations:   createHitLocations(entity, loc.SubTable),
-		})
+		}
+		startID++
+		one.SubLocations, startID = createHitLocations(entity, loc.SubTable, startID)
+		list = append(list, one)
 	}
-	return list
+	return list, startID
+}
+
+// FindHitLocationByID returns the HitLocation with the given ID.
+func FindHitLocationByID(entity *gurps.Entity, locations *gurps.Body, id int) *gurps.HitLocation {
+	match, _ := _findHitLocationByID(entity, locations, id, 1)
+	return match
+}
+
+func _findHitLocationByID(entity *gurps.Entity, locations *gurps.Body, id, startID int) (match *gurps.HitLocation, endID int) {
+	if locations == nil {
+		return nil, startID
+	}
+	for _, loc := range locations.Locations {
+		if startID == id {
+			return loc, startID
+		}
+		startID++
+		if match, startID = _findHitLocationByID(entity, loc.SubTable, id, startID); match != nil {
+			return match, startID
+		}
+	}
+	return nil, startID
 }
 
 // Body holds the data needed by the frontend to display the Body section of a sheet.
@@ -286,9 +312,10 @@ type Body struct {
 
 func createBody(entity *gurps.Entity) Body {
 	locations := gurps.SheetSettingsFor(entity).BodyType
+	list, _ := createHitLocations(entity, locations, 1)
 	return Body{
 		Name:      locations.Name,
-		Locations: createHitLocations(entity, locations),
+		Locations: list,
 	}
 }
 
