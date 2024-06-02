@@ -694,6 +694,11 @@ var allEnums = []*enumInfo{
 				String: "Gives a weapon DR divisor modifier of",
 			},
 			{
+				Name:   "WeaponEffectiveSTBonus",
+				Key:    "weapon_effective_st_bonus",
+				String: "Gives a weapon effective ST modifier of",
+			},
+			{
 				Name:   "WeaponMinSTBonus",
 				Key:    "weapon_min_st_bonus",
 				String: "Gives a weapon minimum ST modifier of",

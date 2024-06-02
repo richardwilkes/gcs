@@ -516,7 +516,7 @@ func (p *featuresPanel) addWeaponLeveledModifierLine(parent *unison.Panel, f gur
 					MarkModified(panel)
 				}, fxp.Min, fxp.Max, true, false))
 			addCheckBox(panel, i18n.Text("per level"), &amount.PerLevel)
-			if ft.Type != feature.WeaponMinSTBonus {
+			if ft.Type != feature.WeaponMinSTBonus && ft.Type != feature.WeaponEffectiveSTBonus {
 				// Can't allow the per-die option for MinST bonuses, since that would cause an infinite loop on
 				// resolution.
 				addCheckBox(panel, i18n.Text("per die"), &amount.PerDie)
@@ -593,6 +593,8 @@ func (p *featuresPanel) createFeatureForType(featureType feature.Type) gurps.Fea
 		bonus = gurps.NewWeaponScopeAccBonus()
 	case feature.WeaponDRDivisorBonus:
 		bonus = gurps.NewWeaponDRDivisorBonus()
+	case feature.WeaponEffectiveSTBonus:
+		bonus = gurps.NewWeaponEffectiveSTBonus()
 	case feature.WeaponMinSTBonus:
 		bonus = gurps.NewWeaponMinSTBonus()
 	case feature.WeaponMinReachBonus:

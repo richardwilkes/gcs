@@ -200,6 +200,12 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 			st = pc.ResolveAttributeCurrent(StrengthID).Max(0).Trunc()
 		}
 	}
+	for _, bonus := range w.Owner.collectWeaponBonuses(1, nil, feature.WeaponEffectiveSTBonus) {
+		st += bonus.AdjustedAmountForWeapon(w.Owner)
+	}
+	if st < 0 {
+		st = 0
+	}
 	if maxST > 0 && maxST < st {
 		st = maxST
 	}

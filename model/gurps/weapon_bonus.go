@@ -27,9 +27,9 @@ var _ Bonus = &WeaponBonus{}
 type WeaponBonus struct {
 	Type                   feature.Type    `json:"type"`
 	Percent                bool            `json:"percent,omitempty"`
-	SwitchTypeValue        bool            `json:"switch_type_value,omitempty"`
 	SelectionType          wsel.Type       `json:"selection_type"`
 	SwitchType             wswitch.Type    `json:"switch_type,omitempty"`
+	SwitchTypeValue        bool            `json:"switch_type_value,omitempty"`
 	NameCriteria           StringCriteria  `json:"name,omitempty"`
 	SpecializationCriteria StringCriteria  `json:"specialization,omitempty"`
 	RelativeLevelCriteria  NumericCriteria `json:"level,omitempty"`
@@ -47,6 +47,11 @@ func NewWeaponDamageBonus() *WeaponBonus {
 // NewWeaponDRDivisorBonus creates a new weapon DR divisor bonus.
 func NewWeaponDRDivisorBonus() *WeaponBonus {
 	return newWeaponBonus(feature.WeaponDRDivisorBonus)
+}
+
+// NewWeaponEffectiveSTBonus creates a new weapon effective ST bonus.
+func NewWeaponEffectiveSTBonus() *WeaponBonus {
+	return newWeaponBonus(feature.WeaponEffectiveSTBonus)
 }
 
 // NewWeaponMinSTBonus creates a new weapon minimum ST bonus.
@@ -200,7 +205,7 @@ func (w *WeaponBonus) Clone() Feature {
 
 // AdjustedAmountForWeapon returns the adjusted amount for the given weapon.
 func (w *WeaponBonus) AdjustedAmountForWeapon(wpn *Weapon) fxp.Int {
-	if w.Type == feature.WeaponMinSTBonus {
+	if w.Type == feature.WeaponMinSTBonus || w.Type == feature.WeaponEffectiveSTBonus {
 		// Can't call BaseDamageDice() here because that would cause an infinite loop, so we just don't permit use of
 		// the per-die feature for this bonus.
 		w.WeaponLeveledAmount.DieCount = fxp.One
@@ -258,6 +263,8 @@ func (w *WeaponBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 				buf.WriteString(i18n.Text("scope accuracy"))
 			case feature.WeaponDRDivisorBonus:
 				buf.WriteString(i18n.Text("DR divisor"))
+			case feature.WeaponEffectiveSTBonus:
+				buf.WriteString(i18n.Text("effective ST"))
 			case feature.WeaponMinSTBonus:
 				buf.WriteString(i18n.Text("minimum ST"))
 			case feature.WeaponMinReachBonus:

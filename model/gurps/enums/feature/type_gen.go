@@ -31,6 +31,7 @@ const (
 	WeaponAccBonus
 	WeaponScopeAccBonus
 	WeaponDRDivisorBonus
+	WeaponEffectiveSTBonus
 	WeaponMinSTBonus
 	WeaponMinReachBonus
 	WeaponMaxReachBonus
@@ -71,6 +72,7 @@ var Types = []Type{
 	WeaponAccBonus,
 	WeaponScopeAccBonus,
 	WeaponDRDivisorBonus,
+	WeaponEffectiveSTBonus,
 	WeaponMinSTBonus,
 	WeaponMinReachBonus,
 	WeaponMaxReachBonus,
@@ -132,6 +134,8 @@ func (enum Type) Key() string {
 		return "weapon_scope_acc_bonus"
 	case WeaponDRDivisorBonus:
 		return "weapon_dr_divisor_bonus"
+	case WeaponEffectiveSTBonus:
+		return "weapon_effective_st_bonus"
 	case WeaponMinSTBonus:
 		return "weapon_min_st_bonus"
 	case WeaponMinReachBonus:
@@ -206,6 +210,8 @@ func (enum Type) String() string {
 		return i18n.Text("Gives a weapon scope accuracy modifier of")
 	case WeaponDRDivisorBonus:
 		return i18n.Text("Gives a weapon DR divisor modifier of")
+	case WeaponEffectiveSTBonus:
+		return i18n.Text("Gives a weapon effective ST modifier of")
 	case WeaponMinSTBonus:
 		return i18n.Text("Gives a weapon minimum ST modifier of")
 	case WeaponMinReachBonus:

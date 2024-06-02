@@ -71,6 +71,7 @@ func (f *Features) UnmarshalJSON(data []byte) error {
 			feature.WeaponAccBonus,
 			feature.WeaponScopeAccBonus,
 			feature.WeaponDRDivisorBonus,
+			feature.WeaponEffectiveSTBonus,
 			feature.WeaponMinSTBonus,
 			feature.WeaponMinReachBonus,
 			feature.WeaponMaxReachBonus,
