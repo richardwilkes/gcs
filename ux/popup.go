@@ -48,7 +48,8 @@ func NewPopup[T comparable](targetMgr *TargetMgr, targetKey, undoTitle string, g
 					undo := NewTargetUndo(p.targetMgr, p.targetKey, p.undoTitle, p.undoID, func(target *unison.Panel, data T) {
 						self := p
 						if target != nil {
-							if field, ok := target.Self.(*Popup[T]); ok {
+							var field *Popup[T]
+							if field, ok = target.Self.(*Popup[T]); ok {
 								self = field
 							}
 						}
