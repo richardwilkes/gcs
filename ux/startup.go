@@ -32,6 +32,7 @@ func Start(files []string) {
 	unison.Start(
 		unison.StartupFinishedCallback(func() {
 			performPlatformStartup()
+			unison.DefaultTableColumnHeaderTheme.OnBackgroundInk = gurps.OnThemeHeader
 			unison.DefaultMarkdownTheme.LinkHandler = HandleLink
 			unison.DefaultMarkdownTheme.WorkingDirProvider = WorkingDirProvider
 			unison.DefaultMarkdownTheme.AltLinkPrefixes = []string{"md:"}
