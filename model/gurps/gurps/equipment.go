@@ -31,11 +31,10 @@ type EquipmentData struct {
 	DataSource   string  `json:"data_source,omitempty"`
 	DataSourceID tid.TID `json:"data_source_id,omitempty"`
 	EquipmentBase
-	EquipmentMutable
+	EquipmentAdjustable
 }
 
-// EquipmentBase holds the base data for equipment, which consists of fields that are not mutable unless a new piece of
-// equipment is created.
+// EquipmentBase holds the base data for equipment, which consists of fields that will be copied from the data source.
 type EquipmentBase struct {
 	Name                   string            `json:"name,alt=description,omitempty"`
 	Tags                   []string          `json:"tags,omitempty"`
@@ -55,18 +54,18 @@ type EquipmentBase struct {
 	WeightIgnoredForSkills bool              `json:"ignore_weight_for_skills,omitempty"`
 }
 
-// EquipmentMutable holds the mutable data for equipment.
-type EquipmentMutable struct {
+// EquipmentAdjustable holds the adjustable data for equipment that isn't updated when a data source is updated.
+type EquipmentAdjustable struct {
 	Modifiers  []*gurps.EquipmentModifier `json:"modifiers,omitempty"`
 	Quantity   fxp.Int                    `json:"quantity,omitempty"`
 	Uses       int                        `json:"uses,omitempty"`
 	Equipped   bool                       `json:"equipped,omitempty"`
 	ThirdParty map[string]any             `json:"third_party,omitempty"`
-	EquipmentMutableContainerOnly
+	EquipmentAdjustableContainerOnly
 }
 
-// EquipmentMutableContainerOnly holds the mutable data for equipment that is only applicable to containers.
-type EquipmentMutableContainerOnly struct {
+// EquipmentAdjustableContainerOnly holds the adjustable data for equipment that is only applicable to containers.
+type EquipmentAdjustableContainerOnly struct {
 	Children []*Equipment `json:"children,omitempty"`
 }
 
@@ -114,7 +113,7 @@ func NewEquipment(entity *gurps.Entity, parent *Equipment, container bool) *Equi
 			EquipmentBase: EquipmentBase{
 				LegalityClass: "4",
 			},
-			EquipmentMutable: EquipmentMutable{
+			EquipmentAdjustable: EquipmentAdjustable{
 				Quantity: fxp.One,
 				Equipped: true,
 			},
@@ -241,7 +240,7 @@ func (e *Equipment) resolveLocalNotes() string {
 // ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
 func (e *Equipment) ClearUnusedFieldsForType() {
 	if !e.Container() {
-		e.EquipmentMutableContainerOnly = EquipmentMutableContainerOnly{}
+		e.EquipmentAdjustableContainerOnly = EquipmentAdjustableContainerOnly{}
 	}
 }
 
