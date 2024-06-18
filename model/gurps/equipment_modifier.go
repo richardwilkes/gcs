@@ -64,10 +64,10 @@ type equipmentModifierListData struct {
 func NewEquipmentModifiersFromFile(fileSystem fs.FS, filePath string) ([]*EquipmentModifier, error) {
 	var data equipmentModifierListData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(invalidFileDataMsg(), err)
+		return nil, errs.NewWithCause(InvalidFileDataMsg(), err)
 	}
 	if data.Type != equipmentModifierListTypeKey {
-		return nil, errs.New(unexpectedFileDataMsg())
+		return nil, errs.New(UnexpectedFileDataMsg())
 	}
 	if err := CheckVersion(data.Version); err != nil {
 		return nil, err
@@ -146,7 +146,7 @@ func (m *EquipmentModifier) UnmarshalJSON(data []byte) error {
 	}
 	localData.ClearUnusedFieldsForType()
 	m.EquipmentModifierData = localData.EquipmentModifierData
-	m.Tags = convertOldCategoriesToTags(m.Tags, localData.Categories)
+	m.Tags = ConvertOldCategoriesToTags(m.Tags, localData.Categories)
 	slices.Sort(m.Tags)
 	if m.Container() {
 		for _, one := range m.Children {

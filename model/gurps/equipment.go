@@ -71,10 +71,10 @@ type equipmentListData struct {
 func NewEquipmentFromFile(fileSystem fs.FS, filePath string) ([]*Equipment, error) {
 	var data equipmentListData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(invalidFileDataMsg(), err)
+		return nil, errs.NewWithCause(InvalidFileDataMsg(), err)
 	}
 	if data.Type != equipmentListTypeKey {
-		return nil, errs.New(unexpectedFileDataMsg())
+		return nil, errs.New(UnexpectedFileDataMsg())
 	}
 	if err := CheckVersion(data.Version); err != nil {
 		return nil, err
@@ -173,7 +173,7 @@ func (e *Equipment) UnmarshalJSON(data []byte) error {
 	}
 	localData.ClearUnusedFieldsForType()
 	e.EquipmentData = localData.EquipmentData
-	e.Tags = convertOldCategoriesToTags(e.Tags, localData.Categories)
+	e.Tags = ConvertOldCategoriesToTags(e.Tags, localData.Categories)
 	slices.Sort(e.Tags)
 	if e.Container() {
 		if e.Quantity == 0 {

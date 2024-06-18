@@ -16,11 +16,13 @@ import (
 	"github.com/richardwilkes/toolbox/txt"
 )
 
-func invalidFileDataMsg() string {
+// InvalidFileDataMsg returns a message indicating that the file data is invalid.
+func InvalidFileDataMsg() string {
 	return i18n.Text("Invalid file data.")
 }
 
-func unexpectedFileDataMsg() string {
+// UnexpectedFileDataMsg returns a message indicating that the file data is not what was expected.
+func UnexpectedFileDataMsg() string {
 	return i18n.Text("This file does not contain the expected data.")
 }
 
@@ -32,7 +34,8 @@ func includesModifiersFrom() string {
 	return i18n.Text("Includes modifiers from")
 }
 
-func convertOldCategoriesToTags(tags, categories []string) []string {
+// ConvertOldCategoriesToTags converts the old categories to tags.
+func ConvertOldCategoriesToTags(tags, categories []string) []string {
 	if categories == nil {
 		return tags
 	}

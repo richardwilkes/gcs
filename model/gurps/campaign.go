@@ -45,7 +45,7 @@ type CampaignData struct {
 func NewCampaignFromFile(fileSystem fs.FS, filePath string) (*Campaign, error) {
 	var campaign Campaign
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &campaign); err != nil {
-		return nil, errs.NewWithCause(invalidFileDataMsg(), err)
+		return nil, errs.NewWithCause(InvalidFileDataMsg(), err)
 	}
 	if err := CheckVersion(campaign.Version); err != nil {
 		return nil, err

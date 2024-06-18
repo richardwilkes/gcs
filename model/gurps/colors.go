@@ -99,7 +99,7 @@ func NewColorsFromFS(fileSystem fs.FS, filePath string) (*Colors, error) {
 		return nil, errs.Wrap(err)
 	}
 	if current.Type != colorsTypeKey {
-		return nil, errs.New(unexpectedFileDataMsg())
+		return nil, errs.New(UnexpectedFileDataMsg())
 	}
 	if current.Version < minimumColorsVersion {
 		return nil, errs.New("The theme color data is too old to be used")

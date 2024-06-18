@@ -71,10 +71,10 @@ type traitModifierListData struct {
 func NewTraitModifiersFromFile(fileSystem fs.FS, filePath string) ([]*TraitModifier, error) {
 	var data traitModifierListData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(invalidFileDataMsg(), err)
+		return nil, errs.NewWithCause(InvalidFileDataMsg(), err)
 	}
 	if data.Type != traitModifierListTypeKey {
-		return nil, errs.New(unexpectedFileDataMsg())
+		return nil, errs.New(UnexpectedFileDataMsg())
 	}
 	if err := CheckVersion(data.Version); err != nil {
 		return nil, err
@@ -140,7 +140,7 @@ func (m *TraitModifier) UnmarshalJSON(data []byte) error {
 	}
 	localData.ClearUnusedFieldsForType()
 	m.TraitModifierData = localData.TraitModifierData
-	m.Tags = convertOldCategoriesToTags(m.Tags, localData.Categories)
+	m.Tags = ConvertOldCategoriesToTags(m.Tags, localData.Categories)
 	slices.Sort(m.Tags)
 	if m.Container() {
 		for _, one := range m.Children {

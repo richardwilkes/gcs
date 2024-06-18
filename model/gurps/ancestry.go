@@ -73,7 +73,7 @@ func NewAncestryFromFile(fileSystem fs.FS, filePath string) (*Ancestry, error) {
 		ancestry.Version = CurrentDataVersion
 	}
 	if ancestry.Type != ancestryTypeKey {
-		return nil, errs.New(unexpectedFileDataMsg())
+		return nil, errs.New(UnexpectedFileDataMsg())
 	}
 	if err := CheckVersion(ancestry.Version); err != nil {
 		return nil, err

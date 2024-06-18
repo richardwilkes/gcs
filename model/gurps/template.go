@@ -40,10 +40,10 @@ type Template struct {
 func NewTemplateFromFile(fileSystem fs.FS, filePath string) (*Template, error) {
 	var template Template
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &template); err != nil {
-		return nil, errs.NewWithCause(invalidFileDataMsg(), err)
+		return nil, errs.NewWithCause(InvalidFileDataMsg(), err)
 	}
 	if template.Type != templateTypeKey {
-		return nil, errs.New(unexpectedFileDataMsg())
+		return nil, errs.New(UnexpectedFileDataMsg())
 	}
 	if err := CheckVersion(template.Version); err != nil {
 		return nil, err

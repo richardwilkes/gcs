@@ -129,7 +129,7 @@ func NewFontsFromFS(fileSystem fs.FS, filePath string) (*Fonts, error) {
 	default:
 	}
 	if current.Type != fontsTypeKey {
-		return nil, errs.New(unexpectedFileDataMsg())
+		return nil, errs.New(UnexpectedFileDataMsg())
 	}
 	if err := CheckVersion(current.Version); err != nil {
 		return nil, err

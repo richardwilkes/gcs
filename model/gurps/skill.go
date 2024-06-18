@@ -67,10 +67,10 @@ type skillListData struct {
 func NewSkillsFromFile(fileSystem fs.FS, filePath string) ([]*Skill, error) {
 	var data skillListData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(invalidFileDataMsg(), err)
+		return nil, errs.NewWithCause(InvalidFileDataMsg(), err)
 	}
 	if data.Type != skillListTypeKey {
-		return nil, errs.New(unexpectedFileDataMsg())
+		return nil, errs.New(UnexpectedFileDataMsg())
 	}
 	if err := CheckVersion(data.Version); err != nil {
 		return nil, err
@@ -215,7 +215,7 @@ func (s *Skill) UnmarshalJSON(data []byte) error {
 	}
 	localData.ClearUnusedFieldsForType()
 	s.SkillData = localData.SkillData
-	s.Tags = convertOldCategoriesToTags(s.Tags, localData.Categories)
+	s.Tags = ConvertOldCategoriesToTags(s.Tags, localData.Categories)
 	slices.Sort(s.Tags)
 	if s.Container() {
 		for _, one := range s.Children {

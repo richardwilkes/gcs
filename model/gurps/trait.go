@@ -66,13 +66,13 @@ type traitListData struct {
 func NewTraitsFromFile(fileSystem fs.FS, filePath string) ([]*Trait, error) {
 	var data traitListData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(invalidFileDataMsg(), err)
+		return nil, errs.NewWithCause(InvalidFileDataMsg(), err)
 	}
 	if data.Type == "advantage_list" {
 		data.Type = traitListTypeKey
 	}
 	if data.Type != traitListTypeKey {
-		return nil, errs.New(unexpectedFileDataMsg())
+		return nil, errs.New(UnexpectedFileDataMsg())
 	}
 	if err := CheckVersion(data.Version); err != nil {
 		return nil, err
@@ -184,7 +184,7 @@ func (a *Trait) UnmarshalJSON(data []byte) error {
 	a.transferOldTypeFlagToTags(i18n.Text("Social"), localData.Social)
 	a.transferOldTypeFlagToTags(i18n.Text("Exotic"), localData.Exotic)
 	a.transferOldTypeFlagToTags(i18n.Text("Supernatural"), localData.Supernatural)
-	a.Tags = convertOldCategoriesToTags(a.Tags, localData.Categories)
+	a.Tags = ConvertOldCategoriesToTags(a.Tags, localData.Categories)
 	slices.Sort(a.Tags)
 	if a.Container() {
 		for _, one := range a.Children {

@@ -70,13 +70,13 @@ func FactoryBody() *Body {
 func NewBodyFromFile(fileSystem fs.FS, filePath string) (*Body, error) {
 	var data standaloneBodyData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(invalidFileDataMsg(), err)
+		return nil, errs.NewWithCause(InvalidFileDataMsg(), err)
 	}
 	var body Body
 	body.BodyData = data.BodyData
 	if data.Type != bodyTypeListTypeKey {
 		if data.OldHitLocations == nil {
-			return nil, errs.New(unexpectedFileDataMsg())
+			return nil, errs.New(UnexpectedFileDataMsg())
 		}
 		body = *data.OldHitLocations
 	} else {
