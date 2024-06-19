@@ -20,27 +20,26 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/entity"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/threshold"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wpn"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/eval"
 	"github.com/richardwilkes/toolbox/fatal"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/toolbox/xmath/crc"
 )
@@ -73,9 +72,8 @@ func (pb *PointsBreakdown) Total() fxp.Int {
 
 // EntityData holds the Entity data that is written to disk.
 type EntityData struct {
-	Type             entity.Type     `json:"type"`
 	Version          int             `json:"version"`
-	ID               uuid.UUID       `json:"id"`
+	ID               tid.TID         `json:"id"`
 	TotalPoints      fxp.Int         `json:"total_points"`
 	PointsRecord     []*PointsRecord `json:"points_record,omitempty"`
 	Profile          *Profile        `json:"profile,omitempty"`
@@ -136,12 +134,11 @@ func NewEntityFromFile(fileSystem fs.FS, filePath string) (*Entity, error) {
 }
 
 // NewEntity creates a new Entity.
-func NewEntity(entityType entity.Type) *Entity {
+func NewEntity() *Entity {
 	settings := GlobalSettings().GeneralSettings()
 	e := &Entity{
 		EntityData: EntityData{
-			Type:        entityType,
-			ID:          NewUUID(),
+			ID:          tid.MustNewTID(kinds.Entity),
 			TotalPoints: settings.InitialPoints,
 			PointsRecord: []*PointsRecord{
 				{
@@ -225,6 +222,9 @@ func (e *Entity) UnmarshalJSON(data []byte) error {
 	e.EntityData = EntityData{}
 	if err := json.Unmarshal(data, &e.EntityData); err != nil {
 		return err
+	}
+	if !tid.IsKindAndValid(e.ID, kinds.Entity) {
+		e.ID = tid.MustNewTID(kinds.Entity)
 	}
 	if e.SheetSettings == nil {
 		e.SheetSettings = GlobalSettings().SheetSettings().Clone(e)
@@ -491,7 +491,7 @@ func (e *Entity) processPrereqs() {
 					e.features.skillBonuses = append(e.features.skillBonuses, penalty)
 				}
 			}
-			if satisfied && s.Type == TechniqueID {
+			if satisfied && s.IsTechnique() {
 				satisfied = s.TechniqueSatisfied(&tooltip, prefix)
 			}
 			if !satisfied {
@@ -520,7 +520,7 @@ func (e *Entity) processPrereqs() {
 					e.features.spellBonuses = append(e.features.spellBonuses, penalty)
 				}
 			}
-			if satisfied && s.Type == RitualMagicSpellID {
+			if satisfied && s.IsRitualMagic() {
 				satisfied = s.RitualMagicSatisfied(&tooltip, prefix)
 			}
 			if !satisfied {
@@ -952,7 +952,7 @@ func (e *Entity) SkillNamed(name, specialization string, requirePoints bool, exc
 	var list []*Skill
 	Traverse(func(sk *Skill) bool {
 		if !excludes[sk.String()] {
-			if !requirePoints || sk.Type == TechniqueID || sk.AdjustedPoints(nil) > 0 {
+			if !requirePoints || sk.IsTechnique() || sk.AdjustedPoints(nil) > 0 {
 				if strings.EqualFold(sk.Name, name) {
 					if specialization == "" || strings.EqualFold(sk.Specialization, specialization) {
 						list = append(list, sk)
@@ -1176,7 +1176,7 @@ func (e *Entity) ResolveVariable(variableName string) string {
 
 // ResolveAttributeDef resolves the given attribute ID to its AttributeDef, or nil.
 func (e *Entity) ResolveAttributeDef(attrID string) *AttributeDef {
-	if e != nil && e.Type == entity.PC {
+	if e != nil {
 		if a, ok := e.Attributes.Set[attrID]; ok {
 			return a.AttributeDef()
 		}
@@ -1194,7 +1194,7 @@ func (e *Entity) ResolveAttributeName(attrID string) string {
 
 // ResolveAttribute resolves the given attribute ID to its Attribute, or nil.
 func (e *Entity) ResolveAttribute(attrID string) *Attribute {
-	if e != nil && e.Type == entity.PC {
+	if e != nil {
 		if a, ok := e.Attributes.Set[attrID]; ok {
 			return a
 		}
@@ -1204,16 +1204,16 @@ func (e *Entity) ResolveAttribute(attrID string) *Attribute {
 
 // ResolveAttributeCurrent resolves the given attribute ID to its current value, or fxp.Min.
 func (e *Entity) ResolveAttributeCurrent(attrID string) fxp.Int {
-	if e != nil && e.Type == entity.PC {
+	if e != nil {
 		return e.Attributes.Current(attrID)
 	}
 	return fxp.Min
 }
 
-// PreservesUserDesc returns true if the user description widget should be preserved when written to disk. Normally, only
-// character sheets should return true for this.
+// PreservesUserDesc returns true if the user description widget should be preserved when written to disk. Normally,
+// only character sheets should return true for this.
 func (e *Entity) PreservesUserDesc() bool {
-	return e.Type == entity.PC
+	return true
 }
 
 // Ancestry returns the current Ancestry.
@@ -1242,21 +1242,21 @@ func (e *Entity) WeaponOwner() WeaponOwner {
 }
 
 // Weapons implements WeaponListProvider.
-func (e *Entity) Weapons(weaponType wpn.Type) []*Weapon {
-	return e.EquippedWeapons(weaponType)
+func (e *Entity) Weapons(melee bool) []*Weapon {
+	return e.EquippedWeapons(melee)
 }
 
 // SetWeapons implements WeaponListProvider.
-func (e *Entity) SetWeapons(_ wpn.Type, _ []*Weapon) {
+func (e *Entity) SetWeapons(_ bool, _ []*Weapon) {
 	// Not permitted
 }
 
 // EquippedWeapons returns a sorted list of equipped weapons.
-func (e *Entity) EquippedWeapons(weaponType wpn.Type) []*Weapon {
+func (e *Entity) EquippedWeapons(melee bool) []*Weapon {
 	m := make(map[uint32]*Weapon)
 	Traverse(func(a *Trait) bool {
 		for _, w := range a.Weapons {
-			if w.Type == weaponType {
+			if w.IsMelee() == melee {
 				m[w.HashCode()] = w
 			}
 		}
@@ -1265,7 +1265,7 @@ func (e *Entity) EquippedWeapons(weaponType wpn.Type) []*Weapon {
 	Traverse(func(eqp *Equipment) bool {
 		if eqp.Equipped {
 			for _, w := range eqp.Weapons {
-				if w.Type == weaponType {
+				if w.IsMelee() == melee {
 					m[w.HashCode()] = w
 				}
 			}
@@ -1274,7 +1274,7 @@ func (e *Entity) EquippedWeapons(weaponType wpn.Type) []*Weapon {
 	}, false, false, e.CarriedEquipment...)
 	Traverse(func(s *Skill) bool {
 		for _, w := range s.Weapons {
-			if w.Type == weaponType {
+			if w.IsMelee() == melee {
 				m[w.HashCode()] = w
 			}
 		}
@@ -1282,7 +1282,7 @@ func (e *Entity) EquippedWeapons(weaponType wpn.Type) []*Weapon {
 	}, false, true, e.Skills...)
 	Traverse(func(s *Spell) bool {
 		for _, w := range s.Weapons {
-			if w.Type == weaponType {
+			if w.IsMelee() == melee {
 				m[w.HashCode()] = w
 			}
 		}

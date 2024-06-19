@@ -14,10 +14,11 @@ import (
 	"context"
 	"io/fs"
 
-	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/xmath/crc"
 )
 
@@ -29,7 +30,7 @@ type Campaign struct {
 // CampaignData holds the campaign file data.
 type CampaignData struct {
 	Version       int            `json:"version"`
-	ID            uuid.UUID      `json:"id"`
+	ID            tid.TID        `json:"id"`
 	SheetSettings *SheetSettings `json:"settings,omitempty"`
 	Traits        []*Trait       `json:"traits,omitempty"`
 	Skills        []*Skill       `json:"skills,omitempty"`
@@ -57,7 +58,7 @@ func NewCampaignFromFile(fileSystem fs.FS, filePath string) (*Campaign, error) {
 func NewCampaign() *Campaign {
 	return &Campaign{
 		CampaignData: CampaignData{
-			ID:            uuid.New(),
+			ID:            tid.MustNewTID(kinds.Campaign),
 			SheetSettings: GlobalSettings().SheetSettings().Clone(nil),
 		},
 	}

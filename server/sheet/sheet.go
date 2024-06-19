@@ -14,14 +14,13 @@ import (
 	"path"
 	"strconv"
 
-	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wpn"
 	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/xio"
 )
 
@@ -367,7 +366,7 @@ func createLiftingAndMovingThings(entity *gurps.Entity) LiftingAndMovingThings {
 
 // Row holds the data needed by the frontend to display a table row.
 type Row struct {
-	ID    uuid.UUID
+	ID    tid.TID
 	Depth int
 	Cells []gurps.CellData
 }
@@ -413,15 +412,15 @@ func createConditionalModifiers(entity *gurps.Entity) *Table {
 }
 
 func createMeleeWeapons(entity *gurps.Entity) *Table {
-	return createWeapons(entity, wpn.Melee)
+	return createWeapons(entity, true)
 }
 
 func createRangedWeapons(entity *gurps.Entity) *Table {
-	return createWeapons(entity, wpn.Ranged)
+	return createWeapons(entity, false)
 }
 
-func createWeapons(entity *gurps.Entity, weaponType wpn.Type) *Table {
-	provider := ux.NewWeaponsProvider(entity, weaponType, true)
+func createWeapons(entity *gurps.Entity, melee bool) *Table {
+	provider := ux.NewWeaponsProvider(entity, melee, true)
 	ids := provider.ColumnIDs()
 	root := provider.RootData()
 	table := &Table{
@@ -429,7 +428,7 @@ func createWeapons(entity *gurps.Entity, weaponType wpn.Type) *Table {
 		Rows:    make([]Row, 0, len(root)),
 	}
 	for i, id := range ids {
-		table.Columns[i] = gurps.WeaponHeaderData(id, weaponType, true)
+		table.Columns[i] = gurps.WeaponHeaderData(id, melee, true)
 	}
 	for _, one := range root {
 		collectRowData(one, 0, table, provider, ids)
@@ -532,7 +531,7 @@ func createNotes(entity *gurps.Entity) *Table {
 
 func collectRowData[T gurps.NodeTypes](node gurps.Node[T], depth int, table *Table, provider ux.TableProvider[T], ids []int) {
 	row := Row{
-		ID:    node.UUID(),
+		ID:    node.ID(),
 		Depth: depth,
 		Cells: make([]gurps.CellData, len(ids)),
 	}

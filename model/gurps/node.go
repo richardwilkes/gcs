@@ -12,8 +12,8 @@ package gurps
 import (
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/toolbox/tid"
 )
 
 // NodeTypes is a constraint that defines the types that may be nodes.
@@ -24,7 +24,7 @@ type NodeTypes interface {
 // Node defines the methods required of nodes in our tables.
 type Node[T NodeTypes] interface {
 	fmt.Stringer
-	UUID() uuid.UUID
+	ID() tid.TID
 	Clone(newEntity *Entity, newParent T, preserveID bool) T
 	OwningEntity() *Entity
 	SetOwningEntity(entity *Entity)

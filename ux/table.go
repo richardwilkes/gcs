@@ -14,10 +14,10 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -326,16 +326,16 @@ func OpenEditor[T gurps.NodeTypes](table *unison.Table[*Node[T]], edit func(item
 func DeleteSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]], recordUndo bool) {
 	if provider, ok := any(table.Model).(TableProvider[T]); ok && !table.IsFiltered() && table.HasSelection() {
 		sel := table.SelectedRows(true)
-		ids := make(map[uuid.UUID]bool, len(sel))
+		ids := make(map[tid.TID]bool, len(sel))
 		list := make([]T, 0, len(sel))
 		var zero T
 		for _, row := range sel {
-			unison.CollectUUIDsFromRow(row, ids)
+			unison.CollectIDsFromRow(row, ids)
 			if target := row.Data(); target != zero {
 				list = append(list, target)
 			}
 		}
-		if !CloseUUID(ids) {
+		if !CloseID(ids) {
 			return
 		}
 		var undo *unison.UndoEdit[*TableUndoEditData[T]]
@@ -407,13 +407,13 @@ func DuplicateSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 		needSet := false
 		topLevelData := provider.RootData()
 		sel := table.SelectedRows(true)
-		selMap := make(map[uuid.UUID]bool, len(sel))
+		selMap := make(map[tid.TID]bool, len(sel))
 		for _, row := range sel {
 			if target := row.Data(); target != zero {
 				tData := gurps.AsNode(target)
 				parent := tData.Parent()
 				clone := tData.Clone(tData.OwningEntity(), parent, false)
-				selMap[gurps.AsNode(clone).UUID()] = true
+				selMap[gurps.AsNode(clone).ID()] = true
 				if parent == zero {
 					for i, child := range topLevelData {
 						if child == target {
@@ -473,9 +473,9 @@ func CopyRowsTo[T gurps.NodeTypes](table *unison.Table[*Node[T]], rows []*Node[T
 		}
 	}
 	table.SetRootRows(append(slices.Clone(table.RootRows()), rows...))
-	selMap := make(map[uuid.UUID]bool, len(rows))
+	selMap := make(map[tid.TID]bool, len(rows))
 	for _, row := range rows {
-		selMap[row.UUID()] = true
+		selMap[row.ID()] = true
 	}
 	table.SetSelectionMap(selMap)
 	if postProcessor != nil {

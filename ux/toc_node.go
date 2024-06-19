@@ -10,15 +10,16 @@
 package ux
 
 import (
-	"github.com/google/uuid"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/unison"
 )
 
 var _ unison.TableRowData[*tocNode] = &tocNode{}
 
 type tocNode struct {
-	uuid       uuid.UUID
+	uuid       tid.TID
 	owner      *PDFDockable
 	parent     *tocNode
 	title      string
@@ -34,7 +35,7 @@ func newTOC(owner *PDFDockable, parent *tocNode, toc []*PDFTableOfContents) []*t
 	nodes := make([]*tocNode, len(toc))
 	for i, one := range toc {
 		nodes[i] = &tocNode{
-			uuid:       uuid.New(),
+			uuid:       tid.MustNewTID(kinds.TableOfContents),
 			owner:      owner,
 			parent:     parent,
 			title:      one.Title,
@@ -49,7 +50,7 @@ func (n *tocNode) CloneForTarget(_ unison.Paneler, _ *tocNode) *tocNode {
 	return nil // Not used
 }
 
-func (n *tocNode) UUID() uuid.UUID {
+func (n *tocNode) ID() tid.TID {
 	return n.uuid
 }
 

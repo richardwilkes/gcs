@@ -14,7 +14,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wpn"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -103,9 +102,8 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 		content.AddChild(newPrereqPanel(e.target.Entity, &e.editorData.Prereq))
 		content.AddChild(newFeaturesPanel(e.target.Entity, e.target, &e.editorData.Features, false))
 		content.AddChild(modifiersPanel)
-		for _, wt := range wpn.Types {
-			content.AddChild(newWeaponsPanel(e, e.target, wt, &e.editorData.Weapons))
-		}
+		content.AddChild(newWeaponsPanel(e, e.target, true, &e.editorData.Weapons))
+		content.AddChild(newWeaponsPanel(e, e.target, false, &e.editorData.Weapons))
 		content.AddChild(newStudyPanel(e.target.Entity, &e.editorData.StudyHoursNeeded, &e.editorData.Study))
 	}
 	e.InstallCmdHandlers(NewTraitModifierItemID, unison.AlwaysEnabled,

@@ -13,13 +13,12 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/entity"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/toolbox/check"
 )
 
 func TestEntityAttributeBonus(t *testing.T) {
-	e := NewEntity(entity.PC)
+	e := NewEntity()
 	check.Equal(t, fxp.Ten, e.Attributes.Current("st"), "ST default")
 	check.Equal(t, e.SwingFor(10), e.Swing(), "Swing default")
 	check.Equal(t, fxp.WeightFromInteger(20, fxp.Pound), e.BasicLift(), "Basic Lift default")

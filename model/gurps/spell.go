@@ -20,12 +20,13 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/entity"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/unison/enums/align"
@@ -70,8 +71,12 @@ type Spell struct {
 
 // SpellData holds the Spell data that is written to disk.
 type SpellData struct {
-	ContainerBase[*Spell]
+	TID tid.TID `json:"id"`
 	SpellEditData
+	ThirdParty map[string]any `json:"third_party,omitempty"`
+	Children   []*Spell       `json:"children,omitempty"` // Only for containers
+	IsOpen     bool           `json:"open,omitempty"`     // Only for containers
+	parent     *Spell
 }
 
 // SpellEditData holds the Spell data that can be edited by the UI detail editor.
@@ -139,27 +144,14 @@ func SaveSpells(spells []*Spell, filePath string) error {
 
 // NewSpell creates a new Spell.
 func NewSpell(e *Entity, parent *Spell, container bool) *Spell {
-	s := newSpell(e, parent, SpellID, container)
-	s.UpdateLevel()
-	return s
-}
-
-// NewRitualMagicSpell creates a new Ritual Magic Spell.
-func NewRitualMagicSpell(e *Entity, parent *Spell, _ bool) *Spell {
-	s := newSpell(e, parent, RitualMagicSpellID, false)
-	s.RitualSkillName = "Ritual Magic"
-	s.SetRawPoints(0)
-	return s
-}
-
-func newSpell(e *Entity, parent *Spell, typeKey string, container bool) *Spell {
 	s := Spell{
 		SpellData: SpellData{
-			ContainerBase: newContainerBase[*Spell](typeKey, container),
+			TID:    tid.MustNewTID(spellKind(container)),
+			IsOpen: container,
+			parent: parent,
 		},
 		Entity: e,
 	}
-	s.parent = parent
 	if container {
 		s.TemplatePicker = &TemplatePicker{}
 	} else {
@@ -173,20 +165,101 @@ func newSpell(e *Entity, parent *Spell, typeKey string, container bool) *Spell {
 		s.Points = fxp.One
 	}
 	s.Name = s.Kind()
+	s.UpdateLevel()
 	return &s
+}
+
+// NewRitualMagicSpell creates a new Ritual Magic Spell.
+func NewRitualMagicSpell(e *Entity, parent *Spell, _ bool) *Spell {
+	s := Spell{
+		SpellData: SpellData{
+			TID:    tid.MustNewTID(kinds.RitualMagicSpell),
+			parent: parent,
+		},
+		Entity: e,
+	}
+	s.Difficulty.Attribute = AttributeIDFor(e, "iq")
+	s.Difficulty.Difficulty = difficulty.Hard
+	s.PowerSource = i18n.Text("Arcane")
+	s.Class = i18n.Text("Regular")
+	s.CastingCost = "1"
+	s.CastingTime = "1 sec"
+	s.Duration = "Instant"
+	s.Points = fxp.One
+	s.RitualSkillName = "Ritual Magic"
+	s.Name = s.Kind()
+	s.SetRawPoints(0)
+	return &s
+}
+
+func spellKind(container bool) byte {
+	if container {
+		return kinds.SpellContainer
+	}
+	return kinds.Spell
+}
+
+// ID returns the local ID of this data.
+func (s *Spell) ID() tid.TID {
+	return s.TID
+}
+
+// Container returns true if this is a container.
+func (s *Spell) Container() bool {
+	return tid.IsKind(s.TID, kinds.SpellContainer)
+}
+
+// HasChildren returns true if this node has children.
+func (s *Spell) HasChildren() bool {
+	return s.Container() && len(s.Children) > 0
+}
+
+// NodeChildren returns the children of this node, if any.
+func (s *Spell) NodeChildren() []*Spell {
+	return s.Children
+}
+
+// SetChildren sets the children of this node.
+func (s *Spell) SetChildren(children []*Spell) {
+	s.Children = children
+}
+
+// Parent returns the parent.
+func (s *Spell) Parent() *Spell {
+	return s.parent
+}
+
+// SetParent sets the parent.
+func (s *Spell) SetParent(parent *Spell) {
+	s.parent = parent
+}
+
+// Open returns true if this node is currently open.
+func (s *Spell) Open() bool {
+	return s.IsOpen && s.Container()
+}
+
+// SetOpen sets the current open state for this node.
+func (s *Spell) SetOpen(open bool) {
+	s.IsOpen = open && s.Container()
+}
+
+// IsRitualMagic returns true if this is a Ritual Magic Spell.
+func (s *Spell) IsRitualMagic() bool {
+	return tid.IsKind(s.TID, kinds.RitualMagicSpell)
 }
 
 // Clone implements Node.
 func (s *Spell) Clone(e *Entity, parent *Spell, preserveID bool) *Spell {
 	var other *Spell
-	if s.Type == RitualMagicSpellID {
+	if s.IsRitualMagic() {
 		other = NewRitualMagicSpell(e, parent, false)
 	} else {
 		other = NewSpell(e, parent, s.Container())
 		other.IsOpen = s.IsOpen
 	}
 	if preserveID {
-		other.ID = s.ID
+		other.TID = s.TID
 	}
 	other.ThirdParty = s.ThirdParty
 	other.SpellEditData.CopyFrom(s)
@@ -248,13 +321,24 @@ func (s *Spell) UnmarshalJSON(data []byte) error {
 	var localData struct {
 		SpellData
 		// Old data fields
+		Type       string   `json:"type"`
 		Categories []string `json:"categories"`
 	}
 	if err := json.Unmarshal(data, &localData); err != nil {
 		return err
 	}
-	localData.ClearUnusedFieldsForType()
+	if !tid.IsValid(localData.TID) {
+		// Fixup old data that used UUIDs instead of TIDs
+		var kind byte
+		if localData.Type == "ritual_magic_spell" {
+			kind = kinds.RitualMagicSpell
+		} else {
+			kind = spellKind(strings.HasSuffix(localData.Type, ContainerKeyPostfix))
+		}
+		localData.TID = tid.MustNewTID(kind)
+	}
 	s.SpellData = localData.SpellData
+	s.ClearUnusedFieldsForType()
 	s.Tags = convertOldCategoriesToTags(s.Tags, localData.Categories)
 	slices.Sort(s.Tags)
 	if s.Container() {
@@ -465,10 +549,10 @@ func (s *Spell) RelativeLevel() string {
 	switch {
 	case rsl == fxp.Min:
 		return "-"
-	case s.Type != RitualMagicSpellID:
-		return ResolveAttributeName(s.Entity, s.Difficulty.Attribute) + rsl.StringWithSign()
-	default:
+	case s.IsRitualMagic():
 		return rsl.StringWithSign()
+	default:
+		return ResolveAttributeName(s.Entity, s.Difficulty.Attribute) + rsl.StringWithSign()
 	}
 }
 
@@ -486,24 +570,24 @@ func (s *Spell) AdjustedRelativeLevel() fxp.Int {
 // UpdateLevel updates the level of the spell, returning true if it has changed.
 func (s *Spell) UpdateLevel() bool {
 	saved := s.LevelData
-	if strings.HasPrefix(s.Type, SpellID) {
-		s.LevelData = CalculateSpellLevel(s.Entity, s.Name, s.PowerSource, s.College, s.Tags, s.Difficulty,
-			s.AdjustedPoints(nil))
-	} else {
+	if s.IsRitualMagic() {
 		s.LevelData = CalculateRitualMagicSpellLevel(s.Entity, s.Name, s.PowerSource, s.RitualSkillName,
 			s.RitualPrereqCount, s.College, s.Tags, s.Difficulty, s.AdjustedPoints(nil))
+	} else {
+		s.LevelData = CalculateSpellLevel(s.Entity, s.Name, s.PowerSource, s.College, s.Tags, s.Difficulty,
+			s.AdjustedPoints(nil))
 	}
 	return saved != s.LevelData
 }
 
 // CalculateLevel returns the computed level without updating it.
 func (s *Spell) CalculateLevel() Level {
-	if strings.HasPrefix(s.Type, SpellID) {
-		return CalculateSpellLevel(s.Entity, s.Name, s.PowerSource, s.College, s.Tags, s.Difficulty,
-			s.AdjustedPoints(nil))
+	if s.IsRitualMagic() {
+		return CalculateRitualMagicSpellLevel(s.Entity, s.Name, s.PowerSource, s.RitualSkillName, s.RitualPrereqCount,
+			s.College, s.Tags, s.Difficulty, s.AdjustedPoints(nil))
 	}
-	return CalculateRitualMagicSpellLevel(s.Entity, s.Name, s.PowerSource, s.RitualSkillName, s.RitualPrereqCount,
-		s.College, s.Tags, s.Difficulty, s.AdjustedPoints(nil))
+	return CalculateSpellLevel(s.Entity, s.Name, s.PowerSource, s.College, s.Tags, s.Difficulty,
+		s.AdjustedPoints(nil))
 }
 
 // IncrementSkillLevel adds enough points to increment the skill level to the next level.
@@ -644,7 +728,7 @@ func determineRitualMagicSkillLevelForCollege(e *Entity, name, college, ritualSk
 
 // RitualMagicSatisfied returns true if the Ritual Magic Spell is satisfied.
 func (s *Spell) RitualMagicSatisfied(tooltip *xio.ByteBuffer, prefix string) bool {
-	if s.Type != RitualMagicSpellID {
+	if !s.IsRitualMagic() {
 		return true
 	}
 	if len(s.College) == 0 {
@@ -706,7 +790,7 @@ func (s *Spell) Notes() string {
 
 // Rituals returns the rituals required to cast the spell.
 func (s *Spell) Rituals() string {
-	if s.Container() || !(s.Entity != nil && s.Entity.Type == entity.PC && s.Entity.SheetSettings.ShowSpellAdj) {
+	if s.Container() || !(s.Entity != nil && s.Entity.SheetSettings.ShowSpellAdj) {
 		return ""
 	}
 	level := s.CalculateLevel().Level
@@ -810,7 +894,7 @@ func (s *Spell) AdjustedPoints(tooltip *xio.ByteBuffer) fxp.Int {
 
 // AdjustedPointsForNonContainerSpell returns the points, adjusted for any bonuses.
 func AdjustedPointsForNonContainerSpell(e *Entity, points fxp.Int, name, powerSource string, colleges, tags []string, tooltip *xio.ByteBuffer) fxp.Int {
-	if e != nil && e.Type == entity.PC {
+	if e != nil {
 		points += e.SpellPointBonusFor(name, powerSource, colleges, tags, tooltip)
 		points = points.Max(0)
 	}
@@ -889,70 +973,77 @@ func (s *Spell) ApplyNameableKeys(m map[string]string) {
 }
 
 // Kind returns the kind of data.
-func (d *SpellData) Kind() string {
-	return d.kind(i18n.Text("Spell"))
+func (s *Spell) Kind() string {
+	if s.IsRitualMagic() {
+		return i18n.Text("Ritual Magic Spell")
+	}
+	if s.Container() {
+		return i18n.Text("Spell Container")
+	}
+	return i18n.Text("Spell")
 }
 
 // ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
-func (d *SpellData) ClearUnusedFieldsForType() {
-	d.clearUnusedFields()
-	if d.Container() {
-		d.TechLevel = nil
-		d.Difficulty = AttributeDifficulty{omit: true}
-		d.College = nil
-		d.PowerSource = ""
-		d.Class = ""
-		d.Resist = ""
-		d.CastingCost = ""
-		d.MaintenanceCost = ""
-		d.CastingTime = ""
-		d.Duration = ""
-		d.RitualSkillName = ""
-		d.RitualPrereqCount = 0
-		d.Points = 0
-		d.Prereq = nil
-		d.Weapons = nil
-		d.StudyHoursNeeded = study.Standard
-		if d.TemplatePicker == nil {
-			d.TemplatePicker = &TemplatePicker{}
+func (s *Spell) ClearUnusedFieldsForType() {
+	if s.Container() {
+		s.TechLevel = nil
+		s.Difficulty = AttributeDifficulty{omit: true}
+		s.College = nil
+		s.PowerSource = ""
+		s.Class = ""
+		s.Resist = ""
+		s.CastingCost = ""
+		s.MaintenanceCost = ""
+		s.CastingTime = ""
+		s.Duration = ""
+		s.RitualSkillName = ""
+		s.RitualPrereqCount = 0
+		s.Points = 0
+		s.Prereq = nil
+		s.Weapons = nil
+		s.StudyHoursNeeded = study.Standard
+		if s.TemplatePicker == nil {
+			s.TemplatePicker = &TemplatePicker{}
 		}
 	} else {
-		d.TemplatePicker = nil
-		d.Difficulty.omit = false
+		s.Children = nil
+		s.IsOpen = false
+		s.TemplatePicker = nil
+		s.Difficulty.omit = false
 	}
 }
 
 // CopyFrom implements node.EditorData.
-func (d *SpellEditData) CopyFrom(s *Spell) {
-	d.copyFrom(s.Entity, &s.SpellEditData, s.Container(), false)
+func (s *SpellEditData) CopyFrom(other *Spell) {
+	s.copyFrom(other.Entity, &other.SpellEditData, other.Container(), false)
 }
 
 // ApplyTo implements node.EditorData.
-func (d *SpellEditData) ApplyTo(s *Spell) {
-	s.SpellEditData.copyFrom(s.Entity, d, s.Container(), true)
+func (s *SpellEditData) ApplyTo(other *Spell) {
+	other.SpellEditData.copyFrom(other.Entity, s, other.Container(), true)
 }
 
-func (d *SpellEditData) copyFrom(entity *Entity, other *SpellEditData, isContainer, isApply bool) {
-	*d = *other
-	d.Tags = txt.CloneStringSlice(d.Tags)
+func (s *SpellEditData) copyFrom(entity *Entity, other *SpellEditData, isContainer, isApply bool) {
+	*s = *other
+	s.Tags = txt.CloneStringSlice(s.Tags)
 	if other.TechLevel != nil {
 		tl := *other.TechLevel
-		d.TechLevel = &tl
+		s.TechLevel = &tl
 	}
-	d.College = txt.CloneStringSlice(d.College)
-	d.Prereq = d.Prereq.CloneResolvingEmpty(isContainer, isApply)
-	d.Weapons = nil
+	s.College = txt.CloneStringSlice(s.College)
+	s.Prereq = s.Prereq.CloneResolvingEmpty(isContainer, isApply)
+	s.Weapons = nil
 	if len(other.Weapons) != 0 {
-		d.Weapons = make([]*Weapon, len(other.Weapons))
+		s.Weapons = make([]*Weapon, len(other.Weapons))
 		for i := range other.Weapons {
-			d.Weapons[i] = other.Weapons[i].Clone(entity, nil, true)
+			s.Weapons[i] = other.Weapons[i].Clone(entity, nil, true)
 		}
 	}
 	if len(other.Study) != 0 {
-		d.Study = make([]*Study, len(other.Study))
+		s.Study = make([]*Study, len(other.Study))
 		for i := range other.Study {
-			d.Study[i] = other.Study[i].Clone()
+			s.Study[i] = other.Study[i].Clone()
 		}
 	}
-	d.TemplatePicker = d.TemplatePicker.Clone()
+	s.TemplatePicker = s.TemplatePicker.Clone()
 }

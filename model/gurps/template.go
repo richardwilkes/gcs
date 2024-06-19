@@ -14,21 +14,19 @@ import (
 	"context"
 	"io/fs"
 
-	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/xmath/crc"
 )
-
-const templateTypeKey = "template"
 
 var _ ListProvider = &Template{}
 
 // Template holds the GURPS Template data that is written to disk.
 type Template struct {
-	Type      string       `json:"type"`
 	Version   int          `json:"version"`
-	ID        uuid.UUID    `json:"id"`
+	ID        tid.TID      `json:"id"`
 	Traits    []*Trait     `json:"traits,alt=advantages,omitempty"`
 	Skills    []*Skill     `json:"skills,omitempty"`
 	Spells    []*Spell     `json:"spells,omitempty"`
@@ -38,24 +36,23 @@ type Template struct {
 
 // NewTemplateFromFile loads a Template from a file.
 func NewTemplateFromFile(fileSystem fs.FS, filePath string) (*Template, error) {
-	var template Template
-	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &template); err != nil {
+	var t Template
+	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &t); err != nil {
 		return nil, errs.NewWithCause(invalidFileDataMsg(), err)
 	}
-	if template.Type != templateTypeKey {
-		return nil, errs.New(unexpectedFileDataMsg())
+	if !tid.IsKindAndValid(t.ID, kinds.Template) {
+		t.ID = tid.MustNewTID(kinds.Template)
 	}
-	if err := CheckVersion(template.Version); err != nil {
+	if err := CheckVersion(t.Version); err != nil {
 		return nil, err
 	}
-	return &template, nil
+	return &t, nil
 }
 
 // NewTemplate creates a new Template.
 func NewTemplate() *Template {
 	template := &Template{
-		Type: templateTypeKey,
-		ID:   NewUUID(),
+		ID: tid.MustNewTID(kinds.Template),
 	}
 	return template
 }

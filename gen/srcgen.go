@@ -627,18 +627,6 @@ var allEnums = []*enumInfo{
 		},
 	},
 	{
-		Pkg:  "model/gurps/enums/entity",
-		Name: "type",
-		Desc: "holds the type of an Entity",
-		Values: []enumValue{
-			{
-				Name:   "PC",
-				Key:    "character",
-				String: "PC",
-			},
-		},
-	},
-	{
 		Pkg:  "model/gurps/enums/feature",
 		Name: "type",
 		Desc: "holds the type of a Feature",
@@ -1288,23 +1276,6 @@ var allEnums = []*enumInfo{
 			{
 				Key:    "musket_rest",
 				String: "Uses a Musket Rest",
-			},
-		},
-	},
-	{
-		Pkg:  "model/gurps/enums/wpn",
-		Name: "type",
-		Desc: "holds the type of an weapon definition",
-		Values: []enumValue{
-			{
-				Name: "Melee",
-				Key:  "melee_weapon",
-				Alt:  "Melee Weapons",
-			},
-			{
-				Name: "Ranged",
-				Key:  "ranged_weapon",
-				Alt:  "Ranged Weapons",
 			},
 		},
 	},

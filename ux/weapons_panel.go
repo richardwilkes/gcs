@@ -10,9 +10,9 @@
 package ux
 
 import (
-	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wpn"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -21,19 +21,19 @@ type weaponsPanel struct {
 	unison.Panel
 	entity      *gurps.Entity
 	weaponOwner gurps.WeaponOwner
-	weaponType  wpn.Type
 	allWeapons  *[]*gurps.Weapon
 	weapons     []*gurps.Weapon
 	provider    TableProvider[*gurps.Weapon]
 	table       *unison.Table[*Node[*gurps.Weapon]]
+	melee       bool
 }
 
-func newWeaponsPanel(cmdRoot Rebuildable, weaponOwner gurps.WeaponOwner, weaponType wpn.Type, weapons *[]*gurps.Weapon) *weaponsPanel {
+func newWeaponsPanel(cmdRoot Rebuildable, weaponOwner gurps.WeaponOwner, melee bool, weapons *[]*gurps.Weapon) *weaponsPanel {
 	p := &weaponsPanel{
 		weaponOwner: weaponOwner,
-		weaponType:  weaponType,
 		allWeapons:  weapons,
-		weapons:     gurps.ExtractWeaponsOfType(weaponType, *weapons),
+		weapons:     gurps.ExtractWeaponsOfType(melee, *weapons),
+		melee:       melee,
 	}
 	p.Self = p
 	p.SetLayout(&unison.FlexLayout{Columns: 1})
@@ -43,17 +43,15 @@ func newWeaponsPanel(cmdRoot Rebuildable, weaponOwner gurps.WeaponOwner, weaponT
 		HGrab:  true,
 	})
 	p.SetBorder(unison.NewLineBorder(unison.ThemeAboveSurface, 0, unison.NewUniformInsets(1), false))
-	p.provider = NewWeaponsProvider(p, p.weaponType, false)
+	p.provider = NewWeaponsProvider(p, p.melee, false)
 	p.table = newEditorTable(p.AsPanel(), p.provider)
-	p.table.RefKey = weaponType.Key() + "-" + uuid.New().String()
 	var id int
-	switch weaponType {
-	case wpn.Melee:
+	if melee {
 		id = NewMeleeWeaponItemID
-	case wpn.Ranged:
+		p.table.RefKey = string(tid.MustNewTID(kinds.WeaponMelee))
+	} else {
 		id = NewRangedWeaponItemID
-	default:
-		return p
+		p.table.RefKey = string(tid.MustNewTID(kinds.WeaponRanged))
 	}
 	cmdRoot.AsPanel().InstallCmdHandlers(id, unison.AlwaysEnabled,
 		func(_ any) { p.provider.CreateItem(cmdRoot, p.table, NoItemVariant) })
@@ -68,20 +66,18 @@ func (p *weaponsPanel) WeaponOwner() gurps.WeaponOwner {
 	return p.weaponOwner
 }
 
-func (p *weaponsPanel) Weapons(weaponType wpn.Type) []*gurps.Weapon {
-	return gurps.ExtractWeaponsOfType(weaponType, *p.allWeapons)
+func (p *weaponsPanel) Weapons(melee bool) []*gurps.Weapon {
+	return gurps.ExtractWeaponsOfType(melee, *p.allWeapons)
 }
 
-func (p *weaponsPanel) SetWeapons(weaponType wpn.Type, list []*gurps.Weapon) {
-	melee, ranged := gurps.SeparateWeapons(*p.allWeapons)
-	switch weaponType {
-	case wpn.Melee:
-		melee = list
-	case wpn.Ranged:
-		ranged = list
-	default:
+func (p *weaponsPanel) SetWeapons(melee bool, list []*gurps.Weapon) {
+	m, r := gurps.SeparateWeapons(*p.allWeapons)
+	if melee {
+		m = list
+	} else {
+		r = list
 	}
-	*p.allWeapons = append(append(make([]*gurps.Weapon, 0, len(melee)+len(ranged)), melee...), ranged...)
+	*p.allWeapons = append(append(make([]*gurps.Weapon, 0, len(m)+len(r)), m...), r...)
 	sel := p.table.CopySelectionMap()
 	p.table.SyncToModel()
 	p.table.SetSelectionMap(sel)

@@ -21,9 +21,11 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/tmcost"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -67,8 +69,12 @@ type TraitModifier struct {
 
 // TraitModifierData holds the TraitModifier data that is written to disk.
 type TraitModifierData struct {
-	ContainerBase[*TraitModifier]
+	TID tid.TID `json:"id"`
 	TraitModifierEditData
+	ThirdParty map[string]any   `json:"third_party,omitempty"`
+	Children   []*TraitModifier `json:"children,omitempty"` // Only for containers
+	IsOpen     bool             `json:"open,omitempty"`     // Only for containers
+	parent     *TraitModifier
 }
 
 // TraitModifierEditData holds the TraitModifier data that can be edited by the UI detail editor.
@@ -127,27 +133,80 @@ func SaveTraitModifiers(modifiers []*TraitModifier, filePath string) error {
 func NewTraitModifier(entity *Entity, parent *TraitModifier, container bool) *TraitModifier {
 	a := &TraitModifier{
 		TraitModifierData: TraitModifierData{
-			ContainerBase: newContainerBase[*TraitModifier](traitModifierTypeKey, container),
+			TID:    tid.MustNewTID(traitModifierKind(container)),
+			IsOpen: container,
+			parent: parent,
 		},
 		Entity: entity,
 	}
 	a.Name = a.Kind()
-	a.parent = parent
 	return a
 }
 
-// Clone implements Node.
-func (m *TraitModifier) Clone(entity *Entity, parent *TraitModifier, preserveID bool) *TraitModifier {
-	other := NewTraitModifier(entity, parent, m.Container())
-	if preserveID {
-		other.ID = m.ID
+func traitModifierKind(container bool) byte {
+	if container {
+		return kinds.TraitModifierContainer
 	}
-	other.IsOpen = m.IsOpen
-	other.ThirdParty = m.ThirdParty
-	other.TraitModifierEditData.CopyFrom(m)
-	if m.HasChildren() {
-		other.Children = make([]*TraitModifier, 0, len(m.Children))
-		for _, child := range m.Children {
+	return kinds.TraitModifier
+}
+
+// ID returns the local ID of this data.
+func (t *TraitModifier) ID() tid.TID {
+	return t.TID
+}
+
+// Container returns true if this is a container.
+func (t *TraitModifier) Container() bool {
+	return tid.IsKind(t.TID, kinds.TraitModifierContainer)
+}
+
+// HasChildren returns true if this node has children.
+func (t *TraitModifier) HasChildren() bool {
+	return t.Container() && len(t.Children) > 0
+}
+
+// NodeChildren returns the children of this node, if any.
+func (t *TraitModifier) NodeChildren() []*TraitModifier {
+	return t.Children
+}
+
+// SetChildren sets the children of this node.
+func (t *TraitModifier) SetChildren(children []*TraitModifier) {
+	t.Children = children
+}
+
+// Parent returns the parent.
+func (t *TraitModifier) Parent() *TraitModifier {
+	return t.parent
+}
+
+// SetParent sets the parent.
+func (t *TraitModifier) SetParent(parent *TraitModifier) {
+	t.parent = parent
+}
+
+// Open returns true if this node is currently open.
+func (t *TraitModifier) Open() bool {
+	return t.IsOpen && t.Container()
+}
+
+// SetOpen sets the current open state for this node.
+func (t *TraitModifier) SetOpen(open bool) {
+	t.IsOpen = open && t.Container()
+}
+
+// Clone implements Node.
+func (t *TraitModifier) Clone(entity *Entity, parent *TraitModifier, preserveID bool) *TraitModifier {
+	other := NewTraitModifier(entity, parent, t.Container())
+	if preserveID {
+		other.TID = t.TID
+	}
+	other.IsOpen = t.IsOpen
+	other.ThirdParty = t.ThirdParty
+	other.TraitModifierEditData.CopyFrom(t)
+	if t.HasChildren() {
+		other.Children = make([]*TraitModifier, 0, len(t.Children))
+		for _, child := range t.Children {
 			other.Children = append(other.Children, child.Clone(entity, other, preserveID))
 		}
 	}
@@ -155,75 +214,80 @@ func (m *TraitModifier) Clone(entity *Entity, parent *TraitModifier, preserveID 
 }
 
 // MarshalJSON implements json.Marshaler.
-func (m *TraitModifier) MarshalJSON() ([]byte, error) {
-	m.ClearUnusedFieldsForType()
-	return json.Marshal(&m.TraitModifierData)
+func (t *TraitModifier) MarshalJSON() ([]byte, error) {
+	t.ClearUnusedFieldsForType()
+	return json.Marshal(&t.TraitModifierData)
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (m *TraitModifier) UnmarshalJSON(data []byte) error {
+func (t *TraitModifier) UnmarshalJSON(data []byte) error {
 	var localData struct {
 		TraitModifierData
 		// Old data fields
+		Type       string   `json:"type"`
 		Categories []string `json:"categories"`
 	}
 	if err := json.Unmarshal(data, &localData); err != nil {
 		return err
 	}
-	localData.ClearUnusedFieldsForType()
-	m.TraitModifierData = localData.TraitModifierData
-	m.Tags = convertOldCategoriesToTags(m.Tags, localData.Categories)
-	slices.Sort(m.Tags)
-	if m.Container() {
-		for _, one := range m.Children {
-			one.parent = m
+	if !tid.IsValid(localData.TID) {
+		// Fixup old data that used UUIDs instead of TIDs
+		localData.TID = tid.MustNewTID(traitModifierKind(strings.HasSuffix(localData.Type, ContainerKeyPostfix)))
+	}
+	t.TraitModifierData = localData.TraitModifierData
+	t.ClearUnusedFieldsForType()
+	t.Tags = convertOldCategoriesToTags(t.Tags, localData.Categories)
+	slices.Sort(t.Tags)
+	if t.Container() {
+		for _, one := range t.Children {
+			one.parent = t
 		}
 	}
 	return nil
 }
 
 // TagList returns the list of tags.
-func (m *TraitModifier) TagList() []string {
-	return m.Tags
+func (t *TraitModifier) TagList() []string {
+	return t.Tags
 }
 
 // CellData returns the cell data information for the given column.
-func (m *TraitModifier) CellData(columnID int, data *CellData) {
+func (t *TraitModifier) CellData(columnID int, data *CellData) {
 	switch columnID {
 	case TraitModifierEnabledColumn:
-		if !m.Container() {
+		if !t.Container() {
 			data.Type = cell.Toggle
-			data.Checked = m.Enabled()
+			data.Checked = t.Enabled()
 			data.Alignment = align.Middle
 		}
 	case TraitModifierDescriptionColumn:
 		data.Type = cell.Text
-		data.Primary = m.Name
-		data.Secondary = m.SecondaryText(func(option display.Option) bool { return option.Inline() })
-		data.Tooltip = m.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
+		data.Primary = t.Name
+		data.Secondary = t.SecondaryText(func(option display.Option) bool { return option.Inline() })
+		data.Tooltip = t.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 	case TraitModifierCostColumn:
-		if !m.Container() {
+		if !t.Container() {
 			data.Type = cell.Text
-			data.Primary = m.CostDescription()
+			data.Primary = t.CostDescription()
 		}
 	case TraitModifierTagsColumn:
 		data.Type = cell.Tags
-		data.Primary = CombineTags(m.Tags)
+		data.Primary = CombineTags(t.Tags)
 	case TraitModifierReferenceColumn, PageRefCellAlias:
 		data.Type = cell.PageRef
-		data.Primary = m.PageRef
-		if m.PageRefHighlight != "" {
-			data.Secondary = m.PageRefHighlight
+		data.Primary = t.PageRef
+		if t.PageRefHighlight != "" {
+			data.Secondary = t.PageRefHighlight
 		} else {
-			data.Secondary = m.Name
+			data.Secondary = t.Name
 		}
 	}
 }
 
 // Depth returns the number of parents this node has.
-func (m *TraitModifier) Depth() int {
+func (t *TraitModifier) Depth() int {
 	count := 0
-	p := m.parent
+	p := t.parent
 	for p != nil {
 		count++
 		p = p.parent
@@ -232,173 +296,179 @@ func (m *TraitModifier) Depth() int {
 }
 
 // OwningEntity returns the owning Entity.
-func (m *TraitModifier) OwningEntity() *Entity {
-	return m.Entity
+func (t *TraitModifier) OwningEntity() *Entity {
+	return t.Entity
 }
 
 // SetOwningEntity sets the owning entity and configures any sub-components as needed.
-func (m *TraitModifier) SetOwningEntity(entity *Entity) {
-	m.Entity = entity
-	if m.Container() {
-		for _, child := range m.Children {
+func (t *TraitModifier) SetOwningEntity(entity *Entity) {
+	t.Entity = entity
+	if t.Container() {
+		for _, child := range t.Children {
 			child.SetOwningEntity(entity)
 		}
 	}
 }
 
 // CostModifier returns the total cost modifier.
-func (m *TraitModifier) CostModifier() fxp.Int {
-	if m.Levels > 0 {
-		return m.Cost.Mul(m.Levels)
+func (t *TraitModifier) CostModifier() fxp.Int {
+	if t.Levels > 0 {
+		return t.Cost.Mul(t.Levels)
 	}
-	return m.Cost
+	return t.Cost
 }
 
 // IsLeveled returns true if this TraitModifier is leveled.
-func (m *TraitModifier) IsLeveled() bool {
-	return !m.Container() && m.CostType == tmcost.Percentage && m.Levels > 0
+func (t *TraitModifier) IsLeveled() bool {
+	return !t.Container() && t.CostType == tmcost.Percentage && t.Levels > 0
 }
 
 // CurrentLevel returns the current level of the modifier or zero if it is not leveled.
-func (m *TraitModifier) CurrentLevel() fxp.Int {
-	if m.Enabled() && m.IsLeveled() {
-		return m.Levels
+func (t *TraitModifier) CurrentLevel() fxp.Int {
+	if t.Enabled() && t.IsLeveled() {
+		return t.Levels
 	}
 	return 0
 }
 
-func (m *TraitModifier) String() string {
+func (t *TraitModifier) String() string {
 	var buffer strings.Builder
-	buffer.WriteString(m.Name)
-	if m.IsLeveled() {
+	buffer.WriteString(t.Name)
+	if t.IsLeveled() {
 		buffer.WriteByte(' ')
-		buffer.WriteString(m.Levels.String())
+		buffer.WriteString(t.Levels.String())
 	}
 	return buffer.String()
 }
 
 // SecondaryText returns the "secondary" text: the text display below an Trait.
-func (m *TraitModifier) SecondaryText(optionChecker func(display.Option) bool) string {
-	if optionChecker(SheetSettingsFor(m.Entity).NotesDisplay) {
-		return m.LocalNotes
+func (t *TraitModifier) SecondaryText(optionChecker func(display.Option) bool) string {
+	if optionChecker(SheetSettingsFor(t.Entity).NotesDisplay) {
+		return t.LocalNotes
 	}
 	return ""
 }
 
 // FullDescription returns a full description.
-func (m *TraitModifier) FullDescription() string {
+func (t *TraitModifier) FullDescription() string {
 	var buffer strings.Builder
-	buffer.WriteString(m.String())
-	if m.LocalNotes != "" {
+	buffer.WriteString(t.String())
+	if t.LocalNotes != "" {
 		buffer.WriteString(" (")
-		buffer.WriteString(m.LocalNotes)
+		buffer.WriteString(t.LocalNotes)
 		buffer.WriteByte(')')
 	}
-	if SheetSettingsFor(m.Entity).ShowTraitModifierAdj {
+	if SheetSettingsFor(t.Entity).ShowTraitModifierAdj {
 		buffer.WriteString(" [")
-		buffer.WriteString(m.CostDescription())
+		buffer.WriteString(t.CostDescription())
 		buffer.WriteByte(']')
 	}
 	return buffer.String()
 }
 
 // FullCostDescription is the same as CostDescription().
-func (m *TraitModifier) FullCostDescription() string {
-	return m.CostDescription()
+func (t *TraitModifier) FullCostDescription() string {
+	return t.CostDescription()
 }
 
 // CostDescription returns the formatted cost.
-func (m *TraitModifier) CostDescription() string {
-	if m.Container() {
+func (t *TraitModifier) CostDescription() string {
+	if t.Container() {
 		return ""
 	}
 	var base string
-	switch m.CostType {
+	switch t.CostType {
 	case tmcost.Percentage:
-		if m.IsLeveled() {
-			base = m.Cost.Mul(m.Levels).StringWithSign()
+		if t.IsLeveled() {
+			base = t.Cost.Mul(t.Levels).StringWithSign()
 		} else {
-			base = m.Cost.StringWithSign()
+			base = t.Cost.StringWithSign()
 		}
 		base += tmcost.Percentage.String()
 	case tmcost.Points:
-		base = m.Cost.StringWithSign()
+		base = t.Cost.StringWithSign()
 	case tmcost.Multiplier:
-		return m.CostType.String() + m.Cost.String()
+		return t.CostType.String() + t.Cost.String()
 	default:
-		errs.Log(errs.New("unknown cost type"), "type", int(m.CostType))
-		base = m.Cost.StringWithSign() + tmcost.Percentage.String()
+		errs.Log(errs.New("unknown cost type"), "type", int(t.CostType))
+		base = t.Cost.StringWithSign() + tmcost.Percentage.String()
 	}
-	if desc := m.Affects.AltString(); desc != "" {
+	if desc := t.Affects.AltString(); desc != "" {
 		base += " " + desc
 	}
 	return base
 }
 
 // FillWithNameableKeys adds any nameable keys found in this TraitModifier to the provided map.
-func (m *TraitModifier) FillWithNameableKeys(keyMap map[string]string) {
-	if !m.Container() && m.Enabled() {
-		Extract(m.Name, keyMap)
-		Extract(m.LocalNotes, keyMap)
-		for _, one := range m.Features {
+func (t *TraitModifier) FillWithNameableKeys(keyMap map[string]string) {
+	if !t.Container() && t.Enabled() {
+		Extract(t.Name, keyMap)
+		Extract(t.LocalNotes, keyMap)
+		for _, one := range t.Features {
 			one.FillWithNameableKeys(keyMap)
 		}
 	}
 }
 
-// ApplyNameableKeys replaces any nameable keys found in this TraitModifier with the corresponding values in the provided map.
-func (m *TraitModifier) ApplyNameableKeys(keyMap map[string]string) {
-	if !m.Container() && m.Enabled() {
-		m.Name = Apply(m.Name, keyMap)
-		m.LocalNotes = Apply(m.LocalNotes, keyMap)
-		for _, one := range m.Features {
+// ApplyNameableKeys replaces any nameable keys found in this TraitModifier with the corresponding values in the
+// provided map.
+func (t *TraitModifier) ApplyNameableKeys(keyMap map[string]string) {
+	if !t.Container() && t.Enabled() {
+		t.Name = Apply(t.Name, keyMap)
+		t.LocalNotes = Apply(t.LocalNotes, keyMap)
+		for _, one := range t.Features {
 			one.ApplyNameableKeys(keyMap)
 		}
 	}
 }
 
 // Enabled returns true if this node is enabled.
-func (m *TraitModifier) Enabled() bool {
-	return !m.Disabled || m.Container()
+func (t *TraitModifier) Enabled() bool {
+	return !t.Disabled || t.Container()
 }
 
 // SetEnabled makes the node enabled, if possible.
-func (m *TraitModifier) SetEnabled(enabled bool) {
-	if !m.Container() {
-		m.Disabled = !enabled
+func (t *TraitModifier) SetEnabled(enabled bool) {
+	if !t.Container() {
+		t.Disabled = !enabled
 	}
 }
 
 // Kind returns the kind of data.
-func (d *TraitModifierData) Kind() string {
-	return d.kind(i18n.Text("Trait Modifier"))
+func (t *TraitModifier) Kind() string {
+	if t.Container() {
+		return i18n.Text("Trait Modifier Container")
+	}
+	return i18n.Text("Trait Modifier")
 }
 
 // ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
-func (d *TraitModifierData) ClearUnusedFieldsForType() {
-	d.clearUnusedFields()
-	if d.Container() {
-		d.CostType = 0
-		d.Disabled = false
-		d.Cost = 0
-		d.Levels = 0
-		d.Affects = 0
-		d.Features = nil
+func (t *TraitModifier) ClearUnusedFieldsForType() {
+	if t.Container() {
+		t.CostType = 0
+		t.Disabled = false
+		t.Cost = 0
+		t.Levels = 0
+		t.Affects = 0
+		t.Features = nil
+	} else {
+		t.Children = nil
+		t.IsOpen = false
 	}
 }
 
 // CopyFrom implements node.EditorData.
-func (d *TraitModifierEditData) CopyFrom(mod *TraitModifier) {
-	d.copyFrom(&mod.TraitModifierEditData)
+func (t *TraitModifierEditData) CopyFrom(other *TraitModifier) {
+	t.copyFrom(&other.TraitModifierEditData)
 }
 
 // ApplyTo implements node.EditorData.
-func (d *TraitModifierEditData) ApplyTo(mod *TraitModifier) {
-	mod.TraitModifierEditData.copyFrom(d)
+func (t *TraitModifierEditData) ApplyTo(other *TraitModifier) {
+	other.TraitModifierEditData.copyFrom(t)
 }
 
-func (d *TraitModifierEditData) copyFrom(other *TraitModifierEditData) {
-	*d = *other
-	d.Tags = txt.CloneStringSlice(d.Tags)
-	d.Features = other.Features.Clone()
+func (t *TraitModifierEditData) copyFrom(other *TraitModifierEditData) {
+	*t = *other
+	t.Tags = txt.CloneStringSlice(t.Tags)
+	t.Features = other.Features.Clone()
 }

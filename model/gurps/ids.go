@@ -11,10 +11,11 @@ package gurps
 
 import (
 	"strings"
-
-	"github.com/google/uuid"
-	"github.com/richardwilkes/toolbox/errs"
 )
+
+// ContainerKeyPostfix is the key postfix used to identify containers.
+// TODO: Make private
+const ContainerKeyPostfix = "_container"
 
 // Various commonly used IDs
 const (
@@ -67,14 +68,4 @@ func SanitizeID(id string, permitLeadingDigits bool, reserved ...string) string 
 			return id
 		}
 	}
-}
-
-// NewUUID creates a new UUID.
-func NewUUID() uuid.UUID {
-	id, err := uuid.NewRandom()
-	if err != nil {
-		errs.Log(err)
-		// continue on... the id will be garbage, but we can live with that... and this should not be possible anyway
-	}
-	return id
 }

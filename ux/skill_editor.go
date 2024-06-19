@@ -10,12 +10,9 @@
 package ux
 
 import (
-	"strings"
-
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wpn"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -34,8 +31,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 	_, ownerIsSheet := owner.(*Sheet)
 	_, ownerIsTemplate := owner.(*Template)
 	addNameLabelAndField(content, &e.editorData.Name)
-	isTechnique := strings.HasPrefix(e.target.Type, gurps.TechniqueID)
-	if !e.target.Container() && !isTechnique {
+	if !e.target.Container() && !e.target.IsTechnique() {
 		addSpecializationLabelAndField(content, &e.editorData.Specialization)
 		addTechLevelRequired(content, &e.editorData.TechLevel, ownerIsSheet)
 	}
@@ -45,17 +41,15 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 	if e.target.Container() {
 		addTemplateChoices(content, nil, "", &e.editorData.TemplatePicker)
 	} else {
-		if isTechnique {
+		if e.target.IsTechnique() {
 			wrapper := addFlowWrapper(content, i18n.Text("Defaults To"), 4)
 			wrapper.SetLayoutData(&unison.FlexLayoutData{
 				HAlign: align.Fill,
 				HGrab:  true,
 			})
-			flags := gurps.TenFlag
-			if isTechnique {
-				flags |= gurps.SkillFlag + gurps.ParryFlag + gurps.BlockFlag + gurps.DodgeFlag
-			}
-			choices, attrChoice := gurps.AttributeChoices(e.target.Entity, "", flags, e.editorData.TechniqueDefault.DefaultType)
+			choices, attrChoice := gurps.AttributeChoices(e.target.Entity, "",
+				gurps.TenFlag|gurps.SkillFlag|gurps.ParryFlag|gurps.BlockFlag|gurps.DodgeFlag,
+				e.editorData.TechniqueDefault.DefaultType)
 			attrChoicePopup := addPopup(wrapper, choices, &attrChoice)
 			skillDefNameField := addStringField(wrapper, i18n.Text("Technique Default Skill Name"),
 				i18n.Text("Skill Name"), &e.editorData.TechniqueDefault.Name)
@@ -158,7 +152,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 				points := gurps.AdjustedPointsForNonContainerSkillOrTechnique(e.target.Entity, e.editorData.Points,
 					e.editorData.Name, e.editorData.Specialization, e.editorData.Tags, nil)
 				var level gurps.Level
-				if isTechnique {
+				if e.target.IsTechnique() {
 					level = gurps.CalculateTechniqueLevel(e.target.Entity, e.editorData.Name,
 						e.editorData.Specialization, e.editorData.Tags, e.editorData.TechniqueDefault,
 						e.editorData.Difficulty.Difficulty, points, true, e.editorData.TechniqueLimitModifier, nil)
@@ -172,11 +166,11 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 					field.SetTitle("-")
 				} else {
 					rsl := level.RelativeLevel
-					if isTechnique {
+					if e.target.IsTechnique() {
 						rsl += e.editorData.TechniqueDefault.Modifier
 					}
-					field.SetTitle(lvl.String() + "/" + gurps.FormatRelativeSkill(e.target.Entity, e.target.Type,
-						e.editorData.Difficulty, rsl))
+					field.SetTitle(lvl.String() + "/" + gurps.FormatRelativeSkill(e.target.Entity,
+						e.target.IsTechnique(), e.editorData.Difficulty, rsl))
 				}
 				field.MarkForLayoutAndRedraw()
 			})
@@ -193,9 +187,8 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 		content.AddChild(newPrereqPanel(e.target.Entity, &e.editorData.Prereq))
 		content.AddChild(newDefaultsPanel(e.target.Entity, &e.editorData.Defaults))
 		content.AddChild(newFeaturesPanel(e.target.Entity, e.target, &e.editorData.Features, false))
-		for _, wt := range wpn.Types {
-			content.AddChild(newWeaponsPanel(e, e.target, wt, &e.editorData.Weapons))
-		}
+		content.AddChild(newWeaponsPanel(e, e.target, true, &e.editorData.Weapons))
+		content.AddChild(newWeaponsPanel(e, e.target, false, &e.editorData.Weapons))
 		content.AddChild(newStudyPanel(e.target.Entity, &e.editorData.StudyHoursNeeded, &e.editorData.Study))
 	}
 	return nil

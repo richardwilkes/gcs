@@ -13,7 +13,6 @@ import (
 	"testing"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wpn"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/check"
 )
@@ -24,8 +23,8 @@ func TestWeaponParryAndBlockStorage(t *testing.T) {
 		blockKey = "block"
 	)
 
-	w := gurps.Weapon{WeaponData: gurps.WeaponData{Type: wpn.Melee}}
-	data, err := json.Marshal(&w)
+	w := gurps.NewWeapon(nil, true)
+	data, err := json.Marshal(w)
 	check.NoError(t, err)
 	s := string(data)
 	check.NotContains(t, s, parryKey)
@@ -44,8 +43,8 @@ func TestWeaponParryAndBlockStorage(t *testing.T) {
 	check.Contains(t, s, parryKey)
 	check.Contains(t, s, blockKey)
 
-	w.Type = wpn.Ranged
-	data, err = json.Marshal(&w)
+	w = gurps.NewWeapon(nil, false)
+	data, err = json.Marshal(w)
 	check.NoError(t, err)
 	s = string(data)
 	check.NotContains(t, s, parryKey)

@@ -25,7 +25,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wpn"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/toolbox/xio/fs"
@@ -289,7 +288,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "BEST_CURRENT_PARRY":
 		best := "-"
 		bestValue := fxp.Min
-		for _, w := range ex.entity.EquippedWeapons(wpn.Melee) {
+		for _, w := range ex.entity.EquippedWeapons(true) {
 			if parry := w.Parry.Resolve(w, nil); parry.CanParry && parry.Modifier > bestValue {
 				best = parry.String()
 				bestValue = parry.Modifier
@@ -299,7 +298,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "BEST_CURRENT_BLOCK":
 		best := "-"
 		bestValue := fxp.Min
-		for _, w := range ex.entity.EquippedWeapons(wpn.Melee) {
+		for _, w := range ex.entity.EquippedWeapons(true) {
 			if block := w.Block.Resolve(w, nil); block.CanBlock && block.Modifier > bestValue {
 				best = block.String()
 				bestValue = block.Modifier
@@ -424,13 +423,13 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "SPELLS_LOOP_START":
 		ex.processSpellsLoop(ex.extractUpToMarker("SPELLS_LOOP_END"))
 	case "MELEE_LOOP_COUNT", "HIERARCHICAL_MELEE_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(len(ex.entity.EquippedWeapons(wpn.Melee))))
+		ex.writeEncodedText(strconv.Itoa(len(ex.entity.EquippedWeapons(true))))
 	case "MELEE_LOOP_START":
 		ex.processMeleeLoop(ex.extractUpToMarker("MELEE_LOOP_END"))
 	case "HIERARCHICAL_MELEE_LOOP_START":
 		ex.processHierarchicalMeleeLoop(ex.extractUpToMarker("HIERARCHICAL_MELEE_LOOP_END"))
 	case "RANGED_LOOP_COUNT", "HIERARCHICAL_RANGED_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(len(ex.entity.EquippedWeapons(wpn.Ranged))))
+		ex.writeEncodedText(strconv.Itoa(len(ex.entity.EquippedWeapons(false))))
 	case "RANGED_LOOP_START":
 		ex.processRangedLoop(ex.extractUpToMarker("RANGED_LOOP_END"))
 	case "HIERARCHICAL_RANGED_LOOP_START":
@@ -793,11 +792,11 @@ func (ex *legacyExporter) processTraitLoop(buffer []byte, f func(*Trait) bool) {
 			ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 				switch key {
 				case idExportKey:
-					ex.writeEncodedText(t.ID.String())
+					ex.writeEncodedText(string(t.TID))
 				case parentIDExportKey:
 					parent := t.Parent()
 					if parent != nil {
-						ex.writeEncodedText(parent.ID.String())
+						ex.writeEncodedText(string(parent.TID))
 					}
 				case typeExportKey:
 					if t.Container() {
@@ -859,11 +858,11 @@ func (ex *legacyExporter) processSkillsLoop(buffer []byte) {
 		ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 			switch key {
 			case idExportKey:
-				ex.writeEncodedText(s.ID.String())
+				ex.writeEncodedText(string(s.TID))
 			case parentIDExportKey:
 				parent := s.Parent()
 				if parent != nil {
-					ex.writeEncodedText(parent.ID.String())
+					ex.writeEncodedText(string(parent.TID))
 				}
 			case typeExportKey:
 				if s.Container() {
@@ -916,11 +915,11 @@ func (ex *legacyExporter) processSpellsLoop(buffer []byte) {
 		ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 			switch key {
 			case idExportKey:
-				ex.writeEncodedText(s.ID.String())
+				ex.writeEncodedText(string(s.TID))
 			case parentIDExportKey:
 				parent := s.Parent()
 				if parent != nil {
-					ex.writeEncodedText(parent.ID.String())
+					ex.writeEncodedText(string(parent.TID))
 				}
 			case typeExportKey:
 				if s.Container() {
@@ -1002,11 +1001,11 @@ func (ex *legacyExporter) processEquipmentLoop(buffer []byte, carried bool) {
 			ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 				switch key {
 				case idExportKey:
-					ex.writeEncodedText(eqp.ID.String())
+					ex.writeEncodedText(string(eqp.TID))
 				case parentIDExportKey:
 					parent := eqp.Parent()
 					if parent != nil {
-						ex.writeEncodedText(parent.ID.String())
+						ex.writeEncodedText(string(parent.TID))
 					}
 				case typeExportKey:
 					if eqp.Container() {
@@ -1115,11 +1114,11 @@ func (ex *legacyExporter) processNotesLoop(buffer []byte) {
 		ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 			switch key {
 			case idExportKey:
-				ex.writeEncodedText(n.ID.String())
+				ex.writeEncodedText(string(n.TID))
 			case parentIDExportKey:
 				parent := n.Parent()
 				if parent != nil {
-					ex.writeEncodedText(parent.ID.String())
+					ex.writeEncodedText(string(parent.TID))
 				}
 			case typeExportKey:
 				if n.Container() {
@@ -1233,7 +1232,7 @@ func (ex *legacyExporter) processPointPoolLoop(buffer []byte) {
 }
 
 func (ex *legacyExporter) processMeleeLoop(buffer []byte) {
-	for i, w := range ex.entity.EquippedWeapons(wpn.Melee) {
+	for i, w := range ex.entity.EquippedWeapons(true) {
 		ex.processBuffer(buffer, func(key string, buf []byte, index int) int {
 			return ex.processMeleeKeys(key, i, w, nil, buf, index)
 		})
@@ -1242,7 +1241,7 @@ func (ex *legacyExporter) processMeleeLoop(buffer []byte) {
 
 func (ex *legacyExporter) processHierarchicalMeleeLoop(buffer []byte) {
 	m := make(map[string][]*Weapon)
-	for _, w := range ex.entity.EquippedWeapons(wpn.Melee) {
+	for _, w := range ex.entity.EquippedWeapons(true) {
 		key := w.String()
 		m[key] = append(m[key], w)
 	}
@@ -1259,7 +1258,7 @@ func (ex *legacyExporter) processHierarchicalMeleeLoop(buffer []byte) {
 }
 
 func (ex *legacyExporter) processRangedLoop(buffer []byte) {
-	for i, w := range ex.entity.EquippedWeapons(wpn.Ranged) {
+	for i, w := range ex.entity.EquippedWeapons(false) {
 		ex.processBuffer(buffer, func(key string, buf []byte, index int) int {
 			return ex.processRangedKeys(key, i, w, nil, buf, index)
 		})
@@ -1268,7 +1267,7 @@ func (ex *legacyExporter) processRangedLoop(buffer []byte) {
 
 func (ex *legacyExporter) processHierarchicalRangedLoop(buffer []byte) {
 	m := make(map[string][]*Weapon)
-	for _, w := range ex.entity.EquippedWeapons(wpn.Ranged) {
+	for _, w := range ex.entity.EquippedWeapons(false) {
 		key := w.String()
 		m[key] = append(m[key], w)
 	}

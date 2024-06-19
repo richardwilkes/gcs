@@ -14,13 +14,13 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/fatal"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -90,9 +90,9 @@ func (n *Node[T]) CloneForTarget(target unison.Paneler, newParent *Node[T]) *Nod
 	return nil // Never reaches here
 }
 
-// UUID implements unison.TableRowData.
-func (n *Node[T]) UUID() uuid.UUID {
-	return n.dataAsNode.UUID()
+// ID implements unison.TableRowData.
+func (n *Node[T]) ID() tid.TID {
+	return n.dataAsNode.ID()
 }
 
 // Parent implements unison.TableRowData.
@@ -637,14 +637,14 @@ func (n *Node[T]) secondaryFieldFont() unison.Font {
 }
 
 // FindRowIndexByID returns the row index of the row with the given ID in the given table.
-func FindRowIndexByID[T gurps.NodeTypes](table *unison.Table[*Node[T]], id uuid.UUID) int {
+func FindRowIndexByID[T gurps.NodeTypes](table *unison.Table[*Node[T]], id tid.TID) int {
 	_, i := rowIndex(id, 0, table.RootRows())
 	return i
 }
 
-func rowIndex[T gurps.NodeTypes](id uuid.UUID, startIndex int, rows []*Node[T]) (updatedStartIndex, result int) {
+func rowIndex[T gurps.NodeTypes](id tid.TID, startIndex int, rows []*Node[T]) (updatedStartIndex, result int) {
 	for _, row := range rows {
-		if id == row.dataAsNode.UUID() {
+		if id == row.dataAsNode.ID() {
 			return 0, startIndex
 		}
 		startIndex++
@@ -708,9 +708,9 @@ func InsertItems[T gurps.NodeTypes](owner Rebuildable, table *unison.Table[*Node
 	table.SetRootRows(rowData(table))
 	table.ValidateScrollRoot()
 	table.RequestFocus()
-	selMap := make(map[uuid.UUID]bool)
+	selMap := make(map[tid.TID]bool)
 	for _, item := range items {
-		selMap[gurps.AsNode(item).UUID()] = true
+		selMap[gurps.AsNode(item).ID()] = true
 	}
 	table.SetSelectionMap(selMap)
 	table.ScrollRowCellIntoView(table.LastSelectedRowIndex(), 0)

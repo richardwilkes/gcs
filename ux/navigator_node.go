@@ -19,10 +19,11 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
@@ -30,20 +31,9 @@ import (
 
 var _ unison.TableRowData[*NavigatorNode] = &NavigatorNode{}
 
-type navigatorNodeType uint8
-
-const (
-	favoritesNode navigatorNodeType = iota
-	libraryNode
-	directoryNode
-	fileNode
-)
-
 // NavigatorNode holds a library, directory or file.
 type NavigatorNode struct {
-	nodeType                 navigatorNodeType
-	open                     bool
-	id                       uuid.UUID
+	id                       tid.TID
 	path                     string
 	nav                      *Navigator
 	library                  *gurps.Library
@@ -51,14 +41,14 @@ type NavigatorNode struct {
 	children                 []*NavigatorNode
 	updateCellReleaseVersion string
 	updateCellCache          *updatableLibraryCell
+	open                     bool
 }
 
 // NewFavoritesNode creates the Favorites node.
 func NewFavoritesNode(nav *Navigator) *NavigatorNode {
 	n := &NavigatorNode{
-		nodeType: favoritesNode,
-		id:       uuid.New(),
-		nav:      nav,
+		id:  tid.MustNewTID(kinds.NavigatorFavorites),
+		nav: nav,
 	}
 	n.Refresh()
 	return n
@@ -67,10 +57,9 @@ func NewFavoritesNode(nav *Navigator) *NavigatorNode {
 // NewLibraryNode creates a new library node.
 func NewLibraryNode(nav *Navigator, lib *gurps.Library) *NavigatorNode {
 	n := &NavigatorNode{
-		nodeType: libraryNode,
-		id:       uuid.New(),
-		nav:      nav,
-		library:  lib,
+		id:      tid.MustNewTID(kinds.NavigatorLibrary),
+		nav:     nav,
+		library: lib,
 	}
 	n.Refresh()
 	return n
@@ -79,12 +68,11 @@ func NewLibraryNode(nav *Navigator, lib *gurps.Library) *NavigatorNode {
 // NewDirectoryNode creates a new DirectoryNode.
 func NewDirectoryNode(nav *Navigator, lib *gurps.Library, dirPath string, parent *NavigatorNode) *NavigatorNode {
 	n := &NavigatorNode{
-		nodeType: directoryNode,
-		id:       uuid.New(),
-		path:     dirPath,
-		nav:      nav,
-		library:  lib,
-		parent:   parent,
+		id:      tid.MustNewTID(kinds.NavigatorDirectory),
+		path:    dirPath,
+		nav:     nav,
+		library: lib,
+		parent:  parent,
 	}
 	n.Refresh()
 	return n
@@ -93,11 +81,10 @@ func NewDirectoryNode(nav *Navigator, lib *gurps.Library, dirPath string, parent
 // NewFileNode creates a new FileNode.
 func NewFileNode(lib *gurps.Library, filePath string, parent *NavigatorNode) *NavigatorNode {
 	return &NavigatorNode{
-		nodeType: fileNode,
-		id:       uuid.New(),
-		path:     filePath,
-		library:  lib,
-		parent:   parent,
+		id:      tid.MustNewTID(kinds.NavigatorFile),
+		path:    filePath,
+		library: lib,
+		parent:  parent,
 	}
 }
 
@@ -106,8 +93,8 @@ func (n *NavigatorNode) CloneForTarget(_ unison.Paneler, _ *NavigatorNode) *Navi
 	return nil
 }
 
-// UUID implements unison.TableRowData.
-func (n *NavigatorNode) UUID() uuid.UUID {
+// ID implements unison.TableRowData.
+func (n *NavigatorNode) ID() tid.TID {
 	return n.id
 }
 
@@ -122,10 +109,7 @@ func (n *NavigatorNode) SetParent(_ *NavigatorNode) {
 
 // CanHaveChildren implements unison.TableRowData.
 func (n *NavigatorNode) CanHaveChildren() bool {
-	if n.nodeType == libraryNode || n.nodeType == directoryNode || n.nodeType == favoritesNode {
-		return true
-	}
-	return false
+	return !n.IsFile()
 }
 
 // Children implements unison.TableRowData.
@@ -137,16 +121,36 @@ func (n *NavigatorNode) Children() []*NavigatorNode {
 func (n *NavigatorNode) SetChildren(_ []*NavigatorNode) {
 }
 
+// IsFile returns true if this is a file node.
+func (n *NavigatorNode) IsFile() bool {
+	return tid.IsKind(n.id, kinds.NavigatorFile)
+}
+
+// IsDirectory returns true if this is a directory node.
+func (n *NavigatorNode) IsDirectory() bool {
+	return tid.IsKind(n.id, kinds.NavigatorDirectory)
+}
+
+// IsLibrary returns true if this is a library node.
+func (n *NavigatorNode) IsLibrary() bool {
+	return tid.IsKind(n.id, kinds.NavigatorLibrary)
+}
+
+// IsFavorites returns true if this is a favorites node.
+func (n *NavigatorNode) IsFavorites() bool {
+	return tid.IsKind(n.id, kinds.NavigatorFavorites)
+}
+
 // CellDataForSort implements unison.TableRowData.
 func (n *NavigatorNode) CellDataForSort(col int) string {
 	if col != 0 {
 		return ""
 	}
 	text := n.primaryColumnText()
-	switch n.nodeType {
-	case favoritesNode:
+	switch {
+	case n.IsFavorites():
 		return "0/" + text
-	case libraryNode:
+	case n.IsLibrary():
 		if n.library.IsUser() {
 			return "1/" + text
 		}
@@ -170,10 +174,10 @@ func filterVersion(version string) string {
 }
 
 func (n *NavigatorNode) primaryColumnText() string {
-	switch n.nodeType {
-	case favoritesNode:
+	switch {
+	case n.IsFavorites():
 		return i18n.Text("Favorites")
-	case libraryNode:
+	case n.IsLibrary():
 		if n.library.IsUser() {
 			return n.library.Title
 		}
@@ -203,7 +207,7 @@ func (n *NavigatorNode) ColumnCell(_, col int, foreground, _ unison.Ink, _, _, _
 	}
 	title := n.primaryColumnText()
 	var ext string
-	if n.nodeType == fileNode {
+	if n.IsFile() {
 		ext = strings.ToLower(path.Ext(n.path))
 	} else if n.open {
 		ext = gurps.OpenFolder
@@ -219,7 +223,7 @@ func (n *NavigatorNode) ColumnCell(_, col int, foreground, _ unison.Ink, _, _, _
 		SVG:  fi.SVG,
 		Size: unison.NewSize(size, size),
 	}
-	if n.nodeType == libraryNode && !n.library.IsUser() {
+	if n.IsLibrary() && !n.library.IsUser() {
 		if current, releases := n.library.AvailableReleases(); len(releases) != 0 && releases[0].HasUpdate() {
 			if relVersion := filterVersion(releases[0].Version); filterVersion(current) != relVersion {
 				if n.updateCellReleaseVersion != relVersion || n.updateCellCache == nil {
@@ -242,7 +246,7 @@ func (n *NavigatorNode) IsOpen() bool {
 
 // SetOpen implements unison.TableRowData.
 func (n *NavigatorNode) SetOpen(open bool) {
-	if open != n.open && n.nodeType != fileNode {
+	if open != n.open && !n.IsFile() {
 		n.open = open
 		n.nav.adjustTableSizeEventually()
 	}
@@ -250,10 +254,10 @@ func (n *NavigatorNode) SetOpen(open bool) {
 
 // Path returns the full path on disk for this node.
 func (n *NavigatorNode) Path() string {
-	switch n.nodeType {
-	case favoritesNode:
+	switch {
+	case n.IsFavorites():
 		return ""
-	case libraryNode:
+	case n.IsLibrary():
 		return n.library.Path()
 	default:
 		return filepath.Join(n.library.Path(), n.path)
@@ -262,8 +266,8 @@ func (n *NavigatorNode) Path() string {
 
 // Refresh the contents of this node.
 func (n *NavigatorNode) Refresh() {
-	switch n.nodeType {
-	case favoritesNode:
+	switch {
+	case n.IsFavorites():
 		type fav struct {
 			path    string
 			library *gurps.Library
@@ -284,9 +288,9 @@ func (n *NavigatorNode) Refresh() {
 		for _, one := range favs {
 			n.children = append(n.children, NewFileNode(one.library, one.path, n))
 		}
-	case libraryNode:
+	case n.IsLibrary():
 		n.children = n.refreshChildren(".", n)
-	case directoryNode:
+	case n.IsDirectory():
 		n.children = n.refreshChildren(n.path, n)
 	default:
 	}
@@ -294,10 +298,10 @@ func (n *NavigatorNode) Refresh() {
 
 // Open the node.
 func (n *NavigatorNode) Open() (dockable unison.Dockable, wasOpen bool) {
-	if n.nodeType != fileNode {
-		return nil, false
+	if n.IsFile() {
+		return OpenFile(n.Path(), 0)
 	}
-	return OpenFile(n.Path(), 0)
+	return nil, false
 }
 
 func (n *NavigatorNode) refreshChildren(dirPath string, parent *NavigatorNode) []*NavigatorNode {

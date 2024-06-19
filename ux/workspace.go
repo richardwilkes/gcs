@@ -17,11 +17,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
@@ -440,16 +440,16 @@ func DockContainerHoldsExtension(dc *unison.DockContainer, ext ...string) bool {
 	return false
 }
 
-// AssociatedUUIDKey is the key used with CloseUUID().
-const AssociatedUUIDKey = "associated_uuid"
+// AssociatedIDKey is the key used with CloseID().
+const AssociatedIDKey = "associated_id"
 
-// CloseUUID attempts to close any Dockables associated with the given UUIDs. Returns false if a dockable refused to
+// CloseID attempts to close any Dockables associated with the given UUIDs. Returns false if a dockable refused to
 // close.
-func CloseUUID(ids map[uuid.UUID]bool) bool {
+func CloseID(ids map[tid.TID]bool) bool {
 	for _, d := range AllDockables() {
 		if tc, ok := d.(unison.TabCloser); ok {
-			if otherValue, ok2 := d.AsPanel().ClientData()[AssociatedUUIDKey]; ok2 {
-				if otherID, ok3 := otherValue.(uuid.UUID); ok3 && ids[otherID] {
+			if otherValue, ok2 := d.AsPanel().ClientData()[AssociatedIDKey]; ok2 {
+				if otherID, ok3 := otherValue.(tid.TID); ok3 && ids[otherID] {
 					if !tc.MayAttemptClose() {
 						return false
 					}

@@ -14,8 +14,6 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/entity"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wpn"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/eval"
@@ -94,7 +92,7 @@ func evalEncumbrance(ev *eval.Evaluator, arguments string) (any, error) {
 		}
 	}
 	e, ok := ev.Resolver.(*Entity)
-	if !ok || e.Type != entity.PC {
+	if !ok {
 		return fxp.Int(0), nil
 	}
 	level := fxp.From(int(e.EncumbranceLevel(forSkills)))
@@ -107,7 +105,7 @@ func evalEncumbrance(ev *eval.Evaluator, arguments string) (any, error) {
 // evalSkillLevel takes up to 3 arguments: name (string, required), specialization (string, optional), relative (bool, optional)
 func evalSkillLevel(ev *eval.Evaluator, arguments string) (any, error) {
 	e, ok := ev.Resolver.(*Entity)
-	if !ok || e.Type != entity.PC {
+	if !ok {
 		return fxp.Int(0), nil
 	}
 	name, remaining := eval.NextArg(arguments)
@@ -154,7 +152,7 @@ func evalSkillLevel(ev *eval.Evaluator, arguments string) (any, error) {
 
 func evalHasTrait(ev *eval.Evaluator, arguments string) (any, error) {
 	e, ok := ev.Resolver.(*Entity)
-	if !ok || e.Type != entity.PC {
+	if !ok {
 		return false, nil
 	}
 	arguments = strings.Trim(arguments, `"`)
@@ -171,7 +169,7 @@ func evalHasTrait(ev *eval.Evaluator, arguments string) (any, error) {
 
 func evalTraitLevel(ev *eval.Evaluator, arguments string) (any, error) {
 	e, ok := ev.Resolver.(*Entity)
-	if !ok || e.Type != entity.PC {
+	if !ok {
 		return -fxp.One, nil
 	}
 	arguments = strings.Trim(arguments, `"`)
@@ -193,7 +191,7 @@ func evalTraitLevel(ev *eval.Evaluator, arguments string) (any, error) {
 
 func evalWeaponDamage(ev *eval.Evaluator, arguments string) (any, error) {
 	e, ok := ev.Resolver.(*Entity)
-	if !ok || e.Type != entity.PC {
+	if !ok {
 		return "", nil
 	}
 	var arg string
@@ -207,12 +205,12 @@ func evalWeaponDamage(ev *eval.Evaluator, arguments string) (any, error) {
 	if usage, err = evalToString(ev, strings.Trim(arg, `"`)); err != nil {
 		return nil, err
 	}
-	for _, w := range e.Weapons(wpn.Melee) {
+	for _, w := range e.Weapons(true) {
 		if strings.EqualFold(w.String(), name) && strings.EqualFold(w.Usage, usage) {
 			return w.Damage.ResolvedDamage(nil), nil
 		}
 	}
-	for _, w := range e.Weapons(wpn.Ranged) {
+	for _, w := range e.Weapons(false) {
 		if strings.EqualFold(w.String(), name) && strings.EqualFold(w.Usage, usage) {
 			return w.Damage.ResolvedDamage(nil), nil
 		}
@@ -568,8 +566,7 @@ func valueToYards(value int) fxp.Int {
 
 // evalRandomHeight generates a random height in inches based on the chart from B18.
 func evalRandomHeight(ev *eval.Evaluator, arguments string) (any, error) {
-	e, ok := ev.Resolver.(*Entity)
-	if !ok || e.Type != entity.PC {
+	if _, ok := ev.Resolver.(*Entity); !ok {
 		return -fxp.One, nil
 	}
 	stDecimal, err := evalToNumber(ev, arguments)
@@ -606,7 +603,7 @@ func evalRandomHeight(ev *eval.Evaluator, arguments string) (any, error) {
 // evalRandomWeight generates a random weight in pounds based on the chart from B18.
 func evalRandomWeight(ev *eval.Evaluator, arguments string) (any, error) {
 	e, ok := ev.Resolver.(*Entity)
-	if !ok || e.Type != entity.PC {
+	if !ok {
 		return -fxp.One, nil
 	}
 	var arg string

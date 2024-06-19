@@ -24,7 +24,9 @@ import (
 const (
 	// CurrentDataVersion holds the current version for data files written with the current release. Note that this is
 	// intentionally the same for all data files that GCS processes.
-	CurrentDataVersion = 4 // First version for the Go version of GCS
+	CurrentDataVersion = 5
+	// FirstGoDataVersion is the version that was written by the first Go version of GCS.
+	FirstGoDataVersion = 4
 	// MinimumDataVersion holds the oldest version for data files that can be loaded. Note that this is intentionally
 	// the same for all data files that GCS processes.
 	MinimumDataVersion    = 2

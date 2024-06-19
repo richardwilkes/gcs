@@ -685,7 +685,7 @@ func (s *Sheet) canSwapDefaults(_ any) bool {
 	canSwap := false
 	for _, skillNode := range s.Skills.SelectedNodes(true) {
 		skill := skillNode.Data()
-		if skill.Type == gurps.TechniqueID {
+		if skill.IsTechnique() {
 			return false
 		}
 		if !skill.CanSwapDefaultsWith(skill.DefaultSkill()) && skill.BestSwappableSkill() == nil {

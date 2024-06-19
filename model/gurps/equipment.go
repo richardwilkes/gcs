@@ -21,9 +21,11 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -65,8 +67,12 @@ type Equipment struct {
 
 // EquipmentData holds the Equipment data that is written to disk.
 type EquipmentData struct {
-	ContainerBase[*Equipment]
+	TID tid.TID `json:"id"`
 	EquipmentEditData
+	ThirdParty map[string]any `json:"third_party,omitempty"`
+	Children   []*Equipment   `json:"children,omitempty"` // Only for containers
+	IsOpen     bool           `json:"open,omitempty"`     // Only for containers
+	parent     *Equipment
 }
 
 // EquipmentEditData holds the Equipment data that can be edited by the UI detail editor.
@@ -127,25 +133,78 @@ func SaveEquipment(equipment []*Equipment, filePath string) error {
 func NewEquipment(entity *Entity, parent *Equipment, container bool) *Equipment {
 	e := Equipment{
 		EquipmentData: EquipmentData{
-			ContainerBase: newContainerBase[*Equipment](equipmentTypeKey, container),
+			TID: tid.MustNewTID(equipmentKind(container)),
 			EquipmentEditData: EquipmentEditData{
 				LegalityClass: "4",
 				Quantity:      fxp.One,
 				Equipped:      true,
 			},
+			IsOpen: container,
+			parent: parent,
 		},
 		Entity: entity,
 	}
 	e.Name = e.Kind()
-	e.parent = parent
 	return &e
+}
+
+func equipmentKind(container bool) byte {
+	if container {
+		return kinds.EquipmentContainer
+	}
+	return kinds.Equipment
+}
+
+// ID returns the local ID of this data.
+func (e *Equipment) ID() tid.TID {
+	return e.TID
+}
+
+// Container returns true if this is a container.
+func (e *Equipment) Container() bool {
+	return tid.IsKind(e.TID, kinds.EquipmentContainer)
+}
+
+// HasChildren returns true if this node has children.
+func (e *Equipment) HasChildren() bool {
+	return e.Container() && len(e.Children) > 0
+}
+
+// NodeChildren returns the children of this node, if any.
+func (e *Equipment) NodeChildren() []*Equipment {
+	return e.Children
+}
+
+// SetChildren sets the children of this node.
+func (e *Equipment) SetChildren(children []*Equipment) {
+	e.Children = children
+}
+
+// Parent returns the parent.
+func (e *Equipment) Parent() *Equipment {
+	return e.parent
+}
+
+// SetParent sets the parent.
+func (e *Equipment) SetParent(parent *Equipment) {
+	e.parent = parent
+}
+
+// Open returns true if this node is currently open.
+func (e *Equipment) Open() bool {
+	return e.IsOpen && e.Container()
+}
+
+// SetOpen sets the current open state for this node.
+func (e *Equipment) SetOpen(open bool) {
+	e.IsOpen = open && e.Container()
 }
 
 // Clone implements Node.
 func (e *Equipment) Clone(entity *Entity, parent *Equipment, preserveID bool) *Equipment {
 	other := NewEquipment(entity, parent, e.Container())
 	if preserveID {
-		other.ID = e.ID
+		other.TID = e.TID
 	}
 	other.IsOpen = e.IsOpen
 	other.ThirdParty = e.ThirdParty
@@ -198,13 +257,18 @@ func (e *Equipment) UnmarshalJSON(data []byte) error {
 	var localData struct {
 		EquipmentData
 		// Old data fields
+		Type       string   `json:"type"`
 		Categories []string `json:"categories"`
 	}
 	if err := json.Unmarshal(data, &localData); err != nil {
 		return err
 	}
-	localData.ClearUnusedFieldsForType()
+	if !tid.IsValid(localData.TID) {
+		// Fixup old data that used UUIDs instead of TIDs
+		localData.TID = tid.MustNewTID(equipmentKind(strings.HasSuffix(localData.Type, ContainerKeyPostfix)))
+	}
 	e.EquipmentData = localData.EquipmentData
+	e.ClearUnusedFieldsForType()
 	e.Tags = convertOldCategoriesToTags(e.Tags, localData.Categories)
 	slices.Sort(e.Tags)
 	if e.Container() {
@@ -287,8 +351,8 @@ func EquipmentHeaderData(columnID int, entity *Entity, carried, forPage bool) He
 func (e *Equipment) CellData(columnID int, data *CellData) {
 	data.Dim = e.Quantity == 0
 	e1 := e
-	for !data.Dim && e1.Parent() != nil {
-		e1 = e1.Parent()
+	for !data.Dim && e1.parent != nil {
+		e1 = e1.parent
 		data.Dim = e1.Quantity == 0
 	}
 	switch columnID {
@@ -624,43 +688,64 @@ func (e *Equipment) Enabled() bool {
 	return true
 }
 
+// CanConvertToFromContainer returns true if this node can be converted to/from a container.
+func (e *Equipment) CanConvertToFromContainer() bool {
+	return !e.Container() || !e.HasChildren()
+}
+
+// ConvertToContainer converts this node to a container.
+func (e *Equipment) ConvertToContainer() {
+	e.TID = tid.TID(kinds.EquipmentContainer) + e.TID[1:]
+}
+
+// ConvertToNonContainer converts this node to a non-container.
+func (e *Equipment) ConvertToNonContainer() {
+	e.TID = tid.TID(kinds.Equipment) + e.TID[1:]
+}
+
 // Kind returns the kind of data.
-func (d *EquipmentData) Kind() string {
-	return d.kind(i18n.Text("Equipment"))
+func (e *Equipment) Kind() string {
+	if e.Container() {
+		return i18n.Text("Equipment Container")
+	}
+	return i18n.Text("Equipment")
 }
 
 // ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
-func (d *EquipmentData) ClearUnusedFieldsForType() {
-	d.clearUnusedFields()
+func (e *Equipment) ClearUnusedFieldsForType() {
+	if !e.Container() {
+		e.Children = nil
+		e.IsOpen = false
+	}
 }
 
 // CopyFrom implements node.EditorData.
-func (d *EquipmentEditData) CopyFrom(e *Equipment) {
-	d.copyFrom(e.Entity, &e.EquipmentEditData, false)
+func (e *EquipmentEditData) CopyFrom(other *Equipment) {
+	e.copyFrom(other.Entity, &other.EquipmentEditData, false)
 }
 
 // ApplyTo implements node.EditorData.
-func (d *EquipmentEditData) ApplyTo(e *Equipment) {
-	e.EquipmentEditData.copyFrom(e.Entity, d, true)
+func (e *EquipmentEditData) ApplyTo(other *Equipment) {
+	other.EquipmentEditData.copyFrom(other.Entity, e, true)
 }
 
-func (d *EquipmentEditData) copyFrom(entity *Entity, other *EquipmentEditData, isApply bool) {
-	*d = *other
-	d.Tags = txt.CloneStringSlice(d.Tags)
-	d.Modifiers = nil
+func (e *EquipmentEditData) copyFrom(entity *Entity, other *EquipmentEditData, isApply bool) {
+	*e = *other
+	e.Tags = txt.CloneStringSlice(e.Tags)
+	e.Modifiers = nil
 	if len(other.Modifiers) != 0 {
-		d.Modifiers = make([]*EquipmentModifier, 0, len(other.Modifiers))
+		e.Modifiers = make([]*EquipmentModifier, 0, len(other.Modifiers))
 		for _, one := range other.Modifiers {
-			d.Modifiers = append(d.Modifiers, one.Clone(entity, nil, true))
+			e.Modifiers = append(e.Modifiers, one.Clone(entity, nil, true))
 		}
 	}
-	d.Prereq = d.Prereq.CloneResolvingEmpty(false, isApply)
-	d.Weapons = nil
+	e.Prereq = e.Prereq.CloneResolvingEmpty(false, isApply)
+	e.Weapons = nil
 	if len(other.Weapons) != 0 {
-		d.Weapons = make([]*Weapon, 0, len(other.Weapons))
+		e.Weapons = make([]*Weapon, 0, len(other.Weapons))
 		for _, one := range other.Weapons {
-			d.Weapons = append(d.Weapons, one.Clone(entity, nil, true))
+			e.Weapons = append(e.Weapons, one.Clone(entity, nil, true))
 		}
 	}
-	d.Features = other.Features.Clone()
+	e.Features = other.Features.Clone()
 }

@@ -115,7 +115,7 @@ func displayPointsEditor(owner Rebuildable, entity *gurps.Entity) {
 		VGrab:  true,
 	})
 	e.AddChild(scroller)
-	e.ClientData()[AssociatedUUIDKey] = e.entity.ID
+	e.ClientData()[AssociatedIDKey] = e.entity.ID
 	e.promptForSave = true
 	scroller.Content().AsPanel().ValidateScrollRoot()
 	PlaceInDock(e, dgroup.Editors, false)

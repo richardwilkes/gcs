@@ -12,9 +12,10 @@ package server
 import (
 	"net/http"
 
-	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/server/websettings"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/xio/network/xhttp"
 )
 
@@ -54,21 +55,21 @@ func (s *Server) logoutHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func sessionFromRequest(r *http.Request) (sessionID uuid.UUID, userName string, ok bool) {
+func sessionFromRequest(r *http.Request) (sessionID tid.TID, userName string, ok bool) {
 	rawID := r.Header.Get(sessionIDHeader)
 	if rawID == "" {
-		return uuid.Nil, "", false
+		return "", "", false
 	}
 	var err error
-	if sessionID, err = uuid.Parse(rawID); err != nil {
-		return uuid.Nil, "", false
+	if sessionID, err = tid.FromStringOfKind(rawID, kinds.Session); err != nil {
+		return "", "", false
 	}
 	userName, ok = gurps.GlobalSettings().WebServer.LookupSession(sessionID)
 	return sessionID, userName, ok
 }
 
-func setSessionHeaders(w http.ResponseWriter, id uuid.UUID, userName string) {
+func setSessionHeaders(w http.ResponseWriter, id tid.TID, userName string) {
 	h := w.Header()
-	h.Set(sessionIDHeader, id.String())
+	h.Set(sessionIDHeader, string(id))
 	h.Set("X-User", userName)
 }

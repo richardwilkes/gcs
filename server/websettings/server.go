@@ -19,10 +19,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/json"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
 )
 
@@ -51,8 +52,8 @@ type Server struct {
 
 type wrapper struct {
 	Server
-	Users    map[string]*User       `json:"users,omitempty"`
-	Sessions map[uuid.UUID]*Session `json:"sessions,omitempty"`
+	Users    map[string]*User     `json:"users,omitempty"`
+	Sessions map[tid.TID]*Session `json:"sessions,omitempty"`
 }
 
 // Settings holds the settings for the embedded web server.
@@ -60,7 +61,7 @@ type Settings struct {
 	Server
 	lock     sync.RWMutex
 	users    map[string]*User
-	sessions map[uuid.UUID]*Session
+	sessions map[tid.TID]*Session
 }
 
 // Default returns the default settings.
@@ -74,7 +75,7 @@ func Default() *Settings {
 			IdleTimeout:         DefaultIdleTimeout,
 		},
 		users:    make(map[string]*User),
-		sessions: make(map[uuid.UUID]*Session),
+		sessions: make(map[tid.TID]*Session),
 	}
 }
 
@@ -129,7 +130,7 @@ func (s *Settings) Validate() {
 		s.users = make(map[string]*User)
 	}
 	if s.sessions == nil {
-		s.sessions = make(map[uuid.UUID]*Session)
+		s.sessions = make(map[tid.TID]*Session)
 	}
 	s.lock.Unlock()
 }
@@ -153,7 +154,7 @@ func (s *Settings) CopyFrom(other *Settings) {
 	for key, user := range other.users {
 		users[key] = user.Clone()
 	}
-	sessions := make(map[uuid.UUID]*Session, len(other.sessions))
+	sessions := make(map[tid.TID]*Session, len(other.sessions))
 	for id, session := range other.sessions {
 		sessions[id] = session.Clone()
 	}
@@ -200,7 +201,7 @@ func (s *Settings) PruneSessions() {
 }
 
 func (s *Settings) pruneSessions() {
-	var sessionsToDelete []uuid.UUID
+	var sessionsToDelete []tid.TID
 	for id, session := range s.sessions {
 		if session.Expired() {
 			sessionsToDelete = append(sessionsToDelete, id)
@@ -258,7 +259,7 @@ func (s *Settings) RemoveUser(name string) {
 	defer s.lock.Unlock()
 	key := UserNameToKey(name)
 	delete(s.users, key)
-	var keysToDelete []uuid.UUID
+	var keysToDelete []tid.TID
 	for id, session := range s.sessions {
 		if session.UserKey == key {
 			keysToDelete = append(keysToDelete, id)
@@ -327,7 +328,7 @@ func (s *Settings) SetAccessList(name string, accessList map[string]Access) {
 }
 
 // LookupSession looks up a session, updating its last used time and returning the user's name if found.
-func (s *Settings) LookupSession(id uuid.UUID) (string, bool) {
+func (s *Settings) LookupSession(id tid.TID) (string, bool) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	session, ok := s.sessions[id]
@@ -344,11 +345,11 @@ func (s *Settings) LookupSession(id uuid.UUID) (string, bool) {
 }
 
 // CreateSession creates a session.
-func (s *Settings) CreateSession(userName string) uuid.UUID {
+func (s *Settings) CreateSession(userName string) tid.TID {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	session := &Session{
-		ID:       uuid.New(),
+		ID:       tid.MustNewTID(kinds.Session),
 		UserKey:  UserNameToKey(userName),
 		Issued:   time.Now(),
 		LastUsed: time.Now(),
@@ -358,7 +359,7 @@ func (s *Settings) CreateSession(userName string) uuid.UUID {
 }
 
 // RemoveSession removes a session.
-func (s *Settings) RemoveSession(id uuid.UUID) {
+func (s *Settings) RemoveSession(id tid.TID) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	delete(s.sessions, id)

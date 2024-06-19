@@ -15,10 +15,11 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -33,7 +34,7 @@ const (
 
 // ConditionalModifier holds data for a reaction or conditional modifier.
 type ConditionalModifier struct {
-	ID      uuid.UUID
+	TID     tid.TID
 	From    string
 	Amounts []fxp.Int
 	Sources []string
@@ -42,7 +43,7 @@ type ConditionalModifier struct {
 // NewConditionalModifier creates a new ConditionalModifier.
 func NewConditionalModifier(source, from string, amt fxp.Int) *ConditionalModifier {
 	return &ConditionalModifier{
-		ID:      uuid.New(),
+		TID:     tid.MustNewTID(kinds.ConditionalModifier),
 		From:    from,
 		Amounts: []fxp.Int{amt},
 		Sources: []string{source},
@@ -50,98 +51,98 @@ func NewConditionalModifier(source, from string, amt fxp.Int) *ConditionalModifi
 }
 
 // Add another source.
-func (m *ConditionalModifier) Add(source string, amt fxp.Int) {
-	m.Amounts = append(m.Amounts, amt)
-	m.Sources = append(m.Sources, source)
+func (c *ConditionalModifier) Add(source string, amt fxp.Int) {
+	c.Amounts = append(c.Amounts, amt)
+	c.Sources = append(c.Sources, source)
 }
 
 // Total returns the total of all amounts.
-func (m *ConditionalModifier) Total() fxp.Int {
+func (c *ConditionalModifier) Total() fxp.Int {
 	var total fxp.Int
-	for _, amt := range m.Amounts {
+	for _, amt := range c.Amounts {
 		total += amt
 	}
 	return total
 }
 
 // Compare returns -1, 0, 1 if this is less than, equal to, or greater than the other.
-func (m *ConditionalModifier) Compare(other *ConditionalModifier) int {
-	result := txt.NaturalCmp(m.From, other.From, true)
+func (c *ConditionalModifier) Compare(other *ConditionalModifier) int {
+	result := txt.NaturalCmp(c.From, other.From, true)
 	if result == 0 {
-		result = cmp.Compare(m.Total(), other.Total())
+		result = cmp.Compare(c.Total(), other.Total())
 	}
 	return result
 }
 
-// UUID returns the UUID of this data.
-func (m *ConditionalModifier) UUID() uuid.UUID {
-	return m.ID
+// ID returns the local ID of this data.
+func (c *ConditionalModifier) ID() tid.TID {
+	return c.TID
 }
 
 // Clone implements Node.
-func (m *ConditionalModifier) Clone(_ *Entity, _ *ConditionalModifier, preserveID bool) *ConditionalModifier {
+func (c *ConditionalModifier) Clone(_ *Entity, _ *ConditionalModifier, preserveID bool) *ConditionalModifier {
 	clone := &ConditionalModifier{
-		From:    m.From,
-		Amounts: slices.Clone(m.Amounts),
-		Sources: slices.Clone(m.Sources),
+		From:    c.From,
+		Amounts: slices.Clone(c.Amounts),
+		Sources: slices.Clone(c.Sources),
 	}
 	if preserveID {
-		clone.ID = m.ID
+		clone.TID = c.TID
 	} else {
-		clone.ID = uuid.New()
+		clone.TID = tid.MustNewTID(kinds.ConditionalModifier)
 	}
 	return clone
 }
 
 // Kind returns the kind of data.
-func (m *ConditionalModifier) Kind() string {
+func (c *ConditionalModifier) Kind() string {
 	return i18n.Text("Conditional Modifier")
 }
 
 // Container returns true if this is a container.
-func (m *ConditionalModifier) Container() bool {
+func (c *ConditionalModifier) Container() bool {
 	return false
 }
 
 // Open returns true if this node is currently open.
-func (m *ConditionalModifier) Open() bool {
+func (c *ConditionalModifier) Open() bool {
 	return false
 }
 
 // SetOpen sets the current open state for this node.
-func (m *ConditionalModifier) SetOpen(_ bool) {
+func (c *ConditionalModifier) SetOpen(_ bool) {
 }
 
 // Enabled returns true if this node is enabled.
-func (m *ConditionalModifier) Enabled() bool {
+func (c *ConditionalModifier) Enabled() bool {
 	return true
 }
 
 // Parent returns the parent.
-func (m *ConditionalModifier) Parent() *ConditionalModifier {
+func (c *ConditionalModifier) Parent() *ConditionalModifier {
 	return nil
 }
 
 // SetParent sets the parent.
-func (m *ConditionalModifier) SetParent(_ *ConditionalModifier) {
+func (c *ConditionalModifier) SetParent(_ *ConditionalModifier) {
 }
 
 // HasChildren returns true if this node has children.
-func (m *ConditionalModifier) HasChildren() bool {
+func (c *ConditionalModifier) HasChildren() bool {
 	return false
 }
 
 // NodeChildren returns the children of this node, if any.
-func (m *ConditionalModifier) NodeChildren() []*ConditionalModifier {
+func (c *ConditionalModifier) NodeChildren() []*ConditionalModifier {
 	return nil
 }
 
 // SetChildren sets the children of this node.
-func (m *ConditionalModifier) SetChildren(_ []*ConditionalModifier) {
+func (c *ConditionalModifier) SetChildren(_ []*ConditionalModifier) {
 }
 
-func (m *ConditionalModifier) String() string {
-	return fmt.Sprintf("%s %s", m.Total().StringWithSign(), m.From)
+func (c *ConditionalModifier) String() string {
+	return fmt.Sprintf("%s %s", c.Total().StringWithSign(), c.From)
 }
 
 // ConditionalModifiersHeaderData returns the header data information for the given conditional modifier column.
@@ -173,41 +174,41 @@ func ReactionModifiersHeaderData(columnID int) HeaderData {
 }
 
 // CellData returns the cell data information for the given column.
-func (m *ConditionalModifier) CellData(columnID int, data *CellData) {
+func (c *ConditionalModifier) CellData(columnID int, data *CellData) {
 	switch columnID {
 	case ConditionalModifierValueColumn:
 		data.Type = cell.Text
-		data.Primary = m.Total().StringWithSign()
+		data.Primary = c.Total().StringWithSign()
 		data.Alignment = align.End
 		var buffer strings.Builder
-		for i, amt := range m.Amounts {
+		for i, amt := range c.Amounts {
 			if i != 0 {
 				buffer.WriteByte('\n')
 			}
-			fmt.Fprintf(&buffer, "%s %s", amt.CommaWithSign(), m.Sources[i])
+			fmt.Fprintf(&buffer, "%s %s", amt.CommaWithSign(), c.Sources[i])
 		}
 		data.Tooltip = buffer.String()
 	case ConditionalModifierDescriptionColumn:
 		data.Type = cell.Text
-		data.Primary = m.From
+		data.Primary = c.From
 	case PageRefCellAlias:
 		data.Type = cell.PageRef
 	}
 }
 
 // OwningEntity returns the owning Entity.
-func (m *ConditionalModifier) OwningEntity() *Entity {
+func (c *ConditionalModifier) OwningEntity() *Entity {
 	return nil
 }
 
 // SetOwningEntity sets the owning entity and configures any sub-components as needed.
-func (m *ConditionalModifier) SetOwningEntity(_ *Entity) {
+func (c *ConditionalModifier) SetOwningEntity(_ *Entity) {
 }
 
 // FillWithNameableKeys adds any nameable keys found to the provided map.
-func (m *ConditionalModifier) FillWithNameableKeys(_ map[string]string) {
+func (c *ConditionalModifier) FillWithNameableKeys(_ map[string]string) {
 }
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
-func (m *ConditionalModifier) ApplyNameableKeys(_ map[string]string) {
+func (c *ConditionalModifier) ApplyNameableKeys(_ map[string]string) {
 }

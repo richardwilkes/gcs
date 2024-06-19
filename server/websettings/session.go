@@ -12,7 +12,7 @@ package websettings
 import (
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/richardwilkes/toolbox/tid"
 )
 
 // Constants
@@ -23,7 +23,7 @@ const (
 
 // Session holds a session's information.
 type Session struct {
-	ID       uuid.UUID `json:"id"`
+	ID       tid.TID   `json:"id"`
 	UserKey  string    `json:"user"`
 	Issued   time.Time `json:"issued"`
 	LastUsed time.Time `json:"last_used"`

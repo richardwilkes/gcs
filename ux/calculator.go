@@ -144,12 +144,12 @@ func DisplayCalculator(sheet *Sheet) {
 
 	c.AddChild(c.createToolbar())
 	c.AddChild(c.scroll)
-	c.ClientData()[AssociatedUUIDKey] = sheet.Entity().ID
+	c.ClientData()[AssociatedIDKey] = sheet.Entity().ID
 	c.content.ValidateScrollRoot()
 	group := dgroup.Editors
 	p := sheet.AsPanel()
 	for p != nil {
-		if _, exists := p.ClientData()[AssociatedUUIDKey]; exists {
+		if _, exists := p.ClientData()[AssociatedIDKey]; exists {
 			group = dgroup.SubEditors
 			break
 		}

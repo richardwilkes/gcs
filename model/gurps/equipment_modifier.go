@@ -21,9 +21,11 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/emcost"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/emweight"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -58,8 +60,12 @@ type EquipmentModifier struct {
 
 // EquipmentModifierData holds the EquipmentModifier data that is written to disk.
 type EquipmentModifierData struct {
-	ContainerBase[*EquipmentModifier]
+	TID tid.TID `json:"id"`
 	EquipmentModifierEditData
+	ThirdParty map[string]any       `json:"third_party,omitempty"`
+	Children   []*EquipmentModifier `json:"children,omitempty"` // Only for containers
+	IsOpen     bool                 `json:"open,omitempty"`     // Only for containers
+	parent     *EquipmentModifier
 }
 
 // EquipmentModifierEditData holds the EquipmentModifier data that can be edited by the UI detail editor.
@@ -117,29 +123,82 @@ func SaveEquipmentModifiers(modifiers []*EquipmentModifier, filePath string) err
 
 // NewEquipmentModifier creates an EquipmentModifier.
 func NewEquipmentModifier(entity *Entity, parent *EquipmentModifier, container bool) *EquipmentModifier {
-	a := &EquipmentModifier{
+	e := EquipmentModifier{
 		EquipmentModifierData: EquipmentModifierData{
-			ContainerBase: newContainerBase[*EquipmentModifier](equipmentModifierTypeKey, container),
+			TID:    tid.MustNewTID(equipmentModifierKind(container)),
+			IsOpen: container,
+			parent: parent,
 		},
 		Entity: entity,
 	}
-	a.Name = a.Kind()
-	a.parent = parent
-	return a
+	e.Name = e.Kind()
+	return &e
+}
+
+func equipmentModifierKind(container bool) byte {
+	if container {
+		return kinds.EquipmentModifierContainer
+	}
+	return kinds.EquipmentModifier
+}
+
+// ID returns the local ID of this data.
+func (e *EquipmentModifier) ID() tid.TID {
+	return e.TID
+}
+
+// Container returns true if this is a container.
+func (e *EquipmentModifier) Container() bool {
+	return tid.IsKind(e.TID, kinds.EquipmentModifierContainer)
+}
+
+// HasChildren returns true if this node has children.
+func (e *EquipmentModifier) HasChildren() bool {
+	return e.Container() && len(e.Children) > 0
+}
+
+// NodeChildren returns the children of this node, if any.
+func (e *EquipmentModifier) NodeChildren() []*EquipmentModifier {
+	return e.Children
+}
+
+// SetChildren sets the children of this node.
+func (e *EquipmentModifier) SetChildren(children []*EquipmentModifier) {
+	e.Children = children
+}
+
+// Parent returns the parent.
+func (e *EquipmentModifier) Parent() *EquipmentModifier {
+	return e.parent
+}
+
+// SetParent sets the parent.
+func (e *EquipmentModifier) SetParent(parent *EquipmentModifier) {
+	e.parent = parent
+}
+
+// Open returns true if this node is currently open.
+func (e *EquipmentModifier) Open() bool {
+	return e.IsOpen && e.Container()
+}
+
+// SetOpen sets the current open state for this node.
+func (e *EquipmentModifier) SetOpen(open bool) {
+	e.IsOpen = open && e.Container()
 }
 
 // Clone implements Node.
-func (m *EquipmentModifier) Clone(entity *Entity, parent *EquipmentModifier, preserveID bool) *EquipmentModifier {
-	other := NewEquipmentModifier(entity, parent, m.Container())
+func (e *EquipmentModifier) Clone(entity *Entity, parent *EquipmentModifier, preserveID bool) *EquipmentModifier {
+	other := NewEquipmentModifier(entity, parent, e.Container())
 	if preserveID {
-		other.ID = m.ID
+		other.TID = e.TID
 	}
-	other.IsOpen = m.IsOpen
-	other.ThirdParty = m.ThirdParty
-	other.EquipmentModifierEditData.CopyFrom(m)
-	if m.HasChildren() {
-		other.Children = make([]*EquipmentModifier, 0, len(m.Children))
-		for _, child := range m.Children {
+	other.IsOpen = e.IsOpen
+	other.ThirdParty = e.ThirdParty
+	other.EquipmentModifierEditData.CopyFrom(e)
+	if e.HasChildren() {
+		other.Children = make([]*EquipmentModifier, 0, len(e.Children))
+		for _, child := range e.Children {
 			other.Children = append(other.Children, child.Clone(entity, other, preserveID))
 		}
 	}
@@ -147,49 +206,54 @@ func (m *EquipmentModifier) Clone(entity *Entity, parent *EquipmentModifier, pre
 }
 
 // MarshalJSON implements json.Marshaler.
-func (m *EquipmentModifier) MarshalJSON() ([]byte, error) {
+func (e *EquipmentModifier) MarshalJSON() ([]byte, error) {
 	type calc struct {
 		ResolvedNotes string `json:"resolved_notes,omitempty"`
 	}
-	m.ClearUnusedFieldsForType()
+	e.ClearUnusedFieldsForType()
 	data := struct {
 		EquipmentModifierData
 		Calc *calc `json:"calc,omitempty"`
 	}{
-		EquipmentModifierData: m.EquipmentModifierData,
+		EquipmentModifierData: e.EquipmentModifierData,
 	}
-	notes := m.resolveLocalNotes()
-	if notes != m.LocalNotes {
+	notes := e.resolveLocalNotes()
+	if notes != e.LocalNotes {
 		data.Calc = &calc{ResolvedNotes: notes}
 	}
 	return json.Marshal(&data)
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (m *EquipmentModifier) UnmarshalJSON(data []byte) error {
+func (e *EquipmentModifier) UnmarshalJSON(data []byte) error {
 	var localData struct {
 		EquipmentModifierData
 		// Old data fields
+		Type       string   `json:"type"`
 		Categories []string `json:"categories"`
 	}
 	if err := json.Unmarshal(data, &localData); err != nil {
 		return err
 	}
-	localData.ClearUnusedFieldsForType()
-	m.EquipmentModifierData = localData.EquipmentModifierData
-	m.Tags = convertOldCategoriesToTags(m.Tags, localData.Categories)
-	slices.Sort(m.Tags)
-	if m.Container() {
-		for _, one := range m.Children {
-			one.parent = m
+	if !tid.IsValid(localData.TID) {
+		// Fixup old data that used UUIDs instead of TIDs
+		localData.TID = tid.MustNewTID(equipmentModifierKind(strings.HasSuffix(localData.Type, ContainerKeyPostfix)))
+	}
+	e.EquipmentModifierData = localData.EquipmentModifierData
+	e.ClearUnusedFieldsForType()
+	e.Tags = convertOldCategoriesToTags(e.Tags, localData.Categories)
+	slices.Sort(e.Tags)
+	if e.Container() {
+		for _, one := range e.Children {
+			one.parent = e
 		}
 	}
 	return nil
 }
 
 // TagList returns the list of tags.
-func (m *EquipmentModifier) TagList() []string {
-	return m.Tags
+func (e *EquipmentModifier) TagList() []string {
+	return e.Tags
 }
 
 // EquipmentModifierHeaderData returns the header data information for the given equipment modifier column.
@@ -221,52 +285,52 @@ func EquipmentModifierHeaderData(columnID int) HeaderData {
 }
 
 // CellData returns the cell data information for the given column.
-func (m *EquipmentModifier) CellData(columnID int, data *CellData) {
+func (e *EquipmentModifier) CellData(columnID int, data *CellData) {
 	switch columnID {
 	case EquipmentModifierEnabledColumn:
-		if !m.Container() {
+		if !e.Container() {
 			data.Type = cell.Toggle
-			data.Checked = m.Enabled()
+			data.Checked = e.Enabled()
 			data.Alignment = align.Middle
 		}
 	case EquipmentModifierDescriptionColumn:
 		data.Type = cell.Text
-		data.Primary = m.Name
-		data.Secondary = m.SecondaryText(func(option display.Option) bool { return option.Inline() })
-		data.Tooltip = m.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
+		data.Primary = e.Name
+		data.Secondary = e.SecondaryText(func(option display.Option) bool { return option.Inline() })
+		data.Tooltip = e.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 	case EquipmentModifierTechLevelColumn:
-		if !m.Container() {
+		if !e.Container() {
 			data.Type = cell.Text
-			data.Primary = m.TechLevel
+			data.Primary = e.TechLevel
 		}
 	case EquipmentModifierCostColumn:
-		if !m.Container() {
+		if !e.Container() {
 			data.Type = cell.Text
-			data.Primary = m.CostDescription()
+			data.Primary = e.CostDescription()
 		}
 	case EquipmentModifierWeightColumn:
-		if !m.Container() {
+		if !e.Container() {
 			data.Type = cell.Text
-			data.Primary = m.WeightDescription()
+			data.Primary = e.WeightDescription()
 		}
 	case EquipmentModifierTagsColumn:
 		data.Type = cell.Tags
-		data.Primary = CombineTags(m.Tags)
+		data.Primary = CombineTags(e.Tags)
 	case EquipmentModifierReferenceColumn, PageRefCellAlias:
 		data.Type = cell.PageRef
-		data.Primary = m.PageRef
-		if m.PageRefHighlight != "" {
-			data.Secondary = m.PageRefHighlight
+		data.Primary = e.PageRef
+		if e.PageRefHighlight != "" {
+			data.Secondary = e.PageRefHighlight
 		} else {
-			data.Secondary = m.Name
+			data.Secondary = e.Name
 		}
 	}
 }
 
 // Depth returns the number of parents this node has.
-func (m *EquipmentModifier) Depth() int {
+func (e *EquipmentModifier) Depth() int {
 	count := 0
-	p := m.parent
+	p := e.parent
 	for p != nil {
 		count++
 		p = p.parent
@@ -275,48 +339,48 @@ func (m *EquipmentModifier) Depth() int {
 }
 
 // OwningEntity returns the owning Entity.
-func (m *EquipmentModifier) OwningEntity() *Entity {
-	return m.Entity
+func (e *EquipmentModifier) OwningEntity() *Entity {
+	return e.Entity
 }
 
 // SetOwningEntity sets the owning entity and configures any sub-components as needed.
-func (m *EquipmentModifier) SetOwningEntity(entity *Entity) {
-	m.Entity = entity
-	if m.Container() {
-		for _, child := range m.Children {
+func (e *EquipmentModifier) SetOwningEntity(entity *Entity) {
+	e.Entity = entity
+	if e.Container() {
+		for _, child := range e.Children {
 			child.SetOwningEntity(entity)
 		}
 	}
 }
 
-func (m *EquipmentModifier) String() string {
-	return m.Name
+func (e *EquipmentModifier) String() string {
+	return e.Name
 }
 
-func (m *EquipmentModifier) resolveLocalNotes() string {
-	return EvalEmbeddedRegex.ReplaceAllStringFunc(m.LocalNotes, m.Entity.EmbeddedEval)
+func (e *EquipmentModifier) resolveLocalNotes() string {
+	return EvalEmbeddedRegex.ReplaceAllStringFunc(e.LocalNotes, e.Entity.EmbeddedEval)
 }
 
 // SecondaryText returns the "secondary" text: the text display below an Trait.
-func (m *EquipmentModifier) SecondaryText(optionChecker func(display.Option) bool) string {
-	if !optionChecker(SheetSettingsFor(m.Entity).NotesDisplay) {
+func (e *EquipmentModifier) SecondaryText(optionChecker func(display.Option) bool) string {
+	if !optionChecker(SheetSettingsFor(e.Entity).NotesDisplay) {
 		return ""
 	}
-	return m.resolveLocalNotes()
+	return e.resolveLocalNotes()
 }
 
 // FullDescription returns a full description.
-func (m *EquipmentModifier) FullDescription() string {
+func (e *EquipmentModifier) FullDescription() string {
 	var buffer strings.Builder
-	buffer.WriteString(m.String())
-	if localNotes := m.resolveLocalNotes(); localNotes != "" {
+	buffer.WriteString(e.String())
+	if localNotes := e.resolveLocalNotes(); localNotes != "" {
 		buffer.WriteString(" (")
-		buffer.WriteString(m.LocalNotes)
+		buffer.WriteString(e.LocalNotes)
 		buffer.WriteByte(')')
 	}
-	if SheetSettingsFor(m.Entity).ShowEquipmentModifierAdj {
-		costDesc := m.CostDescription()
-		weightDesc := m.WeightDescription()
+	if SheetSettingsFor(e.Entity).ShowEquipmentModifierAdj {
+		costDesc := e.CostDescription()
+		weightDesc := e.WeightDescription()
 		if costDesc != "" || weightDesc != "" {
 			buffer.WriteString(" [")
 			buffer.WriteString(costDesc)
@@ -333,9 +397,9 @@ func (m *EquipmentModifier) FullDescription() string {
 }
 
 // FullCostDescription returns a combination of the cost and weight descriptions.
-func (m *EquipmentModifier) FullCostDescription() string {
-	cost := m.CostDescription()
-	weight := m.WeightDescription()
+func (e *EquipmentModifier) FullCostDescription() string {
+	cost := e.CostDescription()
+	weight := e.WeightDescription()
 	switch {
 	case cost == "" && weight == "":
 		return ""
@@ -349,52 +413,52 @@ func (m *EquipmentModifier) FullCostDescription() string {
 }
 
 // CostDescription returns the formatted cost.
-func (m *EquipmentModifier) CostDescription() string {
-	if m.Container() || (m.CostType == emcost.Original && (m.CostAmount == "" || m.CostAmount == "+0")) {
+func (e *EquipmentModifier) CostDescription() string {
+	if e.Container() || (e.CostType == emcost.Original && (e.CostAmount == "" || e.CostAmount == "+0")) {
 		return ""
 	}
-	return m.CostType.Format(m.CostAmount) + " " + m.CostType.String()
+	return e.CostType.Format(e.CostAmount) + " " + e.CostType.String()
 }
 
 // WeightDescription returns the formatted weight.
-func (m *EquipmentModifier) WeightDescription() string {
-	if m.Container() || (m.WeightType == emweight.Original && (m.WeightAmount == "" || strings.HasPrefix(m.WeightAmount, "+0 "))) {
+func (e *EquipmentModifier) WeightDescription() string {
+	if e.Container() || (e.WeightType == emweight.Original && (e.WeightAmount == "" || strings.HasPrefix(e.WeightAmount, "+0 "))) {
 		return ""
 	}
-	return m.WeightType.Format(m.WeightAmount, SheetSettingsFor(m.Entity).DefaultWeightUnits) + " " + m.WeightType.String()
+	return e.WeightType.Format(e.WeightAmount, SheetSettingsFor(e.Entity).DefaultWeightUnits) + " " + e.WeightType.String()
 }
 
 // FillWithNameableKeys adds any nameable keys found in this EquipmentModifier to the provided map.
-func (m *EquipmentModifier) FillWithNameableKeys(keyMap map[string]string) {
-	if m.Enabled() {
-		Extract(m.Name, keyMap)
-		Extract(m.LocalNotes, keyMap)
-		for _, one := range m.Features {
+func (e *EquipmentModifier) FillWithNameableKeys(keyMap map[string]string) {
+	if e.Enabled() {
+		Extract(e.Name, keyMap)
+		Extract(e.LocalNotes, keyMap)
+		for _, one := range e.Features {
 			one.FillWithNameableKeys(keyMap)
 		}
 	}
 }
 
 // ApplyNameableKeys replaces any nameable keys found in this EquipmentModifier with the corresponding values in the provided map.
-func (m *EquipmentModifier) ApplyNameableKeys(keyMap map[string]string) {
-	if m.Enabled() {
-		m.Name = Apply(m.Name, keyMap)
-		m.LocalNotes = Apply(m.LocalNotes, keyMap)
-		for _, one := range m.Features {
+func (e *EquipmentModifier) ApplyNameableKeys(keyMap map[string]string) {
+	if e.Enabled() {
+		e.Name = Apply(e.Name, keyMap)
+		e.LocalNotes = Apply(e.LocalNotes, keyMap)
+		for _, one := range e.Features {
 			one.ApplyNameableKeys(keyMap)
 		}
 	}
 }
 
 // Enabled returns true if this node is enabled.
-func (m *EquipmentModifier) Enabled() bool {
-	return !m.Disabled || m.Container()
+func (e *EquipmentModifier) Enabled() bool {
+	return !e.Disabled || e.Container()
 }
 
 // SetEnabled makes the node enabled, if possible.
-func (m *EquipmentModifier) SetEnabled(enabled bool) {
-	if !m.Container() {
-		m.Disabled = !enabled
+func (e *EquipmentModifier) SetEnabled(enabled bool) {
+	if !e.Container() {
+		e.Disabled = !enabled
 	}
 }
 
@@ -509,36 +573,41 @@ func processMultiplyAddWeightStep(weightType emweight.Type, weight fxp.Int, defU
 }
 
 // Kind returns the kind of data.
-func (d *EquipmentModifierData) Kind() string {
-	return d.kind(i18n.Text("Equipment Modifier"))
+func (e *EquipmentModifier) Kind() string {
+	if e.Container() {
+		return i18n.Text("Equipment Modifier Container")
+	}
+	return i18n.Text("Equipment Modifier")
 }
 
 // ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
-func (d *EquipmentModifierData) ClearUnusedFieldsForType() {
-	d.clearUnusedFields()
-	if d.Container() {
-		d.CostType = 0
-		d.WeightType = 0
-		d.Disabled = false
-		d.TechLevel = ""
-		d.CostAmount = ""
-		d.WeightAmount = ""
-		d.Features = nil
+func (e *EquipmentModifier) ClearUnusedFieldsForType() {
+	if e.Container() {
+		e.CostType = 0
+		e.WeightType = 0
+		e.Disabled = false
+		e.TechLevel = ""
+		e.CostAmount = ""
+		e.WeightAmount = ""
+		e.Features = nil
+	} else {
+		e.Children = nil
+		e.IsOpen = false
 	}
 }
 
 // CopyFrom implements node.EditorData.
-func (d *EquipmentModifierEditData) CopyFrom(mod *EquipmentModifier) {
-	d.copyFrom(&mod.EquipmentModifierEditData)
+func (e *EquipmentModifierEditData) CopyFrom(other *EquipmentModifier) {
+	e.copyFrom(&other.EquipmentModifierEditData)
 }
 
 // ApplyTo implements node.EditorData.
-func (d *EquipmentModifierEditData) ApplyTo(mod *EquipmentModifier) {
-	mod.EquipmentModifierEditData.copyFrom(d)
+func (e *EquipmentModifierEditData) ApplyTo(other *EquipmentModifier) {
+	other.EquipmentModifierEditData.copyFrom(e)
 }
 
-func (d *EquipmentModifierEditData) copyFrom(other *EquipmentModifierEditData) {
-	*d = *other
-	d.Tags = txt.CloneStringSlice(d.Tags)
-	d.Features = other.Features.Clone()
+func (e *EquipmentModifierEditData) copyFrom(other *EquipmentModifierEditData) {
+	*e = *other
+	e.Tags = txt.CloneStringSlice(e.Tags)
+	e.Features = other.Features.Clone()
 }

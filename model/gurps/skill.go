@@ -20,12 +20,13 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/entity"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/unison/enums/align"
@@ -62,8 +63,12 @@ type Skill struct {
 
 // SkillData holds the Skill data that is written to disk.
 type SkillData struct {
-	ContainerBase[*Skill]
+	TID tid.TID `json:"id"`
 	SkillEditData
+	ThirdParty map[string]any `json:"third_party,omitempty"`
+	Children   []*Skill       `json:"children,omitempty"` // Only for containers
+	IsOpen     bool           `json:"open,omitempty"`     // Only for containers
+	parent     *Skill
 }
 
 // SkillEditData holds the Skill data that can be edited by the UI detail editor.
@@ -123,7 +128,7 @@ func NewSkillsFromFile(fileSystem fs.FS, filePath string) ([]*Skill, error) {
 	// Fix up some bad data in standalone skill lists where Hard techniques incorrectly had 1 point assigned to them
 	// instead of 2.
 	Traverse(func(skill *Skill) bool {
-		if strings.HasPrefix(skill.Type, TechniqueID) &&
+		if skill.IsTechnique() &&
 			skill.Difficulty.Difficulty == difficulty.Hard &&
 			skill.Points == fxp.One {
 			skill.Points = fxp.Two
@@ -145,36 +150,18 @@ func SaveSkills(skills []*Skill, filePath string) error {
 
 // NewSkill creates a new Skill.
 func NewSkill(e *Entity, parent *Skill, container bool) *Skill {
-	return newSkill(e, parent, SkillID, container)
-}
-
-// NewTechnique creates a new technique (i.e. a specialized use of a Skill). All parameters may be nil or empty.
-func NewTechnique(e *Entity, parent *Skill, skillName string) *Skill {
-	if skillName == "" {
-		skillName = i18n.Text("Skill")
-	}
-	s := newSkill(e, parent, TechniqueID, false)
-	s.TechniqueDefault = &SkillDefault{
-		DefaultType: SkillID,
-		Name:        skillName,
-	}
-	return s
-}
-
-func newSkill(e *Entity, parent *Skill, typeKey string, container bool) *Skill {
 	s := Skill{
 		SkillData: SkillData{
-			ContainerBase: newContainerBase[*Skill](typeKey, container),
+			TID:    tid.MustNewTID(skillKind(container)),
+			IsOpen: container,
+			parent: parent,
 		},
 		Entity: e,
 	}
-	s.parent = parent
 	if container {
 		s.TemplatePicker = &TemplatePicker{}
 	} else {
-		if typeKey != TechniqueID {
-			s.Difficulty.Attribute = AttributeIDFor(e, DexterityID)
-		}
+		s.Difficulty.Attribute = AttributeIDFor(e, DexterityID)
 		s.Difficulty.Difficulty = difficulty.Average
 		s.Points = fxp.One
 	}
@@ -182,17 +169,96 @@ func newSkill(e *Entity, parent *Skill, typeKey string, container bool) *Skill {
 	return &s
 }
 
+func skillKind(container bool) byte {
+	if container {
+		return kinds.SkillContainer
+	}
+	return kinds.Skill
+}
+
+// NewTechnique creates a new technique (i.e. a specialized use of a Skill). All parameters may be nil or empty.
+func NewTechnique(e *Entity, parent *Skill, skillName string) *Skill {
+	s := Skill{
+		SkillData: SkillData{
+			TID:    tid.MustNewTID(kinds.Technique),
+			parent: parent,
+		},
+		Entity: e,
+	}
+	s.Difficulty.Difficulty = difficulty.Average
+	s.Points = fxp.One
+	if skillName == "" {
+		skillName = i18n.Text("Skill")
+	}
+	s.TechniqueDefault = &SkillDefault{
+		DefaultType: SkillID,
+		Name:        skillName,
+	}
+	s.Name = s.Kind()
+	return &s
+}
+
+// ID returns the local ID of this data.
+func (s *Skill) ID() tid.TID {
+	return s.TID
+}
+
+// Container returns true if this is a container.
+func (s *Skill) Container() bool {
+	return tid.IsKind(s.TID, kinds.SkillContainer)
+}
+
+// HasChildren returns true if this node has children.
+func (s *Skill) HasChildren() bool {
+	return s.Container() && len(s.Children) > 0
+}
+
+// NodeChildren returns the children of this node, if any.
+func (s *Skill) NodeChildren() []*Skill {
+	return s.Children
+}
+
+// SetChildren sets the children of this node.
+func (s *Skill) SetChildren(children []*Skill) {
+	s.Children = children
+}
+
+// Parent returns the parent.
+func (s *Skill) Parent() *Skill {
+	return s.parent
+}
+
+// SetParent sets the parent.
+func (s *Skill) SetParent(parent *Skill) {
+	s.parent = parent
+}
+
+// Open returns true if this node is currently open.
+func (s *Skill) Open() bool {
+	return s.IsOpen && s.Container()
+}
+
+// SetOpen sets the current open state for this node.
+func (s *Skill) SetOpen(open bool) {
+	s.IsOpen = open && s.Container()
+}
+
+// IsTechnique returns true if this is a technique.
+func (s *Skill) IsTechnique() bool {
+	return tid.IsKind(s.TID, kinds.Technique)
+}
+
 // Clone implements Node.
 func (s *Skill) Clone(e *Entity, parent *Skill, preserveID bool) *Skill {
 	var other *Skill
-	if s.Type == TechniqueID {
+	if s.IsTechnique() {
 		other = NewTechnique(e, parent, s.TechniqueDefault.Name)
 	} else {
 		other = NewSkill(e, parent, s.Container())
 		other.IsOpen = s.IsOpen
 	}
 	if preserveID {
-		other.ID = s.ID
+		other.TID = s.TID
 	}
 	other.ThirdParty = s.ThirdParty
 	other.SkillEditData.CopyFrom(s)
@@ -252,13 +318,24 @@ func (s *Skill) UnmarshalJSON(data []byte) error {
 	var localData struct {
 		SkillData
 		// Old data fields
+		Type       string   `json:"type"`
 		Categories []string `json:"categories"`
 	}
 	if err := json.Unmarshal(data, &localData); err != nil {
 		return err
 	}
-	localData.ClearUnusedFieldsForType()
+	if !tid.IsValid(localData.TID) {
+		// Fixup old data that used UUIDs instead of TIDs
+		var kind byte
+		if localData.Type == "technique" {
+			kind = kinds.Technique
+		} else {
+			kind = skillKind(strings.HasSuffix(localData.Type, ContainerKeyPostfix))
+		}
+		localData.TID = tid.MustNewTID(kind)
+	}
 	s.SkillData = localData.SkillData
+	s.ClearUnusedFieldsForType()
 	s.Tags = convertOldCategoriesToTags(s.Tags, localData.Categories)
 	slices.Sort(s.Tags)
 	if s.Container() {
@@ -342,7 +419,7 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 	case SkillRelativeLevelColumn:
 		if !s.Container() {
 			data.Type = cell.Text
-			data.Primary = FormatRelativeSkill(s.Entity, s.Type, s.Difficulty, s.AdjustedRelativeLevel())
+			data.Primary = FormatRelativeSkill(s.Entity, s.IsTechnique(), s.Difficulty, s.AdjustedRelativeLevel())
 			if tooltip := s.CalculateLevel(nil).Tooltip; tooltip != "" {
 				data.Tooltip = includesModifiersFrom() + ":" + tooltip
 			}
@@ -359,19 +436,19 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 }
 
 // FormatRelativeSkill formats the relative skill for display.
-func FormatRelativeSkill(e *Entity, typ string, difficulty AttributeDifficulty, rsl fxp.Int) string {
+func FormatRelativeSkill(e *Entity, numOnly bool, difficulty AttributeDifficulty, rsl fxp.Int) string {
 	switch {
 	case rsl == fxp.Min:
 		return "-"
-	case strings.HasPrefix(typ, SkillID) || strings.HasPrefix(typ, SpellID):
+	case numOnly:
+		return rsl.Trunc().StringWithSign()
+	default:
 		s := ResolveAttributeName(e, difficulty.Attribute)
 		rsl = rsl.Trunc()
 		if rsl != 0 {
 			s += rsl.StringWithSign()
 		}
 		return s
-	default:
-		return rsl.Trunc().StringWithSign()
 	}
 }
 
@@ -410,7 +487,7 @@ func (s *Skill) DefaultSkill() *Skill {
 	if s.Entity == nil {
 		return nil
 	}
-	if strings.HasPrefix(s.Type, TechniqueID) {
+	if s.IsTechnique() {
 		return s.Entity.BaseSkill(s.TechniqueDefault, true)
 	}
 	return s.Entity.BaseSkill(s.DefaultedFrom, true)
@@ -433,7 +510,7 @@ func (s *Skill) Notes() string {
 
 // ModifierNotes returns the notes due to modifiers.
 func (s *Skill) ModifierNotes() string {
-	if strings.HasPrefix(s.Type, TechniqueID) {
+	if s.IsTechnique() {
 		return i18n.Text("Default: ") + s.TechniqueDefault.FullName(s.Entity) + s.TechniqueDefault.ModifierAsString()
 	}
 	if s.Difficulty.Difficulty != difficulty.Wildcard {
@@ -529,10 +606,10 @@ func (s *Skill) RelativeLevel() string {
 	switch {
 	case rsl == fxp.Min:
 		return "-"
-	case strings.HasPrefix(s.Type, SkillID):
-		return ResolveAttributeName(s.Entity, s.Difficulty.Attribute) + rsl.StringWithSign()
-	default:
+	case s.IsTechnique():
 		return rsl.StringWithSign()
+	default:
+		return ResolveAttributeName(s.Entity, s.Difficulty.Attribute) + rsl.StringWithSign()
 	}
 }
 
@@ -542,7 +619,7 @@ func (s *Skill) AdjustedRelativeLevel() fxp.Int {
 		return fxp.Min
 	}
 	if s.Entity != nil && s.LevelData.Level > 0 {
-		if strings.HasPrefix(s.Type, TechniqueID) {
+		if s.IsTechnique() {
 			return s.LevelData.RelativeLevel + s.TechniqueDefault.Modifier
 		}
 		return s.LevelData.RelativeLevel
@@ -575,7 +652,7 @@ func (s *Skill) AdjustedPoints(tooltip *xio.ByteBuffer) fxp.Int {
 
 // AdjustedPointsForNonContainerSkillOrTechnique returns the points, adjusted for any bonuses.
 func AdjustedPointsForNonContainerSkillOrTechnique(e *Entity, points fxp.Int, name, specialization string, tags []string, tooltip *xio.ByteBuffer) fxp.Int {
-	if e != nil && e.Type == entity.PC {
+	if e != nil {
 		points += e.SkillPointBonusFor(name, specialization, tags, tooltip)
 		points = points.Max(0)
 	}
@@ -636,12 +713,12 @@ func (s *Skill) DecrementSkillLevel() {
 // CalculateLevel returns the computed level without updating it.
 func (s *Skill) CalculateLevel(excludes map[string]bool) Level {
 	points := s.AdjustedPoints(nil)
-	if strings.HasPrefix(s.Type, SkillID) {
-		return CalculateSkillLevel(s.Entity, s.Name, s.Specialization, s.Tags, s.DefaultedFrom, s.Difficulty, points,
-			s.EncumbrancePenaltyMultiplier)
+	if s.IsTechnique() {
+		return CalculateTechniqueLevel(s.Entity, s.Name, s.Specialization, s.Tags, s.TechniqueDefault,
+			s.Difficulty.Difficulty, points, true, s.TechniqueLimitModifier, excludes)
 	}
-	return CalculateTechniqueLevel(s.Entity, s.Name, s.Specialization, s.Tags, s.TechniqueDefault,
-		s.Difficulty.Difficulty, points, true, s.TechniqueLimitModifier, excludes)
+	return CalculateSkillLevel(s.Entity, s.Name, s.Specialization, s.Tags, s.DefaultedFrom, s.Difficulty, points,
+		s.EncumbrancePenaltyMultiplier)
 }
 
 // CalculateSkillLevel returns the calculated level for a skill.
@@ -716,18 +793,16 @@ func CalculateTechniqueLevel(e *Entity, name, specialization string, tags []stri
 					excludes = make(map[string]bool)
 				}
 				excludes[buf.String()] = true
-				switch sk.Type {
-				case SkillID:
-					if sk.DefaultedFrom == nil ||
-						(sk.DefaultedFrom.Name != name || sk.DefaultedFrom.Specialization != specialization) {
-						level = sk.CalculateLevel(excludes).Level
-					}
-				case TechniqueID:
+				if sk.IsTechnique() {
 					if sk.TechniqueDefault != nil &&
 						(sk.TechniqueDefault.Name != name || sk.TechniqueDefault.Specialization != specialization) {
 						level = sk.CalculateLevel(excludes).Level
 					}
-				default:
+				} else {
+					if sk.DefaultedFrom == nil ||
+						(sk.DefaultedFrom.Name != name || sk.DefaultedFrom.Specialization != specialization) {
+						level = sk.CalculateLevel(excludes).Level
+					}
 				}
 			}
 		} else {
@@ -771,7 +846,7 @@ func (s *Skill) UpdateLevel() bool {
 }
 
 func (s *Skill) bestDefaultWithPoints(excluded *SkillDefault) *SkillDefault {
-	if strings.HasPrefix(s.Type, TechniqueID) {
+	if s.IsTechnique() {
 		return nil
 	}
 	best := s.bestDefault(excluded)
@@ -816,7 +891,7 @@ func (s *Skill) bestDefault(excluded *SkillDefault) *SkillDefault {
 }
 
 func (s *Skill) calcSkillDefaultLevel(def *SkillDefault, excludes map[string]bool) fxp.Int {
-	level := def.SkillLevel(s.Entity, true, excludes, strings.HasPrefix(s.Type, SkillID))
+	level := def.SkillLevel(s.Entity, true, excludes, !s.IsTechnique())
 	if def.SkillBased() {
 		if other := s.Entity.BestSkillNamed(def.Name, def.Specialization, true, excludes); other != nil {
 			level -= s.Entity.SkillBonusFor(def.Name, def.Specialization, s.Tags, nil)
@@ -862,11 +937,11 @@ func (s *Skill) resolveToSpecificDefaults() []*SkillDefault {
 
 // TechniqueSatisfied returns true if the Technique is satisfied.
 func (s *Skill) TechniqueSatisfied(tooltip *xio.ByteBuffer, prefix string) bool {
-	if strings.HasPrefix(s.Type, SkillID) || !s.TechniqueDefault.SkillBased() {
+	if !s.IsTechnique() || !s.TechniqueDefault.SkillBased() {
 		return true
 	}
 	sk := s.Entity.BestSkillNamed(s.TechniqueDefault.Name, s.TechniqueDefault.Specialization, false, nil)
-	satisfied := sk != nil && (strings.HasPrefix(sk.Type, TechniqueID) || sk.Points > 0)
+	satisfied := sk != nil && (sk.IsTechnique() || sk.Points > 0)
 	if !satisfied && tooltip != nil {
 		tooltip.WriteString(prefix)
 		if sk == nil {
@@ -950,7 +1025,7 @@ func (s *Skill) ApplyNameableKeys(m map[string]string) {
 
 // CanSwapDefaults returns true if this skill's default can be swapped.
 func (s *Skill) CanSwapDefaults() bool {
-	return s.Type != TechniqueID && !s.Container() && s.AdjustedPoints(nil) > 0
+	return !s.IsTechnique() && !s.Container() && s.AdjustedPoints(nil) > 0
 }
 
 // CanSwapDefaultsWith returns true if this skill's default can be swapped with the other skill.
@@ -987,94 +1062,98 @@ func (s *Skill) SwapDefaults() {
 }
 
 // Kind returns the kind of data.
-func (d *SkillData) Kind() string {
-	if strings.HasPrefix(d.Type, SkillID) {
-		return d.kind(i18n.Text("Skill"))
+func (s *Skill) Kind() string {
+	if s.IsTechnique() {
+		return i18n.Text("Technique")
 	}
-	return d.kind(i18n.Text("Technique"))
+	if s.Container() {
+		return i18n.Text("Skill Container")
+	}
+	return i18n.Text("Skill")
 }
 
 // ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
-func (d *SkillData) ClearUnusedFieldsForType() {
-	d.clearUnusedFields()
-	if d.Container() {
-		d.Specialization = ""
-		d.TechLevel = nil
-		d.Difficulty = AttributeDifficulty{omit: true}
-		d.Points = 0
-		d.EncumbrancePenaltyMultiplier = 0
-		d.DefaultedFrom = nil
-		d.Defaults = nil
-		d.TechniqueDefault = nil
-		d.TechniqueLimitModifier = nil
-		d.Prereq = nil
-		d.Weapons = nil
-		d.Features = nil
-		d.StudyHoursNeeded = study.Standard
-		if d.TemplatePicker == nil {
-			d.TemplatePicker = &TemplatePicker{}
+func (s *Skill) ClearUnusedFieldsForType() {
+	if s.Container() {
+		s.Specialization = ""
+		s.TechLevel = nil
+		s.Difficulty = AttributeDifficulty{omit: true}
+		s.Points = 0
+		s.EncumbrancePenaltyMultiplier = 0
+		s.DefaultedFrom = nil
+		s.Defaults = nil
+		s.TechniqueDefault = nil
+		s.TechniqueLimitModifier = nil
+		s.Prereq = nil
+		s.Weapons = nil
+		s.Features = nil
+		s.StudyHoursNeeded = study.Standard
+		if s.TemplatePicker == nil {
+			s.TemplatePicker = &TemplatePicker{}
 		}
 	} else {
-		d.Difficulty.omit = false
-		d.TemplatePicker = nil
+		s.Children = nil
+		s.IsOpen = false
+		s.Difficulty.omit = false
+		s.TemplatePicker = nil
 	}
 }
 
 // CopyFrom implements node.EditorData.
-func (d *SkillEditData) CopyFrom(s *Skill) {
-	d.copyFrom(s.Entity, &s.SkillEditData, s.Container(), false)
+func (s *SkillEditData) CopyFrom(other *Skill) {
+	s.copyFrom(other.Entity, &other.SkillEditData, other.Container(), false)
 }
 
 // ApplyTo implements node.EditorData.
-func (d *SkillEditData) ApplyTo(s *Skill) {
-	s.SkillEditData.copyFrom(s.Entity, d, s.Container(), true)
+func (s *SkillEditData) ApplyTo(other *Skill) {
+	other.SkillEditData.copyFrom(other.Entity, s, other.Container(), true)
 }
 
-func (d *SkillEditData) copyFrom(entity *Entity, other *SkillEditData, isContainer, isApply bool) {
-	*d = *other
-	d.Tags = txt.CloneStringSlice(d.Tags)
+func (s *SkillEditData) copyFrom(entity *Entity, other *SkillEditData, isContainer, isApply bool) {
+	*s = *other
+	s.Tags = txt.CloneStringSlice(s.Tags)
 	if other.TechLevel != nil {
 		tl := *other.TechLevel
-		d.TechLevel = &tl
+		s.TechLevel = &tl
 	}
 	if other.DefaultedFrom != nil {
 		def := *other.DefaultedFrom
-		d.DefaultedFrom = &def
+		s.DefaultedFrom = &def
 	}
-	d.Defaults = nil
+	s.Defaults = nil
 	if len(other.Defaults) != 0 {
-		d.Defaults = make([]*SkillDefault, len(other.Defaults))
+		s.Defaults = make([]*SkillDefault, len(other.Defaults))
 		for i, def := range other.Defaults {
 			def2 := *def
-			d.Defaults[i] = &def2
+			s.Defaults[i] = &def2
 		}
 	}
 	if other.TechniqueDefault != nil {
 		def := *other.TechniqueDefault
-		d.TechniqueDefault = &def
+		s.TechniqueDefault = &def
 		if !DefaultTypeIsSkillBased(other.TechniqueDefault.DefaultType) {
-			d.TechniqueDefault.Name = ""
-			d.TechniqueDefault.Specialization = ""
+			s.TechniqueDefault.Name = ""
+			s.TechniqueDefault.Specialization = ""
 		}
 	}
 	if other.TechniqueLimitModifier != nil {
 		mod := *other.TechniqueLimitModifier
-		d.TechniqueLimitModifier = &mod
+		s.TechniqueLimitModifier = &mod
 	}
-	d.Prereq = d.Prereq.CloneResolvingEmpty(isContainer, isApply)
-	d.Weapons = nil
+	s.Prereq = s.Prereq.CloneResolvingEmpty(isContainer, isApply)
+	s.Weapons = nil
 	if len(other.Weapons) != 0 {
-		d.Weapons = make([]*Weapon, len(other.Weapons))
+		s.Weapons = make([]*Weapon, len(other.Weapons))
 		for i := range other.Weapons {
-			d.Weapons[i] = other.Weapons[i].Clone(entity, nil, true)
+			s.Weapons[i] = other.Weapons[i].Clone(entity, nil, true)
 		}
 	}
-	d.Features = other.Features.Clone()
+	s.Features = other.Features.Clone()
 	if len(other.Study) != 0 {
-		d.Study = make([]*Study, len(other.Study))
+		s.Study = make([]*Study, len(other.Study))
 		for i := range other.Study {
-			d.Study[i] = other.Study[i].Clone()
+			s.Study[i] = other.Study[i].Clone()
 		}
 	}
-	d.TemplatePicker = other.TemplatePicker.Clone()
+	s.TemplatePicker = other.TemplatePicker.Clone()
 }

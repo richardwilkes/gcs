@@ -17,22 +17,23 @@ import (
 	"strings"
 	"unsafe"
 
-	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/entity"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wpn"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
+	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/unison"
 )
 
 var _ Node[*Weapon] = &Weapon{}
@@ -68,8 +69,7 @@ type WeaponOwner interface {
 
 // WeaponData holds the Weapon data that is written to disk.
 type WeaponData struct {
-	ID         uuid.UUID       `json:"id"`
-	Type       wpn.Type        `json:"type"`
+	TID        tid.TID         `json:"id"`
 	Damage     WeaponDamage    `json:"damage"`
 	Strength   WeaponStrength  `json:"strength,omitempty"`
 	Usage      string          `json:"usage,omitempty"`
@@ -93,10 +93,10 @@ type Weapon struct {
 }
 
 // ExtractWeaponsOfType filters the input list down to only those weapons of the given type.
-func ExtractWeaponsOfType(desiredType wpn.Type, list []*Weapon) []*Weapon {
+func ExtractWeaponsOfType(melee bool, list []*Weapon) []*Weapon {
 	var result []*Weapon
 	for _, w := range list {
-		if w.Type == desiredType {
+		if w.IsMelee() == melee {
 			result = append(result, w)
 		}
 	}
@@ -106,23 +106,20 @@ func ExtractWeaponsOfType(desiredType wpn.Type, list []*Weapon) []*Weapon {
 // SeparateWeapons returns separate lists for melee and ranged weapons found in the input list.
 func SeparateWeapons(list []*Weapon) (melee, ranged []*Weapon) {
 	for _, w := range list {
-		switch w.Type {
-		case wpn.Melee:
+		if w.IsMelee() {
 			melee = append(melee, w)
-		case wpn.Ranged:
+		} else {
 			ranged = append(ranged, w)
-		default:
 		}
 	}
 	return melee, ranged
 }
 
 // NewWeapon creates a new weapon of the given type.
-func NewWeapon(owner WeaponOwner, weaponType wpn.Type) *Weapon {
+func NewWeapon(owner WeaponOwner, melee bool) *Weapon {
 	w := &Weapon{
 		WeaponData: WeaponData{
-			ID:   NewUUID(),
-			Type: weaponType,
+			TID: tid.MustNewTID(weaponKind(melee)),
 			Damage: WeaponDamage{
 				WeaponDamageData: WeaponDamageData{
 					Type:                      "cr",
@@ -134,24 +131,39 @@ func NewWeapon(owner WeaponOwner, weaponType wpn.Type) *Weapon {
 		},
 		Owner: owner,
 	}
-	switch weaponType {
-	case wpn.Melee:
+	if melee {
 		w.Reach.Min = fxp.One
 		w.Reach.Max = fxp.One
 		w.Damage.StrengthType = stdmg.Thrust
-	case wpn.Ranged:
+	} else {
 		w.RateOfFire.Mode1.ShotsPerAttack = fxp.One
 		w.Damage.Base = dice.New("1d")
-	default:
 	}
 	return w
+}
+
+func weaponKind(melee bool) byte {
+	if melee {
+		return kinds.WeaponMelee
+	}
+	return kinds.WeaponRanged
+}
+
+// IsMelee returns true if this is a melee weapon.
+func (w *Weapon) IsMelee() bool {
+	return tid.IsKind(w.TID, kinds.WeaponMelee)
+}
+
+// IsRanged returns true if this is a ranged weapon.
+func (w *Weapon) IsRanged() bool {
+	return tid.IsKind(w.TID, kinds.WeaponRanged)
 }
 
 // Clone implements Node.
 func (w *Weapon) Clone(_ *Entity, _ *Weapon, preserveID bool) *Weapon {
 	other := *w
 	if !preserveID {
-		other.ID = uuid.New()
+		other.TID = tid.MustNewTID(w.TID[0])
 	}
 	other.Damage = *other.Damage.Clone(&other)
 	if other.Defaults != nil {
@@ -181,8 +193,7 @@ func (w *Weapon) Compare(other *Weapon) int {
 // nolint:errcheck // Not checking errors on writes to a bytes.Buffer
 func (w *Weapon) HashCode() uint32 {
 	h := fnv.New32()
-	_, _ = h.Write(w.ID[:])
-	_, _ = h.Write([]byte{byte(w.Type)})
+	_, _ = h.Write([]byte(w.TID))
 	_, _ = h.Write([]byte(w.String()))
 	_, _ = h.Write([]byte(w.UsageNotes))
 	_, _ = h.Write([]byte(w.Usage))
@@ -231,8 +242,7 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 		data.Calc.Strength = ""
 	}
 	musclePowerIsResolved := w.PC() != nil
-	switch w.Type {
-	case wpn.Melee:
+	if w.IsMelee() {
 		data.Accuracy = WeaponAccuracy{}
 		data.Range = WeaponRange{}
 		data.RateOfFire = WeaponRoF{}
@@ -248,7 +258,7 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 		if data.Calc.Reach = w.Reach.Resolve(w, nil).String(); data.Calc.Reach == w.Reach.String() {
 			data.Calc.Reach = ""
 		}
-	case wpn.Ranged:
+	} else {
 		data.Parry = WeaponParry{}
 		data.Block = WeaponBlock{}
 		data.Reach = WeaponReach{}
@@ -270,7 +280,6 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 		if data.Calc.Recoil = w.Recoil.Resolve(w, nil).String(); data.Calc.Recoil == w.Recoil.String() {
 			data.Calc.Recoil = ""
 		}
-	default:
 	}
 	if *data.Calc == (calc{}) {
 		data.Calc = nil
@@ -280,22 +289,34 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (w *Weapon) UnmarshalJSON(data []byte) error {
-	w.WeaponData = WeaponData{}
-	if err := json.Unmarshal(data, &w.WeaponData); err != nil {
+	var localData struct {
+		WeaponData
+		// Old data fields
+		Type string `json:"type"`
+	}
+	if err := json.Unmarshal(data, &localData); err != nil {
 		return err
 	}
+	if !tid.IsValid(localData.TID) {
+		// Fixup old data that used UUIDs instead of TIDs
+		localData.TID = tid.MustNewTID(weaponKind(localData.Type == "melee_weapon"))
+	}
+	w.WeaponData = localData.WeaponData
 	w.Validate()
 	return nil
 }
 
-// UUID returns the UUID of this data.
-func (w *Weapon) UUID() uuid.UUID {
-	return w.ID
+// ID returns the local ID of this data.
+func (w *Weapon) ID() tid.TID {
+	return w.TID
 }
 
 // Kind returns the kind of data.
 func (w *Weapon) Kind() string {
-	return w.Type.String()
+	if w.IsMelee() {
+		return i18n.Text("Melee Weapon")
+	}
+	return i18n.Text("Ranged Weapon")
 }
 
 func (w *Weapon) String() string {
@@ -335,7 +356,7 @@ func (w *Weapon) Entity() *Entity {
 
 // PC returns the owning PC, if any.
 func (w *Weapon) PC() *Entity {
-	if e := w.Entity(); e != nil && e.Type == entity.PC {
+	if e := w.Entity(); e != nil {
 		return e
 	}
 	return nil
@@ -411,7 +432,7 @@ func (w *Weapon) skillLevelBaseAdjustment(e *Entity, tooltip *xio.ByteBuffer) fx
 }
 
 func (w *Weapon) skillLevelPostAdjustment(e *Entity, tooltip *xio.ByteBuffer) fxp.Int {
-	if w.Type.EnsureValid() == wpn.Melee &&
+	if w.IsMelee() &&
 		// Cannot use w.ParryParts.Resolve() here, because that calls this
 		w.ResolveBoolFlag(wswitch.CanParry, w.Parry.CanParry) &&
 		w.ResolveBoolFlag(wswitch.Fencing, w.Parry.Fencing) {
@@ -630,17 +651,21 @@ func (w *Weapon) SetChildren(_ []*Weapon) {
 }
 
 // WeaponHeaderData returns the header data information for the given weapon column.
-func WeaponHeaderData(columnID int, weaponType wpn.Type, forPage bool) HeaderData {
+func WeaponHeaderData(columnID int, melee, forPage bool) HeaderData {
 	var data HeaderData
 	switch columnID {
 	case WeaponDescriptionColumn:
-		data.Title = weaponType.String()
+		if melee {
+			data.Title = i18n.Text("Melee Weapon")
+		} else {
+			data.Title = i18n.Text("Ranged Weapon")
+		}
 		data.Primary = true
 	case WeaponUsageColumn:
 		switch {
 		case forPage:
 			data.Title = i18n.Text("Usage")
-		case weaponType == wpn.Melee:
+		case melee:
 			data.Title = i18n.Text("Melee Weapon Usage")
 		default:
 			data.Title = i18n.Text("Ranged Weapon Usage")
@@ -757,13 +782,8 @@ func (w *Weapon) ApplyTo(t *Weapon) {
 
 // Validate ensures the weapon data is valid.
 func (w *Weapon) Validate() {
-	var zero uuid.UUID
-	if w.WeaponData.ID == zero {
-		w.WeaponData.ID = NewUUID()
-	}
 	w.Strength.Validate()
-	switch w.Type {
-	case wpn.Melee:
+	if w.IsMelee() {
 		w.Parry.Validate()
 		w.Block.Validate()
 		w.Reach.Validate()
@@ -773,7 +793,7 @@ func (w *Weapon) Validate() {
 		w.Shots = WeaponShots{}
 		w.Bulk = WeaponBulk{}
 		w.Recoil = WeaponRecoil{}
-	case wpn.Ranged:
+	} else {
 		if w.Accuracy.Jet || w.RateOfFire.Jet {
 			w.Accuracy.Jet = true
 			w.RateOfFire.Jet = true
@@ -787,6 +807,13 @@ func (w *Weapon) Validate() {
 		w.Parry = WeaponParry{}
 		w.Block = WeaponBlock{}
 		w.Reach = WeaponReach{}
-	default:
 	}
+}
+
+// WeaponSVG returns the SVG that should be used for the weapon type.
+func WeaponSVG(melee bool) *unison.SVG {
+	if melee {
+		return svg.MeleeWeapon
+	}
+	return svg.RangedWeapon
 }

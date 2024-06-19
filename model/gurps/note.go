@@ -12,12 +12,15 @@ package gurps
 import (
 	"context"
 	"io/fs"
+	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 )
 
 var (
@@ -44,8 +47,12 @@ type Note struct {
 
 // NoteData holds the Note data that is written to disk.
 type NoteData struct {
-	ContainerBase[*Note]
+	TID tid.TID `json:"id"`
 	NoteEditData
+	ThirdParty map[string]any `json:"third_party,omitempty"`
+	Children   []*Note        `json:"children,omitempty"` // Only for containers
+	IsOpen     bool           `json:"open,omitempty"`     // Only for containers
+	parent     *Note
 }
 
 // NoteEditData holds the Note data that can be edited by the UI detail editor.
@@ -87,22 +94,75 @@ func SaveNotes(notes []*Note, filePath string) error {
 
 // NewNote creates a new Note.
 func NewNote(entity *Entity, parent *Note, container bool) *Note {
-	n := &Note{
+	n := Note{
 		NoteData: NoteData{
-			ContainerBase: newContainerBase[*Note](noteTypeKey, container),
+			TID:    tid.MustNewTID(noteKind(container)),
+			IsOpen: container,
+			parent: parent,
 		},
 		Entity: entity,
 	}
 	n.Text = n.Kind()
+	return &n
+}
+
+func noteKind(container bool) byte {
+	if container {
+		return kinds.NoteContainer
+	}
+	return kinds.Note
+}
+
+// ID returns the local ID of this data.
+func (n *Note) ID() tid.TID {
+	return n.TID
+}
+
+// Container returns true if this is a container.
+func (n *Note) Container() bool {
+	return tid.IsKind(n.TID, kinds.NoteContainer)
+}
+
+// HasChildren returns true if this node has children.
+func (n *Note) HasChildren() bool {
+	return n.Container() && len(n.Children) > 0
+}
+
+// NodeChildren returns the children of this node, if any.
+func (n *Note) NodeChildren() []*Note {
+	return n.Children
+}
+
+// SetChildren sets the children of this node.
+func (n *Note) SetChildren(children []*Note) {
+	n.Children = children
+}
+
+// Parent returns the parent.
+func (n *Note) Parent() *Note {
+	return n.parent
+}
+
+// SetParent sets the parent.
+func (n *Note) SetParent(parent *Note) {
 	n.parent = parent
-	return n
+}
+
+// Open returns true if this node is currently open.
+func (n *Note) Open() bool {
+	return n.IsOpen && n.Container()
+}
+
+// SetOpen sets the current open state for this node.
+func (n *Note) SetOpen(open bool) {
+	n.IsOpen = open && n.Container()
 }
 
 // Clone implements Node.
 func (n *Note) Clone(entity *Entity, parent *Note, preserveID bool) *Note {
 	other := NewNote(entity, parent, n.Container())
 	if preserveID {
-		other.ID = n.ID
+		other.TID = n.TID
 	}
 	other.IsOpen = n.IsOpen
 	other.ThirdParty = n.ThirdParty
@@ -137,10 +197,19 @@ func (n *Note) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (n *Note) UnmarshalJSON(data []byte) error {
-	n.NoteData = NoteData{}
-	if err := json.Unmarshal(data, &n.NoteData); err != nil {
+	var localData struct {
+		NoteData
+		// Old data fields
+		Type string `json:"type"`
+	}
+	if err := json.Unmarshal(data, &localData); err != nil {
 		return err
 	}
+	if !tid.IsValid(localData.TID) {
+		// Fixup old data that used UUIDs instead of TIDs
+		localData.TID = tid.MustNewTID(noteKind(strings.HasSuffix(localData.Type, ContainerKeyPostfix)))
+	}
+	n.NoteData = localData.NoteData
 	n.ClearUnusedFieldsForType()
 	if n.Container() {
 		for _, one := range n.Children {
@@ -231,26 +300,47 @@ func (n *Note) ApplyNameableKeys(m map[string]string) {
 	n.Text = Apply(n.Text, m)
 }
 
+// CanConvertToFromContainer returns true if this node can be converted to/from a container.
+func (n *Note) CanConvertToFromContainer() bool {
+	return !n.Container() || !n.HasChildren()
+}
+
+// ConvertToContainer converts this node to a container.
+func (n *Note) ConvertToContainer() {
+	n.TID = tid.TID(kinds.NoteContainer) + n.TID[1:]
+}
+
+// ConvertToNonContainer converts this node to a non-container.
+func (n *Note) ConvertToNonContainer() {
+	n.TID = tid.TID(kinds.Note) + n.TID[1:]
+}
+
 // Kind returns the kind of data.
-func (d *NoteData) Kind() string {
-	return d.kind(i18n.Text("Note"))
+func (n *Note) Kind() string {
+	if n.Container() {
+		return i18n.Text("Note Container")
+	}
+	return i18n.Text("Note")
 }
 
 // ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
-func (d *NoteData) ClearUnusedFieldsForType() {
-	d.clearUnusedFields()
+func (n *Note) ClearUnusedFieldsForType() {
+	if !n.Container() {
+		n.Children = nil
+		n.IsOpen = false
+	}
 }
 
 // CopyFrom implements node.EditorData.
-func (d *NoteEditData) CopyFrom(note *Note) {
-	d.copyFrom(&note.NoteEditData)
+func (n *NoteEditData) CopyFrom(other *Note) {
+	n.copyFrom(&other.NoteEditData)
 }
 
 // ApplyTo implements node.EditorData.
-func (d *NoteEditData) ApplyTo(note *Note) {
-	note.NoteEditData.copyFrom(d)
+func (n *NoteEditData) ApplyTo(other *Note) {
+	other.NoteEditData.copyFrom(n)
 }
 
-func (d *NoteEditData) copyFrom(other *NoteEditData) {
-	*d = *other
+func (n *NoteEditData) copyFrom(other *NoteEditData) {
+	*n = *other
 }

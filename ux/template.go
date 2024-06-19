@@ -15,14 +15,13 @@ import (
 	"path/filepath"
 	"slices"
 
-	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/entity"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -265,7 +264,7 @@ func NewSheetFromTemplate(filePath string) {
 }
 
 func (d *Template) newSheetFromTemplate(_ any) {
-	e := gurps.NewEntity(entity.PC)
+	e := gurps.NewEntity()
 	sheet := NewSheet(e.Profile.Name+gurps.SheetExt, e)
 	DisplayNewDockable(sheet)
 	if d.applyTemplateToSheet(sheet, true) {
@@ -440,9 +439,9 @@ func cloneRows[T gurps.NodeTypes](table *unison.Table[*Node[T]], rows []*Node[T]
 
 func appendRows[T gurps.NodeTypes](table *unison.Table[*Node[T]], rows []*Node[T]) {
 	table.SetRootRows(append(slices.Clone(table.RootRows()), rows...))
-	selMap := make(map[uuid.UUID]bool, len(rows))
+	selMap := make(map[tid.TID]bool, len(rows))
 	for _, row := range rows {
-		selMap[row.UUID()] = true
+		selMap[row.ID()] = true
 	}
 	table.SetSelectionMap(selMap)
 	if provider, ok := table.ClientData()[TableProviderClientKey]; ok {

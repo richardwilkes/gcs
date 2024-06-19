@@ -12,7 +12,6 @@ package gurps
 import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wpn"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/i18n"
 )
@@ -27,7 +26,7 @@ func NewNaturalAttacks(entity *Entity, parent *Trait) *Trait {
 }
 
 func newBite(owner WeaponOwner) *Weapon {
-	bite := NewWeapon(owner, wpn.Melee)
+	bite := NewWeapon(owner, true)
 	bite.Usage = i18n.Text("Bite")
 	bite.Reach.CloseCombat = true
 	bite.Reach.Min = 0
@@ -55,7 +54,7 @@ func newBite(owner WeaponOwner) *Weapon {
 }
 
 func newPunch(owner WeaponOwner) *Weapon {
-	punch := NewWeapon(owner, wpn.Melee)
+	punch := NewWeapon(owner, true)
 	punch.Usage = i18n.Text("Punch")
 	punch.Parry.CanParry = true
 	punch.Reach.CloseCombat = true
@@ -92,7 +91,7 @@ func newPunch(owner WeaponOwner) *Weapon {
 }
 
 func newKick(owner WeaponOwner) *Weapon {
-	kick := NewWeapon(owner, wpn.Melee)
+	kick := NewWeapon(owner, true)
 	kick.Usage = i18n.Text("Kick")
 	kick.Reach.CloseCombat = true
 	kick.Reach.Min = fxp.One

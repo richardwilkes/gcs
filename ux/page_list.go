@@ -10,11 +10,10 @@
 package ux
 
 import (
-	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wpn"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -103,12 +102,12 @@ func NewReactionsPageList(entity *gurps.Entity) *PageList[*gurps.ConditionalModi
 
 // NewMeleeWeaponsPageList creates the melee weapons page list.
 func NewMeleeWeaponsPageList(entity *gurps.Entity) *PageList[*gurps.Weapon] {
-	return newPageList(nil, NewWeaponsProvider(entity, wpn.Melee, true))
+	return newPageList(nil, NewWeaponsProvider(entity, true, true))
 }
 
 // NewRangedWeaponsPageList creates the ranged weapons page list.
 func NewRangedWeaponsPageList(entity *gurps.Entity) *PageList[*gurps.Weapon] {
-	return newPageList(nil, NewWeaponsProvider(entity, wpn.Ranged, true))
+	return newPageList(nil, NewWeaponsProvider(entity, false, true))
 }
 
 func newPageList[T gurps.NodeTypes](owner Rebuildable, provider TableProvider[T]) *PageList[T] {
@@ -288,16 +287,16 @@ func (p *PageList[T]) SelectedNodes(minimal bool) []*Node[T] {
 	return p.Table.SelectedRows(minimal)
 }
 
-// RecordSelection collects the currently selected row UUIDs.
-func (p *PageList[T]) RecordSelection() map[uuid.UUID]bool {
+// RecordSelection collects the currently selected row IDs.
+func (p *PageList[T]) RecordSelection() map[tid.TID]bool {
 	if p == nil {
 		return nil
 	}
 	return p.Table.CopySelectionMap()
 }
 
-// ApplySelection locates the rows with the given UUIDs and selects them, replacing any existing selection.
-func (p *PageList[T]) ApplySelection(selection map[uuid.UUID]bool) {
+// ApplySelection locates the rows with the given IDs and selects them, replacing any existing selection.
+func (p *PageList[T]) ApplySelection(selection map[tid.TID]bool) {
 	if p != nil {
 		p.Table.SetSelectionMap(selection)
 	}

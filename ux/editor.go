@@ -53,10 +53,10 @@ type editor[N gurps.NodeTypes, D gurps.EditorData[N]] struct {
 }
 
 func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner Rebuildable, target N, svg *unison.SVG, helpMD string, initToolbar func(*editor[N, D], *unison.Panel), initContent func(*editor[N, D], *unison.Panel) func(), preApplyCallback func(D)) {
-	lookFor := gurps.AsNode(target).UUID()
+	lookFor := gurps.AsNode(target).ID()
 	if Activate(func(d unison.Dockable) bool {
 		if e, ok := d.AsPanel().Self.(*editor[N, D]); ok {
-			return e.owner == owner && gurps.AsNode(e.target).UUID() == lookFor
+			return e.owner == owner && gurps.AsNode(e.target).ID() == lookFor
 		}
 		return false
 	}) {
@@ -126,13 +126,13 @@ func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner Rebuildable, 
 	e.AddChild(e.createToolbar(helpMD, initToolbar))
 	e.modificationCallback = initContent(e, content)
 	e.AddChild(e.scroll)
-	e.ClientData()[AssociatedUUIDKey] = gurps.AsNode(target).UUID()
+	e.ClientData()[AssociatedIDKey] = gurps.AsNode(target).ID()
 	e.promptForSave = true
 	e.scroll.Content().AsPanel().ValidateScrollRoot()
 	group := dgroup.Editors
 	p := owner.AsPanel()
 	for p != nil {
-		if _, exists := p.ClientData()[AssociatedUUIDKey]; exists {
+		if _, exists := p.ClientData()[AssociatedIDKey]; exists {
 			group = dgroup.SubEditors
 			break
 		}

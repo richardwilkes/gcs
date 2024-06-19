@@ -11,14 +11,11 @@ package ux
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wpn"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/check"
@@ -32,21 +29,25 @@ type weaponEditor struct {
 // EditWeapon displays the editor for a weapon.
 func EditWeapon(owner Rebuildable, w *gurps.Weapon) {
 	var we weaponEditor
-	displayEditor[*gurps.Weapon, *gurps.Weapon](owner, w, w.Type.SVG(),
-		"md:Help/Interface/"+txt.FirstToUpper(strings.Split(w.Type.Key(), "_")[0])+" Weapon Usage", nil,
-		we.initWeaponEditor, we.preApply)
+	var part string
+	if w.IsMelee() {
+		part = "Melee"
+	} else {
+		part = "Ranged"
+	}
+	displayEditor[*gurps.Weapon, *gurps.Weapon](owner, w, gurps.WeaponSVG(w.IsMelee()),
+		"md:Help/Interface/"+part+" Weapon Usage", nil, we.initWeaponEditor, we.preApply)
 }
 
 func (we *weaponEditor) initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.Panel) func() {
 	w := e.editorData
 	we.addUsageBlock(w, content)
-	switch w.Type {
-	case wpn.Melee:
+	if w.IsMelee() {
 		we.addParryBlock(w, content)
 		we.addBlockBlock(w, content)
 		we.addDamageBlock(w, content)
 		we.addReachBlock(w, content)
-	case wpn.Ranged:
+	} else {
 		we.addAccuracyBlock(w, content)
 		we.addDamageBlock(w, content)
 		we.addRangeBlock(w, content)
@@ -57,7 +58,7 @@ func (we *weaponEditor) initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon]
 	}
 	we.addStrengthBlock(w, content)
 	content.AddChild(newDefaultsPanel(w.Entity(), &w.Defaults))
-	if w.Type == wpn.Ranged {
+	if w.IsRanged() {
 		we.jetCheckBox.OnSet = func() {
 			state := we.jetCheckBox.State == check.Off
 			for _, p := range we.panelsControlledByJet {
@@ -274,7 +275,7 @@ func (we *weaponEditor) addStrengthBlock(w *gurps.Weapon, content *unison.Panel)
 	addDecimalField(wrapper, nil, "", text, text, &strength.Min, 0, fxp.MillionMinusOne)
 	addCheckBox(wrapper, i18n.Text("Two-handed"), &strength.TwoHanded)
 	addCheckBox(wrapper, i18n.Text("Two-handed & unready"), &strength.TwoHandedUnready)
-	if w.Type == wpn.Ranged {
+	if w.IsRanged() {
 		wrapper = addFlowWrapper(content, "", 3)
 		addCheckBox(wrapper, i18n.Text("Has bipod"), &strength.Bipod)
 		addCheckBox(wrapper, i18n.Text("Mounted"), &strength.Mounted)

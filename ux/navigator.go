@@ -18,7 +18,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/svg"
@@ -26,6 +25,7 @@ import (
 	"github.com/richardwilkes/toolbox/desktop"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -273,7 +273,7 @@ func (n *Navigator) favoriteSelection() {
 		changed := false
 		selection := n.table.SelectedRows(true)
 		for _, row := range selection {
-			if row.nodeType == fileNode {
+			if row.IsFile() {
 				changed = true
 				if i := slices.Index(row.library.Favorites, row.path); i != -1 {
 					row.library.Favorites = slices.Delete(row.library.Favorites, i, i+1)
@@ -295,7 +295,7 @@ func (n *Navigator) deleteSelection() {
 		hasOther := false
 		title := ""
 		for _, row := range selection {
-			if row.nodeType == libraryNode {
+			if row.IsLibrary() {
 				if row.library.IsMaster() || row.library.IsUser() {
 					return
 				}
@@ -339,7 +339,7 @@ func (n *Navigator) deleteSelection() {
 					defer n.Reload()
 					for _, row := range selection {
 						p := row.Path()
-						if row.nodeType == directoryNode {
+						if row.IsDirectory() {
 							if err := os.RemoveAll(p); err != nil {
 								unison.ErrorDialogWithError(fmt.Sprintf(i18n.Text("Unable to remove directory:\n%s"), p), err)
 								return
@@ -360,7 +360,7 @@ func (n *Navigator) deleteSelection() {
 func (n *Navigator) closeSelection(selection []*NavigatorNode) bool {
 	for _, row := range selection {
 		p := row.Path()
-		if row.nodeType == directoryNode {
+		if row.IsDirectory() {
 			if len(row.children) != 0 {
 				if !n.closeSelection(row.children) {
 					return false
@@ -410,7 +410,7 @@ var disallowedWindowsFileNames = map[string]bool{
 func (n *Navigator) renameSelection() {
 	if n.table.SelectionCount() == 1 {
 		row := n.table.SelectedRows(false)[0]
-		if row.nodeType == libraryNode {
+		if row.IsLibrary() {
 			return
 		}
 
@@ -465,7 +465,7 @@ func (n *Navigator) renameSelection() {
 }
 
 func (n *Navigator) fixupFavoritePath(row *NavigatorNode, oldPath, newPath string) {
-	if row.nodeType == fileNode {
+	if row.IsFile() {
 		prefix := row.library.PathOnDisk + string([]rune{filepath.Separator})
 		oldPath = strings.TrimPrefix(oldPath, prefix)
 		if i := slices.Index(row.library.Favorites, oldPath); i != -1 {
@@ -476,8 +476,8 @@ func (n *Navigator) fixupFavoritePath(row *NavigatorNode, oldPath, newPath strin
 }
 
 func (n *Navigator) adjustBackingFilePath(row *NavigatorNode, oldPath, newPath string) {
-	switch row.nodeType {
-	case directoryNode:
+	switch {
+	case row.IsDirectory():
 		if !strings.HasSuffix(oldPath, string(os.PathSeparator)) {
 			oldPath += string(os.PathSeparator)
 		}
@@ -489,7 +489,7 @@ func (n *Navigator) adjustBackingFilePath(row *NavigatorNode, oldPath, newPath s
 				}
 			}
 		}
-	case fileNode:
+	case row.IsFile():
 		if dockable := LocateFileBackedDockable(oldPath); dockable != nil {
 			dockable.SetBackingFilePath(newPath)
 		}
@@ -498,7 +498,7 @@ func (n *Navigator) adjustBackingFilePath(row *NavigatorNode, oldPath, newPath s
 
 func (n *Navigator) updateLibrarySelection() {
 	for _, row := range n.table.SelectedRows(true) {
-		if row.nodeType == libraryNode {
+		if row.IsLibrary() {
 			_, releases := row.library.AvailableReleases()
 			if len(releases) == 0 || !releases[0].HasUpdate() || !initiateLibraryUpdate(row.library, releases[0]) {
 				return
@@ -509,7 +509,7 @@ func (n *Navigator) updateLibrarySelection() {
 
 func (n *Navigator) showSelectionReleaseNotes() {
 	for _, row := range n.table.SelectedRows(true) {
-		if row.nodeType == libraryNode {
+		if row.IsLibrary() {
 			current, releases := row.library.AvailableReleases()
 			if len(releases) == 0 || !releases[0].HasUpdate() {
 				return
@@ -535,7 +535,7 @@ func (n *Navigator) showSelectionReleaseNotes() {
 
 func (n *Navigator) configureSelection() {
 	for _, row := range n.table.SelectedRows(true) {
-		if row.nodeType == libraryNode {
+		if row.IsLibrary() {
 			ShowLibrarySettings(row.library)
 		}
 	}
@@ -576,13 +576,13 @@ func (n *Navigator) mouseDown(where unison.Point, button, clickCount int, mod un
 			cm := f.NewMenu(unison.PopupMenuTemporaryBaseID|unison.ContextMenuIDFlag, "", nil)
 			id := 1
 			for _, one := range sel {
-				if one.nodeType == fileNode {
+				if one.IsFile() {
 					cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.favoriteButton))
 					cm.InsertSeparator(-1, true)
 					break
 				}
 			}
-			if len(sel) == 1 && sel[0].nodeType == fileNode {
+			if len(sel) == 1 && sel[0].IsFile() {
 				p := sel[0].Path()
 				if filepath.Ext(p) == gurps.TemplatesExt {
 					cm.InsertItem(-1, newSheetFromTemplateMenuItem(f, &id, p))
@@ -660,7 +660,7 @@ func newShowNodeOnDiskMenuItem(f unison.MenuFactory, id *int, sel []*NavigatorNo
 			m := make(map[string]struct{})
 			for _, node := range sel {
 				p := node.Path()
-				if node.nodeType == fileNode {
+				if node.IsFile() {
 					p = filepath.Dir(p)
 				}
 				m[p] = struct{}{}
@@ -765,7 +765,7 @@ func (n *Navigator) selectionChanged() {
 		hasLibs := false
 		hasOther := false
 		for _, row := range n.table.SelectedRows(true) {
-			if row.nodeType == libraryNode {
+			if row.IsLibrary() {
 				renameEnabled = false
 				hasLibs = true
 				if row.library.IsMaster() || row.library.IsUser() {
@@ -776,10 +776,14 @@ func (n *Navigator) selectionChanged() {
 					downloadEnabled = len(releases) != 0 && releases[0].HasUpdate()
 				}
 			} else {
+				if row.IsFavorites() {
+					renameEnabled = false
+					deleteEnabled = false
+				}
 				hasOther = true
 				configEnabled = false
 				downloadEnabled = false
-				if row.nodeType == fileNode {
+				if row.IsFile() {
 					favoriteEnabled = true
 				}
 			}
@@ -881,7 +885,7 @@ func (n *Navigator) search(text string, row *NavigatorNode) {
 	if row.Match(text) {
 		n.searchResult = append(n.searchResult, row)
 	} else {
-		if row.nodeType == fileNode {
+		if row.IsFile() {
 			p := row.Path()
 			content, ok := n.contentCache[p]
 			if !ok {
@@ -1090,12 +1094,12 @@ func (n *Navigator) ApplySelectedPaths(paths []string) {
 	for _, p := range paths {
 		m[p] = true
 	}
-	selMap := make(map[uuid.UUID]bool)
+	selMap := make(map[tid.TID]bool)
 	count := n.table.LastRowIndex()
 	for i := 0; i <= count; i++ {
 		row := n.table.RowFromIndex(i)
 		if m[row.Path()] {
-			selMap[row.UUID()] = true
+			selMap[row.ID()] = true
 		}
 	}
 	n.table.SetSelectionMap(selMap)
@@ -1207,7 +1211,7 @@ func (n *Navigator) newFolder() {
 	if n.table.SelectionCount() == 1 {
 		row := n.table.SelectedRows(false)[0]
 		parentDir := row.Path()
-		if row.nodeType == fileNode {
+		if row.IsFile() {
 			parentDir = filepath.Dir(parentDir)
 		}
 		name := ""
@@ -1247,7 +1251,7 @@ func (n *Navigator) newFolder() {
 			if err = os.Mkdir(dirPath, 0o750); err != nil {
 				unison.ErrorDialogWithError(fmt.Sprintf(i18n.Text("Unable to create:\n%s"), dirPath), err)
 			} else {
-				if row.nodeType != fileNode && !row.IsOpen() {
+				if !row.IsFile() && !row.IsOpen() {
 					row.SetOpen(true)
 				}
 				n.Reload()

@@ -15,7 +15,6 @@ import (
 	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/entity"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/desktop"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -403,7 +402,7 @@ func registerActions() {
 		Title:      i18n.Text("New Character Sheet"),
 		KeyBinding: unison.KeyBinding{KeyCode: unison.KeyN, Modifiers: unison.OSMenuCmdModifier()},
 		ExecuteCallback: func(_ *unison.Action, _ any) {
-			e := gurps.NewEntity(entity.PC)
+			e := gurps.NewEntity()
 			DisplayNewDockable(NewSheet(e.Profile.Name+gurps.SheetExt, e))
 		},
 	})

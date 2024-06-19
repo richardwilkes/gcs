@@ -10,8 +10,6 @@
 package ux
 
 import (
-	"strings"
-
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/unison"
 )
@@ -20,9 +18,9 @@ import (
 type ConvertableNodeTypes interface {
 	*gurps.Equipment | *gurps.Note
 	Container() bool
-	GetType() string
-	SetType(string)
-	HasChildren() bool
+	CanConvertToFromContainer() bool
+	ConvertToContainer()
+	ConvertToNonContainer()
 }
 
 type containerConversionList[T ConvertableNodeTypes] struct {
@@ -38,19 +36,23 @@ func (c *containerConversionList[T]) Apply() {
 }
 
 type containerConversion[T ConvertableNodeTypes] struct {
-	Target T
-	Type   string
+	Target      T
+	ToContainer bool
 }
 
-func newContainerConversion[T ConvertableNodeTypes](target T) *containerConversion[T] {
+func newContainerConversion[T ConvertableNodeTypes](target T, toContainer bool) *containerConversion[T] {
 	return &containerConversion[T]{
-		Target: target,
-		Type:   target.GetType(),
+		Target:      target,
+		ToContainer: toContainer,
 	}
 }
 
 func (c *containerConversion[T]) Apply() {
-	c.Target.SetType(c.Type)
+	if c.ToContainer {
+		c.Target.ConvertToContainer()
+	} else {
+		c.Target.ConvertToNonContainer()
+	}
 }
 
 // InstallContainerConversionHandlers installs the to & from container conversion handlers.
@@ -67,7 +69,7 @@ func InstallContainerConversionHandlers[T ConvertableNodeTypes](paneler unison.P
 // CanConvertToContainer returns true if the table's current selection has a row that can be converted to a container.
 func CanConvertToContainer[T ConvertableNodeTypes](table *unison.Table[*Node[T]]) bool {
 	for _, row := range table.SelectedRows(false) {
-		if data := row.Data(); data != nil && !data.Container() {
+		if data := row.Data(); data != nil && data.CanConvertToFromContainer() && !data.Container() {
 			return true
 		}
 	}
@@ -78,7 +80,7 @@ func CanConvertToContainer[T ConvertableNodeTypes](table *unison.Table[*Node[T]]
 // non-container.
 func CanConvertToNonContainer[T ConvertableNodeTypes](table *unison.Table[*Node[T]]) bool {
 	for _, row := range table.SelectedRows(false) {
-		if data := row.Data(); data != nil && data.Container() && !data.HasChildren() {
+		if data := row.Data(); data != nil && data.CanConvertToFromContainer() && data.Container() {
 			return true
 		}
 	}
@@ -90,10 +92,10 @@ func ConvertToContainer[T ConvertableNodeTypes](owner Rebuildable, table *unison
 	before := &containerConversionList[T]{Owner: owner}
 	after := &containerConversionList[T]{Owner: owner}
 	for _, row := range table.SelectedRows(false) {
-		if data := row.Data(); data != nil && !data.Container() {
-			before.List = append(before.List, newContainerConversion(data))
-			data.SetType(data.GetType() + gurps.ContainerKeyPostfix)
-			after.List = append(after.List, newContainerConversion(data))
+		if data := row.Data(); data != nil && data.CanConvertToFromContainer() && !data.Container() {
+			before.List = append(before.List, newContainerConversion(data, false))
+			after.List = append(after.List, newContainerConversion(data, true))
+			data.ConvertToContainer()
 		}
 	}
 	if len(before.List) > 0 {
@@ -116,10 +118,10 @@ func ConvertToNonContainer[T ConvertableNodeTypes](owner Rebuildable, table *uni
 	before := &containerConversionList[T]{Owner: owner}
 	after := &containerConversionList[T]{Owner: owner}
 	for _, row := range table.SelectedRows(false) {
-		if data := row.Data(); data != nil && data.Container() && !data.HasChildren() {
-			before.List = append(before.List, newContainerConversion(data))
-			data.SetType(strings.TrimSuffix(data.GetType(), gurps.ContainerKeyPostfix))
-			after.List = append(after.List, newContainerConversion(data))
+		if data := row.Data(); data != nil && data.CanConvertToFromContainer() && data.Container() {
+			before.List = append(before.List, newContainerConversion(data, true))
+			after.List = append(after.List, newContainerConversion(data, false))
+			data.ConvertToNonContainer()
 		}
 	}
 	if len(before.List) > 0 {
