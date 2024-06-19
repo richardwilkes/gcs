@@ -16,19 +16,23 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/affects"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/tmcost"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
 var (
-	_ Node[*TraitModifier] = &TraitModifier{}
-	_ GeneralModifier      = &TraitModifier{}
-	_ LeveledOwner         = &TraitModifier{}
+	_ Node[*TraitModifier]       = &TraitModifier{}
+	_ GeneralModifier            = &TraitModifier{}
+	_ LeveledOwner               = &TraitModifier{}
+	_ EditorData[*TraitModifier] = &TraitModifierEditData{}
 )
 
 // Columns that can be used with the trait modifier method .CellData()
@@ -59,6 +63,34 @@ type GeneralModifier interface {
 type TraitModifier struct {
 	TraitModifierData
 	Entity *Entity
+}
+
+// TraitModifierData holds the TraitModifier data that is written to disk.
+type TraitModifierData struct {
+	ContainerBase[*TraitModifier]
+	TraitModifierEditData
+}
+
+// TraitModifierEditData holds the TraitModifier data that can be edited by the UI detail editor.
+type TraitModifierEditData struct {
+	Name             string   `json:"name,omitempty"`
+	PageRef          string   `json:"reference,omitempty"`
+	PageRefHighlight string   `json:"reference_highlight,omitempty"`
+	LocalNotes       string   `json:"notes,omitempty"`
+	VTTNotes         string   `json:"vtt_notes,omitempty"`
+	Tags             []string `json:"tags,omitempty"`
+	TraitModifierEditDataNonContainerOnly
+}
+
+// TraitModifierEditDataNonContainerOnly holds the TraitModifier data that is only applicable to
+// TraitModifiers that aren't containers.
+type TraitModifierEditDataNonContainerOnly struct {
+	Cost     fxp.Int        `json:"cost,omitempty"`
+	Levels   fxp.Int        `json:"levels,omitempty"`
+	Affects  affects.Option `json:"affects,omitempty"`
+	CostType tmcost.Type    `json:"cost_type,omitempty"`
+	Disabled bool           `json:"disabled,omitempty"`
+	Features Features       `json:"features,omitempty"`
 }
 
 type traitModifierListData struct {
@@ -335,4 +367,38 @@ func (m *TraitModifier) SetEnabled(enabled bool) {
 	if !m.Container() {
 		m.Disabled = !enabled
 	}
+}
+
+// Kind returns the kind of data.
+func (d *TraitModifierData) Kind() string {
+	return d.kind(i18n.Text("Trait Modifier"))
+}
+
+// ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
+func (d *TraitModifierData) ClearUnusedFieldsForType() {
+	d.clearUnusedFields()
+	if d.Container() {
+		d.CostType = 0
+		d.Disabled = false
+		d.Cost = 0
+		d.Levels = 0
+		d.Affects = 0
+		d.Features = nil
+	}
+}
+
+// CopyFrom implements node.EditorData.
+func (d *TraitModifierEditData) CopyFrom(mod *TraitModifier) {
+	d.copyFrom(&mod.TraitModifierEditData)
+}
+
+// ApplyTo implements node.EditorData.
+func (d *TraitModifierEditData) ApplyTo(mod *TraitModifier) {
+	mod.TraitModifierEditData.copyFrom(d)
+}
+
+func (d *TraitModifierEditData) copyFrom(other *TraitModifierEditData) {
+	*d = *other
+	d.Tags = txt.CloneStringSlice(d.Tags)
+	d.Features = other.Features.Clone()
 }

@@ -24,6 +24,7 @@ import (
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -31,6 +32,7 @@ var (
 	_ WeaponOwner                   = &Equipment{}
 	_ Node[*Equipment]              = &Equipment{}
 	_ TechLevelProvider[*Equipment] = &Equipment{}
+	_ EditorData[*Equipment]        = &EquipmentEditData{}
 )
 
 // Columns that can be used with the equipment method .CellData()
@@ -59,6 +61,36 @@ type Equipment struct {
 	EquipmentData
 	Entity            *Entity
 	UnsatisfiedReason string
+}
+
+// EquipmentData holds the Equipment data that is written to disk.
+type EquipmentData struct {
+	ContainerBase[*Equipment]
+	EquipmentEditData
+}
+
+// EquipmentEditData holds the Equipment data that can be edited by the UI detail editor.
+type EquipmentEditData struct {
+	Name                   string               `json:"description,omitempty"`
+	PageRef                string               `json:"reference,omitempty"`
+	PageRefHighlight       string               `json:"reference_highlight,omitempty"`
+	LocalNotes             string               `json:"notes,omitempty"`
+	VTTNotes               string               `json:"vtt_notes,omitempty"`
+	TechLevel              string               `json:"tech_level,omitempty"`
+	LegalityClass          string               `json:"legality_class,omitempty"`
+	Tags                   []string             `json:"tags,omitempty"`
+	Modifiers              []*EquipmentModifier `json:"modifiers,omitempty"`
+	RatedST                fxp.Int              `json:"rated_strength,omitempty"`
+	Quantity               fxp.Int              `json:"quantity,omitempty"`
+	Value                  fxp.Int              `json:"value,omitempty"`
+	Weight                 fxp.Weight           `json:"weight,omitempty"`
+	MaxUses                int                  `json:"max_uses,omitempty"`
+	Uses                   int                  `json:"uses,omitempty"`
+	Prereq                 *PrereqList          `json:"prereqs,omitempty"`
+	Weapons                []*Weapon            `json:"weapons,omitempty"`
+	Features               Features             `json:"features,omitempty"`
+	Equipped               bool                 `json:"equipped,omitempty"`
+	WeightIgnoredForSkills bool                 `json:"ignore_weight_for_skills,omitempty"`
 }
 
 type equipmentListData struct {
@@ -590,4 +622,45 @@ func (e *Equipment) SetTL(tl string) {
 // Enabled returns true if this node is enabled.
 func (e *Equipment) Enabled() bool {
 	return true
+}
+
+// Kind returns the kind of data.
+func (d *EquipmentData) Kind() string {
+	return d.kind(i18n.Text("Equipment"))
+}
+
+// ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
+func (d *EquipmentData) ClearUnusedFieldsForType() {
+	d.clearUnusedFields()
+}
+
+// CopyFrom implements node.EditorData.
+func (d *EquipmentEditData) CopyFrom(e *Equipment) {
+	d.copyFrom(e.Entity, &e.EquipmentEditData, false)
+}
+
+// ApplyTo implements node.EditorData.
+func (d *EquipmentEditData) ApplyTo(e *Equipment) {
+	e.EquipmentEditData.copyFrom(e.Entity, d, true)
+}
+
+func (d *EquipmentEditData) copyFrom(entity *Entity, other *EquipmentEditData, isApply bool) {
+	*d = *other
+	d.Tags = txt.CloneStringSlice(d.Tags)
+	d.Modifiers = nil
+	if len(other.Modifiers) != 0 {
+		d.Modifiers = make([]*EquipmentModifier, 0, len(other.Modifiers))
+		for _, one := range other.Modifiers {
+			d.Modifiers = append(d.Modifiers, one.Clone(entity, nil, true))
+		}
+	}
+	d.Prereq = d.Prereq.CloneResolvingEmpty(false, isApply)
+	d.Weapons = nil
+	if len(other.Weapons) != 0 {
+		d.Weapons = make([]*Weapon, 0, len(other.Weapons))
+		for _, one := range other.Weapons {
+			d.Weapons = append(d.Weapons, one.Clone(entity, nil, true))
+		}
+	}
+	d.Features = other.Features.Clone()
 }

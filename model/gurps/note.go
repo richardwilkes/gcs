@@ -20,7 +20,10 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 )
 
-var _ Node[*Note] = &Note{}
+var (
+	_ Node[*Note]       = &Note{}
+	_ EditorData[*Note] = &NoteEditData{}
+)
 
 // Columns that can be used with the note method .CellData()
 const (
@@ -37,6 +40,19 @@ const (
 type Note struct {
 	NoteData
 	Entity *Entity
+}
+
+// NoteData holds the Note data that is written to disk.
+type NoteData struct {
+	ContainerBase[*Note]
+	NoteEditData
+}
+
+// NoteEditData holds the Note data that can be edited by the UI detail editor.
+type NoteEditData struct {
+	Text             string `json:"text,omitempty"`
+	PageRef          string `json:"reference,omitempty"`
+	PageRefHighlight string `json:"reference_highlight,omitempty"`
 }
 
 type noteListData struct {
@@ -213,4 +229,28 @@ func (n *Note) FillWithNameableKeys(m map[string]string) {
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
 func (n *Note) ApplyNameableKeys(m map[string]string) {
 	n.Text = Apply(n.Text, m)
+}
+
+// Kind returns the kind of data.
+func (d *NoteData) Kind() string {
+	return d.kind(i18n.Text("Note"))
+}
+
+// ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
+func (d *NoteData) ClearUnusedFieldsForType() {
+	d.clearUnusedFields()
+}
+
+// CopyFrom implements node.EditorData.
+func (d *NoteEditData) CopyFrom(note *Note) {
+	d.copyFrom(&note.NoteEditData)
+}
+
+// ApplyTo implements node.EditorData.
+func (d *NoteEditData) ApplyTo(note *Note) {
+	note.NoteEditData.copyFrom(d)
+}
+
+func (d *NoteEditData) copyFrom(other *NoteEditData) {
+	*d = *other
 }

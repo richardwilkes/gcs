@@ -21,11 +21,13 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/tmcost"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -34,6 +36,7 @@ var (
 	_ Node[*Trait]           = &Trait{}
 	_ TemplatePickerProvider = &Trait{}
 	_ LeveledOwner           = &Trait{}
+	_ EditorData[*Trait]     = &TraitEditData{}
 )
 
 // Columns that can be used with the trait method .CellData()
@@ -54,6 +57,50 @@ type Trait struct {
 	TraitData
 	Entity            *Entity
 	UnsatisfiedReason string
+}
+
+// TraitData holds the Trait data that is written to disk.
+type TraitData struct {
+	ContainerBase[*Trait]
+	TraitEditData
+}
+
+// TraitEditData holds the Trait data that can be edited by the UI detail editor.
+type TraitEditData struct {
+	Name             string              `json:"name,omitempty"`
+	PageRef          string              `json:"reference,omitempty"`
+	PageRefHighlight string              `json:"reference_highlight,omitempty"`
+	LocalNotes       string              `json:"notes,omitempty"`
+	VTTNotes         string              `json:"vtt_notes,omitempty"`
+	UserDesc         string              `json:"userdesc,omitempty"`
+	Tags             []string            `json:"tags,omitempty"`
+	Modifiers        []*TraitModifier    `json:"modifiers,omitempty"`
+	CR               selfctrl.Roll       `json:"cr,omitempty"`
+	CRAdj            selfctrl.Adjustment `json:"cr_adj,omitempty"`
+	Disabled         bool                `json:"disabled,omitempty"`
+	TraitNonContainerOnlyEditData
+	TraitContainerOnlyEditData
+}
+
+// TraitNonContainerOnlyEditData holds the Trait data that is only applicable to traits that aren't containers.
+type TraitNonContainerOnlyEditData struct {
+	BasePoints       fxp.Int     `json:"base_points,omitempty"`
+	Levels           fxp.Int     `json:"levels,omitempty"`
+	PointsPerLevel   fxp.Int     `json:"points_per_level,omitempty"`
+	Prereq           *PrereqList `json:"prereqs,omitempty"`
+	Weapons          []*Weapon   `json:"weapons,omitempty"`
+	Features         Features    `json:"features,omitempty"`
+	Study            []*Study    `json:"study,omitempty"`
+	StudyHoursNeeded study.Level `json:"study_hours_needed,omitempty"`
+	RoundCostDown    bool        `json:"round_down,omitempty"`
+	CanLevel         bool        `json:"can_level,omitempty"`
+}
+
+// TraitContainerOnlyEditData holds the Trait data that is only applicable to traits that are containers.
+type TraitContainerOnlyEditData struct {
+	Ancestry       string          `json:"ancestry,omitempty"`
+	TemplatePicker *TemplatePicker `json:"template_picker,omitempty"`
+	ContainerType  container.Type  `json:"container_type,omitempty"`
 }
 
 type traitListData struct {
@@ -628,4 +675,74 @@ func modifyPoints(points, modifier fxp.Int) fxp.Int {
 
 func calculateModifierPoints(points, modifier fxp.Int) fxp.Int {
 	return points.Mul(modifier).Div(fxp.Hundred)
+}
+
+// Kind returns the kind of data.
+func (d *TraitData) Kind() string {
+	return d.kind(i18n.Text("Trait"))
+}
+
+// ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
+func (d *TraitData) ClearUnusedFieldsForType() {
+	d.clearUnusedFields()
+	if d.Container() {
+		d.BasePoints = 0
+		d.Levels = 0
+		d.PointsPerLevel = 0
+		d.CanLevel = false
+		d.Prereq = nil
+		d.Weapons = nil
+		d.Features = nil
+		d.RoundCostDown = false
+		d.StudyHoursNeeded = study.Standard
+		if d.TemplatePicker == nil {
+			d.TemplatePicker = &TemplatePicker{}
+		}
+	} else {
+		d.ContainerType = 0
+		d.TemplatePicker = nil
+		d.Ancestry = ""
+		if !d.CanLevel {
+			d.Levels = 0
+			d.PointsPerLevel = 0
+		}
+	}
+}
+
+// CopyFrom implements node.EditorData.
+func (d *TraitEditData) CopyFrom(t *Trait) {
+	d.copyFrom(t.Entity, &t.TraitEditData, t.Container(), false)
+}
+
+// ApplyTo implements node.EditorData.
+func (d *TraitEditData) ApplyTo(t *Trait) {
+	t.TraitEditData.copyFrom(t.Entity, d, t.Container(), true)
+}
+
+func (d *TraitEditData) copyFrom(entity *Entity, other *TraitEditData, isContainer, isApply bool) {
+	*d = *other
+	d.Tags = txt.CloneStringSlice(d.Tags)
+	d.Modifiers = nil
+	if len(other.Modifiers) != 0 {
+		d.Modifiers = make([]*TraitModifier, 0, len(other.Modifiers))
+		for _, one := range other.Modifiers {
+			d.Modifiers = append(d.Modifiers, one.Clone(entity, nil, true))
+		}
+	}
+	d.Prereq = d.Prereq.CloneResolvingEmpty(isContainer, isApply)
+	d.Weapons = nil
+	if len(other.Weapons) != 0 {
+		d.Weapons = make([]*Weapon, len(other.Weapons))
+		for i := range other.Weapons {
+			d.Weapons[i] = other.Weapons[i].Clone(entity, nil, true)
+		}
+	}
+	d.Features = other.Features.Clone()
+	if len(other.Study) != 0 {
+		d.Study = make([]*Study, len(other.Study))
+		for i := range other.Study {
+			d.Study[i] = other.Study[i].Clone()
+		}
+	}
+	d.TemplatePicker = d.TemplatePicker.Clone()
 }
