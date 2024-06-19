@@ -793,11 +793,11 @@ func (ex *legacyExporter) processTraitLoop(buffer []byte, f func(*Trait) bool) {
 			ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 				switch key {
 				case idExportKey:
-					ex.writeEncodedText(t.ID.String())
+					ex.writeEncodedText(string(t.LocalID))
 				case parentIDExportKey:
 					parent := t.Parent()
 					if parent != nil {
-						ex.writeEncodedText(parent.ID.String())
+						ex.writeEncodedText(string(parent.LocalID))
 					}
 				case typeExportKey:
 					if t.Container() {
@@ -859,11 +859,11 @@ func (ex *legacyExporter) processSkillsLoop(buffer []byte) {
 		ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 			switch key {
 			case idExportKey:
-				ex.writeEncodedText(s.ID.String())
+				ex.writeEncodedText(string(s.LocalID))
 			case parentIDExportKey:
 				parent := s.Parent()
 				if parent != nil {
-					ex.writeEncodedText(parent.ID.String())
+					ex.writeEncodedText(string(parent.LocalID))
 				}
 			case typeExportKey:
 				if s.Container() {
@@ -916,11 +916,11 @@ func (ex *legacyExporter) processSpellsLoop(buffer []byte) {
 		ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 			switch key {
 			case idExportKey:
-				ex.writeEncodedText(s.ID.String())
+				ex.writeEncodedText(string(s.LocalID))
 			case parentIDExportKey:
 				parent := s.Parent()
 				if parent != nil {
-					ex.writeEncodedText(parent.ID.String())
+					ex.writeEncodedText(string(parent.LocalID))
 				}
 			case typeExportKey:
 				if s.Container() {
@@ -1002,11 +1002,11 @@ func (ex *legacyExporter) processEquipmentLoop(buffer []byte, carried bool) {
 			ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 				switch key {
 				case idExportKey:
-					ex.writeEncodedText(eqp.ID.String())
+					ex.writeEncodedText(string(eqp.LocalID))
 				case parentIDExportKey:
 					parent := eqp.Parent()
 					if parent != nil {
-						ex.writeEncodedText(parent.ID.String())
+						ex.writeEncodedText(string(parent.LocalID))
 					}
 				case typeExportKey:
 					if eqp.Container() {
@@ -1115,11 +1115,11 @@ func (ex *legacyExporter) processNotesLoop(buffer []byte) {
 		ex.processBuffer(buffer, func(key string, _ []byte, index int) int {
 			switch key {
 			case idExportKey:
-				ex.writeEncodedText(n.ID.String())
+				ex.writeEncodedText(string(n.LocalID))
 			case parentIDExportKey:
 				parent := n.Parent()
 				if parent != nil {
-					ex.writeEncodedText(parent.ID.String())
+					ex.writeEncodedText(string(parent.LocalID))
 				}
 			case typeExportKey:
 				if n.Container() {

@@ -24,6 +24,7 @@ import (
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -31,7 +32,7 @@ import (
 var (
 	_ Node[*EquipmentModifier]       = &EquipmentModifier{}
 	_ GeneralModifier                = &EquipmentModifier{}
-	_ EditorData[*EquipmentModifier] = &EquipmentModifierEditData{}
+	_ EditorData[*EquipmentModifier] = &EquipmentModifier{}
 )
 
 // Columns that can be used with the equipment modifier method .CellData()
@@ -117,26 +118,23 @@ func SaveEquipmentModifiers(modifiers []*EquipmentModifier, filePath string) err
 
 // NewEquipmentModifier creates an EquipmentModifier.
 func NewEquipmentModifier(entity *Entity, parent *EquipmentModifier, container bool) *EquipmentModifier {
-	a := &EquipmentModifier{
+	m := &EquipmentModifier{
 		EquipmentModifierData: EquipmentModifierData{
-			ContainerBase: newContainerBase[*EquipmentModifier](equipmentModifierTypeKey, container),
+			ContainerBase: newContainerBase(parent, KindEquipmentModifier, KindEquipmentModifierContainer, container),
 		},
 		Entity: entity,
 	}
-	a.Name = a.Kind()
-	a.parent = parent
-	return a
+	m.Name = m.Kind()
+	return m
 }
 
 // Clone implements Node.
 func (m *EquipmentModifier) Clone(entity *Entity, parent *EquipmentModifier, preserveID bool) *EquipmentModifier {
 	other := NewEquipmentModifier(entity, parent, m.Container())
+	other.CopyFrom(m)
 	if preserveID {
-		other.ID = m.ID
+		other.LocalID = m.LocalID
 	}
-	other.IsOpen = m.IsOpen
-	other.ThirdParty = m.ThirdParty
-	other.EquipmentModifierEditData.CopyFrom(m)
 	if m.HasChildren() {
 		other.Children = make([]*EquipmentModifier, 0, len(m.Children))
 		for _, child := range m.Children {
@@ -170,13 +168,26 @@ func (m *EquipmentModifier) UnmarshalJSON(data []byte) error {
 	var localData struct {
 		EquipmentModifierData
 		// Old data fields
+		Type       string   `json:"type"`
 		Categories []string `json:"categories"`
 	}
 	if err := json.Unmarshal(data, &localData); err != nil {
 		return err
 	}
-	localData.ClearUnusedFieldsForType()
+	localData.itemKind = KindEquipmentModifier
+	localData.containerKind = KindEquipmentModifierContainer
+	if !tid.IsKindAndValid(localData.LocalID, KindEquipmentModifierContainer) && !tid.IsKindAndValid(localData.LocalID, KindEquipmentModifier) {
+		switch localData.Type {
+		case "eqp_modifier":
+			localData.LocalID = tid.MustNewTID(KindEquipmentModifier)
+		case "eqp_modifier_container":
+			localData.LocalID = tid.MustNewTID(KindEquipmentModifierContainer)
+		default:
+			return errs.New("invalid data type")
+		}
+	}
 	m.EquipmentModifierData = localData.EquipmentModifierData
+	m.ClearUnusedFieldsForType()
 	m.Tags = ConvertOldCategoriesToTags(m.Tags, localData.Categories)
 	slices.Sort(m.Tags)
 	if m.Container() {
@@ -509,36 +520,39 @@ func processMultiplyAddWeightStep(weightType emweight.Type, weight fxp.Int, defU
 }
 
 // Kind returns the kind of data.
-func (d *EquipmentModifierData) Kind() string {
-	return d.kind(i18n.Text("Equipment Modifier"))
+func (m *EquipmentModifier) Kind() string {
+	return m.kind(i18n.Text("Equipment Modifier"))
 }
 
 // ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
-func (d *EquipmentModifierData) ClearUnusedFieldsForType() {
-	d.clearUnusedFields()
-	if d.Container() {
-		d.CostType = 0
-		d.WeightType = 0
-		d.Disabled = false
-		d.TechLevel = ""
-		d.CostAmount = ""
-		d.WeightAmount = ""
-		d.Features = nil
+func (m *EquipmentModifier) ClearUnusedFieldsForType() {
+	m.clearUnusedFields()
+	if m.Container() {
+		m.CostType = 0
+		m.WeightType = 0
+		m.Disabled = false
+		m.TechLevel = ""
+		m.CostAmount = ""
+		m.WeightAmount = ""
+		m.Features = nil
 	}
 }
 
 // CopyFrom implements node.EditorData.
-func (d *EquipmentModifierEditData) CopyFrom(mod *EquipmentModifier) {
-	d.copyFrom(&mod.EquipmentModifierEditData)
+func (m *EquipmentModifier) CopyFrom(other *EquipmentModifier) {
+	m.copyFrom(other)
+	m.LocalID = tid.MustNewTID(m.LocalID[0])
 }
 
 // ApplyTo implements node.EditorData.
-func (d *EquipmentModifierEditData) ApplyTo(mod *EquipmentModifier) {
-	mod.EquipmentModifierEditData.copyFrom(d)
+func (m *EquipmentModifier) ApplyTo(other *EquipmentModifier) {
+	id := other.LocalID
+	other.copyFrom(m)
+	other.LocalID = id
 }
 
-func (d *EquipmentModifierEditData) copyFrom(other *EquipmentModifierEditData) {
-	*d = *other
-	d.Tags = txt.CloneStringSlice(d.Tags)
-	d.Features = other.Features.Clone()
+func (m *EquipmentModifier) copyFrom(other *EquipmentModifier) {
+	m.EquipmentModifierData = other.EquipmentModifierData
+	m.Tags = txt.CloneStringSlice(m.Tags)
+	m.Features = other.Features.Clone()
 }

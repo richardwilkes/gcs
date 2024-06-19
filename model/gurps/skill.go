@@ -26,6 +26,7 @@ import (
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/unison/enums/align"
@@ -36,7 +37,7 @@ var (
 	_ TechLevelProvider[*Skill]       = &Skill{}
 	_ SkillAdjustmentProvider[*Skill] = &Skill{}
 	_ TemplatePickerProvider          = &Skill{}
-	_ EditorData[*Skill]              = &SkillEditData{}
+	_ EditorData[*Skill]              = &Skill{}
 )
 
 // Columns that can be used with the skill method .CellData()
@@ -145,7 +146,7 @@ func SaveSkills(skills []*Skill, filePath string) error {
 
 // NewSkill creates a new Skill.
 func NewSkill(e *Entity, parent *Skill, container bool) *Skill {
-	return newSkill(e, parent, SkillID, container)
+	return newSkill(e, parent, KindSkill, KindSkillContainer, container)
 }
 
 // NewTechnique creates a new technique (i.e. a specialized use of a Skill). All parameters may be nil or empty.
@@ -153,7 +154,7 @@ func NewTechnique(e *Entity, parent *Skill, skillName string) *Skill {
 	if skillName == "" {
 		skillName = i18n.Text("Skill")
 	}
-	s := newSkill(e, parent, TechniqueID, false)
+	s := newSkill(e, parent, KindTechnique, KindSkillContainer, false)
 	s.TechniqueDefault = &SkillDefault{
 		DefaultType: SkillID,
 		Name:        skillName,
@@ -161,18 +162,17 @@ func NewTechnique(e *Entity, parent *Skill, skillName string) *Skill {
 	return s
 }
 
-func newSkill(e *Entity, parent *Skill, typeKey string, container bool) *Skill {
+func newSkill(e *Entity, parent *Skill, itemKind, containerKind byte, container bool) *Skill {
 	s := Skill{
 		SkillData: SkillData{
-			ContainerBase: newContainerBase[*Skill](typeKey, container),
+			ContainerBase: newContainerBase(parent, itemKind, containerKind, container),
 		},
 		Entity: e,
 	}
-	s.parent = parent
 	if container {
 		s.TemplatePicker = &TemplatePicker{}
 	} else {
-		if typeKey != TechniqueID {
+		if !s.IsTechnique() {
 			s.Difficulty.Attribute = AttributeIDFor(e, DexterityID)
 		}
 		s.Difficulty.Difficulty = difficulty.Average
@@ -182,6 +182,10 @@ func newSkill(e *Entity, parent *Skill, typeKey string, container bool) *Skill {
 	return &s
 }
 
+func (s *Skill) IsTechnique() bool {
+	return tid.IsKind(s.LocalID, KindTechnique)
+}
+
 // Clone implements Node.
 func (s *Skill) Clone(e *Entity, parent *Skill, preserveID bool) *Skill {
 	var other *Skill
@@ -189,13 +193,11 @@ func (s *Skill) Clone(e *Entity, parent *Skill, preserveID bool) *Skill {
 		other = NewTechnique(e, parent, s.TechniqueDefault.Name)
 	} else {
 		other = NewSkill(e, parent, s.Container())
-		other.IsOpen = s.IsOpen
 	}
+	other.CopyFrom(s)
 	if preserveID {
-		other.ID = s.ID
+		other.LocalID = s.LocalID
 	}
-	other.ThirdParty = s.ThirdParty
-	other.SkillEditData.CopyFrom(s)
 	if s.HasChildren() {
 		other.Children = make([]*Skill, 0, len(s.Children))
 		for _, child := range s.Children {
@@ -252,13 +254,31 @@ func (s *Skill) UnmarshalJSON(data []byte) error {
 	var localData struct {
 		SkillData
 		// Old data fields
+		Type       string   `json:"type"`
 		Categories []string `json:"categories"`
 	}
 	if err := json.Unmarshal(data, &localData); err != nil {
 		return err
 	}
-	localData.ClearUnusedFieldsForType()
+	localData.itemKind = KindSkill
+	localData.containerKind = KindSkillContainer
+	if !tid.IsKindAndValid(localData.LocalID, KindSkillContainer) && !tid.IsKindAndValid(localData.LocalID, KindSkill) && !tid.IsKindAndValid(localData.LocalID, KindTechnique) {
+		switch localData.Type {
+		case "skill":
+			localData.LocalID = tid.MustNewTID(KindSkill)
+		case "skill_container":
+			localData.LocalID = tid.MustNewTID(KindSkillContainer)
+		case "technique":
+			localData.LocalID = tid.MustNewTID(KindTechnique)
+		default:
+			return errs.New("invalid data type")
+		}
+	}
+	if tid.IsKindAndValid(localData.LocalID, KindTechnique) {
+		localData.itemKind = KindTechnique
+	}
 	s.SkillData = localData.SkillData
+	s.ClearUnusedFieldsForType()
 	s.Tags = ConvertOldCategoriesToTags(s.Tags, localData.Categories)
 	slices.Sort(s.Tags)
 	if s.Container() {
@@ -987,94 +1007,97 @@ func (s *Skill) SwapDefaults() {
 }
 
 // Kind returns the kind of data.
-func (d *SkillData) Kind() string {
-	if strings.HasPrefix(d.Type, SkillID) {
-		return d.kind(i18n.Text("Skill"))
+func (s *Skill) Kind() string {
+	if s.IsTechnique() {
+		return i18n.Text("Technique")
 	}
-	return d.kind(i18n.Text("Technique"))
+	return s.kind(i18n.Text("Skill"))
 }
 
 // ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
-func (d *SkillData) ClearUnusedFieldsForType() {
-	d.clearUnusedFields()
-	if d.Container() {
-		d.Specialization = ""
-		d.TechLevel = nil
-		d.Difficulty = AttributeDifficulty{omit: true}
-		d.Points = 0
-		d.EncumbrancePenaltyMultiplier = 0
-		d.DefaultedFrom = nil
-		d.Defaults = nil
-		d.TechniqueDefault = nil
-		d.TechniqueLimitModifier = nil
-		d.Prereq = nil
-		d.Weapons = nil
-		d.Features = nil
-		d.StudyHoursNeeded = study.Standard
-		if d.TemplatePicker == nil {
-			d.TemplatePicker = &TemplatePicker{}
+func (s *Skill) ClearUnusedFieldsForType() {
+	s.clearUnusedFields()
+	if s.Container() {
+		s.Specialization = ""
+		s.TechLevel = nil
+		s.Difficulty = AttributeDifficulty{omit: true}
+		s.Points = 0
+		s.EncumbrancePenaltyMultiplier = 0
+		s.DefaultedFrom = nil
+		s.Defaults = nil
+		s.TechniqueDefault = nil
+		s.TechniqueLimitModifier = nil
+		s.Prereq = nil
+		s.Weapons = nil
+		s.Features = nil
+		s.StudyHoursNeeded = study.Standard
+		if s.TemplatePicker == nil {
+			s.TemplatePicker = &TemplatePicker{}
 		}
 	} else {
-		d.Difficulty.omit = false
-		d.TemplatePicker = nil
+		s.Difficulty.omit = false
+		s.TemplatePicker = nil
 	}
 }
 
 // CopyFrom implements node.EditorData.
-func (d *SkillEditData) CopyFrom(s *Skill) {
-	d.copyFrom(s.Entity, &s.SkillEditData, s.Container(), false)
+func (s *Skill) CopyFrom(other *Skill) {
+	s.copyFrom(other.Entity, other, false)
+	s.LocalID = tid.MustNewTID(s.LocalID[0])
 }
 
 // ApplyTo implements node.EditorData.
-func (d *SkillEditData) ApplyTo(s *Skill) {
-	s.SkillEditData.copyFrom(s.Entity, d, s.Container(), true)
+func (s *Skill) ApplyTo(other *Skill) {
+	id := other.LocalID
+	other.copyFrom(other.Entity, s, true)
+	other.LocalID = id
 }
 
-func (d *SkillEditData) copyFrom(entity *Entity, other *SkillEditData, isContainer, isApply bool) {
-	*d = *other
-	d.Tags = txt.CloneStringSlice(d.Tags)
+func (s *Skill) copyFrom(entity *Entity, other *Skill, isApply bool) {
+	s.SkillData = other.SkillData
+	s.Tags = txt.CloneStringSlice(s.Tags)
 	if other.TechLevel != nil {
 		tl := *other.TechLevel
-		d.TechLevel = &tl
+		s.TechLevel = &tl
 	}
 	if other.DefaultedFrom != nil {
 		def := *other.DefaultedFrom
-		d.DefaultedFrom = &def
+		s.DefaultedFrom = &def
 	}
-	d.Defaults = nil
+	s.Defaults = nil
 	if len(other.Defaults) != 0 {
-		d.Defaults = make([]*SkillDefault, len(other.Defaults))
+		s.Defaults = make([]*SkillDefault, len(other.Defaults))
 		for i, def := range other.Defaults {
 			def2 := *def
-			d.Defaults[i] = &def2
+			s.Defaults[i] = &def2
 		}
 	}
 	if other.TechniqueDefault != nil {
 		def := *other.TechniqueDefault
-		d.TechniqueDefault = &def
+		s.TechniqueDefault = &def
 		if !DefaultTypeIsSkillBased(other.TechniqueDefault.DefaultType) {
-			d.TechniqueDefault.Name = ""
-			d.TechniqueDefault.Specialization = ""
+			s.TechniqueDefault.Name = ""
+			s.TechniqueDefault.Specialization = ""
 		}
 	}
 	if other.TechniqueLimitModifier != nil {
 		mod := *other.TechniqueLimitModifier
-		d.TechniqueLimitModifier = &mod
+		s.TechniqueLimitModifier = &mod
 	}
-	d.Prereq = d.Prereq.CloneResolvingEmpty(isContainer, isApply)
-	d.Weapons = nil
+	s.Prereq = s.Prereq.CloneResolvingEmpty(s.Container(), isApply)
+	s.Weapons = nil
 	if len(other.Weapons) != 0 {
-		d.Weapons = make([]*Weapon, len(other.Weapons))
+		s.Weapons = make([]*Weapon, len(other.Weapons))
 		for i := range other.Weapons {
-			d.Weapons[i] = other.Weapons[i].Clone(entity, nil, true)
+			s.Weapons[i] = other.Weapons[i].Clone(entity, nil, true)
 		}
 	}
-	d.Features = other.Features.Clone()
+	s.Features = other.Features.Clone()
 	if len(other.Study) != 0 {
-		d.Study = make([]*Study, len(other.Study))
+		s.Study = make([]*Study, len(other.Study))
 		for i := range other.Study {
-			d.Study[i] = other.Study[i].Clone()
+			s.Study[i] = other.Study[i].Clone()
 		}
 	}
-	d.TemplatePicker = other.TemplatePicker.Clone()
+	s.TemplatePicker = other.TemplatePicker.Clone()
 }

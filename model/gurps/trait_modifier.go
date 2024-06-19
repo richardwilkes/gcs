@@ -24,6 +24,7 @@ import (
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -32,7 +33,7 @@ var (
 	_ Node[*TraitModifier]       = &TraitModifier{}
 	_ GeneralModifier            = &TraitModifier{}
 	_ LeveledOwner               = &TraitModifier{}
-	_ EditorData[*TraitModifier] = &TraitModifierEditData{}
+	_ EditorData[*TraitModifier] = &TraitModifier{}
 )
 
 // Columns that can be used with the trait modifier method .CellData()
@@ -125,26 +126,23 @@ func SaveTraitModifiers(modifiers []*TraitModifier, filePath string) error {
 
 // NewTraitModifier creates a TraitModifier.
 func NewTraitModifier(entity *Entity, parent *TraitModifier, container bool) *TraitModifier {
-	a := &TraitModifier{
+	m := TraitModifier{
 		TraitModifierData: TraitModifierData{
-			ContainerBase: newContainerBase[*TraitModifier](traitModifierTypeKey, container),
+			ContainerBase: newContainerBase(parent, KindTraitModifier, KindTraitModifierContainer, container),
 		},
 		Entity: entity,
 	}
-	a.Name = a.Kind()
-	a.parent = parent
-	return a
+	m.Name = m.Kind()
+	return &m
 }
 
 // Clone implements Node.
 func (m *TraitModifier) Clone(entity *Entity, parent *TraitModifier, preserveID bool) *TraitModifier {
 	other := NewTraitModifier(entity, parent, m.Container())
+	other.CopyFrom(m)
 	if preserveID {
-		other.ID = m.ID
+		other.LocalID = m.LocalID
 	}
-	other.IsOpen = m.IsOpen
-	other.ThirdParty = m.ThirdParty
-	other.TraitModifierEditData.CopyFrom(m)
 	if m.HasChildren() {
 		other.Children = make([]*TraitModifier, 0, len(m.Children))
 		for _, child := range m.Children {
@@ -165,13 +163,26 @@ func (m *TraitModifier) UnmarshalJSON(data []byte) error {
 	var localData struct {
 		TraitModifierData
 		// Old data fields
+		Type       string   `json:"type"`
 		Categories []string `json:"categories"`
 	}
 	if err := json.Unmarshal(data, &localData); err != nil {
 		return err
 	}
-	localData.ClearUnusedFieldsForType()
+	localData.itemKind = KindTraitModifier
+	localData.containerKind = KindTraitModifierContainer
+	if !tid.IsKindAndValid(localData.LocalID, KindTraitModifierContainer) && !tid.IsKindAndValid(localData.LocalID, KindTraitModifier) {
+		switch localData.Type {
+		case "modifier":
+			localData.LocalID = tid.MustNewTID(KindTraitModifier)
+		case "modifier_container":
+			localData.LocalID = tid.MustNewTID(KindTraitModifierContainer)
+		default:
+			return errs.New("invalid data type")
+		}
+	}
 	m.TraitModifierData = localData.TraitModifierData
+	m.ClearUnusedFieldsForType()
 	m.Tags = ConvertOldCategoriesToTags(m.Tags, localData.Categories)
 	slices.Sort(m.Tags)
 	if m.Container() {
@@ -370,35 +381,38 @@ func (m *TraitModifier) SetEnabled(enabled bool) {
 }
 
 // Kind returns the kind of data.
-func (d *TraitModifierData) Kind() string {
-	return d.kind(i18n.Text("Trait Modifier"))
+func (m *TraitModifier) Kind() string {
+	return m.kind(i18n.Text("Trait Modifier"))
 }
 
 // ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
-func (d *TraitModifierData) ClearUnusedFieldsForType() {
-	d.clearUnusedFields()
-	if d.Container() {
-		d.CostType = 0
-		d.Disabled = false
-		d.Cost = 0
-		d.Levels = 0
-		d.Affects = 0
-		d.Features = nil
+func (m *TraitModifier) ClearUnusedFieldsForType() {
+	m.clearUnusedFields()
+	if m.Container() {
+		m.CostType = 0
+		m.Disabled = false
+		m.Cost = 0
+		m.Levels = 0
+		m.Affects = 0
+		m.Features = nil
 	}
 }
 
 // CopyFrom implements node.EditorData.
-func (d *TraitModifierEditData) CopyFrom(mod *TraitModifier) {
-	d.copyFrom(&mod.TraitModifierEditData)
+func (m *TraitModifier) CopyFrom(other *TraitModifier) {
+	m.copyFrom(other)
+	m.LocalID = tid.MustNewTID(m.LocalID[0])
 }
 
 // ApplyTo implements node.EditorData.
-func (d *TraitModifierEditData) ApplyTo(mod *TraitModifier) {
-	mod.TraitModifierEditData.copyFrom(d)
+func (m *TraitModifier) ApplyTo(other *TraitModifier) {
+	id := other.LocalID
+	other.copyFrom(m)
+	other.LocalID = id
 }
 
-func (d *TraitModifierEditData) copyFrom(other *TraitModifierEditData) {
-	*d = *other
-	d.Tags = txt.CloneStringSlice(d.Tags)
-	d.Features = other.Features.Clone()
+func (m *TraitModifier) copyFrom(other *TraitModifier) {
+	m.TraitModifierData = other.TraitModifierData
+	m.Tags = txt.CloneStringSlice(m.Tags)
+	m.Features = other.Features.Clone()
 }

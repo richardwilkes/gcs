@@ -26,6 +26,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wpn"
 	"github.com/richardwilkes/toolbox/errs"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/toolbox/xio/fs"
 )
@@ -83,8 +84,8 @@ type exportedBodyType struct {
 }
 
 type exportedNote struct {
-	ID          string
-	ParentID    string
+	ID          tid.TID
+	ParentID    tid.TID
 	Type        string
 	Description string
 	PageRef     string
@@ -97,8 +98,8 @@ type exportedMana struct {
 }
 
 type exportedSpell struct {
-	ID                string
-	ParentID          string
+	ID                tid.TID
+	ParentID          tid.TID
 	Type              string
 	Points            fxp.Int
 	Level             string
@@ -120,8 +121,8 @@ type exportedSpell struct {
 }
 
 type exportedEquipment struct {
-	ID                string
-	ParentID          string
+	ID                tid.TID
+	ParentID          tid.TID
 	Type              string
 	Quantity          fxp.Int
 	Description       string
@@ -151,8 +152,8 @@ type exportedAllEquipment struct {
 }
 
 type exportedSkill struct {
-	ID                string
-	ParentID          string
+	ID                tid.TID
+	ParentID          tid.TID
 	Type              string
 	Points            fxp.Int
 	Level             string
@@ -168,8 +169,8 @@ type exportedSkill struct {
 }
 
 type exportedTrait struct {
-	ID                string
-	ParentID          string
+	ID                tid.TID
+	ParentID          tid.TID
 	Type              string
 	Points            fxp.Int
 	Description       string
@@ -188,7 +189,7 @@ type exportedSource struct {
 }
 
 type exportedConditionalModifier struct {
-	ID        string
+	ID        tid.TID
 	Total     fxp.Int
 	Situation string
 	Sources   []*exportedSource
@@ -493,7 +494,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 	}
 	Traverse(func(t *Trait) bool {
 		trait := &exportedTrait{
-			ID:                t.ID.String(),
+			ID:                t.LocalID,
 			Points:            t.AdjustedPoints(),
 			Description:       t.String(),
 			UserDescription:   t.UserDesc,
@@ -505,7 +506,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			Depth:             t.Depth(),
 		}
 		if parent := t.Parent(); parent != nil {
-			trait.ParentID = parent.ID.String()
+			trait.ParentID = parent.LocalID
 		}
 		if t.Container() {
 			trait.Type = t.ContainerType.Key()
@@ -517,7 +518,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 	}, true, false, entity.Traits...)
 	Traverse(func(s *Skill) bool {
 		skill := &exportedSkill{
-			ID:                s.ID.String(),
+			ID:                s.LocalID,
 			Type:              groupOrItem(s.Container()),
 			Points:            s.AdjustedPoints(nil),
 			Level:             s.CalculateLevel(nil).LevelAsString(s.Container()),
@@ -531,7 +532,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			Depth:             s.Depth(),
 		}
 		if parent := s.Parent(); parent != nil {
-			skill.ParentID = parent.ID.String()
+			skill.ParentID = parent.LocalID
 		}
 		if !s.Container() {
 			skill.Difficulty = s.Difficulty.Description(entity)
@@ -541,7 +542,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 	}, true, false, entity.Skills...)
 	Traverse(func(s *Spell) bool {
 		spell := &exportedSpell{
-			ID:            s.ID.String(),
+			ID:            s.LocalID,
 			Type:          groupOrItem(s.Container()),
 			Points:        s.AdjustedPoints(nil),
 			Level:         s.CalculateLevel().LevelAsString(s.Container()),
@@ -564,7 +565,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			Depth:             s.Depth(),
 		}
 		if parent := s.Parent(); parent != nil {
-			spell.ParentID = parent.ID.String()
+			spell.ParentID = parent.LocalID
 		}
 		if !s.Container() {
 			spell.Difficulty = s.Difficulty.Description(entity)
@@ -574,14 +575,14 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 	}, true, false, entity.Spells...)
 	Traverse(func(n *Note) bool {
 		note := &exportedNote{
-			ID:          n.ID.String(),
+			ID:          n.LocalID,
 			Type:        groupOrItem(n.Container()),
 			Description: n.String(),
 			PageRef:     n.PageRef,
 			Depth:       n.Depth(),
 		}
 		if parent := n.Parent(); parent != nil {
-			note.ParentID = parent.ID.String()
+			note.ParentID = parent.LocalID
 		}
 		data.Notes = append(data.Notes, note)
 		return false
@@ -660,7 +661,7 @@ func newExportedConditionalModifiers(list []*ConditionalModifier) []*exportedCon
 	result := make([]*exportedConditionalModifier, 0, len(list))
 	for _, one := range list {
 		r := &exportedConditionalModifier{
-			ID:        one.ID.String(),
+			ID:        one.LocalID,
 			Situation: one.From,
 			Total:     one.Total(),
 		}
@@ -680,7 +681,7 @@ func newExportedEquipment(entity *Entity, list []*Equipment, carried bool) []*ex
 	var result []*exportedEquipment
 	Traverse(func(e *Equipment) bool {
 		equipment := &exportedEquipment{
-			ID:                e.ID.String(),
+			ID:                e.LocalID,
 			Type:              groupOrItem(e.Container()),
 			Quantity:          e.Quantity,
 			Description:       e.String(),
@@ -701,7 +702,7 @@ func newExportedEquipment(entity *Entity, list []*Equipment, carried bool) []*ex
 			Equipped:          carried && e.Equipped,
 		}
 		if parent := e.Parent(); parent != nil {
-			equipment.ParentID = parent.ID.String()
+			equipment.ParentID = parent.LocalID
 		}
 		result = append(result, equipment)
 		return false

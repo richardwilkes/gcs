@@ -17,7 +17,6 @@ import (
 	"strings"
 	"unsafe"
 
-	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/entity"
@@ -31,6 +30,7 @@ import (
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -68,7 +68,7 @@ type WeaponOwner interface {
 
 // WeaponData holds the Weapon data that is written to disk.
 type WeaponData struct {
-	ID         uuid.UUID       `json:"id"`
+	LocalID    tid.TID         `json:"id"`
 	Type       wpn.Type        `json:"type"`
 	Damage     WeaponDamage    `json:"damage"`
 	Strength   WeaponStrength  `json:"strength,omitempty"`
@@ -121,8 +121,8 @@ func SeparateWeapons(list []*Weapon) (melee, ranged []*Weapon) {
 func NewWeapon(owner WeaponOwner, weaponType wpn.Type) *Weapon {
 	w := &Weapon{
 		WeaponData: WeaponData{
-			ID:   NewUUID(),
-			Type: weaponType,
+			LocalID: tid.MustNewTID(kindFromWeaponType(weaponType)),
+			Type:    weaponType,
 			Damage: WeaponDamage{
 				WeaponDamageData: WeaponDamageData{
 					Type:                      "cr",
@@ -147,11 +147,18 @@ func NewWeapon(owner WeaponOwner, weaponType wpn.Type) *Weapon {
 	return w
 }
 
+func kindFromWeaponType(weaponType wpn.Type) byte {
+	if weaponType == wpn.Melee {
+		return KindMeleeWeapon
+	}
+	return KindRangedWeapon
+}
+
 // Clone implements Node.
 func (w *Weapon) Clone(_ *Entity, _ *Weapon, preserveID bool) *Weapon {
 	other := *w
 	if !preserveID {
-		other.ID = uuid.New()
+		other.LocalID = tid.MustNewTID(other.LocalID[0])
 	}
 	other.Damage = *other.Damage.Clone(&other)
 	if other.Defaults != nil {
@@ -181,7 +188,7 @@ func (w *Weapon) Compare(other *Weapon) int {
 // nolint:errcheck // Not checking errors on writes to a bytes.Buffer
 func (w *Weapon) HashCode() uint32 {
 	h := fnv.New32()
-	_, _ = h.Write(w.ID[:])
+	_, _ = h.Write([]byte(w.LocalID))
 	_, _ = h.Write([]byte{byte(w.Type)})
 	_, _ = h.Write([]byte(w.String()))
 	_, _ = h.Write([]byte(w.UsageNotes))
@@ -288,9 +295,9 @@ func (w *Weapon) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// UUID returns the UUID of this data.
-func (w *Weapon) UUID() uuid.UUID {
-	return w.ID
+// GetLocalID returns the local ID of this data.
+func (w *Weapon) GetLocalID() tid.TID {
+	return w.LocalID
 }
 
 // Kind returns the kind of data.
@@ -757,9 +764,8 @@ func (w *Weapon) ApplyTo(t *Weapon) {
 
 // Validate ensures the weapon data is valid.
 func (w *Weapon) Validate() {
-	var zero uuid.UUID
-	if w.WeaponData.ID == zero {
-		w.WeaponData.ID = NewUUID()
+	if w.WeaponData.LocalID == "" {
+		w.WeaponData.LocalID = tid.MustNewTID(kindFromWeaponType(w.Type))
 	}
 	w.Strength.Validate()
 	switch w.Type {

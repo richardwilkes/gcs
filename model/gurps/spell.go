@@ -26,6 +26,7 @@ import (
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/unison/enums/align"
@@ -36,7 +37,7 @@ var (
 	_ TechLevelProvider[*Spell]       = &Spell{}
 	_ SkillAdjustmentProvider[*Spell] = &Spell{}
 	_ TemplatePickerProvider          = &Spell{}
-	_ EditorData[*Spell]              = &SpellEditData{}
+	_ EditorData[*Spell]              = &Spell{}
 )
 
 // Columns that can be used with the spell method .CellData()
@@ -139,27 +140,26 @@ func SaveSpells(spells []*Spell, filePath string) error {
 
 // NewSpell creates a new Spell.
 func NewSpell(e *Entity, parent *Spell, container bool) *Spell {
-	s := newSpell(e, parent, SpellID, container)
+	s := newSpell(e, parent, KindSpell, KindSpellContainer, container)
 	s.UpdateLevel()
 	return s
 }
 
 // NewRitualMagicSpell creates a new Ritual Magic Spell.
 func NewRitualMagicSpell(e *Entity, parent *Spell, _ bool) *Spell {
-	s := newSpell(e, parent, RitualMagicSpellID, false)
+	s := newSpell(e, parent, KindRitualMagicSpell, KindRitualMagicSpellContainer, false)
 	s.RitualSkillName = "Ritual Magic"
 	s.SetRawPoints(0)
 	return s
 }
 
-func newSpell(e *Entity, parent *Spell, typeKey string, container bool) *Spell {
+func newSpell(e *Entity, parent *Spell, itemKind, containerKind byte, container bool) *Spell {
 	s := Spell{
 		SpellData: SpellData{
-			ContainerBase: newContainerBase[*Spell](typeKey, container),
+			ContainerBase: newContainerBase(parent, itemKind, containerKind, container),
 		},
 		Entity: e,
 	}
-	s.parent = parent
 	if container {
 		s.TemplatePicker = &TemplatePicker{}
 	} else {
@@ -176,20 +176,23 @@ func newSpell(e *Entity, parent *Spell, typeKey string, container bool) *Spell {
 	return &s
 }
 
+func (s *Spell) IsRitualMagic() bool {
+	return tid.IsKind(s.LocalID, KindRitualMagicSpell) ||
+		tid.IsKind(s.LocalID, KindRitualMagicSpellContainer)
+}
+
 // Clone implements Node.
 func (s *Spell) Clone(e *Entity, parent *Spell, preserveID bool) *Spell {
 	var other *Spell
-	if s.Type == RitualMagicSpellID {
+	if s.IsRitualMagic() {
 		other = NewRitualMagicSpell(e, parent, false)
 	} else {
 		other = NewSpell(e, parent, s.Container())
-		other.IsOpen = s.IsOpen
 	}
+	other.CopyFrom(s)
 	if preserveID {
-		other.ID = s.ID
+		other.LocalID = s.LocalID
 	}
-	other.ThirdParty = s.ThirdParty
-	other.SpellEditData.CopyFrom(s)
 	if s.HasChildren() {
 		other.Children = make([]*Spell, 0, len(s.Children))
 		for _, child := range s.Children {
@@ -248,13 +251,35 @@ func (s *Spell) UnmarshalJSON(data []byte) error {
 	var localData struct {
 		SpellData
 		// Old data fields
+		Type       string   `json:"type"`
 		Categories []string `json:"categories"`
 	}
 	if err := json.Unmarshal(data, &localData); err != nil {
 		return err
 	}
-	localData.ClearUnusedFieldsForType()
+	localData.itemKind = KindSpell
+	localData.containerKind = KindSpellContainer
+	if !tid.IsKindAndValid(localData.LocalID, KindEquipmentContainer) && !tid.IsKindAndValid(localData.LocalID, KindEquipment) {
+		switch localData.Type {
+		case "spell":
+			localData.LocalID = tid.MustNewTID(KindSpell)
+		case "spell_container":
+			localData.LocalID = tid.MustNewTID(KindSpellContainer)
+		case "ritual_magic_spell":
+			localData.LocalID = tid.MustNewTID(KindRitualMagicSpell)
+		case "ritual_magic_spell_container":
+			localData.LocalID = tid.MustNewTID(KindRitualMagicSpellContainer)
+		default:
+			return errs.New("invalid data type")
+		}
+	}
+	if tid.IsKindAndValid(localData.LocalID, KindRitualMagicSpell) ||
+		tid.IsKindAndValid(localData.LocalID, KindRitualMagicSpellContainer) {
+		localData.itemKind = KindRitualMagicSpell
+		localData.containerKind = KindRitualMagicSpellContainer
+	}
 	s.SpellData = localData.SpellData
+	s.ClearUnusedFieldsForType()
 	s.Tags = ConvertOldCategoriesToTags(s.Tags, localData.Categories)
 	slices.Sort(s.Tags)
 	if s.Container() {
@@ -889,12 +914,15 @@ func (s *Spell) ApplyNameableKeys(m map[string]string) {
 }
 
 // Kind returns the kind of data.
-func (d *SpellData) Kind() string {
+func (d *Spell) Kind() string {
+	if d.IsRitualMagic() {
+		return i18n.Text("Ritual Magic Spell")
+	}
 	return d.kind(i18n.Text("Spell"))
 }
 
 // ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
-func (d *SpellData) ClearUnusedFieldsForType() {
+func (d *Spell) ClearUnusedFieldsForType() {
 	d.clearUnusedFields()
 	if d.Container() {
 		d.TechLevel = nil
@@ -923,36 +951,39 @@ func (d *SpellData) ClearUnusedFieldsForType() {
 }
 
 // CopyFrom implements node.EditorData.
-func (d *SpellEditData) CopyFrom(s *Spell) {
-	d.copyFrom(s.Entity, &s.SpellEditData, s.Container(), false)
+func (s *Spell) CopyFrom(other *Spell) {
+	s.copyFrom(other.Entity, other, false)
+	s.LocalID = tid.MustNewTID(s.LocalID[0])
 }
 
 // ApplyTo implements node.EditorData.
-func (d *SpellEditData) ApplyTo(s *Spell) {
-	s.SpellEditData.copyFrom(s.Entity, d, s.Container(), true)
+func (s *Spell) ApplyTo(other *Spell) {
+	id := other.LocalID
+	other.copyFrom(other.Entity, s, true)
+	other.LocalID = id
 }
 
-func (d *SpellEditData) copyFrom(entity *Entity, other *SpellEditData, isContainer, isApply bool) {
-	*d = *other
-	d.Tags = txt.CloneStringSlice(d.Tags)
+func (s *Spell) copyFrom(entity *Entity, other *Spell, isApply bool) {
+	s.SpellData = other.SpellData
+	s.Tags = txt.CloneStringSlice(s.Tags)
 	if other.TechLevel != nil {
 		tl := *other.TechLevel
-		d.TechLevel = &tl
+		s.TechLevel = &tl
 	}
-	d.College = txt.CloneStringSlice(d.College)
-	d.Prereq = d.Prereq.CloneResolvingEmpty(isContainer, isApply)
-	d.Weapons = nil
+	s.College = txt.CloneStringSlice(s.College)
+	s.Prereq = s.Prereq.CloneResolvingEmpty(s.Container(), isApply)
+	s.Weapons = nil
 	if len(other.Weapons) != 0 {
-		d.Weapons = make([]*Weapon, len(other.Weapons))
+		s.Weapons = make([]*Weapon, len(other.Weapons))
 		for i := range other.Weapons {
-			d.Weapons[i] = other.Weapons[i].Clone(entity, nil, true)
+			s.Weapons[i] = other.Weapons[i].Clone(entity, nil, true)
 		}
 	}
 	if len(other.Study) != 0 {
-		d.Study = make([]*Study, len(other.Study))
+		s.Study = make([]*Study, len(other.Study))
 		for i := range other.Study {
-			d.Study[i] = other.Study[i].Clone()
+			s.Study[i] = other.Study[i].Clone()
 		}
 	}
-	d.TemplatePicker = d.TemplatePicker.Clone()
+	s.TemplatePicker = s.TemplatePicker.Clone()
 }

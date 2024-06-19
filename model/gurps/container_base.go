@@ -11,10 +11,9 @@ package gurps
 
 import (
 	"fmt"
-	"strings"
 
-	"github.com/google/uuid"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 )
 
 // ContainerKeyPostfix is the key postfix used to identify containers.
@@ -22,10 +21,14 @@ const ContainerKeyPostfix = "_container"
 
 // ContainerBase holds the type and ID of the data.
 type ContainerBase[T NodeTypes] struct {
-	ID         uuid.UUID      `json:"id"`
-	Type       string         `json:"type"`
-	ThirdParty map[string]any `json:"third_party,omitempty"`
-	parent     T
+	LocalID       tid.TID        `json:"local_id"`
+	DataSource    string         `json:"data_source,omitempty"`
+	DataSourceID  tid.TID        `json:"data_source_id,omitempty"`
+	Type          string         `json:"type"`
+	ThirdParty    map[string]any `json:"third_party,omitempty"`
+	parent        T
+	itemKind      byte
+	containerKind byte
 	ContainerBaseContainerOnly[T]
 }
 
@@ -35,27 +38,32 @@ type ContainerBaseContainerOnly[T NodeTypes] struct {
 	IsOpen   bool `json:"open,omitempty"`
 }
 
-func newContainerBase[T NodeTypes](typeKey string, isContainer bool) ContainerBase[T] {
-	if isContainer {
-		typeKey += ContainerKeyPostfix
+func newContainerBase[T NodeTypes](parent T, itemKind, containerKind byte, container bool) ContainerBase[T] {
+	var kind byte
+	if container {
+		kind = containerKind
+	} else {
+		kind = itemKind
 	}
 	return ContainerBase[T]{
-		ID:   NewUUID(),
-		Type: typeKey,
+		LocalID:       tid.MustNewTID(kind),
+		parent:        parent,
+		itemKind:      itemKind,
+		containerKind: containerKind,
 		ContainerBaseContainerOnly: ContainerBaseContainerOnly[T]{
-			IsOpen: isContainer,
+			IsOpen: container,
 		},
 	}
 }
 
-// UUID returns the UUID of this data.
-func (c *ContainerBase[T]) UUID() uuid.UUID {
-	return c.ID
+// GetLocalID returns the local ID of this data.
+func (c *ContainerBase[T]) GetLocalID() tid.TID {
+	return c.LocalID
 }
 
 // Container returns true if this is a container.
 func (c *ContainerBase[T]) Container() bool {
-	return strings.HasSuffix(c.Type, ContainerKeyPostfix)
+	return tid.IsKindAndValid(c.LocalID, c.containerKind)
 }
 
 func (c *ContainerBase[T]) kind(base string) string {

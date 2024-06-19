@@ -16,6 +16,30 @@ import (
 	"github.com/richardwilkes/toolbox/errs"
 )
 
+// The kinds used by our typed IDs
+const (
+	KindConditionalModifier        = 'c'
+	KindEquipment                  = 'e'
+	KindEquipmentContainer         = 'E'
+	KindEquipmentModifier          = 'f'
+	KindEquipmentModifierContainer = 'F'
+	KindNote                       = 'n'
+	KindNoteContainer              = 'N'
+	KindSkill                      = 's'
+	KindSkillContainer             = 'S'
+	KindTechnique                  = 'q'
+	KindSpell                      = 'p'
+	KindSpellContainer             = 'P'
+	KindRitualMagicSpell           = 'r'
+	KindRitualMagicSpellContainer  = 'R'
+	KindTrait                      = 't'
+	KindTraitContainer             = 'T'
+	KindTraitModifier              = 'm'
+	KindTraitModifierContainer     = 'M'
+	KindMeleeWeapon                = 'w'
+	KindRangedWeapon               = 'W'
+)
+
 // Various commonly used IDs
 const (
 	AllID              = "all"

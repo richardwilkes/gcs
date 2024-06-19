@@ -18,11 +18,12 @@ import (
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 )
 
 var (
 	_ Node[*Note]       = &Note{}
-	_ EditorData[*Note] = &NoteEditData{}
+	_ EditorData[*Note] = &Note{}
 )
 
 // Columns that can be used with the note method .CellData()
@@ -89,24 +90,21 @@ func SaveNotes(notes []*Note, filePath string) error {
 func NewNote(entity *Entity, parent *Note, container bool) *Note {
 	n := &Note{
 		NoteData: NoteData{
-			ContainerBase: newContainerBase[*Note](noteTypeKey, container),
+			ContainerBase: newContainerBase(parent, KindNote, KindNoteContainer, container),
 		},
 		Entity: entity,
 	}
 	n.Text = n.Kind()
-	n.parent = parent
 	return n
 }
 
 // Clone implements Node.
 func (n *Note) Clone(entity *Entity, parent *Note, preserveID bool) *Note {
 	other := NewNote(entity, parent, n.Container())
+	other.CopyFrom(n)
 	if preserveID {
-		other.ID = n.ID
+		other.LocalID = n.LocalID
 	}
-	other.IsOpen = n.IsOpen
-	other.ThirdParty = n.ThirdParty
-	other.NoteEditData.CopyFrom(n)
 	if n.HasChildren() {
 		other.Children = make([]*Note, 0, len(n.Children))
 		for _, child := range n.Children {
@@ -137,10 +135,27 @@ func (n *Note) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (n *Note) UnmarshalJSON(data []byte) error {
-	n.NoteData = NoteData{}
-	if err := json.Unmarshal(data, &n.NoteData); err != nil {
+	var localData struct {
+		NoteData
+		// Old data fields
+		Type string `json:"type"`
+	}
+	if err := json.Unmarshal(data, &localData); err != nil {
 		return err
 	}
+	localData.itemKind = KindNote
+	localData.containerKind = KindNoteContainer
+	if !tid.IsKindAndValid(localData.LocalID, KindNoteContainer) && !tid.IsKindAndValid(localData.LocalID, KindNote) {
+		switch localData.Type {
+		case "note":
+			localData.LocalID = tid.MustNewTID(KindNote)
+		case "note_container":
+			localData.LocalID = tid.MustNewTID(KindNoteContainer)
+		default:
+			return errs.New("invalid data type")
+		}
+	}
+	n.NoteData = localData.NoteData
 	n.ClearUnusedFieldsForType()
 	if n.Container() {
 		for _, one := range n.Children {
@@ -232,25 +247,28 @@ func (n *Note) ApplyNameableKeys(m map[string]string) {
 }
 
 // Kind returns the kind of data.
-func (d *NoteData) Kind() string {
-	return d.kind(i18n.Text("Note"))
+func (n *Note) Kind() string {
+	return n.kind(i18n.Text("Note"))
 }
 
 // ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
-func (d *NoteData) ClearUnusedFieldsForType() {
-	d.clearUnusedFields()
+func (n *Note) ClearUnusedFieldsForType() {
+	n.clearUnusedFields()
 }
 
 // CopyFrom implements node.EditorData.
-func (d *NoteEditData) CopyFrom(note *Note) {
-	d.copyFrom(&note.NoteEditData)
+func (n *Note) CopyFrom(other *Note) {
+	n.copyFrom(other)
+	n.LocalID = tid.MustNewTID(n.LocalID[0])
 }
 
 // ApplyTo implements node.EditorData.
-func (d *NoteEditData) ApplyTo(note *Note) {
-	note.NoteEditData.copyFrom(d)
+func (n *Note) ApplyTo(other *Note) {
+	id := other.LocalID
+	other.copyFrom(other)
+	other.LocalID = id
 }
 
-func (d *NoteEditData) copyFrom(other *NoteEditData) {
-	*d = *other
+func (n *Note) copyFrom(other *Note) {
+	n.NoteData = other.NoteData
 }

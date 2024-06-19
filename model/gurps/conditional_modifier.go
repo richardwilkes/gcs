@@ -15,10 +15,10 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -33,7 +33,7 @@ const (
 
 // ConditionalModifier holds data for a reaction or conditional modifier.
 type ConditionalModifier struct {
-	ID      uuid.UUID
+	LocalID tid.TID
 	From    string
 	Amounts []fxp.Int
 	Sources []string
@@ -42,7 +42,7 @@ type ConditionalModifier struct {
 // NewConditionalModifier creates a new ConditionalModifier.
 func NewConditionalModifier(source, from string, amt fxp.Int) *ConditionalModifier {
 	return &ConditionalModifier{
-		ID:      uuid.New(),
+		LocalID: tid.MustNewTID(KindConditionalModifier),
 		From:    from,
 		Amounts: []fxp.Int{amt},
 		Sources: []string{source},
@@ -73,9 +73,9 @@ func (m *ConditionalModifier) Compare(other *ConditionalModifier) int {
 	return result
 }
 
-// UUID returns the UUID of this data.
-func (m *ConditionalModifier) UUID() uuid.UUID {
-	return m.ID
+// GetLocalID returns the local ID of this data.
+func (m *ConditionalModifier) GetLocalID() tid.TID {
+	return m.LocalID
 }
 
 // Clone implements Node.
@@ -86,9 +86,9 @@ func (m *ConditionalModifier) Clone(_ *Entity, _ *ConditionalModifier, preserveI
 		Sources: slices.Clone(m.Sources),
 	}
 	if preserveID {
-		clone.ID = m.ID
+		clone.LocalID = m.LocalID
 	} else {
-		clone.ID = uuid.New()
+		clone.LocalID = tid.MustNewTID(KindConditionalModifier)
 	}
 	return clone
 }

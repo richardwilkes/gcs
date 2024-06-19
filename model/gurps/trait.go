@@ -27,6 +27,7 @@ import (
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -36,7 +37,7 @@ var (
 	_ Node[*Trait]           = &Trait{}
 	_ TemplatePickerProvider = &Trait{}
 	_ LeveledOwner           = &Trait{}
-	_ EditorData[*Trait]     = &TraitEditData{}
+	_ EditorData[*Trait]     = &Trait{}
 )
 
 // Columns that can be used with the trait method .CellData()
@@ -138,32 +139,29 @@ func SaveTraits(traits []*Trait, filePath string) error {
 
 // NewTrait creates a new Trait.
 func NewTrait(entity *Entity, parent *Trait, container bool) *Trait {
-	a := &Trait{
+	t := Trait{
 		TraitData: TraitData{
-			ContainerBase: newContainerBase[*Trait](traitTypeKey, container),
+			ContainerBase: newContainerBase(parent, KindTrait, KindTraitContainer, container),
 		},
 		Entity: entity,
 	}
-	a.Name = a.Kind()
-	a.parent = parent
-	if a.Container() {
-		a.TemplatePicker = &TemplatePicker{}
+	t.Name = t.Kind()
+	if t.Container() {
+		t.TemplatePicker = &TemplatePicker{}
 	}
-	return a
+	return &t
 }
 
 // Clone implements Node.
-func (a *Trait) Clone(entity *Entity, parent *Trait, preserveID bool) *Trait {
-	other := NewTrait(entity, parent, a.Container())
+func (t *Trait) Clone(entity *Entity, parent *Trait, preserveID bool) *Trait {
+	other := NewTrait(entity, parent, t.Container())
+	other.CopyFrom(t)
 	if preserveID {
-		other.ID = a.ID
+		other.LocalID = t.LocalID
 	}
-	other.IsOpen = a.IsOpen
-	other.ThirdParty = a.ThirdParty
-	other.TraitEditData.CopyFrom(a)
-	if a.HasChildren() {
-		other.Children = make([]*Trait, 0, len(a.Children))
-		for _, child := range a.Children {
+	if t.HasChildren() {
+		other.Children = make([]*Trait, 0, len(t.Children))
+		for _, child := range t.Children {
 			other.Children = append(other.Children, child.Clone(entity, other, preserveID))
 		}
 	}
@@ -171,35 +169,36 @@ func (a *Trait) Clone(entity *Entity, parent *Trait, preserveID bool) *Trait {
 }
 
 // MarshalJSON implements json.Marshaler.
-func (a *Trait) MarshalJSON() ([]byte, error) {
+func (t *Trait) MarshalJSON() ([]byte, error) {
 	type calc struct {
 		Points            fxp.Int `json:"points"`
 		UnsatisfiedReason string  `json:"unsatisfied_reason,omitempty"`
 		ResolvedNotes     string  `json:"resolved_notes,omitempty"`
 	}
-	a.ClearUnusedFieldsForType()
+	t.ClearUnusedFieldsForType()
 	data := struct {
 		TraitData
 		Calc calc `json:"calc"`
 	}{
-		TraitData: a.TraitData,
+		TraitData: t.TraitData,
 		Calc: calc{
-			Points:            a.AdjustedPoints(),
-			UnsatisfiedReason: a.UnsatisfiedReason,
+			Points:            t.AdjustedPoints(),
+			UnsatisfiedReason: t.UnsatisfiedReason,
 		},
 	}
-	notes := a.resolveLocalNotes()
-	if notes != a.LocalNotes {
+	notes := t.resolveLocalNotes()
+	if notes != t.LocalNotes {
 		data.Calc.ResolvedNotes = notes
 	}
 	return json.Marshal(&data)
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (a *Trait) UnmarshalJSON(data []byte) error {
+func (t *Trait) UnmarshalJSON(data []byte) error {
 	var localData struct {
 		TraitData
 		// Old data fields
+		Type         string   `json:"type"`
 		Categories   []string `json:"categories"`
 		Mental       bool     `json:"mental"`
 		Physical     bool     `json:"physical"`
@@ -219,40 +218,53 @@ func (a *Trait) UnmarshalJSON(data []byte) error {
 		localData.Type = traitTypeKey + ContainerKeyPostfix
 	}
 
+	localData.itemKind = KindEquipment
+	localData.containerKind = KindEquipmentContainer
+	if !tid.IsKindAndValid(localData.LocalID, KindTraitContainer) && !tid.IsKindAndValid(localData.LocalID, KindTrait) {
+		switch localData.Type {
+		case "trait":
+			localData.LocalID = tid.MustNewTID(KindTrait)
+		case "trait_container":
+			localData.LocalID = tid.MustNewTID(KindTraitContainer)
+		default:
+			return errs.New("invalid data type")
+		}
+	}
+
 	// Force the CanLevel flag, if needed
 	if !localData.Container() && (localData.Levels != 0 || localData.PointsPerLevel != 0) {
 		localData.CanLevel = true
 	}
+	t.TraitData = localData.TraitData
 
-	localData.ClearUnusedFieldsForType()
-	a.TraitData = localData.TraitData
-	a.transferOldTypeFlagToTags(i18n.Text("Mental"), localData.Mental)
-	a.transferOldTypeFlagToTags(i18n.Text("Physical"), localData.Physical)
-	a.transferOldTypeFlagToTags(i18n.Text("Social"), localData.Social)
-	a.transferOldTypeFlagToTags(i18n.Text("Exotic"), localData.Exotic)
-	a.transferOldTypeFlagToTags(i18n.Text("Supernatural"), localData.Supernatural)
-	a.Tags = ConvertOldCategoriesToTags(a.Tags, localData.Categories)
-	slices.Sort(a.Tags)
-	if a.Container() {
-		for _, one := range a.Children {
-			one.parent = a
+	t.ClearUnusedFieldsForType()
+	t.transferOldTypeFlagToTags(i18n.Text("Mental"), localData.Mental)
+	t.transferOldTypeFlagToTags(i18n.Text("Physical"), localData.Physical)
+	t.transferOldTypeFlagToTags(i18n.Text("Social"), localData.Social)
+	t.transferOldTypeFlagToTags(i18n.Text("Exotic"), localData.Exotic)
+	t.transferOldTypeFlagToTags(i18n.Text("Supernatural"), localData.Supernatural)
+	t.Tags = ConvertOldCategoriesToTags(t.Tags, localData.Categories)
+	slices.Sort(t.Tags)
+	if t.Container() {
+		for _, one := range t.Children {
+			one.parent = t
 		}
 	}
 	return nil
 }
 
-func (a *Trait) transferOldTypeFlagToTags(name string, flag bool) {
-	if flag && !slices.Contains(a.Tags, name) {
-		a.Tags = append(a.Tags, name)
+func (t *Trait) transferOldTypeFlagToTags(name string, flag bool) {
+	if flag && !slices.Contains(t.Tags, name) {
+		t.Tags = append(t.Tags, name)
 	}
 }
 
 // EffectivelyDisabled returns true if this node or a parent is disabled.
-func (a *Trait) EffectivelyDisabled() bool {
-	if a.Disabled {
+func (t *Trait) EffectivelyDisabled() bool {
+	if t.Disabled {
 		return true
 	}
-	p := a.Parent()
+	p := t.Parent()
 	for p != nil {
 		if p.Disabled {
 			return true
@@ -263,8 +275,8 @@ func (a *Trait) EffectivelyDisabled() bool {
 }
 
 // TemplatePickerData returns the TemplatePicker data, if any.
-func (a *Trait) TemplatePickerData() *TemplatePicker {
-	return a.TemplatePicker
+func (t *Trait) TemplatePickerData() *TemplatePicker {
+	return t.TemplatePicker
 }
 
 // TraitsHeaderData returns the header data information for the given trait column.
@@ -288,19 +300,19 @@ func TraitsHeaderData(columnID int) HeaderData {
 }
 
 // CellData returns the cell data information for the given column.
-func (a *Trait) CellData(columnID int, data *CellData) {
-	data.Dim = !a.Enabled()
+func (t *Trait) CellData(columnID int, data *CellData) {
+	data.Dim = !t.Enabled()
 	switch columnID {
 	case TraitDescriptionColumn:
 		data.Type = cell.Text
-		data.Primary = a.String()
-		data.Secondary = a.SecondaryText(func(option display.Option) bool { return option.Inline() })
-		data.Disabled = a.EffectivelyDisabled()
-		data.UnsatisfiedReason = a.UnsatisfiedReason
-		data.Tooltip = a.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
-		data.TemplateInfo = a.TemplatePicker.Description()
-		if a.Container() {
-			switch a.ContainerType {
+		data.Primary = t.String()
+		data.Secondary = t.SecondaryText(func(option display.Option) bool { return option.Inline() })
+		data.Disabled = t.EffectivelyDisabled()
+		data.UnsatisfiedReason = t.UnsatisfiedReason
+		data.Tooltip = t.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
+		data.TemplateInfo = t.TemplatePicker.Description()
+		if t.Container() {
+			switch t.ContainerType {
 			case container.AlternativeAbilities:
 				data.InlineTag = i18n.Text("Alternate")
 			case container.Ancestry:
@@ -314,26 +326,26 @@ func (a *Trait) CellData(columnID int, data *CellData) {
 		}
 	case TraitPointsColumn:
 		data.Type = cell.Text
-		data.Primary = a.AdjustedPoints().String()
+		data.Primary = t.AdjustedPoints().String()
 		data.Alignment = align.End
 	case TraitTagsColumn:
 		data.Type = cell.Tags
-		data.Primary = CombineTags(a.Tags)
+		data.Primary = CombineTags(t.Tags)
 	case TraitReferenceColumn, PageRefCellAlias:
 		data.Type = cell.PageRef
-		data.Primary = a.PageRef
-		if a.PageRefHighlight != "" {
-			data.Secondary = a.PageRefHighlight
+		data.Primary = t.PageRef
+		if t.PageRefHighlight != "" {
+			data.Secondary = t.PageRefHighlight
 		} else {
-			data.Secondary = a.Name
+			data.Secondary = t.Name
 		}
 	}
 }
 
 // Depth returns the number of parents this node has.
-func (a *Trait) Depth() int {
+func (t *Trait) Depth() int {
 	count := 0
-	p := a.parent
+	p := t.parent
 	for p != nil {
 		count++
 		p = p.parent
@@ -342,57 +354,57 @@ func (a *Trait) Depth() int {
 }
 
 // OwningEntity returns the owning Entity.
-func (a *Trait) OwningEntity() *Entity {
-	return a.Entity
+func (t *Trait) OwningEntity() *Entity {
+	return t.Entity
 }
 
 // SetOwningEntity sets the owning entity and configures any sub-components as needed.
-func (a *Trait) SetOwningEntity(entity *Entity) {
-	a.Entity = entity
-	if a.Container() {
-		for _, child := range a.Children {
+func (t *Trait) SetOwningEntity(entity *Entity) {
+	t.Entity = entity
+	if t.Container() {
+		for _, child := range t.Children {
 			child.SetOwningEntity(entity)
 		}
 	} else {
-		for _, w := range a.Weapons {
-			w.SetOwner(a)
+		for _, w := range t.Weapons {
+			w.SetOwner(t)
 		}
 	}
-	for _, m := range a.Modifiers {
+	for _, m := range t.Modifiers {
 		m.SetOwningEntity(entity)
 	}
 }
 
 // Notes returns the local notes.
-func (a *Trait) Notes() string {
-	return a.resolveLocalNotes()
+func (t *Trait) Notes() string {
+	return t.resolveLocalNotes()
 }
 
 // IsLeveled returns true if the Trait is capable of having levels.
-func (a *Trait) IsLeveled() bool {
-	return a.CanLevel && !a.Container()
+func (t *Trait) IsLeveled() bool {
+	return t.CanLevel && !t.Container()
 }
 
 // CurrentLevel returns the current level of the trait or zero if it is not leveled.
-func (a *Trait) CurrentLevel() fxp.Int {
-	if a.Enabled() && a.IsLeveled() {
-		return a.Levels
+func (t *Trait) CurrentLevel() fxp.Int {
+	if t.Enabled() && t.IsLeveled() {
+		return t.Levels
 	}
 	return 0
 }
 
 // AdjustedPoints returns the total points, taking levels and modifiers into account.
-func (a *Trait) AdjustedPoints() fxp.Int {
-	if a.EffectivelyDisabled() {
+func (t *Trait) AdjustedPoints() fxp.Int {
+	if t.EffectivelyDisabled() {
 		return 0
 	}
-	if !a.Container() {
-		return AdjustedPoints(a.Entity, a.CanLevel, a.BasePoints, a.Levels, a.PointsPerLevel, a.CR, a.AllModifiers(), a.RoundCostDown)
+	if !t.Container() {
+		return AdjustedPoints(t.Entity, t.CanLevel, t.BasePoints, t.Levels, t.PointsPerLevel, t.CR, t.AllModifiers(), t.RoundCostDown)
 	}
 	var points fxp.Int
-	if a.ContainerType == container.AlternativeAbilities {
-		values := make([]fxp.Int, len(a.Children))
-		for i, one := range a.Children {
+	if t.ContainerType == container.AlternativeAbilities {
+		values := make([]fxp.Int, len(t.Children))
+		for i, one := range t.Children {
 			values[i] = one.AdjustedPoints()
 			if values[i] > points {
 				points = values[i]
@@ -404,11 +416,11 @@ func (a *Trait) AdjustedPoints() fxp.Int {
 			if !found && maximum == v {
 				found = true
 			} else {
-				points += fxp.ApplyRounding(calculateModifierPoints(v, fxp.Twenty), a.RoundCostDown)
+				points += fxp.ApplyRounding(calculateModifierPoints(v, fxp.Twenty), t.RoundCostDown)
 			}
 		}
 	} else {
-		for _, one := range a.Children {
+		for _, one := range t.Children {
 			points += one.AdjustedPoints()
 		}
 	}
@@ -416,10 +428,10 @@ func (a *Trait) AdjustedPoints() fxp.Int {
 }
 
 // AllModifiers returns the modifiers plus any inherited from parents.
-func (a *Trait) AllModifiers() []*TraitModifier {
-	all := make([]*TraitModifier, len(a.Modifiers))
-	copy(all, a.Modifiers)
-	p := a.parent
+func (t *Trait) AllModifiers() []*TraitModifier {
+	all := make([]*TraitModifier, len(t.Modifiers))
+	copy(all, t.Modifiers)
+	p := t.parent
 	for p != nil {
 		all = append(all, p.Modifiers...)
 		p = p.parent
@@ -428,11 +440,11 @@ func (a *Trait) AllModifiers() []*TraitModifier {
 }
 
 // Enabled returns true if this Trait and all of its parents are enabled.
-func (a *Trait) Enabled() bool {
-	if a.Disabled {
+func (t *Trait) Enabled() bool {
+	if t.Disabled {
 		return false
 	}
-	p := a.parent
+	p := t.parent
 	for p != nil {
 		if p.Disabled {
 			return false
@@ -443,82 +455,82 @@ func (a *Trait) Enabled() bool {
 }
 
 // Description returns a description, which doesn't include any levels.
-func (a *Trait) Description() string {
-	return a.Name
+func (t *Trait) Description() string {
+	return t.Name
 }
 
 // String implements fmt.Stringer.
-func (a *Trait) String() string {
+func (t *Trait) String() string {
 	var buffer strings.Builder
-	buffer.WriteString(a.Name)
-	if a.IsLeveled() {
+	buffer.WriteString(t.Name)
+	if t.IsLeveled() {
 		buffer.WriteByte(' ')
-		buffer.WriteString(a.Levels.String())
+		buffer.WriteString(t.Levels.String())
 	}
 	return buffer.String()
 }
 
-func (a *Trait) resolveLocalNotes() string {
-	return EvalEmbeddedRegex.ReplaceAllStringFunc(a.LocalNotes, a.Entity.EmbeddedEval)
+func (t *Trait) resolveLocalNotes() string {
+	return EvalEmbeddedRegex.ReplaceAllStringFunc(t.LocalNotes, t.Entity.EmbeddedEval)
 }
 
 // FeatureList returns the list of Features.
-func (a *Trait) FeatureList() Features {
-	return a.Features
+func (t *Trait) FeatureList() Features {
+	return t.Features
 }
 
 // TagList returns the list of tags.
-func (a *Trait) TagList() []string {
-	return a.Tags
+func (t *Trait) TagList() []string {
+	return t.Tags
 }
 
 // RatedStrength always return 0 for traits.
-func (a *Trait) RatedStrength() fxp.Int {
+func (t *Trait) RatedStrength() fxp.Int {
 	return 0
 }
 
 // FillWithNameableKeys adds any nameable keys found to the provided map.
-func (a *Trait) FillWithNameableKeys(m map[string]string) {
-	Extract(a.Name, m)
-	Extract(a.LocalNotes, m)
-	Extract(a.UserDesc, m)
-	if a.Prereq != nil {
-		a.Prereq.FillWithNameableKeys(m)
+func (t *Trait) FillWithNameableKeys(m map[string]string) {
+	Extract(t.Name, m)
+	Extract(t.LocalNotes, m)
+	Extract(t.UserDesc, m)
+	if t.Prereq != nil {
+		t.Prereq.FillWithNameableKeys(m)
 	}
-	for _, one := range a.Features {
+	for _, one := range t.Features {
 		one.FillWithNameableKeys(m)
 	}
-	for _, one := range a.Weapons {
+	for _, one := range t.Weapons {
 		one.FillWithNameableKeys(m)
 	}
 	Traverse(func(mod *TraitModifier) bool {
 		mod.FillWithNameableKeys(m)
 		return false
-	}, true, true, a.Modifiers...)
+	}, true, true, t.Modifiers...)
 }
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
-func (a *Trait) ApplyNameableKeys(m map[string]string) {
-	a.Name = Apply(a.Name, m)
-	a.LocalNotes = Apply(a.LocalNotes, m)
-	a.UserDesc = Apply(a.UserDesc, m)
-	if a.Prereq != nil {
-		a.Prereq.ApplyNameableKeys(m)
+func (t *Trait) ApplyNameableKeys(m map[string]string) {
+	t.Name = Apply(t.Name, m)
+	t.LocalNotes = Apply(t.LocalNotes, m)
+	t.UserDesc = Apply(t.UserDesc, m)
+	if t.Prereq != nil {
+		t.Prereq.ApplyNameableKeys(m)
 	}
-	for _, one := range a.Features {
+	for _, one := range t.Features {
 		one.ApplyNameableKeys(m)
 	}
-	for _, one := range a.Weapons {
+	for _, one := range t.Weapons {
 		one.ApplyNameableKeys(m)
 	}
 	Traverse(func(mod *TraitModifier) bool {
 		mod.ApplyNameableKeys(m)
 		return false
-	}, true, true, a.Modifiers...)
+	}, true, true, t.Modifiers...)
 }
 
 // ActiveModifierFor returns the first modifier that matches the name (case-insensitive).
-func (a *Trait) ActiveModifierFor(name string) *TraitModifier {
+func (t *Trait) ActiveModifierFor(name string) *TraitModifier {
 	var found *TraitModifier
 	Traverse(func(mod *TraitModifier) bool {
 		if strings.EqualFold(mod.Name, name) {
@@ -526,18 +538,18 @@ func (a *Trait) ActiveModifierFor(name string) *TraitModifier {
 			return true
 		}
 		return false
-	}, true, true, a.Modifiers...)
+	}, true, true, t.Modifiers...)
 	return found
 }
 
 // ModifierNotes returns the notes due to modifiers.
-func (a *Trait) ModifierNotes() string {
+func (t *Trait) ModifierNotes() string {
 	var buffer strings.Builder
-	if a.CR != selfctrl.NoCR {
-		buffer.WriteString(a.CR.String())
-		if a.CRAdj != selfctrl.NoCRAdj {
+	if t.CR != selfctrl.NoCR {
+		buffer.WriteString(t.CR.String())
+		if t.CRAdj != selfctrl.NoCRAdj {
 			buffer.WriteString(", ")
-			buffer.WriteString(a.CRAdj.Description(a.CR))
+			buffer.WriteString(t.CRAdj.Description(t.CR))
 		}
 	}
 	Traverse(func(mod *TraitModifier) bool {
@@ -546,23 +558,23 @@ func (a *Trait) ModifierNotes() string {
 		}
 		buffer.WriteString(mod.FullDescription())
 		return false
-	}, true, true, a.Modifiers...)
+	}, true, true, t.Modifiers...)
 	return buffer.String()
 }
 
 // SecondaryText returns the "secondary" text: the text display below an Trait.
-func (a *Trait) SecondaryText(optionChecker func(display.Option) bool) string {
+func (t *Trait) SecondaryText(optionChecker func(display.Option) bool) string {
 	var buffer strings.Builder
-	settings := SheetSettingsFor(a.Entity)
-	if a.UserDesc != "" && optionChecker(settings.UserDescriptionDisplay) {
-		buffer.WriteString(a.UserDesc)
+	settings := SheetSettingsFor(t.Entity)
+	if t.UserDesc != "" && optionChecker(settings.UserDescriptionDisplay) {
+		buffer.WriteString(t.UserDesc)
 	}
 	if optionChecker(settings.ModifiersDisplay) {
-		AppendStringOntoNewLine(&buffer, a.ModifierNotes())
+		AppendStringOntoNewLine(&buffer, t.ModifierNotes())
 	}
 	if optionChecker(settings.NotesDisplay) {
-		AppendStringOntoNewLine(&buffer, strings.TrimSpace(a.Notes()))
-		AppendStringOntoNewLine(&buffer, StudyHoursProgressText(ResolveStudyHours(a.Study), a.StudyHoursNeeded, false))
+		AppendStringOntoNewLine(&buffer, strings.TrimSpace(t.Notes()))
+		AppendStringOntoNewLine(&buffer, StudyHoursProgressText(ResolveStudyHours(t.Study), t.StudyHoursNeeded, false))
 	}
 	return buffer.String()
 }
@@ -678,71 +690,74 @@ func calculateModifierPoints(points, modifier fxp.Int) fxp.Int {
 }
 
 // Kind returns the kind of data.
-func (d *TraitData) Kind() string {
-	return d.kind(i18n.Text("Trait"))
+func (t *Trait) Kind() string {
+	return t.kind(i18n.Text("Trait"))
 }
 
 // ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
-func (d *TraitData) ClearUnusedFieldsForType() {
-	d.clearUnusedFields()
-	if d.Container() {
-		d.BasePoints = 0
-		d.Levels = 0
-		d.PointsPerLevel = 0
-		d.CanLevel = false
-		d.Prereq = nil
-		d.Weapons = nil
-		d.Features = nil
-		d.RoundCostDown = false
-		d.StudyHoursNeeded = study.Standard
-		if d.TemplatePicker == nil {
-			d.TemplatePicker = &TemplatePicker{}
+func (t *Trait) ClearUnusedFieldsForType() {
+	t.clearUnusedFields()
+	if t.Container() {
+		t.BasePoints = 0
+		t.Levels = 0
+		t.PointsPerLevel = 0
+		t.CanLevel = false
+		t.Prereq = nil
+		t.Weapons = nil
+		t.Features = nil
+		t.RoundCostDown = false
+		t.StudyHoursNeeded = study.Standard
+		if t.TemplatePicker == nil {
+			t.TemplatePicker = &TemplatePicker{}
 		}
 	} else {
-		d.ContainerType = 0
-		d.TemplatePicker = nil
-		d.Ancestry = ""
-		if !d.CanLevel {
-			d.Levels = 0
-			d.PointsPerLevel = 0
+		t.ContainerType = 0
+		t.TemplatePicker = nil
+		t.Ancestry = ""
+		if !t.CanLevel {
+			t.Levels = 0
+			t.PointsPerLevel = 0
 		}
 	}
 }
 
 // CopyFrom implements node.EditorData.
-func (d *TraitEditData) CopyFrom(t *Trait) {
-	d.copyFrom(t.Entity, &t.TraitEditData, t.Container(), false)
+func (t *Trait) CopyFrom(other *Trait) {
+	t.copyFrom(other.Entity, other, false)
+	t.LocalID = tid.MustNewTID(t.LocalID[0])
 }
 
 // ApplyTo implements node.EditorData.
-func (d *TraitEditData) ApplyTo(t *Trait) {
-	t.TraitEditData.copyFrom(t.Entity, d, t.Container(), true)
+func (t *Trait) ApplyTo(other *Trait) {
+	id := other.LocalID
+	other.copyFrom(other.Entity, t, true)
+	other.LocalID = id
 }
 
-func (d *TraitEditData) copyFrom(entity *Entity, other *TraitEditData, isContainer, isApply bool) {
-	*d = *other
-	d.Tags = txt.CloneStringSlice(d.Tags)
-	d.Modifiers = nil
+func (t *Trait) copyFrom(entity *Entity, other *Trait, isApply bool) {
+	t.TraitData = other.TraitData
+	t.Tags = txt.CloneStringSlice(t.Tags)
+	t.Modifiers = nil
 	if len(other.Modifiers) != 0 {
-		d.Modifiers = make([]*TraitModifier, 0, len(other.Modifiers))
+		t.Modifiers = make([]*TraitModifier, 0, len(other.Modifiers))
 		for _, one := range other.Modifiers {
-			d.Modifiers = append(d.Modifiers, one.Clone(entity, nil, true))
+			t.Modifiers = append(t.Modifiers, one.Clone(entity, nil, true))
 		}
 	}
-	d.Prereq = d.Prereq.CloneResolvingEmpty(isContainer, isApply)
-	d.Weapons = nil
+	t.Prereq = t.Prereq.CloneResolvingEmpty(t.Container(), isApply)
+	t.Weapons = nil
 	if len(other.Weapons) != 0 {
-		d.Weapons = make([]*Weapon, len(other.Weapons))
+		t.Weapons = make([]*Weapon, len(other.Weapons))
 		for i := range other.Weapons {
-			d.Weapons[i] = other.Weapons[i].Clone(entity, nil, true)
+			t.Weapons[i] = other.Weapons[i].Clone(entity, nil, true)
 		}
 	}
-	d.Features = other.Features.Clone()
+	t.Features = other.Features.Clone()
 	if len(other.Study) != 0 {
-		d.Study = make([]*Study, len(other.Study))
+		t.Study = make([]*Study, len(other.Study))
 		for i := range other.Study {
-			d.Study[i] = other.Study[i].Clone()
+			t.Study[i] = other.Study[i].Clone()
 		}
 	}
-	d.TemplatePicker = d.TemplatePicker.Clone()
+	t.TemplatePicker = t.TemplatePicker.Clone()
 }
