@@ -24,12 +24,14 @@ import (
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
 var (
-	_ Node[*EquipmentModifier] = &EquipmentModifier{}
-	_ GeneralModifier          = &EquipmentModifier{}
+	_ Node[*EquipmentModifier]       = &EquipmentModifier{}
+	_ GeneralModifier                = &EquipmentModifier{}
+	_ EditorData[*EquipmentModifier] = &EquipmentModifierEditData{}
 )
 
 // Columns that can be used with the equipment modifier method .CellData()
@@ -52,6 +54,35 @@ const (
 type EquipmentModifier struct {
 	EquipmentModifierData
 	Entity *Entity
+}
+
+// EquipmentModifierData holds the EquipmentModifier data that is written to disk.
+type EquipmentModifierData struct {
+	ContainerBase[*EquipmentModifier]
+	EquipmentModifierEditData
+}
+
+// EquipmentModifierEditData holds the EquipmentModifier data that can be edited by the UI detail editor.
+type EquipmentModifierEditData struct {
+	Name             string   `json:"name,omitempty"`
+	PageRef          string   `json:"reference,omitempty"`
+	PageRefHighlight string   `json:"reference_highlight,omitempty"`
+	LocalNotes       string   `json:"notes,omitempty"`
+	VTTNotes         string   `json:"vtt_notes,omitempty"`
+	Tags             []string `json:"tags,omitempty"`
+	EquipmentModifierEditDataNonContainerOnly
+}
+
+// EquipmentModifierEditDataNonContainerOnly holds the EquipmentModifier data that is only applicable to
+// EquipmentModifiers that aren't containers.
+type EquipmentModifierEditDataNonContainerOnly struct {
+	CostType     emcost.Type   `json:"cost_type,omitempty"`
+	WeightType   emweight.Type `json:"weight_type,omitempty"`
+	Disabled     bool          `json:"disabled,omitempty"`
+	TechLevel    string        `json:"tech_level,omitempty"`
+	CostAmount   string        `json:"cost,omitempty"`
+	WeightAmount string        `json:"weight,omitempty"`
+	Features     Features      `json:"features,omitempty"`
 }
 
 type equipmentModifierListData struct {
@@ -475,4 +506,39 @@ func processMultiplyAddWeightStep(weightType emweight.Type, weight fxp.Int, defU
 		return false
 	}, true, true, modifiers...)
 	return weight + sum
+}
+
+// Kind returns the kind of data.
+func (d *EquipmentModifierData) Kind() string {
+	return d.kind(i18n.Text("Equipment Modifier"))
+}
+
+// ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
+func (d *EquipmentModifierData) ClearUnusedFieldsForType() {
+	d.clearUnusedFields()
+	if d.Container() {
+		d.CostType = 0
+		d.WeightType = 0
+		d.Disabled = false
+		d.TechLevel = ""
+		d.CostAmount = ""
+		d.WeightAmount = ""
+		d.Features = nil
+	}
+}
+
+// CopyFrom implements node.EditorData.
+func (d *EquipmentModifierEditData) CopyFrom(mod *EquipmentModifier) {
+	d.copyFrom(&mod.EquipmentModifierEditData)
+}
+
+// ApplyTo implements node.EditorData.
+func (d *EquipmentModifierEditData) ApplyTo(mod *EquipmentModifier) {
+	mod.EquipmentModifierEditData.copyFrom(d)
+}
+
+func (d *EquipmentModifierEditData) copyFrom(other *EquipmentModifierEditData) {
+	*d = *other
+	d.Tags = txt.CloneStringSlice(d.Tags)
+	d.Features = other.Features.Clone()
 }

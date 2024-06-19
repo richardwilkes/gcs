@@ -21,10 +21,12 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/entity"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -34,6 +36,7 @@ var (
 	_ TechLevelProvider[*Skill]       = &Skill{}
 	_ SkillAdjustmentProvider[*Skill] = &Skill{}
 	_ TemplatePickerProvider          = &Skill{}
+	_ EditorData[*Skill]              = &SkillEditData{}
 )
 
 // Columns that can be used with the skill method .CellData()
@@ -55,6 +58,47 @@ type Skill struct {
 	Entity            *Entity
 	LevelData         Level
 	UnsatisfiedReason string
+}
+
+// SkillData holds the Skill data that is written to disk.
+type SkillData struct {
+	ContainerBase[*Skill]
+	SkillEditData
+}
+
+// SkillEditData holds the Skill data that can be edited by the UI detail editor.
+type SkillEditData struct {
+	Name             string   `json:"name,omitempty"`
+	PageRef          string   `json:"reference,omitempty"`
+	PageRefHighlight string   `json:"reference_highlight,omitempty"`
+	LocalNotes       string   `json:"notes,omitempty"`
+	VTTNotes         string   `json:"vtt_notes,omitempty"`
+	Tags             []string `json:"tags,omitempty"`
+	SkillNonContainerOnlyEditData
+	SkillContainerOnlyEditData
+}
+
+// SkillNonContainerOnlyEditData holds the Skill data that is only applicable to skills that aren't containers.
+type SkillNonContainerOnlyEditData struct {
+	Specialization               string              `json:"specialization,omitempty"`
+	TechLevel                    *string             `json:"tech_level,omitempty"`
+	Difficulty                   AttributeDifficulty `json:"difficulty,omitempty"`
+	Points                       fxp.Int             `json:"points,omitempty"`
+	EncumbrancePenaltyMultiplier fxp.Int             `json:"encumbrance_penalty_multiplier,omitempty"`
+	DefaultedFrom                *SkillDefault       `json:"defaulted_from,omitempty"`
+	Defaults                     []*SkillDefault     `json:"defaults,omitempty"`
+	TechniqueDefault             *SkillDefault       `json:"default,omitempty"`
+	TechniqueLimitModifier       *fxp.Int            `json:"limit,omitempty"`
+	Prereq                       *PrereqList         `json:"prereqs,omitempty"`
+	Weapons                      []*Weapon           `json:"weapons,omitempty"`
+	Features                     Features            `json:"features,omitempty"`
+	Study                        []*Study            `json:"study,omitempty"`
+	StudyHoursNeeded             study.Level         `json:"study_hours_needed,omitempty"`
+}
+
+// SkillContainerOnlyEditData holds the Skill data that is only applicable to skills that are containers.
+type SkillContainerOnlyEditData struct {
+	TemplatePicker *TemplatePicker `json:"template_picker,omitempty"`
 }
 
 type skillListData struct {
@@ -940,4 +984,97 @@ func (s *Skill) SwapDefaults() {
 		baseSkill.UpdateLevel()
 		s.UpdateLevel()
 	}
+}
+
+// Kind returns the kind of data.
+func (d *SkillData) Kind() string {
+	if strings.HasPrefix(d.Type, SkillID) {
+		return d.kind(i18n.Text("Skill"))
+	}
+	return d.kind(i18n.Text("Technique"))
+}
+
+// ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
+func (d *SkillData) ClearUnusedFieldsForType() {
+	d.clearUnusedFields()
+	if d.Container() {
+		d.Specialization = ""
+		d.TechLevel = nil
+		d.Difficulty = AttributeDifficulty{omit: true}
+		d.Points = 0
+		d.EncumbrancePenaltyMultiplier = 0
+		d.DefaultedFrom = nil
+		d.Defaults = nil
+		d.TechniqueDefault = nil
+		d.TechniqueLimitModifier = nil
+		d.Prereq = nil
+		d.Weapons = nil
+		d.Features = nil
+		d.StudyHoursNeeded = study.Standard
+		if d.TemplatePicker == nil {
+			d.TemplatePicker = &TemplatePicker{}
+		}
+	} else {
+		d.Difficulty.omit = false
+		d.TemplatePicker = nil
+	}
+}
+
+// CopyFrom implements node.EditorData.
+func (d *SkillEditData) CopyFrom(s *Skill) {
+	d.copyFrom(s.Entity, &s.SkillEditData, s.Container(), false)
+}
+
+// ApplyTo implements node.EditorData.
+func (d *SkillEditData) ApplyTo(s *Skill) {
+	s.SkillEditData.copyFrom(s.Entity, d, s.Container(), true)
+}
+
+func (d *SkillEditData) copyFrom(entity *Entity, other *SkillEditData, isContainer, isApply bool) {
+	*d = *other
+	d.Tags = txt.CloneStringSlice(d.Tags)
+	if other.TechLevel != nil {
+		tl := *other.TechLevel
+		d.TechLevel = &tl
+	}
+	if other.DefaultedFrom != nil {
+		def := *other.DefaultedFrom
+		d.DefaultedFrom = &def
+	}
+	d.Defaults = nil
+	if len(other.Defaults) != 0 {
+		d.Defaults = make([]*SkillDefault, len(other.Defaults))
+		for i, def := range other.Defaults {
+			def2 := *def
+			d.Defaults[i] = &def2
+		}
+	}
+	if other.TechniqueDefault != nil {
+		def := *other.TechniqueDefault
+		d.TechniqueDefault = &def
+		if !DefaultTypeIsSkillBased(other.TechniqueDefault.DefaultType) {
+			d.TechniqueDefault.Name = ""
+			d.TechniqueDefault.Specialization = ""
+		}
+	}
+	if other.TechniqueLimitModifier != nil {
+		mod := *other.TechniqueLimitModifier
+		d.TechniqueLimitModifier = &mod
+	}
+	d.Prereq = d.Prereq.CloneResolvingEmpty(isContainer, isApply)
+	d.Weapons = nil
+	if len(other.Weapons) != 0 {
+		d.Weapons = make([]*Weapon, len(other.Weapons))
+		for i := range other.Weapons {
+			d.Weapons[i] = other.Weapons[i].Clone(entity, nil, true)
+		}
+	}
+	d.Features = other.Features.Clone()
+	if len(other.Study) != 0 {
+		d.Study = make([]*Study, len(other.Study))
+		for i := range other.Study {
+			d.Study[i] = other.Study[i].Clone()
+		}
+	}
+	d.TemplatePicker = other.TemplatePicker.Clone()
 }

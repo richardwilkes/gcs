@@ -21,10 +21,12 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/entity"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -34,6 +36,7 @@ var (
 	_ TechLevelProvider[*Spell]       = &Spell{}
 	_ SkillAdjustmentProvider[*Spell] = &Spell{}
 	_ TemplatePickerProvider          = &Spell{}
+	_ EditorData[*Spell]              = &SpellEditData{}
 )
 
 // Columns that can be used with the spell method .CellData()
@@ -63,6 +66,45 @@ type Spell struct {
 	Entity            *Entity
 	LevelData         Level
 	UnsatisfiedReason string
+}
+
+// SpellData holds the Spell data that is written to disk.
+type SpellData struct {
+	ContainerBase[*Spell]
+	SpellEditData
+}
+
+// SpellEditData holds the Spell data that can be edited by the UI detail editor.
+type SpellEditData struct {
+	Name             string   `json:"name,omitempty"`
+	PageRef          string   `json:"reference,omitempty"`
+	PageRefHighlight string   `json:"reference_highlight,omitempty"`
+	LocalNotes       string   `json:"notes,omitempty"`
+	VTTNotes         string   `json:"vtt_notes,omitempty"`
+	Tags             []string `json:"tags,omitempty"`
+	SpellNonContainerOnlyEditData
+	SkillContainerOnlyEditData
+}
+
+// SpellNonContainerOnlyEditData holds the Spell data that is only applicable to spells that aren't containers.
+type SpellNonContainerOnlyEditData struct {
+	TechLevel         *string             `json:"tech_level,omitempty"`
+	Difficulty        AttributeDifficulty `json:"difficulty,omitempty"`
+	College           CollegeList         `json:"college,omitempty"`
+	PowerSource       string              `json:"power_source,omitempty"`
+	Class             string              `json:"spell_class,omitempty"`
+	Resist            string              `json:"resist,omitempty"`
+	CastingCost       string              `json:"casting_cost,omitempty"`
+	MaintenanceCost   string              `json:"maintenance_cost,omitempty"`
+	CastingTime       string              `json:"casting_time,omitempty"`
+	Duration          string              `json:"duration,omitempty"`
+	RitualSkillName   string              `json:"base_skill,omitempty"`
+	RitualPrereqCount int                 `json:"prereq_count,omitempty"`
+	Points            fxp.Int             `json:"points,omitempty"`
+	Prereq            *PrereqList         `json:"prereqs,omitempty"`
+	Weapons           []*Weapon           `json:"weapons,omitempty"`
+	Study             []*Study            `json:"study,omitempty"`
+	StudyHoursNeeded  study.Level         `json:"study_hours_needed,omitempty"`
 }
 
 type spellListData struct {
@@ -844,4 +886,73 @@ func (s *Spell) ApplyNameableKeys(m map[string]string) {
 	for _, one := range s.Weapons {
 		one.ApplyNameableKeys(m)
 	}
+}
+
+// Kind returns the kind of data.
+func (d *SpellData) Kind() string {
+	return d.kind(i18n.Text("Spell"))
+}
+
+// ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
+func (d *SpellData) ClearUnusedFieldsForType() {
+	d.clearUnusedFields()
+	if d.Container() {
+		d.TechLevel = nil
+		d.Difficulty = AttributeDifficulty{omit: true}
+		d.College = nil
+		d.PowerSource = ""
+		d.Class = ""
+		d.Resist = ""
+		d.CastingCost = ""
+		d.MaintenanceCost = ""
+		d.CastingTime = ""
+		d.Duration = ""
+		d.RitualSkillName = ""
+		d.RitualPrereqCount = 0
+		d.Points = 0
+		d.Prereq = nil
+		d.Weapons = nil
+		d.StudyHoursNeeded = study.Standard
+		if d.TemplatePicker == nil {
+			d.TemplatePicker = &TemplatePicker{}
+		}
+	} else {
+		d.TemplatePicker = nil
+		d.Difficulty.omit = false
+	}
+}
+
+// CopyFrom implements node.EditorData.
+func (d *SpellEditData) CopyFrom(s *Spell) {
+	d.copyFrom(s.Entity, &s.SpellEditData, s.Container(), false)
+}
+
+// ApplyTo implements node.EditorData.
+func (d *SpellEditData) ApplyTo(s *Spell) {
+	s.SpellEditData.copyFrom(s.Entity, d, s.Container(), true)
+}
+
+func (d *SpellEditData) copyFrom(entity *Entity, other *SpellEditData, isContainer, isApply bool) {
+	*d = *other
+	d.Tags = txt.CloneStringSlice(d.Tags)
+	if other.TechLevel != nil {
+		tl := *other.TechLevel
+		d.TechLevel = &tl
+	}
+	d.College = txt.CloneStringSlice(d.College)
+	d.Prereq = d.Prereq.CloneResolvingEmpty(isContainer, isApply)
+	d.Weapons = nil
+	if len(other.Weapons) != 0 {
+		d.Weapons = make([]*Weapon, len(other.Weapons))
+		for i := range other.Weapons {
+			d.Weapons[i] = other.Weapons[i].Clone(entity, nil, true)
+		}
+	}
+	if len(other.Study) != 0 {
+		d.Study = make([]*Study, len(other.Study))
+		for i := range other.Study {
+			d.Study[i] = other.Study[i].Clone()
+		}
+	}
+	d.TemplatePicker = d.TemplatePicker.Clone()
 }
