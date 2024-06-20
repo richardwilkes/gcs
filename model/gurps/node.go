@@ -13,7 +13,6 @@ import (
 	"fmt"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
-	"github.com/richardwilkes/toolbox/tid"
 )
 
 // NodeTypes is a constraint that defines the types that may be nodes.
@@ -24,20 +23,17 @@ type NodeTypes interface {
 // Node defines the methods required of nodes in our tables.
 type Node[T NodeTypes] interface {
 	fmt.Stringer
-	ID() tid.TID
+	Openable
 	Clone(newEntity *Entity, newParent T, preserveID bool) T
 	OwningEntity() *Entity
 	SetOwningEntity(entity *Entity)
 	Kind() string
-	Container() bool
 	Parent() T
 	SetParent(parent T)
 	HasChildren() bool
 	NodeChildren() []T
 	SetChildren(children []T)
 	Enabled() bool
-	Open() bool
-	SetOpen(open bool)
 	CellData(columnID int, data *CellData)
 	FillWithNameableKeys(m map[string]string)
 	ApplyNameableKeys(m map[string]string)

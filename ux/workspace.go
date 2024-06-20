@@ -136,7 +136,6 @@ func isWorkspaceAllowedToClose() bool {
 
 func workspaceWillClose() {
 	global := gurps.GlobalSettings()
-	global.LibraryExplorer.OpenRowKeys = Workspace.Navigator.DisclosedPaths()
 	global.LibraryExplorer.DividerPosition = Workspace.TopDock.RootDockLayout().DividerPosition()
 	frame := Workspace.Window.FrameRect()
 	global.WorkspaceFrame = &frame

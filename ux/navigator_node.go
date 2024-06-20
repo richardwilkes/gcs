@@ -41,13 +41,12 @@ type NavigatorNode struct {
 	children                 []*NavigatorNode
 	updateCellReleaseVersion string
 	updateCellCache          *updatableLibraryCell
-	open                     bool
 }
 
 // NewFavoritesNode creates the Favorites node.
 func NewFavoritesNode(nav *Navigator) *NavigatorNode {
 	n := &NavigatorNode{
-		id:  tid.MustNewTID(kinds.NavigatorFavorites),
+		id:  "00000000000000000",
 		nav: nav,
 	}
 	n.Refresh()
@@ -56,8 +55,17 @@ func NewFavoritesNode(nav *Navigator) *NavigatorNode {
 
 // NewLibraryNode creates a new library node.
 func NewLibraryNode(nav *Navigator, lib *gurps.Library) *NavigatorNode {
+	var id tid.TID
+	switch {
+	case lib.IsMaster():
+		id = "10000000000000000"
+	case lib.IsUser():
+		id = "10000000000000001"
+	default:
+		id = gurps.IDForNavNode(lib.Path(), kinds.NavigatorLibrary)
+	}
 	n := &NavigatorNode{
-		id:      tid.MustNewTID(kinds.NavigatorLibrary),
+		id:      id,
 		nav:     nav,
 		library: lib,
 	}
@@ -68,7 +76,7 @@ func NewLibraryNode(nav *Navigator, lib *gurps.Library) *NavigatorNode {
 // NewDirectoryNode creates a new DirectoryNode.
 func NewDirectoryNode(nav *Navigator, lib *gurps.Library, dirPath string, parent *NavigatorNode) *NavigatorNode {
 	n := &NavigatorNode{
-		id:      tid.MustNewTID(kinds.NavigatorDirectory),
+		id:      gurps.IDForNavNode(filepath.Join(lib.Path(), dirPath), kinds.NavigatorDirectory),
 		path:    dirPath,
 		nav:     nav,
 		library: lib,
@@ -209,7 +217,7 @@ func (n *NavigatorNode) ColumnCell(_, col int, foreground, _ unison.Ink, _, _, _
 	var ext string
 	if n.IsFile() {
 		ext = strings.ToLower(path.Ext(n.path))
-	} else if n.open {
+	} else if n.IsOpen() {
 		ext = gurps.OpenFolder
 	} else {
 		ext = gurps.ClosedFolder
@@ -241,15 +249,19 @@ func (n *NavigatorNode) ColumnCell(_, col int, foreground, _ unison.Ink, _, _, _
 
 // IsOpen implements unison.TableRowData.
 func (n *NavigatorNode) IsOpen() bool {
-	return n.open
+	return gurps.IsNodeOpen(n)
 }
 
 // SetOpen implements unison.TableRowData.
 func (n *NavigatorNode) SetOpen(open bool) {
-	if open != n.open && !n.IsFile() {
-		n.open = open
+	if gurps.SetNodeOpen(n, open) {
 		n.nav.adjustTableSizeEventually()
 	}
+}
+
+// Container returns true if this node can have children.
+func (n *NavigatorNode) Container() bool {
+	return n.CanHaveChildren()
 }
 
 // Path returns the full path on disk for this node.
@@ -296,8 +308,8 @@ func (n *NavigatorNode) Refresh() {
 	}
 }
 
-// Open the node.
-func (n *NavigatorNode) Open() (dockable unison.Dockable, wasOpen bool) {
+// OpenNodeContent opens the node's content.
+func (n *NavigatorNode) OpenNodeContent() (dockable unison.Dockable, wasOpen bool) {
 	if n.IsFile() {
 		return OpenFile(n.Path(), 0)
 	}

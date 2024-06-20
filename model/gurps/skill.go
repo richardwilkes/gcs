@@ -67,7 +67,6 @@ type SkillData struct {
 	SkillEditData
 	ThirdParty map[string]any `json:"third_party,omitempty"`
 	Children   []*Skill       `json:"children,omitempty"` // Only for containers
-	IsOpen     bool           `json:"open,omitempty"`     // Only for containers
 	parent     *Skill
 }
 
@@ -153,7 +152,6 @@ func NewSkill(e *Entity, parent *Skill, container bool) *Skill {
 	s := Skill{
 		SkillData: SkillData{
 			TID:    tid.MustNewTID(skillKind(container)),
-			IsOpen: container,
 			parent: parent,
 		},
 		Entity: e,
@@ -166,6 +164,7 @@ func NewSkill(e *Entity, parent *Skill, container bool) *Skill {
 		s.Points = fxp.One
 	}
 	s.Name = s.Kind()
+	s.SetOpen(container)
 	return &s
 }
 
@@ -233,14 +232,14 @@ func (s *Skill) SetParent(parent *Skill) {
 	s.parent = parent
 }
 
-// Open returns true if this node is currently open.
-func (s *Skill) Open() bool {
-	return s.IsOpen && s.Container()
+// IsOpen returns true if this node is currently open.
+func (s *Skill) IsOpen() bool {
+	return IsNodeOpen(s)
 }
 
 // SetOpen sets the current open state for this node.
 func (s *Skill) SetOpen(open bool) {
-	s.IsOpen = open && s.Container()
+	SetNodeOpen(s, open)
 }
 
 // IsTechnique returns true if this is a technique.
@@ -255,7 +254,7 @@ func (s *Skill) Clone(e *Entity, parent *Skill, preserveID bool) *Skill {
 		other = NewTechnique(e, parent, s.TechniqueDefault.Name)
 	} else {
 		other = NewSkill(e, parent, s.Container())
-		other.IsOpen = s.IsOpen
+		other.SetOpen(s.IsOpen())
 	}
 	if preserveID {
 		other.TID = s.TID
@@ -320,10 +319,12 @@ func (s *Skill) UnmarshalJSON(data []byte) error {
 		// Old data fields
 		Type       string   `json:"type"`
 		Categories []string `json:"categories"`
+		IsOpen     bool     `json:"open"`
 	}
 	if err := json.Unmarshal(data, &localData); err != nil {
 		return err
 	}
+	setOpen := false
 	if !tid.IsValid(localData.TID) {
 		// Fixup old data that used UUIDs instead of TIDs
 		var kind byte
@@ -333,6 +334,7 @@ func (s *Skill) UnmarshalJSON(data []byte) error {
 			kind = skillKind(strings.HasSuffix(localData.Type, ContainerKeyPostfix))
 		}
 		localData.TID = tid.MustNewTID(kind)
+		setOpen = localData.IsOpen
 	}
 	s.SkillData = localData.SkillData
 	s.ClearUnusedFieldsForType()
@@ -342,6 +344,9 @@ func (s *Skill) UnmarshalJSON(data []byte) error {
 		for _, one := range s.Children {
 			one.parent = s
 		}
+	}
+	if setOpen {
+		SetNodeOpen(s, true)
 	}
 	return nil
 }
@@ -1093,7 +1098,6 @@ func (s *Skill) ClearUnusedFieldsForType() {
 		}
 	} else {
 		s.Children = nil
-		s.IsOpen = false
 		s.Difficulty.omit = false
 		s.TemplatePicker = nil
 	}

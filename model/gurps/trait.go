@@ -67,7 +67,6 @@ type TraitData struct {
 	TraitEditData
 	ThirdParty map[string]any `json:"third_party,omitempty"`
 	Children   []*Trait       `json:"children,omitempty"` // Only for containers
-	IsOpen     bool           `json:"open,omitempty"`     // Only for containers
 	parent     *Trait
 }
 
@@ -147,7 +146,6 @@ func NewTrait(entity *Entity, parent *Trait, container bool) *Trait {
 	t := Trait{
 		TraitData: TraitData{
 			TID:    tid.MustNewTID(traitKind(container)),
-			IsOpen: container,
 			parent: parent,
 		},
 		Entity: entity,
@@ -156,6 +154,7 @@ func NewTrait(entity *Entity, parent *Trait, container bool) *Trait {
 	if t.Container() {
 		t.TemplatePicker = &TemplatePicker{}
 	}
+	t.SetOpen(container)
 	return &t
 }
 
@@ -201,14 +200,14 @@ func (t *Trait) SetParent(parent *Trait) {
 	t.parent = parent
 }
 
-// Open returns true if this node is currently open.
-func (t *Trait) Open() bool {
-	return t.IsOpen && t.Container()
+// IsOpen returns true if this node is currently open.
+func (t *Trait) IsOpen() bool {
+	return IsNodeOpen(t)
 }
 
 // SetOpen sets the current open state for this node.
 func (t *Trait) SetOpen(open bool) {
-	t.IsOpen = open && t.Container()
+	SetNodeOpen(t, open)
 }
 
 // Clone implements Node.
@@ -217,7 +216,7 @@ func (t *Trait) Clone(entity *Entity, parent *Trait, preserveID bool) *Trait {
 	if preserveID {
 		other.TID = t.TID
 	}
-	other.IsOpen = t.IsOpen
+	other.SetOpen(t.IsOpen())
 	other.ThirdParty = t.ThirdParty
 	other.TraitEditData.CopyFrom(t)
 	if t.HasChildren() {
@@ -266,13 +265,16 @@ func (t *Trait) UnmarshalJSON(data []byte) error {
 		Social       bool     `json:"social"`
 		Exotic       bool     `json:"exotic"`
 		Supernatural bool     `json:"supernatural"`
+		IsOpen       bool     `json:"open"`
 	}
 	if err := json.Unmarshal(data, &localData); err != nil {
 		return err
 	}
+	setOpen := false
 	if !tid.IsValid(localData.TID) {
 		// Fixup old data that used UUIDs instead of TIDs
 		localData.TID = tid.MustNewTID(traitKind(strings.HasSuffix(localData.Type, ContainerKeyPostfix)))
+		setOpen = localData.IsOpen
 	}
 	t.TraitData = localData.TraitData
 	// Force the CanLevel flag, if needed
@@ -291,6 +293,9 @@ func (t *Trait) UnmarshalJSON(data []byte) error {
 		for _, one := range t.Children {
 			one.parent = t
 		}
+	}
+	if setOpen {
+		SetNodeOpen(t, true)
 	}
 	return nil
 }
@@ -756,7 +761,6 @@ func (t *Trait) ClearUnusedFieldsForType() {
 		}
 	} else {
 		t.Children = nil
-		t.IsOpen = false
 		t.ContainerType = 0
 		t.TemplatePicker = nil
 		t.Ancestry = ""

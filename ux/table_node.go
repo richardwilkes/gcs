@@ -190,13 +190,14 @@ func applyInkRecursively(panel *unison.Panel, foreground, background unison.Ink)
 
 // IsOpen implements unison.TableRowData.
 func (n *Node[T]) IsOpen() bool {
-	return n.dataAsNode.Container() && n.dataAsNode.Open()
+	return n.dataAsNode.IsOpen()
 }
 
 // SetOpen implements unison.TableRowData.
 func (n *Node[T]) SetOpen(open bool) {
-	if n.dataAsNode.Container() && open != n.dataAsNode.Open() {
-		n.dataAsNode.SetOpen(open)
+	wasOpen := n.dataAsNode.IsOpen()
+	n.dataAsNode.SetOpen(open)
+	if wasOpen != n.dataAsNode.IsOpen() {
 		n.table.SyncToModel()
 	}
 }

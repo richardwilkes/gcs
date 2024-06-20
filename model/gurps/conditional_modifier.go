@@ -104,8 +104,8 @@ func (c *ConditionalModifier) Container() bool {
 	return false
 }
 
-// Open returns true if this node is currently open.
-func (c *ConditionalModifier) Open() bool {
+// IsOpen returns true if this node is currently open.
+func (c *ConditionalModifier) IsOpen() bool {
 	return false
 }
 

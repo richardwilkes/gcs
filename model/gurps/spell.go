@@ -75,7 +75,6 @@ type SpellData struct {
 	SpellEditData
 	ThirdParty map[string]any `json:"third_party,omitempty"`
 	Children   []*Spell       `json:"children,omitempty"` // Only for containers
-	IsOpen     bool           `json:"open,omitempty"`     // Only for containers
 	parent     *Spell
 }
 
@@ -147,7 +146,6 @@ func NewSpell(e *Entity, parent *Spell, container bool) *Spell {
 	s := Spell{
 		SpellData: SpellData{
 			TID:    tid.MustNewTID(spellKind(container)),
-			IsOpen: container,
 			parent: parent,
 		},
 		Entity: e,
@@ -166,6 +164,7 @@ func NewSpell(e *Entity, parent *Spell, container bool) *Spell {
 	}
 	s.Name = s.Kind()
 	s.UpdateLevel()
+	s.SetOpen(container)
 	return &s
 }
 
@@ -234,14 +233,14 @@ func (s *Spell) SetParent(parent *Spell) {
 	s.parent = parent
 }
 
-// Open returns true if this node is currently open.
-func (s *Spell) Open() bool {
-	return s.IsOpen && s.Container()
+// IsOpen returns true if this node is currently open.
+func (s *Spell) IsOpen() bool {
+	return IsNodeOpen(s)
 }
 
 // SetOpen sets the current open state for this node.
 func (s *Spell) SetOpen(open bool) {
-	s.IsOpen = open && s.Container()
+	SetNodeOpen(s, open)
 }
 
 // IsRitualMagic returns true if this is a Ritual Magic Spell.
@@ -256,7 +255,7 @@ func (s *Spell) Clone(e *Entity, parent *Spell, preserveID bool) *Spell {
 		other = NewRitualMagicSpell(e, parent, false)
 	} else {
 		other = NewSpell(e, parent, s.Container())
-		other.IsOpen = s.IsOpen
+		other.SetOpen(s.IsOpen())
 	}
 	if preserveID {
 		other.TID = s.TID
@@ -323,10 +322,12 @@ func (s *Spell) UnmarshalJSON(data []byte) error {
 		// Old data fields
 		Type       string   `json:"type"`
 		Categories []string `json:"categories"`
+		IsOpen     bool     `json:"open"`
 	}
 	if err := json.Unmarshal(data, &localData); err != nil {
 		return err
 	}
+	setOpen := false
 	if !tid.IsValid(localData.TID) {
 		// Fixup old data that used UUIDs instead of TIDs
 		var kind byte
@@ -336,6 +337,7 @@ func (s *Spell) UnmarshalJSON(data []byte) error {
 			kind = spellKind(strings.HasSuffix(localData.Type, ContainerKeyPostfix))
 		}
 		localData.TID = tid.MustNewTID(kind)
+		setOpen = localData.IsOpen
 	}
 	s.SpellData = localData.SpellData
 	s.ClearUnusedFieldsForType()
@@ -345,6 +347,9 @@ func (s *Spell) UnmarshalJSON(data []byte) error {
 		for _, one := range s.Children {
 			one.parent = s
 		}
+	}
+	if setOpen {
+		SetNodeOpen(s, true)
 	}
 	return nil
 }
@@ -1007,7 +1012,6 @@ func (s *Spell) ClearUnusedFieldsForType() {
 		}
 	} else {
 		s.Children = nil
-		s.IsOpen = false
 		s.TemplatePicker = nil
 		s.Difficulty.omit = false
 	}

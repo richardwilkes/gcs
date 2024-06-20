@@ -71,7 +71,6 @@ type EquipmentData struct {
 	EquipmentEditData
 	ThirdParty map[string]any `json:"third_party,omitempty"`
 	Children   []*Equipment   `json:"children,omitempty"` // Only for containers
-	IsOpen     bool           `json:"open,omitempty"`     // Only for containers
 	parent     *Equipment
 }
 
@@ -139,12 +138,12 @@ func NewEquipment(entity *Entity, parent *Equipment, container bool) *Equipment 
 				Quantity:      fxp.One,
 				Equipped:      true,
 			},
-			IsOpen: container,
 			parent: parent,
 		},
 		Entity: entity,
 	}
 	e.Name = e.Kind()
+	e.SetOpen(container)
 	return &e
 }
 
@@ -190,14 +189,14 @@ func (e *Equipment) SetParent(parent *Equipment) {
 	e.parent = parent
 }
 
-// Open returns true if this node is currently open.
-func (e *Equipment) Open() bool {
-	return e.IsOpen && e.Container()
+// IsOpen returns true if this node is currently open.
+func (e *Equipment) IsOpen() bool {
+	return IsNodeOpen(e)
 }
 
 // SetOpen sets the current open state for this node.
 func (e *Equipment) SetOpen(open bool) {
-	e.IsOpen = open && e.Container()
+	SetNodeOpen(e, open)
 }
 
 // Clone implements Node.
@@ -206,7 +205,7 @@ func (e *Equipment) Clone(entity *Entity, parent *Equipment, preserveID bool) *E
 	if preserveID {
 		other.TID = e.TID
 	}
-	other.IsOpen = e.IsOpen
+	other.SetOpen(e.IsOpen())
 	other.ThirdParty = e.ThirdParty
 	other.EquipmentEditData.CopyFrom(e)
 	if e.HasChildren() {
@@ -259,13 +258,16 @@ func (e *Equipment) UnmarshalJSON(data []byte) error {
 		// Old data fields
 		Type       string   `json:"type"`
 		Categories []string `json:"categories"`
+		IsOpen     bool     `json:"open"`
 	}
 	if err := json.Unmarshal(data, &localData); err != nil {
 		return err
 	}
+	setOpen := false
 	if !tid.IsValid(localData.TID) {
 		// Fixup old data that used UUIDs instead of TIDs
 		localData.TID = tid.MustNewTID(equipmentKind(strings.HasSuffix(localData.Type, ContainerKeyPostfix)))
+		setOpen = localData.IsOpen
 	}
 	e.EquipmentData = localData.EquipmentData
 	e.ClearUnusedFieldsForType()
@@ -285,6 +287,9 @@ func (e *Equipment) UnmarshalJSON(data []byte) error {
 		for _, one := range e.Children {
 			one.parent = e
 		}
+	}
+	if setOpen {
+		SetNodeOpen(e, true)
 	}
 	return nil
 }
@@ -715,7 +720,6 @@ func (e *Equipment) Kind() string {
 func (e *Equipment) ClearUnusedFieldsForType() {
 	if !e.Container() {
 		e.Children = nil
-		e.IsOpen = false
 	}
 }
 

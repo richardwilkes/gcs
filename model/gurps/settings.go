@@ -18,14 +18,17 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/server/websettings"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/collection/dict"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/thememode"
@@ -49,8 +52,20 @@ var (
 
 // NavigatorSettings holds settings for the navigator view.
 type NavigatorSettings struct {
-	DividerPosition float32  `json:"divider_position"`
-	OpenRowKeys     []string `json:"open_row_keys,omitempty"`
+	DividerPosition float32                 `json:"divider_position"`
+	Nodes           map[string]*NavNodeInfo `json:"nodes,omitempty"`
+}
+
+// NavNodeInfo holds the ID and last used timestamp for a navigator node.
+type NavNodeInfo struct {
+	ID       tid.TID `json:"id"`
+	LastUsed int64   `json:"last"`
+}
+
+// PDFInfo holds IDs and last opened timestamp for a PDF's table of contents.
+type PDFInfo struct {
+	TOC        map[string]map[int]tid.TID `json:"toc,omitempty"`
+	LastOpened int64                      `json:"last"`
 }
 
 // Settings holds the application settings.
@@ -59,6 +74,7 @@ type Settings struct {
 	General            *GeneralSettings           `json:"general,omitempty"`
 	LibrarySet         Libraries                  `json:"libraries,omitempty"`
 	LibraryExplorer    NavigatorSettings          `json:"library_explorer"`
+	ThemeMode          thememode.Enum             `json:"theme_mode,alt=color_mode"`
 	RecentFiles        []string                   `json:"recent_files,omitempty"`
 	DeepSearch         []string                   `json:"deep_search,omitempty"`
 	LastDirs           map[string]string          `json:"last_dirs,omitempty"`
@@ -71,7 +87,16 @@ type Settings struct {
 	Sheet              *SheetSettings             `json:"sheet_settings,omitempty"`
 	OpenInWindow       []dgroup.Group             `json:"open_in_window,omitempty"`
 	WebServer          *websettings.Settings      `json:"web,omitempty"` // Do not use "web_server" as the key, as an earlier release used that name and it will cause a failure to load the settings file.
-	ThemeMode          thememode.Enum             `json:"theme_mode,alt=color_mode"`
+	OpenNodes          map[tid.TID]int64          `json:"open_nodes,omitempty"`
+	PDFs               map[string]*PDFInfo        `json:"pdfs,omitempty"`
+}
+
+// Openable defines the methods required of openable nodes.
+type Openable interface {
+	ID() tid.TID
+	Container() bool
+	IsOpen() bool
+	SetOpen(open bool)
 }
 
 // GlobalSettings returns the global settings.
@@ -107,6 +132,28 @@ func GlobalSettings() *Settings {
 
 // Save to the standard path.
 func (s *Settings) Save() error {
+	cutoff := time.Now().Add(-time.Hour * 24 * 120).Unix()
+	for k, v := range s.LibraryExplorer.Nodes {
+		if v.LastUsed < cutoff {
+			delete(s.LibraryExplorer.Nodes, k)
+		}
+	}
+	for k, v := range s.OpenNodes {
+		if v < cutoff {
+			delete(s.OpenNodes, k)
+		}
+	}
+	if len(s.OpenNodes) == 0 {
+		s.OpenNodes = nil
+	}
+	for k, v := range s.PDFs {
+		if v.LastOpened < cutoff {
+			delete(s.PDFs, k)
+		}
+	}
+	if len(s.PDFs) == 0 {
+		s.PDFs = nil
+	}
 	return jio.SaveToFile(context.Background(), SettingsPath, s)
 }
 
@@ -227,4 +274,87 @@ func (s *Settings) SheetSettings() *SheetSettings {
 // Libraries implements gurps.SettingsProvider.
 func (s *Settings) Libraries() Libraries {
 	return s.LibrarySet
+}
+
+// IsNodeOpen returns true if the node is currently open.
+func IsNodeOpen(node Openable) bool {
+	if !node.Container() {
+		return false
+	}
+	id := node.ID()
+	settings := GlobalSettings()
+	_, open := settings.OpenNodes[id]
+	if open {
+		if settings.OpenNodes == nil {
+			settings.OpenNodes = make(map[tid.TID]int64)
+		}
+		settings.OpenNodes[id] = time.Now().Unix()
+	}
+	return open
+}
+
+// SetNodeOpen sets the current open state for a node. Returns true if a change was made.
+func SetNodeOpen(node Openable, open bool) bool {
+	if !node.Container() {
+		return false
+	}
+	id := node.ID()
+	settings := GlobalSettings()
+	if _, wasOpen := settings.OpenNodes[id]; wasOpen != open {
+		if settings.OpenNodes == nil {
+			settings.OpenNodes = make(map[tid.TID]int64)
+		}
+		if open {
+			settings.OpenNodes[id] = time.Now().Unix()
+		} else {
+			delete(settings.OpenNodes, id)
+		}
+		return true
+	}
+	return false
+}
+
+// IDForPDFTOC returns the ID for the specified PDF TOC entry.
+func IDForPDFTOC(pdfPath, title string, pageNum int) tid.TID {
+	settings := GlobalSettings()
+	if settings.PDFs == nil {
+		settings.PDFs = make(map[string]*PDFInfo)
+	}
+	pi, ok := settings.PDFs[pdfPath]
+	if !ok {
+		pi = &PDFInfo{}
+		settings.PDFs[pdfPath] = pi
+	}
+	pi.LastOpened = time.Now().Unix()
+	if pi.TOC == nil {
+		pi.TOC = make(map[string]map[int]tid.TID)
+	}
+	titleMap, ok := pi.TOC[title]
+	if !ok {
+		titleMap = make(map[int]tid.TID)
+		pi.TOC[title] = titleMap
+	}
+	id, ok := titleMap[pageNum]
+	if !ok {
+		id = tid.MustNewTID(kinds.TableOfContents)
+		titleMap[pageNum] = id
+	}
+	return id
+}
+
+// IDForNavNode returns the ID for the specified navigator node.
+func IDForNavNode(fullPath string, kind byte) tid.TID {
+	settings := GlobalSettings()
+	if settings.LibraryExplorer.Nodes == nil {
+		settings.LibraryExplorer.Nodes = make(map[string]*NavNodeInfo)
+	}
+	info, ok := settings.LibraryExplorer.Nodes[fullPath]
+	if !ok {
+		info = &NavNodeInfo{
+			ID: tid.MustNewTID(kind),
+		}
+		settings.LibraryExplorer.Nodes[fullPath] = info
+	}
+	info.LastUsed = time.Now().Unix()
+	return info.ID
 }

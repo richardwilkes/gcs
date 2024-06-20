@@ -10,7 +10,7 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/kinds"
+	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/unison"
@@ -19,13 +19,12 @@ import (
 var _ unison.TableRowData[*tocNode] = &tocNode{}
 
 type tocNode struct {
-	uuid       tid.TID
+	id         tid.TID
 	owner      *PDFDockable
 	parent     *tocNode
 	title      string
 	pageNumber int
 	children   []*tocNode
-	open       bool
 }
 
 func newTOC(owner *PDFDockable, parent *tocNode, toc []*PDFTableOfContents) []*tocNode {
@@ -35,7 +34,7 @@ func newTOC(owner *PDFDockable, parent *tocNode, toc []*PDFTableOfContents) []*t
 	nodes := make([]*tocNode, len(toc))
 	for i, one := range toc {
 		nodes[i] = &tocNode{
-			uuid:       tid.MustNewTID(kinds.TableOfContents),
+			id:         gurps.IDForPDFTOC(owner.path, one.Title, one.PageNumber),
 			owner:      owner,
 			parent:     parent,
 			title:      one.Title,
@@ -51,7 +50,7 @@ func (n *tocNode) CloneForTarget(_ unison.Paneler, _ *tocNode) *tocNode {
 }
 
 func (n *tocNode) ID() tid.TID {
-	return n.uuid
+	return n.id
 }
 
 func (n *tocNode) Parent() *tocNode {
@@ -60,6 +59,10 @@ func (n *tocNode) Parent() *tocNode {
 
 func (n *tocNode) SetParent(_ *tocNode) {
 	// Not used
+}
+
+func (n *tocNode) Container() bool {
+	return n.CanHaveChildren()
 }
 
 func (n *tocNode) CanHaveChildren() bool {
@@ -81,7 +84,7 @@ func (n *tocNode) CellDataForSort(_ int) string {
 func (n *tocNode) ColumnCell(_, _ int, foreground, _ unison.Ink, _, _, _ bool) unison.Paneler {
 	var img *unison.SVG
 	if n.CanHaveChildren() {
-		if n.open {
+		if n.IsOpen() {
 			img = svg.OpenFolder
 		} else {
 			img = svg.ClosedFolder
@@ -101,12 +104,11 @@ func (n *tocNode) ColumnCell(_, _ int, foreground, _ unison.Ink, _, _, _ bool) u
 }
 
 func (n *tocNode) IsOpen() bool {
-	return n.open
+	return gurps.IsNodeOpen(n)
 }
 
 func (n *tocNode) SetOpen(open bool) {
-	if n.open != open {
-		n.open = open
+	if gurps.SetNodeOpen(n, open) {
 		n.owner.adjustTableSizeEventually()
 	}
 }

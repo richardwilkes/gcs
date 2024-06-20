@@ -613,8 +613,8 @@ func (w *Weapon) Container() bool {
 	return false
 }
 
-// Open returns true if this node is currently open.
-func (w *Weapon) Open() bool {
+// IsOpen returns true if this node is currently open.
+func (w *Weapon) IsOpen() bool {
 	return false
 }
 

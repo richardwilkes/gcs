@@ -64,7 +64,6 @@ type EquipmentModifierData struct {
 	EquipmentModifierEditData
 	ThirdParty map[string]any       `json:"third_party,omitempty"`
 	Children   []*EquipmentModifier `json:"children,omitempty"` // Only for containers
-	IsOpen     bool                 `json:"open,omitempty"`     // Only for containers
 	parent     *EquipmentModifier
 }
 
@@ -126,12 +125,12 @@ func NewEquipmentModifier(entity *Entity, parent *EquipmentModifier, container b
 	e := EquipmentModifier{
 		EquipmentModifierData: EquipmentModifierData{
 			TID:    tid.MustNewTID(equipmentModifierKind(container)),
-			IsOpen: container,
 			parent: parent,
 		},
 		Entity: entity,
 	}
 	e.Name = e.Kind()
+	e.SetOpen(container)
 	return &e
 }
 
@@ -177,14 +176,14 @@ func (e *EquipmentModifier) SetParent(parent *EquipmentModifier) {
 	e.parent = parent
 }
 
-// Open returns true if this node is currently open.
-func (e *EquipmentModifier) Open() bool {
-	return e.IsOpen && e.Container()
+// IsOpen returns true if this node is currently open.
+func (e *EquipmentModifier) IsOpen() bool {
+	return IsNodeOpen(e)
 }
 
 // SetOpen sets the current open state for this node.
 func (e *EquipmentModifier) SetOpen(open bool) {
-	e.IsOpen = open && e.Container()
+	SetNodeOpen(e, open)
 }
 
 // Clone implements Node.
@@ -193,7 +192,7 @@ func (e *EquipmentModifier) Clone(entity *Entity, parent *EquipmentModifier, pre
 	if preserveID {
 		other.TID = e.TID
 	}
-	other.IsOpen = e.IsOpen
+	other.SetOpen(e.IsOpen())
 	other.ThirdParty = e.ThirdParty
 	other.EquipmentModifierEditData.CopyFrom(e)
 	if e.HasChildren() {
@@ -231,13 +230,16 @@ func (e *EquipmentModifier) UnmarshalJSON(data []byte) error {
 		// Old data fields
 		Type       string   `json:"type"`
 		Categories []string `json:"categories"`
+		IsOpen     bool     `json:"open"`
 	}
 	if err := json.Unmarshal(data, &localData); err != nil {
 		return err
 	}
+	setOpen := false
 	if !tid.IsValid(localData.TID) {
 		// Fixup old data that used UUIDs instead of TIDs
 		localData.TID = tid.MustNewTID(equipmentModifierKind(strings.HasSuffix(localData.Type, ContainerKeyPostfix)))
+		setOpen = localData.IsOpen
 	}
 	e.EquipmentModifierData = localData.EquipmentModifierData
 	e.ClearUnusedFieldsForType()
@@ -247,6 +249,9 @@ func (e *EquipmentModifier) UnmarshalJSON(data []byte) error {
 		for _, one := range e.Children {
 			one.parent = e
 		}
+	}
+	if setOpen {
+		SetNodeOpen(e, true)
 	}
 	return nil
 }
@@ -592,7 +597,6 @@ func (e *EquipmentModifier) ClearUnusedFieldsForType() {
 		e.Features = nil
 	} else {
 		e.Children = nil
-		e.IsOpen = false
 	}
 }
 

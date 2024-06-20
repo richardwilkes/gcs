@@ -93,7 +93,6 @@ func newNavigator() *Navigator {
 	n.needReload = false
 	n.table.SetScale(float32(globalSettings.General.NavigatorUIScale) / 100)
 	n.table.SetRootRows(rows)
-	n.ApplyDisclosedPaths(globalSettings.LibraryExplorer.OpenRowKeys)
 	n.table.SizeColumnsToFit(true)
 
 	n.scroll.SetContent(n.table, behavior.Fill, behavior.Fill)
@@ -815,7 +814,7 @@ func (n *Navigator) handleSelectionDoubleClick() {
 			altered = true
 			row.SetOpen(!row.IsOpen())
 		} else {
-			if d, _ := row.Open(); !toolbox.IsNil(d) {
+			if d, _ := row.OpenNodeContent(); !toolbox.IsNil(d) {
 				if slices.Contains(n.searchResult, row) {
 					if f := findSearchFieldInSelfOrDescendants(d.AsPanel()); f != nil {
 						f.SetText(n.searchField.Text())

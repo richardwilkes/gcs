@@ -51,7 +51,6 @@ type NoteData struct {
 	NoteEditData
 	ThirdParty map[string]any `json:"third_party,omitempty"`
 	Children   []*Note        `json:"children,omitempty"` // Only for containers
-	IsOpen     bool           `json:"open,omitempty"`     // Only for containers
 	parent     *Note
 }
 
@@ -97,12 +96,12 @@ func NewNote(entity *Entity, parent *Note, container bool) *Note {
 	n := Note{
 		NoteData: NoteData{
 			TID:    tid.MustNewTID(noteKind(container)),
-			IsOpen: container,
 			parent: parent,
 		},
 		Entity: entity,
 	}
 	n.Text = n.Kind()
+	n.SetOpen(container)
 	return &n
 }
 
@@ -148,14 +147,14 @@ func (n *Note) SetParent(parent *Note) {
 	n.parent = parent
 }
 
-// Open returns true if this node is currently open.
-func (n *Note) Open() bool {
-	return n.IsOpen && n.Container()
+// IsOpen returns true if this node is currently open.
+func (n *Note) IsOpen() bool {
+	return IsNodeOpen(n)
 }
 
 // SetOpen sets the current open state for this node.
 func (n *Note) SetOpen(open bool) {
-	n.IsOpen = open && n.Container()
+	SetNodeOpen(n, open)
 }
 
 // Clone implements Node.
@@ -164,7 +163,7 @@ func (n *Note) Clone(entity *Entity, parent *Note, preserveID bool) *Note {
 	if preserveID {
 		other.TID = n.TID
 	}
-	other.IsOpen = n.IsOpen
+	other.SetOpen(n.IsOpen())
 	other.ThirdParty = n.ThirdParty
 	other.NoteEditData.CopyFrom(n)
 	if n.HasChildren() {
@@ -200,14 +199,17 @@ func (n *Note) UnmarshalJSON(data []byte) error {
 	var localData struct {
 		NoteData
 		// Old data fields
-		Type string `json:"type"`
+		Type   string `json:"type"`
+		IsOpen bool   `json:"open"`
 	}
 	if err := json.Unmarshal(data, &localData); err != nil {
 		return err
 	}
+	setOpen := false
 	if !tid.IsValid(localData.TID) {
 		// Fixup old data that used UUIDs instead of TIDs
 		localData.TID = tid.MustNewTID(noteKind(strings.HasSuffix(localData.Type, ContainerKeyPostfix)))
+		setOpen = localData.IsOpen
 	}
 	n.NoteData = localData.NoteData
 	n.ClearUnusedFieldsForType()
@@ -215,6 +217,9 @@ func (n *Note) UnmarshalJSON(data []byte) error {
 		for _, one := range n.Children {
 			one.parent = n
 		}
+	}
+	if setOpen {
+		SetNodeOpen(n, true)
 	}
 	return nil
 }
@@ -327,7 +332,6 @@ func (n *Note) Kind() string {
 func (n *Note) ClearUnusedFieldsForType() {
 	if !n.Container() {
 		n.Children = nil
-		n.IsOpen = false
 	}
 }
 

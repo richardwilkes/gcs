@@ -73,7 +73,6 @@ type TraitModifierData struct {
 	TraitModifierEditData
 	ThirdParty map[string]any   `json:"third_party,omitempty"`
 	Children   []*TraitModifier `json:"children,omitempty"` // Only for containers
-	IsOpen     bool             `json:"open,omitempty"`     // Only for containers
 	parent     *TraitModifier
 }
 
@@ -131,16 +130,16 @@ func SaveTraitModifiers(modifiers []*TraitModifier, filePath string) error {
 
 // NewTraitModifier creates a TraitModifier.
 func NewTraitModifier(entity *Entity, parent *TraitModifier, container bool) *TraitModifier {
-	a := &TraitModifier{
+	t := TraitModifier{
 		TraitModifierData: TraitModifierData{
 			TID:    tid.MustNewTID(traitModifierKind(container)),
-			IsOpen: container,
 			parent: parent,
 		},
 		Entity: entity,
 	}
-	a.Name = a.Kind()
-	return a
+	t.Name = t.Kind()
+	t.SetOpen(container)
+	return &t
 }
 
 func traitModifierKind(container bool) byte {
@@ -185,14 +184,14 @@ func (t *TraitModifier) SetParent(parent *TraitModifier) {
 	t.parent = parent
 }
 
-// Open returns true if this node is currently open.
-func (t *TraitModifier) Open() bool {
-	return t.IsOpen && t.Container()
+// IsOpen returns true if this node is currently open.
+func (t *TraitModifier) IsOpen() bool {
+	return IsNodeOpen(t)
 }
 
 // SetOpen sets the current open state for this node.
 func (t *TraitModifier) SetOpen(open bool) {
-	t.IsOpen = open && t.Container()
+	SetNodeOpen(t, open)
 }
 
 // Clone implements Node.
@@ -201,7 +200,7 @@ func (t *TraitModifier) Clone(entity *Entity, parent *TraitModifier, preserveID 
 	if preserveID {
 		other.TID = t.TID
 	}
-	other.IsOpen = t.IsOpen
+	other.SetOpen(t.IsOpen())
 	other.ThirdParty = t.ThirdParty
 	other.TraitModifierEditData.CopyFrom(t)
 	if t.HasChildren() {
@@ -226,13 +225,16 @@ func (t *TraitModifier) UnmarshalJSON(data []byte) error {
 		// Old data fields
 		Type       string   `json:"type"`
 		Categories []string `json:"categories"`
+		IsOpen     bool     `json:"open"`
 	}
 	if err := json.Unmarshal(data, &localData); err != nil {
 		return err
 	}
+	setOpen := false
 	if !tid.IsValid(localData.TID) {
 		// Fixup old data that used UUIDs instead of TIDs
 		localData.TID = tid.MustNewTID(traitModifierKind(strings.HasSuffix(localData.Type, ContainerKeyPostfix)))
+		setOpen = localData.IsOpen
 	}
 	t.TraitModifierData = localData.TraitModifierData
 	t.ClearUnusedFieldsForType()
@@ -242,6 +244,9 @@ func (t *TraitModifier) UnmarshalJSON(data []byte) error {
 		for _, one := range t.Children {
 			one.parent = t
 		}
+	}
+	if setOpen {
+		SetNodeOpen(t, true)
 	}
 	return nil
 }
@@ -453,7 +458,6 @@ func (t *TraitModifier) ClearUnusedFieldsForType() {
 		t.Features = nil
 	} else {
 		t.Children = nil
-		t.IsOpen = false
 	}
 }
 
