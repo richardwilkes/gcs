@@ -200,8 +200,17 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 			st = pc.ResolveAttributeCurrent(StrengthID).Max(0).Trunc()
 		}
 	}
+	var percentMin fxp.Int
 	for _, bonus := range w.Owner.collectWeaponBonuses(1, nil, feature.WeaponEffectiveSTBonus) {
-		st += bonus.AdjustedAmountForWeapon(w.Owner)
+		amt := bonus.AdjustedAmountForWeapon(w.Owner)
+		if bonus.Percent {
+			percentMin += amt
+		} else {
+			st += amt
+		}
+	}
+	if percentMin != 0 {
+		st += st.Mul(percentMin).Div(fxp.Hundred).Trunc()
 	}
 	if st < 0 {
 		st = 0
