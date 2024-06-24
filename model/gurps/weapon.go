@@ -13,6 +13,7 @@ import (
 	"cmp"
 	"encoding/binary"
 	"fmt"
+	"hash"
 	"hash/fnv"
 	"strings"
 	"unsafe"
@@ -160,7 +161,7 @@ func (w *Weapon) IsRanged() bool {
 }
 
 // Clone implements Node.
-func (w *Weapon) Clone(_ *Entity, _ *Weapon, preserveID bool) *Weapon {
+func (w *Weapon) Clone(_ LibraryFile, _ *Entity, _ *Weapon, preserveID bool) *Weapon {
 	other := *w
 	if !preserveID {
 		other.TID = tid.MustNewTID(w.TID[0])
@@ -189,27 +190,39 @@ func (w *Weapon) Compare(other *Weapon) int {
 	return result
 }
 
-// HashCode returns a hash value for this weapon's resolved state.
-// nolint:errcheck // Not checking errors on writes to a bytes.Buffer
-func (w *Weapon) HashCode() uint32 {
-	h := fnv.New32()
+// HashResolved returns a hash value for this weapon's resolved state.
+func (w *Weapon) HashResolved() uint64 {
+	h := fnv.New64()
+	w.Hash(h)
 	_, _ = h.Write([]byte(w.TID))
 	_, _ = h.Write([]byte(w.String()))
-	_, _ = h.Write([]byte(w.UsageNotes))
-	_, _ = h.Write([]byte(w.Usage))
 	_ = binary.Write(h, binary.LittleEndian, w.SkillLevel(nil))
 	_, _ = h.Write([]byte(w.Damage.ResolvedDamage(nil)))
-	w.Parry.hash(h)
-	w.Block.hash(h)
-	w.Accuracy.hash(h)
-	w.Reach.hash(h)
-	w.Range.hash(h)
-	w.RateOfFire.hash(h)
-	w.Shots.hash(h)
-	w.Bulk.hash(h)
-	w.Recoil.hash(h)
-	w.Strength.hash(h)
-	return h.Sum32()
+	return h.Sum64()
+}
+
+// Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
+// "source" data, i.e. not expected to be modified by the user after copying from a library.
+func (w *WeaponData) Hash(h hash.Hash) {
+	if w == nil {
+		return
+	}
+	w.Damage.Hash(h)
+	w.Strength.Hash(h)
+	_, _ = h.Write([]byte(w.Usage))
+	_, _ = h.Write([]byte(w.UsageNotes))
+	w.Reach.Hash(h)
+	w.Parry.Hash(h)
+	w.Block.Hash(h)
+	w.Accuracy.Hash(h)
+	w.Range.Hash(h)
+	w.RateOfFire.Hash(h)
+	w.Shots.Hash(h)
+	w.Bulk.Hash(h)
+	w.Recoil.Hash(h)
+	for _, one := range w.Defaults {
+		one.Hash(h)
+	}
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -304,6 +317,11 @@ func (w *Weapon) UnmarshalJSON(data []byte) error {
 	w.WeaponData = localData.WeaponData
 	w.Validate()
 	return nil
+}
+
+// GetLibraryFile returns the library file that this data is associated with, if any.
+func (w *Weapon) GetLibraryFile() LibraryFile {
+	return LibraryFile{}
 }
 
 // ID returns the local ID of this data.
@@ -772,12 +790,12 @@ func (w *Weapon) SetOwningEntity(_ *Entity) {
 
 // CopyFrom implements node.EditorData.
 func (w *Weapon) CopyFrom(t *Weapon) {
-	*w = *t.Clone(t.Entity(), nil, true)
+	*w = *t.Clone(LibraryFile{}, t.Entity(), nil, true)
 }
 
 // ApplyTo implements node.EditorData.
 func (w *Weapon) ApplyTo(t *Weapon) {
-	*t = *w.Clone(t.Entity(), nil, true)
+	*t = *w.Clone(LibraryFile{}, t.Entity(), nil, true)
 }
 
 // Validate ensures the weapon data is valid.

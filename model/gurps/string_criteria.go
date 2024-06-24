@@ -10,6 +10,8 @@
 package gurps
 
 import (
+	"hash"
+
 	"github.com/richardwilkes/json"
 )
 
@@ -69,4 +71,10 @@ func (s StringCriteria) String() string {
 // StringWithPrefix returns a string representation of this criteria with a prefix.
 func (s StringCriteria) StringWithPrefix(prefix, notPrefix string) string {
 	return s.Compare.DescribeWithPrefix(prefix, notPrefix, s.Qualifier)
+}
+
+// Hash writes this object's contents into the hasher.
+func (s StringCriteria) Hash(h hash.Hash) {
+	_, _ = h.Write([]byte(s.Compare))
+	_, _ = h.Write([]byte(s.Qualifier))
 }

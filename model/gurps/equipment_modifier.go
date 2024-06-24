@@ -11,6 +11,8 @@ package gurps
 
 import (
 	"context"
+	"encoding/binary"
+	"hash"
 	"io/fs"
 	"slices"
 	"strings"
@@ -60,7 +62,8 @@ type EquipmentModifier struct {
 
 // EquipmentModifierData holds the EquipmentModifier data that is written to disk.
 type EquipmentModifierData struct {
-	TID tid.TID `json:"id"`
+	TID    tid.TID `json:"id"`
+	Source Source  `json:"source,omitempty"`
 	EquipmentModifierEditData
 	ThirdParty map[string]any       `json:"third_party,omitempty"`
 	Children   []*EquipmentModifier `json:"children,omitempty"` // Only for containers
@@ -141,6 +144,11 @@ func equipmentModifierKind(container bool) byte {
 	return kinds.EquipmentModifier
 }
 
+// GetLibraryFile returns the library file that this data is associated with, if any.
+func (e *EquipmentModifier) GetLibraryFile() LibraryFile {
+	return e.Source.LibraryFile
+}
+
 // ID returns the local ID of this data.
 func (e *EquipmentModifier) ID() tid.TID {
 	return e.TID
@@ -187,8 +195,10 @@ func (e *EquipmentModifier) SetOpen(open bool) {
 }
 
 // Clone implements Node.
-func (e *EquipmentModifier) Clone(entity *Entity, parent *EquipmentModifier, preserveID bool) *EquipmentModifier {
+func (e *EquipmentModifier) Clone(from LibraryFile, entity *Entity, parent *EquipmentModifier, preserveID bool) *EquipmentModifier {
 	other := NewEquipmentModifier(entity, parent, e.Container())
+	other.Source.LibraryFile = from
+	other.Source.TID = e.TID
 	if preserveID {
 		other.TID = e.TID
 	}
@@ -198,7 +208,7 @@ func (e *EquipmentModifier) Clone(entity *Entity, parent *EquipmentModifier, pre
 	if e.HasChildren() {
 		other.Children = make([]*EquipmentModifier, 0, len(e.Children))
 		for _, child := range e.Children {
-			other.Children = append(other.Children, child.Clone(entity, other, preserveID))
+			other.Children = append(other.Children, child.Clone(from, entity, other, preserveID))
 		}
 	}
 	return other
@@ -597,6 +607,29 @@ func (e *EquipmentModifier) ClearUnusedFieldsForType() {
 		e.Features = nil
 	} else {
 		e.Children = nil
+	}
+}
+
+// Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
+// "source" data, i.e. not expected to be modified by the user after copying from a library.
+func (e *EquipmentModifier) Hash(h hash.Hash) {
+	_, _ = h.Write([]byte(e.Name))
+	_, _ = h.Write([]byte(e.PageRef))
+	_, _ = h.Write([]byte(e.PageRefHighlight))
+	_, _ = h.Write([]byte(e.LocalNotes))
+	_, _ = h.Write([]byte(e.VTTNotes))
+	for _, tag := range e.Tags {
+		_, _ = h.Write([]byte(tag))
+	}
+	if !e.Container() {
+		_ = binary.Write(h, binary.LittleEndian, e.CostType)
+		_ = binary.Write(h, binary.LittleEndian, e.WeightType)
+		_, _ = h.Write([]byte(e.TechLevel))
+		_, _ = h.Write([]byte(e.CostAmount))
+		_, _ = h.Write([]byte(e.WeightAmount))
+		for _, feature := range e.Features {
+			feature.Hash(h)
+		}
 	}
 }
 

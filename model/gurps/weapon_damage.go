@@ -10,6 +10,8 @@
 package gurps
 
 import (
+	"encoding/binary"
+	"hash"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -40,6 +42,23 @@ type WeaponDamageData struct {
 type WeaponDamage struct {
 	WeaponDamageData
 	Owner *Weapon
+}
+
+// Hash writes this object's contents into the hasher.
+func (w *WeaponDamage) Hash(h hash.Hash) {
+	if w == nil {
+		return
+	}
+	_, _ = h.Write([]byte(w.Type))
+	_ = binary.Write(h, binary.LittleEndian, w.StrengthType)
+	_ = binary.Write(h, binary.LittleEndian, w.Leveled)
+	_ = binary.Write(h, binary.LittleEndian, w.StrengthMultiplier)
+	w.Base.Hash(h)
+	_ = binary.Write(h, binary.LittleEndian, w.ArmorDivisor)
+	w.Fragmentation.Hash(h)
+	_ = binary.Write(h, binary.LittleEndian, w.FragmentationArmorDivisor)
+	_, _ = h.Write([]byte(w.FragmentationType))
+	_ = binary.Write(h, binary.LittleEndian, w.ModifierPerDie)
 }
 
 // Clone creates a copy of this data.

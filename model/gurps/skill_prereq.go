@@ -10,6 +10,9 @@
 package gurps
 
 import (
+	"encoding/binary"
+	"hash"
+
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
@@ -122,4 +125,16 @@ func (s *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 		}
 	}
 	return satisfied
+}
+
+// Hash writes this object's contents into the hasher.
+func (s *SkillPrereq) Hash(h hash.Hash) {
+	if s == nil {
+		return
+	}
+	_ = binary.Write(h, binary.LittleEndian, s.Type)
+	_ = binary.Write(h, binary.LittleEndian, s.Has)
+	s.NameCriteria.Hash(h)
+	s.LevelCriteria.Hash(h)
+	s.SpecializationCriteria.Hash(h)
 }

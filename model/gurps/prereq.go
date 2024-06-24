@@ -10,6 +10,8 @@
 package gurps
 
 import (
+	"hash"
+
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
@@ -26,6 +28,8 @@ type Prereq interface {
 	// Satisfied returns true if this Prereq is satisfied by the specified Entity. 'buffer' will be used, if not nil, to
 	// write a description of what was unsatisfied. 'prefix' will be appended to each line of the description.
 	Satisfied(entity *Entity, exclude any, buffer *xio.ByteBuffer, prefix string, hasEquipmentPenalty *bool) bool
+	// Hash writes this object's contents into the hasher.
+	Hash(h hash.Hash)
 }
 
 // HasText returns the appropriate text for has.

@@ -10,6 +10,9 @@
 package gurps
 
 import (
+	"encoding/binary"
+	"hash"
+
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellcmp"
@@ -158,4 +161,16 @@ func (s *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 		}
 	}
 	return satisfied
+}
+
+// Hash writes this object's contents into the hasher.
+func (s *SpellPrereq) Hash(h hash.Hash) {
+	if s == nil {
+		return
+	}
+	_ = binary.Write(h, binary.LittleEndian, s.Type)
+	_ = binary.Write(h, binary.LittleEndian, s.SubType)
+	_ = binary.Write(h, binary.LittleEndian, s.Has)
+	s.QualifierCriteria.Hash(h)
+	s.QuantityCriteria.Hash(h)
 }

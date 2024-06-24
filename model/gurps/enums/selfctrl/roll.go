@@ -47,7 +47,7 @@ var Rolls = []Roll{
 }
 
 // Roll holds the information about a self-control roll, from B121.
-type Roll int
+type Roll byte
 
 // EnsureValid ensures this is of a known value.
 func (s Roll) EnsureValid() Roll {

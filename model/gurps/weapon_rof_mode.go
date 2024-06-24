@@ -53,8 +53,8 @@ func ParseWeaponRoFMode(s string) WeaponRoFMode {
 	return wr
 }
 
-// nolint:errcheck // Not checking errors on writes to a bytes.Buffer
-func (wr WeaponRoFMode) hash(h hash.Hash32) {
+// Hash writes this object's contents into the hasher.
+func (wr WeaponRoFMode) Hash(h hash.Hash) {
 	_ = binary.Write(h, binary.LittleEndian, wr.ShotsPerAttack)
 	_ = binary.Write(h, binary.LittleEndian, wr.SecondaryProjectiles)
 	_ = binary.Write(h, binary.LittleEndian, wr.FullAutoOnly)

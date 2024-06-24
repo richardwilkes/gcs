@@ -84,7 +84,8 @@ func (n *Node[T]) CloneForTarget(target unison.Paneler, newParent *Node[T]) *Nod
 		fatal.IfErr(errs.New("unable to convert to table"))
 	}
 	if provider := DetermineEntityProvider(target); provider != nil {
-		return NewNode[T](table, newParent, n.dataAsNode.Clone(provider.Entity(), newParent.Data(), false), n.forPage)
+		return NewNode[T](table, newParent, n.dataAsNode.Clone(libraryFileFromTable[T](n.table), provider.Entity(),
+			newParent.Data(), false), n.forPage)
 	}
 	fatal.IfErr(errs.New("unable to locate entity provider"))
 	return nil // Never reaches here

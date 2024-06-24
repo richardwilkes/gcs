@@ -10,6 +10,8 @@
 package gurps
 
 import (
+	"encoding/binary"
+	"hash"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -71,6 +73,15 @@ func (c *ContainedWeightReduction) FixedReduction(defUnits fxp.WeightUnit) fxp.W
 		return 0
 	}
 	return fxp.WeightFromStringForced(c.Reduction, defUnits)
+}
+
+// Hash writes this object's contents into the hasher.
+func (c *ContainedWeightReduction) Hash(h hash.Hash) {
+	if c == nil {
+		return
+	}
+	_ = binary.Write(h, binary.LittleEndian, c.Type)
+	_, _ = h.Write([]byte(c.Reduction))
 }
 
 // ExtractContainedWeightReduction extracts the weight reduction (which may be a weight or a percentage) and returns

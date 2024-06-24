@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"context"
+	"hash"
 	"io/fs"
 	"strings"
 
@@ -47,7 +48,8 @@ type Note struct {
 
 // NoteData holds the Note data that is written to disk.
 type NoteData struct {
-	TID tid.TID `json:"id"`
+	TID    tid.TID `json:"id"`
+	Source Source  `json:"source,omitempty"`
 	NoteEditData
 	ThirdParty map[string]any `json:"third_party,omitempty"`
 	Children   []*Note        `json:"children,omitempty"` // Only for containers
@@ -112,6 +114,11 @@ func noteKind(container bool) byte {
 	return kinds.Note
 }
 
+// GetLibraryFile returns the library file that this data is associated with, if any.
+func (n *Note) GetLibraryFile() LibraryFile {
+	return n.Source.LibraryFile
+}
+
 // ID returns the local ID of this data.
 func (n *Note) ID() tid.TID {
 	return n.TID
@@ -158,8 +165,10 @@ func (n *Note) SetOpen(open bool) {
 }
 
 // Clone implements Node.
-func (n *Note) Clone(entity *Entity, parent *Note, preserveID bool) *Note {
+func (n *Note) Clone(from LibraryFile, entity *Entity, parent *Note, preserveID bool) *Note {
 	other := NewNote(entity, parent, n.Container())
+	other.Source.LibraryFile = from
+	other.Source.TID = n.TID
 	if preserveID {
 		other.TID = n.TID
 	}
@@ -169,7 +178,7 @@ func (n *Note) Clone(entity *Entity, parent *Note, preserveID bool) *Note {
 	if n.HasChildren() {
 		other.Children = make([]*Note, 0, len(n.Children))
 		for _, child := range n.Children {
-			other.Children = append(other.Children, child.Clone(entity, other, preserveID))
+			other.Children = append(other.Children, child.Clone(from, entity, other, preserveID))
 		}
 	}
 	return other
@@ -333,6 +342,14 @@ func (n *Note) ClearUnusedFieldsForType() {
 	if !n.Container() {
 		n.Children = nil
 	}
+}
+
+// Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
+// "source" data, i.e. not expected to be modified by the user after copying from a library.
+func (n *Note) Hash(h hash.Hash) {
+	_, _ = h.Write([]byte(n.Text))
+	_, _ = h.Write([]byte(n.PageRef))
+	_, _ = h.Write([]byte(n.PageRefHighlight))
 }
 
 // CopyFrom implements node.EditorData.

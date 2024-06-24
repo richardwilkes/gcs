@@ -1253,11 +1253,11 @@ func (e *Entity) SetWeapons(_ bool, _ []*Weapon) {
 
 // EquippedWeapons returns a sorted list of equipped weapons.
 func (e *Entity) EquippedWeapons(melee bool) []*Weapon {
-	m := make(map[uint32]*Weapon)
+	m := make(map[uint64]*Weapon)
 	Traverse(func(a *Trait) bool {
 		for _, w := range a.Weapons {
 			if w.IsMelee() == melee {
-				m[w.HashCode()] = w
+				m[w.HashResolved()] = w
 			}
 		}
 		return false
@@ -1266,7 +1266,7 @@ func (e *Entity) EquippedWeapons(melee bool) []*Weapon {
 		if eqp.Equipped {
 			for _, w := range eqp.Weapons {
 				if w.IsMelee() == melee {
-					m[w.HashCode()] = w
+					m[w.HashResolved()] = w
 				}
 			}
 		}
@@ -1275,7 +1275,7 @@ func (e *Entity) EquippedWeapons(melee bool) []*Weapon {
 	Traverse(func(s *Skill) bool {
 		for _, w := range s.Weapons {
 			if w.IsMelee() == melee {
-				m[w.HashCode()] = w
+				m[w.HashResolved()] = w
 			}
 		}
 		return false
@@ -1283,7 +1283,7 @@ func (e *Entity) EquippedWeapons(melee bool) []*Weapon {
 	Traverse(func(s *Spell) bool {
 		for _, w := range s.Weapons {
 			if w.IsMelee() == melee {
-				m[w.HashCode()] = w
+				m[w.HashResolved()] = w
 			}
 		}
 		return false

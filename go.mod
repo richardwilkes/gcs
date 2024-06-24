@@ -6,7 +6,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/richardwilkes/json v0.2.0
 	github.com/richardwilkes/pdf v1.23.10
-	github.com/richardwilkes/rpgtools v1.9.0
+	github.com/richardwilkes/rpgtools v1.10.0
 	github.com/richardwilkes/toolbox v1.114.1
 	github.com/richardwilkes/unison v0.72.0
 	github.com/rjeczalik/notify v0.9.3
@@ -32,7 +32,7 @@ require (
 	github.com/miekg/dns v1.1.61 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/pkg/term v1.1.0 // indirect
-	github.com/yuin/goldmark v1.7.2 // indirect
+	github.com/yuin/goldmark v1.7.3 // indirect
 	golang.org/x/mod v0.18.0 // indirect
 	golang.org/x/net v0.26.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect

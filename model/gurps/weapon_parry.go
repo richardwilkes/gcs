@@ -73,8 +73,8 @@ func (wp *WeaponParry) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// nolint:errcheck // Not checking errors on writes to a bytes.Buffer
-func (wp WeaponParry) hash(h hash.Hash32) {
+// Hash writes this object's contents into the hasher.
+func (wp WeaponParry) Hash(h hash.Hash) {
 	_ = binary.Write(h, binary.LittleEndian, wp.CanParry)
 	_ = binary.Write(h, binary.LittleEndian, wp.Fencing)
 	_ = binary.Write(h, binary.LittleEndian, wp.Unbalanced)

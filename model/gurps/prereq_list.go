@@ -10,6 +10,8 @@
 package gurps
 
 import (
+	"encoding/binary"
+	"hash"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
@@ -140,4 +142,17 @@ func (p *PrereqList) Satisfied(entity *Entity, exclude any, buffer *xio.ByteBuff
 		}
 	}
 	return satisfied
+}
+
+// Hash writes this object's contents into the hasher.
+func (p *PrereqList) Hash(h hash.Hash) {
+	if p == nil {
+		return
+	}
+	_ = binary.Write(h, binary.LittleEndian, p.Type)
+	_ = binary.Write(h, binary.LittleEndian, p.All)
+	p.WhenTL.Hash(h)
+	for _, one := range p.Prereqs {
+		one.Hash(h)
+	}
 }

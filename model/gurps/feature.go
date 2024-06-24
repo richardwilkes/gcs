@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"fmt"
+	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
@@ -23,6 +24,7 @@ type Feature interface {
 	Nameables
 	FeatureType() feature.Type
 	Clone() Feature
+	Hash(hash.Hash)
 }
 
 // Bonus is an extension of a Feature, which provides a numerical bonus or penalty.

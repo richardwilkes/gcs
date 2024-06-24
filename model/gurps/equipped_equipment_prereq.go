@@ -10,7 +10,9 @@
 package gurps
 
 import (
+	"encoding/binary"
 	"fmt"
+	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -90,4 +92,14 @@ func (e *EquippedEquipmentPrereq) Satisfied(entity *Entity, exclude any, tooltip
 		}
 	}
 	return satisfied
+}
+
+// Hash writes this object's contents into the hasher.
+func (e *EquippedEquipmentPrereq) Hash(h hash.Hash) {
+	if e == nil {
+		return
+	}
+	_ = binary.Write(h, binary.LittleEndian, e.Type)
+	e.NameCriteria.Hash(h)
+	e.TagsCriteria.Hash(h)
 }

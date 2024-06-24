@@ -11,6 +11,8 @@ package gurps
 
 import (
 	"context"
+	"encoding/binary"
+	"hash"
 	"io/fs"
 	"slices"
 	"strings"
@@ -63,7 +65,8 @@ type Trait struct {
 
 // TraitData holds the Trait data that is written to disk.
 type TraitData struct {
-	TID tid.TID `json:"id"`
+	TID    tid.TID `json:"id"`
+	Source Source  `json:"source,omitempty"`
 	TraitEditData
 	ThirdParty map[string]any `json:"third_party,omitempty"`
 	Children   []*Trait       `json:"children,omitempty"` // Only for containers
@@ -165,6 +168,11 @@ func traitKind(container bool) byte {
 	return kinds.Trait
 }
 
+// GetLibraryFile returns the library file that this data is associated with, if any.
+func (t *Trait) GetLibraryFile() LibraryFile {
+	return t.Source.LibraryFile
+}
+
 // ID returns the local ID of this data.
 func (t *Trait) ID() tid.TID {
 	return t.TID
@@ -211,8 +219,10 @@ func (t *Trait) SetOpen(open bool) {
 }
 
 // Clone implements Node.
-func (t *Trait) Clone(entity *Entity, parent *Trait, preserveID bool) *Trait {
+func (t *Trait) Clone(from LibraryFile, entity *Entity, parent *Trait, preserveID bool) *Trait {
 	other := NewTrait(entity, parent, t.Container())
+	other.Source.LibraryFile = from
+	other.Source.TID = t.TID
 	if preserveID {
 		other.TID = t.TID
 	}
@@ -222,7 +232,7 @@ func (t *Trait) Clone(entity *Entity, parent *Trait, preserveID bool) *Trait {
 	if t.HasChildren() {
 		other.Children = make([]*Trait, 0, len(t.Children))
 		for _, child := range t.Children {
-			other.Children = append(other.Children, child.Clone(entity, other, preserveID))
+			other.Children = append(other.Children, child.Clone(from, entity, other, preserveID))
 		}
 	}
 	return other
@@ -771,6 +781,38 @@ func (t *Trait) ClearUnusedFieldsForType() {
 	}
 }
 
+// Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
+// "source" data, i.e. not expected to be modified by the user after copying from a library.
+func (t *Trait) Hash(h hash.Hash) {
+	_, _ = h.Write([]byte(t.Name))
+	_, _ = h.Write([]byte(t.PageRef))
+	_, _ = h.Write([]byte(t.PageRefHighlight))
+	_, _ = h.Write([]byte(t.LocalNotes))
+	_, _ = h.Write([]byte(t.VTTNotes))
+	for _, tag := range t.Tags {
+		_, _ = h.Write([]byte(tag))
+	}
+	_ = binary.Write(h, binary.LittleEndian, t.CR)
+	_ = binary.Write(h, binary.LittleEndian, t.CRAdj)
+	if t.Container() {
+		_, _ = h.Write([]byte(t.Ancestry))
+		t.TemplatePicker.Hash(h)
+		_ = binary.Write(h, binary.LittleEndian, t.ContainerType)
+	} else {
+		_ = binary.Write(h, binary.LittleEndian, t.BasePoints)
+		_ = binary.Write(h, binary.LittleEndian, t.PointsPerLevel)
+		t.Prereq.Hash(h)
+		for _, one := range t.Weapons {
+			one.Hash(h)
+		}
+		for _, one := range t.Features {
+			one.Hash(h)
+		}
+		_ = binary.Write(h, binary.LittleEndian, t.RoundCostDown)
+		_ = binary.Write(h, binary.LittleEndian, t.CanLevel)
+	}
+}
+
 // CopyFrom implements node.EditorData.
 func (t *TraitEditData) CopyFrom(other *Trait) {
 	t.copyFrom(other.Entity, &other.TraitEditData, other.Container(), false)
@@ -788,15 +830,15 @@ func (t *TraitEditData) copyFrom(entity *Entity, other *TraitEditData, isContain
 	if len(other.Modifiers) != 0 {
 		t.Modifiers = make([]*TraitModifier, 0, len(other.Modifiers))
 		for _, one := range other.Modifiers {
-			t.Modifiers = append(t.Modifiers, one.Clone(entity, nil, true))
+			t.Modifiers = append(t.Modifiers, one.Clone(one.Source.LibraryFile, entity, nil, true))
 		}
 	}
 	t.Prereq = t.Prereq.CloneResolvingEmpty(isContainer, isApply)
 	t.Weapons = nil
 	if len(other.Weapons) != 0 {
 		t.Weapons = make([]*Weapon, len(other.Weapons))
-		for i := range other.Weapons {
-			t.Weapons[i] = other.Weapons[i].Clone(entity, nil, true)
+		for i, w := range other.Weapons {
+			t.Weapons[i] = w.Clone(LibraryFile{}, entity, nil, true)
 		}
 	}
 	t.Features = other.Features.Clone()

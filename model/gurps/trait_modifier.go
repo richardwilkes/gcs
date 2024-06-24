@@ -11,6 +11,8 @@ package gurps
 
 import (
 	"context"
+	"encoding/binary"
+	"hash"
 	"io/fs"
 	"slices"
 	"strings"
@@ -69,7 +71,8 @@ type TraitModifier struct {
 
 // TraitModifierData holds the TraitModifier data that is written to disk.
 type TraitModifierData struct {
-	TID tid.TID `json:"id"`
+	TID    tid.TID `json:"id"`
+	Source Source  `json:"source,omitempty"`
 	TraitModifierEditData
 	ThirdParty map[string]any   `json:"third_party,omitempty"`
 	Children   []*TraitModifier `json:"children,omitempty"` // Only for containers
@@ -149,6 +152,11 @@ func traitModifierKind(container bool) byte {
 	return kinds.TraitModifier
 }
 
+// GetLibraryFile returns the library file that this data is associated with, if any.
+func (t *TraitModifier) GetLibraryFile() LibraryFile {
+	return t.Source.LibraryFile
+}
+
 // ID returns the local ID of this data.
 func (t *TraitModifier) ID() tid.TID {
 	return t.TID
@@ -195,8 +203,10 @@ func (t *TraitModifier) SetOpen(open bool) {
 }
 
 // Clone implements Node.
-func (t *TraitModifier) Clone(entity *Entity, parent *TraitModifier, preserveID bool) *TraitModifier {
+func (t *TraitModifier) Clone(from LibraryFile, entity *Entity, parent *TraitModifier, preserveID bool) *TraitModifier {
 	other := NewTraitModifier(entity, parent, t.Container())
+	other.Source.LibraryFile = from
+	other.Source.TID = t.TID
 	if preserveID {
 		other.TID = t.TID
 	}
@@ -206,7 +216,7 @@ func (t *TraitModifier) Clone(entity *Entity, parent *TraitModifier, preserveID 
 	if t.HasChildren() {
 		other.Children = make([]*TraitModifier, 0, len(t.Children))
 		for _, child := range t.Children {
-			other.Children = append(other.Children, child.Clone(entity, other, preserveID))
+			other.Children = append(other.Children, child.Clone(from, entity, other, preserveID))
 		}
 	}
 	return other
@@ -458,6 +468,28 @@ func (t *TraitModifier) ClearUnusedFieldsForType() {
 		t.Features = nil
 	} else {
 		t.Children = nil
+	}
+}
+
+// Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
+// "source" data, i.e. not expected to be modified by the user after copying from a library.
+func (t *TraitModifier) Hash(h hash.Hash) {
+	_, _ = h.Write([]byte(t.Name))
+	_, _ = h.Write([]byte(t.PageRef))
+	_, _ = h.Write([]byte(t.PageRefHighlight))
+	_, _ = h.Write([]byte(t.LocalNotes))
+	_, _ = h.Write([]byte(t.VTTNotes))
+	for _, tag := range t.Tags {
+		_, _ = h.Write([]byte(tag))
+	}
+	if !t.Container() {
+		_ = binary.Write(h, binary.LittleEndian, t.Cost)
+		_ = binary.Write(h, binary.LittleEndian, t.Levels)
+		_ = binary.Write(h, binary.LittleEndian, t.Affects)
+		_ = binary.Write(h, binary.LittleEndian, t.CostType)
+		for _, feature := range t.Features {
+			feature.Hash(h)
+		}
 	}
 }
 

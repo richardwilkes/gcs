@@ -109,8 +109,9 @@ func (p *traitsProvider) AltDropSupport() *AltDropSupport {
 			if tableDragData, ok := data.(*unison.TableDragData[*Node[*gurps.TraitModifier]]); ok {
 				entity := p.Entity()
 				rows := make([]*gurps.TraitModifier, 0, len(tableDragData.Rows))
+				libraryFile := libraryFileFromTable(tableDragData.Table)
 				for _, row := range tableDragData.Rows {
-					rows = append(rows, row.Data().Clone(entity, nil, false))
+					rows = append(rows, row.Data().Clone(libraryFile, entity, nil, false))
 				}
 				rowData := p.table.RowFromIndex(rowIndex).Data()
 				rowData.Modifiers = append(rowData.Modifiers, rows...)

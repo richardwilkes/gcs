@@ -10,6 +10,9 @@
 package gurps
 
 import (
+	"encoding/binary"
+	"hash"
+
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/json"
 )
@@ -44,4 +47,10 @@ func (w WeightCriteria) Matches(value fxp.Weight) bool {
 
 func (w WeightCriteria) String() string {
 	return w.Compare.Describe(fxp.Int(w.Qualifier))
+}
+
+// Hash writes this object's contents into the hasher.
+func (w WeightCriteria) Hash(h hash.Hash) {
+	_, _ = h.Write([]byte(w.Compare))
+	_ = binary.Write(h, binary.LittleEndian, w.Qualifier)
 }

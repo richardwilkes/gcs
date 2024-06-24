@@ -11,7 +11,9 @@ package gurps
 
 import (
 	"cmp"
+	"encoding/binary"
 	"fmt"
+	"hash"
 	"slices"
 	"strings"
 
@@ -74,13 +76,30 @@ func (c *ConditionalModifier) Compare(other *ConditionalModifier) int {
 	return result
 }
 
+// GetLibraryFile returns the library file that this data is associated with, if any.
+func (c *ConditionalModifier) GetLibraryFile() LibraryFile {
+	return LibraryFile{}
+}
+
 // ID returns the local ID of this data.
 func (c *ConditionalModifier) ID() tid.TID {
 	return c.TID
 }
 
+// Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
+// "source" data, i.e. not expected to be modified by the user after copying from a library.
+func (c *ConditionalModifier) Hash(h hash.Hash) {
+	_, _ = h.Write([]byte(c.From))
+	for _, amt := range c.Amounts {
+		_ = binary.Write(h, binary.LittleEndian, amt)
+	}
+	for _, src := range c.Sources {
+		_, _ = h.Write([]byte(src))
+	}
+}
+
 // Clone implements Node.
-func (c *ConditionalModifier) Clone(_ *Entity, _ *ConditionalModifier, preserveID bool) *ConditionalModifier {
+func (c *ConditionalModifier) Clone(_ LibraryFile, _ *Entity, _ *ConditionalModifier, preserveID bool) *ConditionalModifier {
 	clone := &ConditionalModifier{
 		From:    c.From,
 		Amounts: slices.Clone(c.Amounts),

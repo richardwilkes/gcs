@@ -11,7 +11,9 @@ package gurps
 
 import (
 	"context"
+	"encoding/binary"
 	"fmt"
+	"hash"
 	"io/fs"
 	"slices"
 	"strconv"
@@ -67,7 +69,8 @@ type Equipment struct {
 
 // EquipmentData holds the Equipment data that is written to disk.
 type EquipmentData struct {
-	TID tid.TID `json:"id"`
+	TID    tid.TID `json:"id"`
+	Source Source  `json:"source,omitempty"`
 	EquipmentEditData
 	ThirdParty map[string]any `json:"third_party,omitempty"`
 	Children   []*Equipment   `json:"children,omitempty"` // Only for containers
@@ -154,6 +157,11 @@ func equipmentKind(container bool) byte {
 	return kinds.Equipment
 }
 
+// GetLibraryFile returns the library file that this data is associated with, if any.
+func (e *Equipment) GetLibraryFile() LibraryFile {
+	return e.Source.LibraryFile
+}
+
 // ID returns the local ID of this data.
 func (e *Equipment) ID() tid.TID {
 	return e.TID
@@ -200,8 +208,10 @@ func (e *Equipment) SetOpen(open bool) {
 }
 
 // Clone implements Node.
-func (e *Equipment) Clone(entity *Entity, parent *Equipment, preserveID bool) *Equipment {
+func (e *Equipment) Clone(from LibraryFile, entity *Entity, parent *Equipment, preserveID bool) *Equipment {
 	other := NewEquipment(entity, parent, e.Container())
+	other.Source.LibraryFile = from
+	other.Source.TID = e.TID
 	if preserveID {
 		other.TID = e.TID
 	}
@@ -211,7 +221,7 @@ func (e *Equipment) Clone(entity *Entity, parent *Equipment, preserveID bool) *E
 	if e.HasChildren() {
 		other.Children = make([]*Equipment, 0, len(e.Children))
 		for _, child := range e.Children {
-			other.Children = append(other.Children, child.Clone(entity, other, preserveID))
+			other.Children = append(other.Children, child.Clone(from, entity, other, preserveID))
 		}
 	}
 	return other
@@ -723,6 +733,33 @@ func (e *Equipment) ClearUnusedFieldsForType() {
 	}
 }
 
+// Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
+// "source" data, i.e. not expected to be modified by the user after copying from a library.
+func (e *Equipment) Hash(h hash.Hash) {
+	_, _ = h.Write([]byte(e.Name))
+	_, _ = h.Write([]byte(e.PageRef))
+	_, _ = h.Write([]byte(e.PageRefHighlight))
+	_, _ = h.Write([]byte(e.LocalNotes))
+	_, _ = h.Write([]byte(e.VTTNotes))
+	_, _ = h.Write([]byte(e.TechLevel))
+	_, _ = h.Write([]byte(e.LegalityClass))
+	for _, tag := range e.Tags {
+		_, _ = h.Write([]byte(tag))
+	}
+	_ = binary.Write(h, binary.LittleEndian, e.RatedST)
+	_ = binary.Write(h, binary.LittleEndian, e.Value)
+	_ = binary.Write(h, binary.LittleEndian, e.Weight)
+	_ = binary.Write(h, binary.LittleEndian, int64(e.MaxUses))
+	e.Prereq.Hash(h)
+	for _, weapon := range e.Weapons {
+		weapon.Hash(h)
+	}
+	for _, feature := range e.Features {
+		feature.Hash(h)
+	}
+	_ = binary.Write(h, binary.LittleEndian, e.WeightIgnoredForSkills)
+}
+
 // CopyFrom implements node.EditorData.
 func (e *EquipmentEditData) CopyFrom(other *Equipment) {
 	e.copyFrom(other.Entity, &other.EquipmentEditData, false)
@@ -740,15 +777,15 @@ func (e *EquipmentEditData) copyFrom(entity *Entity, other *EquipmentEditData, i
 	if len(other.Modifiers) != 0 {
 		e.Modifiers = make([]*EquipmentModifier, 0, len(other.Modifiers))
 		for _, one := range other.Modifiers {
-			e.Modifiers = append(e.Modifiers, one.Clone(entity, nil, true))
+			e.Modifiers = append(e.Modifiers, one.Clone(one.Source.LibraryFile, entity, nil, true))
 		}
 	}
 	e.Prereq = e.Prereq.CloneResolvingEmpty(false, isApply)
 	e.Weapons = nil
 	if len(other.Weapons) != 0 {
-		e.Weapons = make([]*Weapon, 0, len(other.Weapons))
-		for _, one := range other.Weapons {
-			e.Weapons = append(e.Weapons, one.Clone(entity, nil, true))
+		e.Weapons = make([]*Weapon, len(other.Weapons))
+		for i, w := range other.Weapons {
+			e.Weapons[i] = w.Clone(LibraryFile{}, entity, nil, true)
 		}
 	}
 	e.Features = other.Features.Clone()

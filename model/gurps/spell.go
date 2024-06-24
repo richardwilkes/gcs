@@ -11,7 +11,9 @@ package gurps
 
 import (
 	"context"
+	"encoding/binary"
 	"fmt"
+	"hash"
 	"io/fs"
 	"slices"
 	"strings"
@@ -71,7 +73,8 @@ type Spell struct {
 
 // SpellData holds the Spell data that is written to disk.
 type SpellData struct {
-	TID tid.TID `json:"id"`
+	TID    tid.TID `json:"id"`
+	Source Source  `json:"source,omitempty"`
 	SpellEditData
 	ThirdParty map[string]any `json:"third_party,omitempty"`
 	Children   []*Spell       `json:"children,omitempty"` // Only for containers
@@ -109,6 +112,43 @@ type SpellNonContainerOnlyEditData struct {
 	Weapons           []*Weapon           `json:"weapons,omitempty"`
 	Study             []*Study            `json:"study,omitempty"`
 	StudyHoursNeeded  study.Level         `json:"study_hours_needed,omitempty"`
+}
+
+// Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
+// "source" data, i.e. not expected to be modified by the user after copying from a library.
+func (s *Spell) Hash(h hash.Hash) {
+	_, _ = h.Write([]byte(s.Name))
+	_, _ = h.Write([]byte(s.PageRef))
+	_, _ = h.Write([]byte(s.PageRefHighlight))
+	_, _ = h.Write([]byte(s.LocalNotes))
+	_, _ = h.Write([]byte(s.VTTNotes))
+	for _, tag := range s.Tags {
+		_, _ = h.Write([]byte(tag))
+	}
+	if s.Container() {
+		s.TemplatePicker.Hash(h)
+	} else {
+		if s.TechLevel != nil {
+			_, _ = h.Write([]byte(*s.TechLevel))
+		}
+		s.Difficulty.Hash(h)
+		for _, college := range s.College {
+			_, _ = h.Write([]byte(college))
+		}
+		_, _ = h.Write([]byte(s.PowerSource))
+		_, _ = h.Write([]byte(s.Class))
+		_, _ = h.Write([]byte(s.Resist))
+		_, _ = h.Write([]byte(s.CastingCost))
+		_, _ = h.Write([]byte(s.MaintenanceCost))
+		_, _ = h.Write([]byte(s.CastingTime))
+		_, _ = h.Write([]byte(s.Duration))
+		_, _ = h.Write([]byte(s.RitualSkillName))
+		_ = binary.Write(h, binary.LittleEndian, int64(s.RitualPrereqCount))
+		s.Prereq.Hash(h)
+		for _, weapon := range s.Weapons {
+			weapon.Hash(h)
+		}
+	}
 }
 
 type spellListData struct {
@@ -198,6 +238,11 @@ func spellKind(container bool) byte {
 	return kinds.Spell
 }
 
+// GetLibraryFile returns the library file that this data is associated with, if any.
+func (s *Spell) GetLibraryFile() LibraryFile {
+	return s.Source.LibraryFile
+}
+
 // ID returns the local ID of this data.
 func (s *Spell) ID() tid.TID {
 	return s.TID
@@ -249,7 +294,7 @@ func (s *Spell) IsRitualMagic() bool {
 }
 
 // Clone implements Node.
-func (s *Spell) Clone(e *Entity, parent *Spell, preserveID bool) *Spell {
+func (s *Spell) Clone(from LibraryFile, e *Entity, parent *Spell, preserveID bool) *Spell {
 	var other *Spell
 	if s.IsRitualMagic() {
 		other = NewRitualMagicSpell(e, parent, false)
@@ -257,6 +302,8 @@ func (s *Spell) Clone(e *Entity, parent *Spell, preserveID bool) *Spell {
 		other = NewSpell(e, parent, s.Container())
 		other.SetOpen(s.IsOpen())
 	}
+	other.Source.LibraryFile = from
+	other.Source.TID = s.TID
 	if preserveID {
 		other.TID = s.TID
 	}
@@ -265,7 +312,7 @@ func (s *Spell) Clone(e *Entity, parent *Spell, preserveID bool) *Spell {
 	if s.HasChildren() {
 		other.Children = make([]*Spell, 0, len(s.Children))
 		for _, child := range s.Children {
-			other.Children = append(other.Children, child.Clone(e, other, preserveID))
+			other.Children = append(other.Children, child.Clone(from, e, other, preserveID))
 		}
 	}
 	return other
@@ -1039,8 +1086,8 @@ func (s *SpellEditData) copyFrom(entity *Entity, other *SpellEditData, isContain
 	s.Weapons = nil
 	if len(other.Weapons) != 0 {
 		s.Weapons = make([]*Weapon, len(other.Weapons))
-		for i := range other.Weapons {
-			s.Weapons[i] = other.Weapons[i].Clone(entity, nil, true)
+		for i, w := range other.Weapons {
+			s.Weapons[i] = w.Clone(LibraryFile{}, entity, nil, true)
 		}
 	}
 	if len(other.Study) != 0 {

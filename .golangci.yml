@@ -14,6 +14,7 @@ linters-settings:
     check-type-assertions: true
     check-blank: true
     exclude-functions:
+      - encoding/binary.Write
       - fmt.Fprint
       - fmt.Fprintf
       - fmt.Fprintln

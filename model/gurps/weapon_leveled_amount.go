@@ -10,7 +10,9 @@
 package gurps
 
 import (
+	"encoding/binary"
 	"fmt"
+	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -26,39 +28,50 @@ type WeaponLeveledAmount struct {
 }
 
 // AdjustedAmount returns the amount, adjusted for level, if requested.
-func (l *WeaponLeveledAmount) AdjustedAmount() fxp.Int {
-	amt := l.Amount
-	if l.PerDie {
-		if l.DieCount < 0 {
+func (w *WeaponLeveledAmount) AdjustedAmount() fxp.Int {
+	amt := w.Amount
+	if w.PerDie {
+		if w.DieCount < 0 {
 			return 0
 		}
-		amt = amt.Mul(l.DieCount)
+		amt = amt.Mul(w.DieCount)
 	}
-	if l.PerLevel {
-		if l.Level < 0 {
+	if w.PerLevel {
+		if w.Level < 0 {
 			return 0
 		}
-		amt = amt.Mul(l.Level)
+		amt = amt.Mul(w.Level)
 	}
 	return amt
 }
 
 // Format the value.
-func (l *WeaponLeveledAmount) Format(asPercentage bool) string {
-	amt := l.Amount.StringWithSign()
-	adjustedAmt := l.AdjustedAmount().StringWithSign()
+func (w *WeaponLeveledAmount) Format(asPercentage bool) string {
+	amt := w.Amount.StringWithSign()
+	adjustedAmt := w.AdjustedAmount().StringWithSign()
 	if asPercentage {
 		amt += "%"
 		adjustedAmt += "%"
 	}
 	switch {
-	case l.PerDie && l.PerLevel:
+	case w.PerDie && w.PerLevel:
 		return fmt.Sprintf(i18n.Text("%s (%s per die, per level)"), adjustedAmt, amt)
-	case l.PerDie:
+	case w.PerDie:
 		return fmt.Sprintf(i18n.Text("%s (%s per die)"), adjustedAmt, amt)
-	case l.PerLevel:
+	case w.PerLevel:
 		return fmt.Sprintf(i18n.Text("%s (%s per level)"), adjustedAmt, amt)
 	default:
 		return amt
 	}
+}
+
+// Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
+// "source" data, i.e. not expected to be modified by the user after copying from a library.
+func (w *WeaponLeveledAmount) Hash(h hash.Hash) {
+	if w == nil {
+		return
+	}
+	_ = binary.Write(h, binary.LittleEndian, w.Amount)
+	_ = binary.Write(h, binary.LittleEndian, w.PerLevel)
+	_ = binary.Write(h, binary.LittleEndian, w.PerDie)
 }

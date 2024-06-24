@@ -11,6 +11,7 @@ package ux
 
 import (
 	"fmt"
+	"path/filepath"
 	"slices"
 	"strings"
 
@@ -194,6 +195,22 @@ func canCopySelectionToSheet[T gurps.NodeTypes](table *unison.Table[*Node[T]]) b
 func canCopySelectionToTemplate[T gurps.NodeTypes](table *unison.Table[*Node[T]]) bool {
 	var t T
 	return table.HasSelection() && len(OpenTemplates(unison.Ancestor[*Template](table))) > 0 && isAcceptableTypeForSheetOrTemplate(t)
+}
+
+func libraryFileFromTable[T gurps.NodeTypes](table *unison.Table[*Node[T]]) gurps.LibraryFile {
+	if d := unison.Ancestor[*TableDockable[T]](table); d != nil {
+		for _, lib := range gurps.GlobalSettings().Libraries() {
+			libPathOnDisk := lib.PathOnDisk + string(filepath.Separator)
+			filePathOnDisk := d.BackingFilePath()
+			if strings.HasPrefix(filePathOnDisk, libPathOnDisk) {
+				return gurps.LibraryFile{
+					Library: lib.Key(),
+					Path:    strings.TrimPrefix(filePathOnDisk, libPathOnDisk),
+				}
+			}
+		}
+	}
+	return gurps.LibraryFile{}
 }
 
 func copySelectionToSheet[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
@@ -412,7 +429,7 @@ func DuplicateSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 			if target := row.Data(); target != zero {
 				tData := gurps.AsNode(target)
 				parent := tData.Parent()
-				clone := tData.Clone(tData.OwningEntity(), parent, false)
+				clone := tData.Clone(tData.GetLibraryFile(), tData.OwningEntity(), parent, false)
 				selMap[gurps.AsNode(clone).ID()] = true
 				if parent == zero {
 					for i, child := range topLevelData {

@@ -10,7 +10,9 @@
 package gurps
 
 import (
+	"encoding/binary"
 	"fmt"
+	"hash"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -303,4 +305,22 @@ func (w *WeaponBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 		buf.WriteByte(']')
 		buffer.WriteString(buf.String())
 	}
+}
+
+// Hash writes this object's contents into the hasher.
+func (w *WeaponBonus) Hash(h hash.Hash) {
+	if w == nil {
+		return
+	}
+	_ = binary.Write(h, binary.LittleEndian, w.Type)
+	_ = binary.Write(h, binary.LittleEndian, w.Percent)
+	_ = binary.Write(h, binary.LittleEndian, w.SelectionType)
+	_ = binary.Write(h, binary.LittleEndian, w.SwitchType)
+	_ = binary.Write(h, binary.LittleEndian, w.SwitchTypeValue)
+	w.NameCriteria.Hash(h)
+	w.SpecializationCriteria.Hash(h)
+	w.RelativeLevelCriteria.Hash(h)
+	w.UsageCriteria.Hash(h)
+	w.TagsCriteria.Hash(h)
+	w.WeaponLeveledAmount.Hash(h)
 }

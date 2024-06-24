@@ -10,6 +10,9 @@
 package gurps
 
 import (
+	"encoding/binary"
+	"hash"
+
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/json"
 )
@@ -49,4 +52,10 @@ func (n NumericCriteria) String() string {
 // AltString returns the alternate description.
 func (n NumericCriteria) AltString() string {
 	return n.Compare.AltDescribe(n.Qualifier)
+}
+
+// Hash writes this object's contents into the hasher.
+func (n NumericCriteria) Hash(h hash.Hash) {
+	_, _ = h.Write([]byte(n.Compare))
+	_ = binary.Write(h, binary.LittleEndian, n.Qualifier)
 }

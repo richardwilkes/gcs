@@ -10,6 +10,9 @@
 package gurps
 
 import (
+	"encoding/binary"
+	"hash"
+
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -87,4 +90,14 @@ func (c *ContainedQuantityPrereq) Satisfied(_ *Entity, exclude any, tooltip *xio
 		tooltip.WriteString(c.QualifierCriteria.String())
 	}
 	return satisfied
+}
+
+// Hash writes this object's contents into the hasher.
+func (c *ContainedQuantityPrereq) Hash(h hash.Hash) {
+	if c == nil {
+		return
+	}
+	_ = binary.Write(h, binary.LittleEndian, c.Type)
+	_ = binary.Write(h, binary.LittleEndian, c.Has)
+	c.QualifierCriteria.Hash(h)
 }

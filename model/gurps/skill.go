@@ -11,7 +11,9 @@ package gurps
 
 import (
 	"context"
+	"encoding/binary"
 	"fmt"
+	"hash"
 	"io/fs"
 	"slices"
 	"strings"
@@ -63,7 +65,8 @@ type Skill struct {
 
 // SkillData holds the Skill data that is written to disk.
 type SkillData struct {
-	TID tid.TID `json:"id"`
+	TID    tid.TID `json:"id"`
+	Source Source  `json:"source,omitempty"`
 	SkillEditData
 	ThirdParty map[string]any `json:"third_party,omitempty"`
 	Children   []*Skill       `json:"children,omitempty"` // Only for containers
@@ -197,6 +200,11 @@ func NewTechnique(e *Entity, parent *Skill, skillName string) *Skill {
 	return &s
 }
 
+// GetLibraryFile returns the library file that this data is associated with, if any.
+func (s *Skill) GetLibraryFile() LibraryFile {
+	return s.Source.LibraryFile
+}
+
 // ID returns the local ID of this data.
 func (s *Skill) ID() tid.TID {
 	return s.TID
@@ -248,7 +256,7 @@ func (s *Skill) IsTechnique() bool {
 }
 
 // Clone implements Node.
-func (s *Skill) Clone(e *Entity, parent *Skill, preserveID bool) *Skill {
+func (s *Skill) Clone(from LibraryFile, e *Entity, parent *Skill, preserveID bool) *Skill {
 	var other *Skill
 	if s.IsTechnique() {
 		other = NewTechnique(e, parent, s.TechniqueDefault.Name)
@@ -256,6 +264,8 @@ func (s *Skill) Clone(e *Entity, parent *Skill, preserveID bool) *Skill {
 		other = NewSkill(e, parent, s.Container())
 		other.SetOpen(s.IsOpen())
 	}
+	other.Source.LibraryFile = from
+	other.Source.TID = s.TID
 	if preserveID {
 		other.TID = s.TID
 	}
@@ -264,7 +274,7 @@ func (s *Skill) Clone(e *Entity, parent *Skill, preserveID bool) *Skill {
 	if s.HasChildren() {
 		other.Children = make([]*Skill, 0, len(s.Children))
 		for _, child := range s.Children {
-			other.Children = append(other.Children, child.Clone(e, other, preserveID))
+			other.Children = append(other.Children, child.Clone(from, e, other, preserveID))
 		}
 	}
 	return other
@@ -1103,6 +1113,43 @@ func (s *Skill) ClearUnusedFieldsForType() {
 	}
 }
 
+// Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
+// "source" data, i.e. not expected to be modified by the user after copying from a library.
+func (s *Skill) Hash(h hash.Hash) {
+	_, _ = h.Write([]byte(s.Name))
+	_, _ = h.Write([]byte(s.PageRef))
+	_, _ = h.Write([]byte(s.PageRefHighlight))
+	_, _ = h.Write([]byte(s.LocalNotes))
+	_, _ = h.Write([]byte(s.VTTNotes))
+	for _, tag := range s.Tags {
+		_, _ = h.Write([]byte(tag))
+	}
+	if s.Container() {
+		s.TemplatePicker.Hash(h)
+	} else {
+		_, _ = h.Write([]byte(s.Specialization))
+		if s.TechLevel != nil {
+			_, _ = h.Write([]byte(*s.TechLevel))
+		}
+		s.Difficulty.Hash(h)
+		_ = binary.Write(h, binary.LittleEndian, s.EncumbrancePenaltyMultiplier)
+		for _, one := range s.Defaults {
+			one.Hash(h)
+		}
+		s.TechniqueDefault.Hash(h)
+		if s.TechniqueLimitModifier != nil {
+			_ = binary.Write(h, binary.LittleEndian, s.TechniqueLimitModifier)
+		}
+		s.Prereq.Hash(h)
+		for _, weapon := range s.Weapons {
+			weapon.Hash(h)
+		}
+		for _, feature := range s.Features {
+			feature.Hash(h)
+		}
+	}
+}
+
 // CopyFrom implements node.EditorData.
 func (s *SkillEditData) CopyFrom(other *Skill) {
 	s.copyFrom(other.Entity, &other.SkillEditData, other.Container(), false)
@@ -1148,8 +1195,8 @@ func (s *SkillEditData) copyFrom(entity *Entity, other *SkillEditData, isContain
 	s.Weapons = nil
 	if len(other.Weapons) != 0 {
 		s.Weapons = make([]*Weapon, len(other.Weapons))
-		for i := range other.Weapons {
-			s.Weapons[i] = other.Weapons[i].Clone(entity, nil, true)
+		for i, w := range other.Weapons {
+			s.Weapons[i] = w.Clone(LibraryFile{}, entity, nil, true)
 		}
 	}
 	s.Features = other.Features.Clone()

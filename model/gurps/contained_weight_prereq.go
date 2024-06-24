@@ -10,6 +10,9 @@
 package gurps
 
 import (
+	"encoding/binary"
+	"hash"
+
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -85,4 +88,14 @@ func (c *ContainedWeightPrereq) Satisfied(entity *Entity, exclude any, tooltip *
 		tooltip.WriteString(c.WeightCriteria.String())
 	}
 	return satisfied
+}
+
+// Hash writes this object's contents into the hasher.
+func (c *ContainedWeightPrereq) Hash(h hash.Hash) {
+	if c == nil {
+		return
+	}
+	_ = binary.Write(h, binary.LittleEndian, c.Type)
+	_ = binary.Write(h, binary.LittleEndian, c.Has)
+	c.WeightCriteria.Hash(h)
 }

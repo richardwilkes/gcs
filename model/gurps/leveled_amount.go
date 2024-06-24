@@ -10,7 +10,9 @@
 package gurps
 
 import (
+	"encoding/binary"
 	"fmt"
+	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -48,4 +50,14 @@ func (l *LeveledAmount) Format(asPercentage bool) string {
 		return fmt.Sprintf(i18n.Text("%s (%s per level)"), leveled, amt)
 	}
 	return amt
+}
+
+// Hash writes this object's contents into the hasher.
+func (l *LeveledAmount) Hash(h hash.Hash) {
+	if l == nil {
+		return
+	}
+	_ = binary.Write(h, binary.LittleEndian, l.Level)
+	_ = binary.Write(h, binary.LittleEndian, l.Amount)
+	_ = binary.Write(h, binary.LittleEndian, l.PerLevel)
 }

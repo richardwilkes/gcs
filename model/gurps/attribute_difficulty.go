@@ -10,6 +10,8 @@
 package gurps
 
 import (
+	"encoding/binary"
+	"hash"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
@@ -94,4 +96,11 @@ func (a *AttributeDifficulty) Normalize(entity *Entity) {
 		text = attr.ID()
 	}
 	a.Attribute = SanitizeID(text, true)
+}
+
+// Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
+// "source" data, i.e. not expected to be modified by the user after copying from a library.
+func (a *AttributeDifficulty) Hash(h hash.Hash) {
+	_, _ = h.Write([]byte(a.Attribute))
+	_ = binary.Write(h, binary.LittleEndian, a.Difficulty)
 }

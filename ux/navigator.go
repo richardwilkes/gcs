@@ -122,6 +122,7 @@ func newNavigator() *Navigator {
 		func(any) { n.searchField.RequestFocus() })
 
 	n.selectionChanged()
+	n.EventuallyReload() // Without this, the version for libraries is sometimes truncated at initial load
 	return n
 }
 

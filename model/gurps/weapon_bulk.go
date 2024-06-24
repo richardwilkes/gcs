@@ -71,8 +71,8 @@ func (wb *WeaponBulk) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// nolint:errcheck // Not checking errors on writes to a bytes.Buffer
-func (wb WeaponBulk) hash(h hash.Hash32) {
+// Hash writes this object's contents into the hasher.
+func (wb WeaponBulk) Hash(h hash.Hash) {
 	_ = binary.Write(h, binary.LittleEndian, wb.Normal)
 	_ = binary.Write(h, binary.LittleEndian, wb.Giant)
 	_ = binary.Write(h, binary.LittleEndian, wb.RetractingStock)

@@ -24,7 +24,9 @@ type NodeTypes interface {
 type Node[T NodeTypes] interface {
 	fmt.Stringer
 	Openable
-	Clone(newEntity *Entity, newParent T, preserveID bool) T
+	Hashable
+	Clone(from LibraryFile, newEntity *Entity, newParent T, preserveID bool) T
+	GetLibraryFile() LibraryFile
 	OwningEntity() *Entity
 	SetOwningEntity(entity *Entity)
 	Kind() string
@@ -57,7 +59,7 @@ type SkillAdjustmentProvider[T NodeTypes] interface {
 type EditorData[T NodeTypes] interface {
 	// CopyFrom copies the corresponding data from the node into this editor data.
 	CopyFrom(T)
-	// ApplyTo copes he editor data into the provided node.
+	// ApplyTo copies the editor data into the provided node.
 	ApplyTo(T)
 }
 

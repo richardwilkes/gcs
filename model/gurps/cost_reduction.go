@@ -10,6 +10,9 @@
 package gurps
 
 import (
+	"encoding/binary"
+	"hash"
+
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 )
@@ -49,4 +52,14 @@ func (c *CostReduction) FillWithNameableKeys(_ map[string]string) {
 
 // ApplyNameableKeys implements Feature.
 func (c *CostReduction) ApplyNameableKeys(_ map[string]string) {
+}
+
+// Hash writes this object's contents into the hasher.
+func (c *CostReduction) Hash(h hash.Hash) {
+	if c == nil {
+		return
+	}
+	_ = binary.Write(h, binary.LittleEndian, c.Type)
+	_, _ = h.Write([]byte(c.Attribute))
+	_ = binary.Write(h, binary.LittleEndian, c.Percentage)
 }

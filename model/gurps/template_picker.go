@@ -10,7 +10,9 @@
 package gurps
 
 import (
+	"encoding/binary"
 	"fmt"
+	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
@@ -62,4 +64,13 @@ func (t *TemplatePicker) Description() string {
 	default:
 		return ""
 	}
+}
+
+// Hash writes this object's contents into the hasher.
+func (t *TemplatePicker) Hash(h hash.Hash) {
+	if t == nil {
+		return
+	}
+	_ = binary.Write(h, binary.LittleEndian, t.Type)
+	t.Qualifier.Hash(h)
 }
