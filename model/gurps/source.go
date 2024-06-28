@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/tid"
 )
@@ -22,6 +23,11 @@ type Source struct {
 	TID tid.TID `json:"id"`
 }
 
+// SrcMatcher provides Source matching for a given ListProvider.
+type SrcMatcher struct {
+	hashes map[tid.TID]uint64
+}
+
 // ShouldOmit implements json.Omitter.
 func (s Source) ShouldOmit() bool {
 	return s.TID == "" || s.Library == "" || s.Path == ""
@@ -33,8 +39,8 @@ func (s Source) collectInto(m map[LibraryFile][]tid.TID) {
 	}
 }
 
-// CollectSourceHashes returns a map of TIDs to hashes for all sources found in the ListProvider.
-func CollectSourceHashes(provider ListProvider) map[tid.TID]uint64 {
+// NewSrcMatch returns a new SrcMatch for the given ListProvider.
+func NewSrcMatch(provider ListProvider) *SrcMatcher {
 	m := make(map[LibraryFile][]tid.TID)
 	Traverse(func(t *Trait) bool {
 		t.Source.collectInto(m)
@@ -73,7 +79,8 @@ func CollectSourceHashes(provider ListProvider) map[tid.TID]uint64 {
 		return false
 	}, false, false, provider.NoteList()...)
 	libs := GlobalSettings().Libraries()
-	result := make(map[tid.TID]uint64)
+	var s SrcMatcher
+	s.hashes = make(map[tid.TID]uint64)
 	for libFile, tids := range m {
 		if lib, ok := libs[libFile.Library]; ok {
 			need := make(map[tid.TID]bool)
@@ -87,52 +94,53 @@ func CollectSourceHashes(provider ListProvider) map[tid.TID]uint64 {
 			switch fi.Extensions[0] {
 			case TraitsExt:
 				if data, err := NewTraitsFromFile(dir, file); err == nil {
-					NodesToHashesByID(need, result, data...)
+					NodesToHashesByID(need, s.hashes, data...)
 					Traverse(func(t *Trait) bool {
-						NodesToHashesByID(need, result, t.Modifiers...)
+						NodesToHashesByID(need, s.hashes, t.Modifiers...)
 						return false
 					}, false, false, data...)
 				}
 			case TraitModifiersExt:
 				if data, err := NewTraitModifiersFromFile(dir, file); err == nil {
-					NodesToHashesByID(need, result, data...)
+					NodesToHashesByID(need, s.hashes, data...)
 				}
 			case SkillsExt:
 				if data, err := NewSkillsFromFile(dir, file); err == nil {
-					NodesToHashesByID(need, result, data...)
+					NodesToHashesByID(need, s.hashes, data...)
 				}
 			case SpellsExt:
 				if data, err := NewSpellsFromFile(dir, file); err == nil {
-					NodesToHashesByID(need, result, data...)
+					NodesToHashesByID(need, s.hashes, data...)
 				}
 			case EquipmentExt:
 				if data, err := NewEquipmentFromFile(dir, file); err == nil {
-					NodesToHashesByID(need, result, data...)
+					NodesToHashesByID(need, s.hashes, data...)
 					Traverse(func(e *Equipment) bool {
-						NodesToHashesByID(need, result, e.Modifiers...)
+						NodesToHashesByID(need, s.hashes, e.Modifiers...)
 						return false
 					}, false, false, data...)
 				}
 			case EquipmentModifiersExt:
 				if data, err := NewEquipmentModifiersFromFile(dir, file); err == nil {
-					NodesToHashesByID(need, result, data...)
+					NodesToHashesByID(need, s.hashes, data...)
 				}
 			case NotesExt:
 				if data, err := NewNotesFromFile(dir, file); err == nil {
-					NodesToHashesByID(need, result, data...)
+					NodesToHashesByID(need, s.hashes, data...)
 				}
 			}
 		}
 	}
-	return result
+	return &s
 }
 
-/*
-
-States:
-
-- Custom
-- Sourced, matching
-- Sourced, mismatched
-
-*/
+// Match returns the source state of the given data.
+func (s *SrcMatcher) Match(data HashableIDer) srcstate.Value {
+	if h, ok := s.hashes[data.ID()]; ok {
+		if h == Hash64(data) {
+			return srcstate.Matched
+		}
+		return srcstate.Mismatched
+	}
+	return srcstate.Custom
+}

@@ -1025,6 +1025,16 @@ var allEnums = []*enumInfo{
 		},
 	},
 	{
+		Pkg:  "model/gurps/enums/srcstate",
+		Name: "value",
+		Desc: "describes the state of a source compared to a piece of data",
+		Values: []enumValue{
+			{Key: "custom"},
+			{Key: "matched"},
+			{Key: "mismatched"},
+		},
+	},
+	{
 		Pkg:  "model/gurps/enums/stdmg",
 		Name: "option",
 		Desc: "holds the type of strength dice to add to damage",

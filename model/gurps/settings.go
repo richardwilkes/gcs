@@ -91,9 +91,14 @@ type Settings struct {
 	PDFs               map[string]*PDFInfo        `json:"pdfs,omitempty"`
 }
 
+// IDer defines the methods required of objects that have an ID.
+type IDer interface {
+	ID() tid.TID
+}
+
 // Openable defines the methods required of openable nodes.
 type Openable interface {
-	ID() tid.TID
+	IDer
 	Container() bool
 	IsOpen() bool
 	SetOpen(open bool)

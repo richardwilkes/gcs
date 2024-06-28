@@ -7,6 +7,12 @@ import (
 	"github.com/richardwilkes/toolbox/tid"
 )
 
+// HashableIDer is an object that can be hashed and has an ID.
+type HashableIDer interface {
+	IDer
+	Hashable
+}
+
 // Hashable is an object that can be hashed.
 type Hashable interface {
 	Hash(hash.Hash)
