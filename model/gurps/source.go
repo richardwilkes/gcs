@@ -113,6 +113,7 @@ func (sm SrcMatcher) PrepareHashes(provider ListProvider) {
 			}
 			var srcData libSrcData
 			srcData.timestamp = modTime
+			srcData.dataHashes = make(map[tid.TID]uint64)
 			dir := os.DirFS(filepath.Dir(p))
 			file := filepath.Base(p)
 			fi := FileInfoFor(p)

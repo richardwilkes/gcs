@@ -1137,7 +1137,9 @@ func (s *Skill) Hash(h hash.Hash) {
 		for _, one := range s.Defaults {
 			one.Hash(h)
 		}
-		s.TechniqueDefault.Hash(h)
+		if s.TechniqueDefault != nil {
+			s.TechniqueDefault.Hash(h)
+		}
 		if s.TechniqueLimitModifier != nil {
 			_ = binary.Write(h, binary.LittleEndian, s.TechniqueLimitModifier)
 		}

@@ -283,6 +283,7 @@ func (e *Entity) Recalculate() {
 			break
 		}
 	}
+	e.srcMatcher.PrepareHashes(e)
 }
 
 func (e *Entity) ensureAttachments() {
