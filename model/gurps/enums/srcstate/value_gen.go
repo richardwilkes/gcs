@@ -22,16 +22,18 @@ const (
 	Custom Value = iota
 	Matched
 	Mismatched
+	Missing
 )
 
 // LastValue is the last valid value.
-const LastValue Value = Mismatched
+const LastValue Value = Missing
 
 // Values holds all possible values.
 var Values = []Value{
 	Custom,
 	Matched,
 	Mismatched,
+	Missing,
 }
 
 // Value describes the state of a source compared to a piece of data.
@@ -39,7 +41,7 @@ type Value byte
 
 // EnsureValid ensures this is of a known value.
 func (enum Value) EnsureValid() Value {
-	if enum <= Mismatched {
+	if enum <= Missing {
 		return enum
 	}
 	return 0
@@ -54,6 +56,8 @@ func (enum Value) Key() string {
 		return "matched"
 	case Mismatched:
 		return "mismatched"
+	case Missing:
+		return "missing"
 	default:
 		return Value(0).Key()
 	}
@@ -68,6 +72,8 @@ func (enum Value) String() string {
 		return i18n.Text("Matched")
 	case Mismatched:
 		return i18n.Text("Mismatched")
+	case Missing:
+		return i18n.Text("Missing")
 	default:
 		return Value(0).String()
 	}

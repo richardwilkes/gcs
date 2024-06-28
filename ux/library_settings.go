@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
@@ -187,7 +188,7 @@ func (d *librarySettingsDockable) initContent(content *unison.Panel) {
 	content.AddChild(wrapper)
 
 	d.addNote(content, fmt.Sprintf(i18n.Text(`Once configured, GitHub repositories will be scanned for release tags in the form "v%d.x.y" through "v%d.x.y", where x and y can be any numeric value`),
-		gurps.MinimumLibraryVersion, gurps.CurrentDataVersion))
+		jio.MinimumLibraryVersion, jio.CurrentDataVersion))
 }
 
 func (d *librarySettingsDockable) addNote(parent *unison.Panel, note string) {

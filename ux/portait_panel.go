@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/imgutil"
+	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -85,7 +86,7 @@ func (p *PortraitPanel) drawSelf(gc *unison.Canvas, _ unison.Rect) {
 		gc.DrawRect(r, unison.Black.SetAlphaIntensity(0.3).Paint(gc, r, paintstyle.Fill))
 		text := unison.NewTextWrappedLines(i18n.Text("Drop an image here or double-click to change the portrait"),
 			&unison.TextDecoration{
-				Font:            gurps.PageFieldPrimaryFont,
+				Font:            fonts.PageFieldPrimary,
 				OnBackgroundInk: unison.White,
 			}, r.Width-unison.StdHSpacing*2)
 		var height float32

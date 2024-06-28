@@ -10,6 +10,8 @@
 package ux
 
 import (
+	"github.com/richardwilkes/gcs/v5/model/colors"
+	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -154,8 +156,8 @@ func NewTableColumnHeader[T gurps.NodeTypes](title, tooltip string) *unison.Defa
 // existing PageTableColumnHeaders, but will alter any PageTableColumnHeaders created in the future.
 var PageTableColumnHeaderTheme = unison.LabelTheme{
 	TextDecoration: unison.TextDecoration{
-		Font:            gurps.PageLabelPrimaryFont,
-		OnBackgroundInk: gurps.OnThemeHeader,
+		Font:            fonts.PageLabelPrimary,
+		OnBackgroundInk: colors.OnHeader,
 	},
 	Gap:    3,
 	HAlign: align.Middle,

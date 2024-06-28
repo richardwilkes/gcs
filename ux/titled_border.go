@@ -10,7 +10,8 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/colors"
+	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/toolbox/xmath"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/filltype"
@@ -27,7 +28,7 @@ type TitledBorder struct {
 
 func (t *TitledBorder) font() unison.Font {
 	if t.Font == nil {
-		return gurps.PageLabelPrimaryFont
+		return fonts.PageLabelPrimary
 	}
 	return t.Font
 }
@@ -51,10 +52,10 @@ func (t *TitledBorder) Draw(gc *unison.Canvas, rect unison.Rect) {
 	path.SetFillType(filltype.EvenOdd)
 	path.Rect(rect)
 	path.Rect(clip)
-	gc.DrawPath(path, gurps.ThemeHeader.Paint(gc, rect, paintstyle.Fill))
+	gc.DrawPath(path, colors.Header.Paint(gc, rect, paintstyle.Fill))
 	text := unison.NewSmallCapsText(t.Title, &unison.TextDecoration{
 		Font:            t.font(),
-		OnBackgroundInk: gurps.OnThemeHeader,
+		OnBackgroundInk: colors.OnHeader,
 	})
 	text.Draw(gc, rect.X+(rect.Width-text.Width())/2, rect.Y+1+text.Baseline())
 }

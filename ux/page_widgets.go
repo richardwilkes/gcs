@@ -10,6 +10,8 @@
 package ux
 
 import (
+	"github.com/richardwilkes/gcs/v5/model/colors"
+	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
@@ -21,10 +23,10 @@ import (
 // NewPageHeader creates a new center-aligned header for a sheet page.
 func NewPageHeader(title string, hSpan int) *unison.Label {
 	label := unison.NewLabel()
-	label.OnBackgroundInk = gurps.OnThemeHeader
+	label.OnBackgroundInk = colors.OnHeader
 	label.Text = unison.NewSmallCapsText(title, &unison.TextDecoration{
-		Font:            gurps.PageLabelPrimaryFont,
-		OnBackgroundInk: gurps.OnThemeHeader,
+		Font:            fonts.PageLabelPrimary,
+		OnBackgroundInk: colors.OnHeader,
 	})
 	label.HAlign = align.Middle
 	label.SetLayoutData(&unison.FlexLayoutData{
@@ -33,7 +35,7 @@ func NewPageHeader(title string, hSpan int) *unison.Label {
 		VAlign: align.Middle,
 	})
 	label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, gurps.ThemeHeader.Paint(gc, rect, paintstyle.Fill))
+		gc.DrawRect(rect, colors.Header.Paint(gc, rect, paintstyle.Fill))
 		label.DefaultDraw(gc, rect)
 	}
 	return label
@@ -53,7 +55,7 @@ func NewPageInternalHeader(title string, span int) unison.Paneler {
 		return sep
 	}
 	label := unison.NewLabel()
-	label.Font = gurps.PageLabelSecondaryFont
+	label.Font = fonts.PageLabelSecondary
 	label.HAlign = align.Middle
 	label.OnBackgroundInk = unison.ThemeOnSurface
 	label.SetTitle(title)
@@ -80,7 +82,7 @@ func NewPageLabel(title string) *unison.Label {
 func NewPageLabelWithInk(title string, ink unison.Ink) *unison.Label {
 	label := unison.NewLabel()
 	label.Text = unison.NewSmallCapsText(title, &unison.TextDecoration{
-		Font:            gurps.PageLabelPrimaryFont,
+		Font:            fonts.PageLabelPrimary,
 		OnBackgroundInk: ink,
 	})
 	label.SetLayoutData(&unison.FlexLayoutData{
@@ -96,7 +98,7 @@ func NewPageLabelWithInk(title string, ink unison.Ink) *unison.Label {
 func NewPageLabelEnd(title string) *unison.Label {
 	label := unison.NewLabel()
 	label.Text = unison.NewSmallCapsText(title, &unison.TextDecoration{
-		Font:            gurps.PageLabelPrimaryFont,
+		Font:            fonts.PageLabelPrimary,
 		OnBackgroundInk: unison.ThemeOnSurface,
 	})
 	label.HAlign = align.End
@@ -112,7 +114,7 @@ func NewPageLabelEnd(title string) *unison.Label {
 func NewPageLabelCenter(title string) *unison.Label {
 	label := unison.NewLabel()
 	label.Text = unison.NewSmallCapsText(title, &unison.TextDecoration{
-		Font:            gurps.PageLabelPrimaryFont,
+		Font:            fonts.PageLabelPrimary,
 		OnBackgroundInk: unison.ThemeOnSurface,
 	})
 	label.HAlign = align.Middle
@@ -136,7 +138,7 @@ func NewPageLabelWithRandomizer(title, tooltip string, clickCallback func()) *un
 		HAlign: align.Fill,
 		VAlign: align.Middle,
 	})
-	b := NewSVGButtonForFont(svg.Randomize, gurps.PageLabelPrimaryFont, -2)
+	b := NewSVGButtonForFont(svg.Randomize, fonts.PageLabelPrimary, -2)
 	b.SetFocusable(false)
 	if tooltip != "" {
 		b.Tooltip = newWrappedTooltip(tooltip)
@@ -161,7 +163,7 @@ func NewStringPageField(targetMgr *TargetMgr, targetKey, undoTitle string, get f
 }
 
 func installPageFieldFontAndFocusBorders(field *unison.Field) {
-	field.Font = gurps.PageFieldPrimaryFont
+	field.Font = fonts.PageFieldPrimary
 	unison.InstallFocusBorders(field, field,
 		unison.NewLineBorder(unison.ThemeFocus, 0, unison.Insets{Bottom: 1}, false),
 		unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1}, false),

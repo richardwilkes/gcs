@@ -14,6 +14,7 @@ import (
 	"io/fs"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -89,7 +90,7 @@ func (d *colorSettingsDockable) sync() {
 
 func (d *colorSettingsDockable) fill() {
 	onColumn := false
-	for _, one := range gurps.CurrentColors() {
+	for _, one := range colors.Current() {
 		on := strings.HasPrefix(one.ID, "on_")
 		if on != onColumn {
 			p := unison.NewPanel()
@@ -111,7 +112,7 @@ func (d *colorSettingsDockable) fill() {
 	}
 }
 
-func (d *colorSettingsDockable) createColorWellField(c *gurps.ThemedColor, light bool) {
+func (d *colorSettingsDockable) createColorWellField(c *colors.ThemedColor, light bool) {
 	w := unison.NewWell()
 	w.Mask = unison.ColorWellMask
 	if light {
@@ -136,12 +137,12 @@ func (d *colorSettingsDockable) createColorWellField(c *gurps.ThemedColor, light
 	d.content.AddChild(w)
 }
 
-func (d *colorSettingsDockable) createResetField(c *gurps.ThemedColor) {
+func (d *colorSettingsDockable) createResetField(c *colors.ThemedColor) {
 	b := unison.NewSVGButton(svg.Reset)
 	b.Tooltip = newWrappedTooltip("Reset this color")
 	b.ClickCallback = func() {
 		if unison.QuestionDialog(fmt.Sprintf(i18n.Text("Are you sure you want to reset %s?"), c.Title), "") == unison.ModalResponseOK {
-			for _, v := range gurps.FactoryColors() {
+			for _, v := range colors.Factory() {
 				if v.ID != c.ID {
 					continue
 				}
@@ -167,7 +168,7 @@ func (d *colorSettingsDockable) createResetField(c *gurps.ThemedColor) {
 }
 
 func (d *colorSettingsDockable) load(fileSystem fs.FS, filePath string) error {
-	s, err := gurps.NewColorsFromFS(fileSystem, filePath)
+	s, err := colors.NewFromFS(fileSystem, filePath)
 	if err != nil {
 		return err
 	}

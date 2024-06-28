@@ -12,6 +12,7 @@ package ux
 import (
 	"fmt"
 
+	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
@@ -276,7 +277,7 @@ func (a *AttrPanel) createPointsField(attr *gurps.Attribute) unison.Paneler {
 			f.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("Points spent on %s"), def.CombinedName()))
 		}
 	})
-	field.Font = gurps.PageFieldSecondaryFont
+	field.Font = fonts.PageFieldSecondary
 	field.OnBackgroundInk = dimmedPointsColor
 	field.Text.AdjustDecorations(func(d *unison.TextDecoration) {
 		d.Font = field.Font
@@ -300,7 +301,7 @@ func (a *AttrPanel) Sync() {
 						label.DrawCallback = label.DefaultDraw
 						if threshold := attr.CurrentThreshold(); threshold != nil {
 							label.Text = unison.NewSmallCapsText("["+threshold.State+"]", &unison.TextDecoration{
-								Font:            gurps.PageLabelPrimaryFont,
+								Font:            fonts.PageLabelPrimary,
 								OnBackgroundInk: unison.ThemeOnSurface,
 							})
 							if threshold.Explanation != "" {
@@ -308,7 +309,7 @@ func (a *AttrPanel) Sync() {
 							}
 						} else {
 							label.Text = unison.NewSmallCapsText("", &unison.TextDecoration{
-								Font:            gurps.PageLabelPrimaryFont,
+								Font:            fonts.PageLabelPrimary,
 								OnBackgroundInk: unison.ThemeOnSurface,
 							})
 							label.Tooltip = nil

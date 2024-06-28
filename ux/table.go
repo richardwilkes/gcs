@@ -15,6 +15,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/colors"
+	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -80,7 +82,7 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 		table.Padding.Bottom = 0
 		table.HierarchyIndent = font.LineHeight()
 		table.MinimumRowHeight = font.LineHeight()
-		layoutData.MinSize = unison.Size{Height: 4 + gurps.PageFieldPrimaryFont.LineHeight()}
+		layoutData.MinSize = unison.Size{Height: 4 + fonts.PageFieldPrimary.LineHeight()}
 	}
 	table.SetLayoutData(layoutData)
 
@@ -98,8 +100,8 @@ func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font
 	}
 	header = unison.NewTableHeader(table, headers...)
 	header.Less = flexibleLess
-	header.BackgroundInk = gurps.ThemeHeader
-	header.InteriorDividerColor = gurps.ThemeHeader
+	header.BackgroundInk = colors.Header
+	header.InteriorDividerColor = colors.Header
 	header.SetBorder(header.HeaderBorder)
 	header.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
@@ -429,7 +431,7 @@ func DuplicateSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 			if target := row.Data(); target != zero {
 				tData := gurps.AsNode(target)
 				parent := tData.Parent()
-				clone := tData.Clone(tData.GetLibraryFile(), tData.OwningEntity(), parent, false)
+				clone := tData.Clone(tData.GetSource().LibraryFile, tData.OwningEntity(), parent, false)
 				selMap[gurps.AsNode(clone).ID()] = true
 				if parent == zero {
 					for i, child := range topLevelData {

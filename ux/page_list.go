@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -111,7 +112,7 @@ func NewRangedWeaponsPageList(entity *gurps.Entity) *PageList[*gurps.Weapon] {
 }
 
 func newPageList[T gurps.NodeTypes](owner Rebuildable, provider TableProvider[T]) *PageList[T] {
-	header, table := NewNodeTable[T](provider, gurps.PageFieldPrimaryFont)
+	header, table := NewNodeTable[T](provider, fonts.PageFieldPrimary)
 	table.ClientData()[WorkingDirKey] = WorkingDirProvider(owner)
 	table.RefKey = provider.RefKey()
 	p := &PageList[T]{

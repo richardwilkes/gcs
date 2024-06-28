@@ -16,6 +16,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
+	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/xmath/crc"
@@ -38,12 +39,12 @@ type Template struct {
 func NewTemplateFromFile(fileSystem fs.FS, filePath string) (*Template, error) {
 	var t Template
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &t); err != nil {
-		return nil, errs.NewWithCause(invalidFileDataMsg(), err)
+		return nil, errs.NewWithCause(message.InvalidFileData(), err)
 	}
 	if !tid.IsKindAndValid(t.ID, kinds.Template) {
 		t.ID = tid.MustNewTID(kinds.Template)
 	}
-	if err := CheckVersion(t.Version); err != nil {
+	if err := jio.CheckVersion(t.Version); err != nil {
 		return nil, err
 	}
 	return &t, nil
@@ -64,7 +65,7 @@ func (t *Template) Entity() *Entity {
 
 // Save the Template to a file as JSON.
 func (t *Template) Save(filePath string) error {
-	t.Version = CurrentDataVersion
+	t.Version = jio.CurrentDataVersion
 	return jio.SaveToFile(context.Background(), filePath, t)
 }
 

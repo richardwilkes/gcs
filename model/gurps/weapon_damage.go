@@ -18,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stdmg"
+	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -188,9 +189,9 @@ func (w *WeaponDamage) DamageTooltip() string {
 	var tooltip xio.ByteBuffer
 	w.ResolvedDamage(&tooltip)
 	if tooltip.Len() == 0 {
-		return noAdditionalModifiers()
+		return message.NoAdditionalModifiers()
 	}
-	return includesModifiersFrom() + tooltip.String()
+	return message.IncludesModifiersFrom() + tooltip.String()
 }
 
 // BaseDamageDice returns the base damage dice for this weapon (i.e. the dice before any bonuses are applied).

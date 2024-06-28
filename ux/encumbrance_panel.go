@@ -13,6 +13,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/richardwilkes/gcs/v5/model/colors"
+	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/encumbrance"
 	"github.com/richardwilkes/gcs/v5/svg"
@@ -51,7 +53,7 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 		r := p.Children()[0].FrameRect()
 		r.X = rect.X
 		r.Width = rect.Width
-		gc.DrawRect(r, gurps.ThemeHeader.Paint(gc, r, paintstyle.Fill))
+		gc.DrawRect(r, colors.Header.Paint(gc, r, paintstyle.Fill))
 		p.current = int(entity.EncumbranceLevel(false))
 		p.overloaded = entity.WeightCarried(false) > entity.MaximumCarry(encumbrance.ExtraHeavy)
 		for i, row := range p.row {
@@ -117,7 +119,7 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 
 func (p *EncumbrancePanel) createMarker(entity *gurps.Entity, enc encumbrance.Level, rowColor *encRowColor) *unison.Label {
 	marker := unison.NewLabel()
-	marker.Font = gurps.PageLabelPrimaryFont
+	marker.Font = fonts.PageLabelPrimary
 	marker.OnBackgroundInk = rowColor
 	marker.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,

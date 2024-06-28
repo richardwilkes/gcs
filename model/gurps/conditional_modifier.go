@@ -76,9 +76,9 @@ func (c *ConditionalModifier) Compare(other *ConditionalModifier) int {
 	return result
 }
 
-// GetLibraryFile returns the library file that this data is associated with, if any.
-func (c *ConditionalModifier) GetLibraryFile() LibraryFile {
-	return LibraryFile{}
+// GetSource returns the source of this data.
+func (c *ConditionalModifier) GetSource() Source {
+	return Source{}
 }
 
 // ID returns the local ID of this data.

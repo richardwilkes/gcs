@@ -25,6 +25,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
+	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -161,12 +162,12 @@ type spellListData struct {
 func NewSpellsFromFile(fileSystem fs.FS, filePath string) ([]*Spell, error) {
 	var data spellListData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(invalidFileDataMsg(), err)
+		return nil, errs.NewWithCause(message.InvalidFileData(), err)
 	}
 	if data.Type != spellListTypeKey {
-		return nil, errs.New(unexpectedFileDataMsg())
+		return nil, errs.New(message.UnexpectedFileData())
 	}
-	if err := CheckVersion(data.Version); err != nil {
+	if err := jio.CheckVersion(data.Version); err != nil {
 		return nil, err
 	}
 	return data.Rows, nil
@@ -176,7 +177,7 @@ func NewSpellsFromFile(fileSystem fs.FS, filePath string) ([]*Spell, error) {
 func SaveSpells(spells []*Spell, filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &spellListData{
 		Type:    spellListTypeKey,
-		Version: CurrentDataVersion,
+		Version: jio.CurrentDataVersion,
 		Rows:    spells,
 	})
 }
@@ -238,9 +239,9 @@ func spellKind(container bool) byte {
 	return kinds.Spell
 }
 
-// GetLibraryFile returns the library file that this data is associated with, if any.
-func (s *Spell) GetLibraryFile() LibraryFile {
-	return s.Source.LibraryFile
+// GetSource returns the source of this data.
+func (s *Spell) GetSource() Source {
+	return s.Source
 }
 
 // ID returns the local ID of this data.
@@ -520,7 +521,7 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 			level := s.CalculateLevel()
 			data.Primary = level.LevelAsString(s.Container())
 			if level.Tooltip != "" {
-				data.Tooltip = includesModifiersFrom() + ":" + level.Tooltip
+				data.Tooltip = message.IncludesModifiersFrom() + ":" + level.Tooltip
 			}
 			data.Alignment = align.End
 		}
@@ -537,7 +538,7 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 				}
 			}
 			if tooltip := s.CalculateLevel().Tooltip; tooltip != "" {
-				data.Tooltip = includesModifiersFrom() + ":" + tooltip
+				data.Tooltip = message.IncludesModifiersFrom() + ":" + tooltip
 			}
 		}
 	case SpellPointsColumn:
@@ -546,7 +547,7 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 		data.Primary = s.AdjustedPoints(&tooltip).String()
 		data.Alignment = align.End
 		if tooltip.Len() != 0 {
-			data.Tooltip = includesModifiersFrom() + ":" + tooltip.String()
+			data.Tooltip = message.IncludesModifiersFrom() + ":" + tooltip.String()
 		}
 	case SpellDescriptionForPageColumn:
 		s.CellData(SpellDescriptionColumn, data)

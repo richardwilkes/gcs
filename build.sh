@@ -86,6 +86,7 @@ for arg in "$@"; do
 done
 
 if [ "$SOMETHING"x != "1x" ]; then
+	BUILD_GEN=1
 	BUILD_GO=1
 fi
 

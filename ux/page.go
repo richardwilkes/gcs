@@ -12,6 +12,7 @@ package ux
 import (
 	"fmt"
 
+	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -87,8 +88,8 @@ func (p *Page) insets() unison.Insets {
 		Bottom: sheetSettings.Page.BottomMargin.Pixels(),
 		Right:  sheetSettings.Page.RightMargin.Pixels(),
 	}
-	height := gurps.PageFooterSecondaryFont.LineHeight()
-	insets.Bottom += xmath.Ceil(max(gurps.PageFooterPrimaryFont.LineHeight(), height) + height)
+	height := fonts.PageFooterSecondary.LineHeight()
+	insets.Bottom += xmath.Ceil(max(fonts.PageFooterPrimary.LineHeight(), height) + height)
 	return insets
 }
 
@@ -105,11 +106,11 @@ func (p *Page) drawSelf(gc *unison.Canvas, _ unison.Rect) {
 	pageNumber := parent.IndexOfChild(p) + 1
 
 	primaryDecorations := &unison.TextDecoration{
-		Font:            gurps.PageFooterPrimaryFont,
+		Font:            fonts.PageFooterPrimary,
 		OnBackgroundInk: unison.ThemeOnSurface,
 	}
 	secondaryDecorations := &unison.TextDecoration{
-		Font:            gurps.PageFooterSecondaryFont,
+		Font:            fonts.PageFooterSecondary,
 		OnBackgroundInk: unison.ThemeOnSurface,
 	}
 

@@ -22,7 +22,7 @@ import (
 	"text/template"
 	"unicode"
 
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/toolbox/fatal"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
@@ -1032,6 +1032,7 @@ var allEnums = []*enumInfo{
 			{Key: "custom"},
 			{Key: "matched"},
 			{Key: "mismatched"},
+			{Key: "missing"},
 		},
 	},
 	{
@@ -1356,8 +1357,8 @@ var myCSSInfo = cssInfo{
 		{Name: "on-below-surface", Provider: unison.ThemeOnBelowSurface},
 		{Name: "on-deep-below-surface", Provider: unison.ThemeOnDeepBelowSurface},
 
-		{Name: "header", Provider: gurps.ThemeHeader},
-		{Name: "on-header", Provider: gurps.OnThemeHeader},
+		{Name: "header", Provider: colors.Header},
+		{Name: "on-header", Provider: colors.OnHeader},
 
 		{Name: "focus", Provider: unison.ThemeFocus},
 		{Name: "deep-focus", Provider: unison.ThemeDeepFocus},

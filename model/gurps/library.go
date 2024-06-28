@@ -24,6 +24,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/txt"
@@ -151,8 +152,8 @@ func (l *Library) IsUser() bool {
 
 // CheckForAvailableUpgrade returns releases that can be upgraded to.
 func (l *Library) CheckForAvailableUpgrade(ctx context.Context, client *http.Client) {
-	incompatibleFutureLibraryVersion := strconv.Itoa(CurrentDataVersion + 1)
-	minimumLibraryVersion := strconv.Itoa(MinimumLibraryVersion)
+	incompatibleFutureLibraryVersion := strconv.Itoa(jio.CurrentDataVersion + 1)
+	minimumLibraryVersion := strconv.Itoa(jio.MinimumLibraryVersion)
 	releases, err := LoadReleases(ctx, client, l.GitHubAccountName, l.AccessToken, l.RepoName, "",
 		func(version, _ string) bool {
 			return incompatibleFutureLibraryVersion == version ||

@@ -11,8 +11,10 @@ package gurps
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/toolbox/txt"
 )
 
 // NodeTypes is a constraint that defines the types that may be nodes.
@@ -26,7 +28,7 @@ type Node[T NodeTypes] interface {
 	Openable
 	Hashable
 	Clone(from LibraryFile, newEntity *Entity, newParent T, preserveID bool) T
-	GetLibraryFile() LibraryFile
+	GetSource() Source
 	OwningEntity() *Entity
 	SetOwningEntity(entity *Entity)
 	Kind() string
@@ -67,4 +69,21 @@ type EditorData[T NodeTypes] interface {
 // otherwise.
 func AsNode[T NodeTypes](in T) Node[T] {
 	return any(in).(Node[T])
+}
+
+func convertOldCategoriesToTags(tags, categories []string) []string {
+	if categories == nil {
+		return tags
+	}
+	for _, one := range categories {
+		parts := strings.Split(one, "/")
+		for _, part := range parts {
+			if part = strings.TrimSpace(part); part != "" {
+				if !txt.CaselessSliceContains(tags, part) {
+					tags = append(tags, part)
+				}
+			}
+		}
+	}
+	return tags
 }

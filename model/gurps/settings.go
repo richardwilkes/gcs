@@ -20,6 +20,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/richardwilkes/gcs/v5/model/colors"
+	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -82,8 +84,8 @@ type Settings struct {
 	PageRefs           PageRefs                   `json:"page_refs,omitempty"`
 	KeyBindings        KeyBindings                `json:"key_bindings,omitempty"`
 	WorkspaceFrame     *unison.Rect               `json:"workspace_frame,omitempty"`
-	Colors             Colors                     `json:"theme_colors"`
-	Fonts              Fonts                      `json:"fonts"`
+	Colors             colors.Colors              `json:"theme_colors"`
+	Fonts              fonts.Fonts                `json:"fonts"`
 	Sheet              *SheetSettings             `json:"sheet_settings,omitempty"`
 	OpenInWindow       []dgroup.Group             `json:"open_in_window,omitempty"`
 	WebServer          *websettings.Settings      `json:"web,omitempty"` // Do not use "web_server" as the key, as an earlier release used that name and it will cause a failure to load the settings file.

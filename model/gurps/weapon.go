@@ -319,9 +319,9 @@ func (w *Weapon) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// GetLibraryFile returns the library file that this data is associated with, if any.
-func (w *Weapon) GetLibraryFile() LibraryFile {
-	return LibraryFile{}
+// GetSource returns the source of this data.
+func (w *Weapon) GetSource() Source {
+	return Source{}
 }
 
 // ID returns the local ID of this data.

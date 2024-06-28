@@ -24,6 +24,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/tmcost"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
+	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -111,12 +112,12 @@ type traitModifierListData struct {
 func NewTraitModifiersFromFile(fileSystem fs.FS, filePath string) ([]*TraitModifier, error) {
 	var data traitModifierListData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(invalidFileDataMsg(), err)
+		return nil, errs.NewWithCause(message.InvalidFileData(), err)
 	}
 	if data.Type != traitModifierListTypeKey {
-		return nil, errs.New(unexpectedFileDataMsg())
+		return nil, errs.New(message.UnexpectedFileData())
 	}
-	if err := CheckVersion(data.Version); err != nil {
+	if err := jio.CheckVersion(data.Version); err != nil {
 		return nil, err
 	}
 	return data.Rows, nil
@@ -126,7 +127,7 @@ func NewTraitModifiersFromFile(fileSystem fs.FS, filePath string) ([]*TraitModif
 func SaveTraitModifiers(modifiers []*TraitModifier, filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &traitModifierListData{
 		Type:    traitModifierListTypeKey,
-		Version: CurrentDataVersion,
+		Version: jio.CurrentDataVersion,
 		Rows:    modifiers,
 	})
 }
@@ -152,9 +153,9 @@ func traitModifierKind(container bool) byte {
 	return kinds.TraitModifier
 }
 
-// GetLibraryFile returns the library file that this data is associated with, if any.
-func (t *TraitModifier) GetLibraryFile() LibraryFile {
-	return t.Source.LibraryFile
+// GetSource returns the source of this data.
+func (t *TraitModifier) GetSource() Source {
+	return t.Source
 }
 
 // ID returns the local ID of this data.

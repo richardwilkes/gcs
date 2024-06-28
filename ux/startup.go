@@ -12,6 +12,7 @@ package ux
 import (
 	_ "embed"
 
+	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/errs"
@@ -32,7 +33,7 @@ func Start(files []string) {
 	unison.Start(
 		unison.StartupFinishedCallback(func() {
 			performPlatformStartup()
-			unison.DefaultTableColumnHeaderTheme.OnBackgroundInk = gurps.OnThemeHeader
+			unison.DefaultTableColumnHeaderTheme.OnBackgroundInk = colors.OnHeader
 			unison.DefaultMarkdownTheme.LinkHandler = HandleLink
 			unison.DefaultMarkdownTheme.WorkingDirProvider = WorkingDirProvider
 			unison.DefaultMarkdownTheme.AltLinkPrefixes = []string{"md:"}

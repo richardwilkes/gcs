@@ -24,6 +24,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
+	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -111,12 +112,12 @@ type equipmentListData struct {
 func NewEquipmentFromFile(fileSystem fs.FS, filePath string) ([]*Equipment, error) {
 	var data equipmentListData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(invalidFileDataMsg(), err)
+		return nil, errs.NewWithCause(message.InvalidFileData(), err)
 	}
 	if data.Type != equipmentListTypeKey {
-		return nil, errs.New(unexpectedFileDataMsg())
+		return nil, errs.New(message.UnexpectedFileData())
 	}
-	if err := CheckVersion(data.Version); err != nil {
+	if err := jio.CheckVersion(data.Version); err != nil {
 		return nil, err
 	}
 	return data.Rows, nil
@@ -126,7 +127,7 @@ func NewEquipmentFromFile(fileSystem fs.FS, filePath string) ([]*Equipment, erro
 func SaveEquipment(equipment []*Equipment, filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &equipmentListData{
 		Type:    equipmentListTypeKey,
-		Version: CurrentDataVersion,
+		Version: jio.CurrentDataVersion,
 		Rows:    equipment,
 	})
 }
@@ -157,9 +158,9 @@ func equipmentKind(container bool) byte {
 	return kinds.Equipment
 }
 
-// GetLibraryFile returns the library file that this data is associated with, if any.
-func (e *Equipment) GetLibraryFile() LibraryFile {
-	return e.Source.LibraryFile
+// GetSource returns the source of this data.
+func (e *Equipment) GetSource() Source {
+	return e.Source
 }
 
 // ID returns the local ID of this data.

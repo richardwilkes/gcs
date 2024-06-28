@@ -7,12 +7,6 @@ import (
 	"github.com/richardwilkes/toolbox/tid"
 )
 
-// HashableIDer is an object that can be hashed and has an ID.
-type HashableIDer interface {
-	IDer
-	Hashable
-}
-
 // Hashable is an object that can be hashed.
 type Hashable interface {
 	Hash(hash.Hash)
@@ -25,16 +19,13 @@ func Hash64(in Hashable) uint64 {
 	return h.Sum64()
 }
 
-// NodesToHashesByID traverses the provided nodes and generates hashes for those items whose ID matches the need set.
-func NodesToHashesByID[T NodeTypes](need map[tid.TID]bool, result map[tid.TID]uint64, data ...T) {
+// NodesToHashesByID traverses the provided nodes and generates hashes.
+func NodesToHashesByID[T NodeTypes](result map[tid.TID]uint64, data ...T) {
 	Traverse(func(one T) bool {
 		node := AsNode(one)
 		id := node.ID()
-		if need[id] {
-			if _, exists := result[id]; !exists {
-				result[id] = Hash64(node)
-				delete(need, id)
-			}
+		if _, exists := result[id]; !exists {
+			result[id] = Hash64(node)
 		}
 		return false
 	}, false, false, data...)

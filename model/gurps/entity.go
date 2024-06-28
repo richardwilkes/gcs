@@ -33,6 +33,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
+	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/errs"
@@ -119,15 +120,16 @@ type Entity struct {
 	cachedEncumbranceLevel          encumbrance.Level
 	cachedEncumbranceLevelForSkills encumbrance.Level
 	cachedVariables                 map[string]string
+	srcMatcher                      SrcMatcher
 }
 
 // NewEntityFromFile loads an Entity from a file.
 func NewEntityFromFile(fileSystem fs.FS, filePath string) (*Entity, error) {
 	var e Entity
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &e); err != nil {
-		return nil, errs.NewWithCause(invalidFileDataMsg(), err)
+		return nil, errs.NewWithCause(message.InvalidFileData(), err)
 	}
-	if err := CheckVersion(e.Version); err != nil {
+	if err := jio.CheckVersion(e.Version); err != nil {
 		return nil, err
 	}
 	return &e, nil
@@ -209,7 +211,7 @@ func (e *Entity) MarshalJSON() ([]byte, error) {
 			Dodge:                 make([]int, len(encumbrance.Levels)),
 		},
 	}
-	data.Version = CurrentDataVersion
+	data.Version = jio.CurrentDataVersion
 	for i, one := range encumbrance.Levels {
 		data.Calc.Move[i] = e.Move(one)
 		data.Calc.Dodge[i] = e.Dodge(one)

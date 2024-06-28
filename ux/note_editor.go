@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -24,7 +25,7 @@ func EditNote(owner Rebuildable, note *gurps.Note) {
 }
 
 func adjustMarkdownThemeForPage(markdown *unison.Markdown) {
-	markdown.Font = gurps.PageFieldPrimaryFont
+	markdown.Font = fonts.PageFieldPrimary
 	markdown.HeadingFont[0] = &unison.DynamicFont{Resolver: func() unison.FontDescriptor { return unison.DeriveMarkdownHeadingFont(markdown.Font, 1) }}
 	markdown.HeadingFont[1] = &unison.DynamicFont{Resolver: func() unison.FontDescriptor { return unison.DeriveMarkdownHeadingFont(markdown.Font, 2) }}
 	markdown.HeadingFont[2] = &unison.DynamicFont{Resolver: func() unison.FontDescriptor { return unison.DeriveMarkdownHeadingFont(markdown.Font, 3) }}

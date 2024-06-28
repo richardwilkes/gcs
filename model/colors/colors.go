@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package colors
 
 import (
 	"context"
@@ -16,6 +16,7 @@ import (
 	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
@@ -23,21 +24,21 @@ import (
 )
 
 const (
-	minimumColorsVersion = 5
-	currentColorsVersion = 5
-	colorsTypeKey        = "theme_colors"
+	minimumVersion = 5
+	currentVersion = 5
+	typeKey        = "theme_colors"
 )
 
 var (
-	colorsOnce    sync.Once
-	currentColors []*ThemedColor
-	factoryColors []*ThemedColor
+	once    sync.Once
+	current []*ThemedColor
+	factory []*ThemedColor
 )
 
 // Additional theme colors
 var (
-	ThemeHeader   = &unison.ThemeColor{Light: unison.RGB(43, 43, 43), Dark: unison.RGB(64, 64, 64)}
-	OnThemeHeader = ThemeHeader.DeriveOn()
+	Header   = &unison.ThemeColor{Light: unison.RGB(43, 43, 43), Dark: unison.RGB(64, 64, 64)}
+	OnHeader = Header.DeriveOn()
 )
 
 // ThemedColor holds a themed color.
@@ -52,36 +53,36 @@ type Colors struct {
 	data map[string]*unison.ThemeColor // Just here for serialization
 }
 
-type colorsData struct {
+type fileData struct {
 	Type    string `json:"type"`
 	Version int    `json:"version"`
 	Colors
 }
 
-// CurrentColors returns the current theme.
-func CurrentColors() []*ThemedColor {
-	colorsOnce.Do(initColors)
-	return currentColors
+// Current returns the current theme.
+func Current() []*ThemedColor {
+	once.Do(initialize)
+	return current
 }
 
-// FactoryColors returns the original theme before any modifications.
-func FactoryColors() []*ThemedColor {
-	colorsOnce.Do(initColors)
-	return factoryColors
+// Factory returns the original theme before any modifications.
+func Factory() []*ThemedColor {
+	once.Do(initialize)
+	return factory
 }
 
-func initColors() {
-	currentColors = []*ThemedColor{
+func initialize() {
+	current = []*ThemedColor{
 		{ID: "surface", Title: "Surface", Color: unison.ThemeSurface},
-		{ID: "header", Title: "Header", Color: ThemeHeader},
+		{ID: "header", Title: "Header", Color: Header},
 		{ID: "focus", Title: "Focus", Color: unison.ThemeFocus},
 		{ID: "tooltip", Title: "Tooltip", Color: unison.ThemeTooltip},
 		{ID: "error", Title: "Error", Color: unison.ThemeError},
 		{ID: "warning", Title: "Warning", Color: unison.ThemeWarning},
 	}
-	factoryColors = make([]*ThemedColor, len(currentColors))
-	for i, c := range currentColors {
-		factoryColors[i] = &ThemedColor{
+	factory = make([]*ThemedColor, len(current))
+	for i, c := range current {
+		factory[i] = &ThemedColor{
 			ID:    c.ID,
 			Title: c.Title,
 			Color: &unison.ThemeColor{
@@ -92,38 +93,38 @@ func initColors() {
 	}
 }
 
-// NewColorsFromFS creates a new set of colors from a file. Any missing values will be filled in with defaults.
-func NewColorsFromFS(fileSystem fs.FS, filePath string) (*Colors, error) {
-	var current colorsData
-	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &current); err != nil {
+// NewFromFS creates a new set of colors from a file. Any missing values will be filled in with defaults.
+func NewFromFS(fileSystem fs.FS, filePath string) (*Colors, error) {
+	var data fileData
+	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
 		return nil, errs.Wrap(err)
 	}
-	if current.Type != colorsTypeKey {
-		return nil, errs.New(unexpectedFileDataMsg())
+	if data.Type != typeKey {
+		return nil, errs.New(message.UnexpectedFileData())
 	}
-	if current.Version < minimumColorsVersion {
+	if data.Version < minimumVersion {
 		return nil, errs.New("The theme color data is too old to be used")
 	}
-	if current.Version > currentColorsVersion {
+	if data.Version > currentVersion {
 		return nil, errs.New("The theme color data is too new to be used")
 	}
-	return &current.Colors, nil
+	return &data.Colors, nil
 }
 
 // Save writes the Colors to the file as JSON.
 func (c *Colors) Save(filePath string) error {
-	return jio.SaveToFile(context.Background(), filePath, &colorsData{
-		Type:    colorsTypeKey,
-		Version: currentColorsVersion,
+	return jio.SaveToFile(context.Background(), filePath, &fileData{
+		Type:    typeKey,
+		Version: currentVersion,
 		Colors:  *c,
 	})
 }
 
 // MarshalJSON implements json.Marshaler.
 func (c *Colors) MarshalJSON() ([]byte, error) {
-	current := CurrentColors()
-	c.data = make(map[string]*unison.ThemeColor, len(current))
-	for _, one := range current {
+	cc := Current()
+	c.data = make(map[string]*unison.ThemeColor, len(cc))
+	for _, one := range cc {
 		c.data[one.ID] = one.Color
 	}
 	return json.Marshal(&c.data)
@@ -143,11 +144,11 @@ func (c *Colors) UnmarshalJSON(data []byte) error {
 		errs.LogWithLevel(context.Background(), slog.LevelWarn, slog.Default(),
 			errs.NewWithCause("Unable to load theme color data", err))
 	}
-	factory := FactoryColors()
+	f := Factory()
 	if c.data == nil {
-		c.data = make(map[string]*unison.ThemeColor, len(factory))
+		c.data = make(map[string]*unison.ThemeColor, len(f))
 	}
-	for _, one := range factory {
+	for _, one := range f {
 		if _, ok := c.data[one.ID]; !ok {
 			clr := *one.Color
 			c.data[one.ID] = &clr
@@ -158,7 +159,7 @@ func (c *Colors) UnmarshalJSON(data []byte) error {
 
 // MakeCurrent applies these colors to the current theme color set and updates all windows.
 func (c *Colors) MakeCurrent() {
-	for _, one := range CurrentColors() {
+	for _, one := range Current() {
 		if v, ok := c.data[one.ID]; ok {
 			*one.Color = *v
 		}
@@ -168,11 +169,11 @@ func (c *Colors) MakeCurrent() {
 
 // Reset to factory defaults.
 func (c *Colors) Reset() {
-	factory := FactoryColors()
+	f := Factory()
 	if c.data == nil {
-		c.data = make(map[string]*unison.ThemeColor, len(factory))
+		c.data = make(map[string]*unison.ThemeColor, len(f))
 	}
-	for _, one := range factory {
+	for _, one := range f {
 		if v, ok := c.data[one.ID]; ok {
 			*v = *one.Color
 		} else {
@@ -184,11 +185,11 @@ func (c *Colors) Reset() {
 
 // ResetOne resets one color by ID to factory defaults.
 func (c *Colors) ResetOne(id string) {
-	factory := FactoryColors()
+	f := Factory()
 	if c.data == nil {
-		c.data = make(map[string]*unison.ThemeColor, len(factory))
+		c.data = make(map[string]*unison.ThemeColor, len(f))
 	}
-	for _, one := range factory {
+	for _, one := range f {
 		if one.ID == id {
 			if v, ok := c.data[id]; ok {
 				*v = *one.Color

@@ -12,6 +12,8 @@ package ux
 import (
 	"fmt"
 
+	"github.com/richardwilkes/gcs/v5/model/colors"
+	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -59,7 +61,7 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 		HGrab:  true,
 	})
 	hdr.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		gc.DrawRect(rect, gurps.ThemeHeader.Paint(gc, rect, paintstyle.Fill))
+		gc.DrawRect(rect, colors.Header.Paint(gc, rect, paintstyle.Fill))
 	}
 
 	hdri := unison.NewPanel()
@@ -78,15 +80,15 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	}
 	p.total = unison.NewLabel()
 	p.total.Text = unison.NewSmallCapsText(fmt.Sprintf(i18n.Text("%s Points"), overallTotal), &unison.TextDecoration{
-		Font:            gurps.PageLabelPrimaryFont,
-		OnBackgroundInk: gurps.OnThemeHeader,
+		Font:            fonts.PageLabelPrimary,
+		OnBackgroundInk: colors.OnHeader,
 	})
 	hdri.AddChild(p.total)
-	height := gurps.PageLabelPrimaryFont.Baseline() - 2
+	height := fonts.PageLabelPrimary.Baseline() - 2
 	editButton := unison.NewSVGButton(svg.Edit)
-	editButton.OnBackgroundInk = gurps.OnThemeHeader
-	editButton.OnSelectionInk = gurps.OnThemeHeader
-	editButton.Font = gurps.PageLabelPrimaryFont
+	editButton.OnBackgroundInk = colors.OnHeader
+	editButton.OnSelectionInk = colors.OnHeader
+	editButton.Font = fonts.PageLabelPrimary
 	editButton.Drawable.(*unison.DrawableSVG).Size = unison.NewSize(height, height)
 	editButton.ClickCallback = func() {
 		displayPointsEditor(unison.AncestorOrSelf[Rebuildable](p), p.entity)
@@ -107,7 +109,7 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	})
 	p.AddChild(p.ptsList)
 
-	p.ptsList.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(gurps.ThemeHeader, 0, unison.Insets{
+	p.ptsList.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(colors.Header, 0, unison.Insets{
 		Top:    0,
 		Left:   1,
 		Bottom: 1,
@@ -198,7 +200,7 @@ func (p *PointsPanel) adjustUnspent() {
 				p.overSpent = -1
 				p.unspentField.OnBackgroundInk = unison.ThemeOnError
 				p.unspentLabel.Text = unison.NewSmallCapsText(i18n.Text("Overspent"), &unison.TextDecoration{
-					Font:            gurps.PageLabelPrimaryFont,
+					Font:            fonts.PageLabelPrimary,
 					OnBackgroundInk: unison.ThemeOnError,
 				})
 			}
@@ -207,7 +209,7 @@ func (p *PointsPanel) adjustUnspent() {
 				p.overSpent = 1
 				p.unspentField.OnBackgroundInk = unison.DefaultLabelTheme.OnBackgroundInk
 				p.unspentLabel.Text = unison.NewSmallCapsText(i18n.Text("Unspent"), &unison.TextDecoration{
-					Font:            gurps.PageLabelPrimaryFont,
+					Font:            fonts.PageLabelPrimary,
 					OnBackgroundInk: unison.DefaultLabelTheme.OnBackgroundInk,
 				})
 			}
@@ -227,8 +229,8 @@ func (p *PointsPanel) Sync() {
 		overallTotal = p.entity.TotalPoints.String()
 	}
 	p.total.Text = unison.NewSmallCapsText(fmt.Sprintf(i18n.Text("%s Points"), overallTotal), &unison.TextDecoration{
-		Font:            gurps.PageLabelPrimaryFont,
-		OnBackgroundInk: gurps.OnThemeHeader,
+		Font:            fonts.PageLabelPrimary,
+		OnBackgroundInk: colors.OnHeader,
 	})
 	p.MarkForLayoutAndRedraw()
 }

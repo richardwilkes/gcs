@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/eval"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
@@ -70,12 +71,12 @@ func NewAncestryFromFile(fileSystem fs.FS, filePath string) (*Ancestry, error) {
 	}
 	if ancestry.Type == "" && ancestry.Version == 0 { // for some older files
 		ancestry.Type = ancestryTypeKey
-		ancestry.Version = CurrentDataVersion
+		ancestry.Version = jio.CurrentDataVersion
 	}
 	if ancestry.Type != ancestryTypeKey {
-		return nil, errs.New(unexpectedFileDataMsg())
+		return nil, errs.New(message.UnexpectedFileData())
 	}
-	if err := CheckVersion(ancestry.Version); err != nil {
+	if err := jio.CheckVersion(ancestry.Version); err != nil {
 		return nil, err
 	}
 	if ancestry.Name == "" {
@@ -88,7 +89,7 @@ func NewAncestryFromFile(fileSystem fs.FS, filePath string) (*Ancestry, error) {
 func (a *Ancestry) Save(filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &ancestryData{
 		Type:     ancestryTypeKey,
-		Version:  CurrentDataVersion,
+		Version:  jio.CurrentDataVersion,
 		Ancestry: *a,
 	})
 }

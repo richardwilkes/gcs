@@ -16,6 +16,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
+	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/tid"
@@ -46,9 +47,9 @@ type CampaignData struct {
 func NewCampaignFromFile(fileSystem fs.FS, filePath string) (*Campaign, error) {
 	var campaign Campaign
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &campaign); err != nil {
-		return nil, errs.NewWithCause(invalidFileDataMsg(), err)
+		return nil, errs.NewWithCause(message.InvalidFileData(), err)
 	}
-	if err := CheckVersion(campaign.Version); err != nil {
+	if err := jio.CheckVersion(campaign.Version); err != nil {
 		return nil, err
 	}
 	return &campaign, nil
@@ -71,7 +72,7 @@ func (c *Campaign) Save(filePath string) error {
 
 // MarshalJSON implements json.Marshaler.
 func (c *Campaign) MarshalJSON() ([]byte, error) {
-	c.Version = CurrentDataVersion
+	c.Version = jio.CurrentDataVersion
 	return json.Marshal(&c.CampaignData)
 }
 

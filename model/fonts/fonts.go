@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package fonts
 
 import (
 	"context"
@@ -15,6 +15,7 @@ import (
 	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/atexit"
@@ -26,24 +27,24 @@ import (
 	"github.com/richardwilkes/unison/enums/weight"
 )
 
-const fontsTypeKey = "theme_fonts"
+const typeKey = "theme_fonts"
 
 // Additional fonts over and above what unison provides by default.
 var (
-	FieldSecondaryFont      = &unison.IndirectFont{Font: unison.FieldFont.Face().Font(unison.FieldFont.Size() - 1)}
-	PageFieldPrimaryFont    = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Medium, spacing.Standard, slant.Upright).Font(7)}
-	PageFieldSecondaryFont  = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Regular, spacing.Standard, slant.Upright).Font(6)}
-	PageLabelPrimaryFont    = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Regular, spacing.Standard, slant.Upright).Font(7)}
-	PageLabelSecondaryFont  = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Regular, spacing.Standard, slant.Upright).Font(6)}
-	PageFooterPrimaryFont   = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Medium, spacing.Standard, slant.Upright).Font(6)}
-	PageFooterSecondaryFont = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Regular, spacing.Standard, slant.Upright).Font(5)}
-	BaseMarkdownFont        = &unison.IndirectFont{Font: unison.LabelFont.Face().Font(unison.LabelFont.Size())}
+	FieldSecondary      = &unison.IndirectFont{Font: unison.FieldFont.Face().Font(unison.FieldFont.Size() - 1)}
+	PageFieldPrimary    = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Medium, spacing.Standard, slant.Upright).Font(7)}
+	PageFieldSecondary  = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Regular, spacing.Standard, slant.Upright).Font(6)}
+	PageLabelPrimary    = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Regular, spacing.Standard, slant.Upright).Font(7)}
+	PageLabelSecondary  = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Regular, spacing.Standard, slant.Upright).Font(6)}
+	PageFooterPrimary   = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Medium, spacing.Standard, slant.Upright).Font(6)}
+	PageFooterSecondary = &unison.IndirectFont{Font: unison.MatchFontFace(unison.DefaultSystemFamilyName, weight.Regular, spacing.Standard, slant.Upright).Font(5)}
+	BaseMarkdown        = &unison.IndirectFont{Font: unison.LabelFont.Face().Font(unison.LabelFont.Size())}
 )
 
 var (
-	fontsOnce    sync.Once
-	currentFonts []*ThemedFont
-	factoryFonts []*ThemedFont
+	once    sync.Once
+	current []*ThemedFont
+	factory []*ThemedFont
 )
 
 // ThemedFont holds a themed font.
@@ -58,7 +59,7 @@ type Fonts struct {
 	data map[string]unison.FontDescriptor // Just here for serialization
 }
 
-type fontsData struct {
+type fileData struct {
 	Type    string `json:"type"`
 	Version int    `json:"version"`
 	Fonts
@@ -66,40 +67,40 @@ type fontsData struct {
 
 // CurrentFonts returns the current theme fonts.
 func CurrentFonts() []*ThemedFont {
-	fontsOnce.Do(initFonts)
-	return currentFonts
+	once.Do(initialize)
+	return current
 }
 
 // FactoryFonts returns the original theme before any modifications.
 func FactoryFonts() []*ThemedFont {
-	fontsOnce.Do(initFonts)
-	return factoryFonts
+	once.Do(initialize)
+	return factory
 }
 
-func initFonts() {
-	currentFonts = []*ThemedFont{
+func initialize() {
+	current = []*ThemedFont{
 		{ID: "system", Title: i18n.Text("System"), Font: unison.SystemFont},
 		{ID: "system.emphasized", Title: i18n.Text("System (Emphasized)"), Font: unison.EmphasizedSystemFont},
 		{ID: "label", Title: i18n.Text("Label"), Font: unison.LabelFont},
 		{ID: "field", Title: i18n.Text("Field"), Font: unison.FieldFont},
-		{ID: "field.secondary", Title: i18n.Text("Secondary Fields"), Font: FieldSecondaryFont},
+		{ID: "field.secondary", Title: i18n.Text("Secondary Fields"), Font: FieldSecondary},
 		{ID: "keyboard", Title: i18n.Text("Keyboard"), Font: unison.KeyboardFont},
-		{ID: "page.field.primary", Title: i18n.Text("Page Primary Fields"), Font: PageFieldPrimaryFont},
-		{ID: "page.field.secondary", Title: i18n.Text("Page Secondary Fields"), Font: PageFieldSecondaryFont},
-		{ID: "page.label.primary", Title: i18n.Text("Page Primary Labels"), Font: PageLabelPrimaryFont},
-		{ID: "page.label.secondary", Title: i18n.Text("Page Secondary Labels"), Font: PageLabelSecondaryFont},
-		{ID: "page.footer.primary", Title: i18n.Text("Page Primary Footer"), Font: PageFooterPrimaryFont},
-		{ID: "page.footer.secondary", Title: i18n.Text("Page Secondary Footer"), Font: PageFooterSecondaryFont},
-		{ID: "markdown.base", Title: i18n.Text("Base Markdown"), Font: BaseMarkdownFont},
+		{ID: "page.field.primary", Title: i18n.Text("Page Primary Fields"), Font: PageFieldPrimary},
+		{ID: "page.field.secondary", Title: i18n.Text("Page Secondary Fields"), Font: PageFieldSecondary},
+		{ID: "page.label.primary", Title: i18n.Text("Page Primary Labels"), Font: PageLabelPrimary},
+		{ID: "page.label.secondary", Title: i18n.Text("Page Secondary Labels"), Font: PageLabelSecondary},
+		{ID: "page.footer.primary", Title: i18n.Text("Page Primary Footer"), Font: PageFooterPrimary},
+		{ID: "page.footer.secondary", Title: i18n.Text("Page Secondary Footer"), Font: PageFooterSecondary},
+		{ID: "markdown.base", Title: i18n.Text("Base Markdown"), Font: BaseMarkdown},
 		{ID: "monospaced", Title: i18n.Text("Monospaced"), Font: unison.MonospacedFont},
 	}
-	factoryFonts = make([]*ThemedFont, len(currentFonts))
-	for i, c := range currentFonts {
+	factory = make([]*ThemedFont, len(current))
+	for i, c := range current {
 		if c.Font.Font == nil {
 			errs.Log(errs.New("nil font"), "id", c.ID)
 			atexit.Exit(1)
 		}
-		factoryFonts[i] = &ThemedFont{
+		factory[i] = &ThemedFont{
 			ID:    c.ID,
 			Title: c.Title,
 			Font: &unison.IndirectFont{
@@ -107,41 +108,41 @@ func initFonts() {
 			},
 		}
 	}
-	unison.DefaultMarkdownTheme.Font = BaseMarkdownFont
+	unison.DefaultMarkdownTheme.Font = BaseMarkdown
 }
 
-// NewFontsFromFS creates a new set of fonts from a file. Any missing values will be filled in with defaults.
-func NewFontsFromFS(fileSystem fs.FS, filePath string) (*Fonts, error) {
-	var current fontsData
-	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &current); err != nil {
+// NewFromFS creates a new set of fonts from a file. Any missing values will be filled in with defaults.
+func NewFromFS(fileSystem fs.FS, filePath string) (*Fonts, error) {
+	var data fileData
+	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
 		return nil, errs.Wrap(err)
 	}
-	switch current.Version {
+	switch data.Version {
 	case 0:
 		// During development of v5, forgot to add the type & version initially, so try and fix that up
-		if current.Type == "" {
-			current.Type = fontsTypeKey
-			current.Version = CurrentDataVersion
+		if data.Type == "" {
+			data.Type = typeKey
+			data.Version = jio.CurrentDataVersion
 		}
 	case 1:
-		current.Type = fontsTypeKey
-		current.Version = CurrentDataVersion
+		data.Type = typeKey
+		data.Version = jio.CurrentDataVersion
 	default:
 	}
-	if current.Type != fontsTypeKey {
-		return nil, errs.New(unexpectedFileDataMsg())
+	if data.Type != typeKey {
+		return nil, errs.New(message.UnexpectedFileData())
 	}
-	if err := CheckVersion(current.Version); err != nil {
+	if err := jio.CheckVersion(data.Version); err != nil {
 		return nil, err
 	}
-	return &current.Fonts, nil
+	return &data.Fonts, nil
 }
 
 // Save writes the Fonts to the file as JSON.
 func (f *Fonts) Save(filePath string) error {
-	return jio.SaveToFile(context.Background(), filePath, &fontsData{
-		Type:    fontsTypeKey,
-		Version: CurrentDataVersion,
+	return jio.SaveToFile(context.Background(), filePath, &fileData{
+		Type:    typeKey,
+		Version: jio.CurrentDataVersion,
 		Fonts:   *f,
 	})
 }

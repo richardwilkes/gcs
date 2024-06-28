@@ -14,6 +14,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/svg"
@@ -626,16 +627,16 @@ func (n *Node[T]) createPageRefCell(c *gurps.CellData, foreground unison.Ink) un
 
 func (n *Node[T]) primaryFieldFont() unison.Font {
 	if n.forPage {
-		return gurps.PageFieldPrimaryFont
+		return fonts.PageFieldPrimary
 	}
 	return unison.FieldFont
 }
 
 func (n *Node[T]) secondaryFieldFont() unison.Font {
 	if n.forPage {
-		return gurps.PageFieldSecondaryFont
+		return fonts.PageFieldSecondary
 	}
-	return gurps.FieldSecondaryFont
+	return fonts.FieldSecondary
 }
 
 // FindRowIndexByID returns the row index of the row with the given ID in the given table.

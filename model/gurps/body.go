@@ -16,6 +16,7 @@ import (
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/errs"
@@ -70,19 +71,19 @@ func FactoryBody() *Body {
 func NewBodyFromFile(fileSystem fs.FS, filePath string) (*Body, error) {
 	var data standaloneBodyData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(invalidFileDataMsg(), err)
+		return nil, errs.NewWithCause(message.InvalidFileData(), err)
 	}
 	var body Body
 	body.BodyData = data.BodyData
 	if data.Type != bodyTypeListTypeKey {
 		if data.OldHitLocations == nil {
-			return nil, errs.New(unexpectedFileDataMsg())
+			return nil, errs.New(message.UnexpectedFileData())
 		}
 		body = *data.OldHitLocations
 	} else {
 		body.Update(nil)
 	}
-	if err := CheckVersion(data.Version); err != nil {
+	if err := jio.CheckVersion(data.Version); err != nil {
 		return nil, err
 	}
 	if data.Version < noNeedForRewrapVersion {
@@ -134,7 +135,7 @@ func (b *Body) Clone(entity *Entity, owningLocation *HitLocation) *Body {
 func (b *Body) Save(filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &standaloneBodyData{
 		Type:     bodyTypeListTypeKey,
-		Version:  CurrentDataVersion,
+		Version:  jio.CurrentDataVersion,
 		BodyData: b.BodyData,
 	})
 }

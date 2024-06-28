@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"slices"
 
+	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
@@ -555,7 +556,7 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 	if notesCapable, hasNotes := any(row).(interface{ Notes() string }); hasNotes {
 		if notes := notesCapable.Notes(); notes != "" {
 			label = unison.NewLabel()
-			label.Font = gurps.FieldSecondaryFont
+			label.Font = fonts.FieldSecondary
 			label.SetTitle(notes)
 			panel.AddChild(label)
 		}

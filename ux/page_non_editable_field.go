@@ -10,7 +10,7 @@
 package ux
 
 import (
-	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 )
@@ -45,7 +45,7 @@ func newNonEditablePageField(syncer func(*NonEditablePageField), hAlign align.En
 		syncer: syncer,
 	}
 	f.Self = f
-	f.Font = gurps.PageFieldPrimaryFont
+	f.Font = fonts.PageFieldPrimary
 	f.HAlign = hAlign
 	f.SetBorder(unison.NewEmptyBorder(unison.Insets{
 		Left:   1,
