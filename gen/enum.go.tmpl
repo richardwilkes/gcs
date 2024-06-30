@@ -90,7 +90,7 @@ func (enum {{$name}}) AltString() string {
     switch enum {
     {{- range .Values}}
     case {{$info.IDFor .}}:
-        return {{if .Alt}}i18n.Text({{printf "%q" .Alt}}){{else}}""{{end}}
+        return {{if not .NoLocalizeAlt}}i18n.Text({{end}}{{printf "%q" .Alt}}{{if not .NoLocalizeAlt}}){{end}}
     {{- end}}
     default:
         return {{$name}}(0).AltString()

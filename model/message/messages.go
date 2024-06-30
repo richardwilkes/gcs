@@ -30,3 +30,13 @@ func NoAdditionalModifiers() string {
 func IncludesModifiersFrom() string {
 	return i18n.Text("Includes modifiers from")
 }
+
+// PageRefTooltip returns the standard tooltip text for a page reference.
+func PageRefTooltip() string {
+	return i18n.Text(`A reference to the book and page the item appears on e.g. B22 would refer to "Basic Set", page 22`)
+}
+
+// SrcMatchTooltip returns the standard tooltip text for the source match indicator.
+func SrcMatchTooltip() string {
+	return i18n.Text("Indicates whether the data matches the source library it came from")
+}

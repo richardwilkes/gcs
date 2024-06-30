@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
+	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
@@ -76,7 +77,7 @@ func addSpecializationLabelAndField(parent *unison.Panel, fieldData *string) {
 }
 
 func addPageRefLabelAndField(parent *unison.Panel, fieldData *string) {
-	addLabelAndStringField(parent, i18n.Text("Page Reference"), gurps.PageRefTooltipText(), fieldData)
+	addLabelAndStringField(parent, i18n.Text("Page Reference"), message.PageRefTooltip(), fieldData)
 }
 
 func addPageRefHighlightLabelAndField(parent *unison.Panel, fieldData *string) {

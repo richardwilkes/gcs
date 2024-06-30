@@ -252,7 +252,7 @@ func NotesHeaderData(columnID int) HeaderData {
 	case NoteReferenceColumn:
 		data.Title = HeaderBookmark
 		data.TitleIsImageKey = true
-		data.Detail = PageRefTooltipText()
+		data.Detail = message.PageRefTooltip()
 	}
 	return data
 }

@@ -79,6 +79,22 @@ func (enum Value) String() string {
 	}
 }
 
+// AltString returns the alternate string.
+func (enum Value) AltString() string {
+	switch enum {
+	case Custom:
+		return "*"
+	case Matched:
+		return ""
+	case Mismatched:
+		return "!"
+	case Missing:
+		return "?"
+	default:
+		return Value(0).AltString()
+	}
+}
+
 // MarshalText implements the encoding.TextMarshaler interface.
 func (enum Value) MarshalText() (text []byte, err error) {
 	return []byte(enum.Key()), nil

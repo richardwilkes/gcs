@@ -358,7 +358,7 @@ func EquipmentHeaderData(columnID int, entity *Entity, carried, forPage bool) He
 	case EquipmentReferenceColumn:
 		data.Title = HeaderBookmark
 		data.TitleIsImageKey = true
-		data.Detail = PageRefTooltipText()
+		data.Detail = message.PageRefTooltip()
 	}
 	return data
 }

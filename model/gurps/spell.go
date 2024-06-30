@@ -440,7 +440,7 @@ func SpellsHeaderData(columnID int) HeaderData {
 	case SpellReferenceColumn:
 		data.Title = HeaderBookmark
 		data.TitleIsImageKey = true
-		data.Detail = PageRefTooltipText()
+		data.Detail = message.PageRefTooltip()
 	case SpellLevelColumn:
 		data.Title = i18n.Text("SL")
 		data.Detail = i18n.Text("Skill Level")

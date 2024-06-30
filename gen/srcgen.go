@@ -44,6 +44,7 @@ type enumValue struct {
 	String        string
 	Alt           string
 	NoLocalize    bool
+	NoLocalizeAlt bool
 	EmptyStringOK bool
 }
 
@@ -183,7 +184,7 @@ func (e *enumInfo) HasOldKeys() bool {
 
 func (e *enumInfo) NeedI18N() bool {
 	for _, one := range e.Values {
-		if !one.NoLocalize || one.Alt != "" {
+		if !one.NoLocalize || (one.Alt != "" && !one.NoLocalizeAlt) {
 			return true
 		}
 	}
@@ -346,8 +347,9 @@ var allEnums = []*enumInfo{
 		Desc: "describes how a TraitModifier affects the point cost",
 		Values: []enumValue{
 			{
-				Key:    "total",
-				String: "to cost",
+				Key:           "total",
+				String:        "to cost",
+				NoLocalizeAlt: true,
 			},
 			{
 				Key:    "base_only",
@@ -1029,10 +1031,25 @@ var allEnums = []*enumInfo{
 		Name: "value",
 		Desc: "describes the state of a source compared to a piece of data",
 		Values: []enumValue{
-			{Key: "custom"},
-			{Key: "matched"},
-			{Key: "mismatched"},
-			{Key: "missing"},
+			{
+				Key:           "custom",
+				Alt:           "*",
+				NoLocalizeAlt: true,
+			},
+			{
+				Key:           "matched",
+				NoLocalizeAlt: true,
+			},
+			{
+				Key:           "mismatched",
+				Alt:           "!",
+				NoLocalizeAlt: true,
+			},
+			{
+				Key:           "missing",
+				Alt:           "?",
+				NoLocalizeAlt: true,
+			},
 		},
 	},
 	{

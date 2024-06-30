@@ -23,6 +23,7 @@ const (
 	HeaderCoins         = "coins"
 	HeaderWeight        = "weight"
 	HeaderBookmark      = "bookmark"
+	HeaderDatabase      = "database"
 	HeaderStackedCoins  = "stacked-coins"
 	HeaderStackedWeight = "stacked-weight"
 )

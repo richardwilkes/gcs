@@ -295,7 +295,7 @@ func EquipmentModifierHeaderData(columnID int) HeaderData {
 	case EquipmentModifierReferenceColumn:
 		data.Title = HeaderBookmark
 		data.TitleIsImageKey = true
-		data.Detail = PageRefTooltipText()
+		data.Detail = message.PageRefTooltip()
 	}
 	return data
 }

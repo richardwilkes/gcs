@@ -352,7 +352,7 @@ func TraitsHeaderData(columnID int) HeaderData {
 	case TraitReferenceColumn:
 		data.Title = HeaderBookmark
 		data.TitleIsImageKey = true
-		data.Detail = PageRefTooltipText()
+		data.Detail = message.PageRefTooltip()
 	}
 	return data
 }

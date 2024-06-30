@@ -13,6 +13,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -73,7 +74,7 @@ func NewEditorListSVGPairHeader[T gurps.NodeTypes](leftSVG, rightSVG *unison.SVG
 
 // NewEditorPageRefHeader creates a new page reference header.
 func NewEditorPageRefHeader[T gurps.NodeTypes](forPage bool) unison.TableColumnHeader[*Node[T]] {
-	return NewEditorListSVGHeader[T](svg.Bookmark, gurps.PageRefTooltipText(), forPage)
+	return NewEditorListSVGHeader[T](svg.Bookmark, message.PageRefTooltip(), forPage)
 }
 
 // NewEditorEquippedHeader creates a new equipped header.
@@ -128,6 +129,8 @@ func headerFromData[T gurps.NodeTypes](data gurps.HeaderData, forPage bool) unis
 			img1 = svg.Weight
 		case gurps.HeaderBookmark:
 			img1 = svg.Bookmark
+		case gurps.HeaderDatabase:
+			img1 = svg.Database
 		case gurps.HeaderStackedCoins:
 			img1 = svg.Stack
 			img2 = svg.Coins

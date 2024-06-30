@@ -57,6 +57,10 @@ var (
 	copyData string
 	Copy     = unison.MustSVGFromContentString(copyData)
 
+	//go:embed database.svg
+	databaseData string
+	Database     = unison.MustSVGFromContentString(databaseData)
+
 	//go:embed download.svg
 	downloadData string
 	Download     = unison.MustSVGFromContentString(downloadData)
