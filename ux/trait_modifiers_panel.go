@@ -18,15 +18,15 @@ import (
 
 type traitModifiersPanel struct {
 	unison.Panel
-	entity    *gurps.Entity
+	owner     gurps.DataOwner
 	modifiers *[]*gurps.TraitModifier
 	provider  TableProvider[*gurps.TraitModifier]
 	table     *unison.Table[*Node[*gurps.TraitModifier]]
 }
 
-func newTraitModifiersPanel(entity *gurps.Entity, modifiers *[]*gurps.TraitModifier) *traitModifiersPanel {
+func newTraitModifiersPanel(owner gurps.DataOwner, modifiers *[]*gurps.TraitModifier) *traitModifiersPanel {
 	p := &traitModifiersPanel{
-		entity:    entity,
+		owner:     owner,
 		modifiers: modifiers,
 	}
 	p.Self = p
@@ -43,8 +43,8 @@ func newTraitModifiersPanel(entity *gurps.Entity, modifiers *[]*gurps.TraitModif
 	return p
 }
 
-func (p *traitModifiersPanel) Entity() *gurps.Entity {
-	return p.entity
+func (p *traitModifiersPanel) DataOwner() gurps.DataOwner {
+	return p.owner
 }
 
 func (p *traitModifiersPanel) TraitModifierList() []*gurps.TraitModifier {

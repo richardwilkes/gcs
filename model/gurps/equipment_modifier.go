@@ -22,10 +22,12 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/emcost"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/emweight"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/tid"
@@ -48,6 +50,7 @@ const (
 	EquipmentModifierWeightColumn
 	EquipmentModifierTagsColumn
 	EquipmentModifierReferenceColumn
+	EquipmentModifierLibSrcColumn
 )
 
 const (
@@ -58,7 +61,7 @@ const (
 // EquipmentModifier holds a modifier to a piece of Equipment.
 type EquipmentModifier struct {
 	EquipmentModifierData
-	Entity *Entity
+	owner DataOwner
 }
 
 // EquipmentModifierData holds the EquipmentModifier data that is written to disk.
@@ -125,13 +128,13 @@ func SaveEquipmentModifiers(modifiers []*EquipmentModifier, filePath string) err
 }
 
 // NewEquipmentModifier creates an EquipmentModifier.
-func NewEquipmentModifier(entity *Entity, parent *EquipmentModifier, container bool) *EquipmentModifier {
+func NewEquipmentModifier(owner DataOwner, parent *EquipmentModifier, container bool) *EquipmentModifier {
 	e := EquipmentModifier{
 		EquipmentModifierData: EquipmentModifierData{
 			TID:    tid.MustNewTID(equipmentModifierKind(container)),
 			parent: parent,
 		},
-		Entity: entity,
+		owner: owner,
 	}
 	e.Name = e.Kind()
 	e.SetOpen(container)
@@ -196,8 +199,8 @@ func (e *EquipmentModifier) SetOpen(open bool) {
 }
 
 // Clone implements Node.
-func (e *EquipmentModifier) Clone(from LibraryFile, entity *Entity, parent *EquipmentModifier, preserveID bool) *EquipmentModifier {
-	other := NewEquipmentModifier(entity, parent, e.Container())
+func (e *EquipmentModifier) Clone(from LibraryFile, owner DataOwner, parent *EquipmentModifier, preserveID bool) *EquipmentModifier {
+	other := NewEquipmentModifier(owner, parent, e.Container())
 	other.Source.LibraryFile = from
 	other.Source.TID = e.TID
 	if preserveID {
@@ -209,7 +212,7 @@ func (e *EquipmentModifier) Clone(from LibraryFile, entity *Entity, parent *Equi
 	if e.HasChildren() {
 		other.Children = make([]*EquipmentModifier, 0, len(e.Children))
 		for _, child := range e.Children {
-			other.Children = append(other.Children, child.Clone(from, entity, other, preserveID))
+			other.Children = append(other.Children, child.Clone(from, owner, other, preserveID))
 		}
 	}
 	return other
@@ -279,7 +282,7 @@ func EquipmentModifierHeaderData(columnID int) HeaderData {
 	case EquipmentModifierEnabledColumn:
 		data.Title = HeaderCheckmark
 		data.TitleIsImageKey = true
-		data.Detail = i18n.Text("Whether this item is enabled. Items that are not enabled do not apply any features they may normally contribute to the character.")
+		data.Detail = message.ModifierEnabledTooltip()
 	case EquipmentModifierDescriptionColumn:
 		data.Title = i18n.Text("Equipment Modifier")
 		data.Primary = true
@@ -296,6 +299,10 @@ func EquipmentModifierHeaderData(columnID int) HeaderData {
 		data.Title = HeaderBookmark
 		data.TitleIsImageKey = true
 		data.Detail = message.PageRefTooltip()
+	case EquipmentModifierLibSrcColumn:
+		data.Title = HeaderDatabase
+		data.TitleIsImageKey = true
+		data.Detail = message.LibSrcTooltip()
 	}
 	return data
 }
@@ -340,6 +347,17 @@ func (e *EquipmentModifier) CellData(columnID int, data *CellData) {
 		} else {
 			data.Secondary = e.Name
 		}
+	case EquipmentModifierLibSrcColumn:
+		data.Type = cell.Text
+		data.Alignment = align.Middle
+		if !toolbox.IsNil(e.owner) {
+			state := e.owner.SourceMatcher().Match(e)
+			data.Primary = state.AltString()
+			data.Tooltip = state.String()
+			if state != srcstate.Custom {
+				data.Tooltip += "\n" + e.Source.String()
+			}
+		}
 	}
 }
 
@@ -354,17 +372,17 @@ func (e *EquipmentModifier) Depth() int {
 	return count
 }
 
-// OwningEntity returns the owning Entity.
-func (e *EquipmentModifier) OwningEntity() *Entity {
-	return e.Entity
+// DataOwner returns the data owner.
+func (e *EquipmentModifier) DataOwner() DataOwner {
+	return e.owner
 }
 
-// SetOwningEntity sets the owning entity and configures any sub-components as needed.
-func (e *EquipmentModifier) SetOwningEntity(entity *Entity) {
-	e.Entity = entity
+// SetDataOwner sets the data owner and configures any sub-components as needed.
+func (e *EquipmentModifier) SetDataOwner(owner DataOwner) {
+	e.owner = owner
 	if e.Container() {
 		for _, child := range e.Children {
-			child.SetOwningEntity(entity)
+			child.SetDataOwner(owner)
 		}
 	}
 }
@@ -374,12 +392,12 @@ func (e *EquipmentModifier) String() string {
 }
 
 func (e *EquipmentModifier) resolveLocalNotes() string {
-	return EvalEmbeddedRegex.ReplaceAllStringFunc(e.LocalNotes, e.Entity.EmbeddedEval)
+	return EvalEmbeddedRegex.ReplaceAllStringFunc(e.LocalNotes, EntityFromNode(e).EmbeddedEval)
 }
 
 // SecondaryText returns the "secondary" text: the text display below an Trait.
 func (e *EquipmentModifier) SecondaryText(optionChecker func(display.Option) bool) string {
-	if !optionChecker(SheetSettingsFor(e.Entity).NotesDisplay) {
+	if !optionChecker(SheetSettingsFor(EntityFromNode(e)).NotesDisplay) {
 		return ""
 	}
 	return e.resolveLocalNotes()
@@ -394,7 +412,7 @@ func (e *EquipmentModifier) FullDescription() string {
 		buffer.WriteString(e.LocalNotes)
 		buffer.WriteByte(')')
 	}
-	if SheetSettingsFor(e.Entity).ShowEquipmentModifierAdj {
+	if SheetSettingsFor(EntityFromNode(e)).ShowEquipmentModifierAdj {
 		costDesc := e.CostDescription()
 		weightDesc := e.WeightDescription()
 		if costDesc != "" || weightDesc != "" {
@@ -441,7 +459,8 @@ func (e *EquipmentModifier) WeightDescription() string {
 	if e.Container() || (e.WeightType == emweight.Original && (e.WeightAmount == "" || strings.HasPrefix(e.WeightAmount, "+0 "))) {
 		return ""
 	}
-	return e.WeightType.Format(e.WeightAmount, SheetSettingsFor(e.Entity).DefaultWeightUnits) + " " + e.WeightType.String()
+	return e.WeightType.Format(e.WeightAmount, SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits) + " " +
+		e.WeightType.String()
 }
 
 // FillWithNameableKeys adds any nameable keys found in this EquipmentModifier to the provided map.

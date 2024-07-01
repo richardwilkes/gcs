@@ -13,9 +13,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/gcs/v5/svg"
-	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/paintstyle"
@@ -70,51 +68,6 @@ func NewEditorListSVGPairHeader[T gurps.NodeTypes](leftSVG, rightSVG *unison.SVG
 		Size:  unison.NewSize(baseline*2+4, baseline),
 	}
 	return header
-}
-
-// NewEditorPageRefHeader creates a new page reference header.
-func NewEditorPageRefHeader[T gurps.NodeTypes](forPage bool) unison.TableColumnHeader[*Node[T]] {
-	return NewEditorListSVGHeader[T](svg.Bookmark, message.PageRefTooltip(), forPage)
-}
-
-// NewEditorEquippedHeader creates a new equipped header.
-func NewEditorEquippedHeader[T gurps.NodeTypes](forPage bool) unison.TableColumnHeader[*Node[T]] {
-	return NewEditorListSVGHeader[T](unison.CheckmarkSVG,
-		i18n.Text(`Whether this piece of equipment is equipped or just carried. Items that are not equipped do not apply any features they may normally contribute to the character.`),
-		forPage)
-}
-
-// NewEnabledHeader creates a new enabled header.
-func NewEnabledHeader[T gurps.NodeTypes](forPage bool) unison.TableColumnHeader[*Node[T]] {
-	return NewEditorListSVGHeader[T](unison.CheckmarkSVG,
-		i18n.Text(`Whether this item is enabled. Items that are not enabled do not apply any features they may normally contribute to the character.`),
-		forPage)
-}
-
-// NewMoneyHeader creates a new money header.
-func NewMoneyHeader[T gurps.NodeTypes](forPage bool) unison.TableColumnHeader[*Node[T]] {
-	return NewEditorListSVGHeader[T](svg.Coins,
-		i18n.Text(`The value of one of these pieces of equipment`),
-		forPage)
-}
-
-// NewExtendedMoneyHeader creates a new extended money page header.
-func NewExtendedMoneyHeader[T gurps.NodeTypes](forPage bool) unison.TableColumnHeader[*Node[T]] {
-	return NewEditorListSVGPairHeader[T](svg.Stack, svg.Coins,
-		i18n.Text(`The value of all of these pieces of equipment, plus the value of any contained equipment`), forPage)
-}
-
-// NewWeightHeader creates a new weight page header.
-func NewWeightHeader[T gurps.NodeTypes](forPage bool) unison.TableColumnHeader[*Node[T]] {
-	return NewEditorListSVGHeader[T](svg.Weight,
-		i18n.Text(`The weight of one of these pieces of equipment`),
-		forPage)
-}
-
-// NewEditorExtendedWeightHeader creates a new extended weight page header.
-func NewEditorExtendedWeightHeader[T gurps.NodeTypes](forPage bool) unison.TableColumnHeader[*Node[T]] {
-	return NewEditorListSVGPairHeader[T](svg.Stack, svg.Weight,
-		i18n.Text(`The weight of all of these pieces of equipment, plus the weight of any contained equipment`), forPage)
 }
 
 func headerFromData[T gurps.NodeTypes](data gurps.HeaderData, forPage bool) unison.TableColumnHeader[*Node[T]] {

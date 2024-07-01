@@ -13,6 +13,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/collection/dict"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
@@ -83,8 +84,8 @@ func (p *traitsProvider) SetRootData(data []*gurps.Trait) {
 	p.provider.SetTraitList(data)
 }
 
-func (p *traitsProvider) Entity() *gurps.Entity {
-	return p.provider.Entity()
+func (p *traitsProvider) DataOwner() gurps.DataOwner {
+	return p.provider.DataOwner()
 }
 
 func (p *traitsProvider) DragKey() string {
@@ -107,21 +108,23 @@ func (p *traitsProvider) AltDropSupport() *AltDropSupport {
 		DragKey: traitModifierDragKey,
 		Drop: func(rowIndex int, data any) {
 			if tableDragData, ok := data.(*unison.TableDragData[*Node[*gurps.TraitModifier]]); ok {
-				entity := p.Entity()
+				dataOwner := p.DataOwner()
 				rows := make([]*gurps.TraitModifier, 0, len(tableDragData.Rows))
 				libraryFile := libraryFileFromTable(tableDragData.Table)
 				for _, row := range tableDragData.Rows {
-					rows = append(rows, row.Data().Clone(libraryFile, entity, nil, false))
+					rows = append(rows, row.Data().Clone(libraryFile, dataOwner, nil, false))
 				}
 				rowData := p.table.RowFromIndex(rowIndex).Data()
 				rowData.Modifiers = append(rowData.Modifiers, rows...)
 				p.table.SyncToModel()
-				if entity != nil {
-					if rebuilder := unison.Ancestor[Rebuildable](p.table); rebuilder != nil {
-						rebuilder.Rebuild(true)
+				if !toolbox.IsNil(dataOwner) {
+					if entity := dataOwner.OwningEntity(); entity != nil {
+						if rebuilder := unison.Ancestor[Rebuildable](p.table); rebuilder != nil {
+							rebuilder.Rebuild(true)
+						}
+						ProcessModifiers(p.table, rows)
+						ProcessNameables(p.table, rows)
 					}
-					ProcessModifiers(p.table, rows)
-					ProcessNameables(p.table, rows)
 				}
 			}
 		},
@@ -152,7 +155,11 @@ func (p *traitsProvider) ColumnIDs() []int {
 	if !p.forPage {
 		columnIDs = append(columnIDs, gurps.TraitTagsColumn)
 	}
-	return append(columnIDs, gurps.TraitReferenceColumn)
+	columnIDs = append(columnIDs, gurps.TraitReferenceColumn)
+	if p.forPage {
+		columnIDs = append(columnIDs, gurps.TraitLibSrcColumn)
+	}
+	return columnIDs
 }
 
 func (p *traitsProvider) HierarchyColumnID() int {
@@ -168,7 +175,7 @@ func (p *traitsProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node
 }
 
 func (p *traitsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Trait]], variant ItemVariant) {
-	item := gurps.NewTrait(p.Entity(), nil, variant == ContainerItemVariant)
+	item := gurps.NewTrait(p.DataOwner(), nil, variant == ContainerItemVariant)
 	InsertItems[*gurps.Trait](owner, table, p.provider.TraitList, p.provider.SetTraitList,
 		func(_ *unison.Table[*Node[*gurps.Trait]]) []*Node[*gurps.Trait] { return p.RootRows() }, item)
 	EditTrait(owner, item)

@@ -56,6 +56,9 @@ func (n NumericCriteria) AltString() string {
 
 // Hash writes this object's contents into the hasher.
 func (n NumericCriteria) Hash(h hash.Hash) {
+	if n.ShouldOmit() {
+		return
+	}
 	_, _ = h.Write([]byte(n.Compare))
 	_ = binary.Write(h, binary.LittleEndian, n.Qualifier)
 }

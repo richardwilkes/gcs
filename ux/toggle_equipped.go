@@ -30,10 +30,7 @@ func (a *toggleEquippedList) Apply() {
 }
 
 func (a *toggleEquippedList) Finish() {
-	entity := a.List[0].Target.OwningEntity()
-	if entity != nil {
-		entity.Recalculate()
-	}
+	gurps.EntityFromNode(a.List[0].Target).Recalculate()
 	MarkModified(a.Owner)
 }
 

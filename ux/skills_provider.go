@@ -84,8 +84,8 @@ func (p *skillsProvider) SetRootData(data []*gurps.Skill) {
 	p.provider.SetSkillList(data)
 }
 
-func (p *skillsProvider) Entity() *gurps.Entity {
-	return p.provider.Entity()
+func (p *skillsProvider) DataOwner() gurps.DataOwner {
+	return p.provider.DataOwner()
 }
 
 func (p *skillsProvider) DragKey() string {
@@ -101,18 +101,18 @@ func (p *skillsProvider) DropShouldMoveData(from, to *unison.Table[*Node[*gurps.
 }
 
 func (p *skillsProvider) ProcessDropData(_, to *unison.Table[*Node[*gurps.Skill]]) {
-	entityProvider := unison.Ancestor[gurps.EntityProvider](to)
-	if !toolbox.IsNil(entityProvider) {
-		entity := entityProvider.Entity()
-		if entity != nil {
-			for _, row := range to.SelectedRows(true) {
-				gurps.Traverse(func(skill *gurps.Skill) bool {
-					if skill.TechLevel != nil && *skill.TechLevel == "" {
-						tl := entity.Profile.TechLevel
-						skill.TechLevel = &tl
-					}
-					return false
-				}, false, true, row.Data())
+	if dataOwnerProvider := unison.Ancestor[gurps.DataOwnerProvider](to); !toolbox.IsNil(dataOwnerProvider) {
+		if dataOwner := dataOwnerProvider.DataOwner(); !toolbox.IsNil(dataOwner) {
+			if entity := dataOwner.OwningEntity(); entity != nil {
+				for _, row := range to.SelectedRows(true) {
+					gurps.Traverse(func(skill *gurps.Skill) bool {
+						if skill.TechLevel != nil && *skill.TechLevel == "" {
+							tl := entity.Profile.TechLevel
+							skill.TechLevel = &tl
+						}
+						return false
+					}, false, true, row.Data())
+				}
 			}
 		}
 	}
@@ -155,7 +155,11 @@ func (p *skillsProvider) ColumnIDs() []int {
 			gurps.SkillTagsColumn,
 		)
 	}
-	return append(columnIDs, gurps.SkillReferenceColumn)
+	columnIDs = append(columnIDs, gurps.SkillReferenceColumn)
+	if p.forPage {
+		columnIDs = append(columnIDs, gurps.SkillLibSrcColumn)
+	}
+	return columnIDs
 }
 
 func (p *skillsProvider) HierarchyColumnID() int {
@@ -174,11 +178,11 @@ func (p *skillsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node
 	var item *gurps.Skill
 	switch variant {
 	case NoItemVariant:
-		item = gurps.NewSkill(p.Entity(), nil, false)
+		item = gurps.NewSkill(p.DataOwner(), nil, false)
 	case ContainerItemVariant:
-		item = gurps.NewSkill(p.Entity(), nil, true)
+		item = gurps.NewSkill(p.DataOwner(), nil, true)
 	case AlternateItemVariant:
-		item = gurps.NewTechnique(p.Entity(), nil, "")
+		item = gurps.NewTechnique(p.DataOwner(), nil, "")
 	default:
 		errs.Log(errs.New("unhandled variant"), "variant", int(variant))
 		atexit.Exit(1)

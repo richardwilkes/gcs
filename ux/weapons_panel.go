@@ -19,7 +19,6 @@ import (
 
 type weaponsPanel struct {
 	unison.Panel
-	entity      *gurps.Entity
 	weaponOwner gurps.WeaponOwner
 	allWeapons  *[]*gurps.Weapon
 	weapons     []*gurps.Weapon
@@ -58,8 +57,8 @@ func newWeaponsPanel(cmdRoot Rebuildable, weaponOwner gurps.WeaponOwner, melee b
 	return p
 }
 
-func (p *weaponsPanel) Entity() *gurps.Entity {
-	return p.entity
+func (p *weaponsPanel) DataOwner() gurps.DataOwner {
+	return p.weaponOwner.DataOwner()
 }
 
 func (p *weaponsPanel) WeaponOwner() gurps.WeaponOwner {

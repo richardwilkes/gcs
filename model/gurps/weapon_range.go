@@ -98,6 +98,9 @@ func (wr *WeaponRange) UnmarshalJSON(data []byte) error {
 
 // Hash writes this object's contents into the hasher.
 func (wr WeaponRange) Hash(h hash.Hash) {
+	if wr.ShouldOmit() {
+		return
+	}
 	_ = binary.Write(h, binary.LittleEndian, wr.HalfDamage)
 	_ = binary.Write(h, binary.LittleEndian, wr.Min)
 	_ = binary.Write(h, binary.LittleEndian, wr.Max)
@@ -116,8 +119,8 @@ func (wr WeaponRange) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 			st = w.Owner.RatedStrength()
 		}
 		if st == 0 {
-			if pc := w.PC(); pc != nil {
-				st = pc.ThrowingStrength()
+			if entity := w.Entity(); entity != nil {
+				st = entity.ThrowingStrength()
 			}
 		}
 		if st > 0 {

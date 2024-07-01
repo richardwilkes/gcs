@@ -99,7 +99,7 @@ func (c *ConditionalModifier) Hash(h hash.Hash) {
 }
 
 // Clone implements Node.
-func (c *ConditionalModifier) Clone(_ LibraryFile, _ *Entity, _ *ConditionalModifier, preserveID bool) *ConditionalModifier {
+func (c *ConditionalModifier) Clone(_ LibraryFile, _ DataOwner, _ *ConditionalModifier, preserveID bool) *ConditionalModifier {
 	clone := &ConditionalModifier{
 		From:    c.From,
 		Amounts: slices.Clone(c.Amounts),
@@ -215,13 +215,13 @@ func (c *ConditionalModifier) CellData(columnID int, data *CellData) {
 	}
 }
 
-// OwningEntity returns the owning Entity.
-func (c *ConditionalModifier) OwningEntity() *Entity {
+// DataOwner always returns nil.
+func (c *ConditionalModifier) DataOwner() DataOwner {
 	return nil
 }
 
-// SetOwningEntity sets the owning entity and configures any sub-components as needed.
-func (c *ConditionalModifier) SetOwningEntity(_ *Entity) {
+// SetDataOwner does nothing.
+func (c *ConditionalModifier) SetDataOwner(_ DataOwner) {
 }
 
 // FillWithNameableKeys adds any nameable keys found to the provided map.

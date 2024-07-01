@@ -21,7 +21,7 @@ type spellListProvider struct {
 	spells []*gurps.Spell
 }
 
-func (p *spellListProvider) Entity() *gurps.Entity {
+func (p *spellListProvider) DataOwner() gurps.DataOwner {
 	return nil
 }
 

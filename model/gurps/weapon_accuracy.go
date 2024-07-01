@@ -75,6 +75,9 @@ func (wa *WeaponAccuracy) UnmarshalJSON(data []byte) error {
 
 // Hash writes this object's contents into the hasher.
 func (wa WeaponAccuracy) Hash(h hash.Hash) {
+	if wa.ShouldOmit() {
+		return
+	}
 	_ = binary.Write(h, binary.LittleEndian, wa.Base)
 	_ = binary.Write(h, binary.LittleEndian, wa.Scope)
 	_ = binary.Write(h, binary.LittleEndian, wa.Jet)
@@ -85,7 +88,7 @@ func (wa WeaponAccuracy) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) We
 	result := wa
 	result.Jet = w.ResolveBoolFlag(wswitch.Jet, result.Jet)
 	if !result.Jet {
-		if pc := w.PC(); pc != nil {
+		if entity := w.Entity(); entity != nil {
 			var percentBase, percentScope fxp.Int
 			for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponAccBonus, feature.WeaponScopeAccBonus) {
 				amt := bonus.AdjustedAmountForWeapon(w)

@@ -16,7 +16,7 @@ import (
 	"github.com/richardwilkes/unison/enums/check"
 )
 
-const entityProviderKey = "entity_provider"
+const dataOwnerProviderKey = "data_owner_provider"
 
 // SetFieldValue sets the value of this field, marking the field and all of its parents as needing to be laid out again
 // if the value is not what is currently in the field.
@@ -78,23 +78,23 @@ func FocusFirstContent(toolbar, content unison.Paneler) {
 	}
 }
 
-// SetEntityProvider sets the EntityProvider into the client data of the target.
-func SetEntityProvider(target unison.Paneler, provider gurps.EntityProvider) {
+// SetDataOwnerProvider sets the DataOwnerProvider into the client data of the target.
+func SetDataOwnerProvider(target unison.Paneler, provider gurps.DataOwnerProvider) {
 	data := target.AsPanel().ClientData()
 	if toolbox.IsNil(provider) {
-		delete(data, entityProviderKey)
+		delete(data, dataOwnerProviderKey)
 	} else {
-		data[entityProviderKey] = provider
+		data[dataOwnerProviderKey] = provider
 	}
 }
 
-// DetermineEntityProvider returns the EntityProvider for the given target.
-func DetermineEntityProvider(target unison.Paneler) gurps.EntityProvider {
-	if provider := unison.AncestorOrSelf[gurps.EntityProvider](target); provider != nil {
+// DetermineDataOwnerProvider returns the DataOwnerProvider for the given target.
+func DetermineDataOwnerProvider(target unison.Paneler) gurps.DataOwnerProvider {
+	if provider := unison.AncestorOrSelf[gurps.DataOwnerProvider](target); provider != nil {
 		return provider
 	}
-	if data, ok := target.AsPanel().ClientData()[entityProviderKey]; ok {
-		if provider, ok2 := data.(gurps.EntityProvider); ok2 {
+	if data, ok := target.AsPanel().ClientData()[dataOwnerProviderKey]; ok {
+		if provider, ok2 := data.(gurps.DataOwnerProvider); ok2 {
 			return provider
 		}
 	}

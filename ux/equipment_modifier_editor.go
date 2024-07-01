@@ -43,7 +43,7 @@ func initEquipmentModifierEditor(e *editor[*gurps.EquipmentModifier, *gurps.Equi
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 	if !e.target.Container() {
-		content.AddChild(newFeaturesPanel(e.target.Entity, e.target, &e.editorData.Features, true))
+		content.AddChild(newFeaturesPanel(gurps.EntityFromNode(e.target), e.target, &e.editorData.Features, true))
 	}
 	return nil
 }
@@ -73,7 +73,7 @@ func addEquipmentCostFields(parent *unison.Panel, e *editor[*gurps.EquipmentModi
 }
 
 func addEquipmentWeightFields(parent *unison.Panel, e *editor[*gurps.EquipmentModifier, *gurps.EquipmentModifierEditData]) {
-	units := gurps.SheetSettingsFor(e.target.Entity).DefaultWeightUnits
+	units := gurps.SheetSettingsFor(gurps.EntityFromNode(e.target)).DefaultWeightUnits
 	label := i18n.Text("Weight Modifier")
 	wrapper := addFlowWrapper(parent, label, 2)
 	field := NewStringField(nil, "", label,

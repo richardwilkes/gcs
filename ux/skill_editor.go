@@ -38,6 +38,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 	addNotesLabelAndField(content, &e.editorData.LocalNotes)
 	addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
 	addTagsLabelAndField(content, &e.editorData.Tags)
+	entity := gurps.EntityFromNode(e.target)
 	if e.target.Container() {
 		addTemplateChoices(content, nil, "", &e.editorData.TemplatePicker)
 	} else {
@@ -47,7 +48,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 				HAlign: align.Fill,
 				HGrab:  true,
 			})
-			choices, attrChoice := gurps.AttributeChoices(e.target.Entity, "",
+			choices, attrChoice := gurps.AttributeChoices(entity, "",
 				gurps.TenFlag|gurps.SkillFlag|gurps.ParryFlag|gurps.BlockFlag|gurps.DodgeFlag,
 				e.editorData.TechniqueDefault.DefaultType)
 			attrChoicePopup := addPopup(wrapper, choices, &attrChoice)
@@ -136,7 +137,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 				}
 			}
 		} else {
-			addDifficultyLabelAndFields(content, e.target.Entity, &e.editorData.Difficulty)
+			addDifficultyLabelAndFields(content, entity, &e.editorData.Difficulty)
 			encLabel := i18n.Text("Encumbrance Penalty")
 			wrapper := addFlowWrapper(content, encLabel, 2)
 			addDecimalField(wrapper, nil, "", encLabel, "", &e.editorData.EncumbrancePenaltyMultiplier, 0, fxp.Nine)
@@ -149,15 +150,15 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 			addDecimalField(wrapper, nil, "", pointsLabel, "", &e.editorData.Points, 0, fxp.MaxBasePoints)
 			wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Level"), false))
 			levelField := NewNonEditableField(func(field *NonEditableField) {
-				points := gurps.AdjustedPointsForNonContainerSkillOrTechnique(e.target.Entity, e.editorData.Points,
+				points := gurps.AdjustedPointsForNonContainerSkillOrTechnique(entity, e.editorData.Points,
 					e.editorData.Name, e.editorData.Specialization, e.editorData.Tags, nil)
 				var level gurps.Level
 				if e.target.IsTechnique() {
-					level = gurps.CalculateTechniqueLevel(e.target.Entity, e.editorData.Name,
-						e.editorData.Specialization, e.editorData.Tags, e.editorData.TechniqueDefault,
-						e.editorData.Difficulty.Difficulty, points, true, e.editorData.TechniqueLimitModifier, nil)
+					level = gurps.CalculateTechniqueLevel(entity, e.editorData.Name, e.editorData.Specialization,
+						e.editorData.Tags, e.editorData.TechniqueDefault, e.editorData.Difficulty.Difficulty, points,
+						true, e.editorData.TechniqueLimitModifier, nil)
 				} else {
-					level = gurps.CalculateSkillLevel(e.target.Entity, e.editorData.Name, e.editorData.Specialization,
+					level = gurps.CalculateSkillLevel(entity, e.editorData.Name, e.editorData.Specialization,
 						e.editorData.Tags, e.editorData.DefaultedFrom, e.editorData.Difficulty, points,
 						e.editorData.EncumbrancePenaltyMultiplier)
 				}
@@ -169,14 +170,15 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 					if e.target.IsTechnique() {
 						rsl += e.editorData.TechniqueDefault.Modifier
 					}
-					field.SetTitle(lvl.String() + "/" + gurps.FormatRelativeSkill(e.target.Entity,
+					field.SetTitle(lvl.String() + "/" + gurps.FormatRelativeSkill(entity,
 						e.target.IsTechnique(), e.editorData.Difficulty, rsl))
 				}
 				field.MarkForLayoutAndRedraw()
 			})
 			insets := levelField.Border().Insets()
 			levelField.SetLayoutData(&unison.FlexLayoutData{
-				MinSize: unison.NewSize(levelField.Font.SimpleWidth((-fxp.MaxBasePoints*2).String())+insets.Left+insets.Right, 0),
+				MinSize: unison.NewSize(levelField.Font.SimpleWidth((-fxp.MaxBasePoints*2).String())+insets.Left+
+					insets.Right, 0),
 			})
 			wrapper.AddChild(levelField)
 		}
@@ -184,12 +186,12 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 	if !e.target.Container() {
-		content.AddChild(newPrereqPanel(e.target.Entity, &e.editorData.Prereq))
-		content.AddChild(newDefaultsPanel(e.target.Entity, &e.editorData.Defaults))
-		content.AddChild(newFeaturesPanel(e.target.Entity, e.target, &e.editorData.Features, false))
+		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq))
+		content.AddChild(newDefaultsPanel(entity, &e.editorData.Defaults))
+		content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false))
 		content.AddChild(newWeaponsPanel(e, e.target, true, &e.editorData.Weapons))
 		content.AddChild(newWeaponsPanel(e, e.target, false, &e.editorData.Weapons))
-		content.AddChild(newStudyPanel(e.target.Entity, &e.editorData.StudyHoursNeeded, &e.editorData.Study))
+		content.AddChild(newStudyPanel(entity, &e.editorData.StudyHoursNeeded, &e.editorData.Study))
 	}
 	return nil
 }

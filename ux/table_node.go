@@ -84,8 +84,8 @@ func (n *Node[T]) CloneForTarget(target unison.Paneler, newParent *Node[T]) *Nod
 	if !ok {
 		fatal.IfErr(errs.New("unable to convert to table"))
 	}
-	if provider := DetermineEntityProvider(target); provider != nil {
-		return NewNode[T](table, newParent, n.dataAsNode.Clone(libraryFileFromTable[T](n.table), provider.Entity(),
+	if provider := DetermineDataOwnerProvider(target); provider != nil {
+		return NewNode[T](table, newParent, n.dataAsNode.Clone(libraryFileFromTable[T](n.table), provider.DataOwner(),
 			newParent.Data(), false), n.forPage)
 	}
 	fatal.IfErr(errs.New("unable to locate entity provider"))
@@ -474,9 +474,7 @@ func handleCheck(data any, check unison.Paneler, checked bool) {
 				},
 			})
 		}
-		if item.Entity != nil {
-			item.Entity.Recalculate()
-		}
+		gurps.EntityFromNode(item).Recalculate()
 	case *gurps.TraitModifier:
 		item.Disabled = !checked
 		if mgr := unison.UndoManagerFor(check); mgr != nil {
@@ -498,9 +496,7 @@ func handleCheck(data any, check unison.Paneler, checked bool) {
 				},
 			})
 		}
-		if item.Entity != nil {
-			item.Entity.Recalculate()
-		}
+		gurps.EntityFromNode(item).Recalculate()
 	case *gurps.EquipmentModifier:
 		item.Disabled = !checked
 		if mgr := unison.UndoManagerFor(check); mgr != nil {
@@ -522,9 +518,7 @@ func handleCheck(data any, check unison.Paneler, checked bool) {
 				},
 			})
 		}
-		if item.Entity != nil {
-			item.Entity.Recalculate()
-		}
+		gurps.EntityFromNode(item).Recalculate()
 	}
 }
 
@@ -536,9 +530,7 @@ type equipmentAdjuster struct {
 
 func (a *equipmentAdjuster) Apply() {
 	a.Target.Equipped = a.Equipped
-	if a.Target.Entity != nil {
-		a.Target.Entity.Recalculate()
-	}
+	gurps.EntityFromNode(a.Target).Recalculate()
 	MarkModified(a.Owner)
 }
 
@@ -550,9 +542,7 @@ type equipmentModifierAdjuster struct {
 
 func (a *equipmentModifierAdjuster) Apply() {
 	a.Target.Disabled = a.Disabled || a.Target.Container()
-	if a.Target.Entity != nil {
-		a.Target.Entity.Recalculate()
-	}
+	gurps.EntityFromNode(a.Target).Recalculate()
 	MarkModified(a.Owner)
 }
 
@@ -564,9 +554,7 @@ type traitModifierAdjuster struct {
 
 func (a *traitModifierAdjuster) Apply() {
 	a.Target.Disabled = a.Disabled || a.Target.Container()
-	if a.Target.Entity != nil {
-		a.Target.Entity.Recalculate()
-	}
+	gurps.EntityFromNode(a.Target).Recalculate()
 	MarkModified(a.Owner)
 }
 

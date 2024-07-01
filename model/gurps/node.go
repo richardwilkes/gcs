@@ -14,8 +14,20 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/txt"
 )
+
+// DataOwner defines the methods required of data owners.
+type DataOwner interface {
+	OwningEntity() *Entity
+	SourceMatcher() *SrcMatcher
+}
+
+// DataOwnerProvider provides a way to retrieve a (possibly nil) data owner.
+type DataOwnerProvider interface {
+	DataOwner() DataOwner
+}
 
 // NodeTypes is a constraint that defines the types that may be nodes.
 type NodeTypes interface {
@@ -27,10 +39,10 @@ type Node[T NodeTypes] interface {
 	fmt.Stringer
 	Openable
 	Hashable
-	Clone(from LibraryFile, newEntity *Entity, newParent T, preserveID bool) T
+	Clone(from LibraryFile, owner DataOwner, newParent T, preserveID bool) T
 	GetSource() Source
-	OwningEntity() *Entity
-	SetOwningEntity(entity *Entity)
+	DataOwner() DataOwner
+	SetDataOwner(owner DataOwner)
 	Kind() string
 	Parent() T
 	SetParent(parent T)
@@ -69,6 +81,15 @@ type EditorData[T NodeTypes] interface {
 // otherwise.
 func AsNode[T NodeTypes](in T) Node[T] {
 	return any(in).(Node[T])
+}
+
+// EntityFromNode returns the owning entity of the node, or nil.
+func EntityFromNode[T NodeTypes](node Node[T]) *Entity {
+	owner := node.DataOwner()
+	if toolbox.IsNil(owner) {
+		return nil
+	}
+	return owner.OwningEntity()
 }
 
 func convertOldCategoriesToTags(tags, categories []string) []string {

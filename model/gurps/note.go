@@ -16,13 +16,16 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/tid"
+	"github.com/richardwilkes/unison/enums/align"
 )
 
 var (
@@ -34,6 +37,7 @@ var (
 const (
 	NoteTextColumn = iota
 	NoteReferenceColumn
+	NoteLibSrcColumn
 )
 
 const (
@@ -44,7 +48,7 @@ const (
 // Note holds a note.
 type Note struct {
 	NoteData
-	Entity *Entity
+	owner DataOwner
 }
 
 // NoteData holds the Note data that is written to disk.
@@ -95,13 +99,13 @@ func SaveNotes(notes []*Note, filePath string) error {
 }
 
 // NewNote creates a new Note.
-func NewNote(entity *Entity, parent *Note, container bool) *Note {
+func NewNote(owner DataOwner, parent *Note, container bool) *Note {
 	n := Note{
 		NoteData: NoteData{
 			TID:    tid.MustNewTID(noteKind(container)),
 			parent: parent,
 		},
-		Entity: entity,
+		owner: owner,
 	}
 	n.Text = n.Kind()
 	n.SetOpen(container)
@@ -166,8 +170,8 @@ func (n *Note) SetOpen(open bool) {
 }
 
 // Clone implements Node.
-func (n *Note) Clone(from LibraryFile, entity *Entity, parent *Note, preserveID bool) *Note {
-	other := NewNote(entity, parent, n.Container())
+func (n *Note) Clone(from LibraryFile, owner DataOwner, parent *Note, preserveID bool) *Note {
+	other := NewNote(owner, parent, n.Container())
 	other.Source.LibraryFile = from
 	other.Source.TID = n.TID
 	if preserveID {
@@ -179,7 +183,7 @@ func (n *Note) Clone(from LibraryFile, entity *Entity, parent *Note, preserveID 
 	if n.HasChildren() {
 		other.Children = make([]*Note, 0, len(n.Children))
 		for _, child := range n.Children {
-			other.Children = append(other.Children, child.Clone(from, entity, other, preserveID))
+			other.Children = append(other.Children, child.Clone(from, owner, other, preserveID))
 		}
 	}
 	return other
@@ -239,7 +243,7 @@ func (n *Note) String() string {
 }
 
 func (n *Note) resolveText() string {
-	return EvalEmbeddedRegex.ReplaceAllStringFunc(n.Text, n.Entity.EmbeddedEval)
+	return EvalEmbeddedRegex.ReplaceAllStringFunc(n.Text, EntityFromNode(n).EmbeddedEval)
 }
 
 // NotesHeaderData returns the header data information for the given note column.
@@ -253,6 +257,10 @@ func NotesHeaderData(columnID int) HeaderData {
 		data.Title = HeaderBookmark
 		data.TitleIsImageKey = true
 		data.Detail = message.PageRefTooltip()
+	case NoteLibSrcColumn:
+		data.Title = HeaderDatabase
+		data.TitleIsImageKey = true
+		data.Detail = message.LibSrcTooltip()
 	}
 	return data
 }
@@ -271,6 +279,17 @@ func (n *Note) CellData(columnID int, data *CellData) {
 		} else {
 			data.Secondary = n.resolveText()
 		}
+	case NoteLibSrcColumn:
+		data.Type = cell.Text
+		data.Alignment = align.Middle
+		if !toolbox.IsNil(n.owner) {
+			state := n.owner.SourceMatcher().Match(n)
+			data.Primary = state.AltString()
+			data.Tooltip = state.String()
+			if state != srcstate.Custom {
+				data.Tooltip += "\n" + n.Source.String()
+			}
+		}
 	}
 }
 
@@ -285,17 +304,17 @@ func (n *Note) Depth() int {
 	return count
 }
 
-// OwningEntity returns the owning Entity.
-func (n *Note) OwningEntity() *Entity {
-	return n.Entity
+// DataOwner returns the data owner.
+func (n *Note) DataOwner() DataOwner {
+	return n.owner
 }
 
-// SetOwningEntity sets the owning entity and configures any sub-components as needed.
-func (n *Note) SetOwningEntity(entity *Entity) {
-	n.Entity = entity
+// SetDataOwner sets the data owner and configures any sub-components as needed.
+func (n *Note) SetDataOwner(owner DataOwner) {
+	n.owner = owner
 	if n.Container() {
 		for _, child := range n.Children {
-			child.SetOwningEntity(entity)
+			child.SetDataOwner(owner)
 		}
 	}
 }

@@ -22,18 +22,24 @@ import (
 	"github.com/richardwilkes/toolbox/xmath/crc"
 )
 
-var _ ListProvider = &Template{}
+var (
+	_ ListProvider = &Template{}
+	_ DataOwner    = &Template{}
+)
 
 // Template holds the GURPS Template data that is written to disk.
 type Template struct {
-	Version   int          `json:"version"`
-	ID        tid.TID      `json:"id"`
-	Traits    []*Trait     `json:"traits,alt=advantages,omitempty"`
-	Skills    []*Skill     `json:"skills,omitempty"`
-	Spells    []*Spell     `json:"spells,omitempty"`
-	Equipment []*Equipment `json:"equipment,omitempty"`
-	Notes     []*Note      `json:"notes,omitempty"`
+	Version    int          `json:"version"`
+	ID         tid.TID      `json:"id"`
+	Traits     []*Trait     `json:"traits,alt=advantages,omitempty"`
+	Skills     []*Skill     `json:"skills,omitempty"`
+	Spells     []*Spell     `json:"spells,omitempty"`
+	Equipment  []*Equipment `json:"equipment,omitempty"`
+	Notes      []*Note      `json:"notes,omitempty"`
+	srcMatcher *SrcMatcher
 }
+
+// TODO: Use srcMatcher
 
 // NewTemplateFromFile loads a Template from a file.
 func NewTemplateFromFile(fileSystem fs.FS, filePath string) (*Template, error) {
@@ -58,9 +64,22 @@ func NewTemplate() *Template {
 	return template
 }
 
-// Entity implements EntityProvider.
-func (t *Template) Entity() *Entity {
+// DataOwner returns the data owner.
+func (t *Template) DataOwner() DataOwner {
+	return t
+}
+
+// OwningEntity returns nil.
+func (t *Template) OwningEntity() *Entity {
 	return nil
+}
+
+// SourceMatcher returns the SourceMatcher.
+func (t *Template) SourceMatcher() *SrcMatcher {
+	if t.srcMatcher == nil {
+		t.srcMatcher = &SrcMatcher{}
+	}
+	return t.srcMatcher
 }
 
 // Save the Template to a file as JSON.

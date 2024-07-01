@@ -20,14 +20,14 @@ type ListProvider interface {
 
 // TraitListProvider defines the methods needed to access the trait list data.
 type TraitListProvider interface {
-	EntityProvider
+	DataOwnerProvider
 	TraitList() []*Trait
 	SetTraitList(list []*Trait)
 }
 
 // EquipmentListProvider defines the methods needed to access the equipment list data.
 type EquipmentListProvider interface {
-	EntityProvider
+	DataOwnerProvider
 	CarriedEquipmentList() []*Equipment
 	SetCarriedEquipmentList(list []*Equipment)
 	OtherEquipmentList() []*Equipment
@@ -36,54 +36,54 @@ type EquipmentListProvider interface {
 
 // NoteListProvider defines the methods needed to access the note list data.
 type NoteListProvider interface {
-	EntityProvider
+	DataOwnerProvider
 	NoteList() []*Note
 	SetNoteList(list []*Note)
 }
 
 // SkillListProvider defines the methods needed to access the skill list data.
 type SkillListProvider interface {
-	EntityProvider
+	DataOwnerProvider
 	SkillList() []*Skill
 	SetSkillList(list []*Skill)
 }
 
 // SpellListProvider defines the methods needed to access the spell list data.
 type SpellListProvider interface {
-	EntityProvider
+	DataOwnerProvider
 	SpellList() []*Spell
 	SetSpellList(list []*Spell)
 }
 
 // TraitModifierListProvider defines the methods needed to access the trait modifier list data.
 type TraitModifierListProvider interface {
-	EntityProvider
+	DataOwnerProvider
 	TraitModifierList() []*TraitModifier
 	SetTraitModifierList(list []*TraitModifier)
 }
 
 // EquipmentModifierListProvider defines the methods needed to access the equipment modifier list data.
 type EquipmentModifierListProvider interface {
-	EntityProvider
+	DataOwnerProvider
 	EquipmentModifierList() []*EquipmentModifier
 	SetEquipmentModifierList(list []*EquipmentModifier)
 }
 
 // ConditionalModifierListProvider defines the methods needed to access the conditional modifier list data.
 type ConditionalModifierListProvider interface {
-	EntityProvider
+	DataOwnerProvider
 	ConditionalModifiers() []*ConditionalModifier
 }
 
 // ReactionModifierListProvider defines the methods needed to access the reaction modifier list data.
 type ReactionModifierListProvider interface {
-	EntityProvider
+	DataOwnerProvider
 	Reactions() []*ConditionalModifier
 }
 
 // WeaponListProvider defines the methods needed to access the weapon list data.
 type WeaponListProvider interface {
-	EntityProvider
+	DataOwnerProvider
 	WeaponOwner() WeaponOwner
 	Weapons(melee bool) []*Weapon
 	SetWeapons(melee bool, list []*Weapon)

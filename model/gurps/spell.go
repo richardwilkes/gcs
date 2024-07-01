@@ -22,11 +22,13 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/tid"
@@ -60,6 +62,7 @@ const (
 	SpellRelativeLevelColumn
 	SpellPointsColumn
 	SpellDescriptionForPageColumn
+	SpellLibSrcColumn
 )
 
 const spellListTypeKey = "spell_list"
@@ -67,7 +70,7 @@ const spellListTypeKey = "spell_list"
 // Spell holds the data for a spell.
 type Spell struct {
 	SpellData
-	Entity            *Entity
+	owner             DataOwner
 	LevelData         Level
 	UnsatisfiedReason string
 }
@@ -183,18 +186,18 @@ func SaveSpells(spells []*Spell, filePath string) error {
 }
 
 // NewSpell creates a new Spell.
-func NewSpell(e *Entity, parent *Spell, container bool) *Spell {
+func NewSpell(owner DataOwner, parent *Spell, container bool) *Spell {
 	s := Spell{
 		SpellData: SpellData{
 			TID:    tid.MustNewTID(spellKind(container)),
 			parent: parent,
 		},
-		Entity: e,
+		owner: owner,
 	}
 	if container {
 		s.TemplatePicker = &TemplatePicker{}
 	} else {
-		s.Difficulty.Attribute = AttributeIDFor(e, "iq")
+		s.Difficulty.Attribute = AttributeIDFor(EntityFromNode(&s), "iq")
 		s.Difficulty.Difficulty = difficulty.Hard
 		s.PowerSource = i18n.Text("Arcane")
 		s.Class = i18n.Text("Regular")
@@ -210,15 +213,15 @@ func NewSpell(e *Entity, parent *Spell, container bool) *Spell {
 }
 
 // NewRitualMagicSpell creates a new Ritual Magic Spell.
-func NewRitualMagicSpell(e *Entity, parent *Spell, _ bool) *Spell {
+func NewRitualMagicSpell(owner DataOwner, parent *Spell, _ bool) *Spell {
 	s := Spell{
 		SpellData: SpellData{
 			TID:    tid.MustNewTID(kinds.RitualMagicSpell),
 			parent: parent,
 		},
-		Entity: e,
+		owner: owner,
 	}
-	s.Difficulty.Attribute = AttributeIDFor(e, "iq")
+	s.Difficulty.Attribute = AttributeIDFor(EntityFromNode(&s), "iq")
 	s.Difficulty.Difficulty = difficulty.Hard
 	s.PowerSource = i18n.Text("Arcane")
 	s.Class = i18n.Text("Regular")
@@ -295,12 +298,12 @@ func (s *Spell) IsRitualMagic() bool {
 }
 
 // Clone implements Node.
-func (s *Spell) Clone(from LibraryFile, e *Entity, parent *Spell, preserveID bool) *Spell {
+func (s *Spell) Clone(from LibraryFile, owner DataOwner, parent *Spell, preserveID bool) *Spell {
 	var other *Spell
 	if s.IsRitualMagic() {
-		other = NewRitualMagicSpell(e, parent, false)
+		other = NewRitualMagicSpell(owner, parent, false)
 	} else {
-		other = NewSpell(e, parent, s.Container())
+		other = NewSpell(owner, parent, s.Container())
 		other.SetOpen(s.IsOpen())
 	}
 	other.Source.LibraryFile = from
@@ -313,7 +316,7 @@ func (s *Spell) Clone(from LibraryFile, e *Entity, parent *Spell, preserveID boo
 	if s.HasChildren() {
 		other.Children = make([]*Spell, 0, len(s.Children))
 		for _, child := range s.Children {
-			other.Children = append(other.Children, child.Clone(from, e, other, preserveID))
+			other.Children = append(other.Children, child.Clone(from, owner, other, preserveID))
 		}
 	}
 	return other
@@ -450,6 +453,10 @@ func SpellsHeaderData(columnID int) HeaderData {
 	case SpellPointsColumn:
 		data.Title = i18n.Text("Pts")
 		data.Detail = i18n.Text("Points")
+	case SpellLibSrcColumn:
+		data.Title = HeaderDatabase
+		data.TitleIsImageKey = true
+		data.Detail = message.LibSrcTooltip()
 	}
 	return data
 }
@@ -502,7 +509,7 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 	case SpellDifficultyColumn:
 		if !s.Container() {
 			data.Type = cell.Text
-			data.Primary = s.Difficulty.Description(s.Entity)
+			data.Primary = s.Difficulty.Description(EntityFromNode(s))
 		}
 	case SpellTagsColumn:
 		data.Type = cell.Tags
@@ -532,7 +539,7 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 			if rsl == fxp.Min {
 				data.Primary = "-"
 			} else {
-				data.Primary = ResolveAttributeName(s.Entity, s.Difficulty.Attribute)
+				data.Primary = ResolveAttributeName(EntityFromNode(s), s.Difficulty.Attribute)
 				if rsl != 0 {
 					data.Primary += rsl.StringWithSign()
 				}
@@ -566,6 +573,17 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 				} else {
 					data.Secondary += "\n" + buffer.String()
 				}
+			}
+		}
+	case SpellLibSrcColumn:
+		data.Type = cell.Text
+		data.Alignment = align.Middle
+		if !toolbox.IsNil(s.owner) {
+			state := s.owner.SourceMatcher().Match(s)
+			data.Primary = state.AltString()
+			data.Tooltip = state.String()
+			if state != srcstate.Custom {
+				data.Tooltip += "\n" + s.Source.String()
 			}
 		}
 	}
@@ -605,7 +623,7 @@ func (s *Spell) RelativeLevel() string {
 	case s.IsRitualMagic():
 		return rsl.StringWithSign()
 	default:
-		return ResolveAttributeName(s.Entity, s.Difficulty.Attribute) + rsl.StringWithSign()
+		return ResolveAttributeName(EntityFromNode(s), s.Difficulty.Attribute) + rsl.StringWithSign()
 	}
 }
 
@@ -614,7 +632,7 @@ func (s *Spell) AdjustedRelativeLevel() fxp.Int {
 	if s.Container() {
 		return fxp.Min
 	}
-	if s.Entity != nil && s.CalculateLevel().Level > 0 {
+	if EntityFromNode(s) != nil && s.CalculateLevel().Level > 0 {
 		return s.LevelData.RelativeLevel
 	}
 	return fxp.Min
@@ -624,11 +642,11 @@ func (s *Spell) AdjustedRelativeLevel() fxp.Int {
 func (s *Spell) UpdateLevel() bool {
 	saved := s.LevelData
 	if s.IsRitualMagic() {
-		s.LevelData = CalculateRitualMagicSpellLevel(s.Entity, s.Name, s.PowerSource, s.RitualSkillName,
+		s.LevelData = CalculateRitualMagicSpellLevel(EntityFromNode(s), s.Name, s.PowerSource, s.RitualSkillName,
 			s.RitualPrereqCount, s.College, s.Tags, s.Difficulty, s.AdjustedPoints(nil))
 	} else {
-		s.LevelData = CalculateSpellLevel(s.Entity, s.Name, s.PowerSource, s.College, s.Tags, s.Difficulty,
-			s.AdjustedPoints(nil))
+		s.LevelData = CalculateSpellLevel(EntityFromNode(s), s.Name, s.PowerSource, s.College, s.Tags,
+			s.Difficulty, s.AdjustedPoints(nil))
 	}
 	return saved != s.LevelData
 }
@@ -636,10 +654,10 @@ func (s *Spell) UpdateLevel() bool {
 // CalculateLevel returns the computed level without updating it.
 func (s *Spell) CalculateLevel() Level {
 	if s.IsRitualMagic() {
-		return CalculateRitualMagicSpellLevel(s.Entity, s.Name, s.PowerSource, s.RitualSkillName, s.RitualPrereqCount,
-			s.College, s.Tags, s.Difficulty, s.AdjustedPoints(nil))
+		return CalculateRitualMagicSpellLevel(EntityFromNode(s), s.Name, s.PowerSource, s.RitualSkillName,
+			s.RitualPrereqCount, s.College, s.Tags, s.Difficulty, s.AdjustedPoints(nil))
 	}
-	return CalculateSpellLevel(s.Entity, s.Name, s.PowerSource, s.College, s.Tags, s.Difficulty,
+	return CalculateSpellLevel(EntityFromNode(s), s.Name, s.PowerSource, s.College, s.Tags, s.Difficulty,
 		s.AdjustedPoints(nil))
 }
 
@@ -791,12 +809,13 @@ func (s *Spell) RitualMagicSatisfied(tooltip *xio.ByteBuffer, prefix string) boo
 		}
 		return false
 	}
+	e := EntityFromNode(s)
 	for _, college := range s.College {
-		if s.Entity.BestSkillNamed(s.RitualSkillName, college, false, nil) != nil {
+		if e.BestSkillNamed(s.RitualSkillName, college, false, nil) != nil {
 			return true
 		}
 	}
-	if s.Entity.BestSkillNamed(s.RitualSkillName, "", false, nil) != nil {
+	if e.BestSkillNamed(s.RitualSkillName, "", false, nil) != nil {
 		return true
 	}
 	if tooltip != nil {
@@ -817,17 +836,17 @@ func (s *Spell) RitualMagicSatisfied(tooltip *xio.ByteBuffer, prefix string) boo
 	return false
 }
 
-// OwningEntity returns the owning Entity.
-func (s *Spell) OwningEntity() *Entity {
-	return s.Entity
+// DataOwner returns the data owner.
+func (s *Spell) DataOwner() DataOwner {
+	return s.owner
 }
 
-// SetOwningEntity sets the owning entity and configures any sub-components as needed.
-func (s *Spell) SetOwningEntity(e *Entity) {
-	s.Entity = e
+// SetDataOwner sets the data owner and configures any sub-components as needed.
+func (s *Spell) SetDataOwner(owner DataOwner) {
+	s.owner = owner
 	if s.Container() {
 		for _, child := range s.Children {
-			child.SetOwningEntity(e)
+			child.SetDataOwner(owner)
 		}
 	} else {
 		for _, w := range s.Weapons {
@@ -843,7 +862,8 @@ func (s *Spell) Notes() string {
 
 // Rituals returns the rituals required to cast the spell.
 func (s *Spell) Rituals() string {
-	if s.Container() || !(s.Entity != nil && s.Entity.SheetSettings.ShowSpellAdj) {
+	e := EntityFromNode(s)
+	if s.Container() || !(e != nil && e.SheetSettings.ShowSpellAdj) {
 		return ""
 	}
 	level := s.CalculateLevel().Level
@@ -896,7 +916,7 @@ func (s *Spell) Description() string {
 // SecondaryText returns the less important information that should be displayed with the description.
 func (s *Spell) SecondaryText(optionChecker func(display.Option) bool) string {
 	var buffer strings.Builder
-	prefs := SheetSettingsFor(s.Entity)
+	prefs := SheetSettingsFor(EntityFromNode(s))
 	if optionChecker(prefs.NotesDisplay) {
 		AppendStringOntoNewLine(&buffer, strings.TrimSpace(s.Notes()))
 		AppendStringOntoNewLine(&buffer, s.Rituals())
@@ -919,7 +939,7 @@ func (s *Spell) String() string {
 }
 
 func (s *Spell) resolveLocalNotes() string {
-	return EvalEmbeddedRegex.ReplaceAllStringFunc(s.LocalNotes, s.Entity.EmbeddedEval)
+	return EvalEmbeddedRegex.ReplaceAllStringFunc(s.LocalNotes, EntityFromNode(s).EmbeddedEval)
 }
 
 // RawPoints returns the unadjusted points.
@@ -942,7 +962,8 @@ func (s *Spell) AdjustedPoints(tooltip *xio.ByteBuffer) fxp.Int {
 		}
 		return total
 	}
-	return AdjustedPointsForNonContainerSpell(s.Entity, s.Points, s.Name, s.PowerSource, s.College, s.Tags, tooltip)
+	return AdjustedPointsForNonContainerSpell(EntityFromNode(s), s.Points, s.Name, s.PowerSource, s.College,
+		s.Tags, tooltip)
 }
 
 // AdjustedPointsForNonContainerSpell returns the points, adjusted for any bonuses.
@@ -1067,15 +1088,15 @@ func (s *Spell) ClearUnusedFieldsForType() {
 
 // CopyFrom implements node.EditorData.
 func (s *SpellEditData) CopyFrom(other *Spell) {
-	s.copyFrom(other.Entity, &other.SpellEditData, other.Container(), false)
+	s.copyFrom(other.owner, &other.SpellEditData, other.Container(), false)
 }
 
 // ApplyTo implements node.EditorData.
 func (s *SpellEditData) ApplyTo(other *Spell) {
-	other.SpellEditData.copyFrom(other.Entity, s, other.Container(), true)
+	other.SpellEditData.copyFrom(other.owner, s, other.Container(), true)
 }
 
-func (s *SpellEditData) copyFrom(entity *Entity, other *SpellEditData, isContainer, isApply bool) {
+func (s *SpellEditData) copyFrom(owner DataOwner, other *SpellEditData, isContainer, isApply bool) {
 	*s = *other
 	s.Tags = txt.CloneStringSlice(s.Tags)
 	if other.TechLevel != nil {
@@ -1088,7 +1109,7 @@ func (s *SpellEditData) copyFrom(entity *Entity, other *SpellEditData, isContain
 	if len(other.Weapons) != 0 {
 		s.Weapons = make([]*Weapon, len(other.Weapons))
 		for i, w := range other.Weapons {
-			s.Weapons[i] = w.Clone(LibraryFile{}, entity, nil, true)
+			s.Weapons[i] = w.Clone(LibraryFile{}, owner, nil, true)
 		}
 	}
 	if len(other.Study) != 0 {

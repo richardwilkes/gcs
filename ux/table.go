@@ -41,7 +41,7 @@ const (
 // TableProvider defines the methods a table provider must contain.
 type TableProvider[T gurps.NodeTypes] interface {
 	unison.TableModel[*Node[T]]
-	gurps.EntityProvider
+	gurps.DataOwnerProvider
 	SetTable(table *unison.Table[*Node[T]])
 	RootData() []T
 	SetRootData(data []T)
@@ -431,7 +431,7 @@ func DuplicateSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 			if target := row.Data(); target != zero {
 				tData := gurps.AsNode(target)
 				parent := tData.Parent()
-				clone := tData.Clone(tData.GetSource().LibraryFile, tData.OwningEntity(), parent, false)
+				clone := tData.Clone(tData.GetSource().LibraryFile, gurps.EntityFromNode(tData), parent, false)
 				selMap[gurps.AsNode(clone).ID()] = true
 				if parent == zero {
 					for i, child := range topLevelData {

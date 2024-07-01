@@ -75,8 +75,8 @@ func (p *weaponsProvider) SetRootData(data []*gurps.Weapon) {
 	p.provider.SetWeapons(p.melee, data)
 }
 
-func (p *weaponsProvider) Entity() *gurps.Entity {
-	return p.provider.Entity()
+func (p *weaponsProvider) DataOwner() gurps.DataOwner {
+	return p.provider.DataOwner()
 }
 
 func (p *weaponsProvider) DragKey() string {

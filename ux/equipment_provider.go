@@ -13,6 +13,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/collection/dict"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
@@ -88,8 +89,8 @@ func (p *equipmentProvider) SetRootData(data []*gurps.Equipment) {
 	p.setEquipmentList(data)
 }
 
-func (p *equipmentProvider) Entity() *gurps.Entity {
-	return p.provider.Entity()
+func (p *equipmentProvider) DataOwner() gurps.DataOwner {
+	return p.provider.DataOwner()
 }
 
 func (p *equipmentProvider) DragKey() string {
@@ -131,21 +132,23 @@ func (p *equipmentProvider) AltDropSupport() *AltDropSupport {
 		DragKey: equipmentModifierDragKey,
 		Drop: func(rowIndex int, data any) {
 			if tableDragData, ok := data.(*unison.TableDragData[*Node[*gurps.EquipmentModifier]]); ok {
-				entity := p.Entity()
+				dataOwner := p.DataOwner()
 				rows := make([]*gurps.EquipmentModifier, 0, len(tableDragData.Rows))
 				libraryFile := libraryFileFromTable(tableDragData.Table)
 				for _, row := range tableDragData.Rows {
-					rows = append(rows, row.Data().Clone(libraryFile, entity, nil, false))
+					rows = append(rows, row.Data().Clone(libraryFile, dataOwner, nil, false))
 				}
 				rowData := p.table.RowFromIndex(rowIndex).Data()
 				rowData.Modifiers = append(rowData.Modifiers, rows...)
 				p.table.SyncToModel()
-				if entity != nil {
-					if rebuilder := unison.Ancestor[Rebuildable](p.table); rebuilder != nil {
-						rebuilder.Rebuild(true)
+				if !toolbox.IsNil(dataOwner) {
+					if entity := dataOwner.OwningEntity(); entity != nil {
+						if rebuilder := unison.Ancestor[Rebuildable](p.table); rebuilder != nil {
+							rebuilder.Rebuild(true)
+						}
+						ProcessModifiers(p.table, rows)
+						ProcessNameables(p.table, rows)
 					}
-					ProcessModifiers(p.table, rows)
-					ProcessNameables(p.table, rows)
 				}
 			}
 		},
@@ -197,7 +200,11 @@ func (p *equipmentProvider) ColumnIDs() []int {
 	if !p.forPage {
 		columnIDs = append(columnIDs, gurps.EquipmentTagsColumn)
 	}
-	return append(columnIDs, gurps.EquipmentReferenceColumn)
+	columnIDs = append(columnIDs, gurps.EquipmentReferenceColumn)
+	if p.forPage {
+		columnIDs = append(columnIDs, gurps.EquipmentLibSrcColumn)
+	}
+	return columnIDs
 }
 
 func (p *equipmentProvider) HierarchyColumnID() int {
@@ -219,7 +226,7 @@ func (p *equipmentProvider) CreateItem(owner Rebuildable, table *unison.Table[*N
 		topListFunc = p.provider.CarriedEquipmentList
 		setTopListFunc = p.provider.SetCarriedEquipmentList
 	}
-	item := gurps.NewEquipment(p.Entity(), nil, variant == ContainerItemVariant)
+	item := gurps.NewEquipment(p.DataOwner(), nil, variant == ContainerItemVariant)
 	InsertItems[*gurps.Equipment](owner, table, topListFunc, setTopListFunc,
 		func(_ *unison.Table[*Node[*gurps.Equipment]]) []*Node[*gurps.Equipment] {
 			return p.RootRows()

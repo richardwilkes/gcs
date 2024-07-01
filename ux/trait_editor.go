@@ -35,10 +35,11 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	content.AddChild(unison.NewPanel())
 	addInvertedCheckBox(content, i18n.Text("Enabled"), &e.editorData.Disabled)
 	var perLevelField, levelField *DecimalField
+	entity := gurps.EntityFromNode(e.target)
 	if !e.target.Container() {
 		wrapper := addFlowWrapper(content, i18n.Text("Point Cost"), 2)
 		costField := NewNonEditableField(func(field *NonEditableField) {
-			field.SetTitle(gurps.AdjustedPoints(e.target.Entity, e.editorData.CanLevel, e.editorData.BasePoints,
+			field.SetTitle(gurps.AdjustedPoints(entity, e.editorData.CanLevel, e.editorData.BasePoints,
 				e.editorData.Levels, e.editorData.PointsPerLevel, e.editorData.CR, e.editorData.Modifiers,
 				e.editorData.RoundCostDown).String())
 			field.MarkForLayoutAndRedraw()
@@ -95,16 +96,16 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	}
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
-	modifiersPanel := newTraitModifiersPanel(e.target.Entity, &e.editorData.Modifiers)
+	modifiersPanel := newTraitModifiersPanel(entity, &e.editorData.Modifiers)
 	if e.target.Container() {
 		content.AddChild(modifiersPanel)
 	} else {
-		content.AddChild(newPrereqPanel(e.target.Entity, &e.editorData.Prereq))
-		content.AddChild(newFeaturesPanel(e.target.Entity, e.target, &e.editorData.Features, false))
+		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq))
+		content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false))
 		content.AddChild(modifiersPanel)
 		content.AddChild(newWeaponsPanel(e, e.target, true, &e.editorData.Weapons))
 		content.AddChild(newWeaponsPanel(e, e.target, false, &e.editorData.Weapons))
-		content.AddChild(newStudyPanel(e.target.Entity, &e.editorData.StudyHoursNeeded, &e.editorData.Study))
+		content.AddChild(newStudyPanel(entity, &e.editorData.StudyHoursNeeded, &e.editorData.Study))
 	}
 	e.InstallCmdHandlers(NewTraitModifierItemID, unison.AlwaysEnabled,
 		func(_ any) { modifiersPanel.provider.CreateItem(e, modifiersPanel.table, NoItemVariant) })

@@ -57,7 +57,7 @@ func (we *weaponEditor) initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon]
 		we.addRecoilBlock(w, content)
 	}
 	we.addStrengthBlock(w, content)
-	content.AddChild(newDefaultsPanel(w.Entity(), &w.Defaults))
+	content.AddChild(newDefaultsPanel(gurps.EntityFromNode(w), &w.Defaults))
 	if w.IsRanged() {
 		we.jetCheckBox.OnSet = func() {
 			state := we.jetCheckBox.State == check.Off

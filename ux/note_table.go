@@ -21,7 +21,7 @@ type noteListProvider struct {
 	notes []*gurps.Note
 }
 
-func (p *noteListProvider) Entity() *gurps.Entity {
+func (p *noteListProvider) DataOwner() gurps.DataOwner {
 	return nil
 }
 

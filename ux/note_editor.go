@@ -69,7 +69,8 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 		func() string { return e.editorData.Text },
 		func(value string) {
 			e.editorData.Text = value
-			markdown.SetContent(gurps.EvalEmbeddedRegex.ReplaceAllStringFunc(value, e.target.Entity.EmbeddedEval), 0)
+			markdown.SetContent(gurps.EvalEmbeddedRegex.ReplaceAllStringFunc(value,
+				gurps.EntityFromNode(e.target).EmbeddedEval), 0)
 			content.MarkForLayoutAndRedraw()
 			MarkModified(content)
 		})
@@ -102,7 +103,8 @@ func initNoteEditor(e *editor[*gurps.Note, *gurps.NoteEditData], content *unison
 	)
 	content.AddChild(label)
 
-	markdown.SetContent(gurps.EvalEmbeddedRegex.ReplaceAllStringFunc(e.editorData.Text, e.target.Entity.EmbeddedEval), 0)
+	markdown.SetContent(gurps.EvalEmbeddedRegex.ReplaceAllStringFunc(e.editorData.Text,
+		gurps.EntityFromNode(e.target).EmbeddedEval), 0)
 
 	markdownWrapper := unison.NewPanel()
 	markdownWrapper.SetScale(1.33)

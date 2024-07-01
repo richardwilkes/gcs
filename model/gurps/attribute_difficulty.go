@@ -101,6 +101,9 @@ func (a *AttributeDifficulty) Normalize(entity *Entity) {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (a *AttributeDifficulty) Hash(h hash.Hash) {
+	if a.ShouldOmit() {
+		return
+	}
 	_, _ = h.Write([]byte(a.Attribute))
 	_ = binary.Write(h, binary.LittleEndian, a.Difficulty)
 }

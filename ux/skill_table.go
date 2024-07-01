@@ -21,7 +21,7 @@ type skillListProvider struct {
 	skills []*gurps.Skill
 }
 
-func (p *skillListProvider) Entity() *gurps.Entity {
+func (p *skillListProvider) DataOwner() gurps.DataOwner {
 	return nil
 }
 

@@ -1033,20 +1033,24 @@ var allEnums = []*enumInfo{
 		Values: []enumValue{
 			{
 				Key:           "custom",
-				Alt:           "*",
+				String:        "Custom data which did not come from a library source",
+				Alt:           "—",
 				NoLocalizeAlt: true,
 			},
 			{
 				Key:           "matched",
+				String:        "Data matches library source data",
 				NoLocalizeAlt: true,
 			},
 			{
 				Key:           "mismatched",
+				String:        "Data does NOT match library source data",
 				Alt:           "!",
 				NoLocalizeAlt: true,
 			},
 			{
 				Key:           "missing",
+				String:        "Unable to locate the library source data to compare against",
 				Alt:           "?",
 				NoLocalizeAlt: true,
 			},

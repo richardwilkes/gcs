@@ -48,12 +48,8 @@ import (
 var (
 	_ eval.VariableResolver = &Entity{}
 	_ ListProvider          = &Entity{}
+	_ DataOwner             = &Entity{}
 )
-
-// EntityProvider provides a way to retrieve a (possibly nil) Entity.
-type EntityProvider interface {
-	Entity() *Entity
-}
 
 // PointsBreakdown holds the points spent on a character.
 type PointsBreakdown struct {
@@ -120,7 +116,7 @@ type Entity struct {
 	cachedEncumbranceLevel          encumbrance.Level
 	cachedEncumbranceLevelForSkills encumbrance.Level
 	cachedVariables                 map[string]string
-	srcMatcher                      SrcMatcher
+	srcMatcher                      *SrcMatcher
 }
 
 // NewEntityFromFile loads an Entity from a file.
@@ -164,6 +160,24 @@ func NewEntity() *Entity {
 	e.ModifiedOn = e.CreatedOn
 	e.Recalculate()
 	return e
+}
+
+// DataOwner returns the data owner.
+func (e *Entity) DataOwner() DataOwner {
+	return e
+}
+
+// OwningEntity returns the Entity.
+func (e *Entity) OwningEntity() *Entity {
+	return e
+}
+
+// SourceMatcher returns the SourceMatcher.
+func (e *Entity) SourceMatcher() *SrcMatcher {
+	if e.srcMatcher == nil {
+		e.srcMatcher = &SrcMatcher{}
+	}
+	return e.srcMatcher
 }
 
 // Entity implements EntityProvider.
@@ -266,8 +280,12 @@ func (e *Entity) DiscardCaches() {
 
 // Recalculate the statistics.
 func (e *Entity) Recalculate() {
+	if e == nil {
+		return
+	}
 	e.ensureAttachments()
 	e.DiscardCaches()
+	e.SourceMatcher().PrepareHashes(e)
 	e.UpdateSkills()
 	e.UpdateSpells()
 	for i := 0; i < 5; i++ {
@@ -283,7 +301,6 @@ func (e *Entity) Recalculate() {
 			break
 		}
 	}
-	e.srcMatcher.PrepareHashes(e)
 }
 
 func (e *Entity) ensureAttachments() {
@@ -292,22 +309,22 @@ func (e *Entity) ensureAttachments() {
 		attr.Entity = e
 	}
 	for _, one := range e.Traits {
-		one.SetOwningEntity(e)
+		one.SetDataOwner(e)
 	}
 	for _, one := range e.Skills {
-		one.SetOwningEntity(e)
+		one.SetDataOwner(e)
 	}
 	for _, one := range e.Spells {
-		one.SetOwningEntity(e)
+		one.SetDataOwner(e)
 	}
 	for _, one := range e.CarriedEquipment {
-		one.SetOwningEntity(e)
+		one.SetDataOwner(e)
 	}
 	for _, one := range e.OtherEquipment {
-		one.SetOwningEntity(e)
+		one.SetDataOwner(e)
 	}
 	for _, one := range e.Notes {
-		one.SetOwningEntity(e)
+		one.SetDataOwner(e)
 	}
 }
 
@@ -1416,7 +1433,7 @@ func (e *Entity) TraitList() []*Trait {
 // SetTraitList implements ListProvider
 func (e *Entity) SetTraitList(list []*Trait) {
 	for _, one := range list {
-		one.SetOwningEntity(e)
+		one.SetDataOwner(e)
 	}
 	e.Traits = list
 }
@@ -1429,7 +1446,7 @@ func (e *Entity) CarriedEquipmentList() []*Equipment {
 // SetCarriedEquipmentList implements ListProvider
 func (e *Entity) SetCarriedEquipmentList(list []*Equipment) {
 	for _, one := range list {
-		one.SetOwningEntity(e)
+		one.SetDataOwner(e)
 	}
 	e.CarriedEquipment = list
 }
@@ -1442,7 +1459,7 @@ func (e *Entity) OtherEquipmentList() []*Equipment {
 // SetOtherEquipmentList implements ListProvider
 func (e *Entity) SetOtherEquipmentList(list []*Equipment) {
 	for _, one := range list {
-		one.SetOwningEntity(e)
+		one.SetDataOwner(e)
 	}
 	e.OtherEquipment = list
 }
@@ -1455,7 +1472,7 @@ func (e *Entity) SkillList() []*Skill {
 // SetSkillList implements ListProvider
 func (e *Entity) SetSkillList(list []*Skill) {
 	for _, one := range list {
-		one.SetOwningEntity(e)
+		one.SetDataOwner(e)
 	}
 	e.Skills = list
 }
@@ -1468,7 +1485,7 @@ func (e *Entity) SpellList() []*Spell {
 // SetSpellList implements ListProvider
 func (e *Entity) SetSpellList(list []*Spell) {
 	for _, one := range list {
-		one.SetOwningEntity(e)
+		one.SetDataOwner(e)
 	}
 	e.Spells = list
 }
@@ -1481,7 +1498,7 @@ func (e *Entity) NoteList() []*Note {
 // SetNoteList implements ListProvider
 func (e *Entity) SetNoteList(list []*Note) {
 	for _, one := range list {
-		one.SetOwningEntity(e)
+		one.SetDataOwner(e)
 	}
 	e.Notes = list
 }

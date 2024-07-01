@@ -29,6 +29,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/tid"
@@ -60,7 +61,7 @@ const (
 // WeaponOwner defines the methods required of a Weapon owner.
 type WeaponOwner interface {
 	fmt.Stringer
-	OwningEntity() *Entity
+	DataOwner() DataOwner
 	Description() string
 	Notes() string
 	FeatureList() Features
@@ -161,7 +162,7 @@ func (w *Weapon) IsRanged() bool {
 }
 
 // Clone implements Node.
-func (w *Weapon) Clone(_ LibraryFile, _ *Entity, _ *Weapon, preserveID bool) *Weapon {
+func (w *Weapon) Clone(_ LibraryFile, _ DataOwner, _ *Weapon, preserveID bool) *Weapon {
 	other := *w
 	if !preserveID {
 		other.TID = tid.MustNewTID(w.TID[0])
@@ -254,7 +255,7 @@ func (w *Weapon) MarshalJSON() ([]byte, error) {
 	if data.Calc.Strength = w.Strength.Resolve(w, nil).String(); data.Calc.Strength == w.Strength.String() {
 		data.Calc.Strength = ""
 	}
-	musclePowerIsResolved := w.PC() != nil
+	musclePowerIsResolved := w.Entity() != nil
 	if w.IsMelee() {
 		data.Accuracy = WeaponAccuracy{}
 		data.Range = WeaponRange{}
@@ -338,7 +339,7 @@ func (w *Weapon) Kind() string {
 }
 
 func (w *Weapon) String() string {
-	if w.Owner == nil {
+	if toolbox.IsNil(w.Owner) {
 		return ""
 	}
 	return w.Owner.Description()
@@ -360,40 +361,41 @@ func (w *Weapon) SetOwner(owner WeaponOwner) {
 	w.Damage.Owner = w
 }
 
-// Entity returns the owning entity, if any.
-func (w *Weapon) Entity() *Entity {
-	if w.Owner == nil {
+// DataOwner returns the weapon owner's data owner.
+func (w *Weapon) DataOwner() DataOwner {
+	if toolbox.IsNil(w.Owner) {
 		return nil
 	}
-	e := w.Owner.OwningEntity()
-	if e == nil {
-		return nil
-	}
-	return e
+	return w.Owner.DataOwner()
 }
 
-// PC returns the owning PC, if any.
-func (w *Weapon) PC() *Entity {
-	if e := w.Entity(); e != nil {
-		return e
+// SetDataOwner does nothing.
+func (w *Weapon) SetDataOwner(_ DataOwner) {
+}
+
+// Entity returns the owning entity, if any.
+func (w *Weapon) Entity() *Entity {
+	owner := w.DataOwner()
+	if owner == nil {
+		return nil
 	}
-	return nil
+	return owner.OwningEntity()
 }
 
 // SkillLevel returns the resolved skill level.
 func (w *Weapon) SkillLevel(tooltip *xio.ByteBuffer) fxp.Int {
-	pc := w.PC()
-	if pc == nil {
+	entity := w.Entity()
+	if entity == nil {
 		return 0
 	}
 	var primaryTooltip *xio.ByteBuffer
 	if tooltip != nil {
 		primaryTooltip = &xio.ByteBuffer{}
 	}
-	adj := w.skillLevelBaseAdjustment(pc, primaryTooltip) + w.skillLevelPostAdjustment(pc, primaryTooltip)
+	adj := w.skillLevelBaseAdjustment(entity, primaryTooltip) + w.skillLevelPostAdjustment(entity, primaryTooltip)
 	best := fxp.Min
 	for _, def := range w.Defaults {
-		if level := def.SkillLevelFast(pc, false, nil, true); level != fxp.Min {
+		if level := def.SkillLevelFast(entity, false, nil, true); level != fxp.Min {
 			level += adj
 			if best < level {
 				best = level
@@ -489,8 +491,8 @@ func (w *Weapon) extractSkillBonusForThisWeapon(f Feature, tooltip *xio.ByteBuff
 
 // ResolveBoolFlag returns the resolved value of the given bool flag.
 func (w *Weapon) ResolveBoolFlag(switchType wswitch.Type, initial bool) bool {
-	pc := w.PC()
-	if pc == nil {
+	entity := w.Entity()
+	if entity == nil {
 		return initial
 	}
 	t := 0
@@ -514,8 +516,8 @@ func (w *Weapon) ResolveBoolFlag(switchType wswitch.Type, initial bool) bool {
 }
 
 func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xio.ByteBuffer, allowedFeatureTypes ...feature.Type) []*WeaponBonus {
-	pc := w.PC()
-	if pc == nil {
+	entity := w.Entity()
+	if entity == nil {
 		return nil
 	}
 	allowed := make(map[feature.Type]bool, len(allowedFeatureTypes))
@@ -526,7 +528,7 @@ func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xio.ByteBuffer, all
 	best := fxp.Min
 	for _, one := range w.Defaults {
 		if one.SkillBased() {
-			if level := one.SkillLevelFast(pc, false, nil, true); best < level {
+			if level := one.SkillLevelFast(entity, false, nil, true); best < level {
 				best = level
 				bestDef = one
 			}
@@ -539,9 +541,9 @@ func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xio.ByteBuffer, all
 		name = bestDef.Name
 		specialization = bestDef.Specialization
 	}
-	pc.AddWeaponWithSkillBonusesFor(name, specialization, w.Usage, tags, dieCount, tooltip, bonusSet, allowed)
+	entity.AddWeaponWithSkillBonusesFor(name, specialization, w.Usage, tags, dieCount, tooltip, bonusSet, allowed)
 	nameQualifier := w.String()
-	pc.AddNamedWeaponBonusesFor(nameQualifier, w.Usage, tags, dieCount, tooltip, bonusSet, allowed)
+	entity.AddNamedWeaponBonusesFor(nameQualifier, w.Usage, tags, dieCount, tooltip, bonusSet, allowed)
 	for _, f := range w.Owner.FeatureList() {
 		w.extractWeaponBonus(f, bonusSet, allowed, fxp.From(dieCount), tooltip)
 	}
@@ -751,7 +753,7 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 	case WeaponAccColumn:
 		data.Primary = w.Accuracy.Resolve(w, &buffer).String()
 	case WeaponRangeColumn:
-		data.Primary = w.Range.Resolve(w, &buffer).String(w.PC() != nil)
+		data.Primary = w.Range.Resolve(w, &buffer).String(w.Entity() != nil)
 	case WeaponRoFColumn:
 		rof := w.RateOfFire.Resolve(w, &buffer)
 		data.Primary = rof.String()
@@ -779,23 +781,14 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 	}
 }
 
-// OwningEntity returns the owning Entity.
-func (w *Weapon) OwningEntity() *Entity {
-	return w.Entity()
-}
-
-// SetOwningEntity sets the owning entity and configures any sub-components as needed.
-func (w *Weapon) SetOwningEntity(_ *Entity) {
-}
-
 // CopyFrom implements node.EditorData.
 func (w *Weapon) CopyFrom(t *Weapon) {
-	*w = *t.Clone(LibraryFile{}, t.Entity(), nil, true)
+	*w = *t.Clone(LibraryFile{}, t.DataOwner(), nil, true)
 }
 
 // ApplyTo implements node.EditorData.
 func (w *Weapon) ApplyTo(t *Weapon) {
-	*t = *w.Clone(LibraryFile{}, t.Entity(), nil, true)
+	*t = *w.Clone(LibraryFile{}, t.DataOwner(), nil, true)
 }
 
 // Validate ensures the weapon data is valid.

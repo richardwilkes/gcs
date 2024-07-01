@@ -86,6 +86,9 @@ func (wr *WeaponReach) UnmarshalJSON(data []byte) error {
 
 // Hash writes this object's contents into the hasher.
 func (wr WeaponReach) Hash(h hash.Hash) {
+	if wr.ShouldOmit() {
+		return
+	}
 	_ = binary.Write(h, binary.LittleEndian, wr.Min)
 	_ = binary.Write(h, binary.LittleEndian, wr.Max)
 	_ = binary.Write(h, binary.LittleEndian, wr.CloseCombat)

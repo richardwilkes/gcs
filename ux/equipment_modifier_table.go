@@ -21,7 +21,7 @@ type equipmentModifierListProvider struct {
 	modifiers []*gurps.EquipmentModifier
 }
 
-func (p *equipmentModifierListProvider) Entity() *gurps.Entity {
+func (p *equipmentModifierListProvider) DataOwner() gurps.DataOwner {
 	return nil
 }
 

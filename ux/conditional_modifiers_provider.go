@@ -63,8 +63,8 @@ func (p *condModProvider) RootData() []*gurps.ConditionalModifier {
 func (p *condModProvider) SetRootData(_ []*gurps.ConditionalModifier) {
 }
 
-func (p *condModProvider) Entity() *gurps.Entity {
-	return p.provider.Entity()
+func (p *condModProvider) DataOwner() gurps.DataOwner {
+	return p.provider.DataOwner()
 }
 
 func (p *condModProvider) DragKey() string {

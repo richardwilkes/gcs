@@ -36,7 +36,12 @@ func PageRefTooltip() string {
 	return i18n.Text(`A reference to the book and page the item appears on e.g. B22 would refer to "Basic Set", page 22`)
 }
 
-// SrcMatchTooltip returns the standard tooltip text for the source match indicator.
-func SrcMatchTooltip() string {
+// LibSrcTooltip returns the standard tooltip text for the library source indicator.
+func LibSrcTooltip() string {
 	return i18n.Text("Indicates whether the data matches the source library it came from")
+}
+
+// ModifierEnabledTooltip returns the standard tooltip text for the modifier enabled indicator.
+func ModifierEnabledTooltip() string {
+	return i18n.Text("Whether this modifier is enabled. Modifiers that are not enabled do not apply any features they may normally contribute.")
 }

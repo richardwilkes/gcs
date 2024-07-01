@@ -59,11 +59,12 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 			}))
 			weightLabel := i18n.Text("Weight")
 			wrapper = addFlowWrapper(content, weightLabel, 3)
-			addWeightField(wrapper, nil, "", weightLabel, "", e.target.Entity, &e.editorData.Weight, false)
+			entity := gurps.EntityFromNode(e.target)
+			addWeightField(wrapper, nil, "", weightLabel, "", entity, &e.editorData.Weight, false)
 			wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Extended"), false))
 			wrapper.AddChild(NewNonEditableField(func(field *NonEditableField) {
 				var weight fxp.Weight
-				defUnits := gurps.SheetSettingsFor(e.target.Entity).DefaultWeightUnits
+				defUnits := gurps.SheetSettingsFor(entity).DefaultWeightUnits
 				if e.editorData.Quantity > 0 {
 					weight = gurps.ExtendedWeightAdjustedForModifiers(defUnits, e.editorData.Quantity, e.editorData.Weight,
 						e.editorData.Modifiers, e.editorData.Features, e.target.Children, false, false)
@@ -84,9 +85,9 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 			addPageRefLabelAndField(content, &e.editorData.PageRef)
 			addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 			adjustFieldBlank(usesField, e.editorData.MaxUses <= 0)
-			content.AddChild(newPrereqPanel(e.target.Entity, &e.editorData.Prereq))
-			content.AddChild(newFeaturesPanel(e.target.Entity, e.target, &e.editorData.Features, false))
-			modifiersPanel := newEquipmentModifiersPanel(e.target.Entity, &e.editorData.Modifiers)
+			content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq))
+			content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false))
+			modifiersPanel := newEquipmentModifiersPanel(entity, &e.editorData.Modifiers)
 			content.AddChild(modifiersPanel)
 			content.AddChild(newWeaponsPanel(e, e.target, true, &e.editorData.Weapons))
 			content.AddChild(newWeaponsPanel(e, e.target, false, &e.editorData.Weapons))

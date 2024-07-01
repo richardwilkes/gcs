@@ -83,8 +83,8 @@ func (p *traitModifiersProvider) SetRootData(data []*gurps.TraitModifier) {
 	p.provider.SetTraitModifierList(data)
 }
 
-func (p *traitModifiersProvider) Entity() *gurps.Entity {
-	return p.provider.Entity()
+func (p *traitModifiersProvider) DataOwner() gurps.DataOwner {
+	return p.provider.DataOwner()
 }
 
 func (p *traitModifiersProvider) DragKey() string {
@@ -114,18 +114,7 @@ func (p *traitModifiersProvider) Headers() []unison.TableColumnHeader[*Node[*gur
 	ids := p.ColumnIDs()
 	headers := make([]unison.TableColumnHeader[*Node[*gurps.TraitModifier]], 0, len(ids))
 	for _, id := range ids {
-		switch id {
-		case gurps.TraitModifierEnabledColumn:
-			headers = append(headers, NewEnabledHeader[*gurps.TraitModifier](false))
-		case gurps.TraitModifierDescriptionColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.TraitModifier](i18n.Text("Trait Modifier"), "", false))
-		case gurps.TraitModifierCostColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.TraitModifier](i18n.Text("Cost Modifier"), "", false))
-		case gurps.TraitModifierTagsColumn:
-			headers = append(headers, NewEditorListHeader[*gurps.TraitModifier](i18n.Text("Tags"), "", false))
-		case gurps.TraitModifierReferenceColumn:
-			headers = append(headers, NewEditorPageRefHeader[*gurps.TraitModifier](false))
-		}
+		headers = append(headers, headerFromData[*gurps.TraitModifier](gurps.TraitModifierHeaderData(id), false))
 	}
 	return headers
 }
@@ -138,12 +127,16 @@ func (p *traitModifiersProvider) ColumnIDs() []int {
 	if p.forEditor {
 		columnIDs = append(columnIDs, gurps.TraitModifierEnabledColumn)
 	}
-	return append(columnIDs,
+	columnIDs = append(columnIDs,
 		gurps.TraitModifierDescriptionColumn,
 		gurps.TraitModifierCostColumn,
 		gurps.TraitModifierTagsColumn,
 		gurps.TraitModifierReferenceColumn,
 	)
+	if p.forEditor {
+		columnIDs = append(columnIDs, gurps.TraitModifierLibSrcColumn)
+	}
+	return columnIDs
 }
 
 func (p *traitModifiersProvider) HierarchyColumnID() int {
@@ -161,7 +154,7 @@ func (p *traitModifiersProvider) OpenEditor(owner Rebuildable, table *unison.Tab
 }
 
 func (p *traitModifiersProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.TraitModifier]], variant ItemVariant) {
-	item := gurps.NewTraitModifier(p.Entity(), nil, variant == ContainerItemVariant)
+	item := gurps.NewTraitModifier(p.DataOwner(), nil, variant == ContainerItemVariant)
 	InsertItems[*gurps.TraitModifier](owner, table, p.provider.TraitModifierList, p.provider.SetTraitModifierList,
 		func(_ *unison.Table[*Node[*gurps.TraitModifier]]) []*Node[*gurps.TraitModifier] {
 			return p.RootRows()

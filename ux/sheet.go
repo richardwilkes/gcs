@@ -39,6 +39,7 @@ var (
 	_ ModifiableRoot             = &Sheet{}
 	_ Rebuildable                = &Sheet{}
 	_ unison.TabCloser           = &Sheet{}
+	_ gurps.DataOwnerProvider    = &Sheet{}
 
 	printMgr    printing.PrintManager
 	lastPrinter printing.PrinterID
@@ -291,6 +292,11 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	s.InstallCmdHandlers(PrintItemID, unison.AlwaysEnabled, func(_ any) { s.print() })
 	s.InstallCmdHandlers(ClearPortraitItemID, s.canClearPortrait, s.clearPortrait)
 	return s
+}
+
+// DataOwner implements gurps.DataOwnerProvider.
+func (s *Sheet) DataOwner() gurps.DataOwner {
+	return s.entity
 }
 
 func (s *Sheet) canClearPortrait(_ any) bool {
@@ -585,7 +591,7 @@ func (s *Sheet) createLists() {
 				} else {
 					s.Reactions.Sync()
 				}
-				SetEntityProvider(s.Reactions.Table, s)
+				SetDataOwnerProvider(s.Reactions.Table, s)
 				if s.Reactions.Table.RootRowCount() > 0 {
 					rowPanel.AddChild(s.Reactions)
 				}
@@ -595,7 +601,7 @@ func (s *Sheet) createLists() {
 				} else {
 					s.ConditionalModifiers.Sync()
 				}
-				SetEntityProvider(s.ConditionalModifiers.Table, s)
+				SetDataOwnerProvider(s.ConditionalModifiers.Table, s)
 				if s.ConditionalModifiers.Table.RootRowCount() > 0 {
 					rowPanel.AddChild(s.ConditionalModifiers)
 				}
@@ -605,7 +611,7 @@ func (s *Sheet) createLists() {
 				} else {
 					s.MeleeWeapons.Sync()
 				}
-				SetEntityProvider(s.MeleeWeapons.Table, s)
+				SetDataOwnerProvider(s.MeleeWeapons.Table, s)
 				if s.MeleeWeapons.Table.RootRowCount() > 0 {
 					rowPanel.AddChild(s.MeleeWeapons)
 				}
@@ -615,7 +621,7 @@ func (s *Sheet) createLists() {
 				} else {
 					s.RangedWeapons.Sync()
 				}
-				SetEntityProvider(s.RangedWeapons.Table, s)
+				SetDataOwnerProvider(s.RangedWeapons.Table, s)
 				if s.RangedWeapons.Table.RootRowCount() > 0 {
 					rowPanel.AddChild(s.RangedWeapons)
 				}

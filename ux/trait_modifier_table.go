@@ -21,7 +21,7 @@ type traitModifierListProvider struct {
 	modifiers []*gurps.TraitModifier
 }
 
-func (p *traitModifierListProvider) Entity() *gurps.Entity {
+func (p *traitModifierListProvider) DataOwner() gurps.DataOwner {
 	return nil
 }
 

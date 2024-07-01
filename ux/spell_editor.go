@@ -29,6 +29,7 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 	_, ownerIsSheet := owner.(*Sheet)
 	_, ownerIsTemplate := owner.(*Template)
 	addNameLabelAndField(content, &e.editorData.Name)
+	entity := gurps.EntityFromNode(e.target)
 	if !e.target.Container() {
 		addTechLevelRequired(content, &e.editorData.TechLevel, ownerIsSheet)
 		addLabelAndListField(content, i18n.Text("College"), i18n.Text("colleges"), (*[]string)(&e.editorData.College))
@@ -42,7 +43,7 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 			wrapper.AddChild(NewFieldInteriorLeadingLabel(prereqCount, false))
 			addIntegerField(wrapper, nil, "", prereqCount, "", &e.editorData.RitualPrereqCount, 0, 99)
 		} else {
-			addDifficultyLabelAndFields(content, e.target.Entity, &e.editorData.Difficulty)
+			addDifficultyLabelAndFields(content, entity, &e.editorData.Difficulty)
 		}
 		if ownerIsSheet || ownerIsTemplate {
 			pointsLabel := i18n.Text("Points")
@@ -50,22 +51,22 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 			addDecimalField(wrapper, nil, "", pointsLabel, "", &e.editorData.Points, 0, fxp.MaxBasePoints)
 			wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Level"), false))
 			levelField := NewNonEditableField(func(field *NonEditableField) {
-				points := gurps.AdjustedPointsForNonContainerSpell(e.target.Entity, e.editorData.Points,
+				points := gurps.AdjustedPointsForNonContainerSpell(entity, e.editorData.Points,
 					e.editorData.Name, e.editorData.PowerSource, e.editorData.College, e.editorData.Tags, nil)
 				var level gurps.Level
 				if e.target.IsRitualMagic() {
-					level = gurps.CalculateRitualMagicSpellLevel(e.target.Entity, e.editorData.Name,
+					level = gurps.CalculateRitualMagicSpellLevel(entity, e.editorData.Name,
 						e.editorData.PowerSource, e.editorData.RitualSkillName, e.editorData.RitualPrereqCount,
 						e.editorData.College, e.editorData.Tags, e.editorData.Difficulty, points)
 				} else {
-					level = gurps.CalculateSpellLevel(e.target.Entity, e.editorData.Name, e.editorData.PowerSource,
+					level = gurps.CalculateSpellLevel(entity, e.editorData.Name, e.editorData.PowerSource,
 						e.editorData.College, e.editorData.Tags, e.editorData.Difficulty, points)
 				}
 				lvl := level.Level.Trunc()
 				if lvl <= 0 {
 					field.SetTitle("-")
 				} else {
-					field.SetTitle(lvl.String() + "/" + gurps.FormatRelativeSkill(e.target.Entity,
+					field.SetTitle(lvl.String() + "/" + gurps.FormatRelativeSkill(entity,
 						e.target.IsRitualMagic(), e.editorData.Difficulty, level.RelativeLevel))
 				}
 				field.MarkForLayoutAndRedraw()
@@ -91,10 +92,10 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 	if !e.target.Container() {
-		content.AddChild(newPrereqPanel(e.target.Entity, &e.editorData.Prereq))
+		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq))
 		content.AddChild(newWeaponsPanel(e, e.target, true, &e.editorData.Weapons))
 		content.AddChild(newWeaponsPanel(e, e.target, false, &e.editorData.Weapons))
-		content.AddChild(newStudyPanel(e.target.Entity, &e.editorData.StudyHoursNeeded, &e.editorData.Study))
+		content.AddChild(newStudyPanel(entity, &e.editorData.StudyHoursNeeded, &e.editorData.Study))
 	}
 	return nil
 }

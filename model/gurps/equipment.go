@@ -22,10 +22,12 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/tid"
@@ -54,6 +56,7 @@ const (
 	EquipmentExtendedWeightColumn
 	EquipmentTagsColumn
 	EquipmentReferenceColumn
+	EquipmentLibSrcColumn
 )
 
 const (
@@ -64,7 +67,7 @@ const (
 // Equipment holds a piece of equipment.
 type Equipment struct {
 	EquipmentData
-	Entity            *Entity
+	owner             DataOwner
 	UnsatisfiedReason string
 }
 
@@ -133,7 +136,7 @@ func SaveEquipment(equipment []*Equipment, filePath string) error {
 }
 
 // NewEquipment creates a new Equipment.
-func NewEquipment(entity *Entity, parent *Equipment, container bool) *Equipment {
+func NewEquipment(owner DataOwner, parent *Equipment, container bool) *Equipment {
 	e := Equipment{
 		EquipmentData: EquipmentData{
 			TID: tid.MustNewTID(equipmentKind(container)),
@@ -144,7 +147,7 @@ func NewEquipment(entity *Entity, parent *Equipment, container bool) *Equipment 
 			},
 			parent: parent,
 		},
-		Entity: entity,
+		owner: owner,
 	}
 	e.Name = e.Kind()
 	e.SetOpen(container)
@@ -209,8 +212,8 @@ func (e *Equipment) SetOpen(open bool) {
 }
 
 // Clone implements Node.
-func (e *Equipment) Clone(from LibraryFile, entity *Entity, parent *Equipment, preserveID bool) *Equipment {
-	other := NewEquipment(entity, parent, e.Container())
+func (e *Equipment) Clone(from LibraryFile, owner DataOwner, parent *Equipment, preserveID bool) *Equipment {
+	other := NewEquipment(owner, parent, e.Container())
 	other.Source.LibraryFile = from
 	other.Source.TID = e.TID
 	if preserveID {
@@ -222,7 +225,7 @@ func (e *Equipment) Clone(from LibraryFile, entity *Entity, parent *Equipment, p
 	if e.HasChildren() {
 		other.Children = make([]*Equipment, 0, len(e.Children))
 		for _, child := range e.Children {
-			other.Children = append(other.Children, child.Clone(from, entity, other, preserveID))
+			other.Children = append(other.Children, child.Clone(from, owner, other, preserveID))
 		}
 	}
 	return other
@@ -238,7 +241,7 @@ func (e *Equipment) MarshalJSON() ([]byte, error) {
 		UnsatisfiedReason       string      `json:"unsatisfied_reason,omitempty"`
 	}
 	e.ClearUnusedFieldsForType()
-	defUnits := SheetSettingsFor(e.Entity).DefaultWeightUnits
+	defUnits := SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits
 	data := struct {
 		EquipmentData
 		Calc calc `json:"calc"`
@@ -359,6 +362,10 @@ func EquipmentHeaderData(columnID int, entity *Entity, carried, forPage bool) He
 		data.Title = HeaderBookmark
 		data.TitleIsImageKey = true
 		data.Detail = message.PageRefTooltip()
+	case EquipmentLibSrcColumn:
+		data.Title = HeaderDatabase
+		data.TitleIsImageKey = true
+		data.Detail = message.LibSrcTooltip()
 	}
 	return data
 }
@@ -411,12 +418,12 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 		data.Alignment = align.End
 	case EquipmentWeightColumn:
 		data.Type = cell.Text
-		units := SheetSettingsFor(e.Entity).DefaultWeightUnits
+		units := SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits
 		data.Primary = units.Format(e.AdjustedWeight(false, units))
 		data.Alignment = align.End
 	case EquipmentExtendedWeightColumn:
 		data.Type = cell.Text
-		units := SheetSettingsFor(e.Entity).DefaultWeightUnits
+		units := SheetSettingsFor(EntityFromNode(e)).DefaultWeightUnits
 		data.Primary = units.Format(e.ExtendedWeight(false, units))
 		data.Alignment = align.End
 	case EquipmentTagsColumn:
@@ -429,6 +436,17 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 			data.Secondary = e.PageRefHighlight
 		} else {
 			data.Secondary = e.Name
+		}
+	case EquipmentLibSrcColumn:
+		data.Type = cell.Text
+		data.Alignment = align.Middle
+		if !toolbox.IsNil(e.owner) {
+			state := e.owner.SourceMatcher().Match(e)
+			data.Primary = state.AltString()
+			data.Tooltip = state.String()
+			if state != srcstate.Custom {
+				data.Tooltip += "\n" + e.Source.String()
+			}
 		}
 	}
 }
@@ -444,24 +462,24 @@ func (e *Equipment) Depth() int {
 	return count
 }
 
-// OwningEntity returns the owning Entity.
-func (e *Equipment) OwningEntity() *Entity {
-	return e.Entity
+// DataOwner returns the data owner.
+func (e *Equipment) DataOwner() DataOwner {
+	return e.owner
 }
 
-// SetOwningEntity sets the owning entity and configures any sub-components as needed.
-func (e *Equipment) SetOwningEntity(entity *Entity) {
-	e.Entity = entity
+// SetDataOwner sets the data owner and configures any sub-components as needed.
+func (e *Equipment) SetDataOwner(owner DataOwner) {
+	e.owner = owner
 	for _, w := range e.Weapons {
 		w.SetOwner(e)
 	}
 	if e.Container() {
 		for _, child := range e.Children {
-			child.SetOwningEntity(entity)
+			child.SetDataOwner(owner)
 		}
 	}
 	for _, m := range e.Modifiers {
-		m.SetOwningEntity(entity)
+		m.SetDataOwner(owner)
 	}
 }
 
@@ -473,7 +491,7 @@ func (e *Equipment) Description() string {
 // SecondaryText returns the "secondary" text: the text display below the description.
 func (e *Equipment) SecondaryText(optionChecker func(display.Option) bool) string {
 	var buffer strings.Builder
-	settings := SheetSettingsFor(e.Entity)
+	settings := SheetSettingsFor(EntityFromNode(e))
 	if optionChecker(settings.ModifiersDisplay) {
 		AppendStringOntoNewLine(&buffer, e.ModifierNotes())
 	}
@@ -500,7 +518,7 @@ func (e *Equipment) String() string {
 }
 
 func (e *Equipment) resolveLocalNotes() string {
-	return EvalEmbeddedRegex.ReplaceAllStringFunc(e.LocalNotes, e.Entity.EmbeddedEval)
+	return EvalEmbeddedRegex.ReplaceAllStringFunc(e.LocalNotes, EntityFromNode(e).EmbeddedEval)
 }
 
 // Notes returns the local notes.
@@ -763,22 +781,22 @@ func (e *Equipment) Hash(h hash.Hash) {
 
 // CopyFrom implements node.EditorData.
 func (e *EquipmentEditData) CopyFrom(other *Equipment) {
-	e.copyFrom(other.Entity, &other.EquipmentEditData, false)
+	e.copyFrom(other.owner, &other.EquipmentEditData, false)
 }
 
 // ApplyTo implements node.EditorData.
 func (e *EquipmentEditData) ApplyTo(other *Equipment) {
-	other.EquipmentEditData.copyFrom(other.Entity, e, true)
+	other.EquipmentEditData.copyFrom(other.owner, e, true)
 }
 
-func (e *EquipmentEditData) copyFrom(entity *Entity, other *EquipmentEditData, isApply bool) {
+func (e *EquipmentEditData) copyFrom(owner DataOwner, other *EquipmentEditData, isApply bool) {
 	*e = *other
 	e.Tags = txt.CloneStringSlice(e.Tags)
 	e.Modifiers = nil
 	if len(other.Modifiers) != 0 {
 		e.Modifiers = make([]*EquipmentModifier, 0, len(other.Modifiers))
 		for _, one := range other.Modifiers {
-			e.Modifiers = append(e.Modifiers, one.Clone(one.Source.LibraryFile, entity, nil, true))
+			e.Modifiers = append(e.Modifiers, one.Clone(one.Source.LibraryFile, owner, nil, true))
 		}
 	}
 	e.Prereq = e.Prereq.CloneResolvingEmpty(false, isApply)
@@ -786,7 +804,7 @@ func (e *EquipmentEditData) copyFrom(entity *Entity, other *EquipmentEditData, i
 	if len(other.Weapons) != 0 {
 		e.Weapons = make([]*Weapon, len(other.Weapons))
 		for i, w := range other.Weapons {
-			e.Weapons[i] = w.Clone(LibraryFile{}, entity, nil, true)
+			e.Weapons[i] = w.Clone(LibraryFile{}, owner, nil, true)
 		}
 	}
 	e.Features = other.Features.Clone()

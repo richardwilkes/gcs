@@ -75,6 +75,9 @@ func (s StringCriteria) StringWithPrefix(prefix, notPrefix string) string {
 
 // Hash writes this object's contents into the hasher.
 func (s StringCriteria) Hash(h hash.Hash) {
+	if s.ShouldOmit() {
+		return
+	}
 	_, _ = h.Write([]byte(s.Compare))
 	_, _ = h.Write([]byte(s.Qualifier))
 }

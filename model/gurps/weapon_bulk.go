@@ -73,6 +73,9 @@ func (wb *WeaponBulk) UnmarshalJSON(data []byte) error {
 
 // Hash writes this object's contents into the hasher.
 func (wb WeaponBulk) Hash(h hash.Hash) {
+	if wb.ShouldOmit() {
+		return
+	}
 	_ = binary.Write(h, binary.LittleEndian, wb.Normal)
 	_ = binary.Write(h, binary.LittleEndian, wb.Giant)
 	_ = binary.Write(h, binary.LittleEndian, wb.RetractingStock)

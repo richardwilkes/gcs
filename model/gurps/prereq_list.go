@@ -146,7 +146,7 @@ func (p *PrereqList) Satisfied(entity *Entity, exclude any, buffer *xio.ByteBuff
 
 // Hash writes this object's contents into the hasher.
 func (p *PrereqList) Hash(h hash.Hash) {
-	if p == nil {
+	if p.ShouldOmit() {
 		return
 	}
 	_ = binary.Write(h, binary.LittleEndian, p.Type)

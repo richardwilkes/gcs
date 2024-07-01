@@ -67,13 +67,13 @@ func (enum Value) Key() string {
 func (enum Value) String() string {
 	switch enum {
 	case Custom:
-		return i18n.Text("Custom")
+		return i18n.Text("Custom data which did not come from a library source")
 	case Matched:
-		return i18n.Text("Matched")
+		return i18n.Text("Data matches library source data")
 	case Mismatched:
-		return i18n.Text("Mismatched")
+		return i18n.Text("Data does NOT match library source data")
 	case Missing:
-		return i18n.Text("Missing")
+		return i18n.Text("Unable to locate the library source data to compare against")
 	default:
 		return Value(0).String()
 	}
@@ -83,7 +83,7 @@ func (enum Value) String() string {
 func (enum Value) AltString() string {
 	switch enum {
 	case Custom:
-		return "*"
+		return "—"
 	case Matched:
 		return ""
 	case Mismatched:

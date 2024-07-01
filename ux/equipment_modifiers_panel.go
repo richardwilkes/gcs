@@ -18,15 +18,15 @@ import (
 
 type equipmentModifiersPanel struct {
 	unison.Panel
-	entity    *gurps.Entity
+	owner     gurps.DataOwner
 	modifiers *[]*gurps.EquipmentModifier
 	provider  TableProvider[*gurps.EquipmentModifier]
 	table     *unison.Table[*Node[*gurps.EquipmentModifier]]
 }
 
-func newEquipmentModifiersPanel(entity *gurps.Entity, modifiers *[]*gurps.EquipmentModifier) *equipmentModifiersPanel {
+func newEquipmentModifiersPanel(owner gurps.DataOwner, modifiers *[]*gurps.EquipmentModifier) *equipmentModifiersPanel {
 	p := &equipmentModifiersPanel{
-		entity:    entity,
+		owner:     owner,
 		modifiers: modifiers,
 	}
 	p.Self = p
@@ -43,8 +43,8 @@ func newEquipmentModifiersPanel(entity *gurps.Entity, modifiers *[]*gurps.Equipm
 	return p
 }
 
-func (p *equipmentModifiersPanel) Entity() *gurps.Entity {
-	return p.entity
+func (p *equipmentModifiersPanel) DataOwner() gurps.DataOwner {
+	return p.owner
 }
 
 func (p *equipmentModifiersPanel) EquipmentModifierList() []*gurps.EquipmentModifier {

@@ -23,12 +23,14 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/tmcost"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/tid"
@@ -50,6 +52,7 @@ const (
 	TraitPointsColumn
 	TraitTagsColumn
 	TraitReferenceColumn
+	TraitLibSrcColumn
 )
 
 const (
@@ -60,7 +63,7 @@ const (
 // Trait holds an advantage, disadvantage, quirk, or perk.
 type Trait struct {
 	TraitData
-	Entity            *Entity
+	owner             DataOwner
 	UnsatisfiedReason string
 }
 
@@ -146,13 +149,13 @@ func SaveTraits(traits []*Trait, filePath string) error {
 }
 
 // NewTrait creates a new Trait.
-func NewTrait(entity *Entity, parent *Trait, container bool) *Trait {
+func NewTrait(owner DataOwner, parent *Trait, container bool) *Trait {
 	t := Trait{
 		TraitData: TraitData{
 			TID:    tid.MustNewTID(traitKind(container)),
 			parent: parent,
 		},
-		Entity: entity,
+		owner: owner,
 	}
 	t.Name = t.Kind()
 	if t.Container() {
@@ -220,8 +223,8 @@ func (t *Trait) SetOpen(open bool) {
 }
 
 // Clone implements Node.
-func (t *Trait) Clone(from LibraryFile, entity *Entity, parent *Trait, preserveID bool) *Trait {
-	other := NewTrait(entity, parent, t.Container())
+func (t *Trait) Clone(from LibraryFile, owner DataOwner, parent *Trait, preserveID bool) *Trait {
+	other := NewTrait(owner, parent, t.Container())
 	other.Source.LibraryFile = from
 	other.Source.TID = t.TID
 	if preserveID {
@@ -233,7 +236,7 @@ func (t *Trait) Clone(from LibraryFile, entity *Entity, parent *Trait, preserveI
 	if t.HasChildren() {
 		other.Children = make([]*Trait, 0, len(t.Children))
 		for _, child := range t.Children {
-			other.Children = append(other.Children, child.Clone(from, entity, other, preserveID))
+			other.Children = append(other.Children, child.Clone(from, owner, other, preserveID))
 		}
 	}
 	return other
@@ -353,6 +356,10 @@ func TraitsHeaderData(columnID int) HeaderData {
 		data.Title = HeaderBookmark
 		data.TitleIsImageKey = true
 		data.Detail = message.PageRefTooltip()
+	case TraitLibSrcColumn:
+		data.Title = HeaderDatabase
+		data.TitleIsImageKey = true
+		data.Detail = message.LibSrcTooltip()
 	}
 	return data
 }
@@ -397,6 +404,17 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 		} else {
 			data.Secondary = t.Name
 		}
+	case TraitLibSrcColumn:
+		data.Type = cell.Text
+		data.Alignment = align.Middle
+		if !toolbox.IsNil(t.owner) {
+			state := t.owner.SourceMatcher().Match(t)
+			data.Primary = state.AltString()
+			data.Tooltip = state.String()
+			if state != srcstate.Custom {
+				data.Tooltip += "\n" + t.Source.String()
+			}
+		}
 	}
 }
 
@@ -411,17 +429,17 @@ func (t *Trait) Depth() int {
 	return count
 }
 
-// OwningEntity returns the owning Entity.
-func (t *Trait) OwningEntity() *Entity {
-	return t.Entity
+// DataOwner returns the data owner.
+func (t *Trait) DataOwner() DataOwner {
+	return t.owner
 }
 
-// SetOwningEntity sets the owning entity and configures any sub-components as needed.
-func (t *Trait) SetOwningEntity(entity *Entity) {
-	t.Entity = entity
+// SetDataOwner sets the data owner and configures any sub-components as needed.
+func (t *Trait) SetDataOwner(owner DataOwner) {
+	t.owner = owner
 	if t.Container() {
 		for _, child := range t.Children {
-			child.SetOwningEntity(entity)
+			child.SetDataOwner(owner)
 		}
 	} else {
 		for _, w := range t.Weapons {
@@ -429,7 +447,7 @@ func (t *Trait) SetOwningEntity(entity *Entity) {
 		}
 	}
 	for _, m := range t.Modifiers {
-		m.SetOwningEntity(entity)
+		m.SetDataOwner(owner)
 	}
 }
 
@@ -457,7 +475,8 @@ func (t *Trait) AdjustedPoints() fxp.Int {
 		return 0
 	}
 	if !t.Container() {
-		return AdjustedPoints(t.Entity, t.CanLevel, t.BasePoints, t.Levels, t.PointsPerLevel, t.CR, t.AllModifiers(), t.RoundCostDown)
+		return AdjustedPoints(EntityFromNode(t), t.CanLevel, t.BasePoints, t.Levels, t.PointsPerLevel, t.CR,
+			t.AllModifiers(), t.RoundCostDown)
 	}
 	var points fxp.Int
 	if t.ContainerType == container.AlternativeAbilities {
@@ -529,7 +548,7 @@ func (t *Trait) String() string {
 }
 
 func (t *Trait) resolveLocalNotes() string {
-	return EvalEmbeddedRegex.ReplaceAllStringFunc(t.LocalNotes, t.Entity.EmbeddedEval)
+	return EvalEmbeddedRegex.ReplaceAllStringFunc(t.LocalNotes, EntityFromNode(t).EmbeddedEval)
 }
 
 // FeatureList returns the list of Features.
@@ -623,7 +642,7 @@ func (t *Trait) ModifierNotes() string {
 // SecondaryText returns the "secondary" text: the text display below an Trait.
 func (t *Trait) SecondaryText(optionChecker func(display.Option) bool) string {
 	var buffer strings.Builder
-	settings := SheetSettingsFor(t.Entity)
+	settings := SheetSettingsFor(EntityFromNode(t))
 	if t.UserDesc != "" && optionChecker(settings.UserDescriptionDisplay) {
 		buffer.WriteString(t.UserDesc)
 	}
@@ -816,22 +835,22 @@ func (t *Trait) Hash(h hash.Hash) {
 
 // CopyFrom implements node.EditorData.
 func (t *TraitEditData) CopyFrom(other *Trait) {
-	t.copyFrom(other.Entity, &other.TraitEditData, other.Container(), false)
+	t.copyFrom(other.owner, &other.TraitEditData, other.Container(), false)
 }
 
 // ApplyTo implements node.EditorData.
 func (t *TraitEditData) ApplyTo(other *Trait) {
-	other.TraitEditData.copyFrom(other.Entity, t, other.Container(), true)
+	other.TraitEditData.copyFrom(other.owner, t, other.Container(), true)
 }
 
-func (t *TraitEditData) copyFrom(entity *Entity, other *TraitEditData, isContainer, isApply bool) {
+func (t *TraitEditData) copyFrom(owner DataOwner, other *TraitEditData, isContainer, isApply bool) {
 	*t = *other
 	t.Tags = txt.CloneStringSlice(t.Tags)
 	t.Modifiers = nil
 	if len(other.Modifiers) != 0 {
 		t.Modifiers = make([]*TraitModifier, 0, len(other.Modifiers))
 		for _, one := range other.Modifiers {
-			t.Modifiers = append(t.Modifiers, one.Clone(one.Source.LibraryFile, entity, nil, true))
+			t.Modifiers = append(t.Modifiers, one.Clone(one.Source.LibraryFile, owner, nil, true))
 		}
 	}
 	t.Prereq = t.Prereq.CloneResolvingEmpty(isContainer, isApply)
@@ -839,7 +858,7 @@ func (t *TraitEditData) copyFrom(entity *Entity, other *TraitEditData, isContain
 	if len(other.Weapons) != 0 {
 		t.Weapons = make([]*Weapon, len(other.Weapons))
 		for i, w := range other.Weapons {
-			t.Weapons[i] = w.Clone(LibraryFile{}, entity, nil, true)
+			t.Weapons[i] = w.Clone(LibraryFile{}, owner, nil, true)
 		}
 	}
 	t.Features = other.Features.Clone()

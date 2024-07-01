@@ -83,8 +83,8 @@ func (p *eqpModProvider) SetRootData(data []*gurps.EquipmentModifier) {
 	p.provider.SetEquipmentModifierList(data)
 }
 
-func (p *eqpModProvider) Entity() *gurps.Entity {
-	return p.provider.Entity()
+func (p *eqpModProvider) DataOwner() gurps.DataOwner {
+	return p.provider.DataOwner()
 }
 
 func (p *eqpModProvider) DragKey() string {
@@ -127,7 +127,7 @@ func (p *eqpModProvider) ColumnIDs() []int {
 	if p.forEditor {
 		columnIDs = append(columnIDs, gurps.EquipmentModifierEnabledColumn)
 	}
-	return append(columnIDs,
+	columnIDs = append(columnIDs,
 		gurps.EquipmentModifierDescriptionColumn,
 		gurps.EquipmentModifierTechLevelColumn,
 		gurps.EquipmentModifierCostColumn,
@@ -135,6 +135,10 @@ func (p *eqpModProvider) ColumnIDs() []int {
 		gurps.EquipmentModifierTagsColumn,
 		gurps.EquipmentModifierReferenceColumn,
 	)
+	if p.forEditor {
+		columnIDs = append(columnIDs, gurps.EquipmentModifierLibSrcColumn)
+	}
+	return columnIDs
 }
 
 func (p *eqpModProvider) HierarchyColumnID() int {
@@ -152,7 +156,7 @@ func (p *eqpModProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node
 }
 
 func (p *eqpModProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.EquipmentModifier]], variant ItemVariant) {
-	item := gurps.NewEquipmentModifier(p.Entity(), nil, variant == ContainerItemVariant)
+	item := gurps.NewEquipmentModifier(p.DataOwner(), nil, variant == ContainerItemVariant)
 	InsertItems[*gurps.EquipmentModifier](owner, table, p.provider.EquipmentModifierList,
 		p.provider.SetEquipmentModifierList,
 		func(_ *unison.Table[*Node[*gurps.EquipmentModifier]]) []*Node[*gurps.EquipmentModifier] {

@@ -68,7 +68,7 @@ func (t *TemplatePicker) Description() string {
 
 // Hash writes this object's contents into the hasher.
 func (t *TemplatePicker) Hash(h hash.Hash) {
-	if t == nil {
+	if t.ShouldOmit() {
 		return
 	}
 	_ = binary.Write(h, binary.LittleEndian, t.Type)

@@ -21,11 +21,13 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/affects"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/display"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/tmcost"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/tid"
@@ -47,6 +49,7 @@ const (
 	TraitModifierCostColumn
 	TraitModifierTagsColumn
 	TraitModifierReferenceColumn
+	TraitModifierLibSrcColumn
 )
 
 const (
@@ -67,7 +70,7 @@ type GeneralModifier interface {
 // TraitModifier holds a modifier to an Trait.
 type TraitModifier struct {
 	TraitModifierData
-	Entity *Entity
+	owner DataOwner
 }
 
 // TraitModifierData holds the TraitModifier data that is written to disk.
@@ -133,13 +136,13 @@ func SaveTraitModifiers(modifiers []*TraitModifier, filePath string) error {
 }
 
 // NewTraitModifier creates a TraitModifier.
-func NewTraitModifier(entity *Entity, parent *TraitModifier, container bool) *TraitModifier {
+func NewTraitModifier(owner DataOwner, parent *TraitModifier, container bool) *TraitModifier {
 	t := TraitModifier{
 		TraitModifierData: TraitModifierData{
 			TID:    tid.MustNewTID(traitModifierKind(container)),
 			parent: parent,
 		},
-		Entity: entity,
+		owner: owner,
 	}
 	t.Name = t.Kind()
 	t.SetOpen(container)
@@ -204,8 +207,8 @@ func (t *TraitModifier) SetOpen(open bool) {
 }
 
 // Clone implements Node.
-func (t *TraitModifier) Clone(from LibraryFile, entity *Entity, parent *TraitModifier, preserveID bool) *TraitModifier {
-	other := NewTraitModifier(entity, parent, t.Container())
+func (t *TraitModifier) Clone(from LibraryFile, owner DataOwner, parent *TraitModifier, preserveID bool) *TraitModifier {
+	other := NewTraitModifier(owner, parent, t.Container())
 	other.Source.LibraryFile = from
 	other.Source.TID = t.TID
 	if preserveID {
@@ -217,7 +220,7 @@ func (t *TraitModifier) Clone(from LibraryFile, entity *Entity, parent *TraitMod
 	if t.HasChildren() {
 		other.Children = make([]*TraitModifier, 0, len(t.Children))
 		for _, child := range t.Children {
-			other.Children = append(other.Children, child.Clone(from, entity, other, preserveID))
+			other.Children = append(other.Children, child.Clone(from, owner, other, preserveID))
 		}
 	}
 	return other
@@ -267,6 +270,33 @@ func (t *TraitModifier) TagList() []string {
 	return t.Tags
 }
 
+// TraitModifierHeaderData returns the header data information for the given trait modifier column.
+func TraitModifierHeaderData(columnID int) HeaderData {
+	var data HeaderData
+	switch columnID {
+	case TraitModifierEnabledColumn:
+		data.Title = HeaderCheckmark
+		data.TitleIsImageKey = true
+		data.Detail = message.ModifierEnabledTooltip()
+	case TraitModifierDescriptionColumn:
+		data.Title = i18n.Text("Trait Modifier")
+		data.Primary = true
+	case TraitModifierCostColumn:
+		data.Title = i18n.Text("Cost Adjustment")
+	case TraitModifierTagsColumn:
+		data.Title = i18n.Text("Tags")
+	case TraitModifierReferenceColumn:
+		data.Title = HeaderBookmark
+		data.TitleIsImageKey = true
+		data.Detail = message.PageRefTooltip()
+	case TraitModifierLibSrcColumn:
+		data.Title = HeaderDatabase
+		data.TitleIsImageKey = true
+		data.Detail = message.LibSrcTooltip()
+	}
+	return data
+}
+
 // CellData returns the cell data information for the given column.
 func (t *TraitModifier) CellData(columnID int, data *CellData) {
 	switch columnID {
@@ -297,6 +327,17 @@ func (t *TraitModifier) CellData(columnID int, data *CellData) {
 		} else {
 			data.Secondary = t.Name
 		}
+	case TraitModifierLibSrcColumn:
+		data.Type = cell.Text
+		data.Alignment = align.Middle
+		if !toolbox.IsNil(t.owner) {
+			state := t.owner.SourceMatcher().Match(t)
+			data.Primary = state.AltString()
+			data.Tooltip = state.String()
+			if state != srcstate.Custom {
+				data.Tooltip += "\n" + t.Source.String()
+			}
+		}
 	}
 }
 
@@ -311,17 +352,17 @@ func (t *TraitModifier) Depth() int {
 	return count
 }
 
-// OwningEntity returns the owning Entity.
-func (t *TraitModifier) OwningEntity() *Entity {
-	return t.Entity
+// DataOwner returns the data owner.
+func (t *TraitModifier) DataOwner() DataOwner {
+	return t.owner
 }
 
-// SetOwningEntity sets the owning entity and configures any sub-components as needed.
-func (t *TraitModifier) SetOwningEntity(entity *Entity) {
-	t.Entity = entity
+// SetDataOwner sets the data owner and configures any sub-components as needed.
+func (t *TraitModifier) SetDataOwner(owner DataOwner) {
+	t.owner = owner
 	if t.Container() {
 		for _, child := range t.Children {
-			child.SetOwningEntity(entity)
+			child.SetDataOwner(owner)
 		}
 	}
 }
@@ -359,7 +400,7 @@ func (t *TraitModifier) String() string {
 
 // SecondaryText returns the "secondary" text: the text display below an Trait.
 func (t *TraitModifier) SecondaryText(optionChecker func(display.Option) bool) string {
-	if optionChecker(SheetSettingsFor(t.Entity).NotesDisplay) {
+	if optionChecker(SheetSettingsFor(EntityFromNode(t)).NotesDisplay) {
 		return t.LocalNotes
 	}
 	return ""
@@ -374,7 +415,7 @@ func (t *TraitModifier) FullDescription() string {
 		buffer.WriteString(t.LocalNotes)
 		buffer.WriteByte(')')
 	}
-	if SheetSettingsFor(t.Entity).ShowTraitModifierAdj {
+	if SheetSettingsFor(EntityFromNode(t)).ShowTraitModifierAdj {
 		buffer.WriteString(" [")
 		buffer.WriteString(t.CostDescription())
 		buffer.WriteByte(']')

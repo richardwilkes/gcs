@@ -75,6 +75,9 @@ func (wp *WeaponParry) UnmarshalJSON(data []byte) error {
 
 // Hash writes this object's contents into the hasher.
 func (wp WeaponParry) Hash(h hash.Hash) {
+	if wp.ShouldOmit() {
+		return
+	}
 	_ = binary.Write(h, binary.LittleEndian, wp.CanParry)
 	_ = binary.Write(h, binary.LittleEndian, wp.Fencing)
 	_ = binary.Write(h, binary.LittleEndian, wp.Unbalanced)
@@ -88,16 +91,16 @@ func (wp WeaponParry) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 	if result.CanParry {
 		result.Fencing = w.ResolveBoolFlag(wswitch.Fencing, result.Fencing)
 		result.Unbalanced = w.ResolveBoolFlag(wswitch.Unbalanced, result.Unbalanced)
-		if pc := w.PC(); pc != nil {
+		if entity := w.Entity(); entity != nil {
 			var primaryTooltip *xio.ByteBuffer
 			if modifiersTooltip != nil {
 				primaryTooltip = &xio.ByteBuffer{}
 			}
-			preAdj := w.skillLevelBaseAdjustment(pc, primaryTooltip)
-			postAdj := w.skillLevelPostAdjustment(pc, primaryTooltip)
+			preAdj := w.skillLevelBaseAdjustment(entity, primaryTooltip)
+			postAdj := w.skillLevelPostAdjustment(entity, primaryTooltip)
 			best := fxp.Min
 			for _, def := range w.Defaults {
-				level := def.SkillLevelFast(pc, false, nil, true)
+				level := def.SkillLevelFast(entity, false, nil, true)
 				if level == fxp.Min {
 					continue
 				}
@@ -112,8 +115,8 @@ func (wp WeaponParry) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 			}
 			if best != fxp.Min {
 				AppendBufferOntoNewLine(modifiersTooltip, primaryTooltip)
-				result.Modifier += fxp.Three + best + pc.ParryBonus
-				AppendStringOntoNewLine(modifiersTooltip, pc.ParryBonusTooltip)
+				result.Modifier += fxp.Three + best + entity.ParryBonus
+				AppendStringOntoNewLine(modifiersTooltip, entity.ParryBonusTooltip)
 				var percentModifier fxp.Int
 				for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponParryBonus) {
 					amt := bonus.AdjustedAmountForWeapon(w)

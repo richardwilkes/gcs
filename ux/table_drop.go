@@ -104,14 +104,15 @@ func didDropCallback[T gurps.NodeTypes](undo *unison.UndoEdit[*TableDragUndoEdit
 			tableProvider.ProcessDropData(from, to)
 		}
 	}
-	entityProvider := unison.Ancestor[gurps.EntityProvider](to)
-	if !toolbox.IsNil(entityProvider) && entityProvider.Entity() != nil {
-		if rebuilder := unison.Ancestor[Rebuildable](to); rebuilder != nil {
-			rebuilder.Rebuild(true)
-		}
-		if entityProvider != unison.Ancestor[gurps.EntityProvider](from) {
-			ProcessModifiersForSelection(to)
-			ProcessNameablesForSelection(to)
+	if entityProvider := unison.Ancestor[gurps.DataOwnerProvider](to); !toolbox.IsNil(entityProvider) {
+		if owner := entityProvider.DataOwner(); !toolbox.IsNil(owner) && !toolbox.IsNil(owner.OwningEntity()) {
+			if rebuilder := unison.Ancestor[Rebuildable](to); rebuilder != nil {
+				rebuilder.Rebuild(true)
+			}
+			if entityProvider != unison.Ancestor[gurps.DataOwnerProvider](from) {
+				ProcessModifiersForSelection(to)
+				ProcessNameablesForSelection(to)
+			}
 		}
 	}
 	finishDidDrop(undo, from, to, move)

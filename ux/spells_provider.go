@@ -84,8 +84,8 @@ func (p *spellsProvider) SetRootData(data []*gurps.Spell) {
 	p.provider.SetSpellList(data)
 }
 
-func (p *spellsProvider) Entity() *gurps.Entity {
-	return p.provider.Entity()
+func (p *spellsProvider) DataOwner() gurps.DataOwner {
+	return p.provider.DataOwner()
 }
 
 func (p *spellsProvider) DragKey() string {
@@ -101,18 +101,18 @@ func (p *spellsProvider) DropShouldMoveData(from, to *unison.Table[*Node[*gurps.
 }
 
 func (p *spellsProvider) ProcessDropData(_, to *unison.Table[*Node[*gurps.Spell]]) {
-	entityProvider := unison.Ancestor[gurps.EntityProvider](to)
-	if !toolbox.IsNil(entityProvider) {
-		entity := entityProvider.Entity()
-		if entity != nil {
-			for _, row := range to.SelectedRows(true) {
-				gurps.Traverse(func(spell *gurps.Spell) bool {
-					if spell.TechLevel != nil && *spell.TechLevel == "" {
-						tl := entity.Profile.TechLevel
-						spell.TechLevel = &tl
-					}
-					return false
-				}, false, true, row.Data())
+	if dataOwnerProvider := unison.Ancestor[gurps.DataOwnerProvider](to); !toolbox.IsNil(dataOwnerProvider) {
+		if dataOwner := dataOwnerProvider.DataOwner(); !toolbox.IsNil(dataOwner) {
+			if entity := dataOwner.OwningEntity(); entity != nil {
+				for _, row := range to.SelectedRows(true) {
+					gurps.Traverse(func(spell *gurps.Spell) bool {
+						if spell.TechLevel != nil && *spell.TechLevel == "" {
+							tl := entity.Profile.TechLevel
+							spell.TechLevel = &tl
+						}
+						return false
+					}, false, true, row.Data())
+				}
 			}
 		}
 	}
@@ -169,7 +169,11 @@ func (p *spellsProvider) ColumnIDs() []int {
 			gurps.SpellTagsColumn,
 		)
 	}
-	return append(columnIDs, gurps.SpellReferenceColumn)
+	columnIDs = append(columnIDs, gurps.SpellReferenceColumn)
+	if p.forPage {
+		columnIDs = append(columnIDs, gurps.SpellLibSrcColumn)
+	}
+	return columnIDs
 }
 
 func (p *spellsProvider) HierarchyColumnID() int {
@@ -191,11 +195,11 @@ func (p *spellsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node
 	var item *gurps.Spell
 	switch variant {
 	case NoItemVariant:
-		item = gurps.NewSpell(p.Entity(), nil, false)
+		item = gurps.NewSpell(p.DataOwner(), nil, false)
 	case ContainerItemVariant:
-		item = gurps.NewSpell(p.Entity(), nil, true)
+		item = gurps.NewSpell(p.DataOwner(), nil, true)
 	case AlternateItemVariant:
-		item = gurps.NewRitualMagicSpell(p.Entity(), nil, false)
+		item = gurps.NewRitualMagicSpell(p.DataOwner(), nil, false)
 	default:
 		errs.Log(errs.New("unhandled variant"), "variant", int(variant))
 		atexit.Exit(1)

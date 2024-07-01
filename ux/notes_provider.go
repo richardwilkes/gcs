@@ -72,8 +72,8 @@ func (p *notesProvider) SetRootData(data []*gurps.Note) {
 	p.provider.SetNoteList(data)
 }
 
-func (p *notesProvider) Entity() *gurps.Entity {
-	return p.provider.Entity()
+func (p *notesProvider) DataOwner() gurps.DataOwner {
+	return p.provider.DataOwner()
 }
 
 func (p *notesProvider) DragKey() string {
@@ -112,10 +112,14 @@ func (p *notesProvider) SyncHeader(_ []unison.TableColumnHeader[*Node[*gurps.Not
 }
 
 func (p *notesProvider) ColumnIDs() []int {
-	return []int{
+	columnIDs := []int{
 		gurps.NoteTextColumn,
 		gurps.NoteReferenceColumn,
 	}
+	if p.forPage {
+		columnIDs = append(columnIDs, gurps.NoteLibSrcColumn)
+	}
+	return columnIDs
 }
 
 func (p *notesProvider) HierarchyColumnID() int {
@@ -131,7 +135,7 @@ func (p *notesProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[
 }
 
 func (p *notesProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Note]], variant ItemVariant) {
-	item := gurps.NewNote(p.Entity(), nil, variant == ContainerItemVariant)
+	item := gurps.NewNote(p.DataOwner(), nil, variant == ContainerItemVariant)
 	InsertItems[*gurps.Note](owner, table, p.provider.NoteList, p.provider.SetNoteList,
 		func(_ *unison.Table[*Node[*gurps.Note]]) []*Node[*gurps.Note] { return p.RootRows() }, item)
 	EditNote(owner, item)

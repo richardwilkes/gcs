@@ -140,7 +140,7 @@ func (w *WeaponDamage) String() string {
 	}
 	convertMods := false
 	if w.Owner != nil {
-		convertMods = SheetSettingsFor(w.Owner.Entity()).UseModifyingDicePlusAdds
+		convertMods = SheetSettingsFor(EntityFromNode(w.Owner)).UseModifyingDicePlusAdds
 	}
 	if w.Base != nil {
 		if base := w.Base.StringExtra(convertMods); base != "0" {
@@ -199,8 +199,8 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 	if w.Owner == nil {
 		return &dice.Dice{Sides: 6, Multiplier: 1}
 	}
-	pc := w.Owner.PC()
-	if pc == nil {
+	entity := w.Owner.Entity()
+	if entity == nil {
 		return &dice.Dice{Sides: 6, Multiplier: 1}
 	}
 	maxST := w.Owner.Strength.Resolve(w.Owner, nil).Min.Mul(fxp.Three)
@@ -211,13 +211,13 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 	if st == 0 {
 		switch w.StrengthType {
 		case stdmg.Thrust, stdmg.Swing:
-			st = pc.StrikingStrength()
+			st = entity.StrikingStrength()
 		case stdmg.LiftingThrust, stdmg.LiftingSwing:
-			st = pc.LiftingStrength()
+			st = entity.LiftingStrength()
 		case stdmg.TelekineticThrust, stdmg.TelekineticSwing:
-			st = pc.TelekineticStrength()
+			st = entity.TelekineticStrength()
 		default:
-			st = pc.ResolveAttributeCurrent(StrengthID).Max(0).Trunc()
+			st = entity.ResolveAttributeCurrent(StrengthID).Max(0).Trunc()
 		}
 	}
 	var percentMin fxp.Int
@@ -256,9 +256,9 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 	var stDamage *dice.Dice
 	switch w.StrengthType {
 	case stdmg.Thrust, stdmg.LiftingThrust, stdmg.TelekineticThrust:
-		stDamage = pc.ThrustFor(intST)
+		stDamage = entity.ThrustFor(intST)
 	case stdmg.Swing, stdmg.LiftingSwing, stdmg.TelekineticSwing:
-		stDamage = pc.SwingFor(intST)
+		stDamage = entity.SwingFor(intST)
 	default:
 		return base
 	}
@@ -275,8 +275,8 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 	if base.Count == 0 && base.Modifier == 0 {
 		return w.String()
 	}
-	pc := w.Owner.PC()
-	adjustForPhoenixFlame := pc.SheetSettings.DamageProgression == progression.PhoenixFlameD3 && base.Sides == 3
+	entity := w.Owner.Entity()
+	adjustForPhoenixFlame := entity.SheetSettings.DamageProgression == progression.PhoenixFlameD3 && base.Sides == 3
 	var percentDamageBonus, percentDRDivisorBonus fxp.Int
 	armorDivisor := w.ArmorDivisor
 	for _, bonus := range w.Owner.collectWeaponBonuses(base.Count, tooltip, feature.WeaponBonus, feature.WeaponDRDivisorBonus) {
@@ -322,7 +322,7 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 	}
 	var buffer strings.Builder
 	if base.Count != 0 || base.Modifier != 0 {
-		buffer.WriteString(base.StringExtra(pc.SheetSettings.UseModifyingDicePlusAdds))
+		buffer.WriteString(base.StringExtra(entity.SheetSettings.UseModifyingDicePlusAdds))
 	}
 	if armorDivisor != fxp.One {
 		buffer.WriteByte('(')
@@ -337,7 +337,7 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 		buffer.WriteString(t)
 	}
 	if w.Fragmentation != nil {
-		if frag := w.Fragmentation.StringExtra(pc.SheetSettings.UseModifyingDicePlusAdds); frag != "0" {
+		if frag := w.Fragmentation.StringExtra(entity.SheetSettings.UseModifyingDicePlusAdds); frag != "0" {
 			if buffer.Len() != 0 {
 				buffer.WriteByte(' ')
 			}

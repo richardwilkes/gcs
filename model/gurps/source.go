@@ -7,6 +7,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/json"
+	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/tid"
 )
 
@@ -53,8 +54,16 @@ func (s Source) collectInto(m map[LibraryFile]struct{}) {
 	}
 }
 
+func (s Source) String() string {
+	return s.LibraryFile.String() + "\n" + i18n.Text("ID: ") + string(s.TID)
+}
+
+func (l LibraryFile) String() string {
+	return i18n.Text("Library: ") + l.Library + "\n" + i18n.Text("Path: ") + l.Path
+}
+
 // PrepareHashes for the given ListProvider.
-func (sm SrcMatcher) PrepareHashes(provider ListProvider) {
+func (sm *SrcMatcher) PrepareHashes(provider ListProvider) {
 	neededLibs := make(map[LibraryFile]struct{})
 	Traverse(func(t *Trait) bool {
 		t.Source.collectInto(neededLibs)
@@ -168,7 +177,7 @@ func (sm SrcMatcher) PrepareHashes(provider ListProvider) {
 }
 
 // Match returns the source state of the given data.
-func (sm SrcMatcher) Match(data SrcProvider) srcstate.Value {
+func (sm *SrcMatcher) Match(data SrcProvider) srcstate.Value {
 	src := data.GetSource()
 	if src.ShouldOmit() {
 		return srcstate.Custom

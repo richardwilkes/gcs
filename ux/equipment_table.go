@@ -22,7 +22,7 @@ type equipmentListProvider struct {
 	other   []*gurps.Equipment
 }
 
-func (p *equipmentListProvider) Entity() *gurps.Entity {
+func (p *equipmentListProvider) DataOwner() gurps.DataOwner {
 	return nil
 }
 

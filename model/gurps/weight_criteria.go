@@ -51,6 +51,9 @@ func (w WeightCriteria) String() string {
 
 // Hash writes this object's contents into the hasher.
 func (w WeightCriteria) Hash(h hash.Hash) {
+	if w.ShouldOmit() {
+		return
+	}
 	_, _ = h.Write([]byte(w.Compare))
 	_ = binary.Write(h, binary.LittleEndian, w.Qualifier)
 }
