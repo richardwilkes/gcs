@@ -431,7 +431,7 @@ func DuplicateSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 			if target := row.Data(); target != zero {
 				tData := gurps.AsNode(target)
 				parent := tData.Parent()
-				clone := tData.Clone(tData.GetSource().LibraryFile, gurps.EntityFromNode(tData), parent, false)
+				clone := tData.Clone(gurps.LibraryFile{}, gurps.EntityFromNode(tData), parent, false)
 				selMap[gurps.AsNode(clone).ID()] = true
 				if parent == zero {
 					for i, child := range topLevelData {

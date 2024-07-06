@@ -53,8 +53,7 @@ type Note struct {
 
 // NoteData holds the Note data that is written to disk.
 type NoteData struct {
-	TID    tid.TID `json:"id"`
-	Source Source  `json:"source,omitempty"`
+	SourcedID
 	NoteEditData
 	ThirdParty map[string]any `json:"third_party,omitempty"`
 	Children   []*Note        `json:"children,omitempty"` // Only for containers
@@ -102,7 +101,9 @@ func SaveNotes(notes []*Note, filePath string) error {
 func NewNote(owner DataOwner, parent *Note, container bool) *Note {
 	n := Note{
 		NoteData: NoteData{
-			TID:    tid.MustNewTID(noteKind(container)),
+			SourcedID: SourcedID{
+				TID: tid.MustNewTID(noteKind(container)),
+			},
 			parent: parent,
 		},
 		owner: owner,
@@ -172,11 +173,7 @@ func (n *Note) SetOpen(open bool) {
 // Clone implements Node.
 func (n *Note) Clone(from LibraryFile, owner DataOwner, parent *Note, preserveID bool) *Note {
 	other := NewNote(owner, parent, n.Container())
-	other.Source.LibraryFile = from
-	other.Source.TID = n.TID
-	if preserveID {
-		other.TID = n.TID
-	}
+	other.AdjustSource(from, n.SourcedID, preserveID)
 	other.SetOpen(n.IsOpen())
 	other.ThirdParty = n.ThirdParty
 	other.NoteEditData.CopyFrom(n)

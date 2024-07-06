@@ -73,8 +73,7 @@ type Equipment struct {
 
 // EquipmentData holds the Equipment data that is written to disk.
 type EquipmentData struct {
-	TID    tid.TID `json:"id"`
-	Source Source  `json:"source,omitempty"`
+	SourcedID
 	EquipmentEditData
 	ThirdParty map[string]any `json:"third_party,omitempty"`
 	Children   []*Equipment   `json:"children,omitempty"` // Only for containers
@@ -139,7 +138,9 @@ func SaveEquipment(equipment []*Equipment, filePath string) error {
 func NewEquipment(owner DataOwner, parent *Equipment, container bool) *Equipment {
 	e := Equipment{
 		EquipmentData: EquipmentData{
-			TID: tid.MustNewTID(equipmentKind(container)),
+			SourcedID: SourcedID{
+				TID: tid.MustNewTID(equipmentKind(container)),
+			},
 			EquipmentEditData: EquipmentEditData{
 				LegalityClass: "4",
 				Quantity:      fxp.One,
@@ -214,11 +215,7 @@ func (e *Equipment) SetOpen(open bool) {
 // Clone implements Node.
 func (e *Equipment) Clone(from LibraryFile, owner DataOwner, parent *Equipment, preserveID bool) *Equipment {
 	other := NewEquipment(owner, parent, e.Container())
-	other.Source.LibraryFile = from
-	other.Source.TID = e.TID
-	if preserveID {
-		other.TID = e.TID
-	}
+	other.AdjustSource(from, e.SourcedID, preserveID)
 	other.SetOpen(e.IsOpen())
 	other.ThirdParty = e.ThirdParty
 	other.EquipmentEditData.CopyFrom(e)
@@ -796,7 +793,7 @@ func (e *EquipmentEditData) copyFrom(owner DataOwner, other *EquipmentEditData, 
 	if len(other.Modifiers) != 0 {
 		e.Modifiers = make([]*EquipmentModifier, 0, len(other.Modifiers))
 		for _, one := range other.Modifiers {
-			e.Modifiers = append(e.Modifiers, one.Clone(one.Source.LibraryFile, owner, nil, true))
+			e.Modifiers = append(e.Modifiers, one.Clone(one.Source.LibraryFile, owner, nil, isApply))
 		}
 	}
 	e.Prereq = e.Prereq.CloneResolvingEmpty(false, isApply)
@@ -804,7 +801,7 @@ func (e *EquipmentEditData) copyFrom(owner DataOwner, other *EquipmentEditData, 
 	if len(other.Weapons) != 0 {
 		e.Weapons = make([]*Weapon, len(other.Weapons))
 		for i, w := range other.Weapons {
-			e.Weapons[i] = w.Clone(LibraryFile{}, owner, nil, true)
+			e.Weapons[i] = w.Clone(LibraryFile{}, owner, nil, isApply)
 		}
 	}
 	e.Features = other.Features.Clone()

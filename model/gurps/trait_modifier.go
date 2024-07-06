@@ -75,8 +75,7 @@ type TraitModifier struct {
 
 // TraitModifierData holds the TraitModifier data that is written to disk.
 type TraitModifierData struct {
-	TID    tid.TID `json:"id"`
-	Source Source  `json:"source,omitempty"`
+	SourcedID
 	TraitModifierEditData
 	ThirdParty map[string]any   `json:"third_party,omitempty"`
 	Children   []*TraitModifier `json:"children,omitempty"` // Only for containers
@@ -139,7 +138,9 @@ func SaveTraitModifiers(modifiers []*TraitModifier, filePath string) error {
 func NewTraitModifier(owner DataOwner, parent *TraitModifier, container bool) *TraitModifier {
 	t := TraitModifier{
 		TraitModifierData: TraitModifierData{
-			TID:    tid.MustNewTID(traitModifierKind(container)),
+			SourcedID: SourcedID{
+				TID: tid.MustNewTID(traitModifierKind(container)),
+			},
 			parent: parent,
 		},
 		owner: owner,
@@ -209,11 +210,7 @@ func (t *TraitModifier) SetOpen(open bool) {
 // Clone implements Node.
 func (t *TraitModifier) Clone(from LibraryFile, owner DataOwner, parent *TraitModifier, preserveID bool) *TraitModifier {
 	other := NewTraitModifier(owner, parent, t.Container())
-	other.Source.LibraryFile = from
-	other.Source.TID = t.TID
-	if preserveID {
-		other.TID = t.TID
-	}
+	other.AdjustSource(from, t.SourcedID, preserveID)
 	other.SetOpen(t.IsOpen())
 	other.ThirdParty = t.ThirdParty
 	other.TraitModifierEditData.CopyFrom(t)

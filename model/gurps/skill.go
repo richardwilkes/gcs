@@ -69,8 +69,7 @@ type Skill struct {
 
 // SkillData holds the Skill data that is written to disk.
 type SkillData struct {
-	TID    tid.TID `json:"id"`
-	Source Source  `json:"source,omitempty"`
+	SourcedID
 	SkillEditData
 	ThirdParty map[string]any `json:"third_party,omitempty"`
 	Children   []*Skill       `json:"children,omitempty"` // Only for containers
@@ -158,7 +157,9 @@ func SaveSkills(skills []*Skill, filePath string) error {
 func NewSkill(owner DataOwner, parent *Skill, container bool) *Skill {
 	s := Skill{
 		SkillData: SkillData{
-			TID:    tid.MustNewTID(skillKind(container)),
+			SourcedID: SourcedID{
+				TID: tid.MustNewTID(skillKind(container)),
+			},
 			parent: parent,
 		},
 		owner: owner,
@@ -186,7 +187,9 @@ func skillKind(container bool) byte {
 func NewTechnique(owner DataOwner, parent *Skill, skillName string) *Skill {
 	s := Skill{
 		SkillData: SkillData{
-			TID:    tid.MustNewTID(kinds.Technique),
+			SourcedID: SourcedID{
+				TID: tid.MustNewTID(kinds.Technique),
+			},
 			parent: parent,
 		},
 		owner: owner,
@@ -268,11 +271,7 @@ func (s *Skill) Clone(from LibraryFile, owner DataOwner, parent *Skill, preserve
 		other = NewSkill(owner, parent, s.Container())
 		other.SetOpen(s.IsOpen())
 	}
-	other.Source.LibraryFile = from
-	other.Source.TID = s.TID
-	if preserveID {
-		other.TID = s.TID
-	}
+	other.AdjustSource(from, s.SourcedID, preserveID)
 	other.ThirdParty = s.ThirdParty
 	other.SkillEditData.CopyFrom(s)
 	if s.HasChildren() {
@@ -1227,7 +1226,7 @@ func (s *SkillEditData) copyFrom(owner DataOwner, other *SkillEditData, isContai
 	if len(other.Weapons) != 0 {
 		s.Weapons = make([]*Weapon, len(other.Weapons))
 		for i, w := range other.Weapons {
-			s.Weapons[i] = w.Clone(LibraryFile{}, owner, nil, true)
+			s.Weapons[i] = w.Clone(LibraryFile{}, owner, nil, isApply)
 		}
 	}
 	s.Features = other.Features.Clone()

@@ -77,8 +77,7 @@ type Spell struct {
 
 // SpellData holds the Spell data that is written to disk.
 type SpellData struct {
-	TID    tid.TID `json:"id"`
-	Source Source  `json:"source,omitempty"`
+	SourcedID
 	SpellEditData
 	ThirdParty map[string]any `json:"third_party,omitempty"`
 	Children   []*Spell       `json:"children,omitempty"` // Only for containers
@@ -189,7 +188,9 @@ func SaveSpells(spells []*Spell, filePath string) error {
 func NewSpell(owner DataOwner, parent *Spell, container bool) *Spell {
 	s := Spell{
 		SpellData: SpellData{
-			TID:    tid.MustNewTID(spellKind(container)),
+			SourcedID: SourcedID{
+				TID: tid.MustNewTID(spellKind(container)),
+			},
 			parent: parent,
 		},
 		owner: owner,
@@ -216,7 +217,9 @@ func NewSpell(owner DataOwner, parent *Spell, container bool) *Spell {
 func NewRitualMagicSpell(owner DataOwner, parent *Spell, _ bool) *Spell {
 	s := Spell{
 		SpellData: SpellData{
-			TID:    tid.MustNewTID(kinds.RitualMagicSpell),
+			SourcedID: SourcedID{
+				TID: tid.MustNewTID(kinds.RitualMagicSpell),
+			},
 			parent: parent,
 		},
 		owner: owner,
@@ -306,11 +309,7 @@ func (s *Spell) Clone(from LibraryFile, owner DataOwner, parent *Spell, preserve
 		other = NewSpell(owner, parent, s.Container())
 		other.SetOpen(s.IsOpen())
 	}
-	other.Source.LibraryFile = from
-	other.Source.TID = s.TID
-	if preserveID {
-		other.TID = s.TID
-	}
+	other.AdjustSource(from, s.SourcedID, preserveID)
 	other.ThirdParty = s.ThirdParty
 	other.SpellEditData.CopyFrom(s)
 	if s.HasChildren() {
@@ -1109,7 +1108,7 @@ func (s *SpellEditData) copyFrom(owner DataOwner, other *SpellEditData, isContai
 	if len(other.Weapons) != 0 {
 		s.Weapons = make([]*Weapon, len(other.Weapons))
 		for i, w := range other.Weapons {
-			s.Weapons[i] = w.Clone(LibraryFile{}, owner, nil, true)
+			s.Weapons[i] = w.Clone(LibraryFile{}, owner, nil, isApply)
 		}
 	}
 	if len(other.Study) != 0 {

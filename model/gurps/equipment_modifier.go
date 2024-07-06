@@ -66,8 +66,7 @@ type EquipmentModifier struct {
 
 // EquipmentModifierData holds the EquipmentModifier data that is written to disk.
 type EquipmentModifierData struct {
-	TID    tid.TID `json:"id"`
-	Source Source  `json:"source,omitempty"`
+	SourcedID
 	EquipmentModifierEditData
 	ThirdParty map[string]any       `json:"third_party,omitempty"`
 	Children   []*EquipmentModifier `json:"children,omitempty"` // Only for containers
@@ -131,7 +130,9 @@ func SaveEquipmentModifiers(modifiers []*EquipmentModifier, filePath string) err
 func NewEquipmentModifier(owner DataOwner, parent *EquipmentModifier, container bool) *EquipmentModifier {
 	e := EquipmentModifier{
 		EquipmentModifierData: EquipmentModifierData{
-			TID:    tid.MustNewTID(equipmentModifierKind(container)),
+			SourcedID: SourcedID{
+				TID: tid.MustNewTID(equipmentModifierKind(container)),
+			},
 			parent: parent,
 		},
 		owner: owner,
@@ -201,11 +202,7 @@ func (e *EquipmentModifier) SetOpen(open bool) {
 // Clone implements Node.
 func (e *EquipmentModifier) Clone(from LibraryFile, owner DataOwner, parent *EquipmentModifier, preserveID bool) *EquipmentModifier {
 	other := NewEquipmentModifier(owner, parent, e.Container())
-	other.Source.LibraryFile = from
-	other.Source.TID = e.TID
-	if preserveID {
-		other.TID = e.TID
-	}
+	other.AdjustSource(from, e.SourcedID, preserveID)
 	other.SetOpen(e.IsOpen())
 	other.ThirdParty = e.ThirdParty
 	other.EquipmentModifierEditData.CopyFrom(e)

@@ -19,6 +19,12 @@ type LibraryFile struct {
 	Path    string `json:"path"`
 }
 
+// SourcedID holds a TID and an optional Source.
+type SourcedID struct {
+	TID    tid.TID `json:"id"`
+	Source Source  `json:"source,omitempty"`
+}
+
 // Source holds a reference to the source of a particular piece of data.
 type Source struct {
 	LibraryFile
@@ -192,4 +198,16 @@ func (sm *SrcMatcher) Match(data SrcProvider) srcstate.Value {
 		}
 	}
 	return srcstate.Missing
+}
+
+// AdjustSource adjusts the source of a SourcedID to match the given LibraryFile.
+func (s *SourcedID) AdjustSource(from LibraryFile, original SourcedID, preserve bool) {
+	if preserve {
+		s.TID = original.TID
+	}
+	s.Source = original.Source
+	if s.Source.Library == "" {
+		s.Source.LibraryFile = from
+		s.Source.TID = original.TID
+	}
 }

@@ -84,12 +84,12 @@ func (n *Node[T]) CloneForTarget(target unison.Paneler, newParent *Node[T]) *Nod
 	if !ok {
 		fatal.IfErr(errs.New("unable to convert to table"))
 	}
+	var owner gurps.DataOwner
 	if provider := DetermineDataOwnerProvider(target); provider != nil {
-		return NewNode[T](table, newParent, n.dataAsNode.Clone(libraryFileFromTable[T](n.table), provider.DataOwner(),
-			newParent.Data(), false), n.forPage)
+		owner = provider.DataOwner()
 	}
-	fatal.IfErr(errs.New("unable to locate entity provider"))
-	return nil // Never reaches here
+	return NewNode[T](table, newParent,
+		n.dataAsNode.Clone(libraryFileFromTable[T](n.table), owner, newParent.Data(), false), false)
 }
 
 // ID implements unison.TableRowData.

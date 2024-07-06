@@ -69,8 +69,7 @@ type Trait struct {
 
 // TraitData holds the Trait data that is written to disk.
 type TraitData struct {
-	TID    tid.TID `json:"id"`
-	Source Source  `json:"source,omitempty"`
+	SourcedID
 	TraitEditData
 	ThirdParty map[string]any `json:"third_party,omitempty"`
 	Children   []*Trait       `json:"children,omitempty"` // Only for containers
@@ -152,7 +151,9 @@ func SaveTraits(traits []*Trait, filePath string) error {
 func NewTrait(owner DataOwner, parent *Trait, container bool) *Trait {
 	t := Trait{
 		TraitData: TraitData{
-			TID:    tid.MustNewTID(traitKind(container)),
+			SourcedID: SourcedID{
+				TID: tid.MustNewTID(traitKind(container)),
+			},
 			parent: parent,
 		},
 		owner: owner,
@@ -225,11 +226,7 @@ func (t *Trait) SetOpen(open bool) {
 // Clone implements Node.
 func (t *Trait) Clone(from LibraryFile, owner DataOwner, parent *Trait, preserveID bool) *Trait {
 	other := NewTrait(owner, parent, t.Container())
-	other.Source.LibraryFile = from
-	other.Source.TID = t.TID
-	if preserveID {
-		other.TID = t.TID
-	}
+	other.AdjustSource(from, t.SourcedID, preserveID)
 	other.SetOpen(t.IsOpen())
 	other.ThirdParty = t.ThirdParty
 	other.TraitEditData.CopyFrom(t)
@@ -850,7 +847,7 @@ func (t *TraitEditData) copyFrom(owner DataOwner, other *TraitEditData, isContai
 	if len(other.Modifiers) != 0 {
 		t.Modifiers = make([]*TraitModifier, 0, len(other.Modifiers))
 		for _, one := range other.Modifiers {
-			t.Modifiers = append(t.Modifiers, one.Clone(one.Source.LibraryFile, owner, nil, true))
+			t.Modifiers = append(t.Modifiers, one.Clone(one.Source.LibraryFile, owner, nil, isApply))
 		}
 	}
 	t.Prereq = t.Prereq.CloneResolvingEmpty(isContainer, isApply)
@@ -858,7 +855,7 @@ func (t *TraitEditData) copyFrom(owner DataOwner, other *TraitEditData, isContai
 	if len(other.Weapons) != 0 {
 		t.Weapons = make([]*Weapon, len(other.Weapons))
 		for i, w := range other.Weapons {
-			t.Weapons[i] = w.Clone(LibraryFile{}, owner, nil, true)
+			t.Weapons[i] = w.Clone(LibraryFile{}, owner, nil, isApply)
 		}
 	}
 	t.Features = other.Features.Clone()

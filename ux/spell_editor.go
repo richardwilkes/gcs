@@ -91,6 +91,7 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 	}
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
+	addSourceFields(content, e.target.TID, &e.target.Source)
 	if !e.target.Container() {
 		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq))
 		content.AddChild(newWeaponsPanel(e, e.target, true, &e.editorData.Weapons))
