@@ -134,11 +134,17 @@ func newPageList[T gurps.NodeTypes](owner Rebuildable, provider TableProvider[T]
 			func(_ any) bool { return p.Table.HasSelection() },
 			func(_ any) { p.provider.OpenEditor(owner, p.Table) })
 		p.InstallCmdHandlers(unison.DeleteItemID,
-			func(_ any) bool { return p.Table.HasSelection() },
+			func(_ any) bool { return HasSelectionAndNotFiltered(p.Table) },
 			func(_ any) { DeleteSelection(p.Table, true) })
 		p.InstallCmdHandlers(DuplicateItemID,
-			func(_ any) bool { return p.Table.HasSelection() },
+			func(_ any) bool { return HasSelectionAndNotFiltered(p.Table) },
 			func(_ any) { DuplicateSelection(p.Table) })
+		table.InstallCmdHandlers(SyncWithSourceItemID,
+			func(_ any) bool { return HasSelectionAndNotFiltered(p.Table) },
+			func(_ any) { SyncWithSourceForSelection(p.Table) })
+		table.InstallCmdHandlers(ClearSourceItemID,
+			func(_ any) bool { return HasSelectionAndNotFiltered(p.Table) },
+			func(_ any) { ClearSourceFromSelection(p.Table) })
 	}
 	p.installOpenPageReferenceHandlers()
 	p.SetLayoutData(&unison.FlexLayoutData{

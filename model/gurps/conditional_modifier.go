@@ -81,6 +81,14 @@ func (c *ConditionalModifier) GetSource() Source {
 	return Source{}
 }
 
+// ClearSource clears the source of this data.
+func (c *ConditionalModifier) ClearSource() {
+}
+
+// SyncWithSource synchronizes this data with the source.
+func (c *ConditionalModifier) SyncWithSource() {
+}
+
 // ID returns the local ID of this data.
 func (c *ConditionalModifier) ID() tid.TID {
 	return c.TID

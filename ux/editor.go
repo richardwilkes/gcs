@@ -10,12 +10,15 @@
 package ux
 
 import (
+	"bytes"
 	"fmt"
 	"reflect"
+	"regexp"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -224,8 +227,28 @@ func (e *editor[N, D]) Tooltip() string {
 	return ""
 }
 
+var pruneIDFields = regexp.MustCompile(`\s*"id":\s*"[^"]+",?\s*`)
+
+func (e *editor[N, D]) isModified() bool {
+	d1, err := json.Marshal(e.beforeData)
+	if err != nil {
+		errs.Log(errs.Wrap(err))
+		return false
+	}
+	var d2 []byte
+	d2, err = json.Marshal(e.editorData)
+	if err != nil {
+		errs.Log(errs.Wrap(err))
+		return false
+	}
+	none := []byte{}
+	d1 = pruneIDFields.ReplaceAll(d1, none)
+	d2 = pruneIDFields.ReplaceAll(d2, none)
+	return !bytes.Equal(d1, d2)
+}
+
 func (e *editor[N, D]) Modified() bool {
-	modified := !reflect.DeepEqual(e.beforeData, e.editorData)
+	modified := e.isModified()
 	e.applyButton.SetEnabled(modified)
 	e.cancelButton.SetEnabled(modified)
 	return modified
@@ -257,7 +280,7 @@ func (e *editor[N, D]) AttemptClose() bool {
 	if !CloseGroup(e) {
 		return false
 	}
-	if e.promptForSave && !reflect.DeepEqual(e.beforeData, e.editorData) {
+	if e.promptForSave && e.isModified() {
 		switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Save changes made to\n%s?"), e.Title()), "") {
 		case unison.ModalResponseDiscard:
 		case unison.ModalResponseOK:

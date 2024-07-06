@@ -25,11 +25,17 @@ func newEditorTable[T gurps.NodeTypes](parent *unison.Panel, provider TableProvi
 		func(_ any) bool { return CanOpenPageRef(table) },
 		func(_ any) { OpenEachPageRef(table) })
 	table.InstallCmdHandlers(unison.DeleteItemID,
-		func(_ any) bool { return table.HasSelection() },
+		func(_ any) bool { return HasSelectionAndNotFiltered(table) },
 		func(_ any) { DeleteSelection(table, true) })
 	table.InstallCmdHandlers(DuplicateItemID,
-		func(_ any) bool { return table.HasSelection() },
+		func(_ any) bool { return HasSelectionAndNotFiltered(table) },
 		func(_ any) { DuplicateSelection(table) })
+	table.InstallCmdHandlers(SyncWithSourceItemID,
+		func(_ any) bool { return HasSelectionAndNotFiltered(table) },
+		func(_ any) { SyncWithSourceForSelection(table) })
+	table.InstallCmdHandlers(ClearSourceItemID,
+		func(_ any) bool { return HasSelectionAndNotFiltered(table) },
+		func(_ any) { ClearSourceFromSelection(table) })
 	InstallTableDropSupport(table, provider)
 	table.SyncToModel()
 	parent.AddChild(header)

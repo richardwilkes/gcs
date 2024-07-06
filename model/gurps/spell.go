@@ -117,43 +117,6 @@ type SpellNonContainerOnlyEditData struct {
 	StudyHoursNeeded  study.Level         `json:"study_hours_needed,omitempty"`
 }
 
-// Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
-// "source" data, i.e. not expected to be modified by the user after copying from a library.
-func (s *Spell) Hash(h hash.Hash) {
-	_, _ = h.Write([]byte(s.Name))
-	_, _ = h.Write([]byte(s.PageRef))
-	_, _ = h.Write([]byte(s.PageRefHighlight))
-	_, _ = h.Write([]byte(s.LocalNotes))
-	_, _ = h.Write([]byte(s.VTTNotes))
-	for _, tag := range s.Tags {
-		_, _ = h.Write([]byte(tag))
-	}
-	if s.Container() {
-		s.TemplatePicker.Hash(h)
-	} else {
-		if s.TechLevel != nil {
-			_, _ = h.Write([]byte(*s.TechLevel))
-		}
-		s.Difficulty.Hash(h)
-		for _, college := range s.College {
-			_, _ = h.Write([]byte(college))
-		}
-		_, _ = h.Write([]byte(s.PowerSource))
-		_, _ = h.Write([]byte(s.Class))
-		_, _ = h.Write([]byte(s.Resist))
-		_, _ = h.Write([]byte(s.CastingCost))
-		_, _ = h.Write([]byte(s.MaintenanceCost))
-		_, _ = h.Write([]byte(s.CastingTime))
-		_, _ = h.Write([]byte(s.Duration))
-		_, _ = h.Write([]byte(s.RitualSkillName))
-		_ = binary.Write(h, binary.LittleEndian, int64(s.RitualPrereqCount))
-		s.Prereq.Hash(h)
-		for _, weapon := range s.Weapons {
-			weapon.Hash(h)
-		}
-	}
-}
-
 type spellListData struct {
 	Type    string   `json:"type"`
 	Version int      `json:"version"`
@@ -243,11 +206,6 @@ func spellKind(container bool) byte {
 		return kinds.SpellContainer
 	}
 	return kinds.Spell
-}
-
-// GetSource returns the source of this data.
-func (s *Spell) GetSource() Source {
-	return s.Source
 }
 
 // ID returns the local ID of this data.
@@ -578,7 +536,7 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 		data.Type = cell.Text
 		data.Alignment = align.Middle
 		if !toolbox.IsNil(s.owner) {
-			state := s.owner.SourceMatcher().Match(s)
+			state, _ := s.owner.SourceMatcher().Match(s)
 			data.Primary = state.AltString()
 			data.Tooltip = state.String()
 			if state != srcstate.Custom {
@@ -1085,17 +1043,103 @@ func (s *Spell) ClearUnusedFieldsForType() {
 	}
 }
 
+// GetSource returns the source of this data.
+func (s *Spell) GetSource() Source {
+	return s.Source
+}
+
+// ClearSource clears the source of this data.
+func (s *Spell) ClearSource() {
+	s.Source = Source{}
+}
+
+// SyncWithSource synchronizes this data with the source.
+func (s *Spell) SyncWithSource() {
+	if !toolbox.IsNil(s.owner) {
+		if state, data := s.owner.SourceMatcher().Match(s); state == srcstate.Mismatched {
+			if other, ok := data.(*Spell); ok {
+				s.Name = other.Name
+				s.PageRef = other.PageRef
+				s.PageRefHighlight = other.PageRefHighlight
+				s.LocalNotes = other.LocalNotes
+				s.VTTNotes = other.VTTNotes
+				s.Tags = slices.Clone(other.Tags)
+				if s.Container() {
+					s.TemplatePicker = other.TemplatePicker.Clone()
+				} else {
+					if other.TechLevel == nil {
+						s.TechLevel = nil
+					} else {
+						tl := *other.TechLevel
+						s.TechLevel = &tl
+					}
+					s.Difficulty = other.Difficulty
+					s.College = txt.CloneStringSlice(s.College)
+					s.PowerSource = other.PowerSource
+					s.Class = other.Class
+					s.Resist = other.Resist
+					s.CastingCost = other.CastingCost
+					s.MaintenanceCost = other.MaintenanceCost
+					s.CastingTime = other.CastingTime
+					s.Duration = other.Duration
+					s.RitualSkillName = other.RitualSkillName
+					s.RitualPrereqCount = other.RitualPrereqCount
+					s.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
+					s.Weapons = CloneWeapons(other.Weapons, false)
+				}
+			}
+		}
+	}
+}
+
+// Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
+// "source" data, i.e. not expected to be modified by the user after copying from a library.
+func (s *Spell) Hash(h hash.Hash) {
+	_, _ = h.Write([]byte(s.Name))
+	_, _ = h.Write([]byte(s.PageRef))
+	_, _ = h.Write([]byte(s.PageRefHighlight))
+	_, _ = h.Write([]byte(s.LocalNotes))
+	_, _ = h.Write([]byte(s.VTTNotes))
+	for _, tag := range s.Tags {
+		_, _ = h.Write([]byte(tag))
+	}
+	if s.Container() {
+		s.TemplatePicker.Hash(h)
+	} else {
+		if s.TechLevel != nil {
+			_, _ = h.Write([]byte(*s.TechLevel))
+		}
+		s.Difficulty.Hash(h)
+		for _, college := range s.College {
+			_, _ = h.Write([]byte(college))
+		}
+		_, _ = h.Write([]byte(s.PowerSource))
+		_, _ = h.Write([]byte(s.Class))
+		_, _ = h.Write([]byte(s.Resist))
+		_, _ = h.Write([]byte(s.CastingCost))
+		_, _ = h.Write([]byte(s.MaintenanceCost))
+		_, _ = h.Write([]byte(s.CastingTime))
+		_, _ = h.Write([]byte(s.Duration))
+		_, _ = h.Write([]byte(s.RitualSkillName))
+		_ = binary.Write(h, binary.LittleEndian, int64(s.RitualPrereqCount))
+		s.Prereq.Hash(h)
+		for _, weapon := range s.Weapons {
+			weapon.Hash(h)
+		}
+	}
+}
+
 // CopyFrom implements node.EditorData.
 func (s *SpellEditData) CopyFrom(other *Spell) {
-	s.copyFrom(other.owner, &other.SpellEditData, other.Container(), false)
+	s.copyFrom(&other.SpellEditData, other.Container(), false)
 }
 
 // ApplyTo implements node.EditorData.
 func (s *SpellEditData) ApplyTo(other *Spell) {
-	other.SpellEditData.copyFrom(other.owner, s, other.Container(), true)
+	other.SpellEditData.copyFrom(s, other.Container(), true)
 }
 
-func (s *SpellEditData) copyFrom(owner DataOwner, other *SpellEditData, isContainer, isApply bool) {
+func (s *SpellEditData) copyFrom(other *SpellEditData, isContainer, isApply bool) {
 	*s = *other
 	s.Tags = txt.CloneStringSlice(s.Tags)
 	if other.TechLevel != nil {
@@ -1104,13 +1148,7 @@ func (s *SpellEditData) copyFrom(owner DataOwner, other *SpellEditData, isContai
 	}
 	s.College = txt.CloneStringSlice(s.College)
 	s.Prereq = s.Prereq.CloneResolvingEmpty(isContainer, isApply)
-	s.Weapons = nil
-	if len(other.Weapons) != 0 {
-		s.Weapons = make([]*Weapon, len(other.Weapons))
-		for i, w := range other.Weapons {
-			s.Weapons[i] = w.Clone(LibraryFile{}, owner, nil, isApply)
-		}
-	}
+	s.Weapons = CloneWeapons(other.Weapons, isApply)
 	if len(other.Study) != 0 {
 		s.Study = make([]*Study, len(other.Study))
 		for i := range other.Study {

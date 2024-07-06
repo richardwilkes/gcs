@@ -120,11 +120,6 @@ func noteKind(container bool) byte {
 	return kinds.Note
 }
 
-// GetSource returns the source of this data.
-func (n *Note) GetSource() Source {
-	return n.Source
-}
-
 // ID returns the local ID of this data.
 func (n *Note) ID() tid.TID {
 	return n.TID
@@ -280,7 +275,7 @@ func (n *Note) CellData(columnID int, data *CellData) {
 		data.Type = cell.Text
 		data.Alignment = align.Middle
 		if !toolbox.IsNil(n.owner) {
-			state := n.owner.SourceMatcher().Match(n)
+			state, _ := n.owner.SourceMatcher().Match(n)
 			data.Primary = state.AltString()
 			data.Tooltip = state.String()
 			if state != srcstate.Custom {
@@ -358,6 +353,29 @@ func (n *Note) Kind() string {
 func (n *Note) ClearUnusedFieldsForType() {
 	if !n.Container() {
 		n.Children = nil
+	}
+}
+
+// GetSource returns the source of this data.
+func (n *Note) GetSource() Source {
+	return n.Source
+}
+
+// ClearSource clears the source of this data.
+func (n *Note) ClearSource() {
+	n.Source = Source{}
+}
+
+// SyncWithSource synchronizes this data with the source.
+func (n *Note) SyncWithSource() {
+	if !toolbox.IsNil(n.owner) {
+		if state, data := n.owner.SourceMatcher().Match(n); state == srcstate.Mismatched {
+			if other, ok := data.(*Note); ok {
+				n.Text = other.Text
+				n.PageRef = other.PageRef
+				n.PageRefHighlight = other.PageRefHighlight
+			}
+		}
 	}
 }
 

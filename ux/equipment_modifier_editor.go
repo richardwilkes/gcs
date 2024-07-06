@@ -42,7 +42,7 @@ func initEquipmentModifierEditor(e *editor[*gurps.EquipmentModifier, *gurps.Equi
 	addTagsLabelAndField(content, &e.editorData.Tags)
 	addPageRefLabelAndField(content, &e.editorData.PageRef)
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
-	addSourceFields(content, e.target.TID, &e.target.Source)
+	addSourceFields(content, &e.target.SourcedID)
 	if !e.target.Container() {
 		content.AddChild(newFeaturesPanel(gurps.EntityFromNode(e.target), e.target, &e.editorData.Features, true))
 	}

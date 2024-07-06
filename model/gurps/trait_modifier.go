@@ -157,11 +157,6 @@ func traitModifierKind(container bool) byte {
 	return kinds.TraitModifier
 }
 
-// GetSource returns the source of this data.
-func (t *TraitModifier) GetSource() Source {
-	return t.Source
-}
-
 // ID returns the local ID of this data.
 func (t *TraitModifier) ID() tid.TID {
 	return t.TID
@@ -328,7 +323,7 @@ func (t *TraitModifier) CellData(columnID int, data *CellData) {
 		data.Type = cell.Text
 		data.Alignment = align.Middle
 		if !toolbox.IsNil(t.owner) {
-			state := t.owner.SourceMatcher().Match(t)
+			state, _ := t.owner.SourceMatcher().Match(t)
 			data.Primary = state.AltString()
 			data.Tooltip = state.String()
 			if state != srcstate.Custom {
@@ -507,6 +502,39 @@ func (t *TraitModifier) ClearUnusedFieldsForType() {
 		t.Features = nil
 	} else {
 		t.Children = nil
+	}
+}
+
+// GetSource returns the source of this data.
+func (t *TraitModifier) GetSource() Source {
+	return t.Source
+}
+
+// ClearSource clears the source of this data.
+func (t *TraitModifier) ClearSource() {
+	t.Source = Source{}
+}
+
+// SyncWithSource synchronizes this data with the source.
+func (t *TraitModifier) SyncWithSource() {
+	if !toolbox.IsNil(t.owner) {
+		if state, data := t.owner.SourceMatcher().Match(t); state == srcstate.Mismatched {
+			if other, ok := data.(*TraitModifier); ok {
+				t.Name = other.Name
+				t.PageRef = other.PageRef
+				t.PageRefHighlight = other.PageRefHighlight
+				t.LocalNotes = other.LocalNotes
+				t.VTTNotes = other.VTTNotes
+				t.Tags = slices.Clone(other.Tags)
+				if !t.Container() {
+					t.Cost = other.Cost
+					t.Levels = other.Levels
+					t.Affects = other.Affects
+					t.CostType = other.CostType
+					t.Features = other.Features.Clone()
+				}
+			}
+		}
 	}
 }
 

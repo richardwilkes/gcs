@@ -32,6 +32,7 @@ var (
 	addNaturalAttacksAction        *unison.Action
 	applyTemplateAction            *unison.Action
 	clearPortraitAction            *unison.Action
+	clearSourceAction              *unison.Action
 	closeTabAction                 *unison.Action
 	colorSettingsAction            *unison.Action
 	convertToContainerAction       *unison.Action
@@ -118,6 +119,7 @@ var (
 	scaleDefaultAction                  *unison.Action
 	scaleDownAction                     *unison.Action
 	scaleUpAction                       *unison.Action
+	syncWithSourceAction                *unison.Action
 	swapDefaultsAction                  *unison.Action
 	toggleStateAction                   *unison.Action
 	undoAction                          *unison.Action
@@ -169,6 +171,12 @@ func registerActions() {
 	clearPortraitAction = registerKeyBindableAction("clear.portrait", &unison.Action{
 		ID:              ClearPortraitItemID,
 		Title:           i18n.Text("Clear Portrait"),
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
+	})
+	clearSourceAction = registerKeyBindableAction("clear.source", &unison.Action{
+		ID:              ClearSourceItemID,
+		Title:           i18n.Text("Clear Source"),
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
@@ -809,6 +817,12 @@ func registerActions() {
 		ID:              ScaleUpItemID,
 		Title:           i18n.Text("Scale Up"),
 		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyEqual, Modifiers: unison.OSMenuCmdModifier() | unison.OptionModifier},
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
+	})
+	syncWithSourceAction = registerKeyBindableAction("clear.sync", &unison.Action{
+		ID:              SyncWithSourceItemID,
+		Title:           i18n.Text("Sync with Source"),
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})

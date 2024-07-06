@@ -57,6 +57,8 @@ const (
 	RedoItemID
 	DuplicateItemID
 	ClearPortraitItemID
+	ClearSourceItemID
+	SyncWithSourceItemID
 	JumpToSearchFilterItemID
 	ConvertToContainerItemID
 	ConvertToNonContainerItemID
@@ -264,7 +266,11 @@ func (s menuBarScope) setupEditMenu(bar unison.Menu) {
 	i = s.insertMenuItem(m, i, toggleStateAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, swapDefaultsAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, convertToContainerAction.NewMenuItem(f))
-	s.insertMenuItem(m, i, convertToNonContainerAction.NewMenuItem(f))
+	i = s.insertMenuItem(m, i, convertToNonContainerAction.NewMenuItem(f))
+
+	i = s.insertMenuSeparator(m, i)
+	i = s.insertMenuItem(m, i, syncWithSourceAction.NewMenuItem(f))
+	s.insertMenuItem(m, i, clearSourceAction.NewMenuItem(f))
 }
 
 func (s menuBarScope) createItemMenu(f unison.MenuFactory) unison.Menu {
@@ -589,5 +595,8 @@ func AppendDefaultContextMenuItems(list []ContextMenuItem) []ContextMenuItem {
 		ContextMenuItem{"", -1},
 		ContextMenuItem{openOnePageReferenceAction.Title, OpenOnePageReferenceItemID},
 		ContextMenuItem{openEachPageReferenceAction.Title, OpenEachPageReferenceItemID},
+		ContextMenuItem{"", -1},
+		ContextMenuItem{syncWithSourceAction.Title, SyncWithSourceItemID},
+		ContextMenuItem{clearSourceAction.Title, ClearSourceItemID},
 	)
 }

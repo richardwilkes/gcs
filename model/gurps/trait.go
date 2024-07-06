@@ -173,11 +173,6 @@ func traitKind(container bool) byte {
 	return kinds.Trait
 }
 
-// GetSource returns the source of this data.
-func (t *Trait) GetSource() Source {
-	return t.Source
-}
-
 // ID returns the local ID of this data.
 func (t *Trait) ID() tid.TID {
 	return t.TID
@@ -405,7 +400,7 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 		data.Type = cell.Text
 		data.Alignment = align.Middle
 		if !toolbox.IsNil(t.owner) {
-			state := t.owner.SourceMatcher().Match(t)
+			state, _ := t.owner.SourceMatcher().Match(t)
 			data.Primary = state.AltString()
 			data.Tooltip = state.String()
 			if state != srcstate.Custom {
@@ -798,6 +793,47 @@ func (t *Trait) ClearUnusedFieldsForType() {
 	}
 }
 
+// GetSource returns the source of this data.
+func (t *Trait) GetSource() Source {
+	return t.Source
+}
+
+// ClearSource clears the source of this data.
+func (t *Trait) ClearSource() {
+	t.Source = Source{}
+}
+
+// SyncWithSource synchronizes this data with the source.
+func (t *Trait) SyncWithSource() {
+	if !toolbox.IsNil(t.owner) {
+		if state, data := t.owner.SourceMatcher().Match(t); state == srcstate.Mismatched {
+			if other, ok := data.(*Trait); ok {
+				t.Name = other.Name
+				t.PageRef = other.PageRef
+				t.PageRefHighlight = other.PageRefHighlight
+				t.LocalNotes = other.LocalNotes
+				t.VTTNotes = other.VTTNotes
+				t.Tags = slices.Clone(other.Tags)
+				t.CR = other.CR
+				t.CRAdj = other.CRAdj
+				if t.Container() {
+					t.Ancestry = other.Ancestry
+					t.TemplatePicker = other.TemplatePicker.Clone()
+					t.ContainerType = other.ContainerType
+				} else {
+					t.BasePoints = other.BasePoints
+					t.PointsPerLevel = other.PointsPerLevel
+					t.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
+					t.Weapons = CloneWeapons(other.Weapons, false)
+					t.Features = other.Features.Clone()
+					t.RoundCostDown = other.RoundCostDown
+					t.CanLevel = other.CanLevel
+				}
+			}
+		}
+	}
+}
+
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (t *Trait) Hash(h hash.Hash) {
@@ -851,13 +887,7 @@ func (t *TraitEditData) copyFrom(owner DataOwner, other *TraitEditData, isContai
 		}
 	}
 	t.Prereq = t.Prereq.CloneResolvingEmpty(isContainer, isApply)
-	t.Weapons = nil
-	if len(other.Weapons) != 0 {
-		t.Weapons = make([]*Weapon, len(other.Weapons))
-		for i, w := range other.Weapons {
-			t.Weapons[i] = w.Clone(LibraryFile{}, owner, nil, isApply)
-		}
-	}
+	t.Weapons = CloneWeapons(other.Weapons, isApply)
 	t.Features = other.Features.Clone()
 	if len(other.Study) != 0 {
 		t.Study = make([]*Study, len(other.Study))

@@ -343,7 +343,7 @@ func OpenEditor[T gurps.NodeTypes](table *unison.Table[*Node[T]], edit func(item
 
 // DeleteSelection removes the selected nodes from the table.
 func DeleteSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]], recordUndo bool) {
-	if provider, ok := any(table.Model).(TableProvider[T]); ok && !table.IsFiltered() && table.HasSelection() {
+	if provider, ok := any(table.Model).(TableProvider[T]); ok && HasSelectionAndNotFiltered(table) {
 		sel := table.SelectedRows(true)
 		ids := make(map[tid.TID]bool, len(sel))
 		list := make([]T, 0, len(sel))
@@ -409,7 +409,7 @@ func DeleteSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]], recordUnd
 
 // DuplicateSelection duplicates the selected nodes in the table.
 func DuplicateSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
-	if provider, ok := any(table.Model).(TableProvider[T]); ok && !table.IsFiltered() && table.HasSelection() {
+	if provider, ok := any(table.Model).(TableProvider[T]); ok && HasSelectionAndNotFiltered(table) {
 		var undo *unison.UndoEdit[*TableUndoEditData[T]]
 		mgr := unison.UndoManagerFor(table)
 		if mgr != nil {
@@ -458,6 +458,77 @@ func DuplicateSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 		}
 		table.SyncToModel()
 		table.SetSelectionMap(selMap)
+		if mgr != nil && undo != nil {
+			undo.AfterData = NewTableUndoEditData(table)
+			mgr.Add(undo)
+		}
+		if builder := unison.AncestorOrSelf[Rebuildable](table); builder != nil {
+			builder.Rebuild(true)
+		}
+	}
+}
+
+// HasSelectionAndNotFiltered returns true if the table has a selection and is not filtered.
+func HasSelectionAndNotFiltered[T gurps.NodeTypes](table *unison.Table[*Node[T]]) bool {
+	return !table.IsFiltered() && table.HasSelection()
+}
+
+// ClearSourceFromSelection clears the source from the selected nodes.
+func ClearSourceFromSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
+	if HasSelectionAndNotFiltered(table) {
+		var undo *unison.UndoEdit[*TableUndoEditData[T]]
+		mgr := unison.UndoManagerFor(table)
+		if mgr != nil {
+			undo = &unison.UndoEdit[*TableUndoEditData[T]]{
+				ID:         unison.NextUndoID(),
+				EditName:   clearSourceAction.Title,
+				UndoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.BeforeData.Apply() },
+				RedoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.AfterData.Apply() },
+				AbsorbFunc: func(_ *unison.UndoEdit[*TableUndoEditData[T]], _ unison.Undoable) bool { return false },
+				BeforeData: NewTableUndoEditData(table),
+			}
+		}
+		var zero T
+		sel := table.SelectedRows(false)
+		for _, row := range sel {
+			if target := row.Data(); target != zero {
+				gurps.AsNode(target).ClearSource()
+			}
+		}
+		table.SyncToModel()
+		if mgr != nil && undo != nil {
+			undo.AfterData = NewTableUndoEditData(table)
+			mgr.Add(undo)
+		}
+		if builder := unison.AncestorOrSelf[Rebuildable](table); builder != nil {
+			builder.Rebuild(true)
+		}
+	}
+}
+
+// SyncWithSourceForSelection synchronizes the selected nodes with their source.
+func SyncWithSourceForSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
+	if HasSelectionAndNotFiltered(table) {
+		var undo *unison.UndoEdit[*TableUndoEditData[T]]
+		mgr := unison.UndoManagerFor(table)
+		if mgr != nil {
+			undo = &unison.UndoEdit[*TableUndoEditData[T]]{
+				ID:         unison.NextUndoID(),
+				EditName:   syncWithSourceAction.Title,
+				UndoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.BeforeData.Apply() },
+				RedoFunc:   func(e *unison.UndoEdit[*TableUndoEditData[T]]) { e.AfterData.Apply() },
+				AbsorbFunc: func(_ *unison.UndoEdit[*TableUndoEditData[T]], _ unison.Undoable) bool { return false },
+				BeforeData: NewTableUndoEditData(table),
+			}
+		}
+		var zero T
+		sel := table.SelectedRows(false)
+		for _, row := range sel {
+			if target := row.Data(); target != zero {
+				gurps.AsNode(target).SyncWithSource()
+			}
+		}
+		table.SyncToModel()
 		if mgr != nil && undo != nil {
 			undo.AfterData = NewTableUndoEditData(table)
 			mgr.Add(undo)

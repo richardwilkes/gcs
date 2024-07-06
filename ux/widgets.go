@@ -20,7 +20,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/i18n"
-	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -69,22 +68,22 @@ func MarkModified(panel unison.Paneler) {
 	}
 }
 
-func addSourceFields(parent *unison.Panel, id tid.TID, source *gurps.Source) {
+func addSourceFields(parent *unison.Panel, source *gurps.SourcedID) {
 	parent.AddChild(NewFieldLeadingLabel(i18n.Text("ID"), false))
-	parent.AddChild(NewNonEditableField(func(f *NonEditableField) {
-		f.SetTitle(string(id))
-	}))
-	parent.AddChild(NewFieldLeadingLabel(i18n.Text("Source ID"), false))
 	parent.AddChild(NewNonEditableField(func(f *NonEditableField) {
 		f.SetTitle(string(source.TID))
 	}))
+	parent.AddChild(NewFieldLeadingLabel(i18n.Text("Source ID"), false))
+	parent.AddChild(NewNonEditableField(func(f *NonEditableField) {
+		f.SetTitle(string(source.Source.TID))
+	}))
 	parent.AddChild(NewFieldLeadingLabel(i18n.Text("Source Library"), false))
 	parent.AddChild(NewNonEditableField(func(f *NonEditableField) {
-		f.SetTitle(source.Library)
+		f.SetTitle(source.Source.Library)
 	}))
 	parent.AddChild(NewFieldLeadingLabel(i18n.Text("Source Path"), false))
 	parent.AddChild(NewNonEditableField(func(f *NonEditableField) {
-		f.SetTitle(source.Path)
+		f.SetTitle(source.Source.Path)
 	}))
 }
 

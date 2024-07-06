@@ -127,11 +127,17 @@ func NewTableDockable[T gurps.NodeTypes](filePath, extension string, provider Ta
 		func(_ any) { d.save(false) })
 	d.InstallCmdHandlers(SaveAsItemID, unison.AlwaysEnabled, func(_ any) { d.save(true) })
 	d.InstallCmdHandlers(unison.DeleteItemID,
-		func(_ any) bool { return !d.table.IsFiltered() && d.table.HasSelection() },
+		func(_ any) bool { return HasSelectionAndNotFiltered(d.table) },
 		func(_ any) { DeleteSelection(d.table, true) })
 	d.InstallCmdHandlers(DuplicateItemID,
-		func(_ any) bool { return !d.table.IsFiltered() && d.table.HasSelection() },
+		func(_ any) bool { return HasSelectionAndNotFiltered(d.table) },
 		func(_ any) { DuplicateSelection(d.table) })
+	table.InstallCmdHandlers(SyncWithSourceItemID,
+		func(_ any) bool { return HasSelectionAndNotFiltered(d.table) },
+		func(_ any) { SyncWithSourceForSelection(d.table) })
+	table.InstallCmdHandlers(ClearSourceItemID,
+		func(_ any) bool { return HasSelectionAndNotFiltered(d.table) },
+		func(_ any) { ClearSourceFromSelection(d.table) })
 	d.InstallCmdHandlers(JumpToSearchFilterItemID,
 		func(any) bool { return !d.filterField.Focused() },
 		func(any) { d.filterField.RequestFocus() })

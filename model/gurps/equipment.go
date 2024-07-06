@@ -104,6 +104,27 @@ type EquipmentEditData struct {
 	WeightIgnoredForSkills bool                 `json:"ignore_weight_for_skills,omitempty"`
 }
 
+// EquipmentSourceData holds the Equipment data that is considered to be "source" data, i.e. not expected to be modified
+// by the user after copying from a library.
+type EquipmentSourceData struct {
+	Name                   string      `json:"description,omitempty"`
+	PageRef                string      `json:"reference,omitempty"`
+	PageRefHighlight       string      `json:"reference_highlight,omitempty"`
+	LocalNotes             string      `json:"notes,omitempty"`
+	VTTNotes               string      `json:"vtt_notes,omitempty"`
+	TechLevel              string      `json:"tech_level,omitempty"`
+	LegalityClass          string      `json:"legality_class,omitempty"`
+	Tags                   []string    `json:"tags,omitempty"`
+	RatedST                fxp.Int     `json:"rated_strength,omitempty"`
+	Value                  fxp.Int     `json:"value,omitempty"`
+	Weight                 fxp.Weight  `json:"weight,omitempty"`
+	MaxUses                int         `json:"max_uses,omitempty"`
+	Prereq                 *PrereqList `json:"prereqs,omitempty"`
+	Weapons                []*Weapon   `json:"weapons,omitempty"`
+	Features               Features    `json:"features,omitempty"`
+	WeightIgnoredForSkills bool        `json:"ignore_weight_for_skills,omitempty"`
+}
+
 type equipmentListData struct {
 	Type    string       `json:"type"`
 	Version int          `json:"version"`
@@ -160,11 +181,6 @@ func equipmentKind(container bool) byte {
 		return kinds.EquipmentContainer
 	}
 	return kinds.Equipment
-}
-
-// GetSource returns the source of this data.
-func (e *Equipment) GetSource() Source {
-	return e.Source
 }
 
 // ID returns the local ID of this data.
@@ -438,7 +454,7 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 		data.Type = cell.Text
 		data.Alignment = align.Middle
 		if !toolbox.IsNil(e.owner) {
-			state := e.owner.SourceMatcher().Match(e)
+			state, _ := e.owner.SourceMatcher().Match(e)
 			data.Primary = state.AltString()
 			data.Tooltip = state.String()
 			if state != srcstate.Custom {
@@ -749,6 +765,42 @@ func (e *Equipment) ClearUnusedFieldsForType() {
 	}
 }
 
+// GetSource returns the source of this data.
+func (e *Equipment) GetSource() Source {
+	return e.Source
+}
+
+// ClearSource clears the source of this data.
+func (e *Equipment) ClearSource() {
+	e.Source = Source{}
+}
+
+// SyncWithSource synchronizes this data with the source.
+func (e *Equipment) SyncWithSource() {
+	if !toolbox.IsNil(e.owner) {
+		if state, data := e.owner.SourceMatcher().Match(e); state == srcstate.Mismatched {
+			if other, ok := data.(*Equipment); ok {
+				e.Name = other.Name
+				e.PageRef = other.PageRef
+				e.PageRefHighlight = other.PageRefHighlight
+				e.LocalNotes = other.LocalNotes
+				e.VTTNotes = other.VTTNotes
+				e.TechLevel = other.TechLevel
+				e.LegalityClass = other.LegalityClass
+				e.Tags = slices.Clone(other.Tags)
+				e.RatedST = other.RatedST
+				e.Value = other.Value
+				e.Weight = other.Weight
+				e.MaxUses = other.MaxUses
+				e.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
+				e.Weapons = CloneWeapons(other.Weapons, false)
+				e.Features = other.Features.Clone()
+				e.WeightIgnoredForSkills = other.WeightIgnoredForSkills
+			}
+		}
+	}
+}
+
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (e *Equipment) Hash(h hash.Hash) {
@@ -797,12 +849,6 @@ func (e *EquipmentEditData) copyFrom(owner DataOwner, other *EquipmentEditData, 
 		}
 	}
 	e.Prereq = e.Prereq.CloneResolvingEmpty(false, isApply)
-	e.Weapons = nil
-	if len(other.Weapons) != 0 {
-		e.Weapons = make([]*Weapon, len(other.Weapons))
-		for i, w := range other.Weapons {
-			e.Weapons[i] = w.Clone(LibraryFile{}, owner, nil, isApply)
-		}
-	}
+	e.Weapons = CloneWeapons(other.Weapons, isApply)
 	e.Features = other.Features.Clone()
 }

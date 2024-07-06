@@ -207,11 +207,6 @@ func NewTechnique(owner DataOwner, parent *Skill, skillName string) *Skill {
 	return &s
 }
 
-// GetSource returns the source of this data.
-func (s *Skill) GetSource() Source {
-	return s.Source
-}
-
 // ID returns the local ID of this data.
 func (s *Skill) ID() tid.TID {
 	return s.TID
@@ -459,7 +454,7 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 		data.Type = cell.Text
 		data.Alignment = align.Middle
 		if !toolbox.IsNil(s.owner) {
-			state := s.owner.SourceMatcher().Match(s)
+			state, _ := s.owner.SourceMatcher().Match(s)
 			data.Primary = state.AltString()
 			data.Tooltip = state.String()
 			if state != srcstate.Custom {
@@ -1141,6 +1136,68 @@ func (s *Skill) ClearUnusedFieldsForType() {
 	}
 }
 
+// GetSource returns the source of this data.
+func (s *Skill) GetSource() Source {
+	return s.Source
+}
+
+// ClearSource clears the source of this data.
+func (s *Skill) ClearSource() {
+	s.Source = Source{}
+}
+
+// SyncWithSource synchronizes this data with the source.
+func (s *Skill) SyncWithSource() {
+	if !toolbox.IsNil(s.owner) {
+		if state, data := s.owner.SourceMatcher().Match(s); state == srcstate.Mismatched {
+			if other, ok := data.(*Skill); ok {
+				s.Name = other.Name
+				s.PageRef = other.PageRef
+				s.PageRefHighlight = other.PageRefHighlight
+				s.LocalNotes = other.LocalNotes
+				s.VTTNotes = other.VTTNotes
+				s.Tags = slices.Clone(other.Tags)
+				if s.Container() {
+					s.TemplatePicker = other.TemplatePicker.Clone()
+				} else {
+					s.Specialization = other.Specialization
+					if other.TechLevel == nil {
+						s.TechLevel = nil
+					} else {
+						tl := *other.TechLevel
+						s.TechLevel = &tl
+					}
+					s.Difficulty = other.Difficulty
+					s.EncumbrancePenaltyMultiplier = other.EncumbrancePenaltyMultiplier
+					s.Defaults = nil
+					if len(other.Defaults) != 0 {
+						s.Defaults = make([]*SkillDefault, len(other.Defaults))
+						for i, def := range other.Defaults {
+							def2 := *def
+							s.Defaults[i] = &def2
+						}
+					}
+					if other.TechniqueDefault != nil {
+						def := *other.TechniqueDefault
+						s.TechniqueDefault = &def
+						if !DefaultTypeIsSkillBased(other.TechniqueDefault.DefaultType) {
+							s.TechniqueDefault.Name = ""
+							s.TechniqueDefault.Specialization = ""
+						}
+					}
+					if other.TechniqueLimitModifier != nil {
+						mod := *other.TechniqueLimitModifier
+						s.TechniqueLimitModifier = &mod
+					}
+					s.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
+					s.Weapons = CloneWeapons(other.Weapons, false)
+					s.Features = other.Features.Clone()
+				}
+			}
+		}
+	}
+}
+
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (s *Skill) Hash(h hash.Hash) {
@@ -1182,15 +1239,15 @@ func (s *Skill) Hash(h hash.Hash) {
 
 // CopyFrom implements node.EditorData.
 func (s *SkillEditData) CopyFrom(other *Skill) {
-	s.copyFrom(other.owner, &other.SkillEditData, other.Container(), false)
+	s.copyFrom(&other.SkillEditData, other.Container(), false)
 }
 
 // ApplyTo implements node.EditorData.
 func (s *SkillEditData) ApplyTo(other *Skill) {
-	other.SkillEditData.copyFrom(other.owner, s, other.Container(), true)
+	other.SkillEditData.copyFrom(s, other.Container(), true)
 }
 
-func (s *SkillEditData) copyFrom(owner DataOwner, other *SkillEditData, isContainer, isApply bool) {
+func (s *SkillEditData) copyFrom(other *SkillEditData, isContainer, isApply bool) {
 	*s = *other
 	s.Tags = txt.CloneStringSlice(s.Tags)
 	if other.TechLevel != nil {
@@ -1222,13 +1279,7 @@ func (s *SkillEditData) copyFrom(owner DataOwner, other *SkillEditData, isContai
 		s.TechniqueLimitModifier = &mod
 	}
 	s.Prereq = s.Prereq.CloneResolvingEmpty(isContainer, isApply)
-	s.Weapons = nil
-	if len(other.Weapons) != 0 {
-		s.Weapons = make([]*Weapon, len(other.Weapons))
-		for i, w := range other.Weapons {
-			s.Weapons[i] = w.Clone(LibraryFile{}, owner, nil, isApply)
-		}
-	}
+	s.Weapons = CloneWeapons(other.Weapons, isApply)
 	s.Features = other.Features.Clone()
 	if len(other.Study) != 0 {
 		s.Study = make([]*Study, len(other.Study))

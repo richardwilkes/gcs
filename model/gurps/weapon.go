@@ -161,6 +161,18 @@ func (w *Weapon) IsRanged() bool {
 	return tid.IsKind(w.TID, kinds.WeaponRanged)
 }
 
+// CloneWeapons clones the input list of weapons.
+func CloneWeapons(list []*Weapon, preserveIDs bool) []*Weapon {
+	if len(list) == 0 {
+		return nil
+	}
+	weapons := make([]*Weapon, len(list))
+	for i, w := range list {
+		weapons[i] = w.Clone(LibraryFile{}, nil, nil, preserveIDs)
+	}
+	return weapons
+}
+
 // Clone implements Node.
 func (w *Weapon) Clone(_ LibraryFile, _ DataOwner, _ *Weapon, preserveID bool) *Weapon {
 	other := *w
@@ -323,6 +335,14 @@ func (w *Weapon) UnmarshalJSON(data []byte) error {
 // GetSource returns the source of this data.
 func (w *Weapon) GetSource() Source {
 	return Source{}
+}
+
+// ClearSource clears the source of this data.
+func (w *Weapon) ClearSource() {
+}
+
+// SyncWithSource synchronizes this data with the source.
+func (w *Weapon) SyncWithSource() {
 }
 
 // ID returns the local ID of this data.
@@ -783,7 +803,7 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 
 // CopyFrom implements node.EditorData.
 func (w *Weapon) CopyFrom(t *Weapon) {
-	*w = *t.Clone(LibraryFile{}, t.DataOwner(), nil, true)
+	*w = *t.Clone(LibraryFile{}, t.DataOwner(), nil, false)
 }
 
 // ApplyTo implements node.EditorData.

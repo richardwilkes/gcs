@@ -33,7 +33,7 @@ type Source struct {
 
 type libSrcData struct {
 	timestamp  time.Time
-	dataHashes map[tid.TID]uint64
+	dataHashes map[tid.TID]HashAndData
 }
 
 // SrcProvider defines the methods needed for a source provider that can be used with the SrcMatcher.Match() function.
@@ -128,7 +128,7 @@ func (sm *SrcMatcher) PrepareHashes(provider ListProvider) {
 			}
 			var srcData libSrcData
 			srcData.timestamp = modTime
-			srcData.dataHashes = make(map[tid.TID]uint64)
+			srcData.dataHashes = make(map[tid.TID]HashAndData)
 			dir := os.DirFS(filepath.Dir(p))
 			file := filepath.Base(p)
 			fi := FileInfoFor(p)
@@ -183,21 +183,21 @@ func (sm *SrcMatcher) PrepareHashes(provider ListProvider) {
 }
 
 // Match returns the source state of the given data.
-func (sm *SrcMatcher) Match(data SrcProvider) srcstate.Value {
+func (sm *SrcMatcher) Match(data SrcProvider) (srcstate.Value, any) {
 	src := data.GetSource()
 	if src.ShouldOmit() {
-		return srcstate.Custom
+		return srcstate.Custom, nil
 	}
 	if srcData, ok := sm.libHashes[src.LibraryFile]; ok {
-		var dataHash uint64
+		var dataHash HashAndData
 		if dataHash, ok = srcData.dataHashes[src.TID]; ok {
-			if dataHash == Hash64(data) {
-				return srcstate.Matched
+			if dataHash.Hash == Hash64(data) {
+				return srcstate.Matched, dataHash.Data
 			}
-			return srcstate.Mismatched
+			return srcstate.Mismatched, dataHash.Data
 		}
 	}
-	return srcstate.Missing
+	return srcstate.Missing, nil
 }
 
 // AdjustSource adjusts the source of a SourcedID to match the given LibraryFile.

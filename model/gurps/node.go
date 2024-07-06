@@ -41,6 +41,8 @@ type Node[T NodeTypes] interface {
 	Hashable
 	Clone(from LibraryFile, owner DataOwner, newParent T, preserveID bool) T
 	GetSource() Source
+	ClearSource()
+	SyncWithSource()
 	DataOwner() DataOwner
 	SetDataOwner(owner DataOwner)
 	Kind() string

@@ -149,11 +149,6 @@ func equipmentModifierKind(container bool) byte {
 	return kinds.EquipmentModifier
 }
 
-// GetSource returns the source of this data.
-func (e *EquipmentModifier) GetSource() Source {
-	return e.Source
-}
-
 // ID returns the local ID of this data.
 func (e *EquipmentModifier) ID() tid.TID {
 	return e.TID
@@ -348,7 +343,7 @@ func (e *EquipmentModifier) CellData(columnID int, data *CellData) {
 		data.Type = cell.Text
 		data.Alignment = align.Middle
 		if !toolbox.IsNil(e.owner) {
-			state := e.owner.SourceMatcher().Match(e)
+			state, _ := e.owner.SourceMatcher().Match(e)
 			data.Primary = state.AltString()
 			data.Tooltip = state.String()
 			if state != srcstate.Custom {
@@ -624,6 +619,40 @@ func (e *EquipmentModifier) ClearUnusedFieldsForType() {
 		e.Features = nil
 	} else {
 		e.Children = nil
+	}
+}
+
+// GetSource returns the source of this data.
+func (e *EquipmentModifier) GetSource() Source {
+	return e.Source
+}
+
+// ClearSource clears the source of this data.
+func (e *EquipmentModifier) ClearSource() {
+	e.Source = Source{}
+}
+
+// SyncWithSource synchronizes this data with the source.
+func (e *EquipmentModifier) SyncWithSource() {
+	if !toolbox.IsNil(e.owner) {
+		if state, data := e.owner.SourceMatcher().Match(e); state == srcstate.Mismatched {
+			if other, ok := data.(*EquipmentModifier); ok {
+				e.Name = other.Name
+				e.PageRef = other.PageRef
+				e.PageRefHighlight = other.PageRefHighlight
+				e.LocalNotes = other.LocalNotes
+				e.VTTNotes = other.VTTNotes
+				e.Tags = slices.Clone(other.Tags)
+				if !e.Container() {
+					e.CostType = other.CostType
+					e.WeightType = other.WeightType
+					e.TechLevel = other.TechLevel
+					e.CostAmount = other.CostAmount
+					e.WeightAmount = other.WeightAmount
+					e.Features = other.Features.Clone()
+				}
+			}
+		}
 	}
 }
 
