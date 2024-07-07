@@ -17,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/model/message"
+	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/xmath/crc"
@@ -29,26 +30,26 @@ var (
 
 // Template holds the GURPS Template data that is written to disk.
 type Template struct {
-	Version    int          `json:"version"`
-	ID         tid.TID      `json:"id"`
-	Traits     []*Trait     `json:"traits,alt=advantages,omitempty"`
-	Skills     []*Skill     `json:"skills,omitempty"`
-	Spells     []*Spell     `json:"spells,omitempty"`
-	Equipment  []*Equipment `json:"equipment,omitempty"`
-	Notes      []*Note      `json:"notes,omitempty"`
+	TemplateData
 	srcMatcher *SrcMatcher
 }
 
-// TODO: Use srcMatcher
+// TemplateData holds the GURPS Template data that is written to disk.
+type TemplateData struct {
+	Version   int          `json:"version"`
+	ID        tid.TID      `json:"id"`
+	Traits    []*Trait     `json:"traits,alt=advantages,omitempty"`
+	Skills    []*Skill     `json:"skills,omitempty"`
+	Spells    []*Spell     `json:"spells,omitempty"`
+	Equipment []*Equipment `json:"equipment,omitempty"`
+	Notes     []*Note      `json:"notes,omitempty"`
+}
 
 // NewTemplateFromFile loads a Template from a file.
 func NewTemplateFromFile(fileSystem fs.FS, filePath string) (*Template, error) {
 	var t Template
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &t); err != nil {
 		return nil, errs.NewWithCause(message.InvalidFileData(), err)
-	}
-	if !tid.IsKindAndValid(t.ID, kinds.Template) {
-		t.ID = tid.MustNewTID(kinds.Template)
 	}
 	if err := jio.CheckVersion(t.Version); err != nil {
 		return nil, err
@@ -59,9 +60,30 @@ func NewTemplateFromFile(fileSystem fs.FS, filePath string) (*Template, error) {
 // NewTemplate creates a new Template.
 func NewTemplate() *Template {
 	template := &Template{
-		ID: tid.MustNewTID(kinds.Template),
+		TemplateData: TemplateData{
+			ID: tid.MustNewTID(kinds.Template),
+		},
 	}
 	return template
+}
+
+// MarshalJSON implements json.Marshaler.
+func (t *Template) MarshalJSON() ([]byte, error) {
+	t.EnsureAttachments()
+	t.Version = jio.CurrentDataVersion
+	return json.Marshal(&t.TemplateData)
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (t *Template) UnmarshalJSON(data []byte) error {
+	if err := json.Unmarshal(data, &t.TemplateData); err != nil {
+		return err
+	}
+	if !tid.IsKindAndValid(t.ID, kinds.Template) {
+		t.ID = tid.MustNewTID(kinds.Template)
+	}
+	t.EnsureAttachments()
+	return nil
 }
 
 // DataOwner returns the data owner.
@@ -84,7 +106,6 @@ func (t *Template) SourceMatcher() *SrcMatcher {
 
 // Save the Template to a file as JSON.
 func (t *Template) Save(filePath string) error {
-	t.Version = jio.CurrentDataVersion
 	return jio.SaveToFile(context.Background(), filePath, t)
 }
 
@@ -154,4 +175,23 @@ func (t *Template) CRC64() uint64 {
 		return 0
 	}
 	return crc.Bytes(0, buffer.Bytes())
+}
+
+// EnsureAttachments ensures that all attachments have their data owner set to the Template.
+func (t *Template) EnsureAttachments() {
+	for _, one := range t.Traits {
+		one.SetDataOwner(t)
+	}
+	for _, one := range t.Skills {
+		one.SetDataOwner(t)
+	}
+	for _, one := range t.Spells {
+		one.SetDataOwner(t)
+	}
+	for _, one := range t.Equipment {
+		one.SetDataOwner(t)
+	}
+	for _, one := range t.Notes {
+		one.SetDataOwner(t)
+	}
 }
