@@ -61,6 +61,10 @@ var (
 	databaseData string
 	Database     = unison.MustSVGFromContentString(databaseData)
 
+	//go:embed down_to_bracket.svg
+	downToBracketData string
+	DownToBracket     = unison.MustSVGFromContentString(downToBracketData)
+
 	//go:embed download.svg
 	downloadData string
 	Download     = unison.MustSVGFromContentString(downloadData)

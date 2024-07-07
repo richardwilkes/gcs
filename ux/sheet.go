@@ -191,79 +191,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 		HGrab:  true,
 		VGrab:  true,
 	})
-
-	helpButton := unison.NewSVGButton(svg.Help)
-	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
-	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Character Sheet") }
-
-	sheetSettingsButton := unison.NewSVGButton(svg.Settings)
-	sheetSettingsButton.Tooltip = newWrappedTooltip(i18n.Text("Sheet Settings"))
-	sheetSettingsButton.ClickCallback = func() { ShowSheetSettings(s) }
-
-	attributesButton := unison.NewSVGButton(svg.Attributes)
-	attributesButton.Tooltip = newWrappedTooltip(i18n.Text("Attributes"))
-	attributesButton.ClickCallback = func() { ShowAttributeSettings(s) }
-
-	bodyTypeButton := unison.NewSVGButton(svg.BodyType)
-	bodyTypeButton.Tooltip = newWrappedTooltip(i18n.Text("Body Type"))
-	bodyTypeButton.ClickCallback = func() { ShowBodySettings(s) }
-
-	calcButton := unison.NewSVGButton(svg.Calculator)
-	calcButton.Tooltip = newWrappedTooltip(i18n.Text("Calculators (jumping, throwing, hiking, etc.)"))
-	calcButton.ClickCallback = func() { DisplayCalculator(s) }
-
-	s.toolbar = unison.NewPanel()
-	s.AddChild(s.toolbar)
-	s.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1},
-		false), unison.NewEmptyBorder(unison.StdInsets())))
-	s.toolbar.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		HGrab:  true,
-	})
-	s.toolbar.AddChild(NewDefaultInfoPop())
-	s.toolbar.AddChild(helpButton)
-	s.toolbar.AddChild(
-		NewScaleField(
-			gurps.InitialUIScaleMin,
-			gurps.InitialUIScaleMax,
-			func() int { return gurps.GlobalSettings().General.InitialSheetUIScale },
-			func() int { return s.scale },
-			func(scale int) { s.scale = scale },
-			nil,
-			false,
-			s.scroll,
-		),
-	)
-	s.toolbar.AddChild(sheetSettingsButton)
-	s.toolbar.AddChild(attributesButton)
-	s.toolbar.AddChild(bodyTypeButton)
-	s.toolbar.AddChild(NewToolbarSeparator())
-	s.toolbar.AddChild(calcButton)
-	s.toolbar.AddChild(NewToolbarSeparator())
-	installSearchTracker(s.toolbar, func() {
-		s.Reactions.Table.ClearSelection()
-		s.ConditionalModifiers.Table.ClearSelection()
-		s.MeleeWeapons.Table.ClearSelection()
-		s.RangedWeapons.Table.ClearSelection()
-		s.Traits.Table.ClearSelection()
-		s.Skills.Table.ClearSelection()
-		s.Spells.Table.ClearSelection()
-		s.CarriedEquipment.Table.ClearSelection()
-		s.OtherEquipment.Table.ClearSelection()
-		s.Notes.Table.ClearSelection()
-	}, func(refList *[]*searchRef, text string, namesOnly bool) {
-		searchSheetTable(refList, text, namesOnly, s.Traits)
-		searchSheetTable(refList, text, namesOnly, s.Skills)
-		searchSheetTable(refList, text, namesOnly, s.Spells)
-		searchSheetTable(refList, text, namesOnly, s.CarriedEquipment)
-		searchSheetTable(refList, text, namesOnly, s.OtherEquipment)
-		searchSheetTable(refList, text, namesOnly, s.Notes)
-	})
-	s.toolbar.SetLayout(&unison.FlexLayout{
-		Columns:  len(s.toolbar.Children()),
-		HSpacing: unison.StdHSpacing,
-	})
-
+	s.createToolbar()
 	s.AddChild(s.scroll)
 
 	s.InstallCmdHandlers(SaveItemID, func(_ any) bool { return s.Modified() }, func(_ any) { s.save(false) })
@@ -292,6 +220,86 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	s.InstallCmdHandlers(PrintItemID, unison.AlwaysEnabled, func(_ any) { s.print() })
 	s.InstallCmdHandlers(ClearPortraitItemID, s.canClearPortrait, s.clearPortrait)
 	return s
+}
+
+func (s *Sheet) createToolbar() {
+	s.toolbar = unison.NewPanel()
+	s.AddChild(s.toolbar)
+	s.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1},
+		false), unison.NewEmptyBorder(unison.StdInsets())))
+	s.toolbar.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Fill,
+		HGrab:  true,
+	})
+
+	s.toolbar.AddChild(NewDefaultInfoPop())
+
+	helpButton := unison.NewSVGButton(svg.Help)
+	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
+	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Character Sheet") }
+	s.toolbar.AddChild(helpButton)
+	s.toolbar.AddChild(
+		NewScaleField(
+			gurps.InitialUIScaleMin,
+			gurps.InitialUIScaleMax,
+			func() int { return gurps.GlobalSettings().General.InitialSheetUIScale },
+			func() int { return s.scale },
+			func(scale int) { s.scale = scale },
+			nil,
+			false,
+			s.scroll,
+		),
+	)
+
+	sheetSettingsButton := unison.NewSVGButton(svg.Settings)
+	sheetSettingsButton.Tooltip = newWrappedTooltip(i18n.Text("Sheet Settings"))
+	sheetSettingsButton.ClickCallback = func() { ShowSheetSettings(s) }
+	s.toolbar.AddChild(sheetSettingsButton)
+
+	attributesButton := unison.NewSVGButton(svg.Attributes)
+	attributesButton.Tooltip = newWrappedTooltip(i18n.Text("Attributes"))
+	attributesButton.ClickCallback = func() { ShowAttributeSettings(s) }
+	s.toolbar.AddChild(attributesButton)
+
+	bodyTypeButton := unison.NewSVGButton(svg.BodyType)
+	bodyTypeButton.Tooltip = newWrappedTooltip(i18n.Text("Body Type"))
+	bodyTypeButton.ClickCallback = func() { ShowBodySettings(s) }
+	s.toolbar.AddChild(bodyTypeButton)
+
+	syncSourceButton := unison.NewSVGButton(svg.DownToBracket)
+	syncSourceButton.Tooltip = newWrappedTooltip(i18n.Text("Sync with all sources in this sheet"))
+	syncSourceButton.ClickCallback = func() { s.syncWithAllSources() }
+	s.toolbar.AddChild(syncSourceButton)
+
+	calcButton := unison.NewSVGButton(svg.Calculator)
+	calcButton.Tooltip = newWrappedTooltip(i18n.Text("Calculators (jumping, throwing, hiking, etc.)"))
+	calcButton.ClickCallback = func() { DisplayCalculator(s) }
+	s.toolbar.AddChild(calcButton)
+
+	installSearchTracker(s.toolbar, func() {
+		s.Reactions.Table.ClearSelection()
+		s.ConditionalModifiers.Table.ClearSelection()
+		s.MeleeWeapons.Table.ClearSelection()
+		s.RangedWeapons.Table.ClearSelection()
+		s.Traits.Table.ClearSelection()
+		s.Skills.Table.ClearSelection()
+		s.Spells.Table.ClearSelection()
+		s.CarriedEquipment.Table.ClearSelection()
+		s.OtherEquipment.Table.ClearSelection()
+		s.Notes.Table.ClearSelection()
+	}, func(refList *[]*searchRef, text string, namesOnly bool) {
+		searchSheetTable(refList, text, namesOnly, s.Traits)
+		searchSheetTable(refList, text, namesOnly, s.Skills)
+		searchSheetTable(refList, text, namesOnly, s.Spells)
+		searchSheetTable(refList, text, namesOnly, s.CarriedEquipment)
+		searchSheetTable(refList, text, namesOnly, s.OtherEquipment)
+		searchSheetTable(refList, text, namesOnly, s.Notes)
+	})
+
+	s.toolbar.SetLayout(&unison.FlexLayout{
+		Columns:  len(s.toolbar.Children()),
+		HSpacing: unison.StdHSpacing,
+	})
 }
 
 // DataOwner implements gurps.DataOwnerProvider.
@@ -736,6 +744,97 @@ func (s *Sheet) SheetSettingsUpdated(entity *gurps.Entity, blockLayout bool) {
 		s.MarkModified(nil)
 		s.Rebuild(blockLayout)
 	}
+}
+
+type sheetTablesUndoData struct {
+	traits           *TableUndoEditData[*gurps.Trait]
+	skills           *TableUndoEditData[*gurps.Skill]
+	spells           *TableUndoEditData[*gurps.Spell]
+	carriedEquipment *TableUndoEditData[*gurps.Equipment]
+	otherEquipment   *TableUndoEditData[*gurps.Equipment]
+	notes            *TableUndoEditData[*gurps.Note]
+}
+
+func newSheetTablesUndoData(sheet *Sheet) *sheetTablesUndoData {
+	return &sheetTablesUndoData{
+		traits:           NewTableUndoEditData(sheet.Traits.Table),
+		skills:           NewTableUndoEditData(sheet.Skills.Table),
+		spells:           NewTableUndoEditData(sheet.Spells.Table),
+		carriedEquipment: NewTableUndoEditData(sheet.CarriedEquipment.Table),
+		otherEquipment:   NewTableUndoEditData(sheet.OtherEquipment.Table),
+		notes:            NewTableUndoEditData(sheet.Notes.Table),
+	}
+}
+
+func (s *sheetTablesUndoData) Apply() {
+	s.traits.Apply()
+	s.skills.Apply()
+	s.spells.Apply()
+	s.carriedEquipment.Apply()
+	s.otherEquipment.Apply()
+	s.notes.Apply()
+}
+
+func (s *Sheet) syncWithAllSources() {
+	var undo *unison.UndoEdit[*sheetTablesUndoData]
+	mgr := unison.UndoManagerFor(s)
+	if mgr != nil {
+		undo = &unison.UndoEdit[*sheetTablesUndoData]{
+			ID:         unison.NextUndoID(),
+			EditName:   syncWithSourceAction.Title,
+			UndoFunc:   func(e *unison.UndoEdit[*sheetTablesUndoData]) { e.BeforeData.Apply() },
+			RedoFunc:   func(e *unison.UndoEdit[*sheetTablesUndoData]) { e.AfterData.Apply() },
+			AbsorbFunc: func(_ *unison.UndoEdit[*sheetTablesUndoData], _ unison.Undoable) bool { return false },
+			BeforeData: newSheetTablesUndoData(s),
+		}
+	}
+	gurps.Traverse(func(t *gurps.Trait) bool {
+		t.SyncWithSource()
+		gurps.Traverse(func(m *gurps.TraitModifier) bool {
+			m.SyncWithSource()
+			return false
+		}, false, false, t.Modifiers...)
+		return false
+	}, false, false, s.entity.Traits...)
+	gurps.Traverse(func(sk *gurps.Skill) bool {
+		sk.SyncWithSource()
+		return false
+	}, false, false, s.entity.Skills...)
+	gurps.Traverse(func(sp *gurps.Spell) bool {
+		sp.SyncWithSource()
+		return false
+	}, false, false, s.entity.Spells...)
+	gurps.Traverse(func(e *gurps.Equipment) bool {
+		e.SyncWithSource()
+		gurps.Traverse(func(m *gurps.EquipmentModifier) bool {
+			m.SyncWithSource()
+			return false
+		}, false, false, e.Modifiers...)
+		return false
+	}, false, false, s.entity.CarriedEquipment...)
+	gurps.Traverse(func(e *gurps.Equipment) bool {
+		e.SyncWithSource()
+		gurps.Traverse(func(m *gurps.EquipmentModifier) bool {
+			m.SyncWithSource()
+			return false
+		}, false, false, e.Modifiers...)
+		return false
+	}, false, false, s.entity.OtherEquipment...)
+	gurps.Traverse(func(n *gurps.Note) bool {
+		n.SyncWithSource()
+		return false
+	}, false, false, s.entity.Notes...)
+	s.Traits.Table.SyncToModel()
+	s.Skills.Table.SyncToModel()
+	s.Spells.Table.SyncToModel()
+	s.CarriedEquipment.Table.SyncToModel()
+	s.OtherEquipment.Table.SyncToModel()
+	s.Notes.Table.SyncToModel()
+	if mgr != nil && undo != nil {
+		undo.AfterData = newSheetTablesUndoData(s)
+		mgr.Add(undo)
+	}
+	s.Rebuild(true)
 }
 
 // Rebuild implements widget.Rebuildable.
