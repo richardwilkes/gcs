@@ -244,7 +244,7 @@ func (e *EquipmentModifier) UnmarshalJSON(data []byte) error {
 	setOpen := false
 	if !tid.IsValid(localData.TID) {
 		// Fixup old data that used UUIDs instead of TIDs
-		localData.TID = tid.MustNewTID(equipmentModifierKind(strings.HasSuffix(localData.Type, ContainerKeyPostfix)))
+		localData.TID = tid.MustNewTID(equipmentModifierKind(strings.HasSuffix(localData.Type, containerKeyPostfix)))
 		setOpen = localData.IsOpen
 	}
 	e.EquipmentModifierData = localData.EquipmentModifierData

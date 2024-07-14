@@ -339,7 +339,7 @@ func (s *Skill) UnmarshalJSON(data []byte) error {
 		if localData.Type == "technique" {
 			kind = kinds.Technique
 		} else {
-			kind = skillKind(strings.HasSuffix(localData.Type, ContainerKeyPostfix))
+			kind = skillKind(strings.HasSuffix(localData.Type, containerKeyPostfix))
 		}
 		localData.TID = tid.MustNewTID(kind)
 		setOpen = localData.IsOpen

@@ -342,7 +342,7 @@ func (s *Spell) UnmarshalJSON(data []byte) error {
 		if localData.Type == "ritual_magic_spell" {
 			kind = kinds.RitualMagicSpell
 		} else {
-			kind = spellKind(strings.HasSuffix(localData.Type, ContainerKeyPostfix))
+			kind = spellKind(strings.HasSuffix(localData.Type, containerKeyPostfix))
 		}
 		localData.TID = tid.MustNewTID(kind)
 		setOpen = localData.IsOpen

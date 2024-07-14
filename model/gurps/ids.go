@@ -13,9 +13,7 @@ import (
 	"strings"
 )
 
-// ContainerKeyPostfix is the key postfix used to identify containers.
-// TODO: Make private
-const ContainerKeyPostfix = "_container"
+const containerKeyPostfix = "_container"
 
 // Various commonly used IDs
 const (

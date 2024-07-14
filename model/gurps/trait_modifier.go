@@ -239,7 +239,7 @@ func (t *TraitModifier) UnmarshalJSON(data []byte) error {
 	setOpen := false
 	if !tid.IsValid(localData.TID) {
 		// Fixup old data that used UUIDs instead of TIDs
-		localData.TID = tid.MustNewTID(traitModifierKind(strings.HasSuffix(localData.Type, ContainerKeyPostfix)))
+		localData.TID = tid.MustNewTID(traitModifierKind(strings.HasSuffix(localData.Type, containerKeyPostfix)))
 		setOpen = localData.IsOpen
 	}
 	t.TraitModifierData = localData.TraitModifierData
