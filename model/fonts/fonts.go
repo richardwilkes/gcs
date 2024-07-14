@@ -15,7 +15,6 @@ import (
 	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/atexit"
@@ -26,8 +25,6 @@ import (
 	"github.com/richardwilkes/unison/enums/spacing"
 	"github.com/richardwilkes/unison/enums/weight"
 )
-
-const typeKey = "theme_fonts"
 
 // Additional fonts over and above what unison provides by default.
 var (
@@ -60,8 +57,7 @@ type Fonts struct {
 }
 
 type fileData struct {
-	Type    string `json:"type"`
-	Version int    `json:"version"`
+	Version int `json:"version"`
 	Fonts
 }
 
@@ -117,21 +113,6 @@ func NewFromFS(fileSystem fs.FS, filePath string) (*Fonts, error) {
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
 		return nil, errs.Wrap(err)
 	}
-	switch data.Version {
-	case 0:
-		// During development of v5, forgot to add the type & version initially, so try and fix that up
-		if data.Type == "" {
-			data.Type = typeKey
-			data.Version = jio.CurrentDataVersion
-		}
-	case 1:
-		data.Type = typeKey
-		data.Version = jio.CurrentDataVersion
-	default:
-	}
-	if data.Type != typeKey {
-		return nil, errs.New(message.UnexpectedFileData())
-	}
 	if err := jio.CheckVersion(data.Version); err != nil {
 		return nil, err
 	}
@@ -141,7 +122,6 @@ func NewFromFS(fileSystem fs.FS, filePath string) (*Fonts, error) {
 // Save writes the Fonts to the file as JSON.
 func (f *Fonts) Save(filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &fileData{
-		Type:    typeKey,
 		Version: jio.CurrentDataVersion,
 		Fonts:   *f,
 	})

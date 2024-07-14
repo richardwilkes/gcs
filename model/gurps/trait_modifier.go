@@ -25,7 +25,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/tmcost"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
-	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
@@ -50,11 +49,6 @@ const (
 	TraitModifierTagsColumn
 	TraitModifierReferenceColumn
 	TraitModifierLibSrcColumn
-)
-
-const (
-	traitModifierListTypeKey = "modifier_list"
-	traitModifierTypeKey     = "modifier"
 )
 
 // GeneralModifier is used for common access to modifiers.
@@ -105,7 +99,6 @@ type TraitModifierEditDataNonContainerOnly struct {
 }
 
 type traitModifierListData struct {
-	Type    string           `json:"type"`
 	Version int              `json:"version"`
 	Rows    []*TraitModifier `json:"rows"`
 }
@@ -114,10 +107,7 @@ type traitModifierListData struct {
 func NewTraitModifiersFromFile(fileSystem fs.FS, filePath string) ([]*TraitModifier, error) {
 	var data traitModifierListData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(message.InvalidFileData(), err)
-	}
-	if data.Type != traitModifierListTypeKey {
-		return nil, errs.New(message.UnexpectedFileData())
+		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(data.Version); err != nil {
 		return nil, err
@@ -128,7 +118,6 @@ func NewTraitModifiersFromFile(fileSystem fs.FS, filePath string) ([]*TraitModif
 // SaveTraitModifiers writes the TraitModifier list to the file as JSON.
 func SaveTraitModifiers(modifiers []*TraitModifier, filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &traitModifierListData{
-		Type:    traitModifierListTypeKey,
 		Version: jio.CurrentDataVersion,
 		Rows:    modifiers,
 	})
@@ -269,7 +258,7 @@ func TraitModifierHeaderData(columnID int) HeaderData {
 	case TraitModifierEnabledColumn:
 		data.Title = HeaderCheckmark
 		data.TitleIsImageKey = true
-		data.Detail = message.ModifierEnabledTooltip()
+		data.Detail = ModifierEnabledTooltip()
 	case TraitModifierDescriptionColumn:
 		data.Title = i18n.Text("Trait Modifier")
 		data.Primary = true
@@ -280,11 +269,11 @@ func TraitModifierHeaderData(columnID int) HeaderData {
 	case TraitModifierReferenceColumn:
 		data.Title = HeaderBookmark
 		data.TitleIsImageKey = true
-		data.Detail = message.PageRefTooltip()
+		data.Detail = PageRefTooltip()
 	case TraitModifierLibSrcColumn:
 		data.Title = HeaderDatabase
 		data.TitleIsImageKey = true
-		data.Detail = message.LibSrcTooltip()
+		data.Detail = LibSrcTooltip()
 	}
 	return data
 }

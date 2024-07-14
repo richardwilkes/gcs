@@ -26,7 +26,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
-	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
@@ -56,8 +55,6 @@ const (
 	SkillPointsColumn
 	SkillLibSrcColumn
 )
-
-const skillListTypeKey = "skill_list"
 
 // Skill holds the data for a skill.
 type Skill struct {
@@ -112,7 +109,6 @@ type SkillContainerOnlyEditData struct {
 }
 
 type skillListData struct {
-	Type    string   `json:"type"`
 	Version int      `json:"version"`
 	Rows    []*Skill `json:"rows"`
 }
@@ -121,10 +117,7 @@ type skillListData struct {
 func NewSkillsFromFile(fileSystem fs.FS, filePath string) ([]*Skill, error) {
 	var data skillListData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(message.InvalidFileData(), err)
-	}
-	if data.Type != skillListTypeKey {
-		return nil, errs.New(message.UnexpectedFileData())
+		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(data.Version); err != nil {
 		return nil, err
@@ -147,7 +140,6 @@ func NewSkillsFromFile(fileSystem fs.FS, filePath string) ([]*Skill, error) {
 // SaveSkills writes the Skill list to the file as JSON.
 func SaveSkills(skills []*Skill, filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &skillListData{
-		Type:    skillListTypeKey,
 		Version: jio.CurrentDataVersion,
 		Rows:    skills,
 	})
@@ -379,7 +371,7 @@ func SkillsHeaderData(columnID int) HeaderData {
 	case SkillReferenceColumn:
 		data.Title = HeaderBookmark
 		data.TitleIsImageKey = true
-		data.Detail = message.PageRefTooltip()
+		data.Detail = PageRefTooltip()
 	case SkillLevelColumn:
 		data.Title = i18n.Text("SL")
 		data.Detail = i18n.Text("Skill Level")
@@ -392,7 +384,7 @@ func SkillsHeaderData(columnID int) HeaderData {
 	case SkillLibSrcColumn:
 		data.Title = HeaderDatabase
 		data.TitleIsImageKey = true
-		data.Detail = message.LibSrcTooltip()
+		data.Detail = LibSrcTooltip()
 	}
 	return data
 }
@@ -429,7 +421,7 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 			level := s.CalculateLevel(nil)
 			data.Primary = level.LevelAsString(s.Container())
 			if level.Tooltip != "" {
-				data.Tooltip = message.IncludesModifiersFrom() + ":" + level.Tooltip
+				data.Tooltip = IncludesModifiersFrom() + ":" + level.Tooltip
 			}
 			data.Alignment = align.End
 		}
@@ -439,7 +431,7 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 			data.Primary = FormatRelativeSkill(EntityFromNode(s), s.IsTechnique(), s.Difficulty,
 				s.AdjustedRelativeLevel())
 			if tooltip := s.CalculateLevel(nil).Tooltip; tooltip != "" {
-				data.Tooltip = message.IncludesModifiersFrom() + ":" + tooltip
+				data.Tooltip = IncludesModifiersFrom() + ":" + tooltip
 			}
 		}
 	case SkillPointsColumn:
@@ -448,7 +440,7 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 		data.Primary = s.AdjustedPoints(&tooltip).String()
 		data.Alignment = align.End
 		if tooltip.Len() != 0 {
-			data.Tooltip = message.IncludesModifiersFrom() + ":" + tooltip.String()
+			data.Tooltip = IncludesModifiersFrom() + ":" + tooltip.String()
 		}
 	case SkillLibSrcColumn:
 		data.Type = cell.Text
@@ -593,9 +585,9 @@ func (s *Skill) SecondaryText(optionChecker func(display.Option) bool) string {
 
 func addTooltipForSkillLevelAdj(optionChecker func(display.Option) bool, prefs *SheetSettings, level Level, to LineBuilder) {
 	if optionChecker(prefs.SkillLevelAdjDisplay) {
-		if level.Tooltip != "" && level.Tooltip != message.NoAdditionalModifiers() {
+		if level.Tooltip != "" && level.Tooltip != NoAdditionalModifiers() {
 			levelTooltip := level.Tooltip
-			msg := message.IncludesModifiersFrom()
+			msg := IncludesModifiersFrom()
 			if !strings.HasPrefix(levelTooltip, msg) {
 				levelTooltip = msg + ":" + levelTooltip
 			}

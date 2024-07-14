@@ -7,14 +7,9 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package message
+package gurps
 
 import "github.com/richardwilkes/toolbox/i18n"
-
-// UnexpectedFileData returns a message indicating that the file does not contain the expected data.
-func UnexpectedFileData() string {
-	return i18n.Text("This file does not contain the expected data.")
-}
 
 // InvalidFileData returns a message indicating that the file contains invalid data.
 func InvalidFileData() string {

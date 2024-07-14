@@ -16,7 +16,6 @@ import (
 	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
@@ -26,7 +25,6 @@ import (
 const (
 	minimumVersion = 5
 	currentVersion = 5
-	typeKey        = "theme_colors"
 )
 
 var (
@@ -54,8 +52,7 @@ type Colors struct {
 }
 
 type fileData struct {
-	Type    string `json:"type"`
-	Version int    `json:"version"`
+	Version int `json:"version"`
 	Colors
 }
 
@@ -99,9 +96,6 @@ func NewFromFS(fileSystem fs.FS, filePath string) (*Colors, error) {
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
 		return nil, errs.Wrap(err)
 	}
-	if data.Type != typeKey {
-		return nil, errs.New(message.UnexpectedFileData())
-	}
 	if data.Version < minimumVersion {
 		return nil, errs.New("The theme color data is too old to be used")
 	}
@@ -114,7 +108,6 @@ func NewFromFS(fileSystem fs.FS, filePath string) (*Colors, error) {
 // Save writes the Colors to the file as JSON.
 func (c *Colors) Save(filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &fileData{
-		Type:    typeKey,
 		Version: currentVersion,
 		Colors:  *c,
 	})

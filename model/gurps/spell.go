@@ -26,7 +26,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
-	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
@@ -64,8 +63,6 @@ const (
 	SpellDescriptionForPageColumn
 	SpellLibSrcColumn
 )
-
-const spellListTypeKey = "spell_list"
 
 // Spell holds the data for a spell.
 type Spell struct {
@@ -118,7 +115,6 @@ type SpellNonContainerOnlyEditData struct {
 }
 
 type spellListData struct {
-	Type    string   `json:"type"`
 	Version int      `json:"version"`
 	Rows    []*Spell `json:"rows"`
 }
@@ -127,10 +123,7 @@ type spellListData struct {
 func NewSpellsFromFile(fileSystem fs.FS, filePath string) ([]*Spell, error) {
 	var data spellListData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(message.InvalidFileData(), err)
-	}
-	if data.Type != spellListTypeKey {
-		return nil, errs.New(message.UnexpectedFileData())
+		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(data.Version); err != nil {
 		return nil, err
@@ -141,7 +134,6 @@ func NewSpellsFromFile(fileSystem fs.FS, filePath string) ([]*Spell, error) {
 // SaveSpells writes the Spell list to the file as JSON.
 func SaveSpells(spells []*Spell, filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &spellListData{
-		Type:    spellListTypeKey,
 		Version: jio.CurrentDataVersion,
 		Rows:    spells,
 	})
@@ -400,7 +392,7 @@ func SpellsHeaderData(columnID int) HeaderData {
 	case SpellReferenceColumn:
 		data.Title = HeaderBookmark
 		data.TitleIsImageKey = true
-		data.Detail = message.PageRefTooltip()
+		data.Detail = PageRefTooltip()
 	case SpellLevelColumn:
 		data.Title = i18n.Text("SL")
 		data.Detail = i18n.Text("Skill Level")
@@ -413,7 +405,7 @@ func SpellsHeaderData(columnID int) HeaderData {
 	case SpellLibSrcColumn:
 		data.Title = HeaderDatabase
 		data.TitleIsImageKey = true
-		data.Detail = message.LibSrcTooltip()
+		data.Detail = LibSrcTooltip()
 	}
 	return data
 }
@@ -485,7 +477,7 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 			level := s.CalculateLevel()
 			data.Primary = level.LevelAsString(s.Container())
 			if level.Tooltip != "" {
-				data.Tooltip = message.IncludesModifiersFrom() + ":" + level.Tooltip
+				data.Tooltip = IncludesModifiersFrom() + ":" + level.Tooltip
 			}
 			data.Alignment = align.End
 		}
@@ -502,7 +494,7 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 				}
 			}
 			if tooltip := s.CalculateLevel().Tooltip; tooltip != "" {
-				data.Tooltip = message.IncludesModifiersFrom() + ":" + tooltip
+				data.Tooltip = IncludesModifiersFrom() + ":" + tooltip
 			}
 		}
 	case SpellPointsColumn:
@@ -511,7 +503,7 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 		data.Primary = s.AdjustedPoints(&tooltip).String()
 		data.Alignment = align.End
 		if tooltip.Len() != 0 {
-			data.Tooltip = message.IncludesModifiersFrom() + ":" + tooltip.String()
+			data.Tooltip = IncludesModifiersFrom() + ":" + tooltip.String()
 		}
 	case SpellDescriptionForPageColumn:
 		s.CellData(SpellDescriptionColumn, data)

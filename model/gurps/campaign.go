@@ -16,7 +16,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
-	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/tid"
@@ -47,7 +46,7 @@ type CampaignData struct {
 func NewCampaignFromFile(fileSystem fs.FS, filePath string) (*Campaign, error) {
 	var campaign Campaign
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &campaign); err != nil {
-		return nil, errs.NewWithCause(message.InvalidFileData(), err)
+		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(campaign.Version); err != nil {
 		return nil, err

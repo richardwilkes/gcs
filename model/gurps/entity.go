@@ -33,7 +33,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
-	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/errs"
@@ -123,7 +122,7 @@ type Entity struct {
 func NewEntityFromFile(fileSystem fs.FS, filePath string) (*Entity, error) {
 	var e Entity
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &e); err != nil {
-		return nil, errs.NewWithCause(message.InvalidFileData(), err)
+		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(e.Version); err != nil {
 		return nil, err

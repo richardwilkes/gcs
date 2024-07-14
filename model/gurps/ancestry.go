@@ -17,17 +17,13 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/eval"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 )
 
 // DefaultAncestry holds the name of the default ancestry.
-const (
-	DefaultAncestry = "Human"
-	ancestryTypeKey = "ancestry"
-)
+const DefaultAncestry = "Human"
 
 // Ancestry holds details necessary to generate ancestry-specific customizations.
 type Ancestry struct {
@@ -37,8 +33,7 @@ type Ancestry struct {
 }
 
 type ancestryData struct {
-	Type    string `json:"type"`
-	Version int    `json:"version"`
+	Version int `json:"version"`
 	Ancestry
 }
 
@@ -69,13 +64,6 @@ func NewAncestryFromFile(fileSystem fs.FS, filePath string) (*Ancestry, error) {
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &ancestry); err != nil {
 		return nil, err
 	}
-	if ancestry.Type == "" && ancestry.Version == 0 { // for some older files
-		ancestry.Type = ancestryTypeKey
-		ancestry.Version = jio.CurrentDataVersion
-	}
-	if ancestry.Type != ancestryTypeKey {
-		return nil, errs.New(message.UnexpectedFileData())
-	}
 	if err := jio.CheckVersion(ancestry.Version); err != nil {
 		return nil, err
 	}
@@ -88,7 +76,6 @@ func NewAncestryFromFile(fileSystem fs.FS, filePath string) (*Ancestry, error) {
 // Save writes the Ancestry to the file as JSON.
 func (a *Ancestry) Save(filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &ancestryData{
-		Type:     ancestryTypeKey,
 		Version:  jio.CurrentDataVersion,
 		Ancestry: *a,
 	})

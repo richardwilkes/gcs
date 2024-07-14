@@ -25,7 +25,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
-	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
@@ -51,11 +50,6 @@ const (
 	EquipmentModifierTagsColumn
 	EquipmentModifierReferenceColumn
 	EquipmentModifierLibSrcColumn
-)
-
-const (
-	equipmentModifierListTypeKey = "eqp_modifier_list"
-	equipmentModifierTypeKey     = "eqp_modifier"
 )
 
 // EquipmentModifier holds a modifier to a piece of Equipment.
@@ -97,7 +91,6 @@ type EquipmentModifierEditDataNonContainerOnly struct {
 }
 
 type equipmentModifierListData struct {
-	Type    string               `json:"type"`
 	Version int                  `json:"version"`
 	Rows    []*EquipmentModifier `json:"rows"`
 }
@@ -106,10 +99,7 @@ type equipmentModifierListData struct {
 func NewEquipmentModifiersFromFile(fileSystem fs.FS, filePath string) ([]*EquipmentModifier, error) {
 	var data equipmentModifierListData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(message.InvalidFileData(), err)
-	}
-	if data.Type != equipmentModifierListTypeKey {
-		return nil, errs.New(message.UnexpectedFileData())
+		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(data.Version); err != nil {
 		return nil, err
@@ -120,7 +110,6 @@ func NewEquipmentModifiersFromFile(fileSystem fs.FS, filePath string) ([]*Equipm
 // SaveEquipmentModifiers writes the EquipmentModifier list to the file as JSON.
 func SaveEquipmentModifiers(modifiers []*EquipmentModifier, filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &equipmentModifierListData{
-		Type:    equipmentModifierListTypeKey,
 		Version: jio.CurrentDataVersion,
 		Rows:    modifiers,
 	})
@@ -274,7 +263,7 @@ func EquipmentModifierHeaderData(columnID int) HeaderData {
 	case EquipmentModifierEnabledColumn:
 		data.Title = HeaderCheckmark
 		data.TitleIsImageKey = true
-		data.Detail = message.ModifierEnabledTooltip()
+		data.Detail = ModifierEnabledTooltip()
 	case EquipmentModifierDescriptionColumn:
 		data.Title = i18n.Text("Equipment Modifier")
 		data.Primary = true
@@ -290,11 +279,11 @@ func EquipmentModifierHeaderData(columnID int) HeaderData {
 	case EquipmentModifierReferenceColumn:
 		data.Title = HeaderBookmark
 		data.TitleIsImageKey = true
-		data.Detail = message.PageRefTooltip()
+		data.Detail = PageRefTooltip()
 	case EquipmentModifierLibSrcColumn:
 		data.Title = HeaderDatabase
 		data.TitleIsImageKey = true
-		data.Detail = message.LibSrcTooltip()
+		data.Detail = LibSrcTooltip()
 	}
 	return data
 }

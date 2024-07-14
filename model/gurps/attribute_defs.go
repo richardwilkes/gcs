@@ -17,14 +17,11 @@ import (
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/fatal"
 	"github.com/richardwilkes/toolbox/xmath/crc"
 )
-
-const attributeSettingsListTypeKey = "attribute_settings"
 
 // AttributeDefs holds a set of AttributeDef objects.
 type AttributeDefs struct {
@@ -73,7 +70,6 @@ func FactoryAttributeDefs() *AttributeDefs {
 }
 
 type attributeDefsData struct {
-	Type    string         `json:"type"`
 	Version int            `json:"version"`
 	Rows    *AttributeDefs `json:"rows,alt=attributes"`
 }
@@ -85,13 +81,7 @@ func NewAttributeDefsFromFile(fileSystem fs.FS, filePath string) (*AttributeDefs
 		OldestKey *AttributeDefs `json:"attribute_settings"`
 	}
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(message.InvalidFileData(), err)
-	}
-	if data.Type == "" && data.Version == 2 { // for some older files
-		data.Type = attributeSettingsListTypeKey
-	}
-	if data.Type != attributeSettingsListTypeKey {
-		return nil, errs.New(message.UnexpectedFileData())
+		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(data.Version); err != nil {
 		return nil, err
@@ -112,7 +102,6 @@ func NewAttributeDefsFromFile(fileSystem fs.FS, filePath string) (*AttributeDefs
 // Save writes the AttributeDefs to the file as JSON.
 func (a *AttributeDefs) Save(filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &attributeDefsData{
-		Type:    attributeSettingsListTypeKey,
 		Version: jio.CurrentDataVersion,
 		Rows:    a,
 	})

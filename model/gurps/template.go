@@ -16,7 +16,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
-	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/tid"
@@ -49,7 +48,7 @@ type TemplateData struct {
 func NewTemplateFromFile(fileSystem fs.FS, filePath string) (*Template, error) {
 	var t Template
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &t); err != nil {
-		return nil, errs.NewWithCause(message.InvalidFileData(), err)
+		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(t.Version); err != nil {
 		return nil, err

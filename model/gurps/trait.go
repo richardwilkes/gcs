@@ -28,7 +28,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/tmcost"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
-	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
@@ -53,11 +52,6 @@ const (
 	TraitTagsColumn
 	TraitReferenceColumn
 	TraitLibSrcColumn
-)
-
-const (
-	traitListTypeKey = "trait_list"
-	traitTypeKey     = "trait"
 )
 
 // Trait holds an advantage, disadvantage, quirk, or perk.
@@ -115,7 +109,6 @@ type TraitContainerOnlyEditData struct {
 }
 
 type traitListData struct {
-	Type    string   `json:"type"`
 	Version int      `json:"version"`
 	Rows    []*Trait `json:"rows"`
 }
@@ -124,13 +117,7 @@ type traitListData struct {
 func NewTraitsFromFile(fileSystem fs.FS, filePath string) ([]*Trait, error) {
 	var data traitListData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(message.InvalidFileData(), err)
-	}
-	if data.Type == "advantage_list" {
-		data.Type = traitListTypeKey
-	}
-	if data.Type != traitListTypeKey {
-		return nil, errs.New(message.UnexpectedFileData())
+		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(data.Version); err != nil {
 		return nil, err
@@ -141,7 +128,6 @@ func NewTraitsFromFile(fileSystem fs.FS, filePath string) ([]*Trait, error) {
 // SaveTraits writes the Trait list to the file as JSON.
 func SaveTraits(traits []*Trait, filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &traitListData{
-		Type:    traitListTypeKey,
 		Version: jio.CurrentDataVersion,
 		Rows:    traits,
 	})
@@ -347,11 +333,11 @@ func TraitsHeaderData(columnID int) HeaderData {
 	case TraitReferenceColumn:
 		data.Title = HeaderBookmark
 		data.TitleIsImageKey = true
-		data.Detail = message.PageRefTooltip()
+		data.Detail = PageRefTooltip()
 	case TraitLibSrcColumn:
 		data.Title = HeaderDatabase
 		data.TitleIsImageKey = true
-		data.Detail = message.LibSrcTooltip()
+		data.Detail = LibSrcTooltip()
 	}
 	return data
 }

@@ -25,7 +25,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
-	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
@@ -57,11 +56,6 @@ const (
 	EquipmentTagsColumn
 	EquipmentReferenceColumn
 	EquipmentLibSrcColumn
-)
-
-const (
-	equipmentListTypeKey = "equipment_list"
-	equipmentTypeKey     = "equipment"
 )
 
 // Equipment holds a piece of equipment.
@@ -126,7 +120,6 @@ type EquipmentSourceData struct {
 }
 
 type equipmentListData struct {
-	Type    string       `json:"type"`
 	Version int          `json:"version"`
 	Rows    []*Equipment `json:"rows"`
 }
@@ -135,10 +128,7 @@ type equipmentListData struct {
 func NewEquipmentFromFile(fileSystem fs.FS, filePath string) ([]*Equipment, error) {
 	var data equipmentListData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(message.InvalidFileData(), err)
-	}
-	if data.Type != equipmentListTypeKey {
-		return nil, errs.New(message.UnexpectedFileData())
+		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(data.Version); err != nil {
 		return nil, err
@@ -149,7 +139,6 @@ func NewEquipmentFromFile(fileSystem fs.FS, filePath string) ([]*Equipment, erro
 // SaveEquipment writes the Equipment list to the file as JSON.
 func SaveEquipment(equipment []*Equipment, filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &equipmentListData{
-		Type:    equipmentListTypeKey,
 		Version: jio.CurrentDataVersion,
 		Rows:    equipment,
 	})
@@ -374,11 +363,11 @@ func EquipmentHeaderData(columnID int, entity *Entity, carried, forPage bool) He
 	case EquipmentReferenceColumn:
 		data.Title = HeaderBookmark
 		data.TitleIsImageKey = true
-		data.Detail = message.PageRefTooltip()
+		data.Detail = PageRefTooltip()
 	case EquipmentLibSrcColumn:
 		data.Title = HeaderDatabase
 		data.TitleIsImageKey = true
-		data.Detail = message.LibSrcTooltip()
+		data.Detail = LibSrcTooltip()
 	}
 	return data
 }

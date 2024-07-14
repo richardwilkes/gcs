@@ -16,7 +16,6 @@ import (
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
-	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/errs"
@@ -25,10 +24,7 @@ import (
 	"github.com/richardwilkes/toolbox/xmath/crc"
 )
 
-const (
-	bodyTypeListTypeKey    = "body_type"
-	noNeedForRewrapVersion = 4
-)
+const noNeedForRewrapVersion = 4
 
 //go:embed embedded_data
 var embeddedFS embed.FS
@@ -49,8 +45,7 @@ type Body struct {
 }
 
 type standaloneBodyData struct {
-	Type    string `json:"type"`
-	Version int    `json:"version"`
+	Version int `json:"version"`
 	BodyData
 	OldHitLocations *Body `json:"hit_locations,omitempty"`
 }
@@ -71,21 +66,18 @@ func FactoryBody() *Body {
 func NewBodyFromFile(fileSystem fs.FS, filePath string) (*Body, error) {
 	var data standaloneBodyData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(message.InvalidFileData(), err)
-	}
-	var body Body
-	body.BodyData = data.BodyData
-	if data.Type != bodyTypeListTypeKey {
-		if data.OldHitLocations == nil {
-			return nil, errs.New(message.UnexpectedFileData())
-		}
-		body = *data.OldHitLocations
-	} else {
-		body.Update(nil)
+		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(data.Version); err != nil {
 		return nil, err
 	}
+	var body Body
+	if data.OldHitLocations == nil {
+		body.BodyData = data.BodyData
+	} else {
+		body.BodyData = data.OldHitLocations.BodyData
+	}
+	body.Update(nil)
 	if data.Version < noNeedForRewrapVersion {
 		body.Rewrap()
 	}
@@ -134,7 +126,6 @@ func (b *Body) Clone(entity *Entity, owningLocation *HitLocation) *Body {
 // Save writes the Body to the file as JSON.
 func (b *Body) Save(filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &standaloneBodyData{
-		Type:     bodyTypeListTypeKey,
 		Version:  jio.CurrentDataVersion,
 		BodyData: b.BodyData,
 	})

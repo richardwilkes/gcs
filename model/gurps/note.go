@@ -19,7 +19,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
-	"github.com/richardwilkes/gcs/v5/model/message"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
@@ -38,11 +37,6 @@ const (
 	NoteTextColumn = iota
 	NoteReferenceColumn
 	NoteLibSrcColumn
-)
-
-const (
-	noteListTypeKey = "note_list"
-	noteTypeKey     = "note"
 )
 
 // Note holds a note.
@@ -68,7 +62,6 @@ type NoteEditData struct {
 }
 
 type noteListData struct {
-	Type    string  `json:"type"`
 	Version int     `json:"version"`
 	Rows    []*Note `json:"rows"`
 }
@@ -77,10 +70,7 @@ type noteListData struct {
 func NewNotesFromFile(fileSystem fs.FS, filePath string) ([]*Note, error) {
 	var data noteListData
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &data); err != nil {
-		return nil, errs.NewWithCause(message.InvalidFileData(), err)
-	}
-	if data.Type != noteListTypeKey {
-		return nil, errs.New(message.UnexpectedFileData())
+		return nil, errs.NewWithCause(InvalidFileData(), err)
 	}
 	if err := jio.CheckVersion(data.Version); err != nil {
 		return nil, err
@@ -91,7 +81,6 @@ func NewNotesFromFile(fileSystem fs.FS, filePath string) ([]*Note, error) {
 // SaveNotes writes the Note list to the file as JSON.
 func SaveNotes(notes []*Note, filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, &noteListData{
-		Type:    noteListTypeKey,
 		Version: jio.CurrentDataVersion,
 		Rows:    notes,
 	})
@@ -248,11 +237,11 @@ func NotesHeaderData(columnID int) HeaderData {
 	case NoteReferenceColumn:
 		data.Title = HeaderBookmark
 		data.TitleIsImageKey = true
-		data.Detail = message.PageRefTooltip()
+		data.Detail = PageRefTooltip()
 	case NoteLibSrcColumn:
 		data.Title = HeaderDatabase
 		data.TitleIsImageKey = true
-		data.Detail = message.LibSrcTooltip()
+		data.Detail = LibSrcTooltip()
 	}
 	return data
 }
