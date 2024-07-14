@@ -92,11 +92,6 @@ func (ws WeaponStrength) Hash(h hash.Hash) {
 // Resolve any bonuses that apply.
 func (ws WeaponStrength) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) WeaponStrength {
 	result := ws
-	if w.Owner != nil {
-		if st := w.Owner.RatedStrength().Max(0); st != 0 {
-			result.Min = st
-		}
-	}
 	result.Bipod = w.ResolveBoolFlag(wswitch.Bipod, result.Bipod)
 	result.Mounted = w.ResolveBoolFlag(wswitch.Mounted, result.Mounted)
 	result.MusketRest = w.ResolveBoolFlag(wswitch.MusketRest, result.MusketRest)
@@ -150,7 +145,7 @@ func (ws WeaponStrength) Tooltip(w *Weapon) string {
 	var tooltip strings.Builder
 	if w.Owner != nil {
 		if st := w.Owner.RatedStrength(); st > 0 {
-			fmt.Fprintf(&tooltip, i18n.Text("The weapon has a rated ST of %v, which is used instead of the user's ST for calculations."), st)
+			fmt.Fprintf(&tooltip, i18n.Text("The weapon has a rated ST of %v, which is used instead of the user's ST for all calculations except minimum ST."), st)
 		}
 	}
 	if ws.Min > 0 {
