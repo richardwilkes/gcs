@@ -1,121 +1,122 @@
 {
-  "name": "Human",
-  "common_options": {
-    "height_formula": "roll(dice(1, 8, if($st < 7, 51, if($st < 10, 54 + ($st - 7) * 3, if($st == 10, 62, if($st < 14, 64 + ($st - 11) * 3, 73))))))",
-    "weight_formula": "roll(dice(1, if($st < 11, 61, if($st < 14, 71 + ($st - 11) * 10, 101)), if($st < 7, 60, if($st < 10, 75 + ($st - 7) * 15, if($st == 10, 115, if($st < 14, 125 + ($st - 11) * 15, 170))))))",
-    "age_formula": "roll(1d12+14)",
-    "hair_options": [
-      {
-        "weight": 14,
-        "value": "Black"
-      },
-      {
-        "weight": 8,
-        "value": "Brown"
-      },
-      {
-        "weight": 5,
-        "value": "Blond"
-      },
-      {
-        "weight": 3,
-        "value": "Redhead"
-      },
-      {
-        "weight": 1,
-        "value": "Bald"
-      }
-    ],
-    "eye_options": [
-      {
-        "weight": 52,
-        "value": "Brown"
-      },
-      {
-        "weight": 18,
-        "value": "Blue"
-      },
-      {
-        "weight": 10,
-        "value": "Amber"
-      },
-      {
-        "weight": 10,
-        "value": "Hazel"
-      },
-      {
-        "weight": 6,
-        "value": "Gray"
-      },
-      {
-        "weight": 4,
-        "value": "Green"
-      }
-    ],
-    "skin_options": [
-      {
-        "weight": 3,
-        "value": "Dark Brown"
-      },
-      {
-        "weight": 3,
-        "value": "Brown"
-      },
-      {
-        "weight": 3,
-        "value": "Olive"
-      },
-      {
-        "weight": 3,
-        "value": "Light Brown"
-      },
-      {
-        "weight": 3,
-        "value": "Tan"
-      },
-      {
-        "weight": 3,
-        "value": "Freckled"
-      },
-      {
-        "weight": 1,
-        "value": "Pale"
-      }
-    ],
-    "handedness_options": [
-      {
-        "weight": 1,
-        "value": "Left"
-      },
-      {
-        "weight": 9,
-        "value": "Right"
-      }
-    ],
-    "name_generators": [
-      "Human Last"
-    ]
-  },
-  "gender_options": [
-    {
-      "weight": 1,
-      "value": {
-        "name": "Male",
-        "name_generators": [
-          "Human First - Male",
-          "Human Last"
-        ]
-      }
-    },
-    {
-      "weight": 1,
-      "value": {
-        "name": "Female",
-        "name_generators": [
-          "Human First - Female",
-          "Human Last"
-        ]
-      }
-    }
-  ]
+	"version": 5,
+	"name": "Human",
+	"common_options": {
+		"height_formula": "roll(dice(1, 8, if($st < 7, 51, if($st < 10, 54 + ($st - 7) * 3, if($st == 10, 62, if($st < 14, 64 + ($st - 11) * 3, 73))))))",
+		"weight_formula": "roll(dice(1, if($st < 11, 61, if($st < 14, 71 + ($st - 11) * 10, 101)), if($st < 7, 60, if($st < 10, 75 + ($st - 7) * 15, if($st == 10, 115, if($st < 14, 125 + ($st - 11) * 15, 170))))))",
+		"age_formula": "roll(1d12+14)",
+		"hair_options": [
+			{
+				"weight": 14,
+				"value": "Black"
+			},
+			{
+				"weight": 8,
+				"value": "Brown"
+			},
+			{
+				"weight": 5,
+				"value": "Blond"
+			},
+			{
+				"weight": 3,
+				"value": "Redhead"
+			},
+			{
+				"weight": 1,
+				"value": "Bald"
+			}
+		],
+		"eye_options": [
+			{
+				"weight": 52,
+				"value": "Brown"
+			},
+			{
+				"weight": 18,
+				"value": "Blue"
+			},
+			{
+				"weight": 10,
+				"value": "Amber"
+			},
+			{
+				"weight": 10,
+				"value": "Hazel"
+			},
+			{
+				"weight": 6,
+				"value": "Gray"
+			},
+			{
+				"weight": 4,
+				"value": "Green"
+			}
+		],
+		"skin_options": [
+			{
+				"weight": 3,
+				"value": "Dark Brown"
+			},
+			{
+				"weight": 3,
+				"value": "Brown"
+			},
+			{
+				"weight": 3,
+				"value": "Olive"
+			},
+			{
+				"weight": 3,
+				"value": "Light Brown"
+			},
+			{
+				"weight": 3,
+				"value": "Tan"
+			},
+			{
+				"weight": 3,
+				"value": "Freckled"
+			},
+			{
+				"weight": 1,
+				"value": "Pale"
+			}
+		],
+		"handedness_options": [
+			{
+				"weight": 1,
+				"value": "Left"
+			},
+			{
+				"weight": 9,
+				"value": "Right"
+			}
+		],
+		"name_generators": [
+			"Human Last"
+		]
+	},
+	"gender_options": [
+		{
+			"weight": 1,
+			"value": {
+				"name": "Male",
+				"name_generators": [
+					"Human First - Male",
+					"Human Last"
+				]
+			}
+		},
+		{
+			"weight": 1,
+			"value": {
+				"name": "Female",
+				"name_generators": [
+					"Human First - Female",
+					"Human Last"
+				]
+			}
+		}
+	]
 }

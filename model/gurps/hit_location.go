@@ -31,7 +31,7 @@ type HitLocationData struct {
 	HitPenalty  int    `json:"hit_penalty,omitempty"`
 	DRBonus     int    `json:"dr_bonus,omitempty"`
 	Description string `json:"description,omitempty"`
-	Notes       string `json:"notes,omityempty"`
+	Notes       string `json:"notes,omitempty"`
 	SubTable    *Body  `json:"sub_table,omitempty"`
 }
 

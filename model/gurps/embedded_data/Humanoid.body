@@ -1,6 +1,5 @@
 {
-	"type": "body_type",
-	"version": 4,
+	"version": 5,
 	"name": "Humanoid",
 	"roll": "3d",
 	"locations": [
