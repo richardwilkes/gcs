@@ -179,12 +179,13 @@ func (w *Weapon) Clone(_ LibraryFile, _ DataOwner, _ *Weapon, preserveID bool) *
 	if !preserveID {
 		other.TID = tid.MustNewTID(w.TID[0])
 	}
-	other.Damage = *other.Damage.Clone(&other)
-	if other.Defaults != nil {
-		other.Defaults = make([]*SkillDefault, 0, len(w.Defaults))
-		for _, one := range w.Defaults {
+	other.Damage = *w.Damage.Clone(&other)
+	other.Defaults = nil
+	if len(w.Defaults) != 0 {
+		other.Defaults = make([]*SkillDefault, len(w.Defaults))
+		for i, one := range w.Defaults {
 			d := *one
-			other.Defaults = append(other.Defaults, &d)
+			other.Defaults[i] = &d
 		}
 	}
 	return &other
@@ -547,7 +548,9 @@ func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xio.ByteBuffer, all
 	var bestDef *SkillDefault
 	best := fxp.Min
 	for _, one := range w.Defaults {
-		if one.SkillBased() {
+		// Need the nil check here, as an entry in the defaults list could be nil due if this weapon pointer was
+		// obtained via a stale owner reference during an edit operation.
+		if one != nil && one.SkillBased() {
 			if level := one.SkillLevelFast(entity, false, nil, true); best < level {
 				best = level
 				bestDef = one

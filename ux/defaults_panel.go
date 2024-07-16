@@ -57,13 +57,13 @@ func newDefaultsPanel(entity *gurps.Entity, defaults *[]*gurps.SkillDefault) *de
 	addButton := unison.NewSVGButton(svg.CircledAdd)
 	addButton.ClickCallback = func() {
 		def := &gurps.SkillDefault{DefaultType: lastDefaultTypeUsed}
-		*defaults = slices.Insert(*defaults, 0, def)
+		*p.defaults = slices.Insert(*p.defaults, 0, def)
 		p.insertDefaultsPanel(1, def)
 		MarkRootAncestorForLayoutRecursively(p)
 		MarkModified(p)
 	}
 	p.AddChild(addButton)
-	for i, one := range *defaults {
+	for i, one := range *p.defaults {
 		p.insertDefaultsPanel(i+1, one)
 	}
 	return p
