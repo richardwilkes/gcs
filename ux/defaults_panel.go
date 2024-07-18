@@ -61,6 +61,7 @@ func newDefaultsPanel(entity *gurps.Entity, defaults *[]*gurps.SkillDefault) *de
 		defs := make([]*gurps.SkillDefault, len(*p.defaults)+1)
 		defs[0] = def
 		copy(defs[1:], *p.defaults)
+		*p.defaults = defs
 		p.insertDefaultsPanel(1, def)
 		MarkRootAncestorForLayoutRecursively(p)
 		MarkModified(p)
