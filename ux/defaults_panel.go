@@ -57,7 +57,10 @@ func newDefaultsPanel(entity *gurps.Entity, defaults *[]*gurps.SkillDefault) *de
 	addButton := unison.NewSVGButton(svg.CircledAdd)
 	addButton.ClickCallback = func() {
 		def := &gurps.SkillDefault{DefaultType: lastDefaultTypeUsed}
-		*p.defaults = slices.Insert(*p.defaults, 0, def)
+		// See the comment for the delete button as to why we don't just use slices.Insert here.
+		defs := make([]*gurps.SkillDefault, len(*p.defaults)+1)
+		defs[0] = def
+		copy(defs[1:], *p.defaults)
 		p.insertDefaultsPanel(1, def)
 		MarkRootAncestorForLayoutRecursively(p)
 		MarkModified(p)
@@ -81,7 +84,14 @@ func (p *defaultsPanel) insertDefaultsPanel(index int, def *gurps.SkillDefault) 
 	deleteButton := unison.NewSVGButton(svg.Trash)
 	deleteButton.ClickCallback = func() {
 		if i := slices.IndexFunc(*p.defaults, func(elem *gurps.SkillDefault) bool { return elem == def }); i != -1 {
-			*p.defaults = slices.Delete(*p.defaults, i, i+1)
+			// Cannot use this here: *p.defaults = slices.Delete(*p.defaults, i, i+1)
+			// because it will cause a panic elsewhere due to some code not having the owner properly updated. This
+			// causes the original slice to be looked at, which now has a nil at its end, which causes problems in code
+			// that expects no nils. So... we do it the more expensive and verbose way.
+			defs := make([]*gurps.SkillDefault, len(*p.defaults)-1)
+			copy(defs, (*p.defaults)[:i])
+			copy(defs[i:], (*p.defaults)[i+1:])
+			*p.defaults = defs
 		}
 		panel.RemoveFromParent()
 		MarkRootAncestorForLayoutRecursively(p)

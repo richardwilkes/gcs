@@ -548,9 +548,7 @@ func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xio.ByteBuffer, all
 	var bestDef *SkillDefault
 	best := fxp.Min
 	for _, one := range w.Defaults {
-		// Need the nil check here, as an entry in the defaults list could be nil due if this weapon pointer was
-		// obtained via a stale owner reference during an edit operation.
-		if one != nil && one.SkillBased() {
+		if one.SkillBased() {
 			if level := one.SkillLevelFast(entity, false, nil, true); best < level {
 				best = level
 				bestDef = one
