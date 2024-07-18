@@ -219,23 +219,23 @@ func (w *WeaponBonus) AdjustedAmountForWeapon(wpn *Weapon) fxp.Int {
 
 // FillWithNameableKeys implements Feature.
 func (w *WeaponBonus) FillWithNameableKeys(m map[string]string) {
-	Extract(w.SpecializationCriteria.Qualifier, m)
+	ExtractNameables(w.SpecializationCriteria.Qualifier, m)
 	if w.SelectionType != wsel.ThisWeapon {
-		Extract(w.NameCriteria.Qualifier, m)
-		Extract(w.SpecializationCriteria.Qualifier, m)
-		Extract(w.UsageCriteria.Qualifier, m)
-		Extract(w.TagsCriteria.Qualifier, m)
+		ExtractNameables(w.NameCriteria.Qualifier, m)
+		ExtractNameables(w.SpecializationCriteria.Qualifier, m)
+		ExtractNameables(w.UsageCriteria.Qualifier, m)
+		ExtractNameables(w.TagsCriteria.Qualifier, m)
 	}
 }
 
 // ApplyNameableKeys implements Feature.
 func (w *WeaponBonus) ApplyNameableKeys(m map[string]string) {
-	w.SpecializationCriteria.Qualifier = Apply(w.SpecializationCriteria.Qualifier, m)
+	w.SpecializationCriteria.Qualifier = ApplyNameables(w.SpecializationCriteria.Qualifier, m)
 	if w.SelectionType != wsel.ThisWeapon {
-		w.NameCriteria.Qualifier = Apply(w.NameCriteria.Qualifier, m)
-		w.SpecializationCriteria.Qualifier = Apply(w.SpecializationCriteria.Qualifier, m)
-		w.UsageCriteria.Qualifier = Apply(w.UsageCriteria.Qualifier, m)
-		w.TagsCriteria.Qualifier = Apply(w.TagsCriteria.Qualifier, m)
+		w.NameCriteria.Qualifier = ApplyNameables(w.NameCriteria.Qualifier, m)
+		w.SpecializationCriteria.Qualifier = ApplyNameables(w.SpecializationCriteria.Qualifier, m)
+		w.UsageCriteria.Qualifier = ApplyNameables(w.UsageCriteria.Qualifier, m)
+		w.TagsCriteria.Qualifier = ApplyNameables(w.TagsCriteria.Qualifier, m)
 	}
 }
 

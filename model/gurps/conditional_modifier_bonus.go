@@ -51,12 +51,12 @@ func (c *ConditionalModifierBonus) Clone() Feature {
 
 // FillWithNameableKeys implements Feature.
 func (c *ConditionalModifierBonus) FillWithNameableKeys(m map[string]string) {
-	Extract(c.Situation, m)
+	ExtractNameables(c.Situation, m)
 }
 
 // ApplyNameableKeys implements Feature.
 func (c *ConditionalModifierBonus) ApplyNameableKeys(m map[string]string) {
-	c.Situation = Apply(c.Situation, m)
+	c.Situation = ApplyNameables(c.Situation, m)
 }
 
 // SetLevel implements Bonus.

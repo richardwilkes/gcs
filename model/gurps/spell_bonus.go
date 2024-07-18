@@ -64,17 +64,17 @@ func (s *SpellBonus) Clone() Feature {
 // FillWithNameableKeys implements Feature.
 func (s *SpellBonus) FillWithNameableKeys(m map[string]string) {
 	if s.SpellMatchType != spellmatch.AllColleges {
-		Extract(s.NameCriteria.Qualifier, m)
+		ExtractNameables(s.NameCriteria.Qualifier, m)
 	}
-	Extract(s.TagsCriteria.Qualifier, m)
+	ExtractNameables(s.TagsCriteria.Qualifier, m)
 }
 
 // ApplyNameableKeys implements Feature.
 func (s *SpellBonus) ApplyNameableKeys(m map[string]string) {
 	if s.SpellMatchType != spellmatch.AllColleges {
-		s.NameCriteria.Qualifier = Apply(s.NameCriteria.Qualifier, m)
+		s.NameCriteria.Qualifier = ApplyNameables(s.NameCriteria.Qualifier, m)
 	}
-	s.TagsCriteria.Qualifier = Apply(s.TagsCriteria.Qualifier, m)
+	s.TagsCriteria.Qualifier = ApplyNameables(s.TagsCriteria.Qualifier, m)
 }
 
 // SetLevel implements Bonus.

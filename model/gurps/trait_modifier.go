@@ -440,8 +440,8 @@ func (t *TraitModifier) CostDescription() string {
 // FillWithNameableKeys adds any nameable keys found in this TraitModifier to the provided map.
 func (t *TraitModifier) FillWithNameableKeys(keyMap map[string]string) {
 	if !t.Container() && t.Enabled() {
-		Extract(t.Name, keyMap)
-		Extract(t.LocalNotes, keyMap)
+		ExtractNameables(t.Name, keyMap)
+		ExtractNameables(t.LocalNotes, keyMap)
 		for _, one := range t.Features {
 			one.FillWithNameableKeys(keyMap)
 		}
@@ -452,8 +452,8 @@ func (t *TraitModifier) FillWithNameableKeys(keyMap map[string]string) {
 // provided map.
 func (t *TraitModifier) ApplyNameableKeys(keyMap map[string]string) {
 	if !t.Container() && t.Enabled() {
-		t.Name = Apply(t.Name, keyMap)
-		t.LocalNotes = Apply(t.LocalNotes, keyMap)
+		t.Name = ApplyNameables(t.Name, keyMap)
+		t.LocalNotes = ApplyNameables(t.LocalNotes, keyMap)
 		for _, one := range t.Features {
 			one.ApplyNameableKeys(keyMap)
 		}

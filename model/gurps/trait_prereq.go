@@ -73,14 +73,14 @@ func (a *TraitPrereq) Clone(parent *PrereqList) Prereq {
 
 // FillWithNameableKeys implements Prereq.
 func (a *TraitPrereq) FillWithNameableKeys(m map[string]string) {
-	Extract(a.NameCriteria.Qualifier, m)
-	Extract(a.NotesCriteria.Qualifier, m)
+	ExtractNameables(a.NameCriteria.Qualifier, m)
+	ExtractNameables(a.NotesCriteria.Qualifier, m)
 }
 
 // ApplyNameableKeys implements Prereq.
 func (a *TraitPrereq) ApplyNameableKeys(m map[string]string) {
-	a.NameCriteria.Qualifier = Apply(a.NameCriteria.Qualifier, m)
-	a.NotesCriteria.Qualifier = Apply(a.NotesCriteria.Qualifier, m)
+	a.NameCriteria.Qualifier = ApplyNameables(a.NameCriteria.Qualifier, m)
+	a.NotesCriteria.Qualifier = ApplyNameables(a.NotesCriteria.Qualifier, m)
 }
 
 // Satisfied implements Prereq.

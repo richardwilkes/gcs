@@ -951,18 +951,18 @@ func (s *Spell) Enabled() bool {
 
 // FillWithNameableKeys adds any nameable keys found to the provided map.
 func (s *Spell) FillWithNameableKeys(m map[string]string) {
-	Extract(s.Name, m)
-	Extract(s.LocalNotes, m)
-	Extract(s.PowerSource, m)
-	Extract(s.Class, m)
-	Extract(s.Resist, m)
-	Extract(s.CastingCost, m)
-	Extract(s.MaintenanceCost, m)
-	Extract(s.CastingTime, m)
-	Extract(s.Duration, m)
-	Extract(s.RitualSkillName, m)
+	ExtractNameables(s.Name, m)
+	ExtractNameables(s.LocalNotes, m)
+	ExtractNameables(s.PowerSource, m)
+	ExtractNameables(s.Class, m)
+	ExtractNameables(s.Resist, m)
+	ExtractNameables(s.CastingCost, m)
+	ExtractNameables(s.MaintenanceCost, m)
+	ExtractNameables(s.CastingTime, m)
+	ExtractNameables(s.Duration, m)
+	ExtractNameables(s.RitualSkillName, m)
 	for _, one := range s.College {
-		Extract(one, m)
+		ExtractNameables(one, m)
 	}
 	if s.Prereq != nil {
 		s.Prereq.FillWithNameableKeys(m)
@@ -974,18 +974,18 @@ func (s *Spell) FillWithNameableKeys(m map[string]string) {
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
 func (s *Spell) ApplyNameableKeys(m map[string]string) {
-	s.Name = Apply(s.Name, m)
-	s.LocalNotes = Apply(s.LocalNotes, m)
-	s.PowerSource = Apply(s.PowerSource, m)
-	s.Class = Apply(s.Class, m)
-	s.Resist = Apply(s.Resist, m)
-	s.CastingCost = Apply(s.CastingCost, m)
-	s.MaintenanceCost = Apply(s.MaintenanceCost, m)
-	s.CastingTime = Apply(s.CastingTime, m)
-	s.Duration = Apply(s.Duration, m)
-	s.RitualSkillName = Apply(s.RitualSkillName, m)
+	s.Name = ApplyNameables(s.Name, m)
+	s.LocalNotes = ApplyNameables(s.LocalNotes, m)
+	s.PowerSource = ApplyNameables(s.PowerSource, m)
+	s.Class = ApplyNameables(s.Class, m)
+	s.Resist = ApplyNameables(s.Resist, m)
+	s.CastingCost = ApplyNameables(s.CastingCost, m)
+	s.MaintenanceCost = ApplyNameables(s.MaintenanceCost, m)
+	s.CastingTime = ApplyNameables(s.CastingTime, m)
+	s.Duration = ApplyNameables(s.Duration, m)
+	s.RitualSkillName = ApplyNameables(s.RitualSkillName, m)
 	for i, one := range s.College {
-		s.College[i] = Apply(one, m)
+		s.College[i] = ApplyNameables(one, m)
 	}
 	if s.Prereq != nil {
 		s.Prereq.ApplyNameableKeys(m)

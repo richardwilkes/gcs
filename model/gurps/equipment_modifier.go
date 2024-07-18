@@ -447,8 +447,8 @@ func (e *EquipmentModifier) WeightDescription() string {
 // FillWithNameableKeys adds any nameable keys found in this EquipmentModifier to the provided map.
 func (e *EquipmentModifier) FillWithNameableKeys(keyMap map[string]string) {
 	if e.Enabled() {
-		Extract(e.Name, keyMap)
-		Extract(e.LocalNotes, keyMap)
+		ExtractNameables(e.Name, keyMap)
+		ExtractNameables(e.LocalNotes, keyMap)
 		for _, one := range e.Features {
 			one.FillWithNameableKeys(keyMap)
 		}
@@ -458,8 +458,8 @@ func (e *EquipmentModifier) FillWithNameableKeys(keyMap map[string]string) {
 // ApplyNameableKeys replaces any nameable keys found in this EquipmentModifier with the corresponding values in the provided map.
 func (e *EquipmentModifier) ApplyNameableKeys(keyMap map[string]string) {
 	if e.Enabled() {
-		e.Name = Apply(e.Name, keyMap)
-		e.LocalNotes = Apply(e.LocalNotes, keyMap)
+		e.Name = ApplyNameables(e.Name, keyMap)
+		e.LocalNotes = ApplyNameables(e.LocalNotes, keyMap)
 		for _, one := range e.Features {
 			one.ApplyNameableKeys(keyMap)
 		}

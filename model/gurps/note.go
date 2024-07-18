@@ -307,12 +307,12 @@ func (n *Note) Enabled() bool {
 
 // FillWithNameableKeys adds any nameable keys found to the provided map.
 func (n *Note) FillWithNameableKeys(m map[string]string) {
-	Extract(n.Text, m)
+	ExtractNameables(n.Text, m)
 }
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
 func (n *Note) ApplyNameableKeys(m map[string]string) {
-	n.Text = Apply(n.Text, m)
+	n.Text = ApplyNameables(n.Text, m)
 }
 
 // CanConvertToFromContainer returns true if this node can be converted to/from a container.

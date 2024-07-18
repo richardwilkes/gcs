@@ -90,15 +90,15 @@ func (s *SkillDefault) FullName(entity *Entity) string {
 
 // FillWithNameableKeys adds any nameable keys found in this SkillDefault to the provided map.
 func (s *SkillDefault) FillWithNameableKeys(m map[string]string) {
-	Extract(s.Name, m)
-	Extract(s.Specialization, m)
+	ExtractNameables(s.Name, m)
+	ExtractNameables(s.Specialization, m)
 }
 
 // ApplyNameableKeys replaces any nameable keys found in this SkillDefault with the corresponding values in the provided
 // map.
 func (s *SkillDefault) ApplyNameableKeys(m map[string]string) {
-	s.Name = Apply(s.Name, m)
-	s.Specialization = Apply(s.Specialization, m)
+	s.Name = ApplyNameables(s.Name, m)
+	s.Specialization = ApplyNameables(s.Specialization, m)
 }
 
 // ModifierAsString returns the modifier as a string suitable for appending.

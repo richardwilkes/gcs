@@ -546,9 +546,9 @@ func (t *Trait) RatedStrength() fxp.Int {
 
 // FillWithNameableKeys adds any nameable keys found to the provided map.
 func (t *Trait) FillWithNameableKeys(m map[string]string) {
-	Extract(t.Name, m)
-	Extract(t.LocalNotes, m)
-	Extract(t.UserDesc, m)
+	ExtractNameables(t.Name, m)
+	ExtractNameables(t.LocalNotes, m)
+	ExtractNameables(t.UserDesc, m)
 	if t.Prereq != nil {
 		t.Prereq.FillWithNameableKeys(m)
 	}
@@ -566,9 +566,9 @@ func (t *Trait) FillWithNameableKeys(m map[string]string) {
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
 func (t *Trait) ApplyNameableKeys(m map[string]string) {
-	t.Name = Apply(t.Name, m)
-	t.LocalNotes = Apply(t.LocalNotes, m)
-	t.UserDesc = Apply(t.UserDesc, m)
+	t.Name = ApplyNameables(t.Name, m)
+	t.LocalNotes = ApplyNameables(t.LocalNotes, m)
+	t.UserDesc = ApplyNameables(t.UserDesc, m)
 	if t.Prereq != nil {
 		t.Prereq.ApplyNameableKeys(m)
 	}

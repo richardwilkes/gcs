@@ -21,8 +21,8 @@ type Nameables interface {
 	ApplyNameableKeys(m map[string]string)
 }
 
-// Extract the nameable sections of the string into the set.
-func Extract(str string, set map[string]string) {
+// ExtractNameables the nameable sections of the string into the set.
+func ExtractNameables(str string, set map[string]string) {
 	count := strings.Count(str, "@")
 	if count > 1 {
 		parts := strings.Split(str, "@")
@@ -34,8 +34,8 @@ func Extract(str string, set map[string]string) {
 	}
 }
 
-// Apply replaces the matching nameable sections with the values from the set.
-func Apply(str string, set map[string]string) string {
+// ApplyNameables replaces the matching nameable sections with the values from the set.
+func ApplyNameables(str string, set map[string]string) string {
 	for k, v := range set {
 		str = strings.ReplaceAll(str, "@"+k+"@", v)
 	}

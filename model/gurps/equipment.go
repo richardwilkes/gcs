@@ -623,8 +623,8 @@ func ExtendedWeightAdjustedForModifiers(defUnits fxp.WeightUnit, qty fxp.Int, ba
 
 // FillWithNameableKeys adds any nameable keys found to the provided map.
 func (e *Equipment) FillWithNameableKeys(m map[string]string) {
-	Extract(e.Name, m)
-	Extract(e.LocalNotes, m)
+	ExtractNameables(e.Name, m)
+	ExtractNameables(e.LocalNotes, m)
 	if e.Prereq != nil {
 		e.Prereq.FillWithNameableKeys(m)
 	}
@@ -642,8 +642,8 @@ func (e *Equipment) FillWithNameableKeys(m map[string]string) {
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
 func (e *Equipment) ApplyNameableKeys(m map[string]string) {
-	e.Name = Apply(e.Name, m)
-	e.LocalNotes = Apply(e.LocalNotes, m)
+	e.Name = ApplyNameables(e.Name, m)
+	e.LocalNotes = ApplyNameables(e.LocalNotes, m)
 	if e.Prereq != nil {
 		e.Prereq.ApplyNameableKeys(m)
 	}

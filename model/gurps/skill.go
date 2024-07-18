@@ -1010,9 +1010,9 @@ func (s *Skill) Enabled() bool {
 
 // FillWithNameableKeys adds any nameable keys found to the provided map.
 func (s *Skill) FillWithNameableKeys(m map[string]string) {
-	Extract(s.Name, m)
-	Extract(s.LocalNotes, m)
-	Extract(s.Specialization, m)
+	ExtractNameables(s.Name, m)
+	ExtractNameables(s.LocalNotes, m)
+	ExtractNameables(s.Specialization, m)
 	if s.Prereq != nil {
 		s.Prereq.FillWithNameableKeys(m)
 	}
@@ -1032,9 +1032,9 @@ func (s *Skill) FillWithNameableKeys(m map[string]string) {
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
 func (s *Skill) ApplyNameableKeys(m map[string]string) {
-	s.Name = Apply(s.Name, m)
-	s.LocalNotes = Apply(s.LocalNotes, m)
-	s.Specialization = Apply(s.Specialization, m)
+	s.Name = ApplyNameables(s.Name, m)
+	s.LocalNotes = ApplyNameables(s.LocalNotes, m)
+	s.Specialization = ApplyNameables(s.Specialization, m)
 	if s.Prereq != nil {
 		s.Prereq.ApplyNameableKeys(m)
 	}
