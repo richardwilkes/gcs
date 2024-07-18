@@ -10,6 +10,9 @@
 package gurps
 
 import (
+	"encoding/binary"
+	"hash"
+
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
@@ -90,4 +93,17 @@ func (s *SkillBonus) SetLevel(level fxp.Int) {
 // AddToTooltip implements Bonus.
 func (s *SkillBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 	s.basicAddToTooltip(&s.LeveledAmount, buffer)
+}
+
+// Hash writes this object's contents into the hasher.
+func (s *SkillBonus) Hash(h hash.Hash) {
+	if s == nil {
+		return
+	}
+	_ = binary.Write(h, binary.LittleEndian, s.Type)
+	_ = binary.Write(h, binary.LittleEndian, s.SelectionType)
+	s.NameCriteria.Hash(h)
+	s.SpecializationCriteria.Hash(h)
+	s.TagsCriteria.Hash(h)
+	s.LeveledAmount.Hash(h)
 }

@@ -1054,17 +1054,10 @@ func (s *Spell) SyncWithSource() {
 				s.PageRef = other.PageRef
 				s.PageRefHighlight = other.PageRefHighlight
 				s.LocalNotes = other.LocalNotes
-				s.VTTNotes = other.VTTNotes
 				s.Tags = slices.Clone(other.Tags)
 				if s.Container() {
 					s.TemplatePicker = other.TemplatePicker.Clone()
 				} else {
-					if other.TechLevel == nil {
-						s.TechLevel = nil
-					} else {
-						tl := *other.TechLevel
-						s.TechLevel = &tl
-					}
 					s.Difficulty = other.Difficulty
 					s.College = txt.CloneStringSlice(s.College)
 					s.PowerSource = other.PowerSource
@@ -1091,16 +1084,12 @@ func (s *Spell) Hash(h hash.Hash) {
 	_, _ = h.Write([]byte(s.PageRef))
 	_, _ = h.Write([]byte(s.PageRefHighlight))
 	_, _ = h.Write([]byte(s.LocalNotes))
-	_, _ = h.Write([]byte(s.VTTNotes))
 	for _, tag := range s.Tags {
 		_, _ = h.Write([]byte(tag))
 	}
 	if s.Container() {
 		s.TemplatePicker.Hash(h)
 	} else {
-		if s.TechLevel != nil {
-			_, _ = h.Write([]byte(*s.TechLevel))
-		}
 		s.Difficulty.Hash(h)
 		for _, college := range s.College {
 			_, _ = h.Write([]byte(college))

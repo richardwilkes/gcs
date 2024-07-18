@@ -630,7 +630,6 @@ func (e *EquipmentModifier) SyncWithSource() {
 				e.PageRef = other.PageRef
 				e.PageRefHighlight = other.PageRefHighlight
 				e.LocalNotes = other.LocalNotes
-				e.VTTNotes = other.VTTNotes
 				e.Tags = slices.Clone(other.Tags)
 				if !e.Container() {
 					e.CostType = other.CostType
@@ -652,7 +651,6 @@ func (e *EquipmentModifier) Hash(h hash.Hash) {
 	_, _ = h.Write([]byte(e.PageRef))
 	_, _ = h.Write([]byte(e.PageRefHighlight))
 	_, _ = h.Write([]byte(e.LocalNotes))
-	_, _ = h.Write([]byte(e.VTTNotes))
 	for _, tag := range e.Tags {
 		_, _ = h.Write([]byte(tag))
 	}

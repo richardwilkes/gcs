@@ -773,7 +773,6 @@ func (e *Equipment) SyncWithSource() {
 				e.PageRef = other.PageRef
 				e.PageRefHighlight = other.PageRefHighlight
 				e.LocalNotes = other.LocalNotes
-				e.VTTNotes = other.VTTNotes
 				e.TechLevel = other.TechLevel
 				e.LegalityClass = other.LegalityClass
 				e.Tags = slices.Clone(other.Tags)
@@ -797,7 +796,6 @@ func (e *Equipment) Hash(h hash.Hash) {
 	_, _ = h.Write([]byte(e.PageRef))
 	_, _ = h.Write([]byte(e.PageRefHighlight))
 	_, _ = h.Write([]byte(e.LocalNotes))
-	_, _ = h.Write([]byte(e.VTTNotes))
 	_, _ = h.Write([]byte(e.TechLevel))
 	_, _ = h.Write([]byte(e.LegalityClass))
 	for _, tag := range e.Tags {

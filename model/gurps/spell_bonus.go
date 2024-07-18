@@ -10,6 +10,9 @@
 package gurps
 
 import (
+	"encoding/binary"
+	"hash"
+
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellmatch"
@@ -87,4 +90,16 @@ func (s *SpellBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 // MatchForType returns true if this spell bonus matches the data for its match type.
 func (s *SpellBonus) MatchForType(name, powerSource string, colleges []string) bool {
 	return s.SpellMatchType.MatchForType(s.NameCriteria, name, powerSource, colleges)
+}
+
+// Hash writes this object's contents into the hasher.
+func (s *SpellBonus) Hash(h hash.Hash) {
+	if s == nil {
+		return
+	}
+	_ = binary.Write(h, binary.LittleEndian, s.Type)
+	_ = binary.Write(h, binary.LittleEndian, s.SpellMatchType)
+	s.NameCriteria.Hash(h)
+	s.TagsCriteria.Hash(h)
+	s.LeveledAmount.Hash(h)
 }

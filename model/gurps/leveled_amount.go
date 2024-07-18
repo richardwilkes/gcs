@@ -57,7 +57,6 @@ func (l *LeveledAmount) Hash(h hash.Hash) {
 	if l == nil {
 		return
 	}
-	_ = binary.Write(h, binary.LittleEndian, l.Level)
 	_ = binary.Write(h, binary.LittleEndian, l.Amount)
 	_ = binary.Write(h, binary.LittleEndian, l.PerLevel)
 }

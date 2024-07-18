@@ -10,6 +10,8 @@
 package gurps
 
 import (
+	"encoding/binary"
+	"hash"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -118,4 +120,15 @@ func (d *DRBonus) UnmarshalJSON(data []byte) error {
 	}
 	d.Normalize()
 	return nil
+}
+
+// Hash writes this object's contents into the hasher.
+func (d *DRBonus) Hash(h hash.Hash) {
+	if d == nil {
+		return
+	}
+	_ = binary.Write(h, binary.LittleEndian, d.Type)
+	_, _ = h.Write([]byte(d.Location))
+	_, _ = h.Write([]byte(d.Specialization))
+	d.LeveledAmount.Hash(h)
 }

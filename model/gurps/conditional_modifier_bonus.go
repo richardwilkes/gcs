@@ -10,6 +10,9 @@
 package gurps
 
 import (
+	"encoding/binary"
+	"hash"
+
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -64,4 +67,14 @@ func (c *ConditionalModifierBonus) SetLevel(level fxp.Int) {
 // AddToTooltip implements Bonus.
 func (c *ConditionalModifierBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 	c.basicAddToTooltip(&c.LeveledAmount, buffer)
+}
+
+// Hash writes this object's contents into the hasher.
+func (c *ConditionalModifierBonus) Hash(h hash.Hash) {
+	if c == nil {
+		return
+	}
+	_ = binary.Write(h, binary.LittleEndian, c.Type)
+	_, _ = h.Write([]byte(c.Situation))
+	c.LeveledAmount.Hash(h)
 }

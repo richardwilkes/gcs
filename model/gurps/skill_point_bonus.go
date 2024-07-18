@@ -10,6 +10,9 @@
 package gurps
 
 import (
+	"encoding/binary"
+	"hash"
+
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -94,4 +97,16 @@ func (s *SkillPointBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 			buffer.WriteString(i18n.Text(" pts]"))
 		}
 	}
+}
+
+// Hash writes this object's contents into the hasher.
+func (s *SkillPointBonus) Hash(h hash.Hash) {
+	if s == nil {
+		return
+	}
+	_ = binary.Write(h, binary.LittleEndian, s.Type)
+	s.NameCriteria.Hash(h)
+	s.SpecializationCriteria.Hash(h)
+	s.TagsCriteria.Hash(h)
+	s.LeveledAmount.Hash(h)
 }

@@ -798,9 +798,7 @@ func (t *Trait) SyncWithSource() {
 				t.PageRef = other.PageRef
 				t.PageRefHighlight = other.PageRefHighlight
 				t.LocalNotes = other.LocalNotes
-				t.VTTNotes = other.VTTNotes
 				t.Tags = slices.Clone(other.Tags)
-				t.CR = other.CR
 				t.CRAdj = other.CRAdj
 				if t.Container() {
 					t.Ancestry = other.Ancestry
@@ -827,11 +825,9 @@ func (t *Trait) Hash(h hash.Hash) {
 	_, _ = h.Write([]byte(t.PageRef))
 	_, _ = h.Write([]byte(t.PageRefHighlight))
 	_, _ = h.Write([]byte(t.LocalNotes))
-	_, _ = h.Write([]byte(t.VTTNotes))
 	for _, tag := range t.Tags {
 		_, _ = h.Write([]byte(tag))
 	}
-	_ = binary.Write(h, binary.LittleEndian, t.CR)
 	_ = binary.Write(h, binary.LittleEndian, t.CRAdj)
 	if t.Container() {
 		_, _ = h.Write([]byte(t.Ancestry))

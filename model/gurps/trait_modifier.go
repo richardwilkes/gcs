@@ -513,7 +513,6 @@ func (t *TraitModifier) SyncWithSource() {
 				t.PageRef = other.PageRef
 				t.PageRefHighlight = other.PageRefHighlight
 				t.LocalNotes = other.LocalNotes
-				t.VTTNotes = other.VTTNotes
 				t.Tags = slices.Clone(other.Tags)
 				if !t.Container() {
 					t.Cost = other.Cost
@@ -534,7 +533,6 @@ func (t *TraitModifier) Hash(h hash.Hash) {
 	_, _ = h.Write([]byte(t.PageRef))
 	_, _ = h.Write([]byte(t.PageRefHighlight))
 	_, _ = h.Write([]byte(t.LocalNotes))
-	_, _ = h.Write([]byte(t.VTTNotes))
 	for _, tag := range t.Tags {
 		_, _ = h.Write([]byte(tag))
 	}
