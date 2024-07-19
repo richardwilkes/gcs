@@ -157,7 +157,9 @@ func (p *traitsProvider) ColumnIDs() []int {
 	}
 	columnIDs = append(columnIDs, gurps.TraitReferenceColumn)
 	if p.forPage {
-		columnIDs = append(columnIDs, gurps.TraitLibSrcColumn)
+		if entity := p.DataOwner().OwningEntity(); entity != nil && !entity.SheetSettings.HideSourceMismatch {
+			columnIDs = append(columnIDs, gurps.TraitLibSrcColumn)
+		}
 	}
 	return columnIDs
 }

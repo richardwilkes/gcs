@@ -171,7 +171,9 @@ func (p *spellsProvider) ColumnIDs() []int {
 	}
 	columnIDs = append(columnIDs, gurps.SpellReferenceColumn)
 	if p.forPage {
-		columnIDs = append(columnIDs, gurps.SpellLibSrcColumn)
+		if entity := p.DataOwner().OwningEntity(); entity != nil && !entity.SheetSettings.HideSourceMismatch {
+			columnIDs = append(columnIDs, gurps.SpellLibSrcColumn)
+		}
 	}
 	return columnIDs
 }

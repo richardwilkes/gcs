@@ -634,42 +634,42 @@ func (s *Sheet) createLists() {
 					rowPanel.AddChild(s.RangedWeapons)
 				}
 			case gurps.BlockLayoutTraitsKey:
-				if s.Traits == nil {
+				if s.Traits.needReconstruction() {
 					s.Traits = NewTraitsPageList(s, s.entity)
 				} else {
 					s.Traits.Sync()
 				}
 				rowPanel.AddChild(s.Traits)
 			case gurps.BlockLayoutSkillsKey:
-				if s.Skills == nil {
+				if s.Skills.needReconstruction() {
 					s.Skills = NewSkillsPageList(s, s.entity)
 				} else {
 					s.Skills.Sync()
 				}
 				rowPanel.AddChild(s.Skills)
 			case gurps.BlockLayoutSpellsKey:
-				if s.Spells == nil {
+				if s.Spells.needReconstruction() {
 					s.Spells = NewSpellsPageList(s, s.entity)
 				} else {
 					s.Spells.Sync()
 				}
 				rowPanel.AddChild(s.Spells)
 			case gurps.BlockLayoutEquipmentKey:
-				if s.CarriedEquipment == nil {
+				if s.CarriedEquipment.needReconstruction() {
 					s.CarriedEquipment = NewCarriedEquipmentPageList(s, s.entity)
 				} else {
 					s.CarriedEquipment.Sync()
 				}
 				rowPanel.AddChild(s.CarriedEquipment)
 			case gurps.BlockLayoutOtherEquipmentKey:
-				if s.OtherEquipment == nil {
+				if s.OtherEquipment.needReconstruction() {
 					s.OtherEquipment = NewOtherEquipmentPageList(s, s.entity)
 				} else {
 					s.OtherEquipment.Sync()
 				}
 				rowPanel.AddChild(s.OtherEquipment)
 			case gurps.BlockLayoutNotesKey:
-				if s.Notes == nil {
+				if s.Notes.needReconstruction() {
 					s.Notes = NewNotesPageList(s, s.entity)
 				} else {
 					s.Notes.Sync()

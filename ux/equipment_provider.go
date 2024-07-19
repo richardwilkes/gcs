@@ -202,7 +202,9 @@ func (p *equipmentProvider) ColumnIDs() []int {
 	}
 	columnIDs = append(columnIDs, gurps.EquipmentReferenceColumn)
 	if p.forPage {
-		columnIDs = append(columnIDs, gurps.EquipmentLibSrcColumn)
+		if entity := p.DataOwner().OwningEntity(); entity != nil && !entity.SheetSettings.HideSourceMismatch {
+			columnIDs = append(columnIDs, gurps.EquipmentLibSrcColumn)
+		}
 	}
 	return columnIDs
 }

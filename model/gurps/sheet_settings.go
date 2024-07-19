@@ -47,6 +47,7 @@ type SheetSettingsData struct {
 	ShowTraitModifierAdj          bool               `json:"show_trait_modifier_adj,alt=show_advantage_modifier_adj,omitempty"`
 	ShowEquipmentModifierAdj      bool               `json:"show_equipment_modifier_adj,omitempty"`
 	ShowSpellAdj                  bool               `json:"show_spell_adj,omitempty"`
+	HideSourceMismatch            bool               `json:"hide_source_mismatch,omitempty"`
 	UseTitleInFooter              bool               `json:"use_title_in_footer,omitempty"`
 	ExcludeUnspentPointsFromTotal bool               `json:"exclude_unspent_points_from_total"`
 }

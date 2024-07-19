@@ -155,6 +155,22 @@ func newPageList[T gurps.NodeTypes](owner Rebuildable, provider TableProvider[T]
 	return p
 }
 
+func (p *PageList[T]) needReconstruction() bool {
+	if p == nil {
+		return true
+	}
+	ids := p.provider.ColumnIDs()
+	if len(ids) != len(p.Table.Columns) {
+		return true
+	}
+	for i, col := range p.Table.Columns {
+		if col.ID != ids[i] {
+			return true
+		}
+	}
+	return false
+}
+
 func (p *PageList[T]) installMoveToCarriedEquipmentHandler(owner Rebuildable) {
 	if sheet, ok := owner.AsPanel().Self.(*Sheet); ok {
 		var t *unison.Table[*Node[*gurps.Equipment]]

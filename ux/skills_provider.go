@@ -157,7 +157,9 @@ func (p *skillsProvider) ColumnIDs() []int {
 	}
 	columnIDs = append(columnIDs, gurps.SkillReferenceColumn)
 	if p.forPage {
-		columnIDs = append(columnIDs, gurps.SkillLibSrcColumn)
+		if entity := p.DataOwner().OwningEntity(); entity != nil && !entity.SheetSettings.HideSourceMismatch {
+			columnIDs = append(columnIDs, gurps.SkillLibSrcColumn)
+		}
 	}
 	return columnIDs
 }

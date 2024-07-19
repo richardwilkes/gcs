@@ -40,6 +40,7 @@ type sheetSettingsDockable struct {
 	showTraitModifier                  *unison.CheckBox
 	showEquipmentModifier              *unison.CheckBox
 	showSpellAdjustments               *unison.CheckBox
+	hideSourceMismatch                 *unison.CheckBox
 	showTitleInsteadOfNameInPageFooter *unison.CheckBox
 	useMultiplicativeModifiers         *unison.CheckBox
 	useModifyDicePlusAdds              *unison.CheckBox
@@ -149,6 +150,11 @@ func (d *sheetSettingsDockable) createOptions(content *unison.Panel) {
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
+	d.hideSourceMismatch = d.addCheckBox(panel, i18n.Text("Show library source column"),
+		!s.HideSourceMismatch, func() {
+			d.settings().HideSourceMismatch = d.hideSourceMismatch.State != check.On
+			d.syncSheet(true)
+		})
 	d.showTraitModifier = d.addCheckBox(panel, i18n.Text("Show trait modifier cost adjustments"),
 		s.ShowTraitModifierAdj, func() {
 			d.settings().ShowTraitModifierAdj = d.showTraitModifier.State == check.On
@@ -397,6 +403,7 @@ func (d *sheetSettingsDockable) reset() {
 func (d *sheetSettingsDockable) sync() {
 	s := d.settings()
 	d.damageProgressionPopup.Select(s.DamageProgression)
+	d.hideSourceMismatch.State = check.FromBool(!s.HideSourceMismatch)
 	d.showTraitModifier.State = check.FromBool(s.ShowTraitModifierAdj)
 	d.showEquipmentModifier.State = check.FromBool(s.ShowEquipmentModifierAdj)
 	d.showSpellAdjustments.State = check.FromBool(s.ShowSpellAdj)
