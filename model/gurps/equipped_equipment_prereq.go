@@ -64,9 +64,9 @@ func (e *EquippedEquipmentPrereq) Clone(parent *PrereqList) Prereq {
 }
 
 // FillWithNameableKeys implements Prereq.
-func (e *EquippedEquipmentPrereq) FillWithNameableKeys(m map[string]string) {
-	ExtractNameables(e.NameCriteria.Qualifier, m)
-	ExtractNameables(e.TagsCriteria.Qualifier, m)
+func (e *EquippedEquipmentPrereq) FillWithNameableKeys(m, existing map[string]string) {
+	ExtractNameables(e.NameCriteria.Qualifier, m, existing)
+	ExtractNameables(e.TagsCriteria.Qualifier, m, existing)
 }
 
 // Satisfied implements Prereq.

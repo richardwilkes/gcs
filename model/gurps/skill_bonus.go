@@ -68,11 +68,11 @@ func (s *SkillBonus) Clone() Feature {
 }
 
 // FillWithNameableKeys implements Feature.
-func (s *SkillBonus) FillWithNameableKeys(m map[string]string) {
-	ExtractNameables(s.SpecializationCriteria.Qualifier, m)
+func (s *SkillBonus) FillWithNameableKeys(m, existing map[string]string) {
+	ExtractNameables(s.SpecializationCriteria.Qualifier, m, existing)
 	if s.SelectionType != skillsel.ThisWeapon {
-		ExtractNameables(s.NameCriteria.Qualifier, m)
-		ExtractNameables(s.TagsCriteria.Qualifier, m)
+		ExtractNameables(s.NameCriteria.Qualifier, m, existing)
+		ExtractNameables(s.TagsCriteria.Qualifier, m, existing)
 	}
 }
 

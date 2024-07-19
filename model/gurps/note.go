@@ -321,14 +321,17 @@ func (n *Note) NameableReplacements() map[string]string {
 }
 
 // FillWithNameableKeys adds any nameable keys found to the provided map.
-func (n *Note) FillWithNameableKeys(m map[string]string) {
-	ExtractNameables(n.Text, m)
+func (n *Note) FillWithNameableKeys(m, existing map[string]string) {
+	if existing == nil {
+		existing = n.Replacements
+	}
+	ExtractNameables(n.Text, m, existing)
 }
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
 func (n *Note) ApplyNameableKeys(m map[string]string) {
 	needed := make(map[string]string)
-	n.FillWithNameableKeys(needed)
+	n.FillWithNameableKeys(needed, nil)
 	n.Replacements = RetainNeededReplacements(needed, m)
 }
 

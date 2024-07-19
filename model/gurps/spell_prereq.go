@@ -70,9 +70,9 @@ func (s *SpellPrereq) Clone(parent *PrereqList) Prereq {
 }
 
 // FillWithNameableKeys implements Prereq.
-func (s *SpellPrereq) FillWithNameableKeys(m map[string]string) {
+func (s *SpellPrereq) FillWithNameableKeys(m, existing map[string]string) {
 	if s.SubType.UsesStringCriteria() {
-		ExtractNameables(s.QualifierCriteria.Qualifier, m)
+		ExtractNameables(s.QualifierCriteria.Qualifier, m, existing)
 	}
 }
 

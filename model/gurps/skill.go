@@ -1056,31 +1056,34 @@ func (s *Skill) NameableReplacements() map[string]string {
 }
 
 // FillWithNameableKeys adds any nameable keys found to the provided map.
-func (s *Skill) FillWithNameableKeys(m map[string]string) {
-	ExtractNameables(s.Name, m)
-	ExtractNameables(s.LocalNotes, m)
-	ExtractNameables(s.Specialization, m)
+func (s *Skill) FillWithNameableKeys(m, existing map[string]string) {
+	if existing == nil {
+		existing = s.Replacements
+	}
+	ExtractNameables(s.Name, m, existing)
+	ExtractNameables(s.LocalNotes, m, existing)
+	ExtractNameables(s.Specialization, m, existing)
 	if s.Prereq != nil {
-		s.Prereq.FillWithNameableKeys(m)
+		s.Prereq.FillWithNameableKeys(m, existing)
 	}
 	if s.TechniqueDefault != nil {
-		s.TechniqueDefault.FillWithNameableKeys(m)
+		s.TechniqueDefault.FillWithNameableKeys(m, existing)
 	}
 	for _, one := range s.Defaults {
-		one.FillWithNameableKeys(m)
+		one.FillWithNameableKeys(m, existing)
 	}
 	for _, one := range s.Features {
-		one.FillWithNameableKeys(m)
+		one.FillWithNameableKeys(m, existing)
 	}
 	for _, one := range s.Weapons {
-		one.FillWithNameableKeys(m)
+		one.FillWithNameableKeys(m, existing)
 	}
 }
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
 func (s *Skill) ApplyNameableKeys(m map[string]string) {
 	needed := make(map[string]string)
-	s.FillWithNameableKeys(needed)
+	s.FillWithNameableKeys(needed, nil)
 	s.Replacements = RetainNeededReplacements(needed, m)
 }
 

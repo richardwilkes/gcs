@@ -75,7 +75,7 @@ func (d *DRBonus) Normalize() {
 }
 
 // FillWithNameableKeys implements Feature.
-func (d *DRBonus) FillWithNameableKeys(_ map[string]string) {
+func (d *DRBonus) FillWithNameableKeys(_, _ map[string]string) {
 }
 
 // SetLevel implements Bonus.

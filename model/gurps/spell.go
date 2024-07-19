@@ -1019,32 +1019,35 @@ func (s *Spell) CollegeWithReplacements() []string {
 }
 
 // FillWithNameableKeys adds any nameable keys found to the provided map.
-func (s *Spell) FillWithNameableKeys(m map[string]string) {
-	ExtractNameables(s.Name, m)
-	ExtractNameables(s.LocalNotes, m)
-	ExtractNameables(s.PowerSource, m)
-	ExtractNameables(s.Class, m)
-	ExtractNameables(s.Resist, m)
-	ExtractNameables(s.CastingCost, m)
-	ExtractNameables(s.MaintenanceCost, m)
-	ExtractNameables(s.CastingTime, m)
-	ExtractNameables(s.Duration, m)
-	ExtractNameables(s.RitualSkillName, m)
+func (s *Spell) FillWithNameableKeys(m, existing map[string]string) {
+	if existing == nil {
+		existing = s.Replacements
+	}
+	ExtractNameables(s.Name, m, existing)
+	ExtractNameables(s.LocalNotes, m, existing)
+	ExtractNameables(s.PowerSource, m, existing)
+	ExtractNameables(s.Class, m, existing)
+	ExtractNameables(s.Resist, m, existing)
+	ExtractNameables(s.CastingCost, m, existing)
+	ExtractNameables(s.MaintenanceCost, m, existing)
+	ExtractNameables(s.CastingTime, m, existing)
+	ExtractNameables(s.Duration, m, existing)
+	ExtractNameables(s.RitualSkillName, m, existing)
 	for _, one := range s.College {
-		ExtractNameables(one, m)
+		ExtractNameables(one, m, existing)
 	}
 	if s.Prereq != nil {
-		s.Prereq.FillWithNameableKeys(m)
+		s.Prereq.FillWithNameableKeys(m, existing)
 	}
 	for _, one := range s.Weapons {
-		one.FillWithNameableKeys(m)
+		one.FillWithNameableKeys(m, existing)
 	}
 }
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
 func (s *Spell) ApplyNameableKeys(m map[string]string) {
 	needed := make(map[string]string)
-	s.FillWithNameableKeys(needed)
+	s.FillWithNameableKeys(needed, nil)
 	s.Replacements = RetainNeededReplacements(needed, m)
 }
 

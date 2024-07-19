@@ -86,9 +86,9 @@ func (p *PrereqList) CloneResolvingEmpty(isContainer, pruneIfEmpty bool) *Prereq
 }
 
 // FillWithNameableKeys implements Prereq.
-func (p *PrereqList) FillWithNameableKeys(m map[string]string) {
+func (p *PrereqList) FillWithNameableKeys(m, existing map[string]string) {
 	for _, one := range p.Prereqs {
-		one.FillWithNameableKeys(m)
+		one.FillWithNameableKeys(m, existing)
 	}
 }
 

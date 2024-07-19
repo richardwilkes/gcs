@@ -465,12 +465,15 @@ func (e *EquipmentModifier) LocalNotesWithReplacements() string {
 }
 
 // FillWithNameableKeys adds any nameable keys found in this EquipmentModifier to the provided map.
-func (e *EquipmentModifier) FillWithNameableKeys(keyMap map[string]string) {
+func (e *EquipmentModifier) FillWithNameableKeys(m, existing map[string]string) {
 	if e.Enabled() {
-		ExtractNameables(e.Name, keyMap)
-		ExtractNameables(e.LocalNotes, keyMap)
+		if existing == nil {
+			existing = e.Replacements
+		}
+		ExtractNameables(e.Name, m, existing)
+		ExtractNameables(e.LocalNotes, m, existing)
 		for _, one := range e.Features {
-			one.FillWithNameableKeys(keyMap)
+			one.FillWithNameableKeys(m, existing)
 		}
 	}
 }
@@ -478,7 +481,7 @@ func (e *EquipmentModifier) FillWithNameableKeys(keyMap map[string]string) {
 // ApplyNameableKeys replaces any nameable keys found in this EquipmentModifier with the corresponding values in the provided map.
 func (e *EquipmentModifier) ApplyNameableKeys(m map[string]string) {
 	needed := make(map[string]string)
-	e.FillWithNameableKeys(needed)
+	e.FillWithNameableKeys(needed, nil)
 	e.Replacements = RetainNeededReplacements(needed, m)
 }
 

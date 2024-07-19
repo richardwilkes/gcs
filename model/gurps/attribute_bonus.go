@@ -61,7 +61,7 @@ func (a *AttributeBonus) Clone() Feature {
 }
 
 // FillWithNameableKeys implements Feature.
-func (a *AttributeBonus) FillWithNameableKeys(_ map[string]string) {
+func (a *AttributeBonus) FillWithNameableKeys(_, _ map[string]string) {
 }
 
 // SetLevel implements Bonus.

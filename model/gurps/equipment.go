@@ -642,32 +642,35 @@ func (e *Equipment) LocalNotesWithReplacements() string {
 }
 
 // FillWithNameableKeys adds any nameable keys found to the provided map.
-func (e *Equipment) FillWithNameableKeys(m map[string]string) {
-	e.fillWithLocalNameableKeys(m)
+func (e *Equipment) FillWithNameableKeys(m, existing map[string]string) {
+	e.fillWithLocalNameableKeys(m, existing)
 	Traverse(func(mod *EquipmentModifier) bool {
-		mod.FillWithNameableKeys(m)
+		mod.FillWithNameableKeys(m, mod.Replacements)
 		return false
 	}, true, true, e.Modifiers...)
 }
 
-func (e *Equipment) fillWithLocalNameableKeys(m map[string]string) {
-	ExtractNameables(e.Name, m)
-	ExtractNameables(e.LocalNotes, m)
+func (e *Equipment) fillWithLocalNameableKeys(m, existing map[string]string) {
+	if existing == nil {
+		existing = e.Replacements
+	}
+	ExtractNameables(e.Name, m, existing)
+	ExtractNameables(e.LocalNotes, m, existing)
 	if e.Prereq != nil {
-		e.Prereq.FillWithNameableKeys(m)
+		e.Prereq.FillWithNameableKeys(m, existing)
 	}
 	for _, one := range e.Features {
-		one.FillWithNameableKeys(m)
+		one.FillWithNameableKeys(m, existing)
 	}
 	for _, one := range e.Weapons {
-		one.FillWithNameableKeys(m)
+		one.FillWithNameableKeys(m, existing)
 	}
 }
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
 func (e *Equipment) ApplyNameableKeys(m map[string]string) {
 	needed := make(map[string]string)
-	e.fillWithLocalNameableKeys(needed)
+	e.fillWithLocalNameableKeys(needed, nil)
 	e.Replacements = RetainNeededReplacements(needed, m)
 	Traverse(func(mod *EquipmentModifier) bool {
 		mod.ApplyNameableKeys(m)

@@ -61,7 +61,7 @@ func (c *ContainedWeightPrereq) Clone(parent *PrereqList) Prereq {
 }
 
 // FillWithNameableKeys implements Prereq.
-func (c *ContainedWeightPrereq) FillWithNameableKeys(_ map[string]string) {
+func (c *ContainedWeightPrereq) FillWithNameableKeys(_, _ map[string]string) {
 }
 
 // Satisfied implements Prereq.

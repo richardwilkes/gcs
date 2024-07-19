@@ -218,12 +218,12 @@ func (w *WeaponBonus) AdjustedAmountForWeapon(wpn *Weapon) fxp.Int {
 }
 
 // FillWithNameableKeys implements Feature.
-func (w *WeaponBonus) FillWithNameableKeys(m map[string]string) {
-	ExtractNameables(w.SpecializationCriteria.Qualifier, m)
+func (w *WeaponBonus) FillWithNameableKeys(m, existing map[string]string) {
+	ExtractNameables(w.SpecializationCriteria.Qualifier, m, existing)
 	if w.SelectionType != wsel.ThisWeapon {
-		ExtractNameables(w.NameCriteria.Qualifier, m)
-		ExtractNameables(w.UsageCriteria.Qualifier, m)
-		ExtractNameables(w.TagsCriteria.Qualifier, m)
+		ExtractNameables(w.NameCriteria.Qualifier, m, existing)
+		ExtractNameables(w.UsageCriteria.Qualifier, m, existing)
+		ExtractNameables(w.TagsCriteria.Qualifier, m, existing)
 	}
 }
 

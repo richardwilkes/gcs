@@ -104,12 +104,13 @@ func didDropCallback[T gurps.NodeTypes](undo *unison.UndoEdit[*TableDragUndoEdit
 			tableProvider.ProcessDropData(from, to)
 		}
 	}
-	if entityProvider := unison.Ancestor[gurps.DataOwnerProvider](to); !toolbox.IsNil(entityProvider) {
-		if owner := entityProvider.DataOwner(); !toolbox.IsNil(owner) && !toolbox.IsNil(owner.OwningEntity()) {
+	if toEntityProvider := unison.Ancestor[gurps.DataOwnerProvider](to); !toolbox.IsNil(toEntityProvider) {
+		if owner := toEntityProvider.DataOwner(); !toolbox.IsNil(owner) && !toolbox.IsNil(owner.OwningEntity()) {
 			if rebuilder := unison.Ancestor[Rebuildable](to); rebuilder != nil {
 				rebuilder.Rebuild(true)
 			}
-			if entityProvider != unison.Ancestor[gurps.DataOwnerProvider](from) {
+			// Only process them if this is both for an entity and not from one (i.e. drop into a sheet from a library)
+			if toolbox.IsNil(unison.Ancestor[gurps.DataOwnerProvider](from)) {
 				ProcessModifiersForSelection(to)
 				ProcessNameablesForSelection(to)
 			}

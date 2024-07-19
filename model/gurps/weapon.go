@@ -649,9 +649,9 @@ func (w *Weapon) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, allowe
 }
 
 // FillWithNameableKeys adds any nameable keys found in this Weapon to the provided map.
-func (w *Weapon) FillWithNameableKeys(m map[string]string) {
+func (w *Weapon) FillWithNameableKeys(m, existing map[string]string) {
 	for _, one := range w.Defaults {
-		one.FillWithNameableKeys(m)
+		one.FillWithNameableKeys(m, existing)
 	}
 }
 

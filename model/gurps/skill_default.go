@@ -101,9 +101,9 @@ func (s *SkillDefault) SpecializationWithReplacements(replacements map[string]st
 }
 
 // FillWithNameableKeys adds any nameable keys found in this SkillDefault to the provided map.
-func (s *SkillDefault) FillWithNameableKeys(m map[string]string) {
-	ExtractNameables(s.Name, m)
-	ExtractNameables(s.Specialization, m)
+func (s *SkillDefault) FillWithNameableKeys(m, existing map[string]string) {
+	ExtractNameables(s.Name, m, existing)
+	ExtractNameables(s.Specialization, m, existing)
 }
 
 // ModifierAsString returns the modifier as a string suitable for appending.

@@ -47,7 +47,7 @@ func (c *CostReduction) Clone() Feature {
 }
 
 // FillWithNameableKeys implements Feature.
-func (c *CostReduction) FillWithNameableKeys(_ map[string]string) {
+func (c *CostReduction) FillWithNameableKeys(_, _ map[string]string) {
 }
 
 // Hash writes this object's contents into the hasher.

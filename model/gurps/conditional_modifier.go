@@ -233,7 +233,7 @@ func (c *ConditionalModifier) SetDataOwner(_ DataOwner) {
 }
 
 // FillWithNameableKeys adds any nameable keys found to the provided map.
-func (c *ConditionalModifier) FillWithNameableKeys(_ map[string]string) {
+func (c *ConditionalModifier) FillWithNameableKeys(_, _ map[string]string) {
 }
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.

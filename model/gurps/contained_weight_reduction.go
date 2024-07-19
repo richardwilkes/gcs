@@ -46,7 +46,7 @@ func (c *ContainedWeightReduction) Clone() Feature {
 }
 
 // FillWithNameableKeys implements Feature.
-func (c *ContainedWeightReduction) FillWithNameableKeys(_ map[string]string) {
+func (c *ContainedWeightReduction) FillWithNameableKeys(_, _ map[string]string) {
 }
 
 // IsPercentageReduction returns true if this is a percentage reduction and not a fixed amount.

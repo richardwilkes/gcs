@@ -64,7 +64,7 @@ func (a *AttributePrereq) Clone(parent *PrereqList) Prereq {
 }
 
 // FillWithNameableKeys implements Prereq.
-func (a *AttributePrereq) FillWithNameableKeys(_ map[string]string) {
+func (a *AttributePrereq) FillWithNameableKeys(_, _ map[string]string) {
 }
 
 // Satisfied implements Prereq.

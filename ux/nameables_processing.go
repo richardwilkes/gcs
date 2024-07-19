@@ -35,7 +35,7 @@ func ProcessNameables[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 	for _, row := range rows {
 		gurps.Traverse(func(row T) bool {
 			m := make(map[string]string)
-			gurps.AsNode(row).FillWithNameableKeys(m)
+			gurps.AsNode(row).FillWithNameableKeys(m, nil)
 			if len(m) > 0 {
 				data = append(data, row)
 				nameables = append(nameables, m)
@@ -122,12 +122,12 @@ func ProcessNameables[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 func createNameableField(key string, m map[string]string) *unison.Field {
 	field := unison.NewField()
 	field.SetMinimumTextWidthUsing("Something reasonable")
+	field.SetText(m[key])
 	field.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Middle,
 		HGrab:  true,
 	})
-	m[key] = ""
 	field.ModifiedCallback = func(_, after *unison.FieldState) {
 		m[key] = after.Text
 	}

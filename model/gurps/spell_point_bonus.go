@@ -62,11 +62,11 @@ func (s *SpellPointBonus) Clone() Feature {
 }
 
 // FillWithNameableKeys implements Feature.
-func (s *SpellPointBonus) FillWithNameableKeys(m map[string]string) {
+func (s *SpellPointBonus) FillWithNameableKeys(m, existing map[string]string) {
 	if s.SpellMatchType != spellmatch.AllColleges {
-		ExtractNameables(s.NameCriteria.Qualifier, m)
+		ExtractNameables(s.NameCriteria.Qualifier, m, existing)
 	}
-	ExtractNameables(s.TagsCriteria.Qualifier, m)
+	ExtractNameables(s.TagsCriteria.Qualifier, m, existing)
 }
 
 // SetLevel implements Bonus.

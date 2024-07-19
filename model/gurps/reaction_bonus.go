@@ -50,8 +50,8 @@ func (r *ReactionBonus) Clone() Feature {
 }
 
 // FillWithNameableKeys implements Feature.
-func (r *ReactionBonus) FillWithNameableKeys(m map[string]string) {
-	ExtractNameables(r.Situation, m)
+func (r *ReactionBonus) FillWithNameableKeys(m, existing map[string]string) {
+	ExtractNameables(r.Situation, m, existing)
 }
 
 // SetLevel implements Bonus.

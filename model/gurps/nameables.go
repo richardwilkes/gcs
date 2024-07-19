@@ -16,7 +16,7 @@ import (
 // NameableFiller defines the method for filling the nameable key map.
 type NameableFiller interface {
 	// FillWithNameableKeys fills the map with nameable keys.
-	FillWithNameableKeys(m map[string]string)
+	FillWithNameableKeys(m, existing map[string]string)
 }
 
 // Nameables defines methods types that want to participate the nameable adjustments should implement.
@@ -33,22 +33,26 @@ type NameableAccesser interface {
 }
 
 // ExtractNameables the nameable sections of the string into the set.
-func ExtractNameables(str string, set map[string]string) {
+func ExtractNameables(str string, m, existing map[string]string) {
 	count := strings.Count(str, "@")
 	if count > 1 {
 		parts := strings.Split(str, "@")
 		for i, one := range parts {
 			if i%2 == 1 && i < count {
-				set[one] = one
+				if value, ok := existing[one]; ok {
+					m[one] = value
+				} else {
+					m[one] = one
+				}
 			}
 		}
 	}
 }
 
 // ApplyNameables replaces the matching nameable sections with the values from the set.
-func ApplyNameables(str string, set map[string]string) string {
+func ApplyNameables(str string, m map[string]string) string {
 	if strings.Count(str, "@") > 1 {
-		for k, v := range set {
+		for k, v := range m {
 			str = strings.ReplaceAll(str, "@"+k+"@", v)
 		}
 	}
@@ -56,13 +60,13 @@ func ApplyNameables(str string, set map[string]string) string {
 }
 
 // ApplyNameablesToList replaces the matching nameable sections with the values from the set.
-func ApplyNameablesToList(in []string, set map[string]string) []string {
+func ApplyNameablesToList(in []string, m map[string]string) []string {
 	if len(in) == 0 {
 		return nil
 	}
 	list := make([]string, len(in))
 	for i := range list {
-		list[i] = ApplyNameables(in[i], set)
+		list[i] = ApplyNameables(in[i], m)
 	}
 	return list
 }

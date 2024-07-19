@@ -458,12 +458,15 @@ func (t *TraitModifier) NameableReplacements() map[string]string {
 }
 
 // FillWithNameableKeys adds any nameable keys found in this TraitModifier to the provided map.
-func (t *TraitModifier) FillWithNameableKeys(m map[string]string) {
+func (t *TraitModifier) FillWithNameableKeys(m, existing map[string]string) {
 	if !t.Container() && t.Enabled() {
-		ExtractNameables(t.Name, m)
-		ExtractNameables(t.LocalNotes, m)
+		if existing == nil {
+			existing = t.Replacements
+		}
+		ExtractNameables(t.Name, m, existing)
+		ExtractNameables(t.LocalNotes, m, existing)
 		for _, one := range t.Features {
-			one.FillWithNameableKeys(m)
+			one.FillWithNameableKeys(m, existing)
 		}
 	}
 }
@@ -472,7 +475,7 @@ func (t *TraitModifier) FillWithNameableKeys(m map[string]string) {
 // provided map.
 func (t *TraitModifier) ApplyNameableKeys(m map[string]string) {
 	needed := make(map[string]string)
-	t.FillWithNameableKeys(needed)
+	t.FillWithNameableKeys(needed, nil)
 	t.Replacements = RetainNeededReplacements(needed, m)
 }
 
