@@ -10,6 +10,8 @@
 package ux
 
 import (
+	"fmt"
+
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
@@ -18,6 +20,12 @@ import (
 	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/check"
 )
+
+type modifiersOnly interface {
+	*gurps.TraitModifier | *gurps.EquipmentModifier
+	fmt.Stringer
+	gurps.Nameables
+}
 
 // ProcessModifiersForSelection processes the selected rows for modifiers that can be toggled on or off.
 func ProcessModifiersForSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
@@ -48,7 +56,7 @@ func ProcessModifiers[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 	}
 }
 
-func processModifiers[T *gurps.TraitModifier | *gurps.EquipmentModifier](title string, modifiers []T) bool {
+func processModifiers[T modifiersOnly](title string, modifiers []T) bool {
 	if len(modifiers) == 0 {
 		return false
 	}

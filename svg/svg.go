@@ -173,6 +173,10 @@ var (
 	menuData string
 	Menu     = unison.MustSVGFromContentString(menuData)
 
+	//go:embed naming.svg
+	namingData string
+	Naming     = unison.MustSVGFromContentString(namingData)
+
 	//go:embed new_folder.svg
 	newFolderData string
 	NewFolder     = unison.MustSVGFromContentString(newFolderData)

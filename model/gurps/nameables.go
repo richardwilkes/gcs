@@ -21,6 +21,7 @@ type NameableFiller interface {
 
 // Nameables defines methods types that want to participate the nameable adjustments should implement.
 type Nameables interface {
+	NameableAccesser
 	NameableFiller
 	// ApplyNameableKeys applies the nameable keys to this object.
 	ApplyNameableKeys(m map[string]string)

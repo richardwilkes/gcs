@@ -47,6 +47,7 @@ type editor[N gurps.NodeTypes, D gurps.EditorData[N]] struct {
 	scroll               *unison.ScrollPanel
 	applyButton          *unison.Button
 	cancelButton         *unison.Button
+	nameablesButton      *unison.Button
 	beforeData           D
 	editorData           D
 	modificationCallback func()
@@ -193,6 +194,20 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 	}
 	toolbar.AddChild(e.cancelButton)
 
+	if _, ok := any(e.target).(*gurps.Weapon); !ok {
+		e.nameablesButton = unison.NewSVGButton(svg.Naming)
+		e.nameablesButton.Tooltip = newWrappedTooltip(i18n.Text("Set Substitutions"))
+		e.nameablesButton.ClickCallback = func() {
+			if tmp, m := e.prepareForSubstitutions(); len(m) > 0 {
+				ShowNameablesDialog([]string{tmp.String()}, []map[string]string{m})
+				tmp.ApplyNameableKeys(m)
+				e.editorData.CopyFrom(tmp)
+				e.Rebuild(false)
+			}
+		}
+		toolbar.AddChild(e.nameablesButton)
+	}
+
 	if initToolbar != nil {
 		initToolbar(e, toolbar)
 	}
@@ -206,6 +221,15 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 		HSpacing: unison.StdHSpacing,
 	})
 	return toolbar
+}
+
+func (e *editor[N, D]) prepareForSubstitutions() (N, map[string]string) {
+	node := gurps.AsNode(e.target)
+	tmp := node.Clone(node.GetSource().LibraryFile, node.DataOwner(), nil, true)
+	e.editorData.ApplyTo(tmp)
+	m := make(map[string]string)
+	tmp.FillWithNameableKeys(m, nil)
+	return tmp, m
 }
 
 func (e *editor[N, D]) TitleIcon(suggestedSize unison.Size) unison.Drawable {
@@ -251,6 +275,8 @@ func (e *editor[N, D]) Modified() bool {
 	modified := e.isModified()
 	e.applyButton.SetEnabled(modified)
 	e.cancelButton.SetEnabled(modified)
+	_, m := e.prepareForSubstitutions()
+	e.nameablesButton.SetEnabled(len(m) > 0)
 	return modified
 }
 

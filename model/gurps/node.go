@@ -32,6 +32,8 @@ type DataOwnerProvider interface {
 // NodeTypes is a constraint that defines the types that may be nodes.
 type NodeTypes interface {
 	*ConditionalModifier | *Equipment | *EquipmentModifier | *Note | *Skill | *Spell | *Trait | *TraitModifier | *Weapon
+	Nameables
+	fmt.Stringer
 }
 
 // Node defines the methods required of nodes in our tables.

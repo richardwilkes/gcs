@@ -10,6 +10,8 @@
 package ux
 
 import (
+	"fmt"
+
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/unison"
 )
@@ -17,6 +19,8 @@ import (
 // ConvertableNodeTypes defines the types that the container conversion can work on.
 type ConvertableNodeTypes interface {
 	*gurps.Equipment | *gurps.Note
+	fmt.Stringer
+	gurps.Nameables
 	Container() bool
 	CanConvertToFromContainer() bool
 	ConvertToContainer()

@@ -31,6 +31,7 @@ func ProcessNameablesForSelection[T gurps.NodeTypes](table *unison.Table[*Node[T
 // ProcessNameables processes the rows and their children for any nameables.
 func ProcessNameables[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 	var data []T
+	var titles []string
 	var nameables []map[string]string
 	for _, row := range rows {
 		gurps.Traverse(func(row T) bool {
@@ -38,85 +39,93 @@ func ProcessNameables[T gurps.NodeTypes](owner unison.Paneler, rows []T) {
 			gurps.AsNode(row).FillWithNameableKeys(m, nil)
 			if len(m) > 0 {
 				data = append(data, row)
+				titles = append(titles, gurps.AsNode(row).String())
 				nameables = append(nameables, m)
 			}
 			return false
 		}, false, false, row)
 	}
 	if len(data) > 0 {
-		list := unison.NewPanel()
-		list.SetBorder(unison.NewEmptyBorder(unison.NewUniformInsets(unison.StdHSpacing)))
-		list.SetLayout(&unison.FlexLayout{
-			Columns:  2,
-			HSpacing: unison.StdHSpacing,
-			VSpacing: unison.StdVSpacing,
-		})
-		for i, one := range data {
-			keys := make([]string, 0, len(nameables[i]))
-			for k := range nameables[i] {
-				keys = append(keys, k)
+		if ShowNameablesDialog(titles, nameables) {
+			for i, row := range data {
+				gurps.AsNode(row).ApplyNameableKeys(nameables[i])
 			}
-			txt.SortStringsNaturalAscending(keys)
-			if i != 0 {
-				sep := unison.NewSeparator()
-				sep.SetLayoutData(&unison.FlexLayoutData{
-					HSpan:  2,
-					HAlign: align.Fill,
-					VAlign: align.Middle,
-					HGrab:  true,
-				})
-				list.AddChild(sep)
+			if rebuildable := unison.Ancestor[Rebuildable](owner); rebuildable != nil {
+				rebuildable.Rebuild(true)
 			}
-			header := unison.NewLabel()
-			header.Font = unison.SystemFont
-			header.SetTitle(txt.Truncate(gurps.AsNode(one).String(), 40, true))
-			header.SetLayoutData(&unison.FlexLayoutData{
+		}
+	}
+}
+
+// ShowNameablesDialog shows a dialog for editing nameables.
+func ShowNameablesDialog(titles []string, nameables []map[string]string) bool {
+	list := unison.NewPanel()
+	list.SetBorder(unison.NewEmptyBorder(unison.NewUniformInsets(unison.StdHSpacing)))
+	list.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	for i, one := range titles {
+		keys := make([]string, 0, len(nameables[i]))
+		for k := range nameables[i] {
+			keys = append(keys, k)
+		}
+		txt.SortStringsNaturalAscending(keys)
+		if i != 0 {
+			sep := unison.NewSeparator()
+			sep.SetLayoutData(&unison.FlexLayoutData{
 				HSpan:  2,
 				HAlign: align.Fill,
 				VAlign: align.Middle,
 				HGrab:  true,
 			})
-			list.AddChild(header)
-			for _, k := range keys {
-				label := unison.NewLabel()
-				label.SetTitle(k)
-				label.SetLayoutData(&unison.FlexLayoutData{
-					HAlign: align.End,
-					VAlign: align.Middle,
-				})
-				list.AddChild(label)
-				list.AddChild(createNameableField(k, nameables[i]))
-			}
+			list.AddChild(sep)
 		}
-		scroll := unison.NewScrollPanel()
-		scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.NewUniformInsets(1), false))
-		scroll.SetContent(list, behavior.Fill, behavior.Fill)
-		scroll.BackgroundInk = unison.ThemeSurface
-		scroll.SetLayoutData(&unison.FlexLayoutData{
+		header := unison.NewLabel()
+		header.Font = unison.SystemFont
+		header.SetTitle(txt.Truncate(one, 40, true))
+		header.SetLayoutData(&unison.FlexLayoutData{
+			HSpan:  2,
 			HAlign: align.Fill,
-			VAlign: align.Fill,
+			VAlign: align.Middle,
 			HGrab:  true,
-			VGrab:  true,
 		})
-		panel := unison.NewPanel()
-		panel.SetLayout(&unison.FlexLayout{
-			Columns:  1,
-			HSpacing: unison.StdHSpacing,
-			VSpacing: unison.StdVSpacing,
-			HAlign:   align.Fill,
-			VAlign:   align.Fill,
-		})
-		label := unison.NewLabel()
-		label.SetTitle(i18n.Text("Provide substitutions:"))
-		panel.AddChild(label)
-		panel.AddChild(scroll)
-		if unison.QuestionDialogWithPanel(panel) == unison.ModalResponseOK {
-			for i, row := range data {
-				gurps.AsNode(row).ApplyNameableKeys(nameables[i])
-			}
-			unison.Ancestor[Rebuildable](owner).Rebuild(true)
+		list.AddChild(header)
+		for _, k := range keys {
+			label := unison.NewLabel()
+			label.SetTitle(k)
+			label.SetLayoutData(&unison.FlexLayoutData{
+				HAlign: align.End,
+				VAlign: align.Middle,
+			})
+			list.AddChild(label)
+			list.AddChild(createNameableField(k, nameables[i]))
 		}
 	}
+	scroll := unison.NewScrollPanel()
+	scroll.SetBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.NewUniformInsets(1), false))
+	scroll.SetContent(list, behavior.Fill, behavior.Fill)
+	scroll.BackgroundInk = unison.ThemeSurface
+	scroll.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Fill,
+		VAlign: align.Fill,
+		HGrab:  true,
+		VGrab:  true,
+	})
+	panel := unison.NewPanel()
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  1,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+		HAlign:   align.Fill,
+		VAlign:   align.Fill,
+	})
+	label := unison.NewLabel()
+	label.SetTitle(i18n.Text("Provide substitutions:"))
+	panel.AddChild(label)
+	panel.AddChild(scroll)
+	return unison.QuestionDialogWithPanel(panel) == unison.ModalResponseOK
 }
 
 func createNameableField(key string, m map[string]string) *unison.Field {

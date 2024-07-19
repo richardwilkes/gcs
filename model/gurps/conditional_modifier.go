@@ -232,6 +232,11 @@ func (c *ConditionalModifier) DataOwner() DataOwner {
 func (c *ConditionalModifier) SetDataOwner(_ DataOwner) {
 }
 
+// NameableReplacements returns the replacements to be used with Nameables.
+func (c *ConditionalModifier) NameableReplacements() map[string]string {
+	return nil
+}
+
 // FillWithNameableKeys adds any nameable keys found to the provided map.
 func (c *ConditionalModifier) FillWithNameableKeys(_, _ map[string]string) {
 }
