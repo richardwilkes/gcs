@@ -51,16 +51,21 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 			addDecimalField(wrapper, nil, "", pointsLabel, "", &e.editorData.Points, 0, fxp.MaxBasePoints)
 			wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Level"), false))
 			levelField := NewNonEditableField(func(field *NonEditableField) {
-				points := gurps.AdjustedPointsForNonContainerSpell(entity, e.editorData.Points,
-					e.editorData.Name, e.editorData.PowerSource, e.editorData.College, e.editorData.Tags, nil)
+				replacements := e.target.NameableReplacements()
+				localName := gurps.ApplyNameables(e.editorData.Name, replacements)
+				localPowerSource := gurps.ApplyNameables(e.editorData.PowerSource, replacements)
+				localColleges := gurps.ApplyNameablesToList(e.editorData.College, replacements)
+				points := gurps.AdjustedPointsForNonContainerSpell(entity, e.editorData.Points, localName,
+					localPowerSource, localColleges, e.editorData.Tags, nil)
 				var level gurps.Level
 				if e.target.IsRitualMagic() {
-					level = gurps.CalculateRitualMagicSpellLevel(entity, e.editorData.Name,
-						e.editorData.PowerSource, e.editorData.RitualSkillName, e.editorData.RitualPrereqCount,
-						e.editorData.College, e.editorData.Tags, e.editorData.Difficulty, points)
+					level = gurps.CalculateRitualMagicSpellLevel(entity, localName, localPowerSource,
+						gurps.ApplyNameables(e.editorData.RitualSkillName, replacements),
+						e.editorData.RitualPrereqCount, localColleges, e.editorData.Tags, e.editorData.Difficulty,
+						points)
 				} else {
-					level = gurps.CalculateSpellLevel(entity, e.editorData.Name, e.editorData.PowerSource,
-						e.editorData.College, e.editorData.Tags, e.editorData.Difficulty, points)
+					level = gurps.CalculateSpellLevel(entity, localName, localPowerSource, localColleges,
+						e.editorData.Tags, e.editorData.Difficulty, points)
 				}
 				lvl := level.Level.Trunc()
 				if lvl <= 0 {

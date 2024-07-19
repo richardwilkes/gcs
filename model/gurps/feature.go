@@ -21,7 +21,7 @@ import (
 
 // Feature holds data that affects another object.
 type Feature interface {
-	Nameables
+	NameableFiller
 	FeatureType() feature.Type
 	Clone() Feature
 	Hash(hash.Hash)

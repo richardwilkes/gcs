@@ -61,6 +61,7 @@ const (
 // WeaponOwner defines the methods required of a Weapon owner.
 type WeaponOwner interface {
 	fmt.Stringer
+	NameableAccesser
 	DataOwner() DataOwner
 	Description() string
 	Notes() string
@@ -415,8 +416,9 @@ func (w *Weapon) SkillLevel(tooltip *xio.ByteBuffer) fxp.Int {
 	}
 	adj := w.skillLevelBaseAdjustment(entity, primaryTooltip) + w.skillLevelPostAdjustment(entity, primaryTooltip)
 	best := fxp.Min
+	replacements := w.NameableReplacements()
 	for _, def := range w.Defaults {
-		if level := def.SkillLevelFast(entity, false, nil, true); level != fxp.Min {
+		if level := def.SkillLevelFast(entity, replacements, false, nil, true); level != fxp.Min {
 			level += adj
 			if best < level {
 				best = level
@@ -501,7 +503,7 @@ func (w *Weapon) EncumbrancePenalty(e *Entity, tooltip *xio.ByteBuffer) fxp.Int 
 func (w *Weapon) extractSkillBonusForThisWeapon(f Feature, tooltip *xio.ByteBuffer) fxp.Int {
 	if sb, ok := f.(*SkillBonus); ok {
 		if sb.SelectionType.EnsureValid() == skillsel.ThisWeapon {
-			if sb.SpecializationCriteria.Matches(w.Usage) {
+			if sb.SpecializationCriteria.Matches(w.Owner.NameableReplacements(), w.Usage) {
 				sb.AddToTooltip(tooltip)
 				return sb.AdjustedAmount()
 			}
@@ -536,6 +538,14 @@ func (w *Weapon) ResolveBoolFlag(switchType wswitch.Type, initial bool) bool {
 	return initial
 }
 
+// NameableReplacements returns the replacements to be used with this weapon.
+func (w *Weapon) NameableReplacements() map[string]string {
+	if toolbox.IsNil(w.Owner) {
+		return nil
+	}
+	return w.Owner.NameableReplacements()
+}
+
 func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xio.ByteBuffer, allowedFeatureTypes ...feature.Type) []*WeaponBonus {
 	entity := w.Entity()
 	if entity == nil {
@@ -547,9 +557,10 @@ func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xio.ByteBuffer, all
 	}
 	var bestDef *SkillDefault
 	best := fxp.Min
+	replacements := w.NameableReplacements()
 	for _, one := range w.Defaults {
 		if one.SkillBased() {
-			if level := one.SkillLevelFast(entity, false, nil, true); best < level {
+			if level := one.SkillLevelFast(entity, replacements, false, nil, true); best < level {
 				best = level
 				bestDef = one
 			}
@@ -559,8 +570,8 @@ func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xio.ByteBuffer, all
 	tags := w.Owner.TagList()
 	var name, specialization string
 	if bestDef != nil {
-		name = bestDef.Name
-		specialization = bestDef.Specialization
+		name = bestDef.NameWithReplacements(replacements)
+		specialization = bestDef.SpecializationWithReplacements(replacements)
 	}
 	entity.AddWeaponWithSkillBonusesFor(name, specialization, w.Usage, tags, dieCount, tooltip, bonusSet, allowed)
 	nameQualifier := w.String()
@@ -609,18 +620,20 @@ func (w *Weapon) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, allowe
 			savedDieCount := bonus.WeaponLeveledAmount.DieCount
 			bonus.WeaponLeveledAmount.Level = bonus.DerivedLevel()
 			bonus.WeaponLeveledAmount.DieCount = dieCount
+			replacements := w.Owner.NameableReplacements()
 			switch bonus.SelectionType {
 			case wsel.WithRequiredSkill:
 			case wsel.ThisWeapon:
-				if bonus.SpecializationCriteria.Matches(w.Usage) {
+				if bonus.SpecializationCriteria.Matches(replacements, w.Usage) {
 					if _, exists := set[bonus]; !exists {
 						set[bonus] = true
 						bonus.AddToTooltip(tooltip)
 					}
 				}
 			case wsel.WithName:
-				if bonus.NameCriteria.Matches(w.String()) && bonus.SpecializationCriteria.Matches(w.Usage) &&
-					bonus.TagsCriteria.MatchesList(w.Owner.TagList()...) {
+				if bonus.NameCriteria.Matches(replacements, w.String()) &&
+					bonus.SpecializationCriteria.Matches(replacements, w.Usage) &&
+					bonus.TagsCriteria.MatchesList(replacements, w.Owner.TagList()...) {
 					if _, exists := set[bonus]; !exists {
 						set[bonus] = true
 						bonus.AddToTooltip(tooltip)
@@ -643,10 +656,7 @@ func (w *Weapon) FillWithNameableKeys(m map[string]string) {
 }
 
 // ApplyNameableKeys replaces any nameable keys found in this Weapon with the corresponding values in the provided map.
-func (w *Weapon) ApplyNameableKeys(m map[string]string) {
-	for _, one := range w.Defaults {
-		one.ApplyNameableKeys(m)
-	}
+func (w *Weapon) ApplyNameableKeys(_ map[string]string) {
 }
 
 // Container returns true if this is a container.

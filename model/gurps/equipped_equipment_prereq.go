@@ -69,26 +69,25 @@ func (e *EquippedEquipmentPrereq) FillWithNameableKeys(m map[string]string) {
 	ExtractNameables(e.TagsCriteria.Qualifier, m)
 }
 
-// ApplyNameableKeys implements Prereq.
-func (e *EquippedEquipmentPrereq) ApplyNameableKeys(m map[string]string) {
-	e.NameCriteria.Qualifier = ApplyNameables(e.NameCriteria.Qualifier, m)
-	e.TagsCriteria.Qualifier = ApplyNameables(e.TagsCriteria.Qualifier, m)
-}
-
 // Satisfied implements Prereq.
 func (e *EquippedEquipmentPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string, hasEquipmentPenalty *bool) bool {
+	var replacements map[string]string
+	if na, ok := exclude.(NameableAccesser); ok {
+		replacements = na.NameableReplacements()
+	}
 	satisfied := false
 	Traverse(func(eqp *Equipment) bool {
-		satisfied = exclude != eqp && eqp.Equipped && eqp.Quantity > 0 && e.NameCriteria.Matches(eqp.Name) &&
-			e.TagsCriteria.MatchesList(eqp.Tags...)
+		satisfied = exclude != eqp && eqp.Equipped && eqp.Quantity > 0 &&
+			e.NameCriteria.Matches(replacements, eqp.NameWithReplacements()) &&
+			e.TagsCriteria.MatchesList(replacements, eqp.Tags...)
 		return satisfied
 	}, false, false, entity.CarriedEquipment...)
 	if !satisfied {
 		*hasEquipmentPenalty = true
 		if tooltip != nil {
 			fmt.Fprintf(tooltip, i18n.Text("%sHas equipment which is equipped and whose name %s %s"),
-				prefix, e.NameCriteria.String(),
-				e.TagsCriteria.StringWithPrefix(i18n.Text("and at least one tag"), i18n.Text("and all tags")))
+				prefix, e.NameCriteria.String(replacements),
+				e.TagsCriteria.StringWithPrefix(replacements, i18n.Text("and at least one tag"), i18n.Text("and all tags")))
 		}
 	}
 	return satisfied

@@ -54,11 +54,6 @@ func (r *ReactionBonus) FillWithNameableKeys(m map[string]string) {
 	ExtractNameables(r.Situation, m)
 }
 
-// ApplyNameableKeys implements Feature.
-func (r *ReactionBonus) ApplyNameableKeys(m map[string]string) {
-	r.Situation = ApplyNameables(r.Situation, m)
-}
-
 // SetLevel implements Bonus.
 func (r *ReactionBonus) SetLevel(level fxp.Int) {
 	r.Level = level

@@ -54,11 +54,6 @@ func (c *ConditionalModifierBonus) FillWithNameableKeys(m map[string]string) {
 	ExtractNameables(c.Situation, m)
 }
 
-// ApplyNameableKeys implements Feature.
-func (c *ConditionalModifierBonus) ApplyNameableKeys(m map[string]string) {
-	c.Situation = ApplyNameables(c.Situation, m)
-}
-
 // SetLevel implements Bonus.
 func (c *ConditionalModifierBonus) SetLevel(level fxp.Int) {
 	c.Level = level

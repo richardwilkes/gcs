@@ -67,10 +67,6 @@ func (a *AttributePrereq) Clone(parent *PrereqList) Prereq {
 func (a *AttributePrereq) FillWithNameableKeys(_ map[string]string) {
 }
 
-// ApplyNameableKeys implements Prereq.
-func (a *AttributePrereq) ApplyNameableKeys(_ map[string]string) {
-}
-
 // Satisfied implements Prereq.
 func (a *AttributePrereq) Satisfied(entity *Entity, _ any, tooltip *xio.ByteBuffer, prefix string, _ *bool) bool {
 	value := entity.ResolveAttributeCurrent(a.Which)

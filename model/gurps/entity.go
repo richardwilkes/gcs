@@ -498,9 +498,9 @@ func (e *Entity) processPrereqs() {
 				satisfied = s.Prereq.Satisfied(e, s, &tooltip, prefix, &eqpPenalty)
 				if eqpPenalty {
 					penalty := NewSkillBonus()
-					penalty.NameCriteria.Qualifier = s.Name
+					penalty.NameCriteria.Qualifier = s.NameWithReplacements()
 					penalty.SpecializationCriteria.Compare = IsString
-					penalty.SpecializationCriteria.Qualifier = s.Specialization
+					penalty.SpecializationCriteria.Qualifier = s.SpecializationWithReplacements()
 					if s.TechLevel != nil && *s.TechLevel != "" {
 						penalty.LeveledAmount.Amount = -fxp.Ten
 					} else {
@@ -529,7 +529,7 @@ func (e *Entity) processPrereqs() {
 				satisfied = s.Prereq.Satisfied(e, s, &tooltip, prefix, &eqpPenalty)
 				if eqpPenalty {
 					penalty := NewSpellBonus()
-					penalty.NameCriteria.Qualifier = s.Name
+					penalty.NameCriteria.Qualifier = s.NameWithReplacements()
 					if s.TechLevel != nil && *s.TechLevel != "" {
 						penalty.LeveledAmount.Amount = -fxp.Ten
 					} else {
@@ -709,7 +709,7 @@ func (e *Entity) TelekineticStrength() fxp.Int {
 	var levels fxp.Int
 	Traverse(func(a *Trait) bool {
 		if !a.Container() && a.IsLeveled() {
-			if strings.EqualFold(a.Name, "telekinesis") {
+			if strings.EqualFold(a.NameWithReplacements(), "telekinesis") {
 				levels += a.Levels.Max(0)
 			}
 		}
@@ -800,12 +800,17 @@ func (e *Entity) AddDRBonusesFor(locationID string, tooltip *xio.ByteBuffer, drM
 func (e *Entity) SkillBonusFor(name, specialization string, tags []string, tooltip *xio.ByteBuffer) fxp.Int {
 	var total fxp.Int
 	for _, bonus := range e.features.skillBonuses {
-		if bonus.SelectionType == skillsel.Name &&
-			bonus.NameCriteria.Matches(name) &&
-			bonus.SpecializationCriteria.Matches(specialization) &&
-			bonus.TagsCriteria.MatchesList(tags...) {
-			total += bonus.AdjustedAmount()
-			bonus.AddToTooltip(tooltip)
+		if bonus.SelectionType == skillsel.Name {
+			var replacements map[string]string
+			if na, ok := bonus.Owner().(NameableAccesser); ok {
+				replacements = na.NameableReplacements()
+			}
+			if bonus.NameCriteria.Matches(replacements, name) &&
+				bonus.SpecializationCriteria.Matches(replacements, specialization) &&
+				bonus.TagsCriteria.MatchesList(replacements, tags...) {
+				total += bonus.AdjustedAmount()
+				bonus.AddToTooltip(tooltip)
+			}
 		}
 	}
 	return total
@@ -815,9 +820,13 @@ func (e *Entity) SkillBonusFor(name, specialization string, tags []string, toolt
 func (e *Entity) SkillPointBonusFor(name, specialization string, tags []string, tooltip *xio.ByteBuffer) fxp.Int {
 	var total fxp.Int
 	for _, bonus := range e.features.skillPointBonuses {
-		if bonus.NameCriteria.Matches(name) &&
-			bonus.SpecializationCriteria.Matches(specialization) &&
-			bonus.TagsCriteria.MatchesList(tags...) {
+		var replacements map[string]string
+		if na, ok := bonus.Owner().(NameableAccesser); ok {
+			replacements = na.NameableReplacements()
+		}
+		if bonus.NameCriteria.Matches(replacements, name) &&
+			bonus.SpecializationCriteria.Matches(replacements, specialization) &&
+			bonus.TagsCriteria.MatchesList(replacements, tags...) {
 			total += bonus.AdjustedAmount()
 			bonus.AddToTooltip(tooltip)
 		}
@@ -829,11 +838,14 @@ func (e *Entity) SkillPointBonusFor(name, specialization string, tags []string, 
 func (e *Entity) SpellBonusFor(name, powerSource string, colleges, tags []string, tooltip *xio.ByteBuffer) fxp.Int {
 	var total fxp.Int
 	for _, bonus := range e.features.spellBonuses {
-		if bonus.TagsCriteria.MatchesList(tags...) {
-			if bonus.MatchForType(name, powerSource, colleges) {
-				total += bonus.AdjustedAmount()
-				bonus.AddToTooltip(tooltip)
-			}
+		var replacements map[string]string
+		if na, ok := bonus.Owner().(NameableAccesser); ok {
+			replacements = na.NameableReplacements()
+		}
+		if bonus.TagsCriteria.MatchesList(replacements, tags...) &&
+			bonus.MatchForType(replacements, name, powerSource, colleges) {
+			total += bonus.AdjustedAmount()
+			bonus.AddToTooltip(tooltip)
 		}
 	}
 	return total
@@ -843,11 +855,14 @@ func (e *Entity) SpellBonusFor(name, powerSource string, colleges, tags []string
 func (e *Entity) SpellPointBonusFor(name, powerSource string, colleges, tags []string, tooltip *xio.ByteBuffer) fxp.Int {
 	var total fxp.Int
 	for _, bonus := range e.features.spellPointBonuses {
-		if bonus.TagsCriteria.MatchesList(tags...) {
-			if bonus.MatchForType(name, powerSource, colleges) {
-				total += bonus.AdjustedAmount()
-				bonus.AddToTooltip(tooltip)
-			}
+		var replacements map[string]string
+		if na, ok := bonus.Owner().(NameableAccesser); ok {
+			replacements = na.NameableReplacements()
+		}
+		if bonus.TagsCriteria.MatchesList(replacements, tags...) &&
+			bonus.MatchForType(replacements, name, powerSource, colleges) {
+			total += bonus.AdjustedAmount()
+			bonus.AddToTooltip(tooltip)
 		}
 	}
 	return total
@@ -868,12 +883,17 @@ func (e *Entity) AddWeaponWithSkillBonusesFor(name, specialization, usage string
 	for _, bonus := range e.features.weaponBonuses {
 		if allowedFeatureTypes[bonus.Type] &&
 			bonus.SelectionType == wsel.WithRequiredSkill &&
-			bonus.NameCriteria.Matches(name) &&
-			bonus.SpecializationCriteria.Matches(specialization) &&
-			bonus.RelativeLevelCriteria.Matches(rsl) &&
-			bonus.UsageCriteria.Matches(usage) &&
-			bonus.TagsCriteria.MatchesList(tags...) {
-			addWeaponBonusToMap(bonus, dieCount, tooltip, m)
+			bonus.RelativeLevelCriteria.Matches(rsl) {
+			var replacements map[string]string
+			if na, ok := bonus.Owner().(NameableAccesser); ok {
+				replacements = na.NameableReplacements()
+			}
+			if bonus.NameCriteria.Matches(replacements, name) &&
+				bonus.SpecializationCriteria.Matches(replacements, specialization) &&
+				bonus.UsageCriteria.Matches(replacements, usage) &&
+				bonus.TagsCriteria.MatchesList(replacements, tags...) {
+				addWeaponBonusToMap(bonus, dieCount, tooltip, m)
+			}
 		}
 	}
 	return m
@@ -887,11 +907,16 @@ func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, 
 	}
 	for _, bonus := range e.features.weaponBonuses {
 		if allowedFeatureTypes[bonus.Type] &&
-			bonus.SelectionType == wsel.WithName &&
-			bonus.NameCriteria.Matches(nameQualifier) &&
-			bonus.SpecializationCriteria.Matches(usageQualifier) &&
-			bonus.TagsCriteria.MatchesList(tagsQualifier...) {
-			addWeaponBonusToMap(bonus, dieCount, tooltip, m)
+			bonus.SelectionType == wsel.WithName {
+			var replacements map[string]string
+			if na, ok := bonus.Owner().(NameableAccesser); ok {
+				replacements = na.NameableReplacements()
+			}
+			if bonus.NameCriteria.Matches(replacements, nameQualifier) &&
+				bonus.SpecializationCriteria.Matches(replacements, usageQualifier) &&
+				bonus.TagsCriteria.MatchesList(replacements, tagsQualifier...) {
+				addWeaponBonusToMap(bonus, dieCount, tooltip, m)
+			}
 		}
 	}
 	return m
@@ -912,12 +937,17 @@ func addWeaponBonusToMap(bonus *WeaponBonus, dieCount int, tooltip *xio.ByteBuff
 func (e *Entity) NamedWeaponSkillBonusesFor(name, usage string, tags []string, tooltip *xio.ByteBuffer) []*SkillBonus {
 	var bonuses []*SkillBonus
 	for _, bonus := range e.features.skillBonuses {
-		if bonus.SelectionType == skillsel.WeaponsWithName &&
-			bonus.NameCriteria.Matches(name) &&
-			bonus.SpecializationCriteria.Matches(usage) &&
-			bonus.TagsCriteria.MatchesList(tags...) {
-			bonuses = append(bonuses, bonus)
-			bonus.AddToTooltip(tooltip)
+		if bonus.SelectionType == skillsel.WeaponsWithName {
+			var replacements map[string]string
+			if na, ok := bonus.Owner().(NameableAccesser); ok {
+				replacements = na.NameableReplacements()
+			}
+			if bonus.NameCriteria.Matches(replacements, name) &&
+				bonus.SpecializationCriteria.Matches(replacements, usage) &&
+				bonus.TagsCriteria.MatchesList(replacements, tags...) {
+				bonuses = append(bonuses, bonus)
+				bonus.AddToTooltip(tooltip)
+			}
 		}
 	}
 	return bonuses
@@ -958,22 +988,14 @@ func (e *Entity) BestSkillNamed(name, specialization string, requirePoints bool,
 	return best
 }
 
-// BaseSkill returns the best skill for the given default, or nil.
-func (e *Entity) BaseSkill(def *SkillDefault, requirePoints bool) *Skill {
-	if e == nil || def == nil || !def.SkillBased() {
-		return nil
-	}
-	return e.BestSkillNamed(def.Name, def.Specialization, requirePoints, nil)
-}
-
 // SkillNamed returns a list of skills that match.
 func (e *Entity) SkillNamed(name, specialization string, requirePoints bool, excludes map[string]bool) []*Skill {
 	var list []*Skill
 	Traverse(func(sk *Skill) bool {
 		if !excludes[sk.String()] {
 			if !requirePoints || sk.IsTechnique() || sk.AdjustedPoints(nil) > 0 {
-				if strings.EqualFold(sk.Name, name) {
-					if specialization == "" || strings.EqualFold(sk.Specialization, specialization) {
+				if strings.EqualFold(sk.NameWithReplacements(), name) {
+					if specialization == "" || strings.EqualFold(sk.SpecializationWithReplacements(), specialization) {
 						list = append(list, sk)
 					}
 				}
@@ -1340,7 +1362,7 @@ func (e *Entity) Reactions() []*ConditionalModifier {
 	}, true, false, e.Traits...)
 	Traverse(func(eqp *Equipment) bool {
 		if eqp.Equipped && eqp.Quantity > 0 {
-			source := i18n.Text("from equipment ") + eqp.Name
+			source := i18n.Text("from equipment ") + eqp.NameWithReplacements()
 			e.reactionsFromFeatureList(source, eqp.Features, m)
 			Traverse(func(mod *EquipmentModifier) bool {
 				e.reactionsFromFeatureList(source, mod.Features, m)
@@ -1365,10 +1387,16 @@ func (e *Entity) reactionsFromFeatureList(source string, features Features, m ma
 	for _, f := range features {
 		if bonus, ok := f.(*ReactionBonus); ok {
 			amt := bonus.AdjustedAmount()
-			if r, exists := m[bonus.Situation]; exists {
+			var replacements map[string]string
+			var na NameableAccesser
+			if na, ok = bonus.Owner().(NameableAccesser); ok {
+				replacements = na.NameableReplacements()
+			}
+			situation := ApplyNameables(bonus.Situation, replacements)
+			if r, exists := m[situation]; exists {
 				r.Add(source, amt)
 			} else {
-				m[bonus.Situation] = NewConditionalModifier(source, bonus.Situation, amt)
+				m[situation] = NewConditionalModifier(source, situation, amt)
 			}
 		}
 	}
@@ -1390,7 +1418,7 @@ func (e *Entity) ConditionalModifiers() []*ConditionalModifier {
 	}, true, false, e.Traits...)
 	Traverse(func(eqp *Equipment) bool {
 		if eqp.Equipped && eqp.Quantity > 0 {
-			source := i18n.Text("from equipment ") + eqp.Name
+			source := i18n.Text("from equipment ") + eqp.NameWithReplacements()
 			e.conditionalModifiersFromFeatureList(source, eqp.Features, m)
 			Traverse(func(mod *EquipmentModifier) bool {
 				e.conditionalModifiersFromFeatureList(source, mod.Features, m)
@@ -1415,10 +1443,16 @@ func (e *Entity) conditionalModifiersFromFeatureList(source string, features Fea
 	for _, f := range features {
 		if bonus, ok := f.(*ConditionalModifierBonus); ok {
 			amt := bonus.AdjustedAmount()
-			if r, exists := m[bonus.Situation]; exists {
+			var replacements map[string]string
+			var na NameableAccesser
+			if na, ok = bonus.Owner().(NameableAccesser); ok {
+				replacements = na.NameableReplacements()
+			}
+			situation := ApplyNameables(bonus.Situation, replacements)
+			if r, exists := m[situation]; exists {
 				r.Add(source, amt)
 			} else {
-				m[bonus.Situation] = NewConditionalModifier(source, bonus.Situation, amt)
+				m[situation] = NewConditionalModifier(source, situation, amt)
 			}
 		}
 	}

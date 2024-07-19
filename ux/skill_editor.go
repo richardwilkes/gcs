@@ -150,16 +150,18 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 			addDecimalField(wrapper, nil, "", pointsLabel, "", &e.editorData.Points, 0, fxp.MaxBasePoints)
 			wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Level"), false))
 			levelField := NewNonEditableField(func(field *NonEditableField) {
-				points := gurps.AdjustedPointsForNonContainerSkillOrTechnique(entity, e.editorData.Points,
-					e.editorData.Name, e.editorData.Specialization, e.editorData.Tags, nil)
+				localName := gurps.ApplyNameables(e.editorData.Name, e.target.Replacements)
+				localSpec := gurps.ApplyNameables(e.editorData.Specialization, e.target.Replacements)
+				points := gurps.AdjustedPointsForNonContainerSkillOrTechnique(entity, e.editorData.Points, localName,
+					localSpec, e.editorData.Tags, nil)
 				var level gurps.Level
 				if e.target.IsTechnique() {
-					level = gurps.CalculateTechniqueLevel(entity, e.editorData.Name, e.editorData.Specialization,
+					level = gurps.CalculateTechniqueLevel(entity, e.target.NameableReplacements(), localName, localSpec,
 						e.editorData.Tags, e.editorData.TechniqueDefault, e.editorData.Difficulty.Difficulty, points,
 						true, e.editorData.TechniqueLimitModifier, nil)
 				} else {
-					level = gurps.CalculateSkillLevel(entity, e.editorData.Name, e.editorData.Specialization,
-						e.editorData.Tags, e.editorData.DefaultedFrom, e.editorData.Difficulty, points,
+					level = gurps.CalculateSkillLevel(entity, localName, localSpec, e.editorData.Tags,
+						e.editorData.DefaultedFrom, e.editorData.Difficulty, points,
 						e.editorData.EncumbrancePenaltyMultiplier)
 				}
 				lvl := level.Level.Trunc()

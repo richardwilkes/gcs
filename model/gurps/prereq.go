@@ -19,7 +19,7 @@ import (
 
 // Prereq holds data necessary to track a prerequisite.
 type Prereq interface {
-	Nameables
+	NameableFiller
 	PrereqType() prereq.Type
 	// ParentList returns the owning parent list, if any.
 	ParentList() *PrereqList

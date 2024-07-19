@@ -64,10 +64,6 @@ func (c *ContainedWeightPrereq) Clone(parent *PrereqList) Prereq {
 func (c *ContainedWeightPrereq) FillWithNameableKeys(_ map[string]string) {
 }
 
-// ApplyNameableKeys implements Prereq.
-func (c *ContainedWeightPrereq) ApplyNameableKeys(_ map[string]string) {
-}
-
 // Satisfied implements Prereq.
 func (c *ContainedWeightPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string, _ *bool) bool {
 	satisfied := false

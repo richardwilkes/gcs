@@ -13,6 +13,7 @@ import (
 	"context"
 	"hash"
 	"io/fs"
+	"maps"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
@@ -56,9 +57,10 @@ type NoteData struct {
 
 // NoteEditData holds the Note data that can be edited by the UI detail editor.
 type NoteEditData struct {
-	Text             string `json:"text,omitempty"`
-	PageRef          string `json:"reference,omitempty"`
-	PageRefHighlight string `json:"reference_highlight,omitempty"`
+	Text             string            `json:"text,omitempty"`
+	PageRef          string            `json:"reference,omitempty"`
+	PageRefHighlight string            `json:"reference_highlight,omitempty"`
+	Replacements     map[string]string `json:"replacements,omitempty"`
 }
 
 type noteListData struct {
@@ -219,12 +221,17 @@ func (n *Note) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// TextWithReplacements returns the text with any replacements applied.
+func (n *Note) TextWithReplacements() string {
+	return ApplyNameables(n.Text, n.Replacements)
+}
+
 func (n *Note) String() string {
 	return n.resolveText()
 }
 
 func (n *Note) resolveText() string {
-	return EvalEmbeddedRegex.ReplaceAllStringFunc(n.Text, EntityFromNode(n).EmbeddedEval)
+	return EvalEmbeddedRegex.ReplaceAllStringFunc(n.TextWithReplacements(), EntityFromNode(n).EmbeddedEval)
 }
 
 // NotesHeaderData returns the header data information for the given note column.
@@ -305,6 +312,14 @@ func (n *Note) Enabled() bool {
 	return true
 }
 
+// NameableReplacements returns the replacements to be used with Nameables.
+func (n *Note) NameableReplacements() map[string]string {
+	if n == nil {
+		return nil
+	}
+	return n.Replacements
+}
+
 // FillWithNameableKeys adds any nameable keys found to the provided map.
 func (n *Note) FillWithNameableKeys(m map[string]string) {
 	ExtractNameables(n.Text, m)
@@ -312,7 +327,9 @@ func (n *Note) FillWithNameableKeys(m map[string]string) {
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
 func (n *Note) ApplyNameableKeys(m map[string]string) {
-	n.Text = ApplyNameables(n.Text, m)
+	needed := make(map[string]string)
+	n.FillWithNameableKeys(needed)
+	n.Replacements = RetainNeededReplacements(needed, m)
 }
 
 // CanConvertToFromContainer returns true if this node can be converted to/from a container.
@@ -388,4 +405,5 @@ func (n *NoteEditData) ApplyTo(other *Note) {
 
 func (n *NoteEditData) copyFrom(other *NoteEditData) {
 	*n = *other
+	n.Replacements = maps.Clone(other.Replacements)
 }

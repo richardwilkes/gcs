@@ -62,7 +62,7 @@ func countPrereqsForList(list *PrereqList, availableSpells []*Spell, nonSpellsCo
 				}
 				if counts[i] == 1 && p.SubType == spellcmp.Name && p.QualifierCriteria.Compare == IsString {
 					Traverse(func(s *Spell) bool {
-						if strings.EqualFold(s.Name, p.QualifierCriteria.Qualifier) {
+						if strings.EqualFold(s.NameWithReplacements(), p.QualifierCriteria.Qualifier) {
 							counts[i] = 1 + countPrereqsForList(s.Prereq, availableSpells, nonSpellsCountAs, useHighestInOr)
 							return true
 						}

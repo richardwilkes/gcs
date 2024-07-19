@@ -90,7 +90,7 @@ func (wb WeaponBlock) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 			postAdj := w.skillLevelPostAdjustment(entity, primaryTooltip)
 			best := fxp.Min
 			for _, def := range w.Defaults {
-				level := def.SkillLevelFast(entity, false, nil, true)
+				level := def.SkillLevelFast(entity, w.NameableReplacements(), false, nil, true)
 				if level == fxp.Min {
 					continue
 				}

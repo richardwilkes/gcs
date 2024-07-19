@@ -14,6 +14,7 @@ import (
 	"encoding/binary"
 	"hash"
 	"io/fs"
+	"maps"
 	"slices"
 	"strings"
 
@@ -78,12 +79,13 @@ type TraitModifierData struct {
 
 // TraitModifierEditData holds the TraitModifier data that can be edited by the UI detail editor.
 type TraitModifierEditData struct {
-	Name             string   `json:"name,omitempty"`
-	PageRef          string   `json:"reference,omitempty"`
-	PageRefHighlight string   `json:"reference_highlight,omitempty"`
-	LocalNotes       string   `json:"notes,omitempty"`
-	VTTNotes         string   `json:"vtt_notes,omitempty"`
-	Tags             []string `json:"tags,omitempty"`
+	Name             string            `json:"name,omitempty"`
+	PageRef          string            `json:"reference,omitempty"`
+	PageRefHighlight string            `json:"reference_highlight,omitempty"`
+	LocalNotes       string            `json:"notes,omitempty"`
+	VTTNotes         string            `json:"vtt_notes,omitempty"`
+	Tags             []string          `json:"tags,omitempty"`
+	Replacements     map[string]string `json:"replacements,omitempty"`
 	TraitModifierEditDataNonContainerOnly
 }
 
@@ -289,7 +291,7 @@ func (t *TraitModifier) CellData(columnID int, data *CellData) {
 		}
 	case TraitModifierDescriptionColumn:
 		data.Type = cell.Text
-		data.Primary = t.Name
+		data.Primary = t.NameWithReplacements()
 		data.Secondary = t.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.Tooltip = t.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 	case TraitModifierCostColumn:
@@ -306,7 +308,7 @@ func (t *TraitModifier) CellData(columnID int, data *CellData) {
 		if t.PageRefHighlight != "" {
 			data.Secondary = t.PageRefHighlight
 		} else {
-			data.Secondary = t.Name
+			data.Secondary = t.NameWithReplacements()
 		}
 	case TraitModifierLibSrcColumn:
 		data.Type = cell.Text
@@ -371,7 +373,7 @@ func (t *TraitModifier) CurrentLevel() fxp.Int {
 
 func (t *TraitModifier) String() string {
 	var buffer strings.Builder
-	buffer.WriteString(t.Name)
+	buffer.WriteString(t.NameWithReplacements())
 	if t.IsLeveled() {
 		buffer.WriteByte(' ')
 		buffer.WriteString(t.Levels.String())
@@ -382,7 +384,7 @@ func (t *TraitModifier) String() string {
 // SecondaryText returns the "secondary" text: the text display below an Trait.
 func (t *TraitModifier) SecondaryText(optionChecker func(display.Option) bool) string {
 	if optionChecker(SheetSettingsFor(EntityFromNode(t)).NotesDisplay) {
-		return t.LocalNotes
+		return t.LocalNotesWithReplacements()
 	}
 	return ""
 }
@@ -393,7 +395,7 @@ func (t *TraitModifier) FullDescription() string {
 	buffer.WriteString(t.String())
 	if t.LocalNotes != "" {
 		buffer.WriteString(" (")
-		buffer.WriteString(t.LocalNotes)
+		buffer.WriteString(t.LocalNotesWithReplacements())
 		buffer.WriteByte(')')
 	}
 	if SheetSettingsFor(EntityFromNode(t)).ShowTraitModifierAdj {
@@ -437,27 +439,41 @@ func (t *TraitModifier) CostDescription() string {
 	return base
 }
 
+// NameWithReplacements returns the name with any replacements applied.
+func (t *TraitModifier) NameWithReplacements() string {
+	return ApplyNameables(t.Name, t.Replacements)
+}
+
+// LocalNotesWithReplacements returns the local notes with any replacements applied.
+func (t *TraitModifier) LocalNotesWithReplacements() string {
+	return ApplyNameables(t.LocalNotes, t.Replacements)
+}
+
+// NameableReplacements returns the replacements to be used with Nameables.
+func (t *TraitModifier) NameableReplacements() map[string]string {
+	if t == nil {
+		return nil
+	}
+	return t.Replacements
+}
+
 // FillWithNameableKeys adds any nameable keys found in this TraitModifier to the provided map.
-func (t *TraitModifier) FillWithNameableKeys(keyMap map[string]string) {
+func (t *TraitModifier) FillWithNameableKeys(m map[string]string) {
 	if !t.Container() && t.Enabled() {
-		ExtractNameables(t.Name, keyMap)
-		ExtractNameables(t.LocalNotes, keyMap)
+		ExtractNameables(t.Name, m)
+		ExtractNameables(t.LocalNotes, m)
 		for _, one := range t.Features {
-			one.FillWithNameableKeys(keyMap)
+			one.FillWithNameableKeys(m)
 		}
 	}
 }
 
 // ApplyNameableKeys replaces any nameable keys found in this TraitModifier with the corresponding values in the
 // provided map.
-func (t *TraitModifier) ApplyNameableKeys(keyMap map[string]string) {
-	if !t.Container() && t.Enabled() {
-		t.Name = ApplyNameables(t.Name, keyMap)
-		t.LocalNotes = ApplyNameables(t.LocalNotes, keyMap)
-		for _, one := range t.Features {
-			one.ApplyNameableKeys(keyMap)
-		}
-	}
+func (t *TraitModifier) ApplyNameableKeys(m map[string]string) {
+	needed := make(map[string]string)
+	t.FillWithNameableKeys(needed)
+	t.Replacements = RetainNeededReplacements(needed, m)
 }
 
 // Enabled returns true if this node is enabled.
@@ -559,6 +575,7 @@ func (t *TraitModifierEditData) ApplyTo(other *TraitModifier) {
 
 func (t *TraitModifierEditData) copyFrom(other *TraitModifierEditData) {
 	*t = *other
-	t.Tags = txt.CloneStringSlice(t.Tags)
+	t.Tags = txt.CloneStringSlice(other.Tags)
+	t.Replacements = maps.Clone(other.Replacements)
 	t.Features = other.Features.Clone()
 }

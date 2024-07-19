@@ -50,10 +50,6 @@ func (c *CostReduction) Clone() Feature {
 func (c *CostReduction) FillWithNameableKeys(_ map[string]string) {
 }
 
-// ApplyNameableKeys implements Feature.
-func (c *CostReduction) ApplyNameableKeys(_ map[string]string) {
-}
-
 // Hash writes this object's contents into the hasher.
 func (c *CostReduction) Hash(h hash.Hash) {
 	if c == nil {

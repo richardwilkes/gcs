@@ -76,15 +76,12 @@ func (s *SpellPrereq) FillWithNameableKeys(m map[string]string) {
 	}
 }
 
-// ApplyNameableKeys implements Prereq.
-func (s *SpellPrereq) ApplyNameableKeys(m map[string]string) {
-	if s.SubType.UsesStringCriteria() {
-		s.QualifierCriteria.Qualifier = ApplyNameables(s.QualifierCriteria.Qualifier, m)
-	}
-}
-
 // Satisfied implements Prereq.
 func (s *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string, _ *bool) bool {
+	var replacements map[string]string
+	if na, ok := exclude.(NameableAccesser); ok {
+		replacements = na.NameableReplacements()
+	}
 	var techLevel *string
 	if sp, ok := exclude.(*Spell); ok {
 		techLevel = sp.TechLevel
@@ -100,25 +97,25 @@ func (s *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 		}
 		switch s.SubType {
 		case spellcmp.Name:
-			if s.QualifierCriteria.Matches(sp.Name) {
+			if s.QualifierCriteria.Matches(replacements, sp.NameWithReplacements()) {
 				count++
 			}
 		case spellcmp.Tag:
 			for _, one := range sp.Tags {
-				if s.QualifierCriteria.Matches(one) {
+				if s.QualifierCriteria.Matches(replacements, one) {
 					count++
 					break
 				}
 			}
 		case spellcmp.College:
-			for _, one := range sp.College {
-				if s.QualifierCriteria.Matches(one) {
+			for _, one := range sp.CollegeWithReplacements() {
+				if s.QualifierCriteria.Matches(replacements, one) {
 					count++
 					break
 				}
 			}
 		case spellcmp.CollegeCount:
-			for _, one := range sp.College {
+			for _, one := range sp.CollegeWithReplacements() {
 				colleges[one] = true
 			}
 		case spellcmp.Any:
@@ -157,7 +154,7 @@ func (s *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 			case spellcmp.College:
 				tooltip.WriteString(i18n.Text("whose college "))
 			}
-			tooltip.WriteString(s.QualifierCriteria.String())
+			tooltip.WriteString(s.QualifierCriteria.String(replacements))
 		}
 	}
 	return satisfied

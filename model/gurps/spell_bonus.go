@@ -69,14 +69,6 @@ func (s *SpellBonus) FillWithNameableKeys(m map[string]string) {
 	ExtractNameables(s.TagsCriteria.Qualifier, m)
 }
 
-// ApplyNameableKeys implements Feature.
-func (s *SpellBonus) ApplyNameableKeys(m map[string]string) {
-	if s.SpellMatchType != spellmatch.AllColleges {
-		s.NameCriteria.Qualifier = ApplyNameables(s.NameCriteria.Qualifier, m)
-	}
-	s.TagsCriteria.Qualifier = ApplyNameables(s.TagsCriteria.Qualifier, m)
-}
-
 // SetLevel implements Bonus.
 func (s *SpellBonus) SetLevel(level fxp.Int) {
 	s.Level = level
@@ -88,8 +80,8 @@ func (s *SpellBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 }
 
 // MatchForType returns true if this spell bonus matches the data for its match type.
-func (s *SpellBonus) MatchForType(name, powerSource string, colleges []string) bool {
-	return s.SpellMatchType.MatchForType(s.NameCriteria, name, powerSource, colleges)
+func (s *SpellBonus) MatchForType(replacements map[string]string, name, powerSource string, colleges []string) bool {
+	return s.SpellMatchType.MatchForType(s.NameCriteria, replacements, name, powerSource, colleges)
 }
 
 // Hash writes this object's contents into the hasher.

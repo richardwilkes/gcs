@@ -50,9 +50,10 @@ func (s *SkillDefault) CloneWithoutLevelOrPoints() *SkillDefault {
 }
 
 // Equivalent returns true if this can be considered equivalent to other.
-func (s *SkillDefault) Equivalent(other *SkillDefault) bool {
-	return other != nil && s.DefaultType == other.DefaultType && s.Modifier == other.Modifier && s.Name == other.Name &&
-		s.Specialization == other.Specialization
+func (s *SkillDefault) Equivalent(replacements map[string]string, other *SkillDefault) bool {
+	return other != nil && s.DefaultType == other.DefaultType && s.Modifier == other.Modifier &&
+		s.NameWithReplacements(replacements) == other.NameWithReplacements(replacements) &&
+		s.SpecializationWithReplacements(replacements) == other.SpecializationWithReplacements(replacements)
 }
 
 // Type returns the type of the SkillDefault.
@@ -66,13 +67,13 @@ func (s *SkillDefault) SetType(t string) {
 }
 
 // FullName returns the full name of the skill to default from.
-func (s *SkillDefault) FullName(entity *Entity) string {
+func (s *SkillDefault) FullName(entity *Entity, replacements map[string]string) string {
 	if s.SkillBased() {
 		var buffer strings.Builder
-		buffer.WriteString(s.Name)
+		buffer.WriteString(s.NameWithReplacements(replacements))
 		if s.Specialization != "" {
 			buffer.WriteString(" (")
-			buffer.WriteString(s.Specialization)
+			buffer.WriteString(s.SpecializationWithReplacements(replacements))
 			buffer.WriteByte(')')
 		}
 		switch {
@@ -88,17 +89,21 @@ func (s *SkillDefault) FullName(entity *Entity) string {
 	return ResolveAttributeName(entity, s.DefaultType)
 }
 
+// NameWithReplacements returns the name of the skill to default from with any nameable keys replaced.
+func (s *SkillDefault) NameWithReplacements(replacements map[string]string) string {
+	return ApplyNameables(s.Name, replacements)
+}
+
+// SpecializationWithReplacements returns the specialization of the skill to default from with any nameable keys
+// replaced.
+func (s *SkillDefault) SpecializationWithReplacements(replacements map[string]string) string {
+	return ApplyNameables(s.Specialization, replacements)
+}
+
 // FillWithNameableKeys adds any nameable keys found in this SkillDefault to the provided map.
 func (s *SkillDefault) FillWithNameableKeys(m map[string]string) {
 	ExtractNameables(s.Name, m)
 	ExtractNameables(s.Specialization, m)
-}
-
-// ApplyNameableKeys replaces any nameable keys found in this SkillDefault with the corresponding values in the provided
-// map.
-func (s *SkillDefault) ApplyNameableKeys(m map[string]string) {
-	s.Name = ApplyNameables(s.Name, m)
-	s.Specialization = ApplyNameables(s.Specialization, m)
 }
 
 // ModifierAsString returns the modifier as a string suitable for appending.
@@ -115,30 +120,31 @@ func (s *SkillDefault) SkillBased() bool {
 }
 
 // SkillLevel returns the base skill level for this SkillDefault.
-func (s *SkillDefault) SkillLevel(entity *Entity, requirePoints bool, excludes map[string]bool, ruleOf20 bool) fxp.Int {
+func (s *SkillDefault) SkillLevel(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool, ruleOf20 bool) fxp.Int {
 	switch s.Type() {
 	case ParryID:
-		best := s.best(entity, requirePoints, excludes)
+		best := s.best(entity, replacements, requirePoints, excludes)
 		if best != fxp.Min {
 			best = best.Div(fxp.Two).Trunc() + fxp.Three + entity.ParryBonus
 		}
 		return s.finalLevel(best)
 	case BlockID:
-		best := s.best(entity, requirePoints, excludes)
+		best := s.best(entity, replacements, requirePoints, excludes)
 		if best != fxp.Min {
 			best = best.Div(fxp.Two).Trunc() + fxp.Three + entity.BlockBonus
 		}
 		return s.finalLevel(best)
 	case SkillID:
-		return s.finalLevel(s.best(entity, requirePoints, excludes))
+		return s.finalLevel(s.best(entity, replacements, requirePoints, excludes))
 	default:
-		return s.SkillLevelFast(entity, requirePoints, excludes, ruleOf20)
+		return s.SkillLevelFast(entity, replacements, requirePoints, excludes, ruleOf20)
 	}
 }
 
-func (s *SkillDefault) best(entity *Entity, requirePoints bool, excludes map[string]bool) fxp.Int {
+func (s *SkillDefault) best(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) fxp.Int {
 	best := fxp.Min
-	for _, sk := range entity.SkillNamed(s.Name, s.Specialization, requirePoints, excludes) {
+	for _, sk := range entity.SkillNamed(s.NameWithReplacements(replacements),
+		s.SpecializationWithReplacements(replacements), requirePoints, excludes) {
 		if best < sk.LevelData.Level {
 			level := sk.CalculateLevel(excludes).Level
 			if best < level {
@@ -150,7 +156,7 @@ func (s *SkillDefault) best(entity *Entity, requirePoints bool, excludes map[str
 }
 
 // SkillLevelFast returns the base skill level for this SkillDefault.
-func (s *SkillDefault) SkillLevelFast(entity *Entity, requirePoints bool, excludes map[string]bool, ruleOf20 bool) fxp.Int {
+func (s *SkillDefault) SkillLevelFast(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool, ruleOf20 bool) fxp.Int {
 	switch s.Type() {
 	case DodgeID:
 		level := entity.Dodge(entity.EncumbranceLevel(false))
@@ -159,19 +165,19 @@ func (s *SkillDefault) SkillLevelFast(entity *Entity, requirePoints bool, exclud
 		}
 		return s.finalLevel(fxp.From(level))
 	case ParryID:
-		best := s.bestFast(entity, requirePoints, excludes)
+		best := s.bestFast(entity, replacements, requirePoints, excludes)
 		if best != fxp.Min {
 			best = best.Div(fxp.Two).Trunc() + fxp.Three + entity.ParryBonus
 		}
 		return s.finalLevel(best)
 	case BlockID:
-		best := s.bestFast(entity, requirePoints, excludes)
+		best := s.bestFast(entity, replacements, requirePoints, excludes)
 		if best != fxp.Min {
 			best = best.Div(fxp.Two).Trunc() + fxp.Three + entity.BlockBonus
 		}
 		return s.finalLevel(best)
 	case SkillID:
-		return s.finalLevel(s.bestFast(entity, requirePoints, excludes))
+		return s.finalLevel(s.bestFast(entity, replacements, requirePoints, excludes))
 	default:
 		level := entity.ResolveAttributeCurrent(s.Type())
 		if ruleOf20 {
@@ -184,9 +190,10 @@ func (s *SkillDefault) SkillLevelFast(entity *Entity, requirePoints bool, exclud
 	}
 }
 
-func (s *SkillDefault) bestFast(entity *Entity, requirePoints bool, excludes map[string]bool) fxp.Int {
+func (s *SkillDefault) bestFast(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) fxp.Int {
 	best := fxp.Min
-	for _, sk := range entity.SkillNamed(s.Name, s.Specialization, requirePoints, excludes) {
+	for _, sk := range entity.SkillNamed(s.NameWithReplacements(replacements),
+		s.SpecializationWithReplacements(replacements), requirePoints, excludes) {
 		if best < sk.LevelData.Level {
 			best = sk.LevelData.Level
 		}

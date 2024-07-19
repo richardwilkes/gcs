@@ -177,8 +177,8 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 	}
 	for _, def := range attrs.List(false) {
 		if a.isRelevant(def) {
-			a.rowStarts = append(a.rowStarts, len(a.Children()))
 			if def.IsSeparator() {
+				a.rowStarts = append(a.rowStarts, len(a.Children()))
 				a.AddChild(NewPageInternalHeader(def.CombinedName(), a.columns()))
 			} else {
 				attr, ok := a.entity.Attributes.Set[def.ID()]
@@ -186,6 +186,7 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 					errs.Log(errs.New("unable to locate attribute data"), "id", def.ID())
 					continue
 				}
+				a.rowStarts = append(a.rowStarts, len(a.Children()))
 				if a.kind == poolAttrKind {
 					a.AddChild(a.createPointsField(attr))
 

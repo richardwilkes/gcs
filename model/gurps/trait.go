@@ -14,6 +14,7 @@ import (
 	"encoding/binary"
 	"hash"
 	"io/fs"
+	"maps"
 	"slices"
 	"strings"
 
@@ -79,6 +80,7 @@ type TraitEditData struct {
 	VTTNotes         string              `json:"vtt_notes,omitempty"`
 	UserDesc         string              `json:"userdesc,omitempty"`
 	Tags             []string            `json:"tags,omitempty"`
+	Replacements     map[string]string   `json:"replacements,omitempty"`
 	Modifiers        []*TraitModifier    `json:"modifiers,omitempty"`
 	CR               selfctrl.Roll       `json:"cr,omitempty"`
 	CRAdj            selfctrl.Adjustment `json:"cr_adj,omitempty"`
@@ -380,7 +382,7 @@ func (t *Trait) CellData(columnID int, data *CellData) {
 		if t.PageRefHighlight != "" {
 			data.Secondary = t.PageRefHighlight
 		} else {
-			data.Secondary = t.Name
+			data.Secondary = t.NameWithReplacements()
 		}
 	case TraitLibSrcColumn:
 		data.Type = cell.Text
@@ -427,11 +429,6 @@ func (t *Trait) SetDataOwner(owner DataOwner) {
 	for _, m := range t.Modifiers {
 		m.SetDataOwner(owner)
 	}
-}
-
-// Notes returns the local notes.
-func (t *Trait) Notes() string {
-	return t.resolveLocalNotes()
 }
 
 // IsLeveled returns true if the Trait is capable of having levels.
@@ -509,15 +506,30 @@ func (t *Trait) Enabled() bool {
 	return true
 }
 
+// NameWithReplacements returns the name with any replacements applied.
+func (t *Trait) NameWithReplacements() string {
+	return ApplyNameables(t.Name, t.Replacements)
+}
+
+// LocalNotesWithReplacements returns the local notes with any replacements applied.
+func (t *Trait) LocalNotesWithReplacements() string {
+	return ApplyNameables(t.LocalNotes, t.Replacements)
+}
+
+// UserDescWithReplacements returns the user description with any replacements applied.
+func (t *Trait) UserDescWithReplacements() string {
+	return ApplyNameables(t.UserDesc, t.Replacements)
+}
+
 // Description returns a description, which doesn't include any levels.
 func (t *Trait) Description() string {
-	return t.Name
+	return t.NameWithReplacements()
 }
 
 // String implements fmt.Stringer.
 func (t *Trait) String() string {
 	var buffer strings.Builder
-	buffer.WriteString(t.Name)
+	buffer.WriteString(t.Description())
 	if t.IsLeveled() {
 		buffer.WriteByte(' ')
 		buffer.WriteString(t.Levels.String())
@@ -525,8 +537,13 @@ func (t *Trait) String() string {
 	return buffer.String()
 }
 
+// Notes returns the local notes.
+func (t *Trait) Notes() string {
+	return t.resolveLocalNotes()
+}
+
 func (t *Trait) resolveLocalNotes() string {
-	return EvalEmbeddedRegex.ReplaceAllStringFunc(t.LocalNotes, EntityFromNode(t).EmbeddedEval)
+	return EvalEmbeddedRegex.ReplaceAllStringFunc(t.LocalNotesWithReplacements(), EntityFromNode(t).EmbeddedEval)
 }
 
 // FeatureList returns the list of Features.
@@ -544,8 +561,24 @@ func (t *Trait) RatedStrength() fxp.Int {
 	return 0
 }
 
+// NameableReplacements returns the replacements to be used with Nameables.
+func (t *Trait) NameableReplacements() map[string]string {
+	if t == nil {
+		return nil
+	}
+	return t.Replacements
+}
+
 // FillWithNameableKeys adds any nameable keys found to the provided map.
 func (t *Trait) FillWithNameableKeys(m map[string]string) {
+	t.fillWithLocalNameableKeys(m)
+	Traverse(func(mod *TraitModifier) bool {
+		mod.FillWithNameableKeys(m)
+		return false
+	}, true, true, t.Modifiers...)
+}
+
+func (t *Trait) fillWithLocalNameableKeys(m map[string]string) {
 	ExtractNameables(t.Name, m)
 	ExtractNameables(t.LocalNotes, m)
 	ExtractNameables(t.UserDesc, m)
@@ -558,26 +591,13 @@ func (t *Trait) FillWithNameableKeys(m map[string]string) {
 	for _, one := range t.Weapons {
 		one.FillWithNameableKeys(m)
 	}
-	Traverse(func(mod *TraitModifier) bool {
-		mod.FillWithNameableKeys(m)
-		return false
-	}, true, true, t.Modifiers...)
 }
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
 func (t *Trait) ApplyNameableKeys(m map[string]string) {
-	t.Name = ApplyNameables(t.Name, m)
-	t.LocalNotes = ApplyNameables(t.LocalNotes, m)
-	t.UserDesc = ApplyNameables(t.UserDesc, m)
-	if t.Prereq != nil {
-		t.Prereq.ApplyNameableKeys(m)
-	}
-	for _, one := range t.Features {
-		one.ApplyNameableKeys(m)
-	}
-	for _, one := range t.Weapons {
-		one.ApplyNameableKeys(m)
-	}
+	needed := make(map[string]string)
+	t.fillWithLocalNameableKeys(needed)
+	t.Replacements = RetainNeededReplacements(needed, m)
 	Traverse(func(mod *TraitModifier) bool {
 		mod.ApplyNameableKeys(m)
 		return false
@@ -588,7 +608,7 @@ func (t *Trait) ApplyNameableKeys(m map[string]string) {
 func (t *Trait) ActiveModifierFor(name string) *TraitModifier {
 	var found *TraitModifier
 	Traverse(func(mod *TraitModifier) bool {
-		if strings.EqualFold(mod.Name, name) {
+		if strings.EqualFold(mod.NameWithReplacements(), name) {
 			found = mod
 			return true
 		}
@@ -621,8 +641,9 @@ func (t *Trait) ModifierNotes() string {
 func (t *Trait) SecondaryText(optionChecker func(display.Option) bool) string {
 	var buffer strings.Builder
 	settings := SheetSettingsFor(EntityFromNode(t))
-	if t.UserDesc != "" && optionChecker(settings.UserDescriptionDisplay) {
-		buffer.WriteString(t.UserDesc)
+	userDesc := t.UserDescWithReplacements()
+	if userDesc != "" && optionChecker(settings.UserDescriptionDisplay) {
+		buffer.WriteString(userDesc)
 	}
 	if optionChecker(settings.ModifiersDisplay) {
 		AppendStringOntoNewLine(&buffer, t.ModifierNotes())
@@ -860,7 +881,8 @@ func (t *TraitEditData) ApplyTo(other *Trait) {
 
 func (t *TraitEditData) copyFrom(owner DataOwner, other *TraitEditData, isContainer, isApply bool) {
 	*t = *other
-	t.Tags = txt.CloneStringSlice(t.Tags)
+	t.Tags = txt.CloneStringSlice(other.Tags)
+	t.Replacements = maps.Clone(other.Replacements)
 	t.Modifiers = nil
 	if len(other.Modifiers) != 0 {
 		t.Modifiers = make([]*TraitModifier, 0, len(other.Modifiers))

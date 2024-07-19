@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"hash"
 	"io/fs"
+	"maps"
 	"slices"
 	"strconv"
 	"strings"
@@ -84,6 +85,7 @@ type EquipmentEditData struct {
 	TechLevel              string               `json:"tech_level,omitempty"`
 	LegalityClass          string               `json:"legality_class,omitempty"`
 	Tags                   []string             `json:"tags,omitempty"`
+	Replacements           map[string]string    `json:"replacements,omitempty"`
 	Modifiers              []*EquipmentModifier `json:"modifiers,omitempty"`
 	RatedST                fxp.Int              `json:"rated_strength,omitempty"`
 	Quantity               fxp.Int              `json:"quantity,omitempty"`
@@ -437,7 +439,7 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 		if e.PageRefHighlight != "" {
 			data.Secondary = e.PageRefHighlight
 		} else {
-			data.Secondary = e.Name
+			data.Secondary = e.NameWithReplacements()
 		}
 	case EquipmentLibSrcColumn:
 		data.Type = cell.Text
@@ -487,7 +489,7 @@ func (e *Equipment) SetDataOwner(owner DataOwner) {
 
 // Description returns a description.
 func (e *Equipment) Description() string {
-	return e.Name
+	return e.NameWithReplacements()
 }
 
 // SecondaryText returns the "secondary" text: the text display below the description.
@@ -516,16 +518,16 @@ func (e *Equipment) SecondaryText(optionChecker func(display.Option) bool) strin
 
 // String implements fmt.Stringer.
 func (e *Equipment) String() string {
-	return e.Name
+	return e.NameWithReplacements()
 }
 
 func (e *Equipment) resolveLocalNotes() string {
-	return EvalEmbeddedRegex.ReplaceAllStringFunc(e.LocalNotes, EntityFromNode(e).EmbeddedEval)
+	return EvalEmbeddedRegex.ReplaceAllStringFunc(e.LocalNotesWithReplacements(), EntityFromNode(e).EmbeddedEval)
 }
 
 // Notes returns the local notes.
 func (e *Equipment) Notes() string {
-	return e.LocalNotes
+	return e.LocalNotesWithReplacements()
 }
 
 // FeatureList returns the list of Features.
@@ -621,8 +623,34 @@ func ExtendedWeightAdjustedForModifiers(defUnits fxp.WeightUnit, qty fxp.Int, ba
 	return fxp.Weight(base.Mul(qty))
 }
 
+// NameableReplacements returns the replacements to be used with Nameables.
+func (e *Equipment) NameableReplacements() map[string]string {
+	if e == nil {
+		return nil
+	}
+	return e.Replacements
+}
+
+// NameWithReplacements returns the name with any replacements applied.
+func (e *Equipment) NameWithReplacements() string {
+	return ApplyNameables(e.Name, e.Replacements)
+}
+
+// LocalNotesWithReplacements returns the local notes with any replacements applied.
+func (e *Equipment) LocalNotesWithReplacements() string {
+	return ApplyNameables(e.LocalNotes, e.Replacements)
+}
+
 // FillWithNameableKeys adds any nameable keys found to the provided map.
 func (e *Equipment) FillWithNameableKeys(m map[string]string) {
+	e.fillWithLocalNameableKeys(m)
+	Traverse(func(mod *EquipmentModifier) bool {
+		mod.FillWithNameableKeys(m)
+		return false
+	}, true, true, e.Modifiers...)
+}
+
+func (e *Equipment) fillWithLocalNameableKeys(m map[string]string) {
 	ExtractNameables(e.Name, m)
 	ExtractNameables(e.LocalNotes, m)
 	if e.Prereq != nil {
@@ -634,25 +662,13 @@ func (e *Equipment) FillWithNameableKeys(m map[string]string) {
 	for _, one := range e.Weapons {
 		one.FillWithNameableKeys(m)
 	}
-	Traverse(func(mod *EquipmentModifier) bool {
-		mod.FillWithNameableKeys(m)
-		return false
-	}, true, true, e.Modifiers...)
 }
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
 func (e *Equipment) ApplyNameableKeys(m map[string]string) {
-	e.Name = ApplyNameables(e.Name, m)
-	e.LocalNotes = ApplyNameables(e.LocalNotes, m)
-	if e.Prereq != nil {
-		e.Prereq.ApplyNameableKeys(m)
-	}
-	for _, one := range e.Features {
-		one.ApplyNameableKeys(m)
-	}
-	for _, one := range e.Weapons {
-		one.ApplyNameableKeys(m)
-	}
+	needed := make(map[string]string)
+	e.fillWithLocalNameableKeys(needed)
+	e.Replacements = RetainNeededReplacements(needed, m)
 	Traverse(func(mod *EquipmentModifier) bool {
 		mod.ApplyNameableKeys(m)
 		return false
@@ -682,7 +698,7 @@ func (e *Equipment) DisplayLegalityClass() string {
 func (e *Equipment) ActiveModifierFor(name string) *EquipmentModifier {
 	var found *EquipmentModifier
 	Traverse(func(mod *EquipmentModifier) bool {
-		if strings.EqualFold(mod.Name, name) {
+		if strings.EqualFold(mod.NameWithReplacements(), name) {
 			found = mod
 			return true
 		}
@@ -827,7 +843,8 @@ func (e *EquipmentEditData) ApplyTo(other *Equipment) {
 
 func (e *EquipmentEditData) copyFrom(owner DataOwner, other *EquipmentEditData, isApply bool) {
 	*e = *other
-	e.Tags = txt.CloneStringSlice(e.Tags)
+	e.Tags = txt.CloneStringSlice(other.Tags)
+	e.Replacements = maps.Clone(other.Replacements)
 	e.Modifiers = nil
 	if len(other.Modifiers) != 0 {
 		e.Modifiers = make([]*EquipmentModifier, 0, len(other.Modifiers))

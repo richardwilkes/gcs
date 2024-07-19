@@ -39,6 +39,7 @@ type Node[T NodeTypes] interface {
 	fmt.Stringer
 	Openable
 	Hashable
+	Nameables
 	Clone(from LibraryFile, owner DataOwner, newParent T, preserveID bool) T
 	GetSource() Source
 	ClearSource()
@@ -53,8 +54,6 @@ type Node[T NodeTypes] interface {
 	SetChildren(children []T)
 	Enabled() bool
 	CellData(columnID int, data *CellData)
-	FillWithNameableKeys(m map[string]string)
-	ApplyNameableKeys(m map[string]string)
 }
 
 // RawPointsAdjuster defines methods for nodes that can have their raw points adjusted must implement.

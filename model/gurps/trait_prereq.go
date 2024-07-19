@@ -77,24 +77,22 @@ func (a *TraitPrereq) FillWithNameableKeys(m map[string]string) {
 	ExtractNameables(a.NotesCriteria.Qualifier, m)
 }
 
-// ApplyNameableKeys implements Prereq.
-func (a *TraitPrereq) ApplyNameableKeys(m map[string]string) {
-	a.NameCriteria.Qualifier = ApplyNameables(a.NameCriteria.Qualifier, m)
-	a.NotesCriteria.Qualifier = ApplyNameables(a.NotesCriteria.Qualifier, m)
-}
-
 // Satisfied implements Prereq.
 func (a *TraitPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string, _ *bool) bool {
+	var replacements map[string]string
+	if na, ok := exclude.(NameableAccesser); ok {
+		replacements = na.NameableReplacements()
+	}
 	satisfied := false
 	Traverse(func(t *Trait) bool {
-		if exclude == t || !a.NameCriteria.Matches(t.Name) {
+		if exclude == t || !a.NameCriteria.Matches(replacements, t.NameWithReplacements()) {
 			return false
 		}
 		notes := t.Notes()
 		if modNotes := t.ModifierNotes(); modNotes != "" {
 			notes += "\n" + modNotes
 		}
-		if !a.NotesCriteria.Matches(notes) {
+		if !a.NotesCriteria.Matches(replacements, notes) {
 			return false
 		}
 		var levels fxp.Int
@@ -111,10 +109,10 @@ func (a *TraitPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 		tooltip.WriteString(prefix)
 		tooltip.WriteString(HasText(a.Has))
 		tooltip.WriteString(i18n.Text(" a trait whose name "))
-		tooltip.WriteString(a.NameCriteria.String())
+		tooltip.WriteString(a.NameCriteria.String(replacements))
 		if a.NotesCriteria.Compare != AnyString {
 			tooltip.WriteString(i18n.Text(", notes "))
-			tooltip.WriteString(a.NotesCriteria.String())
+			tooltip.WriteString(a.NotesCriteria.String(replacements))
 			tooltip.WriteByte(',')
 		}
 		tooltip.WriteString(i18n.Text(" and level "))

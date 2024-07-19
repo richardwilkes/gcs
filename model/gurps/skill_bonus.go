@@ -76,15 +76,6 @@ func (s *SkillBonus) FillWithNameableKeys(m map[string]string) {
 	}
 }
 
-// ApplyNameableKeys implements Feature.
-func (s *SkillBonus) ApplyNameableKeys(m map[string]string) {
-	s.SpecializationCriteria.Qualifier = ApplyNameables(s.SpecializationCriteria.Qualifier, m)
-	if s.SelectionType != skillsel.ThisWeapon {
-		s.NameCriteria.Qualifier = ApplyNameables(s.NameCriteria.Qualifier, m)
-		s.TagsCriteria.Qualifier = ApplyNameables(s.TagsCriteria.Qualifier, m)
-	}
-}
-
 // SetLevel implements Bonus.
 func (s *SkillBonus) SetLevel(level fxp.Int) {
 	s.Level = level

@@ -72,13 +72,6 @@ func (s *SkillPointBonus) FillWithNameableKeys(m map[string]string) {
 	ExtractNameables(s.TagsCriteria.Qualifier, m)
 }
 
-// ApplyNameableKeys implements Feature.
-func (s *SkillPointBonus) ApplyNameableKeys(m map[string]string) {
-	s.NameCriteria.Qualifier = ApplyNameables(s.NameCriteria.Qualifier, m)
-	s.SpecializationCriteria.Qualifier = ApplyNameables(s.SpecializationCriteria.Qualifier, m)
-	s.TagsCriteria.Qualifier = ApplyNameables(s.TagsCriteria.Qualifier, m)
-}
-
 // SetLevel implements Bonus.
 func (s *SkillPointBonus) SetLevel(level fxp.Int) {
 	s.Level = level

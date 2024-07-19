@@ -694,7 +694,8 @@ func (ex *legacyExporter) includeLanguages(t *Trait) bool {
 }
 
 func (ex *legacyExporter) includeCulturalFamiliarities(t *Trait) bool {
-	return strings.HasPrefix(strings.ToLower(t.Name), "cultural familiarity (") && ex.includeByTraitTags(t)
+	return strings.HasPrefix(strings.ToLower(t.NameWithReplacements()), "cultural familiarity (") &&
+		ex.includeByTraitTags(t)
 }
 
 func (ex *legacyExporter) processEncumbranceLoop(buffer []byte) {
@@ -777,7 +778,7 @@ func (ex *legacyExporter) hitLocationEquipment(location *HitLocation) []string {
 			for _, f := range eqp.Features {
 				if bonus, ok := f.(*DRBonus); ok {
 					if bonus.Location == AllID || strings.EqualFold(location.LocID, bonus.Location) {
-						list = append(list, eqp.Name)
+						list = append(list, eqp.NameWithReplacements())
 					}
 				}
 			}
@@ -814,10 +815,11 @@ func (ex *legacyExporter) processTraitLoop(buffer []byte, f func(*Trait) bool) {
 				case descriptionPrimaryExportKey:
 					ex.writeEncodedText(t.String())
 				case "DESCRIPTION_USER":
-					ex.writeEncodedText(t.UserDesc)
+					ex.writeEncodedText(t.UserDescWithReplacements())
 				case "DESCRIPTION_USER_FORMATTED":
-					if t.UserDesc != "" {
-						for _, one := range strings.Split(t.UserDesc, "\n") {
+					userDesc := t.UserDescWithReplacements()
+					if userDesc != "" {
+						for _, one := range strings.Split(userDesc, "\n") {
 							ex.out.WriteString("<p>")
 							ex.writeEncodedText(one)
 							ex.out.WriteString("</p>\n")
@@ -837,7 +839,7 @@ func (ex *legacyExporter) processTraitLoop(buffer []byte, f func(*Trait) bool) {
 						ex.writeWithOptionalParens(key, t.Notes())
 					case strings.HasPrefix(key, "MODIFIER_NOTES_FOR_"):
 						if mod := t.ActiveModifierFor(key[len("MODIFIER_NOTES_FOR_"):]); mod != nil {
-							ex.writeEncodedText(mod.LocalNotes)
+							ex.writeEncodedText(mod.LocalNotesWithReplacements())
 						}
 					case strings.HasPrefix(key, "DEPTHx"):
 						ex.handlePrefixDepth(key, t.Depth())
@@ -945,19 +947,19 @@ func (ex *legacyExporter) processSpellsLoop(buffer []byte) {
 					ex.writeEncodedText(s.Difficulty.Description(EntityFromNode(s)))
 				}
 			case "CLASS":
-				ex.writeEncodedText(s.Class)
+				ex.writeEncodedText(s.ClassWithReplacements())
 			case "COLLEGE":
-				ex.writeEncodedText(strings.Join(s.College, ", "))
+				ex.writeEncodedText(strings.Join(s.CollegeWithReplacements(), ", "))
 			case "MANA_CAST":
-				ex.writeEncodedText(s.CastingCost)
+				ex.writeEncodedText(s.CastingCostWithReplacements())
 			case "MANA_MAINTAIN":
-				ex.writeEncodedText(s.MaintenanceCost)
+				ex.writeEncodedText(s.MaintenanceCostWithReplacements())
 			case "TIME_CAST":
-				ex.writeEncodedText(s.CastingTime)
+				ex.writeEncodedText(s.CastingTimeWithReplacements())
 			case "DURATION":
-				ex.writeEncodedText(s.Duration)
+				ex.writeEncodedText(s.DurationWithReplacements())
 			case "RESIST":
-				ex.writeEncodedText(s.Resist)
+				ex.writeEncodedText(s.ResistWithReplacements())
 			case refExportKey:
 				ex.writeEncodedText(s.PageRef)
 			case styleIndentWarningExportKey:
@@ -1079,7 +1081,7 @@ func (ex *legacyExporter) processEquipmentLoop(buffer []byte, carried bool) {
 				case "LOCATION":
 					parent := eqp.Parent()
 					if parent != nil {
-						ex.writeEncodedText(parent.Name)
+						ex.writeEncodedText(parent.NameWithReplacements())
 					}
 				case "USES":
 					ex.writeEncodedText(strconv.Itoa(eqp.Uses))
@@ -1093,7 +1095,7 @@ func (ex *legacyExporter) processEquipmentLoop(buffer []byte, carried bool) {
 						ex.writeWithOptionalParens(key, eqp.Notes())
 					case strings.HasPrefix(key, "MODIFIER_NOTES_FOR_"):
 						if mod := eqp.ActiveModifierFor(key[len("MODIFIER_NOTES_FOR_"):]); mod != nil {
-							ex.writeEncodedText(mod.LocalNotes)
+							ex.writeEncodedText(mod.LocalNotesWithReplacements())
 						}
 					case strings.HasPrefix(key, "DEPTHx"):
 						ex.handlePrefixDepth(key, eqp.Depth())

@@ -39,18 +39,19 @@ func (s *StringCriteria) UnmarshalJSON(data []byte) error {
 }
 
 // Matches performs a comparison and returns true if the data matches.
-func (s StringCriteria) Matches(value string) bool {
-	return s.Compare.Matches(s.Qualifier, value)
+func (s StringCriteria) Matches(replacements map[string]string, value string) bool {
+	return s.Compare.Matches(ApplyNameables(s.Qualifier, replacements), value)
 }
 
 // MatchesList performs a comparison and returns true if the data matches.
-func (s StringCriteria) MatchesList(value ...string) bool {
+func (s StringCriteria) MatchesList(replacements map[string]string, value ...string) bool {
+	qualifier := ApplyNameables(s.Qualifier, replacements)
 	if len(value) == 0 {
-		return s.Compare.Matches(s.Qualifier, "")
+		return s.Compare.Matches(qualifier, "")
 	}
 	matches := 0
 	for _, one := range value {
-		if s.Compare.Matches(s.Qualifier, one) {
+		if s.Compare.Matches(qualifier, one) {
 			matches++
 		}
 	}
@@ -64,13 +65,13 @@ func (s StringCriteria) MatchesList(value ...string) bool {
 	}
 }
 
-func (s StringCriteria) String() string {
-	return s.Compare.Describe(s.Qualifier)
+func (s StringCriteria) String(replacements map[string]string) string {
+	return s.Compare.Describe(ApplyNameables(s.Qualifier, replacements))
 }
 
 // StringWithPrefix returns a string representation of this criteria with a prefix.
-func (s StringCriteria) StringWithPrefix(prefix, notPrefix string) string {
-	return s.Compare.DescribeWithPrefix(prefix, notPrefix, s.Qualifier)
+func (s StringCriteria) StringWithPrefix(replacements map[string]string, prefix, notPrefix string) string {
+	return s.Compare.DescribeWithPrefix(prefix, notPrefix, ApplyNameables(s.Qualifier, replacements))
 }
 
 // Hash writes this object's contents into the hasher.

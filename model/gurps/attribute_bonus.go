@@ -64,10 +64,6 @@ func (a *AttributeBonus) Clone() Feature {
 func (a *AttributeBonus) FillWithNameableKeys(_ map[string]string) {
 }
 
-// ApplyNameableKeys implements Feature.
-func (a *AttributeBonus) ApplyNameableKeys(_ map[string]string) {
-}
-
 // SetLevel implements Bonus.
 func (a *AttributeBonus) SetLevel(level fxp.Int) {
 	a.Level = level

@@ -13,21 +13,21 @@ import "github.com/richardwilkes/toolbox/errs"
 
 // Matcher defines the methods that a spell matcher must implement.
 type Matcher interface {
-	Matches(string) bool
-	MatchesList(...string) bool
+	Matches(map[string]string, string) bool
+	MatchesList(map[string]string, ...string) bool
 }
 
 // MatchForType applies the matcher and returns the result.
-func (enum Type) MatchForType(matcher Matcher, name, powerSource string, colleges []string) bool {
+func (enum Type) MatchForType(matcher Matcher, replacements map[string]string, name, powerSource string, colleges []string) bool {
 	switch enum {
 	case AllColleges:
 		return true
 	case CollegeName:
-		return matcher.MatchesList(colleges...)
+		return matcher.MatchesList(replacements, colleges...)
 	case PowerSource:
-		return matcher.Matches(powerSource)
+		return matcher.Matches(replacements, powerSource)
 	case Name:
-		return matcher.Matches(name)
+		return matcher.Matches(replacements, name)
 	default:
 		errs.Log(errs.New("unhandled spell match type"), "type", int(enum))
 		return false

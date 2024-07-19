@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"hash"
 	"io/fs"
+	"maps"
 	"slices"
 	"strings"
 
@@ -75,12 +76,13 @@ type SkillData struct {
 
 // SkillEditData holds the Skill data that can be edited by the UI detail editor.
 type SkillEditData struct {
-	Name             string   `json:"name,omitempty"`
-	PageRef          string   `json:"reference,omitempty"`
-	PageRefHighlight string   `json:"reference_highlight,omitempty"`
-	LocalNotes       string   `json:"notes,omitempty"`
-	VTTNotes         string   `json:"vtt_notes,omitempty"`
-	Tags             []string `json:"tags,omitempty"`
+	Name             string            `json:"name,omitempty"`
+	PageRef          string            `json:"reference,omitempty"`
+	PageRefHighlight string            `json:"reference_highlight,omitempty"`
+	LocalNotes       string            `json:"notes,omitempty"`
+	VTTNotes         string            `json:"vtt_notes,omitempty"`
+	Tags             []string          `json:"tags,omitempty"`
+	Replacements     map[string]string `json:"replacements,omitempty"`
 	SkillNonContainerOnlyEditData
 	SkillContainerOnlyEditData
 }
@@ -413,7 +415,7 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 		if s.PageRefHighlight != "" {
 			data.Secondary = s.PageRefHighlight
 		} else {
-			data.Secondary = s.Name
+			data.Secondary = s.NameWithReplacements()
 		}
 	case SkillLevelColumn:
 		if !s.Container() {
@@ -503,6 +505,15 @@ func (s *Skill) SetDataOwner(owner DataOwner) {
 	}
 }
 
+// BaseSkill returns the best skill for the given default, or nil.
+func (s *Skill) BaseSkill(e *Entity, def *SkillDefault, requirePoints bool) *Skill {
+	if e == nil || def == nil || !def.SkillBased() {
+		return nil
+	}
+	return e.BestSkillNamed(def.NameWithReplacements(s.Replacements),
+		def.SpecializationWithReplacements(s.Replacements), requirePoints, nil)
+}
+
 // DefaultSkill returns the skill currently defaulted to, or nil.
 func (s *Skill) DefaultSkill() *Skill {
 	e := EntityFromNode(s)
@@ -510,39 +521,22 @@ func (s *Skill) DefaultSkill() *Skill {
 		return nil
 	}
 	if s.IsTechnique() {
-		return e.BaseSkill(s.TechniqueDefault, true)
+		return s.BaseSkill(e, s.TechniqueDefault, true)
 	}
-	return e.BaseSkill(s.DefaultedFrom, true)
+	return s.BaseSkill(e, s.DefaultedFrom, true)
 }
 
 // HasDefaultTo returns true if the set of possible defaults includes the other skill.
 func (s *Skill) HasDefaultTo(other *Skill) bool {
 	for _, def := range s.resolveToSpecificDefaults() {
-		if def.SkillBased() && def.Name == other.Name && (def.Specialization == "" || def.Specialization == other.Specialization) {
-			return true
+		if def.SkillBased() && def.NameWithReplacements(s.Replacements) == other.NameWithReplacements() {
+			specialization := def.SpecializationWithReplacements(s.Replacements)
+			if specialization == "" || specialization == other.SpecializationWithReplacements() {
+				return true
+			}
 		}
 	}
 	return false
-}
-
-// Notes implements WeaponOwner.
-func (s *Skill) Notes() string {
-	return s.resolveLocalNotes()
-}
-
-// ModifierNotes returns the notes due to modifiers.
-func (s *Skill) ModifierNotes() string {
-	if s.IsTechnique() {
-		return i18n.Text("Default: ") + s.TechniqueDefault.FullName(EntityFromNode(s)) +
-			s.TechniqueDefault.ModifierAsString()
-	}
-	if s.Difficulty.Difficulty != difficulty.Wildcard {
-		defSkill := s.DefaultSkill()
-		if defSkill != nil && s.DefaultedFrom != nil {
-			return i18n.Text("Default: ") + defSkill.String() + s.DefaultedFrom.ModifierAsString()
-		}
-	}
-	return ""
 }
 
 // FeatureList returns the list of Features.
@@ -601,7 +595,7 @@ func addTooltipForSkillLevelAdj(optionChecker func(display.Option) bool, prefs *
 
 func (s *Skill) String() string {
 	var buffer strings.Builder
-	buffer.WriteString(s.Name)
+	buffer.WriteString(s.NameWithReplacements())
 	if !s.Container() {
 		if s.TechLevel != nil {
 			buffer.WriteString("/TL")
@@ -609,15 +603,11 @@ func (s *Skill) String() string {
 		}
 		if s.Specialization != "" {
 			buffer.WriteString(" (")
-			buffer.WriteString(s.Specialization)
+			buffer.WriteString(s.SpecializationWithReplacements())
 			buffer.WriteByte(')')
 		}
 	}
 	return buffer.String()
-}
-
-func (s *Skill) resolveLocalNotes() string {
-	return EvalEmbeddedRegex.ReplaceAllStringFunc(s.LocalNotes, EntityFromNode(s).EmbeddedEval)
 }
 
 // RelativeLevel returns the adjusted relative level as a string.
@@ -670,8 +660,8 @@ func (s *Skill) AdjustedPoints(tooltip *xio.ByteBuffer) fxp.Int {
 		}
 		return total
 	}
-	return AdjustedPointsForNonContainerSkillOrTechnique(EntityFromNode(s), s.Points, s.Name, s.Specialization,
-		s.Tags, tooltip)
+	return AdjustedPointsForNonContainerSkillOrTechnique(EntityFromNode(s), s.Points, s.NameWithReplacements(),
+		s.SpecializationWithReplacements(), s.Tags, tooltip)
 }
 
 // AdjustedPointsForNonContainerSkillOrTechnique returns the points, adjusted for any bonuses.
@@ -738,11 +728,12 @@ func (s *Skill) DecrementSkillLevel() {
 func (s *Skill) CalculateLevel(excludes map[string]bool) Level {
 	points := s.AdjustedPoints(nil)
 	if s.IsTechnique() {
-		return CalculateTechniqueLevel(EntityFromNode(s), s.Name, s.Specialization, s.Tags, s.TechniqueDefault,
-			s.Difficulty.Difficulty, points, true, s.TechniqueLimitModifier, excludes)
+		return CalculateTechniqueLevel(EntityFromNode(s), s.Replacements, s.NameWithReplacements(),
+			s.SpecializationWithReplacements(), s.Tags, s.TechniqueDefault, s.Difficulty.Difficulty, points, true,
+			s.TechniqueLimitModifier, excludes)
 	}
-	return CalculateSkillLevel(EntityFromNode(s), s.Name, s.Specialization, s.Tags, s.DefaultedFrom, s.Difficulty,
-		points, s.EncumbrancePenaltyMultiplier)
+	return CalculateSkillLevel(EntityFromNode(s), s.NameWithReplacements(), s.SpecializationWithReplacements(), s.Tags,
+		s.DefaultedFrom, s.Difficulty, points, s.EncumbrancePenaltyMultiplier)
 }
 
 // CalculateSkillLevel returns the calculated level for a skill.
@@ -798,19 +789,21 @@ func CalculateSkillLevel(e *Entity, name, specialization string, tags []string, 
 }
 
 // CalculateTechniqueLevel returns the calculated level for a technique.
-func CalculateTechniqueLevel(e *Entity, name, specialization string, tags []string, def *SkillDefault, diffLevel difficulty.Level, points fxp.Int, requirePoints bool, limitModifier *fxp.Int, excludes map[string]bool) Level {
+func CalculateTechniqueLevel(e *Entity, replacements map[string]string, name, specialization string, tags []string, def *SkillDefault, diffLevel difficulty.Level, points fxp.Int, requirePoints bool, limitModifier *fxp.Int, excludes map[string]bool) Level {
 	var tooltip xio.ByteBuffer
 	var relativeLevel fxp.Int
 	level := fxp.Min
 	if e != nil {
 		if def.DefaultType == SkillID {
-			if list := e.SkillNamed(def.Name, def.Specialization, requirePoints, excludes); len(list) > 0 {
+			defName := def.NameWithReplacements(replacements)
+			defSpec := def.SpecializationWithReplacements(replacements)
+			if list := e.SkillNamed(defName, defSpec, requirePoints, excludes); len(list) > 0 {
 				sk := list[0]
 				var buf strings.Builder
-				buf.WriteString(def.Name)
-				if def.Specialization != "" {
+				buf.WriteString(defName)
+				if defSpec != "" {
 					buf.WriteString(" (")
-					buf.WriteString(def.Specialization)
+					buf.WriteString(defSpec)
 					buf.WriteByte(')')
 				}
 				if excludes == nil {
@@ -819,19 +812,21 @@ func CalculateTechniqueLevel(e *Entity, name, specialization string, tags []stri
 				excludes[buf.String()] = true
 				if sk.IsTechnique() {
 					if sk.TechniqueDefault != nil &&
-						(sk.TechniqueDefault.Name != name || sk.TechniqueDefault.Specialization != specialization) {
+						(sk.TechniqueDefault.NameWithReplacements(replacements) != name ||
+							sk.TechniqueDefault.SpecializationWithReplacements(replacements) != specialization) {
 						level = sk.CalculateLevel(excludes).Level
 					}
 				} else {
 					if sk.DefaultedFrom == nil ||
-						(sk.DefaultedFrom.Name != name || sk.DefaultedFrom.Specialization != specialization) {
+						(sk.DefaultedFrom.NameWithReplacements(replacements) != name ||
+							sk.DefaultedFrom.SpecializationWithReplacements(replacements) != specialization) {
 						level = sk.CalculateLevel(excludes).Level
 					}
 				}
 			}
 		} else {
 			// Take the modifier back out, as we wanted the base, not the final value.
-			level = def.SkillLevelFast(e, true, nil, false) - def.Modifier
+			level = def.SkillLevelFast(e, replacements, true, nil, false) - def.Modifier
 		}
 		if level != fxp.Min {
 			baseLevel := level
@@ -903,7 +898,7 @@ func (s *Skill) bestDefault(excluded *SkillDefault) *SkillDefault {
 	best := fxp.Min
 	for _, def := range s.resolveToSpecificDefaults() {
 		// For skill-based defaults, prune out any that already use a default that we are involved with
-		if def.Equivalent(excluded) || s.inDefaultChain(def, make(map[*Skill]bool)) {
+		if def.Equivalent(s.Replacements, excluded) || s.inDefaultChain(def, make(map[*Skill]bool)) {
 			continue
 		}
 		if level := s.calcSkillDefaultLevel(def, excludes); best < level {
@@ -917,10 +912,12 @@ func (s *Skill) bestDefault(excluded *SkillDefault) *SkillDefault {
 
 func (s *Skill) calcSkillDefaultLevel(def *SkillDefault, excludes map[string]bool) fxp.Int {
 	e := EntityFromNode(s)
-	level := def.SkillLevel(e, true, excludes, !s.IsTechnique())
+	level := def.SkillLevel(e, s.Replacements, true, excludes, !s.IsTechnique())
 	if def.SkillBased() {
-		if other := e.BestSkillNamed(def.Name, def.Specialization, true, excludes); other != nil {
-			level -= e.SkillBonusFor(def.Name, def.Specialization, s.Tags, nil)
+		defName := def.NameWithReplacements(s.Replacements)
+		defSpec := def.SpecializationWithReplacements(s.Replacements)
+		if other := e.BestSkillNamed(defName, defSpec, true, excludes); other != nil {
+			level -= e.SkillBonusFor(defName, defSpec, s.Tags, nil)
 		}
 	}
 	return level
@@ -931,7 +928,8 @@ func (s *Skill) inDefaultChain(def *SkillDefault, lookedAt map[*Skill]bool) bool
 	if e == nil || def == nil || !def.SkillBased() {
 		return false
 	}
-	for _, one := range e.SkillNamed(def.Name, def.Specialization, true, nil) {
+	for _, one := range e.SkillNamed(def.NameWithReplacements(s.Replacements),
+		def.SpecializationWithReplacements(s.Replacements), true, nil) {
 		if one == s {
 			return true
 		}
@@ -952,7 +950,8 @@ func (s *Skill) resolveToSpecificDefaults() []*SkillDefault {
 		if e == nil || def == nil || !def.SkillBased() {
 			result = append(result, def)
 		} else {
-			for _, one := range e.SkillNamed(def.Name, def.Specialization, true,
+			for _, one := range e.SkillNamed(def.NameWithReplacements(s.Replacements),
+				def.SpecializationWithReplacements(s.Replacements), true,
 				map[string]bool{s.String(): true}) {
 				local := *def
 				local.Specialization = one.Specialization
@@ -969,7 +968,8 @@ func (s *Skill) TechniqueSatisfied(tooltip *xio.ByteBuffer, prefix string) bool 
 		return true
 	}
 	e := EntityFromNode(s)
-	sk := e.BestSkillNamed(s.TechniqueDefault.Name, s.TechniqueDefault.Specialization, false, nil)
+	sk := e.BestSkillNamed(s.TechniqueDefault.NameWithReplacements(s.Replacements),
+		s.TechniqueDefault.SpecializationWithReplacements(s.Replacements), false, nil)
 	satisfied := sk != nil && (sk.IsTechnique() || sk.Points > 0)
 	if !satisfied && tooltip != nil {
 		tooltip.WriteString(prefix)
@@ -978,7 +978,7 @@ func (s *Skill) TechniqueSatisfied(tooltip *xio.ByteBuffer, prefix string) bool 
 		} else {
 			tooltip.WriteString(i18n.Text("Requires at least 1 point in the skill named "))
 		}
-		tooltip.WriteString(s.TechniqueDefault.FullName(e))
+		tooltip.WriteString(s.TechniqueDefault.FullName(e, s.Replacements))
 	}
 	return satisfied
 }
@@ -1008,6 +1008,53 @@ func (s *Skill) Enabled() bool {
 	return true
 }
 
+// NameWithReplacements returns the name with any replacements applied.
+func (s *Skill) NameWithReplacements() string {
+	return ApplyNameables(s.Name, s.Replacements)
+}
+
+// SpecializationWithReplacements returns the specialization with any replacements applied.
+func (s *Skill) SpecializationWithReplacements() string {
+	return ApplyNameables(s.Specialization, s.Replacements)
+}
+
+// LocalNotesWithReplacements returns the local notes with any replacements applied.
+func (s *Skill) LocalNotesWithReplacements() string {
+	return ApplyNameables(s.LocalNotes, s.Replacements)
+}
+
+// Notes implements WeaponOwner.
+func (s *Skill) Notes() string {
+	return s.resolveLocalNotes()
+}
+
+// ModifierNotes returns the notes due to modifiers.
+func (s *Skill) ModifierNotes() string {
+	if s.IsTechnique() {
+		return i18n.Text("Default: ") + s.TechniqueDefault.FullName(EntityFromNode(s), s.Replacements) +
+			s.TechniqueDefault.ModifierAsString()
+	}
+	if s.Difficulty.Difficulty != difficulty.Wildcard {
+		defSkill := s.DefaultSkill()
+		if defSkill != nil && s.DefaultedFrom != nil {
+			return i18n.Text("Default: ") + defSkill.String() + s.DefaultedFrom.ModifierAsString()
+		}
+	}
+	return ""
+}
+
+func (s *Skill) resolveLocalNotes() string {
+	return EvalEmbeddedRegex.ReplaceAllStringFunc(s.LocalNotesWithReplacements(), EntityFromNode(s).EmbeddedEval)
+}
+
+// NameableReplacements returns the replacements to be used with Nameables.
+func (s *Skill) NameableReplacements() map[string]string {
+	if s == nil {
+		return nil
+	}
+	return s.Replacements
+}
+
 // FillWithNameableKeys adds any nameable keys found to the provided map.
 func (s *Skill) FillWithNameableKeys(m map[string]string) {
 	ExtractNameables(s.Name, m)
@@ -1032,24 +1079,9 @@ func (s *Skill) FillWithNameableKeys(m map[string]string) {
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
 func (s *Skill) ApplyNameableKeys(m map[string]string) {
-	s.Name = ApplyNameables(s.Name, m)
-	s.LocalNotes = ApplyNameables(s.LocalNotes, m)
-	s.Specialization = ApplyNameables(s.Specialization, m)
-	if s.Prereq != nil {
-		s.Prereq.ApplyNameableKeys(m)
-	}
-	if s.TechniqueDefault != nil {
-		s.TechniqueDefault.ApplyNameableKeys(m)
-	}
-	for _, one := range s.Defaults {
-		one.ApplyNameableKeys(m)
-	}
-	for _, one := range s.Features {
-		one.ApplyNameableKeys(m)
-	}
-	for _, one := range s.Weapons {
-		one.ApplyNameableKeys(m)
-	}
+	needed := make(map[string]string)
+	s.FillWithNameableKeys(needed)
+	s.Replacements = RetainNeededReplacements(needed, m)
 }
 
 // CanSwapDefaults returns true if this skill's default can be swapped.
@@ -1084,10 +1116,12 @@ func (s *Skill) BestSwappableSkill() *Skill {
 func (s *Skill) SwapDefaults() {
 	def := s.DefaultedFrom
 	s.DefaultedFrom = nil
-	if baseSkill := EntityFromNode(s).BaseSkill(s.bestDefault(nil), true); baseSkill != nil {
-		s.DefaultedFrom = s.bestDefaultWithPoints(def)
-		baseSkill.UpdateLevel()
-		s.UpdateLevel()
+	if e := EntityFromNode(s); e != nil {
+		if baseSkill := s.BaseSkill(e, s.bestDefault(nil), true); baseSkill != nil {
+			s.DefaultedFrom = s.bestDefaultWithPoints(def)
+			baseSkill.UpdateLevel()
+			s.UpdateLevel()
+		}
 	}
 }
 
@@ -1230,7 +1264,8 @@ func (s *SkillEditData) ApplyTo(other *Skill) {
 
 func (s *SkillEditData) copyFrom(other *SkillEditData, isContainer, isApply bool) {
 	*s = *other
-	s.Tags = txt.CloneStringSlice(s.Tags)
+	s.Tags = txt.CloneStringSlice(other.Tags)
+	s.Replacements = maps.Clone(other.Replacements)
 	if other.TechLevel != nil {
 		tl := *other.TechLevel
 		s.TechLevel = &tl

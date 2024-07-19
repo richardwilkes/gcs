@@ -86,7 +86,7 @@ func exportSCR(dir, fileName string, extraSCR int) error {
 	w := csv.NewWriter(out)
 	gurps.Traverse(func(spell *gurps.Spell) bool {
 		scr := extraSCR + gurps.CountPrereqsForSpell(spell, spells, 1, false)
-		if err = w.Write([]string{spell.Name, fmt.Sprintf("%d", scr)}); err != nil {
+		if err = w.Write([]string{spell.NameWithReplacements(), fmt.Sprintf("%d", scr)}); err != nil {
 			err = errs.Wrap(err)
 			return true
 		}

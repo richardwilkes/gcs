@@ -92,13 +92,6 @@ func (p *PrereqList) FillWithNameableKeys(m map[string]string) {
 	}
 }
 
-// ApplyNameableKeys implements Prereq.
-func (p *PrereqList) ApplyNameableKeys(m map[string]string) {
-	for _, one := range p.Prereqs {
-		one.ApplyNameableKeys(m)
-	}
-}
-
 // Satisfied implements Prereq.
 func (p *PrereqList) Satisfied(entity *Entity, exclude any, buffer *xio.ByteBuffer, prefix string, hasEquipmentPenalty *bool) bool {
 	if p.WhenTL.Compare != AnyNumber {
@@ -122,7 +115,7 @@ func (p *PrereqList) Satisfied(entity *Entity, exclude any, buffer *xio.ByteBuff
 		}
 	}
 	if local != nil && local.Len() != 0 {
-		indented := strings.ReplaceAll(local.String(), "\n", "\n  ")
+		indented := strings.ReplaceAll(local.String(), "\n", "\n\u00a0\u00a0\u00a0")
 		local = &xio.ByteBuffer{}
 		local.WriteString(indented)
 	}

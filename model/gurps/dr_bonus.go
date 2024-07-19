@@ -78,10 +78,6 @@ func (d *DRBonus) Normalize() {
 func (d *DRBonus) FillWithNameableKeys(_ map[string]string) {
 }
 
-// ApplyNameableKeys implements Feature.
-func (d *DRBonus) ApplyNameableKeys(_ map[string]string) {
-}
-
 // SetLevel implements Bonus.
 func (d *DRBonus) SetLevel(level fxp.Int) {
 	d.Level = level

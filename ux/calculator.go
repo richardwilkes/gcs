@@ -612,7 +612,7 @@ func (c *Calculator) computeJump(broad bool) fxp.Int {
 	if c.jumpingRunningStartYards > 0 {
 		enhMove := -fxp.One
 		gurps.Traverse(func(t *gurps.Trait) bool {
-			if strings.EqualFold(t.Name, "enhanced move (ground)") && t.IsLeveled() {
+			if strings.EqualFold(t.NameWithReplacements(), "enhanced move (ground)") && t.IsLeveled() {
 				if enhMove == -fxp.One {
 					enhMove = t.Levels
 				} else {
@@ -631,7 +631,7 @@ func (c *Calculator) computeJump(broad bool) fxp.Int {
 
 	// Adjust Basic Move for Jumping skill
 	gurps.Traverse(func(s *gurps.Skill) bool {
-		if strings.EqualFold(s.Name, "jumping") {
+		if strings.EqualFold(s.NameWithReplacements(), "jumping") {
 			s.UpdateLevel()
 			level := s.LevelData.Level.Div(fxp.Two).Trunc()
 			if level > basicMove {
@@ -677,7 +677,7 @@ func (c *Calculator) computeJump(broad bool) fxp.Int {
 	// Adjust for Super Jump
 	levels := -fxp.One
 	gurps.Traverse(func(t *gurps.Trait) bool {
-		if strings.EqualFold(t.Name, "super jump") && t.IsLeveled() {
+		if strings.EqualFold(t.NameWithReplacements(), "super jump") && t.IsLeveled() {
 			if levels == -fxp.One {
 				levels = t.Levels
 			} else {
@@ -721,7 +721,8 @@ func (c *Calculator) updateThrowingResult() {
 	// Determine bonuses for skills
 	var distanceBonus, damageBonus int
 	gurps.Traverse(func(s *gurps.Skill) bool {
-		if strings.EqualFold(s.Name, "throwing art") {
+		switch strings.ToLower(s.NameWithReplacements()) {
+		case "throwing art":
 			s.UpdateLevel()
 			if s.LevelData.RelativeLevel >= fxp.One {
 				if distanceBonus < 2 {
@@ -738,8 +739,7 @@ func (c *Calculator) updateThrowingResult() {
 					damageBonus = 1
 				}
 			}
-		}
-		if strings.EqualFold(s.Name, "throwing") {
+		case "throwing":
 			s.UpdateLevel()
 			if s.LevelData.RelativeLevel >= fxp.Two {
 				if distanceBonus < 2 {
@@ -856,7 +856,7 @@ func (c *Calculator) updateHikingResult() {
 	// Adjust for enhanced move (ground), if any
 	enhMove := -fxp.One
 	gurps.Traverse(func(t *gurps.Trait) bool {
-		if strings.EqualFold(t.Name, "enhanced move (ground)") && t.IsLeveled() {
+		if strings.EqualFold(t.NameWithReplacements(), "enhanced move (ground)") && t.IsLeveled() {
 			if enhMove == -fxp.One {
 				enhMove = t.Levels
 			} else {

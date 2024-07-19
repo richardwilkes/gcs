@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"hash"
 	"io/fs"
+	"maps"
 	"slices"
 	"strings"
 
@@ -83,12 +84,13 @@ type SpellData struct {
 
 // SpellEditData holds the Spell data that can be edited by the UI detail editor.
 type SpellEditData struct {
-	Name             string   `json:"name,omitempty"`
-	PageRef          string   `json:"reference,omitempty"`
-	PageRefHighlight string   `json:"reference_highlight,omitempty"`
-	LocalNotes       string   `json:"notes,omitempty"`
-	VTTNotes         string   `json:"vtt_notes,omitempty"`
-	Tags             []string `json:"tags,omitempty"`
+	Name             string            `json:"name,omitempty"`
+	PageRef          string            `json:"reference,omitempty"`
+	PageRefHighlight string            `json:"reference_highlight,omitempty"`
+	LocalNotes       string            `json:"notes,omitempty"`
+	VTTNotes         string            `json:"vtt_notes,omitempty"`
+	Tags             []string          `json:"tags,omitempty"`
+	Replacements     map[string]string `json:"replacements,omitempty"`
 	SpellNonContainerOnlyEditData
 	SkillContainerOnlyEditData
 }
@@ -423,37 +425,37 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 	case SpellResistColumn:
 		if !s.Container() {
 			data.Type = cell.Text
-			data.Primary = s.Resist
+			data.Primary = s.ResistWithReplacements()
 		}
 	case SpellClassColumn:
 		if !s.Container() {
 			data.Type = cell.Text
-			data.Primary = s.Class
+			data.Primary = s.ClassWithReplacements()
 		}
 	case SpellCollegeColumn:
 		if !s.Container() {
 			data.Type = cell.Text
-			data.Primary = strings.Join(s.College, ", ")
+			data.Primary = strings.Join(s.CollegeWithReplacements(), ", ")
 		}
 	case SpellCastCostColumn:
 		if !s.Container() {
 			data.Type = cell.Text
-			data.Primary = s.CastingCost
+			data.Primary = s.CastingCostWithReplacements()
 		}
 	case SpellMaintainCostColumn:
 		if !s.Container() {
 			data.Type = cell.Text
-			data.Primary = s.MaintenanceCost
+			data.Primary = s.MaintenanceCostWithReplacements()
 		}
 	case SpellCastTimeColumn:
 		if !s.Container() {
 			data.Type = cell.Text
-			data.Primary = s.CastingTime
+			data.Primary = s.CastingTimeWithReplacements()
 		}
 	case SpellDurationColumn:
 		if !s.Container() {
 			data.Type = cell.Text
-			data.Primary = s.Duration
+			data.Primary = s.DurationWithReplacements()
 		}
 	case SpellDifficultyColumn:
 		if !s.Container() {
@@ -469,7 +471,7 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 		if s.PageRefHighlight != "" {
 			data.Secondary = s.PageRefHighlight
 		} else {
-			data.Secondary = s.Name
+			data.Secondary = s.NameWithReplacements()
 		}
 	case SpellLevelColumn:
 		if !s.Container() {
@@ -509,13 +511,13 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 		s.CellData(SpellDescriptionColumn, data)
 		if !s.Container() {
 			var buffer strings.Builder
-			addPartToBuffer(&buffer, i18n.Text("Resistance"), s.Resist)
-			addPartToBuffer(&buffer, i18n.Text("Class"), s.Class)
-			addPartToBuffer(&buffer, i18n.Text("Cast"), s.CastingCost)
-			addPartToBuffer(&buffer, i18n.Text("Maintain"), s.MaintenanceCost)
-			addPartToBuffer(&buffer, i18n.Text("Time"), s.CastingTime)
-			addPartToBuffer(&buffer, i18n.Text("Duration"), s.Duration)
-			addPartToBuffer(&buffer, i18n.Text("College"), strings.Join(s.College, ", "))
+			addPartToBuffer(&buffer, i18n.Text("Resistance"), s.ResistWithReplacements())
+			addPartToBuffer(&buffer, i18n.Text("Class"), s.ClassWithReplacements())
+			addPartToBuffer(&buffer, i18n.Text("Cast"), s.CastingCostWithReplacements())
+			addPartToBuffer(&buffer, i18n.Text("Maintain"), s.MaintenanceCostWithReplacements())
+			addPartToBuffer(&buffer, i18n.Text("Time"), s.CastingTimeWithReplacements())
+			addPartToBuffer(&buffer, i18n.Text("Duration"), s.DurationWithReplacements())
+			addPartToBuffer(&buffer, i18n.Text("College"), strings.Join(s.CollegeWithReplacements(), ", "))
 			if buffer.Len() != 0 {
 				if data.Secondary == "" {
 					data.Secondary = buffer.String()
@@ -590,12 +592,14 @@ func (s *Spell) AdjustedRelativeLevel() fxp.Int {
 // UpdateLevel updates the level of the spell, returning true if it has changed.
 func (s *Spell) UpdateLevel() bool {
 	saved := s.LevelData
+	colleges := s.CollegeWithReplacements()
 	if s.IsRitualMagic() {
-		s.LevelData = CalculateRitualMagicSpellLevel(EntityFromNode(s), s.Name, s.PowerSource, s.RitualSkillName,
-			s.RitualPrereqCount, s.College, s.Tags, s.Difficulty, s.AdjustedPoints(nil))
+		s.LevelData = CalculateRitualMagicSpellLevel(EntityFromNode(s), s.NameWithReplacements(),
+			s.PowerSourceWithReplacements(), s.RitualSkillNameWithReplacements(), s.RitualPrereqCount, colleges,
+			s.Tags, s.Difficulty, s.AdjustedPoints(nil))
 	} else {
-		s.LevelData = CalculateSpellLevel(EntityFromNode(s), s.Name, s.PowerSource, s.College, s.Tags,
-			s.Difficulty, s.AdjustedPoints(nil))
+		s.LevelData = CalculateSpellLevel(EntityFromNode(s), s.NameWithReplacements(), s.PowerSourceWithReplacements(),
+			colleges, s.Tags, s.Difficulty, s.AdjustedPoints(nil))
 	}
 	return saved != s.LevelData
 }
@@ -603,11 +607,12 @@ func (s *Spell) UpdateLevel() bool {
 // CalculateLevel returns the computed level without updating it.
 func (s *Spell) CalculateLevel() Level {
 	if s.IsRitualMagic() {
-		return CalculateRitualMagicSpellLevel(EntityFromNode(s), s.Name, s.PowerSource, s.RitualSkillName,
-			s.RitualPrereqCount, s.College, s.Tags, s.Difficulty, s.AdjustedPoints(nil))
+		return CalculateRitualMagicSpellLevel(EntityFromNode(s), s.NameWithReplacements(),
+			s.PowerSourceWithReplacements(), s.RitualSkillNameWithReplacements(), s.RitualPrereqCount,
+			s.CollegeWithReplacements(), s.Tags, s.Difficulty, s.AdjustedPoints(nil))
 	}
-	return CalculateSpellLevel(EntityFromNode(s), s.Name, s.PowerSource, s.College, s.Tags, s.Difficulty,
-		s.AdjustedPoints(nil))
+	return CalculateSpellLevel(EntityFromNode(s), s.NameWithReplacements(), s.PowerSourceWithReplacements(),
+		s.CollegeWithReplacements(), s.Tags, s.Difficulty, s.AdjustedPoints(nil))
 }
 
 // IncrementSkillLevel adds enough points to increment the skill level to the next level.
@@ -733,12 +738,14 @@ func determineRitualMagicSkillLevelForCollege(e *Entity, name, college, ritualSk
 		def.Name = ""
 	}
 	var limit fxp.Int
-	skillLevel := CalculateTechniqueLevel(e, name, college, tags, def, difficulty.Difficulty, points, false, &limit, nil)
+	skillLevel := CalculateTechniqueLevel(e, nil, name, college, tags, def, difficulty.Difficulty, points, false,
+		&limit, nil)
 	// CalculateTechniqueLevel() does not add the default skill modifier to the relative level, only to the final level
 	skillLevel.RelativeLevel += def.Modifier
 	def.Specialization = ""
 	def.Modifier -= fxp.Six
-	fallback := CalculateTechniqueLevel(e, name, college, tags, def, difficulty.Difficulty, points, false, &limit, nil)
+	fallback := CalculateTechniqueLevel(e, nil, name, college, tags, def, difficulty.Difficulty, points, false,
+		&limit, nil)
 	fallback.RelativeLevel += def.Modifier
 	if skillLevel.Level >= fallback.Level {
 		return skillLevel
@@ -751,7 +758,8 @@ func (s *Spell) RitualMagicSatisfied(tooltip *xio.ByteBuffer, prefix string) boo
 	if !s.IsRitualMagic() {
 		return true
 	}
-	if len(s.College) == 0 {
+	colleges := s.CollegeWithReplacements()
+	if len(colleges) == 0 {
 		if tooltip != nil {
 			tooltip.WriteString(prefix)
 			tooltip.WriteString(i18n.Text("Must be assigned to a college"))
@@ -759,24 +767,25 @@ func (s *Spell) RitualMagicSatisfied(tooltip *xio.ByteBuffer, prefix string) boo
 		return false
 	}
 	e := EntityFromNode(s)
-	for _, college := range s.College {
-		if e.BestSkillNamed(s.RitualSkillName, college, false, nil) != nil {
+	for _, college := range colleges {
+		if e.BestSkillNamed(s.RitualSkillNameWithReplacements(), college, false, nil) != nil {
 			return true
 		}
 	}
-	if e.BestSkillNamed(s.RitualSkillName, "", false, nil) != nil {
+	if e.BestSkillNamed(s.RitualSkillNameWithReplacements(), "", false, nil) != nil {
 		return true
 	}
 	if tooltip != nil {
 		tooltip.WriteString(prefix)
 		tooltip.WriteString(i18n.Text("Requires a skill named "))
-		tooltip.WriteString(s.RitualSkillName)
+		ritual := s.RitualSkillNameWithReplacements()
+		tooltip.WriteString(ritual)
 		tooltip.WriteString(" (")
-		tooltip.WriteString(s.College[0])
+		tooltip.WriteString(colleges[0])
 		tooltip.WriteByte(')')
-		for _, college := range s.College[1:] {
+		for _, college := range colleges[1:] {
 			tooltip.WriteString(i18n.Text(" or "))
-			tooltip.WriteString(s.RitualSkillName)
+			tooltip.WriteString(ritual)
 			tooltip.WriteString(" (")
 			tooltip.WriteString(college)
 			tooltip.WriteByte(')')
@@ -823,13 +832,13 @@ func (s *Spell) Rituals() string {
 		return i18n.Text("Ritual: speak quietly and make a gesture")
 	case level < fxp.Twenty:
 		ritual := i18n.Text("Ritual: speak a word or two OR make a small gesture")
-		if strings.Contains(strings.ToLower(s.Class), "blocking") {
+		if strings.Contains(strings.ToLower(s.ClassWithReplacements()), "blocking") {
 			return ritual
 		}
 		return ritual + i18n.Text("; Cost: -1")
 	default:
 		adj := fxp.As[int]((level - fxp.Fifteen).Div(fxp.Five))
-		class := strings.ToLower(s.Class)
+		class := strings.ToLower(s.ClassWithReplacements())
 		time := ""
 		if !strings.Contains(class, "missile") {
 			time = fmt.Sprintf(i18n.Text("; Time: x1/%d, rounded up, min 1 sec"), 1<<adj)
@@ -877,7 +886,7 @@ func (s *Spell) SecondaryText(optionChecker func(display.Option) bool) string {
 
 func (s *Spell) String() string {
 	var buffer strings.Builder
-	buffer.WriteString(s.Name)
+	buffer.WriteString(s.NameWithReplacements())
 	if !s.Container() {
 		if s.TechLevel != nil {
 			buffer.WriteString("/TL")
@@ -888,7 +897,7 @@ func (s *Spell) String() string {
 }
 
 func (s *Spell) resolveLocalNotes() string {
-	return EvalEmbeddedRegex.ReplaceAllStringFunc(s.LocalNotes, EntityFromNode(s).EmbeddedEval)
+	return EvalEmbeddedRegex.ReplaceAllStringFunc(s.LocalNotesWithReplacements(), EntityFromNode(s).EmbeddedEval)
 }
 
 // RawPoints returns the unadjusted points.
@@ -911,8 +920,8 @@ func (s *Spell) AdjustedPoints(tooltip *xio.ByteBuffer) fxp.Int {
 		}
 		return total
 	}
-	return AdjustedPointsForNonContainerSpell(EntityFromNode(s), s.Points, s.Name, s.PowerSource, s.College,
-		s.Tags, tooltip)
+	return AdjustedPointsForNonContainerSpell(EntityFromNode(s), s.Points, s.NameWithReplacements(),
+		s.PowerSourceWithReplacements(), s.CollegeWithReplacements(), s.Tags, tooltip)
 }
 
 // AdjustedPointsForNonContainerSpell returns the points, adjusted for any bonuses.
@@ -949,6 +958,66 @@ func (s *Spell) Enabled() bool {
 	return true
 }
 
+// NameableReplacements returns the replacements to be used with Nameables.
+func (s *Spell) NameableReplacements() map[string]string {
+	return s.Replacements
+}
+
+// NameWithReplacements returns the name with any replacements applied.
+func (s *Spell) NameWithReplacements() string {
+	return ApplyNameables(s.Name, s.Replacements)
+}
+
+// LocalNotesWithReplacements returns the local notes with any replacements applied.
+func (s *Spell) LocalNotesWithReplacements() string {
+	return ApplyNameables(s.LocalNotes, s.Replacements)
+}
+
+// PowerSourceWithReplacements returns the power source with any replacements applied.
+func (s *Spell) PowerSourceWithReplacements() string {
+	return ApplyNameables(s.PowerSource, s.Replacements)
+}
+
+// ClassWithReplacements returns the class with any replacements applied.
+func (s *Spell) ClassWithReplacements() string {
+	return ApplyNameables(s.Class, s.Replacements)
+}
+
+// ResistWithReplacements returns the resist with any replacements applied.
+func (s *Spell) ResistWithReplacements() string {
+	return ApplyNameables(s.Resist, s.Replacements)
+}
+
+// CastingCostWithReplacements returns the casting cost with any replacements applied.
+func (s *Spell) CastingCostWithReplacements() string {
+	return ApplyNameables(s.CastingCost, s.Replacements)
+}
+
+// MaintenanceCostWithReplacements returns the maintenance cost with any replacements applied.
+func (s *Spell) MaintenanceCostWithReplacements() string {
+	return ApplyNameables(s.MaintenanceCost, s.Replacements)
+}
+
+// CastingTimeWithReplacements returns the casting time with any replacements applied.
+func (s *Spell) CastingTimeWithReplacements() string {
+	return ApplyNameables(s.CastingTime, s.Replacements)
+}
+
+// DurationWithReplacements returns the duration with any replacements applied.
+func (s *Spell) DurationWithReplacements() string {
+	return ApplyNameables(s.Duration, s.Replacements)
+}
+
+// RitualSkillNameWithReplacements returns the ritual skill name with any replacements applied.
+func (s *Spell) RitualSkillNameWithReplacements() string {
+	return ApplyNameables(s.RitualSkillName, s.Replacements)
+}
+
+// CollegeWithReplacements returns the college(s) with any replacements applied.
+func (s *Spell) CollegeWithReplacements() []string {
+	return ApplyNameablesToList(s.College, s.Replacements)
+}
+
 // FillWithNameableKeys adds any nameable keys found to the provided map.
 func (s *Spell) FillWithNameableKeys(m map[string]string) {
 	ExtractNameables(s.Name, m)
@@ -974,25 +1043,9 @@ func (s *Spell) FillWithNameableKeys(m map[string]string) {
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
 func (s *Spell) ApplyNameableKeys(m map[string]string) {
-	s.Name = ApplyNameables(s.Name, m)
-	s.LocalNotes = ApplyNameables(s.LocalNotes, m)
-	s.PowerSource = ApplyNameables(s.PowerSource, m)
-	s.Class = ApplyNameables(s.Class, m)
-	s.Resist = ApplyNameables(s.Resist, m)
-	s.CastingCost = ApplyNameables(s.CastingCost, m)
-	s.MaintenanceCost = ApplyNameables(s.MaintenanceCost, m)
-	s.CastingTime = ApplyNameables(s.CastingTime, m)
-	s.Duration = ApplyNameables(s.Duration, m)
-	s.RitualSkillName = ApplyNameables(s.RitualSkillName, m)
-	for i, one := range s.College {
-		s.College[i] = ApplyNameables(one, m)
-	}
-	if s.Prereq != nil {
-		s.Prereq.ApplyNameableKeys(m)
-	}
-	for _, one := range s.Weapons {
-		one.ApplyNameableKeys(m)
-	}
+	needed := make(map[string]string)
+	s.FillWithNameableKeys(needed)
+	s.Replacements = RetainNeededReplacements(needed, m)
 }
 
 // Kind returns the kind of data.
@@ -1122,12 +1175,13 @@ func (s *SpellEditData) ApplyTo(other *Spell) {
 
 func (s *SpellEditData) copyFrom(other *SpellEditData, isContainer, isApply bool) {
 	*s = *other
-	s.Tags = txt.CloneStringSlice(s.Tags)
+	s.Tags = txt.CloneStringSlice(other.Tags)
+	s.Replacements = maps.Clone(other.Replacements)
 	if other.TechLevel != nil {
 		tl := *other.TechLevel
 		s.TechLevel = &tl
 	}
-	s.College = txt.CloneStringSlice(s.College)
+	s.College = txt.CloneStringSlice(other.College)
 	s.Prereq = s.Prereq.CloneResolvingEmpty(isContainer, isApply)
 	s.Weapons = CloneWeapons(other.Weapons, isApply)
 	if len(other.Study) != 0 {

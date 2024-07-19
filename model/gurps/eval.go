@@ -136,7 +136,8 @@ func evalSkillLevel(ev *eval.Evaluator, arguments string) (any, error) {
 	defer e.unregisterSkillLevelResolutionExclusion(name, specialization)
 	var level fxp.Int
 	Traverse(func(s *Skill) bool {
-		if strings.EqualFold(s.Name, name) && strings.EqualFold(s.Specialization, specialization) {
+		if strings.EqualFold(s.NameWithReplacements(), name) &&
+			strings.EqualFold(s.SpecializationWithReplacements(), specialization) {
 			s.UpdateLevel()
 			if relative {
 				level = s.LevelData.RelativeLevel
@@ -158,7 +159,7 @@ func evalHasTrait(ev *eval.Evaluator, arguments string) (any, error) {
 	arguments = strings.Trim(arguments, `"`)
 	found := false
 	Traverse(func(t *Trait) bool {
-		if strings.EqualFold(t.Name, arguments) {
+		if strings.EqualFold(t.NameWithReplacements(), arguments) {
 			found = true
 			return true
 		}
@@ -175,7 +176,7 @@ func evalTraitLevel(ev *eval.Evaluator, arguments string) (any, error) {
 	arguments = strings.Trim(arguments, `"`)
 	levels := -fxp.One
 	Traverse(func(t *Trait) bool {
-		if strings.EqualFold(t.Name, arguments) {
+		if strings.EqualFold(t.NameWithReplacements(), arguments) {
 			if t.IsLeveled() {
 				if levels == -fxp.One {
 					levels = t.Levels
@@ -624,13 +625,14 @@ func evalRandomWeight(ev *eval.Evaluator, arguments string) (any, error) {
 	fat := false
 	veryFat := false
 	Traverse(func(t *Trait) bool {
-		if strings.EqualFold(t.Name, "skinny") {
+		switch strings.ToLower(t.NameWithReplacements()) {
+		case "skinny":
 			skinny = true
-		} else if strings.EqualFold(t.Name, "overweight") {
+		case "overweight":
 			overweight = true
-		} else if strings.EqualFold(t.Name, "fat") {
+		case "fat":
 			fat = true
-		} else if strings.EqualFold(t.Name, "very Fat") {
+		case "very Fat":
 			veryFat = true
 		}
 		return false

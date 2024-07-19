@@ -14,6 +14,7 @@ import (
 	"encoding/binary"
 	"hash"
 	"io/fs"
+	"maps"
 	"slices"
 	"strings"
 
@@ -69,12 +70,13 @@ type EquipmentModifierData struct {
 
 // EquipmentModifierEditData holds the EquipmentModifier data that can be edited by the UI detail editor.
 type EquipmentModifierEditData struct {
-	Name             string   `json:"name,omitempty"`
-	PageRef          string   `json:"reference,omitempty"`
-	PageRefHighlight string   `json:"reference_highlight,omitempty"`
-	LocalNotes       string   `json:"notes,omitempty"`
-	VTTNotes         string   `json:"vtt_notes,omitempty"`
-	Tags             []string `json:"tags,omitempty"`
+	Name             string            `json:"name,omitempty"`
+	PageRef          string            `json:"reference,omitempty"`
+	PageRefHighlight string            `json:"reference_highlight,omitempty"`
+	LocalNotes       string            `json:"notes,omitempty"`
+	VTTNotes         string            `json:"vtt_notes,omitempty"`
+	Tags             []string          `json:"tags,omitempty"`
+	Replacements     map[string]string `json:"replacements,omitempty"`
 	EquipmentModifierEditDataNonContainerOnly
 }
 
@@ -299,7 +301,7 @@ func (e *EquipmentModifier) CellData(columnID int, data *CellData) {
 		}
 	case EquipmentModifierDescriptionColumn:
 		data.Type = cell.Text
-		data.Primary = e.Name
+		data.Primary = e.NameWithReplacements()
 		data.Secondary = e.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.Tooltip = e.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
 	case EquipmentModifierTechLevelColumn:
@@ -326,7 +328,7 @@ func (e *EquipmentModifier) CellData(columnID int, data *CellData) {
 		if e.PageRefHighlight != "" {
 			data.Secondary = e.PageRefHighlight
 		} else {
-			data.Secondary = e.Name
+			data.Secondary = e.NameWithReplacements()
 		}
 	case EquipmentModifierLibSrcColumn:
 		data.Type = cell.Text
@@ -369,11 +371,11 @@ func (e *EquipmentModifier) SetDataOwner(owner DataOwner) {
 }
 
 func (e *EquipmentModifier) String() string {
-	return e.Name
+	return e.NameWithReplacements()
 }
 
 func (e *EquipmentModifier) resolveLocalNotes() string {
-	return EvalEmbeddedRegex.ReplaceAllStringFunc(e.LocalNotes, EntityFromNode(e).EmbeddedEval)
+	return EvalEmbeddedRegex.ReplaceAllStringFunc(e.LocalNotesWithReplacements(), EntityFromNode(e).EmbeddedEval)
 }
 
 // SecondaryText returns the "secondary" text: the text display below an Trait.
@@ -390,7 +392,7 @@ func (e *EquipmentModifier) FullDescription() string {
 	buffer.WriteString(e.String())
 	if localNotes := e.resolveLocalNotes(); localNotes != "" {
 		buffer.WriteString(" (")
-		buffer.WriteString(e.LocalNotes)
+		buffer.WriteString(localNotes)
 		buffer.WriteByte(')')
 	}
 	if SheetSettingsFor(EntityFromNode(e)).ShowEquipmentModifierAdj {
@@ -444,6 +446,24 @@ func (e *EquipmentModifier) WeightDescription() string {
 		e.WeightType.String()
 }
 
+// NameableReplacements returns the replacements to be used with Nameables.
+func (e *EquipmentModifier) NameableReplacements() map[string]string {
+	if e == nil {
+		return nil
+	}
+	return e.Replacements
+}
+
+// NameWithReplacements returns the name with any replacements applied.
+func (e *EquipmentModifier) NameWithReplacements() string {
+	return ApplyNameables(e.Name, e.Replacements)
+}
+
+// LocalNotesWithReplacements returns the local notes with any replacements applied.
+func (e *EquipmentModifier) LocalNotesWithReplacements() string {
+	return ApplyNameables(e.LocalNotes, e.Replacements)
+}
+
 // FillWithNameableKeys adds any nameable keys found in this EquipmentModifier to the provided map.
 func (e *EquipmentModifier) FillWithNameableKeys(keyMap map[string]string) {
 	if e.Enabled() {
@@ -456,14 +476,10 @@ func (e *EquipmentModifier) FillWithNameableKeys(keyMap map[string]string) {
 }
 
 // ApplyNameableKeys replaces any nameable keys found in this EquipmentModifier with the corresponding values in the provided map.
-func (e *EquipmentModifier) ApplyNameableKeys(keyMap map[string]string) {
-	if e.Enabled() {
-		e.Name = ApplyNameables(e.Name, keyMap)
-		e.LocalNotes = ApplyNameables(e.LocalNotes, keyMap)
-		for _, one := range e.Features {
-			one.ApplyNameableKeys(keyMap)
-		}
-	}
+func (e *EquipmentModifier) ApplyNameableKeys(m map[string]string) {
+	needed := make(map[string]string)
+	e.FillWithNameableKeys(needed)
+	e.Replacements = RetainNeededReplacements(needed, m)
 }
 
 // Enabled returns true if this node is enabled.
@@ -678,6 +694,7 @@ func (e *EquipmentModifierEditData) ApplyTo(other *EquipmentModifier) {
 
 func (e *EquipmentModifierEditData) copyFrom(other *EquipmentModifierEditData) {
 	*e = *other
-	e.Tags = txt.CloneStringSlice(e.Tags)
+	e.Tags = txt.CloneStringSlice(other.Tags)
+	e.Replacements = maps.Clone(other.Replacements)
 	e.Features = other.Features.Clone()
 }
