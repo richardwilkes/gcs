@@ -64,6 +64,9 @@ func NewAncestryFromFile(fileSystem fs.FS, filePath string) (*Ancestry, error) {
 	if err := jio.LoadFromFS(context.Background(), fileSystem, filePath, &ancestry); err != nil {
 		return nil, err
 	}
+	if ancestry.Version == 0 { // for some older files
+		ancestry.Version = jio.MinimumDataVersion
+	}
 	if err := jio.CheckVersion(ancestry.Version); err != nil {
 		return nil, err
 	}
