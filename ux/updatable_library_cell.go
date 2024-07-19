@@ -56,6 +56,7 @@ func newUpdatableLibraryCell(lib *gurps.Library, title *unison.Label, rel gurps.
 
 func (c *updatableLibraryCell) updateForeground(fg unison.Ink) {
 	c.title.OnBackgroundInk = fg
+	c.title.SetTitle(c.title.String())
 }
 
 func (c *updatableLibraryCell) mouseDown(where unison.Point, btn, clickCount int, mod unison.Modifiers) bool {
