@@ -275,8 +275,10 @@ func (e *editor[N, D]) Modified() bool {
 	modified := e.isModified()
 	e.applyButton.SetEnabled(modified)
 	e.cancelButton.SetEnabled(modified)
-	_, m := e.prepareForSubstitutions()
-	e.nameablesButton.SetEnabled(len(m) > 0)
+	if e.nameablesButton != nil {
+		_, m := e.prepareForSubstitutions()
+		e.nameablesButton.SetEnabled(len(m) > 0)
+	}
 	return modified
 }
 
