@@ -435,9 +435,24 @@ func (w *Weapon) SkillLevel(tooltip *xio.ByteBuffer) fxp.Int {
 	return best
 }
 
+func (w *Weapon) usesCrossbowSkill() bool {
+	for _, def := range w.Defaults {
+		if def.Name == "Crossbow" {
+			return true
+		}
+	}
+	return false
+}
+
 func (w *Weapon) skillLevelBaseAdjustment(e *Entity, tooltip *xio.ByteBuffer) fxp.Int {
 	var adj fxp.Int
-	if minST := w.Strength.Resolve(w, nil).Min - e.StrikingStrength(); minST > 0 {
+	minST := w.Strength.Resolve(w, nil).Min
+	if w.IsRanged() && w.Range.MusclePowered && !w.usesCrossbowSkill() {
+		minST -= e.StrikingStrength()
+	} else {
+		minST -= e.LiftingStrength()
+	}
+	if minST > 0 {
 		adj -= minST
 		if tooltip != nil {
 			tooltip.WriteByte('\n')
