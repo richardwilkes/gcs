@@ -100,27 +100,6 @@ type EquipmentEditData struct {
 	WeightIgnoredForSkills bool                 `json:"ignore_weight_for_skills,omitempty"`
 }
 
-// EquipmentSourceData holds the Equipment data that is considered to be "source" data, i.e. not expected to be modified
-// by the user after copying from a library.
-type EquipmentSourceData struct {
-	Name                   string      `json:"description,omitempty"`
-	PageRef                string      `json:"reference,omitempty"`
-	PageRefHighlight       string      `json:"reference_highlight,omitempty"`
-	LocalNotes             string      `json:"notes,omitempty"`
-	VTTNotes               string      `json:"vtt_notes,omitempty"`
-	TechLevel              string      `json:"tech_level,omitempty"`
-	LegalityClass          string      `json:"legality_class,omitempty"`
-	Tags                   []string    `json:"tags,omitempty"`
-	RatedST                fxp.Int     `json:"rated_strength,omitempty"`
-	Value                  fxp.Int     `json:"value,omitempty"`
-	Weight                 fxp.Weight  `json:"weight,omitempty"`
-	MaxUses                int         `json:"max_uses,omitempty"`
-	Prereq                 *PrereqList `json:"prereqs,omitempty"`
-	Weapons                []*Weapon   `json:"weapons,omitempty"`
-	Features               Features    `json:"features,omitempty"`
-	WeightIgnoredForSkills bool        `json:"ignore_weight_for_skills,omitempty"`
-}
-
 type equipmentListData struct {
 	Version int          `json:"version"`
 	Rows    []*Equipment `json:"rows"`
