@@ -795,7 +795,6 @@ func (e *Equipment) SyncWithSource() {
 				e.TechLevel = other.TechLevel
 				e.LegalityClass = other.LegalityClass
 				e.Tags = slices.Clone(other.Tags)
-				e.RatedST = other.RatedST
 				e.Value = other.Value
 				e.Weight = other.Weight
 				e.MaxUses = other.MaxUses
@@ -820,7 +819,6 @@ func (e *Equipment) Hash(h hash.Hash) {
 	for _, tag := range e.Tags {
 		_, _ = h.Write([]byte(tag))
 	}
-	_ = binary.Write(h, binary.LittleEndian, e.RatedST)
 	_ = binary.Write(h, binary.LittleEndian, e.Value)
 	_ = binary.Write(h, binary.LittleEndian, e.Weight)
 	_ = binary.Write(h, binary.LittleEndian, int64(e.MaxUses))
