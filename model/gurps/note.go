@@ -57,10 +57,15 @@ type NoteData struct {
 
 // NoteEditData holds the Note data that can be edited by the UI detail editor.
 type NoteEditData struct {
-	Text             string            `json:"text,omitempty"`
-	PageRef          string            `json:"reference,omitempty"`
-	PageRefHighlight string            `json:"reference_highlight,omitempty"`
-	Replacements     map[string]string `json:"replacements,omitempty"`
+	NoteSyncData
+	Replacements map[string]string `json:"replacements,omitempty"`
+}
+
+// NoteSyncData holds the note sync data that is common to both containers and non-containers.
+type NoteSyncData struct {
+	Text             string `json:"text,omitempty"`
+	PageRef          string `json:"reference,omitempty"`
+	PageRefHighlight string `json:"reference_highlight,omitempty"`
 }
 
 type noteListData struct {
@@ -380,9 +385,7 @@ func (n *Note) SyncWithSource() {
 	if !toolbox.IsNil(n.owner) {
 		if state, data := n.owner.SourceMatcher().Match(n); state == srcstate.Mismatched {
 			if other, ok := data.(*Note); ok {
-				n.Text = other.Text
-				n.PageRef = other.PageRef
-				n.PageRefHighlight = other.PageRefHighlight
+				n.NoteSyncData = other.NoteSyncData
 			}
 		}
 	}
@@ -391,6 +394,10 @@ func (n *Note) SyncWithSource() {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (n *Note) Hash(h hash.Hash) {
+	n.NoteSyncData.hash(h)
+}
+
+func (n *NoteSyncData) hash(h hash.Hash) {
 	_, _ = h.Write([]byte(n.Text))
 	_, _ = h.Write([]byte(n.PageRef))
 	_, _ = h.Write([]byte(n.PageRefHighlight))

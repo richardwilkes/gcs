@@ -77,27 +77,32 @@ type EquipmentData struct {
 
 // EquipmentEditData holds the Equipment data that can be edited by the UI detail editor.
 type EquipmentEditData struct {
-	Name                   string               `json:"description,omitempty"`
-	PageRef                string               `json:"reference,omitempty"`
-	PageRefHighlight       string               `json:"reference_highlight,omitempty"`
-	LocalNotes             string               `json:"notes,omitempty"`
-	VTTNotes               string               `json:"vtt_notes,omitempty"`
-	TechLevel              string               `json:"tech_level,omitempty"`
-	LegalityClass          string               `json:"legality_class,omitempty"`
-	Tags                   []string             `json:"tags,omitempty"`
-	Replacements           map[string]string    `json:"replacements,omitempty"`
-	Modifiers              []*EquipmentModifier `json:"modifiers,omitempty"`
-	RatedST                fxp.Int              `json:"rated_strength,omitempty"`
-	Quantity               fxp.Int              `json:"quantity,omitempty"`
-	Value                  fxp.Int              `json:"value,omitempty"`
-	Weight                 fxp.Weight           `json:"weight,omitempty"`
-	MaxUses                int                  `json:"max_uses,omitempty"`
-	Uses                   int                  `json:"uses,omitempty"`
-	Prereq                 *PrereqList          `json:"prereqs,omitempty"`
-	Weapons                []*Weapon            `json:"weapons,omitempty"`
-	Features               Features             `json:"features,omitempty"`
-	Equipped               bool                 `json:"equipped,omitempty"`
-	WeightIgnoredForSkills bool                 `json:"ignore_weight_for_skills,omitempty"`
+	EquipmentSyncData
+	VTTNotes     string               `json:"vtt_notes,omitempty"`
+	Replacements map[string]string    `json:"replacements,omitempty"`
+	Modifiers    []*EquipmentModifier `json:"modifiers,omitempty"`
+	RatedST      fxp.Int              `json:"rated_strength,omitempty"`
+	Quantity     fxp.Int              `json:"quantity,omitempty"`
+	Uses         int                  `json:"uses,omitempty"`
+	Equipped     bool                 `json:"equipped,omitempty"`
+}
+
+// EquipmentSyncData holds the equipment sync data that is common to both containers and non-containers.
+type EquipmentSyncData struct {
+	Name                   string      `json:"description,omitempty"`
+	PageRef                string      `json:"reference,omitempty"`
+	PageRefHighlight       string      `json:"reference_highlight,omitempty"`
+	LocalNotes             string      `json:"notes,omitempty"`
+	TechLevel              string      `json:"tech_level,omitempty"`
+	LegalityClass          string      `json:"legality_class,omitempty"`
+	Tags                   []string    `json:"tags,omitempty"`
+	Value                  fxp.Int     `json:"value,omitempty"`
+	Weight                 fxp.Weight  `json:"weight,omitempty"`
+	MaxUses                int         `json:"max_uses,omitempty"`
+	Prereq                 *PrereqList `json:"prereqs,omitempty"`
+	Weapons                []*Weapon   `json:"weapons,omitempty"`
+	Features               Features    `json:"features,omitempty"`
+	WeightIgnoredForSkills bool        `json:"ignore_weight_for_skills,omitempty"`
 }
 
 type equipmentListData struct {
@@ -133,9 +138,11 @@ func NewEquipment(owner DataOwner, parent *Equipment, container bool) *Equipment
 				TID: tid.MustNewTID(equipmentKind(container)),
 			},
 			EquipmentEditData: EquipmentEditData{
-				LegalityClass: "4",
-				Quantity:      fxp.One,
-				Equipped:      true,
+				EquipmentSyncData: EquipmentSyncData{
+					LegalityClass: "4",
+				},
+				Quantity: fxp.One,
+				Equipped: true,
 			},
 			parent: parent,
 		},
@@ -767,20 +774,11 @@ func (e *Equipment) SyncWithSource() {
 	if !toolbox.IsNil(e.owner) {
 		if state, data := e.owner.SourceMatcher().Match(e); state == srcstate.Mismatched {
 			if other, ok := data.(*Equipment); ok {
-				e.Name = other.Name
-				e.PageRef = other.PageRef
-				e.PageRefHighlight = other.PageRefHighlight
-				e.LocalNotes = other.LocalNotes
-				e.TechLevel = other.TechLevel
-				e.LegalityClass = other.LegalityClass
+				e.EquipmentSyncData = other.EquipmentSyncData
 				e.Tags = slices.Clone(other.Tags)
-				e.Value = other.Value
-				e.Weight = other.Weight
-				e.MaxUses = other.MaxUses
 				e.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
 				e.Weapons = CloneWeapons(other.Weapons, false)
 				e.Features = other.Features.Clone()
-				e.WeightIgnoredForSkills = other.WeightIgnoredForSkills
 			}
 		}
 	}
@@ -789,6 +787,10 @@ func (e *Equipment) SyncWithSource() {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (e *Equipment) Hash(h hash.Hash) {
+	e.EquipmentSyncData.hash(h)
+}
+
+func (e *EquipmentSyncData) hash(h hash.Hash) {
 	_, _ = h.Write([]byte(e.Name))
 	_, _ = h.Write([]byte(e.PageRef))
 	_, _ = h.Write([]byte(e.PageRefHighlight))

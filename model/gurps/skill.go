@@ -76,37 +76,47 @@ type SkillData struct {
 
 // SkillEditData holds the Skill data that can be edited by the UI detail editor.
 type SkillEditData struct {
-	Name             string            `json:"name,omitempty"`
-	PageRef          string            `json:"reference,omitempty"`
-	PageRefHighlight string            `json:"reference_highlight,omitempty"`
-	LocalNotes       string            `json:"notes,omitempty"`
-	VTTNotes         string            `json:"vtt_notes,omitempty"`
-	Tags             []string          `json:"tags,omitempty"`
-	Replacements     map[string]string `json:"replacements,omitempty"`
+	SkillSyncData
+	VTTNotes     string            `json:"vtt_notes,omitempty"`
+	Replacements map[string]string `json:"replacements,omitempty"`
 	SkillNonContainerOnlyEditData
-	SkillContainerOnlyEditData
+	SkillContainerOnlySyncData
 }
 
 // SkillNonContainerOnlyEditData holds the Skill data that is only applicable to skills that aren't containers.
 type SkillNonContainerOnlyEditData struct {
+	SkillNonContainerOnlySyncData
+	TechLevel        *string       `json:"tech_level,omitempty"`
+	Points           fxp.Int       `json:"points,omitempty"`
+	DefaultedFrom    *SkillDefault `json:"defaulted_from,omitempty"`
+	Study            []*Study      `json:"study,omitempty"`
+	StudyHoursNeeded study.Level   `json:"study_hours_needed,omitempty"`
+}
+
+// SkillSyncData holds the skill sync data that is common to both containers and non-containers.
+type SkillSyncData struct {
+	Name             string   `json:"name,omitempty"`
+	PageRef          string   `json:"reference,omitempty"`
+	PageRefHighlight string   `json:"reference_highlight,omitempty"`
+	LocalNotes       string   `json:"notes,omitempty"`
+	Tags             []string `json:"tags,omitempty"`
+}
+
+// SkillNonContainerOnlySyncData holds the sskll sync data that is only applicable to traits that aren't containers.
+type SkillNonContainerOnlySyncData struct {
 	Specialization               string              `json:"specialization,omitempty"`
-	TechLevel                    *string             `json:"tech_level,omitempty"`
 	Difficulty                   AttributeDifficulty `json:"difficulty,omitempty"`
-	Points                       fxp.Int             `json:"points,omitempty"`
 	EncumbrancePenaltyMultiplier fxp.Int             `json:"encumbrance_penalty_multiplier,omitempty"`
-	DefaultedFrom                *SkillDefault       `json:"defaulted_from,omitempty"`
 	Defaults                     []*SkillDefault     `json:"defaults,omitempty"`
 	TechniqueDefault             *SkillDefault       `json:"default,omitempty"`
 	TechniqueLimitModifier       *fxp.Int            `json:"limit,omitempty"`
 	Prereq                       *PrereqList         `json:"prereqs,omitempty"`
 	Weapons                      []*Weapon           `json:"weapons,omitempty"`
 	Features                     Features            `json:"features,omitempty"`
-	Study                        []*Study            `json:"study,omitempty"`
-	StudyHoursNeeded             study.Level         `json:"study_hours_needed,omitempty"`
 }
 
-// SkillContainerOnlyEditData holds the Skill data that is only applicable to skills that are containers.
-type SkillContainerOnlyEditData struct {
+// SkillContainerOnlySyncData holds the skill sync data that is only applicable to traits that are containers.
+type SkillContainerOnlySyncData struct {
 	TemplatePicker *TemplatePicker `json:"template_picker,omitempty"`
 }
 
@@ -1142,26 +1152,15 @@ func (s *Skill) Kind() string {
 // ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
 func (s *Skill) ClearUnusedFieldsForType() {
 	if s.Container() {
-		s.Specialization = ""
-		s.TechLevel = nil
+		s.SkillNonContainerOnlyEditData = SkillNonContainerOnlyEditData{}
 		s.Difficulty = AttributeDifficulty{omit: true}
-		s.Points = 0
-		s.EncumbrancePenaltyMultiplier = 0
-		s.DefaultedFrom = nil
-		s.Defaults = nil
-		s.TechniqueDefault = nil
-		s.TechniqueLimitModifier = nil
-		s.Prereq = nil
-		s.Weapons = nil
-		s.Features = nil
-		s.StudyHoursNeeded = study.Standard
 		if s.TemplatePicker == nil {
 			s.TemplatePicker = &TemplatePicker{}
 		}
 	} else {
+		s.SkillContainerOnlySyncData = SkillContainerOnlySyncData{}
 		s.Children = nil
 		s.Difficulty.omit = false
-		s.TemplatePicker = nil
 	}
 }
 
@@ -1180,18 +1179,13 @@ func (s *Skill) SyncWithSource() {
 	if !toolbox.IsNil(s.owner) {
 		if state, data := s.owner.SourceMatcher().Match(s); state == srcstate.Mismatched {
 			if other, ok := data.(*Skill); ok {
-				s.Name = other.Name
-				s.PageRef = other.PageRef
-				s.PageRefHighlight = other.PageRefHighlight
-				s.LocalNotes = other.LocalNotes
+				s.SkillSyncData = other.SkillSyncData
 				s.Tags = slices.Clone(other.Tags)
 				if s.Container() {
+					s.SkillContainerOnlySyncData = other.SkillContainerOnlySyncData
 					s.TemplatePicker = other.TemplatePicker.Clone()
 				} else {
-					s.Specialization = other.Specialization
-					s.Difficulty = other.Difficulty
-					s.EncumbrancePenaltyMultiplier = other.EncumbrancePenaltyMultiplier
-					s.Defaults = nil
+					s.SkillNonContainerOnlySyncData = other.SkillNonContainerOnlySyncData
 					if len(other.Defaults) != 0 {
 						s.Defaults = make([]*SkillDefault, len(other.Defaults))
 						for i, def := range other.Defaults {
@@ -1223,6 +1217,15 @@ func (s *Skill) SyncWithSource() {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (s *Skill) Hash(h hash.Hash) {
+	s.SkillSyncData.hash(h)
+	if s.Container() {
+		s.SkillContainerOnlySyncData.hash(h)
+	} else {
+		s.SkillNonContainerOnlySyncData.hash(h)
+	}
+}
+
+func (s *SkillSyncData) hash(h hash.Hash) {
 	_, _ = h.Write([]byte(s.Name))
 	_, _ = h.Write([]byte(s.PageRef))
 	_, _ = h.Write([]byte(s.PageRefHighlight))
@@ -1230,28 +1233,31 @@ func (s *Skill) Hash(h hash.Hash) {
 	for _, tag := range s.Tags {
 		_, _ = h.Write([]byte(tag))
 	}
-	if s.Container() {
-		s.TemplatePicker.Hash(h)
-	} else {
-		_, _ = h.Write([]byte(s.Specialization))
-		s.Difficulty.Hash(h)
-		_ = binary.Write(h, binary.LittleEndian, s.EncumbrancePenaltyMultiplier)
-		for _, one := range s.Defaults {
-			one.Hash(h)
-		}
-		if s.TechniqueDefault != nil {
-			s.TechniqueDefault.Hash(h)
-		}
-		if s.TechniqueLimitModifier != nil {
-			_ = binary.Write(h, binary.LittleEndian, s.TechniqueLimitModifier)
-		}
-		s.Prereq.Hash(h)
-		for _, weapon := range s.Weapons {
-			weapon.Hash(h)
-		}
-		for _, feature := range s.Features {
-			feature.Hash(h)
-		}
+}
+
+func (s *SkillContainerOnlySyncData) hash(h hash.Hash) {
+	s.TemplatePicker.Hash(h)
+}
+
+func (s *SkillNonContainerOnlySyncData) hash(h hash.Hash) {
+	_, _ = h.Write([]byte(s.Specialization))
+	s.Difficulty.Hash(h)
+	_ = binary.Write(h, binary.LittleEndian, s.EncumbrancePenaltyMultiplier)
+	for _, one := range s.Defaults {
+		one.Hash(h)
+	}
+	if s.TechniqueDefault != nil {
+		s.TechniqueDefault.Hash(h)
+	}
+	if s.TechniqueLimitModifier != nil {
+		_ = binary.Write(h, binary.LittleEndian, s.TechniqueLimitModifier)
+	}
+	s.Prereq.Hash(h)
+	for _, weapon := range s.Weapons {
+		weapon.Hash(h)
+	}
+	for _, feature := range s.Features {
+		feature.Hash(h)
 	}
 }
 

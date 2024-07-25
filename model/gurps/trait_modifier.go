@@ -79,24 +79,35 @@ type TraitModifierData struct {
 
 // TraitModifierEditData holds the TraitModifier data that can be edited by the UI detail editor.
 type TraitModifierEditData struct {
-	Name             string            `json:"name,omitempty"`
-	PageRef          string            `json:"reference,omitempty"`
-	PageRefHighlight string            `json:"reference_highlight,omitempty"`
-	LocalNotes       string            `json:"notes,omitempty"`
-	VTTNotes         string            `json:"vtt_notes,omitempty"`
-	Tags             []string          `json:"tags,omitempty"`
-	Replacements     map[string]string `json:"replacements,omitempty"`
+	TraitModifierSyncData
+	VTTNotes     string            `json:"vtt_notes,omitempty"`
+	Replacements map[string]string `json:"replacements,omitempty"`
 	TraitModifierEditDataNonContainerOnly
 }
 
 // TraitModifierEditDataNonContainerOnly holds the TraitModifier data that is only applicable to
 // TraitModifiers that aren't containers.
 type TraitModifierEditDataNonContainerOnly struct {
-	Cost     fxp.Int        `json:"cost,omitempty"`
+	TraitModifierNonContainerSyncData
+	Disabled bool `json:"disabled,omitempty"`
+}
+
+// TraitModifierSyncData holds the TraitModifier sync data that is common to both containers and non-containers.
+type TraitModifierSyncData struct {
+	Name             string   `json:"name,omitempty"`
+	PageRef          string   `json:"reference,omitempty"`
+	PageRefHighlight string   `json:"reference_highlight,omitempty"`
+	LocalNotes       string   `json:"notes,omitempty"`
+	Tags             []string `json:"tags,omitempty"`
+}
+
+// TraitModifierNonContainerSyncData holds the TraitModifier sync data that is only applicable to TraitModifiers that
+// aren't containers.
+type TraitModifierNonContainerSyncData struct {
 	Levels   fxp.Int        `json:"levels,omitempty"`
-	Affects  affects.Option `json:"affects,omitempty"`
+	Cost     fxp.Int        `json:"cost,omitempty"`
 	CostType tmcost.Type    `json:"cost_type,omitempty"`
-	Disabled bool           `json:"disabled,omitempty"`
+	Affects  affects.Option `json:"affects,omitempty"`
 	Features Features       `json:"features,omitempty"`
 }
 
@@ -502,12 +513,7 @@ func (t *TraitModifier) Kind() string {
 // ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
 func (t *TraitModifier) ClearUnusedFieldsForType() {
 	if t.Container() {
-		t.CostType = 0
-		t.Disabled = false
-		t.Cost = 0
-		t.Levels = 0
-		t.Affects = 0
-		t.Features = nil
+		t.TraitModifierEditDataNonContainerOnly = TraitModifierEditDataNonContainerOnly{}
 	} else {
 		t.Children = nil
 	}
@@ -528,16 +534,10 @@ func (t *TraitModifier) SyncWithSource() {
 	if !toolbox.IsNil(t.owner) {
 		if state, data := t.owner.SourceMatcher().Match(t); state == srcstate.Mismatched {
 			if other, ok := data.(*TraitModifier); ok {
-				t.Name = other.Name
-				t.PageRef = other.PageRef
-				t.PageRefHighlight = other.PageRefHighlight
-				t.LocalNotes = other.LocalNotes
+				t.TraitModifierSyncData = other.TraitModifierSyncData
 				t.Tags = slices.Clone(other.Tags)
 				if !t.Container() {
-					t.Cost = other.Cost
-					t.Levels = other.Levels
-					t.Affects = other.Affects
-					t.CostType = other.CostType
+					t.TraitModifierNonContainerSyncData = other.TraitModifierNonContainerSyncData
 					t.Features = other.Features.Clone()
 				}
 			}
@@ -548,6 +548,13 @@ func (t *TraitModifier) SyncWithSource() {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (t *TraitModifier) Hash(h hash.Hash) {
+	t.TraitModifierSyncData.hash(h)
+	if !t.Container() {
+		t.TraitModifierNonContainerSyncData.hash(h)
+	}
+}
+
+func (t *TraitModifierSyncData) hash(h hash.Hash) {
 	_, _ = h.Write([]byte(t.Name))
 	_, _ = h.Write([]byte(t.PageRef))
 	_, _ = h.Write([]byte(t.PageRefHighlight))
@@ -555,14 +562,15 @@ func (t *TraitModifier) Hash(h hash.Hash) {
 	for _, tag := range t.Tags {
 		_, _ = h.Write([]byte(tag))
 	}
-	if !t.Container() {
-		_ = binary.Write(h, binary.LittleEndian, t.Cost)
-		_ = binary.Write(h, binary.LittleEndian, t.Levels)
-		_ = binary.Write(h, binary.LittleEndian, t.Affects)
-		_ = binary.Write(h, binary.LittleEndian, t.CostType)
-		for _, feature := range t.Features {
-			feature.Hash(h)
-		}
+}
+
+func (t *TraitModifierNonContainerSyncData) hash(h hash.Hash) {
+	_ = binary.Write(h, binary.LittleEndian, t.Levels)
+	_ = binary.Write(h, binary.LittleEndian, t.Cost)
+	_ = binary.Write(h, binary.LittleEndian, t.CostType)
+	_ = binary.Write(h, binary.LittleEndian, t.Affects)
+	for _, feature := range t.Features {
+		feature.Hash(h)
 	}
 }
 

@@ -70,22 +70,33 @@ type EquipmentModifierData struct {
 
 // EquipmentModifierEditData holds the EquipmentModifier data that can be edited by the UI detail editor.
 type EquipmentModifierEditData struct {
-	Name             string            `json:"name,omitempty"`
-	PageRef          string            `json:"reference,omitempty"`
-	PageRefHighlight string            `json:"reference_highlight,omitempty"`
-	LocalNotes       string            `json:"notes,omitempty"`
-	VTTNotes         string            `json:"vtt_notes,omitempty"`
-	Tags             []string          `json:"tags,omitempty"`
-	Replacements     map[string]string `json:"replacements,omitempty"`
+	EquipmentModifierSyncData
+	VTTNotes     string            `json:"vtt_notes,omitempty"`
+	Replacements map[string]string `json:"replacements,omitempty"`
 	EquipmentModifierEditDataNonContainerOnly
 }
 
 // EquipmentModifierEditDataNonContainerOnly holds the EquipmentModifier data that is only applicable to
 // EquipmentModifiers that aren't containers.
 type EquipmentModifierEditDataNonContainerOnly struct {
+	EquipmentModifierNonContainerSyncData
+	Disabled bool `json:"disabled,omitempty"`
+}
+
+// EquipmentModifierSyncData holds the EquipmentModifier sync data that is common to both containers and non-containers.
+type EquipmentModifierSyncData struct {
+	Name             string   `json:"name,omitempty"`
+	PageRef          string   `json:"reference,omitempty"`
+	PageRefHighlight string   `json:"reference_highlight,omitempty"`
+	LocalNotes       string   `json:"notes,omitempty"`
+	Tags             []string `json:"tags,omitempty"`
+}
+
+// EquipmentModifierNonContainerSyncData holds the EquipmentModifier sync data that is only applicable to Equipment
+// Modifiers that aren't containers.
+type EquipmentModifierNonContainerSyncData struct {
 	CostType     emcost.Type   `json:"cost_type,omitempty"`
 	WeightType   emweight.Type `json:"weight_type,omitempty"`
-	Disabled     bool          `json:"disabled,omitempty"`
 	TechLevel    string        `json:"tech_level,omitempty"`
 	CostAmount   string        `json:"cost,omitempty"`
 	WeightAmount string        `json:"weight,omitempty"`
@@ -618,13 +629,7 @@ func (e *EquipmentModifier) Kind() string {
 // ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
 func (e *EquipmentModifier) ClearUnusedFieldsForType() {
 	if e.Container() {
-		e.CostType = 0
-		e.WeightType = 0
-		e.Disabled = false
-		e.TechLevel = ""
-		e.CostAmount = ""
-		e.WeightAmount = ""
-		e.Features = nil
+		e.EquipmentModifierEditDataNonContainerOnly = EquipmentModifierEditDataNonContainerOnly{}
 	} else {
 		e.Children = nil
 	}
@@ -645,17 +650,10 @@ func (e *EquipmentModifier) SyncWithSource() {
 	if !toolbox.IsNil(e.owner) {
 		if state, data := e.owner.SourceMatcher().Match(e); state == srcstate.Mismatched {
 			if other, ok := data.(*EquipmentModifier); ok {
-				e.Name = other.Name
-				e.PageRef = other.PageRef
-				e.PageRefHighlight = other.PageRefHighlight
-				e.LocalNotes = other.LocalNotes
+				e.EquipmentModifierSyncData = other.EquipmentModifierSyncData
 				e.Tags = slices.Clone(other.Tags)
 				if !e.Container() {
-					e.CostType = other.CostType
-					e.WeightType = other.WeightType
-					e.TechLevel = other.TechLevel
-					e.CostAmount = other.CostAmount
-					e.WeightAmount = other.WeightAmount
+					e.EquipmentModifierNonContainerSyncData = other.EquipmentModifierNonContainerSyncData
 					e.Features = other.Features.Clone()
 				}
 			}
@@ -666,6 +664,13 @@ func (e *EquipmentModifier) SyncWithSource() {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (e *EquipmentModifier) Hash(h hash.Hash) {
+	e.EquipmentModifierSyncData.hash(h)
+	if !e.Container() {
+		e.EquipmentModifierNonContainerSyncData.hash(h)
+	}
+}
+
+func (e *EquipmentModifierSyncData) hash(h hash.Hash) {
 	_, _ = h.Write([]byte(e.Name))
 	_, _ = h.Write([]byte(e.PageRef))
 	_, _ = h.Write([]byte(e.PageRefHighlight))
@@ -673,15 +678,16 @@ func (e *EquipmentModifier) Hash(h hash.Hash) {
 	for _, tag := range e.Tags {
 		_, _ = h.Write([]byte(tag))
 	}
-	if !e.Container() {
-		_ = binary.Write(h, binary.LittleEndian, e.CostType)
-		_ = binary.Write(h, binary.LittleEndian, e.WeightType)
-		_, _ = h.Write([]byte(e.TechLevel))
-		_, _ = h.Write([]byte(e.CostAmount))
-		_, _ = h.Write([]byte(e.WeightAmount))
-		for _, feature := range e.Features {
-			feature.Hash(h)
-		}
+}
+
+func (e *EquipmentModifierNonContainerSyncData) hash(h hash.Hash) {
+	_ = binary.Write(h, binary.LittleEndian, e.CostType)
+	_ = binary.Write(h, binary.LittleEndian, e.WeightType)
+	_, _ = h.Write([]byte(e.TechLevel))
+	_, _ = h.Write([]byte(e.CostAmount))
+	_, _ = h.Write([]byte(e.WeightAmount))
+	for _, feature := range e.Features {
+		feature.Hash(h)
 	}
 }
 

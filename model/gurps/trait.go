@@ -73,38 +73,48 @@ type TraitData struct {
 
 // TraitEditData holds the Trait data that can be edited by the UI detail editor.
 type TraitEditData struct {
-	Name             string              `json:"name,omitempty"`
-	PageRef          string              `json:"reference,omitempty"`
-	PageRefHighlight string              `json:"reference_highlight,omitempty"`
-	LocalNotes       string              `json:"notes,omitempty"`
-	VTTNotes         string              `json:"vtt_notes,omitempty"`
-	UserDesc         string              `json:"userdesc,omitempty"`
-	Tags             []string            `json:"tags,omitempty"`
-	Replacements     map[string]string   `json:"replacements,omitempty"`
-	Modifiers        []*TraitModifier    `json:"modifiers,omitempty"`
-	CR               selfctrl.Roll       `json:"cr,omitempty"`
-	CRAdj            selfctrl.Adjustment `json:"cr_adj,omitempty"`
-	Disabled         bool                `json:"disabled,omitempty"`
+	TraitSyncData
+	VTTNotes     string            `json:"vtt_notes,omitempty"`
+	UserDesc     string            `json:"userdesc,omitempty"`
+	Replacements map[string]string `json:"replacements,omitempty"`
+	Modifiers    []*TraitModifier  `json:"modifiers,omitempty"`
+	CR           selfctrl.Roll     `json:"cr,omitempty"`
+	Disabled     bool              `json:"disabled,omitempty"`
 	TraitNonContainerOnlyEditData
-	TraitContainerOnlyEditData
+	TraitContainerSyncData
 }
 
 // TraitNonContainerOnlyEditData holds the Trait data that is only applicable to traits that aren't containers.
 type TraitNonContainerOnlyEditData struct {
-	BasePoints       fxp.Int     `json:"base_points,omitempty"`
+	TraitNonContainerSyncData
 	Levels           fxp.Int     `json:"levels,omitempty"`
-	PointsPerLevel   fxp.Int     `json:"points_per_level,omitempty"`
-	Prereq           *PrereqList `json:"prereqs,omitempty"`
-	Weapons          []*Weapon   `json:"weapons,omitempty"`
-	Features         Features    `json:"features,omitempty"`
 	Study            []*Study    `json:"study,omitempty"`
 	StudyHoursNeeded study.Level `json:"study_hours_needed,omitempty"`
-	RoundCostDown    bool        `json:"round_down,omitempty"`
-	CanLevel         bool        `json:"can_level,omitempty"`
 }
 
-// TraitContainerOnlyEditData holds the Trait data that is only applicable to traits that are containers.
-type TraitContainerOnlyEditData struct {
+// TraitSyncData holds the Trait sync data that is common to both containers and non-containers.
+type TraitSyncData struct {
+	Name             string              `json:"name,omitempty"`
+	PageRef          string              `json:"reference,omitempty"`
+	PageRefHighlight string              `json:"reference_highlight,omitempty"`
+	LocalNotes       string              `json:"notes,omitempty"`
+	Tags             []string            `json:"tags,omitempty"`
+	CRAdj            selfctrl.Adjustment `json:"cr_adj,omitempty"`
+}
+
+// TraitNonContainerSyncData holds the Trait sync data that is only applicable to traits that aren't containers.
+type TraitNonContainerSyncData struct {
+	BasePoints     fxp.Int     `json:"base_points,omitempty"`
+	PointsPerLevel fxp.Int     `json:"points_per_level,omitempty"`
+	Prereq         *PrereqList `json:"prereqs,omitempty"`
+	Weapons        []*Weapon   `json:"weapons,omitempty"`
+	Features       Features    `json:"features,omitempty"`
+	RoundCostDown  bool        `json:"round_down,omitempty"`
+	CanLevel       bool        `json:"can_level,omitempty"`
+}
+
+// TraitContainerSyncData holds the Trait sync data that is only applicable to traits that are containers.
+type TraitContainerSyncData struct {
 	Ancestry       string          `json:"ancestry,omitempty"`
 	TemplatePicker *TemplatePicker `json:"template_picker,omitempty"`
 	ContainerType  container.Type  `json:"container_type,omitempty"`
@@ -779,23 +789,13 @@ func (t *Trait) Kind() string {
 // ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
 func (t *Trait) ClearUnusedFieldsForType() {
 	if t.Container() {
-		t.BasePoints = 0
-		t.Levels = 0
-		t.PointsPerLevel = 0
-		t.CanLevel = false
-		t.Prereq = nil
-		t.Weapons = nil
-		t.Features = nil
-		t.RoundCostDown = false
-		t.StudyHoursNeeded = study.Standard
+		t.TraitNonContainerOnlyEditData = TraitNonContainerOnlyEditData{}
 		if t.TemplatePicker == nil {
 			t.TemplatePicker = &TemplatePicker{}
 		}
 	} else {
+		t.TraitContainerSyncData = TraitContainerSyncData{}
 		t.Children = nil
-		t.ContainerType = 0
-		t.TemplatePicker = nil
-		t.Ancestry = ""
 		if !t.CanLevel {
 			t.Levels = 0
 			t.PointsPerLevel = 0
@@ -818,24 +818,16 @@ func (t *Trait) SyncWithSource() {
 	if !toolbox.IsNil(t.owner) {
 		if state, data := t.owner.SourceMatcher().Match(t); state == srcstate.Mismatched {
 			if other, ok := data.(*Trait); ok {
-				t.Name = other.Name
-				t.PageRef = other.PageRef
-				t.PageRefHighlight = other.PageRefHighlight
-				t.LocalNotes = other.LocalNotes
+				t.TraitSyncData = other.TraitSyncData
 				t.Tags = slices.Clone(other.Tags)
-				t.CRAdj = other.CRAdj
 				if t.Container() {
-					t.Ancestry = other.Ancestry
+					t.TraitContainerSyncData = other.TraitContainerSyncData
 					t.TemplatePicker = other.TemplatePicker.Clone()
-					t.ContainerType = other.ContainerType
 				} else {
-					t.BasePoints = other.BasePoints
-					t.PointsPerLevel = other.PointsPerLevel
+					t.TraitNonContainerSyncData = other.TraitNonContainerSyncData
 					t.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
 					t.Weapons = CloneWeapons(other.Weapons, false)
 					t.Features = other.Features.Clone()
-					t.RoundCostDown = other.RoundCostDown
-					t.CanLevel = other.CanLevel
 				}
 			}
 		}
@@ -845,6 +837,15 @@ func (t *Trait) SyncWithSource() {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (t *Trait) Hash(h hash.Hash) {
+	t.TraitSyncData.hash(h)
+	if t.Container() {
+		t.TraitContainerSyncData.hash(h)
+	} else {
+		t.TraitNonContainerSyncData.hash(h)
+	}
+}
+
+func (t *TraitSyncData) hash(h hash.Hash) {
 	_, _ = h.Write([]byte(t.Name))
 	_, _ = h.Write([]byte(t.PageRef))
 	_, _ = h.Write([]byte(t.PageRefHighlight))
@@ -853,23 +854,26 @@ func (t *Trait) Hash(h hash.Hash) {
 		_, _ = h.Write([]byte(tag))
 	}
 	_ = binary.Write(h, binary.LittleEndian, t.CRAdj)
-	if t.Container() {
-		_, _ = h.Write([]byte(t.Ancestry))
-		t.TemplatePicker.Hash(h)
-		_ = binary.Write(h, binary.LittleEndian, t.ContainerType)
-	} else {
-		_ = binary.Write(h, binary.LittleEndian, t.BasePoints)
-		_ = binary.Write(h, binary.LittleEndian, t.PointsPerLevel)
-		t.Prereq.Hash(h)
-		for _, one := range t.Weapons {
-			one.Hash(h)
-		}
-		for _, one := range t.Features {
-			one.Hash(h)
-		}
-		_ = binary.Write(h, binary.LittleEndian, t.RoundCostDown)
-		_ = binary.Write(h, binary.LittleEndian, t.CanLevel)
+}
+
+func (t *TraitNonContainerSyncData) hash(h hash.Hash) {
+	_ = binary.Write(h, binary.LittleEndian, t.BasePoints)
+	_ = binary.Write(h, binary.LittleEndian, t.PointsPerLevel)
+	t.Prereq.Hash(h)
+	for _, one := range t.Weapons {
+		one.Hash(h)
 	}
+	for _, one := range t.Features {
+		one.Hash(h)
+	}
+	_ = binary.Write(h, binary.LittleEndian, t.RoundCostDown)
+	_ = binary.Write(h, binary.LittleEndian, t.CanLevel)
+}
+
+func (t *TraitContainerSyncData) hash(h hash.Hash) {
+	_, _ = h.Write([]byte(t.Ancestry))
+	t.TemplatePicker.Hash(h)
+	_ = binary.Write(h, binary.LittleEndian, t.ContainerType)
 }
 
 // CopyFrom implements node.EditorData.

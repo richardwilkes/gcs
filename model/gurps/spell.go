@@ -84,20 +84,33 @@ type SpellData struct {
 
 // SpellEditData holds the Spell data that can be edited by the UI detail editor.
 type SpellEditData struct {
-	Name             string            `json:"name,omitempty"`
-	PageRef          string            `json:"reference,omitempty"`
-	PageRefHighlight string            `json:"reference_highlight,omitempty"`
-	LocalNotes       string            `json:"notes,omitempty"`
-	VTTNotes         string            `json:"vtt_notes,omitempty"`
-	Tags             []string          `json:"tags,omitempty"`
-	Replacements     map[string]string `json:"replacements,omitempty"`
+	SpellSyncData
+	VTTNotes     string            `json:"vtt_notes,omitempty"`
+	Replacements map[string]string `json:"replacements,omitempty"`
 	SpellNonContainerOnlyEditData
-	SkillContainerOnlyEditData
+	SkillContainerOnlySyncData
 }
 
 // SpellNonContainerOnlyEditData holds the Spell data that is only applicable to spells that aren't containers.
 type SpellNonContainerOnlyEditData struct {
-	TechLevel         *string             `json:"tech_level,omitempty"`
+	SpellNonContainerOnlySyncData
+	TechLevel        *string     `json:"tech_level,omitempty"`
+	Points           fxp.Int     `json:"points,omitempty"`
+	Study            []*Study    `json:"study,omitempty"`
+	StudyHoursNeeded study.Level `json:"study_hours_needed,omitempty"`
+}
+
+// SpellSyncData holds the spell sync data that is common to both containers and non-containers.
+type SpellSyncData struct {
+	Name             string   `json:"name,omitempty"`
+	PageRef          string   `json:"reference,omitempty"`
+	PageRefHighlight string   `json:"reference_highlight,omitempty"`
+	LocalNotes       string   `json:"notes,omitempty"`
+	Tags             []string `json:"tags,omitempty"`
+}
+
+// SpellNonContainerOnlySyncData holds the spell sync data that is only applicable to traits that aren't containers.
+type SpellNonContainerOnlySyncData struct {
 	Difficulty        AttributeDifficulty `json:"difficulty,omitempty"`
 	College           CollegeList         `json:"college,omitempty"`
 	PowerSource       string              `json:"power_source,omitempty"`
@@ -109,11 +122,8 @@ type SpellNonContainerOnlyEditData struct {
 	Duration          string              `json:"duration,omitempty"`
 	RitualSkillName   string              `json:"base_skill,omitempty"`
 	RitualPrereqCount int                 `json:"prereq_count,omitempty"`
-	Points            fxp.Int             `json:"points,omitempty"`
 	Prereq            *PrereqList         `json:"prereqs,omitempty"`
 	Weapons           []*Weapon           `json:"weapons,omitempty"`
-	Study             []*Study            `json:"study,omitempty"`
-	StudyHoursNeeded  study.Level         `json:"study_hours_needed,omitempty"`
 }
 
 type spellListData struct {
@@ -1065,28 +1075,14 @@ func (s *Spell) Kind() string {
 // ClearUnusedFieldsForType zeroes out the fields that are not applicable to this type (container vs not-container).
 func (s *Spell) ClearUnusedFieldsForType() {
 	if s.Container() {
-		s.TechLevel = nil
+		s.SpellNonContainerOnlyEditData = SpellNonContainerOnlyEditData{}
 		s.Difficulty = AttributeDifficulty{omit: true}
-		s.College = nil
-		s.PowerSource = ""
-		s.Class = ""
-		s.Resist = ""
-		s.CastingCost = ""
-		s.MaintenanceCost = ""
-		s.CastingTime = ""
-		s.Duration = ""
-		s.RitualSkillName = ""
-		s.RitualPrereqCount = 0
-		s.Points = 0
-		s.Prereq = nil
-		s.Weapons = nil
-		s.StudyHoursNeeded = study.Standard
 		if s.TemplatePicker == nil {
 			s.TemplatePicker = &TemplatePicker{}
 		}
 	} else {
+		s.SkillContainerOnlySyncData = SkillContainerOnlySyncData{}
 		s.Children = nil
-		s.TemplatePicker = nil
 		s.Difficulty.omit = false
 	}
 }
@@ -1106,25 +1102,14 @@ func (s *Spell) SyncWithSource() {
 	if !toolbox.IsNil(s.owner) {
 		if state, data := s.owner.SourceMatcher().Match(s); state == srcstate.Mismatched {
 			if other, ok := data.(*Spell); ok {
-				s.Name = other.Name
-				s.PageRef = other.PageRef
-				s.PageRefHighlight = other.PageRefHighlight
-				s.LocalNotes = other.LocalNotes
+				s.SpellSyncData = other.SpellSyncData
 				s.Tags = slices.Clone(other.Tags)
 				if s.Container() {
+					s.SkillContainerOnlySyncData = other.SkillContainerOnlySyncData
 					s.TemplatePicker = other.TemplatePicker.Clone()
 				} else {
-					s.Difficulty = other.Difficulty
+					s.SpellNonContainerOnlySyncData = other.SpellNonContainerOnlySyncData
 					s.College = txt.CloneStringSlice(s.College)
-					s.PowerSource = other.PowerSource
-					s.Class = other.Class
-					s.Resist = other.Resist
-					s.CastingCost = other.CastingCost
-					s.MaintenanceCost = other.MaintenanceCost
-					s.CastingTime = other.CastingTime
-					s.Duration = other.Duration
-					s.RitualSkillName = other.RitualSkillName
-					s.RitualPrereqCount = other.RitualPrereqCount
 					s.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
 					s.Weapons = CloneWeapons(other.Weapons, false)
 				}
@@ -1136,6 +1121,15 @@ func (s *Spell) SyncWithSource() {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (s *Spell) Hash(h hash.Hash) {
+	s.SpellSyncData.hash(h)
+	if s.Container() {
+		s.SkillContainerOnlySyncData.hash(h)
+	} else {
+		s.SpellNonContainerOnlySyncData.hash(h)
+	}
+}
+
+func (s *SpellSyncData) hash(h hash.Hash) {
 	_, _ = h.Write([]byte(s.Name))
 	_, _ = h.Write([]byte(s.PageRef))
 	_, _ = h.Write([]byte(s.PageRefHighlight))
@@ -1143,26 +1137,25 @@ func (s *Spell) Hash(h hash.Hash) {
 	for _, tag := range s.Tags {
 		_, _ = h.Write([]byte(tag))
 	}
-	if s.Container() {
-		s.TemplatePicker.Hash(h)
-	} else {
-		s.Difficulty.Hash(h)
-		for _, college := range s.College {
-			_, _ = h.Write([]byte(college))
-		}
-		_, _ = h.Write([]byte(s.PowerSource))
-		_, _ = h.Write([]byte(s.Class))
-		_, _ = h.Write([]byte(s.Resist))
-		_, _ = h.Write([]byte(s.CastingCost))
-		_, _ = h.Write([]byte(s.MaintenanceCost))
-		_, _ = h.Write([]byte(s.CastingTime))
-		_, _ = h.Write([]byte(s.Duration))
-		_, _ = h.Write([]byte(s.RitualSkillName))
-		_ = binary.Write(h, binary.LittleEndian, int64(s.RitualPrereqCount))
-		s.Prereq.Hash(h)
-		for _, weapon := range s.Weapons {
-			weapon.Hash(h)
-		}
+}
+
+func (s *SpellNonContainerOnlySyncData) hash(h hash.Hash) {
+	s.Difficulty.Hash(h)
+	for _, college := range s.College {
+		_, _ = h.Write([]byte(college))
+	}
+	_, _ = h.Write([]byte(s.PowerSource))
+	_, _ = h.Write([]byte(s.Class))
+	_, _ = h.Write([]byte(s.Resist))
+	_, _ = h.Write([]byte(s.CastingCost))
+	_, _ = h.Write([]byte(s.MaintenanceCost))
+	_, _ = h.Write([]byte(s.CastingTime))
+	_, _ = h.Write([]byte(s.Duration))
+	_, _ = h.Write([]byte(s.RitualSkillName))
+	_ = binary.Write(h, binary.LittleEndian, int64(s.RitualPrereqCount))
+	s.Prereq.Hash(h)
+	for _, weapon := range s.Weapons {
+		weapon.Hash(h)
 	}
 }
 
