@@ -68,7 +68,7 @@ func writeICNS(dstPath string, img image.Image) (err error) {
 func writeDocICNS(dir string, base image.Image) error {
 	for i := range gurps.KnownFileTypes {
 		if fi := &gurps.KnownFileTypes[i]; fi.IsGCSData {
-			overlay, err := gurps.CreateImageFromSVG(fi, 512)
+			overlay, err := CreateImageFromSVG(fi.SVG, 512)
 			if err != nil {
 				return err
 			}

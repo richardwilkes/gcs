@@ -99,7 +99,7 @@ func installDesktopIcons() error {
 	for i := range gurps.KnownFileTypes {
 		if fi := &gurps.KnownFileTypes[i]; fi.IsGCSData {
 			var overlay image.Image
-			overlay, err = gurps.CreateImageFromSVG(fi, 128)
+			overlay, err = CreateImageFromSVG(fi.SVG, 128)
 			if err != nil {
 				return err
 			}
