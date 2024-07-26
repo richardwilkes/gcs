@@ -38,8 +38,8 @@ func LengthFromStringForced(text string, defaultUnits LengthUnit) Length {
 	return length
 }
 
-// LengthFromString creates a new Length. May have any of the known Units suffixes, a feet and inches format (e.g. 6'2"),
-// or no notation at all, in which case defaultUnits is used.
+// LengthFromString creates a new Length. May have any of the known Units suffixes, a feet and inches format (e.g.
+// 6'2"), or no notation at all, in which case defaultUnits is used.
 func LengthFromString(text string, defaultUnits LengthUnit) (Length, error) {
 	text = strings.TrimLeft(strings.TrimSpace(text), "+")
 	for _, unit := range LengthUnits[1:] {
