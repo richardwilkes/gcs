@@ -486,7 +486,7 @@ func (e *Entity) processPrereqs() {
 	notMetPrefix := i18n.Text("Prerequisites have not been met:")
 	Traverse(func(a *Trait) bool {
 		a.UnsatisfiedReason = ""
-		if !a.Container() && a.Prereq != nil {
+		if a.Prereq != nil {
 			var tooltip xio.ByteBuffer
 			var eqpPenalty bool
 			if !a.Prereq.Satisfied(e, a, &tooltip, prefix, &eqpPenalty) {

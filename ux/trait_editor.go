@@ -98,10 +98,10 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 	addSourceFields(content, &e.target.SourcedID)
 	modifiersPanel := newTraitModifiersPanel(entity, &e.editorData.Modifiers)
+	content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq))
 	if e.target.Container() {
 		content.AddChild(modifiersPanel)
 	} else {
-		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq))
 		content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false))
 		content.AddChild(modifiersPanel)
 		content.AddChild(newWeaponsPanel(e, e.target, true, &e.editorData.Weapons))

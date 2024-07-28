@@ -99,18 +99,18 @@ type TraitSyncData struct {
 	PageRefHighlight string              `json:"reference_highlight,omitempty"`
 	LocalNotes       string              `json:"notes,omitempty"`
 	Tags             []string            `json:"tags,omitempty"`
+	Prereq           *PrereqList         `json:"prereqs,omitempty"`
 	CRAdj            selfctrl.Adjustment `json:"cr_adj,omitempty"`
 }
 
 // TraitNonContainerSyncData holds the Trait sync data that is only applicable to traits that aren't containers.
 type TraitNonContainerSyncData struct {
-	BasePoints     fxp.Int     `json:"base_points,omitempty"`
-	PointsPerLevel fxp.Int     `json:"points_per_level,omitempty"`
-	Prereq         *PrereqList `json:"prereqs,omitempty"`
-	Weapons        []*Weapon   `json:"weapons,omitempty"`
-	Features       Features    `json:"features,omitempty"`
-	RoundCostDown  bool        `json:"round_down,omitempty"`
-	CanLevel       bool        `json:"can_level,omitempty"`
+	BasePoints     fxp.Int   `json:"base_points,omitempty"`
+	PointsPerLevel fxp.Int   `json:"points_per_level,omitempty"`
+	Weapons        []*Weapon `json:"weapons,omitempty"`
+	Features       Features  `json:"features,omitempty"`
+	RoundCostDown  bool      `json:"round_down,omitempty"`
+	CanLevel       bool      `json:"can_level,omitempty"`
 }
 
 // TraitContainerSyncData holds the Trait sync data that is only applicable to traits that are containers.
@@ -823,12 +823,12 @@ func (t *Trait) SyncWithSource() {
 			if other, ok := data.(*Trait); ok {
 				t.TraitSyncData = other.TraitSyncData
 				t.Tags = slices.Clone(other.Tags)
+				t.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
 				if t.Container() {
 					t.TraitContainerSyncData = other.TraitContainerSyncData
 					t.TemplatePicker = other.TemplatePicker.Clone()
 				} else {
 					t.TraitNonContainerSyncData = other.TraitNonContainerSyncData
-					t.Prereq = other.Prereq.CloneResolvingEmpty(false, true)
 					t.Weapons = CloneWeapons(other.Weapons, false)
 					t.Features = other.Features.Clone()
 				}
@@ -857,12 +857,12 @@ func (t *TraitSyncData) hash(h hash.Hash) {
 		_, _ = h.Write([]byte(tag))
 	}
 	_ = binary.Write(h, binary.LittleEndian, t.CRAdj)
+	t.Prereq.Hash(h)
 }
 
 func (t *TraitNonContainerSyncData) hash(h hash.Hash) {
 	_ = binary.Write(h, binary.LittleEndian, t.BasePoints)
 	_ = binary.Write(h, binary.LittleEndian, t.PointsPerLevel)
-	t.Prereq.Hash(h)
 	for _, one := range t.Weapons {
 		one.Hash(h)
 	}
@@ -881,15 +881,15 @@ func (t *TraitContainerSyncData) hash(h hash.Hash) {
 
 // CopyFrom implements node.EditorData.
 func (t *TraitEditData) CopyFrom(other *Trait) {
-	t.copyFrom(other.owner, &other.TraitEditData, other.Container(), false)
+	t.copyFrom(other.owner, &other.TraitEditData, false)
 }
 
 // ApplyTo implements node.EditorData.
 func (t *TraitEditData) ApplyTo(other *Trait) {
-	other.TraitEditData.copyFrom(other.owner, t, other.Container(), true)
+	other.TraitEditData.copyFrom(other.owner, t, true)
 }
 
-func (t *TraitEditData) copyFrom(owner DataOwner, other *TraitEditData, isContainer, isApply bool) {
+func (t *TraitEditData) copyFrom(owner DataOwner, other *TraitEditData, isApply bool) {
 	*t = *other
 	t.Tags = txt.CloneStringSlice(other.Tags)
 	t.Replacements = maps.Clone(other.Replacements)
@@ -900,7 +900,7 @@ func (t *TraitEditData) copyFrom(owner DataOwner, other *TraitEditData, isContai
 			t.Modifiers = append(t.Modifiers, one.Clone(one.Source.LibraryFile, owner, nil, isApply))
 		}
 	}
-	t.Prereq = t.Prereq.CloneResolvingEmpty(isContainer, isApply)
+	t.Prereq = t.Prereq.CloneResolvingEmpty(false, isApply)
 	t.Weapons = CloneWeapons(other.Weapons, isApply)
 	t.Features = other.Features.Clone()
 	if len(other.Study) != 0 {

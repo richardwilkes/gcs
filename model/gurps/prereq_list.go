@@ -50,6 +50,9 @@ func (p *PrereqList) PrereqType() prereq.Type {
 
 // ParentList implements Prereq.
 func (p *PrereqList) ParentList() *PrereqList {
+	if p == nil {
+		return nil
+	}
 	return p.Parent
 }
 
