@@ -1585,3 +1585,43 @@ func (e *Entity) EmbeddedEval(s string) string {
 	}
 	return fmt.Sprintf("%v", result)
 }
+
+// SyncWithLibrarySources syncs the entity with the library sources.
+func (e *Entity) SyncWithLibrarySources() {
+	Traverse(func(trait *Trait) bool {
+		trait.SyncWithSource()
+		Traverse(func(traitModifier *TraitModifier) bool {
+			traitModifier.SyncWithSource()
+			return false
+		}, false, false, trait.Modifiers...)
+		return false
+	}, false, false, e.Traits...)
+	Traverse(func(skill *Skill) bool {
+		skill.SyncWithSource()
+		return false
+	}, false, false, e.Skills...)
+	Traverse(func(spell *Spell) bool {
+		spell.SyncWithSource()
+		return false
+	}, false, false, e.Spells...)
+	Traverse(func(equipment *Equipment) bool {
+		equipment.SyncWithSource()
+		Traverse(func(equipmentModifier *EquipmentModifier) bool {
+			equipmentModifier.SyncWithSource()
+			return false
+		}, false, false, equipment.Modifiers...)
+		return false
+	}, false, false, e.CarriedEquipment...)
+	Traverse(func(equipment *Equipment) bool {
+		equipment.SyncWithSource()
+		Traverse(func(equipmentModifier *EquipmentModifier) bool {
+			equipmentModifier.SyncWithSource()
+			return false
+		}, false, false, equipment.Modifiers...)
+		return false
+	}, false, false, e.OtherEquipment...)
+	Traverse(func(note *Note) bool {
+		note.SyncWithSource()
+		return false
+	}, false, false, e.Notes...)
+}

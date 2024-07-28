@@ -56,7 +56,10 @@ func main() {
 		SetUsage(i18n.Text("Export sheets using the specified template file"))
 	var convertFiles bool
 	cl.NewGeneralOption(&convertFiles).SetName("convert").SetSingle('c').
-		SetUsage(i18n.Text("Converts all files specified on the command line to the current data format. If a directory is specified, it will be traversed recursively and all files found will be converted. This operation is intended to easily bring files up to the current version's data format. After all files have been processed, GCS will exit"))
+		SetUsage(i18n.Text("Converts all files specified on the command line to the current data format. If a directory is specified, it will be traversed recursively and all files found will be converted. After all files have been processed, GCS will exit"))
+	var syncSheetsAndTemplates bool
+	cl.NewGeneralOption(&syncSheetsAndTemplates).SetName("sync").SetSingle('S').
+		SetUsage(fmt.Sprintf(i18n.Text("Syncs all character sheet (%s) and template (%s) files specified on the command line with their library sources. If a directory is specified, it will be traversed recursively and all files found will be converted. After all files have been processed, GCS will exit"), gurps.SheetExt, gurps.TemplatesExt))
 	cl.NewGeneralOption(&fxp.DebugVariableResolver).SetName("debug-variable-resolver")
 	var backgroundOnly bool
 	cl.NewGeneralOption(&backgroundOnly).SetName("web-server-only").SetSingle('w').SetUsage(i18n.Text("Starts the web server and does not bring up the user interface. If the server has not been configured, just exits"))
@@ -65,9 +68,17 @@ func main() {
 	ux.RegisterKnownFileTypes()
 	settings := gurps.GlobalSettings() // Here to force early initialization
 
+	if convertFiles && syncSheetsAndTemplates {
+		cl.FatalMsg(i18n.Text("Cannot specify both --convert and --sync"))
+	}
+
 	switch {
 	case convertFiles:
 		if err := gurps.Convert(fileList...); err != nil {
+			cl.FatalMsg(err.Error())
+		}
+	case syncSheetsAndTemplates:
+		if err := gurps.SyncSheetsAndTemplates(fileList...); err != nil {
 			cl.FatalMsg(err.Error())
 		}
 	case textTmplPath != "":

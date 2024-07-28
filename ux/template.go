@@ -921,34 +921,7 @@ func (t *Template) syncWithAllSources() {
 			BeforeData: newTemplateTablesUndoData(t),
 		}
 	}
-	gurps.Traverse(func(tr *gurps.Trait) bool {
-		tr.SyncWithSource()
-		gurps.Traverse(func(m *gurps.TraitModifier) bool {
-			m.SyncWithSource()
-			return false
-		}, false, false, tr.Modifiers...)
-		return false
-	}, false, false, t.template.Traits...)
-	gurps.Traverse(func(sk *gurps.Skill) bool {
-		sk.SyncWithSource()
-		return false
-	}, false, false, t.template.Skills...)
-	gurps.Traverse(func(sp *gurps.Spell) bool {
-		sp.SyncWithSource()
-		return false
-	}, false, false, t.template.Spells...)
-	gurps.Traverse(func(e *gurps.Equipment) bool {
-		e.SyncWithSource()
-		gurps.Traverse(func(m *gurps.EquipmentModifier) bool {
-			m.SyncWithSource()
-			return false
-		}, false, false, e.Modifiers...)
-		return false
-	}, false, false, t.template.Equipment...)
-	gurps.Traverse(func(n *gurps.Note) bool {
-		n.SyncWithSource()
-		return false
-	}, false, false, t.template.Notes...)
+	t.template.SyncWithLibrarySources()
 	t.Traits.Table.SyncToModel()
 	t.Skills.Table.SyncToModel()
 	t.Spells.Table.SyncToModel()

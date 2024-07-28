@@ -194,3 +194,35 @@ func (t *Template) EnsureAttachments() {
 		one.SetDataOwner(t)
 	}
 }
+
+// SyncWithLibrarySources syncs the template with the library sources.
+func (t *Template) SyncWithLibrarySources() {
+	Traverse(func(trait *Trait) bool {
+		trait.SyncWithSource()
+		Traverse(func(traitModifier *TraitModifier) bool {
+			traitModifier.SyncWithSource()
+			return false
+		}, false, false, trait.Modifiers...)
+		return false
+	}, false, false, t.Traits...)
+	Traverse(func(skill *Skill) bool {
+		skill.SyncWithSource()
+		return false
+	}, false, false, t.Skills...)
+	Traverse(func(spell *Spell) bool {
+		spell.SyncWithSource()
+		return false
+	}, false, false, t.Spells...)
+	Traverse(func(equipment *Equipment) bool {
+		equipment.SyncWithSource()
+		Traverse(func(equipmentModifier *EquipmentModifier) bool {
+			equipmentModifier.SyncWithSource()
+			return false
+		}, false, false, equipment.Modifiers...)
+		return false
+	}, false, false, t.Equipment...)
+	Traverse(func(note *Note) bool {
+		note.SyncWithSource()
+		return false
+	}, false, false, t.Notes...)
+}

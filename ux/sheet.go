@@ -788,42 +788,7 @@ func (s *Sheet) syncWithAllSources() {
 			BeforeData: newSheetTablesUndoData(s),
 		}
 	}
-	gurps.Traverse(func(t *gurps.Trait) bool {
-		t.SyncWithSource()
-		gurps.Traverse(func(m *gurps.TraitModifier) bool {
-			m.SyncWithSource()
-			return false
-		}, false, false, t.Modifiers...)
-		return false
-	}, false, false, s.entity.Traits...)
-	gurps.Traverse(func(sk *gurps.Skill) bool {
-		sk.SyncWithSource()
-		return false
-	}, false, false, s.entity.Skills...)
-	gurps.Traverse(func(sp *gurps.Spell) bool {
-		sp.SyncWithSource()
-		return false
-	}, false, false, s.entity.Spells...)
-	gurps.Traverse(func(e *gurps.Equipment) bool {
-		e.SyncWithSource()
-		gurps.Traverse(func(m *gurps.EquipmentModifier) bool {
-			m.SyncWithSource()
-			return false
-		}, false, false, e.Modifiers...)
-		return false
-	}, false, false, s.entity.CarriedEquipment...)
-	gurps.Traverse(func(e *gurps.Equipment) bool {
-		e.SyncWithSource()
-		gurps.Traverse(func(m *gurps.EquipmentModifier) bool {
-			m.SyncWithSource()
-			return false
-		}, false, false, e.Modifiers...)
-		return false
-	}, false, false, s.entity.OtherEquipment...)
-	gurps.Traverse(func(n *gurps.Note) bool {
-		n.SyncWithSource()
-		return false
-	}, false, false, s.entity.Notes...)
+	s.entity.SyncWithLibrarySources()
 	s.Traits.Table.SyncToModel()
 	s.Skills.Table.SyncToModel()
 	s.Spells.Table.SyncToModel()
