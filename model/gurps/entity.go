@@ -35,6 +35,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
+	"github.com/richardwilkes/toolbox/collection/dict"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/eval"
 	"github.com/richardwilkes/toolbox/fatal"
@@ -412,19 +413,23 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, levels 
 	case *CostReduction:
 		e.features.costReductions = append(e.features.costReductions, actual)
 	case *DRBonus:
-		if actual.Location == "" {
+		if len(actual.Locations) == 0 { // "this armor"
 			if eqp, ok := owner.(*Equipment); ok {
 				allLocations := make(map[string]bool)
 				locationsMatched := make(map[string]bool)
 				for _, f2 := range eqp.FeatureList() {
-					if drBonus, ok2 := f2.(*DRBonus); ok2 && drBonus.Location != "" {
-						allLocations[drBonus.Location] = true
+					if drBonus, ok2 := f2.(*DRBonus); ok2 && len(drBonus.Locations) != 0 {
+						for _, loc := range drBonus.Locations {
+							allLocations[loc] = true
+						}
 						if drBonus.Specialization == actual.Specialization {
-							locationsMatched[drBonus.Location] = true
+							for _, loc := range drBonus.Locations {
+								locationsMatched[loc] = true
+							}
 							additionalDRBonus := DRBonus{
 								DRBonusData: DRBonusData{
 									Type:           feature.DRBonus,
-									Location:       drBonus.Location,
+									Locations:      slices.Clone(drBonus.Locations),
 									Specialization: actual.Specialization,
 									LeveledAmount:  actual.LeveledAmount,
 								},
@@ -439,11 +444,13 @@ func (e *Entity) processFeature(owner, subOwner fmt.Stringer, f Feature, levels 
 				for k := range locationsMatched {
 					delete(allLocations, k)
 				}
-				for location := range allLocations {
+				if len(allLocations) != 0 {
+					locations := dict.Keys(allLocations)
+					slices.Sort(locations)
 					additionalDRBonus := DRBonus{
 						DRBonusData: DRBonusData{
 							Type:           feature.DRBonus,
-							Location:       location,
+							Locations:      locations,
 							Specialization: actual.Specialization,
 							LeveledAmount:  actual.LeveledAmount,
 						},
@@ -788,9 +795,12 @@ func (e *Entity) AddDRBonusesFor(locationID string, tooltip *xio.ByteBuffer, drM
 		}
 	}
 	for _, one := range e.features.drBonuses {
-		if (one.Location == AllID && isTopLevel) || strings.EqualFold(one.Location, locationID) {
-			drMap[strings.ToLower(one.Specialization)] += fxp.As[int](one.AdjustedAmount())
-			one.AddToTooltip(tooltip)
+		for _, loc := range one.Locations {
+			if (loc == AllID && isTopLevel) || strings.EqualFold(loc, locationID) {
+				drMap[strings.ToLower(one.Specialization)] += fxp.As[int](one.AdjustedAmount())
+				one.AddToTooltip(tooltip)
+				break
+			}
 		}
 	}
 	return drMap

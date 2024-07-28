@@ -12,6 +12,7 @@ package gurps
 import (
 	"encoding/binary"
 	"hash"
+	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -26,7 +27,7 @@ var _ Bonus = &DRBonus{}
 // DRBonusData is split out so that it can be adjusted before and after being serialized.
 type DRBonusData struct {
 	Type           feature.Type `json:"type"`
-	Location       string       `json:"location"`
+	Locations      []string     `json:"locations,omitempty"`
 	Specialization string       `json:"specialization,omitempty"`
 	LeveledAmount
 }
@@ -42,7 +43,7 @@ func NewDRBonus() *DRBonus {
 	return &DRBonus{
 		DRBonusData: DRBonusData{
 			Type:           feature.DRBonus,
-			Location:       "torso",
+			Locations:      []string{TorsoID},
 			Specialization: AllID,
 			LeveledAmount:  LeveledAmount{Amount: fxp.One},
 		},
@@ -57,17 +58,21 @@ func (d *DRBonus) FeatureType() feature.Type {
 // Clone implements Feature.
 func (d *DRBonus) Clone() Feature {
 	other := *d
+	other.Locations = slices.Clone(d.Locations)
 	return &other
 }
 
 // Normalize adjusts the data to it preferred representation.
 func (d *DRBonus) Normalize() {
-	s := strings.TrimSpace(d.Location)
-	if strings.EqualFold(s, AllID) {
-		s = AllID
+	for i, loc := range d.Locations {
+		loc = strings.TrimSpace(loc)
+		if strings.EqualFold(loc, AllID) {
+			d.Locations = []string{AllID}
+			break
+		}
+		d.Locations[i] = loc
 	}
-	d.Location = s
-	s = strings.TrimSpace(d.Specialization)
+	s := strings.TrimSpace(d.Specialization)
 	if s == "" || strings.EqualFold(s, AllID) {
 		s = AllID
 	}
@@ -110,10 +115,17 @@ func (d *DRBonus) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (d *DRBonus) UnmarshalJSON(data []byte) error {
-	d.DRBonusData = DRBonusData{}
-	if err := json.Unmarshal(data, &d.DRBonusData); err != nil {
+	var dataWithOld struct {
+		DRBonusData
+		Location string `json:"location"`
+	}
+	if err := json.Unmarshal(data, &dataWithOld); err != nil {
 		return err
 	}
+	if dataWithOld.Location != "" {
+		dataWithOld.Locations = append(dataWithOld.Locations, dataWithOld.Location)
+	}
+	d.DRBonusData = dataWithOld.DRBonusData
 	d.Normalize()
 	return nil
 }
@@ -124,7 +136,9 @@ func (d *DRBonus) Hash(h hash.Hash) {
 		return
 	}
 	_ = binary.Write(h, binary.LittleEndian, d.Type)
-	_, _ = h.Write([]byte(d.Location))
+	for _, loc := range d.Locations {
+		_, _ = h.Write([]byte(loc))
+	}
 	_, _ = h.Write([]byte(d.Specialization))
 	d.LeveledAmount.Hash(h)
 }

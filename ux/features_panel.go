@@ -23,10 +23,14 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/gcs/v5/svg"
+	"github.com/richardwilkes/toolbox/collection/dict"
+	"github.com/richardwilkes/toolbox/collection/slice"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/check"
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
@@ -40,6 +44,7 @@ type featuresPanel struct {
 	entity               *gurps.Entity
 	owner                fmt.Stringer
 	features             *gurps.Features
+	currentLocation      int
 	forEquipmentModifier bool
 }
 
@@ -192,7 +197,7 @@ func (p *featuresPanel) createDRBonusPanel(f *gurps.DRBonus) *unison.Panel {
 	panel := p.createBasePanel(f)
 	p.addLeveledModifierLine(panel, f, &f.LeveledAmount)
 	panel.AddChild(unison.NewPanel())
-	addHitLocationChoicePopup(panel, p.entity, &f.Location, p.forEquipmentModifier)
+	panel.AddChild(p.createHitLocationChoicesPanel(f))
 	panel.AddChild(unison.NewPanel())
 	wrapper := unison.NewPanel()
 	wrapper.SetLayout(&unison.FlexLayout{
@@ -213,6 +218,139 @@ func (p *featuresPanel) createDRBonusPanel(f *gurps.DRBonus) *unison.Panel {
 	wrapper.AddChild(NewFieldTrailingLabel(i18n.Text("attacks"), false))
 	panel.AddChild(wrapper)
 	return panel
+}
+
+func (p *featuresPanel) createHitLocationChoicesPanel(f *gurps.DRBonus) *unison.Panel {
+	panel := unison.NewPanel()
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  1,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	popup := unison.NewPopupMenu[string]()
+	if p.forEquipmentModifier {
+		popup.AddItem(i18n.Text("to this armor"))
+	}
+	popup.AddItem(i18n.Text("to all locations"))
+	popup.AddItem(i18n.Text("to these locations:"))
+	if len(f.Locations) == 0 {
+		p.currentLocation = 0
+	} else {
+		if slices.Contains(f.Locations, gurps.AllID) {
+			p.currentLocation = 0
+		} else {
+			p.currentLocation = 1
+		}
+		if p.forEquipmentModifier {
+			p.currentLocation++
+		}
+	}
+	popup.SelectIndex(p.currentLocation)
+	popup.SelectionChangedCallback = func(pop *unison.PopupMenu[string]) {
+		p.currentLocation = pop.SelectedIndex()
+		for len(panel.Children()) > 1 {
+			panel.RemoveChildAtIndex(1)
+		}
+		switch {
+		case p.isCurrentLocationThisArmor():
+			f.Locations = nil
+		case p.isCurrentLocationAll():
+			f.Locations = []string{gurps.AllID}
+		case p.isCurrentLocationList():
+			f.Locations = slices.DeleteFunc(f.Locations, func(loc string) bool { return loc == gurps.AllID })
+			if len(f.Locations) == 0 {
+				f.Locations = []string{gurps.TorsoID}
+			}
+			panel.AddChild(p.createHitLocationsCheckBoxes(f))
+		}
+		MarkModified(panel)
+		panel.MarkForLayoutRecursivelyUpward()
+	}
+	panel.AddChild(popup)
+	if p.isCurrentLocationList() {
+		f.Locations = slices.DeleteFunc(f.Locations, func(loc string) bool { return loc == gurps.AllID })
+		panel.AddChild(p.createHitLocationsCheckBoxes(f))
+	}
+	return panel
+}
+
+func (p *featuresPanel) createHitLocationsCheckBoxes(f *gurps.DRBonus) *unison.Panel {
+	panel := unison.NewPanel()
+	const desiredColumns = 4
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:      desiredColumns,
+		HSpacing:     unison.StdHSpacing,
+		VSpacing:     unison.StdVSpacing,
+		EqualColumns: true,
+	})
+	panel.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: unison.StdHSpacing * 2}))
+	bodyType := gurps.BodyFor(p.entity)
+	existing := dict.MapByKey(f.Locations, func(in string) string { return in })
+	locs := bodyType.UniqueHitLocations(p.entity)
+	boxes := make([]*unison.CheckBox, 0, len(existing)+len(locs))
+	for _, loc := range locs {
+		box := unison.NewCheckBox()
+		box.SetTitle(loc.ChoiceName)
+		box.State = check.FromBool(slices.Contains(f.Locations, loc.LocID))
+		box.ClickCallback = func() { toggleHitLocation(box, f, loc.LocID) }
+		delete(existing, loc.LocID)
+		boxes = append(boxes, box)
+	}
+	const unknownKey = "unknown"
+	for _, loc := range dict.Keys(existing) {
+		box := unison.NewCheckBox()
+		box.SetTitle(loc + "*")
+		box.State = check.On
+		box.ClientData()[unknownKey] = true
+		box.ClickCallback = func() { toggleHitLocation(box, f, loc) }
+		boxes = append(boxes, box)
+	}
+	slice.ColumnSort(boxes, desiredColumns, func(a, b *unison.CheckBox) int {
+		_, au := a.ClientData()[unknownKey]
+		_, bu := b.ClientData()[unknownKey]
+		if au != bu {
+			if au {
+				return 1
+			}
+			return -1
+		}
+		return txt.NaturalCmp(a.Text.String(), b.Text.String(), true)
+	})
+	for _, box := range boxes {
+		panel.AddChild(box)
+	}
+	if len(existing) != 0 {
+		label := unison.NewLabel()
+		fd := label.Font.Descriptor()
+		fd.Size *= 0.8
+		label.Font = fd.Font()
+		label.SetTitle(i18n.Text("* Locations not present in current body type"))
+		label.SetLayoutData(&unison.FlexLayoutData{HSpan: desiredColumns})
+		panel.AddChild(label)
+	}
+	return panel
+}
+
+func toggleHitLocation(box *unison.CheckBox, f *gurps.DRBonus, loc string) {
+	if box.State == check.On {
+		f.Locations = append(f.Locations, loc)
+		slices.Sort(f.Locations)
+	} else {
+		f.Locations = slices.DeleteFunc(f.Locations, func(in string) bool { return in == loc })
+	}
+	MarkModified(box)
+}
+
+func (p *featuresPanel) isCurrentLocationThisArmor() bool {
+	return p.forEquipmentModifier && p.currentLocation == 0
+}
+
+func (p *featuresPanel) isCurrentLocationAll() bool {
+	return (p.forEquipmentModifier && p.currentLocation == 1) || (!p.forEquipmentModifier && p.currentLocation == 0)
+}
+
+func (p *featuresPanel) isCurrentLocationList() bool {
+	return (p.forEquipmentModifier && p.currentLocation == 2) || (!p.forEquipmentModifier && p.currentLocation == 1)
 }
 
 func (p *featuresPanel) createReactionBonusPanel(f *gurps.ReactionBonus) *unison.Panel {

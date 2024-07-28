@@ -171,18 +171,6 @@ func addTechLevelRequired(parent *unison.Panel, fieldData **string, ownerIsSheet
 		}))
 }
 
-func addHitLocationChoicePopup(parent *unison.Panel, entity *gurps.Entity, fieldData *string, forEquipmentModifier bool) *unison.PopupMenu[*gurps.HitLocationChoice] {
-	choices, current := gurps.HitLocationChoices(entity, *fieldData, forEquipmentModifier)
-	popup := addPopup(parent, choices, &current)
-	popup.SelectionChangedCallback = func(p *unison.PopupMenu[*gurps.HitLocationChoice]) {
-		if choice, ok := p.Selected(); ok {
-			*fieldData = choice.Key
-			MarkModified(parent)
-		}
-	}
-	return popup
-}
-
 func addAttributeChoicePopup(parent *unison.Panel, entity *gurps.Entity, prefix string, fieldData *string, flags gurps.AttributeFlags) *unison.PopupMenu[*gurps.AttributeChoice] {
 	choices, current := gurps.AttributeChoices(entity, prefix, flags, *fieldData)
 	popup := addPopup(parent, choices, &current)

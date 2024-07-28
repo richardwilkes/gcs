@@ -278,7 +278,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 		ex.writeEncodedText(ex.entity.Swing().String())
 	case "GENERAL_DR":
 		dr := 0
-		if torso := ex.entity.SheetSettings.BodyType.LookupLocationByID(ex.entity, "torso"); torso != nil {
+		if torso := ex.entity.SheetSettings.BodyType.LookupLocationByID(ex.entity, TorsoID); torso != nil {
 			dr = torso.DR(ex.entity, nil, nil)[AllID]
 		}
 		ex.writeEncodedText(strconv.Itoa(dr))
@@ -777,8 +777,11 @@ func (ex *legacyExporter) hitLocationEquipment(location *HitLocation) []string {
 		if eqp.Equipped {
 			for _, f := range eqp.Features {
 				if bonus, ok := f.(*DRBonus); ok {
-					if bonus.Location == AllID || strings.EqualFold(location.LocID, bonus.Location) {
-						list = append(list, eqp.NameWithReplacements())
+					for _, loc := range bonus.Locations {
+						if loc == AllID || strings.EqualFold(location.LocID, loc) {
+							list = append(list, eqp.NameWithReplacements())
+							break
+						}
 					}
 				}
 			}
