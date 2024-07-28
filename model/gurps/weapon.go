@@ -447,7 +447,7 @@ func (w *Weapon) usesCrossbowSkill() bool {
 func (w *Weapon) skillLevelBaseAdjustment(e *Entity, tooltip *xio.ByteBuffer) fxp.Int {
 	var adj fxp.Int
 	minST := w.Strength.Resolve(w, nil).Min
-	if w.IsRanged() && w.Range.MusclePowered && !w.usesCrossbowSkill() {
+	if !w.IsRanged() || (w.Range.MusclePowered && !w.usesCrossbowSkill()) {
 		minST -= e.StrikingStrength()
 	} else {
 		minST -= e.LiftingStrength()
