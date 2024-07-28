@@ -199,6 +199,9 @@ func (p *PointsPanel) adjustUnspent() {
 			if p.overSpent != -1 {
 				p.overSpent = -1
 				p.unspentField.OnBackgroundInk = unison.ThemeOnError
+				p.unspentField.Text.AdjustDecorations(func(decoration *unison.TextDecoration) {
+					decoration.OnBackgroundInk = unison.ThemeOnError
+				})
 				p.unspentLabel.Text = unison.NewSmallCapsText(i18n.Text("Overspent"), &unison.TextDecoration{
 					Font:            fonts.PageLabelPrimary,
 					OnBackgroundInk: unison.ThemeOnError,
@@ -208,6 +211,9 @@ func (p *PointsPanel) adjustUnspent() {
 			if p.overSpent != 1 {
 				p.overSpent = 1
 				p.unspentField.OnBackgroundInk = unison.DefaultLabelTheme.OnBackgroundInk
+				p.unspentField.Text.AdjustDecorations(func(decoration *unison.TextDecoration) {
+					decoration.OnBackgroundInk = unison.DefaultLabelTheme.OnBackgroundInk
+				})
 				p.unspentLabel.Text = unison.NewSmallCapsText(i18n.Text("Unspent"), &unison.TextDecoration{
 					Font:            fonts.PageLabelPrimary,
 					OnBackgroundInk: unison.DefaultLabelTheme.OnBackgroundInk,
