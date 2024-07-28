@@ -437,6 +437,7 @@ func (t *Trait) SetDataOwner(owner DataOwner) {
 		}
 	}
 	for _, m := range t.Modifiers {
+		m.trait = t
 		m.SetDataOwner(owner)
 	}
 }
@@ -460,7 +461,7 @@ func (t *Trait) AdjustedPoints() fxp.Int {
 		return 0
 	}
 	if !t.Container() {
-		return AdjustedPoints(EntityFromNode(t), t.CanLevel, t.BasePoints, t.Levels, t.PointsPerLevel, t.CR,
+		return AdjustedPoints(EntityFromNode(t), t, t.CanLevel, t.BasePoints, t.Levels, t.PointsPerLevel, t.CR,
 			t.AllModifiers(), t.RoundCostDown)
 	}
 	var points fxp.Int
@@ -698,8 +699,9 @@ func ExtractTags(tags string) []string {
 	return list
 }
 
-// AdjustedPoints returns the total points, taking levels and modifiers into account. 'entity' may be nil.
-func AdjustedPoints(entity *Entity, canLevel bool, basePoints, levels, pointsPerLevel fxp.Int, cr selfctrl.Roll, modifiers []*TraitModifier, roundCostDown bool) fxp.Int {
+// AdjustedPoints returns the total points, taking levels and modifiers into account. 'entity' and 'dataOwner' may be
+// nil.
+func AdjustedPoints(entity *Entity, trait *Trait, canLevel bool, basePoints, levels, pointsPerLevel fxp.Int, cr selfctrl.Roll, modifiers []*TraitModifier, roundCostDown bool) fxp.Int {
 	if !canLevel {
 		levels = 0
 		pointsPerLevel = 0
@@ -707,6 +709,7 @@ func AdjustedPoints(entity *Entity, canLevel bool, basePoints, levels, pointsPer
 	var baseEnh, levelEnh, baseLim, levelLim fxp.Int
 	multiplier := cr.Multiplier()
 	Traverse(func(mod *TraitModifier) bool {
+		mod.trait = trait
 		modifier := mod.CostModifier()
 		switch mod.CostType {
 		case tmcost.Percentage:

@@ -36,26 +36,39 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 		costLabel := i18n.Text("Cost")
 		wrapper := addFlowWrapper(content, costLabel, 3)
 		addDecimalField(wrapper, nil, "", costLabel, "", &e.editorData.Cost, -fxp.MaxBasePoints, fxp.MaxBasePoints)
-		costTypePopup := addCostTypePopup(wrapper, e)
+		costTypePopup := unison.NewPopupMenu[tmcost.Type]()
+		costTypePopup.AddItem(tmcost.Types...)
+		costTypePopup.Select(e.editorData.CostType)
+		wrapper.AddChild(costTypePopup)
 		affectsPopup := addPopup(wrapper, affects.Options, &e.editorData.Affects)
-		levels := addLabelAndDecimalField(content, nil, "", i18n.Text("Level"), "", &e.editorData.Levels, 0, fxp.Thousand)
-		adjustFieldBlank(levels, !e.target.IsLeveled())
+		levelLabel := i18n.Text("Level")
+		wrapper = addFlowWrapper(content, levelLabel, 2)
+		levels := addDecimalField(wrapper, nil, "", levelLabel, "", &e.editorData.Levels, 0, fxp.Thousand)
+		box := addCheckBox(wrapper, i18n.Text("Use level from owner"), &e.editorData.UseLevelFromTrait)
+		box.OnSet = func() { adjustFieldBlank(levels, e.editorData.UseLevelFromTrait) }
+		adjustFieldBlank(levels, e.editorData.UseLevelFromTrait)
 		total := NewNonEditableField(func(field *NonEditableField) {
 			enabled := true
-			switch costTypePopup.SelectedIndex() - 1 {
-			case -1:
-				field.SetTitle(e.editorData.Cost.Mul(e.editorData.Levels).StringWithSign() + tmcost.Percentage.String())
-			case int(tmcost.Percentage):
-				field.SetTitle(e.editorData.Cost.StringWithSign() + tmcost.Percentage.String())
-			case int(tmcost.Points):
-				field.SetTitle(e.editorData.Cost.StringWithSign())
-			case int(tmcost.Multiplier):
-				field.SetTitle(tmcost.Multiplier.String() + e.editorData.Cost.String())
-				affectsPopup.Select(affects.Total)
-				enabled = false
-			default:
+			costMultiplier := gurps.CostMultiplierForTraitModifier(e.editorData.Levels, e.target.OwningTrait(),
+				e.editorData.UseLevelFromTrait)
+			costType, ok := costTypePopup.Selected()
+			if ok {
+				switch costType {
+				case tmcost.Percentage:
+					field.SetTitle(e.editorData.Cost.Mul(costMultiplier).StringWithSign() + tmcost.Percentage.String())
+				case tmcost.Points:
+					field.SetTitle(e.editorData.Cost.Mul(costMultiplier).StringWithSign())
+				case tmcost.Multiplier:
+					field.SetTitle(tmcost.Multiplier.String() + e.editorData.Cost.Mul(costMultiplier).String())
+					affectsPopup.Select(affects.Total)
+					enabled = false
+				default:
+					ok = false
+				}
+			}
+			if !ok {
 				errs.Log(errs.New("unhandled cost type"), "index", costTypePopup.SelectedIndex())
-				field.SetTitle(e.editorData.Cost.StringWithSign() + tmcost.Percentage.String())
+				field.SetTitle(e.editorData.Cost.Mul(costMultiplier).StringWithSign() + tmcost.Percentage.String())
 			}
 			affectsPopup.SetEnabled(enabled)
 			field.MarkForLayoutAndRedraw()
@@ -66,19 +79,11 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 		})
 		content.AddChild(NewFieldLeadingLabel(i18n.Text("Total"), false))
 		content.AddChild(total)
-		costTypePopup.SelectionChangedCallback = func(popup *unison.PopupMenu[string]) {
-			index := popup.SelectedIndex()
-			if index == 0 {
-				e.editorData.CostType = tmcost.Percentage
-				if e.editorData.Levels < fxp.One {
-					levels.SetText("1")
-				}
-			} else {
-				e.editorData.CostType = tmcost.Types[index-1]
-				e.editorData.Levels = 0
+		costTypePopup.SelectionChangedCallback = func(popup *unison.PopupMenu[tmcost.Type]) {
+			if what, ok := popup.Selected(); ok {
+				e.editorData.CostType = what
+				MarkModified(popup)
 			}
-			adjustFieldBlank(levels, index != 0)
-			MarkModified(wrapper)
 		}
 	}
 	addTagsLabelAndField(content, &e.editorData.Tags)
@@ -89,19 +94,4 @@ func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifie
 		content.AddChild(newFeaturesPanel(gurps.EntityFromNode(e.target), e.target, &e.editorData.Features, false))
 	}
 	return nil
-}
-
-func addCostTypePopup(parent *unison.Panel, e *editor[*gurps.TraitModifier, *gurps.TraitModifierEditData]) *unison.PopupMenu[string] {
-	popup := unison.NewPopupMenu[string]()
-	popup.AddItem(i18n.Text("% per level"))
-	for _, one := range tmcost.Types {
-		popup.AddItem(one.String())
-	}
-	if e.target.IsLeveled() {
-		popup.SelectIndex(0)
-	} else {
-		popup.Select(e.editorData.CostType.String())
-	}
-	parent.AddChild(popup)
-	return popup
 }

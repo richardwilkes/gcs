@@ -345,7 +345,7 @@ func (e *Entity) processFeatures() {
 		}
 		Traverse(func(mod *TraitModifier) bool {
 			for _, f := range mod.Features {
-				e.processFeature(a, nil, f, mod.Levels)
+				e.processFeature(a, nil, f, mod.CurrentLevel())
 			}
 			return false
 		}, true, true, a.Modifiers...)

@@ -66,6 +66,7 @@ type GeneralModifier interface {
 type TraitModifier struct {
 	TraitModifierData
 	owner DataOwner
+	trait *Trait
 }
 
 // TraitModifierData holds the TraitModifier data that is written to disk.
@@ -104,11 +105,12 @@ type TraitModifierSyncData struct {
 // TraitModifierNonContainerSyncData holds the TraitModifier sync data that is only applicable to TraitModifiers that
 // aren't containers.
 type TraitModifierNonContainerSyncData struct {
-	Levels   fxp.Int        `json:"levels,omitempty"`
-	Cost     fxp.Int        `json:"cost,omitempty"`
-	CostType tmcost.Type    `json:"cost_type,omitempty"`
-	Affects  affects.Option `json:"affects,omitempty"`
-	Features Features       `json:"features,omitempty"`
+	Levels            fxp.Int        `json:"levels,omitempty"`
+	Cost              fxp.Int        `json:"cost,omitempty"`
+	CostType          tmcost.Type    `json:"cost_type,omitempty"`
+	UseLevelFromTrait bool           `json:"use_level_from_trait,omitempty"`
+	Affects           affects.Option `json:"affects,omitempty"`
+	Features          Features       `json:"features,omitempty"`
 }
 
 type traitModifierListData struct {
@@ -138,15 +140,11 @@ func SaveTraitModifiers(modifiers []*TraitModifier, filePath string) error {
 
 // NewTraitModifier creates a TraitModifier.
 func NewTraitModifier(owner DataOwner, parent *TraitModifier, container bool) *TraitModifier {
-	t := TraitModifier{
-		TraitModifierData: TraitModifierData{
-			SourcedID: SourcedID{
-				TID: tid.MustNewTID(traitModifierKind(container)),
-			},
-			parent: parent,
-		},
-		owner: owner,
-	}
+	var t TraitModifier
+	t.TID = tid.MustNewTID(traitModifierKind(container))
+	t.UseLevelFromTrait = true
+	t.parent = parent
+	t.owner = owner
 	t.Name = t.Kind()
 	t.SetOpen(container)
 	return &t
@@ -346,6 +344,11 @@ func (t *TraitModifier) Depth() int {
 	return count
 }
 
+// OwningTrait returns the owning trait.
+func (t *TraitModifier) OwningTrait() *Trait {
+	return t.trait
+}
+
 // DataOwner returns the data owner.
 func (t *TraitModifier) DataOwner() DataOwner {
 	return t.owner
@@ -363,21 +366,51 @@ func (t *TraitModifier) SetDataOwner(owner DataOwner) {
 
 // CostModifier returns the total cost modifier.
 func (t *TraitModifier) CostModifier() fxp.Int {
-	if t.Levels > 0 {
-		return t.Cost.Mul(t.Levels)
-	}
-	return t.Cost
+	return t.Cost.Mul(t.CostMultiplier())
 }
 
 // IsLeveled returns true if this TraitModifier is leveled.
 func (t *TraitModifier) IsLeveled() bool {
-	return !t.Container() && t.CostType == tmcost.Percentage && t.Levels > 0
+	if t.Container() {
+		return false
+	}
+	if t.UseLevelFromTrait {
+		if t.trait == nil {
+			return false
+		}
+		return t.trait.IsLeveled()
+	}
+	return t.Levels > 0
+}
+
+// CostMultiplier returns the amount to multiply the cost by.
+func (t *TraitModifier) CostMultiplier() fxp.Int {
+	if !t.IsLeveled() {
+		return fxp.One
+	}
+	return CostMultiplierForTraitModifier(t.Levels, t.trait, t.UseLevelFromTrait)
+}
+
+// CostMultiplierForTraitModifier returns the amount to multiply the cost by.
+func CostMultiplierForTraitModifier(baseLevels fxp.Int, trait *Trait, useLevelFromTrait bool) fxp.Int {
+	var multiplier fxp.Int
+	if useLevelFromTrait {
+		if trait != nil && trait.IsLeveled() {
+			multiplier = trait.CurrentLevel()
+		}
+	} else {
+		multiplier = baseLevels
+	}
+	if multiplier <= 0 {
+		multiplier = fxp.One
+	}
+	return multiplier
 }
 
 // CurrentLevel returns the current level of the modifier or zero if it is not leveled.
 func (t *TraitModifier) CurrentLevel() fxp.Int {
 	if t.Enabled() && t.IsLeveled() {
-		return t.Levels
+		return t.CostMultiplier()
 	}
 	return 0
 }
@@ -387,7 +420,7 @@ func (t *TraitModifier) String() string {
 	buffer.WriteString(t.NameWithReplacements())
 	if t.IsLeveled() {
 		buffer.WriteByte(' ')
-		buffer.WriteString(t.Levels.String())
+		buffer.WriteString(t.CurrentLevel().String())
 	}
 	return buffer.String()
 }
@@ -430,19 +463,14 @@ func (t *TraitModifier) CostDescription() string {
 	var base string
 	switch t.CostType {
 	case tmcost.Percentage:
-		if t.IsLeveled() {
-			base = t.Cost.Mul(t.Levels).StringWithSign()
-		} else {
-			base = t.Cost.StringWithSign()
-		}
-		base += tmcost.Percentage.String()
+		base = t.CostModifier().StringWithSign() + tmcost.Percentage.String()
 	case tmcost.Points:
-		base = t.Cost.StringWithSign()
+		base = t.CostModifier().StringWithSign()
 	case tmcost.Multiplier:
-		return t.CostType.String() + t.Cost.String()
+		return t.CostType.String() + t.CostModifier().String()
 	default:
 		errs.Log(errs.New("unknown cost type"), "type", int(t.CostType))
-		base = t.Cost.StringWithSign() + tmcost.Percentage.String()
+		base = t.CostModifier().StringWithSign() + tmcost.Percentage.String()
 	}
 	if desc := t.Affects.AltString(); desc != "" {
 		base += " " + desc
@@ -568,6 +596,7 @@ func (t *TraitModifierNonContainerSyncData) hash(h hash.Hash) {
 	_ = binary.Write(h, binary.LittleEndian, t.Levels)
 	_ = binary.Write(h, binary.LittleEndian, t.Cost)
 	_ = binary.Write(h, binary.LittleEndian, t.CostType)
+	_ = binary.Write(h, binary.LittleEndian, t.UseLevelFromTrait)
 	_ = binary.Write(h, binary.LittleEndian, t.Affects)
 	for _, feature := range t.Features {
 		feature.Hash(h)
