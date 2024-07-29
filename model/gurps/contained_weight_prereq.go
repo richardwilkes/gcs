@@ -31,67 +31,63 @@ type ContainedWeightPrereq struct {
 
 // NewContainedWeightPrereq creates a new ContainedWeightPrereq.
 func NewContainedWeightPrereq(entity *Entity) *ContainedWeightPrereq {
-	return &ContainedWeightPrereq{
-		Type: prereq.ContainedWeight,
-		WeightCriteria: WeightCriteria{
-			WeightCriteriaData: WeightCriteriaData{
-				Compare:   AtMostNumber,
-				Qualifier: fxp.WeightFromInteger(5, SheetSettingsFor(entity).DefaultWeightUnits),
-			},
-		},
-		Has: true,
-	}
+	var p ContainedWeightPrereq
+	p.Type = prereq.ContainedWeight
+	p.WeightCriteria.Compare = AtMostNumber
+	p.WeightCriteria.Qualifier = fxp.WeightFromInteger(5, SheetSettingsFor(entity).DefaultWeightUnits)
+	p.Has = true
+	return &p
 }
 
 // PrereqType implements Prereq.
-func (c *ContainedWeightPrereq) PrereqType() prereq.Type {
-	return c.Type
+func (p *ContainedWeightPrereq) PrereqType() prereq.Type {
+	return p.Type
 }
 
 // ParentList implements Prereq.
-func (c *ContainedWeightPrereq) ParentList() *PrereqList {
-	return c.Parent
+func (p *ContainedWeightPrereq) ParentList() *PrereqList {
+	return p.Parent
 }
 
 // Clone implements Prereq.
-func (c *ContainedWeightPrereq) Clone(parent *PrereqList) Prereq {
-	clone := *c
+func (p *ContainedWeightPrereq) Clone(parent *PrereqList) Prereq {
+	clone := *p
 	clone.Parent = parent
 	return &clone
 }
 
 // FillWithNameableKeys implements Prereq.
-func (c *ContainedWeightPrereq) FillWithNameableKeys(_, _ map[string]string) {
+func (p *ContainedWeightPrereq) FillWithNameableKeys(_, _ map[string]string) {
 }
 
 // Satisfied implements Prereq.
-func (c *ContainedWeightPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string, _ *bool) bool {
+func (p *ContainedWeightPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string, _ *bool) bool {
 	satisfied := false
 	if eqp, ok := exclude.(*Equipment); ok {
 		if satisfied = !eqp.Container(); !satisfied {
 			units := SheetSettingsFor(entity).DefaultWeightUnits
 			weight := eqp.ExtendedWeight(false, units) - eqp.AdjustedWeight(false, units)
-			satisfied = c.WeightCriteria.Matches(weight)
+			satisfied = p.WeightCriteria.Matches(weight)
 		}
 	}
-	if !c.Has {
+	if !p.Has {
 		satisfied = !satisfied
 	}
 	if !satisfied && tooltip != nil {
 		tooltip.WriteString(prefix)
-		tooltip.WriteString(HasText(c.Has))
+		tooltip.WriteString(HasText(p.Has))
 		tooltip.WriteString(i18n.Text(" a contained weight which "))
-		tooltip.WriteString(c.WeightCriteria.String())
+		tooltip.WriteString(p.WeightCriteria.String())
 	}
 	return satisfied
 }
 
 // Hash writes this object's contents into the hasher.
-func (c *ContainedWeightPrereq) Hash(h hash.Hash) {
-	if c == nil {
+func (p *ContainedWeightPrereq) Hash(h hash.Hash) {
+	if p == nil {
 		return
 	}
-	_ = binary.Write(h, binary.LittleEndian, c.Type)
-	_ = binary.Write(h, binary.LittleEndian, c.Has)
-	c.WeightCriteria.Hash(h)
+	_ = binary.Write(h, binary.LittleEndian, p.Type)
+	_ = binary.Write(h, binary.LittleEndian, p.Has)
+	p.WeightCriteria.Hash(h)
 }

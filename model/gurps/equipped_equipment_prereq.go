@@ -31,46 +31,38 @@ type EquippedEquipmentPrereq struct {
 
 // NewEquippedEquipmentPrereq creates a new EquippedEquipmentPrereq.
 func NewEquippedEquipmentPrereq() *EquippedEquipmentPrereq {
-	return &EquippedEquipmentPrereq{
-		Type: prereq.EquippedEquipment,
-		NameCriteria: StringCriteria{
-			StringCriteriaData: StringCriteriaData{
-				Compare: IsString,
-			},
-		},
-		TagsCriteria: StringCriteria{
-			StringCriteriaData: StringCriteriaData{
-				Compare: AnyString,
-			},
-		},
-	}
+	var p EquippedEquipmentPrereq
+	p.Type = prereq.EquippedEquipment
+	p.NameCriteria.Compare = IsString
+	p.TagsCriteria.Compare = AnyString
+	return &p
 }
 
 // PrereqType implements Prereq.
-func (e *EquippedEquipmentPrereq) PrereqType() prereq.Type {
-	return e.Type
+func (p *EquippedEquipmentPrereq) PrereqType() prereq.Type {
+	return p.Type
 }
 
 // ParentList implements Prereq.
-func (e *EquippedEquipmentPrereq) ParentList() *PrereqList {
-	return e.Parent
+func (p *EquippedEquipmentPrereq) ParentList() *PrereqList {
+	return p.Parent
 }
 
 // Clone implements Prereq.
-func (e *EquippedEquipmentPrereq) Clone(parent *PrereqList) Prereq {
-	clone := *e
+func (p *EquippedEquipmentPrereq) Clone(parent *PrereqList) Prereq {
+	clone := *p
 	clone.Parent = parent
 	return &clone
 }
 
 // FillWithNameableKeys implements Prereq.
-func (e *EquippedEquipmentPrereq) FillWithNameableKeys(m, existing map[string]string) {
-	ExtractNameables(e.NameCriteria.Qualifier, m, existing)
-	ExtractNameables(e.TagsCriteria.Qualifier, m, existing)
+func (p *EquippedEquipmentPrereq) FillWithNameableKeys(m, existing map[string]string) {
+	ExtractNameables(p.NameCriteria.Qualifier, m, existing)
+	ExtractNameables(p.TagsCriteria.Qualifier, m, existing)
 }
 
 // Satisfied implements Prereq.
-func (e *EquippedEquipmentPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string, hasEquipmentPenalty *bool) bool {
+func (p *EquippedEquipmentPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string, hasEquipmentPenalty *bool) bool {
 	var replacements map[string]string
 	if na, ok := exclude.(NameableAccesser); ok {
 		replacements = na.NameableReplacements()
@@ -78,27 +70,27 @@ func (e *EquippedEquipmentPrereq) Satisfied(entity *Entity, exclude any, tooltip
 	satisfied := false
 	Traverse(func(eqp *Equipment) bool {
 		satisfied = exclude != eqp && eqp.Equipped && eqp.Quantity > 0 &&
-			e.NameCriteria.Matches(replacements, eqp.NameWithReplacements()) &&
-			e.TagsCriteria.MatchesList(replacements, eqp.Tags...)
+			p.NameCriteria.Matches(replacements, eqp.NameWithReplacements()) &&
+			p.TagsCriteria.MatchesList(replacements, eqp.Tags...)
 		return satisfied
 	}, false, false, entity.CarriedEquipment...)
 	if !satisfied {
 		*hasEquipmentPenalty = true
 		if tooltip != nil {
 			fmt.Fprintf(tooltip, i18n.Text("%sHas equipment which is equipped and whose name %s %s"),
-				prefix, e.NameCriteria.String(replacements),
-				e.TagsCriteria.StringWithPrefix(replacements, i18n.Text("and at least one tag"), i18n.Text("and all tags")))
+				prefix, p.NameCriteria.String(replacements),
+				p.TagsCriteria.StringWithPrefix(replacements, i18n.Text("and at least one tag"), i18n.Text("and all tags")))
 		}
 	}
 	return satisfied
 }
 
 // Hash writes this object's contents into the hasher.
-func (e *EquippedEquipmentPrereq) Hash(h hash.Hash) {
-	if e == nil {
+func (p *EquippedEquipmentPrereq) Hash(h hash.Hash) {
+	if p == nil {
 		return
 	}
-	_ = binary.Write(h, binary.LittleEndian, e.Type)
-	e.NameCriteria.Hash(h)
-	e.TagsCriteria.Hash(h)
+	_ = binary.Write(h, binary.LittleEndian, p.Type)
+	p.NameCriteria.Hash(h)
+	p.TagsCriteria.Hash(h)
 }

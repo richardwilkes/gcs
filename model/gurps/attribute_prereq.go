@@ -33,73 +33,69 @@ type AttributePrereq struct {
 
 // NewAttributePrereq creates a new AttributePrereq. 'entity' may be nil.
 func NewAttributePrereq(entity *Entity) *AttributePrereq {
-	return &AttributePrereq{
-		Type: prereq.Attribute,
-		QualifierCriteria: NumericCriteria{
-			NumericCriteriaData: NumericCriteriaData{
-				Compare:   AtLeastNumber,
-				Qualifier: fxp.Ten,
-			},
-		},
-		Which: AttributeIDFor(entity, StrengthID),
-		Has:   true,
-	}
+	var p AttributePrereq
+	p.Type = prereq.Attribute
+	p.QualifierCriteria.Compare = AtLeastNumber
+	p.QualifierCriteria.Qualifier = fxp.Ten
+	p.Which = AttributeIDFor(entity, StrengthID)
+	p.Has = true
+	return &p
 }
 
 // PrereqType implements Prereq.
-func (a *AttributePrereq) PrereqType() prereq.Type {
-	return a.Type
+func (p *AttributePrereq) PrereqType() prereq.Type {
+	return p.Type
 }
 
 // ParentList implements Prereq.
-func (a *AttributePrereq) ParentList() *PrereqList {
-	return a.Parent
+func (p *AttributePrereq) ParentList() *PrereqList {
+	return p.Parent
 }
 
 // Clone implements Prereq.
-func (a *AttributePrereq) Clone(parent *PrereqList) Prereq {
-	clone := *a
+func (p *AttributePrereq) Clone(parent *PrereqList) Prereq {
+	clone := *p
 	clone.Parent = parent
 	return &clone
 }
 
 // FillWithNameableKeys implements Prereq.
-func (a *AttributePrereq) FillWithNameableKeys(_, _ map[string]string) {
+func (p *AttributePrereq) FillWithNameableKeys(_, _ map[string]string) {
 }
 
 // Satisfied implements Prereq.
-func (a *AttributePrereq) Satisfied(entity *Entity, _ any, tooltip *xio.ByteBuffer, prefix string, _ *bool) bool {
-	value := entity.ResolveAttributeCurrent(a.Which)
-	if a.CombinedWith != "" {
-		value += entity.ResolveAttributeCurrent(a.CombinedWith)
+func (p *AttributePrereq) Satisfied(entity *Entity, _ any, tooltip *xio.ByteBuffer, prefix string, _ *bool) bool {
+	value := entity.ResolveAttributeCurrent(p.Which)
+	if p.CombinedWith != "" {
+		value += entity.ResolveAttributeCurrent(p.CombinedWith)
 	}
-	satisfied := a.QualifierCriteria.Matches(value)
-	if !a.Has {
+	satisfied := p.QualifierCriteria.Matches(value)
+	if !p.Has {
 		satisfied = !satisfied
 	}
 	if !satisfied && tooltip != nil {
 		tooltip.WriteString(prefix)
-		tooltip.WriteString(HasText(a.Has))
+		tooltip.WriteString(HasText(p.Has))
 		tooltip.WriteByte(' ')
-		tooltip.WriteString(entity.ResolveAttributeName(a.Which))
-		if a.CombinedWith != "" {
+		tooltip.WriteString(entity.ResolveAttributeName(p.Which))
+		if p.CombinedWith != "" {
 			tooltip.WriteByte('+')
-			tooltip.WriteString(entity.ResolveAttributeName(a.CombinedWith))
+			tooltip.WriteString(entity.ResolveAttributeName(p.CombinedWith))
 		}
 		tooltip.WriteString(i18n.Text(" which "))
-		tooltip.WriteString(a.QualifierCriteria.String())
+		tooltip.WriteString(p.QualifierCriteria.String())
 	}
 	return satisfied
 }
 
 // Hash writes this object's contents into the hasher.
-func (a *AttributePrereq) Hash(h hash.Hash) {
-	if a == nil {
+func (p *AttributePrereq) Hash(h hash.Hash) {
+	if p == nil {
 		return
 	}
-	_ = binary.Write(h, binary.LittleEndian, a.Type)
-	_ = binary.Write(h, binary.LittleEndian, a.Has)
-	_, _ = h.Write([]byte(a.CombinedWith))
-	a.QualifierCriteria.Hash(h)
-	_, _ = h.Write([]byte(a.Which))
+	_ = binary.Write(h, binary.LittleEndian, p.Type)
+	_ = binary.Write(h, binary.LittleEndian, p.Has)
+	_, _ = h.Write([]byte(p.CombinedWith))
+	p.QualifierCriteria.Hash(h)
+	_, _ = h.Write([]byte(p.Which))
 }

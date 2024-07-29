@@ -134,23 +134,14 @@ func SaveEquipment(equipment []*Equipment, filePath string) error {
 
 // NewEquipment creates a new Equipment.
 func NewEquipment(owner DataOwner, parent *Equipment, container bool) *Equipment {
-	e := Equipment{
-		EquipmentData: EquipmentData{
-			SourcedID: SourcedID{
-				TID: tid.MustNewTID(equipmentKind(container)),
-			},
-			EquipmentEditData: EquipmentEditData{
-				EquipmentSyncData: EquipmentSyncData{
-					LegalityClass: "4",
-				},
-				Quantity: fxp.One,
-				Equipped: true,
-			},
-			parent: parent,
-		},
-		owner: owner,
-	}
+	var e Equipment
+	e.TID = tid.MustNewTID(equipmentKind(container))
 	e.Name = e.Kind()
+	e.LegalityClass = "4"
+	e.Quantity = fxp.One
+	e.Equipped = true
+	e.parent = parent
+	e.owner = owner
 	e.SetOpen(container)
 	return &e
 }

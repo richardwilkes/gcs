@@ -110,7 +110,6 @@ type Openable interface {
 func GlobalSettings() *Settings {
 	globalOnce.Do(func() {
 		dice.GURPSFormat = true
-		fixupMovedSettingsFileIfNeeded()
 		if err := jio.LoadFromFile(context.Background(), SettingsPath, &globalSettings); err != nil {
 			globalSettings = Settings{
 				LastSeenGCSVersion: cmdline.AppVersion,

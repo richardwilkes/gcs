@@ -153,15 +153,10 @@ func SaveSpells(spells []*Spell, filePath string) error {
 
 // NewSpell creates a new Spell.
 func NewSpell(owner DataOwner, parent *Spell, container bool) *Spell {
-	s := Spell{
-		SpellData: SpellData{
-			SourcedID: SourcedID{
-				TID: tid.MustNewTID(spellKind(container)),
-			},
-			parent: parent,
-		},
-		owner: owner,
-	}
+	var s Spell
+	s.TID = tid.MustNewTID(spellKind(container))
+	s.parent = parent
+	s.owner = owner
 	if container {
 		s.TemplatePicker = &TemplatePicker{}
 	} else {
@@ -182,15 +177,10 @@ func NewSpell(owner DataOwner, parent *Spell, container bool) *Spell {
 
 // NewRitualMagicSpell creates a new Ritual Magic Spell.
 func NewRitualMagicSpell(owner DataOwner, parent *Spell, _ bool) *Spell {
-	s := Spell{
-		SpellData: SpellData{
-			SourcedID: SourcedID{
-				TID: tid.MustNewTID(kinds.RitualMagicSpell),
-			},
-			parent: parent,
-		},
-		owner: owner,
-	}
+	var s Spell
+	s.TID = tid.MustNewTID(kinds.RitualMagicSpell)
+	s.parent = parent
+	s.owner = owner
 	s.Difficulty.Attribute = AttributeIDFor(EntityFromNode(&s), "iq")
 	s.Difficulty.Difficulty = difficulty.Hard
 	s.PowerSource = i18n.Text("Arcane")

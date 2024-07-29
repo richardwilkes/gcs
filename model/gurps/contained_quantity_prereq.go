@@ -31,41 +31,37 @@ type ContainedQuantityPrereq struct {
 
 // NewContainedQuantityPrereq creates a new ContainedQuantityPrereq.
 func NewContainedQuantityPrereq() *ContainedQuantityPrereq {
-	return &ContainedQuantityPrereq{
-		Type: prereq.ContainedQuantity,
-		QualifierCriteria: NumericCriteria{
-			NumericCriteriaData: NumericCriteriaData{
-				Compare:   AtMostNumber,
-				Qualifier: fxp.One,
-			},
-		},
-		Has: true,
-	}
+	var p ContainedQuantityPrereq
+	p.Type = prereq.ContainedQuantity
+	p.QualifierCriteria.Compare = AtMostNumber
+	p.QualifierCriteria.Qualifier = fxp.One
+	p.Has = true
+	return &p
 }
 
 // PrereqType implements Prereq.
-func (c *ContainedQuantityPrereq) PrereqType() prereq.Type {
-	return c.Type
+func (p *ContainedQuantityPrereq) PrereqType() prereq.Type {
+	return p.Type
 }
 
 // ParentList implements Prereq.
-func (c *ContainedQuantityPrereq) ParentList() *PrereqList {
-	return c.Parent
+func (p *ContainedQuantityPrereq) ParentList() *PrereqList {
+	return p.Parent
 }
 
 // Clone implements Prereq.
-func (c *ContainedQuantityPrereq) Clone(parent *PrereqList) Prereq {
-	clone := *c
+func (p *ContainedQuantityPrereq) Clone(parent *PrereqList) Prereq {
+	clone := *p
 	clone.Parent = parent
 	return &clone
 }
 
 // FillWithNameableKeys implements Prereq.
-func (c *ContainedQuantityPrereq) FillWithNameableKeys(_, _ map[string]string) {
+func (p *ContainedQuantityPrereq) FillWithNameableKeys(_, _ map[string]string) {
 }
 
 // Satisfied implements Prereq.
-func (c *ContainedQuantityPrereq) Satisfied(_ *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string, _ *bool) bool {
+func (p *ContainedQuantityPrereq) Satisfied(_ *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string, _ *bool) bool {
 	satisfied := false
 	if eqp, ok := exclude.(*Equipment); ok {
 		if satisfied = !eqp.Container(); !satisfied {
@@ -73,27 +69,27 @@ func (c *ContainedQuantityPrereq) Satisfied(_ *Entity, exclude any, tooltip *xio
 			for _, child := range eqp.Children {
 				qty += child.Quantity
 			}
-			satisfied = c.QualifierCriteria.Matches(qty)
+			satisfied = p.QualifierCriteria.Matches(qty)
 		}
 	}
-	if !c.Has {
+	if !p.Has {
 		satisfied = !satisfied
 	}
 	if !satisfied && tooltip != nil {
 		tooltip.WriteString(prefix)
-		tooltip.WriteString(HasText(c.Has))
+		tooltip.WriteString(HasText(p.Has))
 		tooltip.WriteString(i18n.Text(" a contained quantity which "))
-		tooltip.WriteString(c.QualifierCriteria.String())
+		tooltip.WriteString(p.QualifierCriteria.String())
 	}
 	return satisfied
 }
 
 // Hash writes this object's contents into the hasher.
-func (c *ContainedQuantityPrereq) Hash(h hash.Hash) {
-	if c == nil {
+func (p *ContainedQuantityPrereq) Hash(h hash.Hash) {
+	if p == nil {
 		return
 	}
-	_ = binary.Write(h, binary.LittleEndian, c.Type)
-	_ = binary.Write(h, binary.LittleEndian, c.Has)
-	c.QualifierCriteria.Hash(h)
+	_ = binary.Write(h, binary.LittleEndian, p.Type)
+	_ = binary.Write(h, binary.LittleEndian, p.Has)
+	p.QualifierCriteria.Hash(h)
 }

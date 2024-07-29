@@ -147,15 +147,10 @@ func SaveTraits(traits []*Trait, filePath string) error {
 
 // NewTrait creates a new Trait.
 func NewTrait(owner DataOwner, parent *Trait, container bool) *Trait {
-	t := Trait{
-		TraitData: TraitData{
-			SourcedID: SourcedID{
-				TID: tid.MustNewTID(traitKind(container)),
-			},
-			parent: parent,
-		},
-		owner: owner,
-	}
+	var t Trait
+	t.TID = tid.MustNewTID(traitKind(container))
+	t.parent = parent
+	t.owner = owner
 	t.Name = t.Kind()
 	if t.Container() {
 		t.TemplatePicker = &TemplatePicker{}

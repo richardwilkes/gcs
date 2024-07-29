@@ -133,16 +133,11 @@ func SaveEquipmentModifiers(modifiers []*EquipmentModifier, filePath string) err
 
 // NewEquipmentModifier creates an EquipmentModifier.
 func NewEquipmentModifier(owner DataOwner, parent *EquipmentModifier, container bool) *EquipmentModifier {
-	e := EquipmentModifier{
-		EquipmentModifierData: EquipmentModifierData{
-			SourcedID: SourcedID{
-				TID: tid.MustNewTID(equipmentModifierKind(container)),
-			},
-			parent: parent,
-		},
-		owner: owner,
-	}
+	var e EquipmentModifier
+	e.TID = tid.MustNewTID(equipmentModifierKind(container))
 	e.Name = e.Kind()
+	e.parent = parent
+	e.owner = owner
 	e.SetOpen(container)
 	return &e
 }

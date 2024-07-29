@@ -95,15 +95,10 @@ func SaveNotes(notes []*Note, filePath string) error {
 
 // NewNote creates a new Note.
 func NewNote(owner DataOwner, parent *Note, container bool) *Note {
-	n := Note{
-		NoteData: NoteData{
-			SourcedID: SourcedID{
-				TID: tid.MustNewTID(noteKind(container)),
-			},
-			parent: parent,
-		},
-		owner: owner,
-	}
+	var n Note
+	n.TID = tid.MustNewTID(noteKind(container))
+	n.parent = parent
+	n.owner = owner
 	n.Text = n.Kind()
 	n.SetOpen(container)
 	return &n

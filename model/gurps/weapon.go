@@ -120,20 +120,17 @@ func SeparateWeapons(list []*Weapon) (melee, ranged []*Weapon) {
 
 // NewWeapon creates a new weapon of the given type.
 func NewWeapon(owner WeaponOwner, melee bool) *Weapon {
-	w := &Weapon{
-		WeaponData: WeaponData{
-			TID: tid.MustNewTID(weaponKind(melee)),
-			Damage: WeaponDamage{
-				WeaponDamageData: WeaponDamageData{
-					Type:                      "cr",
-					StrengthMultiplier:        fxp.One,
-					ArmorDivisor:              fxp.One,
-					FragmentationArmorDivisor: fxp.One,
-				},
-			},
+	var w Weapon
+	w.TID = tid.MustNewTID(weaponKind(melee))
+	w.Damage = WeaponDamage{
+		WeaponDamageData: WeaponDamageData{
+			Type:                      "cr",
+			StrengthMultiplier:        fxp.One,
+			ArmorDivisor:              fxp.One,
+			FragmentationArmorDivisor: fxp.One,
 		},
-		Owner: owner,
 	}
+	w.Owner = owner
 	if melee {
 		w.Reach.Min = fxp.One
 		w.Reach.Max = fxp.One
@@ -142,7 +139,7 @@ func NewWeapon(owner WeaponOwner, melee bool) *Weapon {
 		w.RateOfFire.Mode1.ShotsPerAttack = fxp.One
 		w.Damage.Base = dice.New("1d")
 	}
-	return w
+	return &w
 }
 
 func weaponKind(melee bool) byte {

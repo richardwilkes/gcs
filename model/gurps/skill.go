@@ -159,15 +159,10 @@ func SaveSkills(skills []*Skill, filePath string) error {
 
 // NewSkill creates a new Skill.
 func NewSkill(owner DataOwner, parent *Skill, container bool) *Skill {
-	s := Skill{
-		SkillData: SkillData{
-			SourcedID: SourcedID{
-				TID: tid.MustNewTID(skillKind(container)),
-			},
-			parent: parent,
-		},
-		owner: owner,
-	}
+	var s Skill
+	s.TID = tid.MustNewTID(skillKind(container))
+	s.parent = parent
+	s.owner = owner
 	if container {
 		s.TemplatePicker = &TemplatePicker{}
 	} else {
@@ -189,15 +184,10 @@ func skillKind(container bool) byte {
 
 // NewTechnique creates a new technique (i.e. a specialized use of a Skill). All parameters may be nil or empty.
 func NewTechnique(owner DataOwner, parent *Skill, skillName string) *Skill {
-	s := Skill{
-		SkillData: SkillData{
-			SourcedID: SourcedID{
-				TID: tid.MustNewTID(kinds.Technique),
-			},
-			parent: parent,
-		},
-		owner: owner,
-	}
+	var s Skill
+	s.TID = tid.MustNewTID(kinds.Technique)
+	s.parent = parent
+	s.owner = owner
 	s.Difficulty.Difficulty = difficulty.Average
 	s.Points = fxp.One
 	if skillName == "" {

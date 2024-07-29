@@ -58,12 +58,9 @@ func NewTemplateFromFile(fileSystem fs.FS, filePath string) (*Template, error) {
 
 // NewTemplate creates a new Template.
 func NewTemplate() *Template {
-	template := &Template{
-		TemplateData: TemplateData{
-			ID: tid.MustNewTID(kinds.Template),
-		},
-	}
-	return template
+	var t Template
+	t.ID = tid.MustNewTID(kinds.Template)
+	return &t
 }
 
 // MarshalJSON implements json.Marshaler.

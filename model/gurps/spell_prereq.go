@@ -34,50 +34,42 @@ type SpellPrereq struct {
 
 // NewSpellPrereq creates a new SpellPrereq.
 func NewSpellPrereq() *SpellPrereq {
-	return &SpellPrereq{
-		Type:    prereq.Spell,
-		SubType: spellcmp.Name,
-		QualifierCriteria: StringCriteria{
-			StringCriteriaData: StringCriteriaData{
-				Compare: IsString,
-			},
-		},
-		QuantityCriteria: NumericCriteria{
-			NumericCriteriaData: NumericCriteriaData{
-				Compare:   AtLeastNumber,
-				Qualifier: fxp.One,
-			},
-		},
-		Has: true,
-	}
+	var p SpellPrereq
+	p.Type = prereq.Spell
+	p.SubType = spellcmp.Name
+	p.QualifierCriteria.Compare = IsString
+	p.QuantityCriteria.Compare = AtLeastNumber
+	p.QuantityCriteria.Qualifier = fxp.One
+	p.Has = true
+	return &p
 }
 
 // PrereqType implements Prereq.
-func (s *SpellPrereq) PrereqType() prereq.Type {
-	return s.Type
+func (p *SpellPrereq) PrereqType() prereq.Type {
+	return p.Type
 }
 
 // ParentList implements Prereq.
-func (s *SpellPrereq) ParentList() *PrereqList {
-	return s.Parent
+func (p *SpellPrereq) ParentList() *PrereqList {
+	return p.Parent
 }
 
 // Clone implements Prereq.
-func (s *SpellPrereq) Clone(parent *PrereqList) Prereq {
-	clone := *s
+func (p *SpellPrereq) Clone(parent *PrereqList) Prereq {
+	clone := *p
 	clone.Parent = parent
 	return &clone
 }
 
 // FillWithNameableKeys implements Prereq.
-func (s *SpellPrereq) FillWithNameableKeys(m, existing map[string]string) {
-	if s.SubType.UsesStringCriteria() {
-		ExtractNameables(s.QualifierCriteria.Qualifier, m, existing)
+func (p *SpellPrereq) FillWithNameableKeys(m, existing map[string]string) {
+	if p.SubType.UsesStringCriteria() {
+		ExtractNameables(p.QualifierCriteria.Qualifier, m, existing)
 	}
 }
 
 // Satisfied implements Prereq.
-func (s *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string, _ *bool) bool {
+func (p *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string, _ *bool) bool {
 	var replacements map[string]string
 	if na, ok := exclude.(NameableAccesser); ok {
 		replacements = na.NameableReplacements()
@@ -95,21 +87,21 @@ func (s *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 		if techLevel != nil && sp.TechLevel != nil && *techLevel != *sp.TechLevel {
 			return false
 		}
-		switch s.SubType {
+		switch p.SubType {
 		case spellcmp.Name:
-			if s.QualifierCriteria.Matches(replacements, sp.NameWithReplacements()) {
+			if p.QualifierCriteria.Matches(replacements, sp.NameWithReplacements()) {
 				count++
 			}
 		case spellcmp.Tag:
 			for _, one := range sp.Tags {
-				if s.QualifierCriteria.Matches(replacements, one) {
+				if p.QualifierCriteria.Matches(replacements, one) {
 					count++
 					break
 				}
 			}
 		case spellcmp.College:
 			for _, one := range sp.CollegeWithReplacements() {
-				if s.QualifierCriteria.Matches(replacements, one) {
+				if p.QualifierCriteria.Matches(replacements, one) {
 					count++
 					break
 				}
@@ -123,30 +115,30 @@ func (s *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 		}
 		return false
 	}, false, true, entity.Spells...)
-	if s.SubType == spellcmp.CollegeCount {
+	if p.SubType == spellcmp.CollegeCount {
 		count = len(colleges)
 	}
-	satisfied := s.QuantityCriteria.Matches(fxp.From(count))
-	if !s.Has {
+	satisfied := p.QuantityCriteria.Matches(fxp.From(count))
+	if !p.Has {
 		satisfied = !satisfied
 	}
 	if !satisfied && tooltip != nil {
 		tooltip.WriteString(prefix)
-		tooltip.WriteString(HasText(s.Has))
+		tooltip.WriteString(HasText(p.Has))
 		tooltip.WriteByte(' ')
-		tooltip.WriteString(s.QuantityCriteria.AltString())
-		if s.QuantityCriteria.Qualifier == fxp.One {
+		tooltip.WriteString(p.QuantityCriteria.AltString())
+		if p.QuantityCriteria.Qualifier == fxp.One {
 			tooltip.WriteString(i18n.Text(" spell "))
 		} else {
 			tooltip.WriteString(i18n.Text(" spells "))
 		}
-		switch s.SubType {
+		switch p.SubType {
 		case spellcmp.Any:
 			tooltip.WriteString(i18n.Text("of any kind"))
 		case spellcmp.CollegeCount:
 			tooltip.WriteString(i18n.Text("from different colleges"))
 		default:
-			switch s.SubType {
+			switch p.SubType {
 			case spellcmp.Name:
 				tooltip.WriteString(i18n.Text("whose name "))
 			case spellcmp.Tag:
@@ -154,20 +146,20 @@ func (s *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 			case spellcmp.College:
 				tooltip.WriteString(i18n.Text("whose college "))
 			}
-			tooltip.WriteString(s.QualifierCriteria.String(replacements))
+			tooltip.WriteString(p.QualifierCriteria.String(replacements))
 		}
 	}
 	return satisfied
 }
 
 // Hash writes this object's contents into the hasher.
-func (s *SpellPrereq) Hash(h hash.Hash) {
-	if s == nil {
+func (p *SpellPrereq) Hash(h hash.Hash) {
+	if p == nil {
 		return
 	}
-	_ = binary.Write(h, binary.LittleEndian, s.Type)
-	_ = binary.Write(h, binary.LittleEndian, s.SubType)
-	_ = binary.Write(h, binary.LittleEndian, s.Has)
-	s.QualifierCriteria.Hash(h)
-	s.QuantityCriteria.Hash(h)
+	_ = binary.Write(h, binary.LittleEndian, p.Type)
+	_ = binary.Write(h, binary.LittleEndian, p.SubType)
+	_ = binary.Write(h, binary.LittleEndian, p.Has)
+	p.QualifierCriteria.Hash(h)
+	p.QuantityCriteria.Hash(h)
 }

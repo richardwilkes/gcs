@@ -73,7 +73,7 @@ type EntityData struct {
 	ID               tid.TID         `json:"id"`
 	TotalPoints      fxp.Int         `json:"total_points"`
 	PointsRecord     []*PointsRecord `json:"points_record,omitempty"`
-	Profile          *Profile        `json:"profile,omitempty"`
+	Profile          Profile         `json:"profile"`
 	SheetSettings    *SheetSettings  `json:"settings,omitempty"`
 	Attributes       *Attributes     `json:"attributes,omitempty"`
 	Traits           []*Trait        `json:"traits,alt=advantages,omitempty"`
@@ -134,32 +134,26 @@ func NewEntityFromFile(fileSystem fs.FS, filePath string) (*Entity, error) {
 // NewEntity creates a new Entity.
 func NewEntity() *Entity {
 	settings := GlobalSettings().GeneralSettings()
-	e := &Entity{
-		EntityData: EntityData{
-			ID:          tid.MustNewTID(kinds.Entity),
-			TotalPoints: settings.InitialPoints,
-			PointsRecord: []*PointsRecord{
-				{
-					Points: settings.InitialPoints,
-					When:   jio.Now(),
-					Reason: i18n.Text("Initial points"),
-				},
-			},
-			Profile:   &Profile{},
-			CreatedOn: jio.Now(),
-		},
-	}
-	e.SheetSettings = GlobalSettings().SheetSettings().Clone(e)
-	e.Attributes = NewAttributes(e)
+	var e Entity
+	e.ID = tid.MustNewTID(kinds.Entity)
+	e.TotalPoints = settings.InitialPoints
+	e.PointsRecord = append(e.PointsRecord, &PointsRecord{
+		When:   jio.Now(),
+		Points: settings.InitialPoints,
+		Reason: i18n.Text("Initial points"),
+	})
+	e.CreatedOn = jio.Now()
+	e.SheetSettings = GlobalSettings().SheetSettings().Clone(&e)
+	e.Attributes = NewAttributes(&e)
 	if settings.AutoFillProfile {
-		e.Profile.AutoFill(e)
+		e.Profile.AutoFill(&e)
 	}
 	if settings.AutoAddNaturalAttacks {
-		e.Traits = append(e.Traits, NewNaturalAttacks(e, nil))
+		e.Traits = append(e.Traits, NewNaturalAttacks(&e, nil))
 	}
 	e.ModifiedOn = e.CreatedOn
 	e.Recalculate()
-	return e
+	return &e
 }
 
 // DataOwner returns the data owner.
@@ -244,9 +238,6 @@ func (e *Entity) UnmarshalJSON(data []byte) error {
 	}
 	if e.SheetSettings == nil {
 		e.SheetSettings = GlobalSettings().SheetSettings().Clone(e)
-	}
-	if e.Profile == nil {
-		e.Profile = &Profile{}
 	}
 	if e.Attributes == nil {
 		e.Attributes = NewAttributes(e)

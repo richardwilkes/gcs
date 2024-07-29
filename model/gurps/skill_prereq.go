@@ -32,52 +32,40 @@ type SkillPrereq struct {
 
 // NewSkillPrereq creates a new SkillPrereq.
 func NewSkillPrereq() *SkillPrereq {
-	return &SkillPrereq{
-		Type: prereq.Skill,
-		NameCriteria: StringCriteria{
-			StringCriteriaData: StringCriteriaData{
-				Compare: IsString,
-			},
-		},
-		LevelCriteria: NumericCriteria{
-			NumericCriteriaData: NumericCriteriaData{
-				Compare: AtLeastNumber,
-			},
-		},
-		SpecializationCriteria: StringCriteria{
-			StringCriteriaData: StringCriteriaData{
-				Compare: AnyString,
-			},
-		},
-		Has: true,
-	}
+	var p SkillPrereq
+	p.Type = prereq.Skill
+	p.NameCriteria.Compare = IsString
+	p.LevelCriteria.Compare = AtLeastNumber
+	p.SpecializationCriteria.Compare = AnyString
+	p.Has = true
+	return &p
 }
 
 // PrereqType implements Prereq.
-func (s *SkillPrereq) PrereqType() prereq.Type {
-	return s.Type
+func (p *SkillPrereq) PrereqType() prereq.Type {
+	return p.Type
 }
 
 // ParentList implements Prereq.
-func (s *SkillPrereq) ParentList() *PrereqList {
-	return s.Parent
+func (p *SkillPrereq) ParentList() *PrereqList {
+	return p.Parent
 }
 
 // Clone implements Prereq.
-func (s *SkillPrereq) Clone(parent *PrereqList) Prereq {
-	clone := *s
+func (p *SkillPrereq) Clone(parent *PrereqList) Prereq {
+	clone := *p
 	clone.Parent = parent
 	return &clone
 }
 
 // FillWithNameableKeys implements Prereq.
-func (s *SkillPrereq) FillWithNameableKeys(m, existing map[string]string) {
-	ExtractNameables(s.NameCriteria.Qualifier, m, existing)
-	ExtractNameables(s.SpecializationCriteria.Qualifier, m, existing)
+func (p *SkillPrereq) FillWithNameableKeys(m, existing map[string]string) {
+	ExtractNameables(p.NameCriteria.Qualifier, m, existing)
+	ExtractNameables(p.SpecializationCriteria.Qualifier, m, existing)
 }
 
 // Satisfied implements Prereq.
-func (s *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string, _ *bool) bool {
+func (p *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string, _ *bool) bool {
 	var replacements map[string]string
 	if na, ok := exclude.(NameableAccesser); ok {
 		replacements = na.NameableReplacements()
@@ -88,38 +76,38 @@ func (s *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 		techLevel = sk.TechLevel
 	}
 	Traverse(func(sk *Skill) bool {
-		if exclude == sk || !s.NameCriteria.Matches(replacements, sk.NameWithReplacements()) ||
-			!s.SpecializationCriteria.Matches(replacements, sk.SpecializationWithReplacements()) {
+		if exclude == sk || !p.NameCriteria.Matches(replacements, sk.NameWithReplacements()) ||
+			!p.SpecializationCriteria.Matches(replacements, sk.SpecializationWithReplacements()) {
 			return false
 		}
-		satisfied = s.LevelCriteria.Matches(sk.LevelData.Level)
+		satisfied = p.LevelCriteria.Matches(sk.LevelData.Level)
 		if satisfied && techLevel != nil {
 			satisfied = sk.TechLevel == nil || *techLevel == *sk.TechLevel
 		}
 		return satisfied
 	}, false, true, entity.Skills...)
-	if !s.Has {
+	if !p.Has {
 		satisfied = !satisfied
 	}
 	if !satisfied && tooltip != nil {
 		tooltip.WriteString(prefix)
-		tooltip.WriteString(HasText(s.Has))
+		tooltip.WriteString(HasText(p.Has))
 		tooltip.WriteString(i18n.Text(" a skill whose name "))
-		tooltip.WriteString(s.NameCriteria.String(replacements))
-		if s.SpecializationCriteria.Compare != AnyString {
+		tooltip.WriteString(p.NameCriteria.String(replacements))
+		if p.SpecializationCriteria.Compare != AnyString {
 			tooltip.WriteString(i18n.Text(", specialization "))
-			tooltip.WriteString(s.SpecializationCriteria.String(replacements))
+			tooltip.WriteString(p.SpecializationCriteria.String(replacements))
 			tooltip.WriteByte(',')
 		}
 		if techLevel == nil {
 			tooltip.WriteString(i18n.Text(" and level "))
-			tooltip.WriteString(s.LevelCriteria.String())
+			tooltip.WriteString(p.LevelCriteria.String())
 		} else {
-			if s.SpecializationCriteria.Compare != AnyString {
+			if p.SpecializationCriteria.Compare != AnyString {
 				tooltip.WriteByte(',')
 			}
 			tooltip.WriteString(i18n.Text(" level "))
-			tooltip.WriteString(s.LevelCriteria.String())
+			tooltip.WriteString(p.LevelCriteria.String())
 			tooltip.WriteString(i18n.Text(" and tech level matches"))
 		}
 	}
@@ -127,13 +115,13 @@ func (s *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 }
 
 // Hash writes this object's contents into the hasher.
-func (s *SkillPrereq) Hash(h hash.Hash) {
-	if s == nil {
+func (p *SkillPrereq) Hash(h hash.Hash) {
+	if p == nil {
 		return
 	}
-	_ = binary.Write(h, binary.LittleEndian, s.Type)
-	_ = binary.Write(h, binary.LittleEndian, s.Has)
-	s.NameCriteria.Hash(h)
-	s.LevelCriteria.Hash(h)
-	s.SpecializationCriteria.Hash(h)
+	_ = binary.Write(h, binary.LittleEndian, p.Type)
+	_ = binary.Write(h, binary.LittleEndian, p.Has)
+	p.NameCriteria.Hash(h)
+	p.LevelCriteria.Hash(h)
+	p.SpecializationCriteria.Hash(h)
 }
