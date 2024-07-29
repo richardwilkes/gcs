@@ -196,9 +196,10 @@ func (w *Weapon) Clone(_ LibraryFile, _ DataOwner, _ *Weapon, preserveID bool) *
 func (w *Weapon) Compare(other *Weapon) int {
 	result := txt.NaturalCmp(w.String(), other.String(), true)
 	if result == 0 {
-		if result = txt.NaturalCmp(w.Usage, other.Usage, true); result == 0 {
-			if result = txt.NaturalCmp(w.UsageNotes, other.UsageNotes, true); result == 0 {
-				result = cmp.Compare(uintptr(unsafe.Pointer(w)), uintptr(unsafe.Pointer(other))) //nolint:gosec // Just need a tie-breaker
+		if result = txt.NaturalCmp(w.UsageWithReplacements(), other.UsageWithReplacements(), true); result == 0 {
+			if result = txt.NaturalCmp(w.UsageNotesWithReplacements(), other.UsageNotesWithReplacements(), true); result == 0 {
+				//nolint:gosec // Just need a tie-breaker
+				result = cmp.Compare(uintptr(unsafe.Pointer(w)), uintptr(unsafe.Pointer(other)))
 			}
 		}
 	}
@@ -373,7 +374,7 @@ func (w *Weapon) Notes() string {
 	if w.Owner != nil {
 		buffer.WriteString(w.Owner.Notes())
 	}
-	AppendStringOntoNewLine(&buffer, strings.TrimSpace(w.UsageNotes))
+	AppendStringOntoNewLine(&buffer, strings.TrimSpace(w.UsageNotesWithReplacements()))
 	return buffer.String()
 }
 
@@ -436,8 +437,9 @@ func (w *Weapon) SkillLevel(tooltip *xio.ByteBuffer) fxp.Int {
 }
 
 func (w *Weapon) usesCrossbowSkill() bool {
+	replacements := w.NameableReplacements()
 	for _, def := range w.Defaults {
-		if def.Name == "Crossbow" {
+		if def.NameWithReplacements(replacements) == "Crossbow" {
 			return true
 		}
 	}
@@ -464,7 +466,7 @@ func (w *Weapon) skillLevelBaseAdjustment(e *Entity, tooltip *xio.ByteBuffer) fx
 		}
 	}
 	nameQualifier := w.String()
-	for _, bonus := range e.NamedWeaponSkillBonusesFor(nameQualifier, w.Usage, w.Owner.TagList(), tooltip) {
+	for _, bonus := range e.NamedWeaponSkillBonusesFor(nameQualifier, w.UsageWithReplacements(), w.Owner.TagList(), tooltip) {
 		adj += bonus.AdjustedAmount()
 	}
 	for _, f := range w.Owner.FeatureList() {
@@ -518,7 +520,7 @@ func (w *Weapon) EncumbrancePenalty(e *Entity, tooltip *xio.ByteBuffer) fxp.Int 
 func (w *Weapon) extractSkillBonusForThisWeapon(f Feature, tooltip *xio.ByteBuffer) fxp.Int {
 	if sb, ok := f.(*SkillBonus); ok {
 		if sb.SelectionType.EnsureValid() == skillsel.ThisWeapon {
-			if sb.SpecializationCriteria.Matches(w.Owner.NameableReplacements(), w.Usage) {
+			if sb.SpecializationCriteria.Matches(w.NameableReplacements(), w.UsageWithReplacements()) {
 				sb.AddToTooltip(tooltip)
 				return sb.AdjustedAmount()
 			}
@@ -553,14 +555,6 @@ func (w *Weapon) ResolveBoolFlag(switchType wswitch.Type, initial bool) bool {
 	return initial
 }
 
-// NameableReplacements returns the replacements to be used with this weapon.
-func (w *Weapon) NameableReplacements() map[string]string {
-	if toolbox.IsNil(w.Owner) {
-		return nil
-	}
-	return w.Owner.NameableReplacements()
-}
-
 func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xio.ByteBuffer, allowedFeatureTypes ...feature.Type) []*WeaponBonus {
 	entity := w.Entity()
 	if entity == nil {
@@ -588,9 +582,11 @@ func (w *Weapon) collectWeaponBonuses(dieCount int, tooltip *xio.ByteBuffer, all
 		name = bestDef.NameWithReplacements(replacements)
 		specialization = bestDef.SpecializationWithReplacements(replacements)
 	}
-	entity.AddWeaponWithSkillBonusesFor(name, specialization, w.Usage, tags, dieCount, tooltip, bonusSet, allowed)
+	entity.AddWeaponWithSkillBonusesFor(name, specialization, w.UsageWithReplacements(), tags, dieCount, tooltip,
+		bonusSet, allowed)
 	nameQualifier := w.String()
-	entity.AddNamedWeaponBonusesFor(nameQualifier, w.Usage, tags, dieCount, tooltip, bonusSet, allowed)
+	entity.AddNamedWeaponBonusesFor(nameQualifier, w.UsageWithReplacements(), tags, dieCount, tooltip, bonusSet,
+		allowed)
 	for _, f := range w.Owner.FeatureList() {
 		w.extractWeaponBonus(f, bonusSet, allowed, fxp.From(dieCount), tooltip)
 	}
@@ -635,11 +631,11 @@ func (w *Weapon) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, allowe
 			savedDieCount := bonus.WeaponLeveledAmount.DieCount
 			bonus.WeaponLeveledAmount.Level = bonus.DerivedLevel()
 			bonus.WeaponLeveledAmount.DieCount = dieCount
-			replacements := w.Owner.NameableReplacements()
+			replacements := w.NameableReplacements()
 			switch bonus.SelectionType {
 			case wsel.WithRequiredSkill:
 			case wsel.ThisWeapon:
-				if bonus.SpecializationCriteria.Matches(replacements, w.Usage) {
+				if bonus.SpecializationCriteria.Matches(replacements, w.UsageWithReplacements()) {
 					if _, exists := set[bonus]; !exists {
 						set[bonus] = true
 						bonus.AddToTooltip(tooltip)
@@ -647,7 +643,7 @@ func (w *Weapon) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, allowe
 				}
 			case wsel.WithName:
 				if bonus.NameCriteria.Matches(replacements, w.String()) &&
-					bonus.SpecializationCriteria.Matches(replacements, w.Usage) &&
+					bonus.SpecializationCriteria.Matches(replacements, w.UsageWithReplacements()) &&
 					bonus.TagsCriteria.MatchesList(replacements, w.Owner.TagList()...) {
 					if _, exists := set[bonus]; !exists {
 						set[bonus] = true
@@ -663,8 +659,28 @@ func (w *Weapon) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, allowe
 	}
 }
 
+// UsageWithReplacements returns the usage of the weapon with any nameable keys replaced.
+func (w *Weapon) UsageWithReplacements() string {
+	return ApplyNameables(w.Usage, w.NameableReplacements())
+}
+
+// UsageNotesWithReplacements returns the usage notes of the weapon with any nameable keys replaced.
+func (w *Weapon) UsageNotesWithReplacements() string {
+	return ApplyNameables(w.UsageNotes, w.NameableReplacements())
+}
+
+// NameableReplacements returns the replacements to be used with this weapon.
+func (w *Weapon) NameableReplacements() map[string]string {
+	if toolbox.IsNil(w.Owner) {
+		return nil
+	}
+	return w.Owner.NameableReplacements()
+}
+
 // FillWithNameableKeys adds any nameable keys found in this Weapon to the provided map.
 func (w *Weapon) FillWithNameableKeys(m, existing map[string]string) {
+	ExtractNameables(w.Usage, m, existing)
+	ExtractNameables(w.UsageNotes, m, existing)
 	for _, one := range w.Defaults {
 		one.FillWithNameableKeys(m, existing)
 	}
@@ -777,7 +793,7 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 		data.Primary = w.String()
 		data.Secondary = w.Notes()
 	case WeaponUsageColumn:
-		data.Primary = w.Usage
+		data.Primary = w.UsageWithReplacements()
 	case WeaponSLColumn:
 		data.Primary = w.SkillLevel(&buffer).String()
 	case WeaponParryColumn:

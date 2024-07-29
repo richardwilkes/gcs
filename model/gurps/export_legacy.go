@@ -1359,7 +1359,7 @@ func (ex *legacyExporter) processWeaponKeys(key string, currentID int, w *Weapon
 	case descriptionPrimaryExportKey:
 		ex.writeEncodedText(w.String())
 	case "USAGE":
-		ex.writeEncodedText(w.Usage)
+		ex.writeEncodedText(w.UsageWithReplacements())
 	case "LEVEL":
 		ex.writeEncodedText(w.SkillLevel(nil).String())
 	case "DAMAGE":

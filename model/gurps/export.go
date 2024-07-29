@@ -594,7 +594,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 		data.MeleeWeapons = append(data.MeleeWeapons, &exportedMeleeWeapon{
 			Description:   w.String(),
 			Notes:         w.Notes(),
-			Usage:         w.Usage,
+			Usage:         w.UsageWithReplacements(),
 			Level:         w.SkillLevel(nil),
 			Parry:         parry.String(),
 			ParryParts:    parry,
@@ -618,7 +618,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 		data.RangedWeapons = append(data.RangedWeapons, &exportedRangedWeapon{
 			Description:     w.String(),
 			Notes:           w.Notes(),
-			Usage:           w.Usage,
+			Usage:           w.UsageWithReplacements(),
 			Level:           w.SkillLevel(nil),
 			Accuracy:        accuracy.String(),
 			AccuracyParts:   accuracy,
