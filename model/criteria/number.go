@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package criteria
 
 import (
 	"encoding/binary"
@@ -17,45 +17,45 @@ import (
 	"github.com/richardwilkes/json"
 )
 
-// NumericCriteria holds the criteria for matching a number.
-type NumericCriteria struct {
-	NumericCriteriaData
+// Number holds the criteria for matching a number.
+type Number struct {
+	NumberData
 }
 
-// NumericCriteriaData holds the criteria for matching a number that should be written to disk.
-type NumericCriteriaData struct {
-	Compare   NumericCompareType `json:"compare,omitempty"`
-	Qualifier fxp.Int            `json:"qualifier,omitempty"`
+// NumberData holds the criteria for matching a number that should be written to disk.
+type NumberData struct {
+	Compare   NumericComparison `json:"compare,omitempty"`
+	Qualifier fxp.Int           `json:"qualifier,omitempty"`
 }
 
 // ShouldOmit implements json.Omitter.
-func (n NumericCriteria) ShouldOmit() bool {
+func (n Number) ShouldOmit() bool {
 	return n.Compare.EnsureValid() == AnyNumber
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (n *NumericCriteria) UnmarshalJSON(data []byte) error {
-	err := json.Unmarshal(data, &n.NumericCriteriaData)
+func (n *Number) UnmarshalJSON(data []byte) error {
+	err := json.Unmarshal(data, &n.NumberData)
 	n.Compare = n.Compare.EnsureValid()
 	return err
 }
 
 // Matches performs a comparison and returns true if the data matches.
-func (n NumericCriteria) Matches(value fxp.Int) bool {
+func (n Number) Matches(value fxp.Int) bool {
 	return n.Compare.Matches(n.Qualifier, value)
 }
 
-func (n NumericCriteria) String() string {
+func (n Number) String() string {
 	return n.Compare.Describe(n.Qualifier)
 }
 
 // AltString returns the alternate description.
-func (n NumericCriteria) AltString() string {
+func (n Number) AltString() string {
 	return n.Compare.AltDescribe(n.Qualifier)
 }
 
 // Hash writes this object's contents into the hasher.
-func (n NumericCriteria) Hash(h hash.Hash) {
+func (n Number) Hash(h hash.Hash) {
 	if n.ShouldOmit() {
 		return
 	}

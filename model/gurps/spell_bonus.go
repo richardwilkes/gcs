@@ -13,9 +13,11 @@ import (
 	"encoding/binary"
 	"hash"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellmatch"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/xio"
 )
 
@@ -25,29 +27,21 @@ var _ Bonus = &SpellBonus{}
 type SpellBonus struct {
 	Type           feature.Type    `json:"type"`
 	SpellMatchType spellmatch.Type `json:"match"`
-	NameCriteria   StringCriteria  `json:"name,omitempty"`
-	TagsCriteria   StringCriteria  `json:"tags,alt=category,omitempty"`
+	NameCriteria   criteria.Text   `json:"name,omitempty"`
+	TagsCriteria   criteria.Text   `json:"tags,alt=category,omitempty"`
 	LeveledAmount
 	BonusOwner
 }
 
 // NewSpellBonus creates a new SpellBonus.
 func NewSpellBonus() *SpellBonus {
-	return &SpellBonus{
-		Type:           feature.SpellBonus,
-		SpellMatchType: spellmatch.AllColleges,
-		NameCriteria: StringCriteria{
-			StringCriteriaData: StringCriteriaData{
-				Compare: IsString,
-			},
-		},
-		TagsCriteria: StringCriteria{
-			StringCriteriaData: StringCriteriaData{
-				Compare: AnyString,
-			},
-		},
-		LeveledAmount: LeveledAmount{Amount: fxp.One},
-	}
+	var s SpellBonus
+	s.Type = feature.SpellBonus
+	s.SpellMatchType = spellmatch.AllColleges
+	s.NameCriteria.Compare = criteria.IsText
+	s.TagsCriteria.Compare = criteria.AnyText
+	s.LeveledAmount.Amount = fxp.One
+	return &s
 }
 
 // FeatureType implements Feature.
@@ -64,9 +58,9 @@ func (s *SpellBonus) Clone() Feature {
 // FillWithNameableKeys implements Feature.
 func (s *SpellBonus) FillWithNameableKeys(m, existing map[string]string) {
 	if s.SpellMatchType != spellmatch.AllColleges {
-		ExtractNameables(s.NameCriteria.Qualifier, m, existing)
+		nameable.Extract(s.NameCriteria.Qualifier, m, existing)
 	}
-	ExtractNameables(s.TagsCriteria.Qualifier, m, existing)
+	nameable.Extract(s.TagsCriteria.Qualifier, m, existing)
 }
 
 // SetLevel implements Bonus.

@@ -13,8 +13,10 @@ import (
 	"encoding/binary"
 	"hash"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -23,35 +25,23 @@ var _ Bonus = &SkillPointBonus{}
 
 // SkillPointBonus holds an adjustment to a skill's points.
 type SkillPointBonus struct {
-	Type                   feature.Type   `json:"type"`
-	NameCriteria           StringCriteria `json:"name,omitempty"`
-	SpecializationCriteria StringCriteria `json:"specialization,omitempty"`
-	TagsCriteria           StringCriteria `json:"tags,alt=category,omitempty"`
+	Type                   feature.Type  `json:"type"`
+	NameCriteria           criteria.Text `json:"name,omitempty"`
+	SpecializationCriteria criteria.Text `json:"specialization,omitempty"`
+	TagsCriteria           criteria.Text `json:"tags,alt=category,omitempty"`
 	LeveledAmount
 	BonusOwner
 }
 
 // NewSkillPointBonus creates a new SkillPointBonus.
 func NewSkillPointBonus() *SkillPointBonus {
-	return &SkillPointBonus{
-		Type: feature.SkillPointBonus,
-		NameCriteria: StringCriteria{
-			StringCriteriaData: StringCriteriaData{
-				Compare: IsString,
-			},
-		},
-		SpecializationCriteria: StringCriteria{
-			StringCriteriaData: StringCriteriaData{
-				Compare: AnyString,
-			},
-		},
-		TagsCriteria: StringCriteria{
-			StringCriteriaData: StringCriteriaData{
-				Compare: AnyString,
-			},
-		},
-		LeveledAmount: LeveledAmount{Amount: fxp.One},
-	}
+	var s SkillPointBonus
+	s.Type = feature.SkillPointBonus
+	s.NameCriteria.Compare = criteria.IsText
+	s.SpecializationCriteria.Compare = criteria.AnyText
+	s.TagsCriteria.Compare = criteria.AnyText
+	s.LeveledAmount.Amount = fxp.One
+	return &s
 }
 
 // FeatureType implements Feature.
@@ -67,9 +57,9 @@ func (s *SkillPointBonus) Clone() Feature {
 
 // FillWithNameableKeys implements Feature.
 func (s *SkillPointBonus) FillWithNameableKeys(m, existing map[string]string) {
-	ExtractNameables(s.NameCriteria.Qualifier, m, existing)
-	ExtractNameables(s.SpecializationCriteria.Qualifier, m, existing)
-	ExtractNameables(s.TagsCriteria.Qualifier, m, existing)
+	nameable.Extract(s.NameCriteria.Qualifier, m, existing)
+	nameable.Extract(s.SpecializationCriteria.Qualifier, m, existing)
+	nameable.Extract(s.TagsCriteria.Qualifier, m, existing)
 }
 
 // SetLevel implements Bonus.

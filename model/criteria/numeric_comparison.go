@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package criteria
 
 import (
 	"strings"
@@ -16,17 +16,17 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 )
 
-// Possible NumericCompareType values.
+// Possible NumericComparison values.
 const (
-	AnyNumber       = NumericCompareType("")
-	EqualsNumber    = NumericCompareType("is")
-	NotEqualsNumber = NumericCompareType("is_not")
-	AtLeastNumber   = NumericCompareType("at_least")
-	AtMostNumber    = NumericCompareType("at_most")
+	AnyNumber       = NumericComparison("")
+	EqualsNumber    = NumericComparison("is")
+	NotEqualsNumber = NumericComparison("is_not")
+	AtLeastNumber   = NumericComparison("at_least")
+	AtMostNumber    = NumericComparison("at_most")
 )
 
-// AllNumericCompareTypes is the complete set of NumericCompareType values.
-var AllNumericCompareTypes = []NumericCompareType{
+// AllNumericComparisons is the complete set of NumericComparison values.
+var AllNumericComparisons = []NumericComparison{
 	AnyNumber,
 	EqualsNumber,
 	NotEqualsNumber,
@@ -34,21 +34,21 @@ var AllNumericCompareTypes = []NumericCompareType{
 	AtMostNumber,
 }
 
-// NumericCompareType holds the type for a numeric comparison.
-type NumericCompareType string
+// NumericComparison holds the type for a numeric comparison.
+type NumericComparison string
 
 // EnsureValid ensures this is of a known value.
-func (n NumericCompareType) EnsureValid() NumericCompareType {
-	for _, one := range AllNumericCompareTypes {
+func (n NumericComparison) EnsureValid() NumericComparison {
+	for _, one := range AllNumericComparisons {
 		if one == n {
 			return n
 		}
 	}
-	return AllNumericCompareTypes[0]
+	return AllNumericComparisons[0]
 }
 
 // AltString returns an alternate string for this.
-func (n NumericCompareType) AltString() string {
+func (n NumericComparison) AltString() string {
 	switch n {
 	case AnyNumber:
 		return i18n.Text("anything")
@@ -66,7 +66,7 @@ func (n NumericCompareType) AltString() string {
 }
 
 // String implements fmt.Stringer.
-func (n NumericCompareType) String() string {
+func (n NumericComparison) String() string {
 	switch n {
 	case AnyNumber:
 		return i18n.Text("is anything")
@@ -84,7 +84,7 @@ func (n NumericCompareType) String() string {
 }
 
 // Describe returns a description of this NumericCompareType using a qualifier.
-func (n NumericCompareType) Describe(qualifier fxp.Int) string {
+func (n NumericComparison) Describe(qualifier fxp.Int) string {
 	v := n.EnsureValid()
 	if v == AnyNumber {
 		return v.String()
@@ -93,7 +93,7 @@ func (n NumericCompareType) Describe(qualifier fxp.Int) string {
 }
 
 // AltDescribe returns an alternate description of this NumericCompareType using a qualifier.
-func (n NumericCompareType) AltDescribe(qualifier fxp.Int) string {
+func (n NumericComparison) AltDescribe(qualifier fxp.Int) string {
 	v := n.EnsureValid()
 	result := v.AltString()
 	if v == AnyNumber {
@@ -106,7 +106,7 @@ func (n NumericCompareType) AltDescribe(qualifier fxp.Int) string {
 }
 
 // Matches performs a comparison and returns true if the data matches.
-func (n NumericCompareType) Matches(qualifier, data fxp.Int) bool {
+func (n NumericComparison) Matches(qualifier, data fxp.Int) bool {
 	switch n {
 	case AnyNumber:
 		return true
@@ -123,9 +123,9 @@ func (n NumericCompareType) Matches(qualifier, data fxp.Int) bool {
 	}
 }
 
-// ExtractNumericCompareTypeIndex extracts the index from a string.
-func ExtractNumericCompareTypeIndex(str string) int {
-	for i, one := range AllNumericCompareTypes {
+// ExtractNumericComparisonIndex extracts the index from a string.
+func ExtractNumericComparisonIndex(str string) int {
+	for i, one := range AllNumericComparisons {
 		if strings.EqualFold(string(one), str) {
 			return i
 		}
@@ -133,10 +133,10 @@ func ExtractNumericCompareTypeIndex(str string) int {
 	return 0
 }
 
-// PrefixedNumericCompareTypeChoices returns the set of NumericCompareType choices as strings with a prefix.
-func PrefixedNumericCompareTypeChoices(prefix string) []string {
-	choices := make([]string, len(AllNumericCompareTypes))
-	for i, choice := range AllNumericCompareTypes {
+// PrefixedNumericComparisonChoices returns the set of NumericComparison choices as strings with a prefix.
+func PrefixedNumericComparisonChoices(prefix string) []string {
+	choices := make([]string, len(AllNumericComparisons))
+	for i, choice := range AllNumericComparisons {
 		choices[i] = prefix + " " + choice.String()
 	}
 	return choices

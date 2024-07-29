@@ -13,6 +13,7 @@ import (
 	"encoding/binary"
 	"hash"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -27,7 +28,7 @@ type AttributePrereq struct {
 	Type              prereq.Type     `json:"type"`
 	Has               bool            `json:"has"`
 	CombinedWith      string          `json:"combined_with,omitempty"`
-	QualifierCriteria NumericCriteria `json:"qualifier,omitempty"`
+	QualifierCriteria criteria.Number `json:"qualifier,omitempty"`
 	Which             string          `json:"which"`
 }
 
@@ -35,7 +36,7 @@ type AttributePrereq struct {
 func NewAttributePrereq(entity *Entity) *AttributePrereq {
 	var p AttributePrereq
 	p.Type = prereq.Attribute
-	p.QualifierCriteria.Compare = AtLeastNumber
+	p.QualifierCriteria.Compare = criteria.AtLeastNumber
 	p.QualifierCriteria.Qualifier = fxp.Ten
 	p.Which = AttributeIDFor(entity, StrengthID)
 	p.Has = true

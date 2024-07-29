@@ -7,34 +7,32 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package nameable
 
-import (
-	"strings"
-)
+import "strings"
 
-// NameableFiller defines the method for filling the nameable key map.
-type NameableFiller interface {
+// Filler defines the method for filling the nameable key map.
+type Filler interface {
 	// FillWithNameableKeys fills the map with nameable keys.
 	FillWithNameableKeys(m, existing map[string]string)
 }
 
-// Nameables defines methods types that want to participate the nameable adjustments should implement.
-type Nameables interface {
-	NameableAccesser
-	NameableFiller
-	// ApplyNameableKeys applies the nameable keys to this object.
-	ApplyNameableKeys(m map[string]string)
-}
-
-// NameableAccesser defines the method for retrieving the nameable replacements.
-type NameableAccesser interface {
+// Accesser defines the method for retrieving the nameable replacements.
+type Accesser interface {
 	// NameableReplacements returns the replacements to be used with Nameables.
 	NameableReplacements() map[string]string
 }
 
-// ExtractNameables the nameable sections of the string into the set.
-func ExtractNameables(str string, m, existing map[string]string) {
+// Applier defines methods types that want to participate the nameable adjustments should implement.
+type Applier interface {
+	Accesser
+	Filler
+	// ApplyNameableKeys applies the nameable keys to this object.
+	ApplyNameableKeys(m map[string]string)
+}
+
+// Extract the nameable sections of the string into the set.
+func Extract(str string, m, existing map[string]string) {
 	count := strings.Count(str, "@")
 	if count > 1 {
 		parts := strings.Split(str, "@")
@@ -50,8 +48,8 @@ func ExtractNameables(str string, m, existing map[string]string) {
 	}
 }
 
-// ApplyNameables replaces the matching nameable sections with the values from the set.
-func ApplyNameables(str string, m map[string]string) string {
+// Apply replaces the matching nameable sections with the values from the set.
+func Apply(str string, m map[string]string) string {
 	if strings.Count(str, "@") > 1 {
 		for k, v := range m {
 			str = strings.ReplaceAll(str, "@"+k+"@", v)
@@ -60,20 +58,20 @@ func ApplyNameables(str string, m map[string]string) string {
 	return str
 }
 
-// ApplyNameablesToList replaces the matching nameable sections with the values from the set.
-func ApplyNameablesToList(in []string, m map[string]string) []string {
+// ApplyToList replaces the matching nameable sections with the values from the set.
+func ApplyToList(in []string, m map[string]string) []string {
 	if len(in) == 0 {
 		return nil
 	}
 	list := make([]string, len(in))
 	for i := range list {
-		list[i] = ApplyNameables(in[i], m)
+		list[i] = Apply(in[i], m)
 	}
 	return list
 }
 
-// RetainNeededReplacements returns a map of the needed replacements.
-func RetainNeededReplacements(needed, replacements map[string]string) map[string]string {
+// Reduce returns a map of the replacements which exist in needed.
+func Reduce(needed, replacements map[string]string) map[string]string {
 	ret := make(map[string]string)
 	for k, v := range replacements {
 		if _, ok := needed[k]; ok {

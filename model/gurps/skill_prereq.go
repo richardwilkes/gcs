@@ -13,7 +13,9 @@ import (
 	"encoding/binary"
 	"hash"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -25,18 +27,18 @@ type SkillPrereq struct {
 	Parent                 *PrereqList     `json:"-"`
 	Type                   prereq.Type     `json:"type"`
 	Has                    bool            `json:"has"`
-	NameCriteria           StringCriteria  `json:"name,omitempty"`
-	LevelCriteria          NumericCriteria `json:"level,omitempty"`
-	SpecializationCriteria StringCriteria  `json:"specialization,omitempty"`
+	NameCriteria           criteria.Text   `json:"name,omitempty"`
+	LevelCriteria          criteria.Number `json:"level,omitempty"`
+	SpecializationCriteria criteria.Text   `json:"specialization,omitempty"`
 }
 
 // NewSkillPrereq creates a new SkillPrereq.
 func NewSkillPrereq() *SkillPrereq {
 	var p SkillPrereq
 	p.Type = prereq.Skill
-	p.NameCriteria.Compare = IsString
-	p.LevelCriteria.Compare = AtLeastNumber
-	p.SpecializationCriteria.Compare = AnyString
+	p.NameCriteria.Compare = criteria.IsText
+	p.LevelCriteria.Compare = criteria.AtLeastNumber
+	p.SpecializationCriteria.Compare = criteria.AnyText
 	p.Has = true
 	return &p
 }
@@ -60,14 +62,14 @@ func (p *SkillPrereq) Clone(parent *PrereqList) Prereq {
 
 // FillWithNameableKeys implements Prereq.
 func (p *SkillPrereq) FillWithNameableKeys(m, existing map[string]string) {
-	ExtractNameables(p.NameCriteria.Qualifier, m, existing)
-	ExtractNameables(p.SpecializationCriteria.Qualifier, m, existing)
+	nameable.Extract(p.NameCriteria.Qualifier, m, existing)
+	nameable.Extract(p.SpecializationCriteria.Qualifier, m, existing)
 }
 
 // Satisfied implements Prereq.
 func (p *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string, _ *bool) bool {
 	var replacements map[string]string
-	if na, ok := exclude.(NameableAccesser); ok {
+	if na, ok := exclude.(nameable.Accesser); ok {
 		replacements = na.NameableReplacements()
 	}
 	satisfied := false
@@ -94,7 +96,7 @@ func (p *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 		tooltip.WriteString(HasText(p.Has))
 		tooltip.WriteString(i18n.Text(" a skill whose name "))
 		tooltip.WriteString(p.NameCriteria.String(replacements))
-		if p.SpecializationCriteria.Compare != AnyString {
+		if p.SpecializationCriteria.Compare != criteria.AnyText {
 			tooltip.WriteString(i18n.Text(", specialization "))
 			tooltip.WriteString(p.SpecializationCriteria.String(replacements))
 			tooltip.WriteByte(',')
@@ -103,7 +105,7 @@ func (p *SkillPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 			tooltip.WriteString(i18n.Text(" and level "))
 			tooltip.WriteString(p.LevelCriteria.String())
 		} else {
-			if p.SpecializationCriteria.Compare != AnyString {
+			if p.SpecializationCriteria.Compare != criteria.AnyText {
 				tooltip.WriteByte(',')
 			}
 			tooltip.WriteString(i18n.Text(" level "))

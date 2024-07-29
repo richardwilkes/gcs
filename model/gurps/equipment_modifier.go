@@ -26,6 +26,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
@@ -470,12 +471,12 @@ func (e *EquipmentModifier) NameableReplacements() map[string]string {
 
 // NameWithReplacements returns the name with any replacements applied.
 func (e *EquipmentModifier) NameWithReplacements() string {
-	return ApplyNameables(e.Name, e.Replacements)
+	return nameable.Apply(e.Name, e.Replacements)
 }
 
 // LocalNotesWithReplacements returns the local notes with any replacements applied.
 func (e *EquipmentModifier) LocalNotesWithReplacements() string {
-	return ApplyNameables(e.LocalNotes, e.Replacements)
+	return nameable.Apply(e.LocalNotes, e.Replacements)
 }
 
 // FillWithNameableKeys adds any nameable keys found in this EquipmentModifier to the provided map.
@@ -484,8 +485,8 @@ func (e *EquipmentModifier) FillWithNameableKeys(m, existing map[string]string) 
 		if existing == nil {
 			existing = e.Replacements
 		}
-		ExtractNameables(e.Name, m, existing)
-		ExtractNameables(e.LocalNotes, m, existing)
+		nameable.Extract(e.Name, m, existing)
+		nameable.Extract(e.LocalNotes, m, existing)
 		for _, one := range e.Features {
 			one.FillWithNameableKeys(m, existing)
 		}
@@ -496,7 +497,7 @@ func (e *EquipmentModifier) FillWithNameableKeys(m, existing map[string]string) 
 func (e *EquipmentModifier) ApplyNameableKeys(m map[string]string) {
 	needed := make(map[string]string)
 	e.FillWithNameableKeys(needed, nil)
-	e.Replacements = RetainNeededReplacements(needed, m)
+	e.Replacements = nameable.Reduce(needed, m)
 }
 
 // Enabled returns true if this node is enabled.

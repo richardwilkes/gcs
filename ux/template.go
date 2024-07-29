@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"slices"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -611,19 +612,19 @@ func rawPoints(child any) fxp.Int {
 	switch nc := child.(type) {
 	case *gurps.Skill:
 		if nc.Container() && nc.TemplatePicker != nil && nc.TemplatePicker.Type == picker.Points &&
-			nc.TemplatePicker.Qualifier.Compare == gurps.EqualsNumber {
+			nc.TemplatePicker.Qualifier.Compare == criteria.EqualsNumber {
 			return nc.TemplatePicker.Qualifier.Qualifier
 		}
 		return nc.RawPoints()
 	case *gurps.Spell:
 		if nc.Container() && nc.TemplatePicker != nil && nc.TemplatePicker.Type == picker.Points &&
-			nc.TemplatePicker.Qualifier.Compare == gurps.EqualsNumber {
+			nc.TemplatePicker.Qualifier.Compare == criteria.EqualsNumber {
 			return nc.TemplatePicker.Qualifier.Qualifier
 		}
 		return nc.RawPoints()
 	case *gurps.Trait:
 		if nc.Container() && nc.TemplatePicker != nil && nc.TemplatePicker.Type == picker.Points &&
-			nc.TemplatePicker.Qualifier.Compare == gurps.EqualsNumber {
+			nc.TemplatePicker.Qualifier.Compare == criteria.EqualsNumber {
 			return nc.TemplatePicker.Qualifier.Qualifier
 		}
 		return nc.AdjustedPoints()

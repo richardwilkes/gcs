@@ -13,8 +13,10 @@ import (
 	"encoding/binary"
 	"hash"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -26,18 +28,18 @@ type TraitPrereq struct {
 	Parent        *PrereqList     `json:"-"`
 	Type          prereq.Type     `json:"type"`
 	Has           bool            `json:"has"`
-	NameCriteria  StringCriteria  `json:"name,omitempty"`
-	LevelCriteria NumericCriteria `json:"level,omitempty"`
-	NotesCriteria StringCriteria  `json:"notes,omitempty"`
+	NameCriteria  criteria.Text   `json:"name,omitempty"`
+	LevelCriteria criteria.Number `json:"level,omitempty"`
+	NotesCriteria criteria.Text   `json:"notes,omitempty"`
 }
 
 // NewTraitPrereq creates a new TraitPrereq.
 func NewTraitPrereq() *TraitPrereq {
 	var p TraitPrereq
 	p.Type = prereq.Trait
-	p.NameCriteria.Compare = IsString
-	p.LevelCriteria.Compare = AtLeastNumber
-	p.NotesCriteria.Compare = AnyString
+	p.NameCriteria.Compare = criteria.IsText
+	p.LevelCriteria.Compare = criteria.AtLeastNumber
+	p.NotesCriteria.Compare = criteria.AnyText
 	p.Has = true
 	return &p
 }
@@ -61,14 +63,14 @@ func (p *TraitPrereq) Clone(parent *PrereqList) Prereq {
 
 // FillWithNameableKeys implements Prereq.
 func (p *TraitPrereq) FillWithNameableKeys(m, existing map[string]string) {
-	ExtractNameables(p.NameCriteria.Qualifier, m, existing)
-	ExtractNameables(p.NotesCriteria.Qualifier, m, existing)
+	nameable.Extract(p.NameCriteria.Qualifier, m, existing)
+	nameable.Extract(p.NotesCriteria.Qualifier, m, existing)
 }
 
 // Satisfied implements Prereq.
 func (p *TraitPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string, _ *bool) bool {
 	var replacements map[string]string
-	if na, ok := exclude.(NameableAccesser); ok {
+	if na, ok := exclude.(nameable.Accesser); ok {
 		replacements = na.NameableReplacements()
 	}
 	satisfied := false
@@ -98,7 +100,7 @@ func (p *TraitPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 		tooltip.WriteString(HasText(p.Has))
 		tooltip.WriteString(i18n.Text(" a trait whose name "))
 		tooltip.WriteString(p.NameCriteria.String(replacements))
-		if p.NotesCriteria.Compare != AnyString {
+		if p.NotesCriteria.Compare != criteria.AnyText {
 			tooltip.WriteString(i18n.Text(", notes "))
 			tooltip.WriteString(p.NotesCriteria.String(replacements))
 			tooltip.WriteByte(',')

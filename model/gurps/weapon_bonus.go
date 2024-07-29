@@ -15,10 +15,12 @@ import (
 	"hash"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -32,11 +34,11 @@ type WeaponBonus struct {
 	SelectionType          wsel.Type       `json:"selection_type"`
 	SwitchType             wswitch.Type    `json:"switch_type,omitempty"`
 	SwitchTypeValue        bool            `json:"switch_type_value,omitempty"`
-	NameCriteria           StringCriteria  `json:"name,omitempty"`
-	SpecializationCriteria StringCriteria  `json:"specialization,omitempty"`
-	RelativeLevelCriteria  NumericCriteria `json:"level,omitempty"`
-	UsageCriteria          StringCriteria  `json:"usage,omitempty"`
-	TagsCriteria           StringCriteria  `json:"tags,alt=category,omitempty"`
+	NameCriteria           criteria.Text   `json:"name,omitempty"`
+	SpecializationCriteria criteria.Text   `json:"specialization,omitempty"`
+	RelativeLevelCriteria  criteria.Number `json:"level,omitempty"`
+	UsageCriteria          criteria.Text   `json:"usage,omitempty"`
+	TagsCriteria           criteria.Text   `json:"tags,alt=category,omitempty"`
 	WeaponLeveledAmount
 	BonusOwner
 }
@@ -162,36 +164,16 @@ func NewWeaponSwitchBonus() *WeaponBonus {
 }
 
 func newWeaponBonus(t feature.Type) *WeaponBonus {
-	return &WeaponBonus{
-		Type:          t,
-		SelectionType: wsel.WithRequiredSkill,
-		NameCriteria: StringCriteria{
-			StringCriteriaData: StringCriteriaData{
-				Compare: IsString,
-			},
-		},
-		SpecializationCriteria: StringCriteria{
-			StringCriteriaData: StringCriteriaData{
-				Compare: AnyString,
-			},
-		},
-		RelativeLevelCriteria: NumericCriteria{
-			NumericCriteriaData: NumericCriteriaData{
-				Compare: AtLeastNumber,
-			},
-		},
-		UsageCriteria: StringCriteria{
-			StringCriteriaData: StringCriteriaData{
-				Compare: AnyString,
-			},
-		},
-		TagsCriteria: StringCriteria{
-			StringCriteriaData: StringCriteriaData{
-				Compare: AnyString,
-			},
-		},
-		WeaponLeveledAmount: WeaponLeveledAmount{Amount: fxp.One},
-	}
+	var w WeaponBonus
+	w.Type = t
+	w.SelectionType = wsel.WithRequiredSkill
+	w.NameCriteria.Compare = criteria.IsText
+	w.SpecializationCriteria.Compare = criteria.AnyText
+	w.RelativeLevelCriteria.Compare = criteria.AtLeastNumber
+	w.UsageCriteria.Compare = criteria.AnyText
+	w.TagsCriteria.Compare = criteria.AnyText
+	w.WeaponLeveledAmount.Amount = fxp.One
+	return &w
 }
 
 // FeatureType implements Feature.
@@ -219,11 +201,11 @@ func (w *WeaponBonus) AdjustedAmountForWeapon(wpn *Weapon) fxp.Int {
 
 // FillWithNameableKeys implements Feature.
 func (w *WeaponBonus) FillWithNameableKeys(m, existing map[string]string) {
-	ExtractNameables(w.SpecializationCriteria.Qualifier, m, existing)
+	nameable.Extract(w.SpecializationCriteria.Qualifier, m, existing)
 	if w.SelectionType != wsel.ThisWeapon {
-		ExtractNameables(w.NameCriteria.Qualifier, m, existing)
-		ExtractNameables(w.UsageCriteria.Qualifier, m, existing)
-		ExtractNameables(w.TagsCriteria.Qualifier, m, existing)
+		nameable.Extract(w.NameCriteria.Qualifier, m, existing)
+		nameable.Extract(w.UsageCriteria.Qualifier, m, existing)
+		nameable.Extract(w.TagsCriteria.Qualifier, m, existing)
 	}
 }
 

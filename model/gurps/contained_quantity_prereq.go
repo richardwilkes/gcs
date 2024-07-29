@@ -13,6 +13,7 @@ import (
 	"encoding/binary"
 	"hash"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -26,14 +27,14 @@ type ContainedQuantityPrereq struct {
 	Parent            *PrereqList     `json:"-"`
 	Type              prereq.Type     `json:"type"`
 	Has               bool            `json:"has"`
-	QualifierCriteria NumericCriteria `json:"qualifier,omitempty"`
+	QualifierCriteria criteria.Number `json:"qualifier,omitempty"`
 }
 
 // NewContainedQuantityPrereq creates a new ContainedQuantityPrereq.
 func NewContainedQuantityPrereq() *ContainedQuantityPrereq {
 	var p ContainedQuantityPrereq
 	p.Type = prereq.ContainedQuantity
-	p.QualifierCriteria.Compare = AtMostNumber
+	p.QualifierCriteria.Compare = criteria.AtMostNumber
 	p.QualifierCriteria.Qualifier = fxp.One
 	p.Has = true
 	return &p

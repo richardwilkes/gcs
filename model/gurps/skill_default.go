@@ -15,6 +15,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/i18n"
 )
 
@@ -91,19 +92,19 @@ func (s *SkillDefault) FullName(entity *Entity, replacements map[string]string) 
 
 // NameWithReplacements returns the name of the skill to default from with any nameable keys replaced.
 func (s *SkillDefault) NameWithReplacements(replacements map[string]string) string {
-	return ApplyNameables(s.Name, replacements)
+	return nameable.Apply(s.Name, replacements)
 }
 
 // SpecializationWithReplacements returns the specialization of the skill to default from with any nameable keys
 // replaced.
 func (s *SkillDefault) SpecializationWithReplacements(replacements map[string]string) string {
-	return ApplyNameables(s.Specialization, replacements)
+	return nameable.Apply(s.Specialization, replacements)
 }
 
 // FillWithNameableKeys adds any nameable keys found in this SkillDefault to the provided map.
 func (s *SkillDefault) FillWithNameableKeys(m, existing map[string]string) {
-	ExtractNameables(s.Name, m, existing)
-	ExtractNameables(s.Specialization, m, existing)
+	nameable.Extract(s.Name, m, existing)
+	nameable.Extract(s.Specialization, m, existing)
 }
 
 // ModifierAsString returns the modifier as a string suitable for appending.

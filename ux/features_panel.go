@@ -14,6 +14,7 @@ import (
 	"reflect"
 	"slices"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
@@ -508,7 +509,7 @@ func (p *featuresPanel) createWeaponBonusPanel(f *gurps.WeaponBonus) *unison.Pan
 func (p *featuresPanel) adjustCriteriaPopupAndField(f *gurps.WeaponBonus, criteriaPopup *unison.PopupMenu[string], criteriaField *StringField) {
 	blank := f.SelectionType == wsel.ThisWeapon
 	if !blank {
-		blank = gurps.AllStringCompareTypes[criteriaPopup.SelectedIndex()] == gurps.AnyString
+		blank = criteria.AllStringComparisons[criteriaPopup.SelectedIndex()] == criteria.AnyText
 	}
 	adjustPopupBlank(criteriaPopup, f.SelectionType == wsel.ThisWeapon)
 	adjustFieldBlank(criteriaField, blank)

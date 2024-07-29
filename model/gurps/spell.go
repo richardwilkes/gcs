@@ -27,6 +27,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
@@ -965,57 +966,57 @@ func (s *Spell) NameableReplacements() map[string]string {
 
 // NameWithReplacements returns the name with any replacements applied.
 func (s *Spell) NameWithReplacements() string {
-	return ApplyNameables(s.Name, s.Replacements)
+	return nameable.Apply(s.Name, s.Replacements)
 }
 
 // LocalNotesWithReplacements returns the local notes with any replacements applied.
 func (s *Spell) LocalNotesWithReplacements() string {
-	return ApplyNameables(s.LocalNotes, s.Replacements)
+	return nameable.Apply(s.LocalNotes, s.Replacements)
 }
 
 // PowerSourceWithReplacements returns the power source with any replacements applied.
 func (s *Spell) PowerSourceWithReplacements() string {
-	return ApplyNameables(s.PowerSource, s.Replacements)
+	return nameable.Apply(s.PowerSource, s.Replacements)
 }
 
 // ClassWithReplacements returns the class with any replacements applied.
 func (s *Spell) ClassWithReplacements() string {
-	return ApplyNameables(s.Class, s.Replacements)
+	return nameable.Apply(s.Class, s.Replacements)
 }
 
 // ResistWithReplacements returns the resist with any replacements applied.
 func (s *Spell) ResistWithReplacements() string {
-	return ApplyNameables(s.Resist, s.Replacements)
+	return nameable.Apply(s.Resist, s.Replacements)
 }
 
 // CastingCostWithReplacements returns the casting cost with any replacements applied.
 func (s *Spell) CastingCostWithReplacements() string {
-	return ApplyNameables(s.CastingCost, s.Replacements)
+	return nameable.Apply(s.CastingCost, s.Replacements)
 }
 
 // MaintenanceCostWithReplacements returns the maintenance cost with any replacements applied.
 func (s *Spell) MaintenanceCostWithReplacements() string {
-	return ApplyNameables(s.MaintenanceCost, s.Replacements)
+	return nameable.Apply(s.MaintenanceCost, s.Replacements)
 }
 
 // CastingTimeWithReplacements returns the casting time with any replacements applied.
 func (s *Spell) CastingTimeWithReplacements() string {
-	return ApplyNameables(s.CastingTime, s.Replacements)
+	return nameable.Apply(s.CastingTime, s.Replacements)
 }
 
 // DurationWithReplacements returns the duration with any replacements applied.
 func (s *Spell) DurationWithReplacements() string {
-	return ApplyNameables(s.Duration, s.Replacements)
+	return nameable.Apply(s.Duration, s.Replacements)
 }
 
 // RitualSkillNameWithReplacements returns the ritual skill name with any replacements applied.
 func (s *Spell) RitualSkillNameWithReplacements() string {
-	return ApplyNameables(s.RitualSkillName, s.Replacements)
+	return nameable.Apply(s.RitualSkillName, s.Replacements)
 }
 
 // CollegeWithReplacements returns the college(s) with any replacements applied.
 func (s *Spell) CollegeWithReplacements() []string {
-	return ApplyNameablesToList(s.College, s.Replacements)
+	return nameable.ApplyToList(s.College, s.Replacements)
 }
 
 // FillWithNameableKeys adds any nameable keys found to the provided map.
@@ -1023,18 +1024,18 @@ func (s *Spell) FillWithNameableKeys(m, existing map[string]string) {
 	if existing == nil {
 		existing = s.Replacements
 	}
-	ExtractNameables(s.Name, m, existing)
-	ExtractNameables(s.LocalNotes, m, existing)
-	ExtractNameables(s.PowerSource, m, existing)
-	ExtractNameables(s.Class, m, existing)
-	ExtractNameables(s.Resist, m, existing)
-	ExtractNameables(s.CastingCost, m, existing)
-	ExtractNameables(s.MaintenanceCost, m, existing)
-	ExtractNameables(s.CastingTime, m, existing)
-	ExtractNameables(s.Duration, m, existing)
-	ExtractNameables(s.RitualSkillName, m, existing)
+	nameable.Extract(s.Name, m, existing)
+	nameable.Extract(s.LocalNotes, m, existing)
+	nameable.Extract(s.PowerSource, m, existing)
+	nameable.Extract(s.Class, m, existing)
+	nameable.Extract(s.Resist, m, existing)
+	nameable.Extract(s.CastingCost, m, existing)
+	nameable.Extract(s.MaintenanceCost, m, existing)
+	nameable.Extract(s.CastingTime, m, existing)
+	nameable.Extract(s.Duration, m, existing)
+	nameable.Extract(s.RitualSkillName, m, existing)
 	for _, one := range s.College {
-		ExtractNameables(one, m, existing)
+		nameable.Extract(one, m, existing)
 	}
 	if s.Prereq != nil {
 		s.Prereq.FillWithNameableKeys(m, existing)
@@ -1048,7 +1049,7 @@ func (s *Spell) FillWithNameableKeys(m, existing map[string]string) {
 func (s *Spell) ApplyNameableKeys(m map[string]string) {
 	needed := make(map[string]string)
 	s.FillWithNameableKeys(needed, nil)
-	s.Replacements = RetainNeededReplacements(needed, m)
+	s.Replacements = nameable.Reduce(needed, m)
 }
 
 // Kind returns the kind of data.

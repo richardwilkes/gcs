@@ -13,6 +13,7 @@ import (
 	"fmt"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/unison"
@@ -24,7 +25,7 @@ import (
 type modifiersOnly interface {
 	*gurps.TraitModifier | *gurps.EquipmentModifier
 	fmt.Stringer
-	gurps.Nameables
+	nameable.Applier
 }
 
 // ProcessModifiersForSelection processes the selected rows for modifiers that can be toggled on or off.

@@ -13,6 +13,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -52,15 +53,15 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 			wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Level"), false))
 			levelField := NewNonEditableField(func(field *NonEditableField) {
 				replacements := e.target.NameableReplacements()
-				localName := gurps.ApplyNameables(e.editorData.Name, replacements)
-				localPowerSource := gurps.ApplyNameables(e.editorData.PowerSource, replacements)
-				localColleges := gurps.ApplyNameablesToList(e.editorData.College, replacements)
+				localName := nameable.Apply(e.editorData.Name, replacements)
+				localPowerSource := nameable.Apply(e.editorData.PowerSource, replacements)
+				localColleges := nameable.ApplyToList(e.editorData.College, replacements)
 				points := gurps.AdjustedPointsForNonContainerSpell(entity, e.editorData.Points, localName,
 					localPowerSource, localColleges, e.editorData.Tags, nil)
 				var level gurps.Level
 				if e.target.IsRitualMagic() {
 					level = gurps.CalculateRitualMagicSpellLevel(entity, localName, localPowerSource,
-						gurps.ApplyNameables(e.editorData.RitualSkillName, replacements),
+						nameable.Apply(e.editorData.RitualSkillName, replacements),
 						e.editorData.RitualPrereqCount, localColleges, e.editorData.Tags, e.editorData.Difficulty,
 						points)
 				} else {

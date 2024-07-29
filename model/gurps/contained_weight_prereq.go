@@ -13,6 +13,7 @@ import (
 	"encoding/binary"
 	"hash"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -23,17 +24,17 @@ var _ Prereq = &ContainedWeightPrereq{}
 
 // ContainedWeightPrereq holds a prerequisite for an equipment contained weight.
 type ContainedWeightPrereq struct {
-	Parent         *PrereqList    `json:"-"`
-	Type           prereq.Type    `json:"type"`
-	Has            bool           `json:"has"`
-	WeightCriteria WeightCriteria `json:"qualifier,omitempty"`
+	Parent         *PrereqList     `json:"-"`
+	Type           prereq.Type     `json:"type"`
+	Has            bool            `json:"has"`
+	WeightCriteria criteria.Weight `json:"qualifier,omitempty"`
 }
 
 // NewContainedWeightPrereq creates a new ContainedWeightPrereq.
 func NewContainedWeightPrereq(entity *Entity) *ContainedWeightPrereq {
 	var p ContainedWeightPrereq
 	p.Type = prereq.ContainedWeight
-	p.WeightCriteria.Compare = AtMostNumber
+	p.WeightCriteria.Compare = criteria.AtMostNumber
 	p.WeightCriteria.Qualifier = fxp.WeightFromInteger(5, SheetSettingsFor(entity).DefaultWeightUnits)
 	p.Has = true
 	return &p

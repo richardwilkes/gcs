@@ -13,9 +13,11 @@ import (
 	"encoding/binary"
 	"hash"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellcmp"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -28,8 +30,8 @@ type SpellPrereq struct {
 	Type              prereq.Type     `json:"type"`
 	SubType           spellcmp.Type   `json:"sub_type"`
 	Has               bool            `json:"has"`
-	QualifierCriteria StringCriteria  `json:"qualifier,omitempty"`
-	QuantityCriteria  NumericCriteria `json:"quantity,omitempty"`
+	QualifierCriteria criteria.Text   `json:"qualifier,omitempty"`
+	QuantityCriteria  criteria.Number `json:"quantity,omitempty"`
 }
 
 // NewSpellPrereq creates a new SpellPrereq.
@@ -37,8 +39,8 @@ func NewSpellPrereq() *SpellPrereq {
 	var p SpellPrereq
 	p.Type = prereq.Spell
 	p.SubType = spellcmp.Name
-	p.QualifierCriteria.Compare = IsString
-	p.QuantityCriteria.Compare = AtLeastNumber
+	p.QualifierCriteria.Compare = criteria.IsText
+	p.QuantityCriteria.Compare = criteria.AtLeastNumber
 	p.QuantityCriteria.Qualifier = fxp.One
 	p.Has = true
 	return &p
@@ -64,14 +66,14 @@ func (p *SpellPrereq) Clone(parent *PrereqList) Prereq {
 // FillWithNameableKeys implements Prereq.
 func (p *SpellPrereq) FillWithNameableKeys(m, existing map[string]string) {
 	if p.SubType.UsesStringCriteria() {
-		ExtractNameables(p.QualifierCriteria.Qualifier, m, existing)
+		nameable.Extract(p.QualifierCriteria.Qualifier, m, existing)
 	}
 }
 
 // Satisfied implements Prereq.
 func (p *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string, _ *bool) bool {
 	var replacements map[string]string
-	if na, ok := exclude.(NameableAccesser); ok {
+	if na, ok := exclude.(nameable.Accesser); ok {
 		replacements = na.NameableReplacements()
 	}
 	var techLevel *string

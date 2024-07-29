@@ -12,6 +12,7 @@ package gurps
 import (
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellcmp"
 )
@@ -30,7 +31,7 @@ func countPrereqsForList(list *PrereqList, availableSpells []*Spell, nonSpellsCo
 		case *TraitPrereq:
 			if p.Has {
 				switch p.LevelCriteria.Compare {
-				case EqualsNumber, AtLeastNumber:
+				case criteria.EqualsNumber, criteria.AtLeastNumber:
 					counts[i] = nonSpellsCountAs * max(fxp.As[int](p.LevelCriteria.Qualifier), 1)
 				default:
 					counts[i] = nonSpellsCountAs
@@ -55,12 +56,12 @@ func countPrereqsForList(list *PrereqList, availableSpells []*Spell, nonSpellsCo
 		case *SpellPrereq:
 			if p.Has {
 				switch p.QuantityCriteria.Compare {
-				case EqualsNumber, AtLeastNumber:
+				case criteria.EqualsNumber, criteria.AtLeastNumber:
 					counts[i] = fxp.As[int](p.QuantityCriteria.Qualifier)
 				default:
 					counts[i] = 1
 				}
-				if counts[i] == 1 && p.SubType == spellcmp.Name && p.QualifierCriteria.Compare == IsString {
+				if counts[i] == 1 && p.SubType == spellcmp.Name && p.QualifierCriteria.Compare == criteria.IsText {
 					Traverse(func(s *Spell) bool {
 						if strings.EqualFold(s.NameWithReplacements(), p.QualifierCriteria.Qualifier) {
 							counts[i] = 1 + countPrereqsForList(s.Prereq, availableSpells, nonSpellsCountAs, useHighestInOr)

@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/txt"
 )
@@ -32,7 +33,7 @@ type DataOwnerProvider interface {
 // NodeTypes is a constraint that defines the types that may be nodes.
 type NodeTypes interface {
 	*ConditionalModifier | *Equipment | *EquipmentModifier | *Note | *Skill | *Spell | *Trait | *TraitModifier | *Weapon
-	Nameables
+	nameable.Applier
 	fmt.Stringer
 }
 
@@ -41,7 +42,7 @@ type Node[T NodeTypes] interface {
 	fmt.Stringer
 	Openable
 	Hashable
-	Nameables
+	nameable.Applier
 	Clone(from LibraryFile, owner DataOwner, newParent T, preserveID bool) T
 	GetSource() Source
 	ClearSource()

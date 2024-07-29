@@ -27,6 +27,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/study"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
@@ -1010,17 +1011,17 @@ func (s *Skill) Enabled() bool {
 
 // NameWithReplacements returns the name with any replacements applied.
 func (s *Skill) NameWithReplacements() string {
-	return ApplyNameables(s.Name, s.Replacements)
+	return nameable.Apply(s.Name, s.Replacements)
 }
 
 // SpecializationWithReplacements returns the specialization with any replacements applied.
 func (s *Skill) SpecializationWithReplacements() string {
-	return ApplyNameables(s.Specialization, s.Replacements)
+	return nameable.Apply(s.Specialization, s.Replacements)
 }
 
 // LocalNotesWithReplacements returns the local notes with any replacements applied.
 func (s *Skill) LocalNotesWithReplacements() string {
-	return ApplyNameables(s.LocalNotes, s.Replacements)
+	return nameable.Apply(s.LocalNotes, s.Replacements)
 }
 
 // Notes implements WeaponOwner.
@@ -1060,9 +1061,9 @@ func (s *Skill) FillWithNameableKeys(m, existing map[string]string) {
 	if existing == nil {
 		existing = s.Replacements
 	}
-	ExtractNameables(s.Name, m, existing)
-	ExtractNameables(s.LocalNotes, m, existing)
-	ExtractNameables(s.Specialization, m, existing)
+	nameable.Extract(s.Name, m, existing)
+	nameable.Extract(s.LocalNotes, m, existing)
+	nameable.Extract(s.Specialization, m, existing)
 	if s.Prereq != nil {
 		s.Prereq.FillWithNameableKeys(m, existing)
 	}
@@ -1084,7 +1085,7 @@ func (s *Skill) FillWithNameableKeys(m, existing map[string]string) {
 func (s *Skill) ApplyNameableKeys(m map[string]string) {
 	needed := make(map[string]string)
 	s.FillWithNameableKeys(needed, nil)
-	s.Replacements = RetainNeededReplacements(needed, m)
+	s.Replacements = nameable.Reduce(needed, m)
 }
 
 // CanSwapDefaults returns true if this skill's default can be swapped.

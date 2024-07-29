@@ -7,7 +7,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-package gurps
+package criteria
 
 import (
 	"encoding/binary"
@@ -17,40 +17,40 @@ import (
 	"github.com/richardwilkes/json"
 )
 
-// WeightCriteria holds the criteria for matching a number.
-type WeightCriteria struct {
-	WeightCriteriaData
+// Weight holds the criteria for matching a weight.
+type Weight struct {
+	WeightData
 }
 
-// WeightCriteriaData holds the criteria for matching a number that should be written to disk.
-type WeightCriteriaData struct {
-	Compare   NumericCompareType `json:"compare,omitempty"`
-	Qualifier fxp.Weight         `json:"qualifier,omitempty"`
+// WeightData holds the criteria for matching a weight that should be written to disk.
+type WeightData struct {
+	Compare   NumericComparison `json:"compare,omitempty"`
+	Qualifier fxp.Weight        `json:"qualifier,omitempty"`
 }
 
 // ShouldOmit implements json.Omitter.
-func (w WeightCriteria) ShouldOmit() bool {
+func (w Weight) ShouldOmit() bool {
 	return w.Compare.EnsureValid() == AnyNumber
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (w *WeightCriteria) UnmarshalJSON(data []byte) error {
-	err := json.Unmarshal(data, &w.WeightCriteriaData)
+func (w *Weight) UnmarshalJSON(data []byte) error {
+	err := json.Unmarshal(data, &w.WeightData)
 	w.Compare = w.Compare.EnsureValid()
 	return err
 }
 
 // Matches performs a comparison and returns true if the data matches.
-func (w WeightCriteria) Matches(value fxp.Weight) bool {
+func (w Weight) Matches(value fxp.Weight) bool {
 	return w.Compare.Matches(fxp.Int(w.Qualifier), fxp.Int(value))
 }
 
-func (w WeightCriteria) String() string {
+func (w Weight) String() string {
 	return w.Compare.Describe(fxp.Int(w.Qualifier))
 }
 
 // Hash writes this object's contents into the hasher.
-func (w WeightCriteria) Hash(h hash.Hash) {
+func (w Weight) Hash(h hash.Hash) {
 	if w.ShouldOmit() {
 		return
 	}

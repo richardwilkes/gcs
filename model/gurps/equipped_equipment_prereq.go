@@ -14,7 +14,9 @@ import (
 	"fmt"
 	"hash"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -23,18 +25,18 @@ var _ Prereq = &EquippedEquipmentPrereq{}
 
 // EquippedEquipmentPrereq holds a prerequisite for an equipped piece of equipment.
 type EquippedEquipmentPrereq struct {
-	Parent       *PrereqList    `json:"-"`
-	Type         prereq.Type    `json:"type"`
-	NameCriteria StringCriteria `json:"name,omitempty"`
-	TagsCriteria StringCriteria `json:"tags,omitempty"`
+	Parent       *PrereqList   `json:"-"`
+	Type         prereq.Type   `json:"type"`
+	NameCriteria criteria.Text `json:"name,omitempty"`
+	TagsCriteria criteria.Text `json:"tags,omitempty"`
 }
 
 // NewEquippedEquipmentPrereq creates a new EquippedEquipmentPrereq.
 func NewEquippedEquipmentPrereq() *EquippedEquipmentPrereq {
 	var p EquippedEquipmentPrereq
 	p.Type = prereq.EquippedEquipment
-	p.NameCriteria.Compare = IsString
-	p.TagsCriteria.Compare = AnyString
+	p.NameCriteria.Compare = criteria.IsText
+	p.TagsCriteria.Compare = criteria.AnyText
 	return &p
 }
 
@@ -57,14 +59,14 @@ func (p *EquippedEquipmentPrereq) Clone(parent *PrereqList) Prereq {
 
 // FillWithNameableKeys implements Prereq.
 func (p *EquippedEquipmentPrereq) FillWithNameableKeys(m, existing map[string]string) {
-	ExtractNameables(p.NameCriteria.Qualifier, m, existing)
-	ExtractNameables(p.TagsCriteria.Qualifier, m, existing)
+	nameable.Extract(p.NameCriteria.Qualifier, m, existing)
+	nameable.Extract(p.TagsCriteria.Qualifier, m, existing)
 }
 
 // Satisfied implements Prereq.
 func (p *EquippedEquipmentPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBuffer, prefix string, hasEquipmentPenalty *bool) bool {
 	var replacements map[string]string
-	if na, ok := exclude.(NameableAccesser); ok {
+	if na, ok := exclude.(nameable.Accesser); ok {
 		replacements = na.NameableReplacements()
 	}
 	satisfied := false

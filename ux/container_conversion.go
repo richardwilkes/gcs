@@ -13,6 +13,7 @@ import (
 	"fmt"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/unison"
 )
 
@@ -20,7 +21,7 @@ import (
 type ConvertableNodeTypes interface {
 	*gurps.Equipment | *gurps.Note
 	fmt.Stringer
-	gurps.Nameables
+	nameable.Applier
 	Container() bool
 	CanConvertToFromContainer() bool
 	ConvertToContainer()

@@ -14,6 +14,7 @@ import (
 	"hash"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
@@ -26,7 +27,7 @@ type PrereqList struct {
 	Parent  *PrereqList     `json:"-"`
 	Type    prereq.Type     `json:"type"`
 	All     bool            `json:"all"`
-	WhenTL  NumericCriteria `json:"when_tl,omitempty"`
+	WhenTL  criteria.Number `json:"when_tl,omitempty"`
 	Prereqs Prereqs         `json:"prereqs,omitempty"`
 }
 
@@ -97,7 +98,7 @@ func (p *PrereqList) FillWithNameableKeys(m, existing map[string]string) {
 
 // Satisfied implements Prereq.
 func (p *PrereqList) Satisfied(entity *Entity, exclude any, buffer *xio.ByteBuffer, prefix string, hasEquipmentPenalty *bool) bool {
-	if p.WhenTL.Compare != AnyNumber {
+	if p.WhenTL.Compare != criteria.AnyNumber {
 		tl, _, _ := ExtractTechLevel(entity.Profile.TechLevel)
 		if tl < 0 {
 			tl = 0

@@ -13,13 +13,14 @@ import (
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
 
 // Prereq holds data necessary to track a prerequisite.
 type Prereq interface {
-	NameableFiller
+	nameable.Filler
 	PrereqType() prereq.Type
 	// ParentList returns the owning parent list, if any.
 	ParentList() *PrereqList

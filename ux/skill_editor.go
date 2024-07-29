@@ -13,6 +13,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -150,8 +151,8 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 			addDecimalField(wrapper, nil, "", pointsLabel, "", &e.editorData.Points, 0, fxp.MaxBasePoints)
 			wrapper.AddChild(NewFieldInteriorLeadingLabel(i18n.Text("Level"), false))
 			levelField := NewNonEditableField(func(field *NonEditableField) {
-				localName := gurps.ApplyNameables(e.editorData.Name, e.target.Replacements)
-				localSpec := gurps.ApplyNameables(e.editorData.Specialization, e.target.Replacements)
+				localName := nameable.Apply(e.editorData.Name, e.target.Replacements)
+				localSpec := nameable.Apply(e.editorData.Specialization, e.target.Replacements)
 				points := gurps.AdjustedPointsForNonContainerSkillOrTechnique(entity, e.editorData.Points, localName,
 					localSpec, e.editorData.Tags, nil)
 				var level gurps.Level

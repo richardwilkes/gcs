@@ -26,6 +26,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wsel"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/rpgtools/dice"
@@ -61,7 +62,7 @@ const (
 // WeaponOwner defines the methods required of a Weapon owner.
 type WeaponOwner interface {
 	fmt.Stringer
-	NameableAccesser
+	nameable.Accesser
 	DataOwner() DataOwner
 	Description() string
 	Notes() string
@@ -658,12 +659,12 @@ func (w *Weapon) extractWeaponBonus(f Feature, set map[*WeaponBonus]bool, allowe
 
 // UsageWithReplacements returns the usage of the weapon with any nameable keys replaced.
 func (w *Weapon) UsageWithReplacements() string {
-	return ApplyNameables(w.Usage, w.NameableReplacements())
+	return nameable.Apply(w.Usage, w.NameableReplacements())
 }
 
 // UsageNotesWithReplacements returns the usage notes of the weapon with any nameable keys replaced.
 func (w *Weapon) UsageNotesWithReplacements() string {
-	return ApplyNameables(w.UsageNotes, w.NameableReplacements())
+	return nameable.Apply(w.UsageNotes, w.NameableReplacements())
 }
 
 // NameableReplacements returns the replacements to be used with this weapon.
@@ -676,8 +677,8 @@ func (w *Weapon) NameableReplacements() map[string]string {
 
 // FillWithNameableKeys adds any nameable keys found in this Weapon to the provided map.
 func (w *Weapon) FillWithNameableKeys(m, existing map[string]string) {
-	ExtractNameables(w.Usage, m, existing)
-	ExtractNameables(w.UsageNotes, m, existing)
+	nameable.Extract(w.Usage, m, existing)
+	nameable.Extract(w.UsageNotes, m, existing)
 	for _, one := range w.Defaults {
 		one.FillWithNameableKeys(m, existing)
 	}

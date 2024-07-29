@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"hash"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/json"
@@ -30,7 +31,7 @@ type TemplatePickerProvider interface {
 // TemplatePicker holds the data necessary to allow a template choice to be made.
 type TemplatePicker struct {
 	Type      picker.Type     `json:"type"`
-	Qualifier NumericCriteria `json:"qualifier"`
+	Qualifier criteria.Number `json:"qualifier"`
 }
 
 // Clone creates a copy of the TemplatePicker.

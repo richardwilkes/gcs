@@ -20,6 +20,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/srcstate"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
@@ -223,7 +224,7 @@ func (n *Note) UnmarshalJSON(data []byte) error {
 
 // TextWithReplacements returns the text with any replacements applied.
 func (n *Note) TextWithReplacements() string {
-	return ApplyNameables(n.Text, n.Replacements)
+	return nameable.Apply(n.Text, n.Replacements)
 }
 
 func (n *Note) String() string {
@@ -325,14 +326,14 @@ func (n *Note) FillWithNameableKeys(m, existing map[string]string) {
 	if existing == nil {
 		existing = n.Replacements
 	}
-	ExtractNameables(n.Text, m, existing)
+	nameable.Extract(n.Text, m, existing)
 }
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
 func (n *Note) ApplyNameableKeys(m map[string]string) {
 	needed := make(map[string]string)
 	n.FillWithNameableKeys(needed, nil)
-	n.Replacements = RetainNeededReplacements(needed, m)
+	n.Replacements = nameable.Reduce(needed, m)
 }
 
 // CanConvertToFromContainer returns true if this node can be converted to/from a container.

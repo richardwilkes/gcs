@@ -15,6 +15,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
 )
@@ -51,7 +52,7 @@ func (r *ReactionBonus) Clone() Feature {
 
 // FillWithNameableKeys implements Feature.
 func (r *ReactionBonus) FillWithNameableKeys(m, existing map[string]string) {
-	ExtractNameables(r.Situation, m, existing)
+	nameable.Extract(r.Situation, m, existing)
 }
 
 // SetLevel implements Bonus.

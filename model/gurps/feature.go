@@ -16,12 +16,13 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/xio"
 )
 
 // Feature holds data that affects another object.
 type Feature interface {
-	NameableFiller
+	nameable.Filler
 	FeatureType() feature.Type
 	Clone() Feature
 	Hash(hash.Hash)

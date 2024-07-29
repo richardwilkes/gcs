@@ -29,6 +29,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/tmcost"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
@@ -514,17 +515,17 @@ func (t *Trait) Enabled() bool {
 
 // NameWithReplacements returns the name with any replacements applied.
 func (t *Trait) NameWithReplacements() string {
-	return ApplyNameables(t.Name, t.Replacements)
+	return nameable.Apply(t.Name, t.Replacements)
 }
 
 // LocalNotesWithReplacements returns the local notes with any replacements applied.
 func (t *Trait) LocalNotesWithReplacements() string {
-	return ApplyNameables(t.LocalNotes, t.Replacements)
+	return nameable.Apply(t.LocalNotes, t.Replacements)
 }
 
 // UserDescWithReplacements returns the user description with any replacements applied.
 func (t *Trait) UserDescWithReplacements() string {
-	return ApplyNameables(t.UserDesc, t.Replacements)
+	return nameable.Apply(t.UserDesc, t.Replacements)
 }
 
 // Description returns a description, which doesn't include any levels.
@@ -588,9 +589,9 @@ func (t *Trait) fillWithLocalNameableKeys(m, existing map[string]string) {
 	if existing == nil {
 		existing = t.Replacements
 	}
-	ExtractNameables(t.Name, m, existing)
-	ExtractNameables(t.LocalNotes, m, existing)
-	ExtractNameables(t.UserDesc, m, existing)
+	nameable.Extract(t.Name, m, existing)
+	nameable.Extract(t.LocalNotes, m, existing)
+	nameable.Extract(t.UserDesc, m, existing)
 	if t.Prereq != nil {
 		t.Prereq.FillWithNameableKeys(m, existing)
 	}
@@ -606,7 +607,7 @@ func (t *Trait) fillWithLocalNameableKeys(m, existing map[string]string) {
 func (t *Trait) ApplyNameableKeys(m map[string]string) {
 	needed := make(map[string]string)
 	t.fillWithLocalNameableKeys(needed, nil)
-	t.Replacements = RetainNeededReplacements(needed, m)
+	t.Replacements = nameable.Reduce(needed, m)
 	Traverse(func(mod *TraitModifier) bool {
 		mod.ApplyNameableKeys(m)
 		return false

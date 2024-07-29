@@ -26,6 +26,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/tmcost"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
+	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
@@ -480,12 +481,12 @@ func (t *TraitModifier) CostDescription() string {
 
 // NameWithReplacements returns the name with any replacements applied.
 func (t *TraitModifier) NameWithReplacements() string {
-	return ApplyNameables(t.Name, t.Replacements)
+	return nameable.Apply(t.Name, t.Replacements)
 }
 
 // LocalNotesWithReplacements returns the local notes with any replacements applied.
 func (t *TraitModifier) LocalNotesWithReplacements() string {
-	return ApplyNameables(t.LocalNotes, t.Replacements)
+	return nameable.Apply(t.LocalNotes, t.Replacements)
 }
 
 // NameableReplacements returns the replacements to be used with Nameables.
@@ -502,8 +503,8 @@ func (t *TraitModifier) FillWithNameableKeys(m, existing map[string]string) {
 		if existing == nil {
 			existing = t.Replacements
 		}
-		ExtractNameables(t.Name, m, existing)
-		ExtractNameables(t.LocalNotes, m, existing)
+		nameable.Extract(t.Name, m, existing)
+		nameable.Extract(t.LocalNotes, m, existing)
 		for _, one := range t.Features {
 			one.FillWithNameableKeys(m, existing)
 		}
@@ -515,7 +516,7 @@ func (t *TraitModifier) FillWithNameableKeys(m, existing map[string]string) {
 func (t *TraitModifier) ApplyNameableKeys(m map[string]string) {
 	needed := make(map[string]string)
 	t.FillWithNameableKeys(needed, nil)
-	t.Replacements = RetainNeededReplacements(needed, m)
+	t.Replacements = nameable.Reduce(needed, m)
 }
 
 // Enabled returns true if this node is enabled.
