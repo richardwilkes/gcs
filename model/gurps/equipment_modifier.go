@@ -56,7 +56,8 @@ const (
 // EquipmentModifier holds a modifier to a piece of Equipment.
 type EquipmentModifier struct {
 	EquipmentModifierData
-	owner DataOwner
+	owner     DataOwner
+	equipment *Equipment
 }
 
 // EquipmentModifierData holds the EquipmentModifier data that is written to disk.
@@ -95,12 +96,14 @@ type EquipmentModifierSyncData struct {
 // EquipmentModifierNonContainerSyncData holds the EquipmentModifier sync data that is only applicable to Equipment
 // Modifiers that aren't containers.
 type EquipmentModifierNonContainerSyncData struct {
-	CostType     emcost.Type   `json:"cost_type,omitempty"`
-	WeightType   emweight.Type `json:"weight_type,omitempty"`
-	TechLevel    string        `json:"tech_level,omitempty"`
-	CostAmount   string        `json:"cost,omitempty"`
-	WeightAmount string        `json:"weight,omitempty"`
-	Features     Features      `json:"features,omitempty"`
+	CostType         emcost.Type   `json:"cost_type,omitempty"`
+	CostIsPerLevel   bool          `json:"cost_is_per_level,omitempty"`
+	WeightType       emweight.Type `json:"weight_type,omitempty"`
+	WeightIsPerLevel bool          `json:"weight_is_per_level,omitempty"`
+	TechLevel        string        `json:"tech_level,omitempty"`
+	CostAmount       string        `json:"cost,omitempty"`
+	WeightAmount     string        `json:"weight,omitempty"`
+	Features         Features      `json:"features,omitempty"`
 }
 
 type equipmentModifierListData struct {
@@ -366,6 +369,11 @@ func (e *EquipmentModifier) Depth() int {
 	return count
 }
 
+// OwningEquipment returns the owning equipment.
+func (e *EquipmentModifier) OwningEquipment() *Equipment {
+	return e.equipment
+}
+
 // DataOwner returns the data owner.
 func (e *EquipmentModifier) DataOwner() DataOwner {
 	return e.owner
@@ -508,17 +516,40 @@ func (e *EquipmentModifier) SetEnabled(enabled bool) {
 	}
 }
 
+// CostMultiplier returns the amount to multiply the cost by.
+func (e *EquipmentModifier) CostMultiplier() fxp.Int {
+	return MultiplierForEquipmentModifier(e.equipment, e.CostIsPerLevel)
+}
+
+// WeightMultiplier returns the amount to multiply the weight by.
+func (e *EquipmentModifier) WeightMultiplier() fxp.Int {
+	return MultiplierForEquipmentModifier(e.equipment, e.WeightIsPerLevel)
+}
+
+// MultiplierForEquipmentModifier returns the amount to multiply the cost or weight by.
+func MultiplierForEquipmentModifier(equipment *Equipment, isPerLevel bool) fxp.Int {
+	var multiplier fxp.Int
+	if isPerLevel && equipment != nil && equipment.IsLeveled() {
+		multiplier = equipment.CurrentLevel()
+	}
+	if multiplier <= 0 {
+		multiplier = fxp.One
+	}
+	return multiplier
+}
+
 // ValueAdjustedForModifiers returns the value after adjusting it for a set of modifiers.
-func ValueAdjustedForModifiers(value fxp.Int, modifiers []*EquipmentModifier) fxp.Int {
+func ValueAdjustedForModifiers(equipment *Equipment, value fxp.Int, modifiers []*EquipmentModifier) fxp.Int {
 	// Apply all equipment.OriginalCost
-	cost := processNonCFStep(emcost.Original, value, modifiers)
+	cost := processNonCFStep(equipment, emcost.Original, value, modifiers)
 
 	// Apply all equipment.BaseCost
 	var cf fxp.Int
 	Traverse(func(mod *EquipmentModifier) bool {
+		mod.equipment = equipment
 		if mod.CostType == emcost.Base {
 			t := emcost.Base.FromString(mod.CostAmount)
-			cf += t.ExtractValue(mod.CostAmount)
+			cf += t.ExtractValue(mod.CostAmount).Mul(mod.CostMultiplier())
 			if t == emcost.Multiplier {
 				cf -= fxp.One
 			}
@@ -531,21 +562,22 @@ func ValueAdjustedForModifiers(value fxp.Int, modifiers []*EquipmentModifier) fx
 	}
 
 	// Apply all equipment.FinalBaseCost
-	cost = processNonCFStep(emcost.FinalBase, cost, modifiers)
+	cost = processNonCFStep(equipment, emcost.FinalBase, cost, modifiers)
 
 	// Apply all equipment.FinalCost
-	cost = processNonCFStep(emcost.Final, cost, modifiers)
+	cost = processNonCFStep(equipment, emcost.Final, cost, modifiers)
 
 	return cost.Max(0)
 }
 
-func processNonCFStep(costType emcost.Type, value fxp.Int, modifiers []*EquipmentModifier) fxp.Int {
+func processNonCFStep(equipment *Equipment, costType emcost.Type, value fxp.Int, modifiers []*EquipmentModifier) fxp.Int {
 	var percentages, additions fxp.Int
 	cost := value
 	Traverse(func(mod *EquipmentModifier) bool {
+		mod.equipment = equipment
 		if mod.CostType == costType {
 			t := costType.FromString(mod.CostAmount)
-			amt := t.ExtractValue(mod.CostAmount)
+			amt := t.ExtractValue(mod.CostAmount).Mul(mod.CostMultiplier())
 			switch t {
 			case emcost.Addition:
 				additions += amt
@@ -565,15 +597,19 @@ func processNonCFStep(costType emcost.Type, value fxp.Int, modifiers []*Equipmen
 }
 
 // WeightAdjustedForModifiers returns the weight after adjusting it for a set of modifiers.
-func WeightAdjustedForModifiers(weight fxp.Weight, modifiers []*EquipmentModifier, defUnits fxp.WeightUnit) fxp.Weight {
+func WeightAdjustedForModifiers(equipment *Equipment, weight fxp.Weight, modifiers []*EquipmentModifier, defUnits fxp.WeightUnit) fxp.Weight {
 	var percentages fxp.Int
 	w := fxp.Int(weight)
 
 	// Apply all equipment.OriginalWeight
 	Traverse(func(mod *EquipmentModifier) bool {
+		mod.equipment = equipment
 		if mod.WeightType == emweight.Original {
 			t := emweight.Original.DetermineModifierWeightValueTypeFromString(mod.WeightAmount)
-			amt := t.ExtractFraction(mod.WeightAmount).Value()
+			f := t.ExtractFraction(mod.WeightAmount)
+			f.Normalize()
+			f.Numerator = f.Numerator.Mul(mod.WeightMultiplier())
+			amt := f.Value()
 			if t == emweight.Addition {
 				w += fxp.TrailingWeightUnitFromString(mod.WeightAmount, defUnits).ToPounds(amt)
 			} else {
@@ -587,23 +623,26 @@ func WeightAdjustedForModifiers(weight fxp.Weight, modifiers []*EquipmentModifie
 	}
 
 	// Apply all equipment.BaseWeight
-	w = processMultiplyAddWeightStep(emweight.Base, w, defUnits, modifiers)
+	w = processMultiplyAddWeightStep(equipment, emweight.Base, w, defUnits, modifiers)
 
 	// Apply all equipment.FinalBaseWeight
-	w = processMultiplyAddWeightStep(emweight.FinalBase, w, defUnits, modifiers)
+	w = processMultiplyAddWeightStep(equipment, emweight.FinalBase, w, defUnits, modifiers)
 
 	// Apply all equipment.FinalWeight
-	w = processMultiplyAddWeightStep(emweight.Final, w, defUnits, modifiers)
+	w = processMultiplyAddWeightStep(equipment, emweight.Final, w, defUnits, modifiers)
 
 	return fxp.Weight(w.Max(0))
 }
 
-func processMultiplyAddWeightStep(weightType emweight.Type, weight fxp.Int, defUnits fxp.WeightUnit, modifiers []*EquipmentModifier) fxp.Int {
+func processMultiplyAddWeightStep(equipment *Equipment, weightType emweight.Type, weight fxp.Int, defUnits fxp.WeightUnit, modifiers []*EquipmentModifier) fxp.Int {
 	var sum fxp.Int
 	Traverse(func(mod *EquipmentModifier) bool {
+		mod.equipment = equipment
 		if mod.WeightType == weightType {
 			t := weightType.DetermineModifierWeightValueTypeFromString(mod.WeightAmount)
 			f := t.ExtractFraction(mod.WeightAmount)
+			f.Normalize()
+			f.Numerator = f.Numerator.Mul(mod.WeightMultiplier())
 			switch t {
 			case emweight.Addition:
 				sum += fxp.TrailingWeightUnitFromString(mod.WeightAmount, defUnits).ToPounds(f.Value())

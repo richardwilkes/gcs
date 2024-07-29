@@ -39,6 +39,7 @@ var (
 	convertToNonContainerAction    *unison.Action
 	copyToSheetAction              *unison.Action
 	copyToTemplateAction           *unison.Action
+	decreaseEquipmentLevelAction   *unison.Action
 	decreaseSkillLevelAction       *unison.Action
 	decreaseTechLevelAction        *unison.Action
 	decreaseUsesAction             *unison.Action
@@ -54,6 +55,7 @@ var (
 	exportAsWEBPAction             *unison.Action
 	fontSettingsAction             *unison.Action
 	generalSettingsAction          *unison.Action
+	increaseEquipmentLevelAction   *unison.Action
 	increaseSkillLevelAction       *unison.Action
 	increaseTechLevelAction        *unison.Action
 	increaseUsesAction             *unison.Action
@@ -241,6 +243,12 @@ func registerActions() {
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
+	decreaseEquipmentLevelAction = registerKeyBindableAction("dec.eqp.lvl", &unison.Action{
+		ID:              DecrementEquipmentLevelItemID,
+		Title:           i18n.Text("Decrease Equipment Level"),
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
+	})
 	decreaseSkillLevelAction = registerKeyBindableAction("dec.sl", &unison.Action{
 		ID:              DecrementSkillLevelItemID,
 		Title:           i18n.Text("Decrease Skill Level"),
@@ -345,6 +353,12 @@ func registerActions() {
 		ID:              WebSettingsItemID,
 		Title:           i18n.Text("Web Server Settings…"),
 		ExecuteCallback: func(_ *unison.Action, _ any) { ShowWebSettings() },
+	})
+	increaseEquipmentLevelAction = registerKeyBindableAction("inc.eqp.lvl", &unison.Action{
+		ID:              IncrementEquipmentLevelItemID,
+		Title:           i18n.Text("Increase Equipment Level"),
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
 	increaseSkillLevelAction = registerKeyBindableAction("inc.sl", &unison.Action{
 		ID:              IncrementSkillLevelItemID,

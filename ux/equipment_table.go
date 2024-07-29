@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/unison"
 )
@@ -60,5 +61,17 @@ func NewEquipmentTableDockable(filePath string, equipment []*gurps.Equipment) *T
 		func(path string) error { return gurps.SaveEquipment(provider.OtherEquipmentList(), path) },
 		NewOtherEquipmentItemID, NewOtherEquipmentContainerItemID)
 	InstallContainerConversionHandlers(d, d, d.table)
+	d.InstallCmdHandlers(IncrementTechLevelItemID,
+		func(_ any) bool { return canAdjustTechLevel(d.table, fxp.One) },
+		func(_ any) { adjustTechLevel(d, d.table, fxp.One) })
+	d.InstallCmdHandlers(DecrementTechLevelItemID,
+		func(_ any) bool { return canAdjustTechLevel(d.table, -fxp.One) },
+		func(_ any) { adjustTechLevel(d, d.table, -fxp.One) })
+	d.InstallCmdHandlers(IncrementEquipmentLevelItemID,
+		func(_ any) bool { return canAdjustEquipmentLevel(d.table, fxp.One) },
+		func(_ any) { adjustEquipmentLevel(d, d.table, fxp.One) })
+	d.InstallCmdHandlers(DecrementEquipmentLevelItemID,
+		func(_ any) bool { return canAdjustEquipmentLevel(d.table, -fxp.One) },
+		func(_ any) { adjustEquipmentLevel(d, d.table, -fxp.One) })
 	return d
 }

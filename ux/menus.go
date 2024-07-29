@@ -71,6 +71,8 @@ const (
 	DecrementSkillLevelItemID
 	IncrementTechLevelItemID
 	DecrementTechLevelItemID
+	IncrementEquipmentLevelItemID
+	DecrementEquipmentLevelItemID
 	SwapDefaultsItemID
 	MoveToOtherEquipmentItemID
 	MoveToCarriedEquipmentItemID
@@ -261,6 +263,8 @@ func (s menuBarScope) setupEditMenu(bar unison.Menu) {
 	i = s.insertMenuItem(m, i, decreaseSkillLevelAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, increaseTechLevelAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, decreaseTechLevelAction.NewMenuItem(f))
+	i = s.insertMenuItem(m, i, increaseEquipmentLevelAction.NewMenuItem(f))
+	i = s.insertMenuItem(m, i, decreaseEquipmentLevelAction.NewMenuItem(f))
 
 	i = s.insertMenuSeparator(m, i)
 	i = s.insertMenuItem(m, i, toggleStateAction.NewMenuItem(f))
@@ -587,6 +591,8 @@ func AppendDefaultContextMenuItems(list []ContextMenuItem) []ContextMenuItem {
 		ContextMenuItem{decreaseSkillLevelAction.Title, DecrementSkillLevelItemID},
 		ContextMenuItem{increaseTechLevelAction.Title, IncrementTechLevelItemID},
 		ContextMenuItem{decreaseTechLevelAction.Title, DecrementTechLevelItemID},
+		ContextMenuItem{increaseEquipmentLevelAction.Title, IncrementEquipmentLevelItemID},
+		ContextMenuItem{decreaseEquipmentLevelAction.Title, DecrementEquipmentLevelItemID},
 		ContextMenuItem{"", -1},
 		ContextMenuItem{toggleStateAction.Title, ToggleStateItemID},
 		ContextMenuItem{swapDefaultsAction.Title, SwapDefaultsItemID},

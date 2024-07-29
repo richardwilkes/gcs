@@ -46,7 +46,7 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 			wrapper.AddChild(NewNonEditableField(func(field *NonEditableField) {
 				var value fxp.Int
 				if e.editorData.Quantity > 0 {
-					value = gurps.ValueAdjustedForModifiers(e.editorData.Value, e.editorData.Modifiers)
+					value = gurps.ValueAdjustedForModifiers(e.target, e.editorData.Value, e.editorData.Modifiers)
 					if e.target.Container() {
 						for _, one := range e.target.Children {
 							value += one.ExtendedValue()
@@ -66,8 +66,9 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 				var weight fxp.Weight
 				defUnits := gurps.SheetSettingsFor(entity).DefaultWeightUnits
 				if e.editorData.Quantity > 0 {
-					weight = gurps.ExtendedWeightAdjustedForModifiers(defUnits, e.editorData.Quantity, e.editorData.Weight,
-						e.editorData.Modifiers, e.editorData.Features, e.target.Children, false, false)
+					weight = gurps.ExtendedWeightAdjustedForModifiers(e.target, defUnits, e.editorData.Quantity,
+						e.editorData.Weight, e.editorData.Modifiers, e.editorData.Features, e.target.Children, false,
+						false)
 				}
 				field.SetTitle(defUnits.Format(weight))
 				field.MarkForLayoutAndRedraw()
@@ -81,6 +82,7 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 			wrapper.AddChild(NewFieldInteriorLeadingLabel(maxUsesLabel, false))
 			addIntegerField(wrapper, nil, "", maxUsesLabel, "", &e.editorData.MaxUses, 0, 9999999)
 			addLabelAndDecimalField(content, nil, "", i18n.Text("Rated ST"), i18n.Text("Equipment with a rated ST use this value instead of the user's ST"), &e.editorData.RatedST, 0, fxp.Max)
+			addLabelAndDecimalField(content, nil, "", i18n.Text("Level"), i18n.Text("Level can be used with features and modifiers that have per-level effects"), &e.editorData.Level, 0, fxp.Max)
 			addTagsLabelAndField(content, &e.editorData.Tags)
 			addPageRefLabelAndField(content, &e.editorData.PageRef)
 			addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)

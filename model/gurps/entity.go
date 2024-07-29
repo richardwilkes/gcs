@@ -362,11 +362,11 @@ func (e *Entity) processFeatures() {
 			return false
 		}
 		for _, f := range eqp.Features {
-			e.processFeature(eqp, nil, f, 0)
+			e.processFeature(eqp, nil, f, eqp.Level.Max(0))
 		}
 		Traverse(func(mod *EquipmentModifier) bool {
 			for _, f := range mod.Features {
-				e.processFeature(eqp, mod, f, 0)
+				e.processFeature(eqp, mod, f, eqp.Level.Max(0))
 			}
 			return false
 		}, true, true, eqp.Modifiers...)

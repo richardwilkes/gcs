@@ -49,6 +49,7 @@ func NewCarriedEquipmentPageList(owner Rebuildable, provider gurps.ListProvider)
 	p.installDecrementTechLevelHandler(owner)
 	p.installContainerConversionHandlers(owner)
 	p.installMoveToOtherEquipmentHandler(owner)
+	installEquipmentLevelHandlers(p, owner)
 	return p
 }
 
@@ -59,6 +60,7 @@ func NewOtherEquipmentPageList(owner Rebuildable, provider gurps.ListProvider) *
 	p.installDecrementTechLevelHandler(owner)
 	p.installContainerConversionHandlers(owner)
 	p.installMoveToCarriedEquipmentHandler(owner)
+	installEquipmentLevelHandlers(p, owner)
 	return p
 }
 
@@ -289,6 +291,15 @@ func (p *PageList[T]) installDecrementTechLevelHandler(owner Rebuildable) {
 	p.InstallCmdHandlers(DecrementTechLevelItemID,
 		func(_ any) bool { return canAdjustTechLevel(p.Table, -fxp.One) },
 		func(_ any) { adjustTechLevel(owner, p.Table, -fxp.One) })
+}
+
+func installEquipmentLevelHandlers(p *PageList[*gurps.Equipment], owner Rebuildable) {
+	p.InstallCmdHandlers(IncrementEquipmentLevelItemID,
+		func(_ any) bool { return canAdjustEquipmentLevel(p.Table, fxp.One) },
+		func(_ any) { adjustEquipmentLevel(owner, p.Table, fxp.One) })
+	p.InstallCmdHandlers(DecrementEquipmentLevelItemID,
+		func(_ any) bool { return canAdjustEquipmentLevel(p.Table, -fxp.One) },
+		func(_ any) { adjustEquipmentLevel(owner, p.Table, -fxp.One) })
 }
 
 func (p *PageList[T]) installContainerConversionHandlers(owner Rebuildable) {

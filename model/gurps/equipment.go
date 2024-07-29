@@ -37,6 +37,7 @@ import (
 
 var (
 	_ WeaponOwner                   = &Equipment{}
+	_ LeveledOwner                  = &Equipment{}
 	_ Node[*Equipment]              = &Equipment{}
 	_ TechLevelProvider[*Equipment] = &Equipment{}
 	_ EditorData[*Equipment]        = &EquipmentEditData{}
@@ -83,6 +84,7 @@ type EquipmentEditData struct {
 	Modifiers    []*EquipmentModifier `json:"modifiers,omitempty"`
 	RatedST      fxp.Int              `json:"rated_strength,omitempty"`
 	Quantity     fxp.Int              `json:"quantity,omitempty"`
+	Level        fxp.Int              `json:"level,omitempty"`
 	Uses         int                  `json:"uses,omitempty"`
 	Equipped     bool                 `json:"equipped,omitempty"`
 }
@@ -379,7 +381,7 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 		data.Alignment = align.End
 	case EquipmentDescriptionColumn:
 		data.Type = cell.Text
-		data.Primary = e.Description()
+		data.Primary = e.String()
 		data.Secondary = e.SecondaryText(func(option display.Option) bool { return option.Inline() })
 		data.UnsatisfiedReason = e.UnsatisfiedReason
 		data.Tooltip = e.SecondaryText(func(option display.Option) bool { return option.Tooltip() })
@@ -425,7 +427,7 @@ func (e *Equipment) CellData(columnID int, data *CellData) {
 		if e.PageRefHighlight != "" {
 			data.Secondary = e.PageRefHighlight
 		} else {
-			data.Secondary = e.NameWithReplacements()
+			data.Secondary = e.String()
 		}
 	case EquipmentLibSrcColumn:
 		data.Type = cell.Text
@@ -469,11 +471,25 @@ func (e *Equipment) SetDataOwner(owner DataOwner) {
 		}
 	}
 	for _, m := range e.Modifiers {
+		m.equipment = e
 		m.SetDataOwner(owner)
 	}
 }
 
-// Description returns a description.
+// IsLeveled returns true if the equipment is capable of having levels.
+func (e *Equipment) IsLeveled() bool {
+	return e.Level > 0
+}
+
+// CurrentLevel returns the current level of the equipment or zero if it is not leveled.
+func (e *Equipment) CurrentLevel() fxp.Int {
+	if e.IsLeveled() {
+		return e.Level
+	}
+	return 0
+}
+
+// Description returns a description, which doesn't include any levels.
 func (e *Equipment) Description() string {
 	return e.NameWithReplacements()
 }
@@ -504,7 +520,13 @@ func (e *Equipment) SecondaryText(optionChecker func(display.Option) bool) strin
 
 // String implements fmt.Stringer.
 func (e *Equipment) String() string {
-	return e.NameWithReplacements()
+	var buffer strings.Builder
+	buffer.WriteString(e.Description())
+	if e.IsLeveled() {
+		buffer.WriteByte(' ')
+		buffer.WriteString(e.Level.String())
+	}
+	return buffer.String()
 }
 
 func (e *Equipment) resolveLocalNotes() string {
@@ -533,7 +555,7 @@ func (e *Equipment) RatedStrength() fxp.Int {
 
 // AdjustedValue returns the value after adjustments for any modifiers. Does not include the value of children.
 func (e *Equipment) AdjustedValue() fxp.Int {
-	return ValueAdjustedForModifiers(e.Value, e.Modifiers)
+	return ValueAdjustedForModifiers(e, e.Value, e.Modifiers)
 }
 
 // ExtendedValue returns the extended value.
@@ -555,22 +577,22 @@ func (e *Equipment) AdjustedWeight(forSkills bool, defUnits fxp.WeightUnit) fxp.
 	if forSkills && e.WeightIgnoredForSkills && e.Equipped {
 		return 0
 	}
-	return WeightAdjustedForModifiers(e.Weight, e.Modifiers, defUnits)
+	return WeightAdjustedForModifiers(e, e.Weight, e.Modifiers, defUnits)
 }
 
 // ExtendedWeight returns the extended weight.
 func (e *Equipment) ExtendedWeight(forSkills bool, defUnits fxp.WeightUnit) fxp.Weight {
-	return ExtendedWeightAdjustedForModifiers(defUnits, e.Quantity, e.Weight, e.Modifiers, e.Features, e.Children, forSkills, e.WeightIgnoredForSkills && e.Equipped)
+	return ExtendedWeightAdjustedForModifiers(e, defUnits, e.Quantity, e.Weight, e.Modifiers, e.Features, e.Children, forSkills, e.WeightIgnoredForSkills && e.Equipped)
 }
 
 // ExtendedWeightAdjustedForModifiers calculates the extended weight.
-func ExtendedWeightAdjustedForModifiers(defUnits fxp.WeightUnit, qty fxp.Int, baseWeight fxp.Weight, modifiers []*EquipmentModifier, features Features, children []*Equipment, forSkills, weightIgnoredForSkills bool) fxp.Weight {
+func ExtendedWeightAdjustedForModifiers(equipment *Equipment, defUnits fxp.WeightUnit, qty fxp.Int, baseWeight fxp.Weight, modifiers []*EquipmentModifier, features Features, children []*Equipment, forSkills, weightIgnoredForSkills bool) fxp.Weight {
 	if qty <= 0 {
 		return 0
 	}
 	var base fxp.Int
 	if !forSkills || !weightIgnoredForSkills {
-		base = fxp.Int(WeightAdjustedForModifiers(baseWeight, modifiers, defUnits))
+		base = fxp.Int(WeightAdjustedForModifiers(equipment, baseWeight, modifiers, defUnits))
 	}
 	if len(children) != 0 {
 		var contained fxp.Int
@@ -588,6 +610,7 @@ func ExtendedWeightAdjustedForModifiers(defUnits fxp.WeightUnit, qty fxp.Int, ba
 			}
 		}
 		Traverse(func(mod *EquipmentModifier) bool {
+			mod.equipment = equipment
 			for _, f := range mod.Features {
 				if cwr, ok := f.(*ContainedWeightReduction); ok {
 					if cwr.IsPercentageReduction() {
