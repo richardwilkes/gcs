@@ -5,7 +5,7 @@ go 1.22.5
 require (
 	github.com/google/uuid v1.6.0
 	github.com/richardwilkes/json v0.3.0
-	github.com/richardwilkes/pdf v1.24.8
+	github.com/richardwilkes/pdf v1.24.9
 	github.com/richardwilkes/rpgtools v1.10.1
 	github.com/richardwilkes/toolbox v1.114.2
 	github.com/richardwilkes/unison v0.72.2-0.20240710042805-39e887657095
