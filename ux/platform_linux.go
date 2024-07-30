@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/formats/icon"
@@ -99,7 +100,7 @@ func installDesktopIcons() error {
 	for i := range gurps.KnownFileTypes {
 		if fi := &gurps.KnownFileTypes[i]; fi.IsGCSData {
 			var overlay image.Image
-			overlay, err = CreateImageFromSVG(fi.SVG, 128)
+			overlay, err = svg.CreateImageFromSVG(fi.SVG, 128)
 			if err != nil {
 				return err
 			}

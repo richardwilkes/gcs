@@ -19,6 +19,7 @@ import (
 	"syscall"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/formats/icon"
@@ -67,7 +68,7 @@ func configureRegistry() error {
 		if fi := &gurps.KnownFileTypes[i]; fi.IsGCSData {
 			// Create the doc icon
 			var overlay image.Image
-			if overlay, err = CreateImageFromSVG(fi.SVG, 128); err != nil {
+			if overlay, err = svg.CreateImageFromSVG(fi.SVG, 128); err != nil {
 				return err
 			}
 			docPath := filepath.Join(appDataDir, fi.Extensions[0][1:]+".ico")

@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/errs"
@@ -114,7 +115,7 @@ func addWindowsIcon(rs *winres.ResourceSet) error {
 	for i := range gurps.KnownFileTypes {
 		if fi := &gurps.KnownFileTypes[i]; fi.IsGCSData {
 			var overlay image.Image
-			if overlay, err = CreateImageFromSVG(fi.SVG, 512); err != nil {
+			if overlay, err = svg.CreateImageFromSVG(fi.SVG, 512); err != nil {
 				return err
 			}
 			var extIcon *winres.Icon
