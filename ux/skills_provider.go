@@ -110,6 +110,7 @@ func (p *skillsProvider) ProcessDropData(_, to *unison.Table[*Node[*gurps.Skill]
 							tl := entity.Profile.TechLevel
 							skill.TechLevel = &tl
 						}
+						skill.UpdateLevel()
 						return false
 					}, false, true, row.Data())
 				}

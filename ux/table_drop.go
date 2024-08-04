@@ -34,8 +34,12 @@ func InstallTableDropSupport[T gurps.NodeTypes](table *unison.Table[*Node[T]], p
 		provider.DropShouldMoveData, willDropCallback[T], didDropCallback[T])
 	table.DragRemovedRowsCallback = func() { MarkModified(table) }
 	table.DropOccurredCallback = func() {
-		MarkModified(table)
-		table.RequestFocus()
+		// We need to defer this to give newly added skills a chance to choose their defaults first, before the normal
+		// top-to-bottom sweep fills in the defaults.
+		unison.InvokeTaskAfter(func() {
+			MarkModified(table)
+			table.RequestFocus()
+		}, 1)
 	}
 	if altDropSupport := provider.AltDropSupport(); altDropSupport != nil {
 		originalDataDragOverCallback := table.DataDragOverCallback
