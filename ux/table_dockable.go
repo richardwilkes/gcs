@@ -14,6 +14,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -87,10 +88,12 @@ func NewTableDockable[T gurps.NodeTypes](filePath, extension string, provider Ta
 	if columnSizing, ok := gurps.GlobalSettings().ColumnSizing[filePath]; ok {
 		needSync := false
 		for id, width := range columnSizing {
-			if i := d.table.ColumnIndexForID(id); i != -1 {
-				if d.table.Columns[i].Current != width {
-					d.table.Columns[i].Current = width
-					needSync = true
+			if id != -1 {
+				if i := d.table.ColumnIndexForID(id); i != -1 {
+					if d.table.Columns[i].Current != width {
+						d.table.Columns[i].Current = width
+						needSync = true
+					}
 				}
 			}
 		}
@@ -296,6 +299,7 @@ func (d *TableDockable[T]) AttemptClose() bool {
 
 func (d *TableDockable[T]) preserveColumns() {
 	m := make(map[int]float32, len(d.table.Columns))
+	m[-1] = gurps.ToColumnCutoff(time.Now().Unix())
 	for _, col := range d.table.Columns {
 		m[col.ID] = col.Current
 	}

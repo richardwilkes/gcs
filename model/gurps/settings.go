@@ -152,6 +152,18 @@ func (s *Settings) Save() error {
 	if len(s.OpenNodes) == 0 {
 		s.OpenNodes = nil
 	}
+	columnCutoff := ToColumnCutoff(cutoff)
+	for k, v := range s.ColumnSizing {
+		if last, ok := v[-1]; !ok {
+			// Fixup missing last-used for old data.
+			v[-1] = ToColumnCutoff(time.Now().Unix())
+		} else if last < columnCutoff {
+			delete(s.ColumnSizing, k)
+		}
+	}
+	if len(s.ColumnSizing) == 0 {
+		s.ColumnSizing = nil
+	}
 	for k, v := range s.PDFs {
 		if v.LastOpened < cutoff {
 			delete(s.PDFs, k)
@@ -161,6 +173,11 @@ func (s *Settings) Save() error {
 		s.PDFs = nil
 	}
 	return jio.SaveToFile(context.Background(), SettingsPath, s)
+}
+
+// ToColumnCutoff converts a unix timestamp (in seconds) to a column cutoff value.
+func ToColumnCutoff(in int64) float32 {
+	return float32(in / (60 * 60 * 24))
 }
 
 // EnsureValidity checks the current settings for validity and if they aren't valid, makes them so.
