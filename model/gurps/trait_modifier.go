@@ -91,7 +91,8 @@ type TraitModifierEditData struct {
 // TraitModifiers that aren't containers.
 type TraitModifierEditDataNonContainerOnly struct {
 	TraitModifierNonContainerSyncData
-	Disabled bool `json:"disabled,omitempty"`
+	Levels   fxp.Int `json:"levels,omitempty"`
+	Disabled bool    `json:"disabled,omitempty"`
 }
 
 // TraitModifierSyncData holds the TraitModifier sync data that is common to both containers and non-containers.
@@ -106,7 +107,6 @@ type TraitModifierSyncData struct {
 // TraitModifierNonContainerSyncData holds the TraitModifier sync data that is only applicable to TraitModifiers that
 // aren't containers.
 type TraitModifierNonContainerSyncData struct {
-	Levels            fxp.Int        `json:"levels,omitempty"`
 	Cost              fxp.Int        `json:"cost,omitempty"`
 	CostType          tmcost.Type    `json:"cost_type,omitempty"`
 	UseLevelFromTrait bool           `json:"use_level_from_trait,omitempty"`
@@ -594,7 +594,6 @@ func (t *TraitModifierSyncData) hash(h hash.Hash) {
 }
 
 func (t *TraitModifierNonContainerSyncData) hash(h hash.Hash) {
-	_ = binary.Write(h, binary.LittleEndian, t.Levels)
 	_ = binary.Write(h, binary.LittleEndian, t.Cost)
 	_ = binary.Write(h, binary.LittleEndian, t.CostType)
 	_ = binary.Write(h, binary.LittleEndian, t.UseLevelFromTrait)
