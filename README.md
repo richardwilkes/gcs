@@ -2,7 +2,6 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/richardwilkes/gcs/v5.svg)](https://pkg.go.dev/github.com/richardwilkes/gcs/v5)
 [![Go Report Card](https://goreportcard.com/badge/github.com/richardwilkes/gcs/v5)](https://goreportcard.com/report/github.com/richardwilkes/gcs/v5)
-![GitHub all releases](https://img.shields.io/github/downloads/richardwilkes/gcs/total?style=plastic)
 
 GURPS[^1] Character Sheet (GCS) is a stand-alone, interactive, character sheet editor that allows you to build
 characters for the [GURPS Fourth Edition](http://www.sjgames.com/gurps) roleplaying game system.
