@@ -67,7 +67,7 @@ func NewBodyPanel(entity *gurps.Entity, targetMgr *TargetMgr) *BodyPanel {
 		for i, row := range p.row {
 			var ink unison.Ink
 			if i&1 == 1 {
-				ink = unison.ThemeSurface
+				ink = unison.ThemeBanding
 			} else {
 				ink = unison.ThemeBelowSurface
 			}

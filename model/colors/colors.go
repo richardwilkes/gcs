@@ -72,6 +72,7 @@ func initialize() {
 	current = []*ThemedColor{
 		{ID: "surface", Title: "Surface", Color: unison.ThemeSurface},
 		{ID: "header", Title: "Header", Color: Header},
+		{ID: "banding", Title: "Banding", Color: unison.ThemeBanding},
 		{ID: "focus", Title: "Focus", Color: unison.ThemeFocus},
 		{ID: "tooltip", Title: "Tooltip", Color: unison.ThemeTooltip},
 		{ID: "error", Title: "Error", Color: unison.ThemeError},

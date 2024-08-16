@@ -14,7 +14,6 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
-	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 const (
@@ -53,7 +52,7 @@ func NewIdentityPanel(entity *gurps.Entity, targetMgr *TargetMgr) *IdentityPanel
 		Bottom: 1,
 		Right:  2,
 	})))
-	p.DrawCallback = p.drawSelf
+	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) { drawBandedBackground(p, gc, rect, 0, 2, nil) }
 
 	title := i18n.Text("Name")
 	nameField := NewStringPageField(p.targetMgr, identityPanelNameFieldRefKey, title,
@@ -84,15 +83,4 @@ func NewIdentityPanel(entity *gurps.Entity, targetMgr *TargetMgr) *IdentityPanel
 	orgField.ClientData()[SkipDeepSync] = true
 	p.AddChild(orgField)
 	return p
-}
-
-func (p *IdentityPanel) drawSelf(gc *unison.Canvas, rect unison.Rect) {
-	gc.DrawRect(rect, unison.ThemeSurface.Paint(gc, rect, paintstyle.Fill))
-	children := p.Children()
-	for i := 0; i < len(children); i += 4 {
-		r := children[i].FrameRect()
-		r.X = rect.X
-		r.Width = rect.Width
-		gc.DrawRect(r, unison.ThemeBelowSurface.Paint(gc, r, paintstyle.Fill))
-	}
 }

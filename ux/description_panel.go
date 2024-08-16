@@ -72,7 +72,7 @@ func NewDescriptionPanel(entity *gurps.Entity, targetMgr *TargetMgr) *Descriptio
 }
 
 func (d *DescriptionPanel) drawSelf(gc *unison.Canvas, rect unison.Rect) {
-	gc.DrawRect(rect, unison.ThemeSurface.Paint(gc, rect, paintstyle.Fill))
+	gc.DrawRect(rect, unison.ThemeBelowSurface.Paint(gc, rect, paintstyle.Fill))
 	children := d.Children()
 	if len(children) == 0 {
 		return
@@ -80,11 +80,11 @@ func (d *DescriptionPanel) drawSelf(gc *unison.Canvas, rect unison.Rect) {
 	column := children[0]
 	children = column.Children()
 	p := d.AsPanel()
-	for i := 0; i < len(children); i += 4 {
+	for i := 2; i < len(children); i += 4 {
 		r := column.RectTo(children[i].FrameRect(), p)
 		r.X = rect.X
 		r.Width = rect.Width
-		gc.DrawRect(r, unison.ThemeBelowSurface.Paint(gc, r, paintstyle.Fill))
+		gc.DrawRect(r, unison.ThemeBanding.Paint(gc, r, paintstyle.Fill))
 	}
 }
 

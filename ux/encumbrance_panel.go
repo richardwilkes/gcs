@@ -66,7 +66,7 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 					ink = unison.ThemeFocus
 				}
 			case i&1 == 1:
-				ink = unison.ThemeSurface
+				ink = unison.ThemeBanding
 			default:
 				ink = unison.ThemeBelowSurface
 			}

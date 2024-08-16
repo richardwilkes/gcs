@@ -1381,6 +1381,9 @@ var myCSSInfo = cssInfo{
 		{Name: "header", Provider: colors.Header},
 		{Name: "on-header", Provider: colors.OnHeader},
 
+		{Name: "banding", Provider: unison.ThemeBanding},
+		{Name: "on-banding", Provider: unison.ThemeOnBanding},
+
 		{Name: "focus", Provider: unison.ThemeFocus},
 		{Name: "deep-focus", Provider: unison.ThemeDeepFocus},
 		{Name: "deeper-focus", Provider: unison.ThemeDeeperFocus},

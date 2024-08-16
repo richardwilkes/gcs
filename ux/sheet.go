@@ -846,7 +846,7 @@ func drawBandedBackground(p unison.Paneler, gc *unison.Canvas, rect unison.Rect,
 	for i := start; i < len(children); i += step {
 		var ink unison.Ink
 		if ((i-start)/step)&1 == 1 {
-			ink = unison.ThemeSurface
+			ink = unison.ThemeBanding
 		} else {
 			ink = unison.ThemeBelowSurface
 		}

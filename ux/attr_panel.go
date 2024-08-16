@@ -103,13 +103,13 @@ func newAttrPanel(entity *gurps.Entity, targetMgr *TargetMgr, kind int) *AttrPan
 }
 
 func (a *AttrPanel) drawSelf(gc *unison.Canvas, rect unison.Rect) {
-	gc.DrawRect(rect, unison.ThemeSurface.Paint(gc, rect, paintstyle.Fill))
+	gc.DrawRect(rect, unison.ThemeBelowSurface.Paint(gc, rect, paintstyle.Fill))
 	children := a.Children()
 	for i, rowIndex := range a.rowStarts {
 		if rowIndex > len(children) {
 			break
 		}
-		if i&1 == 1 {
+		if i&1 == 0 {
 			continue
 		}
 		r := children[rowIndex].FrameRect()
@@ -122,7 +122,7 @@ func (a *AttrPanel) drawSelf(gc *unison.Canvas, rect unison.Rect) {
 		}
 		r.X = rect.X
 		r.Width = rect.Width
-		gc.DrawRect(r, unison.ThemeBelowSurface.Paint(gc, r, paintstyle.Fill))
+		gc.DrawRect(r, unison.ThemeBanding.Paint(gc, r, paintstyle.Fill))
 	}
 }
 

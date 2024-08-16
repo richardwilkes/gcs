@@ -30,6 +30,8 @@
 	--color-on-deep-below-surface: #101010;
 	--color-header: #2B2B2B;
 	--color-on-header: #F0F0F0;
+	--color-banding: #E8E8D8;
+	--color-on-banding: #101010;
 	--color-focus: #006199;
 	--color-deep-focus: #005289;
 	--color-deeper-focus: #00447A;
@@ -61,6 +63,8 @@
 	--color-on-deep-below-surface: #F0F0F0;
 	--color-header: #404040;
 	--color-on-header: #F0F0F0;
+	--color-banding: #282818;
+	--color-on-banding: #F0F0F0;
 	--color-focus: #0080CC;
 	--color-deep-focus: #0071BB;
 	--color-deeper-focus: #0061AB;
