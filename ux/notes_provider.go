@@ -117,7 +117,7 @@ func (p *notesProvider) ColumnIDs() []int {
 		gurps.NoteReferenceColumn,
 	}
 	if p.forPage {
-		if entity := p.DataOwner().OwningEntity(); entity != nil && !entity.SheetSettings.HideSourceMismatch {
+		if entity := p.DataOwner().OwningEntity(); entity == nil || !entity.SheetSettings.HideSourceMismatch {
 			columnIDs = append(columnIDs, gurps.NoteLibSrcColumn)
 		}
 	}

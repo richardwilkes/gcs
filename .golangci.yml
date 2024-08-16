@@ -101,3 +101,4 @@ issues:
     - "package-comments: should have a package comment"
     - "stdmethods: method MarshalJSON"
     - "stdmethods: method UnmarshalJSON"
+    - "SA1003: value of type bool cannot be used with binary.Write"
