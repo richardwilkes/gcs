@@ -115,6 +115,7 @@ func (wr WeaponRange) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 	result.InMiles = w.ResolveBoolFlag(wswitch.RangeInMiles, result.InMiles)
 	if result.MusclePowered {
 		var st fxp.Int
+		maxST := w.Strength.Resolve(w, nil).Min.Mul(fxp.Three)
 		if w.Owner != nil {
 			st = w.Owner.RatedStrength()
 		}
@@ -122,6 +123,24 @@ func (wr WeaponRange) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 			if entity := w.Entity(); entity != nil {
 				st = entity.ThrowingStrength()
 			}
+		}
+		var percentMin fxp.Int
+		for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponEffectiveSTBonus) {
+			amt := bonus.AdjustedAmountForWeapon(w)
+			if bonus.Percent {
+				percentMin += amt
+			} else {
+				st += amt
+			}
+		}
+		if percentMin != 0 {
+			st += st.Mul(percentMin).Div(fxp.Hundred).Trunc()
+		}
+		if st < 0 {
+			st = 0
+		}
+		if maxST > 0 && maxST < st {
+			st = maxST
 		}
 		if st > 0 {
 			result.HalfDamage = result.HalfDamage.Mul(st).Trunc().Max(0)
