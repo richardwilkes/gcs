@@ -8,7 +8,7 @@ require (
 	github.com/richardwilkes/pdf v1.24.9
 	github.com/richardwilkes/rpgtools v1.10.1
 	github.com/richardwilkes/toolbox v1.114.2
-	github.com/richardwilkes/unison v0.72.2-0.20240817235301-400804b59f6c
+	github.com/richardwilkes/unison v0.73.0
 	github.com/rjeczalik/notify v0.9.3
 	github.com/tc-hib/winres v0.3.1
 	github.com/vearutop/statigz v1.4.3
@@ -27,7 +27,7 @@ require (
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20240506104042-037f3cc74f2a // indirect
 	github.com/grandcat/zeroconf v1.0.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
-	github.com/lafriks/go-svg v0.5.0 // indirect
+	github.com/lafriks/go-svg v0.5.1-0.20240818203135-3a6c390fc116 // indirect
 	github.com/miekg/dns v1.1.62 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/pkg/term v1.1.0 // indirect
