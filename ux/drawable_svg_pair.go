@@ -27,17 +27,16 @@ func (s *DrawableSVGPair) LogicalSize() unison.Size {
 
 // DrawInRect implements the Drawable interface.
 func (s *DrawableSVGPair) DrawInRect(canvas *unison.Canvas, rect unison.Rect, _ *unison.SamplingOptions, paint *unison.Paint) {
-	canvas.Save()
-	defer canvas.Restore()
 	r := rect
 	r.Width /= 2
 	offset := s.Left.OffsetToCenterWithinScaledSize(r.Size)
-	canvas.Save()
-	canvas.Translate(r.X+offset.X, r.Y+offset.Y)
-	canvas.DrawPath(s.Left.PathForSize(r.Size), paint)
-	canvas.Restore()
-	r.X += r.Width
+	r.X += offset.X
+	r.Y += offset.Y
+	s.Left.DrawInRectPreservingAspectRatio(canvas, r, nil, paint)
+	r.X = rect.X + r.Width
+	r.Y = rect.Y
 	offset = s.Right.OffsetToCenterWithinScaledSize(r.Size)
-	canvas.Translate(r.X+offset.X, r.Y+offset.Y)
-	canvas.DrawPath(s.Right.PathForSize(r.Size), paint)
+	r.X += offset.X
+	r.Y += offset.Y
+	s.Right.DrawInRectPreservingAspectRatio(canvas, r, nil, paint)
 }

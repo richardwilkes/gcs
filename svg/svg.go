@@ -10,15 +10,11 @@
 package svg
 
 import (
-	"bytes"
 	_ "embed"
-	"fmt"
 	"image"
 
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/unison"
-	"github.com/srwiley/oksvg"
-	"github.com/srwiley/rasterx"
 )
 
 // Pre-defined SVG images used by GCS.
@@ -264,15 +260,11 @@ var (
 // at the specified square size. Note that this is not currently GPU accelerated, as I haven't added the necessary bits
 // to unison to support scribbling into arbitrary offscreen images yet.
 func CreateImageFromSVG(svg *unison.SVG, size int) (image.Image, error) {
-	var buffer bytes.Buffer
-	fmt.Fprintf(&buffer, `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %f %f"><path d="%s"/></svg>`,
-		svg.Size().Width, svg.Size().Height, svg.PathScaledTo(1).ToSVGString(true))
-	icon, err := oksvg.ReadIconStream(&buffer)
+	img, err := unison.NewImageFromDrawing(size, size, 72, func(gc *unison.Canvas) {
+		svg.DrawInRectPreservingAspectRatio(gc, unison.NewRect(0, 0, float32(size), float32(size)), nil, nil)
+	})
 	if err != nil {
 		return nil, errs.Wrap(err)
 	}
-	icon.SetTarget(0, 0, float64(size), float64(size))
-	img := image.NewRGBA(image.Rect(0, 0, size, size))
-	icon.Draw(rasterx.NewDasher(size, size, rasterx.NewScannerGV(size, size, img, img.Bounds())), 1)
-	return img, nil
+	return img.ToNRGBA()
 }
