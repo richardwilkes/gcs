@@ -166,6 +166,7 @@ func (p *spellsProvider) ColumnIDs() []int {
 			gurps.SpellCastTimeColumn,
 			gurps.SpellDurationColumn,
 			gurps.SpellDifficultyColumn,
+			gurps.SpellPrereqCountColumn,
 			gurps.SpellTagsColumn,
 		)
 	}

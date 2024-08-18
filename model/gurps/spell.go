@@ -17,6 +17,7 @@ import (
 	"io/fs"
 	"maps"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -57,6 +58,7 @@ const (
 	SpellCastTimeColumn
 	SpellDurationColumn
 	SpellDifficultyColumn
+	SpellPrereqCountColumn
 	SpellTagsColumn
 	SpellReferenceColumn
 	SpellLevelColumn
@@ -390,6 +392,9 @@ func SpellsHeaderData(columnID int) HeaderData {
 	case SpellDifficultyColumn:
 		data.Title = i18n.Text("Diff")
 		data.Detail = i18n.Text("Difficulty")
+	case SpellPrereqCountColumn:
+		data.Title = i18n.Text("P#")
+		data.Detail = i18n.Text("Prerequisite Count")
 	case SpellTagsColumn:
 		data.Title = i18n.Text("Tags")
 	case SpellReferenceColumn:
@@ -462,6 +467,12 @@ func (s *Spell) CellData(columnID int, data *CellData) {
 		if !s.Container() {
 			data.Type = cell.Text
 			data.Primary = s.Difficulty.Description(EntityFromNode(s))
+		}
+	case SpellPrereqCountColumn:
+		if !s.Container() && s.IsRitualMagic() {
+			data.Type = cell.Text
+			data.Alignment = align.End
+			data.Primary = strconv.Itoa(s.RitualPrereqCount)
 		}
 	case SpellTagsColumn:
 		data.Type = cell.Tags
