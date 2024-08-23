@@ -35,7 +35,7 @@ import (
 //go:embed images/doc-256.png
 var docIconBytes []byte
 
-func performPlatformStartup() {
+func performPlatformLateStartup() {
 	exePath, err := os.Executable()
 	if err != nil {
 		errs.Log(err)

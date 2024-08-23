@@ -32,7 +32,6 @@ func Start(files []string) {
 	go libs.PerformUpdateChecks()
 	unison.Start(
 		unison.StartupFinishedCallback(func() {
-			performPlatformStartup()
 			unison.DefaultTableColumnHeaderTheme.OnBackgroundInk = colors.OnHeader
 			unison.DefaultMarkdownTheme.LinkHandler = HandleLink
 			unison.DefaultMarkdownTheme.WorkingDirProvider = WorkingDirProvider
@@ -53,6 +52,7 @@ func Start(files []string) {
 					unison.InvokeTask(func() { OpenFiles(paths) })
 				}
 			}()
+			unison.InvokeTask(performPlatformLateStartup)
 		}),
 		unison.OpenFilesCallback(OpenFiles),
 		unison.AllowQuitCallback(func() bool {

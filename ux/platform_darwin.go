@@ -9,6 +9,6 @@
 
 package ux
 
-func performPlatformStartup() {
+func performPlatformLateStartup() {
 	// no-op
 }

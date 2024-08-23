@@ -42,7 +42,7 @@ var (
 	softwareClasses    = `Software\Classes\`
 )
 
-func performPlatformStartup() {
+func performPlatformLateStartup() {
 	if err := configureRegistry(); err != nil {
 		errs.Log(err)
 	}
