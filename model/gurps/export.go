@@ -450,7 +450,7 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 			Other:         newExportedEquipment(entity, entity.OtherEquipment, false),
 			OtherValue:    entity.WealthNotCarried(),
 		},
-		GridTemplate: htmltmpl.CSS(entity.SheetSettings.BlockLayout.HTMLGridTemplate()),
+		GridTemplate: htmltmpl.CSS(entity.SheetSettings.BlockLayout.HTMLGridTemplate()), //nolint:gosec // This is safe
 		Page:         newExportedPage(entity.SheetSettings.Page),
 	}
 	if entity.SheetSettings.ExcludeUnspentPointsFromTotal {

@@ -28,7 +28,7 @@
 	--color-on-above-surface: #101010;
 	--color-on-below-surface: #101010;
 	--color-on-deep-below-surface: #101010;
-	--color-header: #2B2B2B;
+	--color-header: #505050;
 	--color-on-header: #F0F0F0;
 	--color-banding: #E8E8D8;
 	--color-on-banding: #101010;
@@ -124,6 +124,6 @@ input {
 }
 
 .banding {
-	background-color: var(--color-surface);
-	color: var(--color-on-surface);
+	background-color: var(--color-banding);
+	color: var(--color-on-banding);
 }

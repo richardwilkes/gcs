@@ -64,7 +64,7 @@ func main() {
 	var backgroundOnly bool
 	cl.NewGeneralOption(&backgroundOnly).SetName("web-server-only").SetSingle('w').SetUsage(i18n.Text("Starts the web server and does not bring up the user interface. If the server has not been configured, just exits"))
 	fileList := rotation.ParseAndSetupLogging(cl, false)
-	slog.SetDefault(slog.New(tracelog.New(log.Default().Writer(), slog.LevelInfo)))
+	slog.SetDefault(slog.New(tracelog.New(&tracelog.Config{Sink: log.Default().Writer()})))
 	ux.RegisterKnownFileTypes()
 	settings := gurps.GlobalSettings() // Here to force early initialization
 

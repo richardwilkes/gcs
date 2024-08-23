@@ -99,6 +99,10 @@ if [ "$BUILD_JS"x == "1x" ]; then
 	cd server/pdf
 	./refresh-pdf.js.sh
 	cd ../frontend
+	if [ "$DIST"x == "1x" ]; then
+		# Ensure we get a clean build for the distribution
+		/bin/rm -rf dist
+	fi
 	npm install
 	npm run build
 	if [ "$LINT"x == "1x" ]; then

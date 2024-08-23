@@ -35,7 +35,7 @@ var (
 
 // Additional theme colors
 var (
-	Header   = &unison.ThemeColor{Light: unison.RGB(43, 43, 43), Dark: unison.RGB(64, 64, 64)}
+	Header   = &unison.ThemeColor{Light: unison.RGB(80, 80, 80), Dark: unison.RGB(64, 64, 64)}
 	OnHeader = Header.DeriveOn()
 )
 

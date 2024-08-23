@@ -65,7 +65,7 @@ func handoff(conn net.Conn, pathsBuffer []byte) bool {
 	}
 	buffer = make([]byte, 5)
 	buffer[0] = 22
-	binary.LittleEndian.PutUint32(buffer[1:], uint32(len(pathsBuffer)))
+	binary.LittleEndian.PutUint32(buffer[1:], uint32(len(pathsBuffer))) //nolint:gosec // No, this won't overflow
 	if n, err := conn.Write(buffer); err != nil || n != len(buffer) {
 		return false
 	}

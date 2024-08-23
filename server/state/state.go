@@ -17,7 +17,7 @@ import (
 var state atomic.Int32
 
 // State is the state of the server.
-type State int
+type State int32
 
 // Possible states for the server.
 const (
