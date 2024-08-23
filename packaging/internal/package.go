@@ -12,15 +12,27 @@ package internal
 import (
 	"github.com/richardwilkes/gcs/v5/early"
 	"github.com/richardwilkes/gcs/v5/ux"
+	"github.com/richardwilkes/toolbox/fatal"
+	"github.com/richardwilkes/unison"
 )
 
 // Package performs the platform-specific packaging for GCS.
-func Package() error {
+func Package() {
 	early.Configure()
-	if err := loadBaseImages(); err != nil {
-		return err
-	}
+	fatal.IfErr(loadBaseImages())
 	ux.RegisterExternalFileTypes()
 	ux.RegisterGCSFileTypes()
-	return platformPackage()
+
+	// The doc icons use unison's image code to generate the icons, so we need to start it up.
+	unison.Start(
+		unison.StartupFinishedCallback(func() {
+			w, err := unison.NewWindow("")
+			fatal.IfErr(err)
+			w.ToFront()
+			unison.InvokeTask(func() {
+				fatal.IfErr(platformPackage())
+				w.Dispose() // Will cause the app to quit.
+			})
+		}),
+	)
 }

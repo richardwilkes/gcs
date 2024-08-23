@@ -9,13 +9,8 @@
 
 package main
 
-import (
-	"github.com/richardwilkes/gcs/v5/packaging/internal"
-	"github.com/richardwilkes/toolbox/atexit"
-	"github.com/richardwilkes/toolbox/fatal"
-)
+import "github.com/richardwilkes/gcs/v5/packaging/internal"
 
 func main() {
-	fatal.IfErr(internal.Package())
-	atexit.Exit(0)
+	internal.Package()
 }

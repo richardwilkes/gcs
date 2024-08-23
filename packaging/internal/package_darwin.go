@@ -22,10 +22,8 @@ import (
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/errs"
-	"github.com/richardwilkes/toolbox/fatal"
 	"github.com/richardwilkes/toolbox/formats/icon"
 	"github.com/richardwilkes/toolbox/formats/icon/icns"
-	"github.com/richardwilkes/unison"
 )
 
 //go:embed embedded/info.plist.tmpl
@@ -50,21 +48,7 @@ func platformPackage() error {
 	if err := writeICNS(filepath.Join(resDir, "app.icns"), appImg); err != nil {
 		return err
 	}
-
-	// The doc icons use unison's image code to generate the icons, so we need to start it up.
-	unison.Start(
-		unison.StartupFinishedCallback(func() {
-			w, err := unison.NewWindow("")
-			fatal.IfErr(err)
-			w.ToFront()
-			unison.InvokeTask(func() {
-				fatal.IfErr(writeDocICNS(resDir, docImg))
-				w.Dispose() // Will cause the app to quit.
-			})
-		}),
-	)
-	// Won't ever reach here, since we are starting the UI instead.
-	return nil
+	return writeDocICNS(resDir, docImg)
 }
 
 func writeICNS(dstPath string, img image.Image) (err error) {
