@@ -460,14 +460,14 @@ func (s *Skill) CellData(columnID int, data *CellData) {
 }
 
 // FormatRelativeSkill formats the relative skill for display.
-func FormatRelativeSkill(e *Entity, numOnly bool, difficulty AttributeDifficulty, rsl fxp.Int) string {
+func FormatRelativeSkill(e *Entity, numOnly bool, diff AttributeDifficulty, rsl fxp.Int) string {
 	switch {
 	case rsl == fxp.Min:
 		return "-"
 	case numOnly:
 		return rsl.Trunc().StringWithSign()
 	default:
-		s := ResolveAttributeName(e, difficulty.Attribute)
+		s := ResolveAttributeName(e, diff.Attribute)
 		rsl = rsl.Trunc()
 		if rsl != 0 {
 			s += rsl.StringWithSign()

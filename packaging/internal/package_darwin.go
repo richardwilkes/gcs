@@ -68,7 +68,7 @@ func writeICNS(dstPath string, img image.Image) (err error) {
 
 func writeDocICNS(dir string, base image.Image) error {
 	for i := range gurps.KnownFileTypes {
-		if fi := &gurps.KnownFileTypes[i]; fi.IsGCSData {
+		if fi := gurps.KnownFileTypes[i]; fi.IsGCSData {
 			overlay, err := svg.CreateImageFromSVG(fi.SVG, 512)
 			if err != nil {
 				return err
@@ -109,28 +109,29 @@ func writePlist(targetPath string) (err error) {
 	}
 	fileInfo := make([]*fileData, 0, len(gurps.KnownFileTypes))
 	for _, fi := range gurps.KnownFileTypes {
-		if !fi.IsSpecial {
-			extensions := make([]string, len(fi.Extensions))
-			for i, ext := range fi.Extensions {
-				extensions[i] = ext[1:]
-			}
-			data := &fileData{
-				Name:       fi.Name,
-				Icon:       fi.Extensions[0][1:] + "_doc.icns",
-				UTI:        fi.UTI,
-				ConformsTo: fi.ConformsTo,
-				Extensions: extensions,
-				MimeTypes:  fi.MimeTypes,
-			}
-			if fi.IsGCSData {
-				data.Role = "Editor"
-				data.Rank = "Owner"
-			} else {
-				data.Role = "Viewer"
-				data.Rank = "Alternate"
-			}
-			fileInfo = append(fileInfo, data)
+		if fi.IsSpecial {
+			continue
 		}
+		extensions := make([]string, len(fi.Extensions))
+		for i, ext := range fi.Extensions {
+			extensions[i] = ext[1:]
+		}
+		data := &fileData{
+			Name:       fi.Name,
+			Icon:       fi.Extensions[0][1:] + "_doc.icns",
+			UTI:        fi.UTI,
+			ConformsTo: fi.ConformsTo,
+			Extensions: extensions,
+			MimeTypes:  fi.MimeTypes,
+		}
+		if fi.IsGCSData {
+			data.Role = "Editor"
+			data.Rank = "Owner"
+		} else {
+			data.Role = "Viewer"
+			data.Rank = "Alternate"
+		}
+		fileInfo = append(fileInfo, data)
 	}
 	type tmplData struct {
 		AppName              string

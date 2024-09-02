@@ -27,10 +27,10 @@ type thresholdSettingsPanel struct {
 	deleteButton *unison.Button
 }
 
-func newThresholdSettingsPanel(pool *poolSettingsPanel, threshold *gurps.PoolThreshold) *thresholdSettingsPanel {
+func newThresholdSettingsPanel(pool *poolSettingsPanel, thresh *gurps.PoolThreshold) *thresholdSettingsPanel {
 	p := &thresholdSettingsPanel{
 		pool:      pool,
-		threshold: threshold,
+		threshold: thresh,
 	}
 	p.Self = p
 	p.SetBorder(unison.NewEmptyBorder(unison.Insets{
@@ -62,7 +62,7 @@ func newThresholdSettingsPanel(pool *poolSettingsPanel, threshold *gurps.PoolThr
 		attributeSettingsDragDataKey: &attributeSettingsDragData{
 			owner:     pool.dockable.Entity(),
 			def:       pool.def,
-			threshold: threshold,
+			threshold: thresh,
 		},
 	}))
 	p.AddChild(p.createButtons())

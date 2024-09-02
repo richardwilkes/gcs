@@ -52,7 +52,7 @@ type enumInfo struct {
 	Pkg    string
 	Name   string
 	Desc   string
-	Values []enumValue
+	Values []*enumValue
 }
 
 type cssInfo struct {
@@ -156,7 +156,7 @@ func (e *enumInfo) LocalType() string {
 	return txt.FirstToLower(toIdentifier(e.Name)) + "Data"
 }
 
-func (e *enumInfo) IDFor(v enumValue) string {
+func (e *enumInfo) IDFor(v *enumValue) string {
 	id := v.Name
 	if id == "" {
 		id = toIdentifier(v.Key)
@@ -198,7 +198,7 @@ func (e *enumValue) StringValue() string {
 	return e.String
 }
 
-func last(in []enumValue) enumValue {
+func last(in []*enumValue) *enumValue {
 	return in[len(in)-1]
 }
 
@@ -242,7 +242,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/fxp",
 		Name: "length_unit",
 		Desc: "holds the length unit type. Note that conversions to/from metric are done using the simplified GURPS metric conversion of 1 yd = 1 meter. For consistency, all metric lengths are converted to meters, then to yards, rather than the variations at different lengths that the GURPS rules suggest",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{
 				Name:   "FeetAndInches",
 				Key:    "ft_in",
@@ -296,7 +296,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/fxp",
 		Name: "weight_unit",
 		Desc: "holds the weight unit type. Note that conversions to/from metric are done using the simplified GURPS metric conversion of 1 lb = 0.5kg. For consistency, all metric weights are converted to kilograms, then to pounds, rather than the variations at different weights that the GURPS rules suggest",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{
 				Name:       "Pound",
 				Key:        "lb",
@@ -345,7 +345,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/affects",
 		Name: "option",
 		Desc: "describes how a TraitModifier affects the point cost",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{
 				Key:           "total",
 				String:        "to cost",
@@ -367,7 +367,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/attribute",
 		Name: "placement",
 		Desc: "determines the placement of the attribute on the sheet",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{Key: "automatic"},
 			{Key: "primary"},
 			{Key: "secondary"},
@@ -378,7 +378,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/attribute",
 		Name: "type",
 		Desc: "holds the type of an attribute definition",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{Key: "integer"},
 			{Key: "integer_ref", String: "Integer (Display Only)"},
 			{Key: "decimal"},
@@ -394,7 +394,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/autoscale",
 		Name: "option",
 		Desc: "holds the possible auto-scaling options",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{Key: "no", String: "No Auto-Scaling"},
 			{Key: "fit_width"},
 			{Key: "fit_page"},
@@ -404,7 +404,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/cell",
 		Name: "type",
 		Desc: "holds the type of table cell",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{Key: "text"},
 			{Key: "tags"},
 			{Key: "toggle"},
@@ -416,7 +416,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/container",
 		Name: "type",
 		Desc: "holds the type of a trait container",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{Key: "group"},
 			{Key: "alternative_abilities"},
 			{
@@ -434,7 +434,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/dgroup",
 		Name: "group",
 		Desc: "holds the set of dockable groupings",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{Key: "character_sheets"},
 			{Key: "character_templates"},
 			{Key: "campaigns"},
@@ -451,7 +451,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/difficulty",
 		Name: "level",
 		Desc: "holds the difficulty level of a skill",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{
 				Name:       "Easy",
 				Key:        "e",
@@ -484,7 +484,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/display",
 		Name: "option",
 		Desc: "holds a display option",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{Key: "not_shown"},
 			{Key: "inline"},
 			{Key: "tooltip"},
@@ -498,7 +498,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/emcost",
 		Name: "type",
 		Desc: "describes how an Equipment Modifier's cost is applied",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{
 				Name:   "Original",
 				Key:    "to_original_cost",
@@ -529,7 +529,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/emcost",
 		Name: "value",
 		Desc: "describes how an Equipment Modifier's cost value is applied",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{
 				Name: "Addition",
 				Key:  "+",
@@ -554,7 +554,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/emweight",
 		Name: "type",
 		Desc: "describes how an Equipment Modifier's weight is applied",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{
 				Name:   "Original",
 				Key:    "to_original_weight",
@@ -585,7 +585,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/emweight",
 		Name: "value",
 		Desc: "describes how an Equipment Modifier's weight value is applied",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{
 				Name:       "Addition",
 				Key:        "+",
@@ -614,7 +614,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/encumbrance",
 		Name: "level",
 		Desc: "holds the encumbrance level",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{
 				Name: "No",
 				Key:  "none",
@@ -632,7 +632,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/feature",
 		Name: "type",
 		Desc: "holds the type of a Feature",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{
 				Key:    "attribute_bonus",
 				String: "Gives an attribute modifier of",
@@ -779,7 +779,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/namegen",
 		Name: "builtin",
 		Desc: "holds a built-in name data type",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{Key: "none"},
 			{Key: "american_male"},
 			{Key: "american_female"},
@@ -793,7 +793,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/namegen",
 		Name: "type",
 		Desc: "holds a name generation type",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{Key: "simple"},
 			{Key: "markov_letter", OldKeys: []string{"markov_chain"}},
 			{Key: "markov_run"},
@@ -804,7 +804,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/picker",
 		Name: "type",
 		Desc: "holds the type of template picker",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{Key: "not_applicable"},
 			{Key: "count"},
 			{Key: "points"},
@@ -814,7 +814,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/prereq",
 		Name: "type",
 		Desc: "holds the type of a Prereq",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{
 				Name:   "List",
 				Key:    "prereq_list",
@@ -862,7 +862,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/progression",
 		Name: "option",
 		Desc: "controls how Thrust and Swing are calculated",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{
 				Key: "basic_set",
 				Alt: "*The standard damage progression*",
@@ -915,7 +915,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/selfctrl",
 		Name: "adjustment",
 		Desc: "holds an Adjustment for a self-control roll",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{
 				Name: "NoCRAdj",
 				Key:  "none",
@@ -957,7 +957,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/skillsel",
 		Name: "type",
 		Desc: "holds the type of a selection",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{
 				Name:   "Name",
 				Key:    "skills_with_name",
@@ -977,7 +977,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/spellcmp",
 		Name: "type",
 		Desc: "holds the type of a comparison",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{
 				Key:    "name",
 				String: "whose name",
@@ -1005,7 +1005,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/spellmatch",
 		Name: "type",
 		Desc: "holds the type of a match",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{
 				Key:    "all_colleges",
 				String: "to all colleges",
@@ -1030,7 +1030,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/srcstate",
 		Name: "value",
 		Desc: "describes the state of a source compared to a piece of data",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{
 				Key:           "custom",
 				String:        "Custom data which did not come from a library source",
@@ -1060,7 +1060,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/stdmg",
 		Name: "option",
 		Desc: "holds the type of strength dice to add to damage",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{
 				Key:    "none",
 				String: "None",
@@ -1114,7 +1114,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/stlimit",
 		Name: "option",
 		Desc: "holds a limitation for a Strength AttributeBonus",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{
 				Key:           "none",
 				EmptyStringOK: true,
@@ -1138,7 +1138,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/study",
 		Name: "level",
 		Desc: "holds the number of study hours required per point",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{
 				Name:   "Standard",
 				Key:    "",
@@ -1170,7 +1170,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/study",
 		Name: "type",
 		Desc: "holds the type of study",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{
 				Key:    "self",
 				String: "Self-Taught",
@@ -1193,7 +1193,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/threshold",
 		Name: "op",
 		Desc: "holds an operation to apply when a pool threshold is hit",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{
 				Key: "unknown",
 				Alt: "Unknown",
@@ -1218,7 +1218,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/tmcost",
 		Name: "type",
 		Desc: "describes how a TraitModifier's point cost is applied",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{
 				Key:    "percentage",
 				String: "%",
@@ -1237,7 +1237,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/wsel",
 		Name: "type",
 		Desc: "holds the type of a weapon selection",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{
 				Name:   "WithRequiredSkill",
 				Key:    "weapons_with_required_skill",
@@ -1258,7 +1258,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/gurps/enums/wswitch",
 		Name: "type",
 		Desc: "holds the type of a weapon switch",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{
 				Key:           "not_switched",
 				EmptyStringOK: true,
@@ -1315,7 +1315,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/paper",
 		Name: "orientation",
 		Desc: "holds the orientation of the page",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{Key: "portrait"},
 			{Key: "landscape"},
 		},
@@ -1324,7 +1324,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/paper",
 		Name: "size",
 		Desc: "holds a standard paper dimension",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{Key: "letter"},
 			{Key: "legal"},
 			{Key: "tabloid"},
@@ -1341,7 +1341,7 @@ var allEnums = []*enumInfo{
 		Pkg:  "model/paper",
 		Name: "unit",
 		Desc: "holds the real-world length unit type",
-		Values: []enumValue{
+		Values: []*enumValue{
 			{
 				Name:       "Inch",
 				Key:        "in",

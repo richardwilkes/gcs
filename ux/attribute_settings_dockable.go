@@ -335,17 +335,19 @@ func (d *attributeSettingsDockable) dataDragOver(where unison.Point, data map[st
 						p := children[i].Self.(*attrDefSettingsPanel).poolPanel
 						pt := p.PointFromRoot(rootPt)
 						for j, child := range p.Children() {
-							if rect := child.FrameRect(); pt.In(rect) {
-								d.dragTargetPool = p
-								d.defInsert = i
-								if rect.CenterY() <= pt.Y {
-									d.thresholdInsert = j + 1
-								} else {
-									d.thresholdInsert = j
-								}
-								d.inDragOver = true
-								break
+							rect := child.FrameRect()
+							if !pt.In(rect) {
+								continue
 							}
+							d.dragTargetPool = p
+							d.defInsert = i
+							if rect.CenterY() <= pt.Y {
+								d.thresholdInsert = j + 1
+							} else {
+								d.thresholdInsert = j
+							}
+							d.inDragOver = true
+							break
 						}
 						if d.inDragOver {
 							break

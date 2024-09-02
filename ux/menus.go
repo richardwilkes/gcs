@@ -417,7 +417,7 @@ func (s menuBarScope) recentFilesUpdater(menu unison.Menu) {
 	m := make(map[string]int, len(list))
 	for _, f := range list {
 		title := filepath.Base(f)
-		m[title] = m[title] + 1
+		m[title]++
 	}
 	for i, f := range list {
 		title := filepath.Base(f)
@@ -510,7 +510,7 @@ func (s menuBarScope) createDeepSearchableMenu(f unison.MenuFactory) unison.Menu
 	m := f.NewMenu(DeepSearchableMenuID, i18n.Text("Library Explorer Deep Search In…"), nil)
 	settings := gurps.GlobalSettings()
 	extensions := gurps.DeepSearchableExtensions()
-	extMap := make(map[string]gurps.FileInfo)
+	extMap := make(map[string]*gurps.FileInfo)
 	for _, ext := range extensions {
 		fi := gurps.FileInfoFor(ext)
 		extMap[fi.Name] = fi
@@ -526,7 +526,7 @@ func (s menuBarScope) createDeepSearchableMenu(f unison.MenuFactory) unison.Menu
 	return m
 }
 
-func (s menuBarScope) createDeepSearchableAction(index int, fi gurps.FileInfo) *unison.Action {
+func (s menuBarScope) createDeepSearchableAction(index int, fi *gurps.FileInfo) *unison.Action {
 	return &unison.Action{
 		ID:    DeepSearchableBaseItemID + index,
 		Title: fi.Name,

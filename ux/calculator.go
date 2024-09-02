@@ -162,14 +162,16 @@ func DisplayCalculator(sheet *Sheet) {
 // UpdateCalculator for the given owner.
 func UpdateCalculator(sheet *Sheet) {
 	for _, other := range AllDockables() {
-		if c, ok := other.(*Calculator); ok && c.sheet == sheet {
-			c.updateJumpingResult()
-			c.updateThrowingResult()
-			c.updateHikingResult()
-			c.content.MarkForLayoutRecursively()
-			c.content.MarkForRedraw()
-			break
+		c, ok := other.(*Calculator)
+		if !ok || c.sheet != sheet {
+			continue
 		}
+		c.updateJumpingResult()
+		c.updateThrowingResult()
+		c.updateHikingResult()
+		c.content.MarkForLayoutRecursively()
+		c.content.MarkForRedraw()
+		break
 	}
 }
 

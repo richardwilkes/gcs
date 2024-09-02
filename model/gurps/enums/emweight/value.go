@@ -42,7 +42,7 @@ func (enum Value) Format(fraction fxp.Fraction) string {
 // ExtractFraction from the string.
 func (enum Value) ExtractFraction(s string) fxp.Fraction {
 	s = strings.TrimLeft(strings.TrimSpace(s), Multiplier.Key())
-	for len(s) > 0 && (s[len(s)-1] < '0' || s[len(s)-1] > '9') {
+	for s != "" && (s[len(s)-1] < '0' || s[len(s)-1] > '9') {
 		s = s[:len(s)-1]
 	}
 	fraction := fxp.NewFraction(s)

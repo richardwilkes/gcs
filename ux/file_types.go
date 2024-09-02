@@ -33,12 +33,13 @@ func registerNavigatorFileTypes() {
 	registerSpecialFileInfo(gurps.GenericFile, svg.GenericFile)
 }
 
-func registerSpecialFileInfo(key string, svg *unison.SVG) {
-	gurps.FileInfo{
+func registerSpecialFileInfo(key string, icon *unison.SVG) {
+	fi := gurps.FileInfo{
 		Extensions: []string{key},
-		SVG:        svg,
+		SVG:        icon,
 		IsSpecial:  true,
-	}.Register()
+	}
+	fi.Register()
 }
 
 // RegisterExternalFileTypes registers the external file types.
@@ -58,7 +59,7 @@ func RegisterExternalFileTypes() {
 }
 
 func registerImageFileInfo(format imgfmt.Enum, groupWith []string) {
-	gurps.FileInfo{
+	fi := gurps.FileInfo{
 		Name:       strings.ToUpper(format.Extension()[1:]) + " Image",
 		UTI:        format.UTI(),
 		ConformsTo: []string{"public.image"},
@@ -68,11 +69,12 @@ func registerImageFileInfo(format imgfmt.Enum, groupWith []string) {
 		SVG:        svg.ImageFile,
 		Load:       func(filePath string, _ int) (unison.Dockable, error) { return NewImageDockable(filePath) },
 		IsImage:    true,
-	}.Register()
+	}
+	fi.Register()
 }
 
 func registerPDFFileInfo() {
-	gurps.FileInfo{
+	fi := gurps.FileInfo{
 		Name:       "PDF Document",
 		UTI:        "com.adobe.pdf",
 		ConformsTo: []string{"public.data"},
@@ -82,12 +84,13 @@ func registerPDFFileInfo() {
 		SVG:        svg.PDFFile,
 		Load:       NewPDFDockable,
 		IsPDF:      true,
-	}.Register()
+	}
+	fi.Register()
 }
 
 func registerMarkdownFileInfo() {
 	extensions := []string{gurps.MarkdownExt, ".markdown"}
-	gurps.FileInfo{
+	fi := gurps.FileInfo{
 		Name:             "Markdown Document",
 		UTI:              "net.daringfireball.markdown",
 		ConformsTo:       []string{"public.plain-text"},
@@ -99,7 +102,8 @@ func registerMarkdownFileInfo() {
 		Load: func(filePath string, _ int) (unison.Dockable, error) {
 			return NewMarkdownDockable(filePath, true, false)
 		},
-	}.Register()
+	}
+	fi.Register()
 }
 
 // RegisterGCSFileTypes registers the GCS file types.
@@ -131,33 +135,35 @@ func RegisterGCSFileTypes() {
 	registerGCSFileInfo("GCS Notes", gurps.NotesExt, groupWith, svg.GCSNotes, NewNoteTableDockableFromFile)
 }
 
-func registerGCSFileInfo(name, ext string, groupWith []string, svg *unison.SVG, loader func(filePath string) (unison.Dockable, error)) {
-	gurps.FileInfo{
+func registerGCSFileInfo(name, ext string, groupWith []string, icon *unison.SVG, loader func(filePath string) (unison.Dockable, error)) {
+	fi := gurps.FileInfo{
 		Name:             name,
 		UTI:              cmdline.AppIdentifier + ext,
 		ConformsTo:       []string{"public.data"},
 		Extensions:       []string{ext},
 		GroupWith:        groupWith,
 		MimeTypes:        []string{"application/x-gcs-" + ext[1:]},
-		SVG:              svg,
+		SVG:              icon,
 		Load:             func(filePath string, _ int) (unison.Dockable, error) { return loader(filePath) },
 		IsGCSData:        true,
 		IsDeepSearchable: true,
-	}.Register()
+	}
+	fi.Register()
 }
 
-func registerExportableGCSFileInfo(name, ext string, svg *unison.SVG, loader func(filePath string) (unison.Dockable, error)) {
-	gurps.FileInfo{
+func registerExportableGCSFileInfo(name, ext string, icon *unison.SVG, loader func(filePath string) (unison.Dockable, error)) {
+	fi := gurps.FileInfo{
 		Name:             name,
 		UTI:              cmdline.AppIdentifier + ext,
 		ConformsTo:       []string{"public.data"},
 		Extensions:       []string{ext},
 		GroupWith:        []string{ext},
 		MimeTypes:        []string{"application/x-gcs-" + ext[1:]},
-		SVG:              svg,
+		SVG:              icon,
 		Load:             func(filePath string, _ int) (unison.Dockable, error) { return loader(filePath) },
 		IsGCSData:        true,
 		IsExportable:     true,
 		IsDeepSearchable: true,
-	}.Register()
+	}
+	fi.Register()
 }

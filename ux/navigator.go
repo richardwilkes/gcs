@@ -509,27 +509,28 @@ func (n *Navigator) updateLibrarySelection() {
 
 func (n *Navigator) showSelectionReleaseNotes() {
 	for _, row := range n.table.SelectedRows(true) {
-		if row.IsLibrary() {
-			current, releases := row.library.AvailableReleases()
-			if len(releases) == 0 || !releases[0].HasUpdate() {
-				return
-			}
-			var content strings.Builder
-			for i, release := range releases {
-				if i != 0 {
-					content.WriteString("\n\n")
-				}
-				content.WriteString(i18n.Text("### Version "))
-				content.WriteString(filterVersion(release.Version))
-				content.WriteString("\n\n")
-				if release.Version == current {
-					content.WriteString(i18n.Text("> This version is what you currently have on disk."))
-					content.WriteString("\n\n")
-				}
-				content.WriteString(release.Notes)
-			}
-			ShowReadOnlyMarkdown(fmt.Sprintf(i18n.Text("%s Release Notes"), row.library.Title), content.String())
+		if !row.IsLibrary() {
+			continue
 		}
+		current, releases := row.library.AvailableReleases()
+		if len(releases) == 0 || !releases[0].HasUpdate() {
+			return
+		}
+		var content strings.Builder
+		for i, release := range releases {
+			if i != 0 {
+				content.WriteString("\n\n")
+			}
+			content.WriteString(i18n.Text("### Version "))
+			content.WriteString(filterVersion(release.Version))
+			content.WriteString("\n\n")
+			if release.Version == current {
+				content.WriteString(i18n.Text("> This version is what you currently have on disk."))
+				content.WriteString("\n\n")
+			}
+			content.WriteString(release.Notes)
+		}
+		ShowReadOnlyMarkdown(fmt.Sprintf(i18n.Text("%s Release Notes"), row.library.Title), content.String())
 	}
 }
 
@@ -871,41 +872,40 @@ func setNavigatorRowOpen(row *NavigatorNode, open bool) {
 func (n *Navigator) searchModified(_, _ *unison.FieldState) {
 	n.searchIndex = 0
 	n.searchResult = nil
-	text := strings.ToLower(n.searchField.Text())
-	for _, row := range n.table.RootRows() {
-		n.search(text, row)
-	}
+	n.search(strings.ToLower(n.searchField.Text()), n.table.RootRows())
 	n.adjustForMatch()
 }
 
-func (n *Navigator) search(text string, row *NavigatorNode) {
+func (n *Navigator) search(text string, rows []*NavigatorNode) {
 	if text == "" {
 		return
 	}
-	if row.Match(text) {
-		n.searchResult = append(n.searchResult, row)
-	} else {
-		if row.IsFile() {
+	for _, row := range rows {
+		if row.Match(text) {
+			n.searchResult = append(n.searchResult, row)
+		} else if row.IsFile() {
 			p := row.Path()
 			content, ok := n.contentCache[p]
 			if !ok {
 				fi := gurps.FileInfoFor(p)
 				if n.deepSearch[fi.Extensions[0]] {
+					dir := os.DirFS(filepath.Dir(p))
+					fileName := filepath.Base(p)
 					switch fi.Extensions[0] {
 					case gurps.EquipmentExt:
-						if data, err := gurps.NewEquipmentFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err == nil {
+						if data, err := gurps.NewEquipmentFromFile(dir, fileName); err == nil {
 							content = n.addToContentCache(p, prepareForContentCache(data))
 						}
 					case gurps.EquipmentModifiersExt:
-						if data, err := gurps.NewEquipmentModifiersFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err == nil {
+						if data, err := gurps.NewEquipmentModifiersFromFile(dir, fileName); err == nil {
 							content = n.addToContentCache(p, prepareForContentCache(data))
 						}
 					case gurps.NotesExt:
-						if data, err := gurps.NewNotesFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err == nil {
+						if data, err := gurps.NewNotesFromFile(dir, fileName); err == nil {
 							content = n.addToContentCache(p, prepareForContentCache(data))
 						}
 					case gurps.SheetExt:
-						if data, err := gurps.NewEntityFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err == nil {
+						if data, err := gurps.NewEntityFromFile(dir, fileName); err == nil {
 							for _, one := range data.Skills {
 								one.TechLevel = nil
 							}
@@ -934,21 +934,21 @@ func (n *Navigator) search(text string, row *NavigatorNode) {
 							}, "\n"))
 						}
 					case gurps.SkillsExt:
-						if data, err := gurps.NewSkillsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err == nil {
+						if data, err := gurps.NewSkillsFromFile(dir, fileName); err == nil {
 							for _, one := range data {
 								one.TechLevel = nil
 							}
 							content = n.addToContentCache(p, prepareForContentCache(data))
 						}
 					case gurps.SpellsExt:
-						if data, err := gurps.NewSpellsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err == nil {
+						if data, err := gurps.NewSpellsFromFile(dir, fileName); err == nil {
 							for _, one := range data {
 								one.TechLevel = nil
 							}
 							content = n.addToContentCache(p, prepareForContentCache(data))
 						}
 					case gurps.TemplatesExt:
-						if data, err := gurps.NewTemplateFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err == nil {
+						if data, err := gurps.NewTemplateFromFile(dir, fileName); err == nil {
 							for _, one := range data.Skills {
 								one.TechLevel = nil
 							}
@@ -967,11 +967,11 @@ func (n *Navigator) search(text string, row *NavigatorNode) {
 					// case gurps.CampaignExt:
 					// TODO: Implement
 					case gurps.TraitModifiersExt:
-						if data, err := gurps.NewTraitModifiersFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err == nil {
+						if data, err := gurps.NewTraitModifiersFromFile(dir, fileName); err == nil {
 							content = n.addToContentCache(p, prepareForContentCache(data))
 						}
 					case gurps.TraitsExt:
-						if data, err := gurps.NewTraitsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err == nil {
+						if data, err := gurps.NewTraitsFromFile(dir, fileName); err == nil {
 							content = n.addToContentCache(p, prepareForContentCache(data))
 						}
 					case gurps.MarkdownExt:
@@ -986,10 +986,8 @@ func (n *Navigator) search(text string, row *NavigatorNode) {
 				n.searchResult = append(n.searchResult, row)
 			}
 		}
-	}
-	if row.CanHaveChildren() {
-		for _, child := range row.Children() {
-			n.search(text, child)
+		if row.CanHaveChildren() {
+			n.search(text, row.Children())
 		}
 	}
 }

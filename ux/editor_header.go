@@ -29,12 +29,12 @@ func NewEditorListHeader[T gurps.NodeTypes](title, tooltip string, forPage bool)
 }
 
 // NewEditorListSVGHeader creates a new list header with an SVG image as its content rather than text.
-func NewEditorListSVGHeader[T gurps.NodeTypes](svg *unison.SVG, tooltip string, forPage bool) unison.TableColumnHeader[*Node[T]] {
+func NewEditorListSVGHeader[T gurps.NodeTypes](icon *unison.SVG, tooltip string, forPage bool) unison.TableColumnHeader[*Node[T]] {
 	if forPage {
 		header := NewPageTableColumnHeader[T]("", tooltip)
 		baseline := header.Font.Baseline()
 		header.Drawable = &unison.DrawableSVG{
-			SVG:  svg,
+			SVG:  icon,
 			Size: unison.NewSize(baseline, baseline),
 		}
 		return header
@@ -42,7 +42,7 @@ func NewEditorListSVGHeader[T gurps.NodeTypes](svg *unison.SVG, tooltip string, 
 	header := NewTableColumnHeader[T]("", tooltip)
 	baseline := header.Font.Baseline()
 	header.Drawable = &unison.DrawableSVG{
-		SVG:  svg,
+		SVG:  icon,
 		Size: unison.NewSize(baseline, baseline),
 	}
 	return header

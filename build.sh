@@ -93,6 +93,12 @@ fi
 LDFLAGS_ALL="-X github.com/richardwilkes/toolbox/cmdline.AppVersion=$RELEASE $EXTRA_LD_FLAGS"
 STD_FLAGS="-v -buildvcs=true $EXTRA_BUILD_FLAGS"
 
+# Generate the source
+if [ "$BUILD_GEN"x == "1x" ]; then
+	echo -e "\033[33mGenerating...\033[0m"
+	go generate ./gen/srcgen.go
+fi
+
 # Build our JavaScript code
 if [ "$BUILD_JS"x == "1x" ]; then
 	echo -e "\033[33mBuilding the JavaScript code...\033[0m"
@@ -110,12 +116,6 @@ if [ "$BUILD_JS"x == "1x" ]; then
 		npm run lint
 	fi
 	cd ../..
-fi
-
-# Generate the source
-if [ "$BUILD_GEN"x == "1x" ]; then
-	echo -e "\033[33mGenerating...\033[0m"
-	go generate ./gen/srcgen.go
 fi
 
 # Generate the translation file

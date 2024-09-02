@@ -529,7 +529,7 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 	}
 	for _, child := range children {
 		checkBox := unison.NewCheckBox()
-		title := fmt.Sprintf("%v", child)
+		title := child.String()
 		if tp.Type == picker.Points {
 			points := rawPoints(child)
 			pointsLabel := i18n.Text("points")
@@ -564,7 +564,7 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 		VAlign:   align.Fill,
 	})
 	label := unison.NewLabel()
-	label.SetTitle(fmt.Sprintf("%v", row))
+	label.SetTitle(row.String())
 	panel.AddChild(label)
 	if notesCapable, hasNotes := any(row).(interface{ Notes() string }); hasNotes {
 		if notes := notesCapable.Notes(); notes != "" {

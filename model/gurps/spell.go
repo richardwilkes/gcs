@@ -714,15 +714,15 @@ func CalculateSpellLevel(e *Entity, name, powerSource string, colleges, tags []s
 }
 
 // CalculateRitualMagicSpellLevel returns the calculated spell level.
-func CalculateRitualMagicSpellLevel(e *Entity, name, powerSource, ritualSkillName string, ritualPrereqCount int, colleges, tags []string, difficulty AttributeDifficulty, points fxp.Int) Level {
+func CalculateRitualMagicSpellLevel(e *Entity, name, powerSource, ritualSkillName string, ritualPrereqCount int, colleges, tags []string, diff AttributeDifficulty, points fxp.Int) Level {
 	var skillLevel Level
 	if len(colleges) == 0 {
 		skillLevel = determineRitualMagicSkillLevelForCollege(e, name, "", ritualSkillName, ritualPrereqCount,
-			tags, difficulty, points)
+			tags, diff, points)
 	} else {
 		for _, college := range colleges {
 			possible := determineRitualMagicSkillLevelForCollege(e, name, college, ritualSkillName,
-				ritualPrereqCount, tags, difficulty, points)
+				ritualPrereqCount, tags, diff, points)
 			if skillLevel.Level < possible.Level {
 				skillLevel = possible
 			}
@@ -739,7 +739,7 @@ func CalculateRitualMagicSpellLevel(e *Entity, name, powerSource, ritualSkillNam
 	return skillLevel
 }
 
-func determineRitualMagicSkillLevelForCollege(e *Entity, name, college, ritualSkillName string, ritualPrereqCount int, tags []string, difficulty AttributeDifficulty, points fxp.Int) Level {
+func determineRitualMagicSkillLevelForCollege(e *Entity, name, college, ritualSkillName string, ritualPrereqCount int, tags []string, diff AttributeDifficulty, points fxp.Int) Level {
 	def := &SkillDefault{
 		DefaultType:    SkillID,
 		Name:           ritualSkillName,
@@ -750,13 +750,13 @@ func determineRitualMagicSkillLevelForCollege(e *Entity, name, college, ritualSk
 		def.Name = ""
 	}
 	var limit fxp.Int
-	skillLevel := CalculateTechniqueLevel(e, nil, name, college, tags, def, difficulty.Difficulty, points, false,
+	skillLevel := CalculateTechniqueLevel(e, nil, name, college, tags, def, diff.Difficulty, points, false,
 		&limit, nil)
 	// CalculateTechniqueLevel() does not add the default skill modifier to the relative level, only to the final level
 	skillLevel.RelativeLevel += def.Modifier
 	def.Specialization = ""
 	def.Modifier -= fxp.Six
-	fallback := CalculateTechniqueLevel(e, nil, name, college, tags, def, difficulty.Difficulty, points, false,
+	fallback := CalculateTechniqueLevel(e, nil, name, college, tags, def, diff.Difficulty, points, false,
 		&limit, nil)
 	fallback.RelativeLevel += def.Modifier
 	if skillLevel.Level >= fallback.Level {

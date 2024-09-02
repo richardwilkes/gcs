@@ -543,7 +543,7 @@ func (p *featuresPanel) createSecondaryWeaponPanels(parent *unison.Panel, index 
 	}
 }
 
-func (p *featuresPanel) prepareNewWrapper(parent *unison.Panel, index int) (*unison.Panel, int) {
+func (p *featuresPanel) prepareNewWrapper(parent *unison.Panel, index int) (wrapper *unison.Panel, newIndex int) {
 	parent.AddChildAtIndex(unison.NewPanel(), index)
 	index++
 	return unison.NewPanel(), index

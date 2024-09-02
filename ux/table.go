@@ -428,27 +428,29 @@ func DuplicateSelection[T gurps.NodeTypes](table *unison.Table[*Node[T]]) {
 		sel := table.SelectedRows(true)
 		selMap := make(map[tid.TID]bool, len(sel))
 		for _, row := range sel {
-			if target := row.Data(); target != zero {
-				tData := gurps.AsNode(target)
-				parent := tData.Parent()
-				clone := tData.Clone(gurps.LibraryFile{}, gurps.EntityFromNode(tData), parent, false)
-				selMap[gurps.AsNode(clone).ID()] = true
-				if parent == zero {
-					for i, child := range topLevelData {
-						if child == target {
-							topLevelData = slices.Insert(topLevelData, i+1, clone)
-							needSet = true
-							break
-						}
+			target := row.Data()
+			if target == zero {
+				continue
+			}
+			tData := gurps.AsNode(target)
+			parent := tData.Parent()
+			clone := tData.Clone(gurps.LibraryFile{}, gurps.EntityFromNode(tData), parent, false)
+			selMap[gurps.AsNode(clone).ID()] = true
+			if parent == zero {
+				for i, child := range topLevelData {
+					if child == target {
+						topLevelData = slices.Insert(topLevelData, i+1, clone)
+						needSet = true
+						break
 					}
-				} else {
-					pNode := gurps.AsNode(parent)
-					children := pNode.NodeChildren()
-					for i, child := range children {
-						if child == target {
-							pNode.SetChildren(slices.Insert(children, i+1, clone))
-							break
-						}
+				}
+			} else {
+				pNode := gurps.AsNode(parent)
+				children := pNode.NodeChildren()
+				for i, child := range children {
+					if child == target {
+						pNode.SetChildren(slices.Insert(children, i+1, clone))
+						break
 					}
 				}
 			}

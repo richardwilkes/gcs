@@ -113,7 +113,7 @@ func processHandoff(conn net.Conn, pathsChan chan<- []string) {
 	}
 	size := int(binary.LittleEndian.Uint32(sizeBuffer[:]))
 	buffer := make([]byte, size)
-	if n, err = conn.Read(buffer[:]); err != nil {
+	if n, err = conn.Read(buffer); err != nil {
 		return
 	}
 	if n != size {

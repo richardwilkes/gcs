@@ -96,6 +96,7 @@ documents from the library are open.`))
 	return true
 }
 
+//nolint:gocritic // We need to return the error, but can't return it directly thanks to using a goroutine
 func performLibraryUpdate(wnd *unison.Window, lib *gurps.Library, rel gurps.Release, err *error) {
 	defer finishLibraryUpdate(wnd, lib)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)

@@ -39,7 +39,7 @@ type AttributeChoice struct {
 // AttributeChoices collects the available choices for attributes for the given entity, or nil.
 func AttributeChoices(entity *Entity, prefix string, flags AttributeFlags, currentKey string) (choices []*AttributeChoice, current *AttributeChoice) {
 	if prefix != "" && !strings.HasSuffix(prefix, " ") {
-		prefix = prefix + " "
+		prefix += " "
 	}
 	list := AttributeDefsFor(entity).List(true)
 	choices = make([]*AttributeChoice, 0, len(list)+8)

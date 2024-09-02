@@ -215,11 +215,12 @@ func (n *NavigatorNode) ColumnCell(_, col int, foreground, _ unison.Ink, _, _, _
 	}
 	title := n.primaryColumnText()
 	var ext string
-	if n.IsFile() {
+	switch {
+	case n.IsFile():
 		ext = strings.ToLower(path.Ext(n.path))
-	} else if n.IsOpen() {
+	case n.IsOpen():
 		ext = gurps.OpenFolder
-	} else {
+	default:
 		ext = gurps.ClosedFolder
 	}
 	size := unison.LabelFont.Size() + 5

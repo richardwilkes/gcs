@@ -56,7 +56,7 @@ type editor[N gurps.NodeTypes, D gurps.EditorData[N]] struct {
 	promptForSave        bool
 }
 
-func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner Rebuildable, target N, svg *unison.SVG, helpMD string, initToolbar func(*editor[N, D], *unison.Panel), initContent func(*editor[N, D], *unison.Panel) func(), preApplyCallback func(D)) {
+func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner Rebuildable, target N, icon *unison.SVG, helpMD string, initToolbar func(*editor[N, D], *unison.Panel), initContent func(*editor[N, D], *unison.Panel) func(), preApplyCallback func(D)) {
 	lookFor := gurps.AsNode(target).ID()
 	if Activate(func(d unison.Dockable) bool {
 		if e, ok := d.AsPanel().Self.(*editor[N, D]); ok {
@@ -69,7 +69,7 @@ func displayEditor[N gurps.NodeTypes, D gurps.EditorData[N]](owner Rebuildable, 
 	e := &editor[N, D]{
 		owner:            owner,
 		target:           target,
-		svg:              svg,
+		svg:              icon,
 		scale:            gurps.GlobalSettings().General.InitialEditorUIScale,
 		preApplyCallback: preApplyCallback,
 	}
@@ -223,13 +223,13 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 	return toolbar
 }
 
-func (e *editor[N, D]) prepareForSubstitutions() (N, map[string]string) {
+func (e *editor[N, D]) prepareForSubstitutions() (tmpNode N, m map[string]string) {
 	node := gurps.AsNode(e.target)
-	tmp := node.Clone(node.GetSource().LibraryFile, node.DataOwner(), nil, true)
-	e.editorData.ApplyTo(tmp)
-	m := make(map[string]string)
-	tmp.FillWithNameableKeys(m, nil)
-	return tmp, m
+	tmpNode = node.Clone(node.GetSource().LibraryFile, node.DataOwner(), nil, true)
+	e.editorData.ApplyTo(tmpNode)
+	m = make(map[string]string)
+	tmpNode.FillWithNameableKeys(m, nil)
+	return tmpNode, m
 }
 
 func (e *editor[N, D]) TitleIcon(suggestedSize unison.Size) unison.Drawable {

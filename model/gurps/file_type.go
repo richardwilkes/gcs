@@ -78,12 +78,12 @@ type FileInfo struct {
 
 var (
 	// KnownFileTypes holds the registered file types.
-	KnownFileTypes   []FileInfo
-	fileTypeRegistry = make(map[string]FileInfo)
+	KnownFileTypes   []*FileInfo
+	fileTypeRegistry = make(map[string]*FileInfo)
 )
 
 // Register with the central registry.
-func (f FileInfo) Register() {
+func (f *FileInfo) Register() {
 	for _, ext := range f.Extensions {
 		fileTypeRegistry[ext] = f
 	}
@@ -91,7 +91,7 @@ func (f FileInfo) Register() {
 }
 
 // FileInfoFor returns the FileInfo for the given file path's extension.
-func FileInfoFor(filePath string) FileInfo {
+func FileInfoFor(filePath string) *FileInfo {
 	if info, ok := fileTypeRegistry[strings.ToLower(path.Ext(filePath))]; ok {
 		return info
 	}

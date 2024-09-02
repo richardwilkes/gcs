@@ -1063,8 +1063,8 @@ func (e *Entity) WeightCarried(forSkills bool) fxp.Weight {
 }
 
 // MaximumCarry returns the maximum amount the Entity can carry for the specified encumbrance level.
-func (e *Entity) MaximumCarry(encumbrance encumbrance.Level) fxp.Weight {
-	return fxp.Weight(fxp.Int(e.BasicLift()).Mul(encumbrance.WeightMultiplier()))
+func (e *Entity) MaximumCarry(enc encumbrance.Level) fxp.Weight {
+	return fxp.Weight(fxp.Int(e.BasicLift()).Mul(enc.WeightMultiplier()))
 }
 
 // OneHandedLift returns the one-handed lift value.
@@ -1388,19 +1388,21 @@ func (e *Entity) Reactions() []*ConditionalModifier {
 
 func (e *Entity) reactionsFromFeatureList(source string, features Features, m map[string]*ConditionalModifier) {
 	for _, f := range features {
-		if bonus, ok := f.(*ReactionBonus); ok {
-			amt := bonus.AdjustedAmount()
-			var replacements map[string]string
-			var na nameable.Accesser
-			if na, ok = bonus.Owner().(nameable.Accesser); ok {
-				replacements = na.NameableReplacements()
-			}
-			situation := nameable.Apply(bonus.Situation, replacements)
-			if r, exists := m[situation]; exists {
-				r.Add(source, amt)
-			} else {
-				m[situation] = NewConditionalModifier(source, situation, amt)
-			}
+		bonus, ok := f.(*ReactionBonus)
+		if !ok {
+			continue
+		}
+		amt := bonus.AdjustedAmount()
+		var replacements map[string]string
+		var na nameable.Accesser
+		if na, ok = bonus.Owner().(nameable.Accesser); ok {
+			replacements = na.NameableReplacements()
+		}
+		situation := nameable.Apply(bonus.Situation, replacements)
+		if r, exists := m[situation]; exists {
+			r.Add(source, amt)
+		} else {
+			m[situation] = NewConditionalModifier(source, situation, amt)
 		}
 	}
 }
@@ -1444,19 +1446,21 @@ func (e *Entity) ConditionalModifiers() []*ConditionalModifier {
 
 func (e *Entity) conditionalModifiersFromFeatureList(source string, features Features, m map[string]*ConditionalModifier) {
 	for _, f := range features {
-		if bonus, ok := f.(*ConditionalModifierBonus); ok {
-			amt := bonus.AdjustedAmount()
-			var replacements map[string]string
-			var na nameable.Accesser
-			if na, ok = bonus.Owner().(nameable.Accesser); ok {
-				replacements = na.NameableReplacements()
-			}
-			situation := nameable.Apply(bonus.Situation, replacements)
-			if r, exists := m[situation]; exists {
-				r.Add(source, amt)
-			} else {
-				m[situation] = NewConditionalModifier(source, situation, amt)
-			}
+		bonus, ok := f.(*ConditionalModifierBonus)
+		if !ok {
+			continue
+		}
+		amt := bonus.AdjustedAmount()
+		var replacements map[string]string
+		var na nameable.Accesser
+		if na, ok = bonus.Owner().(nameable.Accesser); ok {
+			replacements = na.NameableReplacements()
+		}
+		situation := nameable.Apply(bonus.Situation, replacements)
+		if r, exists := m[situation]; exists {
+			r.Add(source, amt)
+		} else {
+			m[situation] = NewConditionalModifier(source, situation, amt)
 		}
 	}
 }

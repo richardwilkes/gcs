@@ -147,21 +147,21 @@ func SaveTraits(traits []*Trait, filePath string) error {
 }
 
 // NewTrait creates a new Trait.
-func NewTrait(owner DataOwner, parent *Trait, container bool) *Trait {
+func NewTrait(owner DataOwner, parent *Trait, isContainer bool) *Trait {
 	var t Trait
-	t.TID = tid.MustNewTID(traitKind(container))
+	t.TID = tid.MustNewTID(traitKind(isContainer))
 	t.parent = parent
 	t.owner = owner
 	t.Name = t.Kind()
 	if t.Container() {
 		t.TemplatePicker = &TemplatePicker{}
 	}
-	t.SetOpen(container)
+	t.SetOpen(isContainer)
 	return &t
 }
 
-func traitKind(container bool) byte {
-	if container {
+func traitKind(isContainer bool) byte {
+	if isContainer {
 		return kinds.TraitContainer
 	}
 	return kinds.Trait

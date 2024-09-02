@@ -112,78 +112,80 @@ func (sm *SrcMatcher) PrepareHashes(provider ListProvider) {
 		sm.libHashes = make(map[LibraryFile]libSrcData)
 	}
 	for libFile := range neededLibs {
-		if lib, ok := libs[libFile.Library]; ok {
-			p := filepath.Join(lib.Path(), libFile.Path)
-			stat, err := os.Stat(p)
-			if err != nil {
-				delete(sm.libHashes, libFile)
-				continue
-			}
-			modTime := stat.ModTime()
-			if data, exists := sm.libHashes[libFile]; exists {
-				if modTime.Compare(data.timestamp) >= 0 {
-					continue // We've already loaded this file and it hasn't changed.
-				}
-				delete(sm.libHashes, libFile)
-			}
-			var srcData libSrcData
-			srcData.timestamp = modTime
-			srcData.dataHashes = make(map[tid.TID]HashAndData)
-			dir := os.DirFS(filepath.Dir(p))
-			file := filepath.Base(p)
-			fi := FileInfoFor(p)
-			switch fi.Extensions[0] {
-			case TraitsExt:
-				var data []*Trait
-				if data, err = NewTraitsFromFile(dir, file); err == nil {
-					NodesToHashesByID(srcData.dataHashes, data...)
-					Traverse(func(t *Trait) bool {
-						NodesToHashesByID(srcData.dataHashes, t.Modifiers...)
-						return false
-					}, false, false, data...)
-				}
-			case TraitModifiersExt:
-				var data []*TraitModifier
-				if data, err = NewTraitModifiersFromFile(dir, file); err == nil {
-					NodesToHashesByID(srcData.dataHashes, data...)
-				}
-			case SkillsExt:
-				var data []*Skill
-				if data, err = NewSkillsFromFile(dir, file); err == nil {
-					NodesToHashesByID(srcData.dataHashes, data...)
-				}
-			case SpellsExt:
-				var data []*Spell
-				if data, err = NewSpellsFromFile(dir, file); err == nil {
-					NodesToHashesByID(srcData.dataHashes, data...)
-				}
-			case EquipmentExt:
-				var data []*Equipment
-				if data, err = NewEquipmentFromFile(dir, file); err == nil {
-					NodesToHashesByID(srcData.dataHashes, data...)
-					Traverse(func(e *Equipment) bool {
-						NodesToHashesByID(srcData.dataHashes, e.Modifiers...)
-						return false
-					}, false, false, data...)
-				}
-			case EquipmentModifiersExt:
-				var data []*EquipmentModifier
-				if data, err = NewEquipmentModifiersFromFile(dir, file); err == nil {
-					NodesToHashesByID(srcData.dataHashes, data...)
-				}
-			case NotesExt:
-				var data []*Note
-				if data, err = NewNotesFromFile(dir, file); err == nil {
-					NodesToHashesByID(srcData.dataHashes, data...)
-				}
-			}
-			sm.libHashes[libFile] = srcData
+		lib, ok := libs[libFile.Library]
+		if !ok {
+			continue
 		}
+		p := filepath.Join(lib.Path(), libFile.Path)
+		stat, err := os.Stat(p)
+		if err != nil {
+			delete(sm.libHashes, libFile)
+			continue
+		}
+		modTime := stat.ModTime()
+		if data, exists := sm.libHashes[libFile]; exists {
+			if modTime.Compare(data.timestamp) >= 0 {
+				continue // We've already loaded this file and it hasn't changed.
+			}
+			delete(sm.libHashes, libFile)
+		}
+		var srcData libSrcData
+		srcData.timestamp = modTime
+		srcData.dataHashes = make(map[tid.TID]HashAndData)
+		dir := os.DirFS(filepath.Dir(p))
+		file := filepath.Base(p)
+		fi := FileInfoFor(p)
+		switch fi.Extensions[0] {
+		case TraitsExt:
+			var data []*Trait
+			if data, err = NewTraitsFromFile(dir, file); err == nil {
+				NodesToHashesByID(srcData.dataHashes, data...)
+				Traverse(func(t *Trait) bool {
+					NodesToHashesByID(srcData.dataHashes, t.Modifiers...)
+					return false
+				}, false, false, data...)
+			}
+		case TraitModifiersExt:
+			var data []*TraitModifier
+			if data, err = NewTraitModifiersFromFile(dir, file); err == nil {
+				NodesToHashesByID(srcData.dataHashes, data...)
+			}
+		case SkillsExt:
+			var data []*Skill
+			if data, err = NewSkillsFromFile(dir, file); err == nil {
+				NodesToHashesByID(srcData.dataHashes, data...)
+			}
+		case SpellsExt:
+			var data []*Spell
+			if data, err = NewSpellsFromFile(dir, file); err == nil {
+				NodesToHashesByID(srcData.dataHashes, data...)
+			}
+		case EquipmentExt:
+			var data []*Equipment
+			if data, err = NewEquipmentFromFile(dir, file); err == nil {
+				NodesToHashesByID(srcData.dataHashes, data...)
+				Traverse(func(e *Equipment) bool {
+					NodesToHashesByID(srcData.dataHashes, e.Modifiers...)
+					return false
+				}, false, false, data...)
+			}
+		case EquipmentModifiersExt:
+			var data []*EquipmentModifier
+			if data, err = NewEquipmentModifiersFromFile(dir, file); err == nil {
+				NodesToHashesByID(srcData.dataHashes, data...)
+			}
+		case NotesExt:
+			var data []*Note
+			if data, err = NewNotesFromFile(dir, file); err == nil {
+				NodesToHashesByID(srcData.dataHashes, data...)
+			}
+		}
+		sm.libHashes[libFile] = srcData
 	}
 }
 
 // Match returns the source state of the given data.
-func (sm *SrcMatcher) Match(data SrcProvider) (srcstate.Value, any) {
+func (sm *SrcMatcher) Match(data SrcProvider) (state srcstate.Value, match any) {
 	src := data.GetSource()
 	if src.ShouldOmit() {
 		return srcstate.Custom, nil

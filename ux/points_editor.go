@@ -254,18 +254,19 @@ func (e *pointsEditor) addEntry() {
 
 func (e *pointsEditor) removeEntry(rec *gurps.PointsRecord) {
 	for i, one := range e.current {
-		if one == rec {
-			e.current = slices.Delete(e.current, i, i+1)
-			i *= 5
-			for j := 4; j >= 0; j-- {
-				e.content.RemoveChildAtIndex(i + j)
-			}
-			e.content.Pack()
-			MarkForLayoutWithinDockable(e.content)
-			e.content.MarkForRedraw()
-			MarkModified(e.content)
-			break
+		if one != rec {
+			continue
 		}
+		e.current = slices.Delete(e.current, i, i+1)
+		i *= 5
+		for j := 4; j >= 0; j-- {
+			e.content.RemoveChildAtIndex(i + j)
+		}
+		e.content.Pack()
+		MarkForLayoutWithinDockable(e.content)
+		e.content.MarkForRedraw()
+		MarkModified(e.content)
+		break
 	}
 }
 

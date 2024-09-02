@@ -353,7 +353,7 @@ func (s *Server) updateFieldText(entity *webEntity, update *sheetUpdate) error {
 func (s *Server) updateFieldBinary(entity *webEntity, update *sheetUpdate) error {
 	switch update.Key {
 	case "Portrait":
-		if len(update.Data) == 0 {
+		if update.Data == "" {
 			return errs.New("no data")
 		}
 		data, err := base64.StdEncoding.DecodeString(update.Data)
