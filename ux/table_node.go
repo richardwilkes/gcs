@@ -24,10 +24,9 @@ import (
 	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
-	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
-const invertColorsMarker = "invert"
+const noInvertColorsMarker = "no_invert"
 
 var _ unison.TableRowData[*Node[*gurps.Trait]] = &Node[*gurps.Trait]{}
 
@@ -171,14 +170,14 @@ func applyInkRecursively(panel *unison.Panel, foreground, background unison.Ink)
 		return
 	case *unison.Label:
 		if part.OnBackgroundInk != foreground {
-			if _, exists := part.ClientData()[invertColorsMarker]; !exists {
+			if _, exists := part.ClientData()[noInvertColorsMarker]; !exists {
 				part.OnBackgroundInk = foreground
 				part.SetTitle(part.String())
 			}
 		}
 	case *unison.Tag:
 		if part.OnBackgroundInk != background || part.BackgroundInk != foreground {
-			if _, exists := part.ClientData()[invertColorsMarker]; !exists {
+			if _, exists := part.ClientData()[noInvertColorsMarker]; !exists {
 				part.BackgroundInk = foreground
 				part.OnBackgroundInk = background
 				part.SetTitle(part.Text.String())
@@ -303,47 +302,33 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 	}
 	tooltip := c.Tooltip
 	if c.UnsatisfiedReason != "" {
-		label := unison.NewLabel()
-		label.Font = n.secondaryFieldFont()
-		height := label.Font.LineHeight()
-		label.Drawable = &unison.DrawableSVG{
+		tag := unison.NewTag()
+		tag.BackgroundInk = unison.ThemeError
+		tag.OnBackgroundInk = unison.ThemeOnError
+		tag.Font = n.secondaryFieldFont()
+		height := tag.Font.LineHeight() - 2
+		tag.Drawable = &unison.DrawableSVG{
 			SVG:  unison.TriangleExclamationSVG,
 			Size: unison.NewSize(height, height),
 		}
-		label.HAlign = c.Alignment
-		label.VAlign = align.Middle
-		label.ClientData()[invertColorsMarker] = true
-		label.OnBackgroundInk = unison.ThemeOnError
-		label.SetTitle(i18n.Text("Unsatisfied prerequisite(s)"))
-		label.SetBorder(unison.NewEmptyBorder(unison.Insets{
-			Left:  4,
-			Right: 4,
-		}))
-		label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-			gc.DrawRect(rect, unison.ThemeError.Paint(gc, rect, paintstyle.Fill))
-			label.DefaultDraw(gc, rect)
-		}
-		p.AddChild(label)
+		tag.SetTitle(i18n.Text("Unsatisfied prerequisite(s)"))
+		tag.ClientData()[noInvertColorsMarker] = true
+		p.AddChild(tag)
 		tooltip = c.UnsatisfiedReason
 	}
 	if c.TemplateInfo != "" {
-		label := unison.NewLabel()
-		label.Font = n.secondaryFieldFont()
-		height := label.Font.LineHeight()
-		label.Drawable = &unison.DrawableSVG{
+		tag := unison.NewTag()
+		tag.BackgroundInk = foreground
+		tag.OnBackgroundInk = background
+		tag.Font = n.secondaryFieldFont()
+		height := tag.Font.LineHeight() - 2
+		tag.Drawable = &unison.DrawableSVG{
 			SVG:  svg.GCSTemplate,
 			Size: unison.NewSize(height, height),
 		}
-		label.HAlign = c.Alignment
-		label.VAlign = align.Middle
-		label.ClientData()[invertColorsMarker] = true
-		label.OnBackgroundInk = unison.ThemeOnFocus
-		label.SetTitle(c.TemplateInfo)
-		label.SetBorder(unison.NewEmptyBorder(unison.Insets{
-			Left:  4,
-			Right: 4,
-		}))
-		p.AddChild(label)
+		tag.SetTitle(c.TemplateInfo)
+		tag.ClientData()[noInvertColorsMarker] = true
+		p.AddChild(tag)
 	}
 	if tooltip != "" {
 		p.Tooltip = newWrappedTooltip(tooltip)
