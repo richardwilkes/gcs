@@ -82,7 +82,7 @@ func Start(errorCallback func(error)) {
 
 	site = s
 	s.server.WebServer.Handler = s
-	s.server.StartedChan = make(chan any, 1)
+	s.server.StartedChan = make(chan struct{}, 1)
 	go func() {
 		<-s.server.StartedChan
 		state.Set(state.Running)
