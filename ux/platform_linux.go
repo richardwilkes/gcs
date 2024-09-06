@@ -98,7 +98,7 @@ func installDesktopIcons() error {
 		return errs.Wrap(err)
 	}
 	for i := range gurps.KnownFileTypes {
-		if fi := &gurps.KnownFileTypes[i]; fi.IsGCSData {
+		if fi := gurps.KnownFileTypes[i]; fi.IsGCSData {
 			var overlay image.Image
 			overlay, err = svg.CreateImageFromSVG(fi.SVG, 128)
 			if err != nil {
@@ -149,7 +149,7 @@ func installMimeInfo() error {
 	var buffer bytes.Buffer
 	buffer.WriteString("<?xml version='1.0' encoding='UTF-8'?>\n<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>\n")
 	for i := range gurps.KnownFileTypes {
-		if fi := &gurps.KnownFileTypes[i]; fi.IsGCSData {
+		if fi := gurps.KnownFileTypes[i]; fi.IsGCSData {
 			fmt.Fprintf(&buffer, "  <mime-type type=\"%s\">\n", fi.MimeTypes[0])
 			fmt.Fprintf(&buffer, "    <comment>%s</comment>\n", fi.Name)
 			for _, mimeType := range fi.MimeTypes[1:] {

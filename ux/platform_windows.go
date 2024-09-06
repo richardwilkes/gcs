@@ -65,7 +65,7 @@ func configureRegistry() error {
 		return errs.Wrap(err)
 	}
 	for i := range gurps.KnownFileTypes {
-		if fi := &gurps.KnownFileTypes[i]; fi.IsGCSData {
+		if fi := gurps.KnownFileTypes[i]; fi.IsGCSData {
 			// Create the doc icon
 			var overlay image.Image
 			if overlay, err = svg.CreateImageFromSVG(fi.SVG, 128); err != nil {
