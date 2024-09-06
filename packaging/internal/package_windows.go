@@ -113,7 +113,7 @@ func addWindowsIcon(rs *winres.ResourceSet) error {
 		return errs.Wrap(err)
 	}
 	for i := range gurps.KnownFileTypes {
-		fi := &gurps.KnownFileTypes[i]
+		fi := gurps.KnownFileTypes[i]
 		if !fi.IsGCSData {
 			continue
 		}
