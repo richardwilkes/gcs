@@ -23,13 +23,14 @@ import (
 	"github.com/richardwilkes/toolbox/xio"
 )
 
-func startHandoffService(pathsChan chan<- []string, paths []string) {
+func startHandoffService(readyChan chan struct{}, pathsChan chan<- []string, paths []string) {
 	const address = "127.0.0.1:13322"
 	var pathsBuffer []byte
 	now := time.Now()
 	for time.Since(now) < 10*time.Second {
 		// First, try to establish our port and become the primary GCS instance
 		if listener, err := net.Listen("tcp4", address); err == nil {
+			go waitForReady(readyChan)
 			go acceptHandoff(listener, pathsChan)
 			return
 		}
@@ -58,27 +59,57 @@ func handoff(conn net.Conn, pathsBuffer []byte) bool {
 	defer xio.CloseIgnoringErrors(conn)
 	buffer := make([]byte, len(cmdline.AppIdentifier))
 	if err := conn.SetDeadline(time.Now().Add(time.Second)); err != nil {
+		errs.Log(err)
 		return false
 	}
-	if n, err := conn.Read(buffer); err != nil || n != len(buffer) || !bytes.Equal(buffer, []byte(cmdline.AppIdentifier)) {
+	n, err := conn.Read(buffer)
+	if err != nil {
+		errs.Log(err)
+		return false
+	}
+	if n != len(buffer) || !bytes.Equal(buffer, []byte(cmdline.AppIdentifier)) {
+		errs.Log(errs.New("unexpected app identifier"))
 		return false
 	}
 	buffer = make([]byte, 5)
 	buffer[0] = 22
 	binary.LittleEndian.PutUint32(buffer[1:], uint32(len(pathsBuffer))) //nolint:gosec // No, this won't overflow
-	if n, err := conn.Write(buffer); err != nil || n != len(buffer) {
+	n, err = conn.Write(buffer)
+	if err != nil {
+		errs.Log(err)
 		return false
 	}
-	if n, err := conn.Write(pathsBuffer); err != nil || n != len(pathsBuffer) {
+	if n != len(buffer) {
+		errs.Log(errs.Newf("unexpected value for n: %d, len(buffer): %d", n, len(buffer)))
+		return false
+	}
+	if n, err = conn.Write(pathsBuffer); err != nil {
+		errs.Log(err)
+		return false
+	}
+	if n != len(pathsBuffer) {
+		errs.Log(errs.Newf("unexpected value for n: %d, len(pathsBuffer): %d", n, len(pathsBuffer)))
 		return false
 	}
 	return true
+}
+
+func waitForReady(readyChan <-chan struct{}) {
+	select {
+	case <-readyChan:
+	case <-time.After(15 * time.Second):
+		// This is here to try and ensure GCS doesn't hang around in the background if something goes wrong at startup.
+		// This has only ever been an issue on Windows, and I'm not sure this will actually help, but trying it anyway.
+		errs.Log(errs.New("timed out waiting for app to become ready"))
+		atexit.Exit(1)
+	}
 }
 
 func acceptHandoff(listener net.Listener, pathsChan chan<- []string) {
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
+			errs.Log(err)
 			break
 		}
 		go processHandoff(conn, pathsChan)
@@ -88,39 +119,49 @@ func acceptHandoff(listener net.Listener, pathsChan chan<- []string) {
 func processHandoff(conn net.Conn, pathsChan chan<- []string) {
 	defer xio.CloseIgnoringErrors(conn)
 	if err := conn.SetDeadline(time.Now().Add(time.Second)); err != nil {
+		errs.Log(err)
 		return
 	}
 	if _, err := conn.Write([]byte(cmdline.AppIdentifier)); err != nil {
+		errs.Log(err)
 		return
 	}
 	var single [1]byte
 	n, err := conn.Read(single[:])
 	if err != nil {
+		errs.Log(err)
 		return
 	}
 	if n != 1 {
+		errs.Log(errs.Newf("unexpected value for n: %d", n))
 		return
 	}
 	if single[0] != 22 {
+		errs.Log(errs.Newf("unexpected value for single[0]: %d", single[0]))
 		return
 	}
 	var sizeBuffer [4]byte
 	if n, err = conn.Read(sizeBuffer[:]); err != nil {
+		errs.Log(err)
 		return
 	}
 	if n != 4 {
+		errs.Log(errs.Newf("unexpected value for n: %d", n))
 		return
 	}
 	size := int(binary.LittleEndian.Uint32(sizeBuffer[:]))
 	buffer := make([]byte, size)
 	if n, err = conn.Read(buffer); err != nil {
+		errs.Log(err)
 		return
 	}
 	if n != size {
+		errs.Log(errs.Newf("unexpected value for n: %d, size: %d", n, size))
 		return
 	}
 	var paths []string
 	if err = json.Unmarshal(buffer, &paths); err != nil {
+		errs.Log(err)
 		return
 	}
 	pathsChan <- paths

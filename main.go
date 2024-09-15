@@ -95,12 +95,13 @@ func main() {
 		server.Start(nil)
 		select {}
 	default:
-		ux.StartServer = server.Start
-		ux.StopServer = server.Stop
-		if settings.WebServer.Enabled {
-			server.Start(nil)
-		}
-		ux.Start(fileList) // Never returns
+		ux.Start(fileList, func() {
+			ux.StartServer = server.Start
+			ux.StopServer = server.Stop
+			if gurps.GlobalSettings().WebServer.Enabled {
+				server.Start(nil)
+			}
+		}) // Never returns
 	}
 	atexit.Exit(0)
 }

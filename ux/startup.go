@@ -25,9 +25,10 @@ import (
 var appIconBytes []byte
 
 // Start the UI.
-func Start(files []string) {
+func Start(files []string, afterStartup func()) {
+	readyChan := make(chan struct{})
 	pathsChan := make(chan []string, 32)
-	startHandoffService(pathsChan, files)
+	startHandoffService(readyChan, pathsChan, files)
 	libs := gurps.GlobalSettings().LibrarySet
 	go libs.PerformUpdateChecks()
 	unison.Start(
@@ -53,12 +54,17 @@ func Start(files []string) {
 				}
 			}()
 			unison.InvokeTask(performPlatformLateStartup)
+			unison.InvokeTask(func() {
+				close(readyChan)
+				if afterStartup != nil {
+					afterStartup()
+				}
+			})
 		}),
 		unison.OpenFilesCallback(OpenFiles),
 		unison.AllowQuitCallback(func() bool {
 			for _, wnd := range unison.Windows() {
-				wnd.AttemptClose()
-				if wnd.IsValid() {
+				if !wnd.AttemptClose() || wnd.IsValid() {
 					return false
 				}
 			}
