@@ -13,6 +13,7 @@ import (
 	"bytes"
 	"cmp"
 	"context"
+	"hash"
 	"io/fs"
 	"slices"
 
@@ -20,8 +21,10 @@ import (
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/fatal"
-	"github.com/richardwilkes/toolbox/xmath/crc"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
+
+var _ Hashable = &AttributeDefs{}
 
 // AttributeDefs holds a set of AttributeDef objects.
 type AttributeDefs struct {
@@ -152,13 +155,12 @@ func (a *AttributeDefs) List(omitSeparators bool) []*AttributeDef {
 	return list
 }
 
-// CRC64 calculates a CRC-64 for this data.
-func (a *AttributeDefs) CRC64() uint64 {
-	c := crc.Number(0, len(a.Set))
+// Hash writes this object's contents into the hasher.
+func (a *AttributeDefs) Hash(h hash.Hash) {
+	hashhelper.Num64(h, len(a.Set))
 	for _, one := range a.List(false) {
-		c = one.crc64(c)
+		one.Hash(h)
 	}
-	return c
 }
 
 // ResetTargetKeyPrefixes assigns new key prefixes for all data within these AttributeDefs.

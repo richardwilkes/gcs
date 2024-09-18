@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"encoding/binary"
 	"fmt"
 	"hash"
 
@@ -19,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
 
 var _ Prereq = &EquippedEquipmentPrereq{}
@@ -90,9 +90,10 @@ func (p *EquippedEquipmentPrereq) Satisfied(entity *Entity, exclude any, tooltip
 // Hash writes this object's contents into the hasher.
 func (p *EquippedEquipmentPrereq) Hash(h hash.Hash) {
 	if p == nil {
+		hashhelper.Num8(h, uint8(255))
 		return
 	}
-	_ = binary.Write(h, binary.LittleEndian, p.Type)
+	hashhelper.Num8(h, p.Type)
 	p.NameCriteria.Hash(h)
 	p.TagsCriteria.Hash(h)
 }

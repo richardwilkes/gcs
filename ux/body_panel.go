@@ -31,7 +31,7 @@ type BodyPanel struct {
 	titledBorder  *TitledBorder
 	row           []unison.Paneler
 	sepLayoutData []*unison.FlexLayoutData
-	crc           uint64
+	hash          uint64
 }
 
 // NewBodyPanel creates a new body panel.
@@ -51,7 +51,7 @@ func NewBodyPanel(entity *gurps.Entity, targetMgr *TargetMgr) *BodyPanel {
 		VSpan:  3,
 	})
 	locations := gurps.SheetSettingsFor(entity).BodyType
-	p.crc = locations.CRC64()
+	p.hash = gurps.Hash64(locations)
 	p.titledBorder = &TitledBorder{Title: locations.Name}
 	p.SetBorder(unison.NewCompoundBorder(p.titledBorder, unison.NewEmptyBorder(unison.Insets{
 		Left:   2,
@@ -210,8 +210,8 @@ func (p *BodyPanel) addSeparator() {
 // Sync the panel to the current data.
 func (p *BodyPanel) Sync() {
 	locations := gurps.SheetSettingsFor(p.entity).BodyType
-	if crc := locations.CRC64(); crc != p.crc {
-		p.crc = crc
+	if hash := gurps.Hash64(locations); hash != p.hash {
+		p.hash = hash
 		p.titledBorder.Title = locations.Name
 		p.addContent(locations)
 		MarkForLayoutWithinDockable(p)

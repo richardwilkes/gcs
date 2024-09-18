@@ -11,14 +11,17 @@ package gurps
 
 import (
 	"bytes"
+	"hash"
 	"slices"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/threshold"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/eval"
-	"github.com/richardwilkes/toolbox/xmath/crc"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
+
+var _ Hashable = &PoolThreshold{}
 
 // PoolThreshold holds a point within an attribute pool where changes in state occur.
 type PoolThreshold struct {
@@ -137,15 +140,15 @@ func (p *PoolThreshold) RemoveOp(op threshold.Op) {
 	}
 }
 
-func (p *PoolThreshold) crc64(c uint64) uint64 {
-	c = crc.String(c, p.State)
-	c = crc.String(c, p.Expression)
-	c = crc.String(c, p.Explanation)
-	c = crc.Number(c, len(p.Ops))
+// Hash writes this object's contents into the hasher.
+func (p *PoolThreshold) Hash(h hash.Hash) {
+	hashhelper.String(h, p.State)
+	hashhelper.String(h, p.Expression)
+	hashhelper.String(h, p.Explanation)
+	hashhelper.Num64(h, len(p.Ops))
 	for _, one := range p.Ops {
-		c = crc.Byte(c, byte(one))
+		hashhelper.Num8(h, one)
 	}
-	return c
 }
 
 func (p *PoolThreshold) String() string {

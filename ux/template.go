@@ -49,7 +49,7 @@ type Template struct {
 	toolbar           *unison.Panel
 	scroll            *unison.ScrollPanel
 	template          *gurps.Template
-	crc               uint64
+	hash              uint64
 	content           *templateContent
 	Traits            *PageList[*gurps.Trait]
 	Skills            *PageList[*gurps.Skill]
@@ -91,7 +91,7 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 		scroll:            unison.NewScrollPanel(),
 		template:          template,
 		scale:             gurps.GlobalSettings().General.InitialSheetUIScale,
-		crc:               template.CRC64(),
+		hash:              gurps.Hash64(template),
 		needsSaveAsPrompt: true,
 	}
 	t.Self = t
@@ -283,7 +283,7 @@ func (t *Template) newSheetFromTemplate(_ any) {
 	DisplayNewDockable(sheet)
 	if t.applyTemplateToSheet(sheet, true) {
 		sheet.undoMgr.Clear()
-		sheet.crc = 0
+		sheet.hash = 0
 	}
 	sheet.SetBackingFilePath(e.Profile.Name + gurps.SheetExt)
 }
@@ -694,7 +694,7 @@ func (t *Template) SetBackingFilePath(p string) {
 
 // Modified implements workspace.FileBackedDockable
 func (t *Template) Modified() bool {
-	return t.crc != t.template.CRC64()
+	return t.hash != gurps.Hash64(t.template)
 }
 
 // MarkModified implements widget.ModifiableRoot.
@@ -736,11 +736,11 @@ func (t *Template) save(forceSaveAs bool) bool {
 	success := false
 	if forceSaveAs || t.needsSaveAsPrompt {
 		success = SaveDockableAs(t, gurps.TemplatesExt, t.template.Save, func(path string) {
-			t.crc = t.template.CRC64()
+			t.hash = gurps.Hash64(t.template)
 			t.path = path
 		})
 	} else {
-		success = SaveDockable(t, t.template.Save, func() { t.crc = t.template.CRC64() })
+		success = SaveDockable(t, t.template.Save, func() { t.hash = gurps.Hash64(t.template) })
 	}
 	if success {
 		t.needsSaveAsPrompt = false

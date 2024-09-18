@@ -33,7 +33,7 @@ type attributeSettingsDockable struct {
 	targetMgr       *TargetMgr
 	undoMgr         *unison.UndoManager
 	defs            *gurps.AttributeDefs
-	originalCRC     uint64
+	originalHash    uint64
 	toolbar         *unison.Panel
 	content         *unison.Panel
 	applyButton     *unison.Button
@@ -76,7 +76,7 @@ func ShowAttributeSettings(owner EntityPanel) {
 	}
 	d.TabIcon = svg.Attributes
 	d.defs.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
-	d.originalCRC = d.defs.CRC64()
+	d.originalHash = gurps.Hash64(d.defs)
 	d.Extensions = []string{gurps.AttributesExt, gurps.AttributesExtAlt1, gurps.AttributesExtAlt2}
 	d.undoMgr = unison.NewUndoManager(100, func(err error) { errs.Log(err) })
 	d.Loader = d.load
@@ -92,14 +92,14 @@ func (d *attributeSettingsDockable) UndoManager() *unison.UndoManager {
 }
 
 func (d *attributeSettingsDockable) modified() bool {
-	modified := d.originalCRC != d.defs.CRC64()
+	modified := d.originalHash != gurps.Hash64(d.defs)
 	d.applyButton.SetEnabled(modified)
 	d.cancelButton.SetEnabled(modified)
 	return modified
 }
 
 func (d *attributeSettingsDockable) willClose() bool {
-	if d.promptForSave && d.originalCRC != d.defs.CRC64() {
+	if d.promptForSave && d.originalHash != gurps.Hash64(d.defs) {
 		switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Apply changes made to\n%s?"), d.Title()), "") {
 		case unison.ModalResponseDiscard:
 		case unison.ModalResponseOK:

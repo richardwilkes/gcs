@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"encoding/binary"
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -19,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/spellmatch"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
 
 var _ Bonus = &SpellPointBonus{}
@@ -81,10 +81,11 @@ func (s *SpellPointBonus) MatchForType(replacements map[string]string, name, pow
 // Hash writes this object's contents into the hasher.
 func (s *SpellPointBonus) Hash(h hash.Hash) {
 	if s == nil {
+		hashhelper.Num8(h, uint8(255))
 		return
 	}
-	_ = binary.Write(h, binary.LittleEndian, s.Type)
-	_ = binary.Write(h, binary.LittleEndian, s.SpellMatchType)
+	hashhelper.Num8(h, s.Type)
+	hashhelper.Num8(h, s.SpellMatchType)
 	s.NameCriteria.Hash(h)
 	s.TagsCriteria.Hash(h)
 	s.LeveledAmount.Hash(h)

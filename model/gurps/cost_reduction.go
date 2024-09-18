@@ -10,11 +10,11 @@
 package gurps
 
 import (
-	"encoding/binary"
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
 
 var _ Feature = &CostReduction{}
@@ -53,9 +53,10 @@ func (c *CostReduction) FillWithNameableKeys(_, _ map[string]string) {
 // Hash writes this object's contents into the hasher.
 func (c *CostReduction) Hash(h hash.Hash) {
 	if c == nil {
+		hashhelper.Num8(h, uint8(255))
 		return
 	}
-	_ = binary.Write(h, binary.LittleEndian, c.Type)
-	_, _ = h.Write([]byte(c.Attribute))
-	_ = binary.Write(h, binary.LittleEndian, c.Percentage)
+	hashhelper.Num8(h, c.Type)
+	hashhelper.String(h, c.Attribute)
+	hashhelper.Num64(h, c.Percentage)
 }

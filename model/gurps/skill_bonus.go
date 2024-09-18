@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"encoding/binary"
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -19,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/skillsel"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
 
 var _ Bonus = &SkillBonus{}
@@ -79,10 +79,11 @@ func (s *SkillBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 // Hash writes this object's contents into the hasher.
 func (s *SkillBonus) Hash(h hash.Hash) {
 	if s == nil {
+		hashhelper.Num8(h, uint8(255))
 		return
 	}
-	_ = binary.Write(h, binary.LittleEndian, s.Type)
-	_ = binary.Write(h, binary.LittleEndian, s.SelectionType)
+	hashhelper.Num8(h, s.Type)
+	hashhelper.Num8(h, s.SelectionType)
 	s.NameCriteria.Hash(h)
 	s.SpecializationCriteria.Hash(h)
 	s.TagsCriteria.Hash(h)

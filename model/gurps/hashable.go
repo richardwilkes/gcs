@@ -2,9 +2,9 @@ package gurps
 
 import (
 	"hash"
-	"hash/fnv"
 
 	"github.com/richardwilkes/toolbox/tid"
+	"github.com/zeebo/xxh3"
 )
 
 // Hashable is an object that can be hashed.
@@ -20,7 +20,7 @@ type HashAndData struct {
 
 // Hash64 returns a 64-bit hash of the Hashable object.
 func Hash64(in Hashable) uint64 {
-	h := fnv.New64()
+	h := xxh3.New()
 	in.Hash(h)
 	return h.Sum64()
 }

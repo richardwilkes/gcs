@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"encoding/binary"
 	"hash"
 	"strings"
 
@@ -19,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
 
 var (
@@ -76,11 +76,12 @@ func (wa *WeaponAccuracy) UnmarshalJSON(data []byte) error {
 // Hash writes this object's contents into the hasher.
 func (wa WeaponAccuracy) Hash(h hash.Hash) {
 	if wa.ShouldOmit() {
+		hashhelper.Num8(h, uint8(255))
 		return
 	}
-	_ = binary.Write(h, binary.LittleEndian, wa.Base)
-	_ = binary.Write(h, binary.LittleEndian, wa.Scope)
-	_ = binary.Write(h, binary.LittleEndian, wa.Jet)
+	hashhelper.Num64(h, wa.Base)
+	hashhelper.Num64(h, wa.Scope)
+	hashhelper.Bool(h, wa.Jet)
 }
 
 // Resolve any bonuses that apply.

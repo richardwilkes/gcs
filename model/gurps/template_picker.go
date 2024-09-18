@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"encoding/binary"
 	"fmt"
 	"hash"
 
@@ -19,6 +18,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/picker"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
 
 var _ json.Omitter = &TemplatePicker{}
@@ -70,8 +70,9 @@ func (t *TemplatePicker) Description() string {
 // Hash writes this object's contents into the hasher.
 func (t *TemplatePicker) Hash(h hash.Hash) {
 	if t.ShouldOmit() {
+		hashhelper.Num8(h, uint8(255))
 		return
 	}
-	_ = binary.Write(h, binary.LittleEndian, t.Type)
+	hashhelper.Num8(h, t.Type)
 	t.Qualifier.Hash(h)
 }

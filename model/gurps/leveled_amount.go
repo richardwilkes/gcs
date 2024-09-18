@@ -10,12 +10,12 @@
 package gurps
 
 import (
-	"encoding/binary"
 	"fmt"
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
 
 // LeveledAmount holds an amount that can be either a fixed amount, or an amount per level.
@@ -55,8 +55,9 @@ func (l *LeveledAmount) Format(asPercentage bool) string {
 // Hash writes this object's contents into the hasher.
 func (l *LeveledAmount) Hash(h hash.Hash) {
 	if l == nil {
+		hashhelper.Num8(h, uint8(255))
 		return
 	}
-	_ = binary.Write(h, binary.LittleEndian, l.Amount)
-	_ = binary.Write(h, binary.LittleEndian, l.PerLevel)
+	hashhelper.Num64(h, l.Amount)
+	hashhelper.Bool(h, l.PerLevel)
 }

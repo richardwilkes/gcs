@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"encoding/binary"
 	"hash"
 	"strings"
 
@@ -18,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
 
 var _ Prereq = &PrereqList{}
@@ -144,11 +144,13 @@ func (p *PrereqList) Satisfied(entity *Entity, exclude any, buffer *xio.ByteBuff
 // Hash writes this object's contents into the hasher.
 func (p *PrereqList) Hash(h hash.Hash) {
 	if p.ShouldOmit() {
+		hashhelper.Num8(h, uint8(255))
 		return
 	}
-	_ = binary.Write(h, binary.LittleEndian, p.Type)
-	_ = binary.Write(h, binary.LittleEndian, p.All)
+	hashhelper.Num8(h, p.Type)
+	hashhelper.Bool(h, p.All)
 	p.WhenTL.Hash(h)
+	hashhelper.Num64(h, len(p.Prereqs))
 	for _, one := range p.Prereqs {
 		one.Hash(h)
 	}

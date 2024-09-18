@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"encoding/binary"
 	"hash"
 	"slices"
 	"strings"
@@ -20,6 +19,7 @@ import (
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
 
 var _ Bonus = &DRBonus{}
@@ -133,12 +133,14 @@ func (d *DRBonus) UnmarshalJSON(data []byte) error {
 // Hash writes this object's contents into the hasher.
 func (d *DRBonus) Hash(h hash.Hash) {
 	if d == nil {
+		hashhelper.Num8(h, uint8(255))
 		return
 	}
-	_ = binary.Write(h, binary.LittleEndian, d.Type)
+	hashhelper.Num8(h, d.Type)
+	hashhelper.Num64(h, len(d.Locations))
 	for _, loc := range d.Locations {
-		_, _ = h.Write([]byte(loc))
+		hashhelper.String(h, loc)
 	}
-	_, _ = h.Write([]byte(d.Specialization))
+	hashhelper.String(h, d.Specialization)
 	d.LeveledAmount.Hash(h)
 }

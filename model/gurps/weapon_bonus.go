@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"encoding/binary"
 	"fmt"
 	"hash"
 	"strings"
@@ -23,6 +22,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
 
 var _ Bonus = &WeaponBonus{}
@@ -280,13 +280,14 @@ func (w *WeaponBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 // Hash writes this object's contents into the hasher.
 func (w *WeaponBonus) Hash(h hash.Hash) {
 	if w == nil {
+		hashhelper.Num8(h, uint8(255))
 		return
 	}
-	_ = binary.Write(h, binary.LittleEndian, w.Type)
-	_ = binary.Write(h, binary.LittleEndian, w.Percent)
-	_ = binary.Write(h, binary.LittleEndian, w.SelectionType)
-	_ = binary.Write(h, binary.LittleEndian, w.SwitchType)
-	_ = binary.Write(h, binary.LittleEndian, w.SwitchTypeValue)
+	hashhelper.Num8(h, w.Type)
+	hashhelper.Bool(h, w.Percent)
+	hashhelper.Num8(h, w.SelectionType)
+	hashhelper.Num8(h, w.SwitchType)
+	hashhelper.Bool(h, w.SwitchTypeValue)
 	w.NameCriteria.Hash(h)
 	w.SpecializationCriteria.Hash(h)
 	w.RelativeLevelCriteria.Hash(h)

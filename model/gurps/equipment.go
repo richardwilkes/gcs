@@ -11,7 +11,6 @@ package gurps
 
 import (
 	"context"
-	"encoding/binary"
 	"fmt"
 	"hash"
 	"io/fs"
@@ -33,6 +32,7 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -806,26 +806,29 @@ func (e *Equipment) Hash(h hash.Hash) {
 }
 
 func (e *EquipmentSyncData) hash(h hash.Hash) {
-	_, _ = h.Write([]byte(e.Name))
-	_, _ = h.Write([]byte(e.PageRef))
-	_, _ = h.Write([]byte(e.PageRefHighlight))
-	_, _ = h.Write([]byte(e.LocalNotes))
-	_, _ = h.Write([]byte(e.TechLevel))
-	_, _ = h.Write([]byte(e.LegalityClass))
+	hashhelper.String(h, e.Name)
+	hashhelper.String(h, e.PageRef)
+	hashhelper.String(h, e.PageRefHighlight)
+	hashhelper.String(h, e.LocalNotes)
+	hashhelper.String(h, e.TechLevel)
+	hashhelper.String(h, e.LegalityClass)
+	hashhelper.Num64(h, len(e.Tags))
 	for _, tag := range e.Tags {
-		_, _ = h.Write([]byte(tag))
+		hashhelper.String(h, tag)
 	}
-	_ = binary.Write(h, binary.LittleEndian, e.Value)
-	_ = binary.Write(h, binary.LittleEndian, e.Weight)
-	_ = binary.Write(h, binary.LittleEndian, int64(e.MaxUses))
+	hashhelper.Num64(h, e.Value)
+	hashhelper.Num64(h, e.Weight)
+	hashhelper.Num64(h, e.MaxUses)
 	e.Prereq.Hash(h)
+	hashhelper.Num64(h, len(e.Weapons))
 	for _, weapon := range e.Weapons {
 		weapon.Hash(h)
 	}
+	hashhelper.Num64(h, len(e.Features))
 	for _, feature := range e.Features {
 		feature.Hash(h)
 	}
-	_ = binary.Write(h, binary.LittleEndian, e.WeightIgnoredForSkills)
+	hashhelper.Bool(h, e.WeightIgnoredForSkills)
 }
 
 // CopyFrom implements node.EditorData.

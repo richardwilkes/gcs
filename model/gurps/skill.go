@@ -11,7 +11,6 @@ package gurps
 
 import (
 	"context"
-	"encoding/binary"
 	"fmt"
 	"hash"
 	"io/fs"
@@ -35,6 +34,7 @@ import (
 	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -1217,12 +1217,13 @@ func (s *Skill) Hash(h hash.Hash) {
 }
 
 func (s *SkillSyncData) hash(h hash.Hash) {
-	_, _ = h.Write([]byte(s.Name))
-	_, _ = h.Write([]byte(s.PageRef))
-	_, _ = h.Write([]byte(s.PageRefHighlight))
-	_, _ = h.Write([]byte(s.LocalNotes))
+	hashhelper.String(h, s.Name)
+	hashhelper.String(h, s.PageRef)
+	hashhelper.String(h, s.PageRefHighlight)
+	hashhelper.String(h, s.LocalNotes)
+	hashhelper.Num64(h, len(s.Tags))
 	for _, tag := range s.Tags {
-		_, _ = h.Write([]byte(tag))
+		hashhelper.String(h, tag)
 	}
 }
 
@@ -1231,22 +1232,29 @@ func (s *SkillContainerOnlySyncData) hash(h hash.Hash) {
 }
 
 func (s *SkillNonContainerOnlySyncData) hash(h hash.Hash) {
-	_, _ = h.Write([]byte(s.Specialization))
+	hashhelper.String(h, s.Specialization)
 	s.Difficulty.Hash(h)
-	_ = binary.Write(h, binary.LittleEndian, s.EncumbrancePenaltyMultiplier)
+	hashhelper.Num64(h, s.EncumbrancePenaltyMultiplier)
+	hashhelper.Num64(h, len(s.Defaults))
 	for _, one := range s.Defaults {
 		one.Hash(h)
 	}
 	if s.TechniqueDefault != nil {
 		s.TechniqueDefault.Hash(h)
+	} else {
+		hashhelper.Num8(h, uint8(255))
 	}
 	if s.TechniqueLimitModifier != nil {
-		_ = binary.Write(h, binary.LittleEndian, s.TechniqueLimitModifier)
+		hashhelper.Num64(h, *s.TechniqueLimitModifier)
+	} else {
+		hashhelper.Num8(h, uint8(255))
 	}
 	s.Prereq.Hash(h)
+	hashhelper.Num64(h, len(s.Weapons))
 	for _, weapon := range s.Weapons {
 		weapon.Hash(h)
 	}
+	hashhelper.Num64(h, len(s.Features))
 	for _, feature := range s.Features {
 		feature.Hash(h)
 	}

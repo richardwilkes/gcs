@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"encoding/binary"
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -20,6 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
 
 var _ Prereq = &SpellPrereq{}
@@ -157,11 +157,12 @@ func (p *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 // Hash writes this object's contents into the hasher.
 func (p *SpellPrereq) Hash(h hash.Hash) {
 	if p == nil {
+		hashhelper.Num8(h, uint8(255))
 		return
 	}
-	_ = binary.Write(h, binary.LittleEndian, p.Type)
-	_ = binary.Write(h, binary.LittleEndian, p.SubType)
-	_ = binary.Write(h, binary.LittleEndian, p.Has)
+	hashhelper.Num8(h, p.Type)
+	hashhelper.Num8(h, p.SubType)
+	hashhelper.Bool(h, p.Has)
 	p.QualifierCriteria.Hash(h)
 	p.QuantityCriteria.Hash(h)
 }

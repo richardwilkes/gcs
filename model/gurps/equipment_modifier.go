@@ -11,7 +11,6 @@ package gurps
 
 import (
 	"context"
-	"encoding/binary"
 	"hash"
 	"io/fs"
 	"maps"
@@ -33,6 +32,7 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -706,21 +706,23 @@ func (e *EquipmentModifier) Hash(h hash.Hash) {
 }
 
 func (e *EquipmentModifierSyncData) hash(h hash.Hash) {
-	_, _ = h.Write([]byte(e.Name))
-	_, _ = h.Write([]byte(e.PageRef))
-	_, _ = h.Write([]byte(e.PageRefHighlight))
-	_, _ = h.Write([]byte(e.LocalNotes))
+	hashhelper.String(h, e.Name)
+	hashhelper.String(h, e.PageRef)
+	hashhelper.String(h, e.PageRefHighlight)
+	hashhelper.String(h, e.LocalNotes)
+	hashhelper.Num64(h, len(e.Tags))
 	for _, tag := range e.Tags {
-		_, _ = h.Write([]byte(tag))
+		hashhelper.String(h, tag)
 	}
 }
 
 func (e *EquipmentModifierNonContainerSyncData) hash(h hash.Hash) {
-	_ = binary.Write(h, binary.LittleEndian, e.CostType)
-	_ = binary.Write(h, binary.LittleEndian, e.WeightType)
-	_, _ = h.Write([]byte(e.TechLevel))
-	_, _ = h.Write([]byte(e.CostAmount))
-	_, _ = h.Write([]byte(e.WeightAmount))
+	hashhelper.Num8(h, e.CostType)
+	hashhelper.Num8(h, e.WeightType)
+	hashhelper.String(h, e.TechLevel)
+	hashhelper.String(h, e.CostAmount)
+	hashhelper.String(h, e.WeightAmount)
+	hashhelper.Num64(h, len(e.Features))
 	for _, feature := range e.Features {
 		feature.Hash(h)
 	}

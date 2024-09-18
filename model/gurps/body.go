@@ -12,6 +12,7 @@ package gurps
 import (
 	"context"
 	"embed"
+	"hash"
 	"io/fs"
 	"slices"
 
@@ -21,8 +22,10 @@ import (
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/fatal"
 	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/toolbox/xmath/crc"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
+
+var _ Hashable = &Body{}
 
 const noNeedForRewrapVersion = 4
 
@@ -212,19 +215,14 @@ func (b *Body) LookupLocationByID(entity *Entity, idStr string) *HitLocation {
 	return b.locationLookup[idStr]
 }
 
-// CRC64 calculates a CRC-64 for this data.
-func (b *Body) CRC64() uint64 {
-	return b.crc64(0)
-}
-
-func (b *Body) crc64(c uint64) uint64 {
-	c = crc.String(c, b.Name)
-	c = crc.String(c, b.Roll.String())
-	c = crc.Number(c, len(b.Locations))
-	for _, loc := range b.Locations {
-		c = loc.crc64(c)
+// Hash writes this object's contents into the hasher.
+func (b *Body) Hash(h hash.Hash) {
+	hashhelper.String(h, b.Name)
+	b.Roll.Hash(h)
+	hashhelper.Num64(h, len(b.Locations))
+	for _, one := range b.Locations {
+		one.Hash(h)
 	}
-	return c
 }
 
 // ResetTargetKeyPrefixes assigns new key prefixes for all data within this Body.

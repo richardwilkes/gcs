@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"encoding/binary"
 	"hash"
 	"strings"
 
@@ -20,6 +19,7 @@ import (
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
 
 var (
@@ -89,14 +89,15 @@ func (ws *WeaponShots) UnmarshalJSON(data []byte) error {
 // Hash writes this object's contents into the hasher.
 func (ws WeaponShots) Hash(h hash.Hash) {
 	if ws.ShouldOmit() {
+		hashhelper.Num8(h, uint8(255))
 		return
 	}
-	_ = binary.Write(h, binary.LittleEndian, ws.Count)
-	_ = binary.Write(h, binary.LittleEndian, ws.InChamber)
-	_ = binary.Write(h, binary.LittleEndian, ws.Duration)
-	_ = binary.Write(h, binary.LittleEndian, ws.ReloadTime)
-	_ = binary.Write(h, binary.LittleEndian, ws.ReloadTimeIsPerShot)
-	_ = binary.Write(h, binary.LittleEndian, ws.Thrown)
+	hashhelper.Num64(h, ws.Count)
+	hashhelper.Num64(h, ws.InChamber)
+	hashhelper.Num64(h, ws.Duration)
+	hashhelper.Num64(h, ws.ReloadTime)
+	hashhelper.Bool(h, ws.ReloadTimeIsPerShot)
+	hashhelper.Bool(h, ws.Thrown)
 }
 
 // Resolve any bonuses that apply.

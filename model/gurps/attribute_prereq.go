@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"encoding/binary"
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/criteria"
@@ -18,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
 
 var _ Prereq = &AttributePrereq{}
@@ -92,11 +92,12 @@ func (p *AttributePrereq) Satisfied(entity *Entity, _ any, tooltip *xio.ByteBuff
 // Hash writes this object's contents into the hasher.
 func (p *AttributePrereq) Hash(h hash.Hash) {
 	if p == nil {
+		hashhelper.Num8(h, uint8(255))
 		return
 	}
-	_ = binary.Write(h, binary.LittleEndian, p.Type)
-	_ = binary.Write(h, binary.LittleEndian, p.Has)
-	_, _ = h.Write([]byte(p.CombinedWith))
+	hashhelper.Num8(h, p.Type)
+	hashhelper.Bool(h, p.Has)
+	hashhelper.String(h, p.CombinedWith)
 	p.QualifierCriteria.Hash(h)
-	_, _ = h.Write([]byte(p.Which))
+	hashhelper.String(h, p.Which)
 }

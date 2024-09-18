@@ -11,7 +11,6 @@ package gurps
 
 import (
 	"context"
-	"encoding/binary"
 	"fmt"
 	"hash"
 	"io/fs"
@@ -36,6 +35,7 @@ import (
 	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -1132,30 +1132,33 @@ func (s *Spell) Hash(h hash.Hash) {
 }
 
 func (s *SpellSyncData) hash(h hash.Hash) {
-	_, _ = h.Write([]byte(s.Name))
-	_, _ = h.Write([]byte(s.PageRef))
-	_, _ = h.Write([]byte(s.PageRefHighlight))
-	_, _ = h.Write([]byte(s.LocalNotes))
+	hashhelper.String(h, s.Name)
+	hashhelper.String(h, s.PageRef)
+	hashhelper.String(h, s.PageRefHighlight)
+	hashhelper.String(h, s.LocalNotes)
+	hashhelper.Num64(h, len(s.Tags))
 	for _, tag := range s.Tags {
-		_, _ = h.Write([]byte(tag))
+		hashhelper.String(h, tag)
 	}
 }
 
 func (s *SpellNonContainerOnlySyncData) hash(h hash.Hash) {
 	s.Difficulty.Hash(h)
+	hashhelper.Num64(h, len(s.College))
 	for _, college := range s.College {
-		_, _ = h.Write([]byte(college))
+		hashhelper.String(h, college)
 	}
-	_, _ = h.Write([]byte(s.PowerSource))
-	_, _ = h.Write([]byte(s.Class))
-	_, _ = h.Write([]byte(s.Resist))
-	_, _ = h.Write([]byte(s.CastingCost))
-	_, _ = h.Write([]byte(s.MaintenanceCost))
-	_, _ = h.Write([]byte(s.CastingTime))
-	_, _ = h.Write([]byte(s.Duration))
-	_, _ = h.Write([]byte(s.RitualSkillName))
-	_ = binary.Write(h, binary.LittleEndian, int64(s.RitualPrereqCount))
+	hashhelper.String(h, s.PowerSource)
+	hashhelper.String(h, s.Class)
+	hashhelper.String(h, s.Resist)
+	hashhelper.String(h, s.CastingCost)
+	hashhelper.String(h, s.MaintenanceCost)
+	hashhelper.String(h, s.CastingTime)
+	hashhelper.String(h, s.Duration)
+	hashhelper.String(h, s.RitualSkillName)
+	hashhelper.Num64(h, s.RitualPrereqCount)
 	s.Prereq.Hash(h)
+	hashhelper.Num64(h, len(s.Weapons))
 	for _, weapon := range s.Weapons {
 		weapon.Hash(h)
 	}

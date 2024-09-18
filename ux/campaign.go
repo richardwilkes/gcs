@@ -36,7 +36,7 @@ type Campaign struct {
 	scroll            *unison.ScrollPanel
 	content           *unison.Panel
 	campaign          *gurps.Campaign
-	crc               uint64
+	hash              uint64
 	scale             int
 	needsSaveAsPrompt bool
 }
@@ -58,7 +58,7 @@ func NewCampaign(filePath string, campaign *gurps.Campaign) *Campaign {
 		path:              filePath,
 		scroll:            unison.NewScrollPanel(),
 		campaign:          campaign,
-		crc:               campaign.CRC64(),
+		hash:              gurps.Hash64(campaign),
 		scale:             gurps.GlobalSettings().General.InitialEditorUIScale,
 		needsSaveAsPrompt: true,
 	}
@@ -144,7 +144,7 @@ func (c *Campaign) Tooltip() string {
 
 // Modified implements workspace.FileBackedDockable
 func (c *Campaign) Modified() bool {
-	return c.crc != c.campaign.CRC64()
+	return c.hash != gurps.Hash64(c.campaign)
 }
 
 // MayAttemptClose implements unison.TabCloser
@@ -186,11 +186,11 @@ func (c *Campaign) save(forceSaveAs bool) bool {
 	success := false
 	if forceSaveAs || c.needsSaveAsPrompt {
 		success = SaveDockableAs(c, gurps.CampaignExt, c.campaign.Save, func(path string) {
-			c.crc = c.campaign.CRC64()
+			c.hash = gurps.Hash64(c.campaign)
 			c.path = path
 		})
 	} else {
-		success = SaveDockable(c, c.campaign.Save, func() { c.crc = c.campaign.CRC64() })
+		success = SaveDockable(c, c.campaign.Save, func() { c.hash = gurps.Hash64(c.campaign) })
 	}
 	if success {
 		c.needsSaveAsPrompt = false

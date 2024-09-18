@@ -13,6 +13,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"hash"
 	"strings"
 	"time"
 
@@ -22,7 +23,6 @@ import (
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio/fs"
-	"github.com/richardwilkes/toolbox/xmath/crc"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/behavior"
@@ -36,6 +36,7 @@ var (
 	_ Rebuildable                = &TableDockable[*gurps.Trait]{}
 	_ unison.TabCloser           = &TableDockable[*gurps.Trait]{}
 	_ TagProvider                = &TableDockable[*gurps.Trait]{}
+	_ gurps.Hashable             = &TableDockable[*gurps.Trait]{}
 )
 
 // TableDockable holds the view for a file that contains a (potentially hierarchical) list of data.
@@ -55,7 +56,7 @@ type TableDockable[T gurps.NodeTypes] struct {
 	scroll            *unison.ScrollPanel
 	tableHeader       *unison.TableHeader[*Node[T]]
 	table             *unison.Table[*Node[T]]
-	crc               uint64
+	hash              uint64
 	scale             int
 	needsSaveAsPrompt bool
 }
@@ -159,7 +160,7 @@ func NewTableDockable[T gurps.NodeTypes](filePath, extension string, provider Ta
 				func(_ any) { d.provider.CreateItem(d, d.table, variant) })
 		}
 	}
-	d.crc = d.crc64()
+	d.hash = gurps.Hash64(d)
 	return d
 }
 
@@ -264,7 +265,7 @@ func (d *TableDockable[T]) SetBackingFilePath(p string) {
 
 // Modified implements workspace.FileBackedDockable
 func (d *TableDockable[T]) Modified() bool {
-	return d.crc != d.crc64()
+	return d.hash != gurps.Hash64(d)
 }
 
 // MarkModified implements widget.ModifiableRoot.
@@ -314,11 +315,11 @@ func (d *TableDockable[T]) save(forceSaveAs bool) bool {
 	success := false
 	if forceSaveAs || d.needsSaveAsPrompt {
 		success = SaveDockableAs(d, d.extension, d.saver, func(path string) {
-			d.crc = d.crc64()
+			d.hash = gurps.Hash64(d)
 			d.path = path
 		})
 	} else {
-		success = SaveDockable(d, d.saver, func() { d.crc = d.crc64() })
+		success = SaveDockable(d, d.saver, func() { d.hash = gurps.Hash64(d) })
 	}
 	if success {
 		d.needsSaveAsPrompt = false
@@ -365,7 +366,8 @@ func (d *TableDockable[T]) Rebuild(_ bool) {
 	d.scroll.SetPosition(h, v)
 }
 
-func (d *TableDockable[T]) crc64() uint64 {
+// Hash writes this object's contents into the hasher.
+func (d *TableDockable[T]) Hash(h hash.Hash) {
 	var buffer bytes.Buffer
 	rows := d.provider.RootRows()
 	data := make([]any, 0, len(rows))
@@ -373,9 +375,10 @@ func (d *TableDockable[T]) crc64() uint64 {
 		data = append(data, row.Data())
 	}
 	if err := jio.Save(context.Background(), &buffer, data); err != nil {
-		return 0
+		errs.Log(err)
+		return
 	}
-	return crc.Bytes(0, buffer.Bytes())
+	_, _ = h.Write(buffer.Bytes())
 }
 
 // AllTags returns all tags currently present in the data.

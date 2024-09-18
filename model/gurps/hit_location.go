@@ -12,6 +12,7 @@ package gurps
 import (
 	"bytes"
 	"fmt"
+	"hash"
 	"strconv"
 	"strings"
 
@@ -19,8 +20,10 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/crc"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
+
+var _ Hashable = &HitLocation{}
 
 // HitLocationData holds the Hitlocation data that gets written to disk.
 type HitLocationData struct {
@@ -220,19 +223,21 @@ func (h *HitLocation) updateRollRange(start int) int {
 	return start + h.Slots
 }
 
-func (h *HitLocation) crc64(c uint64) uint64 {
-	c = crc.String(c, h.LocID)
-	c = crc.String(c, h.ChoiceName)
-	c = crc.String(c, h.TableName)
-	c = crc.Number(c, h.Slots)
-	c = crc.Number(c, h.HitPenalty)
-	c = crc.Number(c, h.DRBonus)
-	c = crc.String(c, h.Description)
-	c = crc.String(c, h.Notes)
+// Hash writes this object's contents into the hasher.
+func (h *HitLocation) Hash(hasher hash.Hash) {
+	hashhelper.String(hasher, h.LocID)
+	hashhelper.String(hasher, h.ChoiceName)
+	hashhelper.String(hasher, h.TableName)
+	hashhelper.Num64(hasher, h.Slots)
+	hashhelper.Num64(hasher, h.HitPenalty)
+	hashhelper.Num64(hasher, h.DRBonus)
+	hashhelper.String(hasher, h.Description)
+	hashhelper.String(hasher, h.Notes)
 	if h.SubTable != nil {
-		c = h.SubTable.crc64(c)
+		h.SubTable.Hash(hasher)
+	} else {
+		hashhelper.Num8(hasher, uint8(255))
 	}
-	return c
 }
 
 // ResetTargetKeyPrefixes assigns new key prefixes for all data within this HitLocation.

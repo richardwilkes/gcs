@@ -30,7 +30,7 @@ type bodySettingsDockable struct {
 	targetMgr      *TargetMgr
 	undoMgr        *unison.UndoManager
 	body           *gurps.Body
-	originalCRC    uint64
+	originalHash   uint64
 	toolbar        *unison.Panel
 	content        *unison.Panel
 	applyButton    *unison.Button
@@ -68,7 +68,7 @@ func ShowBodySettings(owner EntityPanel) {
 	}
 	d.TabIcon = svg.BodyType
 	d.body.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
-	d.originalCRC = d.body.CRC64()
+	d.originalHash = gurps.Hash64(d.body)
 	d.Extensions = []string{gurps.BodyExt, gurps.BodyExtAlt}
 	d.undoMgr = unison.NewUndoManager(100, func(err error) { errs.Log(err) })
 	d.Loader = d.load
@@ -84,14 +84,14 @@ func (d *bodySettingsDockable) UndoManager() *unison.UndoManager {
 }
 
 func (d *bodySettingsDockable) modified() bool {
-	modified := d.originalCRC != d.body.CRC64()
+	modified := d.originalHash != gurps.Hash64(d.body)
 	d.applyButton.SetEnabled(modified)
 	d.cancelButton.SetEnabled(modified)
 	return modified
 }
 
 func (d *bodySettingsDockable) willClose() bool {
-	if d.promptForSave && d.originalCRC != d.body.CRC64() {
+	if d.promptForSave && d.originalHash != gurps.Hash64(d.body) {
 		switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Apply changes made to\n%s?"), d.Title()), "") {
 		case unison.ModalResponseDiscard:
 		case unison.ModalResponseOK:

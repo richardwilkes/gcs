@@ -26,6 +26,7 @@ import (
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/tid"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -394,9 +395,9 @@ func (n *Note) Hash(h hash.Hash) {
 }
 
 func (n *NoteSyncData) hash(h hash.Hash) {
-	_, _ = h.Write([]byte(n.Text))
-	_, _ = h.Write([]byte(n.PageRef))
-	_, _ = h.Write([]byte(n.PageRefHighlight))
+	hashhelper.String(h, n.Text)
+	hashhelper.String(h, n.PageRef)
+	hashhelper.String(h, n.PageRefHighlight)
 }
 
 // CopyFrom implements node.EditorData.

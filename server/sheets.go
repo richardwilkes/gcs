@@ -35,11 +35,11 @@ import (
 )
 
 type webEntity struct {
-	ClientPath    string
-	AccessPath    string
-	Entity        *gurps.Entity
-	OriginalCRC64 uint64
-	CurrentCRC64  uint64
+	ClientPath   string
+	AccessPath   string
+	Entity       *gurps.Entity
+	OriginalHash uint64
+	CurrentHash  uint64
 }
 
 // Dir is a directory listing.
@@ -123,7 +123,7 @@ func (s *Server) sheetHandler(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	response := sheet.NewSheetFromEntity(entity.Entity, entity.OriginalCRC64 != entity.CurrentCRC64, access.ReadOnly)
+	response := sheet.NewSheetFromEntity(entity.Entity, entity.OriginalHash != entity.CurrentHash, access.ReadOnly)
 	CompressedJSONResponse(w, http.StatusOK, response)
 }
 
@@ -155,7 +155,7 @@ func (s *Server) updateSheetHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	response := sheet.NewSheetFromEntity(entity.Entity, entity.OriginalCRC64 != entity.CurrentCRC64, access.ReadOnly)
+	response := sheet.NewSheetFromEntity(entity.Entity, entity.OriginalHash != entity.CurrentHash, access.ReadOnly)
 	CompressedJSONResponse(w, http.StatusOK, response)
 }
 
@@ -168,18 +168,18 @@ func (s *Server) saveSheetHandler(w http.ResponseWriter, r *http.Request) {
 		xhttp.ErrorStatus(w, http.StatusForbidden)
 		return
 	}
-	if entity.OriginalCRC64 != entity.CurrentCRC64 {
+	if entity.OriginalHash != entity.CurrentHash {
 		if err := entity.Entity.Save(filepath.Join(access.Dir, entity.AccessPath)); err != nil {
 			slog.Error("error saving sheet", "path", entity.ClientPath, "error", err)
 			xhttp.ErrorStatus(w, http.StatusInternalServerError)
 			return
 		}
-		entity.OriginalCRC64 = entity.CurrentCRC64
+		entity.OriginalHash = entity.CurrentHash
 		s.sheetsLock.Lock()
 		s.entitiesByPath[entity.ClientPath] = entity
 		s.sheetsLock.Unlock()
 	}
-	response := sheet.NewSheetFromEntity(entity.Entity, entity.OriginalCRC64 != entity.CurrentCRC64, access.ReadOnly)
+	response := sheet.NewSheetFromEntity(entity.Entity, entity.OriginalHash != entity.CurrentHash, access.ReadOnly)
 	CompressedJSONResponse(w, http.StatusOK, response)
 }
 
@@ -342,7 +342,7 @@ func (s *Server) updateFieldText(entity *webEntity, update *sheetUpdate) error {
 		}
 	}
 	entity.Entity.ModifiedOn = jio.Now()
-	entity.CurrentCRC64 = entity.Entity.CRC64()
+	entity.CurrentHash = gurps.Hash64(entity.Entity)
 	s.sheetsLock.Lock()
 	s.entitiesByPath[entity.ClientPath] = *entity
 	s.sheetsLock.Unlock()
@@ -370,7 +370,7 @@ func (s *Server) updateFieldBinary(entity *webEntity, update *sheetUpdate) error
 		return errs.Newf("unknown field key: %q", update.Key)
 	}
 	entity.Entity.ModifiedOn = jio.Now()
-	entity.CurrentCRC64 = entity.Entity.CRC64()
+	entity.CurrentHash = gurps.Hash64(entity.Entity)
 	s.sheetsLock.Lock()
 	s.entitiesByPath[entity.ClientPath] = *entity
 	s.sheetsLock.Unlock()
@@ -415,8 +415,8 @@ func (s *Server) loadSheet(w http.ResponseWriter, r *http.Request) (entity webEn
 			entity.ClientPath = entityPath
 			entity.AccessPath = parts[1]
 			entity.Entity = loadedEntity
-			entity.OriginalCRC64 = loadedEntity.CRC64()
-			entity.CurrentCRC64 = entity.OriginalCRC64
+			entity.OriginalHash = gurps.Hash64(loadedEntity)
+			entity.CurrentHash = entity.OriginalHash
 			s.entitiesByPath[entityPath] = entity
 		}
 		s.sheetsLock.Unlock()

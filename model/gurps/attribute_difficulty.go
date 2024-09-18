@@ -10,12 +10,12 @@
 package gurps
 
 import (
-	"encoding/binary"
 	"hash"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
 	"github.com/richardwilkes/json"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
 
 // AttributeDifficulty holds an attribute ID and a difficulty.
@@ -102,8 +102,9 @@ func (a *AttributeDifficulty) Normalize(entity *Entity) {
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (a *AttributeDifficulty) Hash(h hash.Hash) {
 	if a.ShouldOmit() {
+		hashhelper.Num8(h, uint8(255))
 		return
 	}
-	_, _ = h.Write([]byte(a.Attribute))
-	_ = binary.Write(h, binary.LittleEndian, a.Difficulty)
+	hashhelper.String(h, a.Attribute)
+	hashhelper.Num8(h, a.Difficulty)
 }

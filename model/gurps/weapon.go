@@ -11,10 +11,8 @@ package gurps
 
 import (
 	"cmp"
-	"encoding/binary"
 	"fmt"
 	"hash"
-	"hash/fnv"
 	"strings"
 	"unsafe"
 
@@ -36,7 +34,9 @@ import (
 	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 	"github.com/richardwilkes/unison"
+	"github.com/zeebo/xxh3"
 )
 
 var _ Node[*Weapon] = &Weapon{}
@@ -206,12 +206,12 @@ func (w *Weapon) Compare(other *Weapon) int {
 
 // HashResolved returns a hash value for this weapon's resolved state.
 func (w *Weapon) HashResolved() uint64 {
-	h := fnv.New64()
+	h := xxh3.New()
 	w.Hash(h)
-	_, _ = h.Write([]byte(w.TID))
-	_, _ = h.Write([]byte(w.String()))
-	_ = binary.Write(h, binary.LittleEndian, w.SkillLevel(nil))
-	_, _ = h.Write([]byte(w.Damage.ResolvedDamage(nil)))
+	hashhelper.String(h, w.TID)
+	hashhelper.String(h, w.String())
+	hashhelper.Num64(h, w.SkillLevel(nil))
+	hashhelper.String(h, w.Damage.ResolvedDamage(nil))
 	return h.Sum64()
 }
 
@@ -219,12 +219,13 @@ func (w *Weapon) HashResolved() uint64 {
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (w *WeaponData) Hash(h hash.Hash) {
 	if w == nil {
+		hashhelper.Num8(h, uint8(255))
 		return
 	}
 	w.Damage.Hash(h)
 	w.Strength.Hash(h)
-	_, _ = h.Write([]byte(w.Usage))
-	_, _ = h.Write([]byte(w.UsageNotes))
+	hashhelper.String(h, w.Usage)
+	hashhelper.String(h, w.UsageNotes)
 	w.Reach.Hash(h)
 	w.Parry.Hash(h)
 	w.Block.Hash(h)
@@ -234,6 +235,7 @@ func (w *WeaponData) Hash(h hash.Hash) {
 	w.Shots.Hash(h)
 	w.Bulk.Hash(h)
 	w.Recoil.Hash(h)
+	hashhelper.Num64(h, len(w.Defaults))
 	for _, one := range w.Defaults {
 		one.Hash(h)
 	}

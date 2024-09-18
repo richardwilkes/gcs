@@ -10,12 +10,12 @@
 package gurps
 
 import (
-	"encoding/binary"
 	"fmt"
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
 
 // WeaponLeveledAmount holds an amount that can be either a fixed amount, or an amount per level and/or per die.
@@ -69,9 +69,10 @@ func (w *WeaponLeveledAmount) Format(asPercentage bool) string {
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (w *WeaponLeveledAmount) Hash(h hash.Hash) {
 	if w == nil {
+		hashhelper.Num8(h, uint8(255))
 		return
 	}
-	_ = binary.Write(h, binary.LittleEndian, w.Amount)
-	_ = binary.Write(h, binary.LittleEndian, w.PerLevel)
-	_ = binary.Write(h, binary.LittleEndian, w.PerDie)
+	hashhelper.Num64(h, w.Amount)
+	hashhelper.Bool(h, w.PerLevel)
+	hashhelper.Bool(h, w.PerDie)
 }

@@ -65,7 +65,7 @@ type Sheet struct {
 	toolbar              *unison.Panel
 	scroll               *unison.ScrollPanel
 	entity               *gurps.Entity
-	crc                  uint64
+	hash                 uint64
 	content              *unison.Panel
 	modifiedFunc         func()
 	Reactions            *PageList[*gurps.ConditionalModifier]
@@ -125,7 +125,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 		undoMgr:           unison.NewUndoManager(200, func(err error) { errs.Log(err) }),
 		scroll:            unison.NewScrollPanel(),
 		entity:            entity,
-		crc:               entity.CRC64(),
+		hash:              gurps.Hash64(entity),
 		scale:             gurps.GlobalSettings().General.InitialSheetUIScale,
 		content:           unison.NewPanel(),
 		needsSaveAsPrompt: true,
@@ -412,7 +412,7 @@ func (s *Sheet) SetBackingFilePath(p string) {
 
 // Modified implements workspace.FileBackedDockable
 func (s *Sheet) Modified() bool {
-	return s.crc != s.entity.CRC64()
+	return s.hash != gurps.Hash64(s.entity)
 }
 
 // MarkModified implements widget.ModifiableRoot.
@@ -469,11 +469,11 @@ func (s *Sheet) save(forceSaveAs bool) bool {
 	success := false
 	if forceSaveAs || s.needsSaveAsPrompt {
 		success = SaveDockableAs(s, gurps.SheetExt, s.entity.Save, func(path string) {
-			s.crc = s.entity.CRC64()
+			s.hash = gurps.Hash64(s.entity)
 			s.path = path
 		})
 	} else {
-		success = SaveDockable(s, s.entity.Save, func() { s.crc = s.entity.CRC64() })
+		success = SaveDockable(s, s.entity.Save, func() { s.hash = gurps.Hash64(s.entity) })
 	}
 	if success {
 		s.needsSaveAsPrompt = false

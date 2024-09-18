@@ -10,11 +10,11 @@
 package criteria
 
 import (
-	"encoding/binary"
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/json"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
 
 // Weight holds the criteria for matching a weight.
@@ -52,8 +52,9 @@ func (w Weight) String() string {
 // Hash writes this object's contents into the hasher.
 func (w Weight) Hash(h hash.Hash) {
 	if w.ShouldOmit() {
+		hashhelper.Num8(h, uint8(255))
 		return
 	}
-	_, _ = h.Write([]byte(w.Compare))
-	_ = binary.Write(h, binary.LittleEndian, w.Qualifier)
+	hashhelper.String(h, w.Compare)
+	hashhelper.Num64(h, w.Qualifier)
 }

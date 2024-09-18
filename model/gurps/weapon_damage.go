@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"encoding/binary"
 	"hash"
 	"strings"
 
@@ -22,6 +21,7 @@ import (
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
 
 // WeaponDamageData holds the WeaponDamage data that is written to disk.
@@ -47,18 +47,19 @@ type WeaponDamage struct {
 // Hash writes this object's contents into the hasher.
 func (w *WeaponDamage) Hash(h hash.Hash) {
 	if w == nil {
+		hashhelper.Num8(h, uint8(255))
 		return
 	}
-	_, _ = h.Write([]byte(w.Type))
-	_ = binary.Write(h, binary.LittleEndian, w.StrengthType)
-	_ = binary.Write(h, binary.LittleEndian, w.Leveled)
-	_ = binary.Write(h, binary.LittleEndian, w.StrengthMultiplier)
+	hashhelper.String(h, w.Type)
+	hashhelper.Num8(h, w.StrengthType)
+	hashhelper.Bool(h, w.Leveled)
+	hashhelper.Num64(h, w.StrengthMultiplier)
 	w.Base.Hash(h)
-	_ = binary.Write(h, binary.LittleEndian, w.ArmorDivisor)
+	hashhelper.Num64(h, w.ArmorDivisor)
 	w.Fragmentation.Hash(h)
-	_ = binary.Write(h, binary.LittleEndian, w.FragmentationArmorDivisor)
-	_, _ = h.Write([]byte(w.FragmentationType))
-	_ = binary.Write(h, binary.LittleEndian, w.ModifierPerDie)
+	hashhelper.Num64(h, w.FragmentationArmorDivisor)
+	hashhelper.String(h, w.FragmentationType)
+	hashhelper.Num64(h, w.ModifierPerDie)
 }
 
 // Clone creates a copy of this data.

@@ -10,13 +10,13 @@
 package gurps
 
 import (
-	"encoding/binary"
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/stlimit"
 	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
 
 var _ Bonus = &AttributeBonus{}
@@ -77,10 +77,11 @@ func (a *AttributeBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 // Hash writes this object's contents into the hasher.
 func (a *AttributeBonus) Hash(h hash.Hash) {
 	if a == nil {
+		hashhelper.Num8(h, uint8(255))
 		return
 	}
-	_ = binary.Write(h, binary.LittleEndian, a.Type)
-	_ = binary.Write(h, binary.LittleEndian, a.Limitation)
-	_, _ = h.Write([]byte(a.Attribute))
+	hashhelper.Num8(h, a.Type)
+	hashhelper.Num8(h, a.Limitation)
+	hashhelper.String(h, a.Attribute)
 	a.LeveledAmount.Hash(h)
 }

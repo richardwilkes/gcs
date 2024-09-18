@@ -12,6 +12,7 @@ package gurps
 import (
 	"bytes"
 	"context"
+	"hash"
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model/jio"
@@ -19,7 +20,6 @@ import (
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/tid"
-	"github.com/richardwilkes/toolbox/xmath/crc"
 )
 
 // Campaign holds the data set to be used for a campaign.
@@ -75,11 +75,12 @@ func (c *Campaign) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&c.CampaignData)
 }
 
-// CRC64 computes a CRC-64 value for the canonical disk format of the data.
-func (c *Campaign) CRC64() uint64 {
+// Hash writes this object's contents into the hasher.
+func (c *Campaign) Hash(h hash.Hash) {
 	var buffer bytes.Buffer
 	if err := jio.Save(context.Background(), &buffer, c); err != nil {
-		return 0
+		errs.Log(err)
+		return
 	}
-	return crc.Bytes(0, buffer.Bytes())
+	_, _ = h.Write(buffer.Bytes())
 }

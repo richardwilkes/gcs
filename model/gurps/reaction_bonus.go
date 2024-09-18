@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"encoding/binary"
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -18,6 +17,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
 
 var _ Bonus = &ReactionBonus{}
@@ -68,9 +68,10 @@ func (r *ReactionBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 // Hash writes this object's contents into the hasher.
 func (r *ReactionBonus) Hash(h hash.Hash) {
 	if r == nil {
+		hashhelper.Num8(h, uint8(255))
 		return
 	}
-	_ = binary.Write(h, binary.LittleEndian, r.Type)
-	_, _ = h.Write([]byte(r.Situation))
+	hashhelper.Num8(h, r.Type)
+	hashhelper.String(h, r.Situation)
 	r.LeveledAmount.Hash(h)
 }

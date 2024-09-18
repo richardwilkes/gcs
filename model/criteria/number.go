@@ -10,11 +10,11 @@
 package criteria
 
 import (
-	"encoding/binary"
 	"hash"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/json"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
 
 // Number holds the criteria for matching a number.
@@ -57,8 +57,9 @@ func (n Number) AltString() string {
 // Hash writes this object's contents into the hasher.
 func (n Number) Hash(h hash.Hash) {
 	if n.ShouldOmit() {
+		hashhelper.Num8(h, uint8(255))
 		return
 	}
-	_, _ = h.Write([]byte(n.Compare))
-	_ = binary.Write(h, binary.LittleEndian, n.Qualifier)
+	hashhelper.String(h, n.Compare)
+	hashhelper.Num64(h, n.Qualifier)
 }

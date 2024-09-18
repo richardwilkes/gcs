@@ -10,13 +10,13 @@
 package gurps
 
 import (
-	"encoding/binary"
 	"hash"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
 
 var skillBasedDefaultTypes = map[string]bool{
@@ -212,8 +212,8 @@ func (s *SkillDefault) finalLevel(level fxp.Int) fxp.Int {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (s *SkillDefault) Hash(h hash.Hash) {
-	_, _ = h.Write([]byte(s.DefaultType))
-	_, _ = h.Write([]byte(s.Name))
-	_, _ = h.Write([]byte(s.Specialization))
-	_ = binary.Write(h, binary.LittleEndian, s.Modifier)
+	hashhelper.String(h, s.DefaultType)
+	hashhelper.String(h, s.Name)
+	hashhelper.String(h, s.Specialization)
+	hashhelper.Num64(h, s.Modifier)
 }

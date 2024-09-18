@@ -11,7 +11,6 @@ package gurps
 
 import (
 	"context"
-	"encoding/binary"
 	"hash"
 	"io/fs"
 	"maps"
@@ -33,6 +32,7 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -578,26 +578,30 @@ func (t *TraitModifier) SyncWithSource() {
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (t *TraitModifier) Hash(h hash.Hash) {
 	t.TraitModifierSyncData.hash(h)
-	if !t.Container() {
+	if t.Container() {
+		hashhelper.Num8(h, uint8(255))
+	} else {
 		t.TraitModifierNonContainerSyncData.hash(h)
 	}
 }
 
 func (t *TraitModifierSyncData) hash(h hash.Hash) {
-	_, _ = h.Write([]byte(t.Name))
-	_, _ = h.Write([]byte(t.PageRef))
-	_, _ = h.Write([]byte(t.PageRefHighlight))
-	_, _ = h.Write([]byte(t.LocalNotes))
+	hashhelper.String(h, t.Name)
+	hashhelper.String(h, t.PageRef)
+	hashhelper.String(h, t.PageRefHighlight)
+	hashhelper.String(h, t.LocalNotes)
+	hashhelper.Num64(h, len(t.Tags))
 	for _, tag := range t.Tags {
-		_, _ = h.Write([]byte(tag))
+		hashhelper.String(h, tag)
 	}
 }
 
 func (t *TraitModifierNonContainerSyncData) hash(h hash.Hash) {
-	_ = binary.Write(h, binary.LittleEndian, t.Cost)
-	_ = binary.Write(h, binary.LittleEndian, t.CostType)
-	_ = binary.Write(h, binary.LittleEndian, t.UseLevelFromTrait)
-	_ = binary.Write(h, binary.LittleEndian, t.Affects)
+	hashhelper.Num64(h, t.Cost)
+	hashhelper.Num8(h, t.CostType)
+	hashhelper.Bool(h, t.UseLevelFromTrait)
+	hashhelper.Num8(h, t.Affects)
+	hashhelper.Num64(h, len(t.Features))
 	for _, feature := range t.Features {
 		feature.Hash(h)
 	}

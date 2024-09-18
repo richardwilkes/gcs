@@ -10,12 +10,16 @@
 package gurps
 
 import (
+	"hash"
+
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/threshold"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/xmath/crc"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
+
+var _ Hashable = &Attribute{}
 
 // AttributeData holds the Attribute data that is written to disk.
 type AttributeData struct {
@@ -195,17 +199,17 @@ func CountThresholdOpMet(op threshold.Op, attributes *Attributes) int {
 	return total
 }
 
-func (a *Attribute) crc64(c uint64) uint64 {
-	c = crc.String(c, a.AttrID)
-	c = crc.Number(c, a.Adjustment)
-	c = crc.Number(c, a.Damage)
-	c = crc.Number(c, a.Bonus)
-	c = crc.Number(c, a.CostReduction)
-	c = crc.Number(c, a.Order)
+// Hash writes this object's contents into the hasher.
+func (a *Attribute) Hash(h hash.Hash) {
+	hashhelper.String(h, a.AttrID)
+	hashhelper.Num64(h, a.Adjustment)
+	hashhelper.Num64(h, a.Damage)
+	hashhelper.Num64(h, a.Bonus)
+	hashhelper.Num64(h, a.CostReduction)
+	hashhelper.Num64(h, a.Order)
 	if def := a.AttributeDef(); def != nil {
-		c = def.crc64(c)
+		def.Hash(h)
 	} else {
-		c = crc.Number(c, 0)
+		hashhelper.Num8(h, uint8(255))
 	}
-	return c
 }

@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/json"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
 
 // Text holds the criteria for matching text.
@@ -78,8 +79,9 @@ func (t Text) StringWithPrefix(replacements map[string]string, prefix, notPrefix
 // Hash writes this object's contents into the hasher.
 func (t Text) Hash(h hash.Hash) {
 	if t.ShouldOmit() {
+		hashhelper.Num8(h, uint8(255))
 		return
 	}
-	_, _ = h.Write([]byte(t.Compare))
-	_, _ = h.Write([]byte(t.Qualifier))
+	hashhelper.String(h, t.Compare)
+	hashhelper.String(h, t.Qualifier)
 }

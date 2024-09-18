@@ -12,13 +12,16 @@ package gurps
 import (
 	"bytes"
 	"cmp"
+	"hash"
 	"slices"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/json"
-	"github.com/richardwilkes/toolbox/xmath/crc"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
+
+var _ Hashable = &Attributes{}
 
 // Attributes holds a set of Attribute objects.
 type Attributes struct {
@@ -76,13 +79,12 @@ func (a *Attributes) List() []*Attribute {
 	return list
 }
 
-// CRC64 calculates a CRC-64 for this data.
-func (a *Attributes) CRC64() uint64 {
-	c := crc.Number(0, len(a.Set))
+// Hash writes this object's contents into the hasher.
+func (a *Attributes) Hash(h hash.Hash) {
+	hashhelper.Num64(h, len(a.Set))
 	for _, one := range a.List() {
-		c = one.crc64(c)
+		one.Hash(h)
 	}
-	return c
 }
 
 // Cost returns the points spent for the specified Attribute.

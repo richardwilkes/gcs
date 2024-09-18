@@ -10,7 +10,6 @@
 package gurps
 
 import (
-	"encoding/binary"
 	"fmt"
 	"hash"
 	"strings"
@@ -20,6 +19,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/wswitch"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/xio"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
 
 // WeaponRoFMode holds the rate of fire data for one firing mode of a weapon.
@@ -55,10 +55,10 @@ func ParseWeaponRoFMode(s string) WeaponRoFMode {
 
 // Hash writes this object's contents into the hasher.
 func (wr WeaponRoFMode) Hash(h hash.Hash) {
-	_ = binary.Write(h, binary.LittleEndian, wr.ShotsPerAttack)
-	_ = binary.Write(h, binary.LittleEndian, wr.SecondaryProjectiles)
-	_ = binary.Write(h, binary.LittleEndian, wr.FullAutoOnly)
-	_ = binary.Write(h, binary.LittleEndian, wr.HighCyclicControlledBursts)
+	hashhelper.Num64(h, wr.ShotsPerAttack)
+	hashhelper.Num64(h, wr.SecondaryProjectiles)
+	hashhelper.Bool(h, wr.FullAutoOnly)
+	hashhelper.Bool(h, wr.HighCyclicControlledBursts)
 }
 
 // Resolve any bonuses that apply.

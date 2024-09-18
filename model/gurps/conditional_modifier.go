@@ -11,7 +11,6 @@ package gurps
 
 import (
 	"cmp"
-	"encoding/binary"
 	"fmt"
 	"hash"
 	"slices"
@@ -23,6 +22,7 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/txt"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 	"github.com/richardwilkes/unison/enums/align"
 )
 
@@ -97,12 +97,14 @@ func (c *ConditionalModifier) ID() tid.TID {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (c *ConditionalModifier) Hash(h hash.Hash) {
-	_, _ = h.Write([]byte(c.From))
+	hashhelper.String(h, c.From)
+	hashhelper.Num64(h, len(c.Amounts))
 	for _, amt := range c.Amounts {
-		_ = binary.Write(h, binary.LittleEndian, amt)
+		hashhelper.Num64(h, amt)
 	}
+	hashhelper.Num64(h, len(c.Sources))
 	for _, src := range c.Sources {
-		_, _ = h.Write([]byte(src))
+		hashhelper.String(h, src)
 	}
 }
 

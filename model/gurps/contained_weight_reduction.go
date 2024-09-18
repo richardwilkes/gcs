@@ -10,12 +10,12 @@
 package gurps
 
 import (
-	"encoding/binary"
 	"hash"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/feature"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
 
 var _ Feature = &ContainedWeightReduction{}
@@ -74,10 +74,11 @@ func (c *ContainedWeightReduction) FixedReduction(defUnits fxp.WeightUnit) fxp.W
 // Hash writes this object's contents into the hasher.
 func (c *ContainedWeightReduction) Hash(h hash.Hash) {
 	if c == nil {
+		hashhelper.Num8(h, uint8(255))
 		return
 	}
-	_ = binary.Write(h, binary.LittleEndian, c.Type)
-	_, _ = h.Write([]byte(c.Reduction))
+	hashhelper.Num8(h, c.Type)
+	hashhelper.String(h, c.Reduction)
 }
 
 // ExtractContainedWeightReduction extracts the weight reduction (which may be a weight or a percentage) and returns

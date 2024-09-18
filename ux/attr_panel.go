@@ -43,7 +43,7 @@ type AttrPanel struct {
 	entity      *gurps.Entity
 	targetMgr   *TargetMgr
 	prefix      string
-	crc         uint64
+	hash        uint64
 	rowStarts   []int
 	kind        int
 	stateLabels map[string]*unison.Label
@@ -97,7 +97,7 @@ func newAttrPanel(entity *gurps.Entity, targetMgr *TargetMgr, kind int) *AttrPan
 		unison.NewEmptyBorder(unison.NewSymmetricInsets(2, 1))))
 	a.DrawCallback = a.drawSelf
 	attrs := gurps.SheetSettingsFor(a.entity).Attributes
-	a.crc = attrs.CRC64()
+	a.hash = gurps.Hash64(attrs)
 	a.rebuild(attrs)
 	return a
 }
@@ -290,8 +290,8 @@ func (a *AttrPanel) createPointsField(attr *gurps.Attribute) unison.Paneler {
 // Sync the panel to the current data.
 func (a *AttrPanel) Sync() {
 	attrs := gurps.SheetSettingsFor(a.entity).Attributes
-	if crc := attrs.CRC64(); crc != a.crc {
-		a.crc = crc
+	if hash := gurps.Hash64(attrs); hash != a.hash {
+		a.hash = hash
 		a.rebuild(attrs)
 	} else if a.kind == poolAttrKind {
 		for _, def := range attrs.List(false) {

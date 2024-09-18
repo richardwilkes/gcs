@@ -13,6 +13,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"hash"
 	"io/fs"
 	"math"
 	"regexp"
@@ -44,13 +45,13 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/xio"
-	"github.com/richardwilkes/toolbox/xmath/crc"
 )
 
 var (
 	_ eval.VariableResolver = &Entity{}
 	_ ListProvider          = &Entity{}
 	_ DataOwner             = &Entity{}
+	_ Hashable              = &Entity{}
 )
 
 // PointsBreakdown holds the points spent on a character.
@@ -1543,17 +1544,17 @@ func (e *Entity) SetNoteList(list []*Note) {
 	e.Notes = list
 }
 
-// CRC64 computes a CRC-64 value for the canonical disk format of the data. The ModifiedOn field is ignored for this
-// calculation.
-func (e *Entity) CRC64() uint64 {
+// Hash writes this object's contents into the hasher.
+func (e *Entity) Hash(h hash.Hash) {
 	var buffer bytes.Buffer
 	saved := e.ModifiedOn
 	e.ModifiedOn = jio.Time{}
 	defer func() { e.ModifiedOn = saved }()
 	if err := jio.Save(context.Background(), &buffer, e); err != nil {
-		return 0
+		errs.Log(err)
+		return
 	}
-	return crc.Bytes(0, buffer.Bytes())
+	_, _ = h.Write(buffer.Bytes())
 }
 
 // SetPointsRecord sets a new points record list, adjusting the total points.

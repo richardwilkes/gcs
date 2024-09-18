@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"bytes"
+	"hash"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -18,8 +19,10 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/progression"
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/eval"
-	"github.com/richardwilkes/toolbox/xmath/crc"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 )
+
+var _ Hashable = &AttributeDef{}
 
 // ReservedIDs holds a list of IDs that are reserved for internal use.
 var ReservedIDs = []string{SkillID, ParryID, BlockID, SizeModifierID, "10"}
@@ -182,18 +185,18 @@ func (a *AttributeDef) ComputeCost(entity *Entity, value, costReduction fxp.Int,
 	return fxp.ApplyRounding(cost, false)
 }
 
-func (a *AttributeDef) crc64(c uint64) uint64 {
-	c = crc.String(c, a.DefID)
-	c = crc.Byte(c, byte(a.Type))
-	c = crc.Byte(c, byte(a.Placement))
-	c = crc.String(c, a.Name)
-	c = crc.String(c, a.FullName)
-	c = crc.String(c, a.AttributeBase)
-	c = crc.Number(c, a.CostPerPoint)
-	c = crc.Number(c, a.CostAdjPercentPerSM)
-	c = crc.Number(c, len(a.Thresholds))
+// Hash writes this object's contents into the hasher.
+func (a *AttributeDef) Hash(h hash.Hash) {
+	hashhelper.String(h, a.DefID)
+	hashhelper.Num8(h, a.Type)
+	hashhelper.Num8(h, a.Placement)
+	hashhelper.String(h, a.Name)
+	hashhelper.String(h, a.FullName)
+	hashhelper.String(h, a.AttributeBase)
+	hashhelper.Num64(h, a.CostPerPoint)
+	hashhelper.Num64(h, a.CostAdjPercentPerSM)
+	hashhelper.Num64(h, len(a.Thresholds))
 	for _, one := range a.Thresholds {
-		c = one.crc64(c)
+		one.Hash(h)
 	}
-	return c
 }
