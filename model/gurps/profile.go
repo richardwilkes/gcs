@@ -10,6 +10,8 @@
 package gurps
 
 import (
+	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -63,6 +65,37 @@ func (p *Profile) Portrait() *unison.Image {
 		}
 	}
 	return p.PortraitImage
+}
+
+// CanExportPortrait returns true if the portrait can be exported.
+func (p *Profile) CanExportPortrait() bool {
+	return p.PortraitExtension() != ""
+}
+
+// PortraitExtension returns the extension for the portrait image.
+func (p *Profile) PortraitExtension() string {
+	if len(p.PortraitData) == 0 {
+		return ""
+	}
+	switch http.DetectContentType(p.PortraitData) {
+	case "image/webp":
+		return ".webp"
+	case "image/png":
+		return ".png"
+	case "image/jpeg":
+		return ".jpg"
+	case "image/gif":
+		return ".gif"
+	case "image/bmp":
+		return ".bmp"
+	default:
+		return ""
+	}
+}
+
+// ExportPortrait exports the portrait image.
+func (p *Profile) ExportPortrait(filePath string) error {
+	return errs.Wrap(os.WriteFile(filePath, p.PortraitData, 0o640))
 }
 
 // AdjustedSizeModifier returns the adjusted size modifier.

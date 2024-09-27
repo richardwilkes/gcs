@@ -219,6 +219,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	s.InstallCmdHandlers(ExportAsJPEGItemID, unison.AlwaysEnabled, func(_ any) { s.exportToJPEG() })
 	s.InstallCmdHandlers(PrintItemID, unison.AlwaysEnabled, func(_ any) { s.print() })
 	s.InstallCmdHandlers(ClearPortraitItemID, s.canClearPortrait, s.clearPortrait)
+	s.InstallCmdHandlers(ExportPortraitItemID, s.canExportPortrait, s.exportPortrait)
 	return s
 }
 
@@ -305,6 +306,30 @@ func (s *Sheet) createToolbar() {
 // DataOwner implements gurps.DataOwnerProvider.
 func (s *Sheet) DataOwner() gurps.DataOwner {
 	return s.entity
+}
+
+func (s *Sheet) canExportPortrait(_ any) bool {
+	return s.entity.Profile.CanExportPortrait()
+}
+
+func (s *Sheet) exportPortrait(_ any) {
+	if s.entity.Profile.CanExportPortrait() {
+		if ext := s.entity.Profile.PortraitExtension(); ext != "" {
+			s.Window().ShowCursor()
+			dialog := unison.NewSaveDialog()
+			backingFilePath := s.BackingFilePath()
+			dialog.SetInitialDirectory(filepath.Dir(backingFilePath))
+			dialog.SetAllowedExtensions(ext)
+			dialog.SetInitialFileName(fs.SanitizeName(fs.BaseName(backingFilePath)))
+			if dialog.RunModal() {
+				if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), ext, false); ok {
+					if err := s.entity.Profile.ExportPortrait(filePath); err != nil {
+						unison.ErrorDialogWithError(i18n.Text("Unable to export portrait"), err)
+					}
+				}
+			}
+		}
+	}
 }
 
 func (s *Sheet) canClearPortrait(_ any) bool {

@@ -131,21 +131,8 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "ENHANCED_KEY_PARSING":
 		ex.enhancedKeyParsing = true
 	case "PORTRAIT":
-		if len(ex.entity.Profile.PortraitData) != 0 {
-			var ext string
-			switch http.DetectContentType(ex.entity.Profile.PortraitData) {
-			case "image/webp":
-				ext = ".webp"
-			case "image/png":
-				ext = ".png"
-			case "image/jpeg":
-				ext = ".jpg"
-			case "image/gif":
-				ext = ".gif"
-			case "image/bmp":
-				ext = ".bmp"
-			}
-			if ext != "" {
+		if ex.entity.Profile.CanExportPortrait() {
+			if ext := ex.entity.Profile.PortraitExtension(); ext != "" {
 				leafName := fs.TrimExtension(filepath.Base(ex.exportPath)) + ext
 				if err := os.WriteFile(filepath.Join(filepath.Dir(ex.exportPath), leafName), ex.entity.Profile.PortraitData, 0o640); err != nil {
 					return errs.Wrap(err)

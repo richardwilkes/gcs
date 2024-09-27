@@ -56,6 +56,7 @@ const (
 	UndoItemID
 	RedoItemID
 	DuplicateItemID
+	ExportPortraitItemID
 	ClearPortraitItemID
 	ClearSourceItemID
 	SyncWithSourceItemID
@@ -222,6 +223,7 @@ func (s menuBarScope) setupFileMenu(bar unison.Menu) {
 	i = s.insertMenuSeparator(m, i)
 	i = s.insertMenuItem(m, i, saveAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, saveAsAction.NewMenuItem(f))
+	i = s.insertMenuItem(m, i, exportPortraitAction.NewMenuItem(f))
 	i = s.insertMenu(m, i, f.NewMenu(ExportToMenuID, i18n.Text("Export To…"), s.exportToUpdater))
 
 	i = s.insertMenuSeparator(m, i)

@@ -53,6 +53,7 @@ var (
 	exportAsPDFAction              *unison.Action
 	exportAsPNGAction              *unison.Action
 	exportAsWEBPAction             *unison.Action
+	exportPortraitAction           *unison.Action
 	fontSettingsAction             *unison.Action
 	generalSettingsAction          *unison.Action
 	increaseEquipmentLevelAction   *unison.Action
@@ -167,6 +168,12 @@ func registerActions() {
 		ID:              NewSheetFromTemplateItemID,
 		Title:           i18n.Text("New Character Sheet from Template"),
 		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyS, Modifiers: unison.OptionModifier | unison.OSMenuCmdModifier()},
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
+	})
+	exportPortraitAction = registerKeyBindableAction("export.portrait", &unison.Action{
+		ID:              ExportPortraitItemID,
+		Title:           i18n.Text("Export Portrait"),
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})
