@@ -135,6 +135,9 @@ func (sm *SrcMatcher) PrepareHashes(provider ListProvider) {
 		dir := os.DirFS(filepath.Dir(p))
 		file := filepath.Base(p)
 		fi := FileInfoFor(p)
+		if fi == nil || len(fi.Extensions) == 0 {
+			continue
+		}
 		switch fi.Extensions[0] {
 		case TraitsExt:
 			var data []*Trait
