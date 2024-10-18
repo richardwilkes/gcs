@@ -143,7 +143,6 @@ func SaveTraitModifiers(modifiers []*TraitModifier, filePath string) error {
 func NewTraitModifier(owner DataOwner, parent *TraitModifier, container bool) *TraitModifier {
 	var t TraitModifier
 	t.TID = tid.MustNewTID(traitModifierKind(container))
-	t.UseLevelFromTrait = true
 	t.parent = parent
 	t.owner = owner
 	t.Name = t.Kind()
