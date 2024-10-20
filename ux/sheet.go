@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -412,7 +413,7 @@ func (s *Sheet) TitleIcon(suggestedSize unison.Size) unison.Drawable {
 
 // Title implements workspace.FileBackedDockable
 func (s *Sheet) Title() string {
-	return fs.BaseName(s.path)
+	return fs.BaseName(s.BackingFilePath())
 }
 
 func (s *Sheet) String() string {
@@ -421,11 +422,18 @@ func (s *Sheet) String() string {
 
 // Tooltip implements workspace.FileBackedDockable
 func (s *Sheet) Tooltip() string {
-	return s.path
+	return s.BackingFilePath()
 }
 
 // BackingFilePath implements workspace.FileBackedDockable
 func (s *Sheet) BackingFilePath() string {
+	if s.needsSaveAsPrompt {
+		name := strings.TrimSpace(s.entity.Profile.Name)
+		if name == "" {
+			name = i18n.Text("Unnamed Character")
+		}
+		return name + gurps.SheetExt
+	}
 	return s.path
 }
 
