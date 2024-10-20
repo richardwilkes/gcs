@@ -83,7 +83,7 @@ func (p *SpellPrereq) Satisfied(entity *Entity, exclude any, tooltip *xio.ByteBu
 	count := 0
 	colleges := make(map[string]bool)
 	Traverse(func(sp *Spell) bool {
-		if exclude == sp || sp.Points == 0 {
+		if exclude == sp || sp.AdjustedPoints(nil) == 0 {
 			return false
 		}
 		if techLevel != nil && sp.TechLevel != nil && *techLevel != *sp.TechLevel {
