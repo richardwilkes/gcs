@@ -54,7 +54,7 @@ func (d *fontSettingsDockable) initContent(content *unison.Panel) {
 		VSpacing: unison.StdVSpacing,
 	})
 	for i, one := range fonts.CurrentFonts() {
-		d.content.AddChild(NewFieldLeadingLabel(one.Title, false))
+		d.content.AddChild(NewFieldTrailingLabel(one.Title, false))
 		fp := d.createFontPanel(i)
 		d.fontPanels = append(d.fontPanels, fp)
 		d.createResetField(i, fp)
