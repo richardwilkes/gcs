@@ -54,15 +54,6 @@ for arg in "$@"; do
 		BUILD_GO=1
 		BUILD_GEN=1
 		SOMETHING=1
-		case $(uname -s) in
-		Darwin*)
-			if [ "$(uname -p)" == "arm" ]; then
-				export MACOSX_DEPLOYMENT_TARGET=11
-			else
-				export MACOSX_DEPLOYMENT_TARGET=10.15
-			fi
-			;;
-		esac
 		;;
 	--help | -h)
 		echo "$0 [options]"
@@ -89,6 +80,16 @@ if [ "$SOMETHING"x != "1x" ]; then
 	BUILD_GEN=1
 	BUILD_GO=1
 fi
+
+case $(uname -s) in
+Darwin*)
+	if [ "$(uname -p)" == "arm" ]; then
+		export MACOSX_DEPLOYMENT_TARGET=11
+	else
+		export MACOSX_DEPLOYMENT_TARGET=10.15
+	fi
+	;;
+esac
 
 LDFLAGS_ALL="-X github.com/richardwilkes/toolbox/cmdline.AppVersion=$RELEASE $EXTRA_LD_FLAGS"
 STD_FLAGS="-v -buildvcs=true $EXTRA_BUILD_FLAGS"
