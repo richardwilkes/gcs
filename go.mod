@@ -8,16 +8,16 @@ require (
 	github.com/richardwilkes/pdf v1.24.9
 	github.com/richardwilkes/rpgtools v1.10.1
 	github.com/richardwilkes/toolbox v1.121.0
-	github.com/richardwilkes/unison v0.74.0
+	github.com/richardwilkes/unison v0.75.0
 	github.com/rjeczalik/notify v0.9.3
 	github.com/tc-hib/winres v0.3.1
 	github.com/vearutop/statigz v1.4.3
 	github.com/yookoala/realpath v1.0.0
 	github.com/zeebo/xxh3 v1.0.2
-	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0
-	golang.org/x/image v0.20.0
-	golang.org/x/sys v0.25.0
-	golang.org/x/text v0.18.0
+	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c
+	golang.org/x/image v0.21.0
+	golang.org/x/sys v0.26.0
+	golang.org/x/text v0.19.0
 )
 
 require (
@@ -32,10 +32,10 @@ require (
 	github.com/miekg/dns v1.1.62 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/pkg/term v1.1.0 // indirect
-	github.com/yuin/goldmark v1.7.4 // indirect
+	github.com/yuin/goldmark v1.7.8 // indirect
 	golang.org/x/mod v0.21.0 // indirect
-	golang.org/x/net v0.29.0 // indirect
+	golang.org/x/net v0.30.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/tools v0.25.0 // indirect
+	golang.org/x/tools v0.26.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

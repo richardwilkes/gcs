@@ -14,7 +14,6 @@ import (
 	"io/fs"
 
 	"github.com/richardwilkes/gcs/v5/model/fonts"
-	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -24,10 +23,8 @@ import (
 
 type fontSettingsDockable struct {
 	SettingsDockable
-	content         *unison.Panel
-	allFaces        []unison.FontFaceDescriptor
-	monospacedFaces []unison.FontFaceDescriptor
-	noUpdate        bool
+	content    *unison.Panel
+	fontPanels []*unison.FontPanel
 }
 
 // ShowFontSettings shows the Font settings.
@@ -38,8 +35,7 @@ func ShowFontSettings() {
 	}) {
 		return
 	}
-	all, monospaced := unison.AllFontFaces()
-	d := &fontSettingsDockable{allFaces: all, monospacedFaces: monospaced}
+	d := &fontSettingsDockable{}
 	d.Self = d
 	d.TabTitle = i18n.Text("Fonts")
 	d.TabIcon = svg.Settings
@@ -53,43 +49,22 @@ func ShowFontSettings() {
 func (d *fontSettingsDockable) initContent(content *unison.Panel) {
 	d.content = content
 	d.content.SetLayout(&unison.FlexLayout{
-		Columns:  4,
+		Columns:  3,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
-	d.fill()
-}
-
-func (d *fontSettingsDockable) reset() {
-	g := gurps.GlobalSettings()
-	g.Fonts.Reset()
-	g.Fonts.MakeCurrent()
-	d.sync()
-}
-
-func (d *fontSettingsDockable) sync() {
-	d.content.RemoveAllChildren()
-	d.fill()
-	d.MarkForRedraw()
-}
-
-func (d *fontSettingsDockable) fill() {
 	for i, one := range fonts.CurrentFonts() {
-		if i%2 == 0 {
-			d.content.AddChild(NewFieldLeadingLabel(one.Title, false))
-		} else {
-			d.content.AddChild(NewFieldInteriorLeadingLabel(one.Title, false))
-		}
-		d.createFaceField(i)
-		d.createSizeField(i)
-		d.createResetField(i)
+		d.content.AddChild(NewFieldLeadingLabel(one.Title, false))
+		fp := d.createFontPanel(i)
+		d.fontPanels = append(d.fontPanels, fp)
+		d.createResetField(i, fp)
 	}
 	notice := unison.NewLabel()
 	notice.Font = unison.SystemFont
 	notice.SetTitle(i18n.Text("Changing fonts usually requires restarting the app to see content laid out correctly."))
 	notice.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: unison.StdVSpacing * 2}))
 	notice.SetLayoutData(&unison.FlexLayoutData{
-		HSpan:  4,
+		HSpan:  3,
 		VSpan:  1,
 		HAlign: align.Middle,
 		VAlign: align.Middle,
@@ -97,49 +72,17 @@ func (d *fontSettingsDockable) fill() {
 	d.content.AddChild(notice)
 }
 
-func (d *fontSettingsDockable) createFaceField(index int) {
-	p := unison.NewPopupMenu[unison.FontFaceDescriptor]()
-	var list []unison.FontFaceDescriptor
-	if fonts.CurrentFonts()[index].ID == "monospaced" {
-		list = d.monospacedFaces
-	} else {
-		list = d.allFaces
+func (d *fontSettingsDockable) createFontPanel(index int) *unison.FontPanel {
+	fp := unison.NewFontPanel()
+	fp.SetFontDescriptor(fonts.CurrentFonts()[index].Font.Descriptor())
+	fp.FontModifiedCallback = func(fd unison.FontDescriptor) {
+		d.applyFont(index, fd)
 	}
-	for _, ffd := range list {
-		p.AddItem(ffd)
-	}
-	p.Select(fonts.CurrentFonts()[index].Font.Descriptor().FontFaceDescriptor)
-	p.SelectionChangedCallback = func(popup *unison.PopupMenu[unison.FontFaceDescriptor]) {
-		if d.noUpdate {
-			return
-		}
-		if ffd, ok := popup.Selected(); ok {
-			fd2 := fonts.CurrentFonts()[index].Font.Descriptor()
-			fd2.FontFaceDescriptor = ffd
-			d.applyFont(index, fd2)
-		}
-	}
-	d.content.AddChild(p)
+	d.content.AddChild(fp)
+	return fp
 }
 
-func (d *fontSettingsDockable) createSizeField(index int) {
-	field := NewDecimalField(nil, "", i18n.Text("Font Size"),
-		func() fxp.Int { return fxp.From(fonts.CurrentFonts()[index].Font.Size()) },
-		func(v fxp.Int) {
-			if !d.noUpdate {
-				fd := fonts.CurrentFonts()[index].Font.Descriptor()
-				fd.Size = fxp.As[float32](v)
-				d.applyFont(index, fd)
-			}
-		}, fxp.One, fxp.ThousandMinusOne, false, false)
-	field.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Fill,
-		VAlign: align.Middle,
-	})
-	d.content.AddChild(field)
-}
-
-func (d *fontSettingsDockable) createResetField(index int) {
+func (d *fontSettingsDockable) createResetField(index int, fp *unison.FontPanel) {
 	b := unison.NewSVGButton(svg.Reset)
 	b.Tooltip = newWrappedTooltip("Reset this font")
 	b.ClickCallback = func() {
@@ -149,7 +92,7 @@ func (d *fontSettingsDockable) createResetField(index int) {
 				if v.ID != fonts.CurrentFonts()[index].ID {
 					continue
 				}
-				d.applyFont(index, v.Font.Descriptor())
+				fp.SetFontDescriptor(v.Font.Descriptor())
 				break
 			}
 		}
@@ -161,20 +104,32 @@ func (d *fontSettingsDockable) createResetField(index int) {
 	d.content.AddChild(b)
 }
 
+func (d *fontSettingsDockable) reset() {
+	g := gurps.GlobalSettings()
+	g.Fonts.Reset()
+	g.Fonts.MakeCurrent()
+	d.sync()
+}
+
+func (d *fontSettingsDockable) sync() {
+	changed := false
+	for i, fp := range d.fontPanels {
+		saved := fp.FontModifiedCallback
+		fp.FontModifiedCallback = func(_ unison.FontDescriptor) { changed = true }
+		fp.SetFontDescriptor(fonts.CurrentFonts()[i].Font.Descriptor())
+		fp.FontModifiedCallback = saved
+	}
+	if changed {
+		unison.ThemeChanged()
+	}
+}
+
 func (d *fontSettingsDockable) applyFont(index int, fd unison.FontDescriptor) {
-	fonts.CurrentFonts()[index].Font.Font = fd.Font()
-	children := d.content.Children()
-	i := index * 4
-	fd = fonts.CurrentFonts()[index].Font.Descriptor()
-	d.noUpdate = true
-	if p, ok := children[i+1].Self.(*unison.PopupMenu[unison.FontFaceDescriptor]); ok {
-		p.Select(fd.FontFaceDescriptor)
+	f := fonts.CurrentFonts()[index].Font
+	if f.Descriptor() != fd {
+		f.Font = fd.Font()
+		unison.ThemeChanged()
 	}
-	if nf, ok := children[i+2].Self.(*DecimalField); ok {
-		nf.SetText(fxp.From(fd.Size).String())
-	}
-	d.noUpdate = false
-	unison.ThemeChanged()
 }
 
 func (d *fontSettingsDockable) load(fileSystem fs.FS, filePath string) error {
