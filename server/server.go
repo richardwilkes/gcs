@@ -14,6 +14,7 @@ import (
 	"embed"
 	"log/slog"
 	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -189,5 +190,25 @@ func CompressedJSONResponse(w http.ResponseWriter, statusCode int, data any) {
 	}
 	if err = f.Close(); err != nil {
 		errs.Log(errs.NewWithCause("unable to close compressor", err))
+	}
+}
+
+func hasDeflate(acceptEncoding []string) bool {
+	for _, s := range acceptEncoding {
+		for _, encoding := range strings.Split(s, ",") {
+			if strings.TrimSpace(encoding) == "deflate" {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// PossiblyCompressedJSONResponse responds with compressed JSON if supported.
+func PossiblyCompressedJSONResponse(w http.ResponseWriter, r *http.Request, statusCode int, data any) {
+	if hasDeflate(r.Header.Values("Accept-Encoding")) {
+		CompressedJSONResponse(w, statusCode, data)
+	} else {
+		JSONResponse(w, statusCode, data)
 	}
 }
