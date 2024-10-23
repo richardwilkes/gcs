@@ -124,7 +124,7 @@ func (s *Server) sheetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response := sheet.NewSheetFromEntity(entity.Entity, entity.OriginalHash != entity.CurrentHash, access.ReadOnly)
-	CompressedJSONResponse(w, http.StatusOK, response)
+	PossiblyCompressedJSONResponse(w, r, http.StatusOK, response)
 }
 
 func (s *Server) updateSheetHandler(w http.ResponseWriter, r *http.Request) {
@@ -156,7 +156,7 @@ func (s *Server) updateSheetHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	response := sheet.NewSheetFromEntity(entity.Entity, entity.OriginalHash != entity.CurrentHash, access.ReadOnly)
-	CompressedJSONResponse(w, http.StatusOK, response)
+	PossiblyCompressedJSONResponse(w, r, http.StatusOK, response)
 }
 
 func (s *Server) saveSheetHandler(w http.ResponseWriter, r *http.Request) {
@@ -180,7 +180,7 @@ func (s *Server) saveSheetHandler(w http.ResponseWriter, r *http.Request) {
 		s.sheetsLock.Unlock()
 	}
 	response := sheet.NewSheetFromEntity(entity.Entity, entity.OriginalHash != entity.CurrentHash, access.ReadOnly)
-	CompressedJSONResponse(w, http.StatusOK, response)
+	PossiblyCompressedJSONResponse(w, r, http.StatusOK, response)
 }
 
 var errInvalid = errors.New("invalid input")
