@@ -52,8 +52,8 @@ type Colors struct {
 }
 
 type fileData struct {
-	Version int `json:"version"`
-	Colors
+	Version int    `json:"version"`
+	Colors  Colors `json:"colors"`
 }
 
 // Current returns the current theme.

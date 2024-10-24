@@ -57,8 +57,8 @@ type Fonts struct {
 }
 
 type fileData struct {
-	Version int `json:"version"`
-	Fonts
+	Version int   `json:"version"`
+	Fonts   Fonts `json:"fonts"`
 }
 
 // CurrentFonts returns the current theme fonts.
