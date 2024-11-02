@@ -17,7 +17,6 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/fonts"
-	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/tid"
@@ -315,13 +314,7 @@ func flexibleLess(s1, s2 string) bool {
 	if c2 {
 		s2 = s2[1:]
 	}
-	if n1, err := fxp.FromString(s1); err == nil {
-		var n2 fxp.Int
-		if n2, err = fxp.FromString(s2); err == nil {
-			return n1 < n2
-		}
-	}
-	return txt.NaturalLess(s1, s2, true)
+	return txt.NaturalLess(strings.ReplaceAll(s1, ",", ""), strings.ReplaceAll(s2, ",", ""), true)
 }
 
 // OpenEditor opens an editor for each selected row in the table.
