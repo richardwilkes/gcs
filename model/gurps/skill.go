@@ -529,10 +529,17 @@ func (s *Skill) DefaultSkill() *Skill {
 
 // HasDefaultTo returns true if the set of possible defaults includes the other skill.
 func (s *Skill) HasDefaultTo(other *Skill) bool {
+	fmt.Printf("%q.HasDefaultTo(%q)\n", s, other)
+	fmt.Printf("  Replacements: %v\n", s.Replacements)
+	fmt.Printf("other name: %q  specialization: %q\n", other.NameWithReplacements(),
+		other.SpecializationWithReplacements())
 	for _, def := range s.resolveToSpecificDefaults() {
+		fmt.Printf("default name: %q  specialization: %q\n", def.NameWithReplacements(s.Replacements),
+			def.SpecializationWithReplacements(s.Replacements))
 		if def.SkillBased() && def.NameWithReplacements(s.Replacements) == other.NameWithReplacements() {
 			specialization := def.SpecializationWithReplacements(s.Replacements)
 			if specialization == "" || specialization == other.SpecializationWithReplacements() {
+				fmt.Println("true")
 				return true
 			}
 		}
@@ -955,7 +962,8 @@ func (s *Skill) resolveToSpecificDefaults() []*SkillDefault {
 				def.SpecializationWithReplacements(s.Replacements), true,
 				map[string]bool{s.String(): true}) {
 				local := *def
-				local.Specialization = one.Specialization
+				local.Name = one.NameWithReplacements()
+				local.Specialization = one.SpecializationWithReplacements()
 				result = append(result, &local)
 			}
 		}
