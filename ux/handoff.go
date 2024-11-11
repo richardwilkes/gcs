@@ -12,6 +12,7 @@ package ux
 import (
 	"bytes"
 	"encoding/binary"
+	"log/slog"
 	"net"
 	"path/filepath"
 	"time"
@@ -26,10 +27,12 @@ import (
 func startHandoffService(readyChan chan struct{}, pathsChan chan<- []string, paths []string) {
 	const address = "127.0.0.1:13322"
 	var pathsBuffer []byte
+	slog.Info("starting handoff service")
 	now := time.Now()
 	for time.Since(now) < 10*time.Second {
 		// First, try to establish our port and become the primary GCS instance
 		if listener, err := net.Listen("tcp4", address); err == nil {
+			slog.Info("became primary instance")
 			go waitForReady(readyChan)
 			go acceptHandoff(listener, pathsChan)
 			return
@@ -51,11 +54,12 @@ func startHandoffService(readyChan chan struct{}, pathsChan chan<- []string, pat
 		if conn, err := net.DialTimeout("tcp4", address, time.Second); err == nil && handoff(conn, pathsBuffer) {
 			atexit.Exit(0)
 		}
-		// Client can't reach the server, loop around and start the processHandoff again
+		// Client can't reach the server, loop around and start the process handoff again
 	}
 }
 
 func handoff(conn net.Conn, pathsBuffer []byte) bool {
+	slog.Info("handing off to primary instance")
 	defer xio.CloseIgnoringErrors(conn)
 	buffer := make([]byte, len(cmdline.AppIdentifier))
 	if err := conn.SetDeadline(time.Now().Add(time.Second)); err != nil {
@@ -95,9 +99,11 @@ func handoff(conn net.Conn, pathsBuffer []byte) bool {
 }
 
 func waitForReady(readyChan <-chan struct{}) {
+	started := time.Now()
 	select {
 	case <-readyChan:
-	case <-time.After(15 * time.Second):
+		slog.Info("app is ready", "elapsed", time.Since(started))
+	case <-time.After(2 * time.Minute):
 		// This is here to try and ensure GCS doesn't hang around in the background if something goes wrong at startup.
 		// This has only ever been an issue on Windows, and I'm not sure this will actually help, but trying it anyway.
 		errs.Log(errs.New("timed out waiting for app to become ready"))
@@ -112,6 +118,7 @@ func acceptHandoff(listener net.Listener, pathsChan chan<- []string) {
 			errs.Log(err)
 			break
 		}
+		slog.Info("handoff connection accepted")
 		go processHandoff(conn, pathsChan)
 	}
 }
@@ -164,5 +171,6 @@ func processHandoff(conn net.Conn, pathsChan chan<- []string) {
 		errs.Log(err)
 		return
 	}
+	slog.Info("received handoff", "paths", paths)
 	pathsChan <- paths
 }
