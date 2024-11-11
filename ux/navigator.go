@@ -646,8 +646,11 @@ func newContextMenuItemFromButton(f unison.MenuFactory, id *int, button *unison.
 	if button.Enabled() {
 		useID := *id
 		*id++
-		return f.NewItem(unison.PopupMenuTemporaryBaseID+useID,
-			button.Tooltip.Children()[0].Self.(*unison.Label).String(), unison.KeyBinding{}, nil,
+		var title string
+		if label, ok := button.Tooltip.Children()[0].Self.(*unison.Label); ok {
+			title = label.String()
+		}
+		return f.NewItem(unison.PopupMenuTemporaryBaseID+useID, title, unison.KeyBinding{}, nil,
 			func(_ unison.MenuItem) { button.ClickCallback() })
 	}
 	return nil
@@ -995,7 +998,7 @@ func (n *Navigator) search(text string, rows []*NavigatorNode) {
 func prepareForContentCache[T gurps.NodeTypes](data []T) string {
 	var buffer strings.Builder
 	gurps.Traverse(func(one T) bool {
-		buffer.WriteString(strings.ToLower((any(one).(fmt.Stringer)).String()))
+		buffer.WriteString(strings.ToLower(one.String()))
 		buffer.WriteByte('\n')
 		return false
 	}, false, false, data...)

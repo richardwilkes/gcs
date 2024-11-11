@@ -291,8 +291,10 @@ func (e *pointsEditor) copyToOtherSheet(rec *gurps.PointsRecord) {
 		}
 		return false
 	}) {
-		if !one.AsPanel().Self.(*pointsEditor).AttemptClose() {
-			return
+		if pe, ok := one.AsPanel().Self.(*pointsEditor); ok {
+			if !pe.AttemptClose() {
+				return
+			}
 		}
 	}
 	for _, sheet := range sheets {

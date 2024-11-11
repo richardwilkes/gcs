@@ -84,7 +84,10 @@ type EditorData[T NodeTypes] interface {
 // AsNode converts a T to a Node[T]. This shouldn't require these hoops, but Go generics (as of 1.19) fails to compile
 // otherwise.
 func AsNode[T NodeTypes](in T) Node[T] {
-	return any(in).(Node[T])
+	if node, ok := any(in).(Node[T]); ok {
+		return node
+	}
+	return nil
 }
 
 // EntityFromNode returns the owning entity of the node, or nil.

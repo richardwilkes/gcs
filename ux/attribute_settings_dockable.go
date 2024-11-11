@@ -331,27 +331,32 @@ func (d *attributeSettingsDockable) dataDragOver(where unison.Point, data map[st
 				}
 			} else {
 				for i, def := range d.defs.List(false) {
-					if def == dd.def && (def.Type == attribute.Pool || def.Type == attribute.PoolRef) {
-						p := children[i].Self.(*attrDefSettingsPanel).poolPanel
-						pt := p.PointFromRoot(rootPt)
-						for j, child := range p.Children() {
-							rect := child.FrameRect()
-							if !pt.In(rect) {
-								continue
-							}
-							d.dragTargetPool = p
-							d.defInsert = i
-							if rect.CenterY() <= pt.Y {
-								d.thresholdInsert = j + 1
-							} else {
-								d.thresholdInsert = j
-							}
-							d.inDragOver = true
-							break
+					if def != dd.def || (def.Type != attribute.Pool && def.Type != attribute.PoolRef) {
+						continue
+					}
+					pp, ok2 := children[i].Self.(*attrDefSettingsPanel)
+					if !ok2 {
+						continue
+					}
+					p := pp.poolPanel
+					pt := p.PointFromRoot(rootPt)
+					for j, child := range p.Children() {
+						rect := child.FrameRect()
+						if !pt.In(rect) {
+							continue
 						}
-						if d.inDragOver {
-							break
+						d.dragTargetPool = p
+						d.defInsert = i
+						if rect.CenterY() <= pt.Y {
+							d.thresholdInsert = j + 1
+						} else {
+							d.thresholdInsert = j
 						}
+						d.inDragOver = true
+						break
+					}
+					if d.inDragOver {
+						break
 					}
 				}
 			}

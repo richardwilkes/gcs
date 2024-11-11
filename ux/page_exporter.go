@@ -179,7 +179,10 @@ type pageState struct {
 
 func newPageState(child unison.Paneler) *pageState {
 	panel := child.AsPanel()
-	helper := panel.Self.(pageHelper) //nolint:errcheck // The only things used with this are pageHelper-compliant
+	helper, ok := panel.Self.(pageHelper)
+	if !ok {
+		panic("child does not implement pageHelper")
+	}
 	state := &pageState{
 		child:    panel,
 		helper:   helper,
@@ -196,7 +199,10 @@ func newPageState(child unison.Paneler) *pageState {
 }
 
 func (s *pageState) key() string {
-	return s.child.ClientData()[pageKey].(string)
+	if str, ok := s.child.ClientData()[pageKey].(string); ok {
+		return str
+	}
+	return ""
 }
 
 func addRowPanel[T gurps.NodeTypes](rowPanel *unison.Panel, list *PageList[T], key string, startAtMap map[string]int) {

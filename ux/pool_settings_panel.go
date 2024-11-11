@@ -64,7 +64,9 @@ func (p *poolSettingsPanel) addThreshold() {
 	newThreshold := newThresholdSettingsPanel(p, threshold)
 	p.AddChild(newThreshold)
 	if children := p.Children(); len(children) == 2 {
-		children[0].Self.(*thresholdSettingsPanel).deleteButton.SetEnabled(true)
+		if panel, ok := children[0].Self.(*thresholdSettingsPanel); ok {
+			panel.deleteButton.SetEnabled(true)
+		}
 	}
 	undo.AfterData = clonePoolThresholds(p.def.Thresholds)
 	p.dockable.UndoManager().Add(undo)
@@ -80,7 +82,9 @@ func (p *poolSettingsPanel) deleteThreshold(target *thresholdSettingsPanel) {
 	i := p.IndexOfChild(target)
 	target.RemoveFromParent()
 	if children := p.Children(); len(children) == 1 {
-		children[0].Self.(*thresholdSettingsPanel).deleteButton.SetEnabled(false)
+		if panel, ok := children[0].Self.(*thresholdSettingsPanel); ok {
+			panel.deleteButton.SetEnabled(false)
+		}
 	}
 	undo := &unison.UndoEdit[[]*gurps.PoolThreshold]{
 		ID:       unison.NextUndoID(),

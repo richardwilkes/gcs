@@ -672,7 +672,9 @@ func addTemplateChoices(parent *unison.Panel, targetmgr *TargetMgr, targetKey st
 			(*tp).Type = item
 			if last == picker.NotApplicable && item != picker.NotApplicable {
 				(*tp).Qualifier.Qualifier = fxp.One
-				field.(Syncer).Sync()
+				if syncer, ok2 := field.(Syncer); ok2 {
+					syncer.Sync()
+				}
 			}
 			last = item
 			adjustFieldBlank(field, item == picker.NotApplicable || (*tp).Qualifier.Compare == criteria.AnyNumber)

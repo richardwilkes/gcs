@@ -303,7 +303,8 @@ func ApplyTemplate(filePath string) {
 }
 
 func (t *Template) applyTemplate(suppressRandomizePromptAsBool any) {
-	suppressRandomizePrompt, _ := suppressRandomizePromptAsBool.(bool) //nolint:errcheck // The default of false on failure is acceptable
+	//nolint:errcheck // The default of false on failure is acceptable
+	suppressRandomizePrompt, _ := suppressRandomizePromptAsBool.(bool)
 	for _, sheet := range PromptForDestination(OpenSheets(nil)) {
 		t.applyTemplateToSheet(sheet, suppressRandomizePrompt)
 	}

@@ -101,7 +101,8 @@ func configureRegistry() error {
 			}
 		}
 	}
-	shChangeNotifyProc.Call(shcneAssocChanged, shcfnIDlist, 0, 0) //nolint:errcheck // Doesn't matter, nothing we can do on error
+	//nolint:errcheck // Doesn't matter, nothing we can do on error
+	shChangeNotifyProc.Call(shcneAssocChanged, shcfnIDlist, 0, 0)
 	return nil
 }
 

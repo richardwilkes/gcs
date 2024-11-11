@@ -89,7 +89,9 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 	editButton.OnBackgroundInk = colors.OnHeader
 	editButton.OnSelectionInk = colors.OnHeader
 	editButton.Font = fonts.PageLabelPrimary
-	editButton.Drawable.(*unison.DrawableSVG).Size = unison.NewSize(height, height)
+	if dsvg, ok := editButton.Drawable.(*unison.DrawableSVG); ok {
+		dsvg.Size = unison.NewSize(height, height)
+	}
 	editButton.ClickCallback = func() {
 		displayPointsEditor(unison.AncestorOrSelf[Rebuildable](p), p.entity)
 	}

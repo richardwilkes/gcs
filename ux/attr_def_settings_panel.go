@@ -98,7 +98,9 @@ func (p *attrDefSettingsPanel) deleteAttrDef() {
 	p.RemoveFromParent()
 	children := attrPanel.Children()
 	if len(children) == 1 {
-		children[0].Self.(*attrDefSettingsPanel).deleteButton.SetEnabled(false)
+		if panel, ok := children[0].Self.(*attrDefSettingsPanel); ok {
+			panel.deleteButton.SetEnabled(false)
+		}
 	}
 	undo := &unison.UndoEdit[*gurps.AttributeDefs]{
 		ID:         unison.NextUndoID(),

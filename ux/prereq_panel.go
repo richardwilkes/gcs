@@ -120,7 +120,10 @@ func (p *prereqPanel) addToList(parent *unison.Panel, depth, index int, child gu
 		errs.Log(errs.New("unknown prerequisite type"), "type", reflect.TypeOf(child).String())
 	}
 	if panel != nil {
-		columns := parent.Layout().(*unison.FlexLayout).Columns
+		columns := 1
+		if parentLayout, ok := parent.Layout().(*unison.FlexLayout); ok {
+			columns = parentLayout.Columns
+		}
 		panel.SetLayoutData(&unison.FlexLayoutData{
 			HSpan:  columns,
 			HAlign: align.Fill,
@@ -204,7 +207,9 @@ func (p *prereqPanel) adjustAndOr(data gurps.Prereq) {
 			label.SetTitle(text)
 			i := 1
 			if text == noAndOr {
-				i = parent.Layout().(*unison.FlexLayout).Columns - 1
+				if parentLayout, ok2 := parent.Layout().(*unison.FlexLayout); ok2 {
+					i = parentLayout.Columns - 1
+				}
 			}
 			parent.AddChildAtIndex(label, i)
 		}

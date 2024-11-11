@@ -158,15 +158,25 @@ func (s *searchTracker) adjustForMatch() {
 func showSearchRef(ref *searchRef) {
 	switch table := ref.table.(type) {
 	case *unison.Table[*Node[*gurps.Trait]]:
-		showSearchResolvedRef(table, ref.row.(*Node[*gurps.Trait]))
+		if row, ok := ref.row.(*Node[*gurps.Trait]); ok {
+			showSearchResolvedRef(table, row)
+		}
 	case *unison.Table[*Node[*gurps.Skill]]:
-		showSearchResolvedRef(table, ref.row.(*Node[*gurps.Skill]))
+		if row, ok := ref.row.(*Node[*gurps.Skill]); ok {
+			showSearchResolvedRef(table, row)
+		}
 	case *unison.Table[*Node[*gurps.Spell]]:
-		showSearchResolvedRef(table, ref.row.(*Node[*gurps.Spell]))
+		if row, ok := ref.row.(*Node[*gurps.Spell]); ok {
+			showSearchResolvedRef(table, row)
+		}
 	case *unison.Table[*Node[*gurps.Equipment]]:
-		showSearchResolvedRef(table, ref.row.(*Node[*gurps.Equipment]))
+		if row, ok := ref.row.(*Node[*gurps.Equipment]); ok {
+			showSearchResolvedRef(table, row)
+		}
 	case *unison.Table[*Node[*gurps.Note]]:
-		showSearchResolvedRef(table, ref.row.(*Node[*gurps.Note]))
+		if row, ok := ref.row.(*Node[*gurps.Note]); ok {
+			showSearchResolvedRef(table, row)
+		}
 	}
 }
 

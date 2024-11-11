@@ -572,7 +572,9 @@ func (p *featuresPanel) createContainedWeightReductionPanel(f *gurps.ContainedWe
 	field := NewStringField(nil, "", i18n.Text("Contained Weight Reduction"),
 		func() string { return f.Reduction },
 		func(value string) {
-			f.Reduction, _ = gurps.ExtractContainedWeightReduction(value, gurps.SheetSettingsFor(p.entity).DefaultWeightUnits) //nolint:errcheck // A valid value is always returned
+			//nolint:errcheck // A valid value is always returned
+			f.Reduction, _ = gurps.ExtractContainedWeightReduction(value,
+				gurps.SheetSettingsFor(p.entity).DefaultWeightUnits)
 			MarkModified(wrapper)
 		})
 	field.SetMinimumTextWidthUsing("1,000 lb")
