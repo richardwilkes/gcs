@@ -11,7 +11,9 @@ package ux
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
+	"log/slog"
 	"net"
 	"path/filepath"
 	"time"
@@ -95,9 +97,12 @@ func handoff(conn net.Conn, pathsBuffer []byte) bool {
 }
 
 func waitForReady(readyChan <-chan struct{}) {
+	tStart := time.Now()
 	select {
 	case <-readyChan:
-	case <-time.After(15 * time.Second):
+		errs.LogWithLevel(context.Background(), slog.LevelInfo, slog.Default(), errs.Newf("app became ready after %fs", time.Since(tStart).Seconds()))
+		break
+	case <-time.After(120 * time.Second):
 		// This is here to try and ensure GCS doesn't hang around in the background if something goes wrong at startup.
 		// This has only ever been an issue on Windows, and I'm not sure this will actually help, but trying it anyway.
 		errs.Log(errs.New("timed out waiting for app to become ready"))
