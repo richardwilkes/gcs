@@ -188,7 +188,11 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 				}
 				a.rowStarts = append(a.rowStarts, len(a.Children()))
 				if a.kind == poolAttrKind {
-					a.AddChild(a.createPointsField(attr))
+					if def.Type != attribute.PoolRef {
+						a.AddChild(a.createPointsField(attr))
+					} else {
+						a.AddChild(unison.NewPanel())
+					}
 
 					var currentField *DecimalField
 					currentField = NewDecimalPageField(a.targetMgr, a.prefix+attr.AttrID+":cur",

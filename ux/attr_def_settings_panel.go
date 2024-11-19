@@ -200,7 +200,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 		field.Tooltip = newWrappedTooltip(i18n.Text("The base value, which may be a number or a formula"))
 		content.AddChild(field)
 
-		if p.def.Type != attribute.IntegerRef && p.def.Type != attribute.DecimalRef {
+		if p.def.Type != attribute.IntegerRef && p.def.Type != attribute.DecimalRef && p.def.Type != attribute.PoolRef {
 			addLabelAndDecimalField(content, p.dockable.targetMgr, p.def.KeyPrefix+"cost", i18n.Text("Cost per Point"),
 				i18n.Text("The cost per point difference from the base"), &p.def.CostPerPoint, 0, fxp.MaxBasePoints)
 
