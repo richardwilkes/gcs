@@ -29,7 +29,7 @@ func startHandoffService(readyChan chan struct{}, pathsChan chan<- []string, pat
 	var pathsBuffer []byte
 	slog.Info("starting handoff service")
 	now := time.Now()
-	for time.Since(now) < 10*time.Second {
+	for time.Since(now) < time.Minute {
 		// First, try to establish our port and become the primary GCS instance
 		if listener, err := net.Listen("tcp4", address); err == nil {
 			slog.Info("became primary instance")
@@ -56,6 +56,8 @@ func startHandoffService(readyChan chan struct{}, pathsChan chan<- []string, pat
 		}
 		// Client can't reach the server, loop around and start the process handoff again
 	}
+	slog.Error("failed to become primary instance and unable to handoff to another copy of GCS")
+	atexit.Exit(1)
 }
 
 func handoff(conn net.Conn, pathsBuffer []byte) bool {
@@ -99,14 +101,18 @@ func handoff(conn net.Conn, pathsBuffer []byte) bool {
 }
 
 func waitForReady(readyChan <-chan struct{}) {
+	const driverNote = " to become ready; this may be due to defective input device drivers"
 	started := time.Now()
 	select {
 	case <-readyChan:
-		slog.Info("app is ready", "elapsed", time.Since(started))
+		elapsed := time.Since(started)
+		slog.Info("app is ready", "elapsed", elapsed)
+		if elapsed > 10*time.Second || true {
+			slog.Warn("app took an excessive amount of time" + driverNote)
+		}
 	case <-time.After(2 * time.Minute):
 		// This is here to try and ensure GCS doesn't hang around in the background if something goes wrong at startup.
-		// This has only ever been an issue on Windows, and I'm not sure this will actually help, but trying it anyway.
-		errs.Log(errs.New("timed out waiting for app to become ready"))
+		slog.Error("timed out waiting for app" + driverNote)
 		atexit.Exit(1)
 	}
 }
