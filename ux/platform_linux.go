@@ -98,16 +98,18 @@ func installDesktopIcons() error {
 		return errs.Wrap(err)
 	}
 	for i := range gurps.KnownFileTypes {
-		if fi := gurps.KnownFileTypes[i]; fi.IsGCSData {
-			var overlay image.Image
-			overlay, err = svg.CreateImageFromSVG(fi.SVG, 128)
-			if err != nil {
-				return err
-			}
-			targetPath := filepath.Join(dir, strings.ReplaceAll(fi.MimeTypes[0], "/", "-")+".png")
-			if err = writePNG(targetPath, icon.Stack(docIcon, overlay)); err != nil {
-				return err
-			}
+		fi := gurps.KnownFileTypes[i]
+		if !fi.IsGCSData {
+			continue
+		}
+		var overlay image.Image
+		overlay, err = svg.CreateImageFromSVG(fi.SVG, 128)
+		if err != nil {
+			return err
+		}
+		targetPath := filepath.Join(dir, strings.ReplaceAll(fi.MimeTypes[0], "/", "-")+".png")
+		if err = writePNG(targetPath, icon.Stack(docIcon, overlay)); err != nil {
+			return err
 		}
 	}
 	var cmdPath string
@@ -149,17 +151,19 @@ func installMimeInfo() error {
 	var buffer bytes.Buffer
 	buffer.WriteString("<?xml version='1.0' encoding='UTF-8'?>\n<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>\n")
 	for i := range gurps.KnownFileTypes {
-		if fi := gurps.KnownFileTypes[i]; fi.IsGCSData {
-			fmt.Fprintf(&buffer, "  <mime-type type=\"%s\">\n", fi.MimeTypes[0])
-			fmt.Fprintf(&buffer, "    <comment>%s</comment>\n", fi.Name)
-			for _, mimeType := range fi.MimeTypes[1:] {
-				fmt.Fprintf(&buffer, "    <alias type=\"%s\"/>\n", mimeType)
-			}
-			for _, ext := range fi.Extensions {
-				fmt.Fprintf(&buffer, "    <glob pattern=\"*%s\"/>\n", ext)
-			}
-			buffer.WriteString("  </mime-type>\n")
+		fi := gurps.KnownFileTypes[i]
+		if !fi.IsGCSData {
+			continue
 		}
+		fmt.Fprintf(&buffer, "  <mime-type type=\"%s\">\n", fi.MimeTypes[0])
+		fmt.Fprintf(&buffer, "    <comment>%s</comment>\n", fi.Name)
+		for _, mimeType := range fi.MimeTypes[1:] {
+			fmt.Fprintf(&buffer, "    <alias type=\"%s\"/>\n", mimeType)
+		}
+		for _, ext := range fi.Extensions {
+			fmt.Fprintf(&buffer, "    <glob pattern=\"*%s\"/>\n", ext)
+		}
+		buffer.WriteString("  </mime-type>\n")
 	}
 	buffer.WriteString("</mime-info>\n")
 	if err := os.WriteFile(filepath.Join(dir, cmdline.AppIdentifier+".xml"), buffer.Bytes(), 0o640); err != nil {
