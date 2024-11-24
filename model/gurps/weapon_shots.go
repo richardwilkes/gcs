@@ -159,10 +159,10 @@ func (ws WeaponShots) String() string {
 	if ws.Thrown {
 		buffer.WriteByte('T')
 	} else {
-		if ws.Count <= 0 {
+		if ws.Count <= 0 && ws.InChamber <= 0 {
 			return ""
 		}
-		buffer.WriteString(ws.Count.String())
+		buffer.WriteString(ws.Count.Max(0).String())
 		if ws.InChamber > 0 {
 			buffer.WriteByte('+')
 			buffer.WriteString(ws.InChamber.String())
@@ -203,12 +203,11 @@ func (ws *WeaponShots) Validate() {
 		return
 	}
 	ws.Count = ws.Count.Max(0)
-	if ws.Count == 0 {
-		ws.InChamber = 0
+	ws.InChamber = ws.InChamber.Max(0)
+	if ws.Count == 0 && ws.InChamber == 0 {
 		ws.Duration = 0
 		ws.ReloadTime = 0
 		return
 	}
-	ws.InChamber = ws.InChamber.Max(0)
 	ws.Duration = ws.Duration.Max(0)
 }
