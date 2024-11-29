@@ -48,7 +48,7 @@ for arg in "$@"; do
 	--dist | -d)
 		EXTRA_BUILD_FLAGS="-a -trimpath"
 		EXTRA_LD_FLAGS="-s -w"
-		RELEASE="5.28.2"
+		RELEASE="5.29.0"
 		DIST=1
 		BUILD_JS=1
 		BUILD_GO=1
