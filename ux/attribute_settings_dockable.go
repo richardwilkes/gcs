@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"io/fs"
 	"slices"
+	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/attribute"
@@ -41,8 +42,10 @@ type attributeSettingsDockable struct {
 	dragTargetPool  *poolSettingsPanel
 	defInsert       int
 	thresholdInsert int
+	lastDragData    map[string]any
 	promptForSave   bool
 	inDragOver      bool
+	waitingForTimer bool
 }
 
 type attributeSettingsDragData struct {
@@ -85,6 +88,24 @@ func ShowAttributeSettings(owner EntityPanel) {
 	d.ModifiedCallback = d.modified
 	d.WillCloseCallback = d.willClose
 	d.Setup(d.addToStartToolbar, nil, d.initContent)
+	scroller := unison.Ancestor[*unison.ScrollPanel](d.content)
+	scroller.ScrollRectIntoViewCallback = func(rect unison.Rect) bool {
+		if scroller.DefaultScrollRectIntoView(rect) {
+			if d.inDragOver && !d.waitingForTimer {
+				d.waitingForTimer = true
+				unison.InvokeTaskAfter(func() {
+					d.waitingForTimer = false
+					if d.inDragOver {
+						w := d.Window()
+						pt := d.content.PointFromRoot(w.Content().PointToRoot(w.MouseLocation()))
+						d.dataDragOver(pt, d.lastDragData)
+					}
+				}, 50*time.Millisecond)
+			}
+			return true
+		}
+		return false
+	}
 }
 
 func (d *attributeSettingsDockable) UndoManager() *unison.UndoManager {
@@ -303,6 +324,10 @@ func (d *attributeSettingsDockable) apply() {
 }
 
 func (d *attributeSettingsDockable) dataDragOver(where unison.Point, data map[string]any) bool {
+	d.lastDragData = data
+	d.content.ScrollRectIntoView(unison.NewRect(where.X, where.Y-16, 1, 1))
+	d.content.ScrollRectIntoView(unison.NewRect(where.X, where.Y+16, 1, 1))
+
 	prevInDragOver := d.inDragOver
 	prevDefInsert := d.defInsert
 	prevThresholdInsert := d.thresholdInsert
@@ -373,6 +398,7 @@ func (d *attributeSettingsDockable) dataDragExit() {
 	d.defInsert = -1
 	d.thresholdInsert = -1
 	d.dragTargetPool = nil
+	d.lastDragData = nil
 	d.MarkForRedraw()
 }
 
