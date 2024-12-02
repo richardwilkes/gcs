@@ -272,14 +272,17 @@ func (n *Navigator) favoriteSelection() {
 	if n.table.HasSelection() {
 		changed := false
 		selection := n.table.SelectedRows(true)
+		seen := make(map[string]bool)
 		for _, row := range selection {
-			if row.IsFile() {
-				changed = true
-				if i := slices.Index(row.library.Favorites, row.path); i != -1 {
-					row.library.Favorites = slices.Delete(row.library.Favorites, i, i+1)
-				} else {
-					row.library.Favorites = append(row.library.Favorites, row.path)
-				}
+			if seen[row.path] || row.IsLibrary() || row.IsFavorites() {
+				continue
+			}
+			changed = true
+			seen[row.path] = true
+			if i := slices.Index(row.library.Favorites, row.path); i != -1 {
+				row.library.Favorites = slices.Delete(row.library.Favorites, i, i+1)
+			} else {
+				row.library.Favorites = append(row.library.Favorites, row.path)
 			}
 		}
 		if changed {
@@ -465,7 +468,7 @@ func (n *Navigator) renameSelection() {
 }
 
 func (n *Navigator) fixupFavoritePath(row *NavigatorNode, oldPath, newPath string) {
-	if row.IsFile() {
+	if row.IsFile() || row.IsDirectory() {
 		prefix := row.library.PathOnDisk + string([]rune{filepath.Separator})
 		oldPath = strings.TrimPrefix(oldPath, prefix)
 		if i := slices.Index(row.library.Favorites, oldPath); i != -1 {
@@ -780,15 +783,14 @@ func (n *Navigator) selectionChanged() {
 					downloadEnabled = len(releases) != 0 && releases[0].HasUpdate()
 				}
 			} else {
-				if row.IsFavorites() {
-					renameEnabled = false
-					deleteEnabled = false
-				}
 				hasOther = true
 				configEnabled = false
 				downloadEnabled = false
-				if row.IsFile() {
-					favoriteEnabled = true
+				favoriteEnabled = true
+				if row.IsFavorites() {
+					renameEnabled = false
+					deleteEnabled = false
+					favoriteEnabled = false
 				}
 			}
 		}

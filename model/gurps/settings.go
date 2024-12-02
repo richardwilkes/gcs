@@ -140,7 +140,9 @@ func GlobalSettings() *Settings {
 func (s *Settings) Save() error {
 	cutoff := time.Now().Add(-time.Hour * 24 * 120).Unix()
 	for k, v := range s.LibraryExplorer.Nodes {
-		if v.LastUsed < cutoff {
+		if v.LastUsed < cutoff ||
+			// Also prune out old keys before we had dirs in the favorites list
+			(!strings.HasPrefix(k, "F@") && !strings.HasPrefix(k, "_@")) {
 			delete(s.LibraryExplorer.Nodes, k)
 		}
 	}

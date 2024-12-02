@@ -75,8 +75,18 @@ func NewLibraryNode(nav *Navigator, lib *gurps.Library) *NavigatorNode {
 
 // NewDirectoryNode creates a new DirectoryNode.
 func NewDirectoryNode(nav *Navigator, lib *gurps.Library, dirPath string, parent *NavigatorNode) *NavigatorNode {
+	pathForID := "@" + filepath.Join(lib.Path(), dirPath)
+	root := parent
+	for root.parent != nil {
+		root = root.parent
+	}
+	if root.IsFavorites() {
+		pathForID = "F" + pathForID
+	} else {
+		pathForID = "_" + pathForID
+	}
 	n := &NavigatorNode{
-		id:      gurps.IDForNavNode(filepath.Join(lib.Path(), dirPath), kinds.NavigatorDirectory),
+		id:      gurps.IDForNavNode(pathForID, kinds.NavigatorDirectory),
 		path:    dirPath,
 		nav:     nav,
 		library: lib,
@@ -299,7 +309,12 @@ func (n *NavigatorNode) Refresh() {
 		}
 		slices.SortFunc(favs, func(a, b *fav) int { return txt.NaturalCmp(a.path, b.path, true) })
 		for _, one := range favs {
-			n.children = append(n.children, NewFileNode(one.library, one.path, n))
+			p := filepath.Join(one.library.Path(), one.path)
+			if xfs.IsDir(p) {
+				n.children = append(n.children, NewDirectoryNode(n.nav, one.library, one.path, n))
+			} else {
+				n.children = append(n.children, NewFileNode(one.library, one.path, n))
+			}
 		}
 	case n.IsLibrary():
 		n.children = n.refreshChildren(".", n)

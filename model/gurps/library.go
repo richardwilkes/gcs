@@ -29,7 +29,6 @@ import (
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/txt"
 	"github.com/richardwilkes/toolbox/xio"
-	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/rjeczalik/notify"
 )
 
@@ -122,8 +121,11 @@ func (l *Library) SetPath(newPath string) error {
 func (l *Library) CleanupFavorites() {
 	var favs []string
 	for _, one := range l.Favorites {
-		if xfs.FileIsReadable(filepath.Join(l.PathOnDisk, one)) {
-			favs = append(favs, one)
+		path := filepath.Join(l.PathOnDisk, one)
+		if fi, err := os.Stat(path); err == nil {
+			if mode := fi.Mode(); (mode.IsDir() || mode.IsRegular()) && mode.Perm()&0o400 != 0 {
+				favs = append(favs, one)
+			}
 		}
 	}
 	slices.Sort(favs)
