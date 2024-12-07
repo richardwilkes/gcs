@@ -65,40 +65,42 @@ func configureRegistry() error {
 		return errs.Wrap(err)
 	}
 	for i := range gurps.KnownFileTypes {
-		if fi := gurps.KnownFileTypes[i]; fi.IsGCSData {
-			// Create the doc icon
-			var overlay image.Image
-			if overlay, err = svg.CreateImageFromSVG(fi.SVG, 128); err != nil {
-				return err
-			}
-			docPath := filepath.Join(appDataDir, fi.Extensions[0][1:]+".ico")
-			if err = writeIco(icon.Stack(docBaseIcon, overlay), docPath); err != nil {
-				return err
-			}
+		fi := gurps.KnownFileTypes[i]
+		if !fi.IsGCSData {
+			continue
+		}
+		// Create the doc icon
+		var overlay image.Image
+		if overlay, err = svg.CreateImageFromSVG(fi.SVG, 128); err != nil {
+			return err
+		}
+		docPath := filepath.Join(appDataDir, fi.Extensions[0][1:]+".ico")
+		if err = writeIco(icon.Stack(docBaseIcon, overlay), docPath); err != nil {
+			return err
+		}
 
-			// Create the entry that points to the app's information for the extension
-			appExtKey := cmdline.AppIdentifier + fi.Extensions[0]
-			if err = setRegistryKey(softwareClasses+fi.Extensions[0], "", appExtKey); err != nil {
-				return err
-			}
+		// Create the entry that points to the app's information for the extension
+		appExtKey := cmdline.AppIdentifier + fi.Extensions[0]
+		if err = setRegistryKey(softwareClasses+fi.Extensions[0], "", appExtKey); err != nil {
+			return err
+		}
 
-			// Create the entry for the extension
-			path := softwareClasses + appExtKey
-			if err = setRegistryKey(path, "", fi.Name); err != nil {
-				return err
-			}
-			if err = setRegistryKey(path+`\DefaultIcon`, "", docPath); err != nil {
-				return err
-			}
-			if err = setRegistryKey(path+`\Shell`, "", ""); err != nil {
-				return err
-			}
-			if err = setRegistryKey(path+`\Shell\Open`, "", ""); err != nil {
-				return err
-			}
-			if err = setRegistryKey(path+`\Shell\Open\Command`, "", fmt.Sprintf(`"%s" "%%1"`, exePath)); err != nil {
-				return err
-			}
+		// Create the entry for the extension
+		path := softwareClasses + appExtKey
+		if err = setRegistryKey(path, "", fi.Name); err != nil {
+			return err
+		}
+		if err = setRegistryKey(path+`\DefaultIcon`, "", docPath); err != nil {
+			return err
+		}
+		if err = setRegistryKey(path+`\Shell`, "", ""); err != nil {
+			return err
+		}
+		if err = setRegistryKey(path+`\Shell\Open`, "", ""); err != nil {
+			return err
+		}
+		if err = setRegistryKey(path+`\Shell\Open\Command`, "", fmt.Sprintf(`%q %q`, exePath, "%1")); err != nil {
+			return err
 		}
 	}
 	//nolint:errcheck // Doesn't matter, nothing we can do on error
