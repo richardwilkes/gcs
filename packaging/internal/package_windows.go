@@ -105,7 +105,7 @@ func compress() (err error) {
 }
 
 func addWindowsIcon(rs *winres.ResourceSet) error {
-	winIcon, err := winres.NewIconFromImages([]image.Image{icon.Scale(appImg, 256, 256)})
+	winIcon, err := winres.NewIconFromResizedImage(appImg, nil)
 	if err != nil {
 		return errs.Wrap(err)
 	}
@@ -122,7 +122,7 @@ func addWindowsIcon(rs *winres.ResourceSet) error {
 			return err
 		}
 		var extIcon *winres.Icon
-		if extIcon, err = winres.NewIconFromImages([]image.Image{icon.Scale(icon.Stack(docImg, overlay), 256, 256)}); err != nil {
+		if extIcon, err = winres.NewIconFromResizedImage(icon.Stack(docImg, overlay), nil); err != nil {
 			return errs.Wrap(err)
 		}
 		if err = rs.SetIconTranslation(winres.Name(fi.Extensions[0][1:]), 0, extIcon); err != nil {
