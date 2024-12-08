@@ -1,38 +1,47 @@
 {
-  "extends": "@tsconfig/svelte/tsconfig.json",
-  "compilerOptions": {
-    "baseUrl": ".",
-    "isolatedModules": true,
-    /**
+	"extends": "@tsconfig/svelte/tsconfig.json",
+	"compilerOptions": {
+		"target": "ESNext",
+		"useDefineForClassFields": true,
+		"module": "ESNext",
+		"resolveJsonModule": true,
+		"baseUrl": ".",
+		"isolatedModules": true,
+		"moduleDetection": "force",
+		/**
      * Typecheck JS in `.svelte` and `.js` files by default.
      * Disable checkJs if you'd like to use dynamic types in JS.
      * Note that setting allowJs false does not prevent the use
      * of JS in `.svelte` files.
      */
-    "allowJs": true,
-    "checkJs": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "composite": true,
-    "allowImportingTsExtensions": true,
-	"emitDeclarationOnly": true,
-    "useDefineForClassFields": true,
-    "paths": {
-      "$lib/*": [
-        "./src/lib/*"
-      ],
-	  "$svg/*": [
-		"./src/svg/*"
-	  ],
-      "$page/*": [
-        "./src/page/*"
-      ],
-    }
-  },
-  "include": [
-    "./src/**/*.ts",
-    "./src/**/*.js",
-    "./src/**/*.svelte",
-    "./vite.config.ts"
-  ]
+		"allowJs": true,
+		"checkJs": true,
+		"forceConsistentCasingInFileNames": true,
+		"composite": true,
+		"allowImportingTsExtensions": true,
+		"emitDeclarationOnly": true,
+		"tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+		"skipLibCheck": true,
+		"moduleResolution": "bundler",
+		"strict": true,
+		"noEmit": true,
+		"noUncheckedSideEffectImports": true,
+		"paths": {
+			"$lib/*": [
+				"./src/lib/*"
+			],
+			"$svg/*": [
+				"./src/svg/*"
+			],
+			"$page/*": [
+				"./src/page/*"
+			],
+		}
+	},
+	"include": [
+		"./src/**/*.ts",
+		"./src/**/*.js",
+		"./src/**/*.svelte",
+		"./vite.config.ts"
+	]
 }

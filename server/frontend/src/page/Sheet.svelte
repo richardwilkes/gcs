@@ -16,9 +16,13 @@
 	import Personal from '$lib/sheets/personal/Personal.svelte';
 	import Attributes from '$lib/sheets/attributes/Attributes.svelte';
 
-	export let path = '';
+	interface Props {
+		path?: string;
+	}
 
-	let failed = false;
+	let { path = '' }: Props = $props();
+
+	let failed = $state(false);
 
 	async function load() {
 		if (path) {
@@ -32,10 +36,7 @@
 		}
 	}
 
-	$: {
-		path; // For reactivity...
-		load();
-	}
+	load();
 </script>
 
 <div class="content">

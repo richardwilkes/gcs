@@ -10,6 +10,7 @@
   -->
 
 <script lang="ts">
+	import DirNode from './DirNode.svelte';
 	import type { Directory } from '$lib/files.ts';
 	import { tweened } from 'svelte/motion';
 	import { slide } from 'svelte/transition';
@@ -18,12 +19,16 @@
 	import ClosedFolderSVG from '$svg/ClosedFolder.svg?raw';
 	import CircledChevronRightSVG from '$svg/CircledChevronRight.svg?raw';
 
-	export let dir: Directory;
-	export let selectedFile: string | undefined;
-	export let callback: (file: string, finish?: boolean) => void;
+	interface Props {
+		dir: Directory;
+		selectedFile: string | undefined;
+		callback: (file: string, finish?: boolean) => void;
+	}
+
+	let { dir, selectedFile, callback }: Props = $props();
 
 	const rotation = tweened(0, { duration: 200 });
-	let opened = false;
+	let opened = $state(false);
 </script>
 
 <div class="dir">
@@ -31,19 +36,21 @@
 		<button
 			class="chevron"
 			style="transform: rotate({$rotation}deg)"
-			on:click={() => {
+			onclick={() => {
 				opened = !opened;
 				rotation.set(opened ? 90 : 0);
-			}}>
+			}}
+		>
 			{@html CircledChevronRightSVG}
 		</button>
 		<button
 			class="item"
-			on:click={() => {}}
-			on:dblclick={() => {
+			onclick={() => {}}
+			ondblclick={() => {
 				opened = !opened;
 				rotation.set(opened ? 90 : 0);
-			}}>
+			}}
+		>
 			{#if opened}
 				{@html OpenFolderSVG}
 			{:else}
@@ -55,7 +62,7 @@
 	{#if opened}
 		<div class="children" transition:slide={{ delay: 0, duration: 200, axis: 'y' }}>
 			{#each dir.dirs || [] as subDir}
-				<svelte:self dir={subDir} {selectedFile} {callback} />
+				<DirNode dir={subDir} {selectedFile} {callback} />
 			{/each}
 			{#each dir.files || [] as file}
 				<FileNode name={file} path={dir.path + '/' + file} {selectedFile} {callback} />
@@ -87,7 +94,9 @@
 		border: none;
 		background-color: var(--color-surface);
 		color: var(--color-on-surface);
-		user-select: none;
+		-user-select: none;
+		-webkit-user-select: none; /* Chrome/Safari */
+		-moz-user-select: none; /* Firefox */
 	}
 
 	.chevron {

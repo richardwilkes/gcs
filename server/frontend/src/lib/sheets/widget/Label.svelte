@@ -10,15 +10,27 @@
   -->
 
 <script lang="ts">
-	export let tip = '';
-	export let left = false;
-	export let center = false;
-	export let borderLeft = false;
-	export let borderRight = false;
+	interface Props {
+		tip?: string;
+		left?: boolean;
+		center?: boolean;
+		borderLeft?: boolean;
+		borderRight?: boolean;
+		children?: import('svelte').Snippet;
+	}
+
+	let {
+		tip = '',
+		left = false,
+		center = false,
+		borderLeft = false,
+		borderRight = false,
+		children
+	}: Props = $props();
 </script>
 
 <div class="label" class:left class:center class:borderLeft class:borderRight title={tip}>
-	<slot>&nbsp;</slot>
+	{#if children}{@render children()}{:else}&nbsp;{/if}
 </div>
 
 <style>

@@ -17,7 +17,7 @@
 	import Description from '$lib/sheets/personal/Description.svelte';
 	import { sheet } from '$lib/sheet.ts';
 
-	$: imageURL = $sheet?.Portrait ? 'data:;base64,' + $sheet.Portrait : undefined;
+	let imageURL = $derived($sheet?.Portrait ? 'data:;base64,' + $sheet.Portrait : undefined);
 </script>
 
 <div class="content">

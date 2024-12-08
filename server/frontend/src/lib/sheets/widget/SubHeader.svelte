@@ -10,13 +10,23 @@
   -->
 
 <script lang="ts">
-	export let span = 1;
-	export let tip = '';
-	export let extra_style = '';
+	interface Props {
+		span?: number;
+		tip?: string;
+		extra_style?: string;
+		children?: import('svelte').Snippet;
+	}
+
+	let {
+		span = 1,
+		tip = '',
+		extra_style = '',
+		children
+	}: Props = $props();
 </script>
 
 <div class="header" title={tip} style="grid-column-end: span {span};{extra_style}">
-	<slot>&nbsp;</slot>
+	{#if children}{@render children()}{:else}&nbsp;{/if}
 </div>
 
 <style>

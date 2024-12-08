@@ -10,11 +10,16 @@
   -->
 
 <script lang="ts">
-	export let tip = '';
+	interface Props {
+		tip?: string;
+		children?: import('svelte').Snippet;
+	}
+
+	let { tip = '', children }: Props = $props();
 </script>
 
 <div class="header" title={tip}>
-	<slot>&nbsp;</slot>
+	{#if children}{@render children()}{:else}&nbsp;{/if}
 </div>
 
 <style>

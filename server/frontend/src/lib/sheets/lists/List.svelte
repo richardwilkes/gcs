@@ -15,21 +15,26 @@
 	import Icon from '$lib/sheets/lists/Icon.svelte';
 	import Cell from '$lib/sheets/lists/Cell.svelte';
 
-	export let table: Table | null | undefined;
-	export let area: string;
-
-	let style = '';
-
-	$: {
-		style = '';
-		if (table && table.Rows.length !== 0) {
-			style = `grid-area: ${area};grid-template-columns:`;
-			for (let i = 0; i < table.Columns.length; i++) {
-				style += table.Columns[i].Primary ? ' 1fr' : ' auto';
-			}
-			style += `;grid-template-rows: repeat(${table.Rows.length},0fr) 1fr;`;
-		}
+	interface Props {
+		table: Table | null | undefined;
+		area: string;
 	}
+
+	let { table, area }: Props = $props();
+
+	function computeStyle(): string {
+		let s = '';
+		if (table && table.Rows.length !== 0) {
+			s = `grid-area: ${area};grid-template-columns:`;
+			for (let i = 0; i < table.Columns.length; i++) {
+				s += table.Columns[i].Primary ? ' 1fr' : ' auto';
+			}
+			s += `;grid-template-rows: repeat(${table.Rows.length},0fr) 1fr;`;
+		}
+		return s;
+	}
+
+	let style = $derived(computeStyle());
 </script>
 
 {#if table && table.Rows.length !== 0}
@@ -49,7 +54,10 @@
 				<div
 					class:divider={cellIndex !== 0}
 					class:banding
-					style={row.Depth && table.Columns[cellIndex].Primary ? `padding-left: ${row.Depth}em` : ''}>
+					style={row.Depth && table.Columns[cellIndex].Primary
+						? `padding-left: ${row.Depth}em`
+						: ''}
+				>
 					<Cell {cell} column={table.Columns[cellIndex]} />
 				</div>
 			{/each}

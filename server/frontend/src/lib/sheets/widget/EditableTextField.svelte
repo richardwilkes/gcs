@@ -14,8 +14,12 @@
 	import { sheetPath } from '$lib/url.js';
 	import Field from '$lib/sheets/widget/Field.svelte';
 
-	export let key: string;
-	export let right = false;
+	interface Props {
+		key: string;
+		right?: boolean;
+	}
+
+	let { key, right = false }: Props = $props();
 
 	async function updateField(event: FocusEvent) {
 		if ($sheetPath) {
@@ -72,5 +76,6 @@
 	}
 </script>
 
-<Field editable {right} style="width:100%;" on:blur={(target) => updateField(target)}
-	>{extractField($sheet, key, key)}</Field>
+<Field editable {right} style="width:100%;" onblur={(target) => updateField(target)}
+	>{extractField($sheet, key, key)}</Field
+>

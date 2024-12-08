@@ -14,10 +14,10 @@ require (
 	github.com/vearutop/statigz v1.4.3
 	github.com/yookoala/realpath v1.0.0
 	github.com/zeebo/xxh3 v1.0.2
-	golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f
-	golang.org/x/image v0.22.0
-	golang.org/x/sys v0.27.0
-	golang.org/x/text v0.20.0
+	golang.org/x/exp v0.0.0-20241204233417-43b7b7cde48d
+	golang.org/x/image v0.23.0
+	golang.org/x/sys v0.28.0
+	golang.org/x/text v0.21.0
 )
 
 require (
@@ -34,8 +34,8 @@ require (
 	github.com/pkg/term v1.1.0 // indirect
 	github.com/yuin/goldmark v1.7.8 // indirect
 	golang.org/x/mod v0.22.0 // indirect
-	golang.org/x/net v0.31.0 // indirect
-	golang.org/x/sync v0.9.0 // indirect
-	golang.org/x/tools v0.27.0 // indirect
+	golang.org/x/net v0.32.0 // indirect
+	golang.org/x/sync v0.10.0 // indirect
+	golang.org/x/tools v0.28.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

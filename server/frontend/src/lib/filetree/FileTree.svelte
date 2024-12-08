@@ -10,46 +10,59 @@
   -->
 
 <script lang="ts">
-	import Dialog, { ShowAs } from '$lib/Dialog.svelte';
+	import Dialog from '$lib/Dialog.svelte';
+	import { ShowAs } from '$lib/show.ts';
 	import { apiPrefix } from '$lib/dev.ts';
 	import { session } from '$lib/session.ts';
 	import { type Directory, fillPathsForDir } from '$lib/files.ts';
 	import DirNode from '$lib/filetree/DirNode.svelte';
 	import Waiting from '$lib/Waiting.svelte';
 
-	export let showAs: ShowAs = ShowAs.None;
-	export let title = 'Select a File';
-	export let path: string;
-	export let onSuccess: (file: string, finish?: boolean) => void;
-	export let onCancel: () => void;
-
-	let dialog: Dialog;
-	let pending = false;
-	let error = false;
-	let dirs: Directory[] | undefined;
-	let selectedFile: string | undefined;
-
-	$: if (showAs !== ShowAs.None && dialog && !dirs && !pending) {
-		error = false;
-		pending = true;
-		(async function loadFiles() {
-			const rsp = await fetch(apiPrefix(path), {
-				method: 'GET',
-				headers: { 'X-Session': $session?.ID ?? '' },
-				cache: 'no-store',
-			});
-			if (rsp.ok) {
-				let data = await rsp.json();
-				for (const dir of data) {
-					fillPathsForDir(dir, '');
-				}
-				dirs = data;
-				pending = false;
-			} else {
-				error = true;
-			}
-		})();
+	interface Props {
+		showAs?: ShowAs;
+		title?: string;
+		path: string;
+		onSuccess: (file: string, finish?: boolean) => void;
+		onCancel: () => void;
 	}
+
+	let {
+		showAs = $bindable(ShowAs.None),
+		title = 'Select a File',
+		path,
+		onSuccess,
+		onCancel
+	}: Props = $props();
+
+	let dialog: Dialog | undefined = $state();
+	let pending = $state(false);
+	let error = $state(false);
+	let dirs: Directory[] | undefined = $state();
+	let selectedFile: string | undefined = $state();
+
+	$effect(() => {
+		if (showAs !== ShowAs.None && dialog && !dirs && !pending) {
+			error = false;
+			pending = true;
+			(async function loadFiles() {
+				const rsp = await fetch(apiPrefix(path), {
+					method: 'GET',
+					headers: { 'X-Session': $session?.ID ?? '' },
+					cache: 'no-store'
+				});
+				if (rsp.ok) {
+					let data = await rsp.json();
+					for (const dir of data) {
+						fillPathsForDir(dir, '');
+					}
+					dirs = data;
+					pending = false;
+				} else {
+					error = true;
+				}
+			})();
+		}
+	});
 
 	function done(ok: boolean) {
 		dirs = undefined;
@@ -63,7 +76,7 @@
 </script>
 
 <Dialog bind:this={dialog} bind:showAs callback={(ok) => done(ok)}>
-	<div slot="title">{title}</div>
+	<div>{title}</div>
 	<div class="content">
 		{#if pending}
 			<div class="pending" class:error>
@@ -83,9 +96,10 @@
 							callback={(file, finish) => {
 								selectedFile = file;
 								if (finish) {
-									dialog.close(true);
+									dialog?.close(true);
 								}
-							}} />
+							}}
+						/>
 					{/each}
 				</div>
 			</div>

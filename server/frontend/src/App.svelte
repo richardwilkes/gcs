@@ -43,9 +43,9 @@
 	<Toolbar>
 		{#if $sheetPath}
 			{#if $sheet && !$sheet.ReadOnly}
-				<button class="save" disabled={!$sheet.Modified} on:click={save}>Save</button>
+				<button class="save" disabled={!$sheet.Modified} onclick={save}>Save</button>
 			{/if}
-			<button class="open" title="Open…" on:click={open}>
+			<button class="open" title="Open…" onclick={open}>
 				<div class="icon">{@html SheetFileSVG}</div>
 				{$sheetPath}
 				{#if $sheet && $sheet.ReadOnly}

@@ -21,25 +21,25 @@
 		class="highlight"
 		class:left={$currentTheme === Theme.Light}
 		class:middle={$currentTheme === Theme.System}
-		class:right={$currentTheme === Theme.Dark} />
+		class:right={$currentTheme === Theme.Dark}></div>
 	<button
 		class="button"
 		class:active={$currentTheme === Theme.Light}
-		on:click={() => ($currentTheme = Theme.Light)}
+		onclick={() => ($currentTheme = Theme.Light)}
 		title="Light Mode">
 		{@html SunSVG}
 	</button>
 	<button
 		class="button"
 		class:active={$currentTheme === Theme.System}
-		on:click={() => ($currentTheme = Theme.System)}
+		onclick={() => ($currentTheme = Theme.System)}
 		title="System Mode">
 		{@html LightningSVG}
 	</button>
 	<button
 		class="button"
 		class:active={$currentTheme === Theme.Dark}
-		on:click={() => ($currentTheme = Theme.Dark)}
+		onclick={() => ($currentTheme = Theme.Dark)}
 		title="Dark Mode">
 		{@html MoonSVG}
 	</button>

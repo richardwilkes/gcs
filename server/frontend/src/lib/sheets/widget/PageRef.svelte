@@ -13,21 +13,18 @@
 	import { refPrefix } from '$lib/dev';
 	import { sheet } from '$lib/sheet.ts';
 
-	export let pageRef = '';
+	interface Props {
+		pageRef?: string;
+	}
 
-	let tip = '';
-	let single = '';
-	let prefix = '';
-	let uri = '';
+	let { pageRef = '' }: Props = $props();
 
-	$: {
-		const parts = pageRef.split(/,|;/);
-		tip = parts.join('\n');
-		single = parts.length < 2 ? pageRef : parts[0] + '+';
-		prefix = parts[0];
-		let i = prefix.length - 1;
+	let parts = $derived(pageRef.split(/,|;/));
+
+	function calcPageNumStartsAt(): number {
+		let i = parts[0].length - 1;
 		while (i >= 0) {
-			const ch = prefix[i];
+			const ch = parts[0][i];
 			if (ch >= '0' && ch <= '9') {
 				i--;
 			} else {
@@ -35,30 +32,37 @@
 				break;
 			}
 		}
-		if (i > 0) {
-			const page = prefix.substring(i, prefix.length);
-			prefix = prefix.substring(0, i);
-			uri = refPrefix(prefix);
-			const ref = $sheet?.PageRefs[prefix];
-			if (ref?.Name) {
-				uri += '/' + encodeURIComponent(ref.Name);
-			}
-			if (page) {
-				let pageNum = parseInt(page, 10);
-				if (pageNum) {
-					if (ref?.Offset) {
-						pageNum += ref?.Offset;
-					}
-					uri += `#page=${pageNum}`;
-				}
-			}
-		} else {
-			uri = '';
-			prefix = '';
-			single = '';
-			tip = '';
-		}
+		return i;
 	}
+
+	let pageNumStartsAt = $derived(calcPageNumStartsAt());
+	let single = $derived(pageNumStartsAt > 0 ? (parts.length < 2 ? pageRef : parts[0] + '+') : '');
+	let tip = $derived(pageNumStartsAt > 0 ? parts.join('\n') : '');
+	let prefix = $derived(pageNumStartsAt > 0 ? parts[0].substring(0, pageNumStartsAt) : '');
+
+	function computeURI(): string {
+		if (pageNumStartsAt < 1) {
+			return '';
+		}
+		let u = refPrefix(prefix);
+		const ref = $sheet?.PageRefs[prefix];
+		if (ref?.Name) {
+			u += '/' + encodeURIComponent(ref.Name);
+		}
+		const page = parts[0].substring(pageNumStartsAt, parts[0].length);
+		if (page) {
+			let pageNum = parseInt(page, 10);
+			if (pageNum) {
+				if (ref?.Offset) {
+					pageNum += ref?.Offset;
+				}
+				u += `#page=${pageNum}`;
+			}
+		}
+		return u;
+	}
+
+	let uri = $derived(computeURI());
 </script>
 
 <div class="ref" title={tip}>

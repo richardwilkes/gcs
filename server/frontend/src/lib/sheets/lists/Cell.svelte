@@ -17,10 +17,12 @@
 	import PageRef from '$lib/sheets/widget/PageRef.svelte';
 	import SvelteMarkdown from 'svelte-markdown';
 
-	export let cell: Cell;
-	export let column: Column;
+	interface Props {
+		cell: Cell;
+		column: Column; // TODO: Add support for the other fields in the Cell data
+	}
 
-	// TODO: Add support for the other fields in the Cell data
+	let { cell, column }: Props = $props();
 </script>
 
 {#if cell.Type === 'page_ref'}

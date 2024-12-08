@@ -10,21 +10,39 @@
   -->
 
 <script lang="ts">
-	export let style = '';
-	export let tip = '';
-	export let right = false;
-	export let center = false;
-	export let wrap = false;
-	export let noBottomBorder = false;
-	export let editable = false;
-	export let multiLine = false;
-	export let strikeout = false;
+	interface Props {
+		style?: string;
+		tip?: string;
+		right?: boolean;
+		center?: boolean;
+		wrap?: boolean;
+		noBottomBorder?: boolean;
+		editable?: boolean;
+		multiLine?: boolean;
+		strikeout?: boolean;
+		onblur?: (event: FocusEvent) => void;
+		children?: import('svelte').Snippet;
+	}
+
+	let {
+		style = '',
+		tip = '',
+		right = false,
+		center = false,
+		wrap = false,
+		noBottomBorder = false,
+		editable = false,
+		multiLine = false,
+		strikeout = false,
+		onblur = (_: FocusEvent) => {},
+		children
+	}: Props = $props();
 
 	interface FieldElement extends HTMLDivElement {
 		suppressSelectAll?: boolean;
 	}
 
-	let field: FieldElement;
+	let field: FieldElement | undefined = $state();
 	let inDrop: boolean;
 	let contentPriorToDrop: string;
 
@@ -33,6 +51,9 @@
 			if (event.key === 'Enter') {
 				event.preventDefault();
 			}
+		}
+		if (field) {
+			field.suppressSelectAll = false;
 		}
 	}
 
@@ -54,14 +75,16 @@
 	function filterDrag(_: DragEvent) {
 		if (editable && !multiLine) {
 			inDrop = true;
-			contentPriorToDrop = field.innerText;
+			if (field) {
+				contentPriorToDrop = field.innerText;
+			}
 		}
 	}
 
 	function filterInput(_: Event) {
 		if (inDrop) {
 			inDrop = false;
-			if (editable && !multiLine) {
+			if (editable && !multiLine && field) {
 				let text = field.innerText;
 				if (text.includes('\n')) {
 					text = text.replaceAll('\n', '');
@@ -70,7 +93,8 @@
 					if (text !== contentPriorToDrop) {
 						for (let i = 0; i < text.length && i < contentPriorToDrop.length; i++) {
 							if (
-								text[text.length - (i + 1)] != contentPriorToDrop[contentPriorToDrop.length - (i + 1)]
+								text[text.length - (i + 1)] !=
+								contentPriorToDrop[contentPriorToDrop.length - (i + 1)]
 							) {
 								pos = text.length - i;
 								break;
@@ -87,41 +111,45 @@
 		let sel = window.getSelection();
 		if (sel) {
 			sel.removeAllRanges();
-			let first = field.childNodes[0];
-			if (!first) {
-				first = field;
-			}
-			if (first) {
-				const range = document.createRange();
-				range.setStart(first, from);
-				range.setEnd(first, to);
-				sel.addRange(range);
+			if (field) {
+				let first = field.childNodes[0];
+				if (!first) {
+					first = field;
+				}
+				if (first) {
+					const range = document.createRange();
+					range.setStart(first, from);
+					range.setEnd(first, to);
+					sel.addRange(range);
+				}
 			}
 		}
 	}
 
 	function mouseDown(_: MouseEvent) {
-		field.suppressSelectAll = true;
+		if (field) {
+			field.suppressSelectAll = true;
+		}
 	}
 
 	function focusIn(_: FocusEvent) {
-		if (field.suppressSelectAll) {
-			field.suppressSelectAll = false;
-		} else {
-			selectRange(0, field.innerText.length);
+		if (field) {
+			if (field.suppressSelectAll) {
+				field.suppressSelectAll = false;
+			} else {
+				selectRange(0, field.innerText.length);
+			}
 		}
 	}
 
 	function focusOut(_: FocusEvent) {
-		field.suppressSelectAll = false;
-	}
-
-	function keyDown(_: KeyboardEvent) {
-		field.suppressSelectAll = false;
+		if (field) {
+			field.suppressSelectAll = false;
+		}
 	}
 </script>
 
-<!-- svelte-ignore a11y-interactive-supports-focus -->
+<!-- svelte-ignore a11y_interactive_supports_focus -->
 <div
 	class="field"
 	bind:this={field}
@@ -135,16 +163,16 @@
 	role="textbox"
 	contenteditable={editable ? 'plaintext-only' : 'false'}
 	title={tip}
-	on:keydown={filterKey}
-	on:paste={filterPaste}
-	on:drop={filterDrag}
-	on:input={filterInput}
-	on:blur
-	on:keydown={keyDown}
-	on:mousedown={mouseDown}
-	on:focusin={focusIn}
-	on:focusout={focusOut}>
-	<slot />
+	onkeydown={filterKey}
+	onpaste={filterPaste}
+	ondrop={filterDrag}
+	oninput={filterInput}
+	{onblur}
+	onmousedown={mouseDown}
+	onfocusin={focusIn}
+	onfocusout={focusOut}
+>
+	{@render children?.()}
 </div>
 
 <style>

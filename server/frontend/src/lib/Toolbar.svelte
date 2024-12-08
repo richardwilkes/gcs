@@ -16,6 +16,11 @@
 	import { apiPrefix } from '$lib/dev.ts';
 	import { navTo } from '$lib/nav';
 	import LogoutSVG from '$svg/Logout.svg?raw';
+	interface Props {
+		children?: import('svelte').Snippet;
+	}
+
+	let { children }: Props = $props();
 
 	async function logout() {
 		if ($session) {
@@ -33,11 +38,11 @@
 
 <div class="toolbar">
 	<div class="fill">
-		<slot />
+		{@render children?.()}
 	</div>
 	<ThemeSwitch />
 	{#if $session?.User}
-		<button class="logout svg" title="Logout" on:click={logout}>
+		<button class="logout svg" title="Logout" onclick={logout}>
 			{@html LogoutSVG}
 		</button>
 	{/if}

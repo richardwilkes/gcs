@@ -13,44 +13,44 @@
 	import List from '$lib/sheets/lists/List.svelte';
 	import { sheet } from '$lib/sheet.ts';
 
-	let layout: string;
-
-	$: {
-		layout = 'grid-template-areas:';
+	function computeLayout(): string {
+		let s = 'grid-template-areas:';
 		if ($sheet?.Reactions?.Rows.length && $sheet?.ConditionalModifiers?.Rows.length) {
-			layout += '"reactions conditional_modifiers"';
+			s += '"reactions conditional_modifiers"';
 		} else if ($sheet?.Reactions?.Rows.length) {
-			layout += '"reactions reactions"';
+			s += '"reactions reactions"';
 		} else if ($sheet?.ConditionalModifiers?.Rows.length) {
-			layout += '"conditional_modifiers conditional_modifiers"';
+			s += '"conditional_modifiers conditional_modifiers"';
 		}
 		if ($sheet?.MeleeWeapons?.Rows.length) {
-			layout += '"melee melee"';
+			s += '"melee melee"';
 		}
 		if ($sheet?.RangedWeapons?.Rows.length) {
-			layout += '"ranged ranged"';
+			s += '"ranged ranged"';
 		}
 		if ($sheet?.Traits?.Rows.length && $sheet?.Skills?.Rows.length) {
-			layout += '"traits skills"';
+			s += '"traits skills"';
 		} else if ($sheet?.Traits?.Rows.length) {
-			layout += '"traits traits"';
+			s += '"traits traits"';
 		} else if ($sheet?.Skills?.Rows.length) {
-			layout += '"skills skills"';
+			s += '"skills skills"';
 		}
 		if ($sheet?.Spells?.Rows.length) {
-			layout += '"spells spells"';
+			s += '"spells spells"';
 		}
 		if ($sheet?.CarriedEquipment?.Rows.length) {
-			layout += '"equipment equipment"';
+			s += '"equipment equipment"';
 		}
 		if ($sheet?.OtherEquipment?.Rows.length) {
-			layout += '"other_equipment other_equipment"';
+			s += '"other_equipment other_equipment"';
 		}
 		if ($sheet?.Notes?.Rows.length) {
-			layout += '"notes notes"';
+			s += '"notes notes"';
 		}
-		layout += ';';
+		return s + ';';
 	}
+
+	let layout: string = $derived(computeLayout());
 </script>
 
 <div class="lists" style={layout}>

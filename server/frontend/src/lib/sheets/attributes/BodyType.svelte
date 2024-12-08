@@ -52,8 +52,11 @@
 				<Field noBottomBorder center tip={loc.DRDetail}>{loc.DR}</Field>
 			</div>
 			<div class="notes" class:banding>
-				<Field editable style="flex-grow:1;width:100%;" on:blur={(target) => updateField(target, loc)}
-					>{loc.Notes || ''}</Field>
+				<Field
+					editable
+					style="flex-grow:1;width:100%;"
+					onblur={(target) => updateField(target, loc)}>{loc.Notes || ''}</Field
+				>
 			</div>
 		{/each}
 	</div>

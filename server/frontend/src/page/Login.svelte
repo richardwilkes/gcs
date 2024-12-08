@@ -16,20 +16,20 @@
 	import { url } from '$lib/url.ts';
 	import { navTo } from '$lib/nav';
 
-	let form: HTMLFormElement;
-	let nameInput: HTMLInputElement;
-	let passwordInput: HTMLInputElement;
-	let disabled = true;
-	let nameEmpty = true;
-	let passwordEmpty = true;
-	let errorMsg = '';
+	let form: HTMLFormElement | undefined = $state();
+	let nameInput: HTMLInputElement | undefined = $state();
+	let passwordInput: HTMLInputElement | undefined = $state();
+	let nameEmpty = $state(true);
+	let passwordEmpty = $state(true);
+	let disabled = $derived(nameEmpty || passwordEmpty);
+	let errorMsg = $state('');
 
 	function submit(event: Event) {
 		event.preventDefault();
 		fetch(apiPrefix('/login'), {
 			method: 'POST',
 			body: new FormData(form),
-			cache: 'no-store',
+			cache: 'no-store'
 		})
 			.then((rsp) => {
 				if (!rsp.ok) {
@@ -52,8 +52,8 @@
 
 	function handleFailure() {
 		errorMsg = 'Login failed';
-		passwordInput.select();
-		passwordInput.focus();
+		passwordInput?.select();
+		passwordInput?.focus();
 	}
 
 	function updateNameEmpty(event: Event) {
@@ -65,15 +65,13 @@
 	}
 
 	onMount(() => {
-		nameInput.select();
-		nameInput.focus();
+		nameInput?.select();
+		nameInput?.focus();
 	});
-
-	$: disabled = nameEmpty || passwordEmpty;
 </script>
 
 <div class="content">
-	<form class="panel" bind:this={form} on:submit={submit}>
+	<form class="panel" bind:this={form} onsubmit={submit}>
 		<img class="logo" src="/app.webp" alt="GURPS Character Sheet" />
 		<div class="title">GURPS Character Sheet</div>
 		<div class="subtitle">by Richard A. Wilkes</div>
@@ -81,15 +79,23 @@
 			<div class="error">{errorMsg}</div>
 		{/if}
 		<label for="name">Name</label>
-		<input type="text" id="name" name="name" bind:this={nameInput} on:input={updateNameEmpty} required />
+		<input
+			type="text"
+			id="name"
+			name="name"
+			bind:this={nameInput}
+			oninput={updateNameEmpty}
+			required
+		/>
 		<label for="password">Password</label>
 		<input
 			type="password"
 			id="password"
 			name="password"
 			bind:this={passwordInput}
-			on:input={updatePasswordEmpty}
-			required />
+			oninput={updatePasswordEmpty}
+			required
+		/>
 		<button type="submit" {disabled}>Login</button>
 	</form>
 </div>

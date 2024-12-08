@@ -9,62 +9,75 @@
   - defined by the Mozilla Public License, version 2.0.
   -->
 
-<script context="module" lang="ts">
-	export enum ShowAs {
-		None = '',
-		Modal = 'modal',
-		Dialog = 'dialog',
-	}
-</script>
-
 <script lang="ts">
-	export let showAs: ShowAs = ShowAs.None;
-	export let cancelButton = 'Cancel';
-	export let cancelAutoFocus = false;
-	export let okButton = 'OK';
-	export let okAutoFocus = true;
-	export let callback: (ok: boolean) => void;
+	import { ShowAs } from '$lib/show.ts';
+
+	interface Props {
+		showAs?: ShowAs;
+		cancelButton?: string;
+		cancelAutoFocus?: boolean;
+		okButton?: string;
+		okAutoFocus?: boolean;
+		callback: (ok: boolean) => void;
+		title?: import('svelte').Snippet;
+		children?: import('svelte').Snippet;
+		buttons?: import('svelte').Snippet<[any]>;
+	}
+
+	let {
+		showAs = $bindable(ShowAs.None),
+		cancelButton = 'Cancel',
+		cancelAutoFocus = false,
+		okButton = 'OK',
+		okAutoFocus = true,
+		callback,
+		title,
+		children,
+		buttons
+	}: Props = $props();
 	export const close = (ok: boolean) => {
 		showAs = ShowAs.None;
-		dialog.close();
+		dialog?.close();
 		callback(ok);
 	};
 
-	let dialog: HTMLDialogElement;
+	let dialog: HTMLDialogElement | undefined = $state();
 
-	$: if (dialog) {
-		switch (showAs) {
-			case ShowAs.Modal:
-				dialog.showModal();
-				break;
-			case ShowAs.Dialog:
-				dialog.show();
-				break;
-			default:
-				dialog.close();
-				break;
+	$effect(() => {
+		if (dialog) {
+			switch (showAs) {
+				case ShowAs.Modal:
+					dialog.showModal();
+					break;
+				case ShowAs.Dialog:
+					dialog.show();
+					break;
+				default:
+					dialog.close();
+					break;
+			}
 		}
-	}
+	});
 </script>
 
 {#if showAs !== ShowAs.None}
 	<dialog bind:this={dialog}>
 		<div class="title">
-			<slot name="title" />
+			{@render title?.()}
 		</div>
 		<div class="content">
-			<slot />
+			{@render children?.()}
 		</div>
 		<div class="buttons">
-			<slot name="buttons" class="std-buttons" />
+			{@render buttons?.({ class: 'std-buttons' })}
 			<div class="std-buttons">
 				{#if cancelButton}
-					<!-- svelte-ignore a11y-autofocus -->
-					<button autofocus={cancelAutoFocus} on:click={() => close(false)}>{cancelButton}</button>
+					<!-- svelte-ignore a11y_autofocus -->
+					<button autofocus={cancelAutoFocus} onclick={() => close(false)}>{cancelButton}</button>
 				{/if}
 				{#if okButton}
-					<!-- svelte-ignore a11y-autofocus -->
-					<button autofocus={okAutoFocus} on:click={() => close(true)}>{okButton}</button>
+					<!-- svelte-ignore a11y_autofocus -->
+					<button autofocus={okAutoFocus} onclick={() => close(true)}>{okButton}</button>
 				{/if}
 			</div>
 		</div>

@@ -13,18 +13,23 @@
 	import FileSVG from '$svg/File.svg?raw';
 	import SheetFileSVG from '$svg/SheetFile.svg?raw';
 
-	export let name: string;
-	export let path: string;
-	export let selectedFile: string | undefined;
-	export let callback: (path: string, finish?: boolean) => void;
+	interface Props {
+		name: string;
+		path: string;
+		selectedFile: string | undefined;
+		callback: (path: string, finish?: boolean) => void;
+	}
+
+	let { name, path, selectedFile, callback }: Props = $props();
 </script>
 
 <div class="file" class:selected={path === selectedFile}>
 	<button
 		class="item"
 		class:selected={path === selectedFile}
-		on:click={() => callback(path)}
-		on:dblclick={() => callback(path, true)}>
+		onclick={() => callback(path)}
+		ondblclick={() => callback(path, true)}
+	>
 		{#if path.toLowerCase().endsWith('.gcs')}
 			{@html SheetFileSVG}
 		{:else}
@@ -45,7 +50,9 @@
 		border: none;
 		background-color: var(--color-surface);
 		color: var(--color-on-surface);
-		user-select: none;
+		-user-select: none;
+		-webkit-user-select: none; /* Chrome/Safari */
+		-moz-user-select: none; /* Firefox */
 		align-items: center;
 	}
 

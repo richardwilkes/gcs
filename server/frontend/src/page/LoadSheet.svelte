@@ -11,7 +11,7 @@
 
 <script lang="ts">
 	import FileTree from '$lib/filetree/FileTree.svelte';
-	import { ShowAs } from '$lib/Dialog.svelte';
+	import { ShowAs } from '$lib/show.ts';
 	import { navTo } from '$lib/nav';
 </script>
 
@@ -21,7 +21,8 @@
 		path="/sheets"
 		title="Select a Sheet"
 		onSuccess={(path) => navTo('sheet/' + path, undefined, undefined, true)}
-		onCancel={() => window.history.back()} />
+		onCancel={() => window.history.back()}
+	/>
 </div>
 
 <style>

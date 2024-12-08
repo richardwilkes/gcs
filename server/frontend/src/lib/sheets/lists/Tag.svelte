@@ -12,15 +12,20 @@
 <script lang="ts">
 	import WarningSVG from '$svg/Warning.svg?raw';
 
-	export let warning = false;
-	export let tip = '';
+	interface Props {
+		warning?: boolean;
+		tip?: string;
+		children?: import('svelte').Snippet;
+	}
+
+	let { warning = false, tip = '', children }: Props = $props();
 </script>
 
 <div class="tag" class:warning title={tip}>
 	{#if warning}
 		<div class="icon">{@html WarningSVG}</div>
 	{/if}
-	<slot />
+	{@render children?.()}
 </div>
 
 <style>

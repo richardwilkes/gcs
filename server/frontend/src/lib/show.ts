@@ -7,10 +7,8 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, version 2.0.
 
-import './app_gen.css';
-import App from './App.svelte';
-import { mount } from "svelte";
-
-const app = mount(App, { target: document.getElementById('app') as Element });
-
-export default app;
+export enum ShowAs {
+	None = '',
+	Modal = 'modal',
+	Dialog = 'dialog'
+}

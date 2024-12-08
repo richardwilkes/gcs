@@ -10,6 +10,7 @@
   -->
 
 <script lang="ts">
+	import Icon from './Icon.svelte';
 	import BookmarkSVG from '$svg/Bookmark.svg?raw';
 	import CheckmarkSVG from '$svg/Checkmark.svg?raw';
 	import CoinsSVG from '$svg/Coins.svg?raw';
@@ -18,14 +19,18 @@
 	import StackSVG from '$svg/Stack.svg?raw';
 	import WeightSVG from '$svg/Weight.svg?raw';
 
-	export let key: string;
-	export let tip = '';
+	interface Props {
+		key: string;
+		tip?: string;
+	}
+
+	let { key, tip = '' }: Props = $props();
 </script>
 
 <div class="icon" title={tip}>
 	{#if key.startsWith('stacked-')}
 		{@html StackSVG}
-		<svelte:self key={key.slice(8)} />
+		<Icon key={key.slice(8)} />
 	{:else if key === 'bookmark'}
 		{@html BookmarkSVG}
 	{:else if key === 'checkmark'}

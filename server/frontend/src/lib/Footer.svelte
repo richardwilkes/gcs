@@ -21,7 +21,7 @@
 		Modified: boolean;
 	};
 
-	let version: VersionResponse | undefined;
+	let version: VersionResponse | undefined = $state();
 
 	fetch(apiPrefix('/version'), {
 		method: 'GET',

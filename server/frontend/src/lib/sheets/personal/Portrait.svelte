@@ -15,16 +15,20 @@
 	import { sheet, updateSheetField } from '$lib/sheet.ts';
 	import { sheetPath } from '$lib/url.ts';
 
-	export let imageURL: string | undefined;
+	interface Props {
+		imageURL: string | undefined;
+	}
 
-	let clientHeight: number;
-	let pictureHeight: number;
-	let naturalWidth: number;
-	let naturalHeight: number;
-	let width: string;
-	let height: string;
-	let inputElement: HTMLInputElement | undefined;
-	let inDrag = false;
+	let { imageURL }: Props = $props();
+
+	let clientHeight: number | undefined = $state();
+	let pictureHeight: number | undefined = $state();
+	let naturalWidth: number | undefined = $state();
+	let naturalHeight: number | undefined = $state();
+	let width: string | undefined = $state();
+	let height: string | undefined = $state();
+	let inputElement: HTMLInputElement | undefined = $state();
+	let inDrag = $state(false);
 
 	function onInputElementClick(event: MouseEvent) {
 		event.stopPropagation();
@@ -120,11 +124,11 @@
 		}
 	}
 
-	$: {
+	$effect(() => {
 		if (clientHeight) {
 			if (!pictureHeight) {
-				// The picture height is only set the first time the clientHeight is set to avoid it growing to fit the image
-				// height rather than the outer container height.
+				// The picture height is only set the first time the clientHeight is set to avoid it growing to fit the
+				// image height rather than the outer container height.
 				pictureHeight = clientHeight;
 			}
 			if (imageURL) {
@@ -142,23 +146,24 @@
 				height = pictureHeight + 'px';
 			}
 		}
-	}
+	});
 </script>
 
 <div class="block">
 	<Header>Portrait</Header>
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<div
 		class="portrait"
 		bind:clientHeight
 		style="width:{pictureHeight}px;"
 		tabindex="0"
 		role="button"
-		on:click={onClickCallback}
-		on:dragenter={onDragEnterCallback}
-		on:dragover={onDragOverCallback}
-		on:dragleave={onDragLeaveCallback}
-		on:drop={onDropCallback}>
+		onclick={onClickCallback}
+		ondragenter={onDragEnterCallback}
+		ondragover={onDragOverCallback}
+		ondragleave={onDragLeaveCallback}
+		ondrop={onDropCallback}
+	>
 		<input
 			bind:this={inputElement}
 			type="file"
@@ -166,8 +171,9 @@
 			tabindex="-1"
 			style="display:none"
 			accept="image/*"
-			on:change={onChangeCallback}
-			on:click={onInputElementClick} />
+			onchange={onChangeCallback}
+			onclick={onInputElementClick}
+		/>
 		{#if clientHeight}
 			{#if imageURL}
 				<img
@@ -177,14 +183,19 @@
 					bind:naturalHeight
 					{width}
 					{height}
-					alt="Portrait" />
+					alt="Portrait"
+				/>
 			{:else}
-				<div style="width: {width}; height: {height}; pointer-events: none;">{@html SilhouetteSVG}</div>
+				<div style="width: {width}; height: {height}; pointer-events: none;">
+					{@html SilhouetteSVG}
+				</div>
 			{/if}
 		{/if}
-		<!-- svelte-ignore a11y-no-static-element-interactions -->
-		<div class="tip-container" class:inDrag on:dragenter={ignoreDragEnterCallback}>
-			<div class="tip noDrag" class:hide={inDrag}>Drop an image here or double-click to change the portrait</div>
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div class="tip-container" class:inDrag ondragenter={ignoreDragEnterCallback}>
+			<div class="tip noDrag" class:hide={inDrag}>
+				Drop an image here or double-click to change the portrait
+			</div>
 		</div>
 	</div>
 </div>
@@ -197,6 +208,7 @@
 	}
 
 	.portrait {
+		position: relative;
 		background-color: var(--color-below-surface);
 		display: flex;
 		justify-content: center;
@@ -228,7 +240,9 @@
 		font-weight: bold;
 		padding: 1em;
 		text-align: center;
-		user-select: none;
+		-user-select: none;
+		-webkit-user-select: none; /* Chrome/Safari */
+		-moz-user-select: none; /* Firefox */
 	}
 
 	.inDrag {
