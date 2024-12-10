@@ -336,6 +336,7 @@ func TraitsHeaderData(columnID int) HeaderData {
 	case TraitPointsColumn:
 		data.Title = i18n.Text("Pts")
 		data.Detail = i18n.Text("Points")
+		data.Less = fxp.IntLessFromString
 	case TraitTagsColumn:
 		data.Title = i18n.Text("Tags")
 	case TraitReferenceColumn:

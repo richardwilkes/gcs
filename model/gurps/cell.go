@@ -32,6 +32,7 @@ const (
 type HeaderData struct {
 	Title           string
 	Detail          string
+	Less            func(a, b string) bool
 	TitleIsImageKey bool
 	Primary         bool
 }

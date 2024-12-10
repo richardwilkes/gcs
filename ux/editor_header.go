@@ -21,17 +21,17 @@ import (
 )
 
 // NewEditorListHeader creates a new list header for an editor.
-func NewEditorListHeader[T gurps.NodeTypes](title, tooltip string, forPage bool) unison.TableColumnHeader[*Node[T]] {
+func NewEditorListHeader[T gurps.NodeTypes](title, tooltip string, less func(a, b string) bool, forPage bool) unison.TableColumnHeader[*Node[T]] {
 	if forPage {
-		return NewPageTableColumnHeader[T](title, tooltip)
+		return NewPageTableColumnHeader[T](title, tooltip, less)
 	}
-	return NewTableColumnHeader[T](title, tooltip)
+	return NewTableColumnHeader[T](title, tooltip, less)
 }
 
 // NewEditorListSVGHeader creates a new list header with an SVG image as its content rather than text.
-func NewEditorListSVGHeader[T gurps.NodeTypes](icon *unison.SVG, tooltip string, forPage bool) unison.TableColumnHeader[*Node[T]] {
+func NewEditorListSVGHeader[T gurps.NodeTypes](icon *unison.SVG, tooltip string, less func(a, b string) bool, forPage bool) unison.TableColumnHeader[*Node[T]] {
 	if forPage {
-		header := NewPageTableColumnHeader[T]("", tooltip)
+		header := NewPageTableColumnHeader[T]("", tooltip, less)
 		baseline := header.Font.Baseline()
 		header.Drawable = &unison.DrawableSVG{
 			SVG:  icon,
@@ -39,7 +39,7 @@ func NewEditorListSVGHeader[T gurps.NodeTypes](icon *unison.SVG, tooltip string,
 		}
 		return header
 	}
-	header := NewTableColumnHeader[T]("", tooltip)
+	header := NewTableColumnHeader[T]("", tooltip, less)
 	baseline := header.Font.Baseline()
 	header.Drawable = &unison.DrawableSVG{
 		SVG:  icon,
@@ -49,9 +49,9 @@ func NewEditorListSVGHeader[T gurps.NodeTypes](icon *unison.SVG, tooltip string,
 }
 
 // NewEditorListSVGPairHeader creates a new list header with a pair of SVG images as its content rather than text.
-func NewEditorListSVGPairHeader[T gurps.NodeTypes](leftSVG, rightSVG *unison.SVG, tooltip string, forPage bool) unison.TableColumnHeader[*Node[T]] {
+func NewEditorListSVGPairHeader[T gurps.NodeTypes](leftSVG, rightSVG *unison.SVG, tooltip string, less func(a, b string) bool, forPage bool) unison.TableColumnHeader[*Node[T]] {
 	if forPage {
-		header := NewPageTableColumnHeader[T]("", tooltip)
+		header := NewPageTableColumnHeader[T]("", tooltip, less)
 		baseline := header.Font.Baseline()
 		header.Drawable = &DrawableSVGPair{
 			Left:  leftSVG,
@@ -60,7 +60,7 @@ func NewEditorListSVGPairHeader[T gurps.NodeTypes](leftSVG, rightSVG *unison.SVG
 		}
 		return header
 	}
-	header := NewTableColumnHeader[T]("", tooltip)
+	header := NewTableColumnHeader[T]("", tooltip, less)
 	baseline := header.Font.Baseline()
 	header.Drawable = &DrawableSVGPair{
 		Left:  leftSVG,
@@ -92,18 +92,18 @@ func headerFromData[T gurps.NodeTypes](data gurps.HeaderData, forPage bool) unis
 			img2 = svg.Weight
 		}
 		if img2 != nil {
-			return NewEditorListSVGPairHeader[T](img1, img2, data.Detail, forPage)
+			return NewEditorListSVGPairHeader[T](img1, img2, data.Detail, data.Less, forPage)
 		}
 		if img1 != nil {
-			return NewEditorListSVGHeader[T](img1, data.Detail, forPage)
+			return NewEditorListSVGHeader[T](img1, data.Detail, data.Less, forPage)
 		}
 	}
-	return NewEditorListHeader[T](data.Title, data.Detail, forPage)
+	return NewEditorListHeader[T](data.Title, data.Detail, data.Less, forPage)
 }
 
 // NewTableColumnHeader creates a new table column header panel with the given title in small caps.
-func NewTableColumnHeader[T gurps.NodeTypes](title, tooltip string) *unison.DefaultTableColumnHeader[*Node[T]] {
-	header := unison.NewTableColumnHeader[*Node[T]](title, tooltip)
+func NewTableColumnHeader[T gurps.NodeTypes](title, tooltip string, less func(a, b string) bool) *unison.DefaultTableColumnHeader[*Node[T]] {
+	header := unison.NewTableColumnHeader[*Node[T]](title, tooltip, less)
 	header.Text = unison.NewSmallCapsText(title, &header.TextDecoration)
 	return header
 }
@@ -126,13 +126,15 @@ var _ unison.TableColumnHeader[*Node[*gurps.Trait]] = &PageTableColumnHeader[*gu
 // PageTableColumnHeader provides a default page table column header panel.
 type PageTableColumnHeader[T gurps.NodeTypes] struct {
 	*unison.Label
+	less      func(a, b string) bool
 	sortState unison.SortState
 }
 
 // NewPageTableColumnHeader creates a new page table column header panel with the given title.
-func NewPageTableColumnHeader[T gurps.NodeTypes](title, tooltip string) *PageTableColumnHeader[T] {
+func NewPageTableColumnHeader[T gurps.NodeTypes](title, tooltip string, less func(a, b string) bool) *PageTableColumnHeader[T] {
 	h := &PageTableColumnHeader[T]{
 		Label: unison.NewLabel(),
+		less:  less,
 		sortState: unison.SortState{
 			Order:     -1,
 			Ascending: true,
@@ -177,6 +179,11 @@ func (h *PageTableColumnHeader[T]) DefaultDraw(gc *unison.Canvas, dirty unison.R
 	} else {
 		h.Label.DefaultDraw(gc, dirty)
 	}
+}
+
+// Less returns the current less function.
+func (h *PageTableColumnHeader[T]) Less() func(a, b string) bool {
+	return h.less
 }
 
 // SortState returns the current SortState.

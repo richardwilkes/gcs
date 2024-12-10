@@ -74,3 +74,8 @@ func (w *Weight) UnmarshalJSON(in []byte) error {
 	*w, err = WeightFromString(s, Pound)
 	return err
 }
+
+// WeightLessFromStringFunc returns a func to compare two strings as Weights.
+func WeightLessFromStringFunc(units WeightUnit) func(a, b string) bool {
+	return func(a, b string) bool { return WeightFromStringForced(a, units) < WeightFromStringForced(b, units) }
+}

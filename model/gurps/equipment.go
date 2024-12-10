@@ -303,6 +303,7 @@ func EquipmentHeaderData(columnID int, entity *Entity, carried, forPage bool) He
 	case EquipmentQuantityColumn:
 		data.Title = i18n.Text("#")
 		data.Detail = i18n.Text("Quantity")
+		data.Less = fxp.IntLessFromString
 	case EquipmentDescriptionColumn:
 		data.Title = i18n.Text("Equipment")
 		if forPage && entity != nil {
@@ -318,6 +319,7 @@ func EquipmentHeaderData(columnID int, entity *Entity, carried, forPage bool) He
 	case EquipmentUsesColumn:
 		data.Title = i18n.Text("Uses")
 		data.Detail = i18n.Text("The number of uses remaining")
+		data.Less = fxp.IntLessFromString
 	case EquipmentTLColumn:
 		data.Title = i18n.Text("TL")
 		data.Detail = i18n.Text("Tech Level")
@@ -328,18 +330,22 @@ func EquipmentHeaderData(columnID int, entity *Entity, carried, forPage bool) He
 		data.Title = HeaderCoins
 		data.TitleIsImageKey = true
 		data.Detail = i18n.Text("The value of one of these pieces of equipment")
+		data.Less = fxp.IntLessFromString
 	case EquipmentExtendedCostColumn:
 		data.Title = HeaderStackedCoins
 		data.TitleIsImageKey = true
 		data.Detail = i18n.Text("The value of all of these pieces of equipment, plus the value of any contained equipment")
+		data.Less = fxp.IntLessFromString
 	case EquipmentWeightColumn:
 		data.Title = HeaderWeight
 		data.TitleIsImageKey = true
 		data.Detail = i18n.Text("The weight of one of these pieces of equipment")
+		data.Less = fxp.WeightLessFromStringFunc(SheetSettingsFor(entity).DefaultWeightUnits)
 	case EquipmentExtendedWeightColumn:
 		data.Title = HeaderStackedWeight
 		data.TitleIsImageKey = true
 		data.Detail = i18n.Text("The weight of all of these pieces of equipment, plus the weight of any contained equipment")
+		data.Less = fxp.WeightLessFromStringFunc(SheetSettingsFor(entity).DefaultWeightUnits)
 	case EquipmentTagsColumn:
 		data.Title = i18n.Text("Tags")
 	case EquipmentReferenceColumn:

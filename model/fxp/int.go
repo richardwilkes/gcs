@@ -185,3 +185,8 @@ func Extract(in string) (value Int, remainder string) {
 func SecondsToDuration(value Int) time.Duration {
 	return time.Duration(As[int64](value.Mul(Thousand))) * time.Millisecond
 }
+
+// IntLessFromString compares two strings as Ints.
+func IntLessFromString(a, b string) bool {
+	return FromStringForced(a) < FromStringForced(b)
+}

@@ -181,6 +181,7 @@ func ConditionalModifiersHeaderData(columnID int) HeaderData {
 	case ConditionalModifierValueColumn:
 		data.Title = i18n.Text("±")
 		data.Detail = i18n.Text("Modifier")
+		data.Less = fxp.IntLessFromString
 	case ConditionalModifierDescriptionColumn:
 		data.Title = i18n.Text("Condition")
 		data.Primary = true
@@ -195,6 +196,7 @@ func ReactionModifiersHeaderData(columnID int) HeaderData {
 	case ConditionalModifierValueColumn:
 		data.Title = i18n.Text("±")
 		data.Detail = i18n.Text("Modifier")
+		data.Less = fxp.IntLessFromString
 	case ConditionalModifierDescriptionColumn:
 		data.Title = i18n.Text("Reaction")
 		data.Primary = true
