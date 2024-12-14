@@ -14,7 +14,7 @@ require (
 	github.com/vearutop/statigz v1.4.3
 	github.com/yookoala/realpath v1.0.0
 	github.com/zeebo/xxh3 v1.0.2
-	golang.org/x/exp v0.0.0-20241204233417-43b7b7cde48d
+	golang.org/x/exp v0.0.0-20241210194714-1829a127f884
 	golang.org/x/image v0.23.0
 	golang.org/x/sys v0.28.0
 	golang.org/x/text v0.21.0
