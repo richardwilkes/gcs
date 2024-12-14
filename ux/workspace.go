@@ -65,11 +65,11 @@ func InitWorkspace(wnd *unison.Window) {
 	global := gurps.GlobalSettings()
 	if global.WorkspaceFrame != nil {
 		r := *global.WorkspaceFrame
-		if r.Width < 10 {
-			r.Width = 10
+		if r.Width < 100 {
+			r.Width = 100
 		}
-		if r.Height < 10 {
-			r.Height = 10
+		if r.Height < 100 {
+			r.Height = 100
 		}
 		r = unison.BestDisplayForRect(r).FitRectOnto(r)
 		*global.WorkspaceFrame = r
