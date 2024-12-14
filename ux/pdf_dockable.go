@@ -478,7 +478,10 @@ func (d *PDFDockable) pageLoaded() {
 	if d.needDockableResize {
 		d.needDockableResize = false
 		if !IsDockableInWorkspace(d) {
-			d.Window().Pack()
+			wnd := d.Window()
+			wnd.Pack()
+			frame := wnd.FrameRect()
+			wnd.SetFrameRect(unison.BestDisplayForRect(frame).FitRectOnto(frame))
 			d.searchField.SetScrollOffset(unison.Point{})
 		}
 	}

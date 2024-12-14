@@ -68,12 +68,13 @@ func (w *aboutWindow) prepare() error {
 		aboutWnd.Window = nil
 	}
 	w.Pack()
-	r := w.ContentRect()
-	usable := unison.PrimaryDisplay().Usable
+	r := w.FrameRect()
+	primary := unison.PrimaryDisplay()
+	usable := primary.Usable
 	r.X = usable.X + (usable.Width-r.Width)/2
-	r.Y = usable.Y + (usable.Height-r.Height)/2
-	r.Point = r.Point.Floor()
-	w.SetContentRect(r)
+	r.Y = usable.Y + (usable.Height-r.Height)/3
+	r = r.Align()
+	w.SetFrameRect(primary.FitRectOnto(r))
 	return nil
 }
 
