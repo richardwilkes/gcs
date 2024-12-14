@@ -18,22 +18,24 @@ import (
 
 // Possible Roll values.
 const (
-	NoCR = Roll(0)
-	CR6  = Roll(6)
-	CR7  = Roll(7)
-	CR8  = Roll(8)
-	CR9  = Roll(9)
-	CR10 = Roll(10)
-	CR11 = Roll(11)
-	CR12 = Roll(12)
-	CR13 = Roll(13)
-	CR14 = Roll(14)
-	CR15 = Roll(15)
+	NoCR   = Roll(0)
+	CRNone = Roll(1)
+	CR6    = Roll(6)
+	CR7    = Roll(7)
+	CR8    = Roll(8)
+	CR9    = Roll(9)
+	CR10   = Roll(10)
+	CR11   = Roll(11)
+	CR12   = Roll(12)
+	CR13   = Roll(13)
+	CR14   = Roll(14)
+	CR15   = Roll(15)
 )
 
 // Rolls is the complete set of Roll values.
 var Rolls = []Roll{
 	NoCR,
+	CRNone,
 	CR6,
 	CR7,
 	CR8,
@@ -46,7 +48,7 @@ var Rolls = []Roll{
 	CR15,
 }
 
-// Roll holds the information about a self-control roll, from B121.
+// Roll holds the information about a self-control roll, from B121 and Z60.
 type Roll byte
 
 // EnsureValid ensures this is of a known value.
@@ -59,21 +61,13 @@ func (s Roll) EnsureValid() Roll {
 	return Rolls[0]
 }
 
-// Index returns of the Roll within Rolls.
-func (s Roll) Index() int {
-	for i, one := range Rolls {
-		if one == s {
-			return i
-		}
-	}
-	return 0
-}
-
 // String implements fmt.Stringer.
 func (s Roll) String() string {
 	switch s {
 	case NoCR:
 		return i18n.Text("None Required")
+	case CRNone:
+		return i18n.Text("None Allowed")
 	case CR6:
 		return i18n.Text("CR: 6 (Resist rarely)")
 	case CR9:
@@ -103,6 +97,8 @@ func (s Roll) Multiplier() fxp.Int {
 	switch s {
 	case NoCR:
 		return fxp.One
+	case CRNone:
+		return fxp.TwoAndAHalf
 	case CR6:
 		return fxp.Two
 	case CR7:
@@ -128,42 +124,21 @@ func (s Roll) Multiplier() fxp.Int {
 	}
 }
 
-// MinimumRoll returns the minimum roll to retain control.
-func (s Roll) MinimumRoll() int {
-	return int(s.EnsureValid())
-}
-
-// TreatAs returns the standard CR equivalent value for this roll.
-func (s Roll) TreatAs() Roll {
-	switch s {
-	case NoCR, CR6, CR9, CR12, CR15:
-		return s
-	case CR7:
-		return CR6
-	case CR8, CR10:
-		return CR9
-	case CR11, CR13:
-		return CR12
-	case CR14:
-		return CR15
-	default:
-		return NoCR
-	}
-}
-
 // Penalty returns the general penalty for this roll.
 func (s Roll) Penalty() int {
-	switch s.TreatAs() {
+	switch s {
 	case NoCR:
 		return 0
-	case CR6:
-		return -4
-	case CR9:
-		return -3
-	case CR12:
-		return -2
-	case CR15:
+	case CR14, CR15:
 		return -1
+	case CR11, CR12, CR13:
+		return -2
+	case CR8, CR9, CR10:
+		return -3
+	case CR6, CR7:
+		return -4
+	case CRNone:
+		return -5 // No actual rules for this from Z60, so just extend the progression
 	default:
 		return 0
 	}
