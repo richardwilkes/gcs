@@ -373,6 +373,22 @@ func (w *Weapon) Notes() string {
 	var buffer strings.Builder
 	if w.Owner != nil {
 		buffer.WriteString(w.Owner.Notes())
+		switch owner := w.Owner.(type) {
+		case *Equipment:
+			Traverse(func(mod *EquipmentModifier) bool {
+				if mod.ShowNotesOnWeapon {
+					AppendStringOntoNewLine(&buffer, strings.TrimSpace(mod.resolveLocalNotes()))
+				}
+				return false
+			}, true, true, owner.Modifiers...)
+		case *Trait:
+			Traverse(func(mod *TraitModifier) bool {
+				if mod.ShowNotesOnWeapon {
+					AppendStringOntoNewLine(&buffer, strings.TrimSpace(mod.resolveLocalNotes()))
+				}
+				return false
+			}, true, true, owner.Modifiers...)
+		}
 	}
 	AppendStringOntoNewLine(&buffer, strings.TrimSpace(w.UsageNotesWithReplacements()))
 	return buffer.String()

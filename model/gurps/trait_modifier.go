@@ -110,6 +110,7 @@ type TraitModifierNonContainerSyncData struct {
 	Cost              fxp.Int        `json:"cost,omitempty"`
 	CostType          tmcost.Type    `json:"cost_type,omitempty"`
 	UseLevelFromTrait bool           `json:"use_level_from_trait,omitempty"`
+	ShowNotesOnWeapon bool           `json:"show_notes_on_weapon,omitempty"`
 	Affects           affects.Option `json:"affects,omitempty"`
 	Features          Features       `json:"features,omitempty"`
 }
@@ -220,8 +221,21 @@ func (t *TraitModifier) Clone(from LibraryFile, owner DataOwner, parent *TraitMo
 
 // MarshalJSON implements json.Marshaler.
 func (t *TraitModifier) MarshalJSON() ([]byte, error) {
+	type calc struct {
+		ResolvedNotes string `json:"resolved_notes,omitempty"`
+	}
 	t.ClearUnusedFieldsForType()
-	return json.Marshal(&t.TraitModifierData)
+	data := struct {
+		TraitModifierData
+		Calc *calc `json:"calc,omitempty"`
+	}{
+		TraitModifierData: t.TraitModifierData,
+	}
+	notes := t.resolveLocalNotes()
+	if notes != t.LocalNotes {
+		data.Calc = &calc{ResolvedNotes: notes}
+	}
+	return json.Marshal(&data)
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
@@ -425,21 +439,25 @@ func (t *TraitModifier) String() string {
 	return buffer.String()
 }
 
+func (t *TraitModifier) resolveLocalNotes() string {
+	return EvalEmbeddedRegex.ReplaceAllStringFunc(t.LocalNotesWithReplacements(), EntityFromNode(t).EmbeddedEval)
+}
+
 // SecondaryText returns the "secondary" text: the text display below an Trait.
 func (t *TraitModifier) SecondaryText(optionChecker func(display.Option) bool) string {
-	if optionChecker(SheetSettingsFor(EntityFromNode(t)).NotesDisplay) {
-		return t.LocalNotesWithReplacements()
+	if !optionChecker(SheetSettingsFor(EntityFromNode(t)).NotesDisplay) {
+		return ""
 	}
-	return ""
+	return t.resolveLocalNotes()
 }
 
 // FullDescription returns a full description.
 func (t *TraitModifier) FullDescription() string {
 	var buffer strings.Builder
 	buffer.WriteString(t.String())
-	if t.LocalNotes != "" {
+	if localNotes := t.resolveLocalNotes(); localNotes != "" {
 		buffer.WriteString(" (")
-		buffer.WriteString(t.LocalNotesWithReplacements())
+		buffer.WriteString(localNotes)
 		buffer.WriteByte(')')
 	}
 	if SheetSettingsFor(EntityFromNode(t)).ShowTraitModifierAdj {
@@ -599,6 +617,7 @@ func (t *TraitModifierNonContainerSyncData) hash(h hash.Hash) {
 	hashhelper.Num64(h, t.Cost)
 	hashhelper.Num8(h, t.CostType)
 	hashhelper.Bool(h, t.UseLevelFromTrait)
+	hashhelper.Bool(h, t.ShowNotesOnWeapon)
 	hashhelper.Num8(h, t.Affects)
 	hashhelper.Num64(h, len(t.Features))
 	for _, feature := range t.Features {

@@ -28,7 +28,9 @@ func EditTraitModifier(owner Rebuildable, modifier *gurps.TraitModifier) {
 
 func initTraitModifierEditor(e *editor[*gurps.TraitModifier, *gurps.TraitModifierEditData], content *unison.Panel) func() {
 	addNameLabelAndField(content, &e.editorData.Name)
-	addNotesLabelAndField(content, &e.editorData.LocalNotes)
+	addLabelAndMultiLineStringField(content, i18n.Text("Notes"), "", &e.editorData.LocalNotes)
+	content.AddChild(unison.NewPanel())
+	addCheckBox(content, i18n.Text("Also show notes in weapon usage"), &e.editorData.ShowNotesOnWeapon)
 	addVTTNotesLabelAndField(content, &e.editorData.VTTNotes)
 	if !e.target.Container() {
 		content.AddChild(unison.NewPanel())

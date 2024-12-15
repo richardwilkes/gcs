@@ -97,14 +97,15 @@ type EquipmentModifierSyncData struct {
 // EquipmentModifierNonContainerSyncData holds the EquipmentModifier sync data that is only applicable to Equipment
 // Modifiers that aren't containers.
 type EquipmentModifierNonContainerSyncData struct {
-	CostType         emcost.Type   `json:"cost_type,omitempty"`
-	CostIsPerLevel   bool          `json:"cost_is_per_level,omitempty"`
-	WeightType       emweight.Type `json:"weight_type,omitempty"`
-	WeightIsPerLevel bool          `json:"weight_is_per_level,omitempty"`
-	TechLevel        string        `json:"tech_level,omitempty"`
-	CostAmount       string        `json:"cost,omitempty"`
-	WeightAmount     string        `json:"weight,omitempty"`
-	Features         Features      `json:"features,omitempty"`
+	CostType          emcost.Type   `json:"cost_type,omitempty"`
+	CostIsPerLevel    bool          `json:"cost_is_per_level,omitempty"`
+	WeightType        emweight.Type `json:"weight_type,omitempty"`
+	WeightIsPerLevel  bool          `json:"weight_is_per_level,omitempty"`
+	ShowNotesOnWeapon bool          `json:"show_notes_on_weapon,omitempty"`
+	TechLevel         string        `json:"tech_level,omitempty"`
+	CostAmount        string        `json:"cost,omitempty"`
+	WeightAmount      string        `json:"weight,omitempty"`
+	Features          Features      `json:"features,omitempty"`
 }
 
 type equipmentModifierListData struct {
@@ -719,6 +720,7 @@ func (e *EquipmentModifierSyncData) hash(h hash.Hash) {
 func (e *EquipmentModifierNonContainerSyncData) hash(h hash.Hash) {
 	hashhelper.Num8(h, e.CostType)
 	hashhelper.Num8(h, e.WeightType)
+	hashhelper.Bool(h, e.ShowNotesOnWeapon)
 	hashhelper.String(h, e.TechLevel)
 	hashhelper.String(h, e.CostAmount)
 	hashhelper.String(h, e.WeightAmount)
