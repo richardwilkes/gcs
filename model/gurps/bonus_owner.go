@@ -77,7 +77,8 @@ func (b *BonusOwner) DerivedLevel() fxp.Int {
 		if lo, ok := b.subOwner.(LeveledOwner); ok && lo.IsLeveled() {
 			return lo.CurrentLevel()
 		}
-	} else if !toolbox.IsNil(b.owner) {
+	}
+	if !toolbox.IsNil(b.owner) {
 		if lo, ok := b.owner.(LeveledOwner); ok && lo.IsLeveled() {
 			return lo.CurrentLevel()
 		}
