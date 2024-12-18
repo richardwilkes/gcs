@@ -92,6 +92,9 @@ func AsNode[T NodeTypes](in T) Node[T] {
 
 // EntityFromNode returns the owning entity of the node, or nil.
 func EntityFromNode[T NodeTypes](node Node[T]) *Entity {
+	if toolbox.IsNil(node) {
+		return nil
+	}
 	owner := node.DataOwner()
 	if toolbox.IsNil(owner) {
 		return nil
