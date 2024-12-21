@@ -73,7 +73,7 @@ func (s *SkillPointBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 		buffer.WriteByte('\n')
 		buffer.WriteString(s.parentName())
 		buffer.WriteString(" [")
-		buffer.WriteString(s.LeveledAmount.Format(false))
+		buffer.WriteString(s.LeveledAmount.Format())
 		if s.AdjustedAmount() == fxp.One {
 			buffer.WriteString(i18n.Text(" pt]"))
 		} else {

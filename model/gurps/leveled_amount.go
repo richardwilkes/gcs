@@ -37,19 +37,12 @@ func (l *LeveledAmount) AdjustedAmount() fxp.Int {
 }
 
 // Format the value.
-func (l *LeveledAmount) Format(asPercentage bool) string {
+func (l *LeveledAmount) Format() string {
 	amt := l.Amount.StringWithSign()
-	if asPercentage {
-		amt += "%"
+	if !l.PerLevel {
+		return amt
 	}
-	if l.PerLevel {
-		leveled := l.AdjustedAmount().StringWithSign()
-		if asPercentage {
-			leveled += "%"
-		}
-		return fmt.Sprintf(i18n.Text("%s (%s per level)"), leveled, amt)
-	}
-	return amt
+	return fmt.Sprintf(i18n.Text("%s (%s per level)"), l.AdjustedAmount().StringWithSign(), amt)
 }
 
 // Hash writes this object's contents into the hasher.
