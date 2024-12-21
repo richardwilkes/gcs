@@ -10,18 +10,23 @@
 package ux
 
 import (
+	"cmp"
 	"errors"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/autoscale"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/cmdline"
+	"github.com/richardwilkes/toolbox/collection/dict"
+	"github.com/richardwilkes/toolbox/collection/slice"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/log/rotation"
@@ -41,6 +46,8 @@ type generalSettingsDockable struct {
 	autoAddNaturalAttacksCheckbox  *CheckBox
 	groupContainersOnSortCheckbox  *CheckBox
 	initialClickSelectsAllCheckbox *CheckBox
+	deepSearchableCheckbox         []*CheckBox
+	openInWindowCheckbox           []*CheckBox
 	pointsField                    *DecimalField
 	techLevelField                 *StringField
 	calendarPopup                  *unison.PopupMenu[string]
@@ -165,6 +172,8 @@ func (d *generalSettingsDockable) initContent(content *unison.Panel) {
 	d.createPathInfoField(content, i18n.Text("Log Path"), rotation.PathToLog)
 	d.createExternalPDFCmdLineField(content)
 	d.createLocaleField(content)
+	d.createDeepSearchCheckboxes(content)
+	d.createOpenInWindowCheckboxes(content)
 }
 
 func (d *generalSettingsDockable) createPlayerAndDescFields(content *unison.Panel) {
@@ -392,6 +401,102 @@ func (d *generalSettingsDockable) createLocaleField(content *unison.Panel) {
 	content.AddChild(d.localeField)
 }
 
+func (d *generalSettingsDockable) createDeepSearchCheckboxes(content *unison.Panel) {
+	content.AddChild(unison.NewLabel())
+	panel := unison.NewPanel()
+	panel.SetBorder(unison.NewCompoundBorder(&TitledBorder{
+		Title: i18n.Text("Library Explorer Deep Search"),
+		Font:  unison.DefaultLabelTheme.Font,
+	},
+		unison.NewEmptyBorder(unison.NewSymmetricInsets(unison.StdHSpacing,
+			unison.StdVSpacing))))
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	panel.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
+	extensions := gurps.DeepSearchableExtensions()
+	extMap := make(map[string]string)
+	for _, ext := range extensions {
+		fi := gurps.FileInfoFor(ext)
+		extMap[strings.TrimPrefix(fi.Name, "GCS ")] = fi.Extensions[0]
+	}
+	keys := dict.Keys(extMap)
+	slice.ColumnSort(keys, 2, cmp.Compare[string])
+	settings := gurps.GlobalSettings()
+	for _, name := range keys {
+		ext := extMap[name]
+		box := NewCheckBox(nil, "", name,
+			func() check.Enum {
+				return check.FromBool(slices.Contains(settings.DeepSearch, ext))
+			},
+			func(state check.Enum) {
+				i := slices.Index(settings.DeepSearch, ext)
+				if state == check.On {
+					if i == -1 {
+						settings.DeepSearch = append(settings.DeepSearch, ext)
+						slices.Sort(settings.DeepSearch)
+					}
+				} else {
+					if i != -1 {
+						settings.DeepSearch = slices.Delete(settings.DeepSearch, i, i+1)
+					}
+				}
+				Workspace.Navigator.mapDeepSearch()
+			})
+		box.ClientData()["ext"] = ext
+		d.deepSearchableCheckbox = append(d.deepSearchableCheckbox, box)
+		panel.AddChild(box)
+	}
+	content.AddChild(panel)
+}
+
+func (d *generalSettingsDockable) createOpenInWindowCheckboxes(content *unison.Panel) {
+	content.AddChild(unison.NewLabel())
+	panel := unison.NewPanel()
+	panel.SetBorder(unison.NewCompoundBorder(&TitledBorder{
+		Title: i18n.Text("Use Separate Windows"),
+		Font:  unison.DefaultLabelTheme.Font,
+	},
+		unison.NewEmptyBorder(unison.NewSymmetricInsets(unison.StdHSpacing,
+			unison.StdVSpacing))))
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+		VSpacing: unison.StdVSpacing,
+	})
+	panel.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
+	settings := gurps.GlobalSettings()
+	groups := make([]dgroup.Group, len(dgroup.Groups))
+	copy(groups, dgroup.Groups)
+	slice.ColumnSort(groups, 2, cmp.Compare[dgroup.Group])
+	for _, group := range groups {
+		box := NewCheckBox(nil, "", group.String(),
+			func() check.Enum {
+				return check.FromBool(slices.Contains(settings.OpenInWindow, group))
+			},
+			func(state check.Enum) {
+				i := slices.Index(settings.OpenInWindow, group)
+				if state == check.On {
+					if i == -1 {
+						settings.OpenInWindow = append(settings.OpenInWindow, group)
+						slices.Sort(settings.OpenInWindow)
+					}
+				} else {
+					if i != -1 {
+						settings.OpenInWindow = slices.Delete(settings.OpenInWindow, i, i+1)
+					}
+				}
+				Workspace.Navigator.mapDeepSearch()
+			})
+		box.ClientData()["group"] = group
+		d.openInWindowCheckbox = append(d.openInWindowCheckbox, box)
+		panel.AddChild(box)
+	}
+	content.AddChild(panel)
+}
+
 func (d *generalSettingsDockable) reset() {
 	*gurps.GlobalSettings().General = *gurps.NewGeneralSettings()
 	languageSetting = ""
@@ -424,6 +529,20 @@ func (d *generalSettingsDockable) sync() {
 	d.scrollWheelMultiplierField.SetText(gs.ScrollWheelMultiplier.String())
 	SetFieldValue(d.externalPDFCmdlineField.Field, gs.ExternalPDFCmdLine)
 	SetFieldValue(d.localeField.Field, languageSetting)
+	for _, box := range d.deepSearchableCheckbox {
+		if extAny, ok := box.ClientData()["ext"]; ok {
+			if ext, ok2 := extAny.(string); ok2 {
+				SetCheckBoxState(box, slices.Contains(s.DeepSearch, ext))
+			}
+		}
+	}
+	for _, box := range d.openInWindowCheckbox {
+		if groupAny, ok := box.ClientData()["group"]; ok {
+			if group, ok2 := groupAny.(dgroup.Group); ok2 {
+				SetCheckBoxState(box, slices.Contains(s.OpenInWindow, group))
+			}
+		}
+	}
 	d.MarkForRedraw()
 }
 

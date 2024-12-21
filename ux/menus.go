@@ -14,19 +14,15 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"slices"
 	"strings"
 	"sync"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
-	"github.com/richardwilkes/toolbox/collection/dict"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/txt"
 	xfs "github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/enums/check"
 )
 
 // Menu, Item & Action IDs
@@ -153,13 +149,8 @@ const (
 	NewMeleeWeaponItemID
 	NewRangedWeaponItemID
 
-	OpenInWindowMenuID
-
-	LibraryBaseItemID        = OpenInWindowMenuID + int(dgroup.LastGroup) + 2
-	RecentFieldBaseItemID    = LibraryBaseItemID + 500
-	ExportToTextBaseItemID   = RecentFieldBaseItemID + 500
-	DeepSearchableMenuID     = ExportToTextBaseItemID + 500
-	DeepSearchableBaseItemID = DeepSearchableMenuID + 1
+	RecentFieldBaseItemID  = NewRangedWeaponItemID + 500
+	ExportToTextBaseItemID = RecentFieldBaseItemID + 500
 )
 
 var registerKeyBindingsOnce sync.Once
@@ -336,39 +327,7 @@ func (s menuBarScope) createSettingsMenu(f unison.MenuFactory) unison.Menu {
 	m.InsertItem(-1, colorSettingsAction.NewMenuItem(f))
 	m.InsertItem(-1, fontSettingsAction.NewMenuItem(f))
 	m.InsertItem(-1, menuKeySettingsAction.NewMenuItem(f))
-	s.insertMenu(m, -1, s.createOpenInWindowMenu(f))
-	s.insertMenu(m, -1, s.createDeepSearchableMenu(f))
 	return m
-}
-
-func (s menuBarScope) createOpenInWindowMenu(f unison.MenuFactory) unison.Menu {
-	m := f.NewMenu(OpenInWindowMenuID, i18n.Text("Use Separate Windows For…"), nil)
-	settings := gurps.GlobalSettings()
-	for _, group := range dgroup.Groups {
-		mi := s.createOpenInWindowAction(group).NewMenuItem(f)
-		mi.SetCheckState(check.FromBool(slices.Contains(settings.OpenInWindow, group)))
-		m.InsertItem(-1, mi)
-	}
-	return m
-}
-
-func (s menuBarScope) createOpenInWindowAction(group dgroup.Group) *unison.Action {
-	return &unison.Action{
-		ID:    OpenInWindowMenuID + 1 + int(group),
-		Title: group.String(),
-		ExecuteCallback: func(_ *unison.Action, item any) {
-			if mi, ok := item.(unison.MenuItem); ok {
-				settings := gurps.GlobalSettings()
-				if i := slices.Index(settings.OpenInWindow, group); i != -1 {
-					settings.OpenInWindow = slices.Delete(settings.OpenInWindow, i, i+1)
-					mi.SetCheckState(check.Off)
-				} else {
-					settings.OpenInWindow = gurps.SanitizeDockableGroups(append(settings.OpenInWindow, group))
-					mi.SetCheckState(check.On)
-				}
-			}
-		},
-	}
 }
 
 func (s menuBarScope) createViewMenu(f unison.MenuFactory) unison.Menu {
@@ -503,47 +462,6 @@ func (s menuBarScope) createExportToTextAction(index int, path string) *unison.A
 						}
 					}
 				}
-			}
-		},
-	}
-}
-
-func (s menuBarScope) createDeepSearchableMenu(f unison.MenuFactory) unison.Menu {
-	m := f.NewMenu(DeepSearchableMenuID, i18n.Text("Library Explorer Deep Search In…"), nil)
-	settings := gurps.GlobalSettings()
-	extensions := gurps.DeepSearchableExtensions()
-	extMap := make(map[string]*gurps.FileInfo)
-	for _, ext := range extensions {
-		fi := gurps.FileInfoFor(ext)
-		extMap[fi.Name] = fi
-	}
-	keys := dict.Keys(extMap)
-	slices.Sort(keys)
-	for i, name := range keys {
-		fi := extMap[name]
-		mi := s.createDeepSearchableAction(i, fi).NewMenuItem(f)
-		mi.SetCheckState(check.FromBool(slices.Contains(settings.DeepSearch, fi.Extensions[0])))
-		m.InsertItem(-1, mi)
-	}
-	return m
-}
-
-func (s menuBarScope) createDeepSearchableAction(index int, fi *gurps.FileInfo) *unison.Action {
-	return &unison.Action{
-		ID:    DeepSearchableBaseItemID + index,
-		Title: fi.Name,
-		ExecuteCallback: func(_ *unison.Action, item any) {
-			if mi, ok := item.(unison.MenuItem); ok {
-				settings := gurps.GlobalSettings()
-				if i := slices.Index(settings.DeepSearch, fi.Extensions[0]); i != -1 {
-					settings.DeepSearch = slices.Delete(settings.DeepSearch, i, i+1)
-					mi.SetCheckState(check.Off)
-				} else {
-					settings.DeepSearch = append(settings.DeepSearch, fi.Extensions[0])
-					slices.Sort(settings.DeepSearch)
-					mi.SetCheckState(check.On)
-				}
-				Workspace.Navigator.mapDeepSearch()
 			}
 		},
 	}
