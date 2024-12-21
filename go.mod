@@ -7,14 +7,14 @@ require (
 	github.com/richardwilkes/json v0.3.0
 	github.com/richardwilkes/pdf v1.24.10
 	github.com/richardwilkes/rpgtools v1.10.1
-	github.com/richardwilkes/toolbox v1.122.0
+	github.com/richardwilkes/toolbox v1.122.1
 	github.com/richardwilkes/unison v0.76.3
 	github.com/rjeczalik/notify v0.9.3
 	github.com/tc-hib/winres v0.3.1
 	github.com/vearutop/statigz v1.4.3
 	github.com/yookoala/realpath v1.0.0
 	github.com/zeebo/xxh3 v1.0.2
-	golang.org/x/exp v0.0.0-20241210194714-1829a127f884
+	golang.org/x/exp v0.0.0-20241217172543-b2144cdd0a67
 	golang.org/x/image v0.23.0
 	golang.org/x/sys v0.28.0
 	golang.org/x/text v0.21.0
@@ -34,7 +34,7 @@ require (
 	github.com/pkg/term v1.1.0 // indirect
 	github.com/yuin/goldmark v1.7.8 // indirect
 	golang.org/x/mod v0.22.0 // indirect
-	golang.org/x/net v0.32.0 // indirect
+	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/tools v0.28.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
