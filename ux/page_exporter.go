@@ -320,7 +320,7 @@ func (p *pageExporter) HasPage(pageNumber int) bool {
 
 // PageSize implements unison.PageProvider.
 func (p *pageExporter) PageSize() unison.Size {
-	w, h := p.entity.SheetSettings.Page.Orientation.Dimensions(p.entity.SheetSettings.Page.Size.Dimensions())
+	w, h := p.entity.SheetSettings.Page.Orientation.Dimensions(gurps.MustParsePageSize(p.entity.SheetSettings.Page.Size))
 	return unison.NewSize(w.Pixels(), h.Pixels())
 }
 

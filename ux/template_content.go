@@ -35,7 +35,7 @@ func newTemplateContent() *templateContent {
 
 func (p *templateContent) LayoutSizes(_ *unison.Panel, _ unison.Size) (minSize, prefSize, maxSize unison.Size) {
 	s := gurps.GlobalSettings().Sheet
-	w, _ := s.Page.Orientation.Dimensions(s.Page.Size.Dimensions())
+	w, _ := s.Page.Orientation.Dimensions(gurps.MustParsePageSize(s.Page.Size))
 	_, size, _ := p.flex.LayoutSizes(p.AsPanel(), unison.Size{Width: w.Pixels()})
 	prefSize.Width = w.Pixels()
 	prefSize.Height = size.Height

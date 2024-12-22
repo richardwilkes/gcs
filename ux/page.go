@@ -51,7 +51,7 @@ func NewPage(entity *gurps.Entity) *Page {
 // LayoutSizes implements unison.Layout
 func (p *Page) LayoutSizes(_ *unison.Panel, _ unison.Size) (minSize, prefSize, maxSize unison.Size) {
 	s := gurps.SheetSettingsFor(p.entity)
-	w, h := s.Page.Orientation.Dimensions(s.Page.Size.Dimensions())
+	w, h := s.Page.Orientation.Dimensions(gurps.MustParsePageSize(s.Page.Size))
 	if insets := p.insets(); insets != p.lastInsets {
 		p.lastInsets = insets
 		p.SetBorder(unison.NewEmptyBorder(insets))

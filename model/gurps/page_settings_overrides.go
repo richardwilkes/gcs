@@ -17,7 +17,7 @@ import (
 
 // PageSettingsOverrides holds page setting overrides.
 type PageSettingsOverrides struct {
-	Size         *paper.Size
+	Size         *string
 	Orientation  *paper.Orientation
 	TopMargin    *paper.Length
 	LeftMargin   *paper.Length
@@ -27,9 +27,8 @@ type PageSettingsOverrides struct {
 
 // ParseSize and set the override, if applicable.
 func (p *PageSettingsOverrides) ParseSize(in string) {
-	in = strings.TrimSpace(in)
-	if in != "" {
-		size := paper.ExtractSize(in)
+	if w, h, valid := ParsePageSize(in); valid {
+		size := ToPageSize(w, h)
 		p.Size = &size
 	}
 }

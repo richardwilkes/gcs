@@ -710,8 +710,7 @@ func newExportedEquipment(entity *Entity, list []*Equipment, carried bool) []*ex
 }
 
 func newExportedPage(settings *PageSettings) exportedPage {
-	width, height := settings.Size.Dimensions()
-	adjustedWidth, adjustedHeight := settings.Orientation.Dimensions(width, height)
+	adjustedWidth, adjustedHeight := settings.Orientation.Dimensions(MustParsePageSize(settings.Size))
 	return exportedPage{
 		Width:  adjustedWidth.CSSString(),
 		Height: adjustedHeight.CSSString(),

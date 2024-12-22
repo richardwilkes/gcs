@@ -52,8 +52,8 @@ type sheetSettingsDockable struct {
 	modifiersDisplayPopup              *unison.PopupMenu[display.Option]
 	notesDisplayPopup                  *unison.PopupMenu[display.Option]
 	skillLevelAdjDisplayPopup          *unison.PopupMenu[display.Option]
-	paperSizePopup                     *unison.PopupMenu[paper.Size]
 	orientationPopup                   *unison.PopupMenu[paper.Orientation]
+	paperSizeField                     *unison.Field
 	topMarginField                     *unison.Field
 	leftMarginField                    *unison.Field
 	bottomMarginField                  *unison.Field
@@ -278,8 +278,7 @@ func (d *sheetSettingsDockable) createPageSettings(content *unison.Panel) {
 	})
 	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 	d.createHeader(panel, i18n.Text("Page Settings"), 4)
-	d.paperSizePopup = createSettingPopup(d, panel, i18n.Text("Paper Size"), paper.Sizes,
-		s.Page.Size, func(option paper.Size) { d.settings().Page.Size = option })
+	d.paperSizeField = d.createPaperSizeField(panel, i18n.Text("Paper Size"), s.Page.Size, func(option string) { d.settings().Page.Size = option })
 	d.orientationPopup = createSettingPopup(d, panel, i18n.Text("Orientation"), paper.Orientations,
 		s.Page.Orientation, func(option paper.Orientation) { d.settings().Page.Orientation = option })
 	d.topMarginField = d.createPaperMarginField(panel, i18n.Text("Top Margin"), s.Page.TopMargin,
@@ -332,6 +331,28 @@ func (d *sheetSettingsDockable) createBlockLayout(content *unison.Panel) {
 	})
 	panel.AddChild(d.blockLayoutField)
 	content.AddChild(panel)
+}
+
+func (d *sheetSettingsDockable) createPaperSizeField(panel *unison.Panel, title, current string, set func(value string)) *unison.Field {
+	panel.AddChild(NewFieldLeadingLabel(title, false))
+	field := unison.NewField()
+	field.SetText(current)
+	field.ValidateCallback = func() bool {
+		_, _, valid := gurps.ParsePageSize(field.Text())
+		return valid
+	}
+	field.ModifiedCallback = func(_, after *unison.FieldState) {
+		if width, height, valid := gurps.ParsePageSize(after.Text); valid {
+			set(gurps.ToPageSize(width, height))
+			d.syncSheet(false)
+		}
+	}
+	field.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Fill,
+		HGrab:  true,
+	})
+	panel.AddChild(field)
+	return field
 }
 
 func (d *sheetSettingsDockable) createPaperMarginField(panel *unison.Panel, title string, current paper.Length, set func(value paper.Length)) *unison.Field {
@@ -418,7 +439,7 @@ func (d *sheetSettingsDockable) sync() {
 	d.modifiersDisplayPopup.Select(s.ModifiersDisplay)
 	d.notesDisplayPopup.Select(s.NotesDisplay)
 	d.skillLevelAdjDisplayPopup.Select(s.SkillLevelAdjDisplay)
-	d.paperSizePopup.Select(s.Page.Size)
+	d.paperSizeField.SetText(s.Page.Size)
 	d.orientationPopup.Select(s.Page.Orientation)
 	d.topMarginField.SetText(s.Page.TopMargin.String())
 	d.leftMarginField.SetText(s.Page.LeftMargin.String())
