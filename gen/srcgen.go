@@ -1322,23 +1322,6 @@ var allEnums = []*enumInfo{
 	},
 	{
 		Pkg:  "model/paper",
-		Name: "size",
-		Desc: "holds a standard paper dimension",
-		Values: []*enumValue{
-			{Key: "letter"},
-			{Key: "legal"},
-			{Key: "tabloid"},
-			{Key: "a0"},
-			{Key: "a1"},
-			{Key: "a2"},
-			{Key: "a3"},
-			{Key: "a4"},
-			{Key: "a5"},
-			{Key: "a6"},
-		},
-	},
-	{
-		Pkg:  "model/paper",
 		Name: "unit",
 		Desc: "holds the real-world length unit type",
 		Values: []*enumValue{
