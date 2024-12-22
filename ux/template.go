@@ -57,6 +57,7 @@ type Template struct {
 	Equipment         *PageList[*gurps.Equipment]
 	Notes             *PageList[*gurps.Note]
 	dragReroutePanel  *unison.Panel
+	lastBody          *gurps.Body
 	scale             int
 	needsSaveAsPrompt bool
 }
@@ -90,9 +91,13 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 		undoMgr:           unison.NewUndoManager(200, func(err error) { errs.Log(err) }),
 		scroll:            unison.NewScrollPanel(),
 		template:          template,
+		lastBody:          template.BodyType,
 		scale:             gurps.GlobalSettings().General.InitialSheetUIScale,
 		hash:              gurps.Hash64(template),
 		needsSaveAsPrompt: true,
+	}
+	if t.lastBody == nil {
+		t.lastBody = gurps.FactoryBody()
 	}
 	t.Self = t
 	t.targetMgr = NewTargetMgr(t)
@@ -329,6 +334,9 @@ func (t *Template) applyTemplateToSheet(sheet *Sheet, suppressRandomizePrompt bo
 		}
 	}
 	e := sheet.Entity()
+	if t.template.BodyType != nil {
+		e.SheetSettings.BodyType = t.template.BodyType.Clone(e, nil)
+	}
 	templateAncestries := gurps.ActiveAncestries(ExtractNodeDataFromList(t.Traits.Table.RootRows()))
 	if len(templateAncestries) != 0 {
 		entityAncestries := gurps.ActiveAncestries(e.Traits)
@@ -843,6 +851,39 @@ func (t *Template) createLists() {
 			t.content.AddChild(rowPanel)
 		}
 	}
+
+	panel := unison.NewPanel()
+	panel.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+	})
+	panel.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: unison.StdVSpacing}))
+	button := unison.NewButton()
+	button.Font = fonts.PageFieldPrimary
+	button.SetTitle(t.lastBody.Name)
+	button.ClickCallback = func() { ShowBodySettings(t) }
+	if t.template.BodyType == nil {
+		button.SetEnabled(false)
+	}
+	box := NewCheckBox(nil, "", "", func() check.Enum {
+		return check.FromBool(t.template.BodyType != nil)
+	}, func(state check.Enum) {
+		if state == check.On {
+			if t.lastBody == nil {
+				t.lastBody = gurps.FactoryBody()
+			}
+			t.template.BodyType = t.lastBody
+		} else {
+			t.template.BodyType = nil
+		}
+		button.SetEnabled(state == check.On)
+	})
+	box.CheckBoxTheme.Font = fonts.PageFieldPrimary
+	box.SetTitle(i18n.Text("Set Body Type to"))
+	panel.AddChild(box)
+	panel.AddChild(button)
+	t.content.AddChild(panel)
+
 	t.content.ApplyPreferredSize()
 	if refocusOn != nil {
 		refocusOn.AsPanel().RequestFocus()
@@ -933,5 +974,25 @@ func (t *Template) syncWithAllSources() {
 		undo.AfterData = newTemplateTablesUndoData(t)
 		mgr.Add(undo)
 	}
+	t.Rebuild(true)
+}
+
+// BodySettingsTitle implements BodySettingsOwner.
+func (t *Template) BodySettingsTitle() string {
+	return fmt.Sprintf(i18n.Text("Body Type: %s"), t.Title())
+}
+
+// BodySettings implements BodySettingsOwner.
+func (t *Template) BodySettings(forReset bool) *gurps.Body {
+	if forReset {
+		return gurps.GlobalSettings().Sheet.BodyType
+	}
+	return t.lastBody
+}
+
+// SetBodySettings implements BodySettingsOwner.
+func (t *Template) SetBodySettings(body *gurps.Body) {
+	t.lastBody = body
+	t.template.BodyType = body
 	t.Rebuild(true)
 }

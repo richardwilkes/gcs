@@ -292,7 +292,7 @@ func registerActions() {
 	defaultBodyTypeSettingsAction = registerKeyBindableAction("settings.body_type.default", &unison.Action{
 		ID:              DefaultBodyTypeSettingsItemID,
 		Title:           i18n.Text("Default Body Type…"),
-		ExecuteCallback: func(_ *unison.Action, _ any) { ShowBodySettings(nil) },
+		ExecuteCallback: func(_ *unison.Action, _ any) { ShowBodySettings(&globalBodySettingsOwner{}) },
 	})
 	defaultSheetSettingsAction = registerKeyBindableAction("settings.sheet.default", &unison.Action{
 		ID:              DefaultSheetSettingsItemID,

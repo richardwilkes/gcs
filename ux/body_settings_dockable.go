@@ -26,7 +26,7 @@ var _ GroupedCloser = &bodySettingsDockable{}
 
 type bodySettingsDockable struct {
 	SettingsDockable
-	owner          EntityPanel
+	owner          BodySettingsOwner
 	targetMgr      *TargetMgr
 	undoMgr        *unison.UndoManager
 	body           *gurps.Body
@@ -43,7 +43,7 @@ type bodySettingsDockable struct {
 }
 
 // ShowBodySettings the Body Settings. Pass in nil to edit the defaults or a sheet to edit the sheet's.
-func ShowBodySettings(owner EntityPanel) {
+func ShowBodySettings(owner BodySettingsOwner) {
 	if Activate(func(d unison.Dockable) bool {
 		if s, ok := d.AsPanel().Self.(*bodySettingsDockable); ok && owner == s.owner {
 			return true
@@ -58,14 +58,8 @@ func ShowBodySettings(owner EntityPanel) {
 	}
 	d.Self = d
 	d.targetMgr = NewTargetMgr(d)
-	if owner != nil {
-		entity := d.owner.Entity()
-		d.body = entity.SheetSettings.BodyType.Clone(entity, nil)
-		d.TabTitle = i18n.Text("Body Type: " + owner.Entity().Profile.Name)
-	} else {
-		d.body = gurps.GlobalSettings().Sheet.BodyType.Clone(nil, nil)
-		d.TabTitle = i18n.Text("Default Body Type")
-	}
+	d.body = owner.BodySettings(false).Clone(d.owner.Entity(), nil)
+	d.TabTitle = owner.BodySettingsTitle()
 	d.TabIcon = svg.BodyType
 	d.body.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
 	d.originalHash = gurps.Hash64(d.body)
@@ -104,7 +98,7 @@ func (d *bodySettingsDockable) willClose() bool {
 }
 
 func (d *bodySettingsDockable) CloseWithGroup(other unison.Paneler) bool {
-	return d.owner != nil && d.owner == other
+	return d.owner == other
 }
 
 func (d *bodySettingsDockable) addToStartToolbar(toolbar *unison.Panel) {
@@ -147,10 +141,7 @@ func (d *bodySettingsDockable) initContent(content *unison.Panel) {
 }
 
 func (d *bodySettingsDockable) Entity() *gurps.Entity {
-	if d.owner != nil {
-		return d.owner.Entity()
-	}
-	return nil
+	return d.owner.Entity()
 }
 
 func (d *bodySettingsDockable) prepareUndo(title string) *unison.UndoEdit[*gurps.Body] {
@@ -176,11 +167,7 @@ func (d *bodySettingsDockable) applyBodyType(bodyType *gurps.Body) {
 
 func (d *bodySettingsDockable) reset() {
 	undo := d.prepareUndo(i18n.Text("Reset Body Type"))
-	if d.owner != nil {
-		d.body = gurps.GlobalSettings().Sheet.BodyType.Clone(d.Entity(), nil)
-	} else {
-		d.body = gurps.FactoryBody()
-	}
+	d.body = d.owner.BodySettings(true).Clone(d.owner.Entity(), nil)
 	d.body.ResetTargetKeyPrefixes(d.targetMgr.NextPrefix)
 	d.finishAndPostUndo(undo)
 	d.sync()
@@ -219,17 +206,7 @@ func (d *bodySettingsDockable) save(filePath string) error {
 
 func (d *bodySettingsDockable) apply() {
 	d.Window().FocusNext() // Intentionally move the focus to ensure any pending edits are flushed
-	if d.owner == nil {
-		gurps.GlobalSettings().Sheet.BodyType = d.body.Clone(nil, nil)
-		return
-	}
-	entity := d.owner.Entity()
-	entity.SheetSettings.BodyType = d.body.Clone(entity, nil)
-	for _, one := range AllDockables() {
-		if s, ok := one.(gurps.SheetSettingsResponder); ok {
-			s.SheetSettingsUpdated(entity, true)
-		}
-	}
+	d.owner.SetBodySettings(d.body.Clone(d.owner.Entity(), nil))
 }
 
 func (d *bodySettingsDockable) dataDragOver(where unison.Point, data map[string]any) bool {

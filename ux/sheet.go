@@ -896,3 +896,26 @@ func drawBandedBackground(p unison.Paneler, gc *unison.Canvas, rect unison.Rect,
 		gc.DrawRect(r, ink.Paint(gc, r, paintstyle.Fill))
 	}
 }
+
+// BodySettingsTitle implements BodySettingsOwner.
+func (s *Sheet) BodySettingsTitle() string {
+	return fmt.Sprintf(i18n.Text("Body Type: %s"), s.entity.Profile.Name)
+}
+
+// BodySettings implements BodySettingsOwner.
+func (s *Sheet) BodySettings(forReset bool) *gurps.Body {
+	if forReset {
+		return gurps.GlobalSettings().Sheet.BodyType
+	}
+	return s.entity.SheetSettings.BodyType
+}
+
+// SetBodySettings implements BodySettingsOwner.
+func (s *Sheet) SetBodySettings(body *gurps.Body) {
+	s.entity.SheetSettings.BodyType = body
+	for _, one := range AllDockables() {
+		if responder, ok := one.(gurps.SheetSettingsResponder); ok {
+			responder.SheetSettingsUpdated(s.entity, true)
+		}
+	}
+}

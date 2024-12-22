@@ -43,6 +43,7 @@ type TemplateData struct {
 	Spells    []*Spell     `json:"spells,omitempty"`
 	Equipment []*Equipment `json:"equipment,omitempty"`
 	Notes     []*Note      `json:"notes,omitempty"`
+	BodyType  *Body        `json:"body_type,omitempty"`
 }
 
 // NewTemplateFromFile loads a Template from a file.
