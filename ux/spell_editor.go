@@ -13,6 +13,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -99,7 +100,7 @@ func initSpellEditor(e *editor[*gurps.Spell, *gurps.SpellEditData], content *uni
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 	addSourceFields(content, &e.target.SourcedID)
 	if !e.target.Container() {
-		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq))
+		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment))
 		content.AddChild(newWeaponsPanel(e, e.target, true, &e.editorData.Weapons))
 		content.AddChild(newWeaponsPanel(e, e.target, false, &e.editorData.Weapons))
 		content.AddChild(newStudyPanel(entity, &e.editorData.StudyHoursNeeded, &e.editorData.Study))

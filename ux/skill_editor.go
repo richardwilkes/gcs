@@ -13,6 +13,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/difficulty"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -190,7 +191,7 @@ func initSkillEditor(e *editor[*gurps.Skill, *gurps.SkillEditData], content *uni
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 	addSourceFields(content, &e.target.SourcedID)
 	if !e.target.Container() {
-		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq))
+		content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment))
 		content.AddChild(newDefaultsPanel(entity, &e.editorData.Defaults))
 		content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false))
 		content.AddChild(newWeaponsPanel(e, e.target, true, &e.editorData.Weapons))

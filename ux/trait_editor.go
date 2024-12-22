@@ -13,6 +13,7 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/container"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/selfctrl"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -98,7 +99,7 @@ func initTraitEditor(e *editor[*gurps.Trait, *gurps.TraitEditData], content *uni
 	addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 	addSourceFields(content, &e.target.SourcedID)
 	modifiersPanel := newTraitModifiersPanel(entity, &e.editorData.Modifiers)
-	content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq))
+	content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForNonEquipment))
 	if e.target.Container() {
 		content.AddChild(modifiersPanel)
 	} else {

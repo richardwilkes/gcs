@@ -31,16 +31,18 @@ var lastPrereqTypeUsed = prereq.Trait
 
 type prereqPanel struct {
 	unison.Panel
-	entity   *gurps.Entity
-	root     **gurps.PrereqList
-	andOrMap map[gurps.Prereq]*unison.Label
+	entity           *gurps.Entity
+	root             **gurps.PrereqList
+	permittedChoices []prereq.Type
+	andOrMap         map[gurps.Prereq]*unison.Label
 }
 
-func newPrereqPanel(entity *gurps.Entity, root **gurps.PrereqList) *prereqPanel {
+func newPrereqPanel(entity *gurps.Entity, root **gurps.PrereqList, permittedChoices []prereq.Type) *prereqPanel {
 	p := &prereqPanel{
-		entity:   entity,
-		root:     root,
-		andOrMap: make(map[gurps.Prereq]*unison.Label),
+		entity:           entity,
+		root:             root,
+		permittedChoices: permittedChoices,
+		andOrMap:         make(map[gurps.Prereq]*unison.Label),
 	}
 	p.Self = p
 	p.SetLayout(&unison.FlexLayout{Columns: 1})
@@ -229,7 +231,7 @@ func andOrText(pr gurps.Prereq) string {
 
 func (p *prereqPanel) addPrereqTypeSwitcher(parent *unison.Panel, depth int, pr gurps.Prereq) {
 	prereqType := pr.PrereqType()
-	popup := addPopup(parent, prereq.Types[1:], &prereqType)
+	popup := addPopup(parent, p.permittedChoices, &prereqType)
 	popup.SelectionChangedCallback = func(pop *unison.PopupMenu[prereq.Type]) {
 		if item, ok := pop.Selected(); ok {
 			parentList := pr.ParentList()

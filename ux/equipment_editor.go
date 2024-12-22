@@ -14,6 +14,7 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/prereq"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -88,7 +89,7 @@ func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) 
 			addPageRefHighlightLabelAndField(content, &e.editorData.PageRefHighlight)
 			addSourceFields(content, &e.target.SourcedID)
 			adjustFieldBlank(usesField, e.editorData.MaxUses <= 0)
-			content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq))
+			content.AddChild(newPrereqPanel(entity, &e.editorData.Prereq, prereq.TypesForEquipment))
 			content.AddChild(newFeaturesPanel(entity, e.target, &e.editorData.Features, false))
 			modifiersPanel := newEquipmentModifiersPanel(entity, &e.editorData.Modifiers)
 			content.AddChild(modifiersPanel)
