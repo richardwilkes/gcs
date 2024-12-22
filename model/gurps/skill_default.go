@@ -13,6 +13,7 @@ import (
 	"hash"
 	"strings"
 
+	"github.com/richardwilkes/gcs/v5/model/criteria"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/nameable"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -27,13 +28,14 @@ var skillBasedDefaultTypes = map[string]bool{
 
 // SkillDefault holds data for a Skill default.
 type SkillDefault struct {
-	DefaultType    string  `json:"type"`
-	Name           string  `json:"name,omitempty"`
-	Specialization string  `json:"specialization,omitempty"`
-	Modifier       fxp.Int `json:"modifier,omitempty"`
-	Level          fxp.Int `json:"level,omitempty"`
-	AdjLevel       fxp.Int `json:"adjusted_level,omitempty"`
-	Points         fxp.Int `json:"points,omitempty"`
+	DefaultType    string          `json:"type"`
+	Name           string          `json:"name,omitempty"`
+	Specialization string          `json:"specialization,omitempty"`
+	Modifier       fxp.Int         `json:"modifier,omitempty"`
+	Level          fxp.Int         `json:"level,omitempty"`
+	AdjLevel       fxp.Int         `json:"adjusted_level,omitempty"`
+	Points         fxp.Int         `json:"points,omitempty"`
+	WhenTL         criteria.Number `json:"when_tl,omitempty"`
 }
 
 // DefaultTypeIsSkillBased returns true if the SkillDefault type is Skill-based.
@@ -52,7 +54,10 @@ func (s *SkillDefault) CloneWithoutLevelOrPoints() *SkillDefault {
 
 // Equivalent returns true if this can be considered equivalent to other.
 func (s *SkillDefault) Equivalent(replacements map[string]string, other *SkillDefault) bool {
-	return other != nil && s.DefaultType == other.DefaultType && s.Modifier == other.Modifier &&
+	return other != nil &&
+		s.DefaultType == other.DefaultType &&
+		s.Modifier == other.Modifier &&
+		s.WhenTL == other.WhenTL &&
 		s.NameWithReplacements(replacements) == other.NameWithReplacements(replacements) &&
 		s.SpecializationWithReplacements(replacements) == other.SpecializationWithReplacements(replacements)
 }
@@ -122,6 +127,9 @@ func (s *SkillDefault) SkillBased() bool {
 
 // SkillLevel returns the base skill level for this SkillDefault.
 func (s *SkillDefault) SkillLevel(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool, ruleOf20 bool) fxp.Int {
+	if !s.isTLPermitted(entity) {
+		return fxp.Min
+	}
 	switch s.Type() {
 	case ParryID:
 		best := s.best(entity, replacements, requirePoints, excludes)
@@ -142,6 +150,17 @@ func (s *SkillDefault) SkillLevel(entity *Entity, replacements map[string]string
 	}
 }
 
+func (s *SkillDefault) isTLPermitted(entity *Entity) bool {
+	if entity == nil || s.WhenTL.Compare == criteria.AnyNumber {
+		return true
+	}
+	tl, _, _ := ExtractTechLevel(entity.Profile.TechLevel)
+	if tl < 0 {
+		tl = 0
+	}
+	return s.WhenTL.Compare.Matches(s.WhenTL.Qualifier, tl)
+}
+
 func (s *SkillDefault) best(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool) fxp.Int {
 	best := fxp.Min
 	for _, sk := range entity.SkillNamed(s.NameWithReplacements(replacements),
@@ -158,6 +177,9 @@ func (s *SkillDefault) best(entity *Entity, replacements map[string]string, requ
 
 // SkillLevelFast returns the base skill level for this SkillDefault.
 func (s *SkillDefault) SkillLevelFast(entity *Entity, replacements map[string]string, requirePoints bool, excludes map[string]bool, ruleOf20 bool) fxp.Int {
+	if !s.isTLPermitted(entity) {
+		return fxp.Min
+	}
 	switch s.Type() {
 	case DodgeID:
 		level := entity.Dodge(entity.EncumbranceLevel(false))
@@ -216,4 +238,8 @@ func (s *SkillDefault) Hash(h hash.Hash) {
 	hashhelper.String(h, s.Name)
 	hashhelper.String(h, s.Specialization)
 	hashhelper.Num64(h, s.Modifier)
+	if !s.WhenTL.ShouldOmit() {
+		// Only hash this when its not the default, so that old files don't suddenly become marked as modified.
+		s.WhenTL.Hash(h)
+	}
 }

@@ -129,6 +129,9 @@ func (p *defaultsPanel) insertDefaultsPanel(index int, def *gurps.SkillDefault) 
 	adjustFieldBlank(nameField, def.DefaultType != gurps.SkillID)
 	adjustFieldBlank(specializationField, def.DefaultType != gurps.SkillID)
 
+	addNumericCriteriaPanel(panel, nil, "", i18n.Text("when the Tech Level"), i18n.Text("When Tech Level"),
+		&def.WhenTL, 0, fxp.Twelve, 4, true, true)
+
 	panel.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		HGrab:  true,
