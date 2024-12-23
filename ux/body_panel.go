@@ -12,8 +12,10 @@ package ux
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/colors"
+	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -21,6 +23,7 @@ import (
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
 	"github.com/richardwilkes/unison/enums/paintstyle"
+	"github.com/richardwilkes/unison/enums/side"
 )
 
 // BodyPanel holds the contents of the body block on the sheet.
@@ -117,44 +120,95 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 			}
 		}
 	}
+	settings := gurps.SheetSettingsFor(p.entity)
 	for i, location := range bodyType.Locations {
 		rollRange := location.RollRange
 		if rollRange == "-" {
-			rollRange = ""
+			rollRange = " "
 		}
-		var label *unison.Label
+		var roll *unison.Label
 		if hasSubTable || depth != 0 {
-			label = NewPageLabel(rollRange)
+			roll = NewPageLabel(rollRange)
 		} else {
-			label = NewPageLabelCenter(rollRange)
+			roll = NewPageLabelCenter(rollRange)
 		}
-		label.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
-		if depth > 0 {
-			label.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: float32(10 * depth)}))
-		}
-		p.AddChild(label)
+		border := unison.NewEmptyBorder(unison.Insets{Left: float32(10 * depth), Bottom: 1})
+		roll.SetBorder(border)
+		roll.SetLayoutData(&unison.FlexLayoutData{})
+		p.AddChild(roll)
 
 		if i == 0 && depth == 0 {
 			p.addSeparator()
 		}
 
-		name := NewPageLabel(location.TableName)
-		if depth > 0 {
-			name.SetBorder(unison.NewEmptyBorder(unison.Insets{Left: float32(10 * depth)}))
+		if location.SubTable != nil {
+			name := unison.NewButton()
+			name.SetFocusable(false)
+			name.HideBase = true
+			name.HAlign = align.Start
+			name.Side = side.Right
+			name.HMargin = 0
+			name.VMargin = 0
+			name.Font = fonts.PageLabelPrimary
+			name.Text = unison.NewSmallCapsText(location.TableName, &unison.TextDecoration{
+				Font:            name.Font,
+				OnBackgroundInk: name.OnBackgroundInk,
+			})
+			var rotation float32
+			key := fmt.Sprintf("%d:%d", depth, i)
+			if !settings.BodyTypeNodesClosed[key] {
+				rotation = 90
+			}
+			size := max(fonts.PageLabelPrimary.Baseline()-2, 6)
+			name.Drawable = &unison.DrawableSVG{
+				SVG:             unison.CircledChevronRightSVG,
+				Size:            unison.NewSize(size, size),
+				RotationDegrees: rotation,
+			}
+			name.SetLayoutData(&unison.FlexLayoutData{})
+			name.SetBorder(border)
+			if strings.TrimSpace(location.Description) != "" {
+				name.Tooltip = newWrappedTooltip(location.Description)
+			}
+			name.ClickCallback = func() {
+				s := gurps.SheetSettingsFor(p.entity)
+				s.SetBodyTypeNodeClosed(key, !s.BodyTypeNodesClosed[key])
+				p.sync(true)
+				MarkModified(p)
+				unison.InvokeTaskAfter(p.Window().UpdateCursorNow, time.Millisecond)
+			}
+			p.row = append(p.row, name)
+			p.AddChild(name)
+		} else {
+			name := NewPageLabel(location.TableName)
+			name.SetLayoutData(&unison.FlexLayoutData{})
+			name.SetBorder(border)
+			if strings.TrimSpace(location.Description) != "" {
+				name.Tooltip = newWrappedTooltip(location.Description)
+			}
+			p.row = append(p.row, name)
+			p.AddChild(name)
 		}
-		if strings.TrimSpace(location.Description) != "" {
-			name.Tooltip = newWrappedTooltip(location.Description)
-		}
-		name.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
-		p.row = append(p.row, name)
-		p.AddChild(name)
-		p.AddChild(p.createHitPenaltyField(location))
+		penalty := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
+			f.SetTitle(fmt.Sprintf("%+d", location.HitPenalty))
+			MarkForLayoutWithinDockable(f)
+		})
+		penalty.SetLayoutData(&unison.FlexLayoutData{})
+		p.AddChild(penalty)
 
 		if i == 0 && depth == 0 {
 			p.addSeparator()
 		}
 
-		p.AddChild(p.createDRField(location))
+		dr := NewNonEditablePageFieldCenter(func(f *NonEditablePageField) {
+			var tooltip xio.ByteBuffer
+			f.SetTitle(location.DisplayDR(p.entity, &tooltip))
+			f.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("The DR covering the %s hit location%s"),
+				location.TableName, tooltip.String()))
+			MarkForLayoutWithinDockable(f)
+		})
+		dr.SetLayoutData(&unison.FlexLayoutData{})
+		p.AddChild(dr)
 
 		if i == 0 && depth == 0 {
 			p.addSeparator()
@@ -164,33 +218,13 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 		notesField := NewStringPageField(p.targetMgr, "body:"+location.ID(), title,
 			func() string { return location.Notes }, func(value string) { location.Notes = value })
 		notesField.Tooltip = newWrappedTooltip(title)
+		notesField.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 		p.AddChild(notesField)
 
-		if location.SubTable != nil {
+		if location.SubTable != nil && !settings.BodyTypeNodesClosed[fmt.Sprintf("%d:%d", depth, i)] {
 			p.addTable(location.SubTable, depth+1)
 		}
 	}
-}
-
-func (p *BodyPanel) createHitPenaltyField(location *gurps.HitLocation) unison.Paneler {
-	field := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
-		f.SetTitle(fmt.Sprintf("%+d", location.HitPenalty))
-		MarkForLayoutWithinDockable(f)
-	})
-	field.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
-	return field
-}
-
-func (p *BodyPanel) createDRField(location *gurps.HitLocation) unison.Paneler {
-	field := NewNonEditablePageFieldCenter(func(f *NonEditablePageField) {
-		var tooltip xio.ByteBuffer
-		f.SetTitle(location.DisplayDR(p.entity, &tooltip))
-		f.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("The DR covering the %s hit location%s"),
-			location.TableName, tooltip.String()))
-		MarkForLayoutWithinDockable(f)
-	})
-	field.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
-	return field
 }
 
 func (p *BodyPanel) addSeparator() {
@@ -209,8 +243,12 @@ func (p *BodyPanel) addSeparator() {
 
 // Sync the panel to the current data.
 func (p *BodyPanel) Sync() {
+	p.sync(false)
+}
+
+func (p *BodyPanel) sync(force bool) {
 	locations := gurps.SheetSettingsFor(p.entity).BodyType
-	if hash := gurps.Hash64(locations); hash != p.hash {
+	if hash := gurps.Hash64(locations); force || hash != p.hash {
 		p.hash = hash
 		p.titledBorder.Title = locations.Name
 		p.addContent(locations)

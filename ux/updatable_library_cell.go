@@ -32,7 +32,7 @@ func newUpdatableLibraryCell(lib *gurps.Library, title *unison.Label, rel gurps.
 		release: rel,
 		title:   title,
 	}
-	c.Self = &c
+	c.Self = c
 	c.SetLayout(&unison.FlexLayout{
 		Columns:  2,
 		HSpacing: unison.StdHSpacing,
