@@ -11,6 +11,7 @@ package ux
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
@@ -175,12 +176,82 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 	if a.kind == poolAttrKind {
 		a.stateLabels = make(map[string]*unison.Label)
 	}
+	settings := gurps.SheetSettingsFor(a.entity)
+	sepCount := 0
+	closed := false
 	for _, def := range attrs.List(false) {
 		if a.isRelevant(def) {
 			if def.IsSeparator() {
 				a.rowStarts = append(a.rowStarts, len(a.Children()))
-				a.AddChild(NewPageInternalHeader(def.CombinedName(), a.columns()))
-			} else {
+				panel := unison.NewPanel()
+				panel.SetLayout(&unison.FlexLayout{Columns: 2})
+				panel.SetLayoutData(&unison.FlexLayoutData{
+					HSpan:  a.columns(),
+					HAlign: align.Fill,
+					HGrab:  true,
+				})
+				var rotation float32
+				key := fmt.Sprintf("a%d:%d", a.kind, sepCount)
+				sepCount++
+				if closed = settings.NodesClosed[key]; !closed {
+					rotation = 90
+				}
+				button := unison.NewButton()
+				button.SetFocusable(false)
+				button.SetLayoutData(&unison.FlexLayoutData{
+					HAlign: align.Middle,
+					VAlign: align.Middle,
+				})
+				button.HideBase = true
+				button.HMargin = 0
+				button.VMargin = 0
+				size := max(fonts.PageLabelPrimary.Baseline()-2, 6)
+				button.Drawable = &unison.DrawableSVG{
+					SVG:             unison.CircledChevronRightSVG,
+					Size:            unison.NewSize(size, size),
+					RotationDegrees: rotation,
+				}
+				button.ClickCallback = func() {
+					s := gurps.SheetSettingsFor(a.entity)
+					s.SetNodeClosed(key, !s.NodesClosed[key])
+					a.forceSync()
+					MarkModified(a)
+					unison.InvokeTaskAfter(a.Window().UpdateCursorNow, time.Millisecond)
+				}
+				panel.AddChild(button)
+				title := def.CombinedName()
+				if title == "" {
+					sep := unison.NewSeparator()
+					sep.SetLayoutData(&unison.FlexLayoutData{
+						HAlign: align.Fill,
+						VAlign: align.Middle,
+						HGrab:  true,
+					})
+					panel.AddChild(sep)
+				} else {
+					label := unison.NewLabel()
+					label.Font = fonts.PageLabelSecondary
+					label.HAlign = align.Middle
+					label.OnBackgroundInk = unison.ThemeOnSurface
+					label.SetTitle(title)
+					label.SetLayoutData(&unison.FlexLayoutData{
+						HAlign: align.Fill,
+						VAlign: align.Middle,
+						HGrab:  true,
+					})
+					label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
+						_, pref, _ := label.Sizes(unison.Size{})
+						paint := unison.ThemeSurfaceEdge.Paint(gc, rect, paintstyle.Stroke)
+						paint.SetStrokeWidth(1)
+						half := (rect.Width - pref.Width) / 2
+						gc.DrawLine(rect.X, rect.CenterY(), rect.X+half-2, rect.CenterY(), paint)
+						gc.DrawLine(2+rect.Right()-half, rect.CenterY(), rect.Right(), rect.CenterY(), paint)
+						label.DefaultDraw(gc, rect)
+					}
+					panel.AddChild(label)
+				}
+				a.AddChild(panel)
+			} else if !closed {
 				attr, ok := a.entity.Attributes.Set[def.ID()]
 				if !ok {
 					errs.Log(errs.New("unable to locate attribute data"), "id", def.ID())
@@ -276,7 +347,7 @@ func (a *AttrPanel) createPointsField(attr *gurps.Attribute) unison.Paneler {
 	field := NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
 		if text := "[" + attr.PointCost().String() + "]"; text != f.Text.String() {
 			f.SetTitle(text)
-			MarkForLayoutWithinDockable(f)
+			MarkForLayoutWithinDockable(f.AsPanel())
 		}
 		if def := attr.AttributeDef(); def != nil {
 			f.Tooltip = newWrappedTooltip(fmt.Sprintf(i18n.Text("Points spent on %s"), def.CombinedName()))
@@ -284,10 +355,7 @@ func (a *AttrPanel) createPointsField(attr *gurps.Attribute) unison.Paneler {
 	})
 	field.Font = fonts.PageFieldSecondary
 	field.OnBackgroundInk = dimmedPointsColor
-	field.Text.AdjustDecorations(func(d *unison.TextDecoration) {
-		d.Font = field.Font
-		d.OnBackgroundInk = field.OnBackgroundInk
-	})
+	field.SetTitle(field.Text.String())
 	return field
 }
 
@@ -324,5 +392,12 @@ func (a *AttrPanel) Sync() {
 			}
 		}
 	}
+	MarkForLayoutWithinDockable(a)
+}
+
+func (a *AttrPanel) forceSync() {
+	attrs := gurps.SheetSettingsFor(a.entity).Attributes
+	a.hash = gurps.Hash64(attrs)
+	a.rebuild(attrs)
 	MarkForLayoutWithinDockable(a)
 }

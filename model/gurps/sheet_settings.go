@@ -34,7 +34,7 @@ type SheetSettingsData struct {
 	BlockLayout                   *BlockLayout       `json:"block_layout,omitempty"`
 	Attributes                    *AttributeDefs     `json:"attributes,omitempty"`
 	BodyType                      *Body              `json:"body_type,alt=hit_locations,omitempty"`
-	BodyTypeNodesClosed           map[string]bool    `json:"body_type_nodes_closed,omitempty"`
+	NodesClosed                   map[string]bool    `json:"nodes_closed,omitempty"`
 	DamageProgression             progression.Option `json:"damage_progression"`
 	DefaultLengthUnits            fxp.LengthUnit     `json:"default_length_units"`
 	DefaultWeightUnits            fxp.WeightUnit     `json:"default_weight_units"`
@@ -136,8 +136,8 @@ func (s *SheetSettings) EnsureValidity() {
 
 // MarshalJSON implements json.Marshaler.
 func (s *SheetSettings) MarshalJSON() ([]byte, error) {
-	if len(s.BodyTypeNodesClosed) == 0 {
-		s.BodyTypeNodesClosed = nil
+	if len(s.NodesClosed) == 0 {
+		s.NodesClosed = nil
 	}
 	return json.Marshal(&s.SheetSettingsData)
 }
@@ -159,10 +159,10 @@ func (s *SheetSettings) Clone(entity *Entity) *SheetSettings {
 	clone.BlockLayout = s.BlockLayout.Clone()
 	clone.Attributes = s.Attributes.Clone()
 	clone.BodyType = s.BodyType.Clone(entity, nil)
-	if s.BodyTypeNodesClosed != nil {
-		clone.BodyTypeNodesClosed = make(map[string]bool, len(s.BodyTypeNodesClosed))
-		for k, v := range s.BodyTypeNodesClosed {
-			clone.BodyTypeNodesClosed[k] = v
+	if s.NodesClosed != nil {
+		clone.NodesClosed = make(map[string]bool, len(s.NodesClosed))
+		for k, v := range s.NodesClosed {
+			clone.NodesClosed[k] = v
 		}
 	}
 	return &clone
@@ -179,17 +179,17 @@ func (s *SheetSettings) Save(filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, s)
 }
 
-// SetBodyTypeNodeClosed sets the closed state of a body type node.
-func (s *SheetSettings) SetBodyTypeNodeClosed(key string, closed bool) {
+// SetNodeClosed sets the closed state of a keyed node.
+func (s *SheetSettings) SetNodeClosed(key string, closed bool) {
 	if closed {
-		if s.BodyTypeNodesClosed == nil {
-			s.BodyTypeNodesClosed = make(map[string]bool)
+		if s.NodesClosed == nil {
+			s.NodesClosed = make(map[string]bool)
 		}
-		s.BodyTypeNodesClosed[key] = true
+		s.NodesClosed[key] = true
 	} else {
-		delete(s.BodyTypeNodesClosed, key)
-		if len(s.BodyTypeNodesClosed) == 0 {
-			s.BodyTypeNodesClosed = nil
+		delete(s.NodesClosed, key)
+		if len(s.NodesClosed) == 0 {
+			s.NodesClosed = nil
 		}
 	}
 }

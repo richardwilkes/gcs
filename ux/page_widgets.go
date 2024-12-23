@@ -41,38 +41,6 @@ func NewPageHeader(title string, hSpan int) *unison.Label {
 	return label
 }
 
-// NewPageInternalHeader creates a new center-aligned internal header for a sheet page.
-func NewPageInternalHeader(title string, span int) unison.Paneler {
-	layoutData := &unison.FlexLayoutData{
-		HSpan:  span,
-		HAlign: align.Fill,
-	}
-	border := unison.NewEmptyBorder(unison.NewVerticalInsets(2))
-	if title == "" {
-		sep := unison.NewSeparator()
-		sep.SetBorder(border)
-		sep.SetLayoutData(layoutData)
-		return sep
-	}
-	label := unison.NewLabel()
-	label.Font = fonts.PageLabelSecondary
-	label.HAlign = align.Middle
-	label.OnBackgroundInk = unison.ThemeOnSurface
-	label.SetTitle(title)
-	label.SetLayoutData(layoutData)
-	label.SetBorder(border)
-	label.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) {
-		_, pref, _ := label.Sizes(unison.Size{})
-		paint := label.OnBackgroundInk.Paint(gc, rect, paintstyle.Stroke)
-		paint.SetStrokeWidth(1)
-		half := (rect.Width - pref.Width) / 2
-		gc.DrawLine(rect.X, rect.CenterY(), rect.X+half-2, rect.CenterY(), paint)
-		gc.DrawLine(2+rect.Right()-half, rect.CenterY(), rect.Right(), rect.CenterY(), paint)
-		label.DefaultDraw(gc, rect)
-	}
-	return label
-}
-
 // NewPageLabel creates a new start-aligned field label for a sheet page.
 func NewPageLabel(title string) *unison.Label {
 	return NewPageLabelWithInk(title, unison.ThemeOnSurface)
