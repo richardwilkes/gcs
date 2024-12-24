@@ -191,6 +191,14 @@ var (
 	notData string
 	Not     = unison.MustSVGFromContentString(notData)
 
+	//go:embed notes-collapse.svg
+	notesCollapseData string
+	NotesCollapse     = unison.MustSVGFromContentString(notesCollapseData)
+
+	//go:embed notes-expand.svg
+	notesExpandData string
+	NotesExpand     = unison.MustSVGFromContentString(notesExpandData)
+
 	//go:embed open_folder.svg
 	openFolderData string
 	OpenFolder     = unison.MustSVGFromContentString(openFolderData)
