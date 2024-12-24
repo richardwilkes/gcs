@@ -317,7 +317,8 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		button.DrawableOnlyHMargin = 0
 		button.DrawableOnlyVMargin = 0
 		button.Font = n.primaryFieldFont()
-		baseline := max(button.Font.Baseline()-2, 6)
+		baseline := button.Font.Baseline()
+		size := max(baseline-2, 6)
 		key := "N:" + string(n.ID())
 		isClosed := gurps.IsClosed(key)
 		var s *unison.SVG
@@ -328,12 +329,16 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		}
 		button.Drawable = &unison.DrawableSVG{
 			SVG:  s,
-			Size: unison.NewSize(baseline, baseline).Ceil(),
+			Size: unison.NewSize(size, size).Ceil(),
 		}
 		button.ClickCallback = func() {
 			gurps.SetClosedState(key, !gurps.IsClosed(key))
 			n.table.SyncToModel()
 		}
+		if baseline-size > 0 {
+			button.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: baseline - size}))
+		}
+		button.SetLayoutData(&unison.FlexLayoutData{VAlign: align.Start})
 		outer.AddChild(button)
 		p.AddChild(outer)
 		_, prefSize, _ := button.Sizes(unison.Size{})
