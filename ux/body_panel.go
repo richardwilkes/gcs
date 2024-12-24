@@ -120,7 +120,6 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 			}
 		}
 	}
-	settings := gurps.SheetSettingsFor(p.entity)
 	for i, location := range bodyType.Locations {
 		rollRange := location.RollRange
 		if rollRange == "-" {
@@ -155,8 +154,8 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 				OnBackgroundInk: name.OnBackgroundInk,
 			})
 			var rotation float32
-			key := fmt.Sprintf("b%d:%d", depth, i)
-			if !settings.NodesClosed[key] {
+			key := fmt.Sprintf("b:%d:%d", depth, i)
+			if !gurps.IsClosed(key) {
 				rotation = 90
 			}
 			size := max(fonts.PageLabelPrimary.Baseline()-2, 6)
@@ -171,10 +170,8 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 				name.Tooltip = newWrappedTooltip(location.Description)
 			}
 			name.ClickCallback = func() {
-				s := gurps.SheetSettingsFor(p.entity)
-				s.SetNodeClosed(key, !s.NodesClosed[key])
+				gurps.SetClosedState(key, !gurps.IsClosed(key))
 				p.sync(true)
-				MarkModified(p)
 				unison.InvokeTaskAfter(p.Window().UpdateCursorNow, time.Millisecond)
 			}
 			p.row = append(p.row, name)
@@ -221,7 +218,7 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 		notesField.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 		p.AddChild(notesField)
 
-		if location.SubTable != nil && !settings.NodesClosed[fmt.Sprintf("b%d:%d", depth, i)] {
+		if location.SubTable != nil && !gurps.IsClosed(fmt.Sprintf("b:%d:%d", depth, i)) {
 			p.addTable(location.SubTable, depth+1)
 		}
 	}

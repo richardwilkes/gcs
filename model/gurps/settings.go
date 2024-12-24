@@ -89,7 +89,7 @@ type Settings struct {
 	Sheet              *SheetSettings             `json:"sheet_settings,omitempty"`
 	OpenInWindow       []dgroup.Group             `json:"open_in_window,omitempty"`
 	WebServer          *websettings.Settings      `json:"web,omitempty"` // Do not use "web_server" as the key, as an earlier release used that name and it will cause a failure to load the settings file.
-	OpenNodes          map[tid.TID]int64          `json:"open_nodes,omitempty"`
+	Closed             map[string]int64           `json:"closed,omitempty"`
 	PDFs               map[string]*PDFInfo        `json:"pdfs,omitempty"`
 }
 
@@ -116,7 +116,6 @@ func GlobalSettings() *Settings {
 				General:            NewGeneralSettings(),
 				LibrarySet:         NewLibraries(),
 				LibraryExplorer:    NavigatorSettings{DividerPosition: 330},
-				LastDirs:           make(map[string]string),
 				Sheet:              FactorySheetSettings(),
 				WebServer:          websettings.Default(),
 			}
@@ -146,13 +145,10 @@ func (s *Settings) Save() error {
 			delete(s.LibraryExplorer.Nodes, k)
 		}
 	}
-	for k, v := range s.OpenNodes {
+	for k, v := range s.Closed {
 		if v < cutoff {
-			delete(s.OpenNodes, k)
+			delete(s.Closed, k)
 		}
-	}
-	if len(s.OpenNodes) == 0 {
-		s.OpenNodes = nil
 	}
 	columnCutoff := ToColumnCutoff(cutoff)
 	for k, v := range s.ColumnSizing {
@@ -163,16 +159,10 @@ func (s *Settings) Save() error {
 			delete(s.ColumnSizing, k)
 		}
 	}
-	if len(s.ColumnSizing) == 0 {
-		s.ColumnSizing = nil
-	}
 	for k, v := range s.PDFs {
 		if v.LastOpened < cutoff {
 			delete(s.PDFs, k)
 		}
-	}
-	if len(s.PDFs) == 0 {
-		s.PDFs = nil
 	}
 	return jio.SaveToFile(context.Background(), SettingsPath, s)
 }
@@ -194,6 +184,15 @@ func (s *Settings) EnsureValidity() {
 	}
 	if s.LastDirs == nil {
 		s.LastDirs = make(map[string]string)
+	}
+	if s.ColumnSizing == nil {
+		s.ColumnSizing = make(map[string]map[int]float32)
+	}
+	if s.Closed == nil {
+		s.Closed = make(map[string]int64)
+	}
+	if s.PDFs == nil {
+		s.PDFs = make(map[string]*PDFInfo)
 	}
 	if s.Sheet == nil {
 		s.Sheet = FactorySheetSettings()
@@ -306,16 +305,7 @@ func IsNodeOpen(node Openable) bool {
 	if !node.Container() {
 		return false
 	}
-	id := node.ID()
-	settings := GlobalSettings()
-	_, open := settings.OpenNodes[id]
-	if open {
-		if settings.OpenNodes == nil {
-			settings.OpenNodes = make(map[tid.TID]int64)
-		}
-		settings.OpenNodes[id] = time.Now().Unix()
-	}
-	return open
+	return !IsClosed("n:" + string(node.ID()))
 }
 
 // SetNodeOpen sets the current open state for a node. Returns true if a change was made.
@@ -323,28 +313,40 @@ func SetNodeOpen(node Openable, open bool) bool {
 	if !node.Container() {
 		return false
 	}
-	id := node.ID()
+	return SetClosedState("n:"+string(node.ID()), !open)
+}
+
+// IsClosed returns true if the specified key is closed.
+func IsClosed(key string) bool {
 	settings := GlobalSettings()
-	if _, wasOpen := settings.OpenNodes[id]; wasOpen != open {
-		if settings.OpenNodes == nil {
-			settings.OpenNodes = make(map[tid.TID]int64)
-		}
-		if open {
-			settings.OpenNodes[id] = time.Now().Unix()
-		} else {
-			delete(settings.OpenNodes, id)
-		}
-		return true
+	_, closed := settings.Closed[key]
+	if closed {
+		settings.Closed[key] = time.Now().Unix()
 	}
-	return false
+	return closed
+}
+
+// SetClosedState sets the current closed state for a key. Returns true if a change was made.
+func SetClosedState(key string, closed bool) bool {
+	settings := GlobalSettings()
+	_, wasClosed := settings.Closed[key]
+	if wasClosed == closed {
+		if closed {
+			settings.Closed[key] = time.Now().Unix()
+		}
+		return false
+	}
+	if closed {
+		settings.Closed[key] = time.Now().Unix()
+	} else {
+		delete(settings.Closed, key)
+	}
+	return true
 }
 
 // IDForPDFTOC returns the ID for the specified PDF TOC entry.
 func IDForPDFTOC(pdfPath, title string, pageNum int) tid.TID {
 	settings := GlobalSettings()
-	if settings.PDFs == nil {
-		settings.PDFs = make(map[string]*PDFInfo)
-	}
 	pi, ok := settings.PDFs[pdfPath]
 	if !ok {
 		pi = &PDFInfo{}

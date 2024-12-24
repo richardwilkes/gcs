@@ -176,7 +176,6 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 	if a.kind == poolAttrKind {
 		a.stateLabels = make(map[string]*unison.Label)
 	}
-	settings := gurps.SheetSettingsFor(a.entity)
 	sepCount := 0
 	closed := false
 	for _, def := range attrs.List(false) {
@@ -191,9 +190,9 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 					HGrab:  true,
 				})
 				var rotation float32
-				key := fmt.Sprintf("a%d:%d", a.kind, sepCount)
+				key := fmt.Sprintf("a:%d:%d", a.kind, sepCount)
 				sepCount++
-				if closed = settings.NodesClosed[key]; !closed {
+				if closed = gurps.IsClosed(key); !closed {
 					rotation = 90
 				}
 				button := unison.NewButton()
@@ -212,10 +211,8 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 					RotationDegrees: rotation,
 				}
 				button.ClickCallback = func() {
-					s := gurps.SheetSettingsFor(a.entity)
-					s.SetNodeClosed(key, !s.NodesClosed[key])
+					gurps.SetClosedState(key, !gurps.IsClosed(key))
 					a.forceSync()
-					MarkModified(a)
 					unison.InvokeTaskAfter(a.Window().UpdateCursorNow, time.Millisecond)
 				}
 				panel.AddChild(button)

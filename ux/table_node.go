@@ -296,9 +296,47 @@ func (n *Node[T]) createLabelCell(c *gurps.CellData, width float32, foreground, 
 		Columns: 1,
 		HAlign:  c.Alignment,
 	})
-	n.addLabelCell(c, p, width, c.Primary, c.InlineTag, n.primaryFieldFont(), foreground, background, true)
 	if c.Secondary != "" {
-		n.addLabelCell(c, p, width, c.Secondary, "", n.secondaryFieldFont(), foreground, background, false)
+		outer := unison.NewPanel()
+		outer.SetLayout(&unison.FlexLayout{
+			Columns:  2,
+			HSpacing: unison.StdHSpacing / 2,
+		})
+		inner := unison.NewPanel()
+		inner.SetLayout(&unison.FlexLayout{
+			Columns: 1,
+			HAlign:  c.Alignment,
+		})
+		inner.SetLayoutData(&unison.FlexLayoutData{
+			HAlign: align.Fill,
+			HGrab:  true,
+		})
+		outer.AddChild(inner)
+		button := unison.NewButton()
+		button.HideBase = true
+		button.DrawableOnlyHMargin = 0
+		button.DrawableOnlyVMargin = 0
+		button.Font = n.primaryFieldFont()
+		baseline := max(button.Font.Baseline()-2, 6)
+		button.Drawable = &unison.DrawableSVG{
+			SVG:  svg.ReleaseNotes,
+			Size: unison.NewSize(baseline, baseline).Ceil(),
+		}
+		key := "N:" + string(n.ID())
+		button.ClickCallback = func() {
+			gurps.SetClosedState(key, !gurps.IsClosed(key))
+			n.table.SyncToModel()
+		}
+		outer.AddChild(button)
+		p.AddChild(outer)
+		_, prefSize, _ := button.Sizes(unison.Size{})
+		n.addLabelCell(c, inner, width-((unison.StdHSpacing/2)+prefSize.Width), c.Primary, c.InlineTag,
+			n.primaryFieldFont(), foreground, background, true)
+		if !gurps.IsClosed(key) {
+			n.addLabelCell(c, p, width, c.Secondary, "", n.secondaryFieldFont(), foreground, background, false)
+		}
+	} else {
+		n.addLabelCell(c, p, width, c.Primary, c.InlineTag, n.primaryFieldFont(), foreground, background, true)
 	}
 	tooltip := c.Tooltip
 	if c.UnsatisfiedReason != "" {

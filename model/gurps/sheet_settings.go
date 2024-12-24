@@ -34,7 +34,6 @@ type SheetSettingsData struct {
 	BlockLayout                   *BlockLayout       `json:"block_layout,omitempty"`
 	Attributes                    *AttributeDefs     `json:"attributes,omitempty"`
 	BodyType                      *Body              `json:"body_type,alt=hit_locations,omitempty"`
-	NodesClosed                   map[string]bool    `json:"nodes_closed,omitempty"`
 	DamageProgression             progression.Option `json:"damage_progression"`
 	DefaultLengthUnits            fxp.LengthUnit     `json:"default_length_units"`
 	DefaultWeightUnits            fxp.WeightUnit     `json:"default_weight_units"`
@@ -136,9 +135,6 @@ func (s *SheetSettings) EnsureValidity() {
 
 // MarshalJSON implements json.Marshaler.
 func (s *SheetSettings) MarshalJSON() ([]byte, error) {
-	if len(s.NodesClosed) == 0 {
-		s.NodesClosed = nil
-	}
 	return json.Marshal(&s.SheetSettingsData)
 }
 
@@ -159,12 +155,6 @@ func (s *SheetSettings) Clone(entity *Entity) *SheetSettings {
 	clone.BlockLayout = s.BlockLayout.Clone()
 	clone.Attributes = s.Attributes.Clone()
 	clone.BodyType = s.BodyType.Clone(entity, nil)
-	if s.NodesClosed != nil {
-		clone.NodesClosed = make(map[string]bool, len(s.NodesClosed))
-		for k, v := range s.NodesClosed {
-			clone.NodesClosed[k] = v
-		}
-	}
 	return &clone
 }
 
@@ -177,19 +167,4 @@ func (s *SheetSettings) SetOwningEntity(entity *Entity) {
 // Save writes the settings to the file as JSON.
 func (s *SheetSettings) Save(filePath string) error {
 	return jio.SaveToFile(context.Background(), filePath, s)
-}
-
-// SetNodeClosed sets the closed state of a keyed node.
-func (s *SheetSettings) SetNodeClosed(key string, closed bool) {
-	if closed {
-		if s.NodesClosed == nil {
-			s.NodesClosed = make(map[string]bool)
-		}
-		s.NodesClosed[key] = true
-	} else {
-		delete(s.NodesClosed, key)
-		if len(s.NodesClosed) == 0 {
-			s.NodesClosed = nil
-		}
-	}
 }
