@@ -20,63 +20,65 @@ const (
 	maxPaperLengthPixels = 32000
 )
 
-var stdPaperSizes = []paperSize{
+// StdPaperSizes holds the standard paper sizes.
+var StdPaperSizes = []PaperSize{
 	{
-		name:   "letter",
-		width:  paper.Length{Length: 8.5, Units: paper.Inch},
-		height: paper.Length{Length: 11, Units: paper.Inch},
+		Name:   "letter",
+		Width:  paper.Length{Length: 8.5, Units: paper.Inch},
+		Height: paper.Length{Length: 11, Units: paper.Inch},
 	},
 	{
-		name:   "legal",
-		width:  paper.Length{Length: 8.5, Units: paper.Inch},
-		height: paper.Length{Length: 14, Units: paper.Inch},
+		Name:   "legal",
+		Width:  paper.Length{Length: 8.5, Units: paper.Inch},
+		Height: paper.Length{Length: 14, Units: paper.Inch},
 	},
 	{
-		name:   "tabloid",
-		width:  paper.Length{Length: 11, Units: paper.Inch},
-		height: paper.Length{Length: 17, Units: paper.Inch},
+		Name:   "tabloid",
+		Width:  paper.Length{Length: 11, Units: paper.Inch},
+		Height: paper.Length{Length: 17, Units: paper.Inch},
 	},
 	{
-		name:   "a0",
-		width:  paper.Length{Length: 841, Units: paper.Millimeter},
-		height: paper.Length{Length: 1189, Units: paper.Millimeter},
+		Name:   "a0",
+		Width:  paper.Length{Length: 841, Units: paper.Millimeter},
+		Height: paper.Length{Length: 1189, Units: paper.Millimeter},
 	},
 	{
-		name:   "a1",
-		width:  paper.Length{Length: 594, Units: paper.Millimeter},
-		height: paper.Length{Length: 841, Units: paper.Millimeter},
+		Name:   "a1",
+		Width:  paper.Length{Length: 594, Units: paper.Millimeter},
+		Height: paper.Length{Length: 841, Units: paper.Millimeter},
 	},
 	{
-		name:   "a2",
-		width:  paper.Length{Length: 420, Units: paper.Millimeter},
-		height: paper.Length{Length: 594, Units: paper.Millimeter},
+		Name:   "a2",
+		Width:  paper.Length{Length: 420, Units: paper.Millimeter},
+		Height: paper.Length{Length: 594, Units: paper.Millimeter},
 	},
 	{
-		name:   "a3",
-		width:  paper.Length{Length: 297, Units: paper.Millimeter},
-		height: paper.Length{Length: 420, Units: paper.Millimeter},
+		Name:   "a3",
+		Width:  paper.Length{Length: 297, Units: paper.Millimeter},
+		Height: paper.Length{Length: 420, Units: paper.Millimeter},
 	},
 	{
-		name:   "a4",
-		width:  paper.Length{Length: 210, Units: paper.Millimeter},
-		height: paper.Length{Length: 297, Units: paper.Millimeter},
+		Name:   "a4",
+		Width:  paper.Length{Length: 210, Units: paper.Millimeter},
+		Height: paper.Length{Length: 297, Units: paper.Millimeter},
 	},
 	{
-		name:   "a5",
-		width:  paper.Length{Length: 148, Units: paper.Millimeter},
-		height: paper.Length{Length: 210, Units: paper.Millimeter},
+		Name:   "a5",
+		Width:  paper.Length{Length: 148, Units: paper.Millimeter},
+		Height: paper.Length{Length: 210, Units: paper.Millimeter},
 	},
 	{
-		name:   "a6",
-		width:  paper.Length{Length: 105, Units: paper.Millimeter},
-		height: paper.Length{Length: 148, Units: paper.Millimeter},
+		Name:   "a6",
+		Width:  paper.Length{Length: 105, Units: paper.Millimeter},
+		Height: paper.Length{Length: 148, Units: paper.Millimeter},
 	},
 }
 
-type paperSize struct {
-	name   string
-	width  paper.Length
-	height paper.Length
+// PaperSize holds details about a standard paper size.
+type PaperSize struct {
+	Name   string
+	Width  paper.Length
+	Height paper.Length
 }
 
 // PageSettings holds page settings.
@@ -92,7 +94,7 @@ type PageSettings struct {
 // NewPageSettings returns new settings with factory defaults.
 func NewPageSettings() *PageSettings {
 	return &PageSettings{
-		Size:         stdPaperSizes[0].name,
+		Size:         StdPaperSizes[0].Name,
 		Orientation:  paper.Portrait,
 		TopMargin:    paper.Length{Length: 0.25, Units: paper.Inch},
 		LeftMargin:   paper.Length{Length: 0.25, Units: paper.Inch},
@@ -121,7 +123,7 @@ func (p *PageSettings) Clone() *PageSettings {
 func EnsurePageSizeIsValid(in string) string {
 	w, h, ok := ParsePageSize(in)
 	if !ok {
-		return stdPaperSizes[0].name
+		return StdPaperSizes[0].Name
 	}
 	return ToPageSize(w, h)
 }
@@ -132,15 +134,15 @@ func MustParsePageSize(size string) (width, height paper.Length) {
 	if width, height, valid = ParsePageSize(size); valid {
 		return width, height
 	}
-	return stdPaperSizes[0].width, stdPaperSizes[0].height
+	return StdPaperSizes[0].Width, StdPaperSizes[0].Height
 }
 
 // ParsePageSize parses a page size string and returns the width and height in inches.
 func ParsePageSize(size string) (width, height paper.Length, valid bool) {
 	size = strings.TrimPrefix(strings.TrimPrefix(strings.ToLower(strings.TrimSpace(size)), "na-"), "iso-")
-	for _, one := range stdPaperSizes {
-		if size == one.name {
-			return one.width, one.height, true
+	for _, one := range StdPaperSizes {
+		if size == one.Name {
+			return one.Width, one.Height, true
 		}
 	}
 	i := strings.Index(size, "x")
@@ -164,13 +166,13 @@ func outOfPaperRange(length paper.Length) bool {
 
 // ToPageSize converts a width and height to a page size string.
 func ToPageSize(width, height paper.Length) string {
-	for _, one := range stdPaperSizes {
-		if width == one.width && height == one.height {
-			return one.name
+	for _, one := range StdPaperSizes {
+		if width == one.Width && height == one.Height {
+			return one.Name
 		}
 	}
 	if outOfPaperRange(width) || outOfPaperRange(height) {
-		return stdPaperSizes[0].name
+		return StdPaperSizes[0].Name
 	}
 	return width.String() + " x " + height.String()
 }

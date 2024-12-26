@@ -10,7 +10,9 @@
 package ux
 
 import (
+	"fmt"
 	"io/fs"
+	"strings"
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -278,7 +280,7 @@ func (d *sheetSettingsDockable) createPageSettings(content *unison.Panel) {
 	})
 	panel.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 	d.createHeader(panel, i18n.Text("Page Settings"), 4)
-	d.paperSizeField = d.createPaperSizeField(panel, i18n.Text("Paper Size"), s.Page.Size, func(option string) { d.settings().Page.Size = option })
+	d.paperSizeField = d.createPaperSizeField(panel, s.Page.Size, func(option string) { d.settings().Page.Size = option })
 	d.orientationPopup = createSettingPopup(d, panel, i18n.Text("Orientation"), paper.Orientations,
 		s.Page.Orientation, func(option paper.Orientation) { d.settings().Page.Orientation = option })
 	d.topMarginField = d.createPaperMarginField(panel, i18n.Text("Top Margin"), s.Page.TopMargin,
@@ -333,8 +335,18 @@ func (d *sheetSettingsDockable) createBlockLayout(content *unison.Panel) {
 	content.AddChild(panel)
 }
 
-func (d *sheetSettingsDockable) createPaperSizeField(panel *unison.Panel, title, current string, set func(value string)) *unison.Field {
-	panel.AddChild(NewFieldLeadingLabel(title, false))
+func (d *sheetSettingsDockable) createPaperSizeField(panel *unison.Panel, current string, set func(value string)) *unison.Field {
+	panel.AddChild(NewFieldLeadingLabel(i18n.Text("Paper Size"), false))
+	wrapper := unison.NewPanel()
+	wrapper.SetLayout(&unison.FlexLayout{
+		Columns:  2,
+		HSpacing: unison.StdHSpacing,
+	})
+	wrapper.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Fill,
+		HGrab:  true,
+	})
+	panel.AddChild(wrapper)
 	field := unison.NewField()
 	field.SetText(current)
 	field.ValidateCallback = func() bool {
@@ -351,7 +363,19 @@ func (d *sheetSettingsDockable) createPaperSizeField(panel *unison.Panel, title,
 		HAlign: align.Fill,
 		HGrab:  true,
 	})
-	panel.AddChild(field)
+	wrapper.AddChild(field)
+	info := NewInfoPop()
+	var buffer strings.Builder
+	for _, one := range gurps.StdPaperSizes {
+		if buffer.Len() > 0 {
+			buffer.WriteString(", ")
+		}
+		buffer.WriteByte('"')
+		buffer.WriteString(one.Name)
+		buffer.WriteByte('"')
+	}
+	AddHelpToInfoPop(info, wrapTextForTooltip(fmt.Sprintf(i18n.Text(`Enter a standard paper size (e.g., one of %s) or a custom size (e.g., "8.5in x 11in", "210mm x 297mm")`), buffer.String())))
+	wrapper.AddChild(info)
 	return field
 }
 
