@@ -173,7 +173,7 @@ func (n *Navigator) setupToolBar() {
 	n.configLibraryButton.ClickCallback = n.configureSelection
 
 	n.favoriteButton = unison.NewSVGButton(svg.Star)
-	n.favoriteButton.Tooltip = newWrappedTooltip(i18n.Text("Favorite"))
+	n.favoriteButton.Tooltip = newWrappedTooltip(i18n.Text("Toggle Favorite"))
 	n.favoriteButton.ClickCallback = n.favoriteSelection
 
 	first := unison.NewPanel()
@@ -580,7 +580,7 @@ func (n *Navigator) mouseDown(where unison.Point, button, clickCount int, mod un
 			cm := f.NewMenu(unison.PopupMenuTemporaryBaseID|unison.ContextMenuIDFlag, "", nil)
 			id := 1
 			for _, one := range sel {
-				if one.IsFile() {
+				if one.IsFile() || one.IsDirectory() {
 					cm.InsertItem(-1, newContextMenuItemFromButton(f, &id, n.favoriteButton))
 					cm.InsertSeparator(-1, true)
 					break
