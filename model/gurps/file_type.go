@@ -29,6 +29,7 @@ const (
 	CampaignExt           = ".campaign"
 	EquipmentExt          = ".eqp"
 	EquipmentModifiersExt = ".eqm"
+	LootExt               = ".loot"
 	NotesExt              = ".not"
 	SheetExt              = ".gcs"
 	SkillsExt             = ".skl"

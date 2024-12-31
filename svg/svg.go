@@ -99,6 +99,10 @@ var (
 	gcsEquipmentModifiersData string
 	GCSEquipmentModifiers     = unison.MustSVGFromContentString(gcsEquipmentModifiersData)
 
+	//go:embed gcs_loot.svg
+	gcsLootData string
+	GCSLoot     = unison.MustSVGFromContentString(gcsLootData)
+
 	//go:embed gcs_notes.svg
 	gcsNotesData string
 	GCSNotes     = unison.MustSVGFromContentString(gcsNotesData)

@@ -74,6 +74,13 @@ var StdPaperSizes = []PaperSize{
 	},
 }
 
+// PageInfoProvider is an interface for types that have page information.
+type PageInfoProvider interface {
+	PageSettings() *PageSettings
+	PageTitle() string
+	ModifiedOnString() string
+}
+
 // PaperSize holds details about a standard paper size.
 type PaperSize struct {
 	Name   string

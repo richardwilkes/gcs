@@ -162,8 +162,7 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 	t.installNewItemCmdHandlers(NewTechniqueItemID, -1, t.Skills)
 	t.installNewItemCmdHandlers(NewSpellItemID, NewSpellContainerItemID, t.Spells)
 	t.installNewItemCmdHandlers(NewRitualMagicSpellItemID, -1, t.Spells)
-	t.installNewItemCmdHandlers(NewCarriedEquipmentItemID,
-		NewCarriedEquipmentContainerItemID, t.Equipment)
+	t.installNewItemCmdHandlers(NewCarriedEquipmentItemID, NewCarriedEquipmentContainerItemID, t.Equipment)
 	t.installNewItemCmdHandlers(NewNoteItemID, NewNoteContainerItemID, t.Notes)
 	t.InstallCmdHandlers(AddNaturalAttacksItemID, unison.AlwaysEnabled, func(_ any) {
 		InsertItems[*gurps.Trait](t, t.Traits.Table, t.template.TraitList, t.template.SetTraitList,

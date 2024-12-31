@@ -202,13 +202,11 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	s.installNewItemCmdHandlers(NewTechniqueItemID, -1, s.Skills)
 	s.installNewItemCmdHandlers(NewSpellItemID, NewSpellContainerItemID, s.Spells)
 	s.installNewItemCmdHandlers(NewRitualMagicSpellItemID, -1, s.Spells)
-	s.installNewItemCmdHandlers(NewCarriedEquipmentItemID, NewCarriedEquipmentContainerItemID,
-		s.CarriedEquipment)
-	s.installNewItemCmdHandlers(NewOtherEquipmentItemID, NewOtherEquipmentContainerItemID,
-		s.OtherEquipment)
+	s.installNewItemCmdHandlers(NewCarriedEquipmentItemID, NewCarriedEquipmentContainerItemID, s.CarriedEquipment)
+	s.installNewItemCmdHandlers(NewOtherEquipmentItemID, NewOtherEquipmentContainerItemID, s.OtherEquipment)
 	s.installNewItemCmdHandlers(NewNoteItemID, NewNoteContainerItemID, s.Notes)
 	s.InstallCmdHandlers(AddNaturalAttacksItemID, unison.AlwaysEnabled, func(_ any) {
-		InsertItems[*gurps.Trait](s, s.Traits.Table, s.entity.TraitList, s.entity.SetTraitList,
+		InsertItems(s, s.Traits.Table, s.entity.TraitList, s.entity.SetTraitList,
 			func(_ *unison.Table[*Node[*gurps.Trait]]) []*Node[*gurps.Trait] {
 				return s.Traits.provider.RootRows()
 			}, gurps.NewNaturalAttacks(s.entity, nil))
@@ -227,8 +225,8 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 func (s *Sheet) createToolbar() {
 	s.toolbar = unison.NewPanel()
 	s.AddChild(s.toolbar)
-	s.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1},
-		false), unison.NewEmptyBorder(unison.StdInsets())))
+	s.toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0,
+		unison.Insets{Bottom: 1}, false), unison.NewEmptyBorder(unison.StdInsets())))
 	s.toolbar.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		HGrab:  true,

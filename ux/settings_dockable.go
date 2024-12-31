@@ -27,9 +27,10 @@ import (
 
 // Known dockable kinds
 const (
-	SheetDockableKind    = "sheet"
-	TemplateDockableKind = "template"
-	ListDockableKind     = "list"
+	SheetDockableKind     = "sheet"
+	TemplateDockableKind  = "template"
+	LootSheetDockableKind = "loot"
+	ListDockableKind      = "list"
 )
 
 var (

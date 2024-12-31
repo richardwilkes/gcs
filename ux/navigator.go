@@ -968,6 +968,13 @@ func (n *Navigator) search(text string, rows []*NavigatorNode) {
 								prepareForContentCache(data.Notes),
 							}, "\n"))
 						}
+					case gurps.LootExt:
+						if data, err := gurps.NewLootFromFile(dir, fileName); err == nil {
+							content = n.addToContentCache(p, strings.Join([]string{ //nolint:gocritic // Fine as-is
+								prepareForContentCache(data.Items),
+								prepareForContentCache(data.Notes),
+							}, "\n"))
+						}
 					// TODO: Re-enable Campaign files
 					// case gurps.CampaignExt:
 					// TODO: Implement
@@ -1143,6 +1150,9 @@ func DisplayNewDockable(dockable unison.Dockable) {
 			group = &g
 		case fi.Extensions[0] == gurps.TemplatesExt:
 			g := dgroup.CharacterTemplates
+			group = &g
+		case fi.Extensions[0] == gurps.LootExt:
+			g := dgroup.LootSheets
 			group = &g
 		// TODO: Re-enable Campaign files
 		// case fi.Extensions[0] == gurps.CampaignExt:

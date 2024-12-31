@@ -71,6 +71,7 @@ var (
 	newCarriedEquipmentContainerAction  *unison.Action
 	newCharacterSheetAction             *unison.Action
 	newCharacterTemplateAction          *unison.Action
+	newLootSheetAction                  *unison.Action
 	newEquipmentContainerModifierAction *unison.Action
 	newEquipmentLibraryAction           *unison.Action
 	newEquipmentModifierAction          *unison.Action
@@ -440,6 +441,13 @@ func registerActions() {
 		Title: i18n.Text("New Character Template"),
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			DisplayNewDockable(NewTemplate("untitled"+gurps.TemplatesExt, gurps.NewTemplate()))
+		},
+	})
+	newLootSheetAction = registerKeyBindableAction("new.loot", &unison.Action{
+		ID:    NewLootSheetItemID,
+		Title: i18n.Text("New Loot Sheet"),
+		ExecuteCallback: func(_ *unison.Action, _ any) {
+			DisplayNewDockable(NewLootSheet("untitled"+gurps.LootExt, gurps.NewLoot()))
 		},
 	})
 	// TODO: Re-enable Campaign files

@@ -21,6 +21,7 @@ import (
 const (
 	CharacterSheets Group = iota
 	CharacterTemplates
+	LootSheets
 	Campaigns
 	Editors
 	Images
@@ -38,6 +39,7 @@ const LastGroup Group = SubEditors
 var Groups = []Group{
 	CharacterSheets,
 	CharacterTemplates,
+	LootSheets,
 	Campaigns,
 	Editors,
 	Images,
@@ -66,6 +68,8 @@ func (enum Group) Key() string {
 		return "character_sheets"
 	case CharacterTemplates:
 		return "character_templates"
+	case LootSheets:
+		return "loot_sheets"
 	case Campaigns:
 		return "campaigns"
 	case Editors:
@@ -94,6 +98,8 @@ func (enum Group) String() string {
 		return i18n.Text("Character Sheets")
 	case CharacterTemplates:
 		return i18n.Text("Character Templates")
+	case LootSheets:
+		return i18n.Text("Loot Sheets")
 	case Campaigns:
 		return i18n.Text("Campaigns")
 	case Editors:

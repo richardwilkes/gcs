@@ -24,16 +24,16 @@ import (
 // Page holds a logical page worth of content.
 type Page struct {
 	unison.Panel
-	flex       *unison.FlexLayout
-	entity     *gurps.Entity
-	lastInsets unison.Insets
-	Force      bool
+	flex         *unison.FlexLayout
+	infoProvider gurps.PageInfoProvider
+	lastInsets   unison.Insets
+	Force        bool
 }
 
 // NewPage creates a new page.
-func NewPage(entity *gurps.Entity) *Page {
+func NewPage(infoProvider gurps.PageInfoProvider) *Page {
 	p := &Page{
-		entity: entity,
+		infoProvider: infoProvider,
 		flex: &unison.FlexLayout{
 			Columns:  1,
 			HSpacing: 1,
@@ -50,8 +50,8 @@ func NewPage(entity *gurps.Entity) *Page {
 
 // LayoutSizes implements unison.Layout
 func (p *Page) LayoutSizes(_ *unison.Panel, _ unison.Size) (minSize, prefSize, maxSize unison.Size) {
-	s := gurps.SheetSettingsFor(p.entity)
-	w, h := s.Page.Orientation.Dimensions(gurps.MustParsePageSize(s.Page.Size))
+	pageSettings := p.infoProvider.PageSettings()
+	w, h := pageSettings.Orientation.Dimensions(gurps.MustParsePageSize(pageSettings.Size))
 	if insets := p.insets(); insets != p.lastInsets {
 		p.lastInsets = insets
 		p.SetBorder(unison.NewEmptyBorder(insets))
@@ -81,12 +81,12 @@ func (p *Page) ApplyPreferredSize() {
 }
 
 func (p *Page) insets() unison.Insets {
-	sheetSettings := gurps.SheetSettingsFor(p.entity)
+	pageSettings := p.infoProvider.PageSettings()
 	insets := unison.Insets{
-		Top:    sheetSettings.Page.TopMargin.Pixels(),
-		Left:   sheetSettings.Page.LeftMargin.Pixels(),
-		Bottom: sheetSettings.Page.BottomMargin.Pixels(),
-		Right:  sheetSettings.Page.RightMargin.Pixels(),
+		Top:    pageSettings.TopMargin.Pixels(),
+		Left:   pageSettings.LeftMargin.Pixels(),
+		Bottom: pageSettings.BottomMargin.Pixels(),
+		Right:  pageSettings.RightMargin.Pixels(),
 	}
 	height := fonts.PageFooterSecondary.LineHeight()
 	insets.Bottom += xmath.Ceil(max(fonts.PageFooterPrimary.LineHeight(), height) + height)
@@ -114,16 +114,11 @@ func (p *Page) drawSelf(gc *unison.Canvas, _ unison.Rect) {
 		OnBackgroundInk: unison.ThemeOnSurface,
 	}
 
-	var title string
-	if gurps.SheetSettingsFor(p.entity).UseTitleInFooter {
-		title = p.entity.Profile.Title
-	} else {
-		title = p.entity.Profile.Name
-	}
-	center := unison.NewText(title, primaryDecorations)
+	center := unison.NewText(p.infoProvider.PageTitle(), primaryDecorations)
 	left := unison.NewText(fmt.Sprintf(i18n.Text("%s is copyrighted ©%s by %s"), cmdline.AppName,
 		cmdline.ResolveCopyrightYears(), cmdline.CopyrightHolder), secondaryDecorations)
-	right := unison.NewText(fmt.Sprintf(i18n.Text("Modified %s"), p.entity.ModifiedOn), secondaryDecorations)
+	right := unison.NewText(fmt.Sprintf(i18n.Text("Modified %s"), p.infoProvider.ModifiedOnString()),
+		secondaryDecorations)
 	if pageNumber&1 == 0 {
 		left, right = right, left
 	}

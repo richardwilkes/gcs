@@ -77,6 +77,14 @@ func Convert(paths ...string) error {
 			if err = SaveEquipmentModifiers(data, p); err != nil {
 				return err
 			}
+		case LootExt:
+			var loot *Loot
+			if loot, err = NewLootFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {
+				return err
+			}
+			if err = loot.Save(p); err != nil {
+				return err
+			}
 		case SkillsExt:
 			var data []*Skill
 			if data, err = NewSkillsFromFile(os.DirFS(filepath.Dir(p)), filepath.Base(p)); err != nil {

@@ -52,6 +52,7 @@ var (
 	_ ListProvider          = &Entity{}
 	_ DataOwner             = &Entity{}
 	_ Hashable              = &Entity{}
+	_ PageInfoProvider      = &Entity{}
 )
 
 // PointsBreakdown holds the points spent on a character.
@@ -1622,4 +1623,22 @@ func (e *Entity) SyncWithLibrarySources() {
 		note.SyncWithSource()
 		return false
 	}, false, false, e.Notes...)
+}
+
+// PageSettings implements PageInfoProvider.
+func (e *Entity) PageSettings() *PageSettings {
+	return e.SheetSettings.Page
+}
+
+// PageTitle implements PageInfoProvider.
+func (e *Entity) PageTitle() string {
+	if e.SheetSettings.UseTitleInFooter {
+		return e.Profile.Title
+	}
+	return e.Profile.Name
+}
+
+// ModifiedOnString implements PageInfoProvider.
+func (e *Entity) ModifiedOnString() string {
+	return e.ModifiedOn.String()
 }
