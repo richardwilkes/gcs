@@ -28,11 +28,12 @@ import (
 )
 
 var (
-	_ FileBackedDockable         = &LootSheet{}
-	_ unison.UndoManagerProvider = &LootSheet{}
-	_ ModifiableRoot             = &LootSheet{}
-	_ Rebuildable                = &LootSheet{}
-	_ unison.TabCloser           = &LootSheet{}
+	_ FileBackedDockable           = &LootSheet{}
+	_ unison.UndoManagerProvider   = &LootSheet{}
+	_ ModifiableRoot               = &LootSheet{}
+	_ Rebuildable                  = &LootSheet{}
+	_ unison.TabCloser             = &LootSheet{}
+	_ gurps.SheetSettingsResponder = &LootSheet{}
 )
 
 // LootSheet holds the view for a loot sheet.
@@ -464,11 +465,10 @@ func (l *LootSheet) createLists() {
 	if !ok {
 		return
 	}
-	children = page.Children()
-	if len(children) < 1 {
+	if children = page.Children(); len(children) == 0 {
 		return
 	}
-	for i := len(children) - 1; i > 1; i-- {
+	for i := len(children) - 1; i > 0; i-- {
 		page.RemoveChildAtIndex(i)
 	}
 	if l.Equipment.needReconstruction() {
@@ -575,4 +575,10 @@ func (l *LootSheet) exportToJPEG() {
 			}
 		}
 	}
+}
+
+// SheetSettingsUpdated implements gurps.SheetSettingsResponder.
+func (l *LootSheet) SheetSettingsUpdated(_ *gurps.Entity, blockLayout bool) {
+	l.MarkModified(nil)
+	l.Rebuild(blockLayout)
 }

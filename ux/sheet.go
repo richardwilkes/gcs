@@ -35,12 +35,13 @@ import (
 const SkipDeepSync = "!deepsync"
 
 var (
-	_ FileBackedDockable         = &Sheet{}
-	_ unison.UndoManagerProvider = &Sheet{}
-	_ ModifiableRoot             = &Sheet{}
-	_ Rebuildable                = &Sheet{}
-	_ unison.TabCloser           = &Sheet{}
-	_ gurps.DataOwnerProvider    = &Sheet{}
+	_ FileBackedDockable           = &Sheet{}
+	_ unison.UndoManagerProvider   = &Sheet{}
+	_ ModifiableRoot               = &Sheet{}
+	_ Rebuildable                  = &Sheet{}
+	_ unison.TabCloser             = &Sheet{}
+	_ gurps.DataOwnerProvider      = &Sheet{}
+	_ gurps.SheetSettingsResponder = &Sheet{}
 
 	printMgr    printing.PrintManager
 	lastPrinter printing.PrinterID

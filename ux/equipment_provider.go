@@ -189,8 +189,29 @@ func (p *equipmentProvider) ColumnIDs() []int {
 		gurps.EquipmentQuantityColumn,
 		gurps.EquipmentDescriptionColumn,
 		gurps.EquipmentUsesColumn,
-		gurps.EquipmentTLColumn,
-		gurps.EquipmentLCColumn,
+	)
+	var sheetSettings *gurps.SheetSettings
+	if p.forPage {
+		if entity := p.DataOwner().OwningEntity(); entity != nil {
+			sheetSettings = entity.SheetSettings
+		} else {
+			sheetSettings = gurps.GlobalSettings().SheetSettings()
+		}
+	}
+	if p.forPage && sheetSettings != nil {
+		if !sheetSettings.HideTLColumn {
+			columnIDs = append(columnIDs, gurps.EquipmentTLColumn)
+		}
+		if !sheetSettings.HideLCColumn {
+			columnIDs = append(columnIDs, gurps.EquipmentLCColumn)
+		}
+	} else {
+		columnIDs = append(columnIDs,
+			gurps.EquipmentTLColumn,
+			gurps.EquipmentLCColumn,
+		)
+	}
+	columnIDs = append(columnIDs,
 		gurps.EquipmentCostColumn,
 		gurps.EquipmentWeightColumn,
 		gurps.EquipmentExtendedCostColumn,
@@ -201,7 +222,7 @@ func (p *equipmentProvider) ColumnIDs() []int {
 	}
 	columnIDs = append(columnIDs, gurps.EquipmentReferenceColumn)
 	if p.forPage {
-		if entity := p.DataOwner().OwningEntity(); entity == nil || !entity.SheetSettings.HideSourceMismatch {
+		if sheetSettings == nil || !sheetSettings.HideSourceMismatch {
 			columnIDs = append(columnIDs, gurps.EquipmentLibSrcColumn)
 		}
 	}

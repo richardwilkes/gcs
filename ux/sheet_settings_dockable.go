@@ -43,6 +43,8 @@ type sheetSettingsDockable struct {
 	showEquipmentModifier              *unison.CheckBox
 	showSpellAdjustments               *unison.CheckBox
 	hideSourceMismatch                 *unison.CheckBox
+	hideTLColumn                       *unison.CheckBox
+	hideLCColumn                       *unison.CheckBox
 	showTitleInsteadOfNameInPageFooter *unison.CheckBox
 	useMultiplicativeModifiers         *unison.CheckBox
 	useModifyDicePlusAdds              *unison.CheckBox
@@ -155,6 +157,16 @@ func (d *sheetSettingsDockable) createOptions(content *unison.Panel) {
 	d.hideSourceMismatch = d.addCheckBox(panel, i18n.Text("Show library source column"),
 		!s.HideSourceMismatch, func() {
 			d.settings().HideSourceMismatch = d.hideSourceMismatch.State != check.On
+			d.syncSheet(true)
+		})
+	d.hideTLColumn = d.addCheckBox(panel, i18n.Text("Show tech level (TL) column"),
+		!s.HideTLColumn, func() {
+			d.settings().HideTLColumn = d.hideTLColumn.State != check.On
+			d.syncSheet(true)
+		})
+	d.hideLCColumn = d.addCheckBox(panel, i18n.Text("Show legality class (LC) column"),
+		!s.HideLCColumn, func() {
+			d.settings().HideLCColumn = d.hideLCColumn.State != check.On
 			d.syncSheet(true)
 		})
 	d.showTraitModifier = d.addCheckBox(panel, i18n.Text("Show trait modifier cost adjustments"),
@@ -449,6 +461,8 @@ func (d *sheetSettingsDockable) sync() {
 	s := d.settings()
 	d.damageProgressionPopup.Select(s.DamageProgression)
 	d.hideSourceMismatch.State = check.FromBool(!s.HideSourceMismatch)
+	d.hideTLColumn.State = check.FromBool(!s.HideTLColumn)
+	d.hideLCColumn.State = check.FromBool(!s.HideLCColumn)
 	d.showTraitModifier.State = check.FromBool(s.ShowTraitModifierAdj)
 	d.showEquipmentModifier.State = check.FromBool(s.ShowEquipmentModifierAdj)
 	d.showSpellAdjustments.State = check.FromBool(s.ShowSpellAdj)
