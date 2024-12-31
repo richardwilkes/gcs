@@ -15,6 +15,7 @@ import (
 	"hash"
 	"io/fs"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/json"
@@ -87,6 +88,11 @@ func (t *Template) UnmarshalJSON(data []byte) error {
 // DataOwner returns the data owner.
 func (t *Template) DataOwner() DataOwner {
 	return t
+}
+
+// WeightUnit returns the weight unit to use for display.
+func (t *Template) WeightUnit() fxp.WeightUnit {
+	return GlobalSettings().SheetSettings().DefaultWeightUnits
 }
 
 // OwningEntity returns nil.

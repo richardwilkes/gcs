@@ -971,7 +971,7 @@ func (n *Navigator) search(text string, rows []*NavigatorNode) {
 					case gurps.LootExt:
 						if data, err := gurps.NewLootFromFile(dir, fileName); err == nil {
 							content = n.addToContentCache(p, strings.Join([]string{ //nolint:gocritic // Fine as-is
-								prepareForContentCache(data.Items),
+								prepareForContentCache(data.Equipment),
 								prepareForContentCache(data.Notes),
 							}, "\n"))
 						}

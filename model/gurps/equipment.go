@@ -293,7 +293,7 @@ func (e *Equipment) UnmarshalJSON(data []byte) error {
 }
 
 // EquipmentHeaderData returns the header data information for the given equipment column.
-func EquipmentHeaderData(columnID int, entity *Entity, carried, forPage bool) HeaderData {
+func EquipmentHeaderData(columnID int, provider EquipmentListProvider, carried, forPage bool) HeaderData {
 	var data HeaderData
 	switch columnID {
 	case EquipmentEquippedColumn:
@@ -306,13 +306,30 @@ func EquipmentHeaderData(columnID int, entity *Entity, carried, forPage bool) He
 		data.Less = fxp.IntLessFromString
 	case EquipmentDescriptionColumn:
 		data.Title = i18n.Text("Equipment")
-		if forPage && entity != nil {
+		if forPage {
+			var weight fxp.Weight
+			var value fxp.Int
+			units := provider.DataOwner().WeightUnit()
 			if carried {
-				data.Title = fmt.Sprintf(i18n.Text("Carried Equipment (%s; $%s)"),
-					entity.SheetSettings.DefaultWeightUnits.Format(entity.WeightCarried(false)),
-					entity.WealthCarried().Comma())
+				title := i18n.Text("Carried Equipment")
+				if _, ok := provider.(*Template); ok {
+					title = i18n.Text("Equipment")
+				}
+				for _, one := range provider.CarriedEquipmentList() {
+					weight += one.ExtendedWeight(false, units)
+					value += one.ExtendedValue()
+				}
+				data.Title = fmt.Sprintf(i18n.Text("%s (%s; $%s)"), title, units.Format(weight), value.Comma())
 			} else {
-				data.Title = fmt.Sprintf(i18n.Text("Other Equipment ($%s)"), entity.WealthNotCarried().Comma())
+				title := i18n.Text("Other Equipment")
+				if _, ok := provider.(*Loot); ok {
+					title = i18n.Text("Equipment")
+				}
+				for _, one := range provider.OtherEquipmentList() {
+					weight += one.ExtendedWeight(false, units)
+					value += one.ExtendedValue()
+				}
+				data.Title = fmt.Sprintf(i18n.Text("%s (%s; $%s)"), title, units.Format(weight), value.Comma())
 			}
 		}
 		data.Primary = true
@@ -340,12 +357,12 @@ func EquipmentHeaderData(columnID int, entity *Entity, carried, forPage bool) He
 		data.Title = HeaderWeight
 		data.TitleIsImageKey = true
 		data.Detail = i18n.Text("The weight of one of these pieces of equipment")
-		data.Less = fxp.WeightLessFromStringFunc(SheetSettingsFor(entity).DefaultWeightUnits)
+		data.Less = fxp.WeightLessFromStringFunc(provider.DataOwner().WeightUnit())
 	case EquipmentExtendedWeightColumn:
 		data.Title = HeaderStackedWeight
 		data.TitleIsImageKey = true
 		data.Detail = i18n.Text("The weight of all of these pieces of equipment, plus the weight of any contained equipment")
-		data.Less = fxp.WeightLessFromStringFunc(SheetSettingsFor(entity).DefaultWeightUnits)
+		data.Less = fxp.WeightLessFromStringFunc(provider.DataOwner().WeightUnit())
 	case EquipmentTagsColumn:
 		data.Title = i18n.Text("Tags")
 	case EquipmentReferenceColumn:

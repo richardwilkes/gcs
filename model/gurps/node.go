@@ -23,6 +23,7 @@ import (
 type DataOwner interface {
 	OwningEntity() *Entity
 	SourceMatcher() *SrcMatcher
+	WeightUnit() fxp.WeightUnit
 }
 
 // DataOwnerProvider provides a way to retrieve a (possibly nil) data owner.

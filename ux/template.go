@@ -59,6 +59,7 @@ type Template struct {
 	dragReroutePanel  *unison.Panel
 	lastBody          *gurps.Body
 	scale             int
+	awaitingUpdate    bool
 	needsSaveAsPrompt bool
 }
 
@@ -707,7 +708,16 @@ func (t *Template) Modified() bool {
 
 // MarkModified implements widget.ModifiableRoot.
 func (t *Template) MarkModified(_ unison.Paneler) {
-	UpdateTitleForDockable(t)
+	if !t.awaitingUpdate {
+		t.awaitingUpdate = true
+		h, v := t.scroll.Position()
+		focusRefKey := t.targetMgr.CurrentFocusRef()
+		DeepSync(t)
+		UpdateTitleForDockable(t)
+		t.awaitingUpdate = false
+		t.targetMgr.ReacquireFocus(focusRefKey, t.toolbar, t.scroll.Content())
+		t.scroll.SetPosition(h, v)
+	}
 }
 
 // MayAttemptClose implements unison.TabCloser

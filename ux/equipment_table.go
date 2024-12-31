@@ -24,7 +24,19 @@ type equipmentListProvider struct {
 }
 
 func (p *equipmentListProvider) DataOwner() gurps.DataOwner {
+	return p
+}
+
+func (p *equipmentListProvider) OwningEntity() *gurps.Entity {
 	return nil
+}
+
+func (p *equipmentListProvider) SourceMatcher() *gurps.SrcMatcher {
+	return nil
+}
+
+func (p *equipmentListProvider) WeightUnit() fxp.WeightUnit {
+	return gurps.GlobalSettings().SheetSettings().DefaultWeightUnits
 }
 
 func (p *equipmentListProvider) CarriedEquipmentList() []*gurps.Equipment {

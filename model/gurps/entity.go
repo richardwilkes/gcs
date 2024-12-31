@@ -1055,6 +1055,11 @@ func (e *Entity) EncumbranceLevel(forSkills bool) encumbrance.Level {
 	return encumbrance.ExtraHeavy
 }
 
+// WeightUnit returns the weight unit that should be used for display.
+func (e *Entity) WeightUnit() fxp.WeightUnit {
+	return e.SheetSettings.DefaultWeightUnits
+}
+
 // WeightCarried returns the carried weight.
 func (e *Entity) WeightCarried(forSkills bool) fxp.Weight {
 	var total fxp.Weight

@@ -15,6 +15,7 @@ import (
 	"hash"
 	"io/fs"
 
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/json"
@@ -42,7 +43,7 @@ type LootData struct {
 	Name       string       `json:"name,omitempty"`
 	Location   string       `json:"location,omitempty"`
 	ModifiedOn jio.Time     `json:"modified_date"`
-	Items      []*Equipment `json:"items,omitempty"`
+	Equipment  []*Equipment `json:"equipment,omitempty"`
 	Notes      []*Note      `json:"notes,omitempty"`
 }
 
@@ -119,7 +120,7 @@ func (l *Loot) Hash(h hash.Hash) {
 
 // EnsureAttachments ensures that all attachments have their data owner set properly.
 func (l *Loot) EnsureAttachments() {
-	for _, one := range l.Items {
+	for _, one := range l.Equipment {
 		one.SetDataOwner(l)
 	}
 	for _, one := range l.Notes {
@@ -136,7 +137,7 @@ func (l *Loot) SyncWithLibrarySources() {
 			return false
 		}, false, false, item.Modifiers...)
 		return false
-	}, false, false, l.Items...)
+	}, false, false, l.Equipment...)
 	Traverse(func(note *Note) bool {
 		note.SyncWithSource()
 		return false
@@ -148,14 +149,19 @@ func (l *Loot) DataOwner() DataOwner {
 	return l
 }
 
+// WeightUnit returns the weight unit to use for display.
+func (l *Loot) WeightUnit() fxp.WeightUnit {
+	return GlobalSettings().SheetSettings().DefaultWeightUnits
+}
+
 // OtherEquipmentList implements ListProvider.
 func (l *Loot) OtherEquipmentList() []*Equipment {
-	return l.Items
+	return l.Equipment
 }
 
 // SetOtherEquipmentList implements ListProvider.
 func (l *Loot) SetOtherEquipmentList(list []*Equipment) {
-	l.Items = list
+	l.Equipment = list
 }
 
 // NoteList implements ListProvider.

@@ -162,9 +162,9 @@ func (p *equipmentProvider) ItemNames() (singular, plural string) {
 func (p *equipmentProvider) Headers() []unison.TableColumnHeader[*Node[*gurps.Equipment]] {
 	ids := p.ColumnIDs()
 	headers := make([]unison.TableColumnHeader[*Node[*gurps.Equipment]], 0, len(ids))
-	entity, _ := p.provider.(*gurps.Entity) //nolint:errcheck // It's ok for the entity to be nil
 	for _, id := range ids {
-		headers = append(headers, headerFromData[*gurps.Equipment](gurps.EquipmentHeaderData(id, entity, p.carried, p.forPage), p.forPage))
+		headers = append(headers, headerFromData[*gurps.Equipment](gurps.EquipmentHeaderData(id, p.provider, p.carried,
+			p.forPage), p.forPage))
 	}
 	return headers
 }
@@ -173,9 +173,8 @@ func (p *equipmentProvider) SyncHeader(headers []unison.TableColumnHeader[*Node[
 	if p.forPage {
 		if i := p.table.ColumnIndexForID(gurps.EquipmentDescriptionColumn); i != -1 {
 			if header, ok := headers[i].(*PageTableColumnHeader[*gurps.Equipment]); ok {
-				entity, _ := p.provider.(*gurps.Entity) //nolint:errcheck // It's ok for the entity to be nil
 				header.Text = unison.NewSmallCapsText(gurps.EquipmentHeaderData(gurps.EquipmentDescriptionColumn,
-					entity, p.carried, p.forPage).Title, &header.TextDecoration)
+					p.provider, p.carried, p.forPage).Title, &header.TextDecoration)
 			}
 		}
 	}
@@ -218,7 +217,7 @@ func (p *equipmentProvider) ExcessWidthColumnID() int {
 }
 
 func (p *equipmentProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*gurps.Equipment]]) {
-	OpenEditor[*gurps.Equipment](table, func(item *gurps.Equipment) { EditEquipment(owner, item, p.carried) })
+	OpenEditor(table, func(item *gurps.Equipment) { EditEquipment(owner, item, p.carried) })
 }
 
 func (p *equipmentProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Equipment]], variant ItemVariant) {
@@ -229,7 +228,7 @@ func (p *equipmentProvider) CreateItem(owner Rebuildable, table *unison.Table[*N
 		setTopListFunc = p.provider.SetCarriedEquipmentList
 	}
 	item := gurps.NewEquipment(p.DataOwner(), nil, variant == ContainerItemVariant)
-	InsertItems[*gurps.Equipment](owner, table, topListFunc, setTopListFunc,
+	InsertItems(owner, table, topListFunc, setTopListFunc,
 		func(_ *unison.Table[*Node[*gurps.Equipment]]) []*Node[*gurps.Equipment] {
 			return p.RootRows()
 		}, item)

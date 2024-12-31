@@ -46,7 +46,7 @@ type LootSheet struct {
 	content           *unison.Panel
 	loot              *gurps.Loot
 	hash              uint64
-	Items             *PageList[*gurps.Equipment]
+	Equipment         *PageList[*gurps.Equipment]
 	Notes             *PageList[*gurps.Note]
 	dragReroutePanel  *unison.Panel
 	scale             int
@@ -153,7 +153,7 @@ func NewLootSheet(filePath string, loot *gurps.Loot) *LootSheet {
 
 	l.InstallCmdHandlers(SaveItemID, func(_ any) bool { return l.Modified() }, func(_ any) { l.save(false) })
 	l.InstallCmdHandlers(SaveAsItemID, unison.AlwaysEnabled, func(_ any) { l.save(true) })
-	l.installNewItemCmdHandlers(NewOtherEquipmentItemID, NewOtherEquipmentContainerItemID, l.Items)
+	l.installNewItemCmdHandlers(NewOtherEquipmentItemID, NewOtherEquipmentContainerItemID, l.Equipment)
 	l.installNewItemCmdHandlers(NewNoteItemID, NewNoteContainerItemID, l.Notes)
 	l.InstallCmdHandlers(ExportAsPDFItemID, unison.AlwaysEnabled, func(_ any) { l.exportToPDF() })
 	l.InstallCmdHandlers(ExportAsWEBPItemID, unison.AlwaysEnabled, func(_ any) { l.exportToWEBP() })
@@ -196,10 +196,10 @@ func (l *LootSheet) createToolbar() {
 	l.toolbar.AddChild(syncSourceButton)
 
 	installSearchTracker(l.toolbar, func() {
-		l.Items.Table.ClearSelection()
+		l.Equipment.Table.ClearSelection()
 		l.Notes.Table.ClearSelection()
 	}, func(refList *[]*searchRef, text string, namesOnly bool) {
-		searchSheetTable(refList, text, namesOnly, l.Items)
+		searchSheetTable(refList, text, namesOnly, l.Equipment)
 		searchSheetTable(refList, text, namesOnly, l.Notes)
 	})
 
@@ -270,7 +270,7 @@ func (l *LootSheet) keyToPanel(key string) *unison.Panel {
 	var p unison.Paneler
 	switch key {
 	case equipmentDragKey:
-		p = l.Items.Table
+		p = l.Equipment.Table
 	case noteDragKey:
 		p = l.Notes.Table
 	default:
@@ -395,19 +395,19 @@ func (l *LootSheet) save(forceSaveAs bool) bool {
 }
 
 type lootTablesUndoData struct {
-	items *TableUndoEditData[*gurps.Equipment]
-	notes *TableUndoEditData[*gurps.Note]
+	equipment *TableUndoEditData[*gurps.Equipment]
+	notes     *TableUndoEditData[*gurps.Note]
 }
 
 func newLootTablesUndoData(l *LootSheet) *lootTablesUndoData {
 	return &lootTablesUndoData{
-		items: NewTableUndoEditData(l.Items.Table),
-		notes: NewTableUndoEditData(l.Notes.Table),
+		equipment: NewTableUndoEditData(l.Equipment.Table),
+		notes:     NewTableUndoEditData(l.Notes.Table),
 	}
 }
 
 func (l *lootTablesUndoData) Apply() {
-	l.items.Apply()
+	l.equipment.Apply()
 	l.notes.Apply()
 }
 
@@ -425,7 +425,7 @@ func (l *LootSheet) syncWithAllSources() {
 		}
 	}
 	l.loot.SyncWithLibrarySources()
-	l.Items.Table.SyncToModel()
+	l.Equipment.Table.SyncToModel()
 	l.Notes.Table.SyncToModel()
 	if mgr != nil && undo != nil {
 		undo.AfterData = newLootTablesUndoData(l)
@@ -441,10 +441,10 @@ func (l *LootSheet) Rebuild(full bool) {
 	h, v := l.scroll.Position()
 	focusRefKey := l.targetMgr.CurrentFocusRef()
 	if full {
-		itemsSelMap := l.Items.RecordSelection()
+		equipmentSelMap := l.Equipment.RecordSelection()
 		notesSelMap := l.Notes.RecordSelection()
 		defer func() {
-			l.Items.ApplySelection(itemsSelMap)
+			l.Equipment.ApplySelection(equipmentSelMap)
 			l.Notes.ApplySelection(notesSelMap)
 		}()
 		l.createLists()
@@ -471,16 +471,16 @@ func (l *LootSheet) createLists() {
 	for i := len(children) - 1; i > 1; i-- {
 		page.RemoveChildAtIndex(i)
 	}
-	if l.Items.needReconstruction() {
-		l.Items = NewOtherEquipmentPageList(l, l.loot)
+	if l.Equipment.needReconstruction() {
+		l.Equipment = NewOtherEquipmentPageList(l, l.loot)
 	} else {
-		l.Items.Sync()
+		l.Equipment.Sync()
 	}
-	l.Items.SetLayoutData(&unison.FlexLayoutData{
+	l.Equipment.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		HGrab:  true,
 	})
-	page.AddChild(l.Items)
+	page.AddChild(l.Equipment)
 	if l.Notes.needReconstruction() {
 		l.Notes = NewNotesPageList(l, l.loot)
 	} else {
