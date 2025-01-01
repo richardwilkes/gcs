@@ -67,7 +67,7 @@ type TableProvider[T gurps.NodeTypes] interface {
 // NewNodeTable creates a new node table of the specified type, returning the header and table. Pass nil for 'font' if
 // this should be a standalone top-level table for a dockable. Otherwise, pass in the typical font used for a cell.
 func NewNodeTable[T gurps.NodeTypes](provider TableProvider[T], font unison.Font) (header *unison.TableHeader[*Node[T]], table *unison.Table[*Node[T]]) {
-	table = unison.NewTable[*Node[T]](provider)
+	table = unison.NewTable(provider)
 	provider.SetTable(table)
 	table.HierarchyColumnID = provider.HierarchyColumnID()
 	layoutData := &unison.FlexLayoutData{
