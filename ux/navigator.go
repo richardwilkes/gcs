@@ -50,7 +50,6 @@ type FileBackedDockable interface {
 type Navigator struct {
 	unison.Panel
 	toolbar                   *unison.Panel
-	hierarchyButton           *unison.Button
 	backButton                *unison.Button
 	forwardButton             *unison.Button
 	searchField               *unison.Field
@@ -140,9 +139,9 @@ func (n *Navigator) setupToolBar() {
 	helpButton.Tooltip = newWrappedTooltip(i18n.Text("Help"))
 	helpButton.ClickCallback = func() { HandleLink(nil, "md:Help/Interface/Library Tree") }
 
-	n.hierarchyButton = unison.NewSVGButton(svg.Hierarchy)
-	n.hierarchyButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all hierarchical rows"))
-	n.hierarchyButton.ClickCallback = n.toggleHierarchy
+	hierarchyButton := unison.NewSVGButton(svg.Hierarchy)
+	hierarchyButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all hierarchical rows"))
+	hierarchyButton.ClickCallback = n.toggleHierarchy
 
 	n.deleteButton = unison.NewSVGButton(svg.Trash)
 	n.deleteButton.Tooltip = newWrappedTooltip(i18n.Text("Delete"))
@@ -191,7 +190,7 @@ func (n *Navigator) setupToolBar() {
 			n.scroll,
 		),
 	)
-	first.AddChild(n.hierarchyButton)
+	first.AddChild(hierarchyButton)
 	first.AddChild(NewToolbarSeparator())
 	first.AddChild(addLibraryButton)
 	first.AddChild(n.downloadLibraryButton)

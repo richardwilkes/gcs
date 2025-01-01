@@ -191,6 +191,11 @@ func (l *LootSheet) createToolbar() {
 		),
 	)
 
+	hierarchyButton := unison.NewSVGButton(svg.Hierarchy)
+	hierarchyButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all hierarchical rows"))
+	hierarchyButton.ClickCallback = l.toggleHierarchy
+	l.toolbar.AddChild(hierarchyButton)
+
 	syncSourceButton := unison.NewSVGButton(svg.DownToBracket)
 	syncSourceButton.Tooltip = newWrappedTooltip(i18n.Text("Sync with all sources in this sheet"))
 	syncSourceButton.ClickCallback = func() { l.syncWithAllSources() }
@@ -215,6 +220,7 @@ const (
 	lootPanelNameFieldRefKey     = lootPanelFieldPrefix + "name"
 	lootPanelDescFieldRefKey     = lootPanelFieldPrefix + "desc"
 	lootPanelLocationFieldRefKey = lootPanelFieldPrefix + "location"
+	lootPanelSessionFieldRefKey  = lootPanelFieldPrefix + "session"
 )
 
 func createLootTopBlock(loot *gurps.Loot, targetMgr *TargetMgr) *Page {
@@ -238,6 +244,7 @@ func createLootTopBlock(loot *gurps.Loot, targetMgr *TargetMgr) *Page {
 		})))
 	addLootTextField(top, targetMgr, i18n.Text("Name"), lootPanelNameFieldRefKey, &loot.Name)
 	addLootTextField(top, targetMgr, i18n.Text("Location"), lootPanelLocationFieldRefKey, &loot.Location)
+	addLootTextField(top, targetMgr, i18n.Text("Session"), lootPanelSessionFieldRefKey, &loot.Session)
 	page.AddChild(top)
 	return page
 }
@@ -574,4 +581,25 @@ func (l *LootSheet) exportToJPEG() {
 func (l *LootSheet) SheetSettingsUpdated(_ *gurps.Entity, blockLayout bool) {
 	l.MarkModified(nil)
 	l.Rebuild(blockLayout)
+}
+
+func (l *LootSheet) toggleHierarchy() {
+	tables := []interface {
+		FirstDisclosureState() (open, exists bool)
+		SetDisclosureState(open bool)
+	}{
+		l.Equipment,
+		l.Notes,
+	}
+	var open, exists bool
+	for _, table := range tables {
+		if open, exists = table.FirstDisclosureState(); exists {
+			break
+		}
+	}
+	open = !open
+	for _, table := range tables {
+		table.SetDisclosureState(open)
+	}
+	l.Rebuild(true)
 }

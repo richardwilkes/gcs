@@ -336,6 +336,34 @@ func (p *PageList[T]) ApplySelection(selection map[tid.TID]bool) {
 	}
 }
 
+// FirstDisclosureState returns the open state of the first row that can be opened.
+func (p *PageList[T]) FirstDisclosureState() (open, exists bool) {
+	for _, row := range p.Table.RootRows() {
+		if row.CanHaveChildren() {
+			return row.IsOpen(), true
+		}
+	}
+	return false, false
+}
+
+// SetDisclosureState sets the open state of all rows that can be opened.
+func (p *PageList[T]) SetDisclosureState(open bool) {
+	for _, row := range p.Table.RootRows() {
+		if row.CanHaveChildren() {
+			p.setRowOpen(row, open)
+		}
+	}
+}
+
+func (p *PageList[T]) setRowOpen(row *Node[T], open bool) {
+	row.SetOpen(open)
+	for _, child := range row.Children() {
+		if child.CanHaveChildren() {
+			p.setRowOpen(child, open)
+		}
+	}
+}
+
 // Sync the underlying data.
 func (p *PageList[T]) Sync() {
 	p.provider.SyncHeader(p.tableHeader.ColumnHeaders)

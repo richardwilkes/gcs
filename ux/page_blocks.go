@@ -15,13 +15,15 @@ import (
 	"github.com/richardwilkes/unison/enums/align"
 )
 
-func createPageTopBlock(entity *gurps.Entity, targetMgr *TargetMgr) (page *Page, modifiedFunc func()) {
+func createPageTopBlock(entity *gurps.Entity, targetMgr *TargetMgr) (page *Page, modifiedFunc, syncDisclosureFunc func()) {
 	page = NewPage(entity)
 	var top *unison.Panel
 	top, modifiedFunc = createPageFirstRow(entity, targetMgr)
 	page.AddChild(top)
-	page.AddChild(createPageSecondRow(entity, targetMgr))
-	return page, modifiedFunc
+	var bottom *unison.Panel
+	bottom, syncDisclosureFunc = createPageSecondRow(entity, targetMgr)
+	page.AddChild(bottom)
+	return page, modifiedFunc, syncDisclosureFunc
 }
 
 func createPageFirstRow(entity *gurps.Entity, targetMgr *TargetMgr) (top *unison.Panel, modifiedFunc func()) {
@@ -56,8 +58,8 @@ func createPageFirstRow(entity *gurps.Entity, targetMgr *TargetMgr) (top *unison
 	return top, miscPanel.UpdateModified
 }
 
-func createPageSecondRow(entity *gurps.Entity, targetMgr *TargetMgr) *unison.Panel {
-	p := unison.NewPanel()
+func createPageSecondRow(entity *gurps.Entity, targetMgr *TargetMgr) (p *unison.Panel, syncDisclosureFunc func()) {
+	p = unison.NewPanel()
 	p.SetLayout(&unison.FlexLayout{
 		Columns:  4,
 		HSpacing: 1,
@@ -86,12 +88,21 @@ func createPageSecondRow(entity *gurps.Entity, targetMgr *TargetMgr) *unison.Pan
 	endWrapper.AddChild(NewEncumbrancePanel(entity))
 	endWrapper.AddChild(NewLiftingPanel(entity))
 
-	p.AddChild(NewPrimaryAttrPanel(entity, targetMgr))
-	p.AddChild(NewSecondaryAttrPanel(entity, targetMgr))
-	p.AddChild(NewBodyPanel(entity, targetMgr))
+	primaryAttrPanel := NewPrimaryAttrPanel(entity, targetMgr)
+	p.AddChild(primaryAttrPanel)
+	secondaryAttrPanel := NewSecondaryAttrPanel(entity, targetMgr)
+	p.AddChild(secondaryAttrPanel)
+	bodyPanel := NewBodyPanel(entity, targetMgr)
+	p.AddChild(bodyPanel)
 	p.AddChild(endWrapper)
 	p.AddChild(NewDamagePanel(entity))
-	p.AddChild(NewPointPoolsPanel(entity, targetMgr))
+	poolPanel := NewPointPoolsPanel(entity, targetMgr)
+	p.AddChild(poolPanel)
 
-	return p
+	return p, func() {
+		primaryAttrPanel.forceSync()
+		secondaryAttrPanel.forceSync()
+		poolPanel.forceSync()
+		bodyPanel.sync(true)
+	}
 }

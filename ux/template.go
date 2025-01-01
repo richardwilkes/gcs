@@ -208,6 +208,11 @@ func (t *Template) createToolbar() {
 		),
 	)
 
+	hierarchyButton := unison.NewSVGButton(svg.Hierarchy)
+	hierarchyButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all hierarchical rows"))
+	hierarchyButton.ClickCallback = t.toggleHierarchy
+	t.toolbar.AddChild(hierarchyButton)
+
 	addUserButton := unison.NewSVGButton(svg.Stamper)
 	addUserButton.Tooltip = newWrappedTooltip(applyTemplateAction.Title)
 	addUserButton.ClickCallback = func() {
@@ -1003,5 +1008,29 @@ func (t *Template) BodySettings(forReset bool) *gurps.Body {
 func (t *Template) SetBodySettings(body *gurps.Body) {
 	t.lastBody = body
 	t.template.BodyType = body
+	t.Rebuild(true)
+}
+
+func (t *Template) toggleHierarchy() {
+	tables := []interface {
+		FirstDisclosureState() (open, exists bool)
+		SetDisclosureState(open bool)
+	}{
+		t.Traits,
+		t.Skills,
+		t.Spells,
+		t.Equipment,
+		t.Notes,
+	}
+	var open, exists bool
+	for _, table := range tables {
+		if open, exists = table.FirstDisclosureState(); exists {
+			break
+		}
+	}
+	open = !open
+	for _, table := range tables {
+		table.SetDisclosureState(open)
+	}
 	t.Rebuild(true)
 }

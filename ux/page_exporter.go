@@ -41,7 +41,7 @@ func newPageExporter(entity *gurps.Entity) *pageExporter {
 	p.targetMgr = NewTargetMgr(p)
 	pageSize := p.PageSize()
 	r := unison.Rect{Size: pageSize}
-	page, _ := createPageTopBlock(entity, p.targetMgr)
+	page, _, _ := createPageTopBlock(entity, p.targetMgr)
 	p.AddChild(page)
 	p.pages = append(p.pages, page)
 	for _, col := range entity.SheetSettings.BlockLayout.ByRow() {

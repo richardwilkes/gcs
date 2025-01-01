@@ -30,8 +30,8 @@ type AltDropSupport struct {
 // InstallTableDropSupport installs our standard drop support on a table.
 func InstallTableDropSupport[T gurps.NodeTypes](table *unison.Table[*Node[T]], provider TableProvider[T]) {
 	table.ClientData()[TableProviderClientKey] = provider
-	unison.InstallDropSupport[*Node[T], *TableDragUndoEditData[T]](table, provider.DragKey(),
-		provider.DropShouldMoveData, willDropCallback[T], didDropCallback[T])
+	unison.InstallDropSupport(table, provider.DragKey(), provider.DropShouldMoveData, willDropCallback[T],
+		didDropCallback[T])
 	table.DragRemovedRowsCallback = func() { MarkModified(table) }
 	table.DropOccurredCallback = func() {
 		// We need to defer this to give newly added skills a chance to choose their defaults first, before the normal

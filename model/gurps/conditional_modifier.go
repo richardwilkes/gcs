@@ -45,7 +45,7 @@ type ConditionalModifier struct {
 // NewConditionalModifier creates a new ConditionalModifier.
 func NewConditionalModifier(source, from string, amt fxp.Int) *ConditionalModifier {
 	return &ConditionalModifier{
-		TID:     tid.MustNewTID(kinds.ConditionalModifier),
+		TID:     TIDFromHashedString(kinds.ConditionalModifier, from),
 		From:    from,
 		Amounts: []fxp.Int{amt},
 		Sources: []string{source},

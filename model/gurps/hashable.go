@@ -1,9 +1,12 @@
 package gurps
 
 import (
+	"encoding/base64"
+	"fmt"
 	"hash"
 
 	"github.com/richardwilkes/toolbox/tid"
+	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 	"github.com/zeebo/xxh3"
 )
 
@@ -38,4 +41,18 @@ func NodesToHashesByID[T NodeTypes](result map[tid.TID]HashAndData, data ...T) {
 		}
 		return false
 	}, false, false, data...)
+}
+
+// TIDFromHashedString creates a TID from a string.
+func TIDFromHashedString(kind byte, s string) tid.TID {
+	h := xxh3.New()
+	hashhelper.String(h, s)
+	buffer := h.Sum(make([]byte, 0, 12))
+	for len(buffer) < 12 {
+		buffer = append(buffer, 0)
+	}
+	if len(buffer) > 12 {
+		buffer = buffer[:12]
+	}
+	return tid.TID(fmt.Sprintf("%c%s", kind, base64.RawURLEncoding.EncodeToString(buffer)))
 }

@@ -25,12 +25,6 @@ import (
 	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
-const (
-	primaryAttrKind = iota
-	secondaryAttrKind
-	poolAttrKind
-)
-
 var dimmedPointsColor = unison.ThemeOnSurface.Derive(func(basedOn unison.ThemeColor) unison.ThemeColor {
 	return unison.ThemeColor{
 		Light: basedOn.Light.SetAlphaIntensity(0.5),
@@ -52,17 +46,17 @@ type AttrPanel struct {
 
 // NewPrimaryAttrPanel creates a new primary attributes panel.
 func NewPrimaryAttrPanel(entity *gurps.Entity, targetMgr *TargetMgr) *AttrPanel {
-	return newAttrPanel(entity, targetMgr, primaryAttrKind)
+	return newAttrPanel(entity, targetMgr, gurps.PrimaryAttrKind)
 }
 
 // NewSecondaryAttrPanel creates a new secondary attributes panel.
 func NewSecondaryAttrPanel(entity *gurps.Entity, targetMgr *TargetMgr) *AttrPanel {
-	return newAttrPanel(entity, targetMgr, secondaryAttrKind)
+	return newAttrPanel(entity, targetMgr, gurps.SecondaryAttrKind)
 }
 
 // NewPointPoolsPanel creates a new point pools panel.
 func NewPointPoolsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *AttrPanel {
-	return newAttrPanel(entity, targetMgr, poolAttrKind)
+	return newAttrPanel(entity, targetMgr, gurps.PoolAttrKind)
 }
 
 func newAttrPanel(entity *gurps.Entity, targetMgr *TargetMgr, kind int) *AttrPanel {
@@ -85,11 +79,11 @@ func newAttrPanel(entity *gurps.Entity, targetMgr *TargetMgr, kind int) *AttrPan
 	})
 	var title string
 	switch kind {
-	case primaryAttrKind:
+	case gurps.PrimaryAttrKind:
 		title = i18n.Text("Primary Attributes")
-	case secondaryAttrKind:
+	case gurps.SecondaryAttrKind:
 		title = i18n.Text("Secondary Attributes")
-	case poolAttrKind:
+	case gurps.PoolAttrKind:
 		title = i18n.Text("Point Pools")
 	default:
 		a.fatalKind()
@@ -132,54 +126,37 @@ func (a *AttrPanel) fatalKind() {
 }
 
 func (a *AttrPanel) columns() int {
-	if a.kind == poolAttrKind {
+	if a.kind == gurps.PoolAttrKind {
 		return 6
 	}
 	return 3
 }
 
 func (a *AttrPanel) hspan() int {
-	if a.kind == poolAttrKind {
+	if a.kind == gurps.PoolAttrKind {
 		return 2
 	}
 	return 1
 }
 
 func (a *AttrPanel) vspan() int {
-	if a.kind == secondaryAttrKind {
+	if a.kind == gurps.SecondaryAttrKind {
 		return 2
 	}
 	return 1
-}
-
-func (a *AttrPanel) isRelevant(def *gurps.AttributeDef) bool {
-	if def.Placement == attribute.Hidden {
-		return false
-	}
-	switch a.kind {
-	case primaryAttrKind:
-		return def.Primary()
-	case secondaryAttrKind:
-		return def.Secondary()
-	case poolAttrKind:
-		return def.Pool()
-	default:
-		a.fatalKind()
-		return false
-	}
 }
 
 func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 	focusRefKey := a.targetMgr.CurrentFocusRef()
 	a.RemoveAllChildren()
 	a.rowStarts = nil
-	if a.kind == poolAttrKind {
+	if a.kind == gurps.PoolAttrKind {
 		a.stateLabels = make(map[string]*unison.Label)
 	}
 	sepCount := 0
-	closed := false
+	open := true
 	for _, def := range attrs.List(false) {
-		if a.isRelevant(def) {
+		if def.Relevant(a.kind) {
 			if def.IsSeparator() {
 				a.rowStarts = append(a.rowStarts, len(a.Children()))
 				panel := unison.NewPanel()
@@ -190,9 +167,9 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 					HGrab:  true,
 				})
 				var rotation float32
-				key := fmt.Sprintf("a:%d:%d", a.kind, sepCount)
+				currentSepCount := sepCount
 				sepCount++
-				if closed = gurps.IsClosed(key); !closed {
+				if open = def.IsOpen(currentSepCount); open {
 					rotation = 90
 				}
 				button := unison.NewButton()
@@ -211,7 +188,7 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 					RotationDegrees: rotation,
 				}
 				button.ClickCallback = func() {
-					gurps.SetClosedState(key, !gurps.IsClosed(key))
+					def.SetOpen(currentSepCount, !def.IsOpen(currentSepCount))
 					a.forceSync()
 					unison.InvokeTaskAfter(a.Window().UpdateCursorNow, time.Millisecond)
 				}
@@ -248,14 +225,14 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 					panel.AddChild(label)
 				}
 				a.AddChild(panel)
-			} else if !closed {
+			} else if open {
 				attr, ok := a.entity.Attributes.Set[def.ID()]
 				if !ok {
 					errs.Log(errs.New("unable to locate attribute data"), "id", def.ID())
 					continue
 				}
 				a.rowStarts = append(a.rowStarts, len(a.Children()))
-				if a.kind == poolAttrKind {
+				if a.kind == gurps.PoolAttrKind {
 					if def.Type != attribute.PoolRef {
 						a.AddChild(a.createPointsField(attr))
 					} else {
@@ -362,7 +339,7 @@ func (a *AttrPanel) Sync() {
 	if hash := gurps.Hash64(attrs); hash != a.hash {
 		a.hash = hash
 		a.rebuild(attrs)
-	} else if a.kind == poolAttrKind {
+	} else if a.kind == gurps.PoolAttrKind {
 		for _, def := range attrs.List(false) {
 			if def.Pool() && def.Type != attribute.PoolSeparator {
 				id := def.ID()

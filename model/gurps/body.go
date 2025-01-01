@@ -232,3 +232,27 @@ func (b *Body) ResetTargetKeyPrefixes(prefixProvider func() string) {
 		one.ResetTargetKeyPrefixes(prefixProvider)
 	}
 }
+
+// FirstDisclosureState returns the open state of the first row that can be opened.
+func (b *Body) FirstDisclosureState() (open, exists bool) {
+	for i, one := range b.Locations {
+		if one.SubTable != nil {
+			return one.IsOpen(0, i), true
+		}
+	}
+	return false, false
+}
+
+// SetDisclosureState sets the open state of all rows that can be opened.
+func (b *Body) SetDisclosureState(open bool) {
+	b.setDisclosureState(0, open)
+}
+
+func (b *Body) setDisclosureState(depth int, open bool) {
+	for i, one := range b.Locations {
+		if one.SubTable != nil {
+			one.SetOpen(depth, i, open)
+			one.SubTable.setDisclosureState(depth+1, open)
+		}
+	}
+}

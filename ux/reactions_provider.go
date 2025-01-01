@@ -48,7 +48,7 @@ func (p *reactionModProvider) RootRows() []*Node[*gurps.ConditionalModifier] {
 	data := p.provider.Reactions()
 	rows := make([]*Node[*gurps.ConditionalModifier], 0, len(data))
 	for _, one := range data {
-		rows = append(rows, NewNode[*gurps.ConditionalModifier](p.table, nil, one, true))
+		rows = append(rows, NewNode(p.table, nil, one, true))
 	}
 	return rows
 }

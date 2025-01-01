@@ -42,6 +42,7 @@ type LootData struct {
 	ID         tid.TID      `json:"id"`
 	Name       string       `json:"name,omitempty"`
 	Location   string       `json:"location,omitempty"`
+	Session    string       `json:"session,omitempty"`
 	ModifiedOn jio.Time     `json:"modified_date"`
 	Equipment  []*Equipment `json:"equipment,omitempty"`
 	Notes      []*Note      `json:"notes,omitempty"`

@@ -70,6 +70,7 @@ type Sheet struct {
 	hash                 uint64
 	content              *unison.Panel
 	modifiedFunc         func()
+	syncDisclosureFunc   func()
 	Reactions            *PageList[*gurps.ConditionalModifier]
 	ConditionalModifiers *PageList[*gurps.ConditionalModifier]
 	MeleeWeapons         *PageList[*gurps.Weapon]
@@ -183,7 +184,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 		VSpacing: 1,
 	})
 	var top *Page
-	top, s.modifiedFunc = createPageTopBlock(s.entity, s.targetMgr)
+	top, s.modifiedFunc, s.syncDisclosureFunc = createPageTopBlock(s.entity, s.targetMgr)
 	s.content.AddChild(top)
 	s.createLists()
 	s.scroll.SetContent(s.content, behavior.Unmodified, behavior.Unmodified)
@@ -252,6 +253,11 @@ func (s *Sheet) createToolbar() {
 		),
 	)
 
+	hierarchyButton := unison.NewSVGButton(svg.Hierarchy)
+	hierarchyButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all hierarchical rows"))
+	hierarchyButton.ClickCallback = s.toggleHierarchy
+	s.toolbar.AddChild(hierarchyButton)
+
 	sheetSettingsButton := unison.NewSVGButton(svg.Settings)
 	sheetSettingsButton.Tooltip = newWrappedTooltip(i18n.Text("Sheet Settings"))
 	sheetSettingsButton.ClickCallback = func() { ShowSheetSettings(s) }
@@ -289,6 +295,10 @@ func (s *Sheet) createToolbar() {
 		s.OtherEquipment.Table.ClearSelection()
 		s.Notes.Table.ClearSelection()
 	}, func(refList *[]*searchRef, text string, namesOnly bool) {
+		searchSheetTable(refList, text, namesOnly, s.Reactions)
+		searchSheetTable(refList, text, namesOnly, s.ConditionalModifiers)
+		searchSheetTable(refList, text, namesOnly, s.MeleeWeapons)
+		searchSheetTable(refList, text, namesOnly, s.RangedWeapons)
 		searchSheetTable(refList, text, namesOnly, s.Traits)
 		searchSheetTable(refList, text, namesOnly, s.Skills)
 		searchSheetTable(refList, text, namesOnly, s.Spells)
@@ -917,4 +927,40 @@ func (s *Sheet) SetBodySettings(body *gurps.Body) {
 			responder.SheetSettingsUpdated(s.entity, true)
 		}
 	}
+}
+
+func (s *Sheet) toggleHierarchy() {
+	tables := []interface {
+		FirstDisclosureState() (open, exists bool)
+		SetDisclosureState(open bool)
+	}{
+		s.Reactions,
+		s.ConditionalModifiers,
+		s.MeleeWeapons,
+		s.RangedWeapons,
+		s.Traits,
+		s.Skills,
+		s.Spells,
+		s.CarriedEquipment,
+		s.OtherEquipment,
+		s.Notes,
+	}
+	open, exists := s.entity.Attributes.FirstDisclosureState()
+	if !exists {
+		if open, exists = s.entity.SheetSettings.BodyType.FirstDisclosureState(); !exists {
+			for _, table := range tables {
+				if open, exists = table.FirstDisclosureState(); exists {
+					break
+				}
+			}
+		}
+	}
+	open = !open
+	s.entity.Attributes.SetDisclosureState(open)
+	s.entity.SheetSettings.BodyType.SetDisclosureState(open)
+	for _, table := range tables {
+		table.SetDisclosureState(open)
+	}
+	s.syncDisclosureFunc()
+	s.Rebuild(true)
 }

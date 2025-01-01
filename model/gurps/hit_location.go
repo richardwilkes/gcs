@@ -256,3 +256,19 @@ func (h *HitLocation) rewrap() {
 		}
 	}
 }
+
+// IsOpen returns true if this location contains a sub-table and it is open.
+func (h *HitLocation) IsOpen(depth, index int) bool {
+	return h.SubTable != nil && !IsClosed(h.openKey(depth, index))
+}
+
+// SetOpen sets the open state of this location. Does nothing if this location does not contain a sub-table.
+func (h *HitLocation) SetOpen(depth, index int, open bool) {
+	if h.SubTable != nil {
+		SetClosedState(h.openKey(depth, index), !open)
+	}
+}
+
+func (h *HitLocation) openKey(depth, index int) string {
+	return fmt.Sprintf("b:%d:%d", depth, index)
+}

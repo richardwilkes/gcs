@@ -157,6 +157,14 @@ func (s *searchTracker) adjustForMatch() {
 
 func showSearchRef(ref *searchRef) {
 	switch table := ref.table.(type) {
+	case *unison.Table[*Node[*gurps.ConditionalModifier]]:
+		if row, ok := ref.row.(*Node[*gurps.ConditionalModifier]); ok {
+			showSearchResolvedRef(table, row)
+		}
+	case *unison.Table[*Node[*gurps.Weapon]]:
+		if row, ok := ref.row.(*Node[*gurps.Weapon]); ok {
+			showSearchResolvedRef(table, row)
+		}
 	case *unison.Table[*Node[*gurps.Trait]]:
 		if row, ok := ref.row.(*Node[*gurps.Trait]); ok {
 			showSearchResolvedRef(table, row)

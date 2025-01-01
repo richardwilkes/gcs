@@ -11,6 +11,7 @@ package gurps
 
 import (
 	"bytes"
+	"fmt"
 	"hash"
 	"strings"
 
@@ -20,6 +21,13 @@ import (
 	"github.com/richardwilkes/json"
 	"github.com/richardwilkes/toolbox/eval"
 	"github.com/richardwilkes/toolbox/xmath/hashhelper"
+)
+
+// Possible attribute kinds.
+const (
+	PrimaryAttrKind = iota
+	SecondaryAttrKind
+	PoolAttrKind
 )
 
 var _ Hashable = &AttributeDef{}
@@ -118,6 +126,28 @@ func (a *AttributeDef) IsSeparator() bool {
 	return a.Type == attribute.PrimarySeparator || a.Type == attribute.SecondarySeparator || a.Type == attribute.PoolSeparator
 }
 
+// Kind returns the kind of attribute this is.
+func (a *AttributeDef) Kind() int {
+	switch {
+	case a.Pool():
+		return PoolAttrKind
+	case a.Primary():
+		return PrimaryAttrKind
+	case a.Secondary():
+		return SecondaryAttrKind
+	default:
+		return -1
+	}
+}
+
+// Relevant returns true if the attribute is relevant to the given kind.
+func (a *AttributeDef) Relevant(kind int) bool {
+	if a.Placement == attribute.Hidden {
+		return false
+	}
+	return a.Kind() == kind
+}
+
 // Primary returns true if the base value is a non-derived value.
 func (a *AttributeDef) Primary() bool {
 	if a.Type == attribute.PrimarySeparator {
@@ -199,4 +229,20 @@ func (a *AttributeDef) Hash(h hash.Hash) {
 	for _, one := range a.Thresholds {
 		one.Hash(h)
 	}
+}
+
+// IsOpen returns true if this attribute is a separator and it is open.
+func (a *AttributeDef) IsOpen(sepCount int) bool {
+	return a.IsSeparator() && !IsClosed(a.openKey(a.Kind(), sepCount))
+}
+
+// SetOpen sets the open state of this attribute. Does nothing if this attribute is not a separator.
+func (a *AttributeDef) SetOpen(sepCount int, open bool) {
+	if a.IsSeparator() {
+		SetClosedState(a.openKey(a.Kind(), sepCount), !open)
+	}
+}
+
+func (a *AttributeDef) openKey(kind, sepCount int) string {
+	return fmt.Sprintf("a:%d:%d", kind, sepCount)
 }
