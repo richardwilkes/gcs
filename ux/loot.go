@@ -238,13 +238,6 @@ func createLootTopBlock(loot *gurps.Loot, targetMgr *TargetMgr) *Page {
 		})))
 	addLootTextField(top, targetMgr, i18n.Text("Name"), lootPanelNameFieldRefKey, &loot.Name)
 	addLootTextField(top, targetMgr, i18n.Text("Location"), lootPanelLocationFieldRefKey, &loot.Location)
-	top.AddChild(NewPageLabel(i18n.Text("Modified")))
-	top.AddChild(NewNonEditablePageField(func(f *NonEditablePageField) {
-		if text := loot.ModifiedOn.String(); text != f.Text.String() {
-			f.SetTitle(text)
-			MarkForLayoutWithinDockable(f)
-		}
-	}))
 	page.AddChild(top)
 	return page
 }
