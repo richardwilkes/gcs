@@ -127,7 +127,6 @@ var (
 	swapDefaultsAction                  *unison.Action
 	toggleStateAction                   *unison.Action
 	undoAction                          *unison.Action
-	webSettingsAction                   *unison.Action
 )
 
 // These actions aren't registered for key bindings.
@@ -356,11 +355,6 @@ func registerActions() {
 		ID:              GeneralSettingsItemID,
 		Title:           i18n.Text("General Settings…"),
 		ExecuteCallback: func(_ *unison.Action, _ any) { ShowGeneralSettings() },
-	})
-	webSettingsAction = registerKeyBindableAction("settings.web", &unison.Action{
-		ID:              WebSettingsItemID,
-		Title:           i18n.Text("Web Server Settings…"),
-		ExecuteCallback: func(_ *unison.Action, _ any) { ShowWebSettings() },
 	})
 	increaseEquipmentLevelAction = registerKeyBindableAction("inc.eqp.lvl", &unison.Action{
 		ID:              IncrementEquipmentLevelItemID,

@@ -18,7 +18,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/early"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
-	"github.com/richardwilkes/gcs/v5/server"
 	"github.com/richardwilkes/gcs/v5/ux"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/atexit"
@@ -61,12 +60,10 @@ func main() {
 	cl.NewGeneralOption(&syncSheetsAndTemplates).SetName("sync").SetSingle('S').
 		SetUsage(fmt.Sprintf(i18n.Text("Syncs all character sheet (%s) and template (%s) files specified on the command line with their library sources. If a directory is specified, it will be traversed recursively and all files found will be converted. After all files have been processed, GCS will exit"), gurps.SheetExt, gurps.TemplatesExt))
 	cl.NewGeneralOption(&fxp.DebugVariableResolver).SetName("debug-variable-resolver")
-	var backgroundOnly bool
-	cl.NewGeneralOption(&backgroundOnly).SetName("web-server-only").SetSingle('w').SetUsage(i18n.Text("Starts the web server and does not bring up the user interface. If the server has not been configured, just exits"))
 	fileList := rotation.ParseAndSetupLogging(cl, false)
 	slog.SetDefault(slog.New(tracelog.New(&tracelog.Config{Sink: log.Default().Writer()})))
 	ux.RegisterKnownFileTypes()
-	settings := gurps.GlobalSettings() // Here to force early initialization
+	gurps.GlobalSettings() // Here to force early initialization
 
 	if convertFiles && syncSheetsAndTemplates {
 		cl.FatalMsg(i18n.Text("Cannot specify both --convert and --sync"))
@@ -88,20 +85,8 @@ func main() {
 		if err := gurps.ExportSheets(textTmplPath, fileList); err != nil {
 			cl.FatalMsg(err.Error())
 		}
-	case backgroundOnly:
-		if !settings.WebServer.Enabled {
-			cl.FatalMsg(i18n.Text("Web server is not enabled."))
-		}
-		server.Start(nil)
-		select {}
 	default:
-		ux.Start(fileList, func() {
-			ux.StartServer = server.Start
-			ux.StopServer = server.Stop
-			if gurps.GlobalSettings().WebServer.Enabled {
-				server.Start(nil)
-			}
-		}) // Never returns
+		ux.Start(fileList) // Never returns
 	}
 	atexit.Exit(0)
 }

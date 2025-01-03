@@ -26,7 +26,6 @@ import (
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/model/kinds"
-	"github.com/richardwilkes/gcs/v5/server/websettings"
 	"github.com/richardwilkes/rpgtools/dice"
 	"github.com/richardwilkes/toolbox/cmdline"
 	"github.com/richardwilkes/toolbox/collection/dict"
@@ -88,7 +87,6 @@ type Settings struct {
 	Fonts              fonts.Fonts                `json:"fonts"`
 	Sheet              *SheetSettings             `json:"sheet_settings,omitempty"`
 	OpenInWindow       []dgroup.Group             `json:"open_in_window,omitempty"`
-	WebServer          *websettings.Settings      `json:"web,omitempty"` // Do not use "web_server" as the key, as an earlier release used that name and it will cause a failure to load the settings file.
 	Closed             map[string]int64           `json:"closed,omitempty"`
 	PDFs               map[string]*PDFInfo        `json:"pdfs,omitempty"`
 }
@@ -117,7 +115,6 @@ func GlobalSettings() *Settings {
 				LibrarySet:         NewLibraries(),
 				LibraryExplorer:    NavigatorSettings{DividerPosition: 330},
 				Sheet:              FactorySheetSettings(),
-				WebServer:          websettings.Default(),
 			}
 		}
 		globalSettings.EnsureValidity()
@@ -200,11 +197,6 @@ func (s *Settings) EnsureValidity() {
 		s.Sheet.EnsureValidity()
 	}
 	s.OpenInWindow = SanitizeDockableGroups(s.OpenInWindow)
-	if s.WebServer == nil {
-		s.WebServer = websettings.Default()
-	} else {
-		s.WebServer.Validate()
-	}
 }
 
 // SanitizeDockableGroups returns the list of valid dockable groups from the passed-in list, in sorted order.

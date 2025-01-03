@@ -8,7 +8,6 @@ RELEASE="0.0"
 for arg in "$@"; do
 	case "$arg" in
 	--all | -a)
-		BUILD_JS=1
 		BUILD_GO=1
 		BUILD_GEN=1
 		LINT=1
@@ -18,10 +17,6 @@ for arg in "$@"; do
 		;;
 	--go | -g)
 		BUILD_GO=1
-		SOMETHING=1
-		;;
-	--js | -j)
-		BUILD_JS=1
 		SOMETHING=1
 		;;
 	--gen | -G)
@@ -50,19 +45,17 @@ for arg in "$@"; do
 		EXTRA_LD_FLAGS="-s -w"
 		RELEASE="5.31.0"
 		DIST=1
-		BUILD_JS=1
 		BUILD_GO=1
 		BUILD_GEN=1
 		SOMETHING=1
 		;;
 	--help | -h)
 		echo "$0 [options]"
-		echo "  -a, --all  Equivalent to --gen --js --go --lint --race"
+		echo "  -a, --all  Equivalent to --gen --go --lint --race"
 		echo "  -d, --dist Create distribution"
 		echo "  -g, --go   Build the Go code"
 		echo "  -G, --gen  Generate the source"
 		echo "  -i, --i18n Extract the localization template"
-		echo "  -j, --js   Build the JavaScript code"
 		echo "  -l, --lint Run the linters"
 		echo "  -r, --race Run the tests with race-checking enabled"
 		echo "  -t, --test Run the tests"
@@ -98,25 +91,6 @@ STD_FLAGS="-v -buildvcs=true $EXTRA_BUILD_FLAGS"
 if [ "$BUILD_GEN"x == "1x" ]; then
 	echo -e "\033[33mGenerating...\033[0m"
 	go generate ./gen/srcgen.go
-fi
-
-# Build our JavaScript code
-if [ "$BUILD_JS"x == "1x" ]; then
-	echo -e "\033[33mBuilding the JavaScript code...\033[0m"
-	cd server/pdf
-	./refresh-pdf.js.sh
-	cd ../frontend
-	if [ "$DIST"x == "1x" ]; then
-		# Ensure we get a clean build for the distribution
-		/bin/rm -rf dist
-	fi
-	npm install
-	npm run build
-	if [ "$LINT"x == "1x" ]; then
-		echo -e "\033[33mLinting the JavaScript code...\033[0m"
-		npm run lint
-	fi
-	cd ../..
 fi
 
 # Generate the translation file

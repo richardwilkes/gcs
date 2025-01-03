@@ -25,7 +25,7 @@ import (
 var appIconBytes []byte
 
 // Start the UI.
-func Start(files []string, afterStartup func()) {
+func Start(files []string) {
 	readyChan := make(chan struct{})
 	pathsChan := make(chan []string, 32)
 	startHandoffService(readyChan, pathsChan, files)
@@ -54,12 +54,7 @@ func Start(files []string, afterStartup func()) {
 				}
 			}()
 			unison.InvokeTask(performPlatformLateStartup)
-			unison.InvokeTask(func() {
-				close(readyChan)
-				if afterStartup != nil {
-					afterStartup()
-				}
-			})
+			unison.InvokeTask(func() { close(readyChan) })
 		}),
 		unison.OpenFilesCallback(OpenFiles),
 		unison.AllowQuitCallback(func() bool {

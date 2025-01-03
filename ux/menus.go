@@ -91,7 +91,6 @@ const (
 	DefaultAttributeSettingsItemID
 	DefaultBodyTypeSettingsItemID
 	GeneralSettingsItemID
-	WebSettingsItemID
 	PageRefMappingsItemID
 	ColorSettingsItemID
 	FontSettingsItemID
@@ -324,7 +323,6 @@ func (s menuBarScope) createSettingsMenu(f unison.MenuFactory) unison.Menu {
 	m.InsertItem(-1, defaultBodyTypeSettingsAction.NewMenuItem(f))
 	m.InsertSeparator(-1, false)
 	m.InsertItem(-1, generalSettingsAction.NewMenuItem(f))
-	m.InsertItem(-1, webSettingsAction.NewMenuItem(f))
 	m.InsertItem(-1, pageRefMappingsAction.NewMenuItem(f))
 	m.InsertItem(-1, colorSettingsAction.NewMenuItem(f))
 	m.InsertItem(-1, fontSettingsAction.NewMenuItem(f))
