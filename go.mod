@@ -11,7 +11,6 @@ require (
 	github.com/richardwilkes/unison v0.78.0
 	github.com/rjeczalik/notify v0.9.3
 	github.com/tc-hib/winres v0.3.1
-	github.com/vearutop/statigz v1.4.3
 	github.com/yookoala/realpath v1.0.0
 	github.com/zeebo/xxh3 v1.0.2
 	golang.org/x/exp v0.0.0-20241217172543-b2144cdd0a67
