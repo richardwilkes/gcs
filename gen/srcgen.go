@@ -22,19 +22,15 @@ import (
 	"text/template"
 	"unicode"
 
-	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/toolbox/fatal"
 	"github.com/richardwilkes/toolbox/txt"
-	"github.com/richardwilkes/unison"
-	"github.com/richardwilkes/unison/enums/thememode"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
 
 const (
-	rootDir      = ".."
-	genGoSuffix  = "_gen.go"
-	genCSSSuffix = "_gen.css"
+	rootDir     = ".."
+	genGoSuffix = "_gen.go"
 )
 
 type enumValue struct {
@@ -55,27 +51,11 @@ type enumInfo struct {
 	Values []*enumValue
 }
 
-type cssInfo struct {
-	Pkg    string
-	Name   string
-	Colors []*color
-}
-
-type color struct {
-	Name     string
-	Provider unison.ColorProvider
-	Light    unison.Color
-	Dark     unison.Color
-}
-
 func main() {
 	removeExistingGenFiles()
 	for _, one := range allEnums {
 		processEnumTemplate("enum.go.tmpl", one)
 	}
-
-	unison.SetThemeMode(thememode.Light)
-	processCSSTemplate("app.css.tmpl", &myCSSInfo)
 }
 
 func removeExistingGenFiles() {
@@ -83,14 +63,13 @@ func removeExistingGenFiles() {
 	fatal.IfErr(err)
 	fatal.IfErr(filepath.Walk(root, func(path string, info os.FileInfo, _ error) error {
 		name := info.Name()
-		if info.IsDir() {
+		switch {
+		case info.IsDir():
 			if name == ".git" {
 				return filepath.SkipDir
 			}
-		} else {
-			if strings.HasSuffix(name, genGoSuffix) || strings.HasSuffix(name, genCSSSuffix) {
-				fatal.IfErr(os.Remove(path))
-			}
+		case strings.HasSuffix(name, genGoSuffix):
+			fatal.IfErr(os.Remove(path))
 		}
 		return nil
 	}))
@@ -116,24 +95,6 @@ func processEnumTemplate(tmplName string, info *enumInfo) {
 	dir := filepath.Join(rootDir, info.Pkg)
 	fatal.IfErr(os.MkdirAll(dir, 0o750))
 	fatal.IfErr(os.WriteFile(filepath.Join(dir, info.Name+genGoSuffix), data, 0o640))
-}
-
-func processCSSTemplate(tmplName string, info *cssInfo) {
-	unison.SetThemeMode(thememode.Light)
-	for _, c := range info.Colors {
-		c.Light = c.Provider.GetColor()
-	}
-	unison.SetThemeMode(thememode.Dark)
-	for _, c := range info.Colors {
-		c.Dark = c.Provider.GetColor()
-	}
-	tmpl, err := template.New(tmplName).ParseFiles(tmplName)
-	fatal.IfErr(err)
-	var buffer bytes.Buffer
-	fatal.IfErr(tmpl.Execute(&buffer, info))
-	dir := filepath.Join(rootDir, info.Pkg)
-	fatal.IfErr(os.MkdirAll(dir, 0o750))
-	fatal.IfErr(os.WriteFile(filepath.Join(dir, info.Name+genCSSSuffix), buffer.Bytes(), 0o640))
 }
 
 func writeGeneratedFromComment(w io.Writer, tmplName string) {
@@ -1345,46 +1306,5 @@ var allEnums = []*enumInfo{
 				NoLocalize: true,
 			},
 		},
-	},
-}
-
-var myCSSInfo = cssInfo{
-	Pkg:  "server/frontend/src",
-	Name: "app",
-	Colors: []*color{
-		{Name: "surface", Provider: unison.ThemeSurface},
-		{Name: "above-surface", Provider: unison.ThemeAboveSurface},
-		{Name: "below-surface", Provider: unison.ThemeBelowSurface},
-		{Name: "deep-below-surface", Provider: unison.ThemeDeepBelowSurface},
-		{Name: "surface-edge", Provider: unison.ThemeSurfaceEdge},
-		{Name: "on-surface", Provider: unison.ThemeOnSurface},
-		{Name: "on-above-surface", Provider: unison.ThemeOnAboveSurface},
-		{Name: "on-below-surface", Provider: unison.ThemeOnBelowSurface},
-		{Name: "on-deep-below-surface", Provider: unison.ThemeOnDeepBelowSurface},
-
-		{Name: "header", Provider: colors.Header},
-		{Name: "on-header", Provider: colors.OnHeader},
-
-		{Name: "banding", Provider: unison.ThemeBanding},
-		{Name: "on-banding", Provider: unison.ThemeOnBanding},
-
-		{Name: "focus", Provider: unison.ThemeFocus},
-		{Name: "deep-focus", Provider: unison.ThemeDeepFocus},
-		{Name: "deeper-focus", Provider: unison.ThemeDeeperFocus},
-		{Name: "deepest-focus", Provider: unison.ThemeDeepestFocus},
-		{Name: "on-focus", Provider: unison.ThemeOnFocus},
-		{Name: "on-deep-focus", Provider: unison.ThemeOnDeepFocus},
-		{Name: "on-deeper-focus", Provider: unison.ThemeOnDeeperFocus},
-		{Name: "on-deepest-focus", Provider: unison.ThemeOnDeepestFocus},
-
-		{Name: "tooltip", Provider: unison.ThemeTooltip},
-		{Name: "tooltip-edge", Provider: unison.ThemeTooltipEdge},
-		{Name: "on-tooltip", Provider: unison.ThemeOnTooltip},
-
-		{Name: "warning", Provider: unison.ThemeWarning},
-		{Name: "on-warning", Provider: unison.ThemeOnWarning},
-
-		{Name: "error", Provider: unison.ThemeError},
-		{Name: "on-error", Provider: unison.ThemeOnError},
 	},
 }
