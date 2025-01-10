@@ -14,10 +14,8 @@ import (
 	"log/slog"
 	"path"
 	"path/filepath"
-	"runtime"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
@@ -72,6 +70,7 @@ func InitWorkspace(wnd *unison.Window) {
 	dc.SetCurrentDockable(Workspace.Navigator)
 	wnd.AllowCloseCallback = isWorkspaceAllowedToClose
 	wnd.WillCloseCallback = workspaceWillClose
+	wnd.ResizedCallback = finishInit
 	global := gurps.GlobalSettings()
 	if global.WorkspaceFrame != nil {
 		r := *global.WorkspaceFrame
@@ -87,15 +86,20 @@ func InitWorkspace(wnd *unison.Window) {
 	} else {
 		wnd.SetFrameRect(unison.PrimaryDisplay().Usable)
 	}
+	slog.Info("before ToFront")
 	wnd.ToFront()
-	if runtime.GOOS == toolbox.LinuxOS {
-		unison.InvokeTaskAfter(finishInit, time.Millisecond)
-	} else {
-		finishInit()
-	}
+	slog.Info("after ToFront")
+	// if runtime.GOOS == toolbox.LinuxOS {
+	// 	unison.InvokeTaskAfter(finishInit, time.Millisecond)
+	// } else {
+	// 	finishInit()
+	// }
 }
 
 func finishInit() {
+	slog.Info("finishInit")
+	defer slog.Info("finishInit done")
+	Workspace.Window.ResizedCallback = nil
 	if gurps.GlobalSettings().General.RestoreWorkspaceOnStart {
 		restoreDockState()
 	} else {
