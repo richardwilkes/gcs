@@ -13,7 +13,6 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
-	"github.com/richardwilkes/unison/enums/paintstyle"
 )
 
 var (
@@ -61,10 +60,6 @@ func (d *notFoundDockable) Tooltip() string {
 
 func (d *notFoundDockable) Modified() bool {
 	return false
-}
-
-func (d *notFoundDockable) draw(gc *unison.Canvas, dirty unison.Rect) {
-	gc.DrawRect(dirty, unison.Orange.Paint(gc, dirty, paintstyle.Fill))
 }
 
 func (d *notFoundDockable) MayAttemptClose() bool {

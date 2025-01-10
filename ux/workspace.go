@@ -14,8 +14,10 @@ import (
 	"log/slog"
 	"path"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
@@ -86,7 +88,15 @@ func InitWorkspace(wnd *unison.Window) {
 		wnd.SetFrameRect(unison.PrimaryDisplay().Usable)
 	}
 	wnd.ToFront()
-	if global.General.RestoreWorkspaceOnStart {
+	if runtime.GOOS == toolbox.LinuxOS {
+		unison.InvokeTaskAfter(finishInit, time.Millisecond)
+	} else {
+		finishInit()
+	}
+}
+
+func finishInit() {
+	if gurps.GlobalSettings().General.RestoreWorkspaceOnStart {
 		restoreDockState()
 	} else {
 		Workspace.TopDock.RootDockLayout().SetDividerPosition(gurps.DefaultNavigatorDividerPosition)
@@ -253,20 +263,6 @@ func collectDockKeys(dockable unison.Dockable) string {
 		return kd.DockKey()
 	}
 	return ""
-}
-
-func mayDockableClose(d unison.Dockable) bool {
-	if tc, ok := d.(unison.TabCloser); ok {
-		if _, ok = d.(GroupedCloser); !ok {
-			if !tc.MayAttemptClose() {
-				return false
-			}
-			if !tc.AttemptClose() {
-				return false
-			}
-		}
-	}
-	return true
 }
 
 func workspaceWillClose() {
