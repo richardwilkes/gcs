@@ -34,9 +34,16 @@ import (
 	"github.com/rjeczalik/notify"
 )
 
-const minTextWidthCandidate = "Abcdefghijklmnopqrstuvwxyz0123456789"
+const (
+	// NavigatorDockKey is the key used to store the Navigator in the top Dock.
+	NavigatorDockKey      = "navigator"
+	minTextWidthCandidate = "Abcdefghijklmnopqrstuvwxyz0123456789"
+)
 
-var _ unison.Dockable = &Navigator{}
+var (
+	_ unison.Dockable = &Navigator{}
+	_ KeyedDockable   = &Navigator{}
+)
 
 // FileBackedDockable defines methods a Dockable that is based on a file should implement.
 type FileBackedDockable interface {
@@ -123,6 +130,11 @@ func newNavigator() *Navigator {
 	n.selectionChanged()
 	n.EventuallyReload() // Without this, the version for libraries is sometimes truncated at initial load
 	return n
+}
+
+// DockKey implements KeyedDockable.
+func (n *Navigator) DockKey() string {
+	return NavigatorDockKey
 }
 
 func (n *Navigator) mapDeepSearch() {
@@ -1192,29 +1204,29 @@ func DisplayNewDockable(dockable unison.Dockable) {
 
 // OpenFile attempts to open the given file path.
 func OpenFile(filePath string, initialPage int) (dockable unison.Dockable, wasOpen bool) {
-	var err error
-	if filePath, err = filepath.Abs(filePath); err != nil {
-		unison.ErrorDialogWithError(i18n.Text("Unable to resolve path"), err)
+	absPath, err := filepath.Abs(filePath)
+	if err != nil {
+		unison.ErrorDialogWithError(i18n.Text("Unable to resolve path:\n"+filePath), err)
 		return nil, false
 	}
-	if d := LocateFileBackedDockable(filePath); d != nil {
+	if d := LocateFileBackedDockable(absPath); d != nil {
 		ActivateDockable(d)
 		return d, true
 	}
-	fi := gurps.FileInfoFor(filePath)
+	fi := gurps.FileInfoFor(absPath)
 	if fi.IsSpecial {
 		return nil, false
 	}
 	if fi.IsPDF && strings.TrimSpace(gurps.GlobalSettings().General.ExternalPDFCmdLine) != "" {
-		openExternalPDF(filePath, 1)
+		openExternalPDF(absPath, 1)
 		return nil, false
 	}
 	var d unison.Dockable
-	if d, err = fi.Load(filePath, initialPage); err != nil {
-		unison.ErrorDialogWithError(i18n.Text("Unable to open file"), err)
+	if d, err = fi.Load(absPath, initialPage); err != nil {
+		unison.ErrorDialogWithError(i18n.Text("Unable to open file:\n")+absPath, err)
 		return nil, false
 	}
-	gurps.GlobalSettings().AddRecentFile(filePath)
+	gurps.GlobalSettings().AddRecentFile(absPath)
 	DisplayNewDockable(d)
 	return d, false
 }

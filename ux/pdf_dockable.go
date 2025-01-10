@@ -118,6 +118,11 @@ func NewPDFDockable(filePath string, initialPage int) (unison.Dockable, error) {
 	return d, nil
 }
 
+// DockKey implements KeyedDockable.
+func (d *PDFDockable) DockKey() string {
+	return filePrefix + d.path
+}
+
 func (d *PDFDockable) createToolbar() *unison.Panel {
 	outer := unison.NewPanel()
 	outer.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1},

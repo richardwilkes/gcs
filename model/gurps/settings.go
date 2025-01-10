@@ -37,6 +37,9 @@ import (
 
 const maxRecentFiles = 20
 
+// DefaultNavigatorDividerPosition is the default position for the navigator divider.
+const DefaultNavigatorDividerPosition = 330
+
 // Last directory keys
 const (
 	DefaultLastDirKey  = "default"
@@ -53,8 +56,7 @@ var (
 
 // NavigatorSettings holds settings for the navigator view.
 type NavigatorSettings struct {
-	DividerPosition float32                 `json:"divider_position"`
-	Nodes           map[string]*NavNodeInfo `json:"nodes,omitempty"`
+	Nodes map[string]*NavNodeInfo `json:"nodes,omitempty"`
 }
 
 // NavNodeInfo holds the ID and last used timestamp for a navigator node.
@@ -83,6 +85,8 @@ type Settings struct {
 	PageRefs           PageRefs                   `json:"page_refs,omitempty"`
 	KeyBindings        KeyBindings                `json:"key_bindings,omitempty"`
 	WorkspaceFrame     *unison.Rect               `json:"workspace_frame,omitempty"`
+	TopDockState       *unison.DockState          `json:"top_dock_state,omitempty"`
+	DocDockState       *unison.DockState          `json:"doc_dock_state,omitempty"`
 	Colors             colors.Colors              `json:"theme_colors"`
 	Fonts              fonts.Fonts                `json:"fonts"`
 	Sheet              *SheetSettings             `json:"sheet_settings,omitempty"`
@@ -113,7 +117,6 @@ func GlobalSettings() *Settings {
 				LastSeenGCSVersion: cmdline.AppVersion,
 				General:            NewGeneralSettings(),
 				LibrarySet:         NewLibraries(),
-				LibraryExplorer:    NavigatorSettings{DividerPosition: 330},
 				Sheet:              FactorySheetSettings(),
 			}
 		}

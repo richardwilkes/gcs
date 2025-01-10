@@ -41,31 +41,32 @@ var languageSetting string
 
 type generalSettingsDockable struct {
 	SettingsDockable
-	nameField                      *StringField
-	autoFillProfileCheckbox        *CheckBox
-	autoAddNaturalAttacksCheckbox  *CheckBox
-	groupContainersOnSortCheckbox  *CheckBox
-	initialClickSelectsAllCheckbox *CheckBox
-	deepSearchableCheckbox         []*CheckBox
-	openInWindowCheckbox           []*CheckBox
-	pointsField                    *DecimalField
-	techLevelField                 *StringField
-	calendarPopup                  *unison.PopupMenu[string]
-	initialListScaleField          *PercentageField
-	initialEditorScaleField        *PercentageField
-	initialSheetScaleField         *PercentageField
-	initialPDFScaleField           *PercentageField
-	initialMarkdownScaleField      *PercentageField
-	initialImageScaleField         *PercentageField
-	autoScalingPopup               *unison.PopupMenu[autoscale.Option]
-	maxAutoColWidthField           *IntegerField
-	monitorResolutionField         *IntegerField
-	exportResolutionField          *IntegerField
-	tooltipDelayField              *DecimalField
-	tooltipDismissalField          *DecimalField
-	scrollWheelMultiplierField     *DecimalField
-	externalPDFCmdlineField        *StringField
-	localeField                    *StringField
+	nameField                       *StringField
+	autoFillProfileCheckbox         *CheckBox
+	autoAddNaturalAttacksCheckbox   *CheckBox
+	groupContainersOnSortCheckbox   *CheckBox
+	initialClickSelectsAllCheckbox  *CheckBox
+	restoreWorkspaceOnStartCheckbox *CheckBox
+	deepSearchableCheckbox          []*CheckBox
+	openInWindowCheckbox            []*CheckBox
+	pointsField                     *DecimalField
+	techLevelField                  *StringField
+	calendarPopup                   *unison.PopupMenu[string]
+	initialListScaleField           *PercentageField
+	initialEditorScaleField         *PercentageField
+	initialSheetScaleField          *PercentageField
+	initialPDFScaleField            *PercentageField
+	initialMarkdownScaleField       *PercentageField
+	initialImageScaleField          *PercentageField
+	autoScalingPopup                *unison.PopupMenu[autoscale.Option]
+	maxAutoColWidthField            *IntegerField
+	monitorResolutionField          *IntegerField
+	exportResolutionField           *IntegerField
+	tooltipDelayField               *DecimalField
+	tooltipDismissalField           *DecimalField
+	scrollWheelMultiplierField      *DecimalField
+	externalPDFCmdlineField         *StringField
+	localeField                     *StringField
 }
 
 // ShowGeneralSettings the General Settings window.
@@ -191,6 +192,17 @@ func (d *generalSettingsDockable) createPlayerAndDescFields(content *unison.Pane
 }
 
 func (d *generalSettingsDockable) createCheckboxBlock(content *unison.Panel) {
+	d.restoreWorkspaceOnStartCheckbox = NewCheckBox(nil, "", i18n.Text("Restore workspace arrangement on start"),
+		func() check.Enum {
+			return check.FromBool(gurps.GlobalSettings().General.RestoreWorkspaceOnStart)
+		},
+		func(state check.Enum) {
+			gurps.GlobalSettings().General.RestoreWorkspaceOnStart = state == check.On
+		})
+	d.restoreWorkspaceOnStartCheckbox.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
+	content.AddChild(NewFieldLeadingLabel("", false))
+	content.AddChild(d.restoreWorkspaceOnStartCheckbox)
+
 	d.autoFillProfileCheckbox = NewCheckBox(nil, "", i18n.Text("Fill in initial description"),
 		func() check.Enum {
 			return check.FromBool(gurps.GlobalSettings().General.AutoFillProfile)
@@ -507,6 +519,7 @@ func (d *generalSettingsDockable) sync() {
 	s := gurps.GlobalSettings()
 	gs := s.General
 	d.nameField.SetText(gs.DefaultPlayerName)
+	SetCheckBoxState(d.restoreWorkspaceOnStartCheckbox, gs.RestoreWorkspaceOnStart)
 	SetCheckBoxState(d.autoFillProfileCheckbox, gs.AutoFillProfile)
 	SetCheckBoxState(d.groupContainersOnSortCheckbox, gs.GroupContainersOnSort)
 	SetCheckBoxState(d.autoAddNaturalAttacksCheckbox, gs.AutoAddNaturalAttacks)

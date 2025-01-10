@@ -85,29 +85,31 @@ type GeneralSettings struct {
 	AutoAddNaturalAttacks       bool             `json:"add_natural_attacks"`
 	GroupContainersOnSort       bool             `json:"group_containers_on_sort"`
 	InitialFieldClickSelectsAll bool             `json:"initial_field_click_selects_all"`
+	RestoreWorkspaceOnStart     bool             `json:"restore_workspace_on_start"`
 }
 
 // NewGeneralSettings creates settings with factory defaults.
 func NewGeneralSettings() *GeneralSettings {
 	return &GeneralSettings{
-		DefaultPlayerName:      toolbox.CurrentUserName(),
-		DefaultTechLevel:       "3",
-		InitialPoints:          InitialPointsDef,
-		TooltipDelay:           TooltipDelayDef,
-		TooltipDismissal:       TooltipDismissalDef,
-		ScrollWheelMultiplier:  fxp.From(unison.MouseWheelMultiplier),
-		NavigatorUIScale:       InitialNavigatorUIScaleDef,
-		InitialListUIScale:     InitialListUIScaleDef,
-		InitialEditorUIScale:   InitialEditorUIScaleDef,
-		InitialSheetUIScale:    InitialSheetUIScaleDef,
-		InitialPDFUIScale:      InitialPDFUIScaleDef,
-		InitialMarkdownUIScale: InitialMarkdownUIScaleDef,
-		InitialImageUIScale:    InitialImageUIScaleDef,
-		MaximumAutoColWidth:    MaximumAutoColWidthDef,
-		ImageResolution:        ImageResolutionDef,
-		PDFAutoScaling:         InitialPDFAutoScaling,
-		AutoFillProfile:        true,
-		AutoAddNaturalAttacks:  true,
+		DefaultPlayerName:       toolbox.CurrentUserName(),
+		DefaultTechLevel:        "3",
+		InitialPoints:           InitialPointsDef,
+		TooltipDelay:            TooltipDelayDef,
+		TooltipDismissal:        TooltipDismissalDef,
+		ScrollWheelMultiplier:   fxp.From(unison.MouseWheelMultiplier),
+		NavigatorUIScale:        InitialNavigatorUIScaleDef,
+		InitialListUIScale:      InitialListUIScaleDef,
+		InitialEditorUIScale:    InitialEditorUIScaleDef,
+		InitialSheetUIScale:     InitialSheetUIScaleDef,
+		InitialPDFUIScale:       InitialPDFUIScaleDef,
+		InitialMarkdownUIScale:  InitialMarkdownUIScaleDef,
+		InitialImageUIScale:     InitialImageUIScaleDef,
+		MaximumAutoColWidth:     MaximumAutoColWidthDef,
+		ImageResolution:         ImageResolutionDef,
+		PDFAutoScaling:          InitialPDFAutoScaling,
+		AutoFillProfile:         true,
+		AutoAddNaturalAttacks:   true,
+		RestoreWorkspaceOnStart: true,
 	}
 }
 

@@ -14,7 +14,13 @@ import (
 	"github.com/richardwilkes/unison"
 )
 
-var _ unison.Dockable = &DocumentDock{}
+var (
+	_ unison.Dockable = &DocumentDock{}
+	_ KeyedDockable   = &DocumentDock{}
+)
+
+// DocumentsDockKey is the key used to store the DocumentDock in the top Dock.
+const DocumentsDockKey = "documents"
 
 // DocumentDock holds the document dock.
 type DocumentDock struct {
@@ -28,6 +34,11 @@ func NewDocumentDock() *DocumentDock {
 	}
 	d.Self = d
 	return d
+}
+
+// DockKey implements KeyedDockable.
+func (d *DocumentDock) DockKey() string {
+	return DocumentsDockKey
 }
 
 // TitleIcon implements unison.Dockable

@@ -12,7 +12,6 @@ package ux
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"hash"
 	"strings"
 	"time"
@@ -35,6 +34,7 @@ var (
 	_ ModifiableRoot             = &TableDockable[*gurps.Trait]{}
 	_ Rebuildable                = &TableDockable[*gurps.Trait]{}
 	_ unison.TabCloser           = &TableDockable[*gurps.Trait]{}
+	_ KeyedDockable              = &TableDockable[*gurps.Trait]{}
 	_ TagProvider                = &TableDockable[*gurps.Trait]{}
 	_ gurps.Hashable             = &TableDockable[*gurps.Trait]{}
 )
@@ -164,6 +164,11 @@ func NewTableDockable[T gurps.NodeTypes](filePath, extension string, provider Ta
 	return d
 }
 
+// DockKey implements KeyedDockable
+func (d *TableDockable[T]) DockKey() string {
+	return filePrefix + d.path
+}
+
 func (d *TableDockable[T]) createToolbar() *unison.Panel {
 	d.hierarchyButton = unison.NewSVGButton(svg.Hierarchy)
 	d.hierarchyButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all hierarchical rows"))
@@ -280,31 +285,11 @@ func (d *TableDockable[T]) MayAttemptClose() bool {
 
 // AttemptClose implements unison.TabCloser
 func (d *TableDockable[T]) AttemptClose() bool {
-	if !CloseGroup(d) {
-		return false
+	if AttemptSaveForDockable(d) {
+		d.preserveColumns()
+		return AttemptCloseForDockable(d)
 	}
-	if d.Modified() {
-		switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Save changes made to\n%s?"), d.Title()), "") {
-		case unison.ModalResponseDiscard:
-		case unison.ModalResponseOK:
-			if !d.save(false) {
-				return false
-			}
-		case unison.ModalResponseCancel:
-			return false
-		}
-	}
-	d.preserveColumns()
-	return AttemptCloseForDockable(d)
-}
-
-func (d *TableDockable[T]) preserveColumns() {
-	m := make(map[int]float32, len(d.table.Columns))
-	m[-1] = gurps.ToColumnCutoff(time.Now().Unix())
-	for _, col := range d.table.Columns {
-		m[col.ID] = col.Current
-	}
-	gurps.GlobalSettings().ColumnSizing[d.BackingFilePath()] = m
+	return false
 }
 
 func (d *TableDockable[T]) save(forceSaveAs bool) bool {
@@ -321,6 +306,15 @@ func (d *TableDockable[T]) save(forceSaveAs bool) bool {
 		d.needsSaveAsPrompt = false
 	}
 	return success
+}
+
+func (d *TableDockable[T]) preserveColumns() {
+	m := make(map[int]float32, len(d.table.Columns))
+	m[-1] = gurps.ToColumnCutoff(time.Now().Unix())
+	for _, col := range d.table.Columns {
+		m[col.ID] = col.Current
+	}
+	gurps.GlobalSettings().ColumnSizing[d.BackingFilePath()] = m
 }
 
 func (d *TableDockable[T]) toggleHierarchy() {

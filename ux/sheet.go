@@ -40,6 +40,7 @@ var (
 	_ ModifiableRoot               = &Sheet{}
 	_ Rebuildable                  = &Sheet{}
 	_ unison.TabCloser             = &Sheet{}
+	_ KeyedDockable                = &Sheet{}
 	_ gurps.DataOwnerProvider      = &Sheet{}
 	_ gurps.SheetSettingsResponder = &Sheet{}
 
@@ -222,6 +223,11 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	s.InstallCmdHandlers(ClearPortraitItemID, s.canClearPortrait, s.clearPortrait)
 	s.InstallCmdHandlers(ExportPortraitItemID, s.canExportPortrait, s.exportPortrait)
 	return s
+}
+
+// DockKey implements KeyedDockable.
+func (s *Sheet) DockKey() string {
+	return filePrefix + s.path
 }
 
 func (s *Sheet) createToolbar() {
@@ -490,21 +496,10 @@ func (s *Sheet) MayAttemptClose() bool {
 
 // AttemptClose implements unison.TabCloser
 func (s *Sheet) AttemptClose() bool {
-	if !CloseGroup(s) {
-		return false
+	if AttemptSaveForDockable(s) {
+		return AttemptCloseForDockable(s)
 	}
-	if s.Modified() {
-		switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Save changes made to\n%s?"), s.Title()), "") {
-		case unison.ModalResponseDiscard:
-		case unison.ModalResponseOK:
-			if !s.save(false) {
-				return false
-			}
-		case unison.ModalResponseCancel:
-			return false
-		}
-	}
-	return AttemptCloseForDockable(s)
+	return false
 }
 
 func (s *Sheet) save(forceSaveAs bool) bool {

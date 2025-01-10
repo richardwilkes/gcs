@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -34,6 +33,7 @@ var (
 	_ Rebuildable                  = &LootSheet{}
 	_ unison.TabCloser             = &LootSheet{}
 	_ gurps.SheetSettingsResponder = &LootSheet{}
+	_ KeyedDockable                = &LootSheet{}
 )
 
 // LootSheet holds the view for a loot sheet.
@@ -165,6 +165,11 @@ func NewLootSheet(filePath string, loot *gurps.Loot) *LootSheet {
 	l.loot.EnsureAttachments()
 	l.loot.SourceMatcher().PrepareHashes(l.loot)
 	return l
+}
+
+// DockKey implements KeyedDockable.
+func (l *LootSheet) DockKey() string {
+	return filePrefix + l.path
 }
 
 func (l *LootSheet) createToolbar() {
@@ -362,21 +367,10 @@ func (l *LootSheet) MayAttemptClose() bool {
 
 // AttemptClose implements unison.TabCloser.
 func (l *LootSheet) AttemptClose() bool {
-	if !CloseGroup(l) {
-		return false
+	if AttemptSaveForDockable(l) {
+		return AttemptCloseForDockable(l)
 	}
-	if l.Modified() {
-		switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Save changes made to\n%s?"), l.Title()), "") {
-		case unison.ModalResponseDiscard:
-		case unison.ModalResponseOK:
-			if !l.save(false) {
-				return false
-			}
-		case unison.ModalResponseCancel:
-			return false
-		}
-	}
-	return AttemptCloseForDockable(l)
+	return false
 }
 
 func (l *LootSheet) save(forceSaveAs bool) bool {

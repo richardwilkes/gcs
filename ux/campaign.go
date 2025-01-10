@@ -10,7 +10,6 @@
 package ux
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -26,6 +25,7 @@ import (
 var (
 	_ FileBackedDockable = &Campaign{}
 	_ unison.TabCloser   = &Campaign{}
+	_ KeyedDockable      = &Campaign{}
 )
 
 // Campaign holds the view for a GURPS campaign.
@@ -115,6 +115,11 @@ func NewCampaign(filePath string, campaign *gurps.Campaign) *Campaign {
 	return c
 }
 
+// DockKey implements KeyedDockable.
+func (c *Campaign) DockKey() string {
+	return filePrefix + c.path
+}
+
 func (c *Campaign) createContent() unison.Paneler {
 	c.content = unison.NewPanel()
 	return c.content
@@ -154,21 +159,10 @@ func (c *Campaign) MayAttemptClose() bool {
 
 // AttemptClose implements unison.TabCloser
 func (c *Campaign) AttemptClose() bool {
-	if !CloseGroup(c) {
-		return false
+	if AttemptSaveForDockable(c) {
+		return AttemptCloseForDockable(c)
 	}
-	if c.Modified() {
-		switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Save changes made to\n%s?"), c.Title()), "") {
-		case unison.ModalResponseDiscard:
-		case unison.ModalResponseOK:
-			if !c.save(false) {
-				return false
-			}
-		case unison.ModalResponseCancel:
-			return false
-		}
-	}
-	return AttemptCloseForDockable(c)
+	return false
 }
 
 // BackingFilePath implements workspace.FileBackedDockable

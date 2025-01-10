@@ -34,6 +34,7 @@ var (
 	_ FileBackedDockable = &MarkdownDockable{}
 	_ unison.TabCloser   = &MarkdownDockable{}
 	_ ModifiableRoot     = &MarkdownDockable{}
+	_ KeyedDockable      = &MarkdownDockable{}
 )
 
 // MarkdownDockable holds the view for an image file.
@@ -207,6 +208,11 @@ func newMarkdownDockable(filePath, content string, allowEditing, startInEditMode
 	return d, nil
 }
 
+// DockKey implements KeyedDockable.
+func (d *MarkdownDockable) DockKey() string {
+	return filePrefix + d.path
+}
+
 func (d *MarkdownDockable) updateCursor(_ unison.Point) *unison.Cursor {
 	if d.inDrag {
 		return unison.MoveCursor()
@@ -295,18 +301,10 @@ func (d *MarkdownDockable) MayAttemptClose() bool {
 
 // AttemptClose implements unison.TabCloser
 func (d *MarkdownDockable) AttemptClose() bool {
-	if d.Modified() {
-		switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Save changes made to\n%s?"), d.Title()), "") {
-		case unison.ModalResponseDiscard:
-		case unison.ModalResponseOK:
-			if !d.save(false) {
-				return false
-			}
-		case unison.ModalResponseCancel:
-			return false
-		}
+	if AttemptSaveForDockable(d) {
+		return AttemptCloseForDockable(d)
 	}
-	return AttemptCloseForDockable(d)
+	return false
 }
 
 func (d *MarkdownDockable) save(forceSaveAs bool) bool {

@@ -11,14 +11,15 @@ package ux
 
 import (
 	"fmt"
+	"log/slog"
 	"path"
 	"path/filepath"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/gcs/v5/model/gurps/enums/dgroup"
+	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/toolbox/tid"
@@ -31,6 +32,7 @@ import (
 )
 
 const (
+	filePrefix             = "file:"
 	dockGroupClientDataKey = "dock.group"
 	dockableClientDataKey  = "dockable"
 )
@@ -41,6 +43,12 @@ var Workspace struct {
 	TopDock      *unison.Dock
 	Navigator    *Navigator
 	DocumentDock *DocumentDock
+}
+
+// KeyedDockable extends unison.Dockable to require a DockKey() method, used for restoring the dock layout.
+type KeyedDockable interface {
+	unison.Dockable
+	DockKey() string
 }
 
 // GroupedCloser defines the methods required of a tab that wishes to be closed when another tab is closed.
@@ -77,14 +85,69 @@ func InitWorkspace(wnd *unison.Window) {
 	} else {
 		wnd.SetFrameRect(unison.PrimaryDisplay().Usable)
 	}
-	// On some platforms, this needs to be done after a delay... but we do it without the delay, too, so that
-	// well-behaved platforms don't flash
-	Workspace.TopDock.RootDockLayout().SetDividerPosition(global.LibraryExplorer.DividerPosition)
-	unison.InvokeTaskAfter(func() {
-		Workspace.TopDock.RootDockLayout().SetDividerPosition(global.LibraryExplorer.DividerPosition)
-	}, time.Millisecond)
 	wnd.ToFront()
+	if global.General.RestoreWorkspaceOnStart {
+		restoreDockState()
+	} else {
+		Workspace.TopDock.RootDockLayout().SetDividerPosition(gurps.DefaultNavigatorDividerPosition)
+	}
 	Workspace.Navigator.InitialFocus()
+}
+
+func restoreDockState() {
+	global := gurps.GlobalSettings()
+	m := make(map[string]unison.Dockable)
+	extractDockKeys(m, global.TopDockState)
+	extractDockKeys(m, global.DocDockState)
+	if len(m) == 0 {
+		return
+	}
+	files := make([]string, 0, len(m))
+	for k := range m {
+		if strings.HasPrefix(k, filePrefix) {
+			files = append(files, k[len(filePrefix):])
+		}
+	}
+	if global.TopDockState != nil {
+		global.TopDockState.Apply(Workspace.TopDock, func(key string) unison.Dockable {
+			switch key {
+			case NavigatorDockKey:
+				return Workspace.Navigator
+			case DocumentsDockKey:
+				return Workspace.DocumentDock
+			}
+			return nil
+		})
+	}
+	OpenFiles(files)
+	for _, k := range files {
+		if d := LocateFileBackedDockable(k); !toolbox.IsNil(d) {
+			m[filePrefix+k] = d
+		} else {
+			m[filePrefix+k] = newNotFoundDockable(k)
+		}
+	}
+	if global.DocDockState != nil {
+		global.DocDockState.Apply(Workspace.DocumentDock.Dock, func(key string) unison.Dockable {
+			if d, ok := m[key]; ok {
+				return d
+			}
+			slog.Warn("unable to locate dockable", "key", key)
+			return nil
+		})
+	}
+}
+
+func extractDockKeys(m map[string]unison.Dockable, dockState *unison.DockState) {
+	if dockState == nil {
+		return
+	}
+	if dockState.Type == unison.DockableType && dockState.Key != "" {
+		m[dockState.Key] = nil
+	}
+	for _, child := range dockState.Children {
+		extractDockKeys(m, child)
+	}
 }
 
 // Activate attempts to locate an existing dockable that 'matcher' returns true for. Will return true if a suitable
@@ -126,22 +189,70 @@ func ActiveDockable() unison.Dockable {
 }
 
 func isWorkspaceAllowedToClose() bool {
+	// First, close all of the non-file-backed dockables.
 	for _, d := range AllDockables() {
-		if !mayDockableClose(d) {
-			return false
+		if tc, ok := d.(unison.TabCloser); ok {
+			if _, ok = tc.(FileBackedDockable); !ok {
+				if !tc.MayAttemptClose() {
+					return false
+				}
+				if !tc.AttemptClose() {
+					return false
+				}
+			}
+		}
+	}
+
+	// Next, save any file-backed dockables that don't yet have a file on disk and are considered modified.
+	for _, d := range AllDockables() {
+		if tc, ok := d.(unison.TabCloser); ok {
+			var fbd FileBackedDockable
+			if fbd, ok = tc.(FileBackedDockable); ok {
+				if !fs.FileExists(fbd.BackingFilePath()) {
+					if !fbd.MayAttemptClose() {
+						return false
+					}
+					if fbd.Modified() {
+						if !AttemptSaveForDockable(fbd) {
+							return false
+						}
+					}
+					if !fs.FileExists(fbd.BackingFilePath()) {
+						if !AttemptCloseForDockable(fbd) {
+							return false
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// Then, record the current dock state.
+	global := gurps.GlobalSettings()
+	global.TopDockState = unison.NewDockState(Workspace.TopDock, collectDockKeys)
+	global.DocDockState = unison.NewDockState(Workspace.DocumentDock.Dock, collectDockKeys)
+
+	// Finally, close all of the remaining dockables.
+	for _, d := range AllDockables() {
+		if tc, ok := d.(unison.TabCloser); ok {
+			if _, ok = d.(GroupedCloser); !ok {
+				if !tc.MayAttemptClose() {
+					return false
+				}
+				if !tc.AttemptClose() {
+					return false
+				}
+			}
 		}
 	}
 	return true
 }
 
-func workspaceWillClose() {
-	global := gurps.GlobalSettings()
-	global.LibraryExplorer.DividerPosition = Workspace.TopDock.RootDockLayout().DividerPosition()
-	frame := Workspace.Window.FrameRect()
-	global.WorkspaceFrame = &frame
-	if err := global.Save(); err != nil {
-		unison.ErrorDialogWithError(i18n.Text("Unable to save global settings"), err)
+func collectDockKeys(dockable unison.Dockable) string {
+	if kd, ok := dockable.(KeyedDockable); ok {
+		return kd.DockKey()
 	}
+	return ""
 }
 
 func mayDockableClose(d unison.Dockable) bool {
@@ -156,6 +267,15 @@ func mayDockableClose(d unison.Dockable) bool {
 		}
 	}
 	return true
+}
+
+func workspaceWillClose() {
+	frame := Workspace.Window.FrameRect()
+	global := gurps.GlobalSettings()
+	global.WorkspaceFrame = &frame
+	if err := global.Save(); err != nil {
+		unison.ErrorDialogWithError(i18n.Text("Unable to save global settings"), err)
+	}
 }
 
 // AllDockables returns all Dockables, whether in the workspace or in a separate window.
@@ -442,8 +562,7 @@ func DockContainerHoldsExtension(dc *unison.DockContainer, ext ...string) bool {
 // AssociatedIDKey is the key used with CloseID().
 const AssociatedIDKey = "associated_id"
 
-// CloseID attempts to close any Dockables associated with the given UUIDs. Returns false if a dockable refused to
-// close.
+// CloseID attempts to close any Dockables associated with the given TIDs. Returns false if a dockable refused to close.
 func CloseID(ids map[tid.TID]bool) bool {
 	for _, d := range AllDockables() {
 		if tc, ok := d.(unison.TabCloser); ok {
@@ -631,4 +750,32 @@ func AttemptCloseForDockable(d unison.Dockable) bool {
 		return true
 	}
 	return d.AsPanel().Window().AttemptClose()
+}
+
+type saveable interface {
+	save(bool) bool
+}
+
+// AttemptSaveForDockable attempts to save a dockable.
+func AttemptSaveForDockable(d unison.Dockable) bool {
+	if !CloseGroup(d) {
+		return false
+	}
+	if !d.Modified() {
+		return true
+	}
+	s, ok := d.(saveable)
+	if !ok {
+		return true
+	}
+	switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Save changes made to\n%s?"), d.Title()), "") {
+	case unison.ModalResponseDiscard:
+	case unison.ModalResponseOK:
+		if !s.save(false) {
+			return false
+		}
+	case unison.ModalResponseCancel:
+		return false
+	}
+	return true
 }

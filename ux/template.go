@@ -38,6 +38,7 @@ var (
 	_ ModifiableRoot             = &Template{}
 	_ Rebuildable                = &Template{}
 	_ unison.TabCloser           = &Template{}
+	_ KeyedDockable              = &Template{}
 )
 
 // Template holds the view for a GURPS character template.
@@ -177,6 +178,11 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 	t.template.EnsureAttachments()
 	t.template.SourceMatcher().PrepareHashes(t.template)
 	return t
+}
+
+// DockKey implements KeyedDockable.
+func (t *Template) DockKey() string {
+	return filePrefix + t.path
 }
 
 func (t *Template) createToolbar() {
@@ -732,21 +738,10 @@ func (t *Template) MayAttemptClose() bool {
 
 // AttemptClose implements unison.TabCloser
 func (t *Template) AttemptClose() bool {
-	if !CloseGroup(t) {
-		return false
+	if AttemptSaveForDockable(t) {
+		return AttemptCloseForDockable(t)
 	}
-	if t.Modified() {
-		switch unison.YesNoCancelDialog(fmt.Sprintf(i18n.Text("Save changes made to\n%s?"), t.Title()), "") {
-		case unison.ModalResponseDiscard:
-		case unison.ModalResponseOK:
-			if !t.save(false) {
-				return false
-			}
-		case unison.ModalResponseCancel:
-			return false
-		}
-	}
-	return AttemptCloseForDockable(t)
+	return false
 }
 
 func (t *Template) createContent() unison.Paneler {
