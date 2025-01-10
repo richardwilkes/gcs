@@ -70,7 +70,7 @@ func InitWorkspace(wnd *unison.Window) {
 	dc.SetCurrentDockable(Workspace.Navigator)
 	wnd.AllowCloseCallback = isWorkspaceAllowedToClose
 	wnd.WillCloseCallback = workspaceWillClose
-	wnd.ResizedCallback = finishInit
+	wnd.ResizedCallback = finishInit // Doing this to get around platforms that don't immediately resize windows
 	global := gurps.GlobalSettings()
 	if global.WorkspaceFrame != nil {
 		r := *global.WorkspaceFrame
@@ -86,19 +86,10 @@ func InitWorkspace(wnd *unison.Window) {
 	} else {
 		wnd.SetFrameRect(unison.PrimaryDisplay().Usable)
 	}
-	slog.Info("before ToFront")
 	wnd.ToFront()
-	slog.Info("after ToFront")
-	// if runtime.GOOS == toolbox.LinuxOS {
-	// 	unison.InvokeTaskAfter(finishInit, time.Millisecond)
-	// } else {
-	// 	finishInit()
-	// }
 }
 
 func finishInit() {
-	slog.Info("finishInit")
-	defer slog.Info("finishInit done")
 	Workspace.Window.ResizedCallback = nil
 	if gurps.GlobalSettings().General.RestoreWorkspaceOnStart {
 		restoreDockState()
