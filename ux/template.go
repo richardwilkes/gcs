@@ -30,6 +30,7 @@ import (
 	"github.com/richardwilkes/unison/enums/behavior"
 	"github.com/richardwilkes/unison/enums/check"
 	"github.com/richardwilkes/unison/enums/paintstyle"
+	"github.com/richardwilkes/unison/enums/side"
 )
 
 var (
@@ -530,6 +531,29 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 		VSpacing: unison.StdVSpacing,
 	})
 
+	var progressBackground unison.Color
+	if tp.Qualifier.Matches(0) {
+		progressBackground = unison.Green
+	} else {
+		progressBackground = unison.ThemeError.GetColor()
+	}
+	progress := unison.NewLabel()
+	progress.SetBorder(unison.NewCompoundBorder(
+		unison.NewEmptyBorder(unison.Insets{Top: unison.StdVSpacing * 2}),
+		unison.NewEmptyBorder(unison.NewHorizontalInsets(unison.StdHSpacing)),
+	))
+	progress.Side = side.Right
+	progress.OnBackgroundInk = progressBackground.On()
+	progress.DrawCallback = func(gc *unison.Canvas, _ unison.Rect) {
+		if tp.Type == picker.NotApplicable {
+			return
+		}
+		r := progress.ContentRect(true)
+		r.Y += unison.StdVSpacing * 2
+		r.Height -= unison.StdVSpacing * 2
+		gc.DrawRoundedRect(r, 8, 8, progressBackground.Paint(gc, r, paintstyle.Fill))
+		progress.DefaultDraw(gc, r)
+	}
 	boxes := make([]*unison.CheckBox, 0, len(children))
 	var dialog *unison.Dialog
 	callback := func() {
@@ -545,7 +569,27 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 				}
 			}
 		}
-		dialog.Button(unison.ModalResponseOK).SetEnabled(tp.Qualifier.Matches(total))
+		matches := tp.Qualifier.Matches(total)
+		dialog.Button(unison.ModalResponseOK).SetEnabled(matches)
+		if tp.Type != picker.NotApplicable {
+			var img *unison.SVG
+			if matches {
+				img = unison.CheckmarkSVG
+				progressBackground = unison.Green
+			} else {
+				img = svg.Not
+				progressBackground = unison.ThemeError.GetColor()
+			}
+			size := max(progress.Font.Baseline()-2, 6)
+			progress.Drawable = &unison.DrawableSVG{
+				SVG:  img,
+				Size: unison.NewSize(size, size),
+			}
+			progress.OnBackgroundInk = progressBackground.On()
+			progress.SetTitle(total.Comma())
+			progress.MarkForLayoutRecursivelyUpward()
+			progress.MarkForRedraw()
+		}
 	}
 	for _, child := range children {
 		checkBox := unison.NewCheckBox()
@@ -571,19 +615,21 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 	scroll.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		VAlign: align.Fill,
+		HSpan:  2,
 		HGrab:  true,
 		VGrab:  true,
 	})
 
 	panel := unison.NewPanel()
 	panel.SetLayout(&unison.FlexLayout{
-		Columns:  1,
+		Columns:  2,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 		HAlign:   align.Fill,
 		VAlign:   align.Fill,
 	})
 	label := unison.NewLabel()
+	label.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 	label.SetTitle(row.String())
 	panel.AddChild(label)
 	if notesCapable, hasNotes := any(row).(interface{ Notes() string }); hasNotes {
@@ -591,19 +637,36 @@ func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
 			label = unison.NewLabel()
 			label.Font = fonts.FieldSecondary
 			label.SetTitle(notes)
+			label.SetLayoutData(&unison.FlexLayoutData{HSpan: 2})
 			panel.AddChild(label)
 		}
 	}
 	label = unison.NewLabel()
 	label.SetTitle(tp.Description())
 	label.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: unison.StdVSpacing * 2}))
+	label.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.Start,
+		VAlign: align.Middle,
+	})
 	panel.AddChild(label)
+	progress.SetLayoutData(&unison.FlexLayoutData{
+		HAlign: align.End,
+		VAlign: align.Middle,
+	})
+	panel.AddChild(progress)
 	panel.AddChild(scroll)
 
 	var err error
 	dialog, err = unison.NewDialog(unison.DefaultDialogTheme.QuestionIcon,
 		unison.DefaultDialogTheme.QuestionIconInk, panel,
-		[]*unison.DialogButtonInfo{unison.NewCancelButtonInfo(), unison.NewOKButtonInfo()})
+		[]*unison.DialogButtonInfo{
+			unison.NewCancelButtonInfo(),
+			{
+				Title:        i18n.Text("Override"),
+				ResponseCode: unison.ModalResponseUserBase,
+			},
+			unison.NewOKButtonInfo(),
+		})
 	if err != nil {
 		errs.Log(err)
 		return nil, true
