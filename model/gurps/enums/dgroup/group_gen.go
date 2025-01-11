@@ -22,7 +22,6 @@ const (
 	CharacterSheets Group = iota
 	CharacterTemplates
 	LootSheets
-	Campaigns
 	Editors
 	Images
 	Libraries
@@ -40,7 +39,6 @@ var Groups = []Group{
 	CharacterSheets,
 	CharacterTemplates,
 	LootSheets,
-	Campaigns,
 	Editors,
 	Images,
 	Libraries,
@@ -70,8 +68,6 @@ func (enum Group) Key() string {
 		return "character_templates"
 	case LootSheets:
 		return "loot_sheets"
-	case Campaigns:
-		return "campaigns"
 	case Editors:
 		return "editors"
 	case Images:
@@ -100,8 +96,6 @@ func (enum Group) String() string {
 		return i18n.Text("Character Templates")
 	case LootSheets:
 		return i18n.Text("Loot Sheets")
-	case Campaigns:
-		return i18n.Text("Campaigns")
 	case Editors:
 		return i18n.Text("Editors")
 	case Images:

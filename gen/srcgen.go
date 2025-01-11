@@ -399,7 +399,7 @@ var allEnums = []*enumInfo{
 			{Key: "character_sheets"},
 			{Key: "character_templates"},
 			{Key: "loot_sheets"},
-			{Key: "campaigns"},
+			// {Key: "campaigns"}, // TODO: Re-enable Campaign files
 			{Key: "editors"},
 			{Key: "images"},
 			{Key: "libraries"},
