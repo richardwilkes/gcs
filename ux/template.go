@@ -219,14 +219,14 @@ func (t *Template) createToolbar() {
 	hierarchyButton.ClickCallback = t.toggleHierarchy
 	t.toolbar.AddChild(hierarchyButton)
 
-	addUserButton := unison.NewSVGButton(svg.Stamper)
-	addUserButton.Tooltip = newWrappedTooltip(applyTemplateAction.Title)
-	addUserButton.ClickCallback = func() {
+	applyTemplateButton := unison.NewSVGButton(svg.Stamper)
+	applyTemplateButton.Tooltip = newWrappedTooltip(applyTemplateAction.Title)
+	applyTemplateButton.ClickCallback = func() {
 		if CanApplyTemplate() {
 			t.applyTemplate(nil)
 		}
 	}
-	t.toolbar.AddChild(addUserButton)
+	t.toolbar.AddChild(applyTemplateButton)
 
 	syncSourceButton := unison.NewSVGButton(svg.DownToBracket)
 	syncSourceButton.Tooltip = newWrappedTooltip(i18n.Text("Sync with all sources in this sheet"))
@@ -283,12 +283,12 @@ func (t *Template) canApplyTemplate(_ any) bool {
 
 // NewSheetFromTemplate loads the specified template file and creates a new character sheet from it.
 func NewSheetFromTemplate(filePath string) {
-	t, err := NewTemplateFromFile(filePath)
+	d, err := NewTemplateFromFile(filePath)
 	if err != nil {
 		unison.ErrorDialogWithError(i18n.Text("Unable to load template"), err)
 		return
 	}
-	if t, ok := t.(*Template); ok {
+	if t, ok := d.(*Template); ok {
 		t.newSheetFromTemplate(nil)
 	}
 }

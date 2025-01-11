@@ -599,7 +599,11 @@ func (n *Navigator) mouseDown(where unison.Point, button, clickCount int, mod un
 			}
 			if len(sel) == 1 && sel[0].IsFile() {
 				p := sel[0].Path()
-				if filepath.Ext(p) == gurps.TemplatesExt {
+				switch filepath.Ext(p) {
+				case gurps.SheetExt:
+					cm.InsertItem(-1, cloneSheetMenuItem(f, &id, p))
+					cm.InsertSeparator(-1, true)
+				case gurps.TemplatesExt:
 					cm.InsertItem(-1, newSheetFromTemplateMenuItem(f, &id, p))
 					if CanApplyTemplate() {
 						cm.InsertItem(-1, newApplyTemplateMenuItem(f, &id, p))
@@ -636,6 +640,15 @@ func (n *Navigator) mouseDown(where unison.Point, button, clickCount int, mod un
 		}
 	}
 	return stop
+}
+
+func cloneSheetMenuItem(f unison.MenuFactory, id *int, sheetPath string) unison.MenuItem {
+	useID := *id
+	*id++
+	return f.NewItem(unison.PopupMenuTemporaryBaseID+useID, cloneSheetAction.Title,
+		unison.KeyBinding{}, nil, func(_ unison.MenuItem) {
+			CloneSheet(sheetPath)
+		})
 }
 
 func newSheetFromTemplateMenuItem(f unison.MenuFactory, id *int, templatePath string) unison.MenuItem {

@@ -77,6 +77,7 @@ const (
 	ItemMenuID
 	AddNaturalAttacksItemID
 	OpenEditorItemID
+	CloneSheetItemID
 	CopyToSheetItemID
 	CopyToTemplateItemID
 	ApplyTemplateItemID
@@ -247,6 +248,7 @@ func (s menuBarScope) setupEditMenu(bar unison.Menu) {
 	i = s.insertMenuItem(m, i, copyToTemplateAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, applyTemplateAction.NewMenuItem(f))
 	i = s.insertMenuItem(m, i, newSheetFromTemplateAction.NewMenuItem(f))
+	i = s.insertMenuItem(m, i, cloneSheetAction.NewMenuItem(f))
 
 	i = s.insertMenuSeparator(m, i)
 	i = s.insertMenuItem(m, i, incrementAction.NewMenuItem(f))
@@ -496,12 +498,13 @@ func AppendDefaultContextMenuItems(list []ContextMenuItem) []ContextMenuItem {
 		ContextMenuItem{duplicateAction.Title, DuplicateItemID},
 		ContextMenuItem{unison.DeleteAction().Title, unison.DeleteItemID},
 		ContextMenuItem{"", -1},
-		ContextMenuItem{applyTemplateAction.Title, ApplyTemplateItemID},
-		ContextMenuItem{newSheetFromTemplateAction.Title, NewSheetFromTemplateItemID},
 		ContextMenuItem{moveToCarriedEquipmentAction.Title, MoveToCarriedEquipmentItemID},
 		ContextMenuItem{moveToOtherEquipmentAction.Title, MoveToOtherEquipmentItemID},
 		ContextMenuItem{copyToSheetAction.Title, CopyToSheetItemID},
 		ContextMenuItem{copyToTemplateAction.Title, CopyToTemplateItemID},
+		ContextMenuItem{applyTemplateAction.Title, ApplyTemplateItemID},
+		ContextMenuItem{newSheetFromTemplateAction.Title, NewSheetFromTemplateItemID},
+		ContextMenuItem{cloneSheetAction.Title, CloneSheetItemID},
 		ContextMenuItem{"", -1},
 		ContextMenuItem{incrementAction.Title, IncrementItemID},
 		ContextMenuItem{decrementAction.Title, DecrementItemID},

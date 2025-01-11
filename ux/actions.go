@@ -33,6 +33,7 @@ var (
 	applyTemplateAction            *unison.Action
 	clearPortraitAction            *unison.Action
 	clearSourceAction              *unison.Action
+	cloneSheetAction               *unison.Action
 	closeTabAction                 *unison.Action
 	colorSettingsAction            *unison.Action
 	convertToContainerAction       *unison.Action
@@ -161,6 +162,12 @@ func registerActions() {
 		ID:              ApplyTemplateItemID,
 		Title:           i18n.Text("Apply Template to Character Sheet"),
 		KeyBinding:      unison.KeyBinding{KeyCode: unison.KeyA, Modifiers: unison.ShiftModifier | unison.OSMenuCmdModifier()},
+		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
+		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
+	})
+	cloneSheetAction = registerKeyBindableAction("clone.sheet", &unison.Action{
+		ID:              CloneSheetItemID,
+		Title:           i18n.Text("Clone Character Sheet & Re-Randomize Fields"),
 		EnabledCallback: unison.RouteActionToFocusEnabledFunc,
 		ExecuteCallback: unison.RouteActionToFocusExecuteFunc,
 	})

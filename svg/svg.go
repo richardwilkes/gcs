@@ -47,6 +47,10 @@ var (
 	circledVerticalEllipsisData string
 	CircledVerticalEllipsis     = unison.MustSVGFromContentString(circledVerticalEllipsisData)
 
+	//go:embed clone.svg
+	cloneData string
+	Clone     = unison.MustSVGFromContentString(cloneData)
+
 	//go:embed closed_folder.svg
 	closedFolderData string
 	ClosedFolder     = unison.MustSVGFromContentString(closedFolderData)

@@ -19,10 +19,13 @@ import (
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/jio"
+	"github.com/richardwilkes/gcs/v5/model/kinds"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox"
 	"github.com/richardwilkes/toolbox/errs"
 	"github.com/richardwilkes/toolbox/i18n"
+	"github.com/richardwilkes/toolbox/tid"
 	"github.com/richardwilkes/toolbox/xio/fs"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
@@ -222,7 +225,42 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 	s.InstallCmdHandlers(PrintItemID, unison.AlwaysEnabled, func(_ any) { s.print() })
 	s.InstallCmdHandlers(ClearPortraitItemID, s.canClearPortrait, s.clearPortrait)
 	s.InstallCmdHandlers(ExportPortraitItemID, s.canExportPortrait, s.exportPortrait)
+	s.InstallCmdHandlers(CloneSheetItemID, unison.AlwaysEnabled, func(_ any) { s.cloneSheet() })
 	return s
+}
+
+// CloneSheet loads the specified sheet file and creates a new character sheet from it.
+func CloneSheet(filePath string) {
+	d, err := NewSheetFromFile(filePath)
+	if err != nil {
+		unison.ErrorDialogWithError(i18n.Text("Unable to load character sheet"), err)
+		return
+	}
+	if s, ok := d.(*Sheet); ok {
+		s.cloneSheet()
+	}
+}
+
+func (s *Sheet) cloneSheet() {
+	unableToCloneMsg := i18n.Text("Unable to clone character sheet")
+	data, err := s.entity.MarshalJSON()
+	if err != nil {
+		unison.ErrorDialogWithError(unableToCloneMsg, err)
+		return
+	}
+	entity := gurps.NewEntity()
+	if err = entity.UnmarshalJSON(data); err != nil {
+		unison.ErrorDialogWithError(unableToCloneMsg, err)
+		return
+	}
+	entity.ID = tid.MustNewTID(kinds.Entity)
+	entity.CreatedOn = jio.Now()
+	entity.Profile.ApplyRandomizers(s.entity)
+	entity.ModifiedOn = entity.CreatedOn
+	sheet := NewSheet(entity.Profile.Name+gurps.SheetExt, entity)
+	DisplayNewDockable(sheet)
+	sheet.undoMgr.Clear()
+	sheet.hash = 0
 }
 
 // DockKey implements KeyedDockable.
@@ -279,9 +317,14 @@ func (s *Sheet) createToolbar() {
 	bodyTypeButton.ClickCallback = func() { ShowBodySettings(s) }
 	s.toolbar.AddChild(bodyTypeButton)
 
+	cloneSheetButton := unison.NewSVGButton(svg.Clone)
+	cloneSheetButton.Tooltip = newWrappedTooltip(cloneSheetAction.Title)
+	cloneSheetButton.ClickCallback = s.cloneSheet
+	s.toolbar.AddChild(cloneSheetButton)
+
 	syncSourceButton := unison.NewSVGButton(svg.DownToBracket)
 	syncSourceButton.Tooltip = newWrappedTooltip(i18n.Text("Sync with all sources in this sheet"))
-	syncSourceButton.ClickCallback = func() { s.syncWithAllSources() }
+	syncSourceButton.ClickCallback = s.syncWithAllSources
 	s.toolbar.AddChild(syncSourceButton)
 
 	calcButton := unison.NewSVGButton(svg.Calculator)
