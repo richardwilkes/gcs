@@ -43,7 +43,7 @@ for arg in "$@"; do
 	--dist | -d)
 		EXTRA_BUILD_FLAGS="-a -trimpath"
 		EXTRA_LD_FLAGS="-s -w"
-		RELEASE="5.31.0"
+		RELEASE="5.32.0"
 		DIST=1
 		BUILD_GO=1
 		BUILD_GEN=1
