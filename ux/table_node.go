@@ -554,6 +554,28 @@ func handleCheck(data any, check unison.Paneler, checked bool) {
 			})
 		}
 		gurps.EntityFromNode(item).Recalculate()
+	case *gurps.Weapon:
+		item.Hide = checked
+		if mgr := unison.UndoManagerFor(check); mgr != nil {
+			owner := unison.AncestorOrSelf[Rebuildable](check)
+			mgr.Add(&unison.UndoEdit[*weaponAdjuster]{
+				ID:       unison.NextUndoID(),
+				EditName: i18n.Text("Toggle Hidden"),
+				UndoFunc: func(edit *unison.UndoEdit[*weaponAdjuster]) { edit.BeforeData.Apply() },
+				RedoFunc: func(edit *unison.UndoEdit[*weaponAdjuster]) { edit.AfterData.Apply() },
+				BeforeData: &weaponAdjuster{
+					Owner:  owner,
+					Target: item,
+					Hide:   !item.Hide,
+				},
+				AfterData: &weaponAdjuster{
+					Owner:  owner,
+					Target: item,
+					Hide:   item.Hide,
+				},
+			})
+		}
+		gurps.EntityFromNode(item).Recalculate()
 	}
 }
 
@@ -563,10 +585,10 @@ type equipmentAdjuster struct {
 	Equipped bool
 }
 
-func (a *equipmentAdjuster) Apply() {
-	a.Target.Equipped = a.Equipped
-	gurps.EntityFromNode(a.Target).Recalculate()
-	MarkModified(a.Owner)
+func (e *equipmentAdjuster) Apply() {
+	e.Target.Equipped = e.Equipped
+	gurps.EntityFromNode(e.Target).Recalculate()
+	MarkModified(e.Owner)
 }
 
 type equipmentModifierAdjuster struct {
@@ -575,10 +597,10 @@ type equipmentModifierAdjuster struct {
 	Disabled bool
 }
 
-func (a *equipmentModifierAdjuster) Apply() {
-	a.Target.Disabled = a.Disabled || a.Target.Container()
-	gurps.EntityFromNode(a.Target).Recalculate()
-	MarkModified(a.Owner)
+func (e *equipmentModifierAdjuster) Apply() {
+	e.Target.Disabled = e.Disabled || e.Target.Container()
+	gurps.EntityFromNode(e.Target).Recalculate()
+	MarkModified(e.Owner)
 }
 
 type traitModifierAdjuster struct {
@@ -587,10 +609,22 @@ type traitModifierAdjuster struct {
 	Disabled bool
 }
 
-func (a *traitModifierAdjuster) Apply() {
-	a.Target.Disabled = a.Disabled || a.Target.Container()
-	gurps.EntityFromNode(a.Target).Recalculate()
-	MarkModified(a.Owner)
+func (t *traitModifierAdjuster) Apply() {
+	t.Target.Disabled = t.Disabled || t.Target.Container()
+	gurps.EntityFromNode(t.Target).Recalculate()
+	MarkModified(t.Owner)
+}
+
+type weaponAdjuster struct {
+	Owner  Rebuildable
+	Target *gurps.Weapon
+	Hide   bool
+}
+
+func (w *weaponAdjuster) Apply() {
+	w.Target.Hide = w.Hide
+	gurps.EntityFromNode(w.Target).Recalculate()
+	MarkModified(w.Owner)
 }
 
 func convertLinksForPageRef(in string) (string, *unison.SVG) {

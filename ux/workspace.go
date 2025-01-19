@@ -740,7 +740,10 @@ func AttemptCloseForDockable(d unison.Dockable) bool {
 		dc.Close(d)
 		return true
 	}
-	return d.AsPanel().Window().AttemptClose()
+	if wnd := d.AsPanel().Window(); wnd != nil {
+		return wnd.AttemptClose()
+	}
+	return true
 }
 
 type saveable interface {

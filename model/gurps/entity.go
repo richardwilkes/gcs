@@ -1293,8 +1293,8 @@ func (e *Entity) WeaponOwner() WeaponOwner {
 }
 
 // Weapons implements WeaponListProvider.
-func (e *Entity) Weapons(melee bool) []*Weapon {
-	return e.EquippedWeapons(melee)
+func (e *Entity) Weapons(melee, excludeHidden bool) []*Weapon {
+	return e.EquippedWeapons(melee, excludeHidden)
 }
 
 // SetWeapons implements WeaponListProvider.
@@ -1303,11 +1303,11 @@ func (e *Entity) SetWeapons(_ bool, _ []*Weapon) {
 }
 
 // EquippedWeapons returns a sorted list of equipped weapons.
-func (e *Entity) EquippedWeapons(melee bool) []*Weapon {
+func (e *Entity) EquippedWeapons(melee, excludeHidden bool) []*Weapon {
 	m := make(map[uint64]*Weapon)
 	Traverse(func(a *Trait) bool {
 		for _, w := range a.Weapons {
-			if w.IsMelee() == melee {
+			if w.IsMelee() == melee && (!excludeHidden || !w.Hide) {
 				m[w.HashResolved()] = w
 			}
 		}
@@ -1316,7 +1316,7 @@ func (e *Entity) EquippedWeapons(melee bool) []*Weapon {
 	Traverse(func(eqp *Equipment) bool {
 		if eqp.Equipped {
 			for _, w := range eqp.Weapons {
-				if w.IsMelee() == melee {
+				if w.IsMelee() == melee && (!excludeHidden || !w.Hide) {
 					m[w.HashResolved()] = w
 				}
 			}
@@ -1325,7 +1325,7 @@ func (e *Entity) EquippedWeapons(melee bool) []*Weapon {
 	}, false, false, e.CarriedEquipment...)
 	Traverse(func(s *Skill) bool {
 		for _, w := range s.Weapons {
-			if w.IsMelee() == melee {
+			if w.IsMelee() == melee && (!excludeHidden || !w.Hide) {
 				m[w.HashResolved()] = w
 			}
 		}
@@ -1333,7 +1333,7 @@ func (e *Entity) EquippedWeapons(melee bool) []*Weapon {
 	}, false, true, e.Skills...)
 	Traverse(func(s *Spell) bool {
 		for _, w := range s.Weapons {
-			if w.IsMelee() == melee {
+			if w.IsMelee() == melee && (!excludeHidden || !w.Hide) {
 				m[w.HashResolved()] = w
 			}
 		}

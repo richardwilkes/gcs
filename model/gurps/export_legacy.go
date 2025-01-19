@@ -276,7 +276,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "BEST_CURRENT_PARRY":
 		best := "-"
 		bestValue := fxp.Min
-		for _, w := range ex.entity.EquippedWeapons(true) {
+		for _, w := range ex.entity.EquippedWeapons(true, true) {
 			if parry := w.Parry.Resolve(w, nil); parry.CanParry && parry.Modifier > bestValue {
 				best = parry.String()
 				bestValue = parry.Modifier
@@ -286,7 +286,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "BEST_CURRENT_BLOCK":
 		best := "-"
 		bestValue := fxp.Min
-		for _, w := range ex.entity.EquippedWeapons(true) {
+		for _, w := range ex.entity.EquippedWeapons(true, true) {
 			if block := w.Block.Resolve(w, nil); block.CanBlock && block.Modifier > bestValue {
 				best = block.String()
 				bestValue = block.Modifier
@@ -411,13 +411,13 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "SPELLS_LOOP_START":
 		ex.processSpellsLoop(ex.extractUpToMarker("SPELLS_LOOP_END"))
 	case "MELEE_LOOP_COUNT", "HIERARCHICAL_MELEE_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(len(ex.entity.EquippedWeapons(true))))
+		ex.writeEncodedText(strconv.Itoa(len(ex.entity.EquippedWeapons(true, true))))
 	case "MELEE_LOOP_START":
 		ex.processMeleeLoop(ex.extractUpToMarker("MELEE_LOOP_END"))
 	case "HIERARCHICAL_MELEE_LOOP_START":
 		ex.processHierarchicalMeleeLoop(ex.extractUpToMarker("HIERARCHICAL_MELEE_LOOP_END"))
 	case "RANGED_LOOP_COUNT", "HIERARCHICAL_RANGED_LOOP_COUNT":
-		ex.writeEncodedText(strconv.Itoa(len(ex.entity.EquippedWeapons(false))))
+		ex.writeEncodedText(strconv.Itoa(len(ex.entity.EquippedWeapons(false, true))))
 	case "RANGED_LOOP_START":
 		ex.processRangedLoop(ex.extractUpToMarker("RANGED_LOOP_END"))
 	case "HIERARCHICAL_RANGED_LOOP_START":
@@ -1225,7 +1225,7 @@ func (ex *legacyExporter) processPointPoolLoop(buffer []byte) {
 }
 
 func (ex *legacyExporter) processMeleeLoop(buffer []byte) {
-	for i, w := range ex.entity.EquippedWeapons(true) {
+	for i, w := range ex.entity.EquippedWeapons(true, true) {
 		ex.processBuffer(buffer, func(key string, buf []byte, index int) int {
 			return ex.processMeleeKeys(key, i, w, nil, buf, index)
 		})
@@ -1234,7 +1234,7 @@ func (ex *legacyExporter) processMeleeLoop(buffer []byte) {
 
 func (ex *legacyExporter) processHierarchicalMeleeLoop(buffer []byte) {
 	m := make(map[string][]*Weapon)
-	for _, w := range ex.entity.EquippedWeapons(true) {
+	for _, w := range ex.entity.EquippedWeapons(true, true) {
 		key := w.String()
 		m[key] = append(m[key], w)
 	}
@@ -1251,7 +1251,7 @@ func (ex *legacyExporter) processHierarchicalMeleeLoop(buffer []byte) {
 }
 
 func (ex *legacyExporter) processRangedLoop(buffer []byte) {
-	for i, w := range ex.entity.EquippedWeapons(false) {
+	for i, w := range ex.entity.EquippedWeapons(false, true) {
 		ex.processBuffer(buffer, func(key string, buf []byte, index int) int {
 			return ex.processRangedKeys(key, i, w, nil, buf, index)
 		})
@@ -1260,7 +1260,7 @@ func (ex *legacyExporter) processRangedLoop(buffer []byte) {
 
 func (ex *legacyExporter) processHierarchicalRangedLoop(buffer []byte) {
 	m := make(map[string][]*Weapon)
-	for _, w := range ex.entity.EquippedWeapons(false) {
+	for _, w := range ex.entity.EquippedWeapons(false, true) {
 		key := w.String()
 		m[key] = append(m[key], w)
 	}

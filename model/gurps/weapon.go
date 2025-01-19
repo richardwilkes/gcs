@@ -36,6 +36,7 @@ import (
 	"github.com/richardwilkes/toolbox/xio"
 	"github.com/richardwilkes/toolbox/xmath/hashhelper"
 	"github.com/richardwilkes/unison"
+	"github.com/richardwilkes/unison/enums/align"
 	"github.com/zeebo/xxh3"
 )
 
@@ -43,7 +44,8 @@ var _ Node[*Weapon] = &Weapon{}
 
 // Columns that can be used with the weapon method .CellData()
 const (
-	WeaponDescriptionColumn = iota
+	WeaponHideColumn = iota
+	WeaponDescriptionColumn
 	WeaponUsageColumn
 	WeaponSLColumn
 	WeaponParryColumn
@@ -88,6 +90,7 @@ type WeaponData struct {
 	Bulk       WeaponBulk      `json:"bulk,omitempty"`
 	Recoil     WeaponRecoil    `json:"recoil,omitempty"`
 	Defaults   []*SkillDefault `json:"defaults,omitempty"`
+	Hide       bool            `json:"hide,omitempty"`
 }
 
 // Weapon holds the stats for a weapon.
@@ -97,10 +100,10 @@ type Weapon struct {
 }
 
 // ExtractWeaponsOfType filters the input list down to only those weapons of the given type.
-func ExtractWeaponsOfType(melee bool, list []*Weapon) []*Weapon {
+func ExtractWeaponsOfType(melee, excludeHidden bool, list []*Weapon) []*Weapon {
 	var result []*Weapon
 	for _, w := range list {
-		if w.IsMelee() == melee {
+		if w.IsMelee() == melee && (!excludeHidden || !w.Hide) {
 			result = append(result, w)
 		}
 	}
@@ -108,12 +111,14 @@ func ExtractWeaponsOfType(melee bool, list []*Weapon) []*Weapon {
 }
 
 // SeparateWeapons returns separate lists for melee and ranged weapons found in the input list.
-func SeparateWeapons(list []*Weapon) (melee, ranged []*Weapon) {
+func SeparateWeapons(excludeHidden bool, list []*Weapon) (melee, ranged []*Weapon) {
 	for _, w := range list {
-		if w.IsMelee() {
-			melee = append(melee, w)
-		} else {
-			ranged = append(ranged, w)
+		if !excludeHidden || !w.Hide {
+			if w.IsMelee() {
+				melee = append(melee, w)
+			} else {
+				ranged = append(ranged, w)
+			}
 		}
 	}
 	return melee, ranged
@@ -212,6 +217,7 @@ func (w *Weapon) HashResolved() uint64 {
 	hashhelper.String(h, w.String())
 	hashhelper.Num64(h, w.SkillLevel(nil))
 	hashhelper.String(h, w.Damage.ResolvedDamage(nil))
+	hashhelper.Bool(h, w.Hide)
 	return h.Sum64()
 }
 
@@ -752,6 +758,8 @@ func (w *Weapon) SetChildren(_ []*Weapon) {
 func WeaponHeaderData(columnID int, melee, forPage bool) HeaderData {
 	var data HeaderData
 	switch columnID {
+	case WeaponHideColumn:
+		data.Title = i18n.Text("Hide")
 	case WeaponDescriptionColumn:
 		if melee {
 			data.Title = i18n.Text("Melee Weapon")
@@ -805,6 +813,10 @@ func (w *Weapon) CellData(columnID int, data *CellData) {
 	var buffer xio.ByteBuffer
 	data.Type = cell.Text
 	switch columnID {
+	case WeaponHideColumn:
+		data.Type = cell.Toggle
+		data.Checked = w.Hide
+		data.Alignment = align.Middle
 	case WeaponDescriptionColumn:
 		data.Primary = w.String()
 		data.Secondary = w.Notes()

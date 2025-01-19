@@ -31,7 +31,7 @@ func newWeaponsPanel(cmdRoot Rebuildable, weaponOwner gurps.WeaponOwner, melee b
 	p := &weaponsPanel{
 		weaponOwner: weaponOwner,
 		allWeapons:  weapons,
-		weapons:     gurps.ExtractWeaponsOfType(melee, *weapons),
+		weapons:     gurps.ExtractWeaponsOfType(melee, false, *weapons),
 		melee:       melee,
 	}
 	p.Self = p
@@ -65,12 +65,12 @@ func (p *weaponsPanel) WeaponOwner() gurps.WeaponOwner {
 	return p.weaponOwner
 }
 
-func (p *weaponsPanel) Weapons(melee bool) []*gurps.Weapon {
-	return gurps.ExtractWeaponsOfType(melee, *p.allWeapons)
+func (p *weaponsPanel) Weapons(melee, excludeHidden bool) []*gurps.Weapon {
+	return gurps.ExtractWeaponsOfType(melee, excludeHidden, *p.allWeapons)
 }
 
 func (p *weaponsPanel) SetWeapons(melee bool, list []*gurps.Weapon) {
-	m, r := gurps.SeparateWeapons(*p.allWeapons)
+	m, r := gurps.SeparateWeapons(false, *p.allWeapons)
 	if melee {
 		m = list
 	} else {

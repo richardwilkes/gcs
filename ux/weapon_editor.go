@@ -41,6 +41,10 @@ func EditWeapon(owner Rebuildable, w *gurps.Weapon) {
 
 func (we *weaponEditor) initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.Panel) func() {
 	w := e.editorData
+	empty := unison.NewLabel()
+	empty.SetTitle(" ")
+	content.AddChild(empty)
+	addCheckBox(content, i18n.Text("Hide"), &w.Hide)
 	we.addUsageBlock(w, content)
 	if w.IsMelee() {
 		we.addParryBlock(w, content)

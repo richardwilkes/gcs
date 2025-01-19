@@ -51,14 +51,14 @@ func (p *weaponsProvider) SetTable(table *unison.Table[*Node[*gurps.Weapon]]) {
 }
 
 func (p *weaponsProvider) RootRowCount() int {
-	return len(p.provider.Weapons(p.melee))
+	return len(p.provider.Weapons(p.melee, p.forPage))
 }
 
 func (p *weaponsProvider) RootRows() []*Node[*gurps.Weapon] {
-	data := p.provider.Weapons(p.melee)
+	data := p.provider.Weapons(p.melee, p.forPage)
 	rows := make([]*Node[*gurps.Weapon], 0, len(data))
 	for _, one := range data {
-		rows = append(rows, NewNode[*gurps.Weapon](p.table, nil, one, p.forPage))
+		rows = append(rows, NewNode(p.table, nil, one, p.forPage))
 	}
 	return rows
 }
@@ -68,7 +68,7 @@ func (p *weaponsProvider) SetRootRows(rows []*Node[*gurps.Weapon]) {
 }
 
 func (p *weaponsProvider) RootData() []*gurps.Weapon {
-	return p.provider.Weapons(p.melee)
+	return p.provider.Weapons(p.melee, p.forPage)
 }
 
 func (p *weaponsProvider) SetRootData(data []*gurps.Weapon) {
@@ -121,6 +121,8 @@ func (p *weaponsProvider) ColumnIDs() []int {
 	columnIDs := make([]int, 0, 11)
 	if p.forPage {
 		columnIDs = append(columnIDs, gurps.WeaponDescriptionColumn)
+	} else {
+		columnIDs = append(columnIDs, gurps.WeaponHideColumn)
 	}
 	columnIDs = append(columnIDs,
 		gurps.WeaponUsageColumn,
@@ -152,20 +154,23 @@ func (p *weaponsProvider) HierarchyColumnID() int {
 }
 
 func (p *weaponsProvider) ExcessWidthColumnID() int {
-	return gurps.WeaponDescriptionColumn
+	if p.forPage {
+		return gurps.WeaponDescriptionColumn
+	}
+	return gurps.WeaponUsageColumn
 }
 
 func (p *weaponsProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*gurps.Weapon]]) {
 	if !p.forPage {
-		OpenEditor[*gurps.Weapon](table, func(item *gurps.Weapon) { EditWeapon(owner, item) })
+		OpenEditor(table, func(item *gurps.Weapon) { EditWeapon(owner, item) })
 	}
 }
 
 func (p *weaponsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Weapon]], _ ItemVariant) {
 	if !p.forPage {
 		w := gurps.NewWeapon(p.provider.WeaponOwner(), p.melee)
-		InsertItems[*gurps.Weapon](owner, table,
-			func() []*gurps.Weapon { return p.provider.Weapons(p.melee) },
+		InsertItems(owner, table,
+			func() []*gurps.Weapon { return p.provider.Weapons(p.melee, false) },
 			func(list []*gurps.Weapon) { p.provider.SetWeapons(p.melee, list) },
 			func(_ *unison.Table[*Node[*gurps.Weapon]]) []*Node[*gurps.Weapon] { return p.RootRows() }, w)
 		EditWeapon(owner, w)
@@ -176,7 +181,7 @@ func (p *weaponsProvider) Serialize() ([]byte, error) {
 	if p.forPage {
 		return nil, errs.New("not allowed")
 	}
-	return jio.SerializeAndCompress(p.provider.Weapons(p.melee))
+	return jio.SerializeAndCompress(p.provider.Weapons(p.melee, false))
 }
 
 func (p *weaponsProvider) Deserialize(data []byte) error {

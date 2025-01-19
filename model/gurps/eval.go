@@ -206,12 +206,12 @@ func evalWeaponDamage(ev *eval.Evaluator, arguments string) (any, error) {
 	if usage, err = evalToString(ev, strings.Trim(arg, `"`)); err != nil {
 		return nil, err
 	}
-	for _, w := range e.Weapons(true) {
+	for _, w := range e.Weapons(true, false) {
 		if strings.EqualFold(w.String(), name) && strings.EqualFold(w.UsageWithReplacements(), usage) {
 			return w.Damage.ResolvedDamage(nil), nil
 		}
 	}
-	for _, w := range e.Weapons(false) {
+	for _, w := range e.Weapons(false, false) {
 		if strings.EqualFold(w.String(), name) && strings.EqualFold(w.UsageWithReplacements(), usage) {
 			return w.Damage.ResolvedDamage(nil), nil
 		}
