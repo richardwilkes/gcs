@@ -231,9 +231,12 @@ type exportedPool struct {
 }
 
 type exportedAttributes struct {
-	Primary   []*exportedAttribute
-	Secondary []*exportedAttribute
-	Pools     []*exportedPool
+	Primary       []*exportedAttribute
+	PrimaryByID   map[string]*exportedAttribute
+	Secondary     []*exportedAttribute
+	SecondaryByID map[string]*exportedAttribute
+	Pools         []*exportedPool
+	PoolsByID     map[string]*exportedPool
 }
 
 type exportedPoints struct {
@@ -459,19 +462,28 @@ func export(entity *Entity, tmpl exporter, exportPath string) (err error) {
 	if len(entity.Profile.PortraitData) != 0 {
 		data.EmbeddedPortraitDataURL = htmltmpl.URL("data:" + http.DetectContentType(entity.Profile.PortraitData) + ";base64," + base64.StdEncoding.EncodeToString(entity.Profile.PortraitData)) //nolint:gosec // This is a valid data URL
 	}
+	data.Attributes.PrimaryByID = make(map[string]*exportedAttribute)
+	data.Attributes.SecondaryByID = make(map[string]*exportedAttribute)
+	data.Attributes.PoolsByID = make(map[string]*exportedPool)
 	for _, def := range entity.SheetSettings.Attributes.List(true) {
 		if attr, ok := entity.Attributes.Set[def.DefID]; ok {
 			switch {
 			case def.Primary():
-				data.Attributes.Primary = append(data.Attributes.Primary, newExportedAttribute(def, attr))
+				a := newExportedAttribute(def, attr)
+				data.Attributes.Primary = append(data.Attributes.Primary, a)
+				data.Attributes.PrimaryByID[def.DefID] = a
 			case def.Secondary():
-				data.Attributes.Secondary = append(data.Attributes.Secondary, newExportedAttribute(def, attr))
+				a := newExportedAttribute(def, attr)
+				data.Attributes.Secondary = append(data.Attributes.Secondary, a)
+				data.Attributes.SecondaryByID[def.DefID] = a
 			case def.Pool():
-				data.Attributes.Pools = append(data.Attributes.Pools, &exportedPool{
+				p := &exportedPool{
 					exportedAttribute: newExportedAttribute(def, attr),
 					Current:           attr.Current(),
 					Maximum:           attr.Maximum(),
-				})
+				}
+				data.Attributes.Pools = append(data.Attributes.Pools, p)
+				data.Attributes.PoolsByID[def.DefID] = p
 			}
 		}
 	}
