@@ -19,46 +19,33 @@ import (
 )
 
 func TestTemplateFuncs(t *testing.T) {
-	tmplBase := template.New("").Funcs(createTemplateFuncs())
-	tmpl, err := tmplBase.Parse(`
-{{numberFrom 22}}
-{{numberFrom 23.45}}
-{{numberFrom "1"}}
-{{numberFrom "1.23456"}}
-{{numberToInt .One}}
-{{numberToFloat .One}}
-{{numberToInt .OnePointOne}}
-{{numberToFloat .OnePointOne}}
-{{.One.Add .OnePointOne}}
-{{.One.Sub .OnePointOne}}
-{{(numberFrom 22).Add (numberFrom 44.4)}}
-`)
-	check.NoError(t, err)
-	var buffer strings.Builder
-	input := struct {
+	values := struct {
 		One         fxp.Int
 		OnePointOne fxp.Int
 	}{
 		One:         fxp.One,
 		OnePointOne: fxp.OnePointOne,
 	}
-	check.NoError(t, tmpl.Execute(&buffer, input))
-	check.Equal(t, `
-22
-23.45
-1
-1.2345
-1
-1
-1
-1.1
-2.1
--0.1
-66.4
-`, buffer.String())
-
-	buffer.Reset()
-	tmpl, err = tmplBase.Parse(`{{numberFrom "x"}}`)
-	check.NoError(t, err)
-	check.Error(t, tmpl.Execute(&buffer, nil))
+	tmplBase := template.New("").Funcs(createTemplateFuncs())
+	for i, data := range []struct{ in, out string }{
+		{in: `{{numberFrom 22}}`, out: "22"},
+		{in: `{{numberFrom 23.45}}`, out: "23.45"},
+		{in: `{{numberFrom "1"}}`, out: "1"},
+		{in: `{{numberFrom "1.23456"}}`, out: "1.2345"},
+		{in: `{{numberFrom "15U"}}`, out: "15"},
+		{in: `{{numberFrom "15.5U"}}`, out: "15.5"},
+		{in: `{{numberToInt .One}}`, out: "1"},
+		{in: `{{numberToFloat .One}}`, out: "1"},
+		{in: `{{numberToInt .OnePointOne}}`, out: "1"},
+		{in: `{{numberToFloat .OnePointOne}}`, out: "1.1"},
+		{in: `{{.One.Add .OnePointOne}}`, out: "2.1"},
+		{in: `{{.One.Sub .OnePointOne}}`, out: "-0.1"},
+		{in: `{{(numberFrom 22).Add (numberFrom 44.4)}}`, out: "66.4"},
+	} {
+		tmpl, err := tmplBase.Parse(data.in)
+		check.NoError(t, err, "Test %d", i)
+		var buffer strings.Builder
+		check.NoError(t, tmpl.Execute(&buffer, values), "Test %d", i)
+		check.Equal(t, data.out, buffer.String(), "Test %d", i)
+	}
 }

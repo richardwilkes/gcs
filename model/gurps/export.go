@@ -379,7 +379,9 @@ func numberFrom(value any) (fxp.Int, error) {
 	case float64:
 		return fxp.From(v), nil
 	case string:
-		return fxp.FromString(v)
+		// Intentionally allow parsing of things that start with a number, but aren't fully a number
+		result, _ := fxp.Extract(v)
+		return result, nil
 	default:
 		return 0, errs.New("incompatible value")
 	}
