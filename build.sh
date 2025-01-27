@@ -54,6 +54,7 @@ for arg in "$@"; do
 		DIST=--dist
 		BUILD_GO=1
 		BUILD_GEN=1
+		SOMETHING=1
 		;;
 	--help | -h)
 		echo "$0 [options]"
@@ -121,17 +122,19 @@ fi
 if [ "$BUILD_GO"x == "1x" ]; then
 	echo -e "\033[33mBuilding the Go code...\033[0m"
 	go build $STD_FLAGS -ldflags all="$LDFLAGS_ALL" .
-	if [ "$LINT"x == "1x" ]; then
-		GOLANGCI_LINT_VERSION=$(curl --head -s https://github.com/golangci/golangci-lint/releases/latest | grep -i location: | sed 's/^.*v//' | tr -d '\r\n')
-		TOOLS_DIR=$(go env GOPATH)/bin
-		if [ ! -e "$TOOLS_DIR/golangci-lint" ] || [ "$("$TOOLS_DIR/golangci-lint" version 2>&1 | awk '{ print $4 }' || true)x" != "${GOLANGCI_LINT_VERSION}x" ]; then
-			echo -e "\033[33mInstalling version $GOLANGCI_LINT_VERSION of golangci-lint into $TOOLS_DIR...\033[0m"
-			mkdir -p "$TOOLS_DIR"
-			curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$TOOLS_DIR" v$GOLANGCI_LINT_VERSION
-		fi
-		echo -e "\033[33mLinting the Go code...\033[0m"
-		"$TOOLS_DIR/golangci-lint" run
+fi
+
+# Lint the Go code
+if [ "$LINT"x == "1x" ]; then
+	GOLANGCI_LINT_VERSION=$(curl --head -s https://github.com/golangci/golangci-lint/releases/latest | grep -i location: | sed 's/^.*v//' | tr -d '\r\n')
+	TOOLS_DIR=$(go env GOPATH)/bin
+	if [ ! -e "$TOOLS_DIR/golangci-lint" ] || [ "$("$TOOLS_DIR/golangci-lint" version 2>&1 | awk '{ print $4 }' || true)x" != "${GOLANGCI_LINT_VERSION}x" ]; then
+		echo -e "\033[33mInstalling version $GOLANGCI_LINT_VERSION of golangci-lint into $TOOLS_DIR...\033[0m"
+		mkdir -p "$TOOLS_DIR"
+		curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$TOOLS_DIR" v$GOLANGCI_LINT_VERSION
 	fi
+	echo -e "\033[33mLinting the Go code...\033[0m"
+	"$TOOLS_DIR/golangci-lint" run
 fi
 
 # Run the tests

@@ -8,7 +8,7 @@ require (
 	github.com/richardwilkes/pdf v1.24.10
 	github.com/richardwilkes/rpgtools v1.10.1
 	github.com/richardwilkes/toolbox v1.122.1
-	github.com/richardwilkes/unison v0.80.0
+	github.com/richardwilkes/unison v0.80.1
 	github.com/rjeczalik/notify v0.9.3
 	github.com/yookoala/realpath v1.0.0
 	github.com/zeebo/xxh3 v1.0.2
@@ -27,7 +27,7 @@ require (
 	github.com/klauspost/cpuid/v2 v2.2.9 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/lafriks/go-svg v0.5.1 // indirect
-	github.com/miekg/dns v1.1.62 // indirect
+	github.com/miekg/dns v1.1.63 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/pkg/term v1.1.0 // indirect
 	github.com/tc-hib/winres v0.3.1 // indirect

@@ -21,11 +21,12 @@ import (
 
 func main() {
 	early.Configure()
+	appName := cmdline.AppName
 	cmdline.AppName += " Packager"
 	cmdline.AppCmdName += "pack"
 	cmdline.AppIdentifier += ".pack"
 	cl := cmdline.New(false)
-	cl.Description = "A tool for packaging GCS for distribution."
+	cl.Description = "A tool for packaging " + appName + " for distribution."
 	var release string
 	var createDist bool
 	cl.NewGeneralOption(&release).SetName("release").SetSingle('r').SetArg("version").
