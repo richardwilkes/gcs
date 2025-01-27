@@ -13,14 +13,20 @@ for arg in "$@"; do
 		LINT=1
 		TEST=1
 		RACE=-race
+		PACKAGER=1
 		SOMETHING=1
 		;;
 	--go | -g)
 		BUILD_GO=1
+		PACKAGER=1
 		SOMETHING=1
 		;;
 	--gen | -G)
 		BUILD_GEN=1
+		SOMETHING=1
+		;;
+	--genpkg | -p)
+		RUN_GENPKG=1
 		SOMETHING=1
 		;;
 	--lint | -l)
@@ -44,22 +50,23 @@ for arg in "$@"; do
 		EXTRA_BUILD_FLAGS="-a -trimpath"
 		EXTRA_LD_FLAGS="-s -w"
 		RELEASE="5.33.0"
-		DIST=1
+		PACKAGER=1
+		DIST=--dist
 		BUILD_GO=1
 		BUILD_GEN=1
-		SOMETHING=1
 		;;
 	--help | -h)
 		echo "$0 [options]"
-		echo "  -a, --all  Equivalent to --gen --go --lint --race"
-		echo "  -d, --dist Create distribution"
-		echo "  -g, --go   Build the Go code"
-		echo "  -G, --gen  Generate the source"
-		echo "  -i, --i18n Extract the localization template"
-		echo "  -l, --lint Run the linters"
-		echo "  -r, --race Run the tests with race-checking enabled"
-		echo "  -t, --test Run the tests"
-		echo "  -h, --help This help text"
+		echo "  -a, --all    Equivalent to --gen --go --lint --race"
+		echo "  -d, --dist   Create distribution"
+		echo "  -g, --go     Build the Go code"
+		echo "  -G, --gen    Generate the source"
+		echo "  -p, --genpkg Generate the icons and packaging.yml file"
+		echo "  -i, --i18n   Extract the localization template"
+		echo "  -l, --lint   Run the linters"
+		echo "  -r, --race   Run the tests with race-checking enabled"
+		echo "  -t, --test   Run the tests"
+		echo "  -h, --help   This help text"
 		exit 0
 		;;
 	*)
@@ -69,10 +76,17 @@ for arg in "$@"; do
 	esac
 done
 
+if [ "$RUN_GENPKG"x == "1x" ]; then
+	go run cmd/genpkg/main.go
+fi
+
 if [ "$SOMETHING"x != "1x" ]; then
 	BUILD_GEN=1
 	BUILD_GO=1
 fi
+
+LDFLAGS_ALL="-X github.com/richardwilkes/toolbox/cmdline.AppVersion=$RELEASE $EXTRA_LD_FLAGS"
+STD_FLAGS="-v -buildvcs=true $EXTRA_BUILD_FLAGS"
 
 case $(uname -s) in
 Darwin*)
@@ -82,10 +96,10 @@ Darwin*)
 		export MACOSX_DEPLOYMENT_TARGET=10.15
 	fi
 	;;
+MINGW*)
+	LDFLAGS_ALL="$LDFLAGS_ALL -H windowsgui"
+	;;
 esac
-
-LDFLAGS_ALL="-X github.com/richardwilkes/toolbox/cmdline.AppVersion=$RELEASE $EXTRA_LD_FLAGS"
-STD_FLAGS="-v -buildvcs=true $EXTRA_BUILD_FLAGS"
 
 # Generate the source
 if [ "$BUILD_GEN"x == "1x" ]; then
@@ -106,24 +120,7 @@ fi
 # Build our Go code
 if [ "$BUILD_GO"x == "1x" ]; then
 	echo -e "\033[33mBuilding the Go code...\033[0m"
-	case $(uname -s) in
-	Darwin*)
-		go run $STD_FLAGS -ldflags all="$LDFLAGS_ALL" packaging/main.go
-		go build $STD_FLAGS -ldflags all="$LDFLAGS_ALL" -o "GCS.app/Contents/MacOS/" .
-		touch GCS.app
-		;;
-	Linux*)
-		go build $STD_FLAGS -ldflags all="$LDFLAGS_ALL" .
-		;;
-	MINGW*)
-		go run $STD_FLAGS -ldflags all="$LDFLAGS_ALL" packaging/main.go
-		go build $STD_FLAGS -ldflags all="$LDFLAGS_ALL -H windowsgui" .
-		;;
-	*)
-		echo "Unsupported OS"
-		false
-		;;
-	esac
+	go build $STD_FLAGS -ldflags all="$LDFLAGS_ALL" .
 	if [ "$LINT"x == "1x" ]; then
 		GOLANGCI_LINT_VERSION=$(curl --head -s https://github.com/golangci/golangci-lint/releases/latest | grep -i location: | sed 's/^.*v//' | tr -d '\r\n')
 		TOOLS_DIR=$(go env GOPATH)/bin
@@ -147,31 +144,7 @@ if [ "$TEST"x == "1x" ]; then
 	go test $RACE ./... | grep -v "no test files"
 fi
 
-# Package for distribution
-if [ "$DIST"x == "1x" ]; then
-	echo -e "\033[33mPackaging...\033[0m"
-	case $(uname -s) in
-	Darwin*)
-		if [ "$(uname -p)" == "arm" ]; then
-			HW=apple
-		else
-			HW=intel
-		fi
-		codesign -s "Richard Wilkes" -f -v --timestamp --options runtime GCS.app
-		/bin/rm -rf tmp *.dmg
-		mkdir tmp
-		# Installation of https://github.com/create-dmg/create-dmg is required
-		create-dmg --volname "GCS v$RELEASE" --icon-size 128 --window-size 448 280 --add-file GCS.app GCS.app 64 64 \
-			--app-drop-link 256 64 --codesign "Richard Wilkes" --hdiutil-quiet --no-internet-enable --notarize gcs-notary \
-			gcs-$RELEASE-macos-$HW.dmg tmp
-		/bin/rm -rf tmp
-		;;
-	Linux*)
-		/bin/rm -f gcs-${RELEASE}-linux.tgz
-		tar czf gcs-${RELEASE}-linux.tgz gcs
-		;;
-	MINGW*)
-		go run -ldflags all="$LDFLAGS_ALL" packaging/main.go -z
-		;;
-	esac
+# Package
+if [ "$PACKAGER"x == "1x" ]; then
+	go run cmd/pack/main.go --release $RELEASE $DIST
 fi

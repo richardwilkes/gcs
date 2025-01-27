@@ -1,0 +1,238 @@
+full_name: GURPS Character Sheet
+executable_name: gcs
+app_icon: pkgicons/app.png
+description: GURPS Character Sheet is an interactive character sheet editor for the GURPS Fourth Edition roleplaying game.
+copyright_holder: Richard A. Wilkes
+copyright_years: 1998-2025
+trademarks: GURPS is a trademark of Steve Jackson Games, used by permission. All rights reserved.
+file_info:
+  - name: PDF Document
+    icon: pkgicons/pdf_doc.png
+    role: Viewer
+    rank: Alternate
+    uti: com.adobe.pdf
+    conforms_to:
+      - public.data
+    extensions:
+      - pdf
+    mime_types:
+      - application/pdf
+      - application/x-pdf
+  - name: Markdown Document
+    icon: pkgicons/md_doc.png
+    role: Viewer
+    rank: Alternate
+    uti: net.daringfireball.markdown
+    conforms_to:
+      - public.plain-text
+    extensions:
+      - md
+      - markdown
+    mime_types:
+      - text/markdown
+  - name: BMP Image
+    icon: pkgicons/bmp_doc.png
+    role: Viewer
+    rank: Alternate
+    uti: com.microsoft.bmp
+    conforms_to:
+      - public.image
+    extensions:
+      - bmp
+      - dib
+    mime_types:
+      - image/bmp
+      - image/x-bmp
+  - name: GIF Image
+    icon: pkgicons/gif_doc.png
+    role: Viewer
+    rank: Alternate
+    uti: com.compuserve.gif
+    conforms_to:
+      - public.image
+    extensions:
+      - gif
+    mime_types:
+      - image/gif
+  - name: ICO Image
+    icon: pkgicons/ico_doc.png
+    role: Viewer
+    rank: Alternate
+    uti: com.microsoft.ico
+    conforms_to:
+      - public.image
+    extensions:
+      - ico
+    mime_types:
+      - image/x-icon
+      - image/vnd.microsoft.icon
+  - name: JPG Image
+    icon: pkgicons/jpg_doc.png
+    role: Viewer
+    rank: Alternate
+    uti: public.jpeg
+    conforms_to:
+      - public.image
+    extensions:
+      - jpg
+      - jpeg
+      - jpe
+      - jif
+      - jfif
+      - jfi
+    mime_types:
+      - image/jpeg
+  - name: PNG Image
+    icon: pkgicons/png_doc.png
+    role: Viewer
+    rank: Alternate
+    uti: public.png
+    conforms_to:
+      - public.image
+    extensions:
+      - png
+    mime_types:
+      - image/png
+  - name: WBMP Image
+    icon: pkgicons/wbmp_doc.png
+    role: Viewer
+    rank: Alternate
+    uti: com.adobe.wbmp
+    conforms_to:
+      - public.image
+    extensions:
+      - wbmp
+    mime_types:
+      - image/vnd.wap.wbmp
+  - name: WEBP Image
+    icon: pkgicons/webp_doc.png
+    role: Viewer
+    rank: Alternate
+    uti: org.webmproject.webp
+    conforms_to:
+      - public.image
+    extensions:
+      - webp
+    mime_types:
+      - image/webp
+  - name: GCS Sheet
+    icon: pkgicons/gcs_doc.png
+    role: Editor
+    rank: Owner
+    uti: com.trollworks.gcs.gcs
+    conforms_to:
+      - public.data
+    extensions:
+      - gcs
+    mime_types:
+      - application/x-gcs-gcs
+  - name: GCS Template
+    icon: pkgicons/gct_doc.png
+    role: Editor
+    rank: Owner
+    uti: com.trollworks.gcs.gct
+    conforms_to:
+      - public.data
+    extensions:
+      - gct
+    mime_types:
+      - application/x-gcs-gct
+  - name: GCS Loot
+    icon: pkgicons/loot_doc.png
+    role: Editor
+    rank: Owner
+    uti: com.trollworks.gcs.loot
+    conforms_to:
+      - public.data
+    extensions:
+      - loot
+    mime_types:
+      - application/x-gcs-loot
+  - name: GCS Traits
+    icon: pkgicons/adq_doc.png
+    role: Editor
+    rank: Owner
+    uti: com.trollworks.gcs.adq
+    conforms_to:
+      - public.data
+    extensions:
+      - adq
+    mime_types:
+      - application/x-gcs-adq
+  - name: GCS Trait Modifiers
+    icon: pkgicons/adm_doc.png
+    role: Editor
+    rank: Owner
+    uti: com.trollworks.gcs.adm
+    conforms_to:
+      - public.data
+    extensions:
+      - adm
+    mime_types:
+      - application/x-gcs-adm
+  - name: GCS Equipment
+    icon: pkgicons/eqp_doc.png
+    role: Editor
+    rank: Owner
+    uti: com.trollworks.gcs.eqp
+    conforms_to:
+      - public.data
+    extensions:
+      - eqp
+    mime_types:
+      - application/x-gcs-eqp
+  - name: GCS Equipment Modifiers
+    icon: pkgicons/eqm_doc.png
+    role: Editor
+    rank: Owner
+    uti: com.trollworks.gcs.eqm
+    conforms_to:
+      - public.data
+    extensions:
+      - eqm
+    mime_types:
+      - application/x-gcs-eqm
+  - name: GCS Skills
+    icon: pkgicons/skl_doc.png
+    role: Editor
+    rank: Owner
+    uti: com.trollworks.gcs.skl
+    conforms_to:
+      - public.data
+    extensions:
+      - skl
+    mime_types:
+      - application/x-gcs-skl
+  - name: GCS Spells
+    icon: pkgicons/spl_doc.png
+    role: Editor
+    rank: Owner
+    uti: com.trollworks.gcs.spl
+    conforms_to:
+      - public.data
+    extensions:
+      - spl
+    mime_types:
+      - application/x-gcs-spl
+  - name: GCS Notes
+    icon: pkgicons/not_doc.png
+    role: Editor
+    rank: Owner
+    uti: com.trollworks.gcs.not
+    conforms_to:
+      - public.data
+    extensions:
+      - not
+    mime_types:
+      - application/x-gcs-not
+mac:
+  finder_app_name: GCS
+  app_id: com.trollworks.gcs
+  minimum_system_version_amd64: "10.15"
+  minimum_system_version_arm64: "11.0"
+  category_uti: public.app-category.role-playing-games
+  code_signing:
+    identity: Richard Wilkes
+    credentials: gcs-notary
+    options:
+      - runtime
