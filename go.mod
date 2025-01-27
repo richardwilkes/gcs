@@ -2,6 +2,8 @@ module github.com/richardwilkes/gcs/v5
 
 go 1.23.5
 
+replace github.com/richardwilkes/unison => ../unison
+
 require (
 	github.com/google/uuid v1.6.0
 	github.com/richardwilkes/json v0.3.0
