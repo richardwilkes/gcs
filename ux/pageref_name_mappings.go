@@ -142,6 +142,7 @@ var PageRefKeyNameMappings = map[string]string{
 	"H":       "Horror",
 	"HF":      "Historical Folks",
 	"HMD":     "Horror: The Madness Dossier",
+	"HOA":     "Hand of Asgard",
 	"HOSF":    "Horror: The Old Stone Fort",
 	"HOW":     "How to Be a GURPS GM",
 	"HOWRPM":  "How to Be a GURPS GM: Ritual Path Magic",
