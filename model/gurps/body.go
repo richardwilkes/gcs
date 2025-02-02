@@ -233,11 +233,25 @@ func (b *Body) ResetTargetKeyPrefixes(prefixProvider func() string) {
 	}
 }
 
+// ParentIndexes returns the indexes of the owning location and table.
+func (b *Body) ParentIndexes() []int {
+	if b.owningLocation == nil {
+		return nil
+	}
+	indexes := b.owningLocation.owningTable.ParentIndexes()
+	for i, loc := range b.owningLocation.owningTable.Locations {
+		if loc == b.owningLocation {
+			return append(indexes, i)
+		}
+	}
+	return nil
+}
+
 // FirstDisclosureState returns the open state of the first row that can be opened.
 func (b *Body) FirstDisclosureState() (open, exists bool) {
 	for i, one := range b.Locations {
 		if one.SubTable != nil {
-			return one.IsOpen(0, i), true
+			return one.IsOpen(append(b.ParentIndexes(), i)), true
 		}
 	}
 	return false, false
@@ -245,14 +259,18 @@ func (b *Body) FirstDisclosureState() (open, exists bool) {
 
 // SetDisclosureState sets the open state of all rows that can be opened.
 func (b *Body) SetDisclosureState(open bool) {
-	b.setDisclosureState(0, open)
+	b.setDisclosureState(b.ParentIndexes(), open)
 }
 
-func (b *Body) setDisclosureState(depth int, open bool) {
+func (b *Body) setDisclosureState(parents []int, open bool) {
 	for i, one := range b.Locations {
-		if one.SubTable != nil {
-			one.SetOpen(depth, i, open)
-			one.SubTable.setDisclosureState(depth+1, open)
+		if one.SubTable == nil {
+			continue
 		}
+		indexes := make([]int, len(parents)+1)
+		copy(indexes, parents)
+		indexes[len(parents)] = i
+		one.SetOpen(indexes, open)
+		one.SubTable.setDisclosureState(indexes, open)
 	}
 }

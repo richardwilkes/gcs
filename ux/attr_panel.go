@@ -169,7 +169,7 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 				var rotation float32
 				currentSepCount := sepCount
 				sepCount++
-				if open = def.IsOpen(currentSepCount); open {
+				if open = def.IsOpen(a.entity, currentSepCount); open {
 					rotation = 90
 				}
 				button := unison.NewButton()
@@ -188,7 +188,7 @@ func (a *AttrPanel) rebuild(attrs *gurps.AttributeDefs) {
 					RotationDegrees: rotation,
 				}
 				button.ClickCallback = func() {
-					def.SetOpen(currentSepCount, !def.IsOpen(currentSepCount))
+					def.SetOpen(a.entity, currentSepCount, !def.IsOpen(a.entity, currentSepCount))
 					a.forceSync()
 					unison.InvokeTaskAfter(a.Window().UpdateCursorNow, time.Millisecond)
 				}

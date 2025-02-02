@@ -140,6 +140,7 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 			p.addSeparator()
 		}
 
+		indexes := append(bodyType.ParentIndexes(), i)
 		if location.SubTable != nil {
 			name := unison.NewButton()
 			name.SetFocusable(false)
@@ -154,7 +155,7 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 				OnBackgroundInk: name.OnBackgroundInk,
 			})
 			var rotation float32
-			if location.IsOpen(depth, i) {
+			if location.IsOpen(indexes) {
 				rotation = 90
 			}
 			size := max(fonts.PageLabelPrimary.Baseline()-2, 6)
@@ -169,7 +170,7 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 				name.Tooltip = newWrappedTooltip(location.Description)
 			}
 			name.ClickCallback = func() {
-				location.SetOpen(depth, i, !location.IsOpen(depth, i))
+				location.SetOpen(indexes, !location.IsOpen(indexes))
 				p.sync(true)
 				unison.InvokeTaskAfter(p.Window().UpdateCursorNow, time.Millisecond)
 			}
@@ -217,7 +218,7 @@ func (p *BodyPanel) addTable(bodyType *gurps.Body, depth int) {
 		notesField.SetLayoutData(&unison.FlexLayoutData{HAlign: align.Fill})
 		p.AddChild(notesField)
 
-		if location.IsOpen(depth, i) {
+		if location.IsOpen(indexes) {
 			p.addTable(location.SubTable, depth+1)
 		}
 	}

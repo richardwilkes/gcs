@@ -983,7 +983,7 @@ func (s *Sheet) toggleHierarchy() {
 		s.OtherEquipment,
 		s.Notes,
 	}
-	open, exists := s.entity.Attributes.FirstDisclosureState()
+	open, exists := s.entity.Attributes.FirstDisclosureState(s.entity)
 	if !exists {
 		if open, exists = s.entity.SheetSettings.BodyType.FirstDisclosureState(); !exists {
 			for _, table := range tables {
@@ -994,7 +994,7 @@ func (s *Sheet) toggleHierarchy() {
 		}
 	}
 	open = !open
-	s.entity.Attributes.SetDisclosureState(open)
+	s.entity.Attributes.SetDisclosureState(s.entity, open)
 	s.entity.SheetSettings.BodyType.SetDisclosureState(open)
 	for _, table := range tables {
 		table.SetDisclosureState(open)

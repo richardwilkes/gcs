@@ -258,17 +258,27 @@ func (h *HitLocation) rewrap() {
 }
 
 // IsOpen returns true if this location contains a sub-table and it is open.
-func (h *HitLocation) IsOpen(depth, index int) bool {
-	return h.SubTable != nil && !IsClosed(h.openKey(depth, index))
+func (h *HitLocation) IsOpen(indexes []int) bool {
+	return h.SubTable != nil && !IsClosed(h.openKey(indexes))
 }
 
 // SetOpen sets the open state of this location. Does nothing if this location does not contain a sub-table.
-func (h *HitLocation) SetOpen(depth, index int, open bool) {
+func (h *HitLocation) SetOpen(indexes []int, open bool) {
 	if h.SubTable != nil {
-		SetClosedState(h.openKey(depth, index), !open)
+		SetClosedState(h.openKey(indexes), !open)
 	}
 }
 
-func (h *HitLocation) openKey(depth, index int) string {
-	return fmt.Sprintf("b:%d:%d", depth, index)
+func (h *HitLocation) openKey(indexes []int) string {
+	var buffer strings.Builder
+	buffer.WriteString("b:")
+	if h.Entity != nil {
+		buffer.WriteString(string(h.Entity.ID))
+	} else {
+		buffer.WriteString("-")
+	}
+	for _, i := range indexes {
+		fmt.Fprintf(&buffer, ":%d", i)
+	}
+	return buffer.String()
 }

@@ -132,18 +132,18 @@ func (a *Attributes) PoolThreshold(attrID, state string) fxp.Int {
 }
 
 // FirstDisclosureState returns the open state of the first row that can be opened.
-func (a *Attributes) FirstDisclosureState() (open, exists bool) {
+func (a *Attributes) FirstDisclosureState(entity *Entity) (open, exists bool) {
 	for _, one := range a.List() {
 		def := one.AttributeDef()
 		if def != nil && def.IsSeparator() {
-			return def.IsOpen(0), true
+			return def.IsOpen(entity, 0), true
 		}
 	}
 	return false, false
 }
 
 // SetDisclosureState sets the open state of all rows that can be opened.
-func (a *Attributes) SetDisclosureState(open bool) {
+func (a *Attributes) SetDisclosureState(entity *Entity, open bool) {
 	m := make(map[int]int)
 	for _, one := range a.List() {
 		def := one.AttributeDef()
@@ -151,7 +151,7 @@ func (a *Attributes) SetDisclosureState(open bool) {
 			kind := def.Kind()
 			sepCount := m[kind]
 			m[kind] = sepCount + 1
-			def.SetOpen(sepCount, open)
+			def.SetOpen(entity, sepCount, open)
 		}
 	}
 }

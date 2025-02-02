@@ -232,17 +232,25 @@ func (a *AttributeDef) Hash(h hash.Hash) {
 }
 
 // IsOpen returns true if this attribute is a separator and it is open.
-func (a *AttributeDef) IsOpen(sepCount int) bool {
-	return a.IsSeparator() && !IsClosed(a.openKey(a.Kind(), sepCount))
+func (a *AttributeDef) IsOpen(entity *Entity, sepCount int) bool {
+	return a.IsSeparator() && !IsClosed(a.openKey(entity, a.Kind(), sepCount))
 }
 
 // SetOpen sets the open state of this attribute. Does nothing if this attribute is not a separator.
-func (a *AttributeDef) SetOpen(sepCount int, open bool) {
+func (a *AttributeDef) SetOpen(entity *Entity, sepCount int, open bool) {
 	if a.IsSeparator() {
-		SetClosedState(a.openKey(a.Kind(), sepCount), !open)
+		SetClosedState(a.openKey(entity, a.Kind(), sepCount), !open)
 	}
 }
 
-func (a *AttributeDef) openKey(kind, sepCount int) string {
-	return fmt.Sprintf("a:%d:%d", kind, sepCount)
+func (a *AttributeDef) openKey(entity *Entity, kind, sepCount int) string {
+	var buffer strings.Builder
+	buffer.WriteString("a:")
+	if entity != nil {
+		buffer.WriteString(string(entity.ID))
+	} else {
+		buffer.WriteString("-")
+	}
+	fmt.Fprintf(&buffer, ":%d:%d", kind, sepCount)
+	return buffer.String()
 }
