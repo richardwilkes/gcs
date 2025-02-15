@@ -1,6 +1,6 @@
 module github.com/richardwilkes/gcs/v5
 
-go 1.23.5
+go 1.24.0
 
 require (
 	github.com/google/uuid v1.6.0
@@ -12,10 +12,10 @@ require (
 	github.com/rjeczalik/notify v0.9.3
 	github.com/yookoala/realpath v1.0.0
 	github.com/zeebo/xxh3 v1.0.2
-	golang.org/x/exp v0.0.0-20250106191152-7588d65b2ba8
-	golang.org/x/image v0.23.0
-	golang.org/x/sys v0.29.0
-	golang.org/x/text v0.21.0
+	golang.org/x/exp v0.0.0-20250210185358-939b2ce775ac
+	golang.org/x/image v0.24.0
+	golang.org/x/sys v0.30.0
+	golang.org/x/text v0.22.0
 )
 
 require (
@@ -32,9 +32,9 @@ require (
 	github.com/pkg/term v1.1.0 // indirect
 	github.com/tc-hib/winres v0.3.1 // indirect
 	github.com/yuin/goldmark v1.7.8 // indirect
-	golang.org/x/mod v0.22.0 // indirect
-	golang.org/x/net v0.34.0 // indirect
-	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/tools v0.29.0 // indirect
+	golang.org/x/mod v0.23.0 // indirect
+	golang.org/x/net v0.35.0 // indirect
+	golang.org/x/sync v0.11.0 // indirect
+	golang.org/x/tools v0.30.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
