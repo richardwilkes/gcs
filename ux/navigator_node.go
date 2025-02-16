@@ -307,7 +307,13 @@ func (n *NavigatorNode) Refresh() {
 				}
 			}
 		}
-		slices.SortFunc(favs, func(a, b *fav) int { return txt.NaturalCmp(a.path, b.path, true) })
+		slices.SortFunc(favs, func(a, b *fav) int {
+			result := txt.NaturalCmp(xfs.TrimExtension(a.path), xfs.TrimExtension(b.path), true)
+			if result == 0 {
+				result = txt.NaturalCmp(a.path, b.path, true)
+			}
+			return result
+		})
 		for _, one := range favs {
 			p := filepath.Join(one.library.Path(), one.path)
 			if xfs.IsDir(p) {
@@ -342,7 +348,15 @@ func (n *NavigatorNode) refreshChildren(dirPath string, parent *NavigatorNode) [
 		}
 		return nil
 	}
-	slices.SortFunc(entries, func(a, b fs.DirEntry) int { return txt.NaturalCmp(a.Name(), b.Name(), true) })
+	slices.SortFunc(entries, func(a, b fs.DirEntry) int {
+		aName := a.Name()
+		bName := b.Name()
+		result := txt.NaturalCmp(xfs.TrimExtension(aName), xfs.TrimExtension(bName), true)
+		if result == 0 {
+			result = txt.NaturalCmp(aName, bName, true)
+		}
+		return result
+	})
 	children := make([]*NavigatorNode, 0, len(entries))
 	for _, entry := range entries {
 		name := entry.Name()
