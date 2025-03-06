@@ -92,7 +92,9 @@ func InitWorkspace(wnd *unison.Window) {
 func finishInit() {
 	Workspace.Window.ResizedCallback = nil
 	if gurps.GlobalSettings().General.RestoreWorkspaceOnStart {
-		restoreDockState()
+		toolbox.CallWithHandler(restoreDockState, func(err error) {
+			slog.Warn("Unable to restore workspace state", "error", err)
+		})
 	} else {
 		Workspace.TopDock.RootDockLayout().SetDividerPosition(gurps.DefaultNavigatorDividerPosition)
 	}
