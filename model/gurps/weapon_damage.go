@@ -264,6 +264,9 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 	default:
 		return base
 	}
+	if w.Leveled && t.IsLeveled() {
+		multiplyDice(fxp.As[int](t.Levels), stDamage)
+	}
 	base = addDice(base, stDamage)
 	return base
 }
