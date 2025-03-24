@@ -52,6 +52,7 @@ type SheetSettingsData struct {
 	HideLCColumn                  bool               `json:"hide_lc_column,omitempty"`
 	UseTitleInFooter              bool               `json:"use_title_in_footer,omitempty"`
 	ExcludeUnspentPointsFromTotal bool               `json:"exclude_unspent_points_from_total"`
+	ShowIQBasedDamage             bool               `json:"ShowIQBasedDamage,omitempty"`
 }
 
 // SheetSettings holds sheet settings.

@@ -216,6 +216,8 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 			st = entity.LiftingStrength()
 		case stdmg.TelekineticThrust, stdmg.TelekineticSwing:
 			st = entity.TelekineticStrength()
+		case stdmg.IQThrust:
+			st = entity.ResolveAttributeCurrent(IQID).Max(0).Trunc()
 		default:
 			st = entity.ResolveAttributeCurrent(StrengthID).Max(0).Trunc()
 		}
@@ -255,15 +257,12 @@ func (w *WeaponDamage) BaseDamageDice() *dice.Dice {
 	intST := fxp.As[int](st)
 	var stDamage *dice.Dice
 	switch w.StrengthType {
-	case stdmg.Thrust, stdmg.LiftingThrust, stdmg.TelekineticThrust:
+	case stdmg.Thrust, stdmg.LiftingThrust, stdmg.TelekineticThrust, stdmg.IQThrust:
 		stDamage = entity.ThrustFor(intST)
 	case stdmg.Swing, stdmg.LiftingSwing, stdmg.TelekineticSwing:
 		stDamage = entity.SwingFor(intST)
 	default:
 		return base
-	}
-	if w.Leveled && t.IsLeveled() {
-		multiplyDice(fxp.As[int](t.Levels), stDamage)
 	}
 	base = addDice(base, stDamage)
 	return base

@@ -1059,6 +1059,11 @@ var allEnums = []*enumInfo{
 				Key:    "tk_sw",
 				String: "telekinetic sw",
 			},
+			{
+				Name:   "IQThrust",
+				Key:    "iq_thr",
+				String: "IQ ST",
+			},
 			// The following entries are only here to allow loading of old data and will be converted at load
 			{
 				Name:   "OldLeveledThrust",

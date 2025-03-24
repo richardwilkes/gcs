@@ -35,6 +35,7 @@ const (
 	TechniqueID        = "technique"
 	ThrowingStrengthID = "throwing_st"
 	TorsoID            = "torso"
+	IQID               = "iq"
 )
 
 // SanitizeID ensures the ID is not empty and consists of only lowercase alphanumeric characters. If permitLeadingDigits

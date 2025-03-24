@@ -63,6 +63,7 @@ type sheetSettingsDockable struct {
 	bottomMarginField                  *unison.Field
 	rightMarginField                   *unison.Field
 	blockLayoutField                   *unison.Field
+	ShowIQBasedDamage                  *unison.CheckBox
 }
 
 // ShowSheetSettings the Sheet Settings. Pass in nil to edit the defaults or a sheet to edit the sheet's.
@@ -208,6 +209,11 @@ func (d *sheetSettingsDockable) createOptions(content *unison.Panel) {
 		s.ExcludeUnspentPointsFromTotal, func() {
 			d.settings().ExcludeUnspentPointsFromTotal = d.excludeUnspentPointsFromTotal.State == check.On
 			d.syncSheet(false)
+		})
+	d.ShowIQBasedDamage = d.addCheckBox(panel, i18n.Text("Show IQ-Based ST from Opus Longa, Pugna Brevis"),
+		s.ShowIQBasedDamage, func() {
+			d.settings().ShowIQBasedDamage = d.ShowIQBasedDamage.State == check.On
+			d.syncSheet(true)
 		})
 	content.AddChild(panel)
 }
@@ -484,6 +490,7 @@ func (d *sheetSettingsDockable) sync() {
 	d.bottomMarginField.SetText(s.Page.BottomMargin.String())
 	d.rightMarginField.SetText(s.Page.RightMargin.String())
 	d.blockLayoutField.SetText(s.BlockLayout.String())
+	d.ShowIQBasedDamage.State = check.FromBool(s.ShowIQBasedDamage)
 	d.MarkForRedraw()
 }
 

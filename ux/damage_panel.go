@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -43,17 +44,63 @@ func NewDamagePanel(entity *gurps.Entity) *DamagePanel {
 	})))
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) { drawBandedBackground(p, gc, rect, 0, 2, nil) }
 
+	// Add basic thrust damage
+	p.AddChild(NewPageLabel(i18n.Text("Striking Thrust")))
 	p.AddChild(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
 		f.SetTitle(p.entity.Thrust().String())
 		MarkForLayoutWithinDockable(f)
 	}))
-	p.AddChild(NewPageLabel(i18n.Text("Basic Thrust")))
 
+	// Add basic swing damage
+	p.AddChild(NewPageLabel(i18n.Text("Striking Swing")))
 	p.AddChild(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
 		f.SetTitle(p.entity.Swing().String())
 		MarkForLayoutWithinDockable(f)
 	}))
-	p.AddChild(NewPageLabel(i18n.Text("Basic Swing")))
+
+	// Add Lifting Strength-based damage
+	p.AddChild(NewPageLabel(i18n.Text("Lifting Thrust")))
+	p.AddChild(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
+		f.SetTitle(p.entity.LiftingThrust().String())
+		MarkForLayoutWithinDockable(f)
+	}))
+
+	// Add Lifting Strength-based damage
+	p.AddChild(NewPageLabel(i18n.Text("Lifting Swing")))
+	p.AddChild(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
+		f.SetTitle(p.entity.LiftingSwing().String())
+		MarkForLayoutWithinDockable(f)
+	}))
+
+	// Add IQ-based damage
+	if entity.SheetSettings.ShowIQBasedDamage {
+		p.AddChild(NewPageLabel(i18n.Text("IQ-Based Damage")))
+		p.AddChild(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
+			iqST := entity.ResolveAttributeCurrent("iq")
+			iqDamage := entity.ThrustFor(fxp.As[int](iqST)).String()
+			f.SetTitle(iqDamage)
+			MarkForLayoutWithinDockable(f)
+		}))
+	}
+
+	// Add TK Strength-based damage
+	tkST := entity.TelekineticStrength()
+	if tkST > 0 {
+		p.AddChild(NewPageLabel(i18n.Text("TK Thrust")))
+		p.AddChild(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
+			tkThrust := p.entity.ThrustFor(fxp.As[int](tkST)).String()
+			f.SetTitle(tkThrust)
+			MarkForLayoutWithinDockable(f)
+		}))
+
+		// Add TK Strength-based damage
+		p.AddChild(NewPageLabel(i18n.Text("TK Swing")))
+		p.AddChild(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
+			tkSwing := p.entity.SwingFor(fxp.As[int](tkST)).String()
+			f.SetTitle(tkSwing)
+			MarkForLayoutWithinDockable(f)
+		}))
+	}
 
 	return p
 }

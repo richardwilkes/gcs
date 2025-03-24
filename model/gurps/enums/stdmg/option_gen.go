@@ -28,6 +28,7 @@ const (
 	TelekineticSwing
 	OldLeveledThrust
 	OldLeveledSwing
+	IQThrust
 )
 
 // LastOption is the last valid value.
@@ -44,6 +45,7 @@ var Options = []Option{
 	TelekineticSwing,
 	OldLeveledThrust,
 	OldLeveledSwing,
+	IQThrust,
 }
 
 // Option holds the type of strength dice to add to damage.
@@ -74,6 +76,8 @@ func (enum Option) Key() string {
 		return "lift_sw"
 	case TelekineticSwing:
 		return "tk_sw"
+	case IQThrust:
+		return "iq_thr"
 	case OldLeveledThrust:
 		return "thr_leveled"
 	case OldLeveledSwing:
@@ -100,6 +104,8 @@ func (enum Option) String() string {
 		return i18n.Text("lifting sw")
 	case TelekineticSwing:
 		return i18n.Text("telekinetic sw")
+	case IQThrust:
+		return i18n.Text("iq thr")
 	case OldLeveledThrust:
 		return i18n.Text("thr (leveled)")
 	case OldLeveledSwing:
