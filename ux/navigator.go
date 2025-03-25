@@ -83,7 +83,7 @@ func newNavigator() *Navigator {
 	n := &Navigator{
 		toolbar:    unison.NewPanel(),
 		scroll:     unison.NewScrollPanel(),
-		table:      unison.NewTable[*NavigatorNode](&unison.SimpleTableModel[*NavigatorNode]{}),
+		table:      unison.NewTable(&unison.SimpleTableModel[*NavigatorNode]{}),
 		deepSearch: make(map[string]bool),
 	}
 	n.Self = n
@@ -355,12 +355,12 @@ func (n *Navigator) deleteSelection() {
 						p := row.Path()
 						if row.IsDirectory() {
 							if err := os.RemoveAll(p); err != nil {
-								unison.ErrorDialogWithError(fmt.Sprintf(i18n.Text("Unable to remove directory:\n%s"), p), err)
+								Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to remove directory:\n%s"), p), err)
 								return
 							}
 						} else {
 							if err := os.Remove(p); err != nil {
-								unison.ErrorDialogWithError(fmt.Sprintf(i18n.Text("Unable to remove file:\n%s"), p), err)
+								Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to remove file:\n%s"), p), err)
 								return
 							}
 						}
@@ -452,7 +452,7 @@ func (n *Navigator) renameSelection() {
 			unison.DefaultDialogTheme.QuestionIconInk, panel,
 			[]*unison.DialogButtonInfo{unison.NewCancelButtonInfo(), unison.NewOKButtonInfo()})
 		if err != nil {
-			unison.ErrorDialogWithError(i18n.Text("Unable to create rename dialog"), err)
+			Workspace.ErrorHandler(i18n.Text("Unable to create rename dialog"), err)
 			return
 		}
 		newField.ValidateCallback = func() bool {
@@ -466,7 +466,7 @@ func (n *Navigator) renameSelection() {
 			oldPath := row.Path()
 			newPath := filepath.Join(filepath.Dir(oldPath), newName+filepath.Ext(oldPath))
 			if err = os.Rename(oldPath, newPath); err != nil {
-				unison.ErrorDialogWithError(fmt.Sprintf(i18n.Text("Unable to rename:\n%s"), oldPath), err)
+				Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to rename:\n%s"), oldPath), err)
 			} else {
 				n.fixupFavoritePath(row, oldPath, newPath)
 				n.adjustBackingFilePath(row, oldPath, newPath)
@@ -698,7 +698,7 @@ func newShowNodeOnDiskMenuItem(f unison.MenuFactory, id *int, sel []*NavigatorNo
 			}
 			for p := range m {
 				if err := desktop.Open(p); err != nil {
-					unison.ErrorDialogWithError(i18n.Text("Unable to show location on disk"), err)
+					Workspace.ErrorHandler(i18n.Text("Unable to show location on disk"), err)
 				}
 			}
 		})
@@ -1143,7 +1143,7 @@ func (n *Navigator) ApplySelectedPaths(paths []string) {
 func OpenFiles(filePaths []string) {
 	for _, one := range filePaths {
 		if p, err := filepath.Abs(one); err != nil {
-			unison.ErrorDialogWithError(i18n.Text("Unable to open ")+one, err)
+			Workspace.ErrorHandler(i18n.Text("Unable to open ")+one, err)
 		} else {
 			Workspace.Window.ToFront()
 			OpenFile(p, 0)
@@ -1219,7 +1219,7 @@ func DisplayNewDockable(dockable unison.Dockable) {
 func OpenFile(filePath string, initialPage int) (dockable unison.Dockable, wasOpen bool) {
 	absPath, err := filepath.Abs(filePath)
 	if err != nil {
-		unison.ErrorDialogWithError(i18n.Text("Unable to resolve path:\n"+filePath), err)
+		Workspace.ErrorHandler(i18n.Text("Unable to resolve path:\n"+filePath), err)
 		return nil, false
 	}
 	if d := LocateFileBackedDockable(absPath); d != nil {
@@ -1236,7 +1236,7 @@ func OpenFile(filePath string, initialPage int) (dockable unison.Dockable, wasOp
 	}
 	var d unison.Dockable
 	if d, err = fi.Load(absPath, initialPage); err != nil {
-		unison.ErrorDialogWithError(i18n.Text("Unable to open file:\n")+absPath, err)
+		Workspace.ErrorHandler(i18n.Text("Unable to open file:\n")+absPath, err)
 		return nil, false
 	}
 	gurps.GlobalSettings().AddRecentFile(absPath)
@@ -1268,7 +1268,7 @@ func (n *Navigator) newFolder() {
 			unison.DefaultDialogTheme.QuestionIconInk, panel,
 			[]*unison.DialogButtonInfo{unison.NewCancelButtonInfo(), unison.NewOKButtonInfo()})
 		if err != nil {
-			unison.ErrorDialogWithError(i18n.Text("Unable to create new folder dialog"), err)
+			Workspace.ErrorHandler(i18n.Text("Unable to create new folder dialog"), err)
 			return
 		}
 		field.ValidateCallback = func() bool {
@@ -1286,7 +1286,7 @@ func (n *Navigator) newFolder() {
 		if dialog.RunModal() == unison.ModalResponseOK {
 			dirPath := filepath.Join(parentDir, name)
 			if err = os.Mkdir(dirPath, 0o750); err != nil {
-				unison.ErrorDialogWithError(fmt.Sprintf(i18n.Text("Unable to create:\n%s"), dirPath), err)
+				Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to create:\n%s"), dirPath), err)
 			} else {
 				if !row.IsFile() && !row.IsOpen() {
 					row.SetOpen(true)

@@ -63,7 +63,7 @@ type TableDockable[T gurps.NodeTypes] struct {
 
 // NewTableDockable creates a new TableDockable for list data files.
 func NewTableDockable[T gurps.NodeTypes](filePath, extension string, provider TableProvider[T], saver func(path string) error, canCreateIDs ...int) *TableDockable[T] {
-	header, table := NewNodeTable[T](provider, nil)
+	header, table := NewNodeTable(provider, nil)
 	d := &TableDockable[T]{
 		path:              filePath,
 		extension:         extension,

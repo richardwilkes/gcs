@@ -22,7 +22,7 @@ import (
 
 // EditEquipment displays the editor for equipment.
 func EditEquipment(owner Rebuildable, equipment *gurps.Equipment, carried bool) {
-	displayEditor[*gurps.Equipment, *gurps.EquipmentEditData](owner, equipment, svg.GCSEquipment,
+	displayEditor(owner, equipment, svg.GCSEquipment,
 		"md:Help/Interface/Equipment", nil,
 		func(e *editor[*gurps.Equipment, *gurps.EquipmentEditData], content *unison.Panel) func() {
 			addNameLabelAndField(content, &e.editorData.Name)

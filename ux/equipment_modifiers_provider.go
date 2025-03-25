@@ -66,7 +66,7 @@ func (p *eqpModProvider) RootRows() []*Node[*gurps.EquipmentModifier] {
 	data := p.provider.EquipmentModifierList()
 	rows := make([]*Node[*gurps.EquipmentModifier], 0, len(data))
 	for _, one := range data {
-		rows = append(rows, NewNode[*gurps.EquipmentModifier](p.table, nil, one, false))
+		rows = append(rows, NewNode(p.table, nil, one, false))
 	}
 	return rows
 }
@@ -150,14 +150,14 @@ func (p *eqpModProvider) ExcessWidthColumnID() int {
 }
 
 func (p *eqpModProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*gurps.EquipmentModifier]]) {
-	OpenEditor[*gurps.EquipmentModifier](table, func(item *gurps.EquipmentModifier) {
+	OpenEditor(table, func(item *gurps.EquipmentModifier) {
 		EditEquipmentModifier(owner, item)
 	})
 }
 
 func (p *eqpModProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.EquipmentModifier]], variant ItemVariant) {
 	item := gurps.NewEquipmentModifier(p.DataOwner(), nil, variant == ContainerItemVariant)
-	InsertItems[*gurps.EquipmentModifier](owner, table, p.provider.EquipmentModifierList,
+	InsertItems(owner, table, p.provider.EquipmentModifierList,
 		p.provider.SetEquipmentModifierList,
 		func(_ *unison.Table[*Node[*gurps.EquipmentModifier]]) []*Node[*gurps.EquipmentModifier] {
 			return p.RootRows()

@@ -43,6 +43,7 @@ var Workspace struct {
 	TopDock      *unison.Dock
 	Navigator    *Navigator
 	DocumentDock *DocumentDock
+	ErrorHandler func(msg string, err error)
 }
 
 // KeyedDockable extends unison.Dockable to require a DockKey() method, used for restoring the dock layout.
@@ -59,6 +60,7 @@ type GroupedCloser interface {
 
 // InitWorkspace initializes the Workspace singleton.
 func InitWorkspace(wnd *unison.Window) {
+	Workspace.ErrorHandler = func(msg string, err error) { errs.Log(errs.NewWithCause(msg, err)) }
 	Workspace.Window = wnd
 	Workspace.TopDock = unison.NewDock()
 	Workspace.Navigator = newNavigator()
@@ -99,6 +101,7 @@ func finishInit() {
 		Workspace.TopDock.RootDockLayout().SetDividerPosition(gurps.DefaultNavigatorDividerPosition)
 	}
 	Workspace.Navigator.InitialFocus()
+	Workspace.ErrorHandler = func(msg string, err error) { unison.ErrorDialogWithError(msg, err) }
 }
 
 func restoreDockState() {
@@ -267,7 +270,7 @@ func workspaceWillClose() {
 	global := gurps.GlobalSettings()
 	global.WorkspaceFrame = &frame
 	if err := global.Save(); err != nil {
-		unison.ErrorDialogWithError(i18n.Text("Unable to save global settings"), err)
+		Workspace.ErrorHandler(i18n.Text("Unable to save global settings"), err)
 	}
 }
 
@@ -619,7 +622,7 @@ func traverseGroup(d unison.Dockable, f func(target GroupedCloser) bool) {
 func SaveDockable(d FileBackedDockable, saver func(filePath string) error, setUnmodified func()) bool {
 	filePath := d.BackingFilePath()
 	if err := saver(filePath); err != nil {
-		unison.ErrorDialogWithError(fmt.Sprintf(i18n.Text("Unable to save %s"), fs.BaseName(filePath)), err)
+		Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to save %s"), fs.BaseName(filePath)), err)
 		return false
 	}
 	setUnmodified()
@@ -645,7 +648,7 @@ func SaveDockableAs(d FileBackedDockable, extension string, saver func(filePath 
 		}
 		gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
 		if err := saver(filePath); err != nil {
-			unison.ErrorDialogWithError(i18n.Text("Unable to save as ")+fs.BaseName(filePath), err)
+			Workspace.ErrorHandler(i18n.Text("Unable to save as ")+fs.BaseName(filePath), err)
 			return false
 		}
 		setUnmodifiedAndNewPath(filePath)

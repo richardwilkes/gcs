@@ -172,7 +172,7 @@ func newWeaponBonus(t feature.Type) *WeaponBonus {
 	w.RelativeLevelCriteria.Compare = criteria.AtLeastNumber
 	w.UsageCriteria.Compare = criteria.AnyText
 	w.TagsCriteria.Compare = criteria.AnyText
-	w.WeaponLeveledAmount.Amount = fxp.One
+	w.Amount = fxp.One
 	return &w
 }
 
@@ -192,11 +192,11 @@ func (w *WeaponBonus) AdjustedAmountForWeapon(wpn *Weapon) fxp.Int {
 	if w.Type == feature.WeaponMinSTBonus || w.Type == feature.WeaponEffectiveSTBonus {
 		// Can't call BaseDamageDice() here because that would cause an infinite loop, so we just don't permit use of
 		// the per-die feature for this bonus.
-		w.WeaponLeveledAmount.DieCount = fxp.One
+		w.DieCount = fxp.One
 	} else {
-		w.WeaponLeveledAmount.DieCount = fxp.From(wpn.Damage.BaseDamageDice().Count)
+		w.DieCount = fxp.From(wpn.Damage.BaseDamageDice().Count)
 	}
-	return w.WeaponLeveledAmount.AdjustedAmount()
+	return w.AdjustedAmount()
 }
 
 // FillWithNameableKeys implements Feature.
@@ -211,7 +211,7 @@ func (w *WeaponBonus) FillWithNameableKeys(m, existing map[string]string) {
 
 // SetLevel implements Bonus.
 func (w *WeaponBonus) SetLevel(level fxp.Int) {
-	w.WeaponLeveledAmount.Level = level
+	w.Level = level
 }
 
 // AddToTooltip implements Bonus.
@@ -224,7 +224,7 @@ func (w *WeaponBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 		if w.Type == feature.WeaponSwitch {
 			fmt.Fprintf(&buf, "%v set to %v", w.SwitchType, w.SwitchTypeValue)
 		} else {
-			buf.WriteString(w.WeaponLeveledAmount.Format(w.Percent))
+			buf.WriteString(w.Format(w.Percent))
 			buf.WriteString(i18n.Text(" to "))
 			switch w.Type {
 			case feature.WeaponBonus:

@@ -22,7 +22,7 @@ import (
 
 // EditSpell displays the editor for an spell.
 func EditSpell(owner Rebuildable, spell *gurps.Spell) {
-	displayEditor[*gurps.Spell, *gurps.SpellEditData](owner, spell, svg.GCSSpells, "md:Help/Interface/Spell", nil,
+	displayEditor(owner, spell, svg.GCSSpells, "md:Help/Interface/Spell", nil,
 		initSpellEditor, nil)
 }
 

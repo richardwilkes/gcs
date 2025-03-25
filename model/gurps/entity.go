@@ -504,9 +504,9 @@ func (e *Entity) processPrereqs() {
 					penalty.SpecializationCriteria.Compare = criteria.IsText
 					penalty.SpecializationCriteria.Qualifier = s.SpecializationWithReplacements()
 					if s.TechLevel != nil && *s.TechLevel != "" {
-						penalty.LeveledAmount.Amount = -fxp.Ten
+						penalty.Amount = -fxp.Ten
 					} else {
-						penalty.LeveledAmount.Amount = -fxp.Five
+						penalty.Amount = -fxp.Five
 					}
 					penalty.SetOwner(s)
 					e.features.skillBonuses = append(e.features.skillBonuses, penalty)
@@ -533,9 +533,9 @@ func (e *Entity) processPrereqs() {
 					penalty := NewSpellBonus()
 					penalty.NameCriteria.Qualifier = s.NameWithReplacements()
 					if s.TechLevel != nil && *s.TechLevel != "" {
-						penalty.LeveledAmount.Amount = -fxp.Ten
+						penalty.Amount = -fxp.Ten
 					} else {
-						penalty.LeveledAmount.Amount = -fxp.Five
+						penalty.Amount = -fxp.Five
 					}
 					penalty.SetOwner(s)
 					e.features.spellBonuses = append(e.features.spellBonuses, penalty)
@@ -928,13 +928,13 @@ func (e *Entity) AddNamedWeaponBonusesFor(nameQualifier, usageQualifier string, 
 }
 
 func addWeaponBonusToMap(bonus *WeaponBonus, dieCount int, tooltip *xio.ByteBuffer, m map[*WeaponBonus]bool) {
-	savedLevel := bonus.WeaponLeveledAmount.Level
-	savedDieCount := bonus.WeaponLeveledAmount.DieCount
-	bonus.WeaponLeveledAmount.DieCount = fxp.From(dieCount)
-	bonus.WeaponLeveledAmount.Level = bonus.DerivedLevel()
+	savedLevel := bonus.Level
+	savedDieCount := bonus.DieCount
+	bonus.DieCount = fxp.From(dieCount)
+	bonus.Level = bonus.DerivedLevel()
 	bonus.AddToTooltip(tooltip)
-	bonus.WeaponLeveledAmount.Level = savedLevel
-	bonus.WeaponLeveledAmount.DieCount = savedDieCount
+	bonus.Level = savedLevel
+	bonus.DieCount = savedDieCount
 	m[bonus] = true
 }
 

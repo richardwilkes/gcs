@@ -40,7 +40,7 @@ func NewSpellBonus() *SpellBonus {
 	s.SpellMatchType = spellmatch.AllColleges
 	s.NameCriteria.Compare = criteria.IsText
 	s.TagsCriteria.Compare = criteria.AnyText
-	s.LeveledAmount.Amount = fxp.One
+	s.Amount = fxp.One
 	return &s
 }
 

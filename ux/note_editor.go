@@ -20,7 +20,7 @@ import (
 
 // EditNote displays the editor for a note.
 func EditNote(owner Rebuildable, note *gurps.Note) {
-	displayEditor[*gurps.Note, *gurps.NoteEditData](owner, note, svg.GCSNotes, "md:Help/Interface/Note",
+	displayEditor(owner, note, svg.GCSNotes, "md:Help/Interface/Note",
 		initNoteToolbar, initNoteEditor, nil)
 }
 

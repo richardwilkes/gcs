@@ -164,7 +164,7 @@ func (n *Note) Clone(from LibraryFile, owner DataOwner, parent *Note, preserveID
 	other.AdjustSource(from, n.SourcedID, preserveID)
 	other.SetOpen(n.IsOpen())
 	other.ThirdParty = n.ThirdParty
-	other.NoteEditData.CopyFrom(n)
+	other.CopyFrom(n)
 	if n.HasChildren() {
 		other.Children = make([]*Note, 0, len(n.Children))
 		for _, child := range n.Children {
@@ -391,7 +391,7 @@ func (n *Note) SyncWithSource() {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (n *Note) Hash(h hash.Hash) {
-	n.NoteSyncData.hash(h)
+	n.hash(h)
 }
 
 func (n *NoteSyncData) hash(h hash.Hash) {
@@ -407,7 +407,7 @@ func (n *NoteEditData) CopyFrom(other *Note) {
 
 // ApplyTo implements node.EditorData.
 func (n *NoteEditData) ApplyTo(other *Note) {
-	other.NoteEditData.copyFrom(n)
+	other.copyFrom(n)
 }
 
 func (n *NoteEditData) copyFrom(other *NoteEditData) {

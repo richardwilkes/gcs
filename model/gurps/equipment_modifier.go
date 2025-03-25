@@ -202,7 +202,7 @@ func (e *EquipmentModifier) Clone(from LibraryFile, owner DataOwner, parent *Equ
 	other.AdjustSource(from, e.SourcedID, preserveID)
 	other.SetOpen(e.IsOpen())
 	other.ThirdParty = e.ThirdParty
-	other.EquipmentModifierEditData.CopyFrom(e)
+	other.CopyFrom(e)
 	if e.HasChildren() {
 		other.Children = make([]*EquipmentModifier, 0, len(e.Children))
 		for _, child := range e.Children {
@@ -700,7 +700,7 @@ func (e *EquipmentModifier) SyncWithSource() {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (e *EquipmentModifier) Hash(h hash.Hash) {
-	e.EquipmentModifierSyncData.hash(h)
+	e.hash(h)
 	if !e.Container() {
 		e.EquipmentModifierNonContainerSyncData.hash(h)
 	}
@@ -737,7 +737,7 @@ func (e *EquipmentModifierEditData) CopyFrom(other *EquipmentModifier) {
 
 // ApplyTo implements node.EditorData.
 func (e *EquipmentModifierEditData) ApplyTo(other *EquipmentModifier) {
-	other.EquipmentModifierEditData.copyFrom(e)
+	other.copyFrom(e)
 }
 
 func (e *EquipmentModifierEditData) copyFrom(other *EquipmentModifierEditData) {

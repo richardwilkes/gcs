@@ -48,7 +48,7 @@ func WorkingDirProvider(p unison.Paneler) string {
 func HandleLink(p unison.Paneler, target string) {
 	revised, err := unison.ReviseTarget(WorkingDirProvider(p), target, unison.DefaultMarkdownTheme.AltLinkPrefixes)
 	if err != nil {
-		unison.ErrorDialogWithError(i18n.Text("Unable to open ")+target, err)
+		Workspace.ErrorHandler(i18n.Text("Unable to open ")+target, err)
 		return
 	}
 	if !unison.HasURLPrefix(revised) && !unison.HasAnyPrefix(unison.DefaultMarkdownTheme.AltLinkPrefixes, revised) {

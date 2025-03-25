@@ -79,13 +79,14 @@ func (wr WeaponRoFMode) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer, fir
 	var percentSPA, percentSP fxp.Int
 	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, shotsFeature, secondaryFeature) {
 		amt := bonus.AdjustedAmountForWeapon(w)
-		if bonus.Type == shotsFeature {
+		switch bonus.Type {
+		case shotsFeature:
 			if bonus.Percent {
 				percentSPA += amt
 			} else {
 				result.ShotsPerAttack += amt
 			}
-		} else if bonus.Type == secondaryFeature {
+		case secondaryFeature:
 			if bonus.Percent {
 				percentSP += amt
 			} else {

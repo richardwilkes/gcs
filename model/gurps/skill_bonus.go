@@ -42,7 +42,7 @@ func NewSkillBonus() *SkillBonus {
 	s.NameCriteria.Compare = criteria.IsText
 	s.SpecializationCriteria.Compare = criteria.AnyText
 	s.TagsCriteria.Compare = criteria.AnyText
-	s.LeveledAmount.Amount = fxp.One
+	s.Amount = fxp.One
 	return &s
 }
 

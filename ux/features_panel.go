@@ -600,7 +600,7 @@ func (p *featuresPanel) createCostReductionPanel(f *gurps.CostReduction) *unison
 	choice := choices[max(min((fxp.As[int](f.Percentage)/5)-1, 15), 0)]
 	addPopup(wrapper, choices, &choice).ChoiceMadeCallback = func(popup *unison.PopupMenu[string], index int, _ string) {
 		popup.SelectIndex(index)
-		f.Percentage = fxp.From[int]((index + 1) * 5)
+		f.Percentage = fxp.From((index + 1) * 5)
 		MarkModified(wrapper)
 	}
 	p.addWrapperAtIndex(panel, wrapper, -1, true)

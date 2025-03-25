@@ -104,13 +104,14 @@ func (wr WeaponReach) Resolve(w *Weapon, modifiersTooltip *xio.ByteBuffer) Weapo
 	var percentMin, percentMax fxp.Int
 	for _, bonus := range w.collectWeaponBonuses(1, modifiersTooltip, feature.WeaponMinReachBonus, feature.WeaponMaxReachBonus) {
 		amt := bonus.AdjustedAmountForWeapon(w)
-		if bonus.Type == feature.WeaponMinReachBonus {
+		switch bonus.Type {
+		case feature.WeaponMinReachBonus:
 			if bonus.Percent {
 				percentMin += amt
 			} else {
 				result.Min += amt
 			}
-		} else if bonus.Type == feature.WeaponMaxReachBonus {
+		case feature.WeaponMaxReachBonus:
 			if bonus.Percent {
 				percentMax += amt
 			} else {

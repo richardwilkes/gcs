@@ -68,9 +68,9 @@ func adjustTechLevel[T gurps.NodeTypes](owner Rebuildable, table *unison.Table[*
 		if provider, ok := any(row.Data()).(gurps.TechLevelProvider[T]); ok {
 			if provider.RequiresTL() {
 				if tl, changed := gurps.AdjustTechLevel(provider.TL(), amount); changed {
-					before.List = append(before.List, newTechLevelAdjuster[T](provider))
+					before.List = append(before.List, newTechLevelAdjuster(provider))
 					provider.SetTL(tl)
-					after.List = append(after.List, newTechLevelAdjuster[T](provider))
+					after.List = append(after.List, newTechLevelAdjuster(provider))
 				}
 			}
 		}

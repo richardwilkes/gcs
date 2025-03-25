@@ -282,16 +282,16 @@ func (w *WeaponDamage) ResolvedDamage(tooltip *xio.ByteBuffer) string {
 	for _, bonus := range w.Owner.collectWeaponBonuses(base.Count, tooltip, feature.WeaponBonus, feature.WeaponDRDivisorBonus) {
 		switch bonus.Type {
 		case feature.WeaponBonus:
-			bonus.WeaponLeveledAmount.DieCount = fxp.From(base.Count)
+			bonus.DieCount = fxp.From(base.Count)
 			amt := bonus.AdjustedAmountForWeapon(w.Owner)
 			if bonus.Percent {
 				percentDamageBonus += amt
 			} else {
 				if adjustForPhoenixFlame {
-					if bonus.WeaponLeveledAmount.PerLevel {
+					if bonus.PerLevel {
 						amt = amt.Div(fxp.Two)
 					}
-					if bonus.WeaponLeveledAmount.PerDie {
+					if bonus.PerDie {
 						amt = amt.Div(fxp.Two)
 					}
 				}

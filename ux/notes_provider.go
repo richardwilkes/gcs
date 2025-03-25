@@ -55,7 +55,7 @@ func (p *notesProvider) RootRows() []*Node[*gurps.Note] {
 	data := p.provider.NoteList()
 	rows := make([]*Node[*gurps.Note], 0, len(data))
 	for _, one := range data {
-		rows = append(rows, NewNode[*gurps.Note](p.table, nil, one, p.forPage))
+		rows = append(rows, NewNode(p.table, nil, one, p.forPage))
 	}
 	return rows
 }
@@ -133,12 +133,12 @@ func (p *notesProvider) ExcessWidthColumnID() int {
 }
 
 func (p *notesProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*gurps.Note]]) {
-	OpenEditor[*gurps.Note](table, func(item *gurps.Note) { EditNote(owner, item) })
+	OpenEditor(table, func(item *gurps.Note) { EditNote(owner, item) })
 }
 
 func (p *notesProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Note]], variant ItemVariant) {
 	item := gurps.NewNote(p.DataOwner(), nil, variant == ContainerItemVariant)
-	InsertItems[*gurps.Note](owner, table, p.provider.NoteList, p.provider.SetNoteList,
+	InsertItems(owner, table, p.provider.NoteList, p.provider.SetNoteList,
 		func(_ *unison.Table[*Node[*gurps.Note]]) []*Node[*gurps.Note] { return p.RootRows() }, item)
 	EditNote(owner, item)
 }

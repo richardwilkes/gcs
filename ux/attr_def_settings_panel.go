@@ -148,7 +148,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 
 	text = i18n.Text("Attribute Type")
 	content.AddChild(NewFieldLeadingLabel(text, false))
-	content.AddChild(NewPopup[attribute.Type](p.dockable.targetMgr, p.def.KeyPrefix+"type", text,
+	content.AddChild(NewPopup(p.dockable.targetMgr, p.def.KeyPrefix+"type", text,
 		func() attribute.Type { return p.def.Type },
 		func(typ attribute.Type) { p.applyAttributeType(typ) },
 		attribute.Types...))
@@ -156,7 +156,7 @@ func (p *attrDefSettingsPanel) createContent() *unison.Panel {
 	if (p.def.Type != attribute.Pool && p.def.Type != attribute.PoolRef) && !p.def.IsSeparator() {
 		text = i18n.Text("Placement")
 		content.AddChild(NewFieldLeadingLabel(text, false))
-		content.AddChild(NewPopup[attribute.Placement](p.dockable.targetMgr, p.def.KeyPrefix+"placement", text,
+		content.AddChild(NewPopup(p.dockable.targetMgr, p.def.KeyPrefix+"placement", text,
 			func() attribute.Placement { return p.def.Placement },
 			func(placement attribute.Placement) { p.def.Placement = placement },
 			attribute.Placements...))

@@ -42,5 +42,5 @@ func NewPercentageField(targetMgr *TargetMgr, targetKey, undoTitle string, get f
 	extract := func(s string) (int, error) {
 		return strconv.Atoi(strings.TrimSpace(strings.TrimSuffix(s, "%")))
 	}
-	return NewNumericField[int](targetMgr, targetKey, undoTitle, getPrototype, get, set, format, extract, minValue, maxValue)
+	return NewNumericField(targetMgr, targetKey, undoTitle, getPrototype, get, set, format, extract, minValue, maxValue)
 }

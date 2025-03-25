@@ -56,7 +56,7 @@ func NewTagFilterPopup(tagProvider TagProvider) *unison.PopupMenu[string] {
 		simple := index == 0
 		if !simple {
 			modifiers := popup.Window().CurrentKeyModifiers()
-			simple = !(modifiers.ShiftDown() || modifiers.OSMenuCmdModifierDown())
+			simple = !modifiers.ShiftDown() && !modifiers.OSMenuCmdModifierDown()
 		}
 		if simple {
 			popup.SelectIndex(index)

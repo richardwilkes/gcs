@@ -36,5 +36,6 @@ func NewDecimalField(targetMgr *TargetMgr, targetKey, undoTitle string, get func
 		}
 		return value.String()
 	}
-	return NewNumericField[fxp.Int](targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, fxp.FromString, minValue, maxValue)
+	return NewNumericField(targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, fxp.FromString,
+		minValue, maxValue)
 }

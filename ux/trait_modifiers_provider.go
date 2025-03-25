@@ -66,7 +66,7 @@ func (p *traitModifiersProvider) RootRows() []*Node[*gurps.TraitModifier] {
 	data := p.provider.TraitModifierList()
 	rows := make([]*Node[*gurps.TraitModifier], 0, len(data))
 	for _, one := range data {
-		rows = append(rows, NewNode[*gurps.TraitModifier](p.table, nil, one, false))
+		rows = append(rows, NewNode(p.table, nil, one, false))
 	}
 	return rows
 }
@@ -148,14 +148,14 @@ func (p *traitModifiersProvider) ExcessWidthColumnID() int {
 }
 
 func (p *traitModifiersProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*gurps.TraitModifier]]) {
-	OpenEditor[*gurps.TraitModifier](table, func(item *gurps.TraitModifier) {
+	OpenEditor(table, func(item *gurps.TraitModifier) {
 		EditTraitModifier(owner, item)
 	})
 }
 
 func (p *traitModifiersProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.TraitModifier]], variant ItemVariant) {
 	item := gurps.NewTraitModifier(p.DataOwner(), nil, variant == ContainerItemVariant)
-	InsertItems[*gurps.TraitModifier](owner, table, p.provider.TraitModifierList, p.provider.SetTraitModifierList,
+	InsertItems(owner, table, p.provider.TraitModifierList, p.provider.SetTraitModifierList,
 		func(_ *unison.Table[*Node[*gurps.TraitModifier]]) []*Node[*gurps.TraitModifier] {
 			return p.RootRows()
 		}, item)

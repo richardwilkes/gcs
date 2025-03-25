@@ -39,7 +39,7 @@ func NewWeightField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *g
 	extract := func(s string) (fxp.Weight, error) {
 		return fxp.WeightFromString(s, gurps.SheetSettingsFor(entity).DefaultWeightUnits)
 	}
-	f := NewNumericField[fxp.Weight](targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, minValue, maxValue)
+	f := NewNumericField(targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, minValue, maxValue)
 	f.RuneTypedCallback = f.DefaultRuneTyped
 	return f
 }

@@ -90,8 +90,8 @@ func NewAttributeDefsFromFile(fileSystem fs.FS, filePath string) (*AttributeDefs
 		return nil, err
 	}
 	var defs *AttributeDefs
-	if data.attributeDefsData.Rows != nil {
-		defs = data.attributeDefsData.Rows
+	if data.Rows != nil {
+		defs = data.Rows
 	}
 	if defs == nil && data.OldestKey != nil {
 		defs = data.OldestKey

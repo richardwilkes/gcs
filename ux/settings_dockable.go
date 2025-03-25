@@ -208,7 +208,7 @@ func (d *SettingsDockable) insertFileToLoad(m unison.Menu, id int, ref *gurps.Na
 
 func (d *SettingsDockable) doLoad(fileSystem fs.FS, filePath string) {
 	if err := d.Loader(fileSystem, filePath); err != nil {
-		unison.ErrorDialogWithError(i18n.Text("Unable to load ")+d.TabTitle, err)
+		Workspace.ErrorHandler(i18n.Text("Unable to load ")+d.TabTitle, err)
 	}
 }
 
@@ -239,7 +239,7 @@ func (d *SettingsDockable) handleExport(_ unison.MenuItem) {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), d.Extensions[0], false); ok {
 			global.SetLastDir(gurps.SettingsLastDirKey, filepath.Dir(filePath))
 			if err := d.Saver(filePath); err != nil {
-				unison.ErrorDialogWithError(i18n.Text("Unable to save ")+d.TabTitle, err)
+				Workspace.ErrorHandler(i18n.Text("Unable to save ")+d.TabTitle, err)
 			}
 		}
 	}

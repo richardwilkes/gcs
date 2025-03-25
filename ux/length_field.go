@@ -39,7 +39,7 @@ func NewLengthField(targetMgr *TargetMgr, targetKey, undoTitle string, entity *g
 	extract := func(s string) (fxp.Length, error) {
 		return fxp.LengthFromString(s, gurps.SheetSettingsFor(entity).DefaultLengthUnits)
 	}
-	f := NewNumericField[fxp.Length](targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, minValue, maxValue)
+	f := NewNumericField(targetMgr, targetKey, undoTitle, getPrototypes, get, set, format, extract, minValue, maxValue)
 	f.RuneTypedCallback = f.DefaultRuneTyped
 	return f
 }

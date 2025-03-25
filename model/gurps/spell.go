@@ -266,7 +266,7 @@ func (s *Spell) Clone(from LibraryFile, owner DataOwner, parent *Spell, preserve
 	}
 	other.AdjustSource(from, s.SourcedID, preserveID)
 	other.ThirdParty = s.ThirdParty
-	other.SpellEditData.CopyFrom(s)
+	other.CopyFrom(s)
 	if s.HasChildren() {
 		other.Children = make([]*Spell, 0, len(s.Children))
 		for _, child := range s.Children {
@@ -833,7 +833,7 @@ func (s *Spell) Notes() string {
 // Rituals returns the rituals required to cast the spell.
 func (s *Spell) Rituals() string {
 	e := EntityFromNode(s)
-	if s.Container() || !(e != nil && e.SheetSettings.ShowSpellAdj) {
+	if s.Container() || e == nil || !e.SheetSettings.ShowSpellAdj {
 		return ""
 	}
 	level := s.CalculateLevel().Level
@@ -1171,7 +1171,7 @@ func (s *SpellEditData) CopyFrom(other *Spell) {
 
 // ApplyTo implements node.EditorData.
 func (s *SpellEditData) ApplyTo(other *Spell) {
-	other.SpellEditData.copyFrom(s, other.Container(), true)
+	other.copyFrom(s, other.Container(), true)
 }
 
 func (s *SpellEditData) copyFrom(other *SpellEditData, isContainer, isApply bool) {

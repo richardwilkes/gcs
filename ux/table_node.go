@@ -87,8 +87,8 @@ func (n *Node[T]) CloneForTarget(target unison.Paneler, newParent *Node[T]) *Nod
 	if provider := DetermineDataOwnerProvider(target); provider != nil {
 		owner = provider.DataOwner()
 	}
-	return NewNode[T](table, newParent,
-		n.dataAsNode.Clone(libraryFileFromTable[T](n.table), owner, newParent.Data(), false), false)
+	return NewNode(table, newParent,
+		n.dataAsNode.Clone(libraryFileFromTable(n.table), owner, newParent.Data(), false), false)
 }
 
 // ID implements unison.TableRowData.
@@ -117,7 +117,7 @@ func (n *Node[T]) Children() []*Node[T] {
 		children := n.dataAsNode.NodeChildren()
 		n.children = make([]*Node[T], len(children))
 		for i, one := range children {
-			n.children[i] = NewNode[T](n.table, n, one, n.forPage)
+			n.children[i] = NewNode(n.table, n, one, n.forPage)
 		}
 	}
 	return n.children

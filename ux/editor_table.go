@@ -15,7 +15,7 @@ import (
 )
 
 func newEditorTable[T gurps.NodeTypes](parent *unison.Panel, provider TableProvider[T]) *unison.Table[*Node[T]] {
-	header, table := NewNodeTable[T](provider, unison.FieldFont)
+	header, table := NewNodeTable(provider, unison.FieldFont)
 	table.InstallCmdHandlers(OpenEditorItemID, func(_ any) bool { return table.HasSelection() },
 		func(_ any) { provider.OpenEditor(unison.AncestorOrSelf[Rebuildable](table), table) })
 	table.InstallCmdHandlers(OpenOnePageReferenceItemID,

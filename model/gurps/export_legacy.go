@@ -96,7 +96,7 @@ func legacyTextExport(entity *Entity, tmpl []byte, exportPath string) (err error
 			if ex.pos < len(ex.template) {
 				next = ex.template[ex.pos]
 			}
-			if ch == '@' && !(next >= '0' && next <= '9') {
+			if ch == '@' && (next < '0' || next > '9') {
 				lookForKeyMarker = false
 			} else {
 				ex.out.WriteByte(ch)
@@ -1490,7 +1490,7 @@ func (ex *legacyExporter) processBuffer(buffer []byte, f func(key string, buf []
 			if ex.pos < len(ex.template) {
 				next = ex.template[ex.pos]
 			}
-			if ch == '@' && !(next >= '0' && next <= '9') {
+			if ch == '@' && (next < '0' || next > '9') {
 				lookForKeyMarker = false
 			} else {
 				ex.out.WriteByte(ch)

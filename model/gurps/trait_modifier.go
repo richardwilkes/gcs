@@ -209,7 +209,7 @@ func (t *TraitModifier) Clone(from LibraryFile, owner DataOwner, parent *TraitMo
 	other.AdjustSource(from, t.SourcedID, preserveID)
 	other.SetOpen(t.IsOpen())
 	other.ThirdParty = t.ThirdParty
-	other.TraitModifierEditData.CopyFrom(t)
+	other.CopyFrom(t)
 	if t.HasChildren() {
 		other.Children = make([]*TraitModifier, 0, len(t.Children))
 		for _, child := range t.Children {
@@ -594,7 +594,7 @@ func (t *TraitModifier) SyncWithSource() {
 // Hash writes this object's contents into the hasher. Note that this only hashes the data that is considered to be
 // "source" data, i.e. not expected to be modified by the user after copying from a library.
 func (t *TraitModifier) Hash(h hash.Hash) {
-	t.TraitModifierSyncData.hash(h)
+	t.hash(h)
 	if t.Container() {
 		hashhelper.Num8(h, uint8(255))
 	} else {
@@ -632,7 +632,7 @@ func (t *TraitModifierEditData) CopyFrom(other *TraitModifier) {
 
 // ApplyTo implements node.EditorData.
 func (t *TraitModifierEditData) ApplyTo(other *TraitModifier) {
-	other.TraitModifierEditData.copyFrom(t)
+	other.copyFrom(t)
 }
 
 func (t *TraitModifierEditData) copyFrom(other *TraitModifierEditData) {

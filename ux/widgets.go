@@ -409,7 +409,7 @@ func addLabelAndPopup[T comparable](parent *unison.Panel, labelText, tooltip str
 		label.Tooltip = newWrappedTooltip(tooltip)
 	}
 	parent.AddChild(label)
-	return addPopup[T](parent, choices, fieldData)
+	return addPopup(parent, choices, fieldData)
 }
 
 func addPopup[T comparable](parent *unison.Panel, choices []T, fieldData *T) *unison.PopupMenu[T] {
@@ -709,7 +709,7 @@ func WrapWithSpan(span int, children ...unison.Paneler) *unison.Panel {
 func NewSVGButtonForFont(svg *unison.SVG, font unison.Font, sizeAdjust float32) *unison.Button {
 	b := unison.NewButton()
 	b.ButtonTheme = unison.DefaultButtonTheme
-	b.ButtonTheme.Font = font
+	b.Font = font
 	b.DrawableOnlyVMargin = 1
 	b.DrawableOnlyHMargin = 1
 	b.HideBase = true

@@ -263,7 +263,7 @@ func (s *Skill) Clone(from LibraryFile, owner DataOwner, parent *Skill, preserve
 	}
 	other.AdjustSource(from, s.SourcedID, preserveID)
 	other.ThirdParty = s.ThirdParty
-	other.SkillEditData.CopyFrom(s)
+	other.CopyFrom(s)
 	if s.HasChildren() {
 		other.Children = make([]*Skill, 0, len(s.Children))
 		for _, child := range s.Children {
@@ -1268,7 +1268,7 @@ func (s *SkillEditData) CopyFrom(other *Skill) {
 
 // ApplyTo implements node.EditorData.
 func (s *SkillEditData) ApplyTo(other *Skill) {
-	other.SkillEditData.copyFrom(s, other.Container(), true)
+	other.copyFrom(s, other.Container(), true)
 }
 
 func (s *SkillEditData) copyFrom(other *SkillEditData, isContainer, isApply bool) {

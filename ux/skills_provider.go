@@ -67,7 +67,7 @@ func (p *skillsProvider) RootRows() []*Node[*gurps.Skill] {
 	data := p.provider.SkillList()
 	rows := make([]*Node[*gurps.Skill], 0, len(data))
 	for _, one := range data {
-		rows = append(rows, NewNode[*gurps.Skill](p.table, nil, one, p.forPage))
+		rows = append(rows, NewNode(p.table, nil, one, p.forPage))
 	}
 	return rows
 }
@@ -174,7 +174,7 @@ func (p *skillsProvider) ExcessWidthColumnID() int {
 }
 
 func (p *skillsProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*gurps.Skill]]) {
-	OpenEditor[*gurps.Skill](table, func(item *gurps.Skill) { EditSkill(owner, item) })
+	OpenEditor(table, func(item *gurps.Skill) { EditSkill(owner, item) })
 }
 
 func (p *skillsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Skill]], variant ItemVariant) {
@@ -190,7 +190,7 @@ func (p *skillsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node
 		errs.Log(errs.New("unhandled variant"), "variant", int(variant))
 		atexit.Exit(1)
 	}
-	InsertItems[*gurps.Skill](owner, table, p.provider.SkillList, p.provider.SetSkillList,
+	InsertItems(owner, table, p.provider.SkillList, p.provider.SetSkillList,
 		func(_ *unison.Table[*Node[*gurps.Skill]]) []*Node[*gurps.Skill] { return p.RootRows() }, item)
 	EditSkill(owner, item)
 }

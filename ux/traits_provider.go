@@ -67,7 +67,7 @@ func (p *traitsProvider) RootRows() []*Node[*gurps.Trait] {
 	data := p.provider.TraitList()
 	rows := make([]*Node[*gurps.Trait], 0, len(data))
 	for _, one := range data {
-		rows = append(rows, NewNode[*gurps.Trait](p.table, nil, one, p.forPage))
+		rows = append(rows, NewNode(p.table, nil, one, p.forPage))
 	}
 	return rows
 }
@@ -173,12 +173,12 @@ func (p *traitsProvider) ExcessWidthColumnID() int {
 }
 
 func (p *traitsProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*gurps.Trait]]) {
-	OpenEditor[*gurps.Trait](table, func(item *gurps.Trait) { EditTrait(owner, item) })
+	OpenEditor(table, func(item *gurps.Trait) { EditTrait(owner, item) })
 }
 
 func (p *traitsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Trait]], variant ItemVariant) {
 	item := gurps.NewTrait(p.DataOwner(), nil, variant == ContainerItemVariant)
-	InsertItems[*gurps.Trait](owner, table, p.provider.TraitList, p.provider.SetTraitList,
+	InsertItems(owner, table, p.provider.TraitList, p.provider.SetTraitList,
 		func(_ *unison.Table[*Node[*gurps.Trait]]) []*Node[*gurps.Trait] { return p.RootRows() }, item)
 	EditTrait(owner, item)
 }

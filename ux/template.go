@@ -167,7 +167,7 @@ func NewTemplate(filePath string, template *gurps.Template) *Template {
 	t.installNewItemCmdHandlers(NewCarriedEquipmentItemID, NewCarriedEquipmentContainerItemID, t.Equipment)
 	t.installNewItemCmdHandlers(NewNoteItemID, NewNoteContainerItemID, t.Notes)
 	t.InstallCmdHandlers(AddNaturalAttacksItemID, unison.AlwaysEnabled, func(_ any) {
-		InsertItems[*gurps.Trait](t, t.Traits.Table, t.template.TraitList, t.template.SetTraitList,
+		InsertItems(t, t.Traits.Table, t.template.TraitList, t.template.SetTraitList,
 			func(_ *unison.Table[*Node[*gurps.Trait]]) []*Node[*gurps.Trait] {
 				return t.Traits.provider.RootRows()
 			}, gurps.NewNaturalAttacks(nil, nil))
@@ -285,7 +285,7 @@ func (t *Template) canApplyTemplate(_ any) bool {
 func NewSheetFromTemplate(filePath string) {
 	d, err := NewTemplateFromFile(filePath)
 	if err != nil {
-		unison.ErrorDialogWithError(i18n.Text("Unable to load template"), err)
+		Workspace.ErrorHandler(i18n.Text("Unable to load template"), err)
 		return
 	}
 	if t, ok := d.(*Template); ok {
@@ -308,7 +308,7 @@ func (t *Template) newSheetFromTemplate(_ any) {
 func ApplyTemplate(filePath string) {
 	t, err := NewTemplateFromFile(filePath)
 	if err != nil {
-		unison.ErrorDialogWithError(i18n.Text("Unable to load template"), err)
+		Workspace.ErrorHandler(i18n.Text("Unable to load template"), err)
 		return
 	}
 	if CanApplyTemplate() {
@@ -745,7 +745,7 @@ func (t *Template) createLists() {
 		}
 		button.SetEnabled(state == check.On)
 	})
-	box.CheckBoxTheme.Font = fonts.PageFieldPrimary
+	box.Font = fonts.PageFieldPrimary
 	box.SetTitle(i18n.Text("Set Body Type to"))
 	panel.AddChild(box)
 	panel.AddChild(button)

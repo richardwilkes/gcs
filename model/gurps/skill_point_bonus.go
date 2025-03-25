@@ -40,7 +40,7 @@ func NewSkillPointBonus() *SkillPointBonus {
 	s.NameCriteria.Compare = criteria.IsText
 	s.SpecializationCriteria.Compare = criteria.AnyText
 	s.TagsCriteria.Compare = criteria.AnyText
-	s.LeveledAmount.Amount = fxp.One
+	s.Amount = fxp.One
 	return &s
 }
 
@@ -73,7 +73,7 @@ func (s *SkillPointBonus) AddToTooltip(buffer *xio.ByteBuffer) {
 		buffer.WriteByte('\n')
 		buffer.WriteString(s.parentName())
 		buffer.WriteString(" [")
-		buffer.WriteString(s.LeveledAmount.Format())
+		buffer.WriteString(s.Format())
 		if s.AdjustedAmount() == fxp.One {
 			buffer.WriteString(i18n.Text(" pt]"))
 		} else {

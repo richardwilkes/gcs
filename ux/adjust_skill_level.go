@@ -31,13 +31,13 @@ func adjustSkillLevel[T gurps.NodeTypes](owner Rebuildable, table *unison.Table[
 	for _, row := range table.SelectedRows(false) {
 		if provider, ok := any(row.Data()).(gurps.SkillAdjustmentProvider[T]); ok {
 			if increment || provider.RawPoints() > 0 {
-				before.List = append(before.List, newRawPointsAdjuster[T](provider))
+				before.List = append(before.List, newRawPointsAdjuster(provider))
 				if increment {
 					provider.IncrementSkillLevel()
 				} else {
 					provider.DecrementSkillLevel()
 				}
-				after.List = append(after.List, newRawPointsAdjuster[T](provider))
+				after.List = append(after.List, newRawPointsAdjuster(provider))
 			}
 		}
 	}

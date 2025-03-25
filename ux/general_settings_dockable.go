@@ -305,7 +305,7 @@ func (d *generalSettingsDockable) createCellAutoMaxWidthField(content *unison.Pa
 func (d *generalSettingsDockable) createMonitorResolutionField(content *unison.Panel) {
 	title := i18n.Text("Monitor Resolution")
 	content.AddChild(NewFieldLeadingLabel(title, false))
-	d.monitorResolutionField = NewNumericFieldWithException[int](nil, "", title,
+	d.monitorResolutionField = NewNumericFieldWithException(nil, "", title,
 		func(minValue, maxValue int) []int { return []int{minValue, maxValue} },
 		func() int { return gurps.GlobalSettings().General.MonitorResolution },
 		func(v int) { gurps.GlobalSettings().General.MonitorResolution = v },

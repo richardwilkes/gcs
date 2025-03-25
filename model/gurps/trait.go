@@ -218,7 +218,7 @@ func (t *Trait) Clone(from LibraryFile, owner DataOwner, parent *Trait, preserve
 	other.AdjustSource(from, t.SourcedID, preserveID)
 	other.SetOpen(t.IsOpen())
 	other.ThirdParty = t.ThirdParty
-	other.TraitEditData.CopyFrom(t)
+	other.CopyFrom(t)
 	if t.HasChildren() {
 		other.Children = make([]*Trait, 0, len(t.Children))
 		for _, child := range t.Children {
@@ -886,7 +886,7 @@ func (t *TraitEditData) CopyFrom(other *Trait) {
 
 // ApplyTo implements node.EditorData.
 func (t *TraitEditData) ApplyTo(other *Trait) {
-	other.TraitEditData.copyFrom(other.owner, t, true)
+	other.copyFrom(other.owner, t, true)
 }
 
 func (t *TraitEditData) copyFrom(owner DataOwner, other *TraitEditData, isApply bool) {

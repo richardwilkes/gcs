@@ -250,8 +250,8 @@ func (d *librarySettingsDockable) updateToolbar() {
 	d.pathField.Validate()
 	modified := d.library.Title != d.name || d.library.GitHubAccountName != d.github ||
 		d.library.AccessToken != d.token || d.library.RepoName != d.repo || d.library.PathOnDisk != d.path
-	d.applyButton.SetEnabled(modified &&
-		!(d.nameField.Invalid() || d.githubField.Invalid() || d.repoField.Invalid() || d.pathField.Invalid()))
+	d.applyButton.SetEnabled(modified && !d.nameField.Invalid() && !d.githubField.Invalid() &&
+		!d.repoField.Invalid() && !d.pathField.Invalid())
 	d.cancelButton.SetEnabled(modified)
 }
 
@@ -266,7 +266,7 @@ func (d *librarySettingsDockable) apply() {
 	d.library.RepoName = d.repo
 	libs[d.library.Key()] = d.library
 	if err := d.library.SetPath(d.path); err != nil {
-		unison.ErrorDialogWithError(i18n.Text("Unable to update library location"), err)
+		Workspace.ErrorHandler(i18n.Text("Unable to update library location"), err)
 	}
 	Workspace.Navigator.Reload()
 	go checkForLibraryUpgrade(d.library)

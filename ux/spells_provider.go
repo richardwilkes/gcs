@@ -67,7 +67,7 @@ func (p *spellsProvider) RootRows() []*Node[*gurps.Spell] {
 	data := p.provider.SpellList()
 	rows := make([]*Node[*gurps.Spell], 0, len(data))
 	for _, one := range data {
-		rows = append(rows, NewNode[*gurps.Spell](p.table, nil, one, p.forPage))
+		rows = append(rows, NewNode(p.table, nil, one, p.forPage))
 	}
 	return rows
 }
@@ -191,7 +191,7 @@ func (p *spellsProvider) ExcessWidthColumnID() int {
 }
 
 func (p *spellsProvider) OpenEditor(owner Rebuildable, table *unison.Table[*Node[*gurps.Spell]]) {
-	OpenEditor[*gurps.Spell](table, func(item *gurps.Spell) { EditSpell(owner, item) })
+	OpenEditor(table, func(item *gurps.Spell) { EditSpell(owner, item) })
 }
 
 func (p *spellsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node[*gurps.Spell]], variant ItemVariant) {
@@ -207,7 +207,7 @@ func (p *spellsProvider) CreateItem(owner Rebuildable, table *unison.Table[*Node
 		errs.Log(errs.New("unhandled variant"), "variant", int(variant))
 		atexit.Exit(1)
 	}
-	InsertItems[*gurps.Spell](owner, table, p.provider.SpellList, p.provider.SetSpellList,
+	InsertItems(owner, table, p.provider.SpellList, p.provider.SetSpellList,
 		func(_ *unison.Table[*Node[*gurps.Spell]]) []*Node[*gurps.Spell] { return p.RootRows() }, item)
 	EditSpell(owner, item)
 }

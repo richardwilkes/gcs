@@ -65,7 +65,7 @@ func ShowReadOnlyMarkdown(title, content string) {
 	}
 	d, err := NewMarkdownDockableWithContent(title, content, false, false)
 	if err != nil {
-		unison.ErrorDialogWithError(fmt.Sprintf(i18n.Text("Unable to open %s"), title), err)
+		Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Unable to open %s"), title), err)
 		return
 	}
 	DisplayNewDockable(d)

@@ -114,7 +114,7 @@ func NewRangedWeaponsPageList(entity *gurps.Entity) *PageList[*gurps.Weapon] {
 }
 
 func newPageList[T gurps.NodeTypes](owner Rebuildable, provider TableProvider[T]) *PageList[T] {
-	header, table := NewNodeTable[T](provider, fonts.PageFieldPrimary)
+	header, table := NewNodeTable(provider, fonts.PageFieldPrimary)
 	table.ClientData()[WorkingDirKey] = WorkingDirProvider(owner)
 	table.RefKey = provider.RefKey()
 	p := &PageList[T]{

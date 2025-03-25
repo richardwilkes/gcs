@@ -493,7 +493,7 @@ func registerActions() {
 		ExecuteCallback: func(_ *unison.Action, _ any) {
 			d, err := NewMarkdownDockableWithContent("untitled.md", "", true, true)
 			if err != nil {
-				unison.ErrorDialogWithError(i18n.Text("Unable to create new markdown file"), err)
+				Workspace.ErrorHandler(i18n.Text("Unable to create new markdown file"), err)
 			} else {
 				DisplayNewDockable(d)
 			}
@@ -984,6 +984,6 @@ func actionEnabledForSheet(_ *unison.Action, _ any) bool {
 
 func showWebPage(uri string) {
 	if err := desktop.Open(uri); err != nil {
-		unison.ErrorDialogWithError(i18n.Text("Unable to open link"), err)
+		Workspace.ErrorHandler(i18n.Text("Unable to open link"), err)
 	}
 }

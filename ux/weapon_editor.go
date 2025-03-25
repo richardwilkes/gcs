@@ -35,8 +35,8 @@ func EditWeapon(owner Rebuildable, w *gurps.Weapon) {
 	} else {
 		part = "Ranged"
 	}
-	displayEditor[*gurps.Weapon, *gurps.Weapon](owner, w, gurps.WeaponSVG(w.IsMelee()),
-		"md:Help/Interface/"+part+" Weapon Usage", nil, we.initWeaponEditor, we.preApply)
+	displayEditor(owner, w, gurps.WeaponSVG(w.IsMelee()), "md:Help/Interface/"+part+" Weapon Usage", nil,
+		we.initWeaponEditor, we.preApply)
 }
 
 func (we *weaponEditor) initWeaponEditor(e *editor[*gurps.Weapon, *gurps.Weapon], content *unison.Panel) func() {

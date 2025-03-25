@@ -68,7 +68,7 @@ func processModifiers[T modifiersOnly](title string, modifiers []T) bool {
 		HSpacing: unison.StdHSpacing,
 	})
 	tracker := make(map[*unison.CheckBox]gurps.GeneralModifier)
-	gurps.Traverse[T](func(m T) bool {
+	gurps.Traverse(func(m T) bool {
 		if mod, ok := any(m).(gurps.GeneralModifier); ok {
 			text := mod.FullDescription()
 			if cost := mod.FullCostDescription(); cost != "" {

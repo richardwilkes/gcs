@@ -209,8 +209,8 @@ type encRowColor struct {
 }
 
 func (c *encRowColor) GetColor() unison.Color {
-	switch {
-	case c.owner.current == c.index:
+	switch c.owner.current {
+	case c.index:
 		if c.owner.overloaded {
 			return unison.ThemeOnWarning.GetColor()
 		}

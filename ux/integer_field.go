@@ -38,5 +38,6 @@ func NewIntegerField(targetMgr *TargetMgr, targetKey, undoTitle string, get func
 		}
 		return strconv.Itoa(value)
 	}
-	return NewNumericField[int](targetMgr, targetKey, undoTitle, getPrototype, get, set, format, strconv.Atoi, minValue, maxValue)
+	return NewNumericField(targetMgr, targetKey, undoTitle, getPrototype, get, set, format, strconv.Atoi,
+		minValue, maxValue)
 }

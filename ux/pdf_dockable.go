@@ -285,7 +285,7 @@ func (d *PDFDockable) createToolbar() *unison.Panel {
 }
 
 func (d *PDFDockable) createTOC() {
-	d.tocPanel = unison.NewTable[*tocNode](&unison.SimpleTableModel[*tocNode]{})
+	d.tocPanel = unison.NewTable(&unison.SimpleTableModel[*tocNode]{})
 	d.tocPanel.Columns = make([]unison.ColumnInfo, 1)
 	d.tocPanel.DoubleClickCallback = d.tocDoubleClick
 	d.tocPanel.SelectionChangedCallback = d.tocSelectionChanged
@@ -559,7 +559,7 @@ func (d *PDFDockable) mouseUp(where unison.Point, button int, _ unison.Modifiers
 			if d.link.PageNumber >= 0 {
 				d.LoadPage(d.link.PageNumber)
 			} else if err := desktop.Open(d.link.URI); err != nil {
-				unison.ErrorDialogWithError(i18n.Text("Unable to open link"), err)
+				Workspace.ErrorHandler(i18n.Text("Unable to open link"), err)
 			}
 		}
 	}

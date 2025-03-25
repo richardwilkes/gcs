@@ -233,7 +233,7 @@ func NewSheet(filePath string, entity *gurps.Entity) *Sheet {
 func CloneSheet(filePath string) {
 	d, err := NewSheetFromFile(filePath)
 	if err != nil {
-		unison.ErrorDialogWithError(i18n.Text("Unable to load character sheet"), err)
+		Workspace.ErrorHandler(i18n.Text("Unable to load character sheet"), err)
 		return
 	}
 	if s, ok := d.(*Sheet); ok {
@@ -245,12 +245,12 @@ func (s *Sheet) cloneSheet() {
 	unableToCloneMsg := i18n.Text("Unable to clone character sheet")
 	data, err := s.entity.MarshalJSON()
 	if err != nil {
-		unison.ErrorDialogWithError(unableToCloneMsg, err)
+		Workspace.ErrorHandler(unableToCloneMsg, err)
 		return
 	}
 	entity := gurps.NewEntity()
 	if err = entity.UnmarshalJSON(data); err != nil {
-		unison.ErrorDialogWithError(unableToCloneMsg, err)
+		Workspace.ErrorHandler(unableToCloneMsg, err)
 		return
 	}
 	entity.ID = tid.MustNewTID(kinds.Entity)
@@ -383,7 +383,7 @@ func (s *Sheet) exportPortrait(_ any) {
 			if dialog.RunModal() {
 				if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), ext, false); ok {
 					if err := s.entity.Profile.ExportPortrait(filePath); err != nil {
-						unison.ErrorDialogWithError(i18n.Text("Unable to export portrait"), err)
+						Workspace.ErrorHandler(i18n.Text("Unable to export portrait"), err)
 					}
 				}
 			}
@@ -564,7 +564,7 @@ func (s *Sheet) save(forceSaveAs bool) bool {
 func (s *Sheet) print() {
 	data, err := newPageExporter(s.entity).exportAsPDFBytes()
 	if err != nil {
-		unison.ErrorDialogWithError(i18n.Text("Unable to create PDF!"), err)
+		Workspace.ErrorHandler(i18n.Text("Unable to create PDF!"), err)
 		return
 	}
 	dialog := printMgr.NewJobDialog(lastPrinter, "application/pdf", nil)
@@ -580,7 +580,7 @@ func backgroundPrint(title string, printer *printing.Printer, jobAttributes *pri
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 	if err := printer.Print(ctx, title, "application/pdf", bytes.NewBuffer(data), len(data), jobAttributes); err != nil {
-		unison.InvokeTask(func() { unison.ErrorDialogWithError(fmt.Sprintf(i18n.Text("Printing '%s' failed"), title), err) })
+		unison.InvokeTask(func() { Workspace.ErrorHandler(fmt.Sprintf(i18n.Text("Printing '%s' failed"), title), err) })
 	}
 }
 
@@ -595,7 +595,7 @@ func (s *Sheet) exportToPDF() {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "pdf", false); ok {
 			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
 			if err := newPageExporter(s.entity).exportAsPDFFile(filePath); err != nil {
-				unison.ErrorDialogWithError(i18n.Text("Unable to export as PDF!"), err)
+				Workspace.ErrorHandler(i18n.Text("Unable to export as PDF!"), err)
 			}
 		}
 	}
@@ -612,7 +612,7 @@ func (s *Sheet) exportToWEBP() {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "webp", false); ok {
 			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
 			if err := newPageExporter(s.entity).exportAsWEBPs(filePath); err != nil {
-				unison.ErrorDialogWithError(i18n.Text("Unable to export as WEBP!"), err)
+				Workspace.ErrorHandler(i18n.Text("Unable to export as WEBP!"), err)
 			}
 		}
 	}
@@ -629,7 +629,7 @@ func (s *Sheet) exportToPNG() {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "png", false); ok {
 			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
 			if err := newPageExporter(s.entity).exportAsPNGs(filePath); err != nil {
-				unison.ErrorDialogWithError(i18n.Text("Unable to export as PNG!"), err)
+				Workspace.ErrorHandler(i18n.Text("Unable to export as PNG!"), err)
 			}
 		}
 	}
@@ -646,7 +646,7 @@ func (s *Sheet) exportToJPEG() {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "jpeg", false); ok {
 			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
 			if err := newPageExporter(s.entity).exportAsJPEGs(filePath); err != nil {
-				unison.ErrorDialogWithError(i18n.Text("Unable to export as JPEG!"), err)
+				Workspace.ErrorHandler(i18n.Text("Unable to export as JPEG!"), err)
 			}
 		}
 	}

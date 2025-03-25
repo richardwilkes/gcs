@@ -72,7 +72,7 @@ func (p *equipmentProvider) RootRows() []*Node[*gurps.Equipment] {
 	data := p.equipmentList()
 	rows := make([]*Node[*gurps.Equipment], 0, len(data))
 	for _, one := range data {
-		rows = append(rows, NewNode[*gurps.Equipment](p.table, nil, one, p.forPage))
+		rows = append(rows, NewNode(p.table, nil, one, p.forPage))
 	}
 	return rows
 }

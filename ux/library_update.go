@@ -58,7 +58,7 @@ documents from the library are open.`))
 	wnd, err := unison.NewWindow(i18n.Text("Updating…"), unison.FloatingWindowOption(),
 		unison.NotResizableWindowOption(), unison.UndecoratedWindowOption(), unison.TransientWindowOption())
 	if err != nil {
-		unison.ErrorDialogWithError(i18n.Text("Unable to update"), err)
+		Workspace.ErrorHandler(i18n.Text("Unable to update"), err)
 		return false
 	}
 	content := unison.NewPanel()
@@ -91,7 +91,7 @@ documents from the library are open.`))
 	go performLibraryUpdate(wnd, lib, rel, &err)
 	wnd.RunModal()
 	if err != nil {
-		unison.ErrorDialogWithError(i18n.Text("Unable to update"), err)
+		Workspace.ErrorHandler(i18n.Text("Unable to update"), err)
 		return false
 	}
 	return true

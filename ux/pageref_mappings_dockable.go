@@ -50,7 +50,7 @@ func OpenPageReference(ref, highlight string, promptContext map[string]bool) boo
 	switch {
 	case unison.HasURLPrefix(ref):
 		if err := desktop.Open(ref); err != nil {
-			unison.ErrorDialogWithError(i18n.Text("Unable to open ")+ref, err)
+			Workspace.ErrorHandler(i18n.Text("Unable to open ")+ref, err)
 		}
 		return false
 	case strings.HasPrefix(ref, "md:"):
@@ -144,7 +144,7 @@ func openExternalPDF(filePath string, pageNum int) {
 	parts, err := cmdline.Parse(cl)
 	errTitle := i18n.Text("Unable to use external PDF command line")
 	if err != nil {
-		unison.ErrorDialogWithError(errTitle, err)
+		Workspace.ErrorHandler(errTitle, err)
 		return
 	}
 	if len(parts) == 0 {
@@ -153,7 +153,7 @@ func openExternalPDF(filePath string, pageNum int) {
 	}
 	cmd := exec.Command(parts[0], parts[1:]...)
 	if err = cmd.Start(); err != nil {
-		unison.ErrorDialogWithError(errTitle, err)
+		Workspace.ErrorHandler(errTitle, err)
 		return
 	}
 	go func() {

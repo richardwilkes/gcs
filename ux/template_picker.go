@@ -33,7 +33,7 @@ func processPickerRows[T gurps.NodeTypes](rows []*Node[T]) (revised []*Node[T], 
 }
 
 func processPickerRow[T gurps.NodeTypes](row T) (revised []T, abort bool) {
-	n := gurps.AsNode[T](row)
+	n := gurps.AsNode(row)
 	if !n.Container() {
 		return []T{row}, false
 	}

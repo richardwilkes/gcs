@@ -491,7 +491,7 @@ func (l *LootSheet) createLists() {
 func (l *LootSheet) print() {
 	data, err := newLootPageExporter(l.loot).exportAsPDFBytes()
 	if err != nil {
-		unison.ErrorDialogWithError(i18n.Text("Unable to create PDF!"), err)
+		Workspace.ErrorHandler(i18n.Text("Unable to create PDF!"), err)
 		return
 	}
 	dialog := printMgr.NewJobDialog(lastPrinter, "application/pdf", nil)
@@ -514,7 +514,7 @@ func (l *LootSheet) exportToPDF() {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "pdf", false); ok {
 			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
 			if err := newLootPageExporter(l.loot).exportAsPDFFile(filePath); err != nil {
-				unison.ErrorDialogWithError(i18n.Text("Unable to export as PDF!"), err)
+				Workspace.ErrorHandler(i18n.Text("Unable to export as PDF!"), err)
 			}
 		}
 	}
@@ -531,7 +531,7 @@ func (l *LootSheet) exportToWEBP() {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "webp", false); ok {
 			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
 			if err := newLootPageExporter(l.loot).exportAsWEBPs(filePath); err != nil {
-				unison.ErrorDialogWithError(i18n.Text("Unable to export as WEBP!"), err)
+				Workspace.ErrorHandler(i18n.Text("Unable to export as WEBP!"), err)
 			}
 		}
 	}
@@ -548,7 +548,7 @@ func (l *LootSheet) exportToPNG() {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "png", false); ok {
 			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
 			if err := newLootPageExporter(l.loot).exportAsPNGs(filePath); err != nil {
-				unison.ErrorDialogWithError(i18n.Text("Unable to export as PNG!"), err)
+				Workspace.ErrorHandler(i18n.Text("Unable to export as PNG!"), err)
 			}
 		}
 	}
@@ -565,7 +565,7 @@ func (l *LootSheet) exportToJPEG() {
 		if filePath, ok := unison.ValidateSaveFilePath(dialog.Path(), "jpeg", false); ok {
 			gurps.GlobalSettings().SetLastDir(gurps.DefaultLastDirKey, filepath.Dir(filePath))
 			if err := newLootPageExporter(l.loot).exportAsJPEGs(filePath); err != nil {
-				unison.ErrorDialogWithError(i18n.Text("Unable to export as JPEG!"), err)
+				Workspace.ErrorHandler(i18n.Text("Unable to export as JPEG!"), err)
 			}
 		}
 	}
