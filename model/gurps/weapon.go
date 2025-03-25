@@ -213,7 +213,6 @@ func (w *Weapon) Compare(other *Weapon) int {
 func (w *Weapon) HashResolved() uint64 {
 	h := xxh3.New()
 	w.Hash(h)
-	hashhelper.String(h, w.TID)
 	hashhelper.String(h, w.String())
 	hashhelper.Num64(h, w.SkillLevel(nil))
 	hashhelper.String(h, w.Damage.ResolvedDamage(nil))
