@@ -95,7 +95,7 @@ func createPageSecondRow(entity *gurps.Entity, targetMgr *TargetMgr) (p *unison.
 	bodyPanel := NewBodyPanel(entity, targetMgr)
 	p.AddChild(bodyPanel)
 	p.AddChild(endWrapper)
-	p.AddChild(NewDamagePanel(entity))
+	p.AddChild(NewDamagePanel(entity, targetMgr))
 	poolPanel := NewPointPoolsPanel(entity, targetMgr)
 	p.AddChild(poolPanel)
 
