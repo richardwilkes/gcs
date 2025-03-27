@@ -730,6 +730,16 @@ func (e *Entity) LiftingThrust() *dice.Dice {
 	return e.ThrustFor(fxp.As[int](e.LiftingStrength()))
 }
 
+// IQThrust returns the IQ thrust value for the current intelligence.
+func (e *Entity) IQThrust() *dice.Dice {
+	return e.ThrustFor(fxp.As[int](e.ResolveAttributeCurrent(IntelligenceID)))
+}
+
+// TelekineticThrust returns the telekinetic thrust value for the current telekinesis level.
+func (e *Entity) TelekineticThrust() *dice.Dice {
+	return e.ThrustFor(fxp.As[int](e.TelekineticStrength()))
+}
+
 // ThrustFor returns the thrust value for the provided strength.
 func (e *Entity) ThrustFor(st int) *dice.Dice {
 	return e.SheetSettings.DamageProgression.Thrust(st)
@@ -743,6 +753,16 @@ func (e *Entity) Swing() *dice.Dice {
 // LiftingSwing returns the lifting swing value for the current strength.
 func (e *Entity) LiftingSwing() *dice.Dice {
 	return e.SwingFor(fxp.As[int](e.LiftingStrength()))
+}
+
+// IQSwing returns the IQ swing value for the current intelligence.
+func (e *Entity) IQSwing() *dice.Dice {
+	return e.SwingFor(fxp.As[int](e.ResolveAttributeCurrent(IntelligenceID)))
+}
+
+// TelekineticSwing returns the telekinetic swing value for the current telekinesis level.
+func (e *Entity) TelekineticSwing() *dice.Dice {
+	return e.SwingFor(fxp.As[int](e.TelekineticStrength()))
 }
 
 // SwingFor returns the swing value for the provided strength.

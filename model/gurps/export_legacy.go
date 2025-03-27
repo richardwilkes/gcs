@@ -174,7 +174,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "DX_POINTS":
 		ex.writeEncodedText(ex.entity.Attributes.Cost(DexterityID).String())
 	case "IQ_POINTS":
-		ex.writeEncodedText(ex.entity.Attributes.Cost("iq").String())
+		ex.writeEncodedText(ex.entity.Attributes.Cost(IntelligenceID).String())
 	case "HT_POINTS":
 		ex.writeEncodedText(ex.entity.Attributes.Cost("ht").String())
 	case "PERCEPTION_POINTS":
@@ -230,7 +230,7 @@ func (ex *legacyExporter) emitKey(key string) error {
 	case "DX":
 		ex.writeEncodedText(ex.entity.Attributes.Current(DexterityID).String())
 	case "IQ":
-		ex.writeEncodedText(ex.entity.Attributes.Current("iq").String())
+		ex.writeEncodedText(ex.entity.Attributes.Current(IntelligenceID).String())
 	case "HT":
 		ex.writeEncodedText(ex.entity.Attributes.Current("ht").String())
 	case "FP":

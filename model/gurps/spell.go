@@ -163,7 +163,7 @@ func NewSpell(owner DataOwner, parent *Spell, container bool) *Spell {
 	if container {
 		s.TemplatePicker = &TemplatePicker{}
 	} else {
-		s.Difficulty.Attribute = AttributeIDFor(EntityFromNode(&s), "iq")
+		s.Difficulty.Attribute = AttributeIDFor(EntityFromNode(&s), IntelligenceID)
 		s.Difficulty.Difficulty = difficulty.Hard
 		s.PowerSource = i18n.Text("Arcane")
 		s.Class = i18n.Text("Regular")
@@ -184,7 +184,7 @@ func NewRitualMagicSpell(owner DataOwner, parent *Spell, _ bool) *Spell {
 	s.TID = tid.MustNewTID(kinds.RitualMagicSpell)
 	s.parent = parent
 	s.owner = owner
-	s.Difficulty.Attribute = AttributeIDFor(EntityFromNode(&s), "iq")
+	s.Difficulty.Attribute = AttributeIDFor(EntityFromNode(&s), IntelligenceID)
 	s.Difficulty.Difficulty = difficulty.Hard
 	s.PowerSource = i18n.Text("Arcane")
 	s.Class = i18n.Text("Regular")
