@@ -1044,6 +1044,11 @@ var allEnums = []*enumInfo{
 				String: "telekinetic thr",
 			},
 			{
+				Name:   "IQThrust",
+				Key:    "iq_thr",
+				String: "iq thr",
+			},
+			{
 				Name:       "Swing",
 				Key:        "sw",
 				String:     "sw",
@@ -1058,6 +1063,11 @@ var allEnums = []*enumInfo{
 				Name:   "TelekineticSwing",
 				Key:    "tk_sw",
 				String: "telekinetic sw",
+			},
+			{
+				Name:   "IQSwing",
+				Key:    "iq_sw",
+				String: "iq sw",
 			},
 			// The following entries are only here to allow loading of old data and will be converted at load
 			{

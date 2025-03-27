@@ -23,9 +23,11 @@ const (
 	Thrust
 	LiftingThrust
 	TelekineticThrust
+	IQThrust
 	Swing
 	LiftingSwing
 	TelekineticSwing
+	IQSwing
 	OldLeveledThrust
 	OldLeveledSwing
 )
@@ -39,9 +41,11 @@ var Options = []Option{
 	Thrust,
 	LiftingThrust,
 	TelekineticThrust,
+	IQThrust,
 	Swing,
 	LiftingSwing,
 	TelekineticSwing,
+	IQSwing,
 	OldLeveledThrust,
 	OldLeveledSwing,
 }
@@ -68,12 +72,16 @@ func (enum Option) Key() string {
 		return "lift_thr"
 	case TelekineticThrust:
 		return "tk_thr"
+	case IQThrust:
+		return "iq_thr"
 	case Swing:
 		return "sw"
 	case LiftingSwing:
 		return "lift_sw"
 	case TelekineticSwing:
 		return "tk_sw"
+	case IQSwing:
+		return "iq_sw"
 	case OldLeveledThrust:
 		return "thr_leveled"
 	case OldLeveledSwing:
@@ -94,12 +102,16 @@ func (enum Option) String() string {
 		return i18n.Text("lifting thr")
 	case TelekineticThrust:
 		return i18n.Text("telekinetic thr")
+	case IQThrust:
+		return i18n.Text("iq thr")
 	case Swing:
 		return "sw"
 	case LiftingSwing:
 		return i18n.Text("lifting sw")
 	case TelekineticSwing:
 		return i18n.Text("telekinetic sw")
+	case IQSwing:
+		return i18n.Text("iq sw")
 	case OldLeveledThrust:
 		return i18n.Text("thr (leveled)")
 	case OldLeveledSwing:
