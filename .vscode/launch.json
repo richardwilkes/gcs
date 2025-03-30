@@ -10,15 +10,9 @@
 			"request": "launch",
 			"mode": "auto",
 			"program": ".",
-			"args": ["--log-to-console"]
-		},
-		{
-			"name": "GCS Web Server Only",
-			"type": "go",
-			"request": "launch",
-			"mode": "auto",
-			"program": ".",
-			"args": ["--log-to-console", "--web-server-only"]
+			"args": [
+				"--log-to-console"
+			]
 		}
 	]
 }
