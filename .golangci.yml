@@ -155,12 +155,6 @@ linters:
     rules:
       - path: (.+)\.go$
         text: 'fieldalignment: struct with \d+ pointer bytes could be'
-      - path: (.+)\.go$
-        text: 'package-comments: should have a package comment'
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
 issues:
   max-same-issues: 0
 formatters:
@@ -170,9 +164,3 @@ formatters:
   settings:
     gofumpt:
       extra-rules: true
-  exclusions:
-    generated: lax
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
