@@ -71,7 +71,7 @@ func (p *poolSettingsPanel) addThreshold() {
 	undo.AfterData = clonePoolThresholds(p.def.Thresholds)
 	p.dockable.UndoManager().Add(undo)
 	p.dockable.MarkModified(nil)
-	p.dockable.MarkForLayoutAndRedraw()
+	p.MarkForLayoutRecursivelyUpward()
 	p.dockable.ValidateLayout()
 	focus := newThreshold.Children()[2]
 	focus.RequestFocus()
