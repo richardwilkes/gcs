@@ -302,6 +302,11 @@ func (s *Sheet) createToolbar() {
 	hierarchyButton.ClickCallback = s.toggleHierarchy
 	s.toolbar.AddChild(hierarchyButton)
 
+	noteToggleButton := unison.NewSVGButton(svg.NotesToggle)
+	noteToggleButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all embedded notes"))
+	noteToggleButton.ClickCallback = s.toggleNotes
+	s.toolbar.AddChild(noteToggleButton)
+
 	sheetSettingsButton := unison.NewSVGButton(svg.Settings)
 	sheetSettingsButton.Tooltip = newWrappedTooltip(i18n.Text("Sheet Settings"))
 	sheetSettingsButton.ClickCallback = func() { ShowSheetSettings(s) }
@@ -967,11 +972,8 @@ func (s *Sheet) SetBodySettings(body *gurps.Body) {
 	}
 }
 
-func (s *Sheet) toggleHierarchy() {
-	tables := []interface {
-		FirstDisclosureState() (open, exists bool)
-		SetDisclosureState(open bool)
-	}{
+func (s *Sheet) disclosureTables() []disclosureTables {
+	return []disclosureTables{
 		s.Reactions,
 		s.ConditionalModifiers,
 		s.MeleeWeapons,
@@ -983,6 +985,10 @@ func (s *Sheet) toggleHierarchy() {
 		s.OtherEquipment,
 		s.Notes,
 	}
+}
+
+func (s *Sheet) toggleHierarchy() {
+	tables := s.disclosureTables()
 	open, exists := s.entity.Attributes.FirstDisclosureState(s.entity)
 	if !exists {
 		if open, exists = s.entity.SheetSettings.BodyType.FirstDisclosureState(); !exists {
@@ -998,6 +1004,28 @@ func (s *Sheet) toggleHierarchy() {
 	s.entity.SheetSettings.BodyType.SetDisclosureState(open)
 	for _, table := range tables {
 		table.SetDisclosureState(open)
+	}
+	s.syncDisclosureFunc()
+	s.Rebuild(true)
+}
+
+func (s *Sheet) toggleNotes() {
+	tables := s.disclosureTables()
+	state := 0
+	for _, table := range tables {
+		if state = table.FirstNoteState(); state != 0 {
+			break
+		}
+	}
+	if state == 0 {
+		return
+	}
+	var closed bool
+	if state == 1 {
+		closed = true
+	}
+	for _, table := range tables {
+		table.ApplyNoteState(closed)
 	}
 	s.syncDisclosureFunc()
 	s.Rebuild(true)

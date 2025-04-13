@@ -219,6 +219,11 @@ func (t *Template) createToolbar() {
 	hierarchyButton.ClickCallback = t.toggleHierarchy
 	t.toolbar.AddChild(hierarchyButton)
 
+	noteToggleButton := unison.NewSVGButton(svg.NotesToggle)
+	noteToggleButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all embedded notes"))
+	noteToggleButton.ClickCallback = t.toggleNotes
+	t.toolbar.AddChild(noteToggleButton)
+
 	applyTemplateButton := unison.NewSVGButton(svg.Stamper)
 	applyTemplateButton.Tooltip = newWrappedTooltip(applyTemplateAction.Title)
 	applyTemplateButton.ClickCallback = func() {
@@ -864,17 +869,18 @@ func (t *Template) SetBodySettings(body *gurps.Body) {
 	t.Rebuild(true)
 }
 
-func (t *Template) toggleHierarchy() {
-	tables := []interface {
-		FirstDisclosureState() (open, exists bool)
-		SetDisclosureState(open bool)
-	}{
+func (t *Template) disclosureTables() []disclosureTables {
+	return []disclosureTables{
 		t.Traits,
 		t.Skills,
 		t.Spells,
 		t.Equipment,
 		t.Notes,
 	}
+}
+
+func (t *Template) toggleHierarchy() {
+	tables := t.disclosureTables()
 	var open, exists bool
 	for _, table := range tables {
 		if open, exists = table.FirstDisclosureState(); exists {
@@ -884,6 +890,27 @@ func (t *Template) toggleHierarchy() {
 	open = !open
 	for _, table := range tables {
 		table.SetDisclosureState(open)
+	}
+	t.Rebuild(true)
+}
+
+func (t *Template) toggleNotes() {
+	tables := t.disclosureTables()
+	state := 0
+	for _, table := range tables {
+		if state = table.FirstNoteState(); state != 0 {
+			break
+		}
+	}
+	if state == 0 {
+		return
+	}
+	var closed bool
+	if state == 1 {
+		closed = true
+	}
+	for _, table := range tables {
+		table.ApplyNoteState(closed)
 	}
 	t.Rebuild(true)
 }

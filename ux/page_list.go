@@ -364,6 +364,25 @@ func (p *PageList[T]) setRowOpen(row *Node[T], open bool) {
 	}
 }
 
+// FirstNoteState returns the state of the first note in the list. -1 is closed, 1 is open, 0 is none found.
+func (p *PageList[T]) FirstNoteState() int {
+	state := 0
+	for _, row := range p.Table.RootRows() {
+		discoverNoteState(row, &state)
+		if state != 0 {
+			break
+		}
+	}
+	return state
+}
+
+// ApplyNoteState sets the state of all notes in the list.
+func (p *PageList[T]) ApplyNoteState(closed bool) {
+	for _, row := range p.Table.RootRows() {
+		applyNoteState(row, closed)
+	}
+}
+
 // Sync the underlying data.
 func (p *PageList[T]) Sync() {
 	p.provider.SyncHeader(p.tableHeader.ColumnHeaders)

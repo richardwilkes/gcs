@@ -36,6 +36,13 @@ var (
 	_ KeyedDockable                = &LootSheet{}
 )
 
+type disclosureTables interface {
+	FirstDisclosureState() (open, exists bool)
+	SetDisclosureState(open bool)
+	FirstNoteState() int
+	ApplyNoteState(closed bool)
+}
+
 // LootSheet holds the view for a loot sheet.
 type LootSheet struct {
 	unison.Panel
@@ -200,6 +207,11 @@ func (l *LootSheet) createToolbar() {
 	hierarchyButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all hierarchical rows"))
 	hierarchyButton.ClickCallback = l.toggleHierarchy
 	l.toolbar.AddChild(hierarchyButton)
+
+	noteToggleButton := unison.NewSVGButton(svg.NotesToggle)
+	noteToggleButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all embedded notes"))
+	noteToggleButton.ClickCallback = l.toggleNotes
+	l.toolbar.AddChild(noteToggleButton)
 
 	syncSourceButton := unison.NewSVGButton(svg.DownToBracket)
 	syncSourceButton.Tooltip = newWrappedTooltip(i18n.Text("Sync with all sources in this sheet"))
@@ -577,14 +589,15 @@ func (l *LootSheet) SheetSettingsUpdated(_ *gurps.Entity, blockLayout bool) {
 	l.Rebuild(blockLayout)
 }
 
-func (l *LootSheet) toggleHierarchy() {
-	tables := []interface {
-		FirstDisclosureState() (open, exists bool)
-		SetDisclosureState(open bool)
-	}{
+func (l *LootSheet) disclosureTables() []disclosureTables {
+	return []disclosureTables{
 		l.Equipment,
 		l.Notes,
 	}
+}
+
+func (l *LootSheet) toggleHierarchy() {
+	tables := l.disclosureTables()
 	var open, exists bool
 	for _, table := range tables {
 		if open, exists = table.FirstDisclosureState(); exists {
@@ -594,6 +607,27 @@ func (l *LootSheet) toggleHierarchy() {
 	open = !open
 	for _, table := range tables {
 		table.SetDisclosureState(open)
+	}
+	l.Rebuild(true)
+}
+
+func (l *LootSheet) toggleNotes() {
+	tables := l.disclosureTables()
+	state := 0
+	for _, table := range tables {
+		if state = table.FirstNoteState(); state != 0 {
+			break
+		}
+	}
+	if state == 0 {
+		return
+	}
+	var closed bool
+	if state == 1 {
+		closed = true
+	}
+	for _, table := range tables {
+		table.ApplyNoteState(closed)
 	}
 	l.Rebuild(true)
 }

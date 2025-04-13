@@ -207,6 +207,10 @@ var (
 	notesExpandData string
 	NotesExpand     = unison.MustSVGFromContentString(notesExpandData)
 
+	//go:embed notes-toggle.svg
+	notesToggleData string
+	NotesToggle     = unison.MustSVGFromContentString(notesToggleData)
+
 	//go:embed open_folder.svg
 	openFolderData string
 	OpenFolder     = unison.MustSVGFromContentString(openFolderData)

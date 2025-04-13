@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/richardwilkes/gcs/v5/model/gurps"
+	"github.com/richardwilkes/gcs/v5/model/gurps/enums/cell"
 	"github.com/richardwilkes/gcs/v5/model/jio"
 	"github.com/richardwilkes/gcs/v5/svg"
 	"github.com/richardwilkes/toolbox/errs"
@@ -48,9 +49,6 @@ type TableDockable[T gurps.NodeTypes] struct {
 	provider          TableProvider[T]
 	saver             func(path string) error
 	canCreateIDs      map[int]bool
-	hierarchyButton   *unison.Button
-	sizeToFitButton   *unison.Button
-	filterPopup       *unison.PopupMenu[string]
 	filterField       *unison.Field
 	namesOnlyCheckBox *unison.CheckBox
 	scroll            *unison.ScrollPanel
@@ -170,23 +168,27 @@ func (d *TableDockable[T]) DockKey() string {
 }
 
 func (d *TableDockable[T]) createToolbar() *unison.Panel {
-	d.hierarchyButton = unison.NewSVGButton(svg.Hierarchy)
-	d.hierarchyButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all hierarchical rows"))
-	d.hierarchyButton.ClickCallback = d.toggleHierarchy
+	hierarchyButton := unison.NewSVGButton(svg.Hierarchy)
+	hierarchyButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all hierarchical rows"))
+	hierarchyButton.ClickCallback = d.toggleHierarchy
 
-	d.sizeToFitButton = unison.NewSVGButton(svg.SizeToFit)
-	d.sizeToFitButton.Tooltip = newWrappedTooltip(i18n.Text("Sets the width of each column to fit its contents"))
-	d.sizeToFitButton.ClickCallback = d.sizeToFit
+	noteToggleButton := unison.NewSVGButton(svg.NotesToggle)
+	noteToggleButton.Tooltip = newWrappedTooltip(i18n.Text("Opens/closes all embedded notes"))
+	noteToggleButton.ClickCallback = d.toggleNotes
 
-	d.filterPopup = NewTagFilterPopup(d)
+	sizeToFitButton := unison.NewSVGButton(svg.SizeToFit)
+	sizeToFitButton.Tooltip = newWrappedTooltip(i18n.Text("Sets the width of each column to fit its contents"))
+	sizeToFitButton.ClickCallback = d.sizeToFit
+
+	filterPopup := NewTagFilterPopup(d)
 
 	d.filterField = NewSearchField(i18n.Text("Content Filter"), func(_, _ *unison.FieldState) {
-		d.ApplyFilter(SelectedTags(d.filterPopup))
+		d.ApplyFilter(SelectedTags(filterPopup))
 	})
 
 	d.namesOnlyCheckBox = unison.NewCheckBox()
 	d.namesOnlyCheckBox.SetTitle(i18n.Text("Names Only"))
-	d.namesOnlyCheckBox.ClickCallback = func() { d.ApplyFilter(SelectedTags(d.filterPopup)) }
+	d.namesOnlyCheckBox.ClickCallback = func() { d.ApplyFilter(SelectedTags(filterPopup)) }
 
 	toolbar := unison.NewPanel()
 	toolbar.SetBorder(unison.NewCompoundBorder(unison.NewLineBorder(unison.ThemeSurfaceEdge, 0, unison.Insets{Bottom: 1},
@@ -204,11 +206,12 @@ func (d *TableDockable[T]) createToolbar() *unison.Panel {
 			d.scroll,
 		),
 	)
-	toolbar.AddChild(d.hierarchyButton)
-	toolbar.AddChild(d.sizeToFitButton)
+	toolbar.AddChild(hierarchyButton)
+	toolbar.AddChild(noteToggleButton)
+	toolbar.AddChild(sizeToFitButton)
 	toolbar.AddChild(d.filterField)
 	toolbar.AddChild(d.namesOnlyCheckBox)
-	toolbar.AddChild(d.filterPopup)
+	toolbar.AddChild(filterPopup)
 	toolbar.SetLayoutData(&unison.FlexLayoutData{
 		HAlign: align.Fill,
 		HGrab:  true,
@@ -337,6 +340,68 @@ func setTableDockableRowOpen[T gurps.NodeTypes](row *Node[T], open bool) {
 	for _, child := range row.Children() {
 		if child.CanHaveChildren() {
 			setTableDockableRowOpen(child, open)
+		}
+	}
+}
+
+func (d *TableDockable[T]) toggleNotes() {
+	state := 0
+	for _, row := range d.table.RootRows() {
+		discoverNoteState(row, &state)
+		if state != 0 {
+			break
+		}
+	}
+	if state == 0 {
+		return
+	}
+	var closed bool
+	if state == 1 {
+		closed = true
+	}
+	for _, row := range d.table.RootRows() {
+		applyNoteState(row, closed)
+	}
+	d.table.SyncToModel()
+}
+
+func discoverNoteState[T gurps.NodeTypes](n *Node[T], state *int) {
+	for i := range n.table.Columns {
+		var data gurps.CellData
+		n.dataAsNode.CellData(n.table.Columns[i].ID, &data)
+		if data.Type == cell.Text && data.Secondary != "" {
+			if gurps.IsClosed("N:" + string(n.ID())) {
+				*state = -1
+			} else {
+				*state = 1
+			}
+			return
+		}
+	}
+	if n.CanHaveChildren() {
+		for _, child := range n.Children() {
+			discoverNoteState(child, state)
+			if *state != 0 {
+				return
+			}
+		}
+	}
+}
+
+func applyNoteState[T gurps.NodeTypes](n *Node[T], closed bool) {
+	for i := range n.table.Columns {
+		var data gurps.CellData
+		n.dataAsNode.CellData(n.table.Columns[i].ID, &data)
+		if data.Type == cell.Text && data.Secondary != "" {
+			id := "N:" + string(n.ID())
+			if gurps.IsClosed(id) != closed {
+				gurps.SetClosedState(id, closed)
+			}
+		}
+	}
+	if n.CanHaveChildren() {
+		for _, child := range n.Children() {
+			applyNoteState(child, closed)
 		}
 	}
 }
