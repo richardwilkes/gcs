@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -38,6 +39,7 @@ func NewTraitsPageList(owner Rebuildable, provider gurps.ListProvider) *PageList
 	p.installToggleDisabledHandler(owner)
 	p.installIncrementLevelHandler(owner)
 	p.installDecrementLevelHandler(owner)
+	InstallTintFunc(p, colors.TintTraits)
 	return p
 }
 
@@ -50,6 +52,7 @@ func NewCarriedEquipmentPageList(owner Rebuildable, provider gurps.ListProvider)
 	p.installContainerConversionHandlers(owner)
 	p.installMoveToOtherEquipmentHandler(owner)
 	installEquipmentLevelHandlers(p, owner)
+	InstallTintFunc(p, colors.TintCarriedEquipment)
 	return p
 }
 
@@ -61,6 +64,7 @@ func NewOtherEquipmentPageList(owner Rebuildable, provider gurps.ListProvider) *
 	p.installContainerConversionHandlers(owner)
 	p.installMoveToCarriedEquipmentHandler(owner)
 	installEquipmentLevelHandlers(p, owner)
+	InstallTintFunc(p, colors.TintOtherEquipment)
 	return p
 }
 
@@ -73,6 +77,7 @@ func NewSkillsPageList(owner Rebuildable, provider gurps.ListProvider) *PageList
 	p.installDecrementSkillHandler(owner)
 	p.installIncrementTechLevelHandler(owner)
 	p.installDecrementTechLevelHandler(owner)
+	InstallTintFunc(p, colors.TintSkills)
 	return p
 }
 
@@ -83,6 +88,7 @@ func NewSpellsPageList(owner Rebuildable, provider gurps.SpellListProvider) *Pag
 	p.installDecrementPointsHandler(owner)
 	p.installIncrementSkillHandler(owner)
 	p.installDecrementSkillHandler(owner)
+	InstallTintFunc(p, colors.TintSpells)
 	return p
 }
 
@@ -90,27 +96,36 @@ func NewSpellsPageList(owner Rebuildable, provider gurps.SpellListProvider) *Pag
 func NewNotesPageList(owner Rebuildable, provider gurps.ListProvider) *PageList[*gurps.Note] {
 	p := newPageList(owner, NewNotesProvider(provider, true))
 	p.installContainerConversionHandlers(owner)
+	InstallTintFunc(p, colors.TintNotes)
 	return p
 }
 
 // NewConditionalModifiersPageList creates the conditional modifiers page list.
 func NewConditionalModifiersPageList(entity *gurps.Entity) *PageList[*gurps.ConditionalModifier] {
-	return newPageList(nil, NewConditionalModifiersProvider(entity))
+	p := newPageList(nil, NewConditionalModifiersProvider(entity))
+	InstallTintFunc(p, colors.TintConditions)
+	return p
 }
 
 // NewReactionsPageList creates the reaction modifiers page list.
 func NewReactionsPageList(entity *gurps.Entity) *PageList[*gurps.ConditionalModifier] {
-	return newPageList(nil, NewReactionModifiersProvider(entity))
+	p := newPageList(nil, NewReactionModifiersProvider(entity))
+	InstallTintFunc(p, colors.TintReactions)
+	return p
 }
 
 // NewMeleeWeaponsPageList creates the melee weapons page list.
 func NewMeleeWeaponsPageList(entity *gurps.Entity) *PageList[*gurps.Weapon] {
-	return newPageList(nil, NewWeaponsProvider(entity, true, true))
+	p := newPageList(nil, NewWeaponsProvider(entity, true, true))
+	InstallTintFunc(p, colors.TintMelee)
+	return p
 }
 
 // NewRangedWeaponsPageList creates the ranged weapons page list.
 func NewRangedWeaponsPageList(entity *gurps.Entity) *PageList[*gurps.Weapon] {
-	return newPageList(nil, NewWeaponsProvider(entity, false, true))
+	p := newPageList(nil, NewWeaponsProvider(entity, false, true))
+	InstallTintFunc(p, colors.TintRanged)
+	return p
 }
 
 func newPageList[T gurps.NodeTypes](owner Rebuildable, provider TableProvider[T]) *PageList[T] {

@@ -81,6 +81,7 @@ func NewBodyPanel(entity *gurps.Entity, targetMgr *TargetMgr) *BodyPanel {
 		}
 	}
 	p.addContent(locations)
+	InstallTintFunc(p, colors.TintBody)
 	return p
 }
 

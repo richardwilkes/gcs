@@ -20,7 +20,9 @@ import (
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
 	"github.com/richardwilkes/unison/enums/align"
+	"github.com/richardwilkes/unison/enums/paintstyle"
 	"github.com/richardwilkes/unison/enums/thememode"
+	"github.com/richardwilkes/unison/enums/weight"
 )
 
 type colorSettingsDockable struct {
@@ -50,7 +52,7 @@ func ShowColorSettings() {
 func (d *colorSettingsDockable) initContent(content *unison.Panel) {
 	d.content = content
 	d.content.SetLayout(&unison.FlexLayout{
-		Columns:  8,
+		Columns:  4,
 		HSpacing: unison.StdHSpacing,
 		VSpacing: unison.StdVSpacing,
 	})
@@ -89,27 +91,41 @@ func (d *colorSettingsDockable) sync() {
 }
 
 func (d *colorSettingsDockable) fill() {
-	onColumn := false
+	foundTint := false
+	d.createHeader(i18n.Text("Theme Colors"), 0, false)
 	for _, one := range colors.Current() {
-		on := strings.HasPrefix(one.ID, "on_")
-		if on != onColumn {
-			p := unison.NewPanel()
-			p.SetLayoutData(&unison.FlexLayoutData{HSpan: 4})
-			d.content.AddChild(p)
-			onColumn = !onColumn
+		if !foundTint && strings.HasPrefix(one.ID, "tint_") {
+			foundTint = true
+			d.createHeader(i18n.Text("Sheet Block Tints"), unison.StdVSpacing*4, false)
+			d.createHeader(i18n.Text("(Alpha channel > 0 enables the tint, while 0 turns it off)"), 0, true)
 		}
-		var label *unison.Label
-		if on {
-			label = NewFieldInteriorLeadingLabel(one.Title, false)
-		} else {
-			label = NewFieldLeadingLabel(one.Title, false)
-		}
-		d.content.AddChild(label)
+		d.content.AddChild(NewFieldLeadingLabel(one.Title, false))
 		d.createColorWellField(one, true)
 		d.createColorWellField(one, false)
 		d.createResetField(one)
-		onColumn = !onColumn
 	}
+}
+
+func (d *colorSettingsDockable) createHeader(title string, topMargin float32, small bool) {
+	label := unison.NewLabel()
+	if topMargin > 0 {
+		label.SetBorder(unison.NewEmptyBorder(unison.Insets{Top: topMargin}))
+	}
+	desc := label.Font.Descriptor()
+	if small {
+		desc.Size *= 0.8
+	} else {
+		label.Underline = true
+	}
+	desc.Weight = weight.Bold
+	label.Font = desc.Font()
+	label.SetTitle(title)
+	label.SetLayoutData(&unison.FlexLayoutData{
+		HSpan:  4,
+		HAlign: align.Middle,
+		VAlign: align.Middle,
+	})
+	d.content.AddChild(label)
 }
 
 func (d *colorSettingsDockable) createColorWellField(c *colors.ThemedColor, light bool) {
@@ -161,7 +177,7 @@ func (d *colorSettingsDockable) createResetField(c *colors.ThemedColor) {
 		}
 	}
 	b.SetLayoutData(&unison.FlexLayoutData{
-		HAlign: align.Middle,
+		HAlign: align.Start,
 		VAlign: align.Middle,
 	})
 	d.content.AddChild(b)
@@ -181,4 +197,15 @@ func (d *colorSettingsDockable) load(fileSystem fs.FS, filePath string) error {
 
 func (d *colorSettingsDockable) save(filePath string) error {
 	return gurps.GlobalSettings().Colors.Save(filePath)
+}
+
+// InstallTintFunc installs a tint function for the given panel and theme color.
+func InstallTintFunc(panel unison.Paneler, themeColor *unison.ThemeColor) {
+	panel.AsPanel().DrawOverCallback = func(gc *unison.Canvas, rect unison.Rect) {
+		c := themeColor.GetColor()
+		if c.Invisible() {
+			return
+		}
+		gc.DrawRect(rect, c.SetAlphaIntensity(0.1).Paint(gc, rect, paintstyle.Fill))
+	}
 }

@@ -12,6 +12,7 @@ package ux
 import (
 	"strconv"
 
+	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
@@ -68,6 +69,7 @@ func NewDescriptionPanel(entity *gurps.Entity, targetMgr *TargetMgr) *Descriptio
 	d.AddChild(d.createColumn1())
 	d.AddChild(d.createColumn2())
 	d.AddChild(d.createColumn3())
+	InstallTintFunc(d, colors.TintDescription)
 	return d
 }
 

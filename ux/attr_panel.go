@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
@@ -46,17 +47,23 @@ type AttrPanel struct {
 
 // NewPrimaryAttrPanel creates a new primary attributes panel.
 func NewPrimaryAttrPanel(entity *gurps.Entity, targetMgr *TargetMgr) *AttrPanel {
-	return newAttrPanel(entity, targetMgr, gurps.PrimaryAttrKind)
+	p := newAttrPanel(entity, targetMgr, gurps.PrimaryAttrKind)
+	InstallTintFunc(p, colors.TintPrimaryAttributes)
+	return p
 }
 
 // NewSecondaryAttrPanel creates a new secondary attributes panel.
 func NewSecondaryAttrPanel(entity *gurps.Entity, targetMgr *TargetMgr) *AttrPanel {
-	return newAttrPanel(entity, targetMgr, gurps.SecondaryAttrKind)
+	p := newAttrPanel(entity, targetMgr, gurps.SecondaryAttrKind)
+	InstallTintFunc(p, colors.TintSecondaryAttributes)
+	return p
 }
 
 // NewPointPoolsPanel creates a new point pools panel.
 func NewPointPoolsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *AttrPanel {
-	return newAttrPanel(entity, targetMgr, gurps.PoolAttrKind)
+	p := newAttrPanel(entity, targetMgr, gurps.PoolAttrKind)
+	InstallTintFunc(p, colors.TintPools)
+	return p
 }
 
 func newAttrPanel(entity *gurps.Entity, targetMgr *TargetMgr, kind int) *AttrPanel {

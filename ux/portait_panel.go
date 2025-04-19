@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 
 	"github.com/richardwilkes/gcs/v5/imgutil"
+	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/fonts"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/errs"
@@ -51,6 +52,7 @@ func NewPortraitPanel(entity *gurps.Entity) *PortraitPanel {
 		p.MarkForRedraw()
 		return false
 	}
+	InstallTintFunc(p, colors.TintPortrait)
 	return p
 }
 

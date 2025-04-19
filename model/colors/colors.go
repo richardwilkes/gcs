@@ -35,8 +35,30 @@ var (
 
 // Additional theme colors
 var (
-	Header   = &unison.ThemeColor{Light: unison.RGB(80, 80, 80), Dark: unison.RGB(64, 64, 64)}
-	OnHeader = Header.DeriveOn()
+	Header                  = &unison.ThemeColor{Light: unison.RGB(80, 80, 80), Dark: unison.RGB(64, 64, 64)}
+	OnHeader                = Header.DeriveOn()
+	TintPortrait            = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
+	TintIdentity            = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
+	TintMisc                = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
+	TintPoints              = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
+	TintDescription         = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
+	TintPrimaryAttributes   = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
+	TintSecondaryAttributes = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
+	TintBody                = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
+	TintEncumbrance         = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
+	TintLifting             = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
+	TintDamage              = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
+	TintPools               = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
+	TintReactions           = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
+	TintConditions          = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
+	TintMelee               = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
+	TintRanged              = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
+	TintTraits              = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
+	TintSkills              = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
+	TintSpells              = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
+	TintCarriedEquipment    = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
+	TintOtherEquipment      = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
+	TintNotes               = &unison.ThemeColor{Light: unison.Transparent, Dark: unison.Transparent}
 )
 
 // ThemedColor holds a themed color.
@@ -77,6 +99,28 @@ func initialize() {
 		{ID: "tooltip", Title: "Tooltip", Color: unison.ThemeTooltip},
 		{ID: "error", Title: "Error", Color: unison.ThemeError},
 		{ID: "warning", Title: "Warning", Color: unison.ThemeWarning},
+		{ID: "tint_portrait", Title: "Portrait", Color: TintPortrait},
+		{ID: "tint_identity", Title: "Identity", Color: TintIdentity},
+		{ID: "tint_misc", Title: "Miscellaneous", Color: TintMisc},
+		{ID: "tint_points", Title: "Points", Color: TintPoints},
+		{ID: "tint_description", Title: "Description", Color: TintDescription},
+		{ID: "tint_primary_attributes", Title: "Primary Attributes", Color: TintPrimaryAttributes},
+		{ID: "tint_secondary_attributes", Title: "Secondary Attributes", Color: TintSecondaryAttributes},
+		{ID: "tint_body", Title: "Body Type", Color: TintBody},
+		{ID: "tint_encumbrance", Title: "Encumbrance, Move & Dodge", Color: TintEncumbrance},
+		{ID: "tint_lifting", Title: "Lifting & Moving Things", Color: TintLifting},
+		{ID: "tint_damage", Title: "Basic Damage", Color: TintDamage},
+		{ID: "tint_pools", Title: "Point Pools", Color: TintPools},
+		{ID: "tint_reactions", Title: "Reactions", Color: TintReactions},
+		{ID: "tint_conditions", Title: "Conditions", Color: TintConditions},
+		{ID: "tint_melee", Title: "Melee Weapons", Color: TintMelee},
+		{ID: "tint_ranged", Title: "Ranged Weapons", Color: TintRanged},
+		{ID: "tint_traits", Title: "Traits", Color: TintTraits},
+		{ID: "tint_skills", Title: "Skills", Color: TintSkills},
+		{ID: "tint_spells", Title: "Spells", Color: TintSpells},
+		{ID: "tint_carried_equipment", Title: "Carried Equipment", Color: TintCarriedEquipment},
+		{ID: "tint_other_equipment", Title: "Other Equipment", Color: TintOtherEquipment},
+		{ID: "tint_notes", Title: "Notes", Color: TintNotes},
 	}
 	factory = make([]*ThemedColor, len(current))
 	for i, c := range current {

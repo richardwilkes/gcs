@@ -114,6 +114,7 @@ func NewEncumbrancePanel(entity *gurps.Entity) *EncumbrancePanel {
 		p.AddChild(p.createDodgeField(enc, rowColor))
 	}
 
+	InstallTintFunc(p, colors.TintEncumbrance)
 	return p
 }
 

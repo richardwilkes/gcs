@@ -10,6 +10,7 @@
 package ux
 
 import (
+	"github.com/richardwilkes/gcs/v5/model/colors"
 	"github.com/richardwilkes/gcs/v5/model/gurps"
 	"github.com/richardwilkes/toolbox/i18n"
 	"github.com/richardwilkes/unison"
@@ -44,6 +45,7 @@ func NewLiftingPanel(entity *gurps.Entity) *LiftingPanel {
 		Right:  2,
 	})))
 	p.DrawCallback = func(gc *unison.Canvas, rect unison.Rect) { drawBandedBackground(p, gc, rect, 0, 2, nil) }
+	InstallTintFunc(p, colors.TintLifting)
 	p.addFieldAndLabel(NewNonEditablePageFieldEnd(func(f *NonEditablePageField) {
 		if text := p.entity.SheetSettings.DefaultWeightUnits.Format(p.entity.BasicLift()); text != f.Text.String() {
 			f.SetTitle(text)

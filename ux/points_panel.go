@@ -182,6 +182,8 @@ func NewPointsPanel(entity *gurps.Entity, targetMgr *TargetMgr) *PointsPanel {
 		}
 	}), i18n.Text("Spells"), i18n.Text("Total points spent on spells"))
 	p.adjustUnspent()
+
+	InstallTintFunc(p, colors.TintPoints)
 	return p
 }
 
