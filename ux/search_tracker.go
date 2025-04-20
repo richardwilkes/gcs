@@ -25,7 +25,8 @@ type searchRef struct {
 	row   any
 }
 
-type searchTracker struct {
+// SearchTracker provides controls for searching.
+type SearchTracker struct {
 	clearTableSelections func()
 	findMatches          func(refList *[]*searchRef, text string, namesOnly bool)
 	backButton           *unison.Button
@@ -37,8 +38,9 @@ type searchTracker struct {
 	searchIndex          int
 }
 
-func installSearchTracker(toolbar *unison.Panel, clearTableSelections func(), findMatches func(refList *[]*searchRef, text string, namesOnly bool)) {
-	s := &searchTracker{
+// InstallSearchTracker creates a search tracker in the given toolbar.
+func InstallSearchTracker(toolbar *unison.Panel, clearTableSelections func(), findMatches func(refList *[]*searchRef, text string, namesOnly bool)) *SearchTracker {
+	s := &SearchTracker{
 		clearTableSelections: clearTableSelections,
 		findMatches:          findMatches,
 	}
@@ -84,13 +86,22 @@ func installSearchTracker(toolbar *unison.Panel, clearTableSelections func(), fi
 	toolbar.Parent().InstallCmdHandlers(JumpToSearchFilterItemID,
 		func(any) bool { return !s.searchField.Focused() },
 		func(any) { s.searchField.RequestFocus() })
+	return s
 }
 
-func (s *searchTracker) searchModified(_, after *unison.FieldState) {
+// Refresh the search state.
+func (s *SearchTracker) Refresh() {
+	s.searchResult = nil
+	s.findMatches(&s.searchResult, strings.ToLower(s.searchField.Text()), s.namesOnlyCheckBox.State == check.On)
+	s.searchIndex = max(min(s.searchIndex, len(s.searchResult)-1), 0)
+	s.adjustButtonsAndLabels()
+}
+
+func (s *SearchTracker) searchModified(_, after *unison.FieldState) {
 	s.doSearch(after.Text)
 }
 
-func (s *searchTracker) doSearch(text string) {
+func (s *SearchTracker) doSearch(text string) {
 	s.searchIndex = 0
 	s.searchResult = nil
 	s.findMatches(&s.searchResult, strings.ToLower(text), s.namesOnlyCheckBox.State == check.On)
@@ -128,27 +139,33 @@ func searchSheetTableRows[T gurps.NodeTypes](refList *[]*searchRef, text string,
 	}
 }
 
-func (s *searchTracker) previousMatch() {
+func (s *SearchTracker) previousMatch() {
 	if s.searchIndex > 0 {
 		s.searchIndex--
 		s.adjustForMatch()
 	}
 }
 
-func (s *searchTracker) nextMatch() {
+func (s *SearchTracker) nextMatch() {
 	if s.searchIndex < len(s.searchResult)-1 {
 		s.searchIndex++
 		s.adjustForMatch()
 	}
 }
 
-func (s *searchTracker) adjustForMatch() {
+func (s *SearchTracker) adjustForMatch() {
 	s.clearTableSelections()
+	s.adjustButtonsAndLabels()
+	if len(s.searchResult) != 0 {
+		showSearchRef(s.searchResult[s.searchIndex])
+	}
+}
+
+func (s *SearchTracker) adjustButtonsAndLabels() {
 	s.backButton.SetEnabled(s.searchIndex != 0)
 	s.forwardButton.SetEnabled(len(s.searchResult) != 0 && s.searchIndex != len(s.searchResult)-1)
 	if len(s.searchResult) != 0 {
 		s.matchesLabel.SetTitle(fmt.Sprintf(i18n.Text("%d of %d"), s.searchIndex+1, len(s.searchResult)))
-		showSearchRef(s.searchResult[s.searchIndex])
 	} else {
 		s.matchesLabel.SetTitle(i18n.Text("0 of 0"))
 	}

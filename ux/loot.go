@@ -57,6 +57,7 @@ type LootSheet struct {
 	Equipment         *PageList[*gurps.Equipment]
 	Notes             *PageList[*gurps.Note]
 	dragReroutePanel  *unison.Panel
+	searchTracker     *SearchTracker
 	scale             int
 	awaitingUpdate    bool
 	needsSaveAsPrompt bool
@@ -218,7 +219,7 @@ func (l *LootSheet) createToolbar() {
 	syncSourceButton.ClickCallback = func() { l.syncWithAllSources() }
 	l.toolbar.AddChild(syncSourceButton)
 
-	installSearchTracker(l.toolbar, func() {
+	l.searchTracker = InstallSearchTracker(l.toolbar, func() {
 		l.Equipment.Table.ClearSelection()
 		l.Notes.Table.ClearSelection()
 	}, func(refList *[]*searchRef, text string, namesOnly bool) {
@@ -367,6 +368,7 @@ func (l *LootSheet) MarkModified(_ unison.Paneler) {
 		DeepSync(l)
 		UpdateTitleForDockable(l)
 		l.awaitingUpdate = false
+		l.searchTracker.Refresh()
 		l.targetMgr.ReacquireFocus(focusRefKey, l.toolbar, l.scroll.Content())
 		l.scroll.SetPosition(h, v)
 	}
@@ -458,6 +460,7 @@ func (l *LootSheet) Rebuild(full bool) {
 	}
 	DeepSync(l)
 	UpdateTitleForDockable(l)
+	l.searchTracker.Refresh()
 	l.targetMgr.ReacquireFocus(focusRefKey, l.toolbar, l.scroll.Content())
 	l.scroll.SetPosition(h, v)
 }

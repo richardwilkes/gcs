@@ -59,6 +59,7 @@ type Template struct {
 	Notes             *PageList[*gurps.Note]
 	dragReroutePanel  *unison.Panel
 	lastBody          *gurps.Body
+	searchTracker     *SearchTracker
 	scale             int
 	awaitingUpdate    bool
 	needsSaveAsPrompt bool
@@ -238,7 +239,7 @@ func (t *Template) createToolbar() {
 	syncSourceButton.ClickCallback = func() { t.syncWithAllSources() }
 	t.toolbar.AddChild(syncSourceButton)
 
-	installSearchTracker(t.toolbar, func() {
+	t.searchTracker = InstallSearchTracker(t.toolbar, func() {
 		t.Traits.Table.ClearSelection()
 		t.Skills.Table.ClearSelection()
 		t.Spells.Table.ClearSelection()
@@ -589,6 +590,7 @@ func (t *Template) MarkModified(_ unison.Paneler) {
 		DeepSync(t)
 		UpdateTitleForDockable(t)
 		t.awaitingUpdate = false
+		t.searchTracker.Refresh()
 		t.targetMgr.ReacquireFocus(focusRefKey, t.toolbar, t.scroll.Content())
 		t.scroll.SetPosition(h, v)
 	}
@@ -793,6 +795,7 @@ func (t *Template) Rebuild(full bool) {
 	}
 	DeepSync(t)
 	UpdateTitleForDockable(t)
+	t.searchTracker.Refresh()
 	t.targetMgr.ReacquireFocus(focusRefKey, t.toolbar, t.scroll.Content())
 	t.scroll.SetPosition(h, v)
 }

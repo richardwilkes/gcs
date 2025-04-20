@@ -86,6 +86,7 @@ type Sheet struct {
 	OtherEquipment       *PageList[*gurps.Equipment]
 	Notes                *PageList[*gurps.Note]
 	dragReroutePanel     *unison.Panel
+	searchTracker        *SearchTracker
 	scale                int
 	awaitingUpdate       bool
 	needsSaveAsPrompt    bool
@@ -337,7 +338,7 @@ func (s *Sheet) createToolbar() {
 	calcButton.ClickCallback = func() { DisplayCalculator(s) }
 	s.toolbar.AddChild(calcButton)
 
-	installSearchTracker(s.toolbar, func() {
+	s.searchTracker = InstallSearchTracker(s.toolbar, func() {
 		s.Reactions.Table.ClearSelection()
 		s.ConditionalModifiers.Table.ClearSelection()
 		s.MeleeWeapons.Table.ClearSelection()
@@ -531,6 +532,7 @@ func (s *Sheet) MarkModified(src unison.Paneler) {
 		}
 		UpdateTitleForDockable(s)
 		s.awaitingUpdate = false
+		s.searchTracker.Refresh()
 		s.targetMgr.ReacquireFocus(focusRefKey, s.toolbar, s.scroll.Content())
 		s.scroll.SetPosition(h, v)
 		UpdateCalculator(s)
@@ -919,6 +921,7 @@ func (s *Sheet) Rebuild(full bool) {
 	}
 	DeepSync(s)
 	UpdateTitleForDockable(s)
+	s.searchTracker.Refresh()
 	s.targetMgr.ReacquireFocus(focusRefKey, s.toolbar, s.scroll.Content())
 	s.scroll.SetPosition(h, v)
 	UpdateCalculator(s)
