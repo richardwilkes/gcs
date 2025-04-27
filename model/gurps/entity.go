@@ -283,7 +283,7 @@ func (e *Entity) Recalculate() {
 	e.SourceMatcher().PrepareHashes(e)
 	e.UpdateSkills()
 	e.UpdateSpells()
-	for i := 0; i < 5; i++ {
+	for range 5 {
 		// Unfortunately, there are what amount to circular references in the GURPS logic, so we need to potentially run
 		// though this process a few times until things stabilize. To avoid a potential endless loop, though, we cap the
 		// iterations.

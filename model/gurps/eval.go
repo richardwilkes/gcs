@@ -544,7 +544,7 @@ func valueToYards(value int) fxp.Int {
 	}
 	value -= 4
 	multiplier := fxp.One
-	for i := 0; i < value/6; i++ {
+	for range value / 6 {
 		multiplier = multiplier.Mul(fxp.Ten)
 	}
 	var v fxp.Int

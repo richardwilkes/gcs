@@ -71,7 +71,7 @@ func (c *CalendarRef) RandomBirthday(not string) string {
 	}
 	daysInYear := c.Calendar.Days(year)
 	result := ""
-	for i := 0; i < 5; i++ {
+	for range 5 {
 		if result = c.Calendar.NewDateByDays(base + rand.NewCryptoRand().Intn(daysInYear)).Format("%M %D"); result != not {
 			break
 		}
