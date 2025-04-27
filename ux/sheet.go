@@ -520,6 +520,7 @@ func (s *Sheet) MarkModified(src unison.Paneler) {
 		focusRefKey := s.targetMgr.CurrentFocusRef()
 		s.entity.DiscardCaches()
 		s.modifiedFunc()
+		UpdateTitleForDockable(s)
 		// TODO: This can be too slow when the lists have many rows of content, impinging upon interactive typing.
 		//       Looks like most of the time is spent in updating the tables. Unfortunately, there isn't a fast way to
 		//       determine that the content of a table doesn't need to be refreshed.
@@ -530,7 +531,6 @@ func (s *Sheet) MarkModified(src unison.Paneler) {
 		if !skipDeepSync {
 			DeepSync(s)
 		}
-		UpdateTitleForDockable(s)
 		s.awaitingUpdate = false
 		s.searchTracker.Refresh()
 		s.targetMgr.ReacquireFocus(focusRefKey, s.toolbar, s.scroll.Content())
