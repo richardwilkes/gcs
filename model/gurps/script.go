@@ -7,23 +7,21 @@ import (
 
 	"github.com/richardwilkes/gcs/v5/model/fxp"
 	"github.com/richardwilkes/goblin"
+	"github.com/richardwilkes/goblin/ast"
 )
 
 const scriptPrefix = "^^^"
 
-var evalEmbeddedRegex = regexp.MustCompile(`\|\|[^|]+\|\|`)
+var (
+	evalEmbeddedRegex = regexp.MustCompile(`\|\|[^|]+\|\|`)
+	topScope          = createTopScope()
+)
 
 type entityScope struct {
 	entity *Entity
 }
 
-// ResolveText will process the text as a script if it starts with ^^^. If it does not, it will look for embedded
-// expressions inside || pairs inside the text and evaluate them.
-func ResolveText(entity *Entity, text string) string {
-	if !strings.HasPrefix(text, scriptPrefix) {
-		return evalEmbeddedRegex.ReplaceAllStringFunc(text, entity.EmbeddedEval)
-	}
-	es := &entityScope{entity: entity}
+func createTopScope() ast.Scope {
 	scope := goblin.NewScope()
 
 	scope.Define("sprintf", fmt.Sprintf)
@@ -50,6 +48,23 @@ func ResolveText(entity *Entity, text string) string {
 	scope.Define("LengthFromInteger", fxp.LengthFromInteger[int])
 	scope.Define("LengthFromString", fxp.LengthFromStringForced)
 
+	scope.Define("SSRT", SSRT)
+	scope.Define("YardsFromSSRT", YardsFromSSRT)
+
+	return scope
+}
+
+// ResolveText will process the text as a script if it starts with ^^^. If it does not, it will look for embedded
+// expressions inside || pairs inside the text and evaluate them.
+func ResolveText(entity *Entity, text string) string {
+	if !strings.HasPrefix(text, scriptPrefix) {
+		return evalEmbeddedRegex.ReplaceAllStringFunc(text, entity.EmbeddedEval)
+	}
+
+	es := &entityScope{entity: entity}
+	scope := topScope.NewScope()
+	defer scope.Destroy()
+
 	scope.Define("HasTrait", es.HasTrait)
 	scope.Define("TraitLevel", es.TraitLevel)
 
@@ -57,9 +72,6 @@ func ResolveText(entity *Entity, text string) string {
 
 	scope.Define("AttributeIDs", es.AttributeIDs)
 	scope.Define("CurrentAttributeValue", es.CurrentAttributeValue)
-
-	scope.Define("SSRT", SSRT)
-	scope.Define("YardsFromSSRT", YardsFromSSRT)
 
 	v, err := scope.ParseAndRunWithTimeout(GlobalSettings().PermittedPerScriptExecTime, text[len(scriptPrefix):])
 	if err != nil {
