@@ -1,6 +1,7 @@
 package gurps
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -24,6 +25,8 @@ func ResolveText(entity *Entity, text string) string {
 	}
 	es := &entityScope{entity: entity}
 	scope := goblin.NewScope()
+
+	scope.Define("sprintf", fmt.Sprintf)
 
 	scope.DefineType("FixedInt", fxp.One)
 	scope.Define("FixedIntFromString", fxp.FromStringForced)
@@ -51,6 +54,9 @@ func ResolveText(entity *Entity, text string) string {
 	scope.Define("TraitLevel", es.TraitLevel)
 
 	scope.Define("SkillLevel", es.SkillLevel)
+
+	scope.Define("AttributeIDs", es.AttributeIDs)
+	scope.Define("CurrentAttributeValue", es.CurrentAttributeValue)
 
 	scope.Define("SSRT", SSRT)
 	scope.Define("YardsFromSSRT", YardsFromSSRT)
@@ -124,6 +130,35 @@ func (e *entityScope) SkillLevel(name, specialization string, relative bool) int
 		return false
 	}, true, true, e.entity.Skills...)
 	return level
+}
+
+// AttributeIDs returns a list of available attribute IDs.
+func (e *entityScope) AttributeIDs() []string {
+	if e.entity == nil {
+		return nil
+	}
+	attrs := e.entity.Attributes.List()
+	ids := make([]string, 0, len(attrs))
+	for _, attr := range attrs {
+		if def := attr.AttributeDef(); def != nil {
+			if def.IsSeparator() {
+				continue
+			}
+			ids = append(ids, def.DefID)
+		}
+	}
+	return ids
+}
+
+// CurrentAttributeValue resolves the given attribute ID to its current value.
+func (e *entityScope) CurrentAttributeValue(attrID string) (value fxp.Int, exists bool) {
+	if e.entity == nil {
+		return 0, false
+	}
+	if value = e.entity.Attributes.Current(attrID); value == fxp.Min {
+		return 0, false
+	}
+	return value, true
 }
 
 // SSRT is a function that takes a length and converts it to a value from the Size and Speed/Range table.
