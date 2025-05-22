@@ -434,7 +434,7 @@ func (t *Trait) SetDataOwner(owner DataOwner) {
 		}
 	}
 	for _, m := range t.Modifiers {
-		m.trait = t
+		m.setTrait(t)
 		m.SetDataOwner(owner)
 	}
 }
@@ -698,7 +698,7 @@ func AdjustedPoints(entity *Entity, trait *Trait, canLevel bool, basePoints, lev
 	var baseEnh, levelEnh, baseLim, levelLim fxp.Int
 	multiplier := cr.Multiplier()
 	Traverse(func(mod *TraitModifier) bool {
-		mod.trait = trait
+		mod.setTrait(trait)
 		modifier := mod.CostModifier()
 		switch mod.CostType {
 		case tmcost.Percentage:

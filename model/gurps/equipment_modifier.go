@@ -72,7 +72,8 @@ type EquipmentModifierData struct {
 // EquipmentModifierEditData holds the EquipmentModifier data that can be edited by the UI detail editor.
 type EquipmentModifierEditData struct {
 	EquipmentModifierSyncData
-	VTTNotes string `json:"vtt_notes,omitempty"`
+	VTTNotes     string            `json:"vtt_notes,omitempty"`
+	Replacements map[string]string `json:"replacements,omitempty"` // Not actually used any longer, but kept so that we can migrate old data
 	EquipmentModifierEditDataNonContainerOnly
 }
 
@@ -372,6 +373,27 @@ func (e *EquipmentModifier) OwningEquipment() *Equipment {
 // DataOwner returns the data owner.
 func (e *EquipmentModifier) DataOwner() DataOwner {
 	return e.owner
+}
+
+func (e *EquipmentModifier) setEquipment(equipment *Equipment) {
+	e.equipment = equipment
+	if equipment != nil && len(e.Replacements) != 0 {
+		if e.equipment.Replacements == nil {
+			e.equipment.Replacements = e.Replacements
+		} else {
+			for k, v := range e.Replacements {
+				if _, exists := e.equipment.Replacements[k]; !exists {
+					e.equipment.Replacements[k] = v
+				}
+			}
+		}
+		e.Replacements = nil
+	}
+	if e.Container() {
+		for _, child := range e.Children {
+			child.setEquipment(equipment)
+		}
+	}
 }
 
 // SetDataOwner sets the data owner and configures any sub-components as needed.

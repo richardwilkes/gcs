@@ -81,7 +81,8 @@ type TraitModifierData struct {
 // TraitModifierEditData holds the TraitModifier data that can be edited by the UI detail editor.
 type TraitModifierEditData struct {
 	TraitModifierSyncData
-	VTTNotes string `json:"vtt_notes,omitempty"`
+	VTTNotes     string            `json:"vtt_notes,omitempty"`
+	Replacements map[string]string `json:"replacements,omitempty"` // Not actually used any longer, but kept so that we can migrate old data
 	TraitModifierEditDataNonContainerOnly
 }
 
@@ -364,6 +365,27 @@ func (t *TraitModifier) OwningTrait() *Trait {
 // DataOwner returns the data owner.
 func (t *TraitModifier) DataOwner() DataOwner {
 	return t.owner
+}
+
+func (t *TraitModifier) setTrait(trait *Trait) {
+	t.trait = trait
+	if trait != nil && len(t.Replacements) != 0 {
+		if t.trait.Replacements == nil {
+			t.trait.Replacements = t.Replacements
+		} else {
+			for k, v := range t.Replacements {
+				if _, exists := t.trait.Replacements[k]; !exists {
+					t.trait.Replacements[k] = v
+				}
+			}
+		}
+		t.Replacements = nil
+	}
+	if t.Container() {
+		for _, child := range t.Children {
+			child.setTrait(trait)
+		}
+	}
 }
 
 // SetDataOwner sets the data owner and configures any sub-components as needed.

@@ -486,7 +486,7 @@ func (e *Equipment) SetDataOwner(owner DataOwner) {
 		}
 	}
 	for _, m := range e.Modifiers {
-		m.equipment = e
+		m.setEquipment(e)
 		m.SetDataOwner(owner)
 	}
 }
@@ -625,7 +625,7 @@ func ExtendedWeightAdjustedForModifiers(equipment *Equipment, defUnits fxp.Weigh
 			}
 		}
 		Traverse(func(mod *EquipmentModifier) bool {
-			mod.equipment = equipment
+			mod.setEquipment(equipment)
 			for _, f := range mod.Features {
 				if cwr, ok := f.(*ContainedWeightReduction); ok {
 					if cwr.IsPercentageReduction() {
