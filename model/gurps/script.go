@@ -8,16 +8,18 @@ import (
 	"github.com/richardwilkes/goblin"
 )
 
+const scriptPrefix = "^^^"
+
 var evalEmbeddedRegex = regexp.MustCompile(`\|\|[^|]+\|\|`)
 
 type entityScope struct {
 	entity *Entity
 }
 
-// ResolveText will process the text as a script if it starts with ```. If it does not, it will look for embedded
+// ResolveText will process the text as a script if it starts with ^^^. If it does not, it will look for embedded
 // expressions inside || pairs inside the text and evaluate them.
 func ResolveText(entity *Entity, text string) string {
-	if !strings.HasPrefix(text, "```") {
+	if !strings.HasPrefix(text, scriptPrefix) {
 		return evalEmbeddedRegex.ReplaceAllStringFunc(text, entity.EmbeddedEval)
 	}
 	es := &entityScope{entity: entity}
@@ -53,7 +55,7 @@ func ResolveText(entity *Entity, text string) string {
 	scope.Define("SSRT", SSRT)
 	scope.Define("YardsFromSSRT", YardsFromSSRT)
 
-	v, err := scope.ParseAndRunWithTimeout(GlobalSettings().PermittedPerScriptExecTime, text[3:])
+	v, err := scope.ParseAndRunWithTimeout(GlobalSettings().PermittedPerScriptExecTime, text[len(scriptPrefix):])
 	if err != nil {
 		return err.Error()
 	}
