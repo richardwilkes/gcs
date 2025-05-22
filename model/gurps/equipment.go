@@ -667,14 +667,6 @@ func (e *Equipment) LocalNotesWithReplacements() string {
 
 // FillWithNameableKeys adds any nameable keys found to the provided map.
 func (e *Equipment) FillWithNameableKeys(m, existing map[string]string) {
-	e.fillWithLocalNameableKeys(m, existing)
-	Traverse(func(mod *EquipmentModifier) bool {
-		mod.FillWithNameableKeys(m, mod.Replacements)
-		return false
-	}, true, true, e.Modifiers...)
-}
-
-func (e *Equipment) fillWithLocalNameableKeys(m, existing map[string]string) {
 	if existing == nil {
 		existing = e.Replacements
 	}
@@ -689,17 +681,17 @@ func (e *Equipment) fillWithLocalNameableKeys(m, existing map[string]string) {
 	for _, one := range e.Weapons {
 		one.FillWithNameableKeys(m, existing)
 	}
+	Traverse(func(mod *EquipmentModifier) bool {
+		mod.FillWithNameableKeys(m, existing)
+		return false
+	}, true, true, e.Modifiers...)
 }
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
 func (e *Equipment) ApplyNameableKeys(m map[string]string) {
 	needed := make(map[string]string)
-	e.fillWithLocalNameableKeys(needed, nil)
+	e.FillWithNameableKeys(needed, nil)
 	e.Replacements = nameable.Reduce(needed, m)
-	Traverse(func(mod *EquipmentModifier) bool {
-		mod.ApplyNameableKeys(m)
-		return false
-	}, true, true, e.Modifiers...)
 }
 
 // DisplayLegalityClass returns a display version of the LegalityClass.

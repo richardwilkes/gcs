@@ -13,7 +13,6 @@ import (
 	"context"
 	"hash"
 	"io/fs"
-	"maps"
 	"slices"
 	"strings"
 
@@ -82,8 +81,7 @@ type TraitModifierData struct {
 // TraitModifierEditData holds the TraitModifier data that can be edited by the UI detail editor.
 type TraitModifierEditData struct {
 	TraitModifierSyncData
-	VTTNotes     string            `json:"vtt_notes,omitempty"`
-	Replacements map[string]string `json:"replacements,omitempty"`
+	VTTNotes string `json:"vtt_notes,omitempty"`
 	TraitModifierEditDataNonContainerOnly
 }
 
@@ -498,27 +496,33 @@ func (t *TraitModifier) CostDescription() string {
 
 // NameWithReplacements returns the name with any replacements applied.
 func (t *TraitModifier) NameWithReplacements() string {
-	return nameable.Apply(t.Name, t.Replacements)
+	if t.trait == nil {
+		return t.Name
+	}
+	return nameable.Apply(t.Name, t.trait.Replacements)
 }
 
 // LocalNotesWithReplacements returns the local notes with any replacements applied.
 func (t *TraitModifier) LocalNotesWithReplacements() string {
-	return nameable.Apply(t.LocalNotes, t.Replacements)
+	if t.trait == nil {
+		return t.LocalNotes
+	}
+	return nameable.Apply(t.LocalNotes, t.trait.Replacements)
 }
 
 // NameableReplacements returns the replacements to be used with Nameables.
 func (t *TraitModifier) NameableReplacements() map[string]string {
-	if t == nil {
+	if t == nil || t.trait == nil {
 		return nil
 	}
-	return t.Replacements
+	return t.trait.Replacements
 }
 
 // FillWithNameableKeys adds any nameable keys found in this TraitModifier to the provided map.
 func (t *TraitModifier) FillWithNameableKeys(m, existing map[string]string) {
 	if !t.Container() && t.Enabled() {
-		if existing == nil {
-			existing = t.Replacements
+		if existing == nil && t.trait != nil {
+			existing = t.trait.Replacements
 		}
 		nameable.Extract(t.Name, m, existing)
 		nameable.Extract(t.LocalNotes, m, existing)
@@ -528,12 +532,11 @@ func (t *TraitModifier) FillWithNameableKeys(m, existing map[string]string) {
 	}
 }
 
-// ApplyNameableKeys replaces any nameable keys found in this TraitModifier with the corresponding values in the
-// provided map.
+// ApplyNameableKeys passes this up to the owning trait to handle.
 func (t *TraitModifier) ApplyNameableKeys(m map[string]string) {
-	needed := make(map[string]string)
-	t.FillWithNameableKeys(needed, nil)
-	t.Replacements = nameable.Reduce(needed, m)
+	if len(m) != 0 && t.trait != nil {
+		t.trait.ApplyNameableKeys(m)
+	}
 }
 
 // Enabled returns true if this node is enabled.
@@ -638,6 +641,5 @@ func (t *TraitModifierEditData) ApplyTo(other *TraitModifier) {
 func (t *TraitModifierEditData) copyFrom(other *TraitModifierEditData) {
 	*t = *other
 	t.Tags = txt.CloneStringSlice(other.Tags)
-	t.Replacements = maps.Clone(other.Replacements)
 	t.Features = other.Features.Clone()
 }

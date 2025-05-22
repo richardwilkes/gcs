@@ -13,7 +13,6 @@ import (
 	"context"
 	"hash"
 	"io/fs"
-	"maps"
 	"slices"
 	"strings"
 
@@ -73,8 +72,7 @@ type EquipmentModifierData struct {
 // EquipmentModifierEditData holds the EquipmentModifier data that can be edited by the UI detail editor.
 type EquipmentModifierEditData struct {
 	EquipmentModifierSyncData
-	VTTNotes     string            `json:"vtt_notes,omitempty"`
-	Replacements map[string]string `json:"replacements,omitempty"`
+	VTTNotes string `json:"vtt_notes,omitempty"`
 	EquipmentModifierEditDataNonContainerOnly
 }
 
@@ -464,27 +462,33 @@ func (e *EquipmentModifier) WeightDescription() string {
 
 // NameableReplacements returns the replacements to be used with Nameables.
 func (e *EquipmentModifier) NameableReplacements() map[string]string {
-	if e == nil {
+	if e == nil || e.equipment == nil {
 		return nil
 	}
-	return e.Replacements
+	return e.equipment.Replacements
 }
 
 // NameWithReplacements returns the name with any replacements applied.
 func (e *EquipmentModifier) NameWithReplacements() string {
-	return nameable.Apply(e.Name, e.Replacements)
+	if e.equipment == nil {
+		return e.Name
+	}
+	return nameable.Apply(e.Name, e.equipment.Replacements)
 }
 
 // LocalNotesWithReplacements returns the local notes with any replacements applied.
 func (e *EquipmentModifier) LocalNotesWithReplacements() string {
-	return nameable.Apply(e.LocalNotes, e.Replacements)
+	if e.equipment == nil {
+		return e.LocalNotes
+	}
+	return nameable.Apply(e.LocalNotes, e.equipment.Replacements)
 }
 
 // FillWithNameableKeys adds any nameable keys found in this EquipmentModifier to the provided map.
 func (e *EquipmentModifier) FillWithNameableKeys(m, existing map[string]string) {
 	if e.Enabled() {
-		if existing == nil {
-			existing = e.Replacements
+		if existing == nil && e.equipment != nil {
+			existing = e.equipment.Replacements
 		}
 		nameable.Extract(e.Name, m, existing)
 		nameable.Extract(e.LocalNotes, m, existing)
@@ -494,11 +498,11 @@ func (e *EquipmentModifier) FillWithNameableKeys(m, existing map[string]string) 
 	}
 }
 
-// ApplyNameableKeys replaces any nameable keys found in this EquipmentModifier with the corresponding values in the provided map.
+// ApplyNameableKeys passes this up to the owning equipment to handle.
 func (e *EquipmentModifier) ApplyNameableKeys(m map[string]string) {
-	needed := make(map[string]string)
-	e.FillWithNameableKeys(needed, nil)
-	e.Replacements = nameable.Reduce(needed, m)
+	if len(m) != 0 && e.equipment != nil {
+		e.equipment.ApplyNameableKeys(m)
+	}
 }
 
 // Enabled returns true if this node is enabled.
@@ -743,6 +747,5 @@ func (e *EquipmentModifierEditData) ApplyTo(other *EquipmentModifier) {
 func (e *EquipmentModifierEditData) copyFrom(other *EquipmentModifierEditData) {
 	*e = *other
 	e.Tags = txt.CloneStringSlice(other.Tags)
-	e.Replacements = maps.Clone(other.Replacements)
 	e.Features = other.Features.Clone()
 }

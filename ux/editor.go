@@ -194,18 +194,23 @@ func (e *editor[N, D]) createToolbar(helpMD string, initToolbar func(*editor[N, 
 	}
 	toolbar.AddChild(e.cancelButton)
 
-	if _, ok := any(e.target).(*gurps.Weapon); !ok {
-		e.nameablesButton = unison.NewSVGButton(svg.Naming)
-		e.nameablesButton.Tooltip = newWrappedTooltip(i18n.Text("Set Substitutions"))
-		e.nameablesButton.ClickCallback = func() {
-			if tmp, m := e.prepareForSubstitutions(); len(m) > 0 {
-				ShowNameablesDialog([]string{tmp.String()}, []map[string]string{m})
-				tmp.ApplyNameableKeys(m)
-				e.editorData.CopyFrom(tmp)
-				e.Rebuild(false)
+	target := any(e.target)
+	if _, ok := target.(*gurps.Weapon); !ok {
+		if _, ok = target.(*gurps.EquipmentModifier); !ok {
+			if _, ok = target.(*gurps.TraitModifier); !ok {
+				e.nameablesButton = unison.NewSVGButton(svg.Naming)
+				e.nameablesButton.Tooltip = newWrappedTooltip(i18n.Text("Set Substitutions"))
+				e.nameablesButton.ClickCallback = func() {
+					if tmp, m := e.prepareForSubstitutions(); len(m) > 0 {
+						ShowNameablesDialog([]string{tmp.String()}, []map[string]string{m})
+						tmp.ApplyNameableKeys(m)
+						e.editorData.CopyFrom(tmp)
+						e.Rebuild(false)
+					}
+				}
+				toolbar.AddChild(e.nameablesButton)
 			}
 		}
-		toolbar.AddChild(e.nameablesButton)
 	}
 
 	if initToolbar != nil {

@@ -579,14 +579,6 @@ func (t *Trait) NameableReplacements() map[string]string {
 
 // FillWithNameableKeys adds any nameable keys found to the provided map.
 func (t *Trait) FillWithNameableKeys(m, existing map[string]string) {
-	t.fillWithLocalNameableKeys(m, existing)
-	Traverse(func(mod *TraitModifier) bool {
-		mod.FillWithNameableKeys(m, mod.Replacements)
-		return false
-	}, true, true, t.Modifiers...)
-}
-
-func (t *Trait) fillWithLocalNameableKeys(m, existing map[string]string) {
 	if existing == nil {
 		existing = t.Replacements
 	}
@@ -602,17 +594,17 @@ func (t *Trait) fillWithLocalNameableKeys(m, existing map[string]string) {
 	for _, one := range t.Weapons {
 		one.FillWithNameableKeys(m, existing)
 	}
+	Traverse(func(mod *TraitModifier) bool {
+		mod.FillWithNameableKeys(m, existing)
+		return false
+	}, true, true, t.Modifiers...)
 }
 
 // ApplyNameableKeys replaces any nameable keys found with the corresponding values in the provided map.
 func (t *Trait) ApplyNameableKeys(m map[string]string) {
 	needed := make(map[string]string)
-	t.fillWithLocalNameableKeys(needed, nil)
+	t.FillWithNameableKeys(needed, nil)
 	t.Replacements = nameable.Reduce(needed, m)
-	Traverse(func(mod *TraitModifier) bool {
-		mod.ApplyNameableKeys(m)
-		return false
-	}, true, true, t.Modifiers...)
 }
 
 // ActiveModifierFor returns the first modifier that matches the name (case-insensitive).
